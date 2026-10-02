@@ -297,14 +297,16 @@ h1{font-size:clamp(30px,4.9vw,52px);font-weight:800;letter-spacing:-.01em;line-h
 @keyframes acH{0%{opacity:0;transform:scaleX(0)}20%{opacity:1;transform:scaleX(1)}82%{opacity:.92}100%{opacity:0;transform:scaleX(1)}}
 @keyframes acFlash{0%{opacity:0;transform:scale(.3)}18%{opacity:1;transform:scale(1.6)}100%{opacity:0;transform:scale(2.8)}}
 .arise-dash{position:fixed;inset:0;z-index:47;pointer-events:none;overflow:hidden}
-.arise-dash .ad-wrap,.arise-dash .ad-ghost{position:absolute;background-size:contain;background-repeat:no-repeat;background-position:center;mix-blend-mode:screen;-webkit-mask-image:linear-gradient(90deg,transparent,#000 32%,#000 68%,transparent),linear-gradient(180deg,transparent,#000 46%,#000 74%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent,#000 32%,#000 68%,transparent),linear-gradient(180deg,transparent,#000 46%,#000 74%,transparent);mask-composite:intersect;will-change:transform,opacity}
-.arise-dash .ad-ghost{filter:blur(3px) brightness(1.4) drop-shadow(0 0 12px rgba(90,210,255,.9)) drop-shadow(0 0 22px rgba(120,60,240,.6))}
-.arise-dash .ad-wrap{filter:brightness(1.5) drop-shadow(0 0 10px rgba(90,210,255,.8)) drop-shadow(0 0 20px rgba(120,60,240,.55))}
-.arise-dash .ad-wrap>*{position:absolute;left:0;display:block;background-repeat:no-repeat;background-size:100% 100%}
-.arise-dash .ad-sl{animation:adGlitch .15s steps(2) infinite}
-.arise-dash .ad-rgb{opacity:.7}
-@keyframes adGlitch{0%,100%{transform:translateX(0)}33%{transform:translateX(var(--gx,4px))}66%{transform:translateX(var(--gx2,-5px))}}
-@keyframes acSlash{0%{opacity:0;transform:rotate(var(--arot,-32deg)) scaleX(0)}22%{opacity:1;transform:rotate(var(--arot,-32deg)) scaleX(1)}100%{opacity:0;transform:rotate(var(--arot,-32deg)) scaleX(1.05)}}
+.arise-dash .shadow-sword{position:absolute;left:0;top:0;transform-origin:50% 50%;mix-blend-mode:screen;pointer-events:none;will-change:transform,opacity}
+.arise-dash .ss-arc{position:absolute;inset:0;border-radius:50%;background:linear-gradient(120deg,rgba(232,250,255,.98) 0%,#7fdcff 26%,#8a63ff 60%,rgba(138,99,255,0) 100%);-webkit-mask:radial-gradient(circle at 60% 33%,transparent 0 46%,#000 47% 100%);mask:radial-gradient(circle at 60% 33%,transparent 0 46%,#000 47% 100%);transform:rotate(var(--arcrot,-42deg));filter:drop-shadow(0 0 6px rgba(150,215,255,.9)) drop-shadow(0 0 16px rgba(130,70,240,.6))}
+.arise-dash .ss-streak{position:absolute;left:-46%;top:44%;width:78%;height:12%;background:linear-gradient(90deg,rgba(120,60,240,0),rgba(90,205,255,.55) 60%,rgba(180,140,255,.6));filter:blur(6px);border-radius:50%}
+.arise-slash{position:fixed;left:0;top:0;width:0;height:0;z-index:48;pointer-events:none;mix-blend-mode:screen;transform:translate(var(--cx),var(--cy)) rotate(var(--rot))}
+.arise-slash i{position:absolute;left:0;top:0;display:block}
+.arise-slash .as-arc{left:calc(var(--r) * -1);top:calc(var(--r) * -1);width:calc(var(--r) * 2);height:calc(var(--r) * 2);border-radius:50%;background:linear-gradient(120deg,#eafcff 0%,#7fdcff 28%,#b18cff 66%,rgba(177,140,255,0) 100%);-webkit-mask:radial-gradient(circle at 56% 34%,transparent 0 50%,#000 51% 100%);mask:radial-gradient(circle at 56% 34%,transparent 0 50%,#000 51% 100%);transform:scale(.18) rotate(-40deg);filter:drop-shadow(0 0 10px rgba(150,215,255,.9)) drop-shadow(0 0 24px rgba(130,70,240,.55));animation:asSweep .34s cubic-bezier(.2,.7,.2,1) forwards,asFade .22s .16s ease-in forwards}
+.arise-slash .as-spark{left:-16px;top:-16px;width:32px;height:32px;border-radius:50%;background:radial-gradient(circle,#fff 0%,#cdeeff 26%,rgba(150,120,255,.5) 52%,transparent 72%);transform:scale(0);animation:asSpark .4s ease-out forwards}
+@keyframes asSweep{0%{transform:scale(.18) rotate(-48deg)}68%{transform:scale(1) rotate(10deg)}100%{transform:scale(1.14) rotate(26deg)}}
+@keyframes asFade{from{opacity:1}to{opacity:0}}
+@keyframes asSpark{0%{transform:scale(0);opacity:1}55%{transform:scale(1.6);opacity:.9}100%{transform:scale(2.8);opacity:0}}
 @keyframes domTitleIn{0%{opacity:0;transform:scale(1.7);filter:blur(7px)}18%{opacity:1;transform:scale(1);filter:blur(0)}60%{opacity:1;transform:scale(1);filter:blur(0)}100%{opacity:0;transform:scale(1.06);filter:blur(3px)}}
 /* ---------- efek Truth-Seeking Orbs HITAM-UNGU (khusus Madara Rikudou) ---------- */
 .madarafx{position:absolute;inset:0;z-index:20;pointer-events:none;overflow:visible}
@@ -2546,99 +2548,54 @@ function armyOfShadowsFx(){
   playClip(domainAudio);
   setTimeout(()=>d.remove(),2150);
 }
-/* Ambil 1 frame diam dari <video> yang lagi muter jadi dataURL, buat tekstur glitch dash.
-   Pakai art video terbaru (bukan gif lama). Same-origin (preview/deploy http) => canvas bersih. */
-async function captureVideoStill(vid){
-  try{
-    if(vid.readyState<2){
-      await new Promise(res=>{
-        let done=false;const fin=()=>{if(done)return;done=true;res();};
-        vid.addEventListener("loadeddata",fin,{once:true});
-        vid.addEventListener("canplay",fin,{once:true});
-        setTimeout(fin,400);
-      });
-    }
-    if(!vid.videoWidth)return "";
-    const ivw=vid.videoWidth,ivh=vid.videoHeight;
-    const MAXW=260; // tekstur glitch dash aja, ga perlu resolusi penuh (biar ga berat dobel 13x)
-    const scale=Math.min(1,MAXW/ivw);
-    const cw=Math.max(2,Math.round(ivw*scale)),ch=Math.max(2,Math.round(ivh*scale));
-    const c=document.createElement("canvas");c.width=cw;c.height=ch;
-    c.getContext("2d").drawImage(vid,0,0,cw,ch);
-    return c.toDataURL("image/jpeg",0.82);
-  }catch(e){return "";}
-}
-async function jinwooDashFx(){
+function jinwooDashFx(){
   const meEl=document.querySelector(".fighter.me"),foeEl=document.querySelector(".fighter.foe");
   if(!meEl||!foeEl)return;
-  const img=meEl.querySelector("img,video")||meEl;
-  const mr=img.getBoundingClientRect(),fr=foeEl.getBoundingClientRect();
-  if(!mr.width)return;
-  const w=mr.width,h=mr.height;
-  const sx=mr.left+mr.width/2-w/2, sy=mr.top+mr.height/2-h/2;
-  const dx=(fr.left+fr.width/2-w/2)-sx, dy=(fr.top+fr.height/2-h/2)-sy;
-  let src=(img.tagName==="VIDEO")?await captureVideoStill(img):((img.currentSrc||img.src)||"");
-  if(!src)return;
+  const art=meEl.querySelector("img,video")||meEl;
+  const ar=art.getBoundingClientRect(),fr=foeEl.getBoundingClientRect();
+  if(!ar.width||!fr.width)return;
+  const ox=ar.left+ar.width/2, oy=ar.top+ar.height/2;   // asal: tengah kartu Jin-Woo
+  const tx=fr.left+fr.width/2,  ty=fr.top+fr.height/2;  // sasaran: tengah kartu musuh
+  const ang=Math.atan2(ty-oy,tx-ox)*180/Math.PI;         // arah tebasan menuju musuh
+  const dist=Math.hypot(tx-ox,ty-oy);
+  const side=Math.max(ar.width,fr.width)*0.95;           // diameter bulan sabit
   const layer=document.createElement("div");layer.className="arise-dash";document.body.appendChild(layer);
-  const DUR=820;
-  const tp=[
-    {transform:"translate(0,0)",offset:0},
-    {transform:`translate(${dx}px,${dy}px) skewX(-18deg)`,offset:0.17},
-    {transform:"translate(0,0) skewX(12deg)",offset:0.34},
-    {transform:`translate(${dx}px,${dy}px) skewX(-18deg)`,offset:0.5},
-    {transform:"translate(0,0) skewX(12deg)",offset:0.67},
-    {transform:`translate(${dx}px,${dy}px) skewX(-18deg)`,offset:0.83},
-    {transform:`translate(${dx*0.45}px,${dy*0.45}px) skewX(0deg)`,offset:1}
-  ];
-  const run=(el,o,delay)=>{
-    el.style.opacity="0";
-    el.animate(tp,{duration:DUR,easing:"ease-in-out",delay:delay});
-    el.animate([{opacity:0,offset:0},{opacity:o,offset:0.03},{opacity:o,offset:0.9},{opacity:0,offset:1}],{duration:DUR,easing:"linear",delay:delay});
+  const NS=3, GAP=155, FLY=250;
+  // satu slash bulan sabit melesat dari kartu Jin-Woo (arah acak) lalu nyaput kartu musuh
+  const throwArc=(k)=>{
+    const dir=ang+(Math.random()*72-36);     // arah melesat dikit ngaco biar dateng dari berbagai sudut
+    const sy=oy+(k-1)*12-12;                 // titik asal disebar dikit
+    const s=document.createElement("div");s.className="shadow-sword";
+    s.style.left=(ox-side/2)+"px";s.style.top=(sy-side/2)+"px";
+    s.style.width=side+"px";s.style.height=side+"px";
+    s.style.setProperty("--arcrot",(dir-42).toFixed(1)+"deg"); // ujung cembung hadap arah laju
+    s.innerHTML='<i class="ss-streak"></i><i class="ss-arc"></i>';
+    layer.appendChild(s);
+    playClip(swordAudio);
+    s.style.transform=`rotate(${dir}deg) translateX(${dist-side}px)`;
+    s.animate([
+      {transform:`rotate(${dir}deg) translateX(${dist-side}px)`,opacity:0},
+      {transform:`rotate(${dir}deg) translateX(${dist-side}px)`,opacity:1,offset:.06},
+      {transform:`rotate(${dir}deg) translateX(${dist}px)`,opacity:1,offset:.82},
+      {transform:`rotate(${dir}deg) translateX(${dist+16}px)`,opacity:0}
+    ],{duration:FLY,easing:"cubic-bezier(.34,.02,.36,1)",fill:"forwards"}).onfinish=()=>{s.remove();ariseSlashFx(fr,k);};
   };
-  // badan glitch: kartu dipecah slice horizontal yang geser sendiri + fringing RGB,
-  // layar campur (screen) + feather tepi biar kotak kartu ilang pas meluncur.
-  // NB: src sekarang dataURL (banyak tanda kutip) → set style via CSSOM, JANGAN innerHTML
-  // string (kutu ganda di url("...") bakal ngerusak atribut style).
-  const buildGlitch=(delay)=>{
-    const wrap=document.createElement("div");wrap.className="ad-wrap";
-    wrap.style.left=sx+"px";wrap.style.top=sy+"px";wrap.style.width=w+"px";wrap.style.height=h+"px";
-    const S=11,sh=h/S;
-    for(let s=0;s<S;s++){
-      const gx=(Math.random()*12-6).toFixed(1), gx2=(Math.random()*16-8).toFixed(1), ad=(Math.random()*0.16).toFixed(2);
-      const el=document.createElement("i");el.className="ad-sl";
-      el.style.top=(s*sh).toFixed(1)+"px";
-      el.style.height=(sh+0.8).toFixed(1)+"px";
-      el.style.backgroundImage=`url("${src}")`;
-      el.style.backgroundSize=w+"px "+h+"px";
-      el.style.backgroundPosition="0 "+(-s*sh).toFixed(1)+"px";
-      el.style.setProperty("--gx",gx+"px");
-      el.style.setProperty("--gx2",gx2+"px");
-      el.style.animationDelay=ad+"s";
-      wrap.appendChild(el);
-    }
-    const mkRgb=(tx,fl)=>{
-      const el=document.createElement("i");el.className="ad-rgb";
-      el.style.top="0";el.style.height=h+"px";el.style.width="100%";
-      el.style.backgroundImage=`url("${src}")`;
-      el.style.transform="translateX("+tx+"px)";el.style.filter=fl;
-      wrap.appendChild(el);
-    };
-    mkRgb(-3,"hue-rotate(-45deg) saturate(3) brightness(1.15)");
-    mkRgb(3,"hue-rotate(150deg) saturate(3) brightness(1.15)");
-    layer.appendChild(wrap);run(wrap,1,delay);
-  };
-  // echo: bayangan kabur nempel di belakang buat motion smear
-  const buildEcho=(o,delay,bl)=>{
-    const g=document.createElement("div");g.className="ad-ghost";
-    g.style.left=sx+"px";g.style.top=sy+"px";g.style.width=w+"px";g.style.height=h+"px";
-    g.style.backgroundImage=`url("${src}")`;g.style.filter=`blur(${bl}px) brightness(1.4) drop-shadow(0 0 12px rgba(90,210,255,.9))`;
-    layer.appendChild(g);run(g,o,delay);
-  };
-  buildGlitch(0);
-  buildEcho(0.42,80,3);buildEcho(0.24,150,5);
+  for(let k=0;k<NS;k++)setTimeout(()=>throwArc(k),k*GAP);
   anim(".fighter.me","lunge-r");
-  playClip(swordAudio);
-  setTimeout(()=>layer.remove(),DUR+220);
+  setTimeout(()=>layer.remove(),GAP*(NS-1)+FLY+560);
+}
+// sapuan slash bulan sabit di kartu musuh: sabit gede kesabet muter + percikan, sudut beda tiap hit
+function ariseSlashFx(fr,k){
+  const cx=fr.left+fr.width/2, cy=fr.top+fr.height/2;
+  const rot=20+k*46+(Math.random()*30-15);
+  const r=Math.hypot(fr.width,fr.height)*0.55;
+  const s=document.createElement("div");s.className="arise-slash";
+  s.style.setProperty("--cx",cx+"px");s.style.setProperty("--cy",cy+"px");
+  s.style.setProperty("--rot",rot+"deg");s.style.setProperty("--r",r+"px");
+  s.innerHTML='<i class="as-arc"></i><i class="as-spark"></i>';
+  document.body.appendChild(s);
+  anim(".fighter.foe","hit");
+  setTimeout(()=>s.remove(),540);
 }
 function ariseStrikeFx(i,n){
   const foeEl=document.querySelector(".fighter.foe");if(!foeEl)return;
