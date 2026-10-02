@@ -1357,7 +1357,7 @@ function upgradeArtVideo(img){
   img.dataset.vdone="1";img.dataset.ph="1";
   const cs=getComputedStyle(img);
   const v=document.createElement("video");
-  v.src=s;v.poster=s.replace(ART_VIDEO,".gif");
+  v.src=s;
   v.autoplay=true;v.muted=true;v.loop=true;v.playsInline=true;v.setAttribute("playsinline","");v.setAttribute("muted","");v.preload="auto";v.disablePictureInPicture=true;
   v.alt=img.alt||"";
   if(img.className)v.className=img.className;
@@ -2546,7 +2546,29 @@ function armyOfShadowsFx(){
   playClip(domainAudio);
   setTimeout(()=>d.remove(),2150);
 }
-function jinwooDashFx(){
+/* Ambil 1 frame diam dari <video> yang lagi muter jadi dataURL, buat tekstur glitch dash.
+   Pakai art video terbaru (bukan gif lama). Same-origin (preview/deploy http) => canvas bersih. */
+async function captureVideoStill(vid){
+  try{
+    if(vid.readyState<2){
+      await new Promise(res=>{
+        let done=false;const fin=()=>{if(done)return;done=true;res();};
+        vid.addEventListener("loadeddata",fin,{once:true});
+        vid.addEventListener("canplay",fin,{once:true});
+        setTimeout(fin,400);
+      });
+    }
+    if(!vid.videoWidth)return "";
+    const ivw=vid.videoWidth,ivh=vid.videoHeight;
+    const MAXW=260; // tekstur glitch dash aja, ga perlu resolusi penuh (biar ga berat dobel 13x)
+    const scale=Math.min(1,MAXW/ivw);
+    const cw=Math.max(2,Math.round(ivw*scale)),ch=Math.max(2,Math.round(ivh*scale));
+    const c=document.createElement("canvas");c.width=cw;c.height=ch;
+    c.getContext("2d").drawImage(vid,0,0,cw,ch);
+    return c.toDataURL("image/jpeg",0.82);
+  }catch(e){return "";}
+}
+async function jinwooDashFx(){
   const meEl=document.querySelector(".fighter.me"),foeEl=document.querySelector(".fighter.foe");
   if(!meEl||!foeEl)return;
   const img=meEl.querySelector("img,video")||meEl;
@@ -2555,8 +2577,7 @@ function jinwooDashFx(){
   const w=mr.width,h=mr.height;
   const sx=mr.left+mr.width/2-w/2, sy=mr.top+mr.height/2-h/2;
   const dx=(fr.left+fr.width/2-w/2)-sx, dy=(fr.top+fr.height/2-h/2)-sy;
-  let src=img.tagName==="IMG"?(img.currentSrc||img.src):(img.tagName==="VIDEO"?(img.getAttribute("poster")||""):"");
-  if(!src||!/assets\/sprites\//.test(src))src="assets/sprites/ex_jinwoo.gif";
+  let src=(img.tagName==="VIDEO")?await captureVideoStill(img):((img.currentSrc||img.src)||"");
   if(!src)return;
   const layer=document.createElement("div");layer.className="arise-dash";document.body.appendChild(layer);
   const DUR=820;
@@ -2575,18 +2596,36 @@ function jinwooDashFx(){
     el.animate([{opacity:0,offset:0},{opacity:o,offset:0.03},{opacity:o,offset:0.9},{opacity:0,offset:1}],{duration:DUR,easing:"linear",delay:delay});
   };
   // badan glitch: kartu dipecah slice horizontal yang geser sendiri + fringing RGB,
-  // layar campur (screen) + feather tepi biar kotak kartu ilang pas meluncur
+  // layar campur (screen) + feather tepi biar kotak kartu ilang pas meluncur.
+  // NB: src sekarang dataURL (banyak tanda kutip) → set style via CSSOM, JANGAN innerHTML
+  // string (kutu ganda di url("...") bakal ngerusak atribut style).
   const buildGlitch=(delay)=>{
     const wrap=document.createElement("div");wrap.className="ad-wrap";
     wrap.style.left=sx+"px";wrap.style.top=sy+"px";wrap.style.width=w+"px";wrap.style.height=h+"px";
-    const S=11,sh=h/S;let html="";
+    const S=11,sh=h/S;
     for(let s=0;s<S;s++){
       const gx=(Math.random()*12-6).toFixed(1), gx2=(Math.random()*16-8).toFixed(1), ad=(Math.random()*0.16).toFixed(2);
-      html+=`<i class="ad-sl" style="top:${(s*sh).toFixed(1)}px;height:${(sh+0.8).toFixed(1)}px;background-image:url("${src}");background-size:${w}px ${h}px;background-position:0 ${(-s*sh).toFixed(1)}px;--gx:${gx}px;--gx2:${gx2}px;animation-delay:${ad}s"></i>`;
+      const el=document.createElement("i");el.className="ad-sl";
+      el.style.top=(s*sh).toFixed(1)+"px";
+      el.style.height=(sh+0.8).toFixed(1)+"px";
+      el.style.backgroundImage=`url("${src}")`;
+      el.style.backgroundSize=w+"px "+h+"px";
+      el.style.backgroundPosition="0 "+(-s*sh).toFixed(1)+"px";
+      el.style.setProperty("--gx",gx+"px");
+      el.style.setProperty("--gx2",gx2+"px");
+      el.style.animationDelay=ad+"s";
+      wrap.appendChild(el);
     }
-    html+=`<i class="ad-rgb" style="top:0;height:${h}px;width:100%;background-image:url("${src}");transform:translateX(-3px);filter:hue-rotate(-45deg) saturate(3) brightness(1.15)"></i>`;
-    html+=`<i class="ad-rgb" style="top:0;height:${h}px;width:100%;background-image:url("${src}");transform:translateX(3px);filter:hue-rotate(150deg) saturate(3) brightness(1.15)"></i>`;
-    wrap.innerHTML=html;layer.appendChild(wrap);run(wrap,1,delay);
+    const mkRgb=(tx,fl)=>{
+      const el=document.createElement("i");el.className="ad-rgb";
+      el.style.top="0";el.style.height=h+"px";el.style.width="100%";
+      el.style.backgroundImage=`url("${src}")`;
+      el.style.transform="translateX("+tx+"px)";el.style.filter=fl;
+      wrap.appendChild(el);
+    };
+    mkRgb(-3,"hue-rotate(-45deg) saturate(3) brightness(1.15)");
+    mkRgb(3,"hue-rotate(150deg) saturate(3) brightness(1.15)");
+    layer.appendChild(wrap);run(wrap,1,delay);
   };
   // echo: bayangan kabur nempel di belakang buat motion smear
   const buildEcho=(o,delay,bl)=>{
