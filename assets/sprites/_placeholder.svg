@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" width="300" height="450">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#161C3F"/>
+      <stop offset="1" stop-color="#0C1030"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="450" fill="url(#bg)"/>
+  <rect x="10" y="10" width="280" height="430" fill="none" stroke="#2A3566" stroke-width="2" stroke-dasharray="7 7" rx="14"/>
+  <circle cx="150" cy="205" r="46" fill="none" stroke="#3A4780" stroke-width="3"/>
+  <text x="150" y="224" font-family="Barlow Condensed, Arial, sans-serif" font-size="64" font-weight="700" fill="#3A4780" text-anchor="middle">?</text>
+  <text x="150" y="300" font-family="Barlow Condensed, Arial, sans-serif" font-size="20" letter-spacing="4" fill="#3A4780" text-anchor="middle">EMPTY SLOT</text>
+</svg>

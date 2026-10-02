@@ -1,0 +1,52 @@
+{
+  "source": "https://anime-auto-battle.preview.emergentagent.com/",
+  "cdnBase": "https://static.prod-images.emergentagent.com/jobs/b1c9986e-aa75-48e7-89ac-ca39847bbe7f/images",
+  "downloadedAt": "2026-09-29",
+  "images": [
+    { "file": "char-ryu.jpeg", "role": "character", "name": "Ryu", "title": "Void Walker", "original": "cf96188cc2ad3cddb11d81931c4eb20fb1c20a55c4995d7203a4080075ee1670.jpeg" },
+    { "file": "char-kai.jpeg", "role": "character", "name": "Kai", "title": "Storm Blade", "original": "3c06e24a82fc3f0a416ea83fa416c13c69ba308ddebf6c0ebbe9d97b3279a2fb.jpeg" },
+    { "file": "char-aya.jpeg", "role": "character", "name": "Aya", "title": "Crimson Moon", "original": "b553ca5e8cc99d94f0960da02ef5d61a1b872d07bb0f380e6fe61b211ce1b0d2.jpeg" },
+    { "file": "enemy-shadow-rogue.jpeg", "role": "enemy", "name": "Shadow Rogue", "title": "Rogue Ninja", "levels": "1-9", "original": "8b1235cf629b172cc856b040d79cebd7dd1b24ba82d5be2416a955b073261a0f.jpeg" },
+    { "file": "enemy-tetsu.jpeg", "role": "enemy", "name": "Tetsu, Iron Colossus", "level": 10, "boss": true, "original": "246dc0bb0a18c67ed22314a99767c766ee0272b68c58c70105eb6bb816e40a5d.jpeg" },
+    { "file": "enemy-orochi.jpeg", "role": "enemy", "name": "Orochi, Venom Sage", "level": 11, "boss": true, "original": "5428de290b80af0e8192065862a540590c08794f22b52b46701778b79f12ea94.jpeg" },
+    { "file": "enemy-kuro.jpeg", "role": "enemy", "name": "Kuro, Blood Reaper", "level": 12, "boss": true, "original": "4aec67cfbd4f01b20e18cdc09cc9ad53c9de7b8dafbc60e715ac426d5d4e599c.jpeg" },
+    { "file": "enemy-raiden.jpeg", "role": "enemy", "name": "Raiden, Storm Titan", "level": 13, "boss": true, "original": "1be27a64f4d87af455ecc82e5253ecc659ad2776783714e76cce490566965409.jpeg" },
+    { "file": "enemy-yurei.jpeg", "role": "enemy", "name": "Yurei, Phantom Lord", "level": 14, "boss": true, "original": "24561806ab32ad202a75eaa0f6fbcb9c62074971afa7e84f9593a795deb5f794.jpeg" },
+    { "file": "enemy-mao.jpeg", "role": "enemy", "name": "Mao, Demon Emperor", "level": 15, "boss": true, "original": "1263cd36ed933d6e1c30cfea6c46ceb07791c6e1a99a53a8c9f14fcc2c1ee37a.jpeg" },
+    { "file": "char-sukuna.png", "role": "character", "name": "Sukuna", "title": "Heian Curse King", "tier": "EX", "source": "generated locally (manga style) for rate-up banner", "original": null },
+    { "file": "story-bab1.png", "role": "banner", "name": "Bab 1 — Pecahan Nebula di Planet Hijau", "source": "generated locally (Xeno-Verdant, green sky, Nebula Core shrine, empire fleet)", "original": null },
+    { "file": "foe-cyber-drone.png", "role": "foe", "name": "Cyber-Drone", "title": "Recon Robot", "level": 1, "source": "generated locally", "original": null },
+    { "file": "foe-vanguard-patrol.png", "role": "foe", "name": "Vanguard Patrol", "title": "Colonial Trooper", "level": 2, "source": "generated locally", "original": null },
+    { "file": "foe-mutant-beast.png", "role": "foe", "name": "Mutant Beast", "title": "Tamed Predator", "level": 3, "source": "generated locally", "original": null },
+    { "file": "foe-riot-shield.png", "role": "foe", "name": "Riot Shield Trooper", "title": "Bulwark Unit", "level": 4, "trait": "guard 35%", "source": "generated locally", "original": null },
+    { "file": "foe-strike-captain.png", "role": "foe", "name": "Strike Captain", "title": "Vanguard Commander", "level": 5, "boss": true, "trait": "strike every 3 turn x2", "source": "generated locally", "original": null },
+    { "file": "foe-neon-infiltrator.png", "role": "foe", "name": "Neon Infiltrator", "title": "Ghost Wire", "level": 6, "trait": "dodge 30%", "source": "generated locally", "original": null },
+    { "file": "foe-heavy-gunner.png", "role": "foe", "name": "Heavy Gunner", "title": "Ordnance Max", "level": 7, "trait": "atkMult 1.35", "source": "generated locally", "original": null },
+    { "file": "foe-plasma-demolisher.png", "role": "foe", "name": "Plasma Demolisher", "title": "Scorch Engine", "level": 8, "trait": "burn 8% DoT", "source": "generated locally", "original": null },
+    { "file": "foe-tech-shaman.png", "role": "foe", "name": "Tech Shaman", "title": "Nano Healer", "level": 9, "trait": "regen 6%", "source": "generated locally", "original": null },
+    { "file": "foe-grand-enforcer.png", "role": "foe", "name": "Grand Enforcer", "title": "Iron Decree", "level": 10, "boss": true, "trait": "hpMult 1.5 + strike every 4 turn x2.5", "source": "generated locally", "original": null },
+    { "file": "foe-gatekeeper-mech.png", "role": "foe", "name": "Gatekeeper Mech", "title": "Aegis Frame", "level": 11, "trait": "guard 50%", "source": "generated locally", "original": null },
+    { "file": "foe-phantom-assassin.png", "role": "foe", "name": "Phantom Assassin", "title": "Silent Edge", "level": 12, "trait": "crit 45% x2.2", "source": "generated locally", "original": null },
+    { "file": "foe-elite-bodyguard.png", "role": "foe", "name": "Elite Bodyguard", "title": "Blood Oath", "level": 13, "trait": "leech 50%", "source": "generated locally", "original": null },
+    { "file": "foe-shadow-prototype.png", "role": "foe", "name": "Shadow Prototype", "title": "Overlord Echo", "level": 14, "trait": "crit 30% x2 + dodge 20%", "source": "generated locally", "original": null },
+    { "file": "foe-overlord-glacius.png", "role": "foe", "name": "Overlord Glacius", "title": "Final Boss - Two Phases", "level": 15, "boss": true, "trait": "phase2 revive + atkMult 1.2", "source": "generated locally", "original": null }
+  ],
+  "sprites": {
+    "note": "Kartu roster MASTER_CARD_INDEX (12 kartu). File di assets/sprites/. Yang belum ada gambarnya otomatis tampil _placeholder.svg sampai user drop file .png dengan nama persis.",
+    "placeholder": "_placeholder.svg",
+    "cards": [
+      { "char_id": "CH_R_001", "file": "r_genin.png", "name": "Genin Recruit", "tier": "R", "status": "empty" },
+      { "char_id": "CH_R_002", "file": "r_scrapper.png", "name": "Cyber-Scrapper", "tier": "R", "status": "empty" },
+      { "char_id": "CH_SR_001", "file": "sr_ninja.png", "name": "Shadow Infiltrator", "tier": "SR", "status": "empty" },
+      { "char_id": "CH_SR_002", "file": "sr_bomber.png", "name": "Plasma Demolisher", "tier": "SR", "status": "empty" },
+      { "char_id": "CH_SSR_001", "file": "ssr_kai.png", "name": "Kai", "tier": "SSR", "status": "empty" },
+      { "char_id": "CH_SSR_002", "file": "ssr_aya.png", "name": "Aya", "tier": "SSR", "status": "empty" },
+      { "char_id": "CH_UR_001", "file": "ur_kai.png", "name": "Storm Sovereign Kai", "tier": "UR", "status": "empty" },
+      { "char_id": "CH_UR_002", "file": "ur_aya.png", "name": "Blood Moon Aya", "tier": "UR", "status": "empty" },
+      { "char_id": "CH_LR_001", "file": "lr_ryu.png", "name": "Shinobi God Ryu", "tier": "LR", "status": "empty" },
+      { "char_id": "CH_LR_002", "file": "lr_glacius.png", "name": "Overlord Glacius", "tier": "LR", "status": "empty" },
+      { "char_id": "CH_EX_SUKUNA", "file": "ex_sukuna_manga.png", "name": "Ryomen Sukuna", "tier": "EX", "status": "provided by user (manga)" },
+      { "char_id": "CH_EX_GOJO", "file": "ex_gojo_manga.png", "name": "Satoru Gojo", "tier": "EX", "status": "provided by user (manga)" }
+    ]
+  }
+}

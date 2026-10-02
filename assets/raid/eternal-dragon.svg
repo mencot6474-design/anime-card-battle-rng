@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 400 480" width="400" height="480" role="img" aria-label="Eternal Dragon">
+  <defs>
+    <radialGradient id="cosmic" cx="50%" cy="46%" r="62%">
+      <stop offset="0%" stop-color="#4b2380"/>
+      <stop offset="42%" stop-color="#26123f"/>
+      <stop offset="75%" stop-color="#120818"/>
+      <stop offset="100%" stop-color="#0a0510" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="aura" cx="50%" cy="42%" r="55%">
+      <stop offset="0%" stop-color="#ff5a5f" stop-opacity=".85"/>
+      <stop offset="55%" stop-color="#8E0B22" stop-opacity=".35"/>
+      <stop offset="100%" stop-color="#8E0B22" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e23a48"/>
+      <stop offset="45%" stop-color="#8E0B22"/>
+      <stop offset="100%" stop-color="#280610"/>
+    </linearGradient>
+    <linearGradient id="wing" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#5a1030"/>
+      <stop offset="60%" stop-color="#2a0a1a"/>
+      <stop offset="100%" stop-color="#160620"/>
+    </linearGradient>
+    <linearGradient id="horn" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#d8c7a8"/>
+      <stop offset="100%" stop-color="#6a5844"/>
+    </linearGradient>
+    <radialGradient id="eye" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="45%" stop-color="#ffd3e6"/>
+      <stop offset="100%" stop-color="#B98CFF"/>
+    </radialGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+    <g id="half">
+      <path fill="url(#wing)" stroke="#B98CFF" stroke-opacity=".5" stroke-width="1.4"
+        d="M184,168 C150,148 120,150 90,116 C104,150 96,160 60,150 C90,178 92,188 54,200 C96,206 116,210 136,250 C158,208 172,198 192,198 Z"/>
+      <path fill="url(#horn)" stroke="#1a0810" stroke-width="1"
+        d="M168,128 L150,96 L130,72 L120,42 L140,66 L154,92 L178,118 Z"/>
+      <path fill="url(#eye)" filter="url(#glow)"
+        d="M156,164 L182,158 L188,170 L164,176 Z"/>
+      <path fill="#ffffff" opacity=".85" d="M165,164 l3,-1 -1,3 -3,1 z"/>
+    </g>
+  </defs>
+
+  <ellipse cx="200" cy="222" rx="188" ry="206" fill="url(#cosmic)"/>
+  <ellipse cx="200" cy="200" rx="150" ry="150" fill="url(#aura)" filter="url(#soft)"/>
+
+  <use xlink:href="#half"/>
+  <use xlink:href="#half" transform="matrix(-1 0 0 1 400 0)"/>
+
+  <path fill="url(#body)" stroke="#B98CFF" stroke-opacity=".55" stroke-width="1.6" filter="url(#glow)"
+    d="M200,120 L232,128 L258,150 L266,178 L250,196 L258,224 L232,220 L214,246 L206,236 L200,252 L194,236 L186,246 L168,220 L142,224 L150,196 L134,178 L142,150 L168,128 Z"/>
+  <path d="M200,126 L200,246" stroke="#B98CFF" stroke-opacity=".5" stroke-width="1.4"/>
+  <path fill="#ffd3e6" opacity=".9" filter="url(#glow)"
+    d="M192,214 L200,230 L208,214 L200,208 Z"/>
+  <circle cx="192" cy="238" r="2.4" fill="#2a0810"/>
+  <circle cx="208" cy="238" r="2.4" fill="#2a0810"/>
+
+  <g fill="#ffffff" filter="url(#glow)">
+    <path d="M96,90 l3,7 7,3 -7,3 -3,7 -3,-7 -7,-3 7,-3 z"/>
+    <path d="M300,110 l2.2,5.2 5.2,2.2 -5.2,2.2 -2.2,5.2 -2.2,-5.2 -5.2,-2.2 5.2,-2.2 z"/>
+    <path d="M70,268 l2,5 5,2 -5,2 -2,5 -2,-5 -5,-2 5,-2 z"/>
+    <path d="M332,252 l2,5 5,2 -5,2 -2,5 -2,-5 -5,-2 5,-2 z"/>
+    <circle cx="200" cy="58" r="2"/>
+  </g>
+
+  <path fill="#B98CFF" opacity=".55" d="M200,300 l14,34 -14,90 -14,-90 z" filter="url(#soft)"/>
+</svg>
