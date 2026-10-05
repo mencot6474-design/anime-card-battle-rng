@@ -4916,7 +4916,9 @@ function boot(){
   
 loadBackpackState();
 }
+// Force immediate boot on DOM ready
 document.addEventListener("DOMContentLoaded", () => {
+  console.log('DOM Loaded - calling boot...');
   window.boot();
 });
 </script>
