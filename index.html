@@ -4913,50 +4913,8 @@ function boot(){
   
   /* ========== Roll + Backpack Event Listeners ========== */
   // Initialize roll system after login screen shows
-  const initRollSystem = () => {
-    setTimeout(() => {
-      const rollBtn = document.getElementById('rollBtn');
-      const backpackToggle = document.getElementById('backpackToggle');
-      const collectBtn = document.getElementById('collectBtn');
-      
-      if (rollBtn) {
-        rollBtn.addEventListener('click', () => {
-          if (!rollState.active) {
-            startRollAnimation();
-            beep(440, 0.15, 'sine', 0.1);
-          } else {
-            stopRollAnimation();
-            hideRollResult();
-            beep(330, 0.12, 'square', 0.08);
-          }
-        });
-      }
-      
-      if (backpackToggle) {
-        backpackToggle.addEventListener('click', toggleBackpack);
-      }
-      
-      if (collectBtn) {
-        collectBtn.addEventListener('click', () => {
-          if (rollState.active) {
-            beep(660, 0.08, 'triangle', 0.06);
-          }
-        });
-      }
-      
-      const overlay = document.getElementById('rollOverlay');
-      if (overlay) {
-        overlay.addEventListener('click', (e) => {
-          if (e.target === overlay) {
-            hideRollResult();
-          }
-        });
-      }
-    }, 500);
-  };
   
-  loadBackpackState();
-  initRollSystem();
+loadBackpackState();
 }
 document.addEventListener("DOMContentLoaded", () => {
   window.boot();
