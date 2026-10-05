@@ -2131,7 +2131,20 @@ function rollMut(){const r=Math.random()*100;if(r<MUT_CHANCE.rainbow)return "rai
 /* Hadiah login harian 7 hari (coin) — total 950.000, reset tiap 00:00 */
 const DAILY_REWARDS=[30000,50000,70000,100000,150000,200000,400000];
 
-/* ========== TRAIT SYSTEM ==========\nconst TRAIT_TIERS=[{k:"none",name:"NONE",rar:"N/A",mult:1,fx:{},color:"#9A8A8B"},{k:"agile",name:"AGILE",rar:"R",mult:1.15,fx:{pierce:7,color:"blue"},color:"#E07F33"},{k:"endurance",name:"ENDURANCE",rar:"R",mult:1.15,fx:{lifesteal:6,color:"green"},color:"#6EAC4C"},{k:"warrior",name:"WARRIOR",rar:"SR",mult:1.3,fx:{crit:{chance:10,mult:1.8}},color:"#5D4987"},{k:"sniper",name:"SNIPER",rar:"SR",mult:1.3,fx:{crit:{chance:18,mult:1.6},pierce:20},color:"#FF4D5E"},{k:"tank",name:"TANK",rar:"SSR",mult:1.45,fx:{evasion:{chance:12,turns:3}},color:"#2F8FE2"},{k:"assassin",name:"ASSASSIN",rar:"SSR",mult:1.45,fx:{crit:{chance:25,mult:1.5},evasion:{chance:20,turns:2}},color:"#B9C2CC"},{k:"legend",name:"LEGEND",rar:"UR",mult:1.7,fx:{double:35,lifesteal:12,pierce:30},color:"#F6DFA6"},{k:"myth",name:"MYTH",rar:"EX",mult:2.0,fx:{double:50,crit:{chance:40,mult:2.0},evasion:{chance:35,turns:3},pierce:50},color:"#B58CFF"}];\n\nconst TRAIT=Object.fromEntries(TRAIT_TIERS.map(t=>[t.k,t]));
+/* ========== TRAIT SYSTEM ========== */
+const TRAIT_TIERS=[
+  {k:"none",name:"NONE",rar:"N/A",mult:1,fx:{},color:"#9A8A8B"},
+  {k:"agile",name:"AGILE",rar:"R",mult:1.15,fx:{pierce:7,color:"blue"},color:"#E07F33"},
+  {k:"endurance",name:"ENDURANCE",rar:"R",mult:1.15,fx:{lifesteal:6,color:"green"},color:"#6EAC4C"},
+  {k:"warrior",name:"WARRIOR",rar:"SR",mult:1.3,fx:{crit:{chance:10,mult:1.8}},color:"#5D4987"},
+  {k:"sniper",name:"SNIPER",rar:"SR",mult:1.3,fx:{crit:{chance:18,mult:1.6},pierce:20},color:"#FF4D5E"},
+  {k:"tank",name:"TANK",rar:"SSR",mult:1.45,fx:{evasion:{chance:12,turns:3}},color:"#2F8FE2"},
+  {k:"assassin",name:"ASSASSIN",rar:"SSR",mult:1.45,fx:{crit:{chance:25,mult:1.5},evasion:{chance:20,turns:2}},color:"#B9C2CC"},
+  {k:"legend",name:"LEGEND",rar:"UR",mult:1.7,fx:{double:35,lifesteal:12,pierce:30},color:"#F6DFA6"},
+  {k:"myth",name:"MYTH",rar:"EX",mult:2.0,fx:{double:50,crit:{chance:40,mult:2.0},evasion:{chance:35,turns:3},pierce:50},color:"#B58CFF"}
+];
+
+const TRAIT=Object.fromEntries(TRAIT_TIERS.map(t=>[t.k,t]));
 const TRAIT_MULT=Object.fromEntries(TRAIT_TIERS.map(t=>[t.k,t.mult]));TRAIT_MULT.none=1;
 const TRAIT_FX=Object.fromEntries(TRAIT_TIERS.map(t=>[t.k,t.fx]));
 const TRAIT_COLOR=Object.fromEntries(TRAIT_TIERS.map(t=>[t.k,t.color]));TRAIT_COLOR.none="#9A8A8B";
