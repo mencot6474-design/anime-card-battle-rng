@@ -2200,32 +2200,67 @@ function nextResetMs(){const n=new Date();return new Date(n.getFullYear(),n.getM
 function fmtCountdown(ms){const s=Math.max(0,Math.floor(ms/1000));const p=x=>String(x).padStart(2,"0");return p(Math.floor(s/3600))+":"+p(Math.floor(s%3600/60))+":"+p(s%60);}
 let state=null, currentUser=null;
 function loadStateFor(name){
+  console.log('loadStateFor:', name);
   KEY="aab-state-v2:"+name;
-  try{state=JSON.parse(localStorage.getItem(KEY))||freshState();}catch(e){state=freshState();}
+  try{state=JSON.parse(localStorage.getItem(KEY))||freshState();}catch(e){console.warn('Load error, using fresh:', e.message);state=freshState();}
+  
+  console.log('Initial stacks:', state.stacks?.length || 0);
+  
   if(!state.stacks||!state.stacks.length){const st=freshState();state.stacks=st.stacks;state.equippedId=st.equippedId;}
+  console.log('After initial stacks:', state.stacks.length);
+  
   state.stacks=state.stacks.filter(s=>CARDS[s.char]);
+  console.log('After CARDS filter:', state.stacks.length);
+  
   {const seen={};state.stacks.forEach(s=>{const k=s.char+"|"+(s.mut||"none");if(!seen[k])seen[k]=s;else if((s.trait&&s.trait!=="none")&&(!seen[k].trait||seen[k].trait==="none"))seen[k]=s;});state.stacks=Object.values(seen);}
+  console.log('After dedup:', state.stacks.length);
+  
   if(!state.stacks.length){const st=freshState();state.stacks=st.stacks;}
+  console.log('After fallback:', state.stacks.length);
+  
   if(!state.stacks.some(s=>s.id===state.equippedId))state.equippedId=state.stacks[0].id;
   if(!state.stacks.some(s=>s.id===state.equippedId2))state.equippedId2=null;
   if(state.cleared)Object.keys(state.cleared).forEach(k=>{if(+k>LEVEL_COUNT)delete state.cleared[k];});
-  diffProg();Object.keys(state.clearedDiff).forEach(dk=>Object.keys(state.clearedDiff[dk]).forEach(k=>{if(+k>LEVEL_COUNT)delete state.clearedDiff[dk][k];}));
-  if(!Object.keys(state.clearedDiff.normal).length&&Object.keys(state.cleared).length)state.clearedDiff.normal=Object.assign({},state.cleared);
+  
+  // Safely call diffProg and helpers
+  try {
+    const dp = diffProg();
+    Object.keys(state.clearedDiff).forEach(dk=>Object.keys(state.clearedDiff[dk]).forEach(k=>{if(+k>LEVEL_COUNT)delete state.clearedDiff[dk][k];}));
+    if(!Object.keys(state.clearedDiff.normal).length&&Object.keys(state.cleared).length)state.clearedDiff.normal=Object.assign({},state.cleared);
+  } catch(e) { console.warn('diffProg error:', e.message); }
+  
+  // Use safe chap init
+  if(!CHAPTERS || !CHAPTERS.length) { 
+    console.error('CHAPTERS not found!'); 
+    return; 
+  }
   if(!CHAPTERS.some(c=>c.no===state.chap))state.chap=1;
   if(typeof state.dailyIndex!=="number")state.dailyIndex=0;
   if(typeof state.raidTokens!=="number")state.raidTokens=0;
   if(!state.books||typeof state.books!=="object")state.books={common:0,gold:0,rainbow:0};
   ["common","gold","rainbow"].forEach(bk=>{if(typeof state.books[bk]!=="number")state.books[bk]=0;});
-  if(!DIFFS.some(d=>d.k===state.diff))state.diff="normal";
-  if(!RAID_DIFFS.some(d=>d.k===state.raidDiff))state.raidDiff="normal";
-  if(!state.raidCleared||typeof state.raidCleared!=="object")state.raidCleared={normal:false,hard:false,extreme:false,nightmare:false};
-  RAID_DIFFS.forEach(d=>{if(typeof state.raidCleared[d.k]!=="boolean")state.raidCleared[d.k]=false;});
-  if(!cellUnlocked(activeChap(),state.diff))state.diff=highestChapDiff(activeChap());
-  state.stacks.forEach(s=>{if(!s.mut)s.mut="none";if(!s.trait||!TRAIT[s.trait])s.trait="none";if(typeof s.exp!=="number")s.exp=0;s.tier=CARDS[s.char].tier;});
+  
+  // Safely handle DIFFS and RAID_DIFFS
+  if(DIFFS && DIFFS.length && !DIFFS.some(d=>d.k===state.diff))state.diff="normal";
+  if(RAID_DIFFS && RAID_DIFFS.length) {
+    if(!state.raidCleared||typeof state.raidCleared!=="object")state.raidCleared={normal:false,hard:false,extreme:false,nightmare:false};
+    RAID_DIFFS.forEach(d=>{if(typeof state.raidCleared[d.k]!=="boolean")state.raidCleared[d.k]=false;});
+    
+    // Safe difficulty check - only if all dependencies are ready
+    try {
+      if(cellUnlocked && activeChap) {
+        if(!cellUnlocked(activeChap(),state.diff))state.diff=highestChapDiff(activeChap().no);
+      }
+    } catch(e) { console.warn('Difficulty check failed:', e.message); }
+  }
+  
+  if(state.stacks)state.stacks.forEach(s=>{if(!s.mut)s.mut="none";if(!s.trait||!TRAIT[s.trait])s.trait="none";if(typeof s.exp!=="number")s.exp=0;s.tier=CARDS[s.char].tier;});
   if(!state.tower||typeof state.tower!=="object")state.tower={floor:1,best:0};
   if(typeof state.tower.floor!=="number"||state.tower.floor<1)state.tower.floor=1;
   if(typeof state.tower.best!=="number"||state.tower.best<0)state.tower.best=0;
   state.battle=null;
+  
+  console.log('loadStateFor complete! State:', state);
 }
 
 /* ========== DIFFICULTY PROGRESS HELPERS ========== */
