@@ -58,6 +58,49 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .pill svg{flex:none}
 .spacer{flex:1;min-width:0}
 .who{font-size:10px;letter-spacing:.18em;color:var(--muted);font-weight:600;white-space:nowrap}
+/* ========== ROLL SYSTEM UI ========== */
+.roll-btn {position:fixed;right:20px;bottom:20px;width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--purple));border:3px solid var(--line2);box-shadow:0 6px 24px rgba(18,28,38,.35),0 0 0 3px var(--panel);z-index:100;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s;font-size:32px;animation:pulse-roll 2s infinite;}
+.roll-btn:hover{transform:scale(1.1);}
+.roll-btn.active{animation:spin-roll 1.5s linear infinite;}
+@keyframes pulse-roll{0%,100%{box-shadow:0 6px 24px rgba(18,28,38,.35),0 0 0 3px var(--panel);}50%{box-shadow:0 12px 40px rgba(18,28,38,.55),0 0 0 6px var(--cyan);}}
+@keyframes spin-roll{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+.roll-overlay{position:fixed;inset:0;background:rgba(18,28,38,.94);z-index:150;display:none;align-items:center;justify-content:center;flex-direction:column;backdrop-filter:blur(10px);}
+.roll-overlay.visible{display:flex;}
+.roll-card-showcase{width:320px;min-height:420px;background:linear-gradient(135deg,#FFFFFF,#F2F5F8);border-radius:20px;border:3px solid var(--cyan);box-shadow:0 20px 80px rgba(18,28,38,.6);padding:20px;text-align:center;animation:card-reveal .5s ease-out;}
+@keyframes card-reveal{from{opacity:0;transform:scale(.8) translateY(40px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.roll-rarity-chip{font-family:"Barlow Condensed";font-weight:700;font-size:24px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:16px;padding:8px 16px;border-radius:12px;display:inline-block;}
+.roll-card-img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:16px;border:2px solid var(--line2);margin:16px 0;}
+.roll-stats{display:flex;gap:12px;margin-top:16px;font-size:14px;color:var(--muted);}
+.roll-info-btn{margin-top:24px;padding:10px 24px;border-radius:10px;border:1px solid var(--line);background:var(--panel);font-family:"Barlow Condensed";font-weight:600;cursor:pointer;transition:.15s;}
+.roll-info-btn:hover{background:var(--panel2);}
+.backpack-toggle{position:fixed;left:20px;bottom:20px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#2c7a7c,#38b7ff);border:3px solid var(--line2);box-shadow:0 4px 16px rgba(56,183,255,.35);z-index:100;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:28px;transition:transform .2s;}
+.backpack-toggle:hover{transform:scale(1.1);}
+.backpack-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:90vw;max-width:1100px;max-height:80vh;background:var(--panel);border-radius:20px;border:2px solid var(--line2);box-shadow:0 20px 80px rgba(18,28,38,.5);z-index:160;display:none;flex-direction:column;overflow:hidden;}
+.backpack-panel.visible{display:flex;}
+.backpack-header{padding:20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg,var(--panel2),var(--panel));}
+.backpack-close{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);cursor:pointer;font-size:20px;}
+.deck-layout{display:flex;gap:24px;padding:24px;flex:1;overflow:hidden;}
+.deck-main-cards{flex:1;display:flex;flex-direction:column;gap:12px;}
+.deck-slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;}
+.deck-slot-wrapper{width:200px;height:260px;background:linear-gradient(135deg,var(--panel2),var(--panel));border:2px solid var(--line2);border-radius:16px;padding:12px;cursor:pointer;transition:transform .15s,box-shadow .15s;}
+.deck-slot-wrapper:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(18,28,38,.25);}
+.deck-slot-wrapper.equipped{border-color:var(--cyan);box-shadow:0 0 20px rgba(18,28,38,.15);}
+.deck-slot-num{font-family:"Barlow Condensed";font-weight:700;font-size:24px;color:var(--muted);margin-bottom:8px;}
+.deck-slot-card{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:12px;border:1px solid var(--line2);}
+.deck-search-bar{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;gap:8px;background:var(--panel2);}
+.deck-search-input{flex:1;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--panel);font-size:14px;}
+.deck-filters{display:flex;gap:8px;flex-wrap:wrap;}
+.filter-btn{padding:6px 12px;border-radius:8px;border:1px solid var(--line);background:var(--panel);font-family:"Barlow Condensed";font-size:12px;cursor:pointer;white-space:nowrap;}
+.filter-btn.on{background:var(--cyan);color:#fff;}
+.deck-backpack-view{flex:1;overflow-y:auto;padding:16px;}
+.backpack-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;padding:8px 0;}
+.backpack-card-item{position:relative;width:100%;aspect-ratio:3/4;background:linear-gradient(135deg,var(--panel2),var(--panel));border:2px solid var(--line2);border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s;}
+.backpack-card-item:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(18,28,38,.25);}
+.backpack-card-item.equipped{border-color:var(--cyan);}
+.backpack-card-img{width:100%;height:100%;object-fit:cover;}
+.backpack-count-badge{position:absolute;top:6px;right:6px;background:rgba(18,28,38,.85);color:white;border-radius:8px;padding:3px 8px;font-family:"Barlow Condensed";font-weight:700;font-size:12px;}
+.backpack-card-meta{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(18,28,38,.9));padding:16px 8px 8px;font-size:11px;color:var(--muted);}
+deck-equipped-tooltip{position:fixed;background:rgba(14,16,19,.95);backdrop-filter:blur(10px);border:1px solid var(--line2);border-radius:12px;padding:12px;font-size:12px;pointer-events:none;z-index:200;max-width:280px;}
 main{margin:0 auto;padding:clamp(20px,3.4vw,34px) clamp(14px,3.6vw,40px) clamp(20px,3.5vh,60px);max-width:var(--wrap)}
 /* layar sangat lebar: kolom konten dilebarkan supaya grid (deck/index/toko) dapat kolom tambahan, bukan menyisakan tepi kosong */
 @media(min-width:1500px){:root{--wrap:1220px}}
@@ -1462,6 +1505,63 @@ const STORY_BIBLE={
       desc:"100% Butterfly Dance: racun kuat menyebar di seluruh area (toxicity 28% per ronde) hingga musuh tidak bisa regenerasi. 30% peluang mengeluarkan kupu-kupu penyembuh yang memulihkan 15% HP teman satu tim."}
   ]
 };
+/* ROLL SYSTEM - Pull-based RNG (bukan gacha pool) */
+const RNG_ROLL_SPEED=1500; // ms per roll
+const RNG_TOTAL_WEIGHT=1000000; // total weight untuk probability
+
+// Drop rates: R=common, SR=uncommon, SSR=rare, UR=epic, EX=legendary, noGacha=exclusive
+// Format: {tier: string, baseWeight: number}
+const RNG_DROP_RATES=[
+  {tier:"R",      name:"Common",     baseWeight:500000},  // 50% chance
+  {tier:"SR",     name:"Uncommon",   baseWeight:250000},  // 25% chance
+  {tier:"SSR",    name:"Rare",       baseWeight:180000},  // 18% chance
+  {tier:"UR",     name:"Epic",       baseWeight:45000},   // 4.5% chance
+  {tier:"EX",     name:"Legendary",  baseWeight:24500}    // 2.45% chance
+];
+
+// Helper: get all cards filtered by tier (exclude noGacha)
+function getCardsByTier(tier){
+  return MASTER_CARD_INDEX.filter(c=>c.tier===tier&&!c.noGacha);
+}
+
+// Main RNG roll function
+function rngRoll(luck=1,speedMultiplier=1){
+  // Calculate weighted random
+  const rand=Math.random()*RNG_TOTAL_WEIGHT;
+  let cumulative=0;
+  let selectedTier=null;
+  
+  for(const entry of RNG_DROP_RATES){
+    cumulative+=entry.baseWeight;
+    if(rand<=cumulative){
+      selectedTier=entry.tier;
+      break;
+    }
+  }
+  
+  // Fallback jika rand > total weight
+  if(!selectedTier)selectedTier="R";
+  
+  // Get random card from selected tier
+  const cardsInTier=getCardsByTier(selectedTier);
+  if(cardsInTier.length===0)return null;
+  
+  const cardIndex=Math.floor(Math.random()*cardsInTier.length);
+  return{
+    cardId:cardsInTier[cardIndex].char_id,
+    tier:selectedTier,
+    luckBonus:luck,
+    speedBoost:speedMultiplier
+  };
+}
+
+// Instant reward for clearing chapters
+function getChapterReward(chapterNo){
+  // Chapter 1 = 500 cards instant, Chapter 2+ = 1000/5000 cards
+  const rollCounts={1:500,2:1000,3:5000,4:5000,5:5000};
+  return{rollCount:rollCounts[chapterNo]||1000,tiers:["R","SR","SSR"]}; // No UR/EX for story rewards
+}
+
 /* Level dinomori global per bab, tiap bab 6 level: Bab 1 = 1-6, Bab 2 = 7-12, Bab 3 = 13-18 */
 let _chapAcc=0;
 STORY_BIBLE.chapters.forEach(c=>{c.from=_chapAcc+1;_chapAcc+=c.levels.length;c.to=_chapAcc;});
@@ -3711,7 +3811,9 @@ function renderLobby(){
     </div>
     <div class="hub-box h-r1 hub-link" id="hubIndex" role="button" title="Buka Katalog Kartu"><img class="hi-ic" src="assets/images/icon-index-card.png" alt=""><span class="hb-lbl">INDEX CARD</span></div>
     <div class="hub-box h-r2 hub-link" id="hubTrait" role="button" title="Roll Trait untuk kartu aktif"><img class="hi-ic" src="assets/images/icon-trait.svg" alt=""><span class="hb-lbl">TRAIT</span></div>
-  </div>`;
+  </div>
+  
+  /* ========== ROLL SYSTEM UI ELEMENTS ==========\n  <button class="roll-btn" id="rollBtn" title="Roll Cards!">\uD83C\uDCB2</button>\n  <div class="backpack-toggle" id="backpackToggle" title="Backpack">🎒</div>\n\n  {/* ========== OVERLAY & PANELS ========== */}\n  <div class="roll-overlay" id="rollOverlay">\n    <div class="roll-card-showcase">\n      <div class="roll-rarity-chip" id="rollRarityChip">ROLLING...</div>\n      <img class="roll-card-img" id="rollCardImg" src="" alt="">\n      <div class="roll-stats">\n        <div>♡ <span id="rollHp"></span></div>\n        <div>${ATKIC} <span id="rollAtk"></span></div>\n      </div>\n      <div style="margin-top:8px;font-size:14px;color:var(--muted)">${skillTextPlaceholder()}</div>\n      <button class="roll-info-btn" id="collectBtn">COLLECT!</button>\n    </div>\n  </div>\n\n  <div class="backpack-panel" id="backpackPanel">\n    <div class="backpack-header">\n      <h2 style="font-size:20px;font-weight:700;">Backpack</h2>\n      <button class="backpack-close" id="backpackClose">×</button>\n    </div>\n    <div class="deck-layout">\n      <div class="deck-main-cards">\n        <div class="deck-search-bar">\n          <input type="text" class="deck-search-input" id="deckSearch" placeholder="Cari kartu...">\n          <div class="deck-filters" id="deckFilters"></div>\n        </div>\n        <div class="deck-slots" id="deckSlots"></div>\n      </div>\n      <div class="deck-backpack-view">\n        <div class="backpack-grid" id="backpackGrid"></div>\n      </div>\n    </div>\n  </div>`;
   const hc=document.getElementById("hubCard");if(hc)hc.onclick=()=>{if(!state.stacks.length){location.hash="#/deck";return;}openDeckPick({getSel:()=>state.equippedId,onPick:(id)=>{state.equippedId=id;if(state.equippedId2===id)state.equippedId2=null;save();closeDeckPick();render();}});};
   const hi=document.getElementById("hubIndex");if(hi)hi.onclick=()=>{sfx.hit();openIndex();};
   const ht=document.getElementById("hubTrait");if(ht)ht.onclick=()=>{sfx.hit();openTrait();};
