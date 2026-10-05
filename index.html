@@ -2066,7 +2066,7 @@ function upgradeArtVideo(img){
 }
 (function(){
   const scan=el=>{if(!el||el.nodeType!==1)return;if(el.matches&&el.matches('img[src]'))upgradeArtVideo(el);if(el.querySelectorAll)el.querySelectorAll('img[src]').forEach(upgradeArtVideo);};
-  const boot=()=>{
+  window.boot=()=>{
     const obs=new MutationObserver(muts=>{for(const m of muts){if(m.type==="attributes"){if(m.target&&m.target.matches&&m.target.matches('img'))upgradeArtVideo(m.target);continue;}m.addedNodes.forEach(scan);}});
     obs.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:["src"]});
     scan(document.body);
@@ -4937,8 +4937,9 @@ function boot(){
   /* ========== Roll + Backpack Event Listeners ========== */
   // Initialize roll system after login screen shows
   
-loadBackpackState();
+  loadBackpackState();
 }
+
 // Force immediate boot - use setTimeout to ensure script fully loaded
 setTimeout(() => {
   if (typeof window.boot === 'function') {
