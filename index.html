@@ -1355,6 +1355,36 @@ const STORY_BIBLE={
       {unit:"CH_RIKAS_BLESSING",reward:24000},
       {unit:"CH_LIMITLESS_MASTER",reward:29000},
       {unit:"CH_KING_OF_CURSES",reward:40000,boss:true}
+    ]},
+  {no:4, zone:"MUSHIMA TOWN", tag:"STORY · BAB 4",
+    art:"assets/images/story-bab4-mushima.png",
+    lore:[
+      "Teleportasi terakhir mengantarmu ke kota kecil yang nyaris tidak tercatat di peta: Mushima Town. Di sini waktu berjalan seperti air di sungai tenang—tenang sampai kau merasakan hawa dingin di leher sendiri. Tiga entitas purba tidur di bawah tanah, masing-masing mengawetkan satu ritual darah yang sudah dilupakan dunia manusia.",
+      "Kota ini penuh dengan penduduk yang 'terlalu sempurna'. Mereka tidak bicara, hanya menunggu pembedahan dari tiga ahli waris yang bangkit kembali untuk menyelesaikan ritual nenek moyang mereka.",
+      "Tiap entitas yang kamu taklukkan akan meninggalkan jejak darah di tanganmu. Jejak itu bukan kutukan—tapi tanda bahwa kamu berhak melanjutkan perjalanan ke tempat di mana segalanya bermula."
+    ],
+    levels:[
+      {unit:"CH_PORCO_PILLAR",reward:52000},
+      {unit:"CH_AWAKENED_STAND_USER",reward:63000},
+      {unit:"CH_GOLD_EXPERIENCE Requiem",reward:76000},
+      {unit:"CH_THE WORLD",reward:90000},
+      {unit:"CH_OPALESTONE_DREAM",reward:108000},
+      {unit:"CH_HEAVENS_DOOR",reward:145000,boss:true}
+    ]},
+  {no:5, zone:"INFINITY CASTLE", tag:"STORY · BAB 5",
+    art:"assets/images/story-bab5-infinity-castle.png",
+    lore:[
+      "Pintu kayu tua muncul tiba-tiba di ujung jalan, tanpa sambungan ke bangunan apa pun. Kamu masuk dan menemukan istana tanpa batas—ruang ruang yang saling bertumpang tindih tanpa logika arsitektur. Tangga putar menghubungkan lantai yang sama, jendela memperlihatkan langit yang berputar lambat.",
+      "Tujuh pemburu iblis berdiri di sudut berbeda istana, masing-masing menguasai satu ruangan yang mustahil. Mereka telah menunggu ribuan tahun untuk pengujian terakhir: siapa yang layak melanjutkan tradisi keluarga Tsuzumi hingga penghujung siklus.",
+      "Kau tidak bisa mundur. Setiap ruangan yang kau taklukkan mengunci pintu keluar sebelumnya. Tapi tiap kemenangan mengembalikan satu memori hilang dari masa lalumu—dan pada akhirnya, itu adalah imbalan terbesar."
+    ],
+    levels:[
+      {unit:"CH_TANJIRO_BLADE",reward:165000},
+      {unit:"CH_NEZUKO_BAMBOO",reward:188000},
+      {unit:"CH Zenitsu_THUNDER",reward:212000},
+      {unit:"CH_INUIZO_MASK",reward:240000},
+      {unit:"CH_SANEMI_WIND",reward:272000},
+      {unit:"CH_SHINOBU_BUTTERFLY",reward:320000,boss:true}
     ]}
   ],
   units:[
@@ -1403,7 +1433,33 @@ const STORY_BIBLE={
     {id:"CH_KING_OF_CURSES",name:"Sukuna",tier:"SSR",type:"Absolute Offensive",skill:"Cursed Slash",hp:2550,atk:1270,art:"assets/cards/art/king-of-curses.png",fx:{void:22,lifesteal:18},
       desc:"22% peluang meniadakan damage musuh dan mengubahnya jadi pemulihan HP, plus menyerap 18% damage jadi HP."},
     {id:"CH_ETERNAL_DRAGON",name:"Eternal Dragon",tier:"UR",type:"Absolute Dragon",skill:"Galaxy Roar",hp:4200,atk:1500,art:"assets/cards/art/eternal-dragon.png",fx:{purple:{chance:35,mult:3},lifesteal:22},noGacha:true,
-      desc:"35% peluang Galaxy Roar: bola energi beku menghimpun salju sampai besar, lalu disemburkan jadi laser es menembus kartu musuh dan meledak jadi percikan beku (damage 3×). Menyerap 22% dari total damage jadi HP. Kartu eksklusif — hanya didapat dari Toko Raid pakai Token Raid."}
+      desc:"35% peluang Galaxy Roar: bola energi beku menghimpun salju sampai besar, lalu disemburkan jadi laser es menembus kartu musuh dan meledak jadi percikan beku (damage 3×). Menyerap 22% dari total damage jadi HP. Kartu eksklusif — hanya didapat dari Toko Raid pakai Token Raid."},
+    // --- BAB 4: MUSHIMA TOWN (Stardust Crusaders arc) ---
+    {id:"CH_PORCO_PILLAR",name:"Porcoped",tier:"R",type:"Offensive",skill:"Pillar Stand",hp:285,atk:142,art:"assets/cards/art/porco-pillar.png",fx:{crit:{chance:22,mult:1.45}},
+      desc:"22% serangan menjadi tusukan Stand dengan damage ×1.45."},
+    {id:"CH_AWAKENED_STAND_USER",name:"Giorno",tier:"SR",type:"Balanced",skill:"Gold Rush",hp:315,atk:157,art:"assets/cards/art/awakened-stand-user.png",fx:{barrage:{chance:28,min:2,max:4}},
+      desc:"28% peluang meluncurkan hujan emas 2-4 kali beruntun."},
+    {id:"CH_GOLD_EXPERIENCE Requiem",name:"GER",tier:"SSR",type:"Defensive",skill:"Truth Arrow",hp:365,atk:182,art:"assets/cards/art/gold-experience-requiem.png",fx:{reset:{chance:35},warp:{chance:40,duration:99}},
+      desc:"35% setiap serangan membatalkan status efek negatif yang aktif. 40% peluang mengirim musuh kembali ke posisi awal (mengabaikan pertahanan) sampai turn berikutnya."},
+    {id:"CH_THE WORLD",name:"Diavolo",tier:"SSR",type:"Absolute Offensive",skill:"Time Stop",hp:405,atk:202,art:"assets/cards/art/the-world.png",fx:{stop:{chance:30,duration:2},strike:{mult:2.5}},
+      desc:"30% peluang menghentikan waktu selama 2 ronde penuh (musuh tidak bisa menyerang). Setiap serangan Diavolo membawa damage bonus ×2.5 selama time stop aktif."},
+    {id:"CH_OPALESTONE_DREAM",name:"Enrico",tier:"UR",type:"Absolute Balanced",skill:"Doomsday",hp:460,atk:230,art:"assets/cards/art/opalestone-dream.png",fx:{doomsday:{chance:45,cleanup:{turns:99}},pierce:{full:1}},
+      desc:"45% membuka Doomsday: seluruh layar memudar putih lalu semua efek positif/detrimental dihapus bersih selama 99 turno. Selamanya: serangan Enrico menembus 100% pertahanan musuh (true damage)."},
+    {id:"CH_HEAVENS_DOOR",name:"Vinegar",tier:"SSR",type:"Defensive",skill:"Heaven's Door",hp:440,atk:220,art:"assets/cards/art/heavens-door.png",fx:{book:{chance:50,hijack:{attacks:2,duration:99}},reflect:{chance:30,mult:.4}},
+      desc:"50% peluang menulis 'Heaven's Door' di musuh: mereka dipaksa menyerang sendiri selama 2 ronde penuh, terus menerus sampai book ditutup. 30% memantulkan balik 40% damage yang diterima sebagai counter otomatis."},
+    // --- BAB 5: INFINITY CASTLE (Demon Slayer arc) ---
+    {id:"CH_TANJIRO_BLADE",name:"Tanjiro",tier:"SR",type:"Offensive",skill:"Breathe Water",hp:750,atk:375,art:"assets/cards/art/tanjiro-blade.png",fx:{combo:{chance:35,count:3},burn:{chance:25,duration:4}},
+      desc:"35% peluang melakukan kombinasi 3 tebasan cepat berurutan. 25% setiap tebasan memberi burn selama 4 ronde yang mengurangi healing target sebesar 60%."},
+    {id:"CH_NEZUKO_BAMBOO",name:"Nezuko",tier:"R",type:"Defensive",skill:"Bamboo Shield",hp:820,atk:410,art:"assets/cards/art/nezuko-bamboo.png",fx:{shield:{amount:250,turns:3},regenerate:{chance:40,pct:12}},
+      desc:"Memberikan shield 250 HP selama 3 ronde saat spawn. 40% memulihkan 12% HP maksimal setiap turn sebagai darah demon."},
+    {id:"CH Zenitsu_THUNDER",name:"Zenitsu",tier:"SR",type:"Absolute Offensive",skill:"Thunderclap Flash",hp:680,atk:408,art:"assets/cards/art/zenitsu-thunder.png",fx:{flash:{chance:100,speed:30,damage:8},overdrive:{duration:99}},
+      desc:"100% Thunderclap Flash: Zenitsu melesat seperti kilatan petir biru menyapu arena dalam 3 fase, masing-masing memberikan 8x ATK total (±24x ATK). Overdrive mode: damage meningkat 50% setiap phase berturut-turut sampai combo selesai."},
+    {id:"CH_INUIZO_MASK",name:"Inuzo",tier:"SSR",type:"Balanced",skill:"Head Lock",hp:920,atk:460,art:"assets/cards/art/inuzo-mask.png",fx:{lock:{chance:50,bind:{duration:99,silence:30}},throttle:{percent:35}},
+      desc:"50% mengunci kepala musuh: mereka tidak bisa menggunakan passive skill selama 3 ronde penuh dan HP berkurang 35% secara instan."},
+    {id:"CH_SANEMI_WIND",name:"Sanemi",tier:"SSR",type:"Absolute Offensive",skill:"Wind Breathing",hp:860,atk:516,art:"assets/cards/art/sanemi-wind.png",fx:{gale:{chance:40,cleave:{width:6,radius:180}},bloodlust:{hpPct:18,bonusMult:1.35}},
+      desc:"40% melepaskan angin tornado meluas horizontal melempar partikel tajam ke kiri-kanan (damage radius ±180px). Selama HP <60%, setiap serangan mendapat bonus damage 35% karena bloodlust."},
+    {id:"CH_SHINOBU_BUTTERFLY",name:"Shinoibu",tier:"UR",type:"Poison Support",skill:"Butterfly Dance",hp:780,atk:520,art:"assets/cards/art/shinobu-butterfly.png",fx:{poison:{chance:100,duration:99,toxin:28},butterfly:{heal:{chance:30,pct:15}}},
+      desc:"100% Butterfly Dance: racun kuat menyebar di seluruh area (toxicity 28% per ronde) hingga musuh tidak bisa regenerasi. 30% peluang mengeluarkan kupu-kupu penyembuh yang memulihkan 15% HP teman satu tim."}
   ]
 };
 /* Level dinomori global per bab, tiap bab 6 level: Bab 1 = 1-6, Bab 2 = 7-12, Bab 3 = 13-18 */
