@@ -2633,7 +2633,7 @@ function malevolentShrineFx(targetSel,who){
 /* =============== SHELL RENDER =============== */
 const app=document.getElementById("app");
 const ROUTES={"#/lobby":"LOBBY","#/":"STORY","#/gacha":"SUMMON PULL","#/deck":"DECK","#/raid":"BOSS RAID","#/tower":"SKY TOWER","#/settings":"PENGATURAN"};
-function route(){const h=location.hash;return ROUTES[h]?h:"#/lobby";}
+function route(){const h=location.hash;console.log('route():',h);return ROUTES[h]?h:"#/lobby";}
 function renderShell(){
   document.getElementById("crumb-page").textContent=ROUTES[route()];
   document.getElementById("coinVal").textContent=fmt(state.coins);
@@ -4791,21 +4791,36 @@ function renderSettings(){
 /* =============== ROUTER =============== */
 function stopBattleLoop(){ if(bt){ if(bt.timer)clearTimeout(bt.timer); bt=null; } if(fightTimer){ clearTimeout(fightTimer); fightTimer=null; } document.getElementById("overlay").classList.remove("show"); }
 function render(){
-  if(!bt&&!raid)document.querySelectorAll("body>.domvoid,body>.shrinefx,body>.hpfx,body>.ebfx,body>.eb-flash").forEach(e=>e.remove());
-  renderShell();
-  const r=route();
-  if(r==="#/")renderHome();
-  else if(r==="#/gacha")renderSummon();
-  else if(r==="#/deck")renderDeck();
-  else if(r==="#/raid")renderRaid();
-  else if(r==="#/tower")renderTower();
-  else if(r==="#/settings")renderSettings();
-  else renderLobby();
+  try {
+    if(!bt&&!raid)document.querySelectorAll("body>.domvoid,body>.shrinefx,body>.hpfx,body>.ebfx,body>.eb-flash").forEach(e=>e.remove());
+    renderShell();
+    const r=route();
+    if(r==="#/")renderHome();
+    else if(r==="#/gacha")renderSummon();
+    else if(r==="#/deck")renderDeck();
+    else if(r==="#/raid")renderRaid();
+    else if(r==="#/tower")renderTower();
+    else if(r==="#/settings")renderSettings();
+    else renderLobby();
+  } catch (e) {
+    console.error('Render error:', e);
+    document.body.innerHTML = `<div style="padding:40px;color:red"><h1>Error!</h1><p>${e.message}</p><pre>${e.stack}</pre></div>`;
+  }
 }
 /* Semua view battle (story/tower/raid) punya .battle-grid -> pasang mode full-screen.
    Observer dipakai karena sebagian renderer battle dipanggil langsung tanpa lewat render(). */
-const bfSync=()=>document.body.classList.toggle("battle-full",!!app.querySelector(".battle-grid"));
-new MutationObserver(bfSync).observe(app,{childList:true,subtree:true});
+const bfSync=()=>{
+  if(!app) return; // Guard: kalau app belum ready, skip
+  const hasBattle = !!app.querySelector(".battle-grid");
+  document.body.classList.toggle("battle-full", hasBattle);
+};
+if(app){
+  try {
+    new MutationObserver(bfSync).observe(app,{childList:true,subtree:true});
+  } catch(e) {
+    console.warn('MutationObserver failed:', e.message);
+  }
+}
 document.getElementById("bfExit").onclick=()=>{
   sfx.hit();
   stopBattleLoop();stopRaid();stopTower();state.battle=null;closeStory();
