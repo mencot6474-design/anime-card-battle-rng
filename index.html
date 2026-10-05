@@ -4915,11 +4915,20 @@ function boot(){
   
 loadBackpackState();
 }
-// Force immediate boot on DOM ready
-document.addEventListener("DOMContentLoaded", () => {
-  console.log('DOM Loaded - calling boot...');
-  window.boot();
-});
+// Force immediate boot - use setTimeout to ensure script fully loaded
+setTimeout(() => {
+  if (typeof window.boot === 'function') {
+    console.log('Initializing boot()...');
+    try {
+      window.boot();
+    } catch(e) {
+      console.error('Boot error:', e.message);
+      console.error(e.stack);
+    }
+  } else {
+    console.error('boot() function not found!');
+  }
+}, 100);
 </script>
 </body>
 </html>
