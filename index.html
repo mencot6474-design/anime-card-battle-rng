@@ -4886,9 +4886,12 @@ document.getElementById("welcomeModal").addEventListener("click",e=>{if(e.target
 function enterGame(name,welcome){
   currentUser=name;
   localStorage.setItem(SESSION_KEY,name);
+  console.log('Loading state for:', name);
   loadStateFor(name);
   save();
+  console.log('State loaded, entering lobby...');
   runLoading(()=>{
+    console.log('Finishing login...');
     document.getElementById("authScreen").classList.add("hidden");
     document.getElementById("loadingScreen").classList.add("hidden");
     /* render lobby DULU baru popup welcome: tanpa ini halaman di belakang popup masih kosong jadi kelihatan mati */
@@ -4898,6 +4901,7 @@ function enterGame(name,welcome){
       document.getElementById("wlMsg").textContent="Selamat datang, "+name+"!";
       document.getElementById("welcomeModal").classList.remove("hidden");
     }
+    console.log('Login complete!');
   });
 }
 function runLoading(done){
@@ -4907,7 +4911,7 @@ function runLoading(done){
   const status=document.getElementById("ldStatus");
   scr.classList.remove("hidden");
   const steps=["Menyinkronkan data…","Membangun deck…","Menyiapkan arena…","Memuat dunia…","Siarp!"];
-  const dur=5000,t0=Date.now();
+  const dur=3000,t0=Date.now();
   fill.style.width="0%";
   /* setInterval bukan requestAnimationFrame: rAF dibekukan browser saat tab/preview tidak terlihat,
      jadi bar loading berhenti di tengah dan layar kelihatan macet total */
@@ -4915,8 +4919,16 @@ function runLoading(done){
     const p=Math.min(1,(Date.now()-t0)/dur);
     fill.style.width=(p*100).toFixed(1)+"%";
     status.textContent=steps[Math.min(steps.length-1,Math.floor(p*steps.length))];
-    if(p>=1){clearInterval(iv);setTimeout(done,250);}
+    if(p>=1){clearInterval(iv);console.log('Loading done, calling callback...');setTimeout(done,250);}
   },60);
+  // Timeout guard - kalau lebih dari 10 detik masih loading, paksa lanjut
+  setTimeout(()=>{
+    if(p<1){
+      console.warn('Loading timeout, forcing through...');
+      clearInterval(iv);
+      setTimeout(done,250);
+    }
+  },10000);
 }
 function logout(){
   localStorage.removeItem(SESSION_KEY);
