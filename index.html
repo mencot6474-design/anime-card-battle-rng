@@ -2214,6 +2214,17 @@ function loadStateFor(name){
   if(typeof state.tower.best!=="number"||state.tower.best<0)state.tower.best=0;
   state.battle=null;
 }
+
+/* ========== DIFFICULTY PROGRESS HELPERS ========== */
+function diffProg(){return state.clearedDiff[state.diff]||(state.clearedDiff.normal||{});}
+const cellUnlocked=(ch,lv)=>(DIFFS.some(d=>d.k===lv))?state.clearedDiff[lv][ch]:false;
+const chapProgressMode=(c,diff)=>{const cd=diffProg();return c.levels.map((_,i)=>cd[c.from+i]).filter(Boolean).length};
+const chapDone=(c,diff)=>(diffProg()||{}).every?.(val=>val)||Object.values(diffProg()||{})[0];
+
+function highestChapDiff(chapNum){
+  const openLevels = CHAPTERS.filter(c=>c.no<=chapNum);
+  return openLevels.length?openLevels[0].diff||'normal':'normal';
+}
 function save(){if(state)localStorage.setItem(KEY,JSON.stringify(state));}
 function equipped(){return state.stacks.find(s=>s.id===state.equippedId)||state.stacks[0];}
 function equipped2(){return state.equippedId2?state.stacks.find(s=>s.id===state.equippedId2)||null:null;}
