@@ -2014,7 +2014,7 @@ STORY_BIBLE.levels=STORY_BIBLE.chapters.flatMap(c=>c.levels.map(l=>({...l,ch:c.n
 const CHAPTERS=STORY_BIBLE.chapters;
 const chapOf=lv=>CHAPTERS.find(c=>lv>=c.from&&lv<=c.to)||CHAPTERS[0];
 const chapCleared=c=>c.levels.filter((_,i)=>state.cleared[c.from+i]).length;
-const chapDone=c=>chapCleared(c)===c.levels.length;
+/* chapDone versi lama sudah dihapus karena konflik dengan versi baru (diff-aware) */
 const chapOpen=c=>c.no===1||chapDone(CHAPTERS[c.no-2]);
 function activeChap(){
   const open=CHAPTERS.filter(chapOpen);
