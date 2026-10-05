@@ -2070,8 +2070,7 @@ function upgradeArtVideo(img){
     const obs=new MutationObserver(muts=>{for(const m of muts){if(m.type==="attributes"){if(m.target&&m.target.matches&&m.target.matches('img'))upgradeArtVideo(m.target);continue;}m.addedNodes.forEach(scan);}});
     obs.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:["src"]});
     scan(document.body);
-  };
-  if(document.body)boot();else document.addEventListener("DOMContentLoaded",boot);
+  }
 })();
 /* Mekanik battle per passive (angka), dipisah dari data index untuk step() */
 const PASSIVE_FX=Object.fromEntries(STORY_BIBLE.units.map(u=>[u.id,u.fx]));
