@@ -4912,75 +4912,55 @@ function boot(){
   if(last){document.getElementById("auUser").value=last;document.getElementById("auPass").focus();}
   
   /* ========== Roll + Backpack Event Listeners ========== */
-  document.addEventListener('DOMContentLoaded', () => {
-    // Wait for DOM to be fully ready
+  // Initialize roll system after login screen shows
+  const initRollSystem = () => {
     setTimeout(() => {
       const rollBtn = document.getElementById('rollBtn');
       const backpackToggle = document.getElementById('backpackToggle');
       const collectBtn = document.getElementById('collectBtn');
       
-      // Roll button click - start/stop continuous roll
       if (rollBtn) {
         rollBtn.addEventListener('click', () => {
           if (!rollState.active) {
             startRollAnimation();
-            beep(440, 0.15, 'sine', 0.1); // Start sound
+            beep(440, 0.15, 'sine', 0.1);
           } else {
             stopRollAnimation();
             hideRollResult();
-            beep(330, 0.12, 'square', 0.08); // Stop sound
+            beep(330, 0.12, 'square', 0.08);
           }
         });
       }
       
-      // Backpack toggle
       if (backpackToggle) {
-        backpackToggle.addEventListener('click', () => {
-          toggleBackpack();
-          if (rollState.active && document.getElementById('backpackPanel')) {
-            // Pause animation when viewing backpack
-            const currentInterval = rollState.interval;
-            rollState.interval = null;
-            // Resume after a short delay (simulating pause)
-            setTimeout(() => {
-              if (rollState.active) {
-                rollState.interval = setInterval(() => {
-                  const result = rngRoll(rollState.luck, rollState.speedMultiplier);
-                  showRollResult(result);
-                  addToBackpack(result.cardId);
-                }, RNG_ROLL_SPEED / rollState.speedMultiplier);
-              }
-            }, 100);
-          }
-        });
+        backpackToggle.addEventListener('click', toggleBackpack);
       }
       
-      // Collect card button (inside overlay)
       if (collectBtn) {
         collectBtn.addEventListener('click', () => {
           if (rollState.active) {
-            // Continue rolling after collection
             beep(660, 0.08, 'triangle', 0.06);
           }
         });
       }
       
-      // Overlay close (outside showcase)
       const overlay = document.getElementById('rollOverlay');
       if (overlay) {
         overlay.addEventListener('click', (e) => {
           if (e.target === overlay) {
-            // Only close if clicking outside the showcase
             hideRollResult();
           }
         });
       }
-    }, 100);
-  });
+    }, 500);
+  };
   
   loadBackpackState();
+  initRollSystem();
 }
-boot();
+document.addEventListener("DOMContentLoaded", () => {
+  window.boot();
+});
 </script>
 </body>
 </html>
