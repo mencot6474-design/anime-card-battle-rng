@@ -295,6 +295,13 @@ body.battle-full .fighter.foe{grid-area:foe;justify-self:center;align-self:stret
 body.battle-full .me-col:not(.foe-side) .bench-rail{grid-area:bench;justify-self:center;align-self:end;margin-top:0}
 body.battle-full .foe-side .bench-rail{grid-area:foe-slot;justify-self:center;align-self:start;margin-top:0}
 body.battle-full .foe-side .bench{display:none}
+/* konten kartu: nama + HP/ATK selalu terbaca. Di kartu arena yang sempit, 2 kolom stat bikin teks "♡ HP 846" patah-patah → jadi 1 kolom + nowrap. Buang subtitle (cardType) biar rapi. */
+body.battle-full .f-body{gap:8px}
+body.battle-full .f-name{font-size:clamp(14px,2vh,18px)}
+body.battle-full .f-title{display:none}
+body.battle-full .stat-row{grid-template-columns:1fr;gap:6px}
+body.battle-full .stat{white-space:nowrap;justify-content:center;gap:6px;padding:6px 10px;font-size:clamp(12px,1.5vh,14px);font-weight:700}
+body.battle-full .stat svg{flex:none}
 }
 .fighter.ko{filter:grayscale(1) brightness(.5);transform:translateY(12px);opacity:.55;transition:filter .3s,transform .3s,opacity .3s}
 .fighter.me.tag-enter{animation:tagEnter .6s cubic-bezier(.2,.9,.3,1.15) both}
