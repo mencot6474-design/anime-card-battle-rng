@@ -101,8 +101,11 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .bp-empty{padding:48px;text-align:center;color:var(--muted);font-size:15px;}
 .bp-body{flex:1;overflow-y:auto;padding:16px;}
 .bp-h{font-family:"Barlow Condensed";font-weight:700;letter-spacing:.06em;font-size:13px;color:var(--muted);margin:4px 0 10px;}
-.bp-slots{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;max-width:360px;}
-.bp-slot{position:relative;aspect-ratio:3/4;border:2px dashed var(--line2);border-radius:12px;background:var(--panel2);overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.bp-cols{display:flex;gap:18px;align-items:flex-start;}
+.bp-deckcol{flex:0 0 auto;width:clamp(96px,26vw,132px);}
+.bp-collect{flex:1;min-width:0;}
+.bp-slots{display:grid;grid-template-columns:1fr;gap:10px;}
+.bp-slot{position:relative;aspect-ratio:1/1;border:2px dashed var(--line2);border-radius:12px;background:var(--panel2);overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .bp-slot.filled{border-style:solid;}
 .bp-slot.sel{box-shadow:0 0 0 3px var(--cyan);}
 .bp-slot img{width:100%;height:100%;object-fit:cover;object-position:top;}
@@ -1769,12 +1772,17 @@ function renderBackpackPanel(){
     const cnt=(s.count||1)>1?`<span class="bpt-cnt">&times;${fmt(s.count)}</span>`:'';
     return `<div class="bp-tile${inDeck?' in-deck':''}" onclick="bpAssign('${s.id}')" style="border-color:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt="">${mut}${cnt}<button class="bpt-i" onclick="event.stopPropagation();openModal('${s.id}')" title="Detail &amp; naik level">i</button><span class="bpt-lvl">L${s.lv}</span></div>`;
   }).join('');
-  panel.innerHTML=header+`<div class="bp-body">
-    <div class="bp-h">${bpTarget!=null?('SLOT '+(bpTarget+1)+' TERPILIH — tap kartu untuk pasang'):'DEK · 4 SLOT · tap slot lalu tap kartu'}</div>
-    <div class="bp-slots">${slots}</div>
-    <div class="bp-h">KOLEKSI (${state.stacks.length})</div>
-    <div class="bp-tiles">${tiles}</div>
-  </div>`;
+  panel.innerHTML=header+`<div class="bp-body"><div class="bp-cols">
+    <div class="bp-deckcol">
+      <div class="bp-h">DEK</div>
+      <div class="bp-slots">${slots}</div>
+    </div>
+    <div class="bp-collect">
+      <div class="bp-h">${bpTarget!=null?('SLOT '+(bpTarget+1)+' TERPILIH — tap kartu untuk pasang'):'TAP SLOT DEK, LALU TAP KARTU'}</div>
+      <div class="bp-h">KOLEKSI (${state.stacks.length})</div>
+      <div class="bp-tiles">${tiles}</div>
+    </div>
+  </div></div>`;
 }
 
 
