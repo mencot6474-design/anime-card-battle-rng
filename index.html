@@ -1350,6 +1350,11 @@ body.battle-full #bfExit{display:inline-flex}
 /* UR = setingkat di bawah EX & TIDAK ada di gacha (hanya Toko Raid), jadi dia tidak punya baris DROP_RATES */
 const TIERS=["R","SR","SSR","UR","EX"];
 const TIER_COLOR={R:"#9A8A8B",SR:"#C8A2A8",SSR:"#B07A9B",UR:"#2F8FE2",EX:"#FF4D5E"};
+/* Sistem kelangkaan = "1 in N" (peluang per kartu), bukan label tier.
+   `tier` hanya dipakai internal sbg kunci warna/logika; yang tampil ke user adalah odds ini. */
+const TIER_CHANCE={R:100,SR:400,SSR:1500,UR:6000,EX:25000};
+function chanceOf(tier){return TIER_CHANCE[tier]||100;}
+function rarityText(tier){return "1 : "+chanceOf(tier).toLocaleString("id-ID");}
 /* =============== STORY BIBLE ===============
    Satu-satunya tempat data karakter & alur story.
    CARDS, FOES, pool gacha, dan stat musuh diturunkan otomatis dari blok ini. */
@@ -1529,30 +1534,19 @@ function getCards(){
 
 // Main RNG roll function
 function rngRoll(luck=1,speedMultiplier=1){
-  // Calculate weighted random
-  const rand=Math.random()*RNG_TOTAL_WEIGHT;
-  let cumulative=0;
-  let selectedTier=null;
-  
-  for(const entry of RNG_DROP_RATES){
-    cumulative+=entry.baseWeight;
-    if(rand<=cumulative){
-      selectedTier=entry.tier;
-      break;
-    }
-  }
-  
-  // Fallback jika rand > total weight
-  if(!selectedTier)selectedTier="R";
-  
-  // Get random card from selected tier
-  const cardsInTier=getCardsByTier(selectedTier);
-  if(cardsInTier.length===0)return null;
-  
-  const cardIndex=Math.floor(Math.random()*cardsInTier.length);
+  // Pilih kartu LANGSUNG berdasar peluang "1 in N" tiap kartu.
+  // Bobot = 1 / chance^luck (luck>1 menaikkan peluang kartu langka).
+  const pool=MASTER_CARD_INDEX.filter(c=>!c.noGacha);
+  if(!pool.length)return null;
+  let total=0;
+  const weights=pool.map(c=>{const w=1/Math.pow(chanceOf(c.tier),luck);total+=w;return w;});
+  let r=Math.random()*total, idx=pool.length-1;
+  for(let i=0;i<pool.length;i++){r-=weights[i];if(r<=0){idx=i;break;}}
+  const pick=pool[idx];
   return{
-    cardId:cardsInTier[cardIndex].char_id,
-    tier:selectedTier,
+    cardId:pick.char_id,
+    tier:pick.tier,
+    chance:chanceOf(pick.tier),
     luckBonus:luck,
     speedBoost:speedMultiplier
   };
@@ -1650,7 +1644,7 @@ function showRollResult(result) {
   cardImg.dataset.charId = result.cardId;
   
   // Set rarity chip
-  rarityChip.textContent = result.tier;
+  rarityChip.textContent = rarityText(result.tier);
   rarityChip.className = 'roll-rarity-chip';
   rarityChip.classList.add(`tier-${result.tier.toLowerCase()}`);
   
@@ -1793,7 +1787,7 @@ function renderDeckSlots() {
       html += `
         <div class="deck-slot equipped" data-slot="${i}" onclick="equipCard(${i}, '${cardId}')">
           <img src="${cardData.art_image}" alt="${cardData.name}">
-          <span class="deck-slot-tier" style="color:${tierColor}">${cardData.tier}</span>
+          <span class="deck-slot-tier" style="color:${tierColor}">${rarityText(cardData.tier)}</span>
           <button class="deck-unequip-btn" onclick="event.stopPropagation(); unequipCard(${i})">×</button>
           <div class="deck-slot-stats">
             <span class="stat-atk">${stats.atk}</span>
@@ -1846,7 +1840,7 @@ function openCardPicker(slotIndex) {
               <img src="${card.art_image}" alt="${card.name}">
               <div class="card-picker-info">
                 <div class="card-picker-name">${card.name}</div>
-                <div class="card-picker-tier tier-${card.tier.toLowerCase()}">${card.tier}</div>
+                <div class="card-picker-tier tier-${card.tier.toLowerCase()}">${rarityText(card.tier)}</div>
                 <div class="card-picker-stats">
                   <span class="stat-atk">${card.atk} ATK</span>
                   <span class="stat-def">${card.def} DEF</span>
@@ -1934,7 +1928,7 @@ function renderBackpackPanel() {
         <img src="${item.art_image}" alt="${item.name}">
         <div class="backpack-card-info">
           <div class="backpack-card-name">${item.name}</div>
-          <div class="backpack-card-tier tier-${item.tier.toLowerCase()}">${item.tier}</div>
+          <div class="backpack-card-tier tier-${item.tier.toLowerCase()}">${rarityText(item.tier)}</div>
           <div class="backpack-card-stats">
             <span class="stat-atk">${item.atk} ATK</span>
             <span class="stat-def">${item.def} DEF</span>
@@ -2833,7 +2827,7 @@ function playFight(cb){
 let bt=null;
 function meFighterHtml(s){
   const st=cardStats(s.char,s.lv,s.mut,s.trait);
-  return `<div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}">${madaraAura(s.char)}<span class="f-tag" style="color:${TIER_COLOR[s.tier]}">${s.tier} · Lv.${s.lv}</span>
+  return `<div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}">${madaraAura(s.char)}<span class="f-tag" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier)} · Lv.${s.lv}</span>
     ${(s.mut&&s.mut!=="none")||(s.trait&&s.trait!=="none")?`<div class="f-badges">${s.mut&&s.mut!=="none"?mutChip(s.mut,`<span class="fbadge" style="border-color:${MUT_COLOR[s.mut]};color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`):""}${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="fbadge" style="border-color:${TRAIT_COLOR[s.trait]};color:${TRAIT_COLOR[s.trait]}">${traitGem(12)} ${traitLabel(s.trait)}</span>`):""}</div>`:""}
     <div class="skill-overlay"><b>${passiveName(s.char)}</b><span class="sk-txt">${skillText(s.char)}</span></div></div>
     <div class="hpbar"><i id="hpMe"></i><span id="hpMeT">${fmt(st.hp)} / ${fmt(st.hp)}</span></div>
@@ -2855,7 +2849,7 @@ function benchHtml(){
         <span class="b-hp">♡ ${fmt(st.hp)}</span>
         <span class="b-atk">${ATKIC} ${fmt(st.atk)}</span>
       </div>
-      <span class="b-tier" style="color:${TIER_COLOR[sub.tier]};border-color:${TIER_COLOR[sub.tier]}">${sub.tier}</span>
+      <span class="b-tier" style="color:${TIER_COLOR[sub.tier]};border-color:${TIER_COLOR[sub.tier]}">${rarityText(sub.tier)}</span>
     </div></div>`;
 }
 function benchDownHtml(s){
@@ -2868,7 +2862,7 @@ function benchDownHtml(s){
         <span class="b-hp">♡ 0</span>
         <span class="b-atk">${ATKIC} ${fmt(st.atk)}</span>
       </div>
-      <span class="b-tier" style="color:${TIER_COLOR[s.tier]};border-color:${TIER_COLOR[s.tier]}">${s.tier}</span>
+      <span class="b-tier" style="color:${TIER_COLOR[s.tier]};border-color:${TIER_COLOR[s.tier]}">${rarityText(s.tier)}</span>
     </div></div>`;
 }
 function renderBattle(){
@@ -3754,7 +3748,7 @@ function towerBenchHtml(w){
         <span class="b-hp">&#9825; ${fmt(es.hp)}</span>
         <span class="b-atk">${ATKIC} ${fmt(es.atk)}</span>
       </div>
-      <span class="b-tier" style="color:${TIER_COLOR[en.tier]};border-color:${TIER_COLOR[en.tier]}">${en.tier}</span>
+      <span class="b-tier" style="color:${TIER_COLOR[en.tier]};border-color:${TIER_COLOR[en.tier]}">${rarityText(en.tier)}</span>
     </div></div>`;
 }
 function towerFoeSide(w,tagW){return towerFoeHtml(w)+towerBenchHtml(tagW);}
@@ -3769,7 +3763,7 @@ function towerBenchDownHtml(w){
         <span class="b-hp">&#9825; 0</span>
         <span class="b-atk">${ATKIC} ${fmt(es.atk)}</span>
       </div>
-      <span class="b-tier" style="color:${TIER_COLOR[en.tier]};border-color:${TIER_COLOR[en.tier]}">${en.tier}</span>
+      <span class="b-tier" style="color:${TIER_COLOR[en.tier]};border-color:${TIER_COLOR[en.tier]}">${rarityText(en.tier)}</span>
     </div></div>`;
 }
 // class foe-enter punya spesifisitas lebih tinggi dari .fighter.hit → hapus begitu animasi masuk selesai biar kartu musuh bisa bergoyang kena pukul
@@ -3788,7 +3782,7 @@ function towerPreviewCard(w,isBoss,role){
   const en=w.en,es=w.es;
   return `<div class="tw-foe${isBoss?" boss":""}" data-tier="${en.tier}">
     <img src="${en.img}" alt="${en.name}">
-    <div class="tw-foe-info"><span class="tw-tier" style="color:${TIER_COLOR[en.tier]}">${en.tier}</span><span class="tw-name">${en.name}</span>
+    <div class="tw-foe-info"><span class="tw-tier" style="color:${TIER_COLOR[en.tier]}">${rarityText(en.tier)}</span><span class="tw-name">${en.name}</span>
       <span class="tw-stat">&#9825; ${fmt(es.hp)} &nbsp; ${ATKIC} ${fmt(es.atk)}</span></div>
     ${isBoss?'<span class="tw-role">'+(role==="main"?"BOS":"TAG")+'</span>':''}
   </div>`;
@@ -3907,7 +3901,7 @@ function revealSingle(res){
   const mc=res.mut&&res.mut!=="none"?" mut-"+res.mut:"";
   w.innerHTML=`<div class="rc-card${res.tier==="EX"?" ex fire":""}${mc}" data-tier="${res.tier}" style="border-color:${res.mut&&res.mut!=="none"?MUT_COLOR[res.mut]:TIER_COLOR[res.tier]}">
     <span class="rc-art"><img src="${c.sprite_asset}" alt="">${madaraAura(res.char)}</span>
-    <span class="rc-tier" style="color:${TIER_COLOR[res.tier]};border-color:${TIER_COLOR[res.tier]}">${res.tier}</span>
+    <span class="rc-tier" style="color:${TIER_COLOR[res.tier]};border-color:${TIER_COLOR[res.tier]}">${rarityText(res.tier)}</span>
     ${res.mut&&res.mut!=="none"?`<span class="rc-mut">${mutBadge(res.mut)} ×${MUT_MULT[res.mut]}</span>`:""}
     <div class="rc-name">${c.name}</div>
     <div class="rc-title">${c.type}</div>
@@ -3943,7 +3937,7 @@ function showPullModal(results){
     return `
     <div class="pm-card${r.tier==="EX"?" fire":""}${mc}" data-tier="${r.tier}" style="animation-delay:${Math.min(i,20)*.06}s;border-color:${r.mut&&r.mut!=="none"?MUT_COLOR[r.mut]:TIER_COLOR[r.tier]}">
       <img src="${CARDS[r.char].sprite_asset}" alt="">
-      <span class="t" style="color:${TIER_COLOR[r.tier]}">${r.tier}</span>
+      <span class="t" style="color:${TIER_COLOR[r.tier]}">${rarityText(r.tier)}</span>
       ${r.mut&&r.mut!=="none"?`<span class="pm-mut" style="border-color:${MUT_COLOR[r.mut]}">${mutBadge(r.mut)}</span>`:""}
       <span class="n">${CARDS[r.char].name}</span>
       ${r.dupGain?`<span style="color:var(--amber);font-size:11px;font-weight:700;letter-spacing:.05em">+${fmt(r.dupGain)}c</span>`:""}
@@ -3995,9 +3989,9 @@ function doSummon(n){
 const mutRateRows=()=>[["silver","S"],["gold","G"],["rainbow","RB"]].map(([k,l])=>`<span><b style="color:${MUT_COLOR[k]}">${l}</b>${MUT_CHANCE[k]}% ×${MUT_MULT[k]}</span>`).join("");
 function dropRatesHtml(b){
   const tiers=DROP_RATES.map(([t,p])=>t==="EX"
-      ?`<span><b style="color:${TIER_COLOR.EX}">EX ${b.feat}</b>${EX_FEATURED}%</span><span><b style="color:${TIER_COLOR.EX}">EX LAIN</b>${otherExRate()}%</span>`
-      :`<span><b style="color:${TIER_COLOR[t]}">${t}</b>${p}%</span>`).join("");
-  return `<div><div class="dp-head">DROP RATE</div><div class="dp-row">${tiers}</div></div>`
+      ?`<span><b style="color:${TIER_COLOR.EX}">${rarityText("EX")} ${b.feat}</b>${EX_FEATURED}%</span><span><b style="color:${TIER_COLOR.EX}">${rarityText("EX")} LAIN</b>${otherExRate()}%</span>`
+      :`<span><b style="color:${TIER_COLOR[t]}">${rarityText(t)}</b>${p}%</span>`).join("");
+  return `<div><div class="dp-head">PELUANG</div><div class="dp-row">${tiers}</div></div>`
     +`<div><div class="dp-head">MUTASI</div><div class="dp-row">${mutRateRows()}</div></div>`;
 }
 function updateSummonWallet(){
@@ -4073,7 +4067,7 @@ function renderDeck(){
     return `<div class="deck-slot clickable${c.tier==="EX"?" fire":""}${s.mut&&s.mut!=="none"?" mut-"+s.mut:""}" data-id="${s.id}" data-tier="${c.tier}" ${s.mut&&s.mut!=="none"?`style="border-color:${MUT_COLOR[s.mut]}"`:""}>
       <span class="ds-art"><img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(s.char)}</span>
       <div style="flex:1">
-        <div class="eyebrow" style="color:${TIER_COLOR[s.tier]}">${s.tier} · Lv.${s.lv}</div>
+        <div class="eyebrow" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier)} · Lv.${s.lv}</div>
         ${(s.mut&&s.mut!=="none")||(s.trait&&s.trait!=="none")?`<div class="ds-badges">${s.mut&&s.mut!=="none"?mutChip(s.mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`):""}${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="trait-badge" style="color:${TRAIT_COLOR[s.trait]};border-color:${TRAIT_COLOR[s.trait]}">${traitGem(12)} ${traitLabel(s.trait)}</span>`):""}</div>`:""}
         <div style="margin-top:4px"><span class="ac-name">${c.name}</span><span class="ac-title">${c.type}</span></div>
         <div class="ac-stats"><span>♡ ${fmt(st.hp)}</span><span>${ATKIC} ${fmt(st.atk)}</span></div>
@@ -4094,7 +4088,7 @@ function renderDeck(){
   </div>
   <div class="filter-row">
     <span class="eyebrow" style="margin-right:6px">FILTER TIER</span>
-    ${["ALL",...TIERS].map(t=>`<button class="f-chip${filter===t?" on":""}" data-f="${t}">${t}</button>`).join("")}
+    ${["ALL",...TIERS].map(t=>`<button class="f-chip${filter===t?" on":""}" data-f="${t}">${t==="ALL"?"ALL":rarityText(t)}</button>`).join("")}
   </div>
   <div class="eyebrow" style="margin-top:18px">KARTU DIMILIKI</div>
   <label class="card-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input class="card-search" id="deckSearch" type="text" placeholder="Cari kartu…" autocomplete="off"></label>
@@ -4104,7 +4098,7 @@ function renderDeck(){
     return `<button class="tcg${s.id===state.equippedId?" equipped":""}${s.tier==="EX"?" fire":""}${mc}" data-id="${s.id}" data-tier="${s.tier}" data-name="${c.name.toLowerCase()}" ${s.mut&&s.mut!=="none"?`style="border-color:${MUT_COLOR[s.mut]}"`:""}>
       <div class="tcg-img"><img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(s.char)}
         <span class="badge-row">
-          <span class="tier-badge" style="color:${TIER_COLOR[s.tier]}">${s.tier}</span>
+          <span class="tier-badge" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier)}</span>
         </span>
         <span class="badge-row bl">
           ${s.id===state.equippedId?'<span class="eq-chip">AKTIF</span>':""}
@@ -4137,7 +4131,7 @@ function openModal(id){
   mcEl.innerHTML=`
     <span class="md-art"><img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(s.char)}</span>
     <div class="md-info">
-      <div class="eyebrow" style="color:${TIER_COLOR[s.tier]}">${s.tier} · Lv.${s.lv}${s.mut&&s.mut!=="none"?` · ${mutChip(s.mut,`<span>${mutBadge(s.mut)}</span>`)}`:""}</div>
+      <div class="eyebrow" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier)} · Lv.${s.lv}${s.mut&&s.mut!=="none"?` · ${mutChip(s.mut,`<span>${mutBadge(s.mut)}</span>`)}`:""}</div>
       <div class="md-name">${c.name}</div>
       <div class="cr-title" style="margin-bottom:8px">${c.type}</div>
       <div class="cr-stats"><span>♡ ${fmt(st.hp)}</span><span>${ATKIC} ${fmt(st.atk)}</span></div>
@@ -4190,7 +4184,7 @@ function renderLobby(){
           <span class="ht-hp">♡ ${fmt(ts.hp)}</span>
           <span class="ht-atk">${ATKIC} ${fmt(ts.atk)}</span>
         </div>
-        <span class="ht-tier" style="color:${TIER_COLOR[eq2.tier]};border-color:${TIER_COLOR[eq2.tier]}">${eq2.tier}</span>
+        <span class="ht-tier" style="color:${TIER_COLOR[eq2.tier]};border-color:${TIER_COLOR[eq2.tier]}">${rarityText(eq2.tier)}</span>
       </div></div>`;
   };
   app.innerHTML=`
@@ -4209,7 +4203,7 @@ function renderLobby(){
     <div class="hub-mid">
     <div class="hub-center${eq&&eq.mut&&eq.mut!=='none'?' mut-'+eq.mut:''}" id="hubCard" data-tier="${eq?tier:''}" ${eq&&eq.mut&&eq.mut!=='none'?`style="border-color:${MUT_COLOR[eq.mut]}"`:''}>
       ${eq?`<div class="hc-img"><img src="${cardImg(eq.char)}" alt="${cardName(eq.char)}">${madaraAura(eq.char)}
-          <span class="f-tag" style="color:${TIER_COLOR[tier]};border-color:${TIER_COLOR[tier]}">${tier}</span>
+          <span class="f-tag" style="color:${TIER_COLOR[tier]};border-color:${TIER_COLOR[tier]}">${rarityText(tier)}</span>
           ${(eq.mut&&eq.mut!=='none')||(eq.trait&&eq.trait!=='none')?`<div class="hc-badges">${eq.mut&&eq.mut!=='none'?mutChip(eq.mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[eq.mut]}">${mutBadge(eq.mut)}</span>`):''}${eq.trait&&eq.trait!=='none'?traitChip(eq.trait,`<span class="hc-trait" style="color:${TRAIT_COLOR[eq.trait]};border-color:${TRAIT_COLOR[eq.trait]}">${traitGem(12)} ${traitLabel(eq.trait)}</span>`):''}</div>`:''}
           <span class="hc-lv-tag">Lv.${eq.lv}</span>
           <div class="skill-overlay"><b>${passiveName(eq.char)}</b><span class="sk-txt">${skillText(eq.char)}</span></div>
@@ -4375,7 +4369,7 @@ function renderRaidPick(){
     return `<button class="raid-pick-card${s.tier==="EX"?" fire":""}${mc}" data-pick="${s.id}" data-name="${c.name.toLowerCase()}"${s.mut&&s.mut!=="none"?` style="border-color:${MUT_COLOR[s.mut]}"`:""}>
       <div class="rpc-img"><img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(s.char)}
         <span class="badge-row">
-          <span class="tier-badge" style="color:${TIER_COLOR[s.tier]}">${s.tier}</span>
+          <span class="tier-badge" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier)}</span>
         </span>
         ${(s.mut&&s.mut!=="none")?`<span class="badge-row bl">
           ${mutChip(s.mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`)}
@@ -4406,7 +4400,7 @@ function renderRaidBattle(){
         <div class="skill-overlay"><b>${b.skill}</b><span class="sk-txt">${b.name} — melepaskan ${RAID_TURNS}+ turn lalu mengamuk: 3 bola energi beruntun, tiap ledakan menghujani 10× 999.999 damage yang tidak bisa di-dodge.</span></div></div>
       <div class="hpbar"><i id="hpRaid"></i><span id="hpRaidT">${fmt(b.hp)} / ${fmt(b.hp)}</span></div>
       <div class="f-body">
-        <div class="f-name">${b.name}</div><div class="f-title">${b.tier} · RAID · ${b.diffLabel}</div>
+        <div class="f-name">${b.name}</div><div class="f-title">${rarityText(b.tier)} · RAID · ${b.diffLabel}</div>
         <div class="stat-row"><div class="stat">♡ HP ${fmt(b.hp)}</div><div class="stat">${ATKIC} ATK ${fmt(999999)}</div></div>
       </div>
     </div></div>
@@ -4576,7 +4570,7 @@ function raidShopThumb(it){
     const c=CARDS[it.card.char],mut=it.card.mut||"none";
     return `<div class="ri-thumb${mut!=="none"?" mut-"+mut:""}">
       <img src="${c.sprite_asset}" alt="${c.name}">
-      <span class="ri-tier" style="color:${TIER_COLOR[c.tier]};border-color:${TIER_COLOR[c.tier]}">${c.tier}</span>
+      <span class="ri-tier" style="color:${TIER_COLOR[c.tier]};border-color:${TIER_COLOR[c.tier]}">${rarityText(c.tier)}</span>
       ${mut!=="none"?`<span class="ri-mut" style="color:${MUT_COLOR[mut]}">${MUT_LABEL[mut]}</span>`:""}
       <div class="ri-desc">${it.desc}</div>
     </div>`;
@@ -4625,7 +4619,7 @@ function openIndex(){
     const d=DROP_RATES.find(x=>x[0]===t);
     /* UR/EX pakai foil dari CSS (border-color:transparent) — jangan timpa border inline */
     const foil=t==="EX"||t==="UR";
-    return `<div class="ix-sec"><div class="ix-rowhead"><span class="t" style="color:${TIER_COLOR[t]};border-color:${TIER_COLOR[t]}">${t}</span><span class="r">${d?"DROP RATE "+d[1]+"%":"EKSKLUSIF — BUKAN DARI GACHA"} · ${pool.length} KARTU</span></div>
+    return `<div class="ix-sec"><div class="ix-rowhead"><span class="t" style="color:${TIER_COLOR[t]};border-color:${TIER_COLOR[t]}">${rarityText(t)}</span><span class="r">${d?"DARI GACHA":"EKSKLUSIF — BUKAN DARI GACHA"} · ${pool.length} KARTU</span></div>
     <div class="ix-strip">${pool.map(c=>{
       return `<div class="idx-card${t==="EX"?" fire":""}" data-tier="${t}" data-base-hp="${c.base_hp}" data-base-atk="${c.base_atk}"${foil?"":` style="border-color:${TIER_COLOR[t]}55"`}>
         <span class="idx-art"><img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(c.char_id)}</span>
@@ -4691,7 +4685,7 @@ function renderDeckPick(){
       ${s.id===state.equippedId?'<span class="dp-aktif">AKTIF</span>':""}
       <span class="dp-art"><img src="${cardImg(s.char)}" alt="">${madaraAura(s.char)}${s.mut&&s.mut!=="none"?mutChip(s.mut,`<span class="dp-mut" style="border-color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`):""}</span>
       <div class="dp-name">${cardName(s.char)}</div>
-      <div class="dp-meta">${s.tier} · Lv${s.lv} · PWR ${fmt(st.hp+st.atk)}</div>
+      <div class="dp-meta">${rarityText(s.tier)} · Lv${s.lv} · PWR ${fmt(st.hp+st.atk)}</div>
     </button>`;}).join("")}</div><div class="no-result" id="dpSearch-nr">Tidak ada kartu yang cocok.</div>`;
   {const dps=document.getElementById("dpSearch");if(dps){dps.value=dpSearch;dps.oninput=()=>{dpSearch=dps.value;runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));};if(dpSearch)runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));}}
   b.querySelectorAll(".dp-card").forEach(el=>el.onclick=()=>{const tid=el.getAttribute("data-tid");sfx.hit();if(cardPickCfg){cardPickCfg.onPick(tid);}else{traitTarget=tid;closeDeckPick();renderTrait();}});
@@ -4773,7 +4767,7 @@ function gmGrantCard(charId){
   return `${CARDS[charId].name} ditambahkan ke deck`;
 }
 function renderSettings(){
-  const opts=MASTER_CARD_INDEX.map(c=>`<option value="${c.char_id}">${c.tier} · ${c.name}</option>`).join("");
+  const opts=MASTER_CARD_INDEX.map(c=>`<option value="${c.char_id}">${rarityText(c.tier)} · ${c.name}</option>`).join("");
   app.innerHTML=`
   <div class="eyebrow">PENGATURAN</div>
   <h1>Game <span class="grad-text">Settings</span></h1>
