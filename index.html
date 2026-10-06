@@ -831,7 +831,7 @@ body.battle-full .stat svg{flex:none}
 .xpbar i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--purple))}
 
 /* ---------- lobby hub ---------- */
-.lobby-hub{display:grid;grid-template-columns:minmax(78px,1fr) minmax(230px,1.55fr) minmax(78px,1fr);grid-template-rows:1fr 1fr;gap:clamp(12px,2.2vh,24px) clamp(14px,4vw,38px);margin:clamp(4px,1vh,12px) auto 0;max-width:920px;align-items:stretch}
+.lobby-hub{display:grid;grid-template-columns:minmax(78px,1fr) minmax(230px,1.55fr) minmax(78px,1fr);grid-template-rows:1fr 1fr auto;gap:clamp(12px,2.2vh,24px) clamp(14px,4vw,38px);margin:clamp(4px,1vh,12px) auto 0;max-width:920px;align-items:stretch}
 .hub-box{position:relative;border-radius:18px;border:1.5px dashed rgba(20,28,38,.16);background:#FFFFFF;min-height:clamp(88px,17vh,150px);display:grid;place-items:center;transition:border-color .15s}
 .hub-box:hover{border-color:rgba(20,28,38,.22)}
 .hub-box .plus{width:36px;height:36px;border-radius:50%;border:1.5px solid rgba(20,28,38,.20);display:grid;place-items:center;color:rgba(20,28,38,.30);font-size:22px;font-weight:300;line-height:1}
@@ -843,6 +843,7 @@ body.battle-full .stat svg{flex:none}
 .hub-link:hover .hb-lbl{color:var(--cyan)}
 .h-l1{grid-column:1;grid-row:1}.h-l2{grid-column:1;grid-row:2}
 .h-r1{grid-column:3;grid-row:1}.h-r2{grid-column:3;grid-row:2}
+.h-mission{grid-column:2;grid-row:3;min-height:clamp(72px,12vh,104px)}
 .hub-mid{grid-column:2;grid-row:1 / span 2;display:flex;flex-direction:column;gap:clamp(8px,1.4vh,14px);align-items:center;width:100%;max-width:min(330px,38vh);justify-self:center}
 .hub-center{width:100%;aspect-ratio:3/4;border-radius:20px;border:1px solid var(--line2);background:radial-gradient(120% 85% at 50% 0%,rgba(140,30,45,.10),#FFFFFF);position:relative;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:border-color .15s,transform .15s}
 .hub-center:hover{border-color:var(--cyan);transform:translateY(-2px)}
@@ -873,7 +874,7 @@ body.battle-full .stat svg{flex:none}
 .hub-tag.empty .ht-lbl{font-family:"Barlow Condensed";letter-spacing:.12em;font-size:12px;color:var(--muted)}
 .lobby-story{max-width:920px;margin:clamp(26px,5vh,54px) auto 44px;padding:0 clamp(14px,4vw,38px)}
 .story-title{font-family:"Barlow Condensed";font-size:clamp(24px,4vw,36px);font-weight:700;letter-spacing:.12em;color:var(--text);margin:0 0 4px}
-@media(max-width:720px){.lobby-hub{grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto;gap:12px}.hub-mid{grid-column:1 / span 2;grid-row:1}.h-l1{grid-column:1;grid-row:2}.h-l2{grid-column:2;grid-row:2}.h-r1{grid-column:1;grid-row:3}.h-r2{grid-column:2;grid-row:3}}
+@media(max-width:720px){.lobby-hub{grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto auto;gap:12px}.hub-mid{grid-column:1 / span 2;grid-row:1}.h-l1{grid-column:1;grid-row:2}.h-l2{grid-column:2;grid-row:2}.h-r1{grid-column:1;grid-row:3}.h-r2{grid-column:2;grid-row:3}.h-mission{grid-column:1 / span 2;grid-row:4}}
 
 /* ---------- index kartu ---------- */
 .idx-card{position:relative;border:1px solid var(--line2);border-radius:14px;overflow:hidden;background:linear-gradient(160deg,#FFFFFF,#EEF2F6)}
@@ -921,11 +922,8 @@ body.battle-full .stat svg{flex:none}
 #missionModal{position:fixed;inset:0;background:rgba(9,10,12,.8);backdrop-filter:blur(6px);display:none;place-items:center;z-index:60;padding:18px}
 #missionModal.show{display:grid}
 .mx-box{width:min(680px,94vw)}
-.mission-btn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;max-width:920px;margin:clamp(16px,3.5vh,34px) auto 44px;padding:16px 22px;border-radius:16px;border:1.5px solid rgba(20,28,38,.16);background:linear-gradient(160deg,#FFFFFF,#EEF2F6);cursor:pointer;transition:border-color .15s,transform .15s,box-shadow .15s;box-shadow:0 8px 26px rgba(200,212,222,.14)}
-.mission-btn:hover{border-color:var(--cyan);transform:translateY(-2px);box-shadow:0 12px 32px rgba(200,212,222,.22)}
-.mission-btn .mb-ic{width:26px;height:26px;flex:none;color:var(--cyan)}
-.mission-btn .mb-lbl{font-family:"Barlow Condensed";font-weight:700;letter-spacing:.16em;font-size:18px;color:var(--text)}
-.mission-btn .mb-sub{font-family:"Barlow Condensed";font-weight:600;letter-spacing:.1em;font-size:12px;color:var(--muted);border:1px solid var(--line2);border-radius:999px;padding:3px 10px}
+.h-mission .mb-sub{font-family:"Barlow Condensed";font-weight:600;letter-spacing:.08em;font-size:11px;color:var(--muted);border:1px solid var(--line2);border-radius:999px;padding:2px 9px;line-height:1.4}
+.h-mission:hover .mb-sub{color:var(--cyan);border-color:var(--cyan)}
 .ix-rowhead{display:flex;align-items:center;gap:12px;margin-bottom:10px}
 .ix-rowhead .t{font-family:"Barlow Condensed";font-size:20px;font-weight:700;letter-spacing:.12em;border:1px solid;border-radius:8px;padding:1px 14px}
 .ix-rowhead .r{font-size:11px;letter-spacing:.16em;font-weight:700;color:var(--muted)}
@@ -3856,8 +3854,8 @@ function renderLobby(){
     </div>
     <div class="hub-box h-r1 hub-link" id="hubIndex" role="button" title="Buka Katalog Kartu"><img class="hi-ic" src="assets/images/icon-index-card.png" alt=""><span class="hb-lbl">INDEX CARD</span></div>
     <div class="hub-box h-r2 hub-link" id="hubTrait" role="button" title="Roll Trait untuk kartu aktif"><img class="hi-ic" src="assets/images/icon-trait.svg" alt=""><span class="hb-lbl">TRAIT</span></div>
-  </div>
-  <button class="mission-btn" id="missionBtn" type="button" title="Buka daftar misi"><svg class="mb-ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 4 6v13l5-2 6 2 5-2V4l-5 2-6-2Z"/><path d="M9 4v13M15 6v13"/></svg><span class="mb-lbl">MISSION</span><span class="mb-sub" id="missionSub"></span></button>`;
+    <div class="hub-box h-mission hub-link" id="missionBtn" role="button" title="Buka daftar misi"><svg class="tw-ic" width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 4 6v13l5-2 6 2 5-2V4l-5 2-6-2Z"/><path d="M9 4v13M15 6v13"/></svg><span class="hb-lbl">MISSION</span><span class="mb-sub" id="missionSub"></span></div>
+  </div>`;
   const hc=document.getElementById("hubCard");if(hc)hc.onclick=()=>{sfx.hit();toggleBackpack();};
   const hi=document.getElementById("hubIndex");if(hi)hi.onclick=()=>{sfx.hit();openIndex();};
   const ht=document.getElementById("hubTrait");if(ht)ht.onclick=()=>{sfx.hit();openTrait();};
