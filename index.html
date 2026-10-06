@@ -833,6 +833,10 @@ body.battle-full .stat svg{flex:none}
 .hub-center .hc-badges .mut-badge,.hub-center .hc-badges .hc-trait{display:inline-flex;align-items:center;height:22px;padding:0 8px;font-size:12px;line-height:1;border-radius:6px}
 .hub-center .hc-badges .hc-trait.hc-gem{width:22px;padding:0;justify-content:center}
 .hub-center .hc-badges .hc-gem svg{display:block}
+.fighter .f-badges .mut-badge{position:static;top:auto;left:auto}
+.fighter .f-badges .mut-badge,.fighter .f-badges .hc-trait{display:inline-flex;align-items:center;height:22px;padding:0 8px;font-size:12px;line-height:1;border-radius:6px}
+.fighter .f-badges .hc-trait.hc-gem{width:22px;padding:0;justify-content:center}
+.fighter .f-badges .hc-gem svg{display:block}
 .hub-tag{position:relative;width:100%;min-height:86px;display:flex;gap:10px;align-items:center;padding:12px;border-radius:14px;border:1px solid rgba(20,28,38,.16);background:#FFFFFF;cursor:pointer;transition:border-color .15s,transform .15s}
 .hub-tag:hover{border-color:var(--cyan);transform:translateY(-2px)}
 .hub-tag img,.hub-tag video{width:44px;height:58px;object-fit:cover;object-position:top;border-radius:7px;background:#E9EDF2;flex:none}
@@ -2601,8 +2605,9 @@ let bt=null;
 function meFighterHtml(s){
   const st=cardStats(s.char,s.mut,s.trait,s.shiny);
   const mut=(s.mut&&s.mut!=="none")?s.mut:null;
+  const trait=(s.trait&&s.trait!=="none")?s.trait:null;
   return `<div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}">${madaraAura(s.char)}<div class="f-name${(!mut&&s.shiny)?' f-name-shine':''}"${mut?` style="color:${MUT_COLOR[mut]}"`:''}>${mutText(mut,cardName(s.char))}</div><span class="f-tag" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,(CARDS[s.char]||{}).chance)}</span>
-    ${(s.mut&&s.mut!=="none")||s.shiny?`<div class="f-badges">${s.mut&&s.mut!=="none"?mutChip(s.mut,`<span class="fbadge" style="border-color:${MUT_COLOR[s.mut]};color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`):""}${s.shiny?`<span class="fbadge shiny-badge">SHINY</span>`:""}</div>`:""}
+    ${(s.shiny||mut||trait)?`<div class="f-badges">${s.shiny?'<span class="shiny-badge">SHINY</span>':''}${mut?mutChip(mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="hc-trait hc-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(14)}</span>`):''}</div>`:""}
     </div>
     <div class="hpbar"><i id="hpMe"></i><span id="hpMeT">${fmt(st.hp)} / ${fmt(st.hp)}</span></div>
     <div class="f-body">
