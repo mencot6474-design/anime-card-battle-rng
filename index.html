@@ -134,7 +134,10 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .bps-hover.show{display:block;}
 .bps-hover .hub-center{cursor:default;box-shadow:0 14px 40px rgba(0,0,0,.6);}
 .bps-hover .hub-center:hover{transform:none;}
-.bp-tile .bpt-i{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:6px;border:none;background:rgba(12,14,16,.8);color:#fff;font-size:11px;font-weight:700;font-style:italic;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.bp-tile .bpt-ctl{position:absolute;top:2px;right:2px;z-index:3;display:flex;flex-direction:column;gap:3px;}
+.bp-tile .bpt-fav,.bp-tile .bpt-lock{width:18px;height:18px;border-radius:6px;border:none;background:rgba(12,14,16,.8);color:#cfd6dd;font-size:11px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
+.bp-tile .bpt-fav.on{color:#FFC93C;}
+.bp-tile .bpt-lock.on{color:#7DF9FF;}
 .deck-layout{display:flex;gap:24px;padding:24px;flex:1;overflow:hidden;}
 .deck-main-cards{flex:1;display:flex;flex-direction:column;gap:12px;}
 .deck-slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;}
@@ -1720,6 +1723,8 @@ function bpAssign(stackId){
   bpTarget=null;
   renderBackpackPanel();
 }
+function bpFav(stackId){const s=state.stacks.find(x=>x.id===stackId);if(!s)return;s.fav=!s.fav;save();renderBackpackPanel();}
+function bpLock(stackId){const s=state.stacks.find(x=>x.id===stackId);if(!s)return;s.lock=!s.lock;save();renderBackpackPanel();}
 function renderBackpackPanel(){
   const panel=document.getElementById('backpackPanel');if(!panel)return;
   bpsHoverBind();bpsHoverHide();
@@ -1737,7 +1742,7 @@ function renderBackpackPanel(){
     const inDeck=state.deck.includes(s.id);
     const shny=s.shiny?'<span class="bpt-shiny">SHINY</span>':'';
     const cnt=(s.count||1)>1?`<span class="bpt-cnt">&times;${fmt(s.count)}</span>`:'';
-    return `<div class="bp-tile${inDeck?' in-deck':''}" data-sid="${s.id}" onclick="bpAssign('${s.id}')" style="border-color:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt="">${shny?`<div class="bpt-top">${shny}</div>`:''}${cnt}<button class="bpt-i" onclick="event.stopPropagation();openModal('${s.id}')" title="Detail">i</button></div>`;
+    return `<div class="bp-tile${inDeck?' in-deck':''}" data-sid="${s.id}" onclick="bpAssign('${s.id}')" style="border-color:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt="">${shny?`<div class="bpt-top">${shny}</div>`:''}${cnt}<div class="bpt-ctl"><button class="bpt-fav${s.fav?' on':''}" onclick="event.stopPropagation();bpFav('${s.id}')" title="Favorit">${s.fav?'★':'☆'}</button><button class="bpt-lock${s.lock?' on':''}" onclick="event.stopPropagation();bpLock('${s.id}')" title="Lock">${s.lock?'🔒':'🔓'}</button></div></div>`;
   }).join('');
   const cntOf=m=>state.stacks.filter(s=>m==='all'?true:(m==='shiny'?!!s.shiny:(s.mut||'none')===m)).length;
   const chip=(k,lbl)=>{const on=bpMutFilter===k;const col=on?(MUT_COLOR[k]||'#7DF9FF'):'';return `<button class="bp-fchip${on?' on':''}" onclick="bpSetFilter('${k}')"${col?` style="border-color:${col};color:${col}"`:''}>${lbl}<em>${cntOf(k)}</em></button>`;};
