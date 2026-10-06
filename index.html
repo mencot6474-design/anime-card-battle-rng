@@ -840,6 +840,8 @@ body.battle-full #bfExit{display:inline-flex}
 .hub-tag.empty{justify-content:center;gap:8px;border-style:dashed;opacity:.7}
 .hub-tag.empty .ht-plus{width:26px;height:26px;display:grid;place-items:center;border-radius:50%;border:1px solid rgba(20,28,38,.30);color:var(--cyan);font-size:16px;line-height:1}
 .hub-tag.empty .ht-lbl{font-family:"Barlow Condensed";letter-spacing:.12em;font-size:12px;color:var(--muted)}
+.lobby-story{max-width:920px;margin:clamp(26px,5vh,54px) auto 44px;padding:0 clamp(14px,4vw,38px)}
+.story-title{font-family:"Barlow Condensed";font-size:clamp(24px,4vw,36px);font-weight:700;letter-spacing:.12em;color:var(--text);margin:0 0 4px}
 @media(max-width:720px){.lobby-profile{flex-direction:column;align-items:center}.lp-daily{width:100%;max-width:330px;min-height:auto;flex-direction:row;gap:10px;padding:12px 16px}.lp-daily svg{width:26px;height:26px}.lobby-hub{grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto;gap:12px}.hub-mid{grid-column:1 / span 2;grid-row:1}.h-l1{grid-column:1;grid-row:2}.h-l2{grid-column:2;grid-row:2}.h-r1{grid-column:1;grid-row:3}.h-r2{grid-column:2;grid-row:3}}
 
 /* ---------- index kartu ---------- */
@@ -2517,12 +2519,12 @@ setInterval(()=>{
   if(document.getElementById("dailyModal").classList.contains("show"))renderDaily();
 },1000);
 
-/* =============== HOME =============== */
-function renderHome(){
-  if(state.battle)return renderBattle();
+/* =============== HOME (Story) — kini nyatu di layar Lobby ===============
+   Daftar bab dibangun jadi helper (chapListHTML/bindChapList) supaya bisa
+   dipakai renderLobby. Render battle tetap lewat guard state.battle di lobby. */
+function chapListHTML(){
   const pw=totalPower();
-  app.innerHTML=`
-  <h1>Mission</h1>
+  return `<h1 class="story-title">Mission</h1>
   <div class="chap-list" id="chapList">${CHAPTERS.map(c=>{
     const cd=diffProg()[state.diff];const open=cellUnlocked(c,state.diff),done=chapProgMode(c,state.diff);
     let nextLv=c.to;for(let i=c.from;i<=c.to;i++){if(!cd[i]){nextLv=i;break;}}
@@ -2538,12 +2540,15 @@ function renderHome(){
       </div>
     </button>`;
   }).join("")}</div>`;
-  app.querySelectorAll(".story-banner[data-c]").forEach(b=>b.onclick=()=>{
+}
+function bindChapList(){
+  document.querySelectorAll(".story-banner[data-c]").forEach(b=>b.onclick=()=>{
     const n=+b.dataset.c;
     if(state.chap!==n){state.chap=n;save();}
     openStory();
   });
 }
+function renderHome(){ renderLobby(); }
 function openStory(){
   const ch=activeChap(),pw=totalPower();
   if(!cellUnlocked(ch,state.diff)){state.diff=highestChapDiff(ch);save();}
@@ -3724,6 +3729,7 @@ document.getElementById("modal").addEventListener("click",e=>{
 
 /* =============== LOBBY =============== */
 function renderLobby(){
+  if(state.battle)return renderBattle();
   const eq=equipped();
   const st=eq?cardStats(eq.char,eq.lv,eq.mut,eq.trait):null;
   const tier=eq?CARDS[eq.char].tier:null;
@@ -3757,13 +3763,15 @@ function renderLobby(){
     </div>
     <div class="hub-box h-r1 hub-link" id="hubIndex" role="button" title="Buka Katalog Kartu"><img class="hi-ic" src="assets/images/icon-index-card.png" alt=""><span class="hb-lbl">INDEX CARD</span></div>
     <div class="hub-box h-r2 hub-link" id="hubTrait" role="button" title="Roll Trait untuk kartu aktif"><img class="hi-ic" src="assets/images/icon-trait.svg" alt=""><span class="hb-lbl">TRAIT</span></div>
-  </div>`;
+  </div>
+  <section class="lobby-story" id="storySection">${chapListHTML()}</section>`;
   const hc=document.getElementById("hubCard");if(hc)hc.onclick=()=>{sfx.hit();toggleBackpack();};
   const hi=document.getElementById("hubIndex");if(hi)hi.onclick=()=>{sfx.hit();openIndex();};
   const ht=document.getElementById("hubTrait");if(ht)ht.onclick=()=>{sfx.hit();openTrait();};
   const hr=document.getElementById("hubRaid");if(hr)hr.onclick=()=>{sfx.hit();raidView="hub";location.hash="#/raid";};
   const ht2=document.getElementById("hubTower");if(ht2)ht2.onclick=()=>{sfx.hit();stopTower();location.hash="#/tower";};
   const ld=document.getElementById("lpDaily");if(ld)ld.onclick=()=>{sfx.hit();openDaily();};
+  bindChapList();
 }
 
 /* ========== TOGGLE BACKPACK FUNCTION ========== */
