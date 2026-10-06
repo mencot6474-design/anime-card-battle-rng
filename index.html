@@ -2219,23 +2219,16 @@ function nextResetMs(){const n=new Date();return new Date(n.getFullYear(),n.getM
 function fmtCountdown(ms){const s=Math.max(0,Math.floor(ms/1000));const p=x=>String(x).padStart(2,"0");return p(Math.floor(s/3600))+":"+p(Math.floor(s%3600/60))+":"+p(s%60);}
 let state=null, currentUser=null;
 function loadStateFor(name){
-  console.log('loadStateFor:', name);
   KEY="aab-state-v2:"+name;
   try{state=JSON.parse(localStorage.getItem(KEY))||freshState();}catch(e){console.warn('Load error, using fresh:', e.message);state=freshState();}
   
-  console.log('Initial stacks:', state.stacks?.length || 0);
-  
   if(!state.stacks||!state.stacks.length){const st=freshState();state.stacks=st.stacks;state.equippedId=st.equippedId;}
-  console.log('After initial stacks:', state.stacks.length);
   
   state.stacks=state.stacks.filter(s=>CARDS[s.char]);
-  console.log('After CARDS filter:', state.stacks.length);
   
   {const seen={};state.stacks.forEach(s=>{const k=s.char+"|"+(s.mut||"none");if(!seen[k])seen[k]=s;else if((s.trait&&s.trait!=="none")&&(!seen[k].trait||seen[k].trait==="none"))seen[k]=s;});state.stacks=Object.values(seen);}
-  console.log('After dedup:', state.stacks.length);
   
   if(!state.stacks.length){const st=freshState();state.stacks=st.stacks;}
-  console.log('After fallback:', state.stacks.length);
   
   if(!state.stacks.some(s=>s.id===state.equippedId))state.equippedId=state.stacks[0].id;
   if(!state.stacks.some(s=>s.id===state.equippedId2))state.equippedId2=null;
@@ -2278,8 +2271,6 @@ function loadStateFor(name){
   if(typeof state.tower.floor!=="number"||state.tower.floor<1)state.tower.floor=1;
   if(typeof state.tower.best!=="number"||state.tower.best<0)state.tower.best=0;
   state.battle=null;
-  
-  console.log('loadStateFor complete! State:', state);
 }
 
 /* ========== DIFFICULTY PROGRESS HELPERS ========== */
@@ -2687,7 +2678,7 @@ function malevolentShrineFx(targetSel,who){
 /* =============== SHELL RENDER =============== */
 const app=document.getElementById("app");
 const ROUTES={"#/lobby":"LOBBY","#/":"STORY","#/gacha":"SUMMON PULL","#/deck":"DECK","#/raid":"BOSS RAID","#/tower":"SKY TOWER","#/settings":"PENGATURAN"};
-function route(){const h=location.hash;console.log('route():',h);return ROUTES[h]?h:"#/lobby";}
+function route(){const h=location.hash;return ROUTES[h]?h:"#/lobby";}
 function renderShell(){
   document.getElementById("crumb-page").textContent=ROUTES[route()];
   document.getElementById("coinVal").textContent=fmt(state.coins);
@@ -4955,7 +4946,6 @@ document.getElementById("welcomeModal").addEventListener("click",e=>{if(e.target
 function enterGame(name,welcome){
   currentUser=name;
   localStorage.setItem(SESSION_KEY,name);
-  console.log('Loading state for:', name);
   try {
     loadStateFor(name);
     save();
@@ -4964,9 +4954,7 @@ function enterGame(name,welcome){
     state=freshState();
     save();
   }
-  console.log('State loaded, entering lobby...');
   runLoading(()=>{
-    console.log('Finishing login...');
     try {
       document.getElementById("authScreen").classList.add("hidden");
       document.getElementById("loadingScreen").classList.add("hidden");
@@ -4976,7 +4964,6 @@ function enterGame(name,welcome){
         document.getElementById("wlMsg").textContent="Selamat datang, "+name+"!";
         document.getElementById("welcomeModal").classList.remove("hidden");
       }
-      console.log('Login complete!');
     } catch(e) {
       console.error('Post-login render FAILED:', e.message, e.stack);
       document.getElementById("loadingScreen").classList.add("hidden");
@@ -4999,7 +4986,7 @@ function runLoading(done){
     const p=Math.min(1,(Date.now()-t0)/dur);
     fill.style.width=(p*100).toFixed(1)+"%";
     status.textContent=steps[Math.min(steps.length-1,Math.floor(p*steps.length))];
-    if(p>=1&&!completed){completed=true;clearInterval(iv);console.log('Loading done, calling callback...');setTimeout(done,250);}
+    if(p>=1&&!completed){completed=true;clearInterval(iv);setTimeout(done,250);}
   },60);
   // Timeout guard - force through after 8 seconds
   setTimeout(()=>{
@@ -5016,10 +5003,8 @@ function logout(){
   location.reload();
 }
 function boot(){
-  console.log('boot() START');
   document.getElementById("loadingScreen").classList.add("hidden");
   document.getElementById("authScreen").classList.remove("hidden");
-  console.log('boot() auth screen shown');
   document.getElementById("tabLogin").onclick=()=>setAuthMode("login");
   document.getElementById("tabRegister").onclick=()=>setAuthMode("register");
   document.getElementById("auSubmit").onclick=submitAuth;
@@ -5028,41 +5013,13 @@ function boot(){
   const last=(s&&users[s.toLowerCase()])?users[s.toLowerCase()].name:"";
   setAuthMode(Object.keys(users).length?"login":"register");
   if(last){document.getElementById("auUser").value=last;document.getElementById("auPass").focus();}
-  console.log('boot() auth setup done');
   
   /* ========== Roll + Backpack Event Listeners ========== */
-  try {
-    loadBackpackState();
-    console.log('boot() backpack loaded');
-  } catch(e) {
-    console.warn('boot() backpack error:', e.message);
-  }
+  loadBackpackState();
   if(window.videoBoot) window.videoBoot();
-  console.log('boot() COMPLETE');
 }
 
-// Force immediate boot - use setTimeout to ensure script fully loaded (VERSION 3)
-console.log('SCRIPT LOADED at:', new Date().toLocaleTimeString());
-console.log('Timestamp:', Date.now());
-
-setTimeout(() => {
-  console.log('TIMEOUT TRIGGERED - VERSION 3');
-  console.log('window.boot type:', typeof window.boot);
-  if (typeof window.boot === 'function') {
-    console.log('Calling window.boot()...');
-    try {
-      window.boot();
-      console.log('window.boot() called successfully!');
-    } catch(e) {
-      console.error('Boot error:', e.message);
-      console.error(e.stack);
-    }
-  } else {
-    console.error('boot() function not found!');
-    const props = Object.keys(window).filter(p => p.toLowerCase().includes('boot'));
-    console.log('Windows properties with "boot":', props);
-  }
-}, 100);
+setTimeout(() => { boot(); }, 0);
 </script>
 </body>
 </html>
