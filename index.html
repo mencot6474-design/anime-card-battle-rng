@@ -1655,17 +1655,24 @@ function showRollResult(result) {
   const nameEl=document.getElementById('rollCardName');
   if(nameEl)nameEl.textContent=cardData.name||'';
   
-  // Show overlay with animation
+  // Buka overlay. Animasi masuk HANYA sekali (saat pertama tampil) supaya tidak flicker muncul-hilang tiap tick.
+  const wasVisible = overlay.style.display === 'flex';
   overlay.style.display = 'flex';
   const showcase = overlay.querySelector('.roll-card-showcase');
-  showcase.style.opacity = '0';
-  showcase.style.transform = 'scale(0.8)';
-  
-  setTimeout(() => {
-    showcase.style.transition = 'all 0.4s ease-in-out';
+  if (!wasVisible) {
+    showcase.style.transition = 'none';
+    showcase.style.opacity = '0';
+    showcase.style.transform = 'scale(0.8)';
+    setTimeout(() => {
+      showcase.style.transition = 'all 0.4s ease-in-out';
+      showcase.style.opacity = '1';
+      showcase.style.transform = 'scale(1)';
+    }, 50);
+  } else {
+    showcase.style.transition = '';
     showcase.style.opacity = '1';
     showcase.style.transform = 'scale(1)';
-  }, 50);
+  }
   
   // Kartu sudah otomatis masuk backpack (di startRollAnimation); tombol ini cuma tutup + stop roll.
   if(closeBtn) closeBtn.onclick = () => { stopRollAnimation(); hideRollResult(); };
