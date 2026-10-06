@@ -252,9 +252,11 @@ body.battle-full #bfExit{display:inline-flex}
 .bench.used{opacity:0;transform:translateY(-14px) scale(.82);pointer-events:none}
 .bench.down{filter:grayscale(1) brightness(.62);opacity:.9;border-color:rgba(242,88,88,.4)}
 .bench .b-x{position:absolute;top:-8px;right:10px;width:20px;height:20px;display:grid;place-items:center;border-radius:50%;background:var(--red,#f25858);color:#fff;font-weight:800;font-size:13px;line-height:1;z-index:9}
-.bench-rail{margin-top:auto;display:flex;flex-direction:column;gap:8px}
-.bench-rail .bench{min-height:0;padding:8px 10px}
-.bench-rail .bench img,.bench-rail .bench video{width:36px;height:48px}
+.bench-rail{margin-top:auto;display:flex;flex-direction:row;flex-wrap:nowrap;justify-content:center;align-items:flex-end;gap:clamp(8px,2.4vw,14px)}
+.bench-rail .bench-sq{position:relative;width:clamp(58px,17vw,82px);aspect-ratio:3/4;border-radius:11px;overflow:hidden;border:1px solid var(--line);background:#0d0f12;box-shadow:0 4px 14px rgba(0,0,0,.14)}
+.bench-rail .bench-sq img,.bench-rail .bench-sq video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;border-radius:0}
+.bench-rail .bench-sq.empty{border-style:dashed;border-color:rgba(20,28,38,.28);background:rgba(255,255,255,.4)}
+body.battle-full .bench-rail .bench-sq{width:clamp(50px,11vh,74px)}
 .fighter.ko{filter:grayscale(1) brightness(.5);transform:translateY(12px);opacity:.55;transition:filter .3s,transform .3s,opacity .3s}
 .fighter.me.tag-enter{animation:tagEnter .6s cubic-bezier(.2,.9,.3,1.15) both}
 @keyframes tagEnter{0%{opacity:0;transform:translateY(70px) scale(.55)}55%{opacity:1}100%{opacity:1;transform:translateY(0) scale(1)}}
@@ -2631,21 +2633,14 @@ function meFighterHtml(s){
 }
 function updateMeCard(){if(!bt)return;const f=document.querySelector(".fighter.me");if(f){f.className="fighter me"+mutGlow(bt.eq.mut);f.dataset.tier=bt.eq.tier;f.dataset.char=bt.eq.char;f.style.borderColor=bt.eq.mut&&bt.eq.mut!=="none"?MUT_COLOR[bt.eq.mut]:"";f.innerHTML=meFighterHtml(bt.eq);}}
 function benchTile(s){
-  const st=cardStats(s.char,s.lv,s.mut,s.trait);
-  return `<div class="bench" data-tier="${s.tier}"><span class="b-tag">SISA</span>
-    <img src="${cardImg(s.char)}" alt="${cardName(s.char)}">
-    <div class="b-info">
-      <div class="b-left">
-        <div class="b-name">${cardName(s.char)}</div>
-        <span class="b-hp">♡ ${fmt(st.hp)}</span>
-        <span class="b-atk">${ATKIC} ${fmt(st.atk)}</span>
-      </div>
-      <span class="b-tier" style="color:${TIER_COLOR[s.tier]};border-color:${TIER_COLOR[s.tier]}">${rarityText(s.tier)}</span>
-    </div></div>`;
+  return `<div class="bench-sq" data-tier="${s.tier}" style="border-color:${TIER_COLOR[s.tier]}" title="${cardName(s.char)}"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}"></div>`;
 }
+/* Rail cadangan = 3 kotak gambar sejajar (sisa dek setelah fighter aktif), ditambal placeholder biar tetap 3. */
 function benchRailHtml(remaining){
-  if(!remaining||!remaining.length) return `<div class="bench-rail"><div class="bench empty"><span class="b-plus">+</span><span class="b-lbl">Dek kosong</span></div></div>`;
-  return `<div class="bench-rail">${remaining.map(benchTile).join("")}</div>`;
+  const list=remaining||[];
+  let html="";
+  for(let i=0;i<3;i++) html += i<list.length ? benchTile(list[i]) : `<div class="bench-sq empty"></div>`;
+  return `<div class="bench-rail">${html}</div>`;
 }
 /* Bench = kartu dek yang BELUM bertanding (setelah fighter aktif). Saat render awal bt belum ada → pakai equippedList. */
 function benchHtml(){
@@ -2672,7 +2667,7 @@ function renderBattle(){
         <div class="stat-row"><div class="stat">♡ HP ${fmt(es.hp)}</div><div class="stat">${ATKIC} ATK ${fmt(es.atk)}</div></div>
       </div>
     </div>
-    <div class="bench empty"><span class="b-plus">+</span><span class="b-lbl">TAG kosong</span></div>
+    ${benchRailHtml([])}
   </div>
   </div>`;
   playFight(startBattle);
