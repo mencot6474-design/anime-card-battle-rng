@@ -235,6 +235,9 @@ body.battle-full #bfExit{display:inline-flex}
 .bench.used{opacity:0;transform:translateY(-14px) scale(.82);pointer-events:none}
 .bench.down{filter:grayscale(1) brightness(.62);opacity:.9;border-color:rgba(242,88,88,.4)}
 .bench .b-x{position:absolute;top:-8px;right:10px;width:20px;height:20px;display:grid;place-items:center;border-radius:50%;background:var(--red,#f25858);color:#fff;font-weight:800;font-size:13px;line-height:1;z-index:9}
+.bench-rail{margin-top:auto;display:flex;flex-direction:column;gap:8px}
+.bench-rail .bench{min-height:0;padding:8px 10px}
+.bench-rail .bench img,.bench-rail .bench video{width:36px;height:48px}
 .fighter.ko{filter:grayscale(1) brightness(.5);transform:translateY(12px);opacity:.55;transition:filter .3s,transform .3s,opacity .3s}
 .fighter.me.tag-enter{animation:tagEnter .6s cubic-bezier(.2,.9,.3,1.15) both}
 @keyframes tagEnter{0%{opacity:0;transform:translateY(70px) scale(.55)}55%{opacity:1}100%{opacity:1;transform:translateY(0) scale(1)}}
@@ -2892,33 +2895,27 @@ function meFighterHtml(s){
     </div>`;
 }
 function updateMeCard(){if(!bt)return;const f=document.querySelector(".fighter.me");if(f){f.className="fighter me"+mutGlow(bt.eq.mut);f.dataset.tier=bt.eq.tier;f.dataset.char=bt.eq.char;f.style.borderColor=bt.eq.mut&&bt.eq.mut!=="none"?MUT_COLOR[bt.eq.mut]:"";f.innerHTML=meFighterHtml(bt.eq);}}
-function benchHtml(){
-  const sub=equipped2();
-  if(!sub) return `<div class="bench empty"><span class="b-plus">+</span><span class="b-lbl">TAG kosong</span></div>`;
-  const st=cardStats(sub.char,sub.lv,sub.mut,sub.trait);
-  return `<div class="bench" id="bench" data-tier="${sub.tier}"><span class="b-tag">TAG</span>
-    <img src="${cardImg(sub.char)}" alt="${cardName(sub.char)}">
-    <div class="b-info">
-      <div class="b-left">
-        <div class="b-name">${cardName(sub.char)}</div>
-        <span class="b-hp">♡ ${fmt(st.hp)}</span>
-        <span class="b-atk">${ATKIC} ${fmt(st.atk)}</span>
-      </div>
-      <span class="b-tier" style="color:${TIER_COLOR[sub.tier]};border-color:${TIER_COLOR[sub.tier]}">${rarityText(sub.tier)}</span>
-    </div></div>`;
-}
-function benchDownHtml(s){
+function benchTile(s){
   const st=cardStats(s.char,s.lv,s.mut,s.trait);
-  return `<div class="bench down" id="bench" data-tier="${s.tier}"><span class="b-tag">TAG</span><span class="b-x">✕</span>
+  return `<div class="bench" data-tier="${s.tier}"><span class="b-tag">SISA</span>
     <img src="${cardImg(s.char)}" alt="${cardName(s.char)}">
     <div class="b-info">
       <div class="b-left">
         <div class="b-name">${cardName(s.char)}</div>
-        <span class="b-hp">♡ 0</span>
+        <span class="b-hp">♡ ${fmt(st.hp)}</span>
         <span class="b-atk">${ATKIC} ${fmt(st.atk)}</span>
       </div>
       <span class="b-tier" style="color:${TIER_COLOR[s.tier]};border-color:${TIER_COLOR[s.tier]}">${rarityText(s.tier)}</span>
     </div></div>`;
+}
+function benchRailHtml(remaining){
+  if(!remaining||!remaining.length) return `<div class="bench-rail"><div class="bench empty"><span class="b-plus">+</span><span class="b-lbl">Dek kosong</span></div></div>`;
+  return `<div class="bench-rail">${remaining.map(benchTile).join("")}</div>`;
+}
+/* Bench = kartu dek yang BELUM bertanding (setelah fighter aktif). Saat render awal bt belum ada → pakai equippedList. */
+function benchHtml(){
+  const list=(bt&&bt.fighters)?bt.fighters.slice(bt.active+1):equippedList().slice(1);
+  return benchRailHtml(list);
 }
 function renderBattle(){
   const lv=state.battle.level,en=enemyOf(lv),es=enemyStats(lv);
@@ -3407,34 +3404,36 @@ function ariseStrikeFx(i,n,targetSel){
 }
 function startBattle(){
   const lv=state.battle.level,en=enemyOf(lv),es=enemyStats(lv);
-  const eq=equipped(),base=cardStats(eq.char,eq.lv,eq.mut,eq.trait);
-  const sub=equipped2();const fighters=[eq,(sub&&sub.id!==eq.id)?sub:null];
+  const fighters=equippedList();if(!fighters.length)fighters.push(equipped());
+  const eq=fighters[0],base=cardStats(eq.char,eq.lv,eq.mut,eq.trait);
   const eid=en.id||null,efx=eid?(PASSIVE_FX[eid]||{}):{};
   if(bt&&bt.timer)clearTimeout(bt.timer);
-  bt={lv,en,es,eq,fighters,eid,efx,active:0,revUsed:[false,false],justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0};
+  bt={lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0};
   bt.timer=setTimeout(step,700);
 }
 function tagIn(){
-  bt.active=1;bt.eq=bt.fighters[1];bt.justTagged=true;
-  const down=bt.fighters[0];
+  const next=bt.active+1;
+  if(next>=bt.fighters.length)return false;
+  bt.active=next;bt.eq=bt.fighters[next];bt.justTagged=true;
   const base=cardStats(bt.eq.char,bt.eq.lv,bt.eq.mut,bt.eq.trait);
   bt.pMax=base.hp;bt.pHp=base.hp;
-  // fase 1: kartu slot 1 tumbang
+  // fase 1: kartu aktif sekarang tumbang
   const meEl=document.querySelector(".fighter.me");
   if(meEl){meEl.classList.remove("tag-enter");meEl.classList.add("ko");}
   floatText(".fighter.me","KO","crit");
-  // fase 2: slot 2 naik masuk arena, slot 1 jatuh ke bench dgn tanda ✕
+  // fase 2: kartu dek berikutnya naik masuk arena; rail bench diperbarui ke sisa setelahnya
   setTimeout(()=>{
     if(!bt||bt.over)return;
     const me2=document.querySelector(".fighter.me");
     if(me2)me2.classList.remove("ko");
     updateMeCard();
     setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
-    const bEl=document.getElementById("bench");if(bEl)bEl.outerHTML=benchDownHtml(down);
+    const rail=document.querySelector(".bench-rail");if(rail)rail.outerHTML=benchRailHtml(bt.fighters.slice(bt.active+1));
     const me3=document.querySelector(".fighter.me");
     if(me3){me3.classList.add("tag-enter");setTimeout(()=>me3.classList.remove("tag-enter"),650);}
     floatText(".fighter.me","TAG-IN!","heal");
   },2000);
+  return true;
 }
 function trySave(){
   const a=bt.active,fx=resolveFx(bt.eq,bt.efx);
@@ -3444,7 +3443,7 @@ function trySave(){
     setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
     return true;
   }
-  if(a===0&&bt.fighters[1]){tagIn();return true;}
+  if(a+1<bt.fighters.length){tagIn();return true;}
   return false;
 }
 function setBar(id,tid,cur,max){
@@ -3876,10 +3875,10 @@ function renderTowerBattle(){
 }
 function startTowerBattle(){
   const w=towerRun.waves[towerRun.idx];
-  const eq=equipped(),base=cardStats(eq.char,eq.lv,eq.mut,eq.trait);
-  const sub=equipped2();const fighters=[eq,(sub&&sub.id!==eq.id)?sub:null];
+  const fighters=equippedList();if(!fighters.length)fighters.push(equipped());
+  const eq=fighters[0],base=cardStats(eq.char,eq.lv,eq.mut,eq.trait);
   if(bt&&bt.timer)clearTimeout(bt.timer);
-  bt={lv:null,tower:true,en:w.en,es:w.es,eq,fighters,eid:w.eid,efx:w.efx,active:0,revUsed:[false,false],justTagged:false,pHp:base.hp,pMax:base.hp,eHp:w.es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0};
+  bt={lv:null,tower:true,en:w.en,es:w.es,eq,fighters,eid:w.eid,efx:w.efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:w.es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0};
   bt.timer=setTimeout(step,700);
 }
 function foeDown(){
