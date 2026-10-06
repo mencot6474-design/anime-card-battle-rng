@@ -805,16 +805,18 @@ body.battle-full .stat svg{flex:none}
 .hub-mid{grid-column:2;grid-row:1 / span 2;display:flex;flex-direction:column;gap:clamp(8px,1.4vh,14px);align-items:center;width:100%;max-width:min(330px,38vh);justify-self:center}
 .hub-center{width:100%;aspect-ratio:3/4;border-radius:20px;border:1px solid var(--line2);background:radial-gradient(120% 85% at 50% 0%,rgba(140,30,45,.10),#FFFFFF);position:relative;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:border-color .15s,transform .15s}
 .hub-center:hover{border-color:var(--cyan);transform:translateY(-2px)}
-.hub-center .hc-img{flex:1;min-height:0;background:#E9EDF2;position:relative}
+.hub-center .hc-img{position:absolute;inset:0;flex:none;background:#E9EDF2}
 .hub-center .hc-img img,.hub-center .hc-img video{width:100%;height:100%;object-fit:cover;object-position:top}
-.hub-center .hc-info{padding:14px 16px;border-top:1px solid var(--line);background:rgba(255,255,255,.66)}
-.hub-center .hc-name{font-weight:800;font-size:17px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.hub-center .hc-info{position:absolute;left:0;right:0;bottom:0;z-index:6;padding:38px 14px 12px;border-top:none;background:linear-gradient(to top,rgba(6,8,12,.92) 32%,rgba(6,8,12,.5) 64%,transparent)}
+.hub-center .hc-name{font-weight:800;font-size:17px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.7)}
 .hub-center .hc-name .lv{color:var(--cyan);font-size:13px;font-weight:700}
-.hub-center .hc-stats{display:flex;justify-content:space-between;gap:16px;margin-top:9px;font-size:13.5px;color:rgba(16,21,27,.8);align-items:center}
-.hub-center .hc-lv-tag{position:absolute;bottom:8px;right:8px;z-index:6;background:rgba(12,14,16,.78);border:1px solid var(--line2);border-radius:8px;padding:3px 9px;font-family:"Barlow Condensed";letter-spacing:.1em;font-weight:700;font-size:13px;color:#EAF4FF}
+.hub-center .hc-stats{display:flex;justify-content:space-between;gap:16px;margin-top:9px;font-size:14px;font-weight:700;color:#EAF4FF;align-items:center;text-shadow:0 1px 4px rgba(0,0,0,.7)}
+.hub-center .hc-lv-tag{position:absolute;top:12px;left:12px;z-index:6;background:rgba(12,14,16,.78);border:1px solid var(--line2);border-radius:8px;padding:3px 9px;font-family:"Barlow Condensed";letter-spacing:.1em;font-weight:700;font-size:13px;color:#EAF4FF}
 .hub-center .f-tag{top:12px;right:12px}
 .hub-center .mut-badge{top:12px;left:8px}
-.hub-center .hc-badges{position:absolute;top:12px;left:8px;z-index:7;display:flex;gap:6px;align-items:center}
+.hub-center .hc-badges{position:absolute;top:46px;left:12px;z-index:7;display:flex;gap:6px;align-items:center}
+.hub-center .skill-overlay{display:none}
+.hub-center .hc-skill{font-family:"Barlow Condensed";letter-spacing:.08em;text-transform:uppercase;font-size:12px;color:rgba(234,244,255,.72);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hub-center .hc-badges .mut-badge{position:static;top:auto;left:auto}
 .hub-center .hc-badges .mut-hover{display:inline-flex}
 .hub-center .hc-badges .mut-badge,.hub-center .hc-badges .hc-trait{display:inline-flex;align-items:center;height:22px;padding:0 8px;font-size:12px;line-height:1;border-radius:6px}
@@ -3668,6 +3670,7 @@ function renderLobby(){
         </div>
         <div class="hc-info">
           <div class="hc-name">${cardName(eq.char)}</div>
+          <div class="hc-skill">${passiveName(eq.char)}</div>
           <div class="hc-stats"><div class="hp">♡ ${fmt(st.hp)}</div><div class="atk">${ATKIC} ${fmt(st.atk)}</div></div>
         </div>`:`<div class="hc-info"><div class="hc-name">Belum ada kartu</div></div>`}
     </div>
