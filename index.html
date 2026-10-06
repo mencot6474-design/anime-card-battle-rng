@@ -126,6 +126,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .bp-tile img{width:100%;height:100%;object-fit:cover;object-position:top;}
 .bp-tile.in-deck{box-shadow:0 0 0 2px var(--cyan) inset;}
 .bp-tile .bpt-mut{position:absolute;top:2px;left:4px;font-family:"Barlow Condensed";font-weight:700;font-size:10px;text-shadow:0 1px 2px #000;}
+.bp-tile .bpt-shiny{position:absolute;top:15px;left:4px;font-family:"Barlow Condensed";font-weight:700;font-size:9px;letter-spacing:.06em;color:#7DF9FF;text-shadow:0 1px 2px #000;}
 .bp-tile .bpt-cnt{position:absolute;bottom:2px;left:4px;font-family:"Barlow Condensed";font-weight:800;font-size:11px;color:#fff;background:rgba(12,14,16,.72);border-radius:6px;padding:0 5px;text-shadow:0 1px 2px #000;}
 .bp-tile .bpt-i{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:6px;border:none;background:rgba(12,14,16,.8);color:#fff;font-size:11px;font-weight:700;font-style:italic;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .deck-layout{display:flex;gap:24px;padding:24px;flex:1;overflow:hidden;}
@@ -716,10 +717,9 @@ body.battle-full .stat svg{flex:none}
 .idx-card[data-tier] .idx-body{box-shadow:inset 0 2px 0 color-mix(in srgb,var(--tc) 55%,transparent)}
 /* chip tier jadi pill terisi warna rarity (pakai currentColor dari inline style) */
 .tier-badge{border:1px solid currentColor;background:color-mix(in srgb,currentColor 15%,#10080a)}
-/* holo shimmer halus di permukaan art — khusus kartu EX & UR (grid deck, index, lobby, fighter) */
-.tcg-img::after,.hub-center .hc-img::after,.fighter .f-banner::after,.deck-slot .ds-art::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;background:linear-gradient(115deg,transparent 32%,rgba(255,255,255,.22) 46%,rgba(255,255,255,.05) 55%,transparent 70%);background-size:250% 100%;z-index:1}
-.tcg[data-tier="EX"] .tcg-img::after,.hub-center[data-tier="EX"] .hc-img::after,.fighter[data-tier="EX"] .f-banner::after,.deck-slot[data-tier="EX"] .ds-art::after{opacity:1;animation:holoSheen 2.2s ease-in-out infinite}
-.tcg[data-tier="UR"] .tcg-img::after,.hub-center[data-tier="UR"] .hc-img::after,.fighter[data-tier="UR"] .f-banner::after,.deck-slot[data-tier="UR"] .ds-art::after{opacity:1;animation:holoSheen 2.2s ease-in-out infinite}
+/* holo shimmer halus di permukaan art — khusus kartu SHINY (grid deck, index, lobby, fighter, roll) */
+.tcg-img::after,.hub-center .hc-img::after,.fighter .f-banner::after,.deck-slot .ds-art::after,.roll-card-showcase::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;background:linear-gradient(115deg,transparent 32%,rgba(255,255,255,.22) 46%,rgba(255,255,255,.05) 55%,transparent 70%);background-size:250% 100%;z-index:1}
+.tcg.shiny .tcg-img::after,.hub-center.shiny .hc-img::after,.fighter.shiny .f-banner::after,.deck-slot.shiny .ds-art::after,.roll-card-showcase.shiny::after{opacity:1;animation:holoSheen 2.2s ease-in-out infinite}
 @keyframes holoSheen{0%{background-position:180% 0}55%,100%{background-position:-70% 0}}
 /* highlight kartu AKTIF tetap menang dari border/glow tier */
 .tcg.equipped{border-color:rgba(255,90,95,.7)!important;box-shadow:0 0 0 1px rgba(255,90,95,.3),0 8px 22px rgba(255,90,95,.22)!important}
@@ -740,25 +740,26 @@ body.battle-full .stat svg{flex:none}
 /* ---------- MUTASI: kincir = cincin cahaya conic-gradient muter cepet ---------- */
 @property --ga{syntax:"<angle>";inherits:false;initial-value:0deg}
 @keyframes gspin{to{--ga:360deg}}
-.mut-silver,.mut-gold,.mut-rainbow,.mut-secret{position:relative}
-.mut-silver::before,.mut-gold::before,.mut-rainbow::before,.mut-secret::before{
+.mut-gold,.mut-rainbow,.mut-secret{position:relative}
+.mut-gold::before,.mut-rainbow::before,.mut-secret::before{
   content:"";position:absolute;inset:0;border-radius:inherit;padding:2px;pointer-events:none;z-index:9;
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
   mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;
   animation:gspin .7s linear infinite;
 }
-.mut-silver::before{background:conic-gradient(from var(--ga),#eef3f8,#8a97a6,#ffffff,#b7c2ce,#6f7b88,#eef3f8)}
 .mut-gold::before{background:conic-gradient(from var(--ga),#fff3cf,#c9962f,#ffe58a,#b8860b,#8a5a12,#fff3cf)}
 .mut-rainbow::before{background:conic-gradient(from var(--ga),#ff5a78,#ffb347,#ffe66d,#6be08a,#5ac8fa,#7a8cff,#b58cff,#ff6bd6,#ff5a78)}
 .mut-secret::before{background:conic-gradient(from var(--ga),#22d3ee,#7df9ff,#ffffff,#00ffd0,#22d3ee,#aef6ff,#22d3ee)}
 /* glow ambient statis (nggak kedap-kedip) */
-.mut-silver{box-shadow:0 0 16px 2px rgba(190,205,220,.35)}
 .mut-gold{box-shadow:0 0 16px 2px rgba(212,175,106,.42)}
 .mut-rainbow{box-shadow:0 0 18px 3px rgba(181,140,255,.42)}
 .mut-secret{box-shadow:0 0 22px 4px rgba(34,211,238,.5)}
 .mut-badge{position:absolute;top:32px;left:8px;z-index:7;white-space:nowrap;font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.1em;padding:1px 7px;border-radius:6px;background:rgba(16,8,10,.85);border:1px solid}
 .rc-mut{position:absolute;top:38px;right:10px;z-index:7;white-space:nowrap;font-family:"Barlow Condensed";font-weight:700;font-size:13px;letter-spacing:.08em;padding:2px 9px;border-radius:7px;background:rgba(10,10,12,.85);border:1px solid rgba(255,255,255,.28)}
 .pm-mut{position:absolute;top:26px;left:5px;z-index:7;white-space:nowrap;font-family:"Barlow Condensed";font-weight:700;font-size:11px;padding:1px 6px;border-radius:5px;background:rgba(10,10,12,.85);border:1px solid;letter-spacing:.04em}
+/* ---------- SHINY: lapisan terpisah (holo shimmer + label), bisa numpuk di atas mutasi apa pun ---------- */
+.shiny-badge{display:inline-flex;align-items:center;font-family:"Barlow Condensed";font-weight:700;font-size:11px;letter-spacing:.1em;padding:1px 7px;border-radius:6px;background:rgba(10,12,16,.85);border:1px solid #7DF9FF;color:#EAFDFF;text-shadow:0 0 6px rgba(125,249,255,.6);box-shadow:0 0 8px rgba(125,249,255,.4)}
+.shiny-tag{display:inline-block;margin-left:6px;font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.1em;color:#7DF9FF;text-shadow:0 0 6px rgba(125,249,255,.7)}
 
 /* ---------- modal kartu ---------- */
 #modal{position:fixed;inset:0;background:rgba(9,10,12,.72);backdrop-filter:blur(6px);display:none;place-items:safe center;overflow:auto;padding:24px 16px;z-index:50}
@@ -859,6 +860,7 @@ body.battle-full .stat svg{flex:none}
 .gm-panel .set-t{color:var(--cyan)}
 .gm-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
 .gm-select{flex:1;min-width:min(180px,100%);padding:11px 12px;border-radius:10px;background:rgba(255,255,255,.72);border:1px solid rgba(20,28,38,.18);color:var(--text);font-family:inherit;font-size:13px}
+.gm-check{display:inline-flex;align-items:center;gap:6px;color:var(--text);font-family:"Barlow Condensed";font-weight:700;font-size:14px;letter-spacing:.05em;cursor:pointer;white-space:nowrap}
 .gm-btn{padding:11px 14px;border-radius:10px;font-family:"Barlow Condensed";font-size:15px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--cyan);border:1px solid rgba(20,28,38,.30);background:rgba(20,28,38,.08);transition:.15s;cursor:pointer}
 .gm-btn:hover{background:rgba(200,212,222,.16)}
 .gm-note{margin-top:12px;font-size:12px;color:var(--muted);min-height:16px}
@@ -1199,7 +1201,7 @@ body.battle-full .stat svg{flex:none}
 .rpc-stat{font-size:11px;color:var(--muted);letter-spacing:.04em}
 .rpc-fav{position:absolute;top:8px;right:8px;color:var(--amber);font-size:16px;z-index:3}
 .raid-pick-card.fire{border-color:rgba(20,28,38,.5)}
-.raid-pick-card.mut-silver,.raid-pick-card.mut-gold,.raid-pick-card.mut-rainbow,.raid-pick-card.mut-secret{border-color:rgba(20,28,38,.4)}
+.raid-pick-card.mut-gold,.raid-pick-card.mut-rainbow,.raid-pick-card.mut-secret{border-color:rgba(20,28,38,.4)}
 @media(max-width:560px){.raid-tiers{grid-template-columns:1fr}}
 </style>
 </head>
@@ -1563,18 +1565,19 @@ let rollState = { active: false, interval: null, currentCard: null, luck: 1, spe
 /* Roll = SATU-SATUNYA sumber kartu baru selain Toko Raid. Hasil roll DITUMPUK dengan sistem count:
    kartu yang sama (char + tier + varian/mut) masuk ke satu stack dan menaikkan s.count, bukan entri baru,
    biar backpack tidak membengkak. Tiap varian (SHINY/GOLD/RAINBOW/SECRET) numpuk jadi pile sendiri. */
-function grantRolledCard(charId, mut) {
+function grantRolledCard(charId, mut, shiny) {
   const card = CARDS[charId];
   if (!card || !state) return null;
   if (!Array.isArray(state.stacks)) state.stacks = [];
   const m = mut || "none";
-  const s = state.stacks.find(x => x.char === charId && x.tier === card.tier && (x.mut || "none") === m);
+  const sh = !!shiny;
+  const s = state.stacks.find(x => x.char === charId && x.tier === card.tier && (x.mut || "none") === m && !!x.shiny === sh);
   if (s) {
     s.count = (s.count || 1) + 1;
     save(); rollCountBadge();
     return s;
   }
-  const ns = { id: Math.random().toString(36).slice(2, 9), char: charId, tier: card.tier, fav: false, lock: false, mut: m, trait: "none", count: 1 };
+  const ns = { id: Math.random().toString(36).slice(2, 9), char: charId, tier: card.tier, fav: false, lock: false, mut: m, shiny: sh, trait: "none", count: 1 };
   state.stacks.push(ns);
   if (!Array.isArray(state.deck)) state.deck = [null, null, null, null];
   state.deck.length = 4;
@@ -1613,8 +1616,9 @@ function startRollAnimation(luck = 1, speedMultiplier = 1) {
     const result = rngRoll(rollState.luck, rollState.speedMultiplier);
     if(!result){stopRollAnimation();hideRollResult();return;}
     result.mut = rollMut();
+    result.shiny = rollShiny();
     showRollResult(result);
-    grantRolledCard(result.cardId, result.mut);
+    grantRolledCard(result.cardId, result.mut, result.shiny);
   }, initialDelay);
 }
 
@@ -1661,9 +1665,13 @@ function showRollResult(result) {
   rarityChip.style.color = TIER_COLOR[result.tier] || '#fff';
   const nameEl=document.getElementById('rollCardName');
   if(nameEl)nameEl.textContent=cardData.name||'';
+  const sh=!!result.shiny;
+  const showcaseEl=overlay.querySelector('.roll-card-showcase');
+  if(showcaseEl)showcaseEl.classList.toggle('shiny',sh);
   const mutEl=document.getElementById('rollMutBadge');
   if(mutEl){
-    if(mut!=="none"){mutEl.className='roll-mut-badge show';mutEl.style.color=MUT_COLOR[mut];mutEl.style.borderColor=MUT_COLOR[mut];mutEl.innerHTML=mutBadge(mut);}
+    const label=(mut!=="none"?mutBadge(mut):"")+(sh?`<span class="shiny-tag">SHINY</span>`:"");
+    if(label){mutEl.className='roll-mut-badge show';mutEl.style.color=mut!=="none"?MUT_COLOR[mut]:"#7DF9FF";mutEl.style.borderColor=mut!=="none"?MUT_COLOR[mut]:"#7DF9FF";mutEl.innerHTML=label;}
     else{mutEl.className='roll-mut-badge';mutEl.innerHTML='';}
   }
   
@@ -1719,11 +1727,11 @@ function setRollMini(on) {
    Tile koleksi dibuat KECIL & TANPA info stat biar muat banyak.
    Alur: klik slot => jadikan target; klik tile koleksi => pasang ke target (atau slot kosong pertama). */
 let bpTarget = null;
-let bpMutFilter = "all"; /* filter varian koleksi: all|none|silver|gold|rainbow|secret */
+let bpMutFilter = "all"; /* filter varian koleksi: all|none|gold|rainbow|secret|shiny */
 function deckTotalPower(){return equippedList().reduce((a,s)=>{const st=cardStats(s.char,s.mut,s.trait);return a+(st.hp+st.atk);},0);}
 function bpPickSlot(i){bpTarget=(bpTarget===i?null:i);renderBackpackPanel();}
 function bpSetFilter(m){bpMutFilter=m;renderBackpackPanel();}
-function bpMatchesMut(s){return bpMutFilter==="all"||(s.mut||"none")===bpMutFilter;}
+function bpMatchesMut(s){return bpMutFilter==="all"||(bpMutFilter==="shiny"?!!s.shiny:(s.mut||"none")===bpMutFilter);}
 function bpClearSlot(i){setDeckSlot(i,null);bpTarget=null;renderBackpackPanel();}
 function bpAssign(stackId){
   const s=state.stacks.find(x=>x.id===stackId);if(!s)return;
@@ -1749,12 +1757,13 @@ function renderBackpackPanel(){
   const tiles=visible.map(s=>{
     const inDeck=state.deck.includes(s.id);
     const mut=(s.mut&&s.mut!=='none')?`<span class="bpt-mut" style="color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`:'';
+    const shny=s.shiny?'<span class="bpt-shiny">SHINY</span>':'';
     const cnt=(s.count||1)>1?`<span class="bpt-cnt">&times;${fmt(s.count)}</span>`:'';
-    return `<div class="bp-tile${inDeck?' in-deck':''}" onclick="bpAssign('${s.id}')" style="border-color:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt="">${mut}${cnt}<button class="bpt-i" onclick="event.stopPropagation();openModal('${s.id}')" title="Detail">i</button></div>`;
+    return `<div class="bp-tile${inDeck?' in-deck':''}" onclick="bpAssign('${s.id}')" style="border-color:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt="">${mut}${shny}${cnt}<button class="bpt-i" onclick="event.stopPropagation();openModal('${s.id}')" title="Detail">i</button></div>`;
   }).join('');
-  const cntOf=m=>state.stacks.filter(s=>m==='all'||(s.mut||'none')===m).length;
-  const chip=(k,lbl)=>{const on=bpMutFilter===k;const col=on?(MUT_COLOR[k]||'var(--cyan)'):'';return `<button class="bp-fchip${on?' on':''}" onclick="bpSetFilter('${k}')"${col?` style="border-color:${col};color:${col}"`:''}>${lbl}<em>${cntOf(k)}</em></button>`;};
-  const filterRow=`<div class="bp-filter">${chip('all','SEMUA')+chip('none','MURNI')+chip('silver','SHINY')+chip('gold','GOLD')+chip('rainbow','RAINBOW')+chip('secret','SECRET')}</div>`;
+  const cntOf=m=>state.stacks.filter(s=>m==='all'?true:(m==='shiny'?!!s.shiny:(s.mut||'none')===m)).length;
+  const chip=(k,lbl)=>{const on=bpMutFilter===k;const col=on?(MUT_COLOR[k]||'#7DF9FF'):'';return `<button class="bp-fchip${on?' on':''}" onclick="bpSetFilter('${k}')"${col?` style="border-color:${col};color:${col}"`:''}>${lbl}<em>${cntOf(k)}</em></button>`;};
+  const filterRow=`<div class="bp-filter">${chip('all','SEMUA')+chip('none','MURNI')+chip('gold','GOLD')+chip('rainbow','RAINBOW')+chip('secret','SECRET')+chip('shiny','SHINY')}</div>`;
   panel.innerHTML=header+`<div class="bp-body"><div class="bp-cols">
     <div class="bp-deckcol">
       <div class="bp-h">DEK</div>
@@ -1844,27 +1853,31 @@ const FOES=Object.fromEntries(STORY_BIBLE.levels.map((l,i)=>{
 }));
 /* Sistem level kartu DIHAPUS — stat kartu tetap (base x mutasi x trait). */
 /* Sistem MUTASI gacha — roll per-pull, stat dikalikan, ditunjukkan lewat warna glow */
-const MUT_CHANCE={secret:0.5,rainbow:1,gold:4,silver:10}; // % peluang kumulatif dari atas: secret 0.5%, rainbow +1%, gold +4%, shiny +10%
-const MUT_MULT={none:1,silver:3,gold:5,rainbow:10,secret:25};
-const MUT_RANK={none:0,silver:1,gold:2,rainbow:3,secret:4};
-const MUT_LABEL={none:"",silver:"SHINY",gold:"GOLD",rainbow:"RAINBOW",secret:"SECRET"};
-const MUT_COLOR={silver:"#D6DEE8",gold:"#E0BC6E",rainbow:"#B58CFF",secret:"#22D3EE"};
-const MUT_LETTERS={silver:["#F2F5F8","#C7D0DA"],gold:["#F6DFA6","#C99A45"],rainbow:["#FF6B81","#FFB347","#FFE66D","#6BE08A","#B9C2CC","#B98CFF","#FF6BD6"],secret:["#22D3EE","#7DF9FF","#E0F7FF","#00FFD0","#FFFFFF","#22D3EE"]};
+const MUT_CHANCE={secret:0.5,rainbow:1,gold:4}; // % peluang kumulatif dari atas: secret 0.5%, rainbow +1%, gold +4%
+const SHINY_CHANCE=10; // % peluang SHINY (lapisan terpisah, bisa numpuk di atas mutasi apa pun)
+const MUT_MULT={none:1,gold:5,rainbow:10,secret:25};
+const MUT_RANK={none:0,gold:1,rainbow:2,secret:3};
+const MUT_LABEL={none:"",gold:"GOLD",rainbow:"RAINBOW",secret:"SECRET"};
+const MUT_COLOR={gold:"#E0BC6E",rainbow:"#B58CFF",secret:"#22D3EE"};
+const MUT_LETTERS={gold:["#F6DFA6","#C99A45"],rainbow:["#FF6B81","#FFB347","#FFE66D","#6BE08A","#B9C2CC","#B98CFF","#FF6BD6"],secret:["#22D3EE","#7DF9FF","#E0F7FF","#00FFD0","#FFFFFF","#22D3EE"]};
 function mutBadge(mut){
   const label=MUT_LABEL[mut];if(!label)return "";
   const cols=MUT_LETTERS[mut]||[MUT_COLOR[mut]];
   return label.split("").map((ch,i)=>`<span style="color:${cols[i%cols.length]}">${ch}</span>`).join("");
 }
-function rollMut(){const r=Math.random()*100;let c=0;const order=["secret","rainbow","gold","silver"];for(const m of order){c+=MUT_CHANCE[m];if(r<c)return m;}return "none";}
+function rollMut(){const r=Math.random()*100;let c=0;const order=["secret","rainbow","gold"];for(const m of order){c+=MUT_CHANCE[m];if(r<c)return m;}return "none";}
+function rollShiny(){return Math.random()*100<SHINY_CHANCE;}
+function shinyBadge(){return '<span class="shiny-badge">SHINY</span>';}
+const shinyCls=s=>s&&s.shiny?" shiny":"";
 /* Hadiah login harian 7 hari (coin) — total 950.000, reset tiap 00:00 */
 const DAILY_REWARDS=[30000,50000,70000,100000,150000,200000,400000];
 
 /* ========== DIFFICULTY LEVELS ========== */
 const DIFFS=[
   {k:"normal",l:"NORMAL",mut:"none"},
-  {k:"hard",l:"HARD",mut:"silver"},
-  {k:"extreme",l:"EXTREME",mut:"gold"},
-  {k:"nightmare",l:"NIGHTMARE",mut:"rainbow"}
+  {k:"hard",l:"HARD",mut:"gold"},
+  {k:"extreme",l:"EXTREME",mut:"rainbow"},
+  {k:"nightmare",l:"NIGHTMARE",mut:"secret"}
 ];
 const RAID_DIFFS=[
   {k:"normal",l:"NORMAL",hp:1,atk:1,rw:1,color:"#6EAC4C"},
@@ -1944,7 +1957,7 @@ function getUsers(){try{return JSON.parse(localStorage.getItem(USERS_KEY))||{};}
 function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u));}
 function freshState(){
   const s0=STORY_BIBLE.units[0];
-  const start=s0?{id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,fav:false,lock:false,mut:"none",trait:"none",count:1}:null;
+  const start=s0?{id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,fav:false,lock:false,mut:"none",shiny:false,trait:"none",count:1}:null;
   return{coins:1000,raidTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},tower:{floor:1,best:0},
     cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],history:[],battle:null};
 }
@@ -2007,7 +2020,7 @@ function loadStateFor(name){
     } catch(e) { console.warn('Difficulty check failed:', e.message); }
   }
   
-  if(state.stacks)state.stacks.forEach(s=>{if(!s.mut)s.mut="none";if(!s.trait||!TRAIT[s.trait])s.trait="none";s.tier=CARDS[s.char].tier;});
+  if(state.stacks)state.stacks.forEach(s=>{if(!s.mut)s.mut="none";if(s.mut==="silver"){s.shiny=true;s.mut="none";}if(typeof s.shiny!=="boolean")s.shiny=false;if(!s.trait||!TRAIT[s.trait])s.trait="none";s.tier=CARDS[s.char].tier;});
   if(!state.tower||typeof state.tower!=="object")state.tower={floor:1,best:0};
   if(typeof state.tower.floor!=="number"||state.tower.floor<1)state.tower.floor=1;
   if(typeof state.tower.best!=="number"||state.tower.best<0)state.tower.best=0;
@@ -2540,7 +2553,7 @@ let bt=null;
 function meFighterHtml(s){
   const st=cardStats(s.char,s.mut,s.trait);
   return `<div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}">${madaraAura(s.char)}<div class="f-name">${cardName(s.char)}</div><span class="f-tag" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,(CARDS[s.char]||{}).chance)}</span>
-    ${(s.mut&&s.mut!=="none")||(s.trait&&s.trait!=="none")?`<div class="f-badges">${s.mut&&s.mut!=="none"?mutChip(s.mut,`<span class="fbadge" style="border-color:${MUT_COLOR[s.mut]};color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`):""}${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="fbadge" style="border-color:${TRAIT_COLOR[s.trait]};color:${TRAIT_COLOR[s.trait]}">${traitGem(12)} ${traitLabel(s.trait)}</span>`):""}</div>`:""}
+    ${(s.mut&&s.mut!=="none")||(s.trait&&s.trait!=="none")||s.shiny?`<div class="f-badges">${s.mut&&s.mut!=="none"?mutChip(s.mut,`<span class="fbadge" style="border-color:${MUT_COLOR[s.mut]};color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`):""}${s.shiny?`<span class="fbadge shiny-badge">SHINY</span>`:""}${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="fbadge" style="border-color:${TRAIT_COLOR[s.trait]};color:${TRAIT_COLOR[s.trait]}">${traitGem(12)} ${traitLabel(s.trait)}</span>`):""}</div>`:""}
     </div>
     <div class="hpbar"><i id="hpMe"></i><span id="hpMeT">${fmt(st.hp)} / ${fmt(st.hp)}</span></div>
     <div class="f-body">
@@ -2550,7 +2563,7 @@ function meFighterHtml(s){
       <div class="stat-row"><div class="stat">♡ ${fmt(st.hp)}</div><div class="stat">${ATKIC} ${fmt(st.atk)}</div></div>
     </div>`;
 }
-function updateMeCard(){if(!bt)return;const f=document.querySelector(".fighter.me");if(f){f.className="fighter me"+mutGlow(bt.eq.mut);f.dataset.tier=bt.eq.tier;f.dataset.char=bt.eq.char;f.style.borderColor=bt.eq.mut&&bt.eq.mut!=="none"?MUT_COLOR[bt.eq.mut]:"";f.innerHTML=meFighterHtml(bt.eq);}}
+function updateMeCard(){if(!bt)return;const f=document.querySelector(".fighter.me");if(f){f.className="fighter me"+mutGlow(bt.eq.mut)+shinyCls(bt.eq);f.dataset.tier=bt.eq.tier;f.dataset.char=bt.eq.char;f.style.borderColor=bt.eq.mut&&bt.eq.mut!=="none"?MUT_COLOR[bt.eq.mut]:"";f.innerHTML=meFighterHtml(bt.eq);}}
 function benchTile(s){
   return `<div class="bench-sq" data-tier="${s.tier}" style="border-color:${TIER_COLOR[s.tier]}" title="${cardName(s.char)}"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}"></div>`;
 }
@@ -2572,7 +2585,7 @@ function renderBattle(){
   app.innerHTML=`
   <div class="battle-grid">
   <div class="me-col">
-    <div class="fighter me${eq?mutGlow(eq.mut):''}" data-tier="${eq?eq.tier:''}" data-char="${eq?eq.char:''}"${eq?mutEdge(eq.mut):''}>${meFighterHtml(eq)}</div>
+    <div class="fighter me${eq?mutGlow(eq.mut):''}${shinyCls(eq)}" data-tier="${eq?eq.tier:''}" data-char="${eq?eq.char:''}"${eq?mutEdge(eq.mut):''}>${meFighterHtml(eq)}</div>
     ${benchHtml()}
   </div>
   <div class="vs-col"><div class="t">VS</div><div class="s" id="turnLabel">AUTO<br>BATTLE</div></div>
@@ -3498,7 +3511,7 @@ function renderTowerBattle(){
   app.innerHTML=`
   <div class="battle-grid tower-stage">
   <div class="me-col">
-    <div class="fighter me${eq?mutGlow(eq.mut):''}" data-tier="${eq?eq.tier:''}" data-char="${eq?eq.char:''}"${eq?mutEdge(eq.mut):''}>${meFighterHtml(eq)}</div>
+    <div class="fighter me${eq?mutGlow(eq.mut):''}${shinyCls(eq)}" data-tier="${eq?eq.tier:''}" data-char="${eq?eq.char:''}"${eq?mutEdge(eq.mut):''}>${meFighterHtml(eq)}</div>
     ${benchHtml()}
   </div>
   <div class="vs-col"><div class="t">VS</div><div class="s" id="turnLabel">LANTAI ${towerRun.floor}<br>${towerIsBossFloor(towerRun.floor)?"BOS":"AUTO"}</div></div>
@@ -3593,7 +3606,7 @@ function openModal(id){
   mcEl.innerHTML=`
     <span class="md-art"><img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(s.char)}</span>
     <div class="md-info">
-      <div class="eyebrow" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,c.chance)}${s.mut&&s.mut!=="none"?` · ${mutChip(s.mut,`<span>${mutBadge(s.mut)}</span>`)}`:""}</div>
+      <div class="eyebrow" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,c.chance)}${s.mut&&s.mut!=="none"?` · ${mutChip(s.mut,`<span>${mutBadge(s.mut)}</span>`)}`:""}${s.shiny?' · <span class="shiny-badge">SHINY</span>':""}</div>
       <div class="md-name">${c.name}</div>
       <div class="cr-title" style="margin-bottom:8px">${c.type}</div>
       <div class="cr-stats"><span>♡ ${fmt(st.hp)}</span><span>${ATKIC} ${fmt(st.atk)}</span></div>
@@ -3626,11 +3639,11 @@ function renderLobby(){
     <div class="hub-box h-l1 hub-link" id="hubRaid" role="button" title="Masuk Boss Raid"><img class="hi-ic" src="assets/raid/eternal-dragon-hd.png" alt=""><span class="hb-lbl">BOSS RAID</span></div>
     <div class="hub-box h-l2 hub-link" id="hubTower" role="button" title="Masuk Sky Tower"><svg class="tw-ic" width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M9 21V9l3-6 3 6v12"/><path d="M9 12h6M9 16h6"/><path d="M5 21V11M19 21V11"/></svg><span class="hb-lbl">SKY TOWER</span></div>
     <div class="hub-mid">
-    <div class="hub-center${eq&&eq.mut&&eq.mut!=='none'?' mut-'+eq.mut:''}" id="hubCard" data-tier="${eq?tier:''}" ${eq&&eq.mut&&eq.mut!=='none'?`style="border-color:${MUT_COLOR[eq.mut]}"`:''}>
+    <div class="hub-center${eq&&eq.mut&&eq.mut!=='none'?' mut-'+eq.mut:''}${shinyCls(eq)}" id="hubCard" data-tier="${eq?tier:''}" ${eq&&eq.mut&&eq.mut!=='none'?`style="border-color:${MUT_COLOR[eq.mut]}"`:''}>
       ${eq?`<div class="hc-img"><img src="${cardImg(eq.char)}" alt="${cardName(eq.char)}">${madaraAura(eq.char)}
           <span class="hc-name-top">${cardName(eq.char)}</span>
           <span class="hc-chance" style="color:${TIER_COLOR[tier]}">${rarityText(tier,(CARDS[eq.char]||{}).chance)}</span>
-          ${(eq.mut&&eq.mut!=='none')||(eq.trait&&eq.trait!=='none')?`<div class="hc-badges">${eq.mut&&eq.mut!=='none'?mutChip(eq.mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[eq.mut]}">${mutBadge(eq.mut)}</span>`):''}${eq.trait&&eq.trait!=='none'?traitChip(eq.trait,`<span class="hc-trait" style="color:${TRAIT_COLOR[eq.trait]};border-color:${TRAIT_COLOR[eq.trait]}">${traitGem(12)} ${traitLabel(eq.trait)}</span>`):''}</div>`:''}
+          ${(eq.mut&&eq.mut!=='none')||(eq.trait&&eq.trait!=='none')||eq.shiny?`<div class="hc-badges">${eq.mut&&eq.mut!=='none'?mutChip(eq.mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[eq.mut]}">${mutBadge(eq.mut)}</span>`):''}${eq.shiny?'<span class="shiny-badge">SHINY</span>':''}${eq.trait&&eq.trait!=='none'?traitChip(eq.trait,`<span class="hc-trait" style="color:${TRAIT_COLOR[eq.trait]};border-color:${TRAIT_COLOR[eq.trait]}">${traitGem(12)} ${traitLabel(eq.trait)}</span>`):''}</div>`:''}
           <div class="skill-overlay"><b>${passiveName(eq.char)}</b><span class="sk-txt">${skillText(eq.char)}</span></div>
         </div>
         <div class="hc-info">
@@ -3737,13 +3750,13 @@ function renderRaidPick(){
   <div class="raid-pick-grid" id="raidPickGrid">${stacks.map(s=>{
     const c=CARDS[s.char],st=cardStats(s.char,s.mut,s.trait);
     const mc=s.mut&&s.mut!=="none"?" mut-"+s.mut:"";
-    return `<button class="raid-pick-card${s.tier==="EX"?" fire":""}${mc}" data-pick="${s.id}" data-name="${c.name.toLowerCase()}"${s.mut&&s.mut!=="none"?` style="border-color:${MUT_COLOR[s.mut]}"`:""}>
+    return `<button class="raid-pick-card${s.tier==="EX"?" fire":""}${mc}${s.shiny?" shiny":""}" data-pick="${s.id}" data-name="${c.name.toLowerCase()}"${s.mut&&s.mut!=="none"?` style="border-color:${MUT_COLOR[s.mut]}"`:""}>
       <div class="rpc-img"><img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(s.char)}
         <span class="badge-row">
           <span class="tier-badge" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,c.chance)}</span>
         </span>
-        ${(s.mut&&s.mut!=="none")?`<span class="badge-row bl">
-          ${mutChip(s.mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`)}
+        ${(s.mut&&s.mut!=="none")||s.shiny?`<span class="badge-row bl">
+          ${s.mut&&s.mut!=="none"?mutChip(s.mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`):""}${s.shiny?'<span class="shiny-badge">SHINY</span>':""}
         </span>`:""}
         ${s.trait&&s.trait!=="none"?`<span class="badge-row br">
           ${traitChip(s.trait,`<span class="trait-badge" style="color:${TRAIT_COLOR[s.trait]};border-color:${TRAIT_COLOR[s.trait]}">${traitGem(12)}</span>`)}
@@ -3764,7 +3777,7 @@ function renderRaidBattle(){
   const b=raidBossOf(), eq=raidPicked||equipped();
   app.innerHTML=`
   <div class="battle-grid raid-stage">
-    <div class="me-col"><div class="fighter me${eq&&eq.mut&&eq.mut!=='none'?' mut-'+eq.mut:''}" data-tier="${eq?eq.tier:''}" data-char="${eq?eq.char:''}">${meFighterHtml(eq)}</div></div>
+    <div class="me-col"><div class="fighter me${eq&&eq.mut&&eq.mut!=='none'?' mut-'+eq.mut:''}${shinyCls(eq)}" data-tier="${eq?eq.tier:''}" data-char="${eq?eq.char:''}">${meFighterHtml(eq)}</div></div>
     <div class="vs-col"><div class="t">VS</div><div class="s" id="raidTurnLabel">TURN<br>0/${RAID_TURNS}</div></div>
     <div class="me-col foe-side"><div class="fighter foe" data-tier="EX">
       <div class="f-banner"><img src="${b.img}" alt="${b.name}"><div class="f-name">${b.name}</div><span class="f-tag" style="color:${b.diffColor};border-color:${b.diffColor}">${b.diffLabel}</span>
@@ -4111,7 +4124,7 @@ function gmGrantCard(charId){
   if(!CARDS[charId])return "kartu tidak dikenal";
   const ex=state.stacks.find(x=>x.char===charId&&x.tier===CARDS[charId].tier&&(x.mut||"none")==="none");
   if(ex){ex.count=(ex.count||1)+1;return `${CARDS[charId].name} ×${ex.count}`;}
-  state.stacks.push({id:Math.random().toString(36).slice(2,9),char:charId,tier:CARDS[charId].tier,lv:1,exp:0,fav:false,lock:false,mut:"none",trait:"none",count:1});
+  state.stacks.push({id:Math.random().toString(36).slice(2,9),char:charId,tier:CARDS[charId].tier,lv:1,exp:0,fav:false,lock:false,mut:"none",shiny:false,trait:"none",count:1});
   return `${CARDS[charId].name} ditambahkan ke deck`;
 }
 function renderSettings(){
@@ -4134,11 +4147,11 @@ function renderSettings(){
     <div class="gm-row">
       <select class="gm-select" id="gmMut">
         <option value="none">MURNI (tanpa glow)</option>
-        <option value="silver">SHINY</option>
         <option value="gold">GOLD</option>
         <option value="rainbow">RAINBOW</option>
         <option value="secret">SECRET</option>
       </select>
+      <label class="gm-check"><input type="checkbox" id="gmShiny"> SHINY</label>
       <button class="gm-btn" id="gmMutApply">Terapkan ke Kartu Aktif</button>
     </div>
     <div class="gm-row">
@@ -4164,7 +4177,7 @@ function renderSettings(){
   document.getElementById("gmEx").onclick=()=>{const a=gmGrantCard("CH_EX_GOJO"),b=gmGrantCard("CH_EX_MADARA");flash(a+" · "+b);};
   document.getElementById("gmAll").onclick=()=>{MASTER_CARD_INDEX.forEach(c=>gmGrantCard(c.char_id));flash("Semua "+MASTER_CARD_INDEX.length+" kartu dibuka");};
   document.getElementById("gmEquip").onclick=()=>{const ex=state.stacks.filter(s=>s.tier==="EX");if(!ex.length){note("Belum punya kartu EX — grant dulu.");return;}state.equippedId=ex[ex.length-1].id;flash("Equipped: "+CARDS[equipped().char].name);};
-  document.getElementById("gmMutApply").onclick=()=>{const m=document.getElementById("gmMut").value;const eq=equipped();if(!eq){note("Belum ada kartu aktif.");return;}eq.mut=m;save();note("Mutasi '"+(MUT_LABEL[m]||"MURNI")+"' dipasang ke "+CARDS[eq.char].name+" — cek Deck untuk lihat glow.");renderShell();};
+  document.getElementById("gmMutApply").onclick=()=>{const m=document.getElementById("gmMut").value;const sh=document.getElementById("gmShiny").checked;const eq=equipped();if(!eq){note("Belum ada kartu aktif.");return;}eq.mut=m;eq.shiny=sh;save();note((MUT_LABEL[m]||"MURNI")+(sh?" + SHINY":"")+" dipasang ke "+CARDS[eq.char].name+" — cek Deck untuk lihat efek.");renderShell();};
   document.getElementById("gmCoin").onclick=()=>{state.coins+=10000;flash("Coin +10.000");};
   document.getElementById("gmLevels").onclick=()=>{for(let i=1;i<=LEVEL_COUNT;i++){state.cleared[i]=true;DIFFS.forEach(d=>{diffProg()[d.k][i]=true;});}flash("Semua level terbuka");};
   let armed=false,timer=null;
@@ -4242,7 +4255,8 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
     const result=rngRoll(1,1);
     if(!result){beep(220,0.15,"square",0.08);return;}
     result.mut=rollMut();
-    grantRolledCard(result.cardId, result.mut);
+    result.shiny=rollShiny();
+    grantRolledCard(result.cardId, result.mut, result.shiny);
     showRollResult(result);
     beep(440,0.15,"sine",0.1);
     rollState.hideTimer=setTimeout(()=>{hideRollResult();rollState.hideTimer=null;},1600);
