@@ -104,6 +104,11 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .bp-cols{display:flex;gap:18px;align-items:flex-start;flex:1;min-height:0;}
 .bp-deckcol{flex:0 0 auto;align-self:flex-start;width:clamp(64px,calc((80vh - 170px)/4),104px);}
 .bp-collect{flex:1;min-width:0;align-self:stretch;overflow-y:auto;}
+.bp-filter{position:sticky;top:0;z-index:3;display:flex;flex-wrap:wrap;gap:6px;padding:2px 0 10px;margin-bottom:4px;background:var(--panel);}
+.bp-fchip{display:inline-flex;align-items:center;gap:5px;font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.06em;color:var(--muted);border:1px solid var(--line2);background:var(--panel2);border-radius:8px;padding:3px 9px;cursor:pointer;transition:filter .12s,border-color .12s;}
+.bp-fchip:hover{filter:brightness(1.15);}
+.bp-fchip.on{border-color:var(--cyan);color:var(--cyan);}
+.bp-fchip em{font-style:normal;font-size:11px;opacity:.8;font-weight:700;}
 .bp-slots{display:grid;grid-template-columns:1fr;gap:8px;}
 .bp-slot{position:relative;aspect-ratio:1/1;width:100%;border:2px dashed var(--line2);border-radius:12px;background:var(--panel2);overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .bp-slot.filled{border-style:solid;}
@@ -1743,8 +1748,11 @@ function setRollMini(on) {
    Tile koleksi dibuat KECIL & TANPA info stat biar muat banyak.
    Alur: klik slot => jadikan target; klik tile koleksi => pasang ke target (atau slot kosong pertama). */
 let bpTarget = null;
+let bpMutFilter = "all"; /* filter varian koleksi: all|none|silver|gold|rainbow|secret */
 function deckTotalPower(){return equippedList().reduce((a,s)=>{const st=cardStats(s.char,s.lv,s.mut,s.trait);return a+(st.hp+st.atk);},0);}
 function bpPickSlot(i){bpTarget=(bpTarget===i?null:i);renderBackpackPanel();}
+function bpSetFilter(m){bpMutFilter=m;renderBackpackPanel();}
+function bpMatchesMut(s){return bpMutFilter==="all"||(s.mut||"none")===bpMutFilter;}
 function bpClearSlot(i){setDeckSlot(i,null);bpTarget=null;renderBackpackPanel();}
 function bpAssign(stackId){
   const s=state.stacks.find(x=>x.id===stackId);if(!s)return;
@@ -1766,21 +1774,26 @@ function renderBackpackPanel(){
     if(!s)return `<div class="bp-slot${bpTarget===i?' sel':''}" onclick="bpPickSlot(${i})"><span class="bps-plus">+</span><span class="bps-num">${i+1}</span></div>`;
     return `<div class="bp-slot filled${bpTarget===i?' sel':''}" onclick="bpPickSlot(${i})" style="border-color:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt=""><span class="bps-num">${i+1}</span><span class="bps-lvl">L${s.lv}</span><button class="bps-x" onclick="event.stopPropagation();bpClearSlot(${i})">&times;</button></div>`;
   }).join('');
-  const tiles=state.stacks.map(s=>{
+  const visible=state.stacks.filter(bpMatchesMut);
+  const tiles=visible.map(s=>{
     const inDeck=state.deck.includes(s.id);
     const mut=(s.mut&&s.mut!=='none')?`<span class="bpt-mut" style="color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`:'';
     const cnt=(s.count||1)>1?`<span class="bpt-cnt">&times;${fmt(s.count)}</span>`:'';
     return `<div class="bp-tile${inDeck?' in-deck':''}" onclick="bpAssign('${s.id}')" style="border-color:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt="">${mut}${cnt}<button class="bpt-i" onclick="event.stopPropagation();openModal('${s.id}')" title="Detail &amp; naik level">i</button><span class="bpt-lvl">L${s.lv}</span></div>`;
   }).join('');
+  const cntOf=m=>state.stacks.filter(s=>m==='all'||(s.mut||'none')===m).length;
+  const chip=(k,lbl)=>{const on=bpMutFilter===k;const col=on?(MUT_COLOR[k]||'var(--cyan)'):'';return `<button class="bp-fchip${on?' on':''}" onclick="bpSetFilter('${k}')"${col?` style="border-color:${col};color:${col}"`:''}>${lbl}<em>${cntOf(k)}</em></button>`;};
+  const filterRow=`<div class="bp-filter">${chip('all','SEMUA')+chip('none','MURNI')+chip('silver','SHINY')+chip('gold','GOLD')+chip('rainbow','RAINBOW')+chip('secret','SECRET')}</div>`;
   panel.innerHTML=header+`<div class="bp-body"><div class="bp-cols">
     <div class="bp-deckcol">
       <div class="bp-h">DEK</div>
       <div class="bp-slots">${slots}</div>
     </div>
     <div class="bp-collect">
+      ${filterRow}
       <div class="bp-h">${bpTarget!=null?('SLOT '+(bpTarget+1)+' TERPILIH — tap kartu untuk pasang'):'TAP SLOT DEK, LALU TAP KARTU'}</div>
-      <div class="bp-h">KOLEKSI (${state.stacks.length})</div>
-      <div class="bp-tiles">${tiles}</div>
+      <div class="bp-h">KOLEKSI (${visible.length})</div>
+      ${visible.length?`<div class="bp-tiles">${tiles}</div>`:`<div class="bp-empty" style="padding:18px 0">Tidak ada kartu varian ini.</div>`}
     </div>
   </div></div>`;
 }
