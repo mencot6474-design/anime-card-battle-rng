@@ -120,13 +120,11 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .bp-slot img{width:100%;height:100%;object-fit:cover;object-position:top;}
 .bp-slot .bps-plus{font-size:34px;color:var(--line2);}
 .bp-slot .bps-num{position:absolute;top:4px;left:7px;font-family:"Barlow Condensed";font-weight:700;font-size:13px;color:#fff;text-shadow:0 1px 3px #000;}
-.bp-slot .bps-lvl{position:absolute;bottom:4px;right:6px;font-family:"Barlow Condensed";font-weight:700;font-size:12px;color:#fff;text-shadow:0 1px 3px #000;}
 .bp-slot .bps-x{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:7px;border:none;background:rgba(12,14,16,.82);color:#fff;font-size:16px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .bp-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:8px;}
 .bp-tile{position:relative;aspect-ratio:3/4;border:2px solid var(--line2);border-radius:10px;overflow:hidden;cursor:pointer;background:var(--panel2);}
 .bp-tile img{width:100%;height:100%;object-fit:cover;object-position:top;}
 .bp-tile.in-deck{box-shadow:0 0 0 2px var(--cyan) inset;}
-.bp-tile .bpt-lvl{position:absolute;bottom:2px;right:5px;font-family:"Barlow Condensed";font-weight:700;font-size:11px;color:#fff;text-shadow:0 1px 2px #000;}
 .bp-tile .bpt-mut{position:absolute;top:2px;left:4px;font-family:"Barlow Condensed";font-weight:700;font-size:10px;text-shadow:0 1px 2px #000;}
 .bp-tile .bpt-cnt{position:absolute;bottom:2px;left:4px;font-family:"Barlow Condensed";font-weight:800;font-size:11px;color:#fff;background:rgba(12,14,16,.72);border-radius:6px;padding:0 5px;text-shadow:0 1px 2px #000;}
 .bp-tile .bpt-i{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:6px;border:none;background:rgba(12,14,16,.8);color:#fff;font-size:11px;font-weight:700;font-style:italic;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;}
@@ -765,18 +763,6 @@ body.battle-full .stat svg{flex:none}
 .md-info{flex:1;width:100%;text-align:center}
 .md-name{font-size:24px;font-weight:800}
 .md-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
-.md-exp{margin:6px 0 8px}
-.md-exp-head{display:flex;justify-content:space-between;font-family:"Barlow Condensed";font-size:12px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;margin-bottom:4px}
-.md-exp-head span:last-child{color:var(--text)}
-.md-exp-bar{height:8px;border-radius:6px;background:#EEF1F5;border:1px solid var(--line);overflow:hidden}
-.md-exp-bar i{display:block;height:100%;background:linear-gradient(90deg,#7a5cff,#C9D4DE);transition:width .3s}
-.md-books{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
-.md-book{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 6px;border-radius:9px;border:1px solid var(--line2);background:#EEF1F5;color:var(--text);font-family:"Barlow Condensed";cursor:pointer}
-.md-book b{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--bk)}
-.md-book span{font-size:12px;color:var(--muted)}
-.md-book i{font-size:12px;font-style:normal;font-weight:700}
-.md-book:hover:not(:disabled){border-color:var(--bk)}
-.md-book:disabled{opacity:.35;cursor:not-allowed}
 .ri-owned{font-size:12px;color:var(--muted);font-family:"Barlow Condensed";letter-spacing:.06em}
 .md-btn{border:1px solid var(--line2);border-radius:9px;padding:9px;font-family:"Barlow Condensed";font-size:14px;font-weight:700;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
 .md-btn:hover{color:var(--text);border-color:var(--cyan)}
@@ -809,7 +795,6 @@ body.battle-full .stat svg{flex:none}
 .hub-center .hc-img img,.hub-center .hc-img video{width:100%;height:100%;object-fit:cover;object-position:top}
 .hub-center .hc-info{position:absolute;left:0;right:0;bottom:0;z-index:6;padding:30px 14px 12px;border-top:none;background:linear-gradient(to top,rgba(6,8,12,.92) 32%,rgba(6,8,12,.5) 64%,transparent)}
 .hub-center .hc-name{font-weight:800;font-size:17px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.7)}
-.hub-center .hc-name .lv{color:var(--cyan);font-size:13px;font-weight:700}
 .hub-center .hc-stats{display:flex;justify-content:space-between;gap:16px;margin-top:9px;font-size:14px;font-weight:700;color:#EAF4FF;align-items:center;text-shadow:0 1px 4px rgba(0,0,0,.7)}
 .hub-center .hc-name-top{position:absolute;top:12px;left:12px;z-index:6;font-weight:800;font-size:16px;color:#fff;text-shadow:0 1px 5px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.9);max-width:60%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hub-center .hc-chance{position:absolute;top:13px;right:12px;z-index:6;font-family:"Barlow Condensed";letter-spacing:.05em;font-size:14px;font-weight:700;text-shadow:0 1px 5px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.9)}
@@ -1583,7 +1568,7 @@ function grantRolledCard(charId, mut) {
     save(); rollCountBadge();
     return s;
   }
-  const ns = { id: Math.random().toString(36).slice(2, 9), char: charId, tier: card.tier, lv: 1, exp: 0, fav: false, lock: false, mut: m, trait: "none", count: 1 };
+  const ns = { id: Math.random().toString(36).slice(2, 9), char: charId, tier: card.tier, fav: false, lock: false, mut: m, trait: "none", count: 1 };
   state.stacks.push(ns);
   if (!Array.isArray(state.deck)) state.deck = [null, null, null, null];
   state.deck.length = 4;
@@ -1729,7 +1714,7 @@ function setRollMini(on) {
    Alur: klik slot => jadikan target; klik tile koleksi => pasang ke target (atau slot kosong pertama). */
 let bpTarget = null;
 let bpMutFilter = "all"; /* filter varian koleksi: all|none|silver|gold|rainbow|secret */
-function deckTotalPower(){return equippedList().reduce((a,s)=>{const st=cardStats(s.char,s.lv,s.mut,s.trait);return a+(st.hp+st.atk);},0);}
+function deckTotalPower(){return equippedList().reduce((a,s)=>{const st=cardStats(s.char,s.mut,s.trait);return a+(st.hp+st.atk);},0);}
 function bpPickSlot(i){bpTarget=(bpTarget===i?null:i);renderBackpackPanel();}
 function bpSetFilter(m){bpMutFilter=m;renderBackpackPanel();}
 function bpMatchesMut(s){return bpMutFilter==="all"||(s.mut||"none")===bpMutFilter;}
@@ -1752,14 +1737,14 @@ function renderBackpackPanel(){
   const slots=[0,1,2,3].map(i=>{
     const id=state.deck[i];const s=id?state.stacks.find(x=>x.id===id):null;
     if(!s)return `<div class="bp-slot${bpTarget===i?' sel':''}" onclick="bpPickSlot(${i})"><span class="bps-plus">+</span><span class="bps-num">${i+1}</span></div>`;
-    return `<div class="bp-slot filled${bpTarget===i?' sel':''}" onclick="bpPickSlot(${i})" style="border-color:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt=""><span class="bps-num">${i+1}</span><span class="bps-lvl">L${s.lv}</span><button class="bps-x" onclick="event.stopPropagation();bpClearSlot(${i})">&times;</button></div>`;
+    return `<div class="bp-slot filled${bpTarget===i?' sel':''}" onclick="bpPickSlot(${i})" style="border-color:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt=""><span class="bps-num">${i+1}</span><button class="bps-x" onclick="event.stopPropagation();bpClearSlot(${i})">&times;</button></div>`;
   }).join('');
   const visible=state.stacks.filter(bpMatchesMut);
   const tiles=visible.map(s=>{
     const inDeck=state.deck.includes(s.id);
     const mut=(s.mut&&s.mut!=='none')?`<span class="bpt-mut" style="color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`:'';
     const cnt=(s.count||1)>1?`<span class="bpt-cnt">&times;${fmt(s.count)}</span>`:'';
-    return `<div class="bp-tile${inDeck?' in-deck':''}" onclick="bpAssign('${s.id}')" style="border-color:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt="">${mut}${cnt}<button class="bpt-i" onclick="event.stopPropagation();openModal('${s.id}')" title="Detail &amp; naik level">i</button><span class="bpt-lvl">L${s.lv}</span></div>`;
+    return `<div class="bp-tile${inDeck?' in-deck':''}" onclick="bpAssign('${s.id}')" style="border-color:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt="">${mut}${cnt}<button class="bpt-i" onclick="event.stopPropagation();openModal('${s.id}')" title="Detail">i</button></div>`;
   }).join('');
   const cntOf=m=>state.stacks.filter(s=>m==='all'||(s.mut||'none')===m).length;
   const chip=(k,lbl)=>{const on=bpMutFilter===k;const col=on?(MUT_COLOR[k]||'var(--cyan)'):'';return `<button class="bp-fchip${on?' on':''}" onclick="bpSetFilter('${k}')"${col?` style="border-color:${col};color:${col}"`:''}>${lbl}<em>${cntOf(k)}</em></button>`;};
@@ -1851,27 +1836,7 @@ const FOES=Object.fromEntries(STORY_BIBLE.levels.map((l,i)=>{
   const c=CARDS[l.unit];
   return [i+1,{id:l.unit,name:c?c.name:"(kartu hilang)",ep:c?c.passive.name:"",img:c?c.sprite_asset:"",tier:c?c.tier:"",boss:!!l.boss}];
 }));
-/* Sistem BUKU EXP — satu-satunya sumber naik level KARTU (Lv.1-10). Didapat hanya dari Toko Raid. */
-const CARD_MAX_LV=20;
-const BOOK_INFO={
-  common:{name:"Buku EXP",rar:"COMMON",exp:10,color:"#EAEAEA"},
-  gold:{name:"Buku EXP Gold",rar:"GOLD",exp:50,color:"#D4AF6A"},
-  rainbow:{name:"Buku EXP Rainbow",rar:"RAINBOW",exp:100,color:"#FF4D5E"}
-};
-const BOOK_ORDER=["common","gold","rainbow"];
-function cardExpNeed(lv){return 40+(lv-1)*30;}
-function applyBookToCard(cardId,bk){
-  const s=state.stacks.find(x=>x.id===cardId); if(!s||!BOOK_INFO[bk])return{ok:false,msg:"Kartu/buku tidak valid"};
-  if(!(state.books[bk]>0))return{ok:false,msg:"Buku tidak tersedia"};
-  if(s.lv>=CARD_MAX_LV)return{ok:false,msg:"Kartu sudah Lv.max"};
-  state.books[bk]--;
-  let gained=BOOK_INFO[bk].exp, leveled=0;
-  s.exp+=gained;
-  while(s.lv<CARD_MAX_LV&&s.exp>=cardExpNeed(s.lv)){s.exp-=cardExpNeed(s.lv);s.lv++;leveled++;}
-  if(s.lv>=CARD_MAX_LV)s.exp=0;
-  save();
-  return{ok:true,lv:s.lv,leveled,msg:leveled?("Naik ke Lv."+s.lv+(leveled>1?" (+"+leveled+")":"")):("+"+gained+" EXP")};
-}
+/* Sistem level kartu DIHAPUS — stat kartu tetap (base x mutasi x trait). */
 /* Sistem MUTASI gacha — roll per-pull, stat dikalikan, ditunjukkan lewat warna glow */
 const MUT_CHANCE={secret:0.5,rainbow:1,gold:4,silver:10}; // % peluang kumulatif dari atas: secret 0.5%, rainbow +1%, gold +4%, shiny +10%
 const MUT_MULT={none:1,silver:3,gold:5,rainbow:10,secret:25};
@@ -1950,12 +1915,12 @@ function resolveFx(stack,enemyFx){
   return mergeFx(o,TRAIT_FX[stack.trait]||{});
 }
 
-function cardStats(charId,lv,mut,trait){const c=CARDS[charId];if(!c)return{hp:0,atk:0,def:0};const _lv=lv||1,m=Math.pow(1.1,_lv-1),k=(MUT_MULT[mut||"none"]||1)*(TRAIT_MULT[trait||"none"]||1);const hp=Math.round(c.base_hp*m*k),atk=Math.round(c.base_atk*m*k);return{hp,atk,def:hp};}
+function cardStats(charId,mut,trait){const c=CARDS[charId];if(!c)return{hp:0,atk:0,def:0};const k=(MUT_MULT[mut||"none"]||1)*(TRAIT_MULT[trait||"none"]||1);const hp=Math.round(c.base_hp*k),atk=Math.round(c.base_atk*k);return{hp,atk,def:hp};}
 function getTierColor(t){return TIER_COLOR[t]||"#9A8A8B";}
 /* POWER = total HP + ATK semua kartu yang dipakai: kartu utama + TAG (tetap terdeteksi walau cuma 1 kartu) */
 function totalPower(){
   const a=equipped(),b=equipped2();
-  const s=c=>c?cardStats(c.char,c.lv,c.mut,c.trait):{hp:0,atk:0};
+  const s=c=>c?cardStats(c.char,c.mut,c.trait):{hp:0,atk:0};
   const x=s(a),y=s(b);
   return x.hp+x.atk+y.hp+y.atk;
 }
@@ -1973,8 +1938,8 @@ function getUsers(){try{return JSON.parse(localStorage.getItem(USERS_KEY))||{};}
 function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u));}
 function freshState(){
   const s0=STORY_BIBLE.units[0];
-  const start=s0?{id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,lv:1,exp:0,fav:false,lock:false,mut:"none",trait:"none",count:1}:null;
-  return{coins:1000,raidTokens:0,playerLv:1,xp:0,books:{common:0,gold:0,rainbow:0},dailyIndex:0,lastClaim:"",summons:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},tower:{floor:1,best:0},
+  const start=s0?{id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,fav:false,lock:false,mut:"none",trait:"none",count:1}:null;
+  return{coins:1000,raidTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},tower:{floor:1,best:0},
     cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],history:[],battle:null};
 }
 function todayStr(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
@@ -2021,8 +1986,6 @@ function loadStateFor(name){
   if(!CHAPTERS.some(c=>c.no===state.chap))state.chap=1;
   if(typeof state.dailyIndex!=="number")state.dailyIndex=0;
   if(typeof state.raidTokens!=="number")state.raidTokens=0;
-  if(!state.books||typeof state.books!=="object")state.books={common:0,gold:0,rainbow:0};
-  ["common","gold","rainbow"].forEach(bk=>{if(typeof state.books[bk]!=="number")state.books[bk]=0;});
   
   // Safely handle DIFFS and RAID_DIFFS
   if(DIFFS && DIFFS.length && !DIFFS.some(d=>d.k===state.diff))state.diff="normal";
@@ -2038,7 +2001,7 @@ function loadStateFor(name){
     } catch(e) { console.warn('Difficulty check failed:', e.message); }
   }
   
-  if(state.stacks)state.stacks.forEach(s=>{if(!s.mut)s.mut="none";if(!s.trait||!TRAIT[s.trait])s.trait="none";if(typeof s.exp!=="number")s.exp=0;s.tier=CARDS[s.char].tier;});
+  if(state.stacks)state.stacks.forEach(s=>{if(!s.mut)s.mut="none";if(!s.trait||!TRAIT[s.trait])s.trait="none";s.tier=CARDS[s.char].tier;});
   if(!state.tower||typeof state.tower!=="object")state.tower={floor:1,best:0};
   if(typeof state.tower.floor!=="number"||state.tower.floor<1)state.tower.floor=1;
   if(typeof state.tower.best!=="number"||state.tower.best<0)state.tower.best=0;
@@ -2569,8 +2532,8 @@ function playFight(cb){
 /* =============== BATTLE =============== */
 let bt=null;
 function meFighterHtml(s){
-  const st=cardStats(s.char,s.lv,s.mut,s.trait);
-  return `<div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}">${madaraAura(s.char)}<span class="f-tag" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,(CARDS[s.char]||{}).chance)} · Lv.${s.lv}</span>
+  const st=cardStats(s.char,s.mut,s.trait);
+  return `<div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}">${madaraAura(s.char)}<span class="f-tag" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,(CARDS[s.char]||{}).chance)}</span>
     ${(s.mut&&s.mut!=="none")||(s.trait&&s.trait!=="none")?`<div class="f-badges">${s.mut&&s.mut!=="none"?mutChip(s.mut,`<span class="fbadge" style="border-color:${MUT_COLOR[s.mut]};color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`):""}${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="fbadge" style="border-color:${TRAIT_COLOR[s.trait]};color:${TRAIT_COLOR[s.trait]}">${traitGem(12)} ${traitLabel(s.trait)}</span>`):""}</div>`:""}
     <div class="skill-overlay"><b>${passiveName(s.char)}</b><span class="sk-txt">${skillText(s.char)}</span></div></div>
     <div class="hpbar"><i id="hpMe"></i><span id="hpMeT">${fmt(st.hp)} / ${fmt(st.hp)}</span></div>
@@ -2597,7 +2560,7 @@ function benchHtml(){
 }
 function renderBattle(){
   const lv=state.battle.level,en=enemyOf(lv),es=enemyStats(lv);
-  const eq=equipped(),st=cardStats(eq.char,eq.lv,eq.mut,eq.trait);
+  const eq=equipped(),st=cardStats(eq.char,eq.mut,eq.trait);
   app.innerHTML=`
   <div class="battle-grid">
   <div class="me-col">
@@ -3047,7 +3010,7 @@ function ariseStrikeFx(i,n,targetSel){return;/*animasi skill dihapus*/
 function startBattle(){
   const lv=state.battle.level,en=enemyOf(lv),es=enemyStats(lv);
   const fighters=equippedList();if(!fighters.length)fighters.push(equipped());
-  const eq=fighters[0],base=cardStats(eq.char,eq.lv,eq.mut,eq.trait);
+  const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait);
   const eid=en.id||null,efx=eid?(PASSIVE_FX[eid]||{}):{};
   if(bt&&bt.timer)clearTimeout(bt.timer);
   bt={lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0};
@@ -3057,7 +3020,7 @@ function tagIn(){
   const next=bt.active+1;
   if(next>=bt.fighters.length)return false;
   bt.active=next;bt.eq=bt.fighters[next];bt.justTagged=true;
-  const base=cardStats(bt.eq.char,bt.eq.lv,bt.eq.mut,bt.eq.trait);
+  const base=cardStats(bt.eq.char,bt.eq.mut,bt.eq.trait);
   bt.pMax=base.hp;bt.pHp=base.hp;
   // fase 1: kartu aktif sekarang tumbang
   const meEl=document.querySelector(".fighter.me");
@@ -3209,7 +3172,7 @@ function playerPhase(){
     return;
   }
   const efx=bt.efx||{};
-  let atk=cardStats(id,bt.eq.lv,bt.eq.mut,bt.eq.trait).atk;
+  let atk=cardStats(id,bt.eq.mut,bt.eq.trait).atk;
   if(fx.lowHpAtk&&bt.pHp<bt.pMax*fx.lowHpAtk.below/100)atk=Math.round(atk*(1+fx.lowHpAtk.bonus/100));
   let dmgMult=1;
   if(fx.dmgMult)dmgMult*=fx.dmgMult;
@@ -3365,7 +3328,7 @@ function finish(win){
     while(state.xp>=state.playerLv*1000){state.xp-=state.playerLv*1000;state.playerLv++;}
     fanfare();
   }else sfx.lose();
-  state.history.unshift({char:bt.eq.char,tier:bt.eq.tier,lv:bt.eq.lv,enemy:bt.en.name+(bt.en.boss?", "+bt.en.epithet:""),boss:bt.en.boss,level:lv,result:win?"VICTORY":"DEFEAT"});
+  state.history.unshift({char:bt.eq.char,tier:bt.eq.tier,enemy:bt.en.name+(bt.en.boss?", "+bt.en.epithet:""),boss:bt.en.boss,level:lv,result:win?"VICTORY":"DEFEAT"});
   state.history=state.history.slice(0,120);
   save();renderShell();
   const ov=document.getElementById("overlay");
@@ -3519,7 +3482,7 @@ function renderTowerHub(){
 }
 function renderTowerBattle(){
   const w=towerRun.waves[towerRun.idx];
-  const eq=equipped(),st=cardStats(eq.char,eq.lv,eq.mut,eq.trait);
+  const eq=equipped(),st=cardStats(eq.char,eq.mut,eq.trait);
   app.innerHTML=`
   <div class="battle-grid tower-stage">
   <div class="me-col">
@@ -3535,7 +3498,7 @@ function renderTowerBattle(){
 function startTowerBattle(){
   const w=towerRun.waves[towerRun.idx];
   const fighters=equippedList();if(!fighters.length)fighters.push(equipped());
-  const eq=fighters[0],base=cardStats(eq.char,eq.lv,eq.mut,eq.trait);
+  const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait);
   if(bt&&bt.timer)clearTimeout(bt.timer);
   bt={lv:null,tower:true,en:w.en,es:w.es,eq,fighters,eid:w.eid,efx:w.efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:w.es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0};
   schedPhase(700,step);
@@ -3612,18 +3575,16 @@ function runCardSearch(inp, grid, nr){
 }
 function openModal(id){
   const s=state.stacks.find(x=>x.id===id);if(!s)return;
-  const c=CARDS[s.char],st=cardStats(s.char,s.lv,s.mut,s.trait);
-  const maxed=s.lv>=CARD_MAX_LV, need=cardExpNeed(s.lv), expPct=maxed?100:Math.max(0,Math.min(100,Math.round(s.exp/need*100)));
+  const c=CARDS[s.char],st=cardStats(s.char,s.mut,s.trait);
   const m=document.getElementById("modal");
   const mcEl=document.getElementById("md-card");mcEl.dataset.tier=s.tier;
   mcEl.innerHTML=`
     <span class="md-art"><img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(s.char)}</span>
     <div class="md-info">
-      <div class="eyebrow" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,c.chance)} · Lv.${s.lv}${s.mut&&s.mut!=="none"?` · ${mutChip(s.mut,`<span>${mutBadge(s.mut)}</span>`)}`:""}</div>
+      <div class="eyebrow" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,c.chance)}${s.mut&&s.mut!=="none"?` · ${mutChip(s.mut,`<span>${mutBadge(s.mut)}</span>`)}`:""}</div>
       <div class="md-name">${c.name}</div>
       <div class="cr-title" style="margin-bottom:8px">${c.type}</div>
       <div class="cr-stats"><span>♡ ${fmt(st.hp)}</span><span>${ATKIC} ${fmt(st.atk)}</span></div>
-      <div class="md-exp"><div class="md-exp-head"><span>EXP</span><span>${maxed?"MAX":s.exp+" / "+need}</span></div><div class="md-exp-bar"><i style="width:${expPct}%"></i></div></div>
       <div class="cr-skill" style="margin-bottom:4px"><span class="ds-skill-badge">✦ ${c.passive.name}<span class="sk-txt">${skillText(s.char)}</span></span></div>
       <div class="md-actions">
         <button class="md-btn primary" id="md-use">${(function(){const di=state.deck.indexOf(s.id);return di>=0?("DI DEK · SLOT "+(di+1)):"PASANG KE DEK";})()}</button>
@@ -3631,20 +3592,11 @@ function openModal(id){
         <button class="md-btn${s.lock?" on":""}" id="md-lock">${s.lock?"🔒 LOCKED":"LOCK"}</button>
         <button class="md-btn md-close" id="md-close">TUTUP</button>
       </div>
-      <div class="md-books">${BOOK_ORDER.map(bk=>{const info=BOOK_INFO[bk],n=state.books[bk]||0;
-        return `<button class="md-book" data-book="${bk}" ${(n<=0||maxed)?"disabled":""} style="--bk:${info.color}"><b>${info.name.replace("Buku EXP ","")}</b><span>+${info.exp}</span><i>×${n}</i></button>`;
-      }).join("")}</div>
     </div>`;
   m.classList.add("show");
   document.getElementById("md-use").onclick=()=>{sfx.hit();const di=state.deck.indexOf(s.id);if(di>=0){setDeckSlot(di,null);}else{let e=state.deck.indexOf(null);if(e<0)e=0;setDeckSlot(e,s.id);}openModal(id);renderBackpackPanel();};
   document.getElementById("md-fav").onclick=()=>{s.fav=!s.fav;save();openModal(id);renderBackpackPanel();};
   document.getElementById("md-lock").onclick=()=>{s.lock=!s.lock;save();openModal(id);};
-  m.querySelectorAll(".md-book").forEach(btn=>btn.onclick=()=>{
-    if(btn.disabled)return;
-    const r=applyBookToCard(id,btn.dataset.book);
-    if(r.ok){sfx.crit();openModal(id);renderBackpackPanel();raidToast(c.name+" · "+r.msg);}
-    else raidToast(r.msg);
-  });
   document.getElementById("md-close").onclick=()=>{m.classList.remove("show");renderBackpackPanel();};
 }
 document.getElementById("modal").addEventListener("click",e=>{
@@ -3655,7 +3607,7 @@ document.getElementById("modal").addEventListener("click",e=>{
 function renderLobby(){
   if(state.battle)return renderBattle();
   const eq=equipped();
-  const st=eq?cardStats(eq.char,eq.lv,eq.mut,eq.trait):null;
+  const st=eq?cardStats(eq.char,eq.mut,eq.trait):null;
   const tier=eq?CARDS[eq.char].tier:null;
   app.innerHTML=`
   <div class="lobby-hub">
@@ -3770,7 +3722,7 @@ function renderRaidPick(){
   <div class="eyebrow">PILIH KARTU</div>
   <label class="card-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input class="card-search" id="raidSearch" type="text" placeholder="Cari kartu…" autocomplete="off"></label>
   <div class="raid-pick-grid" id="raidPickGrid">${stacks.map(s=>{
-    const c=CARDS[s.char],st=cardStats(s.char,s.lv,s.mut,s.trait);
+    const c=CARDS[s.char],st=cardStats(s.char,s.mut,s.trait);
     const mc=s.mut&&s.mut!=="none"?" mut-"+s.mut:"";
     return `<button class="raid-pick-card${s.tier==="EX"?" fire":""}${mc}" data-pick="${s.id}" data-name="${c.name.toLowerCase()}"${s.mut&&s.mut!=="none"?` style="border-color:${MUT_COLOR[s.mut]}"`:""}>
       <div class="rpc-img"><img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(s.char)}
@@ -3786,7 +3738,7 @@ function renderRaidPick(){
         ${s.fav?'<span class="rpc-fav">★</span>':""}
       </div>
       <div class="rpc-name">${c.name}</div>
-      <div class="rpc-stat">Lv.${s.lv} · ATK ${fmt(st.atk)}</div>
+      <div class="rpc-stat">♡ ${fmt(st.hp)} · ATK ${fmt(st.atk)}</div>
     </button>`;}).join("")}</div>
   <div class="no-result" id="raidSearch-nr">Tidak ada kartu yang cocok dengan pencarian.</div>`;
   {const rs=document.getElementById("raidSearch");if(rs){rs.value=raidSearch;rs.oninput=()=>{raidSearch=rs.value;runCardSearch(rs,document.getElementById("raidPickGrid"),document.getElementById("raidSearch-nr"));};if(raidSearch)runCardSearch(rs,document.getElementById("raidPickGrid"),document.getElementById("raidSearch-nr"));}}
@@ -3814,7 +3766,7 @@ function renderRaidBattle(){
   startRaid();
 }
 function startRaid(){
-  const b=raidBossOf(), eq=raidPicked||equipped(), base=cardStats(eq.char,eq.lv,eq.mut,eq.trait);
+  const b=raidBossOf(), eq=raidPicked||equipped(), base=cardStats(eq.char,eq.mut,eq.trait);
   raid={boss:b,hp:b.hp,max:b.hp,dealt:0,turn:0,cap:RAID_TURNS,atk:base.atk,fx:resolveFx(eq,b.fx||{}),cid:eq.char,over:false,timer:null,domainUsed:false,domainLeft:0,diffKey:b.diffKey,rw:b.rw};
   playFight(()=>{ if(raid&&!raid.over)raid.timer=setTimeout(raidStep,500); });
 }
@@ -3968,6 +3920,7 @@ function renderRaidResult(){
 function raidShopThumb(it){
   if(it.card){
     const c=CARDS[it.card.char],mut=it.card.mut||"none";
+    if(!c) return `<div class="ri-thumb"><div class="ri-desc">${it.desc}</div></div>`;
     return `<div class="ri-thumb${mut!=="none"?" mut-"+mut:""}">
       <img src="${c.sprite_asset}" alt="${c.name}">
       <span class="ri-tier" style="color:${TIER_COLOR[c.tier]};border-color:${TIER_COLOR[c.tier]}">${rarityText(c.tier,c.chance)}</span>
@@ -3975,19 +3928,13 @@ function raidShopThumb(it){
       <div class="ri-desc">${it.desc}</div>
     </div>`;
   }
-  const bk=it.id.startsWith("book_")?it.id.slice(5):null;
-  const col=bk?BOOK_INFO[bk].color:"#E0BC6E";
-  const glyph=bk
-    ?`<svg class="ri-glyph" viewBox="0 0 48 48" fill="${col}" fill-opacity=".22" stroke="${col}" stroke-width="2.6" stroke-linejoin="round"><path d="M7 7h13a8 8 0 0 1 8 8v26a6 6 0 0 0-6-5H7z"/><path d="M41 7H28a8 8 0 0 0-8 8v26a6 6 0 0 1 6-5h15z"/></svg>`
-    :`<svg class="ri-glyph" viewBox="0 0 48 48" fill="none" stroke="${col}" stroke-width="2.6"><circle cx="24" cy="24" r="17" fill="${col}" fill-opacity=".22"/><circle cx="24" cy="24" r="9.5"/></svg>`;
-  return `<div class="ri-thumb" style="background:radial-gradient(circle at 50% 42%,${col}2E,#EDF1F6 72%)">${glyph}<span class="ri-cap">${bk?"+"+BOOK_INFO[bk].exp+" EXP":"+2.000"}</span><div class="ri-desc">${it.desc}</div></div>`;
+  const col="#E0BC6E";
+  const glyph=`<svg class="ri-glyph" viewBox="0 0 48 48" fill="none" stroke="${col}" stroke-width="2.6"><circle cx="24" cy="24" r="17" fill="${col}" fill-opacity=".22"/><circle cx="24" cy="24" r="9.5"/></svg>`;
+  return `<div class="ri-thumb" style="background:radial-gradient(circle at 50% 42%,${col}2E,#EDF1F6 72%)">${glyph}<span class="ri-cap">+2.000</span><div class="ri-desc">${it.desc}</div></div>`;
 }
 function stackHas(char,mut){mut=mut||"none";return state.stacks.some(s=>s.char===char&&(s.mut||"none")===mut);}
 const RAID_SHOP=[
   {id:"coins",name:"2.000 Coin",cost:5,desc:"Koin untuk roll trait & kebutuhan lain.",apply:()=>{state.coins+=2000;return "+2.000 coin";}},
-  {id:"book_common",name:"Buku EXP (Common)",cost:4,color:"#EAEAEA",desc:"Naikkan level KARTU. +10 EXP per buku.",apply:()=>{state.books.common++;return "+1 Buku EXP Common";}},
-  {id:"book_gold",name:"Buku EXP Gold",cost:12,color:"#D4AF6A",desc:"Naikkan level KARTU. +50 EXP per buku.",apply:()=>{state.books.gold++;return "+1 Buku EXP Gold";}},
-  {id:"book_rainbow",name:"Buku EXP Rainbow",cost:24,color:"#FF4D5E",desc:"Naikkan level KARTU. +100 EXP per buku.",apply:()=>{state.books.rainbow++;return "+1 Buku EXP Rainbow";}},
   {id:"card_edragon",name:"Eternal Dragon",cost:120,desc:"Kartu EKSKLUSIF — hanya dijual di Toko Raid, tidak keluar dari roll.",card:{char:"CH_ETERNAL_DRAGON",mut:"none"},apply:()=>gmGrantCard("CH_ETERNAL_DRAGON")}
 ];
 function renderRaidShop(){
@@ -3996,10 +3943,8 @@ function renderRaidShop(){
   <h1>Raid <span class="grad-text">Shop</span></h1>
   <div class="raid-shop-head"><span>TOKEN RAID: <b>${fmt(state.raidTokens||0)}</b></span><button class="btn-ghost" id="shopBack">← KEMBALI</button></div>
   <div class="raid-shop-grid">${RAID_SHOP.map(it=>{
-    const bk=it.id.startsWith("book_")?it.id.slice(5):null;
-    const owned=bk?(state.books[bk]||0):null;
     const have=it.card&&stackHas(it.card.char,it.card.mut);
-    const tag=owned!=null?` <span class="ri-owned">· punyamu ${owned}</span>`:(have?` <span class="ri-owned">· sudah di Deck</span>`:"");
+    const tag=have?` <span class="ri-owned">· sudah di Deck</span>`:"";
     const buy=have?`<button class="ri-buy" disabled>SUDAH DIPUNYA</button>`
       :`<button class="ri-buy" data-buy="${it.id}"${(state.raidTokens||0)<it.cost?" disabled":""}>${it.cost} TOKEN</button>`;
     return `
@@ -4008,7 +3953,7 @@ function renderRaidShop(){
       <div class="ri-name">${it.name}${tag}</div>
       ${buy}
     </div>`;}).join("")}</div>
-  <p class="raid-note">Dapat token dari Boss Raid. Klaim damage 30% → +5, 50% → +10, 100% → +20 token. Buku EXP dipakai untuk menaikkan level kartu di Deck. Kartu Eternal Dragon hanya dijual di sini, tidak keluar dari gacha.</p>`;
+  <p class="raid-note">Dapat token dari Boss Raid. Klaim damage 30% → +5, 50% → +10, 100% → +20 token. Kartu Eternal Dragon hanya dijual di sini, tidak keluar dari gacha.</p>`;
   document.getElementById("shopBack").onclick=()=>{raidView="hub";renderRaid();};
   app.querySelectorAll("[data-buy]").forEach(btn=>btn.onclick=()=>{
     const it=RAID_SHOP.find(x=>x.id===btn.dataset.buy);
