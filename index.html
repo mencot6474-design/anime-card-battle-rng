@@ -797,7 +797,7 @@ body.battle-full .stat svg{flex:none}
 .hub-link .hb-lbl{font-family:"Barlow Condensed";font-weight:700;letter-spacing:.14em;font-size:13px;color:var(--muted);text-align:center;line-height:1.1}
 .hub-link:hover .hb-lbl{color:var(--cyan)}
 .h-l1{grid-column:1;grid-row:1}.h-l2{grid-column:1;grid-row:2}
-.h-r1{grid-column:3;grid-row:1}.h-r2{grid-column:3;grid-row:2}
+.h-r1{grid-column:3;grid-row:1 / span 2}.h-r2{grid-column:3;grid-row:2}
 .h-mission{grid-column:2;grid-row:3;min-height:clamp(72px,12vh,104px)}
 .hub-mid{grid-column:2;grid-row:1 / span 2;display:flex;flex-direction:column;gap:clamp(8px,1.4vh,14px);align-items:center;width:100%;max-width:min(330px,38vh);justify-self:center}
 .hub-center{width:100%;aspect-ratio:3/4;border-radius:20px;border:1px solid var(--line2);background:radial-gradient(120% 85% at 50% 0%,rgba(140,30,45,.10),#FFFFFF);position:relative;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:border-color .15s,transform .15s}
@@ -832,7 +832,7 @@ body.battle-full .stat svg{flex:none}
 .hub-tag.empty .ht-lbl{font-family:"Barlow Condensed";letter-spacing:.12em;font-size:12px;color:var(--muted)}
 .lobby-story{max-width:920px;margin:clamp(26px,5vh,54px) auto 44px;padding:0 clamp(14px,4vw,38px)}
 .story-title{font-family:"Barlow Condensed";font-size:clamp(24px,4vw,36px);font-weight:700;letter-spacing:.12em;color:var(--text);margin:0 0 4px}
-@media(max-width:720px){.lobby-hub{grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto auto;gap:12px}.hub-mid{grid-column:1 / span 2;grid-row:1}.h-l1{grid-column:1;grid-row:2}.h-l2{grid-column:2;grid-row:2}.h-r1{grid-column:1;grid-row:3}.h-r2{grid-column:2;grid-row:3}.h-mission{grid-column:1 / span 2;grid-row:4}}
+@media(max-width:720px){.lobby-hub{grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto auto;gap:12px}.hub-mid{grid-column:1 / span 2;grid-row:1}.h-l1{grid-column:1;grid-row:2}.h-l2{grid-column:2;grid-row:2}.h-r1{grid-column:1 / span 2;grid-row:3}.h-r2{grid-column:2;grid-row:3}.h-mission{grid-column:1 / span 2;grid-row:4}}
 
 /* ---------- index kartu ---------- */
 .idx-card{position:relative;border:1px solid var(--line2);border-radius:14px;overflow:hidden;background:linear-gradient(160deg,#FFFFFF,#EEF2F6)}
@@ -1339,28 +1339,6 @@ body.battle-full .stat svg{flex:none}
     <button class="ix-x" id="stClose" title="Tutup">✕</button>
   </div>
   <div id="startBody"></div>
-</div></div>
-
-<div id="traitModal"><div class="tr-box">
-  <div class="ix-head">
-    <div><div class="eyebrow">SISTEM TRAIT</div><div class="ix-title">Trait Roll</div></div>
-    <button class="ix-x" id="trClose" title="Tutup">✕</button>
-  </div>
-  <div id="trBody"></div>
-</div></div>
-
-<div id="deckPickModal"><div class="dp-box">
-  <div class="ix-head">
-    <div><div class="eyebrow">DECK</div><div class="ix-title">Pilih Kartu</div></div>
-    <button class="ix-x" id="dpClose" title="Tutup">✕</button>
-  </div>
-  <div id="dpBody"></div>
-</div></div>
-
-<div id="traitNotify"></div>
-
-<div id="rarePromptModal"><div class="rp-box" id="rpBox">
-  <div id="rpBody"></div>
 </div></div>
 
 <div id="fightFx"><div class="ff-slash a"></div><div class="ff-slash b"></div><div class="ff-word">FIGHT</div></div>
@@ -1901,47 +1879,20 @@ function raidNextUnlock(k){const i=RAID_DIFFS.findIndex(d=>d.k===k);return i>0?R
 function raidTokenFor(pct,diff){const rw=(diff&&diff.rw)||((diff?diff:raidDiffOf()).rw)||1;for(const x of RAID_TIERS){if(pct>=x.pct)return Math.round(x.tokens*rw);}return 0;}
 function raidNextTier(pct,diff){const rw=(diff&&diff.rw)||((diff?diff:raidDiffOf()).rw)||1;for(let i=RAID_TIERS.length-1;i>=0;i--){if(pct<RAID_TIERS[i].pct)return{pct:RAID_TIERS[i].pct,tokens:Math.round(RAID_TIERS[i].tokens*rw)};}return null;}
 
-/* ========== TRAIT SYSTEM ========== */
-const TRAIT_TIERS=[
-  {k:"none",name:"NONE",rar:"N/A",atk:1,hp:1,chance:0,fx:{},color:"#9A8A8B"},
-  {k:"common",name:"COMMON",rar:"C",atk:1.10,hp:1,chance:55,fx:{},color:"#9A8A8B"},
-  {k:"rare",name:"RARE",rar:"R",atk:1.10,hp:1.10,chance:30,fx:{},color:"#6EAC4C"},
-  {k:"legendary",name:"LEGENDARY",rar:"SR",atk:1.25,hp:1,chance:12,fx:{},color:"#2F8FE2"},
-  {k:"superior",name:"SUPERIOR",rar:"SSR",atk:1.50,hp:1.25,chance:2.5,fx:{},color:"#B58CFF"},
-  {k:"transiden",name:"TRANSIDEN",rar:"UR",atk:2.00,hp:1.50,chance:0.486,fx:{},color:"#F6DFA6"},
-  {k:"demigod",name:"DEMI-GOD",rar:"EX",atk:3.00,hp:1.50,chance:0.01,fx:{},color:"#FF4D5E"},
-  {k:"cosmic",name:"COSMIC",rar:"COS",atk:3.50,hp:3.50,chance:0.003,fx:{},color:"#E56BFF"},
-  {k:"bigbang",name:"BIGBANG",rar:"BB",atk:5.00,hp:4.00,chance:0.001,fx:{},color:"#7DF9FF"}
-];
-
-const TRAIT=Object.fromEntries(TRAIT_TIERS.map(t=>[t.k,t]));
-const TRAIT_ATK=Object.fromEntries(TRAIT_TIERS.map(t=>[t.k,t.atk]));TRAIT_ATK.none=1;
-const TRAIT_HP=Object.fromEntries(TRAIT_TIERS.map(t=>[t.k,t.hp]));TRAIT_HP.none=1;
-const TRAIT_CHANCE=Object.fromEntries(TRAIT_TIERS.map(t=>[t.k,t.chance]));
-const TRAIT_FX=Object.fromEntries(TRAIT_TIERS.map(t=>[t.k,t.fx]));
-const TRAIT_COLOR=Object.fromEntries(TRAIT_TIERS.map(t=>[t.k,t.color]));TRAIT_COLOR.none="#9A8A8B";
-const TRAIT_COST=500;
-const TRAIT_TOTAL=TRAIT_TIERS.reduce((a,t)=>a+(t.chance||0),0);
-function rollTraitPick(){let r=Math.random()*TRAIT_TOTAL;for(const t of TRAIT_TIERS){if(!t.chance)continue;r-=t.chance;if(r<=0)return t.k;}return "common";}
-function traitLabel(k){const t=TRAIT[k];return t?t.name.toUpperCase():"";}
-function traitFxList(k){const t=TRAIT[k];if(!t)return"";const e=[];if(t.fx.pierce)e.push(`+${t.fx.pierce}% tembus defense`);if(t.fx.crit)e.push(`${t.fx.crit.chance}% peluang crit ×${t.fx.crit.mult}`);if(t.fx.lifesteal)e.push(`serap ${t.fx.lifesteal}% damage jadi HP`);if(t.fx.evasion)e.push(`${t.fx.evasion.chance}% peluang hindari serangan`);if(t.fx.double)e.push(`${t.fx.double}% peluang serang dua kali`);return e.length?e.join(" · "):"Tidak ada efek khusus — hanya menaikkan ATK & HP.";}
-function traitGem(sz){return `<svg class="tgem" viewBox="0 0 48 48" width="${sz}" height="${sz}" aria-hidden="true"><path class="gem-body" d="M15 6h18l9 11-18 25L6 17z"/><path class="gem-line" d="M6 17h36M15 6l4.5 11L24 6l4.5 11L33 6M10.5 17L24 42l13.5-25M19.5 17h9"/></svg>`;}
-function traitTipInner(k){const t=TRAIT[k];if(!t)return"";return `<span class="tt-name" style="color:${t.color}">${traitGem(14)} ${t.name}</span><span class="tt-rar">RARITY ${t.rar}${t.chance?` · ${t.chance}%`:""}</span><span class="tt-power" style="color:${t.color}">ATK +${Math.round((t.atk-1)*100)}% · HP +${Math.round((t.hp-1)*100)}%</span><span class="tt-fx">${traitFxList(k)}</span>`;}
-function traitChip(k,html){const t=TRAIT[k];if(!t)return html;return `<span class="trait-hover" data-trait="${k}">${html}</span>`;}
 function mutTipInner(mut){const label=MUT_LABEL[mut];if(!label)return"";const col=MUT_COLOR[mut];return `<span class="tt-name" style="color:${col}">${label}</span><span class="tt-rar">MUTASI KARTU</span><span class="tt-fx">Mutasi hasil Roll · menaikkan HP &amp; ATK · peluang muncul ${MUT_CHANCE[mut]}%.</span>`;}
 function mutChip(mut,html){const label=MUT_LABEL[mut];if(!label)return html;return `<span class="mut-hover" data-mut="${mut}">${html}</span>`;}
 function mergeFx(a,b){if(!b||!Object.keys(b).length)return a;const o={...a};for(const k in b){const av=o[k],bv=b[k];if(av==null){o[k]=bv;continue;}if(typeof bv==="number"&&typeof av==="number"){o[k]=av+bv;continue;}if(bv&&typeof bv==="object"&&av&&typeof av==="object"){if(k==="crit")o[k]={chance:Math.min(95,av.chance+bv.chance),mult:Math.max(av.mult,bv.mult)};else if(k==="evasion")o[k]={chance:Math.min(90,av.chance+bv.chance),turns:Math.max(av.turns,bv.turns)};else if(k==="barrage")o[k]={chance:Math.min(95,av.chance+bv.chance),min:Math.max(av.min,bv.min),max:Math.max(av.max,bv.max)};else o[k]=bv;}else o[k]=bv;}return o;}
-function fxOf(stack){return mergeFx(PASSIVE_FX[stack.char]||{},TRAIT_FX[stack.trait]||{});}
-/* fx aktif pemain; kalau kartu punya {copy:1} (Copy Ninja), salin passive lawan + tetap warisi trait */
+function fxOf(stack){return mergeFx(PASSIVE_FX[stack.char]||{},{});}
+/* fx aktif pemain; kalau kartu punya {copy:1} (Copy Ninja), salin passive lawan */
 function resolveFx(stack,enemyFx){
   const base=fxOf(stack);
   if(!base.copy)return base;
   const o=Object.assign({},enemyFx||{});
   delete o.copy;
-  return mergeFx(o,TRAIT_FX[stack.trait]||{});
+  return o;
 }
 
-function cardStats(charId,mut,trait,shiny){const c=CARDS[charId];if(!c)return{hp:0,atk:0,def:0};const base=(MUT_MULT[mut||"none"]||1)*(shiny?SHINY_MULT:1);const hp=Math.round(c.base_hp*base*(TRAIT_HP[trait||"none"]||1)),atk=Math.round(c.base_atk*base*(TRAIT_ATK[trait||"none"]||1));return{hp,atk,def:hp};}
+function cardStats(charId,mut,trait,shiny){const c=CARDS[charId];if(!c)return{hp:0,atk:0,def:0};const base=(MUT_MULT[mut||"none"]||1)*(shiny?SHINY_MULT:1);const hp=Math.round(c.base_hp*base),atk=Math.round(c.base_atk*base);return{hp,atk,def:hp};}
 function getTierColor(t){return TIER_COLOR[t]||"#9A8A8B";}
 /* POWER = total HP + ATK semua kartu yang dipakai: kartu utama + TAG (tetap terdeteksi walau cuma 1 kartu) */
 function totalPower(){
@@ -1980,7 +1931,7 @@ function loadStateFor(name){
   
   state.stacks=state.stacks.filter(s=>CARDS[s.char]);
   
-  {const seen={};state.stacks.forEach(s=>{const k=s.char+"|"+(s.mut||"none");if(!seen[k]){seen[k]=s;s.count=s.count||1;}else{seen[k].count=(seen[k].count||1)+(s.count||1);if((s.trait&&s.trait!=="none")&&(!seen[k].trait||seen[k].trait==="none"))seen[k].trait=s.trait;}});state.stacks=Object.values(seen);}
+  {const seen={};state.stacks.forEach(s=>{const k=s.char+"|"+(s.mut||"none");if(!seen[k]){seen[k]=s;s.count=s.count||1;}else{seen[k].count=(seen[k].count||1)+(s.count||1);}});state.stacks=Object.values(seen);}
   
   if(!state.stacks.length){const st=freshState();state.stacks=st.stacks;}
   
@@ -2027,7 +1978,7 @@ function loadStateFor(name){
     } catch(e) { console.warn('Difficulty check failed:', e.message); }
   }
   
-  if(state.stacks)state.stacks.forEach(s=>{if(!s.mut)s.mut="none";if(s.mut==="silver"){s.shiny=true;s.mut="none";}if(typeof s.shiny!=="boolean")s.shiny=false;if(!s.trait||!TRAIT[s.trait])s.trait="none";s.tier=CARDS[s.char].tier;});
+  if(state.stacks)state.stacks.forEach(s=>{if(!s.mut)s.mut="none";if(s.mut==="silver"){s.shiny=true;s.mut="none";}if(typeof s.shiny!=="boolean")s.shiny=false;s.tier=CARDS[s.char].tier;});
   if(!state.tower||typeof state.tower!=="object")state.tower={floor:1,best:0};
   if(typeof state.tower.floor!=="number"||state.tower.floor<1)state.tower.floor=1;
   if(typeof state.tower.best!=="number"||state.tower.best<0)state.tower.best=0;
@@ -3641,7 +3592,6 @@ function hubCardHtml(eq,idAttr){
   const tier=CARDS[eq.char].tier;
   const st=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   const mut=(eq.mut&&eq.mut!=='none')?eq.mut:null;
-  const trait=(eq.trait&&eq.trait!=='none')?eq.trait:null;
   return `<div class="hub-center${mut?' mut-'+mut:''}${shinyCls(eq)}"${idAttr||''} data-tier="${tier}"${mut?` style="border-color:${MUT_COLOR[mut]}"`:''}>
       <div class="hc-img"><img src="${cardImg(eq.char)}" alt="${cardName(eq.char)}">${madaraAura(eq.char)}
           <span class="hc-name-top"${mut?` style="color:${MUT_COLOR[mut]}"`:''}>${mutText(mut,cardName(eq.char))}</span>
@@ -3669,12 +3619,10 @@ function renderLobby(){
     ${hubCardHtml(eq,' id="hubCard"')}
     </div>
     <div class="hub-box h-r1 hub-link" id="hubIndex" role="button" title="Buka Katalog Kartu"><img class="hi-ic" src="assets/images/icon-index-card.png" alt=""><span class="hb-lbl">INDEX CARD</span></div>
-    <div class="hub-box h-r2 hub-link" id="hubTrait" role="button" title="Roll Trait untuk kartu aktif"><img class="hi-ic" src="assets/images/icon-trait.svg" alt=""><span class="hb-lbl">TRAIT</span></div>
     <div class="hub-box h-mission hub-link" id="missionBtn" role="button" title="Buka daftar misi"><svg class="tw-ic" width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 4 6v13l5-2 6 2 5-2V4l-5 2-6-2Z"/><path d="M9 4v13M15 6v13"/></svg><span class="hb-lbl">MISSION</span><span class="mb-sub" id="missionSub"></span></div>
   </div>`;
   const hc=document.getElementById("hubCard");if(hc)hc.onclick=()=>{sfx.hit();toggleBackpack();};
   const hi=document.getElementById("hubIndex");if(hi)hi.onclick=()=>{sfx.hit();openIndex();};
-  const ht=document.getElementById("hubTrait");if(ht)ht.onclick=()=>{sfx.hit();openTrait();};
   const hr=document.getElementById("hubRaid");if(hr)hr.onclick=()=>{sfx.hit();raidView="hub";location.hash="#/raid";};
   const ht2=document.getElementById("hubTower");if(ht2)ht2.onclick=()=>{sfx.hit();stopTower();location.hash="#/tower";};
   const mb=document.getElementById("missionBtn");if(mb)mb.onclick=()=>{sfx.hit();openMission();};
@@ -3974,7 +3922,7 @@ function raidShopThumb(it){
 }
 function stackHas(char,mut){mut=mut||"none";return state.stacks.some(s=>s.char===char&&(s.mut||"none")===mut);}
 const RAID_SHOP=[
-  {id:"coins",name:"2.000 Coin",cost:5,desc:"Koin untuk roll trait & kebutuhan lain.",apply:()=>{state.coins+=2000;return "+2.000 coin";}},
+  {id:"coins",name:"2.000 Coin",cost:5,desc:"Koin untuk upgrade & kebutuhan lain.",apply:()=>{state.coins+=2000;return "+2.000 coin";}},
   {id:"card_edragon",name:"Eternal Dragon",cost:120,desc:"Kartu EKSKLUSIF — hanya dijual di Toko Raid, tidak keluar dari roll.",card:{char:"CH_ETERNAL_DRAGON",mut:"none"},apply:()=>gmGrantCard("CH_ETERNAL_DRAGON")}
 ];
 function renderRaidShop(){
@@ -4021,99 +3969,10 @@ function openIndex(){
   document.getElementById("skillPop").onclick=(e)=>{if(e.target.id==="skillPop")document.getElementById("skillPop").classList.remove("show");};
 }
 
-/* =============== TRAIT ROLL (popup) =============== */
-let traitTarget=null;
-let pendingRare=null;
-function traitTargetStack(){let s=state.stacks.find(x=>x.id===traitTarget);if(!s){s=equipped();traitTarget=s?s.id:null;}return s;}
-function openTrait(){traitTarget=null;pendingRare=null;renderTrait();document.getElementById("traitModal").classList.add("show");}
-function closeTrait(){document.getElementById("traitModal").classList.remove("show");hideTraitTip();}
-function renderTrait(){
-  const b=document.getElementById("trBody");
-  if(!state.stacks.length){b.innerHTML=`<p class="sub">Belum ada kartu. Punya kartu dulu lewat Summon.</p>`;return;}
-  const tgt=traitTargetStack();
-  const cur=tgt.trait&&tgt.trait!=="none"?traitChip(tgt.trait,`<span style="color:${TRAIT_COLOR[tgt.trait]}">${traitGem(13)} ${traitLabel(tgt.trait)}</span>`):`<span style="color:var(--muted)">Belum ada trait</span>`;
-  b.innerHTML=`
-    <div class="tr-cur tr-cur-btn" id="trPickCard" role="button" title="Ganti kartu target dari deck"><img src="${cardImg(tgt.char)}" alt="">
-      <div><div class="tc-lbl">KARTU TARGET · TRAIT SEKARANG</div><div class="tc-name">${cardName(tgt.char)}</div><div style="font-size:13px;margin-top:2px">${cur}</div></div>
-      <span class="tr-change">GANTI ▸</span></div>
-    <div class="tr-btns"><button class="tr-btn tr-roll" id="trRoll" ${state.coins<TRAIT_COST?"disabled":""}>ROLL TRAIT · ${fmt(TRAIT_COST)} COIN</button></div>
-    <div class="tr-odds">${TRAIT_TIERS.filter(t=>t.chance>0).map(t=>`<span class="trait-hover" data-trait="${t.k}" style="color:${t.color};border-color:${t.color}55">${t.name} ${t.chance}%</span>`).join("")}</div>
-    <div class="tr-note">COIN: ${fmt(state.coins)} · Roll memasang trait ke target. Trait langka (Blessed / Overlord / Ascendant) minta konfirmasi Simpan / Roll.</div>`;
-  const r=document.getElementById("trRoll");if(r)r.onclick=rollTrait;
-  const pc=document.getElementById("trPickCard");if(pc)pc.onclick=()=>openDeckPick();
-}
-let cardPickCfg=null;
-function openDeckPick(cfg){dpSearch="";cardPickCfg=(cfg&&cfg.getSel&&cfg.onPick)?cfg:null;renderDeckPick();document.getElementById("deckPickModal").classList.add("show");}
-function closeDeckPick(){document.getElementById("deckPickModal").classList.remove("show");hideTraitTip();cardPickCfg=null;}
-function renderDeckPick(){
-  const b=document.getElementById("dpBody");
-  if(!state.stacks.length){b.innerHTML=`<p class="sub">Deck kosong.</p>`;return;}
-  const selId=cardPickCfg?cardPickCfg.getSel():traitTargetStack().id;
-  b.innerHTML=`<label class="card-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input class="card-search" id="dpSearch" type="text" placeholder="Cari kartu…" autocomplete="off"></label><div class="dp-grid" id="dpGrid">${state.stacks.map(s=>{
-    return `<button class="dp-card${s.id===selId?" sel":""}" data-tid="${s.id}" data-name="${cardName(s.char).toLowerCase()}">
-      <img src="${cardImg(s.char)}" alt="">${madaraAura(s.char)}
-      <span class="dp-name">${cardName(s.char)}</span>
-    </button>`;}).join("")}</div><div class="no-result" id="dpSearch-nr">Tidak ada kartu yang cocok.</div>`;
-  {const dps=document.getElementById("dpSearch");if(dps){dps.value=dpSearch;dps.oninput=()=>{dpSearch=dps.value;runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));};if(dpSearch)runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));}}
-  b.querySelectorAll(".dp-card").forEach(el=>el.onclick=()=>{const tid=el.getAttribute("data-tid");sfx.hit();if(cardPickCfg){cardPickCfg.onPick(tid);}else{traitTarget=tid;closeDeckPick();renderTrait();}});
-}
-function rollTrait(){
-  if(state.coins<TRAIT_COST)return;
-  const tgt=traitTargetStack();if(!tgt)return;
-  state.coins-=TRAIT_COST;
-  const k=rollTraitPick();
-  sfx.crit();
-  if(TRAIT[k].atk>=1.5){ save(); renderShell(); renderTrait(); showRarePrompt(k); }
-  else { tgt.trait=k; save(); renderShell(); renderTrait(); traitNotify(k); }
-}
-function showRarePrompt(k){
-  const t=TRAIT[k];if(!t)return;
-  pendingRare=k;
-  const b=document.getElementById("rpBody");
-  const canRoll=state.coins>=TRAIT_COST;
-  b.innerHTML=`
-    <div class="rp-rays"></div>
-    <svg class="rp-gem" viewBox="0 0 48 48" aria-hidden="true"><path class="gem-body" d="M15 6h18l9 11-18 25L6 17z"/><path class="gem-line" d="M6 17h36M15 6l4.5 11L24 6l4.5 11L33 6M10.5 17L24 42l13.5-25M19.5 17h9"/></svg>
-    <div class="rp-kicker">TRAIT LANGKA</div>
-    <div class="rp-name" style="color:${t.color}">${t.name}</div>
-    <div class="rp-rar" style="color:${t.color}">RARITY ${t.rar}</div>
-    <div class="rp-power" style="color:${t.color}">ATK +${Math.round((t.atk-1)*100)}% · HP +${Math.round((t.hp-1)*100)}%</div>
-    <div class="rp-fx">${traitFxList(k)}</div>
-    <div class="rp-btns">
-      <button class="rp-btn rp-save" id="rpSave">SIMPAN</button>
-      <button class="rp-btn rp-roll" id="rpRoll" ${canRoll?"":"disabled"}>ROLL LAGI · ${fmt(TRAIT_COST)} COIN</button>
-    </div>
-    <div class="rp-note">SIMPAN memasang trait ini ke kartu target. ROLL LAGI membuang hasil ini dan mencoba lagi (bayar coin lagi).</div>`;
-  const box=document.getElementById("rpBox");box.style.color=t.color;box.style.borderColor=t.color;
-  document.getElementById("rarePromptModal").classList.add("show");
-  document.getElementById("rpSave").onclick=saveRare;
-  const rr=document.getElementById("rpRoll");if(rr)rr.onclick=rerollRare;
-}
-function closeRarePrompt(){document.getElementById("rarePromptModal").classList.remove("show");}
-function saveRare(){const k=pendingRare;const tgt=traitTargetStack();if(tgt&&k)tgt.trait=k;pendingRare=null;closeRarePrompt();save();renderShell();renderTrait();if(k)traitNotify(k);}
-function rerollRare(){pendingRare=null;closeRarePrompt();rollTrait();}
-function traitNotify(k){
-  const t=TRAIT[k];if(!t)return;
-  const el=document.getElementById("traitNotify");if(!el)return;
-  const rare=t.atk>=1.5;
-  el.innerHTML=`<div class="tn-card${rare?" tn-rare":""}" style="border-color:${t.color};color:${t.color}">
-    <svg class="tn-gem" viewBox="0 0 48 48" aria-hidden="true">
-      <path class="gem-body" d="M15 6h18l9 11-18 25L6 17z"/>
-      <path class="gem-line" d="M6 17h36M15 6l4.5 11L24 6l4.5 11L33 6M10.5 17L24 42l13.5-25M24 6v0M19.5 17h9"/>
-    </svg>
-    <div class="tn-body">
-      <div class="tn-top" style="color:${t.color}">${t.name}</div>
-      <div class="tn-rar">RARITY ${t.rar}</div>
-      <div class="tn-power" style="color:${t.color}">ATK +${Math.round((t.atk-1)*100)}% · HP +${Math.round((t.hp-1)*100)}%</div>
-      <div class="tn-fx">${traitFxList(k)}</div>
-    </div></div>`;
-  el.classList.add("show");
-  clearTimeout(el._t);el._t=setTimeout(()=>{el.classList.remove("show");},2800);
-}
 /* global trait/mut tooltip (fixed → tidak memicu scroll horizontal modal) */
 let __traitTipEl=null;
 function hideTraitTip(){if(__traitTipEl)__traitTipEl.classList.remove("show");}
-function tipHtmlFor(el){const tk=el.getAttribute("data-trait");if(tk&&TRAIT[tk])return traitTipInner(tk);const mk=el.getAttribute("data-mut");if(mk&&MUT_LABEL[mk])return mutTipInner(mk);return "";}
+function tipHtmlFor(el){const mk=el.getAttribute("data-mut");if(mk&&MUT_LABEL[mk])return mutTipInner(mk);return "";}
 function showTraitTip(el){
   const html=tipHtmlFor(el);if(!html)return;
   if(!__traitTipEl){__traitTipEl=document.createElement("div");__traitTipEl.id="traitTip";document.body.appendChild(__traitTipEl);}
@@ -4290,8 +4149,6 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
   });
 })();
 document.getElementById("ixClose").onclick=()=>document.getElementById("indexModal").classList.remove("show");document.getElementById("indexModal").addEventListener("click",e=>{if(e.target.id==="indexModal")e.target.classList.remove("show");});
-document.getElementById("trClose").onclick=closeTrait;document.getElementById("traitModal").addEventListener("click",e=>{if(e.target.id==="traitModal")closeTrait();});
-document.getElementById("dpClose").onclick=closeDeckPick;document.getElementById("deckPickModal").addEventListener("click",e=>{if(e.target.id==="deckPickModal")closeDeckPick();});
 document.getElementById("dlClose").onclick=closeDaily;
 document.getElementById("dailyModal").addEventListener("click",e=>{if(e.target.id==="dailyModal")closeDaily();});
 document.getElementById("stClose").onclick=closeStart;
