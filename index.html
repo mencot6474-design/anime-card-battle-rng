@@ -53,12 +53,12 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .spacer{flex:1;min-width:0}
 .tb-profile{display:flex;align-items:center;gap:10px;min-width:0;flex:0 1 auto}
 .tb-av{width:40px;height:40px;border-radius:50%;background:linear-gradient(120deg,var(--cyan),var(--purple));flex:none}
-.tb-id{display:flex;flex-direction:column;gap:5px;min-width:0;max-width:min(48vw,300px)}
-.tb-top{display:flex;align-items:center;gap:8px;min-width:0}
-.tb-name{font-weight:800;font-size:14px;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.tb-id{display:flex;flex-direction:column;gap:6px;min-width:150px;max-width:min(46vw,320px)}
+.tb-top{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+.tb-name{flex:1;min-width:0;font-weight:800;font-size:14px;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb-chips{display:flex;align-items:center;gap:6px;flex:none}
 .tb-lvl{font-family:"Barlow Condensed";font-weight:700;font-size:11px;letter-spacing:.08em;color:var(--cyan);border:1px solid rgba(20,28,38,.22);border-radius:6px;padding:0 8px;background:rgba(20,28,38,.06);flex:none}
-.tb-xp{display:flex;align-items:center;gap:8px;min-width:0}
-.tb-xpbar{margin-top:0;height:6px;flex:1;min-width:0}
+.tb-profile .tb-xpbar{margin-top:0;height:7px;width:100%}
 .tb-pw{font-family:"Barlow Condensed";font-weight:700;font-size:11px;color:#7A5A12;border:1px solid rgba(20,28,38,.22);border-radius:6px;padding:0 8px;background:rgba(20,28,38,.06);flex:none;white-space:nowrap}
 .tb-settings{margin-left:2px}
 .who{font-size:10px;letter-spacing:.18em;color:var(--muted);font-weight:600;white-space:nowrap}
@@ -1252,8 +1252,8 @@ body.battle-full .bench-rail .bench-sq{width:clamp(50px,11vh,74px)}
   <div class="tb-profile">
     <div class="tb-av"></div>
     <div class="tb-id">
-      <div class="tb-top"><span class="tb-name" id="tbName">GUEST</span><span class="tb-lvl" id="tbLvl">LVL 1</span></div>
-      <div class="tb-xp"><div class="xpbar tb-xpbar"><i id="tbXpFill" style="width:0%"></i></div><span class="tb-pw" id="tbPw" title="Total HP + ATK kartu utama + TAG">&#9889; 0</span></div>
+      <div class="tb-top"><span class="tb-name" id="tbName">GUEST</span><span class="tb-chips"><span class="tb-pw" id="tbPw" title="Total HP + ATK kartu utama + TAG">&#9889; 0</span><span class="tb-lvl" id="tbLvl">LVL 1</span></span></div>
+      <div class="xpbar tb-xpbar"><i id="tbXpFill" style="width:0%"></i></div>
     </div>
   </div>
   <div class="spacer"></div>
