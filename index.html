@@ -4621,6 +4621,14 @@ function raidShopThumb(it){
     :`<svg class="ri-glyph" viewBox="0 0 48 48" fill="none" stroke="${col}" stroke-width="2.6"><circle cx="24" cy="24" r="17" fill="${col}" fill-opacity=".22"/><circle cx="24" cy="24" r="9.5"/></svg>`;
   return `<div class="ri-thumb" style="background:radial-gradient(circle at 50% 42%,${col}2E,#EDF1F6 72%)">${glyph}<span class="ri-cap">${bk?"+"+BOOK_INFO[bk].exp+" EXP":"+2.000"}</span><div class="ri-desc">${it.desc}</div></div>`;
 }
+function stackHas(char,mut){mut=mut||"none";return state.stacks.some(s=>s.char===char&&(s.mut||"none")===mut);}
+const RAID_SHOP=[
+  {id:"coins",name:"2.000 Coin",cost:5,desc:"Koin untuk roll trait & kebutuhan lain.",apply:()=>{state.coins+=2000;return "+2.000 coin";}},
+  {id:"book_common",name:"Buku EXP (Common)",cost:4,color:"#EAEAEA",desc:"Naikkan level KARTU. +10 EXP per buku.",apply:()=>{state.books.common++;return "+1 Buku EXP Common";}},
+  {id:"book_gold",name:"Buku EXP Gold",cost:12,color:"#D4AF6A",desc:"Naikkan level KARTU. +50 EXP per buku.",apply:()=>{state.books.gold++;return "+1 Buku EXP Gold";}},
+  {id:"book_rainbow",name:"Buku EXP Rainbow",cost:24,color:"#FF4D5E",desc:"Naikkan level KARTU. +100 EXP per buku.",apply:()=>{state.books.rainbow++;return "+1 Buku EXP Rainbow";}},
+  {id:"card_edragon",name:"Eternal Dragon",cost:120,desc:"Kartu EKSKLUSIF — hanya dijual di Toko Raid, tidak keluar dari roll.",card:{char:"CH_ETERNAL_DRAGON",mut:"none"},apply:()=>gmGrantCard("CH_ETERNAL_DRAGON")}
+];
 function renderRaidShop(){
   app.innerHTML=`
   <div class="eyebrow">TOKO RAID</div>
