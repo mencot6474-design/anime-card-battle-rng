@@ -1654,7 +1654,7 @@ function showRollResult(result) {
   cardImg.src = cardData.art_image;
   cardImg.dataset.charId = result.cardId;
   const mut = result.mut || "none";
-  const mm = MUT_MULT[mut] || 1;
+  const mm = (MUT_MULT[mut] || 1) * (result.shiny ? SHINY_MULT : 1);
   const hpEl=document.getElementById('rollHp'), atkEl=document.getElementById('rollAtk');
   if(hpEl)hpEl.textContent=fmt(Math.round(cardData.base_hp*mm));
   if(atkEl)atkEl.textContent=fmt(Math.round(cardData.base_atk*mm));
@@ -1728,7 +1728,7 @@ function setRollMini(on) {
    Alur: klik slot => jadikan target; klik tile koleksi => pasang ke target (atau slot kosong pertama). */
 let bpTarget = null;
 let bpMutFilter = "all"; /* filter varian koleksi: all|none|gold|rainbow|secret|shiny */
-function deckTotalPower(){return equippedList().reduce((a,s)=>{const st=cardStats(s.char,s.mut,s.trait);return a+(st.hp+st.atk);},0);}
+function deckTotalPower(){return equippedList().reduce((a,s)=>{const st=cardStats(s.char,s.mut,s.trait,s.shiny);return a+(st.hp+st.atk);},0);}
 function bpPickSlot(i){bpTarget=(bpTarget===i?null:i);renderBackpackPanel();}
 function bpSetFilter(m){bpMutFilter=m;renderBackpackPanel();}
 function bpMatchesMut(s){return bpMutFilter==="all"||(bpMutFilter==="shiny"?!!s.shiny:(s.mut||"none")===bpMutFilter);}
@@ -1855,6 +1855,7 @@ const FOES=Object.fromEntries(STORY_BIBLE.levels.map((l,i)=>{
 /* Sistem MUTASI gacha — roll per-pull, stat dikalikan, ditunjukkan lewat warna glow */
 const MUT_CHANCE={secret:0.5,rainbow:1,gold:4}; // % peluang kumulatif dari atas: secret 0.5%, rainbow +1%, gold +4%
 const SHINY_CHANCE=10; // % peluang SHINY (lapisan terpisah, bisa numpuk di atas mutasi apa pun)
+const SHINY_MULT=2; // SHINY = stat dikali 2, DIKALIKAN di atas multiplier mutasi (mis. shiny+gold = 2*5 = 10)
 const MUT_MULT={none:1,gold:5,rainbow:10,secret:25};
 const MUT_RANK={none:0,gold:1,rainbow:2,secret:3};
 const MUT_LABEL={none:"",gold:"GOLD",rainbow:"RAINBOW",secret:"SECRET"};
@@ -1934,12 +1935,12 @@ function resolveFx(stack,enemyFx){
   return mergeFx(o,TRAIT_FX[stack.trait]||{});
 }
 
-function cardStats(charId,mut,trait){const c=CARDS[charId];if(!c)return{hp:0,atk:0,def:0};const k=(MUT_MULT[mut||"none"]||1)*(TRAIT_MULT[trait||"none"]||1);const hp=Math.round(c.base_hp*k),atk=Math.round(c.base_atk*k);return{hp,atk,def:hp};}
+function cardStats(charId,mut,trait,shiny){const c=CARDS[charId];if(!c)return{hp:0,atk:0,def:0};const k=(MUT_MULT[mut||"none"]||1)*(TRAIT_MULT[trait||"none"]||1)*(shiny?SHINY_MULT:1);const hp=Math.round(c.base_hp*k),atk=Math.round(c.base_atk*k);return{hp,atk,def:hp};}
 function getTierColor(t){return TIER_COLOR[t]||"#9A8A8B";}
 /* POWER = total HP + ATK semua kartu yang dipakai: kartu utama + TAG (tetap terdeteksi walau cuma 1 kartu) */
 function totalPower(){
   const a=equipped(),b=equipped2();
-  const s=c=>c?cardStats(c.char,c.mut,c.trait):{hp:0,atk:0};
+  const s=c=>c?cardStats(c.char,c.mut,c.trait,c.shiny):{hp:0,atk:0};
   const x=s(a),y=s(b);
   return x.hp+x.atk+y.hp+y.atk;
 }
@@ -2551,7 +2552,7 @@ function playFight(cb){
 /* =============== BATTLE =============== */
 let bt=null;
 function meFighterHtml(s){
-  const st=cardStats(s.char,s.mut,s.trait);
+  const st=cardStats(s.char,s.mut,s.trait,s.shiny);
   return `<div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}">${madaraAura(s.char)}<div class="f-name">${cardName(s.char)}</div><span class="f-tag" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,(CARDS[s.char]||{}).chance)}</span>
     ${(s.mut&&s.mut!=="none")||(s.trait&&s.trait!=="none")||s.shiny?`<div class="f-badges">${s.mut&&s.mut!=="none"?mutChip(s.mut,`<span class="fbadge" style="border-color:${MUT_COLOR[s.mut]};color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`):""}${s.shiny?`<span class="fbadge shiny-badge">SHINY</span>`:""}${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="fbadge" style="border-color:${TRAIT_COLOR[s.trait]};color:${TRAIT_COLOR[s.trait]}">${traitGem(12)} ${traitLabel(s.trait)}</span>`):""}</div>`:""}
     </div>
@@ -2581,7 +2582,7 @@ function benchHtml(){
 }
 function renderBattle(){
   const lv=state.battle.level,en=enemyOf(lv),es=enemyStats(lv);
-  const eq=equipped(),st=cardStats(eq.char,eq.mut,eq.trait);
+  const eq=equipped(),st=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   app.innerHTML=`
   <div class="battle-grid">
   <div class="me-col">
@@ -3033,7 +3034,7 @@ function ariseStrikeFx(i,n,targetSel){return;/*animasi skill dihapus*/
 function startBattle(){
   const lv=state.battle.level,en=enemyOf(lv),es=enemyStats(lv);
   const fighters=equippedList();if(!fighters.length)fighters.push(equipped());
-  const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait);
+  const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   const eid=en.id||null,efx=eid?(PASSIVE_FX[eid]||{}):{};
   if(bt&&bt.timer)clearTimeout(bt.timer);
   bt={lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0};
@@ -3043,7 +3044,7 @@ function tagIn(){
   const next=bt.active+1;
   if(next>=bt.fighters.length)return false;
   bt.active=next;bt.eq=bt.fighters[next];bt.justTagged=true;
-  const base=cardStats(bt.eq.char,bt.eq.mut,bt.eq.trait);
+  const base=cardStats(bt.eq.char,bt.eq.mut,bt.eq.trait,bt.eq.shiny);
   bt.pMax=base.hp;bt.pHp=base.hp;
   // fase 1: kartu aktif sekarang tumbang
   const meEl=document.querySelector(".fighter.me");
@@ -3195,7 +3196,7 @@ function playerPhase(){
     return;
   }
   const efx=bt.efx||{};
-  let atk=cardStats(id,bt.eq.mut,bt.eq.trait).atk;
+  let atk=cardStats(id,bt.eq.mut,bt.eq.trait,bt.eq.shiny).atk;
   if(fx.lowHpAtk&&bt.pHp<bt.pMax*fx.lowHpAtk.below/100)atk=Math.round(atk*(1+fx.lowHpAtk.bonus/100));
   let dmgMult=1;
   if(fx.dmgMult)dmgMult*=fx.dmgMult;
@@ -3507,7 +3508,7 @@ function renderTowerHub(){
 }
 function renderTowerBattle(){
   const w=towerRun.waves[towerRun.idx];
-  const eq=equipped(),st=cardStats(eq.char,eq.mut,eq.trait);
+  const eq=equipped(),st=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   app.innerHTML=`
   <div class="battle-grid tower-stage">
   <div class="me-col">
@@ -3523,7 +3524,7 @@ function renderTowerBattle(){
 function startTowerBattle(){
   const w=towerRun.waves[towerRun.idx];
   const fighters=equippedList();if(!fighters.length)fighters.push(equipped());
-  const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait);
+  const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   if(bt&&bt.timer)clearTimeout(bt.timer);
   bt={lv:null,tower:true,en:w.en,es:w.es,eq,fighters,eid:w.eid,efx:w.efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:w.es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0};
   schedPhase(700,step);
@@ -3600,7 +3601,7 @@ function runCardSearch(inp, grid, nr){
 }
 function openModal(id){
   const s=state.stacks.find(x=>x.id===id);if(!s)return;
-  const c=CARDS[s.char],st=cardStats(s.char,s.mut,s.trait);
+  const c=CARDS[s.char],st=cardStats(s.char,s.mut,s.trait,s.shiny);
   const m=document.getElementById("modal");
   const mcEl=document.getElementById("md-card");mcEl.dataset.tier=s.tier;
   mcEl.innerHTML=`
@@ -3632,7 +3633,7 @@ document.getElementById("modal").addEventListener("click",e=>{
 function renderLobby(){
   if(state.battle)return renderBattle();
   const eq=equipped();
-  const st=eq?cardStats(eq.char,eq.mut,eq.trait):null;
+  const st=eq?cardStats(eq.char,eq.mut,eq.trait,eq.shiny):null;
   const tier=eq?CARDS[eq.char].tier:null;
   app.innerHTML=`
   <div class="lobby-hub">
@@ -3748,7 +3749,7 @@ function renderRaidPick(){
   <div class="eyebrow">PILIH KARTU</div>
   <label class="card-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input class="card-search" id="raidSearch" type="text" placeholder="Cari kartu…" autocomplete="off"></label>
   <div class="raid-pick-grid" id="raidPickGrid">${stacks.map(s=>{
-    const c=CARDS[s.char],st=cardStats(s.char,s.mut,s.trait);
+    const c=CARDS[s.char],st=cardStats(s.char,s.mut,s.trait,s.shiny);
     const mc=s.mut&&s.mut!=="none"?" mut-"+s.mut:"";
     return `<button class="raid-pick-card${s.tier==="EX"?" fire":""}${mc}${s.shiny?" shiny":""}" data-pick="${s.id}" data-name="${c.name.toLowerCase()}"${s.mut&&s.mut!=="none"?` style="border-color:${MUT_COLOR[s.mut]}"`:""}>
       <div class="rpc-img"><img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(s.char)}
@@ -3794,7 +3795,7 @@ function renderRaidBattle(){
   startRaid();
 }
 function startRaid(){
-  const b=raidBossOf(), eq=raidPicked||equipped(), base=cardStats(eq.char,eq.mut,eq.trait);
+  const b=raidBossOf(), eq=raidPicked||equipped(), base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   raid={boss:b,hp:b.hp,max:b.hp,dealt:0,turn:0,cap:RAID_TURNS,atk:base.atk,fx:resolveFx(eq,b.fx||{}),cid:eq.char,over:false,timer:null,domainUsed:false,domainLeft:0,diffKey:b.diffKey,rw:b.rw};
   playFight(()=>{ if(raid&&!raid.over)raid.timer=setTimeout(raidStep,500); });
 }
