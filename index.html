@@ -1401,7 +1401,7 @@ const TIER_COLOR={R:"#9A8A8B",SR:"#C8A2A8",SSR:"#B07A9B",UR:"#2F8FE2",EX:"#FF4D5
    `tier` hanya dipakai internal sbg kunci warna/logika; yang tampil ke user adalah odds ini. */
 const TIER_CHANCE={R:100,SR:400,SSR:1500,UR:6000,EX:25000};
 function chanceOf(tier){return TIER_CHANCE[tier]||100;}
-function rarityText(tier){return "1 : "+chanceOf(tier).toLocaleString("id-ID");}
+function rarityText(tier,chance){return "1 : "+(chance||chanceOf(tier)).toLocaleString("id-ID");}
 /* =============== STORY BIBLE ===============
    Satu-satunya tempat data karakter & alur story.
    CARDS, FOES, pool gacha, dan stat musuh diturunkan otomatis dari blok ini. */
@@ -1486,14 +1486,32 @@ const STORY_BIBLE={
     /* ================= TEMPLATE KARTU =================
        Isi ulang array ini dengan kartu baru. Tiap entri = satu kartu, bentuk:
        {id:"CH_...", name:"Nama", tier:"R"|"SR"|"SSR"|"UR"|"EX", type:"Offensive",
-        skill:"Nama Skill", hp:123, atk:45,
+        skill:"Nama Skill", hp:123, atk:45, chance:1000,
         art:"assets/cards/art/slug.png", fx:{double:15},
         desc:"Deskripsi passive yang tampil di kartu.",
         noGacha:false}
        - id harus unik dan cocok dengan field "unit" di chapter (Story) yang memakainya.
-       - fx adalah kunci PASSIVE_FX; lihat pemroses FX di engine battle untuk nama trigger yang didukung.
-       - noGacha:true  -> tidak muncul di Roll (hanya hadiah/Toko Raid).
+       - chance = peluang drop "1 in N" per kartu (override tier). Kosongkan -> ikut tier (R=100,SR=400,SSR=1500,UR=6000,EX=25000).
+       - noGacha:true -> tidak muncul di Roll (hanya hadiah/Toko Raid).
+       - fx = passive. Kunci yang didukung engine battle:
+           double:15            -> 15% serang 2x beruntun
+           crit:{chance,mult}   -> peluang crit x mult
+           pierce:30            -> 30% tembus defense
+           barrage:{chance,min,max,mult} -> gelombang N sambaran
+           evasion:{chance,turns}        -> peluang hindari serangan
+           lifesteal:15         -> serap 15% damage jadi HP
+           void:20              -> 20% meniadakan damage musuh (jadi heal)
+           highHpDmg:{above,bonus} / lowHpAtk:{below,bonus} -> bonus dmg situasional
+           revive:1             -> bangkit 100% HP sekali saat mati
+           dmgMult:2            -> SEMUA serangan x2 damage
+           ignoreDef:1          -> serangan menembus evasion & void musuh
+           statusImmune:1       -> (flag; aktif setelah ada musuh yang kasih efek status)
+           purple:{chance,mult} -> Galaxy Roar (eksklusif id CH_ETERNAL_DRAGON)
+           domain / ranton      -> khusus id EX tertentu (Gojo / Madara)
        ==================================================== */
+    {id:"CH_RULER",name:"RULER",tier:"EX",type:"Absolute",skill:"VENUZDONOA",hp:4787,atk:2394,chance:1000000,art:"assets/cards/art/ruler.webp",
+      fx:{revive:1,dmgMult:2,ignoreDef:1,statusImmune:1},
+      desc:"Saat mati, bangkit dengan 100% HP (sekali). Semua serangan memberikan 2x damage. Efek pengurangan damage musuh diabaikan sepenuhnya. Tidak dapat terkena efek status apapun."}
   ]
 };
 /* ROLL SYSTEM - Pull-based RNG (bukan gacha pool) */
@@ -1525,14 +1543,14 @@ function rngRoll(luck=1,speedMultiplier=1){
   const pool=MASTER_CARD_INDEX.filter(c=>!c.noGacha);
   if(!pool.length)return null;
   let total=0;
-  const weights=pool.map(c=>{const w=1/Math.pow(chanceOf(c.tier),luck);total+=w;return w;});
+  const weights=pool.map(c=>{const w=1/Math.pow(c.chance||chanceOf(c.tier),luck);total+=w;return w;});
   let r=Math.random()*total, idx=pool.length-1;
   for(let i=0;i<pool.length;i++){r-=weights[i];if(r<=0){idx=i;break;}}
   const pick=pool[idx];
   return{
     cardId:pick.char_id,
     tier:pick.tier,
-    chance:chanceOf(pick.tier),
+    chance:pick.chance||chanceOf(pick.tier),
     luckBonus:luck,
     speedBoost:speedMultiplier
   };
@@ -1644,7 +1662,7 @@ function showRollResult(result) {
   if(atkEl)atkEl.textContent=fmt(Math.round(cardData.base_atk*mm));
 
   // Set rarity chip (warna = warna kelangkaan)
-  rarityChip.textContent = rarityText(result.tier);
+  rarityChip.textContent = rarityText(result.tier, result.chance);
   rarityChip.className = 'roll-rarity-chip';
   rarityChip.style.color = TIER_COLOR[result.tier] || '#fff';
   const nameEl=document.getElementById('rollCardName');
@@ -1772,12 +1790,12 @@ function activeChap(){
   return open.find(x=>x.no===(state?state.chap:1))||open.find(x=>!chapDone(x))||open[open.length-1]||CHAPTERS[0];
 }
 const LEVEL_COUNT=STORY_BIBLE.levels.length;
-const MASTER_CARD_INDEX=STORY_BIBLE.units.map(u=>({char_id:u.id,name:u.name,tier:u.tier,type:u.type,base_hp:u.hp,base_atk:u.atk,sprite_asset:u.art,art_image:u.art,passive:{name:u.skill,desc:u.desc},noGacha:!!u.noGacha}));
+const MASTER_CARD_INDEX=STORY_BIBLE.units.map(u=>({char_id:u.id,name:u.name,tier:u.tier,chance:u.chance||null,type:u.type,base_hp:u.hp,base_atk:u.atk,sprite_asset:u.art,art_image:u.art,passive:{name:u.skill,desc:u.desc},noGacha:!!u.noGacha}));
 const CARDS=Object.fromEntries(MASTER_CARD_INDEX.map(c=>[c.char_id,c]));
 function getCardData(id){return CARDS[id]||null;}
-function cardImg(id){return CARDS[id].sprite_asset;}
-function cardName(id){return CARDS[id].name;}
-function cardType(id){return CARDS[id].type;}
+function cardImg(id){const c=CARDS[id];return c?c.sprite_asset:"";}
+function cardName(id){const c=CARDS[id];return c?c.name:"(kartu hilang)";}
+function cardType(id){const c=CARDS[id];return c?c.type:"";}
 function cardTier(id){const c=CARDS[id];return c?c.tier:"";}
 /* KONVENSI JURUS TANDA TANGAN (biar nambah kartu EX/UR nanti gak bikin efek bocor ke tier bawahnya):
    EX = jurus se-layar penuh + background video/gambar sendiri DI BELAKANG kartu (layer *-bgfx, z-1).
@@ -1785,7 +1803,7 @@ function cardTier(id){const c=CARDS[id];return c?c.tier:"";}
    Yang mengizinkan background = TIER kartu, bukan daftar id — jadi kartu baru ikut aturan ini otomatis. */
 const SIG_BG_TIER="EX";
 function sigBackdrop(id){return cardTier(id)===SIG_BG_TIER;}
-function passiveName(id){return CARDS[id].passive.name;}
+function passiveName(id){const c=CARDS[id];return c?c.passive.name:"";}
 document.addEventListener("error",e=>{
   const t=e.target;
   if(t.tagName==="IMG"&&!t.dataset.ph&&((t.getAttribute("src")||"").indexOf("assets/sprites")===0)&&!/\.(mp4|webm|m4v|mov)(\?|$)/i.test(t.getAttribute("src")||"")){
@@ -1941,7 +1959,7 @@ function totalPower(){
 /* GATE = power musuh di level itu (HP + ATK), jadi keduanya dibandingkan apple-to-apple */
 function gateOf(level){const e=enemyStats(level);return e.hp+e.atk;}
 const ATKIC='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></svg>';
-function skillText(charId){return CARDS[charId].passive.desc;}
+function skillText(charId){const c=CARDS[charId];return c?c.passive.desc:"";}
 const fmt=n=>n.toLocaleString("en-US");
 
 /* =============== STATE =============== */
@@ -2549,7 +2567,7 @@ function playFight(cb){
 let bt=null;
 function meFighterHtml(s){
   const st=cardStats(s.char,s.lv,s.mut,s.trait);
-  return `<div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}">${madaraAura(s.char)}<span class="f-tag" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier)} · Lv.${s.lv}</span>
+  return `<div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}">${madaraAura(s.char)}<span class="f-tag" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,(CARDS[s.char]||{}).chance)} · Lv.${s.lv}</span>
     ${(s.mut&&s.mut!=="none")||(s.trait&&s.trait!=="none")?`<div class="f-badges">${s.mut&&s.mut!=="none"?mutChip(s.mut,`<span class="fbadge" style="border-color:${MUT_COLOR[s.mut]};color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`):""}${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="fbadge" style="border-color:${TRAIT_COLOR[s.trait]};color:${TRAIT_COLOR[s.trait]}">${traitGem(12)} ${traitLabel(s.trait)}</span>`):""}</div>`:""}
     <div class="skill-overlay"><b>${passiveName(s.char)}</b><span class="sk-txt">${skillText(s.char)}</span></div></div>
     <div class="hpbar"><i id="hpMe"></i><span id="hpMeT">${fmt(st.hp)} / ${fmt(st.hp)}</span></div>
@@ -3191,6 +3209,7 @@ function playerPhase(){
   let atk=cardStats(id,bt.eq.lv,bt.eq.mut,bt.eq.trait).atk;
   if(fx.lowHpAtk&&bt.pHp<bt.pMax*fx.lowHpAtk.below/100)atk=Math.round(atk*(1+fx.lowHpAtk.bonus/100));
   let dmgMult=1;
+  if(fx.dmgMult)dmgMult*=fx.dmgMult;
   if(fx.highHpDmg&&bt.pHp>bt.pMax*fx.highHpDmg.above/100)dmgMult*=(1+fx.highHpDmg.bonus/100);
   const hits=[{mult:1}];
   if(fx.double&&Math.random()*100<fx.double)hits.push({mult:1});
@@ -3214,9 +3233,9 @@ function playerPhase(){
   let total=0;const shots=[];
   hits.forEach(h=>{
     let d=Math.round(atk*dmgMult*h.mult);
-    if(efx.evasion&&t<=efx.evasion.turns&&Math.random()*100<efx.evasion.chance){shots.push({d:0,evade:true});return;}
+    if(!fx.ignoreDef&&efx.evasion&&t<=efx.evasion.turns&&Math.random()*100<efx.evasion.chance){shots.push({d:0,evade:true});return;}
     const pierce=!!(fx.pierce&&Math.random()*100<fx.pierce);
-    if(efx.void&&!pierce&&Math.random()*100<efx.void){shots.push({d:0,void:true});return;}
+    if(!fx.ignoreDef&&efx.void&&!pierce&&Math.random()*100<efx.void){shots.push({d:0,void:true});return;}
     shots.push({d,miss:false,pierce});total+=d;
   });
   const eHpNext=bt.eHp-total,foeDead=eHpNext<=0;
@@ -3281,6 +3300,7 @@ function enemyPhase(){
   }else{
     let eAtk=bt.es.atk,edmgMult=1;
     if(efx.lowHpAtk&&bt.eHp<bt.es.hp*efx.lowHpAtk.below/100)eAtk=Math.round(eAtk*(1+efx.lowHpAtk.bonus/100));
+    if(efx.dmgMult)edmgMult*=efx.dmgMult;
     if(efx.highHpDmg&&bt.eHp>bt.es.hp*efx.highHpDmg.above/100)edmgMult*=(1+efx.highHpDmg.bonus/100);
     const eHits=[{mult:1}];let ecrit=false,epurple=false,eBarrageN=0;
     if(efx.double&&Math.random()*100<efx.double)eHits.push({mult:1});
@@ -3596,7 +3616,7 @@ function openModal(id){
   mcEl.innerHTML=`
     <span class="md-art"><img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(s.char)}</span>
     <div class="md-info">
-      <div class="eyebrow" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier)} · Lv.${s.lv}${s.mut&&s.mut!=="none"?` · ${mutChip(s.mut,`<span>${mutBadge(s.mut)}</span>`)}`:""}</div>
+      <div class="eyebrow" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,c.chance)} · Lv.${s.lv}${s.mut&&s.mut!=="none"?` · ${mutChip(s.mut,`<span>${mutBadge(s.mut)}</span>`)}`:""}</div>
       <div class="md-name">${c.name}</div>
       <div class="cr-title" style="margin-bottom:8px">${c.type}</div>
       <div class="cr-stats"><span>♡ ${fmt(st.hp)}</span><span>${ATKIC} ${fmt(st.atk)}</span></div>
@@ -3641,7 +3661,7 @@ function renderLobby(){
     <div class="hub-mid">
     <div class="hub-center${eq&&eq.mut&&eq.mut!=='none'?' mut-'+eq.mut:''}" id="hubCard" data-tier="${eq?tier:''}" ${eq&&eq.mut&&eq.mut!=='none'?`style="border-color:${MUT_COLOR[eq.mut]}"`:''}>
       ${eq?`<div class="hc-img"><img src="${cardImg(eq.char)}" alt="${cardName(eq.char)}">${madaraAura(eq.char)}
-          <span class="f-tag" style="color:${TIER_COLOR[tier]};border-color:${TIER_COLOR[tier]}">${rarityText(tier)}</span>
+          <span class="f-tag" style="color:${TIER_COLOR[tier]};border-color:${TIER_COLOR[tier]}">${rarityText(tier,(CARDS[eq.char]||{}).chance)}</span>
           ${(eq.mut&&eq.mut!=='none')||(eq.trait&&eq.trait!=='none')?`<div class="hc-badges">${eq.mut&&eq.mut!=='none'?mutChip(eq.mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[eq.mut]}">${mutBadge(eq.mut)}</span>`):''}${eq.trait&&eq.trait!=='none'?traitChip(eq.trait,`<span class="hc-trait" style="color:${TRAIT_COLOR[eq.trait]};border-color:${TRAIT_COLOR[eq.trait]}">${traitGem(12)} ${traitLabel(eq.trait)}</span>`):''}</div>`:''}
           <span class="hc-lv-tag">Lv.${eq.lv}</span>
           <div class="skill-overlay"><b>${passiveName(eq.char)}</b><span class="sk-txt">${skillText(eq.char)}</span></div>
@@ -3752,7 +3772,7 @@ function renderRaidPick(){
     return `<button class="raid-pick-card${s.tier==="EX"?" fire":""}${mc}" data-pick="${s.id}" data-name="${c.name.toLowerCase()}"${s.mut&&s.mut!=="none"?` style="border-color:${MUT_COLOR[s.mut]}"`:""}>
       <div class="rpc-img"><img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(s.char)}
         <span class="badge-row">
-          <span class="tier-badge" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier)}</span>
+          <span class="tier-badge" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,c.chance)}</span>
         </span>
         ${(s.mut&&s.mut!=="none")?`<span class="badge-row bl">
           ${mutChip(s.mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`)}
@@ -3799,7 +3819,7 @@ function raidStep(){
   if(!raid||raid.over)return;
   raid.turn++;
   if(raid.turn>raid.cap){ if(raid.hp>0){ raidFinisher(()=>endRaid()); } else { endRaid(); } return; }
-  const fx=raid.fx, dmg=raid.atk, id=raid.cid;
+  const fx=raid.fx, dmg=Math.round(raid.atk*(fx.dmgMult||1)), id=raid.cid;
   const domainActive=fx.domain&&id==="CH_EX_GOJO"&&Math.random()*100<(fx.domain.chance||100);
   const hits=[1];
   let crit=false,purple=false,ranton=false,barrageN=0;
@@ -3947,7 +3967,7 @@ function raidShopThumb(it){
     const c=CARDS[it.card.char],mut=it.card.mut||"none";
     return `<div class="ri-thumb${mut!=="none"?" mut-"+mut:""}">
       <img src="${c.sprite_asset}" alt="${c.name}">
-      <span class="ri-tier" style="color:${TIER_COLOR[c.tier]};border-color:${TIER_COLOR[c.tier]}">${rarityText(c.tier)}</span>
+      <span class="ri-tier" style="color:${TIER_COLOR[c.tier]};border-color:${TIER_COLOR[c.tier]}">${rarityText(c.tier,c.chance)}</span>
       ${mut!=="none"?`<span class="ri-mut" style="color:${MUT_COLOR[mut]}">${MUT_LABEL[mut]}</span>`:""}
       <div class="ri-desc">${it.desc}</div>
     </div>`;
@@ -4132,7 +4152,7 @@ function gmGrantCard(charId){
   return `${CARDS[charId].name} ditambahkan ke deck`;
 }
 function renderSettings(){
-  const opts=MASTER_CARD_INDEX.map(c=>`<option value="${c.char_id}">${rarityText(c.tier)} · ${c.name}</option>`).join("");
+  const opts=MASTER_CARD_INDEX.map(c=>`<option value="${c.char_id}">${rarityText(c.tier,c.chance)} · ${c.name}</option>`).join("");
   app.innerHTML=`
   <div class="eyebrow">PENGATURAN</div>
   <h1>Game <span class="grad-text">Settings</span></h1>
