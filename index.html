@@ -921,8 +921,6 @@ body.battle-full .stat svg{flex:none}
 .tr-btn:active{transform:scale(.96)}
 .tr-roll{background:linear-gradient(120deg,var(--pink),var(--purple));color:#fff}
 .tr-roll:disabled{opacity:.5;cursor:not-allowed}
-.tr-odds{margin-top:16px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
-.tr-odds span{font-size:10px;letter-spacing:.08em;font-weight:700;padding:3px 8px;border-radius:6px;border:1px solid var(--line2);color:var(--muted)}
 .tr-note{margin-top:12px;text-align:center;font-size:11px;letter-spacing:.06em;color:var(--muted)}
 .trait-badge{font-family:"Barlow Condensed";font-weight:700;font-size:11px;padding:2px 6px;border-radius:6px;border:1px solid;background:rgba(8,9,11,.7);line-height:1}
 .hc-trait{display:inline-flex;align-items:center;gap:3px;font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.08em;padding:1px 7px;border-radius:6px;background:rgba(12,14,16,.85);border:1px solid;white-space:nowrap;line-height:1.5}
@@ -4055,7 +4053,6 @@ function renderTrait(){
       <div><div class="tc-lbl">KARTU TARGET · TRAIT SEKARANG</div><div class="tc-name">${cardName(tgt.char)}</div><div style="font-size:13px;margin-top:2px">${cur}</div></div>
       <span class="tr-change">GANTI ▸</span></div>
     <div class="tr-btns"><button class="tr-btn tr-roll" id="trRoll" ${state.coins<TRAIT_COST?"disabled":""}>ROLL TRAIT · ${fmt(TRAIT_COST)} COIN</button></div>
-    <div class="tr-odds">${TRAIT_TIERS.filter(t=>t.chance>0).map(t=>`<span class="trait-hover" data-trait="${t.k}" style="color:${t.color};border-color:${t.color}55">${t.name} ${t.chance}%</span>`).join("")}</div>
     <div class="tr-note">COIN: ${fmt(state.coins)} · Roll memasang trait ke target. Trait langka (Blessed / Overlord / Ascendant) minta konfirmasi Simpan / Roll.</div>`;
   const r=document.getElementById("trRoll");if(r)r.onclick=rollTrait;
   const pc=document.getElementById("trPickCard");if(pc)pc.onclick=()=>openDeckPick();
