@@ -54,6 +54,19 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .pill.raid{color:#B98CFF;border-color:rgba(185,140,255,.45);background:linear-gradient(120deg,#170f1e,#0f0a14)}
 .pill svg{flex:none}
 .spacer{flex:1;min-width:0}
+.tb-profile{display:flex;align-items:center;gap:10px;min-width:0;flex:0 1 auto}
+.tb-av{width:40px;height:40px;border-radius:50%;background:linear-gradient(120deg,var(--cyan),var(--purple));flex:none}
+.tb-id{display:flex;flex-direction:column;gap:5px;min-width:0;max-width:min(48vw,300px)}
+.tb-top{display:flex;align-items:center;gap:8px;min-width:0}
+.tb-name{font-weight:800;font-size:14px;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.tb-lvl{font-family:"Barlow Condensed";font-weight:700;font-size:11px;letter-spacing:.08em;color:var(--cyan);border:1px solid rgba(20,28,38,.22);border-radius:6px;padding:0 8px;background:rgba(20,28,38,.06);flex:none}
+.tb-xp{display:flex;align-items:center;gap:8px;min-width:0}
+.tb-xpbar{margin-top:0;height:6px;flex:1;min-width:0}
+.tb-pw{font-family:"Barlow Condensed";font-weight:700;font-size:11px;color:#7A5A12;border:1px solid rgba(20,28,38,.22);border-radius:6px;padding:0 8px;background:rgba(20,28,38,.06);flex:none;white-space:nowrap}
+.tb-daily{width:52px;min-height:46px;padding:5px;gap:2px;border-radius:12px;align-self:center}
+.tb-daily svg{width:19px;height:19px}
+.tb-daily .lpd-lbl{font-size:9px}
+.tb-settings{margin-left:2px}
 .who{font-size:10px;letter-spacing:.18em;color:var(--muted);font-weight:600;white-space:nowrap}
 /* ========== ROLL SYSTEM UI ========== */
 .roll-btn {position:fixed;right:20px;bottom:20px;width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--purple));border:3px solid var(--line2);box-shadow:0 6px 24px rgba(18,28,38,.35),0 0 0 3px var(--panel);z-index:100;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s;font-size:32px;animation:pulse-roll 2s infinite;}
@@ -844,7 +857,7 @@ body.battle-full .bench-rail .bench-sq{width:clamp(50px,11vh,74px)}
 .hub-tag.empty .ht-lbl{font-family:"Barlow Condensed";letter-spacing:.12em;font-size:12px;color:var(--muted)}
 .lobby-story{max-width:920px;margin:clamp(26px,5vh,54px) auto 44px;padding:0 clamp(14px,4vw,38px)}
 .story-title{font-family:"Barlow Condensed";font-size:clamp(24px,4vw,36px);font-weight:700;letter-spacing:.12em;color:var(--text);margin:0 0 4px}
-@media(max-width:720px){.lobby-profile{flex-direction:column;align-items:center}.lp-daily{width:100%;max-width:330px;min-height:auto;flex-direction:row;gap:10px;padding:12px 16px}.lp-daily svg{width:26px;height:26px}.lobby-hub{grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto;gap:12px}.hub-mid{grid-column:1 / span 2;grid-row:1}.h-l1{grid-column:1;grid-row:2}.h-l2{grid-column:2;grid-row:2}.h-r1{grid-column:1;grid-row:3}.h-r2{grid-column:2;grid-row:3}}
+@media(max-width:720px){.lobby-hub{grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto;gap:12px}.hub-mid{grid-column:1 / span 2;grid-row:1}.h-l1{grid-column:1;grid-row:2}.h-l2{grid-column:2;grid-row:2}.h-r1{grid-column:1;grid-row:3}.h-r2{grid-column:2;grid-row:3}}
 
 /* ---------- index kartu ---------- */
 .idx-card{position:relative;border:1px solid var(--line2);border-radius:14px;overflow:hidden;background:linear-gradient(160deg,#FFFFFF,#EEF2F6)}
@@ -1267,15 +1280,18 @@ body.battle-full .bench-rail .bench-sq{width:clamp(50px,11vh,74px)}
   </div>
 </div>
 <header id="topbar">
-  <nav id="nav">
-    <button class="nav-btn" data-route="#/lobby" title="Lobby"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 10.5 9-7.5 9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></button>
-    <button class="nav-btn" data-route="#/" title="Story"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.8C10.4 5.2 8 4.7 4 5.2v13.3c4-.5 6.4 0 8 1.6 1.6-1.6 4-2.1 8-1.6V5.2c-4-.5-6.4 0-8 1.6z"/><path d="M12 6.8v13.3"/></svg></button>
-    <button class="nav-btn" data-route="#/settings" title="Pengaturan"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.14.5.55.9 1.1 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
-  </nav>
-  <div class="crumb"><span class="cb-brand">ANIME CARD BATTLE&nbsp; / &nbsp;</span><b id="crumb-page">BATTLE ARENA</b></div>
+  <div class="tb-profile">
+    <button class="lp-daily tb-daily" id="lpDaily" title="Hadiah Login Harian" aria-label="Hadiah Login Harian"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v9H4v-9"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 1 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 1 0 0-5C13 2 12 7 12 7z"/></svg><span class="lpd-lbl">HARIAN</span></button>
+    <div class="tb-av"></div>
+    <div class="tb-id">
+      <div class="tb-top"><span class="tb-name" id="tbName">GUEST</span><span class="tb-lvl" id="tbLvl">LVL 1</span></div>
+      <div class="tb-xp"><div class="xpbar tb-xpbar"><i id="tbXpFill" style="width:0%"></i></div><span class="tb-pw" id="tbPw" title="Total HP + ATK kartu utama + TAG">&#9889; 0</span></div>
+    </div>
+  </div>
   <div class="spacer"></div>
   <div class="pill coins" id="coinPill" title="Coin"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><ellipse cx="12" cy="6.5" rx="8" ry="3.3"/><path d="M4 6.5v5c0 1.8 3.6 3.3 8 3.3s8-1.5 8-3.3v-5"/><path d="M4 11.5v5c0 1.8 3.6 3.3 8 3.3s8-1.5 8-3.3v-5"/></svg><span id="coinVal"></span></div>
   <div class="pill raid" id="raidPill" title="Token Raid — didapat dari Boss Raid"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 2.5 20.5 7.2v9.6L12 21.5 3.5 16.8V7.2z"/><path d="M12 7.2 8 9.6v4.8l4 2.4 4-2.4V9.6z"/></svg><span id="raidVal"></span></div>
+  <button class="nav-btn tb-settings" data-route="#/settings" title="Pengaturan"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.14.5.55.9 1.1 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
 </header>
 <main id="app"></main>
 <button id="bfExit" title="Keluar dari pertempuran">✕ Keluar</button>
@@ -2466,11 +2482,17 @@ const app=document.getElementById("app");
 const ROUTES={"#/lobby":"LOBBY","#/":"STORY","#/raid":"BOSS RAID","#/tower":"SKY TOWER","#/settings":"PENGATURAN"};
 function route(){const h=location.hash;return ROUTES[h]?h:"#/lobby";}
 function renderShell(){
-  document.getElementById("crumb-page").textContent=ROUTES[route()];
   document.getElementById("coinVal").textContent=fmt(state.coins);
   const rv=document.getElementById("raidVal");if(rv)rv.textContent=fmt(state.raidTokens||0);
   const pl=document.getElementById("plvl");if(pl)pl.textContent="LVL "+state.playerLv;
   const wn=document.getElementById("whoName");if(wn)wn.textContent=currentUser||"GUEST";
+  /* Profil ringkas di topbar (dipindah dari lobby). */
+  const xpNeed=state.playerLv*1000, xpPct=Math.max(0,Math.min(100,Math.round(state.xp/xpNeed*100)));
+  const tn=document.getElementById("tbName");if(tn)tn.textContent=currentUser||"GUEST";
+  const tl=document.getElementById("tbLvl");if(tl)tl.textContent="LVL "+state.playerLv;
+  const tf=document.getElementById("tbXpFill");if(tf)tf.style.width=xpPct+"%";
+  const tp=document.getElementById("tbPw");if(tp)tp.innerHTML="&#9889; "+fmt(totalPower());
+  const ld=document.getElementById("lpDaily");if(ld)ld.classList.toggle("ready",state.lastClaim!==todayStr());
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.route===route()));
 }
 
@@ -3728,17 +3750,7 @@ function renderLobby(){
   const eq=equipped();
   const st=eq?cardStats(eq.char,eq.lv,eq.mut,eq.trait):null;
   const tier=eq?CARDS[eq.char].tier:null;
-  const xpNeed=state.playerLv*1000, xpPct=Math.max(0,Math.min(100,Math.round(state.xp/xpNeed*100)));
   app.innerHTML=`
-  <div class="lobby-profile">
-    <div class="lp-card"><div class="lp-av"></div>
-    <div class="lp-main">
-      <div class="lp-row"><span class="lp-name">${currentUser||"GUEST"}</span><span class="lp-side"><span class="lp-pw" title="Total HP + ATK kartu utama + TAG">&#9889; ${fmt(totalPower())}</span><span class="lp-lvl">LVL ${state.playerLv}</span></span></div>
-      <div class="lp-xprow"><div class="xpbar"><i style="width:${xpPct}%"></i></div><span class="xpnum">${state.xp} / ${xpNeed}</span></div>
-    </div>
-    </div>
-    <button class="lp-daily${state.lastClaim!==todayStr()?" ready":""}" id="lpDaily" role="button" title="Hadiah Login Harian" aria-label="Hadiah Login Harian"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v9H4v-9"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 1 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 1 0 0-5C13 2 12 7 12 7z"/></svg><span class="lpd-lbl">HARIAN</span></button>
-  </div>
   <div class="lobby-hub">
     <div class="hub-box h-l1 hub-link" id="hubRaid" role="button" title="Masuk Boss Raid"><img class="hi-ic" src="assets/raid/eternal-dragon-hd.png" alt=""><span class="hb-lbl">BOSS RAID</span></div>
     <div class="hub-box h-l2 hub-link" id="hubTower" role="button" title="Masuk Sky Tower"><svg class="tw-ic" width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M9 21V9l3-6 3 6v12"/><path d="M9 12h6M9 16h6"/><path d="M5 21V11M19 21V11"/></svg><span class="hb-lbl">SKY TOWER</span></div>
@@ -3765,7 +3777,6 @@ function renderLobby(){
   const ht=document.getElementById("hubTrait");if(ht)ht.onclick=()=>{sfx.hit();openTrait();};
   const hr=document.getElementById("hubRaid");if(hr)hr.onclick=()=>{sfx.hit();raidView="hub";location.hash="#/raid";};
   const ht2=document.getElementById("hubTower");if(ht2)ht2.onclick=()=>{sfx.hit();stopTower();location.hash="#/tower";};
-  const ld=document.getElementById("lpDaily");if(ld)ld.onclick=()=>{sfx.hit();openDaily();};
   bindChapList();
 }
 
@@ -4364,6 +4375,8 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
   if(location.hash===b.dataset.route||(!location.hash&&b.dataset.route==="#/lobby"))render();
   else location.hash=b.dataset.route;
 });
+/* Tombol Harian kini menetap di topbar -> wire sekali, aktif di semua layar. */
+(function wireDaily(){const d=document.getElementById("lpDaily");if(d)d.onclick=()=>{sfx.hit();openDaily();};})();
 /* ===== Dock roll + backpack (elemen statis di <body>): wiring SEKALI saja.
    Elemen ini tidak ikut di-render-ulang, jadi interval roll tetap hidup
    walau player pindah layar / membuka backpack -> AFK aman. ===== */
