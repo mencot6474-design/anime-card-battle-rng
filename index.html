@@ -2238,7 +2238,7 @@ function freshState(){
   const s0=STORY_BIBLE.units[0];
   const start={id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,lv:1,exp:0,fav:false,lock:false,mut:"none",trait:"none"};
   return{coins:1000,raidTokens:0,playerLv:1,xp:0,books:{common:0,gold:0,rainbow:0},dailyIndex:0,lastClaim:"",summons:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},tower:{floor:1,best:0},
-    cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start.id,equippedId2:null,stacks:[start],history:[],battle:null};
+    cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start.id,equippedId2:null,deck:[start.id,null,null,null],stacks:[start],history:[],battle:null};
 }
 function todayStr(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
 function nextResetMs(){const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate()+1,0,0,0,0)-n;}
@@ -2258,6 +2258,15 @@ function loadStateFor(name){
   
   if(!state.stacks.some(s=>s.id===state.equippedId))state.equippedId=state.stacks[0].id;
   if(!state.stacks.some(s=>s.id===state.equippedId2))state.equippedId2=null;
+  /* DECK 4 SLOT: satu-satunya sumber kartu yang dipakai battle. Deck menyimpan stack-id.
+     equippedId / equippedId2 diturunkan dari slot 0 & 1 supaya kontrol lobby lama tetap jalan. */
+  if(!Array.isArray(state.deck))state.deck=[null,null,null,null];
+  state.deck.length=4;
+  state.deck=state.deck.map(id=>(id&&state.stacks.some(s=>s.id===id))?id:null);
+  if(!state.deck[0])state.deck[0]=state.equippedId||state.stacks[0].id;
+  if(!state.deck[1]&&state.equippedId2&&state.deck[0]!==state.equippedId2)state.deck[1]=state.equippedId2;
+  state.equippedId=state.deck[0];
+  state.equippedId2=state.deck[1];
   if(state.cleared)Object.keys(state.cleared).forEach(k=>{if(+k>LEVEL_COUNT)delete state.cleared[k];});
   
   // Safely call diffProg and helpers
@@ -2310,8 +2319,22 @@ function highestChapDiff(chapNum){
   return openLevels.length?openLevels[0].diff||'normal':'normal';
 }
 function save(){if(state)localStorage.setItem(KEY,JSON.stringify(state));}
-function equipped(){return state.stacks.find(s=>s.id===state.equippedId)||state.stacks[0];}
-function equipped2(){return state.equippedId2?state.stacks.find(s=>s.id===state.equippedId2)||null:null;}
+function equipped(){return state.stacks.find(s=>s.id===(state.deck&&state.deck[0]))||state.stacks.find(s=>s.id===state.equippedId)||state.stacks[0];}
+function equipped2(){return (state.deck&&state.deck[1])?state.stacks.find(s=>s.id===state.deck[1])||null:null;}
+/* Daftar kartu dek (slot 0..3) dalam urutan — sumber fighter battle (maks 4). */
+function equippedList(){return (state.deck||[]).map(id=>id?state.stacks.find(s=>s.id===id):null).filter(Boolean);}
+/* Pasang/lepas stack-id ke slot dek; jaga equippedId/2 tetap sinkron dgn slot 0/1. */
+function setDeckSlot(i,id){
+  if(i<0||i>3)return;
+  if(id){
+    // satu kartu tak boleh menempati dua slot
+    const prev=state.deck.indexOf(id);if(prev>=0&&prev!==i)state.deck[prev]=null;
+  }
+  state.deck[i]=id||null;
+  state.equippedId=state.deck[0]||null;
+  state.equippedId2=state.deck[1]||null;
+  save();
+}
 
 /* =============== AUDIO =============== */
 let actx=null;
