@@ -88,6 +88,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .roll-overlay.mini .roll-card-showcase .hub-center .hc-chance{top:21px;left:5px;font-size:10px}
 .roll-overlay.mini .roll-card-showcase .hub-center .hc-badges{top:5px;right:5px;gap:3px}
 .roll-overlay.mini .roll-card-showcase .hub-center .hc-badges .mut-badge,.roll-overlay.mini .roll-card-showcase .hub-center .hc-badges .hc-trait,.roll-overlay.mini .roll-card-showcase .hub-center .shiny-badge{height:16px;padding:0 5px;font-size:9px}
+.roll-overlay.mini .roll-card-showcase .hub-center .hc-badges .hc-trait.hc-gem{width:16px;padding:0}
 .roll-overlay.mini .roll-card-showcase .hub-center .hc-info{padding:18px 8px 7px}
 .roll-overlay.mini .roll-card-showcase .hub-center .hc-skill,.roll-overlay.mini .roll-card-showcase .hub-center .hc-desc{display:none}
 .roll-overlay.mini .roll-card-showcase .hub-center .hc-stats{font-size:11px;margin-top:0;gap:8px}
@@ -818,6 +819,8 @@ body.battle-full .stat svg{flex:none}
 .hub-center .hc-badges .mut-badge{position:static;top:auto;left:auto}
 .hub-center .hc-badges .mut-hover{display:inline-flex}
 .hub-center .hc-badges .mut-badge,.hub-center .hc-badges .hc-trait{display:inline-flex;align-items:center;height:22px;padding:0 8px;font-size:12px;line-height:1;border-radius:6px}
+.hub-center .hc-badges .hc-trait.hc-gem{width:22px;padding:0;justify-content:center}
+.hub-center .hc-badges .hc-gem svg{display:block}
 .hub-tag{position:relative;width:100%;min-height:86px;display:flex;gap:10px;align-items:center;padding:12px;border-radius:14px;border:1px solid rgba(20,28,38,.16);background:#FFFFFF;cursor:pointer;transition:border-color .15s,transform .15s}
 .hub-tag:hover{border-color:var(--cyan);transform:translateY(-2px)}
 .hub-tag img,.hub-tag video{width:44px;height:58px;object-fit:cover;object-position:top;border-radius:7px;background:#E9EDF2;flex:none}
@@ -3651,7 +3654,7 @@ function hubCardHtml(eq,idAttr){
       <div class="hc-img"><img src="${cardImg(eq.char)}" alt="${cardName(eq.char)}">${madaraAura(eq.char)}
           <span class="hc-name-top"${mut?` style="color:${MUT_COLOR[mut]}"`:''}>${mutText(mut,cardName(eq.char))}</span>
           <span class="hc-chance" style="color:${TIER_COLOR[tier]}">${rarityText(tier,(CARDS[eq.char]||{}).chance)}</span>
-          ${(mut||eq.shiny)?`<div class="hc-badges">${mut?mutChip(mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${eq.shiny?'<span class="shiny-badge">SHINY</span>':''}</div>`:''}
+          ${(mut||trait||eq.shiny)?`<div class="hc-badges">${mut?mutChip(mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="hc-trait hc-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(14)}</span>`):''}${eq.shiny?'<span class="shiny-badge">SHINY</span>':''}</div>`:''}
           <div class="skill-overlay"><b>${passiveName(eq.char)}</b><span class="sk-txt">${skillText(eq.char)}</span></div>
         </div>
         <div class="hc-info">
