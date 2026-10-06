@@ -13,7 +13,7 @@
   --line:rgba(18,26,36,.13); --line2:rgba(18,26,36,.26);
   --cyan:#14181E; --purple:#414C58; --pink:#20272E; --amber:#333A42; --red:#14181E;
   --text:#10151B; --muted:#47515C; --muted2:#69737E;
-  --sb:72px;        /* lebar sidebar; ikut dipakai body & topbar biar sejajar */
+  --sb:0px;         /* sidebar kiri sudah dihapus; nav pindah ke topbar */
   --wrap:1080px;    /* lebar kolom konten; naik di layar sangat lebar */
 }
 *{margin:0;padding:0;box-sizing:border-box}
@@ -41,13 +41,10 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .grad-text{background:linear-gradient(90deg,var(--cyan),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
 
 /* ---------- shell ---------- */
-#sidebar{position:fixed;inset:0 auto 0 0;width:var(--sb);background:#B7C0CB;border-right:2px solid rgba(20,28,38,.22);display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:26px;z-index:20}
-#logo{width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#3A424B,#14181E 62%,#0A0C0F);display:grid;place-items:center;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)}
-#logo svg{width:26px;height:26px}
-#nav{display:flex;flex-direction:column;gap:14px;margin-top:26px}
-.nav-btn{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:#454F59;border:1px solid transparent;transition:.15s}
+#nav{display:flex;flex-direction:row;gap:8px;align-items:center}
+.nav-btn{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;color:#454F59;border:1px solid transparent;transition:.15s;cursor:pointer}
 .nav-btn:hover{color:var(--text);background:rgba(255,255,255,.42)}
-.nav-btn.active{color:#E8556A;background:rgba(255,255,255,.6);border-color:rgba(20,28,38,.10);box-shadow:inset 3px 0 0 #E8556A}
+.nav-btn.active{color:#E8556A;background:rgba(255,255,255,.7);border-color:rgba(20,28,38,.12);box-shadow:0 0 0 1px rgba(232,85,106,.25)}
 /* padding kiri/ kanan = max(padding normal, offset kolom konten) -> di layar lebar pill topbar sejajar dengan tepi konten main, bukan menempel ke pinggir jendela */
 #topbar{position:sticky;top:0;z-index:10;margin-left:0;min-height:64px;display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:12px max(clamp(12px,3vw,28px),calc((100vw - var(--sb) - var(--wrap))/2 + clamp(14px,3.6vw,40px)));background:rgba(255,255,255,.82);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 .crumb{font-size:11px;letter-spacing:.22em;font-weight:600;color:var(--muted);text-transform:uppercase;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
@@ -1041,11 +1038,7 @@ body.battle-full #bfExit{display:inline-flex}
 @media(max-width:880px){.who{display:none}.cb-brand{display:none}.md-card{flex-direction:column;width:min(340px,92vw);align-items:center;text-align:center}.md-card .cr-stats{justify-content:center}}
 @media(max-width:700px){.battle-grid{grid-template-columns:1fr}.vs-col{flex-direction:row;margin:6px 0}}
 @media(max-width:560px){
-  :root{--sb:56px}
-  #sidebar{padding:10px 0;gap:18px}
-  #logo{width:38px;height:38px}
-  #logo svg{width:23px;height:23px}
-  #nav{gap:10px;margin-top:16px}
+  #nav{gap:6px}
   .nav-btn{width:38px;height:38px;border-radius:10px}
   .crumb{font-size:10px;letter-spacing:.14em}
   .pill{height:34px}
@@ -1269,15 +1262,12 @@ body.battle-full #bfExit{display:inline-flex}
     <div class="au-note">Profil lokal — data tersimpan hanya di browser ini.</div>
   </div>
 </div>
-<aside id="sidebar">
-  <div id="logo"><svg viewBox="0 0 24 24" fill="none" aria-label="Clan Uzumaki"><path d="M12 12a2 2 0 0 1 4 0 4 4 0 0 1-8 0 6 6 0 0 1 12 0 8 8 0 0 1-16 0" stroke="#fff" stroke-width="2.1" stroke-linecap="round"/></svg></div>
+<header id="topbar">
   <nav id="nav">
     <button class="nav-btn" data-route="#/lobby" title="Lobby"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 10.5 9-7.5 9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></button>
     <button class="nav-btn" data-route="#/" title="Story"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.8C10.4 5.2 8 4.7 4 5.2v13.3c4-.5 6.4 0 8 1.6 1.6-1.6 4-2.1 8-1.6V5.2c-4-.5-6.4 0-8 1.6z"/><path d="M12 6.8v13.3"/></svg></button>
     <button class="nav-btn" data-route="#/settings" title="Pengaturan"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.14.5.55.9 1.1 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   </nav>
-</aside>
-<header id="topbar">
   <div class="crumb"><span class="cb-brand">ANIME CARD BATTLE&nbsp; / &nbsp;</span><b id="crumb-page">BATTLE ARENA</b></div>
   <div class="spacer"></div>
   <div class="pill coins" id="coinPill" title="Coin"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><ellipse cx="12" cy="6.5" rx="8" ry="3.3"/><path d="M4 6.5v5c0 1.8 3.6 3.3 8 3.3s8-1.5 8-3.3v-5"/><path d="M4 11.5v5c0 1.8 3.6 3.3 8 3.3s8-1.5 8-3.3v-5"/></svg><span id="coinVal"></span></div>
@@ -1367,6 +1357,27 @@ body.battle-full #bfExit{display:inline-flex}
 </div></div>
 
 <div id="fightFx"><div class="ff-slash a"></div><div class="ff-slash b"></div><div class="ff-word">FIGHT</div></div>
+
+<!-- ====== DOCK PERSISTEN: roll + backpack. Sengaja DI LUAR #app supaya
+     pindah layar / re-render tidak menghapus elemen ini -> interval roll
+     & panel dek tetap hidup (player bisa AFK tanpa roll ke-stop). -->
+<button class="roll-btn" id="rollBtn" title="Roll Cards!">🎲</button>
+<div class="backpack-toggle" id="backpackToggle" title="Backpack">🎒</div>
+<div class="roll-overlay" id="rollOverlay">
+  <div class="roll-card-showcase">
+    <button class="roll-min-btn" id="rollMinBtn" title="Kecilkan">▾</button>
+    <img class="roll-card-img" id="rollCardImg" src="">
+    <div class="roll-rarity-chip" id="rollRarityChip">ROLLING...</div>
+    <div class="roll-card-name" id="rollCardName"></div>
+    <div class="roll-stats">
+      <div>♡ <span id="rollHp"></span></div>
+      <div><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></svg> <span id="rollAtk"></span></div>
+    </div>
+  </div>
+  <div class="roll-note">Kartu otomatis masuk Koleksi &amp; mengisi slot dek 🎒</div>
+  <button class="roll-info-btn" id="collectBtn">TUTUP</button>
+</div>
+<div class="backpack-panel" id="backpackPanel"></div>
 
 <script>
 "use strict";
@@ -3714,25 +3725,9 @@ document.getElementById("modal").addEventListener("click",e=>{
 /* =============== LOBBY =============== */
 function renderLobby(){
   const eq=equipped();
-  const eq2=equipped2();
   const st=eq?cardStats(eq.char,eq.lv,eq.mut,eq.trait):null;
   const tier=eq?CARDS[eq.char].tier:null;
   const xpNeed=state.playerLv*1000, xpPct=Math.max(0,Math.min(100,Math.round(state.xp/xpNeed*100)));
-  const tagHTML=()=>{
-    if(!eq2)return `<div class="hub-tag empty" id="hubTag" title="Pasang kartu TAG di Deck"><span class="ht-plus">+</span><span class="ht-lbl">TAG kosong</span></div>`;
-    const ts=cardStats(eq2.char,eq2.lv,eq2.mut,eq2.trait);
-    return `<div class="hub-tag" id="hubTag" title="Klik untuk tukar dengan kartu utama">
-      <span class="ht-tag">TAG</span>
-      <img src="${cardImg(eq2.char)}" alt="${cardName(eq2.char)}">
-      <div class="ht-info">
-        <div class="ht-left">
-          <div class="ht-name">${cardName(eq2.char)}</div>
-          <span class="ht-hp">♡ ${fmt(ts.hp)}</span>
-          <span class="ht-atk">${ATKIC} ${fmt(ts.atk)}</span>
-        </div>
-        <span class="ht-tier" style="color:${TIER_COLOR[eq2.tier]};border-color:${TIER_COLOR[eq2.tier]}">${rarityText(eq2.tier)}</span>
-      </div></div>`;
-  };
   app.innerHTML=`
   <div class="lobby-profile">
     <div class="lp-card"><div class="lp-av"></div>
@@ -3759,30 +3754,9 @@ function renderLobby(){
           <div class="hc-stats"><div class="hp">♡ ${fmt(st.hp)}</div><div class="atk">${ATKIC} ${fmt(st.atk)}</div></div>
         </div>`:`<div class="hc-info"><div class="hc-name">Belum ada kartu</div></div>`}
     </div>
-    ${tagHTML()}
     </div>
     <div class="hub-box h-r1 hub-link" id="hubIndex" role="button" title="Buka Katalog Kartu"><img class="hi-ic" src="assets/images/icon-index-card.png" alt=""><span class="hb-lbl">INDEX CARD</span></div>
     <div class="hub-box h-r2 hub-link" id="hubTrait" role="button" title="Roll Trait untuk kartu aktif"><img class="hi-ic" src="assets/images/icon-trait.svg" alt=""><span class="hb-lbl">TRAIT</span></div>
-  </div>
-  <button class="roll-btn" id="rollBtn" title="Roll Cards!">🎲</button>
-  <div class="backpack-toggle" id="backpackToggle" title="Backpack">🎒</div>
-  <div class="roll-overlay" id="rollOverlay">
-    <div class="roll-card-showcase">
-      <button class="roll-min-btn" id="rollMinBtn" title="Kecilkan">▾</button>
-      <img class="roll-card-img" id="rollCardImg" src="">
-      <div class="roll-rarity-chip" id="rollRarityChip">ROLLING...</div>
-      <div class="roll-card-name" id="rollCardName"></div>
-      <div class="roll-stats">
-        <div>♡ <span id="rollHp"></span></div>
-        <div>${ATKIC} <span id="rollAtk"></span></div>
-      </div>
-    </div>
-    <div class="roll-note">Kartu otomatis masuk Koleksi &amp; mengisi slot dek 🎒</div>
-    <button class="roll-info-btn" id="collectBtn">TUTUP</button>
-  </div>
-  
-  <div class="backpack-panel" id="backpackPanel">
-    <!-- Content will be dynamically rendered -->
   </div>`;
   const hc=document.getElementById("hubCard");if(hc)hc.onclick=()=>{sfx.hit();toggleBackpack();};
   const hi=document.getElementById("hubIndex");if(hi)hi.onclick=()=>{sfx.hit();openIndex();};
@@ -3790,42 +3764,6 @@ function renderLobby(){
   const hr=document.getElementById("hubRaid");if(hr)hr.onclick=()=>{sfx.hit();raidView="hub";location.hash="#/raid";};
   const ht2=document.getElementById("hubTower");if(ht2)ht2.onclick=()=>{sfx.hit();stopTower();location.hash="#/tower";};
   const ld=document.getElementById("lpDaily");if(ld)ld.onclick=()=>{sfx.hit();openDaily();};
-  const hs=document.getElementById("hubTag");
-  if(hs)hs.onclick=e=>{
-    e.stopPropagation();
-    if(!state.deck[1]){sfx.hit();toggleBackpack();return;}
-    const a=state.deck[0];setDeckSlot(0,state.deck[1]);setDeckSlot(1,a);
-    sfx.hit();render();
-  };
-  
-  /* ========== Roll System Event Handlers ========== */
-  const rb = document.getElementById('rollBtn');
-  if (rb) {
-    rb.addEventListener('click', () => {
-      if (!rollState.active) {
-        startRollAnimation();
-        beep(440, 0.15, 'sine', 0.1);
-      } else {
-        stopRollAnimation();
-        hideRollResult();
-        beep(330, 0.12, 'square', 0.08);
-      }
-    });
-  }
-  
-  const bt = document.getElementById('backpackToggle');
-  if (bt) {
-    bt.addEventListener('click', toggleBackpack);
-  }
-
-  const rmin = document.getElementById('rollMinBtn');
-  if (rmin) {
-    rmin.addEventListener('click', (e) => { e.stopPropagation(); setRollMini(true); });
-  }
-  const rshow = document.querySelector('#rollOverlay .roll-card-showcase');
-  if (rshow) {
-    rshow.addEventListener('click', () => { if (rollState.mini) setRollMini(false); });
-  }
 }
 
 /* ========== TOGGLE BACKPACK FUNCTION ========== */
@@ -3841,7 +3779,6 @@ function toggleBackpack() {
     panel.style.opacity = '0';
     panel.style.transform = 'translate(-50%, -45%) scale(0.95)';
     setTimeout(() => { panel.style.display = 'none'; render(); }, 300);
-    if (rollState.active) stopRollAnimation();
   } else {
     /* Open */
     renderBackpackPanel();
@@ -4424,6 +4361,22 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
   if(location.hash===b.dataset.route||(!location.hash&&b.dataset.route==="#/lobby"))render();
   else location.hash=b.dataset.route;
 });
+/* ===== Dock roll + backpack (elemen statis di <body>): wiring SEKALI saja.
+   Elemen ini tidak ikut di-render-ulang, jadi interval roll tetap hidup
+   walau player pindah layar / membuka backpack -> AFK aman. ===== */
+(function wireRollDock(){
+  const rb=document.getElementById("rollBtn");
+  if(rb)rb.addEventListener("click",()=>{
+    if(!rollState.active){startRollAnimation();beep(440,0.15,"sine",0.1);}
+    else{stopRollAnimation();hideRollResult();beep(330,0.12,"square",0.08);}
+  });
+  const bt=document.getElementById("backpackToggle");
+  if(bt)bt.addEventListener("click",toggleBackpack);
+  const rmin=document.getElementById("rollMinBtn");
+  if(rmin)rmin.addEventListener("click",e=>{e.stopPropagation();setRollMini(true);});
+  const rshow=document.querySelector("#rollOverlay .roll-card-showcase");
+  if(rshow)rshow.addEventListener("click",()=>{if(rollState.mini)setRollMini(false);});
+})();
 document.getElementById("ixClose").onclick=()=>document.getElementById("indexModal").classList.remove("show");document.getElementById("indexModal").addEventListener("click",e=>{if(e.target.id==="indexModal")e.target.classList.remove("show");});
 document.getElementById("trClose").onclick=closeTrait;document.getElementById("traitModal").addEventListener("click",e=>{if(e.target.id==="traitModal")closeTrait();});
 document.getElementById("dpClose").onclick=closeDeckPick;document.getElementById("deckPickModal").addEventListener("click",e=>{if(e.target.id==="deckPickModal")closeDeckPick();});
