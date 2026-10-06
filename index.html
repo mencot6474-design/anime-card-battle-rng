@@ -2024,8 +2024,9 @@ function activeChap(){
   return open.find(x=>x.no===(state?state.chap:1))||open.find(x=>!chapDone(x))||open[open.length-1]||CHAPTERS[0];
 }
 const LEVEL_COUNT=STORY_BIBLE.levels.length;
-const MASTER_CARD_INDEX=STORY_BIBLE.units.map(u=>({char_id:u.id,name:u.name,tier:u.tier,type:u.type,base_hp:u.hp,base_atk:u.atk,sprite_asset:u.art,passive:{name:u.skill,desc:u.desc},noGacha:!!u.noGacha}));
+const MASTER_CARD_INDEX=STORY_BIBLE.units.map(u=>({char_id:u.id,name:u.name,tier:u.tier,type:u.type,base_hp:u.hp,base_atk:u.atk,sprite_asset:u.art,art_image:u.art,passive:{name:u.skill,desc:u.desc},noGacha:!!u.noGacha}));
 const CARDS=Object.fromEntries(MASTER_CARD_INDEX.map(c=>[c.char_id,c]));
+function getCardData(id){return CARDS[id]||null;}
 function cardImg(id){return CARDS[id].sprite_asset;}
 function cardName(id){return CARDS[id].name;}
 function cardType(id){return CARDS[id].type;}
@@ -2186,7 +2187,8 @@ function resolveFx(stack,enemyFx){
   return mergeFx(o,TRAIT_FX[stack.trait]||{});
 }
 
-function cardStats(charId,lv,mut,trait){const c=CARDS[charId],m=Math.pow(1.1,lv-1),k=(MUT_MULT[mut||"none"]||1)*(TRAIT_MULT[trait||"none"]||1);return{hp:Math.round(c.base_hp*m*k),atk:Math.round(c.base_atk*m*k)};}
+function cardStats(charId,lv,mut,trait){const c=CARDS[charId];if(!c)return{hp:0,atk:0,def:0};const _lv=lv||1,m=Math.pow(1.1,_lv-1),k=(MUT_MULT[mut||"none"]||1)*(TRAIT_MULT[trait||"none"]||1);const hp=Math.round(c.base_hp*m*k),atk=Math.round(c.base_atk*m*k);return{hp,atk,def:hp};}
+function getTierColor(t){return TIER_COLOR[t]||"#9A8A8B";}
 /* POWER = total HP + ATK semua kartu yang dipakai: kartu utama + TAG (tetap terdeteksi walau cuma 1 kartu) */
 function totalPower(){
   const a=equipped(),b=equipped2();
