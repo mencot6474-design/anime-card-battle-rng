@@ -285,15 +285,16 @@ body.battle-full .bench-rail .bench-sq{width:clamp(50px,11vh,74px)}
    TANPA mengubah HTML ketiga renderer (semua hook engine: #foeSide innerHTML-replace, .bench-rail, .fighter.me/.foe, #turnLabel tetap utuh).
    Desktop-only: di layar <=700px layout lama (bertumpuk) tetap dipakai. */
 @media(min-width:701px){
-body.battle-full .battle-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"hud hud" "me foe" "bench bench";gap:clamp(8px,1.6vh,18px) clamp(14px,3vw,40px);padding-left:clamp(84px,10vw,132px);padding-right:clamp(12px,2vw,28px);align-items:stretch}
+body.battle-full .battle-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"hud foe-slot" "me foe" "bench bench";gap:clamp(8px,1.6vh,18px) clamp(14px,3vw,40px);padding-left:clamp(84px,10vw,132px);padding-right:clamp(12px,2vw,28px);align-items:stretch}
 body.battle-full .me-col,body.battle-full .foe-side{display:contents}
 body.battle-full .vs-col{grid-area:hud;align-self:start;justify-self:start;flex-direction:column;align-items:flex-start;gap:2px}
 body.battle-full .vs-col .t{display:none}
 body.battle-full .vs-col .s{font-family:"Barlow Condensed";font-size:clamp(16px,2.6vh,24px);letter-spacing:.05em;color:var(--text);text-transform:none;font-weight:800;text-align:left;line-height:1.12}
-body.battle-full .fighter.me{grid-area:me;justify-self:center;align-self:stretch;width:min(100%,min(600px,calc((100dvh - 250px)*.72)));min-height:0}
-body.battle-full .fighter.foe{grid-area:foe;justify-self:center;align-self:stretch;width:min(100%,min(600px,calc((100dvh - 250px)*.72)));min-height:0}
+body.battle-full .fighter.me{grid-area:me;justify-self:center;align-self:stretch;width:min(100%,min(440px,calc((100dvh - 320px)*.72)));min-height:0}
+body.battle-full .fighter.foe{grid-area:foe;justify-self:center;align-self:stretch;width:min(100%,min(440px,calc((100dvh - 320px)*.72)));min-height:0}
 body.battle-full .me-col:not(.foe-side) .bench-rail{grid-area:bench;justify-self:center;align-self:end;margin-top:0}
-body.battle-full .foe-side .bench-rail,body.battle-full .foe-side .bench{display:none}
+body.battle-full .foe-side .bench-rail{grid-area:foe-slot;justify-self:end;align-self:start;margin-top:0}
+body.battle-full .foe-side .bench{display:none}
 }
 .fighter.ko{filter:grayscale(1) brightness(.5);transform:translateY(12px);opacity:.55;transition:filter .3s,transform .3s,opacity .3s}
 .fighter.me.tag-enter{animation:tagEnter .6s cubic-bezier(.2,.9,.3,1.15) both}
