@@ -66,6 +66,9 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .roll-btn {position:fixed;right:20px;bottom:20px;width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--purple));border:3px solid var(--line2);box-shadow:0 6px 24px rgba(18,28,38,.35),0 0 0 3px var(--panel);z-index:100;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s;font-size:32px;animation:pulse-roll 2s infinite;}
 .roll-btn:hover{transform:scale(1.1);}
 .roll-btn.active{animation:spin-roll 1.5s linear infinite;}
+.roll-auto-btn{position:fixed;right:20px;bottom:104px;z-index:100;padding:8px 16px;border-radius:999px;border:2px solid var(--line2);background:var(--panel);color:var(--text);font-family:"Barlow Condensed";font-weight:800;font-size:14px;letter-spacing:.12em;cursor:pointer;box-shadow:0 4px 14px rgba(18,28,38,.3);transition:.15s;}
+.roll-auto-btn:hover{transform:scale(1.06);}
+.roll-auto-btn.on{background:linear-gradient(135deg,var(--cyan),var(--purple));color:#06131a;border-color:transparent;animation:pulse-roll 1.4s infinite;}
 @keyframes pulse-roll{0%,100%{box-shadow:0 6px 24px rgba(18,28,38,.35),0 0 0 3px var(--panel);}50%{box-shadow:0 12px 40px rgba(18,28,38,.55),0 0 0 6px var(--cyan);}}
 @keyframes spin-roll{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
 .roll-overlay{position:fixed;inset:0;background:rgba(18,28,38,.94);z-index:150;display:none;align-items:center;justify-content:center;flex-direction:column;backdrop-filter:blur(10px);}
@@ -84,7 +87,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .roll-close-out:hover{background:var(--panel2);}
 /* Mode mini: overlay jadi kartu kecil yang nempel di dekat tombol dadu, roll tetap jalan. */
 .roll-overlay.mini{background:transparent;backdrop-filter:none;display:block;align-items:initial;justify-content:initial;pointer-events:none;}
-.roll-overlay.mini .roll-card-showcase{position:fixed;right:20px;bottom:104px;width:120px;box-shadow:0 10px 30px rgba(0,0,0,.5);cursor:pointer;animation:none;pointer-events:auto;}
+.roll-overlay.mini .roll-card-showcase{position:fixed;right:20px;bottom:150px;width:120px;box-shadow:0 10px 30px rgba(0,0,0,.5);cursor:pointer;animation:none;pointer-events:auto;}
 .roll-overlay.mini .roll-rarity-chip{top:6px;left:6px;transform:none;font-size:12px;padding:3px 8px;border-radius:7px;}
 .roll-overlay.mini .roll-mut-badge{top:6px;right:6px;left:auto;transform:none;font-size:10px;padding:2px 7px;letter-spacing:.1em;}
 .roll-overlay.mini .roll-card-name{left:8px;right:8px;bottom:26px;font-size:13px;}
@@ -1412,6 +1415,7 @@ body.battle-full .stat svg{flex:none}
 <!-- ====== DOCK PERSISTEN: roll + backpack. Sengaja DI LUAR #app supaya
      pindah layar / re-render tidak menghapus elemen ini -> interval roll
      & panel dek tetap hidup (player bisa AFK tanpa roll ke-stop). -->
+<button class="roll-auto-btn" id="rollAutoBtn" title="Auto Roll (nyala/mati)">AUTO</button>
 <button class="roll-btn" id="rollBtn" title="Roll Cards!">🎲</button>
 <div class="backpack-toggle" id="backpackToggle" title="Backpack">🎒</div>
 <div class="roll-overlay" id="rollOverlay">
@@ -1693,6 +1697,9 @@ function startRollAnimation(luck = 1, speedMultiplier = 1) {
   
   const rollBtn = document.getElementById('rollBtn');
   if (rollBtn) rollBtn.classList.add('active');
+  const ra = document.getElementById('rollAutoBtn');
+  if (ra) ra.classList.add('on');
+  if (rollState.hideTimer) { clearTimeout(rollState.hideTimer); rollState.hideTimer = null; }
   
   // Set initial delay based on speed multiplier
   const initialDelay = RNG_ROLL_SPEED / speedMultiplier;
@@ -1711,8 +1718,14 @@ function stopRollAnimation() {
     clearInterval(rollState.interval);
     rollState.interval = null;
   }
+  if (rollState.hideTimer) {
+    clearTimeout(rollState.hideTimer);
+    rollState.hideTimer = null;
+  }
   const rollBtn = document.getElementById('rollBtn');
   if (rollBtn) rollBtn.classList.remove('active');
+  const ra = document.getElementById('rollAutoBtn');
+  if (ra) ra.classList.remove('on');
 }
 
 function showRollResult(result) {
@@ -4472,6 +4485,12 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
   });
   const bt=document.getElementById("backpackToggle");
   if(bt)bt.addEventListener("click",toggleBackpack);
+  /* AUTO: toggle rolling terus-menerus. Klik lagi / Tutup / klik dadu = mati. */
+  const ra=document.getElementById("rollAutoBtn");
+  if(ra)ra.addEventListener("click",()=>{
+    if(rollState.active){stopRollAnimation();hideRollResult();beep(330,0.12,"square",0.08);}
+    else{startRollAnimation();beep(440,0.15,"sine",0.1);}
+  });
   const rmin=document.getElementById("rollMinBtn");
   if(rmin)rmin.addEventListener("click",e=>{e.stopPropagation();setRollMini(true);});
   const rshow=document.querySelector("#rollOverlay .roll-card-showcase");
