@@ -917,6 +917,15 @@ body.battle-full .stat svg{flex:none}
 .ix-x{width:38px;height:38px;flex:none;border-radius:10px;border:1px solid var(--line2);background:#E7EBF0;color:var(--text);font-size:16px;cursor:pointer}
 .ix-x:hover{background:#F3E7EA}
 .ix-body{overflow-y:auto;padding:8px 4px 14px;display:flex;flex-direction:column;gap:20px}
+/* ---------- MISSION (popup daftar cerita) ---------- */
+#missionModal{position:fixed;inset:0;background:rgba(9,10,12,.8);backdrop-filter:blur(6px);display:none;place-items:center;z-index:60;padding:18px}
+#missionModal.show{display:grid}
+.mx-box{width:min(680px,94vw)}
+.mission-btn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;max-width:920px;margin:clamp(16px,3.5vh,34px) auto 44px;padding:16px 22px;border-radius:16px;border:1.5px solid rgba(20,28,38,.16);background:linear-gradient(160deg,#FFFFFF,#EEF2F6);cursor:pointer;transition:border-color .15s,transform .15s,box-shadow .15s;box-shadow:0 8px 26px rgba(200,212,222,.14)}
+.mission-btn:hover{border-color:var(--cyan);transform:translateY(-2px);box-shadow:0 12px 32px rgba(200,212,222,.22)}
+.mission-btn .mb-ic{width:26px;height:26px;flex:none;color:var(--cyan)}
+.mission-btn .mb-lbl{font-family:"Barlow Condensed";font-weight:700;letter-spacing:.16em;font-size:18px;color:var(--text)}
+.mission-btn .mb-sub{font-family:"Barlow Condensed";font-weight:600;letter-spacing:.1em;font-size:12px;color:var(--muted);border:1px solid var(--line2);border-radius:999px;padding:3px 10px}
 .ix-rowhead{display:flex;align-items:center;gap:12px;margin-bottom:10px}
 .ix-rowhead .t{font-family:"Barlow Condensed";font-size:20px;font-weight:700;letter-spacing:.12em;border:1px solid;border-radius:8px;padding:1px 14px}
 .ix-rowhead .r{font-size:11px;letter-spacing:.16em;font-weight:700;color:var(--muted)}
@@ -1331,6 +1340,14 @@ body.battle-full .stat svg{flex:none}
     <button class="ix-x" id="ixClose" title="Tutup">✕</button>
   </div>
   <div class="ix-body" id="ixBody"></div>
+</div></div>
+
+<div id="missionModal"><div class="ix-box mx-box">
+  <div class="ix-head">
+    <div><div class="eyebrow">PILIH MISI</div><div class="ix-title">Mission</div></div>
+    <button class="ix-x" id="mxClose" title="Tutup">✕</button>
+  </div>
+  <div class="ix-body" id="missionBody"></div>
 </div></div>
 
 <div id="skillPop"><div class="sp-box">
@@ -2592,8 +2609,7 @@ setInterval(()=>{
    dipakai renderLobby. Render battle tetap lewat guard state.battle di lobby. */
 function chapListHTML(){
   const pw=totalPower();
-  return `<h1 class="story-title">Mission</h1>
-  <div class="chap-list" id="chapList">${CHAPTERS.map(c=>{
+  return `<div class="chap-list" id="chapList">${CHAPTERS.map(c=>{
     const cd=diffProg()[state.diff];const open=cellUnlocked(c,state.diff),done=chapProgMode(c,state.diff);
     let nextLv=c.to;for(let i=c.from;i<=c.to;i++){if(!cd[i]){nextLv=i;break;}}
     const tgt=gateOf(nextLv);
@@ -2616,8 +2632,15 @@ function bindChapList(){
     openStory();
   });
 }
+function openMission(){
+  document.getElementById("missionBody").innerHTML=chapListHTML();
+  bindChapList();
+  document.getElementById("missionModal").classList.add("show");
+}
+function closeMission(){document.getElementById("missionModal").classList.remove("show");}
 function renderHome(){ renderLobby(); }
 function openStory(){
+  const mm=document.getElementById("missionModal");if(mm)mm.classList.remove("show");
   const ch=activeChap(),pw=totalPower();
   if(!cellUnlocked(ch,state.diff)){state.diff=highestChapDiff(ch);save();}
   document.getElementById("smKicker").textContent="CERITA · "+ch.tag.split("·")[1].trim();
@@ -3834,13 +3857,14 @@ function renderLobby(){
     <div class="hub-box h-r1 hub-link" id="hubIndex" role="button" title="Buka Katalog Kartu"><img class="hi-ic" src="assets/images/icon-index-card.png" alt=""><span class="hb-lbl">INDEX CARD</span></div>
     <div class="hub-box h-r2 hub-link" id="hubTrait" role="button" title="Roll Trait untuk kartu aktif"><img class="hi-ic" src="assets/images/icon-trait.svg" alt=""><span class="hb-lbl">TRAIT</span></div>
   </div>
-  <section class="lobby-story" id="storySection">${chapListHTML()}</section>`;
+  <button class="mission-btn" id="missionBtn" type="button" title="Buka daftar misi"><svg class="mb-ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 4 6v13l5-2 6 2 5-2V4l-5 2-6-2Z"/><path d="M9 4v13M15 6v13"/></svg><span class="mb-lbl">MISSION</span><span class="mb-sub" id="missionSub"></span></button>`;
   const hc=document.getElementById("hubCard");if(hc)hc.onclick=()=>{sfx.hit();toggleBackpack();};
   const hi=document.getElementById("hubIndex");if(hi)hi.onclick=()=>{sfx.hit();openIndex();};
   const ht=document.getElementById("hubTrait");if(ht)ht.onclick=()=>{sfx.hit();openTrait();};
   const hr=document.getElementById("hubRaid");if(hr)hr.onclick=()=>{sfx.hit();raidView="hub";location.hash="#/raid";};
   const ht2=document.getElementById("hubTower");if(ht2)ht2.onclick=()=>{sfx.hit();stopTower();location.hash="#/tower";};
-  bindChapList();
+  const mb=document.getElementById("missionBtn");if(mb)mb.onclick=()=>{sfx.hit();openMission();};
+  const ms=document.getElementById("missionSub");if(ms){const done=CHAPTERS.reduce((a,c)=>a+chapProgMode(c,state.diff),0),tot=CHAPTERS.reduce((a,c)=>a+c.levels.length,0);ms.textContent=done+"/"+tot+" SELESAI";}
 }
 
 /* ========== TOGGLE BACKPACK FUNCTION ========== */
@@ -4421,6 +4445,8 @@ document.getElementById("bfExit").onclick=()=>{
   if(route()==="#/lobby")render();else location.hash="#/lobby";
 };
 document.getElementById("btPause").onclick=()=>{sfx.hit();togglePause();};
+document.getElementById("mxClose").onclick=()=>{sfx.hit();closeMission();};
+document.getElementById("missionModal").onclick=(e)=>{if(e.target.id==="missionModal")closeMission();};
 document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
   stopBattleLoop();stopRaid();stopTower();state.battle=null;closeStory();
   if(location.hash===b.dataset.route||(!location.hash&&b.dataset.route==="#/lobby"))render();
