@@ -113,6 +113,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .bp-tile.in-deck{box-shadow:0 0 0 2px var(--cyan) inset;}
 .bp-tile .bpt-lvl{position:absolute;bottom:2px;right:5px;font-family:"Barlow Condensed";font-weight:700;font-size:11px;color:#fff;text-shadow:0 1px 2px #000;}
 .bp-tile .bpt-mut{position:absolute;top:2px;left:4px;font-family:"Barlow Condensed";font-weight:700;font-size:10px;text-shadow:0 1px 2px #000;}
+.bp-tile .bpt-cnt{position:absolute;bottom:2px;left:4px;font-family:"Barlow Condensed";font-weight:800;font-size:11px;color:#fff;background:rgba(12,14,16,.72);border-radius:6px;padding:0 5px;text-shadow:0 1px 2px #000;}
 .bp-tile .bpt-i{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:6px;border:none;background:rgba(12,14,16,.8);color:#fff;font-size:11px;font-weight:700;font-style:italic;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .deck-layout{display:flex;gap:24px;padding:24px;flex:1;overflow:hidden;}
 .deck-main-cards{flex:1;display:flex;flex-direction:column;gap:12px;}
@@ -1585,19 +1586,27 @@ function getChapterReward(chapterNo){
 /* ========== BACKPACK + ROLL SYSTEM ========== */
 let rollState = { active: false, interval: null, currentCard: null, luck: 1, speedMultiplier: 1, mini: false };
 
-/* Roll = SATU-SATUNYA sumber kartu baru selain Toko Raid. Tiap hasil roll jadi satu stack owned
-   di state.stacks dan otomatis mengisi slot dek yang kosong (biar langsung kepakai di battle). */
+/* Roll = SATU-SATUNYA sumber kartu baru selain Toko Raid. Hasil roll DITUMPUK dengan sistem count:
+   kartu yang sama (char + tier + mut) masuk ke satu stack dan menaikkan s.count, bukan entri baru,
+   biar backpack tidak membengkak. Satu stack tetap bisa dipasangkan ke satu slot dek. */
 function grantRolledCard(charId) {
   const card = CARDS[charId];
   if (!card || !state) return null;
-  const s = { id: Math.random().toString(36).slice(2, 9), char: charId, tier: card.tier, lv: 1, exp: 0, fav: false, lock: false, mut: "none", trait: "none" };
-  state.stacks.push(s);
+  if (!Array.isArray(state.stacks)) state.stacks = [];
+  const s = state.stacks.find(x => x.char === charId && x.tier === card.tier && (x.mut || "none") === "none");
+  if (s) {
+    s.count = (s.count || 1) + 1;
+    save(); rollCountBadge();
+    return s;
+  }
+  const ns = { id: Math.random().toString(36).slice(2, 9), char: charId, tier: card.tier, lv: 1, exp: 0, fav: false, lock: false, mut: "none", trait: "none", count: 1 };
+  state.stacks.push(ns);
   if (!Array.isArray(state.deck)) state.deck = [null, null, null, null];
   state.deck.length = 4;
   const empty = state.deck.indexOf(null);
-  if (empty >= 0) setDeckSlot(empty, s.id); else save();
+  if (empty >= 0) setDeckSlot(empty, ns.id); else save();
   rollCountBadge();
-  return s;
+  return ns;
 }
 
 function rollCountBadge() {
@@ -1733,7 +1742,7 @@ function bpAssign(stackId){
 function renderBackpackPanel(){
   const panel=document.getElementById('backpackPanel');if(!panel)return;
   const header=`<div class="backpack-header"><h2>DECK &amp; KOLEKSI</h2>
-    <div class="backpack-stats"><span>POWER <strong>${fmt(deckTotalPower())}</strong></span><span>KARTU <strong>${state.stacks.length}</strong></span></div>
+    <div class="backpack-stats"><span>POWER <strong>${fmt(deckTotalPower())}</strong></span><span>KARTU <strong>${fmt(state.stacks.reduce((a,s)=>a+(s.count||1),0))}</strong></span></div>
     <button class="backpack-close" onclick="toggleBackpack()">&times;</button></div>`;
   if(!state.stacks.length){panel.innerHTML=header+`<div class="bp-empty">Belum punya kartu. Tekan &#127922; untuk Roll.</div>`;return;}
   const slots=[0,1,2,3].map(i=>{
@@ -1744,7 +1753,8 @@ function renderBackpackPanel(){
   const tiles=state.stacks.map(s=>{
     const inDeck=state.deck.includes(s.id);
     const mut=(s.mut&&s.mut!=='none')?`<span class="bpt-mut" style="color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`:'';
-    return `<div class="bp-tile${inDeck?' in-deck':''}" onclick="bpAssign('${s.id}')" style="border-color:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt="">${mut}<button class="bpt-i" onclick="event.stopPropagation();openModal('${s.id}')" title="Detail &amp; naik level">i</button><span class="bpt-lvl">L${s.lv}</span></div>`;
+    const cnt=(s.count||1)>1?`<span class="bpt-cnt">&times;${fmt(s.count)}</span>`:'';
+    return `<div class="bp-tile${inDeck?' in-deck':''}" onclick="bpAssign('${s.id}')" style="border-color:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt="">${mut}${cnt}<button class="bpt-i" onclick="event.stopPropagation();openModal('${s.id}')" title="Detail &amp; naik level">i</button><span class="bpt-lvl">L${s.lv}</span></div>`;
   }).join('');
   panel.innerHTML=header+`<div class="bp-body">
     <div class="bp-h">${bpTarget!=null?('SLOT '+(bpTarget+1)+' TERPILIH — tap kartu untuk pasang'):'DEK · 4 SLOT · tap slot lalu tap kartu'}</div>
@@ -1949,7 +1959,7 @@ function getUsers(){try{return JSON.parse(localStorage.getItem(USERS_KEY))||{};}
 function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u));}
 function freshState(){
   const s0=STORY_BIBLE.units[0];
-  const start={id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,lv:1,exp:0,fav:false,lock:false,mut:"none",trait:"none"};
+  const start={id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,lv:1,exp:0,fav:false,lock:false,mut:"none",trait:"none",count:1};
   return{coins:1000,raidTokens:0,playerLv:1,xp:0,books:{common:0,gold:0,rainbow:0},dailyIndex:0,lastClaim:"",summons:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},tower:{floor:1,best:0},
     cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start.id,equippedId2:null,deck:[start.id,null,null,null],stacks:[start],history:[],battle:null};
 }
@@ -1965,7 +1975,7 @@ function loadStateFor(name){
   
   state.stacks=state.stacks.filter(s=>CARDS[s.char]);
   
-  {const seen={};state.stacks.forEach(s=>{const k=s.char+"|"+(s.mut||"none");if(!seen[k])seen[k]=s;else if((s.trait&&s.trait!=="none")&&(!seen[k].trait||seen[k].trait==="none"))seen[k]=s;});state.stacks=Object.values(seen);}
+  {const seen={};state.stacks.forEach(s=>{const k=s.char+"|"+(s.mut||"none");if(!seen[k]){seen[k]=s;s.count=s.count||1;}else{seen[k].count=(seen[k].count||1)+(s.count||1);if((s.trait&&s.trait!=="none")&&(!seen[k].trait||seen[k].trait==="none"))seen[k].trait=s.trait;}});state.stacks=Object.values(seen);}
   
   if(!state.stacks.length){const st=freshState();state.stacks=st.stacks;}
   
@@ -4236,7 +4246,9 @@ window.addEventListener("scroll",hideTraitTip,true);
 
 /* =============== SETTINGS =============== */
 function gmGrantCard(charId){
-  state.stacks.push({id:Math.random().toString(36).slice(2,9),char:charId,tier:CARDS[charId].tier,lv:1,exp:0,fav:false,lock:false,mut:"none",trait:"none"});
+  const ex=state.stacks.find(x=>x.char===charId&&x.tier===CARDS[charId].tier&&(x.mut||"none")==="none");
+  if(ex){ex.count=(ex.count||1)+1;return `${CARDS[charId].name} ×${ex.count}`;}
+  state.stacks.push({id:Math.random().toString(36).slice(2,9),char:charId,tier:CARDS[charId].tier,lv:1,exp:0,fav:false,lock:false,mut:"none",trait:"none",count:1});
   return `${CARDS[charId].name} ditambahkan ke deck`;
 }
 function renderSettings(){
