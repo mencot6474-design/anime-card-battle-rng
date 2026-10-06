@@ -2192,7 +2192,7 @@ function madaraSound(crit){
   }catch(e){}
 }
 /* ---------- suara RANTON Madara: sambaran petir (crack → zap listrik → kresek-kresek bolt → gemuruh guntur) ---------- */
-function rantonZap(t0,gain){
+function rantonZap(t0,gain){return;/*animasi skill dihapus*/
   const a=actxOf(),s=a.createOscillator();s.type="sawtooth";
   s.frequency.setValueAtTime(1900,t0);s.frequency.exponentialRampToValueAtTime(210,t0+.2);
   const hp=a.createBiquadFilter();hp.type="highpass";hp.frequency.value=320;
@@ -2356,7 +2356,7 @@ function makeIR(dur,decay){
   }
   return buf;
 }
-function domainVoid(){
+function domainVoid(){return;/*animasi skill dihapus*/
   if(state.muted)return;
   try{
     const a=actxOf(),t0=a.currentTime+0.02;
@@ -2409,7 +2409,7 @@ function malevolentShrine(){
     }
   }catch(e){}
 }
-function malevolentShrineFx(targetSel,who){
+function malevolentShrineFx(targetSel,who){return;/*animasi skill dihapus*/
   const grid=document.querySelector(".battle-grid");if(!grid)return;
   const d=document.createElement("div");d.className="shrinefx";
   const bgd=document.createElement("div");bgd.className="shrine-bgfx";
@@ -2687,7 +2687,7 @@ function anim(sel,cls,noPair){
   const pulse=(e)=>{e.classList.remove(cls);void e.offsetWidth;e.classList.add(cls);setTimeout(()=>e.classList.remove(cls),520);};
   pulse(el);
 }
-function sukunaFx(sel,crit,light){
+function sukunaFx(sel,crit,light){return;/*animasi skill dihapus*/
   const f=document.querySelector(sel);if(!f)return;
   const d=document.createElement("div");d.className="sukunafx"+(crit?" crit":"")+(light?" light":"");
   let html=light?"":'<span class="sk-veil"></span>';
@@ -2723,7 +2723,7 @@ function sukunaFx(sel,crit,light){
   f.appendChild(d);
   setTimeout(()=>d.remove(),light?520:(crit?1050:850));
 }
-function cleaveFx(sel,crit,white){
+function cleaveFx(sel,crit,white){return;/*animasi skill dihapus*/
   const f=document.querySelector(sel);if(!f)return;
   const d=document.createElement("div");
   d.className="cleave"+(crit?" crit":"")+(white?" white":"");
@@ -2744,7 +2744,7 @@ function cleaveFx(sel,crit,white){
   f.appendChild(d);
   setTimeout(()=>d.remove(),760);
 }
-function gojoFx(sel,crit){
+function gojoFx(sel,crit){return;/*animasi skill dihapus*/
   const f=document.querySelector(sel);if(!f)return;
   const d=document.createElement("div");d.className="gojofx"+(crit?" crit":"");
   let html='<span class="gp-flash"></span><span class="gp-rays"></span><span class="gp-swirl"></span><span class="gp-orb"></span><span class="gp-core"></span><span class="gp-ring"></span><span class="gp-ring r2"></span><span class="gp-white"></span>';
@@ -2761,7 +2761,7 @@ function gojoFx(sel,crit){
   f.appendChild(d);
   setTimeout(()=>d.remove(),crit?1150:950);
 }
-function reversalRedFx(sel){
+function reversalRedFx(sel){return;/*animasi skill dihapus*/
   gojoSound(false,0);
   const f=document.querySelector(sel);if(!f)return;
   const d=document.createElement("div");d.className="redfx";
@@ -2786,7 +2786,7 @@ function reversalRedFx(sel){
   f.classList.remove("hit");void f.offsetWidth;f.classList.add("knockback");setTimeout(()=>f.classList.remove("knockback"),560);
   setTimeout(()=>d.remove(),640);
 }
-function hollowPurpleFx(crit,atkSel,defSel){
+function hollowPurpleFx(crit,atkSel,defSel){return;/*animasi skill dihapus*/
   const A=atkSel||".fighter.me",D=defSel||".fighter.foe";
   const grid=document.querySelector(".battle-grid");if(!grid)return;
   const meEl=document.querySelector(A),foeEl=document.querySelector(D);
@@ -2821,7 +2821,7 @@ function galaxySound(phase){
     }
   }catch(e){}
 }
-function galaxyRoarFx(atkSel,defSel,crit){
+function galaxyRoarFx(atkSel,defSel,crit){return;/*animasi skill dihapus*/
   const A=atkSel||".fighter.me",D=defSel||".fighter.foe";
   const meEl=document.querySelector(A),foeEl=document.querySelector(D);
   if(!meEl||!foeEl){cleaveFx(D,crit,true);return;}
@@ -2867,7 +2867,7 @@ function galaxyRoarFx(atkSel,defSel,crit){
   },GALAXY.hit);
   setTimeout(()=>o.remove(),GALAXY.total);
 }
-function domainExpansionFx(who){
+function domainExpansionFx(who){return;/*animasi skill dihapus*/
   const grid=document.querySelector(".battle-grid");if(!grid)return;
   const d=document.createElement("div");d.className="domvoid";
   const vw=window.innerWidth, vh=window.innerHeight;
@@ -2897,11 +2897,11 @@ function domainExpansionFx(who){
   bgd.innerHTML='<img class="dom-bgimg" src="assets/sprites/domain.png" alt="">';
   if(sigBackdrop(who||"CH_EX_GOJO"))document.body.appendChild(bgd);
 }
-function domainEndFx(){
+function domainEndFx(){return;/*animasi skill dihapus*/
   document.querySelectorAll(".domvoid").forEach(d=>{d.style.opacity="0";setTimeout(()=>d.remove(),600);});
 }
 function madaraAura(charId){return "";}
-function madaraFx(sel,crit){
+function madaraFx(sel,crit){return;/*animasi skill dihapus*/
   const f=document.querySelector(sel);if(!f)return;
   const d=document.createElement("div");d.className="madarafx"+(crit?" crit":"");
   const orbN=crit?14:8, partN=crit?18:11;
@@ -2929,7 +2929,7 @@ function madaraFx(sel,crit){
   setTimeout(()=>d.remove(),1200);
 }
 /* ---------- LIMBO (Madara) dodge: tubuh berkedip tembus + klon dunia lain menyingkir, serangan menembus ---------- */
-function madaraLimboFx(){
+function madaraLimboFx(){return;/*animasi skill dihapus*/
   const f=document.querySelector(".fighter.me");if(!f)return;
   try{
     f.animate(
@@ -3018,7 +3018,7 @@ function tensaSlash(parent,cx,cy,fr,fromLeft,big){
   setTimeout(()=>{try{cut.remove();}catch(e){}},520);
   return fromLeft?tilt:tilt-180;
 }
-function madaraTensaFx(atkSel,defSel,n,who){
+function madaraTensaFx(atkSel,defSel,n,who){return MADARA_T.slash;/*animasi skill dihapus*/
   const A=atkSel||".fighter.me",D=defSel||".fighter.foe";
   const N=Math.max(1,Math.round(n||15));
   const foeEl=document.querySelector(D);if(!foeEl)return MADARA_T.slash;
@@ -3048,7 +3048,7 @@ function madaraTensaFx(atkSel,defSel,n,who){
   setTimeout(()=>{try{bgd.remove();d.remove();}catch(e){}},MADARA_T.total+120);
   return MADARA_T.slash;
 }
-function armyOfShadowsFx(targetSel,who){
+function armyOfShadowsFx(targetSel,who){return;/*animasi skill dihapus*/
   const grid=document.querySelector(".battle-grid");if(!grid)return;
   const foeEl=document.querySelector(targetSel||".fighter.foe");
   const fr=foeEl?foeEl.getBoundingClientRect():null;
@@ -3064,7 +3064,7 @@ function armyOfShadowsFx(targetSel,who){
   playClip(domainAudio);
   setTimeout(()=>{d.remove();bgd.remove();},2150);
 }
-function jinwooDashFx(atkSel,defSel){
+function jinwooDashFx(atkSel,defSel){return;/*animasi skill dihapus*/
   const A=atkSel||".fighter.me",D=defSel||".fighter.foe";
   const meEl=document.querySelector(A),foeEl=document.querySelector(D);
   if(!meEl||!foeEl)return;
@@ -3102,7 +3102,7 @@ function jinwooDashFx(atkSel,defSel){
   setTimeout(()=>layer.remove(),GAP*(NS-1)+FLY+560);
 }
 // sapuan slash bulan sabit di kartu musuh: sabit gede kesabet muter + percikan, sudut beda tiap hit
-function ariseSlashFx(fr,k,targetSel){
+function ariseSlashFx(fr,k,targetSel){return;/*animasi skill dihapus*/
   const cx=fr.left+fr.width/2, cy=fr.top+fr.height/2;
   const rot=20+k*46+(Math.random()*30-15);
   const r=Math.hypot(fr.width,fr.height)*0.55;
@@ -3113,7 +3113,7 @@ function ariseSlashFx(fr,k,targetSel){
   document.body.appendChild(s);
   setTimeout(()=>s.remove(),540);
 }
-function ariseStrikeFx(i,n,targetSel){
+function ariseStrikeFx(i,n,targetSel){return;/*animasi skill dihapus*/
   const sel=targetSel||".fighter.foe";
   const foeEl=document.querySelector(sel);if(!foeEl)return;
   const fr=foeEl.getBoundingClientRect();
@@ -3195,20 +3195,20 @@ function schedPhase(ms,fn){
 }
 /* ===== Renderer serangan SATU untuk semua kartu: user & musuh tinggal tukar sisi (A=penyerang, D=target) ===== */
 function attackLunge(sel){anim(sel,sel===".fighter.foe"?"lunge-l":"lunge-r");}
-function modeDomainFx(A,D,total,who){
+function modeDomainFx(A,D,total,who){return;/*animasi skill dihapus*/
   domainExpansionFx(who);domainVoid();
   setTimeout(()=>floatText(A,"DOMAIN EXPANSION","crit"),220);
   floatText(D,"UNLIMITED VOID","crit");
   if(total>0)setTimeout(()=>floatText(D,"-"+fmt(total),"crit"),520);
 }
-function modeShrineFx(D,who){malevolentShrineFx(D,who);malevolentShrine();floatText(D,"MALEVOLENT SHRINE","crit");}
-function modeAriseFx(A,D,who){armyOfShadowsFx(D,who);jinwooDashFx(A,D);floatText(D,"ARMY OF SHADOWS","crit");}
-function barrageHitFx(id,i,n,crit,sel){
+function modeShrineFx(D,who){return;/*animasi skill dihapus*/malevolentShrineFx(D,who);malevolentShrine();floatText(D,"MALEVOLENT SHRINE","crit");}
+function modeAriseFx(A,D,who){return;/*animasi skill dihapus*/armyOfShadowsFx(D,who);jinwooDashFx(A,D);floatText(D,"ARMY OF SHADOWS","crit");}
+function barrageHitFx(id,i,n,crit,sel){return;/*animasi skill dihapus*/
   if(id==="CH_EX_SUKUNA")sukunaFx(sel,crit&&i===n-1,i<n-1);
   else if(id==="CH_EX_JINWOO")ariseStrikeFx(i,n,sel);
   else if(id!=="CH_EX_MADARA")cleaveFx(sel,false,true);
 }
-function singleHitFx(id,A,D,o){
+function singleHitFx(id,A,D,o){return;/*animasi skill dihapus*/
   if(id==="CH_EX_SUKUNA")sukunaFx(D,o.crit);
   else if(id==="CH_EX_GOJO"){if(o.purple){hollowPurpleFx(true,A,D);}else{reversalRedFx(D);}}
   else if(id==="CH_EX_MADARA"){madaraFx(D,o.crit);}
