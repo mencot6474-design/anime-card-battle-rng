@@ -73,23 +73,21 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .roll-card-showcase{position:relative;width:300px;aspect-ratio:3/4;border-radius:18px;border:3px solid var(--cyan);background:#12151a;overflow:hidden;box-shadow:0 20px 80px rgba(18,28,38,.6);animation:card-reveal .5s ease-out;}
 @keyframes card-reveal{from{opacity:0;transform:scale(.8) translateY(40px);}to{opacity:1;transform:scale(1) translateY(0);}}
 .roll-card-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
-.roll-rarity-chip{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:2;font-family:"Barlow Condensed";font-weight:700;font-size:22px;letter-spacing:.1em;padding:5px 14px;border-radius:10px;background:rgba(12,14,16,.82);border:1px solid currentColor;white-space:nowrap;}
-.roll-mut-badge{position:absolute;top:52px;left:50%;transform:translateX(-50%);z-index:2;font-family:"Barlow Condensed";font-weight:800;font-size:16px;letter-spacing:.14em;padding:3px 12px;border-radius:9px;background:rgba(12,14,16,.82);border:1px solid currentColor;white-space:nowrap;display:none;}
+.roll-rarity-chip{position:absolute;top:12px;left:12px;transform:none;z-index:2;font-family:"Barlow Condensed";font-weight:700;font-size:22px;letter-spacing:.1em;padding:5px 14px;border-radius:10px;background:rgba(12,14,16,.82);border:1px solid currentColor;white-space:nowrap;}
+.roll-mut-badge{position:absolute;top:12px;right:12px;left:auto;transform:none;z-index:2;font-family:"Barlow Condensed";font-weight:800;font-size:16px;letter-spacing:.14em;padding:5px 12px;border-radius:9px;background:rgba(12,14,16,.82);border:1px solid currentColor;white-space:nowrap;display:none;}
 .roll-mut-badge.show{display:block;}
 .roll-card-name{position:absolute;left:14px;right:14px;bottom:46px;z-index:2;font-family:"Barlow Condensed";font-weight:700;font-size:20px;letter-spacing:.03em;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.85);text-align:left;}
 .roll-stats{position:absolute;left:0;right:0;bottom:0;z-index:2;display:flex;justify-content:space-between;gap:12px;padding:12px 16px;font-size:16px;font-weight:700;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.82));}
 .roll-note{margin-top:18px;font-size:14px;color:var(--muted);text-align:center;}
-.roll-info-btn{margin-top:24px;padding:10px 24px;border-radius:10px;border:1px solid var(--line);background:var(--panel);font-family:"Barlow Condensed";font-weight:600;cursor:pointer;transition:.15s;}
-.roll-info-btn:hover{background:var(--panel2);}
 /* Mode mini: overlay jadi kartu kecil yang nempel di dekat tombol dadu, roll tetap jalan. */
 .roll-overlay.mini{background:transparent;backdrop-filter:none;display:block;align-items:initial;justify-content:initial;pointer-events:none;}
 .roll-overlay.mini .roll-card-showcase{position:fixed;right:20px;bottom:104px;width:120px;box-shadow:0 10px 30px rgba(0,0,0,.5);cursor:pointer;animation:none;pointer-events:auto;}
 .roll-overlay.mini .roll-rarity-chip{top:6px;left:6px;transform:none;font-size:12px;padding:3px 8px;border-radius:7px;}
-.roll-overlay.mini .roll-mut-badge{top:30px;left:6px;transform:none;font-size:10px;padding:2px 7px;letter-spacing:.1em;}
+.roll-overlay.mini .roll-mut-badge{top:6px;right:6px;left:auto;transform:none;font-size:10px;padding:2px 7px;letter-spacing:.1em;}
 .roll-overlay.mini .roll-card-name{left:8px;right:8px;bottom:26px;font-size:13px;}
 .roll-overlay.mini .roll-stats{padding:6px 9px;font-size:12px;}
-.roll-overlay.mini .roll-note,.roll-overlay.mini .roll-info-btn,.roll-overlay.mini .roll-min-btn{display:none;}
-.roll-min-btn{position:absolute;top:12px;right:12px;z-index:3;width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:rgba(12,14,16,.82);color:#fff;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.roll-overlay.mini .roll-note,.roll-overlay.mini .roll-min-btn{display:none;}
+.roll-min-btn{position:absolute;top:12px;left:50%;right:auto;transform:translateX(-50%);z-index:3;width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:rgba(12,14,16,.82);color:#fff;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .roll-min-btn:hover{background:var(--panel2);}
 .backpack-toggle{position:fixed;left:20px;bottom:20px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#2c7a7c,#38b7ff);border:3px solid var(--line2);box-shadow:0 4px 16px rgba(56,183,255,.35);z-index:100;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:28px;transition:transform .2s;}
 .backpack-toggle:hover{transform:scale(1.1);}
@@ -1362,15 +1360,14 @@ body.battle-full .bench-rail .bench-sq{width:clamp(50px,11vh,74px)}
     <button class="roll-min-btn" id="rollMinBtn" title="Kecilkan">▾</button>
     <img class="roll-card-img" id="rollCardImg" src="">
     <div class="roll-rarity-chip" id="rollRarityChip">ROLLING...</div>
-    <div class="roll-card-name" id="rollCardName"></div>
     <div class="roll-mut-badge" id="rollMutBadge"></div>
+    <div class="roll-card-name" id="rollCardName"></div>
     <div class="roll-stats">
       <div>♡ <span id="rollHp"></span></div>
       <div><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></svg> <span id="rollAtk"></span></div>
     </div>
   </div>
-  <div class="roll-note">Kartu otomatis masuk Koleksi &amp; mengisi slot dek 🎒</div>
-  <button class="roll-info-btn" id="collectBtn">TUTUP</button>
+  <div class="roll-note">Kartu otomatis masuk Koleksi · ketuk untuk menutup</div>
 </div>
 <div class="backpack-panel" id="backpackPanel"></div>
 
@@ -1660,8 +1657,7 @@ function showRollResult(result) {
   const overlay = document.getElementById('rollOverlay');
   const cardImg = document.getElementById('rollCardImg');
   const rarityChip = document.getElementById('rollRarityChip');
-  const closeBtn = document.getElementById('collectBtn');
-  
+
   if (!overlay || !cardImg || !rarityChip) return;
   
   const cardData = getCardData(result.cardId);
@@ -1709,8 +1705,7 @@ function showRollResult(result) {
     showcase.style.transform = 'scale(1)';
   }
   
-  // Kartu sudah otomatis masuk koleksi/dek (di startRollAnimation); tombol ini cuma tutup + stop roll.
-  if(closeBtn) closeBtn.onclick = () => { stopRollAnimation(); hideRollResult(); };
+  // Tutup lewat klik di mana saja diikat di wireRollDock (overlay), bukan tombol lagi.
 }
 
 function hideRollResult() {
@@ -4385,6 +4380,13 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
   if(rmin)rmin.addEventListener("click",e=>{e.stopPropagation();setRollMini(true);});
   const rshow=document.querySelector("#rollOverlay .roll-card-showcase");
   if(rshow)rshow.addEventListener("click",()=>{if(rollState.mini)setRollMini(false);});
+  /* Klik di mana saja pada reveal (bukan tombol kecilkan) = tutup + stop roll, ganti tombol TUTUP lama. */
+  const rov=document.getElementById("rollOverlay");
+  if(rov)rov.addEventListener("click",e=>{
+    if(rollState.mini)return;
+    if(e.target.closest("#rollMinBtn"))return;
+    stopRollAnimation();hideRollResult();beep(330,0.12,"square",0.08);
+  });
 })();
 document.getElementById("ixClose").onclick=()=>document.getElementById("indexModal").classList.remove("show");document.getElementById("indexModal").addEventListener("click",e=>{if(e.target.id==="indexModal")e.target.classList.remove("show");});
 document.getElementById("trClose").onclick=closeTrait;document.getElementById("traitModal").addEventListener("click",e=>{if(e.target.id==="traitModal")closeTrait();});
