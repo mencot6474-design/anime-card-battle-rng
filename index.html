@@ -79,6 +79,8 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .roll-card-name{position:absolute;left:14px;right:14px;bottom:46px;z-index:2;font-family:"Barlow Condensed";font-weight:700;font-size:20px;letter-spacing:.03em;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.85);text-align:left;}
 .roll-stats{position:absolute;left:0;right:0;bottom:0;z-index:2;display:flex;justify-content:space-between;gap:12px;padding:12px 16px;font-size:16px;font-weight:700;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.82));}
 .roll-note{margin-top:18px;font-size:14px;color:var(--muted);text-align:center;}
+.roll-close-out{margin-top:14px;padding:9px 22px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-family:"Barlow Condensed";font-weight:700;font-size:15px;letter-spacing:.06em;cursor:pointer;transition:.15s;}
+.roll-close-out:hover{background:var(--panel2);}
 /* Mode mini: overlay jadi kartu kecil yang nempel di dekat tombol dadu, roll tetap jalan. */
 .roll-overlay.mini{background:transparent;backdrop-filter:none;display:block;align-items:initial;justify-content:initial;pointer-events:none;}
 .roll-overlay.mini .roll-card-showcase{position:fixed;right:20px;bottom:104px;width:120px;box-shadow:0 10px 30px rgba(0,0,0,.5);cursor:pointer;animation:none;pointer-events:auto;}
@@ -86,7 +88,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .roll-overlay.mini .roll-mut-badge{top:6px;right:6px;left:auto;transform:none;font-size:10px;padding:2px 7px;letter-spacing:.1em;}
 .roll-overlay.mini .roll-card-name{left:8px;right:8px;bottom:26px;font-size:13px;}
 .roll-overlay.mini .roll-stats{padding:6px 9px;font-size:12px;}
-.roll-overlay.mini .roll-note,.roll-overlay.mini .roll-min-btn{display:none;}
+.roll-overlay.mini .roll-note,.roll-overlay.mini .roll-close-out,.roll-overlay.mini .roll-min-btn{display:none;}
 .roll-min-btn{position:absolute;top:12px;left:50%;right:auto;transform:translateX(-50%);z-index:3;width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:rgba(12,14,16,.82);color:#fff;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .roll-min-btn:hover{background:var(--panel2);}
 .backpack-toggle{position:fixed;left:20px;bottom:20px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#2c7a7c,#38b7ff);border:3px solid var(--line2);box-shadow:0 4px 16px rgba(56,183,255,.35);z-index:100;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:28px;transition:transform .2s;}
@@ -1367,7 +1369,8 @@ body.battle-full .bench-rail .bench-sq{width:clamp(50px,11vh,74px)}
       <div><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></svg> <span id="rollAtk"></span></div>
     </div>
   </div>
-  <div class="roll-note">Kartu otomatis masuk Koleksi · ketuk untuk menutup</div>
+  <div class="roll-note">Kartu otomatis masuk Koleksi &amp; mengisi slot dek 🎒</div>
+  <button class="roll-close-out" id="rollCloseBtn" type="button">&#10005; Tutup</button>
 </div>
 <div class="backpack-panel" id="backpackPanel"></div>
 
@@ -4380,12 +4383,11 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
   if(rmin)rmin.addEventListener("click",e=>{e.stopPropagation();setRollMini(true);});
   const rshow=document.querySelector("#rollOverlay .roll-card-showcase");
   if(rshow)rshow.addEventListener("click",()=>{if(rollState.mini)setRollMini(false);});
-  /* Klik di mana saja pada reveal (bukan tombol kecilkan) = tutup + stop roll, ganti tombol TUTUP lama. */
+  /* Tutup lewat kontrol "✕ Tutup" atau klik area gelap di LUAR kartu — kartu sendiri (area badge/chance) tidak menutup. */
   const rov=document.getElementById("rollOverlay");
   if(rov)rov.addEventListener("click",e=>{
     if(rollState.mini)return;
-    if(e.target.closest("#rollMinBtn"))return;
-    stopRollAnimation();hideRollResult();beep(330,0.12,"square",0.08);
+    if(e.target===rov||e.target.closest("#rollCloseBtn")){stopRollAnimation();hideRollResult();beep(330,0.12,"square",0.08);}
   });
 })();
 document.getElementById("ixClose").onclick=()=>document.getElementById("indexModal").classList.remove("show");document.getElementById("indexModal").addEventListener("click",e=>{if(e.target.id==="indexModal")e.target.classList.remove("show");});
