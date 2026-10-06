@@ -290,13 +290,13 @@ body.battle-full .bench-rail .bench-sq{width:clamp(50px,11vh,74px)}
    TANPA mengubah HTML ketiga renderer (semua hook engine: #foeSide innerHTML-replace, .bench-rail, .fighter.me/.foe, #turnLabel tetap utuh).
    Desktop-only: di layar <=700px layout lama (bertumpuk) tetap dipakai. */
 @media(min-width:701px){
-body.battle-full .battle-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto;grid-template-areas:"hud hud" "foe-slot foe-slot" "me foe" "bench bench";gap:clamp(8px,1.6vh,18px) clamp(14px,3vw,40px);padding-left:clamp(12px,2vw,28px);padding-right:clamp(12px,2vw,28px);align-items:stretch}
+body.battle-full .battle-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"foe-slot foe-slot" "me foe" "bench bench";gap:clamp(8px,1.6vh,18px) clamp(14px,3vw,40px);padding-left:clamp(12px,2vw,28px);padding-right:clamp(12px,2vw,28px);align-items:stretch}
 /* khusus Sky Tower: kiri disisain buat tombol END/PAUSE (story/raid nggak punya tombol → rapat penuh) */
 body.battle-full.battle-tower .battle-grid{padding-left:clamp(84px,10vw,132px)}
 body.battle-full .me-col,body.battle-full .foe-side{display:contents}
-body.battle-full .vs-col{grid-area:hud;align-self:start;justify-self:start;flex-direction:column;align-items:flex-start;gap:2px}
+body.battle-full .vs-col{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);flex-direction:column;align-items:center;gap:2px;z-index:4;pointer-events:none}
 body.battle-full .vs-col .t{display:none}
-body.battle-full .vs-col .s{font-family:"Barlow Condensed";font-size:clamp(16px,2.6vh,24px);letter-spacing:.05em;color:var(--text);text-transform:none;font-weight:800;text-align:left;line-height:1.12}
+body.battle-full .vs-col .s{font-family:"Barlow Condensed";font-size:clamp(16px,2.6vh,24px);letter-spacing:.05em;color:var(--text);text-transform:none;font-weight:800;text-align:center;line-height:1.12}
 body.battle-full .fighter.me{grid-area:me;justify-self:start;align-self:center;aspect-ratio:3/4;width:min(100%,min(460px,calc((100dvh - 360px)*1.1)));max-height:min(600px,calc((100dvh - 360px)*1.55));min-height:0}
 body.battle-full .fighter.foe{grid-area:foe;justify-self:end;align-self:center;aspect-ratio:3/4;width:min(100%,min(460px,calc((100dvh - 360px)*1.1)));max-height:min(600px,calc((100dvh - 360px)*1.55));min-height:0}
 body.battle-full .fighter{height:auto;overflow:visible}
