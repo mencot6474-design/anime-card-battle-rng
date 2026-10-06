@@ -940,8 +940,10 @@ body.battle-full .stat svg{flex:none}
 .dp-card.sel{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(20,28,38,.22)}
 .dp-name{position:absolute;left:0;right:0;bottom:0;z-index:1;padding:15px 5px 3px;font-family:"Barlow Condensed";font-weight:700;font-size:11px;letter-spacing:.02em;line-height:1.1;text-align:left;color:#20161a;background:linear-gradient(transparent,rgba(255,255,255,.92));overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dp-card .dp-badges{position:absolute;top:4px;right:4px;left:auto;z-index:3;display:flex;align-items:center;gap:4px}
-.dp-card .dp-badges .mut-badge,.dp-card .dp-badges .trait-badge{position:static;top:auto;left:auto;right:auto;display:inline-flex;align-items:center;height:15px;padding:0 5px;font-size:9px;letter-spacing:.06em;line-height:1}
-.dp-card .dp-badges .dp-gem{padding:0 3px}
+.dp-card .dp-badges .mut-badge,.dp-card .dp-badges .trait-badge{position:static;top:auto;left:auto;right:auto;box-sizing:border-box;display:inline-flex;align-items:center;height:16px;line-height:1;font-size:10px;letter-spacing:.06em;font-weight:700;border-radius:6px;border:1px solid}
+.dp-card .dp-badges .dp-mut{padding:0 6px}
+.dp-card .dp-badges .dp-gem{padding:0;width:16px;justify-content:center}
+.dp-card .dp-badges .dp-gem svg{display:block;width:12px;height:12px}
 .dp-meta{font-size:9px;letter-spacing:.06em;color:var(--muted)}
 .dp-dia{position:absolute;top:5px;left:5px;z-index:3;display:inline-flex;align-items:center;font-family:"Barlow Condensed";font-weight:700;font-size:9px;letter-spacing:.04em;filter:drop-shadow(0 0 3px #000)}
 #rarePromptModal{position:fixed;inset:0;background:rgba(6,7,9,.86);backdrop-filter:blur(8px);display:none;place-items:center;z-index:80}
