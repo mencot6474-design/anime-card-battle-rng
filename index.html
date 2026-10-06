@@ -1527,10 +1527,16 @@ const STORY_BIBLE={
            statusImmune:1       -> (flag; aktif setelah ada musuh yang kasih efek status)
            purple:{chance,mult} -> Galaxy Roar (eksklusif id CH_ETERNAL_DRAGON)
            domain / ranton      -> khusus id EX tertentu (Gojo / Madara)
+           dodgeAtk:{chance,pct,max} -> hindari serangan (chance%), tiap dodge +pct% ATK permanen (stack s/d max)
+           everySecond:{mult}   -> tiap serangan GENAP (ke-2,ke-4,..) ×mult damage + tembus damage reduction musuh
+           lastStand:{pct}      -> fatal pertama ditahan di 1 HP (sekali) + langsung +pct% ATK
        ==================================================== */
     {id:"CH_RULER",name:"RULER",tier:"EX",type:"Absolute",skill:"VENUZDONOA",hp:4787,atk:2394,chance:1000000,art:"assets/cards/art/ruler.webp",
       fx:{revive:1,dmgMult:2,ignoreDef:1,statusImmune:1},
-      desc:"Saat mati, bangkit dengan 100% HP (sekali). Semua serangan memberikan 2x damage. Efek pengurangan damage musuh diabaikan sepenuhnya. Tidak dapat terkena efek status apapun."}
+      desc:"Saat mati, bangkit dengan 100% HP (sekali). Semua serangan memberikan 2x damage. Efek pengurangan damage musuh diabaikan sepenuhnya. Tidak dapat terkena efek status apapun."},
+    {id:"CH_OTHERWORLDLY",name:"OTHERWORLDLY BEING",tier:"R",type:"Ultra Instinct",skill:"ULTRA INSTINCT: ONE PERCENT",hp:5120,atk:2560,chance:1200000,art:"assets/cards/art/otherworldly-being.png",
+      fx:{dodgeAtk:{chance:60,pct:15,max:3},everySecond:{mult:2},lastStand:{pct:15}},
+      desc:"60% kesempatan menghindari serangan apapun. Setiap kali menghindar, mendapat +15% ATK permanen (menumpuk hingga 3 kali). Setiap serangan ke-2 menggunakan Satu Persen kekuatannya: memberikan 2x damage dan mengabaikan pengurangan damage. Pertama kali menerima damage fatal, bertahan dengan 1 HP dan mendapat +15% ATK."}
   ]
 };
 /* ROLL SYSTEM - Pull-based RNG (bukan gacha pool) */
@@ -3078,7 +3084,7 @@ function startBattle(){
   const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   const eid=en.id||null,efx=eid?(PASSIVE_FX[eid]||{}):{};
   if(bt&&bt.timer)clearTimeout(bt.timer);
-  bt={lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0};
+  bt={lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false)};
   schedPhase(700,step);
 }
 function tagIn(){
@@ -3110,6 +3116,13 @@ function trySave(){
   if(fx.revive&&!bt.revUsed[a]){
     bt.revUsed[a]=true;bt.pHp=bt.pMax;
     setTimeout(()=>floatText(".fighter.me","REVIVE!","heal"),400);
+    setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
+    return true;
+  }
+  /* LAST STAND: fatal pertama ditahan di 1 HP (bukan bangkit penuh) + langsung dapat bonus ATK */
+  if(fx.lastStand&&!bt.standUsed[a]){
+    bt.standUsed[a]=true;bt.pHp=1;bt.atkBuff[a]+=fx.lastStand.pct;
+    setTimeout(()=>floatText(".fighter.me","1% AWAKENED","crit"),400);
     setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
     return true;
   }
@@ -3237,10 +3250,15 @@ function playerPhase(){
     return;
   }
   const efx=bt.efx||{};
+  const a=bt.active;
   let atk=cardStats(id,bt.eq.mut,bt.eq.trait,bt.eq.shiny).atk;
+  if(bt.atkBuff[a])atk=Math.round(atk*(1+bt.atkBuff[a]/100));
   if(fx.lowHpAtk&&bt.pHp<bt.pMax*fx.lowHpAtk.below/100)atk=Math.round(atk*(1+fx.lowHpAtk.bonus/100));
   let dmgMult=1;
   if(fx.dmgMult)dmgMult*=fx.dmgMult;
+  /* SATU PERSEN (Ultra Instinct): tiap serangan GENAP (ke-2, ke-4, ...) = 1% kekuatan penuh → ×mult damage + tembus damage reduction musuh */
+  let pen=!!fx.ignoreDef;
+  if(fx.everySecond){bt.atkCount[a]++;if(bt.atkCount[a]%2===0){dmgMult*=fx.everySecond.mult;pen=true;setTimeout(()=>floatText(".fighter.me","ONE PERCENT","crit"),220);}}
   if(fx.highHpDmg&&bt.pHp>bt.pMax*fx.highHpDmg.above/100)dmgMult*=(1+fx.highHpDmg.bonus/100);
   const hits=[{mult:1}];
   if(fx.double&&Math.random()*100<fx.double)hits.push({mult:1});
@@ -3264,9 +3282,9 @@ function playerPhase(){
   let total=0;const shots=[];
   hits.forEach(h=>{
     let d=Math.round(atk*dmgMult*h.mult);
-    if(!fx.ignoreDef&&efx.evasion&&t<=efx.evasion.turns&&Math.random()*100<efx.evasion.chance){shots.push({d:0,evade:true});return;}
+    if(!pen&&efx.evasion&&t<=efx.evasion.turns&&Math.random()*100<efx.evasion.chance){shots.push({d:0,evade:true});return;}
     const pierce=!!(fx.pierce&&Math.random()*100<fx.pierce);
-    if(!fx.ignoreDef&&efx.void&&!pierce&&Math.random()*100<efx.void){shots.push({d:0,void:true});return;}
+    if(!pen&&efx.void&&!pierce&&Math.random()*100<efx.void){shots.push({d:0,void:true});return;}
     shots.push({d,miss:false,pierce});total+=d;
   });
   const eHpNext=bt.eHp-total,foeDead=eHpNext<=0;
@@ -3314,9 +3332,11 @@ function enemyPhase(){
   }
   // DOMAIN aktif ronde ini (Gojo): damage musuh dikurangi 50%
   const domainOn = bt.domainNow;
-  const evade=!!(fx.evasion&&t<=fx.evasion.turns&&Math.random()*100<fx.evasion.chance);
+  const evade=!!((fx.evasion&&t<=fx.evasion.turns&&Math.random()*100<fx.evasion.chance)||(fx.dodgeAtk&&Math.random()*100<fx.dodgeAtk.chance));
   const eVoid=!!(efx.void&&Math.random()*100<efx.void);
   if(evade){
+    /* ULTRA INSTINCT: tiap berhasil menghindar → +pct% ATK permanen, stack sampai max (khusus dodgeAtk; evasion biasa gak kepengaruh) */
+    if(fx.dodgeAtk&&bt.dodgeStack[bt.active]<fx.dodgeAtk.max){bt.dodgeStack[bt.active]++;bt.atkBuff[bt.active]+=fx.dodgeAtk.pct;setTimeout(()=>floatText(".fighter.me","+"+fx.dodgeAtk.pct+"% ATK","heal"),420);}
     if(id==="CH_EX_MADARA"){
       anim(".fighter.foe","lunge-l");
       setTimeout(()=>{madaraLimboFx();floatText(".fighter.me","LIMBO","miss");},220);
@@ -3567,7 +3587,7 @@ function startTowerBattle(){
   const fighters=equippedList();if(!fighters.length)fighters.push(equipped());
   const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   if(bt&&bt.timer)clearTimeout(bt.timer);
-  bt={lv:null,tower:true,en:w.en,es:w.es,eq,fighters,eid:w.eid,efx:w.efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:w.es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0};
+  bt={lv:null,tower:true,en:w.en,es:w.es,eq,fighters,eid:w.eid,efx:w.efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:w.es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false)};
   schedPhase(700,step);
 }
 function foeDown(){
