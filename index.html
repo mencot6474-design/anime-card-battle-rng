@@ -232,8 +232,8 @@ h1{font-size:clamp(30px,4.9vw,52px);font-weight:800;letter-spacing:-.01em;line-h
 .bench{min-height:86px}
 /* ---------- MODE FULL-SCREEN: semua battle (story/tower/raid) ngisi 100% layar, chrome disembunyikan ---------- */
 body.battle-full{padding-left:0;overflow:hidden}
-body.battle-full #sidebar,body.battle-full #topbar{display:none}
-body.battle-full main{max-width:none;margin:0;padding:0;height:100vh;height:100dvh;display:flex;flex-direction:column;justify-content:center}
+body.battle-full #sidebar{display:none}
+body.battle-full main{max-width:none;margin:0;padding:0;height:calc(100vh - var(--tbh,64px));height:calc(100dvh - var(--tbh,64px));display:flex;flex-direction:column;justify-content:center}
 body.battle-full .battle-grid{width:100%;max-width:none;margin-inline:0;height:100%;min-height:0;grid-template-rows:minmax(0,1fr);grid-template-columns:minmax(0,1fr) clamp(78px,10vw,168px) minmax(0,1fr);gap:clamp(12px,2.4vw,42px);padding:clamp(12px,2.6vh,34px) clamp(14px,3.6vw,62px);align-items:stretch}
 body.battle-full .battle-grid.raid-stage{min-height:0}
 body.battle-full .me-col{max-width:min(620px,max(300px,calc((100dvh - 300px)*.72)));height:100%;min-height:0;gap:clamp(10px,1.8vh,22px)}
@@ -4399,6 +4399,8 @@ const bfSync=()=>{
   const hasBattle = !!grid;
   const wasBattle = document.body.classList.contains("battle-full");
   document.body.classList.toggle("battle-full", hasBattle);
+  // Topbar HUD tetap tampil saat battle (biar nggak sepi); arena pakai sisa tinggi di bawahnya.
+  if(hasBattle){ const tb=document.getElementById("topbar"); if(tb) document.documentElement.style.setProperty("--tbh", Math.round(tb.getBoundingClientRect().height)+"px"); }
   // END/PAUSE khusus Sky Tower; story & raid boss auto-complete jadi nggak perlu tombol.
   document.body.classList.toggle("battle-tower", !!(grid && grid.classList.contains("tower-stage")));
   if(hasBattle&&!wasBattle){ const pb=document.getElementById("btPause"); if(pb)pb.innerHTML="&#9208; PAUSE"; }
