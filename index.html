@@ -4473,7 +4473,9 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
 (function wireRollDock(){
   const rb=document.getElementById("rollBtn");
   if(rb)rb.addEventListener("click",()=>{
-    /* Opsi 1: satu klik = satu roll. Kartu di-reveal sebentar, lalu overlay nutup sendiri (bukan loop). */
+    /* Opsi 1: satu klik = satu roll. Kartu di-reveal sebentar, lalu overlay nutup sendiri (bukan loop).
+       Kunci selama reveal tampil biar gak bisa di-spam. */
+    if(rollState.hideTimer)return;
     if(rollState.active)stopRollAnimation();
     if(rollState.hideTimer){clearTimeout(rollState.hideTimer);rollState.hideTimer=null;}
     const result=rngRoll(1,1);
