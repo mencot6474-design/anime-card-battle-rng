@@ -249,7 +249,7 @@ body.battle-full .vs-col .s{font-size:clamp(10px,1.5vh,15px)}
 #btPause{top:56%;transform:translateY(-50%);background:rgba(224,188,110,.94);color:#20161a}
 #bfExit:hover{background:rgba(215,60,70,1)}
 #btPause:hover{background:rgba(224,188,110,1)}
-body.battle-full #bfExit,body.battle-full #btPause{display:inline-flex}
+body.battle-full.battle-tower #bfExit,body.battle-full.battle-tower #btPause{display:inline-flex}
 @media(max-width:700px){
   body.battle-full{overflow:auto}
   body.battle-full main{height:auto;min-height:100dvh}
@@ -3675,7 +3675,7 @@ function renderTowerBattle(){
   const w=towerRun.waves[towerRun.idx];
   const eq=equipped(),st=cardStats(eq.char,eq.lv,eq.mut,eq.trait);
   app.innerHTML=`
-  <div class="battle-grid">
+  <div class="battle-grid tower-stage">
   <div class="me-col">
     <div class="fighter me${eq?mutGlow(eq.mut):''}" data-tier="${eq?eq.tier:''}" data-char="${eq?eq.char:''}"${eq?mutEdge(eq.mut):''}>${meFighterHtml(eq)}</div>
     ${benchHtml()}
@@ -4395,9 +4395,12 @@ function render(){
    Observer dipakai karena sebagian renderer battle dipanggil langsung tanpa lewat render(). */
 const bfSync=()=>{
   if(!app) return; // Guard: kalau app belum ready, skip
-  const hasBattle = !!app.querySelector(".battle-grid");
+  const grid = app.querySelector(".battle-grid");
+  const hasBattle = !!grid;
   const wasBattle = document.body.classList.contains("battle-full");
   document.body.classList.toggle("battle-full", hasBattle);
+  // END/PAUSE khusus Sky Tower; story & raid boss auto-complete jadi nggak perlu tombol.
+  document.body.classList.toggle("battle-tower", !!(grid && grid.classList.contains("tower-stage")));
   if(hasBattle&&!wasBattle){ const pb=document.getElementById("btPause"); if(pb)pb.innerHTML="&#9208; PAUSE"; }
 };
 if(app){
