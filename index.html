@@ -1630,9 +1630,9 @@ function showRollResult(result) {
   const overlay = document.getElementById('rollOverlay');
   const cardImg = document.getElementById('rollCardImg');
   const rarityChip = document.getElementById('rollRarityChip');
-  const collectBtn = document.getElementById('collectBtn');
+  const closeBtn = document.getElementById('collectBtn');
   
-  if (!overlay || !cardImg || !rarityChip || !collectBtn) return;
+  if (!overlay || !cardImg || !rarityChip) return;
   
   const cardData = getCardData(result.cardId);
   if (!cardData) return;
@@ -1642,6 +1642,9 @@ function showRollResult(result) {
   // Setup card display
   cardImg.src = cardData.art_image;
   cardImg.dataset.charId = result.cardId;
+  const hpEl=document.getElementById('rollHp'), atkEl=document.getElementById('rollAtk');
+  if(hpEl)hpEl.textContent=fmt(cardData.base_hp);
+  if(atkEl)atkEl.textContent=fmt(cardData.base_atk);
   
   // Set rarity chip
   rarityChip.textContent = rarityText(result.tier);
@@ -1649,7 +1652,7 @@ function showRollResult(result) {
   rarityChip.classList.add(`tier-${result.tier.toLowerCase()}`);
   
   // Show overlay with animation
-  overlay.style.display = 'block';
+  overlay.style.display = 'flex';
   const showcase = overlay.querySelector('.roll-card-showcase');
   showcase.style.opacity = '0';
   showcase.style.transform = 'scale(0.8)';
@@ -1660,8 +1663,8 @@ function showRollResult(result) {
     showcase.style.transform = 'scale(1)';
   }, 50);
   
-  // Setup collect button
-  collectBtn.onclick = () => collectCard(result.cardId);
+  // Kartu sudah otomatis masuk backpack (di startRollAnimation); tombol ini cuma tutup + stop roll.
+  if(closeBtn) closeBtn.onclick = () => { stopRollAnimation(); hideRollResult(); };
 }
 
 function hideRollResult() {
@@ -1678,15 +1681,6 @@ function hideRollResult() {
   setTimeout(() => {
     overlay.style.display = 'none';
   }, 300);
-}
-
-function collectCard(cardId) {
-  // Card already added to backpack on reveal
-  // This just confirms collection and hides overlay
-  hideRollResult();
-  
-  // Update backpack view if open
-  renderBackpackPanel();
 }
 
 function equipCard(slotIndex, cardId) {
@@ -4228,8 +4222,8 @@ function renderLobby(){
         <div>♡ <span id="rollHp"></span></div>
         <div>${ATKIC} <span id="rollAtk"></span></div>
       </div>
-      <div style="margin-top:8px;font-size:14px;color:var(--muted)">Tekan tombol roll untuk mendapatkan kartu!</div>
-      <button class="roll-info-btn" id="collectBtn">COLLECT!</button>
+      <div style="margin-top:8px;font-size:14px;color:var(--muted)">Kartu otomatis tersimpan di Backpack 🎒</div>
+      <button class="roll-info-btn" id="collectBtn">TUTUP</button>
     </div>
   </div>
   
