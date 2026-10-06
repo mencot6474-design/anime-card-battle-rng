@@ -4937,21 +4937,33 @@ function enterGame(name,welcome){
   currentUser=name;
   localStorage.setItem(SESSION_KEY,name);
   console.log('Loading state for:', name);
-  loadStateFor(name);
-  save();
+  try {
+    loadStateFor(name);
+    save();
+  } catch(e) {
+    console.error('loadStateFor FAILED:', e.message, e.stack);
+    state=freshState();
+    save();
+  }
   console.log('State loaded, entering lobby...');
   runLoading(()=>{
     console.log('Finishing login...');
-    document.getElementById("authScreen").classList.add("hidden");
-    document.getElementById("loadingScreen").classList.add("hidden");
-    /* render lobby DULU baru popup welcome: tanpa ini halaman di belakang popup masih kosong jadi kelihatan mati */
-    location.hash="#/lobby";
-    render();
-    if(welcome){
-      document.getElementById("wlMsg").textContent="Selamat datang, "+name+"!";
-      document.getElementById("welcomeModal").classList.remove("hidden");
+    try {
+      document.getElementById("authScreen").classList.add("hidden");
+      document.getElementById("loadingScreen").classList.add("hidden");
+      location.hash="#/lobby";
+      render();
+      if(welcome){
+        document.getElementById("wlMsg").textContent="Selamat datang, "+name+"!";
+        document.getElementById("welcomeModal").classList.remove("hidden");
+      }
+      console.log('Login complete!');
+    } catch(e) {
+      console.error('Post-login render FAILED:', e.message, e.stack);
+      document.getElementById("loadingScreen").classList.add("hidden");
+      document.getElementById("authScreen").classList.add("hidden");
+      document.getElementById("app").innerHTML='<div style="padding:40px;color:red"><h1>Render Error</h1><pre>'+e.message+'<br>'+e.stack+'</pre></div>';
     }
-    console.log('Login complete!');
   });
 }
 function runLoading(done){
@@ -4963,30 +4975,32 @@ function runLoading(done){
   const steps=["Menyinkronkan data…","Membangun deck…","Menyiapkan arena…","Memuat dunia…","Siarp!"];
   const dur=3000,t0=Date.now();
   fill.style.width="0%";
-  /* setInterval bukan requestAnimationFrame: rAF dibekukan browser saat tab/preview tidak terlihat,
-     jadi bar loading berhenti di tengah dan layar kelihatan macet total */
+  let completed=false;
   const iv=setInterval(()=>{
     const p=Math.min(1,(Date.now()-t0)/dur);
     fill.style.width=(p*100).toFixed(1)+"%";
     status.textContent=steps[Math.min(steps.length-1,Math.floor(p*steps.length))];
-    if(p>=1){clearInterval(iv);console.log('Loading done, calling callback...');setTimeout(done,250);}
+    if(p>=1&&!completed){completed=true;clearInterval(iv);console.log('Loading done, calling callback...');setTimeout(done,250);}
   },60);
-  // Timeout guard - kalau lebih dari 10 detik masih loading, paksa lanjut
+  // Timeout guard - force through after 8 seconds
   setTimeout(()=>{
-    if(p<1){
+    if(!completed){
+      completed=true;
       console.warn('Loading timeout, forcing through...');
       clearInterval(iv);
       setTimeout(done,250);
     }
-  },10000);
+  },8000);
 }
 function logout(){
   localStorage.removeItem(SESSION_KEY);
   location.reload();
 }
 function boot(){
+  console.log('boot() START');
   document.getElementById("loadingScreen").classList.add("hidden");
   document.getElementById("authScreen").classList.remove("hidden");
+  console.log('boot() auth screen shown');
   document.getElementById("tabLogin").onclick=()=>setAuthMode("login");
   document.getElementById("tabRegister").onclick=()=>setAuthMode("register");
   document.getElementById("auSubmit").onclick=submitAuth;
@@ -4995,25 +5009,38 @@ function boot(){
   const last=(s&&users[s.toLowerCase()])?users[s.toLowerCase()].name:"";
   setAuthMode(Object.keys(users).length?"login":"register");
   if(last){document.getElementById("auUser").value=last;document.getElementById("auPass").focus();}
+  console.log('boot() auth setup done');
   
   /* ========== Roll + Backpack Event Listeners ========== */
-  // Initialize roll system after login screen shows
-  
-  loadBackpackState();
+  try {
+    loadBackpackState();
+    console.log('boot() backpack loaded');
+  } catch(e) {
+    console.warn('boot() backpack error:', e.message);
+  }
+  console.log('boot() COMPLETE');
 }
 
-// Force immediate boot - use setTimeout to ensure script fully loaded
+// Force immediate boot - use setTimeout to ensure script fully loaded (VERSION 3)
+console.log('SCRIPT LOADED at:', new Date().toLocaleTimeString());
+console.log('Timestamp:', Date.now());
+
 setTimeout(() => {
+  console.log('TIMEOUT TRIGGERED - VERSION 3');
+  console.log('window.boot type:', typeof window.boot);
   if (typeof window.boot === 'function') {
-    console.log('Initializing boot()...');
+    console.log('Calling window.boot()...');
     try {
       window.boot();
+      console.log('window.boot() called successfully!');
     } catch(e) {
       console.error('Boot error:', e.message);
       console.error(e.stack);
     }
   } else {
     console.error('boot() function not found!');
+    const props = Object.keys(window).filter(p => p.toLowerCase().includes('boot'));
+    console.log('Windows properties with "boot":', props);
   }
 }, 100);
 </script>
