@@ -1523,6 +1523,9 @@ const RNG_DROP_RATES=[
 function getCardsByTier(tier){
   return MASTER_CARD_INDEX.filter(c=>c.tier===tier&&!c.noGacha);
 }
+function getCards(){
+  return MASTER_CARD_INDEX;
+}
 
 // Main RNG roll function
 function rngRoll(luck=1,speedMultiplier=1){
@@ -4228,7 +4231,7 @@ function renderLobby(){
         <div>♡ <span id="rollHp"></span></div>
         <div>${ATKIC} <span id="rollAtk"></span></div>
       </div>
-      <div style="margin-top:8px;font-size:14px;color:var(--muted)">${skillTextPlaceholder()}</div>
+      <div style="margin-top:8px;font-size:14px;color:var(--muted)">Tekan tombol roll untuk mendapatkan kartu!</div>
       <button class="roll-info-btn" id="collectBtn">COLLECT!</button>
     </div>
   </div>
