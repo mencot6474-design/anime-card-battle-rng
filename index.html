@@ -803,6 +803,7 @@ body.battle-full .stat svg{flex:none}
 .hub-center .hc-badges{position:absolute;top:46px;left:12px;z-index:7;display:flex;gap:6px;align-items:center}
 .hub-center .skill-overlay{display:none}
 .hub-center .hc-skill{font-family:"Barlow Condensed";letter-spacing:.08em;text-transform:uppercase;font-size:12px;color:rgba(234,244,255,.72);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hub-center .hc-desc{font-size:10px;line-height:1.28;color:rgba(234,244,255,.62);margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 1px 3px rgba(0,0,0,.8)}
 .hub-center .hc-badges .mut-badge{position:static;top:auto;left:auto}
 .hub-center .hc-badges .mut-hover{display:inline-flex}
 .hub-center .hc-badges .mut-badge,.hub-center .hc-badges .hc-trait{display:inline-flex;align-items:center;height:22px;padding:0 8px;font-size:12px;line-height:1;border-radius:6px}
@@ -3623,6 +3624,7 @@ function renderLobby(){
         </div>
         <div class="hc-info">
           <div class="hc-skill">${passiveName(eq.char)}</div>
+          <div class="hc-desc">${skillText(eq.char)}</div>
           <div class="hc-stats"><div class="hp">♡ ${fmt(st.hp)}</div><div class="atk">${ATKIC} ${fmt(st.atk)}</div></div>
         </div>`:`<div class="hc-info"><div class="hc-name">Belum ada kartu</div></div>`}
     </div>
