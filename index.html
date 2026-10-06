@@ -204,23 +204,25 @@ h1{font-size:clamp(30px,4.9vw,52px);font-weight:800;letter-spacing:-.01em;line-h
 .lvl-btn .chk{position:absolute;top:6px;right:8px;color:var(--cyan);font-size:12px}
 
 /* ---------- battle ---------- */
-.fighter{padding:0;overflow:visible;border-radius:16px;border:1px solid var(--line2);position:relative;display:flex;flex-direction:column;background:#FFFFFF}
+.fighter{padding:0;overflow:hidden;border-radius:16px;border:1px solid var(--line2);position:relative;display:flex;flex-direction:column;justify-content:flex-end;height:460px;background:#0d0f12}
 .fighter.me{border-color:rgba(20,28,38,.30)}
 .fighter.foe{border-color:rgba(215,150,155,.55)}
-.f-banner{position:relative;height:300px;background:#E9EDF2;border-radius:16px 16px 0 0;overflow:hidden}
+.f-banner{position:absolute;inset:0;height:auto;background:#E9EDF2;border-radius:16px;overflow:hidden;z-index:0}
 .f-banner img,.f-banner video{width:100%;height:100%;object-fit:cover;object-position:top}
-.f-tag{position:absolute;top:12px;right:12px;z-index:2;background:rgba(12,14,16,.75);border:1px solid var(--line2);border-radius:8px;padding:4px 10px;font-family:"Barlow Condensed";letter-spacing:.12em;font-weight:600;font-size:14px}
-.f-badges{position:absolute;top:12px;left:8px;right:120px;z-index:6;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.f-tag{position:absolute;top:10px;right:10px;z-index:2;background:rgba(10,12,16,.82);border:1px solid var(--line2);border-radius:8px;padding:3px 8px;font-family:"Barlow Condensed";letter-spacing:.06em;font-weight:700;font-size:11px;white-space:nowrap}
+.f-badges{position:absolute;top:44px;left:12px;right:12px;z-index:6;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .f-badges .mut-hover,.f-badges .trait-hover{display:inline-flex;vertical-align:middle}
 .f-badges .fbadge{display:inline-flex;align-items:center;gap:3px;height:22px;padding:0 8px;font-family:"Barlow Condensed";font-weight:700;font-size:12px;line-height:1;letter-spacing:.06em;border-radius:6px;background:rgba(12,14,16,.85);border:1px solid;white-space:nowrap}
-.hpbar{height:22px;border-radius:999px;background:#EEF1F5;border:1px solid var(--line);margin:14px 18px 0;position:relative;overflow:hidden}
+.hpbar{height:20px;border-radius:999px;background:rgba(20,24,30,.55);border:1px solid rgba(255,255,255,.18);margin:0 14px 8px;position:relative;z-index:2;overflow:hidden}
 .hpbar i{position:absolute;inset:0;width:100%;background:linear-gradient(90deg,#ff2d4a,#ff6b5e);box-shadow:inset 0 -6px 10px rgba(0,0,0,.22),inset 0 5px 8px rgba(255,255,255,.16);transition:width .35s}
-.hpbar span{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1;color:#0f1418;font-family:"Barlow Condensed";font-size:14px;letter-spacing:.1em;line-height:18px;font-weight:600;white-space:nowrap;text-shadow:0 1px 1px rgba(255,255,255,.5)}
-.f-body{padding:14px 18px 18px;flex:1 1 auto;display:flex;flex-direction:column}
-.f-name{font-size:17px;font-weight:800;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.f-title{color:var(--muted);font-size:9px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin:1px 0 10px;line-height:1.2}
-.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.stat{border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:14px;display:flex;gap:8px;align-items:center;background:#EEF1F5}
+.hpbar span{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1;color:#fff;font-family:"Barlow Condensed";font-size:14px;letter-spacing:.1em;line-height:18px;font-weight:600;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,.85)}
+.f-body{position:relative;z-index:2;flex:0 0 auto;padding:16px 16px 16px;display:flex;flex-direction:column;gap:6px;background:linear-gradient(to top,rgba(6,8,12,.94) 42%,rgba(6,8,12,.55) 78%,transparent)}
+.f-name{position:absolute;top:10px;left:12px;z-index:3;font-size:14px;font-weight:800;line-height:1.2;color:#fff;text-shadow:0 1px 5px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.9);max-width:46%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f-title{display:none}
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f-skill{font-family:"Barlow Condensed";letter-spacing:.08em;text-transform:uppercase;font-size:12px;color:rgba(234,244,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.8)}
+.f-desc{font-size:10.5px;line-height:1.35;color:rgba(234,244,255,.8);text-shadow:0 1px 3px rgba(0,0,0,.85)}
+.stat{border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:8px 12px;font-size:14px;font-weight:700;display:flex;gap:8px;align-items:center;justify-content:center;background:rgba(255,255,255,.10);color:#EAF4FF;text-shadow:0 1px 3px rgba(0,0,0,.6)}
 .skill-overlay{position:absolute;left:8px;bottom:8px;z-index:5;padding:6px 11px;border-radius:10px;background:rgba(14,16,19,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.14);font-family:"Barlow Condensed";letter-spacing:.08em;font-size:13px;text-transform:uppercase;color:#EAF4FF;cursor:help;max-width:calc(100% - 16px)}
 .skill-overlay b{color:#EAF4FF;font-weight:700;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .battle-grid{position:relative;display:grid;grid-template-columns:1fr 90px 1fr;gap:16px;align-items:stretch;justify-items:center;max-width:1000px;margin-inline:auto}
@@ -241,7 +243,7 @@ body.battle-full .battle-grid.raid-stage{min-height:0}
 body.battle-full .me-col{max-width:min(620px,max(300px,calc((100dvh - 300px)*.72)));height:100%;min-height:0;gap:clamp(10px,1.8vh,22px)}
 body.battle-full .me-col>.fighter{flex:1 1 auto;min-height:0}
 body.battle-full .fighter{min-height:0}
-body.battle-full .f-banner{height:0;flex:1 1 0;min-height:0}
+body.battle-full .f-banner{position:absolute;inset:0;height:auto}
 body.battle-full .f-body{flex:0 0 auto;padding:12px clamp(12px,1.6vw,22px) clamp(12px,1.8vh,20px)}
 body.battle-full .bench{flex:none}
 body.battle-full .vs-col .t{font-size:clamp(40px,6vh,74px)}
@@ -257,8 +259,9 @@ body.battle-full.battle-tower #bfExit,body.battle-full.battle-tower #btPause{dis
   body.battle-full main{height:auto;min-height:100dvh}
   body.battle-full .battle-grid{height:auto;grid-template-rows:none;grid-template-columns:1fr}
   body.battle-full .me-col{max-width:340px;height:auto}
-  body.battle-full .f-banner{height:300px;flex:none}
-  body.battle-full .f-body{flex:1 1 auto}
+  body.battle-full .f-banner{position:absolute;inset:0;height:auto}
+  body.battle-full .fighter{height:440px}
+  body.battle-full .f-body{flex:0 0 auto}
 }
 .skill-overlay .sk-txt{position:absolute;left:0;bottom:calc(100% + 8px);width:max-content;max-width:min(240px,78vw);padding:9px 12px;border-radius:12px;background:rgba(14,16,19,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);box-shadow:0 10px 26px rgba(0,0,0,.55);font-family:"Rajdhani",sans-serif;letter-spacing:0;text-transform:none;font-weight:500;font-size:12.5px;line-height:1.4;color:rgba(244,246,248,.92);opacity:0;visibility:hidden;transform:translateY(6px);transition:opacity .16s ease,transform .16s ease,visibility .16s;pointer-events:none;z-index:6}
 .skill-overlay:hover .sk-txt{opacity:1;visibility:visible;transform:translateY(0)}
@@ -296,6 +299,7 @@ body.battle-full .vs-col .t{display:none}
 body.battle-full .vs-col .s{font-family:"Barlow Condensed";font-size:clamp(16px,2.6vh,24px);letter-spacing:.05em;color:var(--text);text-transform:none;font-weight:800;text-align:left;line-height:1.12}
 body.battle-full .fighter.me{grid-area:me;justify-self:center;align-self:stretch;width:min(100%,min(440px,calc((100dvh - 360px)*.72)));max-height:min(600px,calc((100dvh - 360px)*1.55));min-height:0}
 body.battle-full .fighter.foe{grid-area:foe;justify-self:center;align-self:stretch;width:min(100%,min(440px,calc((100dvh - 360px)*.72)));max-height:min(600px,calc((100dvh - 360px)*1.55));min-height:0}
+body.battle-full .fighter{height:auto}
 body.battle-full .me-col:not(.foe-side) .bench-rail{grid-area:bench;justify-self:center;align-self:end;margin-top:0}
 body.battle-full .foe-side .bench-rail{grid-area:foe-slot;justify-self:center;align-self:start;margin-top:0}
 body.battle-full .foe-side .bench{display:none}
@@ -2534,13 +2538,15 @@ function playFight(cb){
 let bt=null;
 function meFighterHtml(s){
   const st=cardStats(s.char,s.mut,s.trait);
-  return `<div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}">${madaraAura(s.char)}<span class="f-tag" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,(CARDS[s.char]||{}).chance)}</span>
+  return `<div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}">${madaraAura(s.char)}<div class="f-name">${cardName(s.char)}</div><span class="f-tag" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,(CARDS[s.char]||{}).chance)}</span>
     ${(s.mut&&s.mut!=="none")||(s.trait&&s.trait!=="none")?`<div class="f-badges">${s.mut&&s.mut!=="none"?mutChip(s.mut,`<span class="fbadge" style="border-color:${MUT_COLOR[s.mut]};color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`):""}${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="fbadge" style="border-color:${TRAIT_COLOR[s.trait]};color:${TRAIT_COLOR[s.trait]}">${traitGem(12)} ${traitLabel(s.trait)}</span>`):""}</div>`:""}
-    <div class="skill-overlay"><b>${passiveName(s.char)}</b><span class="sk-txt">${skillText(s.char)}</span></div></div>
+    </div>
     <div class="hpbar"><i id="hpMe"></i><span id="hpMeT">${fmt(st.hp)} / ${fmt(st.hp)}</span></div>
     <div class="f-body">
-      <div class="f-name">${cardName(s.char)}</div><div class="f-title">${cardType(s.char)}</div>
-      <div class="stat-row"><div class="stat">♡ HP ${fmt(st.hp)}</div><div class="stat">${ATKIC} ATK ${fmt(st.atk)}</div></div>
+      <div class="f-title">${cardType(s.char)}</div>
+      <div class="f-skill">${passiveName(s.char)}</div>
+      <div class="f-desc">${skillText(s.char)}</div>
+      <div class="stat-row"><div class="stat">♡ ${fmt(st.hp)}</div><div class="stat">${ATKIC} ${fmt(st.atk)}</div></div>
     </div>`;
 }
 function updateMeCard(){if(!bt)return;const f=document.querySelector(".fighter.me");if(f){f.className="fighter me"+mutGlow(bt.eq.mut);f.dataset.tier=bt.eq.tier;f.dataset.char=bt.eq.char;f.style.borderColor=bt.eq.mut&&bt.eq.mut!=="none"?MUT_COLOR[bt.eq.mut]:"";f.innerHTML=meFighterHtml(bt.eq);}}
@@ -2571,12 +2577,14 @@ function renderBattle(){
   <div class="vs-col"><div class="t">VS</div><div class="s" id="turnLabel">AUTO<br>BATTLE</div></div>
   <div class="me-col foe-side">
     <div class="fighter foe${mutGlow(diffOf().mut)}" data-tier="${en.tier||''}"${mutEdge(diffOf().mut)}>
-      <div class="f-banner"><img src="${en.img}" alt="${en.name}">${en.boss?'<span class="f-tag" style="color:var(--purple)">BOSS</span>':''}${diffOf().mut!=="none"?`<div class="f-badges">${mutChip(diffOf().mut,`<span class="fbadge" style="border-color:${MUT_COLOR[diffOf().mut]};color:${MUT_COLOR[diffOf().mut]}">${mutBadge(diffOf().mut)}</span>`)}</div>`:""}
-        <div class="skill-overlay"><b>${en.id?passiveName(en.id):"Musuh"}</b><span class="sk-txt">${en.id?skillText(en.id):"Tidak ada kemampuan khusus."}</span></div></div>
+      <div class="f-banner"><img src="${en.img}" alt="${en.name}"><div class="f-name">${en.name}</div>${en.boss?'<span class="f-tag" style="color:var(--purple)">BOSS</span>':''}${diffOf().mut!=="none"?`<div class="f-badges">${mutChip(diffOf().mut,`<span class="fbadge" style="border-color:${MUT_COLOR[diffOf().mut]};color:${MUT_COLOR[diffOf().mut]}">${mutBadge(diffOf().mut)}</span>`)}</div>`:""}
+        </div>
       <div class="hpbar"><i id="hpFoe"></i><span id="hpFoeT">${fmt(es.hp)} / ${fmt(es.hp)}</span></div>
       <div class="f-body">
-        <div class="f-name">${en.name}</div><div class="f-title">${en.epithet}</div>
-        <div class="stat-row"><div class="stat">♡ HP ${fmt(es.hp)}</div><div class="stat">${ATKIC} ATK ${fmt(es.atk)}</div></div>
+        <div class="f-title">${en.epithet}</div>
+        <div class="f-skill">${en.id?passiveName(en.id):"Musuh"}</div>
+        <div class="f-desc">${en.id?skillText(en.id):"Tidak ada kemampuan khusus."}</div>
+        <div class="stat-row"><div class="stat">♡ ${fmt(es.hp)}</div><div class="stat">${ATKIC} ${fmt(es.atk)}</div></div>
       </div>
     </div>
     ${benchRailHtml([])}
@@ -3405,12 +3413,14 @@ function stopTower(){
 function towerFoeHtml(w){
   const en=w.en,es=w.es;
   return `<div class="fighter foe foe-enter" data-tier="${en.tier||''}">
-    <div class="f-banner"><img src="${en.img}" alt="${en.name}">${en.boss?'<span class="f-tag" style="color:var(--purple)">BOSS</span>':''}
-      <div class="skill-overlay"><b>${en.id?passiveName(en.id):"Musuh"}</b><span class="sk-txt">${en.id?skillText(en.id):"Tidak ada kemampuan khusus."}</span></div></div>
+    <div class="f-banner"><img src="${en.img}" alt="${en.name}"><div class="f-name">${en.name}</div>${en.boss?'<span class="f-tag" style="color:var(--purple)">BOSS</span>':''}
+      </div>
     <div class="hpbar"><i id="hpFoe"></i><span id="hpFoeT">${fmt(es.hp)} / ${fmt(es.hp)}</span></div>
     <div class="f-body">
-      <div class="f-name">${en.name}</div><div class="f-title">${en.epithet}</div>
-      <div class="stat-row"><div class="stat">&#9825; HP ${fmt(es.hp)}</div><div class="stat">${ATKIC} ATK ${fmt(es.atk)}</div></div>
+      <div class="f-title">${en.epithet}</div>
+      <div class="f-skill">${en.id?passiveName(en.id):"Musuh"}</div>
+      <div class="f-desc">${en.id?skillText(en.id):"Tidak ada kemampuan khusus."}</div>
+      <div class="stat-row"><div class="stat">&#9825; ${fmt(es.hp)}</div><div class="stat">${ATKIC} ${fmt(es.atk)}</div></div>
     </div>
   </div>`;
 }
@@ -3756,12 +3766,14 @@ function renderRaidBattle(){
     <div class="me-col"><div class="fighter me${eq&&eq.mut&&eq.mut!=='none'?' mut-'+eq.mut:''}" data-tier="${eq?eq.tier:''}" data-char="${eq?eq.char:''}">${meFighterHtml(eq)}</div></div>
     <div class="vs-col"><div class="t">VS</div><div class="s" id="raidTurnLabel">TURN<br>0/${RAID_TURNS}</div></div>
     <div class="me-col foe-side"><div class="fighter foe" data-tier="EX">
-      <div class="f-banner"><img src="${b.img}" alt="${b.name}"><span class="f-tag" style="color:${b.diffColor};border-color:${b.diffColor}">${b.diffLabel}</span>
-        <div class="skill-overlay"><b>${b.skill}</b><span class="sk-txt">${b.name} — melepaskan ${RAID_TURNS}+ turn lalu mengamuk: 3 bola energi beruntun, tiap ledakan menghujani 10× 999.999 damage yang tidak bisa di-dodge.</span></div></div>
+      <div class="f-banner"><img src="${b.img}" alt="${b.name}"><div class="f-name">${b.name}</div><span class="f-tag" style="color:${b.diffColor};border-color:${b.diffColor}">${b.diffLabel}</span>
+        </div>
       <div class="hpbar"><i id="hpRaid"></i><span id="hpRaidT">${fmt(b.hp)} / ${fmt(b.hp)}</span></div>
       <div class="f-body">
-        <div class="f-name">${b.name}</div><div class="f-title">${rarityText(b.tier)} · RAID · ${b.diffLabel}</div>
-        <div class="stat-row"><div class="stat">♡ HP ${fmt(b.hp)}</div><div class="stat">${ATKIC} ATK ${fmt(999999)}</div></div>
+        <div class="f-title">${rarityText(b.tier)} · RAID · ${b.diffLabel}</div>
+        <div class="f-skill">${b.skill}</div>
+        <div class="f-desc">${b.name} — melepaskan ${RAID_TURNS}+ turn lalu mengamuk: 3 bola energi beruntun, tiap ledakan menghujani 10× 999.999 damage yang tidak bisa di-dodge.</div>
+        <div class="stat-row"><div class="stat">♡ ${fmt(b.hp)}</div><div class="stat">${ATKIC} ${fmt(999999)}</div></div>
       </div>
     </div></div>
   </div>`;
