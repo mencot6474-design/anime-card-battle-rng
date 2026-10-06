@@ -1,2 +1,9 @@
 _tmp/
 vibe_images/
+# build artifact: salinan index.html + assets, bisa diregenerasi kapan saja
+dist/
+# screenshot sisa / file sementara di root
+_tmp$*.png
+*.tmp.png
+# backup lokal (arsip zip mentah, di luar riwayat git)
+backups/

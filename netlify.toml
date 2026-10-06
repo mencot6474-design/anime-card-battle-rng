@@ -1,0 +1,9 @@
+[build]
+  publish = "."
+  commands = { dev = "echo 'Just serving static files'" }
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = true
