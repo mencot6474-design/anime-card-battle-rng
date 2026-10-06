@@ -1541,8 +1541,6 @@ const STORY_BIBLE={
       desc:"25% setiap serangan musuh ditolak sampai tidak menghasilkan damage sama sekali."},
     {id:"CH_BIJUU_BEAST",name:"Kurama",tier:"SSR",type:"Offensive",skill:"Tail Swipe",hp:362,atk:181,art:"assets/cards/art/bijuu-beast.png",fx:{barrage:{chance:30,min:2,max:3},lifesteal:15},
       desc:"30% peluang menyapu 2-3 kali beruntun, lalu menyerap 15% damage jadi HP."},
-    {id:"CH_EX_SUKUNA",name:"Ryomen Sukuna",tier:"EX",type:"Absolute Offensive",skill:"Malevolent Shrine",hp:2200,atk:650,art:"assets/sprites/ex_sukuna_manga.gif",fx:{barrage:{chance:100,min:15,max:15,mult:.3,selfStun:1,selfDr:50,selfDrTurns:2},lifesteal:30},
-      desc:"100% membuka Malevolent Shrine: latar kuil api memenuhi layar, lalu 15 tebasan menyapu seluruh arena (tiap tebasan 30% ATK, total 450% ATK). Menyerap 30% dari total damage jadi HP. Setelah rilis, Sukuna stun 1 ronde namun mendapat damage reduction 50% selama 2 ronde (termasuk saat stun) sampai ia melangkah lagi."},
     {id:"CH_EX_GOJO",name:"Satoru Gojo",tier:"EX",type:"Absolute Defensive",skill:"Unlimited Void",hp:2800,atk:500,art:"assets/cards/art/ex-gojo.png",fx:{domain:{chance:100,min:15,max:15,mult:.3,selfStun:1,selfDr:50,selfDrTurns:2},lifesteal:30},
       desc:"100% membuka Domain Expansion: lubang hitam Unlimited Void menutupi layar di belakang kartu, 15 sambaran void menghantam beruntun (tiap sambaran 30% ATK, total 450% ATK). Menyerap 30% dari total damage jadi HP. Setelah rilis, Gojo stun 1 ronde namun mendapat damage reduction 50% selama 2 ronde (termasuk saat stun) sampai ia melangkah lagi."},
     {id:"CH_EX_MADARA",name:"Madara Susanoo",tier:"EX",type:"Absolute Balanced",skill:"Susanoo Tensa",hp:2500,atk:600,art:"assets/cards/art/ex-madara.png",fx:{ranton:{chance:100,hits:15,mult:.17},evasion:{chance:50,turns:99},lifesteal:30},
@@ -3596,7 +3594,7 @@ document.getElementById("overlay").addEventListener("click",e=>{
    Mode endless: lantai naik terus, tiap 5 lantai = gerbang BOS (2 gelombang: utama + TAG).
    Memakai engine battle cerita (2 arah, passive musuh) dengan flag bt.tower. */
 const TOWER_BOSS_ROSTER=[
-  {main:"CH_EX_SUKUNA",tag:"CH_EX_GOJO"},   /* lantai 5, 15, 25 ... */
+  {main:"CH_EX_GOJO",tag:"CH_ETERNAL_DRAGON"},   /* lantai 5, 15, 25 ... */
   {main:"CH_EX_MADARA",tag:"CH_EX_JINWOO"} /* lantai 10, 20, 30 ... */
 ];
 function towerIsBossFloor(f){return f%5===0;}
@@ -4366,7 +4364,7 @@ function renderSettings(){
       <button class="gm-btn" id="gmGrant">Berikan</button>
     </div>
     <div class="gm-row">
-      <button class="gm-btn" id="gmEx">Grant Gojo + Sukuna</button>
+      <button class="gm-btn" id="gmEx">Grant Gojo + Madara</button>
       <button class="gm-btn" id="gmAll">Buka Semua Kartu</button>
       <button class="gm-btn" id="gmEquip">Equip EX Terakhir</button>
     </div>
@@ -4400,7 +4398,7 @@ function renderSettings(){
   const note=msg=>{document.getElementById("gmNote").textContent=msg;};
   const flash=msg=>{note(msg);save();renderShell();};
   document.getElementById("gmGrant").onclick=()=>{const id=document.getElementById("gmCard").value;flash(gmGrantCard(id));};
-  document.getElementById("gmEx").onclick=()=>{const a=gmGrantCard("CH_EX_SUKUNA"),b=gmGrantCard("CH_EX_GOJO");flash(a+" · "+b);};
+  document.getElementById("gmEx").onclick=()=>{const a=gmGrantCard("CH_EX_GOJO"),b=gmGrantCard("CH_EX_MADARA");flash(a+" · "+b);};
   document.getElementById("gmAll").onclick=()=>{MASTER_CARD_INDEX.forEach(c=>gmGrantCard(c.char_id));flash("Semua "+MASTER_CARD_INDEX.length+" kartu dibuka");};
   document.getElementById("gmEquip").onclick=()=>{const ex=state.stacks.filter(s=>s.tier==="EX");if(!ex.length){note("Belum punya kartu EX — grant dulu.");return;}state.equippedId=ex[ex.length-1].id;flash("Equipped: "+CARDS[equipped().char].name);};
   document.getElementById("gmMutApply").onclick=()=>{const m=document.getElementById("gmMut").value;const eq=equipped();if(!eq){note("Belum ada kartu aktif.");return;}eq.mut=m;save();note("Mutasi '"+(MUT_LABEL[m]||"MURNI")+"' dipasang ke "+CARDS[eq.char].name+" — cek Deck untuk lihat glow.");renderShell();};
