@@ -939,7 +939,9 @@ body.battle-full .stat svg{flex:none}
 .dp-card:hover{border-color:var(--line2)}
 .dp-card.sel{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(20,28,38,.22)}
 .dp-name{position:absolute;left:0;right:0;bottom:0;z-index:1;padding:15px 5px 3px;font-family:"Barlow Condensed";font-weight:700;font-size:11px;letter-spacing:.02em;line-height:1.1;text-align:left;color:#20161a;background:linear-gradient(transparent,rgba(255,255,255,.92));overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dp-card .dp-mut{top:4px;left:auto;right:4px;height:15px;padding:0 5px;font-size:9px;letter-spacing:.06em}
+.dp-card .dp-badges{position:absolute;top:4px;right:4px;left:auto;z-index:3;display:flex;align-items:center;gap:4px}
+.dp-card .dp-badges .mut-badge,.dp-card .dp-badges .trait-badge{position:static;top:auto;left:auto;right:auto;display:inline-flex;align-items:center;height:15px;padding:0 5px;font-size:9px;letter-spacing:.06em;line-height:1}
+.dp-card .dp-badges .dp-gem{padding:0 3px}
 .dp-meta{font-size:9px;letter-spacing:.06em;color:var(--muted)}
 .dp-dia{position:absolute;top:5px;left:5px;z-index:3;display:inline-flex;align-items:center;font-family:"Barlow Condensed";font-weight:700;font-size:9px;letter-spacing:.04em;filter:drop-shadow(0 0 3px #000)}
 #rarePromptModal{position:fixed;inset:0;background:rgba(6,7,9,.86);backdrop-filter:blur(8px);display:none;place-items:center;z-index:80}
@@ -4053,7 +4055,7 @@ function renderDeckPick(){
   b.innerHTML=`<label class="card-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input class="card-search" id="dpSearch" type="text" placeholder="Cari kartu…" autocomplete="off"></label><div class="dp-grid" id="dpGrid">${state.stacks.map(s=>{
     return `<button class="dp-card${s.id===selId?" sel":""}" data-tid="${s.id}" data-name="${cardName(s.char).toLowerCase()}"${s.mut&&s.mut!=="none"?` style="border-color:${MUT_COLOR[s.mut]}"`:""}>
       <img src="${cardImg(s.char)}" alt="">${madaraAura(s.char)}
-      ${s.mut&&s.mut!=="none"?mutChip(s.mut,`<span class="mut-badge dp-mut" style="border-color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`):""}
+      ${(s.mut&&s.mut!=="none")||(s.trait&&s.trait!=="none")?`<span class="dp-badges">${s.mut&&s.mut!=="none"?mutChip(s.mut,`<span class="mut-badge dp-mut" style="border-color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`):""}${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="trait-badge dp-gem" style="border-color:${TRAIT_COLOR[s.trait]}">${traitGem(13)}</span>`):""}</span>`:""}
       <span class="dp-name">${cardName(s.char)}</span>
     </button>`;}).join("")}</div><div class="no-result" id="dpSearch-nr">Tidak ada kartu yang cocok.</div>`;
   {const dps=document.getElementById("dpSearch");if(dps){dps.value=dpSearch;dps.oninput=()=>{dpSearch=dps.value;runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));};if(dpSearch)runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));}}
