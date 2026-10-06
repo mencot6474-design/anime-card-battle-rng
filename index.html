@@ -892,6 +892,10 @@ body.battle-full .bench-rail .bench-sq{width:clamp(50px,11vh,74px)}
 .ix-rowhead .t{font-family:"Barlow Condensed";font-size:20px;font-weight:700;letter-spacing:.12em;border:1px solid;border-radius:8px;padding:1px 14px}
 .ix-rowhead .r{font-size:11px;letter-spacing:.16em;font-weight:700;color:var(--muted)}
 .ix-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.ix-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px}
+.ix-cell{position:relative;aspect-ratio:1/1;border:2px solid var(--line2);border-radius:10px;overflow:hidden;background:linear-gradient(160deg,#FFFFFF,#EEF2F6);cursor:pointer;padding:0}
+.ix-cell img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top}
+.ix-cell .ixc-name{position:absolute;left:0;right:0;bottom:0;padding:15px 5px 4px;font-family:"Barlow Condensed";font-size:11px;font-weight:700;line-height:1.1;text-align:center;color:#20161a;background:linear-gradient(transparent,rgba(255,255,255,.92));text-shadow:0 1px 2px rgba(255,255,255,.85)}
 #dailyModal{position:fixed;inset:0;background:rgba(9,10,12,.8);backdrop-filter:blur(6px);display:none;place-items:center;z-index:60}
 #dailyModal.show{display:grid}
 .dl-box{width:min(560px,94vw);border-radius:18px;border:1px solid var(--line2);background:linear-gradient(160deg,#FFFFFF,#EEF2F6);padding:22px;animation:rcIn .35s ease}
@@ -4130,37 +4134,15 @@ function renderRaidShop(){
 
 /* =============== INDEX CARD (popup) =============== */
 function openIndex(){
-  document.getElementById("ixBody").innerHTML=TIERS.map(t=>{
-    const pool=MASTER_CARD_INDEX.filter(c=>c.tier===t);
-    if(!pool.length)return "";
-    const rollable=pool.some(c=>!c.noGacha);
-    /* UR/EX pakai foil dari CSS (border-color:transparent) — jangan timpa border inline */
-    const foil=t==="EX"||t==="UR";
-    return `<div class="ix-sec"><div class="ix-rowhead"><span class="t" style="color:${TIER_COLOR[t]};border-color:${TIER_COLOR[t]}">${rarityText(t)}</span><span class="r">${rollable?"DARI ROLL":"EKSKLUSIF — HANYA TOKO RAID"} · ${pool.length} KARTU</span></div>
-    <div class="ix-strip">${pool.map(c=>{
-      return `<div class="idx-card${t==="EX"?" fire":""}" data-tier="${t}" data-base-hp="${c.base_hp}" data-base-atk="${c.base_atk}"${foil?"":` style="border-color:${TIER_COLOR[t]}55"`}>
-        <span class="idx-art"><img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(c.char_id)}</span>
-        <div class="idx-body">
-          <div class="idx-name" style="color:${TIER_COLOR[t]}">${c.name}</div>
-          <div class="idx-title">${c.type}</div>
-          <div class="idx-stats"><span>♡ ${fmt(c.base_hp)}</span><span>${ATKIC} ${fmt(c.base_atk)}</span></div>
-          <div class="idx-mutrow">${[["none","MURNI"],["silver","SHINY"],["gold","GOLD"],["rainbow","RAINBOW"],["secret","SECRET"]].map(([k,l])=>`<button class="ix-mut${k==="none"?" on":""}" data-m="${k}"${MUT_COLOR[k]?` style="--mc:${MUT_COLOR[k]}"`:""}>${l}</button>`).join("")}</div>
-          <div class="idx-skill"><button class="ds-skill-badge idx-passive" type="button" data-name="${c.passive.name}" data-desc="${String(c.passive.desc).replace(/&/g,"&amp;").replace(/"/g,"&quot;")}">✦ ${c.passive.name}</button></div>
-        </div>
-      </div>`;}).join("")}</div></div>`;
-  }).join("");
-  document.querySelectorAll("#ixBody .idx-card").forEach(card=>{
-    const bh=+card.dataset.baseHp||0, ba=+card.dataset.baseAtk||0, stats=card.querySelector(".idx-stats");
-    card.querySelectorAll(".ix-mut").forEach(btn=>{
-      btn.onclick=()=>{
-        card.querySelectorAll(".ix-mut").forEach(b=>b.classList.toggle("on",b===btn));
-        const k=btn.dataset.m, mult=MUT_MULT[k]||1;
-        stats.innerHTML=`<span>♡ ${fmt(Math.round(bh*mult))}</span><span>${ATKIC} ${fmt(Math.round(ba*mult))}</span>`;
-        stats.style.color=MUT_COLOR[k]||"";
-      };
-    });
-    const pb=card.querySelector(".idx-passive");
-    if(pb)pb.onclick=()=>{document.getElementById("spName").textContent=pb.dataset.name||"";document.getElementById("spDesc").textContent=pb.dataset.desc||"";document.getElementById("skillPop").classList.add("show");};
+  /* Satu grid kotak-kotak berisi SEMUA kartu, tanpa pemisah tier & tanpa label chance.
+     Klik sebuah kotak = buka detail passive lewat #skillPop (info tak hilang, cuma dipindah). */
+  document.getElementById("ixBody").innerHTML=`<div class="ix-grid">${MASTER_CARD_INDEX.map(c=>{
+    return `<button class="ix-cell" type="button" data-c="${c.char_id}" style="border-color:${TIER_COLOR[c.tier]||'var(--line2)'}">
+      <img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(c.char_id)}
+      <span class="ixc-name">${c.name}</span>
+    </button>`;}).join("")}</div>`;
+  document.querySelectorAll("#ixBody .ix-cell").forEach(cell=>{
+    cell.onclick=()=>{const c=CARDS[cell.dataset.c];if(!c)return;document.getElementById("spName").textContent=c.passive.name;document.getElementById("spDesc").textContent=c.passive.desc;document.getElementById("skillPop").classList.add("show");};
   });
   document.getElementById("indexModal").classList.add("show");
   document.getElementById("spClose").onclick=()=>document.getElementById("skillPop").classList.remove("show");
