@@ -90,6 +90,25 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .backpack-panel.visible{display:flex;}
 .backpack-header{padding:20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg,var(--panel2),var(--panel));}
 .backpack-close{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);cursor:pointer;font-size:20px;}
+/* --- Deck manager (Backpack panel): tile compact, tanpa stat --- */
+.bp-empty{padding:48px;text-align:center;color:var(--muted);font-size:15px;}
+.bp-body{flex:1;overflow-y:auto;padding:16px;}
+.bp-h{font-family:"Barlow Condensed";font-weight:700;letter-spacing:.06em;font-size:13px;color:var(--muted);margin:4px 0 10px;}
+.bp-slots{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;max-width:360px;}
+.bp-slot{position:relative;aspect-ratio:3/4;border:2px dashed var(--line2);border-radius:12px;background:var(--panel2);overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.bp-slot.filled{border-style:solid;}
+.bp-slot.sel{box-shadow:0 0 0 3px var(--cyan);}
+.bp-slot img{width:100%;height:100%;object-fit:cover;object-position:top;}
+.bp-slot .bps-plus{font-size:34px;color:var(--line2);}
+.bp-slot .bps-num{position:absolute;top:4px;left:7px;font-family:"Barlow Condensed";font-weight:700;font-size:13px;color:#fff;text-shadow:0 1px 3px #000;}
+.bp-slot .bps-lvl{position:absolute;bottom:4px;right:6px;font-family:"Barlow Condensed";font-weight:700;font-size:12px;color:#fff;text-shadow:0 1px 3px #000;}
+.bp-slot .bps-x{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:7px;border:none;background:rgba(12,14,16,.82);color:#fff;font-size:16px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.bp-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:8px;}
+.bp-tile{position:relative;aspect-ratio:3/4;border:2px solid var(--line2);border-radius:10px;overflow:hidden;cursor:pointer;background:var(--panel2);}
+.bp-tile img{width:100%;height:100%;object-fit:cover;object-position:top;}
+.bp-tile.in-deck{box-shadow:0 0 0 2px var(--cyan) inset;}
+.bp-tile .bpt-lvl{position:absolute;bottom:2px;right:5px;font-family:"Barlow Condensed";font-weight:700;font-size:11px;color:#fff;text-shadow:0 1px 2px #000;}
+.bp-tile .bpt-mut{position:absolute;top:2px;left:4px;font-family:"Barlow Condensed";font-weight:700;font-size:10px;text-shadow:0 1px 2px #000;}
 .deck-layout{display:flex;gap:24px;padding:24px;flex:1;overflow:hidden;}
 .deck-main-cards{flex:1;display:flex;flex-direction:column;gap:12px;}
 .deck-slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;}
@@ -1574,39 +1593,29 @@ function getChapterReward(chapterNo){
 }
 
 /* ========== BACKPACK + ROLL SYSTEM ========== */
-let backpack = {};
-let equippedSlots = [null, null, null, null];
 let rollState = { active: false, interval: null, currentCard: null, luck: 1, speedMultiplier: 1, mini: false };
 
-function addToBackpack(cardId) {
-  if (!backpack[cardId]) {
-    backpack[cardId] = 1;
-  } else {
-    backpack[cardId]++;
-  }
-  updateBackpackCount();
+/* Roll = SATU-SATUNYA sumber kartu baru selain Toko Raid. Tiap hasil roll jadi satu stack owned
+   di state.stacks dan otomatis mengisi slot dek yang kosong (biar langsung kepakai di battle). */
+function grantRolledCard(charId) {
+  const card = CARDS[charId];
+  if (!card || !state) return null;
+  const s = { id: Math.random().toString(36).slice(2, 9), char: charId, tier: card.tier, lv: 1, exp: 0, fav: false, lock: false, mut: "none", trait: "none" };
+  state.stacks.push(s);
+  if (!Array.isArray(state.deck)) state.deck = [null, null, null, null];
+  state.deck.length = 4;
+  const empty = state.deck.indexOf(null);
+  if (empty >= 0) setDeckSlot(empty, s.id); else save();
+  rollCountBadge();
+  return s;
 }
 
-function removeFromBackpack(cardId) {
-  if (backpack[cardId]) {
-    backpack[cardId]--;
-    if (backpack[cardId] <= 0) {
-      delete backpack[cardId];
-    }
-    updateBackpackCount();
-  }
-}
-
-function updateBackpackCount() {
+function rollCountBadge() {
   const toggle = document.getElementById('backpackToggle');
-  if (toggle) {
-    const count = Object.keys(backpack).length;
+  if (toggle && state) {
+    const count = state.stacks.length;
     toggle.setAttribute('data-count', count);
-    if (count > 0) {
-      toggle.classList.add('has-items');
-    } else {
-      toggle.classList.remove('has-items');
-    }
+    toggle.classList.toggle('has-items', count > 0);
   }
 }
 
@@ -1626,7 +1635,7 @@ function startRollAnimation(luck = 1, speedMultiplier = 1) {
   rollState.interval = setInterval(() => {
     const result = rngRoll(rollState.luck, rollState.speedMultiplier);
     showRollResult(result);
-    addToBackpack(result.cardId);
+    grantRolledCard(result.cardId);
   }, initialDelay);
 }
 
@@ -1686,7 +1695,7 @@ function showRollResult(result) {
     showcase.style.transform = 'scale(1)';
   }
   
-  // Kartu sudah otomatis masuk backpack (di startRollAnimation); tombol ini cuma tutup + stop roll.
+  // Kartu sudah otomatis masuk koleksi/dek (di startRollAnimation); tombol ini cuma tutup + stop roll.
   if(closeBtn) closeBtn.onclick = () => { stopRollAnimation(); hideRollResult(); };
 }
 
@@ -1714,320 +1723,47 @@ function setRollMini(on) {
   overlay.classList.toggle('mini', rollState.mini);
 }
 
-function equipCard(slotIndex, cardId) {
-  if (slotIndex < 0 || slotIndex >= equippedSlots.length) return;
-  
-  // Unequip current card from slot
-  const previousCard = equippedSlots[slotIndex];
-  if (previousCard) {
-    removeFromEquippedSlot(slotIndex);
-  }
-  
-  // Check if card exists in backpack
-  if (!backpack[cardId] || backpack[cardId] <= 0) return;
-  
-  // Equip new card
-  equippedSlots[slotIndex] = cardId;
-  addToEquippedSlot(slotIndex, cardId);
-  
-  renderLobby();
-  renderDeckSlots();
+/* ========== DECK MANAGER (panel Backpack) ==========
+   Backpack = editor dek 4 slot berbasis state.stacks + state.deck.
+   Tile koleksi dibuat KECIL & TANPA info stat biar muat banyak.
+   Alur: klik slot => jadikan target; klik tile koleksi => pasang ke target (atau slot kosong pertama). */
+let bpTarget = null;
+function deckTotalPower(){return equippedList().reduce((a,s)=>{const st=cardStats(s.char,s.lv,s.mut,s.trait);return a+(st.hp+st.atk);},0);}
+function bpPickSlot(i){bpTarget=(bpTarget===i?null:i);renderBackpackPanel();}
+function bpClearSlot(i){setDeckSlot(i,null);bpTarget=null;renderBackpackPanel();}
+function bpAssign(stackId){
+  const s=state.stacks.find(x=>x.id===stackId);if(!s)return;
+  let slot=bpTarget;
+  if(slot==null)slot=state.deck.indexOf(null);
+  if(slot<0)slot=0;                 /* dek penuh: timpa slot pertama */
+  setDeckSlot(slot,s.id);
+  bpTarget=null;
+  renderBackpackPanel();
+}
+function renderBackpackPanel(){
+  const panel=document.getElementById('backpackPanel');if(!panel)return;
+  const header=`<div class="backpack-header"><h2>DECK &amp; KOLEKSI</h2>
+    <div class="backpack-stats"><span>POWER <strong>${fmt(deckTotalPower())}</strong></span><span>KARTU <strong>${state.stacks.length}</strong></span></div>
+    <button class="backpack-close" onclick="toggleBackpack()">&times;</button></div>`;
+  if(!state.stacks.length){panel.innerHTML=header+`<div class="bp-empty">Belum punya kartu. Tekan &#127922; untuk Roll.</div>`;return;}
+  const slots=[0,1,2,3].map(i=>{
+    const id=state.deck[i];const s=id?state.stacks.find(x=>x.id===id):null;
+    if(!s)return `<div class="bp-slot${bpTarget===i?' sel':''}" onclick="bpPickSlot(${i})"><span class="bps-plus">+</span><span class="bps-num">${i+1}</span></div>`;
+    return `<div class="bp-slot filled${bpTarget===i?' sel':''}" onclick="bpPickSlot(${i})" style="border-color:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt=""><span class="bps-num">${i+1}</span><span class="bps-lvl">L${s.lv}</span><button class="bps-x" onclick="event.stopPropagation();bpClearSlot(${i})">&times;</button></div>`;
+  }).join('');
+  const tiles=state.stacks.map(s=>{
+    const inDeck=state.deck.includes(s.id);
+    const mut=(s.mut&&s.mut!=='none')?`<span class="bpt-mut" style="color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`:'';
+    return `<div class="bp-tile${inDeck?' in-deck':''}" onclick="bpAssign('${s.id}')" style="border-color:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt="">${mut}<span class="bpt-lvl">L${s.lv}</span></div>`;
+  }).join('');
+  panel.innerHTML=header+`<div class="bp-body">
+    <div class="bp-h">${bpTarget!=null?('SLOT '+(bpTarget+1)+' TERPILIH — tap kartu untuk pasang'):'DEK · 4 SLOT · tap slot lalu tap kartu'}</div>
+    <div class="bp-slots">${slots}</div>
+    <div class="bp-h">KOLEKSI (${state.stacks.length})</div>
+    <div class="bp-tiles">${tiles}</div>
+  </div>`;
 }
 
-function unequipCard(slotIndex) {
-  if (slotIndex < 0 || slotIndex >= equippedSlots.length) return;
-  
-  const cardId = equippedSlots[slotIndex];
-  if (!cardId) return;
-  
-  equippedSlots[slotIndex] = null;
-  removeFromEquippedSlot(slotIndex);
-  
-  renderLobby();
-  renderDeckSlots();
-}
-
-function addToEquippedSlot(slotIndex, cardId) {
-  const item = {
-    char_id: cardId,
-    level: 1,
-    rank: 0,
-    exp: 0,
-    is_equipped: true,
-    skill_level: 1
-  };
-  
-  const key = `equipped_${slotIndex}_${cardId}`;
-  localStorage.setItem(key, JSON.stringify(item));
-}
-
-function removeFromEquippedSlot(slotIndex) {
-  const cardId = equippedSlots[slotIndex];
-  if (!cardId) return;
-  
-  const key = `equipped_${slotIndex}_${cardId}`;
-  localStorage.removeItem(key);
-}
-
-function loadEquippedSlots() {
-  equippedSlots = [null, null, null, null];
-  
-  for (let i = 0; i < 4; i++) {
-    for (const [key, value] of Object.entries(localStorage)) {
-      if (key.startsWith(`equipped_${i}_`)) {
-        const cardId = key.split('_')[3];
-        equippedSlots[i] = cardId;
-        break;
-      }
-    }
-  }
-}
-
-function getTotalPower() {
-  let total = 0;
-  for (const cardId of equippedSlots) {
-    if (cardId) {
-      const cardStatsObj = cardStats(cardId);
-      total += cardStatsObj.atk + cardStatsObj.def;
-    }
-  }
-  return total;
-}
-
-function renderDeckSlots() {
-  const container = document.getElementById('deckSlotContainer');
-  if (!container) return;
-  
-  const cards = getCards();
-  let html = '';
-  
-  for (let i = 0; i < 4; i++) {
-    const cardId = equippedSlots[i];
-    const cardData = cardId ? cards.find(c => c.char_id === cardId) : null;
-    
-    if (cardData) {
-      const stats = cardStats(cardId);
-      const tierColor = getTierColor(cardData.tier);
-      
-      html += `
-        <div class="deck-slot equipped" data-slot="${i}" onclick="equipCard(${i}, '${cardId}')">
-          <img src="${cardData.art_image}" alt="${cardData.name}">
-          <span class="deck-slot-tier" style="color:${tierColor}">${rarityText(cardData.tier)}</span>
-          <button class="deck-unequip-btn" onclick="event.stopPropagation(); unequipCard(${i})">×</button>
-          <div class="deck-slot-stats">
-            <span class="stat-atk">${stats.atk}</span>
-            <span class="stat-def">${stats.def}</span>
-          </div>
-        </div>
-      `;
-    } else {
-      html += `
-        <div class="deck-slot empty" data-slot="${i}" onclick="openCardPicker(${i})">
-          <span class="deck-slot-empty-text">+</span>
-          <span class="deck-slot-empty-label">Tap to equip</span>
-        </div>
-      `;
-    }
-  }
-  
-  container.innerHTML = html;
-}
-
-function openCardPicker(slotIndex) {
-  const cards = getCards();
-  const pickerItems = Object.keys(backpack)
-    .filter(charId => backpack[charId] > 0)
-    .map(charId => {
-      const card = cards.find(c => c.char_id === charId);
-      if (!card) return null;
-      const stats = cardStats(charId);
-      return {
-        ...card,
-        stock: backpack[charId],
-        atk: stats.atk,
-        def: stats.def
-      };
-    })
-    .filter(Boolean);
-  
-  if (pickerItems.length === 0) {
-    alert('Tidak ada kartu di backpack! Roll dulu ya.');
-    return;
-  }
-  
-  const pickerHtml = `
-    <div id="cardPickerModal" class="modal-backdrop" onclick="closeCardPicker()">
-      <div class="card-picker-panel" onclick="event.stopPropagation()">
-        <h3>Pilih Kartu untuk Slot ${slotIndex + 1}</h3>
-        <div class="card-picker-grid">
-          ${pickerItems.map(card => `
-            <div class="card-picker-item" onclick="equipCard(${slotIndex}, '${card.char_id}')" style="border-color: ${getTierColor(card.tier)}">
-              <img src="${card.art_image}" alt="${card.name}">
-              <div class="card-picker-info">
-                <div class="card-picker-name">${card.name}</div>
-                <div class="card-picker-tier tier-${card.tier.toLowerCase()}">${rarityText(card.tier)}</div>
-                <div class="card-picker-stats">
-                  <span class="stat-atk">${card.atk} ATK</span>
-                  <span class="stat-def">${card.def} DEF</span>
-                </div>
-                <div class="card-picker-stock">Stok: ${card.stock}</div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-        <button onclick="closeCardPicker()">Batal</button>
-      </div>
-    </div>
-  `;
-  
-  document.body.insertAdjacentHTML('beforeend', pickerHtml);
-}
-
-function closeCardPicker() {
-  const modal = document.getElementById('cardPickerModal');
-  if (modal) {
-    modal.remove();
-  }
-}
-
-function renderBackpackPanel() {
-  const panel = document.getElementById('backpackPanel');
-  if (!panel) return;
-  
-  const cards = getCards();
-  const equippedSet = new Set(equippedSlots);
-  
-  const backpackItems = Object.keys(backpack)
-    .filter(charId => backpack[charId] > 0)
-    .map(charId => {
-      const card = cards.find(c => c.char_id === charId);
-      if (!card) return null;
-      const stats = cardStats(charId);
-      const isEquipped = equippedSet.has(charId);
-      return {
-        ...card,
-        stock: backpack[charId],
-        atk: stats.atk,
-        def: stats.def,
-        isEquipped: isEquipped
-      };
-    })
-    .filter(Boolean);
-  
-  if (backpackItems.length === 0) {
-    panel.innerHTML = `
-      <div class="backpack-content">
-        <p>Backpack kosong!</p>
-        <button onclick="toggleBackpack(); startRollAnimation()">Mulai Roll Cards</button>
-      </div>
-    `;
-    return;
-  }
-  
-  const totalPower = getTotalPower();
-  
-  let html = `
-    <div class="backpack-header">
-      <h2>Backpack</h2>
-      <div class="backpack-stats">
-        <span>Total Power: <strong>${totalPower}</strong></span>
-        <span>Kartu: <strong>${backpackItems.length}</strong></span>
-      </div>
-      <button class="close-btn" onclick="toggleBackpack()">×</button>
-    </div>
-    <div class="backpack-body">
-      <div class="deck-layout">
-        <div class="deck-slots-section">
-          <h3>Equipped Cards</h3>
-          <div class="deck-slot-container" id="deckSlotContainer"></div>
-        </div>
-        <div class="backpack-cards-section">
-          <h3>Your Cards (${backpackItems.length})</h3>
-          <div class="backpack-grid">
-  `;
-  
-  for (const item of backpackItems) {
-    const tierColor = getTierColor(item.tier);
-    html += `
-      <div class="backpack-card-item" style="border-color: ${tierColor}">
-        <img src="${item.art_image}" alt="${item.name}">
-        <div class="backpack-card-info">
-          <div class="backpack-card-name">${item.name}</div>
-          <div class="backpack-card-tier tier-${item.tier.toLowerCase()}">${rarityText(item.tier)}</div>
-          <div class="backpack-card-stats">
-            <span class="stat-atk">${item.atk} ATK</span>
-            <span class="stat-def">${item.def} DEF</span>
-          </div>
-          <div class="backpack-card-actions">
-            ${item.isEquipped 
-              ? `<button class="btn-unequip" onclick="unequipCardFromBackpack('${item.char_id}')">Unequip</button>`
-              : `<button class="btn-equip" onclick="quickEquip('${item.char_id}')">Quick Equip</button>`
-            }
-            <button class="btn-stock" disabled>${item.stock} stk</button>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-  
-  html += `
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-  
-  panel.innerHTML = html;
-  
-  // Re-render deck slots after panel is rendered
-  renderDeckSlots();
-}
-
-function quickEquip(cardId) {
-  // Find first empty slot
-  const emptySlot = equippedSlots.findIndex(slot => slot === null);
-  if (emptySlot !== -1) {
-    equipCard(emptySlot, cardId);
-  } else {
-    alert('Semua slot sudah equipped! Unequip dulu salah satu.');
-  }
-}
-
-function unequipCardFromBackpack(cardId) {
-  // Find which slot this card is in
-  const slotIndex = equippedSlots.indexOf(cardId);
-  if (slotIndex !== -1) {
-    unequipCard(slotIndex);
-  }
-}
-
-function saveBackpackState() {
-  localStorage.setItem('animeBattle_backpack', JSON.stringify(backpack));
-  localStorage.setItem('animeBattle_equippedSlots', JSON.stringify(equippedSlots));
-}
-
-function loadBackpackState() {
-  const savedBackpack = localStorage.getItem('animeBattle_backpack');
-  const savedEquipped = localStorage.getItem('animeBattle_equippedSlots');
-  
-  if (savedBackpack) {
-    try {
-      backpack = JSON.parse(savedBackpack);
-    } catch (e) {
-      backpack = {};
-    }
-  }
-  
-  if (savedEquipped) {
-    try {
-      equippedSlots = JSON.parse(savedEquipped);
-    } catch (e) {
-      equippedSlots = [null, null, null, null];
-    }
-  }
-  
-  updateBackpackCount();
-}
 
 /* Level dinomeri global per bab, tiap bab 6 level: Bab 1 = 1-6, Bab 2 = 7-12, Bab 3 = 13-18 */
 let _chapAcc=0;
@@ -4293,7 +4029,7 @@ function renderLobby(){
         <div>${ATKIC} <span id="rollAtk"></span></div>
       </div>
     </div>
-    <div class="roll-note">Kartu otomatis tersimpan di Backpack 🎒</div>
+    <div class="roll-note">Kartu otomatis masuk Koleksi &amp; mengisi slot dek 🎒</div>
     <button class="roll-info-btn" id="collectBtn">TUTUP</button>
   </div>
   
@@ -4348,32 +4084,26 @@ function renderLobby(){
 function toggleBackpack() {
   const panel = document.getElementById('backpackPanel');
   if (!panel) return;
-  
+
   const isVisible = panel.style.display !== 'none' && panel.style.display !== '';
-  
+
   if (isVisible) {
-    // Close backpack
+    /* Close: refresh lobby di belakang biar hub card & bench ikut perubahan dek. */
+    bpTarget = null;
     panel.style.opacity = '0';
     panel.style.transform = 'translate(-50%, -45%) scale(0.95)';
-    setTimeout(() => {
-      panel.style.display = 'none';
-    }, 300);
-    
-    // Stop rolling animation when backpack is open
-    if (rollState.active) {
-      stopRollAnimation();
-    }
+    setTimeout(() => { panel.style.display = 'none'; render(); }, 300);
+    if (rollState.active) stopRollAnimation();
   } else {
-    // Open backpack
+    /* Open */
     renderBackpackPanel();
-    panel.style.display = 'block';
-    
-    // Small delay for fade-in animation
+    panel.style.display = 'flex';
+
     setTimeout(() => {
       panel.style.opacity = '1';
       panel.style.transform = 'translate(-50%, -50%) scale(1)';
     }, 10);
-    
+
     beep(520, 0.1, 'triangle', 0.07);
   }
 }
@@ -5085,8 +4815,8 @@ function boot(){
   setAuthMode(Object.keys(users).length?"login":"register");
   if(last){document.getElementById("auUser").value=last;document.getElementById("auPass").focus();}
   
-  /* ========== Roll + Backpack Event Listeners ========== */
-  loadBackpackState();
+  /* ========== Roll + Deck badge init ========== */
+  rollCountBadge();
   if(window.videoBoot) window.videoBoot();
 }
 
