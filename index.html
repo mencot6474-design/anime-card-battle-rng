@@ -87,8 +87,6 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .roll-overlay.mini .roll-card-showcase .hub-center .hc-name-br{bottom:4px;right:5px;font-size:11px;max-width:80%}
 .roll-overlay.mini .roll-card-showcase .hub-center .hc-chance{top:21px;left:5px;font-size:10px}
 .roll-overlay.mini .roll-card-showcase .hub-center .hc-badges{top:5px;right:5px;gap:3px}
-.roll-overlay.mini .roll-card-showcase .hub-center .hc-traitgem.hc-tl{top:6px;left:5px}
-.roll-overlay.mini .roll-card-showcase .hub-center .hc-traitgem.hc-tl .tgem{width:12px;height:12px}
 .roll-overlay.mini .roll-card-showcase .hub-center .hc-badges .mut-badge,.roll-overlay.mini .roll-card-showcase .hub-center .hc-badges .hc-trait,.roll-overlay.mini .roll-card-showcase .hub-center .shiny-badge{height:16px;padding:0 5px;font-size:9px}
 .roll-overlay.mini .roll-card-showcase .hub-center .hc-info{padding:18px 8px 7px}
 .roll-overlay.mini .roll-card-showcase .hub-center .hc-skill,.roll-overlay.mini .roll-card-showcase .hub-center .hc-desc{display:none}
@@ -810,11 +808,10 @@ body.battle-full .stat svg{flex:none}
 .hub-center .hc-name{font-weight:800;font-size:17px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.7)}
 .hub-center .hc-stats{display:flex;justify-content:space-between;gap:16px;margin-top:9px;font-size:14px;font-weight:700;color:#EAF4FF;align-items:center;text-shadow:0 1px 4px rgba(0,0,0,.7)}
 .hub-center .hc-name-br{position:absolute;bottom:10px;right:12px;z-index:6;font-weight:800;font-size:16px;color:#fff;text-align:right;text-shadow:0 1px 5px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.9);max-width:70%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hub-center .hc-traitgem.hc-tl{position:absolute;top:12px;left:12px;z-index:6}
 .hub-center .hc-chance{position:absolute;top:46px;left:12px;z-index:6;font-family:"Barlow Condensed";letter-spacing:.05em;font-size:14px;font-weight:700;text-shadow:0 1px 5px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.9)}
 .hub-center .f-tag{top:12px;right:12px}
 .hub-center .mut-badge{top:12px;left:8px}
-.hub-center .hc-badges{position:absolute;top:13px;right:12px;z-index:7;display:flex;gap:6px;align-items:center;justify-content:flex-end}
+.hub-center .hc-badges{position:absolute;top:12px;right:12px;z-index:7;display:flex;flex-direction:column;gap:5px;align-items:flex-end;justify-content:flex-start}
 .hub-center .skill-overlay{display:none}
 .hub-center .hc-skill{font-family:"Barlow Condensed";letter-spacing:.08em;text-transform:uppercase;font-size:12px;color:rgba(234,244,255,.72);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hub-center .hc-desc{font-size:10px;line-height:1.35;color:rgba(234,244,255,.78);margin-top:2px;white-space:normal;text-shadow:0 1px 3px rgba(0,0,0,.9)}
@@ -921,7 +918,6 @@ body.battle-full .stat svg{flex:none}
 .tr-note{margin-top:12px;text-align:center;font-size:11px;letter-spacing:.06em;color:var(--muted)}
 .trait-badge{font-family:"Barlow Condensed";font-weight:700;font-size:11px;padding:2px 6px;border-radius:6px;border:1px solid;background:rgba(8,9,11,.7);line-height:1}
 .hc-trait{display:inline-flex;align-items:center;gap:3px;font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.08em;padding:1px 7px;border-radius:6px;background:rgba(12,14,16,.85);border:1px solid;white-space:nowrap;line-height:1.5}
-.hc-traitgem{display:inline-flex;align-items:center;line-height:1;filter:drop-shadow(0 0 3px currentColor)}
 .trait-hover{cursor:help}
 #traitTip{position:fixed;z-index:120;pointer-events:none;opacity:0;transform:translateY(4px);transition:opacity .14s ease,transform .14s ease;display:flex;flex-direction:column;gap:3px;width:212px;padding:10px 12px;border-radius:12px;border:1px solid var(--line2);background:linear-gradient(160deg,#FFFFFF,#EEF2F6);box-shadow:0 12px 34px rgba(0,0,0,.65);text-align:center}
 #traitTip.show{opacity:1;transform:translateY(0)}
@@ -3649,9 +3645,8 @@ function hubCardHtml(eq,idAttr){
   const trait=(eq.trait&&eq.trait!=='none')?eq.trait:null;
   return `<div class="hub-center${mut?' mut-'+mut:''}${shinyCls(eq)}"${idAttr||''} data-tier="${tier}"${mut?` style="border-color:${MUT_COLOR[mut]}"`:''}>
       <div class="hc-img"><img src="${cardImg(eq.char)}" alt="${cardName(eq.char)}">${madaraAura(eq.char)}
-          ${trait?traitChip(trait,`<span class="hc-traitgem hc-tl" style="color:${TRAIT_COLOR[trait]}">${traitGem(16)}</span>`):''}
           <span class="hc-chance" style="color:${TIER_COLOR[tier]}">${rarityText(tier,(CARDS[eq.char]||{}).chance)}</span>
-          ${(mut||eq.shiny)?`<div class="hc-badges">${mut?mutChip(mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${eq.shiny?'<span class="shiny-badge">SHINY</span>':''}</div>`:''}
+          ${(mut||trait||eq.shiny)?`<div class="hc-badges">${mut?mutChip(mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="hc-trait" style="color:${TRAIT_COLOR[trait]};border-color:${TRAIT_COLOR[trait]}">${traitGem(12)} ${traitLabel(trait)}</span>`):''}${eq.shiny?'<span class="shiny-badge">SHINY</span>':''}</div>`:''}
           <span class="hc-name-br"${mut?` style="color:${MUT_COLOR[mut]}"`:''}>${mutText(mut,cardName(eq.char))}</span>
           <div class="skill-overlay"><b>${passiveName(eq.char)}</b><span class="sk-txt">${skillText(eq.char)}</span></div>
         </div>
