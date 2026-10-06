@@ -4459,8 +4459,14 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
 (function wireRollDock(){
   const rb=document.getElementById("rollBtn");
   if(rb)rb.addEventListener("click",()=>{
-    if(!rollState.active){startRollAnimation();beep(440,0.15,"sine",0.1);}
-    else{stopRollAnimation();hideRollResult();beep(330,0.12,"square",0.08);}
+    /* Satu klik = satu roll langsung: kartu masuk Koleksi tanpa layar reveal.
+       (Dulu auto-loop terus sampai klik kedua & memunculkan kartu terakhir.) */
+    if(rollState.active)stopRollAnimation();
+    const result=rngRoll(1,1);
+    result.mut=rollMut();
+    grantRolledCard(result.cardId, result.mut);
+    hideRollResult();
+    beep(440,0.15,"sine",0.1);
   });
   const bt=document.getElementById("backpackToggle");
   if(bt)bt.addEventListener("click",toggleBackpack);
