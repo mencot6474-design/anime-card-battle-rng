@@ -92,6 +92,11 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .roll-overlay.mini .roll-card-showcase .hub-center .hc-info{padding:18px 8px 7px}
 .roll-overlay.mini .roll-card-showcase .hub-center .hc-skill,.roll-overlay.mini .roll-card-showcase .hub-center .hc-desc{display:none}
 .roll-overlay.mini .roll-card-showcase .hub-center .hc-stats{font-size:11px;margin-top:0;gap:8px}
+/* Reveal penuh: blok info/stat diperkecil (koreksi user). Lobby tidak ikut berubah. */
+.roll-overlay:not(.mini) .roll-card-showcase .hub-center .hc-info{padding:22px 11px 9px}
+.roll-overlay:not(.mini) .roll-card-showcase .hub-center .hc-skill{font-size:10px;margin-top:2px}
+.roll-overlay:not(.mini) .roll-card-showcase .hub-center .hc-desc{font-size:9px;line-height:1.3}
+.roll-overlay:not(.mini) .roll-card-showcase .hub-center .hc-stats{font-size:12px;margin-top:5px;gap:10px}
 .roll-overlay.mini .roll-actions{display:none;}
 .roll-min-btn{padding:9px 18px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-family:"Barlow Condensed";font-weight:700;font-size:15px;letter-spacing:.06em;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;}
 .roll-min-btn:hover{background:var(--panel2);}
