@@ -1418,7 +1418,7 @@ const TIERS=["R","SR","SSR","UR","EX"];
 const TIER_COLOR={R:"#9A8A8B",SR:"#C8A2A8",SSR:"#B07A9B",UR:"#2F8FE2",EX:"#FF4D5E"};
 /* Sistem kelangkaan = "1 in N" (peluang per kartu), bukan label tier.
    `tier` hanya dipakai internal sbg kunci warna/logika; yang tampil ke user adalah odds ini. */
-const TIER_CHANCE={R:100,SR:400,SSR:1500,UR:6000,EX:25000};
+const TIER_CHANCE={R:10000,SR:100000,SSR:450000,UR:1000000,EX:1000000};
 function chanceOf(tier){return TIER_CHANCE[tier]||100;}
 function rarityText(tier,chance){return "1 in "+(chance||chanceOf(tier));}
 /* =============== STORY BIBLE ===============
@@ -1510,7 +1510,7 @@ const STORY_BIBLE={
         desc:"Deskripsi passive yang tampil di kartu.",
         noGacha:false}
        - id harus unik dan cocok dengan field "unit" di chapter (Story) yang memakainya.
-       - chance = peluang drop "1 in N" per kartu (override tier). Kosongkan -> ikut tier (R=100,SR=400,SSR=1500,UR=6000,EX=25000).
+       - chance = peluang drop "1 in N" per kartu (override tier). Kosongkan -> ikut tier (R=10000,SR=100000,SSR=450000,UR=1000000,EX=1000000).
        - noGacha:true -> tidak muncul di Roll (hanya hadiah/Toko Raid).
        - fx = passive. Kunci yang didukung engine battle:
            double:15            -> 15% serang 2x beruntun
