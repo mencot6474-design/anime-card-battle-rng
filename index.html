@@ -911,7 +911,18 @@ body.battle-full .stat svg{flex:none}
 /* TRAIT modal + badge */
 #traitModal{position:fixed;inset:0;background:rgba(9,10,12,.8);backdrop-filter:blur(6px);display:none;place-items:center;z-index:60}
 #traitModal.show{display:grid}
-.tr-box{width:min(460px,94vw);max-height:88vh;overflow-y:auto;overflow-x:hidden;border-radius:18px;border:1px solid var(--line2);background:linear-gradient(160deg,#FFFFFF,#EEF2F6);padding:22px;animation:rcIn .35s ease}
+.tr-box{width:min(560px,94vw);max-height:88vh;overflow-y:auto;overflow-x:hidden;border-radius:18px;border:1px solid var(--line2);background:linear-gradient(160deg,#FFFFFF,#EEF2F6);padding:22px;animation:rcIn .35s ease}
+.tr-grid{display:flex;gap:18px;align-items:stretch}
+.tr-main{flex:1;min-width:0;display:flex;flex-direction:column}
+.tr-main .tr-cur{margin-bottom:14px}
+.tr-main .tr-note{margin-top:auto}
+.tr-rates{flex:0 0 150px;display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:rgba(20,28,38,.04)}
+.trr-h{font-family:"Barlow Condensed";font-weight:800;font-size:11px;letter-spacing:.18em;color:var(--muted);text-align:center;margin-bottom:2px}
+.trr-row{display:flex;align-items:center;gap:7px;font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.03em;color:#1c232b}
+.trr-dot{flex:none;width:10px;height:10px;border-radius:50%}
+.trr-name{flex:1}
+.trr-pct{font-style:normal;font-weight:800;font-size:12px}
+@media (max-width:520px){.tr-grid{flex-direction:column}.tr-rates{flex:1 1 auto}}
 .tr-cur{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(20,28,38,.05);margin-bottom:16px}
 .tr-cur img,.tr-cur video{width:44px;height:56px;object-fit:cover;border-radius:7px}
 .tr-cur .tc-lbl{font-size:10px;letter-spacing:.16em;color:var(--muted);font-weight:700}
@@ -4048,12 +4059,18 @@ function renderTrait(){
   if(!state.stacks.length){b.innerHTML=`<p class="sub">Belum ada kartu. Punya kartu dulu lewat Summon.</p>`;return;}
   const tgt=traitTargetStack();
   const cur=tgt.trait&&tgt.trait!=="none"?traitChip(tgt.trait,`<span style="color:${TRAIT_COLOR[tgt.trait]}">${traitGem(13)} ${traitLabel(tgt.trait)}</span>`):`<span style="color:var(--muted)">Belum ada trait</span>`;
+  const rates=TRAIT_TIERS.filter(t=>t.chance>0).map(t=>`<div class="trr-row" title="${t.name}"><span class="trr-dot" style="background:${t.color};box-shadow:0 0 7px ${t.color}"></span><span class="trr-name">${t.name}</span><em class="trr-pct" style="color:${t.color}">${t.chance}%</em></div>`).join("");
   b.innerHTML=`
-    <div class="tr-cur tr-cur-btn" id="trPickCard" role="button" title="Ganti kartu target dari deck"><img src="${cardImg(tgt.char)}" alt="">
-      <div><div class="tc-lbl">KARTU TARGET · TRAIT SEKARANG</div><div class="tc-name">${cardName(tgt.char)}</div><div style="font-size:13px;margin-top:2px">${cur}</div></div>
-      <span class="tr-change">GANTI ▸</span></div>
-    <div class="tr-btns"><button class="tr-btn tr-roll" id="trRoll" ${state.coins<TRAIT_COST?"disabled":""}>ROLL TRAIT · ${fmt(TRAIT_COST)} COIN</button></div>
-    <div class="tr-note">COIN: ${fmt(state.coins)} · Roll memasang trait ke target. Trait langka (Blessed / Overlord / Ascendant) minta konfirmasi Simpan / Roll.</div>`;
+    <div class="tr-grid">
+      <div class="tr-main">
+        <div class="tr-cur tr-cur-btn" id="trPickCard" role="button" title="Ganti kartu target dari deck"><img src="${cardImg(tgt.char)}" alt="">
+          <div><div class="tc-lbl">KARTU TARGET · TRAIT SEKARANG</div><div class="tc-name">${cardName(tgt.char)}</div><div style="font-size:13px;margin-top:2px">${cur}</div></div>
+          <span class="tr-change">GANTI ▸</span></div>
+        <div class="tr-btns"><button class="tr-btn tr-roll" id="trRoll" ${state.coins<TRAIT_COST?"disabled":""}>ROLL TRAIT · ${fmt(TRAIT_COST)} COIN</button></div>
+        <div class="tr-note">COIN: ${fmt(state.coins)} · Roll memasang trait ke target. Trait langka minta konfirmasi Simpan / Roll.</div>
+      </div>
+      <div class="tr-rates"><div class="trr-h">DROP RATE</div>${rates}</div>
+    </div>`;
   const r=document.getElementById("trRoll");if(r)r.onclick=rollTrait;
   const pc=document.getElementById("trPickCard");if(pc)pc.onclick=()=>openDeckPick();
 }
