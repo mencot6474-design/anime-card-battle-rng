@@ -109,6 +109,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .bp-tile.in-deck{box-shadow:0 0 0 2px var(--cyan) inset;}
 .bp-tile .bpt-lvl{position:absolute;bottom:2px;right:5px;font-family:"Barlow Condensed";font-weight:700;font-size:11px;color:#fff;text-shadow:0 1px 2px #000;}
 .bp-tile .bpt-mut{position:absolute;top:2px;left:4px;font-family:"Barlow Condensed";font-weight:700;font-size:10px;text-shadow:0 1px 2px #000;}
+.bp-tile .bpt-i{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:6px;border:none;background:rgba(12,14,16,.8);color:#fff;font-size:11px;font-weight:700;font-style:italic;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .deck-layout{display:flex;gap:24px;padding:24px;flex:1;overflow:hidden;}
 .deck-main-cards{flex:1;display:flex;flex-direction:column;gap:12px;}
 .deck-slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;}
@@ -1272,8 +1273,6 @@ body.battle-full #bfExit{display:inline-flex}
   <div id="logo"><svg viewBox="0 0 24 24" fill="none" aria-label="Clan Uzumaki"><path d="M12 12a2 2 0 0 1 4 0 4 4 0 0 1-8 0 6 6 0 0 1 12 0 8 8 0 0 1-16 0" stroke="#fff" stroke-width="2.1" stroke-linecap="round"/></svg></div>
   <nav id="nav">
     <button class="nav-btn" data-route="#/lobby" title="Lobby"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 10.5 9-7.5 9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></button>
-    <button class="nav-btn" data-route="#/deck" title="Deck"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="3" width="11" height="15" rx="2"/><path d="M5 6.5v12A2.5 2.5 0 0 0 7.5 21H17"/><path d="M11 8h5M11 11h5"/></svg></button>
-    <button class="nav-btn" data-route="#/gacha" title="Gacha"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3.5c.6 3.9 1.4 4.7 5.3 5.3-3.9.6-4.7 1.4-5.3 5.3-.6-3.9-1.4-4.7-5.3-5.3 3.9-.6 4.7-1.4 5.3-5.3z"/><path d="M18 14c.3 1.9.7 2.3 2.6 2.6-1.9.3-2.3.7-2.6 2.6-.3-1.9-.7-2.3-2.6-2.6 1.9-.3 2.3-.7 2.6-2.6z"/></svg></button>
     <button class="nav-btn" data-route="#/" title="Story"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.8C10.4 5.2 8 4.7 4 5.2v13.3c4-.5 6.4 0 8 1.6 1.6-1.6 4-2.1 8-1.6V5.2c-4-.5-6.4 0-8 1.6z"/><path d="M12 6.8v13.3"/></svg></button>
     <button class="nav-btn" data-route="#/settings" title="Pengaturan"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.14.5.55.9 1.1 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   </nav>
@@ -1300,14 +1299,6 @@ body.battle-full #bfExit{display:inline-flex}
 </div></div>
 
 <div id="modal"><div class="md-card" id="md-card"></div></div>
-<div id="pullModal"><div class="pm-box">
-  <div class="eyebrow" id="pmTitle">HASIL GACHA ×10</div>
-  <div class="pm-actions">
-    <button class="btn-ghost" id="pmClose">CLOSE</button>
-    <button class="btn-grad" id="pmAgain">≡ &nbsp;10x PULL AGAIN · 900</button>
-  </div>
-  <div class="pm-grid" id="pmGrid"></div>
-</div></div>
 
 <div id="indexModal"><div class="ix-box">
   <div class="ix-head">
@@ -1754,7 +1745,7 @@ function renderBackpackPanel(){
   const tiles=state.stacks.map(s=>{
     const inDeck=state.deck.includes(s.id);
     const mut=(s.mut&&s.mut!=='none')?`<span class="bpt-mut" style="color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`:'';
-    return `<div class="bp-tile${inDeck?' in-deck':''}" onclick="bpAssign('${s.id}')" style="border-color:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt="">${mut}<span class="bpt-lvl">L${s.lv}</span></div>`;
+    return `<div class="bp-tile${inDeck?' in-deck':''}" onclick="bpAssign('${s.id}')" style="border-color:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt="">${mut}<button class="bpt-i" onclick="event.stopPropagation();openModal('${s.id}')" title="Detail &amp; naik level">i</button><span class="bpt-lvl">L${s.lv}</span></div>`;
   }).join('');
   panel.innerHTML=header+`<div class="bp-body">
     <div class="bp-h">${bpTarget!=null?('SLOT '+(bpTarget+1)+' TERPILIH — tap kartu untuk pasang'):'DEK · 4 SLOT · tap slot lalu tap kartu'}</div>
@@ -1837,22 +1828,6 @@ const FOES=Object.fromEntries(STORY_BIBLE.levels.map((l,i)=>{
   const c=CARDS[l.unit];
   return [i+1,{id:l.unit,name:c.name,ep:c.passive.name,img:c.sprite_asset,tier:c.tier,boss:!!l.boss}];
 }));
-const DROP_RATES=[["R",68.6],["SR",20],["SSR",10.4],["EX",1.0]];
-/* Tiap banner punya pool EX sendiri: kartu featured 0.9%, EX lainnya berbagi 0.1% sisanya */
-const EX_FEATURED=0.9;
-const GACHA_BANNERS=[
-  {char:"CH_EX_SUKUNA",feat:"SUKUNA",img:"assets/sprites/ex_sukuna_manga.gif",name:"RYOMEN SUKUNA",tag:"BANNER SPESIAL",sub:"Rate-up kartu EX — Malevolent Shrine",skill:"MALEVOLENT SHRINE"},
-  {char:"CH_EX_GOJO",feat:"GOJO",img:"assets/sprites/ex_gojo.mp4",pos:"center 30%",name:"SATORU GOJO",tag:"BANNER SPESIAL",sub:"Rate-up kartu EX — Infinity Void",skill:"INFINITY VOID"},
-  {char:"CH_EX_MADARA",feat:"MADARA",img:"assets/sprites/ex_madara.mp4",pos:"center 24%",name:"MADARA RIKUDOU",tag:"BANNER SPESIAL",sub:"Rate-up kartu EX — Truth-Seeking Orbs",skill:"TRUTH-SEEKING ORBS"},
-  {char:"CH_EX_JINWOO",feat:"JIN-WOO",img:"assets/sprites/ex_jinwoo.mp4",pos:"center 33%",name:"SUNG JIN-WOO",tag:"BANNER SPESIAL",sub:"Rate-up kartu EX — Shadow Army",skill:"ARISE"}
-];
-const exTierRate=()=>(DROP_RATES.find(d=>d[0]==="EX")||["EX",0])[1];
-const otherExRate=()=>Math.max(0,+(exTierRate()-EX_FEATURED).toFixed(2));
-let summonBanner=0;
-let summonN=10;
-let pullLockTimer=null;
-const PULL_COST={1:100,10:900,100:8000};
-const TIER_DUP_COIN={R:30,SR:80,SSR:250,EX:1000};
 /* Sistem BUKU EXP — satu-satunya sumber naik level KARTU (Lv.1-10). Didapat hanya dari Toko Raid. */
 const CARD_MAX_LV=20;
 const BOOK_INFO={
@@ -2473,7 +2448,7 @@ function malevolentShrineFx(targetSel,who){
 
 /* =============== SHELL RENDER =============== */
 const app=document.getElementById("app");
-const ROUTES={"#/lobby":"LOBBY","#/":"STORY","#/gacha":"SUMMON PULL","#/deck":"DECK","#/raid":"BOSS RAID","#/tower":"SKY TOWER","#/settings":"PENGATURAN"};
+const ROUTES={"#/lobby":"LOBBY","#/":"STORY","#/raid":"BOSS RAID","#/tower":"SKY TOWER","#/settings":"PENGATURAN"};
 function route(){const h=location.hash;return ROUTES[h]?h:"#/lobby";}
 function renderShell(){
   document.getElementById("crumb-page").textContent=ROUTES[route()];
@@ -3686,167 +3661,6 @@ function towerEnd(win){
   ov.classList.add("show");
 }
 
-/* =============== GACHA =============== */
-function rollTier(){
-  let r=Math.random()*100;
-  for(const[t,p]of DROP_RATES){if(r<p)return t;r-=p;}
-  return "R";
-}
-function revealSingle(res){
-  const c=CARDS[res.char];
-  const w=document.createElement("div");
-  w.className="reveal-center";
-  const mc=res.mut&&res.mut!=="none"?" mut-"+res.mut:"";
-  w.innerHTML=`<div class="rc-card${res.tier==="EX"?" ex fire":""}${mc}" data-tier="${res.tier}" style="border-color:${res.mut&&res.mut!=="none"?MUT_COLOR[res.mut]:TIER_COLOR[res.tier]}">
-    <span class="rc-art"><img src="${c.sprite_asset}" alt="">${madaraAura(res.char)}</span>
-    <span class="rc-tier" style="color:${TIER_COLOR[res.tier]};border-color:${TIER_COLOR[res.tier]}">${rarityText(res.tier)}</span>
-    ${res.mut&&res.mut!=="none"?`<span class="rc-mut">${mutBadge(res.mut)} ×${MUT_MULT[res.mut]}</span>`:""}
-    <div class="rc-name">${c.name}</div>
-    <div class="rc-title">${c.type}</div>
-    ${res.dupGain?`<div style="margin-top:10px;font-family:'Barlow Condensed';letter-spacing:.12em;color:var(--amber);font-weight:700;font-size:15px">DUPLIKAT &middot; +${fmt(res.dupGain)} COIN</div>`:""}
-  </div>`;
-  document.body.appendChild(w);
-  sfx.pull();
-  setTimeout(()=>{const card=w.firstElementChild;card.classList.add("out");setTimeout(()=>w.remove(),380);},2600);
-}
-function exSplash(results,onDone){
-  const exs=results.filter(r=>r.tier==="EX");
-  if(!exs.length){if(onDone)onDone();return;}
-  const w=document.createElement("div");
-  w.id="exSplash";
-  w.innerHTML=`<div class="ex-rays"></div><div class="ex-flash"></div>
-    <div class="ex-inner">
-      <div class="ex-label">&#10022; GOD PULL &#10022;</div>
-      <div class="ex-cards">${exs.map(r=>{const c=CARDS[r.char];const mc=r.mut&&r.mut!=="none"?" mut-"+r.mut:"";return `<div class="ex-card${mc}" style="border-color:${r.mut&&r.mut!=="none"?MUT_COLOR[r.mut]:TIER_COLOR.EX}"><img src="${c.sprite_asset}" alt=""><div class="ex-cname">${c.name}</div>${r.mut&&r.mut!=="none"?`<span class="ex-cmut">${mutBadge(r.mut)}</span>`:""}</div>`;}).join("")}</div>
-    </div>`;
-  let done=false;
-  const finish=()=>{if(done)return;done=true;w.remove();if(onDone)onDone();};
-  document.body.appendChild(w);
-  w.addEventListener("click",()=>{w.classList.add("out");setTimeout(finish,450);});
-  setTimeout(()=>w.classList.add("out"),3000);
-  setTimeout(finish,3450);
-}
-function showPullModal(results){
-  const n=results.length,cost=PULL_COST[n]||100*n;
-  results.sort((a,b)=>TIERS.indexOf(b.tier)-TIERS.indexOf(a.tier)||MUT_RANK[b.mut||"none"]-MUT_RANK[a.mut||"none"]);
-  document.getElementById("pmTitle").innerHTML="HASIL GACHA ×"+n;
-  document.getElementById("pmGrid").innerHTML=results.map((r,i)=>{
-    const mc=r.mut&&r.mut!=="none"?" mut-"+r.mut:"";
-    return `
-    <div class="pm-card${r.tier==="EX"?" fire":""}${mc}" data-tier="${r.tier}" style="animation-delay:${Math.min(i,20)*.06}s;border-color:${r.mut&&r.mut!=="none"?MUT_COLOR[r.mut]:TIER_COLOR[r.tier]}">
-      <img src="${CARDS[r.char].sprite_asset}" alt="">
-      <span class="t" style="color:${TIER_COLOR[r.tier]}">${rarityText(r.tier)}</span>
-      ${r.mut&&r.mut!=="none"?`<span class="pm-mut" style="border-color:${MUT_COLOR[r.mut]}">${mutBadge(r.mut)}</span>`:""}
-      <span class="n">${CARDS[r.char].name}</span>
-      ${r.dupGain?`<span style="color:var(--amber);font-size:11px;font-weight:700;letter-spacing:.05em">+${fmt(r.dupGain)}c</span>`:""}
-    </div>`;}).join("");
-  const again=document.getElementById("pmAgain");
-  again.innerHTML="≡ &nbsp;"+n+"x PULL AGAIN · "+cost;
-  again.disabled=true;
-  document.getElementById("pullModal").classList.add("show");
-  sfx.pull();
-  /* kunci tombol pull-again sampai semua kartu selesai muncul (anti spam) */
-  const lockMs=Math.min(n-1,20)*60+500;
-  clearTimeout(pullLockTimer);
-  pullLockTimer=setTimeout(()=>{again.disabled=state.coins<cost;},lockMs);
-}
-function doSummon(n){
-  const cost=PULL_COST[n]||100*n;
-  if(state.coins<cost)return;
-  summonN=n;
-  state.coins-=cost;state.summons+=n;
-  const results=[];
-  for(let i=0;i<n;i++){
-    const tier=rollTier();
-    const pool=MASTER_CARD_INDEX.filter(c=>c.tier===tier&&!c.noGacha);
-    let char;
-    if(tier==="EX"&&pool.length){
-      const b=GACHA_BANNERS[summonBanner];
-      const others=pool.filter(c=>c.char_id!==b.char);
-      char=(!others.length||Math.random()*exTierRate()<EX_FEATURED)?b.char:others[Math.floor(Math.random()*others.length)].char_id;
-    }else{
-      char=(pool.length?pool:MASTER_CARD_INDEX)[Math.floor(Math.random()*(pool.length||MASTER_CARD_INDEX.length))].char_id;
-    }
-    const mut=rollMut(), tierFinal=CARDS[char].tier;
-    const existing=state.stacks.find(s=>s.char===char&&s.mut===mut);
-    if(existing){
-      const gain=TIER_DUP_COIN[tierFinal]||30;
-      state.coins+=gain;
-      results.push({char,tier:tierFinal,mut,dupGain:gain});
-    }else{
-      state.stacks.push({id:Math.random().toString(36).slice(2,9),char,tier:tierFinal,lv:1,exp:0,fav:false,lock:false,mut,trait:"none"});
-      results.push({char,tier:tierFinal,mut});
-    }
-  }
-  save();
-  const showResult=()=>{if(n===1)revealSingle(results[0]);else showPullModal(results);};
-  if(results.some(r=>r.tier==="EX"))exSplash(results,showResult);else showResult();
-  renderShell();
-  updateSummonWallet();
-}
-const mutRateRows=()=>[["silver","S"],["gold","G"],["rainbow","RB"]].map(([k,l])=>`<span><b style="color:${MUT_COLOR[k]}">${l}</b>${MUT_CHANCE[k]}% ×${MUT_MULT[k]}</span>`).join("");
-function dropRatesHtml(b){
-  const tiers=DROP_RATES.map(([t,p])=>t==="EX"
-      ?`<span><b style="color:${TIER_COLOR.EX}">${rarityText("EX")} ${b.feat}</b>${EX_FEATURED}%</span><span><b style="color:${TIER_COLOR.EX}">${rarityText("EX")} LAIN</b>${otherExRate()}%</span>`
-      :`<span><b style="color:${TIER_COLOR[t]}">${rarityText(t)}</b>${p}%</span>`).join("");
-  return `<div><div class="dp-head">PELUANG</div><div class="dp-row">${tiers}</div></div>`
-    +`<div><div class="dp-head">MUTASI</div><div class="dp-row">${mutRateRows()}</div></div>`;
-}
-function updateSummonWallet(){
-  const txt="Wallet: "+fmt(state.coins)+" coin · "+Math.floor(state.coins/100)+" single pull tersedia";
-  app.querySelectorAll(".gacha-banner").forEach(g=>{
-    g.querySelector(".wallet-note").textContent=txt;
-    g.querySelector(".sbtn.x1").disabled=state.coins<100;
-    g.querySelector(".sbtn.x10").disabled=state.coins<900;
-    g.querySelector(".sbtn.x100").disabled=state.coins<8000;
-  });
-}
-function renderSummon(){
-  app.innerHTML=`
-  <h1>Summon <span class="grad-text">Limited Banner</span></h1>
-  ${GACHA_BANNERS.map((b,i)=>`
-  <div class="b-slot">
-    <div class="gacha-banner fire" data-b="${i}">
-      <img src="${b.img}" alt="${b.name}" style="object-position:${b.pos||'center 30%'}">
-      <div class="shade"></div>
-      <div class="gb-content">
-        <div class="gb-kicker">${b.tag} · TIER EX</div>
-        <div class="gb-name">${b.name}<small>${b.sub}</small></div>
-        <div class="gb-rate">✦ ${EX_FEATURED}% EX · ${b.skill}</div>
-      </div>
-      <div class="gb-hint">▸ TAP UNTUK SUMMON</div>
-      <div class="gb-pulls">
-        <div class="summon-btns">
-          <button class="sbtn x1"><span class="sb-q">×1</span><span class="sb-c">100</span></button>
-          <button class="sbtn x10"><span class="sb-q">×10</span><span class="sb-c">900</span></button>
-          <button class="sbtn x100"><span class="sb-q">×100</span><span class="sb-c">8000</span></button>
-        </div>
-        <div class="wallet-note">Wallet: ${fmt(state.coins)} coin · ${Math.floor(state.coins/100)} single pull tersedia</div>
-      </div>
-    </div>
-    <div class="drop-wrap">
-      <button class="drop-info">!</button>
-      <div class="drop-pop down">${dropRatesHtml(b)}</div>
-    </div>
-  </div>`).join("")}`;
-  app.querySelectorAll(".gacha-banner").forEach(g=>{
-    const i=+g.dataset.b;
-    g.onclick=()=>{
-      g.classList.toggle("open");
-      const pop=g.parentElement.querySelector(".drop-pop"),btn=g.parentElement.querySelector(".drop-info");
-      pop.classList.remove("show");btn.classList.remove("on");
-    };
-    g.querySelector(".sbtn.x1").onclick=(e)=>{e.stopPropagation();summonBanner=i;doSummon(1);};
-    g.querySelector(".sbtn.x10").onclick=(e)=>{e.stopPropagation();summonBanner=i;doSummon(10);};
-    g.querySelector(".sbtn.x100").onclick=(e)=>{e.stopPropagation();summonBanner=i;doSummon(100);};
-  });
-  app.querySelectorAll(".b-slot .drop-wrap").forEach(w=>{
-    const btn=w.querySelector(".drop-info"),pop=w.querySelector(".drop-pop");
-    btn.onclick=(e)=>{e.stopPropagation();pop.classList.toggle("show");btn.classList.toggle("on");};
-  });
-  updateSummonWallet();
-}
-
 /* =============== DECK =============== */
 let filter="ALL", deckSearch="", raidSearch="", dpSearch="";
 function runCardSearch(inp, grid, nr){
@@ -3855,70 +3669,6 @@ function runCardSearch(inp, grid, nr){
   let vis=0;
   grid.querySelectorAll("[data-name]").forEach(el=>{const hit=!q||(el.getAttribute("data-name")||"").indexOf(q)>=0;el.style.display=hit?"":"none";if(hit)vis++;});
   if(nr)nr.style.display=vis?"none":"block";
-}
-function renderDeck(){
-  const stacks=state.stacks.filter(s=>filter==="ALL"||s.tier===filter).slice().sort((a,b)=>(b.fav?1:0)-(a.fav?1:0));
-  const slotHtml=(s,label,bg,fg)=>{
-    if(!s) return `<div class="deck-slot empty"><div class="es-plus">+</div><div class="es-txt">${label}</div></div>`;
-    const st=cardStats(s.char,s.lv,s.mut,s.trait),c=CARDS[s.char];
-    const maxed=s.lv>=CARD_MAX_LV, need=cardExpNeed(s.lv), expPct=maxed?100:Math.max(0,Math.min(100,Math.round(s.exp/need*100)));
-    return `<div class="deck-slot clickable${c.tier==="EX"?" fire":""}${s.mut&&s.mut!=="none"?" mut-"+s.mut:""}" data-id="${s.id}" data-tier="${c.tier}" ${s.mut&&s.mut!=="none"?`style="border-color:${MUT_COLOR[s.mut]}"`:""}>
-      <span class="ds-art"><img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(s.char)}</span>
-      <div style="flex:1">
-        <div class="eyebrow" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier)} · Lv.${s.lv}</div>
-        ${(s.mut&&s.mut!=="none")||(s.trait&&s.trait!=="none")?`<div class="ds-badges">${s.mut&&s.mut!=="none"?mutChip(s.mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`):""}${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="trait-badge" style="color:${TRAIT_COLOR[s.trait]};border-color:${TRAIT_COLOR[s.trait]}">${traitGem(12)} ${traitLabel(s.trait)}</span>`):""}</div>`:""}
-        <div style="margin-top:4px"><span class="ac-name">${c.name}</span><span class="ac-title">${c.type}</span></div>
-        <div class="ac-stats"><span>♡ ${fmt(st.hp)}</span><span>${ATKIC} ${fmt(st.atk)}</span></div>
-        <div class="md-exp"><div class="md-exp-head"><span>EXP</span><span>${maxed?"MAX":s.exp+" / "+need}</span></div><div class="md-exp-bar"><i style="width:${expPct}%"></i></div></div>
-        <div class="ac-skill"><span class="ds-skill-badge">✦ ${c.passive.name}<span class="sk-txt">${skillText(s.char)}</span></span></div>
-      </div>
-      <span style="align-self:flex-start;background:${bg};color:${fg};font-family:'Barlow Condensed';font-weight:700;font-size:12px;letter-spacing:.16em;padding:4px 12px;border-radius:7px">${label}</span>
-    </div>`;
-  };
-  app.innerHTML=`
-  <h1>Your <span class="grad-text">Deck</span></h1>
-  <div class="deck-zone">
-    <div class="eyebrow" style="margin-bottom:10px">DECK AKTIF · SLOT 2/2</div>
-    <div class="deck-slots">
-      ${slotHtml(equipped(),"AKTIF","var(--pink)","#fff")}
-      ${slotHtml(equipped2(),"TAG","var(--cyan)","#fff")}
-    </div>
-  </div>
-  <div class="filter-row">
-    <span class="eyebrow" style="margin-right:6px">FILTER TIER</span>
-    ${["ALL",...TIERS].map(t=>`<button class="f-chip${filter===t?" on":""}" data-f="${t}">${t==="ALL"?"ALL":rarityText(t)}</button>`).join("")}
-  </div>
-  <div class="eyebrow" style="margin-top:18px">KARTU DIMILIKI</div>
-  <label class="card-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input class="card-search" id="deckSearch" type="text" placeholder="Cari kartu…" autocomplete="off"></label>
-  <div id="cards">${stacks.map(s=>{
-    const st=cardStats(s.char,s.lv,s.mut,s.trait),c=CARDS[s.char];
-    const mc=s.mut&&s.mut!=="none"?" mut-"+s.mut:"";
-    return `<button class="tcg${s.id===state.equippedId?" equipped":""}${s.tier==="EX"?" fire":""}${mc}" data-id="${s.id}" data-tier="${s.tier}" data-name="${c.name.toLowerCase()}" ${s.mut&&s.mut!=="none"?`style="border-color:${MUT_COLOR[s.mut]}"`:""}>
-      <div class="tcg-img"><img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(s.char)}
-        <span class="badge-row">
-          <span class="tier-badge" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier)}</span>
-        </span>
-        <span class="badge-row bl">
-          ${s.id===state.equippedId?'<span class="eq-chip">AKTIF</span>':""}
-          ${s.id===state.equippedId2?'<span class="eq-chip cad">TAG</span>':""}
-          ${s.mut&&s.mut!=="none"?mutChip(s.mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`):""}
-        </span>
-        ${s.trait&&s.trait!=="none"?`<span class="badge-row br">
-          ${traitChip(s.trait,`<span class="trait-badge" style="color:${TRAIT_COLOR[s.trait]};border-color:${TRAIT_COLOR[s.trait]}">${traitGem(12)}</span>`)}
-        </span>`:""}
-        <span class="tcg-tags">${s.fav?'<span style="color:var(--amber)">★</span>':""}${s.lock?'<span style="color:var(--cyan)">🔒</span>':""}</span>
-      </div>
-      <div class="tcg-info">
-        <div class="tcg-name">${c.name} <span>Lv.${s.lv}</span></div>
-        <div class="tcg-title">${c.type}</div>
-        <div class="tcg-stats"><span>♡ ${fmt(st.hp)}</span><span>${ATKIC} ${fmt(st.atk)}</span></div>
-      </div>
-    </button>`;}).join("")||'<p class="sub">Tidak ada kartu pada tier ini.</p>'}</div>
-  <div class="no-result" id="deckSearch-nr">Tidak ada kartu yang cocok dengan pencarian.</div>`;
-  app.querySelectorAll(".f-chip").forEach(b=>b.onclick=()=>{filter=b.dataset.f;renderDeck();});
-  {const ds=document.getElementById("deckSearch");if(ds){ds.value=deckSearch;ds.oninput=()=>{deckSearch=ds.value;runCardSearch(ds,document.getElementById("cards"),document.getElementById("deckSearch-nr"));};if(deckSearch)runCardSearch(ds,document.getElementById("cards"),document.getElementById("deckSearch-nr"));}}
-  app.querySelectorAll(".deck-slot.clickable").forEach(b=>b.onclick=()=>openModal(b.dataset.id));
-  app.querySelectorAll(".tcg").forEach(b=>b.onclick=()=>openModal(b.dataset.id));
 }
 function openModal(id){
   const s=state.stacks.find(x=>x.id===id);if(!s)return;
@@ -3936,8 +3686,7 @@ function openModal(id){
       <div class="md-exp"><div class="md-exp-head"><span>EXP</span><span>${maxed?"MAX":s.exp+" / "+need}</span></div><div class="md-exp-bar"><i style="width:${expPct}%"></i></div></div>
       <div class="cr-skill" style="margin-bottom:4px"><span class="ds-skill-badge">✦ ${c.passive.name}<span class="sk-txt">${skillText(s.char)}</span></span></div>
       <div class="md-actions">
-        <button class="md-btn primary" id="md-use">${s.id===state.equippedId?"AKTIF":"GUNAKAN"}</button>
-        <button class="md-btn${s.id===state.equippedId2?" on":""}" id="md-use2" ${s.id===state.equippedId?"disabled":""}>${s.id===state.equippedId?"UTAMA · —":(s.id===state.equippedId2?"TAG ✓":"JADIKAN TAG")}</button>
+        <button class="md-btn primary" id="md-use">${(function(){const di=state.deck.indexOf(s.id);return di>=0?("DI DEK · SLOT "+(di+1)):"PASANG KE DEK";})()}</button>
         <button class="md-btn${s.fav?" on":""}" id="md-fav">${s.fav?"★ FAVORIT":"FAVORIT"}</button>
         <button class="md-btn${s.lock?" on":""}" id="md-lock">${s.lock?"🔒 LOCKED":"LOCK"}</button>
         <button class="md-btn md-close" id="md-close">TUTUP</button>
@@ -3947,20 +3696,19 @@ function openModal(id){
       }).join("")}</div>
     </div>`;
   m.classList.add("show");
-  document.getElementById("md-use").onclick=()=>{state.equippedId=s.id;if(state.equippedId2===s.id)state.equippedId2=null;save();m.classList.remove("show");render();};
-  document.getElementById("md-use2").onclick=()=>{if(s.id===state.equippedId)return;state.equippedId2=(state.equippedId2===s.id?null:s.id);sfx.hit();save();openModal(id);renderDeck();};
-  document.getElementById("md-fav").onclick=()=>{s.fav=!s.fav;save();openModal(id);renderShell();};
+  document.getElementById("md-use").onclick=()=>{sfx.hit();const di=state.deck.indexOf(s.id);if(di>=0){setDeckSlot(di,null);}else{let e=state.deck.indexOf(null);if(e<0)e=0;setDeckSlot(e,s.id);}openModal(id);renderBackpackPanel();};
+  document.getElementById("md-fav").onclick=()=>{s.fav=!s.fav;save();openModal(id);renderBackpackPanel();};
   document.getElementById("md-lock").onclick=()=>{s.lock=!s.lock;save();openModal(id);};
   m.querySelectorAll(".md-book").forEach(btn=>btn.onclick=()=>{
     if(btn.disabled)return;
     const r=applyBookToCard(id,btn.dataset.book);
-    if(r.ok){sfx.crit();renderShell();openModal(id);renderDeck();raidToast(c.name+" · "+r.msg);}
+    if(r.ok){sfx.crit();openModal(id);renderBackpackPanel();raidToast(c.name+" · "+r.msg);}
     else raidToast(r.msg);
   });
-  document.getElementById("md-close").onclick=()=>{m.classList.remove("show");renderDeck();};
+  document.getElementById("md-close").onclick=()=>{m.classList.remove("show");renderBackpackPanel();};
 }
 document.getElementById("modal").addEventListener("click",e=>{
-  if(e.target.id==="modal"){document.getElementById("modal").classList.remove("show");renderDeck();}
+  if(e.target.id==="modal"){document.getElementById("modal").classList.remove("show");renderBackpackPanel();}
 });
 
 /* =============== LOBBY =============== */
@@ -4036,7 +3784,7 @@ function renderLobby(){
   <div class="backpack-panel" id="backpackPanel">
     <!-- Content will be dynamically rendered -->
   </div>`;
-  const hc=document.getElementById("hubCard");if(hc)hc.onclick=()=>{if(!state.stacks.length){location.hash="#/deck";return;}openDeckPick({getSel:()=>state.equippedId,onPick:(id)=>{state.equippedId=id;if(state.equippedId2===id)state.equippedId2=null;save();closeDeckPick();render();}});};
+  const hc=document.getElementById("hubCard");if(hc)hc.onclick=()=>{sfx.hit();toggleBackpack();};
   const hi=document.getElementById("hubIndex");if(hi)hi.onclick=()=>{sfx.hit();openIndex();};
   const ht=document.getElementById("hubTrait");if(ht)ht.onclick=()=>{sfx.hit();openTrait();};
   const hr=document.getElementById("hubRaid");if(hr)hr.onclick=()=>{sfx.hit();raidView="hub";location.hash="#/raid";};
@@ -4045,9 +3793,9 @@ function renderLobby(){
   const hs=document.getElementById("hubTag");
   if(hs)hs.onclick=e=>{
     e.stopPropagation();
-    if(!state.equippedId2){location.hash="#/deck";return;}
-    const t=state.equippedId;state.equippedId=state.equippedId2;state.equippedId2=t;
-    sfx.hit();save();render();
+    if(!state.deck[1]){sfx.hit();toggleBackpack();return;}
+    const a=state.deck[0];setDeckSlot(0,state.deck[1]);setDeckSlot(1,a);
+    sfx.hit();render();
   };
   
   /* ========== Roll System Event Handlers ========== */
@@ -4423,10 +4171,10 @@ function openIndex(){
   document.getElementById("ixBody").innerHTML=TIERS.map(t=>{
     const pool=MASTER_CARD_INDEX.filter(c=>c.tier===t);
     if(!pool.length)return "";
-    const d=DROP_RATES.find(x=>x[0]===t);
+    const rollable=pool.some(c=>!c.noGacha);
     /* UR/EX pakai foil dari CSS (border-color:transparent) — jangan timpa border inline */
     const foil=t==="EX"||t==="UR";
-    return `<div class="ix-sec"><div class="ix-rowhead"><span class="t" style="color:${TIER_COLOR[t]};border-color:${TIER_COLOR[t]}">${rarityText(t)}</span><span class="r">${d?"DARI GACHA":"EKSKLUSIF — BUKAN DARI GACHA"} · ${pool.length} KARTU</span></div>
+    return `<div class="ix-sec"><div class="ix-rowhead"><span class="t" style="color:${TIER_COLOR[t]};border-color:${TIER_COLOR[t]}">${rarityText(t)}</span><span class="r">${rollable?"DARI ROLL":"EKSKLUSIF — HANYA TOKO RAID"} · ${pool.length} KARTU</span></div>
     <div class="ix-strip">${pool.map(c=>{
       return `<div class="idx-card${t==="EX"?" fire":""}" data-tier="${t}" data-base-hp="${c.base_hp}" data-base-atk="${c.base_atk}"${foil?"":` style="border-color:${TIER_COLOR[t]}55"`}>
         <span class="idx-art"><img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(c.char_id)}</span>
@@ -4642,8 +4390,6 @@ function render(){
     renderShell();
     const r=route();
     if(r==="#/")renderHome();
-    else if(r==="#/gacha")renderSummon();
-    else if(r==="#/deck")renderDeck();
     else if(r==="#/raid")renderRaid();
     else if(r==="#/tower")renderTower();
     else if(r==="#/settings")renderSettings();
@@ -4678,8 +4424,6 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
   if(location.hash===b.dataset.route||(!location.hash&&b.dataset.route==="#/lobby"))render();
   else location.hash=b.dataset.route;
 });
-document.getElementById("pmClose").onclick=()=>document.getElementById("pullModal").classList.remove("show");
-document.getElementById("pmAgain").onclick=()=>{document.getElementById("pullModal").classList.remove("show");doSummon(summonN);};
 document.getElementById("ixClose").onclick=()=>document.getElementById("indexModal").classList.remove("show");document.getElementById("indexModal").addEventListener("click",e=>{if(e.target.id==="indexModal")e.target.classList.remove("show");});
 document.getElementById("trClose").onclick=closeTrait;document.getElementById("traitModal").addEventListener("click",e=>{if(e.target.id==="traitModal")closeTrait();});
 document.getElementById("dpClose").onclick=closeDeckPick;document.getElementById("deckPickModal").addEventListener("click",e=>{if(e.target.id==="deckPickModal")closeDeckPick();});
