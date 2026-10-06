@@ -1791,6 +1791,7 @@ function setRollMini(on) {
   const overlay = document.getElementById('rollOverlay');
   if (!overlay) return;
   rollState.mini = !!on;
+  if (rollState.mini && rollState.hideTimer) { clearTimeout(rollState.hideTimer); rollState.hideTimer = null; }
   overlay.classList.toggle('mini', rollState.mini);
 }
 
