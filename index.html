@@ -219,10 +219,10 @@ h1{font-size:clamp(30px,4.9vw,52px);font-weight:800;letter-spacing:-.01em;line-h
 .f-body{position:relative;z-index:2;flex:0 0 auto;padding:16px 16px 16px;display:flex;flex-direction:column;gap:6px;background:linear-gradient(to top,rgba(6,8,12,.94) 42%,rgba(6,8,12,.55) 78%,transparent)}
 .f-name{position:absolute;top:10px;left:12px;z-index:3;font-size:14px;font-weight:800;line-height:1.2;color:#fff;text-shadow:0 1px 5px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.9);max-width:46%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .f-title{display:none}
-.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat-row{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-top:2px}
 .f-skill{font-family:"Barlow Condensed";letter-spacing:.08em;text-transform:uppercase;font-size:12px;color:rgba(234,244,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.8)}
 .f-desc{font-size:10.5px;line-height:1.35;color:rgba(234,244,255,.8);text-shadow:0 1px 3px rgba(0,0,0,.85)}
-.stat{border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:8px 12px;font-size:14px;font-weight:700;display:flex;gap:8px;align-items:center;justify-content:center;background:rgba(255,255,255,.10);color:#EAF4FF;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.stat{display:flex;gap:6px;align-items:center;font-size:14px;font-weight:700;color:#EAF4FF;text-shadow:0 1px 4px rgba(0,0,0,.7)}
 .skill-overlay{position:absolute;left:8px;bottom:8px;z-index:5;padding:6px 11px;border-radius:10px;background:rgba(14,16,19,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.14);font-family:"Barlow Condensed";letter-spacing:.08em;font-size:13px;text-transform:uppercase;color:#EAF4FF;cursor:help;max-width:calc(100% - 16px)}
 .skill-overlay b{color:#EAF4FF;font-weight:700;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .battle-grid{position:relative;display:grid;grid-template-columns:1fr 90px 1fr;gap:16px;align-items:stretch;justify-items:center;max-width:1000px;margin-inline:auto}
@@ -280,7 +280,7 @@ body.battle-full.battle-tower #bfExit,body.battle-full.battle-tower #btPause{dis
 .bench.down{filter:grayscale(1) brightness(.62);opacity:.9;border-color:rgba(242,88,88,.4)}
 .bench .b-x{position:absolute;top:-8px;right:10px;width:20px;height:20px;display:grid;place-items:center;border-radius:50%;background:var(--red,#f25858);color:#fff;font-weight:800;font-size:13px;line-height:1;z-index:9}
 .bench-rail{margin-top:auto;display:flex;flex-direction:row;flex-wrap:nowrap;justify-content:center;align-items:flex-end;gap:clamp(8px,2.4vw,14px)}
-.bench-rail .bench-sq{position:relative;width:clamp(58px,17vw,82px);aspect-ratio:3/4;border-radius:11px;overflow:hidden;border:1px solid var(--line);background:#0d0f12;box-shadow:0 4px 14px rgba(0,0,0,.14)}
+.bench-rail .bench-sq{position:relative;width:clamp(58px,17vw,82px);aspect-ratio:1/1;border-radius:11px;overflow:hidden;border:1px solid var(--line);background:#0d0f12;box-shadow:0 4px 14px rgba(0,0,0,.14)}
 .bench-rail .bench-sq img,.bench-rail .bench-sq video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;border-radius:0}
 .bench-rail .bench-sq.empty{border-style:dashed;border-color:rgba(20,28,38,.28);background:rgba(255,255,255,.4)}
 body.battle-full .bench-rail .bench-sq{width:clamp(50px,11vh,74px)}
@@ -307,8 +307,8 @@ body.battle-full .foe-side .bench{display:none}
 body.battle-full .f-body{gap:8px}
 body.battle-full .f-name{font-size:clamp(14px,2vh,18px)}
 body.battle-full .f-title{display:none}
-body.battle-full .stat-row{grid-template-columns:1fr;gap:6px}
-body.battle-full .stat{white-space:nowrap;justify-content:center;gap:6px;padding:6px 10px;font-size:clamp(12px,1.5vh,14px);font-weight:700}
+body.battle-full .stat-row{gap:16px}
+body.battle-full .stat{white-space:nowrap;gap:6px;font-size:14px;font-weight:700}
 body.battle-full .stat svg{flex:none}
 }
 .fighter.ko{filter:grayscale(1) brightness(.5);transform:translateY(12px);opacity:.55;transition:filter .3s,transform .3s,opacity .3s}
@@ -1047,8 +1047,8 @@ body.battle-full .stat svg{flex:none}
   .f-banner{height:200px}
   .f-name{font-size:15px}
   .f-body{padding:12px 14px 14px}
-  .stat{padding:8px 10px;font-size:12px;gap:6px}
-  .stat-row{gap:8px}
+  .stat{gap:6px}
+  .stat-row{gap:16px}
   .hpbar{margin:12px 14px 0}
   .hpbar span{font-size:12px}
   .skill-overlay{font-size:11px;padding:5px 9px}
