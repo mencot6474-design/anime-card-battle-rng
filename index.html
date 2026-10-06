@@ -290,8 +290,8 @@ body.battle-full .me-col,body.battle-full .foe-side{display:contents}
 body.battle-full .vs-col{grid-area:hud;align-self:start;justify-self:start;flex-direction:column;align-items:flex-start;gap:2px}
 body.battle-full .vs-col .t{display:none}
 body.battle-full .vs-col .s{font-family:"Barlow Condensed";font-size:clamp(16px,2.6vh,24px);letter-spacing:.05em;color:var(--text);text-transform:none;font-weight:800;text-align:left;line-height:1.12}
-body.battle-full .fighter.me{grid-area:me;justify-self:center;align-self:stretch;width:min(100%,min(440px,calc((100dvh - 360px)*.72)));min-height:0}
-body.battle-full .fighter.foe{grid-area:foe;justify-self:center;align-self:stretch;width:min(100%,min(440px,calc((100dvh - 360px)*.72)));min-height:0}
+body.battle-full .fighter.me{grid-area:me;justify-self:center;align-self:stretch;width:min(100%,min(440px,calc((100dvh - 360px)*.72)));max-height:min(600px,calc((100dvh - 360px)*1.55));min-height:0}
+body.battle-full .fighter.foe{grid-area:foe;justify-self:center;align-self:stretch;width:min(100%,min(440px,calc((100dvh - 360px)*.72)));max-height:min(600px,calc((100dvh - 360px)*1.55));min-height:0}
 body.battle-full .me-col:not(.foe-side) .bench-rail{grid-area:bench;justify-self:center;align-self:end;margin-top:0}
 body.battle-full .foe-side .bench-rail{grid-area:foe-slot;justify-self:center;align-self:start;margin-top:0}
 body.battle-full .foe-side .bench{display:none}
