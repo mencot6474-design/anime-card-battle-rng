@@ -1649,7 +1649,7 @@ function getChapterReward(chapterNo){
 }
 
 /* ========== BACKPACK + ROLL SYSTEM ========== */
-let rollState = { active: false, interval: null, currentCard: null, luck: 1, speedMultiplier: 1, mini: false };
+let rollState = { active: false, interval: null, currentCard: null, luck: 1, speedMultiplier: 1, mini: false, hideTimer: null };
 
 /* Roll = SATU-SATUNYA sumber kartu baru selain Toko Raid. Hasil roll DITUMPUK dengan sistem count:
    kartu yang sama (char + tier + varian/mut) masuk ke satu stack dan menaikkan s.count, bukan entri baru,
@@ -4459,14 +4459,15 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
 (function wireRollDock(){
   const rb=document.getElementById("rollBtn");
   if(rb)rb.addEventListener("click",()=>{
-    /* Satu klik = satu roll langsung: kartu masuk Koleksi tanpa layar reveal.
-       (Dulu auto-loop terus sampai klik kedua & memunculkan kartu terakhir.) */
+    /* Opsi 1: satu klik = satu roll. Kartu di-reveal sebentar, lalu overlay nutup sendiri (bukan loop). */
     if(rollState.active)stopRollAnimation();
+    if(rollState.hideTimer){clearTimeout(rollState.hideTimer);rollState.hideTimer=null;}
     const result=rngRoll(1,1);
     result.mut=rollMut();
     grantRolledCard(result.cardId, result.mut);
-    hideRollResult();
+    showRollResult(result);
     beep(440,0.15,"sine",0.1);
+    rollState.hideTimer=setTimeout(()=>{hideRollResult();rollState.hideTimer=null;},1600);
   });
   const bt=document.getElementById("backpackToggle");
   if(bt)bt.addEventListener("click",toggleBackpack);
