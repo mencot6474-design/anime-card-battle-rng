@@ -2159,11 +2159,21 @@ const DIFFS=[
   {k:"nightmare",l:"NIGHTMARE",mut:"rainbow"}
 ];
 const RAID_DIFFS=[
-  {k:"normal",l:"NORMAL",color:"#6EAC4C"},
-  {k:"hard",l:"HARD",color:"#E07F33"},
-  {k:"extreme",l:"EXTREME",color:"#FF4D5E"},
-  {k:"nightmare",l:"NIGHTMARE",color:"#B58CFF"}
+  {k:"normal",l:"NORMAL",hp:1,atk:1,rw:1,color:"#6EAC4C"},
+  {k:"hard",l:"HARD",hp:2,atk:1.6,rw:1.5,color:"#E07F33"},
+  {k:"extreme",l:"EXTREME",hp:4,atk:2.2,rw:2.2,color:"#FF4D5E"},
+  {k:"nightmare",l:"NIGHTMARE",hp:8,atk:3,rw:3,color:"#B58CFF"}
 ];
+/* ========== BOSS RAID (konstanta + helper) ========== */
+const RAID_BOSSES=[{id:"RAID_ETERNAL_DRAGON",name:"Eternal Dragon",tier:"EX",skill:"Galaxy Roar",hp:30000,atk:15000,power:15000,img:"assets/raid/eternal-dragon-hd.png",banner:"assets/raid/raid-banner-hd.png",fx:{purple:{chance:100,mult:1}}}];
+const RAID_TURNS=10;
+const RAID_TIERS=[{pct:100,tokens:20},{pct:50,tokens:10},{pct:30,tokens:5}];
+function raidDiffOf(){return RAID_DIFFS.find(d=>d.k===(state&&state.raidDiff))||RAID_DIFFS[0];}
+function raidBossOf(diff){const d=diff||raidDiffOf(),b=RAID_BOSSES[0];return Object.assign({},b,{hp:Math.round(b.hp*d.hp),atk:Math.round(b.atk*d.atk),power:Math.round(b.power*d.hp),rw:d.rw,diffKey:d.k,diffLabel:d.l,diffColor:d.color});}
+function raidDiffUnlocked(k){const i=RAID_DIFFS.findIndex(d=>d.k===k);if(i<=0)return true;return !!(state.raidCleared&&state.raidCleared[RAID_DIFFS[i-1].k]);}
+function raidNextUnlock(k){const i=RAID_DIFFS.findIndex(d=>d.k===k);return i>0?RAID_DIFFS[i-1].l:null;}
+function raidTokenFor(pct,diff){const rw=(diff&&diff.rw)||((diff?diff:raidDiffOf()).rw)||1;for(const x of RAID_TIERS){if(pct>=x.pct)return Math.round(x.tokens*rw);}return 0;}
+function raidNextTier(pct,diff){const rw=(diff&&diff.rw)||((diff?diff:raidDiffOf()).rw)||1;for(let i=RAID_TIERS.length-1;i>=0;i--){if(pct<RAID_TIERS[i].pct)return{pct:RAID_TIERS[i].pct,tokens:Math.round(RAID_TIERS[i].tokens*rw)};}return null;}
 
 /* ========== TRAIT SYSTEM ========== */
 const TRAIT_TIERS=[
