@@ -1483,76 +1483,17 @@ const STORY_BIBLE={
     ]}
   ],
   units:[
-    {id:"CH_UNSTOPPABLE_FIST",name:"Rock Lee",tier:"R",type:"Offensive",skill:"Dynamic Entry",hp:211,atk:105,art:"assets/cards/art/unstoppable-fist.png",fx:{double:15},
-      desc:"15% peluang membuka serangan dengan dua pukulan beruntun."},
-    {id:"CH_COPY_NINJA",name:"Kakashi",tier:"R",type:"Balanced",skill:"Sharingan Copy",hp:234,atk:117,art:"assets/cards/art/copy-ninja.png",fx:{copy:1},
-      desc:"Sharingan menyalin SELURUH passive lawan di tiap pertarungan — jurus musuh dipakai balik oleh Copy Ninja."},
-    {id:"CH_AWAKENED_DARK_AVENGER",name:"Sasuke",tier:"SR",type:"Offensive",skill:"Chidori Storm",hp:260,atk:130,art:"assets/cards/art/awakened-dark-avenger.png",fx:{crit:{chance:25,mult:1.4}},
-      desc:"25% serangan berubah jadi tusukan arus dengan damage ×1.4."},
-    {id:"CH_AWAKENED_PROMISED_CHILD",name:"Naruto",tier:"SR",type:"Balanced",skill:"Planetary Rasenbang",hp:293,atk:146,art:"assets/cards/art/awakened-promised-child.png",fx:{pierce:30},
-      desc:"30% peluang serangan menembus pertahanan musuh."},
-    {id:"CH_SIX_PATHS_OF_PAIN",name:"Pain",tier:"SSR",type:"Defensive",skill:"Shinra Tensei",hp:330,atk:165,art:"assets/cards/art/six-paths-of-pain.png",fx:{evasion:{chance:25,turns:99}},
-      desc:"25% setiap serangan musuh ditolak sampai tidak menghasilkan damage sama sekali."},
-    {id:"CH_BIJUU_BEAST",name:"Kurama",tier:"SSR",type:"Offensive",skill:"Tail Swipe",hp:362,atk:181,art:"assets/cards/art/bijuu-beast.png",fx:{barrage:{chance:30,min:2,max:3},lifesteal:15},
-      desc:"30% peluang menyapu 2-3 kali beruntun, lalu menyerap 15% damage jadi HP."},
-    {id:"CH_EX_GOJO",name:"Satoru Gojo",tier:"EX",type:"Absolute Defensive",skill:"Unlimited Void",hp:2800,atk:500,art:"assets/cards/art/ex-gojo.png",fx:{domain:{chance:100,min:15,max:15,mult:.3,selfStun:1,selfDr:50,selfDrTurns:2},lifesteal:30},
-      desc:"100% membuka Domain Expansion: lubang hitam Unlimited Void menutupi layar di belakang kartu, 15 sambaran void menghantam beruntun (tiap sambaran 30% ATK, total 450% ATK). Menyerap 30% dari total damage jadi HP. Setelah rilis, Gojo stun 1 ronde namun mendapat damage reduction 50% selama 2 ronde (termasuk saat stun) sampai ia melangkah lagi."},
-    {id:"CH_EX_MADARA",name:"Madara Susanoo",tier:"EX",type:"Absolute Balanced",skill:"Susanoo Tensa",hp:2500,atk:600,art:"assets/cards/art/ex-madara.png",fx:{ranton:{chance:100,hits:15,mult:.17},evasion:{chance:50,turns:99},lifesteal:30},
-      desc:"100% memanggil Susanoo: wujud Susanoo menyala di belakang kartu lalu hujan 15 tebasan samurai menyapu SELURUH layar dari ujung kiri ke kanan (tiap tebasan 17% ATK, total ±255% ATK) disusul percikan biru yang nyebar. Menyerap 30% damage jadi HP. 50% peluang menghindari serangan musuh tiap ronde."},
-    {id:"CH_EX_JINWOO",name:"Sung Jin-Woo",tier:"EX",type:"Absolute Shadow",skill:"Arise: Shadow Army",hp:2400,atk:640,art:"assets/cards/art/ex-jinwoo.png",fx:{barrage:{chance:100,min:9,max:9,mult:.5,selfStun:1,selfDr:50,selfDrTurns:2},lifesteal:30},
-      desc:"100% berseru ARISE: bala bayangan memenuhi layar di belakang kartu, Jin-Woo melesat lalu mengoyak musuh dengan 9 sabit bayangan beruntun (tiap sambaran 50% ATK, total 450% ATK). Menyerap 30% dari total damage jadi HP. Setelah rilis, Jin-Woo stun 1 ronde namun mendapat damage reduction 50% selama 2 ronde (termasuk saat stun) sampai pasukannya kembali ke bayangan."},
-    {id:"CH_ULTIMATE_WARRIOR",name:"Gohan",tier:"SR",type:"Offensive",skill:"Masenko Blast",hp:707,atk:354,art:"assets/cards/art/ultimate-warrior.png",fx:{crit:{chance:20,mult:1.5}},
-      desc:"20% serangan berubah jadi ledakan Masenko dengan damage ×1.5."},
-    {id:"CH_BODY_SWITCHER",name:"Cooler",tier:"SR",type:"Balanced",skill:"Body Change",hp:846,atk:423,art:"assets/cards/art/body-switcher.png",fx:{double:20,lifesteal:12},
-      desc:"20% peluang menyerang dua kali beruntun, lalu menyerap 12% damage jadi HP."},
-    {id:"CH_NAMEKIAN_SAGE",name:"Piccolo",tier:"SSR",type:"Offensive",skill:"Special Beam Cannon",hp:978,atk:489,art:"assets/cards/art/namekian-sage.png",fx:{pierce:45},
-      desc:"45% peluang tembakan tembus yang menembus pertahanan musuh."},
-    {id:"CH_AWAKENED_PRIDEFUL_PRINCE",name:"Gotenks",tier:"SSR",type:"Offensive",skill:"Spirit Blast",hp:1120,atk:558,art:"assets/cards/art/awakened-prideful-prince.png",fx:{highHpDmg:{above:60,bonus:35}},
-      desc:"Selama HP masih di atas 60%, setiap serangan membawa 35% damage tambahan."},
-    {id:"CH_AWAKENED_EARTHS_STRONGEST",name:"Goku",tier:"SSR",type:"Offensive",skill:"Kamehameha Burst",hp:1280,atk:641,art:"assets/cards/art/awakened-earths-strongest.png",fx:{barrage:{chance:25,min:2,max:3}},
-      desc:"25% peluang melepas gelombang 2-3 tembakan beruntun."},
-    {id:"CH_AWAKENED_GALACTIC_TYRANT",name:"Frieza",tier:"SSR",type:"Absolute Defensive",skill:"Death Energy",hp:1370,atk:686,art:"assets/cards/art/awakened-galactic-tyrant.png",fx:{void:20,lifesteal:15},
-      desc:"20% peluang meniadakan damage musuh dan mengubahnya jadi pemulihan HP, plus menyerap 15% damage."},
-    {id:"CH_CURSED_DOLL",name:"Nobara",tier:"SR",type:"Balanced",skill:"Resonating Hammer",hp:1210,atk:603,art:"assets/cards/art/cursed-doll.png",fx:{double:18},
-      desc:"18% peluang membuka serangan dengan dua hantaman palu beruntun."},
-    {id:"CH_SHADOW_SUMMONER",name:"Megumi",tier:"SSR",type:"Defensive",skill:"Shadow Creature",hp:1570,atk:783,art:"assets/cards/art/awakened-shadow-summoner.png",fx:{evasion:{chance:24,turns:2}},
-      desc:"Dua turn pertama punya 24% peluang melepas bayangan penangkis sampai damage musuh jadi nol."},
-    {id:"CH_CURSED_FIST",name:"Yuji",tier:"SSR",type:"Offensive",skill:"Cursed Punch",hp:1830,atk:915,art:"assets/cards/art/cursed-fist.png",fx:{crit:{chance:30,mult:1.6}},
-      desc:"30% pukulan berubah jadi tinju kutukan dengan damage ×1.6."},
-    {id:"CH_RIKAS_BLESSING",name:"Yuta",tier:"SSR",type:"Balanced",skill:"Rika's Roar",hp:1990,atk:996,art:"assets/cards/art/rikas-blessing.png",fx:{barrage:{chance:30,min:2,max:3},lifesteal:14},
-      desc:"30% peluang mengaum 2-3 kali beruntun, lalu menyerap 14% damage jadi HP."},
-    {id:"CH_LIMITLESS_MASTER",name:"Gojo",tier:"SSR",type:"Defensive",skill:"Purple",hp:2140,atk:1070,art:"assets/cards/art/limitless-master.png",fx:{pierce:40},
-      desc:"40% peluang melepas Purple yang menembus total pertahanan musuh."},
-    {id:"CH_KING_OF_CURSES",name:"Sukuna",tier:"SSR",type:"Absolute Offensive",skill:"Cursed Slash",hp:2550,atk:1270,art:"assets/cards/art/king-of-curses.png",fx:{void:22,lifesteal:18},
-      desc:"22% peluang meniadakan damage musuh dan mengubahnya jadi pemulihan HP, plus menyerap 18% damage jadi HP."},
-    {id:"CH_ETERNAL_DRAGON",name:"Eternal Dragon",tier:"UR",type:"Absolute Dragon",skill:"Galaxy Roar",hp:4200,atk:1500,art:"assets/cards/art/eternal-dragon.png",fx:{purple:{chance:35,mult:3},lifesteal:22},noGacha:true,
-      desc:"35% peluang Galaxy Roar: bola energi beku menghimpun salju sampai besar, lalu disemburkan jadi laser es menembus kartu musuh dan meledak jadi percikan beku (damage 3×). Menyerap 22% dari total damage jadi HP. Kartu eksklusif — hanya didapat dari Toko Raid pakai Token Raid."},
-    // --- BAB 4: MUSHIMA TOWN (Stardust Crusaders arc) ---
-    {id:"CH_PORCO_PILLAR",name:"Porcoped",tier:"R",type:"Offensive",skill:"Pillar Stand",hp:285,atk:142,art:"assets/cards/art/porco-pillar.png",fx:{crit:{chance:22,mult:1.45}},
-      desc:"22% serangan menjadi tusukan Stand dengan damage ×1.45."},
-    {id:"CH_AWAKENED_STAND_USER",name:"Giorno",tier:"SR",type:"Balanced",skill:"Gold Rush",hp:315,atk:157,art:"assets/cards/art/awakened-stand-user.png",fx:{barrage:{chance:28,min:2,max:4}},
-      desc:"28% peluang meluncurkan hujan emas 2-4 kali beruntun."},
-    {id:"CH_GOLD_EXPERIENCE Requiem",name:"GER",tier:"SSR",type:"Defensive",skill:"Truth Arrow",hp:365,atk:182,art:"assets/cards/art/gold-experience-requiem.png",fx:{reset:{chance:35},warp:{chance:40,duration:99}},
-      desc:"35% setiap serangan membatalkan status efek negatif yang aktif. 40% peluang mengirim musuh kembali ke posisi awal (mengabaikan pertahanan) sampai turn berikutnya."},
-    {id:"CH_THE WORLD",name:"Diavolo",tier:"SSR",type:"Absolute Offensive",skill:"Time Stop",hp:405,atk:202,art:"assets/cards/art/the-world.png",fx:{stop:{chance:30,duration:2},strike:{mult:2.5}},
-      desc:"30% peluang menghentikan waktu selama 2 ronde penuh (musuh tidak bisa menyerang). Setiap serangan Diavolo membawa damage bonus ×2.5 selama time stop aktif."},
-    {id:"CH_OPALESTONE_DREAM",name:"Enrico",tier:"UR",type:"Absolute Balanced",skill:"Doomsday",hp:460,atk:230,art:"assets/cards/art/opalestone-dream.png",fx:{doomsday:{chance:45,cleanup:{turns:99}},pierce:{full:1}},
-      desc:"45% membuka Doomsday: seluruh layar memudar putih lalu semua efek positif/detrimental dihapus bersih selama 99 turno. Selamanya: serangan Enrico menembus 100% pertahanan musuh (true damage)."},
-    {id:"CH_HEAVENS_DOOR",name:"Vinegar",tier:"SSR",type:"Defensive",skill:"Heaven's Door",hp:440,atk:220,art:"assets/cards/art/heavens-door.png",fx:{book:{chance:50,hijack:{attacks:2,duration:99}},reflect:{chance:30,mult:.4}},
-      desc:"50% peluang menulis 'Heaven's Door' di musuh: mereka dipaksa menyerang sendiri selama 2 ronde penuh, terus menerus sampai book ditutup. 30% memantulkan balik 40% damage yang diterima sebagai counter otomatis."},
-    // --- BAB 5: INFINITY CASTLE (Demon Slayer arc) ---
-    {id:"CH_TANJIRO_BLADE",name:"Tanjiro",tier:"SR",type:"Offensive",skill:"Breathe Water",hp:750,atk:375,art:"assets/cards/art/tanjiro-blade.png",fx:{combo:{chance:35,count:3},burn:{chance:25,duration:4}},
-      desc:"35% peluang melakukan kombinasi 3 tebasan cepat berurutan. 25% setiap tebasan memberi burn selama 4 ronde yang mengurangi healing target sebesar 60%."},
-    {id:"CH_NEZUKO_BAMBOO",name:"Nezuko",tier:"R",type:"Defensive",skill:"Bamboo Shield",hp:820,atk:410,art:"assets/cards/art/nezuko-bamboo.png",fx:{shield:{amount:250,turns:3},regenerate:{chance:40,pct:12}},
-      desc:"Memberikan shield 250 HP selama 3 ronde saat spawn. 40% memulihkan 12% HP maksimal setiap turn sebagai darah demon."},
-    {id:"CH Zenitsu_THUNDER",name:"Zenitsu",tier:"SR",type:"Absolute Offensive",skill:"Thunderclap Flash",hp:680,atk:408,art:"assets/cards/art/zenitsu-thunder.png",fx:{flash:{chance:100,speed:30,damage:8},overdrive:{duration:99}},
-      desc:"100% Thunderclap Flash: Zenitsu melesat seperti kilatan petir biru menyapu arena dalam 3 fase, masing-masing memberikan 8x ATK total (±24x ATK). Overdrive mode: damage meningkat 50% setiap phase berturut-turut sampai combo selesai."},
-    {id:"CH_INUIZO_MASK",name:"Inuzo",tier:"SSR",type:"Balanced",skill:"Head Lock",hp:920,atk:460,art:"assets/cards/art/inuzo-mask.png",fx:{lock:{chance:50,bind:{duration:99,silence:30}},throttle:{percent:35}},
-      desc:"50% mengunci kepala musuh: mereka tidak bisa menggunakan passive skill selama 3 ronde penuh dan HP berkurang 35% secara instan."},
-    {id:"CH_SANEMI_WIND",name:"Sanemi",tier:"SSR",type:"Absolute Offensive",skill:"Wind Breathing",hp:860,atk:516,art:"assets/cards/art/sanemi-wind.png",fx:{gale:{chance:40,cleave:{width:6,radius:180}},bloodlust:{hpPct:18,bonusMult:1.35}},
-      desc:"40% melepaskan angin tornado meluas horizontal melempar partikel tajam ke kiri-kanan (damage radius ±180px). Selama HP <60%, setiap serangan mendapat bonus damage 35% karena bloodlust."},
-    {id:"CH_SHINOBU_BUTTERFLY",name:"Shinoibu",tier:"UR",type:"Poison Support",skill:"Butterfly Dance",hp:780,atk:520,art:"assets/cards/art/shinobu-butterfly.png",fx:{poison:{chance:100,duration:99,toxin:28},butterfly:{heal:{chance:30,pct:15}}},
-      desc:"100% Butterfly Dance: racun kuat menyebar di seluruh area (toxicity 28% per ronde) hingga musuh tidak bisa regenerasi. 30% peluang mengeluarkan kupu-kupu penyembuh yang memulihkan 15% HP teman satu tim."}
+    /* ================= TEMPLATE KARTU =================
+       Isi ulang array ini dengan kartu baru. Tiap entri = satu kartu, bentuk:
+       {id:"CH_...", name:"Nama", tier:"R"|"SR"|"SSR"|"UR"|"EX", type:"Offensive",
+        skill:"Nama Skill", hp:123, atk:45,
+        art:"assets/cards/art/slug.png", fx:{double:15},
+        desc:"Deskripsi passive yang tampil di kartu.",
+        noGacha:false}
+       - id harus unik dan cocok dengan field "unit" di chapter (Story) yang memakainya.
+       - fx adalah kunci PASSIVE_FX; lihat pemroses FX di engine battle untuk nama trigger yang didukung.
+       - noGacha:true  -> tidak muncul di Roll (hanya hadiah/Toko Raid).
+       ==================================================== */
   ]
 };
 /* ROLL SYSTEM - Pull-based RNG (bukan gacha pool) */
@@ -1658,6 +1599,7 @@ function startRollAnimation(luck = 1, speedMultiplier = 1) {
   
   rollState.interval = setInterval(() => {
     const result = rngRoll(rollState.luck, rollState.speedMultiplier);
+    if(!result){stopRollAnimation();hideRollResult();return;}
     result.mut = rollMut();
     showRollResult(result);
     grantRolledCard(result.cardId, result.mut);
@@ -1886,7 +1828,7 @@ function upgradeArtVideo(img){
 const PASSIVE_FX=Object.fromEntries(STORY_BIBLE.units.map(u=>[u.id,u.fx]));
 const FOES=Object.fromEntries(STORY_BIBLE.levels.map((l,i)=>{
   const c=CARDS[l.unit];
-  return [i+1,{id:l.unit,name:c.name,ep:c.passive.name,img:c.sprite_asset,tier:c.tier,boss:!!l.boss}];
+  return [i+1,{id:l.unit,name:c?c.name:"(kartu hilang)",ep:c?c.passive.name:"",img:c?c.sprite_asset:"",tier:c?c.tier:"",boss:!!l.boss}];
 }));
 /* Sistem BUKU EXP — satu-satunya sumber naik level KARTU (Lv.1-10). Didapat hanya dari Toko Raid. */
 const CARD_MAX_LV=20;
@@ -2010,9 +1952,9 @@ function getUsers(){try{return JSON.parse(localStorage.getItem(USERS_KEY))||{};}
 function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u));}
 function freshState(){
   const s0=STORY_BIBLE.units[0];
-  const start={id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,lv:1,exp:0,fav:false,lock:false,mut:"none",trait:"none",count:1};
+  const start=s0?{id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,lv:1,exp:0,fav:false,lock:false,mut:"none",trait:"none",count:1}:null;
   return{coins:1000,raidTokens:0,playerLv:1,xp:0,books:{common:0,gold:0,rainbow:0},dailyIndex:0,lastClaim:"",summons:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},tower:{floor:1,best:0},
-    cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start.id,equippedId2:null,deck:[start.id,null,null,null],stacks:[start],history:[],battle:null};
+    cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],history:[],battle:null};
 }
 function todayStr(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
 function nextResetMs(){const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate()+1,0,0,0,0)-n;}
@@ -2030,14 +1972,14 @@ function loadStateFor(name){
   
   if(!state.stacks.length){const st=freshState();state.stacks=st.stacks;}
   
-  if(!state.stacks.some(s=>s.id===state.equippedId))state.equippedId=state.stacks[0].id;
+  if(!state.stacks.some(s=>s.id===state.equippedId))state.equippedId=state.stacks.length?state.stacks[0].id:null;
   if(!state.stacks.some(s=>s.id===state.equippedId2))state.equippedId2=null;
   /* DECK 4 SLOT: satu-satunya sumber kartu yang dipakai battle. Deck menyimpan stack-id.
      equippedId / equippedId2 diturunkan dari slot 0 & 1 supaya kontrol lobby lama tetap jalan. */
   if(!Array.isArray(state.deck))state.deck=[null,null,null,null];
   state.deck.length=4;
   state.deck=state.deck.map(id=>(id&&state.stacks.some(s=>s.id===id))?id:null);
-  if(!state.deck[0])state.deck[0]=state.equippedId||state.stacks[0].id;
+  if(!state.deck[0])state.deck[0]=state.equippedId||(state.stacks.length?state.stacks[0].id:null);
   if(!state.deck[1]&&state.equippedId2&&state.deck[0]!==state.equippedId2)state.deck[1]=state.equippedId2;
   state.equippedId=state.deck[0];
   state.equippedId2=state.deck[1];
@@ -2098,7 +2040,7 @@ function mutBox(mut,cls){const label=MUT_LABEL[mut];if(!label)return "";return `
 const mutGlow=m=>m&&m!=="none"?` mut-${m}`:"";
 const mutEdge=m=>m&&m!=="none"?` style="border-color:${MUT_COLOR[m]}"`:"";
 function enemyOf(level){const f=FOES[level];if(!f)return{id:null,name:"Gate Watcher L-"+level,epithet:chapOf(level).zone,img:chapOf(level).art,boss:false,tier:"R"};return{id:f.id,name:f.name,epithet:f.ep,img:f.img,boss:!!f.boss,tier:f.tier};}
-function enemyStats(level){const l=STORY_BIBLE.levels[level-1];if(!l)return{hp:120,atk:40};const c=CARDS[l.unit],k=MUT_MULT[diffOf().mut]||1;return{hp:Math.round(c.base_hp*(0.55+0.15*level)*k),atk:Math.round(c.base_atk*(0.35+0.13*level)*k)};}
+function enemyStats(level){const l=STORY_BIBLE.levels[level-1];if(!l)return{hp:120,atk:40};const c=CARDS[l.unit];if(!c)return{hp:120,atk:40};const k=MUT_MULT[diffOf().mut]||1;return{hp:Math.round(c.base_hp*(0.55+0.15*level)*k),atk:Math.round(c.base_atk*(0.35+0.13*level)*k)};}
 function firstClearReward(level){const l=STORY_BIBLE.levels[level-1];return (l?l.reward:300)*(diffOf().rw||1);}
 function save(){if(state)localStorage.setItem(KEY,JSON.stringify(state));}
 function equipped(){return state.stacks.find(s=>s.id===(state.deck&&state.deck[0]))||state.stacks.find(s=>s.id===state.equippedId)||state.stacks[0];}
@@ -2565,7 +2507,7 @@ function openStart(lv){
   startLv=lv;
   const en=enemyOf(lv),es=enemyStats(lv),first=!state.cleared[lv];
   const reward=first?firstClearReward(lv):Math.round(firstClearReward(lv)*.2);
-  const pss=en.id?CARDS[en.id].passive:null,pw=totalPower(),g=gateOf(lv),ok=pw>=g;
+  const pss=en.id&&CARDS[en.id]?CARDS[en.id].passive:null,pw=totalPower(),g=gateOf(lv),ok=pw>=g;
   const bar=Math.max(4,Math.min(100,Math.round(pw/g*100)));
   document.getElementById("startBody").innerHTML=`
     <div class="st-hero">
@@ -3442,7 +3384,7 @@ function towerIsBossFloor(f){return f%5===0;}
 function towerBossIndex(f){return ((f/5)-1)%TOWER_BOSS_ROSTER.length;}
 function towerHash(n){return (((n*2654435761)>>>0)%100000)||0;}
 function towerRegularPool(){return MASTER_CARD_INDEX.filter(c=>c.tier==="R"||c.tier==="SR"||c.tier==="SSR");}
-function towerPickRegular(f){const p=towerRegularPool();if(!p.length)return MASTER_CARD_INDEX[0];return p[towerHash(f)%p.length];}
+function towerPickRegular(f){const p=towerRegularPool();if(!p.length)return null;return p[towerHash(f)%p.length];}
 /* Kurva kesulitan absolut (tidak ikut membengkak oleh stat mentah kartu EX).
    Kartu musuh hanya menentukan identitas/art/passive; HP & ATK ditentukan lantai. */
 const TOWER_TIER_K={R:0.85,SR:1,SSR:1.15,UR:1.25,EX:1.3};
@@ -3450,6 +3392,7 @@ function towerEnemyHP(f){return Math.round(140*Math.pow(1.18,f-1));}
 function towerEnemyATK(f){return Math.round(58*Math.pow(1.16,f-1));}
 function towerMakeWave(charId,f,isBoss,role){
   const c=CARDS[charId];
+  if(!c)return null;
   const hpK=isBoss?(role==="main"?2.2:1.4):1;
   const atkK=isBoss?(role==="main"?1.35:1.15):1;
   const tk=TOWER_TIER_K[c.tier]||1;
@@ -3461,9 +3404,10 @@ function towerMakeWave(charId,f,isBoss,role){
 function towerWaves(f){
   if(towerIsBossFloor(f)){
     const r=TOWER_BOSS_ROSTER[towerBossIndex(f)];
-    return [towerMakeWave(r.main,f,true,"main"),towerMakeWave(r.tag,f,true,"tag")];
+    return [towerMakeWave(r.main,f,true,"main"),towerMakeWave(r.tag,f,true,"tag")].filter(Boolean);
   }
-  return [towerMakeWave(towerPickRegular(f).char_id,f,false,"main")];
+  const reg=towerPickRegular(f);
+  return reg?[towerMakeWave(reg.char_id,f,false,"main")].filter(Boolean):[];
 }
 function towerReward(f){const boss=towerIsBossFloor(f);return {coins:boss?(500+f*60):(150+f*30),starStone:0};}
 let towerView="hub", towerRun=null;
@@ -4181,6 +4125,7 @@ window.addEventListener("scroll",hideTraitTip,true);
 
 /* =============== SETTINGS =============== */
 function gmGrantCard(charId){
+  if(!CARDS[charId])return "kartu tidak dikenal";
   const ex=state.stacks.find(x=>x.char===charId&&x.tier===CARDS[charId].tier&&(x.mut||"none")==="none");
   if(ex){ex.count=(ex.count||1)+1;return `${CARDS[charId].name} ×${ex.count}`;}
   state.stacks.push({id:Math.random().toString(36).slice(2,9),char:charId,tier:CARDS[charId].tier,lv:1,exp:0,fav:false,lock:false,mut:"none",trait:"none",count:1});
@@ -4312,6 +4257,7 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
     if(rollState.active)stopRollAnimation();
     if(rollState.hideTimer){clearTimeout(rollState.hideTimer);rollState.hideTimer=null;}
     const result=rngRoll(1,1);
+    if(!result){beep(220,0.15,"square",0.08);return;}
     result.mut=rollMut();
     grantRolledCard(result.cardId, result.mut);
     showRollResult(result);
