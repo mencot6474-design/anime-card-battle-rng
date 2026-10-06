@@ -919,7 +919,8 @@ body.battle-full .stat svg{flex:none}
 .tr-rates{flex:0 0 150px;display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:rgba(20,28,38,.04)}
 .trr-h{font-family:"Barlow Condensed";font-weight:800;font-size:11px;letter-spacing:.18em;color:var(--muted);text-align:center;margin-bottom:2px}
 .trr-row{display:flex;align-items:center;gap:7px;font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.03em;color:#1c232b}
-.trr-dot{flex:none;width:10px;height:10px;border-radius:50%}
+.trr-gem{flex:none;display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px}
+.trr-gem svg{display:block}
 .trr-name{flex:1}
 .trr-pct{font-style:normal;font-weight:800;font-size:12px}
 @media (max-width:520px){.tr-grid{flex-direction:column}.tr-rates{flex:1 1 auto}}
@@ -4059,7 +4060,7 @@ function renderTrait(){
   if(!state.stacks.length){b.innerHTML=`<p class="sub">Belum ada kartu. Punya kartu dulu lewat Summon.</p>`;return;}
   const tgt=traitTargetStack();
   const cur=tgt.trait&&tgt.trait!=="none"?traitChip(tgt.trait,`<span style="color:${TRAIT_COLOR[tgt.trait]}">${traitGem(13)} ${traitLabel(tgt.trait)}</span>`):`<span style="color:var(--muted)">Belum ada trait</span>`;
-  const rates=TRAIT_TIERS.filter(t=>t.chance>0).map(t=>`<div class="trr-row" title="${t.name}"><span class="trr-dot" style="background:${t.color};box-shadow:0 0 7px ${t.color}"></span><span class="trr-name">${t.name}</span><em class="trr-pct" style="color:${t.color}">${t.chance}%</em></div>`).join("");
+  const rates=TRAIT_TIERS.filter(t=>t.chance>0).map(t=>`<div class="trr-row" title="${t.name}"><span class="trr-gem" style="color:${t.color}">${traitGem(13)}</span><span class="trr-name">${t.name}</span><em class="trr-pct" style="color:${t.color}">${t.chance}%</em></div>`).join("");
   b.innerHTML=`
     <div class="tr-grid">
       <div class="tr-main">
