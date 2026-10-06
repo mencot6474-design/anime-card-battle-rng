@@ -41,14 +41,11 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .grad-text{background:linear-gradient(90deg,var(--cyan),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
 
 /* ---------- shell ---------- */
-#nav{display:flex;flex-direction:row;gap:8px;align-items:center}
 .nav-btn{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;color:#454F59;border:1px solid transparent;transition:.15s;cursor:pointer}
 .nav-btn:hover{color:var(--text);background:rgba(255,255,255,.42)}
 .nav-btn.active{color:#E8556A;background:rgba(255,255,255,.7);border-color:rgba(20,28,38,.12);box-shadow:0 0 0 1px rgba(232,85,106,.25)}
 /* padding kiri/ kanan = max(padding normal, offset kolom konten) -> di layar lebar pill topbar sejajar dengan tepi konten main, bukan menempel ke pinggir jendela */
 #topbar{position:sticky;top:0;z-index:10;margin-left:0;min-height:64px;display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:12px max(clamp(12px,3vw,28px),calc((100vw - var(--sb) - var(--wrap))/2 + clamp(14px,3.6vw,40px)));background:rgba(255,255,255,.82);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
-.crumb{font-size:11px;letter-spacing:.22em;font-weight:600;color:var(--muted);text-transform:uppercase;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
-.crumb b{color:var(--cyan)}
 .pill{display:flex;align-items:center;gap:8px;flex:0 1 auto;min-width:0;overflow:hidden;height:38px;padding:0 clamp(10px,1.5vw,16px);border-radius:999px;background:#E1E7EE;border:1px solid var(--line);font-family:"Barlow Condensed";font-size:clamp(15px,2vw,17px);letter-spacing:.08em;font-weight:600;white-space:nowrap}
 .pill.coins{color:#7A5A12;border-color:rgba(120,90,20,.28)}
 .pill.raid{color:#B98CFF;border-color:rgba(185,140,255,.45);background:linear-gradient(120deg,#170f1e,#0f0a14)}
@@ -63,9 +60,6 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .tb-xp{display:flex;align-items:center;gap:8px;min-width:0}
 .tb-xpbar{margin-top:0;height:6px;flex:1;min-width:0}
 .tb-pw{font-family:"Barlow Condensed";font-weight:700;font-size:11px;color:#7A5A12;border:1px solid rgba(20,28,38,.22);border-radius:6px;padding:0 8px;background:rgba(20,28,38,.06);flex:none;white-space:nowrap}
-.tb-daily{width:52px;min-height:46px;padding:5px;gap:2px;border-radius:12px;align-self:center}
-.tb-daily svg{width:19px;height:19px}
-.tb-daily .lpd-lbl{font-size:9px}
 .tb-settings{margin-left:2px}
 .who{font-size:10px;letter-spacing:.18em;color:var(--muted);font-weight:600;white-space:nowrap}
 /* ========== ROLL SYSTEM UI ========== */
@@ -794,27 +788,6 @@ body.battle-full .bench-rail .bench-sq{width:clamp(50px,11vh,74px)}
 .xpbar i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--purple))}
 
 /* ---------- lobby hub ---------- */
-.lobby-profile{display:flex;justify-content:center;align-items:center;gap:clamp(10px,2.5vw,18px);max-width:920px;margin:clamp(0px,0.3vw,4px) auto clamp(18px,3.6vh,40px)}
-.lp-card{justify-self:center;flex:0 1 330px;width:100%;max-width:330px;display:flex;align-items:center;gap:12px;padding:9px 13px;border:1px solid var(--line2);border-radius:15px;background:linear-gradient(160deg,#FFFFFF,#EEF2F6)}
-.lp-av{width:42px;height:42px;border-radius:50%;background:linear-gradient(120deg,var(--cyan),var(--purple));flex:none}
-.lp-main{flex:1;min-width:0}
-.lp-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.lp-name{font-weight:800;font-size:15px;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lp-lvl{font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.1em;color:var(--cyan);border:1px solid rgba(20,28,38,.22);border-radius:7px;padding:1px 9px;background:rgba(20,28,38,.06);flex:none}
-.lp-side{display:flex;align-items:center;gap:6px;flex:none}
-.lp-pw{font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.04em;color:#7A5A12;border:1px solid rgba(20,28,38,.22);border-radius:7px;padding:1px 9px;background:rgba(20,28,38,.06);flex:none;white-space:nowrap}
-.lobby-profile .lp-xprow{display:flex;align-items:center;gap:9px;margin-top:7px}
-.lobby-profile .lp-xprow .xpbar{flex:1;margin-top:0}
-.xpnum{font-family:"Barlow Condensed";font-weight:700;font-size:12.5px;letter-spacing:.05em;color:var(--muted);white-space:nowrap}
-.lp-daily{flex:none;align-self:stretch;cursor:pointer;width:70px;padding:8px;border-radius:15px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1.5px solid rgba(20,28,38,.16);background:rgba(12,14,16,.3);color:var(--muted);transition:.15s;position:relative}
-.lp-daily:hover{border-color:var(--cyan);color:var(--cyan);transform:translateY(-2px);background:rgba(200,212,224,.05)}
-.lp-daily svg{width:24px;height:24px;display:block;filter:drop-shadow(0 3px 6px rgba(0,0,0,.4))}
-.lp-daily .lpd-lbl{font-family:"Barlow Condensed";font-weight:700;letter-spacing:.1em;font-size:10.5px;color:var(--muted);text-align:center;line-height:1}
-.lp-daily:hover .lpd-lbl{color:var(--cyan)}
-.lp-daily.ready{border-color:var(--line2);color:var(--text);background:rgba(18,26,36,.06)}
-.lp-daily.ready .lpd-lbl{color:var(--text)}
-.lp-daily.ready::after{content:"";position:absolute;top:10px;right:12px;width:9px;height:9px;border-radius:50%;background:#B30F2A}
-@keyframes pulseDaily{0%,100%{opacity:1}50%{opacity:.55}}
 .lobby-hub{display:grid;grid-template-columns:minmax(78px,1fr) minmax(230px,1.55fr) minmax(78px,1fr);grid-template-rows:1fr 1fr;gap:clamp(12px,2.2vh,24px) clamp(14px,4vw,38px);margin:clamp(4px,1vh,12px) auto 0;max-width:920px;align-items:stretch}
 .hub-box{position:relative;border-radius:18px;border:1.5px dashed rgba(20,28,38,.16);background:#FFFFFF;min-height:clamp(88px,17vh,150px);display:grid;place-items:center;transition:border-color .15s}
 .hub-box:hover{border-color:rgba(20,28,38,.22)}
@@ -1052,18 +1025,14 @@ body.battle-full .bench-rail .bench-sq{width:clamp(50px,11vh,74px)}
 .dl-claim:disabled{opacity:.4;cursor:not-allowed;background:#F3E7EA;color:var(--muted)}
 .dl-total{margin-top:12px;text-align:center;font-size:11px;letter-spacing:.1em;color:var(--muted)}
 .dl-total b{color:var(--amber)}
-@media(max-width:880px){.who{display:none}.cb-brand{display:none}.md-card{flex-direction:column;width:min(340px,92vw);align-items:center;text-align:center}.md-card .cr-stats{justify-content:center}}
+@media(max-width:880px){.who{display:none}.md-card{flex-direction:column;width:min(340px,92vw);align-items:center;text-align:center}.md-card .cr-stats{justify-content:center}}
 @media(max-width:700px){.battle-grid{grid-template-columns:1fr}.vs-col{flex-direction:row;margin:6px 0}}
 @media(max-width:560px){
-  #nav{gap:6px}
   .nav-btn{width:38px;height:38px;border-radius:10px}
-  .crumb{font-size:10px;letter-spacing:.14em}
   .pill{height:34px}
   .hub-mid{max-width:min(300px,38vh)}
-  .lp-card{max-width:300px}
 }
 @media(max-width:500px){.deck-slot{flex-direction:column;align-items:flex-start}.deck-slot>div{align-self:stretch}.deck-slot img,.deck-slot video{width:84px;height:112px}.deck-slot .ds-art{width:84px;height:112px}}
-@media(max-width:400px){.crumb{display:none}}
 @media(max-width:430px){
   main{padding-left:12px;padding-right:12px;padding-bottom:64px}
   #topbar{padding:10px 12px;gap:8px;min-height:56px}
@@ -1281,7 +1250,6 @@ body.battle-full .bench-rail .bench-sq{width:clamp(50px,11vh,74px)}
 </div>
 <header id="topbar">
   <div class="tb-profile">
-    <button class="lp-daily tb-daily" id="lpDaily" title="Hadiah Login Harian" aria-label="Hadiah Login Harian"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v9H4v-9"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 1 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 1 0 0-5C13 2 12 7 12 7z"/></svg><span class="lpd-lbl">HARIAN</span></button>
     <div class="tb-av"></div>
     <div class="tb-id">
       <div class="tb-top"><span class="tb-name" id="tbName">GUEST</span><span class="tb-lvl" id="tbLvl">LVL 1</span></div>
@@ -2492,7 +2460,6 @@ function renderShell(){
   const tl=document.getElementById("tbLvl");if(tl)tl.textContent="LVL "+state.playerLv;
   const tf=document.getElementById("tbXpFill");if(tf)tf.style.width=xpPct+"%";
   const tp=document.getElementById("tbPw");if(tp)tp.innerHTML="&#9889; "+fmt(totalPower());
-  const ld=document.getElementById("lpDaily");if(ld)ld.classList.toggle("ready",state.lastClaim!==todayStr());
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.route===route()));
 }
 
@@ -4375,8 +4342,6 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
   if(location.hash===b.dataset.route||(!location.hash&&b.dataset.route==="#/lobby"))render();
   else location.hash=b.dataset.route;
 });
-/* Tombol Harian kini menetap di topbar -> wire sekali, aktif di semua layar. */
-(function wireDaily(){const d=document.getElementById("lpDaily");if(d)d.onclick=()=>{sfx.hit();openDaily();};})();
 /* ===== Dock roll + backpack (elemen statis di <body>): wiring SEKALI saja.
    Elemen ini tidak ikut di-render-ulang, jadi interval roll tetap hidup
    walau player pindah layar / membuka backpack -> AFK aman. ===== */
