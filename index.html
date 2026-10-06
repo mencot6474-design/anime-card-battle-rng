@@ -807,11 +807,12 @@ body.battle-full .stat svg{flex:none}
 .hub-center:hover{border-color:var(--cyan);transform:translateY(-2px)}
 .hub-center .hc-img{position:absolute;inset:0;flex:none;background:#E9EDF2}
 .hub-center .hc-img img,.hub-center .hc-img video{width:100%;height:100%;object-fit:cover;object-position:top}
-.hub-center .hc-info{position:absolute;left:0;right:0;bottom:0;z-index:6;padding:38px 14px 12px;border-top:none;background:linear-gradient(to top,rgba(6,8,12,.92) 32%,rgba(6,8,12,.5) 64%,transparent)}
+.hub-center .hc-info{position:absolute;left:0;right:0;bottom:0;z-index:6;padding:30px 14px 12px;border-top:none;background:linear-gradient(to top,rgba(6,8,12,.92) 32%,rgba(6,8,12,.5) 64%,transparent)}
 .hub-center .hc-name{font-weight:800;font-size:17px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.7)}
 .hub-center .hc-name .lv{color:var(--cyan);font-size:13px;font-weight:700}
 .hub-center .hc-stats{display:flex;justify-content:space-between;gap:16px;margin-top:9px;font-size:14px;font-weight:700;color:#EAF4FF;align-items:center;text-shadow:0 1px 4px rgba(0,0,0,.7)}
-.hub-center .hc-lv-tag{position:absolute;top:12px;left:12px;z-index:6;background:rgba(12,14,16,.78);border:1px solid var(--line2);border-radius:8px;padding:3px 9px;font-family:"Barlow Condensed";letter-spacing:.1em;font-weight:700;font-size:13px;color:#EAF4FF}
+.hub-center .hc-name-top{position:absolute;top:12px;left:12px;z-index:6;font-weight:800;font-size:16px;color:#fff;text-shadow:0 1px 5px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.9);max-width:60%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hub-center .hc-chance{position:absolute;top:13px;right:12px;z-index:6;font-family:"Barlow Condensed";letter-spacing:.05em;font-size:14px;font-weight:700;text-shadow:0 1px 5px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.9)}
 .hub-center .f-tag{top:12px;right:12px}
 .hub-center .mut-badge{top:12px;left:8px}
 .hub-center .hc-badges{position:absolute;top:46px;left:12px;z-index:7;display:flex;gap:6px;align-items:center}
@@ -1403,7 +1404,7 @@ const TIER_COLOR={R:"#9A8A8B",SR:"#C8A2A8",SSR:"#B07A9B",UR:"#2F8FE2",EX:"#FF4D5
    `tier` hanya dipakai internal sbg kunci warna/logika; yang tampil ke user adalah odds ini. */
 const TIER_CHANCE={R:100,SR:400,SSR:1500,UR:6000,EX:25000};
 function chanceOf(tier){return TIER_CHANCE[tier]||100;}
-function rarityText(tier,chance){return "1 : "+(chance||chanceOf(tier)).toLocaleString("id-ID");}
+function rarityText(tier,chance){return "1 in "+(chance||chanceOf(tier));}
 /* =============== STORY BIBLE ===============
    Satu-satunya tempat data karakter & alur story.
    CARDS, FOES, pool gacha, dan stat musuh diturunkan otomatis dari blok ini. */
@@ -3663,13 +3664,12 @@ function renderLobby(){
     <div class="hub-mid">
     <div class="hub-center${eq&&eq.mut&&eq.mut!=='none'?' mut-'+eq.mut:''}" id="hubCard" data-tier="${eq?tier:''}" ${eq&&eq.mut&&eq.mut!=='none'?`style="border-color:${MUT_COLOR[eq.mut]}"`:''}>
       ${eq?`<div class="hc-img"><img src="${cardImg(eq.char)}" alt="${cardName(eq.char)}">${madaraAura(eq.char)}
-          <span class="f-tag" style="color:${TIER_COLOR[tier]};border-color:${TIER_COLOR[tier]}">${rarityText(tier,(CARDS[eq.char]||{}).chance)}</span>
+          <span class="hc-name-top">${cardName(eq.char)}</span>
+          <span class="hc-chance" style="color:${TIER_COLOR[tier]}">${rarityText(tier,(CARDS[eq.char]||{}).chance)}</span>
           ${(eq.mut&&eq.mut!=='none')||(eq.trait&&eq.trait!=='none')?`<div class="hc-badges">${eq.mut&&eq.mut!=='none'?mutChip(eq.mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[eq.mut]}">${mutBadge(eq.mut)}</span>`):''}${eq.trait&&eq.trait!=='none'?traitChip(eq.trait,`<span class="hc-trait" style="color:${TRAIT_COLOR[eq.trait]};border-color:${TRAIT_COLOR[eq.trait]}">${traitGem(12)} ${traitLabel(eq.trait)}</span>`):''}</div>`:''}
-          <span class="hc-lv-tag">Lv.${eq.lv}</span>
           <div class="skill-overlay"><b>${passiveName(eq.char)}</b><span class="sk-txt">${skillText(eq.char)}</span></div>
         </div>
         <div class="hc-info">
-          <div class="hc-name">${cardName(eq.char)}</div>
           <div class="hc-skill">${passiveName(eq.char)}</div>
           <div class="hc-stats"><div class="hp">♡ ${fmt(st.hp)}</div><div class="atk">${ATKIC} ${fmt(st.atk)}</div></div>
         </div>`:`<div class="hc-info"><div class="hc-name">Belum ada kartu</div></div>`}
