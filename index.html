@@ -1686,7 +1686,7 @@ function showRollResult(result) {
   if(nameEl)nameEl.textContent=cardData.name||'';
   const mutEl=document.getElementById('rollMutBadge');
   if(mutEl){
-    if(mut!=="none"){mutEl.className='roll-mut-badge show';mutEl.style.color=MUT_COLOR[mut];mutEl.style.borderColor=MUT_COLOR[mut];mutEl.innerHTML=mutBadge(mut)+" &times;"+mm;}
+    if(mut!=="none"){mutEl.className='roll-mut-badge show';mutEl.style.color=MUT_COLOR[mut];mutEl.style.borderColor=MUT_COLOR[mut];mutEl.innerHTML=mutBadge(mut);}
     else{mutEl.className='roll-mut-badge';mutEl.innerHTML='';}
   }
   
@@ -1938,7 +1938,7 @@ function traitFxList(k){const t=TRAIT[k];if(!t)return"";const e=[];if(t.fx.pierc
 function traitGem(sz){return `<svg class="tgem" viewBox="0 0 48 48" width="${sz}" height="${sz}" aria-hidden="true"><path class="gem-body" d="M15 6h18l9 11-18 25L6 17z"/><path class="gem-line" d="M6 17h36M15 6l4.5 11L24 6l4.5 11L33 6M10.5 17L24 42l13.5-25M19.5 17h9"/></svg>`;}
 function traitTipInner(k){const t=TRAIT[k];if(!t)return"";return `<span class="tt-name" style="color:${t.color}">${traitGem(14)} ${t.name}</span><span class="tt-rar">RARITY ${t.rar}</span><span class="tt-power" style="color:${t.color}">HP & DMG ×${t.mult}</span><span class="tt-fx">${traitFxList(k)}</span>`;}
 function traitChip(k,html){const t=TRAIT[k];if(!t)return html;return `<span class="trait-hover" data-trait="${k}">${html}</span>`;}
-function mutTipInner(mut){const label=MUT_LABEL[mut];if(!label)return"";const col=MUT_COLOR[mut];return `<span class="tt-name" style="color:${col}">${label}</span><span class="tt-rar">MUTASI KARTU</span><span class="tt-power" style="color:${col}">HP & DMG ×${MUT_MULT[mut]}</span><span class="tt-fx">Mutasi hasil Summon · menaikkan HP & ATK menjadi ×${MUT_MULT[mut]} · peluang muncul ${MUT_CHANCE[mut]}%.</span>`;}
+function mutTipInner(mut){const label=MUT_LABEL[mut];if(!label)return"";const col=MUT_COLOR[mut];return `<span class="tt-name" style="color:${col}">${label}</span><span class="tt-rar">MUTASI KARTU</span><span class="tt-fx">Mutasi hasil Roll · menaikkan HP &amp; ATK · peluang muncul ${MUT_CHANCE[mut]}%.</span>`;}
 function mutChip(mut,html){const label=MUT_LABEL[mut];if(!label)return html;return `<span class="mut-hover" data-mut="${mut}">${html}</span>`;}
 function mergeFx(a,b){if(!b||!Object.keys(b).length)return a;const o={...a};for(const k in b){const av=o[k],bv=b[k];if(av==null){o[k]=bv;continue;}if(typeof bv==="number"&&typeof av==="number"){o[k]=av+bv;continue;}if(bv&&typeof bv==="object"&&av&&typeof av==="object"){if(k==="crit")o[k]={chance:Math.min(95,av.chance+bv.chance),mult:Math.max(av.mult,bv.mult)};else if(k==="evasion")o[k]={chance:Math.min(90,av.chance+bv.chance),turns:Math.max(av.turns,bv.turns)};else if(k==="barrage")o[k]={chance:Math.min(95,av.chance+bv.chance),min:Math.max(av.min,bv.min),max:Math.max(av.max,bv.max)};else o[k]=bv;}else o[k]=bv;}return o;}
 function fxOf(stack){return mergeFx(PASSIVE_FX[stack.char]||{},TRAIT_FX[stack.trait]||{});}
@@ -4125,7 +4125,7 @@ function openIndex(){
           <div class="idx-name" style="color:${TIER_COLOR[t]}">${c.name}</div>
           <div class="idx-title">${c.type}</div>
           <div class="idx-stats"><span>♡ ${fmt(c.base_hp)}</span><span>${ATKIC} ${fmt(c.base_atk)}</span></div>
-          <div class="idx-mutrow">${[["none","MURNI"],["silver","SHINY"],["gold","GOLD"],["rainbow","RAINBOW"],["secret","SECRET"]].map(([k,l])=>`<button class="ix-mut${k==="none"?" on":""}" data-m="${k}"${MUT_COLOR[k]?` style="--mc:${MUT_COLOR[k]}"`:""}>${l}${k==="none"?"":" ×"+MUT_MULT[k]}</button>`).join("")}</div>
+          <div class="idx-mutrow">${[["none","MURNI"],["silver","SHINY"],["gold","GOLD"],["rainbow","RAINBOW"],["secret","SECRET"]].map(([k,l])=>`<button class="ix-mut${k==="none"?" on":""}" data-m="${k}"${MUT_COLOR[k]?` style="--mc:${MUT_COLOR[k]}"`:""}>${l}</button>`).join("")}</div>
           <div class="idx-skill"><button class="ds-skill-badge idx-passive" type="button" data-name="${c.passive.name}" data-desc="${String(c.passive.desc).replace(/&/g,"&amp;").replace(/"/g,"&quot;")}">✦ ${c.passive.name}</button></div>
         </div>
       </div>`;}).join("")}</div></div>`;
@@ -4286,10 +4286,10 @@ function renderSettings(){
     <div class="gm-row">
       <select class="gm-select" id="gmMut">
         <option value="none">MURNI (tanpa glow)</option>
-        <option value="silver">SHINY ×3</option>
-        <option value="gold">GOLD ×5</option>
-        <option value="rainbow">RAINBOW ×10</option>
-        <option value="secret">SECRET ×25</option>
+        <option value="silver">SHINY</option>
+        <option value="gold">GOLD</option>
+        <option value="rainbow">RAINBOW</option>
+        <option value="secret">SECRET</option>
       </select>
       <button class="gm-btn" id="gmMutApply">Terapkan ke Kartu Aktif</button>
     </div>
