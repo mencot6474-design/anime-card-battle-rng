@@ -75,24 +75,23 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .roll-overlay.visible{display:flex;}
 .roll-card-showcase{position:relative;width:300px;aspect-ratio:3/4;border-radius:18px;border:3px solid var(--cyan);background:#12151a;overflow:hidden;box-shadow:0 20px 80px rgba(18,28,38,.6);animation:card-reveal .5s ease-out;}
 @keyframes card-reveal{from{opacity:0;transform:scale(.8) translateY(40px);}to{opacity:1;transform:scale(1) translateY(0);}}
-.roll-card-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
-.roll-rarity-chip{position:absolute;top:12px;left:12px;transform:none;z-index:2;font-family:"Barlow Condensed";font-weight:700;font-size:22px;letter-spacing:.1em;padding:5px 14px;border-radius:10px;background:rgba(12,14,16,.82);border:1px solid currentColor;white-space:nowrap;}
-.roll-mut-badge{position:absolute;top:12px;right:12px;left:auto;transform:none;z-index:2;font-family:"Barlow Condensed";font-weight:800;font-size:16px;letter-spacing:.14em;padding:5px 12px;border-radius:9px;background:rgba(12,14,16,.82);border:1px solid currentColor;white-space:nowrap;display:none;}
-.roll-mut-badge.show{display:block;}
-.roll-card-name{position:absolute;left:14px;right:14px;bottom:46px;z-index:2;font-family:"Barlow Condensed";font-weight:700;font-size:20px;letter-spacing:.03em;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.85);text-align:left;}
-.roll-stats{position:absolute;left:0;right:0;bottom:0;z-index:2;display:flex;justify-content:space-between;gap:12px;padding:12px 16px;font-size:16px;font-weight:700;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.82));}
-.roll-note{margin-top:18px;font-size:14px;color:var(--muted);text-align:center;}
+/* Kartu hasil roll = salinan persis kartu lobby (.hub-center). Showcase cuma jadi frame + animasi reveal. */
+.roll-card-showcase .hub-center{width:100%;height:100%;border:none;border-radius:inherit;box-shadow:none;cursor:default;animation:none}
+.roll-card-showcase .hub-center:hover{transform:none}
 .roll-actions{display:flex;gap:10px;margin-top:14px;align-items:stretch;justify-content:center;}
 .roll-close-out{padding:9px 22px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-family:"Barlow Condensed";font-weight:700;font-size:15px;letter-spacing:.06em;cursor:pointer;transition:.15s;}
 .roll-close-out:hover{background:var(--panel2);}
 /* Mode mini: overlay jadi kartu kecil yang nempel di dekat tombol dadu, roll tetap jalan. */
 .roll-overlay.mini{background:transparent;backdrop-filter:none;display:block;align-items:initial;justify-content:initial;pointer-events:none;}
 .roll-overlay.mini .roll-card-showcase{position:fixed;right:20px;bottom:150px;width:120px;box-shadow:0 10px 30px rgba(0,0,0,.5);cursor:pointer;animation:none;pointer-events:auto;}
-.roll-overlay.mini .roll-rarity-chip{top:6px;left:6px;transform:none;font-size:12px;padding:3px 8px;border-radius:7px;}
-.roll-overlay.mini .roll-mut-badge{top:6px;right:6px;left:auto;transform:none;font-size:10px;padding:2px 7px;letter-spacing:.1em;}
-.roll-overlay.mini .roll-card-name{left:8px;right:8px;bottom:26px;font-size:13px;}
-.roll-overlay.mini .roll-stats{padding:6px 9px;font-size:12px;}
-.roll-overlay.mini .roll-note,.roll-overlay.mini .roll-actions{display:none;}
+.roll-overlay.mini .roll-card-showcase .hub-center .hc-name-top{top:5px;left:5px;font-size:11px;max-width:75%}
+.roll-overlay.mini .roll-card-showcase .hub-center .hc-chance{top:21px;left:5px;font-size:10px}
+.roll-overlay.mini .roll-card-showcase .hub-center .hc-badges{top:5px;right:5px;gap:3px}
+.roll-overlay.mini .roll-card-showcase .hub-center .hc-badges .mut-badge,.roll-overlay.mini .roll-card-showcase .hub-center .hc-badges .hc-trait,.roll-overlay.mini .roll-card-showcase .hub-center .shiny-badge{height:16px;padding:0 5px;font-size:9px}
+.roll-overlay.mini .roll-card-showcase .hub-center .hc-info{padding:18px 8px 7px}
+.roll-overlay.mini .roll-card-showcase .hub-center .hc-skill,.roll-overlay.mini .roll-card-showcase .hub-center .hc-desc{display:none}
+.roll-overlay.mini .roll-card-showcase .hub-center .hc-stats{font-size:11px;margin-top:0;gap:8px}
+.roll-overlay.mini .roll-actions{display:none;}
 .roll-min-btn{padding:9px 18px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-family:"Barlow Condensed";font-weight:700;font-size:15px;letter-spacing:.06em;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;}
 .roll-min-btn:hover{background:var(--panel2);}
 .backpack-toggle{position:fixed;left:20px;bottom:20px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#2c7a7c,#38b7ff);border:3px solid var(--line2);box-shadow:0 4px 16px rgba(56,183,255,.35);z-index:100;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:28px;transition:transform .2s;}
@@ -125,9 +124,15 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .bp-tile{position:relative;aspect-ratio:3/4;border:2px solid var(--line2);border-radius:10px;overflow:hidden;cursor:pointer;background:var(--panel2);}
 .bp-tile img{width:100%;height:100%;object-fit:cover;object-position:top;}
 .bp-tile.in-deck{box-shadow:0 0 0 2px var(--cyan) inset;}
-.bp-tile .bpt-mut{position:absolute;top:2px;left:4px;font-family:"Barlow Condensed";font-weight:700;font-size:10px;text-shadow:0 1px 2px #000;}
-.bp-tile .bpt-shiny{position:absolute;top:15px;left:4px;font-family:"Barlow Condensed";font-weight:700;font-size:9px;letter-spacing:.06em;color:#7DF9FF;text-shadow:0 1px 2px #000;}
+.bp-tile .bpt-top{position:absolute;top:2px;left:4px;z-index:2;display:flex;flex-direction:column;gap:1px;align-items:flex-start;}
+.bp-tile .bpt-mut{font-family:"Barlow Condensed";font-weight:700;font-size:10px;line-height:1.1;text-shadow:0 1px 2px #000;}
+.bp-tile .bpt-shiny{font-family:"Barlow Condensed";font-weight:700;font-size:9px;line-height:1.1;letter-spacing:.06em;color:#7DF9FF;text-shadow:0 1px 2px #000;}
 .bp-tile .bpt-cnt{position:absolute;bottom:2px;left:4px;font-family:"Barlow Condensed";font-weight:800;font-size:11px;color:#fff;background:rgba(12,14,16,.72);border-radius:6px;padding:0 5px;text-shadow:0 1px 2px #000;}
+/* Hover slot DEK: reveal kartu penuh seperti lobby (nama, chance, badge, passive, stat). */
+.bps-hover{position:fixed;z-index:210;width:190px;pointer-events:none;display:none;}
+.bps-hover.show{display:block;}
+.bps-hover .hub-center{cursor:default;box-shadow:0 14px 40px rgba(0,0,0,.6);}
+.bps-hover .hub-center:hover{transform:none;}
 .bp-tile .bpt-i{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:6px;border:none;background:rgba(12,14,16,.8);color:#fff;font-size:11px;font-weight:700;font-style:italic;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .deck-layout{display:flex;gap:24px;padding:24px;flex:1;overflow:hidden;}
 .deck-main-cards{flex:1;display:flex;flex-direction:column;gap:12px;}
@@ -1369,17 +1374,7 @@ body.battle-full .stat svg{flex:none}
 <button class="roll-btn" id="rollBtn" title="Roll Cards!">🎲</button>
 <div class="backpack-toggle" id="backpackToggle" title="Backpack">🎒</div>
 <div class="roll-overlay" id="rollOverlay">
-  <div class="roll-card-showcase">
-    <img class="roll-card-img" id="rollCardImg" src="">
-    <div class="roll-rarity-chip" id="rollRarityChip">ROLLING...</div>
-    <div class="roll-mut-badge" id="rollMutBadge"></div>
-    <div class="roll-card-name" id="rollCardName"></div>
-    <div class="roll-stats">
-      <div>♡ <span id="rollHp"></span></div>
-      <div><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></svg> <span id="rollAtk"></span></div>
-    </div>
-  </div>
-  <div class="roll-note">Kartu otomatis masuk Koleksi &amp; mengisi slot dek 🎒</div>
+  <div class="roll-card-showcase" id="rollShowcase"></div>
   <div class="roll-actions">
     <button class="roll-min-btn" id="rollMinBtn" type="button" title="Kecilkan">▾ Kecilkan</button>
     <button class="roll-close-out" id="rollCloseBtn" type="button">&#10005; Tutup</button>
@@ -1640,45 +1635,22 @@ function stopRollAnimation() {
 
 function showRollResult(result) {
   const overlay = document.getElementById('rollOverlay');
-  const cardImg = document.getElementById('rollCardImg');
-  const rarityChip = document.getElementById('rollRarityChip');
-
-  if (!overlay || !cardImg || !rarityChip) return;
-  
+  if (!overlay) return;
+  const showcase = overlay.querySelector('.roll-card-showcase');
+  if (!showcase) return;
   const cardData = getCardData(result.cardId);
   if (!cardData) return;
-  
   rollState.currentCard = result;
-  
-  // Setup card display
-  cardImg.src = cardData.art_image;
-  cardImg.dataset.charId = result.cardId;
-  const mut = result.mut || "none";
-  const mm = (MUT_MULT[mut] || 1) * (result.shiny ? SHINY_MULT : 1);
-  const hpEl=document.getElementById('rollHp'), atkEl=document.getElementById('rollAtk');
-  if(hpEl)hpEl.textContent=fmt(Math.round(cardData.base_hp*mm));
-  if(atkEl)atkEl.textContent=fmt(Math.round(cardData.base_atk*mm));
 
-  // Set rarity chip (warna = warna kelangkaan)
-  rarityChip.textContent = rarityText(result.tier, result.chance);
-  rarityChip.className = 'roll-rarity-chip';
-  rarityChip.style.color = TIER_COLOR[result.tier] || '#fff';
-  const nameEl=document.getElementById('rollCardName');
-  if(nameEl)nameEl.textContent=cardData.name||'';
-  const sh=!!result.shiny;
-  const showcaseEl=overlay.querySelector('.roll-card-showcase');
-  if(showcaseEl)showcaseEl.classList.toggle('shiny',sh);
-  const mutEl=document.getElementById('rollMutBadge');
-  if(mutEl){
-    const label=(mut!=="none"?mutBadge(mut):"")+(sh?`<span class="shiny-tag">SHINY</span>`:"");
-    if(label){mutEl.className='roll-mut-badge show';mutEl.style.color=mut!=="none"?MUT_COLOR[mut]:"#7DF9FF";mutEl.style.borderColor=mut!=="none"?MUT_COLOR[mut]:"#7DF9FF";mutEl.innerHTML=label;}
-    else{mutEl.className='roll-mut-badge';mutEl.innerHTML='';}
-  }
-  
+  // Kartu hasil roll = SALINAN persis kartu lobby (hubCardHtml) supaya posisinya identik.
+  const eq = {char:result.cardId, mut:result.mut||"none", shiny:!!result.shiny, trait:"none"};
+  showcase.innerHTML = hubCardHtml(eq);
+  const mut = eq.mut!=="none" ? eq.mut : null;
+  showcase.style.borderColor = mut ? MUT_COLOR[mut] : (TIER_COLOR[CARDS[eq.char].tier] || "var(--cyan)");
+
   // Buka overlay. Animasi masuk HANYA sekali (saat pertama tampil) supaya tidak flicker muncul-hilang tiap tick.
   const wasVisible = overlay.style.display === 'flex';
   overlay.style.display = 'flex';
-  const showcase = overlay.querySelector('.roll-card-showcase');
   if (!wasVisible) {
     showcase.style.transition = 'none';
     showcase.style.opacity = '0';
@@ -1693,7 +1665,7 @@ function showRollResult(result) {
     showcase.style.opacity = '1';
     showcase.style.transform = 'scale(1)';
   }
-  
+
   // Tutup lewat klik di mana saja diikat di wireRollDock (overlay), bukan tombol lagi.
 }
 
@@ -1744,6 +1716,7 @@ function bpAssign(stackId){
 }
 function renderBackpackPanel(){
   const panel=document.getElementById('backpackPanel');if(!panel)return;
+  bpsHoverBind();bpsHoverHide();
   const header=`<div class="backpack-header"><h2>DECK &amp; KOLEKSI</h2>
     <div class="backpack-stats"><span>POWER <strong>${fmt(deckTotalPower())}</strong></span><span>KARTU <strong>${fmt(state.stacks.reduce((a,s)=>a+(s.count||1),0))}</strong></span></div>
     <button class="backpack-close" onclick="toggleBackpack()">&times;</button></div>`;
@@ -1751,7 +1724,7 @@ function renderBackpackPanel(){
   const slots=[0,1,2,3].map(i=>{
     const id=state.deck[i];const s=id?state.stacks.find(x=>x.id===id):null;
     if(!s)return `<div class="bp-slot${bpTarget===i?' sel':''}" onclick="bpPickSlot(${i})"><span class="bps-plus">+</span><span class="bps-num">${i+1}</span></div>`;
-    return `<div class="bp-slot filled${bpTarget===i?' sel':''}" onclick="bpPickSlot(${i})" style="border-color:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt=""><span class="bps-num">${i+1}</span><button class="bps-x" onclick="event.stopPropagation();bpClearSlot(${i})">&times;</button></div>`;
+    return `<div class="bp-slot filled${bpTarget===i?' sel':''}" data-sid="${s.id}" onclick="bpPickSlot(${i})" style="border-color:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt=""><span class="bps-num">${i+1}</span><button class="bps-x" onclick="event.stopPropagation();bpClearSlot(${i})">&times;</button></div>`;
   }).join('');
   const visible=state.stacks.filter(bpMatchesMut);
   const tiles=visible.map(s=>{
@@ -1759,7 +1732,7 @@ function renderBackpackPanel(){
     const mut=(s.mut&&s.mut!=='none')?`<span class="bpt-mut" style="color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`:'';
     const shny=s.shiny?'<span class="bpt-shiny">SHINY</span>':'';
     const cnt=(s.count||1)>1?`<span class="bpt-cnt">&times;${fmt(s.count)}</span>`:'';
-    return `<div class="bp-tile${inDeck?' in-deck':''}" onclick="bpAssign('${s.id}')" style="border-color:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt="">${mut}${shny}${cnt}<button class="bpt-i" onclick="event.stopPropagation();openModal('${s.id}')" title="Detail">i</button></div>`;
+    return `<div class="bp-tile${inDeck?' in-deck':''}" data-sid="${s.id}" onclick="bpAssign('${s.id}')" style="border-color:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt="">${(mut||shny)?`<div class="bpt-top">${mut}${shny}</div>`:''}${cnt}<button class="bpt-i" onclick="event.stopPropagation();openModal('${s.id}')" title="Detail">i</button></div>`;
   }).join('');
   const cntOf=m=>state.stacks.filter(s=>m==='all'?true:(m==='shiny'?!!s.shiny:(s.mut||'none')===m)).length;
   const chip=(k,lbl)=>{const on=bpMutFilter===k;const col=on?(MUT_COLOR[k]||'#7DF9FF'):'';return `<button class="bp-fchip${on?' on':''}" onclick="bpSetFilter('${k}')"${col?` style="border-color:${col};color:${col}"`:''}>${lbl}<em>${cntOf(k)}</em></button>`;};
@@ -1778,6 +1751,40 @@ function renderBackpackPanel(){
   </div></div>`;
 }
 
+
+/* ====== Hover reveal kartu DEK (isi = hubCardHtml, sama persis kartu lobby) ====== */
+let __bpsHoverEl=null;
+function bpsHoverShow(sid,slotRect){
+  const s=state.stacks.find(x=>x.id===sid);if(!s||!CARDS[s.char])return;
+  if(!__bpsHoverEl){__bpsHoverEl=document.createElement('div');__bpsHoverEl.className='bps-hover';document.body.appendChild(__bpsHoverEl);}
+  __bpsHoverEl.innerHTML=hubCardHtml(s);
+  __bpsHoverEl.classList.add('show');
+  const W=190,H=253,gap=10,vw=window.innerWidth,vh=window.innerHeight;
+  let left=slotRect.right+gap;
+  if(left+W>vw-8) left=slotRect.left-W-gap;
+  if(left<8) left=8;
+  let top=slotRect.top;
+  if(top+H>vh-8) top=vh-8-H;
+  if(top<8) top=8;
+  __bpsHoverEl.style.left=left+'px';
+  __bpsHoverEl.style.top=top+'px';
+}
+function bpsHoverHide(){if(__bpsHoverEl)__bpsHoverEl.classList.remove('show');}
+function bpsHoverBind(){
+  if(window.__bpsBound)return;window.__bpsBound=true;
+  const SEL='.bp-slot.filled[data-sid],.bp-tile[data-sid]';
+  document.addEventListener('mouseover',e=>{
+    const sl=e.target.closest&&e.target.closest(SEL);
+    if(sl)bpsHoverShow(sl.getAttribute('data-sid'),sl.getBoundingClientRect());
+  });
+  document.addEventListener('mouseout',e=>{
+    const sl=e.target.closest&&e.target.closest(SEL);
+    if(!sl)return;
+    const to=e.relatedTarget;
+    if(to&&to.closest&&to.closest(SEL)===sl)return;
+    bpsHoverHide();
+  });
+}
 
 /* Level dinomeri global per bab, tiap bab 6 level: Bab 1 = 1-6, Bab 2 = 7-12, Bab 3 = 13-18 */
 let _chapAcc=0;
@@ -3630,6 +3637,26 @@ document.getElementById("modal").addEventListener("click",e=>{
 });
 
 /* =============== LOBBY =============== */
+function hubCardHtml(eq,idAttr){
+  if(!eq||!eq.char||!CARDS[eq.char]) return `<div class="hub-center"${idAttr||''}><div class="hc-info"><div class="hc-name">Belum ada kartu</div></div></div>`;
+  const tier=CARDS[eq.char].tier;
+  const st=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
+  const mut=(eq.mut&&eq.mut!=='none')?eq.mut:null;
+  const trait=(eq.trait&&eq.trait!=='none')?eq.trait:null;
+  return `<div class="hub-center${mut?' mut-'+mut:''}${shinyCls(eq)}"${idAttr||''} data-tier="${tier}"${mut?` style="border-color:${MUT_COLOR[mut]}"`:''}>
+      <div class="hc-img"><img src="${cardImg(eq.char)}" alt="${cardName(eq.char)}">${madaraAura(eq.char)}
+          <span class="hc-name-top">${cardName(eq.char)}</span>
+          <span class="hc-chance" style="color:${TIER_COLOR[tier]}">${rarityText(tier,(CARDS[eq.char]||{}).chance)}</span>
+          ${(mut||trait||eq.shiny)?`<div class="hc-badges">${mut?mutChip(mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${eq.shiny?'<span class="shiny-badge">SHINY</span>':''}${trait?traitChip(trait,`<span class="hc-trait" style="color:${TRAIT_COLOR[trait]};border-color:${TRAIT_COLOR[trait]}">${traitGem(12)} ${traitLabel(trait)}</span>`):''}</div>`:''}
+          <div class="skill-overlay"><b>${passiveName(eq.char)}</b><span class="sk-txt">${skillText(eq.char)}</span></div>
+        </div>
+        <div class="hc-info">
+          <div class="hc-skill">${passiveName(eq.char)}</div>
+          <div class="hc-desc">${skillText(eq.char)}</div>
+          <div class="hc-stats"><div class="hp">♡ ${fmt(st.hp)}</div><div class="atk">${ATKIC} ${fmt(st.atk)}</div></div>
+        </div>
+    </div>`;
+}
 function renderLobby(){
   if(state.battle)return renderBattle();
   const eq=equipped();
@@ -3640,19 +3667,7 @@ function renderLobby(){
     <div class="hub-box h-l1 hub-link" id="hubRaid" role="button" title="Masuk Boss Raid"><img class="hi-ic" src="assets/raid/eternal-dragon-hd.png" alt=""><span class="hb-lbl">BOSS RAID</span></div>
     <div class="hub-box h-l2 hub-link" id="hubTower" role="button" title="Masuk Sky Tower"><svg class="tw-ic" width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M9 21V9l3-6 3 6v12"/><path d="M9 12h6M9 16h6"/><path d="M5 21V11M19 21V11"/></svg><span class="hb-lbl">SKY TOWER</span></div>
     <div class="hub-mid">
-    <div class="hub-center${eq&&eq.mut&&eq.mut!=='none'?' mut-'+eq.mut:''}${shinyCls(eq)}" id="hubCard" data-tier="${eq?tier:''}" ${eq&&eq.mut&&eq.mut!=='none'?`style="border-color:${MUT_COLOR[eq.mut]}"`:''}>
-      ${eq?`<div class="hc-img"><img src="${cardImg(eq.char)}" alt="${cardName(eq.char)}">${madaraAura(eq.char)}
-          <span class="hc-name-top">${cardName(eq.char)}</span>
-          <span class="hc-chance" style="color:${TIER_COLOR[tier]}">${rarityText(tier,(CARDS[eq.char]||{}).chance)}</span>
-          ${(eq.mut&&eq.mut!=='none')||(eq.trait&&eq.trait!=='none')||eq.shiny?`<div class="hc-badges">${eq.mut&&eq.mut!=='none'?mutChip(eq.mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[eq.mut]}">${mutBadge(eq.mut)}</span>`):''}${eq.shiny?'<span class="shiny-badge">SHINY</span>':''}${eq.trait&&eq.trait!=='none'?traitChip(eq.trait,`<span class="hc-trait" style="color:${TRAIT_COLOR[eq.trait]};border-color:${TRAIT_COLOR[eq.trait]}">${traitGem(12)} ${traitLabel(eq.trait)}</span>`):''}</div>`:''}
-          <div class="skill-overlay"><b>${passiveName(eq.char)}</b><span class="sk-txt">${skillText(eq.char)}</span></div>
-        </div>
-        <div class="hc-info">
-          <div class="hc-skill">${passiveName(eq.char)}</div>
-          <div class="hc-desc">${skillText(eq.char)}</div>
-          <div class="hc-stats"><div class="hp">♡ ${fmt(st.hp)}</div><div class="atk">${ATKIC} ${fmt(st.atk)}</div></div>
-        </div>`:`<div class="hc-info"><div class="hc-name">Belum ada kartu</div></div>`}
-    </div>
+    ${hubCardHtml(eq,' id="hubCard"')}
     </div>
     <div class="hub-box h-r1 hub-link" id="hubIndex" role="button" title="Buka Katalog Kartu"><img class="hi-ic" src="assets/images/icon-index-card.png" alt=""><span class="hb-lbl">INDEX CARD</span></div>
     <div class="hub-box h-r2 hub-link" id="hubTrait" role="button" title="Roll Trait untuk kartu aktif"><img class="hi-ic" src="assets/images/icon-trait.svg" alt=""><span class="hb-lbl">TRAIT</span></div>
