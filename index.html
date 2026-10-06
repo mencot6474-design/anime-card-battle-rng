@@ -2312,15 +2312,23 @@ function loadStateFor(name){
 }
 
 /* ========== DIFFICULTY PROGRESS HELPERS ========== */
-function diffProg(){return state.clearedDiff[state.diff]||(state.clearedDiff.normal||{});}
-const cellUnlocked=(ch,lv)=>(DIFFS.some(d=>d.k===lv))?state.clearedDiff[lv][ch]:false;
-const chapProgressMode=(c,diff)=>{const cd=diffProg();return c.levels.map((_,i)=>cd[c.from+i]).filter(Boolean).length};
-const chapDone=(c,diff)=>(diffProg()||{}).every?.(val=>val)||Object.values(diffProg()||{})[0];
-
-function highestChapDiff(chapNum){
-  const openLevels = CHAPTERS.filter(c=>c.no<=chapNum);
-  return openLevels.length?openLevels[0].diff||'normal':'normal';
-}
+const diffOf=()=>DIFFS.find(d=>d.k===(state?state.diff:"normal"))||DIFFS[0];
+/* diffProg() = PETA LENGKAP {normal:{lv:true},hard:{...},...}. Caller akses diffProg()[mode]. */
+function diffProg(){if(!state.clearedDiff)state.clearedDiff={normal:{},hard:{},extreme:{},nightmare:{}};DIFFS.forEach(d=>{if(!state.clearedDiff[d.k])state.clearedDiff[d.k]={};});return state.clearedDiff;}
+function chapProgMode(ch,mode){const cd=diffProg()[mode]||{};let n=0;for(let i=0;i<ch.levels.length;i++)if(cd[ch.from+i])n++;return n;}
+function chapClearedMode(ch,mode){const cd=diffProg()[mode]||{};for(let i=0;i<ch.levels.length;i++)if(!cd[ch.from+i])return false;return true;}
+/* Tamat di mode aktif — dipakai chapOpen/activeChap (panggil 1 arg). */
+const chapDone=(c)=>chapClearedMode(c,state?state.diff:"normal");
+/* GEMBOK BERTANGGA PER-BAB: sel (bab C, mode M) terbuka jika bab C-1 mode M tamat; Bab 1 mode M butuh mode sebelumnya di Bab 1 tamat. */
+function cellUnlocked(ch,mode){const ci=DIFFS.findIndex(d=>d.k===mode),idx=ch.no-1;if(idx<0)return false;if(idx===0)return ci<=0||chapClearedMode(ch,DIFFS[ci-1].k);return chapClearedMode(CHAPTERS[idx-1],mode);}
+function highestChapDiff(ch){if(typeof ch==="number")ch=CHAPTERS.find(c=>c.no===ch)||CHAPTERS[0];let k="normal";DIFFS.forEach(d=>{if(cellUnlocked(ch,d.k))k=d.k;});return k;}
+function cellReqText(ch,mode){const ci=DIFFS.findIndex(d=>d.k===mode),idx=ch.no-1;if(idx<0)return"";if(idx===0)return"SELESAIKAN SEMUA LEVEL BAB 1 DI MODE "+DIFFS[ci-1].l+" UNTUK BUKA MODE INI";return"SELESAIKAN SEMUA LEVEL BAB "+(ch.no-1)+" DI MODE "+DIFFS[ci].l+" UNTUK BUKA BAB INI DI MODE "+DIFFS[ci].l;}
+function mutBox(mut,cls){const label=MUT_LABEL[mut];if(!label)return "";return `<span class="${cls}" style="border-color:${MUT_COLOR[mut]};color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`;}
+const mutGlow=m=>m&&m!=="none"?` mut-${m}`:"";
+const mutEdge=m=>m&&m!=="none"?` style="border-color:${MUT_COLOR[m]}"`:"";
+function enemyOf(level){const f=FOES[level];if(!f)return{id:null,name:"Gate Watcher L-"+level,epithet:chapOf(level).zone,img:chapOf(level).art,boss:false,tier:"R"};return{id:f.id,name:f.name,epithet:f.ep,img:f.img,boss:!!f.boss,tier:f.tier};}
+function enemyStats(level){const l=STORY_BIBLE.levels[level-1];if(!l)return{hp:120,atk:40};const c=CARDS[l.unit],k=MUT_MULT[diffOf().mut]||1;return{hp:Math.round(c.base_hp*(0.55+0.15*level)*k),atk:Math.round(c.base_atk*(0.35+0.13*level)*k)};}
+function firstClearReward(level){const l=STORY_BIBLE.levels[level-1];return (l?l.reward:300)*(diffOf().rw||1);}
 function save(){if(state)localStorage.setItem(KEY,JSON.stringify(state));}
 function equipped(){return state.stacks.find(s=>s.id===(state.deck&&state.deck[0]))||state.stacks.find(s=>s.id===state.equippedId)||state.stacks[0];}
 function equipped2(){return (state.deck&&state.deck[1])?state.stacks.find(s=>s.id===state.deck[1])||null:null;}
