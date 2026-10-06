@@ -2134,6 +2134,20 @@ function rollMut(){const r=Math.random()*100;if(r<MUT_CHANCE.rainbow)return "rai
 /* Hadiah login harian 7 hari (coin) — total 950.000, reset tiap 00:00 */
 const DAILY_REWARDS=[30000,50000,70000,100000,150000,200000,400000];
 
+/* ========== DIFFICULTY LEVELS ========== */
+const DIFFS=[
+  {k:"normal",l:"NORMAL",mut:"none"},
+  {k:"hard",l:"HARD",mut:"silver"},
+  {k:"extreme",l:"EXTREME",mut:"gold"},
+  {k:"nightmare",l:"NIGHTMARE",mut:"rainbow"}
+];
+const RAID_DIFFS=[
+  {k:"normal",l:"NORMAL",color:"#6EAC4C"},
+  {k:"hard",l:"HARD",color:"#E07F33"},
+  {k:"extreme",l:"EXTREME",color:"#FF4D5E"},
+  {k:"nightmare",l:"NIGHTMARE",color:"#B58CFF"}
+];
+
 /* ========== TRAIT SYSTEM ========== */
 const TRAIT_TIERS=[
   {k:"none",name:"NONE",rar:"N/A",mult:1,fx:{},color:"#9A8A8B"},
