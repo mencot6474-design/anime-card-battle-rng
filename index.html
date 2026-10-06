@@ -938,17 +938,16 @@ body.battle-full .bench-rail .bench-sq{width:clamp(50px,11vh,74px)}
 .dp-box{width:min(500px,94vw);max-height:86vh;overflow-y:auto;overflow-x:hidden;border-radius:18px;border:1px solid var(--line2);background:linear-gradient(160deg,#FFFFFF,#EEF2F6);padding:22px;animation:rcIn .3s ease}
 .pm-box,.md-card,.ix-body,.sm-box,.tr-box,.dp-box{scrollbar-width:none;-ms-overflow-style:none}
 .pm-box::-webkit-scrollbar,.md-card::-webkit-scrollbar,.ix-body::-webkit-scrollbar,.sm-box::-webkit-scrollbar,.tr-box::-webkit-scrollbar,.dp-box::-webkit-scrollbar{width:0;height:0;display:none}
-.dp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
-.dp-card{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 6px 9px;border-radius:12px;border:1.5px solid var(--line2);background:rgba(20,28,38,.05);cursor:pointer;transition:transform .08s,border-color .15s,box-shadow .15s}
-.dp-card img,.dp-card video{width:56px;height:74px;object-fit:cover;border-radius:8px;opacity:.85}
-.dp-card:hover{transform:translateY(-2px);border-color:var(--line2)}
+.dp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px}
+.dp-card{position:relative;aspect-ratio:1/1;border:1.5px solid var(--line2);border-radius:10px;overflow:hidden;background:linear-gradient(160deg,#FFFFFF,#EEF2F6);cursor:pointer;padding:0}
+.dp-card img,.dp-card video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top}
+.dp-card:hover{border-color:var(--line2)}
 .dp-card.sel{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(20,28,38,.22)}
-.dp-card.sel img{opacity:1}
-.dp-name{font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.02em;text-align:center;line-height:1.1;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dp-name{position:absolute;left:0;right:0;bottom:0;z-index:1;padding:15px 4px 3px;font-family:"Barlow Condensed";font-weight:700;font-size:11px;letter-spacing:.02em;line-height:1.1;text-align:center;color:#20161a;background:linear-gradient(transparent,rgba(255,255,255,.92));overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dp-meta{font-size:9px;letter-spacing:.06em;color:var(--muted)}
 .dp-dia{position:absolute;top:5px;right:6px;font-family:"Barlow Condensed";font-weight:700;font-size:9px;letter-spacing:.04em;filter:drop-shadow(0 0 3px #000)}
 .dp-aktif{position:absolute;top:5px;left:6px;font-family:"Barlow Condensed";font-weight:700;font-size:9px;letter-spacing:.1em;padding:1px 5px;border-radius:5px;background:var(--cyan);color:#fff}
-.dp-art .dp-mut{position:absolute;top:3px;left:50%;transform:translateX(-50%);z-index:3;white-space:nowrap;font-family:"Barlow Condensed";font-weight:700;font-size:8.5px;letter-spacing:.05em;padding:1px 5px;border-radius:5px;background:rgba(8,9,11,.85);border:1px solid;line-height:1.3;pointer-events:none}
+.dp-card .dp-mut{position:absolute;top:3px;left:50%;transform:translateX(-50%);z-index:3;white-space:nowrap;font-family:"Barlow Condensed";font-weight:700;font-size:8.5px;letter-spacing:.05em;padding:1px 5px;border-radius:5px;background:rgba(8,9,11,.85);border:1px solid;line-height:1.3;pointer-events:none}
 #rarePromptModal{position:fixed;inset:0;background:rgba(6,7,9,.86);backdrop-filter:blur(8px);display:none;place-items:center;z-index:80}
 #rarePromptModal.show{display:grid}
 .rp-box{width:min(420px,92vw);border-radius:20px;border:2px solid var(--pink);background:radial-gradient(120% 120% at 50% 0%,#FFFFFF,#EEF2F6 70%);padding:28px 24px;text-align:center;position:relative;overflow:hidden}
@@ -4178,13 +4177,12 @@ function renderDeckPick(){
   if(!state.stacks.length){b.innerHTML=`<p class="sub">Deck kosong.</p>`;return;}
   const selId=cardPickCfg?cardPickCfg.getSel():traitTargetStack().id;
   b.innerHTML=`<label class="card-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input class="card-search" id="dpSearch" type="text" placeholder="Cari kartu…" autocomplete="off"></label><div class="dp-grid" id="dpGrid">${state.stacks.map(s=>{
-    const st=cardStats(s.char,s.lv,s.mut,s.trait);
     return `<button class="dp-card${s.id===selId?" sel":""}" data-tid="${s.id}" data-name="${cardName(s.char).toLowerCase()}">
-      ${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="dp-dia" style="color:${TRAIT_COLOR[s.trait]}">${traitGem(11)} ${traitLabel(s.trait)}</span>`):""}
+      <img src="${cardImg(s.char)}" alt="">${madaraAura(s.char)}
       ${s.id===state.equippedId?'<span class="dp-aktif">AKTIF</span>':""}
-      <span class="dp-art"><img src="${cardImg(s.char)}" alt="">${madaraAura(s.char)}${s.mut&&s.mut!=="none"?mutChip(s.mut,`<span class="dp-mut" style="border-color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`):""}</span>
-      <div class="dp-name">${cardName(s.char)}</div>
-      <div class="dp-meta">${rarityText(s.tier)} · Lv${s.lv} · PWR ${fmt(st.hp+st.atk)}</div>
+      ${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="dp-dia" style="color:${TRAIT_COLOR[s.trait]}">${traitGem(11)} ${traitLabel(s.trait)}</span>`):""}
+      ${s.mut&&s.mut!=="none"?mutChip(s.mut,`<span class="dp-mut" style="border-color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`):""}
+      <span class="dp-name">${cardName(s.char)}</span>
     </button>`;}).join("")}</div><div class="no-result" id="dpSearch-nr">Tidak ada kartu yang cocok.</div>`;
   {const dps=document.getElementById("dpSearch");if(dps){dps.value=dpSearch;dps.oninput=()=>{dpSearch=dps.value;runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));};if(dpSearch)runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));}}
   b.querySelectorAll(".dp-card").forEach(el=>el.onclick=()=>{const tid=el.getAttribute("data-tid");sfx.hit();if(cardPickCfg){cardPickCfg.onPick(tid);}else{traitTarget=tid;closeDeckPick();renderTrait();}});
