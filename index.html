@@ -354,52 +354,10 @@ body.battle-full .stat svg{flex:none}
 .cleave.white.crit .blade{box-shadow:0 0 28px 9px rgba(255,255,255,.98)}
 @keyframes bladeSweep{0%{opacity:0;transform:rotate(var(--ang,-28deg)) translateX(-55%)}18%{opacity:1}100%{opacity:0;transform:rotate(var(--ang,-28deg)) translateX(55%)}}
 @keyframes cleaveFlash{0%{opacity:0}28%{opacity:1}100%{opacity:0}}
-/* ---------- tebasan khas SUKUNA: 3-5 slash silang merah + luka menganga + bara kutukan (versi light = 1 slash per sambaran barrage) ---------- */
-.sukunafx{position:absolute;inset:0;z-index:20;pointer-events:none;overflow:visible}
-.sukunafx .sk-veil{position:absolute;inset:-8% -12%;background:radial-gradient(circle at 50% 42%,rgba(120,10,20,.2),rgba(30,0,4,.32) 40%,rgba(0,0,0,.1) 58%,transparent 74%);mix-blend-mode:multiply;opacity:0;animation:skVeil .6s ease-out forwards}
-.sukunafx .sk-slash{position:absolute;left:calc(50% - var(--w,150%)/2);width:var(--w,150%);height:var(--th,3px);transform:rotate(var(--ang,-30deg)) translateX(-62%);background:linear-gradient(90deg,transparent,#fff,rgba(255,60,90,.98),rgba(255,120,60,.9),#fff,transparent);box-shadow:0 0 16px 3px rgba(255,50,80,.8),0 0 30px 6px rgba(255,110,40,.4);opacity:0;animation:skSlash var(--dur,.4s) ease-out var(--del,0s) both}
-.sukunafx .sk-wound{position:absolute;left:12%;right:12%;height:2px;transform:rotate(var(--ang,0deg)) scaleX(0);transform-origin:center;background:linear-gradient(90deg,transparent,rgba(255,40,60,.9) 20%,rgba(20,0,4,.95) 50%,rgba(255,40,60,.9) 80%,transparent);box-shadow:0 0 10px 2px rgba(255,50,70,.7);opacity:0;animation:skWound .72s ease-out var(--wdel,0s) forwards}
-.sukunafx .sk-ember{position:absolute;left:50%;top:42%;width:var(--esz,3px);height:var(--esz,3px);margin:calc(var(--esz,3px)/-2) 0 0 calc(var(--esz,3px)/-2);border-radius:50%;background:#ffd27a;box-shadow:0 0 8px 2px rgba(255,120,50,.9),0 0 14px 4px rgba(255,40,60,.5);opacity:0;animation:skEmber var(--ed,.5s) ease-out var(--edel,0s) forwards}
-.sukunafx .sk-flash{position:absolute;inset:0;background:radial-gradient(circle at 50% 42%,rgba(255,70,80,.6),rgba(200,30,50,.3) 40%,transparent 66%);opacity:0;animation:skFlash .5s ease-out forwards}
-.sukunafx.crit .sk-slash{box-shadow:0 0 22px 6px rgba(255,40,70,.95),0 0 40px 10px rgba(255,120,40,.55)}
-.sukunafx.crit .sk-flash{background:radial-gradient(circle at 50% 42%,rgba(255,90,90,.78),rgba(210,40,55,.42) 44%,transparent 70%)}
-.sukunafx.crit .sk-veil{background:radial-gradient(circle at 50% 42%,rgba(150,12,24,.24),rgba(40,0,6,.4) 40%,rgba(0,0,0,.12) 58%,transparent 74%)}
-@keyframes skVeil{0%{opacity:0}18%{opacity:1}100%{opacity:0}}
-@keyframes skSlash{0%{opacity:0;transform:rotate(var(--ang,-30deg)) translateX(-62%)}16%{opacity:1}100%{opacity:0;transform:rotate(var(--ang,-30deg)) translateX(62%)}}
-@keyframes skWound{0%{opacity:0;transform:rotate(var(--ang,0deg)) scaleX(0)}18%{opacity:1;transform:rotate(var(--ang,0deg)) scaleX(1)}72%{opacity:.85}100%{opacity:0;transform:rotate(var(--ang,0deg)) scaleX(1.02)}}
-@keyframes skEmber{0%{transform:translate(0,0) scale(1);opacity:0}18%{opacity:1}100%{transform:translate(var(--ex,0),var(--ey,0)) scale(.2);opacity:0}}
-@keyframes skFlash{0%{opacity:0}22%{opacity:1}100%{opacity:0}}
-/* ---------- Malevolent Shrine (Sukuna): latar kuil api full-layar di BELAKANG kartu + hujan 15 tebasan + 6 luka + tebasan besar yang pecah ---------- */
-.shrinefx{position:fixed;inset:0;z-index:40;pointer-events:none;overflow:hidden}
-.shrinefx .ds-slash{position:absolute;left:-10%;width:120%;height:var(--th,4px);top:var(--top,50%);transform:rotate(var(--ang,-24deg)) translateX(-118%);background:linear-gradient(90deg,transparent,#fff,rgba(255,55,80,.98),rgba(255,120,50,.9),#fff,transparent);box-shadow:0 0 20px 4px rgba(255,50,80,.8),0 0 42px 10px rgba(255,110,40,.4);opacity:0;animation:dsSlash .36s cubic-bezier(.2,.8,.2,1) var(--del,0s) both}
-.shrinefx .ds-wound{position:absolute;left:8%;right:8%;height:2px;top:var(--top,50%);transform:rotate(var(--ang,0deg)) scaleX(0);transform-origin:center;background:linear-gradient(90deg,transparent,rgba(255,40,60,.85) 18%,rgba(18,0,3,.95) 50%,rgba(255,40,60,.85) 82%,transparent);box-shadow:0 0 12px 2px rgba(255,50,70,.6);opacity:0;animation:dsWound 1.4s ease-out var(--wdel,0s) forwards}
-.shrinefx .ds-flash{position:absolute;inset:0;background:radial-gradient(circle at 50% 46%,rgba(255,80,90,.55),transparent 62%);opacity:0;animation:dsFlash 1.55s ease-out forwards}
-.shrine-bgfx{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
-.shrine-bgfx .ds-shrine{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;transform:scale(.94);transform-origin:50% 50%;opacity:0;z-index:1;pointer-events:none;filter:saturate(1.45) contrast(1.14) brightness(1.03);animation:dsShrine 2.4s ease-in-out both}
-@keyframes dsShrine{0%{opacity:0;transform:scale(.94)}24%{opacity:1;transform:scale(1)}70%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.03)}}
 /* ---------- latar VIDEO full-screen ultimate ARISE Jin-Woo (video vertikal ditampilin horizontal: cover penuh layar) ---------- */
 .jinwoo-bgfx{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
 .jinwoo-bgfx .jw-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;transform-origin:50% 50%;opacity:0;z-index:1;pointer-events:none;filter:saturate(1.35) contrast(1.1) brightness(.82) hue-rotate(-10deg);animation:jwBg 2.15s ease-in-out both}
 @keyframes jwBg{0%{opacity:0;transform:scale(1.12)}16%{opacity:.92;transform:scale(1.02)}72%{opacity:.88;transform:scale(1)}100%{opacity:0;transform:scale(.99)}}
-@keyframes dsSlash{0%{opacity:0;transform:rotate(var(--ang,-24deg)) translateX(-118%)}20%{opacity:1}100%{opacity:0;transform:rotate(var(--ang,-24deg)) translateX(118%)}}
-@keyframes dsWound{0%{opacity:0;transform:rotate(var(--ang,0deg)) scaleX(0)}10%{opacity:.95;transform:rotate(var(--ang,0deg)) scaleX(1)}70%{opacity:.7}100%{opacity:0}}
-@keyframes dsFlash{0%{opacity:0}4%{opacity:.9}14%{opacity:0}44%{opacity:0}48%{opacity:.65}58%{opacity:0}100%{opacity:0}}
-.shrinefx .ds-bigslash{position:absolute;inset:0;pointer-events:none;z-index:6;overflow:hidden}
-.shrinefx .bs-cut{position:absolute;left:-12%;right:-12%;top:50%;height:0;transform:rotate(var(--rot,-24deg))}
-.shrinefx .bs-glow,.shrinefx .bs-core,.shrinefx .bs-gash{position:absolute;left:0;right:0;top:0}
-.shrinefx .bs-glow{height:64px;margin-top:-32px;background:linear-gradient(90deg,transparent,rgba(255,60,60,.5) 16%,rgba(255,150,120,.92) 50%,rgba(255,60,60,.5) 84%,transparent);filter:blur(15px);transform:scaleX(0);opacity:0;animation:bsSweep .62s cubic-bezier(.15,.8,.25,1) .9s both}
-.shrinefx .bs-gash{height:16px;margin-top:-8px;background:linear-gradient(90deg,transparent,rgba(70,3,10,.95) 22%,rgba(40,1,6,1) 50%,rgba(70,3,10,.95) 78%,transparent);filter:blur(2px);opacity:0;animation:bsGash 1s ease-out 1s both}
-.shrinefx .bs-core{height:4px;margin-top:-2px;background:linear-gradient(90deg,transparent,#fff 10%,#fff4e2 32%,#ffffff 50%,#fff4e2 68%,#fff 90%,transparent);box-shadow:0 0 20px 5px rgba(255,140,120,.9),0 0 44px 12px rgba(255,60,60,.55);transform:scaleX(0);opacity:0;animation:bsSweep .62s cubic-bezier(.15,.8,.25,1) .9s both}
-.shrinefx .bs-spark{position:absolute;left:50%;top:50%;width:9px;height:9px;margin:-4.5px;border-radius:50%;background:radial-gradient(circle,#fff,#ff7a5a);box-shadow:0 0 26px 12px rgba(255,120,90,.9);opacity:0;animation:bsSpark .7s ease-out .82s both}
-@keyframes bsSweep{0%{transform:scaleX(0);opacity:0}6%{opacity:1}38%{transform:scaleX(1);opacity:1}70%{transform:scaleX(1);opacity:.96}100%{transform:scaleX(1);opacity:0}}
-@keyframes bsGash{0%,18%{opacity:0}44%{opacity:.92}62%{opacity:.6}100%{opacity:0}}
-@keyframes bsSpark{0%{opacity:0;transform:scale(.2)}30%{opacity:1;transform:scale(1.5)}100%{opacity:0;transform:scale(3.2)}}
-.shrinefx .bs-break{position:absolute;left:0;right:0;top:0;height:6px;margin-top:-3px;background:linear-gradient(90deg,transparent,#fff 12%,#fff 88%,transparent);box-shadow:0 0 30px 8px rgba(255,255,255,.9),0 0 60px 16px rgba(255,120,90,.7);transform:scaleX(1);opacity:0;animation:bsBreak .4s ease-out 1.4s both}
-@keyframes bsBreak{0%{opacity:0}15%{opacity:1}100%{opacity:0}}
-.shrinefx .bs-shards{position:absolute;left:-12%;right:-12%;top:50%;height:0;transform:rotate(var(--rot,-24deg));z-index:7;pointer-events:none}
-.shrinefx .bs-shard{position:absolute;top:0;width:var(--sw,10px);height:var(--sh,3px);margin-top:calc(var(--sh,3px)/-2);margin-left:calc(var(--sw,10px)/-2);background:linear-gradient(90deg,#fff,#ff8a5a);box-shadow:0 0 10px 2px rgba(255,90,70,.9);border-radius:2px;opacity:0;animation:bsShatter .6s cubic-bezier(.2,.7,.3,1) var(--sdel,1.45s) both}
-.shrinefx .bs-chunk{position:absolute;top:0;width:var(--sw,16px);height:var(--sh,6px);margin-top:calc(var(--sh,6px)/-2);margin-left:calc(var(--sw,16px)/-2);background:linear-gradient(180deg,#fff,#ff6a52 55%,#a01818);box-shadow:0 0 12px 3px rgba(255,80,60,.85);border-radius:1px;clip-path:polygon(0 30%,100% 0,82% 100%,18% 72%);opacity:0;animation:bsShatter .64s cubic-bezier(.2,.7,.3,1) var(--sdel,1.45s) both}
-@keyframes bsShatter{0%{opacity:0;transform:translate(0,0) rotate(0) scale(1)}10%{opacity:1}100%{opacity:0;transform:translate(var(--sx,0),var(--sy,0)) rotate(var(--sr,180deg)) scale(.25)}}
 /* ---------- ledakan Hollow Purple di kartu target (inti putih + bola ungu + pusaran + cincin + sinar) ---------- */
 .gojofx{position:absolute;inset:0;z-index:20;pointer-events:none;overflow:visible}
 .gojofx .gp-core{position:absolute;left:50%;top:34%;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:radial-gradient(circle,#fff,#eafcff 55%,rgba(180,240,255,0));box-shadow:0 0 22px 9px rgba(200,240,255,.95);animation:gpCore .72s ease-out forwards}
@@ -469,15 +427,11 @@ body.battle-full .stat svg{flex:none}
 .domain-bgfx .dom-bgimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;transform:scale(.97);opacity:0;filter:saturate(1.25) contrast(1.08) brightness(1.02);animation:domBgIn 1.4s ease-in-out both}
 @keyframes domBgIn{0%{opacity:0;transform:scale(.97)}100%{opacity:1;transform:scale(1)}}
 .domvoid .dom-title{justify-content:flex-end;padding-bottom:11vh}
-.domvoid .dom-title,.shrinefx .dom-title,.shadowfx .dom-title,.madara-ult .dom-title{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;text-align:center;z-index:9}
-.domvoid .dom-title .dt-main,.shrinefx .dom-title .dt-main,.shadowfx .dom-title .dt-main,.madara-ult .dom-title .dt-main{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:800;font-size:clamp(52px,14vw,168px);letter-spacing:.1em;line-height:.92;color:#eafcff;text-shadow:0 0 22px rgba(150,90,255,.95),0 0 60px rgba(90,220,255,.7),0 4px 14px rgba(0,0,0,.7);opacity:0;transform:scale(1.7);animation:domTitleIn 1.1s cubic-bezier(.2,.9,.2,1) both}
-.domvoid .dom-title .dt-sub,.shrinefx .dom-title .dt-sub,.shadowfx .dom-title .dt-sub,.madara-ult .dom-title .dt-sub{margin-top:4px;font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:700;font-size:clamp(15px,3.6vw,38px);letter-spacing:.55em;color:#c9a8ff;text-shadow:0 0 18px rgba(150,90,255,.95);opacity:0;transform:scale(1.5);animation:domTitleIn 1.1s cubic-bezier(.2,.9,.2,1) .12s both}
+.domvoid .dom-title,.shadowfx .dom-title,.madara-ult .dom-title{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;text-align:center;z-index:9}
+.domvoid .dom-title .dt-main,.shadowfx .dom-title .dt-main,.madara-ult .dom-title .dt-main{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:800;font-size:clamp(52px,14vw,168px);letter-spacing:.1em;line-height:.92;color:#eafcff;text-shadow:0 0 22px rgba(150,90,255,.95),0 0 60px rgba(90,220,255,.7),0 4px 14px rgba(0,0,0,.7);opacity:0;transform:scale(1.7);animation:domTitleIn 1.1s cubic-bezier(.2,.9,.2,1) both}
+.domvoid .dom-title .dt-sub,.shadowfx .dom-title .dt-sub,.madara-ult .dom-title .dt-sub{margin-top:4px;font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:700;font-size:clamp(15px,3.6vw,38px);letter-spacing:.55em;color:#c9a8ff;text-shadow:0 0 18px rgba(150,90,255,.95);opacity:0;transform:scale(1.5);animation:domTitleIn 1.1s cubic-bezier(.2,.9,.2,1) .12s both}
 .madara-ult .dom-title .dt-main{color:#eaf6ff;text-shadow:0 0 22px rgba(90,170,255,.95),0 0 62px rgba(40,120,255,.72),0 4px 14px rgba(0,0,0,.7)}
 .madara-ult .dom-title .dt-sub{color:#8fc4ff;text-shadow:0 0 18px rgba(70,150,255,.95),0 0 34px rgba(40,110,255,.7)}
-.shrinefx .dom-title .dt-main{color:#fff2ee;text-shadow:0 0 22px rgba(255,70,60,.95),0 0 60px rgba(255,120,40,.7),0 4px 14px rgba(0,0,0,.7)}
-.shrinefx .dom-title .dt-sub{color:#ff9a7a;text-shadow:0 0 18px rgba(255,80,60,.95)}
-.shadowfx .dom-title .dt-main{color:#eef4ff;text-shadow:0 0 22px rgba(120,80,255,.95),0 0 62px rgba(60,220,235,.6),0 4px 14px rgba(0,0,0,.75)}
-.shadowfx .dom-title .dt-sub{color:#8ff0ff;text-shadow:0 0 18px rgba(70,220,235,.95),0 0 34px rgba(130,80,255,.7)}
 /* ---------- Shadow Monarch: bangkitnya pasukan bayangan (khusus Sung Jin-Woo) ---------- */
 .shadowfx{position:fixed;inset:0;z-index:44;pointer-events:none;overflow:hidden}
 .shadowfx .shx-unit{position:absolute;left:var(--cx);top:var(--uy);width:0;height:0;pointer-events:none;opacity:0}
@@ -2481,77 +2435,6 @@ function domainVoid(){return;/*animasi skill dihapus*/
     noiseBurst(bt,.05,2600,.04);
   }catch(e){}
 }
-/* ---------- Malevolent Shrine (khusus Sukuna saat Cleave barrage aktif): swell bawah + drone disonan + hujan tebasan ---------- */
-function malevolentShrine(){
-  if(state.muted)return;
-  try{
-    const a=actxOf(),t0=a.currentTime;
-    voidHum(t0,1.05,.34,70,28);
-    [72,102,152].forEach((fr,idx)=>{
-      const s=a.createOscillator();s.type=idx===0?"sine":"sawtooth";s.frequency.value=fr;s.detune.value=(idx-1)*10;
-      const lp=a.createBiquadFilter();lp.type="lowpass";
-      lp.frequency.setValueAtTime(220,t0);lp.frequency.exponentialRampToValueAtTime(900,t0+.4);lp.frequency.exponentialRampToValueAtTime(180,t0+1.05);
-      const g=a.createGain();
-      g.gain.setValueAtTime(.0001,t0);
-      g.gain.exponentialRampToValueAtTime(idx===0?.14:.07,t0+.18);
-      g.gain.setValueAtTime(idx===0?.14:.07,t0+.7);
-      g.gain.exponentialRampToValueAtTime(.0001,t0+1.05);
-      s.connect(lp);lp.connect(g);g.connect(a.destination);s.start(t0);s.stop(t0+1.1);
-    });
-    for(let i=0;i<10;i++){
-      const ts=t0+.15+Math.random()*.72;
-      noiseBurst(ts,.05,2400+Math.random()*1700,.035+Math.random()*.028);
-    }
-  }catch(e){}
-}
-function malevolentShrineFx(targetSel,who){return;/*animasi skill dihapus*/
-  const grid=document.querySelector(".battle-grid");if(!grid)return;
-  const d=document.createElement("div");d.className="shrinefx";
-  const bgd=document.createElement("div");bgd.className="shrine-bgfx";
-  bgd.innerHTML='<img class="ds-shrine" src="assets/sprites/shrine.mp4" alt="">';
-  if(sigBackdrop(who||"CH_EX_SUKUNA"))document.body.appendChild(bgd);
-  let tp='<div class="ds-bigslash"><div class="bs-cut" style="--rot:-24deg"><div class="bs-glow"></div><div class="bs-gash"></div><div class="bs-core"></div><div class="bs-break"></div></div>';
-  tp+='<div class="bs-shards" style="--rot:-24deg">';
-  const SH=18;
-  for(let i=0;i<SH;i++){
-    const lf=i/(SH-1);
-    const left=(2+lf*96).toFixed(1);
-    const side=i%2?1:-1;
-    const sy=(side*(52+Math.random()*120)).toFixed(0);
-    const sx=((Math.random()-0.5)*64).toFixed(0);
-    const sr=Math.round((Math.random()-0.5)*720);
-    const sw=(8+Math.random()*14).toFixed(0);
-    const sh=(2+Math.random()*4).toFixed(0);
-    const sdel=(1.42+lf*0.2+Math.random()*0.05).toFixed(2);
-    const cls=i%3===0?'bs-chunk':'bs-shard';
-    tp+=`<span class="${cls}" style="left:${left}%;--sy:${sy}px;--sx:${sx}px;--sr:${sr}deg;--sw:${sw}px;--sh:${sh}px;--sdel:${sdel}s"></span>`;
-  }
-  tp+='</div><span class="bs-spark"></span></div>';
-  let html=tp;
-  const N=15;
-  for(let i=0;i<N;i++){
-    const ang=Math.round(-80+Math.random()*160);
-    const top=Math.round(6+Math.random()*88);
-    const th=(3+Math.random()*5).toFixed(1);
-    const del=(0.02+i*0.04+Math.random()*0.02).toFixed(2);
-    html+=`<span class="ds-slash" style="--ang:${ang}deg;top:${top}%;--th:${th}px;--del:${del}s"></span>`;
-  }
-  const W=6;
-  for(let i=0;i<W;i++){
-    const ang=Math.round(-70+Math.random()*140);
-    const top=Math.round(20+Math.random()*60);
-    const wdel=(0.2+i*0.08).toFixed(2);
-    html+=`<span class="ds-wound" style="top:${top}%;--ang:${ang}deg;--wdel:${wdel}s"></span>`;
-  }
-  html+='<span class="ds-flash"></span>';
-  html+='<div class="dom-title"><span class="dt-main">DOMAIN</span><span class="dt-sub">EXPANSION</span></div>';
-  d.innerHTML=html;
-  document.body.appendChild(d);
-  /* getar ditangani mesin (1× per sambaran, berjarak rata) — loop 6× di sini dulu menumpuk
-     dengan getar engine jadi kartu kedouble-keduble bergetar */
-  setTimeout(()=>{d.remove();bgd.remove();},2400);
-}
-
 /* =============== SHELL RENDER =============== */
 const app=document.getElementById("app");
 const ROUTES={"#/lobby":"LOBBY","#/":"STORY","#/raid":"BOSS RAID","#/tower":"SKY TOWER","#/settings":"PENGATURAN"};
@@ -2788,42 +2671,6 @@ function anim(sel,cls,noPair){
   const el=document.querySelector(sel);if(!el)return;
   const pulse=(e)=>{e.classList.remove(cls);void e.offsetWidth;e.classList.add(cls);setTimeout(()=>e.classList.remove(cls),520);};
   pulse(el);
-}
-function sukunaFx(sel,crit,light){return;/*animasi skill dihapus*/
-  const f=document.querySelector(sel);if(!f)return;
-  const d=document.createElement("div");d.className="sukunafx"+(crit?" crit":"")+(light?" light":"");
-  let html=light?"":'<span class="sk-veil"></span>';
-  const slashN=light?1:(crit?5:3);
-  for(let i=0;i<slashN;i++){
-    const ang=Math.round(-70+Math.random()*140);
-    const top=Math.round(18+Math.random()*64);
-    const w=Math.round(120+Math.random()*80);
-    const th=(2+Math.random()*(crit?6:4)).toFixed(1);
-    const del=(Math.random()*0.14).toFixed(2);
-    const dur=(0.34+Math.random()*0.14).toFixed(2);
-    html+=`<span class="sk-slash" style="--ang:${ang}deg;top:${top}%;--w:${w}%;--th:${th}px;--del:${del}s;--dur:${dur}s"></span>`;
-  }
-  const woundN=light?0:(crit?3:2);
-  for(let i=0;i<woundN;i++){
-    const top=Math.round(24+Math.random()*50);
-    const off=Math.round(Math.random()*80-40);
-    const ang=Math.round(-60+Math.random()*120);
-    const del=(0.12+i*0.06).toFixed(2);
-    html+=`<span class="sk-wound" style="top:calc(${top}% + ${off}px);--ang:${ang}deg;--wdel:${del}s"></span>`;
-  }
-  const en=light?5:(crit?16:10);
-  for(let i=0;i<en;i++){
-    const ang=Math.random()*Math.PI*2;
-    const dist=50+Math.random()*(crit?150:120);
-    const ex=(Math.cos(ang)*dist).toFixed(0), ey=(Math.sin(ang)*dist).toFixed(0);
-    const sz=2+Math.round(Math.random()*3);
-    const ed=(0.4+Math.random()*0.3).toFixed(2), edel=(Math.random()*0.12).toFixed(2);
-    html+=`<span class="sk-ember" style="--ex:${ex}px;--ey:${ey}px;--esz:${sz}px;--ed:${ed}s;--edel:${edel}s"></span>`;
-  }
-  if(!light)html+='<span class="sk-flash"></span>';
-  d.innerHTML=html;
-  f.appendChild(d);
-  setTimeout(()=>d.remove(),light?520:(crit?1050:850));
 }
 function cleaveFx(sel,crit,white){return;/*animasi skill dihapus*/
   const f=document.querySelector(sel);if(!f)return;
@@ -3322,16 +3169,13 @@ function modeDomainFx(A,D,total,who){return;/*animasi skill dihapus*/
   floatText(D,"UNLIMITED VOID","crit");
   if(total>0)setTimeout(()=>floatText(D,"-"+fmt(total),"crit"),520);
 }
-function modeShrineFx(D,who){return;/*animasi skill dihapus*/malevolentShrineFx(D,who);malevolentShrine();floatText(D,"MALEVOLENT SHRINE","crit");}
 function modeAriseFx(A,D,who){return;/*animasi skill dihapus*/armyOfShadowsFx(D,who);jinwooDashFx(A,D);floatText(D,"ARMY OF SHADOWS","crit");}
 function barrageHitFx(id,i,n,crit,sel){return;/*animasi skill dihapus*/
-  if(id==="CH_EX_SUKUNA")sukunaFx(sel,crit&&i===n-1,i<n-1);
-  else if(id==="CH_EX_JINWOO")ariseStrikeFx(i,n,sel);
+  if(id==="CH_EX_JINWOO")ariseStrikeFx(i,n,sel);
   else if(id!=="CH_EX_MADARA")cleaveFx(sel,false,true);
 }
 function singleHitFx(id,A,D,o){return;/*animasi skill dihapus*/
-  if(id==="CH_EX_SUKUNA")sukunaFx(D,o.crit);
-  else if(id==="CH_EX_GOJO"){if(o.purple){hollowPurpleFx(true,A,D);}else{reversalRedFx(D);}}
+  if(id==="CH_EX_GOJO"){if(o.purple){hollowPurpleFx(true,A,D);}else{reversalRedFx(D);}}
   else if(id==="CH_EX_MADARA"){madaraFx(D,o.crit);}
   else if(id==="CH_ETERNAL_DRAGON"){if(o.purple){galaxyRoarFx(A,D,o.crit);}else{cleaveFx(D,o.crit,true);}}
   else cleaveFx(D,o.crit,true);
@@ -3342,11 +3186,11 @@ function performAttack(o){
   /* Galaxy Roar = SATU sambaran (waktu damage dipindah ke menit FX); Madara Tensa = HUJAN 15 tebasan,
      tiap sambaran dijadaki MADARA_T.step supaya angka + getar mendarat bareng garisnya. */
   const galaxy=!!o.galaxy;
-  const ultBarrage=(o.domainStrike||o.shrineMode||o.ariseMode||md);
+  const ultBarrage=(o.domainStrike||o.ariseMode||md);
   /* ARISE sengaja TIDAK ikut grid 80ms domain/shrine: 9 sambaran di 80ms cuma kebaca satu getar panjang.
      Pakai ritme sambaran normal (160ms) → 9 hit = 1,28s, masih muat di jendela fase ARISE (2,2s). */
-  const hstep=(o.domainStrike||o.shrineMode)?80:160;
-  const hoff=galaxy?0:md?40:(o.domainStrike||o.shrineMode||o.ariseMode)?60:500;
+  const hstep=o.domainStrike?80:160;
+  const hoff=galaxy?0:md?40:(o.domainStrike||o.ariseMode)?60:500;
   /* Bar dicicil PROPORSIONAL terhadap total damage: damage yang melebihi HP target (one-hit kill)
      tetap tampil nguras dari penuh sampai 0, bukan nyangkut di 100% lalu langsung kosong. */
   const startHp=Math.max(0,Math.min(o.defMax,o.defHpStart));
@@ -3357,9 +3201,8 @@ function performAttack(o){
   setTimeout(()=>{
     if(!bt)return;
     if(o.domainStrike&&!bt.over){modeDomainFx(A,D,o.total,id);}
-    if(o.shrineMode){modeShrineFx(D,id);}
     if(o.ariseMode&&!bt.over){modeAriseFx(A,D,id);}
-    const self=(o.domainStrike?o.fx.domain:(o.shrineMode||o.ariseMode)?o.fx.barrage:null);
+    const self=(o.domainStrike?o.fx.domain:o.ariseMode?o.fx.barrage:null);
     if(self&&self.selfStun&&o.recharge)o.recharge(self);
     /* jurus hujan tebasan MILIK Madara saja — kartu lain (termasuk UR) gak boleh nyomot animasi EX cuma karena punya flag ranton */
     const susStart=(o.ranton&&id==="CH_EX_MADARA"&&!bt.over)?madaraTensaFx(A,D,o.barrageN,id):0;
@@ -3383,7 +3226,7 @@ function performAttack(o){
       if(bt&&!bt.over)setBar(o.barId,o.barTid,endHp,o.defMax);
       if(bt&&o.onAnimEnd)o.onAnimEnd();
     },barEnd+520);
-    if(o.barrageN>1)setTimeout(()=>floatText(D,(o.domainStrike?"UNLIMITED VOID ×":o.shrineMode?"SHRINE ×":o.ariseMode?"ARISE ×":md?"TENSA ×":"CLEAVE ×")+o.barrageN,"crit"),md?MADARA_T.slash:320);
+    if(o.barrageN>1)setTimeout(()=>floatText(D,(o.domainStrike?"UNLIMITED VOID ×":o.ariseMode?"ARISE ×":md?"TENSA ×":"CLEAVE ×")+o.barrageN,"crit"),md?MADARA_T.slash:320);
     else if(shots.length>1&&!o.ranton)setTimeout(()=>floatText(D,"DOUBLE!","crit"),260);
     if(o.total>0&&!o.barrageN)singleHitFx(id,A,D,o);
     else if(galaxy&&!o.barrageN)galaxyRoarFx(A,D,o.crit);
@@ -3425,7 +3268,6 @@ function playerPhase(){
   /* Galaxy Roar = SATU semburan: semua damage ditumpuk ke satu sambaran supaya laser & ledakannya sinkron */
   const galaxy=id==="CH_ETERNAL_DRAGON"&&purple;
   if(galaxy){const m=hits[hits.length-1].mult;hits.length=0;hits.push({mult:m});barrageN=0;}
-  const shrineMode=id==="CH_EX_SUKUNA"&&barrageN>=10;
   const ariseMode=id==="CH_EX_JINWOO"&&barrageN>=9;
   let total=0;const shots=[];
   hits.forEach(h=>{
@@ -3442,7 +3284,7 @@ function playerPhase(){
     barId:"hpFoe",barTid:"hpFoeT",defMax:bt.es.hp,
     defHpStart:bt.eHp+total,defHpEnd:eHpNext,
     shots,total,crit,purple,
-    ranton,domainStrike,shrineMode,ariseMode,barrageN,galaxy,
+    ranton,domainStrike,ariseMode,barrageN,galaxy,
     onAnimEnd:foeDead?foeDownCb:null,
     recharge:(b)=>{if(!bt)return;bt.pStun=b.selfStun;bt.pDrTurns=b.selfDrTurns||b.selfStun;bt.pDr=b.selfDr||0;setTimeout(()=>floatText(".fighter.me","RECHARGE","miss"),1200);}
   });
@@ -3463,13 +3305,13 @@ function playerPhase(){
     if(!foeDead)setTimeout(foeDownCb,620);
     return;
   }
-  schedPhase(galaxy?GALAXY.total+160:shrineMode?2400:ariseMode?2200:domainStrike?1700:ranton?MADARA_T.total+160:1000,enemyPhase);
+  schedPhase(galaxy?GALAXY.total+160:ariseMode?2200:domainStrike?1700:ranton?MADARA_T.total+160:1000,enemyPhase);
 }
 function enemyPhase(){
   if(!bt||bt.over)return;
   const id=bt.eq.char,fx=resolveFx(bt.eq,bt.efx),t=bt.turn;
   const efx=bt.efx||{};
-  let eDomain=false,eShrine=false,eArise=false,eranton=false,eGalaxy=false;
+  let eDomain=false,eArise=false,eranton=false,eGalaxy=false;
   if(bt.eStun>0){
     bt.eStun--;
     anim(".fighter.foe","hit",true);
@@ -3506,7 +3348,6 @@ function enemyPhase(){
     if(efx.barrage&&Math.random()*100<efx.barrage.chance){const n=efx.barrage.min+Math.floor(Math.random()*(efx.barrage.max-efx.barrage.min+1));const bm=efx.barrage.mult||1;if(bm!==1){eHits.length=0;for(let i=0;i<n;i++)eHits.push({mult:bm});}else{while(eHits.length<n)eHits.push({mult:1});}eBarrageN=eHits.length;}
     if(eranton&&!eBarrageN)eBarrageN=eHits.length;
     if(efx.domain&&bt.eid==="CH_EX_GOJO"&&Math.random()*100<(efx.domain.chance||100)){const dn=efx.domain.min||10,dm=(efx.domain.mult!=null?efx.domain.mult:.3);eHits.length=0;for(let i=0;i<dn;i++)eHits.push({mult:dm});eBarrageN=dn;ecrit=false;epurple=false;eranton=false;eDomain=true;}
-    eShrine=bt.eid==="CH_EX_SUKUNA"&&eBarrageN>=10;
     eArise=bt.eid==="CH_EX_JINWOO"&&eBarrageN>=9;
     eGalaxy=bt.eid==="CH_ETERNAL_DRAGON"&&epurple;
     if(eGalaxy){const m=eHits[eHits.length-1].mult;eHits.length=0;eHits.push({mult:m});eBarrageN=0;}
@@ -3528,7 +3369,7 @@ function enemyPhase(){
       barId:"hpMe",barTid:"hpMeT",defMax:bt.pMax,
       defHpStart:meStart,defHpEnd:Math.max(0,bt.pHp),
       shots:eShots,total:etotal,crit:ecrit,purple:epurple,
-      ranton:eranton,domainStrike:eDomain,shrineMode:eShrine,ariseMode:eArise,barrageN:eBarrageN,galaxy:eGalaxy,galaxy:eGalaxy,
+      ranton:eranton,domainStrike:eDomain,ariseMode:eArise,barrageN:eBarrageN,galaxy:eGalaxy,galaxy:eGalaxy,
       onAnimEnd:pDead?deathStep:null,
       recharge:(b)=>{if(!bt)return;bt.eStun=b.selfStun;setTimeout(()=>floatText(".fighter.foe","RECHARGE","miss"),1200);}
     });
@@ -3542,7 +3383,7 @@ function enemyPhase(){
   }
   if(domainOn){bt.domainNow=false; setTimeout(domainEndFx,900);}
   bt.turn++;
-  schedPhase(bt.justTagged?2700:(eGalaxy?GALAXY.total+160:eShrine?2400:eArise?2200:eDomain?1700:eranton?MADARA_T.total+160:1000),playerPhase);
+  schedPhase(bt.justTagged?2700:(eGalaxy?GALAXY.total+160:eArise?2200:eDomain?1700:eranton?MADARA_T.total+160:1000),playerPhase);
 }
 function endBattle(win){
   if(bt.over)return;
@@ -4026,7 +3867,6 @@ function raidStep(){
   if(ranton&&!barrageN)barrageN=hits.length;
   // DOMAIN aktif: serangan jadi 10× barrage @30% ATK
   if(domainActive){hits.length=0;const dn=fx.domain.min||10,dm=(fx.domain.mult!=null?fx.domain.mult:0.3);for(let i=0;i<dn;i++)hits.push(dm);barrageN=dn;crit=false;purple=false;ranton=false;}
-  const shrineMode=id==="CH_EX_SUKUNA"&&barrageN>=10;
   const ariseMode=id==="CH_EX_JINWOO"&&barrageN>=9;
   /* Galaxy Roar = satu semburan laser: seluruh damage ditumpuk ke satu sambaran agar jatuh
      bersamaan dengan ledakan di galaxyRoarFx (GALAXY.hit), bukan di awal animasi. */
@@ -4034,29 +3874,25 @@ function raidStep(){
   if(galaxyMode){const m=hits[hits.length-1];hits.length=0;hits.push(m);barrageN=0;}
   let total=0;hits.forEach(m=>total+=Math.round(dmg*m));
   anim(".fighter.me","lunge-r");
-  const ownSound=id==="CH_EX_GOJO"||id==="CH_EX_MADARA"||id==="CH_EX_SUKUNA"||id==="CH_EX_JINWOO"||(id==="CH_ETERNAL_DRAGON"&&purple);
+  const ownSound=id==="CH_EX_GOJO"||id==="CH_EX_MADARA"||id==="CH_EX_JINWOO"||(id==="CH_ETERNAL_DRAGON"&&purple);
   if(!ownSound)swing();
   const setRaidBar=hp=>{const v=Math.max(0,hp);const p=Math.max(0,Math.min(100,v/raid.max*100));const b=document.getElementById("hpRaid");if(b)b.style.width=p+"%";const tt=document.getElementById("hpRaidT");if(tt)tt.textContent=fmt(v)+" / "+fmt(raid.max);};
   /* panjang rantai animasi hit ronde ini, dihitung SINKRON (di depan setTimeout) supaya cabang kematian
      bisa menunggu sambaran terakhir selesai — bukan memotong getar + angkanya lewat guard raid.over */
-  const rHstep=(domainActive||shrineMode)?80:160;
+  const rHstep=domainActive?80:160;
   const rMd=ranton&&id==="CH_EX_MADARA";
   const rChainEnd=(rMd?MADARA_T.slash+Math.max(0,hits.length-1)*MADARA_T.step+40:180+Math.max(0,hits.length-1)*rHstep)+520;
   setTimeout(()=>{
     if(domainActive&&raid&&!raid.over){document.querySelectorAll("body>.domvoid").forEach(e=>e.remove());domainExpansionFx(id);domainVoid();setTimeout(()=>floatText(".fighter.me","DOMAIN EXPANSION","crit"),220);}
-    if(shrineMode){
-      malevolentShrineFx(null,id);malevolentShrine();
-      floatText(".fighter.foe","MALEVOLENT SHRINE","crit");
-    }
     if(ariseMode&&raid&&!raid.over){armyOfShadowsFx(null,id);jinwooDashFx();floatText(".fighter.foe","ARMY OF SHADOWS","crit");}
     const susStart=(ranton&&id==="CH_EX_MADARA"&&raid&&!raid.over)?madaraTensaFx(".fighter.me",".fighter.foe",barrageN,id):0;
     {
-      const hstep=(domainActive||shrineMode)?80:160;
+      const hstep=domainActive?80:160;
       const susDelay=susStart;
       const md=ranton&&id==="CH_EX_MADARA";
       const dlyAt=i=> galaxyMode ? GALAXY.hit : md ? (susDelay+i*MADARA_T.step) : (i*hstep+susDelay);
       let rShown=raid.hp+total,rBarEnd=0;const rEndHp=raid.hp;
-      const ultBarrage=(domainActive||shrineMode||ariseMode||md);
+      const ultBarrage=(domainActive||ariseMode||md);
       const jwLag=(id==="CH_EX_JINWOO"&&barrageN&&!domainActive)?170:0;
       hits.forEach((m,i)=>{
         const dl=dlyAt(i),ft=dl+(md?40:0);
@@ -4067,14 +3903,13 @@ function raidStep(){
         const dd=Math.round(dmg*m);rShown-=dd;rBarEnd=Math.max(rBarEnd,ft);const stepHp=Math.max(0,rShown);
         setTimeout(()=>floatText(".fighter.foe","-"+fmt(dd),(crit&&i===hits.length-1)?"crit":""),ft);
         setTimeout(()=>setRaidBar(stepHp),ft);
-        if(barrageN&&!domainActive){if(id==="CH_EX_SUKUNA")setTimeout(()=>sukunaFx(".fighter.foe",crit&&i===barrageN-1,i<barrageN-1),i*hstep);else if(id==="CH_EX_JINWOO")setTimeout(()=>ariseStrikeFx(i,barrageN),i*hstep+170);else if(id!=="CH_EX_MADARA")setTimeout(()=>cleaveFx(".fighter.foe",false,true),i*hstep);}
+        if(barrageN&&!domainActive){if(id==="CH_EX_JINWOO")setTimeout(()=>ariseStrikeFx(i,barrageN),i*hstep+170);else if(id!=="CH_EX_MADARA")setTimeout(()=>cleaveFx(".fighter.foe",false,true),i*hstep);}
       });
       setTimeout(()=>setRaidBar(rEndHp),rBarEnd+520);
-      if(barrageN>1)setTimeout(()=>floatText(".fighter.foe",(domainActive?"UNLIMITED VOID ×":shrineMode?"SHRINE ×":ariseMode?"ARISE ×":md?"TENSA ×":"CLEAVE ×")+barrageN,"crit"),md?MADARA_T.slash:320);
+      if(barrageN>1)setTimeout(()=>floatText(".fighter.foe",(domainActive?"UNLIMITED VOID ×":ariseMode?"ARISE ×":md?"TENSA ×":"CLEAVE ×")+barrageN,"crit"),md?MADARA_T.slash:320);
       else if(hits.length>1&&!ranton)setTimeout(()=>floatText(".fighter.foe","DOUBLE!","crit"),260);
       if(total>0&&!barrageN){
-        if(id==="CH_EX_SUKUNA")sukunaFx(".fighter.foe",crit);
-        else if(id==="CH_EX_GOJO"){if(purple){hollowPurpleFx(true);}else{reversalRedFx(".fighter.foe");}}
+        if(id==="CH_EX_GOJO"){if(purple){hollowPurpleFx(true);}else{reversalRedFx(".fighter.foe");}}
         else if(id==="CH_EX_MADARA"){madaraFx(".fighter.foe",crit);}
         else if(id==="CH_ETERNAL_DRAGON"){if(purple){galaxyRoarFx(".fighter.me",".fighter.foe",crit);}else{cleaveFx(".fighter.foe",crit,true);}}
         else cleaveFx(".fighter.foe",crit,true);
@@ -4092,7 +3927,7 @@ function raidStep(){
     return;
   }
   if(domainActive) setTimeout(domainEndFx,1500);
-  raid.timer=setTimeout(raidStep,shrineMode?2600:ariseMode?2200:domainActive?1900:ranton?MADARA_T.total+260:galaxyMode?GALAXY.total+260:1100);
+  raid.timer=setTimeout(raidStep,ariseMode?2200:domainActive?1900:ranton?MADARA_T.total+260:galaxyMode?GALAXY.total+260:1100);
 }
 function raidFinisher(done){
   if(!raid||raid.over){ if(done)done(); return; }
@@ -4417,7 +4252,7 @@ function renderSettings(){
 function stopBattleLoop(){ if(bt){ if(bt.timer)clearTimeout(bt.timer); bt=null; } if(fightTimer){ clearTimeout(fightTimer); fightTimer=null; } document.getElementById("overlay").classList.remove("show"); }
 function render(){
   try {
-    if(!bt&&!raid)document.querySelectorAll("body>.domvoid,body>.shrinefx,body>.hpfx,body>.ebfx,body>.eb-flash").forEach(e=>e.remove());
+    if(!bt&&!raid)document.querySelectorAll("body>.domvoid,body>.hpfx,body>.ebfx,body>.eb-flash").forEach(e=>e.remove());
     renderShell();
     const r=route();
     if(r==="#/")renderHome();
