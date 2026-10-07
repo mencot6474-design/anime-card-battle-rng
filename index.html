@@ -172,6 +172,38 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .bp-soon-ic{font-size:52px;opacity:.5;}
 .bp-soon-t{font-family:"Barlow Condensed";font-weight:800;font-size:22px;letter-spacing:.12em;color:var(--text);}
 .bp-soon-s{font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.24em;opacity:.6;}
+/* ====== Tab TREE: pohon skill, root tengah, cabang LUCK | SPEED menjalar ====== */
+.bp-body.tree{overflow-y:auto;align-items:stretch;}
+.st-spbar{flex:0 0 auto;text-align:center;font-family:"Barlow Condensed";font-weight:700;font-size:14px;letter-spacing:.06em;color:var(--muted);padding:2px 0 12px;}
+.st-spbar strong{color:#5eead4;font-size:18px;margin:0 4px;}
+.st-root{flex:0 0 auto;display:flex;justify-content:center;margin-bottom:6px;}
+.st-cols{display:flex;gap:16px;flex:1;min-height:0;align-items:flex-start;}
+.st-col{flex:1;display:flex;flex-direction:column;gap:10px;border:1px solid var(--line2);border-radius:14px;padding:12px;background:linear-gradient(160deg,#171012,#0d0a0c);}
+.st-col-h{font-family:"Barlow Condensed";font-weight:800;font-size:15px;letter-spacing:.08em;display:flex;align-items:center;gap:7px;}
+.st-col.luck .st-col-h{color:#5eead4;}
+.st-col.speed .st-col-h{color:#fcd34d;}
+.st-col-ic{font-size:18px;}
+.st-chain{display:flex;flex-direction:column;gap:10px;position:relative;}
+.st-chain::before{content:"";position:absolute;left:50%;top:6px;bottom:6px;width:2px;transform:translateX(-50%);background:linear-gradient(var(--line2),transparent);z-index:0;}
+.st-col.luck .st-chain::before{background:linear-gradient(#5eead4,#25403b);}
+.st-col.speed .st-chain::before{background:linear-gradient(#fcd34d,#4a3c14);}
+.st-col-cap{font-size:11px;color:var(--muted);text-align:center;}
+.st-node{position:relative;z-index:1;min-height:62px;border:2px solid var(--line2);border-radius:12px;background:var(--panel2);padding:9px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:.14s;}
+.st-node .st-name{font-family:"Barlow Condensed";font-weight:800;font-size:14px;letter-spacing:.05em;color:#fff;}
+.st-node .st-gain{font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.04em;}
+.st-col.luck .st-gain{color:#5eead4;}
+.st-col.speed .st-gain{color:#fcd34d;}
+.st-node .st-cost{font-family:"Barlow Condensed";font-weight:800;font-size:11px;letter-spacing:.04em;color:var(--muted);}
+.st-node.st-avail{border-color:var(--cyan);box-shadow:0 0 0 1px var(--cyan),0 0 16px rgba(56,183,255,.35);}
+.st-node.st-avail:hover{transform:scale(1.05);}
+.st-node.st-avail .st-cost{color:var(--cyan);}
+.st-node.st-owned{border-color:#39d98a;background:linear-gradient(160deg,#123526,#0d1f18);}
+.st-node.st-owned .st-cost{color:#39d98a;}
+.st-node.st-poor{opacity:.85;}
+.st-node.st-poor .st-cost{color:#f87171;}
+.st-node.st-locked{opacity:.42;cursor:not-allowed;}
+.st-node.st-root{min-height:54px;max-width:160px;border-radius:14px;border-color:var(--line2);background:linear-gradient(160deg,#1b1320,#100a12);}
+.st-node.st-root .st-name{color:#c4b5fd;}
 .bp-item{border:1px solid var(--line2);border-radius:14px;background:linear-gradient(160deg,#171012,#0d0a0c);padding:14px 12px;text-align:center;}
 .bp-item.empty{opacity:.5;}
 .bpi-icon{font-size:34px;line-height:1;}
@@ -1392,6 +1424,8 @@ body.battle-full .stat svg{flex:none}
     <div class="modal-title">PLAYER PROFILE</div>
     <div class="modal-body">
       <div class="stat-row"><span class="stat-lab">LEVEL</span><span class="stat-val" id="plLv">1</span></div>
+      <div class="stat-row"><span class="stat-lab">EXP</span><span class="stat-val" id="plExp">0 / 1000</span></div>
+      <div class="stat-row"><span class="stat-lab">SKILL POINT</span><span class="stat-val" id="plSp" style="color:#5eead4">0</span></div>
       <div class="stat-row"><span class="stat-lab">TOTAL LUCK</span><span class="stat-val" id="plLuck" style="color:var(--cyan)">1.0x</span></div>
       <div class="stat-row"><span class="stat-lab">ROLL SPEED</span><span class="stat-val" id="plSpeed">1.0x</span></div>
     </div>
@@ -1542,7 +1576,7 @@ function rarityText(tier,chance){return "1 in "+(chance||chanceOf(tier));}
    SHINY ×2, mutasi ×MUT_MULT (gold 5 / rainbow 10 / secret 25). Mis. secret dari kartu 800k = 1 in 20M. */
 function effChance(charId,mut,shiny){const c=CARDS[charId]||{};const ch=c.chance||chanceOf(c.tier);return ch*(shiny?SHINY_MULT:1)*(MUT_MULT[mut]||1);}
 // Total luck = (base + flat) × (1 + percent). Base = stat pemain, Flat dari skill tree/artifact/pet, Percent dari artifact/pet.
-function totalLuck(){const p=state?.player||{};const base=p.luckBase??p.luck??1;const flat=p.luckFlat||0;const pct=p.luckPercent||0;return (base+flat)*(1+pct)*weatherLuckMult();}
+function totalLuck(){const p=state?.player||{};const base=p.luckBase??p.luck??1;const flat=(p.luckFlat||0)+treeLuckFlat();const pct=p.luckPercent||0;return (base+flat)*(1+pct)*weatherLuckMult();}
 // Hitung effective chance dari result roll (setelah flat luck division)
 function effChanceFromResult(result){if(!result)return null;return Math.ceil(result.effChance/totalLuck());}
 // Chance yang ditampilkan ke user = base × statMult ÷ totalLuck.
@@ -1755,6 +1789,41 @@ function betterWeather(a,b){if(!a)return b;if(!b)return a;return weatherRank(a)<
 function activeWeatherId(){if(!state||!state.weather)return null;if(Date.now()>=state.weather.endsAt){state.weather=null;return null;}return state.weather.id;}
 function weatherLuckMult(){const id=activeWeatherId();return id?WEATHER[id].luckBonus:1;}
 function weatherSpeedMult(){const id=activeWeatherId();return id?WEATHER[id].speedBonus:1;}
+/* ====== SKILL TREE: 1 SP tiap naik LV. SATU pohon, DUA cabang (LUCK & SPEED).
+   Node nyambung dari ROOT -> bisa ngocor satu cabang atau bagi dua; SP = tradeoff.
+   luck nambah luckFlat, speed nambah pengali roll-speed permanen (tetep kena cap 5x). ====== */
+const TREE_NODES=[
+  {id:"root",  branch:"root", tier:0,name:"FONDASI",       cost:0,luck:0,   speed:0,  req:[],                      desc:"Titik awal pohon skill."},
+  {id:"lk1",   branch:"luck", tier:1,name:"PEKA",          cost:1,luck:0.2, speed:0,  req:["root"],                desc:"Mata mulai tajam cari yang langka."},
+  {id:"lk2",   branch:"luck", tier:2,name:"TERLIHAT",      cost:2,luck:0.5, speed:0,  req:["lk1"],                 desc:"Peluang kartu bagus naik."},
+  {id:"lk3",   branch:"luck", tier:3,name:"MENTARI",       cost:3,luck:1.0, speed:0,  req:["lk2"],                 desc:"Rezeki mulai ngalir."},
+  {id:"lk4",   branch:"luck", tier:4,name:"BERTUAH",       cost:4,luck:2.0, speed:0,  req:["lk3"],                 desc:"Tuaian hoki melimpah."},
+  {id:"lk5",   branch:"luck", tier:5,name:"MUARA REZEKI",  cost:6,luck:4.0, speed:0,  req:["lk4"],                 desc:"Semua aliran hoki bermuara ke lo."},
+  {id:"sp1",   branch:"speed",tier:1,name:"RINGAN",        cost:1,luck:0,   speed:0.3,req:["root"],                desc:"Roll mulai ngebut."},
+  {id:"sp2",   branch:"speed",tier:2,name:"CEPAT",         cost:2,luck:0,   speed:0.4,req:["sp1"],                 desc:"Jeda antar-roll mengecil."},
+  {id:"sp3",   branch:"speed",tier:3,name:"PETIR",         cost:3,luck:0,   speed:0.5,req:["sp2"],                 desc:"Sambaran roll super cepat."},
+  {id:"sp4",   branch:"speed",tier:4,name:"KILAT",         cost:4,luck:0,   speed:0.5,req:["sp3"],                 desc:"Nyaris gak kerasa nunggu."},
+  {id:"sp5",   branch:"speed",tier:5,name:"CAHAYA",        cost:6,luck:0,   speed:0.8,req:["sp4"],                desc:"Mentok speed cap 5x lebih gampang."},
+];
+const TREE=Object.fromEntries(TREE_NODES.map(n=>[n.id,n]));
+function treeOwned(id){return !!(state&&state.player&&state.player.tree&&state.player.tree[id]);}
+function treeLuckFlat(){let s=0;for(const n of TREE_NODES){if(treeOwned(n.id))s+=(n.luck||0);}return s;}
+function playerSpeedMult(){let s=1;for(const n of TREE_NODES){if(treeOwned(n.id))s+=(n.speed||0);}return s;}
+function treeCanBuy(id){
+  const n=TREE[id];if(!n||id==="root")return false;
+  if(treeOwned(id))return false;
+  if(!n.req.every(r=>r==="root"||treeOwned(r)))return false;
+  return (state&&state.player&&state.player.sp||0)>=n.cost;
+}
+function treeBuy(id){
+  const n=TREE[id];if(!n||id==="root")return{ok:false,reason:"NODE"};
+  if(!state||!state.player)return{ok:false,reason:"NOSTATE"};
+  const p=state.player;p.tree=p.tree||{};
+  if(p.tree[id])return{ok:false,reason:"OWNED"};
+  if(!n.req.every(r=>r==="root"||p.tree[r]))return{ok:false,reason:"PREQ"};
+  if((p.sp||0)<n.cost)return{ok:false,reason:"SP"};
+  p.sp-=n.cost;p.tree[id]=true;save();return{ok:true,node:n};
+}
 /* Buka 1 Weather Potion -> roll TERJAMIN 1 weather. Pity no-downgrade: yang ke-roll cuma weather
    selevel atau LEBIH BAGUS dari weather terbaik yang pernah didapat (state.weatherBest).
    Kalau window lama masih aktif, dia ke-ganti (re-roll) tapi nggak pernah turun kelas. */
@@ -1930,8 +1999,8 @@ function startRollAnimation(luck, speedMultiplier = 1) {
   // Jika luck tidak diberikan, pakai totalLuck() dari state (base+flat)*(1+percent).
   const appliedLuck = (typeof luck === "number" && luck > 0) ? luck : totalLuck();
   rollState.luck = appliedLuck;
-  // Clamp speed multiplier → jangan pernah di bawah RNG_ROLL_MIN (300ms).
-  rollState.speedMultiplier = Math.max(1, Math.min(speedMultiplier*weatherSpeedMult(), RNG_ROLL_MAX_MULT));
+  // Clamp speed multiplier → jangan pernah di bawah RNG_ROLL_MIN (300ms). Speed pohon + cuaca, cap 5x.
+  rollState.speedMultiplier = Math.max(1, Math.min(speedMultiplier*playerSpeedMult()*weatherSpeedMult(), RNG_ROLL_MAX_MULT));
   rollState.active = true;
 
   const rollBtn = document.getElementById('rollBtn');
@@ -2018,25 +2087,32 @@ function showRollResult(result) {
 // Modal profil: open/close + update data
 function openProfileModal(){console.log('Opening modal...');const b=document.getElementById("profBackdrop");const m=document.getElementById("profModal");if(b){b.classList.add("show");b.style.display="block";}if(m){m.classList.add("show");m.style.display="flex";renderProfile();}console.log('State:',state,'Player:',state?.player,'Coins:',state?.coins);}
 function closeProfileModal(){const b=document.getElementById("profBackdrop");const m=document.getElementById("profModal");if(b){b.classList.remove("show");b.style.display="none";}if(m){m.classList.remove("show");m.style.display="none";}}
-function renderProfile(){const pl=document.getElementById("plLv"),pll=document.getElementById("plLuck"),pcs=document.getElementById("plSpeed");
-  // Read from DOM (already updated by renderShell) or fallback to state
-  const lvlEl=document.getElementById("tbLvl");const lvText=lvlEl?lvlEl.textContent.replace(/[^0-9]/g,""):"1";
-  if(pl)pl.textContent=lvText||1;
+function renderProfile(){
   const p=state?.player||{};
-  const base=p.luckBase??1, flat=p.luckFlat??0, pct=p.luckPercent??0;
+  const lv=p.lv||state.playerLv||1;
+  const xpNeed=lv*1000, curExp=p.exp||0;
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set("plLv",lv);
+  set("plExp",`${fmt(curExp)} / ${fmt(xpNeed)}`);
+  set("plSp",(p.sp||0));
+  const base=p.luckBase??1, flat=p.luckFlat??0, pct=p.luckPercent??0, treeF=treeLuckFlat();
   const total=totalLuck();
-  if(pll){
-    let txt=total.toFixed(1)+"x";
-    if(flat>0||pct>0){
-      const parts=[];
-      parts.push("Base "+base.toFixed(1));
-      if(flat>0)parts.push("Flat +"+flat.toFixed(1));
-      if(pct>0)parts.push("Pct +"+Math.round(pct*100)+"%");
-      txt+=" ("+parts.join(" · ")+")";
-    }
-    pll.textContent=txt;
-  }
-  console.log('[PROFILE] Luck breakdown:',{base,flat,pct,total});
+  const wm=weatherLuckMult();
+  let ltxt=total.toFixed(1)+"x";
+  const parts=[];
+  parts.push("Base "+base.toFixed(1));
+  if(treeF>0)parts.push("Tree +"+treeF.toFixed(1));
+  if(flat>0)parts.push("Flat +"+flat.toFixed(1));
+  if(pct>0)parts.push("Pct +"+Math.round(pct*100)+"%");
+  if(wm>1)parts.push("Cuaca ×"+wm.toFixed(1));
+  if(treeF>0||flat>0||pct>0||wm>1)ltxt+=" ("+parts.join(" · ")+")";
+  set("plLuck",ltxt);
+  const spm=playerSpeedMult(), swm=weatherSpeedMult();
+  const eff=Math.min(spm*swm,RNG_ROLL_MAX_MULT);
+  const sparts=[];
+  if(spm>1)sparts.push("Tree ×"+spm.toFixed(1));
+  if(swm>1)sparts.push("Cuaca ×"+swm.toFixed(1));
+  set("plSpeed",eff.toFixed(1)+"x"+(sparts.length?" ("+sparts.join(" · ")+")":""));
 }
 
 function hideRollResult() {
@@ -2091,12 +2167,13 @@ function bpLock(stackId){const s=state.stacks.find(x=>x.id===stackId);if(!s)retu
 function renderBackpackPanel(){
   const panel=document.getElementById('backpackPanel');if(!panel)return;
   bpsHoverBind();bpsHoverHide();
-  const TABS=[{k:'deck',l:'DECK'},{k:'item',l:'ITEM'},{k:'artefact',l:'ARTEFAK'},{k:'pet',l:'PET'}];
+  const TABS=[{k:'deck',l:'DECK'},{k:'tree',l:'TREE'},{k:'item',l:'ITEM'},{k:'artefact',l:'ARTEFAK'},{k:'pet',l:'PET'}];
   const tabbar=`<div class="bp-tabs">${TABS.map(t=>`<button class="bp-tab${bpTab===t.k?' on':''}" onclick="bpSetTab('${t.k}')">${t.l}</button>`).join('')}</div>`;
   const header=`<div class="backpack-header"><h2>BACKPACK</h2>
     <div class="backpack-stats"><span>POWER <strong>${fmt(deckTotalPower())}</strong></span><span>KARTU <strong>${fmt(state.stacks.reduce((a,s)=>a+(s.count||1),0))}</strong></span></div>
     <button class="backpack-close" onclick="toggleBackpack()">&times;</button></div>${tabbar}`;
   const soon=lbl=>`<div class="bp-body"><div class="bp-soon"><div class="bp-soon-ic">${lbl==='ARTEFAK'?'◈':'🐾'}</div><div class="bp-soon-t">${lbl}</div><div class="bp-soon-s">SEGERA HADIR</div></div></div>`;
+  if(bpTab==='tree'){panel.innerHTML=header+`<div class="bp-body tree">${renderBpTree()}</div>`;return;}
   if(bpTab==='item'){panel.innerHTML=header+`<div class="bp-body">${renderBpItems()}</div>`;return;}
   if(bpTab==='artefact'){panel.innerHTML=header+soon('ARTEFAK');return;}
   if(bpTab==='pet'){panel.innerHTML=header+soon('PET');return;}
@@ -2162,6 +2239,47 @@ function bpBuyPotion(){
   const r=buyWeatherPotion(WEATHER_POTION_PRICE);
   if(r.ok){beep(660,.12,"sine",.08);renderShell();renderBackpackPanel();}
   else toast("Koin kurang","KOIN KURANG","#f87171");
+}
+/* ====== TAB TREE: pohon skill. Root di tengah, dua cabang menjalar (LUCK kiri | SPEED kanan).
+   SP didapet tiap naik LV; node butuh node sebelumnya di cabang yang sama. ====== */
+function stNodeHtml(n,sp){
+  const owned=treeOwned(n.id);
+  const preqMet=n.req.every(r=>r==="root"||treeOwned(r));
+  const affordable=sp>=n.cost;
+  const state=owned?'owned':(preqMet&&affordable?'avail':(preqMet?'poor':'locked'));
+  const gain=n.branch==='luck'?('+'+n.luck.toFixed(1)+' LUCK'):('+'+n.speed.toFixed(1)+'× SPEED');
+  return `<div class="st-node st-${n.branch} st-${state}" onclick="bpTreeBuy('${n.id}')" title="${n.desc}">
+    <div class="st-name">${n.name}</div>
+    <div class="st-gain">${n.branch==='root'?'AKAR':gain}</div>
+    ${n.branch==='root'?'':`<div class="st-cost">${owned?'✓':n.cost+' SP'}</div>`}
+  </div>`;
+}
+function renderBpTree(){
+  const sp=(state&&state.player&&state.player.sp)||0;
+  const luck=TREE_NODES.filter(n=>n.branch==='luck');
+  const spd=TREE_NODES.filter(n=>n.branch==='speed');
+  const col=(branch,title,ic,list,cap)=>`<div class="st-col ${branch}">
+      <div class="st-col-h"><span class="st-col-ic">${ic}</span>${title}</div>
+      <div class="st-chain">${list.map(n=>stNodeHtml(n,sp)).join('')}</div>
+      <div class="st-col-cap">${cap}</div>
+    </div>`;
+  return `<div class="st-spbar">SKILL POINT <strong>${sp}</strong>${sp>0?' — ketuk node buat naikkin':' — naikkin LV buat dapet SP'}</div>
+    <div class="st-root">${stNodeHtml(TREE.root,sp)}</div>
+    <div class="st-cols">
+      ${col('luck','CABANG LUCK','🍀',luck,'Total luck sekarang: '+totalLuck().toFixed(1)+'×')}
+      ${col('speed','CABANG ROLL SPEED','⚡',spd,'Speed sekarang: '+playerSpeedMult().toFixed(1)+'× (cap 5×)')}
+    </div>`;
+}
+function bpTreeBuy(id){
+  const r=treeBuy(id);
+  if(!r.ok){
+    const msg=r.reason==='SP'?'SP kurang':r.reason==='PREQ'?'Buka node sebelumnya dulu':r.reason==='OWNED'?'Udah dibuka':'-';
+    beep(200,.08,'square',.06);toast(msg,'GAK BISA','#f87171');return;
+  }
+  beep(680,.12,'triangle',.09);setTimeout(()=>beep(900,.12,'triangle',.08),90);
+  const g=r.node.branch==='luck'?(r.node.luck.toFixed(1)+' LUCK'):(r.node.speed.toFixed(1)+'× SPEED');
+  toast(r.node.name,'+'+g,r.node.branch==='luck'?'#5eead4':'#fcd34d');
+  renderShell();renderBackpackPanel();
 }
 
 
@@ -2408,7 +2526,7 @@ function freshState(){
   const start=s0?{id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,fav:false,lock:false,mut:"none",shiny:false,trait:"none",count:1}:null;
   const newState={coins:1000,raidTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},tower:{floor:1,best:0},
     cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],history:[],battle:null,
-    player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1},weather:null,weatherBest:null,potions:0};
+    player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1,sp:0,tree:{}},weather:null,weatherBest:null,potions:0};
   console.log('[FRESH STATE] Initialized player:',newState.player);
   return newState;
 }
@@ -2423,7 +2541,7 @@ function loadStateFor(name){
   // MIGRATE OLD STATE: pastikan player object + format luck baru (base+flat+percent)
   if(!state.player){
     console.log('[MIGRATE] Old state detected, creating player object');
-    state.player={luckBase:1,luckFlat:0,luckPercent:0,exp:state.playerExp||0,lv:state.playerLv||1};
+    state.player={luckBase:1,luckFlat:0,luckPercent:0,exp:state.playerExp||0,lv:state.playerLv||1,sp:0,tree:{}};
   } else if(typeof state.player.luckBase!=="number"){
     // Format lama: {luck:N} -> migrasi ke luckBase, hapus field lama
     const legacyLuck=typeof state.player.luck==="number"?state.player.luck:1;
@@ -2433,6 +2551,9 @@ function loadStateFor(name){
     delete state.player.luck;
     console.log('[MIGRATE] Legacy luck',legacyLuck,'-> luckBase');
   }
+  // MIGRATE: skill tree (SP + node yang dibeli)
+  if(typeof state.player.sp!=="number")state.player.sp=0;
+  if(!state.player.tree||typeof state.player.tree!=="object")state.player.tree={};
   console.log('[LOAD STATE] Initial player state:',state.player);
   
   if(!state.stacks||!state.stacks.length){const st=freshState();state.stacks=st.stacks;state.equippedId=st.equippedId;}
@@ -2864,9 +2985,9 @@ function renderShell(){
   if(state&&state.player){
     const initialExp=state.player.exp||0;
     console.log('[RENDERSHELL] Starting check - player state:',{exp:initialExp,lv:state.player.lv,totalLuck:totalLuck()});
-    // Level up check: EXP per level = playerLv * 1000, naik LV setiap penuh
+    // Level up check: EXP per level = playerLv * 1000, naik LV setiap penuh -> +1 SP.
     while((state.player.exp||0)>=state.player.lv*1000){
-      state.player.exp-=state.player.lv*1000;state.player.lv=(state.player.lv||0)+1;state.playerLv=state.player.lv;}
+      state.player.exp-=state.player.lv*1000;state.player.lv=(state.player.lv||0)+1;state.playerLv=state.player.lv;state.player.sp=(state.player.sp||0)+1;}
     const xpNeed=state.player.lv*1000,xpPct=Math.max(0,Math.min(100,Math.round(state.player.exp/xpNeed*100)));
     const tf=document.getElementById("tbXpFill");if(tf)tf.style.width=xpPct+"%";
     const txt=document.getElementById("tbXpText");if(txt)txt.textContent=`${state.player.exp} / ${xpNeed}`;
@@ -2880,6 +3001,7 @@ function renderShell(){
   const tl=document.getElementById("tbLvl");if(tl)tl.textContent="LVL "+state.playerLv;
   const tp=document.getElementById("tbPw");if(tp)tp.innerHTML="&#9889; "+fmt(totalPower());
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.route===route()));
+  try{const pm=document.getElementById("profModal");if(pm&&pm.style.display!=="none"&&pm.style.display!=="")renderProfile();}catch(e){}
   try{renderWeatherDock();startWeatherTick();}catch(e){}
 }
 
