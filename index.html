@@ -1608,6 +1608,7 @@ const STORY_BIBLE={
            snatch:{pct} -> tiap kali kartu ini MENGALAHKAN kartu musuh (foeDown), curi permanen pct% ATK & pct% max HP musuh yang mati lalu tambah ke stat kartu ini (flat, persist antar tag-in via `bt.snatchAtk[a]`/`bt.snatchHp[a]`).
            arise:{pct,turns} -> (Shadow Monarch) saat kartu ini membunuh DAN masih ada gelombang musuh berikutnya (menara), bangkitkan musuh yang mati sebagai BAYANGAN dengan pct% ATK & HP-nya. Bayangan MENGAMBIL-ALIH slot kartu ini (HP asli disimpan di `bt.shadow.retHp/retMax`), menyerang dengan atk bayangan (passive Monarch dimatikan: `fx={}` selama possess) selama `turns` giliran ATAU sampai bayangan tumbang (trySave → endPossession, Monarch balik utuh). State: `bt.shadow`.
            prideOfPrince:{pct} -> (Royal Vanguard) tiap KARTU PARTY JATUH (di `trySave`, setelah revive/lastStand gagal), semua kartu di `bt.fighters` yang punya fx ini dapat `bt.atkBuff[i]+=pct` (permanen buat sisa battle, numpuk). `atkBuff` dipakai playerPhase `atk*(1+atkBuff/100)` — jadi pas Vanguard aktif dia udah lebih kuat. Jalan walau Vanguard lagi nunggu di bench (buff nyimpen di index-nya).
+           regression:{hpPct} -> (Regressor) kill-banked revive. Tiap Regressor BUNUH musuh (di `foeDown`, blok yang sama dgn snatch/arise): `bt.regressCharges[a]++`. Di `trySave` (SETELAH cek shadow, SEBELUM fx.revive): kalau `fx.regression && bt.regressCharges[a]>0` → `regressCharges[a]--`, `bt.pHp=round(bt.pMax*hpPct/100)`, lalu "skill di-refresh" (reset revUsed/standUsed/burstStart=turn/dodgeCount/atkCount/wtCount, re-arm entryGuard/execGuard). return true (bangkit di tempat, gak tag-in). Tiap kebangkitan "bayar" 1 kill → gak abadi. Butuh kill dulu = butuh mode multi-musuh (menara); story 1 musuh gak bisa demo.
        ==================================================== */
     {id:"CH_RULER",name:"RULER",tier:"EX",type:"Absolute",skill:"VENUZDONOA",hp:4787,atk:2394,chance:850000000,art:"assets/cards/art/ruler.webp",
       fx:{revive:1,dmgMult:2,ignoreDef:1,statusImmune:1},
@@ -1641,7 +1642,10 @@ const STORY_BIBLE={
       desc:"Saat membunuh, bangkitkan kartu yang dikalahkan sebagai bayangan dengan 40% dari stat-nya. Bayangan bertarung menggantikan posisi Shadow Monarch selama 2 giliran, atau sampai bayangan tersebut tumbang."},
     {id:"CH_ROYAL_VANGUARD",name:"ROYAL VANGUARD",tier:"UR",type:"Prince",skill:"PRIDE OF THE PRINCE",hp:1781,atk:891,chance:30000000,art:"assets/cards/art/royal-vanguard.png",pos:"center",
       fx:{prideOfPrince:{pct:25}},
-      desc:"Ketika kartu apapun di party-mu mati, Royal Vanguard mendapatkan +25% serangan secara permanen (menumpuk tiap kali ada kartu party yang jatuh)."}
+      desc:"Ketika kartu apapun di party-mu mati, Royal Vanguard mendapatkan +25% serangan secara permanen (menumpuk tiap kali ada kartu party yang jatuh)."},
+    {id:"CH_REGRESSOR",name:"REGRESSOR",tier:"UR",type:"Player",skill:"REGRESSION",hp:1527,atk:764,chance:18000000,art:"assets/cards/art/regressor.png",pos:"center",
+      fx:{regression:{hpPct:40}},
+      desc:"Saat mati, jika Regressor telah membunuh setidaknya satu kartu dalam pertarungan ini, bangkit kembali dengan 40% HP dan skill-nya di-refresh. Setiap kill menyimpan satu 'regression'; tiap kebangkitan menghabiskan satu."}
   ]
 };
 /* ROLL SYSTEM - Pull-based RNG (bukan gacha pool) */
@@ -3287,7 +3291,7 @@ function startBattle(){
   const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   const eid=en.id||null,efx=eid?(PASSIVE_FX[eid]||{}):{};
   if(bt&&bt.timer)clearTimeout(bt.timer);
-  bt={lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),execGuard:new Array(fighters.length).fill(false),wtCount:new Array(fighters.length).fill(0),snatchAtk:new Array(fighters.length).fill(0),snatchHp:new Array(fighters.length).fill(0),rumbling:0,rumblingPct:0,aftermath:false,gumTurns:0,trickNext:false,royalNow:false,gunsNow:false,shadow:null};
+  bt={lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),execGuard:new Array(fighters.length).fill(false),wtCount:new Array(fighters.length).fill(0),snatchAtk:new Array(fighters.length).fill(0),snatchHp:new Array(fighters.length).fill(0),regressCharges:new Array(fighters.length).fill(0),rumbling:0,rumblingPct:0,aftermath:false,gumTurns:0,trickNext:false,royalNow:false,gunsNow:false,shadow:null};
   // BURST: kartu pertama masuk arena langsung dapat boost HP kalau punya fx.burst
   const fx0=resolveFx(eq,efx);
   if(fx0.burst){bt.pMax=Math.round(base.hp*fx0.burst.mult);bt.pHp=bt.pMax;}
@@ -3331,6 +3335,19 @@ function trySave(){
   /* BAYANGAN JATUH: yang mati cuma summoned shadow — Monarch balik utuh, bukan tag-in/kalah */
   if(bt.shadow){endPossession();return true;}
   const a=bt.active,fx=resolveFx(bt.eq,bt.efx);
+  /* REGRESSION (Regressor): mati TAPI punya kill tersimpan → bangkit di hpPct% max HP, habisin 1 charge,
+     & "skill di-refresh": semua flag sekali-per-battle/window kartu ini di-reset biar balik kayak baru */
+  if(fx.regression&&(bt.regressCharges[a]||0)>0){
+    bt.regressCharges[a]--;
+    bt.pHp=Math.max(1,Math.round(bt.pMax*fx.regression.hpPct/100));
+    bt.revUsed[a]=false;bt.standUsed[a]=false;bt.burstStart[a]=bt.turn;
+    bt.dodgeCount[a]=0;bt.dodgeArmed[a]=false;bt.atkCount[a]=0;bt.wtCount[a]=0;
+    if(fx.entryCounter)bt.entryGuard[a]=true;
+    if(fx.executeOnEntry)bt.execGuard[a]=true;
+    setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
+    setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","REGRESSION","heal");},400);
+    return true;
+  }
   if(fx.revive&&!bt.revUsed[a]){
     bt.revUsed[a]=true;bt.pHp=bt.pMax;
     setTimeout(()=>floatText(".fighter.me","REVIVE!","heal"),400);
@@ -3915,7 +3932,7 @@ function startTowerBattle(){
   const fighters=equippedList();if(!fighters.length)fighters.push(equipped());
   const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   if(bt&&bt.timer)clearTimeout(bt.timer);
-  bt={lv:null,tower:true,en:w.en,es:w.es,eq,fighters,eid:w.eid,efx:w.efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:w.es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),snatchAtk:new Array(fighters.length).fill(0),snatchHp:new Array(fighters.length).fill(0),gumTurns:0,trickNext:false,royalNow:false,gunsNow:false,shadow:null};
+  bt={lv:null,tower:true,en:w.en,es:w.es,eq,fighters,eid:w.eid,efx:w.efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:w.es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),snatchAtk:new Array(fighters.length).fill(0),snatchHp:new Array(fighters.length).fill(0),regressCharges:new Array(fighters.length).fill(0),gumTurns:0,trickNext:false,royalNow:false,gunsNow:false,shadow:null};
   schedPhase(700,step);
 }
 function foeDown(){
@@ -3929,6 +3946,8 @@ function foeDown(){
       setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
       setTimeout(()=>{if(bt&&!bt.over){floatText(".fighter.me","SNATCH +"+fmt(sa)+" ATK +"+fmt(sh)+" HP","crit");}},260);
     }
+    /* REGRESSION (Regressor): tiap kill nyimpen 1 'charge' buat bangkit nanti (dipakai di trySave) */
+    if(sfx.regression){bt.regressCharges[a]=(bt.regressCharges[a]||0)+1;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","REGRESSION READY","heal");},300);}
   }
   /* ARISE (Shadow Monarch): setelah membunuh & masih ada gelombang berikutnya, bangkitkan musuh yang baru mati
      sebagai bayangan (40% stat) yang MENGAMBIL-ALIH slot Monarch. HP asli Monarch disimpan buat balik nanti. */
