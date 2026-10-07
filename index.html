@@ -1534,13 +1534,17 @@ const STORY_BIBLE={
            dodgeAtk:{chance,pct,max} -> hindari serangan (chance%), tiap dodge +pct% ATK permanen (stack s/d max)
            everySecond:{mult}   -> tiap serangan GENAP (ke-2,ke-4,..) ×mult damage + tembus damage reduction musuh
            lastStand:{pct}      -> fatal pertama ditahan di 1 HP (sekali) + langsung +pct% ATK
+           styleSwitching:1    -> 4 mode bergilir tiap giliran: TRICKSTER(hindari ser. giliran itu) / SWORDMASTER(dmg x1.5) / ROYALGUARD(dmg masuk x0.5 + counter 30%) / GUNSLINGER(splash +40%)
        ==================================================== */
     {id:"CH_RULER",name:"RULER",tier:"EX",type:"Absolute",skill:"VENUZDONOA",hp:4787,atk:2394,chance:1000000,art:"assets/cards/art/ruler.webp",
       fx:{revive:1,dmgMult:2,ignoreDef:1,statusImmune:1},
       desc:"Saat mati, bangkit dengan 100% HP (sekali). Semua serangan memberikan 2x damage. Efek pengurangan damage musuh diabaikan sepenuhnya. Tidak dapat terkena efek status apapun."},
     {id:"CH_OTHERWORLDLY",name:"OTHERWORLD",tier:"R",type:"Ultra Instinct",skill:"ULTRA INSTINCT: ONE PERCENT",hp:5120,atk:2560,chance:1200000,art:"assets/cards/art/otherworldly-being.png",
       fx:{dodgeAtk:{chance:60,pct:15,max:3},everySecond:{mult:2},lastStand:{pct:15}},
-      desc:"60% kesempatan menghindari serangan apapun. Setiap kali menghindar, mendapat +15% ATK permanen (menumpuk hingga 3 kali). Setiap serangan ke-2 menggunakan Satu Persen kekuatannya: memberikan 2x damage dan mengabaikan pengurangan damage. Pertama kali menerima damage fatal, bertahan dengan 1 HP dan mendapat +15% ATK."}
+      desc:"60% kesempatan menghindari serangan apapun. Setiap kali menghindar, mendapat +15% ATK permanen (menumpuk hingga 3 kali). Setiap serangan ke-2 menggunakan Satu Persen kekuatannya: memberikan 2x damage dan mengabaikan pengurangan damage. Pertama kali menerima damage fatal, bertahan dengan 1 HP dan mendapat +15% ATK."},
+    {id:"CH_DEVIL_HUNTER",name:"DEVIL HUNTER",tier:"UR",type:"Style",skill:"STYLE SWITCHING",hp:4026,atk:2013,chance:1000000,art:"assets/cards/art/devil-hunter.png",
+      fx:{styleSwitching:1},
+      desc:"Setiap giliran berganti mode secara berurutan: TRICKSTER (menghindari serangan musuh pada giliran itu), SWORDMASTER (damage 1.5x), ROYALGUARD (menerima 50% lebih sedikit damage dan membalas 30% dari damage yang diterima), GUNSLINGER (serangan juga menghantam target berikutnya sebesar 40%)."}
   ]
 };
 /* ROLL SYSTEM - Pull-based RNG (bukan gacha pool) */
@@ -3090,7 +3094,7 @@ function startBattle(){
   const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   const eid=en.id||null,efx=eid?(PASSIVE_FX[eid]||{}):{};
   if(bt&&bt.timer)clearTimeout(bt.timer);
-  bt={lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false)};
+  bt={lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),trickNext:false,royalNow:false,gunsNow:false};
   schedPhase(700,step);
 }
 function tagIn(){
@@ -3246,6 +3250,7 @@ function playerPhase(){
   if(!bt||bt.over)return;
   if(bt.turn>300){ endBattle(bt.eHp<=bt.pHp); return; }
   bt.justTagged=false;
+  bt.trickNext=false;bt.royalNow=false;bt.gunsNow=false;
   const id=bt.eq.char,fx=resolveFx(bt.eq,bt.efx),t=bt.turn;
   document.getElementById("turnLabel").innerHTML="TURN<br>"+t;
   if(bt.pStun>0){
@@ -3265,6 +3270,16 @@ function playerPhase(){
   /* SATU PERSEN (Ultra Instinct): tiap serangan GENAP (ke-2, ke-4, ...) = 1% kekuatan penuh → ×mult damage + tembus damage reduction musuh */
   let pen=!!fx.ignoreDef;
   if(fx.everySecond){bt.atkCount[a]++;if(bt.atkCount[a]%2===0){dmgMult*=fx.everySecond.mult;pen=true;setTimeout(()=>floatText(".fighter.me","ONE PERCENT","crit"),220);}}
+  /* STYLE SWITCHING (Devil Hunter): 4 mode bergilir tiap giliran kartu ini menyerang */
+  if(fx.styleSwitching){
+    const STYLES=["TRICKSTER","SWORDMASTER","ROYALGUARD","GUNSLINGER"];
+    const si=bt.styleCount[a]%4;bt.styleCount[a]++;
+    setTimeout(()=>floatText(".fighter.me",STYLES[si],"crit"),120);
+    if(si===0)bt.trickNext=true;
+    else if(si===1)dmgMult*=1.5;
+    else if(si===2)bt.royalNow=true;
+    else if(si===3)bt.gunsNow=true;
+  }
   if(fx.highHpDmg&&bt.pHp>bt.pMax*fx.highHpDmg.above/100)dmgMult*=(1+fx.highHpDmg.bonus/100);
   const hits=[{mult:1}];
   if(fx.double&&Math.random()*100<fx.double)hits.push({mult:1});
@@ -3285,6 +3300,7 @@ function playerPhase(){
   const galaxy=id==="CH_ETERNAL_DRAGON"&&purple;
   if(galaxy){const m=hits[hits.length-1].mult;hits.length=0;hits.push({mult:m});barrageN=0;}
   const ariseMode=id==="CH_EX_JINWOO"&&barrageN>=9;
+  if(bt.gunsNow)hits.push({mult:0.4});
   let total=0;const shots=[];
   hits.forEach(h=>{
     let d=Math.round(atk*dmgMult*h.mult);
@@ -3338,7 +3354,7 @@ function enemyPhase(){
   }
   // DOMAIN aktif ronde ini (Gojo): damage musuh dikurangi 50%
   const domainOn = bt.domainNow;
-  const evade=!!((fx.evasion&&t<=fx.evasion.turns&&Math.random()*100<fx.evasion.chance)||(fx.dodgeAtk&&Math.random()*100<fx.dodgeAtk.chance));
+  const evade=!!((fx.evasion&&t<=fx.evasion.turns&&Math.random()*100<fx.evasion.chance)||(fx.dodgeAtk&&Math.random()*100<fx.dodgeAtk.chance)||bt.trickNext);
   const eVoid=!!(efx.void&&Math.random()*100<efx.void);
   if(evade){
     /* ULTRA INSTINCT: tiap berhasil menghindar → +pct% ATK permanen, stack sampai max (khusus dodgeAtk; evasion biasa gak kepengaruh) */
@@ -3347,7 +3363,7 @@ function enemyPhase(){
       anim(".fighter.foe","lunge-l");
       setTimeout(()=>{madaraLimboFx();floatText(".fighter.me","LIMBO","miss");},220);
     }else{
-      setTimeout(()=>{playDodge();floatText(".fighter.me","DODGE","miss");},200);
+      setTimeout(()=>{playDodge();floatText(".fighter.me",bt.trickNext?"TRICKSTER":"DODGE","miss");},200);
     }
   }else if(eVoid){
     anim(".fighter.foe","lunge-l");
@@ -3371,6 +3387,8 @@ function enemyPhase(){
     eGalaxy=bt.eid==="CH_ETERNAL_DRAGON"&&epurple;
     if(eGalaxy){const m=eHits[eHits.length-1].mult;eHits.length=0;eHits.push({mult:m});eBarrageN=0;}
     let etotal=0;const eShots=eHits.map(h=>{let d=Math.round(eAtk*edmgMult*h.mult);if(bt.pDrTurns>0&&bt.pDr>0){d=Math.round(d*(1-bt.pDr/100));}etotal+=d;return{d};});
+    /* ROYALGUARD: damage masuk dipangkas 50% (dibalas 30% di bawah) */
+    if(bt.royalNow&&etotal>0){eShots.forEach(s=>s.d=Math.round(s.d*0.5));etotal=eShots.reduce((x,s)=>x+s.d,0);}
     if(bt.pDrTurns>0&&bt.pDr>0){bt.pDrTurns--;setTimeout(()=>floatText(".fighter.me","DR aktif","heal"),340);}
     const meStart=bt.pHp;
     bt.pHp-=etotal;
@@ -3397,6 +3415,12 @@ function enemyPhase(){
       const lh=Math.round(etotal*efx.lifesteal/100);bt.eHp=Math.min(bt.es.hp,bt.eHp+lh);
       setTimeout(()=>floatText(".fighter.foe","+"+fmt(lh),"heal"),280);
       setBar("hpFoe","hpFoeT",bt.eHp,bt.es.hp);
+    }
+    /* ROYALGUARD counter: balas 30% dari damage yang baru diterima ke musuh */
+    if(bt.royalNow&&!pDead&&etotal>0){
+      const ctr=Math.round(etotal*0.3);bt.eHp-=ctr;
+      setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","COUNTER -"+fmt(ctr),"crit");setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);}},560);
+      if(bt.eHp<=0){setTimeout(()=>{if(bt&&!bt.over)foeDown();},900);return;}
     }
     if(pDead)return;
   }
@@ -3593,7 +3617,7 @@ function startTowerBattle(){
   const fighters=equippedList();if(!fighters.length)fighters.push(equipped());
   const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   if(bt&&bt.timer)clearTimeout(bt.timer);
-  bt={lv:null,tower:true,en:w.en,es:w.es,eq,fighters,eid:w.eid,efx:w.efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:w.es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false)};
+  bt={lv:null,tower:true,en:w.en,es:w.es,eq,fighters,eid:w.eid,efx:w.efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:w.es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),trickNext:false,royalNow:false,gunsNow:false};
   schedPhase(700,step);
 }
 function foeDown(){
