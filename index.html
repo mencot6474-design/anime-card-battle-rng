@@ -79,32 +79,34 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .tb-chip.tb-luck{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:12px;background:#E1F5FE;color:#01579B;font-size:12px;font-family:"Barlow Condensed";font-weight:700;letter-spacing:.05em;border:1px solid #B3E5FC;}
 .who{font-size:10px;letter-spacing:.18em;color:var(--muted);font-weight:600;white-space:nowrap}
 /* ========== ROLL SYSTEM UI ========== */
-.roll-btn {position:static;width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--purple));border:2px solid var(--line2);box-shadow:0 4px 16px rgba(18,28,38,.35),0 0 0 2px var(--panel);z-index:100;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s;font-size:22px;}
-.roll-btn:hover{transform:scale(1.1);}
+.roll-btn {position:static;width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--cyan),var(--purple));border:1px solid var(--line);box-shadow:0 3px 10px rgba(18,28,38,.25);z-index:100;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s;font-size:20px;}
+.roll-btn:hover{transform:scale(1.08);}
 .roll-btn.active{animation:spin-roll 1.5s linear infinite;}
-.roll-auto-btn{position:static;padding:5px 13px;border-radius:999px;border:2px solid var(--line2);background:var(--panel);color:var(--text);font-family:"Barlow Condensed";font-weight:800;font-size:12px;letter-spacing:.12em;cursor:pointer;box-shadow:0 3px 10px rgba(18,28,38,.3);transition:.15s;}
-.roll-auto-btn:hover{transform:scale(1.06);}
+.roll-auto-btn{position:static;height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:#E1E7EE;color:#454F59;font-family:"Barlow Condensed";font-weight:600;font-size:13px;letter-spacing:.1em;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;}
+.roll-auto-btn:hover{transform:scale(1.05);}
 .roll-auto-btn.on{background:linear-gradient(135deg,var(--cyan),var(--purple));color:#06131a;border-color:transparent;animation:pulse-roll 1.4s infinite;}
 @keyframes pulse-roll{0%,100%{box-shadow:0 6px 24px rgba(18,28,38,.35),0 0 0 3px var(--panel);}50%{box-shadow:0 12px 40px rgba(18,28,38,.55),0 0 0 6px var(--cyan);}}
 /* ---------- WEATHER DOCK ---------- */
-/* Cluster kontrol tengah-bawah: AUTO di atas-tengah, backpack + roll berdampingan di bawah. */
-.center-dock{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:100;display:flex;flex-direction:column;align-items:center;gap:7px;}
-.cd-rollcol{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:12px;}
-/* Pojok kiri bawah: panel kartu weather DI ATAS, chip weather (timer) DI BAWAHnya. */
-.weather-corner{position:fixed;left:20px;bottom:20px;z-index:100;display:flex;flex-direction:column;align-items:flex-start;gap:8px;}
-.weather-dock{display:flex;flex-direction:column;align-items:flex-start;gap:7px;}
+/* FOOTER = kartu melayang satu baris. Isi: profile · weather(cards+timer) · dock(backpack/roll/AUTO), semua di TENGAH. */
+.lobby-footer{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;z-index:99;display:none;
+  flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:10px 18px;border-radius:18px;
+  background:var(--panel);border:1px solid var(--line2);box-shadow:0 10px 30px rgba(18,28,38,.28);
+  max-width:calc(100vw - 24px);}
+body.on-lobby .lobby-footer{display:flex;}
+body.on-lobby main{padding-bottom:96px;}
+/* Kartu tengah lobby: batasi tinggi biar dasar kartu (HP/ATK) gak ketutup footer card. */
+body.on-lobby .hub-mid{max-width:min(400px,calc((100vh - 210px) * .74))}
+/* Baris bawah footer: profile + dock berdampingan, ditengahin. */
+.foot-main{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:16px;}
+/* Profil di footer: bulat, sama ukuran kayak icon header (42). */
+.foot-profile{width:42px;height:42px;border-radius:50%;flex:none;cursor:pointer;transition:transform .15s,filter .15s;}
+.foot-profile:hover{transform:scale(1.08);filter:brightness(1.1);}
+/* Dock sekarang STATIS di dalam footer (baris), bukan fixed lagi. */
+.center-dock{position:static;display:flex;flex-direction:row;align-items:center;gap:12px;}
+/* Weather di footer: kartu di ATAS, chip timer di BAWAH, ditengahin. */
+.foot-weather{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.weather-dock{display:flex;flex-direction:column;align-items:center;gap:7px;}
 .weather-dock:empty{display:none;}
-/* Rak footer khusus LOBBY: bar solid full-width di bawah biar dadu/backpack + weather
-   "duduk" di satu strip dan gak nyatu sama isi lobby. Dekoratif (pointer-events:none) —
-   dock & weather asli tetap z-index:100 numpang di atasnya. Class .on-lobby diset bfSync. */
-.lobby-footer{position:fixed;left:0;right:0;bottom:0;z-index:99;display:none;height:108px;
-  background:var(--panel);border-top:1px solid var(--line2);
-  box-shadow:0 -8px 26px rgba(18,28,38,.14);pointer-events:none;}
-body.on-lobby .lobby-footer{display:block;}
-body.on-lobby main{padding-bottom:106px;}
-/* Kartu tengah lobby: batasi tinggi biar dasar kartu (HP/ATK) gak ketutup rak footer,
-   terutama di viewport pendek. Dihitung dari sisa tinggi layar dikurangi topbar+bar. */
-body.on-lobby .hub-mid{max-width:min(400px,calc((100vh - 218px) * .74))}
 /* Panel kartu weatherOnly: kotak KECIL gaya index, sejajar. Nongol cuma pas weather aktif. */
 .weather-cards{display:none;gap:5px;flex-wrap:wrap;max-width:min(260px,60vw);}
 .weather-cards.show{display:flex;}
@@ -141,7 +143,7 @@ body.on-lobby .hub-mid{max-width:min(400px,calc((100vh - 218px) * .74))}
 .roll-close-out:hover{background:var(--panel2);}
 /* Mode mini: overlay jadi kartu kecil yang nempel di dekat tombol dadu, roll tetap jalan. */
 .roll-overlay.mini{background:transparent;backdrop-filter:none;display:block;align-items:initial;justify-content:initial;pointer-events:none;}
-.roll-overlay.mini .roll-card-showcase{position:fixed;left:0;right:0;margin:0 auto;bottom:108px;width:120px;box-shadow:0 10px 30px rgba(0,0,0,.5);cursor:pointer;animation:none;pointer-events:auto;}
+.roll-overlay.mini .roll-card-showcase{position:fixed;left:0;right:0;margin:0 auto;bottom:118px;width:120px;box-shadow:0 10px 30px rgba(0,0,0,.5);cursor:pointer;animation:none;pointer-events:auto;}
 .roll-overlay.mini .roll-card-showcase .hub-center .hc-name-top{top:5px;left:5px;font-size:11px;max-width:70%}
 .roll-overlay.mini .roll-card-showcase .hub-center .hc-chance{top:21px;left:5px;font-size:10px}
 .roll-overlay.mini .roll-card-showcase .hub-center .hc-badges{top:5px;right:5px;gap:3px}
@@ -156,9 +158,13 @@ body.on-lobby .hub-mid{max-width:min(400px,calc((100vh - 218px) * .74))}
 .roll-overlay:not(.mini) .roll-card-showcase .hub-center .hc-desc{font-size:8px;line-height:1.3;text-align:justify}
 .roll-overlay:not(.mini) .roll-card-showcase .hub-center .hc-stats{font-size:12px;margin-top:5px;gap:10px}
 .roll-overlay.mini .roll-actions{display:none;}
+/* Strip kecil di mini-reveal: di ATAS kartu, jadi tombol hide. Saat collapsed kartu sembunyi, strip tetap nempel di atas AUTO buat buka lagi. */
+.roll-mini-strip{display:none;}
+.roll-overlay.mini .roll-mini-strip{display:flex;align-items:center;justify-content:center;position:fixed;left:0;right:0;margin:0 auto;bottom:88px;width:120px;height:22px;border-radius:8px;background:var(--panel);border:1px solid var(--line2);color:var(--text);font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.05em;cursor:pointer;pointer-events:auto;box-shadow:0 4px 12px rgba(0,0,0,.4);z-index:101;user-select:none;}
+.roll-overlay.mini.collapsed .roll-card-showcase{display:none;}
 .roll-min-btn{padding:9px 18px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-family:"Barlow Condensed";font-weight:700;font-size:15px;letter-spacing:.06em;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;}
 .roll-min-btn:hover{background:var(--panel2);}
-.backpack-toggle{position:static;width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#2c7a7c,#38b7ff);border:2px solid var(--line2);box-shadow:0 4px 16px rgba(56,183,255,.35);z-index:100;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;transition:transform .2s;}
+.backpack-toggle{position:static;width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#2c7a7c,#38b7ff);border:1px solid var(--line);box-shadow:0 3px 10px rgba(56,183,255,.25);z-index:100;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;transition:transform .2s;}
 .backpack-toggle:hover{transform:scale(1.1);}
 .backpack-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:90vw;max-width:1100px;max-height:80vh;background:var(--panel);border-radius:20px;border:2px solid var(--line2);box-shadow:0 20px 80px rgba(18,28,38,.5);z-index:160;display:none;flex-direction:column;overflow:hidden;}
 .backpack-panel.visible{display:flex;}
@@ -1566,26 +1572,26 @@ body.battle-full .stat svg{flex:none}
 
 <div id="fightFx"><div class="ff-slash a"></div><div class="ff-slash b"></div><div class="ff-word">FIGHT</div></div>
 
-<!-- ====== DOCK PERSISTEN: roll + backpack di TENGAH bawah, weather di POJOK KIRI BAWAH.
-     Sengaja DI LUAR #app supaya pindah layar / re-render tidak menghapus elemen ini
-     -> interval roll & panel dek tetap hidup (player bisa AFK tanpa roll ke-stop). -->
-<!-- ====== RAK FOOTER LOBBY: shelf dekoratif di bawah; dadu + weather numpang di atasnya. ====== -->
-<div class="lobby-footer" aria-hidden="true"></div>
-<div class="center-dock">
-  <button class="roll-auto-btn" id="rollAutoBtn" title="Auto Roll (nyala/mati)">AUTO</button>
-  <div class="cd-rollcol">
-    <div class="backpack-toggle" id="backpackToggle" title="Backpack">🎒</div>
-    <button class="roll-btn" id="rollBtn" title="Roll Cards!">🎲</button>
+<!-- ====== FOOTER LOBBY = KARTU MELAYANG: satu bar berisi profile + weather (cards+timer)
+     + dock (backpack/roll/AUTO), semua di TENGAH. DI LUAR #app biar interval roll & panel
+     dek tetap hidup saat pindah layar. Hanya tampil di lobby (class .on-lobby dari bfSync). ====== -->
+<div class="lobby-footer">
+  <div class="foot-weather">
+    <div id="weatherCards" class="weather-cards"></div>
+    <div id="weatherDock" class="weather-dock"></div>
   </div>
-</div>
-<!-- ===== WEATHER CORNER (pojok kiri bawah): panel kartu weatherOnly yang bisa didapat
-     (nongol cuma pas weather aktif) + chip countdown + tombol pake/beli potion. ===== -->
-<div class="weather-corner">
-  <div id="weatherCards" class="weather-cards"></div>
-  <div id="weatherDock" class="weather-dock"></div>
+  <div class="foot-main">
+    <div class="foot-profile tb-av" id="footAv" title="Buka profil"></div>
+    <div class="center-dock">
+      <div class="backpack-toggle" id="backpackToggle" title="Backpack">🎒</div>
+      <button class="roll-btn" id="rollBtn" title="Roll Cards!">🎲</button>
+      <button class="roll-auto-btn" id="rollAutoBtn" title="Auto Roll (nyala/mati)">AUTO</button>
+    </div>
+  </div>
 </div>
 <div id="weatherToast" class="weather-toast"></div>
 <div class="roll-overlay" id="rollOverlay">
+  <div class="roll-mini-strip" id="rollMiniStrip" type="button" title="Sembunyikan / tampilkan reveal">▾ hide</div>
   <div class="roll-card-showcase" id="rollShowcase"></div>
   <div class="roll-actions">
     <button class="roll-min-btn" id="rollMinBtn" type="button" title="Kecilkan">▾ Kecilkan</button>
@@ -2002,7 +2008,7 @@ function getChapterReward(chapterNo){
 }
 
 /* ========== BACKPACK + ROLL SYSTEM ========== */
-let rollState = { active: false, interval: null, currentCard: null, luck: 1, speedMultiplier: 1, mini: false, hideTimer: null };
+let rollState = { active: false, interval: null, currentCard: null, luck: 1, speedMultiplier: 1, mini: false, collapsed: false, hideTimer: null };
 
 /* Roll = SATU-SATUNYA sumber kartu baru selain Toko Raid. Hasil roll DITUMPUK dengan sistem count:
    kartu yang sama (char + tier + varian/mut) masuk ke satu stack dan menaikkan s.count, bukan entri baru,
@@ -2096,6 +2102,9 @@ function showRollResult(result) {
   const cardData = getCardData(result.cardId);
   if (!cardData) return;
   rollState.currentCard = result;
+  // Kartu baru = selalu tampilkan lagi (bukan state collapsed) biar hasil roll keliatan.
+  if (rollState.collapsed) { rollState.collapsed = false; }
+  if (rollState.mini) syncRollMiniStrip();
 
   // Kartu hasil roll = SALINAN persis kartu lobby (hubCardHtml) supaya posisinya identik.
   const eq = {char:result.cardId, mut:result.mut||"none", shiny:!!result.shiny, trait:"none"};
@@ -2181,8 +2190,37 @@ function setRollMini(on) {
   const overlay = document.getElementById('rollOverlay');
   if (!overlay) return;
   rollState.mini = !!on;
+  if (!rollState.mini) rollState.collapsed = false;
   if (rollState.mini && rollState.hideTimer) { clearTimeout(rollState.hideTimer); rollState.hideTimer = null; }
   overlay.classList.toggle('mini', rollState.mini);
+  syncRollMiniStrip();
+}
+
+// Strip kecil: teks "hide" pas kartu nampil, "▲ buka" pas kartu di-hide (collapsed).
+function syncRollMiniStrip() {
+  const strip = document.getElementById('rollMiniStrip');
+  if (!strip) return;
+  const overlay = document.getElementById('rollOverlay');
+  if (overlay) overlay.classList.toggle('collapsed', !!rollState.collapsed);
+  strip.textContent = rollState.collapsed ? '▲ buka reveal' : '▾ hide';
+  positionMiniReveal();
+}
+
+// Letakin strip + kartu mini TEPAS di atas footer (tinggi footer bisa berubah pas weather on/off).
+function positionMiniReveal() {
+  const overlay = document.getElementById('rollOverlay');
+  if (!overlay || !rollState.mini) return;
+  const footer = document.querySelector('.lobby-footer');
+  const strip = document.getElementById('rollMiniStrip');
+  const card = overlay.querySelector('.roll-card-showcase');
+  let footFromBottom = 78; // fallback
+  if (footer) {
+    const r = footer.getBoundingClientRect();
+    if (r.height > 0) footFromBottom = window.innerHeight - r.top;
+  }
+  const stripBottom = footFromBottom + 8;
+  if (strip) strip.style.bottom = stripBottom + 'px';
+  if (card) card.style.bottom = (stripBottom + 22 + 6) + 'px';
 }
 
 /* ========== DECK MANAGER (panel Backpack) ==========
@@ -5141,6 +5179,7 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
   if(bt)bt.addEventListener("click",toggleBackpack);
   // Event handler: klik avatar → buka modal profil
   const av=document.getElementById("profAv");if(av){av.onclick=function(e){e.stopPropagation();console.log('Avatar clicked!', state?.player); openProfileModal();};}
+  const fav=document.getElementById("footAv");if(fav){fav.onclick=function(e){e.stopPropagation();openProfileModal();};}
   const bd=document.getElementById("profBackdrop");if(bd)bd.onclick=closeProfileModal;
   /* AUTO: toggle rolling terus-menerus. Klik lagi / Tutup / klik dadu = mati. */
   const ra=document.getElementById("rollAutoBtn");
@@ -5151,7 +5190,9 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
   const rmin=document.getElementById("rollMinBtn");
   if(rmin)rmin.addEventListener("click",e=>{e.stopPropagation();setRollMini(true);});
   const rshow=document.querySelector("#rollOverlay .roll-card-showcase");
-  if(rshow)rshow.addEventListener("click",()=>{if(rollState.mini)setRollMini(false);});
+  if(rshow)rshow.addEventListener("click",()=>{if(rollState.mini&&!rollState.collapsed)setRollMini(false);});
+  const rstrip=document.getElementById("rollMiniStrip");
+  if(rstrip)rstrip.addEventListener("click",e=>{e.stopPropagation();if(!rollState.mini)return;rollState.collapsed=!rollState.collapsed;syncRollMiniStrip();beep(rollState.collapsed?330:440,0.08,"sine",0.06);});
   /* Tutup lewat kontrol "✕ Tutup" atau klik area gelap di LUAR kartu — kartu sendiri (area badge/chance) tidak menutup. */
   const rov=document.getElementById("rollOverlay");
   if(rov)rov.addEventListener("click",e=>{
