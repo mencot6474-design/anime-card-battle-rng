@@ -1425,6 +1425,8 @@ const TIER_COLOR={R:"#9A8A8B",SR:"#C8A2A8",SSR:"#B07A9B",UR:"#2F8FE2",EX:"#FF4D5
 const TIER_CHANCE={R:10000,SR:100000,SSR:450000,UR:1000000,EX:1000000};
 function chanceOf(tier){return TIER_CHANCE[tier]||100;}
 function rarityText(tier,chance){return "1 in "+(chance||chanceOf(tier));}
+/* Peluang efektif sebuah kartu: varian SHINY 2× lebih langka dari versi biasanya (stat juga ×2). */
+function effChance(charId,shiny){const c=CARDS[charId]||{};const ch=c.chance||chanceOf(c.tier);return shiny?ch*2:ch;}
 /* =============== STORY BIBLE ===============
    Satu-satunya tempat data karakter & alur story.
    CARDS, FOES, pool gacha, dan stat musuh diturunkan otomatis dari blok ini. */
@@ -1571,19 +1573,27 @@ function getCards(){
 
 // Main RNG roll function
 function rngRoll(luck=1,speedMultiplier=1){
-  // Pilih kartu LANGSUNG berdasar peluang "1 in N" tiap kartu.
-  // Bobot = 1 / chance^luck (luck>1 menaikkan peluang kartu langka).
+  // Pilih hasil LANGSUNG berdasar peluang "1 in N" tiap outcome.
+  // Tiap kartu punya DUA outcome: BIASA (chance C) dan SHINY (chance C×2 → 2× lebih langka, stat ×2).
+  // Bobot = 1 / chance^luck (luck>1 menaikkan peluang outcome langka).
   const pool=MASTER_CARD_INDEX.filter(c=>!c.noGacha);
   if(!pool.length)return null;
+  const entries=[];
+  for(const c of pool){
+    const ch=c.chance||chanceOf(c.tier);
+    entries.push({card:c,shiny:false,ch:ch});
+    entries.push({card:c,shiny:true,ch:ch*2});
+  }
   let total=0;
-  const weights=pool.map(c=>{const w=1/Math.pow(c.chance||chanceOf(c.tier),luck);total+=w;return w;});
-  let r=Math.random()*total, idx=pool.length-1;
-  for(let i=0;i<pool.length;i++){r-=weights[i];if(r<=0){idx=i;break;}}
-  const pick=pool[idx];
+  const weights=entries.map(e=>{const w=1/Math.pow(e.ch,luck);total+=w;return w;});
+  let r=Math.random()*total, idx=entries.length-1;
+  for(let i=0;i<entries.length;i++){r-=weights[i];if(r<=0){idx=i;break;}}
+  const pick=entries[idx];
   return{
-    cardId:pick.char_id,
-    tier:pick.tier,
-    chance:pick.chance||chanceOf(pick.tier),
+    cardId:pick.card.char_id,
+    tier:pick.card.tier,
+    chance:pick.ch,
+    shiny:pick.shiny,
     luckBonus:luck,
     speedBoost:speedMultiplier
   };
@@ -1653,7 +1663,6 @@ function startRollAnimation(luck = 1, speedMultiplier = 1) {
     const result = rngRoll(rollState.luck, rollState.speedMultiplier);
     if(!result){stopRollAnimation();hideRollResult();return;}
     result.mut = rollMut();
-    result.shiny = rollShiny();
     showRollResult(result);
     grantRolledCard(result.cardId, result.mut, result.shiny);
   }, initialDelay);
@@ -1907,7 +1916,6 @@ const FOES=Object.fromEntries(STORY_BIBLE.levels.map((l,i)=>{
 /* Sistem level kartu DIHAPUS — stat kartu tetap (base x mutasi x trait). */
 /* Sistem MUTASI gacha — roll per-pull, stat dikalikan, ditunjukkan lewat warna glow */
 const MUT_CHANCE={secret:0.5,rainbow:1,gold:4}; // % peluang kumulatif dari atas: secret 0.5%, rainbow +1%, gold +4%
-const SHINY_CHANCE=10; // % peluang SHINY (lapisan terpisah, bisa numpuk di atas mutasi apa pun)
 const SHINY_MULT=2; // SHINY = stat dikali 2, DIKALIKAN di atas multiplier mutasi (mis. shiny+gold = 2*5 = 10)
 const MUT_MULT={none:1,gold:5,rainbow:10,secret:25};
 const MUT_RANK={none:0,gold:1,rainbow:2,secret:3};
@@ -1920,7 +1928,6 @@ function mutBadge(mut){
   return mutText(mut,label);
 }
 function rollMut(){const r=Math.random()*100;let c=0;const order=["secret","rainbow","gold"];for(const m of order){c+=MUT_CHANCE[m];if(r<c)return m;}return "none";}
-function rollShiny(){return Math.random()*100<SHINY_CHANCE;}
 function shinyBadge(){return '<span class="shiny-badge">SHINY</span>';}
 const shinyCls=s=>s&&s.shiny?" shiny":"";
 /* Hadiah login harian 7 hari (coin) — total 950.000, reset tiap 00:00 */
@@ -2610,7 +2617,7 @@ function meFighterHtml(s){
   const st=cardStats(s.char,s.mut,s.trait,s.shiny);
   const mut=(s.mut&&s.mut!=="none")?s.mut:null;
   const trait=(s.trait&&s.trait!=="none")?s.trait:null;
-  return `<div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}">${madaraAura(s.char)}<div class="f-name${(!mut&&s.shiny)?' f-name-shine':''}"${mut?` style="color:${MUT_COLOR[mut]}"`:''}>${mutText(mut,cardName(s.char))}</div><span class="f-tag" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,(CARDS[s.char]||{}).chance)}</span>
+  return `<div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}">${madaraAura(s.char)}<div class="f-name${(!mut&&s.shiny)?' f-name-shine':''}"${mut?` style="color:${MUT_COLOR[mut]}"`:''}>${mutText(mut,cardName(s.char))}</div><span class="f-tag" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,effChance(s.char,s.shiny))}</span>
     ${(s.shiny||mut||trait)?`<div class="f-badges">${s.shiny?'<span class="shiny-badge">SHINY</span>':''}${mut?mutChip(mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="hc-trait hc-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(14)}</span>`):''}</div>`:""}
     </div>
     <div class="hpbar"><i id="hpMe"></i><span id="hpMeT">${fmt(st.hp)} / ${fmt(st.hp)}</span></div>
@@ -3698,7 +3705,7 @@ function openModal(id){
   mcEl.innerHTML=`
     <span class="md-art"><img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(s.char)}</span>
     <div class="md-info">
-      <div class="eyebrow" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,c.chance)}${s.mut&&s.mut!=="none"?` · ${mutChip(s.mut,`<span>${mutBadge(s.mut)}</span>`)}`:""}${s.shiny?' · <span class="shiny-badge">SHINY</span>':""}</div>
+      <div class="eyebrow" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,effChance(s.char,s.shiny))}${s.mut&&s.mut!=="none"?` · ${mutChip(s.mut,`<span>${mutBadge(s.mut)}</span>`)}`:""}${s.shiny?' · <span class="shiny-badge">SHINY</span>':""}</div>
       <div class="md-name">${c.name}</div>
       <div class="cr-title" style="margin-bottom:8px">${c.type}</div>
       <div class="cr-stats"><span>♡ ${fmt(st.hp)}</span><span>${ATKIC} ${fmt(st.atk)}</span></div>
@@ -3730,7 +3737,7 @@ function hubCardHtml(eq,idAttr){
   return `<div class="hub-center${mut?' mut-'+mut:''}${shinyCls(eq)}"${idAttr||''} data-tier="${tier}"${mut?` style="border-color:${MUT_COLOR[mut]}"`:''}>
       <div class="hc-img"><img src="${cardImg(eq.char)}" alt="${cardName(eq.char)}">${madaraAura(eq.char)}
           <span class="hc-name-top${(!mut&&eq.shiny)?' hc-name-shine':''}"${mut?` style="color:${MUT_COLOR[mut]}"`:''}>${mutText(mut,cardName(eq.char))}</span>
-          <span class="hc-chance" style="color:${TIER_COLOR[tier]}">${rarityText(tier,(CARDS[eq.char]||{}).chance)}</span>
+          <span class="hc-chance" style="color:${TIER_COLOR[tier]}">${rarityText(tier,effChance(eq.char,eq.shiny))}</span>
           ${(mut||trait||eq.shiny)?`<div class="hc-badges">${eq.shiny?'<span class="shiny-badge">SHINY</span>':''}${mut?mutChip(mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="hc-trait hc-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(14)}</span>`):''}</div>`:''}
           <div class="skill-overlay"><b>${passiveName(eq.char)}</b><span class="sk-txt">${skillText(eq.char)}</span></div>
         </div>
@@ -3853,7 +3860,7 @@ function renderRaidPick(){
     return `<button class="raid-pick-card${s.tier==="EX"?" fire":""}${mc}${s.shiny?" shiny":""}" data-pick="${s.id}" data-name="${c.name.toLowerCase()}"${s.mut&&s.mut!=="none"?` style="border-color:${MUT_COLOR[s.mut]}"`:""}>
       <div class="rpc-img"><img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(s.char)}
         <span class="badge-row">
-          <span class="tier-badge" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,c.chance)}</span>
+          <span class="tier-badge" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,effChance(s.char,s.shiny))}</span>
         </span>
         ${(s.mut&&s.mut!=="none")||s.shiny?`<span class="badge-row bl">
           ${s.mut&&s.mut!=="none"?mutChip(s.mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`):""}${s.shiny?'<span class="shiny-badge">SHINY</span>':""}
@@ -4355,7 +4362,6 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
     const result=rngRoll(1,1);
     if(!result){beep(220,0.15,"square",0.08);return;}
     result.mut=rollMut();
-    result.shiny=rollShiny();
     grantRolledCard(result.cardId, result.mut, result.shiny);
     showRollResult(result);
     beep(440,0.15,"sine",0.1);
