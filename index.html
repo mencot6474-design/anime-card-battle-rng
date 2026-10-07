@@ -934,6 +934,14 @@ body.battle-full .stat svg{flex:none}
 .lobby-hub .hub-mid{perspective:900px}
 .lobby-hub #hubCard{transition:transform .12s ease-out;will-change:transform}
 .lobby-hub #hubCard .hc-glare{position:absolute;inset:0;z-index:5;pointer-events:none;border-radius:inherit;opacity:0;transition:opacity .3s;background:radial-gradient(circle at var(--gx,50%) var(--gy,50%),rgba(255,255,255,.4),rgba(255,255,255,0) 42%);mix-blend-mode:soft-light}
+/* Parallax layer (digerakin via --pf/--pfy dari initHubTilt): foreground (nama/chance) geser
+   searah kursor, badge geser berlawanan, art zoom+geser lawan arah → kedalaman 3D. Semua layer
+   udah di-dalem .hub-center(overflow:hidden) jadi geser few px gak bocor keluar kartu. */
+.lobby-hub #hubCard .hc-img{transform:scale(1.1) translate(calc(var(--pf,0)*-9px),calc(var(--pfy,0)*-7px));transition:transform .12s ease-out}
+.lobby-hub #hubCard .hc-name-top,.lobby-hub #hubCard .hc-chance{transition:transform .12s ease-out}
+.lobby-hub #hubCard .hc-name-top{transform:translate(calc(var(--pf,0)*14px),calc(var(--pfy,0)*10px))}
+.lobby-hub #hubCard .hc-chance{transform:translate(calc(var(--pf,0)*22px),calc(var(--pfy,0)*15px))}
+.lobby-hub #hubCard .hc-badges{transform:translate(calc(var(--pf,0)*-16px),calc(var(--pfy,0)*-11px));transition:transform .12s ease-out}
 .hub-center .hc-img{position:absolute;inset:0;flex:none;background:#E9EDF2}
 .hub-center .hc-img img,.hub-center .hc-img video{width:100%;height:100%;object-fit:cover;object-position:top}
 .hub-center .hc-info{position:absolute;left:0;right:0;bottom:0;z-index:6;padding:30px 14px 12px;border-top:none;background:linear-gradient(to top,rgba(6,8,12,.92) 32%,rgba(6,8,12,.5) 64%,transparent)}
@@ -4469,6 +4477,8 @@ function initHubTilt(card){
     if(raf)cancelAnimationFrame(raf);
     raf=requestAnimationFrame(()=>{
       card.style.transform=`rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg)`;
+      card.style.setProperty('--pf',(px-0.5).toFixed(3));
+      card.style.setProperty('--pfy',(py-0.5).toFixed(3));
       glare.style.setProperty('--gx',(px*100).toFixed(1)+'%');
       glare.style.setProperty('--gy',(py*100).toFixed(1)+'%');
       glare.style.opacity='1';
@@ -4477,6 +4487,8 @@ function initHubTilt(card){
   card.addEventListener('mouseleave',()=>{
     if(raf)cancelAnimationFrame(raf);
     card.style.transform='rotateX(0deg) rotateY(0deg)';
+    card.style.setProperty('--pf','0');
+    card.style.setProperty('--pfy','0');
     glare.style.opacity='0';
   });
 }
