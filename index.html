@@ -1605,6 +1605,7 @@ const STORY_BIBLE={
            wallTitans:{every,pct} -> tiap `every` giliran sejak masuk, sambaran BONUS sebesar pct% ATK ke musuh (di luar serangan normal).
            rumbling:{turns,pct}  -> saat kartu ini MATI (bukan revive/lastStand), musuh kena DoT pct% max HP-nya selama `turns` giliran berikutnya, terus jalan walau kartu udah ganti.
            bungeeGum:{turns,bonus} -> tiap kali kartu ini KENA SERANG musuh, tempel "gum" ke musuh selama `turns` giliran; selama gum aktif semua serangan kartu ini ×(1+bonus/100) damage. Gum ikut pindah ke musuh berikutnya kalau yang kena gum mati (counter `bt.gumTurns` di sisi musuh).
+           snatch:{pct} -> tiap kali kartu ini MENGALAHKAN kartu musuh (foeDown), curi permanen pct% ATK & pct% max HP musuh yang mati lalu tambah ke stat kartu ini (flat, persist antar tag-in via `bt.snatchAtk[a]`/`bt.snatchHp[a]`).
        ==================================================== */
     {id:"CH_RULER",name:"RULER",tier:"EX",type:"Absolute",skill:"VENUZDONOA",hp:4787,atk:2394,chance:850000000,art:"assets/cards/art/ruler.webp",
       fx:{revive:1,dmgMult:2,ignoreDef:1,statusImmune:1},
@@ -1629,7 +1630,10 @@ const STORY_BIBLE={
       desc:"Saat masuk, transform: 1.5x semua stat. Setiap 3 giliran, Wall Titans berbaris memberikan 20% dari serangan Eren ke semua kartu musuh. Saat mati, the Rumbling berlanjut selama 2 giliran lagi - musuh terkena 10% max HP per giliran bahkan setelah Eren jatuh."},
     {id:"CH_TRICKSTER_ACE",name:"TRICKSTER ACE",tier:"UR",type:"Gum",skill:"BUNGEE GUM",hp:2737,atk:1369,chance:125000000,art:"assets/cards/art/trickster-ace.png",pos:"center",
       fx:{bungeeGum:{turns:2,bonus:30}},
-      desc:"Setelah diserang, tempelkan Bungee Gum ke musuh - selama 2 giliran, semua serangan Trickster Ace memberikan 30% bonus damage ke lawan tersebut. Jika lawan yang terkena gum mati, gum berpindah ke kartu musuh berikutnya yang masuk."}
+      desc:"Setelah diserang, tempelkan Bungee Gum ke musuh - selama 2 giliran, semua serangan Trickster Ace memberikan 30% bonus damage ke lawan tersebut. Jika lawan yang terkena gum mati, gum berpindah ke kartu musuh berikutnya yang masuk."},
+    {id:"CH_UNDYING_ROGUE",name:"UNDYING ROGUE",tier:"UR",type:"Snatcher",skill:"SNATCH",hp:2195,atk:1098,chance:60000000,art:"assets/cards/art/undying-rogue.png",pos:"center",
+      fx:{snatch:{pct:15}},
+      desc:"Ketika Undying Rogue mengalahkan sebuah kartu, secara permanen curi 15% dari stat-nya (ATK & HP) dan tambahkan ke stat miliknya sendiri."}
   ]
 };
 /* ROLL SYSTEM - Pull-based RNG (bukan gacha pool) */
@@ -3264,7 +3268,7 @@ function startBattle(){
   const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   const eid=en.id||null,efx=eid?(PASSIVE_FX[eid]||{}):{};
   if(bt&&bt.timer)clearTimeout(bt.timer);
-  bt={lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),execGuard:new Array(fighters.length).fill(false),wtCount:new Array(fighters.length).fill(0),rumbling:0,rumblingPct:0,aftermath:false,gumTurns:0,trickNext:false,royalNow:false,gunsNow:false};
+  bt={lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),execGuard:new Array(fighters.length).fill(false),wtCount:new Array(fighters.length).fill(0),snatchAtk:new Array(fighters.length).fill(0),snatchHp:new Array(fighters.length).fill(0),rumbling:0,rumblingPct:0,aftermath:false,gumTurns:0,trickNext:false,royalNow:false,gunsNow:false};
   // BURST: kartu pertama masuk arena langsung dapat boost HP kalau punya fx.burst
   const fx0=resolveFx(eq,efx);
   if(fx0.burst){bt.pMax=Math.round(base.hp*fx0.burst.mult);bt.pHp=bt.pMax;}
@@ -3278,7 +3282,7 @@ function tagIn(){
   if(next>=bt.fighters.length)return false;
   bt.active=next;bt.eq=bt.fighters[next];bt.justTagged=true;
   const base=cardStats(bt.eq.char,bt.eq.mut,bt.eq.trait,bt.eq.shiny);
-  bt.pMax=base.hp;bt.pHp=base.hp;
+  bt.pMax=base.hp+(bt.snatchHp[next]||0);bt.pHp=bt.pMax;
   bt.burstStart[next]=bt.turn;
   bt.entryGuard[next]=false;bt.dodgeArmed[next]=false;bt.dodgeCount[next]=0;bt.execGuard[next]=false;bt.wtCount[next]=0;
   const nfx=resolveFx(bt.eq,bt.efx);
@@ -3499,6 +3503,7 @@ function playerPhase(){
   if(fx.lowHpAtk&&bt.pHp<bt.pMax*fx.lowHpAtk.below/100)atk=Math.round(atk*(1+fx.lowHpAtk.bonus/100));
   if(fx.burst&&(t-(bt.burstStart[a]||1))<fx.burst.turns)atk=Math.round(atk*fx.burst.mult);
   if(fx.transform)atk=Math.round(atk*fx.transform.mult);
+  if(bt.snatchAtk&&bt.snatchAtk[a])atk+=bt.snatchAtk[a];
   let dmgMult=1;
   if(fx.dmgMult)dmgMult*=fx.dmgMult;
   /* SATU PERSEN (Ultra Instinct): tiap serangan GENAP (ke-2, ke-4, ...) = 1% kekuatan penuh → ×mult damage + tembus damage reduction musuh */
@@ -3882,10 +3887,21 @@ function startTowerBattle(){
   const fighters=equippedList();if(!fighters.length)fighters.push(equipped());
   const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   if(bt&&bt.timer)clearTimeout(bt.timer);
-  bt={lv:null,tower:true,en:w.en,es:w.es,eq,fighters,eid:w.eid,efx:w.efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:w.es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),gumTurns:0,trickNext:false,royalNow:false,gunsNow:false};
+  bt={lv:null,tower:true,en:w.en,es:w.es,eq,fighters,eid:w.eid,efx:w.efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:w.es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),snatchAtk:new Array(fighters.length).fill(0),snatchHp:new Array(fighters.length).fill(0),gumTurns:0,trickNext:false,royalNow:false,gunsNow:false};
   schedPhase(700,step);
 }
 function foeDown(){
+  /* SNATCH: kartu aktif yang punya fx.snatch mencuri pct% stat musuh yang baru tumbang, permanen */
+  if(bt&&!bt.over&&!bt.aftermath&&bt.pHp>0){
+    const a=bt.active,sfx=resolveFx(bt.eq,bt.efx);
+    if(sfx.snatch){
+      const sa=Math.round(bt.es.atk*sfx.snatch.pct/100), sh=Math.round(bt.es.hp*sfx.snatch.pct/100);
+      bt.snatchAtk[a]=(bt.snatchAtk[a]||0)+sa; bt.snatchHp[a]=(bt.snatchHp[a]||0)+sh;
+      bt.pMax+=sh; bt.pHp=Math.min(bt.pMax,bt.pHp+sh);
+      setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
+      setTimeout(()=>{if(bt&&!bt.over){floatText(".fighter.me","SNATCH +"+fmt(sa)+" ATK +"+fmt(sh)+" HP","crit");}},260);
+    }
+  }
   if(bt&&bt.tower&&towerRun&&towerRun.idx+1<towerRun.waves.length){advanceTowerFoe();return;}
   endBattle(true);
 }
