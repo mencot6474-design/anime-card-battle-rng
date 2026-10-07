@@ -94,6 +94,17 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .weather-corner{position:fixed;left:20px;bottom:20px;z-index:100;display:flex;flex-direction:column;align-items:flex-start;gap:8px;}
 .weather-dock{display:flex;flex-direction:column;align-items:flex-start;gap:7px;}
 .weather-dock:empty{display:none;}
+/* Rak footer khusus LOBBY: bar solid full-width di bawah biar dadu/backpack + weather
+   "duduk" di satu strip dan gak nyatu sama isi lobby. Dekoratif (pointer-events:none) —
+   dock & weather asli tetap z-index:100 numpang di atasnya. Class .on-lobby diset bfSync. */
+.lobby-footer{position:fixed;left:0;right:0;bottom:0;z-index:99;display:none;height:152px;
+  background:var(--panel);border-top:1px solid var(--line2);
+  box-shadow:0 -8px 26px rgba(18,28,38,.14);pointer-events:none;}
+body.on-lobby .lobby-footer{display:block;}
+body.on-lobby main{padding-bottom:150px;}
+/* Kartu tengah lobby: batasi tinggi biar dasar kartu (HP/ATK) gak ketutup rak footer,
+   terutama di viewport pendek. Dihitung dari sisa tinggi layar dikurangi topbar+bar. */
+body.on-lobby .hub-mid{max-width:min(400px,calc((100vh - 268px) * .74))}
 /* Panel kartu weatherOnly: kotak KECIL gaya index, sejajar. Nongol cuma pas weather aktif. */
 .weather-cards{display:none;gap:5px;flex-wrap:wrap;max-width:min(260px,60vw);}
 .weather-cards.show{display:flex;}
@@ -1558,6 +1569,8 @@ body.battle-full .stat svg{flex:none}
 <!-- ====== DOCK PERSISTEN: roll + backpack di TENGAH bawah, weather di POJOK KIRI BAWAH.
      Sengaja DI LUAR #app supaya pindah layar / re-render tidak menghapus elemen ini
      -> interval roll & panel dek tetap hidup (player bisa AFK tanpa roll ke-stop). -->
+<!-- ====== RAK FOOTER LOBBY: shelf dekoratif di bawah; dadu + weather numpang di atasnya. ====== -->
+<div class="lobby-footer" aria-hidden="true"></div>
 <div class="center-dock">
   <div class="backpack-toggle" id="backpackToggle" title="Backpack">🎒</div>
   <div class="cd-rollcol">
@@ -5063,6 +5076,7 @@ function render(){
     else if(r==="#/tower")renderTower();
     else if(r==="#/settings")renderSettings();
     else renderLobby();
+    document.body.classList.toggle("on-lobby", !state.battle && !!app.querySelector(".lobby-hub"));
   } catch (e) {
     console.error('Render error:', e);
     document.body.innerHTML = `<div style="padding:40px;color:red"><h1>Error!</h1><p>${e.message}</p><pre>${e.stack}</pre></div>`;
@@ -5080,6 +5094,7 @@ const bfSync=()=>{
   if(hasBattle){ const tb=document.getElementById("topbar"); if(tb) document.documentElement.style.setProperty("--tbh", Math.round(tb.getBoundingClientRect().height)+"px"); }
   // END/PAUSE khusus Sky Tower; story & raid boss auto-complete jadi nggak perlu tombol.
   document.body.classList.toggle("battle-tower", !!(grid && grid.classList.contains("tower-stage")));
+  document.body.classList.toggle("on-lobby", !hasBattle && !!app.querySelector(".lobby-hub"));
   if(hasBattle&&!wasBattle){ const pb=document.getElementById("btPause"); if(pb)pb.innerHTML="&#9208; PAUSE"; }
 };
 if(app){
