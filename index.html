@@ -1607,6 +1607,7 @@ const STORY_BIBLE={
            bungeeGum:{turns,bonus} -> tiap kali kartu ini KENA SERANG musuh, tempel "gum" ke musuh selama `turns` giliran; selama gum aktif semua serangan kartu ini ×(1+bonus/100) damage. Gum ikut pindah ke musuh berikutnya kalau yang kena gum mati (counter `bt.gumTurns` di sisi musuh).
            snatch:{pct} -> tiap kali kartu ini MENGALAHKAN kartu musuh (foeDown), curi permanen pct% ATK & pct% max HP musuh yang mati lalu tambah ke stat kartu ini (flat, persist antar tag-in via `bt.snatchAtk[a]`/`bt.snatchHp[a]`).
            arise:{pct,turns} -> (Shadow Monarch) saat kartu ini membunuh DAN masih ada gelombang musuh berikutnya (menara), bangkitkan musuh yang mati sebagai BAYANGAN dengan pct% ATK & HP-nya. Bayangan MENGAMBIL-ALIH slot kartu ini (HP asli disimpan di `bt.shadow.retHp/retMax`), menyerang dengan atk bayangan (passive Monarch dimatikan: `fx={}` selama possess) selama `turns` giliran ATAU sampai bayangan tumbang (trySave → endPossession, Monarch balik utuh). State: `bt.shadow`.
+           prideOfPrince:{pct} -> (Royal Vanguard) tiap KARTU PARTY JATUH (di `trySave`, setelah revive/lastStand gagal), semua kartu di `bt.fighters` yang punya fx ini dapat `bt.atkBuff[i]+=pct` (permanen buat sisa battle, numpuk). `atkBuff` dipakai playerPhase `atk*(1+atkBuff/100)` — jadi pas Vanguard aktif dia udah lebih kuat. Jalan walau Vanguard lagi nunggu di bench (buff nyimpen di index-nya).
        ==================================================== */
     {id:"CH_RULER",name:"RULER",tier:"EX",type:"Absolute",skill:"VENUZDONOA",hp:4787,atk:2394,chance:850000000,art:"assets/cards/art/ruler.webp",
       fx:{revive:1,dmgMult:2,ignoreDef:1,statusImmune:1},
@@ -1637,7 +1638,10 @@ const STORY_BIBLE={
       desc:"Ketika Undying Rogue mengalahkan sebuah kartu, secara permanen curi 15% dari stat-nya (ATK & HP) dan tambahkan ke stat miliknya sendiri."},
     {id:"CH_SHADOW_MONARCH",name:"SHADOW MONARCH",tier:"EX",type:"Necromancer",skill:"ARISE",hp:1942,atk:971,chance:40000000,art:"assets/cards/art/shadow-monarch.png",pos:"center",
       fx:{arise:{pct:40,turns:2}},
-      desc:"Saat membunuh, bangkitkan kartu yang dikalahkan sebagai bayangan dengan 40% dari stat-nya. Bayangan bertarung menggantikan posisi Shadow Monarch selama 2 giliran, atau sampai bayangan tersebut tumbang."}
+      desc:"Saat membunuh, bangkitkan kartu yang dikalahkan sebagai bayangan dengan 40% dari stat-nya. Bayangan bertarung menggantikan posisi Shadow Monarch selama 2 giliran, atau sampai bayangan tersebut tumbang."},
+    {id:"CH_ROYAL_VANGUARD",name:"ROYAL VANGUARD",tier:"UR",type:"Prince",skill:"PRIDE OF THE PRINCE",hp:1781,atk:891,chance:30000000,art:"assets/cards/art/royal-vanguard.png",pos:"center",
+      fx:{prideOfPrince:{pct:25}},
+      desc:"Ketika kartu apapun di party-mu mati, Royal Vanguard mendapatkan +25% serangan secara permanen (menumpuk tiap kali ada kartu party yang jatuh)."}
   ]
 };
 /* ROLL SYSTEM - Pull-based RNG (bukan gacha pool) */
@@ -3340,6 +3344,8 @@ function trySave(){
     setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
     return true;
   }
+  /* PRIDE OF THE PRINCE: kartu party ini beneran jatuh (revive/lastStand gak nolong) → semua Royal Vanguard di party +pct% ATK permanen (stack di atkBuff, kepakai pas dia masuk/aktif) */
+  for(let i=0;i<bt.fighters.length;i++){const pfx=resolveFx(bt.fighters[i],bt.efx);if(pfx.prideOfPrince)bt.atkBuff[i]=(bt.atkBuff[i]||0)+pfx.prideOfPrince.pct;}
   /* RUMBLING: kartu ini beneran tumbang (revive/lastStand gak nolong) → nyalain DoT post-mortem */
   if(fx.rumbling){bt.rumbling=fx.rumbling.turns;bt.rumblingPct=fx.rumbling.pct;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","THE RUMBLING","burn");},600);}
   if(a+1<bt.fighters.length){tagIn();return true;}
