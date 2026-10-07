@@ -160,8 +160,18 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .bp-cols{display:flex;gap:18px;align-items:flex-start;flex:1;min-height:0;}
 .bp-deckcol{flex:0 0 auto;align-self:flex-start;width:clamp(64px,calc((80vh - 170px)/4),104px);}
 .bp-collect{flex:1;min-width:0;align-self:stretch;overflow-y:auto;}
-/* Kolom ITEM di backpack: kartu item (Weather Potion) + tombol pakai/beli. */
-.bp-itemscol{flex:0 0 176px;width:176px;align-self:stretch;overflow-y:auto;}
+/* Tab nav Backpack: DECK / ITEM / ARTEFAK / PET — tiap tab punya panel sendiri. */
+.bp-tabs{display:flex;gap:6px;padding:10px 16px 0;background:var(--panel);border-bottom:1px solid var(--line);}
+.bp-tab{flex:1;font-family:"Barlow Condensed";font-weight:800;font-size:15px;letter-spacing:.1em;padding:10px 8px;border:1px solid var(--line2);border-bottom:none;border-radius:12px 12px 0 0;background:var(--panel2);color:var(--muted);cursor:pointer;transition:.15s;}
+.bp-tab:hover{filter:brightness(1.12);}
+.bp-tab.on{background:var(--panel);color:var(--cyan);border-color:var(--cyan);}
+/* Panel grid item (tab ITEM) */
+.bp-items-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;overflow-y:auto;align-content:start;padding-top:4px;}
+/* Placeholder tab ARTEFAK / PET */
+.bp-soon{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);}
+.bp-soon-ic{font-size:52px;opacity:.5;}
+.bp-soon-t{font-family:"Barlow Condensed";font-weight:800;font-size:22px;letter-spacing:.12em;color:var(--text);}
+.bp-soon-s{font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.24em;opacity:.6;}
 .bp-item{border:1px solid var(--line2);border-radius:14px;background:linear-gradient(160deg,#171012,#0d0a0c);padding:14px 12px;text-align:center;}
 .bp-item.empty{opacity:.5;}
 .bpi-icon{font-size:34px;line-height:1;}
@@ -175,7 +185,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .bpi-buy{border-color:var(--cyan);color:var(--cyan);}
 .bpi-use:not(:disabled):hover,.bpi-buy:hover{transform:scale(1.04);}
 .bpi-now{margin-top:10px;font-family:"Barlow Condensed";font-weight:800;font-size:12px;letter-spacing:.06em;}
-.bp-filter{position:sticky;top:0;z-index:3;display:flex;flex-wrap:wrap;gap:6px;padding:2px 0 10px;margin-bottom:4px;background:var(--panel);}
+.bp-filter{position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;gap:6px;padding:2px 0 10px;margin-bottom:4px;background:var(--panel);}
 .bp-fchip{display:inline-flex;align-items:center;gap:5px;font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.06em;color:var(--muted);border:1px solid var(--line2);background:var(--panel2);border-radius:8px;padding:3px 9px;cursor:pointer;transition:filter .12s,border-color .12s;}
 .bp-fchip:hover{filter:brightness(1.15);}
 .bp-fchip.on{border-color:var(--cyan);color:var(--cyan);}
@@ -2060,6 +2070,8 @@ function setRollMini(on) {
    Alur: klik slot => jadikan target; klik tile koleksi => pasang ke target (atau slot kosong pertama). */
 let bpTarget = null;
 let bpMutFilter = "all"; /* filter varian koleksi: all|none|gold|rainbow|secret|shiny */
+let bpTab = "deck"; /* tab Backpack: deck | item | artefact | pet */
+function bpSetTab(t){bpTab=t;bpTarget=null;renderBackpackPanel();}
 function deckTotalPower(){return equippedList().reduce((a,s)=>{const st=cardStats(s.char,s.mut,s.trait,s.shiny);return a+(st.hp+st.atk);},0);}
 function bpPickSlot(i){bpTarget=(bpTarget===i?null:i);renderBackpackPanel();}
 function bpSetFilter(m){bpMutFilter=m;renderBackpackPanel();}
@@ -2079,9 +2091,16 @@ function bpLock(stackId){const s=state.stacks.find(x=>x.id===stackId);if(!s)retu
 function renderBackpackPanel(){
   const panel=document.getElementById('backpackPanel');if(!panel)return;
   bpsHoverBind();bpsHoverHide();
-  const header=`<div class="backpack-header"><h2>DECK &amp; KOLEKSI</h2>
+  const TABS=[{k:'deck',l:'DECK'},{k:'item',l:'ITEM'},{k:'artefact',l:'ARTEFAK'},{k:'pet',l:'PET'}];
+  const tabbar=`<div class="bp-tabs">${TABS.map(t=>`<button class="bp-tab${bpTab===t.k?' on':''}" onclick="bpSetTab('${t.k}')">${t.l}</button>`).join('')}</div>`;
+  const header=`<div class="backpack-header"><h2>BACKPACK</h2>
     <div class="backpack-stats"><span>POWER <strong>${fmt(deckTotalPower())}</strong></span><span>KARTU <strong>${fmt(state.stacks.reduce((a,s)=>a+(s.count||1),0))}</strong></span></div>
-    <button class="backpack-close" onclick="toggleBackpack()">&times;</button></div>`;
+    <button class="backpack-close" onclick="toggleBackpack()">&times;</button></div>${tabbar}`;
+  const soon=lbl=>`<div class="bp-body"><div class="bp-soon"><div class="bp-soon-ic">${lbl==='ARTEFAK'?'◈':'🐾'}</div><div class="bp-soon-t">${lbl}</div><div class="bp-soon-s">SEGERA HADIR</div></div></div>`;
+  if(bpTab==='item'){panel.innerHTML=header+`<div class="bp-body">${renderBpItems()}</div>`;return;}
+  if(bpTab==='artefact'){panel.innerHTML=header+soon('ARTEFAK');return;}
+  if(bpTab==='pet'){panel.innerHTML=header+soon('PET');return;}
+  /* tab DECK (default) */
   if(!state.stacks.length){panel.innerHTML=header+`<div class="bp-empty">Belum punya kartu. Tekan &#127922; untuk Roll.</div>`;return;}
   const slots=[0,1,2,3].map(i=>{
     const id=state.deck[i];const s=id?state.stacks.find(x=>x.id===id):null;
@@ -2101,7 +2120,6 @@ function renderBackpackPanel(){
   const cntOf=m=>state.stacks.filter(s=>m==='all'?true:(m==='shiny'?!!s.shiny:(s.mut||'none')===m)).length;
   const chip=(k,lbl)=>{const on=bpMutFilter===k;const col=on?(MUT_COLOR[k]||'#7DF9FF'):'';return `<button class="bp-fchip${on?' on':''}" onclick="bpSetFilter('${k}')"${col?` style="border-color:${col};color:${col}"`:''}>${lbl}<em>${cntOf(k)}</em></button>`;};
   const filterRow=`<div class="bp-filter">${chip('all','SEMUA')+chip('none','MURNI')+chip('gold','GOLD')+chip('rainbow','RAINBOW')+chip('secret','SECRET')+chip('shiny','SHINY')}</div>`;
-  const itemsCol=renderBpItems();
   panel.innerHTML=header+`<div class="bp-body"><div class="bp-cols">
     <div class="bp-deckcol">
       <div class="bp-h">DEK</div>
@@ -2113,17 +2131,14 @@ function renderBackpackPanel(){
       <div class="bp-h">KOLEKSI (${visible.length})</div>
       ${visible.length?`<div class="bp-tiles">${tiles}</div>`:`<div class="bp-empty" style="padding:18px 0">Tidak ada kartu varian ini.</div>`}
     </div>
-    ${itemsCol}
   </div></div>`;
 }
-/* Kolom ITEM di backpack: simpen & pake Weather Potion. PAKAI -> roll weather (window 5 menit), BELI -> pakai coins. */
+/* Tab ITEM di backpack: grid item terpisah dari dek. Sekarang: Weather Potion (PAKAI -> roll weather 5 menit, BELI -> pakai coins). */
 function renderBpItems(){
   const pot=state.potions||0;
   const aw=activeWeatherId();
   const canUse=pot>0;
-  return `<div class="bp-itemscol">
-    <div class="bp-h">ITEM</div>
-    <div class="bp-item${canUse?'':' empty'}">
+  const potion=`<div class="bp-item${canUse?'':' empty'}">
       <div class="bpi-icon">🧪</div>
       <div class="bpi-name">WEATHER POTION</div>
       <div class="bpi-cnt">×${fmt(pot)}</div>
@@ -2133,8 +2148,8 @@ function renderBpItems(){
         <button class="bpi-buy" onclick="bpBuyPotion()">BELI ${fmt(WEATHER_POTION_PRICE)}</button>
       </div>
       ${aw?`<div class="bpi-now" style="color:${WEATHER[aw].color}">Aktif: ${WEATHER[aw].icon} ${WEATHER[aw].name}</div>`:''}
-    </div>
-  </div>`;
+    </div>`;
+  return `<div class="bp-h">ITEM</div><div class="bp-items-grid">${potion}</div>`;
 }
 function bpUsePotion(){
   const r=useWeatherPotion();
