@@ -842,8 +842,9 @@ body.battle-full .stat svg{flex:none}
 .hub-center .hc-name{font-weight:800;font-size:17px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.7)}
 .hub-center .hc-stats{display:flex;justify-content:space-between;gap:16px;margin-top:9px;font-size:14px;font-weight:700;color:#EAF4FF;align-items:center;text-shadow:0 1px 4px rgba(0,0,0,.7)}
 .hub-center .hc-name-top{position:absolute;top:12px;left:12px;z-index:6;font-weight:800;font-size:12px;color:#fff;text-align:left;text-shadow:0 1px 5px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.9);max-width:72%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hub-center .hc-name-top.hc-name-shine,.fighter .f-name.f-name-shine{color:transparent;text-shadow:none;background:linear-gradient(100deg,#9aa3ad 0%,#eef2f7 22%,#ffffff 42%,#c4ccd6 58%,#8b94a0 78%,#eef2f7 100%);background-size:220% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:hcNameShine 2.8s linear infinite}
-@keyframes hcNameShine{to{background-position:-220% center}}
+.hub-center .hc-name-top.hc-name-shine,.fighter .f-name.f-name-shine{color:transparent;-webkit-text-stroke:.6px var(--sh-edge,rgba(255,255,255,.5));text-shadow:0 0 6px var(--sh-glow,rgba(150,200,255,.25));background:linear-gradient(100deg,var(--sh-base,#aeb9c8) 0%,var(--sh-base,#aeb9c8) 40%,#ffffff 50%,var(--sh-base,#aeb9c8) 60%,var(--sh-base,#aeb9c8) 100%);background-size:250% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:hcNameShine 2.6s linear infinite}
+@keyframes hcNameShine{to{background-position:-250% center}}
+.shiny-gloss::after{content:attr(data-text);position:absolute;left:0;top:0;white-space:nowrap;text-shadow:none;color:transparent;-webkit-text-fill-color:transparent;background:linear-gradient(105deg,transparent 8%,rgba(255,255,255,.55) 32%,#ffffff 50%,rgba(255,255,255,.55) 68%,transparent 92%);background-size:250% auto;background-repeat:no-repeat;-webkit-background-clip:text;background-clip:text;filter:brightness(1.6);pointer-events:none;animation:hcNameShine 3s linear infinite}
 .hub-center .hc-chance{position:absolute;top:46px;left:12px;z-index:6;font-family:"Barlow Condensed";letter-spacing:.05em;font-size:14px;font-weight:700;text-shadow:0 1px 5px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.9)}
 .hub-center .f-tag{top:12px;right:12px}
 .hub-center .mut-badge{top:12px;left:8px}
@@ -2046,6 +2047,13 @@ const MUT_LABEL={none:"",gold:"GOLD",rainbow:"RAINBOW",secret:"SECRET"};
 const MUT_COLOR={gold:"#E0BC6E",rainbow:"#B58CFF",secret:"#22D3EE"};
 const MUT_LETTERS={gold:["#F6DFA6","#C99A45"],rainbow:["#FF6B81","#FFB347","#FFE66D","#6BE08A","#B9C2CC","#B98CFF","#FF6BD6"],secret:["#22D3EE","#7DF9FF","#E0F7FF","#00FFD0","#FFFFFF","#22D3EE"]};
 function mutText(mut,text){if(!mut||mut==='none'||!MUT_LABEL[mut])return text;const cols=MUT_LETTERS[mut]||[MUT_COLOR[mut]];return text.split("").map((ch,i)=>ch===' '?ch:`<span style="color:${cols[i%cols.length]}">${ch}</span>`).join("");}
+function shinyName(tag,base,shine,mut,shiny,name){
+  const esc=String(name).replace(/"/g,'&quot;');
+  if(!shiny){const st=(mut&&mut!=='none')?` style="color:${MUT_COLOR[mut]}"`:'';return `<${tag} class="${base}"${st}>${mutText(mut,name)}</${tag}>`;}
+  if(mut==='rainbow'||mut==='secret'){return `<${tag} class="${base} shiny-gloss" data-text="${esc}">${mutText(mut,name)}</${tag}>`;}
+  const st=(mut==='gold')?` style="--sh-base:${MUT_COLOR.gold}"`:'';
+  return `<${tag} class="${base} ${shine}"${st}>${name}</${tag}>`;
+}
 function mutBadge(mut){
   const label=MUT_LABEL[mut];if(!label)return "";
   return mutText(mut,label);
@@ -2770,7 +2778,7 @@ function meFighterHtml(s){
   const st=cardStats(s.char,s.mut,s.trait,s.shiny);
   const mut=(s.mut&&s.mut!=="none")?s.mut:null;
   const trait=(s.trait&&s.trait!=="none")?s.trait:null;
-  return `<div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}"${CARDS[s.char]&&CARDS[s.char].pos?` style="object-position:${CARDS[s.char].pos}"`:''}>${madaraAura(s.char)}<div class="f-name${(!mut&&s.shiny)?' f-name-shine':''}"${mut?` style="color:${MUT_COLOR[mut]}"`:''}>${mutText(mut,cardName(s.char))}</div><span class="hc-chance">1 in ${fmt(luckChance(s.char,s.mut,s.shiny))}</span>
+  return `<div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}"${CARDS[s.char]&&CARDS[s.char].pos?` style="object-position:${CARDS[s.char].pos}"`:''}>${madaraAura(s.char)}${shinyName('div','f-name','f-name-shine',mut,s.shiny,cardName(s.char))}<span class="hc-chance">1 in ${fmt(luckChance(s.char,s.mut,s.shiny))}</span>
     ${(s.shiny||mut||trait)?`<div class="f-badges">${s.shiny?'<span class="shiny-badge">SHINY</span>':''}${mut?mutChip(mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="hc-trait hc-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(14)}</span>`):''}</div>`:""}
     </div>
     <div class="hpbar"><i id="hpMe"></i><span id="hpMeT">${fmt(st.hp)} / ${fmt(st.hp)}</span></div>
@@ -3978,7 +3986,7 @@ function hubCardHtml(eq,idAttr){
   const trait=(eq.trait&&eq.trait!=='none')?eq.trait:null;
   return `<div class="hub-center${mut?' mut-'+mut:''}${shinyCls(eq)}"${idAttr||''} data-tier="${tier}"${mut?` style="border-color:${MUT_COLOR[mut]}"`:''}>
       <div class="hc-img"><img src="${cardImg(eq.char)}" alt="${cardName(eq.char)}"${CARDS[eq.char].pos?` style="object-position:${CARDS[eq.char].pos}"`:''}>${madaraAura(eq.char)}
-          <span class="hc-name-top${(!mut&&eq.shiny)?' hc-name-shine':''}"${mut?` style="color:${MUT_COLOR[mut]}"`:''}>${mutText(mut,cardName(eq.char))}</span>
+          ${shinyName('span','hc-name-top','hc-name-shine',mut,eq.shiny,cardName(eq.char))}
           <span class="hc-chance" style="color:${TIER_COLOR[tier]}">${rarityText(tier,luckChance(eq.char,eq.mut,eq.shiny))}</span>
           ${(mut||trait||eq.shiny)?`<div class="hc-badges">${eq.shiny?'<span class="shiny-badge">SHINY</span>':''}${mut?mutChip(mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="hc-trait hc-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(14)}</span>`):''}</div>`:''}
           <div class="skill-overlay"><b>${passiveName(eq.char)}</b><span class="sk-txt">${skillText(eq.char)}</span></div>
