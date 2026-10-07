@@ -932,16 +932,28 @@ body.battle-full .stat svg{flex:none}
    ngikutin kursor (di-set via JS), .hc-glare = highlight cahaya nyapuin. Battle/roll gak kena
    karena init-nya cuma dipanggil di renderLobby + #hubCard memang gak ada di sana. */
 .lobby-hub .hub-mid{perspective:900px}
-.lobby-hub #hubCard{transition:transform .12s ease-out;will-change:transform}
+.lobby-hub #hubCard{transition:transform .12s ease-out,filter .12s ease-out;will-change:transform,filter}
 .lobby-hub #hubCard .hc-glare{position:absolute;inset:0;z-index:5;pointer-events:none;border-radius:inherit;opacity:0;transition:opacity .3s;background:radial-gradient(circle at var(--gx,50%) var(--gy,50%),rgba(255,255,255,.4),rgba(255,255,255,0) 42%);mix-blend-mode:soft-light}
 /* Parallax layer (digerakin via --pf/--pfy dari initHubTilt): foreground (nama/chance) geser
    searah kursor, badge geser berlawanan, art zoom+geser lawan arah → kedalaman 3D. Semua layer
    udah di-dalem .hub-center(overflow:hidden) jadi geser few px gak bocor keluar kartu. */
-.lobby-hub #hubCard .hc-img{transform:scale(1.1) translate(calc(var(--pf,0)*-9px),calc(var(--pfy,0)*-7px));transition:transform .12s ease-out}
+.lobby-hub #hubCard .hc-img{transform:scale(1.06) translate(calc(var(--pf,0)*-9px),calc(var(--pfy,0)*-7px));transition:transform .12s ease-out}
 .lobby-hub #hubCard .hc-name-top,.lobby-hub #hubCard .hc-chance{transition:transform .12s ease-out}
-.lobby-hub #hubCard .hc-name-top{transform:translate(calc(var(--pf,0)*14px),calc(var(--pfy,0)*10px))}
+.lobby-hub #hubCard .hc-name-top{transform:translate(calc(var(--pf,0)*28px),calc(var(--pfy,0)*18px))}
 .lobby-hub #hubCard .hc-chance{transform:translate(calc(var(--pf,0)*22px),calc(var(--pfy,0)*15px))}
-.lobby-hub #hubCard .hc-badges{transform:translate(calc(var(--pf,0)*-16px),calc(var(--pfy,0)*-11px));transition:transform .12s ease-out}
+.lobby-hub #hubCard .hc-badges{transform:translate(calc(var(--pf,0)*18px),calc(var(--pfy,0)*13px));transition:transform .12s ease-out}
+.lobby-hub #hubCard .hc-stats{transition:transform .12s ease-out}
+.lobby-hub #hubCard .hc-stats{transform:translate(calc(var(--pf,0)*26px),calc(var(--pfy,0)*16px))}
+/* Jarak tepi saat DIAM (bukan cuma pas miring): di kartu gede, inset default 12px keliatan
+   nempel frame. Lebain dikit khusus lobby biar napas. Parallax (transform) gak kesenggol. */
+.lobby-hub #hubCard .hc-name-top{top:18px;left:18px}
+.lobby-hub #hubCard .hc-chance{top:52px;left:18px}
+.lobby-hub #hubCard .hc-badges{top:18px;right:18px}
+/* Bayangan ngambang: GROUND shadow via ::before di panggung .hub-mid (bukan filter di kartu —
+   exGlitch UR/EX ng-Control filter & filter di parent nge-flatten perspective). Elips blur gelap
+   di bawah kartu = kerasa melayang, aman buat semua tier, tilt tetep 3D. */
+.lobby-hub .hub-mid{position:relative}
+.lobby-hub .hub-mid::before{content:"";position:absolute;left:7%;right:7%;top:60%;height:40%;border-radius:50%;background:radial-gradient(50% 50% at 50% 50%,rgba(0,0,0,.5),rgba(0,0,0,0) 72%);filter:blur(15px);z-index:-1;pointer-events:none}
 .hub-center .hc-img{position:absolute;inset:0;flex:none;background:#E9EDF2}
 .hub-center .hc-img img,.hub-center .hc-img video{width:100%;height:100%;object-fit:cover;object-position:top}
 .hub-center .hc-info{position:absolute;left:0;right:0;bottom:0;z-index:6;padding:30px 14px 12px;border-top:none;background:linear-gradient(to top,rgba(6,8,12,.92) 32%,rgba(6,8,12,.5) 64%,transparent)}
