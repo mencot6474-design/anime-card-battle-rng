@@ -86,6 +86,21 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .roll-auto-btn:hover{transform:scale(1.06);}
 .roll-auto-btn.on{background:linear-gradient(135deg,var(--cyan),var(--purple));color:#06131a;border-color:transparent;animation:pulse-roll 1.4s infinite;}
 @keyframes pulse-roll{0%,100%{box-shadow:0 6px 24px rgba(18,28,38,.35),0 0 0 3px var(--panel);}50%{box-shadow:0 12px 40px rgba(18,28,38,.55),0 0 0 6px var(--cyan);}}
+/* ---------- WEATHER DOCK ---------- */
+.weather-dock{position:fixed;right:20px;bottom:150px;z-index:100;display:flex;flex-direction:column;align-items:flex-end;gap:7px;}
+.weather-dock:empty{display:none;}
+.wd-chip{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;border:2px solid var(--wdc,var(--line2));background:var(--panel);color:#fff;font-family:"Barlow Condensed";font-weight:800;font-size:14px;letter-spacing:.06em;box-shadow:0 4px 14px rgba(18,28,38,.35);animation:wd-glow 2s ease-in-out infinite;}
+.wd-chip .wd-ic{font-size:16px;}
+.wd-chip .wd-time{color:var(--wdc,var(--cyan));font-variant-numeric:tabular-nums;}
+@keyframes wd-glow{0%,100%{box-shadow:0 4px 14px rgba(18,28,38,.35);}50%{box-shadow:0 6px 20px color-mix(in srgb,var(--wdc,#38b7ff) 45%,transparent);}}
+.wd-actions{display:flex;gap:6px;}
+.wd-btn{padding:6px 12px;border-radius:999px;border:2px solid var(--line2);background:var(--panel);color:var(--text);font-family:"Barlow Condensed";font-weight:800;font-size:13px;letter-spacing:.08em;cursor:pointer;transition:.15s;box-shadow:0 3px 10px rgba(18,28,38,.28);}
+.wd-btn:hover{transform:scale(1.05);}
+.wd-btn.potion{border-color:#5eead4;color:#5eead4;}
+.wd-btn.buy{border-color:var(--cyan);color:var(--cyan);}
+.weather-toast{position:fixed;left:50%;top:16%;transform:translate(-50%,-14px);z-index:210;padding:14px 26px;border-radius:16px;border:2px solid var(--wdc,var(--cyan));background:rgba(18,28,38,.96);color:#fff;font-family:"Barlow Condensed";font-weight:800;font-size:22px;letter-spacing:.06em;text-align:center;opacity:0;pointer-events:none;transition:opacity .35s,transform .35s;box-shadow:0 10px 40px rgba(18,28,38,.6);}
+.weather-toast.show{opacity:1;transform:translate(-50%,0);}
+.weather-toast small{display:block;font-size:12px;font-weight:700;color:var(--wdc,var(--cyan));margin-top:3px;letter-spacing:.14em;}
 @keyframes spin-roll{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
 .roll-overlay{position:fixed;inset:0;background:rgba(18,28,38,.94);z-index:150;display:none;align-items:center;justify-content:center;flex-direction:column;backdrop-filter:blur(10px);}
 .roll-overlay.visible{display:flex;}
@@ -1441,6 +1456,10 @@ body.battle-full .stat svg{flex:none}
 <button class="roll-auto-btn" id="rollAutoBtn" title="Auto Roll (nyala/mati)">AUTO</button>
 <button class="roll-btn" id="rollBtn" title="Roll Cards!">🎲</button>
 <div class="backpack-toggle" id="backpackToggle" title="Backpack">🎒</div>
+<!-- ===== WEATHER DOCK (persisten, dekat roll). Chip weather aktif + countdown,
+     tombol pake Weather Potion, dan tombol beli (Toko Menara). ===== -->
+<div id="weatherDock" class="weather-dock"></div>
+<div id="weatherToast" class="weather-toast"></div>
 <div class="roll-overlay" id="rollOverlay">
   <div class="roll-card-showcase" id="rollShowcase"></div>
   <div class="roll-actions">
@@ -1475,7 +1494,7 @@ function rarityText(tier,chance){return "1 in "+(chance||chanceOf(tier));}
    SHINY ×2, mutasi ×MUT_MULT (gold 5 / rainbow 10 / secret 25). Mis. secret dari kartu 800k = 1 in 20M. */
 function effChance(charId,mut,shiny){const c=CARDS[charId]||{};const ch=c.chance||chanceOf(c.tier);return ch*(shiny?SHINY_MULT:1)*(MUT_MULT[mut]||1);}
 // Total luck = (base + flat) × (1 + percent). Base = stat pemain, Flat dari skill tree/artifact/pet, Percent dari artifact/pet.
-function totalLuck(){const p=state?.player||{};const base=p.luckBase??p.luck??1;const flat=p.luckFlat||0;const pct=p.luckPercent||0;return (base+flat)*(1+pct);}
+function totalLuck(){const p=state?.player||{};const base=p.luckBase??p.luck??1;const flat=p.luckFlat||0;const pct=p.luckPercent||0;return (base+flat)*(1+pct)*weatherLuckMult();}
 // Hitung effective chance dari result roll (setelah flat luck division)
 function effChanceFromResult(result){if(!result)return null;return Math.ceil(result.effChance/totalLuck());}
 // Chance yang ditampilkan ke user = base × statMult ÷ totalLuck.
@@ -1645,7 +1664,21 @@ const STORY_BIBLE={
       desc:"Ketika kartu apapun di party-mu mati, Royal Vanguard mendapatkan +25% serangan secara permanen (menumpuk tiap kali ada kartu party yang jatuh)."},
     {id:"CH_REGRESSOR",name:"REGRESSOR",tier:"UR",type:"Player",skill:"REGRESSION",hp:1527,atk:764,chance:18000000,art:"assets/cards/art/regressor.png",pos:"center",
       fx:{regression:{hpPct:40}},
-      desc:"Saat mati, jika Regressor telah membunuh setidaknya satu kartu dalam pertarungan ini, bangkit kembali dengan 40% HP dan skill-nya di-refresh. Setiap kill menyimpan satu 'regression'; tiap kebangkitan menghabiskan satu."}
+      desc:"Saat mati, jika Regressor telah membunuh setidaknya satu kartu dalam pertarungan ini, bangkit kembali dengan 40% HP dan skill-nya di-refresh. Setiap kill menyimpan satu 'regression'; tiap kebangkitan menghabiskan satu."},
+    /* ===== KARTU EKSKLUSIF WEATHER (placeholder — art/stat/gambar bisa diganti nanti).
+       Hanya bisa ke-roll saat weather-nya AKTIF (lihat WEATHERS + activeWeatherId). ===== */
+    {id:"CH_STORM_HERALD",name:"STORM HERALD",tier:"UR",type:"Tempest",skill:"THUNDERCALL",hp:2100,atk:1050,chance:12000000,art:"assets/cards/art/storm-herald.png",pos:"center",weatherOnly:"storm",
+      fx:{everySecond:{mult:1.4}},
+      desc:"(Eksklusif cuaca BADAI) Pembawa badai yang sambarannya berlipat tiap giliran genap."},
+    {id:"CH_CELESTIAL_ORACLE",name:"CELESTIAL ORACLE",tier:"EX",type:"Seer",skill:"PROPHECY",hp:2280,atk:1140,chance:16000000,art:"assets/cards/art/celestial-oracle.png",pos:"center",weatherOnly:"celestial",
+      fx:{revive:{pct:50}},
+      desc:"(Eksklusif cuaca CELESTIAL) Peramal yang bangkit sekali dengan 50% HP setelah tumbang."},
+    {id:"CH_ECLIPSE_WARDEN",name:"ECLIPSE WARDEN",tier:"EX",type:"Voidkeeper",skill:"UMBRAL VEIL",hp:2560,atk:1020,chance:24000000,art:"assets/cards/art/eclipse-warden.png",pos:"center",weatherOnly:"eclipse",
+      fx:{dodgeAtk:{pct:30}},
+      desc:"(Eksklusif cuaca ECLIPSE) Penjaga gerhana yang kadang meleset total lalu membalas."},
+    {id:"CH_APOCALYPSE_Herald",name:"APOCALYPSE HERALD",tier:"EX",type:"Doombringer",skill:"END TIMES",hp:2900,atk:1450,chance:36000000,art:"assets/cards/art/apocalypse-herald.png",pos:"center",weatherOnly:"apocalypse",
+      fx:{dmgMult:1.6},
+      desc:"(Eksklusif cuaca APOCALYPSE) Herald akhir zaman dengan damage paling buas di seluruh katalog."}
   ]
 };
 /* ROLL SYSTEM - Pull-based RNG (bukan gacha pool) */
@@ -1653,6 +1686,96 @@ const RNG_ROLL_SPEED=1500; // ms per roll (base)
 const RNG_ROLL_MIN=300;    // ms minimum per roll — speed cap, kartu harus sempat keliatan
 const RNG_ROLL_MAX_MULT=RNG_ROLL_SPEED/RNG_ROLL_MIN; // ≈ 5×
 const RNG_TOTAL_WEIGHT=1000000; // total weight untuk probability
+
+/* ===== WEATHER SYSTEM =====
+   Weather Potion (drop menara / Toko Menara) -> buka = roll TERJAMIN 1 weather (weighted by dropWeight).
+   Pity no-downgrade: nggak pernah dapat weather lebih jelek dari yang pernah didapat (weatherRank: makin rendah rank = makin bagus/langka).
+   Weather aktif = window 5 menit real-time (Date.now()+300000, disimpan sbg endsAt biar tahan reload).
+   Pas aktif: totalLuck x luckBonus, roll speed x speedBonus, pool nambah kartu weatherOnly yang cocok. */
+const WEATHER_MS=300000; // 5 menit
+const WEATHERS=[
+  {id:"storm",      name:"BADAI",      icon:"⛈",  dropWeight:30, luckBonus:1.2, speedBonus:1.5, color:"#7dd3fc"},
+  {id:"celestial",  name:"CELESTIAL",  icon:"✨",  dropWeight:20, luckBonus:2.0, speedBonus:2.0, color:"#fcd34d"},
+  {id:"eclipse",    name:"ECLIPSE",    icon:"🌑",  dropWeight:5,  luckBonus:4.0, speedBonus:3.0, color:"#c4b5fd"},
+  {id:"apocalypse", name:"APOCALYPSE", icon:"☄", dropWeight:1,  luckBonus:8.0, speedBonus:5.0, color:"#f87171"},
+];
+const WEATHER=Object.fromEntries(WEATHERS.map(w=>[w.id,w]));
+/* Rank 0..N berdasar dropWeight ASC (paling langka = rank 0 = paling BAGUS). Pity pakai floorRank: hanya weather dengan rank <= floorRank yang bisa ke-roll. */
+function weatherRank(id){const s=[...WEATHERS].sort((a,b)=>a.dropWeight-b.dropWeight);return s.findIndex(w=>w.id===id);}
+function betterWeather(a,b){if(!a)return b;if(!b)return a;return weatherRank(a)<=weatherRank(b)?a:b;}
+/* Weather yang SEKARANG aktif (null kalau belum/gampang window 5 menit udah lewat). Auto-clear saat kedaluwarsa. */
+function activeWeatherId(){if(!state||!state.weather)return null;if(Date.now()>=state.weather.endsAt){state.weather=null;return null;}return state.weather.id;}
+function weatherLuckMult(){const id=activeWeatherId();return id?WEATHER[id].luckBonus:1;}
+function weatherSpeedMult(){const id=activeWeatherId();return id?WEATHER[id].speedBonus:1;}
+/* Buka 1 Weather Potion -> roll TERJAMIN 1 weather. Pity no-downgrade: yang ke-roll cuma weather
+   selevel atau LEBIH BAGUS dari weather terbaik yang pernah didapat (state.weatherBest).
+   Kalau window lama masih aktif, dia ke-ganti (re-roll) tapi nggak pernah turun kelas. */
+function rollWeather(){
+  const best=state.weatherBest;
+  const floorRank=best?weatherRank(best):Infinity;
+  const eligible=WEATHERS.filter(w=>!best||weatherRank(w.id)<=floorRank);
+  let tot=0;const ws=eligible.map(w=>{tot+=w.dropWeight;return w;});
+  let r=Math.random()*tot,pick=ws[ws.length-1];
+  for(let i=0;i<ws.length;i++){r-=ws[i].dropWeight;if(r<=0){pick=ws[i];break;}}
+  return pick;
+}
+function useWeatherPotion(){
+  if(!state||!state.potions||state.potions<1)return {ok:false,reason:"NO_POTION"};
+  state.potions--;
+  const w=rollWeather();
+  state.weatherBest=betterWeather(state.weatherBest,w.id);
+  state.weather={id:w.id,endsAt:Date.now()+WEATHER_MS};
+  save();
+  return {ok:true,weather:w};
+}
+function buyWeatherPotion(price){
+  if(!state||typeof state.coins!=="number"||state.coins<price)return {ok:false,reason:"NO_COINS"};
+  state.coins-=price;state.potions=(state.potions||0)+1;save();
+  return {ok:true};
+}
+const WEATHER_POTION_PRICE=5000;
+/* Render weather dock = chip (kalau aktif, countdown mm:ss) + tombol pakai potion + beli. Dipanggil tiap renderShell & tiap tick detik. */
+function renderWeatherDock(){
+  const dock=document.getElementById("weatherDock");if(!dock)return;
+  const id=activeWeatherId();const w=id?WEATHER[id]:null;
+  const pot=state&&state.potions||0;
+  let html="";
+  if(w){
+    const left=Math.max(0,(state.weather.endsAt-Date.now()));
+    html+=`<div class="wd-chip" style="--wdc:${w.color}"><span class="wd-ic">${w.icon}</span><span>${w.name}</span><span class="wd-time">${fmtShortCountdown(left)}</span></div>`;
+  }
+  const acts=[];
+  if(pot>0)acts.push(`<button class="wd-btn potion" id="wdUse">🧪 PAKAI ×${pot}</button>`);
+  acts.push(`<button class="wd-btn buy" id="wdbuy">🛒 POTION ${fmt(WEATHER_POTION_PRICE)}</button>`);
+  html+=`<div class="wd-actions">${acts.join("")}</div>`;
+  dock.innerHTML=html;
+  const use=document.getElementById("wdUse");
+  if(use)use.onclick=()=>doUseWeatherPotion();
+  const buy=document.getElementById("wdbuy");
+  if(buy)buy.onclick=()=>{const r=buyWeatherPotion(WEATHER_POTION_PRICE);if(r.ok){beep(660,.12,"sine",.08);renderShell();}else{toast("Koin kurang","KOIN KURANG","#f87171");}};
+}
+function doUseWeatherPotion(){
+  const r=useWeatherPotion();
+  if(!r.ok){toast("Potion habis","GAK ADA POTION","#f87171");return;}
+  const w=r.weather;
+  beep(520,.16,"triangle",.1);setTimeout(()=>beep(780,.18,"triangle",.1),120);
+  toast(`${w.icon} ${w.name}`,"WEATHER AKTIF · 5 MENIT",w.color);
+  renderShell();
+}
+function fmtShortCountdown(ms){const s=Math.max(0,Math.floor(ms/1000));const p=x=>String(x).padStart(2,"0");return p(Math.floor(s/60))+":"+p(s%60);}
+function toast(main,sub,color){
+  const t=document.getElementById("weatherToast");if(!t)return;
+  t.style.setProperty("--wdc",color||"#38b7ff");
+  t.innerHTML=`${main}${sub?`<small>${sub}</small>`:""}`;
+  t.classList.add("show");
+  if(toast._tm)clearTimeout(toast._tm);
+  toast._tm=setTimeout(()=>t.classList.remove("show"),2200);
+}
+let weatherTickStarted=false;
+function startWeatherTick(){
+  if(weatherTickStarted)return;weatherTickStarted=true;
+  setInterval(()=>{if(!state)return;const hadActive=!!state.weather&&Date.now()<state.weather.endsAt;renderWeatherDock();/* re-render chip kalau window baru mati */if(hadActive&&!state.weather)renderShell();},1000);
+}
 
 // Drop rates: R=common, SR=uncommon, SSR=rare, UR=epic, EX=legendary, noGacha=exclusive
 // Format: {tier: string, baseWeight: number}
@@ -1677,7 +1800,8 @@ function getCards(){
 // Display "1 in X" tetap memakai flat division (ch/L) lewat luckChance() — ini konvensi UI, bukan model probabilitas ketat.
 function rngRoll(luckMultiplier=1,speedMultiplier=1){
   const L=(typeof luckMultiplier==="number"&&luckMultiplier>0)?luckMultiplier:1;
-  const pool=MASTER_CARD_INDEX.filter(c=>!c.noGacha);
+  const aw=activeWeatherId();
+  const pool=MASTER_CARD_INDEX.filter(c=>!c.noGacha&&(!c.weatherOnly||c.weatherOnly===aw));
   if(!pool.length)return null;
   const MUTS=["none","gold","rainbow","secret"];
   const entries=[];
@@ -1757,7 +1881,7 @@ function startRollAnimation(luck, speedMultiplier = 1) {
   const appliedLuck = (typeof luck === "number" && luck > 0) ? luck : totalLuck();
   rollState.luck = appliedLuck;
   // Clamp speed multiplier → jangan pernah di bawah RNG_ROLL_MIN (300ms).
-  rollState.speedMultiplier = Math.max(1, Math.min(speedMultiplier, RNG_ROLL_MAX_MULT));
+  rollState.speedMultiplier = Math.max(1, Math.min(speedMultiplier*weatherSpeedMult(), RNG_ROLL_MAX_MULT));
   rollState.active = true;
 
   const rollBtn = document.getElementById('rollBtn');
@@ -1767,7 +1891,7 @@ function startRollAnimation(luck, speedMultiplier = 1) {
   if (rollState.hideTimer) { clearTimeout(rollState.hideTimer); rollState.hideTimer = null; }
 
   // Set initial delay based on speed multiplier
-  const initialDelay = Math.max(RNG_ROLL_MIN, RNG_ROLL_SPEED / speedMultiplier);
+  const initialDelay = Math.max(RNG_ROLL_MIN, RNG_ROLL_SPEED / rollState.speedMultiplier);
   
   rollState.interval = setInterval(() => {
     const result = rngRoll(rollState.luck, rollState.speedMultiplier);
@@ -2000,7 +2124,7 @@ function activeChap(){
   return open.find(x=>x.no===(state?state.chap:1))||open.find(x=>!chapDone(x))||open[open.length-1]||CHAPTERS[0];
 }
 const LEVEL_COUNT=STORY_BIBLE.levels.length;
-const MASTER_CARD_INDEX=STORY_BIBLE.units.map(u=>({char_id:u.id,name:u.name,tier:u.tier,chance:u.chance||null,type:u.type,base_hp:u.hp,base_atk:u.atk,sprite_asset:u.art,art_image:u.art,pos:u.pos||null,passive:{name:u.skill,desc:u.desc},noGacha:!!u.noGacha}));
+const MASTER_CARD_INDEX=STORY_BIBLE.units.map(u=>({char_id:u.id,name:u.name,tier:u.tier,chance:u.chance||null,type:u.type,base_hp:u.hp,base_atk:u.atk,sprite_asset:u.art,art_image:u.art,pos:u.pos||null,passive:{name:u.skill,desc:u.desc},noGacha:!!u.noGacha,weatherOnly:u.weatherOnly||null}));
 const CARDS=Object.fromEntries(MASTER_CARD_INDEX.map(c=>[c.char_id,c]));
 function getCardData(id){return CARDS[id]||null;}
 function cardImg(id){const c=CARDS[id];return c?c.sprite_asset:"";}
@@ -2173,7 +2297,7 @@ function freshState(){
   const start=s0?{id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,fav:false,lock:false,mut:"none",shiny:false,trait:"none",count:1}:null;
   const newState={coins:1000,raidTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},tower:{floor:1,best:0},
     cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],history:[],battle:null,
-    player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1}};
+    player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1},weather:null,weatherBest:null,potions:0};
   console.log('[FRESH STATE] Initialized player:',newState.player);
   return newState;
 }
@@ -2255,6 +2379,11 @@ function loadStateFor(name){
   if(!state.tower||typeof state.tower!=="object")state.tower={floor:1,best:0};
   if(typeof state.tower.floor!=="number"||state.tower.floor<1)state.tower.floor=1;
   if(typeof state.tower.best!=="number"||state.tower.best<0)state.tower.best=0;
+  /* WEATHER: migrasi field baru + expire otomatis kalau window real-time udah lewat. */
+  if(typeof state.potions!=="number"||state.potions<0)state.potions=0;
+  if(state.weatherBest&&!WEATHER[state.weatherBest])state.weatherBest=null;
+  if(state.weather){if(!WEATHER[state.weather.id]||typeof state.weather.endsAt!=="number")state.weather=null;}
+  if(state.weather&&Date.now()>=state.weather.endsAt)state.weather=null;
   state.battle=null;
 }
 
@@ -2640,6 +2769,7 @@ function renderShell(){
   const tl=document.getElementById("tbLvl");if(tl)tl.textContent="LVL "+state.playerLv;
   const tp=document.getElementById("tbPw");if(tp)tp.innerHTML="&#9889; "+fmt(totalPower());
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.route===route()));
+  try{renderWeatherDock();startWeatherTick();}catch(e){}
 }
 
 /* =============== DAILY LOGIN 7 HARI =============== */
@@ -3826,7 +3956,7 @@ function towerWaves(f){
   const reg=towerPickRegular(f);
   return reg?[towerMakeWave(reg.char_id,f,false,"main")].filter(Boolean):[];
 }
-function towerReward(f){const boss=towerIsBossFloor(f);return {coins:boss?(500+f*60):(150+f*30),starStone:0};}
+function towerReward(f){const boss=towerIsBossFloor(f);return {coins:boss?(500+f*60):(150+f*30),starStone:0,potion:boss?2:1};}
 let towerView="hub", towerRun=null;
 function stopTower(){
   if(bt&&bt.tower){ if(bt.timer)clearTimeout(bt.timer); bt=null; }
@@ -3999,11 +4129,11 @@ function towerEnd(win){
   if(win){
     state.tower.best=Math.max(state.tower.best,f);
     if(f>=(state.tower.floor||1))state.tower.floor=f+1;
-    state.coins+=r.coins;save();renderShell();fanfare();
+    state.coins+=r.coins;state.potions=(state.potions||0)+(r.potion||0);save();renderShell();fanfare();
     document.getElementById("ov-eyebrow").textContent=(boss?"BOS":"LANTAI")+" "+f+" DITAKLUKKAN";
     ti.textContent="MENANG";ti.className="ov-title disp";
     rw.style.display="inline-flex";
-    rw.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 9.5h4.5a2 2 0 0 1 0 4H10a2 2 0 0 0 0 4h5"/></svg> +'+r.coins+' <small>COINS</small>';
+    rw.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 9.5h4.5a2 2 0 0 1 0 4H10a2 2 0 0 0 0 4h5"/></svg> +'+r.coins+' <small>COINS</small> <span class="potion-drop" style="margin-left:10px;color:#5eead4">🧪 +'+(r.potion||0)+' <small>WEATHER POTION</small></span>';
     document.getElementById("ov-note").textContent="Menara lantai "+f+" lolos"+(r.starStone?(" · +"+r.starStone+" Star Stone"):"")+" · "+bt.turn+" turn.";
     nx.style.display="";nx.textContent="LANTAI "+state.tower.floor+" \u2192";
     nx.onclick=()=>{ov.classList.remove("show");stopBattleLoop();towerEnter(state.tower.floor);};
