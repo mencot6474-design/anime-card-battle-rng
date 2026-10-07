@@ -1576,7 +1576,7 @@ function rarityText(tier,chance){return "1 in "+(chance||chanceOf(tier));}
    SHINY ×2, mutasi ×MUT_MULT (gold 5 / rainbow 10 / secret 25). Mis. secret dari kartu 800k = 1 in 20M. */
 function effChance(charId,mut,shiny){const c=CARDS[charId]||{};const ch=c.chance||chanceOf(c.tier);return ch*(shiny?SHINY_MULT:1)*(MUT_MULT[mut]||1);}
 // Total luck = (base + flat) × (1 + percent). Base = stat pemain, Flat dari skill tree/artifact/pet, Percent dari artifact/pet.
-function totalLuck(){const p=state?.player||{};const base=p.luckBase??p.luck??1;const flat=(p.luckFlat||0)+treeLuckFlat();const pct=p.luckPercent||0;return (base+flat)*(1+pct)*weatherLuckMult();}
+function totalLuck(){const p=state?.player||{};const base=p.luckBase??p.luck??1;const flat=(p.luckFlat||0)+treeLuckFlat();const pct=(p.luckPercent||0)+treeLuckPct();return (base+flat)*(1+pct)*weatherLuckMult();}
 // Hitung effective chance dari result roll (setelah flat luck division)
 function effChanceFromResult(result){if(!result)return null;return Math.ceil(result.effChance/totalLuck());}
 // Chance yang ditampilkan ke user = base × statMult ÷ totalLuck.
@@ -1794,11 +1794,11 @@ function weatherSpeedMult(){const id=activeWeatherId();return id?WEATHER[id].spe
    luck nambah luckFlat, speed nambah pengali roll-speed permanen (tetep kena cap 5x). ====== */
 const TREE_NODES=[
   {id:"root",  branch:"root", tier:0,name:"FONDASI",       cost:0,luck:0,   speed:0,  req:[],                      desc:"Titik awal pohon skill."},
-  {id:"lk1",   branch:"luck", tier:1,name:"PEKA",          cost:1,luck:0.2, speed:0,  req:["root"],                desc:"Mata mulai tajam cari yang langka."},
-  {id:"lk2",   branch:"luck", tier:2,name:"TERLIHAT",      cost:2,luck:0.5, speed:0,  req:["lk1"],                 desc:"Peluang kartu bagus naik."},
-  {id:"lk3",   branch:"luck", tier:3,name:"MENTARI",       cost:3,luck:1.0, speed:0,  req:["lk2"],                 desc:"Rezeki mulai ngalir."},
-  {id:"lk4",   branch:"luck", tier:4,name:"BERTUAH",       cost:4,luck:2.0, speed:0,  req:["lk3"],                 desc:"Tuaian hoki melimpah."},
-  {id:"lk5",   branch:"luck", tier:5,name:"MUARA REZEKI",  cost:6,luck:4.0, speed:0,  req:["lk4"],                 desc:"Semua aliran hoki bermuara ke lo."},
+  {id:"lk1",   branch:"luck", tier:1,name:"PEKA",          cost:1,luck:5,   speed:0,  req:["root"],                desc:"Mata mulai tajam cari yang langka."},
+  {id:"lk2",   branch:"luck", tier:2,name:"TERLIHAT",      cost:3,luck:10,  speed:0,  req:["lk1"],                 desc:"Peluang kartu bagus naik."},
+  {id:"lk3",   branch:"luck", tier:3,name:"MENTARI",       cost:5,luck:15,  speed:0,  req:["lk2"],                 desc:"Rezeki mulai ngalir."},
+  {id:"lk4",   branch:"luck", tier:4,name:"BERTUAH",       cost:10,luck:20, speed:0,  req:["lk3"],                 desc:"Tuaian hoki melimpah."},
+  {id:"lk5",   branch:"luck", tier:5,name:"MUARA REZEKI",  cost:15,luck:25, luckPct:0.1, speed:0, req:["lk4"],      desc:"Semua aliran hoki bermuara ke lo. +10% pengali luck."},
   {id:"sp1",   branch:"speed",tier:1,name:"RINGAN",        cost:1,luck:0,   speed:0.3,req:["root"],                desc:"Roll mulai ngebut."},
   {id:"sp2",   branch:"speed",tier:2,name:"CEPAT",         cost:2,luck:0,   speed:0.4,req:["sp1"],                 desc:"Jeda antar-roll mengecil."},
   {id:"sp3",   branch:"speed",tier:3,name:"PETIR",         cost:3,luck:0,   speed:0.5,req:["sp2"],                 desc:"Sambaran roll super cepat."},
@@ -1808,6 +1808,7 @@ const TREE_NODES=[
 const TREE=Object.fromEntries(TREE_NODES.map(n=>[n.id,n]));
 function treeOwned(id){return !!(state&&state.player&&state.player.tree&&state.player.tree[id]);}
 function treeLuckFlat(){let s=0;for(const n of TREE_NODES){if(treeOwned(n.id))s+=(n.luck||0);}return s;}
+function treeLuckPct(){let s=0;for(const n of TREE_NODES){if(treeOwned(n.id))s+=(n.luckPct||0);}return s;}
 function playerSpeedMult(){let s=1;for(const n of TREE_NODES){if(treeOwned(n.id))s+=(n.speed||0);}return s;}
 function treeCanBuy(id){
   const n=TREE[id];if(!n||id==="root")return false;
@@ -2095,7 +2096,7 @@ function renderProfile(){
   set("plLv",lv);
   set("plExp",`${fmt(curExp)} / ${fmt(xpNeed)}`);
   set("plSp",(p.sp||0));
-  const base=p.luckBase??1, flat=p.luckFlat??0, pct=p.luckPercent??0, treeF=treeLuckFlat();
+  const base=p.luckBase??1, flat=p.luckFlat??0, pct=(p.luckPercent||0)+treeLuckPct(), treeF=treeLuckFlat();
   const total=totalLuck();
   const wm=weatherLuckMult();
   let ltxt=total.toFixed(1)+"x";
@@ -2247,7 +2248,7 @@ function stNodeHtml(n,sp){
   const preqMet=n.req.every(r=>r==="root"||treeOwned(r));
   const affordable=sp>=n.cost;
   const state=owned?'owned':(preqMet&&affordable?'avail':(preqMet?'poor':'locked'));
-  const gain=n.branch==='luck'?('+'+n.luck.toFixed(1)+' LUCK'):('+'+n.speed.toFixed(1)+'× SPEED');
+  const gain=n.branch==='luck'?('+'+(Number.isInteger(n.luck)?n.luck:n.luck.toFixed(1))+' LUCK'+(n.luckPct?' · +'+Math.round(n.luckPct*100)+'%':'')):('+'+n.speed.toFixed(1)+'× SPEED');
   return `<div class="st-node st-${n.branch} st-${state}" onclick="bpTreeBuy('${n.id}')" title="${n.desc}">
     <div class="st-name">${n.name}</div>
     <div class="st-gain">${n.branch==='root'?'AKAR':gain}</div>
