@@ -1600,6 +1600,9 @@ const STORY_BIBLE={
            everyNth:{n,mult}    -> tiap serangan ke-N berubah: ×mult damage + menembus pengurangan damage (seperti SATU PERSEN tapi periodenya n).
            lowHpAura:{below,dr,burn:{pct,turns}} -> di bawah `below`% HP: damage masuk dipangkas `dr`% + serangan membakar musuh `pct`% max HP selama `turns` giliran.
            executeOnEntry:{pct}  -> saat masuk arena, kalau HP musuh saat ini < pct% dari HP kartu ini, musuh langsung dihancurkan (foeDown). Sekali per masuk.
+           transform:{mult}     -> permanen sejak masuk arena: HP & ATK ×mult (gak ada expiry, beda sama burst).
+           wallTitans:{every,pct} -> tiap `every` giliran sejak masuk, sambaran BONUS sebesar pct% ATK ke musuh (di luar serangan normal).
+           rumbling:{turns,pct}  -> saat kartu ini MATI (bukan revive/lastStand), musuh kena DoT pct% max HP-nya selama `turns` giliran berikutnya, terus jalan walau kartu udah ganti.
        ==================================================== */
     {id:"CH_RULER",name:"RULER",tier:"EX",type:"Absolute",skill:"VENUZDONOA",hp:4787,atk:2394,chance:850000000,art:"assets/cards/art/ruler.webp",
       fx:{revive:1,dmgMult:2,ignoreDef:1,statusImmune:1},
@@ -1618,7 +1621,10 @@ const STORY_BIBLE={
       desc:"Saat masuk arena, Amenotejikara membuat serangan pertama musuh meleset dan Shadow Heir langsung melakukan counter sebesar 15x damage. Setiap 3 giliran, Shadow Heir menghindari serangan berikutnya. Setiap serangan ke-4 berubah menjadi Susanoo Chidori yang memberikan 3x damage dan mengabaikan pengurangan damage. Di bawah 30% HP, Perfect Susanoo aktif, memberikan 40% pengurangan damage dan membuat serangan membakar musuh sebesar 20% max HP selama 2 giliran."},
     {id:"CH_FABLED_SOLDIER",name:"FABLED SOLDIER",tier:"UR",type:"Vanguard",skill:"SUPERNOVA",hp:3153,atk:1577,chance:200000000,art:"assets/cards/art/fabled-soldier.png",pos:"center",
       fx:{executeOnEntry:{pct:20},dmgMult:1.3},
-      desc:"Saat masuk, jika HP kartu aktif musuh saat ini kurang dari 20% dari stat Fabled Soldier, langsung hancurkan. Serangan memberikan 1.3x base damage."}
+      desc:"Saat masuk, jika HP kartu aktif musuh saat ini kurang dari 20% dari stat Fabled Soldier, langsung hancurkan. Serangan memberikan 1.3x base damage."},
+    {id:"CH_IMMORTAL_COLOSSUS",name:"IMMORTAL COLOSSUS",tier:"UR",type:"Titan",skill:"THE RUMBLING",hp:3029,atk:1515,chance:200000000,art:"assets/cards/art/immortal-colossus.png",pos:"center",
+      fx:{transform:{mult:1.5},wallTitans:{every:3,pct:20},rumbling:{turns:2,pct:10}},
+      desc:"Saat masuk, transform: 1.5x semua stat. Setiap 3 giliran, Wall Titans berbaris memberikan 20% dari serangan Eren ke semua kartu musuh. Saat mati, the Rumbling berlanjut selama 2 giliran lagi - musuh terkena 10% max HP per giliran bahkan setelah Eren jatuh."}
   ]
 };
 /* ROLL SYSTEM - Pull-based RNG (bukan gacha pool) */
@@ -3246,10 +3252,11 @@ function startBattle(){
   const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   const eid=en.id||null,efx=eid?(PASSIVE_FX[eid]||{}):{};
   if(bt&&bt.timer)clearTimeout(bt.timer);
-  bt={lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),execGuard:new Array(fighters.length).fill(false),trickNext:false,royalNow:false,gunsNow:false};
+  bt={lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),execGuard:new Array(fighters.length).fill(false),wtCount:new Array(fighters.length).fill(0),rumbling:0,rumblingPct:0,trickNext:false,royalNow:false,gunsNow:false};
   // BURST: kartu pertama masuk arena langsung dapat boost HP kalau punya fx.burst
   const fx0=resolveFx(eq,efx);
   if(fx0.burst){bt.pMax=Math.round(base.hp*fx0.burst.mult);bt.pHp=bt.pMax;}
+  if(fx0.transform){bt.pMax=Math.round(base.hp*fx0.transform.mult);bt.pHp=bt.pMax;}
   if(fx0.entryCounter)bt.entryGuard[0]=true;
   if(fx0.executeOnEntry)bt.execGuard[0]=true;
   schedPhase(700,step);
@@ -3261,9 +3268,10 @@ function tagIn(){
   const base=cardStats(bt.eq.char,bt.eq.mut,bt.eq.trait,bt.eq.shiny);
   bt.pMax=base.hp;bt.pHp=base.hp;
   bt.burstStart[next]=bt.turn;
-  bt.entryGuard[next]=false;bt.dodgeArmed[next]=false;bt.dodgeCount[next]=0;bt.execGuard[next]=false;
+  bt.entryGuard[next]=false;bt.dodgeArmed[next]=false;bt.dodgeCount[next]=0;bt.execGuard[next]=false;bt.wtCount[next]=0;
   const nfx=resolveFx(bt.eq,bt.efx);
   if(nfx.burst){bt.pMax=Math.round(base.hp*nfx.burst.mult);bt.pHp=bt.pMax;}
+  if(nfx.transform){bt.pMax=Math.round(base.hp*nfx.transform.mult);bt.pHp=bt.pMax;}
   if(nfx.entryCounter)bt.entryGuard[next]=true;
   if(nfx.executeOnEntry)bt.execGuard[next]=true;
   // fase 1: kartu aktif sekarang tumbang
@@ -3299,6 +3307,8 @@ function trySave(){
     setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
     return true;
   }
+  /* RUMBLING: kartu ini beneran tumbang (revive/lastStand gak nolong) → nyalain DoT post-mortem */
+  if(fx.rumbling){bt.rumbling=fx.rumbling.turns;bt.rumblingPct=fx.rumbling.pct;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","THE RUMBLING","burn");},600);}
   if(a+1<bt.fighters.length){tagIn();return true;}
   return false;
 }
@@ -3416,6 +3426,14 @@ function playerPhase(){
   bt.trickNext=false;bt.royalNow=false;bt.gunsNow=false;
   const id=bt.eq.char,fx=resolveFx(bt.eq,bt.efx),t=bt.turn;
   document.getElementById("turnLabel").innerHTML="TURN<br>"+t;
+  /* RUMBLING: DoT sisa dari kartu yang udah mati — jalan tiap giliran walau kartu udah ganti */
+  if(bt.rumbling>0){
+    const rd=Math.round(bt.es.hp*(bt.rumblingPct||10)/100);
+    bt.eHp-=rd;bt.rumbling--;
+    setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);
+    setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","RUMBLING -"+fmt(rd),"burn");}},200);
+    if(bt.eHp<=0){setTimeout(()=>{if(bt&&!bt.over)foeDown();},700);return;}
+  }
   if(bt.pStun>0){
     bt.pStun--;
     const lbl=(bt.pDrTurns>0&&bt.pDr)?"STUN · DR "+bt.pDr+"%":"STUN";
@@ -3454,6 +3472,7 @@ function playerPhase(){
   if(bt.atkBuff[a])atk=Math.round(atk*(1+bt.atkBuff[a]/100));
   if(fx.lowHpAtk&&bt.pHp<bt.pMax*fx.lowHpAtk.below/100)atk=Math.round(atk*(1+fx.lowHpAtk.bonus/100));
   if(fx.burst&&(t-(bt.burstStart[a]||1))<fx.burst.turns)atk=Math.round(atk*fx.burst.mult);
+  if(fx.transform)atk=Math.round(atk*fx.transform.mult);
   let dmgMult=1;
   if(fx.dmgMult)dmgMult*=fx.dmgMult;
   /* SATU PERSEN (Ultra Instinct): tiap serangan GENAP (ke-2, ke-4, ...) = 1% kekuatan penuh → ×mult damage + tembus damage reduction musuh */
@@ -3519,6 +3538,8 @@ function playerPhase(){
     if(bt.eHp>bt.es.hp)bt.eHp=bt.es.hp;
     setTimeout(()=>floatText(".fighter.foe","HP DRAIN","crit"),360);
   }
+  /* WALL TITANS: tiap `every` giliran, berbaris ngasih bonus pct% ATK ke musuh (di luar serangan normal) */
+  if(fx.wallTitans){bt.wtCount[a]=(bt.wtCount[a]||0)+1;if(bt.wtCount[a]%fx.wallTitans.every===0&&bt.eHp>0){const wt=Math.round(atk*fx.wallTitans.pct/100);bt.eHp-=wt;setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","WALL TITANS -"+fmt(wt),"crit");}},520);}}
   if(fx.lifesteal&&total>0){
     const ls=Math.round(total*fx.lifesteal/100);bt.pHp=Math.min(bt.pMax,bt.pHp+ls);
     setTimeout(()=>floatText(".fighter.me","+"+fmt(ls),"heal"),300);
