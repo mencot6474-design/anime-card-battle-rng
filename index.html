@@ -1622,8 +1622,9 @@ function effChance(charId,mut,shiny){const c=CARDS[charId]||{};const ch=c.chance
 function totalLuck(){const p=state?.player||{};const base=p.luckBase??p.luck??1;const flat=(p.luckFlat||0)+treeLuckFlat();const pct=(p.luckPercent||0)+treeLuckPct();return (base+flat)*(1+pct)*weatherLuckMult();}
 // Hitung effective chance dari result roll (setelah flat luck division)
 function effChanceFromResult(result){if(!result)return null;return Math.ceil(result.effChance/totalLuck());}
-// Chance yang ditampilkan ke user = base × statMult ÷ totalLuck.
-function luckChance(charId,mut,shiny){return Math.ceil(effChance(charId,mut,shiny)/totalLuck());}
+// Chance yang ditampilkan ke user = base × statMult (MENTAH, TIDAK dibagi luck) — biar kerasa "wah 1 in 18 juta".
+// Sistem luck TETAP jalan di belakang layar (ngaruh ke bobot roll rngRoll + keliatan di Profil), cuma angkanya saja yang shown raw.
+function luckChance(charId,mut,shiny){return effChance(charId,mut,shiny);}
 /* =============== STORY BIBLE ===============
    Satu-satunya tempat data karakter & alur story.
    CARDS, FOES, pool gacha, dan stat musuh diturunkan otomatis dari blok ini. */
@@ -1960,7 +1961,7 @@ function getCards(){
 
 // Main RNG roll function. luckMultiplier = totalLuck() = (base+flat)*(1+percent).
 // Catatan: weight pakai pangkat (1/ch^L) supaya luck benar-benar menggeser distribusi ke arah langka.
-// Display "1 in X" tetap memakai flat division (ch/L) lewat luckChance() — ini konvensi UI, bukan model probabilitas ketat.
+// Display "1 in X" memakai base MENTAH (ch, tanpa pembagian luck) lewat luckChance() — biar kesan rarity-nya "wah".
 function rngRoll(luckMultiplier=1,speedMultiplier=1){
   const L=(typeof luckMultiplier==="number"&&luckMultiplier>0)?luckMultiplier:1;
   const aw=activeWeatherId();
@@ -2121,10 +2122,10 @@ function showRollResult(result) {
   }
 
   // Tutup lewat klik di mana saja diikat di wireRollDock (overlay), bukan tombol lagi.
-  // Update chance display: gunakan effChance dari result (base ÷ totalLuck)
-  if(result.effChance!==undefined){
+  // Update chance display: pakai base MENTAH (result.chance = base × statMult), bukan yang dibagi luck.
+  if(result.chance!==undefined){
     const ec=document.querySelector('.roll-card-showcase .hc-chance');
-    if(ec)ec.textContent="1 in "+fmt(result.effChance);
+    if(ec)ec.textContent="1 in "+fmt(result.chance);
   }
 }
 
