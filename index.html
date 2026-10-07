@@ -1622,7 +1622,7 @@ const STORY_BIBLE={
     {id:"CH_FABLED_SOLDIER",name:"FABLED SOLDIER",tier:"UR",type:"Vanguard",skill:"SUPERNOVA",hp:3153,atk:1577,chance:200000000,art:"assets/cards/art/fabled-soldier.png",pos:"center",
       fx:{executeOnEntry:{pct:20},dmgMult:1.3},
       desc:"Saat masuk, jika HP kartu aktif musuh saat ini kurang dari 20% dari stat Fabled Soldier, langsung hancurkan. Serangan memberikan 1.3x base damage."},
-    {id:"CH_IMMORTAL_COLOSSUS",name:"IMMORTAL COLOSSUS",tier:"UR",type:"Titan",skill:"THE RUMBLING",hp:3029,atk:1515,chance:200000000,art:"assets/cards/art/immortal-colossus.png",pos:"center",
+    {id:"CH_IMMORTAL_COLOSSUS",name:"IMMORTAL COLOSSUS",tier:"UR",type:"Titan",skill:"THE RUMBLING",hp:3029,atk:1515,chance:175000000,art:"assets/cards/art/immortal-colossus.png",pos:"center",
       fx:{transform:{mult:1.5},wallTitans:{every:3,pct:20},rumbling:{turns:2,pct:10}},
       desc:"Saat masuk, transform: 1.5x semua stat. Setiap 3 giliran, Wall Titans berbaris memberikan 20% dari serangan Eren ke semua kartu musuh. Saat mati, the Rumbling berlanjut selama 2 giliran lagi - musuh terkena 10% max HP per giliran bahkan setelah Eren jatuh."}
   ]
@@ -3252,7 +3252,7 @@ function startBattle(){
   const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   const eid=en.id||null,efx=eid?(PASSIVE_FX[eid]||{}):{};
   if(bt&&bt.timer)clearTimeout(bt.timer);
-  bt={lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),execGuard:new Array(fighters.length).fill(false),wtCount:new Array(fighters.length).fill(0),rumbling:0,rumblingPct:0,trickNext:false,royalNow:false,gunsNow:false};
+  bt={lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),execGuard:new Array(fighters.length).fill(false),wtCount:new Array(fighters.length).fill(0),rumbling:0,rumblingPct:0,aftermath:false,trickNext:false,royalNow:false,gunsNow:false};
   // BURST: kartu pertama masuk arena langsung dapat boost HP kalau punya fx.burst
   const fx0=resolveFx(eq,efx);
   if(fx0.burst){bt.pMax=Math.round(base.hp*fx0.burst.mult);bt.pHp=bt.pMax;}
@@ -3310,6 +3310,8 @@ function trySave(){
   /* RUMBLING: kartu ini beneran tumbang (revive/lastStand gak nolong) → nyalain DoT post-mortem */
   if(fx.rumbling){bt.rumbling=fx.rumbling.turns;bt.rumblingPct=fx.rumbling.pct;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","THE RUMBLING","burn");},600);}
   if(a+1<bt.fighters.length){tagIn();return true;}
+  /* LAST CARD MATI tapi Rumbling masih jalan → jangan langsung kalah; masuk mode aftermath (DoT tick doang) */
+  if(bt.rumbling>0){bt.aftermath=true;return true;}
   return false;
 }
 function setBar(id,tid,cur,max){
@@ -3422,6 +3424,18 @@ function performAttack(o){
 function playerPhase(){
   if(!bt||bt.over)return;
   if(bt.turn>300){ endBattle(bt.eHp<=bt.pHp); return; }
+  /* AFTERMATH: kartu terakhir udah mati, Rumbling doang yang jalan — bisa nyulik menang, abis itu kalah */
+  if(bt.aftermath){
+    if(bt.rumbling>0){
+      const rd=Math.round(bt.es.hp*(bt.rumblingPct||10)/100);
+      bt.eHp-=rd;bt.rumbling--;
+      setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);
+      setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","RUMBLING -"+fmt(rd),"burn");}},200);
+      if(bt.eHp<=0){setTimeout(()=>{if(bt&&!bt.over)foeDown();},700);return;}
+      bt.turn++;schedPhase(1000,playerPhase);return;
+    }
+    endBattle(false);return;
+  }
   bt.justTagged=false;
   bt.trickNext=false;bt.royalNow=false;bt.gunsNow=false;
   const id=bt.eq.char,fx=resolveFx(bt.eq,bt.efx),t=bt.turn;
