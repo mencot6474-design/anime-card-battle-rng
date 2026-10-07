@@ -908,7 +908,7 @@ body.battle-full .stat svg{flex:none}
 }
 
 /* ---------- lobby hub ---------- */
-.lobby-hub{display:grid;grid-template-columns:minmax(78px,1fr) minmax(230px,1.55fr) minmax(78px,1fr);grid-template-rows:1fr 1fr auto;gap:clamp(12px,2.2vh,24px) clamp(14px,4vw,38px);margin:clamp(4px,1vh,12px) auto 0;max-width:920px;align-items:stretch}
+.lobby-hub{display:grid;grid-template-columns:minmax(84px,1fr) minmax(230px,1.55fr) minmax(84px,1fr);grid-template-rows:1fr 1fr auto;gap:clamp(12px,2.2vh,24px) clamp(16px,5vw,60px);margin:clamp(4px,1vh,12px) auto 0;max-width:1120px;align-items:stretch}
 .hub-box{position:relative;border-radius:18px;border:1.5px dashed rgba(20,28,38,.16);background:#FFFFFF;min-height:clamp(88px,17vh,150px);display:grid;place-items:center;transition:border-color .15s}
 .hub-box:hover{border-color:rgba(20,28,38,.22)}
 .hub-box .plus{width:36px;height:36px;border-radius:50%;border:1.5px solid rgba(20,28,38,.20);display:grid;place-items:center;color:rgba(20,28,38,.30);font-size:22px;font-weight:300;line-height:1}
@@ -921,7 +921,11 @@ body.battle-full .stat svg{flex:none}
 .h-l1{grid-column:1;grid-row:1}.h-l2{grid-column:1;grid-row:2}
 .h-r1{grid-column:3;grid-row:1}.h-r2{grid-column:3;grid-row:2}
 .h-mission{grid-column:2;grid-row:3;min-height:clamp(72px,12vh,104px)}
-.hub-mid{grid-column:2;grid-row:1 / span 2;display:flex;flex-direction:column;gap:clamp(8px,1.4vh,14px);align-items:center;width:100%;max-width:min(330px,38vh);justify-self:center}
+.hub-mid{grid-column:2;grid-row:1 / span 2;display:flex;flex-direction:column;gap:clamp(8px,1.4vh,14px);align-items:center;width:100%;max-width:min(400px,52vh);justify-self:center}
+/* LOBBY-CLEAN: kartu tengah jadi showcase art — buang paragraf skill/desc yang numpuk
+   (nama/chance/badge udah di sudut, HP/ATK tetep). Detail penuh tetap via hover & backpack. */
+.lobby-hub .hub-center .hc-skill,.lobby-hub .hub-center .hc-desc{display:none}
+.lobby-hub .hub-center .hc-info{padding:20px 14px 12px}
 .hub-center{width:100%;aspect-ratio:3/4;border-radius:20px;border:1px solid var(--line2);background:radial-gradient(120% 85% at 50% 0%,rgba(140,30,45,.10),#FFFFFF);position:relative;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:border-color .15s,transform .15s}
 .hub-center:hover{border-color:var(--cyan);transform:translateY(-2px)}
 .hub-center .hc-img{position:absolute;inset:0;flex:none;background:#E9EDF2}
