@@ -1599,6 +1599,7 @@ const STORY_BIBLE={
            dodgeEvery:{turns}   -> setiap N giliran sejak masuk, pasti menghindari serangan musuh pada giliran itu (deterministik).
            everyNth:{n,mult}    -> tiap serangan ke-N berubah: ×mult damage + menembus pengurangan damage (seperti SATU PERSEN tapi periodenya n).
            lowHpAura:{below,dr,burn:{pct,turns}} -> di bawah `below`% HP: damage masuk dipangkas `dr`% + serangan membakar musuh `pct`% max HP selama `turns` giliran.
+           executeOnEntry:{pct}  -> saat masuk arena, kalau HP musuh saat ini < pct% dari HP kartu ini, musuh langsung dihancurkan (foeDown). Sekali per masuk.
        ==================================================== */
     {id:"CH_RULER",name:"RULER",tier:"EX",type:"Absolute",skill:"VENUZDONOA",hp:4787,atk:2394,chance:850000000,art:"assets/cards/art/ruler.webp",
       fx:{revive:1,dmgMult:2,ignoreDef:1,statusImmune:1},
@@ -1614,7 +1615,10 @@ const STORY_BIBLE={
       desc:"Selama 4 giliran, mendapat 1.75x semua stat dan setiap serangan secara permanen mengurangi max HP musuh sebesar 12%. Setelah 4 giliran, kartu ini mati."},
     {id:"CH_SHADOW_HEIR",name:"SHADOW HEIR",tier:"UR",type:"Dojutsu",skill:"AMENOTEJIKARA / SUSANOO CHIDORI",hp:3563,atk:1782,chance:300000000,art:"assets/cards/art/shadow-heir.png",pos:"center",
       fx:{entryCounter:{mult:15},dodgeEvery:{turns:3},everyNth:{n:4,mult:3},lowHpAura:{below:30,dr:40,burn:{pct:20,turns:2}}},
-      desc:"Saat masuk arena, Amenotejikara membuat serangan pertama musuh meleset dan Shadow Heir langsung melakukan counter sebesar 15x damage. Setiap 3 giliran, Shadow Heir menghindari serangan berikutnya. Setiap serangan ke-4 berubah menjadi Susanoo Chidori yang memberikan 3x damage dan mengabaikan pengurangan damage. Di bawah 30% HP, Perfect Susanoo aktif, memberikan 40% pengurangan damage dan membuat serangan membakar musuh sebesar 20% max HP selama 2 giliran."}
+      desc:"Saat masuk arena, Amenotejikara membuat serangan pertama musuh meleset dan Shadow Heir langsung melakukan counter sebesar 15x damage. Setiap 3 giliran, Shadow Heir menghindari serangan berikutnya. Setiap serangan ke-4 berubah menjadi Susanoo Chidori yang memberikan 3x damage dan mengabaikan pengurangan damage. Di bawah 30% HP, Perfect Susanoo aktif, memberikan 40% pengurangan damage dan membuat serangan membakar musuh sebesar 20% max HP selama 2 giliran."},
+    {id:"CH_FABLED_SOLDIER",name:"FABLED SOLDIER",tier:"UR",type:"Vanguard",skill:"SUPERNOVA",hp:3153,atk:1577,chance:200000000,art:"assets/cards/art/fabled-soldier.png",pos:"center",
+      fx:{executeOnEntry:{pct:20},dmgMult:1.3},
+      desc:"Saat masuk, jika HP kartu aktif musuh saat ini kurang dari 20% dari stat Fabled Soldier, langsung hancurkan. Serangan memberikan 1.3x base damage."}
   ]
 };
 /* ROLL SYSTEM - Pull-based RNG (bukan gacha pool) */
@@ -3242,11 +3246,12 @@ function startBattle(){
   const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   const eid=en.id||null,efx=eid?(PASSIVE_FX[eid]||{}):{};
   if(bt&&bt.timer)clearTimeout(bt.timer);
-  bt={lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),trickNext:false,royalNow:false,gunsNow:false};
+  bt={lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),execGuard:new Array(fighters.length).fill(false),trickNext:false,royalNow:false,gunsNow:false};
   // BURST: kartu pertama masuk arena langsung dapat boost HP kalau punya fx.burst
   const fx0=resolveFx(eq,efx);
   if(fx0.burst){bt.pMax=Math.round(base.hp*fx0.burst.mult);bt.pHp=bt.pMax;}
   if(fx0.entryCounter)bt.entryGuard[0]=true;
+  if(fx0.executeOnEntry)bt.execGuard[0]=true;
   schedPhase(700,step);
 }
 function tagIn(){
@@ -3256,10 +3261,11 @@ function tagIn(){
   const base=cardStats(bt.eq.char,bt.eq.mut,bt.eq.trait,bt.eq.shiny);
   bt.pMax=base.hp;bt.pHp=base.hp;
   bt.burstStart[next]=bt.turn;
-  bt.entryGuard[next]=false;bt.dodgeArmed[next]=false;bt.dodgeCount[next]=0;
+  bt.entryGuard[next]=false;bt.dodgeArmed[next]=false;bt.dodgeCount[next]=0;bt.execGuard[next]=false;
   const nfx=resolveFx(bt.eq,bt.efx);
   if(nfx.burst){bt.pMax=Math.round(base.hp*nfx.burst.mult);bt.pHp=bt.pMax;}
   if(nfx.entryCounter)bt.entryGuard[next]=true;
+  if(nfx.executeOnEntry)bt.execGuard[next]=true;
   // fase 1: kartu aktif sekarang tumbang
   const meEl=document.querySelector(".fighter.me");
   if(meEl){meEl.classList.remove("tag-enter");meEl.classList.add("ko");}
@@ -3421,6 +3427,17 @@ function playerPhase(){
   const a=bt.active;
   /* DODGE EVERY: setiap N giliran sejak masuk, pasti hindari serangan musuh giliran ini */
   if(fx.dodgeEvery){bt.dodgeCount[a]=(bt.dodgeCount[a]||0)+1;if(bt.dodgeCount[a]%fx.dodgeEvery.turns===0)bt.dodgeArmed[a]=true;}
+  /* EXECUTE ON ENTRY (SUPERNOVA): saat masuk, kalau HP musuh < pct% HP kartu ini, hancurkan instan */
+  if(fx.executeOnEntry&&bt.execGuard[a]){
+    bt.execGuard[a]=false;
+    const thr=Math.round(cardStats(id,bt.eq.mut,bt.eq.trait,bt.eq.shiny).hp*fx.executeOnEntry.pct/100);
+    if(bt.eHp>0&&bt.eHp<thr){
+      bt.eHp=0;setBar("hpFoe","hpFoeT",0,bt.es.hp);
+      setTimeout(()=>{anim(".fighter.foe","ko");floatText(".fighter.foe","SUPERNOVA","crit");},200);
+      setTimeout(()=>{if(bt&&!bt.over)foeDown();},700);
+      return;
+    }
+  }
   /* LIFETIME: kartu self-destruct setelah N giliran sejak masuk arena */
   if(fx.lifetime&&(t-(bt.burstStart[a]||1))>=fx.lifetime.turns){
     bt.pHp=0;setBar("hpMe","hpMeT",0,bt.pMax);
