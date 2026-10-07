@@ -236,28 +236,30 @@ h1{font-size:clamp(30px,4.9vw,52px);font-weight:800;letter-spacing:-.01em;line-h
 .lvl-btn.weak{border-color:var(--line2)}
 .lvl-btn .chk{position:absolute;top:6px;right:8px;color:var(--cyan);font-size:12px}
 
-/* ---------- battle ---------- */
-.fighter{padding:0;overflow:hidden;border-radius:16px;border:1px solid var(--line2);position:relative;display:flex;flex-direction:column;justify-content:flex-end;height:460px;background:#0d0f12}
-.fighter.me{border-color:rgba(20,28,38,.30)}
-.fighter.foe{border-color:rgba(215,150,155,.55)}
-.f-banner{position:absolute;inset:0;height:auto;background:#E9EDF2;border-radius:16px;overflow:hidden;z-index:0}
+/* ---------- battle (sama persis card lobby .hub-center) ---------- */
+.fighter{width:100%;max-width:340px;aspect-ratio:3/4;border-radius:20px;border:1px solid var(--line2);background:radial-gradient(120% 85% at 50% 0%,rgba(140,30,45,.10),#FFFFFF);position:relative;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:border-color .15s,transform .15s}
+.f:hover{border-color:var(--cyan);transform:translateY(-2px)}
+.f-banner{width:100%;aspect-ratio:3/4;overflow:hidden}
 .f-banner img,.f-banner video{width:100%;height:100%;object-fit:cover;object-position:top}
-.f-tag{position:absolute;top:36px;left:12px;right:auto;z-index:2;font-family:"Barlow Condensed";letter-spacing:.05em;font-weight:700;font-size:14px;white-space:nowrap;text-shadow:0 1px 5px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.9)}
-.f-badges{position:absolute;top:12px;left:auto;right:12px;z-index:6;display:flex;flex-direction:column;gap:5px;align-items:flex-end;justify-content:flex-start;flex-wrap:wrap}
-.f-badges .mut-hover,.f-badges .trait-hover{display:inline-flex;vertical-align:middle}
-.f-badges .fbadge{display:inline-flex;align-items:center;gap:3px;height:22px;padding:0 8px;font-family:"Barlow Condensed";font-weight:700;font-size:12px;line-height:1;letter-spacing:.06em;border-radius:6px;background:rgba(12,14,16,.85);border:1px solid;white-space:nowrap}
-.hpbar{height:20px;border-radius:999px;background:rgba(20,24,30,.55);border:1px solid rgba(255,255,255,.18);margin:0 14px 8px;position:relative;z-index:2;overflow:hidden}
-.hpbar i{position:absolute;inset:0;width:100%;background:linear-gradient(90deg,#ff2d4a,#ff6b5e);box-shadow:inset 0 -6px 10px rgba(0,0,0,.22),inset 0 5px 8px rgba(255,255,255,.16);transition:width .35s}
-.hpbar span{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1;color:#fff;font-family:"Barlow Condensed";font-size:14px;letter-spacing:.1em;line-height:18px;font-weight:600;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,.85)}
-.f-body{position:relative;z-index:2;flex:0 0 auto;padding:16px 16px 16px;display:flex;flex-direction:column;gap:6px;background:linear-gradient(to top,rgba(6,8,12,.94) 42%,rgba(6,8,12,.55) 78%,transparent)}
-.f-name{position:absolute;top:12px;left:12px;z-index:3;font-size:12px;font-weight:800;line-height:1.05;color:#fff;text-shadow:0 1px 5px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.9);max-width:72%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.f-title{display:none}
-.stat-row{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-top:2px}
-.f-skill{font-family:"Barlow Condensed";letter-spacing:.08em;text-transform:uppercase;font-size:12px;color:rgba(234,244,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.8)}
-.f-desc{font-size:8px;line-height:1.3;color:rgba(234,244,255,.78);text-align:justify;text-justify:inter-word;text-shadow:0 1px 3px rgba(0,0,0,.85)}
-.stat{display:flex;gap:6px;align-items:center;font-size:14px;font-weight:700;color:#EAF4FF;text-shadow:0 1px 4px rgba(0,0,0,.7)}
-.skill-overlay{position:absolute;left:8px;bottom:8px;z-index:5;padding:6px 11px;border-radius:10px;background:rgba(14,16,19,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.14);font-family:"Barlow Condensed";letter-spacing:.08em;font-size:13px;text-transform:uppercase;color:#EAF4FF;cursor:help;max-width:calc(100% - 16px)}
-.skill-overlay b{color:#EAF4FF;font-weight:700;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f-banner::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;background:linear-gradient(115deg,transparent 32%,rgba(255,255,255,.22) 46%,rgba(255,255,255,.05) 55%,transparent 70%);background-size:250% 100%;z-index:1}
+.f.shiny .f-banner::after{opacity:1;animation:holoSheen 2.2s ease-in-out infinite}
+.f-name{position:absolute;top:12px;left:12px;z-index:6;font-weight:800;font-size:12px;color:#fff;text-align:left;text-shadow:0 1px 5px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.9);max-width:72%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hc-chance{position:absolute;top:46px;left:12px;z-index:5;font-family:"Barlow Condensed";font-weight:700;font-size:14px;letter-spacing:.05em;color:#fff;text-shadow:0 1px 5px rgba(0,0,0,.85)}
+.f-tag{position:absolute;top:12px;right:12px;z-index:6;font-family:"Barlow Condensed";font-weight:700;font-size:10px;letter-spacing:.16em;padding:2px 8px;border-radius:6px;background:rgba(14,16,19,.85);backdrop-filter:blur(4px)}
+.f-badges{position:absolute;top:12px;right:12px;z-index:7;display:flex;flex-direction:column;gap:5px;align-items:flex-end;justify-content:flex-start}
+.f-badges .mut-badge{position:static;top:auto;left:auto}
+.f-badges .mut-badge,.f-badges .hc-trait{display:inline-flex;align-items:center;height:22px;padding:0 8px;font-size:12px;line-height:1;border-radius:6px}
+.f-badges .hc-trait.hc-gem{width:22px;padding:0;justify-content:center}
+.f-badges .hc-gem svg{display:block}
+.shiny-badge{display:inline-flex;align-items:center;height:22px;padding:0 8px;font-size:10px;font-family:"Barlow Condensed";font-weight:700;letter-spacing:.1em;text-transform:uppercase;border-radius:6px;background:rgba(160,180,200,.88);color:#14181e;backdrop-filter:blur(4px)}
+.hpbar{height:16px;border-radius:8px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);padding:2px;position:absolute;top:100%;left:14px;right:14px;margin:8px 0 0;z-index:5}
+.hpbar i{display:block;height:100%;background:linear-gradient(90deg,#ff2d4a,#ff6b5e);transition:width .35s}
+.hpbar span{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1;color:#fff;font-family:"Barlow Condensed";font-size:10px;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.85)}
+.f-body{position:absolute;left:0;right:0;bottom:0;z-index:6;padding:30px 14px 12px;border-top:none;background:linear-gradient(to top,rgba(6,8,12,.92) 32%,rgba(6,8,12,.5) 64%,transparent)}
+.f-title{font-size:10px;letter-spacing:.16em;color:#EAF4FF;text-transform:uppercase;font-weight:600;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f-skill{font-family:"Barlow Condensed";letter-spacing:.08em;text-transform:uppercase;font-size:12px;color:#EAF4FF;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fighter .stat-row{background:none;padding:0;border-radius:0;margin-top:9px;display:flex;justify-content:space-between;gap:16px;font-size:14px;font-weight:700;color:#EAF4FF;align-items:center}
+.stat{display:flex;align-items:center;gap:6px;text-shadow:0 2px 8px rgba(0,0,0,.85)}
 .battle-grid{position:relative;display:grid;grid-template-columns:1fr 90px 1fr;gap:16px;align-items:stretch;justify-items:center;max-width:1000px;margin-inline:auto}
 .battle-grid.raid-stage{min-height:calc(100vh - 150px);align-items:center}
 .vs-col{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
@@ -275,9 +277,9 @@ body.battle-full .battle-grid{width:100%;max-width:none;margin-inline:0;height:1
 body.battle-full .battle-grid.raid-stage{min-height:0}
 body.battle-full .me-col{max-width:min(620px,max(300px,calc((100dvh - 300px)*.72)));height:100%;min-height:0;gap:clamp(10px,1.8vh,22px)}
 body.battle-full .me-col>.fighter{flex:1 1 auto;min-height:0}
-body.battle-full .fighter{min-height:0}
+body.battle-full .fighter{min-height:0;width:min(100%,min(460px,calc((100dvh - 360px)*1.1)));max-height:min(600px,calc((100dvh - 360px)*1.55))}
 body.battle-full .f-banner{position:absolute;inset:0;height:auto}
-body.battle-full .f-body{flex:0 0 auto;padding:12px clamp(12px,1.6vw,22px) clamp(12px,1.8vh,20px)}
+body.battle-full .f-body{flex:0 0 auto;padding:30px clamp(12px,1.6vw,22px) clamp(12px,1.8vh,20px)}
 body.battle-full .bench{flex:none}
 body.battle-full .vs-col .t{font-size:clamp(40px,6vh,74px)}
 body.battle-full .vs-col .s{font-size:clamp(10px,1.5vh,15px)}
@@ -298,7 +300,7 @@ body.battle-full.battle-tower #bfExit,body.battle-full.battle-tower #btPause{dis
 }
 .skill-overlay .sk-txt{position:absolute;left:0;bottom:calc(100% + 8px);width:max-content;max-width:min(240px,78vw);padding:9px 12px;border-radius:12px;background:rgba(14,16,19,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);box-shadow:0 10px 26px rgba(0,0,0,.55);font-family:"Rajdhani",sans-serif;letter-spacing:0;text-transform:none;font-weight:500;font-size:12.5px;line-height:1.4;color:rgba(244,246,248,.92);opacity:0;visibility:hidden;transform:translateY(6px);transition:opacity .16s ease,transform .16s ease,visibility .16s;pointer-events:none;z-index:6}
 .skill-overlay:hover .sk-txt{opacity:1;visibility:visible;transform:translateY(0)}
-.bench{display:flex;gap:10px;align-items:center;padding:12px;border-radius:12px;border:1px solid rgba(20,28,38,.16);background:#FFFFFF;position:relative;transition:opacity .4s,transform .4s}
+.bench{display:flex;gap:10px;align-items:center;padding:12px;border-radius:12px;border:1px solid rgba(20,28,38,.25);background:#171012;position:relative;transition:opacity .4s,transform .4s}
 .bench img,.bench video{width:44px;height:58px;object-fit:cover;object-position:top;border-radius:7px;flex:none}
 .bench .b-tag{position:absolute;top:-8px;left:10px;z-index:9;background:var(--cyan);color:#fff;font-family:"Barlow Condensed";font-weight:700;font-size:10px;letter-spacing:.16em;padding:2px 8px;border-radius:6px}
 .bench .b-info{flex:1;min-width:0;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
@@ -332,17 +334,15 @@ body.battle-full .vs-col .t{display:none}
 body.battle-full .vs-col .s{font-family:"Barlow Condensed";font-size:clamp(16px,2.6vh,24px);letter-spacing:.05em;color:var(--text);text-transform:none;font-weight:800;text-align:center;line-height:1.12}
 body.battle-full .fighter.me{grid-area:me;justify-self:start;align-self:center;aspect-ratio:3/4;width:min(100%,min(460px,calc((100dvh - 360px)*1.1)));max-height:min(600px,calc((100dvh - 360px)*1.55));min-height:0}
 body.battle-full .fighter.foe{grid-area:foe;justify-self:end;align-self:center;aspect-ratio:3/4;width:min(100%,min(460px,calc((100dvh - 360px)*1.1)));max-height:min(600px,calc((100dvh - 360px)*1.55));min-height:0}
-body.battle-full .fighter{height:auto;overflow:visible}
+body.battle-full .fighter{height:auto;overflow:hidden;border-radius:20px}
 body.battle-full .hpbar{position:absolute;top:100%;left:14px;right:14px;margin:8px 0 0;z-index:5}
 body.battle-full .me-col:not(.foe-side) .bench-rail{grid-area:bench;justify-self:center;align-self:end;margin-top:0}
 body.battle-full .foe-side .bench-rail{grid-area:foe-slot;justify-self:center;align-self:start;margin-top:0}
 body.battle-full .foe-side .bench{display:none}
-/* konten kartu: nama + HP/ATK selalu terbaca. Di kartu arena yang sempit, 2 kolom stat bikin teks "♡ HP 846" patah-patah → jadi 1 kolom + nowrap. Buang subtitle (cardType) biar rapi. */
-body.battle-full .f-body{gap:8px;border-radius:0 0 16px 16px}
-body.battle-full .f-name{font-size:12px}
-body.battle-full .f-title{display:none}
-body.battle-full .stat-row{gap:16px}
-body.battle-full .stat{white-space:nowrap;gap:6px;font-size:14px;font-weight:700}
+/* Di layar penuh, kartu tetap menampilkan nama atas artwork + info di bawah */
+body.battle-full .f-body{padding:30px clamp(12px,1.6vw,22px) clamp(12px,1.8vh,20px)}
+body.battle-full .stat-row{gap:16px;font-size:14px}
+body.battle-full .stat{white-space:nowrap;gap:6px;font-weight:700}
 body.battle-full .stat svg{flex:none}
 }
 .fighter.ko{filter:grayscale(1) brightness(.5);transform:translateY(12px);opacity:.55;transition:filter .3s,transform .3s,opacity .3s}
@@ -1455,16 +1455,30 @@ body.battle-full .stat svg{flex:none}
 /* UR = setingkat di bawah EX & TIDAK ada di gacha (hanya Toko Raid), jadi dia tidak punya baris DROP_RATES */
 const TIERS=["R","SR","SSR","UR","EX"];
 const TIER_COLOR={R:"#9A8A8B",SR:"#C8A2A8",SSR:"#B07A9B",UR:"#2F8FE2",EX:"#FF4D5E"};
-/* Sistem kelangkaan = "1 in N" (peluang per kartu), bukan label tier.
-   `tier` hanya dipakai internal sbg kunci warna/logika; yang tampil ke user adalah odds ini. */
-const TIER_CHANCE={R:10000,SR:100000,SSR:450000,UR:1000000,EX:1000000};
+/* TIER = 100% KOSMETIK (warna badge + label). Tidak menentukan drop chance, stat scaling, atau pool.
+   Chance tiap kartu di-set manual di field `chance:`. Kalau kartu tidak punya `chance:`, fallback ke
+   TIER_CHANCE di bawah (nilai tengah tiap band, supaya card tanpa override tetap masuk akal).
+   Bands (batas bawah inklusif): R < 50k ≤ SR < 500k ≤ SSR < 5jt ≤ UR < 500jt ≤ EX. */
+const TIER_CHANCE={R:5000,SR:250000,SSR:2500000,UR:50000000,EX:1000000000};
 function chanceOf(tier){return TIER_CHANCE[tier]||100;}
+// Auto-suggest tier kosmetik berdasarkan chance. Pakai pas nambah kartu baru biar label sesuai rarity.
+function tierFromChance(ch){
+  if(ch<50000)return "R";
+  if(ch<500000)return "SR";
+  if(ch<5000000)return "SSR";
+  if(ch<500000000)return "UR";
+  return "EX";
+}
 function rarityText(tier,chance){return "1 in "+(chance||chanceOf(tier));}
 /* Peluang efektif sebuah kartu: tiap lapisan kelangkaan mengali penyebut sesuai pengali stat-nya.
    SHINY ×2, mutasi ×MUT_MULT (gold 5 / rainbow 10 / secret 25). Mis. secret dari kartu 800k = 1 in 20M. */
 function effChance(charId,mut,shiny){const c=CARDS[charId]||{};const ch=c.chance||chanceOf(c.tier);return ch*(shiny?SHINY_MULT:1)*(MUT_MULT[mut]||1);}
+// Total luck = (base + flat) × (1 + percent). Base = stat pemain, Flat dari skill tree/artifact/pet, Percent dari artifact/pet.
+function totalLuck(){const p=state?.player||{};const base=p.luckBase??p.luck??1;const flat=p.luckFlat||0;const pct=p.luckPercent||0;return (base+flat)*(1+pct);}
 // Hitung effective chance dari result roll (setelah flat luck division)
-function effChanceFromResult(result){if(!result)return null;const base=result.effChance;const totalLuck=(state?.player?.luck)||1;return Math.ceil(base/totalLuck);}
+function effChanceFromResult(result){if(!result)return null;return Math.ceil(result.effChance/totalLuck());}
+// Chance yang ditampilkan ke user = base × statMult ÷ totalLuck.
+function luckChance(charId,mut,shiny){return Math.ceil(effChance(charId,mut,shiny)/totalLuck());}
 /* =============== STORY BIBLE ===============
    Satu-satunya tempat data karakter & alur story.
    CARDS, FOES, pool gacha, dan stat musuh diturunkan otomatis dari blok ini. */
@@ -1554,7 +1568,10 @@ const STORY_BIBLE={
         desc:"Deskripsi passive yang tampil di kartu.",
         noGacha:false}
        - id harus unik dan cocok dengan field "unit" di chapter (Story) yang memakainya.
-       - chance = peluang drop "1 in N" per kartu (override tier). Kosongkan -> ikut tier (R=10000,SR=100000,SSR=450000,UR=1000000,EX=1000000).
+       - chance = peluang drop "1 in N" per kartu. WAJIB diisi manual; ini satu-satunya yang menentukan rarity.
+         Kalau kosong, fallback ke TIER_CHANCE[tier] (nilai tengah band tier).
+       - tier = 100% KOSMETIK (warna badge + label). Tidak affect drop rate, stat scaling, atau pool.
+         Saran band: R<50k, SR<500k, SSR<5jt, UR<500jt, EX>=500jt. Helper `tierFromChance(ch)` tersedia.
        - noGacha:true -> tidak muncul di Roll (hanya hadiah/Toko Raid).
        - fx = passive. Kunci yang didukung engine battle:
            double:15            -> 15% serang 2x beruntun
@@ -1575,20 +1592,35 @@ const STORY_BIBLE={
            everySecond:{mult}   -> tiap serangan GENAP (ke-2,ke-4,..) ×mult damage + tembus damage reduction musuh
            lastStand:{pct}      -> fatal pertama ditahan di 1 HP (sekali) + langsung +pct% ATK
            styleSwitching:1    -> 4 mode bergilir tiap giliran: TRICKSTER(hindari ser. giliran itu) / SWORDMASTER(dmg x1.5) / ROYALGUARD(dmg masuk x0.5 + counter 30%) / GUNSLINGER(splash +40%)
+           burst:{turns,mult}  -> untuk N giliran pertama sejak kartu masuk, semua stat (HP & ATK) ×mult. Setelah itu kembali normal.
+           hpDrain:{pct}        -> tiap serangan yang kena, kurangi MAX HP musuh sebesar pct% (permanen, compounding).
+           lifetime:{turns}     -> setelah N giliran sejak kartu masuk, kartu ini mati instan (self-destruct, trigger tag-in/kalah).
+           entryCounter:{mult}  -> saat masuk arena, serangan PERTAMA musuh otomatis meleset lalu kartu ini membalas (counter) sebesar mult× ATK.
+           dodgeEvery:{turns}   -> setiap N giliran sejak masuk, pasti menghindari serangan musuh pada giliran itu (deterministik).
+           everyNth:{n,mult}    -> tiap serangan ke-N berubah: ×mult damage + menembus pengurangan damage (seperti SATU PERSEN tapi periodenya n).
+           lowHpAura:{below,dr,burn:{pct,turns}} -> di bawah `below`% HP: damage masuk dipangkas `dr`% + serangan membakar musuh `pct`% max HP selama `turns` giliran.
        ==================================================== */
-    {id:"CH_RULER",name:"RULER",tier:"EX",type:"Absolute",skill:"VENUZDONOA",hp:4787,atk:2394,chance:1000000,art:"assets/cards/art/ruler.webp",
+    {id:"CH_RULER",name:"RULER",tier:"EX",type:"Absolute",skill:"VENUZDONOA",hp:4787,atk:2394,chance:850000000,art:"assets/cards/art/ruler.webp",
       fx:{revive:1,dmgMult:2,ignoreDef:1,statusImmune:1},
       desc:"Saat mati, bangkit dengan 100% HP (sekali). Semua serangan memberikan 2x damage. Efek pengurangan damage musuh diabaikan sepenuhnya. Tidak dapat terkena efek status apapun."},
-    {id:"CH_OTHERWORLDLY",name:"OTHERWORLD",tier:"R",type:"Ultra Instinct",skill:"ULTRA INSTINCT: ONE PERCENT",hp:5120,atk:2560,chance:1200000,art:"assets/cards/art/otherworldly-being.png",
+    {id:"CH_OTHERWORLDLY",name:"OTHERWORLD",tier:"EX",type:"Ultra Instinct",skill:"ULTRA INSTINCT: ONE PERCENT",hp:5120,atk:2560,chance:1000000000,art:"assets/cards/art/otherworldly-being.png",
       fx:{dodgeAtk:{chance:60,pct:15,max:3},everySecond:{mult:2},lastStand:{pct:15}},
       desc:"60% kesempatan menghindari serangan apapun. Setiap kali menghindar, mendapat +15% ATK permanen (menumpuk hingga 3 kali). Setiap serangan ke-2 menggunakan Satu Persen kekuatannya: memberikan 2x damage dan mengabaikan pengurangan damage. Pertama kali menerima damage fatal, bertahan dengan 1 HP dan mendapat +15% ATK."},
-    {id:"CH_DEVIL_HUNTER",name:"DEVIL HUNTER",tier:"UR",type:"Style",skill:"STYLE SWITCHING",hp:4026,atk:2013,chance:800000,art:"assets/cards/art/devil-hunter.png",
+    {id:"CH_DEVIL_HUNTER",name:"DEVIL HUNTER",tier:"UR",type:"Style",skill:"STYLE SWITCHING",hp:4026,atk:2013,chance:450000000,art:"assets/cards/art/devil-hunter.png",
       fx:{styleSwitching:1},
-      desc:"Setiap giliran berganti mode secara berurutan: TRICKSTER (menghindari serangan musuh pada giliran itu), SWORDMASTER (damage 1.5x), ROYALGUARD (menerima 50% lebih sedikit damage dan membalas 30% dari damage yang diterima), GUNSLINGER (serangan juga menghantam target berikutnya sebesar 40%)."}
+      desc:"Setiap giliran berganti mode secara berurutan: TRICKSTER (menghindari serangan musuh pada giliran itu), SWORDMASTER (damage 1.5x), ROYALGUARD (menerima 50% lebih sedikit damage dan membalas 30% dari damage yang diterima), GUNSLINGER (serangan juga menghantam target berikutnya sebesar 40%)."},
+    {id:"CH_NINE_TAIL",name:"NINE-TAIL PRODIGY",tier:"UR",type:"Jinchuriki",skill:"LIFE FORCE DRAIN",hp:3563,atk:1782,chance:450000000,art:"assets/cards/art/nine-tail-prodigy.png",pos:"center",
+      fx:{burst:{turns:4,mult:1.75},hpDrain:{pct:12},lifetime:{turns:4}},
+      desc:"Selama 4 giliran, mendapat 1.75x semua stat dan setiap serangan secara permanen mengurangi max HP musuh sebesar 12%. Setelah 4 giliran, kartu ini mati."},
+    {id:"CH_SHADOW_HEIR",name:"SHADOW HEIR",tier:"UR",type:"Dojutsu",skill:"AMENOTEJIKARA / SUSANOO CHIDORI",hp:3563,atk:1782,chance:300000000,art:"assets/cards/art/shadow-heir.png",pos:"center",
+      fx:{entryCounter:{mult:15},dodgeEvery:{turns:3},everyNth:{n:4,mult:3},lowHpAura:{below:30,dr:40,burn:{pct:20,turns:2}}},
+      desc:"Saat masuk arena, Amenotejikara membuat serangan pertama musuh meleset dan Shadow Heir langsung melakukan counter sebesar 15x damage. Setiap 3 giliran, Shadow Heir menghindari serangan berikutnya. Setiap serangan ke-4 berubah menjadi Susanoo Chidori yang memberikan 3x damage dan mengabaikan pengurangan damage. Di bawah 30% HP, Perfect Susanoo aktif, memberikan 40% pengurangan damage dan membuat serangan membakar musuh sebesar 20% max HP selama 2 giliran."}
   ]
 };
 /* ROLL SYSTEM - Pull-based RNG (bukan gacha pool) */
-const RNG_ROLL_SPEED=1500; // ms per roll
+const RNG_ROLL_SPEED=1500; // ms per roll (base)
+const RNG_ROLL_MIN=300;    // ms minimum per roll — speed cap, kartu harus sempat keliatan
+const RNG_ROLL_MAX_MULT=RNG_ROLL_SPEED/RNG_ROLL_MIN; // ≈ 5×
 const RNG_TOTAL_WEIGHT=1000000; // total weight untuk probability
 
 // Drop rates: R=common, SR=uncommon, SSR=rare, UR=epic, EX=legendary, noGacha=exclusive
@@ -1609,12 +1641,11 @@ function getCards(){
   return MASTER_CARD_INDEX;
 }
 
-// Main RNG roll function - FLAT LUCK: effective = baseChance / totalLuck
+// Main RNG roll function. luckMultiplier = totalLuck() = (base+flat)*(1+percent).
+// Catatan: weight pakai pangkat (1/ch^L) supaya luck benar-benar menggeser distribusi ke arah langka.
+// Display "1 in X" tetap memakai flat division (ch/L) lewat luckChance() — ini konvensi UI, bukan model probabilitas ketat.
 function rngRoll(luckMultiplier=1,speedMultiplier=1){
-  // Pilih hasil LANGSUNG berdasar peluang "1 in N" tiap outcome.
-  // Tiap kartu punya banyak outcome = (BIASA/SHINY) × (none/gold/rainbow/secret).
-  // Penyebut efektif = chance dasar × pengali stat lapisannya ÷ totalLuck.
-  // Jadi varian yang lebih kuat memang langka, tapi bisa diperbesar efeknya dengan flat luck.
+  const L=(typeof luckMultiplier==="number"&&luckMultiplier>0)?luckMultiplier:1;
   const pool=MASTER_CARD_INDEX.filter(c=>!c.noGacha);
   if(!pool.length)return null;
   const MUTS=["none","gold","rainbow","secret"];
@@ -1624,14 +1655,12 @@ function rngRoll(luckMultiplier=1,speedMultiplier=1){
     for(const shiny of [false,true]){
       for(const mut of MUTS){
         const statMult=(shiny?SHINY_MULT:1)*(MUT_MULT[mut]||1);
-        // Flat division: effective = base * statMult / totalLuck
         entries.push({card:c,mut,shiny,ch:base*statMult});
       }
     }
   }
   let total=0;
-  // WEIGHT tetap 1/chance^luck (untuk balancing), tapi chance display & logic berikutnya dibagi luck
-  const weights=entries.map(e=>{const w=1/Math.pow(e.ch,luckMultiplier);total+=w;return w;});
+  const weights=entries.map(e=>{const w=1/Math.pow(e.ch,L);total+=w;return w;});
   let r=Math.random()*total, idx=entries.length-1;
   for(let i=0;i<entries.length;i++){r-=weights[i];if(r<=0){idx=i;break;}}
   const pick=entries[idx];
@@ -1640,8 +1669,8 @@ function rngRoll(luckMultiplier=1,speedMultiplier=1){
     tier:pick.card.tier,
     mut:pick.mut,
     shiny:pick.shiny,
-    chance:pick.ch,           // base raw chance (tampilkan di card)
-    effChance:Math.ceil(pick.ch/(state?.player?.luck||1)),   // effective setelah flat luck division
+    chance:pick.ch,                                    // base raw chance
+    effChance:Math.ceil(pick.ch/L),                    // flat display = ch / totalLuck
     speedBoost:speedMultiplier
   };
 }
@@ -1690,21 +1719,24 @@ function rollCountBadge() {
   }
 }
 
-function startRollAnimation(luck = 1, speedMultiplier = 1) {
+function startRollAnimation(luck, speedMultiplier = 1) {
   if (rollState.active) return;
-  
-  rollState.luck = luck;
-  rollState.speedMultiplier = speedMultiplier;
+
+  // Jika luck tidak diberikan, pakai totalLuck() dari state (base+flat)*(1+percent).
+  const appliedLuck = (typeof luck === "number" && luck > 0) ? luck : totalLuck();
+  rollState.luck = appliedLuck;
+  // Clamp speed multiplier → jangan pernah di bawah RNG_ROLL_MIN (300ms).
+  rollState.speedMultiplier = Math.max(1, Math.min(speedMultiplier, RNG_ROLL_MAX_MULT));
   rollState.active = true;
-  
+
   const rollBtn = document.getElementById('rollBtn');
   if (rollBtn) rollBtn.classList.add('active');
   const ra = document.getElementById('rollAutoBtn');
   if (ra) ra.classList.add('on');
   if (rollState.hideTimer) { clearTimeout(rollState.hideTimer); rollState.hideTimer = null; }
-  
+
   // Set initial delay based on speed multiplier
-  const initialDelay = RNG_ROLL_SPEED / speedMultiplier;
+  const initialDelay = Math.max(RNG_ROLL_MIN, RNG_ROLL_SPEED / speedMultiplier);
   
   rollState.interval = setInterval(() => {
     const result = rngRoll(rollState.luck, rollState.speedMultiplier);
@@ -1785,8 +1817,21 @@ function renderProfile(){const pl=document.getElementById("plLv"),pll=document.g
   // Read from DOM (already updated by renderShell) or fallback to state
   const lvlEl=document.getElementById("tbLvl");const lvText=lvlEl?lvlEl.textContent.replace(/[^0-9]/g,""):"1";
   if(pl)pl.textContent=lvText||1;
-  if(pll)pll.textContent=(state?.player?.luck||1).toFixed(1)+"x";
-  console.log('Rendering profile:',{level:lvText,luck:state?.player?.luck,rawState:state});
+  const p=state?.player||{};
+  const base=p.luckBase??1, flat=p.luckFlat??0, pct=p.luckPercent??0;
+  const total=totalLuck();
+  if(pll){
+    let txt=total.toFixed(1)+"x";
+    if(flat>0||pct>0){
+      const parts=[];
+      parts.push("Base "+base.toFixed(1));
+      if(flat>0)parts.push("Flat +"+flat.toFixed(1));
+      if(pct>0)parts.push("Pct +"+Math.round(pct*100)+"%");
+      txt+=" ("+parts.join(" · ")+")";
+    }
+    pll.textContent=txt;
+  }
+  console.log('[PROFILE] Luck breakdown:',{base,flat,pct,total});
 }
 
 function hideRollResult() {
@@ -1924,7 +1969,7 @@ function activeChap(){
   return open.find(x=>x.no===(state?state.chap:1))||open.find(x=>!chapDone(x))||open[open.length-1]||CHAPTERS[0];
 }
 const LEVEL_COUNT=STORY_BIBLE.levels.length;
-const MASTER_CARD_INDEX=STORY_BIBLE.units.map(u=>({char_id:u.id,name:u.name,tier:u.tier,chance:u.chance||null,type:u.type,base_hp:u.hp,base_atk:u.atk,sprite_asset:u.art,art_image:u.art,passive:{name:u.skill,desc:u.desc},noGacha:!!u.noGacha}));
+const MASTER_CARD_INDEX=STORY_BIBLE.units.map(u=>({char_id:u.id,name:u.name,tier:u.tier,chance:u.chance||null,type:u.type,base_hp:u.hp,base_atk:u.atk,sprite_asset:u.art,art_image:u.art,pos:u.pos||null,passive:{name:u.skill,desc:u.desc},noGacha:!!u.noGacha}));
 const CARDS=Object.fromEntries(MASTER_CARD_INDEX.map(c=>[c.char_id,c]));
 function getCardData(id){return CARDS[id]||null;}
 function cardImg(id){const c=CARDS[id];return c?c.sprite_asset:"";}
@@ -2090,7 +2135,7 @@ function freshState(){
   const start=s0?{id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,fav:false,lock:false,mut:"none",shiny:false,trait:"none",count:1}:null;
   const newState={coins:1000,raidTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},tower:{floor:1,best:0},
     cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],history:[],battle:null,
-    player:{luck:1,exp:0,lv:1}};
+    player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1}};
   console.log('[FRESH STATE] Initialized player:',newState.player);
   return newState;
 }
@@ -2102,12 +2147,20 @@ function loadStateFor(name){
   KEY="aab-state-v2:"+name;
   try{state=JSON.parse(localStorage.getItem(KEY))||freshState();}catch(e){console.warn('Load error, using fresh:', e.message);state=freshState();}
   
-  // MIGRATE OLD STATE: Tambah player object jika belum ada
+  // MIGRATE OLD STATE: pastikan player object + format luck baru (base+flat+percent)
   if(!state.player){
-    console.log('[MIGRATE] Old state detected, adding player object');
-    state.player={luck:state.playerLuck||1,exp:state.playerExp||0,lv:state.playerLv||1};
+    console.log('[MIGRATE] Old state detected, creating player object');
+    state.player={luckBase:1,luckFlat:0,luckPercent:0,exp:state.playerExp||0,lv:state.playerLv||1};
+  } else if(typeof state.player.luckBase!=="number"){
+    // Format lama: {luck:N} -> migrasi ke luckBase, hapus field lama
+    const legacyLuck=typeof state.player.luck==="number"?state.player.luck:1;
+    state.player.luckBase=legacyLuck;
+    state.player.luckFlat=state.player.luckFlat||0;
+    state.player.luckPercent=state.player.luckPercent||0;
+    delete state.player.luck;
+    console.log('[MIGRATE] Legacy luck',legacyLuck,'-> luckBase');
   }
-  console.log('[LOAD STATE] Initial player state:',{luck:state.player.luck,exp:state.player.exp,lv:state.player.lv});
+  console.log('[LOAD STATE] Initial player state:',state.player);
   
   if(!state.stacks||!state.stacks.length){const st=freshState();state.stacks=st.stacks;state.equippedId=st.equippedId;}
   
@@ -2532,7 +2585,7 @@ function renderShell(){
   /* Profil ringkas di topbar (dipindah dari lobby). */
   if(state&&state.player){
     const initialExp=state.player.exp||0;
-    console.log('[RENDERSHELL] Starting check - player state:',{exp:initialExp,lv:state.player.lv,luck:state.player.luck});
+    console.log('[RENDERSHELL] Starting check - player state:',{exp:initialExp,lv:state.player.lv,totalLuck:totalLuck()});
     // Level up check: EXP per level = playerLv * 1000, naik LV setiap penuh
     while((state.player.exp||0)>=state.player.lv*1000){
       state.player.exp-=state.player.lv*1000;state.player.lv=(state.player.lv||0)+1;state.playerLv=state.player.lv;}
@@ -2707,14 +2760,13 @@ function meFighterHtml(s){
   const st=cardStats(s.char,s.mut,s.trait,s.shiny);
   const mut=(s.mut&&s.mut!=="none")?s.mut:null;
   const trait=(s.trait&&s.trait!=="none")?s.trait:null;
-  return `<div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}">${madaraAura(s.char)}<div class="f-name${(!mut&&s.shiny)?' f-name-shine':''}"${mut?` style="color:${MUT_COLOR[mut]}"`:''}>${mutText(mut,cardName(s.char))}</div><span class="f-tag" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,effChance(s.char,s.mut,s.shiny))}</span>
+  return `<div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}"${CARDS[s.char]&&CARDS[s.char].pos?` style="object-position:${CARDS[s.char].pos}"`:''}>${madaraAura(s.char)}<div class="f-name${(!mut&&s.shiny)?' f-name-shine':''}"${mut?` style="color:${MUT_COLOR[mut]}"`:''}>${mutText(mut,cardName(s.char))}</div><span class="hc-chance">1 in ${fmt(luckChance(s.char,s.mut,s.shiny))}</span>
     ${(s.shiny||mut||trait)?`<div class="f-badges">${s.shiny?'<span class="shiny-badge">SHINY</span>':''}${mut?mutChip(mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="hc-trait hc-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(14)}</span>`):''}</div>`:""}
     </div>
     <div class="hpbar"><i id="hpMe"></i><span id="hpMeT">${fmt(st.hp)} / ${fmt(st.hp)}</span></div>
     <div class="f-body">
       <div class="f-title">${cardType(s.char)}</div>
       <div class="f-skill">${passiveName(s.char)}</div>
-      <div class="f-desc">${skillText(s.char)}</div>
       <div class="stat-row"><div class="stat">♡ ${fmt(st.hp)}</div><div class="stat">${ATKIC} ${fmt(st.atk)}</div></div>
     </div>`;
 }
@@ -2746,13 +2798,12 @@ function renderBattle(){
   <div class="vs-col"><div class="t">VS</div><div class="s" id="turnLabel">AUTO<br>BATTLE</div></div>
   <div class="me-col foe-side">
     <div class="fighter foe${mutGlow(diffOf().mut)}" data-tier="${en.tier||''}"${mutEdge(diffOf().mut)}>
-      <div class="f-banner"><img src="${en.img}" alt="${en.name}"><div class="f-name">${en.name}</div>${en.boss?'<span class="f-tag" style="color:var(--purple)">BOSS</span>':''}${diffOf().mut!=="none"?`<div class="f-badges">${mutChip(diffOf().mut,`<span class="fbadge" style="border-color:${MUT_COLOR[diffOf().mut]};color:${MUT_COLOR[diffOf().mut]}">${mutBadge(diffOf().mut)}</span>`)}</div>`:""}
+      <div class="f-banner"><img src="${en.img}" alt="${en.name}"><div class="f-name">${en.name}</div>${diffOf().mut!=="none"?`<div class="f-badges">${mutChip(diffOf().mut,`<span class="fbadge" style="border-color:${MUT_COLOR[diffOf().mut]};color:${MUT_COLOR[diffOf().mut]}">${mutBadge(diffOf().mut)}</span>`)}</div>`:""}
         </div>
       <div class="hpbar"><i id="hpFoe"></i><span id="hpFoeT">${fmt(es.hp)} / ${fmt(es.hp)}</span></div>
       <div class="f-body">
         <div class="f-title">${en.epithet}</div>
         <div class="f-skill">${en.id?passiveName(en.id):"Musuh"}</div>
-        <div class="f-desc">${en.id?skillText(en.id):"Tidak ada kemampuan khusus."}</div>
         <div class="stat-row"><div class="stat">♡ ${fmt(es.hp)}</div><div class="stat">${ATKIC} ${fmt(es.atk)}</div></div>
       </div>
     </div>
@@ -3191,7 +3242,11 @@ function startBattle(){
   const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   const eid=en.id||null,efx=eid?(PASSIVE_FX[eid]||{}):{};
   if(bt&&bt.timer)clearTimeout(bt.timer);
-  bt={lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),trickNext:false,royalNow:false,gunsNow:false};
+  bt={lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),trickNext:false,royalNow:false,gunsNow:false};
+  // BURST: kartu pertama masuk arena langsung dapat boost HP kalau punya fx.burst
+  const fx0=resolveFx(eq,efx);
+  if(fx0.burst){bt.pMax=Math.round(base.hp*fx0.burst.mult);bt.pHp=bt.pMax;}
+  if(fx0.entryCounter)bt.entryGuard[0]=true;
   schedPhase(700,step);
 }
 function tagIn(){
@@ -3200,6 +3255,11 @@ function tagIn(){
   bt.active=next;bt.eq=bt.fighters[next];bt.justTagged=true;
   const base=cardStats(bt.eq.char,bt.eq.mut,bt.eq.trait,bt.eq.shiny);
   bt.pMax=base.hp;bt.pHp=base.hp;
+  bt.burstStart[next]=bt.turn;
+  bt.entryGuard[next]=false;bt.dodgeArmed[next]=false;bt.dodgeCount[next]=0;
+  const nfx=resolveFx(bt.eq,bt.efx);
+  if(nfx.burst){bt.pMax=Math.round(base.hp*nfx.burst.mult);bt.pHp=bt.pMax;}
+  if(nfx.entryCounter)bt.entryGuard[next]=true;
   // fase 1: kartu aktif sekarang tumbang
   const meEl=document.querySelector(".fighter.me");
   if(meEl){meEl.classList.remove("tag-enter");meEl.classList.add("ko");}
@@ -3359,14 +3419,31 @@ function playerPhase(){
   }
   const efx=bt.efx||{};
   const a=bt.active;
+  /* DODGE EVERY: setiap N giliran sejak masuk, pasti hindari serangan musuh giliran ini */
+  if(fx.dodgeEvery){bt.dodgeCount[a]=(bt.dodgeCount[a]||0)+1;if(bt.dodgeCount[a]%fx.dodgeEvery.turns===0)bt.dodgeArmed[a]=true;}
+  /* LIFETIME: kartu self-destruct setelah N giliran sejak masuk arena */
+  if(fx.lifetime&&(t-(bt.burstStart[a]||1))>=fx.lifetime.turns){
+    bt.pHp=0;setBar("hpMe","hpMeT",0,bt.pMax);
+    setTimeout(()=>{anim(".fighter.me","ko");floatText(".fighter.me","LIFETIME UP","crit");},200);
+    setTimeout(()=>{if(!bt||bt.over)return;if(!trySave()){endBattle(false);return;}schedPhase(bt.justTagged?2700:700,playerPhase);},900);
+    return;
+  }
+  /* BURST: revert HP ke normal kalau masa burst sudah lewat (tanpa lifetime) */
+  if(fx.burst&&(t-(bt.burstStart[a]||1))>=fx.burst.turns){
+    const baseHp=cardStats(id,bt.eq.mut,bt.eq.trait,bt.eq.shiny).hp;
+    if(bt.pMax>baseHp){bt.pMax=baseHp;if(bt.pHp>bt.pMax)bt.pHp=bt.pMax;setBar("hpMe","hpMeT",bt.pHp,bt.pMax);}
+  }
   let atk=cardStats(id,bt.eq.mut,bt.eq.trait,bt.eq.shiny).atk;
   if(bt.atkBuff[a])atk=Math.round(atk*(1+bt.atkBuff[a]/100));
   if(fx.lowHpAtk&&bt.pHp<bt.pMax*fx.lowHpAtk.below/100)atk=Math.round(atk*(1+fx.lowHpAtk.bonus/100));
+  if(fx.burst&&(t-(bt.burstStart[a]||1))<fx.burst.turns)atk=Math.round(atk*fx.burst.mult);
   let dmgMult=1;
   if(fx.dmgMult)dmgMult*=fx.dmgMult;
   /* SATU PERSEN (Ultra Instinct): tiap serangan GENAP (ke-2, ke-4, ...) = 1% kekuatan penuh → ×mult damage + tembus damage reduction musuh */
   let pen=!!fx.ignoreDef;
   if(fx.everySecond){bt.atkCount[a]++;if(bt.atkCount[a]%2===0){dmgMult*=fx.everySecond.mult;pen=true;setTimeout(()=>floatText(".fighter.me","ONE PERCENT","crit"),220);}}
+  /* SUSANOO CHIDORI: tiap serangan ke-N → ×mult damage + menembus pengurangan damage */
+  if(fx.everyNth){bt.atkCount[a]++;if(bt.atkCount[a]%fx.everyNth.n===0){dmgMult*=fx.everyNth.mult;pen=true;setTimeout(()=>floatText(".fighter.me","SUSANOO CHIDORI","crit"),220);}}
   /* STYLE SWITCHING (Devil Hunter): 4 mode bergilir tiap giliran kartu ini menyerang */
   if(fx.styleSwitching){
     const STYLES=["TRICKSTER","SWORDMASTER","ROYALGUARD","GUNSLINGER"];
@@ -3419,14 +3496,23 @@ function playerPhase(){
   });
   bt.eHp=eHpNext;
   if(ranton&&total>0&&bt.eHp>0&&fx.ranton.stun){bt.eStun=fx.ranton.stun;}
+  /* HP DRAIN: tiap serangan yang kena memotong MAX HP musuh secara permanen (compounding) */
+  if(fx.hpDrain&&total>0&&bt.eHp>0){
+    bt.es.hp=Math.max(1,Math.round(bt.es.hp*(1-fx.hpDrain.pct/100)));
+    if(bt.eHp>bt.es.hp)bt.eHp=bt.es.hp;
+    setTimeout(()=>floatText(".fighter.foe","HP DRAIN","crit"),360);
+  }
   if(fx.lifesteal&&total>0){
     const ls=Math.round(total*fx.lifesteal/100);bt.pHp=Math.min(bt.pMax,bt.pHp+ls);
     setTimeout(()=>floatText(".fighter.me","+"+fmt(ls),"heal"),300);
   }
   if(fx.burn&&total>0&&Math.random()*100<fx.burn.chance){bt.eBurn=fx.burn.turns;setTimeout(()=>floatText(".fighter.foe","BURN","burn"),360);}
+  /* PERFECT SUSANOO (low HP): di bawah ambang, serangan membakar musuh selama N giliran */
+  if(fx.lowHpAura&&total>0&&bt.pHp<bt.pMax*fx.lowHpAura.below/100&&bt.eHp>0){bt.eBurn=fx.lowHpAura.burn.turns;setTimeout(()=>floatText(".fighter.foe","PERFECT SUSANOO","burn"),360);}
   setBar("hpFoe","hpFoeT",bt.eHp+total,bt.es.hp);setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
   if(bt.eBurn>0&&bt.eHp>0){
-    const bd=Math.round(bt.es.hp*fx.burn.pct/100);bt.eHp-=bd;bt.eBurn--;
+    const bPct=fx.burn?fx.burn.pct:(fx.lowHpAura?fx.lowHpAura.burn.pct:0);
+    const bd=Math.round(bt.es.hp*bPct/100);bt.eHp-=bd;bt.eBurn--;
     setTimeout(()=>{anim(".fighter.foe","hit");floatText(".fighter.foe","-"+fmt(bd),"burn");},420);
   }
   if(bt.eHp<=0){
@@ -3451,16 +3537,28 @@ function enemyPhase(){
   }
   // DOMAIN aktif ronde ini (Gojo): damage musuh dikurangi 50%
   const domainOn = bt.domainNow;
-  const evade=!!((fx.evasion&&t<=fx.evasion.turns&&Math.random()*100<fx.evasion.chance)||(fx.dodgeAtk&&Math.random()*100<fx.dodgeAtk.chance)||bt.trickNext);
+  const pa=bt.active;
+  const entryTrig=!!(fx.entryCounter&&bt.entryGuard[pa]);
+  const dodgeTrig=!!(fx.dodgeEvery&&bt.dodgeArmed[pa]);
+  const evade=!!(entryTrig||dodgeTrig||(fx.evasion&&t<=fx.evasion.turns&&Math.random()*100<fx.evasion.chance)||(fx.dodgeAtk&&Math.random()*100<fx.dodgeAtk.chance)||bt.trickNext);
   const eVoid=!!(efx.void&&Math.random()*100<efx.void);
   if(evade){
+    if(entryTrig)bt.entryGuard[pa]=false;
+    if(dodgeTrig)bt.dodgeArmed[pa]=false;
     /* ULTRA INSTINCT: tiap berhasil menghindar → +pct% ATK permanen, stack sampai max (khusus dodgeAtk; evasion biasa gak kepengaruh) */
     if(fx.dodgeAtk&&bt.dodgeStack[bt.active]<fx.dodgeAtk.max){bt.dodgeStack[bt.active]++;bt.atkBuff[bt.active]+=fx.dodgeAtk.pct;setTimeout(()=>floatText(".fighter.me","+"+fx.dodgeAtk.pct+"% ATK","heal"),420);}
     if(id==="CH_EX_MADARA"){
       anim(".fighter.foe","lunge-l");
       setTimeout(()=>{madaraLimboFx();floatText(".fighter.me","LIMBO","miss");},220);
     }else{
-      setTimeout(()=>{playDodge();floatText(".fighter.me",bt.trickNext?"TRICKSTER":"DODGE","miss");},200);
+      setTimeout(()=>{playDodge();floatText(".fighter.me",entryTrig?"AMENOTEJIKARA":bt.trickNext?"TRICKSTER":"DODGE","miss");},200);
+    }
+    /* AMENOTEJIKARA counter: balasan instan 15× ATK ke musuh */
+    if(entryTrig){
+      const cAtk=Math.round(cardStats(id,bt.eq.mut,bt.eq.trait,bt.eq.shiny).atk*(1+(bt.atkBuff[pa]||0)/100)*fx.entryCounter.mult);
+      bt.eHp-=cAtk;
+      setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","COUNTER -"+fmt(cAtk),"crit");setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);}},520);
+      if(bt.eHp<=0){setTimeout(()=>{if(bt&&!bt.over)foeDown();},900);return;}
     }
   }else if(eVoid){
     anim(".fighter.foe","lunge-l");
@@ -3486,6 +3584,8 @@ function enemyPhase(){
     let etotal=0;const eShots=eHits.map(h=>{let d=Math.round(eAtk*edmgMult*h.mult);if(bt.pDrTurns>0&&bt.pDr>0){d=Math.round(d*(1-bt.pDr/100));}etotal+=d;return{d};});
     /* ROYALGUARD: damage masuk dipangkas 50% (dibalas 30% di bawah) */
     if(bt.royalNow&&etotal>0){eShots.forEach(s=>s.d=Math.round(s.d*0.5));etotal=eShots.reduce((x,s)=>x+s.d,0);}
+    /* PERFECT SUSANOO (low HP): damage masuk dipangkas `dr`% */
+    if(fx.lowHpAura&&bt.pHp<bt.pMax*fx.lowHpAura.below/100&&etotal>0){eShots.forEach(s=>s.d=Math.round(s.d*(1-fx.lowHpAura.dr/100)));etotal=eShots.reduce((x,s)=>x+s.d,0);setTimeout(()=>floatText(".fighter.me","PERFECT SUSANOO","heal"),320);}
     if(bt.pDrTurns>0&&bt.pDr>0){bt.pDrTurns--;setTimeout(()=>floatText(".fighter.me","DR aktif","heal"),340);}
     const meStart=bt.pHp;
     bt.pHp-=etotal;
@@ -3581,11 +3681,12 @@ const TOWER_BOSS_ROSTER=[
 function towerIsBossFloor(f){return f%5===0;}
 function towerBossIndex(f){return ((f/5)-1)%TOWER_BOSS_ROSTER.length;}
 function towerHash(n){return (((n*2654435761)>>>0)%100000)||0;}
-function towerRegularPool(){return MASTER_CARD_INDEX.filter(c=>c.tier==="R"||c.tier==="SR"||c.tier==="SSR");}
+function towerRegularPool(){return MASTER_CARD_INDEX.filter(c=>!c.noGacha);}
 function towerPickRegular(f){const p=towerRegularPool();if(!p.length)return null;return p[towerHash(f)%p.length];}
 /* Kurva kesulitan absolut (tidak ikut membengkak oleh stat mentah kartu EX).
-   Kartu musuh hanya menentukan identitas/art/passive; HP & ATK ditentukan lantai. */
-const TOWER_TIER_K={R:0.85,SR:1,SSR:1.15,UR:1.25,EX:1.3};
+   Kartu musuh hanya menentukan identitas/art/passive; HP & ATK ditentukan lantai.
+   TIER itu kosmetik — tidak ada lagi stat scaling berdasarkan tier. */
+const TOWER_TIER_K={R:1,SR:1,SSR:1,UR:1,EX:1};
 function towerEnemyHP(f){return Math.round(140*Math.pow(1.18,f-1));}
 function towerEnemyATK(f){return Math.round(58*Math.pow(1.16,f-1));}
 function towerMakeWave(charId,f,isBoss,role){
@@ -3616,13 +3717,12 @@ function stopTower(){
 function towerFoeHtml(w){
   const en=w.en,es=w.es;
   return `<div class="fighter foe foe-enter" data-tier="${en.tier||''}">
-    <div class="f-banner"><img src="${en.img}" alt="${en.name}"><div class="f-name">${en.name}</div>${en.boss?'<span class="f-tag" style="color:var(--purple)">BOSS</span>':''}
+    <div class="f-banner"><img src="${en.img}" alt="${en.name}"><div class="f-name">${en.name}</div>
       </div>
     <div class="hpbar"><i id="hpFoe"></i><span id="hpFoeT">${fmt(es.hp)} / ${fmt(es.hp)}</span></div>
     <div class="f-body">
       <div class="f-title">${en.epithet}</div>
       <div class="f-skill">${en.id?passiveName(en.id):"Musuh"}</div>
-      <div class="f-desc">${en.id?skillText(en.id):"Tidak ada kemampuan khusus."}</div>
       <div class="stat-row"><div class="stat">&#9825; ${fmt(es.hp)}</div><div class="stat">${ATKIC} ${fmt(es.atk)}</div></div>
     </div>
   </div>`;
@@ -3795,7 +3895,7 @@ function openModal(id){
   mcEl.innerHTML=`
     <span class="md-art"><img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(s.char)}</span>
     <div class="md-info">
-      <div class="eyebrow" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,effChance(s.char,s.mut,s.shiny))}${s.mut&&s.mut!=="none"?` · ${mutChip(s.mut,`<span>${mutBadge(s.mut)}</span>`)}`:""}${s.shiny?' · <span class="shiny-badge">SHINY</span>':""}</div>
+      <div class="eyebrow" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,luckChance(s.char,s.mut,s.shiny))}${s.mut&&s.mut!=="none"?` · ${mutChip(s.mut,`<span>${mutBadge(s.mut)}</span>`)}`:""}${s.shiny?' · <span class="shiny-badge">SHINY</span>':""}</div>
       <div class="md-name">${c.name}</div>
       <div class="cr-title" style="margin-bottom:8px">${c.type}</div>
       <div class="cr-stats"><span>♡ ${fmt(st.hp)}</span><span>${ATKIC} ${fmt(st.atk)}</span></div>
@@ -3825,9 +3925,9 @@ function hubCardHtml(eq,idAttr){
   const mut=(eq.mut&&eq.mut!=='none')?eq.mut:null;
   const trait=(eq.trait&&eq.trait!=='none')?eq.trait:null;
   return `<div class="hub-center${mut?' mut-'+mut:''}${shinyCls(eq)}"${idAttr||''} data-tier="${tier}"${mut?` style="border-color:${MUT_COLOR[mut]}"`:''}>
-      <div class="hc-img"><img src="${cardImg(eq.char)}" alt="${cardName(eq.char)}">${madaraAura(eq.char)}
+      <div class="hc-img"><img src="${cardImg(eq.char)}" alt="${cardName(eq.char)}"${CARDS[eq.char].pos?` style="object-position:${CARDS[eq.char].pos}"`:''}>${madaraAura(eq.char)}
           <span class="hc-name-top${(!mut&&eq.shiny)?' hc-name-shine':''}"${mut?` style="color:${MUT_COLOR[mut]}"`:''}>${mutText(mut,cardName(eq.char))}</span>
-          <span class="hc-chance" style="color:${TIER_COLOR[tier]}">${rarityText(tier,effChance(eq.char,eq.mut,eq.shiny))}</span>
+          <span class="hc-chance" style="color:${TIER_COLOR[tier]}">${rarityText(tier,luckChance(eq.char,eq.mut,eq.shiny))}</span>
           ${(mut||trait||eq.shiny)?`<div class="hc-badges">${eq.shiny?'<span class="shiny-badge">SHINY</span>':''}${mut?mutChip(mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="hc-trait hc-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(14)}</span>`):''}</div>`:''}
           <div class="skill-overlay"><b>${passiveName(eq.char)}</b><span class="sk-txt">${skillText(eq.char)}</span></div>
         </div>
@@ -3950,7 +4050,7 @@ function renderRaidPick(){
     return `<button class="raid-pick-card${s.tier==="EX"?" fire":""}${mc}${s.shiny?" shiny":""}" data-pick="${s.id}" data-name="${c.name.toLowerCase()}"${s.mut&&s.mut!=="none"?` style="border-color:${MUT_COLOR[s.mut]}"`:""}>
       <div class="rpc-img"><img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(s.char)}
         <span class="badge-row">
-          <span class="tier-badge" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,effChance(s.char,s.mut,s.shiny))}</span>
+          <span class="tier-badge" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,luckChance(s.char,s.mut,s.shiny))}</span>
         </span>
         ${(s.mut&&s.mut!=="none")||s.shiny?`<span class="badge-row bl">
           ${s.mut&&s.mut!=="none"?mutChip(s.mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`):""}${s.shiny?'<span class="shiny-badge">SHINY</span>':""}
@@ -3974,13 +4074,12 @@ function renderRaidBattle(){
     <div class="me-col"><div class="fighter me${eq&&eq.mut&&eq.mut!=='none'?' mut-'+eq.mut:''}${shinyCls(eq)}" data-tier="${eq?eq.tier:''}" data-char="${eq?eq.char:''}">${meFighterHtml(eq)}</div></div>
     <div class="vs-col"><div class="t">VS</div><div class="s" id="raidTurnLabel">TURN<br>0/${RAID_TURNS}</div></div>
     <div class="me-col foe-side"><div class="fighter foe" data-tier="EX">
-      <div class="f-banner"><img src="${b.img}" alt="${b.name}"><div class="f-name">${b.name}</div><span class="f-tag" style="color:${b.diffColor};border-color:${b.diffColor}">${b.diffLabel}</span>
+      <div class="f-banner"><img src="${b.img}" alt="${b.name}"><div class="f-name">${b.name}</div>
         </div>
       <div class="hpbar"><i id="hpRaid"></i><span id="hpRaidT">${fmt(b.hp)} / ${fmt(b.hp)}</span></div>
       <div class="f-body">
         <div class="f-title">${rarityText(b.tier)} · RAID · ${b.diffLabel}</div>
         <div class="f-skill">${b.skill}</div>
-        <div class="f-desc">${b.name} — melepaskan ${RAID_TURNS}+ turn lalu mengamuk: 3 bola energi beruntun, tiap ledakan menghujani 10× 999.999 damage yang tidak bisa di-dodge.</div>
         <div class="stat-row"><div class="stat">♡ ${fmt(b.hp)}</div><div class="stat">${ATKIC} ${fmt(999999)}</div></div>
       </div>
     </div></div>
