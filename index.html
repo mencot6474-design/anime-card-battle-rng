@@ -79,16 +79,32 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .tb-chip.tb-luck{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:12px;background:#E1F5FE;color:#01579B;font-size:12px;font-family:"Barlow Condensed";font-weight:700;letter-spacing:.05em;border:1px solid #B3E5FC;}
 .who{font-size:10px;letter-spacing:.18em;color:var(--muted);font-weight:600;white-space:nowrap}
 /* ========== ROLL SYSTEM UI ========== */
-.roll-btn {position:fixed;right:20px;bottom:20px;width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--purple));border:3px solid var(--line2);box-shadow:0 6px 24px rgba(18,28,38,.35),0 0 0 3px var(--panel);z-index:100;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s;font-size:32px;animation:pulse-roll 2s infinite;}
+.roll-btn {position:static;width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--purple));border:3px solid var(--line2);box-shadow:0 6px 24px rgba(18,28,38,.35),0 0 0 3px var(--panel);z-index:100;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s;font-size:32px;animation:pulse-roll 2s infinite;}
 .roll-btn:hover{transform:scale(1.1);}
 .roll-btn.active{animation:spin-roll 1.5s linear infinite;}
-.roll-auto-btn{position:fixed;right:20px;bottom:104px;z-index:100;padding:8px 16px;border-radius:999px;border:2px solid var(--line2);background:var(--panel);color:var(--text);font-family:"Barlow Condensed";font-weight:800;font-size:14px;letter-spacing:.12em;cursor:pointer;box-shadow:0 4px 14px rgba(18,28,38,.3);transition:.15s;}
+.roll-auto-btn{position:static;padding:8px 16px;border-radius:999px;border:2px solid var(--line2);background:var(--panel);color:var(--text);font-family:"Barlow Condensed";font-weight:800;font-size:14px;letter-spacing:.12em;cursor:pointer;box-shadow:0 4px 14px rgba(18,28,38,.3);transition:.15s;}
 .roll-auto-btn:hover{transform:scale(1.06);}
 .roll-auto-btn.on{background:linear-gradient(135deg,var(--cyan),var(--purple));color:#06131a;border-color:transparent;animation:pulse-roll 1.4s infinite;}
 @keyframes pulse-roll{0%,100%{box-shadow:0 6px 24px rgba(18,28,38,.35),0 0 0 3px var(--panel);}50%{box-shadow:0 12px 40px rgba(18,28,38,.55),0 0 0 6px var(--cyan);}}
 /* ---------- WEATHER DOCK ---------- */
-.weather-dock{position:fixed;right:20px;bottom:150px;z-index:100;display:flex;flex-direction:column;align-items:flex-end;gap:7px;}
+/* Cluster kontrol tengah-bawah: backpack + (auto di atas) roll. */
+.center-dock{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:100;display:flex;align-items:flex-end;gap:16px;}
+.cd-rollcol{display:flex;flex-direction:column;align-items:center;gap:8px;}
+/* Pojok kiri bawah: chip weather (timer) + panel kartu weather, SEJAJAR sebaris. */
+.weather-corner{position:fixed;left:20px;bottom:20px;z-index:100;display:flex;flex-direction:row;align-items:flex-end;gap:12px;}
+.weather-dock{display:flex;flex-direction:column;align-items:flex-start;gap:7px;}
 .weather-dock:empty{display:none;}
+/* Panel kartu weatherOnly: kotak KECIL gaya index, sejajar. Nongol cuma pas weather aktif. */
+.weather-cards{display:none;gap:7px;flex-wrap:wrap;max-width:min(360px,72vw);}
+.weather-cards.show{display:flex;}
+.wc-slot{position:relative;width:72px;opacity:.42;filter:saturate(.35) brightness(.82);transition:opacity .2s,filter .2s,box-shadow .2s;}
+.wc-slot .idx-art img,.wc-slot .idx-art video{height:56px;}
+.wc-slot .idx-body{padding:4px 5px 5px;}
+.wc-slot .idx-title{display:none;}
+.wc-slot .idx-body{display:flex;align-items:center;justify-content:center;}
+.wc-chance{font-family:"Barlow Condensed";font-weight:800;font-size:11px;letter-spacing:.03em;text-align:center;color:#e8eefc;text-transform:uppercase;white-space:nowrap;}
+.wc-slot.active .wc-chance{color:var(--wc,#38b7ff);}
+.wc-slot.active{opacity:1;filter:none;box-shadow:0 0 0 2px var(--wc,#38b7ff),0 8px 20px color-mix(in srgb,var(--wc,#38b7ff) 34%,transparent);}
 .wd-chip{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;border:2px solid var(--wdc,var(--line2));background:var(--panel);color:#fff;font-family:"Barlow Condensed";font-weight:800;font-size:14px;letter-spacing:.06em;box-shadow:0 4px 14px rgba(18,28,38,.35);animation:wd-glow 2s ease-in-out infinite;}
 .wd-chip .wd-ic{font-size:16px;}
 .wd-chip .wd-time{color:var(--wdc,var(--cyan));font-variant-numeric:tabular-nums;}
@@ -131,7 +147,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .roll-overlay.mini .roll-actions{display:none;}
 .roll-min-btn{padding:9px 18px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-family:"Barlow Condensed";font-weight:700;font-size:15px;letter-spacing:.06em;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;}
 .roll-min-btn:hover{background:var(--panel2);}
-.backpack-toggle{position:fixed;left:20px;bottom:20px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#2c7a7c,#38b7ff);border:3px solid var(--line2);box-shadow:0 4px 16px rgba(56,183,255,.35);z-index:100;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:28px;transition:transform .2s;}
+.backpack-toggle{position:static;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#2c7a7c,#38b7ff);border:3px solid var(--line2);box-shadow:0 4px 16px rgba(56,183,255,.35);z-index:100;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:28px;transition:transform .2s;}
 .backpack-toggle:hover{transform:scale(1.1);}
 .backpack-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:90vw;max-width:1100px;max-height:80vh;background:var(--panel);border-radius:20px;border:2px solid var(--line2);box-shadow:0 20px 80px rgba(18,28,38,.5);z-index:160;display:none;flex-direction:column;overflow:hidden;}
 .backpack-panel.visible{display:flex;}
@@ -144,6 +160,21 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .bp-cols{display:flex;gap:18px;align-items:flex-start;flex:1;min-height:0;}
 .bp-deckcol{flex:0 0 auto;align-self:flex-start;width:clamp(64px,calc((80vh - 170px)/4),104px);}
 .bp-collect{flex:1;min-width:0;align-self:stretch;overflow-y:auto;}
+/* Kolom ITEM di backpack: kartu item (Weather Potion) + tombol pakai/beli. */
+.bp-itemscol{flex:0 0 176px;width:176px;align-self:stretch;overflow-y:auto;}
+.bp-item{border:1px solid var(--line2);border-radius:14px;background:linear-gradient(160deg,#171012,#0d0a0c);padding:14px 12px;text-align:center;}
+.bp-item.empty{opacity:.5;}
+.bpi-icon{font-size:34px;line-height:1;}
+.bpi-name{font-family:"Barlow Condensed";font-weight:800;font-size:14px;letter-spacing:.06em;margin-top:8px;color:#fff;}
+.bpi-cnt{font-family:"Barlow Condensed";font-weight:800;font-size:20px;color:#5eead4;margin-top:2px;}
+.bpi-desc{font-size:10px;line-height:1.4;color:var(--muted);margin-top:8px;text-align:left;}
+.bpi-ctl{display:flex;flex-direction:column;gap:6px;margin-top:12px;}
+.bpi-use,.bpi-buy{font-family:"Barlow Condensed";font-weight:800;font-size:13px;letter-spacing:.08em;padding:8px 10px;border-radius:10px;cursor:pointer;transition:.15s;border:2px solid var(--line2);background:var(--panel);color:var(--text);}
+.bpi-use{border-color:#5eead4;color:#5eead4;}
+.bpi-use:disabled{opacity:.4;cursor:not-allowed;}
+.bpi-buy{border-color:var(--cyan);color:var(--cyan);}
+.bpi-use:not(:disabled):hover,.bpi-buy:hover{transform:scale(1.04);}
+.bpi-now{margin-top:10px;font-family:"Barlow Condensed";font-weight:800;font-size:12px;letter-spacing:.06em;}
 .bp-filter{position:sticky;top:0;z-index:3;display:flex;flex-wrap:wrap;gap:6px;padding:2px 0 10px;margin-bottom:4px;background:var(--panel);}
 .bp-fchip{display:inline-flex;align-items:center;gap:5px;font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.06em;color:var(--muted);border:1px solid var(--line2);background:var(--panel2);border-radius:8px;padding:3px 9px;cursor:pointer;transition:filter .12s,border-color .12s;}
 .bp-fchip:hover{filter:brightness(1.15);}
@@ -1450,15 +1481,22 @@ body.battle-full .stat svg{flex:none}
 
 <div id="fightFx"><div class="ff-slash a"></div><div class="ff-slash b"></div><div class="ff-word">FIGHT</div></div>
 
-<!-- ====== DOCK PERSISTEN: roll + backpack. Sengaja DI LUAR #app supaya
-     pindah layar / re-render tidak menghapus elemen ini -> interval roll
-     & panel dek tetap hidup (player bisa AFK tanpa roll ke-stop). -->
-<button class="roll-auto-btn" id="rollAutoBtn" title="Auto Roll (nyala/mati)">AUTO</button>
-<button class="roll-btn" id="rollBtn" title="Roll Cards!">🎲</button>
-<div class="backpack-toggle" id="backpackToggle" title="Backpack">🎒</div>
-<!-- ===== WEATHER DOCK (persisten, dekat roll). Chip weather aktif + countdown,
-     tombol pake Weather Potion, dan tombol beli (Toko Menara). ===== -->
-<div id="weatherDock" class="weather-dock"></div>
+<!-- ====== DOCK PERSISTEN: roll + backpack di TENGAH bawah, weather di POJOK KIRI BAWAH.
+     Sengaja DI LUAR #app supaya pindah layar / re-render tidak menghapus elemen ini
+     -> interval roll & panel dek tetap hidup (player bisa AFK tanpa roll ke-stop). -->
+<div class="center-dock">
+  <div class="backpack-toggle" id="backpackToggle" title="Backpack">🎒</div>
+  <div class="cd-rollcol">
+    <button class="roll-auto-btn" id="rollAutoBtn" title="Auto Roll (nyala/mati)">AUTO</button>
+    <button class="roll-btn" id="rollBtn" title="Roll Cards!">🎲</button>
+  </div>
+</div>
+<!-- ===== WEATHER CORNER (pojok kiri bawah): panel kartu weatherOnly yang bisa didapat
+     (nongol cuma pas weather aktif) + chip countdown + tombol pake/beli potion. ===== -->
+<div class="weather-corner">
+  <div id="weatherCards" class="weather-cards"></div>
+  <div id="weatherDock" class="weather-dock"></div>
+</div>
 <div id="weatherToast" class="weather-toast"></div>
 <div class="roll-overlay" id="rollOverlay">
   <div class="roll-card-showcase" id="rollShowcase"></div>
@@ -1734,33 +1772,35 @@ function buyWeatherPotion(price){
   return {ok:true};
 }
 const WEATHER_POTION_PRICE=5000;
-/* Render weather dock = chip (kalau aktif, countdown mm:ss) + tombol pakai potion + beli. Dipanggil tiap renderShell & tiap tick detik. */
+/* Lobby corner = CUMA chip weather + countdown (potion diurus dari Backpack > Item). Dipanggil tiap renderShell & tick detik. */
 function renderWeatherDock(){
   const dock=document.getElementById("weatherDock");if(!dock)return;
   const id=activeWeatherId();const w=id?WEATHER[id]:null;
-  const pot=state&&state.potions||0;
-  let html="";
-  if(w){
+  if(!w){dock.innerHTML="";dock.classList.remove("on");}
+  else{
     const left=Math.max(0,(state.weather.endsAt-Date.now()));
-    html+=`<div class="wd-chip" style="--wdc:${w.color}"><span class="wd-ic">${w.icon}</span><span>${w.name}</span><span class="wd-time">${fmtShortCountdown(left)}</span></div>`;
+    dock.classList.add("on");
+    dock.innerHTML=`<div class="wd-chip" style="--wdc:${w.color}"><span class="wd-ic">${w.icon}</span><span>${w.name}</span><span class="wd-time">${fmtShortCountdown(left)}</span></div>`;
   }
-  const acts=[];
-  if(pot>0)acts.push(`<button class="wd-btn potion" id="wdUse">🧪 PAKAI ×${pot}</button>`);
-  acts.push(`<button class="wd-btn buy" id="wdbuy">🛒 POTION ${fmt(WEATHER_POTION_PRICE)}</button>`);
-  html+=`<div class="wd-actions">${acts.join("")}</div>`;
-  dock.innerHTML=html;
-  const use=document.getElementById("wdUse");
-  if(use)use.onclick=()=>doUseWeatherPotion();
-  const buy=document.getElementById("wdbuy");
-  if(buy)buy.onclick=()=>{const r=buyWeatherPotion(WEATHER_POTION_PRICE);if(r.ok){beep(660,.12,"sine",.08);renderShell();}else{toast("Koin kurang","KOIN KURANG","#f87171");}};
+  renderWeatherCards();
 }
-function doUseWeatherPotion(){
-  const r=useWeatherPotion();
-  if(!r.ok){toast("Potion habis","GAK ADA POTION","#f87171");return;}
-  const w=r.weather;
-  beep(520,.16,"triangle",.1);setTimeout(()=>beep(780,.18,"triangle",.1),120);
-  toast(`${w.icon} ${w.name}`,"WEATHER AKTIF · 5 MENIT",w.color);
-  renderShell();
+/* Panel kartu weatherOnly (pojok kiri bawah). Nongol cuma pas weather aktif:
+   tiap kartu = kotak kecil gaya index, TANPA nama/kartu-tag, CUMA "1 in X" chance.
+   Hover kursor -> reveal kartu penuh (hubCardHtml) persis kayak dek. */
+function renderWeatherCards(){
+  const el=document.getElementById("weatherCards");if(!el)return;
+  const aw=activeWeatherId();
+  const cards=MASTER_CARD_INDEX.filter(c=>c.weatherOnly);
+  if(!aw||!cards.length){el.classList.remove("show");el.innerHTML="";return;}
+  el.innerHTML=cards.map(c=>{
+    const on=c.weatherOnly===aw;const cw=WEATHER[c.weatherOnly];
+    return `<div class="idx-card wc-slot${on?' active':''}" data-tier="${c.tier}" data-wc="${c.char_id}"${on?` style="--wc:${cw.color}"`:""}>
+      <div class="idx-art"><img src="${c.art_image}" alt="${c.name}" loading="lazy"></div>
+      <div class="idx-body"><div class="wc-chance">1 in ${fmt(luckChance(c.char_id,'none',false))}</div></div>
+    </div>`;
+  }).join("");
+  el.classList.add("show");
+  wcHoverBind();
 }
 function fmtShortCountdown(ms){const s=Math.max(0,Math.floor(ms/1000));const p=x=>String(x).padStart(2,"0");return p(Math.floor(s/60))+":"+p(s%60);}
 function toast(main,sub,color){
@@ -2061,6 +2101,7 @@ function renderBackpackPanel(){
   const cntOf=m=>state.stacks.filter(s=>m==='all'?true:(m==='shiny'?!!s.shiny:(s.mut||'none')===m)).length;
   const chip=(k,lbl)=>{const on=bpMutFilter===k;const col=on?(MUT_COLOR[k]||'#7DF9FF'):'';return `<button class="bp-fchip${on?' on':''}" onclick="bpSetFilter('${k}')"${col?` style="border-color:${col};color:${col}"`:''}>${lbl}<em>${cntOf(k)}</em></button>`;};
   const filterRow=`<div class="bp-filter">${chip('all','SEMUA')+chip('none','MURNI')+chip('gold','GOLD')+chip('rainbow','RAINBOW')+chip('secret','SECRET')+chip('shiny','SHINY')}</div>`;
+  const itemsCol=renderBpItems();
   panel.innerHTML=header+`<div class="bp-body"><div class="bp-cols">
     <div class="bp-deckcol">
       <div class="bp-h">DEK</div>
@@ -2072,16 +2113,48 @@ function renderBackpackPanel(){
       <div class="bp-h">KOLEKSI (${visible.length})</div>
       ${visible.length?`<div class="bp-tiles">${tiles}</div>`:`<div class="bp-empty" style="padding:18px 0">Tidak ada kartu varian ini.</div>`}
     </div>
+    ${itemsCol}
   </div></div>`;
+}
+/* Kolom ITEM di backpack: simpen & pake Weather Potion. PAKAI -> roll weather (window 5 menit), BELI -> pakai coins. */
+function renderBpItems(){
+  const pot=state.potions||0;
+  const aw=activeWeatherId();
+  const canUse=pot>0;
+  return `<div class="bp-itemscol">
+    <div class="bp-h">ITEM</div>
+    <div class="bp-item${canUse?'':' empty'}">
+      <div class="bpi-icon">🧪</div>
+      <div class="bpi-name">WEATHER POTION</div>
+      <div class="bpi-cnt">×${fmt(pot)}</div>
+      <div class="bpi-desc">Buka untuk memanggil 1 cuaca acak (5 menit). Nggak pernah lebih jelek dari cuaca terbaikmu${state.weatherBest?' ('+WEATHER[state.weatherBest].name+')':''}.</div>
+      <div class="bpi-ctl">
+        <button class="bpi-use" ${canUse?'':'disabled'} onclick="bpUsePotion()">PAKAI</button>
+        <button class="bpi-buy" onclick="bpBuyPotion()">BELI ${fmt(WEATHER_POTION_PRICE)}</button>
+      </div>
+      ${aw?`<div class="bpi-now" style="color:${WEATHER[aw].color}">Aktif: ${WEATHER[aw].icon} ${WEATHER[aw].name}</div>`:''}
+    </div>
+  </div>`;
+}
+function bpUsePotion(){
+  const r=useWeatherPotion();
+  if(!r.ok){toast("Potion habis","GAK ADA POTION","#f87171");return;}
+  beep(520,.16,"triangle",.1);setTimeout(()=>beep(780,.18,"triangle",.1),120);
+  toast(`${r.weather.icon} ${r.weather.name}`,"WEATHER AKTIF · 5 MENIT",r.weather.color);
+  renderShell();renderBackpackPanel();
+}
+function bpBuyPotion(){
+  const r=buyWeatherPotion(WEATHER_POTION_PRICE);
+  if(r.ok){beep(660,.12,"sine",.08);renderShell();renderBackpackPanel();}
+  else toast("Koin kurang","KOIN KURANG","#f87171");
 }
 
 
-/* ====== Hover reveal kartu DEK (isi = hubCardHtml, sama persis kartu lobby) ====== */
+/* ====== Hover reveal kartu (isi = hubCardHtml, sama persis kartu lobby). Dipakai dek + weather corner. ====== */
 let __bpsHoverEl=null;
-function bpsHoverShow(sid,slotRect){
-  const s=state.stacks.find(x=>x.id===sid);if(!s||!CARDS[s.char])return;
+function hoverPlace(eq,slotRect){
   if(!__bpsHoverEl){__bpsHoverEl=document.createElement('div');__bpsHoverEl.className='bps-hover';document.body.appendChild(__bpsHoverEl);}
-  __bpsHoverEl.innerHTML=hubCardHtml(s);
+  __bpsHoverEl.innerHTML=hubCardHtml(eq);
   __bpsHoverEl.classList.add('show');
   const W=190,H=253,gap=10,vw=window.innerWidth,vh=window.innerHeight;
   let left=slotRect.right+gap;
@@ -2093,7 +2166,12 @@ function bpsHoverShow(sid,slotRect){
   __bpsHoverEl.style.left=left+'px';
   __bpsHoverEl.style.top=top+'px';
 }
-function bpsHoverHide(){if(__bpsHoverEl)__bpsHoverEl.classList.remove('show');}
+function bpsHoverShow(sid,slotRect){
+  const s=state.stacks.find(x=>x.id===sid);if(!s||!CARDS[s.char])return;
+  hoverPlace(s,slotRect);
+}
+function hoverHide(){if(__bpsHoverEl)__bpsHoverEl.classList.remove('show');}
+function bpsHoverHide(){hoverHide();}
 function bpsHoverBind(){
   if(window.__bpsBound)return;window.__bpsBound=true;
   const SEL='.bp-slot.filled[data-sid],.bp-tile[data-sid]';
@@ -2107,6 +2185,24 @@ function bpsHoverBind(){
     const to=e.relatedTarget;
     if(to&&to.closest&&to.closest(SEL)===sl)return;
     bpsHoverHide();
+  });
+}
+/* ====== Hover reveal kartu weather corner: reveal kartu penuh lewat hubCardHtml ====== */
+function wcHoverBind(){
+  if(window.__wcBound)return;window.__wcBound=true;
+  const SEL='.wc-slot[data-wc]';
+  document.addEventListener('mouseover',e=>{
+    const sl=e.target.closest&&e.target.closest(SEL);
+    if(!sl)return;
+    const id=sl.getAttribute('data-wc');if(!CARDS[id])return;
+    hoverPlace({char:id,mut:'none',trait:'none',shiny:false},sl.getBoundingClientRect());
+  });
+  document.addEventListener('mouseout',e=>{
+    const sl=e.target.closest&&e.target.closest(SEL);
+    if(!sl)return;
+    const to=e.relatedTarget;
+    if(to&&to.closest&&to.closest(SEL)===sl)return;
+    hoverHide();
   });
 }
 
