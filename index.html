@@ -1425,8 +1425,9 @@ const TIER_COLOR={R:"#9A8A8B",SR:"#C8A2A8",SSR:"#B07A9B",UR:"#2F8FE2",EX:"#FF4D5
 const TIER_CHANCE={R:10000,SR:100000,SSR:450000,UR:1000000,EX:1000000};
 function chanceOf(tier){return TIER_CHANCE[tier]||100;}
 function rarityText(tier,chance){return "1 in "+(chance||chanceOf(tier));}
-/* Peluang efektif sebuah kartu: varian SHINY 2× lebih langka dari versi biasanya (stat juga ×2). */
-function effChance(charId,shiny){const c=CARDS[charId]||{};const ch=c.chance||chanceOf(c.tier);return shiny?ch*2:ch;}
+/* Peluang efektif sebuah kartu: tiap lapisan kelangkaan mengali penyebut sesuai pengali stat-nya.
+   SHINY ×2, mutasi ×MUT_MULT (gold 5 / rainbow 10 / secret 25). Mis. secret dari kartu 800k = 1 in 20M. */
+function effChance(charId,mut,shiny){const c=CARDS[charId]||{};const ch=c.chance||chanceOf(c.tier);return ch*(shiny?SHINY_MULT:1)*(MUT_MULT[mut]||1);}
 /* =============== STORY BIBLE ===============
    Satu-satunya tempat data karakter & alur story.
    CARDS, FOES, pool gacha, dan stat musuh diturunkan otomatis dari blok ini. */
@@ -1574,15 +1575,20 @@ function getCards(){
 // Main RNG roll function
 function rngRoll(luck=1,speedMultiplier=1){
   // Pilih hasil LANGSUNG berdasar peluang "1 in N" tiap outcome.
-  // Tiap kartu punya DUA outcome: BIASA (chance C) dan SHINY (chance C×2 → 2× lebih langka, stat ×2).
-  // Bobot = 1 / chance^luck (luck>1 menaikkan peluang outcome langka).
+  // Tiap kartu punya banyak outcome = (BIASA/SHINY) × (none/gold/rainbow/secret).
+  // Penyebut tiap outcome = chance dasar × pengali stat lapisannya (SHINY ×2, gold ×5, rainbow ×10, secret ×25),
+  // jadi varian yang lebih kuat juga lebih langka proporsional (mis. secret dari kartu 800k = 1 in 20M).
   const pool=MASTER_CARD_INDEX.filter(c=>!c.noGacha);
   if(!pool.length)return null;
+  const MUTS=["none","gold","rainbow","secret"];
   const entries=[];
   for(const c of pool){
-    const ch=c.chance||chanceOf(c.tier);
-    entries.push({card:c,shiny:false,ch:ch});
-    entries.push({card:c,shiny:true,ch:ch*2});
+    const base=c.chance||chanceOf(c.tier);
+    for(const shiny of [false,true]){
+      for(const mut of MUTS){
+        entries.push({card:c,mut,shiny,ch:base*(shiny?SHINY_MULT:1)*(MUT_MULT[mut]||1)});
+      }
+    }
   }
   let total=0;
   const weights=entries.map(e=>{const w=1/Math.pow(e.ch,luck);total+=w;return w;});
@@ -1592,8 +1598,9 @@ function rngRoll(luck=1,speedMultiplier=1){
   return{
     cardId:pick.card.char_id,
     tier:pick.card.tier,
-    chance:pick.ch,
+    mut:pick.mut,
     shiny:pick.shiny,
+    chance:pick.ch,
     luckBonus:luck,
     speedBoost:speedMultiplier
   };
@@ -1662,7 +1669,6 @@ function startRollAnimation(luck = 1, speedMultiplier = 1) {
   rollState.interval = setInterval(() => {
     const result = rngRoll(rollState.luck, rollState.speedMultiplier);
     if(!result){stopRollAnimation();hideRollResult();return;}
-    result.mut = rollMut();
     showRollResult(result);
     grantRolledCard(result.cardId, result.mut, result.shiny);
   }, initialDelay);
@@ -1914,8 +1920,7 @@ const FOES=Object.fromEntries(STORY_BIBLE.levels.map((l,i)=>{
   return [i+1,{id:l.unit,name:c?c.name:"(kartu hilang)",ep:c?c.passive.name:"",img:c?c.sprite_asset:"",tier:c?c.tier:"",boss:!!l.boss}];
 }));
 /* Sistem level kartu DIHAPUS — stat kartu tetap (base x mutasi x trait). */
-/* Sistem MUTASI gacha — roll per-pull, stat dikalikan, ditunjukkan lewat warna glow */
-const MUT_CHANCE={secret:0.5,rainbow:1,gold:4}; // % peluang kumulatif dari atas: secret 0.5%, rainbow +1%, gold +4%
+/* Sistem MUTASI gacha — tiap varian adalah outcome roll sendiri; kelangkaannya = kelangkaan kartu dasar × pengali stat-nya */
 const SHINY_MULT=2; // SHINY = stat dikali 2, DIKALIKAN di atas multiplier mutasi (mis. shiny+gold = 2*5 = 10)
 const MUT_MULT={none:1,gold:5,rainbow:10,secret:25};
 const MUT_RANK={none:0,gold:1,rainbow:2,secret:3};
@@ -1927,7 +1932,6 @@ function mutBadge(mut){
   const label=MUT_LABEL[mut];if(!label)return "";
   return mutText(mut,label);
 }
-function rollMut(){const r=Math.random()*100;let c=0;const order=["secret","rainbow","gold"];for(const m of order){c+=MUT_CHANCE[m];if(r<c)return m;}return "none";}
 function shinyBadge(){return '<span class="shiny-badge">SHINY</span>';}
 const shinyCls=s=>s&&s.shiny?" shiny":"";
 /* Hadiah login harian 7 hari (coin) — total 950.000, reset tiap 00:00 */
@@ -1984,7 +1988,7 @@ function traitFxList(k){const t=TRAIT[k];if(!t)return"";const e=[];if(t.fx.pierc
 function traitGem(sz){return `<svg class="tgem" viewBox="0 0 48 48" width="${sz}" height="${sz}" aria-hidden="true"><path class="gem-body" d="M15 6h18l9 11-18 25L6 17z"/><path class="gem-line" d="M6 17h36M15 6l4.5 11L24 6l4.5 11L33 6M10.5 17L24 42l13.5-25M19.5 17h9"/></svg>`;}
 function traitTipInner(k){const t=TRAIT[k];if(!t)return"";return `<span class="tt-name" style="color:${t.color}">${traitGem(14)} ${t.name}</span><span class="tt-rar">RARITY ${t.rar}${t.chance?` · ${t.chance}%`:""}</span><span class="tt-power" style="color:${t.color}">ATK +${Math.round((t.atk-1)*100)}% · HP +${Math.round((t.hp-1)*100)}%</span><span class="tt-fx">${traitFxList(k)}</span>`;}
 function traitChip(k,html){const t=TRAIT[k];if(!t)return html;return `<span class="trait-hover" data-trait="${k}">${html}</span>`;}
-function mutTipInner(mut){const label=MUT_LABEL[mut];if(!label)return"";const col=MUT_COLOR[mut];return `<span class="tt-name" style="color:${col}">${label}</span><span class="tt-rar">MUTASI KARTU</span><span class="tt-fx">Mutasi hasil Roll · menaikkan HP &amp; ATK · peluang muncul ${MUT_CHANCE[mut]}%.</span>`;}
+function mutTipInner(mut){const label=MUT_LABEL[mut];if(!label)return"";const col=MUT_COLOR[mut];return `<span class="tt-name" style="color:${col}">${label}</span><span class="tt-rar">MUTASI KARTU</span><span class="tt-fx">Mutasi hasil Roll · menaikkan HP &amp; ATK ×${MUT_MULT[mut]||1} · kelangkaan = kelangkaan kartu dasar ×${MUT_MULT[mut]||1}.</span>`;}
 function mutChip(mut,html){const label=MUT_LABEL[mut];if(!label)return html;return `<span class="mut-hover" data-mut="${mut}">${html}</span>`;}
 function mergeFx(a,b){if(!b||!Object.keys(b).length)return a;const o={...a};for(const k in b){const av=o[k],bv=b[k];if(av==null){o[k]=bv;continue;}if(typeof bv==="number"&&typeof av==="number"){o[k]=av+bv;continue;}if(bv&&typeof bv==="object"&&av&&typeof av==="object"){if(k==="crit")o[k]={chance:Math.min(95,av.chance+bv.chance),mult:Math.max(av.mult,bv.mult)};else if(k==="evasion")o[k]={chance:Math.min(90,av.chance+bv.chance),turns:Math.max(av.turns,bv.turns)};else if(k==="barrage")o[k]={chance:Math.min(95,av.chance+bv.chance),min:Math.max(av.min,bv.min),max:Math.max(av.max,bv.max)};else o[k]=bv;}else o[k]=bv;}return o;}
 function fxOf(stack){return mergeFx(PASSIVE_FX[stack.char]||{},TRAIT_FX[stack.trait]||{});}
@@ -2617,7 +2621,7 @@ function meFighterHtml(s){
   const st=cardStats(s.char,s.mut,s.trait,s.shiny);
   const mut=(s.mut&&s.mut!=="none")?s.mut:null;
   const trait=(s.trait&&s.trait!=="none")?s.trait:null;
-  return `<div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}">${madaraAura(s.char)}<div class="f-name${(!mut&&s.shiny)?' f-name-shine':''}"${mut?` style="color:${MUT_COLOR[mut]}"`:''}>${mutText(mut,cardName(s.char))}</div><span class="f-tag" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,effChance(s.char,s.shiny))}</span>
+  return `<div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}">${madaraAura(s.char)}<div class="f-name${(!mut&&s.shiny)?' f-name-shine':''}"${mut?` style="color:${MUT_COLOR[mut]}"`:''}>${mutText(mut,cardName(s.char))}</div><span class="f-tag" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,effChance(s.char,s.mut,s.shiny))}</span>
     ${(s.shiny||mut||trait)?`<div class="f-badges">${s.shiny?'<span class="shiny-badge">SHINY</span>':''}${mut?mutChip(mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="hc-trait hc-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(14)}</span>`):''}</div>`:""}
     </div>
     <div class="hpbar"><i id="hpMe"></i><span id="hpMeT">${fmt(st.hp)} / ${fmt(st.hp)}</span></div>
@@ -3705,7 +3709,7 @@ function openModal(id){
   mcEl.innerHTML=`
     <span class="md-art"><img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(s.char)}</span>
     <div class="md-info">
-      <div class="eyebrow" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,effChance(s.char,s.shiny))}${s.mut&&s.mut!=="none"?` · ${mutChip(s.mut,`<span>${mutBadge(s.mut)}</span>`)}`:""}${s.shiny?' · <span class="shiny-badge">SHINY</span>':""}</div>
+      <div class="eyebrow" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,effChance(s.char,s.mut,s.shiny))}${s.mut&&s.mut!=="none"?` · ${mutChip(s.mut,`<span>${mutBadge(s.mut)}</span>`)}`:""}${s.shiny?' · <span class="shiny-badge">SHINY</span>':""}</div>
       <div class="md-name">${c.name}</div>
       <div class="cr-title" style="margin-bottom:8px">${c.type}</div>
       <div class="cr-stats"><span>♡ ${fmt(st.hp)}</span><span>${ATKIC} ${fmt(st.atk)}</span></div>
@@ -3737,7 +3741,7 @@ function hubCardHtml(eq,idAttr){
   return `<div class="hub-center${mut?' mut-'+mut:''}${shinyCls(eq)}"${idAttr||''} data-tier="${tier}"${mut?` style="border-color:${MUT_COLOR[mut]}"`:''}>
       <div class="hc-img"><img src="${cardImg(eq.char)}" alt="${cardName(eq.char)}">${madaraAura(eq.char)}
           <span class="hc-name-top${(!mut&&eq.shiny)?' hc-name-shine':''}"${mut?` style="color:${MUT_COLOR[mut]}"`:''}>${mutText(mut,cardName(eq.char))}</span>
-          <span class="hc-chance" style="color:${TIER_COLOR[tier]}">${rarityText(tier,effChance(eq.char,eq.shiny))}</span>
+          <span class="hc-chance" style="color:${TIER_COLOR[tier]}">${rarityText(tier,effChance(eq.char,eq.mut,eq.shiny))}</span>
           ${(mut||trait||eq.shiny)?`<div class="hc-badges">${eq.shiny?'<span class="shiny-badge">SHINY</span>':''}${mut?mutChip(mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="hc-trait hc-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(14)}</span>`):''}</div>`:''}
           <div class="skill-overlay"><b>${passiveName(eq.char)}</b><span class="sk-txt">${skillText(eq.char)}</span></div>
         </div>
@@ -3860,7 +3864,7 @@ function renderRaidPick(){
     return `<button class="raid-pick-card${s.tier==="EX"?" fire":""}${mc}${s.shiny?" shiny":""}" data-pick="${s.id}" data-name="${c.name.toLowerCase()}"${s.mut&&s.mut!=="none"?` style="border-color:${MUT_COLOR[s.mut]}"`:""}>
       <div class="rpc-img"><img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(s.char)}
         <span class="badge-row">
-          <span class="tier-badge" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,effChance(s.char,s.shiny))}</span>
+          <span class="tier-badge" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,effChance(s.char,s.mut,s.shiny))}</span>
         </span>
         ${(s.mut&&s.mut!=="none")||s.shiny?`<span class="badge-row bl">
           ${s.mut&&s.mut!=="none"?mutChip(s.mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`):""}${s.shiny?'<span class="shiny-badge">SHINY</span>':""}
@@ -4361,7 +4365,6 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
     if(rollState.hideTimer){clearTimeout(rollState.hideTimer);rollState.hideTimer=null;}
     const result=rngRoll(1,1);
     if(!result){beep(220,0.15,"square",0.08);return;}
-    result.mut=rollMut();
     grantRolledCard(result.cardId, result.mut, result.shiny);
     showRollResult(result);
     beep(440,0.15,"sine",0.1);
