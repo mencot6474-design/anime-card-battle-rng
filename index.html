@@ -928,6 +928,12 @@ body.battle-full .stat svg{flex:none}
 .lobby-hub .hub-center .hc-info{padding:20px 14px 12px}
 .hub-center{width:100%;aspect-ratio:3/4;border-radius:20px;border:1px solid var(--line2);background:radial-gradient(120% 85% at 50% 0%,rgba(140,30,45,.10),#FFFFFF);position:relative;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:border-color .15s,transform .15s}
 .hub-center:hover{border-color:var(--cyan);transform:translateY(-2px)}
+/* 3D TILT (khusus card tengah lobby): .hub-mid jadi panggung ber-perspektif, #hubCard miring
+   ngikutin kursor (di-set via JS), .hc-glare = highlight cahaya nyapuin. Battle/roll gak kena
+   karena init-nya cuma dipanggil di renderLobby + #hubCard memang gak ada di sana. */
+.lobby-hub .hub-mid{perspective:900px}
+.lobby-hub #hubCard{transition:transform .12s ease-out;will-change:transform}
+.lobby-hub #hubCard .hc-glare{position:absolute;inset:0;z-index:5;pointer-events:none;border-radius:inherit;opacity:0;transition:opacity .3s;background:radial-gradient(circle at var(--gx,50%) var(--gy,50%),rgba(255,255,255,.4),rgba(255,255,255,0) 42%);mix-blend-mode:soft-light}
 .hub-center .hc-img{position:absolute;inset:0;flex:none;background:#E9EDF2}
 .hub-center .hc-img img,.hub-center .hc-img video{width:100%;height:100%;object-fit:cover;object-position:top}
 .hub-center .hc-info{position:absolute;left:0;right:0;bottom:0;z-index:6;padding:30px 14px 12px;border-top:none;background:linear-gradient(to top,rgba(6,8,12,.92) 32%,rgba(6,8,12,.5) 64%,transparent)}
@@ -4449,6 +4455,31 @@ function hubCardHtml(eq,idAttr){
         </div>
     </div>`;
 }
+/* Tilt 3D + glare buat kartu tengah lobby. Diikat tiap renderLobby (elemen #hubCard baru
+   tiap render, jadi listener lama ikut hilang — gak dobel). Skip di perangkat sentuh. */
+function initHubTilt(card){
+  if(!card || (window.matchMedia && window.matchMedia('(pointer: coarse)').matches)) return;
+  let glare=card.querySelector('.hc-glare');
+  if(!glare){glare=document.createElement('div');glare.className='hc-glare';card.appendChild(glare);}
+  const MAX=12; let raf=null;
+  card.addEventListener('mousemove',(e)=>{
+    const r=card.getBoundingClientRect();
+    const px=(e.clientX-r.left)/r.width, py=(e.clientY-r.top)/r.height;
+    const rx=((0.5-py)*2*MAX), ry=((px-0.5)*2*MAX);
+    if(raf)cancelAnimationFrame(raf);
+    raf=requestAnimationFrame(()=>{
+      card.style.transform=`rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg)`;
+      glare.style.setProperty('--gx',(px*100).toFixed(1)+'%');
+      glare.style.setProperty('--gy',(py*100).toFixed(1)+'%');
+      glare.style.opacity='1';
+    });
+  });
+  card.addEventListener('mouseleave',()=>{
+    if(raf)cancelAnimationFrame(raf);
+    card.style.transform='rotateX(0deg) rotateY(0deg)';
+    glare.style.opacity='0';
+  });
+}
 function renderLobby(){
   if(state.battle)return renderBattle();
   const eq=equipped();
@@ -4465,7 +4496,7 @@ function renderLobby(){
     <div class="hub-box h-r2 hub-link" id="hubTrait" role="button" title="Roll Trait untuk kartu aktif"><img class="hi-ic" src="assets/images/icon-trait.svg" alt=""><span class="hb-lbl">TRAIT</span></div>
     <div class="hub-box h-mission hub-link" id="missionBtn" role="button" title="Buka daftar misi"><svg class="tw-ic" width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 4 6v13l5-2 6 2 5-2V4l-5 2-6-2Z"/><path d="M9 4v13M15 6v13"/></svg><span class="hb-lbl">MISSION</span><span class="mb-sub" id="missionSub"></span></div>
   </div>`;
-  const hc=document.getElementById("hubCard");if(hc)hc.onclick=()=>{sfx.hit();toggleBackpack();};
+  const hc=document.getElementById("hubCard");if(hc){hc.onclick=()=>{sfx.hit();toggleBackpack();};initHubTilt(hc);}
   const hi=document.getElementById("hubIndex");if(hi)hi.onclick=()=>{sfx.hit();openIndex();};
   const ht=document.getElementById("hubTrait");if(ht)ht.onclick=()=>{sfx.hit();openTrait();};
   const hr=document.getElementById("hubRaid");if(hr)hr.onclick=()=>{sfx.hit();raidView="hub";location.hash="#/raid";};
