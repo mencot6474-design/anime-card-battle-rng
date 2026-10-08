@@ -4664,10 +4664,10 @@ function towerEnd(win){
   if(win){
     /* Menang lantai: kasih hadiah lalu LANGSUNG naik lantai berikutnya tanpa overlay. */
     const r=towerReward(f); state.coins+=r.coins;
-    /* Drop acak tiap floor lolos: Instant roll 50 = 50% (DITABUNG, baru di-roll saat kalah) · Weather 5% · Luck +1 10% · Speed +1 10% */
+    /* Drop tiap floor lolos: Instant roll 100% PASTI (DITABUNG, di-roll saat kalah) — 25×ceil(lantai/10), +25 tiap band 10 lantai · Weather 5% · Luck +1 10% · Speed +1 10% */
     if(!towerRun.drops)towerRun.drops={weather:0,luck:0,speed:0};
-    let gotRoll=false;
-    if(Math.random()<0.50){towerRun.pendingRolls=(towerRun.pendingRolls||0)+50;gotRoll=true;towerRun.cards=(towerRun.cards||0)+50;}
+    const rr=25*Math.ceil(f/10);
+    towerRun.pendingRolls=(towerRun.pendingRolls||0)+rr; towerRun.cards=(towerRun.cards||0)+rr;
     if(Math.random()<0.05){state.potions=(state.potions||0)+1;towerRun.drops.weather++;}
     if(Math.random()<0.10){state.luckPotions=(state.luckPotions||0)+1;towerRun.drops.luck++;}
     if(Math.random()<0.10){state.speedPotions=(state.speedPotions||0)+1;towerRun.drops.speed++;}
@@ -4677,7 +4677,7 @@ function towerEnd(win){
     towerRun.cleared=f; towerRun.coins=(towerRun.coins||0)+r.coins;
     state.tower.best=Math.max(state.tower.best||0,f);
     save(); renderShell(); fanfare();
-    toast("LANTAI "+f+" DITAKLUKKAN",(gotRoll?"+50 ROLL DISIMPAN · ":"NO ROLL · ")+"+"+tok+" TOKEN","#7df9ff");
+    toast("LANTAI "+f+" DITAKLUKKAN","+"+rr+" ROLL DISIMPAN · "+"+"+tok+" TOKEN","#7df9ff");
     bt=null;
     towerEnter(f+1);
     return;
