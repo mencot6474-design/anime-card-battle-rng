@@ -200,7 +200,7 @@ body.on-lobby .weather-panel.show{display:flex;}
 .bp-body{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;padding:16px;}
 .bp-h{font-family:"Barlow Condensed";font-weight:700;letter-spacing:.06em;font-size:13px;color:var(--muted);margin:4px 0 10px;}
 .bp-cols{display:flex;gap:18px;align-items:flex-start;flex:1;min-height:0;}
-.bp-deckcol{flex:0 0 auto;align-self:flex-start;width:clamp(64px,calc((80vh - 170px)/4),104px);}
+.bp-deckcol{flex:0 0 auto;align-self:stretch;display:flex;flex-direction:column;min-height:0;width:auto;}
 .bp-collect{flex:1;min-width:0;align-self:stretch;overflow-y:auto;}
 /* Tab nav Backpack: DECK / ITEM / ARTEFAK / PET — tiap tab punya panel sendiri. */
 .bp-tabs{display:flex;gap:6px;padding:10px 16px 0;background:var(--panel);border-bottom:1px solid var(--line);}
@@ -264,7 +264,8 @@ body.on-lobby .weather-panel.show{display:flex;}
 .bp-fchip:hover{filter:brightness(1.15);}
 .bp-fchip.on{border-color:var(--cyan);color:var(--cyan);}
 .bp-fchip em{font-style:normal;font-size:11px;opacity:.8;font-weight:700;}
-.bp-slots{display:grid;grid-template-columns:1fr;gap:8px;}
+.bp-slots{display:grid;grid-template-columns:1fr;gap:8px;flex:1;min-height:0;grid-template-rows:repeat(4,minmax(0,1fr));}
+.bp-slots .bp-slot{height:100%;width:auto;aspect-ratio:1/1;min-height:0;max-width:112px;max-height:112px;justify-self:center;align-self:center;}
 .bp-slot{position:relative;aspect-ratio:1/1;width:100%;border:2px dashed var(--line2);border-radius:12px;background:var(--panel2);overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .bp-slot.filled{border-style:solid;}
 .bp-slot.sel{box-shadow:0 0 0 3px var(--cyan);}
