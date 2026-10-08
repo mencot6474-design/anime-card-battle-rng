@@ -546,6 +546,15 @@ body.battle-full .fighter[data-tier="UR"]{--ring:#2F8FE2}
 body.battle-full .fighter[data-tier="EX"]{--ring:#FF4D5E}
 body.battle-full .fighter.me,body.battle-full .fighter.foe{box-shadow:0 0 0 2px var(--ring),0 0 26px 4px var(--ring),0 22px 50px rgba(0,0,0,.55)}
 body.battle-full .fighter.ko{box-shadow:none}
+/* KEMIRINGAN 3D kartu aktif — pakai properti `rotate`/`scale` INDIVIDU (bukan `transform`),
+   jadi animasi foe-enter/tag-enter/hit yang main di `transform` tetap jalan & NGGAK ngehapus miringnya.
+   perspective di grid + rotate:y bikin kartu nunduk ngadep tengah = kerasa "hidup", bukan kartu lurus + glow doang. */
+@media(min-width:701px){
+  body.battle-full .battle-grid{perspective:1500px;perspective-origin:50% 42%}
+  body.battle-full .fighter.me{rotate:y 9deg;scale:1.03}
+  body.battle-full .fighter.foe{rotate:y -9deg;scale:1.03}
+  body.battle-full .fighter.ko{rotate:0deg;scale:1}
+}
 /* slot cadangan di-dim biar kartu aktif nge-domominasi */
 body.battle-full .bench-rail .bench-sq{filter:grayscale(.5) brightness(.62) saturate(.85);transition:filter .15s}
 body.battle-full .bench-rail .bench-sq.empty{background:rgba(255,255,255,.06);border-color:rgba(200,212,222,.22)}
