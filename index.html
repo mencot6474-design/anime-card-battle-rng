@@ -1439,8 +1439,8 @@ body.battle-full .stat svg{flex:none}
 .tw-stats .tbs{display:flex;flex-direction:column;gap:2px;padding:8px 18px;border-radius:12px;border:1px solid rgba(47,191,107,.4);background:#0B1526}
 .tw-stats .tbs span{font-family:"Barlow Condensed";letter-spacing:.16em;font-size:10px;font-weight:700;color:#6FE3AC}
 .tw-stats .tbs b{font-size:26px;font-weight:800;color:#EAF3FB;line-height:1}
-.tw-foes{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:6px}
-.tw-foe-slot{width:158px;flex:0 0 auto;cursor:default}
+.tw-foes{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.tw-foe-slot{width:150px;flex:0 0 auto;cursor:default}
 .tw-foe-slot:hover{transform:none}
 .tw-foe-slot .hc-skill,.tw-foe-slot .hc-desc{display:none}
 .tw-foe-slot .hc-info{padding:18px 12px 10px}
@@ -4440,12 +4440,19 @@ function towerMakeWave(charId,f,isBoss,role){
   return {en,es,eid,efx};
 }
 function towerWaves(f){
-  if(towerIsBossFloor(f)){
+  const boss=towerIsBossFloor(f);
+  const p=towerRegularPool();
+  const pick=i=>p.length?p[towerHash(f*4+i)%p.length].char_id:null;
+  const ws=[];
+  if(boss){
     const r=TOWER_BOSS_ROSTER[towerBossIndex(f)];
-    return [towerMakeWave(r.main,f,true,"main"),towerMakeWave(r.tag,f,true,"tag")].filter(Boolean);
+    ws.push(towerMakeWave(r.main,f,true,"main"));
+    ws.push(towerMakeWave(r.tag,f,true,"tag"));
+    if(p.length){ ws.push(towerMakeWave(pick(2),f,true,"tag")); ws.push(towerMakeWave(pick(3),f,true,"tag")); }
+  } else {
+    for(let i=0;i<4;i++){ const id=pick(i); if(!id)break; ws.push(towerMakeWave(id,f,false,i===0?"main":"tag")); }
   }
-  const reg=towerPickRegular(f);
-  return reg?[towerMakeWave(reg.char_id,f,false,"main")].filter(Boolean):[];
+  return ws.filter(Boolean);
 }
 function towerReward(f){const boss=towerIsBossFloor(f);return {coins:boss?(500+f*60):(150+f*30),starStone:0,potion:boss?2:1};}
 let towerView="hub", towerRun=null;
@@ -4521,14 +4528,15 @@ function renderTower(){
   if(towerView==="shop"){renderTowerShop();return;}
   renderTowerHub();
 }
-function towerPreviewCard(w,isBoss,role){
+function towerPreviewCard(w,isBoss,role,idx){
   const id=w.eid, c=CARDS[id]; if(!c) return "";
   const tier=c.tier;
+  const badge = isBoss ? (role==="main"?"BOS":"TAG") : ("GELOMBANG "+((idx||0)+1));
   return `<div class="hub-center tw-foe-slot" data-tier="${tier}">
     <div class="hc-img"><img src="${c.sprite_asset}" alt="${c.name}"${c.pos?` style="object-position:${c.pos}"`:''}>${madaraAura(id)}
       <span class="hc-name-top">${c.name}</span>
       <span class="hc-chance" style="color:${TIER_COLOR[tier]}">${rarityText(tier,luckChance(id))}</span>
-      ${isBoss?`<div class="hc-badges"><span class="hc-trait">${role==="main"?"BOS":"TAG"}</span></div>`:''}
+      <div class="hc-badges"><span class="hc-trait">${badge}</span></div>
     </div>
     <div class="hc-info">
       <div class="hc-skill">${passiveName(id)}</div>
@@ -4549,7 +4557,7 @@ function renderTowerHub(){
     <div class="tw-stats"><div class="tbs"><span>BEST LANTAI</span><b>${best}</b></div><div class="tbs"><span>ROLL / LANTAI</span><b>50 @50%</b></div><div class="tbs"><span>TOKEN INF</span><b>${fmt(state.infTokens||0)}</b></div></div>
   </div>
   <div class="eyebrow" style="margin:16px 0 8px">MUSUH &middot; LANTAI 1</div>
-  <div class="tw-foes">${waves.map((w,i)=>towerPreviewCard(w,boss,i===0?"main":"tag")).join("")}</div>
+  <div class="tw-foes">${waves.map((w,i)=>towerPreviewCard(w,boss,i===0?"main":"tag",i)).join("")}</div>
   <div class="tw-hubbtns">
     <button class="tw-shop tw-shop-go" id="towerGo">&#9876; MULAI RUN</button>
     <button class="tw-shop" id="towerShop">&#9831; TOKO INF</button>
@@ -4670,7 +4678,7 @@ function advanceTowerFoe(){
     setBar("hpFoe","hpFoeT",w.es.hp,w.es.hp);
     const foeEl=side?side.querySelector(".fighter.foe"):null;
     if(foeEl){const fl=document.createElement("div");fl.className="foe-enter-flash";foeEl.appendChild(fl);setTimeout(()=>{try{fl.remove();}catch(e){}},640);}
-    const tl=document.getElementById("turnLabel");if(tl)tl.innerHTML="LANTAI "+towerRun.floor+"<br>GELOMBANG 2";
+    const tl=document.getElementById("turnLabel");if(tl)tl.innerHTML="LANTAI "+towerRun.floor+"<br>GELOMBANG "+(towerRun.idx+1);
     floatText(".fighter.foe","TAG-IN!","heal");
     schedPhase(1000,enemyPhase);
   },2000);
