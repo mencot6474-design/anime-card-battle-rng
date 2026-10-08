@@ -2082,7 +2082,8 @@ function getCards(){
 }
 
 // Main RNG roll function. luckMultiplier = totalLuck() = (base+flat)*(1+percent).
-// Catatan: weight pakai pangkat (1/ch^L) supaya luck benar-benar menggeser distribusi ke arah langka.
+// Weight = 1/ch^(1/L): pangkat mengecil saat luck naik -> distribusi MERATA ke arah kartu langka (luck MEMBANTU).
+// Di L=1 tetap = 1/ch (awal main susah, sesuai desain). Luck ribuan -> langka makin attainable, tanpa overflow.
 // Display "1 in X" memakai base MENTAH (ch, tanpa pembagian luck) lewat luckChance() — biar kesan rarity-nya "wah".
 function rngRoll(luckMultiplier=1,speedMultiplier=1){
   const L=(typeof luckMultiplier==="number"&&luckMultiplier>0)?luckMultiplier:1;
@@ -2101,7 +2102,7 @@ function rngRoll(luckMultiplier=1,speedMultiplier=1){
     }
   }
   let total=0;
-  const weights=entries.map(e=>{const w=1/Math.pow(e.ch,L);total+=w;return w;});
+  const weights=entries.map(e=>{const w=1/Math.pow(e.ch,1/L);total+=w;return w;});
   let r=Math.random()*total, idx=entries.length-1;
   for(let i=0;i<entries.length;i++){r-=weights[i];if(r<=0){idx=i;break;}}
   const pick=entries[idx];
