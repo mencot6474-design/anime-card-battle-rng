@@ -607,6 +607,22 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 .fighter.hit{animation:hitShake .42s cubic-bezier(.3,.6,.3,1)}
 @keyframes hitFlash{0%{filter:brightness(2.1)}70%{filter:brightness(1.3)}100%{filter:brightness(1)}}
 @keyframes hitShake{0%{transform:translate(0,0) rotate(0);filter:brightness(2.1)}15%{transform:translate(13px,-4px) rotate(3deg)}30%{transform:translate(-10px,3px) rotate(-2.5deg);filter:brightness(1.6)}45%{transform:translate(9px,-2px) rotate(2deg)}60%{transform:translate(-6px,2px) rotate(-1.5deg);filter:brightness(1.3)}75%{transform:translate(4px,-1px) rotate(1deg)}100%{transform:translate(0,0) rotate(0);filter:brightness(1)}}
+/* ===== JUICE SERANGAN (prototipe attack-fx) — kartu NORMAL, gak nyentuh jalur ULT =====
+   Screen shake (grid) + hit-stop (freeze animasi fighter) + overlay impact (flash/slash/spark) di dalem kartu target. */
+.battle-grid.shk{animation:bfShake .3s cubic-bezier(.36,.07,.19,.97)}
+.battle-grid.shk-big{animation:bfShakeBig .46s cubic-bezier(.36,.07,.19,.97)}
+@keyframes bfShake{10%{transform:translate(-6px,3px)}20%{transform:translate(7px,-4px)}30%{transform:translate(-8px,2px)}40%{transform:translate(6px,-2px)}50%{transform:translate(-4px,2px)}60%{transform:translate(4px,-1px)}70%{transform:translate(-2px,1px)}100%{transform:translate(0,0)}}
+@keyframes bfShakeBig{10%{transform:translate(-16px,9px) rotate(-.6deg)}20%{transform:translate(18px,-11px) rotate(.7deg)}30%{transform:translate(-19px,7px) rotate(-.5deg)}40%{transform:translate(13px,-6px)}50%{transform:translate(-10px,5px)}60%{transform:translate(7px,-3px)}70%{transform:translate(-4px,2px)}80%{transform:translate(3px,-1px)}100%{transform:translate(0,0)}}
+.battle-grid.hitstop .fighter,.battle-grid.hitstop .bench-sq{animation-play-state:paused}
+.impact{position:absolute;inset:0;z-index:7;pointer-events:none;overflow:hidden;border-radius:20px}
+.impact .im-flash{position:absolute;inset:0;opacity:0;background:radial-gradient(circle at 62% 45%,rgba(255,255,255,.95),rgba(255,255,255,0) 55%);animation:imFlash .18s ease-out}
+.impact.crit .im-flash{background:radial-gradient(circle at 62% 45%,#fff,rgba(255,90,90,.5) 45%,transparent 68%)}
+@keyframes imFlash{0%{opacity:.95}100%{opacity:0}}
+.impact .im-slash{position:absolute;left:50%;top:46%;width:3px;height:0;opacity:0;background:linear-gradient(#fff,rgba(255,255,255,0));box-shadow:0 0 12px #fff;transform:translate(-50%,-50%) rotate(-32deg);animation:imSlash .22s ease-out}
+.impact .im-slash.two{transform:translate(-50%,-50%) rotate(28deg)}
+@keyframes imSlash{0%{opacity:0;height:0}18%{opacity:1;height:180px}100%{opacity:0;height:220px}}
+.impact .im-spark{position:absolute;left:50%;top:46%;width:6px;height:6px;border-radius:50%;background:#fff;box-shadow:0 0 8px 2px #7DF9FF;opacity:0;animation:imSpark .5s cubic-bezier(.1,.7,.3,1) forwards}
+@keyframes imSpark{0%{opacity:1;transform:translate(-50%,-50%) rotate(var(--a)) translateX(0) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--a)) translateX(var(--d)) scale(.2)}}
 /* Reversal Red: inti merah + percikan, target terlempar mundur (kanan menjauh) */
 .fighter.knockback{animation:foeKnock .55s cubic-bezier(.12,.82,.28,1)}
 @keyframes foeKnock{0%{filter:brightness(2.4) saturate(1.4)}12%{transform:translateX(64px) translateY(-12px) rotate(8deg) scale(.93);filter:brightness(1.5) hue-rotate(-12deg)}42%{transform:translateX(30px) translateY(-4px) rotate(3deg)}70%{transform:translateX(-7px) rotate(-1deg)}100%{transform:translateX(0) rotate(0);filter:brightness(1)}}
@@ -4096,6 +4112,10 @@ function schedPhase(ms,fn){
 }
 /* ===== Renderer serangan SATU untuk semua kartu: user & musuh tinggal tukar sisi (A=penyerang, D=target) ===== */
 function attackLunge(sel){anim(sel,sel===".fighter.foe"?"lunge-l":"lunge-r");}
+/* ===== JUICE serangan generik (prototipe attack-fx) — HANYA kartu normal, jalur ULT/galaxy gak disentuh ===== */
+function shakeScreen(big){const g=document.querySelector(".battle-grid");if(!g)return;const cls=big?"shk-big":"shk";g.classList.remove("shk","shk-big");void g.offsetWidth;g.classList.add(cls);setTimeout(()=>g.classList.remove(cls),big?460:300);}
+function hitStop(ms){const g=document.querySelector(".battle-grid");if(!g)return;g.classList.add("hitstop");setTimeout(()=>g.classList.remove("hitstop"),ms||90);}
+function impactFx(Dsel,big){const f=document.querySelector(Dsel);if(!f)return;const box=document.createElement("div");box.className="impact"+(big?" crit":"");box.innerHTML='<span class="im-flash go"></span><span class="im-slash go"></span><span class="im-slash two go"></span>';const n=big?16:8;for(let i=0;i<n;i++){const s=document.createElement("span");s.className="im-spark go";s.style.setProperty("--a",(Math.random()*360).toFixed(1)+"deg");s.style.setProperty("--d",Math.round(40+Math.random()*(big?150:90))+"px");s.style.animationDelay=(Math.random()*.05).toFixed(2)+"s";box.appendChild(s);}f.appendChild(box);setTimeout(()=>box.remove(),big?700:560);}
 function modeDomainFx(A,D,total,who){return;/*animasi skill dihapus*/
   domainExpansionFx(who);domainVoid();
   setTimeout(()=>floatText(A,"DOMAIN EXPANSION","crit"),220);
@@ -4131,6 +4151,7 @@ function performAttack(o){
   const span=Math.max(0,startHp-endHp);
   const hpAt=(cum)=>o.total>0?Math.max(endHp,Math.round(startHp-span*Math.min(1,cum/o.total))):endHp;
   attackLunge(A);
+  if(!ultBarrage&&!galaxy)swing();
   setTimeout(()=>{
     if(!bt)return;
     if(o.domainStrike&&!bt.over){modeDomainFx(A,D,o.total,id);}
@@ -4148,7 +4169,7 @@ function performAttack(o){
       if(s.void){anim(D,"hit");setTimeout(()=>floatText(D,"VOID","miss"),120);return;}
       const dl=dlyAt(i),ft=dl+(md?40:hoff);
       if(!galaxy&&!md&&(o.domainStrike||(id!=="CH_EX_MADARA"&&id!=="CH_EX_GOJO")))setTimeout(()=>playClip(punchAudio),dl);
-      setTimeout(()=>{if(bt&&!bt.over)anim(D,"hit",ultBarrage);},dl+jwLag);
+      setTimeout(()=>{if(bt&&!bt.over){anim(D,"hit",ultBarrage);if(!ultBarrage&&!galaxy){const big=!!(o.crit&&i===shots.length-1);impactFx(D,big);shakeScreen(big);hitStop(big?140:80);if(big)sfx.crit();}}},dl+jwLag);
       cum+=s.d;barEnd=Math.max(barEnd,ft);const stepHp=hpAt(cum);
       setTimeout(()=>floatText(D,"-"+fmt(s.d),(o.crit&&i===shots.length-1)?"crit":""),ft);
       setTimeout(()=>setBar(o.barId,o.barTid,stepHp,o.defMax),ft);
