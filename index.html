@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Anime Card Battle</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -44,6 +44,26 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .nav-btn{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;color:#454F59;border:1px solid transparent;transition:.15s;cursor:pointer}
 .nav-btn:hover{color:var(--text);background:rgba(255,255,255,.42)}
 .nav-btn.active{color:#E8556A;background:rgba(255,255,255,.7);border-color:rgba(20,28,38,.12);box-shadow:0 0 0 1px rgba(232,85,106,.25)}
+/* ---------- MODE MOBILE: landscape + layar penuh (khusus perangkat sentuh) ---------- */
+/* Tombol fullscreen cuma muncul di perangkat sentuh; desktop tetap bersih. */
+.tb-fullscreen{display:none}
+@media (pointer:coarse){.tb-fullscreen{display:grid}}
+/* Overlay "putar HP": HANYA di ponsel/tablet sentuh saat portrait, nutupin game sampai
+   pemain mutar ke landscape. Begitu landscape media query mati -> overlay hilang sendiri
+   (iOS tak dukung screen.orientation.lock, jadi rotasi manual tetap jadi jalur utama). */
+#rotateHint{display:none}
+@media (orientation:portrait) and (pointer:coarse){
+  #rotateHint{display:flex;position:fixed;inset:0;z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:32px;text-align:center;background:radial-gradient(circle at 50% 38%,#1b2330,#0b0e13);color:#fff}
+}
+#rotateHint .rh-ic{width:76px;height:76px;color:#E8556A;animation:rhRotate 1.9s ease-in-out infinite}
+#rotateHint .rh-title{font-family:"Barlow Condensed";font-weight:800;font-size:25px;letter-spacing:.08em;text-transform:uppercase}
+#rotateHint .rh-sub{font-size:13px;color:#aeb8c4;max-width:320px;line-height:1.55}
+#rotateHint .rh-btn{margin-top:6px;padding:13px 26px;border-radius:12px;border:0;background:linear-gradient(120deg,#E8556A,#b8324a);color:#fff;font-family:"Barlow Condensed";font-weight:800;font-size:16px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;box-shadow:0 10px 26px rgba(232,85,106,.4)}
+@keyframes rhRotate{0%,38%{transform:rotate(0deg)}70%,100%{transform:rotate(-90deg)}}
+/* Notch aman saat landscape fullscreen */
+@media (orientation:landscape) and (display-mode:fullscreen){
+  #topbar{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+}
 /* padding kiri/ kanan = max(padding normal, offset kolom konten) -> di layar lebar pill topbar sejajar dengan tepi konten main, bukan menempel ke pinggir jendela */
 #topbar{position:sticky;top:0;z-index:10;margin-left:0;min-height:64px;display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:12px max(clamp(12px,3vw,28px),calc((100vw - var(--sb) - var(--wrap))/2 + clamp(14px,3.6vw,40px)));background:rgba(255,255,255,.82);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 .pill{display:flex;align-items:center;gap:8px;flex:0 1 auto;min-width:0;overflow:hidden;height:38px;padding:0 clamp(10px,1.5vw,16px);border-radius:999px;background:#E1E7EE;border:1px solid var(--line);font-family:"Barlow Condensed";font-size:clamp(15px,2vw,17px);letter-spacing:.08em;font-weight:600;white-space:nowrap}
@@ -1467,6 +1487,7 @@ body.battle-full .stat svg{flex:none}
   <div class="spacer"></div>
   <div class="pill coins" id="coinPill" title="Coin"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><ellipse cx="12" cy="6.5" rx="8" ry="3.3"/><path d="M4 6.5v5c0 1.8 3.6 3.3 8 3.3s8-1.5 8-3.3v-5"/><path d="M4 11.5v5c0 1.8 3.6 3.3 8 3.3s8-1.5 8-3.3v-5"/></svg><span id="coinVal"></span></div>
   <div class="pill raid" id="raidPill" title="Token Raid — didapat dari Boss Raid"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 2.5 20.5 7.2v9.6L12 21.5 3.5 16.8V7.2z"/><path d="M12 7.2 8 9.6v4.8l4 2.4 4-2.4V9.6z"/></svg><span id="raidVal"></span></div>
+  <button class="nav-btn tb-fullscreen" id="fsBtn" type="button" title="Layar penuh"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V5a1 1 0 0 1 1-1h4"/><path d="M20 9V5a1 1 0 0 0-1-1h-4"/><path d="M4 15v4a1 1 0 0 0 1 1h4"/><path d="M20 15v4a1 1 0 0 1-1 1h-4"/></svg></button>
   <button class="nav-btn tb-settings" data-route="#/settings" title="Pengaturan"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.14.5.55.9 1.1 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
 </header>
 <!-- Profil modal -->
@@ -1484,6 +1505,13 @@ body.battle-full .stat svg{flex:none}
   </div>
 </div>
 <main id="app"></main>
+<!-- Overlay khusus mobile portrait: minta pemain mutar ke landscape + tombol masuk layar penuh. -->
+<div id="rotateHint">
+  <svg class="rh-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2.5" width="11" height="19" rx="2.2"/><path d="M20 8a6 6 0 0 1-1 8"/><path d="M20 8l-1.6-.6M20 8l-.6 1.6" /></svg>
+  <div class="rh-title">Putar HP-mu</div>
+  <div class="rh-sub">Game ini dirancang untuk layar mendatar (landscape). Putar ponselmu, lalu ketuk tombol di bawah untuk mode layar penuh.</div>
+  <button class="rh-btn" id="fsBtnOverlay" type="button">Masuk Layar Penuh</button>
+</div>
 <button id="bfExit" title="Akhiri pertempuran">&#10005; END</button>
 <button id="btPause" title="Jeda pertempuran">&#9208; PAUSE</button>
 
@@ -5168,6 +5196,47 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
   if(location.hash===b.dataset.route||(!location.hash&&b.dataset.route==="#/lobby"))render();
   else location.hash=b.dataset.route;
 });
+/* ===== MODE MOBILE: layar penuh + kunci landscape (khusus perangkat sentuh) =====
+   #fsBtn ikut ke-select loop .nav-btn di atas (nggak punya data-route) -> onclick-nya
+   kita TIMPA di sini (blok ini jalan setelah loop) biar nggak nyetel location.hash=undefined. */
+(function(){
+  const root=document.documentElement;
+  const isFs=()=>!!(document.fullscreenElement||document.webkitFullscreenElement||document.mozFullScreenElement||document.msFullscreenElement);
+  function reqFs(el){
+    if(el.requestFullscreen) return el.requestFullscreen();
+    if(el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
+    if(el.mozRequestFullScreen) return el.mozRequestFullScreen();
+    if(el.msRequestFullscreen) return el.msRequestFullscreen();
+    return Promise.reject(new Error("no-fs"));
+  }
+  function exitFs(){
+    if(document.exitFullscreen) return document.exitFullscreen();
+    if(document.webkitExitFullscreen) return document.webkitExitFullscreen();
+    if(document.mozCancelFullScreen) return document.mozCancelFullScreen();
+    if(document.msExitFullscreen) return document.msExitFullscreen();
+  }
+  function lockLandscape(){
+    try{ const o=screen.orientation||screen.mozOrientation; if(o&&o.lock) return o.lock("landscape"); }catch(e){}
+    return Promise.reject(new Error("no-lock"));
+  }
+  function updateIcon(){
+    const b=document.getElementById("fsBtn"); if(!b) return;
+    b.classList.toggle("active",isFs());
+    b.title=isFs()?"Keluar layar penuh":"Layar penuh";
+  }
+  async function enterFs(){
+    try{ await reqFs(root); }catch(e){}
+    try{ await lockLandscape(); }catch(e){}   // iOS gagal -> rotasi manual tetap jalan via overlay CSS
+    updateIcon();
+  }
+  function toggleFs(){ if(isFs()){ try{ exitFs(); }catch(e){} } else { enterFs(); } updateIcon(); }
+  const fsBtn=document.getElementById("fsBtn");
+  if(fsBtn) fsBtn.onclick=(e)=>{ e.preventDefault(); e.stopPropagation(); if(typeof sfx!=="undefined"&&sfx.hit)sfx.hit(); toggleFs(); };
+  const ovBtn=document.getElementById("fsBtnOverlay");
+  if(ovBtn) ovBtn.onclick=(e)=>{ e.preventDefault(); if(typeof sfx!=="undefined"&&sfx.hit)sfx.hit(); enterFs(); };
+  ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"].forEach(ev=>document.addEventListener(ev,updateIcon));
+  updateIcon();
+})();
 /* ===== Dock roll + backpack (elemen statis di <body>): wiring SEKALI saja.
    Elemen ini tidak ikut di-render-ulang, jadi interval roll tetap hidup
    walau player pindah layar / membuka backpack -> AFK aman. ===== */
