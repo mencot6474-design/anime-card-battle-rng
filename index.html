@@ -1440,6 +1440,10 @@ body.battle-full .stat svg{flex:none}
 .tw-stats .tbs span{font-family:"Barlow Condensed";letter-spacing:.16em;font-size:10px;font-weight:700;color:#6FE3AC}
 .tw-stats .tbs b{font-size:26px;font-weight:800;color:#EAF3FB;line-height:1}
 .tw-foes{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.tw-foe-slot{width:158px;flex:0 0 auto;cursor:default}
+.tw-foe-slot:hover{transform:none}
+.tw-foe-slot .hc-skill,.tw-foe-slot .hc-desc{display:none}
+.tw-foe-slot .hc-info{padding:18px 12px 10px}
 .tw-foe{position:relative;display:flex;align-items:center;gap:12px;min-width:230px;flex:1;padding:12px 14px;border-radius:16px;border:1px solid var(--line2);background:#FFFFFF;box-shadow:0 6px 18px rgba(20,28,38,.08)}
 .tw-foe.boss{border-color:rgba(185,140,255,.55);box-shadow:0 6px 20px rgba(120,60,200,.16)}
 .tw-foe img,.tw-foe video{width:60px;height:60px;border-radius:12px;object-fit:cover;object-position:top;background:#EEF2F6}
@@ -4518,12 +4522,19 @@ function renderTower(){
   renderTowerHub();
 }
 function towerPreviewCard(w,isBoss,role){
-  const en=w.en,es=w.es;
-  return `<div class="tw-foe${isBoss?" boss":""}" data-tier="${en.tier}">
-    <img src="${en.img}" alt="${en.name}">
-    <div class="tw-foe-info"><span class="tw-tier" style="color:${TIER_COLOR[en.tier]}">${rarityText(en.tier)}</span><span class="tw-name">${en.name}</span>
-      <span class="tw-stat">&#9825; ${fmt(es.hp)} &nbsp; ${ATKIC} ${fmt(es.atk)}</span></div>
-    ${isBoss?'<span class="tw-role">'+(role==="main"?"BOS":"TAG")+'</span>':''}
+  const id=w.eid, c=CARDS[id]; if(!c) return "";
+  const tier=c.tier;
+  return `<div class="hub-center tw-foe-slot" data-tier="${tier}">
+    <div class="hc-img"><img src="${c.sprite_asset}" alt="${c.name}"${c.pos?` style="object-position:${c.pos}"`:''}>${madaraAura(id)}
+      <span class="hc-name-top">${c.name}</span>
+      <span class="hc-chance" style="color:${TIER_COLOR[tier]}">${rarityText(tier,luckChance(id))}</span>
+      ${isBoss?`<div class="hc-badges"><span class="hc-trait">${role==="main"?"BOS":"TAG"}</span></div>`:''}
+    </div>
+    <div class="hc-info">
+      <div class="hc-skill">${passiveName(id)}</div>
+      <div class="hc-desc">${skillText(id)}</div>
+      <div class="hc-stats"><div class="hp">&#9825; ${fmt(w.es.hp)}</div><div class="atk">${ATKIC} ${fmt(w.es.atk)}</div></div>
+    </div>
   </div>`;
 }
 function renderTowerHub(){
