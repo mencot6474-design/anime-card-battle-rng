@@ -628,6 +628,13 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 @keyframes imSlash{0%{opacity:0;height:0}18%{opacity:1;height:180px}100%{opacity:0;height:220px}}
 .impact .im-spark{position:absolute;left:50%;top:46%;width:6px;height:6px;border-radius:50%;background:#fff;box-shadow:0 0 8px 2px #7DF9FF;opacity:0;animation:imSpark .5s cubic-bezier(.1,.7,.3,1) forwards}
 @keyframes imSpark{0%{opacity:1;transform:translate(-50%,-50%) rotate(var(--a)) translateX(0) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--a)) translateX(var(--d)) scale(.2)}}
+/* Speed-lines: garis momentum nyapu layar pas impact (kartu normal). Lapisan bawah (z42) biar FX ult nempel di atas. */
+#speedLayer{position:fixed;inset:0;z-index:42;pointer-events:none;overflow:hidden}
+#speedLayer .spd-line{position:absolute;left:-30%;width:55%;height:2px;border-radius:2px;opacity:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.92),transparent);animation:spdSweep .34s ease-out forwards}
+#speedLayer.crit .spd-line{height:3px;box-shadow:0 0 10px rgba(255,120,120,.6);
+  background:linear-gradient(90deg,transparent,#fff,rgba(255,90,90,.85),transparent)}
+@keyframes spdSweep{0%{opacity:0;transform:translateX(0) scaleX(.5)}28%{opacity:.95}100%{opacity:0;transform:translateX(240%) scaleX(1.35)}}
 /* Reversal Red: inti merah + percikan, target terlempar mundur (kanan menjauh) */
 .fighter.knockback{animation:foeKnock .55s cubic-bezier(.12,.82,.28,1)}
 @keyframes foeKnock{0%{filter:brightness(2.4) saturate(1.4)}12%{transform:translateX(64px) translateY(-12px) rotate(8deg) scale(.93);filter:brightness(1.5) hue-rotate(-12deg)}42%{transform:translateX(30px) translateY(-4px) rotate(3deg)}70%{transform:translateX(-7px) rotate(-1deg)}100%{transform:translateX(0) rotate(0);filter:brightness(1)}}
@@ -4135,6 +4142,7 @@ function attackLunge(sel,wind){const foe=sel===".fighter.foe";anim(sel,wind?(foe
 function shakeScreen(big){const g=document.querySelector(".battle-grid");if(!g)return;const cls=big?"shk-big":"shk";g.classList.remove("shk","shk-big");void g.offsetWidth;g.classList.add(cls);setTimeout(()=>g.classList.remove(cls),big?460:300);}
 function hitStop(ms){const g=document.querySelector(".battle-grid");if(!g)return;g.classList.add("hitstop");setTimeout(()=>g.classList.remove("hitstop"),ms||90);}
 function impactFx(Dsel,big){const f=document.querySelector(Dsel);if(!f)return;const box=document.createElement("div");box.className="impact"+(big?" crit":"");box.innerHTML='<span class="im-flash go"></span><span class="im-slash go"></span><span class="im-slash two go"></span>';const n=big?16:8;for(let i=0;i<n;i++){const s=document.createElement("span");s.className="im-spark go";s.style.setProperty("--a",(Math.random()*360).toFixed(1)+"deg");s.style.setProperty("--d",Math.round(40+Math.random()*(big?150:90))+"px");s.style.animationDelay=(Math.random()*.05).toFixed(2)+"s";box.appendChild(s);}f.appendChild(box);setTimeout(()=>box.remove(),big?700:560);}
+function speedLines(big){let l=document.getElementById("speedLayer");if(!l){l=document.createElement("div");l.id="speedLayer";document.body.appendChild(l);}l.className=big?"crit":"";const n=big?14:8;for(let i=0;i<n;i++){const s=document.createElement("span");s.className="spd-line";s.style.top=(Math.random()*100).toFixed(1)+"%";s.style.animationDelay=(Math.random()*.08).toFixed(2)+"s";l.appendChild(s);}setTimeout(()=>{l.innerHTML="";},520);}
 function modeDomainFx(A,D,total,who){return;/*animasi skill dihapus*/
   domainExpansionFx(who);domainVoid();
   setTimeout(()=>floatText(A,"DOMAIN EXPANSION","crit"),220);
@@ -4189,7 +4197,7 @@ function performAttack(o){
       if(s.void){anim(D,"hit");setTimeout(()=>floatText(D,"VOID","miss"),120);return;}
       const dl=dlyAt(i),ft=dl+(md?40:hoff);
       if(!galaxy&&!md&&(o.domainStrike||(id!=="CH_EX_MADARA"&&id!=="CH_EX_GOJO")))setTimeout(()=>playClip(punchAudio),dl);
-      setTimeout(()=>{if(bt&&!bt.over){anim(D,"hit",ultBarrage);if(!ultBarrage&&!galaxy){const big=!!(o.crit&&i===shots.length-1);impactFx(D,big);shakeScreen(big);hitStop(big?140:80);if(big)sfx.crit(),critBoom();}}},dl+jwLag);
+      setTimeout(()=>{if(bt&&!bt.over){anim(D,"hit",ultBarrage);if(!ultBarrage&&!galaxy){const big=!!(o.crit&&i===shots.length-1);impactFx(D,big);shakeScreen(big);hitStop(big?140:80);if(!o.barrageN||big)speedLines(big);if(big)sfx.crit(),critBoom();}}},dl+jwLag);
       cum+=s.d;barEnd=Math.max(barEnd,ft);const stepHp=hpAt(cum);
       setTimeout(()=>floatText(D,"-"+fmt(s.d),(o.crit&&i===shots.length-1)?"crit":""),ft);
       setTimeout(()=>setBar(o.barId,o.barTid,stepHp,o.defMax),ft);
