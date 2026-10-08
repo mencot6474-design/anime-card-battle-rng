@@ -4396,8 +4396,8 @@ document.getElementById("overlay").addEventListener("click",e=>{
    Mode endless: lantai naik terus, tiap 5 lantai = gerbang BOS (2 gelombang: utama + TAG).
    Memakai engine battle cerita (2 arah, passive musuh) dengan flag bt.tower. */
 const TOWER_BOSS_ROSTER=[
-  {main:"CH_EX_GOJO",tag:"CH_ETERNAL_DRAGON"},   /* lantai 5, 15, 25 ... */
-  {main:"CH_EX_MADARA",tag:"CH_EX_JINWOO"} /* lantai 10, 20, 30 ... */
+  {main:"CH_SHADOW_MONARCH",tag:"CH_RULER"},   /* lantai 5, 15, 25 ... */
+  {main:"CH_CELESTIAL_ORACLE",tag:"CH_ECLIPSE_WARDEN"} /* lantai 10, 20, 30 ... */
 ];
 function towerIsBossFloor(f){return f%5===0;}
 function towerBossIndex(f){return ((f/5)-1)%TOWER_BOSS_ROSTER.length;}
