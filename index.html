@@ -4478,35 +4478,22 @@ function towerFoeHtml(w){
     </div>
   </div>`;
 }
-function towerBenchHtml(w){
-  if(!w) return `<div class="bench empty"><span class="b-plus">+</span><span class="b-lbl">TAG kosong</span></div>`;
-  const en=w.en,es=w.es;
-  return `<div class="bench foe-bench" data-tier="${en.tier}"><span class="b-tag">TAG</span>
-    <img src="${en.img}" alt="${en.name}">
-    <div class="b-info">
-      <div class="b-left">
-        <div class="b-name">${en.name}</div>
-        <span class="b-hp">&#9825; ${fmt(es.hp)}</span>
-        <span class="b-atk">${ATKIC} ${fmt(es.atk)}</span>
-      </div>
-      <span class="b-tier" style="color:${TIER_COLOR[en.tier]};border-color:${TIER_COLOR[en.tier]}">${rarityText(en.tier)}</span>
-    </div></div>`;
+/* Rail slot musuh = 3 kotak gambar gelombang BERIKUTNYA (miror bench-rail pemain), ditambal placeholder biar tetap 3.
+   Diposisikan grid CSS (.foe-side .bench-rail{grid-area:foe-slot}) jadi nongol di ATAS arena, sejajar kartu+HP pemain. */
+function towerEnemyBenchRail(){
+  const rem=towerRun?towerRun.waves.slice(towerRun.idx+1):[];
+  let html="";
+  for(let i=0;i<3;i++){
+    const w=rem[i];
+    if(w&&w.en){
+      html+=`<div class="bench-sq foe-sq" data-tier="${w.en.tier||''}" style="border-color:${TIER_COLOR[w.en.tier]||'var(--line)'}" title="${w.en.name}"><img src="${w.en.img}" alt="${w.en.name}"></div>`;
+    } else {
+      html+=`<div class="bench-sq empty"></div>`;
+    }
+  }
+  return `<div class="bench-rail foe-rail">${html}</div>`;
 }
-function towerFoeSide(w,tagW){return towerFoeHtml(w)+towerBenchHtml(tagW);}
-// versi "sudah mati" untuk TAG musuh — dipakai saat gelondang 1 digantikan, meniru benchDownHtml punya pemain
-function towerBenchDownHtml(w){
-  const en=w.en,es=w.es;
-  return `<div class="bench foe-bench down"><span class="b-tag">TAG</span><span class="b-x">✕</span>
-    <img src="${en.img}" alt="${en.name}">
-    <div class="b-info">
-      <div class="b-left">
-        <div class="b-name">${en.name}</div>
-        <span class="b-hp">&#9825; 0</span>
-        <span class="b-atk">${ATKIC} ${fmt(es.atk)}</span>
-      </div>
-      <span class="b-tier" style="color:${TIER_COLOR[en.tier]};border-color:${TIER_COLOR[en.tier]}">${rarityText(en.tier)}</span>
-    </div></div>`;
-}
+function towerFoeSide(w){return towerFoeHtml(w)+towerEnemyBenchRail();}
 // class foe-enter punya spesifisitas lebih tinggi dari .fighter.hit → hapus begitu animasi masuk selesai biar kartu musuh bisa bergoyang kena pukul
 function clearFoeEnter(){setTimeout(()=>{const e=document.querySelector(".fighter.foe.foe-enter");if(e)e.classList.remove("foe-enter");},700);}
 function towerEnter(f){
@@ -4615,7 +4602,7 @@ function renderTowerBattle(){
     ${benchHtml()}
   </div>
   <div class="vs-col"><div class="t">VS</div><div class="s" id="turnLabel">LANTAI ${towerRun.floor}<br>${towerIsBossFloor(towerRun.floor)?"BOS":"AUTO"}</div></div>
-  <div class="me-col foe-side" id="foeSide">${towerFoeSide(w,towerRun.waves[towerRun.idx+1])}</div>
+  <div class="me-col foe-side" id="foeSide">${towerFoeSide(w)}</div>
   </div>`;
   clearFoeEnter();
   playFight(startTowerBattle);
@@ -4658,7 +4645,6 @@ function foeDown(){
   endBattle(true);
 }
 function advanceTowerFoe(){
-  const dead=towerRun.waves[towerRun.idx];
   towerRun.idx++;
   const w=towerRun.waves[towerRun.idx];
   bt.en=w.en;bt.es=w.es;bt.eid=w.eid;bt.efx=w.efx;bt.eHp=w.es.hp;
@@ -4672,7 +4658,7 @@ function advanceTowerFoe(){
   setTimeout(()=>{
     if(!bt||bt.over)return;
     const side=document.getElementById("foeSide");
-    if(side)side.innerHTML=towerFoeHtml(w)+towerBenchDownHtml(dead);
+    if(side)side.innerHTML=towerFoeHtml(w)+towerEnemyBenchRail();
     clearFoeEnter();
     setBar("hpFoe","hpFoeT",w.es.hp,w.es.hp);
     const foeEl=side?side.querySelector(".fighter.foe"):null;
