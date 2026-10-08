@@ -488,13 +488,13 @@ body.battle-full .bench-rail .bench-sq{width:clamp(50px,11vh,74px)}
    TANPA mengubah HTML ketiga renderer (semua hook engine: #foeSide innerHTML-replace, .bench-rail, .fighter.me/.foe, #turnLabel tetap utuh).
    Desktop-only: di layar <=700px layout lama (bertumpuk) tetap dipakai. */
 @media(min-width:701px){
-body.battle-full .battle-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"foe-slot foe-slot" "me foe" "bench bench";gap:clamp(8px,1.6vh,18px) clamp(14px,3vw,40px);padding-left:clamp(12px,2vw,28px);padding-right:clamp(12px,2vw,28px);align-items:stretch}
+body.battle-full .battle-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"foe-slot foe-slot" "me foe" "bench bench";gap:clamp(8px,1.6vh,18px) clamp(6px,1.4vw,20px);padding-left:clamp(12px,2vw,28px);padding-right:clamp(12px,2vw,28px);align-items:stretch}
 body.battle-full .me-col,body.battle-full .foe-side{display:contents}
 body.battle-full .vs-col{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);flex-direction:column;align-items:center;gap:2px;z-index:4;pointer-events:none}
 body.battle-full .vs-col .t{display:none}
 body.battle-full .vs-col .s{font-family:"Barlow Condensed";font-size:clamp(16px,2.6vh,24px);letter-spacing:.05em;color:var(--text);text-transform:none;font-weight:800;text-align:center;line-height:1.12}
-body.battle-full .fighter.me{grid-area:me;justify-self:start;align-self:center;aspect-ratio:3/4;width:min(100%,min(460px,calc((100dvh - 360px)*1.1)));max-height:min(600px,calc((100dvh - 360px)*1.55));min-height:0}
-body.battle-full .fighter.foe{grid-area:foe;justify-self:end;align-self:center;aspect-ratio:3/4;width:min(100%,min(460px,calc((100dvh - 360px)*1.1)));max-height:min(600px,calc((100dvh - 360px)*1.55));min-height:0}
+body.battle-full .fighter.me{grid-area:me;justify-self:start;align-self:center;aspect-ratio:3/4;width:min(100%,min(520px,calc((100dvh - 280px)*1.32)));max-height:min(680px,calc((100dvh - 280px)*1.76));min-height:0}
+body.battle-full .fighter.foe{grid-area:foe;justify-self:end;align-self:center;aspect-ratio:3/4;width:min(100%,min(520px,calc((100dvh - 280px)*1.32)));max-height:min(680px,calc((100dvh - 280px)*1.76));min-height:0}
 body.battle-full .fighter{height:auto;overflow:hidden;border-radius:20px}
 body.battle-full .hpbar{position:absolute;top:100%;left:14px;right:14px;margin:8px 0 0;z-index:5}
 body.battle-full .me-col:not(.foe-side) .bench-rail{grid-area:bench;justify-self:center;align-self:end;margin-top:0}
@@ -528,11 +528,11 @@ body.battle-full main{position:relative;z-index:1}
 .battle-arena .ar-sky{position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 8%,#1a2740 0%,#0b1120 42%,#070a12 80%)}
 .battle-arena .ar-floor{position:absolute;left:0;right:0;bottom:0;height:46%;background:linear-gradient(to top,#0a0f18,rgba(10,15,24,0))}
 .battle-arena .ar-horizon{position:absolute;left:0;right:0;top:54%;height:2px;background:linear-gradient(90deg,transparent,rgba(120,180,255,.35),transparent);opacity:.6}
-.battle-arena .ar-spot{position:absolute;top:50%;width:46%;height:70%;transform:translateY(-50%);filter:blur(8px);mix-blend-mode:screen}
-.battle-arena .ar-spot.me{left:2%;background:radial-gradient(closest-side,rgba(47,143,226,.5),transparent 72%)}
-.battle-arena .ar-spot.foe{right:2%;background:radial-gradient(closest-side,rgba(255,77,94,.46),transparent 72%)}
-.battle-arena .ar-speed{position:absolute;inset:0;opacity:.08;background:repeating-linear-gradient(115deg,#fff 0 2px,transparent 2px 26px);mix-blend-mode:overlay}
-.battle-arena .ar-seam{position:absolute;left:50%;top:46%;height:42%;width:3px;transform:translateX(-50%);background:linear-gradient(to bottom,transparent,#EAF4FF,transparent);opacity:.5;filter:blur(.5px);animation:arSeam 2.6s ease-in-out infinite}
+.battle-arena .ar-spot{position:absolute;top:50%;width:54%;height:86%;transform:translateY(-50%);filter:blur(10px);mix-blend-mode:screen}
+.battle-arena .ar-spot.me{left:0;background:radial-gradient(closest-side,rgba(58,150,255,.66),transparent 74%)}
+.battle-arena .ar-spot.foe{right:0;background:radial-gradient(closest-side,rgba(255,64,84,.6),transparent 74%)}
+.battle-arena .ar-speed{position:absolute;inset:0;opacity:.13;background:repeating-linear-gradient(115deg,#fff 0 2px,transparent 2px 26px);mix-blend-mode:overlay}
+.battle-arena .ar-seam{position:absolute;left:50%;top:44%;height:46%;width:4px;transform:translateX(-50%);background:linear-gradient(to bottom,transparent,#EAF4FF,transparent);opacity:.62;filter:blur(.6px);animation:arSeam 2.6s ease-in-out infinite}
 @keyframes arSeam{50%{opacity:.85}}
 .battle-arena .ar-vig{position:absolute;inset:0;background:radial-gradient(120% 100% at 50% 50%,transparent 52%,rgba(0,0,0,.55) 100%)}
 /* ring glow kartu AKTIF (me/foe) se-warna tier — box-shadow, aman dari tabrakan animasi transform */
@@ -544,8 +544,14 @@ body.battle-full .fighter[data-tier="SR"]{--ring:#C8A2A8}
 body.battle-full .fighter[data-tier="SSR"]{--ring:#B07A9B}
 body.battle-full .fighter[data-tier="UR"]{--ring:#2F8FE2}
 body.battle-full .fighter[data-tier="EX"]{--ring:#FF4D5E}
-body.battle-full .fighter.me,body.battle-full .fighter.foe{box-shadow:0 0 0 2px var(--ring),0 0 26px 4px var(--ring),0 22px 50px rgba(0,0,0,.55)}
+body.battle-full .fighter.me,body.battle-full .fighter.foe{box-shadow:0 0 0 3px var(--ring),0 0 34px 8px var(--ring),0 26px 60px rgba(0,0,0,.6)}
 body.battle-full .fighter.ko{box-shadow:none}
+/* topbar dilebur ke arena gelap pas battle (biar full-bleed kayak prototipe, HUD coins/lvl tetap kebaca) */
+body.battle-full #topbar{background:linear-gradient(180deg,rgba(6,9,16,.94),rgba(6,9,16,.5));border-bottom-color:rgba(255,255,255,.08)}
+body.battle-full #topbar,body.battle-full #topbar *{color:#F4F7FA}
+body.battle-full #topbar .pill{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.16)}
+body.battle-full #topbar .nav-btn{color:#C4CDD6}
+body.battle-full #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
 /* KEMIRINGAN 3D kartu aktif — pakai properti `rotate`/`scale` INDIVIDU (bukan `transform`),
    jadi animasi foe-enter/tag-enter/hit yang main di `transform` tetap jalan & NGGAK ngehapus miringnya.
    perspective di grid + rotate:y bikin kartu nunduk ngadep tengah = kerasa "hidup", bukan kartu lurus + glow doang. */
