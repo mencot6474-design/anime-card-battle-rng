@@ -4117,7 +4117,7 @@ function playerPhase(){
   bt.trickNext=false;bt.royalNow=false;bt.gunsNow=false;
   const id=bt.eq.char,t=bt.turn;let fx=resolveFx(bt.eq,bt.efx);
   if(bt.shadow)fx={};
-  document.getElementById("turnLabel").innerHTML="TURN<br>"+t;
+  document.getElementById("turnLabel").innerHTML=(bt.tower&&towerRun)?("LANTAI "+towerRun.floor+"<br>GELOMBANG "+(towerRun.idx+1)+"/"+towerRun.waves.length):("TURN<br>"+t);
   /* RUMBLING: DoT sisa dari kartu yang udah mati — jalan tiap giliran walau kartu udah ganti */
   if(bt.rumbling>0){
     const rd=Math.round(bt.es.hp*(bt.rumblingPct||10)/100);
@@ -4678,7 +4678,7 @@ function advanceTowerFoe(){
     setBar("hpFoe","hpFoeT",w.es.hp,w.es.hp);
     const foeEl=side?side.querySelector(".fighter.foe"):null;
     if(foeEl){const fl=document.createElement("div");fl.className="foe-enter-flash";foeEl.appendChild(fl);setTimeout(()=>{try{fl.remove();}catch(e){}},640);}
-    const tl=document.getElementById("turnLabel");if(tl)tl.innerHTML="LANTAI "+towerRun.floor+"<br>GELOMBANG "+(towerRun.idx+1);
+    const tl=document.getElementById("turnLabel");if(tl)tl.innerHTML="LANTAI "+towerRun.floor+"<br>GELOMBANG "+(towerRun.idx+1)+"/"+towerRun.waves.length;
     floatText(".fighter.foe","TAG-IN!","heal");
     schedPhase(1000,enemyPhase);
   },2000);
