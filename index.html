@@ -2155,7 +2155,7 @@ function grantRolledCard(charId, mut, shiny) {
 function instantRoll(n){
   __batchRoll=true;
   const res=[];
-  try{ for(let i=0;i<n;i++){ const r=rngRoll(); if(!r)continue; grantRolledCard(r.cardId,r.mut,r.shiny); res.push(r);} }
+  try{ for(let i=0;i<n;i++){ const r=rngRoll(totalLuck()); if(!r)continue; grantRolledCard(r.cardId,r.mut,r.shiny); res.push(r);} }
   finally{ __batchRoll=false; }
   save(); rollCountBadge(); return res;
 }
