@@ -109,11 +109,11 @@ body.on-lobby .hub-mid{max-width:min(400px,calc((100vh - 210px) * .74))}
    Nongol cuma pas lobby + weather aktif (.show). Hover = reveal kartu penuh (wcHoverBind). */
 .weather-cards{display:none;position:fixed;left:20px;bottom:20px;z-index:99;gap:8px;flex-wrap:nowrap;align-items:flex-end;}
 body.on-lobby .weather-cards.show{display:flex;}
-.wc-slot{position:relative;width:72px;height:72px;aspect-ratio:1/1;border:2px solid var(--line2);border-radius:10px;overflow:hidden;background:linear-gradient(160deg,#FFFFFF,#EEF2F6);cursor:pointer;opacity:.42;filter:saturate(.35) brightness(.82);transition:opacity .2s,filter .2s,box-shadow .2s;}
+.wc-slot{position:relative;width:55px;height:55px;aspect-ratio:1/1;border:2px solid var(--line2);border-radius:10px;overflow:hidden;background:linear-gradient(160deg,#FFFFFF,#EEF2F6);cursor:pointer;opacity:.42;filter:saturate(.35) brightness(.82);transition:opacity .2s,filter .2s,box-shadow .2s;}
 .wc-slot .idx-art{position:absolute;inset:0;}
 .wc-slot .idx-art img,.wc-slot .idx-art video{width:100%;height:100%;object-fit:cover;object-position:top;}
-.wc-slot .idx-body{position:absolute;left:0;right:0;bottom:0;padding:15px 4px 4px;display:flex;align-items:flex-end;justify-content:center;background:linear-gradient(transparent,rgba(255,255,255,.92));}
-.wc-chance{font-family:"Barlow Condensed";font-weight:700;font-size:11px;line-height:1.1;text-align:center;color:#20161a;text-transform:uppercase;white-space:nowrap;text-shadow:0 1px 2px rgba(255,255,255,.85);}
+.wc-slot .idx-body{position:absolute;left:0;right:0;bottom:0;padding:12px 3px 3px;display:flex;align-items:flex-end;justify-content:center;background:linear-gradient(transparent,rgba(255,255,255,.92));}
+.wc-chance{font-family:"Barlow Condensed";font-weight:700;font-size:9px;line-height:1.1;text-align:center;color:#20161a;text-transform:uppercase;white-space:nowrap;text-shadow:0 1px 2px rgba(255,255,255,.85);}
 .wc-slot.active{opacity:1;filter:none;box-shadow:0 0 0 2px var(--wc,#38b7ff),0 8px 20px color-mix(in srgb,var(--wc,#38b7ff) 34%,transparent);}
 .wc-slot.active .idx-body{background:linear-gradient(transparent,rgba(0,0,0,.72));}
 .wc-slot.active .wc-chance{color:var(--wc,#38b7ff);text-shadow:0 1px 3px rgba(0,0,0,.6);}
