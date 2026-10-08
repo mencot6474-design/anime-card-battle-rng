@@ -496,7 +496,7 @@ body.battle-full .vs-col .s{font-family:"Barlow Condensed";font-size:clamp(16px,
 body.battle-full .fighter.me{grid-area:me;justify-self:start;align-self:center;aspect-ratio:3/4;width:min(100%,min(520px,calc((100dvh - 280px)*1.32)));max-height:min(680px,calc((100dvh - 280px)*1.76));min-height:0}
 body.battle-full .fighter.foe{grid-area:foe;justify-self:end;align-self:center;aspect-ratio:3/4;width:min(100%,min(520px,calc((100dvh - 280px)*1.32)));max-height:min(680px,calc((100dvh - 280px)*1.76));min-height:0}
 body.battle-full .fighter{height:auto;overflow:hidden;border-radius:20px}
-body.battle-full .hpbar{position:absolute;top:100%;left:14px;right:14px;margin:8px 0 0;z-index:5}
+body.battle-full .hpbar{position:absolute;top:auto;bottom:76px;left:14px;right:14px;margin:0;z-index:6;box-shadow:0 3px 12px rgba(0,0,0,.55)}
 body.battle-full .me-col:not(.foe-side) .bench-rail{grid-area:bench;justify-self:center;align-self:end;margin-top:0}
 body.battle-full .foe-side .bench-rail{grid-area:foe-slot;justify-self:center;align-self:start;margin-top:0}
 body.battle-full .foe-side .bench{display:none}
@@ -562,8 +562,14 @@ body.battle-full #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
   body.battle-full .fighter.ko{rotate:0deg;scale:1}
 }
 /* slot cadangan di-dim biar kartu aktif nge-domominasi */
-body.battle-full .bench-rail .bench-sq{filter:grayscale(.5) brightness(.62) saturate(.85);transition:filter .15s}
+body.battle-full .bench-rail .bench-sq{filter:grayscale(.5) brightness(.62) saturate(.85);transition:filter .15s,transform .15s,box-shadow .15s}
 body.battle-full .bench-rail .bench-sq.empty{background:rgba(255,255,255,.06);border-color:rgba(200,212,222,.22)}
+/* cadangan NYALA pas di-hover: lepas dim + naik dikit + ring cyan */
+body.battle-full .bench-rail .bench-sq:not(.empty){cursor:pointer}
+body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:scale(1.09);z-index:3;box-shadow:0 0 0 2px #7DF9FF,0 0 20px rgba(125,249,255,.55)}
+/* mini bar HP di dasar tiap slot cadangan (biar kerasa "mewah" kayak prototipe) */
+.bench-rail .bench-sq .bhp{position:absolute;left:0;right:0;bottom:0;height:5px;background:rgba(255,255,255,.18);z-index:2}
+.bench-rail .bench-sq .bhp i{display:block;height:100%;background:linear-gradient(90deg,#ff2d4a,#ff6b5e)}
 .fighter.ko{filter:grayscale(1) brightness(.5);transform:translateY(12px);opacity:.55;transition:filter .3s,transform .3s,opacity .3s}
 .fighter.me.tag-enter{animation:tagEnter .6s cubic-bezier(.2,.9,.3,1.15) both}
 @keyframes tagEnter{0%{opacity:0;transform:translateY(70px) scale(.55)}55%{opacity:1}100%{opacity:1;transform:translateY(0) scale(1)}}
@@ -3504,7 +3510,7 @@ function endPossession(){
 }
 function updateMeCard(){if(!bt)return;const f=document.querySelector(".fighter.me");if(f){if(bt.shadow){f.className="fighter me shadow-fighter";f.dataset.tier="EX";f.dataset.char="";f.style.borderColor="#7c3aed";f.innerHTML=meShadowHtml(bt.shadow);return;}f.className="fighter me"+mutGlow(bt.eq.mut)+shinyCls(bt.eq);f.dataset.tier=bt.eq.tier;f.dataset.char=bt.eq.char;f.style.borderColor=bt.eq.mut&&bt.eq.mut!=="none"?MUT_COLOR[bt.eq.mut]:"";f.innerHTML=meFighterHtml(bt.eq);}}
 function benchTile(s){
-  return `<div class="bench-sq" data-tier="${s.tier}" style="border-color:${TIER_COLOR[s.tier]}" title="${cardName(s.char)}"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}"></div>`;
+  return `<div class="bench-sq" data-tier="${s.tier}" style="border-color:${TIER_COLOR[s.tier]}" title="${cardName(s.char)}"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}"><span class="bhp"><i style="width:100%"></i></span></div>`;
 }
 /* Rail cadangan = 3 kotak gambar sejajar (sisa dek setelah fighter aktif), ditambal placeholder biar tetap 3. */
 function benchRailHtml(remaining){
@@ -4533,7 +4539,7 @@ function towerEnemyBenchRail(){
   for(let i=0;i<3;i++){
     const w=rem[i];
     if(w&&w.en){
-      html+=`<div class="bench-sq foe-sq" data-tier="${w.en.tier||''}" style="border-color:${TIER_COLOR[w.en.tier]||'var(--line)'}" title="${w.en.name}"><img src="${w.en.img}" alt="${w.en.name}"></div>`;
+      html+=`<div class="bench-sq foe-sq" data-tier="${w.en.tier||''}" style="border-color:${TIER_COLOR[w.en.tier]||'var(--line)'}" title="${w.en.name}"><img src="${w.en.img}" alt="${w.en.name}"><span class="bhp"><i style="width:100%"></i></span></div>`;
     } else {
       html+=`<div class="bench-sq empty"></div>`;
     }
