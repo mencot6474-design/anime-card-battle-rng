@@ -481,7 +481,7 @@ body.battle-full.battle-tower #bfExit{display:inline-flex}
 .bench-rail .bench-sq{position:relative;width:clamp(58px,17vw,82px);aspect-ratio:1/1;border-radius:11px;overflow:hidden;border:1px solid var(--line);background:#0d0f12;box-shadow:0 4px 14px rgba(0,0,0,.14)}
 .bench-rail .bench-sq img,.bench-rail .bench-sq video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;border-radius:0}
 .bench-rail .bench-sq.empty{border-style:dashed;border-color:rgba(20,28,38,.28);background:rgba(255,255,255,.4)}
-body.battle-full .bench-rail .bench-sq{width:clamp(58px,12vh,92px)}
+body.battle-full .bench-rail .bench-sq{width:clamp(66px,15vh,128px)}
 /* ===== LAYOUT ARENA ALA REFERENSI (semua mode battle) =====
    HUD kiri-atas · 2 kartu gede tengah (pemain kiri, musuh kanan) · bench pemain bawah-tengah · kontrol END/PAUSE kiri.
    Trik: .me-col/.foe-side di-flatten (display:contents) supaya anak-anaknya (.fighter, .bench-rail) jadi grid item langsung,
@@ -512,7 +512,7 @@ body.battle-full .stat svg{flex:none}
 @media(min-width:701px) and (max-height:600px){
   body.battle-full .battle-grid{gap:clamp(3px,.8vh,8px) clamp(12px,3vw,30px);padding-block:clamp(6px,1.4vh,12px)}
   body.battle-full .fighter.me,body.battle-full .fighter.foe{width:min(44vw,calc((100dvh - 150px)*.75));max-height:calc(100dvh - 150px)}
-  body.battle-full .bench-rail .bench-sq{width:clamp(36px,8vh,52px)}
+  body.battle-full .bench-rail .bench-sq{width:clamp(46px,11vh,80px)}
   body.battle-full .f-body{padding:22px clamp(10px,1.4vw,18px) clamp(8px,1.2vh,14px)}
   body.battle-full .stat-row{font-size:12px;margin-top:6px;gap:10px}
   body.battle-full .vs-col .s{font-size:clamp(13px,2.2vh,18px)}
