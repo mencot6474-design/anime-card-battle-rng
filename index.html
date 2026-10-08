@@ -4398,7 +4398,7 @@ document.getElementById("overlay").addEventListener("click",e=>{
   if(bt&&bt.tower){stopBattleLoop();towerView="hub";render();return;}
   if(state.battle){state.battle=null;render();}
 });
-document.getElementById("rrClose").onclick=()=>{sfx.hit();document.getElementById("rollResultPop").classList.remove("show");};
+document.getElementById("rrClose").onclick=()=>{document.getElementById("rollResultPop").classList.remove("show");try{sfx.hit();}catch(e){}};
 document.querySelector("#rollResultPop .rr-back").onclick=()=>{document.getElementById("rollResultPop").classList.remove("show");};
 
 /* =============== TOWER (menara tanpa ujung) ===============
