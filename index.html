@@ -259,6 +259,24 @@ body.on-lobby .weather-panel.show{display:flex;}
 .bpi-buy{border-color:var(--cyan);color:var(--cyan);}
 .bpi-use:not(:disabled):hover,.bpi-buy:hover{transform:scale(1.04);}
 .bpi-now{margin-top:10px;font-family:"Barlow Condensed";font-weight:800;font-size:12px;letter-spacing:.06em;}
+/* Tab ITEM: tile icon ringkas; detail & aksi muncul lewat popup konfirmasi. */
+.bp-itemgrid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:14px;overflow-y:auto;align-content:start;padding-top:8px;}
+.bp-itemtile{position:relative;aspect-ratio:1/1;border:1px solid var(--line2);border-radius:14px;background:linear-gradient(160deg,#171012,#0d0a0c);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.14s;}
+.bp-itemtile:hover{transform:translateY(-2px);border-color:var(--cyan);}
+.bp-itemtile.empty{opacity:.45;}
+.bp-itemtile-ic{font-size:40px;line-height:1;display:flex;align-items:center;justify-content:center;}
+.bp-itemtile-ic img{width:74%;height:74%;object-fit:contain;image-rendering:auto;}
+.bp-itemtile-cnt{position:absolute;right:7px;bottom:5px;font-family:"Barlow Condensed";font-weight:800;font-size:14px;color:#5eead4;text-shadow:0 1px 3px #000;}
+.item-pop-back{position:fixed;inset:0;z-index:210;background:rgba(6,10,14,.55);}
+.item-pop{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:211;width:min(90vw,360px);background:var(--panel);border:2px solid var(--line2);border-radius:18px;padding:22px 20px;text-align:center;box-shadow:0 20px 70px rgba(0,0,0,.5);}
+.item-pop-ic{font-size:52px;line-height:1;display:flex;align-items:center;justify-content:center;}
+.item-pop-ic img{width:104px;height:104px;object-fit:contain;}
+.item-pop-name{font-family:"Barlow Condensed";font-weight:800;font-size:20px;letter-spacing:.06em;margin-top:8px;color:#fff;}
+.item-pop-cnt{font-family:"Barlow Condensed";font-weight:800;font-size:15px;color:#5eead4;margin-top:2px;}
+.item-pop-desc{font-size:12px;line-height:1.5;color:var(--muted);margin:12px 0;text-align:left;}
+.item-pop-ctl{display:flex;flex-direction:column;gap:8px;}
+.item-pop-cancel{font-family:"Barlow Condensed";font-weight:800;font-size:13px;letter-spacing:.08em;padding:9px;border-radius:10px;border:2px solid var(--line2);background:transparent;color:var(--muted);cursor:pointer;transition:.15s;}
+.item-pop-cancel:hover{color:var(--text);}
 .bp-filter{position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;gap:6px;padding:2px 0 10px;margin-bottom:4px;background:var(--panel);}
 .bp-fchip{display:inline-flex;align-items:center;gap:5px;font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.06em;color:var(--muted);border:1px solid var(--line2);background:var(--panel2);border-radius:8px;padding:3px 9px;cursor:pointer;transition:filter .12s,border-color .12s;}
 .bp-fchip:hover{filter:brightness(1.15);}
@@ -2047,6 +2065,7 @@ function getChapterReward(chapterNo){
 
 /* ========== BACKPACK + ROLL SYSTEM ========== */
 let rollState = { active: false, interval: null, currentCard: null, luck: 1, speedMultiplier: 1, mini: false, collapsed: false, hideTimer: null };
+let __batchRoll = false;
 
 /* Roll = SATU-SATUNYA sumber kartu baru selain Toko Raid. Hasil roll DITUMPUK dengan sistem count:
    kartu yang sama (char + tier + varian/mut) masuk ke satu stack dan menaikkan s.count, bukan entri baru,
@@ -2060,7 +2079,7 @@ function grantRolledCard(charId, mut, shiny) {
   const s = state.stacks.find(x => x.char === charId && x.tier === card.tier && (x.mut || "none") === m && !!x.shiny === sh);
   if (s) {
     s.count = (s.count || 1) + 1;
-    save(); rollCountBadge();
+    if(!__batchRoll)save(); rollCountBadge();
     return s;
   }
   const ns = { id: Math.random().toString(36).slice(2, 9), char: charId, tier: card.tier, fav: false, lock: false, mut: m, shiny: sh, trait: "none", count: 1 };
@@ -2068,9 +2087,17 @@ function grantRolledCard(charId, mut, shiny) {
   if (!Array.isArray(state.deck)) state.deck = [null, null, null, null];
   state.deck.length = 4;
   const empty = state.deck.indexOf(null);
-  if (empty >= 0) setDeckSlot(empty, ns.id); else save();
+  if (empty >= 0) setDeckSlot(empty, ns.id); else if(!__batchRoll)save();
   rollCountBadge();
   return ns;
+}
+/* Instant roll massal (dipakai reward Infinite Tower): n roll sekaligus, simpan sekali di akhir. */
+function instantRoll(n){
+  __batchRoll=true;
+  const res=[];
+  try{ for(let i=0;i<n;i++){ const r=rngRoll(); if(!r)continue; grantRolledCard(r.cardId,r.mut,r.shiny); res.push(r);} }
+  finally{ __batchRoll=false; }
+  save(); rollCountBadge(); return res;
 }
 
 function rollCountBadge() {
@@ -2268,7 +2295,7 @@ function positionMiniReveal() {
 let bpTarget = null;
 let bpMutFilter = "all"; /* filter varian koleksi: all|none|gold|rainbow|secret|shiny */
 let bpTab = "deck"; /* tab Backpack: deck | item | artefact | pet */
-function bpSetTab(t){bpTab=t;bpTarget=null;renderBackpackPanel();}
+function bpSetTab(t){bpTab=t;bpTarget=null;bpItemPopClose();renderBackpackPanel();}
 function deckTotalPower(){return equippedList().reduce((a,s)=>{const st=cardStats(s.char,s.mut,s.trait,s.shiny);return a+(st.hp+st.atk);},0);}
 function bpPickSlot(i){bpTarget=(bpTarget===i?null:i);renderBackpackPanel();}
 function bpSetFilter(m){bpMutFilter=m;renderBackpackPanel();}
@@ -2334,32 +2361,35 @@ function renderBackpackPanel(){
 /* Tab ITEM di backpack: grid item terpisah dari dek. Sekarang: Weather Potion (PAKAI -> roll weather 5 menit, BELI -> pakai coins). */
 function renderBpItems(){
   const pot=state.potions||0;
-  const aw=activeWeatherId();
-  const canUse=pot>0;
-  const potion=`<div class="bp-item${canUse?'':' empty'}">
-      <div class="bpi-icon">🧪</div>
-      <div class="bpi-name">WEATHER POTION</div>
-      <div class="bpi-cnt">×${fmt(pot)}</div>
-      <div class="bpi-desc">Buka untuk memanggil 1 cuaca acak (5 menit). Nggak pernah lebih jelek dari cuaca terbaikmu${state.weatherBest?' ('+WEATHER[state.weatherBest].name+')':''}.</div>
-      <div class="bpi-ctl">
-        <button class="bpi-use" ${canUse?'':'disabled'} onclick="bpUsePotion()">PAKAI</button>
-        <button class="bpi-buy" onclick="bpBuyPotion()">BELI ${fmt(WEATHER_POTION_PRICE)}</button>
-      </div>
-      ${aw?`<div class="bpi-now" style="color:${WEATHER[aw].color}">Aktif: ${WEATHER[aw].icon} ${WEATHER[aw].name}</div>`:''}
-    </div>`;
-  return `<div class="bp-h">ITEM</div><div class="bp-items-grid">${potion}</div>`;
+  const tile=`<div class="bp-itemtile${pot>0?'':' empty'}" onclick="bpItemPop('potion')">
+      <div class="bp-itemtile-ic"><img src="assets/images/icon-potion.png" alt="Weather Potion" onerror="this.parentNode.textContent='🧪'"></div><span class="bp-itemtile-cnt">×${fmt(pot)}</span></div>`;
+  return `<div class="bp-h">ITEM</div><div class="bp-itemgrid">${tile}</div>`;
 }
+function bpItemPop(kind){
+  bpItemPopClose();
+  if(kind!=='potion')return;
+  const pot=state.potions||0; const aw=activeWeatherId(); const canUse=pot>0;
+  const el=document.createElement('div'); el.id='itemPop';
+  el.innerHTML=`<div class="item-pop-back" onclick="bpItemPopClose()"></div>
+    <div class="item-pop">
+      <div class="item-pop-ic"><img src="assets/images/icon-potion.png" alt="Weather Potion" onerror="this.parentNode.textContent='🧪'"></div>
+      <div class="item-pop-name">WEATHER POTION</div>
+      <div class="item-pop-cnt">Punya: ×${fmt(pot)}</div>
+      <div class="item-pop-desc">Buka untuk memanggil 1 cuaca acak (5 menit). Nggak pernah lebih jelek dari cuaca terbaikmu${state.weatherBest?' ('+WEATHER[state.weatherBest].name+')':''}.${aw?`<br><strong style="color:${WEATHER[aw].color}">Aktif: ${WEATHER[aw].icon} ${WEATHER[aw].name}</strong>`:''}</div>
+      <div class="item-pop-ctl">
+        <button class="bpi-use" ${canUse?'':'disabled'} onclick="bpUsePotion()">PAKAI</button>
+        <button class="item-pop-cancel" onclick="bpItemPopClose()">BATAL</button>
+      </div>
+    </div>`;
+  document.body.appendChild(el);
+}
+function bpItemPopClose(){const e=document.getElementById('itemPop');if(e)e.remove();}
 function bpUsePotion(){
   const r=useWeatherPotion();
   if(!r.ok){toast("Potion habis","GAK ADA POTION","#f87171");return;}
   beep(520,.16,"triangle",.1);setTimeout(()=>beep(780,.18,"triangle",.1),120);
   toast(`${r.weather.icon} ${r.weather.name}`,"WEATHER AKTIF · 5 MENIT",r.weather.color);
-  renderShell();renderBackpackPanel();
-}
-function bpBuyPotion(){
-  const r=buyWeatherPotion(WEATHER_POTION_PRICE);
-  if(r.ok){beep(660,.12,"sine",.08);renderShell();renderBackpackPanel();}
-  else toast("Koin kurang","KOIN KURANG","#f87171");
+  bpItemPopClose();renderShell();renderBackpackPanel();
 }
 /* ====== TAB TREE: pohon skill. Root di tengah, dua cabang menjalar (LUCK kiri | SPEED kanan).
    SP didapet tiap naik LV; node butuh node sebelumnya di cabang yang sama. ====== */
@@ -3093,7 +3123,7 @@ function domainVoid(){return;/*animasi skill dihapus*/
 }
 /* =============== SHELL RENDER =============== */
 const app=document.getElementById("app");
-const ROUTES={"#/lobby":"LOBBY","#/":"STORY","#/raid":"BOSS RAID","#/tower":"SKY TOWER","#/settings":"PENGATURAN"};
+const ROUTES={"#/lobby":"LOBBY","#/":"STORY","#/raid":"BOSS RAID","#/tower":"INFINITE TOWER","#/settings":"PENGATURAN"};
 function route(){const h=location.hash;return ROUTES[h]?h:"#/lobby";}
 // Button profil footer = MUKA kartu utama (deck slot 1), di-crop ke muka pakai .pos kartu.
 function renderFootProfile(){
@@ -4374,8 +4404,15 @@ function towerBenchDownHtml(w){
 // class foe-enter punya spesifisitas lebih tinggi dari .fighter.hit → hapus begitu animasi masuk selesai biar kartu musuh bisa bergoyang kena pukul
 function clearFoeEnter(){setTimeout(()=>{const e=document.querySelector(".fighter.foe.foe-enter");if(e)e.classList.remove("foe-enter");},700);}
 function towerEnter(f){
-  if(!state.tower)state.tower={floor:1,best:0};
-  towerRun={floor:f,waves:towerWaves(f),idx:0};
+  if(!state.tower)state.tower={best:0};
+  if(!towerRun)towerRun={cleared:0,cards:0,coins:0,drops:{weather:0,luck:0,speed:0},tokens:0};
+  towerRun.floor=f; towerRun.waves=towerWaves(f); towerRun.idx=0;
+  towerView="battle";
+  render();
+}
+function towerStartRun(){
+  if(!state.tower)state.tower={best:0};
+  towerRun={floor:1,waves:towerWaves(1),idx:0,cleared:0,cards:0,coins:0,drops:{weather:0,luck:0,speed:0},tokens:0};
   towerView="battle";
   render();
 }
@@ -4393,21 +4430,21 @@ function towerPreviewCard(w,isBoss,role){
   </div>`;
 }
 function renderTowerHub(){
-  if(!state.tower)state.tower={floor:1,best:0};
-  const f=state.tower.floor||1;
-  const boss=towerIsBossFloor(f);
-  const waves=towerWaves(f);
+  if(!state.tower)state.tower={best:0};
+  const best=state.tower.best||0;
+  const boss=towerIsBossFloor(1);
+  const waves=towerWaves(1);
   app.innerHTML=`
   <div class="tw-banner">
-    <div class="tw-title disp">SKY TOWER</div>
-    <div class="tw-sub">MENARA TANPA UJUNG &middot; NAIKKAN LANTAI SETINGGI MUNGKIN</div>
-    <div class="tw-stats"><div class="tbs"><span>LANTAI SAAT INI</span><b>${f}</b></div><div class="tbs"><span>BEST</span><b>${state.tower.best}</b></div></div>
+    <div class="tw-title disp">INFINITE TOWER</div>
+    <div class="tw-sub">MENARA TANPA UJUNG &middot; SEKALI JALAN DARI LANTAI 1 SAMPAI KALAH</div>
+    <div class="tw-stats"><div class="tbs"><span>BEST LANTAI</span><b>${best}</b></div><div class="tbs"><span>ROLL / LANTAI</span><b>50</b></div></div>
   </div>
-  <div class="eyebrow" style="margin:16px 0 8px">${boss?"GERBANG BOS &middot; LANTAI ":"MUSUH &middot; LANTAI "}${f}</div>
+  <div class="eyebrow" style="margin:16px 0 8px">MUSUH &middot; LANTAI 1</div>
   <div class="tw-foes">${waves.map((w,i)=>towerPreviewCard(w,boss,i===0?"main":"tag")).join("")}</div>
-  <button class="raid-teleport tw-go" id="towerGo">${boss?"&#9876; TEMBUS BOS":"&#9876; NAIK LANTAI "+f}</button>
-  <p class="tw-note">Menang = naik ke lantai berikutnya (bos tiap 5 lantai, musuh biasa acak dari katalog R&ndash;SSR). Kalah = ulangi lantai yang sama. Best lantai tersimpan di akunmu. Hadiah = COIN (Star Stone menyusul).</p>`;
-  const g=document.getElementById("towerGo");if(g)g.onclick=()=>{sfx.hit();towerEnter(f);};
+  <button class="raid-teleport tw-go" id="towerGo">&#9876; MULAI RUN</button>
+  <p class="tw-note">Tiap lantai ditaklukkan: musuh mati &rarr; otomatis naik ke lantai berikutnya (tanpa konfirmasi), kamu langsung dapat <b>instant roll 50 kartu</b> + drop acak + Token Inf. Run berhenti saat kalah &mdash; semua hasil roll dari lantai 1 s/d sejauh kamu bertahan jadi milikmu.</p>`;
+  const g=document.getElementById("towerGo");if(g)g.onclick=()=>{sfx.hit();towerStartRun();};
 }
 function renderTowerBattle(){
   const w=towerRun.waves[towerRun.idx];
@@ -4488,33 +4525,32 @@ function advanceTowerFoe(){
 }
 function towerEnd(win){
   clearTimeout(bt.timer);bt.over=true;
-  const f=towerRun.floor, r=towerReward(f), boss=towerIsBossFloor(f);
-  const ov=document.getElementById("overlay");
-  const ti=document.getElementById("ov-title");
-  const rw=document.getElementById("ov-reward");
-  const nx=document.getElementById("ov-next");
+  const f=towerRun.floor;
   if(win){
-    state.tower.best=Math.max(state.tower.best,f);
-    if(f>=(state.tower.floor||1))state.tower.floor=f+1;
-    state.coins+=r.coins;state.potions=(state.potions||0)+(r.potion||0);save();renderShell();fanfare();
-    document.getElementById("ov-eyebrow").textContent=(boss?"BOS":"LANTAI")+" "+f+" DITAKLUKKAN";
-    ti.textContent="MENANG";ti.className="ov-title disp";
-    rw.style.display="inline-flex";
-    rw.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 9.5h4.5a2 2 0 0 1 0 4H10a2 2 0 0 0 0 4h5"/></svg> +'+r.coins+' <small>COINS</small> <span class="potion-drop" style="margin-left:10px;color:#5eead4">🧪 +'+(r.potion||0)+' <small>WEATHER POTION</small></span>';
-    document.getElementById("ov-note").textContent="Menara lantai "+f+" lolos"+(r.starStone?(" · +"+r.starStone+" Star Stone"):"")+" · "+bt.turn+" turn.";
-    nx.style.display="";nx.textContent="LANTAI "+state.tower.floor+" \u2192";
-    nx.onclick=()=>{ov.classList.remove("show");stopBattleLoop();towerEnter(state.tower.floor);};
-    document.getElementById("ov-again").onclick=()=>{ov.classList.remove("show");stopBattleLoop();towerEnter(f);};
-  }else{
-    sfx.lose();
-    document.getElementById("ov-eyebrow").textContent="LANTAI "+f+" GAGAL";
-    ti.textContent="KALAH";ti.className="ov-title disp lose";
-    rw.style.display="none";
-    document.getElementById("ov-note").textContent="Kartu kalah — upgrade kartu atau ganti deck, lalu coba lagi lantai "+f+".";
-    nx.style.display="";nx.textContent="KEMBALI KE HUB";
-    nx.onclick=()=>{ov.classList.remove("show");stopBattleLoop();towerView="hub";render();};
-    document.getElementById("ov-again").onclick=()=>{ov.classList.remove("show");stopBattleLoop();towerEnter(f);};
+    /* Menang lantai: kasih hadiah lalu LANGSUNG naik lantai berikutnya tanpa overlay. */
+    instantRoll(50);
+    const r=towerReward(f); state.coins+=r.coins;
+    towerRun.cleared=f; towerRun.cards=(towerRun.cards||0)+50; towerRun.coins=(towerRun.coins||0)+r.coins;
+    state.tower.best=Math.max(state.tower.best||0,f);
+    save(); renderShell(); fanfare();
+    toast("LANTAI "+f+" DITAKLUKKAN","+50 ROLL · +"+fmt(r.coins)+" COIN","#7df9ff");
+    bt=null;
+    towerEnter(f+1);
+    return;
   }
+  /* Kalah: run berhenti — tampilkan rekap total dari lantai 1 s/d sejauh kamu bertahan. */
+  sfx.lose();
+  const ov=document.getElementById("overlay");
+  const reached=towerRun.cleared||0;
+  document.getElementById("ov-eyebrow").textContent="RUN BERAKHIR DI LANTAI "+f;
+  const ti=document.getElementById("ov-title"); ti.textContent="KALAH"; ti.className="ov-title disp lose";
+  const rw=document.getElementById("ov-reward"); rw.style.display="inline-flex";
+  rw.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 9.5h4.5a2 2 0 0 1 0 4H10a2 2 0 0 0 0 4h5"/></svg> +'+fmt(towerRun.coins||0)+' <small>COIN</small>'
+    +'<span style="margin-left:12px;color:#7df9ff">KARTU +'+fmt(towerRun.cards||0)+'</span>';
+  document.getElementById("ov-note").textContent="Lantai ditaklukkan: "+reached+" · Instant roll total: "+fmt(towerRun.cards||0)+" kartu"+((state.tower.best||0)===reached&&reached>0?" · REKOR BARU!":"")+".";
+  const nx=document.getElementById("ov-next"); nx.style.display=""; nx.textContent="KEMBALI KE HUB";
+  nx.onclick=()=>{ov.classList.remove("show");stopBattleLoop();towerView="hub";render();};
+  document.getElementById("ov-again").onclick=()=>{ov.classList.remove("show");stopBattleLoop();towerStartRun();};
   ov.classList.add("show");
 }
 
@@ -4615,7 +4651,7 @@ function renderLobby(){
   app.innerHTML=`
   <div class="lobby-hub">
     <div class="hub-box h-l1 hub-link" id="hubRaid" role="button" title="Masuk Boss Raid"><img class="hi-ic" src="assets/raid/eternal-dragon-hd.png" alt=""><span class="hb-lbl">BOSS RAID</span></div>
-    <div class="hub-box h-l2 hub-link" id="hubTower" role="button" title="Masuk Sky Tower"><svg class="tw-ic" width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M9 21V9l3-6 3 6v12"/><path d="M9 12h6M9 16h6"/><path d="M5 21V11M19 21V11"/></svg><span class="hb-lbl">SKY TOWER</span></div>
+    <div class="hub-box h-l2 hub-link" id="hubTower" role="button" title="Masuk Infinite Tower"><svg class="tw-ic" width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M9 21V9l3-6 3 6v12"/><path d="M9 12h6M9 16h6"/><path d="M5 21V11M19 21V11"/></svg><span class="hb-lbl">INFINITE TOWER</span></div>
     <div class="hub-mid">
     ${hubCardHtml(eq,' id="hubCard"')}
     </div>
@@ -4642,6 +4678,7 @@ function toggleBackpack() {
   if (isVisible) {
     /* Close: refresh lobby di belakang biar hub card & bench ikut perubahan dek. */
     bpTarget = null;
+    bpItemPopClose();
     panel.style.opacity = '0';
     panel.style.transform = 'translate(-50%, -45%) scale(0.95)';
     setTimeout(() => { panel.style.display = 'none'; render(); }, 300);
