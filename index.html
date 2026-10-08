@@ -517,6 +517,38 @@ body.battle-full .stat svg{flex:none}
   body.battle-full .stat-row{font-size:12px;margin-top:6px;gap:10px}
   body.battle-full .vs-col .s{font-size:clamp(13px,2.2vh,18px)}
 }
+/* ====== ARENA PANGGUNG (khusus mode battle) ======
+   Latar gelap imersif di-BELAKANG grid battle — lobby/backpack/tower-hub tetap tema terang.
+   Elemen .battle-arena di-inject sekali ke <body>, tampil cuma saat body.battle-full.
+   Isi: langit→lantai + horizon, spotlight warna tiap sisi (biru=pemain, merah=musuh), speed-lines,
+   "celah" tegangan di sumbu tengah, vignette. Kartu aktif dilingkar glow se-warna tier, slot cadangan di-dim. */
+.battle-arena{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0;transition:opacity .45s}
+body.battle-full .battle-arena{opacity:1}
+body.battle-full main{position:relative;z-index:1}
+.battle-arena .ar-sky{position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 8%,#1a2740 0%,#0b1120 42%,#070a12 80%)}
+.battle-arena .ar-floor{position:absolute;left:0;right:0;bottom:0;height:46%;background:linear-gradient(to top,#0a0f18,rgba(10,15,24,0))}
+.battle-arena .ar-horizon{position:absolute;left:0;right:0;top:54%;height:2px;background:linear-gradient(90deg,transparent,rgba(120,180,255,.35),transparent);opacity:.6}
+.battle-arena .ar-spot{position:absolute;top:50%;width:46%;height:70%;transform:translateY(-50%);filter:blur(8px);mix-blend-mode:screen}
+.battle-arena .ar-spot.me{left:2%;background:radial-gradient(closest-side,rgba(47,143,226,.5),transparent 72%)}
+.battle-arena .ar-spot.foe{right:2%;background:radial-gradient(closest-side,rgba(255,77,94,.46),transparent 72%)}
+.battle-arena .ar-speed{position:absolute;inset:0;opacity:.08;background:repeating-linear-gradient(115deg,#fff 0 2px,transparent 2px 26px);mix-blend-mode:overlay}
+.battle-arena .ar-seam{position:absolute;left:50%;top:46%;height:42%;width:3px;transform:translateX(-50%);background:linear-gradient(to bottom,transparent,#EAF4FF,transparent);opacity:.5;filter:blur(.5px);animation:arSeam 2.6s ease-in-out infinite}
+@keyframes arSeam{50%{opacity:.85}}
+.battle-arena .ar-vig{position:absolute;inset:0;background:radial-gradient(120% 100% at 50% 50%,transparent 52%,rgba(0,0,0,.55) 100%)}
+/* ring glow kartu AKTIF (me/foe) se-warna tier — box-shadow, aman dari tabrakan animasi transform */
+/* dasar kartu gelap di arena: art yang ke-load nutupin ini, tapi art missing/404 (kartu cuaca) jadi gelap nyatu, bukan putih njolok */
+body.battle-full .fighter{background:linear-gradient(180deg,#1b1418,#0c0a0c)}
+body.battle-full .fighter.me,body.battle-full .fighter.foe{--ring:#8aa}
+body.battle-full .fighter[data-tier="R"]{--ring:#9A8A8B}
+body.battle-full .fighter[data-tier="SR"]{--ring:#C8A2A8}
+body.battle-full .fighter[data-tier="SSR"]{--ring:#B07A9B}
+body.battle-full .fighter[data-tier="UR"]{--ring:#2F8FE2}
+body.battle-full .fighter[data-tier="EX"]{--ring:#FF4D5E}
+body.battle-full .fighter.me,body.battle-full .fighter.foe{box-shadow:0 0 0 2px var(--ring),0 0 26px 4px var(--ring),0 22px 50px rgba(0,0,0,.55)}
+body.battle-full .fighter.ko{box-shadow:none}
+/* slot cadangan di-dim biar kartu aktif nge-domominasi */
+body.battle-full .bench-rail .bench-sq{filter:grayscale(.5) brightness(.62) saturate(.85);transition:filter .15s}
+body.battle-full .bench-rail .bench-sq.empty{background:rgba(255,255,255,.06);border-color:rgba(200,212,222,.22)}
 .fighter.ko{filter:grayscale(1) brightness(.5);transform:translateY(12px);opacity:.55;transition:filter .3s,transform .3s,opacity .3s}
 .fighter.me.tag-enter{animation:tagEnter .6s cubic-bezier(.2,.9,.3,1.15) both}
 @keyframes tagEnter{0%{opacity:0;transform:translateY(70px) scale(.55)}55%{opacity:1}100%{opacity:1;transform:translateY(0) scale(1)}}
@@ -5403,6 +5435,15 @@ const bfSync=()=>{
   document.body.classList.toggle("battle-tower", !!(grid && grid.classList.contains("tower-stage")));
   document.body.classList.toggle("on-lobby", !hasBattle && !!app.querySelector(".lobby-hub"));
 };
+/* Latar arena battle di-inject sekali ke <body> (bukan #app, biar nggak kehapus tiap render).
+   CSS nge-gate tampilnya cuma saat body.battle-full, jadi di luar battle dia tak kelihatan. */
+(function mountArena(){
+  if(document.querySelector(".battle-arena"))return;
+  const a=document.createElement("div");
+  a.className="battle-arena";a.setAttribute("aria-hidden","true");
+  a.innerHTML='<div class="ar-sky"></div><div class="ar-floor"></div><div class="ar-horizon"></div><div class="ar-spot me"></div><div class="ar-spot foe"></div><div class="ar-speed"></div><div class="ar-seam"></div><div class="ar-vig"></div>';
+  document.body.appendChild(a);
+})();
 if(app){
   try {
     new MutationObserver(bfSync).observe(app,{childList:true,subtree:true});
