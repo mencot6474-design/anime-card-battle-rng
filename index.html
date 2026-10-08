@@ -585,13 +585,31 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 /* mini bar HP di dasar tiap slot cadangan (biar kerasa "mewah" kayak prototipe) */
 .bench-rail .bench-sq .bhp{position:absolute;left:0;right:0;bottom:0;height:5px;background:rgba(255,255,255,.18);z-index:2}
 .bench-rail .bench-sq .bhp i{display:block;height:100%;background:linear-gradient(90deg,#ff2d4a,#ff6b5e)}
-.fighter.ko{filter:grayscale(1) brightness(.5);transform:translateY(12px);opacity:.55;transition:filter .3s,transform .3s,opacity .3s}
-.fighter.me.tag-enter{animation:tagEnter .6s cubic-bezier(.2,.9,.3,1.15) both}
-@keyframes tagEnter{0%{opacity:0;transform:translateY(70px) scale(.55)}55%{opacity:1}100%{opacity:1;transform:translateY(0) scale(1)}}
-.fighter.foe.foe-enter{animation:foeEnter .62s cubic-bezier(.2,.9,.3,1.15) both}
-@keyframes foeEnter{0%{opacity:0;transform:translateX(90px) scale(.55)}55%{opacity:1}100%{opacity:1;transform:translateX(0) scale(1)}}
+/* ===== MASUK (ENTER): slam + overshoot + kilat + sheen + shockwave ===== */
+.fighter.me.tag-enter{animation:tagEnter .6s cubic-bezier(.18,.9,.24,1.12) both}
+@keyframes tagEnter{0%{opacity:0;transform:translateY(120px) rotateX(35deg) scale(.6);filter:blur(5px) brightness(1.7)}55%{opacity:1}72%{transform:translateY(-8px) rotateX(-6deg) scale(1.07);filter:none}100%{opacity:1;transform:translateY(0) rotateX(0) scale(1)}}
+.fighter.foe.foe-enter{animation:foeEnter .62s cubic-bezier(.18,.9,.24,1.12) both}
+@keyframes foeEnter{0%{opacity:0;transform:translateX(150px) rotateY(-55deg) scale(.6);filter:blur(5px) brightness(1.7)}55%{opacity:1}72%{transform:translateX(-8px) rotateY(8deg) scale(1.07);filter:none}85%{transform:translateX(3px) rotateY(-3deg) scale(.99)}100%{opacity:1;transform:translateX(0) rotateY(0) scale(1)}}
+/* lapisan kilat+sheen (.enter-fx) & shockwave (.shock-ring) dipasang via JS saat kartu masuk */
+.enter-fx{position:absolute;inset:0;z-index:8;pointer-events:none;overflow:hidden;border-radius:inherit}
+.enter-fx .ef-flash{position:absolute;inset:0;opacity:0;background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.95),transparent 62%);animation:efFlash .5s ease-out .3s}
+.enter-fx .ef-sheen{position:absolute;top:-20%;left:-60%;width:42%;height:140%;opacity:0;background:linear-gradient(100deg,transparent,rgba(255,255,255,.8),transparent);transform:rotate(18deg);animation:efSheen .6s ease-out .34s}
+@keyframes efFlash{0%{opacity:0}20%{opacity:.9}100%{opacity:0}}
+@keyframes efSheen{0%{opacity:0;left:-60%}30%{opacity:1}100%{opacity:0;left:130%}}
+.shock-ring{position:fixed;width:12px;height:12px;border-radius:50%;z-index:3;pointer-events:none;border:2px solid rgba(125,249,255,.75);transform:translate(-50%,-50%) scale(0);opacity:0;animation:shockRing .62s ease-out forwards}
+@keyframes shockRing{0%{opacity:.9;transform:translate(-50%,-50%) scale(0)}100%{opacity:0;transform:translate(-50%,-50%) scale(26)}}
 .foe-enter-flash{position:absolute;inset:-6px;border-radius:inherit;pointer-events:none;z-index:5;background:radial-gradient(closest-side,rgba(255,255,255,.85),rgba(255,255,255,0) 72%);animation:foeFlash .6s ease-out forwards}
 @keyframes foeFlash{0%{opacity:.9;transform:scale(.6)}100%{opacity:0;transform:scale(1.15)}}
+/* ===== MATI (KO): flash -> tersentak -> jatuh & berputar + grayscale + serpihan + stempel ===== */
+.fighter.ko{pointer-events:none}
+.fighter.me.ko{animation:koFallL .85s cubic-bezier(.3,.5,.5,1) both}
+.fighter.foe.ko{animation:koFallR .85s cubic-bezier(.3,.5,.5,1) both}
+@keyframes koFallL{0%{filter:brightness(2.6) saturate(.2)}14%{transform:translate(-12px,-16px) rotate(-5deg);filter:brightness(1.7)}40%{transform:translate(-26px,8px) rotate(-20deg)}100%{transform:translate(-40px,58px) rotate(-34deg) scale(.9);filter:grayscale(1) brightness(.5);opacity:.3}}
+@keyframes koFallR{0%{filter:brightness(2.6) saturate(.2)}14%{transform:translate(12px,-16px) rotate(5deg);filter:brightness(1.7)}40%{transform:translate(26px,8px) rotate(20deg)}100%{transform:translate(40px,58px) rotate(34deg) scale(.9);filter:grayscale(1) brightness(.5);opacity:.3}}
+.ko-shard{position:absolute;width:8px;height:8px;z-index:9;pointer-events:none;border-radius:2px;background:linear-gradient(135deg,#fff,#8a97a6);animation:shardFly .8s ease-out forwards}
+@keyframes shardFly{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--sx),var(--sy)) rotate(var(--sr))}}
+.ko-stamp{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%) scale(0);z-index:43;pointer-events:none;font-weight:900;font-size:clamp(58px,13vw,140px);letter-spacing:.05em;color:#fff;-webkit-text-stroke:3px #000;text-shadow:0 0 30px rgba(255,77,94,.85),0 6px 0 rgba(0,0,0,.4);opacity:0;animation:koStamp .72s cubic-bezier(.2,1.3,.4,1) forwards}
+@keyframes koStamp{0%{opacity:0;transform:translate(-50%,-50%) scale(2.4) rotate(-24deg)}40%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(-12deg)}70%{transform:translate(-50%,-50%) scale(1.06) rotate(-12deg)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.15) rotate(-12deg)}}
 .dmg-float{position:absolute;left:50%;top:36%;transform:translate(-50%,0);font-family:"Barlow Condensed";font-size:44px;font-weight:800;color:#FF6B8A;text-shadow:0 2px 10px rgba(255,255,255,.72);pointer-events:none;z-index:6;animation:floatUp 1.05s cubic-bezier(.16,.85,.36,1) forwards}
 .dmg-float.crit{color:var(--amber);font-size:56px}
 .dmg-float.heal{color:#4ADE80}
@@ -4062,7 +4080,7 @@ function tagIn(){
   if(nfx.executeOnEntry)bt.execGuard[next]=true;
   // fase 1: kartu aktif sekarang tumbang
   const meEl=document.querySelector(".fighter.me");
-  if(meEl){meEl.classList.remove("tag-enter");meEl.classList.add("ko");}
+  if(meEl){meEl.classList.remove("tag-enter");meEl.classList.add("ko");koFx(meEl);}
   floatText(".fighter.me","KO","crit");
   // fase 2: kartu dek berikutnya naik masuk arena; rail bench diperbarui ke sisa setelahnya
   setTimeout(()=>{
@@ -4073,7 +4091,7 @@ function tagIn(){
     setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
     const rail=document.querySelector(".bench-rail");if(rail)rail.outerHTML=benchRailHtml(bt.fighters.slice(bt.active+1));
     const me3=document.querySelector(".fighter.me");
-    if(me3){me3.classList.add("tag-enter");setTimeout(()=>me3.classList.remove("tag-enter"),650);}
+    if(me3){me3.classList.add("tag-enter");enterFx(me3);setTimeout(()=>me3.classList.remove("tag-enter"),650);}
     floatText(".fighter.me","TAG-IN!","heal");
   },2000);
   return true;
@@ -4143,6 +4161,9 @@ function shakeScreen(big){const g=document.querySelector(".battle-grid");if(!g)r
 function hitStop(ms){const g=document.querySelector(".battle-grid");if(!g)return;g.classList.add("hitstop");setTimeout(()=>g.classList.remove("hitstop"),ms||90);}
 function impactFx(Dsel,big){const f=document.querySelector(Dsel);if(!f)return;const box=document.createElement("div");box.className="impact"+(big?" crit":"");box.innerHTML='<span class="im-flash go"></span><span class="im-slash go"></span><span class="im-slash two go"></span>';const n=big?16:8;for(let i=0;i<n;i++){const s=document.createElement("span");s.className="im-spark go";s.style.setProperty("--a",(Math.random()*360).toFixed(1)+"deg");s.style.setProperty("--d",Math.round(40+Math.random()*(big?150:90))+"px");s.style.animationDelay=(Math.random()*.05).toFixed(2)+"s";box.appendChild(s);}f.appendChild(box);setTimeout(()=>box.remove(),big?700:560);}
 function speedLines(big){let l=document.getElementById("speedLayer");if(!l){l=document.createElement("div");l.id="speedLayer";document.body.appendChild(l);}l.className=big?"crit":"";const n=big?14:8;for(let i=0;i<n;i++){const s=document.createElement("span");s.className="spd-line";s.style.top=(Math.random()*100).toFixed(1)+"%";s.style.animationDelay=(Math.random()*.08).toFixed(2)+"s";l.appendChild(s);}setTimeout(()=>{l.innerHTML="";},520);}
+/* ===== MASUK / MATI kartu (prototipe card-enter-death) — di-inject, markup kartu gak diubah ===== */
+function enterFx(el){if(!el)return;const fx=document.createElement("div");fx.className="enter-fx";fx.innerHTML='<span class="ef-flash"></span><span class="ef-sheen"></span>';el.appendChild(fx);setTimeout(()=>{try{fx.remove();}catch(e){}},900);const r=el.getBoundingClientRect();const ring=document.createElement("div");ring.className="shock-ring";ring.style.left=(r.left+r.width/2)+"px";ring.style.top=(r.top+r.height*0.92)+"px";document.body.appendChild(ring);setTimeout(()=>{try{ring.remove();}catch(e){}},700);}
+function koFx(el){if(!el)return;for(let i=0;i<14;i++){const s=document.createElement("span");s.className="ko-shard";s.style.left=(30+Math.random()*40).toFixed(0)+"%";s.style.top=(30+Math.random()*40).toFixed(0)+"%";s.style.setProperty("--sx",(Math.random()*260-130).toFixed(0)+"px");s.style.setProperty("--sy",(Math.random()*220+20).toFixed(0)+"px");s.style.setProperty("--sr",(Math.random()*720-360).toFixed(0)+"deg");s.style.animationDelay=(Math.random()*.12).toFixed(2)+"s";el.appendChild(s);setTimeout(()=>{try{s.remove();}catch(e){}},950);}const st=document.createElement("div");st.className="ko-stamp";st.textContent="K.O.";document.body.appendChild(st);setTimeout(()=>{try{st.remove();}catch(e){}},760);}
 function modeDomainFx(A,D,total,who){return;/*animasi skill dihapus*/
   domainExpansionFx(who);domainVoid();
   setTimeout(()=>floatText(A,"DOMAIN EXPANSION","crit"),220);
@@ -4494,6 +4515,9 @@ function endBattle(win){
   if(bt.over)return;
   if(bt.timer){clearTimeout(bt.timer);bt.timer=null;}
   bt.over=true;
+  /* klimaks: kartu yang kalah beneran tumbang (dulu final death gak ada animasi mati sama sekali) */
+  const deadEl=document.querySelector(win?".fighter.foe":".fighter.me");
+  if(deadEl&&!deadEl.classList.contains("ko")){deadEl.classList.add("ko");koFx(deadEl);}
   domainEndFx();
   setTimeout(()=>{ try{ if(bt&&bt.tower){ towerEnd(win); } else finish(win); }catch(err){ console.error("finish error",err); try{save();}catch(e){} bt=null;state.battle=null;render(); } },win?2000:950);
 }
@@ -4733,6 +4757,9 @@ function renderTowerBattle(){
   <div class="me-col foe-side" id="foeSide">${towerFoeSide(w)}</div>
   </div>`;
   clearFoeEnter();
+  const meEl0=document.querySelector(".fighter.me"),foeEl0=document.querySelector(".fighter.foe");
+  if(meEl0){meEl0.classList.add("tag-enter");setTimeout(()=>{try{meEl0.classList.remove("tag-enter");}catch(e){}},650);enterFx(meEl0);}
+  if(foeEl0)enterFx(foeEl0);
   playFight(startTowerBattle);
 }
 function startTowerBattle(){
@@ -4780,7 +4807,7 @@ function advanceTowerFoe(){
   /* sama seperti tag-in pemain: slot 1 tumbang dulu di arena, lalu slot 2 naik dan slot 1 jatuh ke TAG
      dengan tanda ✕ — sebelumnya kartu gelombang 1 langsung diganti diam-diam */
   const downEl=document.querySelector(".fighter.foe");
-  if(downEl){downEl.classList.remove("foe-enter");downEl.classList.add("ko");}
+  if(downEl){downEl.classList.remove("foe-enter");downEl.classList.add("ko");koFx(downEl);}
   floatText(".fighter.foe","KO","crit");
   bt.turn++;
   setTimeout(()=>{
@@ -4790,7 +4817,7 @@ function advanceTowerFoe(){
     clearFoeEnter();
     setBar("hpFoe","hpFoeT",w.es.hp,w.es.hp);
     const foeEl=side?side.querySelector(".fighter.foe"):null;
-    if(foeEl){const fl=document.createElement("div");fl.className="foe-enter-flash";foeEl.appendChild(fl);setTimeout(()=>{try{fl.remove();}catch(e){}},640);}
+    if(foeEl){enterFx(foeEl);}
     const tl=document.getElementById("turnLabel");if(tl)tl.innerHTML="LANTAI <b>"+towerRun.floor+"</b> · GELOMBANG <b>"+(towerRun.idx+1)+"/"+towerRun.waves.length+"</b>";
     floatText(".fighter.foe","TAG-IN!","heal");
     schedPhase(1000,enemyPhase);
