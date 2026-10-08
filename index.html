@@ -106,19 +106,8 @@ body.on-lobby .hub-mid{max-width:min(400px,calc((100vh - 210px) * .74))}
 /* Dock sekarang STATIS di dalam footer (baris), bukan fixed lagi. */
 .center-dock{position:static;display:flex;flex-direction:row;align-items:center;gap:12px;}
 /* Weather di footer: kartu di ATAS, chip timer di BAWAH, ditengahin. */
-.foot-weather{display:flex;flex-direction:column;align-items:center;gap:6px;}
 .weather-dock{display:flex;flex-direction:column;align-items:center;gap:7px;}
 .weather-dock:empty{display:none;}
-/* Panel kartu weatherOnly = kartu lobby ASLI (hub-center) di-render full 300px lalu di-scale
-   seragam (transform) biar proporsinya 100% SAMA kayak lobby, cuma ngecil. Nongol pas weather aktif. */
-.weather-cards{display:none;gap:7px;flex-wrap:nowrap;align-items:flex-start;}
-.weather-cards.show{display:flex;}
-.wc-slot{position:relative;width:66px;height:88px;overflow:hidden;border-radius:12px;opacity:.42;filter:saturate(.35) brightness(.82);transition:opacity .2s,filter .2s,box-shadow .2s;}
-.wc-slot .hub-center{width:300px;transform:scale(.22);transform-origin:top left;}
-/* Kartu weather: bersihin blok info (skill/desc/HP/ATK dibuang), tempat HP/ATK dipake buat "1 in X" di bawah. */
-.wc-slot .hub-center .hc-stats,.wc-slot .hub-center .hc-skill,.wc-slot .hub-center .hc-desc{display:none;}
-.wc-slot .hub-center .hc-chance{top:auto;bottom:12px;left:14px;}
-.wc-slot.active{opacity:1;filter:none;box-shadow:0 0 0 2px var(--wc,#38b7ff),0 8px 20px color-mix(in srgb,var(--wc,#38b7ff) 34%,transparent);}
 .wd-chip{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;border:2px solid var(--wdc,var(--line2));background:var(--panel);color:#fff;font-family:"Barlow Condensed";font-weight:800;font-size:14px;letter-spacing:.06em;box-shadow:0 4px 14px rgba(18,28,38,.35);animation:wd-glow 2s ease-in-out infinite;}
 .wd-chip .wd-ic{font-size:16px;}
 .wd-chip .wd-time{color:var(--wdc,var(--cyan));font-variant-numeric:tabular-nums;}
@@ -1577,10 +1566,7 @@ body.battle-full .stat svg{flex:none}
      + dock (backpack/roll/AUTO), semua di TENGAH. DI LUAR #app biar interval roll & panel
      dek tetap hidup saat pindah layar. Hanya tampil di lobby (class .on-lobby dari bfSync). ====== -->
 <div class="lobby-footer">
-  <div class="foot-weather">
-    <div id="weatherCards" class="weather-cards"></div>
-    <div id="weatherDock" class="weather-dock"></div>
-  </div>
+  <div id="weatherDock" class="weather-dock"></div>
   <div class="foot-main">
     <button class="foot-profile" id="footAv" type="button" title="Buka profil"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6.5 8-6.5S20 16 20 20"/></svg></button>
     <div class="center-dock">
@@ -1913,24 +1899,6 @@ function renderWeatherDock(){
     dock.classList.add("on");
     dock.innerHTML=`<div class="wd-chip" style="--wdc:${w.color}"><span class="wd-ic">${w.icon}</span><span>${w.name}</span><span class="wd-time">${fmtShortCountdown(left)}</span></div>`;
   }
-  renderWeatherCards();
-}
-/* Panel kartu weatherOnly (pojok kiri bawah). Nongol cuma pas weather aktif:
-   tiap kartu = kotak kecil gaya index, TANPA nama/kartu-tag, CUMA "1 in X" chance.
-   Hover kursor -> reveal kartu penuh (hubCardHtml) persis kayak dek. */
-function renderWeatherCards(){
-  const el=document.getElementById("weatherCards");if(!el)return;
-  const aw=activeWeatherId();
-  const cards=MASTER_CARD_INDEX.filter(c=>c.weatherOnly);
-  if(!aw||!cards.length){el.classList.remove("show");el.innerHTML="";return;}
-  el.innerHTML=cards.map(c=>{
-    const on=c.weatherOnly===aw;const cw=WEATHER[c.weatherOnly];
-    return `<div class="wc-slot${on?' active':''}" data-wc="${c.char_id}"${on?` style="--wc:${cw.color}"`:""}>
-      ${hubCardHtml({char:c.char_id,mut:'none',trait:'none',shiny:false})}
-    </div>`;
-  }).join("");
-  el.classList.add("show");
-  wcHoverBind();
 }
 function fmtShortCountdown(ms){const s=Math.max(0,Math.floor(ms/1000));const p=x=>String(x).padStart(2,"0");return p(Math.floor(s/60))+":"+p(s%60);}
 function toast(main,sub,color){
@@ -2401,24 +2369,6 @@ function bpsHoverBind(){
     const to=e.relatedTarget;
     if(to&&to.closest&&to.closest(SEL)===sl)return;
     bpsHoverHide();
-  });
-}
-/* ====== Hover reveal kartu weather corner: reveal kartu penuh lewat hubCardHtml ====== */
-function wcHoverBind(){
-  if(window.__wcBound)return;window.__wcBound=true;
-  const SEL='.wc-slot[data-wc]';
-  document.addEventListener('mouseover',e=>{
-    const sl=e.target.closest&&e.target.closest(SEL);
-    if(!sl)return;
-    const id=sl.getAttribute('data-wc');if(!CARDS[id])return;
-    hoverPlace({char:id,mut:'none',trait:'none',shiny:false},sl.getBoundingClientRect());
-  });
-  document.addEventListener('mouseout',e=>{
-    const sl=e.target.closest&&e.target.closest(SEL);
-    if(!sl)return;
-    const to=e.relatedTarget;
-    if(to&&to.closest&&to.closest(SEL)===sl)return;
-    hoverHide();
   });
 }
 
