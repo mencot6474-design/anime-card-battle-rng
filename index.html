@@ -771,8 +771,7 @@ body.battle-full .stat svg{flex:none}
 .rrc{position:relative;aspect-ratio:1/1;border:2px solid var(--line2);border-radius:10px;overflow:hidden;background:linear-gradient(160deg,#1a1216,#0e0a0c)}
 .rrc-gold{border-color:#E0BC6E}
 .rrc-secret{border-color:#22D3EE}
-.rrc-shiny{border:2px solid transparent;background:linear-gradient(#0e0a0c,#0e0a0c) padding-box,linear-gradient(120deg,#fff,#a5f3fc,#fff,#c4b5fd,#fff) border-box}
-.rrc-rainbow{border:2px solid transparent;background:linear-gradient(#0e0a0c,#0e0a0c) padding-box,linear-gradient(120deg,#FF6B81,#FFB347,#FFE66D,#6BE08A,#B98CFF,#FF6BD6) border-box}
+.rrc-rainbow{border-color:#B58CFF}
 .rrc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top}
 .rrc-name{position:absolute;left:0;right:0;bottom:0;z-index:1;color:#f4f6f8;font-family:"Barlow Condensed";font-size:11px;font-weight:700;line-height:1.05;padding:12px 3px 3px;background:linear-gradient(transparent,rgba(0,0,0,.6) 45%,rgba(0,0,0,.92));text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rrc-cnt{position:absolute;top:1px;right:4px;z-index:2;color:#fff;font-family:"Barlow Condensed";font-weight:800;font-size:16px;line-height:1;letter-spacing:.02em;text-shadow:0 1px 2px rgba(0,0,0,.95),0 0 5px rgba(0,0,0,.85)}
@@ -4716,7 +4715,7 @@ function showTowerLoot(results){
     const name=cardName(g.cardId),img=cardImg(g.cardId);
     const isShiny=g.shiny&&g.shiny!=="none", isMut=g.mut&&g.mut!=="none";
     const varTag=(isShiny||isMut)?`<span class="rrc-var">${isShiny?'<span class="rrc-shine">SHINY</span>':''}${isMut?`<span class="rrc-mut" style="border-color:${MUT_COLOR[g.mut]||'#fff'}">${mutBadge(g.mut)}</span>`:''}</span>`:'';
-    const rc="rrc"+(isMut?" rrc-"+g.mut:(isShiny?" rrc-shiny":""));
+    const rc="rrc"+(isMut?" rrc-"+g.mut:"");
     return `<div class="${rc}"><img src="${img}" alt="${name}" title="${name}" onerror="this.style.display='none'">${varTag}${g.n>1?`<span class="rrc-cnt">×${g.n}</span>`:''}<span class="rrc-name">1/${fmtC(luckChance(g.cardId,g.mut,g.shiny))}</span></div>`;
   }).join("");
   pop.classList.add("show");
