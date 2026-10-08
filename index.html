@@ -1689,7 +1689,7 @@ function rarityText(tier,chance){return "1 in "+(chance||chanceOf(tier));}
    SHINY ×2, mutasi ×MUT_MULT (gold 5 / rainbow 10 / secret 25). Mis. secret dari kartu 800k = 1 in 20M. */
 function effChance(charId,mut,shiny){const c=CARDS[charId]||{};const ch=c.chance||chanceOf(c.tier);return ch*(shiny?SHINY_MULT:1)*(MUT_MULT[mut]||1);}
 // Total luck = (base + flat) × (1 + percent). Base = stat pemain, Flat dari skill tree/artifact/pet, Percent dari artifact/pet.
-function totalLuck(){const p=state?.player||{};const base=p.luckBase??p.luck??1;const flat=(p.luckFlat||0)+treeLuckFlat();const pct=(p.luckPercent||0)+treeLuckPct();return (base+flat)*(1+pct)*weatherLuckMult();}
+function totalLuck(){const p=state?.player||{};const base=p.luckBase??p.luck??1;const flat=(p.luckFlat||0)+treeLuckFlat()+activeLuckBuff();const pct=(p.luckPercent||0)+treeLuckPct();return (base+flat)*(1+pct)*weatherLuckMult();}
 // Hitung effective chance dari result roll (setelah flat luck division)
 function effChanceFromResult(result){if(!result)return null;return Math.ceil(result.effChance/totalLuck());}
 // Chance yang ditampilkan ke user = base × statMult (MENTAH, TIDAK dibagi luck) — biar kerasa "wah 1 in 18 juta".
@@ -1923,7 +1923,7 @@ const TREE=Object.fromEntries(TREE_NODES.map(n=>[n.id,n]));
 function treeOwned(id){return !!(state&&state.player&&state.player.tree&&state.player.tree[id]);}
 function treeLuckFlat(){let s=0;for(const n of TREE_NODES){if(treeOwned(n.id))s+=(n.luck||0);}return s;}
 function treeLuckPct(){let s=0;for(const n of TREE_NODES){if(treeOwned(n.id))s+=(n.luckPct||0);}return s;}
-function playerSpeedMult(){let s=1;for(const n of TREE_NODES){if(treeOwned(n.id))s+=(n.speed||0);}return s;}
+function playerSpeedMult(){let s=1;for(const n of TREE_NODES){if(treeOwned(n.id))s+=(n.speed||0);}s+=activeSpeedBuff();return Math.min(5,s);}
 function treeCanBuy(id){
   const n=TREE[id];if(!n||id==="root")return false;
   if(treeOwned(id))return false;
@@ -1966,6 +1966,13 @@ function buyWeatherPotion(price){
   return {ok:true};
 }
 const WEATHER_POTION_PRICE=5000;
+/* ====== POTION LUCK & SPEED (drop dari Infinite Tower). Buff sementara 5 menit, konsisten dgn Weather Potion.
+   Pakai -> +1 luck flat / +1x speed selama window; pakai lagi saat masih aktif = nambah stack + refresh durasi. ====== */
+const POTION_BUFF_MS=5*60*1000;
+function activeLuckBuff(){if(!state||!state.luckBuff)return 0;if(Date.now()>=state.luckBuff.endsAt){state.luckBuff=null;return 0;}return state.luckBuff.flat||0;}
+function activeSpeedBuff(){if(!state||!state.speedBuff)return 0;if(Date.now()>=state.speedBuff.endsAt){state.speedBuff=null;return 0;}return state.speedBuff.mult||0;}
+function useLuckPotion(){if(!state||(state.luckPotions||0)<1)return{ok:false,reason:"NO_POTION"};state.luckPotions--;const now=Date.now();const cur=activeLuckBuff();const base=(state.luckBuff&&state.luckBuff.endsAt>now)?state.luckBuff.endsAt:now;state.luckBuff={flat:cur+1,endsAt:base+POTION_BUFF_MS};save();return{ok:true,flat:state.luckBuff.flat};}
+function useSpeedPotion(){if(!state||(state.speedPotions||0)<1)return{ok:false,reason:"NO_POTION"};state.speedPotions--;const now=Date.now();const cur=activeSpeedBuff();const base=(state.speedBuff&&state.speedBuff.endsAt>now)?state.speedBuff.endsAt:now;state.speedBuff={mult:cur+1,endsAt:base+POTION_BUFF_MS};save();return{ok:true,mult:state.speedBuff.mult};}
 /* Panel weather GABUNGAN (pojok kiri bawah): nama + "Ends in Xs" di atas, baris kartu
    weatherOnly (gaya index, hover reveal penuh) di tengah, buff luck/rollspeed di bawah.
    Nongol cuma pas weather aktif. Dipanggil tiap renderShell & tick detik. */
@@ -2358,26 +2365,37 @@ function renderBackpackPanel(){
     </div>
   </div></div>`;
 }
-/* Tab ITEM di backpack: grid item terpisah dari dek. Sekarang: Weather Potion (PAKAI -> roll weather 5 menit, BELI -> pakai coins). */
+/* Tab ITEM di backpack: tile icon ringkas; klik -> popup konfirmasi PAKAI. Item: Weather / Luck / Speed Potion. */
+function bpItemDef(kind){
+  if(kind==='potion'){const aw=activeWeatherId();return{kind,name:'WEATHER POTION',icon:'assets/images/icon-potion.png',emoji:'🧪',cnt:state.potions||0,
+    desc:'Buka untuk memanggil 1 cuaca acak (5 menit). Nggak pernah lebih jelek dari cuaca terbaikmu'+(state.weatherBest?' ('+WEATHER[state.weatherBest].name+')':'')+'.',
+    active:aw?`<br><strong style="color:${WEATHER[aw].color}">Aktif: ${WEATHER[aw].icon} ${WEATHER[aw].name}</strong>`:'',use:'bpUsePotion()'};}
+  if(kind==='luck'){const b=activeLuckBuff();return{kind,name:'LUCK POTION',icon:'assets/images/icon-luck.png',emoji:'🍀',cnt:state.luckPotions||0,
+    desc:'+1 Luck selama 5 menit. Pakai lagi saat masih aktif = nambah stack + refresh durasi.',
+    active:b?`<br><strong style="color:#5eead4">Aktif: +${b} LUCK</strong>`:'',use:'bpUseLuckPotion()'};}
+  if(kind==='speed'){const b=activeSpeedBuff();return{kind,name:'SPEED POTION',icon:'assets/images/icon-speed.png',emoji:'⚡',cnt:state.speedPotions||0,
+    desc:'+1× Roll Speed selama 5 menit (kena cap 5×). Pakai lagi saat masih aktif = nambah stack + refresh durasi.',
+    active:b?`<br><strong style="color:#fcd34d">Aktif: +${b}× SPEED</strong>`:'',use:'bpUseSpeedPotion()'};}
+  return null;
+}
 function renderBpItems(){
-  const pot=state.potions||0;
-  const tile=`<div class="bp-itemtile${pot>0?'':' empty'}" onclick="bpItemPop('potion')">
-      <div class="bp-itemtile-ic"><img src="assets/images/icon-potion.png" alt="Weather Potion" onerror="this.parentNode.textContent='🧪'"></div><span class="bp-itemtile-cnt">×${fmt(pot)}</span></div>`;
-  return `<div class="bp-h">ITEM</div><div class="bp-itemgrid">${tile}</div>`;
+  const kinds=['potion','luck','speed'];
+  const tiles=kinds.map(k=>{const d=bpItemDef(k);return `<div class="bp-itemtile${d.cnt>0?'':' empty'}" onclick="bpItemPop('${k}')"><div class="bp-itemtile-ic"><img src="${d.icon}" alt="${d.name}" onerror="this.parentNode.textContent='${d.emoji}'"></div><span class="bp-itemtile-cnt">×${fmt(d.cnt)}</span></div>`;}).join('');
+  return `<div class="bp-h">ITEM</div><div class="bp-itemgrid">${tiles}</div>`;
 }
 function bpItemPop(kind){
   bpItemPopClose();
-  if(kind!=='potion')return;
-  const pot=state.potions||0; const aw=activeWeatherId(); const canUse=pot>0;
+  const d=bpItemDef(kind); if(!d)return;
+  const canUse=d.cnt>0;
   const el=document.createElement('div'); el.id='itemPop';
   el.innerHTML=`<div class="item-pop-back" onclick="bpItemPopClose()"></div>
     <div class="item-pop">
-      <div class="item-pop-ic"><img src="assets/images/icon-potion.png" alt="Weather Potion" onerror="this.parentNode.textContent='🧪'"></div>
-      <div class="item-pop-name">WEATHER POTION</div>
-      <div class="item-pop-cnt">Punya: ×${fmt(pot)}</div>
-      <div class="item-pop-desc">Buka untuk memanggil 1 cuaca acak (5 menit). Nggak pernah lebih jelek dari cuaca terbaikmu${state.weatherBest?' ('+WEATHER[state.weatherBest].name+')':''}.${aw?`<br><strong style="color:${WEATHER[aw].color}">Aktif: ${WEATHER[aw].icon} ${WEATHER[aw].name}</strong>`:''}</div>
+      <div class="item-pop-ic"><img src="${d.icon}" alt="${d.name}" onerror="this.parentNode.textContent='${d.emoji}'"></div>
+      <div class="item-pop-name">${d.name}</div>
+      <div class="item-pop-cnt">Punya: ×${fmt(d.cnt)}</div>
+      <div class="item-pop-desc">${d.desc}${d.active||''}</div>
       <div class="item-pop-ctl">
-        <button class="bpi-use" ${canUse?'':'disabled'} onclick="bpUsePotion()">PAKAI</button>
+        <button class="bpi-use" ${canUse?'':'disabled'} onclick="${d.use}">PAKAI</button>
         <button class="item-pop-cancel" onclick="bpItemPopClose()">BATAL</button>
       </div>
     </div>`;
@@ -2389,6 +2407,20 @@ function bpUsePotion(){
   if(!r.ok){toast("Potion habis","GAK ADA POTION","#f87171");return;}
   beep(520,.16,"triangle",.1);setTimeout(()=>beep(780,.18,"triangle",.1),120);
   toast(`${r.weather.icon} ${r.weather.name}`,"WEATHER AKTIF · 5 MENIT",r.weather.color);
+  bpItemPopClose();renderShell();renderBackpackPanel();
+}
+function bpUseLuckPotion(){
+  const r=useLuckPotion();
+  if(!r.ok){toast("Potion habis","GAK ADA POTION","#f87171");return;}
+  beep(560,.14,"triangle",.09);setTimeout(()=>beep(820,.14,"triangle",.08),110);
+  toast("LUCK POTION","+"+r.flat+" LUCK · 5 MENIT","#5eead4");
+  bpItemPopClose();renderShell();renderBackpackPanel();
+}
+function bpUseSpeedPotion(){
+  const r=useSpeedPotion();
+  if(!r.ok){toast("Potion habis","GAK ADA POTION","#f87171");return;}
+  beep(720,.14,"square",.08);setTimeout(()=>beep(980,.14,"square",.07),110);
+  toast("SPEED POTION","+"+r.mult+"× SPEED · 5 MENIT","#fcd34d");
   bpItemPopClose();renderShell();renderBackpackPanel();
 }
 /* ====== TAB TREE: pohon skill. Root di tengah, dua cabang menjalar (LUCK kiri | SPEED kanan).
@@ -2673,9 +2705,9 @@ function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u));}
 function freshState(){
   const s0=STORY_BIBLE.units[0];
   const start=s0?{id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,fav:false,lock:false,mut:"none",shiny:false,trait:"none",count:1}:null;
-  const newState={coins:1000,raidTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},tower:{floor:1,best:0},
+  const newState={coins:1000,raidTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},tower:{best:0},
     cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],history:[],battle:null,
-    player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1,sp:0,tree:{}},weather:null,weatherBest:null,potions:0};
+    player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1,sp:0,tree:{}},weather:null,weatherBest:null,potions:0,luckPotions:0,speedPotions:0,luckBuff:null,speedBuff:null,infTokens:0};
   console.log('[FRESH STATE] Initialized player:',newState.player);
   return newState;
 }
@@ -2757,11 +2789,17 @@ function loadStateFor(name){
   }
   
   if(state.stacks)state.stacks.forEach(s=>{if(!s.mut)s.mut="none";if(s.mut==="silver"){s.shiny=true;s.mut="none";}if(typeof s.shiny!=="boolean")s.shiny=false;if(!s.trait||!TRAIT[s.trait])s.trait="none";s.tier=CARDS[s.char].tier;});
-  if(!state.tower||typeof state.tower!=="object")state.tower={floor:1,best:0};
-  if(typeof state.tower.floor!=="number"||state.tower.floor<1)state.tower.floor=1;
+  if(!state.tower||typeof state.tower!=="object")state.tower={best:0};
   if(typeof state.tower.best!=="number"||state.tower.best<0)state.tower.best=0;
-  /* WEATHER: migrasi field baru + expire otomatis kalau window real-time udah lewat. */
+  /* WEATHER + POTION: migrasi field baru + expire otomatis kalau window real-time udah lewat. */
   if(typeof state.potions!=="number"||state.potions<0)state.potions=0;
+  if(typeof state.luckPotions!=="number"||state.luckPotions<0)state.luckPotions=0;
+  if(typeof state.speedPotions!=="number"||state.speedPotions<0)state.speedPotions=0;
+  if(typeof state.infTokens!=="number"||state.infTokens<0)state.infTokens=0;
+  if(state.luckBuff&&typeof state.luckBuff.endsAt!=="number")state.luckBuff=null;
+  if(state.speedBuff&&typeof state.speedBuff.endsAt!=="number")state.speedBuff=null;
+  if(state.luckBuff&&Date.now()>=state.luckBuff.endsAt)state.luckBuff=null;
+  if(state.speedBuff&&Date.now()>=state.speedBuff.endsAt)state.speedBuff=null;
   if(state.weatherBest&&!WEATHER[state.weatherBest])state.weatherBest=null;
   if(state.weather){if(!WEATHER[state.weather.id]||typeof state.weather.endsAt!=="number")state.weather=null;}
   if(state.weather&&Date.now()>=state.weather.endsAt)state.weather=null;
@@ -4438,12 +4476,12 @@ function renderTowerHub(){
   <div class="tw-banner">
     <div class="tw-title disp">INFINITE TOWER</div>
     <div class="tw-sub">MENARA TANPA UJUNG &middot; SEKALI JALAN DARI LANTAI 1 SAMPAI KALAH</div>
-    <div class="tw-stats"><div class="tbs"><span>BEST LANTAI</span><b>${best}</b></div><div class="tbs"><span>ROLL / LANTAI</span><b>50</b></div></div>
+    <div class="tw-stats"><div class="tbs"><span>BEST LANTAI</span><b>${best}</b></div><div class="tbs"><span>ROLL / LANTAI</span><b>50 @50%</b></div></div>
   </div>
   <div class="eyebrow" style="margin:16px 0 8px">MUSUH &middot; LANTAI 1</div>
   <div class="tw-foes">${waves.map((w,i)=>towerPreviewCard(w,boss,i===0?"main":"tag")).join("")}</div>
   <button class="raid-teleport tw-go" id="towerGo">&#9876; MULAI RUN</button>
-  <p class="tw-note">Tiap lantai ditaklukkan: musuh mati &rarr; otomatis naik ke lantai berikutnya (tanpa konfirmasi), kamu langsung dapat <b>instant roll 50 kartu</b> + drop acak + Token Inf. Run berhenti saat kalah &mdash; semua hasil roll dari lantai 1 s/d sejauh kamu bertahan jadi milikmu.</p>`;
+  <p class="tw-note">Tiap lantai ditaklukkan: musuh mati &rarr; otomatis naik ke lantai berikutnya (tanpa konfirmasi). Peluang hadiah per lantai: <b>Instant roll 50 kartu (50%)</b> &middot; Weather Potion (5%) &middot; Luck Potion +1 (10%) &middot; Speed Potion +1 (10%). Run berhenti saat kalah &mdash; semua hasil roll dari lantai 1 s/d sejauh kamu bertahan jadi milikmu.</p>`;
   const g=document.getElementById("towerGo");if(g)g.onclick=()=>{sfx.hit();towerStartRun();};
 }
 function renderTowerBattle(){
@@ -4528,12 +4566,18 @@ function towerEnd(win){
   const f=towerRun.floor;
   if(win){
     /* Menang lantai: kasih hadiah lalu LANGSUNG naik lantai berikutnya tanpa overlay. */
-    instantRoll(50);
     const r=towerReward(f); state.coins+=r.coins;
-    towerRun.cleared=f; towerRun.cards=(towerRun.cards||0)+50; towerRun.coins=(towerRun.coins||0)+r.coins;
+    /* Drop acak tiap floor lolos: Instant roll 50 = 50% · Weather 5% · Luck +1 10% · Speed +1 10% */
+    if(!towerRun.drops)towerRun.drops={weather:0,luck:0,speed:0};
+    let gotRoll=false;
+    if(Math.random()<0.50){instantRoll(50);gotRoll=true;towerRun.cards=(towerRun.cards||0)+50;}
+    if(Math.random()<0.05){state.potions=(state.potions||0)+1;towerRun.drops.weather++;}
+    if(Math.random()<0.10){state.luckPotions=(state.luckPotions||0)+1;towerRun.drops.luck++;}
+    if(Math.random()<0.10){state.speedPotions=(state.speedPotions||0)+1;towerRun.drops.speed++;}
+    towerRun.cleared=f; towerRun.coins=(towerRun.coins||0)+r.coins;
     state.tower.best=Math.max(state.tower.best||0,f);
     save(); renderShell(); fanfare();
-    toast("LANTAI "+f+" DITAKLUKKAN","+50 ROLL · +"+fmt(r.coins)+" COIN","#7df9ff");
+    toast("LANTAI "+f+" DITAKLUKKAN",(gotRoll?"+50 ROLL · ":"NO ROLL · ")+"+"+fmt(r.coins)+" COIN","#7df9ff");
     bt=null;
     towerEnter(f+1);
     return;
@@ -4542,12 +4586,13 @@ function towerEnd(win){
   sfx.lose();
   const ov=document.getElementById("overlay");
   const reached=towerRun.cleared||0;
+  const dr=towerRun.drops||{weather:0,luck:0,speed:0};
   document.getElementById("ov-eyebrow").textContent="RUN BERAKHIR DI LANTAI "+f;
   const ti=document.getElementById("ov-title"); ti.textContent="KALAH"; ti.className="ov-title disp lose";
   const rw=document.getElementById("ov-reward"); rw.style.display="inline-flex";
   rw.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 9.5h4.5a2 2 0 0 1 0 4H10a2 2 0 0 0 0 4h5"/></svg> +'+fmt(towerRun.coins||0)+' <small>COIN</small>'
     +'<span style="margin-left:12px;color:#7df9ff">KARTU +'+fmt(towerRun.cards||0)+'</span>';
-  document.getElementById("ov-note").textContent="Lantai ditaklukkan: "+reached+" · Instant roll total: "+fmt(towerRun.cards||0)+" kartu"+((state.tower.best||0)===reached&&reached>0?" · REKOR BARU!":"")+".";
+  document.getElementById("ov-note").textContent="Lantai ditaklukkan: "+reached+" · Instant roll: "+fmt(towerRun.cards||0)+" kartu · Drop: WEATHER x"+dr.weather+" · LUCK x"+dr.luck+" · SPEED x"+dr.speed+((state.tower.best||0)===reached&&reached>0?" · REKOR BARU!":"")+".";
   const nx=document.getElementById("ov-next"); nx.style.display=""; nx.textContent="KEMBALI KE HUB";
   nx.onclick=()=>{ov.classList.remove("show");stopBattleLoop();towerView="hub";render();};
   document.getElementById("ov-again").onclick=()=>{ov.classList.remove("show");stopBattleLoop();towerStartRun();};
