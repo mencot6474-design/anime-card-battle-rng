@@ -763,10 +763,10 @@ body.battle-full .stat svg{flex:none}
 #rollResultPop{position:fixed;inset:0;display:none;place-items:center;z-index:220;padding:16px}
 #rollResultPop.show{display:grid}
 #rollResultPop .rr-back{position:absolute;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(4px)}
-.rr-card{position:relative;width:min(720px,96vw);max-height:88vh;display:flex;flex-direction:column;background:var(--panel);border:2px solid var(--line2);border-radius:18px;padding:22px 20px;box-shadow:0 20px 70px rgba(0,0,0,.6);text-align:center}
+.rr-card{position:relative;width:min(720px,96vw);max-height:94vh;display:flex;flex-direction:column;background:var(--panel);border:2px solid var(--line2);border-radius:18px;padding:18px 18px;box-shadow:0 20px 70px rgba(0,0,0,.6);text-align:center}
 .rr-title{font-size:30px;letter-spacing:.06em;color:var(--cyan);margin:2px 0 4px}
 .rr-total{color:var(--muted);font-size:13px;letter-spacing:.08em;margin-bottom:14px}
-.rr-grid{overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:16px;padding:14px;flex:1;min-height:120px;align-content:start;border-top:1px solid rgba(0,0,0,.55);border-bottom:1px solid rgba(0,0,0,.55)}
+.rr-grid{overflow-y:auto;overflow-x:hidden;display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:16px;padding:14px;flex:1;min-height:0;align-content:start;border-top:1px solid rgba(0,0,0,.55);border-bottom:1px solid rgba(0,0,0,.55)}
 .rr-empty{grid-column:1/-1;color:var(--muted2);font-size:14px;padding:30px 0}
 .rrc{position:relative;aspect-ratio:1/1;border:2px solid var(--line2);border-radius:10px;overflow:hidden;background:linear-gradient(160deg,#1a1216,#0e0a0c)}
 .rrc.mut-gold,.rrc.mut-rainbow,.rrc.mut-secret{border-width:0}
