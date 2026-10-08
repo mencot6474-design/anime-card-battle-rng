@@ -109,14 +109,14 @@ body.on-lobby .hub-mid{max-width:min(400px,calc((100vh - 210px) * .74))}
 .foot-weather{display:flex;flex-direction:column;align-items:center;gap:6px;}
 .weather-dock{display:flex;flex-direction:column;align-items:center;gap:7px;}
 .weather-dock:empty{display:none;}
-/* Panel kartu weatherOnly: kotak KECIL gaya index, sejajar. Nongol cuma pas weather aktif. */
-.weather-cards{display:none;gap:5px;flex-wrap:wrap;max-width:min(260px,60vw);}
+/* Panel kartu weatherOnly: KOTAK (square), art ngisi penuh, "1 in X" numpuk di bawah. Nongol cuma pas weather aktif. */
+.weather-cards{display:none;gap:6px;flex-wrap:nowrap;}
 .weather-cards.show{display:flex;}
-.wc-slot{position:relative;width:50px;opacity:.42;filter:saturate(.35) brightness(.82);transition:opacity .2s,filter .2s,box-shadow .2s;}
-.wc-slot .idx-art img,.wc-slot .idx-art video{height:38px;}
-.wc-slot .idx-body{padding:3px 3px 3px;}
+.wc-slot{position:relative;width:50px;height:50px;border-radius:9px;overflow:hidden;background:#0e0b0d;border:1px solid var(--line2);opacity:.42;filter:saturate(.35) brightness(.82);transition:opacity .2s,filter .2s,box-shadow .2s;}
+.wc-slot .idx-art{position:absolute;inset:0;}
+.wc-slot .idx-art img,.wc-slot .idx-art video{width:100%;height:100%;object-fit:cover;object-position:top;}
 .wc-slot .idx-title{display:none;}
-.wc-slot .idx-body{display:flex;align-items:center;justify-content:center;}
+.wc-slot .idx-body{position:absolute;left:0;right:0;bottom:0;padding:2px 3px;display:flex;align-items:center;justify-content:center;background:linear-gradient(transparent,rgba(0,0,0,.72));}
 .wc-chance{font-family:"Barlow Condensed";font-weight:800;font-size:8.5px;letter-spacing:.02em;text-align:center;color:#e8eefc;text-transform:uppercase;white-space:nowrap;}
 .wc-slot.active .wc-chance{color:var(--wc,#38b7ff);}
 .wc-slot.active{opacity:1;filter:none;box-shadow:0 0 0 2px var(--wc,#38b7ff),0 8px 20px color-mix(in srgb,var(--wc,#38b7ff) 34%,transparent);}
