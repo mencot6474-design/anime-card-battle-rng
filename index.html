@@ -2102,8 +2102,8 @@ function showRollResult(result) {
   const cardData = getCardData(result.cardId);
   if (!cardData) return;
   rollState.currentCard = result;
-  // Kartu baru = selalu tampilkan lagi (bukan state collapsed) biar hasil roll keliatan.
-  if (rollState.collapsed) { rollState.collapsed = false; }
+  // Jangan paksa buka: kalau user lagi hide (collapsed), biarin tetep kesembunyi
+  // (mis. pas AUTO farming). Isi kartu tetap ke-update di atas, jadi pas di-buka nampil hasil terbaru.
   if (rollState.mini) syncRollMiniStrip();
 
   // Kartu hasil roll = SALINAN persis kartu lobby (hubCardHtml) supaya posisinya identik.
