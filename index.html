@@ -766,9 +766,10 @@ body.battle-full .stat svg{flex:none}
 .rr-card{position:relative;width:min(720px,96vw);max-height:90vh;overflow:hidden;display:flex;flex-direction:column;background:var(--panel);border:2px solid var(--line2);border-radius:18px;padding:18px 18px 0;box-shadow:0 20px 70px rgba(0,0,0,.6);text-align:center}
 .rr-title{font-size:30px;letter-spacing:.06em;color:var(--cyan);margin:2px 0 4px}
 .rr-total{color:var(--muted);font-size:13px;letter-spacing:.08em;margin-bottom:14px}
-.rr-grid{overflow-y:auto;overflow-x:hidden;flex:1;min-height:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:16px;padding:14px;align-content:start;border-top:1px solid rgba(0,0,0,.55);border-bottom:1px solid rgba(0,0,0,.55)}
+.rr-grid{overflow-y:auto;overflow-x:hidden;flex:1;min-height:0;display:grid;grid-template-columns:repeat(auto-fill,78px);grid-auto-rows:78px;justify-content:space-evenly;gap:16px;padding:14px;align-content:start;border-top:1px solid rgba(0,0,0,.55);border-bottom:1px solid rgba(0,0,0,.55)}
 .rr-empty{grid-column:1/-1;color:var(--muted2);font-size:14px;padding:30px 0}
 .rrc{position:relative;aspect-ratio:1/1;border:2px solid var(--line2);border-radius:10px;overflow:hidden;background:linear-gradient(160deg,#1a1216,#0e0a0c)}
+.rrc-sizer{display:block;width:100%;padding-top:100%}
 .rrc.mut-gold,.rrc.mut-rainbow,.rrc.mut-secret{border-width:0}
 .rrc.shiny::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 32%,rgba(255,255,255,.22) 46%,rgba(255,255,255,.05) 55%,transparent 70%);background-size:250% 100%;z-index:1;animation:holoSheen 2.2s ease-in-out infinite}
 .rrc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top}
@@ -4715,7 +4716,7 @@ function showTowerLoot(results){
     const isShiny=g.shiny&&g.shiny!=="none", isMut=g.mut&&g.mut!=="none";
     const varTag=(isShiny||isMut)?`<span class="rrc-var">${isShiny?'<span class="rrc-shine">SHINY</span>':''}${isMut?`<span class="rrc-mut" style="border-color:${MUT_COLOR[g.mut]||'#fff'}">${mutBadge(g.mut)}</span>`:''}</span>`:'';
     let rc="rrc";if(isMut)rc+=" mut-"+g.mut;if(isShiny)rc+=" shiny";
-    return `<div class="${rc}"><img src="${img}" alt="${name}" title="${name}" onerror="this.style.display='none'">${varTag}${g.n>1?`<span class="rrc-cnt">×${g.n}</span>`:''}<span class="rrc-name">1/${fmtC(luckChance(g.cardId,g.mut,g.shiny))}</span></div>`;
+    return `<div class="${rc}"><i class="rrc-sizer"></i><img src="${img}" alt="${name}" title="${name}" onerror="this.style.display='none'">${varTag}${g.n>1?`<span class="rrc-cnt">×${g.n}</span>`:''}<span class="rrc-name">1/${fmtC(luckChance(g.cardId,g.mut,g.shiny))}</span></div>`;
   }).join("");
   pop.classList.add("show");
 }
