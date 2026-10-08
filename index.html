@@ -4531,12 +4531,11 @@ function renderTower(){
 function towerPreviewCard(w,isBoss,role,idx){
   const id=w.eid, c=CARDS[id]; if(!c) return "";
   const tier=c.tier;
-  const badge = isBoss ? (role==="main"?"BOS":"TAG") : ("GELOMBANG "+((idx||0)+1));
   return `<div class="hub-center tw-foe-slot" data-tier="${tier}">
     <div class="hc-img"><img src="${c.sprite_asset}" alt="${c.name}"${c.pos?` style="object-position:${c.pos}"`:''}>${madaraAura(id)}
       <span class="hc-name-top">${c.name}</span>
       <span class="hc-chance" style="color:${TIER_COLOR[tier]}">${rarityText(tier,luckChance(id))}</span>
-      <div class="hc-badges"><span class="hc-trait">${badge}</span></div>
+      ${isBoss?`<div class="hc-badges"><span class="hc-trait">${role==="main"?"BOS":"TAG"}</span></div>`:''}
     </div>
     <div class="hc-info">
       <div class="hc-skill">${passiveName(id)}</div>
@@ -4554,7 +4553,7 @@ function renderTowerHub(){
   <div class="tw-banner">
     <div class="tw-title disp">INFINITE TOWER</div>
     <div class="tw-sub">MENARA TANPA UJUNG &middot; SEKALI JALAN DARI LANTAI 1 SAMPAI KALAH</div>
-    <div class="tw-stats"><div class="tbs"><span>BEST LANTAI</span><b>${best}</b></div><div class="tbs"><span>ROLL / LANTAI</span><b>50 @50%</b></div><div class="tbs"><span>TOKEN INF</span><b>${fmt(state.infTokens||0)}</b></div></div>
+    <div class="tw-stats"><div class="tbs"><span>BEST LANTAI</span><b>${best}</b></div><div class="tbs"><span>TOKEN INF</span><b>${fmt(state.infTokens||0)}</b></div></div>
   </div>
   <div class="eyebrow" style="margin:16px 0 8px">MUSUH &middot; LANTAI 1</div>
   <div class="tw-foes">${waves.map((w,i)=>towerPreviewCard(w,boss,i===0?"main":"tag",i)).join("")}</div>
