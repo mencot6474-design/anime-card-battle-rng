@@ -226,9 +226,9 @@ body.on-lobby .weather-panel.show{display:flex;}
 .st-col.speed .st-col-h{color:#fcd34d;}
 .st-col-ic{font-size:18px;}
 .st-chain{display:flex;flex-direction:column;gap:10px;position:relative;}
-.st-chain::before{content:"";position:absolute;left:50%;top:6px;bottom:6px;width:2px;transform:translateX(-50%);background:linear-gradient(var(--line2),transparent);z-index:0;}
-.st-col.luck .st-chain::before{background:linear-gradient(#5eead4,#25403b);}
-.st-col.speed .st-chain::before{background:linear-gradient(#fcd34d,#4a3c14);}
+.st-node+.st-node::before{content:"";position:absolute;left:50%;top:-10px;height:10px;width:2px;transform:translateX(-50%);background:var(--line2);z-index:0;}
+.st-col.luck .st-node+.st-node::before{background:#5eead4;}
+.st-col.speed .st-node+.st-node::before{background:#fcd34d;}
 .st-col-cap{font-size:11px;color:var(--muted);text-align:center;}
 .st-node{position:relative;z-index:1;min-height:62px;border:2px solid var(--line2);border-radius:12px;background:var(--panel2);padding:9px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:.14s;}
 .st-node .st-name{font-family:"Barlow Condensed";font-weight:800;font-size:14px;letter-spacing:.05em;color:#fff;}
