@@ -282,6 +282,7 @@ body.on-lobby .weather-panel.show{display:flex;}
 .tw-hubbtns .tw-go{flex:1;min-width:180px;}
 .tw-shop{font-family:"Barlow Condensed";font-weight:800;font-size:16px;letter-spacing:.08em;padding:14px 22px;border-radius:14px;border:2px solid #c4b5fd;background:linear-gradient(160deg,#241a34,#160f22);color:#c4b5fd;cursor:pointer;transition:.15s;flex:0 0 auto;}
 .tw-shop:hover{transform:translateY(-2px);filter:brightness(1.12);}
+.tw-shop-go{border-color:#7DF9FF;color:#7DF9FF;background:linear-gradient(160deg,#0f2a2e,#0a1618);}
 .inf-shop{display:flex;flex-direction:column;gap:12px;margin-top:16px;}
 .inf-item{display:flex;align-items:center;gap:14px;border:1px solid var(--line2);border-radius:14px;background:linear-gradient(160deg,#171012,#0d0a0c);padding:14px 16px;}
 .inf-item-ic{font-size:34px;line-height:1;width:48px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
@@ -4539,7 +4540,7 @@ function renderTowerHub(){
   <div class="eyebrow" style="margin:16px 0 8px">MUSUH &middot; LANTAI 1</div>
   <div class="tw-foes">${waves.map((w,i)=>towerPreviewCard(w,boss,i===0?"main":"tag")).join("")}</div>
   <div class="tw-hubbtns">
-    <button class="raid-teleport tw-go" id="towerGo">&#9876; MULAI RUN</button>
+    <button class="tw-shop tw-shop-go" id="towerGo">&#9876; MULAI RUN</button>
     <button class="tw-shop" id="towerShop">&#9831; TOKO INF</button>
     <button class="tw-shop" id="towerLobby">&#8592; KEMBALI KE LOBBY</button>
   </div>
