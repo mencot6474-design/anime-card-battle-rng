@@ -4708,8 +4708,7 @@ function showTowerLoot(results){
   const pop=document.getElementById("rollResultPop");if(!pop||!results||!results.length)return;
   const groups={};
   results.forEach(r=>{const key=r.cardId+"|"+(r.mut||"none")+"|"+(r.shiny||"none");(groups[key]=groups[key]||{cardId:r.cardId,tier:r.tier,mut:r.mut||"none",shiny:r.shiny||"none",n:0}).n++;});
-  const order={EX:5,UR:4,SSR:3,SR:2,R:1};
-  const list=Object.values(groups).sort((a,b)=>(order[b.tier]||0)-(order[a.tier]||0)||b.n-a.n);
+  const list=Object.values(groups).sort((a,b)=>luckChance(b.cardId,b.mut,b.shiny)-luckChance(a.cardId,a.mut,a.shiny)||b.n-a.n);
   document.getElementById("rrTotal").textContent=fmt(results.length)+" kartu · "+list.length+" jenis unik";
   document.getElementById("rrBody").innerHTML=list.map(g=>{
     const name=cardName(g.cardId),img=cardImg(g.cardId);
