@@ -203,10 +203,10 @@ body.on-lobby .weather-panel.show{display:flex;}
 .bp-deckcol{flex:0 0 auto;align-self:stretch;display:flex;flex-direction:column;min-height:0;width:auto;}
 .bp-collect{flex:1;min-width:0;align-self:stretch;overflow-y:auto;}
 /* Tab nav Backpack: DECK / ITEM / ARTEFAK / PET — tiap tab punya panel sendiri. */
-.bp-tabs{display:flex;gap:6px;padding:10px 16px 0;background:var(--panel);border-bottom:1px solid var(--line);}
-.bp-tab{flex:1;font-family:"Barlow Condensed";font-weight:800;font-size:15px;letter-spacing:.1em;padding:10px 8px;border:1px solid var(--line2);border-bottom:none;border-radius:12px 12px 0 0;background:var(--panel2);color:var(--muted);cursor:pointer;transition:.15s;}
-.bp-tab:hover{filter:brightness(1.12);}
-.bp-tab.on{background:var(--panel);color:var(--cyan);border-color:var(--cyan);}
+.bp-tabs{display:flex;gap:6px;margin:14px 16px 4px;padding:6px;background:var(--panel2);border:1px solid var(--line2);border-radius:14px;flex:0 0 auto;}
+.bp-tab{flex:1;font-family:"Barlow Condensed";font-weight:800;font-size:15px;letter-spacing:.1em;padding:9px 8px;border:1px solid transparent;border-radius:9px;background:transparent;color:var(--muted);cursor:pointer;transition:.15s;}
+.bp-tab:hover{filter:brightness(1.15);color:var(--text);}
+.bp-tab.on{background:var(--panel);color:var(--cyan);border-color:var(--cyan);box-shadow:0 0 0 1px rgba(125,249,255,.25) inset;}
 /* Panel grid item (tab ITEM) */
 .bp-items-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;overflow-y:auto;align-content:start;padding-top:4px;}
 /* Placeholder tab ARTEFAK / PET */
