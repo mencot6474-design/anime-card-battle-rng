@@ -505,6 +505,11 @@ body.battle-full .f-body{padding:30px clamp(12px,1.6vw,22px) clamp(12px,1.8vh,20
 body.battle-full .stat-row{gap:16px;font-size:14px}
 body.battle-full .stat{white-space:nowrap;gap:6px;font-weight:700}
 body.battle-full .stat svg{flex:none}
+/* Layout teks kartu ala prototipe: passive lebih nonjol, HP+ATK ngumpul KANAN (HP putih, ATK amber) */
+body.battle-full .f-skill{font-size:14px;font-weight:700}
+body.battle-full .fighter .stat-row{justify-content:flex-end;gap:16px;font-weight:800}
+body.battle-full .fighter .stat-row .stat:first-child{color:#fff}
+body.battle-full .fighter .stat-row .stat:last-child{color:#F0D9A0}
 }
 /* HP landscape: lebar >700px jadi ikut arena desktop, tapi tinggi layar pendek (~360-430px).
    Formula kartu arena ngandelin (100dvh-360px) → nyaris 0. Jadi kartu di-ukur ulang dari tinggi
