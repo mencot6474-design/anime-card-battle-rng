@@ -109,21 +109,16 @@ body.on-lobby .hub-mid{max-width:min(400px,calc((100vh - 210px) * .74))}
 .foot-weather{display:flex;flex-direction:column;align-items:center;gap:6px;}
 .weather-dock{display:flex;flex-direction:column;align-items:center;gap:7px;}
 .weather-dock:empty{display:none;}
-/* Panel kartu weatherOnly = MINI kartu lobby (hub-center) di-perkecil, gaya sama persis. Nongol cuma pas weather aktif. */
+/* Panel kartu weatherOnly = kartu lobby ASLI (hub-center) di-render full 300px lalu di-scale
+   seragam (transform) biar proporsinya 100% SAMA kayak lobby, cuma ngecil. Nongol pas weather aktif. */
 .weather-cards{display:none;gap:7px;flex-wrap:nowrap;align-items:flex-start;}
 .weather-cards.show{display:flex;}
-.wc-slot{position:relative;width:66px;opacity:.42;filter:saturate(.35) brightness(.82);transition:opacity .2s,filter .2s,box-shadow .2s;}
-.wc-slot .hub-center{aspect-ratio:1/1;border-radius:12px;}
-.wc-slot .hub-center .hc-name-top{top:4px;left:5px;font-size:8px;max-width:58%}
-.wc-slot .hub-center .hc-chance{top:15px;left:5px;font-size:8px}
-.wc-slot .hub-center .hc-badges{top:4px;right:4px;gap:2px}
-.wc-slot .hub-center .hc-badges .mut-badge,.wc-slot .hub-center .hc-badges .hc-trait,.wc-slot .hub-center .shiny-badge{height:12px;padding:0 3px;font-size:7px;border-radius:4px}
-.wc-slot .hub-center .hc-badges .hc-trait.hc-gem{width:12px;padding:0}
-.wc-slot .hub-center .hc-info{padding:12px 5px 5px}
-.wc-slot .hub-center .hc-skill,.wc-slot .hub-center .hc-desc{display:none}
-.wc-slot .hub-center .hc-stats{font-size:8px;margin-top:0;gap:4px}
-.wc-slot.active{opacity:1;filter:none;}
-.wc-slot.active .hub-center{box-shadow:0 0 0 2px var(--wc,#38b7ff),0 8px 20px color-mix(in srgb,var(--wc,#38b7ff) 34%,transparent);}
+.wc-slot{position:relative;width:66px;height:88px;overflow:hidden;border-radius:12px;opacity:.42;filter:saturate(.35) brightness(.82);transition:opacity .2s,filter .2s,box-shadow .2s;}
+.wc-slot .hub-center{width:300px;transform:scale(.22);transform-origin:top left;}
+/* Kartu weather: bersihin blok info (skill/desc/HP/ATK dibuang), tempat HP/ATK dipake buat "1 in X" di bawah. */
+.wc-slot .hub-center .hc-stats,.wc-slot .hub-center .hc-skill,.wc-slot .hub-center .hc-desc{display:none;}
+.wc-slot .hub-center .hc-chance{top:auto;bottom:12px;left:14px;}
+.wc-slot.active{opacity:1;filter:none;box-shadow:0 0 0 2px var(--wc,#38b7ff),0 8px 20px color-mix(in srgb,var(--wc,#38b7ff) 34%,transparent);}
 .wd-chip{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;border:2px solid var(--wdc,var(--line2));background:var(--panel);color:#fff;font-family:"Barlow Condensed";font-weight:800;font-size:14px;letter-spacing:.06em;box-shadow:0 4px 14px rgba(18,28,38,.35);animation:wd-glow 2s ease-in-out infinite;}
 .wd-chip .wd-ic{font-size:16px;}
 .wd-chip .wd-time{color:var(--wdc,var(--cyan));font-variant-numeric:tabular-nums;}
