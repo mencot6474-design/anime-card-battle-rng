@@ -4440,8 +4440,8 @@ function stopTower(){
   if(bt&&bt.tower){ if(bt.timer)clearTimeout(bt.timer); bt=null; }
   /* Run ditinggal (END / pindah menu) sebelum kalah: tetap cairkan roll yang sudah ditabung biar nggak hangus. */
   if(towerRun&&(towerRun.pendingRolls||0)>0){
-    const n=towerRun.pendingRolls; instantRoll(n); towerRun.pendingRolls=0;
-    toast("ROLL TOWER DITARIK","+"+n+" KARTU","#7df9ff");
+    const n=towerRun.pendingRolls; const loot=instantRoll(n); towerRun.pendingRolls=0;
+    if(loot&&loot.length)showTowerLoot(loot); else toast("ROLL TOWER DITARIK","+"+n+" KARTU","#7df9ff");
   }
   towerView="hub"; towerRun=null;
 }
