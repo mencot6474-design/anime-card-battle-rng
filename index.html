@@ -490,9 +490,9 @@ body.battle-full .bench-rail .bench-sq{width:clamp(50px,11vh,74px)}
 @media(min-width:701px){
 body.battle-full .battle-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"foe-slot foe-slot" "me foe" "bench bench";gap:clamp(8px,1.6vh,18px) clamp(6px,1.4vw,20px);padding-left:clamp(12px,2vw,28px);padding-right:clamp(12px,2vw,28px);align-items:stretch}
 body.battle-full .me-col,body.battle-full .foe-side{display:contents}
-body.battle-full .vs-col{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);flex-direction:column;align-items:center;gap:2px;z-index:4;pointer-events:none}
-body.battle-full .vs-col .t{display:none}
-body.battle-full .vs-col .s{font-family:"Barlow Condensed";font-size:clamp(16px,2.6vh,24px);letter-spacing:.05em;color:var(--text);text-transform:none;font-weight:800;text-align:center;line-height:1.12}
+body.battle-full .vs-col{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);flex-direction:column-reverse;align-items:center;gap:9px;z-index:5;pointer-events:none}
+body.battle-full .vs-col .s{font-family:"Barlow Condensed";font-size:clamp(13px,1.9vw,18px);letter-spacing:.14em;color:#9fb0c2;text-transform:none;font-weight:800;text-align:center;line-height:1.1;white-space:nowrap;text-shadow:0 2px 10px rgba(0,0,0,.7)}
+body.battle-full .vs-col .s b{color:#7DF9FF;font-weight:800}
 body.battle-full .fighter.me{grid-area:me;justify-self:start;align-self:center;aspect-ratio:3/4;width:min(100%,min(520px,calc((100dvh - 280px)*1.32)));max-height:min(680px,calc((100dvh - 280px)*1.76));min-height:0}
 body.battle-full .fighter.foe{grid-area:foe;justify-self:end;align-self:center;aspect-ratio:3/4;width:min(100%,min(520px,calc((100dvh - 280px)*1.32)));max-height:min(680px,calc((100dvh - 280px)*1.76));min-height:0}
 body.battle-full .fighter{height:auto;overflow:hidden;border-radius:20px}
@@ -517,6 +517,16 @@ body.battle-full .stat svg{flex:none}
   body.battle-full .stat-row{font-size:12px;margin-top:6px;gap:10px}
   body.battle-full .vs-col .s{font-size:clamp(13px,2.2vh,18px)}
 }
+/* HUD "giliran" ala prototipe: elemen .t (dulu VS) dilebur jadi pill dengan titik berdenyut.
+   Biru = giliran pemain, merah = giliran musuh (di-set via .vs-col.foe dari mesin fasa). */
+body.battle-full .vs-col .t{display:inline-flex;align-items:center;gap:8px;padding:4px 13px;border-radius:999px;
+  background:rgba(255,255,255,.07);background-clip:padding-box;-webkit-background-clip:padding-box;
+  border:1px solid rgba(255,255,255,.18);box-shadow:0 4px 16px rgba(0,0,0,.5);
+  font-family:"Barlow Condensed";font-weight:700;font-size:14px;letter-spacing:.09em;line-height:1;
+  color:#F4F7FA;text-shadow:none;white-space:nowrap}
+body.battle-full .vs-col .t::before{content:"";width:8px;height:8px;border-radius:50%;background:#7DF9FF;box-shadow:0 0 10px #7DF9FF;animation:tpPulse 1s ease-in-out infinite}
+body.battle-full .vs-col.foe .t::before{background:#FF4D5E;box-shadow:0 0 10px #FF4D5E}
+@keyframes tpPulse{50%{transform:scale(1.55);opacity:.55}}
 /* ====== ARENA PANGGUNG (khusus mode battle) ======
    Latar gelap imersif di-BELAKANG grid battle — lobby/backpack/tower-hub tetap tema terang.
    Elemen .battle-arena di-inject sekali ke <body>, tampil cuma saat body.battle-full.
@@ -4149,6 +4159,12 @@ function performAttack(o){
     else if(galaxy&&!o.barrageN)galaxyRoarFx(A,D,o.crit);
   },180);
 }
+function setTurnPill(side,label){
+  const col=document.querySelector(".vs-col");if(!col)return;
+  const t=col.querySelector(".t");if(!t)return;
+  col.classList.toggle("foe",side==="foe");
+  t.textContent=label;
+}
 function playerPhase(){
   if(!bt||bt.over)return;
   if(bt.turn>300){ endBattle(bt.eHp<=bt.pHp); return; }
@@ -4170,7 +4186,8 @@ function playerPhase(){
   bt.trickNext=false;bt.royalNow=false;bt.gunsNow=false;
   const id=bt.eq.char,t=bt.turn;let fx=resolveFx(bt.eq,bt.efx);
   if(bt.shadow)fx={};
-  document.getElementById("turnLabel").innerHTML=(bt.tower&&towerRun)?("LANTAI "+towerRun.floor+"<br>GELOMBANG "+(towerRun.idx+1)+"/"+towerRun.waves.length):("TURN<br>"+t);
+  document.getElementById("turnLabel").innerHTML=(bt.tower&&towerRun)?("LANTAI <b>"+towerRun.floor+"</b> · GELOMBANG <b>"+(towerRun.idx+1)+"/"+towerRun.waves.length+"</b>"):("TURN<br>"+t);
+  setTurnPill("you","GILIRANMU");
   /* RUMBLING: DoT sisa dari kartu yang udah mati — jalan tiap giliran walau kartu udah ganti */
   if(bt.rumbling>0){
     const rd=Math.round(bt.es.hp*(bt.rumblingPct||10)/100);
@@ -4311,6 +4328,7 @@ function playerPhase(){
 }
 function enemyPhase(){
   if(!bt||bt.over)return;
+  setTurnPill("foe","GILIRAN MUSUH");
   const id=bt.eq.char,t=bt.turn;let fx=resolveFx(bt.eq,bt.efx);
   if(bt.shadow)fx={};
   const efx=bt.efx||{};
@@ -4654,7 +4672,7 @@ function renderTowerBattle(){
     <div class="fighter me${eq?mutGlow(eq.mut):''}${shinyCls(eq)}" data-tier="${eq?eq.tier:''}" data-char="${eq?eq.char:''}"${eq?mutEdge(eq.mut):''}>${meFighterHtml(eq)}</div>
     ${benchHtml()}
   </div>
-  <div class="vs-col"><div class="t">VS</div><div class="s" id="turnLabel">LANTAI ${towerRun.floor}<br>${towerIsBossFloor(towerRun.floor)?"BOS":"AUTO"}</div></div>
+  <div class="vs-col"><div class="t">VS</div><div class="s" id="turnLabel">LANTAI <b>${towerRun.floor}</b> · ${towerIsBossFloor(towerRun.floor)?"BOS":"GELOMBANG <b>"+(towerRun.idx+1)+"/"+towerRun.waves.length+"</b>"}</div></div>
   <div class="me-col foe-side" id="foeSide">${towerFoeSide(w)}</div>
   </div>`;
   clearFoeEnter();
@@ -4716,7 +4734,7 @@ function advanceTowerFoe(){
     setBar("hpFoe","hpFoeT",w.es.hp,w.es.hp);
     const foeEl=side?side.querySelector(".fighter.foe"):null;
     if(foeEl){const fl=document.createElement("div");fl.className="foe-enter-flash";foeEl.appendChild(fl);setTimeout(()=>{try{fl.remove();}catch(e){}},640);}
-    const tl=document.getElementById("turnLabel");if(tl)tl.innerHTML="LANTAI "+towerRun.floor+"<br>GELOMBANG "+(towerRun.idx+1)+"/"+towerRun.waves.length;
+    const tl=document.getElementById("turnLabel");if(tl)tl.innerHTML="LANTAI <b>"+towerRun.floor+"</b> · GELOMBANG <b>"+(towerRun.idx+1)+"/"+towerRun.waves.length+"</b>";
     floatText(".fighter.foe","TAG-IN!","heal");
     schedPhase(1000,enemyPhase);
   },2000);
