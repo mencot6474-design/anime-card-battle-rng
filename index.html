@@ -4541,15 +4541,17 @@ function renderTowerHub(){
   <div class="tw-hubbtns">
     <button class="raid-teleport tw-go" id="towerGo">&#9876; MULAI RUN</button>
     <button class="tw-shop" id="towerShop">&#9831; TOKO INF</button>
+    <button class="tw-shop" id="towerLobby">&#8592; KEMBALI KE LOBBY</button>
   </div>
   <p class="tw-note">Tiap lantai ditaklukkan: musuh mati &rarr; otomatis naik ke lantai berikutnya (tanpa konfirmasi). Peluang hadiah per lantai: <b>Instant roll 50 kartu (50%)</b> &middot; Weather Potion (5%) &middot; Luck Potion +1 (10%) &middot; Speed Potion +1 (10%). Tiap lantai juga kasih <b>+1 Token Inf</b> (bos +5) buat dibelanjakan di TOKO INF.</p>`;
   const g=document.getElementById("towerGo");if(g)g.onclick=()=>{sfx.hit();towerStartRun();};
   const s=document.getElementById("towerShop");if(s)s.onclick=()=>{sfx.hit();towerView="shop";render();};
+  const lb=document.getElementById("towerLobby");if(lb)lb.onclick=()=>{try{sfx.hit();}catch(e){}location.hash="#/";};
 }
 function renderTowerShop(){
   if(!state.tower)state.tower={best:0};
   const tok=state.infTokens||0;
-  const ICON={weather:'<img src="assets/images/icon-potion.png" onerror="this.parentNode.textContent=\'🧪\'">',mythic:'✨',luck:'🍀',speed:'⚡',roll100:'🎴'};
+  const ICON={weather:'<img src="assets/images/icon-potion.png" onerror="this.parentNode.textContent=\'🧪\'">',mythic:'✨',luck:'🍀',speed:'⚡'};
   const item=(k,label,desc,cost)=>`<div class="inf-item">
       <div class="inf-item-ic">${ICON[k]||'🧪'}</div>
       <div class="inf-item-info"><div class="inf-item-name">${label}</div><div class="inf-item-desc">${desc}</div></div>
@@ -4565,14 +4567,13 @@ function renderTowerShop(){
     ${item('weather','WEATHER POTION','Buka 1 cuaca acak, bertahan 5 menit.',10)}
     ${item('luck','LUCK POTION','+1 Luck selama 5 menit.',10)}
     ${item('speed','SPEED POTION','+1× Roll Speed selama 5 menit.',10)}
-    ${item('roll100','INSTANT ROLL ×100','Langsung roll 100 kartu, masuk koleksi.',20)}
     ${item('mythic','MYTHIC WEATHER POTION','Upgrade 1 Weather Potion -> Mythic: cuaca bertahan 30 MENIT. Butuh 1 Weather Potion.',50)}
   </div>
   <button class="raid-teleport tw-go" id="towerBack" style="margin-top:16px">&#8592; KEMBALI</button>`;
   const b=document.getElementById("towerBack"); if(b)b.onclick=()=>{towerView="hub";render();};
 }
 function infBuy(kind){
-  const cost={weather:10,luck:10,speed:10,roll100:20,mythic:50}[kind]; if(cost==null)return;
+  const cost={weather:10,luck:10,speed:10,mythic:50}[kind]; if(cost==null)return;
   if((state.infTokens||0)<cost){toast("TOKEN KURANG","TOKEN INF TIDAK CUKUP","#f87171");return;}
   if(kind==='mythic'&&(state.potions||0)<1){toast("Butuh 1 Weather Potion","GAK BISA","#f87171");return;}
   state.infTokens-=cost;
@@ -4580,9 +4581,8 @@ function infBuy(kind){
   else if(kind==='luck')state.luckPotions=(state.luckPotions||0)+1;
   else if(kind==='speed')state.speedPotions=(state.speedPotions||0)+1;
   else if(kind==='mythic'){state.potions--;state.mythicPotions=(state.mythicPotions||0)+1;}
-  else if(kind==='roll100')instantRoll(100);
   save(); beep(660,.1,"sine",.07);
-  const label={weather:'WEATHER POTION',luck:'LUCK POTION',speed:'SPEED POTION',roll100:'INSTANT ROLL ×100',mythic:'MYTHIC POTION'}[kind];
+  const label={weather:'WEATHER POTION',luck:'LUCK POTION',speed:'SPEED POTION',mythic:'MYTHIC POTION'}[kind];
   toast(label,"-"+cost+" TOKEN","#c4b5fd");
   renderShell(); if(towerView==="shop")render();
 }
