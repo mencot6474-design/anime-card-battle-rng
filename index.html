@@ -101,6 +101,8 @@ body.on-lobby .hub-mid{max-width:min(400px,calc((100vh - 210px) * .74))}
 /* Tombol profil di footer: kotak 42, sejajar icon dock lain. Ikon sementara (dipakai user). */
 .foot-profile{width:42px;height:42px;border-radius:12px;flex:none;cursor:pointer;display:grid;place-items:center;background:#E1E7EE;border:1px solid var(--line);color:#454F59;transition:transform .15s,filter .15s;}
 .foot-profile:hover{transform:scale(1.08);filter:brightness(1.05);}
+.foot-profile.has-art{padding:0;overflow:hidden;background:#0e0b0d;border-color:var(--line2);}
+.foot-profile.has-art img{width:100%;height:100%;object-fit:cover;object-position:top;border-radius:11px;display:block;}
 /* Dock sekarang STATIS di dalam footer (baris), bukan fixed lagi. */
 .center-dock{position:static;display:flex;flex-direction:row;align-items:center;gap:12px;}
 /* Weather di footer: kartu di ATAS, chip timer di BAWAH, ditengahin. */
@@ -3059,6 +3061,20 @@ function domainVoid(){return;/*animasi skill dihapus*/
 const app=document.getElementById("app");
 const ROUTES={"#/lobby":"LOBBY","#/":"STORY","#/raid":"BOSS RAID","#/tower":"SKY TOWER","#/settings":"PENGATURAN"};
 function route(){const h=location.hash;return ROUTES[h]?h:"#/lobby";}
+// Button profil footer = MUKA kartu utama (deck slot 1), di-crop ke muka pakai .pos kartu.
+function renderFootProfile(){
+  const b=document.getElementById('footAv'); if(!b) return;
+  const eq=equipped(); const cid=eq&&eq.char;
+  const art=(cid&&CARDS[cid])?cardImg(cid):"";
+  if(art){
+    const pos=CARDS[cid].pos?` style="object-position:${CARDS[cid].pos}"`:'';
+    b.innerHTML=`<img src="${art}" alt="${cardName(cid)}" title="${cardName(cid)}"${pos}>`;
+    b.classList.add('has-art');
+  }else{
+    b.innerHTML='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6.5 8-6.5S20 16 20 20"/></svg>';
+    b.classList.remove('has-art');
+  }
+}
 function renderShell(){
   document.getElementById("coinVal").textContent=fmt(state.coins);
   const rv=document.getElementById("raidVal");if(rv)rv.textContent=fmt(state.raidTokens||0);
@@ -3086,6 +3102,7 @@ function renderShell(){
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.route===route()));
   try{const pm=document.getElementById("profModal");if(pm&&pm.style.display!=="none"&&pm.style.display!=="")renderProfile();}catch(e){}
   try{renderWeatherDock();startWeatherTick();}catch(e){}
+  try{renderFootProfile();}catch(e){}
 }
 
 /* =============== DAILY LOGIN 7 HARI =============== */
