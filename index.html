@@ -3040,6 +3040,20 @@ function impactBoom(){
     s.connect(g);g.connect(a.destination);s.start(t0);s.stop(t0+.6);
   }catch(e){}
 }
+/* Dentuman crit: langsung (tanpa delay), pendek, nendang — di-layer di atas sfx.crit() */
+function critBoom(){
+  if(state.muted)return;
+  try{
+    const a=actxOf(),t0=a.currentTime;
+    const s=a.createOscillator();s.type="sine";
+    s.frequency.setValueAtTime(150,t0);s.frequency.exponentialRampToValueAtTime(38,t0+.28);
+    const g=a.createGain();
+    g.gain.setValueAtTime(.0001,t0);
+    g.gain.exponentialRampToValueAtTime(.5,t0+.02);
+    g.gain.exponentialRampToValueAtTime(.0001,t0+.32);
+    s.connect(g);g.connect(a.destination);s.start(t0);s.stop(t0+.34);
+  }catch(e){}
+}
 const fightAudio=new Audio("assets/audio/fight.mp3");
 fightAudio.preload="auto";
 const swordAudio=new Audio("assets/audio/sword.mp3");
@@ -4169,7 +4183,7 @@ function performAttack(o){
       if(s.void){anim(D,"hit");setTimeout(()=>floatText(D,"VOID","miss"),120);return;}
       const dl=dlyAt(i),ft=dl+(md?40:hoff);
       if(!galaxy&&!md&&(o.domainStrike||(id!=="CH_EX_MADARA"&&id!=="CH_EX_GOJO")))setTimeout(()=>playClip(punchAudio),dl);
-      setTimeout(()=>{if(bt&&!bt.over){anim(D,"hit",ultBarrage);if(!ultBarrage&&!galaxy){const big=!!(o.crit&&i===shots.length-1);impactFx(D,big);shakeScreen(big);hitStop(big?140:80);if(big)sfx.crit();}}},dl+jwLag);
+      setTimeout(()=>{if(bt&&!bt.over){anim(D,"hit",ultBarrage);if(!ultBarrage&&!galaxy){const big=!!(o.crit&&i===shots.length-1);impactFx(D,big);shakeScreen(big);hitStop(big?140:80);if(big)sfx.crit(),critBoom();}}},dl+jwLag);
       cum+=s.d;barEnd=Math.max(barEnd,ft);const stepHp=hpAt(cum);
       setTimeout(()=>floatText(D,"-"+fmt(s.d),(o.crit&&i===shots.length-1)?"crit":""),ft);
       setTimeout(()=>setBar(o.barId,o.barTid,stepHp,o.defMax),ft);
