@@ -105,10 +105,16 @@ body.on-lobby .hub-mid{max-width:min(400px,calc((100vh - 210px) * .74))}
 .foot-profile.has-art img{width:100%;height:100%;object-fit:cover;object-position:top;border-radius:11px;display:block;}
 /* Dock sekarang STATIS di dalam footer (baris), bukan fixed lagi. */
 .center-dock{position:static;display:flex;flex-direction:row;align-items:center;gap:12px;}
-/* Kartu weatherOnly di POJOK KIRI BAWAH, ukuran + gaya kayak kartu index (.ix-cell 72px).
-   Nongol cuma pas lobby + weather aktif (.show). Hover = reveal kartu penuh (wcHoverBind). */
-.weather-cards{display:none;position:fixed;left:20px;bottom:20px;z-index:99;gap:8px;flex-wrap:nowrap;align-items:flex-end;}
-body.on-lobby .weather-cards.show{display:flex;}
+/* PANEL WEATHER GABUNGAN (pojok kiri bawah): nama+timer ATAS, baris kartu index-style TENGAH,
+   buff luck/rollspeed BAWAH. Nongol cuma pas lobby + weather aktif (.show). --wc = warna weather. */
+.weather-panel{display:none;position:fixed;left:20px;bottom:20px;z-index:99;flex-direction:column;gap:8px;padding:10px 12px;border-radius:14px;background:var(--panel);border:1px solid var(--wc,var(--line2));box-shadow:0 10px 30px rgba(18,28,38,.35);}
+body.on-lobby .weather-panel.show{display:flex;}
+.wp-head{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.wp-name{display:flex;align-items:center;gap:6px;font-family:"Barlow Condensed";font-weight:800;font-size:16px;letter-spacing:.04em;color:#20161a;text-transform:uppercase;}
+.wp-name .wp-ic{font-size:15px;}
+.wp-timer{font-family:"Barlow Condensed";font-weight:700;font-size:11px;letter-spacing:.04em;color:var(--wc,#38b7ff);background:color-mix(in srgb,var(--wc,#38b7ff) 14%,transparent);border:1px solid color-mix(in srgb,var(--wc,#38b7ff) 40%,transparent);border-radius:999px;padding:3px 9px;white-space:nowrap;font-variant-numeric:tabular-nums;}
+.wp-cards{display:flex;gap:7px;flex-wrap:nowrap;}
+.wp-buff{font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.03em;text-align:center;color:var(--wc,#38b7ff);}
 .wc-slot{position:relative;width:55px;height:55px;aspect-ratio:1/1;border:2px solid var(--line2);border-radius:10px;overflow:hidden;background:linear-gradient(160deg,#FFFFFF,#EEF2F6);cursor:pointer;opacity:.42;filter:saturate(.35) brightness(.82);transition:opacity .2s,filter .2s,box-shadow .2s;}
 .wc-slot .idx-art{position:absolute;inset:0;}
 .wc-slot .idx-art img,.wc-slot .idx-art video{width:100%;height:100%;object-fit:cover;object-position:top;}
@@ -117,13 +123,6 @@ body.on-lobby .weather-cards.show{display:flex;}
 .wc-slot.active{opacity:1;filter:none;box-shadow:0 0 0 2px var(--wc,#38b7ff),0 8px 20px color-mix(in srgb,var(--wc,#38b7ff) 34%,transparent);}
 .wc-slot.active .idx-body{background:linear-gradient(transparent,rgba(0,0,0,.72));}
 .wc-slot.active .wc-chance{color:var(--wc,#38b7ff);text-shadow:0 1px 3px rgba(0,0,0,.6);}
-/* Weather di footer: kartu di ATAS, chip timer di BAWAH, ditengahin. */
-.weather-dock{display:flex;flex-direction:column;align-items:center;gap:7px;}
-.weather-dock:empty{display:none;}
-.wd-chip{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;border:2px solid var(--wdc,var(--line2));background:var(--panel);color:#fff;font-family:"Barlow Condensed";font-weight:800;font-size:14px;letter-spacing:.06em;box-shadow:0 4px 14px rgba(18,28,38,.35);animation:wd-glow 2s ease-in-out infinite;}
-.wd-chip .wd-ic{font-size:16px;}
-.wd-chip .wd-time{color:var(--wdc,var(--cyan));font-variant-numeric:tabular-nums;}
-@keyframes wd-glow{0%,100%{box-shadow:0 4px 14px rgba(18,28,38,.35);}50%{box-shadow:0 6px 20px color-mix(in srgb,var(--wdc,#38b7ff) 45%,transparent);}}
 .wd-actions{display:flex;gap:6px;}
 .wd-btn{padding:6px 12px;border-radius:999px;border:2px solid var(--line2);background:var(--panel);color:var(--text);font-family:"Barlow Condensed";font-weight:800;font-size:13px;letter-spacing:.08em;cursor:pointer;transition:.15s;box-shadow:0 3px 10px rgba(18,28,38,.28);}
 .wd-btn:hover{transform:scale(1.05);}
@@ -1574,15 +1573,15 @@ body.battle-full .stat svg{flex:none}
 
 <div id="fightFx"><div class="ff-slash a"></div><div class="ff-slash b"></div><div class="ff-word">FIGHT</div></div>
 
-<!-- ====== KARTU WEATHER CORNER: 4 kartu weatherOnly ukuran kayak index card, pojok kiri
-     bawah, nongol cuma pas weather aktif (class .show). DI LUAR #app biar tetap hidup. ====== -->
-<div id="weatherCards" class="weather-cards"></div>
+<!-- ====== PANEL WEATHER GABUNGAN (pojok kiri bawah): nama + timer di atas, baris kartu
+     weatherOnly (gaya index) di tengah, buff luck/rollspeed di bawah. Nongol cuma pas
+     lobby + weather aktif (class .show). DI LUAR #app biar tetap hidup. ====== -->
+<div id="weatherPanel" class="weather-panel"></div>
 
-<!-- ====== FOOTER LOBBY = KARTU MELAYANG: satu bar berisi profile + weather timer
-     + dock (backpack/roll/AUTO), semua di TENGAH. DI LUAR #app biar interval roll & panel
-     dek tetap hidup saat pindah layar. Hanya tampil di lobby (class .on-lobby dari bfSync). ====== -->
+<!-- ====== FOOTER LOBBY = KARTU MELAYANG: profile + dock (backpack/roll/AUTO), di TENGAH.
+     DI LUAR #app biar interval roll & panel dek tetap hidup saat pindah layar. Hanya tampil
+     di lobby (class .on-lobby dari bfSync). ====== -->
 <div class="lobby-footer">
-  <div id="weatherDock" class="weather-dock"></div>
   <div class="foot-main">
     <button class="foot-profile" id="footAv" type="button" title="Buka profil"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6.5 8-6.5S20 16 20 20"/></svg></button>
     <div class="center-dock">
@@ -1905,34 +1904,26 @@ function buyWeatherPotion(price){
   return {ok:true};
 }
 const WEATHER_POTION_PRICE=5000;
-/* Lobby corner = CUMA chip weather + countdown (potion diurus dari Backpack > Item). Dipanggil tiap renderShell & tick detik. */
+/* Panel weather GABUNGAN (pojok kiri bawah): nama + "Ends in Xs" di atas, baris kartu
+   weatherOnly (gaya index, hover reveal penuh) di tengah, buff luck/rollspeed di bawah.
+   Nongol cuma pas weather aktif. Dipanggil tiap renderShell & tick detik. */
 function renderWeatherDock(){
-  const dock=document.getElementById("weatherDock");if(!dock)return;
+  const panel=document.getElementById("weatherPanel");if(!panel)return;
   const id=activeWeatherId();const w=id?WEATHER[id]:null;
-  if(!w){dock.innerHTML="";dock.classList.remove("on");}
-  else{
-    const left=Math.max(0,(state.weather.endsAt-Date.now()));
-    dock.classList.add("on");
-    dock.innerHTML=`<div class="wd-chip" style="--wdc:${w.color}"><span class="wd-ic">${w.icon}</span><span>${w.name}</span><span class="wd-time">${fmtShortCountdown(left)}</span></div>`;
-  }
-  renderWeatherCards();
-}
-/* Panel kartu weatherOnly (pojok kiri bawah). Nongol cuma pas weather aktif: tiap kartu =
-   kotak gaya index (72px), art + badge "1 in X" (luckChance live, ikut ke-boost weather).
-   Hover -> reveal kartu penuh persis dek (hoverPlace). */
-function renderWeatherCards(){
-  const el=document.getElementById("weatherCards");if(!el)return;
-  const aw=activeWeatherId();
   const cards=MASTER_CARD_INDEX.filter(c=>c.weatherOnly);
-  if(!aw||!cards.length){el.classList.remove("show");el.innerHTML="";return;}
-  el.innerHTML=cards.map(c=>{
-    const on=c.weatherOnly===aw;const cw=WEATHER[c.weatherOnly];
-    return `<div class="wc-slot${on?' active':''}" data-wc="${c.char_id}"${on?` style="--wc:${cw.color}"`:""}>
-      <span class="idx-art"><img src="${c.sprite_asset}" alt=""></span>
-      <span class="idx-body"><span class="wc-chance">${rarityText(c.tier,luckChance(c.char_id))}</span></span>
-    </div>`;
-  }).join("");
-  el.classList.add("show");
+  if(!w||!cards.length){panel.classList.remove("show");panel.innerHTML="";return;}
+  const secs=Math.max(0,Math.ceil((state.weather.endsAt-Date.now())/1000));
+  panel.style.setProperty("--wc",w.color);
+  panel.innerHTML=`<div class="wp-head"><span class="wp-name"><span class="wp-ic">${w.icon}</span>${w.name}</span><span class="wp-timer">Ends in ${secs}s</span></div>`
+    +`<div class="wp-cards">`+cards.map(c=>{
+      const on=c.weatherOnly===id;const cw=WEATHER[c.weatherOnly];
+      return `<div class="wc-slot${on?' active':''}" data-wc="${c.char_id}"${on?` style="--wc:${cw.color}"`:""}>
+        <span class="idx-art"><img src="${c.sprite_asset}" alt=""></span>
+        <span class="idx-body"><span class="wc-chance">${rarityText(c.tier,luckChance(c.char_id))}</span></span>
+      </div>`;
+    }).join("")+`</div>`
+    +`<div class="wp-buff">${w.luckBonus}x Luck · ${w.speedBonus}x Rollspeed</div>`;
+  panel.classList.add("show");
   wcHoverBind();
 }
 function fmtShortCountdown(ms){const s=Math.max(0,Math.floor(ms/1000));const p=x=>String(x).padStart(2,"0");return p(Math.floor(s/60))+":"+p(s%60);}
