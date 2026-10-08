@@ -277,6 +277,22 @@ body.on-lobby .weather-panel.show{display:flex;}
 .item-pop-ctl{display:flex;flex-direction:column;gap:8px;}
 .item-pop-cancel{font-family:"Barlow Condensed";font-weight:800;font-size:13px;letter-spacing:.08em;padding:9px;border-radius:10px;border:2px solid var(--line2);background:transparent;color:var(--muted);cursor:pointer;transition:.15s;}
 .item-pop-cancel:hover{color:var(--text);}
+/* Infinite Tower: baris tombol hub + Toko Inf */
+.tw-hubbtns{display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;}
+.tw-hubbtns .tw-go{flex:1;min-width:180px;}
+.tw-shop{font-family:"Barlow Condensed";font-weight:800;font-size:16px;letter-spacing:.08em;padding:14px 22px;border-radius:14px;border:2px solid #c4b5fd;background:linear-gradient(160deg,#241a34,#160f22);color:#c4b5fd;cursor:pointer;transition:.15s;flex:0 0 auto;}
+.tw-shop:hover{transform:translateY(-2px);filter:brightness(1.12);}
+.inf-shop{display:flex;flex-direction:column;gap:12px;margin-top:16px;}
+.inf-item{display:flex;align-items:center;gap:14px;border:1px solid var(--line2);border-radius:14px;background:linear-gradient(160deg,#171012,#0d0a0c);padding:14px 16px;}
+.inf-item-ic{font-size:34px;line-height:1;width:48px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+.inf-item-ic img{width:44px;height:44px;object-fit:contain;}
+.inf-item-info{flex:1;min-width:0;}
+.inf-item-name{font-family:"Barlow Condensed";font-weight:800;font-size:16px;letter-spacing:.05em;color:#fff;}
+.inf-item-desc{font-size:11px;line-height:1.4;color:var(--muted);margin-top:3px;}
+.inf-item-buy{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:1px;font-family:"Barlow Condensed";font-weight:800;font-size:18px;color:#c4b5fd;border:2px solid #c4b5fd;background:transparent;border-radius:10px;padding:8px 14px;cursor:pointer;transition:.15s;}
+.inf-item-buy small{font-size:9px;letter-spacing:.1em;}
+.inf-item-buy:not(:disabled):hover{background:#c4b5fd;color:#160f22;transform:scale(1.05);}
+.inf-item-buy:disabled{opacity:.4;cursor:not-allowed;}
 .bp-filter{position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;gap:6px;padding:2px 0 10px;margin-bottom:4px;background:var(--panel);}
 .bp-fchip{display:inline-flex;align-items:center;gap:5px;font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.06em;color:var(--muted);border:1px solid var(--line2);background:var(--panel2);border-radius:8px;padding:3px 9px;cursor:pointer;transition:filter .12s,border-color .12s;}
 .bp-fchip:hover{filter:brightness(1.15);}
@@ -1889,6 +1905,7 @@ const RNG_TOTAL_WEIGHT=1000000; // total weight untuk probability
    Weather aktif = window 5 menit real-time (Date.now()+300000, disimpan sbg endsAt biar tahan reload).
    Pas aktif: totalLuck x luckBonus, roll speed x speedBonus, pool nambah kartu weatherOnly yang cocok. */
 const WEATHER_MS=300000; // 5 menit
+const MYTHIC_WEATHER_MS=1800000; // 30 menit (Mythic Weather Potion)
 const WEATHERS=[
   {id:"storm",      name:"BADAI",      icon:"⛈",  dropWeight:30, luckBonus:1.2, speedBonus:1.5, color:"#7dd3fc"},
   {id:"celestial",  name:"CELESTIAL",  icon:"✨",  dropWeight:20, luckBonus:2.0, speedBonus:2.0, color:"#fcd34d"},
@@ -1957,6 +1974,16 @@ function useWeatherPotion(){
   const w=rollWeather();
   state.weatherBest=betterWeather(state.weatherBest,w.id);
   state.weather={id:w.id,endsAt:Date.now()+WEATHER_MS};
+  save();
+  return {ok:true,weather:w};
+}
+/* Mythic Weather Potion: sama kayak weather biasa tapi cuacanya bertahan 30 menit. */
+function useMythicWeatherPotion(){
+  if(!state||(state.mythicPotions||0)<1)return {ok:false,reason:"NO_POTION"};
+  state.mythicPotions--;
+  const w=rollWeather();
+  state.weatherBest=betterWeather(state.weatherBest,w.id);
+  state.weather={id:w.id,endsAt:Date.now()+MYTHIC_WEATHER_MS};
   save();
   return {ok:true,weather:w};
 }
@@ -2376,10 +2403,13 @@ function bpItemDef(kind){
   if(kind==='speed'){const b=activeSpeedBuff();return{kind,name:'SPEED POTION',icon:'assets/images/icon-speed.png',emoji:'⚡',cnt:state.speedPotions||0,
     desc:'+1× Roll Speed selama 5 menit (kena cap 5×). Pakai lagi saat masih aktif = nambah stack + refresh durasi.',
     active:b?`<br><strong style="color:#fcd34d">Aktif: +${b}× SPEED</strong>`:'',use:'bpUseSpeedPotion()'};}
+  if(kind==='mythic'){const aw=activeWeatherId();return{kind,name:'MYTHIC WEATHER POTION',icon:'assets/images/icon-mythic.png',emoji:'✨',cnt:state.mythicPotions||0,
+    desc:'Seperti Weather Potion, tapi cuaca yang muncul bertahan 30 MENIT.',
+    active:aw?`<br><strong style="color:${WEATHER[aw].color}">Aktif: ${WEATHER[aw].icon} ${WEATHER[aw].name}</strong>`:'',use:'bpUseMythicPotion()'};}
   return null;
 }
 function renderBpItems(){
-  const kinds=['potion','luck','speed'];
+  const kinds=['potion','mythic','luck','speed'];
   const tiles=kinds.map(k=>{const d=bpItemDef(k);return `<div class="bp-itemtile${d.cnt>0?'':' empty'}" onclick="bpItemPop('${k}')"><div class="bp-itemtile-ic"><img src="${d.icon}" alt="${d.name}" onerror="this.parentNode.textContent='${d.emoji}'"></div><span class="bp-itemtile-cnt">×${fmt(d.cnt)}</span></div>`;}).join('');
   return `<div class="bp-h">ITEM</div><div class="bp-itemgrid">${tiles}</div>`;
 }
@@ -2421,6 +2451,13 @@ function bpUseSpeedPotion(){
   if(!r.ok){toast("Potion habis","GAK ADA POTION","#f87171");return;}
   beep(720,.14,"square",.08);setTimeout(()=>beep(980,.14,"square",.07),110);
   toast("SPEED POTION","+"+r.mult+"× SPEED · 5 MENIT","#fcd34d");
+  bpItemPopClose();renderShell();renderBackpackPanel();
+}
+function bpUseMythicPotion(){
+  const r=useMythicWeatherPotion();
+  if(!r.ok){toast("Potion habis","GAK ADA POTION","#f87171");return;}
+  beep(520,.16,"triangle",.1);setTimeout(()=>beep(880,.2,"triangle",.1),120);
+  toast(`${r.weather.icon} ${r.weather.name}`,"WEATHER AKTIF · 30 MENIT",r.weather.color);
   bpItemPopClose();renderShell();renderBackpackPanel();
 }
 /* ====== TAB TREE: pohon skill. Root di tengah, dua cabang menjalar (LUCK kiri | SPEED kanan).
@@ -2707,7 +2744,7 @@ function freshState(){
   const start=s0?{id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,fav:false,lock:false,mut:"none",shiny:false,trait:"none",count:1}:null;
   const newState={coins:1000,raidTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},tower:{best:0},
     cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],history:[],battle:null,
-    player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1,sp:0,tree:{}},weather:null,weatherBest:null,potions:0,luckPotions:0,speedPotions:0,luckBuff:null,speedBuff:null,infTokens:0};
+    player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1,sp:0,tree:{}},weather:null,weatherBest:null,potions:0,mythicPotions:0,luckPotions:0,speedPotions:0,luckBuff:null,speedBuff:null,infTokens:0};
   console.log('[FRESH STATE] Initialized player:',newState.player);
   return newState;
 }
@@ -2793,6 +2830,7 @@ function loadStateFor(name){
   if(typeof state.tower.best!=="number"||state.tower.best<0)state.tower.best=0;
   /* WEATHER + POTION: migrasi field baru + expire otomatis kalau window real-time udah lewat. */
   if(typeof state.potions!=="number"||state.potions<0)state.potions=0;
+  if(typeof state.mythicPotions!=="number"||state.mythicPotions<0)state.mythicPotions=0;
   if(typeof state.luckPotions!=="number"||state.luckPotions<0)state.luckPotions=0;
   if(typeof state.speedPotions!=="number"||state.speedPotions<0)state.speedPotions=0;
   if(typeof state.infTokens!=="number"||state.infTokens<0)state.infTokens=0;
@@ -4456,6 +4494,7 @@ function towerStartRun(){
 }
 function renderTower(){
   if(towerView==="battle"&&towerRun){renderTowerBattle();return;}
+  if(towerView==="shop"){renderTowerShop();return;}
   renderTowerHub();
 }
 function towerPreviewCard(w,isBoss,role){
@@ -4476,13 +4515,57 @@ function renderTowerHub(){
   <div class="tw-banner">
     <div class="tw-title disp">INFINITE TOWER</div>
     <div class="tw-sub">MENARA TANPA UJUNG &middot; SEKALI JALAN DARI LANTAI 1 SAMPAI KALAH</div>
-    <div class="tw-stats"><div class="tbs"><span>BEST LANTAI</span><b>${best}</b></div><div class="tbs"><span>ROLL / LANTAI</span><b>50 @50%</b></div></div>
+    <div class="tw-stats"><div class="tbs"><span>BEST LANTAI</span><b>${best}</b></div><div class="tbs"><span>ROLL / LANTAI</span><b>50 @50%</b></div><div class="tbs"><span>TOKEN INF</span><b>${fmt(state.infTokens||0)}</b></div></div>
   </div>
   <div class="eyebrow" style="margin:16px 0 8px">MUSUH &middot; LANTAI 1</div>
   <div class="tw-foes">${waves.map((w,i)=>towerPreviewCard(w,boss,i===0?"main":"tag")).join("")}</div>
-  <button class="raid-teleport tw-go" id="towerGo">&#9876; MULAI RUN</button>
-  <p class="tw-note">Tiap lantai ditaklukkan: musuh mati &rarr; otomatis naik ke lantai berikutnya (tanpa konfirmasi). Peluang hadiah per lantai: <b>Instant roll 50 kartu (50%)</b> &middot; Weather Potion (5%) &middot; Luck Potion +1 (10%) &middot; Speed Potion +1 (10%). Run berhenti saat kalah &mdash; semua hasil roll dari lantai 1 s/d sejauh kamu bertahan jadi milikmu.</p>`;
+  <div class="tw-hubbtns">
+    <button class="raid-teleport tw-go" id="towerGo">&#9876; MULAI RUN</button>
+    <button class="tw-shop" id="towerShop">&#9831; TOKO INF</button>
+  </div>
+  <p class="tw-note">Tiap lantai ditaklukkan: musuh mati &rarr; otomatis naik ke lantai berikutnya (tanpa konfirmasi). Peluang hadiah per lantai: <b>Instant roll 50 kartu (50%)</b> &middot; Weather Potion (5%) &middot; Luck Potion +1 (10%) &middot; Speed Potion +1 (10%). Tiap lantai juga kasih <b>+1 Token Inf</b> (bos +5) buat dibelanjakan di TOKO INF.</p>`;
   const g=document.getElementById("towerGo");if(g)g.onclick=()=>{sfx.hit();towerStartRun();};
+  const s=document.getElementById("towerShop");if(s)s.onclick=()=>{sfx.hit();towerView="shop";render();};
+}
+function renderTowerShop(){
+  if(!state.tower)state.tower={best:0};
+  const tok=state.infTokens||0;
+  const ICON={weather:'<img src="assets/images/icon-potion.png" onerror="this.parentNode.textContent=\'🧪\'">',mythic:'✨',luck:'🍀',speed:'⚡',roll100:'🎴'};
+  const item=(k,label,desc,cost)=>`<div class="inf-item">
+      <div class="inf-item-ic">${ICON[k]||'🧪'}</div>
+      <div class="inf-item-info"><div class="inf-item-name">${label}</div><div class="inf-item-desc">${desc}</div></div>
+      <button class="inf-item-buy" ${tok<cost?'disabled':''} onclick="infBuy('${k}')">${cost}<small>TOKEN</small></button>
+    </div>`;
+  app.innerHTML=`
+  <div class="tw-banner">
+    <div class="tw-title disp">TOKO INF</div>
+    <div class="tw-sub">BELANJA PAKAI TOKEN INF &middot; HASIL NAIK LANTAI</div>
+    <div class="tw-stats"><div class="tbs"><span>TOKEN INF</span><b>${fmt(tok)}</b></div><div class="tbs"><span>MYTHIC</span><b>${fmt(state.mythicPotions||0)}</b></div></div>
+  </div>
+  <div class="inf-shop">
+    ${item('weather','WEATHER POTION','Buka 1 cuaca acak, bertahan 5 menit.',10)}
+    ${item('luck','LUCK POTION','+1 Luck selama 5 menit.',10)}
+    ${item('speed','SPEED POTION','+1× Roll Speed selama 5 menit.',10)}
+    ${item('roll100','INSTANT ROLL ×100','Langsung roll 100 kartu, masuk koleksi.',20)}
+    ${item('mythic','MYTHIC WEATHER POTION','Upgrade 1 Weather Potion -> Mythic: cuaca bertahan 30 MENIT. Butuh 1 Weather Potion.',50)}
+  </div>
+  <button class="raid-teleport tw-go" id="towerBack" style="margin-top:16px">&#8592; KEMBALI</button>`;
+  const b=document.getElementById("towerBack"); if(b)b.onclick=()=>{towerView="hub";render();};
+}
+function infBuy(kind){
+  const cost={weather:10,luck:10,speed:10,roll100:20,mythic:50}[kind]; if(cost==null)return;
+  if((state.infTokens||0)<cost){toast("TOKEN KURANG","TOKEN INF TIDAK CUKUP","#f87171");return;}
+  if(kind==='mythic'&&(state.potions||0)<1){toast("Butuh 1 Weather Potion","GAK BISA","#f87171");return;}
+  state.infTokens-=cost;
+  if(kind==='weather')state.potions=(state.potions||0)+1;
+  else if(kind==='luck')state.luckPotions=(state.luckPotions||0)+1;
+  else if(kind==='speed')state.speedPotions=(state.speedPotions||0)+1;
+  else if(kind==='mythic'){state.potions--;state.mythicPotions=(state.mythicPotions||0)+1;}
+  else if(kind==='roll100')instantRoll(100);
+  save(); beep(660,.1,"sine",.07);
+  const label={weather:'WEATHER POTION',luck:'LUCK POTION',speed:'SPEED POTION',roll100:'INSTANT ROLL ×100',mythic:'MYTHIC POTION'}[kind];
+  toast(label,"-"+cost+" TOKEN","#c4b5fd");
+  renderShell(); if(towerView==="shop")render();
 }
 function renderTowerBattle(){
   const w=towerRun.waves[towerRun.idx];
@@ -4574,10 +4657,13 @@ function towerEnd(win){
     if(Math.random()<0.05){state.potions=(state.potions||0)+1;towerRun.drops.weather++;}
     if(Math.random()<0.10){state.luckPotions=(state.luckPotions||0)+1;towerRun.drops.luck++;}
     if(Math.random()<0.10){state.speedPotions=(state.speedPotions||0)+1;towerRun.drops.speed++;}
+    /* Token Inf: +1 per lantai, +5 per lantai bos. */
+    const tok=towerIsBossFloor(f)?5:1;
+    state.infTokens=(state.infTokens||0)+tok; towerRun.tokens=(towerRun.tokens||0)+tok;
     towerRun.cleared=f; towerRun.coins=(towerRun.coins||0)+r.coins;
     state.tower.best=Math.max(state.tower.best||0,f);
     save(); renderShell(); fanfare();
-    toast("LANTAI "+f+" DITAKLUKKAN",(gotRoll?"+50 ROLL · ":"NO ROLL · ")+"+"+fmt(r.coins)+" COIN","#7df9ff");
+    toast("LANTAI "+f+" DITAKLUKKAN",(gotRoll?"+50 ROLL · ":"NO ROLL · ")+"+"+tok+" TOKEN","#7df9ff");
     bt=null;
     towerEnter(f+1);
     return;
@@ -4591,8 +4677,9 @@ function towerEnd(win){
   const ti=document.getElementById("ov-title"); ti.textContent="KALAH"; ti.className="ov-title disp lose";
   const rw=document.getElementById("ov-reward"); rw.style.display="inline-flex";
   rw.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 9.5h4.5a2 2 0 0 1 0 4H10a2 2 0 0 0 0 4h5"/></svg> +'+fmt(towerRun.coins||0)+' <small>COIN</small>'
-    +'<span style="margin-left:12px;color:#7df9ff">KARTU +'+fmt(towerRun.cards||0)+'</span>';
-  document.getElementById("ov-note").textContent="Lantai ditaklukkan: "+reached+" · Instant roll: "+fmt(towerRun.cards||0)+" kartu · Drop: WEATHER x"+dr.weather+" · LUCK x"+dr.luck+" · SPEED x"+dr.speed+((state.tower.best||0)===reached&&reached>0?" · REKOR BARU!":"")+".";
+    +'<span style="margin-left:12px;color:#7df9ff">KARTU +'+fmt(towerRun.cards||0)+'</span>'
+    +'<span style="margin-left:12px;color:#c4b5fd">TOKEN +'+fmt(towerRun.tokens||0)+'</span>';
+  document.getElementById("ov-note").textContent="Lantai ditaklukkan: "+reached+" · Instant roll: "+fmt(towerRun.cards||0)+" kartu · Token: "+fmt(towerRun.tokens||0)+" · Drop: WEATHER x"+dr.weather+" · LUCK x"+dr.luck+" · SPEED x"+dr.speed+((state.tower.best||0)===reached&&reached>0?" · REKOR BARU!":"")+".";
   const nx=document.getElementById("ov-next"); nx.style.display=""; nx.textContent="KEMBALI KE HUB";
   nx.onclick=()=>{ov.classList.remove("show");stopBattleLoop();towerView="hub";render();};
   document.getElementById("ov-again").onclick=()=>{ov.classList.remove("show");stopBattleLoop();towerStartRun();};
