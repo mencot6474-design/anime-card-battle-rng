@@ -109,6 +109,9 @@ body.on-lobby .hub-mid{max-width:min(400px,calc((100vh - 210px) * .74))}
    buff luck/rollspeed BAWAH. Nongol cuma pas lobby + weather aktif (.show). --wc = warna weather. */
 .weather-panel{display:none;position:fixed;left:20px;bottom:20px;z-index:99;flex-direction:column;gap:8px;padding:10px 12px;border-radius:14px;background:var(--panel);border:1px solid var(--wc,var(--line2));box-shadow:0 10px 30px rgba(18,28,38,.35);}
 body.on-lobby .weather-panel.show{display:flex;}
+/* Layar sempit: footer (centered) bisa nyentuh panel kiri -> dinaikin duduk pas di ATAS footer
+   (footer = bottom:14 + tinggi ~64 = 78px, jadi bottom:90 ngasih gap ~12px). Fullscreen tetap pojok. */
+@media(max-width:820px){.weather-panel{bottom:90px;}}
 .wp-head{display:flex;align-items:center;justify-content:space-between;gap:10px;}
 .wp-name{display:flex;align-items:center;gap:6px;font-family:"Barlow Condensed";font-weight:800;font-size:16px;letter-spacing:.04em;color:#20161a;text-transform:uppercase;}
 .wp-name .wp-ic{font-size:15px;}
