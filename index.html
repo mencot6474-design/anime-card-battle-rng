@@ -1143,7 +1143,7 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 .h-l1{grid-column:1;grid-row:1}.h-l2{grid-column:1;grid-row:2}
 .h-r1{grid-column:3;grid-row:1}.h-r2{grid-column:3;grid-row:2}
 .h-mission{grid-column:2;grid-row:3;min-height:clamp(72px,12vh,104px)}
-.hub-mid{grid-column:2;grid-row:1 / span 2;display:flex;flex-direction:column;gap:clamp(8px,1.4vh,14px);align-items:center;width:100%;max-width:min(400px,52vh);justify-self:center}
+.hub-mid{grid-column:2;grid-row:1 / span 2;display:flex;flex-direction:column;gap:clamp(8px,1.4vh,14px);align-items:center;justify-content:space-between;width:100%;max-width:min(400px,52vh);justify-self:center}
 /* LOBBY-CLEAN: kartu tengah jadi showcase art — buang paragraf skill/desc yang numpuk
    (nama/chance/badge udah di sudut, HP/ATK tetep). Detail penuh tetap via hover & backpack. */
 .lobby-hub .hub-center .hc-skill,.lobby-hub .hub-center .hc-desc{display:none}
@@ -1170,7 +1170,41 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
    nempel frame. Lebain dikit khusus lobby biar napas. Parallax (transform) gak kesenggol. */
 .lobby-hub #hubCard .hc-name-top{top:18px;left:18px}
 .lobby-hub #hubCard .hc-chance{top:52px;left:18px}
-.lobby-hub #hubCard .hc-badges{top:18px;right:18px}
+.lobby-hub #hubCard .hc-badges{top:-16px;right:-14px;gap:6px}
+/* ===== Port kartu showcase dari _tmp/lobby-proto-v2 (khusus #hubCard lobby):
+   ring glow warna tier + nama/chance nongol keluar frame kiri-atas + bob melayang.
+   Scope id #hubCard → backpack/roll showcase (template sama) tetap desain lama. ===== */
+.lobby-hub .card-float{width:min(100%,36vh);margin-top:auto;margin-bottom:auto;perspective:900px;animation:cardBob 5.5s ease-in-out infinite}
+@keyframes cardBob{0%,100%{transform:translateY(-6px)}50%{transform:translateY(8px)}}
+.lobby-hub #hubCard{
+  background:linear-gradient(180deg,#1b1418,#0c0a0c);border:none;overflow:visible;
+  box-shadow:0 22px 50px rgba(0,0,0,.6);
+  transition:transform .12s ease-out,filter .12s ease-out}
+/* Ring/glow mutasi-tier di BELAKANG kartu (z:-1) - teks nama/chance/badges selalu di atas */
+.lobby-hub #hubCard::before{content:"";position:absolute;inset:-2px;border-radius:22px;z-index:-1;pointer-events:none;box-shadow:0 0 0 2px var(--tcol,#2F8FE2),0 0 26px 4px color-mix(in srgb,var(--tcol,#2F8FE2) 55%,transparent);transition:box-shadow .2s}
+.lobby-hub #hubCard:hover::before{
+  box-shadow:0 0 0 3px var(--tcol,#2F8FE2),0 0 36px 8px color-mix(in srgb,var(--tcol,#2F8FE2) 60%,transparent),0 26px 60px rgba(0,0,0,.6)}
+/* art & tetap kepotong radius walau kartu overflow:visible */
+.lobby-hub #hubCard .hc-img{overflow:visible;border-radius:inherit}
+.lobby-hub #hubCard .hc-img img,.lobby-hub #hubCard .hc-img video{border-radius:inherit}
+/* nama nongol keluar frame kiri-atas + extrude 3D (gabung translate parallax --pf) */
+.lobby-hub #hubCard .hc-name-top{top:-14px;left:-16px;max-width:none;
+  font-family:"Barlow Condensed";font-weight:800;font-size:clamp(24px,3.2vh,32px);line-height:.98;letter-spacing:.03em;
+  transform:skewX(-4deg) translate(calc(var(--pf,0)*28px),calc(var(--pfy,0)*18px));
+  text-shadow:1px 1px 0 #0b0e14,2px 2px 0 #0b0e14,3px 3px 0 #0b0e14,4px 4px 0 #0b0e14,5px 5px 0 #080a0f,6px 6px 0 #080a0f,
+    7px 9px 16px rgba(0,0,0,.9),0 0 26px color-mix(in srgb,var(--tcol,#2F8FE2) 55%,transparent)}
+/* chance → pill gelap border warna tier, nongol di bawah nama */
+.lobby-hub #hubCard .hc-chance{top:26px;left:-6px;font-family:"Barlow Condensed";font-weight:800;font-size:15px;
+  letter-spacing:.14em;color:var(--tcol,#2F8FE2);padding:2px 10px;border-radius:7px;background:rgba(6,9,14,.88);
+  border:1px solid currentColor;text-shadow:0 0 10px color-mix(in srgb,var(--tcol,#2F8FE2) 70%,transparent);
+  box-shadow:0 6px 14px rgba(0,0,0,.6);
+  transform:skewX(-4deg) translate(calc(var(--pf,0)*22px),calc(var(--pfy,0)*15px))}
+/* bawah kartu: buang panel gradient → stats teks polos ala proto */
+.lobby-hub #hubCard .hc-info{background:none;padding:30px 16px 14px}
+.lobby-hub #hubCard .hc-stats{justify-content:flex-start;gap:18px;font-family:"Barlow Condensed";font-weight:800;
+  font-size:19px;letter-spacing:.04em;text-shadow:0 2px 8px rgba(0,0,0,.95),0 0 12px rgba(0,0,0,.7)}
+.lobby-hub #hubCard .hc-stats .hp{color:#5CF0A8}
+.lobby-hub #hubCard .hc-stats .atk{color:#FFD27A}
 /* Bayangan ngambang: GROUND shadow via ::before di panggung .hub-mid (bukan filter di kartu —
    exGlitch UR/EX ng-Control filter & filter di parent nge-flatten perspective). Elips blur gelap
    di bawah kartu = kerasa melayang, aman buat semua tier, tilt tetep 3D. */
@@ -1234,9 +1268,9 @@ body.on-lobby #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
 .lobby-hub,.lobby-footer,.weather-panel{--text:#F4F7FA;--muted:#C4CDD6;--muted2:#9AA6B2;--cyan:#7DF9FF;--line:rgba(200,210,220,.16);--line2:rgba(200,212,222,.30);color:var(--text)}
 /* Grid asimetris: stage kiri (span 2 baris), tile 2x2 kanan, mission full-width bawah */
 .lobby-hub{grid-template-columns:minmax(320px,5fr) minmax(170px,3.4fr) minmax(170px,3.4fr);
-  grid-template-rows:clamp(110px,26vh,270px) clamp(110px,26vh,270px) auto;
+  grid-template-rows:clamp(110px,27vh,300px) clamp(110px,27vh,300px) auto;
   align-content:start;gap:clamp(12px,2.2vh,24px) clamp(16px,4vw,48px)}
-.lobby-hub .hub-mid{grid-column:1;grid-row:1 / span 2;position:relative}
+.lobby-hub .hub-mid{grid-column:1;grid-row:1 / span 3;position:relative}
 .lobby-hub .h-l1{grid-column:2;grid-row:1}
 .lobby-hub .h-r1{grid-column:3;grid-row:1}
 .lobby-hub .h-l2{grid-column:2;grid-row:2}
@@ -1246,9 +1280,9 @@ body.on-lobby #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
 .lobby-hub .hub-mid .seam{position:absolute;left:50%;top:2%;height:96%;width:3px;transform:translateX(-50%);
   background:linear-gradient(to bottom,transparent,#EAF4FF,transparent);opacity:.4;filter:blur(.6px);
   animation:arSeam 2.6s ease-in-out infinite;pointer-events:none}
-.lobby-hub .stage-eyebrow{align-self:flex-end;font-family:"Barlow Condensed";font-weight:700;font-size:11px;letter-spacing:.22em;color:var(--muted2);display:flex;align-items:center;gap:10px}
+.lobby-hub .stage-eyebrow{position:relative;z-index:6;align-self:flex-end;font-family:"Barlow Condensed";font-weight:700;font-size:11px;letter-spacing:.22em;color:var(--muted2);display:flex;align-items:center;gap:10px}
 .lobby-hub .stage-eyebrow::after{content:"";width:64px;height:1px;background:linear-gradient(90deg,var(--cyan),transparent)}
-.lobby-hub .stage-hint{font-family:"Barlow Condensed";font-weight:700;font-size:11px;letter-spacing:.16em;color:var(--muted2);white-space:nowrap}
+.lobby-hub .stage-hint{position:relative;z-index:5;font-family:"Barlow Condensed";font-weight:700;font-size:11px;letter-spacing:.16em;color:var(--muted2);white-space:nowrap}
 .lobby-hub .stage-hint kbd{font:inherit;border:1px solid var(--line2);border-radius:6px;padding:1px 7px;color:var(--cyan);background:rgba(6,9,14,.7);margin-right:6px}
 /* Tile hub: panel solid gelap ala battle + sweep garis bawah saat hover */
 .lobby-hub .hub-box{background:linear-gradient(160deg,#171012 20%,#0f0b0d 80%);border:1px solid var(--line);
@@ -1675,6 +1709,9 @@ body.on-tower #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
 .tw-hub .tw-stage-hint{position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-family:"Barlow Condensed";
   font-weight:700;font-size:11px;letter-spacing:.18em;color:var(--muted2);white-space:nowrap;z-index:3}
 .tw-hub .tw-stage-hint kbd{font:inherit;border:1px solid var(--line2);border-radius:6px;padding:1px 6px;color:var(--ice);background:rgba(6,9,14,.7)}
+/* header stage: tombol kembali di ATAS eyebrow, pojok kiri atas */
+.tw-hub .tw-stage-top{position:absolute;top:0;left:0;z-index:3;display:flex;flex-direction:column;gap:15px;align-items:flex-start}
+.tw-hub .tw-stage-top .tw-stage-eyebrow{position:static;top:auto;left:auto}
 .tw-hub .twr-watermark{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);font-family:"Barlow Condensed";
   font-weight:800;font-size:clamp(120px,22vh,210px);line-height:1;color:rgba(125,249,255,.055);letter-spacing:-.02em;
   pointer-events:none;user-select:none;z-index:0}
@@ -1771,6 +1808,7 @@ body.on-tower #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
   .tw-hub{grid-template-columns:1fr;height:auto;gap:20px}
   .tw-hub .tw-stage{min-height:52vh}
   .tw-hub .tw-stage-eyebrow,.tw-hub .tw-stage-hint{display:none}
+  .tw-hub .tw-stage-top{position:static;margin-bottom:12px}
   .tw-hub .tw-panel{overflow:visible}
 }
 @media(max-width:520px){
@@ -1833,12 +1871,15 @@ body.on-tower #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
 .tw-hub .sd-mrow .v{font-size:15px;font-weight:800;letter-spacing:.04em;color:#fff}
 .tw-hub .sd-mrow .v.g{color:var(--green)}.tw-hub .sd-mrow .v.c{color:var(--ice)}
 .tw-hub .sd-mrow .v.v{color:var(--violet)}.tw-hub .sd-mrow .v.no{color:#ff8a96}
-/* tombol beli ikut animasi masuk (class terpisah — tombol hub tak terpengaruh) */
-.tw-hub .act.buyswap{animation:twDetailIn .35s cubic-bezier(.2,.9,.3,1) .20s both}
+/* tombol beli ikut animasi masuk (class terpisah — tombol hub tak terpengaruh);
+   flex:0 utk column — jangan warisi flex:1 .act.go (bikin tombol berebut tinggi) */
+.tw-hub .act.buyswap{animation:twDetailIn .35s cubic-bezier(.2,.9,.3,1) .20s both;flex:0 0 auto;width:100%}
 .tw-hub .backlink{align-self:flex-start;display:flex;align-items:center;gap:8px;font-family:"Barlow Condensed";
-  font-weight:800;font-size:13px;letter-spacing:.14em;color:var(--muted2);cursor:pointer;
-  padding:8px 0;transition:color .15s;background:none;border:none}
-.tw-hub .backlink:hover{color:var(--ice)}
+  font-weight:800;font-size:13px;letter-spacing:.14em;color:var(--muted);cursor:pointer;
+  padding:9px 16px;border-radius:999px;border:1px solid var(--line2);
+  background:linear-gradient(160deg,#171012,#0f0b0d);
+  box-shadow:0 8px 20px rgba(0,0,0,.5);transition:color .15s,border-color .15s,transform .15s}
+.tw-hub .backlink:hover{color:var(--ice);border-color:var(--ice);transform:translateY(-2px)}
 @media(max-width:520px){
   .tw-hub .srow{padding:11px 12px;gap:10px}
   .tw-hub .sic{width:40px;height:40px;font-size:20px}
@@ -5079,7 +5120,10 @@ function renderTowerShop(){
   app.innerHTML=`<div class="tw-page">
   <div class="tw-hub">
     <section class="tw-stage">
-      <div class="tw-stage-eyebrow">TOKO INF</div>
+      <div class="tw-stage-top">
+        <button class="backlink" id="shopBack">&#8592; KEMBALI KE TOWER</button>
+        <div class="tw-stage-eyebrow">TOKO INF</div>
+      </div>
       <div class="slist" id="shopList"></div>
       <div class="tw-stage-hint"><kbd>TOKEN</kbd> DIDAPAT TIAP LANTAI DITAKLUKKAN</div>
     </section>
@@ -5097,7 +5141,6 @@ function renderTowerShop(){
       <div class="sdetail" id="shopDetail"></div>
       <button class="act go buyswap" id="shopBuy"></button>
       <p class="tw-note">Tiap lantai ditaklukkan: <b class="v">+1 Token Inf</b> (bos lantai kelipatan 5: <b class="v">+5</b>) &middot; Drop potion per lantai: <b class="c">Weather 5%</b> &middot; Luck 10% &middot; Speed 10%.</p>
-      <button class="backlink" id="shopBack">&#8592; KEMBALI KE TOWER</button>
     </section>
   </div></div>`;
   renderList();renderDetail(true);
@@ -5310,7 +5353,7 @@ function hubCardHtml(eq,idAttr){
   const st=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   const mut=(eq.mut&&eq.mut!=='none')?eq.mut:null;
   const trait=(eq.trait&&eq.trait!=='none')?eq.trait:null;
-  return `<div class="hub-center${mut?' mut-'+mut:''}${shinyCls(eq)}"${idAttr||''} data-tier="${tier}"${mut?` style="border-color:${MUT_COLOR[mut]}"`:''}>
+  return `<div class="hub-center${mut?' mut-'+mut:''}${shinyCls(eq)}"${idAttr||''} data-tier="${tier}" style="--tcol:${mut?MUT_COLOR[mut]:TIER_COLOR[tier]}${mut?`;border-color:${MUT_COLOR[mut]}`:''}">
       <div class="hc-img"><img src="${cardImg(eq.char)}" alt="${cardName(eq.char)}"${CARDS[eq.char].pos?` style="object-position:${CARDS[eq.char].pos}"`:''}>${madaraAura(eq.char)}
           ${shinyName('span','hc-name-top','hc-name-shine',mut,eq.shiny,cardName(eq.char))}
           <span class="hc-chance" style="color:${TIER_COLOR[tier]}">${rarityText(tier,luckChance(eq.char,eq.mut,eq.shiny))}</span>
@@ -5365,7 +5408,7 @@ function renderLobby(){
     <div class="hub-mid">
     <div class="seam"></div>
     <div class="stage-eyebrow">ACTIVE CARD</div>
-    ${hubCardHtml(eq,' id="hubCard"')}
+    <div class="card-float">${hubCardHtml(eq,' id="hubCard"')}</div>
     <div class="stage-hint"><kbd>KLIK</kbd> UNTUK BUKA BACKPACK</div>
     </div>
     <div class="hub-box h-r1 hub-link" id="hubIndex" role="button" title="Buka Katalog Kartu"><span class="hb-eyebrow">03</span><img class="hi-ic" src="assets/images/icon-index-card.png" alt=""><span class="hb-lbl">INDEX CARD</span></div>
