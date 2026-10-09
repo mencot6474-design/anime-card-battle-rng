@@ -6,7 +6,7 @@
 <title>Anime Card Battle</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#D5DCE4; --bg2:#C6CDD7; --panel:#FFFFFF; --panel2:#F2F5F8;
@@ -1216,6 +1216,87 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 .lobby-story{max-width:920px;margin:clamp(26px,5vh,54px) auto 44px;padding:0 clamp(14px,4vw,38px)}
 .story-title{font-family:"Barlow Condensed";font-size:clamp(24px,4vw,36px);font-weight:700;letter-spacing:.12em;color:var(--text);margin:0 0 4px}
 @media(max-width:720px){.lobby-hub{grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto auto;gap:12px}.hub-mid{grid-column:1 / span 2;grid-row:1}.h-l1{grid-column:1;grid-row:2}.h-l2{grid-column:2;grid-row:2}.h-r1{grid-column:1;grid-row:3}.h-r2{grid-column:2;grid-row:3}.h-mission{grid-column:1 / span 2;grid-row:4}}
+
+/* ========== LOBBY V2 — STAGE ASIMETRIS GELAP (port dari _tmp/lobby-proto-v2) ==========
+   KIRI = stage kartu di atas arena battle, KANAN = menu 2x2 + mission bar.
+   Scoped (.lobby-hub / body.on-lobby) supaya modal, backpack, roll overlay & battle aman. */
+/* Arena (sudah di-inject mountArena) gate-nya dibuka pas lobby; spot merah kanan diredam. */
+body.on-lobby .battle-arena{opacity:1}
+body.on-lobby .battle-arena .ar-spot.foe{opacity:.4}
+body.on-lobby main{position:relative;z-index:1}
+/* Topbar melebur gelap (pola sama kayak body.battle-full) */
+body.on-lobby #topbar{background:linear-gradient(180deg,rgba(6,9,16,.94),rgba(6,9,16,.5));border-bottom-color:rgba(255,255,255,.08)}
+body.on-lobby #topbar,body.on-lobby #topbar *{color:#F4F7FA}
+body.on-lobby #topbar .pill{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.16)}
+body.on-lobby #topbar .nav-btn{color:#C4CDD6}
+body.on-lobby #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
+/* Var tema gelap khusus permukaan lobby */
+.lobby-hub,.lobby-footer,.weather-panel{--text:#F4F7FA;--muted:#C4CDD6;--muted2:#9AA6B2;--cyan:#7DF9FF;--line:rgba(200,210,220,.16);--line2:rgba(200,212,222,.30);color:var(--text)}
+/* Grid asimetris: stage kiri (span 2 baris), tile 2x2 kanan, mission full-width bawah */
+.lobby-hub{grid-template-columns:minmax(320px,5fr) minmax(170px,3.4fr) minmax(170px,3.4fr);
+  grid-template-rows:clamp(110px,26vh,270px) clamp(110px,26vh,270px) auto;
+  align-content:start;gap:clamp(12px,2.2vh,24px) clamp(16px,4vw,48px)}
+.lobby-hub .hub-mid{grid-column:1;grid-row:1 / span 2;position:relative}
+.lobby-hub .h-l1{grid-column:2;grid-row:1}
+.lobby-hub .h-r1{grid-column:3;grid-row:1}
+.lobby-hub .h-l2{grid-column:2;grid-row:2}
+.lobby-hub .h-r2{grid-column:3;grid-row:2}
+.lobby-hub .h-mission{grid-column:2 / span 2;grid-row:3}
+/* Decorasi stage: seam tegangan + eyebrow + hint (di dalem .hub-mid) */
+.lobby-hub .hub-mid .seam{position:absolute;left:50%;top:2%;height:96%;width:3px;transform:translateX(-50%);
+  background:linear-gradient(to bottom,transparent,#EAF4FF,transparent);opacity:.4;filter:blur(.6px);
+  animation:arSeam 2.6s ease-in-out infinite;pointer-events:none}
+.lobby-hub .stage-eyebrow{align-self:flex-end;font-family:"Barlow Condensed";font-weight:700;font-size:11px;letter-spacing:.22em;color:var(--muted2);display:flex;align-items:center;gap:10px}
+.lobby-hub .stage-eyebrow::after{content:"";width:64px;height:1px;background:linear-gradient(90deg,var(--cyan),transparent)}
+.lobby-hub .stage-hint{font-family:"Barlow Condensed";font-weight:700;font-size:11px;letter-spacing:.16em;color:var(--muted2);white-space:nowrap}
+.lobby-hub .stage-hint kbd{font:inherit;border:1px solid var(--line2);border-radius:6px;padding:1px 7px;color:var(--cyan);background:rgba(6,9,14,.7);margin-right:6px}
+/* Tile hub: panel solid gelap ala battle + sweep garis bawah saat hover */
+.lobby-hub .hub-box{background:linear-gradient(160deg,#171012 20%,#0f0b0d 80%);border:1px solid var(--line);
+  border-radius:20px;gap:12px;box-shadow:0 14px 32px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.04);
+  transition:transform .2s cubic-bezier(.4,0,.2,1),box-shadow .2s,border-color .2s}
+.lobby-hub .hub-box::after{content:"";position:absolute;left:50%;bottom:10px;width:64%;height:2px;
+  background:linear-gradient(90deg,transparent,var(--cyan),#7DF9FF,transparent);
+  transform:translateX(-50%) scaleX(0);transition:transform .35s cubic-bezier(.2,.9,.3,1.1)}
+.lobby-hub .hub-box:hover::after{transform:translateX(-50%) scaleX(1)}
+.lobby-hub .hub-link:hover{border-color:color-mix(in srgb,var(--cyan) 55%,transparent);background:linear-gradient(160deg,#1b1518 20%,#120e10 80%);
+  transform:translateY(-4px) scale(1.02);box-shadow:0 0 0 1px color-mix(in srgb,var(--cyan) 35%,transparent),0 18px 40px rgba(0,0,0,.7)}
+.lobby-hub .hub-link:hover .hb-lbl{color:#fff;text-shadow:0 0 16px color-mix(in srgb,var(--cyan) 50%,transparent)}
+/* Ikon tile dibikin medal bulat (tanpa ubah HTML) */
+.lobby-hub .hub-link .hi-ic,.lobby-hub .hub-link .tw-ic{width:clamp(52px,7vh,66px);height:clamp(52px,7vh,66px);
+  padding:13px;border-radius:50%;box-sizing:border-box;object-fit:contain;color:var(--muted);
+  background:radial-gradient(140% 140% at 50% 0%,#1f2733,#0c0f14);border:1px solid var(--line2);
+  box-shadow:inset 0 1px 3px rgba(255,255,255,.08),0 8px 20px rgba(0,0,0,.5);transition:all .2s}
+.lobby-hub .hub-link:hover .hi-ic,.lobby-hub .hub-link:hover .tw-ic{border-color:var(--cyan);color:var(--cyan);
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--cyan) 15%,transparent),0 10px 24px rgba(0,0,0,.6);transform:scale(1.05)}
+/* Eyebrow numerik tile */
+.lobby-hub .hb-eyebrow{position:absolute;top:12px;left:14px;font-family:"Barlow Condensed";font-weight:700;font-size:10px;letter-spacing:.18em;color:var(--muted2);z-index:2}
+/* Mission bar: horizontal, tinggi cukup biar nggak gepeng */
+.lobby-hub .h-mission{display:grid;grid-template-columns:auto auto 1fr;align-items:center;gap:8px clamp(12px,1.6vw,18px);
+  padding:0 clamp(18px,2.4vw,30px);min-height:clamp(76px,12vh,108px);text-align:left}
+.lobby-hub .h-mission .hb-lbl{text-align:left;letter-spacing:.16em;color:#fff}
+.lobby-hub .h-mission .mb-sub{justify-self:end;font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.1em;color:var(--muted2)}
+/* Footer dock & weather panel: gelap (cuma pas lobby) */
+body.on-lobby .lobby-footer{background:rgba(14,17,20,.95);border-color:rgba(200,212,222,.3);
+  box-shadow:0 14px 38px rgba(0,0,0,.75),0 0 0 1px rgba(255,255,255,.08)}
+body.on-lobby .foot-profile{background:#232A33;border-color:rgba(200,212,222,.3);color:#C4CDD6}
+body.on-lobby .roll-auto-btn{background:#232A33;color:#C4CDD6;border-color:rgba(200,212,222,.3)}
+body.on-lobby .roll-auto-btn.on{background:linear-gradient(135deg,#0c0f14,#2a3540);color:#7DF9FF;border-color:transparent}
+body.on-lobby .roll-btn{background:linear-gradient(135deg,#E8556A,#ff7d5e 55%,#ffb347);border-color:transparent;
+  box-shadow:0 8px 22px rgba(232,85,106,.5)}
+body.on-lobby .weather-panel{background:rgba(14,17,20,.92);border-color:rgba(125,249,255,.35);
+  box-shadow:0 10px 30px rgba(0,0,0,.6)}
+body.on-lobby .weather-panel .wp-name{color:#F4F7FA}
+/* Mobile portrait: stage di atas (full), tile 2x2, mission bawah */
+@media(max-width:720px){
+  .lobby-hub{grid-template-columns:1fr 1fr;gap:12px}
+  .lobby-hub .hub-mid{grid-column:1 / span 2;grid-row:1}
+  .lobby-hub .h-l1{grid-column:1;grid-row:2}
+  .lobby-hub .h-r1{grid-column:2;grid-row:2}
+  .lobby-hub .h-l2{grid-column:1;grid-row:3}
+  .lobby-hub .h-r2{grid-column:2;grid-row:3}
+  .lobby-hub .h-mission{grid-column:1 / span 2;grid-row:4}
+  .lobby-hub .stage-eyebrow,.lobby-hub .stage-hint{display:none}
+}
 
 /* ---------- index kartu ---------- */
 .idx-card{position:relative;border:1px solid var(--line2);border-radius:14px;overflow:hidden;background:linear-gradient(160deg,#FFFFFF,#EEF2F6)}
@@ -4986,13 +5067,16 @@ function renderLobby(){
   const tier=eq?CARDS[eq.char].tier:null;
   app.innerHTML=`
   <div class="lobby-hub">
-    <div class="hub-box h-l1 hub-link" id="hubRaid" role="button" title="Masuk Boss Raid"><img class="hi-ic" src="assets/raid/eternal-dragon-hd.png" alt=""><span class="hb-lbl">BOSS RAID</span></div>
-    <div class="hub-box h-l2 hub-link" id="hubTower" role="button" title="Masuk Infinite Tower"><svg class="tw-ic" width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M9 21V9l3-6 3 6v12"/><path d="M9 12h6M9 16h6"/><path d="M5 21V11M19 21V11"/></svg><span class="hb-lbl">INFINITE TOWER</span></div>
+    <div class="hub-box h-l1 hub-link" id="hubRaid" role="button" title="Masuk Boss Raid"><span class="hb-eyebrow">01</span><img class="hi-ic" src="assets/raid/eternal-dragon-hd.png" alt=""><span class="hb-lbl">BOSS RAID</span></div>
+    <div class="hub-box h-l2 hub-link" id="hubTower" role="button" title="Masuk Infinite Tower"><span class="hb-eyebrow">02</span><svg class="tw-ic" width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M9 21V9l3-6 3 6v12"/><path d="M9 12h6M9 16h6"/><path d="M5 21V11M19 21V11"/></svg><span class="hb-lbl">INFINITE TOWER</span></div>
     <div class="hub-mid">
+    <div class="seam"></div>
+    <div class="stage-eyebrow">ACTIVE CARD</div>
     ${hubCardHtml(eq,' id="hubCard"')}
+    <div class="stage-hint"><kbd>KLIK</kbd> UNTUK BUKA BACKPACK</div>
     </div>
-    <div class="hub-box h-r1 hub-link" id="hubIndex" role="button" title="Buka Katalog Kartu"><img class="hi-ic" src="assets/images/icon-index-card.png" alt=""><span class="hb-lbl">INDEX CARD</span></div>
-    <div class="hub-box h-r2 hub-link" id="hubTrait" role="button" title="Roll Trait untuk kartu aktif"><img class="hi-ic" src="assets/images/icon-trait.svg" alt=""><span class="hb-lbl">TRAIT</span></div>
+    <div class="hub-box h-r1 hub-link" id="hubIndex" role="button" title="Buka Katalog Kartu"><span class="hb-eyebrow">03</span><img class="hi-ic" src="assets/images/icon-index-card.png" alt=""><span class="hb-lbl">INDEX CARD</span></div>
+    <div class="hub-box h-r2 hub-link" id="hubTrait" role="button" title="Roll Trait untuk kartu aktif"><span class="hb-eyebrow">04</span><img class="hi-ic" src="assets/images/icon-trait.svg" alt=""><span class="hb-lbl">TRAIT</span></div>
     <div class="hub-box h-mission hub-link" id="missionBtn" role="button" title="Buka daftar misi"><svg class="tw-ic" width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 4 6v13l5-2 6 2 5-2V4l-5 2-6-2Z"/><path d="M9 4v13M15 6v13"/></svg><span class="hb-lbl">MISSION</span><span class="mb-sub" id="missionSub"></span></div>
   </div>`;
   const hc=document.getElementById("hubCard");if(hc){hc.onclick=()=>{sfx.hit();toggleBackpack();};initHubTilt(hc);}
