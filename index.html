@@ -216,36 +216,85 @@ body.on-lobby .weather-panel.show{display:flex;}
 .bp-soon-s{font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.24em;opacity:.6;}
 /* ====== Tab TREE: pohon skill, root tengah, cabang LUCK | SPEED menjalar ====== */
 .bp-body.tree{overflow-y:auto;align-items:stretch;}
-.st-spbar{flex:0 0 auto;text-align:center;font-family:"Barlow Condensed";font-weight:700;font-size:14px;letter-spacing:.06em;color:var(--muted);padding:2px 0 12px;}
-.st-spbar strong{color:#5eead4;font-size:18px;margin:0 4px;}
-.st-root{flex:0 0 auto;display:flex;justify-content:center;margin-bottom:6px;}
-.st-cols{display:flex;gap:16px;flex:1;min-height:0;align-items:flex-start;}
-.st-col{flex:1;display:flex;flex-direction:column;gap:10px;border:1px solid var(--line2);border-radius:14px;padding:12px;background:linear-gradient(160deg,#171012,#0d0a0c);}
-.st-col-h{font-family:"Barlow Condensed";font-weight:800;font-size:15px;letter-spacing:.08em;display:flex;align-items:center;gap:7px;}
-.st-col.luck .st-col-h{color:#5eead4;}
-.st-col.speed .st-col-h{color:#fcd34d;}
-.st-col-ic{font-size:18px;}
-.st-chain{display:flex;flex-direction:column;gap:10px;position:relative;}
-.st-node+.st-node::before{content:"";position:absolute;left:50%;top:-10px;height:10px;width:2px;transform:translateX(-50%);background:var(--line2);z-index:0;}
-.st-col.luck .st-node+.st-node::before{background:#5eead4;}
-.st-col.speed .st-node+.st-node::before{background:#fcd34d;}
-.st-col-cap{font-size:11px;color:var(--muted);text-align:center;}
-.st-node{position:relative;z-index:1;min-height:62px;border:2px solid var(--line2);border-radius:12px;background:var(--panel2);padding:9px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:.14s;}
-.st-node .st-name{font-family:"Barlow Condensed";font-weight:800;font-size:14px;letter-spacing:.05em;color:#fff;}
-.st-node .st-gain{font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.04em;}
-.st-col.luck .st-gain{color:#5eead4;}
-.st-col.speed .st-gain{color:#fcd34d;}
-.st-node .st-cost{font-family:"Barlow Condensed";font-weight:800;font-size:11px;letter-spacing:.04em;color:var(--muted);}
-.st-node.st-avail{border-color:var(--cyan);box-shadow:0 0 0 1px var(--cyan),0 0 16px rgba(56,183,255,.35);}
-.st-node.st-avail:hover{transform:scale(1.05);}
-.st-node.st-avail .st-cost{color:var(--cyan);}
-.st-node.st-owned{border-color:#39d98a;background:linear-gradient(160deg,#123526,#0d1f18);}
-.st-node.st-owned .st-cost{color:#39d98a;}
-.st-node.st-poor{opacity:.85;}
-.st-node.st-poor .st-cost{color:#f87171;}
-.st-node.st-locked{opacity:.42;cursor:not-allowed;}
-.st-node.st-root{min-height:54px;max-width:160px;border-radius:14px;border-color:var(--line2);background:linear-gradient(160deg,#1b1320,#100a12);}
-.st-node.st-root .st-name{color:#c4b5fd;}
+/* SP CRYSTAL BANNER */
+.spbar{display:flex;flex-direction:column;align-items:stretch;gap:7px}
+.sp-banner{position:relative;display:flex;align-items:center;gap:18px;padding:13px 22px;border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.015))}
+.sp-banner::before{content:"";position:absolute;inset:-1px;border-radius:17px;padding:1px;background:linear-gradient(90deg,rgba(125,249,255,.85),rgba(125,249,255,.22) 45%,rgba(252,211,77,.4));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.sp-crystal{position:relative;flex:0 0 auto;width:34px;height:34px;transform:rotate(45deg);border-radius:8px;background:conic-gradient(from 0deg,#bffcff,#7DF9FF 25%,#2f7f8a 50%,#7DF9FF 75%,#bffcff);box-shadow:0 0 16px rgba(125,249,255,.6),0 0 38px rgba(125,249,255,.28);animation:gemPulse 2.4s ease-in-out infinite}
+.sp-crystal::after{content:"";position:absolute;inset:5px;border-radius:4px;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.95),transparent 62%)}
+@keyframes gemPulse{0%,100%{box-shadow:0 0 16px rgba(125,249,255,.6),0 0 38px rgba(125,249,255,.28);transform:rotate(45deg) scale(1)}50%{box-shadow:0 0 26px rgba(125,249,255,.95),0 0 56px rgba(125,249,255,.45);transform:rotate(45deg) scale(1.07)}}
+.sp-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.sp-label{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.22em;color:var(--muted2)}
+.sp-goal{font-size:11px;letter-spacing:.12em;color:var(--ice);text-shadow:0 0 10px rgba(125,249,255,.5)}
+.sp-goal.ready{color:#5eead4;animation:goalBlink 1.1s ease-in-out infinite}
+@keyframes goalBlink{50%{opacity:.55}}
+.sp-track{position:relative;height:8px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.6)}
+.sp-fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#5eead4,var(--ice));box-shadow:0 0 12px rgba(125,249,255,.8);transition:width .5s ease}
+.sp-fill.full{background:linear-gradient(90deg,var(--ice),#5eead4,#bffcff);background-size:200% 100%;animation:fillSweep 1.4s linear infinite}
+@keyframes fillSweep{to{background-position:200% 0}}
+.sp-num{flex:0 0 auto;font-family:"Barlow Condensed";font-weight:800;font-size:40px;line-height:1;letter-spacing:.02em;color:var(--ice);text-shadow:1px 1px 0 #0b0e14,2px 2px 0 #0b0e14,3px 3px 0 #0b0e14,0 0 22px rgba(125,249,255,.6);animation:numGlow 2.4s ease-in-out infinite}
+@keyframes numGlow{50%{text-shadow:1px 1px 0 #0b0e14,2px 2px 0 #0b0e14,3px 3px 0 #0b0e14,0 0 34px rgba(125,249,255,.95)}}
+.sp-hint{font-size:11px;color:var(--muted2);letter-spacing:.04em;text-align:center}
+/* ROOT + FORK SVG */
+.st-root{position:relative;display:flex;justify-content:center}
+.st-root .st-node{--bc:var(--ice);min-width:300px;justify-content:center;gap:14px;padding:14px 26px;border-radius:16px}
+.st-fork{display:block;width:100%;height:74px;margin-top:12px;margin-bottom:-8px;overflow:visible}
+.st-fork .fk-base{fill:none;stroke-width:3;opacity:.5;filter:drop-shadow(0 0 4px rgba(125,249,255,.5))}
+.st-fork .fk-flow{fill:none;stroke-width:3;stroke-dasharray:9 13;animation:fkFlow .9s linear infinite;filter:drop-shadow(0 0 6px rgba(125,249,255,.8))}
+.st-fork .fk-jewel{fill:#7DF9FF;filter:drop-shadow(0 0 8px #7DF9FF);animation:orbPulse 1.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes fkFlow{to{stroke-dashoffset:-44}}
+/* COLUMNS */
+.st-cols{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.st-col{position:relative;display:flex;flex-direction:column;gap:0}
+.st-col.luck{--bc:#5eead4}
+.st-col.speed{--bc:#fcd34d}
+.st-col::before{content:"";position:absolute;left:50%;top:-8px;height:10px;width:2px;background:linear-gradient(to bottom,var(--ice),var(--bc));box-shadow:0 0 10px color-mix(in srgb,var(--bc) 55%,transparent);transform:translateX(-50%)}
+.st-col-h{display:flex;align-items:center;gap:9px;font-family:"Barlow Condensed";font-weight:800;font-size:15px;letter-spacing:.14em;color:var(--bc);padding-bottom:10px;margin-bottom:4px;border-bottom:1px solid var(--line);text-shadow:0 0 14px color-mix(in srgb,var(--bc) 40%,transparent)}
+.st-col-ic{font-size:16px}
+.st-col-cap{margin-top:12px;font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.1em;color:var(--muted2);text-align:center;background:rgba(255,255,255,.02);border:1px dashed var(--line);border-radius:10px;padding:7px}
+/* CHAIN + ENERGY LINKS */
+.st-chain{display:flex;flex-direction:column}
+.st-link{position:relative;width:4px;height:32px;margin:0 auto;border-radius:4px;background:rgba(255,255,255,.09)}
+.st-link::before{content:"";position:absolute;inset:0;border-radius:4px;background:linear-gradient(180deg,transparent 0 35%,var(--bc,var(--ice)) 50%,transparent 65% 100%);background-size:100% 280%;opacity:0}
+.st-link i{position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:2px;transform:rotate(45deg);background:rgba(255,255,255,.25);box-shadow:0 0 8px rgba(255,255,255,.25)}
+.st-link.flow::before{opacity:.95;animation:linkFlow .9s linear infinite}
+.st-link.flow i{background:var(--bc,var(--ice));box-shadow:0 0 10px var(--bc,var(--ice));animation:orbPulse 1.6s ease-in-out infinite}
+@keyframes linkFlow{from{background-position:0 -140%}to{background-position:0 140%}}
+@keyframes orbPulse{0%,100%{transform:rotate(45deg) scale(1)}50%{transform:rotate(45deg) scale(1.35)}}
+.st-link.pulse{background:repeating-linear-gradient(180deg,var(--bc,var(--ice)) 0 5px,transparent 5px 10px);animation:linkDash 1.1s linear infinite}
+@keyframes linkDash{to{background-position:0 10px}}
+.st-link.pulse i{background:var(--bc,var(--ice));box-shadow:0 0 9px var(--bc,var(--ice))}
+.st-link.dead{background:repeating-linear-gradient(180deg,rgba(248,113,113,.55) 0 3px,transparent 3px 8px)}
+.st-link.dead i{background:rgba(248,113,113,.6);box-shadow:0 0 8px rgba(248,113,113,.5);animation:orbDead 2.2s ease-in-out infinite}
+@keyframes orbDead{50%{opacity:.35}}
+/* NODE CARD */
+.st-node{display:flex;align-items:center;gap:12px;background:linear-gradient(160deg,#161113,#0e0b0d);border:1.5px solid var(--line);border-radius:14px;padding:11px 14px;cursor:pointer;transition:transform .16s,box-shadow .16s,border-color .16s}
+.st-node:hover{transform:translateY(-2px)}
+.st-node .st-info{min-width:0}
+.st-node .st-name{font-family:"Barlow Condensed";font-weight:800;font-size:16px;letter-spacing:.08em;color:#fff}
+.st-node .st-gain{font-family:"Barlow Condensed";font-weight:700;font-size:11px;letter-spacing:.12em;color:var(--muted2);margin-top:1px}
+.st-node .st-cost{margin-left:auto;flex:0 0 auto;font-family:"Barlow Condensed";font-weight:800;font-size:13px;letter-spacing:.06em;padding:4px 11px;border-radius:999px;border:1px solid var(--line2);color:var(--muted);background:rgba(255,255,255,.03)}
+/* NODE ICON - polos, warna cabang, TANPA glow (glow HANYA di tile) */
+.st-ico{flex:0 0 auto;width:32px;height:32px;display:grid;place-items:center;font-size:15px;border-radius:9px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--muted);box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
+.st-col.luck .st-ico{color:#5eead4;border-color:color-mix(in srgb,#5eead4 30%,transparent)}
+.st-col.speed .st-ico{color:#fcd34d;border-color:color-mix(in srgb,#fcd34d 30%,transparent)}
+.st-root .st-ico{width:38px;height:38px;font-size:19px;border-radius:11px;color:var(--ice);border-color:rgba(125,249,255,.5)}
+/* OWNED - glow HANYA di tile yang kebuka */
+.st-node.st-owned{border-color:color-mix(in srgb,var(--bc,var(--ice)) 70%,transparent);background:linear-gradient(160deg,color-mix(in srgb,var(--bc,var(--ice)) 16%,#141013),#0e0b0d 70%);box-shadow:0 0 0 1px color-mix(in srgb,var(--bc,var(--ice)) 40%,transparent),0 0 20px 2px color-mix(in srgb,var(--bc,var(--ice)) 25%,transparent),0 10px 22px rgba(0,0,0,.5)}
+.st-node.st-owned .st-cost{border-color:transparent;background:linear-gradient(120deg,color-mix(in srgb,var(--bc,var(--ice)) 85%,#071016),color-mix(in srgb,var(--bc,var(--ice)) 55%,#071016));color:#071016;box-shadow:0 4px 14px color-mix(in srgb,var(--bc,var(--ice)) 45%,transparent)}
+.st-node.st-owned .st-gain{color:var(--bc,var(--ice))}
+/* AVAIL (bisa dibeli) - tenang, tanpa shimmer */
+.st-node.st-avail{border-color:color-mix(in srgb,var(--bc,var(--ice)) 45%,transparent);background:linear-gradient(160deg,color-mix(in srgb,var(--bc,var(--ice)) 7%,#151113),#0e0b0d)}
+.st-node.st-avail:hover{box-shadow:0 0 0 2px color-mix(in srgb,var(--bc,var(--ice)) 70%,transparent),0 12px 26px rgba(0,0,0,.6)}
+.st-node.st-avail .st-cost{background:transparent;border-color:var(--bc,var(--ice));color:var(--bc,var(--ice))}
+.st-node.st-avail .st-gain{color:color-mix(in srgb,var(--bc,var(--ice)) 75%,var(--muted2))}
+/* POOR (SP kurang) */
+.st-node.st-poor{border-color:rgba(248,113,113,.55);opacity:.8}
+.st-node.st-poor .st-cost{color:#f87171;border-color:rgba(248,113,113,.5);background:rgba(248,113,113,.08)}
+.st-node.st-poor:hover{box-shadow:0 0 0 2px rgba(248,113,113,.5),0 12px 26px rgba(0,0,0,.55)}
+/* LOCKED */
+.st-node.st-locked{border-style:dotted;opacity:.42;filter:grayscale(.45);cursor:not-allowed}
+.st-node.st-locked:hover{transform:none;box-shadow:none}
 .bp-item{border:1px solid var(--line2);border-radius:14px;background:linear-gradient(160deg,#171012,#0d0a0c);padding:14px 12px;text-align:center;}
 .bp-item.empty{opacity:.5;}
 .bpi-icon{font-size:34px;line-height:1;}
@@ -3015,11 +3064,20 @@ function stNodeHtml(n,sp){
   const affordable=sp>=n.cost;
   const state=owned?'owned':(preqMet&&affordable?'avail':(preqMet?'poor':'locked'));
   const gain=n.branch==='luck'?('+'+(Number.isInteger(n.luck)?n.luck:n.luck.toFixed(1))+' LUCK'+(n.luckPct?' · +'+Math.round(n.luckPct*100)+'%':'')):('+'+n.speed.toFixed(1)+'× SPEED');
+  const ic=BP_NODE_ICONS[n.name]||'◆';
   return `<div class="st-node st-${n.branch} st-${state}" onclick="bpTreeBuy('${n.id}')" title="${n.desc}">
-    <div class="st-name">${n.name}</div>
-    <div class="st-gain">${n.branch==='root'?'AKAR':gain}</div>
+    <div class="st-ico">${ic}</div>
+    <div class="st-info"><div class="st-name">${n.name}</div><div class="st-gain">${n.branch==='root'?'AKAR':gain}</div></div>
     ${n.branch==='root'?'':`<div class="st-cost">${owned?'✓':n.cost+' SP'}</div>`}
   </div>`;
+}
+const BP_NODE_ICONS={"FONDASI":"◆","PEKA":"◉","TERLIHAT":"◎","MENTARI":"☀","BERTUAH":"☆","MUARA REZEKI":"☘","RINGAN":"⇢","CEPAT":"➤","PETIR":"⚡","KILAT":"≫","CAHAYA":"✦"};
+function stLinkHtml(src){
+  const owned=treeOwned(src.id);
+  const preqMet=src.req.every(r=>r==="root"||treeOwned(r));
+  const affordable=(state&&state.player&&state.player.sp||0)>=src.cost;
+  const cls=owned?'flow':(preqMet&&affordable?'pulse':'dead');
+  return `<div class="st-link ${cls}"><i></i></div>`;
 }
 function renderBpTree(){
   const sp=(state&&state.player&&state.player.sp)||0;
@@ -3027,13 +3085,39 @@ function renderBpTree(){
   const spd=TREE_NODES.filter(n=>n.branch==='speed');
   const col=(branch,title,ic,list,cap)=>`<div class="st-col ${branch}">
       <div class="st-col-h"><span class="st-col-ic">${ic}</span>${title}</div>
-      <div class="st-chain">${list.map(n=>stNodeHtml(n,sp)).join('')}</div>
+      <div class="st-chain">${list.map((n,i)=>(i?stLinkHtml(list[i-1]):'')+stNodeHtml(n,sp)).join('')}</div>
       <div class="st-col-cap">${cap}</div>
     </div>`;
-  return `<div class="st-spbar">SKILL POINT <strong>${sp}</strong>${sp>0?' — ketuk node buat naikkin':' — naikkin LV buat dapet SP'}</div>
+  const goal=TREE_NODES.filter(n=>n.id!=='root'&&!treeOwned(n.id)&&n.req.every(r=>r==='root'||treeOwned(r))).sort((a,b)=>a.cost-b.cost)[0];
+  const pct=goal?Math.min(100,Math.round(sp/goal.cost*100)):100;
+  const ready=!!goal&&sp>=goal.cost;
+  const hint=sp>0?'ketuk node buat naikkin':'naikkin LV buat dapet SP';
+  const goalTxt=goal?(goal.name+' · '+goal.cost+' SP'+(ready?' — SIAP!':'')):'SEMUA NODE TERBUKA';
+  return `<div class="spbar">
+    <div class="sp-banner">
+      <div class="sp-crystal"></div>
+      <div class="sp-meta">
+        <div class="sp-label">SKILL POINT <span class="sp-goal${ready?' ready':''}">${goalTxt}</span></div>
+        <div class="sp-track"><div class="sp-fill${ready?' full':''}" style="width:${pct}%"></div></div>
+      </div>
+      <div class="sp-num">${sp}</div>
+    </div>
+    <div class="sp-hint">${hint}</div>
+  </div>
     <div class="st-root">${stNodeHtml(TREE.root,sp)}</div>
+    <svg class="st-fork" viewBox="0 0 600 74" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="fkL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7DF9FF"/><stop offset="1" stop-color="#5eead4"/></linearGradient>
+        <linearGradient id="fkR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7DF9FF"/><stop offset="1" stop-color="#fcd34d"/></linearGradient>
+      </defs>
+      <path class="fk-base" d="M300 4 C300 40 146 34 146 74" stroke="url(#fkL)" vector-effect="non-scaling-stroke"/>
+      <path class="fk-flow" d="M300 4 C300 40 146 34 146 74" stroke="url(#fkL)" vector-effect="non-scaling-stroke"/>
+      <path class="fk-base" d="M300 4 C300 40 454 34 454 74" stroke="url(#fkR)" vector-effect="non-scaling-stroke"/>
+      <path class="fk-flow" d="M300 4 C300 40 454 34 454 74" stroke="url(#fkR)" vector-effect="non-scaling-stroke"/>
+      <rect class="fk-jewel" x="293" y="-3" width="14" height="14" rx="3" transform="rotate(45 300 4)"/>
+    </svg>
     <div class="st-cols">
-      ${col('luck','CABANG LUCK','🍀',luck,'Total luck sekarang: '+totalLuck().toFixed(1)+'×')}
+      ${col('luck','CABANG LUCK','☘',luck,'Total luck sekarang: '+totalLuck().toFixed(1)+'×')}
       ${col('speed','CABANG ROLL SPEED','⚡',spd,'Speed sekarang: '+playerSpeedMult().toFixed(1)+'× (cap 5×)')}
     </div>`;
 }
