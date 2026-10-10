@@ -184,6 +184,13 @@ body.on-lobby .weather-panel.show{display:flex;}
 .roll-card-showcase .hub-center{width:100%;height:100%;border:none;border-radius:inherit;box-shadow:none;cursor:default;animation:none}
 .roll-card-showcase .hub-center:hover{transform:none}
 .roll-actions{display:flex;gap:10px;margin-top:14px;align-items:stretch;justify-content:center;}
+/* Tombol reveal = gaya prototipe: lingkaran translucent di luar kartu pojok kanan-atas */
+.roll-overlay:not(.mini) .roll-actions{position:absolute;left:50%;top:50%;transform:translate(calc(150px - 100%),-258px);margin-top:0;gap:10px}
+.roll-overlay:not(.mini) .roll-min-btn,.roll-overlay:not(.mini) .roll-close-out{width:42px;height:42px;padding:0;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#fff;font-size:0;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);cursor:pointer;transition:background .2s,transform .2s;letter-spacing:0}
+.roll-overlay:not(.mini) .roll-min-btn::before{content:"🗔";font-size:19px;line-height:1}
+.roll-overlay:not(.mini) .roll-close-out::before{content:"✕";font-size:19px;line-height:1}
+.roll-overlay:not(.mini) .roll-min-btn:hover{background:rgba(255,255,255,.16);transform:scale(1.08)}
+.roll-overlay:not(.mini) .roll-close-out:hover{background:rgba(255,255,255,.25);transform:scale(1.08)}
 .roll-close-out{padding:9px 22px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-family:"Barlow Condensed";font-weight:700;font-size:15px;letter-spacing:.06em;cursor:pointer;transition:.15s;}
 .roll-close-out:hover{background:var(--panel2);}
 /* Mode mini: overlay jadi kartu kecil yang nempel di dekat tombol dadu, roll tetap jalan. */
@@ -207,7 +214,8 @@ body.on-lobby .weather-panel.show{display:flex;}
 .roll-overlay.mini .roll-actions{display:none;}
 /* Strip kecil di mini-reveal: di ATAS kartu, jadi tombol hide. Saat collapsed kartu sembunyi, strip tetap nempel di atas AUTO buat buka lagi. */
 .roll-mini-strip{display:none;}
-.roll-overlay.mini .roll-mini-strip{display:flex;align-items:center;justify-content:center;position:fixed;left:0;right:0;margin:0 auto;bottom:88px;width:120px;height:22px;border-radius:8px;background:var(--panel);border:1px solid var(--line2);color:var(--text);font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.05em;cursor:pointer;pointer-events:auto;box-shadow:0 4px 12px rgba(0,0,0,.4);z-index:101;user-select:none;}
+.roll-overlay.mini .roll-mini-strip{display:flex;align-items:center;justify-content:center;position:fixed;left:0;right:0;margin:0 auto;bottom:88px;width:120px;height:24px;border-radius:999px;background:rgba(20,26,34,.92);border:1px solid rgba(125,249,255,.55);color:#EAFDFF;font-family:"Barlow Condensed";font-weight:800;font-size:12px;letter-spacing:.14em;cursor:pointer;pointer-events:auto;box-shadow:0 4px 12px rgba(0,0,0,.5),0 0 12px rgba(125,249,255,.25);z-index:101;user-select:none;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:border-color .15s,box-shadow .15s}
+.roll-overlay.mini .roll-mini-strip:hover{border-color:#7DF9FF;box-shadow:0 4px 12px rgba(0,0,0,.5),0 0 18px rgba(125,249,255,.5)}
 .roll-overlay.mini.collapsed .roll-card-showcase{display:none;}
 .roll-min-btn{padding:9px 18px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-family:"Barlow Condensed";font-weight:700;font-size:15px;letter-spacing:.06em;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;}
 .roll-min-btn:hover{background:var(--panel2);}
@@ -2881,6 +2889,8 @@ function showRollResult(result) {
   // Buka overlay. Animasi masuk HANYA sekali (saat pertama tampil) supaya tidak flicker muncul-hilang tiap tick.
   const wasVisible = overlay.style.display === 'flex';
   overlay.style.display = 'flex';
+  /* fix: reveal non-mini harus bersih dari bottom inline sisa mode mini (position:relative → geser naik) */
+  if (!rollState.mini) showcase.style.bottom = '';
   // Cinematic reveal (port dari _tmp/reveal-proto): slam + flash + particles - hanya saat baru buka
   if (!wasVisible && !rollState.mini) {
     showcase.style.transition = 'none';
@@ -2936,7 +2946,7 @@ function renderProfile(){
 function hideRollResult() {
   const overlay = document.getElementById('rollOverlay');
   if (!overlay) return;
-  setRollMini(false);
+  const wasMini = rollState.mini; /* fix: jangan un-mini dulu - fade di tempat biar card nggak loncat ke tengah */
   
   const showcase = overlay.querySelector('.roll-card-showcase');
   if (showcase) {
@@ -2947,7 +2957,14 @@ function hideRollResult() {
   }
   
   setTimeout(() => {
+    if (wasMini) setRollMini(false);
     overlay.style.display = 'none';
+    if (showcase) {
+      showcase.style.opacity = '';
+      showcase.style.transform = '';
+      showcase.style.transition = '';
+      showcase.style.bottom = ''; /* fix: buang sisa bottom inline mini waktu fade-out selesai */
+    }
   }, 300);
 }
 
@@ -2958,6 +2975,12 @@ function setRollMini(on) {
   if (!rollState.mini) rollState.collapsed = false;
   if (rollState.mini && rollState.hideTimer) { clearTimeout(rollState.hideTimer); rollState.hideTimer = null; }
   overlay.classList.toggle('mini', rollState.mini);
+  /* fix: buang sisa bottom inline dari mode mini - kalau nggak, kartu non-mini (position:relative)
+     kegeser naik ±110px pas reveal berikutnya ("card naik ke atas" pas AUTO nyala lagi). */
+  if (!rollState.mini) {
+    const card = overlay.querySelector('.roll-card-showcase');
+    if (card) card.style.bottom = '';
+  }
   syncRollMiniStrip();
 }
 
