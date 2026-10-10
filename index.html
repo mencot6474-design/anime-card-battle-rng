@@ -160,6 +160,26 @@ body.on-lobby .weather-panel.show{display:flex;}
 .roll-overlay.visible{display:flex;}
 .roll-card-showcase{position:relative;width:300px;aspect-ratio:3/4;border-radius:18px;border:3px solid var(--cyan);background:#12151a;overflow:hidden;box-shadow:0 20px 80px rgba(18,28,38,.6);animation:card-reveal .5s ease-out;}
 @keyframes card-reveal{from{opacity:0;transform:scale(.8) translateY(40px);}to{opacity:1;transform:scale(1) translateY(0);}}
+/* ===== CINEMATIC REVEAL (port dari _tmp/reveal-proto) ===== */
+.roll-card-showcase.rv-slam{animation:rvCardSlam .6s cubic-bezier(.3,1,.2,1) forwards}
+@keyframes rvCardSlam{0%{transform:scale(.1) translateY(-200px);opacity:0}50%{transform:scale(1.05) translateY(0);opacity:1}70%{transform:scale(.98) translateY(8px)}100%{transform:scale(1) translateY(0);opacity:1}}
+.roll-overlay .rv-part{position:absolute;display:block;width:8px;height:8px;border-radius:50%;pointer-events:none;z-index:19;animation:rvFloat 2.5s ease-out forwards}
+@keyframes rvFloat{0%{transform:translate(0,0) scale(.8);opacity:.7}100%{transform:translate(var(--ox,0),var(--oy,0)) scale(1.6);opacity:0}}
+.roll-overlay .rv-dust{position:absolute;display:block;background:rgba(255,255,255,.25);border-radius:50%;pointer-events:none;z-index:18;animation:rvDust 3s ease-in forwards}
+@keyframes rvDust{0%{transform:translate(0,0);opacity:0}30%{opacity:1}100%{transform:translate(var(--dx,0),var(--dy,-200px));opacity:0}}
+/* ===== REVEAL CARD = DESAIN LOBBY v2 (port dari override #hubCard) ===== */
+.roll-overlay .roll-card-showcase{overflow:visible;border-width:0}
+.roll-overlay .roll-card-showcase .hub-center::before{z-index:1} /* ring mutasi/exFoil: di bawah nama+badge, di atas art */
+.roll-overlay .roll-card-showcase .hub-center{background:linear-gradient(180deg,#1b1418,#0c0a0c);border-color:transparent;overflow:visible;box-shadow:0 22px 50px rgba(0,0,0,.6)}
+.roll-overlay .roll-card-showcase .hub-center .hc-img{overflow:visible;border-radius:inherit}
+.roll-overlay .roll-card-showcase .hub-center .hc-img img,.roll-overlay .roll-card-showcase .hub-center .hc-img video{border-radius:inherit}
+.roll-overlay .roll-card-showcase .hub-center .hc-name-top{top:-14px;left:-16px;max-width:none;font-family:"Barlow Condensed";font-weight:800;font-size:clamp(24px,3.2vh,32px);line-height:.98;letter-spacing:.03em;white-space:nowrap;overflow:visible;transform:skewX(-4deg);text-shadow:1px 1px 0 #0b0e14,2px 2px 0 #0b0e14,3px 3px 0 #0b0e14,4px 4px 0 #0b0e14,5px 5px 0 #080a0f,6px 6px 0 #080a0f,7px 9px 16px rgba(0,0,0,.9),0 0 26px color-mix(in srgb,var(--tcol,#2F8FE2) 55%,transparent)}
+.roll-overlay .roll-card-showcase .hub-center .hc-chance{top:26px;left:-6px;font-family:"Barlow Condensed";font-weight:800;font-size:17px;letter-spacing:.14em;text-transform:uppercase;color:var(--tcol,#2F8FE2);padding:3px 12px;border-radius:7px;background:rgba(6,9,14,.88);border:1px solid currentColor;text-shadow:0 0 10px color-mix(in srgb,var(--tcol,#2F8FE2) 70%,transparent);box-shadow:0 6px 14px rgba(0,0,0,.6);transform:skewX(-4deg);white-space:nowrap}
+.roll-overlay .roll-card-showcase .hub-center .hc-badges{top:-16px;right:-14px;gap:5px}
+.roll-overlay .roll-card-showcase .hub-center .hc-info{border-radius:0 0 18px 18px} /* scrim bawah ikut kelok, buang sudut lancip */
+.roll-overlay:not(.mini) .roll-card-showcase .hub-center .hc-stats{justify-content:flex-start;gap:18px;font-family:"Barlow Condensed";font-weight:800;font-size:19px;letter-spacing:.04em;text-shadow:0 2px 8px rgba(0,0,0,.95),0 0 12px rgba(0,0,0,.7)}
+.roll-overlay .roll-card-showcase .hub-center .hc-stats .hp{color:#5CF0A8}
+.roll-overlay .roll-card-showcase .hub-center .hc-stats .atk{color:#FFD27A}
 /* Kartu hasil roll = salinan persis kartu lobby (.hub-center). Showcase cuma jadi frame + animasi reveal. */
 .roll-card-showcase .hub-center{width:100%;height:100%;border:none;border-radius:inherit;box-shadow:none;cursor:default;animation:none}
 .roll-card-showcase .hub-center:hover{transform:none}
@@ -169,18 +189,20 @@ body.on-lobby .weather-panel.show{display:flex;}
 /* Mode mini: overlay jadi kartu kecil yang nempel di dekat tombol dadu, roll tetap jalan. */
 .roll-overlay.mini{background:transparent;backdrop-filter:none;display:block;align-items:initial;justify-content:initial;pointer-events:none;}
 .roll-overlay.mini .roll-card-showcase{position:fixed;left:0;right:0;margin:0 auto;bottom:118px;width:120px;box-shadow:0 10px 30px rgba(0,0,0,.5);cursor:pointer;animation:none;pointer-events:auto;}
-.roll-overlay.mini .roll-card-showcase .hub-center .hc-name-top{top:5px;left:5px;font-size:11px;max-width:70%}
-.roll-overlay.mini .roll-card-showcase .hub-center .hc-chance{top:21px;left:5px;font-size:10px}
-.roll-overlay.mini .roll-card-showcase .hub-center .hc-badges{top:5px;right:5px;gap:3px}
+.roll-overlay.mini .roll-card-showcase .hub-center .hc-name-top{top:-8px;left:-9px;max-width:none;font-size:12px;line-height:.98;letter-spacing:.02em;white-space:nowrap;overflow:visible;transform:skewX(-4deg);text-shadow:1px 1px 0 #0b0e14,2px 2px 0 #0b0e14,3px 3px 0 #0b0e14,4px 4px 0 #080a0f,5px 7px 12px rgba(0,0,0,.9),0 0 18px color-mix(in srgb,var(--tcol,#2F8FE2) 55%,transparent)}
+.roll-overlay.mini .roll-card-showcase .hub-center .hc-chance{top:auto;bottom:8px;left:50%;font-size:10px;padding:1px 8px;border-radius:6px;background:rgba(6,9,14,.88);border:1px solid currentColor;box-shadow:0 4px 10px rgba(0,0,0,.6);text-shadow:0 0 8px color-mix(in srgb,var(--tcol,#2F8FE2) 70%,transparent);transform:translateX(-50%) skewX(-4deg);white-space:nowrap}
+.roll-overlay.mini .roll-card-showcase .hub-center .hc-badges{top:-8px;right:-8px;gap:3px}
 .roll-overlay.mini .roll-card-showcase .hub-center .hc-badges .mut-badge,.roll-overlay.mini .roll-card-showcase .hub-center .hc-badges .hc-trait,.roll-overlay.mini .roll-card-showcase .hub-center .shiny-badge{height:16px;padding:0 5px;font-size:9px}
 .roll-overlay.mini .roll-card-showcase .hub-center .hc-badges .hc-trait.hc-gem{width:16px;padding:0}
-.roll-overlay.mini .roll-card-showcase .hub-center .hc-info{padding:18px 8px 7px}
+.roll-overlay.mini .roll-card-showcase .hub-center .hc-info{padding:12px 8px 26px;background:linear-gradient(to top,rgba(6,8,12,.9) 40%,rgba(6,8,12,.45) 68%,transparent);border-radius:0 0 18px 18px}
+.roll-overlay.mini .roll-card-showcase .hub-center .hc-stats{display:none}
 .roll-overlay.mini .roll-card-showcase .hub-center .hc-skill,.roll-overlay.mini .roll-card-showcase .hub-center .hc-desc{display:none}
 .roll-overlay.mini .roll-card-showcase .hub-center .hc-stats{font-size:11px;margin-top:0;gap:8px}
 /* Reveal penuh: blok info/stat diperkecil (koreksi user). Lobby tidak ikut berubah. */
 .roll-overlay:not(.mini) .roll-card-showcase .hub-center .hc-info{padding:22px 11px 9px}
-.roll-overlay:not(.mini) .roll-card-showcase .hub-center .hc-skill{font-size:10px;margin-top:2px}
-.roll-overlay:not(.mini) .roll-card-showcase .hub-center .hc-desc{font-size:8px;line-height:1.3;text-align:justify}
+.roll-overlay:not(.mini) .roll-card-showcase .hub-center .hc-skill{display:flex;align-items:center;gap:8px;font-family:"Barlow Condensed";font-weight:800;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#7DF9FF;margin-top:4px;text-shadow:0 0 8px rgba(125,249,255,.5),0 1px 4px rgba(0,0,0,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.roll-overlay:not(.mini) .roll-card-showcase .hub-center .hc-skill::before{content:"";flex:none;width:3px;height:13px;border-radius:2px;background:linear-gradient(#7DF9FF,#2F8FE2);box-shadow:0 0 8px rgba(125,249,255,.65)}
+.roll-overlay:not(.mini) .roll-card-showcase .hub-center .hc-desc{font-size:10px;line-height:1.45;color:rgba(234,244,255,.85);text-align:justify;text-shadow:0 1px 3px rgba(0,0,0,.9);margin-top:3px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .roll-overlay:not(.mini) .roll-card-showcase .hub-center .hc-stats{font-size:12px;margin-top:5px;gap:10px}
 .roll-overlay.mini .roll-actions{display:none;}
 /* Strip kecil di mini-reveal: di ATAS kartu, jadi tombol hide. Saat collapsed kartu sembunyi, strip tetap nempel di atas AUTO buat buka lagi. */
@@ -210,7 +232,8 @@ body.on-lobby .weather-panel.show{display:flex;}
 /* Panel grid item (tab ITEM) */
 .bp-items-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;overflow-y:auto;align-content:start;padding-top:4px;}
 /* Placeholder tab ARTEFAK / PET */
-.bp-soon{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);}
+.bp-itemgrid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;overflow-y:auto;align-content:start;padding-top:4px} /* alias nama class yang dipakai markup tab ITEM */
+.bp-soon{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);}
 .bp-soon-ic{font-size:52px;opacity:.5;}
 .bp-soon-t{font-family:"Barlow Condensed";font-weight:800;font-size:22px;letter-spacing:.12em;color:var(--text);}
 .bp-soon-s{font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.24em;opacity:.6;}
@@ -372,6 +395,22 @@ body.on-lobby .weather-panel.show{display:flex;}
 .bps-hover.show{display:block;}
 .bps-hover .hub-center{cursor:default;box-shadow:0 14px 40px rgba(0,0,0,.6);}
 .bps-hover .hub-center:hover{transform:none;}
+/* ===== BPS HOVER = DESAIN REVEAL/LOBBY v2 (dek + weather + backpack) ===== */
+.bps-hover .hub-center{background:linear-gradient(180deg,#1b1418,#0c0a0c);border-color:transparent;overflow:visible;box-shadow:0 14px 40px rgba(0,0,0,.6)}
+.bps-hover .hub-center[class*="mut-"]::before,.bps-hover .hub-center[data-tier="UR"]::before,.bps-hover .hub-center[data-tier="EX"]::before{z-index:1} /* ring mutasi/exFoil di bawah teks */
+.bps-hover .hub-center .hc-img{overflow:visible;border-radius:inherit}
+.bps-hover .hub-center .hc-img img,.bps-hover .hub-center .hc-img video{border-radius:inherit}
+.bps-hover .hub-center .hc-name-top{top:-10px;left:-11px;max-width:none;font-family:"Barlow Condensed";font-weight:800;font-size:16px;line-height:.98;letter-spacing:.03em;white-space:nowrap;overflow:visible;transform:skewX(-4deg);text-shadow:1px 1px 0 #0b0e14,2px 2px 0 #0b0e14,3px 3px 0 #0b0e14,4px 4px 0 #0b0e14,5px 5px 0 #080a0f,6px 6px 0 #080a0f,7px 9px 16px rgba(0,0,0,.9),0 0 22px color-mix(in srgb,var(--tcol,#2F8FE2) 55%,transparent)}
+.bps-hover .hub-center .hc-chance{top:18px;left:-4px;font-family:"Barlow Condensed";font-weight:800;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--tcol,#2F8FE2);padding:1px 8px;border-radius:6px;background:rgba(6,9,14,.88);border:1px solid currentColor;text-shadow:0 0 10px color-mix(in srgb,var(--tcol,#2F8FE2) 70%,transparent);box-shadow:0 4px 10px rgba(0,0,0,.6);transform:skewX(-4deg);white-space:nowrap}
+.bps-hover .hub-center .hc-badges{top:-11px;right:-10px;gap:4px}
+.bps-hover .hub-center .hc-badges .mut-badge,.bps-hover .hub-center .hc-badges .hc-trait,.bps-hover .hub-center .shiny-badge{height:18px;padding:0 6px;font-size:10px}
+.bps-hover .hub-center .hc-skill{display:flex;align-items:center;gap:6px;font-family:"Barlow Condensed";font-weight:800;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#7DF9FF;text-shadow:0 0 8px rgba(125,249,255,.5),0 1px 4px rgba(0,0,0,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.bps-hover .hub-center .hc-skill::before{content:"";flex:none;width:3px;height:10px;border-radius:2px;background:linear-gradient(#7DF9FF,#2F8FE2);box-shadow:0 0 8px rgba(125,249,255,.65)}
+.bps-hover .hub-center .hc-desc{font-size:8px;line-height:1.4;color:rgba(234,244,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.9);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:2px}
+.bps-hover .hub-center .hc-stats{justify-content:flex-start;gap:12px;font-family:"Barlow Condensed";font-weight:800;font-size:14px;letter-spacing:.04em;text-shadow:0 2px 8px rgba(0,0,0,.95)}
+.bps-hover .hub-center .hc-stats .hp{color:#5CF0A8}
+.bps-hover .hub-center .hc-stats .atk{color:#FFD27A}
+.bps-hover .hub-center .hc-info{background:linear-gradient(to top,rgba(6,8,12,.92) 34%,rgba(6,8,12,.5) 66%,transparent);padding:18px 10px 9px;border-radius:0 0 20px 20px}
 .bp-tile .bpt-ctl{position:absolute;top:2px;right:2px;z-index:3;display:flex;flex-direction:column;gap:3px;}
 .bp-tile .bpt-fav,.bp-tile .bpt-lock{width:18px;height:18px;border-radius:6px;border:none;background:rgba(12,14,16,.8);color:#cfd6dd;font-size:11px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
 .bp-tile .bpt-fav.on{color:#FFC93C;}
@@ -2023,7 +2062,7 @@ body.on-tower #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
 .backpack-panel .bp-tile.in-deck::before{content:"\2713";position:absolute;right:-6px;bottom:-6px;width:22px;height:22px;border-radius:50%;z-index:3;background:linear-gradient(135deg,var(--ice),#5CF0A8);color:#071016;font-weight:900;font-size:12px;display:grid;place-items:center;box-shadow:0 4px 12px rgba(0,0,0,.6)}
 .backpack-panel{--ice:#7DF9FF;--cyan:#7DF9FF}
 /* ===== POLISH: samakan persis dgn _tmp/backpack-proto.html ===== */
-.backpack-panel{width:min(1080px,96vw);max-width:none;height:auto;max-height:92vh}
+.backpack-panel{width:min(1080px,96vw);max-width:none;height:min(92vh,720px)} /* tinggi tetap: tab ITEM/ARTEFAK/PET nggak mengecil */
 .backpack-panel .bp-tab{flex:0 1 auto}
 .backpack-panel .bp-body{padding:16px 22px 22px}
 .backpack-panel .bp-h{letter-spacing:.22em;margin:6px 0 8px;display:flex;align-items:center;gap:10px}
@@ -2791,6 +2830,35 @@ function stopRollAnimation() {
   if (ra) ra.classList.remove('on');
 }
 
+function rvFx(card, overlay, tcol) {
+  try {
+    if (!tcol) tcol = '#7DF9FF';
+    const r = card.getBoundingClientRect();
+    for (let i = 0; i < 14; i++) {
+      const p = document.createElement('i'); p.className = 'rv-part';
+      const cx = r.left + (i % 2 ? r.width : 0), cy = r.top + Math.random() * r.height;
+      p.style.left = cx + 'px'; p.style.top = cy + 'px';
+      const ang = Math.atan2(cy - (r.top + r.height / 2), cx - (r.left + r.width / 2)) + (Math.random() - .5);
+      const dist = 90 + Math.random() * 140;
+      p.style.setProperty('--ox', Math.cos(ang) * dist + 'px');
+      p.style.setProperty('--oy', Math.sin(ang) * dist + 'px');
+      p.style.background = tcol; p.style.filter = 'drop-shadow(0 0 6px ' + tcol + ')';
+      p.style.animationDelay = (i * 0.04) + 's';
+      overlay.appendChild(p); setTimeout(() => p.remove(), 2600);
+    }
+    for (let i = 0; i < 20; i++) {
+      const d = document.createElement('i'); d.className = 'rv-dust';
+      d.style.left = (r.left + Math.random() * r.width) + 'px';
+      d.style.top = (r.top + r.height * (0.4 + Math.random() * 0.55)) + 'px';
+      const s = 3 + Math.random() * 6; d.style.width = d.style.height = s + 'px';
+      d.style.setProperty('--dx', ((Math.random() - .5) * 160) + 'px');
+      d.style.setProperty('--dy', (-(120 + Math.random() * 160)) + 'px');
+      d.style.animationDelay = (i * 0.06) + 's';
+      overlay.appendChild(d); setTimeout(() => d.remove(), 3200);
+    }
+  } catch (e) {}
+}
+
 function showRollResult(result) {
   const overlay = document.getElementById('rollOverlay');
   if (!overlay) return;
@@ -2808,20 +2876,19 @@ function showRollResult(result) {
   showcase.innerHTML = hubCardHtml(eq);
   const mut = eq.mut!=="none" ? eq.mut : null;
   showcase.style.borderColor = mut ? MUT_COLOR[mut] : (TIER_COLOR[CARDS[eq.char].tier] || "var(--cyan)");
+  showcase.style.setProperty('--tcol', mut ? (MUT_COLOR[mut] || '#7DF9FF') : (TIER_COLOR[CARDS[eq.char].tier] || '#7DF9FF'));
 
   // Buka overlay. Animasi masuk HANYA sekali (saat pertama tampil) supaya tidak flicker muncul-hilang tiap tick.
   const wasVisible = overlay.style.display === 'flex';
   overlay.style.display = 'flex';
-  if (!wasVisible) {
+  // Cinematic reveal (port dari _tmp/reveal-proto): slam + flash + particles - hanya saat baru buka
+  if (!wasVisible && !rollState.mini) {
     showcase.style.transition = 'none';
-    showcase.style.opacity = '0';
-    showcase.style.transform = 'scale(0.8)';
-    setTimeout(() => {
-      showcase.style.transition = 'all 0.4s ease-in-out';
-      showcase.style.opacity = '1';
-      showcase.style.transform = 'scale(1)';
-    }, 50);
+    showcase.classList.remove('rv-slam'); void showcase.offsetWidth; showcase.classList.add('rv-slam');
+    const tcol = mut ? (MUT_COLOR[mut] || '#7DF9FF') : (TIER_COLOR[CARDS[eq.char].tier] || '#7DF9FF');
+    setTimeout(() => rvFx(showcase, overlay, tcol), 560);
   } else {
+    showcase.classList.remove('rv-slam');
     showcase.style.transition = '';
     showcase.style.opacity = '1';
     showcase.style.transform = 'scale(1)';
@@ -2873,6 +2940,7 @@ function hideRollResult() {
   
   const showcase = overlay.querySelector('.roll-card-showcase');
   if (showcase) {
+    showcase.classList.remove('rv-slam');
     showcase.style.transition = 'all 0.3s ease-out';
     showcase.style.opacity = '0';
     showcase.style.transform = 'scale(0.8)';
