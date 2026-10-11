@@ -47,8 +47,6 @@ function artLuckPct(){return state&&Array.isArray(state.artOwned)?state.artOwned
 function petLuckFlat(){const d=state&&state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;return d?(d.flat||0):0;}
 function petLuckPct(){const d=state&&state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;return d?(d.pct||0):0;}
 function totalLuck(){const p=state?.player||{};const base=p.luckBase??p.luck??1;const flat=(p.luckFlat||0)+treeLuckFlat()+activeLuckBuff()+artLuckFlat()+petLuckFlat();const pct=(p.luckPercent||0)+treeLuckPct()+artLuckPct()+petLuckPct();return (base+flat)*(1+pct)*weatherLuckMult();}
-// Hitung effective chance dari result roll (setelah flat luck division)
-function effChanceFromResult(result){if(!result)return null;return Math.ceil(result.effChance/totalLuck());}
 // Chance yang ditampilkan ke user = base × statMult (MENTAH, TIDAK dibagi luck) — biar kerasa "wah 1 in 18 juta".
 // Sistem luck TETAP jalan di belakang layar (ngaruh ke bobot roll rngRoll + keliatan di Profil), cuma angkanya saja yang shown raw.
 function luckChance(charId,mut,shiny){return effChance(charId,mut,shiny);}
@@ -310,12 +308,6 @@ function treeOwned(id){return !!(state&&state.player&&state.player.tree&&state.p
 function treeLuckFlat(){let s=0;for(const n of TREE_NODES){if(treeOwned(n.id))s+=(n.luck||0);}return s;}
 function treeLuckPct(){let s=0;for(const n of TREE_NODES){if(treeOwned(n.id))s+=(n.luckPct||0);}return s;}
 function playerSpeedMult(){let s=1;for(const n of TREE_NODES){if(treeOwned(n.id))s+=(n.speed||0);}s+=activeSpeedBuff();return Math.min(5,s);}
-function treeCanBuy(id){
-  const n=TREE[id];if(!n||id==="root")return false;
-  if(treeOwned(id))return false;
-  if(!n.req.every(r=>r==="root"||treeOwned(r)))return false;
-  return (state&&state.player&&state.player.sp||0)>=n.cost;
-}
 function treeBuy(id){
   const n=TREE[id];if(!n||id==="root")return{ok:false,reason:"NODE"};
   if(!state||!state.player)return{ok:false,reason:"NOSTATE"};
@@ -356,11 +348,6 @@ function useMythicWeatherPotion(){
   save();
   return {ok:true,weather:w};
 }
-function buyWeatherPotion(price){
-  if(!state||typeof state.coins!=="number"||state.coins<price)return {ok:false,reason:"NO_COINS"};
-  state.coins-=price;state.potions=(state.potions||0)+1;save();
-  return {ok:true};
-}
 const WEATHER_POTION_PRICE=5000;
 /* ====== POTION LUCK & SPEED (drop dari Infinite Tower). Buff sementara 5 menit, konsisten dgn Weather Potion.
    Pakai -> +1 luck flat / +1x speed selama window; pakai lagi saat masih aktif = nambah stack + refresh durasi. ====== */
@@ -391,7 +378,6 @@ function renderWeatherDock(){
   panel.classList.add("show");
   wcHoverBind();
 }
-function fmtShortCountdown(ms){const s=Math.max(0,Math.floor(ms/1000));const p=x=>String(x).padStart(2,"0");return p(Math.floor(s/60))+":"+p(s%60);}
 function toast(main,sub,color){
   const t=document.getElementById("weatherToast");if(!t)return;
   t.style.setProperty("--wdc",color||"#38b7ff");
@@ -415,14 +401,6 @@ const RNG_DROP_RATES=[
   {tier:"UR",     name:"Epic",       baseWeight:45000},   // 4.5% chance
   {tier:"EX",     name:"Legendary",  baseWeight:24500}    // 2.45% chance
 ];
-
-// Helper: get all cards filtered by tier (exclude noGacha)
-function getCardsByTier(tier){
-  return MASTER_CARD_INDEX.filter(c=>c.tier===tier&&!c.noGacha);
-}
-function getCards(){
-  return MASTER_CARD_INDEX;
-}
 
 // Main RNG roll function. luckMultiplier = totalLuck() = (base+flat)*(1+percent).
 // Weight = 1/ch^(1/L): pangkat mengecil saat luck naik -> distribusi MERATA ke arah kartu langka (luck MEMBANTU).
@@ -458,13 +436,6 @@ function rngRoll(luckMultiplier=1,speedMultiplier=1){
     effChance:Math.ceil(pick.ch/L),                    // flat display = ch / totalLuck
     speedBoost:speedMultiplier
   };
-}
-
-// Instant reward for clearing chapters
-function getChapterReward(chapterNo){
-  // Chapter 1 = 500 cards instant, Chapter 2+ = 1000/5000 cards
-  const rollCounts={1:500,2:1000,3:5000,4:5000,5:5000};
-  return{rollCount:rollCounts[chapterNo]||1000,tiers:["R","SR","SSR"]}; // No UR/EX for story rewards
 }
 
 /* ========== BACKPACK + ROLL SYSTEM ========== */
@@ -1114,8 +1085,6 @@ function cardTier(id){const c=CARDS[id];return c?c.tier:"";}
    EX = jurus se-layar penuh + background video/gambar sendiri DI BELAKANG kartu (layer *-bgfx, z-1).
    UR dan ke bawah = animasi tetap jalan (bilah, partikel, ledakan) tapi TANPA background sendiri.
    Yang mengizinkan background = TIER kartu, bukan daftar id — jadi kartu baru ikut aturan ini otomatis. */
-const SIG_BG_TIER="EX";
-function sigBackdrop(id){return cardTier(id)===SIG_BG_TIER;}
 function passiveName(id){const c=CARDS[id];return c?c.passive.name:"";}
 document.addEventListener("error",e=>{
   const t=e.target;
@@ -1200,7 +1169,6 @@ function mutBadge(mut){
   const label=MUT_LABEL[mut];if(!label)return "";
   return mutText(mut,label);
 }
-function shinyBadge(){return '<span class="shiny-badge">SHINY</span>';}
 const shinyCls=s=>s&&s.shiny?" shiny":"";
 /* Hadiah login harian 7 hari (coin) — total 950.000, reset tiap 00:00 */
 const DAILY_REWARDS=[30000,50000,70000,100000,150000,200000,400000];
@@ -1272,7 +1240,6 @@ function resolveFx(stack,enemyFx){
 }
 
 function cardStats(charId,mut,trait,shiny){const c=CARDS[charId];if(!c)return{hp:0,atk:0,def:0};const base=(MUT_MULT[mut||"none"]||1)*(shiny?SHINY_MULT:1);const hp=Math.round(c.base_hp*base*(TRAIT_HP[trait||"none"]||1)),atk=Math.round(c.base_atk*base*(TRAIT_ATK[trait||"none"]||1));return{hp,atk,def:hp};}
-function getTierColor(t){return TIER_COLOR[t]||"#9A8A8B";}
 /* POWER = total HP + ATK semua kartu yang dipakai: kartu utama + TAG (tetap terdeteksi walau cuma 1 kartu) */
 function totalPower(){
   const a=equipped(),b=equipped2();
@@ -1514,8 +1481,6 @@ const purpleAudio=new Audio("assets/audio/hollow_purple.mp3");
 purpleAudio.preload="auto";
 const domainAudio=new Audio("assets/audio/domain_void.mp3");
 domainAudio.preload="auto";
-const rantonAudio=new Audio("assets/audio/ranton.mp3");
-rantonAudio.preload="auto";
 const punchAudio=new Audio("assets/audio/punch.mp3");
 punchAudio.preload="auto";
 function playClip(a){
@@ -1553,230 +1518,7 @@ function fightShout(){
   if(state.muted)return;
   try{fightAudio.currentTime=0;fightAudio.play().catch(()=>{});}catch(e){}
 }
-/* ---------- suara serangan Madara: Truth-Seeking Orbs (whoosh → boom), sinkron madaraFx ---------- */
-function orbWhoosh(t0,gain){
-  const a=actxOf(),n=Math.max(1,Math.floor(a.sampleRate*.36));
-  const buf=a.createBuffer(1,n,a.sampleRate),d=buf.getChannelData(0);
-  for(let i=0;i<n;i++)d[i]=Math.random()*2-1;
-  const s=a.createBufferSource();s.buffer=buf;
-  const lp=a.createBiquadFilter();lp.type="lowpass";lp.Q.value=.8;
-  lp.frequency.setValueAtTime(320,t0);lp.frequency.exponentialRampToValueAtTime(2800,t0+.32);
-  const g=a.createGain();
-  g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(gain,t0+.13);g.gain.exponentialRampToValueAtTime(.0001,t0+.37);
-  s.connect(lp);lp.connect(g);g.connect(a.destination);s.start(t0);s.stop(t0+.4);
-}
-function orbBoom(t0,gain,f0){
-  const a=actxOf();
-  const s=a.createOscillator();s.type="sine";
-  s.frequency.setValueAtTime(f0,t0);s.frequency.exponentialRampToValueAtTime(32,t0+.5);
-  const g=a.createGain();
-  g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(gain,t0+.03);g.gain.exponentialRampToValueAtTime(.0001,t0+.6);
-  s.connect(g);g.connect(a.destination);s.start(t0);s.stop(t0+.65);
-}
-function madaraSound(crit){
-  if(state.muted)return;
-  try{
-    const a=actxOf(),t0=a.currentTime;
-    orbWhoosh(t0,crit?.17:.1);
-    orbBoom(t0+.38,crit?.4:.27,crit?180:140);
-    if(crit){orbBoom(t0+.5,.2,88);noiseBurst(t0+.38,.12,1900,.05);}
-  }catch(e){}
-}
-/* ---------- suara RANTON Madara: sambaran petir (crack → zap listrik → kresek-kresek bolt → gemuruh guntur) ---------- */
-function rantonZap(t0,gain){return;/*animasi skill dihapus*/
-  const a=actxOf(),s=a.createOscillator();s.type="sawtooth";
-  s.frequency.setValueAtTime(1900,t0);s.frequency.exponentialRampToValueAtTime(210,t0+.2);
-  const hp=a.createBiquadFilter();hp.type="highpass";hp.frequency.value=320;
-  const g=a.createGain();
-  g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(gain,t0+.012);g.gain.exponentialRampToValueAtTime(.0001,t0+.24);
-  s.connect(hp);hp.connect(g);g.connect(a.destination);s.start(t0);s.stop(t0+.26);
-}
-function thunderRumble(t0,dur,gain){
-  const a=actxOf(),n=Math.max(1,Math.floor(a.sampleRate*dur));
-  const buf=a.createBuffer(1,n,a.sampleRate),d=buf.getChannelData(0);
-  for(let i=0;i<n;i++){const e=i/n;d[i]=(Math.random()*2-1)*(1-e)*(0.55+0.45*Math.sin(e*38));}
-  const s=a.createBufferSource();s.buffer=buf;
-  const lp=a.createBiquadFilter();lp.type="lowpass";lp.Q.value=.6;
-  lp.frequency.setValueAtTime(430,t0);lp.frequency.exponentialRampToValueAtTime(85,t0+dur);
-  const g=a.createGain();
-  g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(gain,t0+.05);g.gain.exponentialRampToValueAtTime(.0001,t0+dur);
-  s.connect(lp);lp.connect(g);g.connect(a.destination);s.start(t0);s.stop(t0+dur+.05);
-  const sub=a.createOscillator();sub.type="sine";
-  sub.frequency.setValueAtTime(68,t0);sub.frequency.exponentialRampToValueAtTime(30,t0+dur);
-  const sg=a.createGain();sg.gain.setValueAtTime(.0001,t0);sg.gain.exponentialRampToValueAtTime(gain*.7,t0+.06);sg.gain.exponentialRampToValueAtTime(.0001,t0+dur);
-  sub.connect(sg);sg.connect(a.destination);sub.start(t0);sub.stop(t0+dur+.05);
-}
-function rantonSound(crit){
-  if(state.muted)return;
-  try{
-    const a=actxOf(),t0=a.currentTime;
-    noiseBurst(t0,.05,4200,crit?.26:.19);
-    rantonZap(t0,crit?.2:.15);
-    const NB=crit?8:4;
-    for(let i=0;i<NB;i++){
-      const tt=t0+.05+Math.random()*.32;
-      noiseBurst(tt,.04,2600+Math.random()*2800,(crit?.12:.09)*(.6+Math.random()*.6));
-    }
-    thunderRumble(t0+.05,crit?.95:.62,crit?.4:.28);
-    if(crit){thunderRumble(t0+.44,.6,.2);noiseBurst(t0+.06,.06,6200,.12);}
-  }catch(e){}
-}
 /* ---------- suara serangan Gojo: Hollow Purple (charge → boom tebal + crackle) ---------- */
-function voidHum(t0,dur,gain,f0,f1,out){
-  const a=actxOf(),s=a.createOscillator();s.type="sine";
-  s.frequency.setValueAtTime(f0,t0);s.frequency.exponentialRampToValueAtTime(f1,t0+dur);
-  const g=a.createGain();
-  g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(gain,t0+dur*.18);g.gain.exponentialRampToValueAtTime(.0001,t0+dur);
-  s.connect(g);g.connect(out||a.destination);s.start(t0);s.stop(t0+dur+.05);
-}
-function purpleWhine(t0,dur,gain,f0,f1){
-  const a=actxOf(),d=Math.max(.1,dur);
-  const bp=a.createBiquadFilter();bp.type="bandpass";bp.Q.value=7;
-  bp.frequency.setValueAtTime(500,t0);bp.frequency.exponentialRampToValueAtTime(5200,t0+d);
-  const shimmer=a.createOscillator();shimmer.type="sine";shimmer.frequency.value=9;const shg=a.createGain();shg.gain.value=900;shimmer.connect(shg);shg.connect(bp.frequency);
-  const g=a.createGain();
-  g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(gain,t0+d*.62);g.gain.exponentialRampToValueAtTime(gain*.55,t0+d*.9);g.gain.exponentialRampToValueAtTime(.0001,t0+d);
-  const o1=a.createOscillator();o1.type="sawtooth";o1.frequency.setValueAtTime(f0,t0);o1.frequency.exponentialRampToValueAtTime(f1,t0+d);
-  const o2=a.createOscillator();o2.type="sawtooth";o2.frequency.setValueAtTime(f0*1.5,t0);o2.frequency.exponentialRampToValueAtTime(f1*1.5,t0+d);o2.detune.value=12;
-  const o3=a.createOscillator();o3.type="sine";o3.frequency.setValueAtTime(f0*2.01,t0);o3.frequency.exponentialRampToValueAtTime(f1*2.01,t0+d);
-  const og=a.createGain();og.gain.value=.5;o1.connect(og);o2.connect(og);og.connect(bp);o3.connect(bp);
-  bp.connect(g);g.connect(a.destination);
-  [o1,o2,o3,shimmer].forEach(x=>{x.start(t0);x.stop(t0+d+.05);});
-}
-function purpleLaunch(t0,gain){
-  const a=actxOf(),dur=.32;
-  const n=Math.max(1,Math.floor(a.sampleRate*dur));
-  const buf=a.createBuffer(1,n,a.sampleRate),d=buf.getChannelData(0);
-  for(let i=0;i<n;i++){const e=i/n;d[i]=(Math.random()*2-1)*e;}
-  const s=a.createBufferSource();s.buffer=buf;
-  const lp=a.createBiquadFilter();lp.type="lowpass";lp.Q.value=3;
-  lp.frequency.setValueAtTime(2600,t0);lp.frequency.exponentialRampToValueAtTime(170,t0+dur);
-  const g=a.createGain();
-  g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(gain,t0+dur*.82);g.gain.exponentialRampToValueAtTime(.0001,t0+dur);
-  s.connect(lp);lp.connect(g);g.connect(a.destination);s.start(t0);s.stop(t0+dur+.02);
-  const sub=a.createOscillator();sub.type="sine";sub.frequency.setValueAtTime(40,t0);sub.frequency.exponentialRampToValueAtTime(130,t0+dur);
-  const sg=a.createGain();sg.gain.setValueAtTime(.0001,t0);sg.gain.exponentialRampToValueAtTime(gain*.6,t0+dur*.75);sg.gain.exponentialRampToValueAtTime(.0001,t0+dur);
-  sub.connect(sg);sg.connect(a.destination);sub.start(t0);sub.stop(t0+dur+.02);
-}
-function purpleDetonate(t0,gain){
-  const a=actxOf();
-  const ws=a.createWaveShaper(),k=40,nc=1024,curve=new Float32Array(nc);
-  for(let i=0;i<nc;i++){const x=i*2/nc-1;curve[i]=(1+k)*x/(1+k*Math.abs(x));}
-  ws.curve=curve;ws.oversample="4x";
-  const s=a.createOscillator();s.type="sine";s.frequency.setValueAtTime(300,t0);s.frequency.exponentialRampToValueAtTime(18,t0+.7);
-  const s2=a.createOscillator();s2.type="sawtooth";s2.frequency.setValueAtTime(150,t0);s2.frequency.exponentialRampToValueAtTime(28,t0+.5);
-  const s2g=a.createGain();s2g.gain.value=.5;s2g.connect(ws);s.connect(ws);
-  const g=a.createGain();g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(gain,t0+.02);g.gain.exponentialRampToValueAtTime(gain*.5,t0+.28);g.gain.exponentialRampToValueAtTime(.0001,t0+1.1);
-  ws.connect(g);g.connect(a.destination);s.start(t0);s2.start(t0);s.stop(t0+1.15);s2.stop(t0+.6);
-  const scr=a.createOscillator();scr.type="sawtooth";scr.frequency.setValueAtTime(2400,t0);scr.frequency.exponentialRampToValueAtTime(320,t0+.4);
-  const vib=a.createOscillator();vib.type="sine";vib.frequency.value=32;const vibg=a.createGain();vibg.gain.value=220;vib.connect(vibg);vibg.connect(scr.frequency);
-  const bp=a.createBiquadFilter();bp.type="bandpass";bp.Q.value=2;bp.frequency.value=2200;
-  const sg2=a.createGain();sg2.gain.setValueAtTime(.0001,t0);sg2.gain.exponentialRampToValueAtTime(gain*.32,t0+.02);sg2.gain.exponentialRampToValueAtTime(.0001,t0+.42);
-  scr.connect(bp);bp.connect(sg2);sg2.connect(a.destination);scr.start(t0);vib.start(t0);scr.stop(t0+.45);vib.stop(t0+.45);
-  const n=Math.max(1,Math.floor(a.sampleRate*1.1));
-  const buf=a.createBuffer(1,n,a.sampleRate),d=buf.getChannelData(0);
-  for(let i=0;i<n;i++){const e=i/n;d[i]=(Math.random()*2-1)*Math.pow(1-e,1.6);}
-  const ns=a.createBufferSource();ns.buffer=buf;
-  const lp=a.createBiquadFilter();lp.type="lowpass";lp.Q.value=.6;
-  lp.frequency.setValueAtTime(900,t0);lp.frequency.exponentialRampToValueAtTime(110,t0+1.0);
-  const ng=a.createGain();ng.gain.setValueAtTime(.0001,t0);ng.gain.exponentialRampToValueAtTime(gain*.5,t0+.05);ng.gain.exponentialRampToValueAtTime(.0001,t0+1.05);
-  ns.connect(lp);lp.connect(ng);ng.connect(a.destination);ns.start(t0);ns.stop(t0+1.1);
-  const delay=a.createDelay();delay.delayTime.value=.16;const fb=a.createGain();fb.gain.value=.32;const wet=a.createGain();wet.gain.value=.5;
-  delay.connect(fb);fb.connect(delay);delay.connect(wet);wet.connect(a.destination);
-  const hp=a.createBiquadFilter();hp.type="highpass";hp.frequency.value=1400;
-  [1568,2093,2637].forEach(fr=>{
-    const o=a.createOscillator();o.type="triangle";o.frequency.value=fr;
-    const og=a.createGain();og.gain.setValueAtTime(.0001,t0);og.gain.exponentialRampToValueAtTime(.045,t0+.02);og.gain.exponentialRampToValueAtTime(.0001,t0+.7);
-    o.connect(hp);hp.connect(og);og.connect(a.destination);og.connect(delay);
-    o.start(t0);o.stop(t0+.75);
-  });
-}
-function redReversal(t0,gain){
-  const a=actxOf();
-  const o=a.createOscillator();o.type="sawtooth";
-  o.frequency.setValueAtTime(560,t0);o.frequency.exponentialRampToValueAtTime(120,t0+.24);
-  const lp=a.createBiquadFilter();lp.type="lowpass";lp.Q.value=6;
-  lp.frequency.setValueAtTime(1000,t0);lp.frequency.exponentialRampToValueAtTime(3800,t0+.05);lp.frequency.exponentialRampToValueAtTime(400,t0+.24);
-  const g=a.createGain();g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(gain,t0+.015);g.gain.exponentialRampToValueAtTime(.0001,t0+.28);
-  o.connect(lp);lp.connect(g);g.connect(a.destination);o.start(t0);o.stop(t0+.3);
-  const n=Math.max(1,Math.floor(a.sampleRate*.32));
-  const buf=a.createBuffer(1,n,a.sampleRate),d=buf.getChannelData(0);
-  for(let i=0;i<n;i++){const e=i/n;d[i]=(Math.random()*2-1)*(1-e);}
-  const s=a.createBufferSource();s.buffer=buf;
-  const bp=a.createBiquadFilter();bp.type="bandpass";bp.Q.value=1.3;bp.frequency.value=1700;
-  const ng=a.createGain();ng.gain.setValueAtTime(.0001,t0);ng.gain.exponentialRampToValueAtTime(gain*.6,t0+.02);ng.gain.exponentialRampToValueAtTime(.0001,t0+.32);
-  s.connect(bp);bp.connect(ng);ng.connect(a.destination);s.start(t0);s.stop(t0+.34);
-}
-function gojoSound(crit,impactMs){
-  if(state.muted)return;
-  try{
-    const a=actxOf(),t0=a.currentTime;
-    const b=t0+((impactMs!=null?impactMs:340)/1000);
-    if(crit){
-      // HOLLOW PURPLE: pakai klip mp3 asli (energy beam blast) yang diluncurkan dari bola ke musuh, dipotong 2 detik dengan fade-out
-      playClipDur(purpleAudio,2000,250);
-    }else{
-      // REVERSAL RED (serangan dasar Gojo): blast tolak + thud void + ping logam "赫"
-      redReversal(t0,.3);
-      voidHum(t0+.02,.42,.26,180,34);
-      const o=a.createOscillator();o.type="triangle";
-      o.frequency.setValueAtTime(2093,t0);o.frequency.exponentialRampToValueAtTime(1400,t0+.22);
-      const og=a.createGain();og.gain.setValueAtTime(.0001,t0);og.gain.exponentialRampToValueAtTime(.05,t0+.02);og.gain.exponentialRampToValueAtTime(.0001,t0+.26);
-      o.connect(og);og.connect(a.destination);o.start(t0);o.stop(t0+.28);
-      noiseBurst(t0+.02,.16,3000,.05);
-    }
-  }catch(e){}
-}
-/* ---------- suara void Gojo: Unlimited Void (swell sub + riser mistis + kord kristal + BUKA domain) ---------- */
-function voidRiser(t0,dur,gain,out){
-  const a=actxOf();
-  const o=a.createOscillator();o.type="sawtooth";o.frequency.setValueAtTime(60,t0);o.frequency.exponentialRampToValueAtTime(440,t0+dur);
-  const lp=a.createBiquadFilter();lp.type="lowpass";lp.Q.value=8;lp.frequency.setValueAtTime(300,t0);lp.frequency.exponentialRampToValueAtTime(2400,t0+dur);
-  const trem=a.createOscillator();trem.type="sine";trem.frequency.value=14;const tg=a.createGain();tg.gain.value=gain*.4;
-  const g=a.createGain();g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(gain,t0+dur*.85);g.gain.exponentialRampToValueAtTime(.0001,t0+dur);
-  trem.connect(tg);tg.connect(g.gain);
-  o.connect(lp);lp.connect(g);g.connect(out||a.destination);
-  o.start(t0);trem.start(t0);o.stop(t0+dur+.05);trem.stop(t0+dur+.05);
-}
-function makeIR(dur,decay){
-  const a=actxOf(),n=Math.max(1,Math.floor(a.sampleRate*dur));
-  const buf=a.createBuffer(2,n,a.sampleRate);
-  for(let c=0;c<2;c++){
-    const d=buf.getChannelData(c);
-    for(let i=0;i<n;i++){const e=i/n;d[i]=(Math.random()*2-1)*Math.pow(1-e,decay);}
-  }
-  return buf;
-}
-function domainVoid(){return;/*animasi skill dihapus*/
-  if(state.muted)return;
-  try{
-    const a=actxOf(),t0=a.currentTime+0.02;
-    // base: klip mp3 domain (body asli) + layer sintesis sinematik di atasnya
-    try{playClip(domainAudio);}catch(e){}
-    const bus=a.createGain();bus.gain.value=1;bus.connect(a.destination);
-    const conv=a.createConvolver();conv.buffer=makeIR(3.6,3.0);
-    const wet=a.createGain();wet.gain.value=.55;
-    bus.connect(conv);conv.connect(wet);wet.connect(a.destination);
-    // 1) sub-drop void (jatuh dari rendah)
-    voidHum(t0,1.7,.28,92,24,bus);
-    // 2) rising void sweep (nada naik pelan)
-    voidRiser(t0,1.15,.05,bus);
-    // 3) kord shimmer kristal "Unlimited Void" — nada tinggi detuned mengembang lewat reverb
-    [523.25,659.25,783.99,1046.5,1318.5].forEach((fr,idx)=>{
-      const o=a.createOscillator();o.type="sine";o.frequency.value=fr;o.detune.value=(idx%2?7:-7);
-      const g=a.createGain();const st=t0+0.12+idx*0.055;
-      g.gain.setValueAtTime(.0001,st);
-      g.gain.exponentialRampToValueAtTime(.048,st+0.05);
-      g.gain.exponentialRampToValueAtTime(.0001,st+1.5);
-      o.connect(g);g.connect(bus);
-      o.start(st);o.stop(st+1.6);
-    });
-    // 4) benturan domain (snap) ~0.34s: thump + kilat noise
-    const bt=t0+0.34;
-    voidHum(bt,.55,.2,150,55,bus);
-    noiseBurst(bt,.05,2600,.04);
-  }catch(e){}
-}
 /* =============== SHELL RENDER =============== */
 const app=document.getElementById("app");
 const ROUTES={"#/lobby":"LOBBY","#/":"STORY","#/raid":"BOSS RAID","#/tower":"INFINITE TOWER","#/settings":"PENGATURAN"};
@@ -1854,7 +1596,6 @@ function claimDaily(){
   sfx.win();save();
   renderShell();renderDaily();
 }
-function openDaily(){renderDaily();document.getElementById("dailyModal").classList.add("show");}
 function closeDaily(){document.getElementById("dailyModal").classList.remove("show");if(route()==="#/lobby")render();}
 function tickDaily(){
   const ms=nextResetMs();
@@ -2019,7 +1760,7 @@ function meFighterHtml(s){
   const st=cardStats(s.char,s.mut,s.trait,s.shiny);
   const mut=(s.mut&&s.mut!=="none")?s.mut:null;
   const trait=(s.trait&&s.trait!=="none")?s.trait:null;
-  return `<div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}"${CARDS[s.char]&&CARDS[s.char].pos?` style="object-position:${CARDS[s.char].pos}"`:''}>${madaraAura(s.char)}${shinyName('div','f-name','f-name-shine',mut,s.shiny,cardName(s.char))}<span class="hc-chance">1 in ${fmt(luckChance(s.char,s.mut,s.shiny))}</span>
+  return `<div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}"${CARDS[s.char]&&CARDS[s.char].pos?` style="object-position:${CARDS[s.char].pos}"`:''}>${shinyName('div','f-name','f-name-shine',mut,s.shiny,cardName(s.char))}<span class="hc-chance">1 in ${fmt(luckChance(s.char,s.mut,s.shiny))}</span>
     ${(s.shiny||mut||trait)?`<div class="f-badges">${s.shiny?'<span class="shiny-badge">SHINY</span>':''}${mut?mutChip(mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="hc-trait hc-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(14)}</span>`):''}</div>`:""}
     </div>
     <div class="hpbar"><i id="hpMe"></i><span id="hpMeT">${fmt(st.hp)} / ${fmt(st.hp)}</span></div>
@@ -2098,415 +1839,13 @@ function anim(sel,cls,noPair){
   const pulse=(e)=>{e.classList.remove(cls);void e.offsetWidth;e.classList.add(cls);setTimeout(()=>e.classList.remove(cls),520);};
   pulse(el);
 }
-function cleaveFx(sel,crit,white){return;/*animasi skill dihapus*/
-  const f=document.querySelector(sel);if(!f)return;
-  const d=document.createElement("div");
-  d.className="cleave"+(crit?" crit":"")+(white?" white":"");
-  const n=white?(crit?5:4):(crit?6:5);
-  let html="";
-  for(let i=0;i<n;i++){
-    const ang=((i/n)*180-90+(Math.random()*18-9)).toFixed(1);
-    const off=white?(Math.random()*40-20).toFixed(1):(Math.random()*130-65).toFixed(1);
-    const w=white?Math.round(150+Math.random()*70):Math.round(90+Math.random()*70);
-    const th=white?((crit?4:3)+Math.random()*(crit?6:5)):((crit?2.5:1.5)+Math.random()*(crit?4.5:3.5));
-    const del=(Math.random()*0.09).toFixed(2);
-    const dur=(0.36+Math.random()*0.14).toFixed(2);
-    const topPct=white?30:36;
-    html+=`<span class="blade" style="--ang:${ang}deg;top:calc(${topPct}% + ${off}px);--w:${w}%;--th:${th.toFixed(1)}px;--del:${del}s;--dur:${dur}s"></span>`;
-  }
-  html+='<span class="flash"></span>';
-  d.innerHTML=html;
-  f.appendChild(d);
-  setTimeout(()=>d.remove(),760);
-}
-function gojoFx(sel,crit){return;/*animasi skill dihapus*/
-  const f=document.querySelector(sel);if(!f)return;
-  const d=document.createElement("div");d.className="gojofx"+(crit?" crit":"");
-  let html='<span class="gp-flash"></span><span class="gp-rays"></span><span class="gp-swirl"></span><span class="gp-orb"></span><span class="gp-core"></span><span class="gp-ring"></span><span class="gp-ring r2"></span><span class="gp-white"></span>';
-  const n=crit?22:14;
-  for(let i=0;i<n;i++){
-    const ang=Math.random()*Math.PI*2;
-    const dist=(crit?150:120)+Math.random()*90;
-    const px=(Math.cos(ang)*dist).toFixed(0), py=(Math.sin(ang)*dist*0.85).toFixed(0);
-    const sz=(crit?4:3)+Math.round(Math.random()*4);
-    const pd=(0.4+Math.random()*0.28).toFixed(2), pdel=(0.16+Math.random()*0.16).toFixed(2);
-    html+=`<span class="gp-part" style="--px:${px}px;--py:${py}px;--gsz:${sz}px;--gpd:${pd}s;--gpdel:${pdel}s"></span>`;
-  }
-  d.innerHTML=html;
-  f.appendChild(d);
-  setTimeout(()=>d.remove(),crit?1150:950);
-}
-function reversalRedFx(sel){return;/*animasi skill dihapus*/
-  gojoSound(false,0);
-  const f=document.querySelector(sel);if(!f)return;
-  const d=document.createElement("div");d.className="redfx";
-  let html='<span class="rr-core"></span><span class="rr-ring"></span>';
-  for(let i=0;i<11;i++){
-    const ang=(Math.random()*150-75)*Math.PI/180;
-    const dist=64+Math.random()*86;
-    const rx=(Math.cos(ang)*dist).toFixed(0), ry=(Math.sin(ang)*dist).toFixed(0);
-    const rsz=(4+Math.random()*4).toFixed(0);
-    const rdel=(Math.random()*.13).toFixed(2);
-    html+=`<span class="rr-part" style="--rx:${rx}px;--ry:${ry}px;--rsz:${rsz}px;--rdel:${rdel}s"></span>`;
-  }
-  for(let i=0;i<6;i++){
-    const ang=Math.random()*120-60;
-    const rlen=(40+Math.random()*54).toFixed(0);
-    const rsz=(3+Math.random()*3).toFixed(0);
-    const rdel=(Math.random()*.1).toFixed(2);
-    html+=`<span class="rr-streak" style="--ang:${ang.toFixed(0)}deg;--rlen:${rlen}px;--rsz:${rsz}px;--rdel:${rdel}s"></span>`;
-  }
-  d.innerHTML=html;
-  f.appendChild(d);
-  f.classList.remove("hit");void f.offsetWidth;f.classList.add("knockback");setTimeout(()=>f.classList.remove("knockback"),560);
-  setTimeout(()=>d.remove(),640);
-}
-function hollowPurpleFx(crit,atkSel,defSel){return;/*animasi skill dihapus*/
-  const A=atkSel||".fighter.me",D=defSel||".fighter.foe";
-  const grid=document.querySelector(".battle-grid");if(!grid)return;
-  const meEl=document.querySelector(A),foeEl=document.querySelector(D);
-  if(!meEl||!foeEl){gojoSound(crit);gojoFx(D,crit);return;}
-  const mr=meEl.getBoundingClientRect(),fr=foeEl.getBoundingClientRect();
-  const ax=mr.left+mr.width/2, ay=mr.top+mr.height*0.42;
-  const bx=fr.left+fr.width/2, by=fr.top+fr.height*0.42;
-  const fly=crit?560:460;
-  const o=document.createElement("div");o.className="hpfx"+(crit?" crit":"");
-  o.innerHTML=`<span class="hp-ball" style="left:${ax.toFixed(0)}px;top:${ay.toFixed(0)}px;--dx:${(bx-ax).toFixed(0)}px;--dy:${(by-ay).toFixed(0)}px;--fly:${fly}ms"></span>`;
-  document.body.appendChild(o);
-  gojoSound(crit,fly);
-  setTimeout(()=>{o.remove();gojoFx(D,crit);},fly);
-}
 /* ---------- GALAXY ROAR (Eternal Dragon): charge bola beku -> sembur laser es -> ledakan percikan beku ----------
    Semua timing dibaca dari GALAXY supaya mesin battle (schedPhase / raid.timer / dlyAt) dan
    animasinya tidak saling lepas: kerusakan & getar kartu jatuh tepat di menit GALAXY.hit. */
 const GALAXY={chg:520,hit:900,total:2100};
-function galaxySound(phase){
-  if(state.muted)return;
-  try{
-    const a=actxOf(),t0=a.currentTime;
-    if(phase==="charge"){
-      purpleWhine(t0,GALAXY.chg/1000,.22,300,2400);
-      voidHum(t0,.5,.14,90,190);
-    }else if(phase==="fire"){
-      purpleLaunch(t0,.3);
-      playClipDur(purpleAudio,GALAXY.total-GALAXY.chg,420);
-    }else{
-      purpleDetonate(t0,.36);
-      impactBoom();
-    }
-  }catch(e){}
-}
-function galaxyRoarFx(atkSel,defSel,crit){return;/*animasi skill dihapus*/
-  const A=atkSel||".fighter.me",D=defSel||".fighter.foe";
-  const meEl=document.querySelector(A),foeEl=document.querySelector(D);
-  if(!meEl||!foeEl){cleaveFx(D,crit,true);return;}
-  const mr=meEl.getBoundingClientRect(),fr=foeEl.getBoundingClientRect();
-  const ax=mr.left+mr.width/2, ay=mr.top+mr.height*.42;
-  const bx=fr.left+fr.width/2, by=fr.top+fr.height*.42;
-  const len=Math.max(60,Math.hypot(bx-ax,by-ay));
-  const ang=(Math.atan2(by-ay,bx-ax)*180/Math.PI).toFixed(1);
-  const osz=crit?196:156, th=crit?74:56;
-  const o=document.createElement("div");o.className="gafx";
-  let html=`<span class="ga-orb" style="left:${ax.toFixed(0)}px;top:${ay.toFixed(0)}px;--osz:${osz.toFixed(0)}px;--chg:${GALAXY.chg}ms"></span>`;
-  /* keping salju tersedot: --ox/--oy = pusat bola (titik temu animasi), --fx/--fy = posisi awal */
-  const sn=crit?18:13;
-  for(let i=0;i<sn;i++){
-    const a2=Math.random()*Math.PI*2, dist=osz*.75+Math.random()*120;
-    const fx=(Math.cos(a2)*dist).toFixed(0), fy=(Math.sin(a2)*dist*.85).toFixed(0);
-    const zz=(2+Math.round(Math.random()*3));
-    html+=`<span class="ga-snow" style="--ox:${ax.toFixed(0)}px;--oy:${ay.toFixed(0)}px;--zz:${zz}px;--fx:${fx}px;--fy:${fy}px;--sd:${(.32+Math.random()*.26).toFixed(2)}s;--sdel:${(Math.random()*(GALAXY.chg/1000*.8)).toFixed(2)}s"></span>`;
-  }
-  html+=`<span class="ga-beam" style="--ax:${ax.toFixed(0)}px;--ay:${ay.toFixed(0)}px;--len:${len.toFixed(0)}px;--th:${th.toFixed(0)}px;--ang:${ang}deg;--bd:${GALAXY.total-GALAXY.chg}ms;--bdel:${(GALAXY.chg/1000).toFixed(2)}s"></span>`;
-  o.innerHTML=html;
-  document.body.appendChild(o);
-  galaxySound("charge");
-  setTimeout(()=>{galaxySound("fire");floatText(A,"GALAXY ROAR","crit");},GALAXY.chg);
-  setTimeout(()=>{
-    if(!document.body.contains(o))return;
-    galaxySound("boom");
-    let imp=`<span class="ga-flash" style="--bx:${bx.toFixed(0)}px;--by:${by.toFixed(0)}px"></span>`;
-    imp+=`<span class="ga-boom" style="--bx:${bx.toFixed(0)}px;--by:${by.toFixed(0)}px;--bsz:${(crit?330:250).toFixed(0)}px"></span>`;
-    imp+=`<span class="ga-mist" style="--bx:${bx.toFixed(0)}px;--by:${by.toFixed(0)}px;--msz:${(crit?520:430).toFixed(0)}px"></span>`;
-    for(let k=0;k<2;k++)imp+=`<span class="ga-wave" style="--bx:${bx.toFixed(0)}px;--by:${by.toFixed(0)}px;--wdel:${(k*.13).toFixed(2)}s"></span>`;
-    const n=crit?30:20;
-    for(let i=0;i<n;i++){
-      const a2=Math.random()*Math.PI*2;
-      const dist=(crit?150:110)+Math.random()*(crit?170:120);
-      const tx=(Math.cos(a2)*dist).toFixed(0), ty=(Math.sin(a2)*dist*.9).toFixed(0);
-      const sz=(4+Math.round(Math.random()*5)), sz2=sz+8+Math.round(Math.random()*14);
-      imp+=`<span class="ga-shard" style="--bx:${bx.toFixed(0)}px;--by:${by.toFixed(0)}px;--sz:${sz}px;--sz2:${sz2}px;--tx:${tx}px;--ty:${ty}px;--r:${Math.round(Math.random()*360)}deg;--fd:${(.56+Math.random()*.34).toFixed(2)}s;--fdel:${(Math.random()*.2).toFixed(2)}s"></span>`;
-    }
-    o.insertAdjacentHTML("beforeend",imp);
-    const foe=document.querySelector(D);
-    if(foe){foe.classList.remove("hit");void foe.offsetWidth;foe.classList.add("knockback");setTimeout(()=>foe.classList.remove("knockback"),560);}
-  },GALAXY.hit);
-  setTimeout(()=>o.remove(),GALAXY.total);
-}
-function domainExpansionFx(who){return;/*animasi skill dihapus*/
-  const grid=document.querySelector(".battle-grid");if(!grid)return;
-  const d=document.createElement("div");d.className="domvoid";
-  const vw=window.innerWidth, vh=window.innerHeight;
-  let html='';
-  // partikel: streak cahaya MENYAMPING, panjang & cepat, menyapu layar bolak-balik
-  const C=[["#E6ECF2","rgba(215,225,235,.85)"],["#C9D4DE","rgba(180,192,204,.85)"],["#c9a8ff","rgba(160,110,255,.85)"],["#e6c8ff","rgba(190,140,255,.85)"],["#ffffff","rgba(236,240,245,.9)"]];
-  const N=38;
-  for(let i=0;i<N;i++){
-    const dir=1;
-    const x0=-360;
-    const x1=vw+360;
-    const rot=0;
-    const sy=(Math.random()*vh).toFixed(0);
-    const sw=(200+Math.random()*420).toFixed(0);
-    const sh=(1.5+Math.random()*2.5).toFixed(1);
-    const dur=(0.35+Math.random()*0.45).toFixed(2);
-    const del=(-Math.random()*dur).toFixed(2);
-    const c=C[i%C.length];
-    html+=`<span class="dom-streak" style="top:${sy}px;left:0;--sw:${sw}px;--sh:${sh}px;--rot:${rot.toFixed(1)}deg;--x0:${x0}px;--x1:${x1}px;--sdur:${dur}s;--sdel:${del}s;--sc:${c[0]};--sc2:${c[1]}"></span>`;
-  }
-  // aura angkasa kosmik + partikel streak di DEPAN; gambar black hole full-screen di BELAKANG kartu
-  html+='<div class="dom-aura"></div><div class="dom-stars"></div>';
-  html+='<div class="dom-title"><span class="dt-main">DOMAIN</span><span class="dt-sub">EXPANSION</span></div>';
-  d.innerHTML=html;
-  document.body.appendChild(d);
-  const bgd=document.createElement("div");bgd.className="domvoid domain-bgfx";
-  bgd.innerHTML='<img class="dom-bgimg" src="assets/sprites/domain.png" alt="">';
-  if(sigBackdrop(who||"CH_EX_GOJO"))document.body.appendChild(bgd);
-}
-function domainEndFx(){return;/*animasi skill dihapus*/
-  document.querySelectorAll(".domvoid").forEach(d=>{d.style.opacity="0";setTimeout(()=>d.remove(),600);});
-}
-function madaraAura(charId){return "";}
-function madaraFx(sel,crit){return;/*animasi skill dihapus*/
-  const f=document.querySelector(sel);if(!f)return;
-  const d=document.createElement("div");d.className="madarafx"+(crit?" crit":"");
-  const orbN=crit?14:8, partN=crit?18:11;
-  let html='<span class="mflash"></span><span class="mrays"></span><span class="mcore"></span><span class="mshock"></span><span class="mshock s2"></span>';
-  for(let i=0;i<orbN;i++){
-    const ang=Math.random()*Math.PI*2;
-    const dist=150+Math.random()*90;
-    const fx=(Math.cos(ang)*dist).toFixed(0), fy=(Math.sin(ang)*dist*0.8-40).toFixed(0);
-    const sz=Math.round((crit?22:16)+Math.random()*16);
-    const del=(Math.random()*0.16).toFixed(2);
-    html+=`<span class="tsb" style="--fx:${fx}px;--fy:${fy}px;--tsz:${sz}px;--del:${del}s"></span>`;
-  }
-  for(let i=0;i<partN;i++){
-    const ang=Math.random()*Math.PI*2;
-    const dist=90+Math.random()*140;
-    const px=(Math.cos(ang)*dist).toFixed(0), py=(Math.sin(ang)*dist).toFixed(0);
-    const psz=(4+Math.random()*6).toFixed(0);
-    const pd=(0.5+Math.random()*0.3).toFixed(2), pdel=(0.28+Math.random()*0.14).toFixed(2);
-    html+=`<span class="mpart" style="--px:${px}px;--py:${py}px;--psz:${psz}px;--pd:${pd}s;--pdel:${pdel}s"></span>`;
-  }
-  html+='<span class="mwhite"></span>';
-  d.innerHTML=html;
-  f.appendChild(d);
-  madaraSound(crit);
-  setTimeout(()=>d.remove(),1200);
-}
-/* ---------- LIMBO (Madara) dodge: tubuh berkedip tembus + klon dunia lain menyingkir, serangan menembus ---------- */
-function madaraLimboFx(){return;/*animasi skill dihapus*/
-  const f=document.querySelector(".fighter.me");if(!f)return;
-  try{
-    f.animate(
-      [{opacity:1,filter:"none",transform:"translateX(0)"},
-       {opacity:.22,filter:"brightness(1.7) drop-shadow(0 0 20px rgba(170,110,255,.95)) blur(1.6px)",transform:"translateX(-26px)",offset:.3},
-       {opacity:.45,filter:"brightness(1.3) blur(.9px)",transform:"translateX(22px)",offset:.62},
-       {opacity:1,filter:"none",transform:"translateX(0)"}],
-      {duration:640,easing:"cubic-bezier(.4,0,.2,1)"}
-    );
-  }catch(e){}
-  const d=document.createElement("div");d.className="limbofx";
-  let html='<span class="lb-clone c1"></span><span class="lb-clone c2"></span><span class="lb-clone c3"></span><span class="lb-ripple"></span>';
-  for(let i=0;i<7;i++){const lx=(2+Math.random()*96).toFixed(0);const dl=(Math.random()*0.14).toFixed(2);html+=`<span class="lb-streak" style="left:${lx}%;animation-delay:${dl}s"></span>`;}
-  d.innerHTML=html;f.appendChild(d);
-  limboSound();
-  setTimeout(()=>d.remove(),860);
-}
-function limboSound(){
-  if(state.muted)return;
-  try{
-    const a=actxOf(),t0=a.currentTime;
-    // whoosh phase-out (sweep turun lewat bandpass nutup)
-    const s=a.createOscillator();s.type="sine";
-    s.frequency.setValueAtTime(920,t0);s.frequency.exponentialRampToValueAtTime(140,t0+.42);
-    const bp=a.createBiquadFilter();bp.type="bandpass";bp.Q.value=3;
-    bp.frequency.setValueAtTime(1500,t0);bp.frequency.exponentialRampToValueAtTime(300,t0+.42);
-    const g=a.createGain();g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(.18,t0+.05);g.gain.exponentialRampToValueAtTime(.0001,t0+.5);
-    s.connect(bp);bp.connect(g);g.connect(a.destination);s.start(t0);s.stop(t0+.55);
-    // hum mistis Limbo (triangle turun + lowpass)
-    const hum=a.createOscillator();hum.type="triangle";hum.frequency.setValueAtTime(126,t0);hum.frequency.exponentialRampToValueAtTime(66,t0+.6);
-    const lp=a.createBiquadFilter();lp.type="lowpass";lp.frequency.value=620;
-    const hg=a.createGain();hg.gain.setValueAtTime(.0001,t0);hg.gain.exponentialRampToValueAtTime(.09,t0+.12);hg.gain.exponentialRampToValueAtTime(.0001,t0+.7);
-    hum.connect(lp);lp.connect(hg);hg.connect(a.destination);hum.start(t0);hum.stop(t0+.75);
-    // shimmer kresek tembus
-    noiseBurst(t0+.05,.3,3600,.05);
-  }catch(e){}
-}
 /* Madara Tensa: video Susanoo full-screen di belakang kartu + HUJAN TEBASAN samurai (garis lurus satu layar penuh, kiri→kanan) */
 let MADARA_T={wind:280,slash:520,step:120,total:2760};
-function tensaBurst(cx,cy,cardW,gashRot,small){
-  const mn=Math.min(innerWidth,innerHeight);
-  const r=small?Math.max(150,mn*0.28):Math.max(320,mn*0.62);
-  const d=document.createElement("div");d.className="tensa-boom";
-  let html="";
-  if(!small){
-    html+=`<span class="tb-flash" style="--cx:${cx.toFixed(0)}px;--cy:${cy.toFixed(0)}px;--r:${r.toFixed(0)}px"></span>`;
-    html+=`<span class="tb-ring" style="--cx:${cx.toFixed(0)}px;--cy:${cy.toFixed(0)}px;--r:${r.toFixed(0)}px"></span>`;
-    html+=`<span class="tb-ring r2" style="--cx:${cx.toFixed(0)}px;--cy:${cy.toFixed(0)}px;--r:${(r*0.62).toFixed(0)}px"></span>`;
-  }
-  html+=`<span class="tb-gash" style="--cx:${cx.toFixed(0)}px;--cy:${cy.toFixed(0)}px;--gw:${(cardW*(small?1.1:2.2)).toFixed(0)}px;--rot:${(gashRot==null?-19:gashRot).toFixed(1)}deg"></span>`;
-  /* percikan biru nyebar; sambaran pertama gelombang penuh, sisanya ringan biar nggak numpuk */
-  const waves=small?1:3;
-  for(let w=0;w<waves;w++){
-    const n=small?12:(w===0?34:26);
-    for(let k=0;k<n;k++){
-      const a=Math.random()*Math.PI*2, dist=r*0.30+Math.random()*r*(w===0?1.15:1.6);
-      const tx=(Math.cos(a)*dist).toFixed(0), ty=(Math.sin(a)*dist*0.92).toFixed(0);
-      const es=(4+Math.random()*(w===0?14:10)).toFixed(0);
-      const ed=(0.55+Math.random()*0.45).toFixed(2), edel=(w*0.18+Math.random()*0.16).toFixed(2);
-      html+=`<span class="tb-p" style="--cx:${cx.toFixed(0)}px;--cy:${cy.toFixed(0)}px;--tx:${tx}px;--ty:${ty}px;--es:${es}px;--ed:${ed}s;--edel:${edel}s"></span>`;
-    }
-  }
-  d.innerHTML=html;document.body.appendChild(d);
-  setTimeout(()=>d.remove(),small?1100:1700);
-}
 /* satu tebasan lurus: garis SELEBAR layar penuh (menembus dua tepi), miring random tipis, lewat di sekitar kartu target */
-function tensaSlash(parent,cx,cy,fr,fromLeft,big){
-  const vw=innerWidth,vh=innerHeight;
-  const tilt=Math.random()*20-10;
-  const th=Math.round(Math.max(12,vh*(big?0.058:0.024+Math.random()*0.026)));
-  const rad=tilt*Math.PI/180,c=Math.cos(rad),s=Math.sin(rad);
-  /* garis HARUS menembus DUA tepi layar: asal di luar tepi terjauh dari target, panjang dibagi cos(tilt)
-     supaya bentang horizontalnya = lebar layar + 220px, lalu anchor-Y digeser biar garis tetap lewat kartu target */
-  const x0=fromLeft?-110:vw+110, spanX=vw+220, len=spanX/c, sC=Math.abs(x0-cx)/c;
-  const py=Math.max(34,Math.min(vh-34,cy+(Math.random()*2-1)*Math.min(fr.height*0.5,vh*0.3)));
-  const ax=x0, ay=py-s*sC;
-  const cut=document.createElement("div");cut.className="mu-cut"+(big?" first":"");
-  cut.style.left=ax.toFixed(0)+"px";cut.style.top=ay.toFixed(0)+"px";
-  cut.style.setProperty("--rot",(fromLeft?tilt:180-tilt).toFixed(1)+"deg");
-  cut.style.setProperty("--len",len.toFixed(0)+"px");
-  cut.style.setProperty("--th",th+"px");
-  cut.style.setProperty("--ck",Math.max(4,Math.round(th*0.24))+"px");
-  cut.style.setProperty("--gl",Math.round(th*2.9)+"px");
-  cut.innerHTML='<i class="mu-glow"></i><i class="mu-line"></i><i class="mu-core"></i><i class="mu-break"></i>';
-  parent.appendChild(cut);
-  setTimeout(()=>{try{cut.remove();}catch(e){}},520);
-  return fromLeft?tilt:tilt-180;
-}
-function madaraTensaFx(atkSel,defSel,n,who){return MADARA_T.slash;/*animasi skill dihapus*/
-  const A=atkSel||".fighter.me",D=defSel||".fighter.foe";
-  const N=Math.max(1,Math.round(n||15));
-  const foeEl=document.querySelector(D);if(!foeEl)return MADARA_T.slash;
-  const fr=foeEl.getBoundingClientRect();if(!fr.width)return MADARA_T.slash;
-  const cx=fr.left+fr.width/2, cy=fr.top+fr.height*0.48;
-  /* video Susanoo full-screen DI BELAKANG kartu — cuma boleh buat kartu EX (lihat sigBackdrop) */
-  const bgd=document.createElement("div");bgd.className="madara-bgfx";
-  bgd.innerHTML='<img class="mt-vid" src="assets/sprites/madara_slash.mp4" alt="">';
-  if(sigBackdrop(who||"CH_EX_MADARA"))document.body.appendChild(bgd);
-  const d=document.createElement("div");d.className="madara-ult";
-  d.innerHTML='<div class="dom-title"><span class="dt-main">MADARA</span><span class="dt-sub">SUSANOO</span></div>';
-  document.body.appendChild(d);
-  floatText(A,"SUSANOO","crit");
-  const fromLeft=cx>innerWidth/2;
-  setTimeout(()=>{if(d.isConnected){try{playClip(rantonAudio);}catch(e){}}},MADARA_T.wind);
-  /* hujan N tebasan lurus se-layar: tiap sambaran = garis kiri→kanan + percikan biru di kartu, ritme MADARA_T.step */
-  for(let i=0;i<N;i++){
-    setTimeout(()=>{
-      if(!d.isConnected||!foeEl.isConnected)return;
-      const gash=tensaSlash(d,cx,cy,fr,fromLeft,i===0);
-      tensaBurst(cx+(Math.random()*2-1)*fr.width*0.2,cy+(Math.random()*2-1)*fr.height*0.18,fr.width,gash,i!==0);
-      try{rantonSound(i===0);}catch(e){}
-      if(i===0){foeEl.classList.remove("knockback"); void foeEl.offsetWidth; foeEl.classList.add("knockback");
-        setTimeout(()=>foeEl.classList.remove("knockback"),560);}
-    },MADARA_T.slash+i*MADARA_T.step);
-  }
-  setTimeout(()=>{try{bgd.remove();d.remove();}catch(e){}},MADARA_T.total+120);
-  return MADARA_T.slash;
-}
-function armyOfShadowsFx(targetSel,who){return;/*animasi skill dihapus*/
-  const grid=document.querySelector(".battle-grid");if(!grid)return;
-  const foeEl=document.querySelector(targetSel||".fighter.foe");
-  const fr=foeEl?foeEl.getBoundingClientRect():null;
-  const cx=fr&&fr.width?fr.left+fr.width/2:window.innerWidth*0.62;
-  const cy=fr&&fr.height?fr.top+fr.height/2:window.innerHeight*0.5;
-  const d=document.createElement("div");d.className="shadowfx";
-  d.style.setProperty("--cx",cx+"px");d.style.setProperty("--cy",cy+"px");
-  const bgd=document.createElement("div");bgd.className="jinwoo-bgfx";
-  bgd.innerHTML='<img class="jw-bg" src="assets/sprites/arise_jinwoo.mp4" alt="">';
-  if(sigBackdrop(who||"CH_EX_JINWOO"))document.body.appendChild(bgd);
-  d.innerHTML=`<div class="shx-unit u-a"><div class="shx-aura"></div><img class="shx-img" src="assets/sprites/shadow_blue.png" alt=""><div class="shx-cut"><div class="shx-glow"></div><div class="shx-core"></div></div></div><div class="shx-unit u-b"><div class="shx-aura"></div><img class="shx-img" src="assets/sprites/shadow_red.png" alt=""><div class="shx-cut"><div class="shx-glow"></div><div class="shx-core"></div></div></div><div class="dom-title"><span class="dt-main">ARISE</span><span class="dt-sub">SHADOW MONARCH</span></div>`;
-  document.body.appendChild(d);
-  playClip(domainAudio);
-  setTimeout(()=>{d.remove();bgd.remove();},2150);
-}
-function jinwooDashFx(atkSel,defSel){return;/*animasi skill dihapus*/
-  const A=atkSel||".fighter.me",D=defSel||".fighter.foe";
-  const meEl=document.querySelector(A),foeEl=document.querySelector(D);
-  if(!meEl||!foeEl)return;
-  const art=meEl.querySelector("img,video")||meEl;
-  const ar=art.getBoundingClientRect(),fr=foeEl.getBoundingClientRect();
-  if(!ar.width||!fr.width)return;
-  const ox=ar.left+ar.width/2, oy=ar.top+ar.height/2;   // asal: tengah kartu Jin-Woo
-  const tx=fr.left+fr.width/2,  ty=fr.top+fr.height/2;  // sasaran: tengah kartu musuh
-  const ang=Math.atan2(ty-oy,tx-ox)*180/Math.PI;         // arah tebasan menuju musuh
-  const dist=Math.hypot(tx-ox,ty-oy);
-  const side=Math.max(ar.width,fr.width)*0.95;           // diameter bulan sabit
-  const layer=document.createElement("div");layer.className="arise-dash";document.body.appendChild(layer);
-  const NS=3, GAP=155, FLY=250;
-  // satu slash bulan sabit melesat dari kartu Jin-Woo (arah acak) lalu nyaput kartu musuh
-  const throwArc=(k)=>{
-    const dir=ang+(Math.random()*72-36);     // arah melesat dikit ngaco biar dateng dari berbagai sudut
-    const sy=oy+(k-1)*12-12;                 // titik asal disebar dikit
-    const s=document.createElement("div");s.className="shadow-sword";
-    s.style.left=(ox-side/2)+"px";s.style.top=(sy-side/2)+"px";
-    s.style.width=side+"px";s.style.height=side+"px";
-    s.style.setProperty("--arcrot",(dir-42).toFixed(1)+"deg"); // ujung cembung hadap arah laju
-    s.innerHTML='<i class="ss-streak"></i><i class="ss-arc"></i>';
-    layer.appendChild(s);
-    playClip(swordAudio);
-    s.style.transform=`rotate(${dir}deg) translateX(${dist-side}px)`;
-    s.animate([
-      {transform:`rotate(${dir}deg) translateX(${dist-side}px)`,opacity:0},
-      {transform:`rotate(${dir}deg) translateX(${dist-side}px)`,opacity:1,offset:.06},
-      {transform:`rotate(${dir}deg) translateX(${dist}px)`,opacity:1,offset:.82},
-      {transform:`rotate(${dir}deg) translateX(${dist+16}px)`,opacity:0}
-    ],{duration:FLY,easing:"cubic-bezier(.34,.02,.36,1)",fill:"forwards"}).onfinish=()=>{s.remove();ariseSlashFx(fr,k,D);};
-  };
-  for(let k=0;k<NS;k++)setTimeout(()=>throwArc(k),k*GAP);
-  anim(A,A===".fighter.foe"?"lunge-l":"lunge-r");
-  setTimeout(()=>layer.remove(),GAP*(NS-1)+FLY+560);
-}
-// sapuan slash bulan sabit di kartu musuh: sabit gede kesabet muter + percikan, sudut beda tiap hit
-function ariseSlashFx(fr,k,targetSel){return;/*animasi skill dihapus*/
-  const cx=fr.left+fr.width/2, cy=fr.top+fr.height/2;
-  const rot=20+k*46+(Math.random()*30-15);
-  const r=Math.hypot(fr.width,fr.height)*0.55;
-  const s=document.createElement("div");s.className="arise-slash";
-  s.style.setProperty("--cx",cx+"px");s.style.setProperty("--cy",cy+"px");
-  s.style.setProperty("--rot",rot+"deg");s.style.setProperty("--r",r+"px");
-  s.innerHTML='<i class="as-arc"></i><i class="as-spark"></i>';
-  document.body.appendChild(s);
-  setTimeout(()=>s.remove(),540);
-}
-function ariseStrikeFx(i,n,targetSel){return;/*animasi skill dihapus*/
-  const sel=targetSel||".fighter.foe";
-  const foeEl=document.querySelector(sel);if(!foeEl)return;
-  const fr=foeEl.getBoundingClientRect();
-  const d=document.createElement("div");d.className="arise-claw";
-  const pad=fr.height*0.04;
-  const x=fr.left+(i+0.5)/n*fr.width;
-  const y=fr.top+(i+0.5)/n*fr.height;
-  const final=(i===n-1);
-  // tiap sambaran menambah 1 garis vertikal + 1 horizontal sepanjang KARDUS musuh
-  // → terakumulasi jadi pagar jaring kotak-kotak yang menutupi seluruh kartu
-  d.innerHTML=
-    `<span class="ac-v" style="--x:${x.toFixed(1)}px;--y0:${(fr.top+pad).toFixed(1)}px;--hlen:${(fr.height-2*pad).toFixed(1)}px;--d:0s"></span>`+
-    `<span class="ac-h" style="--y:${y.toFixed(1)}px;--x0:${(fr.left+pad).toFixed(1)}px;--wlen:${(fr.width-2*pad).toFixed(1)}px;--d:.07s"></span>`+
-    (final?`<span class="ac-flash" style="--cx:${(fr.left+fr.width/2).toFixed(1)}px;--cy:${(fr.top+fr.height/2).toFixed(1)}px"></span>`:"");
-  document.body.appendChild(d);
-  if(final)playClip(swordAudio);
-  setTimeout(()=>d.remove(),final?820:560);
-}
 function startBattle(){
   const lv=state.battle.level,en=enemyOf(lv),es=enemyStats(lv);
   const fighters=equippedList();if(!fighters.length)fighters.push(equipped());
@@ -2642,23 +1981,6 @@ function speedLines(big){let l=document.getElementById("speedLayer");if(!l){l=do
 /* ===== MASUK / MATI kartu (prototipe card-enter-death) — di-inject, markup kartu gak diubah ===== */
 function enterFx(el){if(!el)return;const fx=document.createElement("div");fx.className="enter-fx";fx.innerHTML='<span class="ef-flash"></span><span class="ef-sheen"></span>';el.appendChild(fx);setTimeout(()=>{try{fx.remove();}catch(e){}},900);const r=el.getBoundingClientRect();const ring=document.createElement("div");ring.className="shock-ring";ring.style.left=(r.left+r.width/2)+"px";ring.style.top=(r.top+r.height*0.92)+"px";document.body.appendChild(ring);setTimeout(()=>{try{ring.remove();}catch(e){}},700);}
 function koFx(el){if(!el)return;for(let i=0;i<14;i++){const s=document.createElement("span");s.className="ko-shard";s.style.left=(30+Math.random()*40).toFixed(0)+"%";s.style.top=(30+Math.random()*40).toFixed(0)+"%";s.style.setProperty("--sx",(Math.random()*260-130).toFixed(0)+"px");s.style.setProperty("--sy",(Math.random()*220+20).toFixed(0)+"px");s.style.setProperty("--sr",(Math.random()*720-360).toFixed(0)+"deg");s.style.animationDelay=(Math.random()*.12).toFixed(2)+"s";el.appendChild(s);setTimeout(()=>{try{s.remove();}catch(e){}},950);}const st=document.createElement("div");st.className="ko-stamp";st.textContent="K.O.";document.body.appendChild(st);setTimeout(()=>{try{st.remove();}catch(e){}},760);}
-function modeDomainFx(A,D,total,who){return;/*animasi skill dihapus*/
-  domainExpansionFx(who);domainVoid();
-  setTimeout(()=>floatText(A,"DOMAIN EXPANSION","crit"),220);
-  floatText(D,"UNLIMITED VOID","crit");
-  if(total>0)setTimeout(()=>floatText(D,"-"+fmt(total),"crit"),520);
-}
-function modeAriseFx(A,D,who){return;/*animasi skill dihapus*/armyOfShadowsFx(D,who);jinwooDashFx(A,D);floatText(D,"ARMY OF SHADOWS","crit");}
-function barrageHitFx(id,i,n,crit,sel){return;/*animasi skill dihapus*/
-  if(id==="CH_EX_JINWOO")ariseStrikeFx(i,n,sel);
-  else if(id!=="CH_EX_MADARA")cleaveFx(sel,false,true);
-}
-function singleHitFx(id,A,D,o){return;/*animasi skill dihapus*/
-  if(id==="CH_EX_GOJO"){if(o.purple){hollowPurpleFx(true,A,D);}else{reversalRedFx(D);}}
-  else if(id==="CH_EX_MADARA"){madaraFx(D,o.crit);}
-  else if(id==="CH_ETERNAL_DRAGON"){if(o.purple){galaxyRoarFx(A,D,o.crit);}else{cleaveFx(D,o.crit,true);}}
-  else cleaveFx(D,o.crit,true);
-}
 function performAttack(o){
   const A=o.A,D=o.D,id=o.id,shots=o.shots;
   const md=o.ranton&&id==="CH_EX_MADARA";
@@ -2681,12 +2003,10 @@ function performAttack(o){
   if(wind)setTimeout(()=>{if(bt&&!bt.over)swing();},bsMs(120));
   setTimeout(()=>{
     if(!bt)return;
-    if(o.domainStrike&&!bt.over){modeDomainFx(A,D,o.total,id);}
-    if(o.ariseMode&&!bt.over){modeAriseFx(A,D,id);}
     const self=(o.domainStrike?o.fx.domain:o.ariseMode?o.fx.barrage:null);
     if(self&&self.selfStun&&o.recharge)o.recharge(self);
     /* jurus hujan tebasan MILIK Madara saja — kartu lain (termasuk UR) gak boleh nyomot animasi EX cuma karena punya flag ranton */
-    const susStart=(o.ranton&&id==="CH_EX_MADARA"&&!bt.over)?madaraTensaFx(A,D,o.barrageN,id):0;
+    const susStart=(o.ranton&&id==="CH_EX_MADARA"&&!bt.over)?MADARA_T.slash:0;
     const dlyAt=i=> galaxy ? GALAXY.hit : md ? (susStart+i*MADARA_T.step) : (i*hstep+susStart);
     /* Jin-Woo: cakar ARISE digambar 170ms setelah menit sambaran, jadi getarnya ikut digeser supaya getar & visual mendarat bareng */
     const jwLag=(id==="CH_EX_JINWOO"&&o.barrageN&&!o.domainStrike)?170:0;
@@ -2700,7 +2020,6 @@ function performAttack(o){
       cum+=s.d;barEnd=Math.max(barEnd,ft);const stepHp=hpAt(cum);
       setTimeout(()=>floatText(D,"-"+fmt(s.d),(o.crit&&i===shots.length-1)?"crit":""),bsMs(ft));
       setTimeout(()=>setBar(o.barId,o.barTid,stepHp,o.defMax),bsMs(ft));
-      if(o.barrageN&&!o.domainStrike)setTimeout(()=>barrageHitFx(id,i,o.barrageN,o.crit,D),bsMs(i*hstep+(id==="CH_EX_JINWOO"?170:0)));
       if(s.pierce)setTimeout(()=>floatText(D,"PIERCE","crit"),bsMs(180));
     });
     setTimeout(()=>{
@@ -2716,8 +2035,6 @@ function performAttack(o){
     },bsMs(barEnd+520));
     if(o.barrageN>1)setTimeout(()=>floatText(D,(o.domainStrike?"UNLIMITED VOID ×":o.ariseMode?"ARISE ×":md?"TENSA ×":"CLEAVE ×")+o.barrageN,"crit"),bsMs(md?MADARA_T.slash:320));
     else if(shots.length>1&&!o.ranton)setTimeout(()=>floatText(D,"DOUBLE!","crit"),bsMs(260));
-    if(o.total>0&&!o.barrageN)singleHitFx(id,A,D,o);
-    else if(galaxy&&!o.barrageN)galaxyRoarFx(A,D,o.crit);
   },bsMs(180));
 }
 function setTurnPill(side,label){
@@ -2979,7 +2296,7 @@ function enemyPhase(){
     if(fx.dodgeAtk&&bt.dodgeStack[bt.active]<fx.dodgeAtk.max){bt.dodgeStack[bt.active]++;bt.atkBuff[bt.active]+=fx.dodgeAtk.pct;setTimeout(()=>floatText(".fighter.me","+"+fx.dodgeAtk.pct+"% ATK","heal"),bsMs(420));}
     if(id==="CH_EX_MADARA"){
       anim(".fighter.foe","lunge-l");
-      setTimeout(()=>{madaraLimboFx();floatText(".fighter.me","LIMBO","miss");},bsMs(220));
+      setTimeout(()=>floatText(".fighter.me","LIMBO","miss"),bsMs(220));
     }else{
       setTimeout(()=>{playDodge();floatText(".fighter.me",entryTrig?(fx.entryCounter.text||"AMENOTEJIKARA"):bt.trickNext?"TRICKSTER":"DODGE","miss");},bsMs(200));
     }
@@ -3028,7 +2345,7 @@ function enemyPhase(){
     // kartu tumbang: tag-in / kalah BARU dijalankan setelah seluruh animasi sambaran musuh selesai
     const deathStep=()=>{
       if(!bt||bt.over)return;
-      if(domainOn){bt.domainNow=false;setTimeout(domainEndFx,bsMs(900));}
+      if(domainOn){bt.domainNow=false;}
       bt.turn++;
       /* DEATH DEFY (THREEBLADE RONIN): fatal saat HP sebelum pukulan masih < pct% max
          -> TIDAK tumbang: bertahan di 0 HP, dapat 1 giliran ekstra (masih bisa menyerang),
@@ -3066,7 +2383,7 @@ function enemyPhase(){
     }
     if(pDead)return;
   }
-  if(domainOn){bt.domainNow=false; setTimeout(domainEndFx,bsMs(900));}
+  if(domainOn){bt.domainNow=false;}
   bt.turn++;
   schedPhase(bt.justTagged?2700:(eGalaxy?GALAXY.total+160:eArise?2200:eDomain?1700:eranton?MADARA_T.total+160:1000),playerPhase);
 }
@@ -3078,7 +2395,6 @@ function endBattle(win){
   try{
     const deadEl=document.querySelector(win?".fighter.foe":".fighter.me");
     if(deadEl&&!deadEl.classList.contains("ko")){deadEl.classList.add("ko");koFx(deadEl);}
-    domainEndFx();
   }catch(e){console.error("endBattle fx error",e);}
   setTimeout(()=>{
     try{
@@ -3152,7 +2468,6 @@ function towerIsBossFloor(f){return f%5===0;}
 function towerBossIndex(f){return ((f/5)-1)%TOWER_BOSS_ROSTER.length;}
 function towerHash(n){return (((n*2654435761)>>>0)%100000)||0;}
 function towerRegularPool(){return MASTER_CARD_INDEX.filter(c=>!c.noGacha);}
-function towerPickRegular(f){const p=towerRegularPool();if(!p.length)return null;return p[towerHash(f)%p.length];}
 /* Kurva kesulitan absolut (tidak ikut membengkak oleh stat mentah kartu EX).
    Kartu musuh hanya menentukan identitas/art/passive; HP & ATK ditentukan lantai.
    TIER itu kosmetik — tidak ada lagi stat scaling berdasarkan tier. */
@@ -3603,7 +2918,7 @@ function openModal(id){
   const m=document.getElementById("modal");
   const mcEl=document.getElementById("md-card");mcEl.dataset.tier=s.tier;
   mcEl.innerHTML=`
-    <span class="md-art"><img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(s.char)}</span>
+    <span class="md-art"><img src="${c.sprite_asset}" alt="${c.name}"></span>
     <div class="md-info">
       <div class="eyebrow" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,luckChance(s.char,s.mut,s.shiny))}${s.mut&&s.mut!=="none"?` · ${mutChip(s.mut,`<span>${mutBadge(s.mut)}</span>`)}`:""}${s.shiny?' · <span class="shiny-badge">SHINY</span>':""}</div>
       <div class="md-name">${c.name}</div>
@@ -3635,7 +2950,7 @@ function hubCardHtml(eq,idAttr){
   const mut=(eq.mut&&eq.mut!=='none')?eq.mut:null;
   const trait=(eq.trait&&eq.trait!=='none')?eq.trait:null;
   return `<div class="hub-center${mut?' mut-'+mut:''}${shinyCls(eq)}"${idAttr||''} data-tier="${tier}" style="--tcol:${mut?MUT_COLOR[mut]:TIER_COLOR[tier]}${mut?`;border-color:${MUT_COLOR[mut]}`:''}">
-      <div class="hc-img"><img src="${cardImg(eq.char)}" alt="${cardName(eq.char)}"${CARDS[eq.char].pos?` style="object-position:${CARDS[eq.char].pos}"`:''}>${madaraAura(eq.char)}
+      <div class="hc-img"><img src="${cardImg(eq.char)}" alt="${cardName(eq.char)}"${CARDS[eq.char].pos?` style="object-position:${CARDS[eq.char].pos}"`:''}>
           ${shinyName('span','hc-name-top','hc-name-shine',mut,eq.shiny,cardName(eq.char))}
           <span class="hc-chance" style="color:${TIER_COLOR[tier]}">${rarityText(tier,luckChance(eq.char,eq.mut,eq.shiny))}</span>
           ${(mut||trait||eq.shiny)?`<div class="hc-badges">${eq.shiny?'<span class="shiny-badge">SHINY</span>':''}${mut?mutChip(mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="hc-trait hc-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(14)}</span>`):''}</div>`:''}
@@ -3885,8 +3200,8 @@ function raidStep(){
   // DOMAIN aktif: serangan jadi 10× barrage @30% ATK
   if(domainActive){hits.length=0;const dn=fx.domain.min||10,dm=(fx.domain.mult!=null?fx.domain.mult:0.3);for(let i=0;i<dn;i++)hits.push(dm);barrageN=dn;crit=false;purple=false;ranton=false;}
   const ariseMode=id==="CH_EX_JINWOO"&&barrageN>=9;
-  /* Galaxy Roar = satu semburan laser: seluruh damage ditumpuk ke satu sambaran agar jatuh
-     bersamaan dengan ledakan di galaxyRoarFx (GALAXY.hit), bukan di awal animasi. */
+  /* Galaxy Roar = satu semburan laser: seluruh damage ditumpuk ke satu sambaran
+     supaya jatuh di menit GALAXY.hit, bukan di awal serangan. */
   const galaxyMode=id==="CH_ETERNAL_DRAGON"&&purple;
   if(galaxyMode){const m=hits[hits.length-1];hits.length=0;hits.push(m);barrageN=0;}
   let total=0;hits.forEach(m=>total+=Math.round(dmg*m));
@@ -3900,9 +3215,9 @@ function raidStep(){
   const rMd=ranton&&id==="CH_EX_MADARA";
   const rChainEnd=(rMd?MADARA_T.slash+Math.max(0,hits.length-1)*MADARA_T.step+40:180+Math.max(0,hits.length-1)*rHstep)+520;
   setTimeout(()=>{
-    if(domainActive&&raid&&!raid.over){document.querySelectorAll("body>.domvoid").forEach(e=>e.remove());domainExpansionFx(id);domainVoid();setTimeout(()=>floatText(".fighter.me","DOMAIN EXPANSION","crit"),220);}
-    if(ariseMode&&raid&&!raid.over){armyOfShadowsFx(null,id);jinwooDashFx();floatText(".fighter.foe","ARMY OF SHADOWS","crit");}
-    const susStart=(ranton&&id==="CH_EX_MADARA"&&raid&&!raid.over)?madaraTensaFx(".fighter.me",".fighter.foe",barrageN,id):0;
+    if(domainActive&&raid&&!raid.over){setTimeout(()=>floatText(".fighter.me","DOMAIN EXPANSION","crit"),220);}
+    if(ariseMode&&raid&&!raid.over){floatText(".fighter.foe","ARMY OF SHADOWS","crit");}
+    const susStart=(ranton&&id==="CH_EX_MADARA"&&raid&&!raid.over)?MADARA_T.slash:0;
     {
       const hstep=domainActive?80:160;
       const susDelay=susStart;
@@ -3920,17 +3235,10 @@ function raidStep(){
         const dd=Math.round(dmg*m);rShown-=dd;rBarEnd=Math.max(rBarEnd,ft);const stepHp=Math.max(0,rShown);
         setTimeout(()=>floatText(".fighter.foe","-"+fmt(dd),(crit&&i===hits.length-1)?"crit":""),ft);
         setTimeout(()=>setRaidBar(stepHp),ft);
-        if(barrageN&&!domainActive){if(id==="CH_EX_JINWOO")setTimeout(()=>ariseStrikeFx(i,barrageN),i*hstep+170);else if(id!=="CH_EX_MADARA")setTimeout(()=>cleaveFx(".fighter.foe",false,true),i*hstep);}
       });
       setTimeout(()=>setRaidBar(rEndHp),rBarEnd+520);
       if(barrageN>1)setTimeout(()=>floatText(".fighter.foe",(domainActive?"UNLIMITED VOID ×":ariseMode?"ARISE ×":md?"TENSA ×":"CLEAVE ×")+barrageN,"crit"),md?MADARA_T.slash:320);
       else if(hits.length>1&&!ranton)setTimeout(()=>floatText(".fighter.foe","DOUBLE!","crit"),260);
-      if(total>0&&!barrageN){
-        if(id==="CH_EX_GOJO"){if(purple){hollowPurpleFx(true);}else{reversalRedFx(".fighter.foe");}}
-        else if(id==="CH_EX_MADARA"){madaraFx(".fighter.foe",crit);}
-        else if(id==="CH_ETERNAL_DRAGON"){if(purple){galaxyRoarFx(".fighter.me",".fighter.foe",crit);}else{cleaveFx(".fighter.foe",crit,true);}}
-        else cleaveFx(".fighter.foe",crit,true);
-      }
     }
   },180);
   raid.hp-=total;raid.dealt+=total;
@@ -3943,7 +3251,6 @@ function raidStep(){
     else endRaid();
     return;
   }
-  if(domainActive) setTimeout(domainEndFx,1500);
   raid.timer=setTimeout(raidStep,ariseMode?2200:domainActive?1900:ranton?MADARA_T.total+260:galaxyMode?GALAXY.total+260:1100);
 }
 function raidFinisher(done){
@@ -3992,7 +3299,6 @@ function raidFinisher(done){
 function endRaid(){
   if(!raid||raid.over)return;
   raid.over=true;if(raid.timer){clearTimeout(raid.timer);raid.timer=null;}
-  domainEndFx();
   const pct=Math.round((raid.max-Math.max(0,raid.hp))/raid.max*100);
   const tokens=raidTokenFor(pct,{rw:raid.rw});
   raid.pct=pct;raid.tokens=tokens;
@@ -4068,7 +3374,7 @@ function openIndex(){
      Klik sebuah kotak = buka detail passive lewat #skillPop (info tak hilang, cuma dipindah). */
   document.getElementById("ixBody").innerHTML=`<div class="ix-grid">${MASTER_CARD_INDEX.map(c=>{
     return `<button class="ix-cell" type="button" data-c="${c.char_id}" style="border-color:${TIER_COLOR[c.tier]||'var(--line2)'}">
-      <img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(c.char_id)}
+      <img src="${c.sprite_asset}" alt="${c.name}">
       <span class="ixc-name">${c.name}</span>
     </button>`;}).join("")}</div>`;
   document.querySelectorAll("#ixBody .ix-cell").forEach(cell=>{
@@ -4114,7 +3420,7 @@ function renderDeckPick(){
   const selId=cardPickCfg?cardPickCfg.getSel():traitTargetStack().id;
   b.innerHTML=`<label class="card-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input class="card-search" id="dpSearch" type="text" placeholder="Cari kartu…" autocomplete="off"></label><div class="dp-grid" id="dpGrid">${state.stacks.map(s=>{
     return `<button class="dp-card${s.id===selId?" sel":""}" data-tid="${s.id}" data-name="${cardName(s.char).toLowerCase()}"${s.mut&&s.mut!=="none"?` style="border-color:${MUT_COLOR[s.mut]}"`:""}>
-      <img src="${cardImg(s.char)}" alt="">${madaraAura(s.char)}
+      <img src="${cardImg(s.char)}" alt="">
       ${(s.mut&&s.mut!=="none")||(s.trait&&s.trait!=="none")?`<span class="dp-badges">${s.mut&&s.mut!=="none"?mutChip(s.mut,`<span class="mut-badge dp-mut" style="border-color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`):""}${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="trait-badge dp-gem" style="border-color:${TRAIT_COLOR[s.trait]}">${traitGem(13)}</span>`):""}</span>`:""}
       <span class="dp-name">${cardName(s.char)}</span>
     </button>`;}).join("")}</div><div class="no-result" id="dpSearch-nr">Tidak ada kartu yang cocok.</div>`;
@@ -4294,7 +3600,7 @@ function stopBattleLoop(){ if(bt){ if(bt.timer)clearTimeout(bt.timer); bt=null; 
 function render(){
   try {
     hoverHide(); /* safety net: popup hover kartu (deck/picker) disembunyikan tiap ganti view */
-    if(!bt&&!raid)document.querySelectorAll("body>.domvoid,body>.hpfx,body>.ebfx,body>.eb-flash").forEach(e=>e.remove());
+    if(!bt&&!raid)document.querySelectorAll("body>.ebfx,body>.eb-flash").forEach(e=>e.remove());
     renderShell();
     const r=route();
     if(r==="#/")renderHome();
@@ -4588,11 +3894,6 @@ function fitNameEl(el){
   while(fs>10&&el.scrollWidth>el.clientWidth+1){fs--;el.style.fontSize=fs+"px";}
 }
 const FIT_NAME_SEL=".hc-name-top,.f-name";
-function fitCardNames(root){
-  const scope=(root&&root.querySelectorAll)?root:document;
-  if(root&&root.classList&&root.matches&&root.matches(FIT_NAME_SEL))fitNameEl(root);
-  scope.querySelectorAll(FIT_NAME_SEL).forEach(fitNameEl);
-}
 (function(){
   const app=document.getElementById("app");
   if(app&&window.MutationObserver){
