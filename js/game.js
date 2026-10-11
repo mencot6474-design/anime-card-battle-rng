@@ -1767,20 +1767,25 @@ setInterval(()=>{
    Daftar bab dibangun jadi helper (chapListHTML/bindChapList) supaya bisa
    dipakai renderLobby. Render battle tetap lewat guard state.battle di lobby. */
 function chapListHTML(){
-  const pw=totalPower();
+  const pw=totalPower(),df=diffOf(),dcol=MUT_COLOR[df.mut]||"var(--pink)";
   return `<div class="chap-list" id="chapList">${CHAPTERS.map(c=>{
     const cd=diffProg()[state.diff];const open=cellUnlocked(c,state.diff),done=chapProgMode(c,state.diff);
+    const total=c.levels.length,pct=total?Math.round(done/total*100):0,full=open&&done>=total;
     let nextLv=c.to;for(let i=c.from;i<=c.to;i++){if(!cd[i]){nextLv=i;break;}}
-    const tgt=gateOf(nextLv);
-    return `<button class="story-banner${open?"":" lock"}" data-c="${c.no}">
+    const tgt=gateOf(nextLv),act=open&&c.no===(state?state.chap:1);
+    const chip=full?"✓ SELESAI":(open?"▾ BUKA LEVEL":"🔒 TERKUNCI");
+    return `<button class="story-banner${open?"":" lock"}${full?" full":""}${act?" active":""}" data-c="${c.no}">
       <img src="${c.art}" alt="">
       <div class="shade"></div>
-      <span class="sb-chip">${open?"▾ BUKA LEVEL":"🔒 TERKUNCI"}</span>
+      <span class="sb-no">${String(c.no).padStart(2,"0")}</span>
+      ${act?'<span class="sb-tag">AKTIF</span>':""}
+      <span class="sb-chip">${chip}</span>
       <div class="sb-content">
-        <div class="gb-kicker">${c.tag} · ${diffOf().l}</div>
+        <div class="gb-kicker">${c.tag} · <b style="color:${dcol}">${df.l}</b></div>
         <div class="sb-name">${c.zone}</div>
-        <div class="sb-line">${open?`GATE ${fmt(tgt)} · <span class="sb-pw ${pw>=tgt?"ok":"bad"}">POWER ${fmt(pw)}</span> · PROGRES ${done}/${c.levels.length}`:cellReqText(c,state.diff)}</div>
+        <div class="sb-line">${open?`GATE ${fmt(tgt)} · <span class="sb-pw ${pw>=tgt?"ok":"bad"}">POWER ${fmt(pw)}</span> · PROGRES ${done}/${total}`:cellReqText(c,state.diff)}</div>
       </div>
+      <span class="sb-bar"><i class="${full?"full":""}" style="width:${pct}%"></i></span>
     </button>`;
   }).join("")}</div>`;
 }
@@ -1791,7 +1796,23 @@ function bindChapList(){
     openStory();
   });
 }
+function diffUnlocked(k){const i=DIFFS.findIndex(d=>d.k===k);if(i<=0)return true;return chapClearedMode(CHAPTERS[0],DIFFS[i-1].k);}
 function openMission(){
+  const pw=totalPower();
+  const done=CHAPTERS.reduce((a,c)=>a+chapProgMode(c,state.diff),0),tot=CHAPTERS.reduce((a,c)=>a+c.levels.length,0);
+  const pct=tot?Math.round(done/tot*100):0,df=diffOf(),dcol=MUT_COLOR[df.mut]||"var(--pink)";
+  document.getElementById("mxStats").innerHTML=
+    `<div class="mxs-cell"><span class="mxs-lbl">MODE</span><span class="mxs-chip" style="border-color:${dcol};color:${dcol}">${df.l}</span></div>`+
+    `<div class="mxs-cell mxs-grow"><span class="mxs-lbl">PROGRES <b>${done}/${tot}</b></span><span class="mxs-bar"><i class="${done>=tot?"full":""}" style="width:${pct}%"></i></span></div>`+
+    `<div class="mxs-cell mxs-r"><span class="mxs-lbl">POWER</span><b class="mxs-pw">${fmt(pw)}</b></div>`;
+  document.getElementById("mxDiff").innerHTML=DIFFS.map(d=>{const unl=diffUnlocked(d.k),on=d.k===state.diff,col=d.mut==="none"?"var(--pink)":MUT_COLOR[d.mut];return `<button class="diff-btn${on?" on":""}${unl?"":" locked"}" data-d="${d.k}"${on?` style="border-color:${col};color:${col}"`:""}>${unl?d.l:"🔒 "+d.l}</button>`;}).join("");
+  const note=document.getElementById("mxNote");note.textContent="";
+  document.querySelectorAll("#mxDiff .diff-btn").forEach(b=>b.onclick=()=>{
+    const k=b.dataset.d;
+    if(!diffUnlocked(k)){note.textContent="SELESAIKAN SEMUA LEVEL BAB 1 DI MODE "+DIFFS[DIFFS.findIndex(d=>d.k===k)-1].l+" UNTUK BUKA MODE INI";sfx.lose&&sfx.lose();return;}
+    if(state.diff===k)return;
+    state.diff=k;sfx.hit();save();openMission();
+  });
   document.getElementById("missionBody").innerHTML=chapListHTML();
   bindChapList();
   document.getElementById("missionModal").classList.add("show");
