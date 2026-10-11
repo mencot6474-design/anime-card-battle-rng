@@ -501,8 +501,6 @@ h1{font-size:clamp(30px,4.9vw,52px);font-weight:800;letter-spacing:-.01em;line-h
 .sub{color:var(--muted);max-width:560px;font-size:15px}
 .panel{background:linear-gradient(135deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:16px}
 /* ---------- home ---------- */
-.story-panel{padding:22px 26px;margin:20px 0 18px;display:flex;flex-direction:column;gap:12px}
-.story-panel p{color:var(--muted);font-size:14px;line-height:1.7}
 .story-banner{position:relative;width:100%;height:clamp(170px,22vw,230px);border-radius:18px;overflow:hidden;border:1px solid rgba(234,244,255,.28);margin:12px 0 18px;cursor:pointer;text-align:left;box-shadow:0 12px 40px rgba(200,212,222,.12)}
 .story-banner img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 46%}
 .story-banner .shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(12,14,16,.94),rgba(12,14,16,.65) 45%,rgba(12,14,16,.2))}
@@ -1301,7 +1299,7 @@ body.battle-full .vs-col .bspeed-btn{font-size:clamp(12px,1.4vw,15px);padding:4p
 /* ---------- MISSION (popup daftar cerita) — tema lobby gelap ---------- */
 #missionModal{position:fixed;inset:0;background:radial-gradient(120% 90% at 50% 40%,rgba(125,249,255,.06),rgba(6,7,9,.92) 62%);backdrop-filter:blur(8px);display:none;place-items:center;z-index:60;padding:18px}
 #missionModal.show{display:grid}
-.mx-box{--text:#F4F7FA;--muted:#C4CDD6;--muted2:#9AA6B2;--cyan:#7DF9FF;--purple:#B58CFF;--line:rgba(200,210,220,.16);--line2:rgba(200,212,222,.30);width:min(680px,94vw);position:relative;isolation:isolate;color:var(--text);border-color:rgba(200,212,222,.22);background:linear-gradient(160deg,#171012 20%,#0f0b0d 80%);box-shadow:0 24px 60px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,255,255,.05)}
+.mx-box{--pink:#FF6B8A;--text:#F4F7FA;--muted:#C4CDD6;--muted2:#9AA6B2;--cyan:#7DF9FF;--purple:#B58CFF;--line:rgba(200,210,220,.16);--line2:rgba(200,212,222,.30);width:min(680px,94vw);position:relative;isolation:isolate;color:var(--text);border-color:rgba(200,212,222,.22);background:linear-gradient(160deg,#171012 20%,#0f0b0d 80%);box-shadow:0 24px 60px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,255,255,.05)}
 .mx-box::before{content:"";position:absolute;z-index:-1;inset:0 0 auto 0;height:200px;background:radial-gradient(78% 100% at 50% 0,rgba(125,249,255,.10),rgba(181,140,255,.06) 58%,transparent);pointer-events:none}
 .mx-box .ix-head{border-bottom:1px solid var(--line2);padding-bottom:10px;margin-bottom:12px}
 .mx-box .eyebrow{color:#7DF9FF}
@@ -1369,10 +1367,23 @@ body.battle-full .vs-col .bspeed-btn{font-size:clamp(12px,1.4vw,15px);padding:4p
 .dl-box{width:min(560px,94vw);border-radius:18px;border:1px solid var(--line2);background:linear-gradient(160deg,#FFFFFF,#EEF2F6);padding:22px;animation:rcIn .35s ease}
 #startModal{position:fixed;inset:0;background:rgba(9,10,12,.8);backdrop-filter:blur(6px);display:none;place-items:center;z-index:60}
 #startModal.show{display:grid}
-#storyModal{position:fixed;inset:0;background:rgba(9,10,12,.8);backdrop-filter:blur(6px);display:none;place-items:center;z-index:58;padding:18px}
+#storyModal{position:fixed;inset:0;background:radial-gradient(120% 90% at 50% 40%,rgba(125,249,255,.06),rgba(6,7,9,.92) 62%);backdrop-filter:blur(8px);display:none;place-items:center;z-index:58;padding:18px}
 #storyModal.show{display:grid}
-.sm-box{width:min(560px,94vw);max-height:86vh;overflow:auto;border-radius:18px;border:1px solid var(--line2);background:linear-gradient(160deg,#FFFFFF,#EEF2F6);padding:22px;animation:rcIn .35s ease}
-.sm-box .story-panel{margin:0 0 16px;padding:16px 18px}
+.sm-box{--text:#F4F7FA;--muted:#C4CDD6;--muted2:#9AA6B2;--cyan:#7DF9FF;--purple:#B58CFF;--pink:#FF6B8A;--line:rgba(200,210,220,.16);--line2:rgba(200,212,222,.30);width:min(600px,94vw);max-height:86vh;overflow-y:auto;overflow-x:hidden;border-radius:20px;border:1px solid rgba(200,212,222,.22);background:linear-gradient(160deg,#171012 20%,#0f0b0d 80%);color:var(--text);padding:22px;animation:rcIn .35s ease;position:relative;isolation:isolate;box-shadow:0 24px 60px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,255,255,.05)}
+/* cahaya panggung tipis + header garis pemisah (gaya .mx-box/.tr-box) */
+.sm-box::before{content:"";position:absolute;z-index:-1;inset:0 0 auto 0;height:200px;background:radial-gradient(78% 100% at 50% 0,rgba(125,249,255,.10),rgba(181,140,255,.06) 58%,transparent);pointer-events:none}
+.sm-box .ix-head{border-bottom:1px solid var(--line2);padding-bottom:10px;margin-bottom:12px}
+.sm-box .eyebrow{color:#7DF9FF}
+.sm-box .ix-x{background:rgba(255,255,255,.07);border-color:var(--line2);color:var(--text);transition:background .15s,transform .2s}
+.sm-box .ix-x:hover{background:var(--purple);color:#fff;transform:rotate(90deg)}
+/* quick-switch difficulty versi gelap (pola .mx-box .diff-btn) */
+.sm-box .diff-btn{background:rgba(255,255,255,.05);border-color:var(--line);color:var(--muted)}
+.sm-box .diff-btn:hover{border-color:rgba(125,249,255,.55);color:var(--text)}
+.sm-box .diff-btn.on{background:rgba(125,249,255,.08);box-shadow:0 0 0 1px rgba(125,249,255,.25)}
+.sm-box .diff-btn.locked{opacity:.45}
+/* tile level "melayang" di panggung gelap (ring boss gold dibiarkan) */
+.sm-box #levels .lvl-btn:not(.boss){box-shadow:0 6px 16px rgba(0,0,0,.4)}
+.sm-box #levels .lvl-btn:not(.boss):hover{box-shadow:0 10px 22px rgba(0,0,0,.5),0 0 0 1px rgba(125,249,255,.35)}
 /* ---------- STORY modal: hero banner (nyambung banner lobby) ---------- */
 .sm-hero{position:relative;height:132px;border-radius:14px;overflow:hidden;border:1px solid var(--line2);margin:4px 0 0;background:#0c0e10;color:var(--text)}
 .sm-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 42%}

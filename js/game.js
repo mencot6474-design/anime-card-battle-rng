@@ -1842,7 +1842,6 @@ function openStory(){
     if(state.diff===k){note.textContent="";return;}
     note.textContent="";state.diff=k;sfx.hit();save();openStory();
   });
-  document.getElementById("smLore").innerHTML=ch.lore.map(p=>`<p>${p}</p>`).join("");
   document.getElementById("levels").innerHTML=Array.from({length:ch.levels.length},(_,i)=>{
     const cellOpen=cellUnlocked(ch,state.diff);const cd=diffProg()[state.diff];const lv=ch.from+i,en=enemyOf(lv),cl=cd[lv],unlocked=cellOpen&&(i===0||cd[lv-1]),g=gateOf(lv),ok=pw>=g;
     return `<button class="lvl-btn${unlocked?"":" locked"}${en.boss?" boss":""}${unlocked&&!ok?" weak":""}" data-lv="${lv}" title="${en.name} · GATE ${fmt(g)}" ${unlocked?"":"disabled"}>
