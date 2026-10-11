@@ -501,7 +501,7 @@ function grantRolledCard(charId, mut, shiny) {
   const s = state.stacks.find(x => x.char === charId && x.tier === card.tier && (x.mut || "none") === m && !!x.shiny === sh);
   if (s) {
     s.count = (s.count || 1) + 1;
-    if(!__batchRoll)save(); rollCountBadge();
+    if(!__batchRoll){save();rollCountBadge();idxRewardSync();}
     return s;
   }
   const ns = { id: Math.random().toString(36).slice(2, 9), char: charId, tier: card.tier, fav: false, lock: false, mut: m, shiny: sh, trait: "none", count: 1 };
@@ -510,7 +510,7 @@ function grantRolledCard(charId, mut, shiny) {
   state.deck.length = 4;
   const empty = state.deck.indexOf(null);
   if (empty >= 0) setDeckSlot(empty, ns.id); else if(!__batchRoll)save();
-  rollCountBadge();
+  if(!__batchRoll){rollCountBadge();idxRewardSync();}
   return ns;
 }
 /* Instant roll massal (dipakai reward Infinite Tower): n roll sekaligus, simpan sekali di akhir. */
@@ -520,6 +520,68 @@ function instantRoll(n){
   try{ for(let i=0;i<n;i++){ const r=rngRoll(totalLuck()); if(!r)continue; grantRolledCard(r.cardId,r.mut,r.shiny); res.push(r);} }
   finally{ __batchRoll=false; }
   save(); rollCountBadge(); return res;
+}
+
+/* ===== INDEX REWARD: INTAN ROLL 100K =====
+   Progress = jumlah varian unik yang dimiliki (char x mutasi x shiny; 8 varian per kartu,
+   mencakup semua mutasi + kombinasi shiny / "double mutasi"). Tiap 5 varian terkumpul =
+   +1 item INTAN ROLL 100K otomatis masuk tab ITEM backpack. Pakai item = menarik
+   100.000 roll kartu sekaligus. Klaim idempoten lewat state.idxRewardsClaimed. */
+const IDX_MILESTONE=5;
+function idxVariantKey(s){return s.char+"|"+(s.mut||"none")+"|"+(s.shiny?1:0);}
+function idxProgress(){
+  const owned=new Set((state&&state.stacks||[]).map(idxVariantKey));
+  const total=(typeof MASTER_CARD_INDEX!=="undefined"?MASTER_CARD_INDEX.length:0)*8;
+  const count=owned.size;
+  return {owned:owned,count:count,total:total,blocks:Math.floor(count/IDX_MILESTONE),claimed:(state&&state.idxRewardsClaimed)||0};
+}
+function idxRewardSync(silent){
+  if(!state)return 0;
+  const P=idxProgress();
+  const gain=P.blocks-P.claimed;
+  if(gain<=0)return 0;
+  state.idxRewardsClaimed=P.blocks;
+  state.intanRolls=(state.intanRolls||0)+gain;
+  save();
+  if(!silent){
+    beep(640,.16,"triangle",.09);setTimeout(()=>beep(920,.2,"triangle",.08),120);
+    toast("INDEX REWARD!","+"+gain+" INTAN ROLL 100K · CEK BACKPACK","#7DF9FF");
+  }
+  return gain;
+}
+/* Versi cepat instantRoll untuk jumlah besar: bobot tiap varian dibangun SEKALI,
+   pemilihan lewat binary search prefix (bukan rngRoll berulang) — 100k roll dalam hitungan detik. */
+function instantRollFast(n){
+  if(!(n>0))return [];
+  const L=(typeof totalLuck==="function"&&totalLuck()>0)?totalLuck():1;
+  const aw=activeWeatherId();
+  const pool=MASTER_CARD_INDEX.filter(c=>!c.noGacha&&(!c.weatherOnly||c.weatherOnly===aw));
+  const MUTS=["none","gold","rainbow","secret"];
+  const entries=[];const cum=[];let total=0;
+  for(const c of pool){
+    const base=c.chance||chanceOf(c.tier);
+    for(const shiny of [false,true])for(const mut of MUTS){
+      const ch=base*(shiny?SHINY_MULT:1)*(MUT_MULT[mut]||1);
+      total+=1/Math.pow(ch,1/L);
+      entries.push({card:c,mut:mut,shiny:shiny,ch:ch});
+      cum.push(total);
+    }
+  }
+  if(!entries.length)return [];
+  const pick=()=>{const r=Math.random()*total;let lo=0,hi=entries.length-1;
+    while(lo<hi){const mid=(lo+hi)>>1;if(cum[mid]<r)lo=mid+1;else hi=mid;}
+    return entries[lo];};
+  __batchRoll=true;
+  const res=[];
+  try{
+    for(let i=0;i<n;i++){
+      const e=pick();
+      grantRolledCard(e.card.char_id,e.mut,e.shiny);
+      res.push({cardId:e.card.char_id,tier:e.card.tier,mut:e.mut,shiny:e.shiny,chance:e.ch});
+    }
+  } finally{ __batchRoll=false; }
+  save(); rollCountBadge(); idxRewardSync(true);
+  return res;
 }
 
 function rollCountBadge() {
@@ -929,10 +991,13 @@ function bpItemDef(kind){
   if(kind==='mythic'){const aw=activeWeatherId();return{kind,name:'MYTHIC WEATHER POTION',icon:'assets/images/icon-mythic.png',emoji:'✨',cnt:state.mythicPotions||0,
     desc:'SKIP cuaca sekarang (5 menit, pity sama) - APOCALYPSE chance 3% (potion biasa ~1,8%).',
     active:aw?`<br><strong style="color:${WEATHER[aw].color}">Aktif: ${WEATHER[aw].icon} ${WEATHER[aw].name}</strong>`:'',use:'bpUseMythicPotion()'};}
+  if(kind==='intan'){return{kind,name:'INTAN ROLL 100K',icon:'assets/images/icon-intan.png',emoji:'💎',cnt:state.intanRolls||0,
+    desc:'ITEM INDEX REWARD — didapat otomatis tiap 5 varian kartu terkumpul di Card Index (semua mutasi + varian shiny dihitung). Pakai = langsung menarik 100.000 roll kartu ke koleksi.',
+    active:'',use:'bpUseIntanRoll()'};}
   return null;
 }
 function renderBpItems(){
-  const kinds=['potion','mythic','luck','speed'];
+  const kinds=['potion','mythic','luck','speed','intan'];
   const tiles=kinds.map(k=>{const d=bpItemDef(k);return `<div class="bp-itemtile${d.cnt>0?'':' empty'}" onclick="bpItemPop('${k}')"><div class="bp-itemtile-ic"><img src="${d.icon}" alt="${d.name}" onerror="this.parentNode.textContent='${d.emoji}'"></div><span class="bp-itemtile-cnt">×${fmt(d.cnt)}</span></div>`;}).join('');
   return `<div class="bp-h">ITEM</div><div class="bp-itemgrid">${tiles}</div>`;
 }
@@ -982,6 +1047,16 @@ function bpUseMythicPotion(){
   beep(520,.16,"triangle",.1);setTimeout(()=>beep(880,.2,"triangle",.1),120);
   toast(`${r.weather.icon} ${r.weather.name}`,"WEATHER AKTIF · APOCALYPSE 3%",r.weather.color);
   bpItemPopClose();renderShell();renderBackpackPanel();
+}
+/* Pakai INTAN ROLL 100K: tarik 100.000 roll sekaligus, lalu tampilkan ringkasan loot. */
+function bpUseIntanRoll(){
+  if((state.intanRolls||0)<1){toast("INTAN ROLL habis","GAK ADA ITEM","#f87171");return;}
+  state.intanRolls--;save();
+  bpItemPopClose();
+  beep(440,.18,"triangle",.1);setTimeout(()=>beep(880,.24,"triangle",.08),150);
+  const loot=instantRollFast(100000);
+  showTowerLoot(loot,{weather:0,luck:0,speed:0},"HASIL INTAN ROLL · 100K");
+  renderBackpackPanel();
 }
 /* ====== TAB TREE: pohon skill. Root di tengah, dua cabang menjalar (LUCK kiri | SPEED kanan).
    SP didapet tiap naik LV; node butuh node sebelumnya di cabang yang sama. ====== */
@@ -1419,7 +1494,7 @@ function freshState(){
   const newState={coins:1000,raidTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},tower:{best:0,auto:false},battleSpeed:1,
     cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],history:[],battle:null,
     player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1,sp:0,tree:{}},weather:null,weatherBest:null,potions:0,mythicPotions:0,luckPotions:0,speedPotions:0,luckBuff:null,speedBuff:null,infTokens:0,
-    artOwned:[],artSlots:[null,null],petOwned:[],petEquipped:null};
+    artOwned:[],artSlots:[null,null],petOwned:[],petEquipped:null,intanRolls:0,idxRewardsClaimed:0};
   console.log('[FRESH STATE] Initialized player:',newState.player);
   return newState;
 }
@@ -1488,6 +1563,9 @@ function loadStateFor(name){
   if(!CHAPTERS.some(c=>c.no===state.chap))state.chap=1;
   if(typeof state.dailyIndex!=="number")state.dailyIndex=0;
   if(typeof state.raidTokens!=="number")state.raidTokens=0;
+  /* INDEX REWARD: patch save lama */
+  if(typeof state.intanRolls!=="number"||state.intanRolls<0)state.intanRolls=0;
+  if(typeof state.idxRewardsClaimed!=="number"||state.idxRewardsClaimed<0)state.idxRewardsClaimed=0;
   
   // Safely handle DIFFS and RAID_DIFFS
   if(DIFFS && DIFFS.length && !DIFFS.some(d=>d.k===state.diff))state.diff="normal";
@@ -3054,7 +3132,7 @@ function towerEnd(win){
     },1200);
   }
 }
-function showTowerLoot(results,drops){
+function showTowerLoot(results,drops,title){
   const pop=document.getElementById("rollResultPop");if(!pop)return;
   results=results||[];
   const d=drops||{weather:0,luck:0,speed:0};
@@ -3073,6 +3151,7 @@ function showTowerLoot(results,drops){
     let rc="rrc";if(isMut)rc+=" mut-"+g.mut;if(isShiny)rc+=" shiny";
     return `<div class="${rc}"><i class="rrc-sizer"></i><img src="${img}" alt="${name}" title="${name}" onerror="this.style.display='none'">${varTag}${g.n>1?`<span class="rrc-cnt">×${g.n}</span>`:''}<span class="rrc-name">1/${fmtC(luckChance(g.cardId,g.mut,g.shiny))}</span></div>`;
   }).join("");
+  {const rt=document.getElementById("rrTitle");if(rt)rt.textContent=title||"KARTU RUN INI";}
   pop.classList.add("show");
 }
 
@@ -3543,13 +3622,37 @@ function renderRaidShop(){
 
 /* =============== INDEX CARD (popup) =============== */
 function openIndex(){
-  /* Satu grid kotak-kotak berisi SEMUA kartu, tanpa pemisah tier & tanpa label chance.
+  /* Katalog SEMUA kartu + strip INDEX REWARD: hitung varian unik (char × mut × shiny,
+     8 per kartu — semua mutasi + kombinasi shiny/"double mutasi"). Tiap 5 varian = +1
+     INTAN ROLL 100K. Tiap cell punya 2 baris pips (normal / shiny) per mutasi.
      Klik sebuah kotak = buka detail passive lewat #skillPop (info tak hilang, cuma dipindah). */
-  document.getElementById("ixBody").innerHTML=`<div class="ix-grid">${MASTER_CARD_INDEX.map(c=>{
-    return `<button class="ix-cell" type="button" data-c="${c.char_id}" style="border-color:${TIER_COLOR[c.tier]||'var(--line2)'}">
+  idxRewardSync(true);
+  const P=idxProgress();
+  const pct=P.total?Math.min(100,Math.round(P.count/P.total*100)):0;
+  const complete=P.total>0&&P.count>=P.total;
+  const next=Math.max(0,IDX_MILESTONE-(P.count%IDX_MILESTONE));
+  const strip=`<div class="ix-prog">
+    <div class="ixp-col"><div class="ixp-lbl">VARIAN TERKUMPUL</div><div class="ixp-val">${fmt(P.count)}<em> / ${fmt(P.total)}</em></div></div>
+    <div class="ixp-track"><i style="width:${pct}%"></i></div>
+    <div class="ixp-rw">
+      <div class="ixp-rw-t"><span class="ixp-gem">◆</span> INTAN ROLL 100K</div>
+      <div class="ixp-rw-s">${complete?"SEMUA VARIAN LENGKAP":"+"+IDX_MILESTONE+" varian = +1 item"}</div>
+      <div class="ixp-own">DIMILIKI <b>${fmt(state.intanRolls||0)}</b>${complete?"":` · ${next} varian lagi`}</div>
+    </div>
+  </div>`;
+  const MUTS4=["none","gold","rainbow","secret"];
+  const legend=`<div class="ix-legend">${MUTS4.map(m=>`<span class="ixl"><i style="background:${m==='none'?'#9AA6B2':MUT_COLOR[m]}"></i>${MUT_LABEL[m]||'MURNI'}</span>`).join('')}<span class="ixl"><i class="shp"></i>SHINY (baris bawah)</span></div>`;
+  const cells=MASTER_CARD_INDEX.map(c=>{
+    const ownedC=(mut,sh)=>P.owned.has(`${c.char_id}|${mut}|${sh?1:0}`);
+    const any=MUTS4.some(m=>ownedC(m,false)||ownedC(m,true));
+    const rowSh=sh=>MUTS4.map(mut=>{const on=ownedC(mut,sh);const col=mut==='none'?'#9AA6B2':MUT_COLOR[mut];
+      return `<i class="ixpip${on?' on':''}${sh?' shp':''}"${on?` style="background:${col};border-color:${col}"`:''} title="${MUT_LABEL[mut]||'MURNI'}${sh?' SHINY':''}"></i>`;}).join('');
+    return `<button class="ix-cell${any?'':' no-own'}" type="button" data-c="${c.char_id}" style="border-color:${TIER_COLOR[c.tier]||'var(--line2)'}">
+      <span class="ixc-pips"><span class="ixp-row">${rowSh(false)}</span><span class="ixp-row">${rowSh(true)}</span></span>
       <img src="${c.sprite_asset}" alt="${c.name}">
       <span class="ixc-name">${c.name}</span>
-    </button>`;}).join("")}</div>`;
+    </button>`;}).join("");
+  document.getElementById("ixBody").innerHTML=strip+legend+`<div class="ix-grid">${cells}</div>`;
   document.querySelectorAll("#ixBody .ix-cell").forEach(cell=>{
     cell.onclick=()=>{const c=CARDS[cell.dataset.c];if(!c)return;document.getElementById("spName").textContent=c.passive.name;document.getElementById("spDesc").textContent=c.passive.desc;document.getElementById("skillPop").classList.add("show");};
   });
@@ -3993,6 +4096,7 @@ function enterGame(name,welcome){
   try {
     loadStateFor(name);
     save();
+    idxRewardSync(true); /* klaim retroaktif index reward varian lama (tanpa toast boot) */
   } catch(e) {
     console.error('loadStateFor FAILED:', e.message, e.stack);
     state=freshState();

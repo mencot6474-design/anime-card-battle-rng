@@ -1288,7 +1288,7 @@ body.on-lobby .weather-panel .wp-name{color:#F4F7FA}
 .bspeed-btn:hover{background:rgba(125,249,255,.18)}
 .bspeed-btn:disabled{opacity:.4;cursor:not-allowed;color:#9fb0c2}
 body.battle-full .vs-col .bspeed-btn{font-size:clamp(12px,1.4vw,15px);padding:4px 10px;margin-top:4px}
-#indexModal{position:fixed;inset:0;background:rgba(9,10,12,.8);backdrop-filter:blur(6px);display:none;place-items:center;z-index:60}
+#indexModal{position:fixed;inset:0;background:radial-gradient(120% 90% at 50% 40%,rgba(125,249,255,.06),rgba(6,7,9,.92) 62%);backdrop-filter:blur(8px);display:none;place-items:center;z-index:60;padding:18px}
 #indexModal.show{display:grid}
 .ix-box{width:min(780px,94vw);max-height:88vh;display:flex;flex-direction:column;border-radius:18px;border:1px solid var(--line2);background:linear-gradient(160deg,#FFFFFF,#EEF2F6);padding:22px 22px 10px;animation:rcIn .35s ease}
 .ix-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:6px}
@@ -1296,6 +1296,46 @@ body.battle-full .vs-col .bspeed-btn{font-size:clamp(12px,1.4vw,15px);padding:4p
 .ix-x{width:38px;height:38px;flex:none;border-radius:10px;border:1px solid var(--line2);background:#E7EBF0;color:var(--text);font-size:16px;cursor:pointer}
 .ix-x:hover{background:#F3E7EA}
 .ix-body{overflow-y:auto;padding:8px 4px 14px;display:flex;flex-direction:column;gap:20px}
+/* ===== INDEX CARD — tema lobby gelap (scoped #indexModal; base .ix-* di atas tetap utk modal lain) ===== */
+#indexModal .ix-box{--text:#F4F7FA;--muted:#C4CDD6;--muted2:#9AA6B2;--cyan:#7DF9FF;--purple:#B58CFF;--pink:#FF6B8A;--line:rgba(200,210,220,.16);--line2:rgba(200,212,222,.30);position:relative;isolation:isolate;color:var(--text);border:1px solid rgba(200,212,222,.22);border-radius:20px;background:linear-gradient(160deg,#171012 20%,#0f0b0d 80%);box-shadow:0 24px 60px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,255,255,.05)}
+#indexModal .ix-box::before{content:"";position:absolute;z-index:-1;inset:0 0 auto 0;height:200px;background:radial-gradient(78% 100% at 50% 0,rgba(125,249,255,.10),rgba(181,140,255,.06) 58%,transparent);pointer-events:none}
+#indexModal .ix-head{border-bottom:1px solid var(--line2);padding-bottom:10px;margin-bottom:10px}
+#indexModal .eyebrow{color:#7DF9FF}
+#indexModal .ix-title{color:var(--text)}
+#indexModal .ix-x{background:rgba(255,255,255,.07);border-color:var(--line2);color:var(--text);transition:background .15s,transform .2s}
+#indexModal .ix-x:hover{background:var(--purple);color:#fff;transform:rotate(90deg)}
+#indexModal .ix-body{gap:12px;padding:4px 4px 14px}
+/* strip INDEX REWARD: varian unik -> progress -> milestone INTAN ROLL 100K */
+.ix-prog{display:flex;align-items:center;gap:14px;padding:11px 14px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(160deg,#1d161a,#0f0c0e)}
+.ixp-col{flex:none;min-width:110px}
+.ixp-lbl{font-size:10px;letter-spacing:.16em;font-weight:700;color:var(--muted)}
+.ixp-val{font-family:"Barlow Condensed";font-size:24px;font-weight:800;letter-spacing:.03em;color:var(--text);line-height:1.1}
+.ixp-val em{font-style:normal;font-size:14px;font-weight:700;color:var(--muted)}
+.ixp-track{flex:1;min-width:60px;height:6px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}
+.ixp-track i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--cyan),var(--purple));transition:width .3s}
+.ixp-rw{flex:none;text-align:right}
+.ixp-rw-t{font-family:"Barlow Condensed";font-size:14px;font-weight:800;letter-spacing:.06em;color:#7DF9FF}
+.ixp-gem{color:var(--purple)}
+.ixp-rw-s{font-size:10px;letter-spacing:.06em;color:var(--muted2);margin-top:1px}
+.ixp-own{font-size:11px;letter-spacing:.06em;color:var(--muted);margin-top:2px}
+.ixp-own b{color:#FFCf6E;font-family:"Barlow Condensed";font-weight:800}
+.ix-legend{display:flex;flex-wrap:wrap;gap:8px 14px;padding:2px 4px}
+.ixl{display:inline-flex;align-items:center;gap:5px;font-family:"Barlow Condensed";font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--muted2)}
+.ixl i{width:14px;height:7px;border-radius:2px;border:1px solid rgba(255,255,255,.35);background:rgba(0,0,0,.4);box-sizing:border-box}
+.ixl i.shp{border-radius:99px}
+/* grid cell gelap + pips varian (baris 1 normal, baris 2 shiny) */
+#indexModal .ix-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px}
+#indexModal .ix-cell{position:relative;aspect-ratio:1/1;border:2px solid var(--line2);border-radius:10px;overflow:hidden;background:linear-gradient(160deg,#221a1e,#120e10);cursor:pointer;padding:0;transition:transform .12s,box-shadow .15s}
+#indexModal .ix-cell:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.5),0 0 0 1px rgba(125,249,255,.35)}
+#indexModal .ix-cell img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top}
+#indexModal .ix-cell.no-own img{filter:grayscale(1) brightness(.55)}
+#indexModal .ix-cell .ixc-name{position:absolute;left:0;right:0;bottom:0;padding:14px 4px 4px;font-family:"Barlow Condensed";font-size:11px;font-weight:700;line-height:1.1;text-align:center;color:#E8EEF4;background:linear-gradient(transparent,rgba(10,8,10,.92));text-shadow:0 1px 2px rgba(0,0,0,.8);z-index:1}
+.ixc-pips{position:absolute;top:4px;left:4px;right:4px;display:flex;flex-direction:column;gap:2px;z-index:2;pointer-events:none}
+.ixp-row{display:flex;gap:2px}
+.ixpip{width:12px;height:6px;border-radius:2px;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.5);box-sizing:border-box}
+.ixpip.shp{border-radius:99px}
+.ixpip.on{box-shadow:0 0 5px rgba(255,255,255,.25)}
+@media (max-width:520px){.ix-prog{flex-direction:column;align-items:stretch}.ixp-rw{text-align:left}.ixp-col{min-width:0}}
 /* ---------- MISSION (popup daftar cerita) — tema lobby gelap ---------- */
 #missionModal{position:fixed;inset:0;background:radial-gradient(120% 90% at 50% 40%,rgba(125,249,255,.06),rgba(6,7,9,.92) 62%);backdrop-filter:blur(8px);display:none;place-items:center;z-index:60;padding:18px}
 #missionModal.show{display:grid}
