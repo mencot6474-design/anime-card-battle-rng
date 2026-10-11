@@ -102,7 +102,7 @@ const STORY_BIBLE={
       {unit:"CH_KING_OF_CURSES",reward:40000,boss:true}
     ]},
   {no:4, zone:"MUSHIMA TOWN", tag:"STORY · BAB 4",
-    art:"assets/images/story-bab4-mushima.png",
+    art:"assets/images/story-bab4-trost.webp",
     lore:[
       "Teleportasi terakhir mengantarmu ke kota kecil yang nyaris tidak tercatat di peta: Mushima Town. Di sini waktu berjalan seperti air di sungai tenang—tenang sampai kau merasakan hawa dingin di leher sendiri. Tiga entitas purba tidur di bawah tanah, masing-masing mengawetkan satu ritual darah yang sudah dilupakan dunia manusia.",
       "Kota ini penuh dengan penduduk yang 'terlalu sempurna'. Mereka tidak bicara, hanya menunggu pembedahan dari tiga ahli waris yang bangkit kembali untuk menyelesaikan ritual nenek moyang mereka.",
@@ -117,7 +117,7 @@ const STORY_BIBLE={
       {unit:"CH_HEAVENS_DOOR",reward:145000,boss:true}
     ]},
   {no:5, zone:"INFINITY CASTLE", tag:"STORY · BAB 5",
-    art:"assets/images/story-bab5-infinity-castle.png",
+    art:"assets/images/story-bab5-infinity-castle.webp",
     lore:[
       "Pintu kayu tua muncul tiba-tiba di ujung jalan, tanpa sambungan ke bangunan apa pun. Kamu masuk dan menemukan istana tanpa batas—ruang ruang yang saling bertumpang tindih tanpa logika arsitektur. Tangga putar menghubungkan lantai yang sama, jendela memperlihatkan langit yang berputar lambat.",
       "Tujuh pemburu iblis berdiri di sudut berbeda istana, masing-masing menguasai satu ruangan yang mustahil. Mereka telah menunggu ribuan tahun untuk pengujian terakhir: siapa yang layak melanjutkan tradisi keluarga Tsuzumi hingga penghujung siklus.",
@@ -1907,6 +1907,15 @@ function openStory(){
   if(!cellUnlocked(ch,state.diff)){state.diff=highestChapDiff(ch);save();}
   document.getElementById("smKicker").textContent="CERITA · "+ch.tag.split("·")[1].trim();
   document.getElementById("smTitle").textContent=ch.zone;
+  /* HERO: art bab + info gate — nyambung visual sama banner lobby (shade + sb-line) */
+  const df=diffOf(),dcol=MUT_COLOR[df.mut]||"var(--cyan)";
+  let nx=ch.to;const cdh=diffProg()[state.diff];
+  for(let i=ch.from;i<=ch.to;i++){if(!cdh[i]){nx=i;break;}}
+  const gnx=gateOf(nx),doneN=chapProgMode(ch,state.diff),okN=pw>=gnx;
+  document.getElementById("smHero").innerHTML=
+    `<img src="${ch.art}" alt="" onerror="this.remove()"><div class="shade"></div>`+
+    `<span class="smh-chip" style="border-color:${dcol};color:${dcol}">${df.l}</span>`+
+    `<div class="smh-line">GATE ${fmt(gnx)} · POWER ${fmt(pw)} <b class="${okN?"ok":"bad"}">${okN?"SIAP":"KURANG"}</b> · PROGRES ${doneN}/${ch.levels.length}</div>`;
   document.getElementById("smDiff").innerHTML=DIFFS.map(d=>{const unl=cellUnlocked(ch,d.k),on=d.k===state.diff,col=d.mut==="none"?"var(--pink)":MUT_COLOR[d.mut];return `<button class="diff-btn${on?" on":""}${unl?"":" locked"}" data-d="${d.k}"${on?` style="border-color:${col};color:${col}"`:""}>${unl?d.l:"&#128274; "+d.l}</button>`;}).join("");
   document.getElementById("smDiffNote").textContent="";
   document.querySelectorAll("#smDiff .diff-btn").forEach(b=>b.onclick=()=>{
@@ -1919,8 +1928,9 @@ function openStory(){
   document.getElementById("levels").innerHTML=Array.from({length:ch.levels.length},(_,i)=>{
     const cellOpen=cellUnlocked(ch,state.diff);const cd=diffProg()[state.diff];const lv=ch.from+i,en=enemyOf(lv),cl=cd[lv],unlocked=cellOpen&&(i===0||cd[lv-1]),g=gateOf(lv),ok=pw>=g;
     return `<button class="lvl-btn${unlocked?"":" locked"}${en.boss?" boss":""}${unlocked&&!ok?" weak":""}" data-lv="${lv}" title="${en.name} · GATE ${fmt(g)}" ${unlocked?"":"disabled"}>
+      <img class="lvl-art" src="${en.img}" alt="" loading="lazy" onerror="this.remove()">
       ${cl?'<span class="chk">✓</span>':""}
-      ${unlocked?`<span class="lvl-num">${i+1}</span>`:'<span class="lvl-lock">🔒</span>'}
+      ${unlocked?`<span class="lvl-num">${i+1}</span>${en.boss?'<span class="lvl-bos">BOS</span>':""}<span class="lvl-name">${en.name}</span>`:'<span class="lvl-lock">🔒</span>'}
     </button>`;}).join("");
   document.querySelectorAll("#levels .lvl-btn:not(.locked)").forEach(x=>x.onclick=()=>openStart(+x.dataset.lv));
   document.getElementById("storyModal").classList.add("show");
