@@ -239,12 +239,59 @@ body.on-lobby .weather-panel.show{display:flex;}
 .bp-tab.on{background:var(--panel);color:var(--cyan);border-color:var(--cyan);box-shadow:0 0 0 1px rgba(125,249,255,.25) inset;}
 /* Panel grid item (tab ITEM) */
 .bp-items-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;overflow-y:auto;align-content:start;padding-top:4px;}
-/* Placeholder tab ARTEFAK / PET */
+/* ===== Tab ARTEFAK / PET: shop grid + slot equip (passive LUCK semua) ===== */
 .bp-itemgrid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;overflow-y:auto;align-content:start;padding-top:4px} /* alias nama class yang dipakai markup tab ITEM */
-.bp-soon{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);}
-.bp-soon-ic{font-size:52px;opacity:.5;}
-.bp-soon-t{font-family:"Barlow Condensed";font-weight:800;font-size:22px;letter-spacing:.12em;color:var(--text);}
-.bp-soon-s{font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.24em;opacity:.6;}
+.bp-coinrow{margin-left:auto;display:flex;gap:10px;align-items:center;font-family:"Barlow Condensed";font-weight:800;font-size:14px;letter-spacing:.06em;color:#fcd34d;white-space:nowrap}
+.bp-slotsrow{display:flex;gap:10px;align-items:stretch;margin:2px 0 12px}
+.bp-aslot{position:relative;width:76px;height:76px;border-radius:14px;border:1.5px dashed rgba(200,212,222,.3);background:#141013;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:.15s;flex:0 0 auto}
+.bp-aslot.empty span{font-size:22px;color:var(--muted2)}
+.bp-aslot.filled{border-style:solid;border-color:var(--ec);background:linear-gradient(160deg,color-mix(in srgb,var(--ec) 14%,#141013),#0d0a0c);box-shadow:0 0 0 1px color-mix(in srgb,var(--ec) 45%,transparent),0 0 16px 1px color-mix(in srgb,var(--ec) 30%,transparent)}
+.bp-aslot svg{width:34px;height:34px;color:var(--ec,#7DF9FF)}
+.bp-aslot-n{font-family:"Barlow Condensed";font-weight:800;font-size:9px;letter-spacing:.05em;color:#fff;text-align:center;line-height:1.1;padding:0 5px}
+.bp-aslot-x{position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:#141013;color:#fff;font-size:12px;line-height:1;cursor:pointer;opacity:0;transition:.15s}
+.bp-aslot:hover .bp-aslot-x{opacity:1}
+.bp-aslot-hint{display:flex;align-items:center;font-family:"Barlow Condensed";font-weight:700;font-size:11px;letter-spacing:.14em;color:var(--muted2);padding-left:6px;line-height:1.6}
+.bp-grid6{flex:1;min-height:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px;overflow-y:auto;align-content:start;padding-top:2px}
+.bp-grid6::-webkit-scrollbar{width:0;height:0}
+.bp-shop{position:relative;display:flex;flex-direction:column;gap:5px;border:1px solid var(--line2);border-radius:14px;background:linear-gradient(160deg,#171012,#0d0a0c);padding:12px 11px 11px;transition:.15s}
+.bp-shop:hover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(0,0,0,.5)}
+.bp-shop.eq{border-color:color-mix(in srgb,var(--ec) 70%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--ec) 40%,transparent),0 0 18px 1px color-mix(in srgb,var(--ec) 25%,transparent)}
+.bp-shop-ic{position:relative;height:70px;display:grid;place-items:center}
+.bp-shop-ic>svg{width:52px;height:52px;color:var(--ec,#7DF9FF);filter:drop-shadow(0 0 8px color-mix(in srgb,var(--ec) 45%,transparent))}
+.bp-shop-ic>img{width:70px;height:70px;object-fit:cover;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.6)}
+.bp-shop-ic .ph{display:none;font-size:34px}
+.bp-shop-ic.noimg>img{display:none}
+.bp-shop-ic.noimg .ph{display:block}
+.bp-shop-n{font-family:"Barlow Condensed";font-weight:800;font-size:13px;letter-spacing:.08em;color:#fff;text-align:center;min-height:16px}
+.bp-shop-e{font-family:"Barlow Condensed";font-weight:800;font-size:12px;letter-spacing:.05em;color:#5eead4;text-align:center;min-height:15px}
+.bp-shop-b{margin-top:3px;font-family:"Barlow Condensed";font-weight:800;font-size:12px;letter-spacing:.08em;padding:7px 6px;border-radius:10px;border:2px solid var(--line2);background:var(--panel);color:var(--text);cursor:pointer;transition:.15s}
+.bp-shop-b.buy{border-color:#fcd34d;color:#fcd34d}
+.bp-shop-b.buy:hover{background:rgba(252,211,77,.12);transform:scale(1.03)}
+.bp-shop-b.poor{opacity:.45;cursor:not-allowed}
+.bp-shop-b.on{border-color:#5eead4;color:#5eead4}
+.bp-shop-b.on:hover{background:rgba(94,234,212,.12)}
+.bp-shop-b.off{border-color:var(--line2);color:var(--muted2)}
+.bp-shop-b.off:hover{color:var(--text);filter:brightness(1.2)}
+/* panel PET AKTIF (tab PET) */
+.bp-petact{display:flex;gap:14px;align-items:center;border:1px solid var(--line2);border-radius:16px;background:linear-gradient(120deg,rgba(125,249,255,.07),rgba(255,255,255,.02));padding:11px 14px;margin:2px 0 12px}
+.bp-petact-img{position:relative;width:70px;height:70px;border-radius:14px;overflow:hidden;border:1px solid rgba(125,249,255,.4);box-shadow:0 0 18px rgba(125,249,255,.25);background:#0d0a0c;display:grid;place-items:center;flex:0 0 auto}
+.bp-petact-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.bp-petact-img .lp-fb{display:none;font-size:34px}
+.bp-petact-img.noimg img{display:none}
+.bp-petact-img.noimg .lp-fb{display:block}
+.bp-petact-meta{display:flex;flex-direction:column;gap:2px;min-width:0}
+.bp-petact-l{font-family:"Barlow Condensed";font-weight:700;font-size:10px;letter-spacing:.24em;color:var(--muted2)}
+.bp-petact-n{font-family:"Barlow Condensed";font-weight:800;font-size:18px;letter-spacing:.1em;color:#fff}
+.bp-petact-e{font-family:"Barlow Condensed";font-weight:800;font-size:13px;letter-spacing:.06em;color:#5eead4}
+.bp-petact-none{font-family:"Barlow Condensed";font-weight:700;font-size:13px;letter-spacing:.14em;color:var(--muted2)}
+/* PET melayang di lobby (di samping hub card) */
+.lobby-hub .hub-mid{position:relative}
+.lobby-pet{position:absolute;left:4%;bottom:38px;width:clamp(56px,9vh,92px);z-index:4;pointer-events:none;animation:petBob 3.2s ease-in-out infinite;filter:drop-shadow(0 8px 16px rgba(0,0,0,.55))}
+.lobby-pet img{width:100%;display:block;border-radius:16px;border:1px solid rgba(125,249,255,.35);box-shadow:0 0 20px rgba(125,249,255,.22)}
+.lobby-pet .lp-eb{display:none;font-size:34px;text-align:center}
+.lobby-pet.noimg img{display:none}
+.lobby-pet.noimg .lp-eb{display:block}
+@keyframes petBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
 /* ====== Tab TREE: pohon skill, root tengah, cabang LUCK | SPEED menjalar ====== */
 .bp-body.tree{overflow-y:auto;align-items:stretch;}
 /* SP CRYSTAL BANNER */
@@ -1670,14 +1717,7 @@ body.on-lobby .weather-panel .wp-name{color:#F4F7FA}
   .bench{padding:10px}
   .ix-strip{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
   .idx-card img,.idx-card video{height:120px}
-  .raid-pick-grid{grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px}
   .raid-shop-grid{grid-template-columns:1fr}
-  .raid-banner{padding:16px 14px;gap:12px}
-  .raid-banner .rb-name{font-size:clamp(24px,8vw,32px)}
-  .raid-teleport{width:100%;text-align:center;padding:13px 18px}
-  .raid-meta{gap:10px}
-  .raid-shopbtn{margin-left:0;width:100%}
-  .raid-tokencard{flex-direction:row;align-items:baseline;gap:8px;padding:8px 14px}
   .raid-result .rr-actions{flex-direction:column}
   .rc-card{width:min(230px,82vw)}
   .pm-box{padding:18px}
@@ -1731,28 +1771,41 @@ body.on-lobby .weather-panel .wp-name{color:#F4F7FA}
 .as-btn:active{transform:scale(.95)}
 .as-txt{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
 @keyframes spin360{to{transform:rotate(360deg)}}
-/* =============== BOSS RAID UI =============== */
-.raid-banner{position:relative;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:6px 0 16px;padding:22px clamp(16px,3vw,30px);border-radius:18px;border:1px solid var(--line2);background-size:cover;background-position:center;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.35)}
-.raid-banner .rb-shade{position:absolute;inset:0;background:linear-gradient(100deg,rgba(8,6,14,.9) 20%,rgba(8,6,14,.55) 55%,rgba(8,6,14,.25));z-index:0}
-.raid-banner .rb-info{position:relative;z-index:1;min-width:0}
-.raid-banner .rb-name{font-family:"Barlow Condensed";font-weight:800;letter-spacing:.04em;font-size:clamp(26px,5vw,42px);line-height:1;color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.6)}
-.raid-banner .rb-power{margin-top:8px;font-size:14px;font-weight:700;letter-spacing:.08em;color:#E6ECF2}
-.raid-teleport{position:relative;z-index:1;border:none;cursor:pointer;font-family:"Barlow Condensed";font-weight:800;letter-spacing:.12em;font-size:17px;text-transform:uppercase;color:#fff;padding:14px 26px;border-radius:999px;background:linear-gradient(120deg,#2fbf6b,#1f9d78);box-shadow:0 8px 22px rgba(35,180,110,.35);transition:transform .12s,filter .12s}
-.raid-teleport:hover{filter:brightness(1.08);transform:translateY(-2px)}
-.raid-teleport:active{transform:scale(.97)}
-.raid-meta{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
-.raid-tokencard{display:flex;flex-direction:column;gap:2px;padding:10px 18px;border-radius:14px;border:1px solid rgba(185,140,255,.4);background:linear-gradient(120deg,#170f1e,#0f0a14)}
-.raid-tokencard .rtc-k{font-family:"Barlow Condensed";letter-spacing:.18em;font-size:11px;font-weight:700;color:#B98CFF}
-.raid-tokencard b{font-size:24px;font-weight:800;color:#EAD9FF;line-height:1}
-.raid-hp{font-family:"Barlow Condensed";letter-spacing:.1em;font-size:14px;font-weight:700;color:var(--muted)}
-.raid-hp b{color:var(--text);font-size:18px}
-.raid-shopbtn{flex:0 0 auto;margin-left:auto;padding:11px 20px;font-size:14px}
-.raid-diff{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
-.raid-tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
-.raid-tier{display:flex;flex-direction:column;align-items:center;gap:4px;padding:16px 10px;border-radius:14px;border:1px solid var(--line2);background:rgba(20,28,38,.05)}
-.raid-tier span{font-family:"Barlow Condensed";letter-spacing:.12em;font-size:12px;font-weight:700;color:var(--muted)}
-.raid-tier b{font-size:22px;font-weight:800;color:#6D28D9}
-.raid-note{font-size:13px;line-height:1.6;color:var(--muted);max-width:640px}
+/* =============== BOSS RAID UI — tema setara INFINITE TOWER (reuse .tw-hub, override .rd-*) =============== */
+.rd-page{--text:#F4F7FA;--muted:#C4CDD6;--muted2:#9AA6B2;--cyan:#7DF9FF;--line:rgba(200,210,220,.16);--line2:rgba(200,212,222,.30);--ice:#7DF9FF;--violet:#c4b5fd;--amber:#FFD27A;--green:#5CF0A8;--raid:#B58CFF;color:var(--text)}
+/* ---- panggung boss (kiri): aura ungu + watermark EX + potret ber-glow ---- */
+.rd-hub .rd-stage{position:relative;overflow:hidden}
+.rd-hub .rd-stage::before{content:"";position:absolute;inset:8% 6%;border-radius:50%;background:radial-gradient(closest-side,rgba(139,92,246,.30),rgba(109,40,217,.10) 60%,transparent 75%);filter:blur(6px);animation:rdAura 3.4s ease-in-out infinite;pointer-events:none}
+@keyframes rdAura{0%,100%{opacity:.6;transform:scale(.97)}50%{opacity:1;transform:scale(1.03)}}
+.rd-hub .rd-wm{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);font-family:"Barlow Condensed";font-weight:800;font-size:clamp(130px,24vh,230px);line-height:1;letter-spacing:-.02em;color:rgba(181,140,255,.07);pointer-events:none;user-select:none;z-index:0}
+.rd-boss{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:14px;perspective:900px}
+.rd-boss-frame{position:relative;width:min(300px,34vh);aspect-ratio:3/4;border-radius:20px;overflow:hidden;border:1px solid rgba(181,140,255,.55);box-shadow:0 0 0 1px rgba(181,140,255,.35),0 0 34px 4px rgba(139,92,246,.35),0 24px 50px rgba(0,0,0,.65);animation:rdPulse 3.4s ease-in-out infinite}
+@keyframes rdPulse{0%,100%{box-shadow:0 0 0 1px rgba(181,140,255,.35),0 0 26px 2px rgba(139,92,246,.3),0 24px 50px rgba(0,0,0,.65)}50%{box-shadow:0 0 0 1px rgba(181,140,255,.7),0 0 46px 8px rgba(139,92,246,.5),0 24px 50px rgba(0,0,0,.65)}}
+.rd-boss-frame img{width:100%;height:100%;object-fit:cover;object-position:top}
+.rd-boss-frame::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(10,6,18,.85));pointer-events:none}
+.rd-boss-tag{position:absolute;left:10px;bottom:10px;z-index:2;display:flex;gap:8px;align-items:center}
+.rd-boss-tag .rbt-skill{font-family:"Barlow Condensed";font-weight:800;font-size:11px;letter-spacing:.16em;color:#EAD9FF;border:1px solid rgba(181,140,255,.5);background:rgba(20,12,26,.8);padding:3px 10px;border-radius:999px}
+.rd-boss-tag .rbt-tier{font-family:"Barlow Condensed";font-weight:800;font-size:11px;letter-spacing:.14em;color:#0c0a10;background:linear-gradient(120deg,#e9d5ff,#B58CFF);padding:3px 9px;border-radius:6px}
+/* ---- panel kanan: title + stats + diff + tiers + aksi ---- */
+.rd-hub .rd-title{font-family:"Barlow Condensed";font-weight:800;letter-spacing:.05em;font-size:clamp(30px,6vw,52px);line-height:.95;color:#fff;text-shadow:0 3px 18px rgba(139,92,246,.45)}
+.rd-hub .rd-sub{margin-top:6px;font-size:12px;font-weight:700;letter-spacing:.16em;color:#B9A6D6}
+.rd-stats{position:relative;display:flex;gap:12px;margin-top:4px;flex-wrap:wrap}
+.rd-stats .tbs{display:flex;flex-direction:column;gap:2px;padding:8px 18px;border-radius:12px;border:1px solid rgba(181,140,255,.32);background:linear-gradient(140deg,rgba(139,92,246,.14),rgba(20,12,26,.4))}
+.rd-stats .tbs span{font-family:"Barlow Condensed";letter-spacing:.16em;font-size:10px;font-weight:700;color:#B58CFF}
+.rd-stats .tbs b{font-size:26px;font-weight:800;color:#EAF3FB;line-height:1}
+.raid-diff{display:flex;flex-wrap:wrap;gap:8px}
+.raid-diff .diff-btn{border-color:var(--line2);color:var(--muted)}
+.rd-tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.rd-tier{display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 10px;border-radius:14px;border:1px solid rgba(181,140,255,.32);background:linear-gradient(160deg,rgba(139,92,246,.12),rgba(16,10,24,.6));transition:.15s}
+.rd-tier:hover{transform:translateY(-3px);border-color:rgba(181,140,255,.65);box-shadow:0 10px 24px rgba(0,0,0,.5)}
+.rd-tier span{font-family:"Barlow Condensed";letter-spacing:.12em;font-size:12px;font-weight:700;color:var(--muted)}
+.rd-tier b{font-size:22px;font-weight:800;color:#EAD9FF}
+.rd-tier i{font-style:normal;font-family:"Barlow Condensed";font-size:10px;letter-spacing:.2em;color:#FFD27A}
+.rd-note{font-size:11.5px;line-height:1.55;color:var(--muted2);max-width:640px}
+.rd-note b{color:#DDE6EE}.rd-note .v{color:var(--violet)}
+.raid-note{font-size:13px;line-height:1.6;color:var(--muted);max-width:640px} /* dipakai Toko Raid */
+@media(max-width:560px){.rd-tiers{grid-template-columns:1fr}.rd-boss-frame{width:min(240px,30vh)}}
+@media(max-width:900px){.rd-hub .tw-stage{min-height:44vh}}
 /* ===== SKY TOWER ===== */
 .hub-link .tw-ic{display:block;color:var(--muted);transition:color .15s}
 .hub-link:hover .tw-ic{color:var(--cyan)}
@@ -2011,18 +2064,36 @@ body.on-tower #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
 .raid-item:hover .ri-desc,.raid-item:focus .ri-desc,.raid-item:focus-within .ri-desc{opacity:1}
 #raidToast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(16px);z-index:95;opacity:0;pointer-events:none;padding:12px 22px;border-radius:12px;border:1px solid rgba(185,140,255,.5);background:rgba(20,12,26,.95);color:#EAD9FF;font-family:"Barlow Condensed";font-weight:700;letter-spacing:.06em;font-size:15px;box-shadow:0 10px 30px rgba(0,0,0,.5);transition:opacity .25s,transform .25s}
 #raidToast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.raid-pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px;margin-top:16px}
-.raid-pick-card{background:#FFFFFF;border:1px solid var(--line2);border-radius:14px;padding:10px;cursor:pointer;transition:transform .12s,border-color .12s;display:flex;flex-direction:column;align-items:center;gap:6px}
-.raid-pick-card:hover{transform:translateY(-3px);border-color:var(--cyan)}
-.raid-pick-card:active{transform:scale(.96)}
-.rpc-img{position:relative;width:100%;aspect-ratio:3/4;overflow:hidden;border-radius:10px}
-.rpc-img img,.rpc-img video{width:100%;height:100%;object-fit:cover}
-.rpc-name{font-weight:700;font-size:13px;color:var(--text);text-align:center;line-height:1.2}
-.rpc-stat{font-size:11px;color:var(--muted);letter-spacing:.04em}
-.rpc-fav{position:absolute;top:8px;right:8px;color:var(--amber);font-size:16px;z-index:3}
-.raid-pick-card.fire{border-color:rgba(20,28,38,.5)}
-.raid-pick-card.mut-gold,.raid-pick-card.mut-rainbow,.raid-pick-card.mut-secret{border-color:rgba(20,28,38,.4)}
-@media(max-width:560px){.raid-tiers{grid-template-columns:1fr}}
+/* ===== PICKER RAID — layar loadout gelap-violet (tema tower) ===== */
+.rd-pick{display:flex;flex-direction:column;gap:14px;padding-bottom:30px}
+.rd-pick-head{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:16px 18px;border-radius:18px;border:1px solid rgba(181,140,255,.3);background:linear-gradient(120deg,rgba(139,92,246,.14),rgba(16,10,24,.5));box-shadow:0 14px 34px rgba(0,0,0,.45)}
+.rd-pick-back{width:44px;height:44px;flex:0 0 auto;border-radius:50%;border:1px solid var(--line2);background:rgba(255,255,255,.04);color:var(--muted);font-size:18px;cursor:pointer;transition:.15s;display:grid;place-items:center}
+.rd-pick-back:hover{border-color:#B58CFF;color:#B58CFF;box-shadow:0 0 0 4px rgba(181,140,255,.15)}
+.rd-pick-ttl{display:flex;flex-direction:column;gap:2px;min-width:0}
+.rd-pick-ttl .eyebrow{color:#B58CFF}
+.rd-pick-ttl b{font-family:"Barlow Condensed";font-weight:800;font-size:clamp(20px,3vw,28px);letter-spacing:.06em;color:#fff}
+.rd-pick-boss{margin-left:auto;display:flex;align-items:center;gap:11px;padding:8px 14px 8px 8px;border-radius:14px;border:1px solid rgba(181,140,255,.4);background:rgba(12,8,18,.7)}
+.rd-pick-boss img{width:52px;height:52px;border-radius:10px;object-fit:cover;object-position:top;border:1px solid rgba(181,140,255,.5);box-shadow:0 0 14px rgba(139,92,246,.4)}
+.rd-pick-boss .rpb-i{display:flex;flex-direction:column;gap:2px}
+.rd-pick-boss .rpb-k{font-family:"Barlow Condensed";font-weight:700;font-size:9px;letter-spacing:.22em;color:#B58CFF}
+.rd-pick-boss .rpb-n{font-family:"Barlow Condensed";font-weight:800;font-size:15px;letter-spacing:.06em;color:#fff;line-height:1}
+.rd-pick-boss .rpb-hp{font-family:"Barlow Condensed";font-weight:700;font-size:11px;letter-spacing:.08em;color:#C4CDD6}
+.rd-pick-boss .rpb-df{font-family:"Barlow Condensed";font-weight:800;font-size:10px;letter-spacing:.14em;padding:2px 8px;border-radius:6px;border:1px solid currentColor;align-self:flex-start}
+.raid-pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:8px;margin-top:4px}
+/* Tile = gaya DECK (elegan): tier glow + shimmer sweep + nama miring — persis .backpack-panel .bp-tile */
+.rd-pick .bp-tile{border:none;border-radius:14px;background:#12100f;overflow:visible;box-shadow:0 0 0 1.5px var(--tcol),0 0 16px 1px color-mix(in srgb,var(--tcol) 32%,transparent),0 10px 22px rgba(0,0,0,.5);transition:transform .18s,box-shadow .18s}
+.rd-pick .bp-tile:hover{transform:translateY(-4px);box-shadow:0 0 0 2.5px var(--tcol),0 0 30px 5px color-mix(in srgb,var(--tcol) 55%,transparent),0 16px 34px rgba(0,0,0,.65)}
+.rd-pick .bp-tile img{border-radius:13px}
+.rd-pick .bp-tile::after{content:"";position:absolute;inset:0;border-radius:13px;pointer-events:none;background:linear-gradient(115deg,transparent 32%,rgba(255,255,255,.22) 46%,rgba(255,255,255,.05) 55%,transparent 70%);background-size:250% 100%;opacity:0;transition:opacity .2s;z-index:4}
+.rd-pick .bp-tile:hover::after{opacity:1;animation:bpSweep 1.1s ease-in-out infinite}
+.rd-pick .bpt-name{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:16px 30px 5px 7px;font-family:"Barlow Condensed";font-weight:800;font-size:13px;letter-spacing:.04em;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.95);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transform:skewX(-3deg);background:linear-gradient(to top,rgba(5,7,11,.92),rgba(5,7,11,.4) 55%,transparent);border-radius:0 0 13px 13px;pointer-events:none}
+.rd-pick .bp-tile .bpt-top{top:-7px;left:-6px;right:auto;gap:4px;align-items:flex-start;z-index:3}
+.rd-pick .bp-tile .bpt-shiny{height:auto;padding:2px 7px;font-size:10px;border-radius:6px;border:1px solid var(--ice);background:rgba(12,14,16,.94);color:#EAFDFF;box-shadow:0 4px 12px rgba(0,0,0,.6),0 0 10px rgba(125,249,255,.5);transform:rotate(-2deg);text-shadow:none}
+.rd-pick .bp-tile .bpt-mut{height:auto;padding:2px 7px;font-size:10px;border-radius:6px;background:rgba(12,8,10,.94);box-shadow:0 4px 12px rgba(0,0,0,.6);transform:rotate(-2deg)}
+.rd-pick .bp-tile .bpt-cnt{right:6px;bottom:4px;left:auto;top:auto;color:var(--ice);text-shadow:0 1px 5px rgba(0,0,0,.9);font-size:12px;z-index:3}
+.rd-pick .bp-tile .bpt-ctl{top:4px;right:4px}
+.rd-pick .bp-tile .bpt-fav,.rd-pick .bp-tile .bpt-lock{border-radius:50%;border:1px solid rgba(255,255,255,.25)}
+@media(max-width:560px){.raid-pick-grid{grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px}.rd-pick-boss{margin-left:0;width:100%}}
 /* ===== PORT PROTO BACKPACK (bahasa proto-v2) ===== */
 .backpack-panel{background:linear-gradient(165deg,#1a1214 0%,#120d0f 60%,#0e0a0c 100%);border:1px solid var(--line);border-radius:22px;box-shadow:0 40px 90px rgba(0,0,0,.75),0 0 0 1px rgba(255,255,255,.04)}
 .backpack-panel .backpack-header{background:none;border-bottom:1px solid var(--line);padding:16px 22px 12px}
@@ -2349,7 +2420,31 @@ function rarityText(tier,chance){return "1 in "+(chance||chanceOf(tier));}
    SHINY ×2, mutasi ×MUT_MULT (gold 5 / rainbow 10 / secret 25). Mis. secret dari kartu 800k = 1 in 20M. */
 function effChance(charId,mut,shiny){const c=CARDS[charId]||{};const ch=c.chance||chanceOf(c.tier);return ch*(shiny?SHINY_MULT:1)*(MUT_MULT[mut]||1);}
 // Total luck = (base + flat) × (1 + percent). Base = stat pemain, Flat dari skill tree/artifact/pet, Percent dari artifact/pet.
-function totalLuck(){const p=state?.player||{};const base=p.luckBase??p.luck??1;const flat=(p.luckFlat||0)+treeLuckFlat()+activeLuckBuff();const pct=(p.luckPercent||0)+treeLuckPct();return (base+flat)*(1+pct)*weatherLuckMult();}
+/* ===== DATA ARTEFAK & PET =====
+   Semua passive LUCK (flat + persen) — kuat buat chance ekstrem (1 in miliaran).
+   Artefak: beli pakai coin, equip maks 2 slot. Pet: beli pakai coin, equip 1. */
+const ART_DEFS=[
+  {id:"manik", name:"MANIK REZEKI",       icon:"manik", color:"#5eead4", price:10000000, flat:5,  pct:0},
+  {id:"medal", name:"MEDAL KEBERUNTUNGAN",icon:"medal", color:"#fcd34d", price:20000000, flat:10, pct:10},
+  {id:"giok",  name:"GIOK HOKI",          icon:"giok",  color:"#4ade80", price:35000000, flat:25, pct:0},
+  {id:"batu",  name:"BATU UNTUNG",        icon:"batu",  color:"#7DF9FF", price:50000000, flat:0,  pct:25},
+  {id:"cincin",name:"CINCIN ES",          icon:"cincin",color:"#93c5fd", price:70000000, flat:50, pct:30},
+  {id:"intan", name:"INTAN KUASA",        icon:"intan", color:"#f0abfc", price:100000000,flat:75, pct:75}
+];
+const PET_DEFS=[
+  {id:"doll",        name:"BONEKA TERKUTUK",img:"assets/pets/doll.jpg",        emoji:"🎎",price:10000000, flat:10, pct:0},
+  {id:"otherworldly",name:"MAKHLUK LAIN",   img:"assets/pets/otherworldly.jpg",emoji:"👾",price:20000000, flat:25, pct:0},
+  {id:"titan",       name:"TITAN BUAS",     img:"assets/pets/titan.jpg",       emoji:"🗿",price:35000000, flat:50, pct:0},
+  {id:"dragon",      name:"DRAGON ABADI",   img:"assets/pets/dragon.jpg",      emoji:"🐉",price:50000000, flat:0,  pct:15},
+  {id:"nine-tail",   name:"EKOR SEMBILAN",  img:"assets/pets/nine-tail.jpg",   emoji:"🐺",price:70000000, flat:50, pct:25},
+  {id:"bijuu",       name:"BIJUU",          img:"assets/pets/bijuu.jpg",       emoji:"🦊",price:100000000,flat:100,pct:50}
+];
+function luckTxt(d){const a=[];if(d.flat)a.push("+"+d.flat+" FLAT");if(d.pct)a.push("+"+d.pct+"%");return a.join(" & ")+" LUCK";}
+function artLuckFlat(){return state&&Array.isArray(state.artOwned)?state.artOwned.reduce((a,id)=>a+((ART_DEFS.find(x=>x.id===id)||{}).flat||0),0):0;}
+function artLuckPct(){return state&&Array.isArray(state.artOwned)?state.artOwned.reduce((a,id)=>a+((ART_DEFS.find(x=>x.id===id)||{}).pct||0),0):0;}
+function petLuckFlat(){const d=state&&state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;return d?(d.flat||0):0;}
+function petLuckPct(){const d=state&&state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;return d?(d.pct||0):0;}
+function totalLuck(){const p=state?.player||{};const base=p.luckBase??p.luck??1;const flat=(p.luckFlat||0)+treeLuckFlat()+activeLuckBuff()+artLuckFlat()+petLuckFlat();const pct=(p.luckPercent||0)+treeLuckPct()+artLuckPct()+petLuckPct();return (base+flat)*(1+pct)*weatherLuckMult();}
 // Hitung effective chance dari result roll (setelah flat luck division)
 function effChanceFromResult(result){if(!result)return null;return Math.ceil(result.effChance/totalLuck());}
 // Chance yang ditampilkan ke user = base × statMult (MENTAH, TIDAK dibagi luck) — biar kerasa "wah 1 in 18 juta".
@@ -2461,7 +2556,6 @@ const STORY_BIBLE={
            revive:1             -> bangkit 100% HP sekali saat mati
            dmgMult:2            -> SEMUA serangan x2 damage
            ignoreDef:1          -> serangan menembus evasion & void musuh
-           statusImmune:1       -> (flag; aktif setelah ada musuh yang kasih efek status)
            purple:{chance,mult} -> Galaxy Roar (eksklusif id CH_ETERNAL_DRAGON)
            domain / ranton      -> khusus id EX tertentu (Gojo / Madara)
            dodgeAtk:{chance,pct,max} -> hindari serangan (chance%), tiap dodge +pct% ATK permanen (stack s/d max)
@@ -2476,6 +2570,7 @@ const STORY_BIBLE={
            everyNth:{n,mult}    -> tiap serangan ke-N berubah: ×mult damage + menembus pengurangan damage (seperti SATU PERSEN tapi periodenya n).
            lowHpAura:{below,dr,burn:{pct,turns}} -> di bawah `below`% HP: damage masuk dipangkas `dr`% + serangan membakar musuh `pct`% max HP selama `turns` giliran.
            executeOnEntry:{pct}  -> saat masuk arena, kalau HP musuh saat ini < pct% dari HP kartu ini, musuh langsung dihancurkan (foeDown). Sekali per masuk.
+           entryShatter:{pct} -> saat masuk arena, ledakan pecah: berikan pct% dari total HP musuh saat ini sebagai damage langsung (flat, bypass evasion/void spt wallTitans). Karena arena cuma punya 1 kartu musuh aktif, "sebar rata ke semua kartu" = seluruh damage jatuh ke kartu aktif. Sekali per masuk.
            transform:{mult}     -> permanen sejak masuk arena: HP & ATK ×mult (gak ada expiry, beda sama burst).
            wallTitans:{every,pct} -> tiap `every` giliran sejak masuk, sambaran BONUS sebesar pct% ATK ke musuh (di luar serangan normal).
            rumbling:{turns,pct}  -> saat kartu ini MATI (bukan revive/lastStand), musuh kena DoT pct% max HP-nya selama `turns` giliran berikutnya, terus jalan walau kartu udah ganti.
@@ -2486,7 +2581,7 @@ const STORY_BIBLE={
            regression:{hpPct} -> (Regressor) kill-banked revive. Tiap Regressor BUNUH musuh (di `foeDown`, blok yang sama dgn snatch/arise): `bt.regressCharges[a]++`. Di `trySave` (SETELAH cek shadow, SEBELUM fx.revive): kalau `fx.regression && bt.regressCharges[a]>0` → `regressCharges[a]--`, `bt.pHp=round(bt.pMax*hpPct/100)`, lalu "skill di-refresh" (reset revUsed/standUsed/burstStart=turn/dodgeCount/atkCount/wtCount, re-arm entryGuard/execGuard). return true (bangkit di tempat, gak tag-in). Tiap kebangkitan "bayar" 1 kill → gak abadi. Butuh kill dulu = butuh mode multi-musuh (menara); story 1 musuh gak bisa demo.
        ==================================================== */
     {id:"CH_RULER",name:"RULER",tier:"EX",type:"Absolute",skill:"VENUZDONOA",hp:4787,atk:2394,chance:850000000,art:"assets/cards/art/ruler.webp",
-      fx:{revive:1,dmgMult:2,ignoreDef:1,statusImmune:1},
+      fx:{revive:1,dmgMult:2,ignoreDef:1},
       desc:"Saat mati, bangkit dengan 100% HP (sekali). Semua serangan memberikan 2x damage. Efek pengurangan damage musuh diabaikan sepenuhnya. Tidak dapat terkena efek status apapun."},
     {id:"CH_OTHERWORLDLY",name:"OTHERWORLD",tier:"EX",type:"Ultra Instinct",skill:"ULTRA INSTINCT: ONE PERCENT",hp:5120,atk:2560,chance:1000000000,art:"assets/cards/art/otherworldly-being.png",
       fx:{dodgeAtk:{chance:60,pct:15,max:3},everySecond:{mult:2},lastStand:{pct:15}},
@@ -2521,6 +2616,9 @@ const STORY_BIBLE={
     {id:"CH_REGRESSOR",name:"REGRESSOR",tier:"UR",type:"Player",skill:"REGRESSION",hp:1527,atk:764,chance:18000000,art:"assets/cards/art/regressor.png",pos:"center",
       fx:{regression:{hpPct:40}},
       desc:"Saat mati, jika Regressor telah membunuh setidaknya satu kartu dalam pertarungan ini, bangkit kembali dengan 40% HP dan skill-nya di-refresh. Setiap kill menyimpan satu 'regression'; tiap kebangkitan menghabiskan satu."},
+    {id:"CH_SIXFOLD_PROPHET",name:"SIXFOLD PROPHET",tier:"UR",type:"Shinobi",skill:"ALMIGHTY PUSH",hp:1352,atk:676,chance:12000000,art:"assets/cards/art/sixfold-prophet.jpg",pos:"center",
+      fx:{entryShatter:{pct:20}},
+      desc:"Saat masuk, berikan 20% dari total HP musuh saat ini yang tersebar merata ke semua kartu mereka sebagai damage."},
     /* ===== KARTU EKSKLUSIF WEATHER (placeholder — art/stat/gambar bisa diganti nanti).
        Hanya bisa ke-roll saat weather-nya AKTIF (lihat WEATHERS + activeWeatherId). ===== */
     {id:"CH_STORM_HERALD",name:"STORM HERALD",tier:"UR",type:"Tempest",skill:"THUNDERCALL",hp:2100,atk:1050,chance:12000000,art:"assets/cards/art/storm-herald.png",pos:"center",weatherOnly:"storm",
@@ -3045,11 +3143,10 @@ function renderBackpackPanel(){
   const tabbar=`<div class="bp-tabs">${TABS.map(t=>`<button class="bp-tab${bpTab===t.k?' on':''}" onclick="bpSetTab('${t.k}')">${t.l}</button>`).join('')}</div>`;
   const header=`<div class="backpack-header"><h2>BACKPACK</h2>
     <button class="backpack-close" onclick="toggleBackpack()">&times;</button></div>${tabbar}`;
-  const soon=lbl=>`<div class="bp-body"><div class="bp-soon"><div class="bp-soon-ic">${lbl==='ARTEFAK'?'◈':'🐾'}</div><div class="bp-soon-t">${lbl}</div><div class="bp-soon-s">SEGERA HADIR</div></div></div>`;
   if(bpTab==='tree'){panel.innerHTML=header+`<div class="bp-body tree">${renderBpTree()}</div>`;return;}
   if(bpTab==='item'){panel.innerHTML=header+`<div class="bp-body">${renderBpItems()}</div>`;return;}
-  if(bpTab==='artefact'){panel.innerHTML=header+soon('ARTEFAK');return;}
-  if(bpTab==='pet'){panel.innerHTML=header+soon('PET');return;}
+  if(bpTab==='artefact'){panel.innerHTML=header+`<div class="bp-body">${renderBpArts()}</div>`;return;}
+  if(bpTab==='pet'){panel.innerHTML=header+`<div class="bp-body">${renderBpPets()}</div>`;return;}
   /* tab DECK (default) */
   if(!state.stacks.length){panel.innerHTML=header+`<div class="bp-empty">Belum punya kartu. Tekan &#127922; untuk Roll.</div>`;return;}
   const slots=[0,1,2,3].map(i=>{
@@ -3228,6 +3325,89 @@ function bpTreeBuy(id){
 }
 
 
+/* ====== TAB ARTEFAK & PET (backpack): grid beli + slot equip. Passive = LUCK semua. ====== */
+function artIconSvg(k){
+  const S=p=>`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+  if(k==="manik")return S(`<circle cx="24" cy="12.5" r="5" stroke-width="2"/><circle cx="35.5" cy="24" r="5" stroke-width="2"/><circle cx="24" cy="35.5" r="5" stroke-width="2"/><circle cx="12.5" cy="24" r="5" stroke-width="2"/><circle cx="24" cy="24" r="4.5" stroke-width="1.6" fill="currentColor" fill-opacity=".55"/>`);
+  if(k==="medal")return S(`<path d="M16 6l5.5 14M32 6l-5.5 14" stroke-width="2.4"/><circle cx="24" cy="31" r="10.5" stroke-width="2.4"/><path d="M24 25.5l1.9 3.9 4.3.6-3.1 3 .7 4.3-3.8-2-3.8 2 .7-4.3-3.1-3 4.3-.6z" fill="currentColor" stroke="none"/>`);
+  if(k==="giok")return S(`<ellipse cx="24" cy="24" rx="11.5" ry="14.5" stroke-width="2.4"/><path d="M17.5 18c4 2.6 9 2.6 13 0M16.5 30c4.5-2.6 10.5-2.6 15 0" stroke-width="1.5" stroke-opacity=".75"/>`);
+  if(k==="batu")return S(`<path d="M24 7.5l13.5 9.5-5 18.5H15.5l-5-18.5z" stroke-width="2.4"/><path d="M10.5 17h27M24 7.5l-3.5 9.5 3.5 18.5 3.5-18.5L24 7.5" stroke-width="1.4" stroke-opacity=".75"/>`);
+  if(k==="cincin")return S(`<circle cx="24" cy="30" r="10.5" stroke-width="2.4"/><path d="M24 6l5.5 7.5L24 21l-5.5-7.5z" stroke-width="2"/><path d="M24 6v15M18.5 13.5h11" stroke-width="1.3" stroke-opacity=".8"/>`);
+  return S(`<path d="M14 9.5h20l7.5 10.5L24 41 6.5 20z" stroke-width="2.4"/><path d="M6.5 20h35M14 9.5L18 20l6 21 6-21 4-10.5" stroke-width="1.5" stroke-opacity=".8"/>`);
+}
+function renderBpArts(){
+  const coins=state.coins||0;
+  const slots=[0,1].map(i=>{
+    const id=state.artSlots[i],d=id?ART_DEFS.find(x=>x.id===id):null;
+    if(!d)return `<div class="bp-aslot empty" onclick="toast('SLOT KOSONG','BELI ARTEFAK DULU','#fcd34d')"><span>◈</span></div>`;
+    return `<div class="bp-aslot filled" style="--ec:${d.color}" onclick="bpArtSlot(${i})">${artIconSvg(d.icon)}<span class="bp-aslot-n">${d.name}</span><button class="bp-aslot-x" onclick="event.stopPropagation();bpArtSlot(${i})">&times;</button></div>`;
+  }).join('');
+  const cards=ART_DEFS.map(d=>{
+    const owned=state.artOwned.includes(d.id),eq=state.artSlots.includes(d.id);
+    const btn=eq?`<button class="bp-shop-b off" onclick="bpToggleArt('${d.id}')">LEPAS</button>`
+      :owned?`<button class="bp-shop-b on" onclick="bpToggleArt('${d.id}')">PASANG</button>`
+      :`<button class="bp-shop-b ${coins>=d.price?'buy':'poor'}" onclick="bpBuyArt('${d.id}')">BELI · 🪙 ${fmt(d.price)}</button>`;
+    return `<div class="bp-shop${eq?' eq':''}" style="--ec:${d.color}"><div class="bp-shop-ic">${artIconSvg(d.icon)}</div><div class="bp-shop-n">${d.name}</div><div class="bp-shop-e">${luckTxt(d)}</div>${btn}</div>`;
+  }).join('');
+  return `<div class="bp-h">ARTEFAK · 2 SLOT<div class="bp-coinrow">☘ ${totalLuck().toFixed(1)}× · 🪙 ${fmt(coins)}</div></div>
+  <div class="bp-slotsrow">${slots}<div class="bp-aslot-hint">Klik slot untuk lepas<br>Beli artefak dulu untuk pasang</div></div>
+  <div class="bp-grid6">${cards}</div>`;
+}
+function renderBpPets(){
+  const coins=state.coins||0;
+  const act=state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;
+  const actHtml=act?`<div class="bp-petact">
+    <div class="bp-petact-img"><img src="${act.img}" alt="${act.name}" onerror="this.parentNode.classList.add('noimg')"><span class="lp-fb">${act.emoji}</span></div>
+    <div class="bp-petact-meta"><span class="bp-petact-l">PET AKTIF</span><span class="bp-petact-n">${act.name}</span><span class="bp-petact-e">${luckTxt(act)}</span></div>
+    <button class="bp-shop-b off" style="margin-left:auto" onclick="bpTogglePet('${act.id}')">LEPAS</button></div>`
+    :`<div class="bp-petact"><span class="bp-petact-none">BELUM ADA PET AKTIF — BELI &amp; PASANG DI BAWAH</span></div>`;
+  const cards=PET_DEFS.map(p=>{
+    const owned=state.petOwned.includes(p.id),eq=state.petEquipped===p.id;
+    const btn=eq?`<button class="bp-shop-b off" onclick="bpTogglePet('${p.id}')">LEPAS</button>`
+      :owned?`<button class="bp-shop-b on" onclick="bpTogglePet('${p.id}')">PASANG</button>`
+      :`<button class="bp-shop-b ${coins>=p.price?'buy':'poor'}" onclick="bpBuyPet('${p.id}')">BELI · 🪙 ${fmt(p.price)}</button>`;
+    return `<div class="bp-shop${eq?' eq':''}" style="--ec:#7DF9FF"><div class="bp-shop-ic"><img src="${p.img}" alt="${p.name}" onerror="this.parentNode.classList.add('noimg')"><span class="ph">${p.emoji}</span></div><div class="bp-shop-n">${p.name}</div><div class="bp-shop-e">${luckTxt(p)}</div>${btn}</div>`;
+  }).join('');
+  return `<div class="bp-h">PET · 1 SLOT<div class="bp-coinrow">☘ ${totalLuck().toFixed(1)}× · 🪙 ${fmt(coins)}</div></div>
+  ${actHtml}
+  <div class="bp-grid6">${cards}</div>`;
+}
+
+function bpBuyArt(id){
+  const d=ART_DEFS.find(x=>x.id===id);if(!d||state.artOwned.includes(id))return;
+  if((state.coins||0)<d.price){beep(200,.09,"square",.06);toast("COIN KURANG","BUTUH 🪙 "+fmt(d.price),"#f87171");return;}
+  state.coins-=d.price;state.artOwned.push(id);save();
+  beep(680,.12,"triangle",.09);setTimeout(()=>beep(900,.12,"triangle",.08),90);
+  toast(d.name,luckTxt(d),d.color);renderShell();renderBackpackPanel();
+}
+function bpToggleArt(id){
+  const d=ART_DEFS.find(x=>x.id===id);if(!d||!state.artOwned.includes(id))return;
+  const i=state.artSlots.indexOf(id);
+  if(i>=0){state.artSlots[i]=null;beep(360,.08,"triangle",.06);toast("DILEPAS",d.name,"#9ca3af");}
+  else{let s=state.artSlots.indexOf(null);if(s<0)s=0;state.artSlots[s]=id;beep(680,.12,"triangle",.09);toast("TERPASANG",d.name+" → SLOT "+(s+1),d.color);}
+  save();renderShell();renderBackpackPanel();
+}
+function bpArtSlot(i){const id=state.artSlots[i];if(id)bpToggleArt(id);}
+function bpBuyPet(id){
+  const d=PET_DEFS.find(x=>x.id===id);if(!d||state.petOwned.includes(id))return;
+  if((state.coins||0)<d.price){beep(200,.09,"square",.06);toast("COIN KURANG","BUTUH 🪙 "+fmt(d.price),"#f87171");return;}
+  state.coins-=d.price;state.petOwned.push(id);save();
+  beep(680,.12,"triangle",.09);setTimeout(()=>beep(900,.12,"triangle",.08),90);
+  toast(d.name,luckTxt(d),"#7DF9FF");renderShell();renderBackpackPanel();
+}
+function bpTogglePet(id){
+  const d=PET_DEFS.find(x=>x.id===id);if(!d||!state.petOwned.includes(id))return;
+  if(state.petEquipped===id){state.petEquipped=null;beep(360,.08,"triangle",.06);toast("PET DILEPAS",d.name,"#9ca3af");}
+  else{state.petEquipped=id;beep(680,.12,"triangle",.09);toast("PET AKTIF",d.name+" · "+luckTxt(d),d.color);}
+  save();renderShell();renderBackpackPanel();
+  if(!state.battle&&typeof render==="function")render();
+}
+function lobbyPetHtml(){
+  const d=state&&state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;
+  if(!d)return"";
+  return `<div class="lobby-pet" title="${d.name}"><img src="${d.img}" alt="${d.name}" onerror="this.parentNode.classList.add('noimg')"><span class="lp-eb">${d.emoji}</span></div>`;
+}
+
 /* ====== Hover reveal kartu (isi = hubCardHtml, sama persis kartu lobby). Dipakai dek + weather corner. ====== */
 let __bpsHoverEl=null;
 function hoverPlace(eq,slotRect){
@@ -3350,6 +3530,24 @@ function upgradeArtVideo(img){
 })();
 /* Mekanik battle per passive (angka), dipisah dari data index untuk step() */
 const PASSIVE_FX=Object.fromEntries(STORY_BIBLE.units.map(u=>[u.id,u.fx]));
+/* ===== VALIDATOR PASSIVE =====
+   FX_KNOWN = keyword fx yang BENERAN diimplement battle engine (single source of truth).
+   validateFx() jalan pas boot: keyword di luar daftar = PASSIVE ZONK (desc tampil, efek nol) -> console.warn, bukan diam-diam.
+   Nambah keyword baru? Daftarkan ke array INI SETELAH implementasi di kode battle. */
+const FX_KNOWN=["double","crit","pierce","barrage","evasion","lifesteal","void","highHpDmg","lowHpAtk",
+  "revive","dmgMult","ignoreDef","purple","domain","ranton","dodgeAtk","everySecond","lastStand",
+  "styleSwitching","burst","hpDrain","lifetime","entryCounter","dodgeEvery","everyNth","lowHpAura",
+  "executeOnEntry","transform","wallTitans","rumbling","bungeeGum","snatch","arise","prideOfPrince",
+  "regression","copy","entryShatter"];
+function validateFx(){const bad=[];(STORY_BIBLE.units||[]).forEach(u=>{const fx=u.fx||{},ks=Object.keys(fx);
+  ks.forEach(k=>{if(!FX_KNOWN.includes(k))bad.push(u.id+" :: fx."+k+" TIDAK DIKENAL -> passive TIDAK AKAN JALAN di battle");});
+  if((u.desc||"").trim()&&!ks.length)bad.push(u.id+" :: desc ada tapi fx kosong -> murni teks");});
+  if(bad.length)console.warn("[FX VALIDATOR] PASSIVE BERMASALAH:\n"+bad.join("\n"));
+  else console.log("[FX VALIDATOR] OK - "+STORY_BIBLE.units.length+" unit, "+FX_KNOWN.length+" keyword");
+  return bad;}
+validateFx();
+
+
 const FOES=Object.fromEntries(STORY_BIBLE.levels.map((l,i)=>{
   const c=CARDS[l.unit];
   return [i+1,{id:l.unit,name:c?c.name:"(kartu hilang)",ep:c?c.passive.name:"",img:c?c.sprite_asset:"",tier:c?c.tier:"",boss:!!l.boss}];
@@ -3380,12 +3578,14 @@ const shinyCls=s=>s&&s.shiny?" shiny":"";
 /* Hadiah login harian 7 hari (coin) — total 950.000, reset tiap 00:00 */
 const DAILY_REWARDS=[30000,50000,70000,100000,150000,200000,400000];
 
-/* ========== DIFFICULTY LEVELS ========== */
+/* ========== DIFFICULTY LEVELS ==========
+   rw = pengali hadiah coin story per difficulty (sama pola dgn RAID_DIFFS),
+   dipakai firstClearReward(). Tanpa rw, semua diff bayar ×1 (bug lama). */
 const DIFFS=[
-  {k:"normal",l:"NORMAL",mut:"none"},
-  {k:"hard",l:"HARD",mut:"gold"},
-  {k:"extreme",l:"EXTREME",mut:"rainbow"},
-  {k:"nightmare",l:"NIGHTMARE",mut:"secret"}
+  {k:"normal",l:"NORMAL",mut:"none",rw:1},
+  {k:"hard",l:"HARD",mut:"gold",rw:1.5},
+  {k:"extreme",l:"EXTREME",mut:"rainbow",rw:2.2},
+  {k:"nightmare",l:"NIGHTMARE",mut:"secret",rw:3}
 ];
 const RAID_DIFFS=[
   {k:"normal",l:"NORMAL",hp:1,atk:1,rw:1,color:"#6EAC4C"},
@@ -3471,7 +3671,8 @@ function freshState(){
   const start=s0?{id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,fav:false,lock:false,mut:"none",shiny:false,trait:"none",count:1}:null;
   const newState={coins:1000,raidTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},tower:{best:0},
     cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],history:[],battle:null,
-    player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1,sp:0,tree:{}},weather:null,weatherBest:null,potions:0,mythicPotions:0,luckPotions:0,speedPotions:0,luckBuff:null,speedBuff:null,infTokens:0};
+    player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1,sp:0,tree:{}},weather:null,weatherBest:null,potions:0,mythicPotions:0,luckPotions:0,speedPotions:0,luckBuff:null,speedBuff:null,infTokens:0,
+    artOwned:[],artSlots:[null,null],petOwned:[],petEquipped:null};
   console.log('[FRESH STATE] Initialized player:',newState.player);
   return newState;
 }
@@ -3561,6 +3762,14 @@ function loadStateFor(name){
   if(typeof state.luckPotions!=="number"||state.luckPotions<0)state.luckPotions=0;
   if(typeof state.speedPotions!=="number"||state.speedPotions<0)state.speedPotions=0;
   if(typeof state.infTokens!=="number"||state.infTokens<0)state.infTokens=0;
+  /* ARTEFAK + PET: field baru — player lama mulai kosong, id korup dibuang. */
+  if(!Array.isArray(state.artOwned))state.artOwned=[];
+  state.artOwned=state.artOwned.filter(id=>ART_DEFS.some(a=>a.id===id));
+  if(!Array.isArray(state.artSlots)||state.artSlots.length!==2)state.artSlots=[null,null];
+  state.artSlots=state.artSlots.map(id=>(id&&state.artOwned.includes(id))?id:null);
+  if(!Array.isArray(state.petOwned))state.petOwned=[];
+  state.petOwned=state.petOwned.filter(id=>PET_DEFS.some(p=>p.id===id));
+  if(!state.petEquipped||!state.petOwned.includes(state.petEquipped))state.petEquipped=null;
   if(state.luckBuff&&typeof state.luckBuff.endsAt!=="number")state.luckBuff=null;
   if(state.speedBuff&&typeof state.speedBuff.endsAt!=="number")state.speedBuff=null;
   if(state.luckBuff&&Date.now()>=state.luckBuff.endsAt)state.luckBuff=null;
@@ -4093,7 +4302,9 @@ function closeStory(){document.getElementById("storyModal").classList.remove("sh
 let startLv=null;
 function openStart(lv){
   startLv=lv;
-  const en=enemyOf(lv),es=enemyStats(lv),first=!state.cleared[lv];
+  /* first clear = PER DIFFICULTY (diffProg), bukan state.cleared global —
+     biar clear pertama di HARD/EXTREME/NIGHTMARE tetap bayar 100%, bukan replay 20%. */
+  const en=enemyOf(lv),es=enemyStats(lv),first=!diffProg()[state.diff][lv];
   const reward=first?firstClearReward(lv):Math.round(firstClearReward(lv)*.2);
   const pss=en.id&&CARDS[en.id]?CARDS[en.id].passive:null,pw=totalPower(),g=gateOf(lv),ok=pw>=g;
   const bar=Math.max(4,Math.min(100,Math.round(pw/g*100)));
@@ -4113,7 +4324,7 @@ function openStart(lv){
       <div class="sg-row"><span>GATE MUSUH</span><b>${fmt(g)}</b></div>
     </div>
     ${pss?`<div class="st-trait"><b>PASSIVE · ${pss.name}</b> ${pss.desc}</div>`:""}
-    <div class="st-reward"><span class="st-rw-label">${first?"FIRST CLEAR":"REPLAY (20%)"}</span><span class="st-rw-gold">◎ ${fmt(reward)} gold</span></div>
+    <div class="st-reward"><span class="st-rw-label">${first?"FIRST CLEAR":"REPLAY (20%)"} · ${diffOf().l} ×${diffOf().rw||1}</span><span class="st-rw-gold">◎ ${fmt(reward)} gold</span></div>
     <div class="st-btns">
       <button class="st-cancel" id="stCancel">BATAL</button>
       <button class="st-go${ok?"":" weak"}" id="stGo">${ok?"⚔ &nbsp;MULAI BATTLE":"⚠ &nbsp;POWER KURANG — MASUK"}</button>
@@ -4632,13 +4843,14 @@ function startBattle(){
   const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   const eid=en.id||null,efx=eid?(PASSIVE_FX[eid]||{}):{};
   if(bt&&bt.timer)clearTimeout(bt.timer);
-  bt={lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),execGuard:new Array(fighters.length).fill(false),wtCount:new Array(fighters.length).fill(0),snatchAtk:new Array(fighters.length).fill(0),snatchHp:new Array(fighters.length).fill(0),regressCharges:new Array(fighters.length).fill(0),rumbling:0,rumblingPct:0,aftermath:false,gumTurns:0,trickNext:false,royalNow:false,gunsNow:false,shadow:null};
+  bt={lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),execGuard:new Array(fighters.length).fill(false),shatterGuard:new Array(fighters.length).fill(false),wtCount:new Array(fighters.length).fill(0),snatchAtk:new Array(fighters.length).fill(0),snatchHp:new Array(fighters.length).fill(0),regressCharges:new Array(fighters.length).fill(0),rumbling:0,rumblingPct:0,aftermath:false,gumTurns:0,trickNext:false,royalNow:false,gunsNow:false,shadow:null};
   // BURST: kartu pertama masuk arena langsung dapat boost HP kalau punya fx.burst
   const fx0=resolveFx(eq,efx);
   if(fx0.burst){bt.pMax=Math.round(base.hp*fx0.burst.mult);bt.pHp=bt.pMax;}
   if(fx0.transform){bt.pMax=Math.round(base.hp*fx0.transform.mult);bt.pHp=bt.pMax;}
   if(fx0.entryCounter)bt.entryGuard[0]=true;
   if(fx0.executeOnEntry)bt.execGuard[0]=true;
+  if(fx0.entryShatter)bt.shatterGuard[0]=true;
   schedPhase(700,step);
 }
 function tagIn(){
@@ -4648,12 +4860,13 @@ function tagIn(){
   const base=cardStats(bt.eq.char,bt.eq.mut,bt.eq.trait,bt.eq.shiny);
   bt.pMax=base.hp+(bt.snatchHp[next]||0);bt.pHp=bt.pMax;
   bt.burstStart[next]=bt.turn;
-  bt.entryGuard[next]=false;bt.dodgeArmed[next]=false;bt.dodgeCount[next]=0;bt.execGuard[next]=false;bt.wtCount[next]=0;
+  bt.entryGuard[next]=false;bt.dodgeArmed[next]=false;bt.dodgeCount[next]=0;bt.execGuard[next]=false;bt.wtCount[next]=0;bt.shatterGuard[next]=false;
   const nfx=resolveFx(bt.eq,bt.efx);
   if(nfx.burst){bt.pMax=Math.round(base.hp*nfx.burst.mult);bt.pHp=bt.pMax;}
   if(nfx.transform){bt.pMax=Math.round(base.hp*nfx.transform.mult);bt.pHp=bt.pMax;}
   if(nfx.entryCounter)bt.entryGuard[next]=true;
   if(nfx.executeOnEntry)bt.execGuard[next]=true;
+  if(nfx.entryShatter)bt.shatterGuard[next]=true;
   // fase 1: kartu aktif sekarang tumbang
   const meEl=document.querySelector(".fighter.me");
   if(meEl){meEl.classList.remove("tag-enter");meEl.classList.add("ko");koFx(meEl);}
@@ -4685,6 +4898,7 @@ function trySave(){
     bt.dodgeCount[a]=0;bt.dodgeArmed[a]=false;bt.atkCount[a]=0;bt.wtCount[a]=0;
     if(fx.entryCounter)bt.entryGuard[a]=true;
     if(fx.executeOnEntry)bt.execGuard[a]=true;
+    if(fx.entryShatter)bt.shatterGuard[a]=true;
     setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
     setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","REGRESSION","heal");},400);
     return true;
@@ -4868,6 +5082,16 @@ function playerPhase(){
       setTimeout(()=>{anim(".fighter.foe","ko");floatText(".fighter.foe","SUPERNOVA","crit");},200);
       setTimeout(()=>{if(bt&&!bt.over)foeDown();},700);
       return;
+    }
+  }
+  /* ENTRY SHATTER (ALMIGHTY PUSH): saat masuk, ledakan memecah -> damage flat sebesar pct% dari total HP musuh saat ini (bypass evasion/void, spt wallTitans) */
+  if(fx.entryShatter&&bt.shatterGuard[a]){
+    bt.shatterGuard[a]=false;
+    if(bt.eHp>0){
+      const sd=Math.max(1,Math.round(bt.eHp*fx.entryShatter.pct/100));
+      bt.eHp-=sd;setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);
+      setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","ALMIGHTY PUSH -"+fmt(sd),"crit");}},200);
+      if(bt.eHp<=0){setTimeout(()=>{if(bt&&!bt.over)foeDown();},700);return;}
     }
   }
   /* LIFETIME: kartu self-destruct setelah N giliran sejak masuk arena */
@@ -5099,7 +5323,7 @@ function endBattle(win){
 }
 function finish(win){
   clearTimeout(bt.timer);bt.over=true;
-  const lv=bt.lv,first=!state.cleared[lv];
+  const lv=bt.lv,first=!diffProg()[state.diff][lv];
   const reward=win?(first?firstClearReward(lv):Math.round(firstClearReward(lv)*.2)):0;
   if(win){state.cleared[lv]=true;diffProg()[state.diff][lv]=true;state.coins+=reward;state.xp+=20;
     while(state.xp>=state.playerLv*1000){state.xp-=state.playerLv*1000;state.playerLv++;}
@@ -5441,7 +5665,9 @@ function startTowerBattle(){
   const fighters=equippedList();if(!fighters.length)fighters.push(equipped());
   const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   if(bt&&bt.timer)clearTimeout(bt.timer);
-  bt={lv:null,tower:true,en:w.en,es:w.es,eq,fighters,eid:w.eid,efx:w.efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:w.es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),snatchAtk:new Array(fighters.length).fill(0),snatchHp:new Array(fighters.length).fill(0),regressCharges:new Array(fighters.length).fill(0),gumTurns:0,trickNext:false,royalNow:false,gunsNow:false,shadow:null};
+  bt={lv:null,tower:true,en:w.en,es:w.es,eq,fighters,eid:w.eid,efx:w.efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:w.es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),snatchAtk:new Array(fighters.length).fill(0),snatchHp:new Array(fighters.length).fill(0),regressCharges:new Array(fighters.length).fill(0),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),execGuard:new Array(fighters.length).fill(false),wtCount:new Array(fighters.length).fill(0),shatterGuard:new Array(fighters.length).fill(false),gumTurns:0,trickNext:false,royalNow:false,gunsNow:false,shadow:null};
+  const tfx=resolveFx(eq,w.efx);
+  if(tfx&&tfx.entryShatter)bt.shatterGuard[0]=true;
   schedPhase(700,step);
 }
 function foeDown(){
@@ -5666,6 +5892,7 @@ function renderLobby(){
     <div class="seam"></div>
     <div class="stage-eyebrow">ACTIVE CARD</div>
     <div class="card-float">${hubCardHtml(eq,' id="hubCard"')}</div>
+    ${lobbyPetHtml()}
     <div class="stage-hint"><kbd>KLIK</kbd> UNTUK BUKA BACKPACK</div>
     </div>
     <div class="hub-box h-r1 hub-link" id="hubIndex" role="button" title="Buka Katalog Kartu"><span class="hb-eyebrow">03</span><img class="hi-ic" src="assets/images/icon-index-card.png" alt=""><span class="hb-lbl">INDEX CARD</span></div>
@@ -5723,6 +5950,7 @@ function raidToast(msg){
   clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove("show"),2200);
 }
 function renderRaid(){
+  hoverHide(); /* fix: popup hover picker jangan nyusul ke battle — mouseout gak fire saat DOM di-replace */
   if(raidView==="pick")return renderRaidPick();
   if(raidView==="battle")return renderRaidBattle();
   if(raidView==="result")return renderRaidResult();
@@ -5733,25 +5961,54 @@ function renderRaidHub(){
   const b=raidBossOf();
   const tierTok=RAID_TIERS.slice().reverse();
   app.innerHTML=`
-  <div class="raid-banner" style="background-image:url('${b.banner}')">
-    <div class="rb-shade"></div>
-    <div class="rb-info"><div class="rb-name">${b.name}</div><div class="rb-power">Battle Power: ${fmt(b.power)}</div></div>
-    <button class="raid-teleport" id="raidGo">⚔ &nbsp;MASUK RAID</button>
-  </div>
-  <div class="eyebrow" style="margin:14px 0 8px">TINGKAT KESULAHAN</div>
-  <div class="raid-diff" id="raidDiffRow">${RAID_DIFFS.map(d=>{const unl=raidDiffUnlocked(d.k),on=d.k===state.raidDiff;return `<button class="diff-btn${on?" on":""}${unl?"":" locked"}" data-rd="${d.k}"${on?` style="border-color:${d.color};color:${d.color}"`:""}>${unl?d.l:"&#128274; "+d.l}</button>`;}).join("")}</div>
-  <div class="raid-meta">
-    <div class="raid-tokencard"><span class="rtc-k">TOKEN RAID</span><b>${fmt(state.raidTokens||0)}</b></div>
-    <div class="raid-hp">HP BOSS <b>${fmt(b.hp)}</b></div>
-    <div class="raid-hp">ATK BOSS <b>${fmt(999999)}</b></div>
-    <button class="btn-ghost raid-shopbtn" id="raidShopBtn">TOKO RAID</button>
-  </div>
-  <div class="raid-tiers">
-    ${tierTok.map(t=>`<div class="raid-tier"><span>${t.pct}% DMG</span><b>+${Math.round(t.tokens*(b.rw||1))}</b></div>`).join("")}
-  </div>
-  <p class="raid-note">Kuras sebagian HP boss dalam satu percobaan untuk klaim token — makin besar % damage, makin banyak token. makin sulit tingkatnya, HP boss naik tapi token reward ikut berlipat. Token dibelanjakan di Toko Raid.</p>`;
+  <div class="tw-page rd-page"><div class="tw-hub rd-hub">
+    <section class="tw-stage rd-stage">
+      <div class="tw-stage-eyebrow">BOSS RAID</div>
+      <div class="rd-wm">EX</div>
+      <div class="rd-boss">
+        <div class="rd-boss-frame"><img src="${b.img}" alt="${b.name}">
+          <div class="rd-boss-tag"><span class="rbt-tier">EX TIER</span><span class="rbt-skill">${b.skill.toUpperCase()}</span></div>
+        </div>
+      </div>
+      <div class="tw-stage-hint"><kbd>MASUK</kbd> KURAS HP BOSS DALAM ${RAID_TURNS} TURN</div>
+    </section>
+    <section class="tw-panel">
+      <div>
+        <div class="rd-title">${b.name}</div>
+        <div class="rd-sub">RAID BOSS &middot; DAMAGE = TOKEN &middot; TOKEN = PERKAKAS</div>
+      </div>
+      <div class="rd-stats">
+        <div class="tbs"><span>TOKEN RAID</span><b>${fmt(state.raidTokens||0)}</b></div>
+        <div class="tbs"><span>HP BOSS</span><b>${fmt(b.hp)}</b></div>
+        <div class="tbs"><span>BATTLE POWER</span><b>${fmt(b.power)}</b></div>
+      </div>
+      <div>
+        <div class="eyebrow" style="margin-bottom:8px">TINGKAT KESULITAN</div>
+        <div class="raid-diff" id="raidDiffRow">${RAID_DIFFS.map(d=>{const unl=raidDiffUnlocked(d.k),on=d.k===state.raidDiff;return `<button class="diff-btn${on?" on":""}${unl?"":" locked"}" data-rd="${d.k}"${on?` style="border-color:${d.color};color:${d.color}"`:""}>${unl?d.l:"&#128274; "+d.l}</button>`;}).join("")}</div>
+      </div>
+      <div class="rd-tiers">
+        ${tierTok.map(t=>`<div class="rd-tier"><span>${t.pct}% DMG</span><b>+${Math.round(t.tokens*(b.rw||1))}</b><i>TOKEN</i></div>`).join("")}
+      </div>
+      <div class="tw-acts">
+        <button class="act go" id="raidGo">
+          <span class="amed"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="m13 19 6-6"/><path d="m16 16 4 4"/><path d="M19 21l2-2"/></svg></span>
+          <span class="atxt"><small>Kuras HP boss</small><b>MASUK RAID</b></span>
+        </button>
+        <button class="act violet" id="raidShopBtn">
+          <span class="amed"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
+          <span class="atxt"><small>Belanja token</small><b>TOKO RAID</b></span>
+        </button>
+        <button class="act cyan" id="raidLobby">
+          <span class="amed"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg></span>
+          <span class="atxt"><small>Kembali</small><b>LOBBY</b></span>
+        </button>
+      </div>
+      <p class="rd-note">Kuras sebagian HP boss dalam satu percobaan untuk klaim token — makin besar <b>% damage</b>, makin banyak token. Makin sulit tingkatnya, HP boss naik tapi token reward ikut berlipat (<b class="v">×${b.rw||1}</b>). Token dibelanjakan di TOKO RAID.</p>
+    </section>
+  </div></div>`;
   document.getElementById("raidGo").onclick=()=>{if(!raidDiffUnlocked(state.raidDiff)){raidToast("Tingkat ini masih terkunci.");return;}sfx.hit();raidView="pick";renderRaid();};
   document.getElementById("raidShopBtn").onclick=()=>{sfx.hit();raidView="shop";renderRaid();};
+  const rl=document.getElementById("raidLobby");if(rl)rl.onclick=()=>{try{sfx.hit();}catch(e){}location.hash="#/";};
   app.querySelectorAll("[data-rd]").forEach(btn=>btn.onclick=()=>{
     const k=btn.dataset.rd;
     if(!raidDiffUnlocked(k)){raidToast("Selesaikan tingkat "+raidNextUnlock(k)+" dulu untuk buka "+RAID_DIFFS.find(d=>d.k===k).l+".");return;}
@@ -5760,26 +6017,28 @@ function renderRaidHub(){
 }
 function renderRaidPick(){
   const stacks=state.stacks.slice().sort((a,b)=>(b.fav?1:0)-(a.fav?1:0));
+  const b=raidBossOf(),df=raidDiffOf();
   app.innerHTML=`
-  <div class="eyebrow">PILIH KARTU</div>
-  <label class="card-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input class="card-search" id="raidSearch" type="text" placeholder="Cari kartu…" autocomplete="off"></label>
-  <div class="raid-pick-grid" id="raidPickGrid">${stacks.map(s=>{
-    const c=CARDS[s.char],st=cardStats(s.char,s.mut,s.trait,s.shiny);
-    const mc=s.mut&&s.mut!=="none"?" mut-"+s.mut:"";
-    return `<button class="raid-pick-card${s.tier==="EX"?" fire":""}${mc}${s.shiny?" shiny":""}" data-pick="${s.id}" data-name="${c.name.toLowerCase()}"${s.mut&&s.mut!=="none"?` style="border-color:${MUT_COLOR[s.mut]}"`:""}>
-      <div class="rpc-img"><img src="${c.sprite_asset}" alt="${c.name}">${madaraAura(s.char)}
-        <span class="badge-row">
-          <span class="tier-badge" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,luckChance(s.char,s.mut,s.shiny))}</span>
-        </span>
-        ${(s.mut&&s.mut!=="none")||s.shiny?`<span class="badge-row bl">
-          ${s.mut&&s.mut!=="none"?mutChip(s.mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`):""}${s.shiny?'<span class="shiny-badge">SHINY</span>':""}
-        </span>`:""}
-        ${s.fav?'<span class="rpc-fav">★</span>':""}
-      </div>
-      <div class="rpc-name">${c.name}</div>
-      <div class="rpc-stat">♡ ${fmt(st.hp)} · ATK ${fmt(st.atk)}</div>
-    </button>`;}).join("")}</div>
-  <div class="no-result" id="raidSearch-nr">Tidak ada kartu yang cocok dengan pencarian.</div>`;
+  <div class="rd-page rd-pick">
+    <div class="rd-pick-head">
+      <button class="rd-pick-back" id="raidPickBack" title="Kembali ke hub raid">&#8592;</button>
+      <div class="rd-pick-ttl"><span class="eyebrow">PILIH KARTU RAID</span><b>SATU KARTU vs ${b.name.toUpperCase()}</b></div>
+      <div class="rd-pick-boss"><img src="${b.img}" alt="${b.name}"><div class="rpb-i"><span class="rpb-k">BOSS &middot; ${b.diffLabel}</span><span class="rpb-n">${b.name}</span><span class="rpb-hp">HP ${fmt(b.hp)} &middot; ${RAID_TURNS} TURN</span><span class="rpb-df" style="color:${df.color}">${df.l} ×${df.rw||1}</span></div></div>
+    </div>
+    <label class="card-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input class="card-search" id="raidSearch" type="text" placeholder="Cari kartu…" autocomplete="off"></label>
+    <div class="raid-pick-grid" id="raidPickGrid">${stacks.map(s=>{
+      const c=CARDS[s.char];
+      const shny=s.shiny?'<span class="bpt-shiny">SHINY</span>':'';
+      const mut=(s.mut&&s.mut!=='none')?s.mut:null;
+      const trait=(s.trait&&s.trait!=='none')?s.trait:null;
+      const cnt=(s.count||1)>1?`<span class="bpt-cnt">&times;${fmt(s.count)}</span>`:'';
+      const stack=(shny||mut||trait)?`<div class="bpt-top">${shny}${mut?mutChip(mut,`<span class="bpt-mut" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="bpt-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(12)}</span>`):''}</div>`:'';
+      return `<div class="bp-tile" data-sid="${s.id}" data-pick="${s.id}" data-name="${c.name.toLowerCase()}" style="--tcol:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt="">${stack}${cnt}<div class="bpt-ctl"><button class="bpt-fav${s.fav?' on':''}" onclick="event.stopPropagation();bpFav('${s.id}');renderRaidPick()" title="Favorit">${s.fav?'★':'☆'}</button><button class="bpt-lock${s.lock?' on':''}" onclick="event.stopPropagation();bpLock('${s.id}');renderRaidPick()" title="Lock">${s.lock?'🔒':'🔓'}</button></div><div class="bpt-name">${c.name}</div></div>`;
+    }).join("")}</div>
+    <div class="no-result" id="raidSearch-nr">Tidak ada kartu yang cocok dengan pencarian.</div>
+  </div>`;
+  bpsHoverBind();bpsHoverHide(); /* hover tile -> reveal kartu penuh (stat/passive) kayak tab DECK */
+  {const bk=document.getElementById("raidPickBack");if(bk)bk.onclick=()=>{sfx.hit();raidView="hub";renderRaid();};}
   {const rs=document.getElementById("raidSearch");if(rs){rs.value=raidSearch;rs.oninput=()=>{raidSearch=rs.value;runCardSearch(rs,document.getElementById("raidPickGrid"),document.getElementById("raidSearch-nr"));};if(raidSearch)runCardSearch(rs,document.getElementById("raidPickGrid"),document.getElementById("raidSearch-nr"));}}
   app.querySelectorAll("[data-pick]").forEach(btn=>btn.onclick=()=>{
     sfx.hit();raidPicked=state.stacks.find(s=>s.id===btn.dataset.pick)||state.stacks[0];
@@ -6209,6 +6468,7 @@ function renderSettings(){
 function stopBattleLoop(){ if(bt){ if(bt.timer)clearTimeout(bt.timer); bt=null; } if(fightTimer){ clearTimeout(fightTimer); fightTimer=null; } document.getElementById("overlay").classList.remove("show"); }
 function render(){
   try {
+    hoverHide(); /* safety net: popup hover kartu (deck/picker) disembunyikan tiap ganti view */
     if(!bt&&!raid)document.querySelectorAll("body>.domvoid,body>.hpfx,body>.ebfx,body>.eb-flash").forEach(e=>e.remove());
     renderShell();
     const r=route();
