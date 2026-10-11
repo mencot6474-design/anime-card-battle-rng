@@ -1296,7 +1296,7 @@ function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u));}
 function freshState(){
   const s0=STORY_BIBLE.units[0];
   const start=s0?{id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,fav:false,lock:false,mut:"none",shiny:false,trait:"none",count:1}:null;
-  const newState={coins:1000,raidTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},tower:{best:0},
+  const newState={coins:1000,raidTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},tower:{best:0,auto:false},
     cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],history:[],battle:null,
     player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1,sp:0,tree:{}},weather:null,weatherBest:null,potions:0,mythicPotions:0,luckPotions:0,speedPotions:0,luckBuff:null,speedBuff:null,infTokens:0,
     artOwned:[],artSlots:[null,null],petOwned:[],petEquipped:null};
@@ -2583,7 +2583,7 @@ function trySave(){
 function setBar(id,tid,cur,max){
   const b=document.getElementById(id);if(!b)return;
   b.style.width=Math.max(0,cur/max*100)+"%";
-  document.getElementById(tid).textContent=fmt(Math.max(0,cur))+" / "+fmt(max);
+  const t=tid?document.getElementById(tid):null;if(t)t.textContent=fmt(Math.max(0,cur))+" / "+fmt(max);
 }
 function step(){ if(!bt||bt.over)return; schedPhase(0,playerPhase); }
 // Safe scheduler: guarantees the battle can never hang. If a phase throws,
@@ -2671,8 +2671,15 @@ function performAttack(o){
       if(s.pierce)setTimeout(()=>floatText(D,"PIERCE","crit"),180);
     });
     setTimeout(()=>{
-      if(bt&&!bt.over)setBar(o.barId,o.barTid,endHp,o.defMax);
-      if(bt&&o.onAnimEnd)o.onAnimEnd();
+      /* Safety net (pola sama dgn schedPhase): rantai kematian jalan di timeout mentah ini —
+         satu exception = battle STUCK tanpa UI/reward. Tangkap + paksa endBattle. */
+      try{
+        if(bt&&!bt.over)setBar(o.barId,o.barTid,endHp,o.defMax);
+        if(bt&&o.onAnimEnd)o.onAnimEnd();
+      }catch(err){
+        console.error("onAnimEnd error",err);
+        if(bt&&!bt.over){ try{ bt.timer=null; endBattle(bt.eHp<=0); }catch(e2){ console.error("force endBattle error",e2); } }
+      }
     },barEnd+520);
     if(o.barrageN>1)setTimeout(()=>floatText(D,(o.domainStrike?"UNLIMITED VOID ×":o.ariseMode?"ARISE ×":md?"TENSA ×":"CLEAVE ×")+o.barrageN,"crit"),md?MADARA_T.slash:320);
     else if(shots.length>1&&!o.ranton)setTimeout(()=>floatText(D,"DOUBLE!","crit"),260);
@@ -3031,14 +3038,32 @@ function enemyPhase(){
   schedPhase(bt.justTagged?2700:(eGalaxy?GALAXY.total+160:eArise?2200:eDomain?1700:eranton?MADARA_T.total+160:1000),playerPhase);
 }
 function endBattle(win){
-  if(bt.over)return;
+  if(!bt||bt.over)return;
   if(bt.timer){clearTimeout(bt.timer);bt.timer=null;}
   bt.over=true;
   /* klimaks: kartu yang kalah beneran tumbang (dulu final death gak ada animasi mati sama sekali) */
-  const deadEl=document.querySelector(win?".fighter.foe":".fighter.me");
-  if(deadEl&&!deadEl.classList.contains("ko")){deadEl.classList.add("ko");koFx(deadEl);}
-  domainEndFx();
-  setTimeout(()=>{ try{ if(bt&&bt.tower){ towerEnd(win); } else finish(win); }catch(err){ console.error("finish error",err); try{save();}catch(e){} bt=null;state.battle=null;render(); } },win?2000:950);
+  try{
+    const deadEl=document.querySelector(win?".fighter.foe":".fighter.me");
+    if(deadEl&&!deadEl.classList.contains("ko")){deadEl.classList.add("ko");koFx(deadEl);}
+    domainEndFx();
+  }catch(e){console.error("endBattle fx error",e);}
+  setTimeout(()=>{
+    try{
+      if(bt&&bt.tower){ towerEnd(win); }
+      else if(bt){ finish(win); }
+      /* bt keburu di-null tapi masih di tower battle → tetap tutup lewat towerEnd
+         (null-safe utk bt) supaya pendingRolls cair, popup roll muncul & pemain balik hub. */
+      else if(towerRun&&towerView==="battle"){ towerEnd(win); }
+      else{ console.error("endBattle: no battle context, win="+win); }
+    }catch(err){
+      console.error("finish error",err);
+      let recovered=false;
+      try{ if(!win&&towerRun){ towerEnd(false); recovered=true; } }catch(e2){ console.error("towerEnd retry error",e2); }
+      try{save();}catch(e){}
+      if(recovered)return;
+      bt=null;state.battle=null;render();
+    }
+  },win?2000:950);
 }
 function finish(win){
   clearTimeout(bt.timer);bt.over=true;
@@ -3078,8 +3103,10 @@ document.getElementById("overlay").addEventListener("click",e=>{
   if(bt&&bt.tower){stopBattleLoop();towerView="hub";render();return;}
   if(state.battle){state.battle=null;render();}
 });
-document.getElementById("rrClose").onclick=()=>{document.getElementById("rollResultPop").classList.remove("show");try{sfx.hit();}catch(e){}};
-document.querySelector("#rollResultPop .rr-back").onclick=()=>{document.getElementById("rollResultPop").classList.remove("show");};
+let towerLossAutoPending=false; /* auto-restart tower: nunggu popup roll ditutup (reset di stopTower/towerStartRun) */
+function rollPopClosed(){ if(!towerLossAutoPending)return; towerLossAutoPending=false; if(state&&state.tower&&state.tower.auto){ try{ towerStartRun(); }catch(e){ console.error("tower auto-restart error",e); } } }
+document.getElementById("rrClose").onclick=()=>{document.getElementById("rollResultPop").classList.remove("show");try{sfx.hit();}catch(e){}rollPopClosed();};
+document.querySelector("#rollResultPop .rr-back").onclick=()=>{document.getElementById("rollResultPop").classList.remove("show");rollPopClosed();};
 
 /* =============== TOWER (menara tanpa ujung) ===============
    Mode endless: lantai naik terus, tiap 5 lantai = gerbang BOS (2 gelombang: utama + TAG).
@@ -3128,6 +3155,7 @@ function towerWaves(f){
 function towerReward(f){const boss=towerIsBossFloor(f);return {coins:boss?(500+f*60):(150+f*30),starStone:0,potion:boss?2:1};}
 let towerView="hub", towerRun=null;
 function stopTower(){
+  towerLossAutoPending=false;
   if(bt&&bt.tower){ if(bt.timer)clearTimeout(bt.timer); bt=null; }
   /* Run ditinggal (END / pindah menu) sebelum kalah: tetap cairkan roll yang sudah ditabung biar nggak hangus. */
   if(towerRun&&(towerRun.pendingRolls||0)>0){
@@ -3176,6 +3204,7 @@ function towerEnter(f){
   render();
 }
 function towerStartRun(){
+  towerLossAutoPending=false;
   if(!state.tower)state.tower={best:0};
   towerRun={floor:1,waves:towerWaves(1),idx:0,cleared:0,cards:0,coins:0,drops:{weather:0,luck:0,speed:0},tokens:0,pendingRolls:0};
   towerView="battle";
@@ -3380,6 +3409,7 @@ function renderTowerBattle(){
   playFight(startTowerBattle);
 }
 function startTowerBattle(){
+  if(bt)return; /* playFight bisa kepanggil ulang dr renderTowerBattle — jangan reset battle yang masih hidup */
   const w=towerRun.waves[towerRun.idx];
   const fighters=equippedList();if(!fighters.length)fighters.push(equipped());
   const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
@@ -3446,7 +3476,7 @@ function advanceTowerFoe(){
   },2000);
 }
 function towerEnd(win){
-  clearTimeout(bt.timer);bt.over=true;
+  if(bt){clearTimeout(bt.timer);bt.over=true;}
   const f=towerRun.floor;
   if(win){
     /* Menang lantai: kasih hadiah lalu LANGSUNG naik lantai berikutnya tanpa overlay. */
@@ -3469,26 +3499,38 @@ function towerEnd(win){
     towerEnter(f+1);
     return;
   }
-  /* Kalah: run berhenti — cairkan SEMUA roll yang ditabung sekaligus, lalu tampilkan popup hasil kartunya. */
-  sfx.lose();
+  /* Kalah: run berhenti — cairkan SEMUA roll yang ditabung SEBELUM sfx/DOM apa pun
+     (apapun yang error sesudahnya, reward tetap aman & pendingRolls gak dobel).
+     TANPA overlay KALAH: langsung balik ke hub Tower tepat di balik popup hasil roll,
+     dan kalau AUTO RESTART aktif, run baru Lantai 1 menyusul setelah popup ditutup. */
   const pending=towerRun.pendingRolls||0;
-  const loot=pending>0?instantRoll(pending):[];
+  let loot=[];
+  try{ loot=pending>0?instantRoll(pending):[]; }
+  catch(err){ console.error("towerEnd instantRoll error",err); }
   towerRun.pendingRolls=0;
-  const ov=document.getElementById("overlay");
+  try{ sfx.lose(); }catch(e){}
   const reached=towerRun.cleared||0;
   const dr=towerRun.drops||{weather:0,luck:0,speed:0};
-  document.getElementById("ov-eyebrow").textContent="RUN BERAKHIR DI LANTAI "+f;
-  const ti=document.getElementById("ov-title"); ti.textContent="KALAH"; ti.className="ov-title disp lose";
-  const rw=document.getElementById("ov-reward"); rw.style.display="inline-flex";
-  rw.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 9.5h4.5a2 2 0 0 1 0 4H10a2 2 0 0 0 0 4h5"/></svg> +'+fmt(towerRun.coins||0)+' <small>COIN</small>'
-    +'<span style="margin-left:12px;color:#7df9ff">KARTU +'+fmt(towerRun.cards||0)+'</span>'
-    +'<span style="margin-left:12px;color:#c4b5fd">TOKEN +'+fmt(towerRun.tokens||0)+'</span>';
-  document.getElementById("ov-note").textContent="Lantai ditaklukkan: "+reached+" · Instant roll: "+fmt(towerRun.cards||0)+" kartu · Token: "+fmt(towerRun.tokens||0)+" · Drop: WEATHER x"+dr.weather+" · LUCK x"+dr.luck+" · SPEED x"+dr.speed+((state.tower.best||0)===reached&&reached>0?" · REKOR BARU!":"")+".";
-  const nx=document.getElementById("ov-next"); nx.style.display=""; nx.textContent="KEMBALI KE HUB";
-  nx.onclick=()=>{ov.classList.remove("show");stopBattleLoop();towerView="hub";render();};
-  document.getElementById("ov-again").onclick=()=>{ov.classList.remove("show");stopBattleLoop();towerStartRun();};
-  ov.classList.add("show");
-  showTowerLoot(loot,dr);
+  const auto=!!(state&&state.tower&&state.tower.auto);
+  towerLossAutoPending=auto;
+  try{ save(); renderShell(); }catch(e){}
+  try{ toast("RUN BERAKHIR DI LANTAI "+f,"LANTAI DITAKLUKKAN: "+reached+" · KARTU +"+fmt(towerRun.cards||0)+" · TOKEN +"+fmt(towerRun.tokens||0),"#f87171"); }catch(e){}
+  /* Popup hasil roll (kartu + potion) tetap tampil — z-220, di atas segalanya. */
+  try{ showTowerLoot(loot,dr); }
+  catch(err){ console.error("showTowerLoot error",err); }
+  /* Lobby Tower muncul di belakang popup: begitu AMBIL diklik, pemain sudah di hub. */
+  try{ stopBattleLoop(); }catch(e){}
+  towerView="hub";
+  try{ render(); }catch(e){}
+  /* Auto-restart tapi gak ada yang bisa diklik (run tuntas sebelum lantai apa pun
+     ditaklukkan → loot & potion kosong → popup gak muncul): restart setelah jeda singkat. */
+  if(auto&&!loot.length&&!(dr.weather+dr.luck+dr.speed)){
+    setTimeout(()=>{
+      if(!towerLossAutoPending)return;
+      towerLossAutoPending=false;
+      try{ towerStartRun(); }catch(e){ console.error("tower auto-restart error",e); }
+    },1200);
+  }
 }
 function showTowerLoot(results,drops){
   const pop=document.getElementById("rollResultPop");if(!pop)return;
@@ -4158,6 +4200,12 @@ function renderSettings(){
     <div class="gm-note" id="gmNote"></div>
   </div>
   <div class="panel set-panel">
+    <div class="set-t">INFINITE TOWER</div>
+    <div class="set-d">Biasanya kalah di Tower Infinite = run berakhir &amp; kembali ke menu. Aktifkan <b style="color:var(--text)">AUTO RESTART</b> supaya begitu kalah, run baru otomatis dimulai lagi dari Lantai 1 tanpa kembali ke menu.</div>
+    <label class="gm-check"><input type="checkbox" id="setAutoTower"> AUTO RESTART DARI LANTAI 1</label>
+    <div class="gm-note" id="towerSetNote"></div>
+  </div>
+  <div class="panel set-panel">
     <div class="set-t">AKUN</div>
     <div class="set-d">Masuk sebagai <b style="color:var(--text)">${currentUser||"-"}</b>. Keluar untuk pindah ke akun lain di browser ini.</div>
     <button class="reset-btn" id="logoutBtn" style="color:var(--cyan);border-color:rgba(20,28,38,.3);background:rgba(20,28,38,.06)">Keluar &amp; Ganti Akun</button>
@@ -4168,6 +4216,13 @@ function renderSettings(){
     <button class="reset-btn" id="resetBtn">Reset Semua &amp; Main Dari Awal</button>
   </div>`;
   document.getElementById("logoutBtn").onclick=logout;
+  /* Auto restart Tower Infinite — flag di state.tower.auto (default mati). */
+  if(!state.tower)state.tower={best:0};
+  const autoCb=document.getElementById("setAutoTower"),towerSetNote=document.getElementById("towerSetNote");
+  const towerSetMsg=()=>{towerSetNote.textContent=autoCb.checked?"AUTO RESTART AKTIF — kalah = langsung mulai run baru dari Lantai 1.":"Auto restart mati — kalah = kembali ke menu Tower.";};
+  autoCb.checked=state.tower.auto===true;
+  towerSetMsg();
+  autoCb.onchange=()=>{state.tower.auto=autoCb.checked;save();towerSetMsg();};
   const note=msg=>{document.getElementById("gmNote").textContent=msg;};
   const flash=msg=>{note(msg);save();renderShell();};
   document.getElementById("gmGrant").onclick=()=>{const id=document.getElementById("gmCard").value;flash(gmGrantCard(id));};
