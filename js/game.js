@@ -3567,7 +3567,7 @@ function renderTrait(){
           <div><div class="tc-lbl">KARTU TARGET · TRAIT SEKARANG</div><div class="tc-name">${cardName(tgt.char)}</div><div class="tc-tline">${cur}</div><div class="tc-tstat"${tt?` style="color:${tt.color}"`:""}>${curStat}</div></div>
           <span class="tr-change">GANTI ▸</span></div>
         <div class="tr-btns"><button class="tr-btn tr-roll" id="trRoll" ${state.coins<TRAIT_COST?"disabled":""}>ROLL TRAIT · ${fmt(TRAIT_COST)} COIN</button></div>
-        <div class="tr-note">COIN: ${fmt(state.coins)} · Roll memasang trait ke target. Trait langka minta konfirmasi Simpan / Roll.</div>
+        <div class="tr-note">COIN: <b class="tr-coin">${fmt(state.coins)}</b> · Roll memasang trait ke target. Trait langka minta konfirmasi Simpan / Roll.</div>
       </div>
       <div class="tr-rates"><div class="trr-h">DROP RATE</div>${rates}</div>
     </div>`;
@@ -3575,7 +3575,7 @@ function renderTrait(){
   const pc=document.getElementById("trPickCard");if(pc)pc.onclick=()=>openDeckPick();
 }
 let cardPickCfg=null;
-function openDeckPick(cfg){dpSearch="";cardPickCfg=(cfg&&cfg.getSel&&cfg.onPick)?cfg:null;renderDeckPick();document.getElementById("deckPickModal").classList.add("show");}
+function openDeckPick(cfg){dpSearch="";cardPickCfg=(cfg&&cfg.getSel&&cfg.onPick)?cfg:null;document.getElementById("deckPickModal").classList.toggle("dp-dark",!cardPickCfg);renderDeckPick();document.getElementById("deckPickModal").classList.add("show");}
 function closeDeckPick(){document.getElementById("deckPickModal").classList.remove("show");hideTraitTip();cardPickCfg=null;}
 function renderDeckPick(){
   const b=document.getElementById("dpBody");
