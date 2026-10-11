@@ -244,18 +244,32 @@ const STORY_BIBLE={
     {id:"CH_YOUNG_SPIRIT_VESSEL",name:"YOUNG SPIRIT VESSEL",tier:"R",type:"Shinobi",skill:"SHADOW CLONE DODGE",hp:88,atk:44,chance:1400,art:"assets/cards/art/young-spirit-vessel.jpg",pos:"center",
       fx:{entryCounter:{mult:0,text:"SHADOW CLONE"}},
       desc:"Memanggil bayangan klon - menghindari serangan pertama!"},
-    /* ===== KARTU EKSKLUSIF WEATHER (placeholder — art/stat/gambar bisa diganti nanti).
-       Hanya bisa ke-roll saat weather-nya AKTIF (lihat WEATHERS + activeWeatherId). ===== */
-    {id:"CH_STORM_HERALD",name:"STORM HERALD",tier:"UR",type:"Tempest",skill:"THUNDERCALL",hp:2100,atk:1050,chance:12000000,art:"assets/cards/art/storm-herald.png",pos:"center",weatherOnly:"storm",
+    /* ===== KARTU EKSKLUSIF WEATHER: 2 per cuaca (1 UR + 1 EX) = 8 total.
+       Hanya bisa ke-roll saat weather-nya AKTIF (lihat WEATHERS + activeWeatherId).
+       4 kartu UR baru = PLACEHOLDER struktur — art & passive final diganti
+       sesuai kiriman user (timpa field art/fx/desc/hp/atk/chance di entri ini). ===== */
+    {id:"CH_STORM_HERALD",name:"STORM HERALD",tier:"UR",type:"Tempest",skill:"THUNDERCALL",hp:2100,atk:1050,chance:12000000,art:"assets/cards/art/moon-blade.webp",pos:"center",weatherOnly:"storm",
       fx:{everySecond:{mult:1.4}},
       desc:"(Eksklusif cuaca BADAI) Pembawa badai yang sambarannya berlipat tiap giliran genap."},
-    {id:"CH_CELESTIAL_ORACLE",name:"CELESTIAL ORACLE",tier:"EX",type:"Seer",skill:"PROPHECY",hp:2280,atk:1140,chance:16000000,art:"assets/cards/art/celestial-oracle.png",pos:"center",weatherOnly:"celestial",
+    {id:"CH_TEMPEST_TYRANT",name:"TEMPEST TYRANT",tier:"EX",type:"Tempest",skill:"STORM JUDGMENT",hp:2400,atk:1250,chance:20000000,art:"assets/cards/art/awakened-galactic-tyrant.png",pos:"center",weatherOnly:"storm",
+      fx:{barrage:{chance:30,min:2,max:4,mult:1.4}},
+      desc:"(Eksklusif cuaca BADAI) Tyrant badai yang 30% peluang melepas 2-4 sambaran beruntun."},
+    {id:"CH_ASTRAL_SEER",name:"ASTRAL SEER",tier:"UR",type:"Seer",skill:"STARLIGHT READING",hp:1950,atk:980,chance:10000000,art:"assets/cards/art/awakened-promised-child.png",pos:"center",weatherOnly:"celestial",
+      fx:{crit:{chance:25,mult:2}},
+      desc:"(Eksklusif cuaca CELESTIAL) Peramal bintang dengan 25% peluang serangan kritis 2x damage."},
+    {id:"CH_CELESTIAL_ORACLE",name:"CELESTIAL ORACLE",tier:"EX",type:"Seer",skill:"PROPHECY",hp:2280,atk:1140,chance:16000000,art:"assets/cards/art/rikas-blessing.png",pos:"center",weatherOnly:"celestial",
       fx:{revive:{pct:50}},
       desc:"(Eksklusif cuaca CELESTIAL) Peramal yang bangkit sekali dengan 50% HP setelah tumbang."},
-    {id:"CH_ECLIPSE_WARDEN",name:"ECLIPSE WARDEN",tier:"EX",type:"Voidkeeper",skill:"UMBRAL VEIL",hp:2560,atk:1020,chance:24000000,art:"assets/cards/art/eclipse-warden.png",pos:"center",weatherOnly:"eclipse",
+    {id:"CH_UMBRAL_KNIFE",name:"UMBRAL KNIFE",tier:"UR",type:"Voidkeeper",skill:"SHADOW SIPHON",hp:2050,atk:1000,chance:14000000,art:"assets/cards/art/sickle-haze.webp",pos:"center",weatherOnly:"eclipse",
+      fx:{lifesteal:20},
+      desc:"(Eksklusif cuaca ECLIPSE) Pisau bayangan yang menyerap 20% damage yang diberikan sebagai HP."},
+    {id:"CH_ECLIPSE_WARDEN",name:"ECLIPSE WARDEN",tier:"EX",type:"Voidkeeper",skill:"UMBRAL VEIL",hp:2560,atk:1020,chance:24000000,art:"assets/cards/art/king-of-curses.png",pos:"center",weatherOnly:"eclipse",
       fx:{dodgeAtk:{pct:30}},
       desc:"(Eksklusif cuaca ECLIPSE) Penjaga gerhana yang kadang meleset total lalu membalas."},
-    {id:"CH_APOCALYPSE_Herald",name:"APOCALYPSE HERALD",tier:"EX",type:"Doombringer",skill:"END TIMES",hp:2900,atk:1450,chance:36000000,art:"assets/cards/art/apocalypse-herald.png",pos:"center",weatherOnly:"apocalypse",
+    {id:"CH_DOOMCRIER",name:"DOOMCRIER",tier:"UR",type:"Doombringer",skill:"ASHEN WARNING",hp:2300,atk:1150,chance:18000000,art:"assets/cards/art/armored-titan.jpg",pos:"center",weatherOnly:"apocalypse",
+      fx:{burn:{chance:40,pct:10,turns:2}},
+      desc:"(Eksklusif cuaca APOCALYPSE) Pembawa kabar kehancuran yang 40% peluang membakar musuh 10% max HP selama 2 giliran."},
+    {id:"CH_APOCALYPSE_Herald",name:"APOCALYPSE HERALD",tier:"EX",type:"Doombringer",skill:"END TIMES",hp:2900,atk:1450,chance:36000000,art:"assets/cards/art/destruction-fist.webp",pos:"center",weatherOnly:"apocalypse",
       fx:{dmgMult:1.6},
       desc:"(Eksklusif cuaca APOCALYPSE) Herald akhir zaman dengan damage paling buas di seluruh katalog."}
   ]
@@ -266,13 +280,16 @@ const RNG_ROLL_MIN=300;    // ms minimum per roll — speed cap, kartu harus sem
 const RNG_ROLL_MAX_MULT=RNG_ROLL_SPEED/RNG_ROLL_MIN; // ≈ 5×
 const RNG_TOTAL_WEIGHT=1000000; // total weight untuk probability
 
-/* ===== WEATHER SYSTEM =====
-   Weather Potion (drop menara / Toko Menara) -> buka = roll TERJAMIN 1 weather (weighted by dropWeight).
-   Pity no-downgrade: nggak pernah dapat weather lebih jelek dari yang pernah didapat (weatherRank: makin rendah rank = makin bagus/langka).
-   Weather aktif = window 5 menit real-time (Date.now()+300000, disimpan sbg endsAt biar tahan reload).
+/* ===== WEATHER SYSTEM (siklus ala ACC) =====
+   Cuaca = state yang JALAN TERUS tanpa potion: siklus alami 30 menit per cuaca
+   (roll weighted by dropWeight, TANPA pity - boleh turun kelas).
+   Weather Potion (drop menara / Toko Inf) = SKIP: reroll cuaca sekarang ke cuaca acak lain,
+   durasi 5 menit, PITY no-downgrade (gak pernah turun kelas dari weatherBest).
+   weatherBest cuma ke-update dari roll POTION, biar pity gak kekunci roll alami.
+   Mythic Weather Potion = sama (pity + 5 menit), tapi APOCALYPSE di-override jadi 3%.
    Pas aktif: totalLuck x luckBonus, roll speed x speedBonus, pool nambah kartu weatherOnly yang cocok. */
-const WEATHER_MS=300000; // 5 menit
-const MYTHIC_WEATHER_MS=1800000; // 30 menit (Mythic Weather Potion)
+const WEATHER_MS=300000; // 5 menit (durasi window potion)
+const WEATHER_ROTATE_MS=1800000; // 30 menit (siklus alami tiap cuaca)
 const WEATHERS=[
   {id:"storm",      name:"BADAI",      icon:"⛈",  dropWeight:30, luckBonus:1.2, speedBonus:1.5, color:"#7dd3fc"},
   {id:"celestial",  name:"CELESTIAL",  icon:"✨",  dropWeight:20, luckBonus:2.0, speedBonus:2.0, color:"#fcd34d"},
@@ -317,34 +334,44 @@ function treeBuy(id){
   if((p.sp||0)<n.cost)return{ok:false,reason:"SP"};
   p.sp-=n.cost;p.tree[id]=true;save();return{ok:true,node:n};
 }
-/* Buka 1 Weather Potion -> roll TERJAMIN 1 weather. Pity no-downgrade: yang ke-roll cuma weather
-   selevel atau LEBIH BAGUS dari weather terbaik yang pernah didapat (state.weatherBest).
-   Kalau window lama masih aktif, dia ke-ganti (re-roll) tapi nggak pernah turun kelas. */
-function rollWeather(){
-  const best=state.weatherBest;
-  const floorRank=best?weatherRank(best):Infinity;
-  const eligible=WEATHERS.filter(w=>!best||weatherRank(w.id)<=floorRank);
-  let tot=0;const ws=eligible.map(w=>{tot+=w.dropWeight;return w;});
+/* Weighted pick dari daftar weather (pakai dropWeight). */
+function weatherPick(ws){
+  let tot=0;ws.forEach(w=>tot+=w.dropWeight);
   let r=Math.random()*tot,pick=ws[ws.length-1];
   for(let i=0;i<ws.length;i++){r-=ws[i].dropWeight;if(r<=0){pick=ws[i];break;}}
   return pick;
 }
+/* Roll 1 weather.
+   opts.pity=true     -> hanya weather selevel/LEBIH BAGUS dari weatherBest (untuk potion).
+   opts.boostApo=true -> APOCALYPSE di-override jadi 3% flat (untuk mythic). */
+function rollWeather(opts){
+  opts=opts||{};
+  let eligible=WEATHERS;
+  if(opts.pity&&state.weatherBest){const fr=weatherRank(state.weatherBest);eligible=WEATHERS.filter(w=>weatherRank(w.id)<=fr);}
+  if(opts.boostApo&&eligible.some(w=>w.id==="apocalypse")){
+    if(Math.random()<0.03)return WEATHER.apocalypse;
+    const rest=eligible.filter(w=>w.id!=="apocalypse");
+    if(rest.length)eligible=rest;
+  }
+  return weatherPick(eligible);
+}
+/* Skip cuaca: reroll SEKARANG (pity no-downgrade), durasi 5 menit. */
 function useWeatherPotion(){
   if(!state||!state.potions||state.potions<1)return {ok:false,reason:"NO_POTION"};
   state.potions--;
-  const w=rollWeather();
+  const w=rollWeather({pity:true});
   state.weatherBest=betterWeather(state.weatherBest,w.id);
   state.weather={id:w.id,endsAt:Date.now()+WEATHER_MS};
   save();
   return {ok:true,weather:w};
 }
-/* Mythic Weather Potion: sama kayak weather biasa tapi cuacanya bertahan 30 menit. */
+/* Mythic Weather Potion: sama (pity + 5 menit) tapi APOCALYPSE chance 3%. */
 function useMythicWeatherPotion(){
   if(!state||(state.mythicPotions||0)<1)return {ok:false,reason:"NO_POTION"};
   state.mythicPotions--;
-  const w=rollWeather();
+  const w=rollWeather({pity:true,boostApo:true});
   state.weatherBest=betterWeather(state.weatherBest,w.id);
-  state.weather={id:w.id,endsAt:Date.now()+MYTHIC_WEATHER_MS};
+  state.weather={id:w.id,endsAt:Date.now()+WEATHER_MS};
   save();
   return {ok:true,weather:w};
 }
@@ -362,18 +389,16 @@ function useSpeedPotion(){if(!state||(state.speedPotions||0)<1)return{ok:false,r
 function renderWeatherDock(){
   const panel=document.getElementById("weatherPanel");if(!panel)return;
   const id=activeWeatherId();const w=id?WEATHER[id]:null;
-  const cards=MASTER_CARD_INDEX.filter(c=>c.weatherOnly);
+  /* Panel cuma tampilkan kartu weatherOnly milik cuaca yang LAGI AKTIF (2 kartu: UR + EX). */
+  const cards=MASTER_CARD_INDEX.filter(c=>c.weatherOnly===id);
   if(!w||!cards.length){panel.classList.remove("show");panel.innerHTML="";return;}
-  const secs=Math.max(0,Math.ceil((state.weather.endsAt-Date.now())/1000));
   panel.style.setProperty("--wc",w.color);
-  panel.innerHTML=`<div class="wp-head"><span class="wp-name"><span class="wp-ic">${w.icon}</span>${w.name}</span><span class="wp-timer">Ends in ${secs}s</span></div>`
-    +`<div class="wp-cards">`+cards.map(c=>{
-      const on=c.weatherOnly===id;const cw=WEATHER[c.weatherOnly];
-      return `<div class="wc-slot${on?' active':''}" data-wc="${c.char_id}"${on?` style="--wc:${cw.color}"`:""}>
+  panel.innerHTML=`<div class="wp-head"><span class="wp-name"><span class="wp-ic">${w.icon}</span>${w.name}</span><span class="wp-timer">Ends in ${fmtCountdown(state.weather.endsAt-Date.now())}</span></div>`
+    +`<div class="wp-cards">`+cards.map(c=>
+      `<div class="wc-slot active" data-wc="${c.char_id}" style="--wc:${w.color}">
         <span class="idx-art"><img src="${c.sprite_asset}" alt=""></span>
         <span class="idx-body"><span class="wc-chance">${rarityText(c.tier,luckChance(c.char_id))}</span></span>
-      </div>`;
-    }).join("")+`</div>`
+      </div>`).join("")+`</div>`
     +`<div class="wp-buff">${w.luckBonus}x Luck · ${w.speedBonus}x Rollspeed</div>`;
   panel.classList.add("show");
   wcHoverBind();
@@ -389,7 +414,27 @@ function toast(main,sub,color){
 let weatherTickStarted=false;
 function startWeatherTick(){
   if(weatherTickStarted)return;weatherTickStarted=true;
-  setInterval(()=>{if(!state)return;const hadActive=!!state.weather&&Date.now()<state.weather.endsAt;renderWeatherDock();/* re-render chip kalau window baru mati */if(hadActive&&!state.weather)renderShell();},1000);
+  /* ensureWeather: window habis / save lama tanpa weather -> roll cuaca ALAMI berikutnya
+     (weighted, tanpa pity), 30 menit. silent=true buat seeding pas boot (tanpa toast). */
+  const ensureWeather=silent=>{
+    if(!state)return null;
+    if(state.weather&&Date.now()<state.weather.endsAt)return null;
+    const w=rollWeather();
+    state.weather={id:w.id,endsAt:Date.now()+WEATHER_ROTATE_MS};
+    save();
+    if(!silent){toast(`${w.icon} ${w.name}`,"CUACA BERUBAH · 30 MENIT",w.color);beep(520,.14,"sine",.06);setTimeout(()=>beep(700,.16,"sine",.06),130);}
+    return w;
+  };
+  window.ensureWeather=ensureWeather;
+  ensureWeather(true);           /* seed cuaca pertama pas boot (tanpa toast) */
+  renderShell();                 /* refresh UI dgn weather sudah ada */
+  setInterval(()=>{
+    if(!state)return;
+    const hadActive=!!state.weather&&Date.now()<state.weather.endsAt;
+    const changed=ensureWeather(false);   /* auto-rotate: habis -> roll baru + toast */
+    renderWeatherDock();
+    if(changed||(!hadActive&&state.weather))renderShell(); /* refresh chip/speed pas cuaca ganti */
+  },1000);
 }
 
 // Drop rates: R=common, SR=uncommon, SSR=rare, UR=epic, EX=legendary, noGacha=exclusive
@@ -780,7 +825,7 @@ function renderBackpackPanel(){
 /* Tab ITEM di backpack: tile icon ringkas; klik -> popup konfirmasi PAKAI. Item: Weather / Luck / Speed Potion. */
 function bpItemDef(kind){
   if(kind==='potion'){const aw=activeWeatherId();return{kind,name:'WEATHER POTION',icon:'assets/images/icon-potion.png',emoji:'🧪',cnt:state.potions||0,
-    desc:'Buka untuk memanggil 1 cuaca acak (5 menit). Nggak pernah lebih jelek dari cuaca terbaikmu'+(state.weatherBest?' ('+WEATHER[state.weatherBest].name+')':'')+'.',
+    desc:'SKIP cuaca sekarang: roll cuaca acak lain, bertahan 5 menit. Nggak pernah lebih jelek dari cuaca terbaikmu'+(state.weatherBest?' ('+WEATHER[state.weatherBest].name+')':'')+'. Cuaca juga jalan otomatis tiap 30 menit tanpa potion.',
     active:aw?`<br><strong style="color:${WEATHER[aw].color}">Aktif: ${WEATHER[aw].icon} ${WEATHER[aw].name}</strong>`:'',use:'bpUsePotion()'};}
   if(kind==='luck'){const b=activeLuckBuff();return{kind,name:'LUCK POTION',icon:'assets/images/icon-luck.png',emoji:'🍀',cnt:state.luckPotions||0,
     desc:'+1 Luck selama 5 menit. Pakai lagi saat masih aktif = nambah stack + refresh durasi.',
@@ -789,7 +834,7 @@ function bpItemDef(kind){
     desc:'+1× Roll Speed selama 5 menit (kena cap 5×). Pakai lagi saat masih aktif = nambah stack + refresh durasi.',
     active:b?`<br><strong style="color:#fcd34d">Aktif: +${b}× SPEED</strong>`:'',use:'bpUseSpeedPotion()'};}
   if(kind==='mythic'){const aw=activeWeatherId();return{kind,name:'MYTHIC WEATHER POTION',icon:'assets/images/icon-mythic.png',emoji:'✨',cnt:state.mythicPotions||0,
-    desc:'Seperti Weather Potion, tapi cuaca yang muncul bertahan 30 MENIT.',
+    desc:'SKIP cuaca sekarang (5 menit, pity sama) - APOCALYPSE chance 3% (potion biasa ~1,8%).',
     active:aw?`<br><strong style="color:${WEATHER[aw].color}">Aktif: ${WEATHER[aw].icon} ${WEATHER[aw].name}</strong>`:'',use:'bpUseMythicPotion()'};}
   return null;
 }
@@ -842,7 +887,7 @@ function bpUseMythicPotion(){
   const r=useMythicWeatherPotion();
   if(!r.ok){toast("Potion habis","GAK ADA POTION","#f87171");return;}
   beep(520,.16,"triangle",.1);setTimeout(()=>beep(880,.2,"triangle",.1),120);
-  toast(`${r.weather.icon} ${r.weather.name}`,"WEATHER AKTIF · 30 MENIT",r.weather.color);
+  toast(`${r.weather.icon} ${r.weather.name}`,"WEATHER AKTIF · APOCALYPSE 3%",r.weather.color);
   bpItemPopClose();renderShell();renderBackpackPanel();
 }
 /* ====== TAB TREE: pohon skill. Root di tengah, dua cabang menjalar (LUCK kiri | SPEED kanan).
@@ -2643,10 +2688,10 @@ function renderTowerShop(){
     </div>`;
   /* data item (teks & harga = versi live) — state dari state live */
   const ITEMS=[
-    {k:"weather",label:"WEATHER POTION",sub:"Buka 1 cuaca acak, bertahan 5 menit.",cost:10,req:null,ac:"var(--ice)"},
+    {k:"weather",label:"WEATHER POTION",sub:"SKIP cuaca sekarang ke cuaca acak lain, 5 menit (pity no-downgrade).",cost:10,req:null,ac:"var(--ice)"},
     {k:"luck",label:"LUCK POTION",sub:"+1 Luck selama 5 menit.",cost:10,req:null,ac:"var(--green)"},
     {k:"speed",label:"SPEED POTION",sub:"+1× Roll Speed selama 5 menit.",cost:10,req:null,ac:"var(--amber)"},
-    {k:"mythic",label:"MYTHIC WEATHER POTION",sub:"Upgrade 1 Weather Potion -> Mythic: cuaca bertahan 30 MENIT. Butuh 1 Weather Potion.",cost:50,req:"weather",ac:"var(--violet)"}
+    {k:"mythic",label:"MYTHIC WEATHER POTION",sub:"Upgrade 1 Weather Potion -> Mythic: APOCALYPSE chance 3% (durasi 5 menit). Butuh 1 Weather Potion.",cost:50,req:"weather",ac:"var(--violet)"}
   ];
   const stkOf=k=>k==="weather"?(state.potions||0):k==="luck"?(state.luckPotions||0):k==="speed"?(state.speedPotions||0):(state.mythicPotions||0);
   if(window.shopSel==null||window.shopSel>=ITEMS.length)window.shopSel=0;
