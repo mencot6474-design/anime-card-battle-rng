@@ -1505,6 +1505,14 @@ body.on-lobby .weather-panel .wp-name{color:#F4F7FA}
 .gm-btn{padding:11px 14px;border-radius:10px;font-family:"Barlow Condensed";font-size:15px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--cyan);border:1px solid rgba(20,28,38,.30);background:rgba(20,28,38,.08);transition:.15s;cursor:pointer}
 .gm-btn:hover{background:rgba(200,212,222,.16)}
 .gm-note{margin-top:12px;font-size:12px;color:var(--muted);min-height:16px}
+/* ===== BATTLE SPEED (selector settings + tombol in-battle di .vs-col) ===== */
+.gm-btn.bs-on{background:rgba(125,249,255,.18);border-color:var(--cyan);color:var(--cyan)}
+.gm-btn[disabled]{opacity:.4;cursor:not-allowed}
+.gm-btn[disabled]:hover{background:rgba(20,28,38,.08)}
+.bspeed-btn{margin-top:2px;padding:5px 12px;min-width:54px;border-radius:10px;font-family:"Barlow Condensed";font-size:16px;font-weight:800;letter-spacing:.06em;color:#7DF9FF;border:1px solid rgba(125,249,255,.5);background:rgba(12,14,16,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);cursor:pointer;transition:.15s;pointer-events:auto}
+.bspeed-btn:hover{background:rgba(125,249,255,.18)}
+.bspeed-btn:disabled{opacity:.4;cursor:not-allowed;color:#9fb0c2}
+body.battle-full .vs-col .bspeed-btn{font-size:clamp(12px,1.4vw,15px);padding:4px 10px;margin-top:4px}
 #indexModal{position:fixed;inset:0;background:rgba(9,10,12,.8);backdrop-filter:blur(6px);display:none;place-items:center;z-index:60}
 #indexModal.show{display:grid}
 .ix-box{width:min(780px,94vw);max-height:88vh;display:flex;flex-direction:column;border-radius:18px;border:1px solid var(--line2);background:linear-gradient(160deg,#FFFFFF,#EEF2F6);padding:22px 22px 10px;animation:rcIn .35s ease}
