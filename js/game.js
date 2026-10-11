@@ -897,7 +897,7 @@ function renderBackpackPanel(){
     const mut=(s.mut&&s.mut!=='none')?s.mut:null;
     const trait=(s.trait&&s.trait!=='none')?s.trait:null;
     const cnt=(s.count||1)>1?`<span class="bpt-cnt">&times;${fmt(s.count)}</span>`:'';
-    const stack=(shny||mut||trait)?`<div class="bpt-top">${shny}${mut?mutChip(mut,`<span class="bpt-mut" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="bpt-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(12)}</span>`):''}</div>`:'';
+    const stack=(shny||mut||trait)?`<div class="bpt-top">${shny}${mut?mutChip(mut,`<span class="bpt-mut" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="bpt-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(12,trait)}</span>`):''}</div>`:'';
     return `<div class="bp-tile${inDeck?' in-deck':''}" data-sid="${s.id}" onclick="bpAssign('${s.id}')" style="--tcol:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt="">${stack}${cnt}<div class="bpt-ctl"><button class="bpt-fav${s.fav?' on':''}" onclick="event.stopPropagation();bpFav('${s.id}')" title="Favorit">${s.fav?'★':'☆'}</button><button class="bpt-lock${s.lock?' on':''}" onclick="event.stopPropagation();bpLock('${s.id}')" title="Lock">${s.lock?'🔒':'🔓'}</button></div><div class="bpt-name">${cardName(s.char)}</div></div>`;
   }).join('');
   const cntOf=m=>state.stacks.filter(s=>m==='all'?true:(m==='shiny'?!!s.shiny:(s.mut||'none')===m)).length;
@@ -1361,8 +1361,23 @@ const TRAIT_TOTAL=TRAIT_TIERS.reduce((a,t)=>a+(t.chance||0),0);
 function rollTraitPick(){let r=Math.random()*TRAIT_TOTAL;for(const t of TRAIT_TIERS){if(!t.chance)continue;r-=t.chance;if(r<=0)return t.k;}return "common";}
 function traitLabel(k){const t=TRAIT[k];return t?t.name.toUpperCase():"";}
 function traitFxList(k){const t=TRAIT[k];if(!t)return"";const e=[];if(t.fx.pierce)e.push(`+${t.fx.pierce}% tembus defense`);if(t.fx.crit)e.push(`${t.fx.crit.chance}% peluang crit ×${t.fx.crit.mult}`);if(t.fx.lifesteal)e.push(`serap ${t.fx.lifesteal}% damage jadi HP`);if(t.fx.evasion)e.push(`${t.fx.evasion.chance}% peluang hindari serangan`);if(t.fx.double)e.push(`${t.fx.double}% peluang serang dua kali`);return e.length?e.join(" · "):"Tidak ada efek khusus — hanya menaikkan ATK & HP.";}
-function traitGem(sz){return `<svg class="tgem" viewBox="0 0 48 48" width="${sz}" height="${sz}" aria-hidden="true"><path class="gem-body" d="M15 6h18l9 11-18 25L6 17z"/><path class="gem-line" d="M6 17h36M15 6l4.5 11L24 6l4.5 11L33 6M10.5 17L24 42l13.5-25M19.5 17h9"/></svg>`;}
-function traitTipInner(k){const t=TRAIT[k];if(!t)return"";return `<span class="tt-name" style="color:${t.color}">${traitGem(14)} ${t.name}</span><span class="tt-rar">RARITY ${t.rar}${t.chance?` · ${t.chance}%`:""}</span><span class="tt-power" style="color:${t.color}">ATK +${Math.round((t.atk-1)*100)}% · HP +${Math.round((t.hp-1)*100)}%</span><span class="tt-fx">${traitFxList(k)}</span>`;}
+/* ===== Ikon unik per trait tier =====
+   Tiap tier punya siluet berbeda (bukan cuma beda warna): batu polos → permata → mahkota → kristal →
+   mata → tengkorak bertanduk → galaksi → supernova. Pola sama dgn gem lama:
+   bentuk isi di .gem-body (fill currentColor), detail di .gem-line (stroke). */
+const TRAIT_ICONS={
+  common:`<path class="gem-body" d="M17 7h14l10 10v14L31 41H17L7 31V17z"/><path class="gem-line" d="M17 7L7 17M31 7l10 10M7 31l10 10M41 31l-10 10M17 17h14v14H17z"/>`,
+  rare:`<path class="gem-body" d="M10 18h28L24 42z"/><path class="gem-body" opacity=".8" d="M10 18l6-9h16l6 9z"/><path class="gem-line" d="M10 18h28M16 9l8 9 8-9M24 18v24M16 9l-6 9M32 9l6 9M16 18l4.5 16M32 18l-4.5 16"/>`,
+  legendary:`<path class="gem-body" d="M6 14l9 10 9-16 9 16 9-10-5 24H11z"/><path class="gem-line" d="M11 31h26M24 18l3.5 5.5L24 29l-3.5-5.5zM15.2 26.2a2.6 2.6 0 100 5.2 2.6 2.6 0 000-5.2zM32.8 26.2a2.6 2.6 0 100 5.2 2.6 2.6 0 000-5.2z"/>`,
+  superior:`<path class="gem-body" d="M24 5l16 9v20l-16 9-16-9V14z"/><path class="gem-line" d="M24 13.5l9 5v11l-9 5-9-5v-11zM24 19l5.5 5.5L24 30l-5.5-5.5z"/>`,
+  transiden:`<path class="gem-body" d="M3 24C7 15.5 14.5 10 24 10s17 5.5 21 14c-4 8.5-11.5 14-21 14S7 32.5 3 24z"/><path class="gem-line" d="M24 16.5a7.5 7.5 0 100 15 7.5 7.5 0 000-15M24 20.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7M12 20c3.6-4 7.7-6.4 12-6.8M36 20c-3.6-4-7.7-6.4-12-6.8"/>`,
+  demigod:`<path class="gem-body" d="M10.5 20C6.8 13.3 5.6 7 5.6 7 11.5 8 15.9 12 18 17.4zM37.5 20c3.7-6.7 4.9-13 4.9-13-5.9 1-10.3 5-12.4 10.4z"/><path class="gem-body" d="M24 9c-8.8 0-15 6-15 14.2 0 4.9 2.5 9.2 6.2 11.6V39c0 1.7 1.3 3 3 3h11.6c1.7 0 3-1.3 3-3v-4.2c3.7-2.4 6.2-6.7 6.2-11.6C39 15 32.8 9 24 9z"/><path class="gem-line" d="M17.5 21.5a4.6 4.6 0 100 9.2 4.6 4.6 0 000-9.2zM30.5 21.5a4.6 4.6 0 100 9.2 4.6 4.6 0 000-9.2zM24 30l-3.4-5h6.8zM17 35h14M21 34.5v4M27 34.5v4"/>`,
+  cosmic:`<path class="gem-body" d="M44 24L31.4 27.1 38.1 38.1 27.1 31.4 24 44 20.9 31.4 9.9 38.1 16.6 27.1 4 24 16.6 20.9 9.9 9.9 20.9 16.6 24 4 27.1 16.6 38.1 9.9 31.4 20.9z"/><path class="gem-line" d="M24 19.8a4.2 4.2 0 100 8.4 4.2 4.2 0 000-8.4"/><ellipse class="gem-line" cx="24" cy="24" rx="20.5" ry="8.5" transform="rotate(-28 24 24)"/>`,
+  bigbang:`<path class="gem-body" d="M46 24L30.1 27.5 35 43.1 24 31 13 43.1 17.9 27.5 2 24 17.9 20.5 13 4.9 24 17 35 4.9 30.1 20.5z"/><path class="gem-line" d="M24 18a6 6 0 100 12 6 6 0 000-12M24 21.5a2.5 2.5 0 100 5 2.5 2.5 0 000-5"/>`
+};
+const TRAIT_HOT=new Set(["transiden","demigod","cosmic","bigbang"]);
+function traitGem(sz,k,cls){const icon=(k&&TRAIT_ICONS[k])||`<path class="gem-body" d="M15 6h18l9 11-18 25L6 17z"/><path class="gem-line" d="M6 17h36M15 6l4.5 11L24 6l4.5 11L33 6M10.5 17L24 42l13.5-25M19.5 17h9"/>`;const hot=k&&TRAIT_HOT.has(k)?" tg-hot":"";return `<svg class="tgem${hot}${cls?" "+cls:""}" viewBox="0 0 48 48" width="${sz}" height="${sz}" aria-hidden="true">${icon}</svg>`;}
+function traitTipInner(k){const t=TRAIT[k];if(!t)return"";return `<span class="tt-name" style="color:${t.color}">${traitGem(16,k)} ${t.name}</span><span class="tt-rar">RARITY ${t.rar}${t.chance?` · ${t.chance}%`:""}</span><span class="tt-power" style="color:${t.color}">ATK +${Math.round((t.atk-1)*100)}% · HP +${Math.round((t.hp-1)*100)}%</span><span class="tt-fx">${traitFxList(k)}</span>`;}
 function traitChip(k,html){const t=TRAIT[k];if(!t)return html;return `<span class="trait-hover" data-trait="${k}">${html}</span>`;}
 function mutTipInner(mut){const label=MUT_LABEL[mut];if(!label)return"";const col=MUT_COLOR[mut];return `<span class="tt-name" style="color:${col}">${label}</span><span class="tt-rar">MUTASI KARTU</span><span class="tt-fx">Mutasi hasil Roll · menaikkan HP &amp; ATK ×${MUT_MULT[mut]||1} · kelangkaan = kelangkaan kartu dasar ×${MUT_MULT[mut]||1}.</span>`;}
 function mutChip(mut,html){const label=MUT_LABEL[mut];if(!label)return html;return `<span class="mut-hover" data-mut="${mut}">${html}</span>`;}
@@ -1899,7 +1914,7 @@ function meFighterHtml(s){
   const mut=(s.mut&&s.mut!=="none")?s.mut:null;
   const trait=(s.trait&&s.trait!=="none")?s.trait:null;
   return `<div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}"${CARDS[s.char]&&CARDS[s.char].pos?` style="object-position:${CARDS[s.char].pos}"`:''}>${shinyName('div','f-name','f-name-shine',mut,s.shiny,cardName(s.char))}<span class="hc-chance">1 in ${fmt(luckChance(s.char,s.mut,s.shiny))}</span>
-    ${(s.shiny||mut||trait)?`<div class="f-badges">${s.shiny?'<span class="shiny-badge">SHINY</span>':''}${mut?mutChip(mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="hc-trait hc-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(14)}</span>`):''}</div>`:""}
+    ${(s.shiny||mut||trait)?`<div class="f-badges">${s.shiny?'<span class="shiny-badge">SHINY</span>':''}${mut?mutChip(mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="hc-trait hc-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(14,trait)}</span>`):''}</div>`:""}
     </div>
     <div class="hpbar"><i id="hpMe"></i><span id="hpMeT">${fmt(st.hp)} / ${fmt(st.hp)}</span></div>
     <div class="f-body">
@@ -3091,7 +3106,7 @@ function hubCardHtml(eq,idAttr){
       <div class="hc-img"><img src="${cardImg(eq.char)}" alt="${cardName(eq.char)}"${CARDS[eq.char].pos?` style="object-position:${CARDS[eq.char].pos}"`:''}>
           ${shinyName('span','hc-name-top','hc-name-shine',mut,eq.shiny,cardName(eq.char))}
           <span class="hc-chance" style="color:${TIER_COLOR[tier]}">${rarityText(tier,luckChance(eq.char,eq.mut,eq.shiny))}</span>
-          ${(mut||trait||eq.shiny)?`<div class="hc-badges">${eq.shiny?'<span class="shiny-badge">SHINY</span>':''}${mut?mutChip(mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="hc-trait hc-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(14)}</span>`):''}</div>`:''}
+          ${(mut||trait||eq.shiny)?`<div class="hc-badges">${eq.shiny?'<span class="shiny-badge">SHINY</span>':''}${mut?mutChip(mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="hc-trait hc-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(14,trait)}</span>`):''}</div>`:''}
           <div class="skill-overlay"><b>${passiveName(eq.char)}</b><span class="sk-txt">${skillText(eq.char)}</span></div>
         </div>
         <div class="hc-info">
@@ -3283,7 +3298,7 @@ function renderRaidPick(){
       const mut=(s.mut&&s.mut!=='none')?s.mut:null;
       const trait=(s.trait&&s.trait!=='none')?s.trait:null;
       const cnt=(s.count||1)>1?`<span class="bpt-cnt">&times;${fmt(s.count)}</span>`:'';
-      const stack=(shny||mut||trait)?`<div class="bpt-top">${shny}${mut?mutChip(mut,`<span class="bpt-mut" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="bpt-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(12)}</span>`):''}</div>`:'';
+      const stack=(shny||mut||trait)?`<div class="bpt-top">${shny}${mut?mutChip(mut,`<span class="bpt-mut" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="bpt-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(12,trait)}</span>`):''}</div>`:'';
       return `<div class="bp-tile" data-sid="${s.id}" data-pick="${s.id}" data-name="${c.name.toLowerCase()}" style="--tcol:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt="">${stack}${cnt}<div class="bpt-ctl"><button class="bpt-fav${s.fav?' on':''}" onclick="event.stopPropagation();bpFav('${s.id}');renderRaidPick()" title="Favorit">${s.fav?'★':'☆'}</button><button class="bpt-lock${s.lock?' on':''}" onclick="event.stopPropagation();bpLock('${s.id}');renderRaidPick()" title="Lock">${s.lock?'🔒':'🔓'}</button></div><div class="bpt-name">${c.name}</div></div>`;
     }).join("")}</div>
     <div class="no-result" id="raidSearch-nr">Tidak ada kartu yang cocok dengan pencarian.</div>
@@ -3533,13 +3548,23 @@ function renderTrait(){
   const b=document.getElementById("trBody");
   if(!state.stacks.length){b.innerHTML=`<p class="sub">Belum ada kartu. Punya kartu dulu lewat Summon.</p>`;return;}
   const tgt=traitTargetStack();
-  const cur=tgt.trait&&tgt.trait!=="none"?traitChip(tgt.trait,`<span style="color:${TRAIT_COLOR[tgt.trait]}">${traitGem(13)} ${traitLabel(tgt.trait)}</span>`):`<span style="color:var(--muted)">Belum ada trait</span>`;
-  const rates=TRAIT_TIERS.filter(t=>t.chance>0).map(t=>`<div class="trr-row" title="${t.name}"><span class="trr-gem" style="color:${t.color}">${traitGem(13)}</span><span class="trr-name">${t.name}</span><em class="trr-pct" style="color:${t.color}">${t.chance}%</em></div>`).join("");
+  const hasT=!!(tgt.trait&&tgt.trait!=="none");
+  const tt=hasT?TRAIT[tgt.trait]:null;
+  const cur=tt?traitChip(tt.k,`<span class="tc-trait" style="color:${tt.color}">${traitGem(16,tt.k)} ${traitLabel(tt.k)}</span>`):`<span class="tc-trait" style="color:var(--muted)">Belum ada trait</span>`;
+  const curStat=tt?`ATK +${Math.round((tt.atk-1)*100)}% · HP +${Math.round((tt.hp-1)*100)}%`:"Roll untuk coba peruntungan bonus ATK &amp; HP.";
+  const rates=TRAIT_TIERS.filter(t=>t.chance>0).map(t=>{
+    const own=tgt.trait===t.k;
+    const aPct=Math.round((t.atk-1)*100),hPct=Math.round((t.hp-1)*100);
+    const bar=Math.max(2,Math.round((t.chance/55)*1000)/10);
+    return `<div class="trr-item${own?" own":""}"${own?` style="box-shadow:inset 0 0 0 1px ${t.color};background:color-mix(in srgb,${t.color} 10%,transparent)"`:""} title="${t.name} · RARITY ${t.rar} · ATK +${aPct}% · HP +${hPct}%">
+      <div class="trr-row"><span class="trr-gem" style="color:${t.color}">${traitGem(15,t.k)}</span><span class="trr-name">${t.name}</span>${own?`<em class="trr-flag" style="background:${t.color}">AKTIF</em>`:""}<em class="trr-rar" style="color:${t.color};border-color:${t.color}">${t.rar}</em><em class="trr-pct" style="color:${t.color}">${t.chance}%</em></div>
+      <div class="trr-bar"><i style="width:${bar}%;background:${t.color}"></i></div>
+    </div>`;}).join("");
   b.innerHTML=`
     <div class="tr-grid">
       <div class="tr-main">
         <div class="tr-cur tr-cur-btn" id="trPickCard" role="button" title="Ganti kartu target dari deck"><img src="${cardImg(tgt.char)}" alt="">
-          <div><div class="tc-lbl">KARTU TARGET · TRAIT SEKARANG</div><div class="tc-name">${cardName(tgt.char)}</div><div style="font-size:13px;margin-top:2px">${cur}</div></div>
+          <div><div class="tc-lbl">KARTU TARGET · TRAIT SEKARANG</div><div class="tc-name">${cardName(tgt.char)}</div><div class="tc-tline">${cur}</div><div class="tc-tstat"${tt?` style="color:${tt.color}"`:""}>${curStat}</div></div>
           <span class="tr-change">GANTI ▸</span></div>
         <div class="tr-btns"><button class="tr-btn tr-roll" id="trRoll" ${state.coins<TRAIT_COST?"disabled":""}>ROLL TRAIT · ${fmt(TRAIT_COST)} COIN</button></div>
         <div class="tr-note">COIN: ${fmt(state.coins)} · Roll memasang trait ke target. Trait langka minta konfirmasi Simpan / Roll.</div>
@@ -3559,7 +3584,7 @@ function renderDeckPick(){
   b.innerHTML=`<label class="card-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input class="card-search" id="dpSearch" type="text" placeholder="Cari kartu…" autocomplete="off"></label><div class="dp-grid" id="dpGrid">${state.stacks.map(s=>{
     return `<button class="dp-card${s.id===selId?" sel":""}" data-tid="${s.id}" data-name="${cardName(s.char).toLowerCase()}"${s.mut&&s.mut!=="none"?` style="border-color:${MUT_COLOR[s.mut]}"`:""}>
       <img src="${cardImg(s.char)}" alt="">
-      ${(s.mut&&s.mut!=="none")||(s.trait&&s.trait!=="none")?`<span class="dp-badges">${s.mut&&s.mut!=="none"?mutChip(s.mut,`<span class="mut-badge dp-mut" style="border-color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`):""}${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="trait-badge dp-gem" style="border-color:${TRAIT_COLOR[s.trait]}">${traitGem(13)}</span>`):""}</span>`:""}
+      ${(s.mut&&s.mut!=="none")||(s.trait&&s.trait!=="none")?`<span class="dp-badges">${s.mut&&s.mut!=="none"?mutChip(s.mut,`<span class="mut-badge dp-mut" style="border-color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`):""}${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="trait-badge dp-gem" style="border-color:${TRAIT_COLOR[s.trait]}">${traitGem(13,s.trait)}</span>`):""}</span>`:""}
       <span class="dp-name">${cardName(s.char)}</span>
     </button>`;}).join("")}</div><div class="no-result" id="dpSearch-nr">Tidak ada kartu yang cocok.</div>`;
   {const dps=document.getElementById("dpSearch");if(dps){dps.value=dpSearch;dps.oninput=()=>{dpSearch=dps.value;runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));};if(dpSearch)runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));}}
@@ -3581,7 +3606,7 @@ function showRarePrompt(k){
   const canRoll=state.coins>=TRAIT_COST;
   b.innerHTML=`
     <div class="rp-rays"></div>
-    <svg class="rp-gem" viewBox="0 0 48 48" aria-hidden="true"><path class="gem-body" d="M15 6h18l9 11-18 25L6 17z"/><path class="gem-line" d="M6 17h36M15 6l4.5 11L24 6l4.5 11L33 6M10.5 17L24 42l13.5-25M19.5 17h9"/></svg>
+    ${traitGem(78,k,"rp-gem")}
     <div class="rp-kicker">TRAIT LANGKA</div>
     <div class="rp-name" style="color:${t.color}">${t.name}</div>
     <div class="rp-rar" style="color:${t.color}">RARITY ${t.rar}</div>
@@ -3605,10 +3630,7 @@ function traitNotify(k){
   const el=document.getElementById("traitNotify");if(!el)return;
   const rare=t.atk>=1.5;
   el.innerHTML=`<div class="tn-card${rare?" tn-rare":""}" style="border-color:${t.color};color:${t.color}">
-    <svg class="tn-gem" viewBox="0 0 48 48" aria-hidden="true">
-      <path class="gem-body" d="M15 6h18l9 11-18 25L6 17z"/>
-      <path class="gem-line" d="M6 17h36M15 6l4.5 11L24 6l4.5 11L33 6M10.5 17L24 42l13.5-25M24 6v0M19.5 17h9"/>
-    </svg>
+    ${traitGem(46,k,"tn-gem")}
     <div class="tn-body">
       <div class="tn-top" style="color:${t.color}">${t.name}</div>
       <div class="tn-rar">RARITY ${t.rar}</div>

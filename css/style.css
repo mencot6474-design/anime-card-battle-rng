@@ -1337,13 +1337,18 @@ body.battle-full .vs-col .bspeed-btn{font-size:clamp(12px,1.4vw,15px);padding:4p
 .tr-main{flex:1;min-width:0;display:flex;flex-direction:column}
 .tr-main .tr-cur{margin-bottom:14px}
 .tr-main .tr-note{margin-top:auto}
-.tr-rates{flex:0 0 150px;display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:rgba(20,28,38,.04)}
+.tr-rates{flex:0 0 200px;display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:rgba(20,28,38,.04)}
 .trr-h{font-family:"Barlow Condensed";font-weight:800;font-size:11px;letter-spacing:.18em;color:var(--muted);text-align:center;margin-bottom:2px}
-.trr-row{display:flex;align-items:center;gap:7px;font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.03em;color:#1c232b}
-.trr-gem{flex:none;display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px}
+.trr-item{display:flex;flex-direction:column;gap:4px;padding:5px 6px;border-radius:8px;border:1px solid transparent}
+.trr-row{display:flex;align-items:center;gap:6px;font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.03em;color:#1c232b}
+.trr-gem{flex:none;display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px}
 .trr-gem svg{display:block}
-.trr-name{flex:1}
-.trr-pct{font-style:normal;font-weight:800;font-size:12px}
+.trr-name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trr-pct{font-style:normal;font-weight:800;font-size:12px;flex:none}
+.trr-rar{font-style:normal;font-weight:800;font-size:9px;letter-spacing:.06em;padding:1px 4px;border-radius:4px;border:1px solid;line-height:1.4;flex:none}
+.trr-flag{font-style:normal;font-weight:800;font-size:8px;letter-spacing:.1em;padding:1.5px 5px;border-radius:4px;background:#0b0e13;color:#0b0e13;line-height:1.4;flex:none}
+.trr-bar{height:4px;border-radius:99px;background:rgba(11,14,19,.1);overflow:hidden}
+.trr-bar i{display:block;height:100%;border-radius:99px}
 @media (max-width:520px){.tr-grid{flex-direction:column}
 .tr-rates{flex:1 1 auto}
 }
@@ -1351,6 +1356,9 @@ body.battle-full .vs-col .bspeed-btn{font-size:clamp(12px,1.4vw,15px);padding:4p
 .tr-cur img,.tr-cur video{width:44px;height:56px;object-fit:cover;border-radius:7px}
 .tr-cur .tc-lbl{font-size:10px;letter-spacing:.16em;color:var(--muted);font-weight:700}
 .tr-cur .tc-name{font-family:"Barlow Condensed";font-weight:700;font-size:18px;letter-spacing:.03em}
+.tc-trait{display:inline-flex;align-items:center;gap:5px}
+.tc-tline{display:flex;align-items:center;gap:6px;margin-top:3px;min-height:18px}
+.tc-tstat{font-family:"Barlow Condensed";font-weight:700;font-size:12.5px;letter-spacing:.05em;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tr-btns{display:flex;gap:10px}
 .tr-btn{flex:1;border:none;border-radius:11px;padding:14px 10px;font-family:"Barlow Condensed";font-weight:700;font-size:15px;letter-spacing:.12em;cursor:pointer;transition:transform .08s,filter .15s}
 .tr-btn:active{transform:scale(.96)}
@@ -1412,6 +1420,11 @@ body.battle-full .vs-col .bspeed-btn{font-size:clamp(12px,1.4vw,15px);padding:4p
 .gem-body{fill:currentColor}
 .gem-line{fill:none;stroke:rgba(255,255,255,.55);stroke-width:1.4;stroke-linejoin:round}
 .tgem{display:inline-block;vertical-align:-2px;flex:none;filter:drop-shadow(0 0 3px currentColor)}
+.tgem.tg-hot{filter:drop-shadow(0 0 5px currentColor);animation:tgPulse 2.4s ease-in-out infinite}
+.tgem.rp-gem{filter:drop-shadow(0 0 18px currentColor);animation:rpFloat 2.4s ease-in-out infinite}
+.tgem.tn-gem{width:46px;height:46px;filter:drop-shadow(0 0 12px currentColor)}
+@keyframes tgPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+@media (prefers-reduced-motion:reduce){.tgem.tg-hot{animation:none}}
 .tn-top{font-family:"Barlow Condensed";font-weight:700;font-size:26px;letter-spacing:.05em;line-height:1}
 .tn-rar{font-size:10px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase;margin-top:2px}
 .tn-power{font-family:"Barlow Condensed";font-weight:700;font-size:15px;letter-spacing:.04em;margin-top:4px}
