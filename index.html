@@ -75,16 +75,19 @@
 </header>
 <!-- Profil modal -->
 <div class="modal-backdrop" id="profBackdrop" style="position:fixed;top:48px;left:0;right:0;bottom:0;z-index:75;"></div>
-<div class="modal-profile" id="profModal" style="position:fixed;top:80px;left:20px;z-index:76;display:none;">
+<div class="modal-profile" id="profModal">
   <div class="prof-modal-inner">
-    <div class="modal-title">PLAYER PROFILE</div>
-    <div class="modal-body">
-      <div class="stat-row"><span class="stat-lab">LEVEL</span><span class="stat-val" id="plLv">1</span></div>
-      <div class="stat-row"><span class="stat-lab">EXP</span><span class="stat-val" id="plExp">0 / 1000</span></div>
-      <div class="stat-row"><span class="stat-lab">SKILL POINT</span><span class="stat-val" id="plSp" style="color:#5eead4">0</span></div>
-      <div class="stat-row"><span class="stat-lab">TOTAL LUCK</span><span class="stat-val" id="plLuck" style="color:var(--cyan)">1.0x</span></div>
-      <div class="stat-row"><span class="stat-lab">ROLL SPEED</span><span class="stat-val" id="plSpeed">1.0x</span></div>
+    <button class="prof-x" id="profClose" type="button" aria-label="Tutup profil">&times;</button>
+    <div class="prof-hero">
+      <div class="prof-av" id="pfAv"></div>
+      <div class="prof-id">
+        <div class="prof-name" id="pfName">GUEST</div>
+        <div class="prof-deck" id="pfDeck">KARTU UTAMA · —</div>
+        <div class="xpbar prof-xp"><i id="pfXpFill" style="width:0%"></i><span id="pfXpText">0 / 1000</span></div>
+      </div>
+      <div class="prof-lv"><b id="pfLv">1</b><small>LEVEL</small></div>
     </div>
+    <div class="prof-body" id="profBody"></div>
   </div>
 </div>
 <main id="app"></main>
