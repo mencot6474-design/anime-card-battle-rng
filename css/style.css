@@ -2300,12 +2300,12 @@ body.on-tower #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
 /* Ikon item Toko Raid di tombol beli (.amed) — patokan ukuran biar PNG gak overflow. */
 .tw-hub .act .amed img{width:36px;height:36px;object-fit:contain}
 /* Frame kartu lobby CRAYON: PNG sudah di-chroma-key (magenta → transparan) → frame-card-dark-keyed.
-   Slice 300 = seluruh seni frame dari tepi (bar perak + swirl; PNG 3:4 = kartu 3:4 → skala seragam).
+   Slice 200 = hanya margin transparan (0-100px) + seni frame bar perak/swirl (100-200px) dari tepi; zona plat gelap opaque #2E292F (inset 200-300px, baked di PNG, bukan CSS) TIDAK ikut di-slice → tak ada plat di belakang celah ring; goresan lebih tebal/tajam (22px), celah nembus latar lobby.
    Cukup rule #hubCard ini saja — rule .hub-center global lama dihapus supaya backpack/roll tak ikut.
    background:transparent = buang pelat hitam gradasi (#1b1418→#0c0a0c) di belakang bingkai; area
    transparan PNG frame (margin luar & celah swirl) sekarang nembus ke latar lobby,bukan jadi hitam. */
 .lobby-hub #hubCard{border-width:clamp(28px,4vh,44px);border-style:solid;border-color:transparent;
-  border-image:url("../assets/frames/frame-card-dark-keyed.png") 300 round;background:transparent}
+  border-image:url("../assets/frames/frame-card-dark-keyed.png") 200 round;background:transparent}
 /* Buang ring/bloom glow --tcol + foil gradient animasi UR/EX (satu pseudo-element ::before); bayangan hitam bawah tetap. */
 .lobby-hub #hubCard::before,.lobby-hub #hubCard:hover::before{display:none}
 .lobby-hub #hubCard[data-tier]{box-shadow:0 22px 50px rgba(0,0,0,.6)}
@@ -2318,5 +2318,6 @@ body.on-tower #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
    di tengah kanvas) → kotak persegi + object-fit:cover memotong margin samping:visible size makhluk
    naik ±2x & konsisten antar pet;
    glow cyan border+box-shadow di gambar pet dimatikan (drop-shadow gelap di parent tetap). */
-.lobby-pet{width:clamp(150px,26vh,280px);aspect-ratio:1/1}
+.lobby-pet{width:clamp(150px,26vh,280px);aspect-ratio:1/1;left:auto;right:calc(100% - 68px)}/* pet di samping KIRI kartu — stage = kolom 1 grid (paling kiri), ruang halaman di kiri bebas (tile di kanan); overlap 68px ke tepi kartu */
 .lobby-pet img{border:none;box-shadow:none;width:100%;height:100%;object-fit:cover}
+@media(max-width:1280px){.lobby-pet{right:auto;left:4%}}
