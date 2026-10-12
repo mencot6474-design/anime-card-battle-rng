@@ -835,7 +835,8 @@ function renderProfile(){
     artTile(0)+artTile(1)
     +tile("PET",pd?pd.name:"TIDAK ADA",pd?(petB.length?petB.join(" · "):"tanpa bonus luck"):"belum ada pet dipakai")
     +tile("ARTEFAK DIMILIKI",`${(state.artOwned||[]).length} / ${ART_DEFS.length}`,"total koleksi artefak")
-    +tile("PET DIMILIKI",`${(state.petOwned||[]).length} / ${PET_DEFS.length}`,"total koleksi pet");
+    +tile("PET DIMILIKI",`${(state.petOwned||[]).length} / ${PET_DEFS.length}`,"total koleksi pet")
+    +tile("DEV UNLOCK",`<button class="prof-unbtn" onclick="devUnlockAll()">BUKA SEMUA PET & ARTEFAK</button>`,"langsung penuh - idempoten","accent");
   /* ===== ITEM & BUFF: token, potion, cuaca & buff aktif (countdown live) ===== */
   const wAct=(state.weather&&Date.now()<state.weather.endsAt)?WEATHER[state.weather.id]:null;
   const wSub=wAct?`sisa ${fmtCountdown(state.weather.endsAt-Date.now())} · Luck ×${wAct.luckBonus} · Speed ×${wAct.speedBonus}`:"siklus alami 30 menit";
@@ -1252,6 +1253,25 @@ function lobbyPetHtml(){
   if(!d)return"";
   return `<div class="lobby-pet" title="${d.name}"><img src="${d.img}" alt="${d.name}" onerror="this.parentNode.classList.add('noimg')"><span class="lp-eb">${d.emoji}</span></div>`;
 }
+/* ===== DEV: buka SEMUA pet + artefak untuk akun aktif (idempoten - aman dijalankan berulang) ===== */
+function devUnlockAll(){
+  if(!state)return;
+  const hadA=(state.artOwned||[]).length, hadP=(state.petOwned||[]).length;
+  state.artOwned=ART_DEFS.map(a=>a.id);
+  state.petOwned=PET_DEFS.map(p=>p.id);
+  if(!Array.isArray(state.artSlots)||state.artSlots.length!==2)state.artSlots=[null,null];
+  /* isi slot artefak yang masih kosong - pilihan lama dipertahankan */
+  const top=["pedang-api","helm-abyss"];
+  for(let i=0;i<2;i++)if(!state.artSlots[i]){const pick=top.find(id=>!state.artSlots.includes(id));if(pick)state.artSlots[i]=pick;}
+  if(!state.petEquipped)state.petEquipped="kyubi";
+  save();
+  beep(680,.12,"triangle",.09);setTimeout(()=>beep(900,.12,"triangle",.08),90);setTimeout(()=>beep(1180,.16,"triangle",.08),190);
+  toast("UNLOCK ALL",`+${state.artOwned.length-hadA} artefak + ${state.petOwned.length-hadP} pet - koleksi penuh!`,"#7DF9FF");
+  renderShell();
+  if(typeof renderBackpackPanel==="function")renderBackpackPanel();
+  if(document.getElementById("profBody"))renderProfile();
+}
+window.devUnlockAll=devUnlockAll;
 
 /* ====== Hover reveal kartu (isi = hubCardHtml, sama persis kartu lobby). Dipakai dek + weather corner. ====== */
 let __bpsHoverEl=null;

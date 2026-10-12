@@ -114,6 +114,8 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 .prof-ts{font-size:10px;line-height:1.5;color:var(--muted);word-break:break-word}
 .prof-ok{color:var(--success);font-weight:700}
 .prof-off{color:#9aa4b2;font-weight:700}
+.prof-unbtn{font-family:"Barlow Condensed";font-weight:800;font-size:15px;letter-spacing:.06em;padding:7px 12px;border-radius:8px;border:1px solid rgba(125,249,255,.55);background:rgba(125,249,255,.12);color:var(--cyan);cursor:pointer;transition:.15s;white-space:nowrap}
+.prof-unbtn:hover{background:rgba(125,249,255,.24);box-shadow:0 0 14px rgba(125,249,255,.35)}
 @media(max-width:560px){
 .modal-profile{top:56px;width:calc(100vw - 16px);max-height:calc(100vh - 72px)}
 .prof-hero{gap:10px;padding:12px 42px 10px 12px}
