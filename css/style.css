@@ -1073,7 +1073,9 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 /* Parallax layer (digerakin via --pf/--pfy dari initHubTilt): foreground (nama/chance) geser
    searah kursor,badge geser berlawanan,art zoom+geser lawan arah → kedalaman 3D. Semua layer
    udah di-dalem .hub-center(overflow:hidden) jadi geser few px gak bocor keluar kartu. */
-.lobby-hub #hubCard .hc-img{transform:scale(1.06) translate(calc(var(--pf,0)*-9px),calc(var(--pfy,0)*-7px));transition:transform .12s ease-out}
+/* Parallax art: transform pindah ke IMG — .hc-img tetap jadi clipper (gak ikut kescale),
+   jadi art gak bocor nimpa ring frame; scale 1.06 -> 1.08 biar headroom clip >= translate (9/7px). */
+.lobby-hub #hubCard .hc-img img,.lobby-hub #hubCard .hc-img video{transform:scale(1.08) translate(calc(var(--pf,0)*-9px),calc(var(--pfy,0)*-7px));transition:transform .12s ease-out}
 .lobby-hub #hubCard .hc-name-top,.lobby-hub #hubCard .hc-chance{transition:transform .12s ease-out}
 .lobby-hub #hubCard .hc-name-top{transform:translate(calc(var(--pf,0)*28px),calc(var(--pfy,0)*18px))}
 .lobby-hub #hubCard .hc-chance{transform:translate(calc(var(--pf,0)*22px),calc(var(--pfy,0)*15px))}
@@ -1097,8 +1099,9 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 .lobby-hub #hubCard::before{content:"";position:absolute;inset:-2px;border-radius:22px;z-index:-1;pointer-events:none;box-shadow:0 0 0 2px var(--tcol,#2F8FE2),0 0 26px 4px color-mix(in srgb,var(--tcol,#2F8FE2) 55%,transparent);transition:box-shadow .2s}
 .lobby-hub #hubCard:hover::before{
   box-shadow:0 0 0 3px var(--tcol,#2F8FE2),0 0 36px 8px color-mix(in srgb,var(--tcol,#2F8FE2) 60%,transparent),0 26px 60px rgba(0,0,0,.6)}
-/* art & tetap kepotong radius walau kartu overflow:visible */
-.lobby-hub #hubCard .hc-img{overflow:visible;border-radius:inherit}
+/* art tetap kepotong radius; overflow:hidden = clip zoom/parallax ke kotak .hc-img
+   (dulu visible — art bocor ngerusak ring frame crayon di tepi kartu) */
+.lobby-hub #hubCard .hc-img{overflow:hidden;border-radius:inherit}
 .lobby-hub #hubCard .hc-img img,.lobby-hub #hubCard .hc-img video{border-radius:inherit}
 /* nama nongol keluar frame kiri-atas + extrude 3D (gabung translate parallax --pf) */
 .lobby-hub #hubCard .hc-name-top{top:-14px;left:-16px;max-width:none;
@@ -2299,13 +2302,13 @@ body.on-tower #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
 .bp-shop-ic>.icov{width:64px;height:64px}
 /* Ikon item Toko Raid di tombol beli (.amed) — patokan ukuran biar PNG gak overflow. */
 .tw-hub .act .amed img{width:36px;height:36px;object-fit:contain}
-/* Frame kartu lobby CRAYON: PNG sudah di-chroma-key (magenta → transparan) → frame-card-dark-keyed.
-   Slice 200 = hanya margin transparan (0-100px) + seni frame bar perak/swirl (100-200px) dari tepi; zona plat gelap opaque #2E292F (inset 200-300px, baked di PNG, bukan CSS) TIDAK ikut di-slice → tak ada plat di belakang celah ring; goresan lebih tebal/tajam (22px), celah nembus latar lobby.
+/* Frame kartu lobby CRAYON V3: PNG frame-crayon.png = frame-card-dark-keyed di-key ulang (pelat interior #2E292F -> transparan via flood-fill) + crop margin transparan per sisi (L70/T81/R68/B82) → seni frame nempel di tepi file.
+   Slice per sisi = kedalaman seni + buffer 12px (T326 R301 B387 L304) → baton perak + swirl terekam UTUH di ring border-width, rect tengah dijamin kosong (nol seni kepotong); celah swirl nembus latar lobby.
    Cukup rule #hubCard ini saja — rule .hub-center global lama dihapus supaya backpack/roll tak ikut.
    background:transparent = buang pelat hitam gradasi (#1b1418→#0c0a0c) di belakang bingkai; area
    transparan PNG frame (margin luar & celah swirl) sekarang nembus ke latar lobby,bukan jadi hitam. */
 .lobby-hub #hubCard{border-width:clamp(28px,4vh,44px);border-style:solid;border-color:transparent;
-  border-image:url("../assets/frames/frame-card-dark-keyed.png") 200 round;background:transparent}
+  border-image:url("../assets/frames/frame-crayon.png") 326 301 387 304 round;background:transparent}
 /* Buang ring/bloom glow --tcol + foil gradient animasi UR/EX (satu pseudo-element ::before); bayangan hitam bawah tetap. */
 .lobby-hub #hubCard::before,.lobby-hub #hubCard:hover::before{display:none}
 .lobby-hub #hubCard[data-tier]{box-shadow:0 22px 50px rgba(0,0,0,.6)}
@@ -2318,6 +2321,6 @@ body.on-tower #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
    di tengah kanvas) → kotak persegi + object-fit:cover memotong margin samping:visible size makhluk
    naik ±2x & konsisten antar pet;
    glow cyan border+box-shadow di gambar pet dimatikan (drop-shadow gelap di parent tetap). */
-.lobby-pet{width:clamp(150px,26vh,280px);aspect-ratio:1/1;left:auto;right:calc(100% - 68px)}/* pet di samping KIRI kartu — stage = kolom 1 grid (paling kiri), ruang halaman di kiri bebas (tile di kanan); overlap 68px ke tepi kartu */
+.lobby-pet{width:clamp(150px,26vh,280px);aspect-ratio:1/1;left:auto;right:100%}/* pet di samping KIRI kartu — stage = kolom 1 grid (paling kiri), ruang halaman di kiri bebas (tile di kanan); rapat pinggir kartu TANPA overlap (dulu 68px) supaya tepi kiri frame crayon gak ketutup pet */
 .lobby-pet img{border:none;box-shadow:none;width:100%;height:100%;object-fit:cover}
 @media(max-width:1280px){.lobby-pet{right:auto;left:4%}}
