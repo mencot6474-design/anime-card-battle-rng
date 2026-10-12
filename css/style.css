@@ -2290,3 +2290,14 @@ body.on-tower #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
 @keyframes twDetailIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
 
 @keyframes bpSweep{0%{background-position:120% 0}100%{background-position:-120% 0}}
+/* ===== CRAYON V2 ===== */
+/* Ikon artefak PNG: wrapper numpuk — SVG di bawah sebagai fallback (img onerror => this.remove()). */
+.icov{display:inline-grid;place-items:center;line-height:0}
+.icov>svg,.icov>img{grid-area:1/1;width:100%;height:100%}
+.icov>img{object-fit:contain}
+.bp-aslot.filled>.icov{width:34px;height:34px}
+.bp-shop-ic>.icov{width:64px;height:64px}
+/* Ikon item Toko Raid di tombol beli (.amed) — patokan ukuran biar PNG gak overflow. */
+.tw-hub .act .amed img{width:36px;height:36px;object-fit:contain}
+/* Frame kartu lobby CRAYON: border-image (bagian dalam PNG TIDAK ikut render — konten kartu tetap kelihatan), glow --tcol tetap. */
+.hub-center{border-width:22px;border-style:solid;border-color:transparent;border-image:url("../assets/frames/frame-card-dark.png") 78/22px round}

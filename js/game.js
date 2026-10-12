@@ -33,7 +33,11 @@ const ART_DEFS=[
   {id:"giok",  name:"GIOK HOKI",          icon:"giok",  color:"#4ade80", price:35000000, flat:25, pct:0},
   {id:"batu",  name:"BATU UNTUNG",        icon:"batu",  color:"#7DF9FF", price:50000000, flat:0,  pct:25},
   {id:"cincin",name:"CINCIN ES",          icon:"cincin",color:"#93c5fd", price:70000000, flat:50, pct:30},
-  {id:"intan", name:"INTAN KUASA",        icon:"intan", color:"#f0abfc", price:100000000,flat:75, pct:75}
+  {id:"intan", name:"INTAN KUASA",        icon:"intan", color:"#f0abfc", price:100000000,flat:75, pct:75},
+  /* CRAYON V2 — kanal via src: "coin" (Backpack) · "raid" (Toko Raid, cost=token) · "tower" (drop Inf Tower, base rate TANPA luck). */
+  {id:"pedang-api",   name:"PEDANG API",   icon:"pedang-api",   color:"#fb923c", src:"tower", flat:120, pct:100, img:"assets/artifacts/pedang-api.png"},
+  {id:"helm-abyss",   name:"HELM ABYSS",   icon:"helm-abyss",   color:"#818cf8", src:"raid",  raidCost:5000,  flat:80, pct:120, img:"assets/artifacts/abyss-helm.png"},
+  {id:"tameng-surgawi",name:"TAMENG SURGAWI",icon:"tameng-surgawi",color:"#fde68a",src:"coin", price:1000000000,flat:50, pct:200, img:"assets/artifacts/tameng-surgawi.png"}
 ];
 const PET_DEFS=[
   {id:"doll",        name:"BONEKA TERKUTUK",img:"assets/pets/doll.jpg",        emoji:"🎎",price:10000000, flat:10, pct:0},
@@ -41,7 +45,11 @@ const PET_DEFS=[
   {id:"titan",       name:"TITAN BUAS",     img:"assets/pets/titan.jpg",       emoji:"🗿",price:35000000, flat:50, pct:0},
   {id:"dragon",      name:"DRAGON ABADI",   img:"assets/pets/dragon.jpg",      emoji:"🐉",price:50000000, flat:0,  pct:15},
   {id:"nine-tail",   name:"EKOR SEMBILAN",  img:"assets/pets/nine-tail.jpg",   emoji:"🐺",price:70000000, flat:50, pct:25},
-  {id:"bijuu",       name:"BIJUU",          img:"assets/pets/bijuu.jpg",       emoji:"🦊",price:100000000,flat:100,pct:50}
+  {id:"bijuu",       name:"BIJUU",          img:"assets/pets/bijuu.jpg",       emoji:"🦊",price:100000000,flat:100,pct:50},
+  /* CRAYON V2 — pet BARU (pet lama tidak ditimpa). src sama seperti artefak. */
+  {id:"kyubi",       name:"KYUBI FOX",      img:"assets/pets/kyubi.png",      emoji:"🦊",src:"tower",flat:200,pct:300},
+  {id:"nebula-wisp", name:"NEBULA WISP",    img:"assets/pets/nebula-wisp.png",emoji:"🌌",src:"raid", raidCost:15000,flat:150,pct:220},
+  {id:"next-bot",    name:"NEXT-BOT",       img:"assets/pets/next-bot.png",   emoji:"🤖",src:"coin", price:5000000000,flat:120,pct:150}
 ];
 function luckTxt(d){const a=[];if(d.flat)a.push("+"+d.flat+" FLAT");if(d.pct)a.push("+"+d.pct+"%");return a.join(" & ")+" LUCK";}
 function artLuckFlat(){return state&&Array.isArray(state.artOwned)?state.artOwned.reduce((a,id)=>a+((ART_DEFS.find(x=>x.id===id)||{}).flat||0),0):0;}
@@ -819,7 +827,7 @@ function renderProfile(){
   const artTile=i=>{const id=state.artSlots&&state.artSlots[i];
     const d=id?ART_DEFS.find(x=>x.id===id):null;
     if(!d)return tile("ARTEFAK "+(i+1),"KOSONG","slot belum terpasang");
-    const b=[];if(d.flat)b.push("+"+d.flat+" flat");if(d.pct)b.push("+"+Math.round(d.pct*100)+"%");
+    const b=[];if(d.flat)b.push("+"+d.flat+" flat");if(d.pct)b.push("+"+d.pct+"%");
     return tile("ARTEFAK "+(i+1),d.name,b.length?b.join(" · "):"tanpa bonus luck");};
   const pd=state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;
   const petB=[];if(pd){if(pd.flat)petB.push("+"+pd.flat+" flat");if(pd.pct)petB.push("+"+Math.round(pd.pct*100)+"%");}
@@ -1159,19 +1167,30 @@ function artIconSvg(k){
   if(k==="cincin")return S(`<circle cx="24" cy="30" r="10.5" stroke-width="2.4"/><path d="M24 6l5.5 7.5L24 21l-5.5-7.5z" stroke-width="2"/><path d="M24 6v15M18.5 13.5h11" stroke-width="1.3" stroke-opacity=".8"/>`);
   return S(`<path d="M14 9.5h20l7.5 10.5L24 41 6.5 20z" stroke-width="2.4"/><path d="M6.5 20h35M14 9.5L18 20l6 21 6-21 4-10.5" stroke-width="1.5" stroke-opacity=".8"/>`);
 }
+/* Ikon artefak CRAYON: PNG di ATAS SVG fallback — gagal load => this.remove() => SVG tampil. */
+function artIconHtml(d){
+  if(!d.img)return artIconSvg(d.icon);
+  return `<span class="icov">${artIconSvg(d.icon)}<img src="${d.img}" alt="" onerror="this.remove()"></span>`;
+}
+/* Tombol beli Backpack per kanal: raid/tower TIDAK dijual pakai coin — tombol jadi petunjuk sumber. */
+function bpBuyBtn(d,kind){
+  if(d.src==="raid")return `<button class="bp-shop-b off" onclick="toast('TOKO RAID','BELI PAKAI TOKEN RAID · ${fmt(d.raidCost||0)} TOKEN','#B58CFF')">TOKO RAID · ${fmt(d.raidCost||0)} TOKEN</button>`;
+  if(d.src==="tower")return `<button class="bp-shop-b off" onclick="toast('INF TOWER','DROP BASE CHANCE — TIDAK KENA LUCK PLAYER','#7DF9FF')">DROP · INF TOWER</button>`;
+  return `<button class="bp-shop-b ${(state.coins||0)>=d.price?'buy':'poor'}" onclick="bpBuy${kind}('${d.id}')">BELI · 🪙 ${fmt(d.price)}</button>`;
+}
 function renderBpArts(){
   const coins=state.coins||0;
   const slots=[0,1].map(i=>{
     const id=state.artSlots[i],d=id?ART_DEFS.find(x=>x.id===id):null;
     if(!d)return `<div class="bp-aslot empty" onclick="toast('SLOT KOSONG','BELI ARTEFAK DULU','#fcd34d')"><span>◈</span></div>`;
-    return `<div class="bp-aslot filled" style="--ec:${d.color}" onclick="bpArtSlot(${i})">${artIconSvg(d.icon)}<span class="bp-aslot-n">${d.name}</span><button class="bp-aslot-x" onclick="event.stopPropagation();bpArtSlot(${i})">&times;</button></div>`;
+    return `<div class="bp-aslot filled" style="--ec:${d.color}" onclick="bpArtSlot(${i})">${artIconHtml(d)}<span class="bp-aslot-n">${d.name}</span><button class="bp-aslot-x" onclick="event.stopPropagation();bpArtSlot(${i})">&times;</button></div>`;
   }).join('');
   const cards=ART_DEFS.map(d=>{
     const owned=state.artOwned.includes(d.id),eq=state.artSlots.includes(d.id);
     const btn=eq?`<button class="bp-shop-b off" onclick="bpToggleArt('${d.id}')">LEPAS</button>`
       :owned?`<button class="bp-shop-b on" onclick="bpToggleArt('${d.id}')">PASANG</button>`
-      :`<button class="bp-shop-b ${coins>=d.price?'buy':'poor'}" onclick="bpBuyArt('${d.id}')">BELI · 🪙 ${fmt(d.price)}</button>`;
-    return `<div class="bp-shop${eq?' eq':''}" style="--ec:${d.color}"><div class="bp-shop-ic">${artIconSvg(d.icon)}</div><div class="bp-shop-n">${d.name}</div><div class="bp-shop-e">${luckTxt(d)}</div>${btn}</div>`;
+      :bpBuyBtn(d,"Art");
+    return `<div class="bp-shop${eq?' eq':''}" style="--ec:${d.color}"><div class="bp-shop-ic">${artIconHtml(d)}</div><div class="bp-shop-n">${d.name}</div><div class="bp-shop-e">${luckTxt(d)}</div>${btn}</div>`;
   }).join('');
   return `<div class="bp-h">ARTEFAK · 2 SLOT<div class="bp-coinrow">☘ ${totalLuck().toFixed(1)}× · 🪙 ${fmt(coins)}</div></div>
   <div class="bp-slotsrow">${slots}<div class="bp-aslot-hint">Klik slot untuk lepas<br>Beli artefak dulu untuk pasang</div></div>
@@ -1189,7 +1208,7 @@ function renderBpPets(){
     const owned=state.petOwned.includes(p.id),eq=state.petEquipped===p.id;
     const btn=eq?`<button class="bp-shop-b off" onclick="bpTogglePet('${p.id}')">LEPAS</button>`
       :owned?`<button class="bp-shop-b on" onclick="bpTogglePet('${p.id}')">PASANG</button>`
-      :`<button class="bp-shop-b ${coins>=p.price?'buy':'poor'}" onclick="bpBuyPet('${p.id}')">BELI · 🪙 ${fmt(p.price)}</button>`;
+      :bpBuyBtn(p,"Pet");
     return `<div class="bp-shop${eq?' eq':''}" style="--ec:#7DF9FF"><div class="bp-shop-ic"><img src="${p.img}" alt="${p.name}" onerror="this.parentNode.classList.add('noimg')"><span class="ph">${p.emoji}</span></div><div class="bp-shop-n">${p.name}</div><div class="bp-shop-e">${luckTxt(p)}</div>${btn}</div>`;
   }).join('');
   return `<div class="bp-h">PET · 1 SLOT<div class="bp-coinrow">☘ ${totalLuck().toFixed(1)}× · 🪙 ${fmt(coins)}</div></div>
@@ -1199,6 +1218,7 @@ function renderBpPets(){
 
 function bpBuyArt(id){
   const d=ART_DEFS.find(x=>x.id===id);if(!d||state.artOwned.includes(id))return;
+  if(d.src&&d.src!=="coin"){toast("TIDAK DIJUAL DI SINI",d.src==="raid"?"BELI DI TOKO RAID PAKAI TOKEN":"DROP BASE DI INF TOWER","#fcd34d");return;}
   if((state.coins||0)<d.price){beep(200,.09,"square",.06);toast("COIN KURANG","BUTUH 🪙 "+fmt(d.price),"#f87171");return;}
   state.coins-=d.price;state.artOwned.push(id);save();
   beep(680,.12,"triangle",.09);setTimeout(()=>beep(900,.12,"triangle",.08),90);
@@ -1214,6 +1234,7 @@ function bpToggleArt(id){
 function bpArtSlot(i){const id=state.artSlots[i];if(id)bpToggleArt(id);}
 function bpBuyPet(id){
   const d=PET_DEFS.find(x=>x.id===id);if(!d||state.petOwned.includes(id))return;
+  if(d.src&&d.src!=="coin"){toast("TIDAK DIJUAL DI SINI",d.src==="raid"?"BELI DI TOKO RAID PAKAI TOKEN":"DROP BASE DI INF TOWER","#fcd34d");return;}
   if((state.coins||0)<d.price){beep(200,.09,"square",.06);toast("COIN KURANG","BUTUH 🪙 "+fmt(d.price),"#f87171");return;}
   state.coins-=d.price;state.petOwned.push(id);save();
   beep(680,.12,"triangle",.09);setTimeout(()=>beep(900,.12,"triangle",.08),90);
@@ -3140,6 +3161,10 @@ function towerEnd(win){
     if(Math.random()<0.05){state.potions=(state.potions||0)+1;towerRun.drops.weather++;}
     if(Math.random()<0.10){state.luckPotions=(state.luckPotions||0)+1;towerRun.drops.luck++;}
     if(Math.random()<0.10){state.speedPotions=(state.speedPotions||0)+1;towerRun.drops.speed++;}
+    /* DROP LANGKAH CRAYON V2 — BASE murni TANPA luck player (totalLuck TIDAK dipakai): pedang-api 0,1% · kyubi 0,01% per lantai. */
+    const rare=[];
+    if(!state.artOwned.includes("pedang-api")&&Math.random()<0.001){state.artOwned.push("pedang-api");rare.push("ARTEFAK PEDANG API · +120 FLAT & +100% LUCK");}
+    if(!state.petOwned.includes("kyubi")&&Math.random()<0.0001){state.petOwned.push("kyubi");rare.push("PET KYUBI FOX · +200 FLAT & +300% LUCK");}
     /* Token Inf: +1 per lantai, +5 per lantai bos. */
     const tok=towerIsBossFloor(f)?5:1;
     state.infTokens=(state.infTokens||0)+tok; towerRun.tokens=(towerRun.tokens||0)+tok;
@@ -3147,6 +3172,7 @@ function towerEnd(win){
     state.tower.best=Math.max(state.tower.best||0,f);
     save(); renderShell(); fanfare();
     toast("LANTAI "+f+" DITAKLUKKAN","+"+rr+" ROLL DISIMPAN · "+"+"+tok+" TOKEN","#7df9ff");
+    rare.forEach((m,i)=>setTimeout(()=>toast("DROP LANGKAH · LANTAI "+f,m,"#fb923c"),700*(i+1)));
     bt=null;
     towerEnter(f+1);
     return;
@@ -3631,7 +3657,11 @@ function stackHas(char,mut){mut=mut||"none";return state.stacks.some(s=>s.char==
 const RAID_SHOP=[
   {id:"coins",name:"2.000 Coin",cost:5,desc:"Koin untuk roll trait & kebutuhan lain.",apply:()=>{state.coins+=2000;return "+2.000 coin";}},
   {id:"card_edragon",name:"Eternal Dragon",cost:120,desc:"Kartu BOSS eksklusif — beli SEKALI, roll terbuka PERMANEN di semua gacha. Chance dasar 1 in 25 jt · ICE BLAST 50% (3×75% ATK) · immune semua status effect.",card:{char:"CH_ETERNAL_DRAGON",mut:"none"},
-    apply:()=>{state.raidShopOwned=state.raidShopOwned||{};state.raidShopOwned.CH_ETERNAL_DRAGON=true;return gmGrantCard("CH_ETERNAL_DRAGON");}}
+    apply:()=>{state.raidShopOwned=state.raidShopOwned||{};state.raidShopOwned.CH_ETERNAL_DRAGON=true;return gmGrantCard("CH_ETERNAL_DRAGON");}},
+  {id:"helm-abyss",name:"HELM ABYSS",cost:5000,desc:"Artefak CRAYON V2 — +80 flat & +120% LUCK permanen. Beli SEKALI, langsung masuk Backpack (slot artefak, equip 2 slot).",effect:"+80 FLAT & +120% LUCK",owned:()=>state.artOwned.includes("helm-abyss"),
+    apply:()=>{state.artOwned=state.artOwned||[];if(!state.artOwned.includes("helm-abyss"))state.artOwned.push("helm-abyss");return "HELM ABYSS · +80 FLAT & +120% LUCK";}},
+  {id:"nebula-wisp",name:"NEBULA WISP",cost:15000,desc:"Pet CRAYON V2 — +150 flat & +220% LUCK permanen. Beli SEKALI, langsung masuk Backpack (slot pet, equip 1).",effect:"+150 FLAT & +220% LUCK",owned:()=>state.petOwned.includes("nebula-wisp"),
+    apply:()=>{state.petOwned=state.petOwned||[];if(!state.petOwned.includes("nebula-wisp"))state.petOwned.push("nebula-wisp");return "NEBULA WISP · +150 FLAT & +220% LUCK";}}
 ];
 /* =============== TOKO RAID — layout master-detail ala TOKO INF (.tw-hub) ===============
    Kiri: daftar item (.srow). Kanan: stats token + detail (.sdetail) + tombol beli (.act.go.buyswap).
@@ -3641,6 +3671,7 @@ function raidShopBuy(id){
   const tok=state.raidTokens||0;
   if(tok<it.cost){raidToast("TOKEN KURANG — butuh "+it.cost+" token");return;}
   if(it.card&&stackHas(it.card.char,it.card.mut)){raidToast("Kartu itu sudah ada di Deck kamu");return;}
+  if(it.owned&&it.owned()){raidToast("Sudah dibeli — permanen di Backpack");return;}
   state.raidTokens-=it.cost;
   const msg=it.apply();save();sfx.crit();renderShell();
   raidToast(msg+" · −"+it.cost+" token");
@@ -3648,7 +3679,9 @@ function raidShopBuy(id){
 }
 function renderRaidShop(){
   const tok=state.raidTokens||0;
-  const ICO={coins:"🪙",card_edragon:`<img src="assets/raid/eternal-dragon-hd.png" onerror="this.parentNode.textContent='🐉'">`};
+  const ICO={coins:"🪙",card_edragon:`<img src="assets/raid/eternal-dragon-hd.png" onerror="this.parentNode.textContent='🐉'">`,
+    "helm-abyss":`<img src="assets/artifacts/abyss-helm.png" onerror="this.parentNode.textContent='🪖'">`,
+    "nebula-wisp":`<img src="assets/pets/nebula-wisp.png" onerror="this.parentNode.textContent='🌌'">`};
   const cardItems=RAID_SHOP.filter(x=>x.card);
   const bossTotal=cardItems.length,bossCount=cardItems.filter(x=>bossRollUnlocked(x.card.char)).length;
   const ITEMS=RAID_SHOP.map(it=>({k:it.id,label:it.name.toUpperCase(),sub:it.card?"Kartu BOSS · TIER BOSS · roll permanen setelah beli":it.desc,cost:it.cost,ac:it.card?"#FFFFFF":"#FFD27A",it}));
@@ -3660,16 +3693,16 @@ function renderRaidShop(){
         <span class="sic">${ICO[it.k]||"🎁"}</span>
         <span class="sinfo"><span class="sname">${it.label}</span><span class="ssub">${it.sub}</span></span>
         <span class="scost"><b>${it.cost}</b><span>TOKEN</span></span>
-        ${it.it.card&&stackHas(it.it.card.char,it.it.card.mut)?`<span class="sown">SUDAH DIBELI</span>`:""}
+        ${((it.it.card&&stackHas(it.it.card.char,it.it.card.mut))||(it.it.owned&&it.it.owned()))?`<span class="sown">SUDAH DIBELI</span>`:""}
       </div>`).join("");
     document.querySelectorAll("#raidShopList .srow").forEach(r=>r.onclick=()=>{window.raidShopSel=+r.dataset.i;renderList();renderDetail();});
   };
   const renderBuy=()=>{
     const it=ITEMS[window.raidShopSel],btn=document.getElementById("raidShopBuy");
     btn.style.animation="none";void btn.offsetWidth;btn.style.animation="";
-    const have=!!(it.it.card&&stackHas(it.it.card.char,it.it.card.mut));
+    const have=!!(it.it.card&&stackHas(it.it.card.char,it.it.card.mut))||(it.it.owned?it.it.owned():false);
     let small="Beli item ini",big=`BELI — ${it.cost} TOKEN`,dis=false;
-    if(have){small="Sudah dibeli · roll permanen terbuka";big="SUDAH DIPUNYA";dis=true;}
+    if(have){small=it.it.card?"Sudah dibeli · roll permanen terbuka":"Sudah dibeli · permanen di Backpack";big="SUDAH DIPUNYA";dis=true;}
     else if(tok<it.cost){small="Token tidak cukup";big=`KURANG ${it.cost-tok} TOKEN`;dis=true;}
     btn.disabled=dis;
     btn.innerHTML=`<span class="amed">${ICO[it.k]||"🎁"}</span><span class="atxt"><small>${small}</small><b>${big}</b></span>`;
@@ -3693,7 +3726,7 @@ function renderRaidShop(){
         <div class="sd-mrow"><span class="k">HARGA</span><span class="v c">${it.cost} TOKEN RAID</span></div>
         ${isCard?`<div class="sd-mrow"><span class="k">ROLL</span><span class="v ${unlocked?"g":"no"}">${unlocked?"TERBUKA · PERMANEN":"TERKUNCI — BELUM DIBELI"}</span></div>
         <div class="sd-mrow"><span class="k">DIMILIKI</span><span class="v g">${cnt?"×"+cnt:"—"}</span></div>`
-        :`<div class="sd-mrow"><span class="k">EFEK</span><span class="v g">+2.000 COIN LANGSUNG</span></div>`}
+        :`<div class="sd-mrow"><span class="k">EFEK</span><span class="v g">${it.it.effect||"+2.000 COIN LANGSUNG"}</span></div>`}
         <div class="sd-mrow"><span class="k">SISA TOKEN</span><span class="v c">${tok} / ${it.cost}</span></div>
       </div>`;
       renderBuy();
