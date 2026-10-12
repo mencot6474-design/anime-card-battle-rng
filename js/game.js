@@ -3562,14 +3562,14 @@ function renderRaidResult(){
   const pct=raid?raid.pct:0, tokens=raid?raid.tokens:0, nx=raidNextTier(pct,{rw:raid?raid.rw:1});
   const dLabel=raid?(RAID_DIFFS.find(d=>d.k===raid.diffKey)||{}).l:"";
   app.innerHTML=`
-  <div class="raid-result">
+  <div class="tw-page rd-page"><div class="raid-result">
     <div class="eyebrow">HASIL RAID${dLabel?" · "+dLabel:""}</div>
     <div class="rr-title disp${pct>=100?"":" lose"}">${pct>=100?"BOSS TUMBANG":"RAID SELESAI"}</div>
     <div class="rr-pct">Damage ke Boss <b>${pct}%</b></div>
     <div class="rr-token">+${tokens} <span>TOKEN RAID</span></div>
     <div class="rr-tier">${nx?`Butuh ${nx.pct}% damage untuk +${nx.tokens} token.`:"Semua tier terklaim!"}</div>
     <div class="rr-actions"><button class="btn-grad" id="rrAgain">RAID LAGI</button><button class="btn-ghost" id="rrHub">KEMBALI</button></div>
-  </div>`;
+  </div></div>`;
   document.getElementById("rrAgain").onclick=()=>{sfx.hit();raidView="pick";renderRaid();};
   document.getElementById("rrHub").onclick=()=>{raidView="hub";renderRaid();};
 }
@@ -3586,7 +3586,7 @@ function raidShopThumb(it){
   }
   const col="#E0BC6E";
   const glyph=`<svg class="ri-glyph" viewBox="0 0 48 48" fill="none" stroke="${col}" stroke-width="2.6"><circle cx="24" cy="24" r="17" fill="${col}" fill-opacity=".22"/><circle cx="24" cy="24" r="9.5"/></svg>`;
-  return `<div class="ri-thumb" style="background:radial-gradient(circle at 50% 42%,${col}2E,#EDF1F6 72%)">${glyph}<span class="ri-cap">+2.000</span><div class="ri-desc">${it.desc}</div></div>`;
+  return `<div class="ri-thumb" style="background:radial-gradient(circle at 50% 42%,${col}2E,#141013 72%)">${glyph}<span class="ri-cap">+2.000</span><div class="ri-desc">${it.desc}</div></div>`;
 }
 function stackHas(char,mut){mut=mut||"none";return state.stacks.some(s=>s.char===char&&(s.mut||"none")===mut);}
 const RAID_SHOP=[
@@ -3595,6 +3595,7 @@ const RAID_SHOP=[
 ];
 function renderRaidShop(){
   app.innerHTML=`
+  <div class="tw-page rd-page">
   <div class="eyebrow">TOKO RAID</div>
   <h1>Raid <span class="grad-text">Shop</span></h1>
   <div class="raid-shop-head"><span>TOKEN RAID: <b>${fmt(state.raidTokens||0)}</b></span><button class="btn-ghost" id="shopBack">← KEMBALI</button></div>
@@ -3609,7 +3610,8 @@ function renderRaidShop(){
       <div class="ri-name">${it.name}${tag}</div>
       ${buy}
     </div>`;}).join("")}</div>
-  <p class="raid-note">Dapat token dari Boss Raid. Klaim damage 30% → +5, 50% → +10, 100% → +20 token. Kartu Eternal Dragon hanya dijual di sini, tidak keluar dari gacha.</p>`;
+  <p class="raid-note">Dapat token dari Boss Raid. Klaim damage 30% → +5, 50% → +10, 100% → +20 token. Kartu Eternal Dragon hanya dijual di sini, tidak keluar dari gacha.</p>
+  </div>`;
   document.getElementById("shopBack").onclick=()=>{raidView="hub";renderRaid();};
   app.querySelectorAll("[data-buy]").forEach(btn=>btn.onclick=()=>{
     const it=RAID_SHOP.find(x=>x.id===btn.dataset.buy);
