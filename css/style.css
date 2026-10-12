@@ -2301,9 +2301,11 @@ body.on-tower #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
 .tw-hub .act .amed img{width:36px;height:36px;object-fit:contain}
 /* Frame kartu lobby CRAYON: PNG sudah di-chroma-key (magenta → transparan) → frame-card-dark-keyed.
    Slice 300 = seluruh seni frame dari tepi (bar perak + swirl; PNG 3:4 = kartu 3:4 → skala seragam).
-   Cukup rule #hubCard ini saja — rule .hub-center global lama dihapus supaya backpack/roll tak ikut. */
+   Cukup rule #hubCard ini saja — rule .hub-center global lama dihapus supaya backpack/roll tak ikut.
+   background:transparent = buang pelat hitam gradasi (#1b1418→#0c0a0c) di belakang bingkai; area
+   transparan PNG frame (margin luar & celah swirl) sekarang nembus ke latar lobby,bukan jadi hitam. */
 .lobby-hub #hubCard{border-width:clamp(28px,4vh,44px);border-style:solid;border-color:transparent;
-  border-image:url("../assets/frames/frame-card-dark-keyed.png") 300 round}
+  border-image:url("../assets/frames/frame-card-dark-keyed.png") 300 round;background:transparent}
 /* Buang ring/bloom glow --tcol + foil gradient animasi UR/EX (satu pseudo-element ::before); bayangan hitam bawah tetap. */
 .lobby-hub #hubCard::before,.lobby-hub #hubCard:hover::before{display:none}
 .lobby-hub #hubCard[data-tier]{box-shadow:0 22px 50px rgba(0,0,0,.6)}
@@ -2311,7 +2313,10 @@ body.on-tower #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
 /* Glow teks --tcol di nama & chance dimatikan (extrude gelap 3D tetap). */
 .lobby-hub #hubCard .hc-name-top{text-shadow:1px 1px 0 #0b0e14,2px 2px 0 #0b0e14,3px 3px 0 #0b0e14,4px 4px 0 #0b0e14,5px 5px 0 #080a0f,6px 6px 0 #080a0f,7px 9px 16px rgba(0,0,0,.9)}
 .lobby-hub #hubCard .hc-chance{text-shadow:none}
-/* Pet lobby jauh lebih besar (dulu clamp(56px,9vh,92px), lalu clamp(84px,13vh,140px) — masih kecil);
+/* Pet lobby jauh lebih besar (dulu clamp(56px,9vh,92px), lalu clamp(84px,13vh,140px) — masih kecil).
+   PNG pet punya margin transparan lebar (nebula-wisp & next-bot 1920x1280,kyubi 1600x1600,makhluk
+   di tengah kanvas) → kotak persegi + object-fit:cover memotong margin samping:visible size makhluk
+   naik ±2x & konsisten antar pet;
    glow cyan border+box-shadow di gambar pet dimatikan (drop-shadow gelap di parent tetap). */
-.lobby-pet{width:clamp(120px,18vh,200px)}
-.lobby-pet img{border:none;box-shadow:none}
+.lobby-pet{width:clamp(150px,26vh,280px);aspect-ratio:1/1}
+.lobby-pet img{border:none;box-shadow:none;width:100%;height:100%;object-fit:cover}
