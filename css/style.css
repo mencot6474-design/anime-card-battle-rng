@@ -2301,3 +2301,11 @@ body.on-tower #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
 .tw-hub .act .amed img{width:36px;height:36px;object-fit:contain}
 /* Frame kartu lobby CRAYON: border-image (bagian dalam PNG TIDAK ikut render — konten kartu tetap kelihatan), glow --tcol tetap. */
 .hub-center{border-width:22px;border-style:solid;border-color:transparent;border-image:url("../assets/frames/frame-card-dark.png") 78/22px round}
+/* Fix feedback: override border:none lawas di #hubCard (spesifisitas id) supaya frame crayon benar2 tampil; */
+.lobby-hub #hubCard{border-width:22px;border-style:solid;border-color:transparent;border-image:url("../assets/frames/frame-card-dark.png") 78/22px round}
+/* buang ring/bloom glow --tcol + ring tier 1px yang nabrak PNG transparan; bayangan hitam bawah tetap. */
+.lobby-hub #hubCard::before,.lobby-hub #hubCard:hover::before{box-shadow:none}
+.lobby-hub #hubCard[data-tier]{box-shadow:0 22px 50px rgba(0,0,0,.6)}
+.lobby-hub #hubCard:hover{border-color:transparent}
+/* Pet lobby lebih besar (sebelumnya clamp(56px,9vh,92px) — kecil). */
+.lobby-pet{width:clamp(84px,13vh,140px)}
