@@ -1024,7 +1024,6 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 .md-info{flex:1;width:100%;text-align:center}
 .md-name{font-size:24px;font-weight:800}
 .md-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
-.ri-owned{font-size:12px;color:var(--muted);font-family:"Barlow Condensed";letter-spacing:.06em}
 .md-btn{border:1px solid var(--line2);border-radius:9px;padding:9px;font-family:"Barlow Condensed";font-size:14px;font-weight:700;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
 .md-btn:hover{color:var(--text);border-color:var(--cyan)}
 .md-btn.on{color:var(--amber);border-color:rgba(255,255,255,.22)}
@@ -1660,7 +1659,6 @@ h1{font-size:clamp(26px,8vw,34px)}
 .bench{padding:10px}
 .ix-strip{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
 .idx-card img,.idx-card video{height:120px}
-.raid-shop-grid{grid-template-columns:1fr}
 .raid-result .rr-actions{flex-direction:column}
 .lobby-hub{gap:10px}
 .dmg-float{font-size:34px}
@@ -1740,7 +1738,6 @@ h1{font-size:clamp(26px,8vw,34px)}
 .rd-note{font-size:11.5px;line-height:1.55;color:var(--muted2);max-width:640px}
 .rd-note b{color:#DDE6EE}
 .rd-note .v{color:var(--violet)}
-.raid-note{font-size:13px;line-height:1.6;color:var(--muted);max-width:640px}
 /* dipakai Toko Raid */
 @media(max-width:560px){.rd-tiers{grid-template-columns:1fr}.rd-boss-frame{width:min(240px,30vh)}}
 @media(max-width:900px){.rd-hub .tw-stage{min-height:44vh}
@@ -1992,26 +1989,23 @@ body.on-tower #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
 .raid-result .rr-tier{font-size:13px;color:var(--muted)}
 .raid-result .rr-actions{display:flex;gap:12px;width:100%;margin-top:8px}
 .raid-result .rr-actions .btn-grad,.raid-result .rr-actions .btn-ghost{flex:1;text-align:center}
-.raid-shop-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6px 0 16px;padding:12px 18px;border-radius:14px;border:1px solid var(--line2);background:rgba(255,255,255,.05)}
-.raid-shop-head span{font-family:"Barlow Condensed";letter-spacing:.1em;font-weight:700;font-size:14px;color:var(--muted)}
-.raid-shop-head b{color:#B58CFF;font-size:20px}
-.raid-shop-head button{flex:0 0 auto;padding:9px 16px;font-size:13px}
-.raid-shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:16px}
-.raid-item{display:flex;flex-direction:column;gap:8px;padding:18px;border-radius:16px;border:1px solid rgba(200,212,222,.22);background:linear-gradient(160deg,#1d161a,#0f0c0e);box-shadow:0 10px 24px rgba(0,0,0,.4)}
-.raid-item .ri-name{font-weight:800;font-size:16px;color:var(--text);text-align:center;line-height:1.2}
-.raid-item .ri-buy{cursor:pointer;border:none;font-family:"Barlow Condensed";font-weight:800;letter-spacing:.1em;font-size:14px;color:#fff;padding:10px;border-radius:10px;background:linear-gradient(120deg,#7A3FF2,#B98CFF);transition:filter .12s,transform .12s;margin-top:auto}
-.raid-item .ri-buy:hover:not(:disabled){filter:brightness(1.1);transform:translateY(-1px)}
-.raid-item .ri-buy:disabled{opacity:.4;cursor:not-allowed;background:rgba(255,255,255,.08);color:var(--muted)}
-/* Thumbnail tile toko: art kartu / ikon buku-coin. Deskripsi baru muncul saat kursor di atas tile supaya tile tidak penuh teks. */
-.ri-thumb{position:relative;width:min(100%,188px);aspect-ratio:3/4;margin:0 auto;border-radius:12px;overflow:hidden;background:#141013;border:1px solid var(--line2);display:grid;place-items:center}
-.ri-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top}
-.ri-glyph{width:56%;height:56%}
-.ri-cap{position:absolute;bottom:9px;left:50%;transform:translateX(-50%);font-family:"Barlow Condensed";font-weight:800;letter-spacing:.1em;font-size:12px;color:#fff;background:#221A2A;padding:2px 9px;border-radius:6px}
-.ri-tier{position:absolute;top:8px;left:8px;z-index:6;font-family:"Barlow Condensed";font-weight:800;letter-spacing:.12em;font-size:11px;padding:2px 8px;border-radius:6px;border:1px solid;background:rgba(8,6,10,.85)}
-.ri-mut{position:absolute;top:8px;right:8px;z-index:6;font-family:"Barlow Condensed";font-weight:800;letter-spacing:.12em;font-size:11px;padding:2px 8px;border-radius:6px;background:#221A2A}
-.ri-desc{position:absolute;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px 14px;background:#171012;color:#EDE3FF;font-size:12px;line-height:1.55;opacity:0;pointer-events:none;transition:opacity .16s}
-.raid-item:hover .ri-desc,.raid-item:focus .ri-desc,.raid-item:focus-within .ri-desc{opacity:1}
 #raidToast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(16px);z-index:95;opacity:0;pointer-events:none;padding:12px 22px;border-radius:12px;border:1px solid rgba(185,140,255,.5);background:rgba(20,12,26,.95);color:#EAD9FF;font-family:"Barlow Condensed";font-weight:700;letter-spacing:.06em;font-size:15px;box-shadow:0 10px 30px rgba(0,0,0,.5);transition:opacity .25s,transform .25s}
+/* ===== TOKO RAID — kartu BOSS tier glitch hitam-putih =====
+   Border/teks putih solid (TIER_COLOR.BOSS=#FFF) + jitter glitch; gembok = belum dibeli di Toko Raid. */
+.ix-cell[data-tier="BOSS"]{border-color:#fff!important;background:#0b0b0d;animation:bossGlitch 2.6s steps(1) infinite}
+.ix-cell[data-tier="BOSS"] img{filter:grayscale(1) contrast(1.2)}
+.ix-cell[data-tier="BOSS"] .ixc-name{color:#fff;text-shadow:1px 0 #000,-1px 0 #000}
+.ix-cell[data-tier="BOSS"]:hover{box-shadow:0 0 0 2px #000,0 0 0 4px #fff}
+@keyframes bossGlitch{0%,90%{transform:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.55)}92%{transform:translateX(2px);box-shadow:-3px 0 0 #fff,3px 0 0 #000}95%{transform:translateX(-2px);box-shadow:3px 0 0 #fff,-3px 0 0 #000}97%,100%{transform:none;box-shadow:none}}
+.ix-cell.boss-locked::after{content:"🔒";position:absolute;left:50%;bottom:7px;transform:translateX(-50%);font-size:15px;z-index:7;filter:drop-shadow(0 1px 2px #000)}
+.ix-cell.boss-locked::before{content:"";position:absolute;inset:0;z-index:6;background:repeating-linear-gradient(135deg,rgba(0,0,0,.5) 0 7px,rgba(0,0,0,.18) 7px 14px);pointer-events:none}
+.ix-cell.boss-locked img{opacity:.6}
+/* thumb kartu BOSS di DETAIL Toko Raid (sbig versi potret) + nama skill di deskripsi */
+.tw-hub .sd-head .sbig.boss-art{width:74px;height:96px;border-radius:12px;background:#0b0b0d;border:1px solid #fff;overflow:hidden}
+.tw-hub .sd-head .sbig.boss-art img{width:100%;height:100%;object-fit:cover;object-position:top;filter:grayscale(1) contrast(1.15)}
+.sd-skill{color:#fff;font-weight:800;letter-spacing:.04em}
+/* aksen ungu Toko Raid (tombol beli besar — default hijau utk Toko Inf) */
+.rd-page .tw-hub .act.go{--ac:#B58CFF;border-color:rgba(181,140,255,.55)}
 #raidToast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 /* ===== PICKER RAID — layar loadout gelap-violet (tema tower) ===== */
 .rd-pick{display:flex;flex-direction:column;gap:14px;padding-bottom:30px}

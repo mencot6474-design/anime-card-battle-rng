@@ -1,13 +1,15 @@
 "use strict";
 /* =============== DATA =============== */
-/* UR = setingkat di bawah EX & TIDAK ada di gacha (hanya Toko Raid), jadi dia tidak punya baris DROP_RATES */
-const TIERS=["R","SR","SSR","UR","EX"];
-const TIER_COLOR={R:"#9A8A8B",SR:"#C8A2A8",SSR:"#B07A9B",UR:"#2F8FE2",EX:"#FF4D5E"};
+/* UR = setingkat di bawah EX & TIDAK ada di gacha (hanya Toko Raid), jadi dia tidak punya baris DROP_RATES.
+   BOSS = kartu beli di TOKO RAID: glitch hitam-putih, terkunci di semua roll SEBELI dibeli, permanen sesudahnya. */
+const TIERS=["R","SR","SSR","UR","EX","BOSS"];
+const TIER_COLOR={R:"#9A8A8B",SR:"#C8A2A8",SSR:"#B07A9B",UR:"#2F8FE2",EX:"#FF4D5E",BOSS:"#FFFFFF"};
 /* TIER = 100% KOSMETIK (warna badge + label). Tidak menentukan drop chance, stat scaling, atau pool.
    Chance tiap kartu di-set manual di field `chance:`. Kalau kartu tidak punya `chance:`, fallback ke
    TIER_CHANCE di bawah (nilai tengah tiap band, supaya card tanpa override tetap masuk akal).
-   Bands (batas bawah inklusif): R < 50k ≤ SR < 500k ≤ SSR < 5jt ≤ UR < 500jt ≤ EX. */
-const TIER_CHANCE={R:5000,SR:250000,SSR:2500000,UR:50000000,EX:1000000000};
+   Bands (batas bawah inklusif): R < 50k ≤ SR < 500k ≤ SSR < 5jt ≤ UR < 500jt ≤ EX.
+   BOSS di luar band (chance dasar 25 jt) — label kosmetik khusus kartu Toko Raid. */
+const TIER_CHANCE={R:5000,SR:250000,SSR:2500000,UR:50000000,EX:1000000000,BOSS:25000000};
 function chanceOf(tier){return TIER_CHANCE[tier]||100;}
 // Auto-suggest tier kosmetik berdasarkan chance. Pakai pas nambah kartu baru biar label sesuai rarity.
 function tierFromChance(ch){
@@ -133,7 +135,7 @@ const STORY_BIBLE={
   units:[
     /* ================= TEMPLATE KARTU =================
        Isi ulang array ini dengan kartu baru. Tiap entri = satu kartu, bentuk:
-       {id:"CH_...", name:"Nama", tier:"R"|"SR"|"SSR"|"UR"|"EX", type:"Offensive",
+       {id:"CH_...", name:"Nama", tier:"R"|"SR"|"SSR"|"UR"|"EX"|"BOSS", type:"Offensive",
         skill:"Nama Skill", hp:123, atk:45, chance:1000,
         art:"assets/cards/art/slug.png", fx:{double:15},
         desc:"Deskripsi passive yang tampil di kartu.",
@@ -144,6 +146,9 @@ const STORY_BIBLE={
        - tier = 100% KOSMETIK (warna badge + label). Tidak affect drop rate, stat scaling, atau pool.
          Saran band: R<50k, SR<500k, SSR<5jt, UR<500jt, EX>=500jt. Helper `tierFromChance(ch)` tersedia.
        - noGacha:true -> tidak muncul di Roll (hanya hadiah/Toko Raid).
+       - raidBoss:true -> kartu BOSS Toko Raid: TIDAK bisa di-roll di mana pun SEBELI dibeli
+         (state.raidShopOwned[id]=true lewat pembelian, fallback: sudah punya stack),
+         PERMANEN bisa di-roll sesudahnya (lihat bossRollUnlocked + gachaPool).
        - fx = passive. Kunci yang didukung engine battle:
            double:15            -> 15% serang 2x beruntun
            crit:{chance,mult}   -> peluang crit x mult
@@ -178,6 +183,8 @@ const STORY_BIBLE={
             deathDefy:{pct}    -> saat FATAL DAMAGE dengan HP sebelum pukulan < pct% max: TIDAK tumbang — bertahan di 0 HP untuk 1 giliran ekstra (masih bisa menyerang), lalu jatuh di awal enemyPhase berikutnya (trySave jalan normal). Sekali per battle (bt.defyUsed). Gak jalan saat dikuasai bayangan. Boss TIDAK kebal (tidak disebut di desc).
             openingHit:{pct}   -> serangan PERTAMA ke kartu musuh BARU ×(1+pct%) damage. Guard level battle `bt.openGuard` (bukan per-fighter): di-arm saat musuh masuk arena (startBattle/startTowerAdvance) & tiap gelombang menara baru. Dikonsumsi pada percobaan serangan pertama (miss/evade tetap menghabiskan). Tag-in PEMAIN tidak re-arm. Gak jalan saat dikuasai bayangan (fx={}).
             desperateStrike:{below,mult,text} -> di bawah `below`% HP (cek tiap playerPhase), serangan berikutnya ×mult SEKALI (state bt.dsState[a]: 0->1 armed, 1->2 saat dilepas). Setelah serangan itu, kartu MATI di awal enemyPhase berikutnya ("mati di akhir giliran", pola deathDefy: ko + trySave). Stun menunda (charge tetap tersimpan, gak kebuang).
+           statusImmune:1     -> IMMUNE total terhadap status negatif: STUN dibatalkan (float "IMMUNE", giliran tetap jalan), burn/DoT/drain/stun yang menyasar kartu ini ditolak — jalan saat kartu ini PEMAIN maupun LAWAN.
+           iceBlast:{chance,pct,hits} -> peluang chance% melempar ICE BLAST: `hits` tembakan @ pct% ATK (menggantikan hit giliran itu, label float "ICE BLAST ×N"). Mis. {chance:50,pct:75,hits:3} = 50% → 3 × 75% ATK.
            transform:{mult}     -> permanen sejak masuk arena: HP & ATK ×mult (gak ada expiry, beda sama burst).
            wallTitans:{every,pct} -> tiap `every` giliran sejak masuk, sambaran BONUS sebesar pct% ATK ke musuh (di luar serangan normal).
            rumbling:{turns,pct}  -> saat kartu ini MATI (bukan revive/lastStand), musuh kena DoT pct% max HP-nya selama `turns` giliran berikutnya, terus jalan walau kartu udah ganti.
@@ -271,7 +278,13 @@ const STORY_BIBLE={
       desc:"(Eksklusif cuaca APOCALYPSE) Pembawa kabar kehancuran yang 40% peluang membakar musuh 10% max HP selama 2 giliran."},
     {id:"CH_APOCALYPSE_Herald",name:"APOCALYPSE HERALD",tier:"EX",type:"Doombringer",skill:"END TIMES",hp:2900,atk:1450,chance:36000000,art:"assets/cards/art/destruction-fist.webp",pos:"center",weatherOnly:"apocalypse",
       fx:{dmgMult:1.6},
-      desc:"(Eksklusif cuaca APOCALYPSE) Herald akhir zaman dengan damage paling buas di seluruh katalog."}
+      desc:"(Eksklusif cuaca APOCALYPSE) Herald akhir zaman dengan damage paling buas di seluruh katalog."},
+    /* ===== KARTU BOSS — TOKO RAID (tier BOSS, glitch hitam-putih) =====
+       raidBoss:true -> terkunci di SEMUA roll sebelum dibeli, permanen sesudahnya (bossRollUnlocked).
+       chance dasar 1 in 25 juta (skill: ICE BLAST + immune status effect). ===== */
+    {id:"CH_ETERNAL_DRAGON",name:"ETERNAL DRAGON",tier:"BOSS",type:"Raid Boss",skill:"ICE BLAST",hp:5200,atk:2600,chance:25000000,art:"assets/raid/eternal-dragon-hd.png",pos:"center",raidBoss:true,
+      fx:{statusImmune:true,iceBlast:{chance:50,pct:75,hits:3}},
+      desc:"TIDAK PERNAH terkena status effect apapun (stun, burn, dan efek negatif lainnya). 50% peluang menembakkan ICE BLAST: 3 serangan beruntun masing-masing 75% ATK."}
   ]
 };
 /* ROLL SYSTEM - Pull-based RNG (bukan gacha pool) */
@@ -456,7 +469,7 @@ const RNG_DROP_RATES=[
 function rngRoll(luckMultiplier=1,speedMultiplier=1){
   const L=(typeof luckMultiplier==="number"&&luckMultiplier>0)?luckMultiplier:1;
   const aw=activeWeatherId();
-  const pool=MASTER_CARD_INDEX.filter(c=>!c.noGacha&&(!c.weatherOnly||c.weatherOnly===aw));
+  const pool=gachaPool();
   if(!pool.length)return null;
   const MUTS=["none","gold","rainbow","secret"];
   const entries=[];
@@ -555,7 +568,7 @@ function instantRollFast(n){
   if(!(n>0))return [];
   const L=(typeof totalLuck==="function"&&totalLuck()>0)?totalLuck():1;
   const aw=activeWeatherId();
-  const pool=MASTER_CARD_INDEX.filter(c=>!c.noGacha&&(!c.weatherOnly||c.weatherOnly===aw));
+  const pool=gachaPool();
   const MUTS=["none","gold","rainbow","secret"];
   const entries=[];const cum=[];let total=0;
   for(const c of pool){
@@ -1287,9 +1300,22 @@ function activeChap(){
   return open.find(x=>x.no===(state?state.chap:1))||open.find(x=>!chapDone(x))||open[open.length-1]||CHAPTERS[0];
 }
 const LEVEL_COUNT=STORY_BIBLE.levels.length;
-const MASTER_CARD_INDEX=STORY_BIBLE.units.map(u=>({char_id:u.id,name:u.name,tier:u.tier,chance:u.chance||null,type:u.type,base_hp:u.hp,base_atk:u.atk,sprite_asset:u.art,art_image:u.art,pos:u.pos||null,passive:{name:u.skill,desc:u.desc},noGacha:!!u.noGacha,weatherOnly:u.weatherOnly||null}));
+const MASTER_CARD_INDEX=STORY_BIBLE.units.map(u=>({char_id:u.id,name:u.name,tier:u.tier,chance:u.chance||null,type:u.type,base_hp:u.hp,base_atk:u.atk,sprite_asset:u.art,art_image:u.art,pos:u.pos||null,passive:{name:u.skill,desc:u.desc},noGacha:!!u.noGacha,weatherOnly:u.weatherOnly||null,raidBoss:!!u.raidBoss}));
 const CARDS=Object.fromEntries(MASTER_CARD_INDEX.map(c=>[c.char_id,c]));
 function getCardData(id){return CARDS[id]||null;}
+/* ===== GATE KARTU BOSS (TOKO RAID) =====
+   raidBoss:true -> terkunci di semua roll SEBELI dibeli; state.raidShopOwned[id]=true dibuat
+   saat pembelian di Toko Raid (persist via save) -> PERMANEN terbuka sesudahnya.
+   Fallback: sudah punya stack kartunya (mis. save lama / grant GM). */
+function bossRollUnlocked(charId){
+  if(state&&state.raidShopOwned&&state.raidShopOwned[charId])return true;
+  return !!(state&&state.stacks||[]).some(s=>s.char===charId);
+}
+/* Pool roll gacha BERSAMA (rngRoll + instantRollFast): buang noGacha, gate weather, gate boss. */
+function gachaPool(){
+  const aw=activeWeatherId();
+  return MASTER_CARD_INDEX.filter(c=>!c.noGacha&&(!c.raidBoss||bossRollUnlocked(c.char_id))&&(!c.weatherOnly||c.weatherOnly===aw));
+}
 function cardImg(id){const c=CARDS[id];return c?c.sprite_asset:"";}
 function cardName(id){const c=CARDS[id];return c?c.name:"(kartu hilang)";}
 function cardType(id){const c=CARDS[id];return c?c.type:"";}
@@ -1347,7 +1373,7 @@ const FX_KNOWN=["double","crit","pierce","barrage","evasion","lifesteal","void",
   "revive","dmgMult","ignoreDef","purple","domain","ranton","dodgeAtk","everySecond","lastStand",
   "styleSwitching","burst","hpDrain","lifetime","entryCounter","dodgeEvery","everyNth","lowHpAura",
   "executeOnEntry","transform","wallTitans","rumbling","bungeeGum","snatch","arise","prideOfPrince",
-  "regression","copy","entryShatter","entryMaxHp","turnMaxHp","splitDeath","deathDefy","openingHit","burn","desperateStrike"];
+  "regression","copy","entryShatter","entryMaxHp","turnMaxHp","splitDeath","deathDefy","openingHit","burn","desperateStrike","statusImmune","iceBlast"];
 function validateFx(){const bad=[];(STORY_BIBLE.units||[]).forEach(u=>{const fx=u.fx||{},ks=Object.keys(fx);
   ks.forEach(k=>{if(!FX_KNOWN.includes(k))bad.push(u.id+" :: fx."+k+" TIDAK DIKENAL -> passive TIDAK AKAN JALAN di battle");});
   if((u.desc||"").trim()&&!ks.length)bad.push(u.id+" :: desc ada tapi fx kosong -> murni teks");});
@@ -1467,6 +1493,9 @@ function resolveFx(stack,enemyFx){
   return mergeFx(o,TRAIT_FX[stack.trait]||{});
 }
 
+/* STATUS IMMUNE (fx.statusImmune): tolak status negatif yang menyasar kartu pemegang.
+   Sisi pemain: pakai `fx` hasil resolveFx (sudah ada di playerPhase). Sisi lawan: cek di sini. */
+function foeStatusImmune(){return !!(bt&&bt.efx&&bt.efx.statusImmune);}
 function cardStats(charId,mut,trait,shiny){const c=CARDS[charId];if(!c)return{hp:0,atk:0,def:0};const base=(MUT_MULT[mut||"none"]||1)*(shiny?SHINY_MULT:1);const hp=Math.round(c.base_hp*base*(TRAIT_HP[trait||"none"]||1)),atk=Math.round(c.base_atk*base*(TRAIT_ATK[trait||"none"]||1));return{hp,atk,def:hp};}
 /* POWER = total HP + ATK semua kartu yang dipakai: kartu utama + TAG (tetap terdeteksi walau cuma 1 kartu) */
 function totalPower(){
@@ -1491,7 +1520,7 @@ function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u));}
 function freshState(){
   const s0=STORY_BIBLE.units[0];
   const start=s0?{id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,fav:false,lock:false,mut:"none",shiny:false,trait:"none",count:1}:null;
-  const newState={coins:1000,raidTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},tower:{best:0,auto:false},battleSpeed:1,
+  const newState={coins:1000,raidTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},raidShopOwned:{},tower:{best:0,auto:false},battleSpeed:1,
     cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],history:[],battle:null,
     player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1,sp:0,tree:{}},weather:null,weatherBest:null,potions:0,mythicPotions:0,luckPotions:0,speedPotions:0,luckBuff:null,speedBuff:null,infTokens:0,
     artOwned:[],artSlots:[null,null],petOwned:[],petEquipped:null,intanRolls:0,idxRewardsClaimed:0};
@@ -1525,6 +1554,8 @@ function loadStateFor(name){
   /* BATTLE SPEED: migrasi save lama + clamp ke unlock level (LV25→2x, LV50→3x, LV100→4x) */
   if(typeof state.battleSpeed!=="number"||state.battleSpeed<1||state.battleSpeed>4||Math.floor(state.battleSpeed)!==state.battleSpeed)state.battleSpeed=1;
   {const _lv=state.playerLv||1,_max=_lv>=100?4:_lv>=50?3:_lv>=25?2:1;if(state.battleSpeed>_max)state.battleSpeed=_max;}
+  /* MIGRATE: flag kepemilikan kartu BOSS (TOKO RAID) — unlock roll permanen */
+  if(!state.raidShopOwned||typeof state.raidShopOwned!=="object")state.raidShopOwned={};
   console.log('[LOAD STATE] Initial player state:',state.player);
   
   if(!state.stacks||!state.stacks.length){const st=freshState();state.stacks=st.stacks;state.equippedId=st.equippedId;}
@@ -2284,7 +2315,7 @@ function performAttack(o){
         if(bt&&!bt.over){ try{ bt.timer=null; endBattle(bt.eHp<=0); }catch(e2){ console.error("force endBattle error",e2); } }
       }
     },bsMs(barEnd+520));
-    if(o.barrageN>1)setTimeout(()=>floatText(D,(o.domainStrike?"UNLIMITED VOID ×":o.ariseMode?"ARISE ×":md?"TENSA ×":"CLEAVE ×")+o.barrageN,"crit"),bsMs(md?MADARA_T.slash:320));
+    if(o.barrageN>1)setTimeout(()=>floatText(D,(o.iceBlast?"ICE BLAST ×":o.domainStrike?"UNLIMITED VOID ×":o.ariseMode?"ARISE ×":md?"TENSA ×":"CLEAVE ×")+o.barrageN,"crit"),bsMs(md?MADARA_T.slash:320));
     else if(shots.length>1&&!o.ranton)setTimeout(()=>floatText(D,"DOUBLE!","crit"),bsMs(260));
   },bsMs(180));
 }
@@ -2299,6 +2330,7 @@ function playerPhase(){
   if(bt.turn>300){ endBattle(bt.eHp<=bt.pHp); return; }
   /* AFTERMATH: kartu terakhir udah mati, Rumbling doang yang jalan — bisa nyulik menang, abis itu kalah */
   if(bt.aftermath){
+    if(bt.rumbling>0&&foeStatusImmune()){bt.rumbling=0;setTimeout(()=>floatText(".fighter.foe","IMMUNE · RUMBLING","heal"),bsMs(160));}
     if(bt.rumbling>0){
       const rd=Math.round(bt.es.hp*(bt.rumblingPct||10)/100);
       bt.eHp-=rd;bt.rumbling--;
@@ -2318,6 +2350,7 @@ function playerPhase(){
   document.getElementById("turnLabel").innerHTML=(bt.tower&&towerRun)?("LANTAI <b>"+towerRun.floor+"</b> · GELOMBANG <b>"+(towerRun.idx+1)+"/"+towerRun.waves.length+"</b>"):("TURN<br>"+t);
   setTurnPill("you","GILIRANMU");
   /* RUMBLING: DoT sisa dari kartu yang udah mati — jalan tiap giliran walau kartu udah ganti */
+  if(bt.rumbling>0&&foeStatusImmune()){bt.rumbling=0;setTimeout(()=>floatText(".fighter.foe","IMMUNE · RUMBLING","heal"),bsMs(160));}
   if(bt.rumbling>0){
     const rd=Math.round(bt.es.hp*(bt.rumblingPct||10)/100);
     bt.eHp-=rd;bt.rumbling--;
@@ -2327,18 +2360,24 @@ function playerPhase(){
   }
   /* TURN MAX HP (BIOKINESIS): tiap giliran kartu ini aktif & hidup, kartu aktif musuh rugi pct% MAX HP (flat).
      Ditaruh SEBELUM cek stun biar aura tetap nyala walau kartu kena stun. Boss NPC kebal. */
-  if(fx.turnMaxHp&&!bt.en.boss&&bt.eHp>0){
+  if(fx.turnMaxHp&&!bt.en.boss&&!foeStatusImmune()&&bt.eHp>0){
     const td=Math.max(1,Math.round(bt.es.hp*fx.turnMaxHp.pct/100));
     bt.eHp-=td;setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);
     setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","BIOKINESIS -"+fmt(td),"burn");}},bsMs(200));
     if(bt.eHp<=0){setTimeout(()=>{if(bt&&!bt.over)foeDown();},bsMs(700));return;}
   }
   if(bt.pStun>0){
-    bt.pStun--;
-    const lbl=(bt.pDrTurns>0&&bt.pDr)?"STUN · DR "+bt.pDr+"%":"STUN";
-    setTimeout(()=>floatText(".fighter.me",lbl,"crit"),bsMs(200));
-    schedPhase(600,enemyPhase);
-    return;
+    if(fx.statusImmune){
+      /* STATUS IMMUNE: stun DIBATALKAN — giliran tetap jalan */
+      bt.pStun=0;
+      setTimeout(()=>floatText(".fighter.me","IMMUNE · STUN","heal"),bsMs(200));
+    }else{
+      bt.pStun--;
+      const lbl=(bt.pDrTurns>0&&bt.pDr)?"STUN · DR "+bt.pDr+"%":"STUN";
+      setTimeout(()=>floatText(".fighter.me",lbl,"crit"),bsMs(200));
+      schedPhase(600,enemyPhase);
+      return;
+    }
   }
   const efx=bt.efx||{};
   const a=bt.active;
@@ -2371,7 +2410,7 @@ function playerPhase(){
      Boss NPC kebal. Guard sekali-per-masuk persis pola entryShatter. */
   if(fx.entryMaxHp&&bt.bioGuard[a]){
     bt.bioGuard[a]=false;
-    if(bt.eHp>0&&!bt.en.boss){
+    if(bt.eHp>0&&!bt.en.boss&&!foeStatusImmune()){
       const bd=Math.max(1,Math.round(bt.es.hp*fx.entryMaxHp.pct/100));
       bt.eHp-=bd;setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);
       setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","BIOKINESIS -"+fmt(bd),"crit");}},bsMs(200));
@@ -2432,9 +2471,11 @@ function playerPhase(){
   if(fx.purple&&Math.random()*100<fx.purple.chance){purple=true;crit=true;hits[hits.length-1].mult*=fx.purple.mult;}
   let ranton=false;
   if(fx.ranton&&Math.random()*100<fx.ranton.chance){ranton=true;crit=true;hits.length=0;const rh=Math.max(1,fx.ranton.hits||5),rm=fx.ranton.mult||1;for(let k=0;k<rh;k++)hits.push({mult:rm});}
-  let barrageN=0;
+  let barrageN=0,iceBlastN=0;
   if(fx.barrage&&Math.random()*100<fx.barrage.chance){const n=fx.barrage.min+Math.floor(Math.random()*(fx.barrage.max-fx.barrage.min+1));const bm=fx.barrage.mult||1;if(bm!==1){hits.length=0;for(let i=0;i<n;i++)hits.push({mult:bm});}else{while(hits.length<n)hits.push({mult:1});}barrageN=hits.length;}
   if(ranton&&!barrageN)barrageN=hits.length;
+  /* ICE BLAST (kartu BOSS): chance% -> ganti hit jadi N tembakan @ pct% ATK, label float di performAttack */
+  if(fx.iceBlast&&Math.random()*100<fx.iceBlast.chance){const n=Math.max(1,fx.iceBlast.hits||3),pm=(fx.iceBlast.pct!=null?fx.iceBlast.pct:100)/100;hits.length=0;for(let i=0;i<n;i++)hits.push({mult:pm});iceBlastN=n;barrageN=n;}
   // DOMAIN EXPANSION (Gojo, disamakan dengan Shrine Sukuna): 100% tiap ronde → 15 sambaran @30% ATK + lifesteal + recharge (stun 1 & DR 50% 2 ronde)
   let domainStrike=false;
   if(fx.domain&&id==="CH_EX_GOJO"&&Math.random()*100<(fx.domain.chance||100)){const dn=fx.domain.min||10,dm=(fx.domain.mult!=null?fx.domain.mult:0.3);hits.length=0;for(let i=0;i<dn;i++)hits.push({mult:dm});barrageN=dn;crit=false;purple=false;ranton=false;domainStrike=true;}
@@ -2459,14 +2500,14 @@ function playerPhase(){
     barId:"hpFoe",barTid:"hpFoeT",defMax:bt.es.hp,
     defHpStart:bt.eHp+total,defHpEnd:eHpNext,
     shots,total,crit,purple,
-    ranton,domainStrike,ariseMode,barrageN,galaxy,
+    ranton,domainStrike,ariseMode,barrageN,galaxy,iceBlast:!!iceBlastN,
     onAnimEnd:foeDead?foeDownCb:null,
-    recharge:(b)=>{if(!bt)return;bt.pStun=b.selfStun;bt.pDrTurns=b.selfDrTurns||b.selfStun;bt.pDr=b.selfDr||0;setTimeout(()=>floatText(".fighter.me","RECHARGE","miss"),bsMs(1200));}
+    recharge:(b)=>{if(!bt)return;bt.pStun=(fx&&fx.statusImmune)?0:b.selfStun;bt.pDrTurns=b.selfDrTurns||b.selfStun;bt.pDr=b.selfDr||0;setTimeout(()=>floatText(".fighter.me","RECHARGE","miss"),bsMs(1200));}
   });
   bt.eHp=eHpNext;
-  if(ranton&&total>0&&bt.eHp>0&&fx.ranton.stun){bt.eStun=fx.ranton.stun;}
+  if(ranton&&total>0&&bt.eHp>0&&fx.ranton.stun){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else bt.eStun=fx.ranton.stun;}
   /* HP DRAIN: tiap serangan yang kena memotong MAX HP musuh secara permanen (compounding) */
-  if(fx.hpDrain&&total>0&&bt.eHp>0){
+  if(fx.hpDrain&&total>0&&bt.eHp>0&&!foeStatusImmune()){
     bt.es.hp=Math.max(1,Math.round(bt.es.hp*(1-fx.hpDrain.pct/100)));
     if(bt.eHp>bt.es.hp)bt.eHp=bt.es.hp;
     setTimeout(()=>floatText(".fighter.foe","HP DRAIN","crit"),bsMs(360));
@@ -2477,10 +2518,12 @@ function playerPhase(){
     const ls=Math.round(total*fx.lifesteal/100);bt.pHp=Math.min(bt.pMax,bt.pHp+ls);
     setTimeout(()=>floatText(".fighter.me","+"+fmt(ls),"heal"),bsMs(300));
   }
-  if(fx.burn&&total>0&&Math.random()*100<fx.burn.chance){bt.eBurn=fx.burn.turns;setTimeout(()=>floatText(".fighter.foe","BURN","burn"),bsMs(360));}
+  if(fx.burn&&total>0&&Math.random()*100<fx.burn.chance){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else{bt.eBurn=fx.burn.turns;setTimeout(()=>floatText(".fighter.foe","BURN","burn"),bsMs(360));}}
   /* PERFECT SUSANOO (low HP): di bawah ambang, serangan membakar musuh selama N giliran */
-  if(fx.lowHpAura&&total>0&&bt.pHp<bt.pMax*fx.lowHpAura.below/100&&bt.eHp>0){bt.eBurn=fx.lowHpAura.burn.turns;setTimeout(()=>floatText(".fighter.foe","PERFECT SUSANOO","burn"),bsMs(360));}
+  if(fx.lowHpAura&&total>0&&bt.pHp<bt.pMax*fx.lowHpAura.below/100&&bt.eHp>0){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else{bt.eBurn=fx.lowHpAura.burn.turns;setTimeout(()=>floatText(".fighter.foe","PERFECT SUSANOO","burn"),bsMs(360));}}
   setBar("hpFoe","hpFoeT",bt.eHp+total,bt.es.hp);setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
+  /* STATUS IMMUNE: burn musuh dibatalkan tanpa tick damage */
+  if(bt.eBurn>0&&foeStatusImmune()){bt.eBurn=0;setTimeout(()=>floatText(".fighter.foe","IMMUNE · BURN","heal"),bsMs(300));}
   if(bt.eBurn>0&&bt.eHp>0){
     const bPct=fx.burn?fx.burn.pct:(fx.lowHpAura?fx.lowHpAura.burn.pct:0);
     const bd=Math.round(bt.es.hp*bPct/100);bt.eHp-=bd;bt.eBurn--;
@@ -2524,14 +2567,20 @@ function enemyPhase(){
   const id=bt.eq.char,t=bt.turn;let fx=resolveFx(bt.eq,bt.efx);
   if(bt.shadow)fx={};
   const efx=bt.efx||{};
-  let eDomain=false,eArise=false,eranton=false,eGalaxy=false;
+  let eDomain=false,eArise=false,eranton=false,eGalaxy=false,eIceBlast=false;
   if(bt.eStun>0){
-    bt.eStun--;
-    anim(".fighter.foe","hit",true);
-    setTimeout(()=>floatText(".fighter.foe","STUNNED","crit"),bsMs(200));
-    bt.turn++;
-    schedPhase(1000,playerPhase);
-    return;
+    if(efx.statusImmune){
+      /* STATUS IMMUNE: stun musuh dibatalkan — musuh tetap menyerang */
+      bt.eStun=0;
+      setTimeout(()=>floatText(".fighter.foe","IMMUNE · STUN","heal"),bsMs(200));
+    }else{
+      bt.eStun--;
+      anim(".fighter.foe","hit",true);
+      setTimeout(()=>floatText(".fighter.foe","STUNNED","crit"),bsMs(200));
+      bt.turn++;
+      schedPhase(1000,playerPhase);
+      return;
+    }
   }
   // DOMAIN aktif ronde ini (Gojo): damage musuh dikurangi 50%
   const domainOn = bt.domainNow;
@@ -2578,6 +2627,8 @@ function enemyPhase(){
     if(efx.ranton&&Math.random()*100<efx.ranton.chance){eranton=true;ecrit=true;eHits.length=0;const rh=Math.max(1,efx.ranton.hits||5),rm=efx.ranton.mult||1;for(let k=0;k<rh;k++)eHits.push({mult:rm});}
     if(efx.barrage&&Math.random()*100<efx.barrage.chance){const n=efx.barrage.min+Math.floor(Math.random()*(efx.barrage.max-efx.barrage.min+1));const bm=efx.barrage.mult||1;if(bm!==1){eHits.length=0;for(let i=0;i<n;i++)eHits.push({mult:bm});}else{while(eHits.length<n)eHits.push({mult:1});}eBarrageN=eHits.length;}
     if(eranton&&!eBarrageN)eBarrageN=eHits.length;
+    /* ICE BLAST (kartu BOSS sebagai LAWAN): N tembakan @ pct% ATK */
+    if(efx.iceBlast&&Math.random()*100<efx.iceBlast.chance){const n=Math.max(1,efx.iceBlast.hits||3),pm=(efx.iceBlast.pct!=null?efx.iceBlast.pct:100)/100;eHits.length=0;for(let i=0;i<n;i++)eHits.push({mult:pm});eIceBlast=true;eBarrageN=n;}
     if(efx.domain&&bt.eid==="CH_EX_GOJO"&&Math.random()*100<(efx.domain.chance||100)){const dn=efx.domain.min||10,dm=(efx.domain.mult!=null?efx.domain.mult:.3);eHits.length=0;for(let i=0;i<dn;i++)eHits.push({mult:dm});eBarrageN=dn;ecrit=false;epurple=false;eranton=false;eDomain=true;}
     eArise=bt.eid==="CH_EX_JINWOO"&&eBarrageN>=9;
     eGalaxy=bt.eid==="CH_ETERNAL_DRAGON"&&epurple;
@@ -2616,7 +2667,7 @@ function enemyPhase(){
       barId:"hpMe",barTid:"hpMeT",defMax:bt.pMax,
       defHpStart:meStart,defHpEnd:Math.max(0,bt.pHp),
       shots:eShots,total:etotal,crit:ecrit,purple:epurple,
-      ranton:eranton,domainStrike:eDomain,ariseMode:eArise,barrageN:eBarrageN,galaxy:eGalaxy,galaxy:eGalaxy,
+      ranton:eranton,domainStrike:eDomain,ariseMode:eArise,barrageN:eBarrageN,galaxy:eGalaxy,iceBlast:eIceBlast,
       onAnimEnd:pDead?deathStep:null,
       recharge:(b)=>{if(!bt)return;bt.eStun=b.selfStun;setTimeout(()=>floatText(".fighter.foe","RECHARGE","miss"),bsMs(1200));}
     });
@@ -2718,7 +2769,8 @@ const TOWER_BOSS_ROSTER=[
 function towerIsBossFloor(f){return f%5===0;}
 function towerBossIndex(f){return ((f/5)-1)%TOWER_BOSS_ROSTER.length;}
 function towerHash(n){return (((n*2654435761)>>>0)%100000)||0;}
-function towerRegularPool(){return MASTER_CARD_INDEX.filter(c=>!c.noGacha);}
+/* Pool musuh menara: semua kartu non-eksklusif + gate kartu BOSS (sama dgn roll: terkunci sebelum dibeli). */
+function towerRegularPool(){return MASTER_CARD_INDEX.filter(c=>!c.noGacha&&(!c.raidBoss||bossRollUnlocked(c.char_id)));}
 /* Kurva kesulitan absolut (tidak ikut membengkak oleh stat mentah kartu EX).
    Kartu musuh hanya menentukan identitas/art/passive; HP & ATK ditentukan lantai.
    TIER itu kosmetik — tidak ada lagi stat scaling berdasarkan tier. */
@@ -3441,7 +3493,7 @@ function raidStep(){
   const fx=raid.fx, dmg=Math.round(raid.atk*(fx.dmgMult||1)), id=raid.cid;
   const domainActive=fx.domain&&id==="CH_EX_GOJO"&&Math.random()*100<(fx.domain.chance||100);
   const hits=[1];
-  let crit=false,purple=false,ranton=false,barrageN=0;
+  let crit=false,purple=false,ranton=false,barrageN=0,iceBlastN=0;
   if(fx.double&&Math.random()*100<fx.double)hits.push(1);
   if(fx.crit&&Math.random()*100<fx.crit.chance){crit=true;hits[hits.length-1]*=fx.crit.mult;}
   else if(Math.random()*100<BASE_CRIT.chance){crit=true;hits[hits.length-1]*=BASE_CRIT.mult;}
@@ -3449,6 +3501,8 @@ function raidStep(){
   if(fx.ranton&&Math.random()*100<fx.ranton.chance){ranton=true;crit=true;hits.length=0;const rh=Math.max(1,fx.ranton.hits||5),rm=fx.ranton.mult||1;for(let k=0;k<rh;k++)hits.push(rm);}
   if(fx.barrage&&Math.random()*100<fx.barrage.chance){const n=fx.barrage.min+Math.floor(Math.random()*(fx.barrage.max-fx.barrage.min+1)),bm=fx.barrage.mult||1;hits.length=0;for(let i=0;i<n;i++)hits.push(bm);barrageN=hits.length;}
   if(ranton&&!barrageN)barrageN=hits.length;
+  /* ICE BLAST (kartu BOSS): N tembakan @ pct% ATK — pola hits angka polos di raid */
+  if(fx.iceBlast&&Math.random()*100<fx.iceBlast.chance){const n=Math.max(1,fx.iceBlast.hits||3),pm=(fx.iceBlast.pct!=null?fx.iceBlast.pct:100)/100;hits.length=0;for(let i=0;i<n;i++)hits.push(pm);iceBlastN=n;barrageN=n;}
   // DOMAIN aktif: serangan jadi 10× barrage @30% ATK
   if(domainActive){hits.length=0;const dn=fx.domain.min||10,dm=(fx.domain.mult!=null?fx.domain.mult:0.3);for(let i=0;i<dn;i++)hits.push(dm);barrageN=dn;crit=false;purple=false;ranton=false;}
   const ariseMode=id==="CH_EX_JINWOO"&&barrageN>=9;
@@ -3489,7 +3543,7 @@ function raidStep(){
         setTimeout(()=>setRaidBar(stepHp),ft);
       });
       setTimeout(()=>setRaidBar(rEndHp),rBarEnd+520);
-      if(barrageN>1)setTimeout(()=>floatText(".fighter.foe",(domainActive?"UNLIMITED VOID ×":ariseMode?"ARISE ×":md?"TENSA ×":"CLEAVE ×")+barrageN,"crit"),md?MADARA_T.slash:320);
+      if(barrageN>1)setTimeout(()=>floatText(".fighter.foe",(iceBlastN?"ICE BLAST ×":domainActive?"UNLIMITED VOID ×":ariseMode?"ARISE ×":md?"TENSA ×":"CLEAVE ×")+barrageN,"crit"),md?MADARA_T.slash:320);
       else if(hits.length>1&&!ranton)setTimeout(()=>floatText(".fighter.foe","DOUBLE!","crit"),260);
     }
   },180);
@@ -3573,53 +3627,109 @@ function renderRaidResult(){
   document.getElementById("rrAgain").onclick=()=>{sfx.hit();raidView="pick";renderRaid();};
   document.getElementById("rrHub").onclick=()=>{raidView="hub";renderRaid();};
 }
-function raidShopThumb(it){
-  if(it.card){
-    const c=CARDS[it.card.char],mut=it.card.mut||"none";
-    if(!c) return `<div class="ri-thumb"><div class="ri-desc">${it.desc}</div></div>`;
-    return `<div class="ri-thumb${mut!=="none"?" mut-"+mut:""}">
-      <img src="${c.sprite_asset}" alt="${c.name}">
-      <span class="ri-tier" style="color:${TIER_COLOR[c.tier]};border-color:${TIER_COLOR[c.tier]}">${rarityText(c.tier,c.chance)}</span>
-      ${mut!=="none"?`<span class="ri-mut" style="color:${MUT_COLOR[mut]}">${MUT_LABEL[mut]}</span>`:""}
-      <div class="ri-desc">${it.desc}</div>
-    </div>`;
-  }
-  const col="#E0BC6E";
-  const glyph=`<svg class="ri-glyph" viewBox="0 0 48 48" fill="none" stroke="${col}" stroke-width="2.6"><circle cx="24" cy="24" r="17" fill="${col}" fill-opacity=".22"/><circle cx="24" cy="24" r="9.5"/></svg>`;
-  return `<div class="ri-thumb" style="background:radial-gradient(circle at 50% 42%,${col}2E,#141013 72%)">${glyph}<span class="ri-cap">+2.000</span><div class="ri-desc">${it.desc}</div></div>`;
-}
 function stackHas(char,mut){mut=mut||"none";return state.stacks.some(s=>s.char===char&&(s.mut||"none")===mut);}
 const RAID_SHOP=[
   {id:"coins",name:"2.000 Coin",cost:5,desc:"Koin untuk roll trait & kebutuhan lain.",apply:()=>{state.coins+=2000;return "+2.000 coin";}},
-  {id:"card_edragon",name:"Eternal Dragon",cost:120,desc:"Kartu EKSKLUSIF — hanya dijual di Toko Raid, tidak keluar dari roll.",card:{char:"CH_ETERNAL_DRAGON",mut:"none"},apply:()=>gmGrantCard("CH_ETERNAL_DRAGON")}
+  {id:"card_edragon",name:"Eternal Dragon",cost:120,desc:"Kartu BOSS eksklusif — beli SEKALI, roll terbuka PERMANEN di semua gacha. Chance dasar 1 in 25 jt · ICE BLAST 50% (3×75% ATK) · immune semua status effect.",card:{char:"CH_ETERNAL_DRAGON",mut:"none"},
+    apply:()=>{state.raidShopOwned=state.raidShopOwned||{};state.raidShopOwned.CH_ETERNAL_DRAGON=true;return gmGrantCard("CH_ETERNAL_DRAGON");}}
 ];
+/* =============== TOKO RAID — layout master-detail ala TOKO INF (.tw-hub) ===============
+   Kiri: daftar item (.srow). Kanan: stats token + detail (.sdetail) + tombol beli (.act.go.buyswap).
+   Kartu BOSS: status ROLL TERKUNCI/TERBUKA ditampilkan; beli = raidShopOwned[id]=true (permanen). */
+function raidShopBuy(id){
+  const it=RAID_SHOP.find(x=>x.id===id);if(!it)return;
+  const tok=state.raidTokens||0;
+  if(tok<it.cost){raidToast("TOKEN KURANG — butuh "+it.cost+" token");return;}
+  if(it.card&&stackHas(it.card.char,it.card.mut)){raidToast("Kartu itu sudah ada di Deck kamu");return;}
+  state.raidTokens-=it.cost;
+  const msg=it.apply();save();sfx.crit();renderShell();
+  raidToast(msg+" · −"+it.cost+" token");
+  renderRaidShop();
+}
 function renderRaidShop(){
-  app.innerHTML=`
-  <div class="tw-page rd-page">
-  <div class="eyebrow">TOKO RAID</div>
-  <h1>Raid <span class="grad-text">Shop</span></h1>
-  <div class="raid-shop-head"><span>TOKEN RAID: <b>${fmt(state.raidTokens||0)}</b></span><button class="btn-ghost" id="shopBack">← KEMBALI</button></div>
-  <div class="raid-shop-grid">${RAID_SHOP.map(it=>{
-    const have=it.card&&stackHas(it.card.char,it.card.mut);
-    const tag=have?` <span class="ri-owned">· sudah di Deck</span>`:"";
-    const buy=have?`<button class="ri-buy" disabled>SUDAH DIPUNYA</button>`
-      :`<button class="ri-buy" data-buy="${it.id}"${(state.raidTokens||0)<it.cost?" disabled":""}>${it.cost} TOKEN</button>`;
-    return `
-    <div class="raid-item" tabindex="0">
-      ${raidShopThumb(it)}
-      <div class="ri-name">${it.name}${tag}</div>
-      ${buy}
-    </div>`;}).join("")}</div>
-  <p class="raid-note">Dapat token dari Boss Raid. Klaim damage 30% → +5, 50% → +10, 100% → +20 token. Kartu Eternal Dragon hanya dijual di sini, tidak keluar dari gacha.</p>
-  </div>`;
-  document.getElementById("shopBack").onclick=()=>{raidView="hub";renderRaid();};
-  app.querySelectorAll("[data-buy]").forEach(btn=>btn.onclick=()=>{
-    const it=RAID_SHOP.find(x=>x.id===btn.dataset.buy);
-    if(!it||(state.raidTokens||0)<it.cost)return;
-    if(it.card&&stackHas(it.card.char,it.card.mut))return raidToast("Kartu itu sudah ada di Deck kamu");
-    state.raidTokens-=it.cost;const msg=it.apply();save();sfx.crit();renderShell();renderRaidShop();
-    raidToast(msg+" · −"+it.cost+" token");
-  });
+  const tok=state.raidTokens||0;
+  const ICO={coins:"🪙",card_edragon:`<img src="assets/raid/eternal-dragon-hd.png" onerror="this.parentNode.textContent='🐉'">`};
+  const cardItems=RAID_SHOP.filter(x=>x.card);
+  const bossTotal=cardItems.length,bossCount=cardItems.filter(x=>bossRollUnlocked(x.card.char)).length;
+  const ITEMS=RAID_SHOP.map(it=>({k:it.id,label:it.name.toUpperCase(),sub:it.card?"Kartu BOSS · TIER BOSS · roll permanen setelah beli":it.desc,cost:it.cost,ac:it.card?"#FFFFFF":"#FFD27A",it}));
+  if(window.raidShopSel==null||window.raidShopSel>=ITEMS.length)window.raidShopSel=0;
+  let swapT=null;
+  const renderList=()=>{
+    document.getElementById("raidShopList").innerHTML=ITEMS.map((it,i)=>`
+      <div class="srow${i===window.raidShopSel?" on":""}" data-i="${i}" style="--ac:${it.ac}">
+        <span class="sic">${ICO[it.k]||"🎁"}</span>
+        <span class="sinfo"><span class="sname">${it.label}</span><span class="ssub">${it.sub}</span></span>
+        <span class="scost"><b>${it.cost}</b><span>TOKEN</span></span>
+        ${it.it.card&&stackHas(it.it.card.char,it.it.card.mut)?`<span class="sown">SUDAH DIBELI</span>`:""}
+      </div>`).join("");
+    document.querySelectorAll("#raidShopList .srow").forEach(r=>r.onclick=()=>{window.raidShopSel=+r.dataset.i;renderList();renderDetail();});
+  };
+  const renderBuy=()=>{
+    const it=ITEMS[window.raidShopSel],btn=document.getElementById("raidShopBuy");
+    btn.style.animation="none";void btn.offsetWidth;btn.style.animation="";
+    const have=!!(it.it.card&&stackHas(it.it.card.char,it.it.card.mut));
+    let small="Beli item ini",big=`BELI — ${it.cost} TOKEN`,dis=false;
+    if(have){small="Sudah dibeli · roll permanen terbuka";big="SUDAH DIPUNYA";dis=true;}
+    else if(tok<it.cost){small="Token tidak cukup";big=`KURANG ${it.cost-tok} TOKEN`;dis=true;}
+    btn.disabled=dis;
+    btn.innerHTML=`<span class="amed">${ICO[it.k]||"🎁"}</span><span class="atxt"><small>${small}</small><b>${big}</b></span>`;
+  };
+  const renderDetail=immediate=>{
+    const it=ITEMS[window.raidShopSel],box=document.getElementById("raidShopDetail");
+    clearTimeout(swapT);
+    const paint=()=>{
+      box.classList.remove("out");
+      const isCard=!!it.it.card;
+      const c=isCard?CARDS[it.it.card.char]:null;
+      const unlocked=!isCard||bossRollUnlocked(it.it.card.char);
+      const cnt=isCard?state.stacks.filter(s=>s.char===it.it.card.char).reduce((n,s)=>n+(s.count||1),0):0;
+      box.innerHTML=`
+      <div class="sd-head" style="--ac:${it.ac}">
+        <span class="sbig${isCard?" boss-art":""}">${ICO[it.k]||"🎁"}</span>
+        <span><span class="sd-kicker">${isCard?"KARTU BOSS · TIER "+(c?c.tier:"BOSS"):"TOKEN · LANGSUNG"}</span><div class="sd-name">${it.label}</div></span>
+      </div>
+      <p class="sd-desc">${it.it.desc}${c?`<br><b class="sd-skill">${c.passive.name}</b> — ${c.passive.desc}`:""}</p>
+      <div class="sd-meta" style="--ac:${it.ac}">
+        <div class="sd-mrow"><span class="k">HARGA</span><span class="v c">${it.cost} TOKEN RAID</span></div>
+        ${isCard?`<div class="sd-mrow"><span class="k">ROLL</span><span class="v ${unlocked?"g":"no"}">${unlocked?"TERBUKA · PERMANEN":"TERKUNCI — BELUM DIBELI"}</span></div>
+        <div class="sd-mrow"><span class="k">DIMILIKI</span><span class="v g">${cnt?"×"+cnt:"—"}</span></div>`
+        :`<div class="sd-mrow"><span class="k">EFEK</span><span class="v g">+2.000 COIN LANGSUNG</span></div>`}
+        <div class="sd-mrow"><span class="k">SISA TOKEN</span><span class="v c">${tok} / ${it.cost}</span></div>
+      </div>`;
+      renderBuy();
+    };
+    if(immediate||!box.children.length){paint();return;}
+    box.classList.add("out");
+    swapT=setTimeout(paint,140);
+  };
+  app.innerHTML=`<div class="tw-page rd-page">
+  <div class="tw-hub">
+    <section class="tw-stage">
+      <div class="tw-stage-top">
+        <button class="backlink" id="raidShopBack">&#8592; KEMBALI KE RAID</button>
+        <div class="tw-stage-eyebrow">TOKO RAID</div>
+      </div>
+      <div class="slist" id="raidShopList"></div>
+      <div class="tw-stage-hint"><kbd>TOKEN</kbd> DIDAPAT DARI % DAMAGE BOSS</div>
+    </section>
+    <section class="tw-panel">
+      <div>
+        <div class="tw-title">TOKO RAID</div>
+        <div class="tw-sub">BELANJA PAKAI TOKEN RAID &middot; KARTU BOSS BUKA ROLL PERMANEN</div>
+      </div>
+      <div class="tw-stats">
+        <div class="tbs acc"><span>TOKEN RAID</span><b>${fmt(tok)}</b></div>
+        <div class="tbs vio"><span>BOSS UNLOCKED</span><b>${bossCount}/${bossTotal}</b></div>
+      </div>
+      <div class="eyebrow">DETAIL ITEM</div>
+      <div class="sdetail" id="raidShopDetail"></div>
+      <button class="act go buyswap" id="raidShopBuy"></button>
+      <p class="tw-note">Dapat token dari Boss Raid: klaim damage 30% &rarr; <b class="v">+5</b>, 50% &rarr; <b class="v">+10</b>, 100% &rarr; <b class="v">+20</b>. Kartu BOSS sekali beli &rarr; roll terbuka <b class="v">selamanya</b> di semua gacha (roll biasa, menara, INTAN ROLL) — sebelum dibeli roll-nya terkunci.</p>
+    </section>
+  </div></div>`;
+  renderList();renderDetail(true);
+  const rb=document.getElementById("raidShopBack");if(rb)rb.onclick=()=>{try{sfx.hit();}catch(e){}raidView="hub";renderRaid();};
+  const bi=document.getElementById("raidShopBuy");if(bi)bi.onclick=()=>{if(bi.disabled)return;raidShopBuy(ITEMS[window.raidShopSel].k);};
 }
 
 /* =============== INDEX CARD (popup) =============== */
@@ -3649,7 +3759,8 @@ function openIndex(){
     const any=MUTS4.some(m=>ownedC(m,false)||ownedC(m,true));
     const rowSh=sh=>MUTS4.map(mut=>{const on=ownedC(mut,sh);const col=mut==='none'?'#9AA6B2':MUT_COLOR[mut];
       return `<i class="ixpip${on?' on':''}${sh?' shp':''}"${on?` style="background:${col};border-color:${col}"`:''} title="${MUT_LABEL[mut]||'MURNI'}${sh?' SHINY':''}"></i>`;}).join('');
-    return `<button class="ix-cell${any?'':' no-own'}" type="button" data-c="${c.char_id}" style="border-color:${TIER_COLOR[c.tier]||'var(--line2)'}">
+    const lockBoss=!!(c.raidBoss&&!bossRollUnlocked(c.char_id));
+    return `<button class="ix-cell${any?'':' no-own'}${lockBoss?' boss-locked':''}" type="button" data-c="${c.char_id}" data-tier="${c.tier}"${lockBoss?' title="BELUM DIBELI — beli di TOKO RAID untuk buka roll"':''} style="border-color:${TIER_COLOR[c.tier]||'var(--line2)'}">
       <span class="ixc-pips"><span class="ixp-row">${rowSh(false)}</span><span class="ixp-row">${rowSh(true)}</span></span>
       <img src="${c.sprite_asset}" alt="${c.name}">
       <span class="ixc-name">${c.name}</span>
