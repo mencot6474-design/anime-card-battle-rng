@@ -160,6 +160,21 @@ body.on-lobby .weather-panel.show{display:flex;}
    (footer = bottom:14 + tinggi ~64 = 78px,jadi bottom:90 ngasih gap ~12px). Fullscreen tetap pojok.
    Ambang 900px (bukan 820) = footer.left baru clear dari panel.right (~287) di vw>~824; 900 ngasih margin aman. */
 @media(max-width:900px){.weather-panel{bottom:90px;}}
+/* BUFF DOCK (pojok kanan bawah): chip luck/speed potion aktif — icon + efek + timer live.
+   Nongol cuma pas ada buff (.show). Layar sempit dinaikin biar nggak ketimpa footer. */
+.buff-dock{display:none;position:fixed;right:20px;bottom:20px;z-index:99;flex-direction:column;gap:8px;align-items:flex-end;}
+.buff-dock.show{display:flex;}
+@media(max-width:900px){.buff-dock{bottom:90px;}}
+.bd-chip{display:flex;align-items:center;gap:8px;padding:7px 11px 7px 8px;border-radius:999px;background:var(--panel);border:1px solid var(--line2);box-shadow:0 8px 22px rgba(18,28,38,.32);}
+.bd-chip.luck{border-color:#5eead4;}
+.bd-chip.speed{border-color:#fcd34d;}
+.bd-ic{width:26px;height:26px;border-radius:8px;overflow:hidden;display:grid;place-items:center;background:linear-gradient(160deg,#FFFFFF,#EEF2F6);border:1px solid var(--line2);font-size:14px;flex:none;}
+.bd-ic img{width:100%;height:100%;object-fit:cover;}
+.bd-txt{display:flex;flex-direction:column;line-height:1.05;}
+.bd-txt b{font-family:"Barlow Condensed";font-weight:800;font-size:12px;letter-spacing:.04em;color:#20161a;white-space:nowrap;}
+.bd-chip.luck .bd-txt b{color:#0f766e;}
+.bd-chip.speed .bd-txt b{color:#a16207;}
+.bd-txt small{font-family:"Barlow Condensed";font-weight:700;font-size:11px;letter-spacing:.05em;color:var(--ink3,#5b6672);font-variant-numeric:tabular-nums;}
 .wp-head{display:flex;align-items:center;justify-content:space-between;gap:10px;}
 .wp-name{display:flex;align-items:center;gap:6px;font-family:"Barlow Condensed";font-weight:800;font-size:16px;letter-spacing:.04em;color:#20161a;text-transform:uppercase;}
 .wp-name .wp-ic{font-size:15px;}
@@ -278,7 +293,7 @@ body.on-lobby .weather-panel.show{display:flex;}
 .bp-shop{position:relative;display:flex;flex-direction:column;gap:5px;border:1px solid var(--line2);border-radius:14px;background:linear-gradient(160deg,#171012,#0d0a0c);padding:12px 11px 11px;transition:.15s}
 .bp-shop:hover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(0,0,0,.5)}
 .bp-shop.eq{border-color:color-mix(in srgb,var(--ec) 70%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--ec) 40%,transparent),0 0 18px 1px color-mix(in srgb,var(--ec) 25%,transparent)}
-.bp-shop-ic{position:relative;height:70px;display:grid;place-items:center}
+.bp-shop-ic{position:relative;height:78px;display:grid;place-items:center}
 .bp-shop-ic>svg{width:52px;height:52px;color:var(--ec,#7DF9FF);filter:drop-shadow(0 0 8px color-mix(in srgb,var(--ec) 45%,transparent))}
 .bp-shop-ic>img{width:70px;height:70px;object-fit:cover;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.6)}
 .bp-shop-ic .ph{display:none;font-size:34px}
@@ -308,8 +323,8 @@ body.on-lobby .weather-panel.show{display:flex;}
 .bp-petact-none{font-family:"Barlow Condensed";font-weight:700;font-size:13px;letter-spacing:.14em;color:var(--muted2)}
 /* PET melayang di lobby (di samping hub card) */
 .lobby-hub .hub-mid{position:relative}
-.lobby-pet{position:absolute;left:4%;bottom:38px;width:clamp(56px,9vh,92px);z-index:4;pointer-events:none;animation:petBob 3.2s ease-in-out infinite;filter:drop-shadow(0 8px 16px rgba(0,0,0,.55))}
-.lobby-pet img{width:100%;display:block;border-radius:16px;border:1px solid rgba(125,249,255,.35);box-shadow:0 0 20px rgba(125,249,255,.22)}
+.lobby-pet{position:absolute;right:calc(100% - 68px);left:auto;bottom:38px;width:clamp(168px,27vh,276px);z-index:4;pointer-events:none;animation:petBob 3.2s ease-in-out infinite;filter:drop-shadow(0 8px 16px rgba(0,0,0,.55))}
+.lobby-pet img{width:100%;display:block}
 .lobby-pet .lp-eb{display:none;font-size:34px;text-align:center}
 .lobby-pet.noimg img{display:none}
 .lobby-pet.noimg .lp-eb{display:block}
@@ -415,6 +430,41 @@ body.on-lobby .weather-panel.show{display:flex;}
 .item-pop-desc{font-size:12px;line-height:1.5;color:var(--muted);margin:12px 0;text-align:left;}
 .item-pop-ctl{display:flex;flex-direction:column;gap:8px;}
 .item-pop-cancel{font-family:"Barlow Condensed";font-weight:800;font-size:13px;letter-spacing:.08em;padding:9px;border-radius:10px;border:2px solid var(--line2);background:transparent;color:var(--muted);cursor:pointer;transition:.15s;}
+/* ---------- WEATHER ODDS (chance asli + bar pity di popup potion) ---------- */
+.wo-wrap{max-height:42vh;overflow-y:auto;text-align:left;margin:0 0 12px;padding:12px 12px 6px;border:1px solid var(--line);border-radius:14px;background:var(--panel2);box-shadow:inset 0 1px 0 rgba(255,255,255,.8);}
+.wo-h{font-family:"Barlow Condensed";font-weight:800;font-size:14px;letter-spacing:.16em;color:var(--text);text-align:center;margin-bottom:10px;}
+.wo-pity{margin-bottom:9px;}
+.wo-pity-top{display:flex;justify-content:space-between;align-items:baseline;font-family:"Barlow Condensed";font-weight:800;font-size:12px;letter-spacing:.08em;color:var(--muted);}
+.wo-pity-top b{color:#0F766E;font-size:13px;white-space:nowrap;}
+.wo-pity:has(.wo-m) .wo-pity-top b{color:#6D28D9;}
+.wo-bar{height:7px;border-radius:99px;background:rgba(18,26,36,.10);margin-top:5px;overflow:hidden;}
+.wo-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#14B8A6,#0FA3B1);transition:width .3s;}
+.wo-bar.wo-m i{background:linear-gradient(90deg,#7C3AED,#A78BFA);}
+.wo-sec{margin-top:12px;}
+.wo-sec-h{font-family:"Barlow Condensed";font-weight:800;font-size:12px;letter-spacing:.18em;padding:4px 10px;border-radius:8px;margin-bottom:6px;background:rgba(18,26,36,.05);border:1px solid var(--line);}
+.wo-sec-h.awakened{color:#7C3AED;border-color:rgba(124,58,237,.35);background:rgba(124,58,237,.08);}
+.wo-sec-h.arcane{color:#6D28D9;border-color:rgba(109,40,217,.30);background:rgba(109,40,217,.07);}
+.wo-sec-h.rare{color:#E8556A;border-color:rgba(232,85,106,.35);background:rgba(232,85,106,.08);}
+.wo-sec-h.uncommon{color:#0F766E;border-color:rgba(15,118,110,.30);background:rgba(15,118,110,.08);}
+.wo-sec-h.common{color:var(--muted);}
+.wo-row{display:flex;align-items:center;gap:7px;padding:4px 3px;font-size:12px;border-bottom:1px dashed rgba(18,26,36,.12);}
+.wo-row:last-child{border-bottom:none;}
+.wo-ic{font-size:15px;line-height:1;flex:0 0 auto;filter:drop-shadow(0 1px 2px rgba(18,26,36,.25));}
+.wo-nm{flex:1;font-family:"Barlow Condensed";font-weight:800;letter-spacing:.05em;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.wo-pct{color:var(--muted2);font-variant-numeric:tabular-nums;}
+.wo-inv{color:#0F766E;font-family:"Barlow Condensed";font-weight:800;font-variant-numeric:tabular-nums;min-width:66px;text-align:right;}
+/* Toggle jumlah roll gacha: 1x / 5x / 25x / 100x (chip ala bp-fchip, tema lobby) */
+.wo-multi{display:flex;gap:6px;justify-content:center;margin:0 0 10px;}
+.wo-multi button{font-family:"Barlow Condensed";font-weight:800;font-size:13px;letter-spacing:.06em;padding:5px 14px;border-radius:999px;border:1px solid var(--line2);background:var(--panel);color:var(--muted);transition:.13s;cursor:pointer;}
+.wo-multi button:hover{color:var(--text);border-color:var(--text);}
+.wo-multi button.on{background:var(--text);color:var(--panel);border-color:var(--text);box-shadow:0 4px 12px rgba(18,28,38,.28);}
+/* Popup item: kontras nama/count/tombol di panel putih (tema lobby) */
+#itemPop .item-pop-name{color:var(--text);}
+#itemPop .item-pop-cnt{color:#0F766E;}
+#itemPop .bpi-use{border-color:#0F766E;color:#0F766E;}
+#itemPop .bpi-use:not(:disabled):hover{background:#0F766E;color:#fff;}
+#itemPop .bpi-all{border-style:dashed;border-color:#A16207;color:#A16207;}
+#itemPop .bpi-all:not(:disabled):hover{background:#A16207;color:#fff;}
 .item-pop-cancel:hover{color:var(--text);}
 /* Infinite Tower: baris tombol hub + Toko Inf */
 .tw-hubbtns{display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;}
@@ -1911,6 +1961,48 @@ body.on-tower #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
 /* ===== TOKO INF (port dari shop-proto-v1) ===== */
 /* daftar item — kolom kiri */
 .tw-hub .slist{display:flex;flex-direction:column;gap:10px;align-self:stretch;margin:auto 0;padding-top:26px;width:100%}
+/* TOKO (Inf & Raid): hub DIKUNCI 1 layar - tinggi = viewport - topbar - pad main/tw-hub (138),
+   grid 1 baris minmax(0,1fr) biar baris gak memanjang walau konten panjang.
+   Hasil: layar utama toko DIAM, cuma .slist (daftar item) yang scroll di dalam box. */
+.tw-hub.shop-hub{height:calc(100dvh - var(--tbh,64px) - 138px);min-height:0;grid-template-rows:minmax(0,1fr)}
+/* TOKO (Inf & Raid): kolom stage jadi column ketat — area header (tombol KEMBALI + eyebrow)
+   di-reserve padding atas, area hint di-reserve padding bawah, dan .slist scroll SENDIRI
+   di ruang sisa. Item nambah berapa pun gak nabrak header/hint/panel kanan. */
+.tw-hub .shop-stage{flex-direction:column;align-items:stretch;justify-content:flex-start;
+  /* Tinggi ngikut hub yang DIKUNCI 1 layar (lihat .tw-hub.shop-hub di atas) - biar .slist
+     selalu dapat tinggi pasti & scroll SENDIRI; halaman gak ikut memanjang. */
+  height:100%;min-height:0;
+  padding-top:74px;padding-bottom:46px;overflow:hidden}
+/* panel kanan (deskripsi item): kotaknya dipaksa seukuran baris (stretch). overflow-y:auto di sini
+   cuma jaring pengaman kalo konten kepanjangan; yang utama tetap .slist yang scroll. */
+.tw-hub .shop-stage + .tw-panel{height:auto;align-self:stretch;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.tw-hub .shop-stage .slist{flex:1 1 auto;min-height:0;max-height:100%;margin:0;padding-top:0;
+  overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
+/* baris gak boleh melebar keluar list (biar icon/teks gak ke potong) */
+.tw-hub .shop-stage .slist>.srow{width:100%;box-sizing:border-box;max-width:100%}
+.tw-hub .shop-stage .slist>.srow:first-child{margin-top:10px}
+.tw-hub .shop-stage .slist::-webkit-scrollbar{width:8px}
+.tw-hub .shop-stage .slist::-webkit-scrollbar-thumb{background:var(--line2);border-radius:8px}
+.tw-hub .shop-stage .slist::-webkit-scrollbar-track{background:transparent}
+/* .slist itu flex kolom: baris WAJIB flex-shrink:0 biar gak di-press mengecil,
+   konten meluber ke bawah -> .slist yang scroll (bukan halaman). */
+.tw-hub .shop-stage .slist>.srow{flex:0 0 auto}
+/* Layar pendek (laptop): padatkan panel kanan biar deskripsi muat 1 layar tanpa scroll. */
+@media(max-height:900px){
+  .tw-hub.shop-hub .tw-title{font-size:clamp(30px,4.4vh,44px)}
+  .tw-hub.shop-hub .tw-stats{gap:6px}
+  .tw-hub.shop-hub .tw-panel{gap:clamp(8px,1.3vh,14px)}
+  .tw-hub.shop-hub .sdetail{gap:10px}
+  .tw-hub.shop-hub .sd-meta{gap:6px;padding:10px 12px}
+  .tw-hub.shop-hub .tw-note{font-size:11px;line-height:1.45}
+}
+
+/* MOBILE: header masuk flow (hint/eyebrow off) - stage dikasih tinggi, isi list tetap scroll
+   sendiri di dalam; panel kanan flow (overflow:visible) biar halaman yang scroll. */
+@media(max-width:900px){
+  .tw-hub.shop-hub{height:auto;grid-template-rows:auto}
+  .tw-hub .shop-stage{height:min(70vh,600px);min-height:0;padding-top:0;padding-bottom:0}
+}
 .tw-hub .srow{position:relative;display:flex;align-items:center;gap:13px;padding:13px 15px;border-radius:16px;
   border:1px solid var(--line);cursor:pointer;overflow:hidden;
   background:linear-gradient(160deg,#171012 20%,#0f0b0d 80%);
@@ -1919,7 +2011,7 @@ body.on-tower #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
 .tw-hub .srow::after{content:"";position:absolute;left:50%;bottom:8px;width:64%;height:2px;
   background:linear-gradient(90deg,transparent,var(--ac,var(--ice)),transparent);
   transform:translateX(-50%) scaleX(0);transition:transform .35s cubic-bezier(.2,.9,.3,1.1)}
-.tw-hub .srow:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--ac,var(--ice)) 55%,transparent);
+.tw-hub .srow:hover{border-color:color-mix(in srgb,var(--ac,var(--ice)) 55%,transparent);
   box-shadow:0 0 0 1px color-mix(in srgb,var(--ac,var(--ice)) 35%,transparent),0 18px 40px rgba(0,0,0,.7)}
 .tw-hub .srow:hover::after{transform:translateX(-50%) scaleX(1)}
 .tw-hub .srow.on{border-color:var(--ac,var(--ice));
@@ -1929,11 +2021,17 @@ body.on-tower #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
 .tw-hub .sic{width:46px;height:46px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;font-size:24px;
   color:var(--ac,var(--ice));background:radial-gradient(140% 140% at 50% 0%,#1f2733,#0c0f14);
   border:1px solid var(--line2);box-shadow:inset 0 1px 3px rgba(255,255,255,.08),0 8px 20px rgba(0,0,0,.5);transition:all .2s}
-.tw-hub .sic img{width:26px;height:26px;object-fit:contain}
+.tw-hub .sic img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+/* ikon kartu boss: jangan lingkaran (art landscape -> oval) — pakai kartu mini portrait */
+.tw-hub .sic.card,.tw-hub .act .amed.card{border-radius:9px;overflow:hidden}
+.tw-hub .sic.card img,.tw-hub .act .amed.card img{border-radius:9px;object-position:top}
 .tw-hub .srow:hover .sic,.tw-hub .srow.on .sic{border-color:var(--ac,var(--ice));
   box-shadow:0 0 0 4px color-mix(in srgb,var(--ac,var(--ice)) 15%,transparent),0 8px 20px rgba(0,0,0,.6)}
 .tw-hub .sinfo{flex:1;min-width:0}
-.tw-hub .sname{font-family:"Barlow Condensed";font-weight:800;font-size:17px;letter-spacing:.05em;color:#fff;line-height:1.1}
+.tw-hub .sname{font-family:"Barlow Condensed";font-weight:800;font-size:17px;letter-spacing:.05em;color:#fff;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* hindari nabrak sama badge SUDAH DIBELI (absolute di pojok kanan atas) */
+.tw-hub .srow>.sinfo{padding-right:8px}
+.tw-hub .srow:has(.sown)>.scost{margin-right:74px}
 .tw-hub .ssub{margin-top:3px;font-size:11px;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tw-hub .scost{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-family:"Barlow Condensed"}
 .tw-hub .scost b{font-size:19px;font-weight:800;color:var(--ice);line-height:1}
@@ -1952,7 +2050,7 @@ body.on-tower #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
   color:var(--ac,var(--ice));background:radial-gradient(140% 140% at 50% 0%,#1f2733,#0c0f14);
   border:1px solid var(--ac,var(--ice));
   box-shadow:0 0 0 4px color-mix(in srgb,var(--ac,var(--ice)) 12%,transparent),0 0 26px 2px color-mix(in srgb,var(--ac,var(--ice)) 30%,transparent),0 14px 30px rgba(0,0,0,.6)}
-.tw-hub .sbig img{width:48px;height:48px;object-fit:contain}
+.tw-hub .sbig img{width:100%;height:100%;object-fit:cover;border-radius:22px}
 .tw-hub .sd-kicker{font-family:"Barlow Condensed";font-weight:700;font-size:11px;letter-spacing:.24em;color:var(--ac,var(--ice))}
 .tw-hub .sd-name{font-family:"Barlow Condensed";font-weight:800;font-size:clamp(24px,3.4vh,32px);letter-spacing:.04em;color:#fff;line-height:1.05;margin-top:3px}
 .tw-hub .sd-desc{font-size:13px;line-height:1.6;color:var(--muted)}
@@ -1973,7 +2071,7 @@ body.on-tower #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
   padding:9px 16px;border-radius:999px;border:1px solid var(--line2);
   background:linear-gradient(160deg,#171012,#0f0b0d);
   box-shadow:0 8px 20px rgba(0,0,0,.5);transition:color .15s,border-color .15s,transform .15s}
-.tw-hub .backlink:hover{color:var(--ice);border-color:var(--ice);transform:translateY(-2px)}
+.tw-hub .backlink:hover{color:var(--ice);border-color:var(--ice)}
 @media(max-width:520px){.tw-hub .srow{padding:11px 12px;gap:10px}
 .tw-hub .sic{width:40px;height:40px;font-size:20px}
 .tw-hub .sname{font-size:15px}
@@ -2297,7 +2395,7 @@ body.on-tower #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
 .icov{display:inline-grid;place-items:center;line-height:0}
 .icov>svg,.icov>img{grid-area:1/1;width:100%;height:100%}
 .icov>img{object-fit:contain}
-.bp-aslot.filled>.icov{width:34px;height:34px}
-.bp-shop-ic>.icov{width:64px;height:64px}
+.bp-aslot.filled>.icov{width:44px;height:44px}
+.bp-shop-ic>.icov{width:76px;height:76px}
 /* Ikon item Toko Raid di tombol beli (.amed) — patokan ukuran biar PNG gak overflow. */
-.tw-hub .act .amed img{width:36px;height:36px;object-fit:contain}
+.tw-hub .act .amed img{width:40px;height:40px;object-fit:cover;border-radius:50%}

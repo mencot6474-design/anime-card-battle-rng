@@ -26,7 +26,7 @@ function effChance(charId,mut,shiny){const c=CARDS[charId]||{};const ch=c.chance
 // Total luck = (base + flat) × (1 + percent). Base = stat pemain, Flat dari skill tree/artifact/pet, Percent dari artifact/pet.
 /* ===== DATA ARTEFAK & PET =====
    Semua passive LUCK (flat + persen) — kuat buat chance ekstrem (1 in miliaran).
-   Artefak: beli pakai coin, equip maks 2 slot. Pet: beli pakai coin, equip 1. */
+   Artefak: beli pakai coin, equip maks 2 slot — LUCK artefak hanya dihitung dari slot terpasang. Pet: beli pakai coin, equip 1. */
 const ART_DEFS=[
   {id:"manik", name:"MANIK REZEKI",       icon:"manik", color:"#5eead4", price:10000000, flat:5,  pct:0},
   {id:"medal", name:"MEDAL KEBERUNTUNGAN",icon:"medal", color:"#fcd34d", price:20000000, flat:10, pct:10},
@@ -40,23 +40,23 @@ const ART_DEFS=[
   {id:"tameng-surgawi",name:"TAMENG SURGAWI",icon:"tameng-surgawi",color:"#fde68a",src:"coin", price:1000000000,flat:50, pct:200, img:"assets/artifacts/tameng-surgawi.png"}
 ];
 const PET_DEFS=[
-  {id:"doll",        name:"BONEKA TERKUTUK",img:"assets/pets/doll.jpg",        emoji:"🎎",price:10000000, flat:10, pct:0},
-  {id:"otherworldly",name:"MAKHLUK LAIN",   img:"assets/pets/otherworldly.jpg",emoji:"👾",price:20000000, flat:25, pct:0},
-  {id:"titan",       name:"TITAN BUAS",     img:"assets/pets/titan.jpg",       emoji:"🗿",price:35000000, flat:50, pct:0},
-  {id:"dragon",      name:"DRAGON ABADI",   img:"assets/pets/dragon.jpg",      emoji:"🐉",price:50000000, flat:0,  pct:15},
-  {id:"nine-tail",   name:"EKOR SEMBILAN",  img:"assets/pets/nine-tail.jpg",   emoji:"🐺",price:70000000, flat:50, pct:25},
-  {id:"bijuu",       name:"BIJUU",          img:"assets/pets/bijuu.jpg",       emoji:"🦊",price:100000000,flat:100,pct:50},
+  {id:"doll",        name:"BONEKA TERKUTUK",img:"assets/pets/doll.png",        emoji:"🎎",price:10000000, flat:10, pct:0},
+  {id:"otherworldly",name:"MAKHLUK LAIN",   img:"assets/pets/otherworldly.png",emoji:"👾",price:20000000, flat:25, pct:0},
+  {id:"titan",       name:"TITAN BUAS",     img:"assets/pets/titan.png",       emoji:"🗿",price:35000000, flat:50, pct:0},
+  {id:"dragon",      name:"DRAGON ABADI",   img:"assets/pets/dragon.png",      emoji:"🐉",price:50000000, flat:0,  pct:15},
+  {id:"nine-tail",   name:"EKOR SEMBILAN",  img:"assets/pets/nine-tail.png",   emoji:"🐺",price:70000000, flat:50, pct:25},
+  {id:"bijuu",       name:"BIJUU",          img:"assets/pets/bijuu.png",       emoji:"🦊",price:100000000,flat:100,pct:50},
   /* CRAYON V2 — pet BARU (pet lama tidak ditimpa). src sama seperti artefak. */
   {id:"kyubi",       name:"KYUBI FOX",      img:"assets/pets/kyubi.png",      emoji:"🦊",src:"tower",flat:200,pct:300},
   {id:"nebula-wisp", name:"NEBULA WISP",    img:"assets/pets/nebula-wisp.png",emoji:"🌌",src:"raid", raidCost:15000,flat:150,pct:220},
   {id:"next-bot",    name:"NEXT-BOT",       img:"assets/pets/next-bot.png",   emoji:"🤖",src:"coin", price:5000000000,flat:120,pct:150}
 ];
 function luckTxt(d){const a=[];if(d.flat)a.push("+"+d.flat+" FLAT");if(d.pct)a.push("+"+d.pct+"%");return a.join(" & ")+" LUCK";}
-function artLuckFlat(){return state&&Array.isArray(state.artOwned)?state.artOwned.reduce((a,id)=>a+((ART_DEFS.find(x=>x.id===id)||{}).flat||0),0):0;}
-function artLuckPct(){return state&&Array.isArray(state.artOwned)?state.artOwned.reduce((a,id)=>a+((ART_DEFS.find(x=>x.id===id)||{}).pct||0),0):0;}
+function artLuckFlat(){return state&&Array.isArray(state.artSlots)?state.artSlots.reduce((a,id)=>a+((ART_DEFS.find(x=>x.id===id)||{}).flat||0),0):0;}
+function artLuckPct(){return state&&Array.isArray(state.artSlots)?state.artSlots.reduce((a,id)=>a+((ART_DEFS.find(x=>x.id===id)||{}).pct||0),0):0;}
 function petLuckFlat(){const d=state&&state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;return d?(d.flat||0):0;}
 function petLuckPct(){const d=state&&state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;return d?(d.pct||0):0;}
-function totalLuck(){const p=state?.player||{};const base=p.luckBase??p.luck??1;const flat=(p.luckFlat||0)+treeLuckFlat()+activeLuckBuff()+artLuckFlat()+petLuckFlat();const pct=(p.luckPercent||0)+treeLuckPct()+artLuckPct()+petLuckPct();return (base+flat)*(1+pct)*weatherLuckMult();}
+function totalLuck(){const p=state?.player||{};const base=p.luckBase??p.luck??1;const flat=(p.luckFlat||0)+treeLuckFlat()+activeLuckBuff()+artLuckFlat()+petLuckFlat();const pct=(p.luckPercent||0)+treeLuckPct()+activeLuckBuffPct()+artLuckPct()+petLuckPct();return (base+flat)*(1+pct)*weatherLuckMult();}
 // Chance yang ditampilkan ke user = base × statMult (MENTAH, TIDAK dibagi luck) — biar kerasa "wah 1 in 18 juta".
 // Sistem luck TETAP jalan di belakang layar (ngaruh ke bobot roll rngRoll + keliatan di Profil), cuma angkanya saja yang shown raw.
 function luckChance(charId,mut,shiny){return effChance(charId,mut,shiny);}
@@ -259,34 +259,34 @@ const STORY_BIBLE={
     {id:"CH_YOUNG_SPIRIT_VESSEL",name:"YOUNG SPIRIT VESSEL",tier:"R",type:"Shinobi",skill:"SHADOW CLONE DODGE",hp:88,atk:44,chance:1400,art:"assets/cards/art/young-spirit-vessel.jpg",pos:"center",
       fx:{entryCounter:{mult:0,text:"SHADOW CLONE"}},
       desc:"Memanggil bayangan klon - menghindari serangan pertama!"},
-    /* ===== KARTU EKSKLUSIF WEATHER: 2 per cuaca (1 UR + 1 EX) = 8 total.
-       Hanya bisa ke-roll saat weather-nya AKTIF (lihat WEATHERS + activeWeatherId).
-       4 kartu UR baru = PLACEHOLDER struktur — art & passive final diganti
-       sesuai kiriman user (timpa field art/fx/desc/hp/atk/chance di entri ini). ===== */
-    {id:"CH_STORM_HERALD",name:"STORM HERALD",tier:"UR",type:"Tempest",skill:"THUNDERCALL",hp:2100,atk:1050,chance:12000000,art:"assets/cards/art/moon-blade.webp",pos:"center",weatherOnly:"storm",
+    /* ===== KARTU EKSKLUSIF WEATHER — Hanya bisa ke-roll saat weather-nya AKTIF
+       (lihat WEATHERS + activeWeatherId). Saat ini 4 cuaca punya kartu
+       (thunderstorm / aurora / eclipse / awakened); cuaca lain nyusul —
+       tinggal tambah entri baru dgn field weatherOnly:"<id>". ===== */
+    {id:"CH_STORM_HERALD",name:"STORM HERALD",tier:"UR",type:"Tempest",skill:"THUNDERCALL",hp:2100,atk:1050,chance:12000000,art:"assets/cards/art/moon-blade.webp",pos:"center",weatherOnly:"thunderstorm",
       fx:{everySecond:{mult:1.4}},
-      desc:"(Eksklusif cuaca BADAI) Pembawa badai yang sambarannya berlipat tiap giliran genap."},
-    {id:"CH_TEMPEST_TYRANT",name:"TEMPEST TYRANT",tier:"EX",type:"Tempest",skill:"STORM JUDGMENT",hp:2400,atk:1250,chance:20000000,art:"assets/cards/art/awakened-galactic-tyrant.png",pos:"center",weatherOnly:"storm",
+      desc:"(Eksklusif cuaca THUNDERSTORM) Pembawa badai yang sambarannya berlipat tiap giliran genap."},
+    {id:"CH_TEMPEST_TYRANT",name:"TEMPEST TYRANT",tier:"EX",type:"Tempest",skill:"STORM JUDGMENT",hp:2400,atk:1250,chance:20000000,art:"assets/cards/art/awakened-galactic-tyrant.png",pos:"center",weatherOnly:"thunderstorm",
       fx:{barrage:{chance:30,min:2,max:4,mult:1.4}},
-      desc:"(Eksklusif cuaca BADAI) Tyrant badai yang 30% peluang melepas 2-4 sambaran beruntun."},
-    {id:"CH_ASTRAL_SEER",name:"ASTRAL SEER",tier:"UR",type:"Seer",skill:"STARLIGHT READING",hp:1950,atk:980,chance:10000000,art:"assets/cards/art/awakened-promised-child.png",pos:"center",weatherOnly:"celestial",
+      desc:"(Eksklusif cuaca THUNDERSTORM) Tyrant badai yang 30% peluang melepas 2-4 sambaran beruntun."},
+    {id:"CH_ASTRAL_SEER",name:"ASTRAL SEER",tier:"UR",type:"Seer",skill:"STARLIGHT READING",hp:1950,atk:980,chance:10000000,art:"assets/cards/art/awakened-promised-child.png",pos:"center",weatherOnly:"aurora",
       fx:{crit:{chance:25,mult:2}},
-      desc:"(Eksklusif cuaca CELESTIAL) Peramal bintang dengan 25% peluang serangan kritis 2x damage."},
-    {id:"CH_CELESTIAL_ORACLE",name:"CELESTIAL ORACLE",tier:"EX",type:"Seer",skill:"PROPHECY",hp:2280,atk:1140,chance:16000000,art:"assets/cards/art/rikas-blessing.png",pos:"center",weatherOnly:"celestial",
+      desc:"(Eksklusif cuaca AURORA) Peramal bintang dengan 25% peluang serangan kritis 2x damage."},
+    {id:"CH_CELESTIAL_ORACLE",name:"CELESTIAL ORACLE",tier:"EX",type:"Seer",skill:"PROPHECY",hp:2280,atk:1140,chance:16000000,art:"assets/cards/art/rikas-blessing.png",pos:"center",weatherOnly:"aurora",
       fx:{revive:{pct:50}},
-      desc:"(Eksklusif cuaca CELESTIAL) Peramal yang bangkit sekali dengan 50% HP setelah tumbang."},
+      desc:"(Eksklusif cuaca AURORA) Peramal yang bangkit sekali dengan 50% HP setelah tumbang."},
     {id:"CH_UMBRAL_KNIFE",name:"UMBRAL KNIFE",tier:"UR",type:"Voidkeeper",skill:"SHADOW SIPHON",hp:2050,atk:1000,chance:14000000,art:"assets/cards/art/sickle-haze.webp",pos:"center",weatherOnly:"eclipse",
       fx:{lifesteal:20},
       desc:"(Eksklusif cuaca ECLIPSE) Pisau bayangan yang menyerap 20% damage yang diberikan sebagai HP."},
     {id:"CH_ECLIPSE_WARDEN",name:"ECLIPSE WARDEN",tier:"EX",type:"Voidkeeper",skill:"UMBRAL VEIL",hp:2560,atk:1020,chance:24000000,art:"assets/cards/art/king-of-curses.png",pos:"center",weatherOnly:"eclipse",
       fx:{dodgeAtk:{pct:30}},
       desc:"(Eksklusif cuaca ECLIPSE) Penjaga gerhana yang kadang meleset total lalu membalas."},
-    {id:"CH_DOOMCRIER",name:"DOOMCRIER",tier:"UR",type:"Doombringer",skill:"ASHEN WARNING",hp:2300,atk:1150,chance:18000000,art:"assets/cards/art/armored-titan.jpg",pos:"center",weatherOnly:"apocalypse",
+    {id:"CH_DOOMCRIER",name:"DOOMCRIER",tier:"UR",type:"Doombringer",skill:"ASHEN WARNING",hp:2300,atk:1150,chance:18000000,art:"assets/cards/art/armored-titan.jpg",pos:"center",weatherOnly:"awakened",
       fx:{burn:{chance:40,pct:10,turns:2}},
-      desc:"(Eksklusif cuaca APOCALYPSE) Pembawa kabar kehancuran yang 40% peluang membakar musuh 10% max HP selama 2 giliran."},
-    {id:"CH_APOCALYPSE_Herald",name:"APOCALYPSE HERALD",tier:"EX",type:"Doombringer",skill:"END TIMES",hp:2900,atk:1450,chance:36000000,art:"assets/cards/art/destruction-fist.webp",pos:"center",weatherOnly:"apocalypse",
+      desc:"(Eksklusif cuaca AWAKENED) Pembawa kabar kehancuran yang 40% peluang membakar musuh 10% max HP selama 2 giliran."},
+    {id:"CH_APOCALYPSE_Herald",name:"APOCALYPSE HERALD",tier:"EX",type:"Doombringer",skill:"END TIMES",hp:2900,atk:1450,chance:36000000,art:"assets/cards/art/destruction-fist.webp",pos:"center",weatherOnly:"awakened",
       fx:{dmgMult:1.6},
-      desc:"(Eksklusif cuaca APOCALYPSE) Herald akhir zaman dengan damage paling buas di seluruh katalog."},
+      desc:"(Eksklusif cuaca AWAKENED) Herald akhir zaman dengan damage paling buas di seluruh katalog."},
     /* ===== KARTU BOSS — TOKO RAID (tier BOSS, glitch hitam-putih) =====
        raidBoss:true -> terkunci di SEMUA roll sebelum dibeli, permanen sesudahnya (bossRollUnlocked).
        chance dasar 1 in 25 juta (skill: ICE BLAST + immune status effect). ===== */
@@ -301,24 +301,45 @@ const RNG_ROLL_MIN=300;    // ms minimum per roll — speed cap, kartu harus sem
 const RNG_ROLL_MAX_MULT=RNG_ROLL_SPEED/RNG_ROLL_MIN; // ≈ 5×
 const RNG_TOTAL_WEIGHT=1000000; // total weight untuk probability
 
-/* ===== WEATHER SYSTEM (siklus ala ACC) =====
-   Cuaca = state yang JALAN TERUS tanpa potion: siklus alami 30 menit per cuaca
-   (roll weighted by dropWeight, TANPA pity - boleh turun kelas).
-   Weather Potion (drop menara / Toko Inf) = SKIP: reroll cuaca sekarang ke cuaca acak lain,
-   durasi 5 menit, PITY no-downgrade (gak pernah turun kelas dari weatherBest).
-   weatherBest cuma ke-update dari roll POTION, biar pity gak kekunci roll alami.
-   Mythic Weather Potion = sama (pity + 5 menit), tapi APOCALYPSE di-override jadi 3%.
-   Pas aktif: totalLuck x luckBonus, roll speed x speedBonus, pool nambah kartu weatherOnly yang cocok. */
+/* ===== WEATHER SYSTEM (15 cuaca, ikut tier RARE / UNCOMMON / COMMON) =====
+   dropWeight = bobot per 10.000 roll (total 10.000). Semua chance yang tampil
+   di panel WEATHER ODDS dihitung langsung dari bobot ini (pct = w/100,
+   "1 in X" = 10000/w).
+   Cuaca alami: siklus 30 menit, weighted penuh, TANPA pity (boleh turun kelas).
+   Weather Potion = GACHA: roll weighted penuh. Hasil sama/lebih bagus (dropWeight
+   <= cuaca aktif) -> pindah + timer reset 5 menit; lebih jelek -> cuaca TETEP
+   (potion tetep kepotong). PITY berlaku di roll POTION aja:
+   100 roll potion tanpa RARE -> dijamin kelas RARE (GOOFY..ECLIPSE),
+   250 tanpa AWAKENED -> dijamin AWAKENED (counter `state.wpity`,
+   bareng Mythic Potion). ARCANE gak reset counter apa pun.
+   Mythic Weather Potion = sama, tapi AWAKENED di-override jadi 3%.
+   weatherBest = stat "cuaca terbaik pernah" (display), ke-update dari SEMUA roll.
+   Pas aktif: totalLuck x luckBonus, roll speed x speedBonus, pool nambah kartu
+   weatherOnly yang cocok. */
 const WEATHER_MS=300000; // 5 menit (durasi window potion)
 const WEATHER_ROTATE_MS=1800000; // 30 menit (siklus alami tiap cuaca)
 const WEATHERS=[
-  {id:"storm",      name:"BADAI",      icon:"⛈",  dropWeight:30, luckBonus:1.2, speedBonus:1.5, color:"#7dd3fc"},
-  {id:"celestial",  name:"CELESTIAL",  icon:"✨",  dropWeight:20, luckBonus:2.0, speedBonus:2.0, color:"#fcd34d"},
-  {id:"eclipse",    name:"ECLIPSE",    icon:"🌑",  dropWeight:5,  luckBonus:4.0, speedBonus:3.0, color:"#c4b5fd"},
-  {id:"apocalypse", name:"APOCALYPSE", icon:"☄", dropWeight:1,  luckBonus:8.0, speedBonus:5.0, color:"#f87171"},
+  /* RARE (paling langka -> paling kuat) */
+  {id:"awakened",   name:"AWAKENED",   icon:"👁",  dropWeight:1,   rar:"AWAKENED", luckBonus:15.0, speedBonus:8.0, color:"#c084fc"},
+  {id:"arcane",     name:"ARCANE",     icon:"🔮",  dropWeight:5,   rar:"ARCANE",   luckBonus:10.0, speedBonus:6.0, color:"#a78bfa"},
+  {id:"goofy",      name:"GOOFY",      icon:"🤪",  dropWeight:15,  rar:"RARE",     luckBonus:7.0,  speedBonus:4.5, color:"#fde047"},
+  {id:"glitch",     name:"GLITCH",     icon:"📺",  dropWeight:20,  rar:"RARE",     luckBonus:6.0,  speedBonus:4.0, color:"#f87171"},
+  {id:"doodle",     name:"DOODLE",     icon:"🎨",  dropWeight:25,  rar:"RARE",     luckBonus:5.0,  speedBonus:3.5, color:"#f1f5f9"},
+  {id:"eclipse",    name:"ECLIPSE",    icon:"🌑",  dropWeight:40,  rar:"RARE",     luckBonus:4.0,  speedBonus:3.0, color:"#c4b5fd"},
+  /* UNCOMMON */
+  {id:"iceage",     name:"ICE AGE",    icon:"🧊",  dropWeight:67,  rar:"UNCOMMON", luckBonus:3.5,  speedBonus:3.0, color:"#67e8f9"},
+  {id:"galactic",   name:"GALACTIC",   icon:"🪐",  dropWeight:100, rar:"UNCOMMON", luckBonus:3.0,  speedBonus:2.5, color:"#fb923c"},
+  {id:"aurora",     name:"AURORA",     icon:"🌌",  dropWeight:143, rar:"UNCOMMON", luckBonus:2.5,  speedBonus:2.0, color:"#5eead4"},
+  {id:"monsoon",    name:"MONSOON",    icon:"🌊",  dropWeight:333, rar:"UNCOMMON", luckBonus:2.0,  speedBonus:1.8, color:"#60a5fa"},
+  /* COMMON */
+  {id:"sandstorm",  name:"SANDSTORM",  icon:"🌪",  dropWeight:1000,rar:"COMMON",   luckBonus:1.3,  speedBonus:1.4, color:"#fbbf24"},
+  {id:"thunderstorm",name:"THUNDERSTORM",icon:"⛈", dropWeight:1000,rar:"COMMON",   luckBonus:1.4,  speedBonus:1.5, color:"#fde047"},
+  {id:"snowfall",   name:"SNOWFALL",   icon:"❄",  dropWeight:1400,rar:"COMMON",   luckBonus:1.25, speedBonus:1.3, color:"#bae6fd"},
+  {id:"lightrain",  name:"LIGHT RAIN", icon:"🌦",  dropWeight:2340,rar:"COMMON",   luckBonus:1.2,  speedBonus:1.2, color:"#7dd3fc"},
+  {id:"windy",      name:"WINDY",      icon:"🍃",  dropWeight:3511,rar:"COMMON",   luckBonus:1.1,  speedBonus:1.1, color:"#86efac"},
 ];
 const WEATHER=Object.fromEntries(WEATHERS.map(w=>[w.id,w]));
-/* Rank 0..N berdasar dropWeight ASC (paling langka = rank 0 = paling BAGUS). Pity pakai floorRank: hanya weather dengan rank <= floorRank yang bisa ke-roll. */
+/* Rank 0..N berdasar dropWeight ASC (paling langka = rank 0 = paling BAGUS). Dipakai buat stat weatherBest (cuaca terbaik pernah) + banding hasil gacha potion (rank hasil <= rank aktif = pindah + reset timer; lebih = cuaca tetep). */
 function weatherRank(id){const s=[...WEATHERS].sort((a,b)=>a.dropWeight-b.dropWeight);return s.findIndex(w=>w.id===id);}
 function betterWeather(a,b){if(!a)return b;if(!b)return a;return weatherRank(a)<=weatherRank(b)?a:b;}
 /* Weather yang SEKARANG aktif (null kalau belum/gampang window 5 menit udah lewat). Auto-clear saat kedaluwarsa. */
@@ -362,67 +383,155 @@ function weatherPick(ws){
   for(let i=0;i<ws.length;i++){r-=ws[i].dropWeight;if(r<=0){pick=ws[i];break;}}
   return pick;
 }
-/* Roll 1 weather.
-   opts.pity=true     -> hanya weather selevel/LEBIH BAGUS dari weatherBest (untuk potion).
-   opts.boostApo=true -> APOCALYPSE di-override jadi 3% flat (untuk mythic). */
+/* Roll 1 weather: weighted penuh ikut dropWeight asli (boleh turun kelas).
+   opts.boostAwakened=true -> AWAKENED di-override jadi 3% flat (untuk mythic). */
 function rollWeather(opts){
   opts=opts||{};
   let eligible=WEATHERS;
-  if(opts.pity&&state.weatherBest){const fr=weatherRank(state.weatherBest);eligible=WEATHERS.filter(w=>weatherRank(w.id)<=fr);}
-  if(opts.boostApo&&eligible.some(w=>w.id==="apocalypse")){
-    if(Math.random()<0.03)return WEATHER.apocalypse;
-    const rest=eligible.filter(w=>w.id!=="apocalypse");
+  if(opts.boostAwakened&&eligible.some(w=>w.id==="awakened")){
+    if(Math.random()<0.03)return WEATHER.awakened;
+    const rest=eligible.filter(w=>w.id!=="awakened");
     if(rest.length)eligible=rest;
   }
   return weatherPick(eligible);
 }
-/* Skip cuaca: reroll SEKARANG (pity no-downgrade), durasi 5 menit. */
+/* Gacha potion: roll full weighted. Hasil sama/lebih bagus (dropWeight <=
+   cuaca aktif; tie berat = setara -> pindah) -> pindah + timer reset 5 menit.
+   Hasil lebih jelek -> cuaca tetep, timer gak disentuh (potion tetep kepotong;
+   return kept:true). */
+function applyPotionRoll(w){
+  const cur=activeWeatherId();
+  if(cur&&w.dropWeight>WEATHER[cur].dropWeight)return {kept:true,weather:WEATHER[cur]};
+  state.weatherBest=betterWeather(state.weatherBest,w.id);
+  state.weather={id:w.id,endsAt:Date.now()+WEATHER_MS};
+  return {kept:false,weather:w};
+}
+/* ===== PITY POTION — counter pemakaian Weather + Mythic Potion (ke-save).
+   p.r >= PITY_RARE   -> roll potion berikutnya DIJAMIN kelas RARE.
+   p.m >= PITY_MYTHIC -> roll potion berikutnya DIJAMIN AWAKENED.
+   Reset: hasil RARE set r=0, hasil AWAKENED set m=0. Siklus alami 30 menit
+   gak ngitung counter ini (pity = fitur gacha potion doang). ===== */
+const PITY_RARE=100, PITY_MYTHIC=250;
+function potionWeatherRoll(opts){
+  opts=opts||{};
+  if(!state.wpity||typeof state.wpity.r!=="number"||typeof state.wpity.m!=="number")state.wpity={r:0,m:0};
+  const p=state.wpity;
+  let w;
+  if(p.m>=PITY_MYTHIC)w=WEATHER.awakened;
+  else if(p.r>=PITY_RARE)w=weatherPick(WEATHERS.filter(x=>x.rar==="RARE"));
+  else w=rollWeather(opts);
+  p.r++;p.m++;
+  if(w.rar==="RARE")p.r=0;
+  if(w.id==="awakened")p.m=0;
+  return w;
+}
 function useWeatherPotion(){
   if(!state||!state.potions||state.potions<1)return {ok:false,reason:"NO_POTION"};
   state.potions--;
-  const w=rollWeather({pity:true});
-  state.weatherBest=betterWeather(state.weatherBest,w.id);
-  state.weather={id:w.id,endsAt:Date.now()+WEATHER_MS};
+  const r=applyPotionRoll(potionWeatherRoll());
   save();
-  return {ok:true,weather:w};
+  return {ok:true,kept:r.kept,weather:r.weather};
 }
-/* Mythic Weather Potion: sama (pity + 5 menit) tapi APOCALYPSE chance 3%. */
+/* Mythic Weather Potion: aturan gacha sama, tapi AWAKENED chance 3%. */
 function useMythicWeatherPotion(){
   if(!state||(state.mythicPotions||0)<1)return {ok:false,reason:"NO_POTION"};
   state.mythicPotions--;
-  const w=rollWeather({pity:true,boostApo:true});
-  state.weatherBest=betterWeather(state.weatherBest,w.id);
-  state.weather={id:w.id,endsAt:Date.now()+WEATHER_MS};
+  const r=applyPotionRoll(potionWeatherRoll({boostAwakened:true}));
   save();
-  return {ok:true,weather:w};
+  return {ok:true,kept:r.kept,weather:r.weather};
 }
 const WEATHER_POTION_PRICE=5000;
-/* ====== POTION LUCK & SPEED (drop dari Infinite Tower). Buff sementara 5 menit, konsisten dgn Weather Potion.
-   Pakai -> +1 luck flat / +1x speed selama window; pakai lagi saat masih aktif = nambah stack + refresh durasi. ====== */
+/* ====== POTION LUCK & SPEED (L1-L3 · Toko Inf + Toko Raid). Buff sementara 5 menit per pot.
+   PER-LEVEL: state.luckBuffs/state.speedBuffs = array entry [{lv,flat/pct/add,endsAt}] — satu entry
+   per level, GAK digabung. Stack se-level: efek diJUMLAHKAN + durasi NABUH +5 menit per pot;
+   beda level jalan timer-nya masing-masing. Baca via luckBuffs()/speedBuffs(). ====== */
 const POTION_BUFF_MS=5*60*1000;
-function activeLuckBuff(){if(!state||!state.luckBuff)return 0;if(Date.now()>=state.luckBuff.endsAt){state.luckBuff=null;return 0;}return state.luckBuff.flat||0;}
-function activeSpeedBuff(){if(!state||!state.speedBuff)return 0;if(Date.now()>=state.speedBuff.endsAt){state.speedBuff=null;return 0;}return state.speedBuff.mult||0;}
-function useLuckPotion(){if(!state||(state.luckPotions||0)<1)return{ok:false,reason:"NO_POTION"};state.luckPotions--;const now=Date.now();const cur=activeLuckBuff();const base=(state.luckBuff&&state.luckBuff.endsAt>now)?state.luckBuff.endsAt:now;state.luckBuff={flat:cur+1,endsAt:base+POTION_BUFF_MS};save();return{ok:true,flat:state.luckBuff.flat};}
-function useSpeedPotion(){if(!state||(state.speedPotions||0)<1)return{ok:false,reason:"NO_POTION"};state.speedPotions--;const now=Date.now();const cur=activeSpeedBuff();const base=(state.speedBuff&&state.speedBuff.endsAt>now)?state.speedBuff.endsAt:now;state.speedBuff={mult:cur+1,endsAt:base+POTION_BUFF_MS};save();return{ok:true,mult:state.speedBuff.mult};}
+const LUCK_POTS=[null,{flat:3,pct:0},{flat:5,pct:0.10},{flat:10,pct:0.20}];
+const SPEED_POTS=[null,{add:0.2},{add:0.5},{add:1.0}];
+function activeLuckBuff(){return luckBuffs().reduce((s,b)=>s+(b.flat||0),0);}
+function activeLuckBuffPct(){return luckBuffs().reduce((s,b)=>s+(b.pct||0),0);}
+function activeSpeedBuff(){return speedBuffs().reduce((s,b)=>s+(b.add||0),0);}
+function luckBuffs(){if(!state||!Array.isArray(state.luckBuffs))return[];const now=Date.now();state.luckBuffs=state.luckBuffs.filter(b=>b&&b.endsAt>now);return state.luckBuffs;}
+function speedBuffs(){if(!state||!Array.isArray(state.speedBuffs))return[];const now=Date.now();state.speedBuffs=state.speedBuffs.filter(b=>b&&b.endsAt>now);return state.speedBuffs;}
+function useLuckPotion(lv,n){
+  lv=Math.max(1,Math.min(3,lv|0));n=Math.max(1,n|0);
+  const def=LUCK_POTS[lv];
+  if(!state||!def||(state.luckPots[lv-1]||0)<n)return{ok:false,reason:"NO_POTION"};
+  state.luckPots[lv-1]-=n;
+  const now=Date.now();
+  if(!Array.isArray(state.luckBuffs))state.luckBuffs=[];
+  let e=state.luckBuffs.find(x=>x.lv===lv);
+  if(!e){e={lv:lv,flat:0,pct:0,endsAt:now};state.luckBuffs.push(e);}
+  else if(e.endsAt<=now){e.flat=0;e.pct=0;e.endsAt=now;}
+  e.flat=(e.flat||0)+def.flat*n;
+  e.pct=(e.pct||0)+def.pct*n;
+  e.endsAt+=POTION_BUFF_MS*n;
+  save();
+  return{ok:true,flat:e.flat,pct:e.pct,ms:POTION_BUFF_MS*n};
+}
+function useSpeedPotion(lv,n){
+  lv=Math.max(1,Math.min(3,lv|0));n=Math.max(1,n|0);
+  const def=SPEED_POTS[lv];
+  if(!state||!def||(state.speedPots[lv-1]||0)<n)return{ok:false,reason:"NO_POTION"};
+  state.speedPots[lv-1]-=n;
+  const now=Date.now();
+  if(!Array.isArray(state.speedBuffs))state.speedBuffs=[];
+  let e=state.speedBuffs.find(x=>x.lv===lv);
+  if(!e){e={lv:lv,add:0,endsAt:now};state.speedBuffs.push(e);}
+  else if(e.endsAt<=now){e.add=0;e.endsAt=now;}
+  e.add=(e.add||0)+def.add*n;
+  e.endsAt+=POTION_BUFF_MS*n;
+  save();
+  return{ok:true,add:e.add,ms:POTION_BUFF_MS*n};
+}
 /* Panel weather GABUNGAN (pojok kiri bawah): nama + "Ends in Xs" di atas, baris kartu
    weatherOnly (gaya index, hover reveal penuh) di tengah, buff luck/rollspeed di bawah.
    Nongol cuma pas weather aktif. Dipanggil tiap renderShell & tick detik. */
 function renderWeatherDock(){
   const panel=document.getElementById("weatherPanel");if(!panel)return;
   const id=activeWeatherId();const w=id?WEATHER[id]:null;
-  /* Panel cuma tampilkan kartu weatherOnly milik cuaca yang LAGI AKTIF (2 kartu: UR + EX). */
+  /* Kartu weatherOnly milik cuaca yang LAGI AKTIF — cuaca tanpa kartu tetep
+     tampil (nama + timer + buff), baris kartu dikosongkan. */
   const cards=MASTER_CARD_INDEX.filter(c=>c.weatherOnly===id);
-  if(!w||!cards.length){panel.classList.remove("show");panel.innerHTML="";return;}
+  if(!w){panel.classList.remove("show");panel.innerHTML="";return;}
   panel.style.setProperty("--wc",w.color);
   panel.innerHTML=`<div class="wp-head"><span class="wp-name"><span class="wp-ic">${w.icon}</span>${w.name}</span><span class="wp-timer">Ends in ${fmtCountdown(state.weather.endsAt-Date.now())}</span></div>`
-    +`<div class="wp-cards">`+cards.map(c=>
+    +(cards.length?`<div class="wp-cards">`+cards.map(c=>
       `<div class="wc-slot active" data-wc="${c.char_id}" style="--wc:${w.color}">
         <span class="idx-art"><img src="${c.sprite_asset}" alt=""></span>
         <span class="idx-body"><span class="wc-chance">${rarityText(c.tier,luckChance(c.char_id))}</span></span>
-      </div>`).join("")+`</div>`
+      </div>`).join("")+`</div>`:"")
     +`<div class="wp-buff">${w.luckBonus}x Luck · ${w.speedBonus}x Rollspeed</div>`;
   panel.classList.add("show");
   wcHoverBind();
+}
+/* ====== BUFF DOCK (pojok kanan bawah): luck & speed potion AKTIF — SATU CHIP PER LEVEL
+   (L1/L2/L3 gak digabung), icon sesuai level + efek level itu + timer live masing-masing.
+   Nongol cuma pas ada buff; dipanggil tiap renderShell & tick detik. ====== */
+function renderBuffDock(){
+  const el=document.getElementById("buffDock");if(!el)return;
+  const now=Date.now();
+  const ls=luckBuffs().slice().sort((a,b)=>a.lv-b.lv);
+  const ss=speedBuffs().slice().sort((a,b)=>a.lv-b.lv);
+  if(!ls.length&&!ss.length){el.classList.remove("show");el.innerHTML="";return;}
+  const chip=(cls,src,emoji,label,ms)=>`<div class="bd-chip ${cls}">
+      <span class="bd-ic"><img src="${src}" alt="" onerror="this.parentNode.textContent='${emoji}'"></span>
+      <span class="bd-txt"><b>${label}</b><small>${fmtCountdown(ms)}</small></span>
+    </div>`;
+  let html="";
+  ls.forEach(b=>{
+    const lTxt=b.lv>0?"L"+b.lv+" ":"";
+    const p=b.pct||0;
+    html+=chip("luck","assets/images/pot-luck-"+b.lv+".png","🍀",
+      `LUCK ${lTxt}+${b.flat||0}${p>0?` · +${Math.round(p*100)}%`:""}`,b.endsAt-now);
+  });
+  ss.forEach(b=>{
+    const lTxt=b.lv>0?"L"+b.lv+" ":"";
+    html+=chip("speed","assets/images/pot-speed-"+b.lv+".png","⚡",
+      `SPEED ${lTxt}+${(b.add||0).toFixed(1)}×`,b.endsAt-now);
+  });
+  el.innerHTML=html;
+  el.classList.add("show");
 }
 function toast(main,sub,color){
   const t=document.getElementById("weatherToast");if(!t)return;
@@ -436,11 +545,13 @@ let weatherTickStarted=false;
 function startWeatherTick(){
   if(weatherTickStarted)return;weatherTickStarted=true;
   /* ensureWeather: window habis / save lama tanpa weather -> roll cuaca ALAMI berikutnya
-     (weighted, tanpa pity), 30 menit. silent=true buat seeding pas boot (tanpa toast). */
+     (weighted, tanpa pity - bebas turun kelas), 30 menit. weatherBest tetep ke-update
+     biar stat "cuaca terbaik pernah" akurat. silent=true buat seeding pas boot (tanpa toast). */
   const ensureWeather=silent=>{
     if(!state)return null;
     if(state.weather&&Date.now()<state.weather.endsAt)return null;
     const w=rollWeather();
+    state.weatherBest=betterWeather(state.weatherBest,w.id);
     state.weather={id:w.id,endsAt:Date.now()+WEATHER_ROTATE_MS};
     save();
     if(!silent){toast(`${w.icon} ${w.name}`,"CUACA BERUBAH · 30 MENIT",w.color);beep(520,.14,"sine",.06);setTimeout(()=>beep(700,.16,"sine",.06),130);}
@@ -453,7 +564,7 @@ function startWeatherTick(){
     if(!state)return;
     const hadActive=!!state.weather&&Date.now()<state.weather.endsAt;
     const changed=ensureWeather(false);   /* auto-rotate: habis -> roll baru + toast */
-    renderWeatherDock();
+    renderWeatherDock();renderBuffDock();
     if(changed||(!hadActive&&state.weather))renderShell(); /* refresh chip/speed pas cuaca ganti */
     /* live refresh modal profil pas terbuka (countdown cuaca/potion) */
     try{const pm=document.getElementById("profModal");if(pm&&pm.style.display==="flex")renderProfile();}catch(e){}
@@ -471,8 +582,11 @@ const RNG_DROP_RATES=[
 ];
 
 // Main RNG roll function. luckMultiplier = totalLuck() = (base+flat)*(1+percent).
-// Weight = 1/ch^(1/L): pangkat mengecil saat luck naik -> distribusi MERATA ke arah kartu langka (luck MEMBANTU).
-// Di L=1 tetap = 1/ch (awal main susah, sesuai desain). Luck ribuan -> langka makin attainable, tanpa overflow.
+// SISTEM ASLI: bobot per varian = 1 / max(statMult, ch/L) — peluang beneran "1 in (chance dibagi luck)".
+// Luck = pengali chance LINEAR: kartu "1 in 40.000.000" dengan luck 1000 → efektif ≈ 1 in 40.000.
+// Floor = statMult (mut×shiny): L cuma nge-skala kartu DASAR; mutasi/shiny tetap pembagi kelangkaan
+//   relatif presisi (gold = 5x lebih langka dari base-nya) di luck berapa pun — gak pernah ke-flatten.
+// Di L=1 bobot = 1/max(statMult, ch) (mutasi awal susah, identik desain lama). ch/L<statMult → bobot penuh.
 // Display "1 in X" memakai base MENTAH (ch, tanpa pembagian luck) lewat luckChance() — biar kesan rarity-nya "wah".
 function rngRoll(luckMultiplier=1,speedMultiplier=1){
   const L=(typeof luckMultiplier==="number"&&luckMultiplier>0)?luckMultiplier:1;
@@ -486,12 +600,12 @@ function rngRoll(luckMultiplier=1,speedMultiplier=1){
     for(const shiny of [false,true]){
       for(const mut of MUTS){
         const statMult=(shiny?SHINY_MULT:1)*(MUT_MULT[mut]||1);
-        entries.push({card:c,mut,shiny,ch:base*statMult});
+        entries.push({card:c,mut,shiny,ch:base*statMult,m:statMult});
       }
     }
   }
   let total=0;
-  const weights=entries.map(e=>{const w=1/Math.pow(e.ch,1/L);total+=w;return w;});
+  const weights=entries.map(e=>{const w=1/Math.max(e.m,e.ch/L);total+=w;return w;});
   let r=Math.random()*total, idx=entries.length-1;
   for(let i=0;i<entries.length;i++){r-=weights[i];if(r<=0){idx=i;break;}}
   const pick=entries[idx];
@@ -582,8 +696,9 @@ function instantRollFast(n){
   for(const c of pool){
     const base=c.chance||chanceOf(c.tier);
     for(const shiny of [false,true])for(const mut of MUTS){
-      const ch=base*(shiny?SHINY_MULT:1)*(MUT_MULT[mut]||1);
-      total+=1/Math.pow(ch,1/L);
+      const statMult=(shiny?SHINY_MULT:1)*(MUT_MULT[mut]||1);
+      const ch=base*statMult;
+      total+=1/Math.max(statMult,ch/L);
       entries.push({card:c,mut:mut,shiny:shiny,ch:ch});
       cum.push(total);
     }
@@ -772,15 +887,15 @@ function renderProfile(){
   const tile=(lab,val,sub,tcls,vcls)=>`<div class="prof-tile${tcls?" "+tcls:""}"><span class="prof-tl">${lab}</span><span class="prof-tv${vcls?" "+vcls:""}">${val}</span>${sub?`<span class="prof-ts">${sub}</span>`:""}</div>`;
   const sec=(t,grid)=>`<section class="prof-sec"><h3 class="prof-sec-t">${t}</h3><div class="prof-grid">${grid}</div></section>`;
   /* ===== GACHA: luck lengkap, speed, battle speed, power, summon ===== */
-  const base=p.luckBase??1, flat=p.luckFlat||0, treeF=treeLuckFlat(), artF=artLuckFlat(), artP=artLuckPct(), petF=petLuckFlat(), petP=petLuckPct(), plB=activeLuckBuff();
-  const pct=(p.luckPercent||0)+treeLuckPct()+artP+petP;
+  const base=p.luckBase??1, flat=p.luckFlat||0, treeF=treeLuckFlat(), artF=artLuckFlat(), artP=artLuckPct(), petF=petLuckFlat(), petP=petLuckPct(), plB=activeLuckBuff(), plBP=activeLuckBuffPct();
+  const pct=(p.luckPercent||0)+treeLuckPct()+plBP+artP+petP;
   const wm=weatherLuckMult();
   const lparts=["Base "+base.toFixed(1)];
   if(flat>0)lparts.push("Player +"+flat.toFixed(1));
   if(treeF>0)lparts.push("Pohon +"+treeF.toFixed(1));
   if(artF>0||artP>0)lparts.push("Artefak +"+artF.toFixed(1)+(artP>0?" / +"+Math.round(artP*100)+"%":""));
   if(petF>0||petP>0)lparts.push("Pet +"+petF.toFixed(1)+(petP>0?" / +"+Math.round(petP*100)+"%":""));
-  if(plB>0)lparts.push("Buff +"+plB.toFixed(1));
+  if(plB>0||plBP>0)lparts.push("Buff +"+plB.toFixed(1)+(plBP>0?" / +"+Math.round(plBP*100)+"%":""));
   if(pct>0)lparts.push("Pct +"+Math.round(pct*100)+"%");
   if(wm>1)lparts.push("Cuaca ×"+wm.toFixed(1));
   const spm=playerSpeedMult(), swm=weatherSpeedMult();
@@ -840,18 +955,24 @@ function renderProfile(){
   /* ===== ITEM & BUFF: token, potion, cuaca & buff aktif (countdown live) ===== */
   const wAct=(state.weather&&Date.now()<state.weather.endsAt)?WEATHER[state.weather.id]:null;
   const wSub=wAct?`sisa ${fmtCountdown(state.weather.endsAt-Date.now())} · Luck ×${wAct.luckBonus} · Speed ×${wAct.speedBonus}`:"siklus alami 30 menit";
-  const lb=plB, sb=activeSpeedBuff();
+  const lb=plB, lbp=activeLuckBuffPct(), sb=activeSpeedBuff();
+  /* buff breakdown PER LEVEL (L1/L2/L3 terpisah — gak digabung) */
   const bparts=[];
-  if(lb>0&&state.luckBuff&&state.luckBuff.endsAt>Date.now())bparts.push(`Luck +${lb} · sisa ${fmtCountdown(state.luckBuff.endsAt-Date.now())}`);
-  if(sb>0&&state.speedBuff&&state.speedBuff.endsAt>Date.now())bparts.push(`Speed +${sb} · sisa ${fmtCountdown(state.speedBuff.endsAt-Date.now())}`);
+  luckBuffs().slice().sort((a,b)=>a.lv-b.lv).forEach(b=>{
+    const p=b.pct||0;
+    bparts.push(`Luck ${b.lv>0?"L"+b.lv+" ":""}+${b.flat||0}${p>0?' / +'+Math.round(p*100)+'%':''} · sisa ${fmtCountdown(b.endsAt-Date.now())}`);
+  });
+  speedBuffs().slice().sort((a,b)=>a.lv-b.lv).forEach(b=>{
+    bparts.push(`Speed ${b.lv>0?"L"+b.lv+" ":""}+${(b.add||0).toFixed(1)}× · sisa ${fmtCountdown(b.endsAt-Date.now())}`);
+  });
   const item=
     tile("COIN",fmt(state.coins||0),"")
     +tile("TOKEN RAID",fmt(state.raidTokens||0),"dari Boss Raid")
     +tile("TOKEN INF",fmt(state.infTokens||0),"mata Infinite Tower")
     +tile("WEATHER POTION",`×${state.potions||0}`,"skip cuaca 5 menit")
-    +tile("MYTHIC POTION",`×${state.mythicPotions||0}`,"reroll pity + APOCALYPSE 3%")
-    +tile("LUCK POTION",`×${state.luckPotions||0}`,"buff luck sementara")
-    +tile("SPEED POTION",`×${state.speedPotions||0}`,"buff speed sementara")
+    +tile("MYTHIC POTION",`×${state.mythicPotions||0}`,"reroll + APOCALYPSE 3%")
+    +tile("LUCK POTION",`L1 ×${fmt((state.luckPots||[])[0]||0)} · L2 ×${fmt((state.luckPots||[])[1]||0)} · L3 ×${fmt((state.luckPots||[])[2]||0)}`,"buff luck sementara")
+    +tile("SPEED POTION",`L1 ×${fmt((state.speedPots||[])[0]||0)} · L2 ×${fmt((state.speedPots||[])[1]||0)} · L3 ×${fmt((state.speedPots||[])[2]||0)}`,"buff speed sementara")
     +tile("CUACA AKTIF",wAct?`${wAct.icon} ${wAct.name}`:"TIDAK AKTIF",wSub,"wide")
     +tile("BUFF AKTIF",(lb>0||sb>0)?"AKTIF":"TIDAK AKTIF",bparts.length?bparts.join(" · "):"pakai potion untuk buff sementara","wide");
   body.innerHTML=
@@ -1002,16 +1123,16 @@ function renderBackpackPanel(){
 /* Tab ITEM di backpack: tile icon ringkas; klik -> popup konfirmasi PAKAI. Item: Weather / Luck / Speed Potion. */
 function bpItemDef(kind){
   if(kind==='potion'){const aw=activeWeatherId();return{kind,name:'WEATHER POTION',icon:'assets/images/icon-potion.png',emoji:'🧪',cnt:state.potions||0,
-    desc:'SKIP cuaca sekarang: roll cuaca acak lain, bertahan 5 menit. Nggak pernah lebih jelek dari cuaca terbaikmu'+(state.weatherBest?' ('+WEATHER[state.weatherBest].name+')':'')+'. Cuaca juga jalan otomatis tiap 30 menit tanpa potion.',
+    desc:'Gacha cuaca · chance asli + pity. Hasil sama/lebih bagus = pindah + timer reset 5 menit; lebih jelek = cuaca tetep.',
     active:aw?`<br><strong style="color:${WEATHER[aw].color}">Aktif: ${WEATHER[aw].icon} ${WEATHER[aw].name}</strong>`:'',use:'bpUsePotion()'};}
-  if(kind==='luck'){const b=activeLuckBuff();return{kind,name:'LUCK POTION',icon:'assets/images/icon-luck.png',emoji:'🍀',cnt:state.luckPotions||0,
-    desc:'+1 Luck selama 5 menit. Pakai lagi saat masih aktif = nambah stack + refresh durasi.',
-    active:b?`<br><strong style="color:#5eead4">Aktif: +${b} LUCK</strong>`:'',use:'bpUseLuckPotion()'};}
-  if(kind==='speed'){const b=activeSpeedBuff();return{kind,name:'SPEED POTION',icon:'assets/images/icon-speed.png',emoji:'⚡',cnt:state.speedPotions||0,
-    desc:'+1× Roll Speed selama 5 menit (kena cap 5×). Pakai lagi saat masih aktif = nambah stack + refresh durasi.',
-    active:b?`<br><strong style="color:#fcd34d">Aktif: +${b}× SPEED</strong>`:'',use:'bpUseSpeedPotion()'};}
+  if(kind.startsWith('luck')){const lv=+kind[4],d=LUCK_POTS[lv],b=activeLuckBuff(),bp=activeLuckBuffPct();return{kind,name:'LUCK POTION L'+lv,icon:`assets/images/pot-luck-${lv}.png`,emoji:'🍀',cnt:(state.luckPots&&state.luckPots[lv-1])||0,
+    desc:`+${d.flat} flat luck${d.pct?` & +${Math.round(d.pct*100)}% luck`:''} selama 5 menit per pot. Stackable — efek dijumlah, durasi nambah +5 menit tiap pot.`,
+    active:b||bp?`<br><strong style="color:#5eead4">Aktif: +${b} LUCK${bp?` · +${Math.round(bp*100)}%`:''}</strong>`:'',use:`bpUseLuckPotion(${lv},1)`,useAll:`bpUseLuckPotion(${lv},'all')`};}
+  if(kind.startsWith('speed')){const lv=+kind.slice(-1),d=SPEED_POTS[lv],b=activeSpeedBuff();return{kind,name:'SPEED POTION L'+lv,icon:`assets/images/pot-speed-${lv}.png`,emoji:'⚡',cnt:(state.speedPots&&state.speedPots[lv-1])||0,
+    desc:`Roll speed +${d.add.toFixed(1)}× selama 5 menit per pot (cap total ×5). Stackable — efek dijumlah, durasi nambah +5 menit tiap pot.`,
+    active:b?`<br><strong style="color:#fcd34d">Aktif: +${b.toFixed(1)}× SPEED</strong>`:'',use:`bpUseSpeedPotion(${lv},1)`,useAll:`bpUseSpeedPotion(${lv},'all')`};}
   if(kind==='mythic'){const aw=activeWeatherId();return{kind,name:'MYTHIC WEATHER POTION',icon:'assets/images/icon-mythic.png',emoji:'✨',cnt:state.mythicPotions||0,
-    desc:'SKIP cuaca sekarang (5 menit, pity sama) - APOCALYPSE chance 3% (potion biasa ~1,8%).',
+    desc:'Sama kayak Weather Potion, tapi AWAKENED chance 3%.',
     active:aw?`<br><strong style="color:${WEATHER[aw].color}">Aktif: ${WEATHER[aw].icon} ${WEATHER[aw].name}</strong>`:'',use:'bpUseMythicPotion()'};}
   if(kind==='intan'){return{kind,name:'INTAN ROLL 100K',icon:'assets/images/icon-intan.png',emoji:'💎',cnt:state.intanRolls||0,
     desc:'ITEM INDEX REWARD — didapat otomatis tiap 5 varian kartu terkumpul di Card Index (semua mutasi + varian shiny dihitung). Pakai = langsung menarik 100.000 roll kartu ke koleksi.',
@@ -1019,13 +1140,16 @@ function bpItemDef(kind){
   return null;
 }
 function renderBpItems(){
-  const kinds=['potion','mythic','luck','speed','intan'];
+  const kinds=['potion','mythic','luck1','luck2','luck3','speed1','speed2','speed3','intan'];
   const tiles=kinds.map(k=>{const d=bpItemDef(k);return `<div class="bp-itemtile${d.cnt>0?'':' empty'}" onclick="bpItemPop('${k}')"><div class="bp-itemtile-ic"><img src="${d.icon}" alt="${d.name}" onerror="this.parentNode.textContent='${d.emoji}'"></div><span class="bp-itemtile-cnt">×${fmt(d.cnt)}</span></div>`;}).join('');
   return `<div class="bp-h">ITEM</div><div class="bp-itemgrid">${tiles}</div>`;
 }
 function bpItemPop(kind){
   bpItemPopClose();
   const d=bpItemDef(kind); if(!d)return;
+  const isGacha=(kind==='potion'||kind==='mythic');
+  const odds=isGacha?weatherOddsHTML():'';
+  const multi=isGacha?`<div class="wo-multi">${[1,5,25,100].map(n=>`<button data-n="${n}" class="${bpMultiN===n?'on':''}" onclick="bpSetMulti(${n})">${n}×</button>`).join('')}</div>`:'';
   const canUse=d.cnt>0;
   const el=document.createElement('div'); el.id='itemPop';
   el.innerHTML=`<div class="item-pop-back" onclick="bpItemPopClose()"></div>
@@ -1034,41 +1158,123 @@ function bpItemPop(kind){
       <div class="item-pop-name">${d.name}</div>
       <div class="item-pop-cnt">Punya: ×${fmt(d.cnt)}</div>
       <div class="item-pop-desc">${d.desc}${d.active||''}</div>
+      ${odds}
+      ${multi}
       <div class="item-pop-ctl">
-        <button class="bpi-use" ${canUse?'':'disabled'} onclick="${d.use}">PAKAI</button>
+        <button class="bpi-use" ${canUse?'':'disabled'} onclick="${d.use}">PAKAI${isGacha&&bpMultiN>1?' ×'+bpMultiN:''}</button>
+        ${d.useAll&&d.cnt>1?`<button class="bpi-use bpi-all" ${canUse?'':'disabled'} onclick="${d.useAll}">GABUNG SEMUA ×${fmt(d.cnt)}</button>`:''}
         <button class="item-pop-cancel" onclick="bpItemPopClose()">BATAL</button>
       </div>
     </div>`;
   document.body.appendChild(el);
 }
-function bpItemPopClose(){const e=document.getElementById('itemPop');if(e)e.remove();}
-function bpUsePotion(){
-  const r=useWeatherPotion();
-  if(!r.ok){toast("Potion habis","GAK ADA POTION","#f87171");return;}
-  beep(520,.16,"triangle",.1);setTimeout(()=>beep(780,.18,"triangle",.1),120);
-  toast(`${r.weather.icon} ${r.weather.name}`,"WEATHER AKTIF · 5 MENIT",r.weather.color);
-  bpItemPopClose();renderShell();renderBackpackPanel();
+/* Toggle jumlah roll gacha (1 / 5 / 25 / 100) di popup potion. */
+let bpMultiN=1;
+function bpSetMulti(n){
+  bpMultiN=n;
+  document.querySelectorAll('#itemPop .wo-multi button').forEach(b=>b.classList.toggle('on',+b.dataset.n===n));
+  const use=document.querySelector('#itemPop .bpi-use');
+  if(use&&bpMultiN>1)use.textContent='PAKAI ×'+bpMultiN;
+  else if(use)use.textContent='PAKAI';
 }
-function bpUseLuckPotion(){
-  const r=useLuckPotion();
+function bpItemPopClose(){const e=document.getElementById('itemPop');if(e)e.remove();}
+/* ===== PANEL WEATHER ODDS (popup Weather / Mythic Potion):
+   2 bar pity + daftar chance ASLI per kelas (RARE -> COMMON, langka dulu).
+   Chance = odds dasar — pity override gak dimasukin biar angka tetep jujur. ===== */
+function weatherOddsHTML(){
+  const p=(state&&state.wpity)||{r:0,m:0};
+  const rLeft=Math.max(0,PITY_RARE-(p.r||0)),mLeft=Math.max(0,PITY_MYTHIC-(p.m||0));
+  const pity=(label,v,max,cls)=>`<div class="wo-pity">
+      <div class="wo-pity-top"><span>${label}</span><b>Guaranteed in ${fmt(v)}</b></div>
+      <div class="wo-bar ${cls}"><i style="width:${Math.min(100,(max-v)/max*100).toFixed(1)}%"></i></div>
+    </div>`;
+  const sec=(rar,label)=>{
+    const list=WEATHERS.filter(w=>w.rar===rar).sort((a,b)=>a.dropWeight-b.dropWeight);
+    return `<div class="wo-sec"><div class="wo-sec-h ${rar.toLowerCase()}">${label}</div>`+
+      list.map(w=>{
+        const pct=w.dropWeight/100;
+        const pctS=pct<1?pct.toFixed(2):pct.toFixed(1);
+        const inv=10000/w.dropWeight;
+        const invS=inv<10?inv.toFixed(1):fmt(Math.round(inv));
+        return `<div class="wo-row"><span class="wo-ic">${w.icon}</span><span class="wo-nm">${w.name}</span><span class="wo-pct">${pctS}%</span><span class="wo-inv">1 in ${invS}</span></div>`;
+      }).join("")+`</div>`;
+  };
+  return `<div class="wo-wrap">
+    <div class="wo-h">WEATHER ODDS</div>
+    ${pity("RARE PITY",rLeft,PITY_RARE,"wo-r")}
+    ${pity("MYTHIC PITY",mLeft,PITY_MYTHIC,"wo-m")}
+    ${sec("AWAKENED","AWAKENED")}${sec("ARCANE","ARCANE")}${sec("RARE","RARE")}${sec("UNCOMMON","UNCOMMON")}${sec("COMMON","COMMON")}
+  </div>`;
+}
+function bpUsePotion(){
+  const n=bpMultiN;let done=0,switches=0,kept=0,best=null,last=null;
+  for(let i=0;i<n;i++){
+    const r=useWeatherPotion();
+    if(!r.ok)break;
+    done++;last=r.weather;
+    if(r.kept)kept++;else{switches++;if(!best||r.weather.dropWeight<best.dropWeight)best=r.weather;}
+  }
+  if(!done){
+    toast("Potion habis","GAK ADA POTION","#f87171");
+    return;
+  }
+  if(n>1){
+    const w=best||last;
+    toast(`${w?w.icon+' '+w.name:'GACHA ×'+done}`,`×${done} ROLL · ${switches} PINDAH · ${kept} SKIP`,w?w.color:'#5eead4');
+    if(switches)beep(520,.16,"triangle",.1),setTimeout(()=>beep(780,.18,"triangle",.1),120);
+    else beep(240,.18,"sine",.07);
+  }else if(last&&best===null&&kept){
+    toast(`${last.icon} ${last.name}`,"ROLL LEBIH JELEK · CUACA TETEP",last.color);
+    beep(240,.18,"sine",.07);
+  }else{
+    beep(520,.16,"triangle",.1);setTimeout(()=>beep(780,.18,"triangle",.1),120);
+    toast(`${best.icon} ${best.name}`,"WEATHER AKTIF · 5 MENIT",best.color);
+  }
+  renderShell();renderBackpackPanel();bpItemPop('potion');
+}
+function bpUseLuckPotion(lv,all){
+  const cnt=(state.luckPots&&state.luckPots[lv-1])||0;
+  const n=all==='all'?cnt:1;
+  const r=useLuckPotion(lv,n);
   if(!r.ok){toast("Potion habis","GAK ADA POTION","#f87171");return;}
   beep(560,.14,"triangle",.09);setTimeout(()=>beep(820,.14,"triangle",.08),110);
-  toast("LUCK POTION","+"+r.flat+" LUCK · 5 MENIT","#5eead4");
+  toast("LUCK POTION L"+lv+(n>1?" ×"+n:""),"+"+r.flat+" LUCK"+(r.pct?" · +"+Math.round(r.pct*100)+"%":"")+" · "+Math.round(r.ms/60000)+" MENIT","#5eead4");
   bpItemPopClose();renderShell();renderBackpackPanel();
 }
-function bpUseSpeedPotion(){
-  const r=useSpeedPotion();
+function bpUseSpeedPotion(lv,all){
+  const cnt=(state.speedPots&&state.speedPots[lv-1])||0;
+  const n=all==='all'?cnt:1;
+  const r=useSpeedPotion(lv,n);
   if(!r.ok){toast("Potion habis","GAK ADA POTION","#f87171");return;}
   beep(720,.14,"square",.08);setTimeout(()=>beep(980,.14,"square",.07),110);
-  toast("SPEED POTION","+"+r.mult+"× SPEED · 5 MENIT","#fcd34d");
+  toast("SPEED POTION L"+lv+(n>1?" ×"+n:""),"SPEED +"+r.add.toFixed(1)+"× · "+Math.round(r.ms/60000)+" MENIT","#fcd34d");
   bpItemPopClose();renderShell();renderBackpackPanel();
 }
 function bpUseMythicPotion(){
-  const r=useMythicWeatherPotion();
-  if(!r.ok){toast("Potion habis","GAK ADA POTION","#f87171");return;}
-  beep(520,.16,"triangle",.1);setTimeout(()=>beep(880,.2,"triangle",.1),120);
-  toast(`${r.weather.icon} ${r.weather.name}`,"WEATHER AKTIF · APOCALYPSE 3%",r.weather.color);
-  bpItemPopClose();renderShell();renderBackpackPanel();
+  const n=bpMultiN;let done=0,switches=0,kept=0,best=null,last=null;
+  for(let i=0;i<n;i++){
+    const r=useMythicWeatherPotion();
+    if(!r.ok)break;
+    done++;last=r.weather;
+    if(r.kept)kept++;else{switches++;if(!best||r.weather.dropWeight<best.dropWeight)best=r.weather;}
+  }
+  if(!done){
+    toast("Potion habis","GAK ADA POTION","#f87171");
+    return;
+  }
+  if(n>1){
+    const w=best||last;
+    toast(`${w?w.icon+' '+w.name:'GACHA ×'+done}`,`×${done} ROLL · ${switches} PINDAH · ${kept} SKIP`,w?w.color:'#5eead4');
+    if(switches)beep(520,.16,"triangle",.1),setTimeout(()=>beep(880,.2,"triangle",.1),120);
+    else beep(240,.18,"sine",.07);
+  }else if(last&&best===null&&kept){
+    toast(`${last.icon} ${last.name}`,"ROLL LEBIH JELEK · CUACA TETEP",last.color);
+    beep(240,.18,"sine",.07);
+  }else{
+    beep(520,.16,"triangle",.1);setTimeout(()=>beep(880,.2,"triangle",.1),120);
+    toast(`${best.icon} ${best.name}`,"WEATHER AKTIF · AWAKENED 3%",best.color);
+  }
+  renderShell();renderBackpackPanel();bpItemPop('mythic');
 }
 /* Pakai INTAN ROLL 100K: tarik 100.000 roll sekaligus, lalu tampilkan ringkasan loot. */
 function bpUseIntanRoll(){
@@ -1168,10 +1374,10 @@ function artIconSvg(k){
   if(k==="cincin")return S(`<circle cx="24" cy="30" r="10.5" stroke-width="2.4"/><path d="M24 6l5.5 7.5L24 21l-5.5-7.5z" stroke-width="2"/><path d="M24 6v15M18.5 13.5h11" stroke-width="1.3" stroke-opacity=".8"/>`);
   return S(`<path d="M14 9.5h20l7.5 10.5L24 41 6.5 20z" stroke-width="2.4"/><path d="M6.5 20h35M14 9.5L18 20l6 21 6-21 4-10.5" stroke-width="1.5" stroke-opacity=".8"/>`);
 }
-/* Ikon artefak CRAYON: PNG di ATAS SVG fallback — gagal load => this.remove() => SVG tampil. */
+/* Ikon artefak CRAYON: PNG saja — tanpa SVG di belakang (berlian default gak nongol). */
 function artIconHtml(d){
   if(!d.img)return artIconSvg(d.icon);
-  return `<span class="icov">${artIconSvg(d.icon)}<img src="${d.img}" alt="" onerror="this.remove()"></span>`;
+  return `<span class="icov"><img src="${d.img}" alt="" onerror="this.remove()"></span>`;
 }
 /* Tombol beli Backpack per kanal: raid/tower TIDAK dijual pakai coin — tombol jadi petunjuk sumber. */
 function bpBuyBtn(d,kind){
@@ -1563,7 +1769,7 @@ function freshState(){
   const start=s0?{id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,fav:false,lock:false,mut:"none",shiny:false,trait:"none",count:1}:null;
   const newState={coins:1000,raidTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},raidShopOwned:{},tower:{best:0,auto:false},battleSpeed:1,
     cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],history:[],battle:null,
-    player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1,sp:0,tree:{}},weather:null,weatherBest:null,potions:0,mythicPotions:0,luckPotions:0,speedPotions:0,luckBuff:null,speedBuff:null,infTokens:0,
+    player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1,sp:0,tree:{}},weather:null,weatherBest:null,potions:0,mythicPotions:0,luckPots:[0,0,0],speedPots:[0,0,0],luckBuffs:[],speedBuffs:[],infTokens:0,
     artOwned:[],artSlots:[null,null],petOwned:[],petEquipped:null,intanRolls:0,idxRewardsClaimed:0};
   console.log('[FRESH STATE] Initialized player:',newState.player);
   return newState;
@@ -1659,8 +1865,13 @@ function loadStateFor(name){
   /* WEATHER + POTION: migrasi field baru + expire otomatis kalau window real-time udah lewat. */
   if(typeof state.potions!=="number"||state.potions<0)state.potions=0;
   if(typeof state.mythicPotions!=="number"||state.mythicPotions<0)state.mythicPotions=0;
-  if(typeof state.luckPotions!=="number"||state.luckPotions<0)state.luckPotions=0;
-  if(typeof state.speedPotions!=="number"||state.speedPotions<0)state.speedPotions=0;
+  /* MIGRASI LUCK/SPEED POTION lama (counter tunggal) -> array per level [L1,L2,L3]. */
+  if(!Array.isArray(state.luckPots)){state.luckPots=[typeof state.luckPotions==="number"&&state.luckPotions>0?Math.floor(state.luckPotions):0,0,0];delete state.luckPotions;}
+  if(!Array.isArray(state.speedPots)){state.speedPots=[typeof state.speedPotions==="number"&&state.speedPotions>0?Math.floor(state.speedPotions):0,0,0];delete state.speedPotions;}
+  state.luckPots=state.luckPots.map(v=>typeof v==="number"&&v>0?Math.floor(v):0);
+  state.speedPots=state.speedPots.map(v=>typeof v==="number"&&v>0?Math.floor(v):0);
+  /* Pity potion: counter roll RARE/AWAKENED (bareng weather + mythic potion). */
+  if(!state.wpity||typeof state.wpity.r!=="number"||typeof state.wpity.m!=="number")state.wpity={r:0,m:0};
   if(typeof state.infTokens!=="number"||state.infTokens<0)state.infTokens=0;
   /* ARTEFAK + PET: field baru — player lama mulai kosong, id korup dibuang. */
   if(!Array.isArray(state.artOwned))state.artOwned=[];
@@ -1670,10 +1881,22 @@ function loadStateFor(name){
   if(!Array.isArray(state.petOwned))state.petOwned=[];
   state.petOwned=state.petOwned.filter(id=>PET_DEFS.some(p=>p.id===id));
   if(!state.petEquipped||!state.petOwned.includes(state.petEquipped))state.petEquipped=null;
-  if(state.luckBuff&&typeof state.luckBuff.endsAt!=="number")state.luckBuff=null;
-  if(state.speedBuff&&typeof state.speedBuff.endsAt!=="number")state.speedBuff=null;
-  if(state.luckBuff&&Date.now()>=state.luckBuff.endsAt)state.luckBuff=null;
-  if(state.speedBuff&&Date.now()>=state.speedBuff.endsAt)state.speedBuff=null;
+  /* Buff potion -> format PER-LEVEL array. Save lama (objek gabung luckBuff/speedBuff) dimigrasi
+     jadi 1 entry lv:0 (efek & sisa durasinya dipertahankan apa adanya, chip generik tanpa "Lx"). */
+  if(!Array.isArray(state.luckBuffs)){
+    state.luckBuffs=[];
+    const ob=state.luckBuff;
+    if(ob&&typeof ob.endsAt==="number"&&Date.now()<ob.endsAt)state.luckBuffs.push({lv:0,flat:ob.flat||0,pct:ob.pct||0,endsAt:ob.endsAt});
+    delete state.luckBuff;
+  }
+  if(!Array.isArray(state.speedBuffs)){
+    state.speedBuffs=[];
+    const ob=state.speedBuff;
+    if(ob&&typeof ob.endsAt==="number"&&Date.now()<ob.endsAt)state.speedBuffs.push({lv:0,add:ob.add!=null?ob.add:(ob.mult||0),endsAt:ob.endsAt});
+    delete state.speedBuff;
+  }
+  state.luckBuffs=state.luckBuffs.filter(b=>b&&typeof b.endsAt==="number"&&b.endsAt>Date.now());
+  state.speedBuffs=state.speedBuffs.filter(b=>b&&typeof b.endsAt==="number"&&b.endsAt>Date.now());
   if(state.weatherBest&&!WEATHER[state.weatherBest])state.weatherBest=null;
   if(state.weather){if(!WEATHER[state.weather.id]||typeof state.weather.endsAt!=="number")state.weather=null;}
   if(state.weather&&Date.now()>=state.weather.endsAt)state.weather=null;
@@ -1863,7 +2086,7 @@ function renderShell(){
   const tp=document.getElementById("tbPw");if(tp)tp.innerHTML="&#9889; "+fmt(totalPower());
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.route===route()));
   try{const pm=document.getElementById("profModal");if(pm&&pm.style.display!=="none"&&pm.style.display!=="")renderProfile();}catch(e){}
-  try{renderWeatherDock();startWeatherTick();}catch(e){}
+  try{renderWeatherDock();renderBuffDock();startWeatherTick();}catch(e){}
   try{renderFootProfile();}catch(e){}
 }
 
@@ -2979,7 +3202,9 @@ function renderTowerHub(){
 function renderTowerShop(){
   if(!state.tower)state.tower={best:0};
   const tok=state.infTokens||0;
-  const ICON={weather:'<img src="assets/images/icon-potion.png" onerror="this.parentNode.textContent=\'🧪\'">',mythic:'✨',luck:'🍀',speed:'⚡'};
+  const ICON={weather:'<img src="assets/images/icon-potion.png" onerror="this.parentNode.textContent=\'🧪\'">',mythic:'✨',
+    luck1:'<img src="assets/images/pot-luck-1.png" onerror="this.parentNode.textContent=\'🍀\'">',luck2:'<img src="assets/images/pot-luck-2.png" onerror="this.parentNode.textContent=\'🍀\'">',luck3:'<img src="assets/images/pot-luck-3.png" onerror="this.parentNode.textContent=\'🍀\'">',
+    speed1:'<img src="assets/images/pot-speed-1.png" onerror="this.parentNode.textContent=\'⚡\'">',speed2:'<img src="assets/images/pot-speed-2.png" onerror="this.parentNode.textContent=\'⚡\'">',speed3:'<img src="assets/images/pot-speed-3.png" onerror="this.parentNode.textContent=\'⚡\'">'};
   const item=(k,label,desc,cost)=>`<div class="inf-item">
       <div class="inf-item-ic">${ICON[k]||'🧪'}</div>
       <div class="inf-item-info"><div class="inf-item-name">${label}</div><div class="inf-item-desc">${desc}</div></div>
@@ -2987,19 +3212,23 @@ function renderTowerShop(){
     </div>`;
   /* data item (teks & harga = versi live) — state dari state live */
   const ITEMS=[
-    {k:"weather",label:"WEATHER POTION",sub:"SKIP cuaca sekarang ke cuaca acak lain, 5 menit (pity no-downgrade).",cost:10,req:null,ac:"var(--ice)"},
-    {k:"luck",label:"LUCK POTION",sub:"+1 Luck selama 5 menit.",cost:10,req:null,ac:"var(--green)"},
-    {k:"speed",label:"SPEED POTION",sub:"+1× Roll Speed selama 5 menit.",cost:10,req:null,ac:"var(--amber)"},
+    {k:"weather",label:"WEATHER POTION",sub:"Gacha cuaca ikut chance asli, 5 menit (hasil sama/lebih bagus dari cuaca aktif = pindah + reset timer; lebih jelek = cuaca tetep).",cost:10,req:null,ac:"var(--ice)"},
+    {k:"luck1",label:"LUCK POTION L1",sub:"+3 flat luck selama 5 menit. Stackable — durasi nambah +5 menit tiap pot.",cost:10,req:null,ac:"var(--green)"},
+    {k:"luck2",label:"LUCK POTION L2",sub:"+5 flat luck & +10% luck selama 5 menit. Stackable — durasi nambah +5 menit tiap pot.",cost:50,req:null,ac:"var(--green)"},
+    {k:"luck3",label:"LUCK POTION L3",sub:"+10 flat luck & +20% luck selama 5 menit. Stackable — durasi nambah +5 menit tiap pot.",cost:250,req:null,ac:"var(--green)"},
+    {k:"speed1",label:"SPEED POTION L1",sub:"Roll speed +0.2× (≈1.2×) selama 5 menit. Stackable — durasi nambah +5 menit tiap pot.",cost:10,req:null,ac:"var(--amber)"},
+    {k:"speed2",label:"SPEED POTION L2",sub:"Roll speed +0.5× (≈1.5×) selama 5 menit. Stackable — durasi nambah +5 menit tiap pot.",cost:50,req:null,ac:"var(--amber)"},
+    {k:"speed3",label:"SPEED POTION L3",sub:"Roll speed +1.0× (2×) selama 5 menit. Stackable — durasi nambah +5 menit tiap pot.",cost:250,req:null,ac:"var(--amber)"},
     {k:"mythic",label:"MYTHIC WEATHER POTION",sub:"Upgrade 1 Weather Potion -> Mythic: APOCALYPSE chance 3% (durasi 5 menit). Butuh 1 Weather Potion.",cost:50,req:"weather",ac:"var(--violet)"}
   ];
-  const stkOf=k=>k==="weather"?(state.potions||0):k==="luck"?(state.luckPotions||0):k==="speed"?(state.speedPotions||0):(state.mythicPotions||0);
+  const stkOf=k=>k==="weather"?(state.potions||0):k.startsWith("luck")?(state.luckPots&&state.luckPots[+k.slice(-1)-1])||0:k.startsWith("speed")?(state.speedPots&&state.speedPots[+k.slice(-1)-1])||0:(state.mythicPotions||0);
   if(window.shopSel==null||window.shopSel>=ITEMS.length)window.shopSel=0;
   let swapT=null;
   const renderList=()=>{
     document.getElementById("shopList").innerHTML=ITEMS.map((it,i)=>`
       <div class="srow${i===window.shopSel?" on":""}" data-i="${i}" style="--ac:${it.ac}">
         <span class="sic">${ICON[it.k]||"🧪"}</span>
-        <span class="sinfo"><span class="sname">${it.label}</span><span class="ssub">${it.sub}</span></span>
+        <span class="sinfo"><span class="sname">${it.label}</span></span>
         <span class="scost"><b>${it.cost}</b><span>TOKEN</span></span>
         ${stkOf(it.k)>0?`<span class="sown">&times;${stkOf(it.k)}</span>`:""}
       </div>`).join("");
@@ -3039,8 +3268,8 @@ function renderTowerShop(){
     swapT=setTimeout(paint,140);           /* lalu ganti isi + stagger masuk */
   };
   app.innerHTML=`<div class="tw-page">
-  <div class="tw-hub">
-    <section class="tw-stage">
+  <div class="tw-hub shop-hub">
+    <section class="tw-stage shop-stage">
       <div class="tw-stage-top">
         <button class="backlink" id="shopBack">&#8592; KEMBALI KE TOWER</button>
         <div class="tw-stage-eyebrow">TOKO INF</div>
@@ -3069,16 +3298,16 @@ function renderTowerShop(){
   const bi=document.getElementById("shopBuy");if(bi)bi.onclick=()=>{if(bi.disabled)return;infBuy(ITEMS[window.shopSel].k);};
 }
 function infBuy(kind){
-  const cost={weather:10,luck:10,speed:10,mythic:50}[kind]; if(cost==null)return;
+  const cost={weather:10,luck1:10,luck2:50,luck3:250,speed1:10,speed2:50,speed3:250,mythic:50}[kind]; if(cost==null)return;
   if((state.infTokens||0)<cost){toast("TOKEN KURANG","TOKEN INF TIDAK CUKUP","#f87171");return;}
   if(kind==='mythic'&&(state.potions||0)<1){toast("Butuh 1 Weather Potion","GAK BISA","#f87171");return;}
   state.infTokens-=cost;
   if(kind==='weather')state.potions=(state.potions||0)+1;
-  else if(kind==='luck')state.luckPotions=(state.luckPotions||0)+1;
-  else if(kind==='speed')state.speedPotions=(state.speedPotions||0)+1;
+  else if(kind.startsWith('luck')){state.luckPots=state.luckPots||[0,0,0];state.luckPots[+kind.slice(-1)-1]++;}
+  else if(kind.startsWith('speed')){state.speedPots=state.speedPots||[0,0,0];state.speedPots[+kind.slice(-1)-1]++;}
   else if(kind==='mythic'){state.potions--;state.mythicPotions=(state.mythicPotions||0)+1;}
   save(); beep(660,.1,"sine",.07);
-  const label={weather:'WEATHER POTION',luck:'LUCK POTION',speed:'SPEED POTION',mythic:'MYTHIC POTION'}[kind];
+  const label={weather:'WEATHER POTION',mythic:'MYTHIC POTION'}[kind]||(kind.startsWith('luck')?'LUCK POTION L'+kind.slice(-1):'SPEED POTION L'+kind.slice(-1));
   toast(label,"-"+cost+" TOKEN","#c4b5fd");
   renderShell(); if(towerView==="shop")render();
 }
@@ -3179,8 +3408,8 @@ function towerEnd(win){
     const rr=25*Math.ceil(f/10);
     towerRun.pendingRolls=(towerRun.pendingRolls||0)+rr; towerRun.cards=(towerRun.cards||0)+rr;
     if(Math.random()<0.05){state.potions=(state.potions||0)+1;towerRun.drops.weather++;}
-    if(Math.random()<0.10){state.luckPotions=(state.luckPotions||0)+1;towerRun.drops.luck++;}
-    if(Math.random()<0.10){state.speedPotions=(state.speedPotions||0)+1;towerRun.drops.speed++;}
+    if(Math.random()<0.10){state.luckPots=state.luckPots||[0,0,0];state.luckPots[0]++;towerRun.drops.luck++;}
+    if(Math.random()<0.10){state.speedPots=state.speedPots||[0,0,0];state.speedPots[0]++;towerRun.drops.speed++;}
     /* DROP LANGKAH CRAYON V2 — BASE murni TANPA luck player (totalLuck TIDAK dipakai): pedang-api 0,1% · kyubi 0,01% per lantai. */
     const rare=[];
     if(!state.artOwned.includes("pedang-api")&&Math.random()<0.001){state.artOwned.push("pedang-api");rare.push("ARTEFAK PEDANG API · +120 FLAT & +100% LUCK");}
@@ -3234,12 +3463,12 @@ function showTowerLoot(results,drops,title){
   const pop=document.getElementById("rollResultPop");if(!pop)return;
   results=results||[];
   const d=drops||{weather:0,luck:0,speed:0};
-  const POTION=[{k:'weather',name:'WEATHER',icon:'assets/images/icon-potion.png',emoji:'🧪'},{k:'luck',name:'LUCK',icon:'assets/images/icon-luck.png',emoji:'🍀'},{k:'speed',name:'SPEED',icon:'assets/images/icon-speed.png',emoji:'⚡'}];
+  const POTION=[{k:'weather',name:'WEATHER',icon:'assets/images/icon-potion.png',emoji:'🧪'},{k:'luck',name:'LUCK',icon:'assets/images/pot-luck-1.png',emoji:'🍀'},{k:'speed',name:'SPEED',icon:'assets/images/pot-speed-1.png',emoji:'⚡'}];
   const totalPot=POTION.reduce((s,p)=>s+(d[p.k]||0),0);
   if(!results.length&&!totalPot)return;
   const potChips=POTION.filter(p=>(d[p.k]||0)>0).map(p=>{const n=d[p.k]||0;return `<div class="rrc rrc-potion" title="${p.name} POTION"><i class="rrc-sizer"></i><span class="rrc-pot-ic"><img src="${p.icon}" alt="${p.name}" onerror="this.parentNode.textContent='${p.emoji}'"></span>${n>1?`<span class="rrc-cnt">×${n}</span>`:''}<span class="rrc-name">${p.name}</span></div>`;}).join("");
   const groups={};
-  results.forEach(r=>{const key=r.cardId+"|"+(r.mut||"none")+"|"+(r.shiny||"none");(groups[key]=groups[key]||{cardId:r.cardId,tier:r.tier,mut:r.mut||"none",shiny:r.shiny||"none",n:0}).n++;});
+  results.forEach(r=>{const key=r.cardId+"|"+(r.mut||"none")+"|"+(r.shiny||"none");(groups[key]=groups[key]||{cardId:r.cardId,tier:r.tier,mut:r.mut||"none",shiny:!!(r.shiny&&r.shiny!=="none"),n:0}).n++;});
   const list=Object.values(groups).sort((a,b)=>luckChance(b.cardId,b.mut,b.shiny)-luckChance(a.cardId,a.mut,a.shiny)||b.n-a.n);
   document.getElementById("rrTotal").textContent=fmt(results.length)+" kartu"+(list.length?" · "+list.length+" jenis unik":"")+(totalPot?" · "+fmt(totalPot)+" potion":"");
   document.getElementById("rrBody").innerHTML=potChips+list.map(g=>{
@@ -3681,7 +3910,20 @@ const RAID_SHOP=[
   {id:"helm-abyss",name:"HELM ABYSS",cost:5000,desc:"Artefak CRAYON V2 — +80 flat & +120% LUCK permanen. Beli SEKALI, langsung masuk Backpack (slot artefak, equip 2 slot).",effect:"+80 FLAT & +120% LUCK",owned:()=>state.artOwned.includes("helm-abyss"),
     apply:()=>{state.artOwned=state.artOwned||[];if(!state.artOwned.includes("helm-abyss"))state.artOwned.push("helm-abyss");return "HELM ABYSS · +80 FLAT & +120% LUCK";}},
   {id:"nebula-wisp",name:"NEBULA WISP",cost:15000,desc:"Pet CRAYON V2 — +150 flat & +220% LUCK permanen. Beli SEKALI, langsung masuk Backpack (slot pet, equip 1).",effect:"+150 FLAT & +220% LUCK",owned:()=>state.petOwned.includes("nebula-wisp"),
-    apply:()=>{state.petOwned=state.petOwned||[];if(!state.petOwned.includes("nebula-wisp"))state.petOwned.push("nebula-wisp");return "NEBULA WISP · +150 FLAT & +220% LUCK";}}
+    apply:()=>{state.petOwned=state.petOwned||[];if(!state.petOwned.includes("nebula-wisp"))state.petOwned.push("nebula-wisp");return "NEBULA WISP · +150 FLAT & +220% LUCK";}},
+  /* LUCK & SPEED POTION L1-L3 — consumable, harga token sama dgn Toko Inf. */
+  {id:"luck1",name:"Luck Potion L1",cost:10,desc:"+3 flat luck selama 5 menit. Stackable — efek dijumlah, durasi nambah +5 menit tiap pot.",effect:"+3 FLAT LUCK · 5 MENIT",
+    apply:()=>{state.luckPots=state.luckPots||[0,0,0];state.luckPots[0]++;return "LUCK POTION L1";}},
+  {id:"luck2",name:"Luck Potion L2",cost:50,desc:"+5 flat luck & +10% luck selama 5 menit. Stackable — efek dijumlah, durasi nambah +5 menit tiap pot.",effect:"+5 FLAT & +10% LUCK · 5 MENIT",
+    apply:()=>{state.luckPots=state.luckPots||[0,0,0];state.luckPots[1]++;return "LUCK POTION L2";}},
+  {id:"luck3",name:"Luck Potion L3",cost:250,desc:"+10 flat luck & +20% luck selama 5 menit. Stackable — efek dijumlah, durasi nambah +5 menit tiap pot.",effect:"+10 FLAT & +20% LUCK · 5 MENIT",
+    apply:()=>{state.luckPots=state.luckPots||[0,0,0];state.luckPots[2]++;return "LUCK POTION L3";}},
+  {id:"speed1",name:"Speed Potion L1",cost:10,desc:"Roll speed +0.2× (≈1.2×) selama 5 menit. Stackable — efek dijumlah, durasi nambah +5 menit tiap pot.",effect:"SPEED +0.2× · 5 MENIT",
+    apply:()=>{state.speedPots=state.speedPots||[0,0,0];state.speedPots[0]++;return "SPEED POTION L1";}},
+  {id:"speed2",name:"Speed Potion L2",cost:50,desc:"Roll speed +0.5× (≈1.5×) selama 5 menit. Stackable — efek dijumlah, durasi nambah +5 menit tiap pot.",effect:"SPEED +0.5× · 5 MENIT",
+    apply:()=>{state.speedPots=state.speedPots||[0,0,0];state.speedPots[1]++;return "SPEED POTION L2";}},
+  {id:"speed3",name:"Speed Potion L3",cost:250,desc:"Roll speed +1.0× (2×) selama 5 menit. Stackable — efek dijumlah, durasi nambah +5 menit tiap pot.",effect:"SPEED +1.0× · 5 MENIT",
+    apply:()=>{state.speedPots=state.speedPots||[0,0,0];state.speedPots[2]++;return "SPEED POTION L3";}}
 ];
 /* =============== TOKO RAID — layout master-detail ala TOKO INF (.tw-hub) ===============
    Kiri: daftar item (.srow). Kanan: stats token + detail (.sdetail) + tombol beli (.act.go.buyswap).
@@ -3699,9 +3941,16 @@ function raidShopBuy(id){
 }
 function renderRaidShop(){
   const tok=state.raidTokens||0;
-  const ICO={coins:"🪙",card_edragon:`<img src="assets/raid/eternal-dragon-hd.png" onerror="this.parentNode.textContent='🐉'">`,
+  const COIN_IC=`<svg viewBox="0 0 24 24" width="100%" height="100%" style="display:block"><circle cx="12" cy="12" r="10" fill="#E8B33A" stroke="#8a6414" stroke-width="1.5"/><circle cx="12" cy="12" r="7.2" fill="none" stroke="#B4831E" stroke-width="1.2"/><text x="12" y="16.6" text-anchor="middle" font-size="11" font-weight="900" fill="#6b4a08" font-family="Arial">$</text></svg>`;
+  const ICO={coins:COIN_IC,card_edragon:`<img src="assets/raid/eternal-dragon-hd.png" onerror="this.parentNode.textContent='🐉'">`,
     "helm-abyss":`<img src="assets/artifacts/abyss-helm.png" onerror="this.parentNode.textContent='🪖'">`,
-    "nebula-wisp":`<img src="assets/pets/nebula-wisp.png" onerror="this.parentNode.textContent='🌌'">`};
+    "nebula-wisp":`<img src="assets/pets/nebula-wisp.png" onerror="this.parentNode.textContent='🌌'">`,
+    luck1:`<img src="assets/images/pot-luck-1.png" onerror="this.parentNode.textContent='🍀'">`,
+    luck2:`<img src="assets/images/pot-luck-2.png" onerror="this.parentNode.textContent='🍀'">`,
+    luck3:`<img src="assets/images/pot-luck-3.png" onerror="this.parentNode.textContent='🍀'">`,
+    speed1:`<img src="assets/images/pot-speed-1.png" onerror="this.parentNode.textContent='⚡'">`,
+    speed2:`<img src="assets/images/pot-speed-2.png" onerror="this.parentNode.textContent='⚡'">`,
+    speed3:`<img src="assets/images/pot-speed-3.png" onerror="this.parentNode.textContent='⚡'">`};
   const cardItems=RAID_SHOP.filter(x=>x.card);
   const bossTotal=cardItems.length,bossCount=cardItems.filter(x=>bossRollUnlocked(x.card.char)).length;
   const ITEMS=RAID_SHOP.map(it=>({k:it.id,label:it.name.toUpperCase(),sub:it.card?"Kartu BOSS · TIER BOSS · roll permanen setelah beli":it.desc,cost:it.cost,ac:it.card?"#FFFFFF":"#FFD27A",it}));
@@ -3710,8 +3959,8 @@ function renderRaidShop(){
   const renderList=()=>{
     document.getElementById("raidShopList").innerHTML=ITEMS.map((it,i)=>`
       <div class="srow${i===window.raidShopSel?" on":""}" data-i="${i}" style="--ac:${it.ac}">
-        <span class="sic">${ICO[it.k]||"🎁"}</span>
-        <span class="sinfo"><span class="sname">${it.label}</span><span class="ssub">${it.sub}</span></span>
+        <span class="sic${it.it.card?" card":""}">${ICO[it.k]||"🎁"}</span>
+        <span class="sinfo"><span class="sname">${it.label}</span></span>
         <span class="scost"><b>${it.cost}</b><span>TOKEN</span></span>
         ${((it.it.card&&stackHas(it.it.card.char,it.it.card.mut))||(it.it.owned&&it.it.owned()))?`<span class="sown">SUDAH DIBELI</span>`:""}
       </div>`).join("");
@@ -3725,7 +3974,7 @@ function renderRaidShop(){
     if(have){small=it.it.card?"Sudah dibeli · roll permanen terbuka":"Sudah dibeli · permanen di Backpack";big="SUDAH DIPUNYA";dis=true;}
     else if(tok<it.cost){small="Token tidak cukup";big=`KURANG ${it.cost-tok} TOKEN`;dis=true;}
     btn.disabled=dis;
-    btn.innerHTML=`<span class="amed">${ICO[it.k]||"🎁"}</span><span class="atxt"><small>${small}</small><b>${big}</b></span>`;
+    btn.innerHTML=`<span class="amed${it.it.card?" card":""}">${ICO[it.k]||"🎁"}</span><span class="atxt"><small>${small}</small><b>${big}</b></span>`;
   };
   const renderDetail=immediate=>{
     const it=ITEMS[window.raidShopSel],box=document.getElementById("raidShopDetail");
@@ -3756,8 +4005,8 @@ function renderRaidShop(){
     swapT=setTimeout(paint,140);
   };
   app.innerHTML=`<div class="tw-page rd-page">
-  <div class="tw-hub">
-    <section class="tw-stage">
+  <div class="tw-hub shop-hub">
+    <section class="tw-stage shop-stage">
       <div class="tw-stage-top">
         <button class="backlink" id="raidShopBack">&#8592; KEMBALI KE RAID</button>
         <div class="tw-stage-eyebrow">TOKO RAID</div>
