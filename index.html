@@ -78,14 +78,28 @@
 <div class="modal-profile" id="profModal">
   <div class="prof-modal-inner">
     <button class="prof-x" id="profClose" type="button" aria-label="Tutup profil">&times;</button>
-    <div class="prof-hero">
-      <div class="prof-av" id="pfAv"></div>
-      <div class="prof-id">
-        <div class="prof-name" id="pfName">GUEST</div>
-        <div class="prof-deck" id="pfDeck">KARTU UTAMA · —</div>
-        <div class="xpbar prof-xp"><i id="pfXpFill" style="width:0%"></i><span id="pfXpText">0 / 1000</span></div>
+    <div class="prof-top">
+      <div class="prof-left">
+        <div class="prof-title-tag" id="pfTitleTag">[UNRANKED]</div>
+        <div class="prof-av" id="pfAv"></div>
+        <div class="prof-id">
+          <div class="prof-name" id="pfName">GUEST</div>
+          <div class="prof-lvline">LV <b id="pfLv">1</b><span class="prof-deck" id="pfDeck">KARTU UTAMA · —</span></div>
+          <div class="xpbar prof-xp"><i id="pfXpFill" style="width:0%"></i><span id="pfXpText">0 / 1000</span></div>
+        </div>
+        <button class="prof-titles-btn" id="pfTitlesBtn" type="button">TITLES</button>
       </div>
-      <div class="prof-lv"><b id="pfLv">1</b><small>LEVEL</small></div>
+      <div class="prof-right">
+        <div>
+          <div class="prof-eyebrow">STATISTIK PEMAIN</div>
+          <div class="prof-h1">Player Profile!</div>
+        </div>
+        <div>
+          <div class="prof-party-t">PARTY</div>
+          <div class="prof-party-row" id="pfParty"></div>
+        </div>
+        <div class="prof-stats" id="pfStats"></div>
+      </div>
     </div>
     <div class="prof-body" id="profBody"></div>
   </div>
@@ -125,10 +139,16 @@
 <div id="indexModal"><div class="ix-box">
   <div class="ix-head">
     <div><div class="eyebrow">KATALOG KARTU GACHA</div><div class="ix-title">Card Index</div></div>
-    <button class="ix-x" id="ixClose" title="Tutup">✕</button>
+    <div class="ix-h-tools">
+      <input class="ix-search" id="ixSearch" type="text" placeholder="Cari kartu…" autocomplete="off">
+      <button class="ix-x" id="ixClose" title="Tutup">✕</button>
+    </div>
   </div>
+  <div class="ix-toolbar" id="ixToolbar"></div>
   <div class="ix-body" id="ixBody"></div>
+  <div class="ix-foot" id="ixFoot"></div>
 </div></div>
+
 
 <div id="missionModal"><div class="ix-box mx-box">
   <div class="ix-head">

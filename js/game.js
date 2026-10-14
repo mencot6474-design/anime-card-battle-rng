@@ -28,12 +28,12 @@ function effChance(charId,mut,shiny){const c=CARDS[charId]||{};const ch=c.chance
    Semua passive LUCK (flat + persen) — kuat buat chance ekstrem (1 in miliaran).
    Artefak: beli pakai coin, equip maks 2 slot — LUCK artefak hanya dihitung dari slot terpasang. Pet: beli pakai coin, equip 1. */
 const ART_DEFS=[
-  {id:"manik", name:"MANIK REZEKI",       icon:"manik", color:"#5eead4", price:10000000, flat:5,  pct:0},
-  {id:"medal", name:"MEDAL KEBERUNTUNGAN",icon:"medal", color:"#fcd34d", price:20000000, flat:10, pct:10},
-  {id:"giok",  name:"GIOK HOKI",          icon:"giok",  color:"#4ade80", price:35000000, flat:25, pct:0},
-  {id:"batu",  name:"BATU UNTUNG",        icon:"batu",  color:"#7DF9FF", price:50000000, flat:0,  pct:25},
-  {id:"cincin",name:"CINCIN ES",          icon:"cincin",color:"#93c5fd", price:70000000, flat:50, pct:30},
-  {id:"intan", name:"INTAN KUASA",        icon:"intan", color:"#f0abfc", price:100000000,flat:75, pct:75},
+  {id:"manik", name:"MANIK REZEKI",       icon:"manik", color:"#5eead4", price:10000000, flat:5,  pct:0, img:"assets/artifacts/manik.png"},
+  {id:"medal", name:"MEDAL KEBERUNTUNGAN",icon:"medal", color:"#fcd34d", price:20000000, flat:10, pct:10, img:"assets/artifacts/medal.png"},
+  {id:"giok",  name:"GIOK HOKI",          icon:"giok",  color:"#4ade80", price:35000000, flat:25, pct:0, img:"assets/artifacts/giok.png"},
+  {id:"batu",  name:"BATU UNTUNG",        icon:"batu",  color:"#7DF9FF", price:50000000, flat:0,  pct:25, img:"assets/artifacts/batu.png"},
+  {id:"cincin",name:"CINCIN ES",          icon:"cincin",color:"#93c5fd", price:70000000, flat:50, pct:30, img:"assets/artifacts/cincin.png"},
+  {id:"intan", name:"INTAN KUASA",        icon:"intan", color:"#f0abfc", price:100000000,flat:75, pct:75, img:"assets/artifacts/intan.png"},
   /* CRAYON V2 — kanal via src: "coin" (Backpack) · "raid" (Toko Raid, cost=token) · "tower" (drop Inf Tower, base rate TANPA luck). */
   {id:"pedang-api",   name:"PEDANG API",   icon:"pedang-api",   color:"#fb923c", src:"tower", flat:120, pct:100, img:"assets/artifacts/pedang-api.png"},
   {id:"helm-abyss",   name:"HELM ABYSS",   icon:"helm-abyss",   color:"#818cf8", src:"raid",  raidCost:5000,  flat:80, pct:120, img:"assets/artifacts/abyss-helm.png"},
@@ -43,7 +43,7 @@ const PET_DEFS=[
   {id:"doll",        name:"BONEKA TERKUTUK",img:"assets/pets/doll.png",        emoji:"🎎",price:10000000, flat:10, pct:0},
   {id:"otherworldly",name:"MAKHLUK LAIN",   img:"assets/pets/otherworldly.png",emoji:"👾",price:20000000, flat:25, pct:0},
   {id:"titan",       name:"TITAN BUAS",     img:"assets/pets/titan.png",       emoji:"🗿",price:35000000, flat:50, pct:0},
-  {id:"dragon",      name:"DRAGON ABADI",   img:"assets/pets/dragon.png",      emoji:"🐉",price:50000000, flat:0,  pct:15},
+  {id:"dragon",      name:"BONE DRAGON",    img:"assets/pets/dragon.png",      emoji:"🐉",price:50000000, flat:50, pct:15},
   {id:"nine-tail",   name:"EKOR SEMBILAN",  img:"assets/pets/nine-tail.png",   emoji:"🐺",price:70000000, flat:50, pct:25},
   {id:"bijuu",       name:"BIJUU",          img:"assets/pets/bijuu.png",       emoji:"🦊",price:100000000,flat:100,pct:50},
   /* CRAYON V2 — pet BARU (pet lama tidak ditimpa). src sama seperti artefak. */
@@ -198,9 +198,56 @@ const STORY_BIBLE={
            rumbling:{turns,pct}  -> saat kartu ini MATI (bukan revive/lastStand), musuh kena DoT pct% max HP-nya selama `turns` giliran berikutnya, terus jalan walau kartu udah ganti.
            bungeeGum:{turns,bonus} -> tiap kali kartu ini KENA SERANG musuh, tempel "gum" ke musuh selama `turns` giliran; selama gum aktif semua serangan kartu ini ×(1+bonus/100) damage. Gum ikut pindah ke musuh berikutnya kalau yang kena gum mati (counter `bt.gumTurns` di sisi musuh).
            snatch:{pct} -> tiap kali kartu ini MENGALAHKAN kartu musuh (foeDown), curi permanen pct% ATK & pct% max HP musuh yang mati lalu tambah ke stat kartu ini (flat, persist antar tag-in via `bt.snatchAtk[a]`/`bt.snatchHp[a]`).
+           psychicBarrier:{dr,turns,healPct} -> saat masuk arena, aktifkan barrier selama `turns` giliran: damage musuh masuk dipangkas `dr`% + tiap serangan yang diredam memulihkan `healPct`% max HP kartu ini (heal permanen). Re-arm tiap kartu ini masuk. (BLIZZARD BADDIE)
+           entryAtkPct:{pct} -> saat masuk arena, ledakan serpihan: kartu aktif musuh menerima damage FLAT sebesar `pct`% dari ATK kartu ini (bypass evasion/void spt entryShatter). Sekali per masuk. (PAPER PAL)
+            sleepStrike:{turns,mult,text} -> saat masuk arena, kartu TIDUR selama `turns` giliran (melewati serangan, float "TERTIDUR" — self-sleep, gak ke-block statusImmune). Pas tidur habis, serangan berikutnya di-arm ×mult (label float `text`, default "THUNDERCLAP FLASH"). Kalau serangan itu MENGALAHKAN musuh, sisa overkill disimpan di `bt.overflow` dan menghantam musuh berikutnya pas gelombang menara berganti (advanceTowerFoe). Re-arm tiap kartu ini masuk/tag-in/regression. (THUNDER PRODIGY)
            arise:{pct,turns} -> (Shadow Monarch) saat kartu ini membunuh DAN masih ada gelombang musuh berikutnya (menara), bangkitkan musuh yang mati sebagai BAYANGAN dengan pct% ATK & HP-nya. Bayangan MENGAMBIL-ALIH slot kartu ini (HP asli disimpan di `bt.shadow.retHp/retMax`), menyerang dengan atk bayangan (passive Monarch dimatikan: `fx={}` selama possess) selama `turns` giliran ATAU sampai bayangan tumbang (trySave → endPossession, Monarch balik utuh). State: `bt.shadow`.
            prideOfPrince:{pct} -> (Royal Vanguard) tiap KARTU PARTY JATUH (di `trySave`, setelah revive/lastStand gagal), semua kartu di `bt.fighters` yang punya fx ini dapat `bt.atkBuff[i]+=pct` (permanen buat sisa battle, numpuk). `atkBuff` dipakai playerPhase `atk*(1+atkBuff/100)` — jadi pas Vanguard aktif dia udah lebih kuat. Jalan walau Vanguard lagi nunggu di bench (buff nyimpen di index-nya).
            regression:{hpPct} -> (Regressor) kill-banked revive. Tiap Regressor BUNUH musuh (di `foeDown`, blok yang sama dgn snatch/arise): `bt.regressCharges[a]++`. Di `trySave` (SETELAH cek shadow, SEBELUM fx.revive): kalau `fx.regression && bt.regressCharges[a]>0` → `regressCharges[a]--`, `bt.pHp=round(bt.pMax*hpPct/100)`, lalu "skill di-refresh" (reset revUsed/standUsed/burstStart=turn/dodgeCount/atkCount/wtCount, re-arm entryGuard/execGuard). return true (bangkit di tempat, gak tag-in). Tiap kebangkitan "bayar" 1 kill → gak abadi. Butuh kill dulu = butuh mode multi-musuh (menara); story 1 musuh gak bisa demo.
+            entryFreeze:{turns,mult} -> saat masuk arena, bekukan kartu aktif musuh selama `turns` giliran (pakai mekanik eStun — musuh dilewati; KEBAL kalau foe statusImmune; float "BEKU"). Counter global `bt.freezeLeft` tick tiap enemyPhase; selama >0 serangan kartu ini ×mult ke target. Re-arm tiap masuk/tag-in/regression. (10TH CAPTAIN)
+            iceShell:dr -> selama kartu ini AKTIF di arena, semua damage musuh masuk dipangkas `dr`% permanen (tanpa timer; hilang kalau kartu tag-out). (10TH CAPTAIN)
+            heavyRain:{turns,healPct} -> saat masuk arena, pasang hujan `turns` giliran (`bt.rain`): tiap giliran kartu ini pulih `healPct`% max HP — jalan walau kena stun (spt turnMaxHp). Re-arm tiap masuk/tag-in/regression. (OCEAN'S GUARDIAN)
+            shockwave:{every,pct} -> setiap serangan ke-`every` (counter `bt.shockCount[a]`, hitungan serangan beneran — stun gak ngitung), kartu aktif musuh kena damage FLAT pct% ATK di luar serangan normal (gaya wallTitans; arena 1 musuh aktif, jadi "semua musuh" jatuh ke kartu aktif). (OCEAN'S GUARDIAN)
+            timeStop:{turns,every} -> saat masuk arena + setiap serangan ke-`every` (counter bt.atkCount[a]), stun kartu aktif musuh selama `turns` giliran (mekanik eStun - musuh dilewati; KEBAL kalau foe statusImmune; float "THE WORLD"). Selama time stop aktif, serangan kartu ini MENEMBUS efx.evasion/efx.void musuh ("tidak bisa di-dodge"). Re-arm tiap masuk/tag-in/regression/tower. (IMMORTAL VAMPIRE)
+            killHeal:{pct} -> tiap kali kartu ini MENGALAHKAN kartu musuh (di foeDown, blok snatch/regression): heal pct% max HP + float "HISAP DARAH". (IMMORTAL VAMPIRE)
+   freezeTransfer:1 -> (ABSOLUTE ZERO) di foeDown blok snatch: musuh tumbang selama bt.freezeLeft>0 (target lagi beku) -> bt.freezeNext=true. Di advanceTowerFoe (musuh gelombang berikutnya masuk): flag habis -> eStun=1 + freezeLeft=1 + float "BEKU" (guard foeStatusImmune), flag di-reset. Story musuh 1 kartu jadi efektifnya di menara.
+   foeEntryFreeze:{turns} -> (ICE QUEEN) di advanceTowerFoe: musuh BARU masuk arena -> bekukan turns giliran (eStun+freezeLeft, float "BEKU", KEBAL kalau foe statusImmune). Dicek tiap musuh masuk jadi re-arm otomatis.
+   hitFreeze:{chance,turns,mult} -> (ICE QUEEN) di playerPhase: serangan dgn total>0 & musuh masih hidup -> chance% bekukan turns giliran (eStun+freezeLeft, pola burn + guard statusImmune; float "BEKU"). Selama target beku (freezeLeft>0) serangan kartu ini xmult di blok freeze dmgMult.
+            tripleHit:{hits,mult} -> tiap serangan pecah jadi `hits` tembakan (array hits di playerPhase), masing-masing ×`mult` damage - total = hits×mult. (SEA SOVEREIGN)
+            flood:{every,mult,exec} -> setiap serangan ke-`every` (counter bt.atkCount[a]; kartu ini gak punya everyNth/everySecond jadi counter bebas): ×mult damage + tembus DR; kalau HP musuh <= exec% max saat itu juga, total damage dipaksa >= HP musuh (eksekusi pasti), float "40-DAY FLOOD". (SEA SOVEREIGN)
+puppetPoison:{pct} -> tiap serangan kartu ini deal damage (total>0): musuh kehilangan pct% ATK tambahan PERMANEN selama battle (state bt.ePoison, additive s/d 90%, dipotong dari eAtk di enemyPhase let eAtk=bt.es.atk). Reset tiap lawan ganti (blok eBurn=0). Float "PUPPET -pct% ATK". (PUPPETEER)
+puppetBody:{dr} -> DR persen terhadap SEMUA damage masuk (state bt.pGuardDr, digabung sama pDr di perhitungan eShots). Re-arm tiap masuk/tag-in/regression/tower -> kartu lain tanpa fx ini gak kebawa. (PUPPETEER)
+sandBurial:{every,mult} -> setiap serangan ke-every (counter bt.atkCount[a]; kartu ini gak punya everyNth/everySecond jadi counter bebas): xmult damage + MENEMBUS efx.evasion/efx.void musuh (guaranteed hit via tsLock; game gak punya mekanik stealth jadi void â‰ˆ veil), float "SAND BURIAL". (SAND VESSEL)
+autoBlock:{pct} -> DR persen damage masuk, pakai field sama bt.pGuardDr (1 titik implementasi DR). (SAND VESSEL)
+unlimitedVoid:{below,turns,healPct} -> cek di awal playerPhase: kalau HP kartu aktif < below% max (sekali per battle, state bt.voidUsed): set HP ke healPct% max + STUN musuh turns giliran (bt.eStun; kalau foe statusImmune stun dibatalkan, heal tetap jalan). (BLESSED SORCERER)
+dimensionShift:{turns} -> saat battle dimulai / kartu ini masuk (startBattle fx0, startTowerBattle tfx) dan saat musuh baru masuk (advanceTowerFoe): ability aktif musuh nonaktif selama turns giliran musuh (state bt.eAbilityOff; enemyPhase memakai efx kosong - void/barrage/iceBlast/double/crit/dmgMult/lowHpAtk lawan mati; tick sejajar freezeLeft). (MOON MOTHER)
+   revive:{pct,lock} -> di `trySave` waktu kartu ini tumbang: bangkit sekali dgn pct% HP (default 100% kalau gak diisi) + `lock` -> set `bt.eAbilityOff=lock` jadi ability musuh mati selama lock giliran (tick/trigger re-use rantai dimensionShift). Sekali per battle via `bt.revUsed[a]`. (ALMIGHTY TYRANT; kartu lama dgn revive:pct ikut ke-honor desc-nya)
+   gluttony:{pct} -> tiap kartu aktif ini MENGALAHKAN musuh (`foeDown`, blok snatch): serap pct% ATK & pct% max HP musuh ke `bt.snatchAtk[a]`/`bt.snatchHp[a]` (flat, persist antar tag-in - pola snatch) lalu `bt.pCopyFx = copy bt.efx` (TERBARU menggantikan, gak numpuk); `resolveFx` ngasih `pCopyFx` ke kartu selama dia `bt.eq` aktif (bench = dormant). (DEMON SLIME)flood +label -> fx.flood.label opsional ganti teks float (default "40-DAY FLOOD"); eksekusi default 20% lewat fx.flood.exec - exec:0 = TANPA eksekusi (HOLLOW PURPLE Blessed Sorcerer / ASH BONES Moon Mother pakai label+exec sendiri).
+   seriousPunch:{charge,mult,wavePct,cd} -> GILIRAN kartu ini MENYERANG: (1) `bt.spCd[a]>0` -> skip serangan sambil cd--; (2) `bt.spTurn[a]`++ selama < `charge` -> skip serangan (float CHARGING); (3) giliran ke-`charge`: arm -> x`mult` damage (blok dmgMult) + hit tambahan `wavePct`% (shockwave, blok hits); reset hitung, `bt.spCd=cd`. State per kartu: spCd/spTurn/spArmed/spWave. (BALD KING)
+   meteorWave:{pct} -> guard `bt.meteorGuard[a]` (arming 4 titik persis pola bioGuard/entryMaxHp): saat masuk, damage FLAT sebesar pct% MAX HP kartu ini ke musuh aktif (bypass evasion/void). (METEOR CONQUEROR)
+   overheat:{delay,pct} -> setelah `delay` giliran sejak masuk (ukur `bt.burstStart[a]`, pola lifetime): tiap giliran kartu ini rugi pct% MAX HP sendiri (float OVERHEAT); kalau HP habis -> tewas (trySave/endBattle spt lifetime). (METEOR CONQUEROR)
+    berserker:{selfDmgPct,atkGainPct,lowPct,undyingTurns,atkMult} -> (THE STRUGGLER) playerPhase tiap giliran: rugi selfDmgPct% max HP + bt.atkBuff[a]+=atkGainPct (STACK permanen, kena di blok atk). HP < lowPct% max -> BERSERKER ARMOR: kebal mati (hp boleh < 0; gate pDead di enemyPhase) selama undyingTurns giliran + serangan xatkMult (blok dmgMult); countdown habis -> tewas paksa (endBattle).
+    stripAbility:1 -> (WHITE HAWK) di enemyPhase, serangan musuh yang KENA (etotal>0): bt.eAbilityOff=999 -> ability musuh mati permanen (makan mekanik dimensionShift: efx foe kosong). Miss musuh tiap 3 giliran pake fx dodgeEvery {turns:3} yang sudah ada.
+    valhalla:{turns,dmgCut,atkPct,healPct,master:{mult,stun}} -> (HEIGHT OF PAINTING) arming entry 4 titik (fx0/nfx/regression fx/tfx): bt.valhallaLeft=turns. playerPhase: +atkPct% ATK/giliran (stack) selama countdown; habis -> heal healPct% max HP. enemyPhase: damage masuk dipangkas dmgCut% + HP floor di 1 (gak bisa tewas selama aktif). Blok dmgMult: serangan ke-3 -> MASTERPIECE xmult (pakai counter bt.paintHits[a]) + stun musuh master.stun giliran (guard statusImmune).
+    dmgCut:{pct} -> (INK ANAMLOY) selama kartu AKTIF di arena, damage masuk dipangkas pct% permanen (pola iceShell, tanpa timer; hilang pas tag-out).
+    inkCorrupt:{pct,max} -> (INK ANAMLOY) serangan yang KENA (total>0): bt.eInk++ (cap max) + simpan bt.eInkPct; enemyPhase blok eAtk: ATK musuh dipangkas eInk x eInkPct% (permanen selama musuh ini berdiri, reset eInk=0 pas ganti gelombang lewat init bt / ePoison neighbor - TIDAK, eInk persist sengaja).
+    inkDrain:{pct,every} -> (INK ANAMLOY) serangan ke-`every` (counter bt.paintHits[a], sama dgn masterpiece): heal pct% max... TIDAK - heal pct% dari damage yang DIBERIKAN serangan itu (total>0). fx.revive ditambah opsi stun:N -> trySave blok revive: musuh kena stun N giliran (guard statusImmune).
+    dupEntry:1 -> (GLITCHED ENTITY) arming entry 4 titik (fx0/nfx/regression fx/tfx): stats diduplikasi 2x on entry - bt.pMax x2 + HP penuh + bt.atkBuff[aktif]+100 (ATK x2).
+    maxCorrupt:{pct} -> (GLITCHED ENTITY) playerPhase: serangan KENA (total>0, musuh hidup): bt.es.hp turun pct% permanen (max HP musuh corrupt, eHp clamp ke max baru, bar foe update).
+    worldCorrupt:{every,pct,dmgUp} -> (THE GRIEFER) arming entry 4 titik: bt.wc={c:0,atk:atk dasar Griefer,every,pct,dmgUp}. enemyPhase: counter tiap giliran musuh; tiap every -> musuh GLITCH: self-hit pct% ATK Griefer (tanpa DR) + semua slot party +dmgUp% ATK (stack, sisa battle).
+    deathRear:{hpPct} -> (THE GRIEFER) kematian PERTAMA kali (trySave setelah revive/lastStand): di-remove dari rotasi (tag-in normal) + tandai rearIdx/rearWaiting; saat rantai party habis -> balik jadi kartu terakhir dgn hpPct% HP. Sekali per battle.
+    grieferAtk:{mult} -> (THE GRIEFER) playerPhase: total damage serangan ini xmult.
+    senzu:{healPct,every,eatMult,strikeMult,atkGain,hpGain,maxMult} -> (DUMB HAIR GUY) playerPhase: heal healPct% max HP tiap giliran; serangan dikali eatMult selama makan; tiap every giliran FINISH MEAL -> serangan xstrikeMult, lalu gain atkGain% damage sbg flat ATK + hpGain% sbg max HP (hingga maxMultx stats dasar).
+    stretch:{balloon:{reflect},fireworks:{mult},flop:{healPct}} -> (DUMB STRETCHY GUY) playerPhase: tiap serangan trigger random: BALLOON -> tak damage + reflect reflect% dari hit musuh berikutnya; FIREWORKS -> hit musuh xmult ATK dasar (terpisah dari serangan normal); FLOP -> miss tapi heal healPct% max HP.
+    havocRocket:{every,pct} -> (HAVOC WREACKER) playerPhase, counter bt.hvCount[a] tiap serangan: setiap serangan ke-`every` -> damage FLAT pct% ATK ke musuh AKTIF + pancar ke SELURUH slot CADANGAN tower via lineupAoeHit (cadangan kehabisan HP -> w.dead / mati).
+    getExcited:1 -> (HAVOC WREACKER) foeDown blok freezeTransfer: kartu ini membunuh -> bt.excited=true; di akhir advanceTowerFoe jadwal diganti playerPhase (serangan ekstra) alih-alih enemyPhase.
+    rewind:{pct,stun} -> (TIME TRICKSTER) trySave sebelum blok revive, sekali via bt.revUsed: heal pct% max HP + damage musuh SEJUMLAH heal itu + stun stun giliran (guard statusImmune). Kalau lethal, playerPhase berikutnya langsung foeDown (guard eHp<=0).
+    turret:{start,every,atkPct,blockPct} -> (YORDLE INVENTOR) arming entry 4 titik: bt.turret=start. playerPhase: tiap every giliran +1 turret (guard bt.turretTurn); serangan: dmgMult*=(1+turret*atkPct/100). enemyPhase: kena hit & random<blockPct -> etotal=0 + turret-- (hancur).
+    lineupAoeHit(dmg) -> helper (dekat advanceTowerFoe): TOWER ONLY. Loop waves sisa idx+1: lazy w.hp-=dmg; w.hp<=0 -> w.dead (dilewati advanceTowerFoe, rail KO + bar HP). Re-render .foe-rail + float. Foe AKTIF tidak disentuh (caller sudah).
+    worldEnder:{cyc1,cyc2,pierce,healPct,revive:{dr}} -> (DARKIN LORD) playerPhase blok hits (setelah const hits): counter bt.weCount[a] mod 3 -> serangan 1 x cyc1; serangan 2 x cyc2 + lineupAoeHit ke seluruh cadangan; serangan 3 x pierce + lineupNextHit ke cadangan di belakang musuh. Lifesteal: heal healPct% dari total damage giliran ini (total+weExtra), x1.3 setelah revive. trySave blok custom sebelum fx.revive: kematian PERTAMA (revUsed) -> full HP + bt.pDr=dr permanen (pDrTurns 9999) + weRevived.
+    psychicBarrage:{rocks,mult,streakPct,reviveRocks} -> (PSYCHIC ESPER) playerPhase blok hits: ganti serangan jadi N batu (bt.pbRocks||rocks) @ mult; tiap batu pilih target - 50% musuh AKTIF (masuk shots) / 50% cadangan tower acak (damage langsung w.hp, rail refresh); streak target sama berturut-turut -> +streakPct% per batu (bt.pbKey/bt.pbStreak). Semua batu jatuh ke cadangan -> push mult 0 biar pipeline crit gak crash. trySave custom: kematian PERTAMA -> full HP + bt.pbRocks=reviveRocks.
+    rubberField:{drPct,bouncePct,dizzyPct,dizzyTurns} -> (SUN GOD) arming 4 titik ASSIGNMENT bt.rubber=!!fxX.rubberField (ikut mati pas tag-out). enemyPhase setelah blok dmgCut: etotal dipotong 50% + rbBounce=separuhnya; penyerang kena DIZZY (guard statusImmune): dizzyStack++ + dizzyLeft=9. Setelah hit (dekat royalNow counter): rbBounce dipukulkan balik ke musuh, bisa foeDown. playerPhase blok dmgMult: x(1+dizzyStack*0.2) selama dizzyLeft>0. Tick tiap awal enemyPhase; advanceTowerFoe reset semua.
+    lineupNextHit(dmg) -> helper (sebelum lineupAoeHit): TOWER ONLY. damage FLAT ke cadangan tower terdepan yang masih hidup (w.hp lazy-init -> w.dead); story no-op. Re-render .foe-rail + float PIERCE.
        ==================================================== */
     {id:"CH_RULER",name:"RULER",tier:"EX",type:"Absolute",skill:"VENUZDONOA",hp:4787,atk:2394,chance:850000000,art:"assets/cards/art/ruler.webp",
       fx:{revive:1,dmgMult:2,ignoreDef:1},
@@ -259,37 +306,113 @@ const STORY_BIBLE={
     {id:"CH_YOUNG_SPIRIT_VESSEL",name:"YOUNG SPIRIT VESSEL",tier:"R",type:"Shinobi",skill:"SHADOW CLONE DODGE",hp:88,atk:44,chance:1400,art:"assets/cards/art/young-spirit-vessel.jpg",pos:"center",
       fx:{entryCounter:{mult:0,text:"SHADOW CLONE"}},
       desc:"Memanggil bayangan klon - menghindari serangan pertama!"},
-    /* ===== KARTU EKSKLUSIF WEATHER — Hanya bisa ke-roll saat weather-nya AKTIF
-       (lihat WEATHERS + activeWeatherId). Saat ini 4 cuaca punya kartu
-       (thunderstorm / aurora / eclipse / awakened); cuaca lain nyusul —
-       tinggal tambah entri baru dgn field weatherOnly:"<id>". ===== */
-    {id:"CH_STORM_HERALD",name:"STORM HERALD",tier:"UR",type:"Tempest",skill:"THUNDERCALL",hp:2100,atk:1050,chance:12000000,art:"assets/cards/art/moon-blade.webp",pos:"center",weatherOnly:"thunderstorm",
-      fx:{everySecond:{mult:1.4}},
-      desc:"(Eksklusif cuaca THUNDERSTORM) Pembawa badai yang sambarannya berlipat tiap giliran genap."},
-    {id:"CH_TEMPEST_TYRANT",name:"TEMPEST TYRANT",tier:"EX",type:"Tempest",skill:"STORM JUDGMENT",hp:2400,atk:1250,chance:20000000,art:"assets/cards/art/awakened-galactic-tyrant.png",pos:"center",weatherOnly:"thunderstorm",
-      fx:{barrage:{chance:30,min:2,max:4,mult:1.4}},
-      desc:"(Eksklusif cuaca THUNDERSTORM) Tyrant badai yang 30% peluang melepas 2-4 sambaran beruntun."},
-    {id:"CH_ASTRAL_SEER",name:"ASTRAL SEER",tier:"UR",type:"Seer",skill:"STARLIGHT READING",hp:1950,atk:980,chance:10000000,art:"assets/cards/art/awakened-promised-child.png",pos:"center",weatherOnly:"aurora",
-      fx:{crit:{chance:25,mult:2}},
-      desc:"(Eksklusif cuaca AURORA) Peramal bintang dengan 25% peluang serangan kritis 2x damage."},
-    {id:"CH_CELESTIAL_ORACLE",name:"CELESTIAL ORACLE",tier:"EX",type:"Seer",skill:"PROPHECY",hp:2280,atk:1140,chance:16000000,art:"assets/cards/art/rikas-blessing.png",pos:"center",weatherOnly:"aurora",
-      fx:{revive:{pct:50}},
-      desc:"(Eksklusif cuaca AURORA) Peramal yang bangkit sekali dengan 50% HP setelah tumbang."},
-    {id:"CH_UMBRAL_KNIFE",name:"UMBRAL KNIFE",tier:"UR",type:"Voidkeeper",skill:"SHADOW SIPHON",hp:2050,atk:1000,chance:14000000,art:"assets/cards/art/sickle-haze.webp",pos:"center",weatherOnly:"eclipse",
-      fx:{lifesteal:20},
-      desc:"(Eksklusif cuaca ECLIPSE) Pisau bayangan yang menyerap 20% damage yang diberikan sebagai HP."},
-    {id:"CH_ECLIPSE_WARDEN",name:"ECLIPSE WARDEN",tier:"EX",type:"Voidkeeper",skill:"UMBRAL VEIL",hp:2560,atk:1020,chance:24000000,art:"assets/cards/art/king-of-curses.png",pos:"center",weatherOnly:"eclipse",
-      fx:{dodgeAtk:{pct:30}},
-      desc:"(Eksklusif cuaca ECLIPSE) Penjaga gerhana yang kadang meleset total lalu membalas."},
-    {id:"CH_DOOMCRIER",name:"DOOMCRIER",tier:"UR",type:"Doombringer",skill:"ASHEN WARNING",hp:2300,atk:1150,chance:18000000,art:"assets/cards/art/armored-titan.jpg",pos:"center",weatherOnly:"awakened",
-      fx:{burn:{chance:40,pct:10,turns:2}},
-      desc:"(Eksklusif cuaca AWAKENED) Pembawa kabar kehancuran yang 40% peluang membakar musuh 10% max HP selama 2 giliran."},
-    {id:"CH_APOCALYPSE_Herald",name:"APOCALYPSE HERALD",tier:"EX",type:"Doombringer",skill:"END TIMES",hp:2900,atk:1450,chance:36000000,art:"assets/cards/art/destruction-fist.webp",pos:"center",weatherOnly:"awakened",
-      fx:{dmgMult:1.6},
-      desc:"(Eksklusif cuaca AWAKENED) Herald akhir zaman dengan damage paling buas di seluruh katalog."},
-    /* ===== KARTU BOSS — TOKO RAID (tier BOSS, glitch hitam-putih) =====
+    /* ===== KARTU EKSKLUSIF WEATHER: AWAKENED ===== */
+{id:"CH_DARKIN_LORD",name:"DARKIN LORD",tier:"SSR",type:"Darkin",skill:"THE WORLD ENDER",hp:7040,atk:3520,chance:10000000,art:"assets/cards/art/darkin-lord.jpg",pos:"center",weatherOnly:"awakened",
+  fx:{worldEnder:{cyc1:1.5,cyc2:0.4,pierce:0.8,healPct:30,revive:{dr:40}}},
+  desc:"(Eksklusif cuaca AWAKENED) THE WORLD ENDER: serangan cycle 3 tahap - serangan 1 memberikan 150% damage, serangan 2 memberikan 40% damage ke semua musuh (slot cadangan ikut kena), serangan 3 menembus musuh dan yang di belakangnya masing-masing 80%. Heal 30% dari semua damage yang diberikan. Pertama kali mati: bangkit dengan 40% damage reduction dan heal 30% lebih banyak."},
+{id:"CH_PSYCHIC_ESPER",name:"PSYCHIC ESPER",tier:"SSR",type:"Esper",skill:"PSYCHIC BARRAGE",hp:10600,atk:5340,chance:40000000,art:"assets/cards/art/psychic-esper.jpg",pos:"center",weatherOnly:"awakened",
+  fx:{psychicBarrage:{rocks:5,mult:1.9,streakPct:10,reviveRocks:10}},
+  desc:"(Eksklusif cuaca AWAKENED) PSYCHIC BARRAGE: alih-alih menyerang, melempar 5 batu psikis 190% damage ke musuh acak termasuk slot cadangan. Batu beruntun kena musuh yang sama menambah 10% damage per batu. Pertama kali mati: bangkit full HP dan melempar 10 batu tiap serangan."},
+{id:"CH_SUN_GOD",name:"SUN GOD",tier:"SSR",type:"Sun",skill:"RUBBER FIELD",hp:9270,atk:4630,chance:25000000,art:"assets/cards/art/sun-god.jpg",pos:"center",weatherOnly:"awakened",
+  fx:{rubberField:{drPct:50,bouncePct:50,dizzyPct:20,dizzyTurns:9}},
+  desc:"(Eksklusif cuaca AWAKENED) RUBBER FIELD: saat masuk arena mengubah medan jadi karet - selama di arena menerima 50% lebih sedikit damage dari serangan dan 50% sisanya memantul balik ke penyerang. Penyerang jadi DIZZY: +20% damage diterima per stack selama 9 giliran. Stack menumpuk."},/* ===== KARTU EKSKLUSIF WEATHER: ICEAGE ===== */
+    {id:"CH_ABSOLUTE_ZERO",name:"ABSOLUTE ZERO",tier:"SSR",type:"Frost",skill:"ICE TIME CAPSULE",hp:1690,atk:848,chance:1600000,art:"assets/cards/art/absolute-zero.jpg",pos:"center",weatherOnly:"iceage",
+      fx:{entryFreeze:{turns:2,mult:2},freezeTransfer:1},
+      desc:"(Eksklusif cuaca ICE AGE) Saat masuk arena, membekukan kartu aktif musuh selama 2 giliran dan memberikan 2x damage ke target yang beku. Membunuh target dalam keadaan beku memindahkan freeze ke kartu musuh berikutnya (1 giliran)."},
+    {id:"CH_ICE_QUEEN",name:"ICE QUEEN",tier:"SSR",type:"Frost",skill:"MAHAPADMA - TIME FREEZE",hp:2140,atk:1070,chance:3500000,art:"assets/cards/art/ice-queen.jpg",pos:"center",weatherOnly:"iceage",
+      fx:{foeEntryFreeze:{turns:1},hitFreeze:{chance:25,turns:1,mult:1.9}},
+      desc:"(Eksklusif cuaca ICE AGE) Membekukan musuh 1 giliran setiap mereka masuk arena. Setiap serangan memiliki 25% chance membekukan musuh 1 giliran, dan memberikan 1.9x damage ke target yang beku."},
+    /* ===== KARTU EKSKLUSIF WEATHER: ECLIPSE ===== */
+    {id:"CH_THE_STRUGGLER",name:"THE STRUGGLER",tier:"SSR",type:"Berserk",skill:"BERSERKER ARMOR",hp:2510,atk:1260,chance:3500000,art:"assets/cards/art/the-struggler.jpg",pos:"center",weatherOnly:"eclipse",
+      fx:{berserker:{selfDmgPct:5,atkGainPct:15,lowPct:20,undyingTurns:2,atkMult:2}},
+      desc:"(Eksklusif cuaca ECLIPSE) Kehilangan 5% max HP setiap giliran, namun mendapatkan +15% ATK permanen tiap giliran (menumpuk). Saat HP di bawah 20%, BERSERKER ARMOR aktif: kebal kematian selama 2 giliran (HP boleh di bawah 0) dengan serangan 2x. Setelah 2 giliran, The Struggler tewas."},
+    {id:"CH_WHITE_HAWK",name:"WHITE HAWK",tier:"SSR",type:"Divine",skill:"GODHAND CAUSALITY",hp:2800,atk:1400,chance:5000000,art:"assets/cards/art/white-hawk.jpg",pos:"center",weatherOnly:"eclipse",
+      fx:{dodgeEvery:{turns:3},stripAbility:1},
+      desc:"(Eksklusif cuaca ECLIPSE) Setiap kali diserang, kemampuan musuh dihapus permanen. Setiap 3 giliran, serangan musuh berikutnya dihindari dengan pasti. White Hawk selalu mengontrol medan perang."},
+    /* ===== KARTU EKSKLUSIF WEATHER: ARCANE ===== */
+{id:"CH_HAVOC_WREACKER",name:"HAVOC WREACKER",tier:"SSR",type:"Arcane",skill:"SUPER MEGA DEATH ROCKET",hp:8430,atk:4210,chance:25000000,art:"assets/cards/art/havoc-wreacker.jpg",pos:"center",weatherOnly:"arcane",
+  fx:{havocRocket:{every:3,pct:50},getExcited:1},
+  desc:"(Eksklusif cuaca ARCANE) SUPER MEGA DEATH ROCKET: setiap serangan ke-3 meledakkan 50% ATK ke seluruh lineup musuh - slot cadangan ikut kebakar dan bisa tumbang. Saat membunuh, GET EXCITED!: langsung menyerang lagi tanpa menunggu giliran musuh."},
+{id:"CH_TIME_TRICKSTER",name:"TIME TRICKSTER",tier:"SSR",type:"Arcane",skill:"V-DRIVE RESONANCE",hp:7230,atk:3610,chance:15000000,art:"assets/cards/art/time-trickster.jpg",pos:"center",weatherOnly:"arcane",
+  fx:{rewind:{pct:75,stun:1}},
+  desc:"(Eksklusif cuaca ARCANE) V-DRIVE RESONANCE: saat mati, bangkit dengan 75% max HP (sekali), langsung menghantam musuh sebesar HP yang dipulihkan, dan memstun musuh 1 giliran."},
+{id:"CH_YORDLE_INVENTOR",name:"YORDLE INVENTOR",tier:"SSR",type:"Arcane",skill:"EVOLUTION TURRET",hp:7630,atk:3810,chance:18000000,art:"assets/cards/art/yordle-inventor.jpg",pos:"center",weatherOnly:"arcane",
+  fx:{turret:{start:2,every:3,atkPct:25,blockPct:40}},
+  desc:"(Eksklusif cuaca ARCANE) EVOLUTION TURRET: saat masuk arena memanggil 2 turret, bertambah 1 setiap 3 giliran. Setiap turret memberi +25% ATK. Saat terkena serangan, 40% chance turret menahan seluruh damage (1 turret hancur)."},/* ===== KARTU EKSKLUSIF WEATHER: GOOFY ===== */
+    {id:"CH_DUMB_HAIR_GUY",name:"DUMB HAIR GUY",tier:"SSR",type:"Goofy",skill:"SENZU MUNCH",hp:5540,atk:2770,chance:13000000,art:"assets/cards/art/dumb-hair-guy.jpg",pos:"center",weatherOnly:"goofy",
+      fx:{senzu:{healPct:25,every:3,eatMult:0.5,strikeMult:4,atkGain:25,hpGain:50,maxMult:10}},
+      desc:"(Eksklusif cuaca GOOFY) Won't stop eating: heal 25% Max HP setiap giliran, tapi serangan hanya memberikan 0.5x damage selama makan. Setiap 3 giliran selesai makan: serangan unmissable 4x strike, lalu serapan senzu memberikan +25% dari damage sebagai ATK dan +50% sebagai Max HP (hingga 10x stats dasar). Kemudian mulai makan lagi."},
+    {id:"CH_DUMB_STRETCHY_GUY",name:"DUMB STRETCHY GUY",tier:"SSR",type:"Goofy",skill:"GOMU GOMU NO... WAIT WHAT?",hp:5120,atk:2560,chance:13000000,art:"assets/cards/art/dumb-stretchy-guy.jpg",pos:"center",weatherOnly:"goofy",
+      fx:{stretch:{balloon:{reflect:50},fireworks:{mult:0.5},flop:{healPct:40}}},
+      desc:"(Eksklusif cuaca GOOFY) Setiap serangan trigger salah satu kekacauan: Gum-Gum Balloon (serangan meleset, tapi reflect 50% damage dari hit musuh berikutnya), Gum-Gum Fireworks (pukul semua musuh sebesar 50% ATK), atau Gum-Gum Flop (miss tapi heal 40% Max HP)."},
+    /* ===== KARTU EKSKLUSIF WEATHER: GLITCH ===== */
+    {id:"CH_GLITCHED_ENTITY",name:"GLITCHED ENTITY",tier:"SSR",type:"Corruption",skill:"CORRUPTED DATA",hp:4180,atk:2090,chance:8000000,art:"assets/cards/art/glitched-entity.jpg",pos:"center",weatherOnly:"glitch",
+      fx:{dupEntry:1,maxCorrupt:{pct:8},statusImmune:1},
+      desc:"(Eksklusif cuaca GLITCH) Saat masuk arena, data terduplikasi: stat HP dan ATK menjadi 2x. Setiap serangan yang mengenai musuh merusak Max HP mereka 8% secara permanen (bisa menumpuk). Kebal terhadap semua status negatif."},
+    {id:"CH_THE_GRIEFER",name:"THE GRIEFER",tier:"SSR",type:"Troll",skill:"WORLD CORRUPTION",hp:5160,atk:2580,chance:16000000,art:"assets/cards/art/the-griefer.jpg",pos:"center",weatherOnly:"glitch",
+      fx:{worldCorrupt:{every:3,pct:200,dmgUp:10},deathRear:{hpPct:50},grieferAtk:{mult:1.5}},
+      desc:"(Eksklusif cuaca GLITCH) Saat masuk arena, kemampuan musuh ter-corrupt: setiap 3 giliran, musuh glitch dan menghantam dirinya sendiri sebesar 200% ATK The Griefer, sementara seluruh party mendapat +10% damage untuk sisa battle. Serangan The Griefer memberikan 1.5x damage. Pertama kali tumbang, ia di-remove dari lineup dan kembali di belakang kartu terakhirmu dengan 50% HP."},
+    /* ===== KARTU EKSKLUSIF WEATHER: DOODLE ===== */
+    {id:"CH_HEIGHT_OF_PAINTING",name:"HEIGHT OF PAINTING",tier:"SSR",type:"Painter",skill:"TWILIGHT OF VALHALLA",hp:3670,atk:1840,chance:7000000,art:"assets/cards/art/height-of-painting.jpg",pos:"center",weatherOnly:"doodle",
+      fx:{valhalla:{turns:4,dmgCut:60,atkPct:15,healPct:40,master:{mult:3,stun:1}}},
+      desc:"(Eksklusif cuaca DOODLE) Saat masuk arena, Twilight of Valhalla aktif selama 4 giliran: menerima 60% damage reduction, +15% ATK setiap giliran, dan HP tidak dapat jatuh di bawah 1. Saat lukisan berakhir, memulihkan 40% max HP. Setiap serangan ke-3 adalah Masterpiece: 3x damage dan menstun musuh 1 giliran."},
+    {id:"CH_INK_ANAMLOY",name:"INK ANAMLOY",tier:"SSR",type:"Demon",skill:"THE INK DEMON",hp:3420,atk:1710,chance:3500000,art:"assets/cards/art/ink-anamloy.jpg",pos:"center",weatherOnly:"doodle",
+      fx:{dmgCut:{pct:30},inkCorrupt:{pct:10,max:5},inkDrain:{pct:50,every:3},revive:{pct:50,stun:1}},
+      desc:"(Eksklusif cuaca DOODLE) Menerima 30% damage reduction selama di arena. Setiap serangan yang menaikkan Ink Corruption mengurangi Attack musuh 10% permanen (maksimal 5 stack). Setiap serangan ke-3 memulihkan 50% dari damage yang diberikan. Saat mati, sekali bangkit dengan 50% HP dan menstun musuh 1 giliran."},
+    /* ===== KARTU EKSKLUSIF WEATHER: WINDY ===== */
+    {id:"CH_BLIZZARD_BADDIE",name:"BLIZZARD BADDIE",tier:"SR",type:"Frost",skill:"PSYCHIC BLIZZARD",hp:350,atk:175,chance:80000,art:"assets/cards/art/blizzard-baddie.jpg",pos:"center",weatherOnly:"windy",
+      fx:{psychicBarrier:{dr:30,turns:3,healPct:10}},
+      desc:"(Eksklusif cuaca WINDY) Saat masuk arena, membuat psychic barrier yang mengurangi damage 30% selama 3 giliran. Setiap serangan yang diredam barrier memulihkan 10% max HP."},
+    {id:"CH_PAPER_PAL",name:"PAPER PAL",tier:"SR",type:"Trickster",skill:"PAPER STORM",hp:272,atk:136,chance:50000,art:"assets/cards/art/paper-pal.jpg",pos:"center",weatherOnly:"windy",
+      fx:{entryAtkPct:{pct:10},crit:{chance:25,mult:1.5}},
+      desc:"(Eksklusif cuaca WINDY) Saat masuk arena, serpihan kertas memberikan 10% ATK ke semua kartu musuh. Serangan memiliki 25% chance menembus dengan 1.5x damage."},
+    /* ===== KARTU EKSKLUSIF WEATHER: LIGHTRAIN ===== */
+    {id:"CH_BLESSED_MAGE",name:"BLESSED MAGE",tier:"SR",type:"Mystic",skill:"SPIRIT OF ZEPHYR",hp:379,atk:190,chance:150000,art:"assets/cards/art/blessed-mage.jpg",pos:"center",weatherOnly:"lightrain",
+      fx:{transform:{mult:1.2},everyNth:{n:2,mult:2,text:"SPIRIT DIVE"}},
+      desc:"(Eksklusif cuaca LIGHTRAIN) Mendapat 20% tambahan semua stat sepanjang pertarungan. Setiap 2 giliran, Spirit Dive aktif: serangan berikutnya memberikan 2x damage."},
+    {id:"CH_THUNDER_PRODIGY",name:"THUNDER PRODIGY",tier:"SR",type:"Stormcaller",skill:"THUNDERCLAP FLASH",hp:438,atk:219,chance:150000,art:"assets/cards/art/thunder-prodigy.jpg",pos:"center",weatherOnly:"lightrain",
+      fx:{sleepStrike:{turns:1,mult:4,text:"THUNDERCLAP FLASH"}},
+      desc:"(Eksklusif cuaca LIGHTRAIN) Tertidur 1 giliran saat masuk arena. Serangan pertama setelah bangun memberikan 4x damage, dan kelebihan damage yang membunuh target mengenai musuh berikutnya."},
+    /* ===== KARTU EKSKLUSIF WEATHER: SNOWFALL ===== */
+    {id:"CH_10TH_CAPTAIN",name:"10TH CAPTAIN",tier:"SR",type:"Frost",skill:"BANKAI: DAIGUREN HYORINMARU",hp:435,atk:218,chance:175000,art:"assets/cards/art/10th-captain.jpg",pos:"center",weatherOnly:"snowfall",
+      fx:{entryFreeze:{turns:2,mult:1.5},iceShell:20},
+      desc:"(Eksklusif cuaca SNOWFALL) Saat masuk arena, bekukan kartu aktif musuh selama 2 giliran. Selama musuh beku, serangan memberikan 1.5x damage. Selalu menerima 20% pengurangan damage (ice shell)."},
+    {id:"CH_OCEANS_GUARDIAN",name:"OCEAN'S GUARDIAN",tier:"SR",type:"Tideborn",skill:"FISH-MAN KARATE: VAGABOND DRILL",hp:831,atk:416,chance:500000,art:"assets/cards/art/oceans-guardian.jpg",pos:"center",weatherOnly:"snowfall",
+      fx:{heavyRain:{turns:3,healPct:20},shockwave:{every:3,pct:15}},
+      desc:"(Eksklusif cuaca SNOWFALL) Saat masuk arena, hujan deras selama 3 giliran: memulihkan 20% max HP setiap giliran selama hujan. Setiap serangan ke-3 mengirimkan shockwave 15% ATK ke kartu aktif musuh."},
+      /* ===== KARTU EKSKLUSIF WEATHER: THUNDERSTORM (baru - engine passives: timeStop/killHeal/tripleHit/flood) ===== */
+      {id:"CH_IMMORTAL_VAMPIRE",name:"IMMORTAL VAMPIRE",tier:"SR",type:"Voidkeeper",skill:"THE WORLD: TIME STOP",hp:595,atk:298,chance:330000,art:"assets/cards/art/immortal-vampire.jpg",pos:"center",weatherOnly:"thunderstorm",
+        fx:{timeStop:{turns:2,every:4},killHeal:{pct:25}},
+        desc:"(Eksklusif cuaca THUNDERSTORM) Saat masuk dan setiap 4 giliran menghentikan waktu: kartu aktif musuh stun 2 giliran dan serangan tidak bisa dielakkan selama waktu berhenti. Setiap kill memulihkan 25% max HP."},
+      {id:"CH_SEA_SOVEREIGN",name:"SEA SOVEREIGN",tier:"SR",type:"Tideborn",skill:"DIVINE TRIDENT",hp:939,atk:470,chance:700000,art:"assets/cards/art/sea-sovereign.jpg",pos:"center",weatherOnly:"thunderstorm",
+        fx:{tripleHit:{hits:3,mult:0.5},flood:{every:4,mult:2,exec:20}},
+        desc:"(Eksklusif cuaca THUNDERSTORM) Setiap serangan menghantam 3 kali (masing-masing 50% damage). Tiap 4 giliran melepas 40-DAY FLOOD: 2x damage dengan eksekusi pasti untuk musuh di bawah 20% HP."},
+{id:"CH_PUPPETEER",name:"PUPPETEER",tier:"SR",type:"Construct",skill:"HITOKUGUTSU - HUMAN PUPPET",hp:567,atk:284,chance:280000,art:"assets/cards/art/puppeteer.jpg",pos:"center",weatherOnly:"sandstorm",
+fx:{puppetPoison:{pct:10},puppetBody:{dr:20}},
+desc:"(Eksklusif cuaca SANDSTORM) Tiap serangan menancapkan puppet poison: -10% ATK musuh permanen (stacking). Tubuh boneka memberi 20% pengurangan damage masuk."},
+{id:"CH_SAND_VESSEL",name:"SAND VESSEL",tier:"SR",type:"Desertborn",skill:"SAND BURIAL",hp:631,atk:316,chance:350000,art:"assets/cards/art/sand-vessel.jpg",pos:"center",weatherOnly:"sandstorm",
+fx:{sandBurial:{every:3,mult:2},autoBlock:{pct:25}},
+desc:"(Eksklusif cuaca SANDSTORM) Tiap 3 giliran melepas SAND BURIAL: hit pasti 2x damage yang mengabaikan dodge. Di antara Sand Burial, auto-block 25% damage masuk."},
+{id:"CH_BLESSED_SORCERER",name:"BLESSED SORCERER",tier:"SR",type:"Sorcerer",skill:"SIX EYES: HOLLOW PURPLE",hp:1090,atk:548,chance:850000,art:"assets/cards/art/blessed-sorcerer.jpg",pos:"center",weatherOnly:"monsoon",
+fx:{autoBlock:{pct:50},flood:{every:4,mult:2,exec:0,label:"HOLLOW PURPLE"},unlimitedVoid:{below:20,turns:2,healPct:50}},
+desc:"(Eksklusif cuaca MONSOON) Limitless Infinity: menerima 50% pengurangan damage dari semua sumber. Tiap serangan ke-4 melepas HOLLOW PURPLE: 2x damage yang mengabaikan semua pengurangan damage. Di bawah 20% HP: UNLIMITED VOID - stun musuh 2 giliran dan heal ke 50% (sekali per battle)."},
+{id:"CH_MOON_MOTHER",name:"MOON MOTHER",tier:"SR",type:"Moonborn",skill:"AMENOMINAKA",hp:1150,atk:576,chance:1000000,art:"assets/cards/art/moon-mother.jpg",pos:"center",weatherOnly:"monsoon",
+fx:{dimensionShift:{turns:2},flood:{every:4,mult:3,exec:25,label:"ALL-KILLING ASH BONES"}},
+desc:"(Eksklusif cuaca MONSOON) Saat musuh masuk arena, AMENOMINAKA memindahkannya ke dimensi lain: ability aktif musuh nonaktif selama 2 giliran. Tiap serangan ke-4 melepas ALL-KILLING ASH BONES: 3x damage mengabaikan pengurangan damage, dengan eksekusi musuh di bawah 25% HP."},
+  {id:"CH_ALMIGHTY_TYRANT",name:"ALMIGHTY TYRANT",tier:"SSR",type:"Tyrant",skill:"THE ALMIGHTY",hp:1210,atk:608,chance:1200000,art:"assets/cards/art/almighty-tyrant.jpg",pos:"center",weatherOnly:"aurora",
+fx:{dodgeEvery:{turns:3},revive:{pct:60,lock:2}},
+desc:"(Eksklusif cuaca AURORA) THE ALMIGHTY: menghindari serangan musuh di giliran ke-3. Saat tumbang, alter the future: bangkit di 60% HP dan nonaktifkan ability musuh selama 2 giliran (sekali per battle)."},
+{id:"CH_DEMON_SLIME",name:"DEMON SLIME",tier:"SSR",type:"Slimeborn",skill:"PREDATOR: GLUTTONY",hp:1860,atk:933,chance:2200000,art:"assets/cards/art/demon-slime.jpg",pos:"center",weatherOnly:"aurora",
+fx:{gluttony:{pct:25}},
+desc:"(Eksklusif cuaca AURORA) PREDATOR: GLUTTONY: tiap membunuh, serap 25% ATK & max HP musuh secara permanen (pola snatch) dan salin ability musuh - yang terbaru menggantikan - selama kartu ini aktif di battle."},    /* ===== KARTU BOSS — TOKO RAID (tier BOSS, glitch hitam-putih) =====
        raidBoss:true -> terkunci di SEMUA roll sebelum dibeli, permanen sesudahnya (bossRollUnlocked).
        chance dasar 1 in 25 juta (skill: ICE BLAST + immune status effect). ===== */
+{id:"CH_BALD_KING",name:"BALD KING",tier:"SSR",type:"Heroic",skill:"SERIOUS PUNCH",hp:1680,atk:843,chance:1500000,art:"assets/cards/art/bald-king.jpg",pos:"center",weatherOnly:"galactic",
+fx:{seriousPunch:{charge:2,mult:5,wavePct:10,cd:3}},
+desc:"(Eksklusif cuaca GALACTIC) SERIOUS PUNCH: mengisi 2 giliran tanpa menyerang, lalu giliran ke-3 melepas pukulan 5x damage + shockwave 10% ke seluruh lineup musuh. Cooldown 3 giliran."},
+{id:"CH_METEOR_CONQUEROR",name:"METEOR CONQUEROR",tier:"SSR",type:"Conqueror",skill:"METEORIC BURST",hp:1280,atk:640,chance:1000000,art:"assets/cards/art/meteor-conqueror.jpg",pos:"center",weatherOnly:"galactic",
+fx:{meteorWave:{pct:15},burst:{turns:3,mult:2},overheat:{delay:3,pct:10}},
+desc:"(Eksklusif cuaca GALACTIC) METEORIC BURST: saat masuk meledakkan 15% max HP ke musuh + stats x2 selama 3 giliran. Setelahnya overheat: rugi 10% max HP tiap giliran."},
     {id:"CH_ETERNAL_DRAGON",name:"ETERNAL DRAGON",tier:"BOSS",type:"Raid Boss",skill:"ICE BLAST",hp:5200,atk:2600,chance:25000000,art:"assets/raid/eternal-dragon-hd.png",pos:"center",raidBoss:true,
       fx:{statusImmune:true,iceBlast:{chance:50,pct:75,hits:3}},
       desc:"TIDAK PERNAH terkena status effect apapun (stun, burn, dan efek negatif lainnya). 50% peluang menembakkan ICE BLAST: 3 serangan beruntun masing-masing 75% ATK."}
@@ -443,7 +566,7 @@ function useMythicWeatherPotion(){
 const WEATHER_POTION_PRICE=5000;
 /* ====== POTION LUCK & SPEED (L1-L3 · Toko Inf + Toko Raid). Buff sementara 5 menit per pot.
    PER-LEVEL: state.luckBuffs/state.speedBuffs = array entry [{lv,flat/pct/add,endsAt}] — satu entry
-   per level, GAK digabung. Stack se-level: efek diJUMLAHKAN + durasi NABUH +5 menit per pot;
+   per level, GAK digabung. Stack se-level: luck/speed di-CAP 1x dasar per level (GAK nambah walau pakai lagi);
    beda level jalan timer-nya masing-masing. Baca via luckBuffs()/speedBuffs(). ====== */
 const POTION_BUFF_MS=5*60*1000;
 const LUCK_POTS=[null,{flat:3,pct:0},{flat:5,pct:0.10},{flat:10,pct:0.20}];
@@ -508,27 +631,46 @@ function renderWeatherDock(){
 /* ====== BUFF DOCK (pojok kanan bawah): luck & speed potion AKTIF — SATU CHIP PER LEVEL
    (L1/L2/L3 gak digabung), icon sesuai level + efek level itu + timer live masing-masing.
    Nongol cuma pas ada buff; dipanggil tiap renderShell & tick detik. ====== */
+/* ====== BUFF DOCK (pojok kanan bawah) — gaya referensi user: slot gelap rounded,
+   border warna per tipe, ikon di tengah, badge angka (sisa detik timer / ✓) nempel
+   di tepi ATAS slot. Isi: potion yang lagi AKTIF doang (luck/speed L1-L3 per level,
+   timer live masing-masing) + artefak yang lagi di-equip. Nongol cuma pas ada isinya;
+   dipanggil tiap renderShell & tick detik. ====== */
 function renderBuffDock(){
   const el=document.getElementById("buffDock");if(!el)return;
   const now=Date.now();
   const ls=luckBuffs().slice().sort((a,b)=>a.lv-b.lv);
   const ss=speedBuffs().slice().sort((a,b)=>a.lv-b.lv);
-  if(!ls.length&&!ss.length){el.classList.remove("show");el.innerHTML="";return;}
-  const chip=(cls,src,emoji,label,ms)=>`<div class="bd-chip ${cls}">
+  const arts=(state&&state.artSlots||[]).map(id=>ART_DEFS.find(d=>d.id===id)).filter(Boolean);
+  if(!ls.length&&!ss.length&&!arts.length){el.classList.remove("show");el.innerHTML="";return;}
+  /* Slot chip: badge timer countdown di atas + ikon tengah. emoji = fallback kalau img gagal.
+     Tooltip hover (bukan title native): main = nama, sub = deskripsi passive + sisa waktu. */
+  const chip=(cls,src,emoji,main,sub,ms)=>`<div class="bd-chip ${cls}">
+      <span class="bd-badge">${fmtCountdown(ms)}</span>
       <span class="bd-ic"><img src="${src}" alt="" onerror="this.parentNode.textContent='${emoji}'"></span>
-      <span class="bd-txt"><b>${label}</b><small>${fmtCountdown(ms)}</small></span>
+      <span class="bd-tip"><b>${main}</b><small>${sub}</small></span>
     </div>`;
   let html="";
   ls.forEach(b=>{
     const lTxt=b.lv>0?"L"+b.lv+" ":"";
     const p=b.pct||0;
     html+=chip("luck","assets/images/pot-luck-"+b.lv+".png","🍀",
-      `LUCK ${lTxt}+${b.flat||0}${p>0?` · +${Math.round(p*100)}%`:""}`,b.endsAt-now);
+      `LUCK ${lTxt}POTION`.trim(),
+      `+${b.flat||0} FLAT${p>0?` · +${Math.round(p*100)}%`:""} LUCK · sisa ${fmtCountdown(b.endsAt-now)}`,b.endsAt-now);
   });
   ss.forEach(b=>{
     const lTxt=b.lv>0?"L"+b.lv+" ":"";
     html+=chip("speed","assets/images/pot-speed-"+b.lv+".png","⚡",
-      `SPEED ${lTxt}+${(b.add||0).toFixed(1)}×`,b.endsAt-now);
+      `SPEED ${lTxt}POTION`.trim(),
+      `+${(b.add||0).toFixed(1)}× SPEED · sisa ${fmtCountdown(b.endsAt-now)}`,b.endsAt-now);
+  });
+  arts.forEach(d=>{
+    const icon=d.img?`<img src="${d.img}" alt="" onerror="this.remove()">`:"💎";
+    html+=`<div class="bd-chip art" style="--sc:${d.color}">
+      <span class="bd-badge eq">&#10003;</span>
+      <span class="bd-ic">${icon}</span>
+      <span class="bd-tip"><b>${d.name}</b><small>${luckTxt(d)} · TERPASANG</small></span>
+    </div>`;
   });
   el.innerHTML=html;
   el.classList.add("show");
@@ -866,7 +1008,7 @@ function renderProfile(){
   const xpNeed=lv*1000, curExp=p.exp||0;
   const xpPct=Math.max(0,Math.min(100,Math.round(curExp/xpNeed*100)));
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  /* ---- hero: avatar kartu utama (crop pos, pola sama renderFootProfile) + nama + XP ---- */
+  /* ---- hero kiri: title tag + avatar kartu utama + nama/level/XP ---- */
   const eq=equipped(); const cid=eq&&eq.char;
   const av=document.getElementById("pfAv");
   if(av){
@@ -883,11 +1025,15 @@ function renderProfile(){
   set("pfLv",lv);
   const xf=document.getElementById("pfXpFill");if(xf)xf.style.width=xpPct+"%";
   set("pfXpText",`${fmt(curExp)} / ${fmt(xpNeed)} · ${xpPct}%`);
-  /* ---- helper tile/seksi ---- */
+  set("pfTitleTag",cid?("["+cardName(cid).toUpperCase()+"]"):"[UNRANKED]");
+  const tb=document.getElementById("pfTitlesBtn");
+  if(tb)tb.onclick=()=>{body.scrollTo({top:0,behavior:"smooth"});};
+  /* ---- helper tile/seksi/row ---- */
   const tile=(lab,val,sub,tcls,vcls)=>`<div class="prof-tile${tcls?" "+tcls:""}"><span class="prof-tl">${lab}</span><span class="prof-tv${vcls?" "+vcls:""}">${val}</span>${sub?`<span class="prof-ts">${sub}</span>`:""}</div>`;
   const sec=(t,grid)=>`<section class="prof-sec"><h3 class="prof-sec-t">${t}</h3><div class="prof-grid">${grid}</div></section>`;
-  /* ===== GACHA: luck lengkap, speed, battle speed, power, summon ===== */
-  const base=p.luckBase??1, flat=p.luckFlat||0, treeF=treeLuckFlat(), artF=artLuckFlat(), artP=artLuckPct(), petF=petLuckFlat(), petP=petLuckPct(), plB=activeLuckBuff(), plBP=activeLuckBuffPct();
+  const row=(lab,val)=>`<div class="prof-row"><span class="prof-rl">${lab}</span><span class="prof-rv">${val}</span></div>`;
+  /* ===== ANGKA INTI: stat rows gaya referensi ===== */
+  const base=p.luckBase??1, flat=p.luckFlat||0, treeF=treeLuckFlat(), treeP=treeLuckPct(), artF=artLuckFlat(), artP=artLuckPct(), petF=petLuckFlat(), petP=petLuckPct(), plB=activeLuckBuff(), plBP=activeLuckBuffPct();
   const pct=(p.luckPercent||0)+treeLuckPct()+plBP+artP+petP;
   const wm=weatherLuckMult();
   const lparts=["Base "+base.toFixed(1)];
@@ -903,6 +1049,27 @@ function renderProfile(){
   const sparts=[];if(spm>1)sparts.push("Pohon/Buff ×"+spm.toFixed(1));if(swm>1)sparts.push("Cuaca ×"+swm.toFixed(1));
   const bsMax=battleSpeedMax();
   const bsNext=bsMax<4?("Berikutnya: "+(bsMax===1?"LV25 → 2×":bsMax===2?"LV50 → 3×":"LV100 → 4×")):"Semua kecepatan terbuka";
+  const pfStats=document.getElementById("pfStats");
+  if(pfStats)pfStats.innerHTML=
+    row("BATTLE POWER",fmt(totalPower()))
+    +row("CURRENT LUCK",totalLuck().toFixed(1)+"×")
+    +row("TREE LUCK","+"+treeF.toFixed(1)+(treeP>0?" / +"+Math.round(treeP*100)+"%":""))
+    +row("ITEM LUCK","+"+(artF+petF).toFixed(1)+((artP+petP)>0?" / +"+Math.round((artP+petP)*100)+"%":""))
+    +row("ROLL SPEED",eff.toFixed(1)+"×");
+
+  /* ===== PARTY: pet + 2 artefak + kartu utama (portrait + pill) ===== */
+  const pslot=(img,label,pill,name)=>`<div class="prof-slot${img?"":" empty"}" title="${name}">${img?`<img src="${img}" alt="">`:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/></svg>'}<span class="ps-lab">${label}</span><span class="ps-pill">${pill}</span></div>`;
+  const pd=state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;
+  const slots=[];
+  slots.push(pslot(pd?`assets/pets/${pd.id}.png`:"","PET",pd?`+${pd.flat||0}${pd.pct?" / +"+Math.round(pd.pct*100)+"%":""}`:"KOSONG",pd?pd.name:"Pet kosong"));
+  [0,1].forEach(i=>{
+    const aid=state.artSlots&&state.artSlots[i];
+    const ad=aid?ART_DEFS.find(x=>x.id===aid):null;
+    slots.push(pslot(ad?(ad.img||""):"","ARTEFAK "+(i+1),ad?`+${ad.flat||0}${ad.pct?" / +"+ad.pct+"%":""}`:"KOSONG",ad?ad.name:"Artefak kosong"));
+  });
+  slots.push(pslot(cid?cardImg(cid):"","KARTU",cid?`1 IN ${fmt(effChance(cid))}`:"KOSONG",cid?cardName(cid):"Tanpa kartu"));
+  const pfParty=document.getElementById("pfParty");if(pfParty)pfParty.innerHTML=slots.join("");
+  /* ===== GACHA: luck lengkap, speed, battle speed, power, summon ===== */
   const gacha=
     tile("TOTAL LUCK",totalLuck().toFixed(1)+"×",lparts.join(" · "),"wide accent","big")
     +tile("ROLL SPEED",eff.toFixed(1)+"×",sparts.length?sparts.join(" · ")+" · cap ×5":"Tanpa bonus · cap ×5")
@@ -933,7 +1100,7 @@ function renderProfile(){
     return `<b class="${ok?"prof-ok":"prof-off"}">${d.l} ${ok?"✓":"✗"}</b>`;}).join(" · ");
   const di=state.dailyIndex||0;
   const progres=
-    tile("INFINITE TOWER",`Lantai ${(state.tower&&state.tower.best)||0}`,((state.tower&&state.tower.auto)?"<b class=\"prof-ok\">AUTO RESTART: AKTIF</b>":"AUTO RESTART: MATI"))
+    tile("INFINITE TOWER",`Lantai ${(state.tower&&state.tower.best)||0}`,((state.tower&&state.tower.auto)?"AUTO RESTART: AKTIF":"AUTO RESTART: MATI"))
     +tile("SKILL POINT",`${p.sp||0}`,"untuk talent tree")
     +tile("HADIAH HARIAN",`HARI ${di+1} / 7`,`berikutnya +${fmt(DAILY_REWARDS[di]||0)} coin`)
     +storyTiles
@@ -944,7 +1111,6 @@ function renderProfile(){
     if(!d)return tile("ARTEFAK "+(i+1),"KOSONG","slot belum terpasang");
     const b=[];if(d.flat)b.push("+"+d.flat+" flat");if(d.pct)b.push("+"+d.pct+"%");
     return tile("ARTEFAK "+(i+1),d.name,b.length?b.join(" · "):"tanpa bonus luck");};
-  const pd=state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;
   const petB=[];if(pd){if(pd.flat)petB.push("+"+pd.flat+" flat");if(pd.pct)petB.push("+"+Math.round(pd.pct*100)+"%");}
   const equip=
     artTile(0)+artTile(1)
@@ -955,12 +1121,11 @@ function renderProfile(){
   /* ===== ITEM & BUFF: token, potion, cuaca & buff aktif (countdown live) ===== */
   const wAct=(state.weather&&Date.now()<state.weather.endsAt)?WEATHER[state.weather.id]:null;
   const wSub=wAct?`sisa ${fmtCountdown(state.weather.endsAt-Date.now())} · Luck ×${wAct.luckBonus} · Speed ×${wAct.speedBonus}`:"siklus alami 30 menit";
-  const lb=plB, lbp=activeLuckBuffPct(), sb=activeSpeedBuff();
-  /* buff breakdown PER LEVEL (L1/L2/L3 terpisah — gak digabung) */
+  const lb=plB, sb=activeSpeedBuff();
   const bparts=[];
   luckBuffs().slice().sort((a,b)=>a.lv-b.lv).forEach(b=>{
-    const p=b.pct||0;
-    bparts.push(`Luck ${b.lv>0?"L"+b.lv+" ":""}+${b.flat||0}${p>0?' / +'+Math.round(p*100)+'%':''} · sisa ${fmtCountdown(b.endsAt-Date.now())}`);
+    const q=b.pct||0;
+    bparts.push(`Luck ${b.lv>0?"L"+b.lv+" ":""}+${b.flat||0}${q>0?' / +'+Math.round(q*100)+'%':''} · sisa ${fmtCountdown(b.endsAt-Date.now())}`);
   });
   speedBuffs().slice().sort((a,b)=>a.lv-b.lv).forEach(b=>{
     bparts.push(`Speed ${b.lv>0?"L"+b.lv+" ":""}+${(b.add||0).toFixed(1)}× · sisa ${fmtCountdown(b.endsAt-Date.now())}`);
@@ -975,13 +1140,26 @@ function renderProfile(){
     +tile("SPEED POTION",`L1 ×${fmt((state.speedPots||[])[0]||0)} · L2 ×${fmt((state.speedPots||[])[1]||0)} · L3 ×${fmt((state.speedPots||[])[2]||0)}`,"buff speed sementara")
     +tile("CUACA AKTIF",wAct?`${wAct.icon} ${wAct.name}`:"TIDAK AKTIF",wSub,"wide")
     +tile("BUFF AKTIF",(lb>0||sb>0)?"AKTIF":"TIDAK AKTIF",bparts.length?bparts.join(" · "):"pakai potion untuk buff sementara","wide");
+  /* ===== TITLES: judul pencapaian (tombol TITLES scroll ke seksi ini) ===== */
+  const titles=[
+    {n:"ROOKIE ROLLER",d:"Roll kartu pertama",ok:(state.summons||0)>=1},
+    {n:"COLLECTOR",d:"Kumpulkan 10 kartu unik",ok:uni.size>=10},
+    {n:"SHINY HUNTER",d:"Dapatkan 1 kartu shiny",ok:shiny>=1},
+    {n:"TOWER CLIMBER",d:"Capai lantai 10 Infinite Tower",ok:((state.tower&&state.tower.best)||0)>=10},
+    {n:"RAID SLAYER",d:"Kalahkan 1 boss raid",ok:raidDone>=1},
+    {n:"ELITE",d:"Capai level 25",ok:lv>=25}
+  ];
+  const titlesGrid=titles.map(t=>tile(t.n,t.ok?"✓ DIRAIH":"· belum",t.d,t.ok?"accent":"",t.ok?"prof-ok":"")).join("");
   body.innerHTML=
-    sec("GACHA",gacha)
+    sec("TITLES",titlesGrid)
+    +sec("GACHA",gacha)
     +sec("KOLEKSI",koleksi)
     +sec("PROGRES",progres)
     +sec("EKUIPMEN",equip)
     +sec("ITEM & BUFF",item);
 }
+
+
 
 function hideRollResult() {
   const overlay = document.getElementById('rollOverlay');
@@ -1084,7 +1262,7 @@ function renderBackpackPanel(){
   const tabbar=`<div class="bp-tabs">${TABS.map(t=>`<button class="bp-tab${bpTab===t.k?' on':''}" onclick="bpSetTab('${t.k}')">${t.l}</button>`).join('')}</div>`;
   const header=`<div class="backpack-header"><h2>BACKPACK</h2>
     <button class="backpack-close" onclick="toggleBackpack()">&times;</button></div>${tabbar}`;
-  if(bpTab==='tree'){panel.innerHTML=header+`<div class="bp-body tree">${renderBpTree()}</div>`;return;}
+  if(bpTab==='tree'){panel.innerHTML=header+`<div class="bp-body tree">${renderBpTree()}</div>`;stMount();return;}
   if(bpTab==='item'){panel.innerHTML=header+`<div class="bp-body">${renderBpItems()}</div>`;return;}
   if(bpTab==='artefact'){panel.innerHTML=header+`<div class="bp-body">${renderBpArts()}</div>`;return;}
   if(bpTab==='pet'){panel.innerHTML=header+`<div class="bp-body">${renderBpPets()}</div>`;return;}
@@ -1095,7 +1273,7 @@ function renderBackpackPanel(){
     if(!s)return `<div class="bp-slot${bpTarget===i?' sel':''}" onclick="bpPickSlot(${i})"><span class="bps-plus">+</span><span class="bps-num">${i+1}</span></div>`;
     return `<div class="bp-slot filled${bpTarget===i?' sel':''}" data-sid="${s.id}" onclick="bpPickSlot(${i})" style="--tcol:${TIER_COLOR[s.tier]};border-color:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt=""><span class="bps-num">${i+1}</span><button class="bps-x" onclick="event.stopPropagation();bpClearSlot(${i})">&times;</button></div>`;
   }).join('');
-  const visible=state.stacks.filter(bpMatchesMut);
+  const visible=state.stacks.filter(bpMatchesMut).sort((a,b)=>(b.fav?1:0)-(a.fav?1:0)); /* favorit → baris atas */
   const tiles=visible.map(s=>{
     const inDeck=state.deck.includes(s.id);
     const shny=s.shiny?'<span class="bpt-shiny">SHINY</span>':'';
@@ -1103,22 +1281,25 @@ function renderBackpackPanel(){
     const trait=(s.trait&&s.trait!=='none')?s.trait:null;
     const cnt=(s.count||1)>1?`<span class="bpt-cnt">&times;${fmt(s.count)}</span>`:'';
     const stack=(shny||mut||trait)?`<div class="bpt-top">${shny}${mut?mutChip(mut,`<span class="bpt-mut" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="bpt-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(12,trait)}</span>`):''}</div>`:'';
-    return `<div class="bp-tile${inDeck?' in-deck':''}" data-sid="${s.id}" onclick="bpAssign('${s.id}')" style="--tcol:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt="">${stack}${cnt}<div class="bpt-ctl"><button class="bpt-fav${s.fav?' on':''}" onclick="event.stopPropagation();bpFav('${s.id}')" title="Favorit">${s.fav?'★':'☆'}</button><button class="bpt-lock${s.lock?' on':''}" onclick="event.stopPropagation();bpLock('${s.id}')" title="Lock">${s.lock?'🔒':'🔓'}</button></div><div class="bpt-name">${cardName(s.char)}</div></div>`;
+    return `<div class="bp-tile${inDeck?' in-deck':''}" data-sid="${s.id}" data-name="${cardName(s.char).toLowerCase()}" onclick="bpAssign('${s.id}')" style="--tcol:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt="">${stack}${cnt}<div class="bpt-ctl"><button class="bpt-fav${s.fav?' on':''}" onclick="event.stopPropagation();bpFav('${s.id}')" title="Favorit">${s.fav?'★':'☆'}</button><button class="bpt-lock${s.lock?' on':''}" onclick="event.stopPropagation();bpLock('${s.id}')" title="Lock">${s.lock?'🔒':'🔓'}</button></div><div class="bpt-name">${cardName(s.char)}</div></div>`;
   }).join('');
   const cntOf=m=>state.stacks.filter(s=>m==='all'?true:(m==='shiny'?!!s.shiny:(s.mut||'none')===m)).length;
   const chip=(k,lbl)=>{const on=bpMutFilter===k;const col=!on?(MUT_COLOR[k]||'#7DF9FF'):'';return `<button class="bp-fchip${on?' on':''}" onclick="bpSetFilter('${k}')"${col?` style="border-color:${col};color:${col}"`:''}>${lbl}<em>${cntOf(k)}</em></button>`;};
-  const filterRow=`<div class="bp-filter">${chip('all','SEMUA')+chip('shiny','SHINY')+chip('gold','GOLD')+chip('rainbow','RAINBOW')+chip('secret','SECRET')}</div>`;
-  panel.innerHTML=header+`<div class="bp-body"><div class="bp-cols">
+  const searchInput=`<input class="bp-search" type="search" placeholder="🔍 Cari kartu…" value="${deckSearch}" oninput="deckSearch=this.value;runCardSearch(this,document.querySelector('.bp-tiles'),document.getElementById('bp-nores'))">`;
+  const filterRow=`<div class="bp-filter">${searchInput}${chip('all','SEMUA')+chip('shiny','SHINY')+chip('gold','GOLD')+chip('rainbow','RAINBOW')+chip('secret','SECRET')}</div>`;
+  panel.innerHTML=header+`<div class="bp-body deck"><div class="bp-cols">
     <div class="bp-h">DECK AKTIF</div>
     <div class="bp-deckcol">
       <div class="bp-slots">${slots}</div><div class="bp-deckmeta"><span class="bdm-l">TOTAL POWER</span><b class="bdm-v">${fmt(deckTotalPower())}</b><button class="bp-save" onclick="beep(660,.08);toast('DECK TERSIMPAN','SIAP DIPAKAI','#7DF9FF')">SIMPAN DECK</button></div>
     </div>
     <div class="bp-collect">
-      ${filterRow}
-      <div class="bp-h">KOLEKSI</div>
-      ${visible.length?`<div class="bp-tiles">${tiles}</div>`:`<div class="bp-empty" style="padding:18px 0">Tidak ada kartu varian ini.</div>`}
+      <div class="bp-colhead">${filterRow}<div class="bp-h">KOLEKSI</div></div>
+      ${visible.length?`<div class="bp-scroll"><div class="bp-tiles">${tiles}</div><div class="bp-empty" id="bp-nores" style="display:none;padding:18px 0">Kartu tidak ditemukan.</div></div>`:`<div class="bp-empty" style="padding:18px 0">Tidak ada kartu varian ini.</div>`}
     </div>
   </div></div>`;
+  /* terapkan ulang query search setelah re-render (misal toggle ★) — query disimpan di deckSearch */
+  const si=document.getElementById('bp-search');
+  if(si&&deckSearch)runCardSearch(si,document.querySelector('.bp-tiles'),document.getElementById('bp-nores'));
 }
 /* Tab ITEM di backpack: tile icon ringkas; klik -> popup konfirmasi PAKAI. Item: Weather / Luck / Speed Potion. */
 function bpItemDef(kind){
@@ -1288,40 +1469,110 @@ function bpUseIntanRoll(){
 }
 /* ====== TAB TREE: pohon skill. Root di tengah, dua cabang menjalar (LUCK kiri | SPEED kanan).
    SP didapet tiap naik LV; node butuh node sebelumnya di cabang yang sama. ====== */
+/* Kanvas base px; zoom dikunci 100% — navigasi via drag-pan. */
+const ST_W=940,ST_H=740;
+const stZoom=1;
+/* Apply zoom langsung tanpa re-render panel (dipakai wheel & tombol). */
+function stApplyZoom(){
+  const scale=document.querySelector('.st-scale');if(!scale)return;
+  const canvas=scale.firstElementChild;
+  canvas.style.width=ST_W+'px';canvas.style.height=ST_H+'px';
+  scale.style.width=(ST_W*stZoom)+'px';scale.style.height=(ST_H*stZoom)+'px';
+  canvas.style.transform='scale('+stZoom+')';
+  const lbl=document.querySelector('.st-zoom-lbl');if(lbl)lbl.textContent=Math.round(stZoom*100)+'%';
+  stSyncLanes();
+}
+/* Sinkron frame lane ke kolom hex: posisi/ukuran ikut isi (px), styling gak pernah di-scale. */
+function stSyncLanes(){
+  const wrap=document.querySelector('.st-wrap');if(!wrap)return;
+  const view=wrap.querySelector('.st-view'),canvas=wrap.querySelector('.st-canvas');
+  const laneL=wrap.querySelector('.st-lane.luck'),laneS=wrap.querySelector('.st-lane.speed');
+  if(!view||!canvas||!laneL||!laneS)return;
+  const wr=wrap.getBoundingClientRect(),cr=canvas.getBoundingClientRect();
+  const z=stZoom||1;
+  const colW=108*z; /* node 84 + padding 24 */
+  const x1=cr.left+0.24*cr.width, x2=cr.left+0.76*cr.width;
+  const rawT=cr.top-wr.top+0.15*cr.height-48*z-16*z; /* y15% - setengah node - napas */
+  const rawB=cr.top-wr.top+0.85*cr.height+48*z+16*z;
+  const t=Math.max(16,rawT), b=Math.min(wr.height-12,rawB);
+  const set=(el,cx)=>{
+    el.style.left=(cx-colW/2-wr.left)+'px';
+    el.style.right='auto';
+    el.style.width=colW+'px';
+    el.style.top=t+'px';
+    el.style.bottom='auto';
+    el.style.height=Math.max(40,b-t)+'px';
+  };
+  set(laneL,x1);set(laneS,x2);
+}
+/* Tinggi view dipatok ke sisa ruang .bp-body.tree — frame gak pernah nembus panel, bawah tree gak kepotong. */
+function stFitViewH(){
+  const view=document.querySelector('.st-view');if(!view)return;
+  const body=view.closest('.bp-body');if(!body)return;
+  const top=view.getBoundingClientRect().top-body.getBoundingClientRect().top+body.scrollTop;
+  view.style.height=Math.max(300,body.clientHeight-top-16)+'px';
+}
+/* Pasang setelah innerHTML: fit tinggi view + drag-pan (zoom dikunci 100%). */
+function stMount(){
+  const view=document.querySelector('.st-view');if(!view)return;
+  stFitViewH();
+  stApplyZoom();
+  /* frame lane ikut ngikuti kolom pas drag-pan */
+  view.addEventListener('scroll',()=>stSyncLanes(),{passive:true});
+  /* drag-to-pan: mouse & touch (node hex tetap bisa diklik). */
+  let sx=0,sy=0,sl=0,st=0,drag=false;
+  view.addEventListener('pointerdown',e=>{if(e.target.closest('.st-node'))return;drag=true;sx=e.clientX;sy=e.clientY;sl=view.scrollLeft;st=view.scrollTop;view.setPointerCapture(e.pointerId);view.classList.add('grabbing');});
+  view.addEventListener('pointermove',e=>{if(!drag)return;view.scrollLeft=sl-(e.clientX-sx);view.scrollTop=st-(e.clientY-sy);});
+  view.addEventListener('pointerup',()=>{drag=false;view.classList.remove('grabbing');});
+  view.addEventListener('pointercancel',()=>{drag=false;view.classList.remove('grabbing');});
+  /* resize window: patokin lagi tinggi view + sync lane (sekali daftar aja) */
+  if(!stMount._rs){stMount._rs=true;window.addEventListener('resize',()=>{stFitViewH();stApplyZoom();});}
+}
+/* Posisi hexagon (persen kanvas): root di tengah, LUCK kolom kiri, SPEED kolom kanan. */
+const ST_POS={root:[50,50]};
+["lk1","lk2","lk3","lk4","lk5"].forEach((id,i)=>ST_POS[id]=[24,15+17.5*i]);
+["sp1","sp2","sp3","sp4","sp5"].forEach((id,i)=>ST_POS[id]=[76,15+17.5*i]);
 function stNodeHtml(n,sp){
-  const owned=treeOwned(n.id);
+  const isRoot=n.branch==='root';
+  const owned=isRoot||treeOwned(n.id);
   const preqMet=n.req.every(r=>r==="root"||treeOwned(r));
   const affordable=sp>=n.cost;
-  const state=owned?'owned':(preqMet&&affordable?'avail':(preqMet?'poor':'locked'));
-  const gain=n.branch==='luck'?('+'+(Number.isInteger(n.luck)?n.luck:n.luck.toFixed(1))+' LUCK'+(n.luckPct?' · +'+Math.round(n.luckPct*100)+'%':'')):('+'+n.speed.toFixed(1)+'× SPEED');
+  const st=owned?'owned':(preqMet&&affordable?'avail':(preqMet?'poor':'locked'));
+  const gain=isRoot?'AKAR':(n.branch==='luck'?('+'+(Number.isInteger(n.luck)?n.luck:n.luck.toFixed(1))+' LUCK'+(n.luckPct?' · +'+Math.round(n.luckPct*100)+'%':'')):('+'+n.speed.toFixed(1)+'× SPEED'));
   const ic=BP_NODE_ICONS[n.name]||'◆';
-  return `<div class="st-node st-${n.branch} st-${state}" onclick="bpTreeBuy('${n.id}')" title="${n.desc}">
-    <div class="st-ico">${ic}</div>
-    <div class="st-info"><div class="st-name">${n.name}</div><div class="st-gain">${n.branch==='root'?'AKAR':gain}</div></div>
-    ${n.branch==='root'?'':`<div class="st-cost">${owned?'✓':n.cost+' SP'}</div>`}
+  const [x,y]=ST_POS[n.id]||[50,50];
+  const cost=isRoot?'':`<div class="st-cost">${owned?'✓':n.cost+' SP'}</div>`;
+  return `<div class="st-node st-${n.branch} st-${st}" ${isRoot?'':'onclick="bpTreeBuy(\''+n.id+'\')"'} style="left:${x}%;top:${y}%" title="${n.name} — ${gain} · ${n.desc}">
+    <div class="st-in"><div class="st-ico">${ic}</div><div class="st-name">${n.name}</div><div class="st-gain">${gain}</div>${cost}</div>
   </div>`;
 }
 const BP_NODE_ICONS={"FONDASI":"◆","PEKA":"◉","TERLIHAT":"◎","MENTARI":"☀","BERTUAH":"☆","MUARA REZEKI":"☘","RINGAN":"⇢","CEPAT":"➤","PETIR":"⚡","KILAT":"≫","CAHAYA":"✦"};
-function stLinkHtml(src){
-  const owned=treeOwned(src.id);
-  const preqMet=src.req.every(r=>r==="root"||treeOwned(r));
-  const affordable=(state&&state.player&&state.player.sp||0)>=src.cost;
-  const cls=owned?'flow':(preqMet&&affordable?'pulse':'dead');
-  return `<div class="st-link ${cls}"><i></i></div>`;
+/* Garis energi antar hex (SVG): root→cabang selalu mengalir; segmen lain ikut state node sumbernya. */
+function stLinesHtml(sp){
+  const seg=(a,b,br)=>{
+    const A=ST_POS[a],B=ST_POS[b];
+    let cls='flow';
+    const src=TREE_NODES.find(nn=>nn.id===a);
+    if(a!=='root'&&src){
+      const owned=treeOwned(src.id);
+      const preqMet=src.req.every(r=>r==="root"||treeOwned(r));
+      const affordable=sp>=src.cost;
+      cls=owned?'flow':(preqMet&&affordable?'pulse':'dead');
+    }
+    return `<line class="ln ln-${br} ${cls}" x1="${A[0]}" y1="${A[1]}" x2="${B[0]}" y2="${B[1]}"/>`;
+  };
+  const lk=["lk1","lk2","lk3","lk4","lk5"],spd=["sp1","sp2","sp3","sp4","sp5"];
+  let out=seg("root",lk[0],"luck")+seg("root",spd[0],"speed");
+  for(let i=1;i<lk.length;i++)out+=seg(lk[i-1],lk[i],"luck");
+  for(let i=1;i<spd.length;i++)out+=seg(spd[i-1],spd[i],"speed");
+  return `<svg class="st-lines" viewBox="0 0 100 100" preserveAspectRatio="none">${out}</svg>`;
 }
 function renderBpTree(){
   const sp=(state&&state.player&&state.player.sp)||0;
-  const luck=TREE_NODES.filter(n=>n.branch==='luck');
-  const spd=TREE_NODES.filter(n=>n.branch==='speed');
-  const col=(branch,title,ic,list,cap)=>`<div class="st-col ${branch}">
-      <div class="st-col-h"><span class="st-col-ic">${ic}</span>${title}</div>
-      <div class="st-chain">${list.map((n,i)=>(i?stLinkHtml(list[i-1]):'')+stNodeHtml(n,sp)).join('')}</div>
-      <div class="st-col-cap">${cap}</div>
-    </div>`;
   const goal=TREE_NODES.filter(n=>n.id!=='root'&&!treeOwned(n.id)&&n.req.every(r=>r==='root'||treeOwned(r))).sort((a,b)=>a.cost-b.cost)[0];
   const pct=goal?Math.min(100,Math.round(sp/goal.cost*100)):100;
   const ready=!!goal&&sp>=goal.cost;
-  const hint=sp>0?'ketuk node buat naikkin':'naikkin LV buat dapet SP';
+  const hint=sp>0?'ketuk hexagon buat naikkin':'naikkin LV buat dapet SP';
   const goalTxt=goal?(goal.name+' · '+goal.cost+' SP'+(ready?' — SIAP!':'')):'SEMUA NODE TERBUKA';
   return `<div class="spbar">
     <div class="sp-banner">
@@ -1334,22 +1585,11 @@ function renderBpTree(){
     </div>
     <div class="sp-hint">${hint}</div>
   </div>
-    <div class="st-root">${stNodeHtml(TREE.root,sp)}</div>
-    <svg class="st-fork" viewBox="0 0 600 74" preserveAspectRatio="none">
-      <defs>
-        <linearGradient id="fkL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7DF9FF"/><stop offset="1" stop-color="#5eead4"/></linearGradient>
-        <linearGradient id="fkR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7DF9FF"/><stop offset="1" stop-color="#fcd34d"/></linearGradient>
-      </defs>
-      <path class="fk-base" d="M300 4 C300 40 146 34 146 74" stroke="url(#fkL)" vector-effect="non-scaling-stroke"/>
-      <path class="fk-flow" d="M300 4 C300 40 146 34 146 74" stroke="url(#fkL)" vector-effect="non-scaling-stroke"/>
-      <path class="fk-base" d="M300 4 C300 40 454 34 454 74" stroke="url(#fkR)" vector-effect="non-scaling-stroke"/>
-      <path class="fk-flow" d="M300 4 C300 40 454 34 454 74" stroke="url(#fkR)" vector-effect="non-scaling-stroke"/>
-      <rect class="fk-jewel" x="293" y="-3" width="14" height="14" rx="3" transform="rotate(45 300 4)"/>
-    </svg>
-    <div class="st-cols">
-      ${col('luck','CABANG LUCK','☘',luck,'Total luck sekarang: '+totalLuck().toFixed(1)+'×')}
-      ${col('speed','CABANG ROLL SPEED','⚡',spd,'Speed sekarang: '+playerSpeedMult().toFixed(1)+'× (cap 5×)')}
-    </div>`;
+  <div class="st-pills">
+    <span class="st-pill luck">☘ LUCK <b>${totalLuck().toFixed(1)}×</b></span>
+    <span class="st-pill speed">⚡ SPEED <b>${playerSpeedMult().toFixed(1)}×</b> · CAP 5×</span>
+  </div>
+  <div class="st-wrap"><div class="st-view"><div class="st-scale"><div class="st-canvas">${stLinesHtml(sp)}${TREE_NODES.map(n=>stNodeHtml(n,sp)).join('')}</div></div></div><div class="st-lane luck"><span class="st-lane-hd">☘ LUCK</span></div><div class="st-lane speed"><span class="st-lane-hd">⚡ SPEED</span></div></div>`;
 }
 function bpTreeBuy(id){
   const r=treeBuy(id);
@@ -1457,7 +1697,7 @@ function bpTogglePet(id){
 function lobbyPetHtml(){
   const d=state&&state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;
   if(!d)return"";
-  return `<div class="lobby-pet" title="${d.name}"><img src="${d.img}" alt="${d.name}" onerror="this.parentNode.classList.add('noimg')"><span class="lp-eb">${d.emoji}</span></div>`;
+  return `<div class="lobby-pet"><img src="${d.img}" alt="${d.name}" onerror="this.parentNode.classList.add('noimg')"><span class="lp-eb">${d.emoji}</span><span class="lp-tip"><b style="color:${d.color}">${d.name}</b><small>${luckTxt(d)}</small></span></div>`;
 }
 /* ===== DEV: buka SEMUA pet + artefak untuk akun aktif (idempoten - aman dijalankan berulang) ===== */
 function devUnlockAll(){
@@ -1620,7 +1860,7 @@ const FX_KNOWN=["double","crit","pierce","barrage","evasion","lifesteal","void",
   "revive","dmgMult","ignoreDef","purple","domain","ranton","dodgeAtk","everySecond","lastStand",
   "styleSwitching","burst","hpDrain","lifetime","entryCounter","dodgeEvery","everyNth","lowHpAura",
   "executeOnEntry","transform","wallTitans","rumbling","bungeeGum","snatch","arise","prideOfPrince",
-  "regression","copy","entryShatter","entryMaxHp","turnMaxHp","splitDeath","deathDefy","openingHit","burn","desperateStrike","statusImmune","iceBlast"];
+  "regression","copy","entryShatter","entryMaxHp","turnMaxHp","splitDeath","deathDefy","openingHit","burn","desperateStrike","statusImmune","iceBlast","psychicBarrier","entryAtkPct","sleepStrike","entryFreeze","iceShell","heavyRain","shockwave","timeStop","killHeal","tripleHit","flood","puppetPoison","puppetBody","sandBurial","autoBlock","unlimitedVoid","dimensionShift","gluttony","seriousPunch","meteorWave","overheat","freezeTransfer","foeEntryFreeze","hitFreeze","berserker","stripAbility","valhalla","dmgCut","inkCorrupt","inkDrain","dupEntry","maxCorrupt","worldCorrupt","deathRear","grieferAtk","senzu","stretch","havocRocket","getExcited","rewind","turret","worldEnder","psychicBarrage","rubberField"];
 function validateFx(){const bad=[];(STORY_BIBLE.units||[]).forEach(u=>{const fx=u.fx||{},ks=Object.keys(fx);
   ks.forEach(k=>{if(!FX_KNOWN.includes(k))bad.push(u.id+" :: fx."+k+" TIDAK DIKENAL -> passive TIDAK AKAN JALAN di battle");});
   if((u.desc||"").trim()&&!ks.length)bad.push(u.id+" :: desc ada tapi fx kosong -> murni teks");});
@@ -1733,7 +1973,9 @@ function mergeFx(a,b){if(!b||!Object.keys(b).length)return a;const o={...a};for(
 function fxOf(stack){return mergeFx(PASSIVE_FX[stack.char]||{},TRAIT_FX[stack.trait]||{});}
 /* fx aktif pemain; kalau kartu punya {copy:1} (Copy Ninja), salin passive lawan + tetap warisi trait */
 function resolveFx(stack,enemyFx){
-  const base=fxOf(stack);
+  let base=fxOf(stack);
+  /* GLUTTONY (Demon Slime): kartu aktif nerima ability musuh yang disalin */
+  if(bt&&bt.pCopyFx&&stack===bt.eq)base=mergeFx(base,bt.pCopyFx);
   if(!base.copy)return base;
   const o=Object.assign({},enemyFx||{});
   delete o.copy;
@@ -2398,7 +2640,7 @@ function startBattle(){
   const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   const eid=en.id||null,efx=eid?(PASSIVE_FX[eid]||{}):{};
   if(bt&&bt.timer)clearTimeout(bt.timer);
-  bt={speed:battleSpeedEff(),lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),execGuard:new Array(fighters.length).fill(false),shatterGuard:new Array(fighters.length).fill(false),wtCount:new Array(fighters.length).fill(0),snatchAtk:new Array(fighters.length).fill(0),snatchHp:new Array(fighters.length).fill(0),regressCharges:new Array(fighters.length).fill(0),bioGuard:new Array(fighters.length).fill(false),splitLeft:new Array(fighters.length).fill(0),splitMult:new Array(fighters.length).fill(1),rumbling:0,rumblingPct:0,defyUsed:new Array(fighters.length).fill(false),defyHold:false,openGuard:true,dsState:new Array(fighters.length).fill(0),aftermath:false,gumTurns:0,trickNext:false,royalNow:false,gunsNow:false,shadow:null};
+  bt={speed:battleSpeedEff(),lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,ePoison:0,pGuardDr:0,eAbilityOff:0,voidUsed:false,pCopyFx:null,spCd:[],spTurn:[],spArmed:[],spWave:[],meteorGuard:[],phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),execGuard:new Array(fighters.length).fill(false),shatterGuard:new Array(fighters.length).fill(false),wtCount:new Array(fighters.length).fill(0),snatchAtk:new Array(fighters.length).fill(0),snatchHp:new Array(fighters.length).fill(0),regressCharges:new Array(fighters.length).fill(0),bioGuard:new Array(fighters.length).fill(false),splitLeft:new Array(fighters.length).fill(0),splitMult:new Array(fighters.length).fill(1),rumbling:0,rumblingPct:0,defyUsed:new Array(fighters.length).fill(false),defyHold:false,openGuard:true,dsState:new Array(fighters.length).fill(0),aftermath:false,gumTurns:0,trickNext:false,royalNow:false,gunsNow:false,psychic:null,atkEntryGuard:new Array(fighters.length).fill(false),sleepLeft:new Array(fighters.length).fill(0),sleepArmed:new Array(fighters.length).fill(false),overflow:0,rain:null,freezeLeft:0,shockCount:new Array(fighters.length).fill(0),shadow:null,freezeNext:false,valhallaLeft:0,paintHits:[],eInk:0,eInkPct:0,wc:null,rearIdx:-1,rearWaiting:false,rearUsed:[],senzu:{},senzuFin:false,balloon:0,stretchShot:0,turret:0,hvCount:new Array(fighters.length).fill(0),excited:false,weCount:new Array(fighters.length).fill(0),weRevived:false,pbRocks:0,pbKey:"",pbStreak:0,rubber:false,rbBounce:0,dizzyStack:0,dizzyLeft:0};
   // BURST: kartu pertama masuk arena langsung dapat boost HP kalau punya fx.burst
   const fx0=resolveFx(eq,efx);
   if(fx0.burst){bt.pMax=Math.round(base.hp*fx0.burst.mult);bt.pHp=bt.pMax;}
@@ -2407,6 +2649,22 @@ function startBattle(){
   if(fx0.executeOnEntry)bt.execGuard[0]=true;
   if(fx0.entryShatter)bt.shatterGuard[0]=true;
   if(fx0.entryMaxHp)bt.bioGuard[0]=true;
+  if(fx0.meteorWave)bt.meteorGuard[0]=true;
+  if(fx0.entryAtkPct)bt.atkEntryGuard[0]=true;
+  if(fx0.psychicBarrier)bt.psychic={left:fx0.psychicBarrier.turns,dr:fx0.psychicBarrier.dr,healPct:fx0.psychicBarrier.healPct};
+  if(fx0.sleepStrike){bt.sleepLeft[0]=fx0.sleepStrike.turns;bt.sleepArmed[0]=true;}
+   if(fx0.entryFreeze&&!foeStatusImmune()){bt.eStun=fx0.entryFreeze.turns;bt.freezeLeft=fx0.entryFreeze.turns;setTimeout(()=>floatText(".fighter.foe","BEKU","crit"),bsMs(300));}
+   if(fx0.heavyRain)bt.rain={left:fx0.heavyRain.turns,healPct:fx0.heavyRain.healPct};
+   if(fx0.timeStop&&!foeStatusImmune()){bt.eStun=fx0.timeStop.turns;setTimeout(()=>floatText(".fighter.foe","THE WORLD","crit"),bsMs(300));}
+  if(fx0.dimensionShift){bt.eAbilityOff=fx0.dimensionShift.turns;setTimeout(()=>floatText(".fighter.foe","AMENOMINAKA","crit"),bsMs(300));}
+bt.pGuardDr=(fx0&&fx0.puppetBody)?fx0.puppetBody.dr:((fx0&&fx0.autoBlock)?fx0.autoBlock.pct:0);
+if(fx0.valhalla){bt.valhallaLeft=fx0.valhalla.turns;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","TWILIGHT OF VALHALLA","crit");},bsMs(360));}
+if(fx0.senzu){const _szb=cardStats(bt.eq.char,bt.eq.mut,bt.eq.trait,bt.eq.shiny);bt.senzu={baseAtk:_szb.atk,baseHp:bt.pMax,atkSum:0,hpSum:0,turn:0};setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","MUNCH MUNCH!","heal");},bsMs(420));}
+if(fx0.turret)bt.turret=fx0.turret.start;
+bt.rubber=!!(fx0&&fx0.rubberField);if(bt.rubber)setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","RUBBER FIELD","crit");},bsMs(520));
+if(fx0.stretch){setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","GOMU GOMU... WAIT WHAT?!","crit");},bsMs(520));}
+if(fx0.dupEntry){bt.pMax=Math.round(bt.pMax*2);bt.pHp=bt.pMax;bt.atkBuff[bt.active]+=100;setTimeout(()=>{if(bt&&!bt.over){setBar("hpMe","hpMeT",bt.pHp,bt.pMax);floatText(".fighter.me","DATA DUPLICATED x2","crit");}},bsMs(420));}
+if(fx0.worldCorrupt){bt.wc={c:0,atk:Math.round(cardStats(bt.eq.char,bt.eq.mut,bt.eq.trait,bt.eq.shiny).atk),every:fx0.worldCorrupt.every,pct:fx0.worldCorrupt.pct,dmgUp:fx0.worldCorrupt.dmgUp};setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","ABILITY CORRUPTED","crit");},bsMs(520));}
   bt.fighters.forEach((f,i)=>{const x=resolveFx(f,efx);if(x.splitDeath)bt.splitLeft[i]=x.splitDeath.times;});
   schedPhase(700,step);
 }
@@ -2425,6 +2683,21 @@ function tagIn(){
   if(nfx.executeOnEntry)bt.execGuard[next]=true;
   if(nfx.entryShatter)bt.shatterGuard[next]=true;
   if(nfx.entryMaxHp)bt.bioGuard[next]=true;
+  if(nfx.meteorWave)bt.meteorGuard[next]=true;
+  if(nfx.entryAtkPct)bt.atkEntryGuard[next]=true;
+  if(nfx.psychicBarrier)bt.psychic={left:nfx.psychicBarrier.turns,dr:nfx.psychicBarrier.dr,healPct:nfx.psychicBarrier.healPct};
+  if(nfx.sleepStrike){bt.sleepLeft[next]=nfx.sleepStrike.turns;bt.sleepArmed[next]=true;}
+   if(nfx.entryFreeze&&!foeStatusImmune()){bt.eStun=nfx.entryFreeze.turns;bt.freezeLeft=nfx.entryFreeze.turns;setTimeout(()=>floatText(".fighter.foe","BEKU","crit"),bsMs(300));}
+   if(nfx.heavyRain)bt.rain={left:nfx.heavyRain.turns,healPct:nfx.heavyRain.healPct};
+   if(nfx.timeStop&&!foeStatusImmune()){bt.eStun=nfx.timeStop.turns;setTimeout(()=>floatText(".fighter.foe","THE WORLD","crit"),bsMs(300));}
+bt.pGuardDr=(nfx&&nfx.puppetBody)?nfx.puppetBody.dr:((nfx&&nfx.autoBlock)?nfx.autoBlock.pct:0);
+if(nfx.valhalla){bt.valhallaLeft=nfx.valhalla.turns;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","TWILIGHT OF VALHALLA","crit");},bsMs(360));}
+if(nfx.senzu){const _szb=cardStats(bt.eq.char,bt.eq.mut,bt.eq.trait,bt.eq.shiny);bt.senzu={baseAtk:_szb.atk,baseHp:bt.pMax,atkSum:0,hpSum:0,turn:0};setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","MUNCH MUNCH!","heal");},bsMs(420));}
+if(nfx.turret)bt.turret=nfx.turret.start;
+bt.rubber=!!(nfx&&nfx.rubberField);if(bt.rubber)setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","RUBBER FIELD","crit");},bsMs(520));
+if(nfx.stretch){setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","GOMU GOMU... WAIT WHAT?!","crit");},bsMs(520));}
+if(nfx.dupEntry){bt.pMax=Math.round(bt.pMax*2);bt.pHp=bt.pMax;bt.atkBuff[bt.active]+=100;setTimeout(()=>{if(bt&&!bt.over){setBar("hpMe","hpMeT",bt.pHp,bt.pMax);floatText(".fighter.me","DATA DUPLICATED x2","crit");}},bsMs(420));}
+if(nfx.worldCorrupt){bt.wc={c:0,atk:Math.round(cardStats(bt.eq.char,bt.eq.mut,bt.eq.trait,bt.eq.shiny).atk),every:nfx.worldCorrupt.every,pct:nfx.worldCorrupt.pct,dmgUp:nfx.worldCorrupt.dmgUp};setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","ABILITY CORRUPTED","crit");},bsMs(520));}
   // fase 1: kartu aktif sekarang tumbang
   const meEl=document.querySelector(".fighter.me");
   if(meEl){meEl.classList.remove("tag-enter");meEl.classList.add("ko");koFx(meEl);}
@@ -2452,12 +2725,27 @@ function trySave(){
   if(fx.regression&&(bt.regressCharges[a]||0)>0){
     bt.regressCharges[a]--;
     bt.pHp=Math.max(1,Math.round(bt.pMax*fx.regression.hpPct/100));
-    bt.revUsed[a]=false;bt.standUsed[a]=false;bt.burstStart[a]=bt.turn;
-    bt.dodgeCount[a]=0;bt.dodgeArmed[a]=false;bt.atkCount[a]=0;bt.wtCount[a]=0;
+    bt.revUsed[a]=false;bt.standUsed[a]=false;bt.burstStart[a]=bt.turn;bt.weRevived=false;bt.pbRocks=0;bt.pbKey="";bt.pbStreak=0;
+    bt.dodgeCount[a]=0;bt.dodgeArmed[a]=false;bt.atkCount[a]=0;bt.wtCount[a]=0;bt.shockCount[a]=0;
     if(fx.entryCounter)bt.entryGuard[a]=true;
     if(fx.executeOnEntry)bt.execGuard[a]=true;
     if(fx.entryShatter)bt.shatterGuard[a]=true;
     if(fx.entryMaxHp)bt.bioGuard[a]=true;
+    if(fx.meteorWave)bt.meteorGuard[a]=true;
+    if(fx.entryAtkPct)bt.atkEntryGuard[a]=true;
+    if(fx.psychicBarrier)bt.psychic={left:fx.psychicBarrier.turns,dr:fx.psychicBarrier.dr,healPct:fx.psychicBarrier.healPct};
+    if(fx.sleepStrike){bt.sleepLeft[a]=fx.sleepStrike.turns;bt.sleepArmed[a]=true;}
+     if(fx.entryFreeze&&!foeStatusImmune()){bt.eStun=fx.entryFreeze.turns;bt.freezeLeft=fx.entryFreeze.turns;setTimeout(()=>floatText(".fighter.foe","BEKU","crit"),bsMs(300));}
+     if(fx.heavyRain)bt.rain={left:fx.heavyRain.turns,healPct:fx.heavyRain.healPct};
+     if(fx.timeStop&&!foeStatusImmune()){bt.eStun=fx.timeStop.turns;setTimeout(()=>floatText(".fighter.foe","THE WORLD","crit"),bsMs(300));}
+bt.pGuardDr=(fx&&fx.puppetBody)?fx.puppetBody.dr:((fx&&fx.autoBlock)?fx.autoBlock.pct:0);
+if(fx.valhalla){bt.valhallaLeft=fx.valhalla.turns;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","TWILIGHT OF VALHALLA","crit");},bsMs(360));}
+if(fx.senzu){const _szb=cardStats(bt.eq.char,bt.eq.mut,bt.eq.trait,bt.eq.shiny);bt.senzu={baseAtk:_szb.atk,baseHp:bt.pMax,atkSum:0,hpSum:0,turn:0};setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","MUNCH MUNCH!","heal");},bsMs(420));}
+if(fx.turret)bt.turret=fx.turret.start;
+bt.rubber=!!(fx&&fx.rubberField);
+if(fx.stretch){setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","GOMU GOMU... WAIT WHAT?!","crit");},bsMs(520));}
+if(fx.dupEntry){bt.pMax=Math.round(bt.pMax*2);bt.pHp=bt.pMax;bt.atkBuff[bt.active]+=100;setTimeout(()=>{if(bt&&!bt.over){setBar("hpMe","hpMeT",bt.pHp,bt.pMax);floatText(".fighter.me","DATA DUPLICATED x2","crit");}},bsMs(420));}
+if(fx.worldCorrupt){bt.wc={c:0,atk:Math.round(cardStats(bt.eq.char,bt.eq.mut,bt.eq.trait,bt.eq.shiny).atk),every:fx.worldCorrupt.every,pct:fx.worldCorrupt.pct,dmgUp:fx.worldCorrupt.dmgUp};setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","ABILITY CORRUPTED","crit");},bsMs(520));}
     setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
     setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","REGRESSION","heal");},bsMs(400));
     return true;
@@ -2470,15 +2758,46 @@ function trySave(){
     bt.splitMult[a]=(bt.splitMult[a]||1)*fx.splitDeath.pct/100;
     bt.pMax=Math.max(1,Math.round(bt.pMax*fx.splitDeath.pct/100));
     bt.pHp=bt.pMax;
-    bt.revUsed[a]=false;bt.standUsed[a]=false;bt.burstStart[a]=bt.turn;
-    bt.dodgeCount[a]=0;bt.dodgeArmed[a]=false;bt.atkCount[a]=0;bt.wtCount[a]=0;
+    bt.revUsed[a]=false;bt.standUsed[a]=false;bt.burstStart[a]=bt.turn;bt.weRevived=false;bt.pbRocks=0;bt.pbKey="";bt.pbStreak=0;
+    bt.dodgeCount[a]=0;bt.dodgeArmed[a]=false;bt.atkCount[a]=0;bt.wtCount[a]=0;bt.shockCount[a]=0;
     setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
     setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","SPLIT!","heal");},bsMs(400));
     return true;
   }
+  /* V-DRIVE RESONANCE (TIME TRICKSTER): mati -> bangkit pct% max HP (sekali) + damage musuh sejumlah heal itu + stun */
+  if(fx.rewind&&!bt.revUsed[a]){
+    bt.revUsed[a]=true;
+    const rh=Math.max(1,Math.round(bt.pMax*fx.rewind.pct/100));
+    bt.pHp=Math.min(bt.pMax,rh);
+    setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
+    if(bt.eHp>0){
+      bt.eHp-=rh;setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);
+      setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","REWIND -"+fmt(rh),"crit");}},bsMs(420));
+    }
+    if(fx.rewind.stun&&!foeStatusImmune()){bt.eStun=Math.max(bt.eStun||0,fx.rewind.stun);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","REWOUND!","crit");},bsMs(560));}
+    setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","V-DRIVE RESONANCE +"+fmt(rh),"heal");},bsMs(300));
+    return true;
+    }
+  /* THE WORLD ENDER (DARKIN LORD): kematian PERTAMA -> revive penuh + DR 40% permanen + heal bonus */
+  if(fx.worldEnder&&!bt.revUsed[a]){
+    bt.revUsed[a]=true;bt.pHp=bt.pMax;bt.weRevived=true;
+    bt.pDr=Math.max(bt.pDr||0,fx.worldEnder.revive.dr);bt.pDrTurns=9999;
+    setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
+    setTimeout(()=>floatText(".fighter.me","THE WORLD ENDER","crit"),bsMs(400));
+    return true;
+  }
+  /* PSYCHIC OVERLOAD (PSYCHIC ESPER): kematian PERTAMA -> full HP + 10 batu per serangan */
+  if(fx.psychicBarrage&&!bt.revUsed[a]){
+    bt.revUsed[a]=true;bt.pHp=bt.pMax;bt.pbRocks=fx.psychicBarrage.reviveRocks;
+    setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
+    setTimeout(()=>floatText(".fighter.me","PSYCHIC OVERLOAD","crit"),bsMs(400));
+    return true;
+  }
   if(fx.revive&&!bt.revUsed[a]){
-    bt.revUsed[a]=true;bt.pHp=bt.pMax;
+    bt.revUsed[a]=true;bt.pHp=(fx.revive.pct!=null)?Math.max(1,Math.round(bt.pMax*fx.revive.pct/100)):bt.pMax;
+    if(fx.revive.lock){bt.eAbilityOff=Math.max(bt.eAbilityOff||0,fx.revive.lock);setTimeout(()=>floatText(".fighter.foe","ALTER THE FUTURE","crit"),bsMs(600));}
     setTimeout(()=>floatText(".fighter.me","REVIVE!","heal"),bsMs(400));
+    if(fx.revive.stun&&!foeStatusImmune()){bt.eStun=Math.max(bt.eStun||0,fx.revive.stun);setTimeout(()=>floatText(".fighter.foe","INK DEMON STUN","crit"),bsMs(520));}
     setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
     return true;
   }
@@ -2493,9 +2812,26 @@ function trySave(){
   for(let i=0;i<bt.fighters.length;i++){const pfx=resolveFx(bt.fighters[i],bt.efx);if(pfx.prideOfPrince)bt.atkBuff[i]=(bt.atkBuff[i]||0)+pfx.prideOfPrince.pct;}
   /* RUMBLING: kartu ini beneran tumbang (revive/lastStand gak nolong) → nyalain DoT post-mortem */
   if(fx.rumbling){bt.rumbling=fx.rumbling.turns;bt.rumblingPct=fx.rumbling.pct;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","THE RUMBLING","burn");},bsMs(600));}
+  /* DEATH REAR (THE GRIEFER): mati PERTAMA kali -> remove dari rotasi sekarang, nunggu balik di belakang party */
+  if(fx.deathRear&&!bt.rearUsed[a]){
+    bt.rearUsed[a]=true;bt.rearIdx=a;bt.rearWaiting=true;
+    setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","REMOVED FROM LINE","miss");},bsMs(400));
+  }
   if(a+1<bt.fighters.length){tagIn();return true;}
   /* LAST CARD MATI tapi Rumbling masih jalan → jangan langsung kalah; masuk mode aftermath (DoT tick doang) */
   if(bt.rumbling>0){bt.aftermath=true;return true;}
+  /* REAR RETURN (THE GRIEFER): rantai party habis -> balik sebagai kartu terakhir dgn hpPct% HP */
+  if(bt.rearWaiting&&bt.rearIdx>=0){
+    const ri=bt.rearIdx;bt.rearWaiting=false;
+    const rfx=resolveFx(bt.fighters[ri],bt.efx);
+    bt.active=ri;bt.eq=bt.fighters[ri];bt.justTagged=true;
+    const rbase=cardStats(bt.eq.char,bt.eq.mut,bt.eq.trait,bt.eq.shiny);
+    bt.pMax=rbase.hp+(bt.snatchHp[ri]||0);
+    bt.pHp=Math.max(1,Math.round(bt.pMax*((((rfx.deathRear||{}).hpPct)||50)/100)));
+    setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
+    setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","WORLD REWIND!","heal");},bsMs(400));
+    return true;
+  }
   return false;
 }
 function setBar(id,tid,cur,max){
@@ -2611,8 +2947,19 @@ function playerPhase(){
   bt.trickNext=false;bt.royalNow=false;bt.gunsNow=false;
   const id=bt.eq.char,t=bt.turn;let fx=resolveFx(bt.eq,bt.efx);
   if(bt.shadow)fx={};
+  /* UNLIMITED VOID (BLESSED SORCERER): HP < below% max -> set ke healPct% + stun musuh turns, sekali per battle */
+  if(fx.unlimitedVoid&&!bt.voidUsed&&bt.pHp<bt.pMax*fx.unlimitedVoid.below/100){
+    bt.voidUsed=true;
+    bt.pHp=Math.max(bt.pHp,Math.round(bt.pMax*fx.unlimitedVoid.healPct/100));
+    setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
+    setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","UNLIMITED VOID","heal");},bsMs(220));
+    if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE Â· VOID","heal"),bsMs(460));}
+    else{bt.eStun+=fx.unlimitedVoid.turns;setTimeout(()=>floatText(".fighter.foe","UNLIMITED VOID","crit"),bsMs(460));}
+  }
   document.getElementById("turnLabel").innerHTML=(bt.tower&&towerRun)?("LANTAI <b>"+towerRun.floor+"</b> · GELOMBANG <b>"+(towerRun.idx+1)+"/"+towerRun.waves.length+"</b>"):("TURN<br>"+t);
   setTurnPill("you","GILIRANMU");
+  /* EVOLUTION TURRET (YORDLE INVENTOR): tiap `every` giliran -> +1 turret */
+  if(fx.turret&&bt.turn%fx.turret.every===0){bt.turret++;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","TURRET +1 ("+bt.turret+")","heal");},bsMs(320));}
   /* RUMBLING: DoT sisa dari kartu yang udah mati — jalan tiap giliran walau kartu udah ganti */
   if(bt.rumbling>0&&foeStatusImmune()){bt.rumbling=0;setTimeout(()=>floatText(".fighter.foe","IMMUNE · RUMBLING","heal"),bsMs(160));}
   if(bt.rumbling>0){
@@ -2621,6 +2968,13 @@ function playerPhase(){
     setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);
     setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","RUMBLING -"+fmt(rd),"burn");}},bsMs(200));
     if(bt.eHp<=0){setTimeout(()=>{if(bt&&!bt.over)foeDown();},bsMs(700));return;}
+  }
+  /* HEAVY RAIN (OCEAN'S GUARDIAN): selama hujan aktif, kartu ini pulih `healPct`% max HP tiap giliran — jalan walau kena stun (spt turnMaxHp); hujan habis setelah `left` giliran */
+  if(bt.rain&&bt.rain.left>0){
+    const rh=Math.max(1,Math.round(bt.pMax*bt.rain.healPct/100));
+    bt.pHp=Math.min(bt.pMax,bt.pHp+rh);setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
+    setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","HUJAN +"+fmt(rh),"heal");},bsMs(260));
+    bt.rain.left--;
   }
   /* TURN MAX HP (BIOKINESIS): tiap giliran kartu ini aktif & hidup, kartu aktif musuh rugi pct% MAX HP (flat).
      Ditaruh SEBELUM cek stun biar aura tetap nyala walau kartu kena stun. Boss NPC kebal. */
@@ -2645,6 +2999,22 @@ function playerPhase(){
   }
   const efx=bt.efx||{};
   const a=bt.active;
+  /* SLEEP STRIKE (THUNDER PRODIGY): tidur N giliran sejak masuk — serangan dilewati;
+     begitu hitung tidur habis, serangan berikutnya di-arm ×mult (lihat blok dmgMult) */
+  if(fx.sleepStrike&&(bt.sleepLeft[a]||0)>0){
+    bt.sleepLeft[a]--;
+    if(bt.sleepLeft[a]===0){bt.sleepArmed[a]=true;setTimeout(()=>floatText(".fighter.me","BANGUN!","heal"),bsMs(200));}
+    else setTimeout(()=>floatText(".fighter.me","TERTIDUR","miss"),bsMs(200));
+    schedPhase(600,enemyPhase);
+    return;
+  }
+    /* SERIOUS PUNCH (BALD KING): charge giliran tanpa menyerang -> giliran ke-charge arm pukulan -> cd giliran */
+  if(fx.seriousPunch){
+    if((bt.spCd[a]||0)>0){bt.spCd[a]=(bt.spCd[a]||0)-1;if(bt.spCd[a]>0)setTimeout(()=>floatText(".fighter.me","SERIOUS PUNCH Â· CD "+bt.spCd[a],"miss"),bsMs(200));schedPhase(600,enemyPhase);return;}
+    bt.spTurn[a]=(bt.spTurn[a]||0)+1;
+    if(bt.spTurn[a]<fx.seriousPunch.charge){setTimeout(()=>floatText(".fighter.me","CHARGING... "+bt.spTurn[a]+"/"+fx.seriousPunch.charge,"miss"),bsMs(200));schedPhase(600,enemyPhase);return;}
+    bt.spTurn[a]=0;bt.spCd[a]=fx.seriousPunch.cd;bt.spArmed[a]=true;
+  }
   /* DESPERATE STRIKE: di bawah below% HP -> serangan berikutnya ×mult, sesudahnya tewas di akhir giliran */
   if(fx.desperateStrike&&bt.dsState[a]===0&&bt.pHp>0&&bt.pHp<bt.pMax*fx.desperateStrike.below/100)bt.dsState[a]=1;
   /* DODGE EVERY: setiap N giliran sejak masuk, pasti hindari serangan musuh giliran ini */
@@ -2660,6 +3030,16 @@ function playerPhase(){
       return;
     }
   }
+    /* METEORIC BURST (METEOR CONQUEROR): saat masuk, ledakan meteror -> damage FLAT pct% MAX HP kartu ini ke musuh aktif (bypass evasion/void), sekali per masuk */
+  if(fx.meteorWave&&bt.meteorGuard[a]){
+    bt.meteorGuard[a]=false;
+    if(bt.eHp>0){
+      const md=Math.max(1,Math.round(bt.pMax*fx.meteorWave.pct/100));
+      bt.eHp-=md;setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);
+      setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","METEORIC BURST -"+fmt(md),"crit");}},bsMs(200));
+      if(bt.eHp<=0){setTimeout(()=>{if(bt&&!bt.over)foeDown();},bsMs(700));return;}
+    }
+  }
   /* ENTRY SHATTER (ALMIGHTY PUSH): saat masuk, ledakan memecah -> damage flat sebesar pct% dari total HP musuh saat ini (bypass evasion/void, spt wallTitans) */
   if(fx.entryShatter&&bt.shatterGuard[a]){
     bt.shatterGuard[a]=false;
@@ -2667,6 +3047,17 @@ function playerPhase(){
       const sd=Math.max(1,Math.round(bt.eHp*fx.entryShatter.pct/100));
       bt.eHp-=sd;setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);
       setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","ALMIGHTY PUSH -"+fmt(sd),"crit");}},bsMs(200));
+      if(bt.eHp<=0){setTimeout(()=>{if(bt&&!bt.over)foeDown();},bsMs(700));return;}
+    }
+  }
+  /* PAPER STORM (PAPER PAL): saat masuk, serpihan kertas memberikan damage FLAT sebesar pct% dari ATK kartu ini ke kartu aktif musuh (bypass evasion/void spt entryShatter). Sekali per masuk. */
+  if(fx.entryAtkPct&&bt.atkEntryGuard[a]){
+    bt.atkEntryGuard[a]=false;
+    if(bt.eHp>0){
+      const ownAtk=cardStats(bt.eq.char,bt.eq.mut,bt.eq.trait,bt.eq.shiny).atk;
+      const pd=Math.max(1,Math.round(ownAtk*fx.entryAtkPct.pct/100));
+      bt.eHp-=pd;setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);
+      setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","PAPER STORM -"+fmt(pd),"crit");}},bsMs(200));
       if(bt.eHp<=0){setTimeout(()=>{if(bt&&!bt.over)foeDown();},bsMs(700));return;}
     }
   }
@@ -2693,6 +3084,49 @@ function playerPhase(){
     const baseHp=cardStats(id,bt.eq.mut,bt.eq.trait,bt.eq.shiny).hp;
     if(bt.pMax>baseHp){bt.pMax=baseHp;if(bt.pHp>bt.pMax)bt.pHp=bt.pMax;setBar("hpMe","hpMeT",bt.pHp,bt.pMax);}
   }
+    /* OVERHEAT (METEOR CONQUEROR): setelah delay giliran sejak masuk -> rugi pct% MAX HP sendiri tiap giliran; habis -> tewas (pola lifetime) */
+  if(fx.overheat&&(t-(bt.burstStart[a]||1))>=fx.overheat.delay){
+    const oh=Math.max(1,Math.round(bt.pMax*fx.overheat.pct/100));
+    bt.pHp=Math.max(0,bt.pHp-oh);setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
+    setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.me","hit");floatText(".fighter.me","OVERHEAT -"+fmt(oh),"burn");}},bsMs(200));
+    if(bt.pHp<=0){setTimeout(()=>{if(!bt||bt.over)return;if(!trySave()){endBattle(false);return;}schedPhase(bt.justTagged?2700:700,playerPhase);},bsMs(900));return;}
+  }
+  /* BERSERKER ARMOR (THE STRUGGLER): tiap giliran rugi selfDmgPct% max HP + atkGainPct% ATK stack; HP < lowPct% -> undying undyingTurns giliran + xatkMult; habis -> tewas */
+  if(fx.berserker){
+    const bzk=fx.berserker;
+    if((bt.berserkLeft||0)>0){
+      bt.berserkLeft--;
+      setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","BERSERKER TURNS "+bt.berserkLeft,"crit");},bsMs(240));
+      if(bt.berserkLeft<=0){
+        bt.berserkOn=false;
+        setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.me","ko");floatText(".fighter.me","ARMOR HABIS","crit");}},bsMs(220));
+        setTimeout(()=>{if(bt&&!bt.over)endBattle(false);},bsMs(900));
+        return;
+      }
+    }
+    const bzd=Math.max(1,Math.round(bt.pMax*bzk.selfDmgPct/100));
+    bt.pHp-=bzd;bt.atkBuff[a]+=bzk.atkGainPct;
+    setTimeout(()=>{if(bt&&!bt.over){floatText(".fighter.me","BERSERK -"+fmt(bzd)+" +"+bzk.atkGainPct+"% ATK","burn");}},bsMs(200));
+    if(!bt.berserkOn&&bt.pHp<=bt.pMax*bzk.lowPct/100){
+      bt.berserkOn=true;bt.berserkLeft=bzk.undyingTurns;
+      setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","BERSERKER ARMOR!","crit");},bsMs(420));
+    }
+    if(bt.pHp<=0&&!bt.berserkOn){
+      setTimeout(()=>{if(!bt||bt.over)return;if(!trySave()){endBattle(false);return;}schedPhase(bt.justTagged?2700:700,playerPhase);},bsMs(900));
+      return;
+    }
+  }
+   /* TWILIGHT OF VALHALLA (HEIGHT OF PAINTING): tiap giliran selama aktif -> +atkPct% ATK stack; countdown habis -> heal healPct% max HP */
+   if(fx.valhalla&&(bt.valhallaLeft||0)>0){
+     const vl=fx.valhalla;
+     bt.atkBuff[a]+=vl.atkPct;bt.valhallaLeft--;
+     setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","TWILIGHT +"+vl.atkPct+"% ATK","heal");},bsMs(240));
+     if(bt.valhallaLeft<=0){
+       const vh=Math.max(1,Math.round(bt.pMax*vl.healPct/100));
+       bt.pHp=Math.min(bt.pMax,bt.pHp+vh);setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
+       setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","TWILIGHT HABIS +"+fmt(vh),"heal");},bsMs(460));
+     }
+   }
   let atk=cardStats(id,bt.eq.mut,bt.eq.trait,bt.eq.shiny).atk;
   if(bt.atkBuff[a])atk=Math.round(atk*(1+bt.atkBuff[a]/100));
   /* SPLIT DEATH: ATK badan hasil terbelah ikut menyusut (kumulatif, gaya snatchAtk) */
@@ -2708,11 +3142,35 @@ function playerPhase(){
   if(fx.openingHit&&bt.openGuard&&bt.eHp>0){dmgMult*=(1+fx.openingHit.pct/100);bt.openGuard=false;}
   /* DESPERATE STRIKE dilepas: ×mult sekali lalu state=2 -> mati di awal enemyPhase (lihat blok dsState) */
   if(fx.desperateStrike&&bt.dsState[a]===1){dmgMult*=fx.desperateStrike.mult;bt.dsState[a]=2;setTimeout(()=>floatText(".fighter.me",fx.desperateStrike.text||"DESPERATE STRIKE","crit"),bsMs(200));}
+  /* SLEEP STRIKE dilepas: serangan pertama setelah bangun ×mult sekali; overkill disimpan di bt.overflow (dihantamkan ke musuh berikutnya di advanceTowerFoe) */
+  let sleepHit=false;
+  if(fx.sleepStrike&&bt.sleepArmed[a]){sleepHit=true;dmgMult*=fx.sleepStrike.mult;bt.sleepArmed[a]=false;setTimeout(()=>floatText(".fighter.me",fx.sleepStrike.text||"THUNDERCLAP FLASH","crit"),bsMs(220));}
+    /* SERIOUS PUNCH dilepas: giliran ke-charge -> xmult + arm shockwave 10% (dipakai di blok hits) */
+  if(fx.seriousPunch&&bt.spArmed[a]){bt.spArmed[a]=false;dmgMult*=fx.seriousPunch.mult;setTimeout(()=>floatText(".fighter.me","SERIOUS PUNCH","crit"),bsMs(200));}
+  /* FREEZE (10TH CAPTAIN): selama target BEKU (bt.freezeLeft>0, tick paralel eStun di enemyPhase) serangan kartu ini ×mult */
+  if(fx.entryFreeze&&(bt.freezeLeft||0)>0)dmgMult*=fx.entryFreeze.mult;
+  /* FREEZE BONUS (ICE QUEEN): selama target BEKU, serangan kartu ini xmult */
+  if(fx.hitFreeze&&(bt.freezeLeft||0)>0)dmgMult*=fx.hitFreeze.mult;
+   /* MASTERPIECE (HEIGHT OF PAINTING): serangan ke-3 -> xmult + arm stun (dilepas setelah hit, guard statusImmune) */
+   let masterpiece=false;
+   if(fx.valhalla&&fx.valhalla.master){bt.paintHits[a]=(bt.paintHits[a]||0)+1;if(bt.paintHits[a]%3===0){masterpiece=true;dmgMult*=fx.valhalla.master.mult;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","MASTERPIECE!","crit");},bsMs(220));}}
+  /* BERSERKER ARMOR aktif (THE STRUGGLER): serangan xatkMult */
+  /* DIZZY (RUBBER FIELD): penyerang kena DIZZY -> semua damage yang diterima +20% per stack */
+  if((bt.dizzyStack||0)>0&&(bt.dizzyLeft||0)>0)dmgMult*=(1+bt.dizzyStack*0.2);
+  if(fx.berserker&&bt.berserkOn&&(bt.berserkLeft||0)>0)dmgMult*=fx.berserker.atkMult;
   /* SATU PERSEN (Ultra Instinct): tiap serangan GENAP (ke-2, ke-4, ...) = 1% kekuatan penuh → ×mult damage + tembus damage reduction musuh */
   let pen=!!fx.ignoreDef;
   if(fx.everySecond){bt.atkCount[a]++;if(bt.atkCount[a]%2===0){dmgMult*=fx.everySecond.mult;pen=true;setTimeout(()=>floatText(".fighter.me","ONE PERCENT","crit"),bsMs(220));}}
   /* SUSANOO CHIDORI: tiap serangan ke-N → ×mult damage + menembus pengurangan damage */
   if(fx.everyNth){bt.atkCount[a]++;if(bt.atkCount[a]%fx.everyNth.n===0){dmgMult*=fx.everyNth.mult;pen=true;setTimeout(()=>floatText(".fighter.me",fx.everyNth.text||"SUSANOO CHIDORI","crit"),bsMs(220));}}
+  /* THE WORLD (Immortal Vampire): serangan ke-`every` -> stun musuh `turns` giliran lagi (entry stun sudah arming di 4 titik masuk) */
+  if(fx.timeStop){bt.atkCount[a]++;if(bt.atkCount[a]%fx.timeStop.every===0&&!foeStatusImmune()){bt.eStun=fx.timeStop.turns;setTimeout(()=>floatText(".fighter.foe","THE WORLD","crit"),bsMs(220));}}
+  /* 40-DAY FLOOD (Sea Sovereign): serangan ke-`every` -> ×mult + tembus DR + eksekusi kalau musuh <= exec% HP */
+  let floodHit=false;
+  if(fx.flood){bt.atkCount[a]++;if(bt.atkCount[a]%fx.flood.every===0){floodHit=true;dmgMult*=fx.flood.mult;pen=true;setTimeout(()=>floatText(".fighter.foe",(fx.flood.label||"40-DAY FLOOD"),"crit"),bsMs(220));}}
+/* SAND BURIAL (Sand Vessel): serangan ke-`every` -> guaranteed hit xmult, bypass dodge/void via tsLock */
+let sandHit=false;
+if(fx.sandBurial){bt.atkCount[a]++;if(bt.atkCount[a]%fx.sandBurial.every===0){sandHit=true;dmgMult*=fx.sandBurial.mult;setTimeout(()=>floatText(".fighter.foe","SAND BURIAL","crit"),bsMs(220));}}
   /* STYLE SWITCHING (Devil Hunter): 4 mode bergilir tiap giliran kartu ini menyerang */
   if(fx.styleSwitching){
     const STYLES=["TRICKSTER","SWORDMASTER","ROYALGUARD","GUNSLINGER"];
@@ -2724,9 +3182,111 @@ function playerPhase(){
     else if(si===3)bt.gunsNow=true;
   }
   if(fx.highHpDmg&&bt.pHp>bt.pMax*fx.highHpDmg.above/100)dmgMult*=(1+fx.highHpDmg.bonus/100);
+  if(fx.grieferAtk)dmgMult*=fx.grieferAtk.mult;
+  if(fx.turret&&bt.turret>0)dmgMult*=(1+bt.turret*fx.turret.atkPct/100);
+  /* SENZU MUNCH (DUMB HAIR GUY): heal tiap giliran; makan -> x0.5 dmg; finish meal tiap N giliran -> x4 strike */
+  if(fx.senzu){
+    const sl=fx.senzu;
+    bt.senzu.turn++;
+    const fin=(bt.senzu.turn%sl.every===0);
+    const heal=Math.round(bt.pMax*sl.healPct/100);
+    bt.pHp=Math.min(bt.pMax,bt.pHp+heal);
+    dmgMult*=fin?sl.strikeMult:sl.eatMult;
+    bt.senzuFin=fin;
+    setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me",fin?"FINISH THE MEAL!":"MUNCH MUNCH +"+heal,"heal");},bsMs(300));
+  }
+  /* GOMU GOMU (DUMB STRETCHY GUY): tiap serangan trigger random 1 dari 3 */
+  if(fx.stretch){
+    const st=fx.stretch;const r=Math.floor(Math.random()*3);
+    if(r===0){bt.balloon=st.balloon.reflect;dmgMult=0;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","GUM-GUM BALLOON!","heal");},bsMs(300));}
+    else if(r===1){dmgMult=0;bt.stretchShot=Math.round(cardStats(bt.eq.char,bt.eq.mut,bt.eq.trait,bt.eq.shiny).atk*st.fireworks.mult);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","GUM-GUM FIREWORKS!","crit");},bsMs(300));}
+    else{dmgMult=0;const fh=Math.round(bt.pMax*st.flop.healPct/100);bt.pHp=Math.min(bt.pMax,bt.pHp+fh);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","GUM-GUM FLOP +"+fh,"heal");},bsMs(300));}
+  }
   /* BUNGEE GUM: selama gum masih nempel di musuh (ditempel waktu musuh nyerang), serangan ×(1+bonus%) lalu hitung mundur */
   if(fx.bungeeGum&&bt.gumTurns>0){dmgMult*=(1+fx.bungeeGum.bonus/100);bt.gumTurns--;}
   const hits=[{mult:1}];
+
+  /* THE WORLD ENDER (DARKIN LORD): cycle 3 serangan - 150% / 40% semua / 80% pierce + 80% di belakang */
+
+  let weExtra=0;
+
+  if(fx.worldEnder){
+
+    const we=fx.worldEnder;const ph=bt.weCount[a]%3;bt.weCount[a]++;
+
+    hits.length=0;
+
+    if(ph===0){hits.push({mult:we.cyc1});}
+
+    else if(ph===1){hits.push({mult:we.cyc2});weExtra=Math.round(atk*dmgMult*we.cyc2);lineupAoeHit(weExtra);}
+
+    else{hits.push({mult:we.pierce});weExtra=Math.round(atk*dmgMult*we.pierce);lineupNextHit(weExtra);}
+
+    setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me",ph===0?"WORLD ENDER":ph===1?"WORLD ENDER - ALL":"WORLD ENDER - PIERCE","crit");},bsMs(240));
+
+  }
+
+  /* PSYCHIC BARRAGE (PSYCHIC ESPER): alih-alih menyerang - N batu acak ke musuh aktif / cadangan tower */
+
+  if(fx.psychicBarrage){
+
+    const pb=fx.psychicBarrage;const n=bt.pbRocks||pb.rocks;
+
+    hits.length=0;
+
+    let railDirty=false;
+
+    for(let i=0;i<n;i++){
+
+      let target=null;
+
+      if(bt.tower&&towerRun){
+
+        const alive=[];
+
+        for(let j=towerRun.idx+1;j<towerRun.waves.length;j++){const w=towerRun.waves[j];if(w&&!w.dead)alive.push(w);}
+
+        if(alive.length&&Math.random()<0.5)target=alive[Math.floor(Math.random()*alive.length)];
+
+      }
+
+      const key=target?("W"+towerRun.waves.indexOf(target)):"A";
+
+      if(key===bt.pbKey)bt.pbStreak++;else bt.pbStreak=0;
+
+      bt.pbKey=key;
+
+      const m=pb.mult*(1+bt.pbStreak*(pb.streakPct||10)/100);
+
+      if(target){
+
+        if(target.hp==null)target.hp=target.es.hp;
+
+        const d=Math.round(atk*dmgMult*m);
+
+        target.hp-=d;
+
+        if(target.hp<=0){target.hp=0;target.dead=true;}
+
+        railDirty=true;
+
+      }else{
+
+        hits.push({mult:m});
+
+      }
+
+    }
+
+    if(!hits.length)hits.push({mult:0});
+
+    if(railDirty){const rail=document.querySelector(".foe-rail");if(rail)rail.outerHTML=towerEnemyBenchRail();}
+
+    setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","PSYCHIC BARRAGE x"+n,"crit");},bsMs(300));
+
+  }
+  if(fx.seriousPunch&&bt.spWave[a]){bt.spWave[a]=false;hits.push({mult:(fx.seriousPunch.wavePct||10)/100});lineupAoeHit(Math.round(atk*dmgMult*((fx.seriousPunch.wavePct||10)/100)));}
+  if(fx.tripleHit){hits.length=0;for(let tri=0;tri<fx.tripleHit.hits;tri++)hits.push({mult:fx.tripleHit.mult});}
   if(fx.double&&Math.random()*100<fx.double)hits.push({mult:1});
   let crit=false;
   if(fx.crit&&Math.random()*100<fx.crit.chance){crit=true;hits[hits.length-1].mult*=fx.crit.mult;}
@@ -2749,15 +3309,23 @@ function playerPhase(){
   if(galaxy){const m=hits[hits.length-1].mult;hits.length=0;hits.push({mult:m});barrageN=0;}
   const ariseMode=id==="CH_EX_JINWOO"&&barrageN>=9;
   if(bt.gunsNow)hits.push({mult:0.4});
-  let total=0;const shots=[];
+/* THE WORLD: selama time stop aktif serangan tidak bisa di-dodge/void */
+  let tsLock=!!(fx.timeStop&&(bt.eStun||0)>0)||!!sandHit;
+    let total=0;const shots=[];
   hits.forEach(h=>{
     let d=Math.round(atk*dmgMult*h.mult);
-    if(!pen&&efx.evasion&&t<=efx.evasion.turns&&Math.random()*100<efx.evasion.chance){shots.push({d:0,evade:true});return;}
+    if(!pen&&!tsLock&&efx.evasion&&t<=efx.evasion.turns&&Math.random()*100<efx.evasion.chance){shots.push({d:0,evade:true});return;}
     const pierce=!!(fx.pierce&&Math.random()*100<fx.pierce);
-    if(!pen&&efx.void&&!pierce&&Math.random()*100<efx.void){shots.push({d:0,void:true});return;}
+    if(!pen&&!tsLock&&efx.void&&!pierce&&Math.random()*100<efx.void){shots.push({d:0,void:true});return;}
     shots.push({d,miss:false,pierce});total+=d;
   });
-  const eHpNext=bt.eHp-total,foeDead=eHpNext<=0;
+if(floodHit&&total>0&&total<bt.eHp&&((fx.flood.exec!=null?fx.flood.exec:20)>0)&&bt.eHp<=bt.es.hp*((fx.flood.exec!=null?fx.flood.exec:20)/100))total=bt.eHp;
+/* HITOKUGUTSU (Puppeteer): tiap hit -> puppet poison -pct% ATK musuh permanen (stacking s/d 90%) */
+if(fx.puppetPoison&&total>0){bt.ePoison=Math.min(90,(bt.ePoison||0)+fx.puppetPoison.pct);setTimeout(()=>floatText(".fighter.foe","PUPPET -"+fx.puppetPoison.pct+"% ATK","burn"),bsMs(360));}
+if(fx.inkCorrupt&&total>0){bt.eInk=Math.min(fx.inkCorrupt.max,(bt.eInk||0)+1);bt.eInkPct=fx.inkCorrupt.pct;setTimeout(()=>floatText(".fighter.foe","INK CORRUPTION","burn"),bsMs(380));}
+    const eHpNext=bt.eHp-total,foeDead=eHpNext<=0;
+  /* THUNDERCLAP FLASH overflow: sisa damage serangan sleepStrike yang membunuh target disimpan buat musuh berikutnya */
+  if(sleepHit&&foeDead&&eHpNext<0)bt.overflow=-eHpNext;
   const foeDownCb=()=>{if(bt&&!bt.over)foeDown();};
   performAttack({
     A:".fighter.me",D:".fighter.foe",id,fx,
@@ -2770,19 +3338,65 @@ function playerPhase(){
   });
   bt.eHp=eHpNext;
   if(ranton&&total>0&&bt.eHp>0&&fx.ranton.stun){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else bt.eStun=fx.ranton.stun;}
+   if(masterpiece&&bt.eHp>0&&fx.valhalla.master.stun){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else{bt.eStun=Math.max(bt.eStun||0,fx.valhalla.master.stun);setTimeout(()=>floatText(".fighter.foe","MASTERPIECE STUN","crit"),bsMs(520));}}
   /* HP DRAIN: tiap serangan yang kena memotong MAX HP musuh secara permanen (compounding) */
   if(fx.hpDrain&&total>0&&bt.eHp>0&&!foeStatusImmune()){
     bt.es.hp=Math.max(1,Math.round(bt.es.hp*(1-fx.hpDrain.pct/100)));
     if(bt.eHp>bt.es.hp)bt.eHp=bt.es.hp;
     setTimeout(()=>floatText(".fighter.foe","HP DRAIN","crit"),bsMs(360));
   }
+    /* THE WORLD ENDER lifesteal: heal healPct% dari semua damage giliran ini (x1.3 setelah revive) */
+
+  if(fx.worldEnder&&total+weExtra>0){
+
+    const wh=Math.max(1,Math.round((total+weExtra)*fx.worldEnder.healPct/100*(bt.weRevived?1.3:1)));
+
+    bt.pHp=Math.min(bt.pMax,bt.pHp+wh);
+
+    setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","LIFESTEAL +"+fmt(wh),"heal");},bsMs(460));
+
+  }
+
   /* WALL TITANS: tiap `every` giliran, berbaris ngasih bonus pct% ATK ke musuh (di luar serangan normal) */
   if(fx.wallTitans){bt.wtCount[a]=(bt.wtCount[a]||0)+1;if(bt.wtCount[a]%fx.wallTitans.every===0&&bt.eHp>0){const wt=Math.round(atk*fx.wallTitans.pct/100);bt.eHp-=wt;setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","WALL TITANS -"+fmt(wt),"crit");}},bsMs(520));}}
-  if(fx.lifesteal&&total>0){
+  /* SHOCKWAVE (OCEAN'S GUARDIAN): setiap serangan ke-`every`, kartu aktif musuh kena flat pct% ATK di luar serangan normal (gaya wallTitans; arena 1 musuh aktif = "semua musuh" jatuh ke kartu aktif) */
+  if(fx.shockwave){bt.shockCount[a]=(bt.shockCount[a]||0)+1;if(bt.shockCount[a]%fx.shockwave.every===0&&bt.eHp>0){const sw=Math.round(atk*fx.shockwave.pct/100);bt.eHp-=sw;lineupAoeHit(sw);setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","SHOCKWAVE -"+fmt(sw),"crit");}},bsMs(560));}}
+  /* SUPER MEGA DEATH ROCKET (HAVOC WREACKER): serangan ke-`every` -> flat pct% ATK ke musuh aktif + seluruh slot cadangan (lineupAoeHit) */
+  if(fx.havocRocket){bt.hvCount[a]=(bt.hvCount[a]||0)+1;if(bt.hvCount[a]%fx.havocRocket.every===0&&bt.eHp>0){const rk=Math.round(atk*fx.havocRocket.pct/100);bt.eHp-=rk;setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","DEATH ROCKET -"+fmt(rk),"crit");}},bsMs(560));lineupAoeHit(rk);}}  if(fx.lifesteal&&total>0){
     const ls=Math.round(total*fx.lifesteal/100);bt.pHp=Math.min(bt.pMax,bt.pHp+ls);
     setTimeout(()=>floatText(".fighter.me","+"+fmt(ls),"heal"),bsMs(300));
   }
+   /* INK DRAIN (INK ANAMLOY): serangan ke-every -> heal pct% dari damage yang DIBERIKAN serangan itu */
+   if(fx.inkDrain&&total>0){bt.paintHits[a]=(bt.paintHits[a]||0)+1;if(bt.paintHits[a]%fx.inkDrain.every===0){const ih=Math.max(1,Math.round(total*fx.inkDrain.pct/100));bt.pHp=Math.min(bt.pMax,bt.pHp+ih);setBar("hpMe","hpMeT",bt.pHp,bt.pMax);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","INK DRAIN +"+fmt(ih),"heal");},bsMs(320));}}
   if(fx.burn&&total>0&&Math.random()*100<fx.burn.chance){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else{bt.eBurn=fx.burn.turns;setTimeout(()=>floatText(".fighter.foe","BURN","burn"),bsMs(360));}}
+  /* HIT FREEZE (ICE QUEEN): chance% per serangan -> bekukan musuh turns giliran (pola burn, guard statusImmune) */
+  /* SENZU FINISH MEAL (DUMB HAIR GUY): gain 25% damage sbg flat ATK + 50% sbg max HP, cap maxMultx base */
+  if(fx.senzu&&bt.senzuFin&&total>0&&bt.eHp>0){
+    const sl=fx.senzu;
+    let gA=Math.round(total*sl.atkGain/100);let gH=Math.round(total*sl.hpGain/100);
+    gA=Math.max(0,Math.min(gA,bt.senzu.baseAtk*(sl.maxMult-1)-bt.senzu.atkSum));
+    gH=Math.max(0,Math.min(gH,bt.senzu.baseHp*(sl.maxMult-1)-bt.senzu.hpSum));
+    if(gA>0){bt.senzu.atkSum+=gA;bt.atkBuff[a]+=Math.round(gA/bt.senzu.baseAtk*100);}
+    if(gH>0){bt.senzu.hpSum+=gH;bt.pMax=Math.round(bt.senzu.baseHp+bt.senzu.hpSum);if(bt.pHp>bt.pMax)bt.pHp=bt.pMax;}
+    setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","SENZU GROW +ATK +MAX HP","crit");},bsMs(360));
+  }
+  if(fx.senzu)bt.senzuFin=false;
+  /* FIREWORKS (DUMB STRETCHY GUY): pukulan ekstra xmult ATK dasar ke musuh */
+  if(bt.stretchShot){
+    const fd=bt.stretchShot;bt.stretchShot=0;
+    if(bt.eHp>0){
+      bt.eHp-=fd;
+      setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","FIREWORKS -"+fmt(fd),"crit");setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);}},bsMs(340));
+      if(bt.eHp<=0){setTimeout(()=>{if(bt&&!bt.over)foeDown();},bsMs(900));return;}
+    }
+  }
+  /* MAX CORRUPT (GLITCHED ENTITY): serangan kena -> max HP musuh turun pct% permanen, clamp eHp */
+  if(fx.maxCorrupt&&total>0&&bt.eHp>0){
+    bt.es.hp=Math.max(1,Math.round(bt.es.hp*(100-fx.maxCorrupt.pct)/100));
+    if(bt.eHp>bt.es.hp)bt.eHp=bt.es.hp;
+    setTimeout(()=>{if(bt&&!bt.over){floatText(".fighter.foe","MAX HP CORRUPT","burn");setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);}},bsMs(340));
+  }
+  if(fx.hitFreeze&&total>0&&bt.eHp>0&&Math.random()*100<fx.hitFreeze.chance){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else{bt.eStun=fx.hitFreeze.turns;bt.freezeLeft=fx.hitFreeze.turns;setTimeout(()=>floatText(".fighter.foe","BEKU","crit"),bsMs(360));}}
   /* PERFECT SUSANOO (low HP): di bawah ambang, serangan membakar musuh selama N giliran */
   if(fx.lowHpAura&&total>0&&bt.pHp<bt.pMax*fx.lowHpAura.below/100&&bt.eHp>0){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else{bt.eBurn=fx.lowHpAura.burn.turns;setTimeout(()=>floatText(".fighter.foe","PERFECT SUSANOO","burn"),bsMs(360));}}
   setBar("hpFoe","hpFoeT",bt.eHp+total,bt.es.hp);setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
@@ -2828,10 +3442,14 @@ function enemyPhase(){
     return;
   }
   setTurnPill("foe","GILIRAN MUSUH");
+  if(bt.dizzyLeft>0){bt.dizzyLeft--;if(bt.dizzyLeft<=0){bt.dizzyStack=0;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","DIZZY HABIS","miss");},bsMs(300));}}
   const id=bt.eq.char,t=bt.turn;let fx=resolveFx(bt.eq,bt.efx);
   if(bt.shadow)fx={};
-  const efx=bt.efx||{};
+  const efx=(bt.eAbilityOff>0)?{}:(bt.efx||{});
   let eDomain=false,eArise=false,eranton=false,eGalaxy=false,eIceBlast=false;
+  /* FREEZE tick (10TH CAPTAIN): hitungan beku turun tiap giliran musuh — paralel dgn eStun, sebelum blok stun biar bonus ×mult habis pas 2 giliran */
+  if(bt.freezeLeft>0)bt.freezeLeft--;
+  if(bt.eAbilityOff>0)bt.eAbilityOff--;
   if(bt.eStun>0){
     if(efx.statusImmune){
       /* STATUS IMMUNE: stun musuh dibatalkan — musuh tetap menyerang */
@@ -2880,6 +3498,8 @@ function enemyPhase(){
     if(bt.eHp>0){bt.eHp=Math.min(bt.es.hp,bt.eHp+vh);setTimeout(()=>floatText(".fighter.foe","+"+fmt(vh),"heal"),bsMs(420));setBar("hpFoe","hpFoeT",bt.eHp,bt.es.hp);}
   }else{
     let eAtk=bt.es.atk,edmgMult=1;
+if(bt.ePoison>0)eAtk=Math.max(1,Math.round(eAtk*(1-Math.min(90,bt.ePoison)/100)));
+    if((bt.eInk||0)>0&&bt.eInkPct>0)eAtk=Math.max(1,Math.round(eAtk*(1-(bt.eInk*bt.eInkPct)/100)));
     if(efx.lowHpAtk&&bt.eHp<bt.es.hp*efx.lowHpAtk.below/100)eAtk=Math.round(eAtk*(1+efx.lowHpAtk.bonus/100));
     if(efx.dmgMult)edmgMult*=efx.dmgMult;
     if(efx.highHpDmg&&bt.eHp>bt.es.hp*efx.highHpDmg.above/100)edmgMult*=(1+efx.highHpDmg.bonus/100);
@@ -2897,17 +3517,62 @@ function enemyPhase(){
     eArise=bt.eid==="CH_EX_JINWOO"&&eBarrageN>=9;
     eGalaxy=bt.eid==="CH_ETERNAL_DRAGON"&&epurple;
     if(eGalaxy){const m=eHits[eHits.length-1].mult;eHits.length=0;eHits.push({mult:m});eBarrageN=0;}
-    let etotal=0;const eShots=eHits.map(h=>{let d=Math.round(eAtk*edmgMult*h.mult);if(bt.pDrTurns>0&&bt.pDr>0){d=Math.round(d*(1-bt.pDr/100));}etotal+=d;return{d};});
+    let etotal=0;const eShots=eHits.map(h=>{let d=Math.round(eAtk*edmgMult*h.mult);let drR=(bt.pDrTurns>0&&bt.pDr>0)?bt.pDr:0;if((bt.pGuardDr||0)>drR)drR=bt.pGuardDr;if(drR>0){d=Math.round(d*(1-drR/100));}etotal+=d;return{d};});
     /* ROYALGUARD: damage masuk dipangkas 50% (dibalas 30% di bawah) */
     if(bt.royalNow&&etotal>0){eShots.forEach(s=>s.d=Math.round(s.d*0.5));etotal=eShots.reduce((x,s)=>x+s.d,0);}
     /* PERFECT SUSANOO (low HP): damage masuk dipangkas `dr`% */
     if(fx.lowHpAura&&bt.pHp<bt.pMax*fx.lowHpAura.below/100&&etotal>0){eShots.forEach(s=>s.d=Math.round(s.d*(1-fx.lowHpAura.dr/100)));etotal=eShots.reduce((x,s)=>x+s.d,0);setTimeout(()=>floatText(".fighter.me","PERFECT SUSANOO","heal"),bsMs(320));}
+    /* PSYCHIC BLIZZARD (BLIZZARD BADDIE): barrier aktif -> pangkas damage `dr`% + heal `healPct`% max HP per serangan yang diredam; barrier habis setelah `left` giliran */
+    if(bt.psychic&&bt.psychic.left>0&&etotal>0){
+      eShots.forEach(s=>s.d=Math.round(s.d*(1-bt.psychic.dr/100)));etotal=eShots.reduce((x,s)=>x+s.d,0);
+      const bh=Math.max(1,Math.round(bt.pMax*bt.psychic.healPct/100));
+      bt.pHp=Math.min(bt.pMax,bt.pHp+bh);setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
+      setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","PSYCHIC BARRIER +"+fmt(bh),"heal");},bsMs(360));
+      bt.psychic.left--;
+      if(bt.psychic.left<=0)setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","BARRIER HABIS","miss");},bsMs(520));
+    }
+    /* ICE SHELL (10TH CAPTAIN): selama kartu ini AKTIF di arena, damage masuk dipangkas `iceShell`% permanen (tanpa timer; hilang pas tag-out) */
+    if(fx.iceShell&&etotal>0){eShots.forEach(s=>s.d=Math.round(s.d*(1-fx.iceShell/100)));etotal=eShots.reduce((x,s)=>x+s.d,0);}
+   /* TWILIGHT OF VALHALLA (HEIGHT OF PAINTING): selama aktif, damage masuk dipangkas dmgCut% */
+   if(fx.valhalla&&(bt.valhallaLeft||0)>0&&etotal>0){eShots.forEach(s=>s.d=Math.round(s.d*(1-fx.valhalla.dmgCut/100)));etotal=eShots.reduce((x,s)=>x+s.d,0);}
+   /* INK WARD (INK ANAMLOY): selama kartu aktif, damage masuk dipangkas dmgCut% (pola iceShell) */
+   if(fx.dmgCut&&etotal>0){eShots.forEach(s=>s.d=Math.round(s.d*(1-fx.dmgCut.pct/100)));etotal=eShots.reduce((x,s)=>x+s.d,0);}
+
+    /* RUBBER FIELD (SUN GOD): serangan dipotong 50%, sisanya disimpan buat memantul balik + penyerang jadi DIZZY */
+
+    bt.rbBounce=0;
+
+    if(bt.rubber&&etotal>0){
+
+      const full=etotal;
+
+      eShots.forEach(s=>s.d=Math.round(s.d*0.5));etotal=eShots.reduce((x,s)=>x+s.d,0);
+
+      bt.rbBounce=full-etotal;
+
+      if(!foeStatusImmune()){bt.dizzyStack=(bt.dizzyStack||0)+1;bt.dizzyLeft=9;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","DIZZY x"+bt.dizzyStack,"burn");},bsMs(420));}
+
+    }
+    /* EVOLUTION TURRET (YORDLE INVENTOR): kena serangan -> chance% turret nahan semua damage, 1 turret hancur */
+    if(fx.turret&&bt.turret>0&&etotal>0&&Math.random()*100<fx.turret.blockPct){
+      etotal=0;eShots.forEach(s=>s.d=0);bt.turret--;
+      setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","TURRET BLOCK! sisa "+bt.turret,"crit");},bsMs(320));
+    }    /* GUM-GUM BALLOON (DUMB STRETCHY GUY): reflect % dari hit musuh berikutnya (sekali pakai) */
+    if(bt.balloon>0&&etotal>0){
+      const rd=Math.max(1,Math.round(etotal*bt.balloon/100));
+      bt.balloon=0;bt.eHp-=rd;
+      setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","BALLOON -"+fmt(rd),"crit");setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);}},bsMs(380));
+      if(bt.eHp<=0){setTimeout(()=>{if(bt&&!bt.over)foeDown();},bsMs(900));}
+    }
     if(bt.pDrTurns>0&&bt.pDr>0){bt.pDrTurns--;setTimeout(()=>floatText(".fighter.me","DR aktif","heal"),bsMs(340));}
     /* BUNGEE GUM: tiap kali musuh KENA menempel ke Trickster (serangan masuk), tempel/renew gum 2 giliran */
     if(fx.bungeeGum&&etotal>0){bt.gumTurns=fx.bungeeGum.turns;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","BUNGEE GUM","crit");},bsMs(300));}
+    /* GODHAND CAUSALITY (WHITE HAWK): diserang & kena -> ability musuh dimatikan permanen */
+    if(fx.stripAbility&&etotal>0){bt.eAbilityOff=999;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","GODHAND - ABILITY ERASED","crit");},bsMs(300));}
     const meStart=bt.pHp;
     bt.pHp-=etotal;
-    const pDead=bt.pHp<=0;
+    if(fx.valhalla&&(bt.valhallaLeft||0)>0&&bt.pHp<1){bt.pHp=1;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","TWILIGHT HOLD!","heal");},bsMs(300));}
+    const pDead=bt.pHp<=0&&!(fx.berserker&&bt.berserkOn&&(bt.berserkLeft||0)>0);
     // kartu tumbang: tag-in / kalah BARU dijalankan setelah seluruh animasi sambaran musuh selesai
     const deathStep=()=>{
       if(!bt||bt.over)return;
@@ -2947,7 +3612,32 @@ function enemyPhase(){
       setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","COUNTER -"+fmt(ctr),"crit");setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);}},bsMs(560));
       if(bt.eHp<=0){setTimeout(()=>{if(bt&&!bt.over)foeDown();},bsMs(900));return;}
     }
+        /* RUBBER FIELD bounce: separuh damage serangan musuh memantul balik ke penyerang */
+
+    if(bt.rbBounce>0&&!pDead){
+
+      const rb=bt.rbBounce;bt.rbBounce=0;
+
+      bt.eHp-=rb;
+
+      setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","RUBBER -"+fmt(rb),"crit");setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);}},bsMs(560));
+
+      if(bt.eHp<=0){setTimeout(()=>{if(bt&&!bt.over)foeDown();},bsMs(900));return;}
+
+    }
+
     if(pDead)return;
+  }
+  /* WORLD CORRUPT (THE GRIEFER): counter giliran musuh; tiap every -> musuh self-hit + party +dmgUp% dmg */
+  if(bt.wc&&bt.eHp>0&&bt.pHp>0){
+    bt.wc.c++;
+    if(bt.wc.c%bt.wc.every===0){
+      const wd=Math.max(1,Math.round(bt.wc.atk*bt.wc.pct/100));
+      bt.eHp-=wd;
+      for(let i=0;i<bt.fighters.length;i++)bt.atkBuff[i]=(bt.atkBuff[i]||0)+bt.wc.dmgUp;
+      setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","GLITCH! -"+fmt(wd),"crit");floatText(".fighter.me","+"+bt.wc.dmgUp+"% DMG","heal");setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);}},bsMs(500));
+      if(bt.eHp<=0){setTimeout(()=>{if(bt&&!bt.over)foeDown();},bsMs(900));return;}
+    }
   }
   if(domainOn){bt.domainNow=false;}
   bt.turn++;
@@ -3028,7 +3718,7 @@ document.querySelector("#rollResultPop .rr-back").onclick=()=>{document.getEleme
    Memakai engine battle cerita (2 arah, passive musuh) dengan flag bt.tower. */
 const TOWER_BOSS_ROSTER=[
   {main:"CH_SHADOW_MONARCH",tag:"CH_RULER"},   /* lantai 5, 15, 25 ... */
-  {main:"CH_CELESTIAL_ORACLE",tag:"CH_ECLIPSE_WARDEN"} /* lantai 10, 20, 30 ... */
+  {main:"CH_ALMIGHTY_TYRANT",tag:"CH_DEMON_SLIME"} /* lantai 10, 20, 30 ... */
 ];
 function towerIsBossFloor(f){return f%5===0;}
 function towerBossIndex(f){return ((f/5)-1)%TOWER_BOSS_ROSTER.length;}
@@ -3100,7 +3790,8 @@ function towerEnemyBenchRail(){
   for(let i=0;i<3;i++){
     const w=rem[i];
     if(w&&w.en){
-      html+=`<div class="bench-sq foe-sq" data-tier="${w.en.tier||''}" style="border-color:${TIER_COLOR[w.en.tier]||'var(--line)'}" title="${w.en.name}"><img src="${w.en.img}" alt="${w.en.name}"><span class="bhp"><i style="width:100%"></i></span></div>`;
+      const wHp=(w.hp!=null?w.hp:w.es.hp),wPct=Math.max(0,Math.min(100,Math.round(wHp/w.es.hp*100)));
+      html+=`<div class="bench-sq foe-sq" data-tier="${w.en.tier||''}" style="border-color:${TIER_COLOR[w.en.tier]||'var(--line)'};${w.dead?'filter:grayscale(1);opacity:.55;':''}" title="${w.en.name}${w.dead?' (KO)':''}"><img src="${w.en.img}" alt="${w.en.name}"><span class="bhp"><i style="width:${wPct}%"></i></span>${w.dead?'<b style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#ff5c5c;font-weight:800;font-size:11px">KO</b>':''}</div>`;
     } else {
       html+=`<div class="bench-sq empty"></div>`;
     }
@@ -3336,11 +4027,27 @@ function startTowerBattle(){
   const fighters=equippedList();if(!fighters.length)fighters.push(equipped());
   const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   if(bt&&bt.timer)clearTimeout(bt.timer);
-  bt={speed:battleSpeedEff(),lv:null,tower:true,en:w.en,es:w.es,eq,fighters,eid:w.eid,efx:w.efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:w.es.hp,turn:1,over:false,eBurn:0,phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),snatchAtk:new Array(fighters.length).fill(0),snatchHp:new Array(fighters.length).fill(0),regressCharges:new Array(fighters.length).fill(0),bioGuard:new Array(fighters.length).fill(false),splitLeft:new Array(fighters.length).fill(0),splitMult:new Array(fighters.length).fill(1),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),execGuard:new Array(fighters.length).fill(false),wtCount:new Array(fighters.length).fill(0),shatterGuard:new Array(fighters.length).fill(false),defyUsed:new Array(fighters.length).fill(false),defyHold:false,openGuard:true,dsState:new Array(fighters.length).fill(0),gumTurns:0,trickNext:false,royalNow:false,gunsNow:false,shadow:null};
+  bt={speed:battleSpeedEff(),lv:null,tower:true,en:w.en,es:w.es,eq,fighters,eid:w.eid,efx:w.efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:w.es.hp,turn:1,over:false,eBurn:0,ePoison:0,pGuardDr:0,eAbilityOff:0,voidUsed:false,pCopyFx:null,spCd:[],spTurn:[],spArmed:[],spWave:[],meteorGuard:[],phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),snatchAtk:new Array(fighters.length).fill(0),snatchHp:new Array(fighters.length).fill(0),regressCharges:new Array(fighters.length).fill(0),bioGuard:new Array(fighters.length).fill(false),splitLeft:new Array(fighters.length).fill(0),splitMult:new Array(fighters.length).fill(1),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),execGuard:new Array(fighters.length).fill(false),wtCount:new Array(fighters.length).fill(0),shatterGuard:new Array(fighters.length).fill(false),defyUsed:new Array(fighters.length).fill(false),defyHold:false,openGuard:true,dsState:new Array(fighters.length).fill(0),gumTurns:0,trickNext:false,royalNow:false,gunsNow:false,psychic:null,atkEntryGuard:new Array(fighters.length).fill(false),sleepLeft:new Array(fighters.length).fill(0),sleepArmed:new Array(fighters.length).fill(false),overflow:0,rain:null,freezeLeft:0,shockCount:new Array(fighters.length).fill(0),shadow:null,freezeNext:false,valhallaLeft:0,paintHits:[],eInk:0,eInkPct:0,wc:null,rearIdx:-1,rearWaiting:false,rearUsed:[],senzu:{},senzuFin:false,balloon:0,stretchShot:0,turret:0,hvCount:new Array(fighters.length).fill(0),excited:false,weCount:new Array(fighters.length).fill(0),weRevived:false,pbRocks:0,pbKey:"",pbStreak:0,rubber:false,rbBounce:0,dizzyStack:0,dizzyLeft:0};
   const tfx=resolveFx(eq,w.efx);
   if(tfx&&tfx.entryCounter)bt.entryGuard[0]=true;
   if(tfx&&tfx.entryShatter)bt.shatterGuard[0]=true;
   if(tfx&&tfx.entryMaxHp)bt.bioGuard[0]=true;
+  if(tfx&&tfx.meteorWave)bt.meteorGuard[0]=true;
+  if(tfx&&tfx.entryAtkPct)bt.atkEntryGuard[0]=true;
+  if(tfx&&tfx.psychicBarrier)bt.psychic={left:tfx.psychicBarrier.turns,dr:tfx.psychicBarrier.dr,healPct:tfx.psychicBarrier.healPct};
+  if(tfx&&tfx.sleepStrike){bt.sleepLeft[0]=tfx.sleepStrike.turns;bt.sleepArmed[0]=true;}
+   if(tfx&&tfx.entryFreeze&&!foeStatusImmune()){bt.eStun=tfx.entryFreeze.turns;bt.freezeLeft=tfx.entryFreeze.turns;setTimeout(()=>floatText(".fighter.foe","BEKU","crit"),bsMs(300));}
+   if(tfx&&tfx.heavyRain)bt.rain={left:tfx.heavyRain.turns,healPct:tfx.heavyRain.healPct};
+   if(tfx&&tfx.timeStop&&!foeStatusImmune()){bt.eStun=tfx.timeStop.turns;setTimeout(()=>floatText(".fighter.foe","THE WORLD","crit"),bsMs(300));}
+  if(tfx&&tfx.dimensionShift){bt.eAbilityOff=tfx.dimensionShift.turns;setTimeout(()=>floatText(".fighter.foe","AMENOMINAKA","crit"),bsMs(300));}
+if(tfx)bt.pGuardDr=tfx.puppetBody?tfx.puppetBody.dr:(tfx.autoBlock?tfx.autoBlock.pct:0);
+if(tfx&&tfx.valhalla){bt.valhallaLeft=tfx.valhalla.turns;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","TWILIGHT OF VALHALLA","crit");},bsMs(360));}
+if(tfx.senzu){const _szb=cardStats(bt.eq.char,bt.eq.mut,bt.eq.trait,bt.eq.shiny);bt.senzu={baseAtk:_szb.atk,baseHp:bt.pMax,atkSum:0,hpSum:0,turn:0};setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","MUNCH MUNCH!","heal");},bsMs(420));}
+if(tfx.turret)bt.turret=tfx.turret.start;
+bt.rubber=!!(tfx&&tfx.rubberField);if(bt.rubber)setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","RUBBER FIELD","crit");},bsMs(520));
+if(tfx.stretch){setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","GOMU GOMU... WAIT WHAT?!","crit");},bsMs(520));}
+if(tfx.dupEntry){bt.pMax=Math.round(bt.pMax*2);bt.pHp=bt.pMax;bt.atkBuff[bt.active]+=100;setTimeout(()=>{if(bt&&!bt.over){setBar("hpMe","hpMeT",bt.pHp,bt.pMax);floatText(".fighter.me","DATA DUPLICATED x2","crit");}},bsMs(420));}
+if(tfx.worldCorrupt){bt.wc={c:0,atk:Math.round(cardStats(bt.eq.char,bt.eq.mut,bt.eq.trait,bt.eq.shiny).atk),every:tfx.worldCorrupt.every,pct:tfx.worldCorrupt.pct,dmgUp:tfx.worldCorrupt.dmgUp};setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","ABILITY CORRUPTED","crit");},bsMs(520));}
   bt.fighters.forEach((f,i)=>{const x=resolveFx(f,w.efx);if(x.splitDeath)bt.splitLeft[i]=x.splitDeath.times;});
   schedPhase(700,step);
 }
@@ -3357,7 +4064,19 @@ function foeDown(){
     }
     /* REGRESSION (Regressor): tiap kill nyimpen 1 'charge' buat bangkit nanti (dipakai di trySave) */
     if(sfx.regression){bt.regressCharges[a]=(bt.regressCharges[a]||0)+1;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","REGRESSION READY","heal");},bsMs(300));}
-  }
+    if(sfx.killHeal&&bt.pHp>0){const kh=Math.max(1,Math.round(bt.pMax*sfx.killHeal.pct/100));bt.pHp=Math.min(bt.pMax,bt.pHp+kh);setBar("hpMe","hpMeT",bt.pHp,bt.pMax);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","HISAP DARAH +"+fmt(kh),"heal");},bsMs(340));}
+    /* FREEZE TRANSFER (ABSOLUTE ZERO): musuh tumbang dalam keadaan BEKU -> freeze pindah ke kartu musuh berikutnya */
+    if(sfx.freezeTransfer&&(bt.freezeLeft||0)>0){bt.freezeNext=true;}
+    if(sfx.getExcited){bt.excited=true;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","GET EXCITED!","crit");},bsMs(300));}
+    /* GLUTTONY (Demon Slime): serap pct% ATK & max-HP musuh tumbang (pola snatch) + salin ability musuh TERBARU */
+    if(sfx.gluttony){
+      const ga=Math.round(bt.es.atk*sfx.gluttony.pct/100),gh=Math.round(bt.es.hp*sfx.gluttony.pct/100);
+      bt.snatchAtk[a]=(bt.snatchAtk[a]||0)+ga; bt.snatchHp[a]=(bt.snatchHp[a]||0)+gh;
+      bt.pMax+=gh; bt.pHp=Math.min(bt.pMax,bt.pHp+gh);
+      if(bt.efx)bt.pCopyFx=Object.assign({},bt.efx);
+      setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
+      setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","GLUTTONY +"+fmt(ga)+" ATK +"+fmt(gh)+" HP","crit");},bsMs(300));
+    }  }
   /* ARISE (Shadow Monarch): setelah membunuh & masih ada gelombang berikutnya, bangkitkan musuh yang baru mati
      sebagai bayangan (40% stat) yang MENGAMBIL-ALIH slot Monarch. HP asli Monarch disimpan buat balik nanti. */
   if(bt&&!bt.over&&!bt.aftermath&&!bt.shadow&&bt.pHp>0&&bt.tower&&towerRun&&towerRun.idx+1<towerRun.waves.length){
@@ -3373,11 +4092,57 @@ function foeDown(){
   if(bt&&bt.tower&&towerRun&&towerRun.idx+1<towerRun.waves.length){advanceTowerFoe();return;}
   endBattle(true);
 }
+/* lineupAoeHit: damage AoE kena musuh AKTIF (urusan caller) + SELURUH slot CADANGAN tower (waves sisa setelah idx).
+   Cadangan lazy-init w.hp = w.es.hp; w.hp habis -> w.dead=true: rail kasih tanda KO, advanceTowerFoe nge-skip,
+   dan kalau sisa semua mati -> endBattle(true). Mode story (bukan tower) no-op karena musuh cuma 1. */
+/* lineupNextHit: damage FLAT ke slot CADANGAN tower terdepan yang masih hidup (serangan pierce "yang di belakangnya"); story no-op */
+function lineupNextHit(dmg){
+  if(!bt||bt.over||!bt.tower||!towerRun||!(dmg>0))return;
+  let hitW=null;
+  for(let i=towerRun.idx+1;i<towerRun.waves.length;i++){
+    const w=towerRun.waves[i];
+    if(!w||w.dead)continue;
+    hitW=w;break;
+  }
+  if(!hitW)return;
+  if(hitW.hp==null)hitW.hp=hitW.es.hp;
+  hitW.hp-=dmg;
+  if(hitW.hp<=0){hitW.hp=0;hitW.dead=true;}
+  const rail=document.querySelector(".foe-rail");
+  if(rail)rail.outerHTML=towerEnemyBenchRail();
+  setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","PIERCE -"+fmt(dmg),"crit");},bsMs(640));
+}
+function lineupAoeHit(dmg){
+  if(!bt||bt.over||!bt.tower||!towerRun||!(dmg>0))return;
+  let killed=0;
+  for(let i=towerRun.idx+1;i<towerRun.waves.length;i++){
+    const w=towerRun.waves[i];
+    if(!w||w.dead)continue;
+    if(w.hp==null)w.hp=w.es.hp;
+    w.hp-=dmg;
+    if(w.hp<=0){w.hp=0;w.dead=true;killed++;}
+  }
+  const rail=document.querySelector(".foe-rail");
+  if(rail)rail.outerHTML=towerEnemyBenchRail();
+  setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","AOE -"+fmt(dmg)+" (lineup)","crit");},bsMs(640));
+  if(killed)setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe",killed+" CADANGAN KO!","crit");},bsMs(900));
+}
 function advanceTowerFoe(){
-  towerRun.idx++;
+  do{towerRun.idx++;}while(towerRun.idx<towerRun.waves.length&&towerRun.waves[towerRun.idx]&&towerRun.waves[towerRun.idx].dead);
+  if(towerRun.idx>=towerRun.waves.length){endBattle(true);return;}
   const w=towerRun.waves[towerRun.idx];
   bt.en=w.en;bt.es=w.es;bt.eid=w.eid;bt.efx=w.efx;bt.eHp=w.es.hp;
   bt.openGuard=true;bt.eBurn=0;bt.eStun=0;bt.phase2used=false;bt.domainUsed=false;bt.domainLeft=0;bt.domainNow=false;
+  {const rfx=resolveFx(bt.eq,bt.efx);if(rfx.dimensionShift)bt.eAbilityOff=rfx.dimensionShift.turns;}
+  {const nfx=resolveFx(bt.eq,bt.efx);
+   /* FOE ENTRY FREEZE (ICE QUEEN): musuh baru masuk -> bekukan turns giliran (pola entryFreeze, guard statusImmune) */
+   if(nfx.foeEntryFreeze&&!foeStatusImmune()){bt.eStun=nfx.foeEntryFreeze.turns;bt.freezeLeft=nfx.foeEntryFreeze.turns;setTimeout(()=>floatText(".fighter.foe","BEKU","crit"),bsMs(300));}
+   /* FREEZE TRANSFER (ABSOLUTE ZERO): musuh ini mewarisi freeze dari target beku yang dibunuh sebelumnya */
+   if(bt.freezeNext){bt.freezeNext=false;if(!foeStatusImmune()){bt.eStun=Math.max(bt.eStun,1);bt.freezeLeft=Math.max(bt.freezeLeft,1);setTimeout(()=>floatText(".fighter.foe","BEKU","crit"),bsMs(360));}}
+  }
+bt.ePoison=0;bt.dizzyStack=0;bt.dizzyLeft=0;bt.rbBounce=0;bt.pbKey="";bt.pbStreak=0;
+  /* THUNDERCLAP FLASH overflow dari gelombang sebelumnya langsung menghantam musuh baru ini */
+  if(bt.overflow&&bt.overflow>0){bt.eHp-=bt.overflow;bt.overflow=0;}
   /* sama seperti tag-in pemain: slot 1 tumbang dulu di arena, lalu slot 2 naik dan slot 1 jatuh ke TAG
      dengan tanda ✕ — sebelumnya kartu gelombang 1 langsung diganti diam-diam */
   const downEl=document.querySelector(".fighter.foe");
@@ -3389,12 +4154,13 @@ function advanceTowerFoe(){
     const side=document.getElementById("foeSide");
     if(side)side.innerHTML=towerFoeHtml(w)+towerEnemyBenchRail();
     clearFoeEnter();
-    setBar("hpFoe","hpFoeT",w.es.hp,w.es.hp);
+    setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);
+    if(bt.eHp<bt.es.hp)setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","THUNDERCLAP","crit");}},bsMs(500));
     const foeEl=side?side.querySelector(".fighter.foe"):null;
     if(foeEl){enterFx(foeEl);}
     const tl=document.getElementById("turnLabel");if(tl)tl.innerHTML="LANTAI <b>"+towerRun.floor+"</b> · GELOMBANG <b>"+(towerRun.idx+1)+"/"+towerRun.waves.length+"</b>";
     floatText(".fighter.foe","TAG-IN!","heal");
-    schedPhase(1000,enemyPhase);
+    if(bt.excited){bt.excited=false;floatText(".fighter.foe","EXTRA ATTACK!","crit");schedPhase(1000,playerPhase);}else schedPhase(1000,enemyPhase);
   },bsMs(2000));
 }
 function towerEnd(win){
@@ -4035,46 +4801,117 @@ function renderRaidShop(){
 }
 
 /* =============== INDEX CARD (popup) =============== */
+const IX_MUTS=["none","gold","rainbow","secret"];
+let ixState={q:"",mut:"all",shiny:false,owned:false,sort:"name"};
 function openIndex(){
-  /* Katalog SEMUA kartu + strip INDEX REWARD: hitung varian unik (char × mut × shiny,
-     8 per kartu — semua mutasi + kombinasi shiny/"double mutasi"). Tiap 5 varian = +1
-     INTAN ROLL 100K. Tiap cell punya 2 baris pips (normal / shiny) per mutasi.
-     Klik sebuah kotak = buka detail passive lewat #skillPop (info tak hilang, cuma dipindah). */
+  /* Katalog SEMUA kartu — layout meniru referensi "INDEX!": search di header, toolbar
+     chip mutasi + toggle SHINY + OWNED ONLY + sort, grid full-art (nama, centang owned
+     x/8, pips mut×shiny, nama+deskripsi skill di atas art), footer strip progres varian
+     (segmen per mutasi) -> milestone INTAN ROLL 100K. Klik kartu = detail passive
+     lengkap di #skillPop. Filter/sort state disimpan di ixState biar gak reset. */
   idxRewardSync(true);
+  ixRender();
+  document.getElementById("indexModal").classList.add("show");
+  const sx=document.getElementById("ixSearch");
+  sx.value=ixState.q;
+  sx.oninput=()=>{ixState.q=sx.value.trim().toLowerCase();ixRender();};
+  document.getElementById("spClose").onclick=()=>document.getElementById("skillPop").classList.remove("show");
+  document.getElementById("skillPop").onclick=(e)=>{if(e.target.id==="skillPop")document.getElementById("skillPop").classList.remove("show");};
+}
+function ixRender(){
   const P=idxProgress();
+  const ownCnt=(c,mut,sh)=>P.owned.has(`${c.char_id}|${mut}|${sh?1:0}`);
+  const ownedN=(c,sh)=>IX_MUTS.reduce((n,m)=>n+(ownCnt(c,m,sh)?1:0),0);
+  /* --- toolbar: chip mutasi + shiny + owned-only + sort --- */
+  /* parse filter sekali: chip "s-*" = mutasi versi SHINY; fmSel = mutasi murni (null = semua) */
+  const shChip=ixState.mut.startsWith("s-");
+  const fmSel=ixState.mut==="all"?null:ixState.mut.slice(shChip?2:0);
+  const fShiny=shChip||ixState.shiny;
+  const chip=(k,l,cls)=>`<button class="ix-chip ${cls||""}${ixState.mut===k?' on':''}" type="button" data-mut="${k}">${l}</button>`;
+  const toolbar=`<div class="ix-bar">
+    <div class="ix-chips">${chip("all","SEMUA","all")}${IX_MUTS.map(m=>chip(m,MUT_LABEL[m]||"MURNI","m-"+m)).join("")}
+      ${chip("s-gold",MUT_LABEL.gold+" + SHINY","m-gold shp")}${chip("s-rainbow",MUT_LABEL.rainbow+" + SHINY","m-rainbow shp")}${chip("s-secret",MUT_LABEL.secret+" + SHINY","m-secret shp")}
+      <button class="ix-chip shiny${ixState.shiny?' on':''}" type="button" data-shiny="1">SHINY</button></div>
+    <span class="ix-sp"></span>
+    <button class="ix-tog${ixState.owned?' on':''}" type="button" data-owned="1">✓ OWNED</button>
+    <select class="ix-sort" id="ixSort" title="Urutkan">
+      <option value="name">Nama</option><option value="tier">Tier</option>
+      <option value="own">Varian</option><option value="chance">Chance</option>
+    </select></div>`;
+  /* --- filter + sort --- */
+  const TIER_RANK={R:0,SR:1,SSR:2,UR:3,EX:4,BOSS:5};
+  let list=MASTER_CARD_INDEX.filter(c=>{
+    if(ixState.q&&!c.name.toLowerCase().includes(ixState.q))return false;
+    if(ixState.owned&&!(ownedN(c,false)+ownedN(c,true)))return false;
+    /* chip mutasi -> wajib punya varian mutasi itu; chip s-* / toggle SHINY -> wajib varian shiny;
+       tanpa chip mutasi + toggle SHINY -> punya varian shiny apa pun. */
+    if(fmSel){
+      if(!(ownCnt(c,fmSel,fShiny)||ownCnt(c,fmSel,!fShiny)))return false;
+    } else if(fShiny&&!ownedN(c,true))return false;
+    return true;});
+  const T={name:(a,b)=>a.name.localeCompare(b.name),
+    tier:(a,b)=>(TIER_RANK[a.tier]??9)-(TIER_RANK[b.tier]??9)||a.name.localeCompare(b.name),
+    own:(a,b)=>(ownedN(b,false)+ownedN(b,true))-(ownedN(a,false)+ownedN(a,true))||a.name.localeCompare(b.name),
+    chance:(a,b)=>(a.chance==null?1e9:a.chance)-(b.chance==null?1e9:b.chance)||a.name.localeCompare(b.name)};
+  list.sort(T[ixState.sort]||T.name);
+  /* --- kartu full-art --- */
+  const cells=list.map(c=>{
+    const any=ownedN(c,false)+ownedN(c,true);
+    const anySh=ownedN(c,true)>0;
+    /* border = mutasi tertinggi yang DIMILIKI (secret > rainbow > gold);
+       belum punya mutasi: warna tier; belum owned sama sekali: abu redup.
+       Punya varian shiny owned -> class shiny = holo shimmer. */
+    const bestMut=ownCnt(c,"secret",false)||ownCnt(c,"secret",true)?"secret":
+      ownCnt(c,"rainbow",false)||ownCnt(c,"rainbow",true)?"rainbow":
+      (ownCnt(c,"gold",false)||ownCnt(c,"gold",true))?"gold":null;
+    /* chip MUTASI sedang aktif -> border & nama ikut mutasi TERPILIH biar filter
+       ke-baca visual (semua kartu tampil dgn gaya chip itu);
+       MURNI -> tampilan polos (warna tier); ALL -> mutasi tertinggi milik sendiri. */
+    const fm=ixState.mut==="all"?bestMut:fmSel;
+    const bc=fm?MUT_COLOR[fm]:(any?(TIER_COLOR[c.tier]||"#9AA6B2"):"#3A3F47");
+    const lockBoss=!!(c.raidBoss&&!bossRollUnlocked(c.char_id));
+    /* holo shimmer HANYA di tab SEMUA atau lagi di konteks shiny (chip s-* / toggle SHINY);
+       tab MURNI/GOLD/RAINBOW/SECRET biasa tampil tanpa shimmer biar kebaca beda. */
+    const shFx=anySh&&(ixState.mut==="all"||fShiny);
+    const cls=`ix-cell${any?'':' no-own'}${lockBoss?' boss-locked':''}${shFx?' shiny':''}${fm?' m-'+fm:''}`;
+    /* gaya kartu lobby: NAMA kiri-atas + chance pill di bawahnya + badge ✓ kanan-atas;
+       pips & teks passive dibuang — klik kartu tetap buka skillPop buat detail.
+       mut=fm -> nama ikut warna mutasi (rainbow = huruf warna-warni). */
+    const nameHtml=shinyName('span','ixc-name','ixc-shine',fm,anySh,c.name);
+    return `<button class="${cls}" type="button" data-c="${c.char_id}"${lockBoss?' title="BELUM DIBELI — beli di TOKO RAID untuk buka roll"':''} style="--tc:${TIER_COLOR[c.tier]||'#9AA6B2'};--bc:${bc}">
+      <img src="${c.sprite_asset}" alt="${c.name}">
+      <span class="ixc-stack">${nameHtml}<span class="ixc-chance"${fmSel&&fmSel!=="none"?` style="color:${MUT_COLOR[fmSel]}"`:""}>1 IN ${fmt(effChance(c.char_id,fmSel||"none",fShiny))}</span></span>
+      <span class="ixc-own${any?' on':''}">✓ ${any}/8</span>
+    </button>`;}).join("");
+  /* --- footer: strip progres SEGMENT per mutasi + milestone INTAN ROLL --- */
+  const t=MASTER_CARD_INDEX.length;
+  const segs=IX_MUTS.map(m=>{let n=0;for(const c of MASTER_CARD_INDEX)if(ownCnt(c,m,false))n++;
+    return `<i title="${MUT_LABEL[m]||'MURNI'} ${n}/${t}" style="--p:${t?Math.round(n/t*100):0}%;--c:${m==='none'?'#9AA6B2':MUT_COLOR[m]}"></i>`;}).join("");
   const pct=P.total?Math.min(100,Math.round(P.count/P.total*100)):0;
   const complete=P.total>0&&P.count>=P.total;
   const next=Math.max(0,IDX_MILESTONE-(P.count%IDX_MILESTONE));
   const strip=`<div class="ix-prog">
     <div class="ixp-col"><div class="ixp-lbl">VARIAN TERKUMPUL</div><div class="ixp-val">${fmt(P.count)}<em> / ${fmt(P.total)}</em></div></div>
-    <div class="ixp-track"><i style="width:${pct}%"></i></div>
+    <div class="ixp-track ix-seg" title="${pct}%">${segs}</div>
     <div class="ixp-rw">
       <div class="ixp-rw-t"><span class="ixp-gem">◆</span> INTAN ROLL 100K</div>
       <div class="ixp-rw-s">${complete?"SEMUA VARIAN LENGKAP":"+"+IDX_MILESTONE+" varian = +1 item"}</div>
       <div class="ixp-own">DIMILIKI <b>${fmt(state.intanRolls||0)}</b>${complete?"":` · ${next} varian lagi`}</div>
-    </div>
-  </div>`;
-  const MUTS4=["none","gold","rainbow","secret"];
-  const legend=`<div class="ix-legend">${MUTS4.map(m=>`<span class="ixl"><i style="background:${m==='none'?'#9AA6B2':MUT_COLOR[m]}"></i>${MUT_LABEL[m]||'MURNI'}</span>`).join('')}<span class="ixl"><i class="shp"></i>SHINY (baris bawah)</span></div>`;
-  const cells=MASTER_CARD_INDEX.map(c=>{
-    const ownedC=(mut,sh)=>P.owned.has(`${c.char_id}|${mut}|${sh?1:0}`);
-    const any=MUTS4.some(m=>ownedC(m,false)||ownedC(m,true));
-    const rowSh=sh=>MUTS4.map(mut=>{const on=ownedC(mut,sh);const col=mut==='none'?'#9AA6B2':MUT_COLOR[mut];
-      return `<i class="ixpip${on?' on':''}${sh?' shp':''}"${on?` style="background:${col};border-color:${col}"`:''} title="${MUT_LABEL[mut]||'MURNI'}${sh?' SHINY':''}"></i>`;}).join('');
-    const lockBoss=!!(c.raidBoss&&!bossRollUnlocked(c.char_id));
-    return `<button class="ix-cell${any?'':' no-own'}${lockBoss?' boss-locked':''}" type="button" data-c="${c.char_id}" data-tier="${c.tier}"${lockBoss?' title="BELUM DIBELI — beli di TOKO RAID untuk buka roll"':''} style="border-color:${TIER_COLOR[c.tier]||'var(--line2)'}">
-      <span class="ixc-pips"><span class="ixp-row">${rowSh(false)}</span><span class="ixp-row">${rowSh(true)}</span></span>
-      <img src="${c.sprite_asset}" alt="${c.name}">
-      <span class="ixc-name">${c.name}</span>
-    </button>`;}).join("");
-  document.getElementById("ixBody").innerHTML=strip+legend+`<div class="ix-grid">${cells}</div>`;
+    </div></div>`;
+  document.getElementById("ixToolbar").innerHTML=toolbar;
+  document.getElementById("ixBody").innerHTML=(list.length?"":`<div class="ix-empty">Tidak ada kartu yang cocok</div>`)+`<div class="ix-grid">${cells}</div>`;
+  document.getElementById("ixFoot").innerHTML=strip;
+  const sel=document.getElementById("ixSort");sel.value=ixState.sort;
+  sel.onchange=()=>{ixState.sort=sel.value;ixRender();};
+  document.querySelectorAll("#ixToolbar .ix-chip[data-mut]").forEach(b=>b.onclick=()=>{ixState.mut=b.dataset.mut;ixRender();});
+  const shb=document.querySelector("#ixToolbar [data-shiny]");if(shb)shb.onclick=()=>{ixState.shiny=!ixState.shiny;ixRender();};
+  const owb=document.querySelector("#ixToolbar [data-owned]");if(owb)owb.onclick=()=>{ixState.owned=!ixState.owned;ixRender();};
   document.querySelectorAll("#ixBody .ix-cell").forEach(cell=>{
     cell.onclick=()=>{const c=CARDS[cell.dataset.c];if(!c)return;document.getElementById("spName").textContent=c.passive.name;document.getElementById("spDesc").textContent=c.passive.desc;document.getElementById("skillPop").classList.add("show");};
   });
-  document.getElementById("indexModal").classList.add("show");
-  document.getElementById("spClose").onclick=()=>document.getElementById("skillPop").classList.remove("show");
-  document.getElementById("skillPop").onclick=(e)=>{if(e.target.id==="skillPop")document.getElementById("skillPop").classList.remove("show");};
 }
+
+
 
 /* =============== TRAIT ROLL (popup) =============== */
 let traitTarget=null;
