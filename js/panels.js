@@ -160,8 +160,8 @@ function useLuckPotion(lv,n){
   let e=state.luckBuffs.find(x=>x.lv===lv);
   if(!e){e={lv:lv,flat:0,pct:0,endsAt:now};state.luckBuffs.push(e);}
   else if(e.endsAt<=now){e.flat=0;e.pct=0;e.endsAt=now;}
-  e.flat=(e.flat||0)+def.flat*n;
-  e.pct=(e.pct||0)+def.pct*n;
+  e.flat=def.flat;/* CAP 1x dasar level — spam gak nambah flat, cuma timer */
+  e.pct=def.pct;
   e.endsAt+=POTION_BUFF_MS*n;
   save();
   return{ok:true,flat:e.flat,pct:e.pct,ms:POTION_BUFF_MS*n};
@@ -176,7 +176,7 @@ function useSpeedPotion(lv,n){
   let e=state.speedBuffs.find(x=>x.lv===lv);
   if(!e){e={lv:lv,add:0,endsAt:now};state.speedBuffs.push(e);}
   else if(e.endsAt<=now){e.add=0;e.endsAt=now;}
-  e.add=(e.add||0)+def.add*n;
+  e.add=def.add;/* CAP 1x dasar level — spam gak nambah speed, cuma timer */
   e.endsAt+=POTION_BUFF_MS*n;
   save();
   return{ok:true,add:e.add,ms:POTION_BUFF_MS*n};
