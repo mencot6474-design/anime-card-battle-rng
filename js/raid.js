@@ -484,7 +484,7 @@ function ixRender(){
     const nameHtml=shinyName('span','ixc-name','ixc-shine',fm,anySh,c.name);
     return `<button class="${cls}" type="button" data-c="${c.char_id}"${lockBoss?' title="BELUM DIBELI — beli di TOKO RAID untuk buka roll"':''} style="--tc:${TIER_COLOR[c.tier]||'#9AA6B2'};--bc:${bc}">
       <img src="${c.sprite_asset}" alt="${c.name}">
-      <span class="ixc-stack">${nameHtml}<span class="ixc-chance"${fmSel&&fmSel!=="none"?` style="color:${MUT_COLOR[fmSel]}"`:""}>1 IN ${fmt(effChance(c.char_id,fmSel||"none",fShiny))}</span></span>
+      <span class="ixc-stack">${nameHtml}<span class="ixc-chance"${fmSel&&fmSel!=="none"?` style="color:${MUT_COLOR[fmSel]}"`:""}>1 IN ${fmtChance(effChance(c.char_id,fmSel||"none",fShiny))}</span></span>
       <span class="ixc-own${any?' on':''}">✓ ${any}/8</span>
     </button>`;}).join("");
   /* --- footer: strip progres SEGMENT per mutasi + milestone INTAN ROLL --- */

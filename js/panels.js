@@ -566,7 +566,7 @@ function showRollResult(result) {
   // Update chance display: pakai base MENTAH (result.chance = base × statMult), bukan yang dibagi luck.
   if(result.chance!==undefined){
     const ec=document.querySelector('.roll-card-showcase .hc-chance');
-    if(ec)ec.textContent="1 in "+fmt(result.chance);
+    if(ec)ec.textContent="1 in "+fmtChance(result.chance);
   }
 }
 
@@ -606,17 +606,24 @@ function renderProfile(){
   const tile=(lab,val,sub,tcls,vcls)=>`<div class="prof-tile${tcls?" "+tcls:""}"><span class="prof-tl">${lab}</span><span class="prof-tv${vcls?" "+vcls:""}">${val}</span>${sub?`<span class="prof-ts">${sub}</span>`:""}</div>`;
   const sec=(t,grid)=>`<section class="prof-sec"><h3 class="prof-sec-t">${t}</h3><div class="prof-grid">${grid}</div></section>`;
   const row=(lab,val)=>`<div class="prof-row"><span class="prof-rl">${lab}</span><span class="prof-rv">${val}</span></div>`;
-  /* ===== ANGKA INTI: stat rows gaya referensi ===== */
+  /* ===== ANGKA INTI: stat rows gaya referensi =====
+     NOTE satuan: artefak/pet simpan pct sebagai PERSEN BULAT (200 = +200%,
+     sengaja biar OP — totalLuck emang nerapin ×201, gak disentuh), tree/potion
+     simpan PECAHAN (0.1 = +10%). Nampilinnya jangan dicampur / jangan ×100
+     dua kali buat art+pet. */
   const base=p.luckBase??1, flat=p.luckFlat||0, treeF=treeLuckFlat(), treeP=treeLuckPct(), artF=artLuckFlat(), artP=artLuckPct(), petF=petLuckFlat(), petP=petLuckPct(), plB=activeLuckBuff(), plBP=activeLuckBuffPct();
   const pct=(p.luckPercent||0)+treeLuckPct()+plBP+artP+petP;
   const wm=weatherLuckMult();
   const lparts=["Base "+base.toFixed(1)];
   if(flat>0)lparts.push("Player +"+flat.toFixed(1));
   if(treeF>0)lparts.push("Pohon +"+treeF.toFixed(1));
-  if(artF>0||artP>0)lparts.push("Artefak +"+artF.toFixed(1)+(artP>0?" / +"+Math.round(artP*100)+"%":""));
-  if(petF>0||petP>0)lparts.push("Pet +"+petF.toFixed(1)+(petP>0?" / +"+Math.round(petP*100)+"%":""));
+  if(artF>0||artP>0)lparts.push("Artefak +"+artF.toFixed(1)+(artP>0?" / +"+Math.round(artP)+"%":""));
+  if(petF>0||petP>0)lparts.push("Pet +"+petF.toFixed(1)+(petP>0?" / +"+Math.round(petP)+"%":""));
   if(plB>0||plBP>0)lparts.push("Buff +"+plB.toFixed(1)+(plBP>0?" / +"+Math.round(plBP*100)+"%":""));
-  if(pct>0)lparts.push("Pct +"+Math.round(pct*100)+"%");
+  /* baris "Pct" = cuma sumber pecahan (luckPercent + tree + potion); art/pet
+     (satuan persen bulat) udah tampil di barisnya sendiri — jangan digabung. */
+  const pctFrac=(p.luckPercent||0)+treeP+plBP;
+  if(pctFrac>0)lparts.push("Pct +"+Math.round(pctFrac*100)+"%");
   if(wm>1)lparts.push("Cuaca ×"+wm.toFixed(1));
   const spm=playerSpeedMult(), swm=weatherSpeedMult();
   const eff=Math.min(spm*swm,RNG_ROLL_MAX_MULT);
@@ -628,20 +635,20 @@ function renderProfile(){
     row("BATTLE POWER",fmt(totalPower()))
     +row("CURRENT LUCK",totalLuck().toFixed(1)+"×")
     +row("TREE LUCK","+"+treeF.toFixed(1)+(treeP>0?" / +"+Math.round(treeP*100)+"%":""))
-    +row("ITEM LUCK","+"+(artF+petF).toFixed(1)+((artP+petP)>0?" / +"+Math.round((artP+petP)*100)+"%":""))
+    +row("ITEM LUCK","+"+(artF+petF).toFixed(1)+((artP+petP)>0?" / +"+Math.round(artP+petP)+"%":""))
     +row("ROLL SPEED",eff.toFixed(1)+"×");
 
   /* ===== PARTY: pet + 2 artefak + kartu utama (portrait + pill) ===== */
   const pslot=(img,label,pill,name)=>`<div class="prof-slot${img?"":" empty"}" title="${name}">${img?`<img src="${img}" alt="">`:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/></svg>'}<span class="ps-lab">${label}</span><span class="ps-pill">${pill}</span></div>`;
   const pd=state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;
   const slots=[];
-  slots.push(pslot(pd?`assets/pets/${pd.id}.png`:"","PET",pd?`+${pd.flat||0}${pd.pct?" / +"+Math.round(pd.pct*100)+"%":""}`:"KOSONG",pd?pd.name:"Pet kosong"));
+  slots.push(pslot(pd?`assets/pets/${pd.id}.png`:"","PET",pd?`+${pd.flat||0}${pd.pct?" / +"+Math.round(pd.pct)+"%":""}`:"KOSONG",pd?pd.name:"Pet kosong"));
   [0,1].forEach(i=>{
     const aid=state.artSlots&&state.artSlots[i];
     const ad=aid?ART_DEFS.find(x=>x.id===aid):null;
     slots.push(pslot(ad?(ad.img||""):"","ARTEFAK "+(i+1),ad?`+${ad.flat||0}${ad.pct?" / +"+ad.pct+"%":""}`:"KOSONG",ad?ad.name:"Artefak kosong"));
   });
-  slots.push(pslot(cid?cardImg(cid):"","KARTU",cid?`1 IN ${fmt(effChance(cid))}`:"KOSONG",cid?cardName(cid):"Tanpa kartu"));
+  slots.push(pslot(cid?cardImg(cid):"","KARTU",cid?`1 IN ${fmtChance(effChance(cid,eq.mut||"none",!!eq.shiny))}`:"KOSONG",cid?cardName(cid):"Tanpa kartu"));
   const pfParty=document.getElementById("pfParty");if(pfParty)pfParty.innerHTML=slots.join("");
   /* ===== GACHA: luck lengkap, speed, battle speed, power, summon ===== */
   const gacha=
@@ -847,7 +854,8 @@ function renderBackpackPanel(){
     if(!s)return `<div class="bp-slot${bpTarget===i?' sel':''}" onclick="bpPickSlot(${i})"><span class="bps-plus">+</span><span class="bps-num">${i+1}</span></div>`;
     return `<div class="bp-slot filled${bpTarget===i?' sel':''}" data-sid="${s.id}" onclick="bpPickSlot(${i})" style="--tcol:${TIER_COLOR[s.tier]};border-color:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt=""><span class="bps-num">${i+1}</span><button class="bps-x" onclick="event.stopPropagation();bpClearSlot(${i})">&times;</button></div>`;
   }).join('');
-  const visible=state.stacks.filter(bpMatchesMut).sort((a,b)=>(b.fav?1:0)-(a.fav?1:0)); /* favorit → baris atas */
+  const pOf=s=>{const st=cardStats(s.char,s.mut,s.trait,s.shiny);return st.hp+st.atk;};
+  const visible=state.stacks.filter(bpMatchesMut).sort((a,b)=>(b.fav?1:0)-(a.fav?1:0)||pOf(b)-pOf(a)||luckChance(b.char,b.mut,b.shiny)-luckChance(a.char,a.mut,a.shiny)); /* favorit → terkuat → paling langka */
   const tiles=visible.map(s=>{
     const inDeck=state.deck.includes(s.id);
     const shny=s.shiny?'<span class="bpt-shiny">SHINY</span>':'';

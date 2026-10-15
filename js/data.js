@@ -19,7 +19,10 @@ function tierFromChance(ch){
   if(ch<500000000)return "UR";
   return "EX";
 }
-function rarityText(tier,chance){return "1 in "+(chance||chanceOf(tier));}
+/* Chance ringkas biar gak kepanjangan: 800 → "800", 1500 → "1.5K",
+   1jt → "1M", 18jt → "18M", 1000jt → "1B", 1e12 → "1T". */
+function fmtChance(n){n=Math.round(Number(n)||0);if(n<1000)return String(n);const u=[[1e12,"T"],[1e9,"B"],[1e6,"M"],[1e3,"K"]];for(const[v,s]of u)if(n>=v){const x=n/v;return (x<10?Math.round(x*10)/10:Math.floor(x))+s;}return String(n);}
+function rarityText(tier,chance){return "1 in "+fmtChance(chance||chanceOf(tier));}
 /* Peluang efektif sebuah kartu: tiap lapisan kelangkaan mengali penyebut sesuai pengali stat-nya.
    SHINY ×2, mutasi ×MUT_MULT (gold 5 / rainbow 10 / secret 25). Mis. secret dari kartu 800k = 1 in 20M. */
 function effChance(charId,mut,shiny){const c=CARDS[charId]||{};const ch=c.chance||chanceOf(c.tier);return ch*(shiny?SHINY_MULT:1)*(MUT_MULT[mut]||1);}
