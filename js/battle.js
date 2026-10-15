@@ -1288,7 +1288,20 @@ document.getElementById("overlay").addEventListener("click",e=>{
   if(state.battle){state.battle=null;bt=null;render();}
 });
 let towerLossAutoPending=false; /* auto-restart tower: nunggu popup roll ditutup (reset di stopTower/towerStartRun) */
+let rollPopTimer=null; /* auto-claim popup hasil roll: 5 detik tutup sendiri biar AFK/auto-run gak macet */
+function closeRollPop(){ if(rollPopTimer){clearTimeout(rollPopTimer);rollPopTimer=null;} const pop=document.getElementById("rollResultPop"); if(pop)pop.classList.remove("show"); rollPopClosed(); }
+function armRollPopAutoClose(ms){
+  if(rollPopTimer)clearTimeout(rollPopTimer);
+  rollPopTimer=setTimeout(()=>{
+    rollPopTimer=null;
+    const pop=document.getElementById("rollResultPop");
+    if(!pop||!pop.classList.contains("show"))return;
+    try{sfx.hit();}catch(e){}
+    pop.classList.remove("show"); /* kartu+potion SUDAH tersimpan (instantRoll save()) — ini tampilan doang: tutup = auto-claim */
+    rollPopClosed();
+  },ms);
+}
 function rollPopClosed(){ if(!towerLossAutoPending)return; towerLossAutoPending=false; if(state&&state.tower&&state.tower.auto){ try{ towerStartRun(); }catch(e){ console.error("tower auto-restart error",e); } } }
-document.getElementById("rrClose").onclick=()=>{document.getElementById("rollResultPop").classList.remove("show");try{sfx.hit();}catch(e){}rollPopClosed();};
-document.querySelector("#rollResultPop .rr-back").onclick=()=>{document.getElementById("rollResultPop").classList.remove("show");rollPopClosed();};
+document.getElementById("rrClose").onclick=()=>{try{sfx.hit();}catch(e){}closeRollPop();};
+document.querySelector("#rollResultPop .rr-back").onclick=()=>{closeRollPop();};
 

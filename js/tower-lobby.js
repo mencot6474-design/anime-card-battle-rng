@@ -544,6 +544,7 @@ function showTowerLoot(results,drops,title){
   }).join("");
   {const rt=document.getElementById("rrTitle");if(rt)rt.textContent=title||"KARTU RUN INI";}
   pop.classList.add("show");
+  try{armRollPopAutoClose(5000);}catch(e){} /* auto-claim 5 detik: gak nahan AFK / auto-run tower */
 }
 
 /* =============== DECK =============== */
