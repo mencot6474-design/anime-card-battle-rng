@@ -404,7 +404,29 @@ fx:{dodgeEvery:{turns:3},revive:{pct:60,lock:2}},
 desc:"(Eksklusif cuaca AURORA) THE ALMIGHTY: menghindari serangan musuh di giliran ke-3. Saat tumbang, alter the future: bangkit di 60% HP dan nonaktifkan ability musuh selama 2 giliran (sekali per battle)."},
 {id:"CH_DEMON_SLIME",name:"DEMON SLIME",tier:"SSR",type:"Slimeborn",skill:"PREDATOR: GLUTTONY",hp:1860,atk:933,chance:2200000,art:"assets/cards/art/demon-slime.jpg",pos:"center",weatherOnly:"aurora",
 fx:{gluttony:{pct:25}},
-desc:"(Eksklusif cuaca AURORA) PREDATOR: GLUTTONY: tiap membunuh, serap 25% ATK & max HP musuh secara permanen (pola snatch) dan salin ability musuh - yang terbaru menggantikan - selama kartu ini aktif di battle."},    /* ===== KARTU BOSS — TOKO RAID (tier BOSS, glitch hitam-putih) =====
+desc:"(Eksklusif cuaca AURORA) PREDATOR: GLUTTONY: tiap membunuh, serap 25% ATK & max HP musuh secara permanen (pola snatch) dan salin ability musuh - yang terbaru menggantikan - selama kartu ini aktif di battle."},
+    {id:"CH_LUCK_VOLTIA",name:"LUCK VOLTIA",tier:"R",type:"Stormcaller",skill:"LIGHTNING BATTLE FIEND",hp:169,atk:85,chance:12000,art:"assets/cards/art/luck-voltia.jpg",fx:{entryAtkPct:{pct:60},stunPunch:{every:3,chance:50,turns:1,atkPct:8,max:5}},desc:"Saat masuk arena, langsung menyerang dgn 60% ATK. Serangan ke-3 punya 50% kesempatan menstun musuh 1 giliran. Tiap stun sukses +8% ATK permanen (maks 5 stack)."},
+    {id:"CH_NOBLE_COMPANION",name:"NOBLE COMPANION",tier:"R",type:"Supporter",skill:"PASSIONATE NARRATION",hp:210,atk:105,chance:25000,art:"assets/cards/art/noble-companion.jpg",fx:{partyDmg:{pct:20}},desc:"Selama Noble Companion ada di party, semua kartu party mendapat +20% damage."},
+    {id:"CH_BLOODMOON_DEMON",name:"BLOODMOON DEMON",tier:"R",type:"Demon",skill:"BLOOD IGNITE",hp:222,atk:111,chance:30000,art:"assets/cards/art/bloodmoon-demon.jpg",fx:{regen:{pct:10,stopBelow:20},counterHit:{chance:40,pct:10,base:"foeMaxHp"},lowHpAtk:{below:20,bonus:100}},desc:"Regen 10% max HP tiap giliran (berhenti di bawah 20% HP). Diserang -> 40% bakar darah penyerang 10% max HP mereka. Di bawah 20% HP: mode terbangkitkan, serangan x2."},
+    {id:"CH_GREEN_BEAST",name:"GREEN BEAST",tier:"SR",type:"Fighter",skill:"EIGHT GATES",hp:320,atk:160,chance:100000,art:"assets/cards/art/green-beast.jpg",fx:{eightGates:{atkPct:15,max:5,selfPct:8}},desc:"Tiap serangan kena buka 1 gerbang: +15% ATK permanen (maks 5). Gerbang penuh -> tiap mukul bayar 8% max HP sendiri."},
+    {id:"CH_DRAGON_SIN",name:"DRAGON SIN",tier:"SR",type:"Holy",skill:"FULL COUNTER",hp:394,atk:197,chance:200000,art:"assets/cards/art/dragon-sin.jpg",fx:{counterHit:{chance:100,pct:30,base:"atk"}},desc:"Saat diserang, membalas 30% ATK Dragon Sin kembali ke penyerang."},
+    {id:"CH_FROST_WIZARD",name:"FROST WIZARD",tier:"SR",type:"Frost",skill:"FROZEN DOUBLE",hp:436,atk:218,chance:280000,art:"assets/cards/art/frost-wizard.jpg",fx:{double:{chance:100,pct:40}},desc:"Serangan mengenai dua kali (pukulan kedua 40% damage)."},
+    {id:"CH_RUBBERBOUND_CAPTAIN",name:"RUBBERBOUND CAPTAIN",tier:"SR",type:"Grappler",skill:"FIVE STAMP RUSH",hp:485,atk:243,chance:400000,art:"assets/cards/art/rubberbound-captain.jpg",fx:{double:{chance:25,pct:75}},desc:"25% kesempatan saat menyerang untuk memukul lagi dengan 75% damage."},
+    {id:"CH_ICE_REAPER",name:"ICE REAPER",tier:"SR",type:"Frost",skill:"HAKKA NO TOGAME",hp:485,atk:243,chance:400000,art:"assets/cards/art/ice-reaper.jpg",fx:{deathHex:{turns:3,atkCut:30}},desc:"Saat mati, bekukan kartu musuh 3 giliran dan potong ATK mereka 30% permanen."},
+    {id:"CH_FROSTBANE",name:"FROSTBANE",tier:"SR",type:"Frost",skill:"STARKFROST ICEFIELD",hp:534,atk:267,chance:550000,art:"assets/cards/art/frostbane.jpg",fx:{entryFreeze:{turns:2,mult:1.5}},desc:"Saat masuk, bekukan musuh 2 giliran. Serangan ke target beku memberikan 1.5x damage."},
+    {id:"CH_COPYBLADE_MENTOR",name:"COPYBLADE MENTOR",tier:"SSR",type:"Copyist",skill:"IMPERIAL BLADE FUSION",hp:598,atk:299,chance:800000,art:"assets/cards/art/copyblade-mentor.jpg",fx:{copy:{turns:6}},desc:"Saat masuk atau musuh masuk, salin ability lawan selama 6 giliran."},
+    {id:"CH_NULLBLADE_KNIGHT",name:"NULLBLADE KNIGHT",tier:"SSR",type:"Anti-Magic",skill:"NULL STANCE",hp:658,atk:329,chance:1100000,art:"assets/cards/art/nullblade-knight.jpg",fx:{dimensionShift:{turns:2},statusImmune:1,dmgMult:1.3},desc:"Saat masuk, nonaktifkan ability musuh 2 giliran. Kebal ability pengubah stat. Serangan 1.3x damage."},
+    {id:"CH_TITAN_HUNTER",name:"TITAN HUNTER",tier:"SSR",type:"Warrior",skill:"BEAST KAMUI",hp:723,atk:362,chance:1500000,art:"assets/cards/art/titan-hunter.jpg",fx:{dodgeAtk:{chance:35,pct:40,max:0,nextOnly:1}},desc:"35% kesempatan menghindar serangan apapun. Tiap sukses menghindar, serangan berikutnya +40% damage."},
+    {id:"CH_CRIMSON_WARLORD",name:"CRIMSON WARLORD",tier:"SSR",type:"Conqueror",skill:"METEOR SHOWER",hp:763,atk:382,chance:1800000,art:"assets/cards/art/crimson-warlord.jpg",fx:{meteorShower:{pct:15,every:4},dmgMult:1.3,dmgCut:{pct:20}},desc:"Saat masuk + tiap 4 giliran: jatuhkan meteor -> SEMUA kartu musuh rugi 15% max HP mereka (boss NPC kebal). Serangan 1.3x. Terima 20% pengurangan damage (Susano'o)."},
+    {id:"CH_LIGHTBORNE_ADMIRAL",name:"LIGHTBORNE ADMIRAL",tier:"SSR",type:"Commander",skill:"YASAKANI MAGATAMA",hp:692,atk:346,chance:3000000,art:"assets/cards/art/lightborne-admiral.jpg",fx:{splash:{pct:90},dmgMult:1.5,entryCounter:{mult:0,text:"BUTA CAHAYA"}},desc:"Serangan mengenai musuh + kartu lineup berikutnya sebesar 90% damage. Serangan 1.5x. Saat masuk, butakan musuh: serangan pertama mereka meleset."},
+    {id:"CH_SOUL_REAPER",name:"SOUL REAPER",tier:"SSR",type:"Wanderer",skill:"SHUKATSU",hp:890,atk:445,chance:3000000,art:"assets/cards/art/soul-reaper.jpg",fx:{revive:{pct:50,atkPct:20}},desc:"Saat mati, bangkit lagi dengan 50% HP dan +20% ATK (sekali per battle)."},
+    {id:"CH_GALACTIC_TYRANT",name:"GALACTIC TYRANT",tier:"SSR",type:"Alien",skill:"DEATH BEAM",hp:1030,atk:519,chance:5000000,art:"assets/cards/art/galactic-tyrant.jpg",fx:{everyNth:{n:3,mult:1,pen:true,next:100,text:"DEATH BEAM"},lowHpAtk:{below:50,bonus:70},lowHpAura:{below:50,dr:25}},desc:"Tiap serangan ke-3 jadi Death Beam: abaikan pengurangan damage + hantam kartu lineup berikutnya. Di bawah 50% HP: evolusi Golden Galactic Tyrant, +70% ATK & 25% pengurangan damage permanen."},
+    {id:"CH_SOLAR_BRAWLER",name:"SOLAR BRAWLER",tier:"SSR",type:"Saiyan",skill:"LIMIT BREAKER",hp:1090,atk:549,chance:6000000,art:"assets/cards/art/solar-brawler.jpg",fx:{statGrow:{pct:20}},desc:"Setiap giliran, semua stat naik 20% (compound). Makin lama makin mengerikan."},
+    {id:"CH_TREMOR_EMPEROR",name:"TREMOR EMPEROR",tier:"UR",type:"Titan",skill:"GURA GURA GUM-GUM",hp:4780,atk:2390,chance:800000000,art:"assets/cards/art/tremor-emperor.jpg",fx:{quake:{pct:10},shockAll:{pct:15},deathStay:1},desc:"Saat masuk: gempa -> SEMUA kartu musuh rugi 10% max HP mereka. Tiap serangan shockwave 15% ATK ke seluruh lineup musuh. Fatal -> bertahan 1 giliran extra (masih menyerang)."},
+    {id:"CH_ANT_KING",name:"ANT KING",tier:"UR",type:"Chimera",skill:"POST-ROSE METAMORPHOSIS",hp:5120,atk:2560,chance:1000000000,art:"assets/cards/art/ant-king.jpg",fx:{statGrow:{pct:5},gluttony:{pct:15,healPct:25,noCopy:1},revive:{pct:50,atkPct:50}},desc:"+5% stat tiap giliran. Tiap membunuh serap 15% stat musuh permanen + heal 25% max HP. Fatal -> bangkit sekali 50% HP +50% ATK."},
+    {id:"CH_TIME_MASTER",name:"TIME MASTER",tier:"UR",type:"Requiem",skill:"THE WORLD",hp:7120,atk:3560,chance:3000000000,art:"assets/cards/art/time-master.jpg",fx:{dimensionShift:{turns:999},reversal:1},desc:"Saat musuh masuk, nonaktifkan ability mereka permanen. Serangan mematikan pertama dibalikkan - sisa 1 HP (sekali per battle)."},
+    {id:"CH_OMNI_SOVEREIGN",name:"OMNI SOVEREIGN",tier:"UR",type:"Deity",skill:"OMNI SCALPEL",hp:8310,atk:4150,chance:5000000000,art:"assets/cards/art/omni-sovereign.jpg",fx:{eraseOnEntry:1},desc:"Saat masuk, jika total stat musuh lebih lemah dari Omni Sovereign, hapus mereka dari battle sepenuhnya."},
+    {id:"CH_ASTRAL_DEVOURER",name:"ASTRAL DEVOURER",tier:"UR",type:"Cosmic",skill:"ADAPTATION + GAMMA RAY",hp:10200,atk:5120,chance:10000000000,art:"assets/cards/art/astral-devourer.jpg",fx:{statGrow:{pct:15},everyNth:{n:3,mult:4,pen:true,next:20,all:1,text:"GAMMA RAY BURST"},causality:{atkPct:15}},desc:"Adaptasi +15% stat tiap giliran. Tiap serangan ke-3: Gamma Ray Burst, 4x damage, tembus semua kartu lineup musuh 20% ATK. Fatal -> balik ke HP awal giliran sebelumnya +15% ATK (sekali)."},    /* ===== KARTU BOSS — TOKO RAID (tier BOSS, glitch hitam-putih) =====
        raidBoss:true -> terkunci di SEMUA roll sebelum dibeli, permanen sesudahnya (bossRollUnlocked).
        chance dasar 1 in 25 juta (skill: ICE BLAST + immune status effect). ===== */
 {id:"CH_BALD_KING",name:"BALD KING",tier:"SSR",type:"Heroic",skill:"SERIOUS PUNCH",hp:1680,atk:843,chance:1500000,art:"assets/cards/art/bald-king.jpg",pos:"center",weatherOnly:"galactic",
@@ -1856,11 +1878,29 @@ const PASSIVE_FX=Object.fromEntries(STORY_BIBLE.units.map(u=>[u.id,u.fx]));
    FX_KNOWN = keyword fx yang BENERAN diimplement battle engine (single source of truth).
    validateFx() jalan pas boot: keyword di luar daftar = PASSIVE ZONK (desc tampil, efek nol) -> console.warn, bukan diam-diam.
    Nambah keyword baru? Daftarkan ke array INI SETELAH implementasi di kode battle. */
+
+    /* ===== FX BARU — BATCH 22 KARTU NORMAL (asset card normal) =====
+       regen:{pct,stopBelow} -> (BLOODMOON DEMON) pulih pct% max HP tiap giliran SEBELUM cek stun (pola heavyRain); berhenti selama HP < stopBelow% max.
+       counterHit:{chance,pct,base} -> (DRAGON SIN base:"atk" / BLOODMOON base:"foeMaxHp") enemyPhase: kena serangan -> roll chance% -> musuh rugi FLAT pct% dari ATK kartu ini atau MAX HP penyerang. Sisi pemain.
+       stunPunch:{every,chance,turns,atkPct,max} -> (LUCK VOLTIA) serangan kena -> punchCount++; ke-every -> roll chance% stun (guard statusImmune); stun sukses -> stunGain++ (cap max) + atkBuff+=atkPct permanen.
+       eightGates:{atkPct,max,selfPct} -> (GREEN BEAST) serangan kena -> gateCount++ (cap max) -> atkBuff+=atkPct; gerbang penuh -> rugi selfPct% max HP; tumbang -> gateKill (mati di akhir giliran, pola dsState).
+       deathHex:{turns,atkCut} -> (ICE REAPER) trySave saat BENERAN tumbang: musuh freeze turns (eStun+freezeLeft, guard statusImmune) + ePoison+=atkCut (cap 90).
+       meteorShower:{pct,every} -> (CRIMSON WARLORD) entry + tiap every giliran (state msLast[]): aoe flat pct% MAX HP musuh (BOSS NPC kebal) + cadangan menara per-wave. Helper aoeMaxHpFire/armShotFx.
+       splash:{pct} -> (LIGHTBORNE ADMIRAL) serangan kena -> flat pct% ATK ke lineup BERIKUTNYA (lineupNextHit) / musuh aktif lagi (story).
+       partyDmg:{pct} -> (NOBLE COMPANION) startBattle fx0 + startTowerBattle tfx: SEMUA fighter party atkBuff+=pct sekali per battle.
+       statGrow:{pct} -> (SOLAR BRAWLER / ANT KING) tiap giliran sebelum cek stun: pMax & pHp naik pct% + atkBuff+=pct (compound).
+       reversal:1 -> (TIME MASTER) serangan mematikan PERTAMA dibalik jadi 1 HP (sekali per battle).
+       causality:{atkPct} -> (ASTRAL DEVOURER) fatal -> pHp = hp awal giliran SEBELUMNYA (snapshot causalPrev/causalNow) + atkBuff+=atkPct (sekali).
+       eraseOnEntry:1 -> (OMNI SOVEREIGN) entry: total stat (hp+atk) musuh < milik kartu ini -> eHp=0 instan (pola executeOnEntry).
+       quake:{pct} -> (TREMOR EMPEROR) entry: aoe flat pct% MAX HP ke SEMUA kartu musuh (boss TETAP kena).
+       shockAll:{pct} -> (TREMOR EMPEROR) serangan kena -> flat pct% ATK ke seluruh lineup musuh (lineupAoeHit / aktif di story).
+       deathStay:1 -> (TREMOR EMPEROR) fatal -> bertahan 1 giliran extra (pHp=1, defyHold), jatuh di awal enemyPhase berikutnya (pola deathDefy tanpa syarat HP).
+       EKSTENSI: double OBJEK {chance,pct} -> hit tambahan x(pct/100) (angka lama tetap). everyNth.next/next all -> hit ke-N ikut flat next% ATK. dodgeAtk.nextOnly -> dodge kasih +pct% damage SATU serangan berikutnya (dodgeNext[]). revive.atkPct -> bangkit +atkPct% ATK. copy:{turns:N} -> ability lawan disalin N giliran (copyLeft tick tiap enemyPhase; resolveFx di-gate). gluttony.healPct / gluttony.noCopy. lowHpAura tanpa burn = aman (guard).
 const FX_KNOWN=["double","crit","pierce","barrage","evasion","lifesteal","void","highHpDmg","lowHpAtk",
   "revive","dmgMult","ignoreDef","purple","domain","ranton","dodgeAtk","everySecond","lastStand",
   "styleSwitching","burst","hpDrain","lifetime","entryCounter","dodgeEvery","everyNth","lowHpAura",
   "executeOnEntry","transform","wallTitans","rumbling","bungeeGum","snatch","arise","prideOfPrince",
-  "regression","copy","entryShatter","entryMaxHp","turnMaxHp","splitDeath","deathDefy","openingHit","burn","desperateStrike","statusImmune","iceBlast","psychicBarrier","entryAtkPct","sleepStrike","entryFreeze","iceShell","heavyRain","shockwave","timeStop","killHeal","tripleHit","flood","puppetPoison","puppetBody","sandBurial","autoBlock","unlimitedVoid","dimensionShift","gluttony","seriousPunch","meteorWave","overheat","freezeTransfer","foeEntryFreeze","hitFreeze","berserker","stripAbility","valhalla","dmgCut","inkCorrupt","inkDrain","dupEntry","maxCorrupt","worldCorrupt","deathRear","grieferAtk","senzu","stretch","havocRocket","getExcited","rewind","turret","worldEnder","psychicBarrage","rubberField"];
+  "regression","copy","entryShatter","entryMaxHp","turnMaxHp","splitDeath","deathDefy","openingHit","burn","desperateStrike","statusImmune","iceBlast","psychicBarrier","entryAtkPct","sleepStrike","entryFreeze","iceShell","heavyRain","shockwave","timeStop","killHeal","tripleHit","flood","puppetPoison","puppetBody","sandBurial","autoBlock","unlimitedVoid","dimensionShift","gluttony","seriousPunch","meteorWave","overheat","freezeTransfer","foeEntryFreeze","hitFreeze","berserker","stripAbility","valhalla","dmgCut","inkCorrupt","inkDrain","dupEntry","maxCorrupt","worldCorrupt","deathRear","grieferAtk","senzu","stretch","havocRocket","getExcited","rewind","turret","worldEnder","psychicBarrage","rubberField","regen","counterHit","stunPunch","eightGates","deathHex","meteorShower","splash","partyDmg","statGrow","reversal","causality","eraseOnEntry","quake","shockAll","deathStay"];
 function validateFx(){const bad=[];(STORY_BIBLE.units||[]).forEach(u=>{const fx=u.fx||{},ks=Object.keys(fx);
   ks.forEach(k=>{if(!FX_KNOWN.includes(k))bad.push(u.id+" :: fx."+k+" TIDAK DIKENAL -> passive TIDAK AKAN JALAN di battle");});
   if((u.desc||"").trim()&&!ks.length)bad.push(u.id+" :: desc ada tapi fx kosong -> murni teks");});
@@ -1976,7 +2016,7 @@ function resolveFx(stack,enemyFx){
   let base=fxOf(stack);
   /* GLUTTONY (Demon Slime): kartu aktif nerima ability musuh yang disalin */
   if(bt&&bt.pCopyFx&&stack===bt.eq)base=mergeFx(base,bt.pCopyFx);
-  if(!base.copy)return base;
+  if(!base.copy)return base;if(base.copy&&base.copy.turns&&!(bt&&bt.copyLeft>0))return base;
   const o=Object.assign({},enemyFx||{});
   delete o.copy;
   return mergeFx(o,TRAIT_FX[stack.trait]||{});
@@ -1985,6 +2025,30 @@ function resolveFx(stack,enemyFx){
 /* STATUS IMMUNE (fx.statusImmune): tolak status negatif yang menyasar kartu pemegang.
    Sisi pemain: pakai `fx` hasil resolveFx (sudah ada di playerPhase). Sisi lawan: cek di sini. */
 function foeStatusImmune(){return !!(bt&&bt.efx&&bt.efx.statusImmune);}
+/* HELPER fx batch kartu normal: aoe flat pct% MAX HP musuh (quake/meteor), arming entry (erase/ms/copy), buffer party */
+function aoeMaxHpFire(pct,label,noBoss){
+  if(!bt||bt.over)return;
+  if(noBoss&&bt.en&&bt.en.boss)return;
+  const hitW=(w)=>{if(!w||w.dead)return;if(w.hp==null)w.hp=w.es.hp;const d=Math.max(1,Math.round(w.es.hp*pct/100));w.hp=Math.max(0,w.hp-d);if(w.hp<=0)w.dead=true;};
+  const d=Math.max(1,Math.round(bt.es.hp*pct/100));
+  bt.eHp-=d;
+  if(bt.tower&&towerRun){for(let j=towerRun.idx+1;j<towerRun.waves.length;j++)hitW(towerRun.waves[j]);const rail=document.querySelector(".foe-rail");if(rail)rail.outerHTML=towerEnemyBenchRail();}
+  setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe",label+" -"+fmt(d),"crit");setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);}},bsMs(320));
+  if(bt.eHp<=0){const _fg=(bt.fgen||0);setTimeout(()=>{if(bt&&!bt.over&&(bt.fgen||0)===_fg)foeDown();},bsMs(760));}
+}
+function armShotFx(fx,idx){
+  if(!fx||idx==null||!bt)return;
+  bt.eraseGuard=bt.eraseGuard||new Array(bt.fighters.length).fill(false);
+  if(fx.eraseOnEntry)bt.eraseGuard[idx]=true;
+  if(fx.copy&&fx.copy.turns)bt.copyLeft=fx.copy.turns;
+  if(fx.meteorShower){bt.msLast=bt.msLast||new Array(bt.fighters.length).fill(-99);bt.msLast[idx]=bt.turn;aoeMaxHpFire(fx.meteorShower.pct,"KEDATANGAN BINTANG",true);}
+  if(fx.quake)aoeMaxHpFire(fx.quake.pct,"GURA GURA GUM-GUM",false);
+}
+function partyDmgApply(fx){
+  if(!fx||!fx.partyDmg)return;
+  for(let i=0;i<bt.fighters.length;i++)bt.atkBuff[i]=(bt.atkBuff[i]||0)+fx.partyDmg.pct;
+  setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","NARASI +"+fx.partyDmg.pct+"% DMG PARTY","heal");},bsMs(420));
+}
 function cardStats(charId,mut,trait,shiny){const c=CARDS[charId];if(!c)return{hp:0,atk:0,def:0};const base=(MUT_MULT[mut||"none"]||1)*(shiny?SHINY_MULT:1);const hp=Math.round(c.base_hp*base*(TRAIT_HP[trait||"none"]||1)),atk=Math.round(c.base_atk*base*(TRAIT_ATK[trait||"none"]||1));return{hp,atk,def:hp};}
 /* POWER = total HP + ATK semua kartu yang dipakai: kartu utama + TAG (tetap terdeteksi walau cuma 1 kartu) */
 function totalPower(){
@@ -2640,7 +2704,7 @@ function startBattle(){
   const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   const eid=en.id||null,efx=eid?(PASSIVE_FX[eid]||{}):{};
   if(bt&&bt.timer)clearTimeout(bt.timer);
-  bt={speed:battleSpeedEff(),lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,ePoison:0,pGuardDr:0,eAbilityOff:0,voidUsed:false,pCopyFx:null,spCd:[],spTurn:[],spArmed:[],spWave:[],meteorGuard:[],phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),execGuard:new Array(fighters.length).fill(false),shatterGuard:new Array(fighters.length).fill(false),wtCount:new Array(fighters.length).fill(0),snatchAtk:new Array(fighters.length).fill(0),snatchHp:new Array(fighters.length).fill(0),regressCharges:new Array(fighters.length).fill(0),bioGuard:new Array(fighters.length).fill(false),splitLeft:new Array(fighters.length).fill(0),splitMult:new Array(fighters.length).fill(1),rumbling:0,rumblingPct:0,defyUsed:new Array(fighters.length).fill(false),defyHold:false,openGuard:true,dsState:new Array(fighters.length).fill(0),aftermath:false,gumTurns:0,trickNext:false,royalNow:false,gunsNow:false,psychic:null,atkEntryGuard:new Array(fighters.length).fill(false),sleepLeft:new Array(fighters.length).fill(0),sleepArmed:new Array(fighters.length).fill(false),overflow:0,rain:null,freezeLeft:0,shockCount:new Array(fighters.length).fill(0),shadow:null,freezeNext:false,valhallaLeft:0,paintHits:[],eInk:0,eInkPct:0,wc:null,rearIdx:-1,rearWaiting:false,rearUsed:[],senzu:{},senzuFin:false,balloon:0,stretchShot:0,turret:0,hvCount:new Array(fighters.length).fill(0),excited:false,weCount:new Array(fighters.length).fill(0),weRevived:false,pbRocks:0,pbKey:"",pbStreak:0,rubber:false,rbBounce:0,dizzyStack:0,dizzyLeft:0};
+  bt={speed:battleSpeedEff(),fgen:1,lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,ePoison:0,pGuardDr:0,eAbilityOff:0,voidUsed:false,pCopyFx:null,spCd:[],spTurn:[],spArmed:[],spWave:[],meteorGuard:[],phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),execGuard:new Array(fighters.length).fill(false),shatterGuard:new Array(fighters.length).fill(false),wtCount:new Array(fighters.length).fill(0),snatchAtk:new Array(fighters.length).fill(0),snatchHp:new Array(fighters.length).fill(0),regressCharges:new Array(fighters.length).fill(0),bioGuard:new Array(fighters.length).fill(false),splitLeft:new Array(fighters.length).fill(0),splitMult:new Array(fighters.length).fill(1),rumbling:0,rumblingPct:0,defyUsed:new Array(fighters.length).fill(false),defyHold:false,openGuard:true,dsState:new Array(fighters.length).fill(0),aftermath:false,gumTurns:0,trickNext:false,royalNow:false,gunsNow:false,psychic:null,atkEntryGuard:new Array(fighters.length).fill(false),sleepLeft:new Array(fighters.length).fill(0),sleepArmed:new Array(fighters.length).fill(false),overflow:0,rain:null,freezeLeft:0,shockCount:new Array(fighters.length).fill(0),shadow:null,freezeNext:false,valhallaLeft:0,paintHits:[],eInk:0,eInkPct:0,wc:null,rearIdx:-1,rearWaiting:false,rearUsed:[],senzu:{},senzuFin:false,balloon:0,stretchShot:0,turret:0,hvCount:new Array(fighters.length).fill(0),excited:false,weCount:new Array(fighters.length).fill(0),weRevived:false,pbRocks:0,pbKey:"",pbStreak:0,rubber:false,rbBounce:0,dizzyStack:0,dizzyLeft:0};
   // BURST: kartu pertama masuk arena langsung dapat boost HP kalau punya fx.burst
   const fx0=resolveFx(eq,efx);
   if(fx0.burst){bt.pMax=Math.round(base.hp*fx0.burst.mult);bt.pHp=bt.pMax;}
@@ -2651,6 +2715,7 @@ function startBattle(){
   if(fx0.entryMaxHp)bt.bioGuard[0]=true;
   if(fx0.meteorWave)bt.meteorGuard[0]=true;
   if(fx0.entryAtkPct)bt.atkEntryGuard[0]=true;
+  armShotFx(fx0,0);partyDmgApply(fx0);
   if(fx0.psychicBarrier)bt.psychic={left:fx0.psychicBarrier.turns,dr:fx0.psychicBarrier.dr,healPct:fx0.psychicBarrier.healPct};
   if(fx0.sleepStrike){bt.sleepLeft[0]=fx0.sleepStrike.turns;bt.sleepArmed[0]=true;}
    if(fx0.entryFreeze&&!foeStatusImmune()){bt.eStun=fx0.entryFreeze.turns;bt.freezeLeft=fx0.entryFreeze.turns;setTimeout(()=>floatText(".fighter.foe","BEKU","crit"),bsMs(300));}
@@ -2685,6 +2750,7 @@ function tagIn(){
   if(nfx.entryMaxHp)bt.bioGuard[next]=true;
   if(nfx.meteorWave)bt.meteorGuard[next]=true;
   if(nfx.entryAtkPct)bt.atkEntryGuard[next]=true;
+  armShotFx(nfx,next);
   if(nfx.psychicBarrier)bt.psychic={left:nfx.psychicBarrier.turns,dr:nfx.psychicBarrier.dr,healPct:nfx.psychicBarrier.healPct};
   if(nfx.sleepStrike){bt.sleepLeft[next]=nfx.sleepStrike.turns;bt.sleepArmed[next]=true;}
    if(nfx.entryFreeze&&!foeStatusImmune()){bt.eStun=nfx.entryFreeze.turns;bt.freezeLeft=nfx.entryFreeze.turns;setTimeout(()=>floatText(".fighter.foe","BEKU","crit"),bsMs(300));}
@@ -2733,6 +2799,7 @@ function trySave(){
     if(fx.entryMaxHp)bt.bioGuard[a]=true;
     if(fx.meteorWave)bt.meteorGuard[a]=true;
     if(fx.entryAtkPct)bt.atkEntryGuard[a]=true;
+    armShotFx(fx,a);
     if(fx.psychicBarrier)bt.psychic={left:fx.psychicBarrier.turns,dr:fx.psychicBarrier.dr,healPct:fx.psychicBarrier.healPct};
     if(fx.sleepStrike){bt.sleepLeft[a]=fx.sleepStrike.turns;bt.sleepArmed[a]=true;}
      if(fx.entryFreeze&&!foeStatusImmune()){bt.eStun=fx.entryFreeze.turns;bt.freezeLeft=fx.entryFreeze.turns;setTimeout(()=>floatText(".fighter.foe","BEKU","crit"),bsMs(300));}
@@ -2794,7 +2861,7 @@ if(fx.worldCorrupt){bt.wc={c:0,atk:Math.round(cardStats(bt.eq.char,bt.eq.mut,bt.
     return true;
   }
   if(fx.revive&&!bt.revUsed[a]){
-    bt.revUsed[a]=true;bt.pHp=(fx.revive.pct!=null)?Math.max(1,Math.round(bt.pMax*fx.revive.pct/100)):bt.pMax;
+    bt.revUsed[a]=true;bt.pHp=(fx.revive.pct!=null)?Math.max(1,Math.round(bt.pMax*fx.revive.pct/100)):bt.pMax;if(fx.revive.atkPct)bt.atkBuff[a]+=fx.revive.atkPct;
     if(fx.revive.lock){bt.eAbilityOff=Math.max(bt.eAbilityOff||0,fx.revive.lock);setTimeout(()=>floatText(".fighter.foe","ALTER THE FUTURE","crit"),bsMs(600));}
     setTimeout(()=>floatText(".fighter.me","REVIVE!","heal"),bsMs(400));
     if(fx.revive.stun&&!foeStatusImmune()){bt.eStun=Math.max(bt.eStun||0,fx.revive.stun);setTimeout(()=>floatText(".fighter.foe","INK DEMON STUN","crit"),bsMs(520));}
@@ -2812,6 +2879,11 @@ if(fx.worldCorrupt){bt.wc={c:0,atk:Math.round(cardStats(bt.eq.char,bt.eq.mut,bt.
   for(let i=0;i<bt.fighters.length;i++){const pfx=resolveFx(bt.fighters[i],bt.efx);if(pfx.prideOfPrince)bt.atkBuff[i]=(bt.atkBuff[i]||0)+pfx.prideOfPrince.pct;}
   /* RUMBLING: kartu ini beneran tumbang (revive/lastStand gak nolong) → nyalain DoT post-mortem */
   if(fx.rumbling){bt.rumbling=fx.rumbling.turns;bt.rumblingPct=fx.rumbling.pct;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","THE RUMBLING","burn");},bsMs(600));}
+  /* DEATH HEX (ICE REAPER): beneran tumbang -> freeze turns + ePoison atkCut */
+  if(fx.deathHex){
+    if(!foeStatusImmune()){bt.eStun=Math.max(bt.eStun||0,fx.deathHex.turns);bt.freezeLeft=Math.max(bt.freezeLeft||0,fx.deathHex.turns);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","HAKKA NO TOGAME · BEKU","crit");},bsMs(520));}
+    bt.ePoison=Math.min(90,(bt.ePoison||0)+fx.deathHex.atkCut);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","-"+fx.deathHex.atkCut+"% ATK PERMANEN","burn");},bsMs(640));
+  }
   /* DEATH REAR (THE GRIEFER): mati PERTAMA kali -> remove dari rotasi sekarang, nunggu balik di belakang party */
   if(fx.deathRear&&!bt.rearUsed[a]){
     bt.rearUsed[a]=true;bt.rearIdx=a;bt.rearWaiting=true;
@@ -2844,6 +2916,7 @@ function step(){ if(!bt||bt.over)return; schedPhase(0,playerPhase); }
 // the chain is broken (no next timer) — so we force an end instead of freezing.
 function schedPhase(ms,fn){
   if(!bt)return;
+  clearTimeout(bt.timer);/* timer basi dibatalkan: schedule terakhir menang — cegah rantai giliran dobel */
   bt.timer=setTimeout(()=>{
     bt.timer=null;
     try{ fn(); }
@@ -2927,6 +3000,7 @@ function setTurnPill(side,label){
 }
 function playerPhase(){
   if(!bt||bt.over)return;
+  bt.foeDowning=false;/* kill berikutnya baru sah setelah giliran ini mulai */
   if(bt.turn>300){ endBattle(bt.eHp<=bt.pHp); return; }
   /* AFTERMATH: kartu terakhir udah mati, Rumbling doang yang jalan — bisa nyulik menang, abis itu kalah */
   if(bt.aftermath){
@@ -2976,6 +3050,14 @@ function playerPhase(){
     setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","HUJAN +"+fmt(rh),"heal");},bsMs(260));
     bt.rain.left--;
   }
+  /* rotasi snapshot HP buat CAUSALITY (ASTRAL DEVOURER): pHp awal giliran ini jadi hp pembanding giliran berikutnya */
+  bt.causalPrev=(bt.causalNow==null)?bt.pHp:bt.causalNow;bt.causalNow=bt.pHp;
+  /* STAT GROW (SOLAR BRAWLER / ANT KING): semua stat naik pct% compound per giliran */
+  if(fx.statGrow&&bt.pHp>0){const sgd=Math.round(bt.pMax*fx.statGrow.pct/100);bt.pMax+=sgd;bt.pHp+=sgd;bt.atkBuff[bt.active]+=fx.statGrow.pct;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","STATS +"+fx.statGrow.pct+"%","heal");},bsMs(300));}
+  /* REGEN (BLOODMOON DEMON): pulih pct% max HP tiap giliran, jalan walau kena stun; berhenti di bawah stopBelow% max HP */
+  if(fx.regen&&bt.pHp>0&&!(fx.regen.stopBelow!=null&&bt.pHp<bt.pMax*fx.regen.stopBelow/100)){const rh2=Math.max(1,Math.round(bt.pMax*fx.regen.pct/100));bt.pHp=Math.min(bt.pMax,bt.pHp+rh2);setBar("hpMe","hpMeT",bt.pHp,bt.pMax);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","REGEN +"+fmt(rh2),"heal");},bsMs(260));}
+  /* METEOR PERIODIC (CRIMSON WARLORD): tiap `every` giliran sejak masuk -> aoe pct% max HP musuh (boss kebal) */
+  if(fx.meteorShower&&bt.pHp>0&&bt.eHp>0){bt.msLast=bt.msLast||new Array(bt.fighters.length).fill(-99);if(bt.msLast[bt.active]==null||bt.msLast[bt.active]<-90)bt.msLast[bt.active]=bt.turn;if(bt.turn-bt.msLast[bt.active]>=fx.meteorShower.every){aoeMaxHpFire(fx.meteorShower.pct,"METEOR BERIKUTNYA",true);bt.msLast[bt.active]=bt.turn;}}
   /* TURN MAX HP (BIOKINESIS): tiap giliran kartu ini aktif & hidup, kartu aktif musuh rugi pct% MAX HP (flat).
      Ditaruh SEBELUM cek stun biar aura tetap nyala walau kartu kena stun. Boss NPC kebal. */
   if(fx.turnMaxHp&&!bt.en.boss&&!foeStatusImmune()&&bt.eHp>0){
@@ -3020,6 +3102,17 @@ function playerPhase(){
   /* DODGE EVERY: setiap N giliran sejak masuk, pasti hindari serangan musuh giliran ini */
   if(fx.dodgeEvery){bt.dodgeCount[a]=(bt.dodgeCount[a]||0)+1;if(bt.dodgeCount[a]%fx.dodgeEvery.turns===0)bt.dodgeArmed[a]=true;}
   /* EXECUTE ON ENTRY (SUPERNOVA): saat masuk, kalau HP musuh < pct% HP kartu ini, hancurkan instan */
+  /* ERASE (OMNI SOVEREIGN): entry -> total stat musuh < milik kartu ini -> hapus (pola executeOnEntry) */
+  if(fx.eraseOnEntry&&bt.eraseGuard&&bt.eraseGuard[a]){
+    bt.eraseGuard[a]=false;
+    const ownS=cardStats(id,bt.eq.mut,bt.eq.trait,bt.eq.shiny);
+    if(bt.eHp>0&&(bt.es.hp+bt.es.atk)<(ownS.hp+ownS.atk)){
+      bt.eHp=0;setBar("hpFoe","hpFoeT",0,bt.es.hp);
+      setTimeout(()=>{anim(".fighter.foe","ko");floatText(".fighter.foe","HAPUS EKSISTENSI","crit");},bsMs(200));
+      setTimeout(()=>{if(bt&&!bt.over)foeDown();},bsMs(700));
+      return;
+    }
+  }
   if(fx.executeOnEntry&&bt.execGuard[a]){
     bt.execGuard[a]=false;
     const thr=Math.round(cardStats(id,bt.eq.mut,bt.eq.trait,bt.eq.shiny).hp*fx.executeOnEntry.pct/100);
@@ -3057,7 +3150,7 @@ function playerPhase(){
       const ownAtk=cardStats(bt.eq.char,bt.eq.mut,bt.eq.trait,bt.eq.shiny).atk;
       const pd=Math.max(1,Math.round(ownAtk*fx.entryAtkPct.pct/100));
       bt.eHp-=pd;setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);
-      setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","PAPER STORM -"+fmt(pd),"crit");}},bsMs(200));
+      setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe",passiveName(id)+" -"+fmt(pd),"crit");}},bsMs(200));
       if(bt.eHp<=0){setTimeout(()=>{if(bt&&!bt.over)foeDown();},bsMs(700));return;}
     }
   }
@@ -3139,6 +3232,8 @@ function playerPhase(){
   let dmgMult=1;
   if(fx.dmgMult)dmgMult*=fx.dmgMult;
   /* OPENING HIT: serangan pertama ke kartu musuh BARU ×(1+pct%) — guard dibuang saat percobaan pertama (miss/evade tetap habis) */
+  /* DODGE-NEXT (TITAN HUNTER nextOnly): bonus damage dari dodge dipakai di serangan ini (sekali pakai) */
+  if(fx.dodgeAtk&&fx.dodgeAtk.nextOnly){bt.dodgeNext=bt.dodgeNext||new Array(bt.fighters.length).fill(0);if((bt.dodgeNext[a]||0)>0){dmgMult*=1+bt.dodgeNext[a]/100;bt.dodgeNext[a]=0;setTimeout(()=>floatText(".fighter.me","COUNTER DODGE +"+fx.dodgeAtk.pct+"%","crit"),bsMs(150));}}
   if(fx.openingHit&&bt.openGuard&&bt.eHp>0){dmgMult*=(1+fx.openingHit.pct/100);bt.openGuard=false;}
   /* DESPERATE STRIKE dilepas: ×mult sekali lalu state=2 -> mati di awal enemyPhase (lihat blok dsState) */
   if(fx.desperateStrike&&bt.dsState[a]===1){dmgMult*=fx.desperateStrike.mult;bt.dsState[a]=2;setTimeout(()=>floatText(".fighter.me",fx.desperateStrike.text||"DESPERATE STRIKE","crit"),bsMs(200));}
@@ -3162,7 +3257,7 @@ function playerPhase(){
   let pen=!!fx.ignoreDef;
   if(fx.everySecond){bt.atkCount[a]++;if(bt.atkCount[a]%2===0){dmgMult*=fx.everySecond.mult;pen=true;setTimeout(()=>floatText(".fighter.me","ONE PERCENT","crit"),bsMs(220));}}
   /* SUSANOO CHIDORI: tiap serangan ke-N → ×mult damage + menembus pengurangan damage */
-  if(fx.everyNth){bt.atkCount[a]++;if(bt.atkCount[a]%fx.everyNth.n===0){dmgMult*=fx.everyNth.mult;pen=true;setTimeout(()=>floatText(".fighter.me",fx.everyNth.text||"SUSANOO CHIDORI","crit"),bsMs(220));}}
+  if(fx.everyNth){bt.atkCount[a]++;if(bt.atkCount[a]%fx.everyNth.n===0){dmgMult*=fx.everyNth.mult;pen=true;setTimeout(()=>floatText(".fighter.me",fx.everyNth.text||"SUSANOO CHIDORI","crit"),bsMs(220));}}if(fx.everyNth.next&&bt.atkCount[a]>0&&bt.atkCount[a]%fx.everyNth.n===0&&bt.eHp>0){const nd=Math.max(1,Math.round(atk*(fx.everyNth.next/100)));if(fx.everyNth.all&&bt.tower&&towerRun){lineupAoeHit(nd);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","GAMMA RAY -"+fmt(nd),"crit");},bsMs(420));}else if(!fx.everyNth.all&&bt.tower&&towerRun){lineupNextHit(nd);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","DEATH BEAM -"+fmt(nd),"crit");},bsMs(420));}}
   /* THE WORLD (Immortal Vampire): serangan ke-`every` -> stun musuh `turns` giliran lagi (entry stun sudah arming di 4 titik masuk) */
   if(fx.timeStop){bt.atkCount[a]++;if(bt.atkCount[a]%fx.timeStop.every===0&&!foeStatusImmune()){bt.eStun=fx.timeStop.turns;setTimeout(()=>floatText(".fighter.foe","THE WORLD","crit"),bsMs(220));}}
   /* 40-DAY FLOOD (Sea Sovereign): serangan ke-`every` -> ×mult + tembus DR + eksekusi kalau musuh <= exec% HP */
@@ -3287,7 +3382,7 @@ if(fx.sandBurial){bt.atkCount[a]++;if(bt.atkCount[a]%fx.sandBurial.every===0){sa
   }
   if(fx.seriousPunch&&bt.spWave[a]){bt.spWave[a]=false;hits.push({mult:(fx.seriousPunch.wavePct||10)/100});lineupAoeHit(Math.round(atk*dmgMult*((fx.seriousPunch.wavePct||10)/100)));}
   if(fx.tripleHit){hits.length=0;for(let tri=0;tri<fx.tripleHit.hits;tri++)hits.push({mult:fx.tripleHit.mult});}
-  if(fx.double&&Math.random()*100<fx.double)hits.push({mult:1});
+  if(typeof fx.double==="object"){if(Math.random()*100<(fx.double.chance!=null?fx.double.chance:100))hits.push({mult:(fx.double.pct!=null?fx.double.pct:100)/100});}else if(fx.double&&Math.random()*100<fx.double)hits.push({mult:1});
   let crit=false;
   if(fx.crit&&Math.random()*100<fx.crit.chance){crit=true;hits[hits.length-1].mult*=fx.crit.mult;}
   else if(Math.random()*100<BASE_CRIT.chance){crit=true;hits[hits.length-1].mult*=BASE_CRIT.mult;}
@@ -3326,7 +3421,7 @@ if(fx.inkCorrupt&&total>0){bt.eInk=Math.min(fx.inkCorrupt.max,(bt.eInk||0)+1);bt
     const eHpNext=bt.eHp-total,foeDead=eHpNext<=0;
   /* THUNDERCLAP FLASH overflow: sisa damage serangan sleepStrike yang membunuh target disimpan buat musuh berikutnya */
   if(sleepHit&&foeDead&&eHpNext<0)bt.overflow=-eHpNext;
-  const foeDownCb=()=>{if(bt&&!bt.over)foeDown();};
+  const _fgFoe=(bt.fgen||0);const foeDownCb=()=>{if(bt&&!bt.over&&(bt.fgen||0)===_fgFoe)foeDown();};
   performAttack({
     A:".fighter.me",D:".fighter.foe",id,fx,
     barId:"hpFoe",barTid:"hpFoeT",defMax:bt.es.hp,
@@ -3398,12 +3493,44 @@ if(fx.inkCorrupt&&total>0){bt.eInk=Math.min(fx.inkCorrupt.max,(bt.eInk||0)+1);bt
   }
   if(fx.hitFreeze&&total>0&&bt.eHp>0&&Math.random()*100<fx.hitFreeze.chance){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else{bt.eStun=fx.hitFreeze.turns;bt.freezeLeft=fx.hitFreeze.turns;setTimeout(()=>floatText(".fighter.foe","BEKU","crit"),bsMs(360));}}
   /* PERFECT SUSANOO (low HP): di bawah ambang, serangan membakar musuh selama N giliran */
-  if(fx.lowHpAura&&total>0&&bt.pHp<bt.pMax*fx.lowHpAura.below/100&&bt.eHp>0){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else{bt.eBurn=fx.lowHpAura.burn.turns;setTimeout(()=>floatText(".fighter.foe","PERFECT SUSANOO","burn"),bsMs(360));}}
+  if(fx.lowHpAura&&total>0&&bt.pHp<bt.pMax*fx.lowHpAura.below/100&&bt.eHp>0){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else{if(fx.lowHpAura.burn)bt.eBurn=fx.lowHpAura.burn.turns;setTimeout(()=>floatText(".fighter.foe","PERFECT SUSANOO","burn"),bsMs(360));}}
+  /* STUN PUNCH (LUCK VOLTIA): counter tiap serangan kena; serangan ke-every -> roll stun + atkBuff permanen */
+  if(fx.stunPunch&&total>0&&bt.eHp>0){
+    bt.punchCount=bt.punchCount||new Array(bt.fighters.length).fill(0);bt.stunGain=bt.stunGain||new Array(bt.fighters.length).fill(0);
+    bt.punchCount[a]=(bt.punchCount[a]||0)+1;
+    if(bt.punchCount[a]%fx.stunPunch.every===0&&Math.random()*100<fx.stunPunch.chance&&!foeStatusImmune()){
+      bt.eStun=Math.max(bt.eStun||0,fx.stunPunch.turns);
+      if(bt.stunGain[a]<(fx.stunPunch.max||5)){bt.stunGain[a]++;bt.atkBuff[a]+=fx.stunPunch.atkPct;}
+      setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","STUN! +"+fx.stunPunch.atkPct+"% ATK","crit");},bsMs(360));
+    }
+  }
+  /* EIGHT GATES (GREEN BEAST): gerbang tiap kena -> atkBuff; gerbang penuh -> rugi selfPct% max HP (mati via gateKill) */
+  if(fx.eightGates&&total>0&&bt.eHp>0&&bt.pHp>0){
+    bt.gateCount=bt.gateCount||new Array(bt.fighters.length).fill(0);
+    if(bt.gateCount[a]<fx.eightGates.max){bt.gateCount[a]++;bt.atkBuff[a]+=fx.eightGates.atkPct;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","GERBANG "+bt.gateCount[a]+"/"+fx.eightGates.max+" +"+fx.eightGates.atkPct+"%","crit");},bsMs(380));}
+    if(bt.gateCount[a]>=fx.eightGates.max){
+      const gd=Math.max(1,Math.round(bt.pMax*fx.eightGates.selfPct/100));bt.pHp=Math.max(0,bt.pHp-gd);
+      setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.me","hit");floatText(".fighter.me","HARGA GERBANG -"+fmt(gd),"burn");setBar("hpMe","hpMeT",bt.pHp,bt.pMax);}},bsMs(440));
+      if(bt.pHp<=0)bt.gateKill=true;
+    }
+  }
+  /* SHOCK ALL (TREMOR EMPEROR): shockwave flat pct% ATK ke seluruh lineup musuh / aktif (story) */
+  if(fx.shockAll&&total>0&&bt.eHp>0){
+    const sd=Math.max(1,Math.round(atk*fx.shockAll.pct/100));
+    if(bt.tower&&towerRun){lineupAoeHit(sd);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","GEMPA -"+fmt(sd),"crit");},bsMs(460));}
+    else{bt.eHp-=sd;setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","GEMPA -"+fmt(sd),"crit");setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);}},bsMs(460));}
+  }
+  /* SPLASH (LIGHTBORNE ADMIRAL): tembusan flat pct% ATK ke lineup BERIKUTNYA / aktif lagi (story) */
+  if(fx.splash&&total>0&&bt.eHp>0){
+    const pd=Math.max(1,Math.round(atk*fx.splash.pct/100));
+    if(bt.tower&&towerRun){lineupNextHit(pd);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","YASAKANI -"+fmt(pd),"crit");},bsMs(500));}
+    else{bt.eHp-=pd;setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","YASAKANI -"+fmt(pd),"crit");setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);}},bsMs(500));}
+  }
   setBar("hpFoe","hpFoeT",bt.eHp+total,bt.es.hp);setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
   /* STATUS IMMUNE: burn musuh dibatalkan tanpa tick damage */
   if(bt.eBurn>0&&foeStatusImmune()){bt.eBurn=0;setTimeout(()=>floatText(".fighter.foe","IMMUNE · BURN","heal"),bsMs(300));}
   if(bt.eBurn>0&&bt.eHp>0){
-    const bPct=fx.burn?fx.burn.pct:(fx.lowHpAura?fx.lowHpAura.burn.pct:0);
+    const bPct=fx.burn?fx.burn.pct:(fx.lowHpAura&&fx.lowHpAura.burn?fx.lowHpAura.burn.pct:0);
     const bd=Math.round(bt.es.hp*bPct/100);bt.eHp-=bd;bt.eBurn--;
     setTimeout(()=>{anim(".fighter.foe","hit");floatText(".fighter.foe","-"+fmt(bd),"burn");},bsMs(420));
   }
@@ -3416,6 +3543,7 @@ if(fx.inkCorrupt&&total>0){bt.eInk=Math.min(fx.inkCorrupt.max,(bt.eInk||0)+1);bt
 }
 function enemyPhase(){
   if(!bt||bt.over)return;
+  bt.foeDowning=false;/* kill berikutnya baru sah setelah giliran ini mulai */
   /* DEATH DEFY selesai: kartu sudah dapat giliran ekstranya (menyerang) -> tumbang sekarang,
      sebelum musuh sempat menyerang balik. Pola penutup = deathStep (turn++ / trySave / playerPhase). */
   if(bt.defyHold){
@@ -3441,6 +3569,17 @@ function enemyPhase(){
     },bsMs(900));
     return;
   }
+  /* EIGHT GATES harga: kartu tumbang di akhir giliran dia (pola dsState) */
+  if(bt.gateKill){
+    bt.gateKill=false;bt.pHp=0;
+    setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.me","ko");floatText(".fighter.me","GERBANG PENUH...","crit");}},bsMs(150));
+    setTimeout(()=>{
+      if(!bt||bt.over)return;bt.turn++;
+      if(!trySave()){endBattle(false);return;}
+      schedPhase(bt.justTagged?2700:700,playerPhase);
+    },bsMs(900));
+    return;
+  }
   setTurnPill("foe","GILIRAN MUSUH");
   if(bt.dizzyLeft>0){bt.dizzyLeft--;if(bt.dizzyLeft<=0){bt.dizzyStack=0;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","DIZZY HABIS","miss");},bsMs(300));}}
   const id=bt.eq.char,t=bt.turn;let fx=resolveFx(bt.eq,bt.efx);
@@ -3450,6 +3589,7 @@ function enemyPhase(){
   /* FREEZE tick (10TH CAPTAIN): hitungan beku turun tiap giliran musuh — paralel dgn eStun, sebelum blok stun biar bonus ×mult habis pas 2 giliran */
   if(bt.freezeLeft>0)bt.freezeLeft--;
   if(bt.eAbilityOff>0)bt.eAbilityOff--;
+  if(bt.copyLeft>0)bt.copyLeft--;
   if(bt.eStun>0){
     if(efx.statusImmune){
       /* STATUS IMMUNE: stun musuh dibatalkan — musuh tetap menyerang */
@@ -3475,7 +3615,7 @@ function enemyPhase(){
     if(entryTrig)bt.entryGuard[pa]=false;
     if(dodgeTrig)bt.dodgeArmed[pa]=false;
     /* ULTRA INSTINCT: tiap berhasil menghindar → +pct% ATK permanen, stack sampai max (khusus dodgeAtk; evasion biasa gak kepengaruh) */
-    if(fx.dodgeAtk&&bt.dodgeStack[bt.active]<fx.dodgeAtk.max){bt.dodgeStack[bt.active]++;bt.atkBuff[bt.active]+=fx.dodgeAtk.pct;setTimeout(()=>floatText(".fighter.me","+"+fx.dodgeAtk.pct+"% ATK","heal"),bsMs(420));}
+    if(fx.dodgeAtk&&fx.dodgeAtk.nextOnly){bt.dodgeNext=bt.dodgeNext||new Array(bt.fighters.length).fill(0);bt.dodgeNext[bt.active]=(bt.dodgeNext[bt.active]||0)+fx.dodgeAtk.pct;}else if(fx.dodgeAtk&&bt.dodgeStack[bt.active]<fx.dodgeAtk.max){bt.dodgeStack[bt.active]++;bt.atkBuff[bt.active]+=fx.dodgeAtk.pct;setTimeout(()=>floatText(".fighter.me","+"+fx.dodgeAtk.pct+"% ATK","heal"),bsMs(420));}
     if(id==="CH_EX_MADARA"){
       anim(".fighter.foe","lunge-l");
       setTimeout(()=>floatText(".fighter.me","LIMBO","miss"),bsMs(220));
@@ -3504,7 +3644,7 @@ if(bt.ePoison>0)eAtk=Math.max(1,Math.round(eAtk*(1-Math.min(90,bt.ePoison)/100))
     if(efx.dmgMult)edmgMult*=efx.dmgMult;
     if(efx.highHpDmg&&bt.eHp>bt.es.hp*efx.highHpDmg.above/100)edmgMult*=(1+efx.highHpDmg.bonus/100);
     const eHits=[{mult:1}];let ecrit=false,epurple=false,eBarrageN=0;
-    if(efx.double&&Math.random()*100<efx.double)eHits.push({mult:1});
+    if(typeof efx.double==="object"){if(Math.random()*100<(efx.double.chance!=null?efx.double.chance:100))eHits.push({mult:(efx.double.pct!=null?efx.double.pct:100)/100});}else if(efx.double&&Math.random()*100<efx.double)eHits.push({mult:1});
     if(efx.crit&&Math.random()*100<efx.crit.chance){ecrit=true;eHits[eHits.length-1].mult*=efx.crit.mult;}
     else if(Math.random()*100<BASE_CRIT.chance){ecrit=true;eHits[eHits.length-1].mult*=BASE_CRIT.mult;}
     if(efx.purple&&Math.random()*100<efx.purple.chance){epurple=true;ecrit=true;eHits[eHits.length-1].mult*=efx.purple.mult;}
@@ -3572,12 +3712,18 @@ if(bt.ePoison>0)eAtk=Math.max(1,Math.round(eAtk*(1-Math.min(90,bt.ePoison)/100))
     const meStart=bt.pHp;
     bt.pHp-=etotal;
     if(fx.valhalla&&(bt.valhallaLeft||0)>0&&bt.pHp<1){bt.pHp=1;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","TWILIGHT HOLD!","heal");},bsMs(300));}
+    /* REVERSAL (TIME MASTER): serangan mematikan PERTAMA dibalik -> 1 HP (sekali) */
+    if(fx.reversal&&bt.pHp<=0){bt.reversalUsed=bt.reversalUsed||new Array(bt.fighters.length).fill(false);if(!bt.reversalUsed[bt.active]){bt.reversalUsed[bt.active]=true;bt.pHp=1;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","GOLD EXPERIENCE REQUIEM!","crit");},bsMs(400));}}
+    /* CAUSALITY (ASTRAL DEVOURER): fatal -> balik ke HP awal giliran sebelumnya + atkBuff */
+    if(fx.causality&&bt.pHp<=0){bt.causalUsed=bt.causalUsed||new Array(bt.fighters.length).fill(false);if(!bt.causalUsed[bt.active]){bt.causalUsed[bt.active]=true;bt.pHp=Math.max(1,bt.causalPrev||bt.pMax);bt.atkBuff[bt.active]+=fx.causality.atkPct;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","KAUSALITAS DIBALIK! +"+fx.causality.atkPct+"% ATK","crit");},bsMs(400));}}
     const pDead=bt.pHp<=0&&!(fx.berserker&&bt.berserkOn&&(bt.berserkLeft||0)>0);
     // kartu tumbang: tag-in / kalah BARU dijalankan setelah seluruh animasi sambaran musuh selesai
     const deathStep=()=>{
       if(!bt||bt.over)return;
       if(domainOn){bt.domainNow=false;}
       bt.turn++;
+      /* DEATH STAY (TREMOR EMPEROR): fatal -> bertahan 1 giliran extra (masih menyerang), jatuh di awal enemyPhase berikutnya */
+      if(fx.deathStay){bt.stayUsed=bt.stayUsed||new Array(bt.fighters.length).fill(false);if(!bt.stayUsed[bt.active]){bt.stayUsed[bt.active]=true;bt.defyHold=true;bt.pHp=1;setBar("hpMe","hpMeT",1,bt.pMax);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","GURA GURA HOLD!","crit");},bsMs(400));schedPhase(1100,playerPhase);return;}}
       /* DEATH DEFY (THREEBLADE RONIN): fatal saat HP sebelum pukulan masih < pct% max
          -> TIDAK tumbang: bertahan di 0 HP, dapat 1 giliran ekstra (masih bisa menyerang),
          lalu jatuh di awal enemyPhase berikutnya. Sekali per battle. (fx={}=saat shadow -> gak trigger) */
@@ -3606,7 +3752,15 @@ if(bt.ePoison>0)eAtk=Math.max(1,Math.round(eAtk*(1-Math.min(90,bt.ePoison)/100))
       setTimeout(()=>floatText(".fighter.foe","+"+fmt(lh),"heal"),bsMs(280));
       setBar("hpFoe","hpFoeT",bt.eHp,bt.es.hp);
     }
-    /* ROYALGUARD counter: balas 30% dari damage yang baru diterima ke musuh */
+    /* COUNTER HIT (DRAGON SIN base atk / BLOODMOON base foeMaxHp): kena serangan -> balas flat */
+  if(fx.counterHit&&etotal>0&&bt.eHp>0&&Math.random()*100<fx.counterHit.chance){
+    const cb=(fx.counterHit.base==="foeMaxHp")?bt.es.hp:cardStats(id,bt.eq.mut,bt.eq.trait,bt.eq.shiny).atk;
+    const cd=Math.max(1,Math.round(cb*fx.counterHit.pct/100));
+    bt.eHp-=cd;
+    setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe",(fx.counterHit.base==="foeMaxHp"?"BLOOD IGNITE -":"FULL COUNTER -")+fmt(cd),"crit");setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);}},bsMs(560));
+    if(bt.eHp<=0){setTimeout(()=>{if(bt&&!bt.over)foeDown();},bsMs(900));return;}
+  }
+  /* ROYALGUARD counter: balas 30% dari damage yang baru diterima ke musuh */
     if(bt.royalNow&&!pDead&&etotal>0){
       const ctr=Math.round(etotal*0.3);bt.eHp-=ctr;
       setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","COUNTER -"+fmt(ctr),"crit");setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);}},bsMs(560));
@@ -4027,13 +4181,14 @@ function startTowerBattle(){
   const fighters=equippedList();if(!fighters.length)fighters.push(equipped());
   const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   if(bt&&bt.timer)clearTimeout(bt.timer);
-  bt={speed:battleSpeedEff(),lv:null,tower:true,en:w.en,es:w.es,eq,fighters,eid:w.eid,efx:w.efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:w.es.hp,turn:1,over:false,eBurn:0,ePoison:0,pGuardDr:0,eAbilityOff:0,voidUsed:false,pCopyFx:null,spCd:[],spTurn:[],spArmed:[],spWave:[],meteorGuard:[],phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),snatchAtk:new Array(fighters.length).fill(0),snatchHp:new Array(fighters.length).fill(0),regressCharges:new Array(fighters.length).fill(0),bioGuard:new Array(fighters.length).fill(false),splitLeft:new Array(fighters.length).fill(0),splitMult:new Array(fighters.length).fill(1),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),execGuard:new Array(fighters.length).fill(false),wtCount:new Array(fighters.length).fill(0),shatterGuard:new Array(fighters.length).fill(false),defyUsed:new Array(fighters.length).fill(false),defyHold:false,openGuard:true,dsState:new Array(fighters.length).fill(0),gumTurns:0,trickNext:false,royalNow:false,gunsNow:false,psychic:null,atkEntryGuard:new Array(fighters.length).fill(false),sleepLeft:new Array(fighters.length).fill(0),sleepArmed:new Array(fighters.length).fill(false),overflow:0,rain:null,freezeLeft:0,shockCount:new Array(fighters.length).fill(0),shadow:null,freezeNext:false,valhallaLeft:0,paintHits:[],eInk:0,eInkPct:0,wc:null,rearIdx:-1,rearWaiting:false,rearUsed:[],senzu:{},senzuFin:false,balloon:0,stretchShot:0,turret:0,hvCount:new Array(fighters.length).fill(0),excited:false,weCount:new Array(fighters.length).fill(0),weRevived:false,pbRocks:0,pbKey:"",pbStreak:0,rubber:false,rbBounce:0,dizzyStack:0,dizzyLeft:0};
+  bt={speed:battleSpeedEff(),fgen:1,lv:null,tower:true,en:w.en,es:w.es,eq,fighters,eid:w.eid,efx:w.efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:w.es.hp,turn:1,over:false,eBurn:0,ePoison:0,pGuardDr:0,eAbilityOff:0,voidUsed:false,pCopyFx:null,spCd:[],spTurn:[],spArmed:[],spWave:[],meteorGuard:[],phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),snatchAtk:new Array(fighters.length).fill(0),snatchHp:new Array(fighters.length).fill(0),regressCharges:new Array(fighters.length).fill(0),bioGuard:new Array(fighters.length).fill(false),splitLeft:new Array(fighters.length).fill(0),splitMult:new Array(fighters.length).fill(1),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),execGuard:new Array(fighters.length).fill(false),wtCount:new Array(fighters.length).fill(0),shatterGuard:new Array(fighters.length).fill(false),defyUsed:new Array(fighters.length).fill(false),defyHold:false,openGuard:true,dsState:new Array(fighters.length).fill(0),gumTurns:0,trickNext:false,royalNow:false,gunsNow:false,psychic:null,atkEntryGuard:new Array(fighters.length).fill(false),sleepLeft:new Array(fighters.length).fill(0),sleepArmed:new Array(fighters.length).fill(false),overflow:0,rain:null,freezeLeft:0,shockCount:new Array(fighters.length).fill(0),shadow:null,freezeNext:false,valhallaLeft:0,paintHits:[],eInk:0,eInkPct:0,wc:null,rearIdx:-1,rearWaiting:false,rearUsed:[],senzu:{},senzuFin:false,balloon:0,stretchShot:0,turret:0,hvCount:new Array(fighters.length).fill(0),excited:false,weCount:new Array(fighters.length).fill(0),weRevived:false,pbRocks:0,pbKey:"",pbStreak:0,rubber:false,rbBounce:0,dizzyStack:0,dizzyLeft:0};
   const tfx=resolveFx(eq,w.efx);
   if(tfx&&tfx.entryCounter)bt.entryGuard[0]=true;
   if(tfx&&tfx.entryShatter)bt.shatterGuard[0]=true;
   if(tfx&&tfx.entryMaxHp)bt.bioGuard[0]=true;
   if(tfx&&tfx.meteorWave)bt.meteorGuard[0]=true;
   if(tfx&&tfx.entryAtkPct)bt.atkEntryGuard[0]=true;
+  armShotFx(tfx,0);partyDmgApply(tfx);
   if(tfx&&tfx.psychicBarrier)bt.psychic={left:tfx.psychicBarrier.turns,dr:tfx.psychicBarrier.dr,healPct:tfx.psychicBarrier.healPct};
   if(tfx&&tfx.sleepStrike){bt.sleepLeft[0]=tfx.sleepStrike.turns;bt.sleepArmed[0]=true;}
    if(tfx&&tfx.entryFreeze&&!foeStatusImmune()){bt.eStun=tfx.entryFreeze.turns;bt.freezeLeft=tfx.entryFreeze.turns;setTimeout(()=>floatText(".fighter.foe","BEKU","crit"),bsMs(300));}
@@ -4052,6 +4207,13 @@ if(tfx.worldCorrupt){bt.wc={c:0,atk:Math.round(cardStats(bt.eq.char,bt.eq.mut,bt
   schedPhase(700,step);
 }
 function foeDown(){
+  /* RE-ENTRANCY GUARD: AOE (meteor/quake) + serangan biasa bisa men-schedule foeDown 2x untuk kill yang sama.
+     Tanpa guard ini advanceTowerFoe kejar 2x: gelombang hidup ke-skip, kill-reward dobel, dan musuh kebagian giliran dobel.
+     Hasilnya kartu pemain mati mendadak pas ngeluarin AOE di tower. */
+  if(!bt||bt.over)return;
+  if(bt.eHp>0)return;/* STALE-CALL GUARD: kill ini udah keproses — musuh baru udah ke-load (eHp>0), jangan advance dobel */
+  if(bt.foeDowning)return;
+  bt.foeDowning=true;
   /* SNATCH: kartu aktif yang punya fx.snatch mencuri pct% stat musuh yang baru tumbang, permanen */
   if(bt&&!bt.over&&!bt.aftermath&&bt.pHp>0){
     const a=bt.active,sfx=resolveFx(bt.eq,bt.efx);
@@ -4072,8 +4234,8 @@ function foeDown(){
     if(sfx.gluttony){
       const ga=Math.round(bt.es.atk*sfx.gluttony.pct/100),gh=Math.round(bt.es.hp*sfx.gluttony.pct/100);
       bt.snatchAtk[a]=(bt.snatchAtk[a]||0)+ga; bt.snatchHp[a]=(bt.snatchHp[a]||0)+gh;
-      bt.pMax+=gh; bt.pHp=Math.min(bt.pMax,bt.pHp+gh);
-      if(bt.efx)bt.pCopyFx=Object.assign({},bt.efx);
+      bt.pMax+=gh;if(sfx.gluttony&&sfx.gluttony.healPct){const glh=Math.max(1,Math.round(bt.pMax*sfx.gluttony.healPct/100));bt.pHp=Math.min(bt.pMax,bt.pHp+glh);} bt.pHp=Math.min(bt.pMax,bt.pHp+gh);
+      if(bt.efx&&!(sfx.gluttony&&sfx.gluttony.noCopy))bt.pCopyFx=Object.assign({},bt.efx);
       setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
       setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","GLUTTONY +"+fmt(ga)+" ATK +"+fmt(gh)+" HP","crit");},bsMs(300));
     }  }
@@ -4128,12 +4290,15 @@ function lineupAoeHit(dmg){
   if(killed)setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe",killed+" CADANGAN KO!","crit");},bsMs(900));
 }
 function advanceTowerFoe(){
+  if(!bt||bt.over)return;
+  bt.fgen=(bt.fgen||0)+1;/* generasi musuh: cb basi dari kill sebelumnya bakal kebuang */
   do{towerRun.idx++;}while(towerRun.idx<towerRun.waves.length&&towerRun.waves[towerRun.idx]&&towerRun.waves[towerRun.idx].dead);
   if(towerRun.idx>=towerRun.waves.length){endBattle(true);return;}
   const w=towerRun.waves[towerRun.idx];
   bt.en=w.en;bt.es=w.es;bt.eid=w.eid;bt.efx=w.efx;bt.eHp=w.es.hp;
   bt.openGuard=true;bt.eBurn=0;bt.eStun=0;bt.phase2used=false;bt.domainUsed=false;bt.domainLeft=0;bt.domainNow=false;
   {const rfx=resolveFx(bt.eq,bt.efx);if(rfx.dimensionShift)bt.eAbilityOff=rfx.dimensionShift.turns;}
+    {const cfx=resolveFx(bt.eq,bt.efx);if(cfx.copy&&cfx.copy.turns)bt.copyLeft=cfx.copy.turns;}
   {const nfx=resolveFx(bt.eq,bt.efx);
    /* FOE ENTRY FREEZE (ICE QUEEN): musuh baru masuk -> bekukan turns giliran (pola entryFreeze, guard statusImmune) */
    if(nfx.foeEntryFreeze&&!foeStatusImmune()){bt.eStun=nfx.foeEntryFreeze.turns;bt.freezeLeft=nfx.foeEntryFreeze.turns;setTimeout(()=>floatText(".fighter.foe","BEKU","crit"),bsMs(300));}
