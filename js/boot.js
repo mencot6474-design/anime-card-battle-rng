@@ -158,52 +158,6 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
   if(location.hash===b.dataset.route||(!location.hash&&b.dataset.route==="#/lobby"))render();
   else location.hash=b.dataset.route;
 });
-/* ===== MODE MOBILE: layar penuh + kunci landscape (khusus perangkat sentuh) =====
-   #fsBtn ikut ke-select loop .nav-btn di atas (nggak punya data-route) -> onclick-nya
-   kita TIMPA di sini (blok ini jalan setelah loop) biar nggak nyetel location.hash=undefined. */
-(function(){
-  const root=document.documentElement;
-  const isFs=()=>!!(document.fullscreenElement||document.webkitFullscreenElement||document.mozFullScreenElement||document.msFullscreenElement);
-  function reqFs(el){
-    /* HP/touch: Chrome Android paksa layout 1000x450 + abaikan meta viewport pas
-       element-fullscreen (gak bisa diakalin), dan browser UI pun tetap tampil —
-       jadi fullscreen di HP cuma ngerusak tampilan. Skip API-nya: layout tetap
-       1600x720 normal. Desktop tetap fullscreen beneran. */
-    if(matchMedia("(pointer:coarse)").matches) return Promise.resolve();
-    if(el.requestFullscreen) return el.requestFullscreen();
-    if(el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
-    if(el.mozRequestFullScreen) return el.mozRequestFullScreen();
-    if(el.msRequestFullscreen) return el.msRequestFullscreen();
-    return Promise.reject(new Error("no-fs"));
-  }
-  function exitFs(){
-    if(document.exitFullscreen) return document.exitFullscreen();
-    if(document.webkitExitFullscreen) return document.webkitExitFullscreen();
-    if(document.mozCancelFullScreen) return document.mozCancelFullScreen();
-    if(document.msExitFullscreen) return document.msExitFullscreen();
-  }
-  function lockLandscape(){
-    try{ const o=screen.orientation||screen.mozOrientation; if(o&&o.lock) return o.lock("landscape"); }catch(e){}
-    return Promise.reject(new Error("no-lock"));
-  }
-  function updateIcon(){
-    const b=document.getElementById("fsBtn"); if(!b) return;
-    b.classList.toggle("active",isFs());
-    b.title=isFs()?"Keluar layar penuh":"Layar penuh";
-  }
-  async function enterFs(){
-    try{ await reqFs(root); }catch(e){}
-    try{ await lockLandscape(); }catch(e){}   // iOS gagal -> rotasi manual tetap jalan via overlay CSS
-    updateIcon();
-  }
-  function toggleFs(){ if(isFs()){ try{ exitFs(); }catch(e){} } else { enterFs(); } updateIcon(); }
-  const fsBtn=document.getElementById("fsBtn");
-  if(fsBtn) fsBtn.onclick=(e)=>{ e.preventDefault(); e.stopPropagation(); if(typeof sfx!=="undefined"&&sfx.hit)sfx.hit(); toggleFs(); };
-  const ovBtn=document.getElementById("fsBtnOverlay");
-  if(ovBtn) ovBtn.onclick=(e)=>{ e.preventDefault(); if(typeof sfx!=="undefined"&&sfx.hit)sfx.hit(); enterFs(); };
-  ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"].forEach(ev=>document.addEventListener(ev,updateIcon));
-  updateIcon();
-})();
 /* ===== Dock roll + backpack (elemen statis di <body>): wiring SEKALI saja.
    Elemen ini tidak ikut di-render-ulang, jadi interval roll tetap hidup
    walau player pindah layar / membuka backpack -> AFK aman. ===== */
