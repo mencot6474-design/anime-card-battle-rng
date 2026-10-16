@@ -54,8 +54,8 @@ function sheetFx(name,x,y,opts){
 }
 window.sheetFx=sheetFx;
 /* ledakan api kecil pas tick burn (dipanggil battle.js) */
-window.burnSheetTick=function(){
-  var el=document.querySelector(".fighter.foe");if(!el)return;
+window.burnSheetTick=function(side){
+  var el=document.querySelector(side==="me"?".fighter.me":".fighter.foe");if(!el)return;
   var c=centerOf(el);
   sheetFx("fire_impact",c[0],c[1],{size:150});
   if(typeof sfxPlay==="function")sfxPlay("fire",.28,1.15);
@@ -84,7 +84,7 @@ window.strikeFx=strikeFx;
    Interval jalan terus,cuma "nyala" pas counter status > 0 — otomatis nutup
    SEMUA titik pemberian passive (15+ site) tanpa disentuh satu-satu.
    Freeze musuh = eStun + freezeLeft → ledakan es sekali + loop stun (kaku). */
-var _prev={foe:{stun:0,burn:0},me:{stun:0}},_loop={},_tim={},_frzPrev=false;
+var _prev={foe:{stun:0,burn:0},me:{stun:0}},_loop={},_tim={},_frzPrev=false,_meFrzPrev=false;
 function selOf(side){return ".fighter."+side;}
 function stPlay(side,type){
   var key=side+":"+type;if(_loop[key])return;
@@ -93,7 +93,7 @@ function stPlay(side,type){
   sheetFx(type+"_start",c[0],c[1],{size:190});
   /* onset SFX: zap pas stun,batal kalau itu freeze (freeze sendirian bunyi ice-cast) */
   if(typeof sfxPlay==="function"){
-    var g=window.bt,frz=(side==="foe"&&g&&g.freezeLeft>0);
+    var g=window.bt,frz=(g&&((side==="foe"&&g.freezeLeft>0)||(side==="me"&&g.pFreeze>0)));
     if(!frz)sfxPlay("stun",.65);
   }
   _tim[key]=setTimeout(function(){
@@ -116,7 +116,7 @@ function upd(side,type,on){
 }
 function stAllStop(){
   upd("foe","stun",false);upd("foe","burn",false);upd("me","stun",false);
-  _frzPrev=false;
+  _frzPrev=false;_meFrzPrev=false;
 }
 function statusSync(){
   try{
@@ -125,13 +125,20 @@ function statusSync(){
     var freeze=(g.freezeLeft||0)>0;
     var foeStun=freeze||(g.eStun||0)>0;
     var foeBurn=(g.eBurn||0)>0;
-    var meStun=(g.pStun||0)>0;
+    var meFreeze=(g.pFreeze||0)>0;
+    var meStun=meFreeze||(g.pStun||0)>0;
     if(freeze&&!_frzPrev){ /* onset freeze: ledakan es sekali */
       var el=document.querySelector(".fighter.foe");
       if(el){var c=centerOf(el);sheetFx("ice_impact",c[0],c[1],{size:230});}
       if(typeof sfxPlay==="function")sfxPlay("iceCast",.8);
     }
     _frzPrev=freeze;
+    if(meFreeze&&!_meFrzPrev){
+      var mel=document.querySelector(".fighter.me");
+      if(mel){var mc=centerOf(mel);sheetFx("ice_impact",mc[0],mc[1],{size:230});}
+      if(typeof sfxPlay==="function")sfxPlay("iceCast",.8);
+    }
+    _meFrzPrev=meFreeze;
     upd("foe","stun",foeStun);
     upd("foe","burn",foeBurn);
     upd("me","stun",meStun);

@@ -490,6 +490,7 @@ function playerPhase(){
     setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","BIOKINESIS -"+fmt(td),"burn");}},bsMs(200));
     if(bt.eHp<=0){setTimeout(()=>{if(bt&&!bt.over)foeDown();},bsMs(700));return;}
   }
+  if((bt.pFreeze||0)>0)bt.pFreeze--;
   if(bt.pStun>0){
     if(fx.statusImmune){
       /* STATUS IMMUNE: stun DIBATALKAN — giliran tetap jalan */
@@ -646,6 +647,9 @@ function playerPhase(){
    }
   let atk=cardStats(id,bt.eq.mut,bt.eq.trait,bt.eq.shiny).atk;
   if(bt.atkBuff[a])atk=Math.round(atk*(1+bt.atkBuff[a]/100));
+  /* MIRROR status musuh: puppet poison & ink corrupt motong ATK pemain (pola ePoison/eInk) */
+  if(bt.pPoisonCut)atk=Math.max(1,Math.round(atk*(1-Math.min(90,bt.pPoisonCut)/100)));
+  if((bt.pInk||0)>0&&bt.pInkPct>0)atk=Math.max(1,Math.round(atk*(1-(bt.pInk*bt.pInkPct)/100)));
   /* SPLIT DEATH: ATK badan hasil terbelah ikut menyusut (kumulatif, gaya snatchAtk) */
   if(bt.splitMult&&bt.splitMult[a])atk=Math.round(atk*bt.splitMult[a]);
   if(fx.lowHpAtk&&bt.pHp<bt.pMax*fx.lowHpAtk.below/100)atk=Math.round(atk*(1+fx.lowHpAtk.bonus/100));
@@ -856,6 +860,20 @@ if(fx.inkCorrupt&&total>0){bt.eInk=Math.min(fx.inkCorrupt.max,(bt.eInk||0)+1);bt
     recharge:(b)=>{if(!bt)return;bt.pStun=(fx&&fx.statusImmune)?0:b.selfStun;bt.pDrTurns=b.selfDrTurns||b.selfStun;bt.pDr=b.selfDr||0;setTimeout(()=>floatText(".fighter.me","RECHARGE","miss"),bsMs(1200));}
   });
   bt.eHp=eHpNext;
+  /* ===== MIRROR PASSIVE LAWAN - kartu musuh prok saat kena serangan (counter/poison/ink/drain) ===== */
+  const efxM=(bt.eAbilityOff>0)?{}:(bt.efx||{});
+  if(total>0&&bt.eHp>0&&bt.pHp>0){
+    if(efxM.counterHit&&Math.random()*100<efxM.counterHit.chance){
+      const cb=(efxM.counterHit.base==="foeMaxHp")?bt.pMax:bt.es.atk;
+      const cd=Math.max(1,Math.round(cb*efxM.counterHit.pct/100));
+      bt.pHp=Math.max(0,bt.pHp-cd);
+      setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.me","hit");floatText(".fighter.me",(efxM.counterHit.base==="foeMaxHp"?"BLOOD IGNITE -":"FULL COUNTER -")+fmt(cd),"crit");setBar("hpMe","hpMeT",Math.max(0,bt.pHp),bt.pMax);}},bsMs(560));
+      if(bt.pHp<=0)setTimeout(()=>{if(bt&&!bt.over){if(!trySave())endBattle(false);}},bsMs(900));
+    }
+    if(efxM.puppetPoison){bt.pPoisonCut=Math.min(90,(bt.pPoisonCut||0)+efxM.puppetPoison.pct);setTimeout(()=>floatText(".fighter.me","POISON -"+efxM.puppetPoison.pct+"% ATK","burn"),bsMs(360));}
+    if(efxM.inkCorrupt){bt.pInk=Math.min(efxM.inkCorrupt.max,(bt.pInk||0)+1);bt.pInkPct=efxM.inkCorrupt.pct;setTimeout(()=>floatText(".fighter.me","INK CORRUPTION","burn"),bsMs(380));}
+    if(efxM.hpDrain&&!fx.statusImmune){bt.pMax=Math.max(1,Math.round(bt.pMax*(1-efxM.hpDrain.pct/100)));if(bt.pHp>bt.pMax)bt.pHp=bt.pMax;setTimeout(()=>{if(bt&&!bt.over){floatText(".fighter.me","HP DRAIN","crit");setBar("hpMe","hpMeT",bt.pHp,bt.pMax);}},bsMs(360));}
+  }
   if(ranton&&total>0&&bt.eHp>0&&fx.ranton.stun){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else bt.eStun=fx.ranton.stun;}
    if(masterpiece&&bt.eHp>0&&fx.valhalla.master.stun){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else{bt.eStun=Math.max(bt.eStun||0,fx.valhalla.master.stun);setTimeout(()=>floatText(".fighter.foe","MASTERPIECE STUN","crit"),bsMs(520));}}
   /* HP DRAIN: tiap serangan yang kena memotong MAX HP musuh secara permanen (compounding) */
@@ -1028,6 +1046,30 @@ function enemyPhase(){
       return;
     }
   }
+  /* ===== MIRROR PASSIVE LAWAN - DoT burn pemain + proc serangan sisi musuh ===== */
+  if((bt.pBurn||0)>0&&fx.statusImmune){bt.pBurn=0;setTimeout(()=>floatText(".fighter.me","IMMUNE - BURN","heal"),bsMs(300));}
+  if((bt.pBurn||0)>0&&bt.pHp>0){
+    const pbPct=efx.burn?efx.burn.pct:(efx.lowHpAura&&efx.lowHpAura.burn?efx.lowHpAura.burn.pct:0);
+    const pbd=Math.round(bt.pMax*pbPct/100);bt.pHp=Math.max(0,bt.pHp-pbd);bt.pBurn--;
+    setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
+    setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.me","hit");floatText(".fighter.me","-"+fmt(pbd),"burn");if(window.burnSheetTick)burnSheetTick("me");}},bsMs(420));
+    if(bt.pHp<=0){bt.turn++;setTimeout(()=>{if(bt&&!bt.over){if(!trySave())endBattle(false);}},bsMs(800));return;}
+  }
+  if(bt.pHp>0&&bt.eHp>0){
+    const eA=bt.es.atk;
+    if(efx.wallTitans){bt.eWt=(bt.eWt||0)+1;if(bt.eWt%efx.wallTitans.every===0){const d2=Math.round(eA*efx.wallTitans.pct/100);bt.pHp=Math.max(0,bt.pHp-d2);setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.me","hit");floatText(".fighter.me","WALL TITANS -"+fmt(d2),"burn");setBar("hpMe","hpMeT",Math.max(0,bt.pHp),bt.pMax);}},bsMs(520));}}
+    if(efx.shockwave){bt.eShock=(bt.eShock||0)+1;if(bt.eShock%efx.shockwave.every===0){const d2=Math.round(eA*efx.shockwave.pct/100);bt.pHp=Math.max(0,bt.pHp-d2);setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.me","hit");floatText(".fighter.me","SHOCKWAVE -"+fmt(d2),"burn");setBar("hpMe","hpMeT",Math.max(0,bt.pHp),bt.pMax);}},bsMs(560));}}
+    if(efx.havocRocket){bt.eHv=(bt.eHv||0)+1;if(bt.eHv%efx.havocRocket.every===0){const d2=Math.round(eA*efx.havocRocket.pct/100);bt.pHp=Math.max(0,bt.pHp-d2);setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.me","hit");floatText(".fighter.me","DEATH ROCKET -"+fmt(d2),"burn");setBar("hpMe","hpMeT",Math.max(0,bt.pHp),bt.pMax);}},bsMs(560));}}
+    if(efx.shockAll){const d2=Math.max(1,Math.round(eA*efx.shockAll.pct/100));bt.pHp=Math.max(0,bt.pHp-d2);setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.me","hit");floatText(".fighter.me","GEMPA -"+fmt(d2),"burn");setBar("hpMe","hpMeT",Math.max(0,bt.pHp),bt.pMax);}},bsMs(460));}
+    if(efx.splash){const d2=Math.max(1,Math.round(eA*efx.splash.pct/100));bt.pHp=Math.max(0,bt.pHp-d2);setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.me","hit");floatText(".fighter.me","YASAKANI -"+fmt(d2),"burn");setBar("hpMe","hpMeT",Math.max(0,bt.pHp),bt.pMax);}},bsMs(500));}
+    if(efx.maxCorrupt){bt.pMax=Math.max(1,Math.round(bt.pMax*(100-efx.maxCorrupt.pct)/100));if(bt.pHp>bt.pMax)bt.pHp=bt.pMax;setTimeout(()=>{if(bt&&!bt.over){floatText(".fighter.me","MAX HP CORRUPT","burn");setBar("hpMe","hpMeT",bt.pHp,bt.pMax);}},bsMs(340));}
+    if(efx.burn&&Math.random()*100<efx.burn.chance){if(fx.statusImmune){setTimeout(()=>floatText(".fighter.me","IMMUNE","heal"),bsMs(360));}else{bt.pBurn=(bt.pBurn||0)+efx.burn.turns;setTimeout(()=>floatText(".fighter.me","BURN","burn"),bsMs(360));}}
+    if(efx.lowHpAura&&efx.lowHpAura.burn&&bt.eHp<bt.es.hp*efx.lowHpAura.below/100){if(fx.statusImmune){setTimeout(()=>floatText(".fighter.me","IMMUNE","heal"),bsMs(360));}else{bt.pBurn=(bt.pBurn||0)+efx.lowHpAura.burn.turns;setTimeout(()=>floatText(".fighter.me","PERFECT SUSANOO","burn"),bsMs(360));}}
+    if(efx.hitFreeze&&Math.random()*100<efx.hitFreeze.chance){if(fx.statusImmune){setTimeout(()=>floatText(".fighter.me","IMMUNE","heal"),bsMs(360));}else{bt.pStun=Math.max(bt.pStun||0,efx.hitFreeze.turns);bt.pFreeze=efx.hitFreeze.turns;setTimeout(()=>floatText(".fighter.me","BEKU","crit"),bsMs(360));}}
+    if(efx.stunPunch){bt.ePunchN=(bt.ePunchN||0)+1;if(bt.ePunchN%efx.stunPunch.every===0&&Math.random()*100<efx.stunPunch.chance&&!fx.statusImmune){bt.pStun=Math.max(bt.pStun||0,efx.stunPunch.turns);setTimeout(()=>floatText(".fighter.me","STUN!","crit"),bsMs(360));}}
+    if(efx.timeStop){bt.eTsN=(bt.eTsN||0)+1;if(bt.eTsN%efx.timeStop.every===0&&!fx.statusImmune){bt.pStun=Math.max(bt.pStun||0,efx.timeStop.turns);setTimeout(()=>floatText(".fighter.me","THE WORLD","crit"),bsMs(360));}}
+    if(bt.pHp<=0){bt.turn++;setTimeout(()=>{if(bt&&!bt.over){if(!trySave())endBattle(false);}},bsMs(800));return;}
+  }
   // DOMAIN aktif ronde ini (Gojo): damage musuh dikurangi 50%
   const domainOn = bt.domainNow;
   const pa=bt.active;
@@ -1176,6 +1218,8 @@ if(bt.ePoison>0)eAtk=Math.max(1,Math.round(eAtk*(1-Math.min(90,bt.ePoison)/100))
       setTimeout(()=>floatText(".fighter.foe","+"+fmt(lh),"heal"),bsMs(280));
       setBar("hpFoe","hpFoeT",bt.eHp,bt.es.hp);
     }
+        /* MIRROR INK DRAIN: musuh heal pct% dari damage yang baru DIBERIKAN */
+    if(efx.inkDrain&&etotal>0){bt.ePaint=(bt.ePaint||0)+1;if(bt.ePaint%efx.inkDrain.every===0){const ih=Math.max(1,Math.round(etotal*efx.inkDrain.pct/100));bt.eHp=Math.min(bt.es.hp,bt.eHp+ih);setBar("hpFoe","hpFoeT",bt.eHp,bt.es.hp);setTimeout(()=>floatText(".fighter.foe","INK DRAIN +"+fmt(ih),"heal"),bsMs(320));}}
     /* COUNTER HIT (DRAGON SIN base atk / BLOODMOON base foeMaxHp): kena serangan -> balas flat */
   if(fx.counterHit&&etotal>0&&bt.eHp>0&&Math.random()*100<fx.counterHit.chance){
     const cb=(fx.counterHit.base==="foeMaxHp")?bt.es.hp:cardStats(id,bt.eq.mut,bt.eq.trait,bt.eq.shiny).atk;
