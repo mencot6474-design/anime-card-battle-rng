@@ -838,16 +838,12 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 .fighter.windlunge-l{animation:windLungeL .5s ease}
 .fighter.hit{animation:hitShake .42s cubic-bezier(.3,.6,.3,1)}
 /* ===== JUICE SERANGAN (prototipe attack-fx) — kartu NORMAL,gak nyentuh jalur ULT =====
-   Screen shake (grid) + hit-stop (freeze animasi fighter) + overlay impact (flash/slash/spark) di dalem kartu target. */
+   Screen shake (grid) + hit-stop (freeze animasi fighter). Impact/slash pake spritesheet — js/sheetfx.js. */
 .battle-grid.shk{animation:bfShake .3s cubic-bezier(.36,.07,.19,.97)}
 .battle-grid.shk-big{animation:bfShakeBig .46s cubic-bezier(.36,.07,.19,.97)}
 .battle-grid.hitstop .fighter,.battle-grid.hitstop .bench-sq{animation-play-state:paused}
-.impact{position:absolute;inset:0;z-index:7;pointer-events:none;overflow:hidden;border-radius:20px}
-.impact .im-flash{position:absolute;inset:0;opacity:0;background:radial-gradient(circle at 62% 45%,rgba(255,255,255,.95),rgba(255,255,255,0) 55%);animation:imFlash .18s ease-out}
-.impact.crit .im-flash{background:radial-gradient(circle at 62% 45%,#fff,rgba(255,90,90,.5) 45%,transparent 68%)}
-.impact .im-slash{position:absolute;left:50%;top:46%;width:3px;height:0;opacity:0;background:linear-gradient(#fff,rgba(255,255,255,0));box-shadow:0 0 12px #fff;transform:translate(-50%,-50%) rotate(-32deg);animation:imSlash .22s ease-out}
-.impact .im-slash.two{transform:translate(-50%,-50%) rotate(28deg)}
-.impact .im-spark{position:absolute;left:50%;top:46%;width:6px;height:6px;border-radius:50%;background:#fff;box-shadow:0 0 8px 2px #7DF9FF;opacity:0;animation:imSpark .5s cubic-bezier(.1,.7,.3,1) forwards}
+/* spritesheet "Combat FX Free" (js/sheetfx.js) — fixed di viewport,gambar frame via background-position */
+.vfx-sheet{position:fixed;background-repeat:no-repeat;pointer-events:none;z-index:84;will-change:background-position;filter:drop-shadow(0 4px 14px rgba(0,0,0,.35))}
 /* Speed-lines: garis momentum nyapu layar pas impact (kartu normal). Lapisan bawah (z42) biar FX ult nempel di atas. */
 #speedLayer{position:fixed;inset:0;z-index:42;pointer-events:none;overflow:hidden}
 #speedLayer .spd-line{position:absolute;left:-30%;width:55%;height:2px;border-radius:2px;opacity:0;
@@ -2375,12 +2371,6 @@ body.on-tower #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
 @keyframes bfShake{10%{transform:translate(-6px,3px)}20%{transform:translate(7px,-4px)}30%{transform:translate(-8px,2px)}40%{transform:translate(6px,-2px)}50%{transform:translate(-4px,2px)}60%{transform:translate(4px,-1px)}70%{transform:translate(-2px,1px)}100%{transform:translate(0,0)}}
 
 @keyframes bfShakeBig{10%{transform:translate(-16px,9px) rotate(-.6deg)}20%{transform:translate(18px,-11px) rotate(.7deg)}30%{transform:translate(-19px,7px) rotate(-.5deg)}40%{transform:translate(13px,-6px)}50%{transform:translate(-10px,5px)}60%{transform:translate(7px,-3px)}70%{transform:translate(-4px,2px)}80%{transform:translate(3px,-1px)}100%{transform:translate(0,0)}}
-
-@keyframes imFlash{0%{opacity:.95}100%{opacity:0}}
-
-@keyframes imSlash{0%{opacity:0;height:0}18%{opacity:1;height:180px}100%{opacity:0;height:220px}}
-
-@keyframes imSpark{0%{opacity:1;transform:translate(-50%,-50%) rotate(var(--a)) translateX(0) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--a)) translateX(var(--d)) scale(.2)}}
 
 @keyframes spdSweep{0%{opacity:0;transform:translateX(0) scaleX(.5)}28%{opacity:.95}100%{opacity:0;transform:translateX(240%) scaleX(1.35)}}
 
