@@ -62,7 +62,7 @@ function renderSettings(){
   <div class="panel set-panel">
     <div class="set-t">RESET PROGRES</div>
     <div class="set-d">Hapus SEMUA data save — level, kartu, coin, token raid, dan riwayat battle — lalu mulai ulang dari awal. Tindakan ini tidak bisa dibatalkan.</div>
-    <button class="reset-btn" id="resetBtn">Reset Semua &amp; Main Dari Awal</button>
+    <button class="reset-btn" id="resetBtn">Reset Semua &amp; Main Dari Awal</button><div class="gm-note" style="text-align:center;opacity:.7;margin-top:10px">BUILD 68bfcb1 · VIEWPORT 1080</div>
   </div>`;
   document.getElementById("logoutBtn").onclick=logout;
   /* Auto restart Tower Infinite — flag di state.tower.auto (default mati). */
