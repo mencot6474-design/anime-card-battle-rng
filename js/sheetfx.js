@@ -58,6 +58,7 @@ window.burnSheetTick=function(){
   var el=document.querySelector(".fighter.foe");if(!el)return;
   var c=centerOf(el);
   sheetFx("fire_impact",c[0],c[1],{size:150});
+  if(typeof sfxPlay==="function")sfxPlay("fire",.28,1.15);
 };
 /* ===== strikeFx — tebasan sheet + impact ELEMEN sesuai passive penyerang ===== */
 function strikeFx(Dsel,o){
@@ -71,6 +72,12 @@ function strikeFx(Dsel,o){
         :(fx.hitFreeze||fx.entryFreeze||fx.foeEntryFreeze||fx.deathHex)?"ice_impact"
         :(big?"white_hit":"white_spark");
   sheetFx(imp,c[0],c[1],{size:big?235:160,flip:!!o.flip});
+  /* SFX elemen nyambung ke sheet yang sama */
+  try{if(typeof sfxPlay==="function"){
+    if(fx.burn||fx.overheat)sfxPlay("fire",big?.9:.6);
+    else if(fx.hitFreeze||fx.entryFreeze||fx.foeEntryFreeze||fx.deathHex)sfxPlay("iceHit",big?.9:.6);
+    else sfxPlay(big?"crit":"slash",.8);
+  }}catch(e){}
 }
 window.strikeFx=strikeFx;
 /* ===== STATUS WATCHER — freeze/stun/burn start→loop→end =====
@@ -84,6 +91,11 @@ function stPlay(side,type){
   var el=document.querySelector(selOf(side));if(!el)return;
   var c=centerOf(el);
   sheetFx(type+"_start",c[0],c[1],{size:190});
+  /* onset SFX: zap pas stun,batal kalau itu freeze (freeze sendirian bunyi ice-cast) */
+  if(typeof sfxPlay==="function"){
+    var g=window.bt,frz=(side==="foe"&&g&&g.freezeLeft>0);
+    if(!frz)sfxPlay("stun",.65);
+  }
   _tim[key]=setTimeout(function(){
     _loop[key]=sheetFx(type+"_loop",c[0],c[1],{size:190});
   },660);
@@ -117,6 +129,7 @@ function statusSync(){
     if(freeze&&!_frzPrev){ /* onset freeze: ledakan es sekali */
       var el=document.querySelector(".fighter.foe");
       if(el){var c=centerOf(el);sheetFx("ice_impact",c[0],c[1],{size:230});}
+      if(typeof sfxPlay==="function")sfxPlay("iceCast",.8);
     }
     _frzPrev=freeze;
     upd("foe","stun",foeStun);

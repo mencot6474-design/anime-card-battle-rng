@@ -235,20 +235,32 @@ function critBoom(){
     s.connect(g);g.connect(a.destination);s.start(t0);s.stop(t0+.34);
   }catch(e){}
 }
-const fightAudio=new Audio("assets/audio/fight.mp3");
-fightAudio.preload="auto";
-const swordAudio=new Audio("assets/audio/sword.mp3");
+const fightAudio=null; /* pack SFX tak punya klip "FIGHT!" — cukup impactBoom */
+const swordAudio=new Audio("assets/audio/swing-draw.mp3");
 swordAudio.preload="auto";
-const winAudio=new Audio("assets/audio/win.mp3");
+const winAudio=new Audio("assets/audio/win-jingle.mp3");
 winAudio.preload="auto";
-const dodgeAudio=new Audio("assets/audio/dodge.mp3");
+const dodgeAudio=new Audio("assets/audio/slash-oga.ogg");
 dodgeAudio.preload="auto";
-const purpleAudio=new Audio("assets/audio/hollow_purple.mp3");
+const purpleAudio=new Audio("assets/audio/fire-spell.ogg");
 purpleAudio.preload="auto";
-const domainAudio=new Audio("assets/audio/domain_void.mp3");
+const domainAudio=new Audio("assets/audio/ice-cast.wav");
 domainAudio.preload="auto";
-const punchAudio=new Audio("assets/audio/punch.mp3");
+const punchAudio=new Audio("assets/audio/hit-heavy.ogg");
 punchAudio.preload="auto";
+/* ---------- SFX pack: klip elemen/pesawat (dipakai battle.js + sheetfx.js) ---------- */
+const SFXP={slash:new Audio("assets/audio/slash-kenney.ogg"),hit:new Audio("assets/audio/hit-heavy.ogg"),
+  crit:new Audio("assets/audio/hit-metal.ogg"),fire:new Audio("assets/audio/fire-spell.ogg"),
+  iceCast:new Audio("assets/audio/ice-cast.wav"),iceHit:new Audio("assets/audio/ice-impact.wav"),
+  stun:new Audio("assets/audio/stun-zap.ogg"),dodge:new Audio("assets/audio/slash-oga.ogg")};
+for(const k in SFXP)SFXP[k].preload="auto";
+/* mainkan satu klip dari peta SFXP (kalau ada); volume/offset opsional */
+function sfxPlay(name,vol,rate){
+  if(state.muted)return;const base=SFXP[name];if(!base)return;
+  try{const c=base.cloneNode(true);c.volume=Math.min(1,(vol==null?1:vol));
+    if(rate&&c.playbackRate)c.playbackRate=rate;
+    c.play().catch(()=>{});}catch(e){}
+}
 function playClip(a){
   if(state.muted)return;
   try{const c=a.cloneNode(true);c.play().catch(()=>{});}catch(e){}
