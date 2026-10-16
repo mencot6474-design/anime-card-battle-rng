@@ -400,8 +400,6 @@ function chapListHTML(){
     const tgt=gateOf(nextLv),act=open&&c.no===(state?state.chap:1);
     const chip=full?"✓ SELESAI":(open?"▾ BUKA LEVEL":"🔒 TERKUNCI");
     return `<button class="story-banner${open?"":" lock"}${full?" full":""}${act?" active":""}" data-c="${c.no}">
-      <img src="${c.art}" alt="">
-      <div class="shade"></div>
       <span class="sb-no">${String(c.no).padStart(2,"0")}</span>
       ${act?'<span class="sb-tag">AKTIF</span>':""}
       <span class="sb-chip">${chip}</span>
@@ -458,7 +456,6 @@ function openStory(){
   for(let i=ch.from;i<=ch.to;i++){if(!cdh[i]){nx=i;break;}}
   const gnx=gateOf(nx),doneN=chapProgMode(ch,state.diff),okN=pw>=gnx;
   document.getElementById("smHero").innerHTML=
-    `<img src="${ch.art}" alt="" onerror="this.remove()"><div class="shade"></div>`+
     `<span class="smh-chip" style="border-color:${dcol};color:${dcol}">${df.l}</span>`+
     `<div class="smh-line">GATE ${fmt(gnx)} · POWER ${fmt(pw)} <b class="${okN?"ok":"bad"}">${okN?"SIAP":"KURANG"}</b> · PROGRES ${doneN}/${ch.levels.length}</div>`;
   document.getElementById("smDiff").innerHTML=DIFFS.map(d=>{const unl=cellUnlocked(ch,d.k),on=d.k===state.diff,col=d.mut==="none"?"var(--pink)":MUT_COLOR[d.mut];return `<button class="diff-btn${on?" on":""}${unl?"":" locked"}" data-d="${d.k}"${on?` style="border-color:${col};color:${col}"`:""}>${unl?d.l:"&#128274; "+d.l}</button>`;}).join("");
