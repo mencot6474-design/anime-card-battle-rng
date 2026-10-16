@@ -110,8 +110,8 @@ const BASE_CRIT={chance:10,mult:1.5}; // crit global TERSEMBUNYI: semua kartu pu
 const MUT_MULT={none:1,gold:5,rainbow:10,secret:25};
 const MUT_RANK={none:0,gold:1,rainbow:2,secret:3};
 const MUT_LABEL={none:"",gold:"GOLD",rainbow:"RAINBOW",secret:"SECRET"};
-const MUT_COLOR={gold:"#E0BC6E",rainbow:"#B58CFF",secret:"#22D3EE"};
-const MUT_LETTERS={gold:["#F6DFA6","#C99A45"],rainbow:["#FF6B81","#FFB347","#FFE66D","#6BE08A","#B9C2CC","#B98CFF","#FF6BD6"],secret:["#22D3EE","#7DF9FF","#E0F7FF","#00FFD0","#FFFFFF","#22D3EE"]};
+const MUT_COLOR={gold:"#E0BC6E",rainbow:"#B58CFF",secret:"#A855F7"};
+const MUT_LETTERS={gold:["#F6DFA6","#C99A45"],rainbow:["#FF6B81","#FFB347","#FFE66D","#6BE08A","#B9C2CC","#B98CFF","#FF6BD6"],secret:["#C084FC","#A855F7","#E9D5FF","#9333EA","#FFFFFF","#C084FC"]};
 function mutText(mut,text){if(!mut||mut==='none'||!MUT_LABEL[mut])return text;const cols=MUT_LETTERS[mut]||[MUT_COLOR[mut]];return text.split("").map((ch,i)=>ch===' '?ch:`<span style="color:${cols[i%cols.length]}">${ch}</span>`).join("");}
 function shinyName(tag,base,shine,mut,shiny,name){
   const esc=String(name).replace(/"/g,'&quot;');
