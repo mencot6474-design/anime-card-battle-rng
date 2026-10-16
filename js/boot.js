@@ -196,7 +196,21 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
   if(fsBtn) fsBtn.onclick=(e)=>{ e.preventDefault(); e.stopPropagation(); if(typeof sfx!=="undefined"&&sfx.hit)sfx.hit(); toggleFs(); };
   const ovBtn=document.getElementById("fsBtnOverlay");
   if(ovBtn) ovBtn.onclick=(e)=>{ e.preventDefault(); if(typeof sfx!=="undefined"&&sfx.hit)sfx.hit(); enterFs(); };
-  ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"].forEach(ev=>document.addEventListener(ev,updateIcon));
+  ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"].forEach(ev=>document.addEventListener(ev,()=>{
+    updateIcon();
+    /* Chrome Android re-evaluate viewport meta pas fullscreen → meta width bisa diabaikan
+       (layout drop ke zoom layar, mis. 1000x450). Re-insert node meta + flip content
+       paksa Chrome baca ulang → layout balik ke 1600x720. */
+    const m=document.querySelector('meta[name="viewport"]'); if(!m)return;
+    const c=m.getAttribute("content")||"";
+    requestAnimationFrame(()=>{
+      const fresh=m.cloneNode(true);
+      if(m.parentNode)m.parentNode.removeChild(m);
+      document.head.appendChild(fresh);
+      fresh.setAttribute("content",c.replace("width=1600","width=1600.0"));
+      requestAnimationFrame(()=>fresh.setAttribute("content",c));
+    });
+  }));
   updateIcon();
 })();
 /* ===== Dock roll + backpack (elemen statis di <body>): wiring SEKALI saja.
