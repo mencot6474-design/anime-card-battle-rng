@@ -382,6 +382,15 @@ function boot(){
   /* ========== Roll + Deck badge init ========== */
   rollCountBadge();
   if(window.videoBoot) window.videoBoot();
+  /* Diagnosa: build + viewport nyata HP (tampil di semua layar) */
+  (function(){
+    const d=document.createElement("div");
+    const upd=()=>{d.textContent="BUILD 68bfcb1 · VP "+window.innerWidth+"×"+window.innerHeight;};
+    d.style.cssText="position:fixed;left:6px;bottom:6px;z-index:999999;font:10px monospace;color:#7cf;opacity:.8;pointer-events:none;text-shadow:0 1px 2px #000";
+    upd();
+    window.addEventListener("resize",upd);
+    document.body.appendChild(d);
+  })();
 }
 
 setTimeout(() => { boot(); }, 0);
