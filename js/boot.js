@@ -165,6 +165,11 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
   const root=document.documentElement;
   const isFs=()=>!!(document.fullscreenElement||document.webkitFullscreenElement||document.mozFullScreenElement||document.msFullscreenElement);
   function reqFs(el){
+    /* HP/touch: Chrome Android paksa layout 1000x450 + abaikan meta viewport pas
+       element-fullscreen (gak bisa diakalin), dan browser UI pun tetap tampil —
+       jadi fullscreen di HP cuma ngerusak tampilan. Skip API-nya: layout tetap
+       1600x720 normal. Desktop tetap fullscreen beneran. */
+    if(matchMedia("(pointer:coarse)").matches) return Promise.resolve();
     if(el.requestFullscreen) return el.requestFullscreen();
     if(el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
     if(el.mozRequestFullScreen) return el.mozRequestFullScreen();
@@ -196,60 +201,7 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
   if(fsBtn) fsBtn.onclick=(e)=>{ e.preventDefault(); e.stopPropagation(); if(typeof sfx!=="undefined"&&sfx.hit)sfx.hit(); toggleFs(); };
   const ovBtn=document.getElementById("fsBtnOverlay");
   if(ovBtn) ovBtn.onclick=(e)=>{ e.preventDefault(); if(typeof sfx!=="undefined"&&sfx.hit)sfx.hit(); enterFs(); };
-  /* Viewport recovery fullscreen Android (2 lapis):
-     L1 — Chrome reset zoom + abaikan meta pas masuk fullscreen → layout 1000x450.
-     Poll meta (initial-scale eksplisit = innerWidth/1600) tiap 100ms maks 2.5s
-     sampai innerWidth balik >=1500 (layout 1600x720).
-     L2 — kalau poll habis masih <1500 → fallback html zoom: layout logis 1600
-     (px presisi), visual di-scale w/1600. Keluar fullscreen: restore semua. */
-  const vpEl=document.querySelector('meta[name="viewport"]');
-  const VP_ORIG=vpEl?(vpEl.getAttribute("content")||"width=1600, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"):"width=1600";
-  let vpPoll=null;
-  function applyVp(){
-    const m=document.querySelector('meta[name="viewport"]'); if(!m)return;
-    const w=window.innerWidth;
-    let c=VP_ORIG;
-    if(isFs()&&w>0&&w<1500){
-      const s=Math.round(w/1600*10000)/10000;
-      c="width=1600, initial-scale="+s+", maximum-scale=1.0, user-scalable=no, viewport-fit=cover";
-    }
-    if(m.getAttribute("content")===c)return;
-    const fresh=m.cloneNode(true);
-    fresh.setAttribute("content",c);
-    m.parentNode.replaceChild(fresh,m);
-  }
-  function clearFsZoom(){
-    document.documentElement.style.zoom="";
-    document.documentElement.classList.remove("fs-zoom");
-    document.body.style.minHeight="";
-    window.__fsZoom=0;
-  }
-  function fsZoomFallback(){
-    const w=window.innerWidth; if(!isFs()||w<=0||w>=1500)return false;
-    const s=Math.round(w/1600*10000)/10000;
-    document.documentElement.style.zoom=s;
-    document.documentElement.classList.add("fs-zoom");
-    /* 100vh di zoom mode jadi 450 logis (render 450*s) → kompensasi biar body tetap penuh layar */
-    document.body.style.minHeight=Math.round(window.innerHeight/s)+"px";
-    window.__fsZoom=1;
-    return true;
-  }
-  function startVpPoll(){
-    clearInterval(vpPoll);
-    let t=0;
-    vpPoll=setInterval(()=>{
-      t+=100;
-      if(!isFs()){clearInterval(vpPoll);vpPoll=null;return;}
-      applyVp();
-      if(window.innerWidth>=1500){clearInterval(vpPoll);vpPoll=null;return;}  // sukses: meta dihormati
-      if(t>=2500){clearInterval(vpPoll);vpPoll=null;fsZoomFallback();}        // meta diabaikan → fallback
-    },100);
-  }
-  ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"].forEach(ev=>document.addEventListener(ev,()=>{
-    updateIcon();
-    if(isFs()){ clearFsZoom(); startVpPoll(); }   // reset state dulu, lalu poll
-    else{ clearInterval(vpPoll); vpPoll=null; clearFsZoom(); applyVp(); }
-  }));
+  ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"].forEach(ev=>document.addEventListener(ev,updateIcon));
   updateIcon();
 })();
 /* ===== Dock roll + backpack (elemen statis di <body>): wiring SEKALI saja.
@@ -438,7 +390,7 @@ function boot(){
   /* Diagnosa: build + viewport nyata HP (tampil di semua layar) */
   (function(){
     const d=document.createElement("div");
-    const upd=()=>{d.textContent="BUILD f3c8d2b · VP "+window.innerWidth+"×"+window.innerHeight+(window.__fsZoom?" Z":"");};
+    const upd=()=>{d.textContent="BUILD f3c8d2b · VP "+window.innerWidth+"×"+window.innerHeight;};
     d.style.cssText="position:fixed;left:6px;bottom:6px;z-index:999999;font:10px monospace;color:#7cf;opacity:.8;pointer-events:none;text-shadow:0 1px 2px #000";
     upd();
     window.addEventListener("resize",upd);

@@ -582,8 +582,6 @@ body.on-lobby .weather-panel.show{display:flex;}
 deck-equipped-tooltip{position:fixed;background:rgba(14,16,19,.95);backdrop-filter:blur(10px);border:1px solid var(--line2);border-radius:12px;padding:12px;font-size:12px;pointer-events:none;z-index:200;max-width:280px;}
 main{margin:0 auto;padding:clamp(20px,3.4vw,34px) clamp(14px,3.6vw,40px) clamp(20px,3.5vh,60px);max-width:var(--wrap)}
 /* layar sangat lebar: kolom konten dilebarkan supaya grid (deck/index/toko) dapat kolom tambahan,bukan menyisakan tepi kosong */
-/* Fullscreen fallback (js/boot.js zoom mode): viewport <1500 → samain proporsi desktop */
-html.fs-zoom{--wrap:1220px}
 @media(min-width:1500px){:root{--wrap:1220px}}
 @media(min-width:2100px){:root{--wrap:1420px}
 }
