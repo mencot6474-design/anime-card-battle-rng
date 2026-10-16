@@ -196,20 +196,30 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
   if(fsBtn) fsBtn.onclick=(e)=>{ e.preventDefault(); e.stopPropagation(); if(typeof sfx!=="undefined"&&sfx.hit)sfx.hit(); toggleFs(); };
   const ovBtn=document.getElementById("fsBtnOverlay");
   if(ovBtn) ovBtn.onclick=(e)=>{ e.preventDefault(); if(typeof sfx!=="undefined"&&sfx.hit)sfx.hit(); enterFs(); };
+  /* Viewport recovery: Chrome Android reset zoom ke 1.0 pas fullscreen DAN skip
+     zoom-to-fit meta → layout drop ke 1000x450. Fix: pas fullscreen, set meta
+     dengan initial-scale eksplisit (= innerWidth/1600) → layout viewport balik
+     1600x720, visual di-zoom. Pas keluar, balikin meta original. */
+  const vpEl=document.querySelector('meta[name="viewport"]');
+  const VP_ORIG=vpEl?(vpEl.getAttribute("content")||"width=1600, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"):"width=1600";
+  function applyVp(){
+    const m=document.querySelector('meta[name="viewport"]'); if(!m)return;
+    const w=window.innerWidth;
+    let c=VP_ORIG;
+    if(isFs()&&w>0&&w<1500){
+      const s=Math.round(w/1600*10000)/10000;
+      c="width=1600, initial-scale="+s+", maximum-scale=1.0, user-scalable=no, viewport-fit=cover";
+    }
+    if(m.getAttribute("content")===c)return;
+    const fresh=m.cloneNode(true);
+    fresh.setAttribute("content",c);
+    m.parentNode.replaceChild(fresh,m);
+  }
   ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"].forEach(ev=>document.addEventListener(ev,()=>{
     updateIcon();
-    /* Chrome Android re-evaluate viewport meta pas fullscreen → meta width bisa diabaikan
-       (layout drop ke zoom layar, mis. 1000x450). Re-insert node meta + flip content
-       paksa Chrome baca ulang → layout balik ke 1600x720. */
-    const m=document.querySelector('meta[name="viewport"]'); if(!m)return;
-    const c=m.getAttribute("content")||"";
-    requestAnimationFrame(()=>{
-      const fresh=m.cloneNode(true);
-      if(m.parentNode)m.parentNode.removeChild(m);
-      document.head.appendChild(fresh);
-      fresh.setAttribute("content",c.replace("width=1600","width=1600.0"));
-      requestAnimationFrame(()=>fresh.setAttribute("content",c));
-    });
+    applyVp();
+    requestAnimationFrame(applyVp);   // innerWidth mungkin belum ke-update di event
+    setTimeout(applyVp,120);          // cek ulang setelah zoom reset Chrome stabil
   }));
   updateIcon();
 })();
