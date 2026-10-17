@@ -164,8 +164,8 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
   max-width:calc(100vw - 24px);}
 body.on-lobby .lobby-footer{display:flex;}
 body.on-lobby main{padding-bottom:96px;}
-/* Kartu tengah lobby: batasi tinggi biar dasar kartu (HP/ATK) gak ketutup footer card. */
-body.on-lobby .hub-mid{max-width:min(400px,calc((100vh - 210px) * .74))}
+/* Kartu tengah lobby: stage hero full-width (cap 400px lama bikin area card sempit). */
+body.on-lobby .hub-mid{max-width:none}
 /* Baris bawah footer: profile + dock berdampingan,ditengahin. */
 .foot-main{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:16px;}
 /* Tombol profil di footer: kotak 42,sejajar icon dock lain. Ikon sementara (dipakai user). */
@@ -2796,22 +2796,22 @@ body.on-lobby #app{height:100%;min-height:0}
 .lobby-hub .lobby-heading{grid-column:1/-1;grid-row:1;padding:0 4px 8px}
 .lobby-hub .hub-mid{
   grid-column:1;grid-row:2/span 2;justify-self:stretch;align-self:stretch;max-width:none;min-width:0;
-  display:flex;align-items:center;justify-content:center;padding:clamp(14px,1.8vh,22px);overflow:visible
+  display:flex;flex-direction:row;align-items:center;justify-content:center;padding:clamp(14px,1.8vh,22px);overflow:visible
 }
 .lobby-hub .h-l1{grid-column:2;grid-row:2}
 .lobby-hub .h-l2{grid-column:2;grid-row:3}
 .lobby-hub .h-r1{grid-column:3;grid-row:2}
 .lobby-hub .h-r2{grid-column:3;grid-row:3}
-.lobby-hub .h-mission{grid-column:1/-1;grid-row:4}
+.lobby-hub .h-mission{grid-column:2/-1;grid-row:4}
 .lobby-hub .hub-mid .seam{display:none}
 .lobby-hub .stage-eyebrow{position:absolute;top:clamp(12px,1.8vh,20px);left:50%;align-self:auto;transform:translateX(-50%);z-index:7;white-space:nowrap}
 .lobby-hub .stage-hint{position:absolute;left:50%;bottom:clamp(10px,1.6vh,18px);transform:translateX(-50%);z-index:7;white-space:nowrap}
-.lobby-hub .card-float{width:min(100%,38vh,420px);margin:0 0 0 clamp(40px,5vw,90px)}
+.lobby-hub .card-float{--petw:clamp(150px,21vh,205px);width:min(42vh,450px,calc(100% - var(--petw) - 12px));margin:0}
 .lobby-hub .lobby-pet{left:clamp(12px,1.5vw,24px);right:auto;bottom:clamp(24px,4vh,42px);width:clamp(72px,10vh,112px);z-index:4}
 @media(max-width:1100px) and (min-width:721px){
   .lobby-hub{grid-template-columns:minmax(0,1.5fr) minmax(0,.85fr) minmax(0,.85fr)}
-  .lobby-hub .card-float{width:min(100%,36vh,360px);margin-left:clamp(80px,11vw,126px)}
-  .lobby-hub .lobby-pet{left:8px;width:clamp(64px,9vh,78px)}
+  .lobby-hub .card-float{--petw:clamp(150px,21vh,205px);width:min(38vh,380px,calc(100% - var(--petw) - 12px));margin:0}
+  .lobby-hub .hub-pet-slot .lobby-pet{width:clamp(120px,16vh,160px)}
 }
 @media(max-width:720px){
   body.on-lobby main{height:auto;min-height:calc(100dvh - var(--tbh,64px));padding:8px 10px 96px;overflow:visible}
@@ -2826,7 +2826,7 @@ body.on-lobby #app{height:100%;min-height:0}
   .lobby-hub .h-mission{grid-column:1/-1;grid-row:5}
   .lobby-hub .stage-eyebrow{top:10px}
   .lobby-hub .stage-hint{bottom:10px;font-size:9px}
-  .lobby-hub .card-float{width:min(100%,58vw,270px);margin-left:clamp(36px,8vw,54px)}
+  .lobby-hub .card-float{--petw:clamp(96px,24vw,140px);width:min(58vw,270px,calc(100% - var(--petw) - 12px));margin:0}
   .lobby-hub .lobby-pet{left:3px;right:auto;bottom:24px;width:clamp(42px,12vw,48px)}
   .lobby-hub .hub-box.hub-link:not(.h-mission){min-height:68px;padding:8px 10px;grid-template-rows:auto minmax(0,1fr) auto}
   .lobby-hub .hub-box.hub-link:not(.h-mission) .tile-category{display:none}
@@ -2856,7 +2856,7 @@ body.on-lobby #app{height:100%;min-height:0}
   .lobby-hub .h-mission{grid-column:1/-1;grid-row:3;min-height:36px;padding:4px 10px;border-radius:10px}
   .lobby-hub .stage-eyebrow{top:4px;font-size:8px}
   .lobby-hub .stage-hint{display:none}
-  .lobby-hub .card-float{width:min(100%,32vh,260px);margin-left:clamp(44px,10vw,90px)}
+  .lobby-hub .card-float{--petw:clamp(150px,21vh,205px);width:min(32vh,260px,calc(100% - var(--petw) - 12px));margin:0}
   .lobby-hub .lobby-pet{left:6px;bottom:6px;width:clamp(50px,12vh,64px)}
   .lobby-hub .hub-box.hub-link:not(.h-mission){min-height:0;padding:6px 8px;grid-template-rows:minmax(0,1fr)}
   .lobby-hub .hub-box.hub-link:not(.h-mission) .tile-index,.lobby-hub .hub-box.hub-link:not(.h-mission) .tile-action{display:none}
@@ -2889,7 +2889,7 @@ body.on-lobby #app{height:100%;min-height:0}
   .lobby-hub .h-mission{grid-column:1/-1;grid-row:6}
   .lobby-hub .stage-eyebrow{top:8px;font-size:9px}
   .lobby-hub .stage-hint{bottom:8px;font-size:8px}
-  .lobby-hub .card-float{width:min(100%,32vh,280px);margin-left:clamp(42px,8vw,60px)}
+  .lobby-hub .card-float{width:min(100%,32vh,280px);margin:0}
   .lobby-hub .lobby-pet{left:6px;right:auto;bottom:20px;width:clamp(48px,9vh,60px)}
   .lobby-hub .hub-box.hub-link:not(.h-mission){min-height:0;padding:6px 10px;border-radius:12px 4px 12px 4px;grid-template-rows:auto minmax(0,1fr) auto}
   .lobby-hub .hub-box.hub-link:not(.h-mission) .tile-category{display:none}
@@ -2910,7 +2910,7 @@ body.on-lobby #app{height:100%;min-height:0}
 
 /* Remove only the empty frame behind the hero card; keep the action tiles outlined. */
 .lobby-hub .stage-eyebrow,.lobby-hub .stage-hint{display:none!important}
-.lobby-hub .hub-mid{border:0;background:radial-gradient(ellipse at 50% 44%,rgba(194,158,97,.14),transparent 66%),linear-gradient(165deg,rgba(27,27,25,.76),rgba(13,14,15,.86));box-shadow:none}
+.lobby-hub .hub-mid{border:0;background:none;box-shadow:none}
 
 /* Add a real breathing band around the hero at the compact 694×665 live-preview viewport. */
 @media(max-width:720px) and (orientation:landscape) and (min-height:560px){
@@ -2921,27 +2921,21 @@ body.on-lobby #app{height:100%;min-height:0}
   .lobby-kicker{font-size:8px}
   .lobby-heading h1{font-size:19px}
   .lobby-hub .hub-mid{padding:8px 8px 24px}
-  .lobby-hub .card-float{position:relative;top:12px;width:min(100%,34vh,280px);margin-top:8px;margin-bottom:8px;z-index:3}
+  .lobby-hub .card-float{--petw:58px;position:relative;top:12px;width:min(34vh,280px,calc(100% - var(--petw) - 12px));margin-top:8px;margin-bottom:8px;z-index:3}
   .lobby-hub .lobby-pet{bottom:24px;width:clamp(56px,10vh,68px);z-index:4}
   .lobby-hub .hub-box.h-mission.hub-link{min-height:44px;padding:4px 10px}
 }
 
 /* Pet bay below the hero; mission takes the final right-rail tile, not a full-width bar. */
 .lobby-hub .hub-pet-slot{
-  z-index:5;grid-column:1;grid-row:2/span 2;justify-self:start;align-self:end;position:relative;
-  display:grid;place-items:center;width:clamp(68px,9vh,84px);height:clamp(68px,9vh,84px);
-  margin:0 0 clamp(24px,4vh,42px) clamp(10px,1.5vw,20px);padding:4px;
-  border:1px dashed rgba(199,168,109,.4);border-radius:16px;
-  background:radial-gradient(ellipse at 50% 15%,rgba(199,168,109,.12),transparent 70%),rgba(10,12,13,.68);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 8px 18px rgba(0,0,0,.2)
+  z-index:5;position:relative;display:block;flex:0 0 auto;align-self:center;justify-self:start;
+  width:auto;height:auto;margin:0;padding:0;
+  border:0;background:none;box-shadow:none
 }
-.lobby-hub .hub-pet-slot::before{
-  content:"PET COMPANION";position:absolute;top:-7px;left:50%;transform:translateX(-50%);z-index:3;
-  padding:2px 6px;border:1px solid rgba(199,168,109,.3);border-radius:999px;background:#111211;
-  font:700 7px/1 "Barlow Condensed";letter-spacing:.12em;color:#c7a86d;white-space:nowrap
-}
+.lobby-hub .hub-pet-slot::before{display:none}
 .lobby-hub .hub-pet-slot .lobby-pet{
-  position:relative;inset:auto;left:auto;right:auto;top:auto;bottom:auto;width:100%;height:100%;margin:0;z-index:1
+  position:relative;inset:auto;left:auto;right:auto;top:auto;bottom:auto;
+  width:clamp(150px,21vh,205px);height:auto;margin:0;flex:0 0 auto;z-index:1
 }
 .lobby-hub .hub-pet-empty{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;height:100%;padding:6px;color:#b8aa8b}
 .lobby-hub .pet-slot-mark{font-size:22px;line-height:1;opacity:.72}
@@ -2949,7 +2943,9 @@ body.on-lobby #app{height:100%;min-height:0}
 .lobby-hub .pet-slot-copy b{font:800 10px/1 "Barlow Condensed";letter-spacing:.12em;color:#e4d3ad}
 .lobby-hub .pet-slot-copy small{font:600 7px/1.2 "Barlow Condensed";letter-spacing:.08em;color:#969082}
 @media(max-width:720px){
-  .lobby-hub .hub-pet-slot{grid-column:1/-1;grid-row:2;justify-self:center;align-self:end;width:clamp(88px,22vw,108px);height:clamp(72px,18vw,88px);margin:0 0 18px}
+  .lobby-hub .hub-mid{flex-wrap:wrap}
+  .lobby-hub .hub-mid .hub-pet-slot{align-self:center;justify-self:auto;width:auto;height:auto;margin:0;padding:0}
+  .lobby-hub .hub-pet-slot .lobby-pet{width:clamp(96px,24vw,140px)}
 }
 @media(max-width:720px) and (orientation:landscape) and (min-height:560px){
   .lobby-hub{grid-template-rows:auto repeat(5,minmax(0,1fr))}

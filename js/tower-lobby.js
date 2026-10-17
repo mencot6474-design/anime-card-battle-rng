@@ -644,13 +644,6 @@ function renderLobby(){
   const tier=eq?CARDS[eq.char].tier:null;
   app.innerHTML=`
   <div class="lobby-hub">
-    <div class="lobby-heading">
-      <div class="lobby-heading-copy">
-        <span class="lobby-kicker"><span class="lobby-kicker-mark"></span>ARENA / HOME</span>
-        <h1>SUMMONER'S HALL</h1>
-      </div>
-      <span class="lobby-headnote"><i></i>YOUR NEXT CHALLENGE AWAITS</span>
-    </div>
     <div class="hub-box h-l1 hub-link hub-link-raid" id="hubRaid" role="button" title="Masuk Boss Raid">
       <span class="tile-index"><span class="tile-number">01</span><span class="tile-category">RAID / BOSS</span></span>
       <span class="tile-art" aria-hidden="true"><svg viewBox="0 0 128 128" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M64 15c15 14 30 19 46 17l-10 17 14 12-17 9 2 20-22-9-13 29-13-29-22 9 2-20-17-9 14-12-10-17c16 2 31-3 46-17Z"/><path d="M48 59 37 65l13 6m30-12 11 6-13 6M52 79c4-5 8-8 12-8s8 3 12 8M57 88h14M58 41l6-11 6 11"/><path d="m53 64 7 2-5 3m20-5-7 2 5 3"/></svg></span>
@@ -666,11 +659,9 @@ function renderLobby(){
     <div class="hub-mid">
     <div class="seam"></div>
     <div class="stage-eyebrow">ACTIVE CARD</div>
+    <div class="hub-pet-slot" role="group" aria-label="Pet companion">${lobbyPetHtml()}</div>
     <div class="card-float">${hubCardHtml(eq,' id="hubCard"')}</div>
     <div class="stage-hint"><kbd>KLIK</kbd> UNTUK BUKA BACKPACK</div>
-    </div>
-    <div class="hub-pet-slot" role="group" aria-label="Pet companion slot">
-      ${lobbyPetHtml()||'<div class="hub-pet-empty"><span class="pet-slot-mark">✧</span><span class="pet-slot-copy"><b>PET SLOT</b><small>EQUIP A COMPANION</small></span></div>'}
     </div>
     <div class="hub-box h-r1 hub-link hub-link-index" id="hubIndex" role="button" title="Buka Katalog Kartu">
       <span class="tile-index"><span class="tile-number">03</span><span class="tile-category">COLLECTION / ARCHIVE</span></span>
