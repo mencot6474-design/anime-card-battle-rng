@@ -3165,8 +3165,8 @@ body.battle-full .fighter.me,body.battle-full .fighter.foe{
 .dp-card .dp-badges .shiny-pill{height:auto!important;min-height:0!important;padding:2px 6px!important;font-size:9px!important;letter-spacing:.05em!important}
 #deckPickModal .dp-card .dp-badges{display:flex!important;flex-direction:column!important;align-items:flex-end!important;gap:4px!important}
 
-/* ===== LOBBY v22: stage-center — kartu & pet dipaksa di tengah mutlak; panel dibuang, background lobby asli langsung kelihatan. */
+/* ===== LOBBY v23: stage-center — grup [pet][card] di-center flow (bukan absolute; v22 bikin tinggi hub-mid collapse → kartu nempel header). Panel tetap dibuang, bg lobby asli kelihatan. */
 .lobby-hub{background:none;border:0;box-shadow:none;border-radius:0}
-.lobby-hub .hub-mid{display:block;position:relative;padding:0;overflow:visible}
-.lobby-hub .stage-center{position:absolute;inset:0;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:clamp(8px,1.4vh,14px)}
+.lobby-hub .hub-mid{display:flex;align-items:center;justify-content:center;position:relative;padding:0;overflow:visible}
+.lobby-hub .stage-center{display:flex;flex-direction:row;align-items:center;justify-content:center;width:100%;gap:clamp(8px,1.4vh,14px)}
 
