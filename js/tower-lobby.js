@@ -594,7 +594,7 @@ function hubCardHtml(eq,idAttr){
   const st=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   const mut=(eq.mut&&eq.mut!=='none')?eq.mut:null;
   const trait=(eq.trait&&eq.trait!=='none')?eq.trait:null;
-  return `<div class="hub-center${mut?' mut-'+mut:''}${shinyCls(eq)}"${idAttr||''} data-tier="${tier}" style="--tcol:${mut?MUT_COLOR[mut]:TIER_COLOR[tier]}${mut?`;border-color:${MUT_COLOR[mut]}`:''}">
+  return `<div class="hub-center${mut?' mut-'+mut:''}${shinyCls(eq)}"${idAttr||''} data-tier="${tier}" style="--tcol:${mut?MUT_COLOR[mut]:TIER_COLOR[tier]}${mut&&!eq.shiny?`;border-color:${MUT_COLOR[mut]}`:''}">
       <div class="hc-img"><img src="${cardImg(eq.char)}" alt="${cardName(eq.char)}"${CARDS[eq.char].pos?` style="object-position:${CARDS[eq.char].pos}"`:''}>
           ${mut&&!eq.shiny?`<span class="hc-name-top hc-mut-name" data-text="${String(cardName(eq.char)).replace(/"/g,'&quot;')}">${mut==='rainbow'?mutText(mut,cardName(eq.char)):cardName(eq.char)}</span>`:eq.shiny?`<span class="hc-name-top hc-name-shine${mut?' hc-name-shine-'+mut:''}" style="${mut==='gold'?'--sh-base:#E0BC6E;--sh-edge:rgba(224,188,110,.95);--sh-glow:rgba(224,188,110,.55)':mut==='rainbow'?'--sh-base:#B58CFF;--sh-edge:rgba(90,200,250,.95);--sh-glow:rgba(181,140,255,.55)':mut==='secret'?'--sh-base:#A855F7;--sh-edge:rgba(168,85,247,.95);--sh-glow:rgba(168,85,247,.55)':'--sh-base:#22d3ee;--sh-edge:rgba(34,211,238,.95);--sh-glow:rgba(34,211,238,.55)'}">${cardName(eq.char)}</span>`:shinyName('span','hc-name-top','hc-name-shine',mut,eq.shiny,cardName(eq.char))}
           <span class="hc-chance" style="color:${TIER_COLOR[tier]}">${rarityText(tier,luckChance(eq.char,eq.mut,eq.shiny))}</span>
@@ -644,8 +644,25 @@ function renderLobby(){
   const tier=eq?CARDS[eq.char].tier:null;
   app.innerHTML=`
   <div class="lobby-hub">
-    <div class="hub-box h-l1 hub-link" id="hubRaid" role="button" title="Masuk Boss Raid"><span class="hb-eyebrow">01</span><img class="hi-ic" src="assets/raid/eternal-dragon-hd.png" alt=""><span class="hb-lbl">BOSS RAID</span></div>
-    <div class="hub-box h-l2 hub-link" id="hubTower" role="button" title="Masuk Infinite Tower"><span class="hb-eyebrow">02</span><svg class="tw-ic" width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M9 21V9l3-6 3 6v12"/><path d="M9 12h6M9 16h6"/><path d="M5 21V11M19 21V11"/></svg><span class="hb-lbl">INFINITE TOWER</span></div>
+    <div class="lobby-heading">
+      <div class="lobby-heading-copy">
+        <span class="lobby-kicker"><span class="lobby-kicker-mark"></span>ARENA / HOME</span>
+        <h1>SUMMONER'S HALL</h1>
+      </div>
+      <span class="lobby-headnote"><i></i>YOUR NEXT CHALLENGE AWAITS</span>
+    </div>
+    <div class="hub-box h-l1 hub-link hub-link-raid" id="hubRaid" role="button" title="Masuk Boss Raid">
+      <span class="tile-index"><span class="tile-number">01</span><span class="tile-category">RAID / BOSS</span></span>
+      <span class="tile-art" aria-hidden="true"><svg viewBox="0 0 128 128" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M64 15c15 14 30 19 46 17l-10 17 14 12-17 9 2 20-22-9-13 29-13-29-22 9 2-20-17-9 14-12-10-17c16 2 31-3 46-17Z"/><path d="M48 59 37 65l13 6m30-12 11 6-13 6M52 79c4-5 8-8 12-8s8 3 12 8M57 88h14M58 41l6-11 6 11"/><path d="m53 64 7 2-5 3m20-5-7 2 5 3"/></svg></span>
+      <span class="tile-copy"><span class="hb-lbl">BOSS RAID</span><span class="hb-meta">Challenge the raid boss</span></span>
+      <span class="tile-action"><span>ENTER RAID</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span>
+    </div>
+    <div class="hub-box h-l2 hub-link hub-link-tower" id="hubTower" role="button" title="Masuk Infinite Tower">
+      <span class="tile-index"><span class="tile-number">02</span><span class="tile-category">TOWER / ASCENT</span></span>
+      <span class="tile-art" aria-hidden="true"><svg viewBox="0 0 128 128" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M64 12 45 36h10v17H40v17h15v17H31v25h66V87H73V70h15V53H73V36h10L64 12Z"/><path d="M55 53h18M55 70h18M55 87h18M57 112V91h14v21M59 36h10M64 12V5"/><circle cx="64" cy="7" r="2"/></svg></span>
+      <span class="tile-copy"><span class="hb-lbl">INFINITE TOWER</span><span class="hb-meta">Climb the endless tower</span></span>
+      <span class="tile-action"><span>CLIMB</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span>
+    </div>
     <div class="hub-mid">
     <div class="seam"></div>
     <div class="stage-eyebrow">ACTIVE CARD</div>
@@ -653,9 +670,29 @@ function renderLobby(){
     ${lobbyPetHtml()}
     <div class="stage-hint"><kbd>KLIK</kbd> UNTUK BUKA BACKPACK</div>
     </div>
-    <div class="hub-box h-r1 hub-link" id="hubIndex" role="button" title="Buka Katalog Kartu"><span class="hb-eyebrow">03</span><img class="hi-ic" src="assets/images/icon-index-card.png" alt=""><span class="hb-lbl">INDEX CARD</span></div>
-    <div class="hub-box h-r2 hub-link" id="hubTrait" role="button" title="Roll Trait untuk kartu aktif"><span class="hb-eyebrow">04</span><img class="hi-ic" src="assets/images/icon-trait.svg" alt=""><span class="hb-lbl">TRAIT</span></div>
-    <div class="hub-box h-mission hub-link" id="missionBtn" role="button" title="Buka daftar misi"><svg class="tw-ic" width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 4 6v13l5-2 6 2 5-2V4l-5 2-6-2Z"/><path d="M9 4v13M15 6v13"/></svg><span class="hb-lbl">MISSION</span><span class="mb-sub" id="missionSub"></span></div>
+    <div class="hub-box h-r1 hub-link hub-link-index" id="hubIndex" role="button" title="Buka Katalog Kartu">
+      <span class="tile-index"><span class="tile-number">03</span><span class="tile-category">COLLECTION / ARCHIVE</span></span>
+      <span class="tile-art" aria-hidden="true"><svg viewBox="0 0 128 128" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="35" y="26" width="52" height="76" rx="4" transform="rotate(-11 35 26)"/><rect x="48" y="25" width="52" height="76" rx="4" transform="rotate(7 48 25)"/><path d="M58 47h28m-28 12h25m-24 12h19"/><path d="m70 80 4 8 9 1-7 6 2 9-8-5-8 4 2-8-6-6 9-1 3-8Z"/></svg></span>
+      <span class="tile-copy"><span class="hb-lbl">CARD INDEX</span><span class="hb-meta">Browse your collection</span></span>
+      <span class="tile-action"><span>OPEN INDEX</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span>
+    </div>
+    <div class="hub-box h-r2 hub-link hub-link-trait" id="hubTrait" role="button" title="Roll Trait untuk kartu aktif">
+      <span class="tile-index"><span class="tile-number">04</span><span class="tile-category">CARD / CUSTOMIZE</span></span>
+      <span class="tile-art" aria-hidden="true"><svg viewBox="0 0 128 128" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m64 13 12 37 39 14-39 13-12 38-13-38-38-13 38-14 13-37Z"/><path d="m64 13 0 104M26 64h76M43 50l21 14 21-14M43 77l21-13 21 13"/><path d="M95 19v15m-7.5-7.5h15M28 93v11m-5.5-5.5h11"/></svg></span>
+      <span class="tile-copy"><span class="hb-lbl">TRAIT</span><span class="hb-meta">Reroll your active card</span></span>
+      <span class="tile-action"><span>REFINE</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span>
+    </div>
+    <div class="hub-box h-mission hub-link hub-link-mission" id="missionBtn" role="button" title="Buka daftar misi">
+      <span class="tile-index"><span class="tile-number">05</span><span class="tile-category">CAMPAIGN / FIELD LOG</span></span>
+      <span class="tile-art" aria-hidden="true"><svg viewBox="0 0 128 128" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M38 24h43l13 13v68H38V24Z"/><path d="M81 24v16h13M50 55h10m9 0h20M50 72h10m9 0h20M50 89h10m9 0h20"/><path d="m50 55 3 3 6-7m0 21 3 3 6-7m-9 21 3 3 6-7"/></svg></span>
+      <span class="tile-copy"><span class="hb-lbl">MISSION LOG</span><span class="hb-meta">Keep your story moving forward</span></span>
+      <span class="mission-progress">
+        <span class="mission-progress-label">STORY CLEARANCE</span>
+        <span class="mission-meter" id="missionMeter" role="progressbar" aria-label="Mission progress" aria-valuemin="0"><span id="missionFill"></span></span>
+        <span class="mb-sub" id="missionSub"></span>
+      </span>
+      <span class="tile-action"><span>VIEW MISSIONS</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span>
+    </div>
   </div>`;
   const hc=document.getElementById("hubCard");if(hc){hc.onclick=()=>{sfx.hit();toggleBackpack();};initHubTilt(hc);}
   const hi=document.getElementById("hubIndex");if(hi)hi.onclick=()=>{sfx.hit();openIndex();};
@@ -663,7 +700,7 @@ function renderLobby(){
   const hr=document.getElementById("hubRaid");if(hr)hr.onclick=()=>{sfx.hit();raidView="hub";location.hash="#/raid";};
   const ht2=document.getElementById("hubTower");if(ht2)ht2.onclick=()=>{sfx.hit();stopTower();location.hash="#/tower";};
   const mb=document.getElementById("missionBtn");if(mb)mb.onclick=()=>{sfx.hit();openMission();};
-  const ms=document.getElementById("missionSub");if(ms){const done=CHAPTERS.reduce((a,c)=>a+chapProgMode(c,state.diff),0),tot=CHAPTERS.reduce((a,c)=>a+c.levels.length,0);ms.textContent=done+"/"+tot+" SELESAI";}
+  const ms=document.getElementById("missionSub");if(ms){const done=CHAPTERS.reduce((a,c)=>a+chapProgMode(c,state.diff),0),tot=CHAPTERS.reduce((a,c)=>a+c.levels.length,0);ms.textContent=done+"/"+tot+" SELESAI";const ratio=tot?Math.min(100,Math.round(done/tot*100)):0;const meter=document.getElementById("missionMeter"),fill=document.getElementById("missionFill");if(meter){meter.setAttribute("aria-valuemax",String(tot));meter.setAttribute("aria-valuenow",String(done));}if(fill)fill.style.width=ratio+"%";}
 }
 
 /* ========== TOGGLE BACKPACK FUNCTION ========== */
