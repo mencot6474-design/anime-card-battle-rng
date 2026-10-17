@@ -26,10 +26,10 @@ function renderRaidHub(){
   <div class="tw-page rd-page"><div class="tw-hub rd-hub">
     <section class="tw-stage rd-stage">
       <div class="tw-stage-eyebrow">BOSS RAID</div>
-      <div class="rd-wm">EX</div>
+      
       <div class="rd-boss">
         <div class="rd-boss-frame"><img src="${b.img}" alt="${b.name}">
-          <div class="rd-boss-tag"><span class="rbt-tier">EX TIER</span><span class="rbt-skill">${b.skill.toUpperCase()}</span></div>
+          <div class="rd-boss-tag"><span class="rbt-skill">${b.skill.toUpperCase()}</span></div>
         </div>
       </div>
       <div class="tw-stage-hint"><kbd>MASUK</kbd> KURAS HP BOSS DALAM ${RAID_TURNS} TURN</div>
@@ -90,11 +90,11 @@ function renderRaidPick(){
     <label class="card-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input class="card-search" id="raidSearch" type="text" placeholder="Cari kartu…" autocomplete="off"></label>
     <div class="raid-pick-grid" id="raidPickGrid">${stacks.map(s=>{
       const c=CARDS[s.char];
-      const shny=s.shiny?'<span class="bpt-shiny">SHINY</span>':'';
+      const shny=s.shiny?'<span class="bpt-shiny shiny-pill">SHINY</span>':'';
       const mut=(s.mut&&s.mut!=='none')?s.mut:null;
       const trait=(s.trait&&s.trait!=='none')?s.trait:null;
       const cnt=(s.count||1)>1?`<span class="bpt-cnt">&times;${fmt(s.count)}</span>`:'';
-      const stack=(shny||mut||trait)?`<div class="bpt-top">${shny}${mut?mutChip(mut,`<span class="bpt-mut" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="bpt-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(12,trait)}</span>`):''}</div>`:'';
+      const stack=(shny||mut||trait)?`<div class="bpt-top">${shny}${mut?mutChip(mut,mutPill(mut,'bpt-mut')):''}${trait?traitChip(trait,`<span class="bpt-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(12,trait)}</span>`):''}</div>`:'';
       return `<div class="bp-tile" data-sid="${s.id}" data-pick="${s.id}" data-name="${c.name.toLowerCase()}" style="--tcol:${TIER_COLOR[s.tier]}"><img src="${cardImg(s.char)}" alt="">${stack}${cnt}<div class="bpt-ctl"><button class="bpt-fav${s.fav?' on':''}" onclick="event.stopPropagation();bpFav('${s.id}');renderRaidPick()" title="Favorit">${s.fav?'★':'☆'}</button><button class="bpt-lock${s.lock?' on':''}" onclick="event.stopPropagation();bpLock('${s.id}');renderRaidPick()" title="Lock">${s.lock?'🔒':'🔓'}</button></div><div class="bpt-name">${c.name}</div></div>`;
     }).join("")}</div>
     <div class="no-result" id="raidSearch-nr">Tidak ada kartu yang cocok dengan pencarian.</div>
@@ -468,23 +468,33 @@ function ixRender(){
     const bestMut=ownCnt(c,"secret",false)||ownCnt(c,"secret",true)?"secret":
       ownCnt(c,"rainbow",false)||ownCnt(c,"rainbow",true)?"rainbow":
       (ownCnt(c,"gold",false)||ownCnt(c,"gold",true))?"gold":null;
-    /* chip MUTASI sedang aktif -> border & nama ikut mutasi TERPILIH biar filter
-       ke-baca visual (semua kartu tampil dgn gaya chip itu);
-       MURNI -> tampilan polos (warna tier); ALL -> mutasi tertinggi milik sendiri. */
+    /* chip MUTASI aktif -> border & nama mengikuti mutasi terpilih;
+       kartu murni memakai border netral; ALL memilih mutasi tertinggi milik sendiri. */
     const fm=ixState.mut==="all"?bestMut:fmSel;
-    const bc=fm?MUT_COLOR[fm]:(any?(TIER_COLOR[c.tier]||"#9AA6B2"):"#3A3F47");
+    const hasMut=!!(fm&&fm!=="none");
+    const bc=hasMut?MUT_COLOR[fm]:(any?"#9AA6B2":"#3A3F47");
+    const chanceColor=hasMut?MUT_COLOR[fm]:"#9AA6B2";
+    const chanceText=`1 IN ${fmtChance(effChance(c.char_id,fmSel||"none",fShiny))}`;
+    const chanceHtml=hasMut&&fm==='rainbow'?mutText('rainbow',chanceText):chanceText;
     const lockBoss=!!(c.raidBoss&&!bossRollUnlocked(c.char_id));
     /* holo shimmer HANYA di tab SEMUA atau lagi di konteks shiny (chip s-* / toggle SHINY);
        tab MURNI/GOLD/RAINBOW/SECRET biasa tampil tanpa shimmer biar kebaca beda. */
     const shFx=anySh&&(ixState.mut==="all"||fShiny);
-    const cls=`ix-cell${any?'':' no-own'}${lockBoss?' boss-locked':''}${shFx?' shiny':''}${fm?' m-'+fm:''}`;
+    const comboFx=!!(shFx&&hasMut);
+    const cls=`ix-cell${any?'':' no-own'}${lockBoss?' boss-locked':''}${shFx?' shiny':''}${hasMut?' m-'+fm:''}${comboFx?' combo-mut':''}`;
     /* gaya kartu lobby: NAMA kiri-atas + chance pill di bawahnya + badge ✓ kanan-atas;
        pips & teks passive dibuang — klik kartu tetap buka skillPop buat detail.
        mut=fm -> nama ikut warna mutasi (rainbow = huruf warna-warni). */
-    const nameHtml=shinyName('span','ixc-name','ixc-shine',fm,anySh,c.name);
-    return `<button class="${cls}" type="button" data-c="${c.char_id}"${lockBoss?' title="BELUM DIBELI — beli di TOKO RAID untuk buka roll"':''} style="--tc:${TIER_COLOR[c.tier]||'#9AA6B2'};--bc:${bc}">
+    const safeName=String(c.name).replace(/"/g,'&quot;');
+    const shinyStyle=hasMut&&fm==='gold'?'--sh-base:#E0BC6E;--sh-edge:rgba(224,188,110,.95);--sh-glow:rgba(224,188,110,.55)':hasMut&&fm==='rainbow'?'--sh-base:#B58CFF;--sh-edge:rgba(90,200,250,.95);--sh-glow:rgba(181,140,255,.55)':hasMut&&fm==='secret'?'--sh-base:#A855F7;--sh-edge:rgba(168,85,247,.95);--sh-glow:rgba(168,85,247,.55)':'--sh-base:#22d3ee;--sh-edge:rgba(34,211,238,.95);--sh-glow:rgba(34,211,238,.55)';
+    const nameHtml=hasMut&&!shFx
+      ?`<span class="ixc-name hc-name-top hc-mut-name" data-text="${safeName}">${fm==='rainbow'?mutText(fm,c.name):c.name}</span>`
+      :shFx
+        ?`<span class="ixc-name hc-name-top hc-name-shine${hasMut?' hc-name-shine-'+fm:''}" style="${shinyStyle}">${c.name}</span>`
+        :`<span class="ixc-name hc-name-top">${c.name}</span>`;
+    return `<button class="${cls}" type="button" data-c="${c.char_id}"${lockBoss?' title="BELUM DIBELI — beli di TOKO RAID untuk buka roll"':''} style="--tc:#9AA6B2;--bc:${bc}">
       <img src="${c.sprite_asset}" alt="${c.name}">
-      <span class="ixc-stack">${nameHtml}<span class="ixc-chance"${fmSel&&fmSel!=="none"?` style="color:${MUT_COLOR[fmSel]}"`:""}>1 IN ${fmtChance(effChance(c.char_id,fmSel||"none",fShiny))}</span></span>
+      <span class="ixc-stack">${nameHtml}<span class="ixc-chance${hasMut&&fm==='rainbow'?' ixc-chance-rainbow':''}" style="color:${chanceColor}"><span class="ixc-chance-text">${chanceHtml}</span></span></span>
       <span class="ixc-own${any?' on':''}">✓ ${any}/8</span>
     </button>`;}).join("");
   /* --- footer: strip progres SEGMENT per mutasi + milestone INTAN ROLL --- */
@@ -563,7 +573,7 @@ function renderDeckPick(){
   b.innerHTML=`<label class="card-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input class="card-search" id="dpSearch" type="text" placeholder="Cari kartu…" autocomplete="off"></label><div class="dp-grid" id="dpGrid">${state.stacks.map(s=>{
     return `<button class="dp-card${s.id===selId?" sel":""}" data-tid="${s.id}" data-name="${cardName(s.char).toLowerCase()}"${s.mut&&s.mut!=="none"?` style="border-color:${MUT_COLOR[s.mut]}"`:""}>
       <img src="${cardImg(s.char)}" alt="">
-      ${(s.mut&&s.mut!=="none")||(s.trait&&s.trait!=="none")?`<span class="dp-badges">${s.mut&&s.mut!=="none"?mutChip(s.mut,`<span class="mut-badge dp-mut" style="border-color:${MUT_COLOR[s.mut]}">${mutBadge(s.mut)}</span>`):""}${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="trait-badge dp-gem" style="border-color:${TRAIT_COLOR[s.trait]}">${traitGem(13,s.trait)}</span>`):""}</span>`:""}
+      ${s.shiny||(s.mut&&s.mut!=="none")||(s.trait&&s.trait!=="none")?`<span class="dp-badges">${s.shiny?'<span class="shiny-badge shiny-pill">SHINY</span>':""}${s.mut&&s.mut!=="none"?mutChip(s.mut,mutPill(s.mut,'mut-badge dp-mut')):""}${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="trait-badge dp-gem" style="border-color:${TRAIT_COLOR[s.trait]}">${traitGem(13,s.trait)}</span>`):""}</span>`:""}
       <span class="dp-name">${cardName(s.char)}</span>
     </button>`;}).join("")}</div><div class="no-result" id="dpSearch-nr">Tidak ada kartu yang cocok.</div>`;
   {const dps=document.getElementById("dpSearch");if(dps){dps.value=dpSearch;dps.oninput=()=>{dpSearch=dps.value;runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));};if(dpSearch)runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));}}

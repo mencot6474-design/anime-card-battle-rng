@@ -31,12 +31,20 @@ function wireSpeedBtn(){
     upd();
   };
 }
+function battleCardNameHtml(name,mut,shiny){
+  const esc=String(name).replace(/"/g,'&quot;');
+  if(mut&&!shiny)return `<div class="f-name f-mut-name f-mut-${mut}" data-text="${esc}">${mut==='rainbow'?mutText(mut,name):name}</div>`;
+  if(!shiny)return `<div class="f-name">${name}</div>`;
+  const vars=mut==='gold'?'--sh-base:#E0BC6E;--sh-edge:rgba(224,188,110,.95);--sh-glow:rgba(224,188,110,.55)':mut==='rainbow'?'--sh-base:#B58CFF;--sh-edge:rgba(90,200,250,.95);--sh-glow:rgba(181,140,255,.55)':mut==='secret'?'--sh-base:#A855F7;--sh-edge:rgba(168,85,247,.95);--sh-glow:rgba(168,85,247,.55)':'';
+  return `<div class="f-name f-name-shine${mut?' f-name-shine-'+mut:''}"${vars?` style="${vars}"`:''}>${name}</div>`;
+}
 function meFighterHtml(s){
   const st=cardStats(s.char,s.mut,s.trait,s.shiny);
   const mut=(s.mut&&s.mut!=="none")?s.mut:null;
   const trait=(s.trait&&s.trait!=="none")?s.trait:null;
-  return `<div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}"${CARDS[s.char]&&CARDS[s.char].pos?` style="object-position:${CARDS[s.char].pos}"`:''}>${shinyName('div','f-name','f-name-shine',mut,s.shiny,cardName(s.char))}<span class="hc-chance">1 in ${fmtChance(luckChance(s.char,s.mut,s.shiny))}</span>
-    ${(s.shiny||mut||trait)?`<div class="f-badges">${s.shiny?'<span class="shiny-badge">SHINY</span>':''}${mut?mutChip(mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="hc-trait hc-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(14,trait)}</span>`):''}</div>`:""}
+  const name=cardName(s.char),fName=battleCardNameHtml(name,mut,s.shiny);
+  return `<div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}"${CARDS[s.char]&&CARDS[s.char].pos?` style="object-position:${CARDS[s.char].pos}"`:''}>${fName}<span class="hc-chance">1 in ${fmtChance(luckChance(s.char,s.mut,s.shiny))}</span>
+    ${(s.shiny||mut||trait)?`<div class="f-badges">${s.shiny?'<span class="shiny-badge shiny-pill">SHINY</span>':''}${mut?mutChip(mut,mutPill(mut)):''}${trait?traitChip(trait,`<span class="hc-trait hc-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(14,trait)}</span>`):''}</div>`:""}
     </div>
     <div class="hpbar"><i id="hpMe"></i><span id="hpMeT">${fmt(st.hp)} / ${fmt(st.hp)}</span></div>
     <div class="f-body">
@@ -56,6 +64,7 @@ function endPossession(){
   updateMeCard();setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
   setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","MONARCH RETURNS","heal");},200);
 }
+
 function updateMeCard(){if(!bt)return;const f=document.querySelector(".fighter.me");if(f){if(bt.shadow){f.className="fighter me shadow-fighter";f.dataset.tier="EX";f.dataset.char="";f.style.borderColor="#7c3aed";f.innerHTML=meShadowHtml(bt.shadow);return;}f.className="fighter me"+mutGlow(bt.eq.mut)+shinyCls(bt.eq);f.dataset.tier=bt.eq.tier;f.dataset.char=bt.eq.char;f.style.borderColor=bt.eq.mut&&bt.eq.mut!=="none"?MUT_COLOR[bt.eq.mut]:"";f.innerHTML=meFighterHtml(bt.eq);}}
 function benchTile(s){
   return `<div class="bench-sq" data-tier="${s.tier}" style="border-color:${TIER_COLOR[s.tier]}" title="${cardName(s.char)}"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}"><span class="bhp"><i style="width:100%"></i></span></div>`;
@@ -84,7 +93,7 @@ function renderBattle(){
   <div class="vs-col"><div class="t">VS</div><div class="s" id="turnLabel">AUTO<br>BATTLE</div><button class="bspeed-btn" id="bspeedBtn" type="button">1×</button></div>
   <div class="me-col foe-side">
     <div class="fighter foe${mutGlow(diffOf().mut)}" data-tier="${en.tier||''}"${mutEdge(diffOf().mut)}>
-      <div class="f-banner"><img src="${en.img}" alt="${en.name}"><div class="f-name">${en.name}</div>${diffOf().mut!=="none"?`<div class="f-badges">${mutChip(diffOf().mut,`<span class="fbadge" style="border-color:${MUT_COLOR[diffOf().mut]};color:${MUT_COLOR[diffOf().mut]}">${mutBadge(diffOf().mut)}</span>`)}</div>`:""}
+      <div class="f-banner"><img src="${en.img}" alt="${en.name}"><div class="f-name">${en.name}</div>${diffOf().mut!=="none"?`<div class="f-badges">${mutChip(diffOf().mut,mutPill(diffOf().mut,'fbadge'))}</div>`:""}
         </div>
       <div class="hpbar"><i id="hpFoe"></i><span id="hpFoeT">${fmt(es.hp)} / ${fmt(es.hp)}</span></div>
       <div class="f-body">
@@ -1352,4 +1361,6 @@ function armRollPopAutoClose(ms){
 function rollPopClosed(){ if(!towerLossAutoPending)return; towerLossAutoPending=false; if(state&&state.tower&&state.tower.auto){ try{ towerStartRun(); }catch(e){ console.error("tower auto-restart error",e); } } }
 document.getElementById("rrClose").onclick=()=>{try{sfx.hit();}catch(e){}closeRollPop();};
 document.querySelector("#rollResultPop .rr-back").onclick=()=>{closeRollPop();};
+
+click=()=>{closeRollPop();};
 

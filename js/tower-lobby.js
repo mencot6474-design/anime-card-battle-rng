@@ -108,12 +108,11 @@ function renderTower(){
 }
 function towerPreviewCard(w,isBoss,role,idx){
   const id=w.eid, c=CARDS[id]; if(!c) return "";
-  const tier=c.tier;
-  const badge=(isBoss&&idx===0)?"BOSS":tier;
-  return `<div class="tw-fcard${isBoss&&idx===0?" bossx":""}" data-tier="${tier}" style="--fc:${TIER_COLOR[tier]};animation-delay:${-idx*0.7}s">
+  const tier=c.tier,bossBadge=isBoss&&idx===0;
+  return `<div class="tw-fcard${bossBadge?" bossx":""}" data-tier="${tier}" style="animation-delay:${-idx*0.7}s">
     <img src="${c.sprite_asset}" alt="${c.name}"${c.pos?` style="object-position:${c.pos}"`:''}>
     <span class="fn">${c.name}</span>
-    <span class="fb">${badge}</span>
+    ${bossBadge?'<span class="fb">BOSS</span>':''}
     <span class="fs"><span class="hp"><i>HP</i> <b>${fmt(w.es.hp)}</b></span><span class="atk"><i>ATK</i> <b>${fmt(w.es.atk)}</b></span></span>
   </div>`;
 }
@@ -539,7 +538,7 @@ function showTowerLoot(results,drops,title){
   document.getElementById("rrBody").innerHTML=potChips+list.map(g=>{
     const name=cardName(g.cardId),img=cardImg(g.cardId);
     const isShiny=g.shiny&&g.shiny!=="none", isMut=g.mut&&g.mut!=="none";
-    const varTag=(isShiny||isMut)?`<span class="rrc-var">${isShiny?'<span class="rrc-shine">SHINY</span>':''}${isMut?`<span class="rrc-mut" style="border-color:${MUT_COLOR[g.mut]||'#fff'}">${mutBadge(g.mut)}</span>`:''}</span>`:'';
+    const varTag=(isShiny||isMut)?`<span class="rrc-var">${isShiny?'<span class="rrc-shine shiny-pill">SHINY</span>':''}${isMut?mutChip(g.mut,mutPill(g.mut,'rrc-mut')):''}</span>`:'';
     let rc="rrc";if(isMut)rc+=" mut-"+g.mut;if(isShiny)rc+=" shiny";
     return `<div class="${rc}"><i class="rrc-sizer"></i><img src="${img}" alt="${name}" title="${name}" onerror="this.style.display='none'">${varTag}${g.n>1?`<span class="rrc-cnt">×${g.n}</span>`:''}<span class="rrc-name">1/${fmtC(luckChance(g.cardId,g.mut,g.shiny))}</span></div>`;
   }).join("");
@@ -565,7 +564,7 @@ function openModal(id){
   mcEl.innerHTML=`
     <span class="md-art"><img src="${c.sprite_asset}" alt="${c.name}"></span>
     <div class="md-info">
-      <div class="eyebrow" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,luckChance(s.char,s.mut,s.shiny))}${s.mut&&s.mut!=="none"?` · ${mutChip(s.mut,`<span>${mutBadge(s.mut)}</span>`)}`:""}${s.shiny?' · <span class="shiny-badge">SHINY</span>':""}</div>
+      <div class="eyebrow" style="color:${TIER_COLOR[s.tier]}">${rarityText(s.tier,luckChance(s.char,s.mut,s.shiny))}${s.mut&&s.mut!=="none"?` · ${mutChip(s.mut,mutPill(s.mut))}`:""}${s.shiny?' · <span class="shiny-badge shiny-pill">SHINY</span>':""}</div>
       <div class="md-name">${c.name}</div>
       <div class="cr-title" style="margin-bottom:8px">${c.type}</div>
       <div class="cr-stats"><span>♡ ${fmt(st.hp)}</span><span>${ATKIC} ${fmt(st.atk)}</span></div>
@@ -594,11 +593,12 @@ function hubCardHtml(eq,idAttr){
   const st=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   const mut=(eq.mut&&eq.mut!=='none')?eq.mut:null;
   const trait=(eq.trait&&eq.trait!=='none')?eq.trait:null;
+  const chanceText=rarityText(tier,luckChance(eq.char,eq.mut,eq.shiny));
   return `<div class="hub-center${mut?' mut-'+mut:''}${shinyCls(eq)}"${idAttr||''} data-tier="${tier}" style="--tcol:${mut?MUT_COLOR[mut]:TIER_COLOR[tier]}${mut&&!eq.shiny?`;border-color:${MUT_COLOR[mut]}`:''}">
       <div class="hc-img"><img src="${cardImg(eq.char)}" alt="${cardName(eq.char)}"${CARDS[eq.char].pos?` style="object-position:${CARDS[eq.char].pos}"`:''}>
           ${mut&&!eq.shiny?`<span class="hc-name-top hc-mut-name" data-text="${String(cardName(eq.char)).replace(/"/g,'&quot;')}">${mut==='rainbow'?mutText(mut,cardName(eq.char)):cardName(eq.char)}</span>`:eq.shiny?`<span class="hc-name-top hc-name-shine${mut?' hc-name-shine-'+mut:''}" style="${mut==='gold'?'--sh-base:#E0BC6E;--sh-edge:rgba(224,188,110,.95);--sh-glow:rgba(224,188,110,.55)':mut==='rainbow'?'--sh-base:#B58CFF;--sh-edge:rgba(90,200,250,.95);--sh-glow:rgba(181,140,255,.55)':mut==='secret'?'--sh-base:#A855F7;--sh-edge:rgba(168,85,247,.95);--sh-glow:rgba(168,85,247,.55)':'--sh-base:#22d3ee;--sh-edge:rgba(34,211,238,.95);--sh-glow:rgba(34,211,238,.55)'}">${cardName(eq.char)}</span>`:shinyName('span','hc-name-top','hc-name-shine',mut,eq.shiny,cardName(eq.char))}
-          <span class="hc-chance" style="color:${TIER_COLOR[tier]}">${rarityText(tier,luckChance(eq.char,eq.mut,eq.shiny))}</span>
-          ${(mut||trait||eq.shiny)?`<div class="hc-badges">${eq.shiny?'<span class="shiny-badge">SHINY</span>':''}${mut?mutChip(mut,`<span class="mut-badge" style="border-color:${MUT_COLOR[mut]}">${mutBadge(mut)}</span>`):''}${trait?traitChip(trait,`<span class="hc-trait hc-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(14,trait)}</span>`):''}</div>`:''}
+          <span class="hc-chance${mut==='rainbow'?' hc-chance-rainbow':''}" style="color:${mut?MUT_COLOR[mut]:"#9AA6B2"}">${mut==='rainbow'?mutText(mut,chanceText):chanceText}</span>
+          ${(mut||trait||eq.shiny)?`<div class="hc-badges">${eq.shiny?'<span class="shiny-badge shiny-pill">SHINY</span>':''}${mut?mutChip(mut,mutPill(mut)):''}${trait?traitChip(trait,`<span class="hc-trait hc-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(14,trait)}</span>`):''}</div>`:''}
           <div class="skill-overlay"><b>${passiveName(eq.char)}</b><span class="sk-txt">${skillText(eq.char)}</span></div>
         </div>
         <div class="hc-info">
@@ -667,8 +667,10 @@ function renderLobby(){
     <div class="seam"></div>
     <div class="stage-eyebrow">ACTIVE CARD</div>
     <div class="card-float">${hubCardHtml(eq,' id="hubCard"')}</div>
-    ${lobbyPetHtml()}
     <div class="stage-hint"><kbd>KLIK</kbd> UNTUK BUKA BACKPACK</div>
+    </div>
+    <div class="hub-pet-slot" role="group" aria-label="Pet companion slot">
+      ${lobbyPetHtml()||'<div class="hub-pet-empty"><span class="pet-slot-mark">✧</span><span class="pet-slot-copy"><b>PET SLOT</b><small>EQUIP A COMPANION</small></span></div>'}
     </div>
     <div class="hub-box h-r1 hub-link hub-link-index" id="hubIndex" role="button" title="Buka Katalog Kartu">
       <span class="tile-index"><span class="tile-number">03</span><span class="tile-category">COLLECTION / ARCHIVE</span></span>
