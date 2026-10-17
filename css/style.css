@@ -948,7 +948,7 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 .rrc{position:relative;aspect-ratio:1/1;border:2px solid var(--line2);border-radius:10px;overflow:hidden;background:linear-gradient(160deg,#1a1216,#0e0a0c)}
 .rrc-sizer{display:block;width:100%;padding-top:100%}
 .rrc.mut-gold,.rrc.mut-rainbow,.rrc.mut-secret{border-width:0}
-.rrc.shiny::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 32%,rgba(255,255,255,.22) 46%,rgba(255,255,255,.05) 55%,transparent 70%);background-size:250% 100%;z-index:1;animation:holoSheen 2.2s ease-in-out infinite}
+.rrc.shiny::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:.78;background:linear-gradient(115deg,transparent 0%,transparent 45%,rgba(34,211,238,.12) 47%,rgba(125,249,255,.45) 48.5%,rgba(255,255,255,.96) 50%,rgba(255,255,255,.9) 51%,rgba(181,140,255,.55) 52.5%,rgba(255,107,214,.18) 54%,transparent 56%,transparent 100%);background-size:180% 100%;background-position:125% 0;background-repeat:no-repeat;mix-blend-mode:screen;z-index:1;animation:holoSheen 1.8s linear infinite}
 .rrc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top}
 .rrc-name{position:absolute;left:0;right:0;bottom:0;z-index:1;color:#f4f6f8;font-family:"Barlow Condensed";font-size:11px;font-weight:700;line-height:1.05;padding:12px 3px 3px;background:linear-gradient(transparent,rgba(0,0,0,.6) 45%,rgba(0,0,0,.92));text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rrc-cnt{position:absolute;top:1px;right:4px;z-index:2;color:#fff;font-family:"Barlow Condensed";font-weight:800;font-size:16px;line-height:1;letter-spacing:.02em;text-shadow:0 1px 2px rgba(0,0,0,.95),0 0 5px rgba(0,0,0,.85)}
@@ -1070,8 +1070,11 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 /* chip tier jadi pill terisi warna rarity (pakai currentColor dari inline style) */
 .tier-badge{border:1px solid currentColor;background:color-mix(in srgb,currentColor 15%,#10080a)}
 /* holo shimmer halus di permukaan art — khusus kartu SHINY (grid deck,index,lobby,fighter,roll) */
-.tcg-img::after,.hub-center .hc-img::after,.fighter .f-banner::after,.deck-slot .ds-art::after,.roll-card-showcase::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;background:linear-gradient(115deg,transparent 32%,rgba(255,255,255,.22) 46%,rgba(255,255,255,.05) 55%,transparent 70%);background-size:250% 100%;z-index:1}
-.tcg.shiny .tcg-img::after,.hub-center.shiny .hc-img::after,.fighter.shiny .f-banner::after,.deck-slot.shiny .ds-art::after,.roll-card-showcase.shiny::after{opacity:1;animation:holoSheen 2.2s ease-in-out infinite}
+.tcg-img,.f-banner{overflow:hidden;border-radius:inherit}
+.hub-center .hc-img{border-radius:inherit}
+.tcg-img::after,.hub-center .hc-img::after,.f-banner::after,.deck-slot .ds-art::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;background:linear-gradient(115deg,transparent 0%,transparent 45%,rgba(34,211,238,.12) 47%,rgba(125,249,255,.45) 48.5%,rgba(255,255,255,.96) 50%,rgba(255,255,255,.9) 51%,rgba(181,140,255,.55) 52.5%,rgba(255,107,214,.18) 54%,transparent 56%,transparent 100%);background-size:180% 100%;background-position:125% 0;background-repeat:no-repeat;mix-blend-mode:screen;z-index:1}
+.tcg.shiny .tcg-img::after,.hub-center.shiny .hc-img::after,.f.shiny .f-banner::after,.fighter.shiny .f-banner::after,.deck-slot.shiny .ds-art::after{opacity:.78;animation:holoSheen 1.8s linear infinite}
+
 /* highlight kartu AKTIF tetap menang dari border/glow tier */
 .tcg.equipped{border-color:rgba(255,90,95,.7)!important;box-shadow:0 0 0 1px rgba(255,90,95,.3),0 8px 22px rgba(255,90,95,.22)!important}
 /* ---------- EX FOIL METALIK + GLITCH (semua permukaan kartu EX) ---------- */
@@ -1154,6 +1157,11 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 .lobby-hub .hub-center .hc-skill,.lobby-hub .hub-center .hc-desc{display:none}
 .lobby-hub .hub-center .hc-info{padding:20px 14px 12px}
 .hub-center{width:100%;aspect-ratio:3/4;border-radius:20px;border:1px solid var(--line2);background:radial-gradient(120% 85% at 50% 0%,rgba(140,30,45,.10),#FFFFFF);position:relative;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:border-color .15s,transform .15s}
+.hub-center.shiny.mut-gold{--hc-mut-border-gradient:linear-gradient(90deg,#22d3ee 0%,#59cdd9 18%,#7bcfce 30%,#a7d1b5 45%,#c7d0a1 60%,#e0bc6e 78%,#c99a45 100%)}
+.hub-center.shiny.mut-rainbow{--hc-mut-border-gradient:linear-gradient(90deg,#ff5a78 0%,#ff9c55 13%,#ffe66d 26%,#6be08a 39%,#22d3ee 52%,#5ac8fa 64%,#7a8cff 76%,#b58cff 88%,#ff6bd6 100%)}
+.hub-center.shiny.mut-secret{--hc-mut-border-gradient:linear-gradient(90deg,#22d3ee 0%,#57cddc 18%,#66c7e0 28%,#775cd7 45%,#9333ea 62%,#a855f7 78%,#d9bbfa 100%)}
+.hub-center.shiny.mut-gold,.hub-center.shiny.mut-rainbow,.hub-center.shiny.mut-secret{border:1px solid transparent;background:radial-gradient(120% 85% at 50% 0%,rgba(140,30,45,.10),#FFFFFF) padding-box,var(--hc-mut-border-gradient) border-box;background-size:100% 100%,320% 100%;background-position:0 0,0 0;background-repeat:no-repeat;animation:hubComboCardBorderFlow 3s ease-in-out infinite alternate}
+@keyframes hubComboCardBorderFlow{to{background-position:0 0,100% 0}}
 .hub-center:hover{border-color:var(--cyan);transform:translateY(-2px)}
 /* 3D TILT (khusus card tengah lobby): .hub-mid jadi panggung ber-perspektif,#hubCard miring
    ngikutin kursor (di-set via JS),.hc-glare = highlight cahaya nyapuin. Battle/roll gak kena
@@ -1456,8 +1464,8 @@ body.battle-full .vs-col .bspeed-btn{font-size:clamp(12px,1.4vw,15px);padding:4p
 #indexModal .ix-cell.m-secret{box-shadow:0 0 12px rgba(168,85,247,.3),inset 0 0 0 1px rgba(168,85,247,.35)}
 #indexModal .ix-cell.m-rainbow{border-color:transparent;background:linear-gradient(160deg,#221a1e,#120e10) padding-box,linear-gradient(160deg,#FF6B81,#FFB347,#FFE66D,#6BE08A,#7DF9FF,#B98CFF,#FF6BD6) border-box;box-shadow:0 0 14px rgba(181,140,255,.4),0 0 4px rgba(125,249,255,.55),0 0 4px rgba(255,107,214,.45),inset 0 0 0 1px rgba(181,140,255,.4)}
 /* holo shimmer — kartu dgn minimal 1 varian shiny owned */
-#indexModal .ix-cell::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;background:linear-gradient(115deg,transparent 30%,rgba(125,249,255,.28) 45%,rgba(181,140,255,.22) 55%,transparent 70%);background-size:250% 100%}
-#indexModal .ix-cell.shiny::after{opacity:1;animation:holoSheen 2.2s ease-in-out infinite}
+#indexModal .ix-cell::after{content:"";position:absolute;inset:0;border-radius:inherit;z-index:2;pointer-events:none;opacity:0;background:linear-gradient(115deg,transparent 0%,transparent 45%,rgba(34,211,238,.12) 47%,rgba(125,249,255,.45) 48.5%,rgba(255,255,255,.96) 50%,rgba(255,255,255,.9) 51%,rgba(181,140,255,.55) 52.5%,rgba(255,107,214,.18) 54%,transparent 56%,transparent 100%);background-size:180% 100%;background-position:125% 0;background-repeat:no-repeat;mix-blend-mode:screen}
+#indexModal .ix-cell.shiny::after{opacity:.78;animation:holoSheen 1.8s linear infinite}
 #indexModal .ixc-stack{position:absolute;top:8px;left:10px;right:54px;z-index:3;display:flex;flex-direction:column;align-items:flex-start;gap:7px;pointer-events:none}
 #indexModal .ixc-name{position:static;padding:0;background:none;text-align:left;max-width:100%;font-family:"Barlow Condensed";font-size:15px;font-weight:800;letter-spacing:.03em;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#F4F7FA;pointer-events:none;transform:skewX(-4deg);text-shadow:1px 1px 0 #0b0e14,2px 2px 0 #0b0e14,2px 4px 8px rgba(0,0,0,.75),0 0 22px color-mix(in srgb,var(--tc,#2F8FE2) 55%,transparent)}
 #indexModal .ixc-name.ixc-shine{color:transparent;-webkit-text-stroke:.6px rgba(255,255,255,.5);text-shadow:0 0 6px rgba(150,200,255,.25);background:linear-gradient(100deg,#aeb9c8 0%,#aeb9c8 40%,#ffffff 50%,#aeb9c8 60%,#aeb9c8 100%);background-size:250% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:hcNameShine 2.8s ease-in-out infinite alternate}
@@ -2254,6 +2262,9 @@ body.on-tower #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
 .backpack-panel .bp-mut-rainbow{--bp-deck-gradient:linear-gradient(90deg,#ff5a78,#ffb347,#ffe66d,#6be08a,#5ac8fa,#7a8cff,#b58cff,#ff6bd6,#ff5a78)}
 .backpack-panel .bp-mut-secret{--bp-deck-gradient:linear-gradient(90deg,#6b21a8,#a855f7,#d8b4fe,#f3e8ff,#9333ea,#6b21a8)}
 .backpack-panel .bp-mut-shiny{--bp-deck-gradient:linear-gradient(90deg,#2f8fe2,#7df9ff,#eafdff,#b58cff,#7df9ff,#2f8fe2)}
+.backpack-panel .bp-mut-shiny-gold{--bp-deck-gradient:linear-gradient(90deg,#22d3ee 0%,#69cfe0 14%,#7bcfce 25%,#a7d1b5 38%,#d5d3a0 52%,#e0bc6e 68%,#f6dfa6 82%,#c99a45 92%,#22d3ee 100%)}
+.backpack-panel .bp-mut-shiny-rainbow{--bp-deck-gradient:linear-gradient(90deg,#ff5a78 0%,#ff9c55 13%,#ffe66d 26%,#6be08a 39%,#22d3ee 52%,#5ac8fa 64%,#7a8cff 76%,#b58cff 88%,#ff6bd6 100%)}
+.backpack-panel .bp-mut-shiny-secret{--bp-deck-gradient:linear-gradient(90deg,#22d3ee 0%,#66c7e0 16%,#6b21a8 32%,#9333ea 48%,#a855f7 64%,#c084fc 78%,#d9bbfa 90%,#22d3ee 100%)}
 .backpack-panel .bp-slot.filled[class*="bp-mut-"]{border:2px solid transparent;background:linear-gradient(#0c0a0c,#0c0a0c) padding-box,var(--bp-deck-gradient) border-box;background-size:100% 100%,320% 100%;background-position:0 0,0 0;background-repeat:no-repeat;animation:bpDeckMutationBorderFlow 3s linear infinite alternate;box-shadow:0 10px 24px rgba(0,0,0,.55)}
 .backpack-panel .bp-slot.filled[class*="bp-mut-"].sel{box-shadow:0 0 0 3px var(--cyan),0 10px 24px rgba(0,0,0,.55)}
 .backpack-panel .bp-slot .bps-plus{font-size:28px;color:var(--muted2)}
@@ -2442,7 +2453,7 @@ body.on-tower #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
 
 @keyframes exDark{0%{filter:brightness(0)}28%{filter:brightness(0)}52%{filter:brightness(3.4)}100%{filter:brightness(1)}}
 
-@keyframes holoSheen{0%{background-position:180% 0}55%,100%{background-position:-70% 0}}
+@keyframes holoSheen{from{background-position:125% 0}to{background-position:-25% 0}}
 
 @keyframes exFoil{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 
