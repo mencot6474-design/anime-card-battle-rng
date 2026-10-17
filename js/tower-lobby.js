@@ -659,8 +659,10 @@ function renderLobby(){
     <div class="hub-mid">
     <div class="seam"></div>
     <div class="stage-eyebrow">ACTIVE CARD</div>
+    <div class="stage-center">
     <div class="hub-pet-slot" role="group" aria-label="Pet companion">${lobbyPetHtml()}</div>
     <div class="card-float">${hubCardHtml(eq,' id="hubCard"')}</div>
+    </div>
     <div class="stage-hint"><kbd>KLIK</kbd> UNTUK BUKA BACKPACK</div>
     </div>
     <div class="hub-box h-r1 hub-link hub-link-index" id="hubIndex" role="button" title="Buka Katalog Kartu">
