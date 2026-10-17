@@ -3169,4 +3169,7 @@ body.battle-full .fighter.me,body.battle-full .fighter.foe{
 .lobby-hub{background:none;border:0;box-shadow:none;border-radius:0}
 .lobby-hub .hub-mid{display:flex;align-items:center;justify-content:center;position:relative;padding:0;overflow:visible}
 .lobby-hub .stage-center{display:flex;flex-direction:row;align-items:center;justify-content:center;width:100%;gap:clamp(8px,1.4vh,14px)}
+/* ===== LOBBY v24: #app IS <main> (satu elemen, id specificity menang) — height:100% resolve ke auto (body height auto)
+   → hub content-sized & nempel atas, kartu kelihatan di sepertiga atas layar. Paksa tinggi viewport di elemen yang sama. */
+body.on-lobby #app{height:calc(100dvh - var(--tbh,64px));min-height:0}
 
