@@ -637,6 +637,16 @@ function initHubTilt(card){
     glare.style.opacity='0';
   });
 }
+/* Loadout kiri kartu: kolom vertikal [ARTEFAK 1][ARTEFAK 2][PET]. Klik → Backpack (tab ARTEFAK/PET). */
+function hubLoadoutHtml(){
+  const slot=(i)=>{const id=(state.artSlots||[])[i];const d=id?ART_DEFS.find(a=>a.id===id):null;return d
+    ? `<div class="loadout-slot art-slot filled" data-bp="artefact" role="button" tabindex="0" title="${d.name} · ${luckTxt(d)}" style="--ac:${d.color}">${artIconHtml(d)}</div>`
+    : `<div class="loadout-slot art-slot" data-bp="artefact" role="button" tabindex="0" title="Slot artefak ${i+1} — kosong"><span class="ls-mark">&#9670;</span><span class="ls-lbl">SLOT ${i+1}</span></div>`;};
+  const pet=lobbyPetHtml()
+    ? `<div class="loadout-slot pet-slot filled" data-bp="pet" role="button" tabindex="0" title="Pet aktif — kelola di Backpack" style="--ac:#8fd3ff">${lobbyPetHtml()}</div>`
+    : `<div class="loadout-slot pet-slot" data-bp="pet" role="button" tabindex="0" title="Slot pet — kosong"><span class="ls-mark">&#128062;</span><span class="ls-lbl">PET</span></div>`;
+  return slot(0)+slot(1)+pet;
+}
 function renderLobby(){
   if(state.battle)return renderBattle();
   const eq=equipped();
@@ -660,7 +670,7 @@ function renderLobby(){
     <div class="seam"></div>
     <div class="stage-eyebrow">ACTIVE CARD</div>
     <div class="stage-center">
-    <div class="hub-pet-slot" role="group" aria-label="Pet companion">${lobbyPetHtml()}</div>
+    <div class="stage-loadout" role="group" aria-label="Loadout artefak & pet">${hubLoadoutHtml()}</div>
     <div class="card-float">${hubCardHtml(eq,' id="hubCard"')}</div>
     </div>
     <div class="stage-hint"><kbd>KLIK</kbd> UNTUK BUKA BACKPACK</div>
@@ -696,6 +706,7 @@ function renderLobby(){
   const ht2=document.getElementById("hubTower");if(ht2)ht2.onclick=()=>{sfx.hit();stopTower();location.hash="#/tower";};
   const mb=document.getElementById("missionBtn");if(mb)mb.onclick=()=>{sfx.hit();openMission();};
   const ms=document.getElementById("missionSub");if(ms){const done=CHAPTERS.reduce((a,c)=>a+chapProgMode(c,state.diff),0),tot=CHAPTERS.reduce((a,c)=>a+c.levels.length,0);ms.textContent=done+"/"+tot+" SELESAI";const ratio=tot?Math.min(100,Math.round(done/tot*100)):0;const meter=document.getElementById("missionMeter"),fill=document.getElementById("missionFill");if(meter){meter.setAttribute("aria-valuemax",String(tot));meter.setAttribute("aria-valuenow",String(done));}if(fill)fill.style.width=ratio+"%";}
+  document.querySelectorAll(".stage-loadout .loadout-slot").forEach(el=>{el.onclick=()=>{sfx.hit();bpSetTab(el.dataset.bp||"pet");const p=document.getElementById("backpackPanel");if(!p||p.style.display!=="flex")toggleBackpack();};});
 }
 
 /* ========== TOGGLE BACKPACK FUNCTION ========== */
