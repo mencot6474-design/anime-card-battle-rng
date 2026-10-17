@@ -640,10 +640,10 @@ h1{font-size:clamp(30px,4.9vw,52px);font-weight:800;letter-spacing:-.01em;line-h
 /* ---------- battle (sama persis card lobby .hub-center) ---------- */
 .fighter{width:100%;max-width:340px;aspect-ratio:3/4;border-radius:20px;border:1px solid var(--line2);background:radial-gradient(120% 85% at 50% 0%,rgba(140,30,45,.10),#FFFFFF);position:relative;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:border-color .15s,transform .15s}
 .f:hover{border-color:var(--cyan);transform:translateY(-2px)}
-.f-banner{width:100%;aspect-ratio:3/4;overflow:hidden}
+.f-banner{position:relative;width:100%;aspect-ratio:3/4;overflow:hidden}
 .f-banner img,.f-banner video{width:100%;height:100%;object-fit:cover;object-position:top}
 .f-banner::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;background:linear-gradient(115deg,transparent 32%,rgba(255,255,255,.22) 46%,rgba(255,255,255,.05) 55%,transparent 70%);background-size:250% 100%;z-index:1}
-.f.shiny .f-banner::after{opacity:1;animation:holoSheen 2.2s ease-in-out infinite}
+.f.shiny .f-banner::after{opacity:1;animation:holoSheen 6s linear infinite}
 .f-name{position:absolute;top:12px;left:12px;z-index:6;font-weight:800;font-size:12px;color:#fff;text-align:left;text-shadow:0 1px 5px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.9);max-width:72%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hc-chance{position:absolute;top:46px;left:12px;z-index:5;font-family:"Barlow Condensed";font-weight:700;font-size:14px;letter-spacing:.05em;color:#fff;text-shadow:0 1px 5px rgba(0,0,0,.85)}
 .f-tag{position:absolute;top:12px;right:12px;z-index:6;font-family:"Barlow Condensed";font-weight:700;font-size:10px;letter-spacing:.16em;padding:2px 8px;border-radius:6px;background:rgba(14,16,19,.85);backdrop-filter:blur(4px)}
@@ -948,7 +948,7 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 .rrc{position:relative;aspect-ratio:1/1;border:2px solid var(--line2);border-radius:10px;overflow:hidden;background:linear-gradient(160deg,#1a1216,#0e0a0c)}
 .rrc-sizer{display:block;width:100%;padding-top:100%}
 .rrc.mut-gold,.rrc.mut-rainbow,.rrc.mut-secret{border-width:0}
-.rrc.shiny::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:.78;background:linear-gradient(115deg,transparent 0%,transparent 45%,rgba(34,211,238,.12) 47%,rgba(125,249,255,.45) 48.5%,rgba(255,255,255,.96) 50%,rgba(255,255,255,.9) 51%,rgba(181,140,255,.55) 52.5%,rgba(255,107,214,.18) 54%,transparent 56%,transparent 100%);background-size:180% 100%;background-position:125% 0;background-repeat:no-repeat;mix-blend-mode:screen;z-index:1;animation:holoSheen 1.8s linear infinite}
+.rrc.shiny::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:.78;background:linear-gradient(115deg,transparent 0%,transparent 45%,rgba(34,211,238,.12) 47%,rgba(125,249,255,.45) 48.5%,rgba(255,255,255,.96) 50%,rgba(255,255,255,.9) 51%,rgba(181,140,255,.55) 52.5%,rgba(255,107,214,.18) 54%,transparent 56%,transparent 100%);background-size:180% 100%;background-position:125% 0;background-repeat:no-repeat;mix-blend-mode:screen;z-index:1;animation:holoSheen 6s linear infinite}
 .rrc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top}
 .rrc-name{position:absolute;left:0;right:0;bottom:0;z-index:1;color:#f4f6f8;font-family:"Barlow Condensed";font-size:11px;font-weight:700;line-height:1.05;padding:12px 3px 3px;background:linear-gradient(transparent,rgba(0,0,0,.6) 45%,rgba(0,0,0,.92));text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rrc-cnt{position:absolute;top:1px;right:4px;z-index:2;color:#fff;font-family:"Barlow Condensed";font-weight:800;font-size:16px;line-height:1;letter-spacing:.02em;text-shadow:0 1px 2px rgba(0,0,0,.95),0 0 5px rgba(0,0,0,.85)}
@@ -1072,8 +1072,8 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 /* holo shimmer halus di permukaan art — khusus kartu SHINY (grid deck,index,lobby,fighter,roll) */
 .tcg-img,.f-banner{overflow:hidden;border-radius:inherit}
 .hub-center .hc-img{border-radius:inherit}
-.tcg-img::after,.hub-center .hc-img::after,.f-banner::after,.deck-slot .ds-art::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;background:linear-gradient(115deg,transparent 0%,transparent 45%,rgba(34,211,238,.12) 47%,rgba(125,249,255,.45) 48.5%,rgba(255,255,255,.96) 50%,rgba(255,255,255,.9) 51%,rgba(181,140,255,.55) 52.5%,rgba(255,107,214,.18) 54%,transparent 56%,transparent 100%);background-size:180% 100%;background-position:125% 0;background-repeat:no-repeat;mix-blend-mode:screen;z-index:1}
-.tcg.shiny .tcg-img::after,.hub-center.shiny .hc-img::after,.f.shiny .f-banner::after,.fighter.shiny .f-banner::after,.deck-slot.shiny .ds-art::after{opacity:.78;animation:holoSheen 1.8s linear infinite}
+.tcg-img::after,.hub-center .hc-img::after,.f-banner::after,.deck-slot .ds-art::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;background:linear-gradient(115deg,transparent 0%,transparent 41%,rgba(34,211,238,0) 44%,rgba(34,211,238,.14) 46%,rgba(125,249,255,.5) 48.5%,rgba(255,255,255,.92) 50%,rgba(222,235,255,.72) 51.5%,rgba(181,140,255,.34) 54%,rgba(181,140,255,.12) 56%,rgba(181,140,255,0) 59%,transparent 62%,transparent 100%);background-size:180% 100%;background-position:160% 0;background-repeat:no-repeat;mix-blend-mode:screen;z-index:1}
+.tcg.shiny .tcg-img::after,.hub-center.shiny .hc-img::after,.f.shiny .f-banner::after,.fighter.shiny .f-banner::after,.deck-slot.shiny .ds-art::after{opacity:.78;animation:holoSheen 6s linear infinite}
 
 /* highlight kartu AKTIF tetap menang dari border/glow tier */
 .tcg.equipped{border-color:rgba(255,90,95,.7)!important;box-shadow:0 0 0 1px rgba(255,90,95,.3),0 8px 22px rgba(255,90,95,.22)!important}
@@ -1083,11 +1083,11 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 .tcg[data-tier="EX"],.idx-card[data-tier="EX"],.hub-center[data-tier="EX"],.deck-slot[data-tier="EX"],.md-card[data-tier="EX"],.bench[data-tier="EX"]{border-color:transparent}
 [data-tier="EX"]::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;pointer-events:none;z-index:8;background:linear-gradient(115deg,#ff4d5e,#ff8fb0,#ffe1e8,#c7f2ff,#4de1ff,#ff4d5e);background-size:250% 250%;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:exFoil 5.5s linear infinite}
 /* glitch: split kromatik merah/cyan sesekali — HANYA permukaan statis (bukan fighter/rc/pm biar gak tabrak animasi battle & reveal) */
-.tcg[data-tier="EX"],.idx-card[data-tier="EX"],.hub-center[data-tier="EX"],.deck-slot[data-tier="EX"],.md-card[data-tier="EX"],.bench[data-tier="EX"]{animation:exGlitch 5s steps(1) infinite}
+
 /* ---------- UR FOIL (setingkat di bawah EX): bingkai es,tanpa api merah ---------- */
 .deck-slot[data-tier="UR"],.md-card[data-tier="UR"]{position:relative}
 [data-tier="UR"]{box-shadow:0 0 16px rgba(47,143,226,.24),0 0 24px rgba(120,205,255,.12)}
-.tcg[data-tier="UR"],.idx-card[data-tier="UR"],.hub-center[data-tier="UR"],.deck-slot[data-tier="UR"],.md-card[data-tier="UR"],.bench[data-tier="UR"]{border-color:transparent;animation:exGlitch 5s steps(1) infinite}
+.tcg[data-tier="UR"],.idx-card[data-tier="UR"],.hub-center[data-tier="UR"],.deck-slot[data-tier="UR"],.md-card[data-tier="UR"],.bench[data-tier="UR"]{border-color:transparent}
 [data-tier="UR"]::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;pointer-events:none;z-index:8;background:linear-gradient(115deg,#2f8fe2,#7fd0ff,#eafaff,#cfe9ff,#2f8fe2);background-size:250% 250%;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:exFoil 5.5s linear infinite}
 /* ---------- MUTASI: kincir = cincin cahaya conic-gradient muter cepet ---------- */
 @property --ga{syntax:"<angle>";inherits:false;initial-value:0deg}
@@ -1453,7 +1453,7 @@ body.battle-full .vs-col .bspeed-btn{font-size:clamp(12px,1.4vw,15px);padding:4p
    + badge ✓ n/8 kanan-atas. Pips & teks passive dibuang — klik kartu = skillPop.
    Border = mutasi tertinggi yg dimiliki; shiny = holo shimmer (aturan di atas). ===== */
 #indexModal .ix-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px}
-#indexModal .ix-cell{position:relative;aspect-ratio:3/4.2;border:2px solid var(--bc,var(--tc,var(--line2)));border-radius:12px;overflow:hidden;background:linear-gradient(160deg,#221a1e,#120e10);cursor:pointer;padding:0;transition:transform .12s,box-shadow .15s;display:block;text-align:left}
+#indexModal .ix-cell{position:relative;aspect-ratio:3/4.2;border:2px solid var(--bc,var(--line2));border-radius:12px;overflow:hidden;background:linear-gradient(160deg,#221a1e,#120e10);cursor:pointer;padding:0;transition:transform .12s,box-shadow .15s;display:block;text-align:left}
 #indexModal .ix-cell:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,.55),0 0 0 1px rgba(125,249,255,.35)}
 #indexModal .ix-cell img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top}
 #indexModal .ix-cell.no-own img{filter:grayscale(1) brightness(.55)}
@@ -1465,11 +1465,11 @@ body.battle-full .vs-col .bspeed-btn{font-size:clamp(12px,1.4vw,15px);padding:4p
 #indexModal .ix-cell.m-rainbow{border-color:transparent;background:linear-gradient(160deg,#221a1e,#120e10) padding-box,linear-gradient(160deg,#FF6B81,#FFB347,#FFE66D,#6BE08A,#7DF9FF,#B98CFF,#FF6BD6) border-box;box-shadow:0 0 14px rgba(181,140,255,.4),0 0 4px rgba(125,249,255,.55),0 0 4px rgba(255,107,214,.45),inset 0 0 0 1px rgba(181,140,255,.4)}
 /* holo shimmer — kartu dgn minimal 1 varian shiny owned */
 #indexModal .ix-cell::after{content:"";position:absolute;inset:0;border-radius:inherit;z-index:2;pointer-events:none;opacity:0;background:linear-gradient(115deg,transparent 0%,transparent 45%,rgba(34,211,238,.12) 47%,rgba(125,249,255,.45) 48.5%,rgba(255,255,255,.96) 50%,rgba(255,255,255,.9) 51%,rgba(181,140,255,.55) 52.5%,rgba(255,107,214,.18) 54%,transparent 56%,transparent 100%);background-size:180% 100%;background-position:125% 0;background-repeat:no-repeat;mix-blend-mode:screen}
-#indexModal .ix-cell.shiny::after{opacity:.78;animation:holoSheen 1.8s linear infinite}
+#indexModal .ix-cell.shiny::after{opacity:.78;animation:holoSheen 6s linear infinite}
 #indexModal .ixc-stack{position:absolute;top:8px;left:10px;right:54px;z-index:3;display:flex;flex-direction:column;align-items:flex-start;gap:7px;pointer-events:none}
-#indexModal .ixc-name{position:static;padding:0;background:none;text-align:left;max-width:100%;font-family:"Barlow Condensed";font-size:15px;font-weight:800;letter-spacing:.03em;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#F4F7FA;pointer-events:none;transform:skewX(-4deg);text-shadow:1px 1px 0 #0b0e14,2px 2px 0 #0b0e14,2px 4px 8px rgba(0,0,0,.75),0 0 22px color-mix(in srgb,var(--tc,#2F8FE2) 55%,transparent)}
-#indexModal .ixc-name.ixc-shine{color:transparent;-webkit-text-stroke:.6px rgba(255,255,255,.5);text-shadow:0 0 6px rgba(150,200,255,.25);background:linear-gradient(100deg,#aeb9c8 0%,#aeb9c8 40%,#ffffff 50%,#aeb9c8 60%,#aeb9c8 100%);background-size:250% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:hcNameShine 2.8s ease-in-out infinite alternate}
-#indexModal .ixc-chance{position:relative;z-index:3;font-family:"Barlow Condensed";font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--tc,#9AA6B2);background:rgba(6,9,14,.88);border:1px solid currentColor;border-radius:6px;padding:1.5px 7px;line-height:1.3;white-space:nowrap;pointer-events:none;transform:skewX(-4deg);box-shadow:0 4px 10px rgba(0,0,0,.6);text-shadow:0 0 8px color-mix(in srgb,currentColor 70%,transparent)}
+#indexModal .ixc-name{position:static;display:block;padding:0;background:none;text-align:left;max-width:100%;font-weight:800;font-size:12px;color:#fff;text-shadow:0 1px 5px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+#indexModal .ixc-name.ixc-shine{color:transparent;-webkit-text-stroke:.6px var(--sh-edge,rgba(255,255,255,.5));text-shadow:0 0 6px var(--sh-glow,rgba(150,200,255,.25));background:linear-gradient(100deg,var(--sh-base,#aeb9c8) 0%,var(--sh-base,#aeb9c8) 40%,#fff 50%,var(--sh-base,#aeb9c8) 60%,var(--sh-base,#aeb9c8) 100%);background-size:250% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:hcNameShine 2.8s ease-in-out infinite alternate}
+#indexModal .ixc-chance{position:relative;z-index:3;font-family:"Barlow Condensed";font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--tc,#9AA6B2);background:rgba(6,9,14,.88);border:1px solid currentColor;border-radius:6px;padding:1.5px 7px;line-height:1.3;white-space:nowrap;pointer-events:none;transform:skewX(-4deg);box-shadow:0 4px 10px rgba(0,0,0,.6);text-shadow:none}
 #indexModal .ixc-own{position:absolute;top:8px;right:8px;z-index:4;display:inline-flex;align-items:center;gap:3px;font-family:"Barlow Condensed";font-size:10px;font-weight:800;letter-spacing:.04em;color:#6BE08A;background:rgba(10,20,12,.85);border:1px solid rgba(107,224,138,.55);border-radius:999px;padding:1.5px 7px;line-height:1.3;pointer-events:none;box-shadow:0 4px 10px rgba(0,0,0,.5)}
 #indexModal .ixc-own:not(.on){color:var(--muted2);border-color:var(--line2)}
 .ix-empty{grid-column:1/-1;text-align:center;padding:34px 10px;font-family:"Barlow Condensed";font-size:15px;letter-spacing:.06em;color:var(--muted2)}
@@ -2453,17 +2453,17 @@ body.on-tower #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
 
 @keyframes exDark{0%{filter:brightness(0)}28%{filter:brightness(0)}52%{filter:brightness(3.4)}100%{filter:brightness(1)}}
 
-@keyframes holoSheen{from{background-position:125% 0}to{background-position:-25% 0}}
+@keyframes holoSheen{from{background-position:160% 0}to{background-position:-60% 0}}
 
 @keyframes exFoil{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 
-@keyframes exGlitch{0%,90%,100%{filter:none}91%{filter:drop-shadow(-2px 0 rgba(255,0,80,.75)) drop-shadow(2px 0 rgba(0,235,255,.75))}93%{filter:none}95%{filter:drop-shadow(2px 0 rgba(255,0,80,.6)) drop-shadow(-2px 0 rgba(0,235,255,.6))}97%{filter:none}}
+
 
 @keyframes gspin{to{--ga:360deg}}
 
 @keyframes cardBob{0%,100%{transform:translateY(-6px)}50%{transform:translateY(8px)}}
 
-@keyframes hcNameShine{from{background-position:0% 50%}to{background-position:-250% 50%}}
+@keyframes hcNameShine{from{background-position:100% 50%}to{background-position:0% 50%}}
 
 @keyframes rpSpin{to{transform:translateX(-50%) rotate(360deg)}}
 
@@ -2780,3 +2780,391 @@ body.on-tower #topbar .nav-btn:hover{background:rgba(255,255,255,.1)}
   .lobby-hub .h-mission .tile-action{display:none}
 }
 
+/* VIEWPORT-FIT LOBBY: give the hero its own stage and keep the pet inside it. */
+body.on-lobby main{
+  width:100%;max-width:none;height:calc(100vh - 64px);height:calc(100dvh - var(--tbh,64px));min-height:0;margin:0;
+  padding:clamp(4px,1vh,10px) clamp(10px,1.6vw,24px) 92px
+}
+body.on-lobby #app{height:100%;min-height:0}
+.lobby-hub{
+  width:100%;max-width:none;height:100%;min-height:0;margin:0;
+  grid-template-columns:minmax(0,1.65fr) minmax(150px,.85fr) minmax(150px,.85fr);
+  grid-template-rows:auto minmax(0,1fr) minmax(0,1fr) minmax(72px,auto);
+  gap:clamp(8px,1.2vh,13px) clamp(10px,1.2vw,18px);
+  padding:clamp(10px,1.5vh,18px) clamp(12px,1.6vw,24px);border-radius:22px
+}
+.lobby-hub .lobby-heading{grid-column:1/-1;grid-row:1;padding:0 4px 8px}
+.lobby-hub .hub-mid{
+  grid-column:1;grid-row:2/span 2;justify-self:stretch;align-self:stretch;max-width:none;min-width:0;
+  display:flex;align-items:center;justify-content:center;padding:clamp(14px,1.8vh,22px);overflow:visible
+}
+.lobby-hub .h-l1{grid-column:2;grid-row:2}
+.lobby-hub .h-l2{grid-column:2;grid-row:3}
+.lobby-hub .h-r1{grid-column:3;grid-row:2}
+.lobby-hub .h-r2{grid-column:3;grid-row:3}
+.lobby-hub .h-mission{grid-column:1/-1;grid-row:4}
+.lobby-hub .hub-mid .seam{display:none}
+.lobby-hub .stage-eyebrow{position:absolute;top:clamp(12px,1.8vh,20px);left:50%;align-self:auto;transform:translateX(-50%);z-index:7;white-space:nowrap}
+.lobby-hub .stage-hint{position:absolute;left:50%;bottom:clamp(10px,1.6vh,18px);transform:translateX(-50%);z-index:7;white-space:nowrap}
+.lobby-hub .card-float{width:min(100%,38vh,420px);margin:0 0 0 clamp(40px,5vw,90px)}
+.lobby-hub .lobby-pet{left:clamp(12px,1.5vw,24px);right:auto;bottom:clamp(24px,4vh,42px);width:clamp(72px,10vh,112px);z-index:4}
+@media(max-width:1100px) and (min-width:721px){
+  .lobby-hub{grid-template-columns:minmax(0,1.5fr) minmax(0,.85fr) minmax(0,.85fr)}
+  .lobby-hub .card-float{width:min(100%,36vh,360px);margin-left:clamp(80px,11vw,126px)}
+  .lobby-hub .lobby-pet{left:8px;width:clamp(64px,9vh,78px)}
+}
+@media(max-width:720px){
+  body.on-lobby main{height:auto;min-height:calc(100dvh - var(--tbh,64px));padding:8px 10px 96px;overflow:visible}
+  body.on-lobby #app{height:auto;min-height:0}
+  .lobby-hub{height:auto;min-height:0;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto auto auto auto auto;gap:9px;margin:0;padding:12px;border-radius:20px}
+  .lobby-hub .lobby-heading{grid-column:1/-1;grid-row:1;padding:0 2px 10px}
+  .lobby-hub .hub-mid{grid-column:1/-1;grid-row:2;min-height:clamp(360px,45vh,400px);padding:12px 8px}
+  .lobby-hub .h-l1{grid-column:1;grid-row:3}
+  .lobby-hub .h-r1{grid-column:2;grid-row:3}
+  .lobby-hub .h-l2{grid-column:1;grid-row:4}
+  .lobby-hub .h-r2{grid-column:2;grid-row:4}
+  .lobby-hub .h-mission{grid-column:1/-1;grid-row:5}
+  .lobby-hub .stage-eyebrow{top:10px}
+  .lobby-hub .stage-hint{bottom:10px;font-size:9px}
+  .lobby-hub .card-float{width:min(100%,58vw,270px);margin-left:clamp(36px,8vw,54px)}
+  .lobby-hub .lobby-pet{left:3px;right:auto;bottom:24px;width:clamp(42px,12vw,48px)}
+  .lobby-hub .hub-box.hub-link:not(.h-mission){min-height:68px;padding:8px 10px;grid-template-rows:auto minmax(0,1fr) auto}
+  .lobby-hub .hub-box.hub-link:not(.h-mission) .tile-category{display:none}
+  .lobby-hub .hub-box.hub-link:not(.h-mission) .tile-number{font-size:12px}
+  .lobby-hub .hub-box.hub-link:not(.h-mission) .tile-art{right:-8px;width:72px;opacity:.15}
+  .lobby-hub .hub-box.hub-link:not(.h-mission) .tile-copy{max-width:82%;align-self:center;padding:0}
+  .lobby-hub .hub-box.hub-link:not(.h-mission) .tile-copy .hb-lbl{font-size:12px;letter-spacing:.09em}
+  .lobby-hub .hub-box.hub-link:not(.h-mission) .tile-copy .hb-meta,.lobby-hub .hub-box.hub-link:not(.h-mission) .tile-action{display:none}
+  .lobby-hub .hub-box.h-mission.hub-link{grid-template-columns:minmax(0,1fr) minmax(78px,92px);grid-template-rows:auto minmax(0,1fr);min-height:64px;padding:8px 10px;column-gap:8px}
+  .lobby-hub .h-mission .tile-index{grid-column:1;grid-row:1}
+  .lobby-hub .h-mission .tile-copy{grid-column:1;grid-row:2;max-width:100%;align-self:end;padding:0}
+  .lobby-hub .h-mission .tile-copy .hb-meta,.lobby-hub .h-mission .tile-action,.lobby-hub .h-mission .mission-progress-label{display:none}
+  .lobby-hub .h-mission .tile-art{left:auto;right:34%;width:70px;opacity:.1}
+  .lobby-hub .h-mission .mission-progress{grid-column:2;grid-row:1/3;grid-template-columns:1fr;gap:5px;align-self:center}
+  .lobby-hub .h-mission .mission-meter{grid-column:1;grid-row:1}
+  .lobby-hub .h-mission .mb-sub{grid-column:1;grid-row:2;font-size:8px}
+}
+@media(max-height:600px) and (orientation:landscape) and (min-width:721px){
+  body.on-lobby main{padding:2px 8px 78px}
+  .lobby-hub{grid-template-columns:minmax(0,1.5fr) minmax(0,.85fr) minmax(0,.85fr);grid-template-rows:minmax(0,1fr) minmax(0,1fr) 38px;gap:5px 8px;padding:4px 6px;border-radius:14px}
+  .lobby-hub .lobby-heading{display:none}
+  .lobby-hub .hub-mid{grid-column:1;grid-row:1/span 2;padding:6px;border-radius:16px}
+  .lobby-hub .h-l1{grid-column:2;grid-row:1}
+  .lobby-hub .h-l2{grid-column:2;grid-row:2}
+  .lobby-hub .h-r1{grid-column:3;grid-row:1}
+  .lobby-hub .h-r2{grid-column:3;grid-row:2}
+  .lobby-hub .h-mission{grid-column:1/-1;grid-row:3;min-height:36px;padding:4px 10px;border-radius:10px}
+  .lobby-hub .stage-eyebrow{top:4px;font-size:8px}
+  .lobby-hub .stage-hint{display:none}
+  .lobby-hub .card-float{width:min(100%,32vh,260px);margin-left:clamp(44px,10vw,90px)}
+  .lobby-hub .lobby-pet{left:6px;bottom:6px;width:clamp(50px,12vh,64px)}
+  .lobby-hub .hub-box.hub-link:not(.h-mission){min-height:0;padding:6px 8px;grid-template-rows:minmax(0,1fr)}
+  .lobby-hub .hub-box.hub-link:not(.h-mission) .tile-index,.lobby-hub .hub-box.hub-link:not(.h-mission) .tile-action{display:none}
+  .lobby-hub .hub-box.hub-link:not(.h-mission) .tile-art{right:-6px;width:66px;opacity:.12}
+  .lobby-hub .hub-box.hub-link:not(.h-mission) .tile-copy{grid-row:1;max-width:84%;align-self:center;padding:0}
+  .lobby-hub .hub-box.hub-link:not(.h-mission) .tile-copy .hb-lbl{font-size:10px}
+  .lobby-hub .hub-box.hub-link:not(.h-mission) .tile-copy .hb-meta{display:none}
+  .lobby-hub .hub-box.h-mission.hub-link{grid-template-columns:minmax(0,1fr) minmax(100px,140px);grid-template-rows:1fr;min-height:36px;padding:3px 9px;column-gap:10px}
+  .lobby-hub .h-mission .tile-index,.lobby-hub .h-mission .tile-copy .hb-meta,.lobby-hub .h-mission .mission-progress-label,.lobby-hub .h-mission .tile-action{display:none}
+  .lobby-hub .h-mission .tile-copy{grid-column:1;grid-row:1;max-width:100%;align-self:center;padding:0}
+  .lobby-hub .h-mission .tile-copy .hb-lbl{font-size:10px}
+  .lobby-hub .h-mission .mission-progress{grid-column:2;grid-row:1;grid-template-columns:1fr;gap:3px}
+  .lobby-hub .h-mission .mission-meter{grid-column:1;grid-row:1}
+  .lobby-hub .h-mission .mb-sub{grid-column:1;grid-row:2;font-size:7px}
+}
+
+/* Compact landscape preview / small laptop panel (e.g. 694 × 665): hero left, clean action rail right. */
+@media(max-width:720px) and (orientation:landscape) and (min-height:560px){
+  body.on-lobby main{height:calc(100vh - 64px);height:calc(100dvh - var(--tbh,64px));min-height:0;padding:4px 8px 82px;overflow:visible}
+  body.on-lobby #app{height:100%;min-height:0}
+  .lobby-hub{height:100%;min-height:0;grid-template-columns:minmax(0,1.12fr) minmax(170px,.88fr);grid-template-rows:auto repeat(4,minmax(0,1fr)) minmax(52px,auto);gap:6px 8px;margin:0;padding:8px;border-radius:18px}
+  .lobby-hub .lobby-heading{grid-column:1/-1;grid-row:1;display:flex;padding:0 3px 6px}
+  .lobby-hub .lobby-heading h1{font-size:22px}
+  .lobby-hub .lobby-headnote{display:none}
+  .lobby-hub .hub-mid{grid-column:1;grid-row:2/span 4;min-height:0;padding:8px;border-radius:18px}
+  .lobby-hub .h-l1{grid-column:2;grid-row:2}
+  .lobby-hub .h-l2{grid-column:2;grid-row:3}
+  .lobby-hub .h-r1{grid-column:2;grid-row:4}
+  .lobby-hub .h-r2{grid-column:2;grid-row:5}
+  .lobby-hub .h-mission{grid-column:1/-1;grid-row:6}
+  .lobby-hub .stage-eyebrow{top:8px;font-size:9px}
+  .lobby-hub .stage-hint{bottom:8px;font-size:8px}
+  .lobby-hub .card-float{width:min(100%,32vh,280px);margin-left:clamp(42px,8vw,60px)}
+  .lobby-hub .lobby-pet{left:6px;right:auto;bottom:20px;width:clamp(48px,9vh,60px)}
+  .lobby-hub .hub-box.hub-link:not(.h-mission){min-height:0;padding:6px 10px;border-radius:12px 4px 12px 4px;grid-template-rows:auto minmax(0,1fr) auto}
+  .lobby-hub .hub-box.hub-link:not(.h-mission) .tile-category{display:none}
+  .lobby-hub .hub-box.hub-link:not(.h-mission) .tile-number{font-size:11px}
+  .lobby-hub .hub-box.hub-link:not(.h-mission) .tile-art{right:-8px;width:68px;opacity:.13}
+  .lobby-hub .hub-box.hub-link:not(.h-mission) .tile-copy{max-width:82%;align-self:center;padding:0}
+  .lobby-hub .hub-box.hub-link:not(.h-mission) .tile-copy .hb-lbl{font-size:12px;letter-spacing:.08em}
+  .lobby-hub .hub-box.hub-link:not(.h-mission) .tile-copy .hb-meta,.lobby-hub .hub-box.hub-link:not(.h-mission) .tile-action{display:none}
+  .lobby-hub .hub-box.h-mission.hub-link{grid-template-columns:minmax(0,1fr) minmax(96px,135px);grid-template-rows:1fr;min-height:52px;padding:6px 12px;column-gap:12px;border-radius:12px 18px 6px 18px}
+  .lobby-hub .h-mission .tile-index,.lobby-hub .h-mission .tile-copy .hb-meta,.lobby-hub .h-mission .mission-progress-label,.lobby-hub .h-mission .tile-action{display:none}
+  .lobby-hub .h-mission .tile-copy{grid-column:1;grid-row:1;max-width:100%;align-self:center;padding:0}
+  .lobby-hub .h-mission .tile-copy .hb-lbl{font-size:12px}
+  .lobby-hub .h-mission .tile-art{left:auto;right:36%;width:64px;opacity:.1}
+  .lobby-hub .h-mission .mission-progress{grid-column:2;grid-row:1;grid-template-columns:1fr;gap:4px;align-self:center}
+  .lobby-hub .h-mission .mission-meter{grid-column:1;grid-row:1}
+  .lobby-hub .h-mission .mb-sub{grid-column:1;grid-row:2;font-size:8px}
+}
+
+/* Remove only the empty frame behind the hero card; keep the action tiles outlined. */
+.lobby-hub .stage-eyebrow,.lobby-hub .stage-hint{display:none!important}
+.lobby-hub .hub-mid{border:0;background:radial-gradient(ellipse at 50% 44%,rgba(194,158,97,.14),transparent 66%),linear-gradient(165deg,rgba(27,27,25,.76),rgba(13,14,15,.86));box-shadow:none}
+
+/* Add a real breathing band around the hero at the compact 694×665 live-preview viewport. */
+@media(max-width:720px) and (orientation:landscape) and (min-height:560px){
+  body.on-lobby main{padding-bottom:78px}
+  .lobby-hub{padding:4px;gap:4px 8px;grid-template-rows:auto repeat(4,minmax(0,1fr)) minmax(44px,auto)}
+  .lobby-hub .lobby-heading{padding-bottom:2px}
+  .lobby-heading-copy{gap:2px}
+  .lobby-kicker{font-size:8px}
+  .lobby-heading h1{font-size:19px}
+  .lobby-hub .hub-mid{padding:8px 8px 24px}
+  .lobby-hub .card-float{position:relative;top:12px;width:min(100%,34vh,280px);margin-top:8px;margin-bottom:8px;z-index:3}
+  .lobby-hub .lobby-pet{bottom:24px;width:clamp(56px,10vh,68px);z-index:4}
+  .lobby-hub .hub-box.h-mission.hub-link{min-height:44px;padding:4px 10px}
+}
+
+/* Pet bay below the hero; mission takes the final right-rail tile, not a full-width bar. */
+.lobby-hub .hub-pet-slot{
+  z-index:5;grid-column:1;grid-row:2/span 2;justify-self:start;align-self:end;position:relative;
+  display:grid;place-items:center;width:clamp(68px,9vh,84px);height:clamp(68px,9vh,84px);
+  margin:0 0 clamp(24px,4vh,42px) clamp(10px,1.5vw,20px);padding:4px;
+  border:1px dashed rgba(199,168,109,.4);border-radius:16px;
+  background:radial-gradient(ellipse at 50% 15%,rgba(199,168,109,.12),transparent 70%),rgba(10,12,13,.68);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 8px 18px rgba(0,0,0,.2)
+}
+.lobby-hub .hub-pet-slot::before{
+  content:"PET COMPANION";position:absolute;top:-7px;left:50%;transform:translateX(-50%);z-index:3;
+  padding:2px 6px;border:1px solid rgba(199,168,109,.3);border-radius:999px;background:#111211;
+  font:700 7px/1 "Barlow Condensed";letter-spacing:.12em;color:#c7a86d;white-space:nowrap
+}
+.lobby-hub .hub-pet-slot .lobby-pet{
+  position:relative;inset:auto;left:auto;right:auto;top:auto;bottom:auto;width:100%;height:100%;margin:0;z-index:1
+}
+.lobby-hub .hub-pet-empty{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;height:100%;padding:6px;color:#b8aa8b}
+.lobby-hub .pet-slot-mark{font-size:22px;line-height:1;opacity:.72}
+.lobby-hub .pet-slot-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
+.lobby-hub .pet-slot-copy b{font:800 10px/1 "Barlow Condensed";letter-spacing:.12em;color:#e4d3ad}
+.lobby-hub .pet-slot-copy small{font:600 7px/1.2 "Barlow Condensed";letter-spacing:.08em;color:#969082}
+@media(max-width:720px){
+  .lobby-hub .hub-pet-slot{grid-column:1/-1;grid-row:2;justify-self:center;align-self:end;width:clamp(88px,22vw,108px);height:clamp(72px,18vw,88px);margin:0 0 18px}
+}
+@media(max-width:720px) and (orientation:landscape) and (min-height:560px){
+  .lobby-hub{grid-template-rows:auto repeat(5,minmax(0,1fr))}
+  .lobby-hub .hub-mid{grid-column:1;grid-row:2/span 4}
+  .lobby-hub .hub-pet-slot{grid-column:1;grid-row:6;justify-self:stretch;align-self:stretch;width:auto;height:auto;min-height:0;margin:0;padding:12px 8px 2px}
+  .lobby-hub .hub-pet-slot .lobby-pet{width:clamp(56px,9vh,64px);height:clamp(56px,9vh,64px);align-self:end}
+  .lobby-hub .hub-pet-empty{align-items:center;justify-content:center}
+  .lobby-hub .hub-box.h-mission.hub-link{grid-column:2;grid-row:6;min-height:0;height:100%;padding:8px 10px}
+}
+
+/* Keep equipped pets clipped to the bay's content box; only the empty state shows placeholder copy. */
+@media(max-width:720px) and (orientation:landscape) and (min-height:560px){
+  .lobby-hub .hub-pet-slot{display:flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:0;min-height:0;padding:4px 8px;border:1px solid rgba(199,168,109,.22);background:radial-gradient(ellipse at 50% 24%,rgba(199,168,109,.12),transparent 72%),rgba(10,12,13,.34);box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}
+  .lobby-hub .hub-pet-slot::before{display:block}
+  .lobby-hub .hub-pet-slot>.lobby-pet{position:relative;inset:auto;left:auto;right:auto;top:auto;bottom:auto;display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:58px;height:58px;max-width:100%;max-height:100%;margin:0;z-index:1;animation:none;transform:none;filter:none}
+  .lobby-hub .hub-pet-slot>.lobby-pet img{display:block;width:auto;height:auto;max-width:100%;max-height:58px;object-fit:contain}
+  .lobby-hub .hub-pet-slot>.lobby-pet .lp-eb{font-size:28px;line-height:1}
+  .lobby-hub .hub-pet-slot .hub-pet-empty{width:100%;height:100%;align-items:center;justify-content:center}
+}
+
+/* Battle cards: replace the tier halo with the current slim lobby frame and name treatment. */
+.fighter{border:1px solid var(--line2);box-shadow:0 18px 38px rgba(0,0,0,.42)}
+body.battle-full .fighter.me,body.battle-full .fighter.foe{
+  border:1px solid color-mix(in srgb,var(--ring,#8a9) 42%,rgba(255,255,255,.16));
+  box-shadow:0 18px 38px rgba(0,0,0,.42)
+}
+.fighter.ko{box-shadow:none}
+.fighter.me[data-char="CH_EX_JINWOO"]:not(.ko){box-shadow:0 18px 38px rgba(0,0,0,.42)!important}
+.fighter.shiny.mut-gold{--battle-mut-border-gradient:linear-gradient(90deg,#22d3ee 0%,#59cdd9 18%,#7bcfce 30%,#a7d1b5 45%,#c7d0a1 60%,#e0bc6e 78%,#c99a45 100%)}
+.fighter.shiny.mut-rainbow{--battle-mut-border-gradient:linear-gradient(90deg,#ff5a78 0%,#ff9c55 13%,#ffe66d 26%,#6be08a 39%,#22d3ee 52%,#5ac8fa 64%,#7a8cff 76%,#b58cff 88%,#ff6bd6 100%)}
+.fighter.shiny.mut-secret{--battle-mut-border-gradient:linear-gradient(90deg,#22d3ee 0%,#57cddc 18%,#66c7e0 28%,#775cd7 45%,#9333ea 62%,#a855f7 78%,#d9bbfa 100%)}
+.fighter.shiny.mut-gold,.fighter.shiny.mut-rainbow,.fighter.shiny.mut-secret{
+  border:2px solid transparent!important;
+  background:linear-gradient(180deg,#1b1418,#0c0a0c) padding-box,var(--battle-mut-border-gradient) border-box;
+  background-size:100% 100%,320% 100%;background-position:0 0,0 0;background-repeat:no-repeat
+}
+.fighter .f-name{
+  top:12px;left:14px;z-index:6;font-family:"Barlow Condensed";font-size:clamp(20px,2.6vh,30px);
+  font-weight:800;line-height:.98;letter-spacing:.03em;transform:skewX(-4deg);max-width:72%;
+  text-shadow:1px 1px 0 #0b0e14,2px 2px 0 #0b0e14,3px 3px 0 #0b0e14,4px 4px 0 #0b0e14,5px 5px 0 #080a0f,6px 6px 0 #080a0f,7px 9px 16px rgba(0,0,0,.9)
+}
+.fighter .f-name.f-name-shine{
+  -webkit-text-stroke:0 transparent;text-shadow:none;
+  filter:drop-shadow(0 1px 5px rgba(0,0,0,.88)) drop-shadow(0 0 6px var(--sh-glow,rgba(150,200,255,.35)))
+}
+
+/* The latest mutation name sweeps and combo frame flow, isolated from fighter hit/tag animations. */
+@property --battle-border-shift{syntax:"<percentage>";inherits:true;initial-value:0%}
+@keyframes battleBorderTravel{to{--battle-border-shift:100%}}
+.battle-grid{--battle-border-shift:0%;animation:battleBorderTravel 3s ease-in-out infinite alternate}
+.battle-grid.hitstop{animation-play-state:paused}
+.fighter.shiny.mut-gold,.fighter.shiny.mut-rainbow,.fighter.shiny.mut-secret{background-position:0 0,var(--battle-border-shift,0%) 0}
+.fighter .f-name.f-mut-gold{color:#E0BC6E}
+.fighter .f-name.f-mut-rainbow{color:#B58CFF}
+.fighter .f-name.f-mut-secret{color:#A855F7}
+.fighter .f-name.f-mut-gold::after{--battle-mut-sweep:linear-gradient(110deg,transparent 0%,transparent 38%,rgba(255,246,217,0) 42%,rgba(255,246,217,.95) 48%,#fff 50%,rgba(226,176,74,.98) 53%,rgba(255,246,217,0) 60%,transparent 100%)}
+.fighter .f-name.f-mut-rainbow::after{--battle-mut-sweep:linear-gradient(110deg,transparent 0%,transparent 38%,rgba(255,111,182,0) 42%,rgba(255,111,182,.95) 47%,#fff 50%,rgba(91,200,250,.95) 53%,rgba(181,140,255,0) 60%,transparent 100%)}
+.fighter .f-name.f-mut-secret::after{--battle-mut-sweep:linear-gradient(110deg,transparent 0%,transparent 38%,rgba(216,180,254,0) 42%,rgba(216,180,254,.98) 48%,#fff 50%,rgba(147,51,234,.98) 53%,rgba(216,180,254,0) 60%,transparent 100%)}
+.fighter .f-name.f-mut-gold::after,.fighter .f-name.f-mut-rainbow::after,.fighter .f-name.f-mut-secret::after{
+  content:attr(data-text);position:absolute;left:0;top:0;z-index:1;white-space:nowrap;font:inherit;line-height:inherit;letter-spacing:inherit;
+  text-shadow:none;-webkit-text-stroke:0 transparent;pointer-events:none;color:transparent;-webkit-text-fill-color:transparent;
+  background:var(--battle-mut-sweep);background-size:300% 100%;background-position:100% 50%;background-repeat:no-repeat;
+  -webkit-background-clip:text;background-clip:text;filter:brightness(1.35);animation:hcMutNameSweep 2s linear infinite alternate
+}
+.fighter .f-name.f-name-shine-gold{background-image:linear-gradient(100deg,#69cfe0 0%,#7bcfce 17%,#a7d1b5 34%,#d5d3a0 52%,#f6dfa6 68%,#d9b765 83%,#c99a45 100%)}
+.fighter .f-name.f-name-shine-rainbow{background-image:linear-gradient(100deg,#ff5a78 0%,#ff9c55 13%,#ffe66d 26%,#6be08a 39%,#4fc9d6 52%,#5ac8fa 64%,#7a8cff 76%,#b58cff 88%,#ff6bd6 100%)}
+.fighter .f-name.f-name-shine-secret{background-image:linear-gradient(100deg,#6b21a8 0%,#7b2fc1 18%,#9651da 36%,#b982f2 54%,#d9bbfa 69%,#bacdec 84%,#66c7e0 100%)}
+
+/* Infinite Tower renders a dedicated .tower-stage; pin the same battle treatment to that path. */
+.battle-grid.tower-stage{--battle-border-shift:0%;animation:battleBorderTravel 3s ease-in-out infinite alternate}
+.battle-grid.tower-stage.hitstop{animation-play-state:paused}
+.battle-grid.tower-stage .fighter.me,.battle-grid.tower-stage .fighter.foe{border:1px solid color-mix(in srgb,var(--ring,#8a9) 42%,rgba(255,255,255,.16));box-shadow:0 18px 38px rgba(0,0,0,.42)}
+.battle-grid.tower-stage .fighter.ko{box-shadow:none}
+.battle-grid.tower-stage .fighter.shiny.mut-gold,.battle-grid.tower-stage .fighter.shiny.mut-rainbow,.battle-grid.tower-stage .fighter.shiny.mut-secret{border:2px solid transparent!important;background:linear-gradient(180deg,#1b1418,#0c0a0c) padding-box,var(--battle-mut-border-gradient) border-box;background-size:100% 100%,320% 100%;background-position:0 0,var(--battle-border-shift,0%) 0;background-repeat:no-repeat}
+.battle-grid.tower-stage .fighter .f-name{font-family:"Barlow Condensed";font-size:clamp(20px,2.6vh,30px);font-weight:800;line-height:.98;letter-spacing:.03em;transform:skewX(-4deg);text-shadow:1px 1px 0 #0b0e14,2px 2px 0 #0b0e14,3px 3px 0 #0b0e14,4px 4px 0 #0b0e14,5px 5px 0 #080a0f,6px 6px 0 #080a0f,7px 9px 16px rgba(0,0,0,.9)}
+.battle-grid.tower-stage .fighter .f-name.f-name-shine{
+  animation:hcNameShine 2.8s ease-in-out infinite alternate;color:transparent!important;-webkit-text-fill-color:transparent!important;
+  -webkit-text-stroke:0 transparent;text-shadow:none!important;
+  filter:drop-shadow(0 1px 4px rgba(0,0,0,.62)) drop-shadow(0 0 5px var(--sh-glow,rgba(150,200,255,.35)))
+}
+.battle-grid.tower-stage .fighter .f-name.f-mut-gold::after,.battle-grid.tower-stage .fighter .f-name.f-mut-rainbow::after,.battle-grid.tower-stage .fighter .f-name.f-mut-secret::after{animation:hcMutNameSweep 2s linear infinite alternate}
+
+/* One shared flowing border for Shiny + mutation: suppress the old tier ring/outline. */
+.fighter.shiny.mut-gold,.fighter.shiny.mut-rainbow,.fighter.shiny.mut-secret,
+.battle-grid.tower-stage .fighter.shiny.mut-gold,.battle-grid.tower-stage .fighter.shiny.mut-rainbow,.battle-grid.tower-stage .fighter.shiny.mut-secret{
+  border:2px solid transparent!important;border-color:transparent!important;outline:none!important;box-shadow:none!important;
+  background:linear-gradient(180deg,#1b1418,#0c0a0c) padding-box,var(--battle-mut-border-gradient) border-box!important;
+  background-origin:padding-box,border-box!important;background-clip:padding-box,border-box!important;
+  background-size:100% 100%,320% 100%;background-position:0 0,var(--battle-border-shift,0%) 0;background-repeat:no-repeat
+}
+
+/* EX/UR foil uses ::before as its own ring; remove it on combo cards to prevent double outlines. */
+.fighter.shiny.mut-gold::before,.fighter.shiny.mut-rainbow::before,.fighter.shiny.mut-secret::before{content:none!important;display:none!important;animation:none!important;background:none!important}
+.hub-center.shiny.mut-gold::before,.hub-center.shiny.mut-rainbow::before,.hub-center.shiny.mut-secret::before{content:none!important;display:none!important;animation:none!important;background:none!important}
+
+/* Retire EX/UR tier frames on non-mutation cards across every surface. */
+[data-tier="EX"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret)::before,
+[data-tier="UR"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret)::before{content:none!important;display:none!important;animation:none!important;background:none!important}
+[data-tier="EX"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),
+[data-tier="UR"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret){box-shadow:none!important}
+.tcg[data-tier="EX"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),.tcg[data-tier="UR"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),
+.idx-card[data-tier="EX"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),.idx-card[data-tier="UR"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),
+.hub-center[data-tier="EX"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),.hub-center[data-tier="UR"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),
+.deck-slot[data-tier="EX"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),.deck-slot[data-tier="UR"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),
+.md-card[data-tier="EX"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),.md-card[data-tier="UR"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),
+.bench[data-tier="EX"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),.bench[data-tier="UR"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret){border-color:var(--line2)!important}
+.fighter[data-tier="EX"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),.fighter[data-tier="UR"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret){border-color:var(--line2)!important;box-shadow:0 18px 38px rgba(0,0,0,.42)!important}
+
+/* Rarity stays as gameplay data; remove tier-colored frames, glows and labels everywhere. Mutation frames and the separate BOSS marker remain. */
+.tcg[data-tier]:not(.equipped):not(.mut-gold):not(.mut-rainbow):not(.mut-secret),
+.idx-card[data-tier]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),
+.deck-slot[data-tier]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),
+.hub-center[data-tier]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),
+.md-card[data-tier]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),
+.bench[data-tier]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret){border-color:var(--line2)!important}
+.tcg[data-tier="SSR"]:not(.equipped):not(.mut-gold):not(.mut-rainbow):not(.mut-secret),
+.tcg[data-tier="UR"]:not(.equipped):not(.mut-gold):not(.mut-rainbow):not(.mut-secret),
+.tcg[data-tier="EX"]:not(.equipped):not(.mut-gold):not(.mut-rainbow):not(.mut-secret){box-shadow:0 8px 22px rgba(0,0,0,.28)!important}
+.idx-card[data-tier="SSR"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),
+.idx-card[data-tier="UR"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),
+.idx-card[data-tier="EX"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),
+.hub-center[data-tier="SSR"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),
+.hub-center[data-tier="UR"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),
+.hub-center[data-tier="EX"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret){box-shadow:none!important}
+.md-card[data-tier]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret){box-shadow:0 24px 60px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,255,255,.05)!important}
+.tcg.equipped:not(.mut-gold):not(.mut-rainbow):not(.mut-secret){border-color:rgba(255,90,95,.7)!important;box-shadow:0 0 0 1px rgba(255,90,95,.3),0 8px 22px rgba(255,90,95,.22)!important}
+.tcg[data-tier] .tcg-info,.idx-card[data-tier] .idx-body{box-shadow:none!important}
+.bench-sq:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),.foe-sq:not(.mut-gold):not(.mut-rainbow):not(.mut-secret){border-color:var(--line2)!important}
+#indexModal .ix-cell:not(.m-gold):not(.m-rainbow):not(.m-secret){border-color:var(--bc,var(--line2))!important}
+#indexModal .ix-cell:not(.m-gold):not(.m-rainbow):not(.m-secret) .ixc-chance:not([style]){color:#9AA6B2!important;border-color:#9AA6B2!important;text-shadow:none!important}
+.hub-center[data-tier]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret) .hc-chance{color:#F4F7FA!important;border-color:var(--line2)!important;text-shadow:none!important}
+.lobby-hub #hubCard:not(.mut-gold):not(.mut-rainbow):not(.mut-secret)::before{content:none!important;display:none!important;animation:none!important;background:none!important;box-shadow:none!important}
+.tw-fcard:not(.bossx){border-color:var(--line2)!important;box-shadow:0 14px 30px rgba(0,0,0,.6)!important}
+.backpack-panel .bp-slot.filled:not([class*="bp-mut-"]){border-color:var(--line2)!important}
+.backpack-panel .bp-tile:not([class*="bp-mut-"]){border-color:var(--line2)!important}
+.rd-pick .bp-tile{border-color:var(--line2)!important;box-shadow:0 10px 22px rgba(0,0,0,.5)!important}
+.tier-badge,.rbt-tier{display:none!important}
+.hub-center:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),.lobby-hub #hubCard:not(.mut-gold):not(.mut-rainbow):not(.mut-secret){border-color:var(--line2)!important}
+.fighter[data-tier]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret):not(.shadow-fighter){border-color:var(--line2)!important;box-shadow:0 18px 38px rgba(0,0,0,.42)!important}
+
+/* Index names use the same current mutation/shiny finish as the lobby and battle cards. */
+#indexModal .ixc-name.ixc-mut-name{position:relative;display:inline-block}
+#indexModal .ixc-name.ixc-mut-name-gold{color:#E0BC6E}
+#indexModal .ixc-name.ixc-mut-name-rainbow{color:#B58CFF}
+#indexModal .ixc-name.ixc-mut-name-secret{color:#A855F7}
+#indexModal .ixc-name.ixc-mut-name-gold::after{--ix-mut-name-sweep:linear-gradient(110deg,transparent 0%,transparent 38%,rgba(255,246,217,0) 42%,rgba(255,246,217,.95) 48%,#fff 50%,rgba(226,176,74,.98) 53%,rgba(255,246,217,0) 60%,transparent 100%)}
+#indexModal .ixc-name.ixc-mut-name-rainbow::after{--ix-mut-name-sweep:linear-gradient(110deg,transparent 0%,transparent 38%,rgba(255,111,182,0) 42%,rgba(255,111,182,.95) 47%,#fff 50%,rgba(91,200,250,.95) 53%,rgba(181,140,255,0) 60%,transparent 100%)}
+#indexModal .ixc-name.ixc-mut-name-secret::after{--ix-mut-name-sweep:linear-gradient(110deg,transparent 0%,transparent 38%,rgba(216,180,254,0) 42%,rgba(216,180,254,.98) 48%,#fff 50%,rgba(147,51,234,.98) 53%,rgba(216,180,254,0) 60%,transparent 100%)}
+#indexModal .ixc-name.ixc-mut-name::after{content:attr(data-text);position:absolute;left:0;top:0;white-space:nowrap;font:inherit;line-height:inherit;letter-spacing:inherit;text-shadow:none;-webkit-text-stroke:0 transparent;pointer-events:none;color:transparent;-webkit-text-fill-color:transparent;background:var(--ix-mut-name-sweep);background-size:300% 100%;background-position:100% 50%;background-repeat:no-repeat;-webkit-background-clip:text;background-clip:text;filter:brightness(1.35);animation:hcMutNameSweep 2s linear infinite alternate}
+
+/* Blended Shiny + mutation border for Index cards, animated with the existing holo sweep. */
+#indexModal .ix-cell.combo-mut.m-gold{--ix-combo-border:linear-gradient(90deg,#22d3ee 0%,#69cfe0 14%,#7bcfce 25%,#a7d1b5 38%,#d5d3a0 52%,#e0bc6e 68%,#f6dfa6 82%,#c99a45 92%,#22d3ee 100%)}
+#indexModal .ix-cell.combo-mut.m-rainbow{--ix-combo-border:linear-gradient(90deg,#ff5a78 0%,#ff9c55 13%,#ffe66d 26%,#6be08a 39%,#22d3ee 52%,#5ac8fa 64%,#7a8cff 76%,#b58cff 88%,#ff6bd6 100%)}
+#indexModal .ix-cell.combo-mut.m-secret{--ix-combo-border:linear-gradient(90deg,#22d3ee 0%,#66c7e0 16%,#6b21a8 32%,#9333ea 48%,#a855f7 64%,#c084fc 78%,#d9bbfa 90%,#22d3ee 100%)}
+#indexModal .ix-cell.combo-mut{border:2px solid transparent;background:linear-gradient(160deg,#221a1e,#120e10) padding-box,var(--ix-combo-border) border-box;background-size:100% 100%,320% 100%;background-position:0 0,0 0;background-repeat:no-repeat;animation:ixComboBorderFlow 3s linear infinite alternate}
+@keyframes ixComboBorderFlow{to{background-position:0 0,100% 0}}
+
+/* Reuse the exact lobby title treatment in Index cards. */
+#indexModal .ix-cell.m-gold:not(.shiny) .ixc-name.hc-mut-name{color:#E0BC6E}
+#indexModal .ix-cell.m-rainbow:not(.shiny) .ixc-name.hc-mut-name{color:#B58CFF}
+#indexModal .ix-cell.m-secret:not(.shiny) .ixc-name.hc-mut-name{color:#A855F7}
+#indexModal .ix-cell.m-gold:not(.shiny) .ixc-name.hc-mut-name::after{--hc-mut-name-sweep:linear-gradient(110deg,transparent 0%,transparent 38%,rgba(255,246,217,0) 42%,rgba(255,246,217,.95) 48%,#fff 50%,rgba(226,176,74,.98) 53%,rgba(255,246,217,0) 60%,transparent 100%)}
+#indexModal .ix-cell.m-rainbow:not(.shiny) .ixc-name.hc-mut-name::after{--hc-mut-name-sweep:linear-gradient(110deg,transparent 0%,transparent 38%,rgba(255,111,182,0) 42%,rgba(255,111,182,.95) 47%,#fff 50%,rgba(91,200,250,.95) 53%,rgba(181,140,255,0) 60%,transparent 100%)}
+#indexModal .ix-cell.m-secret:not(.shiny) .ixc-name.hc-mut-name::after{--hc-mut-name-sweep:linear-gradient(110deg,transparent 0%,transparent 38%,rgba(216,180,254,0) 42%,rgba(216,180,254,.98) 48%,#fff 50%,rgba(147,51,234,.98) 53%,rgba(216,180,254,0) 60%,transparent 100%)}
+#indexModal .ixc-name.hc-mut-name::after{content:attr(data-text);position:absolute;left:0;top:0;white-space:nowrap;font:inherit;line-height:inherit;letter-spacing:inherit;text-shadow:none;-webkit-text-stroke:0 transparent;pointer-events:none;color:transparent;-webkit-text-fill-color:transparent;background:var(--hc-mut-name-sweep);background-size:300% 100%;background-position:100% 50%;background-repeat:no-repeat;-webkit-background-clip:text;background-clip:text;filter:brightness(1.35);animation:hcMutNameSweep 2s linear infinite alternate}
+#indexModal .ixc-name.hc-name-shine{color:transparent;-webkit-text-stroke:.6px var(--sh-edge,rgba(255,255,255,.5));text-shadow:0 0 6px var(--sh-glow,rgba(150,200,255,.25));background:linear-gradient(100deg,var(--sh-base,#aeb9c8) 0%,var(--sh-base,#aeb9c8) 40%,#ffffff 50%,var(--sh-base,#aeb9c8) 60%,var(--sh-base,#aeb9c8) 100%);background-size:250% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:hcNameShine 2.8s ease-in-out infinite alternate}
+#indexModal .ixc-name.hc-name-shine.hc-name-shine-gold{background-image:linear-gradient(100deg,#69cfe0 0%,#7bcfce 17%,#a7d1b5 34%,#d5d3a0 52%,#f6dfa6 68%,#d9b765 83%,#c99a45 100%)}
+#indexModal .ixc-name.hc-name-shine.hc-name-shine-rainbow{background-image:linear-gradient(100deg,#ff5a78 0%,#ff9c55 13%,#ffe66d 26%,#6be08a 39%,#4fc9d6 52%,#5ac8fa 64%,#7a8cff 76%,#b58cff 88%,#ff6bd6 100%)}
+#indexModal .ixc-name.hc-name-shine.hc-name-shine-secret{background-image:linear-gradient(100deg,#6b21a8 0%,#7b2fc1 18%,#9651da 36%,#b982f2 54%,#d9bbfa 69%,#bacdec 84%,#66c7e0 100%)}
+#indexModal .ixc-name.hc-name-shine.hc-name-shine-gold,#indexModal .ixc-name.hc-name-shine.hc-name-shine-rainbow,#indexModal .ixc-name.hc-name-shine.hc-name-shine-secret{text-shadow:none;-webkit-text-stroke:0 transparent;filter:drop-shadow(0 1px 5px rgba(0,0,0,.88)) drop-shadow(0 0 6px var(--sh-glow,rgba(150,200,255,.35)))}
+
+/* Keep Index mutation borders (including the blended combo frame), but remove mutation-colored bloom. */
+#indexModal .ix-cell.m-gold,#indexModal .ix-cell.m-rainbow,#indexModal .ix-cell.m-secret,#indexModal .ix-cell.combo-mut{box-shadow:none!important}
+#indexModal .ix-cell.m-gold:hover,#indexModal .ix-cell.m-rainbow:hover,#indexModal .ix-cell.m-secret:hover,#indexModal .ix-cell.combo-mut:hover{box-shadow:0 10px 24px rgba(0,0,0,.55)!important}
+
+/* Rainbow mutation color for the 1 IN X chance badge, without adding a glow. */
+#indexModal .ixc-chance.ixc-chance-rainbow{border:1px solid transparent;border-color:transparent!important;background:linear-gradient(rgba(6,9,14,.9),rgba(6,9,14,.9)) padding-box,linear-gradient(90deg,#ff5a78 0%,#ff9c55 15%,#ffe66d 30%,#6be08a 45%,#22d3ee 60%,#5ac8fa 72%,#7a8cff 84%,#b58cff 94%,#ff6bd6 100%) border-box;color:#fff!important;text-shadow:0 1px 2px rgba(0,0,0,.9)!important}
+#indexModal .ixc-chance-text{display:inline-block}
+#indexModal .ixc-chance-rainbow .ixc-chance-text{background:none!important;background-clip:border-box!important;-webkit-background-clip:border-box!important;color:#fff!important;-webkit-text-fill-color:currentColor!important;text-shadow:none}
+#indexModal .ixc-chance-rainbow .ixc-chance-text span{-webkit-text-fill-color:currentColor!important}
+.hub-center .hc-chance.hc-chance-rainbow{border:1px solid transparent;border-radius:6px;padding:1px 6px;background:linear-gradient(rgba(6,9,14,.9),rgba(6,9,14,.9)) padding-box,linear-gradient(90deg,#ff5a78 0%,#ff9c55 15%,#ffe66d 30%,#6be08a 45%,#22d3ee 60%,#5ac8fa 72%,#7a8cff 84%,#b58cff 94%,#ff6bd6 100%) border-box;color:#fff!important;-webkit-text-fill-color:currentColor!important;text-shadow:0 1px 2px rgba(0,0,0,.9)!important;filter:none}
+.hub-center .hc-chance.hc-chance-rainbow span{-webkit-text-fill-color:currentColor!important}
+
+/* Lobby mutation badges mirror the selected mutation chips in the Index toolbar. */
+.hub-center .hc-badges .mut-badge.ix-chip{height:auto;min-height:22px;padding:5px 13px;border-radius:999px;font-family:"Barlow Condensed";font-size:12px;font-weight:700;letter-spacing:.09em;line-height:1;text-transform:uppercase;cursor:default}
+.hub-center .hc-badges .mut-badge.ix-chip::before{display:none}
+.hub-center .hc-badges .mut-badge.ix-chip.m-gold.on{background:linear-gradient(110deg,#8a5a12 0%,#c9962f 28%,#ffe58a 52%,#b8860b 74%,#8a5a12 100%);background-size:220% 100%;background-position:0% 50%;animation:lobbyMutBadgeFlow 3.2s ease-in-out infinite alternate;border-color:rgba(255,229,138,.85);color:#211606;box-shadow:none}
+.hub-center .hc-badges .mut-badge.ix-chip.m-rainbow.on{background:linear-gradient(90deg,#ff5a78 0%,#ff9c55 13%,#ffe66d 26%,#6be08a 39%,#22d3ee 52%,#5ac8fa 64%,#7a8cff 76%,#b58cff 88%,#ff6bd6 100%);background-size:260% 100%;background-position:0% 50%;animation:lobbyMutBadgeFlow 4s ease-in-out infinite alternate;border-color:rgba(255,255,255,.72);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.9);box-shadow:none}
+.hub-center .hc-badges .mut-badge.ix-chip.m-secret.on{background:linear-gradient(110deg,#4c1475 0%,#7e22ce 32%,#d8b4fe 52%,#9333ea 74%,#4c1475 100%);background-size:220% 100%;background-position:0% 50%;animation:lobbyMutBadgeFlow 3.2s ease-in-out infinite alternate;border-color:rgba(216,180,254,.85);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.9);box-shadow:none}
+@keyframes lobbyMutBadgeFlow{from{background-position:0% 50%}to{background-position:100% 50%}}
+.hub-center .hc-badges .shiny-badge{height:auto;min-height:22px;padding:5px 13px;border-radius:999px;border:1px solid rgba(255,255,255,.75);background:linear-gradient(110deg,#2f8fe2 0%,#22d3ee 22%,#eafdff 45%,#b58cff 62%,#7df9ff 80%,#2f8fe2 100%);background-size:240% 100%;background-position:0% 50%;animation:lobbyMutBadgeFlow 3.6s ease-in-out infinite alternate;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.9);box-shadow:none;backdrop-filter:none;font-family:"Barlow Condensed";font-size:12px;font-weight:700;letter-spacing:.09em;line-height:1;text-transform:uppercase;white-space:nowrap}
+@media(prefers-reduced-motion:reduce){.hub-center .hc-badges .mut-badge.ix-chip,.hub-center .hc-badges .shiny-badge{animation:none!important}}
+
+/* Roll reveal has its own stronger chance-badge shadow; remove it so the label stays legible. */
+.roll-overlay .roll-card-showcase .hub-center .hc-chance,.roll-overlay.mini .roll-card-showcase .hub-center .hc-chance{text-shadow:none!important}
+.roll-overlay .roll-card-showcase .hub-center .hc-chance.hc-chance-rainbow,.roll-overlay.mini .roll-card-showcase .hub-center .hc-chance.hc-chance-rainbow{border:1px solid transparent;border-color:transparent!important;background:linear-gradient(rgba(6,9,14,.9),rgba(6,9,14,.9)) padding-box,linear-gradient(90deg,#ff5a78 0%,#ff9c55 15%,#ffe66d 30%,#6be08a 45%,#22d3ee 60%,#5ac8fa 72%,#7a8cff 84%,#b58cff 94%,#ff6bd6 100%) border-box!important;color:#fff!important;text-shadow:none!important}
+
+/* Shared animated mutation pills for collection, deck, roll-result, tower-preview, and battle card badges. */
+.mut-hover .ix-chip{display:inline-flex;align-items:center;justify-content:center;height:auto;min-height:22px;padding:5px 13px;border-radius:999px;font-family:"Barlow Condensed";font-size:12px;font-weight:700;letter-spacing:.09em;line-height:1;text-transform:uppercase;white-space:nowrap;cursor:default}
+.mut-hover .ix-chip::before{display:none!important}
+.mut-hover .ix-chip.m-gold.on{background:linear-gradient(110deg,#8a5a12 0%,#c9962f 28%,#ffe58a 52%,#b8860b 74%,#8a5a12 100%);background-size:220% 100%;background-position:0% 50%;animation:lobbyMutBadgeFlow 3.2s ease-in-out infinite alternate;border-color:rgba(255,229,138,.85);color:#211606;text-shadow:none;box-shadow:none}
+.mut-hover .ix-chip.m-rainbow.on{background:linear-gradient(90deg,#ff5a78 0%,#ff9c55 13%,#ffe66d 26%,#6be08a 39%,#22d3ee 52%,#5ac8fa 64%,#7a8cff 76%,#b58cff 88%,#ff6bd6 100%);background-size:260% 100%;background-position:0% 50%;animation:lobbyMutBadgeFlow 4s ease-in-out infinite alternate;border-color:rgba(255,255,255,.72);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.9);box-shadow:none}
+.mut-hover .ix-chip.m-secret.on{background:linear-gradient(110deg,#4c1475 0%,#7e22ce 32%,#d8b4fe 52%,#9333ea 74%,#4c1475 100%);background-size:220% 100%;background-position:0% 50%;animation:lobbyMutBadgeFlow 3.2s ease-in-out infinite alternate;border-color:rgba(216,180,254,.85);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.9);box-shadow:none}
+.backpack-panel .bp-tile .mut-hover .bpt-mut.ix-chip,.rd-pick .bp-tile .mut-hover .bpt-mut.ix-chip{height:auto;min-height:0;padding:2px 7px;border-radius:999px;font-size:9px;letter-spacing:.06em;transform:none!important;box-shadow:none!important}
+.dp-card .dp-badges .mut-hover .dp-mut.ix-chip{height:auto;min-height:0;padding:2px 7px;border-radius:999px;font-size:10px;letter-spacing:.06em}
+.rrc-var .mut-hover .rrc-mut.ix-chip{height:auto;min-height:0;padding:1px 5px;border-radius:999px;font-size:8px;letter-spacing:.04em}
+.eyebrow .mut-hover .mut-badge.ix-chip,.st-ep .mut-hover .st-mut.ix-chip{height:auto;min-height:0;padding:2px 7px;border-radius:999px;font-size:9px;letter-spacing:.05em;vertical-align:middle}
+@media(prefers-reduced-motion:reduce){.mut-hover .ix-chip.m-gold.on,.mut-hover .ix-chip.m-rainbow.on,.mut-hover .ix-chip.m-secret.on{animation:none!important}}
+
+/* Apply the animated cyan/ice/violet Shiny pill beyond the Lobby badges. */
+.shiny-pill{display:inline-flex!important;align-items:center!important;justify-content:center!important;height:auto!important;min-height:22px!important;padding:5px 13px!important;border:1px solid rgba(255,255,255,.75)!important;border-radius:999px!important;background:linear-gradient(110deg,#2f8fe2 0%,#22d3ee 22%,#eafdff 45%,#b58cff 62%,#7df9ff 80%,#2f8fe2 100%)!important;background-size:240% 100%!important;background-position:0% 50%;animation:lobbyMutBadgeFlow 3.6s ease-in-out infinite alternate!important;color:#fff!important;text-shadow:0 1px 2px rgba(0,0,0,.9)!important;box-shadow:none!important;backdrop-filter:none!important;transform:none!important;font-family:"Barlow Condensed"!important;font-size:12px!important;font-weight:700!important;letter-spacing:.09em!important;line-height:1!important;text-transform:uppercase!important;white-space:nowrap!important}
+.backpack-panel .bp-tile .bpt-shiny.shiny-pill,.rd-pick .bp-tile .bpt-shiny.shiny-pill{height:auto!important;min-height:0!important;padding:2px 7px!important;font-size:9px!important;letter-spacing:.06em!important}
+.rrc-var .rrc-shine.shiny-pill{height:auto!important;min-height:0!important;padding:1px 5px!important;font-size:7px!important;letter-spacing:.04em!important}
+.eyebrow .shiny-pill{height:auto!important;min-height:0!important;padding:2px 7px!important;font-size:9px!important;letter-spacing:.05em!important}
+.fighter .f-badges .mut-hover .mut-badge.ix-chip,.fighter .f-badges .mut-hover .fbadge.ix-chip{position:static!important;inset:auto!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;height:auto!important;min-height:22px!important;padding:5px 13px!important;border-radius:999px!important;font-family:"Barlow Condensed"!important;font-size:12px!important;font-weight:700!important;letter-spacing:.09em!important;line-height:1!important;text-transform:uppercase!important;white-space:nowrap!important}
+@media(prefers-reduced-motion:reduce){.shiny-pill{animation:none!important}}
+.dp-card .dp-badges .shiny-pill{height:auto!important;min-height:0!important;padding:2px 6px!important;font-size:9px!important;letter-spacing:.05em!important}
+#deckPickModal .dp-card .dp-badges{display:flex!important;flex-direction:column!important;align-items:flex-end!important;gap:4px!important}
