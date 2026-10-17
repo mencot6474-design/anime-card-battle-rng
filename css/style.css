@@ -3172,4 +3172,10 @@ body.battle-full .fighter.me,body.battle-full .fighter.foe{
 /* ===== LOBBY v24: #app IS <main> (satu elemen, id specificity menang) — height:100% resolve ke auto (body height auto)
    → hub content-sized & nempel atas, kartu kelihatan di sepertiga atas layar. Paksa tinggi viewport di elemen yang sama. */
 body.on-lobby #app{height:calc(100dvh - var(--tbh,64px));min-height:0}
+/* ===== LOBBY v25: hub-mid span SEMUA baris (1/-1) di desktop — kartu+pet dead-center seluruh tinggi layar.
+   v24 cuma center di row 2-3, kegeser ke atas oleh row 1 (eyebrow) + row 4 (mission bar). Col1 kosong selain hub-mid, jadi aman. */
+@media(min-width:721px) and (min-height:601px){
+  .lobby-hub .hub-mid{grid-row:1/-1}
+}
+
 
