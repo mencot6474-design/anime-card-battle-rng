@@ -215,8 +215,7 @@ function renderBuffDock(){
   const now=Date.now();
   const ls=luckBuffs().slice().sort((a,b)=>a.lv-b.lv);
   const ss=speedBuffs().slice().sort((a,b)=>a.lv-b.lv);
-  const arts=(state&&state.artSlots||[]).map(id=>ART_DEFS.find(d=>d.id===id)).filter(Boolean);
-  if(!ls.length&&!ss.length&&!arts.length){el.classList.remove("show");el.innerHTML="";return;}
+  if(!ls.length&&!ss.length){el.classList.remove("show");el.innerHTML="";return;}
   /* Slot chip: badge timer countdown di atas + ikon tengah. emoji = fallback kalau img gagal.
      Tooltip hover (bukan title native): main = nama, sub = deskripsi passive + sisa waktu. */
   const chip=(cls,src,emoji,main,sub,ms)=>`<div class="bd-chip ${cls}">
@@ -237,14 +236,6 @@ function renderBuffDock(){
     html+=chip("speed","assets/images/pot-speed-"+b.lv+".png","⚡",
       `SPEED ${lTxt}POTION`.trim(),
       `+${(b.add||0).toFixed(1)}× SPEED · sisa ${fmtCountdown(b.endsAt-now)}`,b.endsAt-now);
-  });
-  arts.forEach(d=>{
-    const icon=d.img?`<img src="${d.img}" alt="" onerror="this.remove()">`:"💎";
-    html+=`<div class="bd-chip art" style="--sc:${d.color}">
-      <span class="bd-badge eq">&#10003;</span>
-      <span class="bd-ic">${icon}</span>
-      <span class="bd-tip"><b>${d.name}</b><small>${luckTxt(d)} · TERPASANG</small></span>
-    </div>`;
   });
   el.innerHTML=html;
   el.classList.add("show");

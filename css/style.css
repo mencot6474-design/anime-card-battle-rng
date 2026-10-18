@@ -3181,9 +3181,9 @@ body.on-lobby #app{height:calc(100dvh - var(--tbh,64px));min-height:0}
 
 /* ===== LOBBY v26: loadout di kiri kartu — kolom vertikal [ARTEFAK 1][ARTEFAK 2][PET].
    Posisi kartu TIDAK diubah (v25 tetap). Slot kosong = border dashed gold; keisi = ikon artefak / pet. Klik → Backpack. ===== */
-.lobby-hub .stage-loadout{display:flex;flex-direction:column;align-items:center;justify-self:start;align-self:center;flex:0 0 auto;gap:clamp(8px,1.1vh,12px);margin-right:clamp(16px,4vw,64px);z-index:5}
+.lobby-hub .stage-loadout{display:flex;flex-direction:column;align-items:center;justify-self:start;align-self:center;flex:0 0 auto;gap:clamp(8px,1.1vh,12px);margin-right:clamp(48px,9vw,160px);z-index:5}
 .lobby-hub .stage-loadout .loadout-slot{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;box-sizing:border-box;
-  width:clamp(58px,10vh,88px);height:clamp(58px,10vh,88px);padding:0;margin:0;cursor:pointer;user-select:none;
+  width:clamp(66px,12vh,104px);height:clamp(66px,12vh,104px);padding:0;margin:0;cursor:pointer;user-select:none;
   border:1px dashed rgba(199,168,109,.36);border-radius:10px;
   background:radial-gradient(circle at 50% 24%,rgba(199,168,109,.10),transparent 72%),rgba(10,12,13,.40);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.03);transition:border-color .16s,transform .16s,box-shadow .16s}
@@ -3195,9 +3195,13 @@ body.on-lobby #app{height:calc(100dvh - var(--tbh,64px));min-height:0}
 .lobby-hub .stage-loadout .loadout-slot .ls-lbl{font:800 9px/1 "Barlow Condensed";letter-spacing:.1em;color:#9a9382}
 .lobby-hub .stage-loadout .lobby-pet{position:relative;inset:auto;left:auto;right:auto;top:auto;bottom:auto;display:flex;align-items:center;justify-content:center;width:100%;height:100%;margin:0;flex:0 0 auto;z-index:1}
 .lobby-hub .stage-loadout .lobby-pet img{display:block;width:100%;height:100%;max-height:100%;object-fit:contain}
+/* v28: tooltip slot artefak (gaya .bd-tip) — nongol pas hover slot, bukan title native. */
+.lobby-hub .stage-loadout .loadout-slot .ls-tip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%) translateY(4px);background:rgba(14,16,19,.96);border:1px solid var(--line2,#2a2f38);border-radius:10px;padding:6px 10px;font-size:11px;line-height:1.5;white-space:nowrap;color:#e7ecf3;text-align:center;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;z-index:70;box-shadow:0 6px 16px rgba(0,0,0,.5);}
+.lobby-hub .stage-loadout .loadout-slot .ls-tip small{display:block;font-size:10px;color:#9aa3b0}
+.lobby-hub .stage-loadout .loadout-slot:hover .ls-tip{opacity:1;transform:translateX(-50%) translateY(0)}
 @media(max-width:720px){
-  .lobby-hub .stage-loadout{gap:6px;margin-right:clamp(8px,3vw,24px)}
-  .lobby-hub .stage-loadout .loadout-slot{width:clamp(46px,13vw,64px);height:clamp(46px,13vw,64px);border-radius:8px}
+  .lobby-hub .stage-loadout{gap:6px;margin-right:clamp(24px,6vw,56px)}
+  .lobby-hub .stage-loadout .loadout-slot{width:clamp(54px,15vw,74px);height:clamp(54px,15vw,74px);border-radius:8px}
   .lobby-hub .stage-loadout .loadout-slot .ls-lbl{font-size:7px}
 }
 

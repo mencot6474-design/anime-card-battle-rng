@@ -640,8 +640,8 @@ function initHubTilt(card){
 /* Loadout kiri kartu: kolom vertikal [ARTEFAK 1][ARTEFAK 2][PET]. Klik → Backpack (tab ARTEFAK/PET). */
 function hubLoadoutHtml(){
   const slot=(i)=>{const id=(state.artSlots||[])[i];const d=id?ART_DEFS.find(a=>a.id===id):null;return d
-    ? `<div class="loadout-slot art-slot filled" data-bp="artefact" role="button" tabindex="0" title="${d.name} · ${luckTxt(d)}" style="--ac:${d.color}">${artIconHtml(d)}</div>`
-    : `<div class="loadout-slot art-slot" data-bp="artefact" role="button" tabindex="0" title="Slot artefak ${i+1} — kosong"><span class="ls-mark">&#9670;</span><span class="ls-lbl">SLOT ${i+1}</span></div>`;};
+    ? `<div class="loadout-slot art-slot filled" data-bp="artefact" role="button" tabindex="0" style="--ac:${d.color}">${artIconHtml(d)}<span class="ls-tip"><b>${d.name}</b><small>${luckTxt(d)} · TERPASANG</small></span></div>`
+    : `<div class="loadout-slot art-slot" data-bp="artefact" role="button" tabindex="0"><span class="ls-mark">&#9670;</span><span class="ls-lbl">SLOT ${i+1}</span><span class="ls-tip"><b>SLOT ARTEFAK ${i+1}</b><small>Kosong — klik untuk buka Backpack</small></span></div>`;};
   const pet=lobbyPetHtml()
     ? `<div class="loadout-slot pet-slot filled" data-bp="pet" role="button" tabindex="0" title="Pet aktif — kelola di Backpack" style="--ac:#8fd3ff">${lobbyPetHtml()}</div>`
     : `<div class="loadout-slot pet-slot" data-bp="pet" role="button" tabindex="0" title="Slot pet — kosong"><span class="ls-mark">&#128062;</span><span class="ls-lbl">PET</span></div>`;
