@@ -3156,17 +3156,17 @@ body.battle-full .fighter.me,body.battle-full .fighter.foe{
 @media(prefers-reduced-motion:reduce){.mut-hover .ix-chip.m-gold.on,.mut-hover .ix-chip.m-rainbow.on,.mut-hover .ix-chip.m-secret.on{animation:none!important}}
 
 /* Apply the animated cyan/ice/violet Shiny pill beyond the Lobby badges. */
-.shiny-pill{display:inline-flex!important;align-items:center!important;justify-content:center!important;height:auto!important;min-height:22px!important;padding:5px 13px!important;border:1px solid rgba(255,255,255,.75)!important;border-radius:999px!important;background:linear-gradient(110deg,#2f8fe2 0%,#22d3ee 22%,#eafdff 45%,#b58cff 62%,#7df9ff 80%,#2f8fe2 100%)!important;background-size:240% 100%!important;background-position:0% 50%;animation:lobbyMutBadgeFlow 3.6s ease-in-out infinite alternate!important;color:#fff!important;text-shadow:0 1px 2px rgba(0,0,0,.9)!important;box-shadow:none!important;backdrop-filter:none!important;transform:none!important;font-family:"Barlow Condensed"!important;font-size:12px!important;font-weight:700!important;letter-spacing:.09em!important;line-height:1!important;text-transform:uppercase!important;white-space:nowrap!important}
-.backpack-panel .bp-tile .bpt-shiny.shiny-pill,.rd-pick .bp-tile .bpt-shiny.shiny-pill{height:auto!important;min-height:0!important;padding:2px 7px!important;font-size:9px!important;letter-spacing:.06em!important}
-.rrc-var .rrc-shine.shiny-pill{height:auto!important;min-height:0!important;padding:1px 5px!important;font-size:7px!important;letter-spacing:.04em!important}
-.eyebrow .shiny-pill{height:auto!important;min-height:0!important;padding:2px 7px!important;font-size:9px!important;letter-spacing:.05em!important}
+.shiny-pill{display:inline-flex!important;align-items:center!important;justify-content:center!important;height:20px!important;min-height:0!important;padding:0 8px!important;border:1px solid rgba(255,255,255,.75)!important;border-radius:999px!important;background:linear-gradient(110deg,#2f8fe2 0%,#22d3ee 22%,#eafdff 45%,#b58cff 62%,#7df9ff 80%,#2f8fe2 100%)!important;background-size:240% 100%!important;background-position:0% 50%;animation:lobbyMutBadgeFlow 3.6s ease-in-out infinite alternate!important;color:#fff!important;text-shadow:0 1px 2px rgba(0,0,0,.9)!important;box-shadow:none!important;backdrop-filter:none!important;transform:none!important;font-family:"Barlow Condensed"!important;font-size:10px!important;font-weight:700!important;letter-spacing:.09em!important;line-height:1!important;text-transform:uppercase!important;white-space:nowrap!important}
+/* v30: semua override ukuran per-konteks dihapus — shiny pill seragam global (h20·pad0 8·font10). */
+/* removed v30: rrc override */
+/* removed v30: eyebrow override */
 .fighter .f-badges .mut-hover .mut-badge.ix-chip,.fighter .f-badges .mut-hover .fbadge.ix-chip{position:static!important;inset:auto!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;height:auto!important;min-height:22px!important;padding:5px 13px!important;border-radius:999px!important;font-family:"Barlow Condensed"!important;font-size:12px!important;font-weight:700!important;letter-spacing:.09em!important;line-height:1!important;text-transform:uppercase!important;white-space:nowrap!important}
 @media(prefers-reduced-motion:reduce){.shiny-pill{animation:none!important}}
-.dp-card .dp-badges .shiny-pill{height:auto!important;min-height:0!important;padding:2px 6px!important;font-size:9px!important;letter-spacing:.05em!important}
+/* removed v30: deck-pick override */
 #deckPickModal .dp-card .dp-badges{display:flex!important;flex-direction:column!important;align-items:flex-end!important;gap:4px!important}
-/* v29: roll reveal — badge SHINY disamain ukurannya dgn badge mutasi/trait (anti .shiny-pill !important). */
-.roll-overlay .roll-card-showcase .hub-center .hc-badges .shiny-badge.shiny-pill{height:22px!important;min-height:0!important;padding:0 8px!important;font-size:12px!important}
-.roll-overlay.mini .roll-card-showcase .hub-center .hc-badges .shiny-badge.shiny-pill{height:16px!important;min-height:0!important;padding:0 5px!important;font-size:9px!important}
+/* ukuran shiny pill kini seragam global di base rule .shiny-pill (v30). */
+/* removed v30: roll reveal override */
+/* removed v30: roll reveal mini override */
 
 /* ===== LOBBY v23: stage-center — grup [pet][card] di-center flow (bukan absolute; v22 bikin tinggi hub-mid collapse → kartu nempel header). Panel tetap dibuang, bg lobby asli kelihatan. */
 .lobby-hub{background:none;border:0;box-shadow:none;border-radius:0}
