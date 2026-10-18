@@ -3164,6 +3164,9 @@ body.battle-full .fighter.me,body.battle-full .fighter.foe{
 @media(prefers-reduced-motion:reduce){.shiny-pill{animation:none!important}}
 .dp-card .dp-badges .shiny-pill{height:auto!important;min-height:0!important;padding:2px 6px!important;font-size:9px!important;letter-spacing:.05em!important}
 #deckPickModal .dp-card .dp-badges{display:flex!important;flex-direction:column!important;align-items:flex-end!important;gap:4px!important}
+/* v29: roll reveal — badge SHINY disamain ukurannya dgn badge mutasi/trait (anti .shiny-pill !important). */
+.roll-overlay .roll-card-showcase .hub-center .hc-badges .shiny-badge.shiny-pill{height:22px!important;min-height:0!important;padding:0 8px!important;font-size:12px!important}
+.roll-overlay.mini .roll-card-showcase .hub-center .hc-badges .shiny-badge.shiny-pill{height:16px!important;min-height:0!important;padding:0 5px!important;font-size:9px!important}
 
 /* ===== LOBBY v23: stage-center — grup [pet][card] di-center flow (bukan absolute; v22 bikin tinggi hub-mid collapse → kartu nempel header). Panel tetap dibuang, bg lobby asli kelihatan. */
 .lobby-hub{background:none;border:0;box-shadow:none;border-radius:0}
