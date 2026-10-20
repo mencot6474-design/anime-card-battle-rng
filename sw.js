@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v148-wm-click-fix';
+const CACHE_NAME = 'anime-card-battle-v149-weather-trait-style';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

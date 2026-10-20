@@ -46337,3 +46337,170 @@ body.battle-full .fighter.foe.ko {
   border-radius: 14px;
   padding: 16px;
 }
+
+
+/* ==========================================================================
+   WEATHER MACHINE (CYBER TRAIT STYLE MODAL)
+   ========================================================================== */
+#weatherMachineModal {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse 90% 80% at 50% 30%, rgba(10, 20, 36, 0.9), rgba(4, 7, 12, 0.97) 80%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: none;
+  place-items: center;
+  z-index: 95;
+}
+
+#weatherMachineModal.show {
+  display: grid;
+  animation: slwIn 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Modal Box: Mengikuti style persis .tr-box */
+.wm-box {
+  width: min(680px, 96vw) !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(56, 189, 248, 0.35) !important;
+  background: linear-gradient(165deg, rgba(14, 20, 32, 0.98) 0%, rgba(8, 12, 20, 0.98) 60%, rgba(5, 7, 12, 1) 100%) !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 30px rgba(56, 189, 248, 0.15) !important;
+}
+
+/* Header */
+.wm-cyber-head {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 14px 18px !important;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.2) !important;
+  background: rgba(0, 0, 0, 0.3) !important;
+}
+
+.wm-cyber-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-family: "Rajdhani", sans-serif !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.16em !important;
+  color: #38bdf8 !important;
+}
+
+.wm-cyber-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: #38bdf8 !important;
+  box-shadow: 0 0 8px #38bdf8 !important;
+}
+
+.wm-cyber-title {
+  font-family: "Barlow Condensed", sans-serif !important;
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  color: #f0f9ff !important;
+  letter-spacing: 0.08em !important;
+}
+
+.wm-body-wrap {
+  padding: 16px !important;
+}
+
+/* Weather Current Panel (seperti .tr-cur) */
+.wm-cur-panel {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  padding: 14px 16px !important;
+  border-radius: 14px !important;
+  border: 1px solid color-mix(in srgb, var(--tcol, #38bdf8) 45%, rgba(255, 255, 255, 0.1)) !important;
+  background: linear-gradient(165deg, rgba(12, 22, 38, 0.85), rgba(6, 11, 20, 0.95)) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 0 15px color-mix(in srgb, var(--tcol, #38bdf8) 12%, transparent) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.wm-cur-panel::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 4px !important;
+  height: 100% !important;
+  background: var(--tcol, #38bdf8) !important;
+  box-shadow: 0 0 10px var(--tcol, #38bdf8) !important;
+}
+
+.wm-thumb-wrap {
+  width: 72px !important;
+  height: 72px !important;
+  border-radius: 12px !important;
+  background: radial-gradient(circle, color-mix(in srgb, var(--tcol, #38bdf8) 25%, transparent) 0%, rgba(0, 0, 0, 0.6) 80%) !important;
+  display: grid !important;
+  place-items: center !important;
+  flex: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+.wm-thumb-wrap img {
+  width: 58px !important;
+  height: 58px !important;
+  object-fit: contain !important;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.7)) !important;
+}
+
+.wm-cur-info {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  min-width: 0 !important;
+  flex: 1 !important;
+}
+
+.wm-stat-row {
+  display: flex !important;
+  gap: 8px !important;
+  margin-top: 4px !important;
+}
+
+/* Pity block */
+.wm-pity-block {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  padding: 10px 14px !important;
+  border-radius: 12px !important;
+  background: rgba(10, 16, 28, 0.6) !important;
+  border: 1px solid rgba(56, 189, 248, 0.18) !important;
+}
+
+/* Roll Button */
+.wm-roll-btn {
+  background: linear-gradient(135deg, #0284c7, #0369a1) !important;
+  box-shadow: 0 0 16px rgba(2, 132, 199, 0.45) !important;
+  border-color: #38bdf8 !important;
+}
+
+.wm-roll-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0ea5e9, #0284c7) !important;
+  box-shadow: 0 0 24px rgba(14, 165, 233, 0.6) !important;
+}
+
+.wm-roll-btn .tr-cost-badge {
+  background: rgba(56, 189, 248, 0.25) !important;
+  border-color: rgba(56, 189, 248, 0.5) !important;
+  color: #e0f2fe !important;
+}
+
+/* Rates list scrollable right pane */
+.wm-rates-list {
+  max-height: 480px !important;
+  overflow-y: auto !important;
+  scrollbar-width: thin !important;
+  padding-right: 4px !important;
+}

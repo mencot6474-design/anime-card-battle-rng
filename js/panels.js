@@ -1061,7 +1061,7 @@ function renderBackpackPanel(){
 }
 /* Tab ITEM di backpack: tile icon ringkas; klik -> popup konfirmasi PAKAI. Item: Weather / Luck / Speed Potion. */
 function bpItemDef(kind){
-  if(kind==='potion'){const aw=activeWeatherId();return{kind,name:'WEATHER POTION',icon:'assets/images/icon-potion.png',emoji:'🧪',cnt:state.potions||0,
+  if(kind==='potion'){const aw=activeWeatherId();return{kind,name:'WEATHER POTION',icon:'assets/images/weather-potion.webp?v=1',emoji:'🧪',cnt:state.potions||0,
     desc:'Gacha cuaca · chance asli + pity. Hasil sama/lebih bagus = pindah + timer reset 5 menit; lebih jelek = cuaca tetep.',
     active:aw?`<br><strong style="color:${WEATHER[aw].color}">Aktif: ${WEATHER[aw].icon} ${WEATHER[aw].name}</strong>`:'',use:'bpUsePotion()'};}
   if(kind.startsWith('luck')){const lv=+kind[4],d=LUCK_POTS[lv],b=activeLuckBuff(),bp=activeLuckBuffPct();return{kind,name:'LUCK POTION L'+lv,icon:`assets/images/pot-luck-${lv}.png`,emoji:'🍀',cnt:(state.luckPots&&state.luckPots[lv-1])||0,
@@ -1070,9 +1070,6 @@ function bpItemDef(kind){
   if(kind.startsWith('speed')){const lv=+kind.slice(-1),d=SPEED_POTS[lv],b=activeSpeedBuff();return{kind,name:'SPEED POTION L'+lv,icon:`assets/images/pot-speed-${lv}.png`,emoji:'⚡',cnt:(state.speedPots&&state.speedPots[lv-1])||0,
     desc:`Roll speed +${d.add.toFixed(1)}× selama 5 menit per pot (cap total ×20). Stackable — efek dijumlah, durasi nambah +5 menit tiap pot.`,
     active:b?`<br><strong style="color:#fcd34d">Aktif: +${b.toFixed(1)}× SPEED</strong>`:'',use:`bpUseSpeedPotion(${lv},1)`,useAll:`bpUseSpeedPotion(${lv},'all')`};}
-  if(kind==='mythic'){const aw=activeWeatherId();return{kind,name:'MYTHIC WEATHER POTION',icon:'assets/images/icon-mythic.png',emoji:'✨',cnt:state.mythicPotions||0,
-    desc:'Sama kayak Weather Potion, tapi AWAKENED chance 3%.',
-    active:aw?`<br><strong style="color:${WEATHER[aw].color}">Aktif: ${WEATHER[aw].icon} ${WEATHER[aw].name}</strong>`:'',use:'bpUseMythicPotion()'};}
   if(kind==='r5k'){return{kind,name:'INSTAN ROLL 5K',icon:'assets/images/instanpack-5k.webp?v=trans1',emoji:'📦',cnt:(state&&state.rollPacks&&state.rollPacks.r5k)||0,
     desc:'SPECIAL ROLL PACK - Berisi 5.000 tarikan kartu instan ke dalam koleksi.',
     active:'',use:"bpUseRollPack('r5k', 5000)"};}
@@ -1254,32 +1251,6 @@ function bpUseSpeedPotion(lv,all){
   beep(720,.14,"square",.08);setTimeout(()=>beep(980,.14,"square",.07),110);
   toast("SPEED POTION L"+lv+(n>1?" ×"+n:""),"SPEED +"+r.add.toFixed(1)+"× · "+Math.round(r.ms/60000)+" MENIT","#fcd34d");
   bpItemPopClose();renderShell();renderBackpackPanel();
-}
-function bpUseMythicPotion(){
-  const n=bpMultiN;let done=0,switches=0,kept=0,best=null,last=null;
-  for(let i=0;i<n;i++){
-    const r=useMythicWeatherPotion();
-    if(!r.ok)break;
-    done++;last=r.weather;
-    if(r.kept)kept++;else{switches++;if(!best||r.weather.dropWeight<best.dropWeight)best=r.weather;}
-  }
-  if(!done){
-    toast("Potion habis","GAK ADA POTION","#f87171");
-    return;
-  }
-  if(n>1){
-    const w=best||last;
-    toast(`${w?w.icon+' '+w.name:'GACHA ×'+done}`,`×${done} ROLL · ${switches} PINDAH · ${kept} SKIP`,w?w.color:'#5eead4');
-    if(switches)beep(520,.16,"triangle",.1),setTimeout(()=>beep(880,.2,"triangle",.1),120);
-    else beep(240,.18,"sine",.07);
-  }else if(last&&best===null&&kept){
-    toast(`${last.icon} ${last.name}`,"ROLL LEBIH JELEK · CUACA TETEP",last.color);
-    beep(240,.18,"sine",.07);
-  }else{
-    beep(520,.16,"triangle",.1);setTimeout(()=>beep(880,.2,"triangle",.1),120);
-    toast(`${best.icon} ${best.name}`,"WEATHER AKTIF · AWAKENED 3%",best.color);
-  }
-  renderShell();renderBackpackPanel();bpItemPop('mythic');
 }
 /* Pakai INTAN ROLL 100K: tarik 100.000 roll sekaligus, lalu tampilkan ringkasan loot. */
 function bpUseIntanRoll(){
@@ -1776,16 +1747,17 @@ window.closePremiumShop = closePremiumShop;
 window.buyPremiumPack = buyPremiumPack;
 
 
-/* =============== WEATHER MACHINE SYSTEM =============== */
-let wmMultiN = 1;
 
-function setWmMulti(n){
-  wmMultiN = n;
-  document.querySelectorAll('#weatherMachineModal .wo-multi button').forEach(b => b.classList.toggle('on', +b.dataset.n === n));
-  renderWeatherMachine();
-}
+/* =============== WEATHER MACHINE SYSTEM (TRAIT-STYLE CYBER MATRIX) =============== */
+let wmMultiN = 1;
+let wmAutoTarget = null;
+let wmAutoRunning = false;
+let wmAutoTimer = null;
+let wmAutoCount = 0;
 
 function openWeatherMachine(){
+  wmAutoRunning = false;
+  if(wmAutoTimer) clearTimeout(wmAutoTimer);
   renderWeatherMachine();
   const modal = document.getElementById('weatherMachineModal');
   if(modal) modal.classList.add('show');
@@ -1795,17 +1767,22 @@ function openWeatherMachine(){
 }
 
 function closeWeatherMachine(){
+  wmStopAuto();
   const modal = document.getElementById('weatherMachineModal');
   if(modal) modal.classList.remove('show');
 }
 
-function wmUsePotion(type){
-  const n = wmMultiN;
+function setWmMulti(n){
+  wmMultiN = n;
+  renderWeatherMachine();
+}
+
+function wmSynthesizeRoll(multi){
+  const n = multi || wmMultiN || 1;
   let done = 0, switches = 0, kept = 0, best = null, last = null;
-  const isMythic = (type === 'mythic');
   
   for(let i = 0; i < n; i++){
-    const r = isMythic ? useMythicWeatherPotion() : useWeatherPotion();
+    const r = useWeatherPotion();
     if(!r.ok) break;
     done++;
     last = r.weather;
@@ -1817,14 +1794,16 @@ function wmUsePotion(type){
   }
 
   if(!done){
-    toast("Potion habis", "GAK ADA POTION", "#f87171");
+    toast("POTION HABIS", "Tidak ada Weather Potion tersisa!", "#f87171");
     beep(240, 0.12, 'square', 0.08);
-    return;
+    wmStopAuto();
+    renderWeatherMachine();
+    return false;
   }
 
   if(n > 1){
     const w = best || last;
-    toast(done + "× GACHA CUACA", switches ? ("Ganti ke " + w.name + " (" + switches + "× pindah)") : ("Cuaca tetap (" + kept + "× hasil sama/kurang)"), w.color);
+    toast(done + "× SINTESIS CUACA", switches ? ("Anomali aktif: " + w.name + " (" + switches + "× pergeseran)") : ("Cuaca stabil (" + kept + "× hasil sama/rendah)"), w.color);
   } else {
     toast(last.name, last.desc, last.color);
   }
@@ -1836,11 +1815,71 @@ function wmUsePotion(type){
   renderWeatherMachine();
   renderShell();
   if(!state.battle && typeof render === "function") render();
+  return true;
+}
+
+function wmToggleAuto(){
+  if(wmAutoRunning){
+    wmStopAuto();
+  } else {
+    if(!wmAutoTarget){
+      toast("PILIH TARGET", "Centang target cuaca pada daftar di sebelah kanan terlebih dahulu!", "#fcd34d");
+      beep(240, 0.12, 'square', 0.08);
+      return;
+    }
+    if((state.potions || 0) < 1){
+      toast("POTION HABIS", "Dibutuhkan Weather Potion untuk memulai auto-synthesis!", "#f87171");
+      return;
+    }
+    wmAutoRunning = true;
+    wmAutoCount = 0;
+    renderWeatherMachine();
+    wmAutoLoop();
+  }
+}
+
+function wmStopAuto(){
+  wmAutoRunning = false;
+  if(wmAutoTimer) clearTimeout(wmAutoTimer);
+  renderWeatherMachine();
+}
+
+function wmAutoLoop(){
+  if(!wmAutoRunning) return;
+  if((state.potions || 0) < 1){
+    toast("AUTO SELESAI", "Weather Potion habis!", "#f87171");
+    wmStopAuto();
+    return;
+  }
+
+  wmAutoCount++;
+  const r = useWeatherPotion();
+  if(!r.ok){
+    wmStopAuto();
+    return;
+  }
+
+  save();
+  renderWeatherMachine();
+  renderShell();
+  if(!state.battle && typeof render === "function") render();
+
+  // Cek apakah mencapai target cuaca
+  const cur = activeWeatherId();
+  if(cur && cur === wmAutoTarget){
+    beep(720, 0.2, "triangle", 0.1);
+    setTimeout(() => beep(960, 0.25, "triangle", 0.12), 120);
+    toast("TARGET TERCAPAI!", "Cuaca " + WEATHER[cur].name + " berhasil diaktifkan pada iterasi #" + wmAutoCount, WEATHER[cur].color);
+    wmStopAuto();
+    return;
+  }
+
+  wmAutoTimer = setTimeout(wmAutoLoop, 140);
 }
 
 function renderWeatherMachine(){
-  const curEl = document.getElementById('wmCurrentWeather');
   const bodyEl = document.getElementById('wmBody');
+  const headEl = document.getElementById('wmHeadWeather');
   if(!bodyEl) return;
 
   const aw = activeWeatherId();
@@ -1849,70 +1888,156 @@ function renderWeatherMachine(){
     ? fmtCountdown(state.weather.endsAt - Date.now())
     : '00:00';
 
-  if(curEl){
-    curEl.innerHTML = '<span class="wm-cur-tag">STATUS CUACA SAAT INI:</span>' +
-      '<div class="wm-cur-badge" style="border-color:' + curDef.color + ';box-shadow:0 0 12px ' + curDef.color + '33">' +
-        '<span class="wm-cur-ic" style="color:' + curDef.color + '">' + curDef.icon + '</span>' +
-        '<strong style="color:' + curDef.color + '">' + curDef.name + '</strong>' +
-        '<span class="wm-cur-timer">⏱ ' + remainingTime + '</span>' +
-      '</div>';
+  if(headEl){
+    headEl.innerHTML = '<div class="wm-cur-badge" style="border-color:' + curDef.color + ';box-shadow:0 0 12px ' + curDef.color + '44">' +
+      '<span class="wm-cur-ic" style="color:' + curDef.color + '">' + curDef.icon + '</span>' +
+      '<strong style="color:' + curDef.color + '">' + curDef.name + '</strong>' +
+      '<span class="wm-cur-timer">⏱ ' + remainingTime + '</span>' +
+    '</div>';
   }
 
   const pPotCnt = (state && state.potions) || 0;
-  const mPotCnt = (state && state.mythicPotions) || 0;
+  const p = (state && state.wpity) || { r: 0, m: 0 };
+  const rLeft = Math.max(0, PITY_RARE - (p.r || 0));
+  const mLeft = Math.max(0, PITY_MYTHIC - (p.m || 0));
 
-  const multiHtml = '<div class="bpholo-multi-wrap wm-multi-wrap">' +
-    '<div class="bpholo-multi-label">BATCH SYNTHESIS:</div>' +
-    '<div class="wo-multi">' +
-      [1, 5, 25, 100].map(n => '<button data-n="' + n + '" class="' + (wmMultiN === n ? 'on' : '') + '" onclick="setWmMulti(' + n + ')">' + n + '×</button>').join('') +
-    '</div>' +
-  '</div>';
-
-  const catalystCards = '' +
-    '<div class="wm-cards-grid">' +
-      '<div class="wm-card">' +
-        '<div class="wm-card-badge standard">STANDARD CATALYST</div>' +
-        '<div class="wm-card-img-wrap"><img src="assets/images/icon-potion.png" alt="Weather Potion" class="wm-card-img"></div>' +
-        '<div class="wm-card-info">' +
-          '<div class="wm-card-name">WEATHER POTION</div>' +
-          '<div class="wm-card-desc">Gacha cuaca acak mengikuti peluang asli & pity rate. Hasil yang lebih langka akan langsung mengaktifkan cuaca baru dan mereset durasi 5 menit.</div>' +
-          '<div class="wm-card-owned">DIMILIKI: <b>' + fmt(pPotCnt) + ' Potion</b></div>' +
-        '</div>' +
-        '<div class="wm-card-footer">' +
-          '<button class="wm-synthesize-btn ' + (pPotCnt > 0 ? '' : 'disabled') + '" type="button" ' + (pPotCnt > 0 ? '' : 'disabled') + ' onclick="wmUsePotion(\'standard\')">' +
-            '<span>SINTESIS CUACA' + (wmMultiN > 1 ? ' (' + wmMultiN + '×)' : '') + '</span>' +
-          '</button>' +
-        '</div>' +
+  // Daftar probabilitas cuaca (seperti tr-rates)
+  const ratesHtml = WEATHERS.map(w => {
+    const own = aw === w.id;
+    const isTarget = wmAutoTarget === w.id;
+    const pct = w.dropWeight / 100;
+    const pctS = pct < 1 ? pct.toFixed(2) : pct.toFixed(1);
+    const inv = Math.round(10000 / w.dropWeight);
+    return '<div class="trr-item' + (own ? ' own' : '') + (isTarget ? ' is-target' : '') + '" style="--tcol:' + w.color + '" title="' + w.name + ' • ' + w.desc + '">' +
+      '<div class="trr-row">' +
+        '<span class="trr-gem" style="color:' + w.color + '">' + w.icon + '</span>' +
+        '<span class="trr-name" style="color:' + w.color + '">' + w.name + '</span>' +
+        (own ? '<span class="trr-flag">ACTIVE</span>' : '') +
+        '<span class="trr-rar ' + w.rar.toLowerCase() + '">' + w.rar + '</span>' +
+        '<span class="trr-pct">' + pctS + '%</span>' +
+        '<label class="trr-tgt" title="Target Auto Synthesis">' +
+          '<input type="radio" name="wmAutoTgt" value="' + w.id + '" ' + (isTarget ? 'checked' : '') + ' onchange="wmSelectTarget(\'' + w.id + '\')">' +
+          '<span class="trr-tgt-box">' +
+            '<svg class="trr-tgt-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>' +
+          '</span>' +
+        '</label>' +
       '</div>' +
-
-      '<div class="wm-card mythic">' +
-        '<div class="wm-card-badge mythic">MYTHIC CATALYST</div>' +
-        '<div class="wm-card-img-wrap"><img src="assets/images/icon-mythic.png" alt="Mythic Weather Potion" class="wm-card-img"></div>' +
-        '<div class="wm-card-info">' +
-          '<div class="wm-card-name">MYTHIC WEATHER POTION</div>' +
-          '<div class="wm-card-desc">Katalis cuaca ultra langka! Peluang kelas AWAKENED dinaikkan drastis hingga 3% untuk memicu fenomena cuaca terkuat di seluruh jagat raya.</div>' +
-          '<div class="wm-card-owned">DIMILIKI: <b>' + fmt(mPotCnt) + ' Potion</b></div>' +
-        '</div>' +
-        '<div class="wm-card-footer">' +
-          '<button class="wm-synthesize-btn mythic ' + (mPotCnt > 0 ? '' : 'disabled') + '" type="button" ' + (mPotCnt > 0 ? '' : 'disabled') + ' onclick="wmUsePotion(\'mythic\')">' +
-            '<span>SINTESIS MYTHIC' + (wmMultiN > 1 ? ' (' + wmMultiN + '×)' : '') + '</span>' +
-          '</button>' +
-        '</div>' +
-      '</div>' +
+      '<div class="trr-bar"><i style="width:' + Math.min(100, Math.max(2, (w.dropWeight / 4500) * 100)) + '%;background:linear-gradient(90deg,' + w.color + ',#7DF9FF)"></i></div>' +
     '</div>';
+  }).join('');
 
   bodyEl.innerHTML = '' +
-    '<div class="wm-subbanner">' +
-      '<span class="wm-sub-ic">⚡</span>' +
-      '<span class="wm-sub-txt">Weather Machine mengendalikan iklim dan anomali atmosferik. Potion cuaca diaktifkan di sini untuk memicu cuaca langka dengan pengganda Luck & Speed!</span>' +
-    '</div>' +
-    multiHtml +
-    catalystCards +
-    '<div class="wm-odds-container">' + weatherOddsHTML() + '</div>';
+    '<div class="tr-grid wm-grid">' +
+      '<!-- SISI KIRI: CONTROLS & SYNTHESIZER (SEPERTI TR-MAIN) -->' +
+      '<div class="tr-main wm-main">' +
+        '<!-- KARTU AKTIF CUACA (MIRIP TR-CUR) -->' +
+        '<div class="tr-cur wm-cur-panel" style="--tcol:' + curDef.color + '">' +
+          '<div class="tr-cur-thumb-wrap wm-thumb-wrap">' +
+            '<img src="assets/images/weather-potion.webp?v=1" alt="Weather Potion">' +
+            '<span class="tr-cur-scanline"></span>' +
+          '</div>' +
+          '<div class="tr-cur-info wm-cur-info">' +
+            '<div class="tc-lbl-row">' +
+              '<span class="tc-lbl">ATMOSPHERIC NODE</span>' +
+              '<span class="tc-code">CORE // ' + curDef.rar + '</span>' +
+            '</div>' +
+            '<div class="tc-name" style="color:' + curDef.color + '">' + curDef.name + '</div>' +
+            '<div class="tc-tline">' +
+              '<span class="tc-trait-pill" style="--tcol:' + curDef.color + '">' +
+                '<span class="tc-gem-wrap">' + curDef.icon + '</span>' +
+                '<span class="tc-name-glow">' + curDef.desc + '</span>' +
+              '</span>' +
+            '</div>' +
+            '<div class="tc-tstat-wrap wm-stat-row">' +
+              '<div class="tc-badge-stat"><span class="tcb-tag">LUCK</span> <b class="tcb-val">' + (curDef.luckBonus > 1 ? '+' + Math.round((curDef.luckBonus - 1) * 100) + '%' : '1.0×') + '</b></div>' +
+              '<div class="tc-badge-stat"><span class="tcb-tag">SPEED</span> <b class="tcb-val">' + (curDef.speedBonus > 1 ? '+' + Math.round((curDef.speedBonus - 1) * 100) + '%' : '1.0×') + '</b></div>' +
+              '<div class="tc-badge-stat"><span class="tcb-tag">DURATION</span> <b class="tcb-val">' + remainingTime + '</b></div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+
+        '<!-- PITY BARS -->' +
+        '<div class="wm-pity-block">' +
+          '<div class="wo-pity">' +
+            '<div class="wo-pity-top"><span>RARE GUARANTEED IN</span><b>' + fmt(rLeft) + ' SINTESIS</b></div>' +
+            '<div class="wo-bar wo-r"><i style="width:' + Math.min(100, (PITY_RARE - rLeft) / PITY_RARE * 100).toFixed(1) + '%"></i></div>' +
+          '</div>' +
+          '<div class="wo-pity">' +
+            '<div class="wo-pity-top"><span>AWAKENED GUARANTEED IN</span><b>' + fmt(mLeft) + ' SINTESIS</b></div>' +
+            '<div class="wo-bar wo-m"><i style="width:' + Math.min(100, (PITY_MYTHIC - mLeft) / PITY_MYTHIC * 100).toFixed(1) + '%"></i></div>' +
+          '</div>' +
+        '</div>' +
+
+        '<!-- TOMBOL KONTROL SYNTHESIS (SEPERTI TR-CONTROLS) -->' +
+        '<div class="tr-controls wm-controls">' +
+          '<button class="tr-btn tr-roll wm-roll-btn" type="button" ' + (pPotCnt < 1 || wmAutoRunning ? 'disabled' : '') + ' onclick="wmSynthesizeRoll()">' +
+            '<span class="tr-btn-glow"></span>' +
+            '<span class="tr-btn-content">' +
+              '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>' +
+              '<span>' + (wmAutoRunning ? 'SYNTHESIS RUNNING...' : 'SINTESIS CUACA' + (wmMultiN > 1 ? ' (' + wmMultiN + '×)' : '')) + '</span>' +
+              '<span class="tr-cost-badge">1× POTION</span>' +
+            '</span>' +
+          '</button>' +
+        '</div>' +
+
+        '<!-- AUTO SYNTHESIS PANEL (SEPERTI TR-AUTO-PANEL) -->' +
+        '<div class="tr-auto-panel' + (wmAutoRunning ? ' on' : '') + '">' +
+          '<div class="tr-auto-top">' +
+            '<button class="tr-btn tr-auto-btn wm-auto-btn" type="button" ' + (pPotCnt < 1 && !wmAutoRunning ? 'disabled' : '') + ' onclick="wmToggleAuto()">' +
+              (wmAutoRunning
+                ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg> ABORT AUTO SYNTHESIS'
+                : '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg> INITIATE AUTO SYNTHESIS') +
+            '</button>' +
+            '<div class="tr-pulse-indicator' + (wmAutoRunning ? ' pulse-run' : '') + '">' +
+              '<span class="tr-pi-dot"></span>' +
+              '<span class="tr-pi-txt">' + (wmAutoRunning ? 'CYCLING 140ms' : 'STANDBY') + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="tr-auto-meta">' +
+            '<div class="tram-row"><span class="tram-k">LOCKED TARGET:</span> <b class="tram-v">' + (wmAutoTarget ? WEATHER[wmAutoTarget].name : 'PILIH DARI DAFTAR') + '</b></div>' +
+            '<div class="tram-row"><span class="tram-k">ITERATION:</span> <b class="tram-n">#' + wmAutoCount + '</b></div>' +
+          '</div>' +
+        '</div>' +
+
+        '<!-- FOOTER STATUS -->' +
+        '<div class="tr-footer-status wm-footer-status">' +
+          '<div class="tr-coin-pill">' +
+            '<img src="assets/images/weather-potion.webp?v=1" alt="Potion" width="18" height="18">' +
+            '<span>POTION SUPPLY:</span>' +
+            '<b class="tr-coin" style="color:#38bdf8">' + fmt(pPotCnt) + '</b>' +
+          '</div>' +
+          '<div class="bpholo-multi-wrap" style="margin:0">' +
+            '<div class="bpholo-multi-label">BATCH:</div>' +
+            '<div class="wo-multi">' +
+              [1, 5, 25, 100].map(n => '<button data-n="' + n + '" class="' + (wmMultiN === n ? 'on' : '') + '" onclick="setWmMulti(' + n + ')">' + n + '×</button>').join('') +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<!-- SISI KANAN: RATES & TARGET SELECTOR (SEPERTI TR-RATES) -->' +
+      '<div class="tr-rates wm-rates">' +
+        '<div class="trr-h">' +
+          '<div class="trr-h-title">' +
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>' +
+            'ATMOSPHERIC PROBABILITY MATRIX' +
+          '</div>' +
+          '<span class="trr-h-sub">PILIH TARGET AUTO</span>' +
+        '</div>' +
+        '<div class="trr-list wm-rates-list">' + ratesHtml + '</div>' +
+      '</div>' +
+    '</div>';
+}
+
+function wmSelectTarget(wId){
+  wmAutoTarget = (wmAutoTarget === wId) ? null : wId;
+  renderWeatherMachine();
 }
 
 window.openWeatherMachine = openWeatherMachine;
 window.closeWeatherMachine = closeWeatherMachine;
 window.setWmMulti = setWmMulti;
-window.wmUsePotion = wmUsePotion;
+window.wmSynthesizeRoll = wmSynthesizeRoll;
+window.wmToggleAuto = wmToggleAuto;
+window.wmSelectTarget = wmSelectTarget;
 window.renderWeatherMachine = renderWeatherMachine;

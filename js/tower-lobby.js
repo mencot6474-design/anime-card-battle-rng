@@ -307,8 +307,7 @@ function renderTowerShop(){
     {k:"luck3",cat:"AUGMENT",tier:"MK-III",label:"NEURAL LUCK MK-III",sub:"+10 flat luck & +20% luck multiplier selama 5 menit. Matrix augmentasi maksimal.",cost:250,req:null,ac:"#5cf0a8"},
     {k:"speed1",cat:"OVERCLOCK",tier:"MK-I",label:"CHRONO BOOSTER MK-I",sub:"Roll speed +0.2× (≈1.2×) selama 5 menit. Mempercepat siklus putaran RNG mesin menara.",cost:10,req:null,ac:"#ffd27a"},
     {k:"speed2",cat:"OVERCLOCK",tier:"MK-II",label:"CHRONO BOOSTER MK-II",sub:"Roll speed +0.5× (≈1.5×) selama 5 menit. Overclock sinkronisasi akselerator.",cost:50,req:null,ac:"#ffd27a"},
-    {k:"speed3",cat:"OVERCLOCK",tier:"MK-III",label:"CHRONO BOOSTER MK-III",sub:"Roll speed +1.0× (2.0× instan) selama 5 menit. Siklus overdrive kecepatan tertinggi.",cost:250,req:null,ac:"#ffd27a"},
-    {k:"mythic",cat:"CATACLYSM",tier:"PROTO",label:"MYTHIC WEATHER CORE",sub:"Sintesis 1 Weather Potion -> Mythic: Membuka peluang cuaca APOCALYPSE 3% (durasi 5 menit).",cost:50,req:"weather",ac:"#c084fc"}
+    {k:"speed3",cat:"OVERCLOCK",tier:"MK-III",label:"CHRONO BOOSTER MK-III",sub:"Roll speed +1.0× (2.0× instan) selama 5 menit. Siklus overdrive kecepatan tertinggi.",cost:250,req:null,ac:"#ffd27a"}
   ];
   const stkOf=k=>k==="weather"?(state.potions||0):k.startsWith("luck")?(state.luckPots&&state.luckPots[+k.slice(-1)-1])||0:k.startsWith("speed")?(state.speedPots&&state.speedPots[+k.slice(-1)-1])||0:(state.mythicPotions||0);
   if(window.shopSel==null||window.shopSel>=ITEMS.length)window.shopSel=0;
@@ -429,10 +428,6 @@ function renderTowerShop(){
           <b class="cyan">${fmt(tok)}</b>
         </div>
         <div class="csd-tel-card">
-          <small>MYTHIC CORE</small>
-          <b class="purple">${fmt(state.mythicPotions||0)}</b>
-        </div>
-        <div class="csd-tel-card">
           <small>WEATHER POT</small>
           <b>${fmt(state.potions||0)}</b>
         </div>
@@ -461,12 +456,10 @@ function renderTowerShop(){
 function infBuy(kind){
   const cost={weather:10,luck1:10,luck2:50,luck3:250,speed1:10,speed2:50,speed3:250,mythic:50}[kind]; if(cost==null)return;
   if((state.infTokens||0)<cost){toast("TOKEN KURANG","TOKEN INF TIDAK CUKUP","#f87171");return;}
-  if(kind==='mythic'&&(state.potions||0)<1){toast("Butuh 1 Weather Potion","GAK BISA","#f87171");return;}
   state.infTokens-=cost;
   if(kind==='weather')state.potions=(state.potions||0)+1;
   else if(kind.startsWith('luck')){state.luckPots=state.luckPots||[0,0,0];state.luckPots[+kind.slice(-1)-1]++;}
   else if(kind.startsWith('speed')){state.speedPots=state.speedPots||[0,0,0];state.speedPots[+kind.slice(-1)-1]++;}
-  else if(kind==='mythic'){state.potions--;state.mythicPotions=(state.mythicPotions||0)+1;}
   save(); beep(660,.1,"sine",.07);
   const label={weather:'WEATHER POTION',mythic:'MYTHIC POTION'}[kind]||(kind.startsWith('luck')?'LUCK POTION L'+kind.slice(-1):'SPEED POTION L'+kind.slice(-1));
   toast(label,"-"+cost+" TOKEN","#c4b5fd");
