@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v152-wm-hidedocks';
+const CACHE_NAME = 'anime-card-battle-v153-auto-hide-mini';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

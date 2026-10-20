@@ -1774,7 +1774,7 @@ body.on-lobby .weather-panel.show{display:flex;}
 
 
 
-/* Sembunyikan dock, panel weather, dan mini strip roll saat modal Index Card, Trait, Weather Machine, Premium, Mission, Story, Profil, atau Title terbuka */
+/* Sembunyikan dock, panel weather, roll overlay penuh, dan mini reveal strip saat modal / fitur non-lobby aktif */
 body:has(#indexModal.show) .lobby-footer,
 body:has(#traitModal.show) .lobby-footer,
 body:has(#weatherMachineModal.show) .lobby-footer,
@@ -1802,35 +1802,27 @@ body:has(#storyModal.show) .roll-mini-strip,
 body:has(#startModal.show) .roll-mini-strip,
 body:has(#profModal.show) .roll-mini-strip,
 body:has(#titlesModal.show) .roll-mini-strip,
+body:has(#indexModal.show) .roll-overlay,
+body:has(#traitModal.show) .roll-overlay,
+body:has(#weatherMachineModal.show) .roll-overlay,
+body:has(#premiumModal.show) .roll-overlay,
+body:has(#missionModal.show) .roll-overlay,
+body:has(#storyModal.show) .roll-overlay,
+body:has(#startModal.show) .roll-overlay,
+body:has(#profModal.show) .roll-overlay,
+body:has(#titlesModal.show) .roll-overlay,
 body:has(#weatherMachineModal.show) .buff-dock,
 body:has(#profModal.show) .buff-dock,
 body:has(#titlesModal.show) .buff-dock,
 body.hide-docks-modal .lobby-footer,
 body.hide-docks-modal .weather-panel,
 body.hide-docks-modal .roll-mini-strip,
-
-
-
+body.hide-docks-modal .roll-overlay,
 body.battle-full .roll-overlay,
-
-
-
 body.battle-full .roll-mini-strip,
-
-
-
 body.on-tower .roll-overlay,
-
-
-
 body.on-tower .roll-mini-strip,
-
-
-
 body.on-raid .roll-overlay,
-
-
-
 body.on-raid .roll-mini-strip{
 
 

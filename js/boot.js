@@ -280,7 +280,17 @@ document.getElementById("stClose").onclick=closeStart;
 document.getElementById("startModal").addEventListener("click",e=>{if(e.target.id==="startModal")closeStart();});
 document.getElementById("smClose").onclick=closeStory;
 document.getElementById("storyModal").addEventListener("click",e=>{if(e.target.id==="storyModal")closeStory();});
-window.addEventListener("hashchange",()=>{stopBattleLoop();stopRaid();stopTower();if(route()!=="#/"){state.battle=null;}closeStory();render();});
+window.addEventListener("hashchange",()=>{
+  stopBattleLoop();
+  stopRaid();
+  stopTower();
+  if(route()!=="#/"){
+    state.battle=null;
+    if(typeof collapseMiniReveal === "function") collapseMiniReveal();
+  }
+  closeStory();
+  render();
+});
 
 /* =============== AUTH + BOOT =============== */
 let authMode="login";

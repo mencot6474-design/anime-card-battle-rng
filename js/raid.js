@@ -670,6 +670,7 @@ function renderRaidShop(){
 const IX_MUTS=["none","gold","rainbow","secret","ultima"];
 let ixState={q:"",mut:"all",shiny:false,owned:false,sort:"name"};
 function openIndex(){
+  if(typeof collapseMiniReveal === "function") collapseMiniReveal();
   /* Katalog SEMUA kartu — layout meniru referensi "INDEX!": search di header, toolbar
      chip mutasi + toggle SHINY + OWNED ONLY + sort, grid full-art (nama, centang owned
      x/10, pips mut×shiny, nama+deskripsi skill di atas art), footer strip progres varian
@@ -902,7 +903,10 @@ let pendingRareAuto=false;
 let autoTargets=new Set();
 const AUTO_TICK=100; // ms antar roll (kecepatan auto roll)
 function traitTargetStack(){let s=state.stacks.find(x=>x.id===traitTarget);if(!s){s=equipped();traitTarget=s?s.id:null;}return s;}
-function openTrait(){traitTarget=null;pendingRare=null;pendingRareAuto=false;renderTrait();document.getElementById("traitModal").classList.add("show");}
+function openTrait(){
+  if(typeof collapseMiniReveal === "function") collapseMiniReveal();
+  traitTarget=null;pendingRare=null;pendingRareAuto=false;renderTrait();document.getElementById("traitModal").classList.add("show");
+}
 function closeTrait(){autoStop();document.getElementById("traitModal").classList.remove("show");hideTraitTip();}
 function renderTrait(){
   const b=document.getElementById("trBody");

@@ -646,7 +646,10 @@ function showRollResult(result) {
 }
 
 // Modal profil: open/close + update data
-function openProfileModal(){const b=document.getElementById("profBackdrop");const m=document.getElementById("profModal");if(b){b.classList.add("show");b.style.display="block";}if(m){m.classList.add("show");m.style.display="flex";renderProfile();}}
+function openProfileModal(){
+  if(typeof collapseMiniReveal === "function") collapseMiniReveal();
+  const b=document.getElementById("profBackdrop");const m=document.getElementById("profModal");if(b){b.classList.add("show");b.style.display="block";}if(m){m.classList.add("show");m.style.display="flex";renderProfile();}
+}
 function closeProfileModal(){const b=document.getElementById("profBackdrop");const m=document.getElementById("profModal");if(b){b.classList.remove("show");b.style.display="none";}if(m){m.classList.remove("show");m.style.display="none";}}
 
 // Modal Titles Cyberpunk
@@ -952,6 +955,14 @@ function syncRollMiniStrip() {
   }
   positionMiniReveal();
 }
+
+function collapseMiniReveal() {
+  if (typeof rollState !== 'undefined') {
+    rollState.collapsed = true;
+    syncRollMiniStrip();
+  }
+}
+window.collapseMiniReveal = collapseMiniReveal;
 
 // Letakin strip + kartu mini TEPAS di atas footer (tinggi footer bisa berubah pas weather on/off).
 function positionMiniReveal() {
@@ -1632,6 +1643,7 @@ function premSetTab(tabKey){
 }
 
 function openPremiumShop(){
+  if(typeof collapseMiniReveal === "function") collapseMiniReveal();
   renderPremiumShop();
   var modal = document.getElementById('premiumModal');
   if(modal) modal.classList.add('show');
@@ -1831,6 +1843,7 @@ let wmAutoTimer = null;
 let wmAutoCount = 0;
 
 function openWeatherMachine(){
+  if(typeof collapseMiniReveal === "function") collapseMiniReveal();
   wmAutoRunning = false;
   if(wmAutoTimer) clearTimeout(wmAutoTimer);
   renderWeatherMachine();
