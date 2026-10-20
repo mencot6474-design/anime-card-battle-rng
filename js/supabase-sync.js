@@ -152,7 +152,9 @@ const CloudDB = {
         }
       }
 
-      const res = await this.saveState(username, curSave);
+      /* Upload state LOKAL terbaru (bukan snapshot cloud lama) supaya kartu/progress terbaru tidak ter-rollback. */
+      const payload = window.state ? window.state : curSave;
+      const res = await this.saveState(username, payload);
       return { ok: true, balance: curSave.premiumGems };
     } catch (err) {
       console.error("[CloudDB verifyAndDeductGems fail]", err);

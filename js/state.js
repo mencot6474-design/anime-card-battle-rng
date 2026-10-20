@@ -54,7 +54,7 @@ function loadStateFor(name){
   
   state.stacks=state.stacks.filter(s=>CARDS[s.char]);
   
-  {const seen={};state.stacks.forEach(s=>{const k=s.char+"|"+(s.mut||"none");if(!seen[k]){seen[k]=s;s.count=s.count||1;}else{seen[k].count=(seen[k].count||1)+(s.count||1);if((s.trait&&s.trait!=="none")&&(!seen[k].trait||seen[k].trait==="none"))seen[k].trait=s.trait;}});state.stacks=Object.values(seen);}
+  {const seen={};state.stacks.forEach(s=>{const k=s.char+"|"+(s.mut||"none")+"|"+(s.shiny?1:0);if(!seen[k]){seen[k]=s;s.count=s.count||1;}else{seen[k].count=(seen[k].count||1)+(s.count||1);if((s.trait&&s.trait!=="none")&&(!seen[k].trait||seen[k].trait==="none"))seen[k].trait=s.trait;}});state.stacks=Object.values(seen);}
   
   if(!state.stacks.length){const st=freshState();state.stacks=st.stacks;}
   
