@@ -1635,6 +1635,7 @@ function openPremiumShop(){
   renderPremiumShop();
   var modal = document.getElementById('premiumModal');
   if(modal) modal.classList.add('show');
+  document.body.classList.add('hide-docks-modal');
   var closeBtn = document.getElementById('premClose');
   if(closeBtn) closeBtn.onclick = closePremiumShop;
   if(modal) modal.onclick = function(e){ if(e.target.id === 'premiumModal') closePremiumShop(); };
@@ -1643,6 +1644,7 @@ function openPremiumShop(){
 function closePremiumShop(){
   var modal = document.getElementById('premiumModal');
   if(modal) modal.classList.remove('show');
+  document.body.classList.remove('hide-docks-modal');
 }
 
 function renderPremiumShop(){
@@ -1834,6 +1836,7 @@ function openWeatherMachine(){
   renderWeatherMachine();
   const modal = document.getElementById('weatherMachineModal');
   if(modal) modal.classList.add('show');
+  document.body.classList.add('hide-docks-modal');
   const closeBtn = document.getElementById('wmClose');
   if(closeBtn) closeBtn.onclick = closeWeatherMachine;
   if(modal) modal.onclick = function(e){ if(e.target.id === 'weatherMachineModal') closeWeatherMachine(); };
@@ -1843,6 +1846,7 @@ function closeWeatherMachine(){
   wmStopAuto();
   const modal = document.getElementById('weatherMachineModal');
   if(modal) modal.classList.remove('show');
+  document.body.classList.remove('hide-docks-modal');
 }
 
 function setWmMulti(n){

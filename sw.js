@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v151-prem-weather';
+const CACHE_NAME = 'anime-card-battle-v152-wm-hidedocks';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

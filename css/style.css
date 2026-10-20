@@ -1774,110 +1774,39 @@ body.on-lobby .weather-panel.show{display:flex;}
 
 
 
-/* Sembunyikan dock, panel weather, dan mini strip roll saat modal Index Card, Trait, Mission, Story, Profil, atau Title terbuka */
-
-
-
+/* Sembunyikan dock, panel weather, dan mini strip roll saat modal Index Card, Trait, Weather Machine, Premium, Mission, Story, Profil, atau Title terbuka */
 body:has(#indexModal.show) .lobby-footer,
-
-
-
 body:has(#traitModal.show) .lobby-footer,
-
-
-
+body:has(#weatherMachineModal.show) .lobby-footer,
+body:has(#premiumModal.show) .lobby-footer,
 body:has(#missionModal.show) .lobby-footer,
-
-
-
 body:has(#storyModal.show) .lobby-footer,
-
-
-
 body:has(#startModal.show) .lobby-footer,
-
-
-
 body:has(#profModal.show) .lobby-footer,
-
-
-
 body:has(#titlesModal.show) .lobby-footer,
-
-
-
 body:has(#indexModal.show) .weather-panel,
-
-
-
 body:has(#traitModal.show) .weather-panel,
-
-
-
+body:has(#weatherMachineModal.show) .weather-panel,
+body:has(#premiumModal.show) .weather-panel,
 body:has(#missionModal.show) .weather-panel,
-
-
-
 body:has(#storyModal.show) .weather-panel,
-
-
-
 body:has(#startModal.show) .weather-panel,
-
-
-
 body:has(#profModal.show) .weather-panel,
-
-
-
 body:has(#titlesModal.show) .weather-panel,
-
-
-
 body:has(#indexModal.show) .roll-mini-strip,
-
-
-
 body:has(#traitModal.show) .roll-mini-strip,
-
-
-
+body:has(#weatherMachineModal.show) .roll-mini-strip,
+body:has(#premiumModal.show) .roll-mini-strip,
 body:has(#missionModal.show) .roll-mini-strip,
-
-
-
 body:has(#storyModal.show) .roll-mini-strip,
-
-
-
 body:has(#startModal.show) .roll-mini-strip,
-
-
-
 body:has(#profModal.show) .roll-mini-strip,
-
-
-
 body:has(#titlesModal.show) .roll-mini-strip,
-
-
-
+body:has(#weatherMachineModal.show) .buff-dock,
 body:has(#profModal.show) .buff-dock,
-
-
-
 body:has(#titlesModal.show) .buff-dock,
-
-
-
 body.hide-docks-modal .lobby-footer,
-
-
-
 body.hide-docks-modal .weather-panel,
-
-
-
 body.hide-docks-modal .roll-mini-strip,
 
 
@@ -46415,6 +46344,8 @@ body.battle-full .fighter.foe.ko {
   max-height: 86vh !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
   border-radius: 16px !important;
   border: 1px solid rgba(56, 189, 248, 0.3) !important;
   background: linear-gradient(165deg, rgba(14, 20, 32, 0.98) 0%, rgba(8, 12, 20, 0.98) 60%, rgba(5, 7, 12, 1) 100%) !important;
@@ -46709,8 +46640,9 @@ body.battle-full .fighter.foe.ko {
 .wm-rates-list {
   max-height: 330px !important;
   overflow-y: auto !important;
-  scrollbar-width: thin !important;
-  padding-right: 3px !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  padding-right: 0 !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 4px !important;
@@ -46759,4 +46691,12 @@ body.battle-full .fighter.foe.ko {
 .wm-rates .trr-tgt-box svg {
   width: 10px !important;
   height: 10px !important;
+}
+
+/* Weather Machine Scrollbar Hidden */
+.wm-box::-webkit-scrollbar,
+.wm-rates-list::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
