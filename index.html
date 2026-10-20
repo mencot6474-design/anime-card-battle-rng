@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1600, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+<title>Anime Card Battle</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1f2833">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700;800&family=Russo+One&family=Rajdhani:wght@700;800;900&display=swap" rel="stylesheet">
+<!-- External Game Icon Library: Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<link rel="stylesheet" href="css/style.css?v=v142-compactdock">
+<link rel="stylesheet" href="css/sl-system.css?v=sl-v4">
+<link rel="stylesheet" href="css/story-carousel.css?v=v8">
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js?v=v112').catch(() => {});
+    });
+  }
+</script>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <defs>
+    <linearGradient id="coinGoldGrad" x1="4" y1="4" x2="20" y2="20" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFD700"/>
+      <stop offset="0.5" stop-color="#FFA000"/>
+      <stop offset="1" stop-color="#FF6F00"/>
+    </linearGradient>
+    <g id="coinSvgSymbol">
+      <circle cx="12" cy="12" r="10" fill="url(#coinGoldGrad)" stroke="#FFE57F" stroke-width="1.2"/>
+      <circle cx="12" cy="12" r="7.5" fill="none" stroke="#FFE57F" stroke-width="0.8" stroke-dasharray="2 1.5"/>
+      <path d="M12 7.5v9M9.5 9.5h5a1.5 1.5 0 0 1 0 3h-5a1.5 1.5 0 0 0 0 3h5.5" stroke="#FFF9C4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </defs>
+</svg>
+<div id="liveVeil" aria-hidden="true"></div>
+<div id="loadingScreen" class="hidden">
+  <div class="ld-inner">
+    <div class="ld-logo"><svg viewBox="0 0 24 24" fill="none" aria-label="Clan Uzumaki"><path d="M12 12a2 2 0 0 1 4 0 4 4 0 0 1-8 0 6 6 0 0 1 12 0 8 8 0 0 1-16 0" stroke="#fff" stroke-width="2.1" stroke-linecap="round"/></svg></div>
+    <div class="ld-title disp">Anime <span class="ld-accent">Card Battle</span></div>
+    <div class="ld-bar"><i id="ldFill"></i></div>
+    <div class="ld-status" id="ldStatus">Memuat…</div>
+  </div>
+</div>
+<div id="authSpin" class="hidden">
+  <div class="as-box">
+    <div class="as-ring"></div>
+    <div class="as-txt" id="asTxt">Memproses…</div>
+  </div>
+</div>
+<div id="authDone" class="hidden">
+  <div class="as-box">
+    <div class="as-check">✓</div>
+    <div class="as-title" id="adTitle">Akun berhasil dibuat</div>
+    <div class="as-txt" id="adMsg">Silakan masuk dengan akun barumu.</div>
+    <button class="as-btn" id="adOk">KE LOGIN</button>
+  </div>
+</div>
+<div id="welcomeModal" class="hidden">
+  <div class="as-box">
+    <div class="as-check">✓</div>
+    <div class="as-title">Berhasil masuk</div>
+    <div class="as-txt" id="wlMsg">Selamat datang kembali.</div>
+    <button class="as-btn" id="wlOk">MULAI</button>
+  </div>
+</div>
+<div id="authScreen" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;background:#0b0e14;padding:16px;">
+  <div class="au-card" style="position:relative;z-index:1000000;display:block;">
+    <div class="au-logo"><svg viewBox="0 0 24 24" fill="none" aria-label="Clan Uzumaki"><path d="M12 12a2 2 0 0 1 4 0 4 4 0 0 1-8 0 6 6 0 0 1 12 0 8 8 0 0 1-16 0" stroke="#fff" stroke-width="2.1" stroke-linecap="round"/></svg></div>
+    <div class="au-brand disp">Anime Card Battle</div>
+    <div class="au-sub">Battle Arena · masuk ke akunmu</div>
+    <div class="au-tabs">
+      <button class="au-tab active" id="tabLogin">MASUK</button>
+      <button class="au-tab" id="tabRegister">DAFTAR</button>
+    </div>
+    <label class="au-lbl">Username</label>
+    <input class="au-input" id="auUser" type="text" placeholder="nama shinobi" autocomplete="off" maxlength="16">
+    <label class="au-lbl">Password</label>
+    <input class="au-input" id="auPass" type="password" placeholder="••••••" autocomplete="off" maxlength="24">
+    <div class="au-err" id="auErr"></div>
+    <button class="au-go" id="auSubmit">MASUK</button>
+    <div class="au-note">Profil lokal — data tersimpan hanya di browser ini.</div>
+  </div>
+</div>
+<header id="topbar">
+  <div class="tb-profile">
+    <div class="tb-av-wrapper">
+      <div class="tb-av" id="profAv" title="Buka profil"></div>
+      <label class="tb-av-change" for="avFileInput" title="Ganti Avatar dari Galeri">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      </label>
+      <input type="file" id="avFileInput" accept="image/*" style="display:none">
+    </div>
+    <div class="tb-id">
+      <div class="tb-top"><span class="tb-name" id="tbName">GUEST</span><span class="tb-chips"><span class="tb-pw" id="tbPw" title="Total HP + ATK kartu utama + TAG">&#9889; 0</span><span class="tb-lvl" id="tbLvl">LVL 1</span></span></div>
+      <div class="xpbar tb-xpbar"><i id="tbXpFill" style="width:0%"></i><span id="tbXpText">0 / 1000</span></div>
+    </div>
+  </div>
+  <div class="spacer"></div>
+  <div class="pill coins" id="coinPill" title="Gold Coin">
+    <span class="coin-icon-wrap">
+      <svg width="20" height="20" viewBox="0 0 24 24"><use href="#coinSvgSymbol"/></svg>
+    </span>
+    <span id="coinVal"></span>
+  </div>
+  <div class="pill gems" id="gemPill" title="Mata Uang Premium (Klik untuk buka Toko Premium)">
+    <span class="coin-icon-wrap gem-icon-wrap">
+      <img src="assets/images/premium-currency.webp" alt="Gem" width="22" height="22" style="border-radius:50%;object-fit:cover;filter:drop-shadow(0 0 4px rgba(255,215,0,0.6));">
+    </span>
+    <span id="gemVal">0</span>
+  </div>
+   <button class="nav-btn tb-settings" data-route="#/settings" title="Pengaturan"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.14.5.55.9 1.1 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+</header>
+<!-- Profil modal -->
+<div class="modal-backdrop" id="profBackdrop" style="position:fixed;top:48px;left:0;right:0;bottom:0;z-index:75;"></div>
+<div class="modal-profile" id="profModal">
+  <div class="prof-modal-inner">
+    <button class="prof-x" id="profClose" type="button" aria-label="Tutup profil">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="prof-top">
+      <div class="prof-left">
+        <div class="prof-title-tag" id="pfTitleTag">[UNRANKED]</div>
+        <div class="prof-av-wrap">
+          <div class="prof-av" id="pfAv"></div>
+          <span class="prof-av-badge">ACTIVE</span>
+        </div>
+        <div class="prof-id">
+          <div class="prof-name" id="pfName">GUEST</div>
+          <div class="prof-lvline">
+            <span class="prof-lv-pill">LV <b id="pfLv">1</b></span>
+            <span class="prof-deck" id="pfDeck">MAIN DECK · —</span>
+          </div>
+          <div class="xpbar prof-xp"><i id="pfXpFill" style="width:0%"></i><span id="pfXpText">0 / 1000</span></div>
+        </div>
+        <button class="prof-titles-btn" id="pfTitlesBtn" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+          TITLES
+        </button>
+      </div>
+      <div class="prof-right">
+        <div class="prof-header-meta">
+          <div class="prof-eyebrow">NEURAL MATRIX · AGENT TELEMETRY</div>
+          <div class="prof-h1">OPERATOR STATS</div>
+        </div>
+        <div class="prof-party-wrap">
+          <div class="prof-party-t">EQUIPPED PARTY GEAR</div>
+          <div class="prof-party-row" id="pfParty"></div>
+        </div>
+        <div class="prof-stats" id="pfStats"></div>
+      </div>
+    </div>
+    <div class="prof-body" id="profBody"></div>
+  </div>
+</div>
+<!-- Modal Titles Cyberpunk -->
+<div class="modal-backdrop" id="titlesBackdrop" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:90;"></div>
+<div class="modal-titles" id="titlesModal">
+  <div class="titles-modal-inner">
+    <div class="tm-header">
+      <div class="tm-h-meta">
+        <span class="tm-tag">SYSTEM TITLES &middot; NEURAL CODEX</span>
+        <h2 class="tm-title">TITLE SELECTOR</h2>
+      </div>
+      <button class="prof-x" id="titlesClose" type="button" aria-label="Tutup Title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="tm-preview-stage">
+      <div class="tm-preview-label">ACTIVE TITLE CROWN PREVIEW</div>
+      <div class="tm-preview-box" id="tmPreviewBox">
+        <!-- Live preview of equipped title with wings & crown -->
+      </div>
+    </div>
+    <div class="tm-list-label">AVAILABLE OPERATOR TITLES</div>
+    <div class="tm-grid" id="titlesListGrid"></div>
+  </div>
+</div>
+<main id="app"></main>
+    <!-- Overlay khusus mobile portrait: minta pemain mutar ke landscape. -->
+<div id="rotateHint">
+  <svg class="rh-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2.5" width="11" height="19" rx="2.2"/><path d="M20 8a6 6 0 0 1-1 8"/><path d="M20 8l-1.6-.6M20 8l-.6 1.6" /></svg>
+  <div class="rh-title">Putar HP-mu</div>
+      <div class="rh-sub">Game ini dirancang untuk layar mendatar (landscape). Putar ponselmu untuk bermain.</div>
+</div>
+<button id="bfExit" title="Akhiri pertempuran">&#10005; END</button>
+
+<div id="overlay">
+  <div class="ov-card sl-theme" id="ovCard">
+    <div class="sl-corner sl-tl"></div>
+    <div class="sl-corner sl-tr"></div>
+    <div class="sl-corner sl-bl"></div>
+    <div class="sl-corner sl-br"></div>
+    
+    <div class="ov-system-header">
+      <div class="ov-sys-badge" id="ovSysBadge">
+        <span class="ov-pulse-dot"></span>
+        <span id="ov-eyebrow">SYSTEM NOTIFICATION</span>
+      </div>
+      <div class="ov-sys-meta" id="ovSysMeta">[OPERATION OUTCOME]</div>
+    </div>
+
+    <!-- Main Title: VICTORY or DEFEAT -->
+    <div class="ov-title-wrap">
+      <div class="ov-title-bg" id="ovTitleBg">VICTORY</div>
+      <div class="ov-title disp" id="ov-title">VICTORY</div>
+    </div>
+
+    <div class="ov-divider"></div>
+
+    <!-- Center Reward & Stats Matrix -->
+    <div class="ov-body-content">
+      <div class="ov-reward-card" id="ovRewardCard">
+        <div class="ov-reward-lbl">COMBAT REWARDS ACQUIRED</div>
+        <div class="ov-reward-val-row">
+          <div class="ov-reward" id="ov-reward"></div>
+        </div>
+      </div>
+
+      <div class="ov-telemetry-row">
+        <div class="ov-tel-box">
+          <span class="ov-tel-lbl">COMBAT STATUS</span>
+          <span class="ov-tel-val" id="ovCombatStatus">SUCCESS</span>
+        </div>
+        <div class="ov-tel-box">
+          <span class="ov-tel-lbl">ENGAGEMENT LOG</span>
+          <span class="ov-tel-val" id="ov-note">COMPLETED IN 3 TURNS</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ov-hint">KLIK DI LUAR UNTUK KELUAR</div>
+
+    <!-- Action Buttons -->
+    <div class="ov-actions">
+      <button class="ov-btn-retry" id="ov-again" type="button">
+        <span class="ov-btn-icon">↺</span>
+        <span>MAIN LAGI</span>
+      </button>
+      <button class="ov-btn-primary" id="ov-next" type="button">
+        <span>SELESAI</span>
+        <span class="ov-btn-icon">❯</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="rollResultPop">
+  <div class="rr-back"></div>
+  <div class="rr-card sl-theme">
+    <div class="sl-corner sl-tl"></div>
+    <div class="sl-corner sl-tr"></div>
+    <div class="sl-corner sl-bl"></div>
+    <div class="sl-corner sl-br"></div>
+    <div class="sl-system-header">
+      <div class="sl-sys-badge"><span class="sl-pulse-dot"></span>SYSTEM NOTIFICATION</div>
+      <div class="sl-sys-sub">[QUEST COMPLETE : ACQUIRED REWARDS]</div>
+    </div>
+    <div class="rr-title disp sl-title" id="rrTitle">KARTU RUN INI</div>
+    <div class="rr-total sl-total" id="rrTotal"></div>
+    <div class="rr-grid sl-grid" id="rrBody"></div>
+    <div class="sl-footer">
+      <button class="sl-claim-btn" id="rrClose">
+        <span class="sl-claim-glow"></span>
+        <span class="sl-claim-text"><i class="sl-claim-icon">❖</i> ACCEPT REWARD</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="modal"><div class="md-card" id="md-card"></div></div>
+
+<div id="indexModal"><div class="ix-box">
+  <div class="ix-head">
+    <div class="ix-header-titles">
+      <div class="ix-eyebrow"><span class="ix-dot"></span>NEURAL MATRIX · ARCHIVE REGISTRY</div>
+      <div class="ix-title">CARD INDEX</div>
+    </div>
+    <div class="ix-h-tools">
+      <div class="ix-search-wrap">
+        <svg class="ix-search-ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input class="ix-search" id="ixSearch" type="text" placeholder="QUERY DATABASE..." autocomplete="off">
+      </div>
+      <button class="ix-x" id="ixClose" title="Tutup">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="ix-toolbar" id="ixToolbar"></div>
+  <div class="ix-body" id="ixBody"></div>
+  <div class="ix-foot" id="ixFoot"></div>
+</div></div>
+
+<!-- ================= PREMIUM SHOP MODAL ================= -->
+<div id="premiumModal" class="prem-modal-backdrop">
+  <div class="prem-modal-inner">
+    <div class="prem-head">
+      <div class="prem-h-left">
+        <span class="prem-badge"><span class="prem-pulse"></span>EXCLUSIVE SYNDICATE</span>
+        <h2 class="prem-title">PREMIUM SHOP</h2>
+      </div>
+      <div class="prem-balance-pill">
+        <img src="assets/images/premium-currency.webp" alt="Gem" width="22" height="22">
+        <span class="prem-bal-txt">SALDO:</span>
+        <strong id="premBalVal">0</strong>
+      </div>
+      <button class="ix-x" id="premClose" type="button" title="Tutup">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    
+    <div class="prem-subbanner">
+      <span class="prem-sub-ic">?</span>
+      <span class="prem-sub-txt">Tarik ribuan kartu gacha dalam hitungan detik! Item masuk langsung ke Backpack & aman tersimpan di Supabase Cloud.</span>
+    </div>
+
+    <div class="prem-grid" id="premGrid">
+      <!-- Generated via JS: 5k, 10k, 25k, 50k, 100k -->
+    </div>
+  </div>
+</div>
+
+
+
+<!-- WEATHER MACHINE MODAL -->
+<div id="weatherMachineModal" class="prem-modal-backdrop">
+  <div class="prem-modal-inner wm-modal-inner">
+    <div class="prem-head wm-head">
+      <div class="prem-h-left">
+        <span class="prem-badge wm-badge"><span class="prem-pulse"></span>ATMOSPHERIC SYNTHESIZER</span>
+        <h2 class="prem-title wm-title">WEATHER MACHINE</h2>
+      </div>
+      <div class="wm-current-weather" id="wmCurrentWeather">
+        <!-- Rendered via JS -->
+      </div>
+      <button class="ix-x" id="wmClose" type="button" title="Tutup">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    
+    <div class="wm-body" id="wmBody">
+      <!-- Injected by renderWeatherMachine() -->
+    </div>
+  </div>
+</div>
+
+<div id="missionModal"><div class="ix-box mx-box">
+  <div class="ix-head">
+    <div class="ix-header-titles">
+      <div class="ix-eyebrow"><span class="ix-dot"></span>TACTICAL DIRECTIVES · CLEARANCE OPS</div>
+      <div class="ix-title mx-title">MISSION LOG</div>
+    </div>
+    <div class="ix-h-tools">
+      <button class="ix-x" id="mxClose" title="Tutup">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="mx-stats" id="mxStats"></div>
+  <div class="mx-diff" id="mxDiff"></div>
+  <div class="mx-note" id="mxNote"></div>
+  <div class="ix-body" id="missionBody"></div>
+</div></div>
+
+<div id="skillPop"><div class="sp-layout">
+  <div class="sp-art-card" id="spArtCard">
+    <img id="spImg" src="" alt="Card Art">
+  </div>
+  <div class="sp-info-panel">
+    <button class="sp-x-btn" id="spClose" title="Tutup">✕</button>
+    <div class="sp-card-name" id="spCardName"></div>
+    <div class="sp-card-rarity" id="spCardRarity"></div>
+    <div class="sp-stats-row">
+      <div class="sp-stat-card hp">
+        <span class="sp-stat-ic">❤️</span>
+        <div class="sp-stat-data">
+          <small>HEALTH</small>
+          <b id="spHp">0</b>
+        </div>
+      </div>
+      <div class="sp-stat-card atk">
+        <span class="sp-stat-ic">⚔️</span>
+        <div class="sp-stat-data">
+          <small>ATTACK</small>
+          <b id="spAtk">0</b>
+        </div>
+      </div>
+    </div>
+    <div class="sp-ability-box">
+      <div class="sp-ability-lbl">ABILITY</div>
+      <div class="sp-ability-name" id="spName"></div>
+      <div class="sp-ability-desc" id="spDesc"></div>
+    </div>
+  </div>
+</div></div>
+
+<div id="dailyModal"><div class="dl-box">
+  <div class="ix-head">
+    <div><div class="eyebrow">LOGIN HARIAN</div><div class="ix-title">Daily Reward</div></div>
+    <button class="ix-x" id="dlClose" title="Tutup">✕</button>
+  </div>
+  <div class="dl-count">RESET DALAM <b id="dlCount">00:00:00</b></div>
+  <div class="dl-grid" id="dlGrid"></div>
+  <div class="dl-foot" id="dlFoot"></div>
+</div></div>
+
+<div id="storyModal">
+  <div class="sc-window">
+    <div class="sc-corner sc-corner-tl"></div>
+    <div class="sc-corner sc-corner-tr"></div>
+    <div class="sc-corner sc-corner-bl"></div>
+    <div class="sc-corner sc-corner-br"></div>
+
+    <!-- Header & Bab Navigation -->
+    <div class="sc-head">
+      <div class="sc-chap-nav">
+        <button class="btn-sc-nav" id="scPrevChap" type="button" aria-label="Bab Sebelumnya">❮</button>
+        <div class="sc-chap-title-box">
+          <div class="sc-chap-eyebrow">STORY CAMPAIGN ARCHIVE</div>
+          <div class="sc-chap-title" id="scChapTitle">BAB 01 · DESA LEMBAH NINJA</div>
+        </div>
+        <button class="btn-sc-nav" id="scNextChap" type="button" aria-label="Bab Berikutnya">❯</button>
+      </div>
+
+      <div class="sc-head-right">
+        <div class="sc-diff-group" id="scDiffGroup">
+          <!-- Dynamic difficulty buttons -->
+        </div>
+        <button class="sc-close-btn" id="smClose" type="button" aria-label="Tutup">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- 3D Carousel Stage -->
+    <div class="sc-carousel-stage" id="scCarouselStage">
+      <button class="sc-stage-arrow sc-arrow-left" id="scPrevStage" type="button" aria-label="Kartu Sebelumnya">❮</button>
+      <button class="sc-stage-arrow sc-arrow-right" id="scNextStage" type="button" aria-label="Kartu Berikutnya">❯</button>
+
+      <div class="sc-carousel-track" id="scCarouselTrack">
+        <!-- 6 Persistent Enemy Cards Injected Here -->
+      </div>
+    </div>
+
+    <!-- Dots Pagination Indicator -->
+    <div class="sc-dots-indicator" id="scDotsIndicator"></div>
+
+    <!-- Bottom Action Dock -->
+    <div class="sc-action-dock">
+      <div class="sc-dock-intel" id="scDockIntel">
+        <div class="sc-dock-stage-lbl" id="scDockStageNum">STAGE 01 // REGULAR STAGE</div>
+        <div class="sc-dock-enemy-name" id="scDockEnemyName">STAGE TARGET</div>
+      </div>
+
+      <div class="sc-dock-readiness" id="scDockReadiness">
+        <div class="sc-dock-rd-labels">
+          <span>GATE REQUIREMENT</span>
+          <b id="scDockGateVal">1,000</b>
+        </div>
+        <div class="sc-dock-bar">
+          <div class="sc-dock-bar-fill" id="scDockBarFill" style="width: 100%;"></div>
+        </div>
+      </div>
+
+      <div class="sc-dock-action-wrap">
+        <div class="sc-dock-reward-box">
+          <span class="sc-dock-rw-lbl">FIRST CLEAR REWARD</span>
+          <span class="sc-dock-rw-val" id="scDockRewardVal">◎ 1,000</span>
+        </div>
+        <button class="sc-btn-battle-launch" id="scBtnBattle" type="button">
+          <span>⚔</span> MULAI BATTLE
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="startModal"><div class="st-box">
+  <div class="ix-head">
+    <div class="ix-header-titles">
+      <div class="ix-eyebrow"><span class="ix-dot"></span>COMBAT ENGAGEMENT · BRIEFING PROTOCOL</div>
+      <div class="ix-title st-title">MISSION BRIEF</div>
+    </div>
+    <div class="ix-h-tools">
+      <button class="ix-x" id="stClose" title="Tutup">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+  <div id="startBody"></div>
+</div></div>
+
+<div id="traitModal"><div class="tr-box">
+  <div class="ix-head tr-cyber-head">
+    <div class="tr-h-left">
+      <div class="tr-cyber-pill"><span class="tr-cyber-dot"></span>NEURAL MATRIX MOD</div>
+      <div class="ix-title tr-cyber-title">TRAIT SYNTHESIS</div>
+    </div>
+    <button class="ix-x" id="trClose" title="Tutup">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </button>
+  </div>
+  <div id="trBody"></div>
+</div></div>
+
+<div id="deckPickModal"><div class="dp-box">
+  <div class="ix-head">
+    <div><div class="eyebrow">DECK</div><div class="ix-title">Pilih Kartu</div></div>
+    <button class="ix-x" id="dpClose" title="Tutup">✕</button>
+  </div>
+  <div id="dpBody"></div>
+</div></div>
+
+<div id="traitNotify"></div>
+
+<div id="rarePromptModal"><div class="rp-box" id="rpBox">
+  <div id="rpBody"></div>
+</div></div>
+
+<!-- MODAL BREAKDOWN DROP RATE INFINITE TOWER -->
+<div id="towerDropModal" class="tw-drop-modal-backdrop">
+  <div class="tw-drop-modal">
+    <div class="ix-head">
+      <div class="ix-header-titles">
+        <div class="ix-eyebrow"><span class="ix-dot"></span>NEURAL SPIRE // LOOT PROBABILITY MATRIX</div>
+        <div class="ix-title">DROP RATE BREAKDOWN</div>
+      </div>
+      <button class="ix-x" id="twDropModalClose" title="Tutup">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="tw-drop-modal-body" id="towerDropModalBody"></div>
+  </div>
+</div>
+
+<div id="fightFx">
+  <div class="battle-intro-overlay" id="battleIntroOverlay">
+    <div class="bio-bg-speedlines"></div>
+    <div class="bio-dark-vignette"></div>
+
+    <!-- UPPER CUT-IN STRIP: PLAYER (SLIDES FROM LEFT) -->
+    <div class="bio-cutin-strip bio-cutin-top" id="bioPlayerStrip">
+      <div class="bio-strip-backdrop"></div>
+      <div class="bio-strip-content">
+        <div class="bio-strip-portrait-frame">
+          <img id="bioPlayerImg" class="bio-strip-img" src="" alt="Player Fighter">
+          <div class="bio-portrait-glare"></div>
+        </div>
+        <div class="bio-strip-info">
+          <div class="bio-strip-header">
+            <span class="bio-badge-tag bio-badge-player">OPERATOR</span>
+            <span class="bio-tier-pill" id="bioPlayerTier">SSR</span>
+          </div>
+          <div class="bio-strip-name" id="bioPlayerName">PLAYER</div>
+          <div class="bio-strip-sub" id="bioPlayerSub">CHALLENGER DEPLOYED</div>
+        </div>
+      </div>
+      <div class="bio-strip-laser bio-laser-top"></div>
+    </div>
+
+    <!-- CENTER VS BADGE (STANDS BETWEEN THE TWO STRIPS, NO CARDS COLLIDING) -->
+    <div class="bio-center-divider-zone">
+      <div class="bio-mid-line"></div>
+      <div class="bio-vs-pill">
+        <span class="bio-vs-v">V</span><span class="bio-vs-s">S</span>
+      </div>
+      <div class="bio-vs-protocol">TACTICAL CLASH</div>
+    </div>
+
+    <!-- LOWER CUT-IN STRIP: ENEMY / BOSS (SLIDES FROM RIGHT) -->
+    <div class="bio-cutin-strip bio-cutin-bot" id="bioFoeStrip">
+      <div class="bio-strip-backdrop foe-backdrop"></div>
+      <div class="bio-strip-content foe-content">
+        <div class="bio-strip-info foe-info">
+          <div class="bio-strip-header foe-header">
+            <span class="bio-tier-pill foe-tier" id="bioFoeTier">UR</span>
+            <span class="bio-badge-tag bio-badge-foe" id="bioFoeRole">HOSTILE</span>
+          </div>
+          <div class="bio-strip-name foe-name" id="bioFoeName">ENEMY</div>
+          <div class="bio-strip-sub foe-sub" id="bioFoeSub">STAGE OPPONENT</div>
+        </div>
+        <div class="bio-strip-portrait-frame foe-frame">
+          <img id="bioFoeImg" class="bio-strip-img" src="" alt="Enemy Fighter">
+          <div class="bio-portrait-glare foe-glare"></div>
+        </div>
+      </div>
+      <div class="bio-strip-laser bio-laser-bot"></div>
+    </div>
+
+    <div class="bio-impact-flash" id="bioImpactFlash"></div>
+    <div class="bio-letterbox-bar bio-lb-top"></div>
+    <div class="bio-letterbox-bar bio-lb-bot"></div>
+  </div>
+  <div class="ff-slash a"></div><div class="ff-slash b"></div><div class="ff-word">FIGHT</div>
+</div>
+
+<!-- ====== PANEL WEATHER GABUNGAN (pojok kiri bawah): nama + timer di atas, baris kartu
+     weatherOnly (gaya index) di tengah, buff luck/rollspeed di bawah. Nongol cuma pas
+     lobby + weather aktif (class .show). DI LUAR #app biar tetap hidup. ====== -->
+<div id="weatherPanel" class="weather-panel"></div>
+
+<!-- ====== BUFF DOCK (pojok kanan bawah): luck & speed potion AKTIF — icon + efek + timer.
+     Nongol otomatis selama buff hidup (.show dari renderBuffDock). DI LUAR #app biar tetap hidup. ====== -->
+<div id="buffDock" class="buff-dock"></div>
+
+<!-- ====== FOOTER LOBBY = KARTU MELAYANG: profile + dock (backpack/roll/AUTO), di TENGAH.
+     DI LUAR #app biar interval roll & panel dek tetap hidup saat pindah layar. Hanya tampil
+     di lobby (class .on-lobby dari bfSync). ====== -->
+<div class="lobby-footer">
+  <div class="foot-main">
+    <button class="foot-profile" id="footAv" type="button" title="Buka profil"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></button>
+    <div class="center-dock">
+      <button class="backpack-toggle" id="backpackToggle" type="button" title="Backpack">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/>
+          <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+          <path d="M8 14h8"/>
+          <path d="M9 10v4"/>
+          <path d="M15 10v4"/>
+        </svg>
+      </button>
+      <button class="roll-btn" id="rollBtn" type="button" title="Roll Cards!">
+        <svg class="roll-ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="18" height="18" x="3" y="3" rx="3" ry="3"/>
+          <circle cx="8" cy="8" r="1.5" fill="currentColor"/>
+          <circle cx="16" cy="8" r="1.5" fill="currentColor"/>
+          <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+          <circle cx="8" cy="16" r="1.5" fill="currentColor"/>
+          <circle cx="16" cy="16" r="1.5" fill="currentColor"/>
+        </svg>
+        <span class="roll-txt">ROLL</span>
+      </button>
+      <button class="roll-auto-btn" id="rollAutoBtn" type="button" title="Auto Roll (nyala/mati)">
+        <span class="ra-indicator"></span>
+        <span class="ra-txt">AUTO</span>
+      </button>
+    </div>
+  </div>
+</div>
+<div id="weatherToast" class="weather-toast"></div>
+<div class="roll-overlay" id="rollOverlay">
+  <div class="roll-mini-strip" id="rollMiniStrip" type="button" title="Sembunyikan / tampilkan reveal">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+    <span>COLLAPSE</span>
+  </div>
+  <div class="roll-card-showcase" id="rollShowcase"></div>
+  <div class="roll-actions">
+    <button class="roll-min-btn" id="rollMinBtn" type="button" title="Kecilkan">▾ Kecilkan</button>
+    <button class="roll-close-out" id="rollCloseBtn" type="button">&#10005; Tutup</button>
+  </div>
+</div>
+<div class="backpack-panel" id="backpackPanel"></div>
+
+<script src="js/data.js?v=v115-transitems"></script>
+<script src="js/supabase-sync.js?v=v115-transitems"></script>
+<script src="js/panels.js?v=v116-weathermachine"></script>
+<script src="js/cards-fx.js?v=v68-liveroll"></script>
+<script src="js/anime-archetype-attacks.js?v=v107-archetypes"></script>
+<script src="js/state.js?v=v71-premium"></script>
+<script src="js/sheetfx.js?v=v107-noslash"></script>
+<script src="js/battle.js?v=v110-victory"></script>
+<script src="js/tower-lobby.js?v=v104-shimmeractive"></script>
+<script src="js/foe-passives.js?v=v62-foe-passives"></script>
+<script src="js/story-carousel.js?v=v4"></script>
+<script src="js/raid.js?v=v78-bust"></script>
+<script src="js/boot.js?v=v56-cloudsync"></script>
+
+<!-- ========== CORET MODE (dev-only overlay anotasi) ==========
+     Alat buat user LINGKARIN bagian layout yang mau diubah. Cuma aktif di file:// / 127.0.0.1 / localhost.
+     Klik ✏ CORET (kanan-atas) → gambar freehand → agen baca window.coretReport() buat tahu korekan
+     nyangkut di elemen DOM mana. Bukan bagian dari game; aman dihapus. -->
+<script src="js/coret.js"></script>
+</body>
+</html>
