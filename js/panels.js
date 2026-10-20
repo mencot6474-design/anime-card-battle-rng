@@ -1887,16 +1887,22 @@ function renderWeatherMachine(){
   const remainingTime = (state && state.weather && state.weather.endsAt && state.weather.endsAt > Date.now())
     ? fmtCountdown(state.weather.endsAt - Date.now())
     : '00:00';
+  const pPotCnt = (state && state.potions) || 0;
 
   if(headEl){
-    headEl.innerHTML = '<div class="wm-cur-badge" style="border-color:' + curDef.color + ';box-shadow:0 0 12px ' + curDef.color + '44">' +
-      '<span class="wm-cur-ic" style="color:' + curDef.color + '">' + curDef.icon + '</span>' +
-      '<strong style="color:' + curDef.color + '">' + curDef.name + '</strong>' +
-      '<span class="wm-cur-timer">⏱ ' + remainingTime + '</span>' +
-    '</div>';
+    headEl.innerHTML = '' +
+      '<div class="wm-head-pill wm-cur-badge" style="border-color:' + curDef.color + ';box-shadow:0 0 10px ' + curDef.color + '33">' +
+        '<span class="wm-cur-ic" style="color:' + curDef.color + '">' + curDef.icon + '</span>' +
+        '<strong style="color:' + curDef.color + '">' + curDef.name + '</strong>' +
+        '<span class="wm-cur-timer">⏱ ' + remainingTime + '</span>' +
+      '</div>' +
+      '<div class="wm-head-pill wm-supply-badge" title="Stok Weather Potion">' +
+        '<img src="assets/images/weather-potion.webp?v=1" alt="Potion" class="wm-head-pot-img">' +
+        '<span class="wm-pot-sep">:</span>' +
+        '<b class="wm-pot-val">' + fmt(pPotCnt) + '</b>' +
+      '</div>';
   }
 
-  const pPotCnt = (state && state.potions) || 0;
   const p = (state && state.wpity) || { r: 0, m: 0 };
   const rLeft = Math.max(0, PITY_RARE - (p.r || 0));
   const mLeft = Math.max(0, PITY_MYTHIC - (p.m || 0));
@@ -1974,7 +1980,7 @@ function renderWeatherMachine(){
             '<span class="tr-btn-glow"></span>' +
             '<span class="tr-btn-content">' +
               '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>' +
-              '<span>' + (wmAutoRunning ? 'SYNTHESIS RUNNING...' : 'SINTESIS CUACA' + (wmMultiN > 1 ? ' (' + wmMultiN + '×)' : '')) + '</span>' +
+              '<span>' + (wmAutoRunning ? 'SYNTHESIS RUNNING...' : 'SINTESIS CUACA') + '</span>' +
               '<span class="tr-cost-badge">1× POTION</span>' +
             '</span>' +
           '</button>' +
@@ -1996,21 +2002,6 @@ function renderWeatherMachine(){
           '<div class="tr-auto-meta">' +
             '<div class="tram-row"><span class="tram-k">LOCKED TARGET:</span> <b class="tram-v">' + (wmAutoTarget ? WEATHER[wmAutoTarget].name : 'PILIH DARI DAFTAR') + '</b></div>' +
             '<div class="tram-row"><span class="tram-k">ITERATION:</span> <b class="tram-n">#' + wmAutoCount + '</b></div>' +
-          '</div>' +
-        '</div>' +
-
-        '<!-- FOOTER STATUS -->' +
-        '<div class="tr-footer-status wm-footer-status">' +
-          '<div class="tr-coin-pill">' +
-            '<img src="assets/images/weather-potion.webp?v=1" alt="Potion" width="18" height="18">' +
-            '<span>POTION SUPPLY:</span>' +
-            '<b class="tr-coin" style="color:#38bdf8">' + fmt(pPotCnt) + '</b>' +
-          '</div>' +
-          '<div class="bpholo-multi-wrap" style="margin:0">' +
-            '<div class="bpholo-multi-label">BATCH:</div>' +
-            '<div class="wo-multi">' +
-              [1, 5, 25, 100].map(n => '<button data-n="' + n + '" class="' + (wmMultiN === n ? 'on' : '') + '" onclick="setWmMulti(' + n + ')">' + n + '×</button>').join('') +
-            '</div>' +
           '</div>' +
         '</div>' +
       '</div>' +

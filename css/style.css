@@ -46358,16 +46358,16 @@ body.battle-full .fighter.foe.ko {
   animation: slwIn 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
-/* Modal Box: Mengikuti style persis .tr-box */
+/* Modal Box: Mengikuti style persis .tr-box (diperkecil, elegan, hemat ruang) */
 .wm-box {
-  width: min(680px, 96vw) !important;
-  max-height: 90vh !important;
+  width: min(580px, 94vw) !important;
+  max-height: 86vh !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
-  border-radius: 20px !important;
-  border: 1px solid rgba(56, 189, 248, 0.35) !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(56, 189, 248, 0.3) !important;
   background: linear-gradient(165deg, rgba(14, 20, 32, 0.98) 0%, rgba(8, 12, 20, 0.98) 60%, rgba(5, 7, 12, 1) 100%) !important;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 30px rgba(56, 189, 248, 0.15) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 25px rgba(56, 189, 248, 0.12) !important;
 }
 
 /* Header */
@@ -46375,52 +46375,112 @@ body.battle-full .fighter.foe.ko {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  padding: 14px 18px !important;
-  border-bottom: 1px solid rgba(56, 189, 248, 0.2) !important;
-  background: rgba(0, 0, 0, 0.3) !important;
+  padding: 10px 14px !important;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.18) !important;
+  background: rgba(0, 0, 0, 0.35) !important;
+  gap: 10px !important;
 }
 
 .wm-cyber-pill {
   display: inline-flex !important;
   align-items: center !important;
-  gap: 6px !important;
+  gap: 5px !important;
   font-family: "Rajdhani", sans-serif !important;
-  font-size: 10px !important;
+  font-size: 9px !important;
   font-weight: 800 !important;
-  letter-spacing: 0.16em !important;
+  letter-spacing: 0.14em !important;
   color: #38bdf8 !important;
 }
 
 .wm-cyber-dot {
-  width: 6px !important;
-  height: 6px !important;
+  width: 5px !important;
+  height: 5px !important;
   border-radius: 50% !important;
   background: #38bdf8 !important;
-  box-shadow: 0 0 8px #38bdf8 !important;
+  box-shadow: 0 0 6px #38bdf8 !important;
 }
 
 .wm-cyber-title {
   font-family: "Barlow Condensed", sans-serif !important;
-  font-size: 22px !important;
+  font-size: 18px !important;
   font-weight: 800 !important;
   color: #f0f9ff !important;
-  letter-spacing: 0.08em !important;
+  letter-spacing: 0.06em !important;
+  line-height: 1.1 !important;
+}
+
+/* Badges di header atas */
+.wm-head-badges {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-end !important;
+}
+
+.wm-head-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 4px 9px !important;
+  border-radius: 999px !important;
+  background: rgba(15, 23, 42, 0.75) !important;
+  border: 1px solid rgba(56, 189, 248, 0.3) !important;
+  font-family: "Rajdhani", sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+}
+
+.wm-supply-badge {
+  background: rgba(14, 165, 233, 0.12) !important;
+  border-color: rgba(56, 189, 248, 0.4) !important;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.15) !important;
+}
+
+.wm-head-pot-img {
+  width: 17px !important;
+  height: 17px !important;
+  object-fit: contain !important;
+  filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.6)) !important;
+}
+
+.wm-pot-sep {
+  color: #64748b !important;
+  font-weight: 800 !important;
+  font-size: 12px !important;
+  margin: 0 -1px !important;
+}
+
+.wm-pot-val {
+  color: #38bdf8 !important;
+  font-size: 12.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.04em !important;
 }
 
 .wm-body-wrap {
-  padding: 16px !important;
+  padding: 12px !important;
 }
 
-/* Weather Current Panel (seperti .tr-cur) */
+.wm-grid {
+  gap: 12px !important;
+}
+
+.wm-main {
+  gap: 10px !important;
+}
+
+/* Weather Current Panel (seperti .tr-cur) - Compact & Elegant */
 .wm-cur-panel {
   display: flex !important;
   align-items: center !important;
-  gap: 14px !important;
-  padding: 14px 16px !important;
-  border-radius: 14px !important;
+  gap: 10px !important;
+  padding: 9px 12px !important;
+  border-radius: 12px !important;
   border: 1px solid color-mix(in srgb, var(--tcol, #38bdf8) 45%, rgba(255, 255, 255, 0.1)) !important;
   background: linear-gradient(165deg, rgba(12, 22, 38, 0.85), rgba(6, 11, 20, 0.95)) !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 0 15px color-mix(in srgb, var(--tcol, #38bdf8) 12%, transparent) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45), inset 0 0 12px color-mix(in srgb, var(--tcol, #38bdf8) 10%, transparent) !important;
   position: relative !important;
   overflow: hidden !important;
 }
@@ -46430,16 +46490,16 @@ body.battle-full .fighter.foe.ko {
   position: absolute !important;
   top: 0 !important;
   left: 0 !important;
-  width: 4px !important;
+  width: 3px !important;
   height: 100% !important;
   background: var(--tcol, #38bdf8) !important;
-  box-shadow: 0 0 10px var(--tcol, #38bdf8) !important;
+  box-shadow: 0 0 8px var(--tcol, #38bdf8) !important;
 }
 
 .wm-thumb-wrap {
-  width: 72px !important;
-  height: 72px !important;
-  border-radius: 12px !important;
+  width: 50px !important;
+  height: 50px !important;
+  border-radius: 10px !important;
   background: radial-gradient(circle, color-mix(in srgb, var(--tcol, #38bdf8) 25%, transparent) 0%, rgba(0, 0, 0, 0.6) 80%) !important;
   display: grid !important;
   place-items: center !important;
@@ -46448,59 +46508,204 @@ body.battle-full .fighter.foe.ko {
 }
 
 .wm-thumb-wrap img {
-  width: 58px !important;
-  height: 58px !important;
+  width: 40px !important;
+  height: 40px !important;
   object-fit: contain !important;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.7)) !important;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.7)) !important;
 }
 
 .wm-cur-info {
   display: flex !important;
   flex-direction: column !important;
-  gap: 4px !important;
+  gap: 2px !important;
   min-width: 0 !important;
   flex: 1 !important;
+  padding-right: 0 !important;
+}
+
+.wm-cur-info .tc-lbl-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.wm-cur-info .tc-lbl {
+  font-size: 8.5px !important;
+  letter-spacing: 0.12em !important;
+}
+
+.wm-cur-info .tc-code {
+  font-size: 8.5px !important;
+}
+
+.wm-cur-info .tc-name {
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
+}
+
+.wm-cur-info .tc-trait-pill {
+  padding: 2px 7px !important;
+  font-size: 10px !important;
+  gap: 4px !important;
 }
 
 .wm-stat-row {
   display: flex !important;
-  gap: 8px !important;
-  margin-top: 4px !important;
+  gap: 6px !important;
+  margin-top: 3px !important;
+}
+
+.wm-stat-row .tc-badge-stat {
+  padding: 2px 6px !important;
+  font-size: 9.5px !important;
+  border-radius: 6px !important;
 }
 
 /* Pity block */
 .wm-pity-block {
   display: flex !important;
   flex-direction: column !important;
-  gap: 8px !important;
-  padding: 10px 14px !important;
-  border-radius: 12px !important;
-  background: rgba(10, 16, 28, 0.6) !important;
-  border: 1px solid rgba(56, 189, 248, 0.18) !important;
+  gap: 6px !important;
+  padding: 8px 11px !important;
+  border-radius: 10px !important;
+  background: rgba(10, 16, 28, 0.55) !important;
+  border: 1px solid rgba(56, 189, 248, 0.15) !important;
+}
+
+.wm-pity-block .wo-pity-top {
+  font-size: 9.5px !important;
+  margin-bottom: 2px !important;
+}
+
+.wm-pity-block .wo-bar {
+  height: 4px !important;
 }
 
 /* Roll Button */
+.wm-controls {
+  margin: 0 !important;
+}
+
 .wm-roll-btn {
+  padding: 8px 14px !important;
+  min-height: 38px !important;
+  font-size: 13px !important;
   background: linear-gradient(135deg, #0284c7, #0369a1) !important;
-  box-shadow: 0 0 16px rgba(2, 132, 199, 0.45) !important;
+  box-shadow: 0 0 14px rgba(2, 132, 199, 0.4) !important;
   border-color: #38bdf8 !important;
+  border-radius: 10px !important;
 }
 
 .wm-roll-btn:hover:not(:disabled) {
   background: linear-gradient(135deg, #0ea5e9, #0284c7) !important;
-  box-shadow: 0 0 24px rgba(14, 165, 233, 0.6) !important;
+  box-shadow: 0 0 20px rgba(14, 165, 233, 0.55) !important;
 }
 
 .wm-roll-btn .tr-cost-badge {
+  font-size: 9.5px !important;
+  padding: 2px 6px !important;
   background: rgba(56, 189, 248, 0.25) !important;
   border-color: rgba(56, 189, 248, 0.5) !important;
   color: #e0f2fe !important;
 }
 
-/* Rates list scrollable right pane */
+/* Auto Panel */
+.wm-auto-btn {
+  padding: 7px 12px !important;
+  font-size: 11.5px !important;
+  min-height: 34px !important;
+}
+
+.tr-auto-panel {
+  padding: 9px 12px !important;
+  border-radius: 11px !important;
+  gap: 6px !important;
+}
+
+.tr-auto-top {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.tr-auto-meta {
+  font-size: 10px !important;
+  gap: 8px !important;
+}
+
+/* Sisi Kanan: Rates list */
+.wm-rates {
+  flex: 0 0 215px !important;
+  padding: 10px !important;
+  border-radius: 13px !important;
+}
+
+.wm-rates .trr-h {
+  padding-bottom: 7px !important;
+  margin-bottom: 6px !important;
+}
+
+.wm-rates .trr-h-title {
+  font-size: 10.5px !important;
+  letter-spacing: 0.14em !important;
+}
+
+.wm-rates .trr-h-sub {
+  font-size: 8.5px !important;
+}
+
 .wm-rates-list {
-  max-height: 480px !important;
+  max-height: 330px !important;
   overflow-y: auto !important;
   scrollbar-width: thin !important;
-  padding-right: 4px !important;
+  padding-right: 3px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+}
+
+.wm-rates .trr-item {
+  padding: 5px 7px !important;
+  border-radius: 8px !important;
+  gap: 3px !important;
+}
+
+.wm-rates .trr-row {
+  font-size: 11px !important;
+  gap: 5px !important;
+}
+
+.wm-rates .trr-gem {
+  width: 15px !important;
+  height: 15px !important;
+  font-size: 12px !important;
+}
+
+.wm-rates .trr-name {
+  font-size: 11px !important;
+}
+
+.wm-rates .trr-pct {
+  font-size: 9.5px !important;
+}
+
+.wm-rates .trr-rar {
+  font-size: 8px !important;
+  padding: 1px 4px !important;
+}
+
+.wm-rates .trr-bar {
+  height: 2.5px !important;
+}
+
+.wm-rates .trr-tgt-box {
+  width: 14px !important;
+  height: 14px !important;
+  border-radius: 4px !important;
+}
+
+.wm-rates .trr-tgt-box svg {
+  width: 10px !important;
+  height: 10px !important;
 }
