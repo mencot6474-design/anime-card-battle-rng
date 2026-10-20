@@ -1845,8 +1845,8 @@ function renderWeatherMachine(){
 
   const aw = activeWeatherId();
   const curDef = (aw && WEATHER[aw]) || WEATHER.sunshine;
-  const remainingTime = (state.weather && state.weather.endsAt && state.weather.endsAt > Date.now())
-    ? fmtTimer(Math.max(0, Math.floor((state.weather.endsAt - Date.now()) / 1000)))
+  const remainingTime = (state && state.weather && state.weather.endsAt && state.weather.endsAt > Date.now())
+    ? fmtCountdown(state.weather.endsAt - Date.now())
     : '00:00';
 
   if(curEl){
