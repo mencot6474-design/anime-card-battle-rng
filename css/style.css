@@ -45443,13 +45443,64 @@ body.battle-full .fighter.foe.ko {
   font-size: 16px;
   color: #ffd700;
 }
+
+/* Category Tabs */
+.prem-tabs-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.12);
+  background: rgba(12, 10, 6, 0.6);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.prem-tabs-bar::-webkit-scrollbar {
+  display: none;
+}
+.prem-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 215, 0, 0.18);
+  color: #d1c7a5;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.16s ease;
+}
+.prem-tab-btn:hover {
+  background: rgba(255, 215, 0, 0.1);
+  border-color: rgba(255, 215, 0, 0.4);
+  color: #fff;
+}
+.prem-tab-btn.on {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.25), rgba(230, 184, 0, 0.15));
+  border-color: #ffd700;
+  color: #ffd700;
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.25);
+}
+.prem-tab-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
+}
+
 .prem-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
   padding: 20px 22px;
   overflow-y: auto;
-  max-height: calc(88vh - 140px);
+  max-height: calc(88vh - 180px);
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
 }

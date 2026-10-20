@@ -98,8 +98,18 @@ const CloudDB = {
       // Guest mode: local check
       if ((window.state?.premiumGems || 0) < cost) return { ok: false, msg: "GEMS TIDAK CUKUP" };
       window.state.premiumGems -= cost;
-      window.state.rollPacks = window.state.rollPacks || {};
-      window.state.rollPacks[packKey] = (window.state.rollPacks[packKey] || 0) + 1;
+      if (itemType === 'weather') {
+        // Cuaca langsung aktif di state lokal
+      } else if (itemType === 'art') {
+        window.state.artOwned = window.state.artOwned || [];
+        if (!window.state.artOwned.includes(packKey)) window.state.artOwned.push(packKey);
+      } else if (itemType === 'pet') {
+        window.state.petOwned = window.state.petOwned || [];
+        if (!window.state.petOwned.includes(packKey)) window.state.petOwned.push(packKey);
+      } else {
+        window.state.rollPacks = window.state.rollPacks || {};
+        window.state.rollPacks[packKey] = (window.state.rollPacks[packKey] || 0) + 1;
+      }
       return { ok: true, balance: window.state.premiumGems };
     }
 
@@ -116,14 +126,30 @@ const CloudDB = {
       }
 
       curSave.premiumGems = cloudGems - cost;
-      curSave.rollPacks = curSave.rollPacks || {};
-      curSave.rollPacks[packKey] = (curSave.rollPacks[packKey] || 0) + 1;
+      if (itemType === 'weather') {
+        // weather handled by caller
+      } else if (itemType === 'art') {
+        curSave.artOwned = curSave.artOwned || [];
+        if (!curSave.artOwned.includes(packKey)) curSave.artOwned.push(packKey);
+      } else if (itemType === 'pet') {
+        curSave.petOwned = curSave.petOwned || [];
+        if (!curSave.petOwned.includes(packKey)) curSave.petOwned.push(packKey);
+      } else {
+        curSave.rollPacks = curSave.rollPacks || {};
+        curSave.rollPacks[packKey] = (curSave.rollPacks[packKey] || 0) + 1;
+      }
 
       // Update state locally
       if (window.state) {
         window.state.premiumGems = curSave.premiumGems;
-        window.state.rollPacks = window.state.rollPacks || {};
-        window.state.rollPacks[packKey] = curSave.rollPacks[packKey];
+        if (itemType === 'art') {
+          window.state.artOwned = curSave.artOwned;
+        } else if (itemType === 'pet') {
+          window.state.petOwned = curSave.petOwned;
+        } else if (itemType !== 'weather') {
+          window.state.rollPacks = window.state.rollPacks || {};
+          window.state.rollPacks[packKey] = curSave.rollPacks[packKey];
+        }
       }
 
       const res = await this.saveState(username, curSave);

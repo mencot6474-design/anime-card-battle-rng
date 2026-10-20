@@ -12,7 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700;800&family=Russo+One&family=Rajdhani:wght@700;800;900&display=swap" rel="stylesheet">
 <!-- External Game Icon Library: Lucide Icons -->
 <script src="https://unpkg.com/lucide@latest"></script>
-<link rel="stylesheet" href="css/style.css?v=v143-wmcompact">
+<link rel="stylesheet" href="css/style.css?v=v144-premweather">
 <link rel="stylesheet" href="css/sl-system.css?v=sl-v4">
 <link rel="stylesheet" href="css/story-carousel.css?v=v8">
 <script>
@@ -315,12 +315,28 @@
     </div>
     
     <div class="prem-subbanner">
-      <span class="prem-sub-ic">?</span>
-      <span class="prem-sub-txt">Tarik ribuan kartu gacha dalam hitungan detik! Item masuk langsung ke Backpack & aman tersimpan di Supabase Cloud.</span>
+      <span class="prem-sub-ic">✦</span>
+      <span class="prem-sub-txt">Toko Resmi Premium Syndicate — Tarik ribuan kartu instan, koleksi artefak & pet sakti, serta aktivasi anomali cuaca legendaris langsung dengan Premium Gems!</span>
+    </div>
+
+    <!-- Category Tabs -->
+    <div class="prem-tabs-bar" id="premTabs">
+      <button class="prem-tab-btn on" type="button" data-cat="all" onclick="premSetTab('all')">
+        <span class="prem-tab-dot"></span>SEMUA ITEM
+      </button>
+      <button class="prem-tab-btn" type="button" data-cat="pack" onclick="premSetTab('pack')">
+        <span class="prem-tab-dot"></span>INSTAN ROLL
+      </button>
+      <button class="prem-tab-btn" type="button" data-cat="equip" onclick="premSetTab('equip')">
+        <span class="prem-tab-dot"></span>PET & ARTEFAK
+      </button>
+      <button class="prem-tab-btn" type="button" data-cat="weather" onclick="premSetTab('weather')">
+        <span class="prem-tab-dot"></span>WEATHER INSTAN
+      </button>
     </div>
 
     <div class="prem-grid" id="premGrid">
-      <!-- Generated via JS: 5k, 10k, 25k, 50k, 100k -->
+      <!-- Generated via JS: Packs, Pets, Artifacts, Weather -->
     </div>
   </div>
 </div>
@@ -652,8 +668,8 @@
 <div class="backpack-panel" id="backpackPanel"></div>
 
 <script src="js/data.js?v=v115-transitems"></script>
-<script src="js/supabase-sync.js?v=v115-transitems"></script>
-<script src="js/panels.js?v=v119-wmcompact"></script>
+<script src="js/supabase-sync.js?v=v120-premweather"></script>
+<script src="js/panels.js?v=v120-premweather"></script>
 <script src="js/cards-fx.js?v=v68-liveroll"></script>
 <script src="js/anime-archetype-attacks.js?v=v107-archetypes"></script>
 <script src="js/state.js?v=v71-premium"></script>

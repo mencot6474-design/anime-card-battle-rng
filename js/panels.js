@@ -1598,15 +1598,38 @@ const LEVEL_COUNT=STORY_BIBLE.levels.length;
 const MASTER_CARD_INDEX=STORY_BIBLE.units.map(u=>({char_id:u.id,name:u.name,tier:u.tier,chance:u.chance||null,type:u.type,base_hp:u.hp,base_atk:u.atk,sprite_asset:u.art,art_image:u.art,pos:u.pos||null,passive:{name:u.skill,desc:u.desc},noGacha:!!u.noGacha,weatherOnly:u.weatherOnly||null,raidBoss:!!u.raidBoss,isStoryEnemy:!!(u.noGacha&&!u.chance)}));
 
 /* =============== PREMIUM SHOP SYSTEM =============== */
+var premCurTab = 'all';
+
 var PREMIUM_PACKS = [
-  { id: 'tome-infinity', type: 'art', name: 'TOME OF INFINITY', price: 500, img: 'assets/artifacts/tome-infinity.webp?v=1', badge: 'MYTHIC ARTIFACT', desc: 'Kitab mistis tak terbatas! Memberikan +150 Flat Luck & +200% Luck secara permanen.' },
-  { id: 'cyber-kitsune', type: 'pet', name: 'CYBER KITSUNE', price: 1000, img: 'assets/pets/cyber-kitsune.webp?v=1', badge: 'SUPREME PET', desc: 'Rubah legendaris masa depan! Memberikan +250 Flat Luck & +300% Luck saat dipasang.' },
-  { id: 'r5k', type: 'pack', name: 'INSTAN ROLL 5.000', amount: 5000, price: 5, img: 'assets/images/instanpack-5k.webp?v=trans1', badge: 'STARTER', desc: '5.000 tarikan kartu instan ke dalam inventori.' },
-  { id: 'r10k', type: 'pack', name: 'INSTAN ROLL 10.000', amount: 10000, price: 10, img: 'assets/images/instanpack-10k.webp?v=trans1', badge: 'POPULAR', desc: '10.000 tarikan kartu instan ke dalam inventori.' },
-  { id: 'r25k', type: 'pack', name: 'INSTAN ROLL 25.000', amount: 25000, price: 20, img: 'assets/images/instanpack-25k.webp?v=trans1', badge: 'VALUE', desc: '25.000 tarikan kartu instan ke dalam inventori.' },
-  { id: 'r50k', type: 'pack', name: 'INSTAN ROLL 50.000', amount: 50000, price: 30, img: 'assets/images/instanpack-50k.webp?v=trans1', badge: 'EPIC', desc: '50.000 tarikan kartu instan ke dalam inventori.' },
-  { id: 'r100k', type: 'pack', name: 'INSTAN ROLL 100.000', amount: 100000, price: 50, img: 'assets/images/instanpack-100k.webp?v=trans1', badge: 'ULTIMATE', desc: '100.000 tarikan kartu instan ke dalam inventori.' }
+  // PET & ARTEFAK
+  { id: 'tome-infinity', cat: 'equip', type: 'art', name: 'TOME OF INFINITY', price: 500, img: 'assets/artifacts/tome-infinity.webp?v=1', badge: 'MYTHIC ARTIFACT', desc: 'Kitab mistis tak terbatas! Memberikan +150 Flat Luck & +200% Luck secara permanen.' },
+  { id: 'cyber-kitsune', cat: 'equip', type: 'pet', name: 'CYBER KITSUNE', price: 1000, img: 'assets/pets/cyber-kitsune.webp?v=1', badge: 'SUPREME PET', desc: 'Rubah legendaris masa depan! Memberikan +250 Flat Luck & +300% Luck saat dipasang.' },
+
+  // INSTAN ROLL PACKS
+  { id: 'r5k', cat: 'pack', type: 'pack', name: 'INSTAN ROLL 5.000', amount: 5000, price: 5, img: 'assets/images/instanpack-5k.webp?v=trans1', badge: 'STARTER', desc: '5.000 tarikan kartu instan ke dalam inventori.' },
+  { id: 'r10k', cat: 'pack', type: 'pack', name: 'INSTAN ROLL 10.000', amount: 10000, price: 10, img: 'assets/images/instanpack-10k.webp?v=trans1', badge: 'POPULAR', desc: '10.000 tarikan kartu instan ke dalam inventori.' },
+  { id: 'r25k', cat: 'pack', type: 'pack', name: 'INSTAN ROLL 25.000', amount: 25000, price: 20, img: 'assets/images/instanpack-25k.webp?v=trans1', badge: 'VALUE', desc: '25.000 tarikan kartu instan ke dalam inventori.' },
+  { id: 'r50k', cat: 'pack', type: 'pack', name: 'INSTAN ROLL 50.000', amount: 50000, price: 30, img: 'assets/images/instanpack-50k.webp?v=trans1', badge: 'EPIC', desc: '50.000 tarikan kartu instan ke dalam inventori.' },
+  { id: 'r100k', cat: 'pack', type: 'pack', name: 'INSTAN ROLL 100.000', amount: 100000, price: 50, img: 'assets/images/instanpack-100k.webp?v=trans1', badge: 'ULTIMATE', desc: '100.000 tarikan kartu instan ke dalam inventori.' },
+
+  // WEATHER INSTAN (Hanya Rare sampai Awakened)
+  { id: 'w_eclipse', cat: 'weather', type: 'weather', targetWeather: 'eclipse', name: 'INSTAN ECLIPSE', price: 15, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', desc: 'Aktifkan cuaca ECLIPSE instan selama 30 menit! +300% Luck & +200% Roll Speed.' },
+  { id: 'w_doodle', cat: 'weather', type: 'weather', targetWeather: 'doodle', name: 'INSTAN DOODLE', price: 25, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', desc: 'Aktifkan cuaca DOODLE instan selama 30 menit! +400% Luck & +250% Roll Speed.' },
+  { id: 'w_glitch', cat: 'weather', type: 'weather', targetWeather: 'glitch', name: 'INSTAN GLITCH', price: 35, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', desc: 'Aktifkan cuaca GLITCH instan selama 30 menit! +500% Luck & +300% Roll Speed.' },
+  { id: 'w_goofy', cat: 'weather', type: 'weather', targetWeather: 'goofy', name: 'INSTAN GOOFY', price: 50, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', desc: 'Aktifkan cuaca GOOFY instan selama 30 menit! +600% Luck & +350% Roll Speed.' },
+  { id: 'w_arcane', cat: 'weather', type: 'weather', targetWeather: 'arcane', name: 'INSTAN ARCANE', price: 80, img: 'assets/images/weather-potion.webp?v=1', badge: 'ARCANE WEATHER', desc: 'Aktifkan anomali sihir ARCANE instan selama 30 menit! +900% Luck & +500% Roll Speed.' },
+  { id: 'w_awakened', cat: 'weather', type: 'weather', targetWeather: 'awakened', name: 'INSTAN AWAKENED', price: 150, img: 'assets/images/weather-potion.webp?v=1', badge: 'SUPREME AWAKENED', desc: 'Kekuatan tertinggi semesta AWAKENED instan selama 30 menit! +1400% Luck & +700% Roll Speed.' }
 ];
+
+function premSetTab(tabKey){
+  premCurTab = tabKey || 'all';
+  var tabs = document.querySelectorAll('.prem-tab-btn');
+  tabs.forEach(function(b){
+    if(b.getAttribute('data-cat') === premCurTab) b.classList.add('on');
+    else b.classList.remove('on');
+  });
+  renderPremiumShop();
+}
 
 function openPremiumShop(){
   renderPremiumShop();
@@ -1629,15 +1652,32 @@ function renderPremiumShop(){
   var grid = document.getElementById('premGrid');
   if(!grid) return;
 
-  grid.innerHTML = PREMIUM_PACKS.map(function(p){
+  var filteredPacks = PREMIUM_PACKS.filter(function(p){
+    if(premCurTab === 'all') return true;
+    if(premCurTab === 'equip') return p.cat === 'equip';
+    if(premCurTab === 'pack') return p.cat === 'pack';
+    if(premCurTab === 'weather') return p.cat === 'weather';
+    return true;
+  });
+
+  grid.innerHTML = filteredPacks.map(function(p){
     var isAlreadyOwned = false;
     var ownedTxt = '';
+    var activeWeatherNow = activeWeatherId();
+
     if (p.type === 'art') {
       isAlreadyOwned = (state.artOwned || []).includes(p.id);
       ownedTxt = isAlreadyOwned ? '<span style="color:#4ade80">SUDAH DIMILIKI (ARTEFAK)</span>' : 'BELUM DIMILIKI';
     } else if (p.type === 'pet') {
       isAlreadyOwned = (state.petOwned || []).includes(p.id);
       ownedTxt = isAlreadyOwned ? '<span style="color:#4ade80">SUDAH DIMILIKI (PET)</span>' : 'BELUM DIMILIKI';
+    } else if (p.type === 'weather') {
+      var isCurActive = (activeWeatherNow === p.targetWeather);
+      var wDef = WEATHER[p.targetWeather];
+      var rem = (isCurActive && state.weather && state.weather.endsAt > Date.now()) ? fmtCountdown(state.weather.endsAt - Date.now()) : '';
+      ownedTxt = isCurActive
+        ? '<span style="color:' + (wDef ? wDef.color : '#38bdf8') + '">SEDANG AKTIF (⏱ ' + rem + ')</span>'
+        : '<span style="color:#94a3b8">AKTIFKAN LANGSUNG 30 MENIT</span>';
     } else {
       var owned = (state.rollPacks && state.rollPacks[p.id]) || 0;
       ownedTxt = 'DIMILIKI DI BACKPACK: <b>' + owned + '</b>';
@@ -1647,9 +1687,19 @@ function renderPremiumShop(){
     var btnCls = (canAfford && !isAlreadyOwned) ? 'prem-buy-btn' : 'prem-buy-btn disabled';
     var btnLabel = isAlreadyOwned ? 'SUDAH DIMILIKI' : ('BELI · ' + p.price + ' GEMS');
 
-    return '<div class="prem-card' + (isAlreadyOwned ? ' prem-card-owned-full' : '') + '">' +
+    var customCardBorder = '';
+    if(p.type === 'weather'){
+      var wCol = (WEATHER[p.targetWeather] && WEATHER[p.targetWeather].color) || '#38bdf8';
+      customCardBorder = ' style="border-color:' + wCol + '55"';
+    }
+
+    return '<div class="prem-card' + (isAlreadyOwned ? ' prem-card-owned-full' : '') + '"' + customCardBorder + '>' +
       '<div class="prem-card-badge">' + p.badge + '</div>' +
-      '<div class="prem-card-img-wrap"><img src="' + p.img + '" alt="' + p.name + '" class="prem-card-img"></div>' +
+      '<div class="prem-card-img-wrap">' +
+        (p.type === 'weather'
+          ? '<div style="position:relative;width:100%;height:100%;display:grid;place-items:center;background:radial-gradient(circle,' + (WEATHER[p.targetWeather]?.color || '#38bdf8') + '22,transparent 70%)"><img src="' + p.img + '" alt="' + p.name + '" class="prem-card-img" style="width:70px;height:70px"><span style="position:absolute;bottom:6px;right:10px;font-size:24px;filter:drop-shadow(0 0 8px currentColor)">' + (WEATHER[p.targetWeather]?.icon || '✨') + '</span></div>'
+          : '<img src="' + p.img + '" alt="' + p.name + '" class="prem-card-img">') +
+      '</div>' +
       '<div class="prem-card-info">' +
         '<div class="prem-card-name">' + p.name + '</div>' +
         '<div class="prem-card-desc">' + p.desc + '</div>' +
@@ -1700,6 +1750,10 @@ async function buyPremiumPack(packId, ev){
       } else if(pack.type === 'pet'){
         state.petOwned = state.petOwned || [];
         if(!state.petOwned.includes(pack.id)) state.petOwned.push(pack.id);
+      } else if(pack.type === 'weather'){
+        const wId = pack.targetWeather;
+        state.weatherBest = betterWeather(state.weatherBest, wId);
+        state.weather = { id: wId, endsAt: Date.now() + WEATHER_ROTATE_MS };
       } else {
         state.rollPacks = state.rollPacks || {};
         state.rollPacks[pack.id] = (state.rollPacks[pack.id] || 0) + 1;
@@ -1718,6 +1772,10 @@ async function buyPremiumPack(packId, ev){
       } else if(pack.type === 'pet'){
         state.petOwned = state.petOwned || [];
         if(!state.petOwned.includes(pack.id)) state.petOwned.push(pack.id);
+      } else if(pack.type === 'weather'){
+        const wId = pack.targetWeather;
+        state.weatherBest = betterWeather(state.weatherBest, wId);
+        state.weather = { id: wId, endsAt: Date.now() + WEATHER_ROTATE_MS };
       } else {
         state.rollPacks = state.rollPacks || {};
         state.rollPacks[pack.id] = (state.rollPacks[pack.id] || 0) + 1;
@@ -1727,12 +1785,26 @@ async function buyPremiumPack(packId, ev){
 
     beep(640,.15,'triangle',.08);
     setTimeout(function(){ beep(960,.2,'triangle',.09); }, 120);
-    var rewardMsg = (pack.type === 'art' || pack.type === 'pet') ? ('+' + pack.name + ' berhasil dibuka & masuk Backpack!') : ('+1 ' + pack.name + ' masuk ke Backpack!');
-    toast('PEMBELIAN BERHASIL!', rewardMsg, '#FFD700');
+
+    var rewardMsg = '';
+    if(pack.type === 'art' || pack.type === 'pet'){
+      rewardMsg = '+' + pack.name + ' berhasil dibuka & masuk Backpack!';
+    } else if(pack.type === 'weather'){
+      const wDef = WEATHER[pack.targetWeather] || {};
+      rewardMsg = 'Cuaca ' + (wDef.name || pack.name) + ' AKTIF selama 30 menit!';
+    } else {
+      rewardMsg = '+1 ' + pack.name + ' masuk ke Backpack!';
+    }
+
+    toast('PEMBELIAN BERHASIL!', rewardMsg, pack.type === 'weather' ? (WEATHER[pack.targetWeather]?.color || '#FFD700') : '#FFD700');
     save();
     renderPremiumShop();
     renderShell();
+    if(typeof renderWeatherDock === 'function') renderWeatherDock();
     if(typeof renderBackpackPanel === 'function') renderBackpackPanel();
+    if(typeof renderWeatherMachine === 'function' && document.getElementById('weatherMachineModal')?.classList.contains('show')) {
+      renderWeatherMachine();
+    }
     console.log('[BUY PREMIUM] Success! state.premiumGems:', state.premiumGems);
   } catch(err){
     console.error('Buy pack error:', err);
@@ -1745,6 +1817,7 @@ async function buyPremiumPack(packId, ev){
 window.openPremiumShop = openPremiumShop;
 window.closePremiumShop = closePremiumShop;
 window.buyPremiumPack = buyPremiumPack;
+window.premSetTab = premSetTab;
 
 
 
