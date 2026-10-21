@@ -2423,3 +2423,93 @@ window.fetchGlobalLuck        = fetchGlobalLuck;
 window.renderGlobalLuckBanner = renderGlobalLuckBanner;
 window.renderGlobalLuckWidget = renderGlobalLuckWidget;
 
+/* =============== TOP-UP GEMS MODAL =============== */
+const TOPUP_PACKS = [
+  { gems: 60,   price: '9.900',   label: null,         bonus: null },
+  { gems: 330,  price: '49.900',  label: 'BEST VALUE', bonus: '+10%' },
+  { gems: 700,  price: '99.900',  label: null,         bonus: null },
+  { gems: 1500, price: '199.900', label: 'POPULAR',    bonus: '+15%' },
+  { gems: 3250, price: '399.900', label: null,         bonus: null },
+  { gems: 6500, price: '799.900', label: 'BEST DEAL',  bonus: '+20%' },
+];
+
+function renderTopupModal() {
+  const modal = document.getElementById('topupModal');
+  if (!modal) return;
+
+  const gems = state.premiumGems || 0;
+
+  const packHTML = TOPUP_PACKS.map(function(p) {
+    const badgeHTML = p.label
+      ? '<span class="topup-badge topup-badge--' + p.label.replace(/s/g,'').toLowerCase() + '">' + p.label + '</span>'
+      : '';
+    const bonusHTML = p.bonus
+      ? '<span class="topup-bonus">' + p.bonus + ' BONUS</span>'
+      : '';
+    return (
+      '<div class="topup-card' + (p.label ? ' topup-card--featured' : '') + '">' +
+        badgeHTML +
+        '<div class="topup-card-gem-icon">💎</div>' +
+        '<div class="topup-card-gems">' + p.gems.toLocaleString('id-ID') + '<span class="topup-card-gems-label"> Gems</span></div>' +
+        bonusHTML +
+        '<div class="topup-card-price">Rp ' + p.price + '</div>' +
+        '<button class="topup-buy-btn" onclick="buyTopup(' + p.gems + ')">BELI SEKARANG</button>' +
+      '</div>'
+    );
+  }).join('');
+
+  modal.innerHTML =
+    '<div class="topup-inner">' +
+      '<button class="topup-close" onclick="closeTopup()" title="Tutup">&times;</button>' +
+      '<div class="topup-header">' +
+        '<div class="topup-header-icon">💎</div>' +
+        '<div class="topup-header-text">' +
+          '<div class="topup-title">TOP-UP GEMS</div>' +
+          '<div class="topup-balance">Saldo kamu: <span class="topup-balance-val" id="topupBalanceVal">' + gems.toLocaleString('id-ID') + '</span> Gems</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="topup-grid">' + packHTML + '</div>' +
+      '<p class="topup-note">⚡ Ini adalah simulasi game — tidak ada transaksi nyata.</p>' +
+    '</div>';
+}
+
+function openTopup() {
+  const modal = document.getElementById('topupModal');
+  if (!modal) return;
+  renderTopupModal();
+  modal.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeTopup() {
+  const modal = document.getElementById('topupModal');
+  if (modal) modal.classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+async function buyTopup(gemsAmount) {
+  state.premiumGems = (state.premiumGems || 0) + gemsAmount;
+  save();
+  if (currentUser && window.CloudDB) {
+    try { await window.CloudDB.saveState(currentUser, state); } catch(e) {}
+  }
+  renderShell();
+  renderTopupModal();
+  beep(720,  0.2,  'triangle', 0.15);
+  setTimeout(function(){ beep(960,  0.25, 'triangle', 0.15); }, 100);
+  setTimeout(function(){ beep(1200, 0.2,  'triangle', 0.12); }, 200);
+  toast('💎 GEMS DITAMBAHKAN!', '+' + gemsAmount.toLocaleString('id-ID') + ' Gems berhasil masuk ke akunmu', '#ffd700');
+}
+
+// Tutup modal kalau klik backdrop
+document.addEventListener('click', function(e) {
+  const modal = document.getElementById('topupModal');
+  if (modal && modal.classList.contains('show') && e.target === modal) {
+    closeTopup();
+  }
+});
+
+window.openTopup  = openTopup;
+window.closeTopup = closeTopup;
+window.buyTopup   = buyTopup;
+

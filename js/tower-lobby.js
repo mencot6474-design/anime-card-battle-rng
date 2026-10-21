@@ -1044,7 +1044,7 @@ function renderLobby(){
   </div>`;
   const hc=document.getElementById("hubCard");if(hc){hc.onclick=()=>{sfx.hit();toggleBackpack();};initHubTilt(hc);}
   const hp=document.getElementById("hubPremium");if(hp)hp.onclick=()=>{sfx.hit();openPremiumShop();};
-  const gp=document.getElementById("gemPill");if(gp)gp.onclick=()=>{sfx.hit();openPremiumShop();};
+  const gp=document.getElementById("gemPill");if(gp)gp.onclick=()=>{sfx.hit();openTopup();};
   const hi=document.getElementById("hubIndex");if(hi)hi.onclick=()=>{sfx.hit();openIndex();};
   const ht=document.getElementById("hubTrait");if(ht)ht.onclick=()=>{sfx.hit();openTrait();};
   const hr=document.getElementById("hubRaid");if(hr)hr.onclick=()=>{sfx.hit();raidView="hub";location.hash="#/raid";};
