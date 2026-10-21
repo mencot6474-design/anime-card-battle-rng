@@ -1120,7 +1120,6 @@ function autoPaint(){
   const cv=document.getElementById("coinVal");if(cv)cv.textContent=fmt(state.coins);
   const c=document.getElementById("trCoinVal");if(c)c.textContent=fmt(state.coins);
   const n=document.getElementById("trAutoN");if(n)n.textContent="#"+autoRollN;
-  traitUiRefresh();
 }
 function autoTick(){
   if(!autoRoll)return;
@@ -1132,7 +1131,7 @@ function autoTick(){
   if(autoTargets.has(k)){tgt.trait=k;autoStop();save();if(!state.battle&&typeof render==="function")render();renderTrait();traitNotify(k);return;} // TARGET KENA → simpan + stop
   tgt.trait=k;
   if(autoRollN%10===0)save();
-  renderShell();autoPaint();
+  autoPaint();
   autoRollTimer=setTimeout(autoTick,AUTO_TICK);
 }
 function resumeAutoRoll(){pendingRare=null;pendingRareAuto=false;closeRarePrompt();if(!autoRoll){renderTrait();return;}autoRollTimer=setTimeout(autoTick,AUTO_TICK);}

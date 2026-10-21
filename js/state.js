@@ -21,7 +21,7 @@ function freshState(){
 }
 function todayStr(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
 function nextResetMs(){const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate()+1,0,0,0,0)-n;}
-function fmtCountdown(ms){const s=Math.max(0,Math.floor(ms/1000));const p=x=>String(x).padStart(2,"0");return p(Math.floor(s/3600))+":"+p(Math.floor(s%3600/60))+":"+p(s%60);}
+function fmtCountdown(ms){const s=Math.max(0,Math.floor(ms/1000));const p=x=>String(x).padStart(2,"0");const h=Math.floor(s/3600);const m=Math.floor(s%3600/60);const sec=s%60;if(h>0)return p(h)+":"+p(m)+":"+p(sec);return p(m)+":"+p(sec);}
 let state=null, currentUser=null;
 function loadStateFor(name){
   KEY="aab-state-v2:"+name;

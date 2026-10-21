@@ -97,6 +97,12 @@ const TREE_NODES=[
   {id:"sp3",   branch:"speed",tier:3,name:"PETIR",         cost:5,luck:0,   speed:0.8,req:["sp2"],                 desc:"Sambaran roll super cepat."},
   {id:"sp4",   branch:"speed",tier:4,name:"KILAT",         cost:10,luck:0,  speed:1.0,req:["sp3"],                 desc:"Nyaris gak kerasa nunggu."},
   {id:"sp5",   branch:"speed",tier:5,name:"CAHAYA",        cost:15,luck:0,  speed:1.2,req:["sp4"],                desc:"Mentok jalur speed pohon (kumulatif 5.0×) — total roll speed bisa lebih tinggi +potion/cuaca."},
+  /* ===== LUCK BOOSTER (panel ketiga, butuh lk5 & sp5 terbuka dulu) ===== */
+  {id:"bst1",  branch:"booster",tier:1,name:"AMPLIFIKASI I",   cost:10,luck:50, luckPct:0.25,speed:0, req:["lk5","sp5"], desc:"Booster pertama — daya luck meledak. +50 flat · +25% pengali."},
+  {id:"bst2",  branch:"booster",tier:2,name:"AMPLIFIKASI II",  cost:10,luck:50, luckPct:0.25,speed:0, req:["bst1"],      desc:"Gelombang kedua amplifikasi luck. +50 flat · +25% pengali."},
+  {id:"bst3",  branch:"booster",tier:3,name:"AMPLIFIKASI III", cost:10,luck:50, luckPct:0.25,speed:0, req:["bst2"],      desc:"Tiga lapis resonansi luck. +50 flat · +25% pengali."},
+  {id:"bst4",  branch:"booster",tier:4,name:"AMPLIFIKASI IV",  cost:10,luck:50, luckPct:0.25,speed:0, req:["bst3"],      desc:"Hampir puncak — luck mendidih. +50 flat · +25% pengali."},
+  {id:"bst5",  branch:"booster",tier:5,name:"SINGULARITAS",    cost:20,luck:100,luckPct:0.50,speed:0, req:["bst4"],      desc:"Puncak pohon booster — luck menembus batas. +100 flat · +50% pengali."},
 ];
 const TREE=Object.fromEntries(TREE_NODES.map(n=>[n.id,n]));
 function treeOwned(id){return !!(state&&state.player&&state.player.tree&&state.player.tree[id]);}
@@ -277,7 +283,7 @@ function renderBuffDock(){
   /* Slot chip: badge timer countdown di atas + ikon tengah. emoji = fallback kalau img gagal.
      Tooltip hover (bukan title native): main = nama, sub = deskripsi passive + sisa waktu. */
   const chip=(cls,src,emoji,main,sub,ms)=>`<div class="bd-chip ${cls}">
-      <span class="bd-badge">${fmtCountdown(ms)}</span>
+      <span class="bd-badge" data-ends="${Date.now()+ms}">${fmtCountdown(ms)}</span>
       <span class="bd-ic"><img src="${src}" alt="" onerror="this.parentNode.textContent='${emoji}'"></span>
       <span class="bd-tip"><b>${main}</b><small>${sub}</small></span>
     </div>`;
@@ -329,8 +335,17 @@ function startWeatherTick(){
     if(!state)return;
     const hadActive=!!state.weather&&Date.now()<state.weather.endsAt;
     const changed=ensureWeather(false);   /* auto-rotate: habis -> roll baru + toast */
-    renderWeatherDock();renderBuffDock();
-    if(changed||(!hadActive&&state.weather))renderShell(); /* refresh chip/speed pas cuaca ganti */
+    if(changed||(!hadActive&&state.weather)){
+      /* cuaca/buff berubah -> full rebuild + sync shell */
+      renderWeatherDock();renderBuffDock();renderShell();
+    }else{
+      /* cuaca tidak berubah -> update hanya countdown timer (tanpa rebuild panel) */
+      const wp=document.querySelector(".wp-timer-val");if(wp&&state.weather)wp.textContent=fmtCountdown(state.weather.endsAt-Date.now());
+      document.querySelectorAll(".bd-badge").forEach(b=>{
+        /* badge timer buff: update teks countdown dari data-ends (disimpan saat render) */
+        const ends=b.getAttribute("data-ends");if(ends)b.textContent=fmtCountdown(+ends-Date.now());
+      });
+    }
     /* live refresh modal profil pas terbuka (countdown cuaca/potion) */
     try{const pm=document.getElementById("profModal");if(pm&&pm.style.display==="flex")renderProfile();}catch(e){}
   },1000);
@@ -1286,9 +1301,10 @@ function stMount(){
   if(!stMount._rs){stMount._rs=true;window.addEventListener('resize',()=>{stFitViewH();stApplyZoom();});}
 }
 /* Posisi hexagon (persen kanvas): root di tengah, LUCK kolom kiri, SPEED kolom kanan. */
-const ST_POS={root:[50,50]};
-["lk1","lk2","lk3","lk4","lk5"].forEach((id,i)=>ST_POS[id]=[24,15+17.5*i]);
-["sp1","sp2","sp3","sp4","sp5"].forEach((id,i)=>ST_POS[id]=[76,15+17.5*i]);
+const ST_POS={root:[50,50,0]};
+function polar(tier,side){const r=18+tier*6;const ang=(side==='luck'?Math.PI*0.85:Math.PI*0.15)+(tier-1)*0.18*(side==='luck'?-1:1);const x=50+Math.cos(ang)*r;const y=24+tier*11;const z=40-tier*24;return [x,y,z];}
+["lk1","lk2","lk3","lk4","lk5"].forEach((id,i)=>ST_POS[id]=polar(i+1,'luck'));
+["sp1","sp2","sp3","sp4","sp5"].forEach((id,i)=>ST_POS[id]=polar(i+1,'speed'));
 function stNodeHtml(n,sp){
   const isRoot=n.branch==='root';
   const owned=isRoot||treeOwned(n.id);
@@ -1297,9 +1313,9 @@ function stNodeHtml(n,sp){
   const st=owned?'owned':(preqMet&&affordable?'avail':(preqMet?'poor':'locked'));
   const gain=isRoot?'AKAR':(n.branch==='luck'?('+'+(Number.isInteger(n.luck)?n.luck:n.luck.toFixed(1))+' LUCK'+(n.luckPct?' · +'+Math.round(n.luckPct*100)+'%':'')):('+'+n.speed.toFixed(1)+'× SPEED'));
   const ic=BP_NODE_ICONS[n.name]||'◆';
-  const [x,y]=ST_POS[n.id]||[50,50];
+  const [x,y,z]=ST_POS[n.id]||[50,50,0];
   const cost=isRoot?'':`<div class="st-cost">${owned?'✓':n.cost+' SP'}</div>`;
-  return `<div class="st-node st-${n.branch} st-${st}" ${isRoot?'':'onclick="bpTreeBuy(\''+n.id+'\')"'} style="left:${x}%;top:${y}%" title="${n.name} — ${gain} · ${n.desc}">
+  return `<div class="st-node st-${n.branch} st-${st}" ${isRoot?'':'onclick="bpTreeBuy(\''+n.id+'\')"'} style="left:${x}%;top:${y}%;transform:translate3d(-50%,-50%,${z}px)" title="${n.name} — ${gain} · ${n.desc}">
     <div class="st-in"><div class="st-ico">${ic}</div><div class="st-name">${n.name}</div><div class="st-gain">${gain}</div>${cost}</div>
   </div>`;
 }
@@ -1324,12 +1340,37 @@ function stLinesHtml(sp){
   for(let i=1;i<spd.length;i++)out+=seg(spd[i-1],spd[i],"speed");
   return `<svg class="st-lines" viewBox="0 0 100 100" preserveAspectRatio="none">${out}</svg>`;
 }
+function slNodeHtml(n,sp){
+  const owned=treeOwned(n.id);
+  const preqMet=n.req.every(r=>r==='root'||treeOwned(r));
+  const affordable=sp>=n.cost;
+  const st=owned?'owned':(preqMet&&affordable?'avail':(preqMet?'poor':'locked'));
+  let gain,cls;
+  if(n.branch==='luck'){
+    gain='+'+n.luck+' LUCK'+(n.luckPct?' · +'+Math.round(n.luckPct*100)+'% mult':'');
+    cls='sl-luck';
+  } else if(n.branch==='speed'){
+    gain='+'+n.speed.toFixed(1)+'× roll speed';
+    cls='sl-speed';
+  } else {
+    // booster: tampilkan flat + pct sekaligus
+    gain='+'+n.luck+' LUCK · +'+Math.round((n.luckPct||0)*100)+'% mult';
+    cls='sl-booster';
+  }
+  return `<div class="sl-node ${cls} ${st}"${owned?'':` onclick="bpTreeBuy('${n.id}')"`}>
+    <div class="sl-num">${n.tier}</div>
+    <div class="sl-name">${n.name}</div>
+    <div class="sl-gain">${gain}</div>
+    <div class="sl-cost">${owned?'MILIKI':n.cost+' SP'}</div>
+  </div>`;
+}
+
 function renderBpTree(){
   const sp=(state&&state.player&&state.player.sp)||0;
   const goal=TREE_NODES.filter(n=>n.id!=='root'&&!treeOwned(n.id)&&n.req.every(r=>r==='root'||treeOwned(r))).sort((a,b)=>a.cost-b.cost)[0];
   const pct=goal?Math.min(100,Math.round(sp/goal.cost*100)):100;
   const ready=!!goal&&sp>=goal.cost;
-  const hint=sp>0?'ketuk hexagon buat naikkin':'naikkin LV buat dapet SP';
+  const hint=sp>0?'beli node buat naikkan stat':'naikkan LV buat dapet SP';
   const goalTxt=goal?(goal.name+' · '+goal.cost+' SP'+(ready?' — SIAP!':'')):'SEMUA NODE TERBUKA';
   return `<div class="spbar">
     <div class="sp-banner">
@@ -1342,11 +1383,21 @@ function renderBpTree(){
     </div>
     <div class="sp-hint">${hint}</div>
   </div>
-  <div class="st-pills">
-    <span class="st-pill luck">☘ LUCK <b>${totalLuck().toFixed(1)}×</b></span>
-    <span class="st-pill speed">⚡ SPEED <b>${playerSpeedMult().toFixed(1)}×</b> · CAP 20×</span>
-  </div>
-  <div class="st-wrap"><div class="st-view"><div class="st-scale"><div class="st-canvas">${stLinesHtml(sp)}${TREE_NODES.map(n=>stNodeHtml(n,sp)).join('')}</div></div></div><div class="st-lane luck"><span class="st-lane-hd">☘ LUCK</span></div><div class="st-lane speed"><span class="st-lane-hd">⚡ SPEED</span></div></div>`;
+  <div class="sl-tree">
+    <div class="sl-branch sl-luck">
+      <div class="sl-branch-title">☘ LUCK</div>
+      ${TREE_NODES.filter(n=>n.branch==='luck').map(n=>slNodeHtml(n,sp)).join('')}
+    </div>
+    <div class="sl-branch sl-speed">
+      <div class="sl-branch-title">⚡ SPEED</div>
+      ${TREE_NODES.filter(n=>n.branch==='speed').map(n=>slNodeHtml(n,sp)).join('')}
+    </div>
+    <div class="sl-branch sl-booster">
+      <div class="sl-branch-title">🔥 LUCK BOOSTER</div>
+      <div class="sl-branch-req">Butuh lk5 &amp; sp5 terbuka</div>
+      ${TREE_NODES.filter(n=>n.branch==='booster').map(n=>slNodeHtml(n,sp)).join('')}
+    </div>
+  </div>`;
 }
 function bpTreeBuy(id){
   const r=treeBuy(id);
@@ -1355,8 +1406,11 @@ function bpTreeBuy(id){
     beep(200,.08,'square',.06);toast(msg,'GAK BISA','#f87171');return;
   }
   beep(680,.12,'triangle',.09);setTimeout(()=>beep(900,.12,'triangle',.08),90);
-  const g=r.node.branch==='luck'?(r.node.luck.toFixed(1)+' LUCK'):(r.node.speed.toFixed(1)+'× SPEED');
-  toast(r.node.name,'+'+g,r.node.branch==='luck'?'#5eead4':'#fcd34d');
+  let g,col;
+  if(r.node.branch==='luck')    { g=r.node.luck.toFixed(1)+' LUCK'; col='#5eead4'; }
+  else if(r.node.branch==='speed') { g=r.node.speed.toFixed(1)+'× SPEED'; col='#fcd34d'; }
+  else { g=r.node.luck+' LUCK · +'+Math.round((r.node.luckPct||0)*100)+'% mult'; col='#f97316'; }
+  toast(r.node.name,'+'+g,col);
   renderShell();renderBackpackPanel();
 }
 
@@ -1875,6 +1929,86 @@ function wmStopAuto(){
   renderWeatherMachine();
 }
 
+/* wmAutoPaint: update ringan saat auto-loop — tidak re-render seluruh shell/app */
+function wmAutoPaint(){
+  const aw = activeWeatherId();
+  const curDef = (aw && WEATHER[aw]) || WEATHER.sunshine;
+  const pPotCnt = (state && state.potions) || 0;
+  const remainingTime = (state && state.weather && state.weather.endsAt && state.weather.endsAt > Date.now())
+    ? fmtCountdown(state.weather.endsAt - Date.now())
+    : '00:00';
+
+  // update header: cuaca aktif + timer + stok potion
+  const headEl = document.getElementById('wmHeadWeather');
+  if(headEl){
+    headEl.innerHTML = '' +
+      '<div class="wm-head-pill wm-cur-badge" style="border-color:' + curDef.color + ';box-shadow:0 0 10px ' + curDef.color + '33">' +
+        '<span class="wm-cur-ic" style="color:' + curDef.color + '">' + curDef.icon + '</span>' +
+        '<strong style="color:' + curDef.color + '">' + curDef.name + '</strong>' +
+        '<span class="wm-cur-timer">⏱ ' + remainingTime + '</span>' +
+      '</div>' +
+      '<div class="wm-head-pill wm-supply-badge" title="Stok Weather Potion">' +
+        '<img src="assets/images/weather-potion.webp?v=1" alt="Potion" class="wm-head-pot-img">' +
+        '<span class="wm-pot-sep">:</span>' +
+        '<b class="wm-pot-val">' + fmt(pPotCnt) + '</b>' +
+      '</div>';
+  }
+
+  // update iterasi counter
+  const iterEl = document.querySelector('.tram-n');
+  if(iterEl) iterEl.textContent = '#' + wmAutoCount;
+
+  // update cuaca aktif di rates list (ACTIVE flag)
+  document.querySelectorAll('.wm-rates-list .trr-item').forEach(it => {
+    const wid = it.querySelector('input[name="wmAutoTgt"]')?.value;
+    const own = !!wid && wid === aw;
+    it.classList.toggle('own', own);
+    const row = it.querySelector('.trr-row');
+    if(!row) return;
+    const old = row.querySelector('.trr-flag');
+    if(old) old.remove();
+    if(own){
+      const flag = document.createElement('span');
+      flag.className = 'trr-flag';
+      flag.textContent = 'ACTIVE';
+      const rar = row.querySelector('.trr-rar');
+      if(rar) row.insertBefore(flag, rar); else row.appendChild(flag);
+    }
+  });
+
+  // update pity bars
+  const p = (state && state.wpity) || { r: 0, m: 0 };
+  const rLeft = Math.max(0, PITY_RARE - (p.r || 0));
+  const mLeft = Math.max(0, PITY_MYTHIC - (p.m || 0));
+  const pityBlocks = document.querySelectorAll('.wo-pity');
+  if(pityBlocks[0]){
+    const top = pityBlocks[0].querySelector('.wo-pity-top b');
+    if(top) top.textContent = fmt(rLeft) + ' SINTESIS';
+    const bar = pityBlocks[0].querySelector('.wo-bar i');
+    if(bar) bar.style.width = Math.min(100, (PITY_RARE - rLeft) / PITY_RARE * 100).toFixed(1) + '%';
+  }
+  if(pityBlocks[1]){
+    const top = pityBlocks[1].querySelector('.wo-pity-top b');
+    if(top) top.textContent = fmt(mLeft) + ' SINTESIS';
+    const bar = pityBlocks[1].querySelector('.wo-bar i');
+    if(bar) bar.style.width = Math.min(100, (PITY_MYTHIC - mLeft) / PITY_MYTHIC * 100).toFixed(1) + '%';
+  }
+
+  // update cuaca panel kiri (nama, warna, timer, stat)
+  const curPanel = document.querySelector('.wm-cur-panel');
+  if(curPanel){
+    curPanel.style.setProperty('--tcol', curDef.color);
+    const tcName = curPanel.querySelector('.tc-name');
+    if(tcName){ tcName.style.color = curDef.color; tcName.textContent = curDef.name; }
+    const durBadge = curPanel.querySelectorAll('.tc-badge-stat .tcb-val')[2];
+    if(durBadge) durBadge.textContent = remainingTime;
+  }
+
+  // update coin di shell tanpa re-render
+  const cv = document.getElementById('coinVal'); if(cv) cv.textContent = fmt(state.coins);
+  const c = document.getElementById('trCoinVal'); if(c) c.textContent = fmt(state.coins);
+}
+
 function wmAutoLoop(){
   if(!wmAutoRunning) return;
   if((state.potions || 0) < 1){
@@ -1891,9 +2025,7 @@ function wmAutoLoop(){
   }
 
   save();
-  renderWeatherMachine();
-  renderShell();
-  if(!state.battle && typeof render === "function") render();
+  wmAutoPaint(); // ← update surgical, tanpa renderShell/render
 
   // Cek apakah mencapai target cuaca
   const cur = activeWeatherId();
@@ -1902,6 +2034,9 @@ function wmAutoLoop(){
     setTimeout(() => beep(960, 0.25, "triangle", 0.12), 120);
     toast("TARGET TERCAPAI!", "Cuaca " + WEATHER[cur].name + " berhasil diaktifkan pada iterasi #" + wmAutoCount, WEATHER[cur].color);
     wmStopAuto();
+    renderWeatherMachine(); // full render sekali saat selesai
+    if(!state.battle && typeof render === "function") render();
+    renderShell();
     return;
   }
 
