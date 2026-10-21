@@ -46736,22 +46736,33 @@ body.battle-full .fighter.foe.ko {
   height: 0 !important;
 }
 
-/* ====== GLOBAL LUCK BANNER ====== */
-#globalLuckBanner{
-  position:fixed;top:0;left:0;right:0;z-index:9990;
-  background:linear-gradient(90deg,#854d0e,#713f12,#854d0e);
-  border-bottom:1px solid #fcd34d;
-  transform:translateY(-100%);transition:transform .3s ease;
-  pointer-events:none;
-}
-#globalLuckBanner.show{transform:translateY(0)}
-.glb-inner{
+/* ====== GLOBAL LUCK WIDGET (lobby backpack) ====== */
+.glw-wrap{
   display:flex;align-items:center;gap:10px;
-  max-width:900px;margin:0 auto;padding:7px 16px;
+  padding:8px 12px;margin-bottom:8px;
+  background:linear-gradient(135deg,rgba(14,116,144,.18),rgba(7,89,133,.25));
+  border:1px solid rgba(56,189,248,.3);
+  border-radius:10px;
 }
-.glb-icon{font-size:18px;flex:0 0 auto}
-.glb-text{flex:1;font-family:"Barlow Condensed",sans-serif;font-size:13px;font-weight:700;color:#fef08a;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.glb-text b{font-size:14px;letter-spacing:.08em;color:#fcd34d}
-.glb-by{font-weight:400;color:rgba(254,240,138,.75);font-size:11px}
-.glb-by strong{color:#fef08a}
-.glb-timer{flex:0 0 auto;font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:14px;color:#fcd34d;letter-spacing:.06em;font-variant-numeric:tabular-nums;background:rgba(0,0,0,.3);padding:2px 8px;border-radius:6px}
+.glw-icon{flex:0 0 auto;display:flex;align-items:center}
+.glw-info{flex:1;min-width:0}
+.glw-title{font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;color:rgba(186,230,253,.7);text-transform:uppercase;margin-bottom:2px}
+.glw-status{display:flex;align-items:center;gap:5px;font-size:11px;flex-wrap:wrap}
+.glw-status.active{color:#e0f2fe}
+.glw-off{color:rgba(148,163,184,.6);font-style:italic;font-size:11px}
+.glw-mult{font-family:"Barlow Condensed",sans-serif;font-size:15px;font-weight:800;color:#38bdf8;letter-spacing:.04em}
+.glw-stack{font-size:10px;color:rgba(186,230,253,.6);background:rgba(56,189,248,.1);padding:1px 5px;border-radius:4px}
+.glw-sep{color:rgba(148,163,184,.4)}
+.glw-by{font-size:11px;color:rgba(186,230,253,.7)}
+.glw-by b{color:#7dd3fc}
+.glw-timer{font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:13px;color:#38bdf8;font-variant-numeric:tabular-nums;background:rgba(0,0,0,.3);padding:1px 6px;border-radius:5px}
+.glw-btn{
+  flex:0 0 auto;
+  font-family:"Barlow Condensed",sans-serif;font-size:12px;font-weight:700;letter-spacing:.06em;
+  padding:5px 10px;border-radius:7px;border:1px solid rgba(56,189,248,.5);
+  background:linear-gradient(135deg,#0369a1,#075985);color:#e0f2fe;
+  cursor:pointer;white-space:nowrap;transition:opacity .15s;
+}
+.glw-btn:hover:not(:disabled){background:linear-gradient(135deg,#0284c7,#0369a1)}
+.glw-btn:disabled{opacity:.4;cursor:not-allowed}
+.glw-btn.stack{background:linear-gradient(135deg,#0f766e,#0d6eaa);border-color:rgba(20,184,166,.5)}

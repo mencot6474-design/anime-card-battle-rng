@@ -1451,7 +1451,7 @@ function renderBpArts(){
       :bpBuyBtn(d,"Art");
     return `<div class="bp-shop${eq?' eq':''}" style="--ec:${d.color}"><div class="bp-shop-ic">${artIconHtml(d)}</div><div class="bp-shop-n">${d.name}</div><div class="bp-shop-e">${luckTxt(d)}</div>${btn}</div>`;
   }).join('');
-  return `<div class="bp-h">ARTEFAK · 2 SLOT<div class="bp-coinrow">☘ ${totalLuck().toFixed(1)}× · ${coinIcon(15)} ${fmt(coins)}</div></div>
+  return `${renderGlobalLuckWidget()}<div class="bp-h">ARTEFAK · 2 SLOT<div class="bp-coinrow">☘ ${totalLuck().toFixed(1)}× · ${coinIcon(15)} ${fmt(coins)}</div></div>
   <div class="bp-slotsrow">${slots}<div class="bp-aslot-hint">Klik slot untuk lepas<br>Beli artefak dulu untuk pasang</div></div>
   <div class="bp-grid6">${cards}</div>`;
 }
@@ -1470,7 +1470,7 @@ function renderBpPets(){
       :bpBuyBtn(p,"Pet");
     return `<div class="bp-shop${eq?' eq':''}" style="--ec:#7DF9FF"><div class="bp-shop-ic"><img src="${p.img}" alt="${p.name}" onerror="this.parentNode.classList.add('noimg')"><span class="ph">${p.emoji}</span></div><div class="bp-shop-n">${p.name}</div><div class="bp-shop-e">${luckTxt(p)}</div>${btn}</div>`;
   }).join('');
-  return `<div class="bp-h">PET · 1 SLOT<div class="bp-coinrow">☘ ${totalLuck().toFixed(1)}× · ${coinIcon(15)} ${fmt(coins)}</div></div>
+  return `${renderGlobalLuckWidget()}<div class="bp-h">PET · 1 SLOT<div class="bp-coinrow">☘ ${totalLuck().toFixed(1)}× · ${coinIcon(15)} ${fmt(coins)}</div></div>
   ${actHtml}
   <div class="bp-grid6">${cards}</div>`;
 }
@@ -2207,14 +2207,37 @@ window.wmToggleAuto = wmToggleAuto;
 window.wmSelectTarget = wmSelectTarget;
 window.renderWeatherMachine = renderWeatherMachine;
 
-/* =============== GLOBAL LUCK SYSTEM =============== */
-const GLOBAL_LUCK_COST = 500;
-const GLOBAL_LUCK_MULT = 10;
-const GLOBAL_LUCK_DURATION_MS = 3600000; // 1 jam
-let _globalLuckCache = null;      // cache hasil poll terakhir
-let _globalLuckPollTimer = null;  // timer poll
+/* =============== GLOBAL LUCK SYSTEM v2 =============== */
+const GLOBAL_LUCK_COST        = 500;
+const GLOBAL_LUCK_STEP_MULT   = 10;
+const GLOBAL_LUCK_MAX_MULT    = 100;
+const GLOBAL_LUCK_STEP_MS     = 3600000;   // 1 jam per stack
+const GLOBAL_LUCK_MAX_MS      = 36000000;  // max 10 jam
 
-// Ambil status global luck (cache 15 detik)
+let _globalLuckCache     = null;  // cache hasil poll
+let _globalLuckPollTimer = null;  // timer poll
+let _glWidgetTimer       = null;  // timer countdown widget
+
+/* ---- SVG Icon Fountain (air pancuran) ---- */
+function globalLuckFountainSvg(sz) {
+  sz = sz || 30;
+  return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+    '<ellipse cx="16" cy="26" rx="10" ry="3" fill="#38bdf8" opacity=".35"/>' +
+    '<rect x="6" y="24" width="20" height="3" rx="1.5" fill="#7dd3fc"/>' +
+    '<rect x="14.5" y="17" width="3" height="8" rx="1" fill="#bae6fd"/>' +
+    '<path d="M9 17 Q16 19 23 17 Q21 13 16 13 Q11 13 9 17Z" fill="#38bdf8"/>' +
+    '<rect x="15" y="9" width="2" height="5" rx="1" fill="#e0f2fe"/>' +
+    '<circle cx="16" cy="5" r="1.3" fill="#7dd3fc"/>' +
+    '<circle cx="12" cy="7" r="1" fill="#38bdf8" opacity=".8"/>' +
+    '<circle cx="20" cy="7" r="1" fill="#38bdf8" opacity=".8"/>' +
+    '<circle cx="10" cy="10" r=".8" fill="#38bdf8" opacity=".6"/>' +
+    '<circle cx="22" cy="10" r=".8" fill="#38bdf8" opacity=".6"/>' +
+    '<circle cx="14" cy="4" r=".6" fill="#bae6fd" opacity=".7"/>' +
+    '<circle cx="18" cy="4" r=".6" fill="#bae6fd" opacity=".7"/>' +
+    '</svg>';
+}
+
+/* ---- Fetch dari Supabase ---- */
 async function fetchGlobalLuck() {
   if (!window.CloudDB) return null;
   try {
@@ -2224,19 +2247,7 @@ async function fetchGlobalLuck() {
   } catch(e) { return null; }
 }
 
-// Mulai polling tiap 15 detik
-function startGlobalLuckPoll() {
-  if (_globalLuckPollTimer) return;
-  fetchGlobalLuck().then(renderGlobalLuckBanner);
-  _globalLuckPollTimer = setInterval(async () => {
-    await fetchGlobalLuck();
-    renderGlobalLuckBanner();
-    // Juga update totalLuck display jika ada
-    if (typeof renderShell === 'function') renderShell();
-  }, 15000);
-}
-
-// Multiplier dari global luck (1 kalau tidak aktif)
+/* ---- Multiplier aktif (1 jika tidak aktif) ---- */
 function globalLuckMult() {
   if (!_globalLuckCache) return 1;
   if (Date.now() >= new Date(_globalLuckCache.ends_at).getTime()) {
@@ -2246,64 +2257,120 @@ function globalLuckMult() {
   return _globalLuckCache.multiplier || 1;
 }
 
-// Render/update banner global luck di atas layar
-function renderGlobalLuckBanner() {
-  let el = document.getElementById('globalLuckBanner');
-  const gl = _globalLuckCache;
-  const now = Date.now();
+/* ---- Render widget di backpack (return HTML string) ---- */
+function renderGlobalLuckWidget() {
+  const gl     = _globalLuckCache;
+  const now    = Date.now();
   const active = gl && now < new Date(gl.ends_at).getTime();
+  const gems   = (typeof state !== 'undefined' && state.premiumGems) || 0;
+  const canBuy = gems >= GLOBAL_LUCK_COST;
+  const mult   = active ? (gl.multiplier || 0) : 0;
+  const stacks = active ? Math.round(mult / GLOBAL_LUCK_STEP_MULT) : 0;
+  const maxed  = mult >= GLOBAL_LUCK_MAX_MULT;
 
-  if (!active) {
-    if (el) { el.classList.remove('show'); el.innerHTML = ''; }
-    return;
+  let timerStr = '';
+  if (active) {
+    const msLeft = new Date(gl.ends_at).getTime() - now;
+    const s = Math.max(0, Math.floor(msLeft / 1000));
+    const pad = function(x){ return String(x).padStart(2,'0'); };
+    const hh = Math.floor(s / 3600);
+    const mm = Math.floor(s % 3600 / 60);
+    const ss = s % 60;
+    timerStr = hh > 0 ? (pad(hh)+':'+pad(mm)+':'+pad(ss)) : (pad(mm)+':'+pad(ss));
   }
 
-  if (!el) {
-    el = document.createElement('div');
-    el.id = 'globalLuckBanner';
-    document.body.appendChild(el);
-  }
+  const btnLabel = active
+    ? (maxed ? 'MAX STACK (100×)' : 'TUMPUK +10× · 500 💎')
+    : 'AKTIFKAN · 500 💎';
+  const btnDisabled = !canBuy || maxed;
+  const btnClass = 'glw-btn' + (active && !maxed ? ' stack' : '');
 
-  const msLeft = new Date(gl.ends_at).getTime() - now;
-  const s = Math.max(0, Math.floor(msLeft / 1000));
-  const pad = x => String(x).padStart(2, '0');
-  const h = Math.floor(s / 3600);
-  const m = Math.floor(s % 3600 / 60);
-  const sc = s % 60;
-  const timer = h > 0 ? `${pad(h)}:${pad(m)}:${pad(sc)}` : `${pad(m)}:${pad(sc)}`;
+  const statusHtml = active
+    ? ('<span class="glw-mult">'+mult+'×</span>'
+       + '<span class="glw-stack">'+stacks+' tumpuk</span>'
+       + '<span class="glw-sep">·</span>'
+       + '<span class="glw-by">oleh <b>'+gl.activated_by+'</b></span>'
+       + '<span class="glw-sep">·</span>'
+       + '<span class="glw-timer" id="glWidgetTimer">'+timerStr+'</span>')
+    : '<span class="glw-off">Belum aktif — efek untuk semua pemain</span>';
+  const statusClass = 'glw-status' + (active ? ' active' : '');
 
-  el.innerHTML = `
-    <div class="glb-inner">
-      <span class="glb-icon">⚡</span>
-      <span class="glb-text">
-        <b>GLOBAL LUCK ${GLOBAL_LUCK_MULT}×</b>
-        <span class="glb-by">diaktifkan oleh <strong>${gl.activated_by}</strong></span>
-      </span>
-      <span class="glb-timer">${timer}</span>
-    </div>`;
-  el.classList.add('show');
+  return '<div class="glw-wrap" id="glLobbyWidget">'
+    + '<div class="glw-icon">' + globalLuckFountainSvg(30) + '</div>'
+    + '<div class="glw-info">'
+      + '<div class="glw-title">GLOBAL LUCK</div>'
+      + '<div class="' + statusClass + '">' + statusHtml + '</div>'
+    + '</div>'
+    + '<button class="' + btnClass + '" id="glBuyBtn" onclick="buyGlobalLuck()"'
+      + (btnDisabled ? ' disabled' : '') + '>' + btnLabel + '</button>'
+    + '</div>';
 }
 
-// Beli & aktifkan global luck
+/* ---- Ticker countdown widget (update tiap detik) ---- */
+function _startGlWidgetTick() {
+  if (_glWidgetTimer) return;
+  _glWidgetTimer = setInterval(function() {
+    var el = document.getElementById('glWidgetTimer');
+    if (!el) { clearInterval(_glWidgetTimer); _glWidgetTimer = null; return; }
+    var gl = _globalLuckCache;
+    if (!gl) { el.textContent = ''; return; }
+    var msLeft = new Date(gl.ends_at).getTime() - Date.now();
+    if (msLeft <= 0) {
+      _globalLuckCache = null;
+      clearInterval(_glWidgetTimer); _glWidgetTimer = null;
+      if (typeof renderBackpackPanel === 'function') renderBackpackPanel();
+      if (typeof renderShell === 'function') renderShell();
+      return;
+    }
+    var s = Math.floor(msLeft / 1000);
+    var pad = function(x){ return String(x).padStart(2,'0'); };
+    var hh = Math.floor(s / 3600);
+    var mm = Math.floor(s % 3600 / 60);
+    var ss = s % 60;
+    el.textContent = hh > 0 ? (pad(hh)+':'+pad(mm)+':'+pad(ss)) : (pad(mm)+':'+pad(ss));
+  }, 1000);
+}
+
+/* ---- Polling 15 detik ---- */
+function startGlobalLuckPoll() {
+  if (_globalLuckPollTimer) return;
+  fetchGlobalLuck().then(function() {
+    if (typeof renderBackpackPanel === 'function') renderBackpackPanel();
+    _startGlWidgetTick();
+  });
+  _globalLuckPollTimer = setInterval(async function() {
+    await fetchGlobalLuck();
+    if (typeof renderBackpackPanel === 'function') renderBackpackPanel();
+    if (typeof renderShell === 'function') renderShell();
+    _startGlWidgetTick();
+  }, 15000);
+}
+
+/* ---- Stub banner lama (no-op — widget sekarang di backpack) ---- */
+function renderGlobalLuckBanner() {
+  var el = document.getElementById('globalLuckBanner');
+  if (el) el.remove();
+}
+
+/* ---- Beli / Stack Global Luck ---- */
 async function buyGlobalLuck() {
   const btn = document.getElementById('glBuyBtn');
   if (btn) btn.disabled = true;
   try {
     if ((state.premiumGems || 0) < GLOBAL_LUCK_COST) {
-      toast('GEMS TIDAK CUKUP', `Butuh ${GLOBAL_LUCK_COST} Gems`, '#f87171');
-      return;
-    }
-    const username = currentUser || 'GUEST';
-    
-    // Cek apakah sudah ada yang aktif
-    const existing = await fetchGlobalLuck();
-    if (existing) {
-      const msLeft = new Date(existing.ends_at).getTime() - Date.now();
-      toast('GLOBAL LUCK SUDAH AKTIF', `Diaktifkan oleh ${existing.activated_by} · sisa ${Math.ceil(msLeft/60000)} menit`, '#fcd34d');
+      toast('GEMS TIDAK CUKUP', 'Butuh ' + GLOBAL_LUCK_COST + ' Gems', '#f87171');
       return;
     }
 
-    // Potong gems (via cloud jika login, lokal jika guest)
+    const existing = await fetchGlobalLuck();
+    if (existing && (existing.multiplier || 0) >= GLOBAL_LUCK_MAX_MULT) {
+      toast('SUDAH MAX STACK', 'Global Luck sudah 100× — tidak bisa ditambah lagi', '#fcd34d');
+      return;
+    }
+
+    const username = currentUser || 'GUEST';
+
+    // Potong gems
     if (currentUser && window.CloudDB) {
       const res = await window.CloudDB.verifyAndDeductGems(currentUser, GLOBAL_LUCK_COST, 'global_luck', 'global_luck');
       if (!res.ok) { toast('GAGAL', res.msg || 'Transaksi gagal', '#f87171'); return; }
@@ -2313,27 +2380,34 @@ async function buyGlobalLuck() {
       save();
     }
 
-    // Insert ke Supabase
+    // Upsert ke Supabase
     if (window.CloudDB) {
-      await window.CloudDB.activateGlobalLuck(username, GLOBAL_LUCK_MULT, GLOBAL_LUCK_DURATION_MS);
+      await window.CloudDB.stackGlobalLuck(username);
     }
 
     // Update cache lokal
+    const prevMult   = existing ? (existing.multiplier || 10) : 0;
+    const newMult    = Math.min(prevMult + GLOBAL_LUCK_STEP_MULT, GLOBAL_LUCK_MAX_MULT);
+    const prevEnd    = existing ? new Date(existing.ends_at).getTime() : Date.now();
+    const newEnd     = Math.min(prevEnd + GLOBAL_LUCK_STEP_MS, Date.now() + GLOBAL_LUCK_MAX_MS);
     _globalLuckCache = {
+      id: existing ? existing.id : null,
       activated_by: username,
-      activated_at: new Date().toISOString(),
-      ends_at: new Date(Date.now() + GLOBAL_LUCK_DURATION_MS).toISOString(),
-      multiplier: GLOBAL_LUCK_MULT
+      activated_at: existing ? existing.activated_at : new Date().toISOString(),
+      ends_at: new Date(newEnd).toISOString(),
+      multiplier: newMult
     };
 
     beep(720, 0.2, 'triangle', 0.12);
-    setTimeout(() => beep(960, 0.25, 'triangle', 0.14), 100);
-    setTimeout(() => beep(1200, 0.2, 'triangle', 0.12), 200);
-    toast('⚡ GLOBAL LUCK AKTIF!', `${GLOBAL_LUCK_MULT}× luck untuk semua server selama 1 jam!`, '#fcd34d');
+    setTimeout(function(){ beep(960, 0.25, 'triangle', 0.14); }, 100);
+    setTimeout(function(){ beep(1200, 0.2, 'triangle', 0.12); }, 200);
 
-    renderGlobalLuckBanner();
-    renderShell();
-    renderPremiumShop();
+    const stacks = Math.round(newMult / GLOBAL_LUCK_STEP_MULT);
+    toast('💧 GLOBAL LUCK AKTIF!', newMult + '× luck (' + stacks + ' tumpuk) untuk semua server!', '#38bdf8');
+
+    if (typeof renderBackpackPanel === 'function') renderBackpackPanel();
+    if (typeof renderShell === 'function') renderShell();
+    _startGlWidgetTick();
   } catch(err) {
     console.error('[buyGlobalLuck]', err);
     toast('ERROR', err.message, '#f87171');
@@ -2342,8 +2416,9 @@ async function buyGlobalLuck() {
   }
 }
 
-window.buyGlobalLuck = buyGlobalLuck;
-window.globalLuckMult = globalLuckMult;
-window.startGlobalLuckPoll = startGlobalLuckPoll;
-window.fetchGlobalLuck = fetchGlobalLuck;
+window.buyGlobalLuck          = buyGlobalLuck;
+window.globalLuckMult         = globalLuckMult;
+window.startGlobalLuckPoll    = startGlobalLuckPoll;
+window.fetchGlobalLuck        = fetchGlobalLuck;
 window.renderGlobalLuckBanner = renderGlobalLuckBanner;
+window.renderGlobalLuckWidget = renderGlobalLuckWidget;
