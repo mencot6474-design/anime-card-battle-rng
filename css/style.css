@@ -46766,3 +46766,20 @@ body.battle-full .fighter.foe.ko {
 .glw-btn:hover:not(:disabled){background:linear-gradient(135deg,#0284c7,#0369a1)}
 .glw-btn:disabled{opacity:.4;cursor:not-allowed}
 .glw-btn.stack{background:linear-gradient(135deg,#0f766e,#0d6eaa);border-color:rgba(20,184,166,.5)}
+
+/* ====== GLOBAL LUCK DOCK (di atas footer lobby) ====== */
+.gl-dock{
+  position:fixed;
+  bottom:72px;          /* di atas .lobby-footer */
+  left:50%;transform:translateX(-50%);
+  z-index:900;
+  width:min(400px,92vw);
+  pointer-events:auto;
+}
+.gl-dock:empty{display:none}
+/* Widget di dalam dock — kompak, pas untuk lobby */
+.gl-dock .glw-wrap{
+  margin-bottom:0;
+  backdrop-filter:blur(8px);
+  box-shadow:0 4px 16px rgba(0,0,0,.45);
+}

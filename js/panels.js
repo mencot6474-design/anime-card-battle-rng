@@ -2335,11 +2335,13 @@ function _startGlWidgetTick() {
 function startGlobalLuckPoll() {
   if (_globalLuckPollTimer) return;
   fetchGlobalLuck().then(function() {
+    renderGlobalLuckDock();
     if (typeof renderBackpackPanel === 'function') renderBackpackPanel();
     _startGlWidgetTick();
   });
   _globalLuckPollTimer = setInterval(async function() {
     await fetchGlobalLuck();
+    renderGlobalLuckDock();
     if (typeof renderBackpackPanel === 'function') renderBackpackPanel();
     if (typeof renderShell === 'function') renderShell();
     _startGlWidgetTick();
@@ -2405,6 +2407,7 @@ async function buyGlobalLuck() {
     const stacks = Math.round(newMult / GLOBAL_LUCK_STEP_MULT);
     toast('💧 GLOBAL LUCK AKTIF!', newMult + '× luck (' + stacks + ' tumpuk) untuk semua server!', '#38bdf8');
 
+    renderGlobalLuckDock();
     if (typeof renderBackpackPanel === 'function') renderBackpackPanel();
     if (typeof renderShell === 'function') renderShell();
     _startGlWidgetTick();
@@ -2422,3 +2425,15 @@ window.startGlobalLuckPoll    = startGlobalLuckPoll;
 window.fetchGlobalLuck        = fetchGlobalLuck;
 window.renderGlobalLuckBanner = renderGlobalLuckBanner;
 window.renderGlobalLuckWidget = renderGlobalLuckWidget;
+
+/* ---- Render widget ke #glDock di lobby (selalu visible) ---- */
+function renderGlobalLuckDock() {
+  var el = document.getElementById('glDock');
+  if (!el) return;
+  el.innerHTML = renderGlobalLuckWidget();
+  // Re-bind tick setelah render
+  if (_globalLuckCache && Date.now() < new Date(_globalLuckCache.ends_at).getTime()) {
+    _startGlWidgetTick();
+  }
+}
+window.renderGlobalLuckDock = renderGlobalLuckDock;
