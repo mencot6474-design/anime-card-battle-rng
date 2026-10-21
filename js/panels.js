@@ -17,23 +17,23 @@ const WEATHER_MS=300000; // 5 menit (durasi window potion)
 const WEATHER_ROTATE_MS=1800000; // 30 menit (siklus alami tiap cuaca)
 const WEATHERS=[
   /* RARE (paling langka -> paling kuat) */
-  {id:"awakened",   name:"AWAKENED",   icon:"👁",  dropWeight:1,   rar:"AWAKENED", luckBonus:15.0, speedBonus:8.0, color:"#c084fc"},
-  {id:"arcane",     name:"ARCANE",     icon:"🔮",  dropWeight:5,   rar:"ARCANE",   luckBonus:10.0, speedBonus:6.0, color:"#a78bfa"},
-  {id:"goofy",      name:"GOOFY",      icon:"🤪",  dropWeight:15,  rar:"RARE",     luckBonus:7.0,  speedBonus:4.5, color:"#fde047"},
-  {id:"glitch",     name:"GLITCH",     icon:"📺",  dropWeight:20,  rar:"RARE",     luckBonus:6.0,  speedBonus:4.0, color:"#f87171"},
-  {id:"doodle",     name:"DOODLE",     icon:"🎨",  dropWeight:25,  rar:"RARE",     luckBonus:5.0,  speedBonus:3.5, color:"#f1f5f9"},
-  {id:"eclipse",    name:"ECLIPSE",    icon:"🌑",  dropWeight:40,  rar:"RARE",     luckBonus:4.0,  speedBonus:3.0, color:"#c4b5fd"},
+  {id:"awakened",   name:"AWAKENED",   icon:"𓂀",  dropWeight:1,   rar:"AWAKENED", luckBonus:15.0, speedBonus:8.0, color:"#c084fc"},
+  {id:"arcane",     name:"ARCANE",     icon:"꩜",  dropWeight:5,   rar:"ARCANE",   luckBonus:10.0, speedBonus:6.0, color:"#a78bfa"},
+  {id:"goofy",      name:"GOOFY",      icon:"⍟",  dropWeight:15,  rar:"RARE",     luckBonus:7.0,  speedBonus:4.5, color:"#fde047"},
+  {id:"glitch",     name:"GLITCH",     icon:"⌗",  dropWeight:20,  rar:"RARE",     luckBonus:6.0,  speedBonus:4.0, color:"#f87171"},
+  {id:"doodle",     name:"DOODLE",     icon:"⌘",  dropWeight:25,  rar:"RARE",     luckBonus:5.0,  speedBonus:3.5, color:"#f1f5f9"},
+  {id:"eclipse",    name:"ECLIPSE",    icon:"𐌈",  dropWeight:40,  rar:"RARE",     luckBonus:4.0,  speedBonus:3.0, color:"#c4b5fd"},
   /* UNCOMMON */
-  {id:"iceage",     name:"ICE AGE",    icon:"🧊",  dropWeight:67,  rar:"UNCOMMON", luckBonus:3.5,  speedBonus:3.0, color:"#67e8f9"},
-  {id:"galactic",   name:"GALACTIC",   icon:"🪐",  dropWeight:100, rar:"UNCOMMON", luckBonus:3.0,  speedBonus:2.5, color:"#fb923c"},
-  {id:"aurora",     name:"AURORA",     icon:"🌌",  dropWeight:143, rar:"UNCOMMON", luckBonus:2.5,  speedBonus:2.0, color:"#5eead4"},
-  {id:"monsoon",    name:"MONSOON",    icon:"🌊",  dropWeight:333, rar:"UNCOMMON", luckBonus:2.0,  speedBonus:1.8, color:"#60a5fa"},
+  {id:"iceage",     name:"ICE AGE",    icon:"⟁",  dropWeight:67,  rar:"UNCOMMON", luckBonus:3.5,  speedBonus:3.0, color:"#67e8f9"},
+  {id:"galactic",   name:"GALACTIC",   icon:"⊛",  dropWeight:100, rar:"UNCOMMON", luckBonus:3.0,  speedBonus:2.5, color:"#fb923c"},
+  {id:"aurora",     name:"AURORA",     icon:"⌬",  dropWeight:143, rar:"UNCOMMON", luckBonus:2.5,  speedBonus:2.0, color:"#5eead4"},
+  {id:"monsoon",    name:"MONSOON",    icon:"⍦",  dropWeight:333, rar:"UNCOMMON", luckBonus:2.0,  speedBonus:1.8, color:"#60a5fa"},
   /* COMMON */
-  {id:"sandstorm",  name:"SANDSTORM",  icon:"🌪",  dropWeight:1000,rar:"COMMON",   luckBonus:1.3,  speedBonus:1.4, color:"#fbbf24"},
-  {id:"thunderstorm",name:"THUNDERSTORM",icon:"⛈", dropWeight:1000,rar:"COMMON",   luckBonus:1.4,  speedBonus:1.5, color:"#fde047"},
-  {id:"snowfall",   name:"SNOWFALL",   icon:"❄",  dropWeight:1400,rar:"COMMON",   luckBonus:1.25, speedBonus:1.3, color:"#bae6fd"},
-  {id:"lightrain",  name:"LIGHT RAIN", icon:"🌦",  dropWeight:2340,rar:"COMMON",   luckBonus:1.2,  speedBonus:1.2, color:"#7dd3fc"},
-  {id:"windy",      name:"WINDY",      icon:"🍃",  dropWeight:3511,rar:"COMMON",   luckBonus:1.1,  speedBonus:1.1, color:"#86efac"},
+  {id:"sandstorm",  name:"SANDSTORM",  icon:"⟳",  dropWeight:1000,rar:"COMMON",   luckBonus:1.3,  speedBonus:1.4, color:"#fbbf24"},
+  {id:"thunderstorm",name:"THUNDERSTORM",icon:"⌁", dropWeight:1000,rar:"COMMON",   luckBonus:1.4,  speedBonus:1.5, color:"#fde047"},
+  {id:"snowfall",   name:"SNOWFALL",   icon:"⁕",  dropWeight:1400,rar:"COMMON",   luckBonus:1.25, speedBonus:1.3, color:"#bae6fd"},
+  {id:"lightrain",  name:"LIGHT RAIN", icon:"⁑",  dropWeight:2340,rar:"COMMON",   luckBonus:1.2,  speedBonus:1.2, color:"#7dd3fc"},
+  {id:"windy",      name:"WINDY",      icon:"≋",  dropWeight:3511,rar:"COMMON",   luckBonus:1.1,  speedBonus:1.1, color:"#86efac"},
 ];
 const WEATHER=Object.fromEntries(WEATHERS.map(w=>[w.id,w]));
 
