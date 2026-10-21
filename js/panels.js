@@ -1029,7 +1029,7 @@ function renderBackpackPanel(){
 function bpItemDef(kind){
   if(kind==='potion'){const aw=activeWeatherId();return{kind,name:'WEATHER POTION',icon:'assets/images/weather-potion.webp?v=1',emoji:'🧪',cnt:state.potions||0,
     desc:'Gacha cuaca · chance asli + pity. Hasil sama/lebih bagus = pindah + timer reset 5 menit; lebih jelek = cuaca tetep.',
-    active:aw?`<br><strong style="color:${WEATHER[aw].color}">Aktif: ${WEATHER[aw].icon} ${WEATHER[aw].name}</strong>`:'',use:'bpUsePotion()'};}
+    active:aw?`<br><strong style="color:${WEATHER[aw].color}">Aktif: <span style="display:inline-flex;align-items:center;gap:4px;vertical-align:middle">${weatherSvg(aw,13)}</span> ${WEATHER[aw].name}</strong>`:'',use:'bpUsePotion()'};}
   if(kind.startsWith('luck')){const lv=+kind[4],d=LUCK_POTS[lv],b=activeLuckBuff(),bp=activeLuckBuffPct();return{kind,name:'LUCK POTION L'+lv,icon:`assets/images/pot-luck-${lv}.png`,emoji:'🍀',cnt:(state.luckPots&&state.luckPots[lv-1])||0,
     desc:`+${d.flat} flat luck${d.pct?` & +${Math.round(d.pct*100)}% luck`:''} selama 5 menit per pot. Stackable — efek dijumlah, durasi nambah +5 menit tiap pot.`,
     active:b||bp?`<br><strong style="color:#5eead4">Aktif: +${b} LUCK${bp?` · +${Math.round(bp*100)}%`:''}</strong>`:'',use:`bpUseLuckPotion(${lv},1)`,useAll:`bpUseLuckPotion(${lv},'all')`};}
@@ -1704,7 +1704,7 @@ function renderPremiumShop(){
       '<div class="prem-card-badge">' + p.badge + '</div>' +
       '<div class="prem-card-img-wrap">' +
         (p.type === 'weather'
-          ? '<div style="position:relative;width:100%;height:100%;display:grid;place-items:center;background:radial-gradient(circle,' + (WEATHER[p.targetWeather]?.color || '#38bdf8') + '22,transparent 70%)"><img src="' + p.img + '" alt="' + p.name + '" class="prem-card-img" style="width:70px;height:70px"><span style="position:absolute;bottom:6px;right:10px;font-size:24px;filter:drop-shadow(0 0 8px currentColor)">' + (WEATHER[p.targetWeather]?.icon || '✨') + '</span></div>'
+          ? '<div style="position:relative;width:100%;height:100%;display:grid;place-items:center;background:radial-gradient(circle,' + (WEATHER[p.targetWeather]?.color || '#38bdf8') + '22,transparent 70%)"><img src="' + p.img + '" alt="' + p.name + '" class="prem-card-img" style="width:70px;height:70px"><span style="position:absolute;bottom:6px;right:10px;font-size:24px;filter:drop-shadow(0 0 8px currentColor)">' + weatherSvg(p.targetWeather, 20) + '</span></div>'
           : '<img src="' + p.img + '" alt="' + p.name + '" class="prem-card-img">') +
       '</div>' +
       '<div class="prem-card-info">' +
@@ -1943,7 +1943,7 @@ function wmAutoPaint(){
   if(headEl){
     headEl.innerHTML = '' +
       '<div class="wm-head-pill wm-cur-badge" style="border-color:' + curDef.color + ';box-shadow:0 0 10px ' + curDef.color + '33">' +
-        '<span class="wm-cur-ic" style="color:' + curDef.color + '">' + curDef.icon + '</span>' +
+        '<span class="wm-cur-ic" style="color:' + curDef.color + '">' + weatherSvg(aw, 14) + '</span>' +
         '<strong style="color:' + curDef.color + '">' + curDef.name + '</strong>' +
         '<span class="wm-cur-timer">⏱ ' + remainingTime + '</span>' +
       '</div>' +
@@ -2058,7 +2058,7 @@ function renderWeatherMachine(){
   if(headEl){
     headEl.innerHTML = '' +
       '<div class="wm-head-pill wm-cur-badge" style="border-color:' + curDef.color + ';box-shadow:0 0 10px ' + curDef.color + '33">' +
-        '<span class="wm-cur-ic" style="color:' + curDef.color + '">' + curDef.icon + '</span>' +
+        '<span class="wm-cur-ic" style="color:' + curDef.color + '">' + weatherSvg(aw, 14) + '</span>' +
         '<strong style="color:' + curDef.color + '">' + curDef.name + '</strong>' +
         '<span class="wm-cur-timer">⏱ ' + remainingTime + '</span>' +
       '</div>' +
@@ -2082,7 +2082,7 @@ function renderWeatherMachine(){
     const inv = Math.round(10000 / w.dropWeight);
     return '<div class="trr-item' + (own ? ' own' : '') + (isTarget ? ' is-target' : '') + '" style="--tcol:' + w.color + '" title="' + w.name + ' • ' + w.desc + '">' +
       '<div class="trr-row">' +
-        '<span class="trr-gem" style="color:' + w.color + '">' + w.icon + '</span>' +
+        '<span class="trr-gem" style="color:' + w.color + '">' + weatherSvg(w.id, 13) + '</span>' +
         '<span class="trr-name" style="color:' + w.color + '">' + w.name + '</span>' +
         (own ? '<span class="trr-flag">ACTIVE</span>' : '') +
         '<span class="trr-rar ' + w.rar.toLowerCase() + '">' + w.rar + '</span>' +
@@ -2116,7 +2116,7 @@ function renderWeatherMachine(){
             '<div class="tc-name" style="color:' + curDef.color + '">' + curDef.name + '</div>' +
             '<div class="tc-tline">' +
               '<span class="tc-trait-pill" style="--tcol:' + curDef.color + '">' +
-                '<span class="tc-gem-wrap">' + curDef.icon + '</span>' +
+                '<span class="tc-gem-wrap">' + weatherSvg(aw||'sunshine', 18) + '</span>' +
                 '<span class="tc-name-glow">' + curDef.desc + '</span>' +
               '</span>' +
             '</div>' +
