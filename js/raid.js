@@ -920,7 +920,7 @@ function renderTrait(){
     const isTarget=autoTargets.has(t.k);
     const aPct=Math.round((t.atk-1)*100),hPct=Math.round((t.hp-1)*100);
     const bar=Math.max(2,Math.round((t.chance/55)*1000)/10);
-    return `<div class="trr-item${own?" own":""}${isTarget?" is-target":""}" style="--tcol:${t.color}" title="${t.name} • RARITY ${t.rar} • ATK +${aPct}% • HP +${hPct}%">
+    return `<div class="trr-item${own?" own":""}${isTarget?" is-target":""}" data-tk="${t.k}" style="--tcol:${t.color}" title="${t.name} • RARITY ${t.rar} • ATK +${aPct}% • HP +${hPct}%">
       <div class="trr-row">
         <span class="trr-gem" style="color:${t.color}">${traitGem(16,t.k)}</span>
         <span class="trr-name">${t.name}</span>
@@ -1077,20 +1077,50 @@ function autoStop(){autoRoll=false;clearTimeout(autoRollTimer);autoRollTimer=nul
 function toggleAuto(){autoRoll?stopAutoRoll():startAutoRoll();}
 function startAutoRoll(){if(state.coins<TRAIT_COST){autoToast(`BUTUH ${fmt(TRAIT_COST)} COIN UNTUK AUTO ROLL`);return;}autoRoll=true;autoRollN=0;renderTrait();autoTick();}
 function stopAutoRoll(){autoStop();renderTrait();if(!state.battle&&typeof render==="function")render();}
+function traitUiRefresh(){
+  const tgt=traitTargetStack();
+  const root=document.getElementById("traitModal");
+  if(!root||!tgt)return;
+  const hasT=!!(tgt.trait&&tgt.trait!=="none");
+  const tt=hasT?TRAIT[tgt.trait]:null;
+  /* --- SUBJECT MATRIX: pill trait + stat badge (SCOPED ke modal trait!) --- */
+  const tl=root.querySelector(".tc-tline");
+  if(tl){
+    tl.innerHTML=tt
+      ? traitChip(tt.k,`<span class="tc-trait-pill" style="--tcol:${tt.color}"><span class="tc-gem-wrap">${traitGem(16,tt.k)}</span> <span class="tc-name-glow">${traitLabel(tt.k)}</span></span>`)
+      : `<span class="tc-trait-none"><span class="tc-none-dot"></span>TANPA TRAIT</span>`;
+  }
+  const tsw=root.querySelector(".tc-tstat-wrap");
+  if(tsw){
+    tsw.innerHTML=tt
+      ? `<div class="tc-badge-stat"><span class="tcb-tag">ATK</span> <b class="tcb-val">+${Math.round((tt.atk-1)*100)}%</b></div><div class="tc-badge-stat"><span class="tcb-tag">HP</span> <b class="tcb-val">+${Math.round((tt.hp-1)*100)}%</b></div>`
+      : `<div class="tc-badge-stat tc-stat-empty">ROLL UNTUK MENGAKTIFKAN MODIFIER</div>`;
+  }
+  const curCard=document.getElementById("trPickCard");
+  if(curCard)curCard.style.setProperty("--tcol",tt?tt.color:"var(--cyan)");
+  /* --- DROP RATE list: pindahkan flag ACTIVE ke tier yang sedang aktif --- */
+  root.querySelectorAll(".trr-item").forEach(it=>{
+    const k=it.getAttribute("data-tk");
+    const own=(!!tt&&k===tt.k);
+    it.classList.toggle("own",own);
+    const nameRow=it.querySelector(".trr-row");
+    if(!nameRow)return;
+    const old=nameRow.querySelector(".trr-flag");
+    if(old)old.remove();
+    if(own){
+      const flag=document.createElement("span");
+      flag.className="trr-flag";
+      flag.textContent="ACTIVE";
+      const rar=nameRow.querySelector(".trr-rar");
+      if(rar)nameRow.insertBefore(flag,rar);else nameRow.appendChild(flag);
+    }
+  });
+}
 function autoPaint(){
   const cv=document.getElementById("coinVal");if(cv)cv.textContent=fmt(state.coins);
   const c=document.getElementById("trCoinVal");if(c)c.textContent=fmt(state.coins);
   const n=document.getElementById("trAutoN");if(n)n.textContent="#"+autoRollN;
-  const tgt=traitTargetStack();
-  if(tgt && tgt.trait && TRAIT[tgt.trait]){
-    const tt=TRAIT[tgt.trait];
-    const tl=document.querySelector(".tc-tline");
-    if(tl)tl.innerHTML=traitChip(tt.k,`<span class="tc-trait-pill" style="--tcol:${tt.color}"><span class="tc-gem-wrap">${traitGem(16,tt.k)}</span> <span class="tc-name-glow">${traitLabel(tt.k)}</span></span>`);
-    const tsw=document.querySelector(".tc-tstat-wrap");
-    if(tsw)tsw.innerHTML=`<div class="tc-badge-stat"><span class="tcb-tag">ATK</span> <b class="tcb-val">+${Math.round((tt.atk-1)*100)}%</b></div><div class="tc-badge-stat"><span class="tcb-tag">HP</span> <b class="tcb-val">+${Math.round((tt.hp-1)*100)}%</b></div>`;
-    const curCard=document.getElementById("trPickCard");
-    if(curCard)curCard.style.setProperty("--tcol", tt.color);
-  }
+  traitUiRefresh();
 }
 function autoTick(){
   if(!autoRoll)return;

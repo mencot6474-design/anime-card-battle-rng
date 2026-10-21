@@ -1780,11 +1780,13 @@ let wmAutoTarget = null;
 let wmAutoRunning = false;
 let wmAutoTimer = null;
 let wmAutoCount = 0;
+let wmRenderTimer = null;
 
 function openWeatherMachine(){
   wmAutoRunning = false;
   if(wmAutoTimer) clearTimeout(wmAutoTimer);
   renderWeatherMachine();
+  wmRenderTimer = setInterval(renderWeatherMachine, 1000);
   const modal = document.getElementById('weatherMachineModal');
   if(modal) modal.classList.add('show');
   document.body.classList.add('hide-docks-modal');
@@ -1794,6 +1796,7 @@ function openWeatherMachine(){
 }
 
 function closeWeatherMachine(){
+  if(wmRenderTimer){clearInterval(wmRenderTimer);wmRenderTimer=null;}
   wmStopAuto();
   const modal = document.getElementById('weatherMachineModal');
   if(modal) modal.classList.remove('show');

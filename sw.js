@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v154-shiny-merge-fix';
+const CACHE_NAME = 'anime-card-battle-v155-trait-auto';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
