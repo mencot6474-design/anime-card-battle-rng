@@ -46770,16 +46770,18 @@ body.battle-full .fighter.foe.ko {
 /* ====== GLOBAL LUCK DOCK (di atas footer lobby) ====== */
 .gl-dock{
   position:fixed;
-  bottom:72px;          /* di atas .lobby-footer */
+  top:52px;             /* tepat di bawah header */
   left:50%;transform:translateX(-50%);
   z-index:900;
-  width:min(400px,92vw);
+  width:min(380px,90vw);
   pointer-events:auto;
 }
 .gl-dock:empty{display:none}
-/* Widget di dalam dock — kompak, pas untuk lobby */
+/* Widget di dalam dock — kompak, top bar style */
 .gl-dock .glw-wrap{
   margin-bottom:0;
-  backdrop-filter:blur(8px);
-  box-shadow:0 4px 16px rgba(0,0,0,.45);
+  backdrop-filter:blur(12px);
+  box-shadow:0 4px 20px rgba(0,0,0,.5);
+  border-radius:0 0 12px 12px;
+  border-top:none;
 }
