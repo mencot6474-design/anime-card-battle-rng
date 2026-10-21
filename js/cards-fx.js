@@ -108,7 +108,12 @@ const FOES=Object.fromEntries(STORY_BIBLE.levels.map((l,i)=>{
 const SHINY_MULT=5; // SHINY = stat dikali 5, DIKALIKAN di atas multiplier mutasi (mis. shiny+gold = 5*10 = 50)
 const BASE_CRIT={chance:10,mult:1.5}; // crit global TERSEMBUNYI: semua kartu punya peluang dasar ini; kartu bertait crit tetap pakai trait-nya
 const MUT_MULT={none:1,gold:10,rainbow:25,secret:50,ultima:100};
-const MUT_RANK={none:0,gold:1,rainbow:2,secret:3,ultima:4};
+/* ==== CHANCE MULTIPLIER (terpisah dari STAT) ====
+   Digunakan HANYA untuk peluang roll (effChance / rngRoll / rollCommonScale).
+   STAT (cardStats, tooltip, panel) masih pakai SHINY_MULT / MUT_MULT di atas.
+   Shiny dan mutasi stacked perkalian (mis. shiny+gold = 50×100 = ×5000). */
+const SHINY_CHANCE_MULT=50; // dasar 1 in 100 → shiny 1 in 5000
+const MUT_CHANCE_MULT={none:1,gold:100,rainbow:10000,secret:1000000,ultima:100000000}; // gold ×100, rainbow ×10000, secret ×1000000, ultima ×100000000
 const MUT_LABEL={none:"",gold:"GOLD",rainbow:"RAINBOW",secret:"SECRET",ultima:"ULTIMA"};
 const MUT_COLOR={gold:"#E0BC6E",rainbow:"#B58CFF",secret:"#A855F7",ultima:"#FF0055"};
 const MUT_LETTERS={gold:["#F6DFA6","#C99A45"],rainbow:["#FF6B81","#FFB347","#FFE66D","#6BE08A","#B9C2CC","#B98CFF","#FF6BD6"],secret:["#C084FC","#A855F7","#E9D5FF","#9333EA","#FFFFFF","#C084FC"],ultima:["#FF0055","#FF3366","#FF88AA","#FFFFFF","#FF0055","#FFAA00"]};

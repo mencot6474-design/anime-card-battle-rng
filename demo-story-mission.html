@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>STORY MISSION: PERFECTLY PROPORTIONED 3D CAROUSEL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;0,900;1,700;1,900&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #030611;
+      --panel: rgba(7, 14, 28, 0.94);
+      --cyan: #00f0ff;
+      --cyan-glow: rgba(0, 240, 255, 0.5);
+      --blue: #1b6bff;
+      --gold: #ffbe1a;
+      --gold-glow: rgba(255, 190, 26, 0.55);
+      --magenta: #ff2a7a;
+      --magenta-glow: rgba(255, 42, 122, 0.6);
+      --purple: #9d4edd;
+      --purple-glow: rgba(157, 78, 221, 0.55);
+      --green: #00ffaa;
+      --text: #f0f6fc;
+      --text-muted: #8494ab;
+      --line: rgba(0, 240, 255, 0.18);
+      --line-bright: rgba(0, 240, 255, 0.65);
+      --font-disp: 'Barlow Condensed', sans-serif;
+      --font-body: 'Outfit', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+
+    body {
+      background: radial-gradient(circle at 50% 12%, #0e2044 0%, #030611 75%);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 14px;
+      overflow-x: hidden;
+      perspective: 1600px;
+    }
+
+    /* Ambient Lighting */
+    .ambient-glow {
+      position: fixed;
+      width: 900px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 150, 255, 0.16) 0%, transparent 70%);
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      filter: blur(100px);
+      pointer-events: none;
+      z-index: 0;
+      transition: background 0.6s ease;
+    }
+
+    /* Cyber Energy Grid */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+      background-size: 36px 36px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Top Nav Bar */
+    .proto-bar {
+      position: relative;
+      z-index: 20;
+      width: 100%;
+      max-width: 1040px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: rgba(6, 12, 24, 0.94);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      border-radius: 10px;
+      padding: 6px 14px;
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+    .proto-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      color: var(--cyan);
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .dot-live {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan);
+      animation: pulseDot 1.4s infinite;
+    }
+    @keyframes pulseDot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .proto-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-proto {
+      background: rgba(0, 240, 255, 0.1);
+      border: 1px solid var(--line);
+      color: var(--text);
+      font-size: 11px;
+      font-family: var(--font-mono);
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-proto:hover {
+      background: var(--cyan);
+      color: #040914;
+      font-weight: bold;
+    }
+
+    /* MAIN STAGE ARENA WINDOW (PROPORTIONALLY BALANCED) */
+    .arena-window {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 1040px;
+      height: calc(100vh - 65px);
+      max-height: 720px;
+      min-height: 560px;
+      background: var(--panel);
+      backdrop-filter: blur(20px);
+      border: 1.5px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.85),
+        0 0 40px rgba(0, 102, 255, 0.18),
+        inset 0 0 20px rgba(0, 240, 255, 0.05);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Corner Accents */
+    .corner {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-color: var(--cyan);
+      pointer-events: none;
+      z-index: 15;
+    }
+    .corner-tl { top: 6px; left: 6px; border-top: 2px solid var(--cyan); border-left: 2px solid var(--cyan); }
+    .corner-tr { top: 6px; right: 6px; border-top: 2px solid var(--cyan); border-right: 2px solid var(--cyan); }
+    .corner-bl { bottom: 6px; left: 6px; border-bottom: 2px solid var(--cyan); border-left: 2px solid var(--cyan); }
+    .corner-br { bottom: 6px; right: 6px; border-bottom: 2px solid var(--cyan); border-right: 2px solid var(--cyan); }
+
+    /* ==============================================================
+       HEADER (COMPACT & BALANCED)
+       ============================================================== */
+    .arena-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(4, 8, 18, 0.95);
+      position: relative;
+      z-index: 5;
+      flex-shrink: 0;
+    }
+    .chap-nav-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-chap-nav {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--line);
+      color: var(--cyan);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      font-size: 16px;
+      flex-shrink: 0;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .btn-chap-nav:hover:not(:disabled) {
+      background: var(--cyan);
+      color: #040914;
+      box-shadow: 0 0 14px var(--cyan-glow);
+      transform: scale(1.08);
+    }
+    .btn-chap-nav:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .chap-center-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      width: 300px; /* FIXED WIDTH: Tombol panah tidak akan pernah bergeser/pindah posisi! */
+      flex-shrink: 0;
+      gap: 2px;
+    }
+    .chap-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--cyan);
+      letter-spacing: 2px;
+      font-weight: 700;
+    }
+    .chap-title {
+      font-family: var(--font-disp);
+      font-size: 21px;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+      text-align: center;
+    }
+
+    .diff-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 3px;
+    }
+    .btn-diff {
+      font-family: var(--font-disp);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-diff:hover { color: #fff; }
+    .btn-diff.active {
+      color: #040914;
+      background: var(--cyan);
+      box-shadow: 0 0 12px var(--cyan-glow);
+    }
+
+    /* ==============================================================
+       CINEMATIC 3D COVERFLOW STAGE (WITH PROPORTIONAL BREATHING ROOM)
+       ============================================================== */
+    .carousel-stage {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: visible;
+      perspective: 1400px;
+      transform-style: preserve-3d;
+      padding: 14px 0;
+      min-height: 330px;
+    }
+
+    /* Navigation Arrows */
+    .btn-stage-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(8, 16, 36, 0.88);
+      border: 1.5px solid var(--line-bright);
+      color: var(--cyan);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      font-size: 18px;
+      z-index: 25;
+      box-shadow: 0 6px 22px rgba(0, 0, 0, 0.7);
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .btn-stage-arrow:hover {
+      background: var(--cyan);
+      color: #040914;
+      box-shadow: 0 0 22px var(--cyan-glow);
+      transform: translateY(-50%) scale(1.1);
+    }
+    .btn-arrow-left { left: 24px; }
+    .btn-arrow-right { right: 24px; }
+
+    /* The Carousel Track */
+    .carousel-track {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform-style: preserve-3d;
+    }
+
+    /* ==============================================================
+       PERFECTLY SIZED 3D CARD COMPONENT (215px x 315px Base)
+       Never touches top header or bottom dock!
+       ============================================================== */
+    .c-card {
+      position: absolute;
+      width: 215px;
+      height: 315px;
+      border-radius: 14px;
+      background: #081120;
+      border: 1.8px solid var(--line);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.75);
+      cursor: pointer;
+      transform-style: preserve-3d;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+      /* Balanced Continuous Interpolation */
+      transition: 
+        transform 0.6s cubic-bezier(0.18, 0.9, 0.28, 1.05),
+        opacity 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+        filter 0.5s ease,
+        border-color 0.4s ease,
+        box-shadow 0.5s ease;
+      will-change: transform, opacity, filter;
+      -webkit-box-reflect: below 8px linear-gradient(to bottom, rgba(0,0,0,0) 70%, rgba(0,0,0,0.2) 100%);
+    }
+
+    /* 3D Arc Positions: Scale 1.1 max so it sits with elegant 35px margin above & below */
+    /* Center Active Card: 3D Tilt dimatikan (Tegak lurus flat ke depan), Bayangan Mirror Bawah Dipertahankan */
+    .c-card.pos-0 {
+      transform: translateX(0px) translateY(-2px) scale(1.1);
+      z-index: 10;
+      opacity: 1;
+      filter: none;
+      cursor: default;
+    }
+    .c-card.pos-1 {
+      transform: translateX(195px) translateY(6px) translateZ(-50px) rotateY(-34deg) scale(0.85);
+      z-index: 6;
+      opacity: 0.75;
+      filter: brightness(0.65) saturate(0.85);
+    }
+    .c-card.pos-neg-1 {
+      transform: translateX(-195px) translateY(6px) translateZ(-50px) rotateY(34deg) scale(0.85);
+      z-index: 6;
+      opacity: 0.75;
+      filter: brightness(0.65) saturate(0.85);
+    }
+    .c-card.pos-2 {
+      transform: translateX(350px) translateY(14px) translateZ(-170px) rotateY(-48deg) scale(0.68);
+      z-index: 3;
+      opacity: 0.4;
+      filter: brightness(0.4) saturate(0.6);
+    }
+    .c-card.pos-neg-2 {
+      transform: translateX(-350px) translateY(14px) translateZ(-170px) rotateY(48deg) scale(0.68);
+      z-index: 3;
+      opacity: 0.4;
+      filter: brightness(0.4) saturate(0.6);
+    }
+    .c-card.pos-hidden {
+      transform: translateX(0px) translateY(30px) translateZ(-350px) rotateY(0deg) scale(0.35);
+      z-index: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Active Glowing Auras */
+    .c-card.pos-0.tier-R {
+      border-color: #60a5fa;
+      box-shadow: 0 0 35px rgba(96, 165, 250, 0.45), inset 0 0 16px rgba(96, 165, 250, 0.2);
+    }
+    .c-card.pos-0.tier-SR {
+      border-color: var(--purple);
+      box-shadow: 0 0 40px var(--purple-glow), inset 0 0 18px rgba(157, 78, 221, 0.25);
+    }
+    .c-card.pos-0.tier-SSR {
+      border-color: var(--gold);
+      box-shadow: 0 0 48px var(--gold-glow), inset 0 0 22px rgba(255, 190, 26, 0.3);
+      animation: goldAuraPulse 2s infinite alternate ease-in-out;
+    }
+    .c-card.pos-0.tier-UR {
+      border-color: var(--magenta);
+      box-shadow: 0 0 55px var(--magenta-glow), inset 0 0 26px rgba(255, 42, 122, 0.35);
+      animation: urAuraPulse 1.8s infinite alternate ease-in-out;
+    }
+    @keyframes goldAuraPulse {
+      0% { box-shadow: 0 0 32px var(--gold-glow); }
+      100% { box-shadow: 0 0 55px rgba(255, 190, 26, 0.75); }
+    }
+    @keyframes urAuraPulse {
+      0% { box-shadow: 0 0 38px var(--magenta-glow); }
+      100% { box-shadow: 0 0 65px rgba(255, 42, 122, 0.85); }
+    }
+
+    /* Card Top Ribbon */
+    .c-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: rgba(0, 0, 0, 0.68);
+      backdrop-filter: blur(6px);
+      z-index: 2;
+    }
+    .c-stage-badge {
+      font-family: var(--font-disp);
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--cyan);
+      letter-spacing: 0.8px;
+    }
+    .c-card.is-boss .c-stage-badge {
+      color: var(--magenta);
+      text-shadow: 0 0 8px var(--magenta);
+    }
+    .c-clear-status {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    /* Card Art Frame */
+    .c-art-frame {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: #020408;
+    }
+    .c-art-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+      transition: transform 0.5s ease;
+    }
+    .c-card.pos-0 .c-art-frame img {
+      transform: scale(1.06);
+    }
+
+    .c-art-shade {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(0deg, rgba(5, 10, 22, 0.95) 0%, rgba(5, 10, 22, 0.12) 50%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .c-boss-tag {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: linear-gradient(135deg, var(--magenta), #b5179e);
+      color: #fff;
+      font-family: var(--font-disp);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.8px;
+      padding: 1px 6px;
+      border-radius: 4px;
+      box-shadow: 0 0 12px var(--magenta);
+    }
+
+    /* Card Bottom Info */
+    .c-card-info {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 10px 12px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      z-index: 3;
+    }
+    .c-tier-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .c-tier-pill {
+      font-family: var(--font-disp);
+      font-size: 11px;
+      font-weight: 900;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: rgba(0, 0, 0, 0.75);
+    }
+    .c-tier-R { color: #60a5fa; border: 1px solid #60a5fa; }
+    .c-tier-SR { color: #c084fc; border: 1px solid #c084fc; }
+    .c-tier-SSR { color: var(--gold); border: 1px solid var(--gold); text-shadow: 0 0 6px var(--gold-glow); }
+    .c-tier-UR { color: #ff2a7a; border: 1px solid #ff2a7a; text-shadow: 0 0 6px var(--magenta-glow); }
+
+    .c-gate-val {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    .c-card-name {
+      font-family: var(--font-disp);
+      font-size: 19px;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95);
+    }
+
+    /* ==============================================================
+       PAGINATION DOTS
+       ============================================================== */
+    .dots-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 6px 0;
+      z-index: 5;
+      flex-shrink: 0;
+    }
+    .dot-node {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .dot-node:hover {
+      background: rgba(255, 255, 255, 0.5);
+      transform: scale(1.2);
+    }
+    .dot-node.active {
+      width: 24px;
+      border-radius: 99px;
+      background: var(--cyan);
+      box-shadow: 0 0 12px var(--cyan-glow);
+    }
+
+    /* ==============================================================
+       BOTTOM COMBAT ACTION DOCK
+       ============================================================== */
+    .action-dock {
+      background: rgba(4, 9, 20, 0.96);
+      border-top: 1px solid var(--line);
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      position: relative;
+      z-index: 5;
+      flex-shrink: 0;
+    }
+    .dock-intel {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      max-width: 440px;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    .dock-intel.dock-fade-out {
+      opacity: 0;
+      transform: translateY(5px);
+    }
+    .dock-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dock-stage-lbl {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--cyan);
+      letter-spacing: 1px;
+      font-weight: 700;
+    }
+    .dock-enemy-name {
+      font-family: var(--font-disp);
+      font-size: 20px;
+      font-weight: 900;
+      color: #fff;
+    }
+
+    .dock-readiness {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 170px;
+      transition: opacity 0.2s ease;
+    }
+    .dock-readiness.dock-fade-out {
+      opacity: 0;
+    }
+    .dock-rd-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+    .dock-bar {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .dock-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue), var(--green));
+      border-radius: 99px;
+      transition: width 0.3s ease, background 0.3s ease;
+    }
+
+    .dock-action-wrap {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .dock-reward-box {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 1px;
+    }
+    .dock-rw-lbl {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+    .dock-rw-val {
+      font-family: var(--font-disp);
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--gold);
+      text-shadow: 0 0 10px var(--gold-glow);
+    }
+
+    .btn-battle-launch {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #ffc72c, #ff8c00);
+      color: #040914;
+      font-family: var(--font-disp);
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      padding: 11px 28px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 0 20px var(--gold-glow);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .btn-battle-launch:hover {
+      transform: translateY(-2px) scale(1.04);
+      filter: brightness(1.15);
+      box-shadow: 0 0 28px rgba(255, 190, 26, 0.7);
+    }
+
+    /* TOAST */
+    .toast-pill {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-60px);
+      background: rgba(4, 9, 20, 0.95);
+      border: 1px solid var(--cyan);
+      box-shadow: 0 0 20px var(--cyan-glow);
+      color: #fff;
+      padding: 8px 18px;
+      border-radius: 99px;
+      font-family: var(--font-disp);
+      font-size: 15px;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 200;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      pointer-events: none;
+    }
+    .toast-pill.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 800px) {
+      .c-card { width: 175px; height: 260px; }
+      .c-card.pos-1 { transform: translateX(140px) translateY(6px) translateZ(-50px) rotateY(-32deg) scale(0.85); }
+      .c-card.pos-neg-1 { transform: translateX(-140px) translateY(6px) translateZ(-50px) rotateY(32deg) scale(0.85); }
+      .action-dock { flex-direction: column; align-items: stretch; gap: 10px; padding: 10px 14px; }
+      .dock-action-wrap { justify-content: space-between; }
+      .btn-battle-launch { font-size: 17px; padding: 9px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-glow" id="ambientGlow"></div>
+
+  <!-- TOP NAV BAR -->
+  <div class="proto-bar">
+    <div class="proto-title">
+      <span class="dot-live"></span>
+      STORY MISSION V4.4: GOLDEN RATIO PROPORTIONS (PERFECT CLEARANCE)
+    </div>
+    <div class="proto-actions">
+      <a href="demo-mission.html" class="btn-proto">📜 Open: Adventurer Handbook (Daily)</a>
+      <button class="btn-proto" onclick="toggleAudio()">🔊 Audio: <span id="sndState">ON</span></button>
+    </div>
+  </div>
+
+  <!-- MAIN WINDOW -->
+  <div class="arena-window">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+
+    <!-- WINDOW HEADER -->
+    <div class="arena-head">
+      <div class="chap-nav-wrap">
+        <button class="btn-chap-nav" id="btnPrevChap" onclick="changeChapter(-1)">❮</button>
+        <div class="chap-center-info">
+          <div class="chap-eyebrow" id="chapEyebrow">CHAPTER SELECTION</div>
+          <div class="chap-title" id="chapTitle">BAB 01 · DESA LEMBAH NINJA</div>
+        </div>
+        <button class="btn-chap-nav" id="btnNextChap" onclick="changeChapter(1)">❯</button>
+      </div>
+
+      <!-- Difficulty Selector -->
+      <div class="diff-group">
+        <button class="btn-diff active" onclick="setDiff('normal')">NORMAL</button>
+        <button class="btn-diff" onclick="setDiff('hard')">HARD</button>
+        <button class="btn-diff" onclick="setDiff('extreme')">EXTREME</button>
+        <button class="btn-diff" onclick="setDiff('nightmare')">NIGHTMARE</button>
+      </div>
+    </div>
+
+    <!-- 3D CARD CAROUSEL STAGE -->
+    <div class="carousel-stage" id="carouselStage">
+      <button class="btn-stage-arrow btn-arrow-left" onclick="slideStage(-1)">❮</button>
+      <button class="btn-stage-arrow btn-arrow-right" onclick="slideStage(1)">❯</button>
+
+      <div class="carousel-track" id="carouselTrack">
+        <!-- Persistent DOM Cards injected here -->
+      </div>
+    </div>
+
+    <!-- PAGINATION DOTS -->
+    <div class="dots-indicator" id="dotsIndicator">
+      <!-- Dots populated dynamically -->
+    </div>
+
+    <!-- ACTION DOCK (BOTTOM) -->
+    <div class="action-dock">
+      <div class="dock-intel" id="dockIntel">
+        <div class="dock-title-row">
+          <span class="dock-stage-lbl" id="dockStageNum">STAGE 06 // BOSS ENCOUNTER</span>
+          <span class="dock-enemy-name" id="dockEnemyName">NINE-TAIL PRODIGY</span>
+        </div>
+      </div>
+
+      <div class="dock-readiness" id="dockReadiness">
+        <div class="dock-rd-labels">
+          <span>GATE REQUIREMENT:</span>
+          <b id="dockGateVal" style="color:var(--green);">2,400 (SIAP TEMPUR)</b>
+        </div>
+        <div class="dock-bar">
+          <div class="dock-bar-fill" id="dockBarFill" style="width: 100%;"></div>
+        </div>
+      </div>
+
+      <div class="dock-action-wrap">
+        <div class="dock-reward-box">
+          <span class="dock-rw-lbl">FIRST CLEAR REWARD</span>
+          <span class="dock-rw-val" id="dockRewardVal">◎ 2,400</span>
+        </div>
+        <button class="btn-battle-launch" onclick="launchBattle()">
+          <span>⚔</span> MULAI BATTLE
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast-pill" id="toastPill">
+    <span id="toastIcon">⚔️</span>
+    <span id="toastText">Memasuki Arena Tempur...</span>
+  </div>
+
+  <script>
+    /* ==============================================================
+       AUDIO ENGINE
+       ============================================================== */
+    let audioOn = true;
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let actx = null;
+
+    function getAudioCtx() {
+      if (!actx) actx = new AudioCtx();
+      if (actx.state === 'suspended') actx.resume();
+      return actx;
+    }
+
+    function toggleAudio() {
+      audioOn = !audioOn;
+      document.getElementById("sndState").textContent = audioOn ? "ON" : "OFF";
+      showToast(audioOn ? "🔊 Audio Aktif" : "🔇 Audio Muted");
+    }
+
+    function playSfx(type) {
+      if (!audioOn) return;
+      try {
+        const ctx = getAudioCtx();
+        const now = ctx.currentTime;
+        if (type === 'swipe') {
+          const osc1 = ctx.createOscillator();
+          const gain1 = ctx.createGain();
+          osc1.type = 'sine';
+          osc1.frequency.setValueAtTime(340, now);
+          osc1.frequency.exponentialRampToValueAtTime(130, now + 0.18);
+          gain1.gain.setValueAtTime(0.2, now);
+          gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+          osc1.connect(gain1);
+          gain1.connect(ctx.destination);
+          osc1.start(now);
+          osc1.stop(now + 0.2);
+
+          const osc2 = ctx.createOscillator();
+          const gain2 = ctx.createGain();
+          osc2.type = 'triangle';
+          osc2.frequency.setValueAtTime(840, now + 0.05);
+          osc2.frequency.exponentialRampToValueAtTime(420, now + 0.15);
+          gain2.gain.setValueAtTime(0.09, now + 0.05);
+          gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+          osc2.connect(gain2);
+          gain2.connect(ctx.destination);
+          osc2.start(now + 0.05);
+          osc2.stop(now + 0.18);
+
+        } else if (type === 'battle') {
+          const osc1 = ctx.createOscillator();
+          const osc2 = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc1.type = 'triangle';
+          osc2.type = 'sawtooth';
+          osc1.frequency.setValueAtTime(140, now);
+          osc1.frequency.exponentialRampToValueAtTime(560, now + 0.3);
+          osc2.frequency.setValueAtTime(280, now);
+          osc2.frequency.exponentialRampToValueAtTime(840, now + 0.35);
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+          osc1.connect(gain);
+          osc2.connect(gain);
+          gain.connect(ctx.destination);
+          osc1.start(now);
+          osc2.start(now);
+          osc1.stop(now + 0.45);
+          osc2.stop(now + 0.45);
+        }
+      } catch(e) {}
+    }
+
+    /* ==============================================================
+       CHAPTERS & CARD DATA
+       ============================================================== */
+    const CHAPTERS = [
+      {
+        no: 1,
+        title: "BAB 01 · DESA LEMBAH NINJA",
+        levels: [
+          { num: 1, name: "Unstoppable Fist", tier: "R", art: "assets/cards/art/unstoppable-fist.webp", gate: 300, reward: 300, boss: false, cleared: true, desc: "20% peluang pukulan lurus bertubi-tubi." },
+          { num: 2, name: "Copy Ninja", tier: "R", art: "assets/cards/art/copy-ninja.webp", gate: 450, reward: 450, boss: false, cleared: true, desc: "Meniru 15% damage serangan balasan musuh." },
+          { num: 3, name: "Dark Avenger", tier: "SR", art: "assets/cards/art/dark-avenger.webp", gate: 650, reward: 650, boss: false, cleared: true, desc: "25% peluang Chidori menembus 30% armor musuh." },
+          { num: 4, name: "Promised Child", tier: "SR", art: "assets/cards/art/promised-child.webp", gate: 900, reward: 900, boss: false, cleared: true, desc: "Meningkatkan ATK 20% saat HP di bawah 50%." },
+          { num: 5, name: "Six Paths of Pain", tier: "SSR", art: "assets/cards/art/six-paths-of-pain.webp", gate: 1300, reward: 1300, boss: false, cleared: true, desc: "Shinra Tensei memantulkan 20% damage ke musuh." },
+          { num: 6, name: "Nine-Tail Prodigy", tier: "SSR", art: "assets/cards/art/nine-tail-prodigy.webp", gate: 2400, reward: 2400, boss: true, cleared: true, desc: "30% peluang menyapu 2-3 kali beruntun & 15% lifesteal." }
+        ]
+      },
+      {
+        no: 2,
+        title: "BAB 02 · ORBITAL GREEN PLANET",
+        levels: [
+          { num: 1, name: "Solar Brawler", tier: "SR", art: "assets/cards/art/solar-brawler.webp", gate: 3000, reward: 3000, boss: false, cleared: true, desc: "20% serangan berubah jadi ledakan Masenko x1.5." },
+          { num: 2, name: "Glitched Entity", tier: "SR", art: "assets/cards/art/glitched-entity.webp", gate: 3800, reward: 3800, boss: false, cleared: true, desc: "20% peluang menyerang 2x lalu serap 12% damage." },
+          { num: 3, name: "Namekian Sage", tier: "SR", art: "assets/cards/art/namekian-sage.webp", gate: 4700, reward: 4700, boss: false, cleared: true, desc: "Regenerasi 10% HP tiap awal giliran." },
+          { num: 4, name: "Prideful Prince", tier: "SSR", art: "assets/cards/art/prideful-prince.webp", gate: 5800, reward: 5800, boss: false, cleared: true, desc: "Final Flash memberikan bonus damage 40%." },
+          { num: 5, name: "Earth's Strongest", tier: "SSR", art: "assets/cards/art/earths-strongest.webp", gate: 7200, reward: 7200, boss: false, cleared: true, desc: "Kamehameha menembus defense musuh secara penuh." },
+          { num: 6, name: "Galactic Emperor", tier: "UR", art: "assets/cards/art/galactic-emperor.webp", gate: 11000, reward: 11000, boss: true, cleared: true, desc: "Death Beam membakar 5% max HP musuh per giliran." }
+        ]
+      },
+      {
+        no: 3,
+        title: "BAB 03 · SHIBUYA STATION INCIDENT",
+        levels: [
+          { num: 1, name: "Cursed Doll", tier: "SR", art: "assets/cards/art/cursed-doll.webp", gate: 14000, reward: 14000, boss: false, cleared: true, desc: "Menahan serangan fatal sekali dengan 1 HP." },
+          { num: 2, name: "Shadow Summoner", tier: "SR", art: "assets/cards/art/shadow-summoner.webp", gate: 17000, reward: 17000, boss: false, cleared: true, desc: "Memanggil serigala bayangan untuk serangan ganda." },
+          { num: 3, name: "Cursed Fist", tier: "SSR", art: "assets/cards/art/cursed-fist.webp", gate: 20000, reward: 20000, boss: false, cleared: true, desc: "Black Flash berpeluang 25% memberikan crit x2.5." },
+          { num: 4, name: "Rika's Blessing", tier: "SSR", art: "assets/cards/art/rikas-blessing.webp", gate: 24000, reward: 24000, boss: false, cleared: true, desc: "Meniru teknik musuh dan meningkatkan ATK." },
+          { num: 5, name: "Limitless Master", tier: "UR", art: "assets/cards/art/limitless-master.webp", gate: 29000, reward: 29000, boss: false, cleared: false, desc: "Infinity meniadakan 30% serangan yang masuk." },
+          { num: 6, name: "King of Curses", tier: "UR", art: "assets/cards/art/king-of-curses.webp", gate: 40000, reward: 40000, boss: true, cleared: false, desc: "Dismantle & Cleave menyayat musuh 4 kali bertubi-tubi." }
+        ]
+      },
+      {
+        no: 4,
+        title: "BAB 04 · MUSHIMA ANCIENT TOWN",
+        levels: [
+          { num: 1, name: "Porco Pillar", tier: "SSR", art: "assets/cards/art/porco-pillar.webp", gate: 52000, reward: 52000, boss: false, cleared: false, desc: "Pertahanan batu mengurangi 25% damage masuk." },
+          { num: 2, name: "Stand User", tier: "SSR", art: "assets/cards/art/stand-user.webp", gate: 63000, reward: 63000, boss: false, cleared: false, desc: "Serangan bayangan menembus perlindungan lawan." },
+          { num: 3, name: "Golden Requiem", tier: "UR", art: "assets/cards/art/golden-requiem.webp", gate: 76000, reward: 76000, boss: false, cleared: false, desc: "Mengembalikan aksi lawan ke titik nol." },
+          { num: 4, name: "The World", tier: "UR", art: "assets/cards/art/the-world.webp", gate: 90000, reward: 90000, boss: false, cleared: false, desc: "Menghentikan waktu dan melancarkan rentetan pukulan." },
+          { num: 5, name: "Opalestone Dream", tier: "UR", art: "assets/cards/art/opalestone-dream.webp", gate: 108000, reward: 108000, boss: false, cleared: false, desc: "Ilusi kristal menyamarkan serangan berikutnya." },
+          { num: 6, name: "Heaven's Gate", tier: "UR", art: "assets/cards/art/heavens-door.webp", gate: 145000, reward: 145000, boss: true, cleared: false, desc: "Menulis ulang realitas dan menurunkan stat musuh." }
+        ]
+      },
+      {
+        no: 5,
+        title: "BAB 05 · INFINITY MANSION PALACE",
+        levels: [
+          { num: 1, name: "Blade Prodigy", tier: "SSR", art: "assets/cards/art/tanjiro-blade.webp", gate: 165000, reward: 165000, boss: false, cleared: false, desc: "Hinokami Kagura meningkatkan crit damage 50%." },
+          { num: 2, name: "Bamboo Demon", tier: "SSR", art: "assets/cards/art/nezuko-bamboo.webp", gate: 188000, reward: 188000, boss: false, cleared: false, desc: "Blood Burst membakar lawan selama 3 giliran." },
+          { num: 3, name: "Thunder Flash", tier: "SSR", art: "assets/cards/art/zenitsu-thunder.webp", gate: 212000, reward: 212000, boss: false, cleared: false, desc: "Godspeed menyerang di awal sebelum musuh bertindak." },
+          { num: 4, name: "Beast Mask", tier: "SSR", art: "assets/cards/art/inuizo-mask.webp", gate: 240000, reward: 240000, boss: false, cleared: false, desc: "Serangan liar berganda dengan 20% lifesteal." },
+          { num: 5, name: "Wind Hashira", tier: "UR", art: "assets/cards/art/sanemi-wind.webp", gate: 272000, reward: 272000, boss: false, cleared: false, desc: "Tornado bilah menyapu bersih efek pelindung musuh." },
+          { num: 6, name: "Insect Hashira", tier: "UR", art: "assets/cards/art/shinobu-butterfly.webp", gate: 320000, reward: 320000, boss: true, cleared: false, desc: "Racun Wisteria menguras HP musuh secara kumulatif." }
+        ]
+      }
+    ];
+
+    let currentChapter = 0;
+    let currentStage = 5;
+    const playerPower = 45800;
+
+    /* ==============================================================
+       PERSISTENT DOM GENERATION
+       ============================================================== */
+    function buildChapterCardsDOM() {
+      const ch = CHAPTERS[currentChapter];
+      document.getElementById("chapTitle").textContent = ch.title;
+      document.getElementById("btnPrevChap").disabled = currentChapter === 0;
+      document.getElementById("btnNextChap").disabled = currentChapter === CHAPTERS.length - 1;
+
+      const track = document.getElementById("carouselTrack");
+      track.innerHTML = ch.levels.map((lvl, idx) => `
+        <div class="c-card tier-${lvl.tier} ${lvl.boss ? 'is-boss' : ''}" id="card-${idx}" data-idx="${idx}" onclick="onCardClick(${idx})">
+          <div class="c-card-head">
+            <span class="c-stage-badge">${lvl.boss ? '★ BOSS STAGE' : 'STAGE 0' + lvl.num}</span>
+            ${lvl.cleared ? '<span class="c-clear-status">✓ CLEARED</span>' : ''}
+          </div>
+
+          <div class="c-art-frame">
+            <img src="${lvl.art}" alt="${lvl.name}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'215\' height=\'315\' fill=\'%2300f0ff\'><rect width=\'100%\' height=\'100%\' fill=\'%230b1c3b\'/><text x=\'50%\' y=\'50%\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-size=\'20\'>STAGE 0${lvl.num}</text></svg>'">
+            <div class="c-art-shade"></div>
+            ${lvl.boss ? '<span class="c-boss-tag">BOSS</span>' : ''}
+          </div>
+
+          <div class="c-card-info">
+            <div class="c-tier-row">
+              <span class="c-tier-pill c-tier-${lvl.tier}">${lvl.tier}</span>
+              <span class="c-gate-val">GATE ${lvl.gate.toLocaleString()}</span>
+            </div>
+            <div class="c-card-name">${lvl.name}</div>
+          </div>
+        </div>
+      `).join("");
+
+      buildDotsDOM();
+      updateCarouselPositions(true);
+    }
+
+    function buildDotsDOM() {
+      const ch = CHAPTERS[currentChapter];
+      const container = document.getElementById("dotsIndicator");
+      container.innerHTML = ch.levels.map((lvl, idx) => `
+        <div class="dot-node" id="dot-${idx}" onclick="onCardClick(${idx})" title="Stage 0${lvl.num}"></div>
+      `).join("");
+    }
+
+    /* ==============================================================
+       UPDATE 3D POSITIONS
+       ============================================================== */
+    function updateCarouselPositions(immediate = false) {
+      const ch = CHAPTERS[currentChapter];
+
+      // Update Cards Classes seamlessly
+      ch.levels.forEach((lvl, idx) => {
+        const cardEl = document.getElementById(`card-${idx}`);
+        if (!cardEl) return;
+
+        const offset = idx - currentStage;
+        let posClass = "pos-hidden";
+        if (offset === 0) posClass = "pos-0";
+        else if (offset === 1) posClass = "pos-1";
+        else if (offset === -1) posClass = "pos-neg-1";
+        else if (offset === 2) posClass = "pos-2";
+        else if (offset === -2) posClass = "pos-neg-2";
+
+        cardEl.classList.remove("pos-0", "pos-1", "pos-neg-1", "pos-2", "pos-neg-2", "pos-hidden");
+        cardEl.classList.add(posClass);
+
+        cardEl.style.transform = "";
+      });
+
+      // Update Dots
+      ch.levels.forEach((_, idx) => {
+        const dot = document.getElementById(`dot-${idx}`);
+        if (dot) dot.classList.toggle("active", idx === currentStage);
+      });
+
+      bindTiltToActiveCard();
+      crossfadeDockInfo();
+    }
+
+    /* Smooth Slide & Fade for Bottom Dock Intel */
+    function crossfadeDockInfo() {
+      const ch = CHAPTERS[currentChapter];
+      const lvl = ch.levels[currentStage];
+
+      const intelEl = document.getElementById("dockIntel");
+      const readEl = document.getElementById("dockReadiness");
+
+      intelEl.classList.add("dock-fade-out");
+      readEl.classList.add("dock-fade-out");
+
+      setTimeout(() => {
+        document.getElementById("dockStageNum").textContent = lvl.boss ? "STAGE 06 // BOSS ENCOUNTER" : `STAGE 0${lvl.num} // REGULAR STAGE`;
+        document.getElementById("dockEnemyName").textContent = `${lvl.name} [${lvl.tier}]`;
+
+        const ok = playerPower >= lvl.gate;
+        const ratio = Math.min(100, Math.round((playerPower / lvl.gate) * 100));
+
+        document.getElementById("dockGateVal").innerHTML = `${lvl.gate.toLocaleString()} (${ok ? '<span style="color:var(--green)">SIAP TEMPUR</span>' : '<span style="color:var(--red)">POWER KURANG</span>'})`;
+        document.getElementById("dockBarFill").style.width = ratio + "%";
+        document.getElementById("dockBarFill").style.background = ok ? 'linear-gradient(90deg, var(--blue), var(--green))' : 'linear-gradient(90deg, #ff8c00, var(--red))';
+
+        document.getElementById("dockRewardVal").textContent = `◎ ${lvl.reward.toLocaleString()}`;
+
+        intelEl.classList.remove("dock-fade-out");
+        readEl.classList.remove("dock-fade-out");
+      }, 150);
+    }
+
+    /* 3D Mouse Parallax on Active Card */
+    /* 3D Mouse Parallax Dimatikan: Kartu tengah tetap flat menghadap depan */
+    function bindTiltToActiveCard() {
+      const activeCard = document.querySelector(".c-card.pos-0");
+      if (!activeCard) return;
+      activeCard.onmousemove = null;
+      activeCard.onmouseleave = null;
+    }
+
+    /* ==============================================================
+       GESTURES & INTERACTIVITY
+       ============================================================== */
+    function onCardClick(idx) {
+      if (idx === currentStage) return;
+      playSfx('swipe');
+      currentStage = idx;
+      updateCarouselPositions(false);
+    }
+
+    function slideStage(dir) {
+      const ch = CHAPTERS[currentChapter];
+      const next = currentStage + dir;
+      if (next < 0 || next >= ch.levels.length) return;
+      playSfx('swipe');
+      currentStage = next;
+      updateCarouselPositions(false);
+    }
+
+    function changeChapter(dir) {
+      const next = currentChapter + dir;
+      if (next < 0 || next >= CHAPTERS.length) return;
+      playSfx('swipe');
+      currentChapter = next;
+      currentStage = 0;
+      buildChapterCardsDOM();
+    }
+
+    function setDiff(diff) {
+      playSfx('swipe');
+      document.querySelectorAll(".diff-group .btn-diff").forEach(b => {
+        b.classList.toggle("active", b.textContent.toLowerCase().includes(diff));
+      });
+      showToast(`⚡ Mode Kesulitan: ${diff.toUpperCase()}`);
+    }
+
+    function launchBattle() {
+      playSfx('battle');
+      const ch = CHAPTERS[currentChapter];
+      const lvl = ch.levels[currentStage];
+      showToast(`⚔️ Memulai Pertempuran: ${lvl.name}...`);
+    }
+
+    /* Keyboard Nav */
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") slideStage(-1);
+      if (e.key === "ArrowRight") slideStage(1);
+    });
+
+    /* Touch Gestures */
+    let touchStartX = 0;
+    const stageEl = document.getElementById("carouselStage");
+    stageEl.addEventListener("touchstart", e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+    stageEl.addEventListener("touchend", e => {
+      const diffX = e.changedTouches[0].clientX - touchStartX;
+      if (Math.abs(diffX) > 40) {
+        if (diffX > 0) slideStage(-1);
+        else slideStage(1);
+      }
+    }, { passive: true });
+
+    /* Mouse Wheel */
+    stageEl.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      if (e.deltaY > 20) slideStage(1);
+      else if (e.deltaY < -20) slideStage(-1);
+    }, { passive: false });
+
+    /* Toast */
+    let toastTimer = null;
+    function showToast(msg) {
+      const pill = document.getElementById("toastPill");
+      document.getElementById("toastText").textContent = msg;
+      pill.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => pill.classList.remove("show"), 2200);
+    }
+
+    // Init
+    buildChapterCardsDOM();
+  </script>
+</body>
+</html>

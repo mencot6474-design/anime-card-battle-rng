@@ -364,7 +364,8 @@ function rngRoll(luckMultiplier=1,speedMultiplier=1){
     for(const shiny of [false,true]){
       for(const mut of MUTS){
         const statMult=(shiny?SHINY_MULT:1)*(MUT_MULT[mut]||1);
-        entries.push({card:c,mut,shiny,ch:base*statMult,m:statMult});
+        const chanceMult=(shiny?SHINY_CHANCE_MULT:1)*(MUT_CHANCE_MULT[mut]||1);
+        entries.push({card:c,mut,shiny,ch:base*chanceMult,m:statMult});
       }
     }
   }
@@ -386,7 +387,7 @@ function rngRoll(luckMultiplier=1,speedMultiplier=1){
 }
 
 /* ========== BACKPACK + ROLL SYSTEM ========== */
-let rollState = { active: false, interval: null, currentCard: null, luck: 1, speedMultiplier: 1, mini: false, collapsed: false, hideTimer: null, fadeTimer: null };
+let rollState = { active: false, interval: null, currentCard: null, luck: 1, speedMultiplier: 1, hideTimer: null, fadeTimer: null, hideOverlay: false };
 let __batchRoll = false;
 
 /* Roll = SATU-SATUNYA sumber kartu baru selain Toko Raid. Hasil roll DITUMPUK dengan sistem count:
@@ -470,7 +471,8 @@ function instantRollFast(n){
     const base=c.chance||chanceOf(c.tier);
     for(const shiny of [false,true])for(const mut of MUTS){
       const statMult=(shiny?SHINY_MULT:1)*(MUT_MULT[mut]||1);
-      const ch=base*statMult;
+      const chanceMult=(shiny?SHINY_CHANCE_MULT:1)*(MUT_CHANCE_MULT[mut]||1);
+      const ch=base*chanceMult;
       total+=(ch>=ROLL_RARE_DEN?L:K)/ch; /* Fix A+B — sama dengan bobot rngRoll */
       entries.push({card:c,mut:mut,shiny:shiny,ch:ch});
       cum.push(total);
@@ -513,6 +515,7 @@ function startRollAnimation(luck, speedMultiplier = 1) {
   // Clamp speed multiplier → jangan pernah di bawah RNG_ROLL_MIN (75ms). Speed pohon + potion + cuaca, cap 20x.
   rollState.speedMultiplier = rollSpeedNow();
   rollState.active = true;
+  rollState.hideOverlay = false;
 
   const rollBtn = document.getElementById('rollBtn');
   if (rollBtn) rollBtn.classList.add('active');
@@ -600,6 +603,7 @@ function rvFx(card, overlay, tcol) {
 function showRollResult(result) {
   const overlay = document.getElementById('rollOverlay');
   if (!overlay) return;
+  if (rollState.hideOverlay) return;
   const showcase = overlay.querySelector('.roll-card-showcase');
   if (!showcase) return;
   /* fix race: batalkan fade-out pending - timeout lama jangan nutup reveal baru */
@@ -608,13 +612,10 @@ function showRollResult(result) {
   const cardData = getCardData(result.cardId);
   if (!cardData) return;
   rollState.currentCard = result;
-  // Jangan paksa buka: kalau user lagi hide (collapsed), biarin tetep kesembunyi
-  // (mis. pas AUTO farming). Isi kartu tetap ke-update di atas, jadi pas di-buka nampil hasil terbaru.
-  if (rollState.mini) syncRollMiniStrip();
 
   // Kartu hasil roll = SALINAN persis kartu lobby (hubCardHtml) supaya posisinya identik.
   const eq = {char:result.cardId, mut:result.mut||"none", shiny:!!result.shiny, trait:"none"};
-  showcase.innerHTML = hubCardHtml(eq);
+  showcase.innerHTML = hubCardHtml(eq, null, true);
   const mut = eq.mut!=="none" ? eq.mut : null;
   showcase.style.borderColor = mut ? MUT_COLOR[mut] : (TIER_COLOR[CARDS[eq.char].tier] || "var(--cyan)");
   showcase.style.setProperty('--tcol', mut ? (MUT_COLOR[mut] || '#7DF9FF') : (TIER_COLOR[CARDS[eq.char].tier] || '#7DF9FF'));
@@ -622,10 +623,8 @@ function showRollResult(result) {
   // Buka overlay. Animasi masuk HANYA sekali (saat pertama tampil) supaya tidak flicker muncul-hilang tiap tick.
   const wasVisible = overlay.style.display === 'flex';
   overlay.style.display = 'flex';
-  /* fix: reveal non-mini harus bersih dari bottom inline sisa mode mini (position:relative → geser naik) */
-  if (!rollState.mini) showcase.style.bottom = '';
   // Cinematic reveal (port dari _tmp/reveal-proto): slam + flash + particles - hanya saat baru buka
-  if (!wasVisible && !rollState.mini) {
+  if (!wasVisible) {
     showcase.style.transition = 'none';
     showcase.classList.remove('rv-slam'); void showcase.offsetWidth; showcase.classList.add('rv-slam');
     const tcol = mut ? (MUT_COLOR[mut] || '#7DF9FF') : (TIER_COLOR[CARDS[eq.char].tier] || '#7DF9FF');
@@ -647,7 +646,6 @@ function showRollResult(result) {
 
 // Modal profil: open/close + update data
 function openProfileModal(){
-  if(typeof collapseMiniReveal === "function") collapseMiniReveal();
   const b=document.getElementById("profBackdrop");const m=document.getElementById("profModal");if(b){b.classList.add("show");b.style.display="block";}if(m){m.classList.add("show");m.style.display="flex";renderProfile();}
 }
 function closeProfileModal(){const b=document.getElementById("profBackdrop");const m=document.getElementById("profModal");if(b){b.classList.remove("show");b.style.display="none";}if(m){m.classList.remove("show");m.style.display="none";}}
@@ -899,10 +897,10 @@ function renderProfile(){
 
 
 function hideRollResult() {
+  rollState.hideOverlay = true;
   const overlay = document.getElementById('rollOverlay');
   if (!overlay) return;
-  const wasMini = rollState.mini; /* fix: jangan un-mini dulu - fade di tempat biar card nggak loncat ke tengah */
-  
+
   const showcase = overlay.querySelector('.roll-card-showcase');
   if (showcase) {
     showcase.classList.remove('rv-slam');
@@ -910,75 +908,17 @@ function hideRollResult() {
     showcase.style.opacity = '0';
     showcase.style.transform = 'scale(0.8)';
   }
-  
+
   rollState.fadeTimer = setTimeout(() => {
     rollState.fadeTimer = null;
-    if (wasMini) setRollMini(false);
     overlay.style.display = 'none';
     if (showcase) {
       showcase.style.opacity = '';
       showcase.style.transform = '';
       showcase.style.transition = '';
-      showcase.style.bottom = ''; /* fix: buang sisa bottom inline mini waktu fade-out selesai */
+      showcase.style.bottom = '';
     }
   }, 300);
-}
-
-function setRollMini(on) {
-  const overlay = document.getElementById('rollOverlay');
-  if (!overlay) return;
-  rollState.mini = !!on;
-  if (!rollState.mini) rollState.collapsed = false;
-  if (rollState.mini && rollState.hideTimer) { clearTimeout(rollState.hideTimer); rollState.hideTimer = null; }
-  if (rollState.fadeTimer) { clearTimeout(rollState.fadeTimer); rollState.fadeTimer = null; }
-  overlay.classList.toggle('mini', rollState.mini);
-  /* fix: buang sisa bottom inline dari mode mini - kalau nggak, kartu non-mini (position:relative)
-     kegeser naik ±110px pas reveal berikutnya ("card naik ke atas" pas AUTO nyala lagi). */
-  if (!rollState.mini) {
-    const card = overlay.querySelector('.roll-card-showcase');
-    if (card) card.style.bottom = '';
-  }
-  syncRollMiniStrip();
-}
-
-// Strip kecil Cyberpunk: tombol hide / reveal pas roll
-function syncRollMiniStrip() {
-  const strip = document.getElementById('rollMiniStrip');
-  if (!strip) return;
-  const overlay = document.getElementById('rollOverlay');
-  if (overlay) overlay.classList.toggle('collapsed', !!rollState.collapsed);
-  
-  if (rollState.collapsed) {
-    strip.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg><span>EXPAND</span>`;
-  } else {
-    strip.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg><span>COLLAPSE</span>`;
-  }
-  positionMiniReveal();
-}
-
-function collapseMiniReveal() {
-  if (typeof rollState !== 'undefined') {
-    rollState.collapsed = true;
-    syncRollMiniStrip();
-  }
-}
-window.collapseMiniReveal = collapseMiniReveal;
-
-// Letakin strip + kartu mini TEPAS di atas footer (tinggi footer bisa berubah pas weather on/off).
-function positionMiniReveal() {
-  const overlay = document.getElementById('rollOverlay');
-  if (!overlay || !rollState.mini) return;
-  const footer = document.querySelector('.lobby-footer');
-  const strip = document.getElementById('rollMiniStrip');
-  const card = overlay.querySelector('.roll-card-showcase');
-  let footFromBottom = 78; // fallback
-  if (footer) {
-    const r = footer.getBoundingClientRect();
-    if (r.height > 0) footFromBottom = window.innerHeight - r.top;
-  }
-  const stripBottom = footFromBottom + 8;
-  if (strip) strip.style.bottom = stripBottom + 'px';
-  if (card) card.style.bottom = (stripBottom + 22 + 6) + 'px';
 }
 
 /* ========== DECK MANAGER (panel Backpack) ==========
@@ -1643,7 +1583,6 @@ function premSetTab(tabKey){
 }
 
 function openPremiumShop(){
-  if(typeof collapseMiniReveal === "function") collapseMiniReveal();
   renderPremiumShop();
   var modal = document.getElementById('premiumModal');
   if(modal) modal.classList.add('show');
@@ -1843,7 +1782,6 @@ let wmAutoTimer = null;
 let wmAutoCount = 0;
 
 function openWeatherMachine(){
-  if(typeof collapseMiniReveal === "function") collapseMiniReveal();
   wmAutoRunning = false;
   if(wmAutoTimer) clearTimeout(wmAutoTimer);
   renderWeatherMachine();

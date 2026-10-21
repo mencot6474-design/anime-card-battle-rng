@@ -755,7 +755,7 @@ function showTowerLoot(results,drops,title){
       ${g.n>1?`<span class="rrc-cnt">×${g.n}</span>`:''}
       <div class="rrc-footer">
         <span class="rrc-name-text">${name}</span>
-        <span class="rrc-chance-text">1/${fmtC(chanceVal)}</span>
+        <span class="rrc-chance-text">1 in ${fmtChance(chanceVal)}</span>
       </div>
     </div>`;
   }).join("");
@@ -856,13 +856,14 @@ function renderTitleCrownHtml(titleName, variantCls){
 }
 window.renderTitleCrownHtml = renderTitleCrownHtml;
 
-function hubCardHtml(eq,idAttr){
+function hubCardHtml(eq,idAttr,showHideBtn){
   if(!eq||!eq.char||!CARDS[eq.char]) return `<div class="hub-center"${idAttr||''}><div class="hc-info"><div class="hc-name">Belum ada kartu</div></div></div>`;
   const tier=CARDS[eq.char].tier;
   const st=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   const mut=(eq.mut&&eq.mut!=='none')?eq.mut:null;
   const trait=(eq.trait&&eq.trait!=='none')?eq.trait:null;
   const chanceText=rarityText(tier,luckChance(eq.char,eq.mut,eq.shiny));
+  const hideBtn=showHideBtn?`<button class="roll-hide-btn" type="button">Sembunyikan</button>`:'';
   return `<div class="hub-center${mut?' mut-'+mut:''}${shinyCls(eq)}"${idAttr||''} data-tier="${tier}" style="--tcol:${mut?MUT_COLOR[mut]:TIER_COLOR[tier]}${mut&&!eq.shiny?`;border-color:${MUT_COLOR[mut]}`:''}">
       <div class="hc-img"><img src="${cardImg(eq.char)}" alt="${cardName(eq.char)}"${CARDS[eq.char].pos?` style="object-position:${CARDS[eq.char].pos}"`:''}>
           ${mut&&!eq.shiny?`<span class="hc-name-top hc-mut-name" data-text="${String(cardName(eq.char)).replace(/"/g,'&quot;')}">${mut==='rainbow'?mutText(mut,cardName(eq.char)):cardName(eq.char)}</span>`:eq.shiny?`<span class="hc-name-top hc-name-shine${mut?' hc-name-shine-'+mut:''}" data-text="${String(cardName(eq.char)).replace(/"/g,'&quot;')}" style="${mut==='gold'?'--sh-base:#E0BC6E;--sh-edge:rgba(224,188,110,.95);--sh-glow:rgba(224,188,110,.55)':mut==='rainbow'?'--sh-base:#B58CFF;--sh-edge:rgba(90,200,250,.95);--sh-glow:rgba(181,140,255,.55)':mut==='secret'?'--sh-base:#A855F7;--sh-edge:rgba(168,85,247,.95);--sh-glow:rgba(168,85,247,.55)':mut==='ultima'?'--sh-base:#FF0055;--sh-edge:rgba(255,51,102,.95);--sh-glow:rgba(255,0,85,.6)':'--sh-base:#22d3ee;--sh-edge:rgba(34,211,238,.95);--sh-glow:rgba(34,211,238,.55)'}">${cardName(eq.char)}</span>`:shinyName('span','hc-name-top','hc-name-shine',mut,eq.shiny,cardName(eq.char))}
@@ -875,6 +876,7 @@ function hubCardHtml(eq,idAttr){
           <div class="hc-desc">${skillText(eq.char)}</div>
           <div class="hc-stats"><div class="hp">♡ ${fmt(st.hp)}</div><div class="atk">${ATKIC} ${fmt(st.atk)}</div></div>
         </div>
+        ${hideBtn}
     </div>`;
 }
 /* 3D tilt dihapus sesuai instruksi user: kembali ke display border standar tanpa tilt/transform 3D */

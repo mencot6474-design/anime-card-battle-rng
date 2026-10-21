@@ -2229,7 +2229,7 @@ body.on-raid .roll-mini-strip{
 
 
 
-.roll-overlay:not(.mini) .roll-min-btn,.roll-overlay:not(.mini) .roll-close-out{width:42px;height:42px;padding:0;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#fff;font-size:0;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);cursor:pointer;transition:background .2s,transform .2s;letter-spacing:0}
+.roll-overlay:not(.mini) .roll-close-out{width:auto;padding:9px 22px;border-radius:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#fff;font-family:'Barlow Condensed';font-weight:700;font-size:15px;letter-spacing:.06em;display:flex;align-items:center;justify-content:center;gap:6px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);cursor:pointer;transition:background .2s,transform .2s;}
 
 
 
@@ -2237,7 +2237,7 @@ body.on-raid .roll-mini-strip{
 
 
 
-.roll-overlay:not(.mini) .roll-close-out::before{content:"✕";font-size:19px;line-height:1}
+.roll-overlay:not(.mini) .roll-close-out::before{content:"";font-size:19px;line-height:1}
 
 
 
@@ -2248,6 +2248,10 @@ body.on-raid .roll-mini-strip{
 .roll-overlay:not(.mini) .roll-close-out:hover{background:rgba(255,255,255,.25);transform:scale(1.08)}
 
 
+
+.roll-hide-btn{position:absolute;right:14px;bottom:14px;padding:6px 16px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;font-family:"Barlow Condensed";font-weight:700;font-size:13px;letter-spacing:.05em;cursor:pointer;transition:background .2s,transform .2s;z-index:5;}
+
+.roll-hide-btn:hover{background:rgba(255,255,255,.25);transform:scale(1.05);}
 
 .roll-close-out{padding:9px 22px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-family:"Barlow Condensed";font-weight:700;font-size:15px;letter-spacing:.06em;cursor:pointer;transition:.15s;}
 
@@ -2449,7 +2453,7 @@ body.on-lobby .roll-overlay.mini.collapsed .roll-card-showcase{display:none;}
 
 
 
-  width:40px;height:40px;padding:0;border-radius:12px;
+  width:auto;padding:9px 22px;border-radius:10px;
 
 
 
@@ -2457,7 +2461,7 @@ body.on-lobby .roll-overlay.mini.collapsed .roll-card-showcase{display:none;}
 
 
 
-  color:#7DF9FF;font-size:0;display:flex;align-items:center;justify-content:center;
+  color:#7DF9FF;font-family:'Barlow Condensed';font-weight:700;font-size:15px;letter-spacing:.06em;display:flex;align-items:center;justify-content:center;gap:6px;
 
 
 

@@ -67,7 +67,6 @@
   }
 
   function openStory(targetChapNo) {
-    if (typeof collapseMiniReveal === "function") collapseMiniReveal();
     try {
       if (typeof CHAPTERS === "undefined" || !CHAPTERS || !CHAPTERS.length) {
         console.warn("[StoryCarousel] CHAPTERS not defined yet.");

@@ -258,17 +258,10 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
     if(rollState.active){stopRollAnimation();hideRollResult();beep(330,0.12,"square",0.08);}
     else{startRollAnimation();beep(440,0.15,"sine",0.1);}
   });
-  const rmin=document.getElementById("rollMinBtn");
-  if(rmin)rmin.addEventListener("click",e=>{e.stopPropagation();setRollMini(true);});
-  const rshow=document.querySelector("#rollOverlay .roll-card-showcase");
-  if(rshow)rshow.addEventListener("click",()=>{if(rollState.mini&&!rollState.collapsed)setRollMini(false);});
-  const rstrip=document.getElementById("rollMiniStrip");
-  if(rstrip)rstrip.addEventListener("click",e=>{e.stopPropagation();if(!rollState.mini)return;rollState.collapsed=!rollState.collapsed;syncRollMiniStrip();beep(rollState.collapsed?330:440,0.08,"sine",0.06);});
-  /* Tutup lewat kontrol "✕ Tutup" atau klik area gelap di LUAR kartu — kartu sendiri (area badge/chance) tidak menutup. */
+  /* Sembunyikan lewat kontrol "Sembunyikan" atau klik area gelap di LUAR kartu — kartu sendiri (area badge/chance) tidak menyembunyikan. Auto roll tetap berjalan di background. */
   const rov=document.getElementById("rollOverlay");
   if(rov)rov.addEventListener("click",e=>{
-    if(rollState.mini)return;
-    if(e.target===rov||e.target.closest("#rollCloseBtn")){stopRollAnimation();hideRollResult();beep(330,0.12,"square",0.08);}
+    if(e.target===rov||e.target.closest("#rollCloseBtn")||e.target.closest(".roll-hide-btn")){hideRollResult();beep(330,0.12,"square",0.08);}
   });
 })();
 document.getElementById("ixClose").onclick=()=>document.getElementById("indexModal").classList.remove("show");document.getElementById("indexModal").addEventListener("click",e=>{if(e.target.id==="indexModal")e.target.classList.remove("show");});
@@ -286,7 +279,7 @@ window.addEventListener("hashchange",()=>{
   stopTower();
   if(route()!=="#/"){
     state.battle=null;
-    if(typeof collapseMiniReveal === "function") collapseMiniReveal();
+    
   }
   closeStory();
   render();
