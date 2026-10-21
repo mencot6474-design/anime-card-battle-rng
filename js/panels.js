@@ -810,7 +810,7 @@ function renderProfile(){
   const pslot=(img,label,pill,name)=>`<div class="prof-slot${img?"":" empty"}" title="${name}">${img?`<img src="${img}" alt="">`:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/></svg>'}<span class="ps-lab">${label}</span><span class="ps-pill">${pill}</span></div>`;
   const pd=state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;
   const slots=[];
-  slots.push(pslot(pd?`assets/pets/${pd.id}.png`:"","PET",pd?`+${pd.flat||0}${pd.pct?" / +"+Math.round(pd.pct)+"%":""}`:"KOSONG",pd?pd.name:"Pet kosong"));
+  slots.push(pslot(pd?(pd.img||`assets/pets/${pd.id}.png`):"","PET",pd?`+${pd.flat||0}${pd.pct?" / +"+Math.round(pd.pct)+"%":""}`:"KOSONG",pd?pd.name:"Pet kosong"));
   [0,1].forEach(i=>{
     const aid=state.artSlots&&state.artSlots[i];
     const ad=aid?ART_DEFS.find(x=>x.id===aid):null;
