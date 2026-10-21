@@ -1,0 +1,304 @@
+{
+ "effects": [
+  {
+   "name": "burn_start",
+   "element": "burn",
+   "shape": "start",
+   "anchor": [
+    0.5,
+    0.9
+   ],
+   "body": 0.715,
+   "tint": [
+    1.0,
+    0.72,
+    0.55
+   ],
+   "frames": 16,
+   "fps": 24,
+   "loop": false,
+   "columns": 8,
+   "rows": 2,
+   "cell": {
+    "256": [
+     256,
+     256
+    ],
+    "128": [
+     128,
+     128
+    ],
+    "pixel": [
+     64,
+     64
+    ]
+   },
+   "file": "burn/burn_start.png"
+  },
+  {
+   "name": "burn_loop",
+   "element": "burn",
+   "shape": "loop",
+   "anchor": [
+    0.5,
+    0.9
+   ],
+   "body": 0.715,
+   "tint": [
+    1.0,
+    0.72,
+    0.55
+   ],
+   "frames": 24,
+   "fps": 24,
+   "loop": true,
+   "columns": 8,
+   "rows": 3,
+   "cell": {
+    "256": [
+     256,
+     256
+    ],
+    "128": [
+     128,
+     128
+    ],
+    "pixel": [
+     64,
+     64
+    ]
+   },
+   "file": "burn/burn_loop.png"
+  },
+  {
+   "name": "burn_end",
+   "element": "burn",
+   "shape": "end",
+   "anchor": [
+    0.5,
+    0.9
+   ],
+   "body": 0.715,
+   "tint": [
+    1.0,
+    0.72,
+    0.55
+   ],
+   "frames": 16,
+   "fps": 24,
+   "loop": false,
+   "columns": 8,
+   "rows": 2,
+   "cell": {
+    "256": [
+     256,
+     256
+    ],
+    "128": [
+     128,
+     128
+    ],
+    "pixel": [
+     64,
+     64
+    ]
+   },
+   "file": "burn/burn_end.png"
+  },
+  {
+   "name": "poison_start",
+   "element": "poison",
+   "shape": "start",
+   "anchor": [
+    0.5,
+    0.9
+   ],
+   "body": 0.715,
+   "tint": [
+    0.7,
+    1.0,
+    0.6
+   ],
+   "frames": 16,
+   "fps": 24,
+   "loop": false,
+   "columns": 8,
+   "rows": 2,
+   "cell": {
+    "256": [
+     256,
+     256
+    ],
+    "128": [
+     128,
+     128
+    ],
+    "pixel": [
+     64,
+     64
+    ]
+   },
+   "file": "poison/poison_start.png"
+  },
+  {
+   "name": "poison_loop",
+   "element": "poison",
+   "shape": "loop",
+   "anchor": [
+    0.5,
+    0.9
+   ],
+   "body": 0.715,
+   "tint": [
+    0.7,
+    1.0,
+    0.6
+   ],
+   "frames": 24,
+   "fps": 24,
+   "loop": true,
+   "columns": 8,
+   "rows": 3,
+   "cell": {
+    "256": [
+     256,
+     256
+    ],
+    "128": [
+     128,
+     128
+    ],
+    "pixel": [
+     64,
+     64
+    ]
+   },
+   "file": "poison/poison_loop.png"
+  },
+  {
+   "name": "poison_end",
+   "element": "poison",
+   "shape": "end",
+   "anchor": [
+    0.5,
+    0.9
+   ],
+   "body": 0.715,
+   "tint": [
+    0.7,
+    1.0,
+    0.6
+   ],
+   "frames": 16,
+   "fps": 24,
+   "loop": false,
+   "columns": 8,
+   "rows": 2,
+   "cell": {
+    "256": [
+     256,
+     256
+    ],
+    "128": [
+     128,
+     128
+    ],
+    "pixel": [
+     64,
+     64
+    ]
+   },
+   "file": "poison/poison_end.png"
+  },
+  {
+   "name": "stun_start",
+   "element": "stun",
+   "shape": "start",
+   "anchor": [
+    0.5,
+    0.9
+   ],
+   "body": 0.715,
+   "frames": 16,
+   "fps": 24,
+   "loop": false,
+   "columns": 8,
+   "rows": 2,
+   "cell": {
+    "256": [
+     256,
+     256
+    ],
+    "128": [
+     128,
+     128
+    ],
+    "pixel": [
+     64,
+     64
+    ]
+   },
+   "file": "stun/stun_start.png"
+  },
+  {
+   "name": "stun_loop",
+   "element": "stun",
+   "shape": "loop",
+   "anchor": [
+    0.5,
+    0.9
+   ],
+   "body": 0.715,
+   "frames": 24,
+   "fps": 24,
+   "loop": true,
+   "columns": 8,
+   "rows": 3,
+   "cell": {
+    "256": [
+     256,
+     256
+    ],
+    "128": [
+     128,
+     128
+    ],
+    "pixel": [
+     64,
+     64
+    ]
+   },
+   "file": "stun/stun_loop.png"
+  },
+  {
+   "name": "stun_end",
+   "element": "stun",
+   "shape": "end",
+   "anchor": [
+    0.5,
+    0.9
+   ],
+   "body": 0.715,
+   "frames": 16,
+   "fps": 24,
+   "loop": false,
+   "columns": 8,
+   "rows": 2,
+   "cell": {
+    "256": [
+     256,
+     256
+    ],
+    "128": [
+     128,
+     128
+    ],
+    "pixel": [
+     64,
+     64
+    ]
+   },
+   "file": "stun/stun_end.png"
+  }
+ ]
+}

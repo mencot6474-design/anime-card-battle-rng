@@ -1,0 +1,553 @@
+/* ==========================================================================
+   SL-SYSTEM.CSS — "SYSTEM WINDOW" UI (referensi: Solo Leveling status window)
+   --------------------------------------------------------------------------
+   Untuk SEMUA picker/modal di game. Palet & komponen mengikuti tema
+   roll-result .rr-card.sl-theme yang sudah ada (satu bahasa visual).
+   Di-link SETELAH style.css; override penting pakai !important selektif.
+   ========================================================================== */
+
+:root{
+  --sl-cyan:#00d9ff;
+  --sl-blue:#0066ff;
+  --sl-navy:#040914;
+  --sl-accent:#38bdf8;
+  --sl-violet:#b58cff;
+  --sl-red:#ff4d5e;
+  --sl-panel:linear-gradient(180deg,rgba(7,16,35,.96) 0%,rgba(4,9,20,.99) 100%);
+  --sl-edge:rgba(0,217,255,.45);
+  --sl-edge-soft:rgba(56,189,248,.28);
+  --sl-glow:0 0 30px rgba(0,102,255,.30),0 0 12px rgba(0,217,255,.22),inset 0 0 24px rgba(0,102,255,.12);
+  --sl-ease:180ms cubic-bezier(.2,.8,.2,1);
+}
+
+/* ==========================================================================
+   1. PANEL DASAR — kulit system window untuk semua box modal
+   ========================================================================== */
+#deckPickModal .dp-box,
+#traitModal .tr-box,
+#dailyModal .dl-box,
+#storyModal .sm-box,
+#startModal .st-box,
+#indexModal .ix-box,
+#missionModal .ix-box,
+#rarePromptModal .rp-box,
+#towerDropModal .tw-drop-modal,
+.modal-profile .prof-modal-inner,
+.modal-titles .titles-modal-inner{
+  position:relative;
+  border-radius:12px !important;
+  border:1.5px solid var(--sl-edge) !important;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,217,255,.028) 0px,rgba(0,217,255,.028) 1px,transparent 1px,transparent 3px),
+    var(--sl-panel) !important;
+  box-shadow:var(--sl-glow) !important;
+  color:#f0f6fc;
+}
+
+/* Corner brackets: 4 sudut L (cyan). ::before = TL+BR, ::after = TR+BL */
+#deckPickModal .dp-box::before,
+#traitModal .tr-box::before,
+#dailyModal .dl-box::before,
+#storyModal .sm-box::before,
+#startModal .st-box::before,
+#indexModal .ix-box::before,
+#missionModal .ix-box::before,
+.rp-box::before,
+.modal-profile .prof-modal-inner::before,
+.modal-titles .titles-modal-inner::before{
+  content:"";position:absolute;inset:6px;pointer-events:none;z-index:4;border-radius:8px;
+  background:
+    linear-gradient(var(--sl-cyan),var(--sl-cyan)) left top/14px 2px no-repeat,
+    linear-gradient(var(--sl-cyan),var(--sl-cyan)) left top/2px 14px no-repeat,
+    linear-gradient(var(--sl-cyan),var(--sl-cyan)) right bottom/14px 2px no-repeat,
+    linear-gradient(var(--sl-cyan),var(--sl-cyan)) right bottom/2px 14px no-repeat;
+  opacity:.7;
+}
+#deckPickModal .dp-box::after,
+#traitModal .tr-box::after,
+#dailyModal .dl-box::after,
+#storyModal .sm-box::after,
+#startModal .st-box::after,
+#indexModal .ix-box::after,
+#missionModal .ix-box::after,
+.rp-box::after,
+.modal-profile .prof-modal-inner::after,
+.modal-titles .titles-modal-inner::after{
+  content:"";position:absolute;inset:6px;pointer-events:none;z-index:4;border-radius:8px;
+  background:
+    linear-gradient(var(--sl-cyan),var(--sl-cyan)) right top/14px 2px no-repeat,
+    linear-gradient(var(--sl-cyan),var(--sl-cyan)) right top/2px 14px no-repeat,
+    linear-gradient(var(--sl-cyan),var(--sl-cyan)) left bottom/14px 2px no-repeat,
+    linear-gradient(var(--sl-cyan),var(--sl-cyan)) left bottom/2px 14px no-repeat;
+  opacity:.7;
+}
+
+/* Animasi masuk panel */
+@keyframes slwIn{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:none}}
+#deckPickModal.show .dp-box,
+#traitModal.show .tr-box,
+#dailyModal.show .dl-box,
+#storyModal.show .sm-box,
+#startModal.show .st-box,
+#indexModal.show .ix-box,
+#missionModal.show .ix-box,
+#towerDropModal.show .tw-drop-modal{
+  animation:slwIn var(--sl-ease) both;
+}
+@media(prefers-reduced-motion:reduce){
+  #deckPickModal.show .dp-box,#traitModal.show .tr-box,#dailyModal.show .dl-box,
+  #storyModal.show .sm-box,#startModal.show .st-box,#indexModal.show .ix-box,
+  #missionModal.show .ix-box,#towerDropModal.show .tw-drop-modal{animation:none !important}
+}
+
+/* #towerDropModal .tw-drop-modal: ::before sudah dipakai garis atas -> corners via ::after */
+#towerDropModal .tw-drop-modal{
+  position:relative;
+  border-radius:12px !important;
+  border:1.5px solid var(--sl-edge) !important;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,217,255,.028) 0px,rgba(0,217,255,.028) 1px,transparent 1px,transparent 3px),
+    var(--sl-panel) !important;
+  box-shadow:var(--sl-glow) !important;
+}
+#towerDropModal .tw-drop-modal::after{
+  content:"";position:absolute;inset:6px;pointer-events:none;z-index:4;border-radius:8px;
+  background:
+    linear-gradient(var(--sl-cyan),var(--sl-cyan)) right top/14px 2px no-repeat,
+    linear-gradient(var(--sl-cyan),var(--sl-cyan)) right top/2px 14px no-repeat,
+    linear-gradient(var(--sl-cyan),var(--sl-cyan)) left bottom/14px 2px no-repeat,
+    linear-gradient(var(--sl-cyan),var(--sl-cyan)) left bottom/2px 14px no-repeat;
+  opacity:.7;
+}
+
+/* ==========================================================================
+   2. HEADER — .ix-head diseragamkan di semua modal
+   ========================================================================== */
+#deckPickModal .ix-head,
+#traitModal .ix-head,
+#dailyModal .ix-head,
+#storyModal .ix-head,
+#startModal .ix-head,
+#indexModal .ix-head,
+#missionModal .ix-head,
+#towerDropModal .ix-head{
+  border-bottom:1px solid rgba(0,217,255,.30) !important;
+  padding-bottom:12px !important;
+  margin-bottom:14px !important;
+  background:linear-gradient(90deg,rgba(0,217,255,.10),transparent 60%) !important;
+}
+#deckPickModal .ix-head .eyebrow,
+#dailyModal .ix-head .eyebrow{
+  color:var(--sl-cyan) !important;
+  letter-spacing:.26em !important;
+  text-shadow:0 0 8px rgba(0,217,255,.55) !important;
+}
+#deckPickModal .ix-head .ix-title,
+#traitModal .ix-head .ix-title,
+#dailyModal .ix-head .ix-title,
+#storyModal .ix-head .ix-title,
+#startModal .ix-head .ix-title,
+#indexModal .ix-head .ix-title,
+#missionModal .ix-head .ix-title,
+#towerDropModal .ix-head .ix-title{
+  color:#fff !important;
+  text-shadow:0 0 14px rgba(0,217,255,.55),0 2px 4px rgba(0,0,0,.9) !important;
+  letter-spacing:.06em !important;
+}
+.ix-eyebrow{color:var(--sl-cyan) !important;text-shadow:0 0 8px rgba(0,217,255,.45) !important}
+.ix-dot{background:var(--sl-cyan) !important;box-shadow:0 0 8px var(--sl-cyan) !important}
+
+/* Tombol X seragam: ghost cyan -> fill saat hover */
+#deckPickModal .ix-x,
+#traitModal .ix-x,
+#dailyModal .ix-x,
+#storyModal .ix-x,
+#startModal .ix-x,
+#indexModal .ix-x,
+#missionModal .ix-x,
+#towerDropModal .ix-x{
+  width:30px !important;height:30px !important;flex:none !important;
+  border:1px solid rgba(0,217,255,.45) !important;
+  border-radius:8px !important;
+  color:#cfefff !important;background:rgba(0,217,255,.06) !important;
+  display:grid;place-items:center;
+  transition:all var(--sl-ease);
+}
+#deckPickModal .ix-x:hover,
+#traitModal .ix-x:hover,
+#dailyModal .ix-x:hover,
+#storyModal .ix-x:hover,
+#startModal .ix-x:hover,
+#indexModal .ix-x:hover,
+#missionModal .ix-x:hover,
+#towerDropModal .ix-x:hover{
+  background:var(--sl-cyan) !important;color:#040914 !important;
+  box-shadow:0 0 14px rgba(0,217,255,.6) !important;
+}
+
+/* ==========================================================================
+   3. TILE KARTU — dp-card (deck pick), bp-tile (backpack + raid pick), ix-cell (index)
+   ========================================================================== */
+#deckPickModal .dp-card,
+.bp-tile,
+.ix-cell{
+  border:1px solid var(--sl-edge-soft) !important;
+  border-radius:10px !important;
+  background:linear-gradient(165deg,rgba(12,20,42,.9),rgba(6,10,22,.96)) !important;
+  transition:border-color var(--sl-ease),box-shadow var(--sl-ease),transform var(--sl-ease) !important;
+}
+#deckPickModal .dp-card:hover,
+.bp-tile:hover,
+.ix-cell:hover{
+  border-color:var(--sl-cyan) !important;
+  box-shadow:0 0 14px rgba(0,217,255,.35),0 8px 22px rgba(0,0,0,.55) !important;
+  transform:translateY(-2px) !important;
+}
+/* sweep garis cyan bawah ala system window saat hover */
+#deckPickModal .dp-card::after,
+.bp-tile::after{
+  content:"";position:absolute;left:8%;right:8%;bottom:4px;height:2px;pointer-events:none;z-index:3;
+  background:linear-gradient(90deg,transparent,var(--sl-cyan),transparent);
+  transform:scaleX(0);transform-origin:left;transition:transform .25s ease;
+}
+#deckPickModal .dp-card:hover::after,
+.bp-tile:hover::after{transform:scaleX(1)}
+.bp-tile{position:relative}
+/* state TERPILIH: frame penuh cyan + glow */
+#deckPickModal .dp-card.sel{
+  border-color:var(--sl-cyan) !important;
+  box-shadow:0 0 0 1px var(--sl-cyan),0 0 18px rgba(0,217,255,.5) !important;
+}
+/* nama kartu di tile: glow tipis biar kebaca di panel gelap */
+#deckPickModal .dp-name,
+.bp-tile .bpt-name{color:#e8f6ff !important;text-shadow:0 1px 3px rgba(0,0,0,.9)}
+
+/* ==========================================================================
+   4. SEARCH INPUT — navy gelap + caret/border cyan
+   ========================================================================== */
+#deckPickModal .card-search,
+.rd-pick .card-search,
+.ix-search{
+  background:rgba(4,9,20,.85) !important;
+  border:1px solid rgba(56,189,248,.30) !important;
+  border-radius:9px !important;
+  color:#e8f6ff !important;
+  caret-color:var(--sl-cyan) !important;
+  transition:border-color var(--sl-ease),box-shadow var(--sl-ease);
+}
+#deckPickModal .card-search:focus,
+.rd-pick .card-search:focus,
+.ix-search:focus{
+  outline:none !important;
+  border-color:var(--sl-cyan) !important;
+  box-shadow:0 0 12px rgba(0,217,255,.35) !important;
+}
+#deckPickModal .card-search::placeholder,
+.rd-pick .card-search::placeholder,
+.ix-search::placeholder{color:rgba(148,180,210,.55) !important;letter-spacing:.08em}
+.card-search-wrap svg{color:var(--sl-cyan) !important}
+.ix-search-wrap{border:1px solid rgba(56,189,248,.30) !important;border-radius:9px !important;background:rgba(4,9,20,.85) !important}
+.ix-search-wrap:focus-within{border-color:var(--sl-cyan) !important;box-shadow:0 0 12px rgba(0,217,255,.35) !important}
+
+
+/* ==========================================================================
+   5. TOMBOL AKSI
+   ========================================================================== */
+.rp-btn{
+  border:1px solid var(--sl-edge) !important;border-radius:9px !important;
+  font-family:"Barlow Condensed",sans-serif;font-weight:800;letter-spacing:.12em;
+  background:rgba(0,217,255,.08) !important;color:#cfefff !important;
+  transition:all var(--sl-ease);
+}
+.rp-btn:hover{background:var(--sl-cyan) !important;color:#040914 !important;box-shadow:0 0 16px rgba(0,217,255,.55) !important}
+.rp-btn[disabled]{opacity:.45 !important;box-shadow:none !important}
+.rp-btn.rp-roll{border-color:rgba(181,140,255,.5) !important;background:rgba(181,140,255,.10) !important;color:#e6d9ff !important}
+.rp-btn.rp-roll:hover{background:var(--sl-violet) !important;color:#12081f !important;box-shadow:0 0 16px rgba(181,140,255,.5) !important}
+
+/* trait modal: tombol ROLL TRAIT + AUTO */
+.tr-btn{
+  border:1px solid var(--sl-edge) !important;border-radius:9px !important;
+  background:linear-gradient(180deg,rgba(0,217,255,.14),rgba(0,102,255,.10)) !important;
+  color:#eafdff !important;
+  box-shadow:0 0 12px rgba(0,217,255,.22),inset 0 1px 0 rgba(255,255,255,.06);
+  transition:all var(--sl-ease);
+}
+.tr-btn:hover:not([disabled]){
+  border-color:var(--sl-cyan) !important;
+  box-shadow:0 0 18px rgba(0,217,255,.45) !important;
+}
+.tr-btn[disabled]{opacity:.5 !important}
+.tr-btn.tr-auto-btn{border-color:rgba(181,140,255,.5) !important;background:rgba(181,140,255,.10) !important}
+.tr-btn.tr-auto-btn:hover:not([disabled]){border-color:var(--sl-violet) !important;box-shadow:0 0 16px rgba(181,140,255,.45) !important}
+.tr-cost-badge{border:1px solid rgba(255,210,122,.4) !important;border-radius:999px !important;color:#ffd27a !important}
+
+/* trait: item probabilitas + kartu target */
+.trr-item{border:1px solid rgba(56,189,248,.18) !important;border-radius:9px !important;background:linear-gradient(165deg,rgba(12,20,42,.75),rgba(6,10,22,.9)) !important}
+.trr-item.is-target{border-color:var(--sl-cyan) !important;box-shadow:0 0 12px rgba(0,217,255,.35) !important}
+.trr-item.own{border-color:rgba(46,213,115,.55) !important}
+.tr-cur{border:1px solid var(--sl-edge-soft) !important;border-radius:10px !important;background:linear-gradient(165deg,rgba(12,20,42,.85),rgba(6,10,22,.95)) !important}
+.tr-coin-pill{border:1px solid rgba(255,210,122,.35) !important;border-radius:999px !important;background:rgba(20,14,4,.55) !important}
+.trr-tgt{border:1px solid rgba(56,189,248,.4) !important;border-radius:6px !important;background:rgba(4,9,20,.7) !important}
+.trr-item.is-target .trr-tgt{background:var(--sl-cyan) !important;color:#040914 !important}
+
+
+/* ==========================================================================
+   6. BACKPACK PANEL & RAID PICK HEAD
+   ========================================================================== */
+.backpack-panel{
+  border:1.5px solid var(--sl-edge) !important;
+  border-radius:12px !important;
+  box-shadow:var(--sl-glow) !important;
+}
+.backpack-panel .bp-head,
+.rd-pick .rd-pick-head{
+  border:1px solid var(--sl-edge-soft) !important;
+  border-radius:10px !important;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,217,255,.028) 0px,rgba(0,217,255,.028) 1px,transparent 1px,transparent 3px),
+    linear-gradient(180deg,rgba(7,16,35,.95),rgba(4,9,20,.98)) !important;
+  box-shadow:inset 0 0 20px rgba(0,102,255,.12) !important;
+}
+.rd-pick .rd-pick-back{
+  border:1px solid rgba(0,217,255,.45) !important;border-radius:8px !important;
+  color:#cfefff !important;background:rgba(0,217,255,.06) !important;
+}
+.rd-pick .rd-pick-back:hover{background:var(--sl-cyan) !important;color:#040914 !important}
+.rd-pick .rd-pick-ttl .eyebrow{color:var(--sl-cyan) !important;letter-spacing:.26em !important}
+.rd-pick .rd-pick-ttl b{color:#fff !important;text-shadow:0 0 12px rgba(0,217,255,.5) !important}
+.rd-pick .rd-pick-boss{
+  border:1px solid rgba(181,140,255,.4) !important;border-radius:10px !important;
+  background:linear-gradient(165deg,rgba(20,12,34,.9),rgba(8,6,16,.96)) !important;
+}
+
+/* ==========================================================================
+   7. EMPTY STATE & SCROLLBAR
+   ========================================================================== */
+.tr-empty-state,.no-result{color:rgba(148,197,230,.75) !important;letter-spacing:.06em}
+.no-result::before{content:"[ NO DATA ] ";color:var(--sl-cyan);font-family:"Barlow Condensed",sans-serif;font-weight:700;letter-spacing:.2em}
+.dp-box ::-webkit-scrollbar,.tr-box ::-webkit-scrollbar,.ix-box ::-webkit-scrollbar,
+.sm-box ::-webkit-scrollbar,.st-box ::-webkit-scrollbar,.dl-box ::-webkit-scrollbar,
+.backpack-panel ::-webkit-scrollbar,.rd-pick ::-webkit-scrollbar{width:5px}
+.dp-box ::-webkit-scrollbar-thumb,.tr-box ::-webkit-scrollbar-thumb,.ix-box ::-webkit-scrollbar-thumb,
+.sm-box ::-webkit-scrollbar-thumb,.st-box ::-webkit-scrollbar-thumb,.dl-box ::-webkit-scrollbar-thumb,
+.backpack-panel ::-webkit-scrollbar-thumb,.rd-pick ::-webkit-scrollbar-thumb{
+  background:rgba(0,217,255,.35);border-radius:99px
+}
+
+
+/* ==========================================================================
+   8. RAID HUB ZERO-SCROLL — 1 layar penuh, tanpa scroll halaman, tanpa kepotong
+   ---------------------------------------------------------------------------
+   FIX v3 (rantai tinggi): .tw-page.rd-page tingginya AUTO -> height:100% pada
+   hub TIDAK resolve (dianggap auto) -> hub tumbuh seukuran konten -> #app
+   ke-scroll. Solusi: wrapper .tw-page.rd-page ikut dikunci 100% (pasti),
+   hub pakai flex:1 min-height:0 (robust dari persentase).
+   Kunci: area gambar .hhc-art-frame menyesuaikan ruang (aspect-ratio dibuang).
+   ========================================================================== */
+.tw-page.rd-page{
+  height:100% !important;
+  max-height:100% !important;
+  overflow:hidden !important;
+  display:flex !important;
+  flex-direction:column !important;
+}
+.rd-page .hunter-raid-hub{
+  flex:1 1 auto !important;
+  height:auto !important;
+  min-height:0 !important;
+  max-height:100% !important;
+  overflow:hidden !important;
+  gap:clamp(6px,1.5vh,14px) !important;
+  /* napas bawah: dock tidak nempel tepi layar (sl-v4) */
+  padding-bottom:clamp(6px,1.7vh,14px) !important;
+}
+.rd-page .hunter-raid-hub .hr-topbar{
+  flex:none !important;
+  padding:clamp(6px,1.3vh,10px) clamp(10px,1.6vw,16px) !important;
+}
+.rd-page .hunter-raid-hub .hr-board-section{
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  gap:clamp(4px,1vh,10px) !important;
+}
+.rd-page .hunter-raid-hub .hr-board-title{
+  flex:none !important;
+  font-size:clamp(10px,1.6vh,12px) !important;
+}
+.rd-page .hunter-raid-hub .hr-cards-grid{
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  grid-auto-rows:minmax(0,1fr) !important;
+  gap:clamp(6px,1.2vw,12px) !important;
+}
+/* Kartu: flex kolom, TINGGI NGIKUT baris grid (1fr) — tidak memaksa tinggi sendiri */
+.rd-page .hunter-raid-hub .hr-hunt-card{
+  min-height:0 !important;
+  height:auto !important;
+  overflow:hidden !important;
+  display:flex !important;
+  flex-direction:column !important;
+  padding:clamp(6px,1.5vh,12px) !important;
+}
+.rd-page .hunter-raid-hub .hhc-top{
+  flex:none !important;
+  margin-bottom:clamp(4px,1vh,8px) !important;
+  gap:clamp(4px,.8vh,6px) !important;
+}
+.rd-page .hunter-raid-hub .hhc-rank-badge{font-size:clamp(8px,1.3vh,11px) !important;padding:2px clamp(4px,.8vh,8px) !important}
+.rd-page .hunter-raid-hub .hhc-gate-title{font-size:clamp(10px,1.7vh,13px) !important}
+.rd-page .hunter-raid-hub .hhc-cleared-tag,
+.rd-page .hunter-raid-hub .hhc-active-tag,
+.rd-page .hunter-raid-hub .hhc-locked-tag{font-size:clamp(7px,1.1vh,9px) !important;padding:2px clamp(3px,.6vh,6px) !important}
+/* INI KUNCI UTAMA: art frame fleksibel — gambar cover menyesuaikan ruang sisa */
+.rd-page .hunter-raid-hub .hhc-art-frame{
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  aspect-ratio:auto !important;
+  margin-bottom:clamp(4px,1vh,8px) !important;
+}
+.rd-page .hunter-raid-hub .hhc-monster-name{font-size:clamp(10px,1.7vh,13px) !important;bottom:clamp(12px,2.2vh,16px) !important;left:clamp(5px,1vh,8px) !important}
+.rd-page .hunter-raid-hub .hhc-monster-skill{font-size:clamp(7px,1.1vh,8.5px) !important;bottom:clamp(3px,.7vh,4px) !important;left:clamp(5px,1vh,8px) !important}
+.rd-page .hunter-raid-hub .hhc-stats-grid{
+  flex:none !important;
+  gap:clamp(3px,.7vh,5px) !important;
+  margin-bottom:clamp(4px,1vh,8px) !important;
+}
+.rd-page .hunter-raid-hub .hhc-stat-box{padding:clamp(3px,.7vh,5px) clamp(4px,.9vh,7px) !important}
+.rd-page .hunter-raid-hub .hsb-lbl{font-size:clamp(7px,1.05vh,8px) !important}
+.rd-page .hunter-raid-hub .hsb-val{font-size:clamp(9px,1.55vh,12px) !important}
+.rd-page .hunter-raid-hub .hsb-val.gold small{font-size:clamp(7px,1.15vh,9px) !important}
+.rd-page .hunter-raid-hub .hhc-footer-status{flex:none !important;padding-top:clamp(2px,.5vh,4px) !important}
+.rd-page .hunter-raid-hub .hhc-state-lbl{font-size:clamp(8px,1.3vh,10px) !important}
+.rd-page .hunter-raid-hub .hhc-state-lbl.lock{font-size:clamp(7px,1.15vh,9px) !important}
+/* Dock bawah */
+.rd-page .hunter-raid-hub .hr-deploy-dock{
+  flex:none !important;
+  gap:clamp(8px,1.5vw,16px) !important;
+  padding:clamp(6px,1.4vh,12px) clamp(10px,1.8vw,18px) !important;
+}
+.rd-page .hunter-raid-hub .hdd-tag{font-size:clamp(8px,1.3vh,11px) !important}
+.rd-page .hunter-raid-hub .hdd-boss-desc{font-size:clamp(9px,1.35vh,11.5px) !important;line-height:1.35 !important}
+.rd-page .hunter-raid-hub .hdd-btn{padding:clamp(5px,1.1vh,8px) clamp(10px,1.6vw,16px) !important}
+.rd-page .hunter-raid-hub .hdd-btn-text small{font-size:clamp(7px,1.05vh,9px) !important}
+.rd-page .hunter-raid-hub .hdd-btn-text b{font-size:clamp(11px,1.7vh,15px) !important}
+.rd-page .hunter-raid-hub .hdd-btn.deploy{min-width:clamp(120px,15vw,170px) !important}
+/* Padding main raid dipadatkan (toko pakai :has(.shop-hub) -> tetap menang);
+   bawah lebih lega supaya dock/panel tidak nempel tepi layar (sl-v4) */
+body.on-raid main{padding:clamp(10px,1.8vh,18px) clamp(14px,3.6vw,40px) clamp(12px,2.4vh,22px) !important}
+/* Tier cadangan layar sangat pendek */
+@media(max-height:650px){
+  .rd-page .hunter-raid-hub .hhc-gate-title{font-size:clamp(9px,1.6vh,13px) !important}
+  .rd-page .hunter-raid-hub .hhc-stat-box{padding:2px 5px !important}
+  .rd-page .hunter-raid-hub .hsb-val{font-size:clamp(9px,1.5vh,12px) !important}
+  .rd-page .hunter-raid-hub .hdd-boss-desc{font-size:clamp(9px,1.3vh,11.5px) !important}
+}
+
+
+/* ==========================================================================
+   9. TOKO RAID ZERO-SCROLL — 1 layar; cuma grid item + panel detail yang
+   scroll DI DALAM kotaknya. Halaman diam total.
+   ========================================================================== */
+.rd-page .hunter-shop-hub{
+  flex:1 1 auto !important;
+  height:auto !important;
+  min-height:0 !important;
+  max-height:100% !important;
+  overflow:hidden !important;
+  gap:clamp(6px,1.4vh,14px) !important;
+  /* napas bawah: panel tidak nempel tepi layar (sl-v4) */
+  padding-bottom:clamp(6px,1.7vh,14px) !important;
+}
+.rd-page .hunter-shop-hub .hsh-header{
+  flex:none !important;
+  padding:clamp(6px,1.3vh,10px) clamp(10px,1.6vw,16px) !important;
+}
+.rd-page .hunter-shop-hub .hsh-title{font-size:clamp(13px,2.2vh,18px) !important}
+.rd-page .hunter-shop-hub .hsh-kicker{font-size:clamp(8px,1.2vh,10px) !important}
+.rd-page .hunter-shop-hub .hsh-back-btn{font-size:clamp(9px,1.3vh,11.5px) !important;padding:clamp(4px,.9vh,6px) clamp(8px,1.2vw,12px) !important}
+.rd-page .hunter-shop-hub .hsh-token-chip{padding:clamp(2px,.6vh,4px) clamp(8px,1.1vw,12px) !important}
+.rd-page .hunter-shop-hub .htc-col b{font-size:clamp(12px,2vh,16px) !important}
+.rd-page .hunter-shop-hub .htc-col small{font-size:clamp(7px,1.1vh,9px) !important}
+/* Split utama ambil sisa ruang, TIDAK mengalir keluar */
+.rd-page .hunter-shop-hub .hsh-content-split{
+  flex:1 1 auto !important;
+  min-height:0 !important;
+}
+/* Panel kiri: daftar item scroll internal (halaman diam) */
+.rd-page .hunter-shop-hub .hsh-grid-panel{
+  min-height:0 !important;
+  overflow:hidden !important;
+  display:flex !important;
+  flex-direction:column !important;
+  gap:clamp(4px,.9vh,8px) !important;
+  padding:clamp(6px,1.3vh,12px) clamp(8px,1.2vw,14px) !important;
+}
+.rd-page .hunter-shop-hub .hsh-grid-subhdr{flex:none !important;font-size:clamp(8px,1.2vh,10.5px) !important}
+.rd-page .hunter-shop-hub .hunter-shop-grid{
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  max-height:none !important;   /* dulu max-height:440px kaku -> ganti ruang sisa */
+  overflow-y:auto !important;
+  overscroll-behavior:contain;
+  align-content:start;
+}
+/* Panel kanan (inspeksi): isi scroll internal, tombol beli tetap kelihatan */
+.rd-page .hunter-shop-hub .hsh-detail-panel{
+  min-height:0 !important;
+  overflow:hidden !important;
+  display:flex !important;
+  flex-direction:column !important;
+}
+.rd-page .hunter-shop-hub .hsd-panel-title{flex:none !important;font-size:clamp(8px,1.2vh,10.5px) !important;padding:clamp(6px,1.2vh,10px) clamp(8px,1.1vw,12px) !important}
+.rd-page .hunter-shop-hub .hsd-detail-content{
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  overflow-y:auto !important;
+  overscroll-behavior:contain;
+}
+.rd-page .hunter-shop-hub .hsd-action-footer{
+  flex:none !important;
+  padding:clamp(6px,1.2vh,10px) clamp(8px,1.1vw,12px) !important;
+}
+.rd-page .hunter-shop-hub .hsd-buy-action{width:100% !important;padding:clamp(7px,1.4vh,11px) !important;font-size:clamp(11px,1.6vh,14px) !important}
+
+
+
+/* ==========================================================================
+   10. TOKO INF — kunci ulang 1 layar (wrapper-nya ikut "auto" akibat patch
+   hub tower; struktur aslinya sudah benar: catalog overflow hidden +
+   .cyber-item-stream scroll internal). Scope via :has() biar hub tower
+   TETAP boleh flow.
+   ========================================================================== */
+body.on-tower:has(.tactical-shop-hub) main{
+  height:calc(100vh - var(--tbh,64px)) !important;
+  height:calc(100dvh - var(--tbh,64px)) !important;
+  max-height:calc(100dvh - var(--tbh,64px)) !important;
+  min-height:0 !important;
+  overflow:hidden !important;
+}
+.tactical-tower-page:has(.tactical-shop-hub){
+  height:100% !important;
+  max-height:100% !important;
+  overflow:hidden !important;
+}
+.tactical-shop-hub{height:100%;max-height:100%;min-height:0;overflow:hidden}
+/* napas bawah: panel catalog/dossier tidak nempel tepi layar (sl-v4) */
+.tactical-shop-hub{padding-bottom:clamp(6px,1.7vh,14px) !important}
+/* padding main toko inf dipadatkan; bawah lega (sl-v4) */
+body.on-tower:has(.tactical-shop-hub) main{
+  padding:clamp(10px,1.8vh,18px) clamp(14px,2.5vw,40px) clamp(14px,2.6vh,28px) !important;
+}
+/* header/footer toko inf skala vh */
+.tactical-shop-hub .csc-header{flex:none !important;padding-bottom:clamp(4px,1vh,8px) !important}
+.tactical-shop-hub .csc-title{font-size:clamp(14px,2.4vh,20px) !important}
+.tactical-shop-hub .csc-kicker{font-size:clamp(8px,1.2vh,10px) !important}
+.tactical-shop-hub .cyber-back-pill{font-size:clamp(9px,1.3vh,11.5px) !important;padding:clamp(4px,.9vh,6px) clamp(8px,1.2vw,12px) !important}
+.tactical-shop-hub .csc-footer{flex:none !important;font-size:clamp(8px,1.15vh,10px) !important;padding:clamp(4px,.9vh,8px) 0 0 !important}
+.tactical-shop-hub .csd-head{flex:none !important}
+.tactical-shop-hub .csd-title{font-size:clamp(13px,2.2vh,18px) !important}
+.tactical-shop-hub .csd-kicker{font-size:clamp(7px,1.1vh,9.5px) !important}
+.tactical-shop-hub .csd-telemetry{flex:none !important}
+.tactical-shop-hub .cyber-buy-btn{flex:none !important;padding:clamp(7px,1.4vh,11px) !important;font-size:clamp(11px,1.6vh,14px) !important}
