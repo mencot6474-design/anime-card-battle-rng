@@ -46735,3 +46735,23 @@ body.battle-full .fighter.foe.ko {
   width: 0 !important;
   height: 0 !important;
 }
+
+/* ====== GLOBAL LUCK BANNER ====== */
+#globalLuckBanner{
+  position:fixed;top:0;left:0;right:0;z-index:9990;
+  background:linear-gradient(90deg,#854d0e,#713f12,#854d0e);
+  border-bottom:1px solid #fcd34d;
+  transform:translateY(-100%);transition:transform .3s ease;
+  pointer-events:none;
+}
+#globalLuckBanner.show{transform:translateY(0)}
+.glb-inner{
+  display:flex;align-items:center;gap:10px;
+  max-width:900px;margin:0 auto;padding:7px 16px;
+}
+.glb-icon{font-size:18px;flex:0 0 auto}
+.glb-text{flex:1;font-family:"Barlow Condensed",sans-serif;font-size:13px;font-weight:700;color:#fef08a;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.glb-text b{font-size:14px;letter-spacing:.08em;color:#fcd34d}
+.glb-by{font-weight:400;color:rgba(254,240,138,.75);font-size:11px}
+.glb-by strong{color:#fef08a}
+.glb-timer{flex:0 0 auto;font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:14px;color:#fcd34d;letter-spacing:.06em;font-variant-numeric:tabular-nums;background:rgba(0,0,0,.3);padding:2px 8px;border-radius:6px}

@@ -168,6 +168,31 @@ const CloudDB = {
       return user.save_data.current_session_id;
     }
     return null;
+  },
+
+  // Ambil global luck yang sedang aktif (ends_at > now)
+  async getGlobalLuck() {
+    const now = new Date().toISOString();
+    const data = await this._request(
+      `global_luck?ends_at=gt.${now}&order=ends_at.desc&limit=1`
+    );
+    return (data && data.length > 0) ? data[0] : null;
+  },
+
+  // Aktifkan global luck baru (insert row)
+  async activateGlobalLuck(username, multiplier = 10, durationMs = 3600000) {
+    const now = new Date();
+    const endsAt = new Date(now.getTime() + durationMs).toISOString();
+    return await this._request('global_luck', {
+      method: 'POST',
+      prefer: 'return=representation',
+      body: JSON.stringify({
+        activated_by: username,
+        activated_at: now.toISOString(),
+        ends_at: endsAt,
+        multiplier
+      })
+    });
   }
 };
 

@@ -348,6 +348,7 @@ function renderShell(){
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.route===route()));
   try{const pm=document.getElementById("profModal");if(pm&&pm.style.display!=="none"&&pm.style.display!=="")renderProfile();}catch(e){}
   try{renderWeatherDock();renderBuffDock();startWeatherTick();}catch(e){}
+  try{if(typeof startGlobalLuckPoll==='function')startGlobalLuckPoll();}catch(e){}
   try{renderFootProfile();}catch(e){}
 }
 

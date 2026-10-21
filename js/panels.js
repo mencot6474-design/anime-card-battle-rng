@@ -1606,6 +1606,7 @@ const MASTER_CARD_INDEX=STORY_BIBLE.units.map(u=>({char_id:u.id,name:u.name,tier
 var premCurTab = 'all';
 
 var PREMIUM_PACKS = [
+  { id: 'global_luck', cat: 'all', type: 'global_luck', name: 'GLOBAL LUCK', price: 500, img: 'assets/images/weather-potion.webp?v=1', badge: 'SERVER EVENT', desc: 'Aktifkan 10× LUCK untuk SEMUA pemain di server selama 1 JAM! Username kamu akan tampil sebagai aktivator.' },
   // PET & ARTEFAK
   { id: 'tome-infinity', cat: 'equip', type: 'art', name: 'TOME OF INFINITY', price: 500, img: 'assets/artifacts/tome-infinity.webp?v=1', badge: 'MYTHIC ARTIFACT', desc: 'Kitab mistis tak terbatas! Memberikan +150 Flat Luck & +200% Luck secara permanen.' },
   { id: 'cyber-kitsune', cat: 'equip', type: 'pet', name: 'CYBER KITSUNE', price: 1000, img: 'assets/pets/cyber-kitsune.webp?v=1', badge: 'SUPREME PET', desc: 'Rubah legendaris masa depan! Memberikan +250 Flat Luck & +300% Luck saat dipasang.' },
@@ -1739,6 +1740,13 @@ async function buyPremiumPack(packId, ev){
   var btn = (ev && ev.currentTarget) || (window.event && window.event.currentTarget);
   if(btn) { btn.disabled = true; btn.textContent = 'MEMPROSES...'; }
   console.log('[BUY PREMIUM] Starting purchase:', packId, 'type:', pack.type, 'price:', pack.price);
+
+  // Handle global_luck type — delegasi ke buyGlobalLuck()
+  if (pack.type === 'global_luck') {
+    await buyGlobalLuck();
+    if(btn) btn.disabled = false;
+    return;
+  }
 
   try {
     if(window.CloudDB && typeof window.CloudDB.verifyAndDeductGems === 'function'){
@@ -2198,3 +2206,144 @@ window.wmSynthesizeRoll = wmSynthesizeRoll;
 window.wmToggleAuto = wmToggleAuto;
 window.wmSelectTarget = wmSelectTarget;
 window.renderWeatherMachine = renderWeatherMachine;
+
+/* =============== GLOBAL LUCK SYSTEM =============== */
+const GLOBAL_LUCK_COST = 500;
+const GLOBAL_LUCK_MULT = 10;
+const GLOBAL_LUCK_DURATION_MS = 3600000; // 1 jam
+let _globalLuckCache = null;      // cache hasil poll terakhir
+let _globalLuckPollTimer = null;  // timer poll
+
+// Ambil status global luck (cache 15 detik)
+async function fetchGlobalLuck() {
+  if (!window.CloudDB) return null;
+  try {
+    const data = await window.CloudDB.getGlobalLuck();
+    _globalLuckCache = data;
+    return data;
+  } catch(e) { return null; }
+}
+
+// Mulai polling tiap 15 detik
+function startGlobalLuckPoll() {
+  if (_globalLuckPollTimer) return;
+  fetchGlobalLuck().then(renderGlobalLuckBanner);
+  _globalLuckPollTimer = setInterval(async () => {
+    await fetchGlobalLuck();
+    renderGlobalLuckBanner();
+    // Juga update totalLuck display jika ada
+    if (typeof renderShell === 'function') renderShell();
+  }, 15000);
+}
+
+// Multiplier dari global luck (1 kalau tidak aktif)
+function globalLuckMult() {
+  if (!_globalLuckCache) return 1;
+  if (Date.now() >= new Date(_globalLuckCache.ends_at).getTime()) {
+    _globalLuckCache = null;
+    return 1;
+  }
+  return _globalLuckCache.multiplier || 1;
+}
+
+// Render/update banner global luck di atas layar
+function renderGlobalLuckBanner() {
+  let el = document.getElementById('globalLuckBanner');
+  const gl = _globalLuckCache;
+  const now = Date.now();
+  const active = gl && now < new Date(gl.ends_at).getTime();
+
+  if (!active) {
+    if (el) { el.classList.remove('show'); el.innerHTML = ''; }
+    return;
+  }
+
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'globalLuckBanner';
+    document.body.appendChild(el);
+  }
+
+  const msLeft = new Date(gl.ends_at).getTime() - now;
+  const s = Math.max(0, Math.floor(msLeft / 1000));
+  const pad = x => String(x).padStart(2, '0');
+  const h = Math.floor(s / 3600);
+  const m = Math.floor(s % 3600 / 60);
+  const sc = s % 60;
+  const timer = h > 0 ? `${pad(h)}:${pad(m)}:${pad(sc)}` : `${pad(m)}:${pad(sc)}`;
+
+  el.innerHTML = `
+    <div class="glb-inner">
+      <span class="glb-icon">⚡</span>
+      <span class="glb-text">
+        <b>GLOBAL LUCK ${GLOBAL_LUCK_MULT}×</b>
+        <span class="glb-by">diaktifkan oleh <strong>${gl.activated_by}</strong></span>
+      </span>
+      <span class="glb-timer">${timer}</span>
+    </div>`;
+  el.classList.add('show');
+}
+
+// Beli & aktifkan global luck
+async function buyGlobalLuck() {
+  const btn = document.getElementById('glBuyBtn');
+  if (btn) btn.disabled = true;
+  try {
+    if ((state.premiumGems || 0) < GLOBAL_LUCK_COST) {
+      toast('GEMS TIDAK CUKUP', `Butuh ${GLOBAL_LUCK_COST} Gems`, '#f87171');
+      return;
+    }
+    const username = currentUser || 'GUEST';
+    
+    // Cek apakah sudah ada yang aktif
+    const existing = await fetchGlobalLuck();
+    if (existing) {
+      const msLeft = new Date(existing.ends_at).getTime() - Date.now();
+      toast('GLOBAL LUCK SUDAH AKTIF', `Diaktifkan oleh ${existing.activated_by} · sisa ${Math.ceil(msLeft/60000)} menit`, '#fcd34d');
+      return;
+    }
+
+    // Potong gems (via cloud jika login, lokal jika guest)
+    if (currentUser && window.CloudDB) {
+      const res = await window.CloudDB.verifyAndDeductGems(currentUser, GLOBAL_LUCK_COST, 'global_luck', 'global_luck');
+      if (!res.ok) { toast('GAGAL', res.msg || 'Transaksi gagal', '#f87171'); return; }
+      state.premiumGems = res.balance;
+    } else {
+      state.premiumGems = (state.premiumGems || 0) - GLOBAL_LUCK_COST;
+      save();
+    }
+
+    // Insert ke Supabase
+    if (window.CloudDB) {
+      await window.CloudDB.activateGlobalLuck(username, GLOBAL_LUCK_MULT, GLOBAL_LUCK_DURATION_MS);
+    }
+
+    // Update cache lokal
+    _globalLuckCache = {
+      activated_by: username,
+      activated_at: new Date().toISOString(),
+      ends_at: new Date(Date.now() + GLOBAL_LUCK_DURATION_MS).toISOString(),
+      multiplier: GLOBAL_LUCK_MULT
+    };
+
+    beep(720, 0.2, 'triangle', 0.12);
+    setTimeout(() => beep(960, 0.25, 'triangle', 0.14), 100);
+    setTimeout(() => beep(1200, 0.2, 'triangle', 0.12), 200);
+    toast('⚡ GLOBAL LUCK AKTIF!', `${GLOBAL_LUCK_MULT}× luck untuk semua server selama 1 jam!`, '#fcd34d');
+
+    renderGlobalLuckBanner();
+    renderShell();
+    renderPremiumShop();
+  } catch(err) {
+    console.error('[buyGlobalLuck]', err);
+    toast('ERROR', err.message, '#f87171');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+window.buyGlobalLuck = buyGlobalLuck;
+window.globalLuckMult = globalLuckMult;
+window.startGlobalLuckPoll = startGlobalLuckPoll;
+window.fetchGlobalLuck = fetchGlobalLuck;
+window.renderGlobalLuckBanner = renderGlobalLuckBanner;
