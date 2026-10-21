@@ -46767,21 +46767,15 @@ body.battle-full .fighter.foe.ko {
 .glw-btn:disabled{opacity:.4;cursor:not-allowed}
 .glw-btn.stack{background:linear-gradient(135deg,#0f766e,#0d6eaa);border-color:rgba(20,184,166,.5)}
 
-/* ====== GLOBAL LUCK DOCK (di atas footer lobby) ====== */
-.gl-dock{
-  position:fixed;
-  top:52px;             /* tepat di bawah header */
-  left:50%;transform:translateX(-50%);
-  z-index:900;
-  width:min(380px,90vw);
-  pointer-events:auto;
+/* ====== GLOBAL LUCK WIDGET — di dalam lobby, di atas loadout bar ====== */
+.hub-gl-widget{
+  width:100%;
+  padding:0 0 6px 0;
 }
-.gl-dock:empty{display:none}
-/* Widget di dalam dock — kompak, top bar style */
-.gl-dock .glw-wrap{
+.hub-gl-widget .glw-wrap{
   margin-bottom:0;
-  backdrop-filter:blur(12px);
-  box-shadow:0 4px 20px rgba(0,0,0,.5);
-  border-radius:0 0 12px 12px;
-  border-top:none;
+  background:linear-gradient(135deg,rgba(14,116,144,.22),rgba(7,89,133,.30));
+  border:1px solid rgba(56,189,248,.28);
+  border-radius:10px;
+  box-shadow:0 2px 12px rgba(0,0,0,.4);
 }

@@ -931,6 +931,7 @@ function renderLobby(){
   const tier=eq?CARDS[eq.char].tier:null;
   app.innerHTML=`
   <div class="lobby-hub">
+    ${(typeof renderGlobalLuckWidget === 'function') ? '<div class="hub-gl-widget">' + renderGlobalLuckWidget() + '</div>' : ''}
     <div class="hub-loadout-bar" role="group" aria-label="Loadout artefak & pet">${hubLoadoutHtml()}</div>
     <div class="hub-box h-l1 hub-link hub-link-raid" id="hubRaid" role="button" title="Masuk Boss Raid">
       <span class="tile-index"><span class="tile-number">01</span><span class="tile-category">CYBER / RAID</span></span>
@@ -1052,6 +1053,7 @@ function renderLobby(){
   const mb=document.getElementById("missionBtn");if(mb)mb.onclick=()=>{sfx.hit();openMission();};
   const ms=document.getElementById("missionSub");if(ms){const done=CHAPTERS.reduce((a,c)=>a+chapProgMode(c,state.diff),0),tot=CHAPTERS.reduce((a,c)=>a+c.levels.length,0);ms.textContent=done+"/"+tot+" SELESAI";const ratio=tot?Math.min(100,Math.round(done/tot*100)):0;const meter=document.getElementById("missionMeter"),fill=document.getElementById("missionFill");if(meter){meter.setAttribute("aria-valuemax",String(tot));meter.setAttribute("aria-valuenow",String(done));}if(fill)fill.style.width=ratio+"%";}
   document.querySelectorAll(".hub-loadout-bar .loadout-slot, .stage-loadout .loadout-slot").forEach(el=>{el.onclick=()=>{sfx.hit();bpSetTab(el.dataset.bp||"pet");const p=document.getElementById("backpackPanel");if(!p||p.style.display!=="flex")toggleBackpack();};});
+  if (typeof _startGlWidgetTick === "function") _startGlWidgetTick();
 }
 
 /* ========== TOGGLE BACKPACK FUNCTION ========== */

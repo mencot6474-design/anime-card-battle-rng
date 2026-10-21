@@ -349,7 +349,6 @@ function renderShell(){
   try{const pm=document.getElementById("profModal");if(pm&&pm.style.display!=="none"&&pm.style.display!=="")renderProfile();}catch(e){}
   try{renderWeatherDock();renderBuffDock();startWeatherTick();}catch(e){}
   try{if(typeof startGlobalLuckPoll==='function')startGlobalLuckPoll();}catch(e){}
-  try{if(typeof renderGlobalLuckDock==='function')renderGlobalLuckDock();}catch(e){}
   try{renderFootProfile();}catch(e){}
 }
 
