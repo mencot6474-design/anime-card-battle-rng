@@ -306,7 +306,7 @@ function renderFootProfile(){
   }
 }
 function renderShell(){
-  document.getElementById("coinVal").textContent=fmt(state.coins);
+  const cv=document.getElementById("coinVal");if(cv)cv.textContent=fmt(state.coins);
   const gv=document.getElementById("gemVal");if(gv)gv.textContent=fmt(state.premiumGems||0);
   const rv=document.getElementById("raidVal");if(rv)rv.textContent=fmt(state.raidTokens||0);
   const pl=document.getElementById("plvl");if(pl)pl.textContent="LVL "+state.playerLv;
@@ -540,7 +540,10 @@ function openStart(lv){
 }
 function closeStart(){document.getElementById("startModal").classList.remove("show");}
 let fightTimer=null;
-function playFight(cb){
+function playFight(cb,opts){
+  /* opts.skipIntro=true -> lewatin cut-in intro (overlay #fightFx) & delay 1350ms.
+     Dipakai Infinite Tower supaya tiap naik lantai gak nge-play cut-in lagi. */
+  const skipIntro=!!(opts&&opts.skipIntro);
   const f=document.getElementById("fightFx");
   if(!f){ if(typeof cb==="function")cb(); return; }
 
@@ -639,9 +642,10 @@ function playFight(cb){
 
   f.classList.remove("go");
   void f.offsetWidth;
-  f.classList.add("go");
+  if(!skipIntro) f.classList.add("go");
 
   clearTimeout(fightTimer);
+  if(skipIntro){ if(typeof cb==="function")cb(); return; }
   fightTimer=setTimeout(()=>{
     f.classList.remove("go");
     if(typeof cb==="function")cb();
