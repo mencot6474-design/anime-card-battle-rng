@@ -47948,3 +47948,8 @@ body.battle-full .fighter.foe.ko {
   .backpack-panel .bp-body.deck .bp-collect{overflow:visible!important;}
   .backpack-panel .bp-scroll{overflow:visible!important;max-height:none!important;}
 }
+
+/* ====== PROFIL: kartu utama di panel stat sedikit lebih kecil (92%) & center ====== */
+#profModal .prof-hero-card{
+  height:92%;max-height:92%;width:auto;align-self:center;aspect-ratio:3/4;
+}
