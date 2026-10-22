@@ -444,23 +444,29 @@ window.playPassiveCutIn=function(opts){
   var ov=document.getElementById("pgrCutinOverlay");
   if(!ov)return;
   _cutinLock=true;
-  var imgEl=document.getElementById("pgrCutinImg");
-  var tagEl=document.getElementById("pgrCutinTag");
-  var ttlEl=document.getElementById("pgrCutinTitle");
-  var dscEl=document.getElementById("pgrCutinDesc");
-  var artSrc=opts.img||(opts.charId&&typeof window.cardImg==="function"?window.cardImg(opts.charId):"");
-  var cName=opts.name||(opts.charId&&typeof window.cardName==="function"?window.cardName(opts.charId):"UNIT");
-  if(imgEl&&artSrc)imgEl.src=artSrc;
-  if(tagEl)tagEl.textContent=opts.tag||("SYSTEM OVERDRIVE // "+cName);
-  if(ttlEl)ttlEl.textContent=opts.title||opts.passiveName||"PASSIVE OVERDRIVE";
-  if(dscEl)dscEl.textContent=opts.desc||opts.quote||"Kekuatan pasif kartu bangkit menembus batas pertahanan.";
-  CyberSfx.cutInActivate();
-  ov.classList.add("active");
-  var dur=typeof window.bsMs==="function"?window.bsMs(1150):1150;
-  setTimeout(function(){
-    ov.classList.remove("active");
-    setTimeout(function(){_cutinLock=false;},250);
-  },Math.max(450,dur));
+  let released=false;
+  try{
+    var imgEl=document.getElementById("pgrCutinImg");
+    var tagEl=document.getElementById("pgrCutinTag");
+    var ttlEl=document.getElementById("pgrCutinTitle");
+    var dscEl=document.getElementById("pgrCutinDesc");
+    var artSrc=opts.img||(opts.charId&&typeof window.cardImg==="function"?window.cardImg(opts.charId):"");
+    var cName=opts.name||(opts.charId&&typeof window.cardName==="function"?window.cardName(opts.charId):"UNIT");
+    if(imgEl&&artSrc)imgEl.src=artSrc;
+    if(tagEl)tagEl.textContent=opts.tag||("SYSTEM OVERDRIVE // "+cName);
+    if(ttlEl)ttlEl.textContent=opts.title||opts.passiveName||"PASSIVE OVERDRIVE";
+    if(dscEl)dscEl.textContent=opts.desc||opts.quote||"Kekuatan pasif kartu bangkit menembus batas pertahanan.";
+    CyberSfx.cutInActivate();
+    ov.classList.add("active");
+    var dur=typeof window.bsMs==="function"?window.bsMs(1150):1150;
+    setTimeout(function(){
+      ov.classList.remove("active");
+      released=true;
+      setTimeout(function(){_cutinLock=false;},250);
+    },Math.max(450,dur));
+  } finally {
+    if(!released)_cutinLock=false;
+  }
 };
 
 /* ===== PASSIVE AOE SPLASH FX (TANPA LASER/PILAR CAHAYA — HANYA PERCIKAN & SHOCKWAVE KE SLOT CADANGAN) ===== */

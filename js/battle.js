@@ -811,15 +811,7 @@ function havocRocketFx(o){
   const tx=rt.left+rt.width*0.5,ty=rt.top+rt.height*0.5;
   const dir=tx>=sx?1:-1;
 
-  if(window.playPassiveCutIn){
-    window.playPassiveCutIn({
-      charId:"CH_HAVOC_WREACKER",
-      name:"HAVOC WRECKER",
-      passiveName:"SUPER MEGA DEATH ROCKET!",
-      quote:"BYE-BYE! SAY HELLO TO MY GIGANTIC FRIEND!",
-      color:"#ff0055"
-    });
-  }
+  /* Entry battle cut-in removed — only ultimate/passive cut-ins show */
 
   // Partikel percikan ledakan
   const particles=[];
@@ -1377,15 +1369,7 @@ function worldEnderReviveFx(sel){
   const sc=bsMs(1000)/1000||1;
   const cx=r.left+r.width*0.5,cy=r.top+r.height*0.5;
   const t0=performance.now(),DUR=1100;
-  if(window.playPassiveCutIn){
-    window.playPassiveCutIn({
-      charId:"CH_DARKIN_LORD",
-      name:"DARKIN LORD",
-      passiveName:"THE WORLD ENDER · IMMORTAL",
-      quote:"I AM NOT YOUR ENEMY, I AM THE ENEMY!",
-      color:"#ff1e42"
-    });
-  }
+  /* Entry battle cut-in removed — only ultimate/passive cut-ins show */
   let raf=0;
   const finish=()=>{cancelAnimationFrame(raf);try{cv.remove();}catch(e){}};
   const frame=(now)=>{
@@ -1671,15 +1655,7 @@ function causalityFx(sel){
   const sc=bsMs(1000)/1000||1;
   const cx=r.left+r.width*0.5,cy=r.top+r.height*0.5;
   const t0=performance.now(),DUR=1150;
-  if(window.playPassiveCutIn){
-    window.playPassiveCutIn({
-      charId:"CH_ASTRAL_DEVOURER",
-      name:"ASTRAL DEVOURER",
-      passiveName:"CAUSALITY REVERSAL · ZERO",
-      quote:"TIME AND SPACE FLOW BACKWARD TO ABSOLUTE ZERO!",
-      color:"#38bdf8"
-    });
-  }
+  /* Entry battle cut-in removed — only ultimate/passive cut-ins show */
   const rewindDots=[];
   for(let i=0;i<32;i++){
     const a=(i/32)*6.283;
@@ -1746,6 +1722,7 @@ window.causalityFx=causalityFx;
 let MADARA_T={wind:280,slash:520,step:120,total:2760};
 /* satu tebasan lurus: garis SELEBAR layar penuh (menembus dua tepi), miring random tipis, lewat di sekitar kartu target */
 function startBattle(){
+  window.cutInShown=false;
   const lv=state.battle.level,en=enemyOf(lv),es=enemyStats(lv);
   const fighters=equippedList();if(!fighters.length)fighters.push(equipped());
   const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
@@ -1753,7 +1730,7 @@ function startBattle(){
   let efx=eid?(PASSIVE_FX[eid]||{}):{};
   /* SHARINGAN COPY sbg lawan (Kakashi): sekali di awal battle, salin seluruh passive kartu pemain */
   if(efx.copy){const own={...efx};delete own.copy;efx=Object.assign({},fxOf(eq)||{},own);delete efx.copy;}
-  bt={speed:battleSpeedEff(),fgen:++FGEN,lv,en,es,eq,fighters,eid,efx,active:0,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,ePoison:0,pGuardDr:0,eAbilityOff:0,voidUsed:false,pCopyFx:null,spCd:[],spTurn:[],spArmed:[],spWave:[],meteorGuard:[],phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),execGuard:new Array(fighters.length).fill(false),shatterGuard:new Array(fighters.length).fill(false),wtCount:new Array(fighters.length).fill(0),snatchAtk:new Array(fighters.length).fill(0),snatchHp:new Array(fighters.length).fill(0),regressCharges:new Array(fighters.length).fill(0),bioGuard:new Array(fighters.length).fill(false),splitLeft:new Array(fighters.length).fill(0),splitMult:new Array(fighters.length).fill(1),rumbling:0,rumblingPct:0,defyUsed:new Array(fighters.length).fill(false),defyHold:false,openGuard:true,dsState:new Array(fighters.length).fill(0),aftermath:false,gumTurns:0,trickNext:false,royalNow:false,gunsNow:false,psychic:null,atkEntryGuard:new Array(fighters.length).fill(false),sleepLeft:new Array(fighters.length).fill(0),sleepArmed:new Array(fighters.length).fill(false),overflow:0,rain:null,freezeLeft:0,shockCount:new Array(fighters.length).fill(0),shadow:null,freezeNext:false,valhallaLeft:0,paintHits:[],eInk:0,eInkPct:0,wc:null,rearIdx:-1,rearWaiting:false,rearUsed:[],senzu:{},senzuFin:false,balloon:0,stretchShot:0,turret:0,hvCount:new Array(fighters.length).fill(0),hvUses:new Array(fighters.length).fill(0),hvEntryGuard:new Array(fighters.length).fill(false),eHvUses:0,excited:false,weCount:new Array(fighters.length).fill(0),weRevived:false,pbRocks:0,pbKey:"",pbStreak:0,rubber:false,rbBounce:0,dizzyStack:0,dizzyLeft:0,bajrangUsed:new Array(fighters.length).fill(false)};
+  bt={speed:battleSpeedEff(),fgen:++FGEN,lv,en,es,eq,fighters,eid,efx,active:0,cutInShown:false,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,ePoison:0,pGuardDr:0,eAbilityOff:0,voidUsed:false,pCopyFx:null,spCd:[],spTurn:[],spArmed:[],spWave:[],meteorGuard:[],phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),execGuard:new Array(fighters.length).fill(false),shatterGuard:new Array(fighters.length).fill(false),wtCount:new Array(fighters.length).fill(0),snatchAtk:new Array(fighters.length).fill(0),snatchHp:new Array(fighters.length).fill(0),regressCharges:new Array(fighters.length).fill(0),bioGuard:new Array(fighters.length).fill(false),splitLeft:new Array(fighters.length).fill(0),splitMult:new Array(fighters.length).fill(1),rumbling:0,rumblingPct:0,defyUsed:new Array(fighters.length).fill(false),defyHold:false,openGuard:true,dsState:new Array(fighters.length).fill(0),aftermath:false,gumTurns:0,trickNext:false,royalNow:false,gunsNow:false,psychic:null,atkEntryGuard:new Array(fighters.length).fill(false),sleepLeft:new Array(fighters.length).fill(0),sleepArmed:new Array(fighters.length).fill(false),overflow:0,rain:null,freezeLeft:0,shockCount:new Array(fighters.length).fill(0),shadow:null,freezeNext:false,valhallaLeft:0,paintHits:[],eInk:0,eInkPct:0,wc:null,rearIdx:-1,rearWaiting:false,rearUsed:[],senzu:{},senzuFin:false,balloon:0,stretchShot:0,turret:0,hvCount:new Array(fighters.length).fill(0),hvUses:new Array(fighters.length).fill(0),hvEntryGuard:new Array(fighters.length).fill(false),eHvUses:0,excited:false,weCount:new Array(fighters.length).fill(0),weRevived:false,pbRocks:0,pbKey:"",pbStreak:0,rubber:false,rbBounce:0,dizzyStack:0,dizzyLeft:0,bajrangUsed:new Array(fighters.length).fill(false)};
   // BURST: kartu pertama masuk arena langsung dapat boost HP kalau punya fx.burst
   const fx0=resolveFx(eq,efx);
   if(fx0.burst){bt.pMax=Math.round(base.hp*fx0.burst.mult);bt.pHp=bt.pMax;}
@@ -2073,20 +2050,8 @@ function performAttack(o){
   if(hpAnim&&window.hollowPurpleFx)hollowPurpleFx({t0:180});
   if(we&&window.worldEnderFx)worldEnderFx({fromSel:A,toSel:D,phase:o.worldEnder.phase,revived:o.worldEnder.revived});
   if(gr&&window.gammaRayFx)gammaRayFx({fromSel:A,toSel:D});
-  if(window.playPassiveCutIn&&(o.domainStrike||o.ariseMode||md||psy||bj||hpAnim||o.galaxy||o.iceBlast||(we&&o.worldEnder.phase===2)||gr)){
-    const cDef=(typeof CARDS!=="undefined"&&CARDS)?CARDS[id]:null;
-    const isFoeSide=String(A).includes("foe");
-    const uName=cDef?cDef.name:(isFoeSide&&bt&&bt.en&&bt.en.name?bt.en.name:"UNIT");
-    const pName=o.domainStrike?"DOMAIN EXPANSION":o.ariseMode?"SHADOW MONARCH · ARISE":md?"LIMBO · SUSANOO TENSA":psy?"PSYCHIC BARRAGE":bj?"BAJRANG GUN":hpAnim?"HOLLOW PURPLE":o.galaxy?"GALAXY ROAR":o.iceBlast?"ABSOLUTE ZERO":we?"THE WORLD ENDER · PIERCE":gr?"GAMMA RAY BURST":(cDef&&cDef.skill?cDef.skill.split("—")[0].trim():"CORE PASSIVE");
-    const uQuote=cDef&&cDef.skill?cDef.skill:(isFoeSide&&bt&&bt.en&&bt.en.epithet?bt.en.epithet:"SYSTEM OVERDRIVE ENGAGED");
-    window.playPassiveCutIn({
-      charId:id||(isFoeSide?bt.eid:""),
-      name:uName,
-      passiveName:pName,
-      quote:uQuote,
-      color:o.domainStrike||o.ariseMode||hpAnim?"#c084fc":o.iceBlast||psy||gr?"#38bdf8":"#f43f5e"
-    });
-  }
+  /* All cut-in removed */
+
   /* Bar dicicil PROPORSIONAL terhadap total damage: damage yang melebihi HP target (one-hit kill)
      tetap tampil nguras dari penuh sampai 0, bukan nyangkut di 100% lalu langsung kosong. */
   const startHp=Math.max(0,Math.min(o.defMax,o.defHpStart));

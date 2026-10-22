@@ -271,9 +271,7 @@ function raidStep(){
   anim(".fighter.me","lunge-r");
   if(wePhase>=0&&window.worldEnderFx)window.worldEnderFx({fromSel:".fighter.me",toSel:".fighter.foe",phase:wePhase,revived:false});
   if(gammaRayHit&&window.gammaRayFx)window.gammaRayFx({fromSel:".fighter.me",toSel:".fighter.foe"});
-  if((domainActive||ariseMode||purple||ranton||iceBlastN||gammaRayHit)&&typeof window.playPassiveCutIn==="function"){
-    window.playPassiveCutIn({img:cardImg(id),tag:"RAID OVERDRIVE // "+cardName(id),title:gammaRayHit?"GAMMA RAY BURST":passiveName(id),desc:skillText(id)});
-  }
+  /* All cut-in removed */
   const setRaidBar=hp=>{const v=Math.max(0,hp);const p=Math.max(0,Math.min(100,v/raid.max*100));const b=document.getElementById("hpRaid");if(b)b.style.width=p+"%";const tt=document.getElementById("hpRaidT");if(tt)tt.textContent=fmt(v)+" / "+fmt(raid.max);};
   /* panjang rantai animasi hit ronde ini, dihitung SINKRON (di depan setTimeout) supaya cabang kematian
      bisa menunggu sambaran terakhir selesai — bukan memotong getar + angkanya lewat guard raid.over */
