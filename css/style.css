@@ -47754,3 +47754,136 @@ body.battle-full .fighter.foe.ko {
 @media(max-width:860px) and (max-height:560px){
   #profModal .prof-modal-inner{grid-template-rows:minmax(0,1fr);}
 }
+
+/* ====== FULL-SCREEN GAME SCREENS: INDEX / PREMIUM / TRAIT / WEATHER / STORY ====== */
+#indexModal,#premiumModal,#traitModal,#weatherMachineModal,#storyModal{
+  padding:0!important;place-items:stretch!important;
+  background:
+    radial-gradient(110% 80% at 50% 0%,rgba(125,249,255,.07),transparent 62%),
+    #070b12!important;
+}
+#indexModal .ix-box,
+#premiumModal .prem-modal-inner,
+#traitModal .tr-box,
+#weatherMachineModal .wm-box,
+#storyModal .sc-window{
+  width:100%!important;max-width:none!important;
+  height:100dvh!important;max-height:none!important;min-height:0!important;
+  margin:0!important;padding:0!important;
+  border:0!important;border-radius:0!important;box-shadow:none!important;
+  background:transparent!important;
+  display:flex!important;flex-direction:column!important;
+  overflow:hidden!important;
+  animation:none!important;
+}
+#indexModal .ix-head,
+#premiumModal .prem-head,
+#traitModal .tr-cyber-head,
+#weatherMachineModal .wm-cyber-head,
+#storyModal .sc-head{
+  flex:none;
+  padding:24px 120px 14px 30px!important;
+  border-bottom:1px solid rgba(125,249,255,.14)!important;
+}
+#indexModal .ix-x,#premiumModal .ix-x,#traitModal .ix-x,#weatherMachineModal .ix-x{color:#cfeeff!important;}
+
+/* --- CARD INDEX --- */
+#indexModal .ix-toolbar{padding:14px 30px 0!important;flex:none;margin:0!important;}
+#indexModal .ix-body{
+  flex:1 1 auto;min-height:0;overflow-y:auto;
+  padding:16px 30px 10px!important;
+}
+#indexModal .ix-grid{
+  grid-template-columns:repeat(auto-fill,minmax(165px,1fr))!important;
+  gap:14px!important;
+}
+#indexModal .ix-foot{
+  flex:none;margin:0!important;
+  padding:10px 30px 16px!important;
+  border-top:1px solid rgba(125,249,255,.12)!important;
+}
+
+/* --- PREMIUM SHOP --- */
+#premiumModal .prem-subbanner{margin:14px 30px 0!important;}
+#premiumModal .prem-tabs-bar{padding:14px 30px 0!important;flex:none;}
+#premiumModal .prem-modal-inner{overflow-y:auto!important;}
+#premiumModal .prem-grid{
+  flex:none;max-height:none!important;
+  overflow:visible!important;
+  padding:18px 30px 28px!important;
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr))!important;
+  gap:16px!important;
+}
+
+/* --- TRAIT & WEATHER: dua kolom lega, konten di tengah --- */
+#traitModal #trBody,
+#weatherMachineModal #wmBody{
+  flex:1 1 auto;min-height:0;overflow-y:auto;
+  padding:22px 30px 30px!important;
+}
+#traitModal .tr-grid,
+#weatherMachineModal .wm-grid{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.2fr) minmax(320px,1fr);
+  width:100%;max-width:1240px;margin:0 auto;
+  gap:26px!important;align-items:flex-start!important;
+}
+#traitModal .tr-main,
+#traitModal .tr-rates,
+#weatherMachineModal .tr-main,
+#weatherMachineModal .tr-rates{
+  flex:none!important;width:auto!important;min-width:0;max-width:none!important;
+}
+
+/* --- STORY --- */
+#storyModal .sc-window{position:relative;}
+#storyModal .sc-carousel-stage{flex:1 1 auto;min-height:0;}
+#storyModal .sc-action-dock{flex:none;}
+
+@media(max-width:860px){
+  #indexModal .ix-head,
+  #premiumModal .prem-head,
+  #traitModal .tr-cyber-head,
+  #weatherMachineModal .wm-cyber-head,
+  #storyModal .sc-head{padding:16px 110px 10px 16px!important;}
+  #indexModal .ix-toolbar{padding:10px 16px 0!important;}
+  #indexModal .ix-body{padding:12px 16px 8px!important;}
+  #indexModal .ix-foot{padding:8px 16px 12px!important;}
+  #premiumModal .prem-subbanner{margin:10px 16px 0!important;}
+  #premiumModal .prem-tabs-bar{padding:10px 16px 0!important;}
+  #premiumModal .prem-grid{padding:12px 16px 18px!important;grid-template-columns:repeat(auto-fill,minmax(160px,1fr))!important;}
+  #traitModal #trBody,#weatherMachineModal #wmBody{padding:14px 16px 22px!important;}
+
+  /* STORY: header dua baris supaya difficulty + close tidak ketiban CORET */
+  #storyModal .sc-head{flex-wrap:wrap;align-items:center;gap:8px 10px;padding:12px 110px 10px 16px!important;}
+  #storyModal .sc-chap-nav{flex:1 1 100%;order:1;min-width:0;gap:8px;}
+  #storyModal .sc-chap-title-box{width:auto;flex:1 1 auto;min-width:0;}
+  #storyModal .sc-chap-title{font-size:18px;}
+  #storyModal .sc-head-right{flex:1 1 100%;order:2;min-width:0;gap:8px;}
+  #storyModal .sc-diff-group{flex:1 1 auto;min-width:0;overflow-x:auto;scrollbar-width:none;}
+  #storyModal .sc-diff-group::-webkit-scrollbar{display:none;}
+  #storyModal .btn-sc-diff{flex:0 0 auto;font-size:12px;padding:4px 8px;}
+  #storyModal .sc-action-dock{padding:10px 16px 14px;}
+  #storyModal .sc-dock-reward-box{align-items:flex-start;}
+}
+
+@media(max-width:720px){
+  #traitModal .tr-grid,#weatherMachineModal .wm-grid{grid-template-columns:1fr!important;gap:16px!important;}
+}
+
+/* Layar pendek (HP landscape): kartu story menyesuaikan tinggi */
+@media(max-height:620px){
+  #storyModal .sc-carousel-track{transform:scale(.56);}
+  #storyModal .sc-carousel-stage{padding:2px 0;}
+  #storyModal .sc-dots-indicator{display:none;}
+  #storyModal .sc-action-dock{padding:6px 16px 8px;gap:12px;}
+  #storyModal .sc-dock-stage-lbl{font-size:9px;}
+  #storyModal .sc-dock-enemy-name{font-size:15px;}
+  #storyModal .sc-dock-intel{min-width:0;max-width:none;}
+  #storyModal .sc-dock-readiness{flex:1 1 auto;min-width:0;}
+  #storyModal .sc-dock-rd-labels{white-space:nowrap;gap:8px;font-size:9px;}
+  #storyModal .sc-dock-action-wrap{gap:10px;}
+  #storyModal .sc-dock-rw-lbl{font-size:8px;}
+  #storyModal .sc-dock-rw-val{font-size:16px;}
+  #storyModal .sc-btn-battle-launch{font-size:14px;padding:6px 16px;white-space:nowrap;}
+}

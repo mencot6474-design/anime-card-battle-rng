@@ -2257,7 +2257,7 @@ function renderWeatherMachine(){
             '<div class="tc-tline">' +
               '<span class="tc-trait-pill" style="--tcol:' + curDef.color + '">' +
                 '<span class="tc-gem-wrap">' + weatherSvg(aw||'sunshine', 18) + '</span>' +
-                '<span class="tc-name-glow">' + curDef.desc + '</span>' +
+                '<span class="tc-name-glow">' + (curDef.desc || (curDef.rar + ' WEATHER')) + '</span>' +
               '</span>' +
             '</div>' +
             '<div class="tc-tstat-wrap wm-stat-row">' +
