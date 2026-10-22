@@ -47697,3 +47697,38 @@ body.battle-full .fighter.foe.ko {
   #profModal .prof-hero-lab{display:none;}
   #profModal .prof-main-head{padding:10px 14px 8px;}
 }
+
+/* ====== HERO PROFIL: parallax 3D (tilt ngikut kursor + lapisan kedalaman) ====== */
+#profModal .prof-hero{perspective:1300px;perspective-origin:50% 45%;}
+#profModal .prof-hero-stage{
+  position:absolute;inset:0;transform-style:preserve-3d;will-change:transform;
+  transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
+  transition:transform .22s cubic-bezier(.22,.61,.36,1);
+  animation:profHeroFloat 9s ease-in-out infinite;
+}
+@keyframes profHeroFloat{0%,100%{translate:0 0}50%{translate:0 -9px}}
+#profModal .prof-hero-art{
+  position:absolute;inset:-7%;overflow:hidden;
+  transform:translate3d(var(--mx,0px),var(--my,0px),60px);
+  transition:transform .22s cubic-bezier(.22,.61,.36,1);
+}
+#profModal .prof-hero-glow{
+  position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;opacity:.85;
+  transform:translate3d(calc(var(--mx,0px) * -0.6),calc(var(--my,0px) * -0.6),18px);
+  background:radial-gradient(78% 58% at 50% 40%,rgba(125,249,255,.16),transparent 66%);
+  transition:transform .22s cubic-bezier(.22,.61,.36,1);
+}
+#profModal .prof-hero-shine{
+  position:absolute;inset:0;pointer-events:none;opacity:0;mix-blend-mode:screen;
+  transform:translateZ(90px);transition:opacity .25s ease;
+  background:radial-gradient(36% 28% at var(--gx,50%) var(--gy,35%),rgba(255,255,255,.30),rgba(255,255,255,.07) 46%,transparent 70%);
+}
+#profModal .prof-hero:hover .prof-hero-shine{opacity:1;}
+@media(hover:none),(pointer:coarse){
+  #profModal .prof-hero-stage,#profModal .prof-hero-art,#profModal .prof-hero-glow{transform:none;}
+  #profModal .prof-hero-shine{display:none;}
+}
+@media(prefers-reduced-motion:reduce){
+  #profModal .prof-hero-stage{animation:none;}
+}
+#profModal .prof-hero-art{transform:translate3d(var(--mx,0px),var(--my,0px),60px) scale(1.05);}

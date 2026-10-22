@@ -676,9 +676,39 @@ function showRollResult(result) {
 
 // Modal profil: open/close + update data
 function openProfileModal(){
-  const b=document.getElementById("profBackdrop");const m=document.getElementById("profModal");if(b){b.classList.add("show");b.style.display="block";}if(m){m.classList.add("show");m.style.display="flex";renderProfile();profTabGo("overview");}
+  const b=document.getElementById("profBackdrop");const m=document.getElementById("profModal");if(b){b.classList.add("show");b.style.display="block";}if(m){m.classList.add("show");m.style.display="flex";renderProfile();profTabGo("overview");initProfHeroParallax();}
 }
-function closeProfileModal(){const b=document.getElementById("profBackdrop");const m=document.getElementById("profModal");if(b){b.classList.remove("show");b.style.display="none";}if(m){m.classList.remove("show");m.style.display="none";}}
+function closeProfileModal(){const b=document.getElementById("profBackdrop");const m=document.getElementById("profModal");if(b){b.classList.remove("show");b.style.display="none";}if(m){m.classList.remove("show");m.style.display="none";}resetProfHeroParallax();}
+
+/* Parallax 3D hero profil: kursor kanan-kiri/atas-bawah → tilt + art & shine beda kedalaman */
+let _profParallaxBound=false;
+function initProfHeroParallax(){
+  const hero=document.getElementById("profHero");
+  if(!hero||_profParallaxBound)return;
+  _profParallaxBound=true;
+  if(!window.matchMedia("(hover:hover) and (pointer:fine)").matches)return;
+  let raf=0,tx=0,ty=0;
+  const apply=()=>{
+    raf=0;
+    hero.style.setProperty("--rx",(-ty*6).toFixed(2)+"deg");
+    hero.style.setProperty("--ry",(tx*8).toFixed(2)+"deg");
+    hero.style.setProperty("--mx",(-tx*16).toFixed(1)+"px");
+    hero.style.setProperty("--my",(-ty*12).toFixed(1)+"px");
+    hero.style.setProperty("--gx",((tx+1)*50).toFixed(1)+"%");
+    hero.style.setProperty("--gy",((ty+1)*45).toFixed(1)+"%");
+  };
+  hero.addEventListener("pointermove",e=>{
+    const r=hero.getBoundingClientRect();
+    tx=Math.max(-1,Math.min(1,((e.clientX-r.left)/r.width)*2-1));
+    ty=Math.max(-1,Math.min(1,((e.clientY-r.top)/r.height)*2-1));
+    if(!raf)raf=requestAnimationFrame(apply);
+  });
+  hero.addEventListener("pointerleave",()=>{tx=0;ty=0;if(!raf)raf=requestAnimationFrame(apply);});
+}
+function resetProfHeroParallax(){
+  const hero=document.getElementById("profHero");if(!hero)return;
+  ["--rx","--ry","--mx","--my","--gx","--gy"].forEach(v=>hero.style.removeProperty(v));
+}
 
 /* Tab menu profil (gaya menu karakter): rail kiri + halaman kanan */
 const PROF_TABS={overview:"OPERATOR STATS",koleksi:"KOLEKSI",progres:"PROGRES",ekuipmen:"EKUIPMEN",item:"ITEM & BUFF",titles:"TITLES"};
