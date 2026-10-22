@@ -47786,6 +47786,16 @@ body.battle-full .fighter.foe.ko {
   border-bottom:1px solid rgba(125,249,255,.14)!important;
 }
 #indexModal .ix-x,#premiumModal .ix-x,#traitModal .ix-x,#weatherMachineModal .ix-x{color:#cfeeff!important;}
+#premiumModal .ix-x{
+  background:rgba(255,255,255,.06)!important;
+  border-color:rgba(255,215,0,.35)!important;
+  color:#ffe9a8!important;
+}
+#premiumModal .ix-x:hover{
+  background:rgba(255,77,94,.18)!important;
+  border-color:#ff4d5e!important;
+  color:#fff!important;
+}
 
 /* --- CARD INDEX --- */
 #indexModal .ix-toolbar{padding:14px 30px 0!important;flex:none;margin:0!important;}
@@ -47806,7 +47816,13 @@ body.battle-full .fighter.foe.ko {
 /* --- PREMIUM SHOP --- */
 #premiumModal .prem-subbanner{margin:14px 30px 0!important;}
 #premiumModal .prem-tabs-bar{padding:14px 30px 0!important;flex:none;}
-#premiumModal .prem-modal-inner{overflow-y:auto!important;}
+#premiumModal .prem-modal-inner{
+  overflow-y:auto!important;
+  scrollbar-width:none;-ms-overflow-style:none;
+}
+#premiumModal .prem-modal-inner::-webkit-scrollbar{display:none;width:0;height:0;}
+#premiumModal .prem-tabs-bar{scrollbar-width:none;-ms-overflow-style:none;}
+#premiumModal .prem-tabs-bar::-webkit-scrollbar{display:none;width:0;height:0;}
 #premiumModal .prem-grid{
   flex:none;max-height:none!important;
   overflow:visible!important;
