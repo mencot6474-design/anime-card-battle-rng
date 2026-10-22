@@ -478,6 +478,11 @@ function footMenuGo(k){
   else if(k==="settings")location.hash="#/settings";
   else if(k==="logout"){if(confirm("Keluar dari akun ini?"))logout();}
 }
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Escape")return;
+  const m=document.getElementById("profModal");
+  if(m&&(m.classList.contains("show")||m.style.display==="flex"))closeProfileModal();
+});
 function boot(){
   document.getElementById("loadingScreen").classList.add("hidden");
   document.getElementById("authScreen").classList.remove("hidden");

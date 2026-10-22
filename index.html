@@ -12,7 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700;800&family=Russo+One&family=Rajdhani:wght@700;800;900&display=swap" rel="stylesheet">
 <!-- External Game Icon Library: Lucide Icons -->
 <script src="https://unpkg.com/lucide@latest"></script>
-<link rel="stylesheet" href="css/style.css?v=v175-footmenu">
+<link rel="stylesheet" href="css/style.css?v=v181-gprofil6">
 <link rel="stylesheet" href="css/sl-system.css?v=sl-v4">
 <link rel="stylesheet" href="css/story-carousel.css?v=v8">
 <script>
@@ -119,45 +119,78 @@
    <button class="nav-btn tb-settings" data-route="#/settings" title="Pengaturan"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.14.5.55.9 1.1 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
 </header>
 <!-- Profil modal -->
-<div class="modal-backdrop" id="profBackdrop" style="position:fixed;top:48px;left:0;right:0;bottom:0;z-index:75;"></div>
+<div class="modal-backdrop" id="profBackdrop" style="position:fixed;inset:0;z-index:75;"></div>
 <div class="modal-profile" id="profModal">
   <div class="prof-modal-inner">
     <button class="prof-x" id="profClose" type="button" aria-label="Tutup profil">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
-    <div class="prof-top">
-      <div class="prof-left">
+
+    <!-- HERO: art kartu utama full tinggi, identitas di bawah -->
+    <aside class="prof-hero">
+      <div class="prof-hero-art" id="pfAv"></div>
+      <div class="prof-hero-fade"></div>
+      <div class="prof-hero-info">
         <div class="prof-title-tag" id="pfTitleTag">[UNRANKED]</div>
-        <div class="prof-av-wrap">
-          <div class="prof-av" id="pfAv"></div>
-          <span class="prof-av-badge">ACTIVE</span>
+        <div class="prof-name" id="pfName">GUEST</div>
+        <div class="prof-lvline">
+          <span class="prof-lv-pill">LV <b id="pfLv">1</b></span>
+          <span class="prof-deck" id="pfDeck">MAIN DECK · —</span>
         </div>
-        <div class="prof-id">
-          <div class="prof-name" id="pfName">GUEST</div>
-          <div class="prof-lvline">
-            <span class="prof-lv-pill">LV <b id="pfLv">1</b></span>
-            <span class="prof-deck" id="pfDeck">MAIN DECK · —</span>
-          </div>
-          <div class="xpbar prof-xp"><i id="pfXpFill" style="width:0%"></i><span id="pfXpText">0 / 1000</span></div>
+        <div class="xpbar prof-xp"><i id="pfXpFill" style="width:0%"></i><span id="pfXpText">0 / 1000</span></div>
+        <div class="prof-hero-foot">
+          <span class="prof-hero-lab">NEURAL NET · SECTOR 07</span>
         </div>
-        <button class="prof-titles-btn" id="pfTitlesBtn" type="button">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
-          TITLES
-        </button>
       </div>
-      <div class="prof-right">
-        <div class="prof-header-meta">
+    </aside>
+
+    <!-- MAIN: header + rail tab + isi halaman -->
+    <section class="prof-main">
+      <div class="prof-main-head">
+        <div class="prof-main-titles">
           <div class="prof-eyebrow">NEURAL MATRIX · AGENT TELEMETRY</div>
-          <div class="prof-h1">OPERATOR STATS</div>
+          <div class="prof-h1" id="pfPaneTitle">OPERATOR STATS</div>
         </div>
-        <div class="prof-party-wrap">
-          <div class="prof-party-t">EQUIPPED PARTY GEAR</div>
-          <div class="prof-party-row" id="pfParty"></div>
+        <div class="prof-power">
+          <span class="prof-power-lab">BATTLE POWER</span>
+          <span class="prof-power-v" id="pfPower">0</span>
         </div>
-        <div class="prof-stats" id="pfStats"></div>
       </div>
-    </div>
-    <div class="prof-side" id="profSide"></div>
+      <div class="prof-main-body">
+        <nav class="prof-rail" id="profRail" role="tablist">
+          <button class="prof-tab active" type="button" data-tab="overview" onclick="profTabGo('overview')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>RINGKASAN</span></button>
+          <button class="prof-tab" type="button" data-tab="koleksi" onclick="profTabGo('koleksi')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="13" height="16" rx="2"/><path d="M8 4h9a2 2 0 0 1 2 2v12"/><path d="M7 9h5M7 13h5"/></svg><span>KOLEKSI</span></button>
+          <button class="prof-tab" type="button" data-tab="progres" onclick="profTabGo('progres')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 3 5-7 4 4"/><path d="M3 21h18"/></svg><span>PROGRES</span></button>
+          <button class="prof-tab" type="button" data-tab="ekuipmen" onclick="profTabGo('ekuipmen')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6z"/><path d="M9.5 12l1.8 1.8L15 10"/></svg><span>EKUIPMEN</span></button>
+          <button class="prof-tab" type="button" data-tab="item" onclick="profTabGo('item')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg><span>ITEM &amp; BUFF</span></button>
+          <button class="prof-tab" type="button" data-tab="titles" onclick="profTabGo('titles')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg><span>TITLES</span></button>
+        </nav>
+        <div class="prof-pane" id="profPane">
+          <div class="prof-page active" data-page="overview">
+            <section class="prof-sec">
+              <h3 class="prof-sec-t">EQUIPPED PARTY GEAR</h3>
+              <div class="prof-party-row" id="pfParty"></div>
+            </section>
+            <section class="prof-sec">
+              <h3 class="prof-sec-t">STATISTIK</h3>
+              <div class="prof-stats" id="pfStats"></div>
+            </section>
+            <section class="prof-sec">
+              <h3 class="prof-sec-t">PENCAPAIAN</h3>
+              <div class="prof-grid" id="pfAchieve"></div>
+            </section>
+          </div>
+          <div class="prof-page" data-page="koleksi"><div id="pfPageKoleksi"></div></div>
+          <div class="prof-page" data-page="progres"><div id="pfPageProgres"></div></div>
+          <div class="prof-page" data-page="ekuipmen"><div id="pfPageEkuipmen"></div></div>
+          <div class="prof-page" data-page="item"><div id="pfPageItem"></div></div>
+          <div class="prof-page" data-page="titles">
+            <div id="pfPageTitles"></div>
+            <button class="prof-more-btn" type="button" onclick="openTitlesModal()">BUKA TITLE SELECTOR</button>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 </div>
 <!-- Modal Titles Cyberpunk -->
@@ -675,7 +708,7 @@
 <script src="js/data.js?v=v115-transitems"></script>
 <script src="js/config.js?v=v156-trakteer"></script>
 <script src="js/supabase-sync.js?v=v163-towerdrop"></script>
-<script src="js/panels.js?v=v172-sidepanel"></script>
+<script src="js/panels.js?v=v177-gprofil5"></script>
 <script src="js/topup.js?v=v157-topupicons"></script>
 <script src="js/cards-fx.js?v=v68-liveroll"></script>
 <script src="js/anime-archetype-attacks.js?v=v107-archetypes"></script>
@@ -686,7 +719,7 @@
 <script src="js/foe-passives.js?v=v62-foe-passives"></script>
 <script src="js/story-carousel.js?v=v122-autohidemini"></script>
 <script src="js/raid.js?v=v123-traitauto"></script>
-<script src="js/boot.js?v=v123-footmenu"></script>
+<script src="js/boot.js?v=v124-gprofil2"></script>
 <script src="js/pwa.js?v=v156-install"></script>
 
 <!-- ========== CORET MODE (dev-only overlay anotasi) ==========

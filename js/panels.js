@@ -676,9 +676,22 @@ function showRollResult(result) {
 
 // Modal profil: open/close + update data
 function openProfileModal(){
-  const b=document.getElementById("profBackdrop");const m=document.getElementById("profModal");if(b){b.classList.add("show");b.style.display="block";}if(m){m.classList.add("show");m.style.display="flex";renderProfile();}
+  const b=document.getElementById("profBackdrop");const m=document.getElementById("profModal");if(b){b.classList.add("show");b.style.display="block";}if(m){m.classList.add("show");m.style.display="flex";renderProfile();profTabGo("overview");}
 }
 function closeProfileModal(){const b=document.getElementById("profBackdrop");const m=document.getElementById("profModal");if(b){b.classList.remove("show");b.style.display="none";}if(m){m.classList.remove("show");m.style.display="none";}}
+
+/* Tab menu profil (gaya menu karakter): rail kiri + halaman kanan */
+const PROF_TABS={overview:"OPERATOR STATS",koleksi:"KOLEKSI",progres:"PROGRES",ekuipmen:"EKUIPMEN",item:"ITEM & BUFF",titles:"TITLES"};
+window.profTab="overview";
+function profTabGo(k){
+  if(!PROF_TABS[k])return;
+  window.profTab=k;
+  const rail=document.getElementById("profRail");
+  if(rail)rail.querySelectorAll(".prof-tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===k));
+  const pane=document.getElementById("profPane");
+  if(pane){pane.querySelectorAll(".prof-page").forEach(p=>p.classList.toggle("active",p.dataset.page===k));pane.scrollTop=0;}
+  const t=document.getElementById("pfPaneTitle");if(t)t.textContent=PROF_TABS[k];
+}
 
 // Modal Titles Cyberpunk
 function openTitlesModal(){
@@ -777,6 +790,7 @@ function renderProfile(){
   set("pfName",currentUser||"GUEST");
   set("pfDeck",cid?("KARTU UTAMA · "+cardName(cid)):"KARTU UTAMA · —");
   set("pfLv",lv);
+  set("pfPower",fmt(totalPower()));
   const xf=document.getElementById("pfXpFill");if(xf)xf.style.width=xpPct+"%";
   set("pfXpText",`${fmt(curExp)} / ${fmt(xpNeed)} · ${xpPct}%`);
   const curT = state.playerTitle || "ROOKIE";
@@ -787,7 +801,6 @@ function renderProfile(){
   }
   const tb=document.getElementById("pfTitlesBtn");
   if(tb)tb.onclick=()=>{ openTitlesModal(); };
-  /* ---- helper tile/seksi/row ---- */
   const row=(lab,val)=>`<div class="prof-row"><span class="prof-rl">${lab}</span><span class="prof-rv">${val}</span></div>`;
   const spm=playerSpeedMult(), swm=weatherSpeedMult();
   const eff=Math.min(spm*swm,RNG_ROLL_MAX_MULT);
@@ -825,7 +838,6 @@ function renderProfile(){
   const pfParty=document.getElementById("pfParty");if(pfParty)pfParty.innerHTML=slots.join("");
   /* ===== PANEL SAMPING: koleksi, progres, gear, item ===== */
   const tile=(lab,val,sub,tcls,vcls)=>`<div class="prof-tile${tcls?" "+tcls:""}"><span class="prof-tl">${lab}</span><span class="prof-tv${vcls?" "+vcls:""}">${val}</span>${sub?`<span class="prof-ts">${sub}</span>`:""}</div>`;
-  const sec=(t,grid)=>`<section class="prof-sec"><h3 class="prof-sec-t">${t}</h3><div class="prof-grid">${grid}</div></section>`;
   const st=Array.isArray(state.stacks)?state.stacks:[];
   let copies=0, shiny=0, gold=0, rainbow=0, secret=0, ultima=0; const uni=new Set();
   for(const s of st){const c=s.count||1;copies+=c;uni.add(s.char);
@@ -857,12 +869,14 @@ function renderProfile(){
   const artTile=i=>{const id=state.artSlots&&state.artSlots[i];
     const d=id?ART_DEFS.find(x=>x.id===id):null;
     return tile("ARTEFAK "+(i+1),d?d.name:"KOSONG","");};
-  const equip=
-    artTile(0)+artTile(1)
-    +tile("PET",pd?pd.name:"TIDAK ADA","")
-    +tile("ARTEFAK DIMILIKI",`${(state.artOwned||[]).length} / ${ART_DEFS.length}`,"")
-    +tile("PET DIMILIKI",`${(state.petOwned||[]).length} / ${PET_DEFS.length}`,"")
-    +tile("DEV UNLOCK",`<button class="prof-unbtn" onclick="devUnlockAll()">BUKA SEMUA PET & ARTEFAK</button>`,"","accent");
+  const gearStats=d=>`+${d.flat||0}${d.pct?" / +"+d.pct+"%":""}`;
+  const ownedArt=ART_DEFS.filter(d=>(state.artOwned||[]).includes(d.id))
+    .map(d=>{const on=(state.artSlots||[]).includes(d.id);return tile(d.name,on?"TERPASANG":"DIMILIKI",gearStats(d),on?"accent":"");}).join("");
+  const ownedPet=PET_DEFS.filter(d=>(state.petOwned||[]).includes(d.id))
+    .map(d=>{const on=state.petEquipped===d.id;return tile(d.name,on?"TERPASANG":"DIMILIKI",gearStats(d),on?"accent":"");}).join("");
+  const equipCounts=
+    tile("ARTEFAK DIMILIKI",`${(state.artOwned||[]).length} / ${ART_DEFS.length}`,"")
+    +tile("PET DIMILIKI",`${(state.petOwned||[]).length} / ${PET_DEFS.length}`,"");
   const wAct=(state.weather&&Date.now()<state.weather.endsAt)?WEATHER[state.weather.id]:null;
   const luckPotN=(state.luckPots||[]).reduce((a,b)=>a+(b||0),0);
   const speedPotN=(state.speedPots||[]).reduce((a,b)=>a+(b||0),0);
@@ -885,14 +899,25 @@ function renderProfile(){
     {n:"ELITE",d:"Capai level 25",ok:lv>=25}
   ];
   const titlesGrid=titles.map(t=>tile(t.n,t.ok?"✓ DIRAIH":"· belum",t.d,t.ok?"accent":"",t.ok?"prof-ok":"")).join("");
-  const side=document.getElementById("profSide");
-  if(side)side.innerHTML=
-    sec("KOLEKSI",koleksi)
-    +sec("GACHA",gacha)
-    +sec("PROGRES",progres)
-    +sec("EKUIPMEN",equip)
-    +sec("ITEM & BUFF",item)
-    +sec("TITLES",titlesGrid);
+  const earned=titles.filter(t=>t.ok);
+  const sec=(t,grid)=>`<section class="prof-sec"><h3 class="prof-sec-t">${t}</h3><div class="prof-grid">${grid}</div></section>`;
+  const kolPct=Math.round(uni.size/Math.max(1,totalCards)*100);
+  const fill=(id,html)=>{const el=document.getElementById(id);if(el)el.innerHTML=html;};
+  fill("pfAchieve",earned.length
+    ?tile("TITLE DIRAIH",`${earned.length} / ${titles.length}`,"","accent")+earned.map(t=>tile(t.n,"✓ DIRAIH",t.d,"accent","prof-ok")).join("")
+    :tile("BELUM ADA TITLE","·","Selesaikan misi awal untuk membuka pencapaian","wide"));
+  fill("pfPageKoleksi",
+    `<div class="prof-kbar"><i style="width:${kolPct}%"></i><span>${uni.size} / ${totalCards} KARTU · ${kolPct}%</span></div>`
+    +sec("KOLEKSI KARTU",koleksi)
+    +sec("GACHA",gacha));
+  fill("pfPageProgres",`<div class="prof-grid">${progres}</div>`);
+  fill("pfPageEkuipmen",
+    sec("TERPASANG",artTile(0)+artTile(1)+tile("PET",pd?pd.name:"TIDAK ADA","")+equipCounts)
+    +sec("INVENTORY ARTEFAK",ownedArt||tile("BELUM ADA ARTEFAK","·","Beli di toko untuk membuka slot","wide"))
+    +sec("INVENTORY PET",ownedPet||tile("BELUM ADA PET","·","Dapatkan pet dari raid / tower","wide"))
+    +sec("DEVELOPER",tile("DEV UNLOCK",`<button class="prof-unbtn" onclick="devUnlockAll()">BUKA SEMUA PET & ARTEFAK</button>`,"","accent")));
+  fill("pfPageItem",`<div class="prof-grid">${item}</div>`);
+  fill("pfPageTitles",`<div class="prof-grid">${titlesGrid}</div>`);
 }
 
 
@@ -1564,7 +1589,7 @@ function devUnlockAll(){
   toast("UNLOCK ALL",`+${state.artOwned.length-hadA} artefak + ${state.petOwned.length-hadP} pet - koleksi penuh!`,"#7DF9FF");
   renderShell();
   if(typeof renderBackpackPanel==="function")renderBackpackPanel();
-  if(document.getElementById("profSide"))renderProfile();
+  if(document.getElementById("profPane"))renderProfile();
 }
 window.devUnlockAll=devUnlockAll;
 

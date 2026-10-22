@@ -47501,3 +47501,199 @@ body.battle-full .fighter.foe.ko {
   color:#ffd700;min-width:14px;text-align:center;
 }
 
+
+/* ====== MENU PROFIL GAYA GAME (full-screen): hero art kiri + rail tab kanan ====== */
+#profModal.modal-profile{
+  position:fixed;inset:0;margin:0;width:100vw;max-width:none;
+  height:100vh;height:100dvh;max-height:none;
+  border:0;border-radius:0;background:#070b12;
+  overflow:hidden;backdrop-filter:none;-webkit-backdrop-filter:none;
+  animation:pfMenuIn .22s ease-out;
+}
+@keyframes pfMenuIn{from{opacity:0;transform:scale(.985)}}
+#profModal .prof-modal-inner{
+  display:grid;grid-template-columns:minmax(320px,38%) minmax(0,1fr);
+  width:100%;height:100%;padding:0;overflow:hidden;flex:none;
+}
+#profModal .prof-x{top:18px;right:18px;z-index:30;background:rgba(8,10,16,.75);}
+
+/* --- hero --- */
+#profModal .prof-hero{
+  position:relative;overflow:hidden;min-width:0;
+  border-right:1px solid rgba(125,249,255,.14);
+  background:
+    radial-gradient(120% 75% at 50% 18%, rgba(125,249,255,.12), transparent 62%),
+    linear-gradient(180deg,#0b1220,#06090f);
+  display:flex;flex-direction:column;justify-content:flex-end;
+}
+#profModal .prof-hero-art{position:absolute;inset:0;overflow:hidden;}
+#profModal .prof-hero-art img{width:100%;height:100%;object-fit:cover;object-position:center 20%;display:block;}
+#profModal .prof-hero-art > svg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:rgba(125,249,255,.45);}
+#profModal .prof-hero-fade{
+  position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(7,11,18,.55) 0%,rgba(7,11,18,0) 26%,rgba(7,11,18,.55) 58%,#070b12 100%);
+}
+#profModal .prof-hero-info{
+  position:relative;z-index:2;display:flex;flex-direction:column;gap:10px;
+  padding:0 28px 24px;
+}
+#profModal .prof-name{font-size:clamp(26px,2.3vw,38px);letter-spacing:.05em;text-shadow:0 2px 18px rgba(0,0,0,.75);}
+#profModal .prof-lvline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+#profModal .prof-xp{max-width:100%;}
+#profModal .prof-hero-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:6px;flex-wrap:wrap;}
+#profModal .prof-hero-lab{
+  font-family:"Rajdhani",sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.2em;
+  color:rgba(148,163,184,.75);text-transform:uppercase;
+}
+
+/* --- main --- */
+#profModal .prof-main{
+  display:flex;flex-direction:column;min-width:0;min-height:0;
+  background:linear-gradient(180deg,rgba(10,15,24,.98),rgba(6,9,15,.99));
+}
+#profModal .prof-main-head{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:18px;
+  padding:30px 30px 16px;border-bottom:1px solid rgba(125,249,255,.12);flex:none;
+}
+#profModal .prof-main-titles{display:flex;flex-direction:column;gap:5px;min-width:0;}
+#profModal .prof-h1{font-size:26px;}
+#profModal .prof-power{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex:none;}
+#profModal .prof-power-lab{
+  font-family:"Rajdhani",sans-serif;font-size:9px;font-weight:800;letter-spacing:.22em;color:#64748b;text-transform:uppercase;
+}
+#profModal .prof-power-v{
+  font-family:"Rajdhani",sans-serif;font-size:30px;font-weight:800;line-height:1;
+  color:#7DF9FF;text-shadow:0 0 20px rgba(125,249,255,.45);font-variant-numeric:tabular-nums;
+}
+#profModal .prof-main-body{display:flex;flex:1;min-height:0;}
+
+/* rail tab */
+#profModal .prof-rail{
+  flex:0 0 214px;display:flex;flex-direction:column;gap:4px;
+  padding:16px 12px;overflow-y:auto;scrollbar-width:thin;
+  border-right:1px solid rgba(125,249,255,.1);
+}
+#profModal .prof-tab{
+  position:relative;display:flex;align-items:center;gap:11px;
+  padding:11px 13px;border-radius:10px;border:1px solid transparent;background:none;
+  font-family:"Rajdhani",sans-serif;font-weight:800;font-size:12px;letter-spacing:.13em;
+  color:#8b97ab;text-transform:uppercase;text-align:left;cursor:pointer;
+  transition:background .15s,color .15s,border-color .15s;
+}
+#profModal .prof-tab svg{width:17px;height:17px;flex:none;}
+#profModal .prof-tab:hover{background:rgba(125,249,255,.07);color:#dbeafe;}
+#profModal .prof-tab.active{
+  background:linear-gradient(90deg,rgba(125,249,255,.16),rgba(125,249,255,.02));
+  border-color:rgba(125,249,255,.3);color:#fff;
+  box-shadow:inset 0 0 18px rgba(125,249,255,.07);
+}
+#profModal .prof-tab.active::before{
+  content:"";position:absolute;left:-13px;top:50%;transform:translateY(-50%);
+  width:3px;height:22px;border-radius:0 3px 3px 0;background:#7DF9FF;
+  box-shadow:0 0 10px #7DF9FF;
+}
+
+/* halaman */
+#profModal .prof-pane{
+  flex:1;min-width:0;overflow-y:auto;padding:20px 28px 30px;
+  scrollbar-width:thin;scrollbar-color:rgba(125,249,255,.25) transparent;
+}
+#profModal .prof-pane::-webkit-scrollbar{width:6px;}
+#profModal .prof-pane::-webkit-scrollbar-thumb{background:rgba(125,249,255,.25);border-radius:6px;}
+#profModal .prof-page{display:none;flex-direction:column;gap:18px;}
+#profModal .prof-page.active{display:flex;}
+#profModal .prof-grid{grid-template-columns:repeat(auto-fill,minmax(166px,1fr));gap:10px;}
+#profModal .prof-more-btn{
+  align-self:flex-start;padding:10px 18px;border-radius:10px;cursor:pointer;
+  font-family:"Rajdhani",sans-serif;font-weight:800;font-size:12px;letter-spacing:.14em;
+  color:#7DF9FF;background:rgba(125,249,255,.1);border:1px solid rgba(125,249,255,.35);
+  transition:background .15s,color .15s;
+}
+#profModal .prof-more-btn:hover{background:rgba(125,249,255,.2);color:#fff;}
+
+/* --- responsif --- */
+@media(max-width:860px){
+  #profModal .prof-modal-inner{grid-template-columns:1fr;grid-template-rows:minmax(0,40%) minmax(0,1fr);}
+  #profModal .prof-hero{border-right:0;border-bottom:1px solid rgba(125,249,255,.14);}
+  #profModal .prof-hero-art img{object-position:center 22%;}
+  #profModal .prof-hero-info{padding:0 18px 14px;gap:8px;}
+  #profModal .prof-name{font-size:24px;}
+  #profModal .prof-main-head{padding:14px 18px 12px;gap:12px;}
+  #profModal .prof-h1{font-size:19px;}
+  #profModal .prof-power-v{font-size:22px;}
+  #profModal .prof-main-body{flex-direction:column;}
+  #profModal .prof-rail{
+    flex:none;flex-direction:row;overflow-x:auto;overflow-y:hidden;
+    padding:9px 12px;gap:6px;border-right:0;border-bottom:1px solid rgba(125,249,255,.1);
+  }
+  #profModal .prof-tab{padding:8px 10px;font-size:11px;white-space:nowrap;}
+  #profModal .prof-tab.active::before{display:none;}
+  #profModal .prof-pane{padding:14px 14px 22px;}
+  #profModal .prof-grid{grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:8px;}
+  #profModal .prof-x{top:12px;right:12px;}
+}
+@media(max-height:560px){
+  #profModal .prof-modal-inner{grid-template-columns:minmax(210px,32%) minmax(0,1fr);grid-template-rows:1fr;}
+  #profModal .prof-hero{border-right:1px solid rgba(125,249,255,.14);border-bottom:0;}
+  #profModal .prof-hero-info{padding:0 16px 12px;gap:6px;}
+  #profModal .prof-name{font-size:22px;}
+  #profModal .prof-main-head{padding:12px 16px 10px;}
+  #profModal .prof-h1{font-size:18px;}
+  #profModal .prof-pane{padding:12px;}
+}
+
+/* menu profil: X pindah ke kiri-atas (kanan-atas dipakai tombol CORET), gear lebih besar */
+#profModal .prof-x{
+  left:18px;right:auto;top:18px;width:40px;height:40px;border-radius:50%;
+  background:rgba(6,10,16,.72);border:1px solid rgba(125,249,255,.32);color:#cbd5e1;
+}
+#profModal .prof-x:hover{background:rgba(125,249,255,.16);color:#fff;border-color:#7DF9FF;}
+#profModal .prof-party-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}
+#profModal .prof-slot{flex:none;min-height:132px;padding:12px 10px;gap:8px;justify-content:center;}
+#profModal .prof-slot img{width:72px;height:72px;}
+#profModal .ps-lab{font-size:11px;}
+#profModal .ps-pill{font-size:10px;padding:2px 8px;}
+#profModal .prof-xp{height:12px;background:rgba(6,9,15,.85);border:1px solid rgba(125,249,255,.22);}
+#profModal .prof-xp i{background:linear-gradient(90deg,#00f2fe,#7DF9FF)!important;box-shadow:0 0 10px rgba(125,249,255,.55);}
+@media(max-width:860px){
+  #profModal .prof-slot{min-height:100px;padding:8px 6px;gap:5px;}
+  #profModal .prof-slot img{width:46px;height:46px;}
+  #profModal .prof-party-row{gap:6px;}
+  #profModal .prof-x{left:12px;top:12px;width:34px;height:34px;}
+}
+
+/* bar progres koleksi di menu profil */
+#profModal .prof-kbar{
+  position:relative;height:18px;border-radius:99px;overflow:hidden;
+  background:rgba(6,9,15,.85);border:1px solid rgba(125,249,255,.22);
+}
+#profModal .prof-kbar i{
+  display:block;height:100%;border-radius:99px;
+  background:linear-gradient(90deg,#00f2fe,#7DF9FF);
+  box-shadow:0 0 12px rgba(125,249,255,.55);
+}
+#profModal .prof-kbar span{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:"Rajdhani",sans-serif;font-size:10px;font-weight:800;letter-spacing:.14em;
+  color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9);
+}
+#profModal .prof-page > div:not(.prof-grid){display:flex;flex-direction:column;gap:18px;}
+
+/* mobile: title tag tetap di atas nama (rule lama .prof-title-tag{order:1} bikin turun), rail tanpa scrollbar */
+#profModal .prof-title-tag{order:0;}
+@media(max-width:860px){
+  #profModal .prof-rail{scrollbar-width:none;-ms-overflow-style:none;}
+  #profModal .prof-rail::-webkit-scrollbar{display:none;}
+  #profModal .prof-modal-inner{grid-template-rows:minmax(0,36%) minmax(0,1fr);}
+}
+
+/* HP landscape pendek: tetap 2 kolom (hero kiri) walau lebarnya <860, biar isi nggak kepepet ke bawah */
+@media(max-width:860px) and (max-height:560px){
+  #profModal .prof-modal-inner{grid-template-columns:minmax(190px,30%) minmax(0,1fr);grid-template-rows:minmax(0,1fr);}
+  #profModal .prof-hero{border-right:1px solid rgba(125,249,255,.14);border-bottom:0;}
+  #profModal .prof-name{font-size:18px;}
+  #profModal .prof-hero-art img{object-position:center 16%;}
+  #profModal .prof-hero-info{padding:0 12px 10px;gap:5px;}
+  #profModal .prof-hero-lab{display:none;}
+  #profModal .prof-main-head{padding:10px 14px 8px;}
+}
