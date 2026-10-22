@@ -1,0 +1,14 @@
+# Build artifact duplikat (hasil tools/cap-sync.mjs) — jangan dipublikasikan
+www/
+node_modules/
+android/
+ios/
+.git/
+.github/
+supabase/
+docs/
+backups/
+_tmp/
+*.bak
+*.log
+.DS_Store
