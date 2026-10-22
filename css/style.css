@@ -47840,6 +47840,28 @@ body.battle-full .fighter.foe.ko {
 #storyModal .sc-carousel-stage{flex:1 1 auto;min-height:0;}
 #storyModal .sc-action-dock{flex:none;}
 
+/* --- BACKPACK --- */
+.backpack-panel{
+  top:0!important;left:0!important;transform:none!important;
+  width:100vw!important;max-width:none!important;
+  height:100dvh!important;max-height:none!important;
+  border:0!important;border-radius:0!important;box-shadow:none!important;
+  background:
+    radial-gradient(110% 80% at 50% 0%,rgba(125,249,255,.07),transparent 62%),
+    #070b12!important;
+}
+.backpack-panel .backpack-header{
+  flex:none;padding:24px 120px 14px 30px!important;
+  border-bottom:1px solid rgba(125,249,255,.14)!important;
+  background:transparent!important;
+}
+.backpack-panel .bp-tabs{flex:none;margin:14px 30px 0!important;}
+.backpack-panel .bp-body{flex:1 1 auto;min-height:0;padding:16px 30px 20px!important;}
+.backpack-panel .bp-tiles{grid-template-columns:repeat(auto-fill,minmax(148px,1fr))!important;}
+.backpack-panel .bp-itemgrid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))!important;}
+.backpack-panel .bp-search{max-width:360px;}
+.backpack-panel .bp-slots .bp-slot{width:110px!important;max-height:150px!important;}
+
 @media(max-width:860px){
   #indexModal .ix-head,
   #premiumModal .prem-head,
@@ -47865,10 +47887,22 @@ body.battle-full .fighter.foe.ko {
   #storyModal .btn-sc-diff{flex:0 0 auto;font-size:12px;padding:4px 8px;}
   #storyModal .sc-action-dock{padding:10px 16px 14px;}
   #storyModal .sc-dock-reward-box{align-items:flex-start;}
+
+  .backpack-panel .backpack-header{padding:16px 110px 10px 16px!important;}
+  .backpack-panel .bp-tabs{margin:10px 16px 0!important;overflow-x:auto;scrollbar-width:none;}
+  .backpack-panel .bp-tabs::-webkit-scrollbar{display:none;}
+  .backpack-panel .bp-tab{flex:1 0 auto;white-space:nowrap;}
+  .backpack-panel .bp-body{padding:12px 16px 16px!important;}
 }
 
 @media(max-width:720px){
   #traitModal .tr-grid,#weatherMachineModal .wm-grid{grid-template-columns:1fr!important;gap:16px!important;}
+  .backpack-panel .bp-tabs{flex-wrap:wrap;overflow:visible;}
+  .backpack-panel .bp-tab{flex:1 1 30%;}
+  .backpack-panel .bp-deckcol{flex-wrap:wrap;gap:10px;padding:10px 12px!important;}
+  .backpack-panel .bp-deckcol::after{display:none;}
+  .backpack-panel .bp-slots .bp-slot{width:66px!important;max-height:92px!important;}
+  .backpack-panel .bp-deckmeta{flex:1 1 100%;}
 }
 
 /* Layar pendek (HP landscape): kartu story menyesuaikan tinggi */
@@ -47886,4 +47920,15 @@ body.battle-full .fighter.foe.ko {
   #storyModal .sc-dock-rw-lbl{font-size:8px;}
   #storyModal .sc-dock-rw-val{font-size:16px;}
   #storyModal .sc-btn-battle-launch{font-size:14px;padding:6px 16px;white-space:nowrap;}
+
+  /* Backpack: layar pendek -> seluruh body yang scroll, koleksi tetap terjangkau */
+  .backpack-panel .backpack-header{padding:10px 110px 8px 16px!important;}
+  .backpack-panel .bp-tabs{margin:8px 16px 0!important;}
+  .backpack-panel .bp-body{padding:10px 16px 12px!important;}
+  .backpack-panel .bp-deckcol{padding:8px 12px!important;}
+  .backpack-panel .bp-slots .bp-slot{width:60px!important;max-height:82px!important;}
+  .backpack-panel .bp-body.deck{overflow-y:auto!important;}
+  .backpack-panel .bp-body.deck .bp-cols{overflow:visible!important;}
+  .backpack-panel .bp-body.deck .bp-collect{overflow:visible!important;}
+  .backpack-panel .bp-scroll{overflow:visible!important;max-height:none!important;}
 }
