@@ -12,7 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700;800&family=Russo+One&family=Rajdhani:wght@700;800;900&display=swap" rel="stylesheet">
 <!-- External Game Icon Library: Lucide Icons -->
 <script src="https://unpkg.com/lucide@latest"></script>
-<link rel="stylesheet" href="css/style.css?v=v183-heroparallax2">
+<link rel="stylesheet" href="css/style.css?v=v185-herocard">
 <link rel="stylesheet" href="css/sl-system.css?v=sl-v4">
 <link rel="stylesheet" href="css/story-carousel.css?v=v8">
 <script>
@@ -126,14 +126,14 @@
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
 
-    <!-- HERO: art kartu utama full tinggi dengan parallax 3D, identitas di bawah -->
+    <!-- HERO: kartu utama tampil sebagai CARD (sama seperti kartu lobby) dengan parallax 3D -->
     <aside class="prof-hero" id="profHero">
+      <div class="prof-hero-bg" id="pfBg" aria-hidden="true"></div>
       <div class="prof-hero-stage" id="profHeroStage">
-        <div class="prof-hero-art" id="pfAv"></div>
+        <div class="prof-hero-card" id="pfAv"></div>
         <div class="prof-hero-glow" aria-hidden="true"></div>
         <div class="prof-hero-shine" aria-hidden="true"></div>
       </div>
-      <div class="prof-hero-fade"></div>
       <div class="prof-hero-info">
         <div class="prof-title-tag" id="pfTitleTag">[UNRANKED]</div>
         <div class="prof-name" id="pfName">GUEST</div>
@@ -712,7 +712,7 @@
 <script src="js/data.js?v=v115-transitems"></script>
 <script src="js/config.js?v=v156-trakteer"></script>
 <script src="js/supabase-sync.js?v=v163-towerdrop"></script>
-<script src="js/panels.js?v=v178-heroparallax"></script>
+<script src="js/panels.js?v=v179-herocard"></script>
 <script src="js/topup.js?v=v157-topupicons"></script>
 <script src="js/cards-fx.js?v=v68-liveroll"></script>
 <script src="js/anime-archetype-attacks.js?v=v107-archetypes"></script>

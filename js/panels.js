@@ -803,20 +803,16 @@ function renderProfile(){
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
   /* ---- hero kiri: title tag + avatar kartu utama + nama/level/XP ---- */
   const eq=equipped(); const cid=eq&&eq.char;
+  /* Hero = kartu utama tampil sebagai CARD, pakai markup yang sama dengan kartu lobby. */
   const av=document.getElementById("pfAv");
   if(av){
-    if(state&&state.customAvatar){
-      av.innerHTML=`<img src="${state.customAvatar}" alt="Custom Avatar">`;
-    }else{
-      const art=(cid&&CARDS[cid])?cardImg(cid):"";
-      if(art){
-        const pos=CARDS[cid].pos?` style="object-position:${CARDS[cid].pos}"`:"";
-        av.innerHTML=`<img src="${art}" alt=""${pos}>`;
-      }else{
-        av.innerHTML='<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6.5 8-6.5S20 16 20 20"/></svg>';
-      }
-    }
+    av.innerHTML=(eq&&typeof hubCardHtml==="function")
+      ?hubCardHtml(eq,'',false)
+      :'<div class="hub-center"><div class="hc-info"><div class="hc-name">Belum ada kartu</div></div></div>';
   }
+  const bg=document.getElementById("pfBg");
+  const bgSrc=(state&&state.customAvatar)?state.customAvatar:(cid&&CARDS[cid]?cardImg(cid):"");
+  if(bg)bg.innerHTML=bgSrc?`<img src="${bgSrc}" alt=""${state.customAvatar?"":(CARDS[cid]&&CARDS[cid].pos?` style="object-position:${CARDS[cid].pos}"`:"")}>`:"";
   set("pfName",currentUser||"GUEST");
   set("pfDeck",cid?("KARTU UTAMA · "+cardName(cid)):"KARTU UTAMA · —");
   set("pfLv",lv);
