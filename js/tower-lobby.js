@@ -739,9 +739,10 @@ function showTowerLoot(results,drops,title){
   if(!results.length&&!totalPot)return;
   const potChips=POTION.filter(p=>(d[p.k]||0)>0).map(p=>{const n=d[p.k]||0;return `<div class="rrc rrc-potion" title="${p.name} POTION"><i class="rrc-sizer"></i><span class="rrc-pot-ic"><img src="${p.icon}" alt="${p.name}" onerror="this.parentNode.textContent='${p.emoji}'"></span>${n>1?`<span class="rrc-cnt">×${n}</span>`:''}<span class="rrc-name">${p.name}</span></div>`;}).join("");
   const groups={};
-  results.forEach(r=>{const key=r.cardId+"|"+(r.mut||"none")+"|"+(r.shiny||"none");(groups[key]=groups[key]||{cardId:r.cardId,tier:r.tier,mut:r.mut||"none",shiny:!!(r.shiny&&r.shiny!=="none"),n:0}).n++;});
+  results.forEach(r=>{const key=r.cardId+"|"+(r.mut||"none")+"|"+(r.shiny||"none");{const g=(groups[key]||(groups[key]={cardId:r.cardId,tier:r.tier,mut:r.mut||"none",shiny:!!(r.shiny&&r.shiny!=="none"),n:0}));g.n+=(typeof r.n==="number"?r.n:1);}});
   const list=Object.values(groups).sort((a,b)=>luckChance(b.cardId,b.mut,b.shiny)-luckChance(a.cardId,a.mut,a.shiny)||b.n-a.n);
-  document.getElementById("rrTotal").textContent=fmt(results.length)+" kartu"+(list.length?" · "+list.length+" jenis unik":"")+(totalPot?" · "+fmt(totalPot)+" potion":"");
+  const totalCards=(typeof results.totalPulls==="number")?results.totalPulls:results.length;
+  document.getElementById("rrTotal").textContent=fmt(totalCards)+" kartu"+(list.length?" · "+list.length+" jenis unik":"")+(totalPot?" · "+fmt(totalPot)+" potion":"");
   document.getElementById("rrBody").innerHTML=potChips+list.map(g=>{
     const name=cardName(g.cardId),img=cardImg(g.cardId);
     const isShiny=g.shiny&&g.shiny!=="none", isMut=g.mut&&g.mut!=="none";
@@ -989,6 +990,10 @@ function renderLobby(){
         </div>
       </div>
       <div class="stage-hint"><kbd>KLIK</kbd> UNTUK BUKA BACKPACK</div>
+      <button class="hub-install-btn" id="hubInstallBtn" type="button" style="display:none" title="Install aplikasi ke perangkat">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+        <span>INSTALL APP</span>
+      </button>
     </div>
     <div class="hub-box h-r0 hub-link hub-link-premium" id="hubPremium" role="button" title="Toko Premium - Beli Roll Pack">
       <span class="tile-index"><span class="tile-number" style="color:#FFD700">VIP</span><span class="tile-category" style="color:#FFA000">SPECIAL / SYNDICATE</span></span>

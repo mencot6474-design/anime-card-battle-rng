@@ -473,8 +473,9 @@ function claimIndexReward(){
 }
 window.claimIndexReward=claimIndexReward;
 /* Versi cepat instantRoll untuk jumlah besar: bobot tiap varian dibangun SEKALI,
-   pemilihan lewat binary search prefix (bukan rngRoll berulang) — 100k roll dalam hitungan detik. */
-function instantRollFast(n){
+   pemilihan lewat binary search prefix (bukan rngRoll berulang) — 100k roll dalam hitungan detik.
+   agg=true -> hasil digabung per varian (pakai r.n) supaya multiplies besar tidak meledakkan memori. */
+function instantRollFast(n, agg){
   if(!(n>0))return [];
   const L=(typeof totalLuck==="function"&&totalLuck()>0)?totalLuck():1;
   const aw=activeWeatherId();
@@ -499,14 +500,25 @@ function instantRollFast(n){
     return entries[lo];};
   __batchRoll=true;
   const res=[];
+  const groups=(agg)?{}:null;
+  let totalPulls=0;
   try{
     for(let i=0;i<n;i++){
       const e=pick();
       grantRolledCard(e.card.char_id,e.mut,e.shiny);
-      res.push({cardId:e.card.char_id,tier:e.card.tier,mut:e.mut,shiny:e.shiny,chance:e.ch});
+      totalPulls++;
+      if(groups){
+        const key=e.card.char_id+'|'+(e.mut||'none')+'|'+(e.shiny?'true':'none');
+        const g=groups[key]||(groups[key]={cardId:e.card.char_id,tier:e.card.tier,mut:e.mut,shiny:e.shiny,chance:e.ch,n:0});
+        g.n++;
+      } else {
+        res.push({cardId:e.card.char_id,tier:e.card.tier,mut:e.mut,shiny:e.shiny,chance:e.ch});
+      }
     }
   } finally{ __batchRoll=false; }
+  if(groups) for(const k in groups) res.push(groups[k]);
   save(); rollCountBadge(); idxRewardSync(true);
+  res.totalPulls=totalPulls;
   return res;
 }
 
@@ -1038,22 +1050,22 @@ function bpItemDef(kind){
     active:b?`<br><strong style="color:#fcd34d">Aktif: +${b.toFixed(1)}× SPEED</strong>`:'',use:`bpUseSpeedPotion(${lv},1)`,useAll:`bpUseSpeedPotion(${lv},'all')`};}
   if(kind==='r5k'){return{kind,name:'INSTAN ROLL 5K',icon:'assets/images/instanpack-5k.webp?v=trans1',emoji:'📦',cnt:(state&&state.rollPacks&&state.rollPacks.r5k)||0,
     desc:'SPECIAL ROLL PACK - Berisi 5.000 tarikan kartu instan ke dalam koleksi.',
-    active:'',use:"bpUseRollPack('r5k', 5000)"};}
+    active:'',isPack:true,use:"bpUseRollPack('r5k', 5000, window.bpPackN)"};}
   if(kind==='r10k'){return{kind,name:'INSTAN ROLL 10K',icon:'assets/images/instanpack-10k.webp?v=trans1',emoji:'📦',cnt:(state&&state.rollPacks&&state.rollPacks.r10k)||0,
     desc:'SPECIAL ROLL PACK - Berisi 10.000 tarikan kartu instan ke dalam koleksi.',
-    active:'',use:"bpUseRollPack('r10k', 10000)"};}
+    active:'',isPack:true,use:"bpUseRollPack('r10k', 10000, window.bpPackN)"};}
   if(kind==='r25k'){return{kind,name:'INSTAN ROLL 25K',icon:'assets/images/instanpack-25k.webp?v=trans1',emoji:'📦',cnt:(state&&state.rollPacks&&state.rollPacks.r25k)||0,
     desc:'SPECIAL ROLL PACK - Berisi 25.000 tarikan kartu instan ke dalam koleksi.',
-    active:'',use:"bpUseRollPack('r25k', 25000)"};}
+    active:'',isPack:true,use:"bpUseRollPack('r25k', 25000, window.bpPackN)"};}
   if(kind==='r50k'){return{kind,name:'INSTAN ROLL 50K',icon:'assets/images/instanpack-50k.webp?v=trans1',emoji:'📦',cnt:(state&&state.rollPacks&&state.rollPacks.r50k)||0,
     desc:'SPECIAL ROLL PACK - Berisi 50.000 tarikan kartu instan ke dalam koleksi.',
-    active:'',use:"bpUseRollPack('r50k', 50000)"};}
+    active:'',isPack:true,use:"bpUseRollPack('r50k', 50000, window.bpPackN)"};}
   if(kind==='r100k'){return{kind,name:'INSTAN ROLL 100K',icon:'assets/images/instanpack-100k.webp?v=trans1',emoji:'📦',cnt:(state&&state.rollPacks&&state.rollPacks.r100k)||0,
     desc:'SPECIAL ROLL PACK - Berisi 100.000 tarikan kartu instan ke dalam koleksi.',
-    active:'',use:"bpUseRollPack('r100k', 100000)"};}
+    active:'',isPack:true,use:"bpUseRollPack('r100k', 100000, window.bpPackN)"};}
   if(kind==='intan'){return{kind,name:'INTAN ROLL 100K',icon:'assets/images/icon-intan.png',emoji:'💎',cnt:state.intanRolls||0,
     desc:'ITEM INDEX REWARD — didapat otomatis tiap 5 varian kartu terkumpul di Card Index (semua mutasi + varian shiny dihitung). Pakai = langsung menarik 100.000 roll kartu ke koleksi.',
-    active:'',use:'bpUseIntanRoll()'};}
+    active:'',isPack:true,use:'bpUseIntanRoll(window.bpPackN)'};}
   return null;
 }
 function renderBpItems(){
@@ -1068,6 +1080,14 @@ function bpItemPop(kind){
   const isRollPack=kind.startsWith('r');
   const odds=isGacha?weatherOddsHTML():'';
   const multi=isGacha?`<div class="bpholo-multi-wrap"><div class="bpholo-multi-label">JUMLAH ROLL:</div><div class="wo-multi">${[1,5,25,100].map(n=>`<button data-n="${n}" class="${bpMultiN===n?'on':''}" onclick="bpSetMulti(${n})">${n}×</button>`).join('')}</div></div>`:'';
+  const isPack=!!d.isPack;
+  if(isPack){
+    /* clamp multiplier ke stok yang dimiliki */
+    bpPopupKind=kind; bpPackCnt=d.cnt; bpPackRollAmount=(kind==='intan')?100000:bpPackRollAmountOf(kind);
+    if(bpPackN>d.cnt)bpPackN=1;
+    window.bpPackN=bpPackN;
+  }
+  const packMulti=isPack?`<div class="bpholo-multi-wrap"><div class="bpholo-multi-label">JUMLAH PAKET:</div><div class="wo-multi">${PACK_MULTI_LIST.map(n=>`<button data-pn="${n}" class="${bpPackN===n?'on':''}" ${d.cnt<n?'disabled':''} onclick="bpSetPackN(${n})">${n}×</button>`).join('')}</div>${bpPackInfoHTML(d.cnt)}`:'';
   const canUse=d.cnt>0;
 
   let themeTone="#7DF9FF";
@@ -1117,12 +1137,13 @@ function bpItemPop(kind){
         ${d.active?`<div class="bpholo-active-eff">${d.active}</div>`:''}
         ${odds}
         ${multi}
+        ${packMulti}
       </div>
 
       <div class="bpholo-actions">
         <button class="bpholo-btn-use ${canUse?'':'disabled'}" ${canUse?'':'disabled'} type="button">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          <span>PAKAI SEKARANG${isGacha&&bpMultiN>1?' ('+bpMultiN+'×)':''}</span>
+          <span>PAKAI SEKARANG${isGacha&&bpMultiN>1?' ('+bpMultiN+'×)':''}${isPack&&bpPackN>1?' ('+bpPackN+'× paket)':''}</span>
         </button>
         ${d.useAll&&d.cnt>1?`<button class="bpholo-btn-all" onclick="${d.useAll}">GABUNG SEMUA (×${fmt(d.cnt)})</button>`:''}
         <button class="bpholo-btn-dismiss" onclick="bpItemPopClose()" type="button">TUTUP</button>
@@ -1138,9 +1159,42 @@ function bpItemPop(kind){
 }
 /* Toggle jumlah roll gacha (1 / 5 / 25 / 100) di popup potion. */
 let bpMultiN=1;
+/* Toggle jumlah pemakaian Instan Pack (1 / 10 / 25 / 100) — tanpa batas jumlah tarikan. */
+const PACK_MULTI_LIST=[1,10,25,100];
+const PACK_ROLL_AMOUNT={r5k:5000,r10k:10000,r25k:25000,r50k:50000,r100k:100000};
+let bpPackN=1;
+let bpPopupKind='';
+let bpPackCnt=0;
+let bpPackRollAmount=0;
+window.bpPackN=1;
+function bpPackRollAmountOf(kind){return PACK_ROLL_AMOUNT[kind]||0;}
+function bpPackInfoHTML(cnt){
+  const n=bpPackN;
+  const packs=Math.min(n,Math.max(0,cnt||0));
+  const pulls=bpPackRollAmount*packs;
+  return `<div class="bpholo-packinfo">PAKAI <b>${packs}</b> PAKET · TOTAL <b>${fmt(pulls)}</b> TARIKAN</div>`;
+}
+function bpSetPackN(n){
+  n=Math.max(1,parseInt(n,10)||1);
+  const cnt=(typeof bpPackCnt==='number')?bpPackCnt:0;
+  if(n>cnt){toast("STOK TIDAK CUKUP","PUNYA "+fmt(cnt)+" PAKET","#f87171");return;}
+  bpPackN=n; window.bpPackN=n;
+  document.querySelectorAll('#itemPop .wo-multi button[data-pn]').forEach(b=>b.classList.toggle('on',+b.dataset.pn===n));
+  const info=document.querySelector('#itemPop .bpholo-packinfo');
+  if(info&&info.outerHTML!==undefined){
+    const tmp=document.createElement('div'); tmp.innerHTML=bpPackInfoHTML(cnt);
+    info.replaceWith(tmp.firstElementChild||info);
+  }
+  const use=document.querySelector('#itemPop .bpholo-btn-use span');
+  if(use){
+    const isGacha=(bpPopupKind==='potion'||bpPopupKind==='mythic');
+    use.textContent='PAKAI SEKARANG'+(isGacha&&bpMultiN>1?' ('+bpMultiN+'×)':'')+(bpPackN>1?' ('+bpPackN+'× paket)':'');
+  }
+}
+window.bpSetPackN=bpSetPackN;
 function bpSetMulti(n){
   bpMultiN=n;
-  document.querySelectorAll('#itemPop .wo-multi button').forEach(b=>b.classList.toggle('on',+b.dataset.n===n));
+  document.querySelectorAll('#itemPop .wo-multi button[data-n]').forEach(b=>b.classList.toggle('on',+b.dataset.n===n));
   const use=document.querySelector('#itemPop .bpi-use');
   if(use&&bpMultiN>1)use.textContent='PAKAI ×'+bpMultiN;
   else if(use)use.textContent='PAKAI';
@@ -1218,25 +1272,33 @@ function bpUseSpeedPotion(lv,all){
   toast("SPEED POTION L"+lv+(n>1?" ×"+n:""),"SPEED +"+r.add.toFixed(1)+"× · "+Math.round(r.ms/60000)+" MENIT","#fcd34d");
   bpItemPopClose();renderShell();renderBackpackPanel();
 }
-/* Pakai INTAN ROLL 100K: tarik 100.000 roll sekaligus, lalu tampilkan ringkasan loot. */
-function bpUseIntanRoll(){
-  if((state.intanRolls||0)<1){toast("INTAN ROLL habis","GAK ADA ITEM","#f87171");return;}
-  state.intanRolls--;save();
+/* Pakai INTAN ROLL 100K: tarik 100.000 roll sekaligus (×N paket), lalu tampilkan ringkasan loot. */
+function bpUseIntanRoll(n){
+  n=Math.max(1,parseInt(n,10)||1);
+  const owned=state.intanRolls||0;
+  if(owned<1){toast("INTAN ROLL habis","GAK ADA ITEM","#f87171");return;}
+  const use=Math.min(n,owned);
+  state.intanRolls=owned-use;save();
   bpItemPopClose();
   beep(440,.18,"triangle",.1);setTimeout(()=>beep(880,.24,"triangle",.08),150);
-  const loot=instantRollFast(100000);
-  showTowerLoot(loot,{weather:0,luck:0,speed:0},"HASIL INTAN ROLL · 100K");
+  const pulls=100000*use;
+  const loot=instantRollFast(pulls,true);
+  showTowerLoot(loot,{weather:0,luck:0,speed:0},"HASIL INTAN ROLL · "+fmt(pulls)+" ("+use+"×)");
   renderBackpackPanel();
 }
-function bpUseRollPack(packKey, rollAmount){
+function bpUseRollPack(packKey, rollAmount, n){
+  n=Math.max(1,parseInt(n,10)||1);
   state.rollPacks = state.rollPacks || {};
-  if((state.rollPacks[packKey]||0) < 1){toast("PACK HABIS","TIDAK ADA ITEM","#f87171");return;}
-  state.rollPacks[packKey]--;
+  const owned=state.rollPacks[packKey]||0;
+  if(owned<1){toast("PACK HABIS","TIDAK ADA ITEM","#f87171");return;}
+  const use=Math.min(n,owned);
+  state.rollPacks[packKey]=owned-use;
   save();
   bpItemPopClose();
   beep(520,.18,"triangle",.1);setTimeout(()=>beep(940,.24,"triangle",.08),150);
-  const loot=instantRollFast(rollAmount);
-  showTowerLoot(loot,{weather:0,luck:0,speed:0},'HASIL INSTAN ROLL · ' + rollAmount.toLocaleString());
+  const pulls=rollAmount*use;
+  const loot=instantRollFast(pulls,true);
+  showTowerLoot(loot,{weather:0,luck:0,speed:0},'HASIL INSTAN ROLL · ' + pulls.toLocaleString()+" ("+use+"×)");
   renderBackpackPanel();
 }
 /* ====== TAB TREE: pohon skill. Root di tengah, dua cabang menjalar (LUCK kiri | SPEED kanan).
@@ -1627,6 +1689,39 @@ var PREMIUM_PACKS = [
   { id: 'w_awakened', cat: 'weather', type: 'weather', targetWeather: 'awakened', name: 'INSTAN AWAKENED', price: 150, img: 'assets/images/weather-potion.webp?v=1', badge: 'SUPREME AWAKENED', desc: 'Kekuatan tertinggi semesta AWAKENED instan selama 30 menit! +1400% Luck & +700% Roll Speed.' }
 ];
 
+/* ---- Isi popup konfirmasi pembelian item toko premium ---- */
+function premConfirmBody(pack, qty) {
+  qty = Math.max(1, parseInt(qty, 10) || 1);
+  var gemIcon = '<img class="glcf-gem-icon" src="assets/images/premium-currency.webp" alt="" width="16" height="16">';
+  var efek = pack.desc || '';
+  var labelEfek = 'EFEK';
+  var rows = '';
+  if (pack.type === 'pack') {
+    var totalPull = Number(pack.amount || 0) * qty;
+    rows += '<div class="glcf-row"><span class="glcf-label">JUMLAH</span><span class="glcf-val"><b>' + qty + '×</b> paket ' + pack.name + '</span></div>' +
+      '<div class="glcf-row"><span class="glcf-label">TARIKAN</span><span class="glcf-val"><b>' + totalPull.toLocaleString('id-ID') + '</b> tarikan kartu instan</span></div>';
+    efek = 'Menambah <b>' + totalPull.toLocaleString('id-ID') + '</b> tarikan kartu instan ke dalam Backpack.';
+  } else if (pack.type === 'art') {
+    efek = 'Artefak permanen masuk Backpack. ' + (pack.desc || '');
+  } else if (pack.type === 'pet') {
+    efek = 'Pet sakti masuk Backpack. ' + (pack.desc || '');
+  } else if (pack.type === 'weather') {
+    var wName = (WEATHER[pack.targetWeather] && WEATHER[pack.targetWeather].name) || pack.name;
+    labelEfek = 'CUACA';
+    efek = 'Cuaca <b>' + wName + '</b> langsung aktif selama <b>30 MENIT</b>. ' + (pack.desc || '');
+  }
+  var totalPrice = Number(pack.price || 0) * qty;
+  return '<div class="glcf-row"><span class="glcf-label">ITEM</span><span class="glcf-val"><b>' + pack.name + '</b>' +
+      (pack.badge ? '<span class="glcf-badge">' + pack.badge + '</span>' : '') + '</span></div>' +
+    rows +
+    '<div class="glcf-row"><span class="glcf-label">' + labelEfek + '</span><span class="glcf-val">' + efek + '</span></div>' +
+    '<div class="glcf-row"><span class="glcf-label">HARGA</span><span class="glcf-val">' + gemIcon + ' ' + totalPrice + ' Gems' +
+      (qty > 1 ? ' <span style="opacity:.7">(' + pack.price + ' × ' + qty + ')</span>' : '') + '</span></div>' +
+    '<div class="glcf-row"><span class="glcf-label">SALDO</span><span class="glcf-val">' + gemIcon + ' ' + fmt(state.premiumGems || 0) + ' Gems</span></div>' +
+    '<div class="glcf-warn">Gems langsung dipotong dan <b>tidak bisa dikembalikan</b>.' +
+      (pack.type === 'weather' ? ' Cuaca langsung aktif selama 30 menit.' : '') + '</div>';
+}
+
 function premSetTab(tabKey){
   premCurTab = tabKey || 'all';
   var tabs = document.querySelectorAll('.prem-tab-btn');
@@ -1723,7 +1818,7 @@ function renderPremiumShop(){
   }).join('');
 }
 
-async function buyPremiumPack(packId, ev){
+async function buyPremiumPack(packId, ev, qty){
   var pack = PREMIUM_PACKS.find(function(x){ return x.id === packId; });
   if(!pack) return;
 
@@ -1738,19 +1833,59 @@ async function buyPremiumPack(packId, ev){
   }
 
   var btn = (ev && ev.currentTarget) || (window.event && window.event.currentTarget);
-  if(btn) { btn.disabled = true; btn.textContent = 'MEMPROSES...'; }
   console.log('[BUY PREMIUM] Starting purchase:', packId, 'type:', pack.type, 'price:', pack.price);
 
-  // Handle global_luck type — delegasi ke buyGlobalLuck()
+  // Handle global_luck type — delegasi ke buyGlobalLuck() (popup konfirmasi di dalamnya)
   if (pack.type === 'global_luck') {
     await buyGlobalLuck();
     if(btn) btn.disabled = false;
     return;
   }
 
+  /* --- Popup konfirmasi pembelian --- */
+  qty = Math.max(1, parseInt(qty, 10) || 1);
+  if (pack.type === 'pack') {
+    // Paket Instan Pack: popup berisi toggle jumlah beli (×1 / ×5 / ×10 / ×25)
+    var QTY_LIST = [1, 5, 10, 25];
+    var qtyOptions = QTY_LIST.map(function (q) {
+      return {
+        label: '×' + q,
+        value: String(q),
+        body: premConfirmBody(pack, q),
+        okText: 'BELI · ' + (Number(pack.price) * q) + ' GEMS'
+      };
+    });
+    var pickedQty = await showConfirmDialog({
+      title: 'KONFIRMASI PEMBELIAN',
+      body: premConfirmBody(pack, 1),
+      okText: 'BELI · ' + pack.price + ' GEMS',
+      options: qtyOptions,
+      optsLabel: 'JUMLAH PAKET',
+      selected: QTY_LIST.indexOf(qty) >= 0 ? String(qty) : '1'
+    });
+    if (!pickedQty) {
+      toast('DIBATALKAN', 'Pembelian dibatalkan', '#94a3b8');
+      return;
+    }
+    qty = parseInt(pickedQty, 10) || 1;
+  } else {
+    var confirmed = await showConfirmDialog({
+      title: 'KONFIRMASI PEMBELIAN',
+      body: premConfirmBody(pack, 1),
+      okText: 'BELI · ' + pack.price + ' GEMS'
+    });
+    if (!confirmed) {
+      toast('DIBATALKAN', 'Pembelian dibatalkan', '#94a3b8');
+      return;
+    }
+  }
+
+  var totalCost = Number(pack.price || 0) * qty;
+  if(btn) { btn.disabled = true; btn.textContent = 'MEMPROSES...'; }
+
   try {
     if(window.CloudDB && typeof window.CloudDB.verifyAndDeductGems === 'function'){
-      var res = await window.CloudDB.verifyAndDeductGems(currentUser, pack.price, pack.id, pack.type);
+      var res = await window.CloudDB.verifyAndDeductGems(currentUser, totalCost, pack.id, pack.type, qty);
       if(!res.ok){
         beep(280,.2,'sawtooth',.12);
         toast('TRANSAKSI GAGAL', res.msg || 'Saldo tidak mencukupi!', '#f87171');
@@ -1758,7 +1893,7 @@ async function buyPremiumPack(packId, ev){
         renderShell();
         return;
       }
-      state.premiumGems = (typeof res.balance === 'number') ? res.balance : (state.premiumGems - pack.price);
+      state.premiumGems = (typeof res.balance === 'number') ? res.balance : (state.premiumGems - totalCost);
       if(pack.type === 'art'){
         state.artOwned = state.artOwned || [];
         if(!state.artOwned.includes(pack.id)) state.artOwned.push(pack.id);
@@ -1770,17 +1905,16 @@ async function buyPremiumPack(packId, ev){
         state.weatherBest = betterWeather(state.weatherBest, wId);
         state.weather = { id: wId, endsAt: Date.now() + WEATHER_ROTATE_MS };
       } else {
-        state.rollPacks = state.rollPacks || {};
-        state.rollPacks[pack.id] = (state.rollPacks[pack.id] || 0) + 1;
+        // Pack (Instan Pack) sudah ditambahkan oleh verifyAndDeductGems (qty) -> jangan dobel.
       }
       save();
     } else {
-      if((state.premiumGems || 0) < pack.price){
+      if((state.premiumGems || 0) < totalCost){
         beep(280,.2,'sawtooth',.12);
-        toast('GEMS KURANG', 'Butuh ' + pack.price + ' Gems untuk beli ini!', '#f87171');
+        toast('GEMS KURANG', 'Butuh ' + totalCost + ' Gems untuk beli ini!', '#f87171');
         return;
       }
-      state.premiumGems -= pack.price;
+      state.premiumGems -= totalCost;
       if(pack.type === 'art'){
         state.artOwned = state.artOwned || [];
         if(!state.artOwned.includes(pack.id)) state.artOwned.push(pack.id);
@@ -1793,7 +1927,7 @@ async function buyPremiumPack(packId, ev){
         state.weather = { id: wId, endsAt: Date.now() + WEATHER_ROTATE_MS };
       } else {
         state.rollPacks = state.rollPacks || {};
-        state.rollPacks[pack.id] = (state.rollPacks[pack.id] || 0) + 1;
+        state.rollPacks[pack.id] = (state.rollPacks[pack.id] || 0) + qty;
       }
       save();
     }
@@ -1808,7 +1942,7 @@ async function buyPremiumPack(packId, ev){
       const wDef = WEATHER[pack.targetWeather] || {};
       rewardMsg = 'Cuaca ' + (wDef.name || pack.name) + ' AKTIF selama 30 menit!';
     } else {
-      rewardMsg = '+1 ' + pack.name + ' masuk ke Backpack!';
+      rewardMsg = '+' + qty + ' ' + pack.name + ' masuk ke Backpack! (' + (Number(pack.amount || 0) * qty).toLocaleString('id-ID') + ' tarikan)!';
     }
 
     toast('PEMBELIAN BERHASIL!', rewardMsg, pack.type === 'weather' ? (WEATHER[pack.targetWeather]?.color || '#FFD700') : '#FFD700');
@@ -2279,9 +2413,11 @@ function renderGlobalLuckWidget() {
     timerStr = hh > 0 ? (pad(hh)+':'+pad(mm)+':'+pad(ss)) : (pad(mm)+':'+pad(ss));
   }
 
+  /* Ikon resmi mata uang premium (bukan emoji) */
+  const gemIcon = '<img class="glw-gem-icon" src="assets/images/premium-currency.webp" alt="" width="14" height="14">';
   const btnLabel = active
-    ? (maxed ? 'MAX STACK (100×)' : 'TUMPUK +10× · 500 💎')
-    : 'AKTIFKAN · 500 💎';
+    ? (maxed ? 'MAX STACK (100×)' : 'TUMPUK +10× · ' + gemIcon + '500')
+    : 'AKTIFKAN · ' + gemIcon + '500';
   const btnDisabled = !canBuy || maxed;
   const btnClass = 'glw-btn' + (active && !maxed ? ' stack' : '');
 
@@ -2352,6 +2488,80 @@ function renderGlobalLuckBanner() {
   if (el) el.remove();
 }
 
+/* ---- Popup konfirmasi generik (promise-based) ----
+ * opts: { title, body, okText, options:[{label,value,body,okText}], selected }
+ * resolve: true (tanpa options) atau nilai option yang dipilih (dengan options). */
+function showConfirmDialog(opts) {
+  opts = opts || {};
+  return new Promise(function (resolve) {
+    var host = document.getElementById('glConfirmHost');
+    if (!host) {
+      host = document.createElement('div');
+      host.id = 'glConfirmHost';
+      document.body.appendChild(host);
+    }
+    var options = opts.options || [];
+    var selected = opts.selected !== undefined ? opts.selected : (options.length ? options[0].value : null);
+
+    function bodyHTML() {
+      if (!options.length) return opts.body || '';
+      var cur = null;
+      for (var i = 0; i < options.length; i++) { if (options[i].value === selected) { cur = options[i]; break; } }
+      return (cur && cur.body) || opts.body || '';
+    }
+    function okText() {
+      if (!options.length) return opts.okText || 'AKTIFKAN';
+      var cur = null;
+      for (var i = 0; i < options.length; i++) { if (options[i].value === selected) { cur = options[i]; break; } }
+      return (cur && cur.okText) || opts.okText || 'BELI';
+    }
+
+    var optHTML = options.length
+      ? '<div class="glcf-opts">' + options.map(function (o) {
+          return '<button type="button" class="glcf-opt' + (o.value === selected ? ' on' : '') + '" data-val="' + o.value + '">' + o.label + '</button>';
+        }).join('') + '</div>'
+      : '';
+
+    host.innerHTML =
+      '<div class="glcf-backdrop">' +
+        '<div class="glcf-box">' +
+          '<div class="glcf-title">' + (opts.title || 'KONFIRMASI') + '</div>' +
+          (optHTML ? '<div class="glcf-opts-wrap">' +
+            (opts.optsLabel ? '<div class="glcf-opts-label">' + opts.optsLabel + '</div>' : '') + optHTML + '</div>' : '') +
+          '<div class="glcf-body">' + bodyHTML() + '</div>' +
+          '<div class="glcf-actions">' +
+            '<button class="glcf-btn glcf-btn--cancel" type="button">BATAL</button>' +
+            '<button class="glcf-btn glcf-btn--ok" type="button">' + okText() + '</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    function close(val) {
+      host.innerHTML = '';
+      document.removeEventListener('keydown', onKey);
+      resolve(val);
+    }
+    function onKey(e) { if (e.key === 'Escape') close(options.length ? null : false); }
+    document.addEventListener('keydown', onKey);
+    host.querySelector('.glcf-btn--cancel').onclick = function () { close(options.length ? null : false); };
+    host.querySelector('.glcf-btn--ok').onclick = function () { close(options.length ? selected : true); };
+    host.querySelector('.glcf-backdrop').onclick = function (e) { if (e.target === this) close(options.length ? null : false); };
+
+    var optWrap = host.querySelector('.glcf-opts-wrap');
+    if (optWrap) {
+      optWrap.querySelectorAll('.glcf-opt').forEach(function (b) {
+        b.onclick = function () {
+          selected = b.getAttribute('data-val');
+          optWrap.querySelectorAll('.glcf-opt').forEach(function (x) { x.classList.toggle('on', x === b); });
+          host.querySelector('.glcf-body').innerHTML = bodyHTML();
+          host.querySelector('.glcf-btn--ok').textContent = okText();
+        };
+      });
+    }
+  });
+}
+window.showConfirmDialog = showConfirmDialog;
+
 /* ---- Beli / Stack Global Luck ---- */
 async function buyGlobalLuck() {
   const btn = document.getElementById('glBuyBtn');
@@ -2369,6 +2579,33 @@ async function buyGlobalLuck() {
     }
 
     const username = currentUser || 'GUEST';
+    const isStack = !!existing;
+    const prevMult = existing ? (existing.multiplier || 0) : 0;
+    const newMult = Math.min(prevMult + GLOBAL_LUCK_STEP_MULT, GLOBAL_LUCK_MAX_MULT);
+
+    /* --- Popup konfirmasi sebelum membeli --- */
+    const gemIcon = '<img class="glcf-gem-icon" src="assets/images/premium-currency.webp" alt="" width="16" height="16">';
+    const confirmBody =
+      '<div class="glcf-row"><span class="glcf-label">AKUN</span><span class="glcf-val">' + username + '</span></div>' +
+      '<div class="glcf-row"><span class="glcf-label">EFEK</span><span class="glcf-val">' +
+        (isStack
+          ? 'Tumpukan ke <b>' + newMult + '× LUCK</b> (dari ' + prevMult + '×)'
+          : 'Aktifkan <b>' + newMult + '× LUCK</b> untuk semua pemain') +
+      '</span></div>' +
+      '<div class="glcf-row"><span class="glcf-label">DURASI</span><span class="glcf-val">+1 JAM per aktivasi (maks. 10 jam)</span></div>' +
+      '<div class="glcf-row"><span class="glcf-label">HARGA</span><span class="glcf-val">' + gemIcon + ' ' + GLOBAL_LUCK_COST + ' Gems</span></div>' +
+      '<div class="glcf-row"><span class="glcf-label">SALDO</span><span class="glcf-val">' + gemIcon + ' ' + (state.premiumGems || 0) + ' Gems</span></div>' +
+      '<div class="glcf-warn">Gems langsung dipotong dan <b>tidak bisa dikembalikan</b>. Aktivasi berlaku untuk seluruh server.</div>';
+
+    const ok = await showConfirmDialog({
+      title: isStack ? 'TUMPUK GLOBAL LUCK' : 'AKTIVASI GLOBAL LUCK',
+      body: confirmBody,
+      okText: isStack ? 'TUMPUK' : 'AKTIFKAN'
+    });
+    if (!ok) {
+      toast('DIBATALKAN', 'Pembelian Global Luck dibatalkan', '#94a3b8');
+      return;
+    }
 
     // Potong gems
     if (currentUser && window.CloudDB) {
@@ -2386,8 +2623,6 @@ async function buyGlobalLuck() {
     }
 
     // Update cache lokal
-    const prevMult   = existing ? (existing.multiplier || 10) : 0;
-    const newMult    = Math.min(prevMult + GLOBAL_LUCK_STEP_MULT, GLOBAL_LUCK_MAX_MULT);
     const prevEnd    = existing ? new Date(existing.ends_at).getTime() : Date.now();
     const newEnd     = Math.min(prevEnd + GLOBAL_LUCK_STEP_MS, Date.now() + GLOBAL_LUCK_MAX_MS);
     _globalLuckCache = {
@@ -2424,14 +2659,41 @@ window.renderGlobalLuckBanner = renderGlobalLuckBanner;
 window.renderGlobalLuckWidget = renderGlobalLuckWidget;
 
 /* =============== TOP-UP GEMS MODAL =============== */
+/* id dipakai server (Edge Function) sebagai sumber kebenaran harga & gems.
+ * Harus identik dengan supabase/functions/_shared/packs.ts (server = sumber kebenaran). */
 const TOPUP_PACKS = [
-  { gems: 60,   price: '9.900',   label: null,         bonus: null },
-  { gems: 330,  price: '49.900',  label: 'BEST VALUE', bonus: '+10%' },
-  { gems: 700,  price: '99.900',  label: null,         bonus: null },
-  { gems: 1500, price: '199.900', label: 'POPULAR',    bonus: '+15%' },
-  { gems: 3250, price: '399.900', label: null,         bonus: null },
-  { gems: 6500, price: '799.900', label: 'BEST DEAL',  bonus: '+20%' },
+  { id: 'p100',  gems: 100,  price: '10.000',  label: null,         bonus: null, productId: 'gems_100' },
+  { id: 'p500',  gems: 500,  price: '50.000',  label: null,         bonus: null, productId: 'gems_500' },
+  { id: 'p1000', gems: 1000, price: '100.000', label: 'POPULAR',    bonus: null, productId: 'gems_1000' },
+  { id: 'p2500', gems: 2500, price: '250.000', label: null,         bonus: null, productId: 'gems_2500' },
+  { id: 'p5000', gems: 5000, price: '500.000', label: 'BEST VALUE', bonus: null, productId: 'gems_5000' },
 ];
+window.TOPUP_PACKS = {};
+TOPUP_PACKS.forEach(function(p){ window.TOPUP_PACKS[p.id] = p; });
+
+/* Slug kelas CSS untuk badge: "BEST VALUE" -> "best-value" (tanpa spasi),
+ * supaya kelas .topup-badge--best-value benar-benar|style-nya match. */
+function topupBadgeClass(label) {
+  return 'topup-badge--' + String(label || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+/* Ikon resmi mata uang premium (dipakai juga di pill header global). */
+const TOPUP_GEM_ICON = 'assets/images/premium-currency.webp';
+
+function topupGemIconHTML(size, cls) {
+  return '<img class="' + (cls || '') + '" src="' + TOPUP_GEM_ICON + '" alt="" width="' + size + '" height="' + size + '">';
+}
+
+/* Build Android (Capacitor) => top-up lewat Google Play Billing.
+ * Build web => top-up lewat Trakteer Shop (QRIS/VA) + kode redeem. */
+function isNativeBuild() {
+  return (typeof window.__AAB_BUILD__ !== 'undefined' && window.__AAB_BUILD__ === 'android')
+      || (typeof window.Capacitor !== 'undefined' && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+}
+window.IS_NATIVE_BUILD = isNativeBuild;
 
 function renderTopupModal() {
   const modal = document.getElementById('topupModal');
@@ -2439,9 +2701,86 @@ function renderTopupModal() {
 
   const gems = state.premiumGems || 0;
 
+  /* Web build: top-up dimatikan (hanya Android / Google Play Billing). */
+  const native = isNativeBuild();
+  const tab = window.TOPUP_TAB || (native ? 'play' : 'shop');
+
+  const tabsHTML =
+    '<div class="topup-tabs">' +
+      '<button class="topup-tab' + (tab === 'shop' ? ' is-active' : '') + '" type="button" data-topup-tab="shop">BELI GEMS</button>' +
+      '<button class="topup-tab' + (tab === 'code' ? ' is-active' : '') + '" type="button" data-topup-tab="code">PUNYA KODE</button>' +
+    '</div>';
+
+  if (!native) {
+    let bodyHTML = '';
+    if (tab === 'code') {
+      bodyHTML =
+        '<div class="topup-code-box">' +
+          '<label class="topup-code-label" for="topupCodeInput">Masukkan kode redeem dari Trakteer</label>' +
+          '<div class="topup-code-row">' +
+            '<input id="topupCodeInput" class="topup-code-input" type="text" autocomplete="off" spellcheck="false" placeholder="ACB-XXXX-XXXX-XXXX">' +
+            '<button class="topup-redeem-btn" id="topupRedeemBtn" type="button">TUKAR</button>' +
+          '</div>' +
+          '<p class="topup-note">Kode redeem dibeli di Trakteer Shop. Satu kode hanya bisa dipakai 1x.</p>' +
+        '</div>';
+    } else {
+      const shopPackHTML = TOPUP_PACKS.map(function(p) {
+        const badgeHTML = p.label
+          ? '<span class="topup-badge ' + topupBadgeClass(p.label) + '">' + p.label + '</span>'
+          : '';
+        const bonusHTML = p.bonus ? '<span class="topup-bonus">' + p.bonus + ' BONUS</span>' : '';
+        return (
+          '<div class="topup-card' + (p.label ? ' topup-card--featured' : '') + '">' +
+            badgeHTML +
+            topupGemIconHTML(30, 'topup-card-gem-icon') +
+            '<div class="topup-card-gems">' + p.gems.toLocaleString('id-ID') + '<span class="topup-card-gems-label"> Gems</span></div>' +
+            bonusHTML +
+            '<div class="topup-card-price">Rp ' + p.price + '</div>' +
+            '<button class="topup-buy-btn" onclick="Topup.openShop(\'' + p.id + '\')">BELI DI TRAKTEER</button>' +
+          '</div>'
+        );
+      }).join('');
+      bodyHTML =
+        '<div class="topup-grid">' + shopPackHTML + '</div>' +
+        '<p class="topup-note">Pembayaran lewat Trakteer Shop (QRIS / Virtual Account). Setelah pembayaran, kode redeem dikirim ke Anda &#8212; masukkan di tab <b>PUNYA KODE</b>.</p>';
+    }
+
+    modal.innerHTML =
+      '<div class="topup-inner">' +
+        '<button class="topup-close" onclick="closeTopup()" title="Tutup">&times;</button>' +
+        '<div class="topup-header">' +
+          '<div class="topup-header-icon">' + topupGemIconHTML(38, '') + '</div>' +
+          '<div class="topup-header-text">' +
+            '<div class="topup-title">TOP-UP GEMS</div>' +
+            '<div class="topup-balance">Saldo kamu: <span class="topup-balance-val" id="topupBalanceVal">' + gems.toLocaleString('id-ID') + '</span> Gems</div>' +
+          '</div>' +
+        '</div>' +
+        '<div id="topupStatusBox" class="topup-status-box"></div>' +
+        tabsHTML +
+        bodyHTML +
+      '</div>';
+
+    modal.querySelectorAll('.topup-tab').forEach(function(btn) {
+      btn.onclick = function() {
+        window.TOPUP_TAB = btn.getAttribute('data-topup-tab');
+        renderTopupModal();
+      };
+    });
+
+    const rbtn = document.getElementById('topupRedeemBtn');
+    if (rbtn) {
+      rbtn.onclick = function() { window.Topup.redeem(); };
+      const inp = document.getElementById('topupCodeInput');
+      if (inp) {
+        inp.onkeydown = function(e) { if (e.key === 'Enter') { e.preventDefault(); window.Topup.redeem(); } };
+      }
+    }
+    return;
+  }
+
   const packHTML = TOPUP_PACKS.map(function(p) {
     const badgeHTML = p.label
-      ? '<span class="topup-badge topup-badge--' + p.label.replace(/s/g,'').toLowerCase() + '">' + p.label + '</span>'
+      ? '<span class="topup-badge ' + topupBadgeClass(p.label) + '">' + p.label + '</span>'
       : '';
     const bonusHTML = p.bonus
       ? '<span class="topup-bonus">' + p.bonus + ' BONUS</span>'
@@ -2449,11 +2788,11 @@ function renderTopupModal() {
     return (
       '<div class="topup-card' + (p.label ? ' topup-card--featured' : '') + '">' +
         badgeHTML +
-        '<div class="topup-card-gem-icon">💎</div>' +
+        topupGemIconHTML(30, 'topup-card-gem-icon') +
         '<div class="topup-card-gems">' + p.gems.toLocaleString('id-ID') + '<span class="topup-card-gems-label"> Gems</span></div>' +
         bonusHTML +
         '<div class="topup-card-price">Rp ' + p.price + '</div>' +
-        '<button class="topup-buy-btn" onclick="buyTopup(' + p.gems + ')">BELI SEKARANG</button>' +
+        '<button class="topup-buy-btn" onclick="Topup.buy(\'' + p.id + '\')">BELI SEKARANG</button>' +
       '</div>'
     );
   }).join('');
@@ -2462,14 +2801,15 @@ function renderTopupModal() {
     '<div class="topup-inner">' +
       '<button class="topup-close" onclick="closeTopup()" title="Tutup">&times;</button>' +
       '<div class="topup-header">' +
-        '<div class="topup-header-icon">💎</div>' +
+        '<div class="topup-header-icon">' + topupGemIconHTML(38, '') + '</div>' +
         '<div class="topup-header-text">' +
           '<div class="topup-title">TOP-UP GEMS</div>' +
           '<div class="topup-balance">Saldo kamu: <span class="topup-balance-val" id="topupBalanceVal">' + gems.toLocaleString('id-ID') + '</span> Gems</div>' +
         '</div>' +
       '</div>' +
+      '<div id="topupStatusBox" class="topup-status-box"></div>' +
       '<div class="topup-grid">' + packHTML + '</div>' +
-      '<p class="topup-note">⚡ Ini adalah simulasi game — tidak ada transaksi nyata.</p>' +
+      '<p class="topup-note">Pembayaran lewat Google Play Billing. Gems masuk otomatis setelah pembelian terverifikasi.</p>' +
     '</div>';
 }
 
@@ -2487,18 +2827,14 @@ function closeTopup() {
   document.body.style.overflow = '';
 }
 
+/* Top-up nyata: alur invoice + polling ada di js/topup.js (window.Topup).
+ * Fungsi ini kept sebagai alias biar panggilan lama tidak error. */
 async function buyTopup(gemsAmount) {
-  state.premiumGems = (state.premiumGems || 0) + gemsAmount;
-  save();
-  if (currentUser && window.CloudDB) {
-    try { await window.CloudDB.saveState(currentUser, state); } catch(e) {}
+  if (window.Topup && typeof window.Topup.buy === 'function') {
+    const pack = TOPUP_PACKS.find(function(p){ return p.gems === gemsAmount; });
+    if (pack) return window.Topup.buy(pack.id);
   }
-  renderShell();
-  renderTopupModal();
-  beep(720,  0.2,  'triangle', 0.15);
-  setTimeout(function(){ beep(960,  0.25, 'triangle', 0.15); }, 100);
-  setTimeout(function(){ beep(1200, 0.2,  'triangle', 0.12); }, 200);
-  toast('💎 GEMS DITAMBAHKAN!', '+' + gemsAmount.toLocaleString('id-ID') + ' Gems berhasil masuk ke akunmu', '#ffd700');
+  toast('ERROR', 'Modul top-up belum siap. Muat ulang halaman.', '#f87171');
 }
 
 // Tutup modal kalau klik backdrop

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v155-trait-auto';
+const CACHE_NAME = 'anime-card-battle-v162-packmulti';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

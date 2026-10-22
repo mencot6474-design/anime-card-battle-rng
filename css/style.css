@@ -3362,6 +3362,16 @@ body.on-lobby .roll-overlay.mini.collapsed .roll-card-showcase{display:none;}
 
 .wo-multi button.on{background:var(--text);color:var(--panel);border-color:var(--text);box-shadow:0 4px 12px rgba(18,28,38,.28);}
 
+/* Opsi multiplier yang melebihi stok -> nonaktif */
+.wo-multi button:disabled{opacity:.32;cursor:not-allowed;border-style:dashed;}
+
+.wo-multi button:disabled:hover{color:var(--muted);border-color:var(--line2);}
+
+/* Ringkasan jumlah paket & total tarikan (Instan Pack) */
+.bpholo-packinfo{font-family:"Barlow Condensed";font-size:12px;letter-spacing:.06em;color:var(--muted);text-align:center;margin:2px 0 6px;}
+
+.bpholo-packinfo b{color:var(--text);font-weight:800;}
+
 
 
 /* Popup item: kontras nama/count/tombol di panel putih (tema lobby) */
@@ -46758,10 +46768,15 @@ body.battle-full .fighter.foe.ko {
 .glw-timer{font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:13px;color:#38bdf8;font-variant-numeric:tabular-nums;background:rgba(0,0,0,.3);padding:1px 6px;border-radius:5px}
 .glw-btn{
   flex:0 0 auto;
+  display:inline-flex;align-items:center;gap:4px;
   font-family:"Barlow Condensed",sans-serif;font-size:12px;font-weight:700;letter-spacing:.06em;
   padding:5px 10px;border-radius:7px;border:1px solid rgba(56,189,248,.5);
   background:linear-gradient(135deg,#0369a1,#075985);color:#e0f2fe;
   cursor:pointer;white-space:nowrap;transition:opacity .15s;
+}
+.glw-btn .glw-gem-icon{
+  width:14px;height:14px;object-fit:contain;border-radius:50%;
+  filter:drop-shadow(0 0 4px rgba(255,215,0,.55));
 }
 .glw-btn:hover:not(:disabled){background:linear-gradient(135deg,#0284c7,#0369a1)}
 .glw-btn:disabled{opacity:.4;cursor:not-allowed}
@@ -46780,6 +46795,96 @@ body.battle-full .fighter.foe.ko {
   box-shadow:0 2px 12px rgba(0,0,0,.4);
 }
 
+
+/* ============ POPUP KONFIRMASI GLOBAL LUCK ============ */
+.glcf-backdrop{
+  position:fixed;inset:0;z-index:9500;
+  background:rgba(0,0,0,.8);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;
+  padding:16px;animation:glcf-fade .18s ease-out both;
+}
+@keyframes glcf-fade{from{opacity:0}to{opacity:1}}
+.glcf-box{
+  width:100%;max-width:420px;
+  background:linear-gradient(160deg,#0d1117 0%,#111827 60%,#0f1e2e 100%);
+  border:1px solid rgba(255,215,0,.4);
+  border-radius:16px;
+  box-shadow:0 0 40px rgba(255,215,0,.14),0 10px 50px rgba(0,0,0,.7);
+  padding:20px 18px 18px;
+  animation:glcf-pop .24s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes glcf-pop{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
+.glcf-title{
+  font-family:"Barlow Condensed",sans-serif;font-size:20px;font-weight:800;letter-spacing:.12em;
+  color:#ffd700;text-transform:uppercase;
+  text-shadow:0 0 16px rgba(255,215,0,.45);
+  padding-bottom:12px;margin-bottom:14px;
+  border-bottom:1px solid rgba(255,215,0,.22);
+}
+.glcf-body{font-size:13px;color:rgba(255,255,255,.8);line-height:1.55;max-height:46vh;overflow-y:auto}
+.glcf-row{display:flex;gap:10px;padding:5px 0;align-items:flex-start}
+.glcf-label{
+  flex:0 0 62px;font-family:"Barlow Condensed",sans-serif;
+  font-size:11px;font-weight:700;letter-spacing:.1em;color:rgba(255,255,255,.45);
+  padding-top:2px;
+}
+.glcf-val{flex:1;color:#e2e8f0;word-break:break-word}
+.glcf-val b{color:#7dd3fc}
+.glcf-gem-icon{
+  width:16px;height:16px;object-fit:contain;border-radius:50%;
+  vertical-align:-3px;margin-right:3px;
+  filter:drop-shadow(0 0 4px rgba(255,215,0,.55));
+}
+.glcf-warn{
+  margin-top:12px;padding:9px 11px;border-radius:9px;
+  background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.32);
+  color:#fecaca;font-size:12px;line-height:1.5;
+}
+.glcf-warn b{color:#fca5a5}
+.glcf-actions{display:flex;gap:10px;margin-top:16px}
+.glcf-btn{
+  flex:1;cursor:pointer;
+  font-family:"Barlow Condensed",sans-serif;font-size:13px;font-weight:800;letter-spacing:.1em;
+  padding:10px 12px;border-radius:9px;text-transform:uppercase;
+  transition:transform .12s,box-shadow .15s,background .15s;
+}
+.glcf-btn:active{transform:translateY(1px)}
+.glcf-btn--cancel{
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);color:rgba(255,255,255,.75);
+}
+.glcf-btn--cancel:hover{background:rgba(255,255,255,.12);color:#fff}
+.glcf-btn--ok{
+  background:linear-gradient(135deg,#0369a1,#075985);
+  border:1px solid rgba(56,189,248,.55);color:#e0f2fe;
+  box-shadow:0 0 16px rgba(56,189,248,.25);
+}
+.glcf-btn--ok:hover{box-shadow:0 0 24px rgba(56,189,248,.45)}
+
+.glcf-badge{
+  display:inline-block;font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:800;letter-spacing:.1em;
+  padding:1px 8px;border-radius:20px;margin-left:6px;vertical-align:1px;
+  background:rgba(255,215,0,.14);border:1px solid rgba(255,215,0,.4);color:#ffd700;
+}
+.glcf-opts-wrap{margin-bottom:12px}
+.glcf-opts-label{
+  font-family:"Barlow Condensed",sans-serif;font-size:11px;font-weight:800;letter-spacing:.1em;
+  color:rgba(255,255,255,.5);margin-bottom:6px;
+}
+.glcf-opts{display:flex;flex-wrap:wrap;gap:6px}
+.glcf-opt{
+  cursor:pointer;
+  font-family:"Barlow Condensed",sans-serif;font-size:12px;font-weight:800;letter-spacing:.08em;
+  padding:6px 12px;border-radius:8px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.16);color:rgba(255,255,255,.72);
+  transition:background .15s,border-color .15s,color .15s,box-shadow .15s;
+}
+.glcf-opt:hover{background:rgba(255,255,255,.11);color:#fff}
+.glcf-opt.on{
+  background:linear-gradient(135deg,rgba(255,215,0,.22),rgba(255,215,0,.08));
+  border-color:rgba(255,215,0,.65);color:#ffd700;
+  box-shadow:0 0 14px rgba(255,215,0,.28);
+}
 
 /* ====== TOP-UP GEMS MODAL ====== */
 .topup-backdrop {
@@ -46854,9 +46959,15 @@ body.battle-full .fighter.foe.ko {
   border-bottom: 1px solid rgba(255, 215, 0, 0.2);
 }
 .topup-header-icon {
-  font-size: 38px;
   line-height: 1;
   filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
+}
+.topup-header-icon img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  border-radius: 50%;
+  display: block;
 }
 .topup-title {
   font-family: "Barlow Condensed", sans-serif;
@@ -46928,7 +47039,7 @@ body.battle-full .fighter.foe.ko {
   white-space: nowrap;
   text-transform: uppercase;
 }
-.topup-badge--bestvalue {
+.topup-badge--best-value {
   background: linear-gradient(90deg, #16a34a, #15803d);
   color: #d1fae5;
   border: 1px solid rgba(134,239,172,0.4);
@@ -46938,6 +47049,17 @@ body.battle-full .fighter.foe.ko {
   color: #ede9fe;
   border: 1px solid rgba(196,181,253,0.4);
 }
+.topup-badge--best-deal {
+  background: linear-gradient(90deg, #b45309, #92400e);
+  color: #fef3c7;
+  border: 1px solid rgba(253,230,138,0.4);
+}
+/* Alias lama (tanpa tanda hubung) — tetap disimpan agar class versi lama tidak rusak. */
+.topup-badge--bestvalue {
+  background: linear-gradient(90deg, #16a34a, #15803d);
+  color: #d1fae5;
+  border: 1px solid rgba(134,239,172,0.4);
+}
 .topup-badge--bestdeal {
   background: linear-gradient(90deg, #b45309, #92400e);
   color: #fef3c7;
@@ -46946,10 +47068,21 @@ body.battle-full .fighter.foe.ko {
 
 /* Konten kartu */
 .topup-card-gem-icon {
-  font-size: 30px;
-  line-height: 1;
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  border-radius: 50%;
   margin-top: 4px;
   filter: drop-shadow(0 0 8px rgba(255,215,0,0.45));
+}
+.topup-inline-gem {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  border-radius: 50%;
+  vertical-align: -5px;
+  margin-right: 4px;
+  filter: drop-shadow(0 0 6px rgba(255,215,0,0.5));
 }
 .topup-card-gems {
   font-family: "Barlow Condensed", sans-serif;
@@ -47020,9 +47153,205 @@ body.battle-full .fighter.foe.ko {
   margin: 0;
 }
 
+/* ====== TOP-UP: status pembayaran ====== */
+.topup-status-box:empty { display: none; }
+.topup-status-box { margin-bottom: 14px; }
+.topup-status {
+  border-radius: 12px;
+  padding: 14px 14px 12px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.04);
+  animation: topup-slidein 0.22s ease both;
+}
+.topup-status--wait {
+  border-color: rgba(251,191,36,0.45);
+  background: rgba(251,191,36,0.10);
+}
+.topup-status--ok {
+  border-color: rgba(74,222,128,0.5);
+  background: rgba(74,222,128,0.12);
+}
+.topup-status--fail {
+  border-color: rgba(248,113,113,0.5);
+  background: rgba(248,113,113,0.12);
+}
+.topup-status-title {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #ffd700;
+  margin-bottom: 6px;
+}
+.topup-status--ok .topup-status-title { color: #4ade80; }
+.topup-status--fail .topup-status-title { color: #f87171; }
+.topup-status-text {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.78);
+}
+.topup-status-text b { color: #ffd700; }
+.topup-status-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.topup-btn {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 7px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.85);
+  transition: background 0.15s, opacity 0.15s;
+}
+.topup-btn:hover { background: rgba(255,255,255,0.16); }
+.topup-btn--ghost { background: transparent; }
+.topup-status-hint {
+  margin-top: 10px;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: rgba(255,255,255,0.35);
+}
+.topup-status-hint code {
+  font-family: "Barlow Condensed", sans-serif;
+  background: rgba(0,0,0,0.35);
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: rgba(255,255,255,0.6);
+}
+.topup-buy-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none;
+}
+
 /* Responsive — layar kecil: 1 kolom */
 @media (max-width: 380px) {
   .topup-grid { grid-template-columns: 1fr; }
   .topup-inner { padding: 20px 14px 22px; }
   .topup-title { font-size: 22px; }
 }
+
+
+/* ========== TOP-UP: TAB + KODE REDEEM (Trakteer Shop) ========== */
+.topup-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 14px;
+  background: rgba(0,0,0,0.30);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 4px;
+}
+.topup-tab {
+  flex: 1;
+  padding: 9px 10px;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.55);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+.topup-tab:hover { color: rgba(255,255,255,0.85); }
+.topup-tab.is-active {
+  color: #ffd700;
+  background: rgba(255,215,0,0.10);
+  border-color: rgba(255,215,0,0.35);
+  box-shadow: 0 0 12px rgba(255,215,0,0.15) inset;
+}
+.topup-code-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.topup-code-label {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.55);
+}
+.topup-code-row {
+  display: flex;
+  gap: 8px;
+}
+.topup-code-input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #ffd700;
+  background: rgba(0,0,0,0.42);
+  border: 1px solid rgba(255,215,0,0.28);
+  border-radius: 10px;
+  outline: none;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+.topup-code-input::placeholder { color: rgba(255,255,255,0.22); letter-spacing: 0.08em; }
+.topup-code-input:focus {
+  border-color: rgba(255,215,0,0.65);
+  box-shadow: 0 0 0 3px rgba(255,215,0,0.10);
+}
+.topup-redeem-btn {
+  padding: 12px 20px;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.10em;
+  color: #10151c;
+  background: linear-gradient(135deg, #ffd700, #ffa000);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+
+/* ========== PWA INSTALL BUTTON ========== */
+.pwa-install-btn,
+.hub-install-btn {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 7px 13px;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  color: rgba(255,255,255,0.75);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+.pwa-install-btn:hover,
+.hub-install-btn:hover {
+  color: #ffd700;
+  border-color: rgba(255,215,0,0.45);
+  background: rgba(255,215,0,0.08);
+  box-shadow: 0 0 14px rgba(255,215,0,0.14);
+}
+
+  transition: transform 0.14s ease, box-shadow 0.14s ease, opacity 0.14s ease;
+  box-shadow: 0 4px 14px rgba(255,165,0,0.25);
+}
+.topup-redeem-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(255,165,0,0.35); }
+.topup-redeem-btn:active { transform: translateY(0); }
+.topup-redeem-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }

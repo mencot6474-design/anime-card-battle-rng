@@ -12,13 +12,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700;800&family=Russo+One&family=Rajdhani:wght@700;800;900&display=swap" rel="stylesheet">
 <!-- External Game Icon Library: Lucide Icons -->
 <script src="https://unpkg.com/lucide@latest"></script>
-<link rel="stylesheet" href="css/style.css?v=v146-autohidemini">
+<link rel="stylesheet" href="css/style.css?v=v162-packmulti">
 <link rel="stylesheet" href="css/sl-system.css?v=sl-v4">
 <link rel="stylesheet" href="css/story-carousel.css?v=v8">
 <script>
+  /* Link toko Trakteer (fallback — utama ada di js/config.js). */
+  window.TRAKTEER_SHOP_URL = "";
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=v155').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=v161').catch(() => {});
     });
   }
 </script>
@@ -663,18 +665,21 @@
 <div class="backpack-panel" id="backpackPanel"></div>
 
 <script src="js/data.js?v=v115-transitems"></script>
-<script src="js/supabase-sync.js?v=v121-nosync-rollback"></script>
-<script src="js/panels.js?v=v122-autohidemini"></script>
+<script src="js/config.js?v=v156-trakteer"></script>
+<script src="js/supabase-sync.js?v=v162-packmulti"></script>
+<script src="js/panels.js?v=v162-packmulti"></script>
+<script src="js/topup.js?v=v157-topupicons"></script>
 <script src="js/cards-fx.js?v=v68-liveroll"></script>
 <script src="js/anime-archetype-attacks.js?v=v107-archetypes"></script>
 <script src="js/state.js?v=v72-shinyfix"></script>
 <script src="js/sheetfx.js?v=v107-noslash"></script>
 <script src="js/battle.js?v=v110-victory"></script>
-<script src="js/tower-lobby.js?v=v118-wmtrait"></script>
+<script src="js/tower-lobby.js?v=v162-packmulti"></script>
 <script src="js/foe-passives.js?v=v62-foe-passives"></script>
 <script src="js/story-carousel.js?v=v122-autohidemini"></script>
 <script src="js/raid.js?v=v123-traitauto"></script>
 <script src="js/boot.js?v=v122-autohidemini"></script>
+<script src="js/pwa.js?v=v156-install"></script>
 
 <!-- ========== CORET MODE (dev-only overlay anotasi) ==========
      Alat buat user LINGKARIN bagian layout yang mau diubah. Cuma aktif di file:// / 127.0.0.1 / localhost.
