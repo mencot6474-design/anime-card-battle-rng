@@ -12,7 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700;800&family=Russo+One&family=Rajdhani:wght@700;800;900&display=swap" rel="stylesheet">
 <!-- External Game Icon Library: Lucide Icons -->
 <script src="https://unpkg.com/lucide@latest"></script>
-<link rel="stylesheet" href="css/style.css?v=v162-packmulti">
+<link rel="stylesheet" href="css/style.css?v=v175-footmenu">
 <link rel="stylesheet" href="css/sl-system.css?v=sl-v4">
 <link rel="stylesheet" href="css/story-carousel.css?v=v8">
 <script>
@@ -20,7 +20,7 @@
   window.TRAKTEER_SHOP_URL = "";
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=v161').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=v163-towerdrop').catch(() => {});
     });
   }
 </script>
@@ -157,7 +157,7 @@
         <div class="prof-stats" id="pfStats"></div>
       </div>
     </div>
-    <div class="prof-body" id="profBody"></div>
+    <div class="prof-side" id="profSide"></div>
   </div>
 </div>
 <!-- Modal Titles Cyberpunk -->
@@ -541,7 +541,7 @@
     <div class="ix-head">
       <div class="ix-header-titles">
         <div class="ix-eyebrow"><span class="ix-dot"></span>NEURAL SPIRE // LOOT PROBABILITY MATRIX</div>
-        <div class="ix-title">DROP RATE BREAKDOWN</div>
+        <div class="ix-title">LOOT MATRIX</div>
       </div>
       <button class="ix-x" id="twDropModalClose" title="Tutup">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -626,7 +626,7 @@
      di lobby (class .on-lobby dari bfSync). ====== -->
 <div class="lobby-footer">
   <div class="foot-main">
-    <button class="foot-profile" id="footAv" type="button" title="Buka profil"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></button>
+    <button class="foot-profile" id="footAv" type="button" title="Menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
     <div class="center-dock">
       <button class="backpack-toggle" id="backpackToggle" type="button" title="Backpack">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -653,6 +653,14 @@
         <span class="ra-txt">AUTO</span>
       </button>
     </div>
+    <div class="foot-menu" id="footMenu" role="menu" aria-label="Menu">
+      <button class="fm-item" type="button" role="menuitem" onclick="footMenuGo('profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>PROFIL</span></button>
+      <button class="fm-item" type="button" role="menuitem" onclick="footMenuGo('titles')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg><span>TITLES</span></button>
+      <button class="fm-item" type="button" role="menuitem" onclick="footMenuGo('backpack')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M8 14h8"/></svg><span>BACKPACK</span></button>
+      <button class="fm-item" type="button" role="menuitem" onclick="footMenuGo('premium')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15L4 4L9 9L12 2L15 9L20 4L22 15H2Z"/></svg><span>PREMIUM SHOP</span></button>
+      <button class="fm-item" type="button" role="menuitem" onclick="footMenuGo('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="9" cy="7" r="2.4"/><circle cx="15" cy="17" r="2.4"/></svg><span>PENGATURAN</span></button>
+      <button class="fm-item danger" type="button" role="menuitem" onclick="footMenuGo('logout')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg><span>KELUAR</span></button>
+    </div>
   </div>
 </div>
 <div id="weatherToast" class="weather-toast"></div>
@@ -666,19 +674,19 @@
 
 <script src="js/data.js?v=v115-transitems"></script>
 <script src="js/config.js?v=v156-trakteer"></script>
-<script src="js/supabase-sync.js?v=v162-packmulti"></script>
-<script src="js/panels.js?v=v162-packmulti"></script>
+<script src="js/supabase-sync.js?v=v163-towerdrop"></script>
+<script src="js/panels.js?v=v172-sidepanel"></script>
 <script src="js/topup.js?v=v157-topupicons"></script>
 <script src="js/cards-fx.js?v=v68-liveroll"></script>
 <script src="js/anime-archetype-attacks.js?v=v107-archetypes"></script>
-<script src="js/state.js?v=v72-shinyfix"></script>
+<script src="js/state.js?v=v166-footmenu"></script>
 <script src="js/sheetfx.js?v=v107-noslash"></script>
 <script src="js/battle.js?v=v110-victory"></script>
-<script src="js/tower-lobby.js?v=v162-packmulti"></script>
+<script src="js/tower-lobby.js?v=v165-glwidget"></script>
 <script src="js/foe-passives.js?v=v62-foe-passives"></script>
 <script src="js/story-carousel.js?v=v122-autohidemini"></script>
 <script src="js/raid.js?v=v123-traitauto"></script>
-<script src="js/boot.js?v=v122-autohidemini"></script>
+<script src="js/boot.js?v=v123-footmenu"></script>
 <script src="js/pwa.js?v=v156-install"></script>
 
 <!-- ========== CORET MODE (dev-only overlay anotasi) ==========

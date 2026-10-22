@@ -435,6 +435,7 @@ function instantRoll(n){
   const res=[];
   try{ for(let i=0;i<n;i++){ const r=rngRoll(totalLuck()); if(!r)continue; grantRolledCard(r.cardId,r.mut,r.shiny); res.push(r);} }
   finally{ __batchRoll=false; }
+  if(state)state.totalRolls=(state.totalRolls||0)+n;
   save(); rollCountBadge(); return res;
 }
 
@@ -517,6 +518,7 @@ function instantRollFast(n, agg){
     }
   } finally{ __batchRoll=false; }
   if(groups) for(const k in groups) res.push(groups[k]);
+  if(state)state.totalRolls=(state.totalRolls||0)+totalPulls;
   save(); rollCountBadge(); idxRewardSync(true);
   res.totalPulls=totalPulls;
   return res;
@@ -576,6 +578,7 @@ function rollTick(){
   if(state&&state.player){
     state.player.exp=(state.player.exp||0)+50;
   }
+  if(state)state.totalRolls=(state.totalRolls||0)+1;
   showRollResult(result);
   renderShell(); // Update XP bar & level check
   grantRolledCard(result.cardId,result.mut,result.shiny);
@@ -750,8 +753,6 @@ function renderTitlesModal(){
 }
 function renderProfile(){
   if(!state)return;
-  const body=document.getElementById("profBody");
-  if(!body)return;
   const p=state.player||{};
   const lv=p.lv||state.playerLv||1;
   const xpNeed=lv*1000, curExp=p.exp||0;
@@ -779,44 +780,36 @@ function renderProfile(){
   const xf=document.getElementById("pfXpFill");if(xf)xf.style.width=xpPct+"%";
   set("pfXpText",`${fmt(curExp)} / ${fmt(xpNeed)} · ${xpPct}%`);
   const curT = state.playerTitle || "ROOKIE";
-  set("pfTitleTag", `[${curT}]`);
+  const pt=document.getElementById("pfTitleTag");
+  if(pt){
+    pt.className="prof-title-tag title-"+curT.toLowerCase().replace(/\s+/g,"_");
+    pt.innerHTML=`<span class="ptt-crown"><svg width="15" height="12" viewBox="0 0 24 18" fill="none"><path d="M2 15L4 4L9 9L12 2L15 9L20 4L22 15H2Z" fill="currentColor" stroke="rgba(255,255,255,.55)" stroke-width="1.1" stroke-linejoin="round"/></svg></span><span class="ptt-txt">${curT}</span>`;
+  }
   const tb=document.getElementById("pfTitlesBtn");
   if(tb)tb.onclick=()=>{ openTitlesModal(); };
   /* ---- helper tile/seksi/row ---- */
-  const tile=(lab,val,sub,tcls,vcls)=>`<div class="prof-tile${tcls?" "+tcls:""}"><span class="prof-tl">${lab}</span><span class="prof-tv${vcls?" "+vcls:""}">${val}</span>${sub?`<span class="prof-ts">${sub}</span>`:""}</div>`;
-  const sec=(t,grid)=>`<section class="prof-sec"><h3 class="prof-sec-t">${t}</h3><div class="prof-grid">${grid}</div></section>`;
   const row=(lab,val)=>`<div class="prof-row"><span class="prof-rl">${lab}</span><span class="prof-rv">${val}</span></div>`;
-  /* ===== ANGKA INTI: stat rows gaya referensi =====
-     NOTE satuan: artefak/pet simpan pct sebagai PERSEN BULAT (200 = +200%,
-     sengaja biar OP — totalLuck emang nerapin ×201, gak disentuh), tree/potion
-     simpan PECAHAN (0.1 = +10%). Nampilinnya jangan dicampur / jangan ×100
-     dua kali buat art+pet. */
-  const base=p.luckBase??1, flat=p.luckFlat||0, treeF=treeLuckFlat(), treeP=treeLuckPct(), artF=artLuckFlat(), artP=artLuckPct(), petF=petLuckFlat(), petP=petLuckPct(), plB=activeLuckBuff(), plBP=activeLuckBuffPct();
-  const pct=(p.luckPercent||0)+treeLuckPct()+plBP+artP+petP;
-  const wm=weatherLuckMult();
-  const lparts=["Base "+base.toFixed(1)];
-  if(flat>0)lparts.push("Player +"+flat.toFixed(1));
-  if(treeF>0)lparts.push("Pohon +"+treeF.toFixed(1));
-  if(artF>0||artP>0)lparts.push("Artefak +"+artF.toFixed(1)+(artP>0?" / +"+Math.round(artP)+"%":""));
-  if(petF>0||petP>0)lparts.push("Pet +"+petF.toFixed(1)+(petP>0?" / +"+Math.round(petP)+"%":""));
-  if(plB>0||plBP>0)lparts.push("Buff +"+plB.toFixed(1)+(plBP>0?" / +"+Math.round(plBP*100)+"%":""));
-  /* baris "Pct" = cuma sumber pecahan (luckPercent + tree + potion); art/pet
-     (satuan persen bulat) udah tampil di barisnya sendiri — jangan digabung. */
-  const pctFrac=(p.luckPercent||0)+treeP+plBP;
-  if(pctFrac>0)lparts.push("Pct +"+Math.round(pctFrac*100)+"%");
-  if(wm>1)lparts.push("Cuaca ×"+wm.toFixed(1));
   const spm=playerSpeedMult(), swm=weatherSpeedMult();
   const eff=Math.min(spm*swm,RNG_ROLL_MAX_MULT);
-  const sparts=[];if(spm>1)sparts.push("Pohon/Buff ×"+spm.toFixed(1));if(swm>1)sparts.push("Cuaca ×"+swm.toFixed(1));
-  const bsMax=battleSpeedMax();
-  const bsNext=bsMax<4?("Berikutnya: "+(bsMax===1?"LV10 → 2×":bsMax===2?"LV25 → 3×":"LV50 → 4×")):"Semua kecepatan terbuka";
   const pfStats=document.getElementById("pfStats");
+  const playSec=Math.floor(state.playSec||0);
+  const fmtPlay=()=>{const h=Math.floor(playSec/3600),m=Math.floor(playSec%3600/60);return h>0?`${h}j ${m}m`:m>0?`${m}m ${playSec%60}s`:`${playSec}s`;};
+  /* RAREST POOL: kartu paling langka = "1 in N" TERBESAR di antara yang DIMILIKI pemain. */
+  const _Kc=rollCommonScale();
+  let rarest=null, rarestCh=-Infinity;
+  for(const s of (state.stacks||[])){
+    const c=CARDS[s.char]; if(!c)continue;
+    const den=(c.chance||chanceOf(c.tier))*(s.shiny?SHINY_CHANCE_MULT:1)*(MUT_CHANCE_MULT[s.mut||"none"]||1);
+    const ch=den>=ROLL_RARE_DEN?den:den/_Kc;
+    if(ch>rarestCh){rarestCh=ch;rarest=s;}
+  }
   if(pfStats)pfStats.innerHTML=
     row("BATTLE POWER",fmt(totalPower()))
     +row("CURRENT LUCK",totalLuck().toFixed(1)+"×")
-    +row("TREE LUCK","+"+treeF.toFixed(1)+(treeP>0?" / +"+Math.round(treeP*100)+"%":""))
-    +row("ITEM LUCK","+"+(artF+petF).toFixed(1)+((artP+petP)>0?" / +"+Math.round(artP+petP)+"%":""))
-    +row("ROLL SPEED",eff.toFixed(1)+"×");
+    +row("ROLL SPEED",eff.toFixed(1)+"×")
+    +row("WAKTU BERMAIN",fmtPlay())
+    +row("TOTAL ROLL",fmt(state.totalRolls||0))
+    +row("RAREST POOL",rarest?`${cardName(rarest.char)} · 1 IN ${fmtChance(rarestCh)}`:"—");
 
   /* ===== PARTY: pet + 2 artefak + kartu utama (portrait + pill) ===== */
   const pslot=(img,label,pill,name)=>`<div class="prof-slot${img?"":" empty"}" title="${name}">${img?`<img src="${img}" alt="">`:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/></svg>'}<span class="ps-lab">${label}</span><span class="ps-pill">${pill}</span></div>`;
@@ -830,79 +823,59 @@ function renderProfile(){
   });
   slots.push(pslot(cid?cardImg(cid):"","KARTU",cid?`1 IN ${fmtChance(effChance(cid,eq.mut||"none",!!eq.shiny))}`:"KOSONG",cid?cardName(cid):"Tanpa kartu"));
   const pfParty=document.getElementById("pfParty");if(pfParty)pfParty.innerHTML=slots.join("");
-  /* ===== GACHA: luck lengkap, speed, battle speed, power, summon ===== */
-  const gacha=
-    tile("TOTAL LUCK",totalLuck().toFixed(1)+"×",lparts.join(" · "),"wide accent","big")
-    +tile("ROLL SPEED",eff.toFixed(1)+"×",sparts.length?sparts.join(" · ")+" · cap ×20":"Tanpa bonus · cap ×20")
-    +tile("BATTLE SPEED",battleSpeedEff()+"×",`Maks ${bsMax}× · ${bsNext}`)
-    +tile("TOTAL POWER",fmt(totalPower()),"HP + ATK deck aktif")
-    +tile("TOTAL SUMMON",fmt(state.summons||0),"pull sepanjang masa");
-  /* ===== KOLEKSI: dari state.stacks ===== */
+  /* ===== PANEL SAMPING: koleksi, progres, gear, item ===== */
+  const tile=(lab,val,sub,tcls,vcls)=>`<div class="prof-tile${tcls?" "+tcls:""}"><span class="prof-tl">${lab}</span><span class="prof-tv${vcls?" "+vcls:""}">${val}</span>${sub?`<span class="prof-ts">${sub}</span>`:""}</div>`;
+  const sec=(t,grid)=>`<section class="prof-sec"><h3 class="prof-sec-t">${t}</h3><div class="prof-grid">${grid}</div></section>`;
   const st=Array.isArray(state.stacks)?state.stacks:[];
   let copies=0, shiny=0, gold=0, rainbow=0, secret=0, ultima=0; const uni=new Set();
   for(const s of st){const c=s.count||1;copies+=c;uni.add(s.char);
     if(s.shiny)shiny+=c;const m=s.mut||"none";
     if(m==="gold")gold+=c;else if(m==="rainbow")rainbow+=c;else if(m==="secret")secret+=c;else if(m==="ultima")ultima+=c;}
   const totalCards=MASTER_CARD_INDEX.filter(c=>!c.isStoryEnemy).length;
-  const uniPct=totalCards?Math.round(uni.size/totalCards*100):0;
   const koleksi=
-    tile("KARTU UNIK",`${uni.size} / ${totalCards}`,`progres koleksi ${uniPct}%`)
-    +tile("TOTAL COPY",fmt(copies),"seluruh salinan kartu")
-    +tile("SHINY",fmt(shiny),"salinan shiny")
-    +tile("GOLD",fmt(gold),"mutasi gold")
-    +tile("RAINBOW",fmt(rainbow),"mutasi rainbow")
-    +tile("SECRET",fmt(secret),"mutasi secret")
-    +tile("ULTIMA",fmt(ultima),"mutasi ultima");
-  /* ===== PROGRES: tower, story per diff, raid, SP, harian ===== */
+    tile("KARTU UNIK",`${uni.size} / ${totalCards}`,"")
+    +tile("TOTAL COPY",fmt(copies),"")
+    +tile("SHINY",fmt(shiny),"")
+    +tile("GOLD",fmt(gold),"")
+    +tile("RAINBOW",fmt(rainbow),"")
+    +tile("SECRET",fmt(secret),"")
+    +tile("ULTIMA",fmt(ultima),"");
   const cd=(state.clearedDiff&&typeof state.clearedDiff==="object")?state.clearedDiff:{};
   const storyTiles=DIFFS.map(d=>{const n=Object.keys(cd[d.k]||{}).length;
-    return tile("STORY "+d.l,`${n}/${LEVEL_COUNT}`,`${LEVEL_COUNT?Math.round(n/LEVEL_COUNT*100):0}% selesai`);}).join("");
+    return tile("STORY "+d.l,`${n}/${LEVEL_COUNT}`,"");}).join("");
   const raidDone=RAID_DIFFS.filter(d=>state.raidCleared&&state.raidCleared[d.k]).length;
-  const raidSub=RAID_DIFFS.map(d=>{const ok=state.raidCleared&&state.raidCleared[d.k];
-    return `<b class="${ok?"prof-ok":"prof-off"}">${d.l} ${ok?"✓":"✗"}</b>`;}).join(" · ");
   const di=state.dailyIndex||0;
   const progres=
-    tile("INFINITE TOWER",`Lantai ${(state.tower&&state.tower.best)||0}`,((state.tower&&state.tower.auto)?"AUTO RESTART: AKTIF":"AUTO RESTART: MATI"))
-    +tile("SKILL POINT",`${p.sp||0}`,"untuk talent tree")
-    +tile("HADIAH HARIAN",`HARI ${di+1} / 7`,`berikutnya +${fmt(DAILY_REWARDS[di]||0)} coin`)
+    tile("INFINITE TOWER",`Lantai ${(state.tower&&state.tower.best)||0}`,"")
+    +tile("SKILL POINT",`${p.sp||0}`,"")
+    +tile("HADIAH HARIAN",`HARI ${di+1} / 7`,"")
     +storyTiles
-    +tile("BOSS RAID",`${raidDone} / ${RAID_DIFFS.length}`,raidSub,"wide");
-  /* ===== EKUIPMEN: artefak + pet dengan kontribusi luck ===== */
+    +tile("BOSS RAID",`${raidDone} / ${RAID_DIFFS.length}`,"","wide");
+  const gacha=
+    tile("BATTLE SPEED",battleSpeedEff()+"×","")
+    +tile("TOTAL SUMMON",fmt(state.summons||0),"");
   const artTile=i=>{const id=state.artSlots&&state.artSlots[i];
     const d=id?ART_DEFS.find(x=>x.id===id):null;
-    if(!d)return tile("ARTEFAK "+(i+1),"KOSONG","slot belum terpasang");
-    const b=[];if(d.flat)b.push("+"+d.flat+" flat");if(d.pct)b.push("+"+d.pct+"%");
-    return tile("ARTEFAK "+(i+1),d.name,b.length?b.join(" · "):"tanpa bonus luck");};
-  const petB=[];if(pd){if(pd.flat)petB.push("+"+pd.flat+" flat");if(pd.pct)petB.push("+"+Math.round(pd.pct*100)+"%");}
+    return tile("ARTEFAK "+(i+1),d?d.name:"KOSONG","");};
   const equip=
     artTile(0)+artTile(1)
-    +tile("PET",pd?pd.name:"TIDAK ADA",pd?(petB.length?petB.join(" · "):"tanpa bonus luck"):"belum ada pet dipakai")
-    +tile("ARTEFAK DIMILIKI",`${(state.artOwned||[]).length} / ${ART_DEFS.length}`,"total koleksi artefak")
-    +tile("PET DIMILIKI",`${(state.petOwned||[]).length} / ${PET_DEFS.length}`,"total koleksi pet")
-    +tile("DEV UNLOCK",`<button class="prof-unbtn" onclick="devUnlockAll()">BUKA SEMUA PET & ARTEFAK</button>`,"langsung penuh - idempoten","accent");
-  /* ===== ITEM & BUFF: token, potion, cuaca & buff aktif (countdown live) ===== */
+    +tile("PET",pd?pd.name:"TIDAK ADA","")
+    +tile("ARTEFAK DIMILIKI",`${(state.artOwned||[]).length} / ${ART_DEFS.length}`,"")
+    +tile("PET DIMILIKI",`${(state.petOwned||[]).length} / ${PET_DEFS.length}`,"")
+    +tile("DEV UNLOCK",`<button class="prof-unbtn" onclick="devUnlockAll()">BUKA SEMUA PET & ARTEFAK</button>`,"","accent");
   const wAct=(state.weather&&Date.now()<state.weather.endsAt)?WEATHER[state.weather.id]:null;
-  const wSub=wAct?`sisa ${fmtCountdown(state.weather.endsAt-Date.now())} · Luck ×${wAct.luckBonus} · Speed ×${wAct.speedBonus}`:"siklus alami 30 menit";
-  const lb=plB, sb=activeSpeedBuff();
-  const bparts=[];
-  luckBuffs().slice().sort((a,b)=>a.lv-b.lv).forEach(b=>{
-    const q=b.pct||0;
-    bparts.push(`Luck ${b.lv>0?"L"+b.lv+" ":""}+${b.flat||0}${q>0?' / +'+Math.round(q*100)+'%':''} · sisa ${fmtCountdown(b.endsAt-Date.now())}`);
-  });
-  speedBuffs().slice().sort((a,b)=>a.lv-b.lv).forEach(b=>{
-    bparts.push(`Speed ${b.lv>0?"L"+b.lv+" ":""}+${(b.add||0).toFixed(1)}× · sisa ${fmtCountdown(b.endsAt-Date.now())}`);
-  });
+  const luckPotN=(state.luckPots||[]).reduce((a,b)=>a+(b||0),0);
+  const speedPotN=(state.speedPots||[]).reduce((a,b)=>a+(b||0),0);
   const item=
     tile("COIN",fmt(state.coins||0),"")
-    +tile("TOKEN RAID",fmt(state.raidTokens||0),"dari Boss Raid")
-    +tile("TOKEN INF",fmt(state.infTokens||0),"mata Infinite Tower")
-    +tile("WEATHER POTION",`×${state.potions||0}`,"skip cuaca 5 menit")
-    +tile("MYTHIC POTION",`×${state.mythicPotions||0}`,"reroll + APOCALYPSE 3%")
-    +tile("LUCK POTION",`L1 ×${fmt((state.luckPots||[])[0]||0)} · L2 ×${fmt((state.luckPots||[])[1]||0)} · L3 ×${fmt((state.luckPots||[])[2]||0)}`,"buff luck sementara")
-    +tile("SPEED POTION",`L1 ×${fmt((state.speedPots||[])[0]||0)} · L2 ×${fmt((state.speedPots||[])[1]||0)} · L3 ×${fmt((state.speedPots||[])[2]||0)}`,"buff speed sementara")
-    +tile("CUACA AKTIF",wAct?`<span style="display:inline-flex;align-items:center;gap:6px;color:${wAct.color}">${weatherSvg(wAct.id,16)} ${wAct.name}</span>`:"TIDAK AKTIF",wSub,"wide")
-    +tile("BUFF AKTIF",(lb>0||sb>0)?"AKTIF":"TIDAK AKTIF",bparts.length?bparts.join(" · "):"pakai potion untuk buff sementara","wide");
-  /* ===== TITLES: judul pencapaian (tombol TITLES scroll ke seksi ini) ===== */
+    +tile("TOKEN RAID",fmt(state.raidTokens||0),"")
+    +tile("TOKEN INF",fmt(state.infTokens||0),"")
+    +tile("WEATHER POTION",`×${state.potions||0}`,"")
+    +tile("MYTHIC POTION",`×${state.mythicPotions||0}`,"")
+    +tile("LUCK POTION",`×${fmt(luckPotN)}`,"")
+    +tile("SPEED POTION",`×${fmt(speedPotN)}`,"")
+    +tile("CUACA AKTIF",wAct?`<span style="display:inline-flex;align-items:center;gap:6px;color:${wAct.color}">${weatherSvg(wAct.id,16)} ${wAct.name}</span>`:"TIDAK AKTIF","","wide")
+    +tile("BUFF AKTIF",(activeLuckBuff()>0||activeSpeedBuff()>0)?"AKTIF":"TIDAK AKTIF","","wide");
   const titles=[
     {n:"ROOKIE ROLLER",d:"Roll kartu pertama",ok:(state.summons||0)>=1},
     {n:"COLLECTOR",d:"Kumpulkan 10 kartu unik",ok:uni.size>=10},
@@ -912,13 +885,14 @@ function renderProfile(){
     {n:"ELITE",d:"Capai level 25",ok:lv>=25}
   ];
   const titlesGrid=titles.map(t=>tile(t.n,t.ok?"✓ DIRAIH":"· belum",t.d,t.ok?"accent":"",t.ok?"prof-ok":"")).join("");
-  body.innerHTML=
-    sec("TITLES",titlesGrid)
+  const side=document.getElementById("profSide");
+  if(side)side.innerHTML=
+    sec("KOLEKSI",koleksi)
     +sec("GACHA",gacha)
-    +sec("KOLEKSI",koleksi)
     +sec("PROGRES",progres)
     +sec("EKUIPMEN",equip)
-    +sec("ITEM & BUFF",item);
+    +sec("ITEM & BUFF",item)
+    +sec("TITLES",titlesGrid);
 }
 
 
@@ -1063,7 +1037,7 @@ function bpItemDef(kind){
   if(kind==='r100k'){return{kind,name:'INSTAN ROLL 100K',icon:'assets/images/instanpack-100k.webp?v=trans1',emoji:'📦',cnt:(state&&state.rollPacks&&state.rollPacks.r100k)||0,
     desc:'SPECIAL ROLL PACK - Berisi 100.000 tarikan kartu instan ke dalam koleksi.',
     active:'',isPack:true,use:"bpUseRollPack('r100k', 100000, window.bpPackN)"};}
-  if(kind==='intan'){return{kind,name:'INTAN ROLL 100K',icon:'assets/images/icon-intan.png',emoji:'💎',cnt:state.intanRolls||0,
+  if(kind==='intan'){return{kind,name:'INTAN ROLL 100K',icon:(state.intanRolls&&state.intanRolls>0?'assets/images/icon-index-card.png':'assets/sprites/_placeholder.svg'),emoji:'💎',cnt:state.intanRolls||0,
     desc:'ITEM INDEX REWARD — didapat otomatis tiap 5 varian kartu terkumpul di Card Index (semua mutasi + varian shiny dihitung). Pakai = langsung menarik 100.000 roll kartu ke koleksi.',
     active:'',isPack:true,use:'bpUseIntanRoll(window.bpPackN)'};}
   return null;
@@ -1590,7 +1564,7 @@ function devUnlockAll(){
   toast("UNLOCK ALL",`+${state.artOwned.length-hadA} artefak + ${state.petOwned.length-hadP} pet - koleksi penuh!`,"#7DF9FF");
   renderShell();
   if(typeof renderBackpackPanel==="function")renderBackpackPanel();
-  if(document.getElementById("profBody"))renderProfile();
+  if(document.getElementById("profSide"))renderProfile();
 }
 window.devUnlockAll=devUnlockAll;
 

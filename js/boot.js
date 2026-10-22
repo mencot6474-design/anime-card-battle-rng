@@ -249,7 +249,12 @@ document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
   if(bt)bt.addEventListener("click",toggleBackpack);
   // Event handler: klik avatar → buka modal profil
   const av=document.getElementById("profAv");if(av){av.onclick=function(e){e.stopPropagation();openProfileModal();};}
-  const fav=document.getElementById("footAv");if(fav){fav.onclick=function(e){e.stopPropagation();openProfileModal();};}
+  const fav=document.getElementById("footAv");if(fav){fav.onclick=function(e){e.stopPropagation();toggleFootMenu();};}
+  document.addEventListener("click",e=>{
+    const fm=document.getElementById("footMenu");
+    if(!fm||!fm.classList.contains("show"))return;
+    if(!e.target.closest("#footMenu")&&!e.target.closest("#footAv"))closeFootMenu();
+  });
   const bd=document.getElementById("profBackdrop");if(bd)bd.onclick=closeProfileModal;
   const pc=document.getElementById("profClose");if(pc)pc.onclick=function(e){e.stopPropagation();closeProfileModal();};
   /* AUTO: toggle rolling terus-menerus. Klik lagi / Tutup / klik dadu = mati. */
@@ -455,6 +460,23 @@ function runLoading(done){
 function logout(){
   localStorage.removeItem(SESSION_KEY);
   location.reload();
+}
+/* ---- Menu dock (tombol kiri footer) ---- */
+function toggleFootMenu(){
+  const m=document.getElementById("footMenu");if(!m)return;
+  m.classList.toggle("show");
+}
+function closeFootMenu(){
+  const m=document.getElementById("footMenu");if(m)m.classList.remove("show");
+}
+function footMenuGo(k){
+  closeFootMenu();
+  if(k==="profile")openProfileModal();
+  else if(k==="titles")openTitlesModal();
+  else if(k==="backpack")toggleBackpack();
+  else if(k==="premium")openPremiumShop();
+  else if(k==="settings")location.hash="#/settings";
+  else if(k==="logout"){if(confirm("Keluar dari akun ini?"))logout();}
 }
 function boot(){
   document.getElementById("loadingScreen").classList.add("hidden");

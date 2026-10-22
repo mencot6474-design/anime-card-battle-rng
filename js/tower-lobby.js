@@ -6,6 +6,14 @@ const TOWER_BOSS_ROSTER=[
   {main:"CH_ALMIGHTY_TYRANT",tag:"CH_DEMON_SLIME"} /* lantai 10, 20, 30 ... */
 ];
 function towerIsBossFloor(f){return f%5===0;}
+/* ===== DROP INSTAN PACK PER LANTAI (Inf Tower) =====
+   BASE rate, TIDAK dipengaruhi luck player. 50K tidak ada drop Tower. */
+const TOWER_PACK_DROPS=[
+  {k:'r5k',  p:0.05,  name:'INSTAN ROLL 5.000',  icon:'assets/images/instanpack-5k.webp?v=trans1',  label:'5%'},
+  {k:'r10k', p:0.02,  name:'INSTAN ROLL 10.000', icon:'assets/images/instanpack-10k.webp?v=trans1', label:'2%'},
+  {k:'r25k', p:0.01,  name:'INSTAN ROLL 25.000', icon:'assets/images/instanpack-25k.webp?v=trans1', label:'1%'},
+  {k:'r100k',p:0.005, name:'INSTAN ROLL 100.000',icon:'assets/images/instanpack-100k.webp?v=trans1',label:'0,5%'}
+];
 function towerBossIndex(f){return ((f/5)-1)%TOWER_BOSS_ROSTER.length;}
 function towerHash(n){return (((n*2654435761)>>>0)%100000)||0;}
 /* Pool musuh menara: semua kartu non-eksklusif + gate kartu BOSS (sama dgn roll: terkunci sebelum dibeli). */
@@ -17,8 +25,13 @@ const TOWER_TIER_K={R:1,SR:1,SSR:1,UR:1,EX:1};
 function towerEnemyHP(f){return Math.round(140*Math.pow(1.18,f-1));}
 function towerEnemyATK(f){return Math.round(58*Math.pow(1.16,f-1));}
 function towerMakeWave(charId,f,isBoss,role){
-  const c=CARDS[charId];
-  if(!c)return null;
+  try { const c=CARDS[charId]; if(!c)return null;
+  const hpK=isBoss?(role==="main"?2.2:1.4):1;
+  const atkK=isBoss?(role==="main"?1.35:1.15):1;
+  const tk=TOWER_TIER_K[c.tier]||1;
+  const es={hp:Math.round(towerEnemyHP(f)*hpK*tk),atk:Math.round(towerEnemyATK(f)*atkK*tk)};
+  const eid=charId,efx=PASSIVE_FX[eid]||{};const en={id:eid,name:c.name,epithet:isBoss?(role==="main"?"BOS LANTAI":"PENJAGA TAG"):c.type,img:c.sprite_asset||'_placeholder.boss',boss:!!isBoss,tier:c.tier,mut:"none"};
+  return {en,es,eid,efx};} catch(e){console.error("towerMakeWave error:",e);return null;}
   const hpK=isBoss?(role==="main"?2.2:1.4):1;
   const atkK=isBoss?(role==="main"?1.35:1.15):1;
   const tk=TOWER_TIER_K[c.tier]||1;
@@ -50,7 +63,8 @@ function stopTower(){
   /* Run ditinggal (END / pindah menu) sebelum kalah: tetap cairkan roll yang sudah ditabung biar nggak hangus. */
   if(towerRun&&(towerRun.pendingRolls||0)>0){
     const n=towerRun.pendingRolls; const loot=instantRoll(n); towerRun.pendingRolls=0;
-    if(loot&&loot.length)showTowerLoot(loot,towerRun.drops); else toast("ROLL TOWER DITARIK","+"+n+" KARTU","#7df9ff");
+    /* Popup hasil roll tetap BIKIN pack + artefak/pet ikut tampil (icon sama dgn backpack). */
+    if(loot&&loot.length)showTowerLoot(loot,towerRun.drops,null,{packDrops:towerRun.packDrops||{},rareDrops:towerRun.rareDrops||[]}); else toast("ROLL TOWER DITARIK","+"+n+" KARTU","#7df9ff");
   }
   towerView="hub"; towerRun=null;
 }
@@ -100,7 +114,7 @@ function towerStartRun(){
   if(typeof hideRollResult==="function")hideRollResult();
   towerLossAutoPending=false;
   if(!state.tower)state.tower={best:0};
-  towerRun={floor:1,waves:towerWaves(1),idx:0,cleared:0,cards:0,coins:0,drops:{weather:0,luck:0,speed:0},tokens:0,pendingRolls:0};
+  towerRun={floor:1,waves:towerWaves(1),idx:0,cleared:0,cards:0,coins:0,drops:{weather:0,luck:0,speed:0},tokens:0,pendingRolls:0,packDrops:{},rareDrops:[]};
   towerView="battle";
   render();
 }
@@ -674,17 +688,30 @@ function towerEnd(win){
   if(win){
     /* Menang lantai: kasih hadiah lalu LANGSUNG naik lantai berikutnya tanpa overlay. */
     const r=towerReward(f); state.coins+=r.coins;
-    /* Drop tiap floor lolos: Instant roll 100% PASTI (DITABUNG, di-roll saat kalah) — 25×ceil(lantai/10), +25 tiap band 10 lantai · Weather 5% · Luck +1 10% · Speed +1 10% */
+    /* Drop tiap floor lolos: Instant roll 100% PASTI (DITABUNG, di-roll saat kalah) — 100 tarikan per lantai · Weather 5% · Luck +1 10% · Speed +1 10% */
     if(!towerRun.drops)towerRun.drops={weather:0,luck:0,speed:0};
-    const rr=25*Math.ceil(f/10);
+    const rr=100;
     towerRun.pendingRolls=(towerRun.pendingRolls||0)+rr; towerRun.cards=(towerRun.cards||0)+rr;
     if(Math.random()<0.05){state.potions=(state.potions||0)+1;towerRun.drops.weather++;}
     if(Math.random()<0.10){state.luckPots=state.luckPots||[0,0,0];state.luckPots[0]++;towerRun.drops.luck++;}
     if(Math.random()<0.10){state.speedPots=state.speedPots||[0,0,0];state.speedPots[0]++;towerRun.drops.speed++;}
+    /* DROP INSTAN PACK per lantai — BASE rate, TANPA luck player.
+       5K 5% · 10K 2% · 25K 1% · 100K 0,5% (50K tidak ada drop Tower). */
+    state.rollPacks=state.rollPacks||{};
+    towerRun.packDrops=towerRun.packDrops||{};
+    const packGot=[];
+    TOWER_PACK_DROPS.forEach(d=>{
+      if(Math.random()<d.p){
+        state.rollPacks[d.k]=(state.rollPacks[d.k]||0)+1;
+        towerRun.packDrops[d.k]=(towerRun.packDrops[d.k]||0)+1;
+        packGot.push(d.name);
+      }
+    });
     /* DROP LANGKAH CRAYON V2 — BASE murni TANPA luck player (totalLuck TIDAK dipakai): pedang-api 0,1% · kyubi 0,01% per lantai. */
     const rare=[];
-    if(!state.artOwned.includes("pedang-api")&&Math.random()<0.001){state.artOwned.push("pedang-api");rare.push("ARTEFAK PEDANG API · +120 FLAT & +100% LUCK");}
-    if(!state.petOwned.includes("kyubi")&&Math.random()<0.0001){state.petOwned.push("kyubi");rare.push("PET KYUBI FOX · +200 FLAT & +300% LUCK");}
+    towerRun.rareDrops=towerRun.rareDrops||[];
+    if(!state.artOwned.includes("pedang-api")&&Math.random()<0.001){state.artOwned.push("pedang-api");rare.push("ARTEFAK PEDANG API · +120 FLAT & +100% LUCK");towerRun.rareDrops.push({kind:'art',id:"pedang-api",name:"PEDANG API",icon:"assets/artifacts/pedang-api.png",n:1});}
+    if(!state.petOwned.includes("kyubi")&&Math.random()<0.0001){state.petOwned.push("kyubi");rare.push("PET KYUBI FOX · +200 FLAT & +300% LUCK");towerRun.rareDrops.push({kind:'pet',id:"kyubi",name:"KYUBI FOX",icon:"assets/pets/kyubi.png",n:1});}
     /* Token Inf: +1 per lantai, +5 per lantai bos. */
     const tok=towerIsBossFloor(f)?5:1;
     state.infTokens=(state.infTokens||0)+tok; towerRun.tokens=(towerRun.tokens||0)+tok;
@@ -692,6 +719,7 @@ function towerEnd(win){
     state.tower.best=Math.max(state.tower.best||0,f);
     save(); renderShell(); fanfare();
     toast("LANTAI "+f+" DITAKLUKKAN","+"+rr+" ROLL DISIMPAN · "+"+"+tok+" TOKEN","#7df9ff");
+    packGot.forEach((nm,i)=>setTimeout(()=>toast("DROP INSTAN PACK · LANTAI "+f,nm+" · MASUK BACKPACK","#FFD700"),500*(i+1)));
     rare.forEach((m,i)=>setTimeout(()=>toast("DROP LANGKAH · LANTAI "+f,m,"#fb923c"),700*(i+1)));
     bt=null;
     towerEnter(f+1);
@@ -714,7 +742,7 @@ function towerEnd(win){
   try{ save(); renderShell(); }catch(e){}
   try{ toast("RUN BERAKHIR DI LANTAI "+f,"LANTAI DITAKLUKKAN: "+reached+" · KARTU +"+fmt(towerRun.cards||0)+" · TOKEN +"+fmt(towerRun.tokens||0),"#f87171"); }catch(e){}
   /* Popup hasil roll (kartu + potion) tetap tampil — z-220, di atas segalanya. */
-  try{ showTowerLoot(loot,dr); }
+  try{ showTowerLoot(loot,dr,null,{packDrops:towerRun.packDrops,rareDrops:towerRun.rareDrops}); }
   catch(err){ console.error("showTowerLoot error",err); }
   /* Lobby Tower muncul di belakang popup: begitu AMBIL diklik, pemain sudah di hub. */
   try{ stopBattleLoop(); }catch(e){}
@@ -730,20 +758,36 @@ function towerEnd(win){
     },1200);
   }
 }
-function showTowerLoot(results,drops,title){
+function showTowerLoot(results,drops,title,extra){
   const pop=document.getElementById("rollResultPop");if(!pop)return;
   results=results||[];
   const d=drops||{weather:0,luck:0,speed:0};
-  const POTION=[{k:'weather',name:'WEATHER',icon:'assets/images/icon-potion.png',emoji:'🧪'},{k:'luck',name:'LUCK',icon:'assets/images/pot-luck-1.png',emoji:'🍀'},{k:'speed',name:'SPEED',icon:'assets/images/pot-speed-1.png',emoji:'⚡'}];
+  const ex=extra||{};
+  const POTION=[{k:'weather',name:'WEATHER',icon:'assets/images/weather-potion.webp?v=1',emoji:'🧪'},{k:'luck',name:'LUCK',icon:'assets/images/pot-luck-1.png',emoji:'🍀'},{k:'speed',name:'SPEED',icon:'assets/images/pot-speed-1.png',emoji:'⚡'}];
   const totalPot=POTION.reduce((s,p)=>s+(d[p.k]||0),0);
-  if(!results.length&&!totalPot)return;
+  /* Chips Instan Pack + artefak/pet dari drop Tower (icon ASLI dari backpack). */
+  const packChips=TOWER_PACK_DROPS.filter(p=>(ex.packDrops&&ex.packDrops[p.k])>0).map(p=>{const n=ex.packDrops[p.k]||0;return `<div class="twr-loot-chip" title="${p.name}"><span class="twr-loot-ic"><img src="${p.icon}" alt="${p.name}" onerror="this.onerror=null;this.parentNode.textContent='📦'"></span><span class="twr-loot-name">${p.name}</span>${n>1?`<span class="twr-loot-cnt">×${n}</span>`:''}</div>`;}).join("");
+  /* Icon artefak/pet: ambil dari definisi BACKPACK (ART_DEFS/PET_DEFS) supaya identik dgn tile backpack. */
+  const rareChips=(ex.rareDrops||[]).map(r=>{
+    let icon=r.icon||"";
+    try{
+      if(r.kind==='art'&&typeof ART_DEFS!=="undefined"){const d=ART_DEFS.find(x=>x.id===r.id);if(d&&d.img)icon=d.img;}
+      else if(r.kind==='pet'&&typeof PET_DEFS!=="undefined"){const d=PET_DEFS.find(x=>x.id===r.id);if(d&&d.img)icon=d.img;}
+    }catch(e){}
+    if(!icon)icon='assets/images/icon-index-card.png';
+    const fb=r.kind==='pet'?'🐾':(r.kind==='art'?'◈':'✦');
+    return `<div class="twr-loot-chip rare" title="${r.name}"><span class="twr-loot-ic"><img src="${icon}" alt="${r.name}" onerror="this.onerror=null;this.parentNode.textContent='${fb}'"></span><span class="twr-loot-name">${r.name}</span></div>`;
+  }).join("");
+  const lootChips=(packChips||rareChips)?`<div class="twr-loot-wrap">${packChips}${rareChips}</div>`:"";
+  const totalPack=TOWER_PACK_DROPS.reduce((s,p)=>s+((ex.packDrops&&ex.packDrops[p.k])||0),0);
+  if(!results.length&&!totalPot&&!totalPack&&!rareChips)return;
   const potChips=POTION.filter(p=>(d[p.k]||0)>0).map(p=>{const n=d[p.k]||0;return `<div class="rrc rrc-potion" title="${p.name} POTION"><i class="rrc-sizer"></i><span class="rrc-pot-ic"><img src="${p.icon}" alt="${p.name}" onerror="this.parentNode.textContent='${p.emoji}'"></span>${n>1?`<span class="rrc-cnt">×${n}</span>`:''}<span class="rrc-name">${p.name}</span></div>`;}).join("");
   const groups={};
   results.forEach(r=>{const key=r.cardId+"|"+(r.mut||"none")+"|"+(r.shiny||"none");{const g=(groups[key]||(groups[key]={cardId:r.cardId,tier:r.tier,mut:r.mut||"none",shiny:!!(r.shiny&&r.shiny!=="none"),n:0}));g.n+=(typeof r.n==="number"?r.n:1);}});
   const list=Object.values(groups).sort((a,b)=>luckChance(b.cardId,b.mut,b.shiny)-luckChance(a.cardId,a.mut,a.shiny)||b.n-a.n);
   const totalCards=(typeof results.totalPulls==="number")?results.totalPulls:results.length;
-  document.getElementById("rrTotal").textContent=fmt(totalCards)+" kartu"+(list.length?" · "+list.length+" jenis unik":"")+(totalPot?" · "+fmt(totalPot)+" potion":"");
-  document.getElementById("rrBody").innerHTML=potChips+list.map(g=>{
+  document.getElementById("rrTotal").textContent=fmt(totalCards)+" kartu"+(list.length?" · "+list.length+" jenis unik":"")+(totalPot?" · "+fmt(totalPot)+" potion":"")+(totalPack?" · "+fmt(totalPack)+" pack":"");
+  document.getElementById("rrBody").innerHTML=lootChips+potChips+list.map(g=>{
     const name=cardName(g.cardId),img=cardImg(g.cardId);
     const isShiny=g.shiny&&g.shiny!=="none", isMut=g.mut&&g.mut!=="none";
     const varTag=(isShiny||isMut)?`<span class="rrc-var">${isShiny?'<span class="rrc-shine shiny-pill">SHINY</span>':''}${isMut?mutChip(g.mut,mutPill(g.mut,'rrc-mut')):''}</span>`:'';
@@ -935,7 +979,6 @@ function renderLobby(){
   const tier=eq?CARDS[eq.char].tier:null;
   app.innerHTML=`
   <div class="lobby-hub">
-    ${(typeof renderGlobalLuckWidget === 'function') ? '<div class="hub-gl-widget">' + renderGlobalLuckWidget() + '</div>' : ''}
     <div class="hub-loadout-bar" role="group" aria-label="Loadout artefak & pet">${hubLoadoutHtml()}</div>
     <div class="hub-box h-l1 hub-link hub-link-raid" id="hubRaid" role="button" title="Masuk Boss Raid">
       <span class="tile-index"><span class="tile-number">01</span><span class="tile-category">CYBER / RAID</span></span>
@@ -982,10 +1025,10 @@ function renderLobby(){
     </div>
     <div class="hub-mid">
       <div class="seam"></div>
+      ${(typeof renderGlobalLuckWidget === 'function') ? '<div class="hub-gl-widget">' + renderGlobalLuckWidget() + '</div>' : ''}
       <div class="stage-eyebrow">ACTIVE CARD</div>
       <div class="stage-center">
         <div class="card-float">
-          ${renderTitleCrownHtml(state.playerTitle || "ROOKIE")}
           ${hubCardHtml(eq,' id="hubCard"')}
         </div>
       </div>
@@ -1092,66 +1135,63 @@ function toggleBackpack() {
   }
 }
 
-/* ========== MODAL BREAKDOWN DROP RATE INFINITE TOWER ========== */
+/* ========== MODAL BREAKDOWN DROP RATE INFINITE TOWER ==========
+   Redesign minimalis: 3 blok ringkas (PASTI / INSTAN PACK / ARTEFAK & PET).
+   Semua ikon pakai file ASLI yang sudah ada (backpack/premium shop), bukan emoji. */
+const TWR_CARD_ICON="assets/images/icon-index-card.png";
+const TWR_TOKEN_ICON="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237df9ff' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 6v12M8 10h8M8 14h6'/%3E%3C/svg%3E";
 function openTowerDropModal(){
   const m = document.getElementById("towerDropModal");
   const body = document.getElementById("towerDropModalBody");
   if(!m || !body) return;
 
-  const drops = [
+  const sections = [
     {
-      cat: "TABUNGAN RUN (100% GUARANTEED)",
-      items: [
-        { name: "Instant Card Rolls", chance: "100%", badge: "GUARANTEED", note: "+25 Kartu per lantai (+25 kartu tiap 10 lantai). Di-roll instan saat tamat.", ic: "🎴", col: "#7df9ff" },
-        { name: "Token Inf (Lantai Reguler)", chance: "100%", badge: "+1 TOKEN", note: "Diperoleh otomatis tiap membersihkan lantai biasa.", ic: "🪙", col: "#c084fc" },
-        { name: "Token Inf (Lantai Boss)", chance: "100%", badge: "+5 TOKEN", note: "Diperoleh khusus saat menaklukkan lantai kelipatan 5.", ic: "👑", col: "#ffd27a" }
+      key:"pasti", title:"PASTI SETIAP LANTAI",
+      items:[
+        {name:"TARIKAN KARTU INSTAN", rate:"PASTI", sub:"100 tarikan dijamin per lantai (tabung dulu, di-roll saat run tamat)", icon:TWR_CARD_ICON, cls:"guar"},
+        {name:"TOKEN INF", rate:"PASTI", sub:"+1 per lantai biasa · +5 per lantai bos (kelipatan 5)", icon:TWR_TOKEN_ICON, cls:"guar"},
+        {name:"WEATHER POTION", rate:"5%", sub:"Gacha cuaca aktif, durasi 5 menit", icon:"assets/images/weather-potion.webp?v=1", cls:""},
+        {name:"LUCK POTION L1", rate:"10%", sub:"+3 Flat Luck selama 5 menit (stackable)", icon:"assets/images/pot-luck-1.png", cls:""},
+        {name:"SPEED POTION L1", rate:"10%", sub:"+0,2× Roll Speed selama 5 menit (stackable)", icon:"assets/images/pot-speed-1.png", cls:""}
       ]
     },
     {
-      cat: "TACTICAL REAGENTS (CONSUMABLE)",
-      items: [
-        { name: "Weather Potion", chance: "5.0%", badge: "1 IN 20", note: "Gacha cuaca aktif (chance cuaca asli, durasi 5 menit).", ic: "🧪", col: "#7df9ff" },
-        { name: "Luck Potion L1", chance: "10.0%", badge: "1 IN 10", note: "+3 Flat Luck selama 5 menit. Efek stackable durasi.", ic: "🍀", col: "#5cf0a8" },
-        { name: "Speed Potion L1", chance: "10.0%", badge: "1 IN 10", note: "+0.2× Roll Speed selama 5 menit. Efek stackable durasi.", ic: "⚡", col: "#ffd27a" }
-      ]
+      key:"pack", title:"INSTAN PACK · DROP ACAK PER LANTAI",
+      items:TOWER_PACK_DROPS.map(p=>({
+        name:p.name, rate:p.label, sub:"Masuk tab ITEM di Backpack · siap pakai",
+        icon:p.icon, cls:""
+      }))
     },
     {
-      cat: "SECRET DROPS (BASE PURE RATE - UNMODIFIED BY LUCK)",
-      items: [
-        { name: "Artefak Pedang Api", chance: "0.10%", badge: "1 : 1.000", note: "Artefak Permanen: +120 Flat Luck & +100% Luck Multiplier (Maks 1).", ic: "🗡️", col: "#ff6b81" },
-        { name: "Pet Kyubi Fox", chance: "0.01%", badge: "1 : 10.000", note: "Companion Mythic: +200 Flat Luck & +300% Luck Multiplier (Maks 1).", ic: "🦊", col: "#ff4757" }
+      key:"rare", title:"ARTEFAK & PET · BASE RATE (TANPA LUCK)",
+      items:[
+        {name:"PEDANG API", rate:"0,1%", sub:"Artefak permanen · +120 Flat Luck & +100% Luck Multiplier (maks 1)", icon:"assets/artifacts/pedang-api.png", cls:"ultra"},
+        {name:"KYUBI FOX", rate:"0,01%", sub:"Pet Mythic · +200 Flat Luck & +300% Luck Multiplier (maks 1)", icon:"assets/pets/kyubi.png", cls:"ultra"}
       ]
     }
   ];
 
-  body.innerHTML = drops.map(sec => `
-    <div class="twd-section">
-      <div class="twd-sec-title">
-        <span class="twd-dot"></span>
-        <span>${sec.cat}</span>
-      </div>
-      <div class="twd-grid">
-        ${sec.items.map(it => `
-          <div class="twd-card" style="--it-col:${it.col}">
-            <div class="twd-ic-box">
-              <span class="twd-glyph">${it.ic}</span>
+  body.innerHTML = `
+    <div class="twr-note">Semua drop dihitung <b>per lantai</b> yang dit taklukkan. Peluang Instan Pack, artefak & pet <b>tidak</b> dipengaruhi luck player.</div>
+    ${sections.map(sec=>`
+      <section class="twr-sec">
+        <h4 class="twr-sec-t">${sec.title}</h4>
+        <div class="twr-list">
+          ${sec.items.map(it=>`
+            <div class="twr-row">
+              <span class="twr-ic"><img src="${it.icon}" alt="${it.name}" onerror="this.parentNode.textContent='✦'"></span>
+              <span class="twr-txt">
+                <span class="twr-name">${it.name}</span>
+                <span class="twr-sub">${it.sub}</span>
+              </span>
+              <span class="twr-rate ${it.cls}">${it.rate}</span>
             </div>
-            <div class="twd-info">
-              <div class="twd-top">
-                <span class="twd-name">${it.name}</span>
-                <span class="twd-badge">${it.badge}</span>
-              </div>
-              <div class="twd-sub">${it.note}</div>
-            </div>
-            <div class="twd-rate-box">
-              <span class="twd-rate-lbl">PROBABILITY</span>
-              <span class="twd-rate-val">${it.chance}</span>
-            </div>
-          </div>
-        `).join("")}
-      </div>
-    </div>
-  `).join("");
+          `).join("")}
+        </div>
+      </section>
+    `).join("")}
+  `;
 
   m.classList.add("show");
   beep(480, 0.08, "triangle", 0.06);

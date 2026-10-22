@@ -554,7 +554,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 
 
 
-  position:fixed;top:64px;left:50%;transform:translateX(-50%);
+  position:fixed;inset:0;margin:auto;height:fit-content;
 
 
 
@@ -594,7 +594,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 
 
 
-.prof-modal-inner{display:flex;flex-direction:column;min-height:0;flex:1;position:relative;}
+.prof-modal-inner{display:flex;flex-direction:column;min-height:0;flex:1;position:relative;overflow-y:auto;scrollbar-width:thin;}
 
 
 
@@ -663,30 +663,18 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 
 
 .prof-title-tag{
-
-
-
-  font-family:"Rajdhani",sans-serif;font-weight:800;font-size:12px;letter-spacing:.12em;
-
-
-
-  color:#06101e;background:linear-gradient(90deg,#7DF9FF,#B58CFF);
-
-
-
-  padding:3px 12px;border-radius:6px;max-width:100%;white-space:nowrap;
-
-
-
-  overflow:hidden;text-overflow:ellipsis;box-shadow:0 2px 10px rgba(125,249,255,.3);
-
-
-
-  text-transform:uppercase;
-
-
-
+  display:inline-flex;align-items:center;gap:7px;
+  font-family:"Rajdhani",sans-serif;font-weight:900;font-size:12px;letter-spacing:.14em;
+  color:#EAF6FF;
+  background:linear-gradient(160deg,rgba(125,249,255,.18),rgba(181,140,255,.12));
+  border:1px solid rgba(125,249,255,.5);
+  padding:4px 13px 4px 10px;border-radius:999px;max-width:100%;white-space:nowrap;
+  overflow:hidden;
+  box-shadow:0 0 14px rgba(125,249,255,.25),inset 0 0 10px rgba(125,249,255,.06);
+  text-transform:uppercase;text-shadow:0 0 8px rgba(125,249,255,.55);
 }
+.prof-title-tag .ptt-crown{display:inline-flex;flex:none;color:#FFD700;filter:drop-shadow(0 0 4px rgba(255,215,0,.75));}
+.prof-title-tag .ptt-txt{overflow:hidden;text-overflow:ellipsis;}
 
 
 
@@ -1082,7 +1070,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 
 
 
-  color:#7DF9FF;white-space:nowrap;margin-left:auto;text-shadow:0 0 8px rgba(125,249,255,.3);
+  color:#7DF9FF;white-space:nowrap;margin-left:auto;text-shadow:0 0 8px rgba(125,249,255,.3);max-width:70%;overflow:hidden;text-overflow:ellipsis;
 
 
 
@@ -1119,6 +1107,21 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 
 
 .prof-body::-webkit-scrollbar-thumb{background:rgba(125,249,255,.25);border-radius:6px;}
+
+/* panel samping stat: di layar lebar nempel di kanan, di layar sempit turun ke bawah */
+.prof-side{
+  padding:16px 18px 20px;display:flex;flex-direction:column;gap:18px;
+  min-height:0;scrollbar-width:thin;scrollbar-color:rgba(125,249,255,.25) transparent;
+  border-top:1px solid rgba(125,249,255,.14);
+}
+.prof-side::-webkit-scrollbar{width:6px;}
+.prof-side::-webkit-scrollbar-thumb{background:rgba(125,249,255,.25);border-radius:6px;}
+@media(min-width:1000px){
+  .modal-profile{width:min(1120px,calc(100vw - 32px));}
+  .prof-modal-inner{flex-direction:row;align-items:stretch;}
+  .prof-top{flex:1;min-width:0;align-items:center;padding:20px;border-bottom:none;border-right:1px solid rgba(125,249,255,.18);}
+  .prof-side{flex:0 0 400px;max-width:44%;border-top:none;border-left:1px solid rgba(125,249,255,.18);overflow-y:auto;padding-top:44px;}
+}
 
 
 
@@ -1302,7 +1305,7 @@ button{font-family:inherit;color:inherit;background:none;border:none;cursor:poin
 
 
 
-  .modal-profile{top:54px;width:calc(100vw - 16px);max-height:calc(100vh - 68px);}
+  .modal-profile{width:calc(100vw - 16px);max-height:calc(100vh - 68px);}
 
 
 
@@ -1695,6 +1698,30 @@ body.on-lobby .hub-mid{max-width:none}
 
 
 .center-dock{position:static;display:flex;flex-direction:row;align-items:center;gap:8px;}
+/* ---- MENU FOOTER (ganti ikon profil) ---- */
+.foot-menu{
+  position:absolute;left:0;bottom:calc(100% + 10px);
+  min-width:200px;padding:6px;border-radius:14px;
+  display:none;flex-direction:column;gap:2px;
+  background:rgba(10,14,22,.97);border:1px solid rgba(125,249,255,.28);
+  box-shadow:0 18px 44px rgba(0,0,0,.82), 0 0 18px rgba(125,249,255,.08);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  z-index:120;animation:fmIn .16s ease-out;
+}
+.foot-menu.show{display:flex;}
+@keyframes fmIn{from{opacity:0;transform:translateY(6px)}}
+.fm-item{
+  display:flex;align-items:center;gap:10px;width:100%;
+  padding:9px 11px;border:0;border-radius:9px;background:none;
+  font-family:"Rajdhani",sans-serif;font-weight:700;font-size:12px;letter-spacing:.12em;
+  color:#cbd5e1;text-transform:uppercase;cursor:pointer;text-align:left;
+  transition:background .15s,color .15s;
+}
+.fm-item svg{width:16px;height:16px;flex:none;color:#7DF9FF}
+.fm-item:hover{background:rgba(125,249,255,.12);color:#fff}
+.fm-item.danger{color:#fda4af}
+.fm-item.danger svg{color:#fb7185}
+.fm-item.danger:hover{background:rgba(251,113,133,.14);color:#ffe4e6}
 
 
 
@@ -46785,7 +46812,10 @@ body.battle-full .fighter.foe.ko {
 /* ====== GLOBAL LUCK WIDGET — di dalam lobby, di atas loadout bar ====== */
 .hub-gl-widget{
   width:100%;
-  padding:0 0 6px 0;
+  padding:0;
+  margin:0 0 16px;
+  z-index:6;
+  transform:translateY(-32px);
 }
 .hub-gl-widget .glw-wrap{
   margin-bottom:0;
@@ -46793,6 +46823,9 @@ body.battle-full .fighter.foe.ko {
   border:1px solid rgba(56,189,248,.28);
   border-radius:10px;
   box-shadow:0 2px 12px rgba(0,0,0,.4);
+}
+@media(max-width:720px){
+  .lobby-hub .hub-gl-widget{width:min(340px,88vw);margin-inline:auto;}
 }
 
 
@@ -47355,3 +47388,116 @@ body.battle-full .fighter.foe.ko {
 .topup-redeem-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(255,165,0,0.35); }
 .topup-redeem-btn:active { transform: translateY(0); }
 .topup-redeem-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+/* ============================================================
+   MODAL DROP RATE INF TOWER — REDESIGN MINIMALIS (twr-)
+   ============================================================ */
+.tw-drop-modal{ max-width:480px; border-radius:16px; }
+.tw-drop-modal-body{ padding:14px 16px 18px; gap:16px; }
+@media (max-width:520px){
+  .tw-drop-modal{ max-width:100%;border-radius:14px; }
+  .tw-drop-modal-body{ padding:12px 12px 16px;gap:12px; }
+  .twr-row{ padding:7px 8px;gap:8px; }
+  .twr-ic{ width:28px;height:28px; }
+  .twr-name{ font-size:12.5px; }
+  .twr-sub{ font-size:10px; }
+  .twr-rate{ min-width:46px;font-size:12px;padding:2px 7px; }
+}
+
+.twr-note{
+  font-size:11px;line-height:1.45;color:#8ea0b6;
+  background:rgba(125,249,255,.05);
+  border:1px solid rgba(125,249,255,.14);
+  border-radius:10px;padding:8px 10px;
+}
+.twr-note b{ color:#cfe9ff;font-weight:800; }
+
+.twr-sec{ display:flex;flex-direction:column;gap:6px; }
+.twr-sec-t{
+  margin:0;
+  font-family:"Rajdhani",sans-serif;font-weight:800;font-size:11px;letter-spacing:.16em;
+  color:#7df9ff;text-transform:uppercase;
+  display:flex;align-items:center;gap:6px;
+}
+.twr-sec-t::before{
+  content:"";width:4px;height:12px;border-radius:2px;
+  background:linear-gradient(180deg,#7df9ff,#c084fc);
+}
+
+.twr-list{
+  display:flex;flex-direction:column;
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:12px;overflow:hidden;
+  background:rgba(255,255,255,.015);
+}
+.twr-row{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 10px;
+  border-bottom:1px solid rgba(255,255,255,.055);
+  transition:background .15s ease;
+}
+.twr-row:last-child{ border-bottom:none; }
+.twr-row:hover{ background:rgba(125,249,255,.05); }
+
+.twr-ic{
+  width:32px;height:32px;flex:none;border-radius:9px;
+  display:grid;place-items:center;overflow:hidden;
+  background:rgba(6,10,17,.85);border:1px solid rgba(255,255,255,.09);
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.5);
+  font-size:15px;color:#7df9ff;
+}
+.twr-ic img{ width:100%;height:100%;object-fit:contain;display:block; }
+
+.twr-txt{ flex:1;min-width:0;display:flex;flex-direction:column;gap:1px; }
+.twr-name{
+  font-family:"Rajdhani",sans-serif;font-weight:800;font-size:13.5px;
+  letter-spacing:.04em;color:#eef4ff;
+}
+.twr-sub{
+  font-size:10.5px;line-height:1.3;color:#7f8ea3;
+}
+
+.twr-rate{
+  flex:none;min-width:52px;text-align:center;
+  font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:13px;letter-spacing:.06em;
+  padding:3px 8px;border-radius:999px;
+  color:#cbd5e1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
+}
+.twr-rate.guar{ color:#5cf0a8;background:rgba(92,240,168,.12);border-color:rgba(92,240,168,.35); }
+.twr-rate.ultra{ color:#ff6b81;background:rgba(255,107,129,.12);border-color:rgba(255,107,129,.35); }
+.twr-row:hover .twr-rate{ filter:brightness(1.12); }
+
+/* Chip loot (pack/artefak/pet) di popup hasil roll */
+.twr-loot-wrap{
+  grid-column:1 / -1;
+  display:flex;flex-wrap:wrap;gap:6px;
+  margin:0 0 10px;padding:0;
+}
+.twr-loot-chip{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:5px 10px 5px 5px;margin:0 6px 6px 0;border-radius:999px;
+  background:linear-gradient(160deg,rgba(255,215,0,.10),rgba(5,18,12,.9));
+  border:1px solid rgba(255,215,0,.35);
+  box-shadow:0 0 10px rgba(255,215,0,.12);
+}
+.twr-loot-chip.rare{
+  background:linear-gradient(160deg,rgba(255,107,129,.12),rgba(20,6,10,.9));
+  border-color:rgba(255,107,129,.4);
+  box-shadow:0 0 10px rgba(255,107,129,.15);
+}
+.twr-loot-ic{
+  width:26px;height:26px;flex:none;border-radius:50%;overflow:hidden;
+  display:grid;place-items:center;font-size:13px;color:#ffd700;
+  background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);
+}
+.twr-loot-chip.rare .twr-loot-ic{ color:#ff6b81; }
+.twr-loot-ic img{ width:100%;height:100%;object-fit:contain;display:block; }
+.twr-loot-name{
+  font-family:"Rajdhani",sans-serif;font-weight:800;font-size:12px;letter-spacing:.05em;
+  color:#eef4ff;white-space:nowrap;
+}
+.twr-loot-cnt{
+  font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:12px;
+  color:#ffd700;min-width:14px;text-align:center;
+}
+

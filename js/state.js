@@ -12,7 +12,7 @@ function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u));}
 function freshState(){
   const s0=STORY_BIBLE.units[0];
   const start=s0?{id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,fav:false,lock:false,mut:"none",shiny:false,trait:"none",count:1}:null;
-  const newState={coins:1000,raidTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},raidShopOwned:{},tower:{best:0,auto:false},battleSpeed:1,
+  const newState={coins:1000,raidTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,totalRolls:0,playSec:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},raidShopOwned:{},tower:{best:0,auto:false},battleSpeed:1,
     cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],history:[],battle:null,
     player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1,sp:0,tree:{}},weather:null,weatherBest:null,potions:0,mythicPotions:0,luckPots:[0,0,0],speedPots:[0,0,0],luckBuffs:[],speedBuffs:[],infTokens:0,
     artOwned:[],artSlots:[null,null],petOwned:[],petEquipped:null,intanRolls:0,idxRewardsClaimed:0,premiumGems:50,rollPacks:{r5k:0,r10k:0,r25k:0,r50k:0,r100k:0}};
@@ -92,6 +92,12 @@ function loadStateFor(name){
   if(!state.rollPacks||typeof state.rollPacks!=="object")state.rollPacks={r5k:0,r10k:0,r25k:0,r50k:0,r100k:0};
   ['r5k','r10k','r25k','r50k','r100k'].forEach(k=>{if(typeof state.rollPacks[k]!=="number"||state.rollPacks[k]<0)state.rollPacks[k]=0;});
   if(typeof state.idxRewardsClaimed!=="number"||state.idxRewardsClaimed<0)state.idxRewardsClaimed=0;
+  /* STAT PROFIL: total roll gabungan (dice + instan pack) & waktu bermain.
+     Save lama tanpa counter: isi dari jumlah kartu yang sudah dimiliki. */
+  if(typeof state.totalRolls!=="number"||state.totalRolls<0){
+    state.totalRolls=(state.stacks||[]).reduce((sum,x)=>sum+(x.count||1),0);
+  }
+  if(typeof state.playSec!=="number"||state.playSec<0)state.playSec=0;
   
   // Safely handle DIFFS and RAID_DIFFS
   if(DIFFS && DIFFS.length && !DIFFS.some(d=>d.k===state.diff))state.diff="normal";
@@ -291,20 +297,7 @@ function fightShout(){
 const app=document.getElementById("app");
 const ROUTES={"#/lobby":"LOBBY","#/":"STORY","#/raid":"BOSS RAID","#/tower":"INFINITE TOWER","#/settings":"PENGATURAN"};
 function route(){const h=location.hash;return ROUTES[h]?h:"#/lobby";}
-// Button profil footer = MUKA kartu utama (deck slot 1), di-crop ke muka pakai .pos kartu.
-function renderFootProfile(){
-  const b=document.getElementById('footAv'); if(!b) return;
-  const eq=equipped(); const cid=eq&&eq.char;
-  const art=(cid&&CARDS[cid])?cardImg(cid):"";
-  if(art){
-    const pos=CARDS[cid].pos?` style="object-position:${CARDS[cid].pos}"`:'';
-    b.innerHTML=`<img src="${art}" alt="${cardName(cid)}" title="${cardName(cid)}"${pos}>`;
-    b.classList.add('has-art');
-  }else{
-    b.innerHTML='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6.5 8-6.5S20 16 20 20"/></svg>';
-    b.classList.remove('has-art');
-  }
-}
+// Button footer kiri = menu (ikon hamburger statis di index.html).
 function renderShell(){
   const cv=document.getElementById("coinVal");if(cv)cv.textContent=fmt(state.coins);
   const gv=document.getElementById("gemVal");if(gv)gv.textContent=fmt(state.premiumGems||0);
@@ -349,7 +342,6 @@ function renderShell(){
   try{const pm=document.getElementById("profModal");if(pm&&pm.style.display!=="none"&&pm.style.display!=="")renderProfile();}catch(e){}
   try{renderWeatherDock();renderBuffDock();startWeatherTick();}catch(e){}
   try{if(typeof startGlobalLuckPoll==='function')startGlobalLuckPoll();}catch(e){}
-  try{renderFootProfile();}catch(e){}
 }
 
 /* =============== DAILY LOGIN 7 HARI =============== */
@@ -389,14 +381,22 @@ function tickDaily(){
   const ms=nextResetMs();
   const c=document.getElementById("dlCount");if(c)c.textContent=fmtCountdown(ms);
 }
-let _dailyLast=null;
+let _dailyLast=null, _playLast=Date.now(), _playSaveAcc=0;
 setInterval(()=>{
   if(!state)return;
+  /* Waktu bermain: akumulasi detik saat tab aktif, persist tiap 30 detik. */
+  const _now=Date.now();
+  const _d=Math.max(0,Math.min(5,(_now-_playLast)/1000));
+  _playLast=_now;
+  if(!document.hidden){state.playSec=(state.playSec||0)+_d;_playSaveAcc+=_d;if(_playSaveAcc>=30){_playSaveAcc=0;save();}}
   tickDaily();
   if(state.lastClaim===_dailyLast)return;
   _dailyLast=state.lastClaim;renderShell();
   if(document.getElementById("dailyModal").classList.contains("show"))renderDaily();
 },1000);
+/* Simpan sinkron saat app ditutup/pindah background supaya playtime tidak hilang. */
+addEventListener("pagehide",()=>{if(state)save();});
+document.addEventListener("visibilitychange",()=>{if(state&&document.hidden)save();});
 
 /* =============== HOME (Story) — kini nyatu di layar Lobby ===============
    Daftar bab dibangun jadi helper (chapListHTML/bindChapList) supaya bisa
