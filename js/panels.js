@@ -346,8 +346,6 @@ function startWeatherTick(){
         const ends=b.getAttribute("data-ends");if(ends)b.textContent=fmtCountdown(+ends-Date.now());
       });
     }
-    /* live refresh modal profil pas terbuka (countdown cuaca/potion) */
-    try{const pm=document.getElementById("profModal");if(pm&&pm.style.display==="flex")renderProfile();}catch(e){}
   },1000);
 }
 
