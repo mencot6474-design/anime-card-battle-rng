@@ -1,0 +1,157 @@
+# PETA STRUKTUR GAME — Anime Card Battle RNG
+
+Vanilla JS SPA. Tanpa build step untuk web. Semua state global, semua render via string HTML.
+Baca file ini dulu; jangan baca `style.css` (48k baris) atau `index.html` utuh kecuali terpaksa — pakai anchor di bawah + grep.
+
+---
+
+## 1. ATURAN KERJA (WAJIB)
+
+1. **Jangan refactor besar / hapus kode** tanpa diminta eksplisit. User sensitif ke perubahan tak diminta.
+2. **Cache-busting:** setiap edit file JS/CSS → naikkan `?v=` di `index.html` (script JS di baris ~710–725, CSS di baris 15–17). Kalau tidak, user lihat versi lama.
+3. **CSS append-only:** perubahan gaya ditambahkan di **akhir `css/style.css`** sebagai blok override. Jangan edit aturan lama di tengah file (bisa menabrak ratusan layar lain).
+4. **Commit** pakai identitas inline (tidak ada global config):
+   `git -c user.name="Qoder Agent" -c user.email="agent@qoder.local" commit -m "..."`
+   Stage **file spesifik**, jangan `git add -A`. Jangan commit `js/supabase-sync.js`, `manifest.json`, `sw.js` yang kotor, dan folder untracked (`android/`, `www/`, `node_modules/`, `supabase/`, `docs/`, `dist/`).
+5. Push/pull hanya kalau diminta. Remote: `origin` → GitHub `mencot6474-design/anime-card-battle-rng` (branch `master`). `gh` CLI tidak ada.
+6. Responsif wajib dicek: desktop 1400×900, HP 500×844, HP landscape ~850×390.
+7. Preview dev server: `http://127.0.0.1:8123` (node_repl static server dengan Range + no-cache). **Jangan dimatikan** — itu preview milik user.
+
+---
+
+## 2. PETA FILE
+
+```
+index.html            shell, semua modal/screen markup, urutan script
+css/style.css         47.9k baris — SEMUA gaya utama (append override di akhir)
+css/story-carousel.css  CSS khusus modal story (diload setelah style.css)
+css/sl-system.css     roll/gacha system
+css/anim-prototipe.css  halaman prototipe (tidak dipakai game)
+js/data.js            STORY_BIBLE, luck helper, data cerita/unit
+js/config.js          config runtime (Supabase dll)
+js/supabase-sync.js   CloudDB (pull/push save)
+js/panels.js          gacha roll, profil, backpack, premium, weather, topup, global luck
+js/topup.js           modal topup (render terpisah)
+js/cards-fx.js        CARDS (index kartu), DIFFS, FX/skill text, mutasi
+js/anime-archetype-attacks.js  definisi attack per archetype
+js/state.js           state global, auth, renderShell, home, mission, story hook
+js/sheetfx.js         efek lembar/slash battle
+js/battle.js          battle engine + render
+js/tower-lobby.js     lobby hub, tower, backpack toggle, modal helper
+js/foe-passives.js    passive musuh
+js/story-carousel.js  modal story (IIFE, ekspor ke window)
+js/raid.js            raid hub/battle/shop + index card + trait/auto-roll
+js/boot.js            router, enterGame, settings, foot menu
+js/pwa.js             install prompt/service worker
+js/coret.js           fitur coret dev (tombol float #crFab)
+assets/{cards,pets,artifacts,images,raid,vfx,audio,bg,frames,sprites}
+tools/cap-sync.mjs    copy web → www (Capacitor)
+docs/TOPUP.md, test-roll-system.md, *-prototype.html, prototipe.html
+```
+
+Urutan load (penting — fungsi global saling pakai):
+`data → config → supabase-sync → panels → topup → cards-fx → anime-archetype-attacks → state → sheetfx → battle → tower-lobby → foe-passives → story-carousel → raid → boot → pwa → coret`
+
+`panels.js` dimuat **sebelum** `cards-fx.js` (CARDS dipakai saat render, bukan saat load). `raid.js` dimuat **setelah** `tower-lobby.js`.
+
+---
+
+## 3. STATE & DATA MODEL
+
+- `let state=null, currentUser=null` — `js/state.js:25`
+- `freshState()` — `js/state.js:12` = bentuk save:
+  `coins, playerLv, cleared[], clearedDiff{}, deck[4], stacks{}, battle{}, player{luckBase,luckFlat,luckPercent,exp,lv,sp,tree{}}, weather{}, potions{}, luckPots{}, speedPots{}, artOwned[], artSlots[], petOwned[], petEquipped[], premiumGems, rollPacks{}`
+- Persist: localStorage `aab-state-v2:<username>`; cloud pull saat `enterGame()`.
+- `const app=document.getElementById("app")` — `js/state.js:297`; semua view di-render ke sini.
+- Routing: `render()` `js/boot.js:144` → `#/` home, `#/raid`, `#/tower`, `#/settings`, default lobby.
+- `enterGame()` `js/boot.js:389`.
+
+Rantai data kartu:
+`STORY_BIBLE` (`js/data.js:100`, chapters → levels → unit/reward/boss)
+→ `MASTER_CARD_INDEX` (`js/panels.js:1663`, diturunkan dari units)
+→ `CARDS` (`js/cards-fx.js:1`, `Object.fromEntries(MASTER_CARD_INDEX...)`)
+→ `DIFFS` (`js/cards-fx.js:139`), `CHAPTERS` (`js/panels.js:1653`).
+Mutasi: `MUT_MULT / MUT_CHANCE_MULT / MUT_LABEL / MUT_COLOR` (`js/cards-fx.js` ~110–119).
+
+Helper kartu: `cardImg, cardName, cardStats, traitChip, mutChip, fxOf, skillText` (cards-fx.js).
+Luck: `luckChance, totalLuck, fmtChance` (data.js).
+
+---
+
+## 4. PETA LAYAR (modal → buka → render → CSS anchor)
+
+| Layar | Modal / root | Buka | Render | CSS (style.css ±) |
+|---|---|---|---|---|
+| Home | `#app` | `render()` | `renderHome` (state.js:458) → `renderLobby` (tower-lobby.js:975) | lobby 3436+ |
+| Story | `#storyModal` | `openStory` (state.js:459 → `window.openStoryCarousel`) | `openStory` IIFE (story-carousel.js:69) | `css/story-carousel.css:21` `.sc-window` |
+| Index kartu | `#indexModal` | `openIndex` (raid.js:670) | `ixRender` (raid.js) | 47800 |
+| Trait / skill tree | `#traitModal` | `openTrait` (raid.js:903) | `renderTrait` (raid.js:907) | 47834 |
+| Weather machine | `#weatherMachineModal` | `openWeatherMachine` (panels.js:1979) | `renderWeatherMachine` (panels.js:2186) | 47834 |
+| Premium shop | `#premiumModal` | `openPremiumShop` (panels.js:1733) | `renderPremiumShop` (panels.js:1749) | 47816, base 45337 |
+| Profil | `#profModal` | `openProfileModal` (panels.js:676) | `renderProfile` (panels.js:765) | 529, fullscreen 47505/47701 |
+| Backpack | `#backpackPanel` | `toggleBackpack` (tower-lobby.js:1111) | `renderBackpackPanel` (panels.js:976) | 47859, base 2539 |
+| Backpack tab item | — | — | `renderBpItems` (1069) / tree 1428 / arts 1500 / pets 1518 | — |
+| Mission | `#missionModal` | `openMission` (state.js:433) | — | — |
+| Start battle | `#startModal` | `openStart` (state.js:508) | — | — |
+| Deck pick | `#deckPickModal` | `openDeckPick` (raid.js:1020) | `renderDeckPick` (raid.js:1022) | — |
+| Battle | `#app` view | `startBattle` (battle.js:1724) | `renderBattle` (battle.js:235) | battle 3992 |
+| Tower | `#app` view | `startTowerBattle` (tower-lobby.js:503) | `renderTower` (121) / `renderTowerBattle` (482) | tower 3436 |
+| Raid | `#app` view | `startRaid` (raid.js:223) | `renderRaid` (14) / hub 22 / pick 171 / battle 203 / result 391 / shop 443 | — |
+| Topup | `#topupModal` | `openTopup` (panels.js:2814) | `renderTopupModal` (panels.js:2696) | topup 46922 |
+| Titles | `#titlesModal` | `openTitlesModal` (panels.js:695) | `renderTitlesModal` (716) | — |
+| Settings | `#app` view | `#/settings` | `renderSettings` (boot.js:9) | — |
+
+Markup modal ada di `index.html` (baris kunci):
+welcome 66, authScreen 74, app 221, profModal 123, titlesModal 200, rollResultPop 290, `#modal` 313, indexModal 315, premiumModal 337, weatherMachineModal 384, missionModal 400, dailyModal 450, storyModal 460 (header 468–486, dock 502–526), startModal 531, traitModal 546, deckPickModal 559, rarePromptModal 569, towerDropModal 574, backpackPanel 708, topupModal 734.
+
+### Pola layar full-screen (index/premium/trait/weather/story/backpack/profil)
+`position:fixed; inset:0; width:100vw; height:100dvh; border-radius:0; min-height:0!important`
+Box dalam = `display:flex; flex-direction:column; overflow:hidden`; header `flex:none` (padding-right 110–120px supaya tidak ketutup tombol dev `#crFab`), body `flex:1; min-height:0` dan hanya body yang scroll.
+Backpack bukan `display:fixed` bawaan — `toggleBackpack` set inline transform; dinetralkan CSS `transform:none!important`.
+
+---
+
+## 5. SISTEM
+
+- **Gacha/roll** — `startRollAnimation` panels.js:534; CSS `sl-system.css` + style.css 1368; roll packs & luck multiplier di `state.player`.
+- **Battle** — engine + render di `battle.js`; damage/FX/attack archetype di `anime-archetype-attacks.js` + `sheetfx.js`; passive lawan `foe-passives.js`.
+- **Tower** — `tower-lobby.js` (hub, shop 301, battle 482, start 503) + `openTowerDropModal` 1143.
+- **Raid** — `raid.js` (hub/pick/battle/result/shop, auto-roll 1075–1076).
+- **Story** — `story-carousel.js` IIFE; mengekspor `window.openStoryCarousel/openStory/closeStory/openMission/selectStoryStage/slideStoryStage/changeStoryChapter/initStoryCarousel`.
+- **Weather** — `WEATHERS` (panels.js ~17), `WEATHER` map, `weatherSvg(id,sz)`, dock `renderWeatherDock` 232, tick `startWeatherTick` 316, machine modal 1979/2186.
+- **Buff dock** — `renderBuffDock` panels.js:277.
+- **Trait/skill tree** — `renderTrait` raid.js:907, auto-roll 1075.
+- **Backpack** — render di panels.js (deck 976, item 1069, tree 1428, artefact 1500, pet 1518); toggle + header close di tower-lobby.js:1111.
+- **Premium shop** — panels.js 1733/1749, CSS 45337 + 47816.
+- **Profil** — panels.js 676/765, CSS 529 + 47505.
+- **Global luck widget** — panels.js 2393/2469/2484, CSS 46776.
+- **Topup** — panels.js 2696/2814 + topup.js; dokumentasi `docs/TOPUP.md`.
+- **Cloud sync** — supabase-sync.js (CloudDB), config di js/config.js.
+- **PWA** — pwa.js + manifest.json + sw.js.
+- **Dev coret** — coret.js, tombol float `#crFab` (kanan atas; layar full-screen WAJIB kasih padding kanan).
+
+---
+
+## 6. RESEP "MAU UBAH X"
+
+- **Tambah/ubah kartu** → `STORY_BIBLE` (data.js) untuk unit cerita; `MASTER_CARD_INDEX` (panels.js:1663) untuk index; art di `assets/cards/art/<slug>.png`. Jangan cascade tier/skill kalau hanya diminta ganti art.
+- **Ubah skill/trait** → `cards-fx.js` (`skillText`, `fxOf`), trait tree `renderTrait` (raid.js:907), passive musuh `foe-passives.js`.
+- **Ubah FX serangan** → `anime-archetype-attacks.js` (definisi) + `sheetfx.js` (render efek) + `assets/vfx`.
+- **Ubah tampilan layar** → cari id modal di `index.html`, render function di tabel atas, lalu **append** override CSS di akhir `css/style.css`.
+- **Ubah gacha/rate** → panels.js area roll (534+), `roll-system.js` (prototipe), `sl-system.css`.
+- **Ubah ekonomi/harga** → konstanta di panels.js (premium/topup), raid.js (`TRAIT_COST`), tower-lobby.js (shop).
+- **Ubah save/state** → `freshState` state.js:12 + migrasi di `enterGame` boot.js:389 + supabase-sync.js.
+- **Tambah layar** → markup di index.html, render fn, route di `render()` boot.js:144 atau tombol di lobby tower-lobby.js:975.
+
+---
+
+## 7. GOTCHA
+
+- Cache-bust `?v=` wajib naik setiap edit; user pakai browser cache agresif. "Masih bug" sering = cache (hard refresh dulu).
+- CSS 48k baris: anchor section di atas hanya perkiraan; pakai `grep -n "\.nama-kelas"`. Semua override baru taruh paling bawah supaya menang specificity/order.
+- Banyak modal punya `.show` class; buka = `classList.add("show")`, tutup = hapus setelah animasi (delay ~300ms).
+- Jangan baca `index.html` penuh — grep id/markup yang dibutuhkan.
+- Headless Edge di Windows punya lebar minimum ~500px; viewport 390 dilaporkan ~492. Pakai 500×844 untuk uji HP.
+- Animasi dev harus dimatikan sebelum mengukur layout headless.
+- Asset gambar besar (artifacts 18M, pets 13M, cards 12M) — jangan base64 inline.
+- `assets/` di-commit; `backups/`, `_tmp/`, `dist/`, `www/`, `node_modules/` bukan sumber utama.
