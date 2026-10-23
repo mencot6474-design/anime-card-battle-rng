@@ -48523,13 +48523,21 @@ body.battle-full .fighter.full-art .f-badges .fbadge{display:inline-flex!importa
 .skfx-ghost{position:absolute;opacity:0;border-radius:11px;background-color:#120a1c;
   background-size:cover;background-position:top center;border:1.5px solid rgba(167,139,250,.8);
   box-shadow:0 0 24px rgba(124,58,237,.5),0 14px 34px rgba(0,0,0,.65);
-  filter:grayscale(.35) brightness(.82) hue-rotate(215deg) saturate(1.55);
+  filter:brightness(.3) saturate(2.6) hue-rotate(215deg) contrast(1.15);
   will-change:transform,opacity,clip-path;transform-origin:center center;z-index:2}
+.skfx-ghost:not(.king)::after{content:"";position:absolute;inset:0;border-radius:inherit;
+  pointer-events:none;background:linear-gradient(180deg,rgba(167,139,250,.16),rgba(76,29,149,.22));
+  mix-blend-mode:screen}
 .skfx-ghost.king{filter:none;border-color:rgba(125,249,255,.65);box-shadow:0 0 22px rgba(10,14,24,.55),0 14px 34px rgba(0,0,0,.7)}
 .skfx-ghost.skfx-quake{animation:skfxQuake .42s linear infinite}
 @keyframes skfxQuake{0%,100%{translate:0 0}25%{translate:-4px 1px}50%{translate:3px -1px}75%{translate:-2px 2px}}
 .bench-rail .bench-sq.skfx-pending{opacity:0!important}
 .bench-rail .bench-sq.skfx-landed{animation:skfxPop .55s cubic-bezier(.2,.9,.25,1.15)}
 @keyframes skfxPop{0%{transform:scale(.7);filter:brightness(2) saturate(1.6)}100%{transform:scale(1)}}
+/* pre-beat "kena pukul" (hit-shake) & kartu mati — dipakai .fighter saat FX jalan */
+.fighter.skfx-hit{animation:skfxCardHit .34s ease-out}
+@keyframes skfxCardHit{0%{transform:translateX(0);filter:brightness(2.4) saturate(.4)}18%{transform:translateX(-6px)}36%{transform:translateX(5px)}54%{transform:translateX(-4px)}72%{transform:translateX(2px)}100%{transform:none;filter:none}}
+.fighter.skfx-dead{filter:grayscale(1) brightness(.32) contrast(1.1)}
+.fighter.skfx-quake{animation:skfxQuake .42s linear infinite}
 
 
