@@ -9241,7 +9241,7 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 
 
 
-.hub-center.mut-gold:not(.shiny) .hc-name-top.hc-mut-name::after,.hub-center.mut-rainbow:not(.shiny) .hc-name-top.hc-mut-name::after,.hub-center.mut-secret:not(.shiny) .hc-name-top.hc-mut-name::after{content:attr(data-text);position:absolute;left:0;top:0;white-space:nowrap;font:inherit;line-height:inherit;letter-spacing:inherit;text-shadow:none;-webkit-text-stroke:0 transparent;pointer-events:none;color:transparent;-webkit-text-fill-color:transparent;background:var(--hc-mut-name-sweep);background-size:300% 100%;background-position:100% 50%;background-repeat:no-repeat;-webkit-background-clip:text;background-clip:text;filter:brightness(1.35);animation:hcMutNameSweep 2s linear infinite alternate}
+.hub-center.mut-gold:not(.shiny) .hc-name-top.hc-mut-name::after,.hub-center.mut-rainbow:not(.shiny) .hc-name-top.hc-mut-name::after,.hub-center.mut-secret:not(.shiny) .hc-name-top.hc-mut-name::after{content:attr(data-text);position:absolute;left:0;top:0;white-space:nowrap;font:inherit;line-height:inherit;letter-spacing:inherit;text-shadow:none;-webkit-text-stroke:0 transparent;pointer-events:none;color:transparent;-webkit-text-fill-color:transparent;background:var(--hc-mut-name-sweep);background-size:300% 100%;background-position:100% 50%;background-repeat:no-repeat;-webkit-background-clip:text;background-clip:text;filter:brightness(1.35);animation:hcMutNameSweep 2s var(--fx-combo-tf,linear) infinite alternate}
 
 
 
@@ -35345,7 +35345,7 @@ body.battle-full .fighter.me,body.battle-full .fighter.foe{
 
 
 
-  -webkit-background-clip:text;background-clip:text;filter:brightness(1.35);animation:hcMutNameSweep 2s linear infinite alternate
+  -webkit-background-clip:text;background-clip:text;filter:brightness(1.35);animation:hcMutNameSweep 2s var(--fx-combo-tf,linear) infinite alternate
 
 
 
@@ -35417,7 +35417,7 @@ body.battle-full .fighter.me,body.battle-full .fighter.foe{
 
 
 
-.battle-grid.tower-stage .fighter .f-name.f-mut-gold::after,.battle-grid.tower-stage .fighter .f-name.f-mut-rainbow::after,.battle-grid.tower-stage .fighter .f-name.f-mut-secret::after{animation:hcMutNameSweep 2s linear infinite alternate}
+.battle-grid.tower-stage .fighter .f-name.f-mut-gold::after,.battle-grid.tower-stage .fighter .f-name.f-mut-rainbow::after,.battle-grid.tower-stage .fighter .f-name.f-mut-secret::after{animation:hcMutNameSweep 2s var(--fx-combo-tf,linear) infinite alternate}
 
 
 
@@ -35661,7 +35661,7 @@ body.battle-full .fighter.me,body.battle-full .fighter.foe{
 
 
 
-#indexModal .ixc-name.ixc-mut-name::after{content:attr(data-text);position:absolute;left:0;top:0;white-space:nowrap;font:inherit;line-height:inherit;letter-spacing:inherit;text-shadow:none;-webkit-text-stroke:0 transparent;pointer-events:none;color:transparent;-webkit-text-fill-color:transparent;background:var(--ix-mut-name-sweep);background-size:300% 100%;background-position:100% 50%;background-repeat:no-repeat;-webkit-background-clip:text;background-clip:text;filter:brightness(1.35);animation:hcMutNameSweep 2s linear infinite alternate}
+#indexModal .ixc-name.ixc-mut-name::after{content:attr(data-text);position:absolute;left:0;top:0;white-space:nowrap;font:inherit;line-height:inherit;letter-spacing:inherit;text-shadow:none;-webkit-text-stroke:0 transparent;pointer-events:none;color:transparent;-webkit-text-fill-color:transparent;background:var(--ix-mut-name-sweep);background-size:300% 100%;background-position:100% 50%;background-repeat:no-repeat;-webkit-background-clip:text;background-clip:text;filter:brightness(1.35);animation:hcMutNameSweep 2s var(--fx-combo-tf,linear) infinite alternate}
 
 
 
@@ -35737,7 +35737,7 @@ body.battle-full .fighter.me,body.battle-full .fighter.foe{
 
 
 
-#indexModal .ixc-name.hc-mut-name::after{content:attr(data-text);position:absolute;left:0;top:0;white-space:nowrap;font:inherit;line-height:inherit;letter-spacing:inherit;text-shadow:none;-webkit-text-stroke:0 transparent;pointer-events:none;color:transparent;-webkit-text-fill-color:transparent;background:var(--hc-mut-name-sweep);background-size:300% 100%;background-position:100% 50%;background-repeat:no-repeat;-webkit-background-clip:text;background-clip:text;filter:brightness(1.35);animation:hcMutNameSweep 2s linear infinite alternate}
+#indexModal .ixc-name.hc-mut-name::after{content:attr(data-text);position:absolute;left:0;top:0;white-space:nowrap;font:inherit;line-height:inherit;letter-spacing:inherit;text-shadow:none;-webkit-text-stroke:0 transparent;pointer-events:none;color:transparent;-webkit-text-fill-color:transparent;background:var(--hc-mut-name-sweep);background-size:300% 100%;background-position:100% 50%;background-repeat:no-repeat;-webkit-background-clip:text;background-clip:text;filter:brightness(1.35);animation:hcMutNameSweep 2s var(--fx-combo-tf,linear) infinite alternate}
 
 
 
@@ -43893,7 +43893,7 @@ body.battle-full .fighter.phantom-enter {
 
 
 
-  animation:hcMutNameSweep 2s linear infinite alternate;
+  animation:hcMutNameSweep 2s var(--fx-combo-tf,linear) infinite alternate;
 
 
 
@@ -44817,7 +44817,7 @@ body.battle-full .fighter.foe.ko {
 
   filter: brightness(1.6);
 
-  animation: hcMutNameSweep 2s linear infinite alternate;
+  animation: hcMutNameSweep 2s var(--fx-combo-tf,linear) infinite alternate;
 
   z-index: 5;
 
@@ -44857,7 +44857,7 @@ body.battle-full .fighter.foe.ko {
 
   text-shadow: none !important;
 
-  animation: shinyGradient2WayFlow 2.8s ease-in-out infinite alternate !important;
+  animation: shinyGradient2WayFlow 2.8s var(--fx-combo-tf,ease-in-out) infinite alternate !important;
 
 }
 
@@ -44973,7 +44973,7 @@ body.battle-full .fighter.foe.ko {
 
 
 
-  animation: shinyGradient2WayFlow 2.4s ease-in-out infinite alternate !important;
+  animation: shinyGradient2WayFlow 2.4s var(--fx-combo-tf,ease-in-out) infinite alternate !important;
 
 
 
@@ -45077,7 +45077,7 @@ body.battle-full .fighter.foe.ko {
 
 
 
-  animation: shinyGradient2WayFlow 2.2s ease-in-out infinite alternate !important;
+  animation: shinyGradient2WayFlow 2.2s var(--fx-combo-tf,ease-in-out) infinite alternate !important;
 
 
 
@@ -45177,7 +45177,7 @@ body.battle-full .fighter.foe.ko {
 
 
 
-  animation: shinyGradient2WayFlow 2.4s ease-in-out infinite alternate !important;
+  animation: shinyGradient2WayFlow 2.4s var(--fx-combo-tf,ease-in-out) infinite alternate !important;
 
 
 
@@ -45281,7 +45281,7 @@ body.battle-full .fighter.foe.ko {
 
 
 
-  animation: shinyGradient2WayFlow 2s ease-in-out infinite alternate !important;
+  animation: shinyGradient2WayFlow 2s var(--fx-combo-tf,ease-in-out) infinite alternate !important;
 
 
 
@@ -48626,10 +48626,23 @@ html.fps-locked{
 }
 /* HOVER-ONLY combo/ring: 65 tile visible × 2 animasi background-position = ~2000
    repaint/detik walau udah steps(90). Bekukan animasi di semua tile yang gak di-hover,
-   hanya tile yang lagi di-hover aja yang hidup. Tetap terasa "kartu hidup" saat
-   inspeksi, tapi grid diem = CPU lega. */
-html.fps-locked :is(.bp-tile,.bp-slot.filled,.dp-card,.rrc,#indexModal .ix-cell):not(:hover),
-html.fps-locked :is(.bp-tile,.bp-slot.filled,.dp-card,.rrc,#indexModal .ix-cell):not(:hover)::before{
+   hanya tile yang lagi di-hover aja yang hidup. Termasuk pseudo/descendant (holoSheen
+   di .ix-cell.shiny::after, hcMutNameSweep di nama ::after, dll). */
+html.fps-locked :is(.bp-tile,.bp-slot.filled,.dp-card,.rrc):not(:hover),
+html.fps-locked :is(.bp-tile,.bp-slot.filled,.dp-card,.rrc):not(:hover) *,
+html.fps-locked :is(.bp-tile,.bp-slot.filled,.dp-card,.rrc):not(:hover)::before,
+html.fps-locked :is(.bp-tile,.bp-slot.filled,.dp-card,.rrc):not(:hover)::after,
+html.fps-locked :is(.bp-tile,.bp-slot.filled,.dp-card,.rrc):not(:hover) *::before,
+html.fps-locked :is(.bp-tile,.bp-slot.filled,.dp-card,.rrc):not(:hover) *::after,
+/* Index butuh #indexModal ID-level supaya menang vs rule seperti
+   `#indexModal .ix-cell.shiny.m-gold .ixc-name` (specificity 1,4,0). */
+html.fps-locked #indexModal .ix-cell:not(:hover),
+html.fps-locked #indexModal .ix-cell:not(:hover) [class],
+html.fps-locked #indexModal .ix-cell:not(:hover) [class]::before,
+html.fps-locked #indexModal .ix-cell:not(:hover) [class]::after,
+html.fps-locked #indexModal .ix-cell:not(:hover) [class] [class],
+html.fps-locked #indexModal .ix-cell:not(:hover)::before,
+html.fps-locked #indexModal .ix-cell:not(:hover)::after{
   animation-name: none !important;
 }
 html.fps-locked :is(.bp-tile,.bp-slot.filled,.dp-card,.rrc,#indexModal .ix-cell):hover,
@@ -48655,8 +48668,13 @@ html.fps-locked body.bp-open .lobby-hub *::after,
 html.fps-locked body.bp-open .hub-center *::before,
 html.fps-locked body.bp-open .hub-center *::after,
 html.fps-locked body.bp-open .mut-hover *::before,
-html.fps-locked body.bp-open .mut-hover *::after{
-  animation: none !important;
+html.fps-locked body.bp-open .mut-hover *::after,
+/* INDEX-OPEN: modal index juga nutup penuh layar -> lobby di belakang gak keliatan. */
+html.fps-locked body:has(#indexModal.show) #app > *:not(#indexModal),
+html.fps-locked body:has(#indexModal.show) #app > *:not(#indexModal) *,
+html.fps-locked body:has(#indexModal.show) #app > *:not(#indexModal) *::before,
+html.fps-locked body:has(#indexModal.show) #app > *:not(#indexModal) *::after{
+  animation-name: none !important;
 }
 /* chipBreath = opacity animasi di 59 shiny-badge/shiny-pill. Walau opacity
    composited, tiap animasi aktif tetap memicu style recalc di element-nya tiap
