@@ -308,7 +308,7 @@ function psyBarrageFx(o){
   const rm=me.getBoundingClientRect(),rf=foe.getBoundingClientRect();
   if(!rm.width||!rf.width)return;
   const railEl=document.querySelector(".foe-rail");const rr=railEl?railEl.getBoundingClientRect():null;
-  const W=window.innerWidth,H=window.innerHeight,dpr=Math.min(2,window.devicePixelRatio||1);
+  const W=window.innerWidth,H=window.innerHeight,dpr=FXDPR();
   const cv=document.createElement("canvas");cv.id="psyCanvas";cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
   cv.style.cssText="position:fixed;left:0;top:0;width:100vw;height:100vh;pointer-events:none;z-index:69";
   document.body.appendChild(cv);
@@ -444,7 +444,7 @@ function rubberBounceFx(){
   me.classList.remove("rubber-squash");void me.offsetWidth;me.classList.add("rubber-squash");
   setTimeout(()=>me.classList.remove("rubber-squash"),550);
   const rm=me.getBoundingClientRect(),rf=foe.getBoundingClientRect();
-  const W=window.innerWidth,H=window.innerHeight,dpr=Math.min(2,window.devicePixelRatio||1);
+  const W=window.innerWidth,H=window.innerHeight,dpr=FXDPR();
   const cv=document.createElement("canvas");cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
   cv.style.cssText="position:fixed;left:0;top:0;width:100vw;height:100vh;pointer-events:none;z-index:69";
   document.body.appendChild(cv);
@@ -500,7 +500,7 @@ function bajrangGunFx(o){
   if(!foe||!me)return;
   const rf=foe.getBoundingClientRect(),rm=me.getBoundingClientRect();if(!rf.width)return;
   const railEl=document.querySelector(".foe-rail");const rr=railEl?railEl.getBoundingClientRect():null;
-  const W=window.innerWidth,H=window.innerHeight,dpr=Math.min(2,window.devicePixelRatio||1);
+  const W=window.innerWidth,H=window.innerHeight,dpr=FXDPR();
   const cv=document.createElement("canvas");cv.id="bjCanvas";cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
   cv.style.cssText="position:fixed;left:0;top:0;width:100vw;height:100vh;pointer-events:none;z-index:68";
   document.body.appendChild(cv);
@@ -598,7 +598,7 @@ function hollowPurpleFx(o){
   const foe=document.querySelector('.fighter.foe'),me=document.querySelector('.fighter.me');
   if(!foe||!me)return;
   const rf=foe.getBoundingClientRect(),rm=me.getBoundingClientRect();if(!rf.width)return;
-  const W=window.innerWidth,H=window.innerHeight,dpr=Math.min(2,window.devicePixelRatio||1);
+  const W=window.innerWidth,H=window.innerHeight,dpr=FXDPR();
   const cv=document.createElement('canvas');cv.id='hpCanvas';cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
   cv.style.cssText='position:fixed;left:0;top:0;width:100vw;height:100vh;pointer-events:none;z-index:68';
   document.body.appendChild(cv);
@@ -806,7 +806,7 @@ function havocRocketFx(o){
   if(!rf.width||!rt.width)return;
   const railEl=document.querySelector(toSel.includes("foe")?".foe-rail":".bench-rail");
   const rr=railEl?railEl.getBoundingClientRect():null;
-  const W=window.innerWidth,H=window.innerHeight,dpr=Math.min(2,window.devicePixelRatio||1);
+  const W=window.innerWidth,H=window.innerHeight,dpr=FXDPR();
   const cv=document.createElement("canvas");cv.id="hrCanvas";cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
   cv.style.cssText="position:fixed;left:0;top:0;width:100vw;height:100vh;pointer-events:none;z-index:68";
   document.body.appendChild(cv);
@@ -1042,7 +1042,7 @@ function worldEnderFx(o){
   const revived=!!o.revived;
   const railEl=document.querySelector(toSel.includes("foe")?".foe-rail":".bench-rail");
   const rr=railEl?railEl.getBoundingClientRect():null;
-  const W=window.innerWidth,H=window.innerHeight,dpr=Math.min(2,window.devicePixelRatio||1);
+  const W=window.innerWidth,H=window.innerHeight,dpr=FXDPR();
   const cv=document.createElement("canvas");cv.id="weCanvas";cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
   cv.style.cssText="position:fixed;left:0;top:0;width:100vw;height:100vh;pointer-events:none;z-index:68";
   document.body.appendChild(cv);
@@ -1366,7 +1366,7 @@ function worldEnderReviveFx(sel){
   if(!el)return;
   const r=el.getBoundingClientRect();
   if(!r.width)return;
-  const W=window.innerWidth,H=window.innerHeight,dpr=Math.min(2,window.devicePixelRatio||1);
+  const W=window.innerWidth,H=window.innerHeight,dpr=FXDPR();
   const cv=document.createElement("canvas");cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
   cv.style.cssText="position:fixed;left:0;top:0;width:100vw;height:100vh;pointer-events:none;z-index:69";
   document.body.appendChild(cv);
@@ -1425,7 +1425,7 @@ function gammaRayFx(o){
   if(!rf.width||!rt.width)return;
   const railEl=document.querySelector(toSel.includes("foe")?".foe-rail":".bench-rail");
   const rr=railEl?railEl.getBoundingClientRect():null;
-  const W=window.innerWidth,H=window.innerHeight,dpr=Math.min(2,window.devicePixelRatio||1);
+  const W=window.innerWidth,H=window.innerHeight,dpr=FXDPR();
   const cv=document.createElement("canvas");cv.id="grCanvas";cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
   cv.style.cssText="position:fixed;left:0;top:0;width:100vw;height:100vh;pointer-events:none;z-index:68";
   document.body.appendChild(cv);
@@ -1652,7 +1652,7 @@ function causalityFx(sel){
   if(!el)return;
   const r=el.getBoundingClientRect();
   if(!r.width)return;
-  const W=window.innerWidth,H=window.innerHeight,dpr=Math.min(2,window.devicePixelRatio||1);
+  const W=window.innerWidth,H=window.innerHeight,dpr=FXDPR();
   const cv=document.createElement("canvas");cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
   cv.style.cssText="position:fixed;left:0;top:0;width:100vw;height:100vh;pointer-events:none;z-index:69";
   document.body.appendChild(cv);

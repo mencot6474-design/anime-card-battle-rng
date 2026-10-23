@@ -150,7 +150,7 @@ function ensureFxCanvas(){
 }
 function resizeFxCanvas(){
   if(!fxCv)return;
-  var dpr=Math.min(2,window.devicePixelRatio||1);
+  var dpr=FXDPR();
   fxCv.width=Math.round(window.innerWidth*dpr);
   fxCv.height=Math.round(window.innerHeight*dpr);
   if(fxCtx)fxCtx.setTransform(dpr,0,0,dpr,0,0);
@@ -334,8 +334,15 @@ function tickFxCanvas(){
     fxCtx.fillStyle=g.color;
     fxCtx.strokeStyle="#ffffff";
     fxCtx.lineWidth=0.8;
-    fxCtx.shadowColor=g.color;
-    fxCtx.shadowBlur=12;
+    /* Glow murah: segitiga halo lebih besar & transparan (pengganti shadowBlur per partikel). */
+    fxCtx.globalAlpha=Math.max(0,g.alpha*0.28);
+    fxCtx.beginPath();
+    fxCtx.moveTo(0,-g.size*1.9);
+    fxCtx.lineTo(g.size*1.4,g.size*0.95);
+    fxCtx.lineTo(-g.size*1.15,g.size*1.5);
+    fxCtx.closePath();
+    fxCtx.fill();
+    fxCtx.globalAlpha=Math.max(0,g.alpha);
     fxCtx.beginPath();
     fxCtx.moveTo(0,-g.size);
     fxCtx.lineTo(g.size*0.75,g.size*0.5);
@@ -354,18 +361,23 @@ function tickFxCanvas(){
     sp.alpha-=sp.decay;
     if(sp.alpha<=0){sparks.splice(k,1);continue;}
     fxCtx.save();
-    fxCtx.globalAlpha=Math.max(0,sp.alpha);
     fxCtx.strokeStyle=sp.color;
     fxCtx.fillStyle=sp.color;
-    fxCtx.shadowColor=sp.color;
-    fxCtx.shadowBlur=10;
+    /* Glow murah: sapuan lebar & transparan (pengganti shadowBlur per partikel). */
+    fxCtx.globalAlpha=Math.max(0,sp.alpha*0.3);
+    fxCtx.lineCap="round";
+    fxCtx.lineWidth=sp.size*2.4;
+    fxCtx.beginPath();
+    fxCtx.moveTo(sp.x,sp.y);
+    fxCtx.lineTo(sp.x-sp.vx*2.2,sp.y-sp.vy*2.2);
+    fxCtx.stroke();
+    fxCtx.globalAlpha=Math.max(0,sp.alpha);
     if(sp.upward){
       fxCtx.beginPath();
       fxCtx.arc(sp.x,sp.y,sp.size,0,Math.PI*2);
       fxCtx.fill();
     }else{
       fxCtx.lineWidth=2;
-      fxCtx.lineCap="round";
       fxCtx.beginPath();
       fxCtx.moveTo(sp.x,sp.y);
       fxCtx.lineTo(sp.x-sp.vx*2.2,sp.y-sp.vy*2.2);

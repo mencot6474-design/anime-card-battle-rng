@@ -86,7 +86,7 @@
 
   function getCanvas(){
     var W = window.innerWidth, H = window.innerHeight;
-    var dpr = Math.min(2, window.devicePixelRatio || 1);
+    var dpr = FXDPR();
     var cv = document.createElement("canvas");
     cv.width = Math.round(W * dpr);
     cv.height = Math.round(H * dpr);
