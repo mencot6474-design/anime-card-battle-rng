@@ -48000,7 +48000,7 @@ body.on-tower:has(.tactical-tower-page) main#app{padding:0!important;}
 
 @media(max-width:600px){
   body.on-tower:has(.tactical-tower-hub) main#app{
-    height:calc(100dvh - var(--tbh,64px))!important;max-height:calc(100dvh - var(--tbh,64px))!important;
+    height:100dvh!important;max-height:100dvh!important;
     overflow-y:auto!important;
   }
   .tactical-tower-page:has(.tactical-tower-hub){
@@ -48040,7 +48040,7 @@ body.on-raid:has(.hunter-raid-hub) main#app{padding:0!important;width:100%!impor
 
 @media(max-width:900px),(max-height:600px){
   body.on-raid:has(.hunter-raid-hub) main#app{
-    height:calc(100dvh - var(--tbh,64px))!important;max-height:calc(100dvh - var(--tbh,64px))!important;
+    height:100dvh!important;max-height:100dvh!important;
     overflow-y:auto!important;
   }
   .rd-page:has(.hunter-raid-hub){
@@ -48068,4 +48068,26 @@ body.on-raid:has(.hunter-raid-hub) main#app{padding:0!important;width:100%!impor
   }
   .tactical-dossier-panel .dossier-sec:has(.tw-foes) .tw-foes{flex:1 1 auto!important;min-height:0;}
   .tactical-dossier-panel .tw-fcard{height:100%!important;}
+}
+
+/* Topbar ikut ditutup di layar Tower & Raid -> benar-benar full layar */
+body.on-tower:has(.tactical-tower-page) #topbar,
+body.on-raid:has(.rd-page) #topbar{display:none!important;}
+body.on-tower:has(.tactical-tower-page) main#app,
+body.on-raid:has(.rd-page) main#app{
+  height:100dvh!important;max-height:100dvh!important;min-height:0!important;
+}
+/* sisakan ruang kanan-atas untuk tombol dev CORET */
+body.on-tower:has(.tactical-tower-page) .dossier-header,
+body.on-tower:has(.tactical-tower-page) .csc-header{padding-right:110px!important;}
+body.on-raid:has(.rd-page) .hr-topbar,
+body.on-raid:has(.rd-page) .hsh-header,
+body.on-raid:has(.rd-page) .rd-pick-head{padding-right:110px!important;}
+
+@media(max-width:1000px){
+  body.on-tower:has(.tactical-tower-page) .dossier-header,
+  body.on-tower:has(.tactical-tower-page) .csc-header,
+  body.on-raid:has(.rd-page) .hr-topbar,
+  body.on-raid:has(.rd-page) .hsh-header,
+  body.on-raid:has(.rd-page) .rd-pick-head{padding-right:92px!important;}
 }
