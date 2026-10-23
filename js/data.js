@@ -7,16 +7,16 @@ const TIER_COLOR={R:"#9A8A8B",SR:"#C8A2A8",SSR:"#B07A9B",UR:"#2F8FE2",EX:"#FF4D5
 /* TIER = 100% KOSMETIK (warna badge + label). Tidak menentukan drop chance, stat scaling, atau pool.
    Chance tiap kartu di-set manual di field `chance:`. Kalau kartu tidak punya `chance:`, fallback ke
    TIER_CHANCE di bawah (nilai tengah tiap band, supaya card tanpa override tetap masuk akal).
-   Bands (batas bawah inklusif): R < 50k ≤ SR < 500k ≤ SSR < 5jt ≤ UR < 500jt ≤ EX.
+   Bands (batas bawah inklusif): R < 50k ≤ SR < 150k ≤ SSR < 500k ≤ UR < 1jt ≤ EX.
    BOSS di luar band (chance dasar 25 jt) — label kosmetik khusus kartu Toko Raid. */
-const TIER_CHANCE={R:5000,SR:250000,SSR:2500000,UR:50000000,EX:1000000000,BOSS:25000000};
+const TIER_CHANCE={R:5000,SR:100000,SSR:300000,UR:750000,EX:3000000,BOSS:25000000};
 function chanceOf(tier){return TIER_CHANCE[tier]||100;}
 // Auto-suggest tier kosmetik berdasarkan chance. Pakai pas nambah kartu baru biar label sesuai rarity.
 function tierFromChance(ch){
   if(ch<50000)return "R";
-  if(ch<500000)return "SR";
-  if(ch<5000000)return "SSR";
-  if(ch<500000000)return "UR";
+  if(ch<150000)return "SR";
+  if(ch<500000)return "SSR";
+  if(ch<1000000)return "UR";
   return "EX";
 }
 /* Chance ringkas biar gak kepanjangan: 800 → "800", 1500 → "1.5K",
@@ -181,7 +181,7 @@ const STORY_BIBLE={
        - chance = peluang drop "1 in N" per kartu. WAJIB diisi manual; ini satu-satunya yang menentukan rarity.
          Kalau kosong, fallback ke TIER_CHANCE[tier] (nilai tengah band tier).
        - tier = 100% KOSMETIK (warna badge + label). Tidak affect drop rate, stat scaling, atau pool.
-         Saran band: R<50k, SR<500k, SSR<5jt, UR<500jt, EX>=500jt. Helper `tierFromChance(ch)` tersedia.
+         Saran band: R<50k, SR<150k, SSR<500k, UR<1jt, EX>=1jt (EX s/d 5jt). Helper `tierFromChance(ch)` tersedia.
        - noGacha:true -> tidak muncul di Roll (hanya hadiah/Toko Raid).
        - raidBoss:true -> kartu BOSS Toko Raid: TIDAK bisa di-roll di mana pun SEBELI dibeli
          (state.raidShopOwned[id]=true lewat pembelian, fallback: sudah punya stack),
@@ -286,19 +286,19 @@ dimensionShift:{turns} -> saat battle dimulai / kartu ini masuk (startBattle fx0
       desc:"15% peluang membuka serangan dengan dua pukulan beruntun."},
     {id:"CH_COPY_NINJA",name:"COPYBLADE MENTOR",tier:"R",type:"Balanced",skill:"IMPERIAL BLADE FUSION",hp:234,atk:117,art:"assets/cards/art/copyblade-mentor.webp",fx:{copy:1},noGacha:true,
       desc:"Sharingan menyalin SELURUH passive lawan di tiap pertarungan — jurus musuh dipakai balik oleh Copy Ninja."},
-    {id:"CH_AWAKENED_DARK_AVENGER",name:"DARKIN LORD",tier:"SR",type:"Offensive",skill:"THE WORLD ENDER",hp:260,atk:130,art:"assets/cards/art/darkin-lord.webp",fx:{crit:{chance:25,mult:1.4}},noGacha:true,
+    {id:"CH_AWAKENED_DARK_AVENGER",name:"DARKIN LORD",tier:"R",type:"Offensive",skill:"THE WORLD ENDER",hp:260,atk:130,art:"assets/cards/art/darkin-lord.webp",fx:{crit:{chance:25,mult:1.4}},noGacha:true,
       desc:"25% serangan berubah jadi tusukan arus dengan damage ×1.4."},
-    {id:"CH_AWAKENED_PROMISED_CHILD",name:"TRICKSTER ACE",tier:"SR",type:"Balanced",skill:"BUNGEE GUM",hp:293,atk:146,art:"assets/cards/art/trickster-ace.webp",fx:{pierce:30},noGacha:true,
+    {id:"CH_AWAKENED_PROMISED_CHILD",name:"TRICKSTER ACE",tier:"R",type:"Balanced",skill:"BUNGEE GUM",hp:293,atk:146,art:"assets/cards/art/trickster-ace.webp",fx:{pierce:30},noGacha:true,
       desc:"30% peluang serangan menembus pertahanan musuh."},
-    {id:"CH_SIX_PATHS_OF_PAIN",name:"SIXFOLD PROPHET",tier:"SSR",type:"Defensive",skill:"ALMIGHTY PUSH",hp:330,atk:165,art:"assets/cards/art/sixfold-prophet.webp",fx:{evasion:{chance:25,turns:99}},noGacha:true,
+    {id:"CH_SIX_PATHS_OF_PAIN",name:"SIXFOLD PROPHET",tier:"R",type:"Defensive",skill:"ALMIGHTY PUSH",hp:330,atk:165,art:"assets/cards/art/sixfold-prophet.webp",fx:{evasion:{chance:25,turns:99}},noGacha:true,
       desc:"25% setiap serangan musuh ditolak sampai tidak menghasilkan damage sama sekali."},
-    {id:"CH_BIJUU_BEAST",name:"NINE-TAIL PRODIGY",tier:"SSR",type:"Offensive",skill:"LIFE FORCE DRAIN",hp:362,atk:181,art:"assets/cards/art/nine-tail-prodigy.webp",fx:{barrage:{chance:30,min:2,max:3},lifesteal:15},noGacha:true,
+    {id:"CH_BIJUU_BEAST",name:"NINE-TAIL PRODIGY",tier:"R",type:"Offensive",skill:"LIFE FORCE DRAIN",hp:362,atk:181,art:"assets/cards/art/nine-tail-prodigy.webp",fx:{barrage:{chance:30,min:2,max:3},lifesteal:15},noGacha:true,
       desc:"30% peluang menyapu 2-3 kali beruntun, lalu menyerap 15% damage jadi HP."},
     {id:"CH_ULTIMATE_WARRIOR",name:"SOLAR BRAWLER",tier:"SR",type:"Offensive",skill:"LIMIT BREAKER",hp:707,atk:354,art:"assets/cards/art/solar-brawler.webp",fx:{crit:{chance:20,mult:1.5}},noGacha:true,
       desc:"20% serangan berubah jadi ledakan Masenko dengan damage ×1.5."},
     {id:"CH_BODY_SWITCHER",name:"GLITCHED ENTITY",tier:"SR",type:"Balanced",skill:"CORRUPTED DATA",hp:846,atk:423,art:"assets/cards/art/glitched-entity.webp",fx:{double:20,lifesteal:12},noGacha:true,
       desc:"20% peluang menyerang dua kali beruntun, lalu menyerap 12% damage jadi HP."},
-    {id:"CH_NAMEKIAN_SAGE",name:"OCEAN'S GUARDIAN",tier:"SSR",type:"Offensive",skill:"FISH-MAN KARATE: VAGABOND DRILL",hp:978,atk:489,art:"assets/cards/art/oceans-guardian.webp",fx:{pierce:45},noGacha:true,
+    {id:"CH_NAMEKIAN_SAGE",name:"OCEAN'S GUARDIAN",tier:"SR",type:"Offensive",skill:"FISH-MAN KARATE: VAGABOND DRILL",hp:978,atk:489,art:"assets/cards/art/oceans-guardian.webp",fx:{pierce:45},noGacha:true,
       desc:"45% peluang tembakan tembus yang menembus pertahanan musuh."},
     {id:"CH_AWAKENED_PRIDEFUL_PRINCE",name:"ROYAL VANGUARD",tier:"SSR",type:"Offensive",skill:"PRIDE OF THE PRINCE",hp:1120,atk:558,art:"assets/cards/art/royal-vanguard.webp",fx:{highHpDmg:{above:60,bonus:35}},noGacha:true,
       desc:"Selama HP masih di atas 60%, setiap serangan membawa 35% damage tambahan."},
@@ -306,7 +306,7 @@ dimensionShift:{turns} -> saat battle dimulai / kartu ini masuk (startBattle fx0
       desc:"25% peluang melepas gelombang 2-3 tembakan beruntun."},
     {id:"CH_AWAKENED_GALACTIC_TYRANT",name:"GALACTIC TYRANT",tier:"SSR",type:"Absolute Defensive",skill:"DEATH BEAM",hp:1370,atk:686,art:"assets/cards/art/galactic-tyrant.webp",fx:{void:20,lifesteal:15},noGacha:true,
       desc:"20% peluang meniadakan damage musuh dan mengubahnya jadi pemulihan HP, plus menyerap 15% damage."},
-    {id:"CH_CURSED_DOLL",name:"PUPPETEER",tier:"SR",type:"Balanced",skill:"HITOKUGUTSU - HUMAN PUPPET",hp:1210,atk:603,art:"assets/cards/art/puppeteer.webp",fx:{double:18},noGacha:true,
+    {id:"CH_CURSED_DOLL",name:"PUPPETEER",tier:"SSR",type:"Balanced",skill:"HITOKUGUTSU - HUMAN PUPPET",hp:1210,atk:603,art:"assets/cards/art/puppeteer.webp",fx:{double:18},noGacha:true,
       desc:"18% peluang membuka serangan dengan dua hantaman palu beruntun."},
     {id:"CH_SHADOW_SUMMONER",name:"SHADOW MONARCH",tier:"SSR",type:"Defensive",skill:"ARISE",hp:1570,atk:783,art:"assets/cards/art/shadow-monarch.webp",fx:{evasion:{chance:24,turns:2}},noGacha:true,
       desc:"Dua turn pertama punya 24% peluang melepas bayangan penangkis sampai damage musuh jadi nol."},
@@ -325,23 +325,23 @@ dimensionShift:{turns} -> saat battle dimulai / kartu ini masuk (startBattle fx0
       desc:"20% peluang memukul dua kali beruntun — stand-nya bergerak lebih cepat dari penggunanya."},
     {id:"CH_GOLD_EXPERIENCE Requiem",name:"BLESSED SORCERER",tier:"SSR",type:"Balanced",skill:"SIX EYES: HOLLOW PURPLE",hp:3750,atk:1875,art:"assets/cards/art/blessed-sorcerer.webp",fx:{lifesteal:20},noGacha:true,
       desc:"Menyerap 20% dari total damage yang diberikan jadi HP — usaha lawan selalu kembali ke nol."},
-    {id:"CH_THE WORLD",name:"TIME MASTER",tier:"UR",type:"Absolute Defensive",skill:"THE WORLD",hp:4250,atk:2125,art:"assets/cards/art/time-master.webp",fx:{void:25,lifesteal:15},noGacha:true,
+    {id:"CH_THE WORLD",name:"TIME MASTER",tier:"SSR",type:"Absolute Defensive",skill:"THE WORLD",hp:4250,atk:2125,art:"assets/cards/art/time-master.webp",fx:{void:25,lifesteal:15},noGacha:true,
       desc:"25% peluang menghentikan waktu: damage musuh ditiadakan dan berubah jadi pemulihan HP, plus menyerap 15% damage."},
     {id:"CH_OPALESTONE_DREAM",name:"INK ANAMLOY",tier:"UR",type:"Defensive",skill:"THE INK DEMON",hp:4800,atk:2400,art:"assets/cards/art/ink-anamloy.webp",fx:{evasion:{chance:25,turns:99}},noGacha:true,
       desc:"25% setiap serangan musuh dibelokkan oleh mimpi opal putih sampai tidak menghasilkan damage."},
     {id:"CH_HEAVENS_DOOR",name:"HEIGHT OF PAINTING",tier:"UR",type:"Absolute Balanced",skill:"TWILIGHT OF VALHALLA",hp:5500,atk:2750,art:"assets/cards/art/height-of-painting.webp",fx:{pierce:40},noGacha:true,
       desc:"40% peluang serangan menulis ulang halaman pertahanan musuh — menembus total pertahanan."},
-    {id:"CH_TANJIRO_BLADE",name:"SUNBREATH SWORDSMAN",tier:"SSR",type:"Offensive",skill:"WATER BREATHING: FIRST FORM",hp:6200,atk:3100,art:"assets/cards/art/sunbreath-swordsman.webp",fx:{barrage:{chance:30,min:2,max:3}},noGacha:true,
+    {id:"CH_TANJIRO_BLADE",name:"SUNBREATH SWORDSMAN",tier:"UR",type:"Offensive",skill:"WATER BREATHING: FIRST FORM",hp:6200,atk:3100,art:"assets/cards/art/sunbreath-swordsman.webp",fx:{barrage:{chance:30,min:2,max:3}},noGacha:true,
       desc:"30% peluang melepas Jurus Matahari 2-3 tebasan beruntun."},
-    {id:"CH_NEZUKO_BAMBOO",name:"YOUNG SPIRIT VESSEL",tier:"SSR",type:"Defensive",skill:"SHADOW CLONE DODGE",hp:7000,atk:3500,art:"assets/cards/art/young-spirit-vessel.webp",fx:{lifesteal:18},noGacha:true,
+    {id:"CH_NEZUKO_BAMBOO",name:"YOUNG SPIRIT VESSEL",tier:"UR",type:"Defensive",skill:"SHADOW CLONE DODGE",hp:7000,atk:3500,art:"assets/cards/art/young-spirit-vessel.webp",fx:{lifesteal:18},noGacha:true,
       desc:"Menyerap 18% dari total damage yang diberikan jadi HP — darah iblis memulihkan dirinya sendiri."},
-    {id:"CH Zenitsu_THUNDER",name:"THUNDER PRODIGY",tier:"SSR",type:"Offensive",skill:"THUNDERCLAP FLASH",hp:7900,atk:3950,art:"assets/cards/art/thunder-prodigy.webp",fx:{crit:{chance:35,mult:1.7}},noGacha:true,
+    {id:"CH Zenitsu_THUNDER",name:"THUNDER PRODIGY",tier:"UR",type:"Offensive",skill:"THUNDERCLAP FLASH",hp:7900,atk:3950,art:"assets/cards/art/thunder-prodigy.webp",fx:{crit:{chance:35,mult:1.7}},noGacha:true,
       desc:"35% serangan menyambar seperti petir dengan damage ×1.7."},
-    {id:"CH_INUIZO_MASK",name:"WILDHEART HUNTER",tier:"UR",type:"Offensive",skill:"JAJANKEN - ROCK",hp:8900,atk:4450,art:"assets/cards/art/wildheart-hunter.webp",fx:{double:25},noGacha:true,
+    {id:"CH_INUIZO_MASK",name:"WILDHEART HUNTER",tier:"EX",type:"Offensive",skill:"JAJANKEN - ROCK",hp:8900,atk:4450,art:"assets/cards/art/wildheart-hunter.webp",fx:{double:25},noGacha:true,
       desc:"25% peluang menerkam dua kali beruntun dengan dual gergaji berkarat."},
-    {id:"CH_SANEMI_WIND",name:"WHITE HAWK",tier:"UR",type:"Offensive",skill:"GODHAND CAUSALITY",hp:10000,atk:5000,art:"assets/cards/art/white-hawk.webp",fx:{barrage:{chance:35,min:2,max:3}},noGacha:true,
+    {id:"CH_SANEMI_WIND",name:"WHITE HAWK",tier:"EX",type:"Offensive",skill:"GODHAND CAUSALITY",hp:10000,atk:5000,art:"assets/cards/art/white-hawk.webp",fx:{barrage:{chance:35,min:2,max:3}},noGacha:true,
       desc:"35% peluang badai angin menyapu 2-3 kali beruntun."},
-    {id:"CH_SHINOBU_BUTTERFLY",name:"MOON MOTHER",tier:"UR",type:"Absolute Balanced",skill:"AMENOMINAKA",hp:11500,atk:5750,art:"assets/cards/art/moon-mother.webp",fx:{pierce:45,lifesteal:15},noGacha:true,
+    {id:"CH_SHINOBU_BUTTERFLY",name:"MOON MOTHER",tier:"EX",type:"Absolute Balanced",skill:"AMENOMINAKA",hp:11500,atk:5750,art:"assets/cards/art/moon-mother.webp",fx:{pierce:45,lifesteal:15},noGacha:true,
       desc:"45% peluang sengatan beracun menembus total pertahanan, lalu menyerap 15% damage jadi HP."},
     {id:"CH_RULER",name:"RULER",tier:"EX",type:"Absolute",skill:"VENUZDONOA",hp:4787,atk:2394,chance:850000000,art:"assets/cards/art/ruler.webp",
       fx:{revive:1,dmgMult:2,ignoreDef:1},
