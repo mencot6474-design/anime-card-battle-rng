@@ -48504,3 +48504,8 @@ body.battle-full .fighter.full-art .f-badges .mut-badge,
 body.battle-full .fighter.full-art .f-badges .shiny-badge,
 body.battle-full .fighter.full-art .f-badges .fbadge{display:inline-flex!important}
 
+/* ===== SHADOW ARMY (SHADOW KING): kartu bayangan di barisan belakang ===== */
+.fighter.me.shadow-fighter .f-banner img{filter:grayscale(.35) brightness(.75) hue-rotate(215deg) saturate(1.45)}
+.bench-rail .bench-sq.shadow-sq{border-color:rgba(124,58,237,.75)!important;box-shadow:0 0 10px rgba(124,58,237,.4)}
+.bench-rail .bench-sq.shadow-sq img{filter:grayscale(.35) brightness(.78) hue-rotate(215deg) saturate(1.45)}
+

@@ -163,7 +163,7 @@ window.foeFighterInnerHtml=foeFighterInnerHtml;
 
 function meFighterHtml(s,opts){
   opts=opts||{};
-  const st=cardStats(s.char,s.mut,s.trait,s.shiny);
+  const st=s.sk?{hp:s.skHp,atk:s.skAtk}:cardStats(s.char,s.mut,s.trait,s.shiny);
   const maxHp=opts.maxHp!=null?Math.max(1,opts.maxHp):Math.max(1,st.hp||1);
   const curHp=opts.curHp!=null?Math.max(0,Math.min(maxHp,opts.curHp)):maxHp;
   const hpPct=Math.max(0,Math.min(100,curHp/maxHp*100));
@@ -223,10 +223,34 @@ function endPossession(){
   updateMeCard();setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
   setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","MONARCH RETURNS","heal");},200);
 }
+/* ===== SHADOW ARMY (SHADOW KING) =====
+   Shadow = fighter asli yang di-append ke bt.fighters (slot di belakang party) dengan
+   stat 75% musuh yang tumbang. Disimpan di stack: {sk:true, skAtk, skHp, dead}. */
+function skIsShadow(f){return !!(f&&f.sk);}
+function skLivingShadows(){return bt?bt.fighters.filter(f=>skIsShadow(f)&&!f.dead):[];}
+function skFirstShadowIdx(){
+  if(!bt)return -1;
+  for(let i=bt.active+1;i<bt.fighters.length;i++){const f=bt.fighters[i];if(skIsShadow(f)&&!f.dead)return i;}
+  return -1;
+}
+function skKingFx(){if(!bt)return null;const k=bt.fighters.find(f=>f&&!skIsShadow(f)&&(PASSIVE_FX[f.char]||{}).shadowArmy);return k?(PASSIVE_FX[k.char].shadowArmy):null;}
+/* Semua state battle di-key per SLOT (index), jadi saat tukar posisi nilainya ikut dipindah. */
+const SK_SLOT_ARRAYS=["revUsed","atkBuff","dodgeStack","atkCount","standUsed","styleCount","burstStart","entryGuard","dodgeArmed","dodgeCount","execGuard","shatterGuard","wtCount","snatchAtk","snatchHp","regressCharges","bioGuard","splitLeft","splitMult","defyUsed","dsState","atkEntryGuard","sleepLeft","sleepArmed","shockCount","hvCount","hvUses","hvEntryGuard","weCount","bajrangUsed","meteorGuard"];
+function skRotateToRear(a,s){
+  /* Shadow di slot s maju ke slot aktif a; King turun ke barisan paling belakang. Slot < a (sudah tumbang) tetap. */
+  const order=[];
+  for(let i=0;i<a;i++)order.push(i);
+  order.push(s);
+  for(let i=a;i<bt.fighters.length;i++)if(i!==a&&i!==s)order.push(i);
+  order.push(a);
+  bt.fighters=order.map(i=>bt.fighters[i]);
+  SK_SLOT_ARRAYS.forEach(k=>{const arr=bt[k];if(Array.isArray(arr)){const old=arr.slice();bt[k]=order.map(i=>old[i]);}});
+}
 
-function updateMeCard(){if(!bt)return;const f=document.querySelector(".fighter.me");if(f){if(bt.shadow){f.className="fighter me shadow-fighter";f.dataset.tier="EX";f.dataset.char="";f.style.borderColor="#7c3aed";f.innerHTML=meShadowHtml(bt.shadow);return;}f.className="fighter me"+mutGlow(bt.eq.mut)+shinyCls(bt.eq)+(isFullArt(bt.eq.char)?" full-art":"");f.dataset.tier=bt.eq.tier;f.dataset.char=bt.eq.char;f.style.borderColor=bt.eq.mut&&bt.eq.mut!=="none"?MUT_COLOR[bt.eq.mut]:"";f.innerHTML=meFighterHtml(bt.eq,{curHp:bt.pHp,maxHp:bt.pMax});}}
+function updateMeCard(){if(!bt)return;const f=document.querySelector(".fighter.me");if(f){if(bt.shadow){f.className="fighter me shadow-fighter";f.dataset.tier="EX";f.dataset.char="";f.style.borderColor="#7c3aed";f.innerHTML=meShadowHtml(bt.shadow);return;}f.className="fighter me"+mutGlow(bt.eq.mut)+shinyCls(bt.eq)+(isFullArt(bt.eq.char)?" full-art":"")+(bt.eq.sk?" shadow-fighter":"");f.dataset.tier=bt.eq.tier||cardTier(bt.eq.char)||"SR";f.dataset.char=bt.eq.char;f.style.borderColor=bt.eq.mut&&bt.eq.mut!=="none"?MUT_COLOR[bt.eq.mut]:"";f.innerHTML=meFighterHtml(bt.eq,{curHp:bt.pHp,maxHp:bt.pMax});}}
 function benchTile(s){
-  return `<div class="bench-sq" data-tier="${s.tier}" style="border-color:${TIER_COLOR[s.tier]}" title="${cardName(s.char)}"><span class="bench-mini-tier">${s.tier}</span><img src="${cardThumb(s.char)}" alt="${cardName(s.char)}" loading="lazy" decoding="async"><span class="bhp"><i style="width:100%"></i></span></div>`;
+  const tier=s.tier||cardTier(s.char)||"SR";
+  return `<div class="bench-sq${s.sk?" shadow-sq":""}" data-tier="${tier}" style="border-color:${TIER_COLOR[tier]}" title="${s.sk?"SHADOW · ":""}${cardName(s.char)}"><span class="bench-mini-tier">${tier}</span><img src="${cardThumb(s.char)}" alt="${cardName(s.char)}" loading="lazy" decoding="async"><span class="bhp"><i style="width:100%"></i></span></div>`;
 }
 /* Rail cadangan = 3 kotak gambar sejajar (sisa dek setelah fighter aktif), ditambal placeholder biar tetap 3. */
 function benchRailHtml(remaining,caption){
@@ -1842,13 +1866,17 @@ function tagIn(){
   const next=bt.active+1;
   if(next>=bt.fighters.length)return false;
   bt.active=next;bt.eq=bt.fighters[next];bt.justTagged=true;
-  const base=cardStats(bt.eq.char,bt.eq.mut,bt.eq.trait,bt.eq.shiny);
+  const base=bt.eq.sk?{hp:bt.eq.skHp,atk:bt.eq.skAtk}:cardStats(bt.eq.char,bt.eq.mut,bt.eq.trait,bt.eq.shiny);
   bt.pMax=base.hp+(bt.snatchHp[next]||0);bt.pHp=bt.pMax;
   bt.burstStart[next]=bt.turn;
   bt.entryGuard[next]=false;bt.dodgeArmed[next]=false;bt.dodgeCount[next]=0;bt.execGuard[next]=false;bt.wtCount[next]=0;bt.shatterGuard[next]=false;bt.bioGuard[next]=false;
-  const nfx=resolveFx(bt.eq,bt.efx);
+  let nfx=resolveFx(bt.eq,bt.efx);
+  /* Shadow cuma bawa stat, bukan passive kartu asalnya. */
+  if(bt.eq.sk)nfx={};
   if(nfx.burst){bt.pMax=Math.round(base.hp*nfx.burst.mult);bt.pHp=bt.pMax;}
   if(nfx.transform){bt.pMax=Math.round(base.hp*nfx.transform.mult);bt.pHp=bt.pMax;}
+  /* SHADOW ARMY: HP hasil serapan Shadow yang tumbang nambah max HP King saat dia masuk lagi */
+  if(nfx.shadowArmy&&bt.skAbsorb&&bt.skAbsorb.hp>0){bt.pMax+=bt.skAbsorb.hp;bt.pHp=bt.pMax;}
   if(nfx.entryCounter)bt.entryGuard[next]=true;
   if(nfx.executeOnEntry)bt.execGuard[next]=true;
   if(nfx.entryShatter)bt.shatterGuard[next]=true;
@@ -1893,7 +1921,38 @@ function trySave(){
   if(!bt||bt.over||bt.pHp>0)return true;
   /* BAYANGAN JATUH: yang mati cuma summoned shadow — Monarch balik utuh, bukan tag-in/kalah */
   if(bt.shadow){endPossession();return true;}
-  const a=bt.active,fx=resolveFx(bt.eq,bt.efx);
+  const a=bt.active;
+  /* SHADOW tumbang: stat-nya cuma stat (tanpa passive asli) & King menyerap absorbPct% stat-nya */
+  if(bt.eq.sk){
+    bt.eq.dead=true;
+    const kf=skKingFx();
+    if(kf){
+      const ap=(kf.absorbPct!=null)?kf.absorbPct:35;
+      const aa=Math.round(bt.eq.skAtk*ap/100),hh=Math.round(bt.eq.skHp*ap/100);
+      bt.skAbsorb=bt.skAbsorb||{atk:0,hp:0};
+      bt.skAbsorb.atk+=aa;bt.skAbsorb.hp+=hh;
+      setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","LEGION ABSORB +"+fmt(aa)+" ATK +"+fmt(hh)+" HP","heal");},bsMs(320));
+    }
+  }
+  const fx=bt.eq.sk?{}:resolveFx(bt.eq,bt.efx);
+  /* SHADOW ARMY: kematian PERTAMA King -> tukar posisi dengan Shadow pertama (Shadow maju, King hidup
+     penuh di barisan paling belakang). Kalau belum ada Shadow, mati normal. */
+  if(fx.shadowArmy&&!bt.skSwapped){
+    const sIdx=skFirstShadowIdx();
+    if(sIdx>=0){
+      bt.skSwapped=true;bt.justTagged=true;
+      const slot=bt.active;
+      skRotateToRear(slot,sIdx);
+      bt.eq=bt.fighters[slot];
+      bt.pMax=bt.eq.skHp;bt.pHp=bt.pMax;bt.pGuardDr=0;
+      updateMeCard();setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
+      const meEl=document.querySelector(".fighter.me");
+      if(meEl){meEl.classList.add("tag-enter");setTimeout(()=>{try{meEl.classList.remove("tag-enter");}catch(e){}},650);}
+      const rail=document.querySelector(".bench-rail");if(rail)rail.outerHTML=benchRailHtml(bt.fighters.slice(bt.active+1));
+      setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","SHADOW EXCHANGE","heal");},bsMs(300));
+      return true;
+    }
+  }
   /* REGRESSION (Regressor): mati TAPI punya kill tersimpan → bangkit di hpPct% max HP, habisin 1 charge,
      & "skill di-refresh": semua flag sekali-per-battle/window kartu ini di-reset biar balik kayak baru */
   if(fx.regression&&(bt.regressCharges[a]||0)>0){
@@ -2139,6 +2198,7 @@ function playerPhase(){
   bt.trickNext=false;bt.royalNow=false;bt.gunsNow=false;
   const id=bt.eq.char,t=bt.turn;let fx=resolveFx(bt.eq,bt.efx);
   if(bt.shadow)fx={};
+  if(bt.eq.sk)fx={};
   /* UNLIMITED VOID (BLESSED SORCERER): HP < below% max -> set ke healPct% + stun musuh turns, sekali per battle */
   if(fx.unlimitedVoid&&!bt.voidUsed&&bt.pHp<bt.pMax*fx.unlimitedVoid.below/100){
     bt.voidUsed=true;
@@ -2354,7 +2414,7 @@ function playerPhase(){
        setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","TWILIGHT HABIS +"+fmt(vh),"heal");},bsMs(460));
      }
    }
-  let atk=cardStats(id,bt.eq.mut,bt.eq.trait,bt.eq.shiny).atk;
+  let atk=bt.eq.sk?bt.eq.skAtk:cardStats(id,bt.eq.mut,bt.eq.trait,bt.eq.shiny).atk;
   if(bt.atkBuff[a])atk=Math.round(atk*(1+bt.atkBuff[a]/100));
   /* MIRROR status musuh: puppet poison & ink corrupt motong ATK pemain (pola ePoison/eInk) */
   if(bt.pPoisonCut)atk=Math.max(1,Math.round(atk*(1-Math.min(90,bt.pPoisonCut)/100)));
@@ -2367,6 +2427,11 @@ function playerPhase(){
   if(bt.snatchAtk&&bt.snatchAtk[a])atk+=bt.snatchAtk[a];
   if(bt.shadow)atk=bt.shadow.atk;
   let dmgMult=1;
+  /* SHADOW ARMY (SHADOW KING): stat serapan permanen; selama masih ada Shadow hidup damage +atkUp% */
+  if(fx.shadowArmy){
+    if(bt.skAbsorb&&bt.skAbsorb.atk>0)atk+=bt.skAbsorb.atk;
+    if(skLivingShadows().length)dmgMult*=(1+(fx.shadowArmy.atkUp||30)/100);
+  }
   if(fx.dmgMult)dmgMult*=fx.dmgMult;
   /* OPENING HIT: serangan pertama ke kartu musuh BARU ×(1+pct%) — guard dibuang saat percobaan pertama (miss/evade tetap habis) */
   /* DODGE-NEXT (TITAN HUNTER nextOnly): bonus damage dari dodge dipakai di serangan ini (sekali pakai) */
@@ -2773,6 +2838,7 @@ function enemyPhase(){
   if(bt.dizzyLeft>0){bt.dizzyLeft--;if(bt.dizzyLeft<=0){bt.dizzyStack=0;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","DIZZY HABIS","miss");},bsMs(300));}}
   const id=bt.eq.char,t=bt.turn;let fx=resolveFx(bt.eq,bt.efx);
   if(bt.shadow)fx={};
+  if(bt.eq.sk)fx={};
   const efx=(bt.eAbilityOff>0)?{}:(bt.efx||{});
   let eDomain=false,eArise=false,eranton=false,eGalaxy=false,eIceBlast=false,eBajrang=false,ePsychicActive=null,eWorldEnder=null,eGammaRay=false;
   /* FREEZE tick (10TH CAPTAIN): hitungan beku turun tiap giliran musuh — paralel dgn eStun, sebelum blok stun biar bonus ×mult habis pas 2 giliran */
@@ -2936,6 +3002,8 @@ if(bt.ePoison>0)eAtk=Math.max(1,Math.round(eAtk*(1-Math.min(90,bt.ePoison)/100))
     }
     /* ICE SHELL (10TH CAPTAIN): selama kartu ini AKTIF di arena, damage masuk dipangkas `iceShell`% permanen (tanpa timer; hilang pas tag-out) */
     if(!ePierce&&fx.iceShell&&etotal>0){eShots.forEach(s=>s.d=Math.round(s.d*(1-fx.iceShell/100)));etotal=eShots.reduce((x,s)=>x+s.d,0);}
+    /* SHADOW ARMY (SHADOW KING): selama masih ada Shadow hidup, damage masuk dipangkas dr% */
+    if(!ePierce&&fx.shadowArmy&&skLivingShadows().length&&etotal>0){eShots.forEach(s=>s.d=Math.round(s.d*(1-(fx.shadowArmy.dr||15)/100)));etotal=eShots.reduce((x,s)=>x+s.d,0);}
    /* TWILIGHT OF VALHALLA (HEIGHT OF PAINTING): selama aktif, damage masuk dipangkas dmgCut% */
    if(!ePierce&&fx.valhalla&&(bt.valhallaLeft||0)>0&&etotal>0){eShots.forEach(s=>s.d=Math.round(s.d*(1-fx.valhalla.dmgCut/100)));etotal=eShots.reduce((x,s)=>x+s.d,0);}
    /* INK WARD (INK ANAMLOY): selama kartu aktif, damage masuk dipangkas dmgCut% (pola iceShell) */
