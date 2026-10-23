@@ -928,18 +928,24 @@ function hubCardHtml(eq,idAttr,showHideBtn){
     </div>`;
 }
 /* 3D parallax: kartu ikut miring halus mengikuti kursor di layar; saat kursor
-   masuk ke kartu, kemiringan naik dan porosnya mengikuti posisi kursor di kartu. */
+   masuk ke kartu, kemiringan naik dan porosnya mengikuti posisi kursor di kartu.
+   Nilai disimpan di HUB_TILT supaya tidak hilang saat lobby re-render. */
+const HUB_TILT={tx:0,ty:0,cx:0,cy:0};
+function hubTiltCss(x,y){
+  const dx=(x/9)*6,dy=(-y/9)*5;
+  return `perspective(1100px) translate3d(${dx.toFixed(1)}px,${dy.toFixed(1)}px,0) rotateX(${y.toFixed(2)}deg) rotateY(${x.toFixed(2)}deg)`;
+}
 function initHubTilt(card){
   if(!card) return;
   const R_IDLE=2.5,R_HOVER=9,LERP=0.12;
-  let tx=0,ty=0,cx=0,cy=0,raf=0;
+  let raf=0;
   const apply=()=>{
     raf=0;
     if(!card.isConnected){document.removeEventListener("pointermove",onMove);return;}
-    cx+=(tx-cx)*LERP; cy+=(ty-cy)*LERP;
-    const dx=(cx/R_HOVER)*6,dy=(-cy/R_HOVER)*5;
-    card.style.transform=`perspective(1100px) translate3d(${dx.toFixed(1)}px,${dy.toFixed(1)}px,0) rotateX(${cy.toFixed(2)}deg) rotateY(${cx.toFixed(2)}deg)`;
-    if(Math.abs(tx-cx)>0.03||Math.abs(ty-cy)>0.03) raf=requestAnimationFrame(apply);
+    HUB_TILT.cx+=(HUB_TILT.tx-HUB_TILT.cx)*LERP;
+    HUB_TILT.cy+=(HUB_TILT.ty-HUB_TILT.cy)*LERP;
+    card.style.setProperty("--hub-tilt",hubTiltCss(HUB_TILT.cx,HUB_TILT.cy));
+    if(Math.abs(HUB_TILT.tx-HUB_TILT.cx)>0.03||Math.abs(HUB_TILT.ty-HUB_TILT.cy)>0.03) raf=requestAnimationFrame(apply);
   };
   const kick=()=>{if(!raf)raf=requestAnimationFrame(apply);};
   const onMove=(e)=>{
@@ -950,18 +956,18 @@ function initHubTilt(card){
     if(over){
       const nx=(e.clientX-r.left)/Math.max(1,r.width)*2-1;
       const ny=(e.clientY-r.top)/Math.max(1,r.height)*2-1;
-      tx=nx*R_HOVER; ty=-ny*R_HOVER;
+      HUB_TILT.tx=nx*R_HOVER; HUB_TILT.ty=-ny*R_HOVER;
     }else{
-      tx=(e.clientX/Math.max(1,window.innerWidth)*2-1)*R_IDLE;
-      ty=-(e.clientY/Math.max(1,window.innerHeight)*2-1)*R_IDLE;
+      HUB_TILT.tx=(e.clientX/Math.max(1,window.innerWidth)*2-1)*R_IDLE;
+      HUB_TILT.ty=-(e.clientY/Math.max(1,window.innerHeight)*2-1)*R_IDLE;
     }
     kick();
   };
   if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches)return;
-  document.addEventListener("pointermove",onMove,{passive:true});
-  card.addEventListener("pointerleave",()=>{tx=0;ty=0;kick();});
+  card.style.setProperty("--hub-tilt",hubTiltCss(HUB_TILT.cx,HUB_TILT.cy));
   card.style.willChange="transform";
-  card.style.transition="none"; /* lerp per-frame, jangan dobel sama transition CSS */
+  document.addEventListener("pointermove",onMove,{passive:true});
+  card.addEventListener("pointerleave",()=>{HUB_TILT.tx=0;HUB_TILT.ty=0;kick();});
 }
 /* Loadout kiri kartu: kolom vertikal [ARTEFAK 1][ARTEFAK 2][PET]. Klik → Backpack (tab ARTEFAK/PET). */
 function hubLoadoutHtml(){

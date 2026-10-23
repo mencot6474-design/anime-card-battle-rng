@@ -48499,3 +48499,9 @@ body.battle-full .fighter.full-art .f-badges .mut-hover,
 body.battle-full .fighter.full-art .f-badges .mut-badge,
 body.battle-full .fighter.full-art .f-badges .shiny-badge,
 body.battle-full .fighter.full-art .f-badges .fbadge{display:inline-flex!important}
+
+/* ===== LOBBY HUB 3D PARALLAX =====
+   Aturan lama .lobby-hub #hubCard mengunci transform:none!important, jadi
+   inline style kalah. Nilai tilt dikirim lewat custom property (inline) dan
+   dipakai di deklarasi !important dengan specificity lebih tinggi. */
+.lobby-hub #hubCard:not(#_bv2){transform:var(--hub-tilt,none)!important}
