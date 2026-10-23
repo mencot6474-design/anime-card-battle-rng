@@ -842,7 +842,7 @@ function openModal(id){
       </div>
     </div>`;
   m.classList.add("show");
-  document.getElementById("md-use").onclick=()=>{sfx.hit();const di=state.deck.indexOf(s.id);if(di>=0){setDeckSlot(di,null);}else{let e=state.deck.indexOf(null);if(e<0)e=0;setDeckSlot(e,s.id);}openModal(id);renderBackpackPanel();if(!state.battle&&typeof render==="function")render();};
+  document.getElementById("md-use").onclick=()=>{sfx.hit();const di=state.deck.indexOf(s.id);if(di>=0){setDeckSlot(di,null);}else{let e=state.deck.indexOf(null);if(e<0)e=0;setDeckSlot(e,s.id);}openModal(id);renderBackpackPanel();if(!battleLive()&&typeof render==="function")render();};
   document.getElementById("md-fav").onclick=()=>{s.fav=!s.fav;save();openModal(id);renderBackpackPanel();};
   document.getElementById("md-lock").onclick=()=>{s.lock=!s.lock;save();openModal(id);};
   document.getElementById("md-close").onclick=()=>{m.classList.remove("show");renderBackpackPanel();};

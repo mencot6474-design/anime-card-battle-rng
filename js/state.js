@@ -309,6 +309,17 @@ function fightShout(){
 const app=document.getElementById("app");
 const ROUTES={"#/lobby":"LOBBY","#/":"STORY","#/raid":"BOSS RAID","#/tower":"INFINITE TOWER","#/settings":"PENGATURAN"};
 function route(){const h=location.hash;return ROUTES[h]?h:"#/lobby";}
+/* TRUE selama battle apa pun hidup — story (state.battle), raid, atau tower (bt).
+   Dipakai guard polling/loop yang memanggil render(): kalau render() nyasar saat battle,
+   arena dibangun ulang, turn balik 0, dan timer lama tetap jalan (battle jadi dobel cepat). */
+function battleLive(){
+  try{
+    if(state&&state.battle)return true;
+    if(typeof bt!=="undefined"&&bt&&!bt.over)return true;
+    if(typeof raid!=="undefined"&&raid&&!raid.over)return true;
+  }catch(e){}
+  return false;
+}
 // Button footer kiri = menu (ikon hamburger statis di index.html).
 function renderShell(){
   const cv=document.getElementById("coinVal");if(cv)cv.textContent=fmt(state.coins);

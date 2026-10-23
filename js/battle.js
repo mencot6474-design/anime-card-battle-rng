@@ -1726,6 +1726,7 @@ let MADARA_T={wind:280,slash:520,step:120,total:2760};
 /* satu tebasan lurus: garis SELEBAR layar penuh (menembus dua tepi), miring random tipis, lewat di sekitar kartu target */
 function startBattle(){
   window.cutInShown=false;
+  if(bt&&bt.timer){clearTimeout(bt.timer);bt.timer=null;}
   const lv=state.battle.level,en=enemyOf(lv),es=enemyStats(lv);
   const fighters=equippedList();if(!fighters.length)fighters.push(equipped());
   const eq=fighters[0],base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);

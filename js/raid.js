@@ -222,6 +222,19 @@ function renderRaidBattle(){
 }
 function startRaid(){
   const b=raidBossOf(), eq=raidPicked||equipped(), base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
+  /* Arena bisa di-render ulang oleh polling/loop global. Kalau raid masih hidup, lanjutkan —
+     jangan bikin objek baru (turn balik 0) dan jangan tinggalkan timer lama jalan (speed dobel). */
+  if(raid&&!raid.over&&raid.diffKey===b.diffKey&&raid.cid===eq.char){
+    /* DOM baru dari render ulang → kembalikan label & HP ke posisi battle yang sedang jalan. */
+    const tl=document.getElementById("raidTurnLabel");
+    if(tl)tl.innerHTML="TURN<br>"+raid.turn+"/"+raid.cap;
+    const hb=document.getElementById("hpRaid"),ht=document.getElementById("hpRaidT");
+    const hp=Math.max(0,raid.hp);
+    if(hb)hb.style.width=Math.max(0,Math.min(100,hp/raid.max*100))+"%";
+    if(ht)ht.textContent=fmt(hp)+" / "+fmt(raid.max);
+    return;
+  }
+  if(raid&&raid.timer){clearTimeout(raid.timer);raid.timer=null;}
   raid={boss:b,hp:b.hp,max:b.hp,dealt:0,turn:0,cap:RAID_TURNS,atk:base.atk,fx:resolveFx(eq,b.fx||{}),cid:eq.char,over:false,timer:null,domainUsed:false,domainLeft:0,diffKey:b.diffKey,rw:b.rw,havocUses:0,havocGuard:true};
   /* Raid: tanpa cut-in banner VS — langsung masuk arena */
   playFight(()=>{ if(raid&&!raid.over)raid.timer=setTimeout(raidStep,500); },{skipIntro:true});
@@ -1095,7 +1108,7 @@ async function rollTrait(){
   const k=rollTraitPick();
   sfx.crit();
   if(TRAIT[k].atk>=1.5){ save(); renderShell(); renderTrait(); showRarePrompt(k); }
-  else { tgt.trait=k; save(); if(!state.battle&&typeof render==="function")render(); renderTrait(); traitNotify(k); }
+  else { tgt.trait=k; save(); if(!battleLive()&&typeof render==="function")render(); renderTrait(); traitNotify(k); }
 }
 function showRarePrompt(k,auto){
   const t=TRAIT[k];if(!t)return;
@@ -1122,7 +1135,7 @@ function showRarePrompt(k,auto){
   const rr=document.getElementById("rpRoll");if(rr)rr.onclick=auto?resumeAutoRoll:rerollRare;
 }
 function closeRarePrompt(){document.getElementById("rarePromptModal").classList.remove("show");}
-function saveRare(){const k=pendingRare;autoStop();pendingRareAuto=false;const tgt=traitTargetStack();if(tgt&&k)tgt.trait=k;pendingRare=null;closeRarePrompt();save();if(!state.battle&&typeof render==="function")render();renderTrait();if(k)traitNotify(k);}
+function saveRare(){const k=pendingRare;autoStop();pendingRareAuto=false;const tgt=traitTargetStack();if(tgt&&k)tgt.trait=k;pendingRare=null;closeRarePrompt();save();if(!battleLive()&&typeof render==="function")render();renderTrait();if(k)traitNotify(k);}
 function rerollRare(){pendingRare=null;pendingRareAuto=false;closeRarePrompt();rollTrait();}
 /* ===== AUTO ROLL (loop 100ms) ===== */
 function targetLabel(){return autoTargets.size?[...autoTargets].map(k=>TRAIT[k]?TRAIT[k].name:"").filter(Boolean).join(" · "):"centang di DROP RATE";}
@@ -1138,7 +1151,7 @@ async function startAutoRoll(){
   }
   autoRoll=true;autoRollN=0;renderTrait();autoTick();
 }
-function stopAutoRoll(){autoStop();renderTrait();if(!state.battle&&typeof render==="function")render();}
+function stopAutoRoll(){autoStop();renderTrait();if(!battleLive()&&typeof render==="function")render();}
 function traitUiRefresh(){
   const tgt=traitTargetStack();
   const root=document.getElementById("traitModal");
@@ -1205,7 +1218,7 @@ function autoTick(){
   state.coins-=TRAIT_COST;autoRollN++;
   const k=rollTraitPick();
   if(autoRollN%10===0)sfx.crit(); // sfx ditahan tiap 10 roll biar gak nembak terus di 100ms
-  if(autoTargets.has(k)){tgt.trait=k;autoStop();save();if(!state.battle&&typeof render==="function")render();renderTrait();traitNotify(k);return;} // TARGET KENA → simpan + stop
+  if(autoTargets.has(k)){tgt.trait=k;autoStop();save();if(!battleLive()&&typeof render==="function")render();renderTrait();traitNotify(k);return;} // TARGET KENA → simpan + stop
   tgt.trait=k;
   if(autoRollN%10===0)save();
   autoPaint();

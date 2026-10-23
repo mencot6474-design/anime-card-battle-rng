@@ -962,7 +962,7 @@ function bpSetFilter(m){bpMutFilter=m;renderBackpackPanel();}
 function bpMatchesMut(s){return bpMutFilter==="all"||(bpMutFilter==="shiny"?!!s.shiny:(s.mut||"none")===bpMutFilter);}
 function bpCardBorderColor(s){if(s.mut&&s.mut!=="none"&&MUT_COLOR[s.mut])return MUT_COLOR[s.mut];if(s.shiny)return "#7DF9FF";return "var(--line2)";}
 function bpCardBorderKind(s){if(s.shiny&&s.mut&&s.mut!=="none"&&MUT_COLOR[s.mut])return "shiny-"+s.mut;if(s.mut&&s.mut!=="none"&&MUT_COLOR[s.mut])return s.mut;if(s.shiny)return "shiny";return "";}
-function bpClearSlot(i){setDeckSlot(i,null);bpTarget=null;renderBackpackPanel();if(!state.battle&&typeof render==="function")render();}
+function bpClearSlot(i){setDeckSlot(i,null);bpTarget=null;renderBackpackPanel();if(!battleLive()&&typeof render==="function")render();}
 function bpAssign(stackId){
   const s=state.stacks.find(x=>x.id===stackId);if(!s)return;
   let slot=bpTarget;
@@ -971,7 +971,7 @@ function bpAssign(stackId){
   setDeckSlot(slot,s.id);
   bpTarget=null;
   renderBackpackPanel();
-  if(!state.battle&&typeof render==="function")render();
+  if(!battleLive()&&typeof render==="function")render();
 }
 function bpFav(stackId){const s=state.stacks.find(x=>x.id===stackId);if(!s)return;s.fav=!s.fav;save();renderBackpackPanel();}
 function bpLock(stackId){const s=state.stacks.find(x=>x.id===stackId);if(!s)return;s.lock=!s.lock;save();renderBackpackPanel();}
@@ -1551,7 +1551,7 @@ function bpToggleArt(id){
   if(i>=0){state.artSlots[i]=null;beep(360,.08,"triangle",.06);toast("DILEPAS",d.name,"#9ca3af");}
   else{let s=state.artSlots.indexOf(null);if(s<0)s=0;state.artSlots[s]=id;beep(680,.12,"triangle",.09);toast("TERPASANG",d.name+" → SLOT "+(s+1),d.color);}
   save();renderShell();renderBackpackPanel();
-  if(!state.battle&&typeof render==="function")render();
+  if(!battleLive()&&typeof render==="function")render();
 }
 function bpArtSlot(i){const id=state.artSlots[i];if(id)bpToggleArt(id);}
 function bpBuyPet(id){
@@ -1567,7 +1567,7 @@ function bpTogglePet(id){
   if(state.petEquipped===id){state.petEquipped=null;beep(360,.08,"triangle",.06);toast("PET DILEPAS",d.name,"#9ca3af");}
   else{state.petEquipped=id;beep(680,.12,"triangle",.09);toast("PET AKTIF",d.name+" · "+luckTxt(d),d.color);}
   save();renderShell();renderBackpackPanel();
-  if(!state.battle&&typeof render==="function")render();
+  if(!battleLive()&&typeof render==="function")render();
 }
 function lobbyPetHtml(){
   const d=state&&state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;
@@ -2042,7 +2042,7 @@ function wmSynthesizeRoll(multi){
   save();
   renderWeatherMachine();
   renderShell();
-  if(!state.battle && typeof render === "function") render();
+  if(!battleLive() && typeof render === "function") render();
   return true;
 }
 
@@ -2195,7 +2195,7 @@ function wmAutoLoop(){
     toast("TARGET TERCAPAI!", "Cuaca " + WEATHER[cur].name + " berhasil diaktifkan pada iterasi #" + wmAutoCount, WEATHER[cur].color);
     wmStopAuto();
     renderWeatherMachine(); // full render sekali saat selesai
-    if(!state.battle && typeof render === "function") render();
+    if(!battleLive() && typeof render === "function") render();
     renderShell();
     return;
   }
@@ -2489,12 +2489,12 @@ function _startGlWidgetTick() {
 function startGlobalLuckPoll() {
   if (_globalLuckPollTimer) return;
   fetchGlobalLuck().then(function() {
-    if (typeof render === 'function' && !( typeof state !== 'undefined' && state && state.battle)) render();
+    if (typeof render === 'function' && !battleLive()) render();
     _startGlWidgetTick();
   });
   _globalLuckPollTimer = setInterval(async function() {
     await fetchGlobalLuck();
-    if (typeof render === 'function' && !(typeof state !== 'undefined' && state && state.battle)) render();
+    if (typeof render === 'function' && !battleLive()) render();
     if (typeof renderShell === 'function') renderShell();
     _startGlWidgetTick();
   }, 15000);
@@ -2658,7 +2658,7 @@ async function buyGlobalLuck() {
     const stacks = Math.round(newMult / GLOBAL_LUCK_STEP_MULT);
     toast('💧 GLOBAL LUCK AKTIF!', newMult + '× luck (' + stacks + ' tumpuk) untuk semua server!', '#38bdf8');
 
-    if (typeof render === 'function' && !(state && state.battle)) render();
+    if (typeof render === 'function' && !battleLive()) render();
     if (typeof renderShell === 'function') renderShell();
     _startGlWidgetTick();
   } catch(err) {
