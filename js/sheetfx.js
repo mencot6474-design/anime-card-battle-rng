@@ -120,10 +120,17 @@ var CyberSfx=(function(){
       var p=1+(idx||0)*0.15;
       tone({type:"triangle",f1:920*p,f2:260,dur:0.14,gain:0.16});
       noiseBurst({dur:0.1,filterType:"bandpass",freq:2800*p,q:2.5,gain:0.18});
+    },
+    /* AudioContext yang dibuat di luar gesture (mis. di dalam setTimeout battle) tetap
+       "suspended" di WebView Android → hening. Resume dipicu listener gesture di state.js. */
+    unlock:function(){
+      var c=ctx();
+      if(c&&c.state==="suspended")c.resume().catch(function(){});
     }
   };
 })();
 window.CyberSfx=CyberSfx;
+(window.__aabAudioUnlockers=window.__aabAudioUnlockers||[]).push(function(){CyberSfx.unlock();});
 
 /* ===== CANVAS 2D PGR × SOLO LEVELING VFX OVERLAY ENGINE (EXACT PROTOTYPE RENDERER) ===== */
 var fxCv=null,fxCtx=null,fxRunning=false;

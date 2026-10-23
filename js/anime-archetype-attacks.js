@@ -75,8 +75,14 @@
         osc.connect(g); g.connect(c.destination);
         osc.start(t + i*0.03); osc.stop(t + i*0.03 + 0.18);
       }
+    },
+    unlock: function(){
+      var c = this.getCtx();
+      if(c && c.state === "suspended") c.resume().catch(function(){});
     }
   };
+
+  (window.__aabAudioUnlockers = window.__aabAudioUnlockers || []).push(function(){ SFX.unlock(); });
 
   function getCanvas(){
     var W = window.innerWidth, H = window.innerHeight;

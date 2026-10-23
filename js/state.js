@@ -226,6 +226,18 @@ const sfx={
   pull:()=>beep(880,.2,"sine",.05)
 };
 
+/* Unlock audio: WebView Android/iOS menahan AudioContext yang dibuat tanpa gesture user
+   (mis. SFX ronde raid yang dipicu setTimeout) dalam state "suspended" → suara hening.
+   Listener dipasang permanen agar konteks ikut resume setelah app balik dari background. */
+function unlockGameAudio(){
+  try{
+    if(!actx&&(window.AudioContext||window.webkitAudioContext))actx=new (window.AudioContext||window.webkitAudioContext)();
+    if(actx&&actx.state==="suspended")actx.resume().catch(()=>{});
+    (window.__aabAudioUnlockers||[]).forEach(fn=>{try{fn();}catch(e){}});
+  }catch(e){}
+}
+["pointerdown","touchstart","keydown"].forEach(ev=>window.addEventListener(ev,unlockGameAudio,{passive:true}));
+
 /* ---------- ANNOUNCER "FIGHT!" ---------- */
 function actxOf(){actx=actx||new (window.AudioContext||window.webkitAudioContext)();return actx;}
 function noiseBurst(t,dur,freq,gain){
