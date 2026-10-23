@@ -276,7 +276,10 @@ function raidStep(){
   if(galaxyMode){const m=hits[hits.length-1];hits.length=0;hits.push(m);barrageN=0;}
   const md=ranton&&id==="CH_EX_MADARA";
   /* Basic attack: archetype FX (6 elemen) — sama seperti battle/tower. Ult & barrage pakai FX khusus. */
-  const basicHit=!domainActive&&!ariseMode&&!md&&!galaxyMode&&!psychicActive&&!bajrangActive&&!hpPurple&&wePhase<0&&!gammaRayHit;
+  let total=0;hits.forEach(m=>total+=Math.round(dmg*m));
+  /* ronde roket Havoc = ronde ult → basic archetype jangan ikut main (dulu dua-duanya keluar bareng) */
+  const havocWillFire=!!(fx.havocRocket&&raid.hp-total>0&&raid.havocGuard&&(raid.havocUses||0)<(fx.havocRocket.maxUses||3));
+  const basicHit=!domainActive&&!ariseMode&&!md&&!galaxyMode&&!psychicActive&&!bajrangActive&&!hpPurple&&wePhase<0&&!gammaRayHit&&!havocWillFire;
   if(basicHit&&window.playAnimeArchetypeAttack){try{window.playAnimeArchetypeAttack(id,".fighter.me",".fighter.foe");}catch(e){console.error("raid archetype fx",e);}}
   if(psychicActive&&window.psyBarrageFx)window.psyBarrageFx({n:raid.psyN||hits.length,shotCount:hits.length,t0:180});
   if(bajrangActive&&window.bajrangGunFx)window.bajrangGunFx({t0:180});
@@ -287,7 +290,6 @@ function raidStep(){
     if(bajrangActive&&window.CyberSfx)window.CyberSfx.aoeCharge();
     if(hpPurple&&window.CyberSfx)window.CyberSfx.plasmaBurn();
   }catch(e){}
-  let total=0;hits.forEach(m=>total+=Math.round(dmg*m));
   anim(".fighter.me","lunge-r");
   if(wePhase>=0&&window.worldEnderFx)window.worldEnderFx({fromSel:".fighter.me",toSel:".fighter.foe",phase:wePhase,revived:false});
   if(gammaRayHit&&window.gammaRayFx)window.gammaRayFx({fromSel:".fighter.me",toSel:".fighter.foe"});

@@ -1821,6 +1821,7 @@ function applyFoeEntryPassives(){
   }
   if(efx.havocRocket&&(bt.eHvUses||0)<(efx.havocRocket.maxUses||3)){
     bt.eHvUses=(bt.eHvUses||0)+1;
+    bt.eHavocAnimTurn=true; /* sama seperti sisi player: roket menggantikan animasi basic */
     const rawD=Math.max(1,Math.round(bt.es.atk*(efx.havocRocket.pct||50)/100));
     const d=Math.min(Math.round(bt.pMax*0.25), rawD);
     bt.pHp=Math.max(1,bt.pHp-d);
@@ -2045,7 +2046,7 @@ function performAttack(o){
   const ultBarrage=(o.domainStrike||o.ariseMode||md);
   /* ARISE sengaja TIDAK ikut grid 80ms domain/shrine: 9 sambaran di 80ms cuma kebaca satu getar panjang.
      Pakai ritme sambaran normal (160ms) → 9 hit = 1,28s, masih muat di jendela fase ARISE (2,2s). */
-  const psy=!!o.psychic,bj=!!o.bajrang,hpAnim=!!o.hollowPurple,we=!!o.worldEnder,gr=!!o.gammaRay;
+  const psy=!!o.psychic,bj=!!o.bajrang,hpAnim=!!o.hollowPurple,we=!!o.worldEnder,gr=!!o.gammaRay,hv=!!o.havoc;
   const hstep=psy?PSY_T.step:o.domainStrike?80:160;
   const hoff=(psy||bj||hpAnim||we||gr)?0:galaxy?0:md?40:(o.domainStrike||o.ariseMode)?60:500;
   if(psy&&window.psyBarrageFx)psyBarrageFx({n:o.psychic.n,shotCount:shots.length,revived:o.psychic.revived,t0:180});
@@ -2063,7 +2064,7 @@ function performAttack(o){
   const hpAt=(cum)=>o.total>0?Math.max(endHp,Math.round(startHp-span*Math.min(1,cum/o.total))):endHp;
   const wind=!(ultBarrage||galaxy);
   attackLunge(A,wind);
-  if(!ultBarrage && !galaxy && !bj && !hpAnim && !psy && !we && !gr && !md && window.playAnimeArchetypeAttack){
+  if(!ultBarrage && !galaxy && !bj && !hpAnim && !psy && !we && !gr && !md && !hv && window.playAnimeArchetypeAttack){
     try { window.playAnimeArchetypeAttack(id, A, D); } catch(e){ console.error("playAnimeArchetypeAttack err", e); }
   }
   setTimeout(()=>{
@@ -2280,6 +2281,7 @@ function playerPhase(){
   if(fx.havocRocket&&bt.hvEntryGuard[a]&&(bt.hvUses[a]||0)<(fx.havocRocket.maxUses||3)){
     bt.hvEntryGuard[a]=false;
     bt.hvUses[a]=(bt.hvUses[a]||0)+1;
+    bt.havocAnimTurn=true; /* roket = ult ronde ini → basic archetype di-skip supaya tidak dobel */
     if(bt.eHp>0){
       const ownAtk=cardStats(bt.eq.char,bt.eq.mut,bt.eq.trait,bt.eq.shiny).atk;
       const rk=Math.max(1,Math.round(ownAtk*(fx.havocRocket.pct||50)/100));
@@ -2577,10 +2579,11 @@ if(fx.inkCorrupt&&total>0){bt.eInk=Math.min(fx.inkCorrupt.max,(bt.eInk||0)+1);bt
     barId:"hpFoe",barTid:"hpFoeT",defMax:bt.es.hp,
     defHpStart:bt.eHp+total,defHpEnd:eHpNext,
     shots,total,crit,purple,
-    ranton,domainStrike,ariseMode,barrageN,galaxy,iceBlast:!!iceBlastN,bajrang:bajrangActive,hollowPurple:(floodHit&&fx.flood&&(fx.flood.label==="HOLLOW PURPLE")),psychic:fx.psychicBarrage?{n:bt.psyN||fx.psychicBarrage.rocks,revived:!!bt.pbRocks}:null,worldEnder:wePhase>=0?{phase:wePhase,revived:!!bt.weRevived}:null,gammaRay:gammaRayHit,
+    ranton,domainStrike,ariseMode,barrageN,galaxy,iceBlast:!!iceBlastN,bajrang:bajrangActive,hollowPurple:(floodHit&&fx.flood&&(fx.flood.label==="HOLLOW PURPLE")),havoc:!!bt.havocAnimTurn,psychic:fx.psychicBarrage?{n:bt.psyN||fx.psychicBarrage.rocks,revived:!!bt.pbRocks}:null,worldEnder:wePhase>=0?{phase:wePhase,revived:!!bt.weRevived}:null,gammaRay:gammaRayHit,
     onAnimEnd:foeDead?foeDownCb:null,
     recharge:(b)=>{if(!bt)return;bt.pStun=(fx&&fx.statusImmune)?0:b.selfStun;bt.pDrTurns=b.selfDrTurns||b.selfStun;bt.pDr=b.selfDr||0;setTimeout(()=>floatText(".fighter.me","RECHARGE","miss"),bsMs(1200));}
   });
+  bt.havocAnimTurn=false;
   bt.eHp=eHpNext;
   /* ===== MIRROR PASSIVE LAWAN - kartu musuh prok saat kena serangan (counter/poison/ink/drain) ===== */
   const efxM=(bt.eAbilityOff>0)?{}:(bt.efx||{});
@@ -2995,10 +2998,11 @@ if(bt.ePoison>0)eAtk=Math.max(1,Math.round(eAtk*(1-Math.min(90,bt.ePoison)/100))
       barId:"hpMe",barTid:"hpMeT",defMax:bt.pMax,
       defHpStart:meStart,defHpEnd:Math.max(0,bt.pHp),
       shots:eShots,total:etotal,crit:ecrit,purple:epurple,
-      ranton:eranton,domainStrike:eDomain,ariseMode:eArise,barrageN:eBarrageN,galaxy:eGalaxy,iceBlast:eIceBlast,bajrang:eBajrang,hollowPurple:eHollowPurple,psychic:ePsychicActive,worldEnder:eWorldEnder,gammaRay:eGammaRay,
+      ranton:eranton,domainStrike:eDomain,ariseMode:eArise,barrageN:eBarrageN,galaxy:eGalaxy,iceBlast:eIceBlast,bajrang:eBajrang,hollowPurple:eHollowPurple,havoc:!!bt.eHavocAnimTurn,psychic:ePsychicActive,worldEnder:eWorldEnder,gammaRay:eGammaRay,
       onAnimEnd:pDead?deathStep:null,
       recharge:(b)=>{if(!bt)return;bt.eStun=b.selfStun;setTimeout(()=>floatText(".fighter.foe","RECHARGE","miss"),bsMs(1200));}
     });
+    bt.eHavocAnimTurn=false;
     setBar("hpMe","hpMeT",meStart,bt.pMax);
     if(typeof foeOnHitLanded==="function")foeOnHitLanded(etotal);
     if(efx.lifesteal&&etotal>0&&bt.eHp>0){
