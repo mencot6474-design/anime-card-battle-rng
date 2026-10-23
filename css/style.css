@@ -48091,3 +48091,17 @@ body.on-raid:has(.rd-page) .rd-pick-head{padding-right:110px!important;}
   body.on-raid:has(.rd-page) .hsh-header,
   body.on-raid:has(.rd-page) .rd-pick-head{padding-right:92px!important;}
 }
+
+/* BG foto senada Tower Inf / Raid Boss untuk Trait, Weather Machine, Premium Shop, Story */
+#premiumModal,#traitModal,#weatherMachineModal,#storyModal{
+  background:
+    radial-gradient(circle at 50% 35%, rgba(10,14,22,.45) 0%, rgba(8,12,19,.78) 75%, rgba(5,8,14,.92) 100%),
+    linear-gradient(rgba(125,249,255,.015) 1px, transparent 1px) 0 0/28px 28px,
+    linear-gradient(90deg, rgba(125,249,255,.015) 1px, transparent 1px) 0 0/28px 28px,
+    #080c13 url("../assets/bg/tower.jpg") center center / cover no-repeat fixed!important;
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+
+/* Panel dalam ikut transparan supaya foto BG tower kelihatan (sl-system/story-carousel menimpa aturan full-screen) */
+#traitModal .tr-box.tr-box{background:transparent!important;box-shadow:none!important;border:0!important;border-radius:0!important;}
+#storyModal .sc-window{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:none!important;}
