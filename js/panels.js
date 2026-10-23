@@ -1002,7 +1002,7 @@ function renderBackpackPanel(){
     const mutCls=(s.mut&&s.mut!=='none')?' mut-'+s.mut:'';
     const shinyClsStr=s.shiny?' shiny':'';
     const fullMutClass=variantClass+mutCls+shinyClsStr;
-    return `<div class="bp-slot filled${bpTarget===i?' sel':''}${fullMutClass}${CARDS[s.char]&&CARDS[s.char].fullArt?' fa':''}" data-sid="${s.id}" onclick="bpPickSlot(${i})" style="--tcol:${edge}${edgeStyle}"><img src="${cardThumb(s.char)}" alt="" loading="lazy" decoding="async"><span class="bps-num">${i+1}</span><button class="bps-x" onclick="event.stopPropagation();bpClearSlot(${i})">&times;</button></div>`;
+    return `<div class="bp-slot filled${bpTarget===i?' sel':''}${fullMutClass}${CARDS[s.char]&&CARDS[s.char].fullArt?' fa':''}" data-sid="${s.id}" onclick="bpPickSlot(${i})" style="--tcol:${edge}${edgeStyle}"><img src="${cardThumb(s.char)}" alt="" loading="lazy" decoding="async">${CARDS[s.char]&&CARDS[s.char].fullArt&&((s.mut&&s.mut!=='none')||s.shiny)?`<span class="bps-fa-var">${s.shiny?'<span class="shiny-badge shiny-pill">SHINY</span>':''}${s.mut&&s.mut!=='none'?mutChip(s.mut,mutPill(s.mut)):''}</span>`:''}<span class="bps-num">${i+1}</span><button class="bps-x" onclick="event.stopPropagation();bpClearSlot(${i})">&times;</button></div>`;
   }).join('');
   const pOf=s=>{const st=cardStats(s.char,s.mut,s.trait,s.shiny);return st.hp+st.atk;};
   const visible=state.stacks.filter(bpMatchesMut).sort((a,b)=>(b.fav?1:0)-(a.fav?1:0)||pOf(b)-pOf(a)||luckChance(b.char,b.mut,b.shiny)-luckChance(a.char,a.mut,a.shiny)); /* favorit → terkuat → paling langka */

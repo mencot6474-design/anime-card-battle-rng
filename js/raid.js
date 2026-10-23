@@ -828,6 +828,7 @@ function ixRender(){
 
     return `<button class="${cls}" type="button" data-c="${c.char_id}" data-mut="${hasMut ? fm : 'none'}" data-shiny="${shFx ? '1' : '0'}"${lockBoss ? ' title="BELUM DIBELI - beli di TOKO RAID untuk buka roll"' : ''} style="--tc:#9AA6B2;--bc:${bc}">
       <img src="${thumbSrc(c.sprite_asset)}" alt="${c.name}" width="360" height="536" loading="lazy" decoding="async">
+      ${c.fullArt&&(hasMut||shFx)?`<span class="ix-fa-var">${shFx?'<span class="shiny-badge shiny-pill">SHINY</span>':''}${hasMut?mutChip(fm,mutPill(fm)):''}</span>`:''}
       <span class="ixc-stack">${nameHtml}<span class="ixc-chance${hasMut && (fm === 'rainbow' || fm === 'ultima') ? ' ixc-chance-rainbow' : ''}" style="color:${chanceColor}"><span class="ixc-chance-text">${chanceHtml}</span></span></span>
       <span class="ixc-own${isSpecificVariantOwned ? ' on' : ''}">${any}/10</span>
     </button>`;
