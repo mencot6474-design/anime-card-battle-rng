@@ -48283,3 +48283,17 @@ body:has(#indexModal.show, #skillPop.show, #premiumModal.show, #traitModal.show,
   :is(#app,#topbar,.lobby-footer,.foot-menu,.weather-panel)::after{
   animation-play-state:paused !important;
 }
+
+/* ===== PERF 2026-10-23 TAHAP 3 · #2 — blur sisa di battle/raid/tower =====
+   Hanya properti blur yang dicabut (nol aset gambar disentuh). Elemen yang latarnya
+   terlalu bening dinaikkan alpha-nya supaya teks tetap terbaca di atas arena. */
+.ds-skill-badge .sk-txt,.f-tag,.shiny-badge,#bfExit,.skill-overlay .sk-txt,
+.bspeed-btn,.b-slot .drop-info,.pgr-cutin-panel,.smh-chip,
+.cp-card,.cp-topbar,.cp-header,.cp-deploy-dock,.cp-panel,
+.spire-stream-panel,.deck-equipped-tooltip,.dm-card,.tactical-btn{
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+}
+.b-slot .drop-info{background:rgba(14,16,19,.88)}
+.bspeed-btn{background:rgba(12,14,16,.9)}
+.pgr-cutin-panel{background:linear-gradient(90deg,rgba(5,7,14,.72) 0%,rgba(10,15,30,.95) 18%,rgba(22,14,44,.96) 72%,rgba(5,7,14,.72) 100%)}
