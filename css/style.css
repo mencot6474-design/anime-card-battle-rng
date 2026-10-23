@@ -48302,3 +48302,17 @@ body:has(#indexModal.show, #skillPop.show, #premiumModal.show, #traitModal.show,
    `background-attachment:fixed` memaksa repaint seluruh viewport saat scroll /
    address bar bergerak (jank di WebView HP). Lobby tak scroll, jadi visual sama. */
 body.on-lobby{background-attachment:scroll}
+
+/* ===== PERF 2026-10-23 TAHAP 3 · #3 — vignette Matrix tanpa backdrop-filter =====
+   `backdrop-filter:hue-rotate` full-screen memaksa GPU membaca+memproses ulang seluruh
+   layar tiap frame selama 580ms. Efek diganti wash teal→violet pada overlay itu sendiri
+   (tanpa membaca backdrop); hue-shift kartu di `.fighter.matrix-dodge` tetap ada. */
+#pgrMatrixOverlay{
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  background:radial-gradient(circle at center,
+    rgba(0,245,212,.15) 0%,
+    rgba(125,249,255,.06) 26%,
+    rgba(181,140,255,.11) 58%,
+    rgba(11,9,26,.82) 100%);
+}
