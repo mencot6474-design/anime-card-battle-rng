@@ -927,14 +927,41 @@ function hubCardHtml(eq,idAttr,showHideBtn){
         ${hideBtn}
     </div>`;
 }
-/* 3D tilt dihapus sesuai instruksi user: kembali ke display border standar tanpa tilt/transform 3D */
+/* 3D parallax: kartu ikut miring halus mengikuti kursor di layar; saat kursor
+   masuk ke kartu, kemiringan naik dan porosnya mengikuti posisi kursor di kartu. */
 function initHubTilt(card){
   if(!card) return;
-  card.style.transform='none';
-  card.style.setProperty('--pf','0');
-  card.style.setProperty('--pfy','0');
-  const glare=card.querySelector('.hc-glare');
-  if(glare)glare.remove();
+  const R_IDLE=2.5,R_HOVER=9,LERP=0.12;
+  let tx=0,ty=0,cx=0,cy=0,raf=0;
+  const apply=()=>{
+    raf=0;
+    if(!card.isConnected){document.removeEventListener("pointermove",onMove);return;}
+    cx+=(tx-cx)*LERP; cy+=(ty-cy)*LERP;
+    const dx=(cx/R_HOVER)*6,dy=(-cy/R_HOVER)*5;
+    card.style.transform=`perspective(1100px) translate3d(${dx.toFixed(1)}px,${dy.toFixed(1)}px,0) rotateX(${cy.toFixed(2)}deg) rotateY(${cx.toFixed(2)}deg)`;
+    if(Math.abs(tx-cx)>0.03||Math.abs(ty-cy)>0.03) raf=requestAnimationFrame(apply);
+  };
+  const kick=()=>{if(!raf)raf=requestAnimationFrame(apply);};
+  const onMove=(e)=>{
+    if(!card.isConnected){document.removeEventListener("pointermove",onMove);return;}
+    if(e.pointerType==="touch")return;
+    const r=card.getBoundingClientRect();
+    const over=e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom;
+    if(over){
+      const nx=(e.clientX-r.left)/Math.max(1,r.width)*2-1;
+      const ny=(e.clientY-r.top)/Math.max(1,r.height)*2-1;
+      tx=nx*R_HOVER; ty=-ny*R_HOVER;
+    }else{
+      tx=(e.clientX/Math.max(1,window.innerWidth)*2-1)*R_IDLE;
+      ty=-(e.clientY/Math.max(1,window.innerHeight)*2-1)*R_IDLE;
+    }
+    kick();
+  };
+  if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches)return;
+  document.addEventListener("pointermove",onMove,{passive:true});
+  card.addEventListener("pointerleave",()=>{tx=0;ty=0;kick();});
+  card.style.willChange="transform";
+  card.style.transition="none"; /* lerp per-frame, jangan dobel sama transition CSS */
 }
 /* Loadout kiri kartu: kolom vertikal [ARTEFAK 1][ARTEFAK 2][PET]. Klik → Backpack (tab ARTEFAK/PET). */
 function hubLoadoutHtml(){
