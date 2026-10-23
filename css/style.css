@@ -48382,3 +48382,42 @@ body.battle-full .fighter.shiny .f-banner::after{
 
 /* Chip rarity di backpack: pulse box-shadow diganti glow statis. */
 .bd-chip.art{animation:none !important;box-shadow:0 0 12px var(--sc,rgba(255,255,255,.3))}
+
+/* ===== PERF/LAYOUT 2026-10-23 · ukuran layar HP = PC =====
+   Viewport sudah dipaku `width=1600` (sama seperti PC), tapi Chrome/WebView HP
+   masih bisa "font boosting" (membesarkan teks otomatis) karena lebar layout jauh
+   lebih besar dari lebar fisik → teks melimpah & layout terasa nabrak.
+   Matikan autosizing supaya skala teks identik dengan desktop. */
+html,body{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+
+/* ===== LAYOUT 2026-10-23 · layar sempit ikut komposisi PC =====
+   Di layar ≤700px dulu kartu ditumpuk 1 kolom dengan tinggi 440px (mudah nabrak
+   & kegedean di HP). Sekarang dipaksa komposisi 3 kolom seperti desktop, hanya
+   diskalakan. Kalau HP memakai viewport desktop (width=1600) blok ini tidak aktif;
+   ini jaring pengaman untuk browser WebView yang memaksa device-width. */
+@media(max-width:700px){
+  body.battle-full{overflow:hidden}
+  body.battle-full main{height:calc(100dvh - var(--tbh,64px));min-height:0;justify-content:center}
+  body.battle-full .battle-grid{
+    height:100%;min-height:0;
+    grid-template-columns:minmax(0,1fr) clamp(48px,12vw,96px) minmax(0,1fr);
+    grid-template-rows:minmax(0,1fr);
+    gap:clamp(4px,1.6vw,12px);padding:clamp(6px,2vw,14px);
+    align-items:center;justify-items:center;
+  }
+  body.battle-full .me-col,body.battle-full .foe-side{
+    max-width:none;height:auto;justify-content:center;gap:8px;
+  }
+  body.battle-full .fighter{height:auto;width:100%;max-height:min(58dvh,420px)}
+  body.battle-full .foe-side .bench{display:none}
+  body.battle-full .vs-col{position:static;transform:none}
+}
+
+/* Kolom VS di layar sempit: jangan melebar ke kartu (dulu flex row + nowrap
+   bikin kotak VS 210px menabrak kartu kiri/kanan). */
+@media(max-width:700px){
+  body.battle-full .vs-col{flex-direction:column;width:100%;min-width:0;gap:4px}
+  body.battle-full .vs-col .t{font-size:clamp(18px,4.6vw,34px);line-height:1}
+  body.battle-full .vs-col .s{font-size:clamp(8px,2vw,11px);letter-spacing:.12em;white-space:normal;line-height:1.25}
+  body.battle-full .bspeed-btn{font-size:11px;padding:4px 8px;min-width:0}
+}
