@@ -9097,7 +9097,7 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 
 
 
-  font-family:"Barlow Condensed";font-weight:800;font-size:clamp(20px,2.6vh,28px);line-height:.98;letter-spacing:.03em;
+  font-family:"Barlow Condensed";font-weight:800;font-size:clamp(15px,1.9vh,20px);line-height:.98;letter-spacing:.03em;
 
 
 
@@ -44213,7 +44213,7 @@ body.battle-full .fighter.phantom-enter {
 
 
 
-  top:calc(-8px + clamp(20px,2.6vh,28px) + 6px);left:-20px;
+  top:calc(-8px + clamp(15px,1.9vh,20px) + 6px);left:-20px;
 
 
 
@@ -48435,6 +48435,10 @@ body.battle-full .fighter.full-art .f-banner::before{
 }
 
 .hub-center.fa{aspect-ratio:2/3;width:calc(100% * 8 / 9);margin-inline:auto;background:transparent}
+/* Kartu full-art di lobby: wrapper dinaikkan dan kartu mengisi penuh, tapi tetap
+   di bawah widget GLOBAL LUCK dan tidak menabrak dock. */
+.lobby-hub .card-float.fa{width:min(100%,38vh,360px)}
+.lobby-hub .card-float.fa .hub-center.fa{width:100%}
 .hub-center.fa:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),
 .hub-center.fa[data-tier]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret){
   border:0 !important;border-radius:0 !important;
@@ -48500,8 +48504,3 @@ body.battle-full .fighter.full-art .f-badges .mut-badge,
 body.battle-full .fighter.full-art .f-badges .shiny-badge,
 body.battle-full .fighter.full-art .f-badges .fbadge{display:inline-flex!important}
 
-/* ===== LOBBY HUB 3D PARALLAX =====
-   Aturan lama .lobby-hub #hubCard mengunci transform:none!important, jadi
-   inline style kalah. Nilai tilt dikirim lewat custom property (inline) dan
-   dipakai di deklarasi !important dengan specificity lebih tinggi. */
-.lobby-hub #hubCard:not(#_bv2){transform:var(--hub-tilt,none)!important}

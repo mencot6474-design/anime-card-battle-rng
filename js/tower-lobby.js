@@ -927,58 +927,6 @@ function hubCardHtml(eq,idAttr,showHideBtn){
         ${hideBtn}
     </div>`;
 }
-/* 3D parallax: kursor di luar kartu = geser 2D bulat (tidak bikin gambar di-resample,
-   jadi tetap tajam); kursor di atas kartu = baru diputar 3D mengikuti posisi kursor.
-   Nilai disimpan di HUB_TILT supaya tidak hilang saat lobby re-render. */
-const HUB_TILT={tx:0,ty:0,cx:0,cy:0,th:0,ch:0};
-function hubTiltCss(x,y,h){
-  h=h<0?0:h>1?1:h;
-  if(h>0.01){
-    const dx=((x/9)*6*h).toFixed(1),dy=((-y/9)*5*h).toFixed(1);
-    return `perspective(1100px) translate3d(${dx}px,${dy}px,0) rotateX(${(y*h).toFixed(2)}deg) rotateY(${(x*h).toFixed(2)}deg)`;
-  }
-  const px=Math.round(x*2.2),py=Math.round(-y*2.2);
-  return (px||py)?`translate(${px}px,${py}px)`:"none";
-}
-function initHubTilt(card){
-  if(!card) return;
-  const R_IDLE=2.5,R_HOVER=9,LERP=0.12;
-  let raf=0;
-  const apply=()=>{
-    raf=0;
-    if(!card.isConnected){document.removeEventListener("pointermove",onMove);return;}
-    HUB_TILT.cx+=(HUB_TILT.tx-HUB_TILT.cx)*LERP;
-    HUB_TILT.cy+=(HUB_TILT.ty-HUB_TILT.cy)*LERP;
-    HUB_TILT.ch+=(HUB_TILT.th-HUB_TILT.ch)*LERP;
-    const still=Math.abs(HUB_TILT.tx-HUB_TILT.cx)<0.03&&Math.abs(HUB_TILT.ty-HUB_TILT.cy)<0.03&&Math.abs(HUB_TILT.th-HUB_TILT.ch)<0.01;
-    if(still){HUB_TILT.cx=HUB_TILT.tx;HUB_TILT.cy=HUB_TILT.ty;HUB_TILT.ch=HUB_TILT.th;}
-    const css=hubTiltCss(HUB_TILT.cx,HUB_TILT.cy,HUB_TILT.ch);
-    if(css==="none"){card.style.removeProperty("--hub-tilt");card.style.willChange="";}
-    else{card.style.setProperty("--hub-tilt",css);card.style.willChange=HUB_TILT.ch>0.01?"transform":"";}
-    if(!still) raf=requestAnimationFrame(apply);
-  };
-  const kick=()=>{if(!raf)raf=requestAnimationFrame(apply);};
-  const onMove=(e)=>{
-    if(!card.isConnected){document.removeEventListener("pointermove",onMove);return;}
-    if(e.pointerType==="touch")return;
-    const r=card.getBoundingClientRect();
-    const over=e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom;
-    if(over){
-      const nx=(e.clientX-r.left)/Math.max(1,r.width)*2-1;
-      const ny=(e.clientY-r.top)/Math.max(1,r.height)*2-1;
-      HUB_TILT.tx=nx*R_HOVER; HUB_TILT.ty=-ny*R_HOVER; HUB_TILT.th=1;
-    }else{
-      HUB_TILT.tx=(e.clientX/Math.max(1,window.innerWidth)*2-1)*R_IDLE;
-      HUB_TILT.ty=-(e.clientY/Math.max(1,window.innerHeight)*2-1)*R_IDLE;
-      HUB_TILT.th=0;
-    }
-    kick();
-  };
-  if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches)return;
-  card.style.removeProperty("--hub-tilt");
-  document.addEventListener("pointermove",onMove,{passive:true});
-  card.addEventListener("pointerleave",()=>{HUB_TILT.tx=0;HUB_TILT.ty=0;HUB_TILT.th=0;kick();});
-}
 /* Loadout kiri kartu: kolom vertikal [ARTEFAK 1][ARTEFAK 2][PET]. Klik → Backpack (tab ARTEFAK/PET). */
 function hubLoadoutHtml(){
   const artSvg = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>`;
@@ -1071,7 +1019,7 @@ function renderLobby(){
       ${(typeof renderGlobalLuckWidget === 'function') ? '<div class="hub-gl-widget">' + renderGlobalLuckWidget() + '</div>' : ''}
       <div class="stage-eyebrow">ACTIVE CARD</div>
       <div class="stage-center">
-        <div class="card-float">
+        <div class="card-float${eq&&CARDS[eq.char]&&CARDS[eq.char].fullArt?' fa':''}">
           ${hubCardHtml(eq,' id="hubCard"')}
         </div>
       </div>
@@ -1136,7 +1084,7 @@ function renderLobby(){
       <span class="tile-action"><span>VIEW MISSIONS</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span>
     </div>
   </div>`;
-  const hc=document.getElementById("hubCard");if(hc){hc.onclick=()=>{sfx.hit();toggleBackpack();};initHubTilt(hc);}
+  const hc=document.getElementById("hubCard");if(hc){hc.onclick=()=>{sfx.hit();toggleBackpack();};}
   const hp=document.getElementById("hubPremium");if(hp)hp.onclick=()=>{sfx.hit();openPremiumShop();};
   const gp=document.getElementById("gemPill");if(gp)gp.onclick=()=>{sfx.hit();openTopup();};
   const hi=document.getElementById("hubIndex");if(hi)hi.onclick=()=>{sfx.hit();openIndex();};
