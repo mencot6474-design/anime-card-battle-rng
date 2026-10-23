@@ -9,6 +9,12 @@ let FGEN=0;
 function battleSpeedMax(){const lv=(state&&state.playerLv)||1;return lv>=50?4:lv>=25?3:lv>=10?2:1;}
 function battleSpeedEff(){let s=(state&&state.battleSpeed)||1;if(s<1)s=1;const m=battleSpeedMax();return Math.min(Math.floor(s),m);}
 function bsMs(ms){const m=(bt&&bt.speed)||1;return m<=1?ms:Math.max(0,Math.round(ms/m));}
+/* FX canvas ult dipakai di battle cerita/tower DAN raid (engine terpisah). Guard `!bt` dulu
+   membunuh animasi di raid karena `bt` null → canvas dihapus di frame pertama. */
+function fxEngineOver(){
+  if(typeof raid!=="undefined"&&raid&&!raid.over&&typeof raidView!=="undefined"&&raidView==="battle")return false;
+  return !(typeof bt!=="undefined"&&bt&&!bt.over);
+}
 /* Tombol speed in-battle (di .vs-col): cycle 1x→2x→3x→4x→1x — hanya tier yang sudah terbuka per level.
    Efek langsung ke bt.speed (timeout berikutnya) + persist state.battleSpeed (ikut ke settings & battle berikut). */
 function wireSpeedBtn(){
@@ -353,7 +359,7 @@ function psyBarrageFx(o){
   };
   const finish=()=>{cancelAnimationFrame(raf);try{cv.remove();}catch(e){}};
   const frame=(now)=>{
-    if(!bt||bt.over||!cv.isConnected){finish();return;}
+    if(fxEngineOver()||!cv.isConnected){finish();return;}
     const t=(now-t0)/sc;                          // waktu "logis" (ms) independen speed
     if(t>total){finish();return;}
     ctx.clearRect(0,0,W,H);
@@ -529,7 +535,7 @@ function bajrangGunFx(o){
   };
   const finish=()=>{cancelAnimationFrame(raf);try{cv.remove();}catch(e){}};
   const frame=(now)=>{
-    if(!bt||bt.over||!cv.isConnected){finish();return;}
+    if(fxEngineOver()||!cv.isConnected){finish();return;}
     const t=(now-t0)/sc;if(t>END){finish();return;}
     ctx.clearRect(0,0,W,H);
     const pre=Math.min(1,t/320),post=t>HIT?Math.max(0,1-(t-HIT)/700):1;
@@ -897,8 +903,7 @@ function havocRocketFx(o){
   let raf=0;
   const finish=()=>{cancelAnimationFrame(raf);try{cv.remove();}catch(e){}};
   const frame=(now)=>{
-    const isOver=(typeof bt!=="undefined"&&bt&&bt.over)||(typeof raid!=="undefined"&&raid&&raid.over);
-    if(isOver||!cv.isConnected){finish();return;}
+    if(fxEngineOver()||!cv.isConnected){finish();return;}
     const el=(now-t0)/sc;
     if(el>TOTAL){finish();return;}
     ctx.clearRect(0,0,W,H);
@@ -1174,8 +1179,7 @@ function worldEnderFx(o){
   let raf=0;
   const finish=()=>{cancelAnimationFrame(raf);try{cv.remove();}catch(e){}};
   const frame=(now)=>{
-    const isOver=(typeof bt!=="undefined"&&bt&&bt.over)||(typeof raid!=="undefined"&&raid&&raid.over);
-    if(isOver||!cv.isConnected){finish();return;}
+    if(fxEngineOver()||!cv.isConnected){finish();return;}
     const el=(now-t0)/sc;
     if(el>TOTAL){finish();return;}
     ctx.clearRect(0,0,W,H);
@@ -1460,8 +1464,7 @@ function gammaRayFx(o){
   let raf=0;
   const finish=()=>{cancelAnimationFrame(raf);try{cv.remove();}catch(e){}};
   const frame=(now)=>{
-    const isOver=(typeof bt!=="undefined"&&bt&&bt.over)||(typeof raid!=="undefined"&&raid&&raid.over);
-    if(isOver||!cv.isConnected){finish();return;}
+    if(fxEngineOver()||!cv.isConnected){finish();return;}
     const el=(now-t0)/sc;
     if(el>TOTAL){finish();return;}
     ctx.clearRect(0,0,W,H);

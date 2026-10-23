@@ -281,6 +281,12 @@ function raidStep(){
   if(psychicActive&&window.psyBarrageFx)window.psyBarrageFx({n:raid.psyN||hits.length,shotCount:hits.length,t0:180});
   if(bajrangActive&&window.bajrangGunFx)window.bajrangGunFx({t0:180});
   if(hpPurple&&window.hollowPurpleFx)window.hollowPurpleFx({t0:180});
+  /* SFX ult: basic sudah bunyi dari synth archetype, ult/barrage perlu bunyi sendiri (dulu hening total) */
+  try{
+    if(psychicActive&&window.CyberSfx)window.CyberSfx.aoeCharge();
+    if(bajrangActive&&window.CyberSfx)window.CyberSfx.aoeCharge();
+    if(hpPurple&&window.CyberSfx)window.CyberSfx.plasmaBurn();
+  }catch(e){}
   let total=0;hits.forEach(m=>total+=Math.round(dmg*m));
   anim(".fighter.me","lunge-r");
   if(wePhase>=0&&window.worldEnderFx)window.worldEnderFx({fromSel:".fighter.me",toSel:".fighter.foe",phase:wePhase,revived:false});
@@ -309,6 +315,8 @@ function raidStep(){
         /* getar DIJARAKI per sambaran (dl), sama seperti story/tower: sebelumnya hit non-Madara digetarkan
            sekaligus di menit yang sama jadi kartu cuma bergetar satu kali untuk 10× damage */
         setTimeout(()=>{if(raid&&!raid.over){anim(".fighter.foe","hit",ultBarrage);if(window.strikeFx&&!md&&!galaxyMode&&!psychicActive&&!bajrangActive&&!hpPurple)window.strikeFx(".fighter.foe",{big:crit&&i===hits.length-1,fx:fx});}},dl+jwLag);
+        /* bunyi impact per sambaran — ritme sama seperti angka HP yang jatuh */
+        setTimeout(()=>{if(raid&&!raid.over){try{if(crit&&i===hits.length-1)sfx.crit();else playClip(punchAudio);}catch(e){}}},dl);
         const dd=Math.round(dmg*m);rShown-=dd;rBarEnd=Math.max(rBarEnd,ft);const stepHp=Math.max(0,rShown);
         setTimeout(()=>floatText(".fighter.foe","-"+fmt(dd),(crit&&i===hits.length-1)?"crit":""),ft);
         setTimeout(()=>setRaidBar(stepHp),ft);
@@ -318,6 +326,11 @@ function raidStep(){
       else if(hits.length>1&&!ranton)setTimeout(()=>floatText(".fighter.foe","DOUBLE!","crit"),260+rWeWait);
       if(bajrangActive)setTimeout(()=>floatText(".fighter.me","BAJRANG GUN!","crit"),BJ_T.first-80);
       if(hpPurple)setTimeout(()=>floatText(".fighter.foe","HOLLOW PURPLE","crit"),HP_T.first-80);
+      /* dentuman khas ult saat impact, bukan cuma saat charge */
+      if((bajrangActive||hpPurple)&&window.CyberSfx){
+        const impDelay=(bajrangActive?BJ_T.first:HP_T.first)+80;
+        setTimeout(()=>{if(raid&&!raid.over)window.CyberSfx.aoeDetonate();},impDelay);
+      }
     }
   },180);
   raid.hp-=total;raid.dealt+=total;
@@ -330,6 +343,7 @@ function raidStep(){
     const rk=Math.round(raid.atk*(fx.havocRocket.pct||50)/100);
     raid.hp-=rk;raid.dealt+=rk;
     if(window.havocRocketFx)havocRocketFx({fromSel:".fighter.me",toSel:".fighter.foe"});
+    try{if(window.CyberSfx)window.CyberSfx.aoeCharge();}catch(e){}
     setTimeout(()=>{
       if(raid&&!raid.over){
         anim(".fighter.foe","hit");
