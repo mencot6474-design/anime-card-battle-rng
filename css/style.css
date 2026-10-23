@@ -48360,3 +48360,25 @@ body.battle-full .fighter .f-name.f-name-shine::after{
   text-shadow:1px 1px 0 #0b0e14,2px 2px 0 #0b0e14,3px 3px 0 #0b0e14,0 0 24px rgba(125,249,255,.75) !important;
   animation:none !important;
 }
+
+/* ===== PERF 2026-10-23 TAHAP 3 · #9 — sisa animasi non-composited =====
+   1) Nama mutasi di battle (`f-mut-*::after`) juga memakai sweep background-position;
+      disamakan jadi pulse opacity seperti nama shiny.
+   2) Sheen banner shiny (holoSheen = background-position) dibekukan saat battle.
+   3) Badge/pill shiny di lobby (lobbyMutBadgeFlow = background-position) diganti
+      napas opacity; gradien tetap, tanpa repaint. */
+body.battle-full .fighter .f-name[class*="f-mut-"]::after{
+  animation:nameGlintPulse 2.4s ease-in-out infinite !important;
+  opacity:.5;
+}
+body.battle-full .fighter.shiny .f-banner::after{
+  animation:none !important;
+  opacity:.78;
+}
+.shiny-badge,.shiny-pill{
+  animation:chipBreath 3.6s ease-in-out infinite !important;
+}
+@keyframes chipBreath{0%,100%{opacity:.8}50%{opacity:1}}
+
+/* Chip rarity di backpack: pulse box-shadow diganti glow statis. */
+.bd-chip.art{animation:none !important;box-shadow:0 0 12px var(--sc,rgba(255,255,255,.3))}
