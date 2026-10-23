@@ -927,13 +927,18 @@ function hubCardHtml(eq,idAttr,showHideBtn){
         ${hideBtn}
     </div>`;
 }
-/* 3D parallax: kartu ikut miring halus mengikuti kursor di layar; saat kursor
-   masuk ke kartu, kemiringan naik dan porosnya mengikuti posisi kursor di kartu.
+/* 3D parallax: kursor di luar kartu = geser 2D bulat (tidak bikin gambar di-resample,
+   jadi tetap tajam); kursor di atas kartu = baru diputar 3D mengikuti posisi kursor.
    Nilai disimpan di HUB_TILT supaya tidak hilang saat lobby re-render. */
-const HUB_TILT={tx:0,ty:0,cx:0,cy:0};
-function hubTiltCss(x,y){
-  const dx=(x/9)*6,dy=(-y/9)*5;
-  return `perspective(1100px) translate3d(${dx.toFixed(1)}px,${dy.toFixed(1)}px,0) rotateX(${y.toFixed(2)}deg) rotateY(${x.toFixed(2)}deg)`;
+const HUB_TILT={tx:0,ty:0,cx:0,cy:0,th:0,ch:0};
+function hubTiltCss(x,y,h){
+  h=h<0?0:h>1?1:h;
+  if(h>0.01){
+    const dx=((x/9)*6*h).toFixed(1),dy=((-y/9)*5*h).toFixed(1);
+    return `perspective(1100px) translate3d(${dx}px,${dy}px,0) rotateX(${(y*h).toFixed(2)}deg) rotateY(${(x*h).toFixed(2)}deg)`;
+  }
+  const px=Math.round(x*2.2),py=Math.round(-y*2.2);
+  return (px||py)?`translate(${px}px,${py}px)`:"none";
 }
 function initHubTilt(card){
   if(!card) return;
@@ -944,8 +949,13 @@ function initHubTilt(card){
     if(!card.isConnected){document.removeEventListener("pointermove",onMove);return;}
     HUB_TILT.cx+=(HUB_TILT.tx-HUB_TILT.cx)*LERP;
     HUB_TILT.cy+=(HUB_TILT.ty-HUB_TILT.cy)*LERP;
-    card.style.setProperty("--hub-tilt",hubTiltCss(HUB_TILT.cx,HUB_TILT.cy));
-    if(Math.abs(HUB_TILT.tx-HUB_TILT.cx)>0.03||Math.abs(HUB_TILT.ty-HUB_TILT.cy)>0.03) raf=requestAnimationFrame(apply);
+    HUB_TILT.ch+=(HUB_TILT.th-HUB_TILT.ch)*LERP;
+    const still=Math.abs(HUB_TILT.tx-HUB_TILT.cx)<0.03&&Math.abs(HUB_TILT.ty-HUB_TILT.cy)<0.03&&Math.abs(HUB_TILT.th-HUB_TILT.ch)<0.01;
+    if(still){HUB_TILT.cx=HUB_TILT.tx;HUB_TILT.cy=HUB_TILT.ty;HUB_TILT.ch=HUB_TILT.th;}
+    const css=hubTiltCss(HUB_TILT.cx,HUB_TILT.cy,HUB_TILT.ch);
+    if(css==="none"){card.style.removeProperty("--hub-tilt");card.style.willChange="";}
+    else{card.style.setProperty("--hub-tilt",css);card.style.willChange=HUB_TILT.ch>0.01?"transform":"";}
+    if(!still) raf=requestAnimationFrame(apply);
   };
   const kick=()=>{if(!raf)raf=requestAnimationFrame(apply);};
   const onMove=(e)=>{
@@ -956,18 +966,18 @@ function initHubTilt(card){
     if(over){
       const nx=(e.clientX-r.left)/Math.max(1,r.width)*2-1;
       const ny=(e.clientY-r.top)/Math.max(1,r.height)*2-1;
-      HUB_TILT.tx=nx*R_HOVER; HUB_TILT.ty=-ny*R_HOVER;
+      HUB_TILT.tx=nx*R_HOVER; HUB_TILT.ty=-ny*R_HOVER; HUB_TILT.th=1;
     }else{
       HUB_TILT.tx=(e.clientX/Math.max(1,window.innerWidth)*2-1)*R_IDLE;
       HUB_TILT.ty=-(e.clientY/Math.max(1,window.innerHeight)*2-1)*R_IDLE;
+      HUB_TILT.th=0;
     }
     kick();
   };
   if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches)return;
-  card.style.setProperty("--hub-tilt",hubTiltCss(HUB_TILT.cx,HUB_TILT.cy));
-  card.style.willChange="transform";
+  card.style.removeProperty("--hub-tilt");
   document.addEventListener("pointermove",onMove,{passive:true});
-  card.addEventListener("pointerleave",()=>{HUB_TILT.tx=0;HUB_TILT.ty=0;kick();});
+  card.addEventListener("pointerleave",()=>{HUB_TILT.tx=0;HUB_TILT.ty=0;HUB_TILT.th=0;kick();});
 }
 /* Loadout kiri kartu: kolom vertikal [ARTEFAK 1][ARTEFAK 2][PET]. Klik → Backpack (tab ARTEFAK/PET). */
 function hubLoadoutHtml(){
