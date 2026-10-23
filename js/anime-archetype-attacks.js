@@ -84,17 +84,52 @@
 
   (window.__aabAudioUnlockers = window.__aabAudioUnlockers || []).push(function(){ SFX.unlock(); });
 
-  function getCanvas(){
-    var W = window.innerWidth, H = window.innerHeight;
+  /* ===== SATU CANVAS BERSAMA UNTUK SEMUA SERANGAN =====
+     Sebelumnya tiap serangan membuat canvas full-screen baru (alokasi tiap attack,
+     dan canvas bisa menumpuk saat efek lain masih jalan). Sekarang satu canvas
+     dipakai ulang: layar dibersihkan sekali per frame, lalu semua efek aktif
+     digambar di atasnya lewat satu rAF loop. */
+  var sharedCv = null, sharedCtx = null, sharedRaf = 0, sharedFns = [];
+
+  function ensureSharedCanvas(){
+    var W = window.innerWidth, H = window.innerHeight, dpr = FXDPR();
+    if(!sharedCv){
+      sharedCv = document.createElement("canvas");
+      sharedCv.id = "animeAtkCanvas";
+      sharedCv.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:78;";
+      document.body.appendChild(sharedCv);
+      sharedCtx = sharedCv.getContext("2d");
+    }
+    var pw = Math.round(W * dpr), ph = Math.round(H * dpr);
+    if(sharedCv.width !== pw || sharedCv.height !== ph){
+      sharedCv.width = pw;
+      sharedCv.height = ph;
+    }
+    sharedCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { cv: sharedCv, ctx: sharedCtx, W: W, H: H };
+  }
+
+  function getCanvas(){ return ensureSharedCanvas(); }
+
+  function registerFrame(fn){
+    sharedFns.push(fn);
+    if(!sharedRaf) sharedRaf = requestAnimationFrame(sharedTick);
+  }
+
+  function sharedTick(now){
+    var s = ensureSharedCanvas(), ctx = s.ctx;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, s.cv.width, s.cv.height);
     var dpr = FXDPR();
-    var cv = document.createElement("canvas");
-    cv.width = Math.round(W * dpr);
-    cv.height = Math.round(H * dpr);
-    cv.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:78;";
-    document.body.appendChild(cv);
-    var ctx = cv.getContext("2d");
-    ctx.scale(dpr, dpr);
-    return { cv: cv, ctx: ctx, W: W, H: H };
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    for(var i = sharedFns.length - 1; i >= 0; i--){
+      ctx.save();
+      var keep = sharedFns[i](now);
+      ctx.restore();
+      if(keep === false) sharedFns.splice(i, 1);
+    }
+    if(sharedFns.length) sharedRaf = requestAnimationFrame(sharedTick);
+    else sharedRaf = 0;
   }
 
   // Flash & Impact Frame ala Anime Shonen
@@ -180,8 +215,7 @@
 
     function frame(now){
       var p = (now - t0) / DUR;
-      if(p >= 1){ cv.remove(); return; }
-      ctx.clearRect(0,0,W,H);
+      if(p >= 1){ return false; }
       triggerImpactFrame(ctx, W, H, p);
 
       ctx.save();
@@ -280,9 +314,8 @@
       }
 
       ctx.restore();
-      requestAnimationFrame(frame);
     }
-    requestAnimationFrame(frame);
+    registerFrame(frame);
   }
 
     // 2. ⚔️ BLADE ARCHETYPE (Grand Crescent Moon / Moon Breathing Gigantic Cleave + Orbital Eclipse Burst)
@@ -371,8 +404,7 @@
 
     function frame(now){
       var p = (now - t0) / DUR;
-      if(p >= 1){ cv.remove(); return; }
-      ctx.clearRect(0,0,W,H);
+      if(p >= 1){ return false; }
       triggerImpactFrame(ctx, W, H, p);
 
       ctx.save();
@@ -470,9 +502,8 @@
       }
 
       ctx.restore();
-      requestAnimationFrame(frame);
     }
-    requestAnimationFrame(frame);
+    registerFrame(frame);
   }
 
     // 3. ⚡ LIGHTNING ARCHETYPE (Thunder Flash / Godspeed Warp Lance + Forked Discharge + Plasma Cage)
@@ -540,8 +571,7 @@
 
     function frame(now){
       var p = (now - t0) / DUR;
-      if(p >= 1){ cv.remove(); return; }
-      ctx.clearRect(0,0,W,H);
+      if(p >= 1){ return false; }
       triggerImpactFrame(ctx, W, H, p);
 
       ctx.save();
@@ -656,9 +686,8 @@
       }
 
       ctx.restore();
-      requestAnimationFrame(frame);
     }
-    requestAnimationFrame(frame);
+    registerFrame(frame);
   }
 
     // 4. 🔥 FIRE ARCHETYPE (Flame Lance / Phoenix Streak + Eruption Vortex + Floating Embers)
@@ -701,8 +730,7 @@
 
     function frame(now){
       var p = (now - t0) / DUR;
-      if(p >= 1){ cv.remove(); return; }
-      ctx.clearRect(0,0,W,H);
+      if(p >= 1){ return false; }
       triggerImpactFrame(ctx, W, H, p);
 
       ctx.save();
@@ -813,9 +841,8 @@
       }
 
       ctx.restore();
-      requestAnimationFrame(frame);
     }
-    requestAnimationFrame(frame);
+    registerFrame(frame);
   }
 
   // 5. ❄️ ICE ARCHETYPE (Frost Lance & Glacial Crystal Shatter + Sparkling Flakes)
@@ -906,8 +933,7 @@
 
     function frame(now){
       var p = (now - t0) / DUR;
-      if(p >= 1){ cv.remove(); return; }
-      ctx.clearRect(0,0,W,H);
+      if(p >= 1){ return false; }
       triggerImpactFrame(ctx, W, H, p);
 
       ctx.save();
@@ -1019,9 +1045,8 @@
       }
 
       ctx.restore();
-      requestAnimationFrame(frame);
     }
-    requestAnimationFrame(frame);
+    registerFrame(frame);
   }
 
     // 5. 🌌 ENERGY ARCHETYPE (Balanced Anime Energy: Orbiting Plasma Orb + Double-Helix Trail + Radial Burst)
@@ -1065,8 +1090,7 @@
 
     function frame(now){
       var p = (now - t0) / DUR;
-      if(p >= 1){ cv.remove(); return; }
-      ctx.clearRect(0,0,W,H);
+      if(p >= 1){ return false; }
       triggerImpactFrame(ctx, W, H, p);
 
       ctx.save();
@@ -1188,9 +1212,8 @@
       }
 
       ctx.restore();
-      requestAnimationFrame(frame);
     }
-    requestAnimationFrame(frame);
+    registerFrame(frame);
   }
 
     // DISPATCHER UTAMA: Menentukan 1 dari 6 Archetype Otomatis Berdasarkan Karakter
