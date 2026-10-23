@@ -48335,3 +48335,28 @@ body.battle-full .fighter.me[data-char="CH_EX_JINWOO"]::after{
   animation:jinwooInnerPulse 2.6s ease-in-out infinite;
 }
 @keyframes jinwooInnerPulse{0%,100%{opacity:.35}45%{opacity:1}}
+
+/* ===== PERF 2026-10-23 TAHAP 3 · #8 — HUD non-composited =====
+   Animasi yang mengubah `background-position`/`text-shadow`/`box-shadow` memaksa
+   repaint tiap frame. Diganti animasi `transform`/`opacity` (composited) atau statis:
+   - Nama shiny di battle: sweep gradient di-freeze, diganti pulse opacity pada
+     lapisan kilau (::after) → kedip tetap hidup tanpa repaint teks.
+   - Kristal skill (`.sp-crystal`): glow statis, pulse lewat scale.
+   - Angka skill (`.sp-num`): glow statis, tanpa animasi. */
+body.battle-full .fighter .f-name.f-name-shine{animation:none !important}
+body.battle-full .fighter .f-name.f-name-shine::after{
+  animation:nameGlintPulse 2.4s ease-in-out infinite !important;
+  opacity:.5;
+}
+@keyframes nameGlintPulse{0%,100%{opacity:.22}50%{opacity:.95}}
+
+.sp-crystal{
+  box-shadow:0 0 20px rgba(125,249,255,.75),0 0 46px rgba(125,249,255,.35) !important;
+  animation:spGemPulse 2.4s ease-in-out infinite !important;
+}
+@keyframes spGemPulse{0%,100%{transform:rotate(45deg) scale(1)}50%{transform:rotate(45deg) scale(1.06)}}
+
+.sp-num{
+  text-shadow:1px 1px 0 #0b0e14,2px 2px 0 #0b0e14,3px 3px 0 #0b0e14,0 0 24px rgba(125,249,255,.75) !important;
+  animation:none !important;
+}
