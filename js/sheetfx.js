@@ -609,6 +609,14 @@ function statusSync(){
     upd("me","burn",meBurn);
   }catch(e){}
 }
-setInterval(statusSync,220);
+/* Watcher status hanya perlu jalan selama battle hidup. Setelah battle selesai
+   ia tetap dipanggil sekali lagi (cleanup class stun/freeze/burn), lalu diam. */
+var _stWasActive=false;
+setInterval(function(){
+  var g=window.bt;
+  var active=!!(g&&!g.over);
+  if(active||_stWasActive)statusSync();
+  _stWasActive=active;
+},220);
 window.sheetStatusSync=statusSync;
 })();

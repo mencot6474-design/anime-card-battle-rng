@@ -48297,3 +48297,8 @@ body:has(#indexModal.show, #skillPop.show, #premiumModal.show, #traitModal.show,
 .b-slot .drop-info{background:rgba(14,16,19,.88)}
 .bspeed-btn{background:rgba(12,14,16,.9)}
 .pgr-cutin-panel{background:linear-gradient(90deg,rgba(5,7,14,.72) 0%,rgba(10,15,30,.95) 18%,rgba(22,14,44,.96) 72%,rgba(5,7,14,.72) 100%)}
+
+/* ===== PERF 2026-10-23 TAHAP 3 · #5 — background lobby tidak `fixed` =====
+   `background-attachment:fixed` memaksa repaint seluruh viewport saat scroll /
+   address bar bergerak (jank di WebView HP). Lobby tak scroll, jadi visual sama. */
+body.on-lobby{background-attachment:scroll}
