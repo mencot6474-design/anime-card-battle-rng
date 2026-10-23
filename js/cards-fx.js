@@ -1,7 +1,7 @@
 /* Kuota partikel global (~30% lebih sedikit) biar HP lemah gak frame. */
 function FXQ(n){return Math.max(1,Math.round((n||0)*0.7));}
-/* Resolusi canvas FX dibatasi 1.5x: overlay glow tak butuh DPR penuh. */
-function FXDPR(){return Math.min(1.5,window.devicePixelRatio||1);}
+/* Resolusi canvas FX = 1x: overlay glow tak butuh DPR penuh (HP kentang). */
+function FXDPR(){return 1;}
 const CARDS=Object.fromEntries(MASTER_CARD_INDEX.map(c=>[c.char_id,c]));
 function getCardData(id){return CARDS[id]||null;}
 /* ===== GATE KARTU BOSS (TOKO RAID) =====
