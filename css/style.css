@@ -47953,3 +47953,119 @@ body.battle-full .fighter.foe.ko {
 #profModal .prof-hero-card{
   height:92%;max-height:92%;width:auto;align-self:center;aspect-ratio:3/4;
 }
+
+/* ====== TOWER INF & RAID BOSS: LAYAR PENUH ======
+   Tower: stream kiri setinggi layar, dossier kanan scroll sendiri, CTA nempel bawah.
+   Raid: hub/board isi seluruh layar, dock bawah terkunci (zero-scroll) di layar lebar;
+   di layar sempit/pendek konten mengalir + #app yang scroll supaya kartu tidak kepenyet. */
+
+/* --- TOWER INF --- */
+body.on-tower:has(.tactical-tower-page) main#app{padding:0!important;}
+.tactical-tower-page{
+  height:100%!important;max-height:100%!important;overflow:hidden!important;
+  display:flex!important;flex-direction:column!important;
+}
+.tactical-tower-hub{
+  height:100%!important;max-height:100%!important;overflow:hidden!important;
+  max-width:none!important;gap:0!important;
+  grid-template-columns:300px minmax(0,1fr)!important;
+}
+.spire-stream-panel{
+  border-radius:0!important;border-top:0!important;border-bottom:0!important;border-left:0!important;
+  padding-bottom:0!important;
+}
+.spire-stream-ftr{padding-bottom:44px!important;}
+.spire-node-list{max-height:none!important;flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important;}
+.tactical-dossier-panel{
+  height:100%!important;max-height:100%!important;overflow-y:auto!important;
+  padding:22px 28px!important;gap:18px!important;
+}
+.tactical-dossier-panel .dossier-actions{margin-top:auto!important;}
+.tactical-dossier-panel .tw-foes{
+  display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:14px!important;flex-wrap:nowrap!important;overflow:visible!important;
+}
+.tactical-dossier-panel .tw-fcard{width:auto!important;flex:none!important;height:clamp(150px,40vh,380px)!important;}
+.tactical-dossier-panel .tw-fcard .fn{font-size:clamp(12px,1.2vw,16px)!important;}
+.tactical-dossier-panel .tw-fcard .fs{font-size:clamp(10.5px,1vw,13px)!important;padding:3px 7px!important;}
+
+@media(max-width:1000px){
+  .tactical-tower-hub{grid-template-columns:240px minmax(0,1fr)!important;}
+}
+@media(min-width:601px) and (max-width:800px){
+  .tactical-tower-hub{grid-template-columns:220px minmax(0,1fr)!important;}
+  .tactical-dossier-panel .tw-foes{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  .tactical-dossier-panel .tw-fcard{height:clamp(140px,22vh,220px)!important;}
+}
+
+@media(max-width:600px){
+  body.on-tower:has(.tactical-tower-hub) main#app{
+    height:calc(100dvh - var(--tbh,64px))!important;max-height:calc(100dvh - var(--tbh,64px))!important;
+    overflow-y:auto!important;
+  }
+  .tactical-tower-page:has(.tactical-tower-hub){
+    height:auto!important;max-height:none!important;overflow:visible!important;
+  }
+  .tactical-tower-page:has(.tactical-tower-hub) .tactical-tower-hub{
+    grid-template-columns:1fr!important;height:auto!important;max-height:none!important;
+    overflow:visible!important;gap:12px!important;padding:0 12px 14px!important;
+  }
+  .tactical-tower-page:has(.tactical-tower-hub) .spire-stream-panel{
+    border:1px solid rgba(125,249,255,.22)!important;border-radius:12px!important;
+    height:auto!important;max-height:none!important;
+  }
+  .tactical-tower-page:has(.tactical-tower-hub) .spire-node-list{
+    max-height:min(34vh,280px)!important;overflow-y:auto!important;flex:none!important;
+  }
+  .tactical-tower-page:has(.tactical-tower-hub) .spire-stream-ftr{padding-bottom:8px!important;}
+  .tactical-tower-page:has(.tactical-tower-hub) .tactical-dossier-panel{
+    height:auto!important;max-height:none!important;overflow:visible!important;
+    padding:14px 12px 18px!important;gap:14px!important;
+  }
+  .tactical-tower-page:has(.tactical-tower-hub) .tactical-dossier-panel .dossier-actions{margin-top:0!important;}
+  .tactical-tower-page:has(.tactical-tower-hub) .tactical-dossier-panel .tw-foes{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;
+  }
+  .tactical-tower-page:has(.tactical-tower-hub) .tactical-dossier-panel .tw-fcard{
+    height:auto!important;aspect-ratio:3/4;
+  }
+}
+
+/* --- RAID BOSS --- */
+body.on-raid:has(.hunter-raid-hub) main#app{padding:0!important;width:100%!important;max-width:none!important;margin:0!important;}
+.rd-page:has(.hunter-raid-hub) .hunter-raid-hub{
+  max-width:none!important;margin:0!important;padding:14px 24px!important;
+}
+.rd-page:has(.hunter-raid-hub) .hr-cards-grid{gap:16px!important;}
+
+@media(max-width:900px),(max-height:600px){
+  body.on-raid:has(.hunter-raid-hub) main#app{
+    height:calc(100dvh - var(--tbh,64px))!important;max-height:calc(100dvh - var(--tbh,64px))!important;
+    overflow-y:auto!important;
+  }
+  .rd-page:has(.hunter-raid-hub){
+    height:auto!important;max-height:none!important;overflow:visible!important;display:block!important;
+  }
+  .rd-page:has(.hunter-raid-hub) .hunter-raid-hub{
+    height:auto!important;max-height:none!important;overflow:visible!important;
+    gap:12px!important;padding:12px!important;
+  }
+  .rd-page:has(.hunter-raid-hub) .hunter-raid-hub .hr-board-section{overflow:visible!important;flex:none!important;min-height:0!important;}
+  .rd-page:has(.hunter-raid-hub) .hunter-raid-hub .hr-cards-grid{
+    flex:none!important;grid-auto-rows:auto!important;
+    grid-template-columns:repeat(auto-fit,minmax(190px,1fr))!important;gap:12px!important;
+  }
+  .rd-page:has(.hunter-raid-hub) .hunter-raid-hub .hr-hunt-card{height:auto!important;min-height:0!important;}
+  .rd-page:has(.hunter-raid-hub) .hunter-raid-hub .hr-hunt-card .hhc-art-frame{
+    aspect-ratio:16/11!important;flex:0 0 auto!important;
+  }
+}
+
+/* Tower: di layar lebar, baris kartu target mengisi sisa tinggi (tanpa ruang kosong) */
+@media(min-width:801px) and (min-height:620px){
+  .tactical-dossier-panel .dossier-sec:has(.tw-foes){
+    flex:1 1 auto!important;min-height:0;display:flex!important;flex-direction:column;
+  }
+  .tactical-dossier-panel .dossier-sec:has(.tw-foes) .tw-foes{flex:1 1 auto!important;min-height:0;}
+  .tactical-dossier-panel .tw-fcard{height:100%!important;}
+}
