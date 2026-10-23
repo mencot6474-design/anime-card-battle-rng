@@ -48217,3 +48217,16 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{box-shadow:0 0 0 2px #7
 .tr-auto-meta .tram-n{flex:none;overflow:visible;text-overflow:clip;white-space:nowrap}
 /* LOCKED TARGET yang boleh memendek (ellipsis) supaya ITERATION dapat ruang penuh */
 .tr-auto-meta .tram-v{flex:1 1 auto;min-width:0}
+
+/* ===== PERF 2026-10-23: buang blur GPU di layar utama (HP/PC kentang) =====
+   Backdrop-filter berlapis di atas background beranimasi memaksa re-blur tiap frame.
+   Latar elemen ini sudah gradient/rgba pekat, jadi visual hampir sama tanpa blur. */
+#topbar,.lobby-footer,.foot-menu,.hub-box,.loadout-slot,.bio-strip-backdrop,
+.weather-panel.show,.f-body,.cryo-glass-overlay{
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+}
+/* Grid kartu panjang: browser boleh skip render tile di luar viewport. */
+.ix-cell,.bp-tile,.bp-shop{content-visibility:auto;contain-intrinsic-size:170px 260px;}
+/* Animasi dekoratif berhenti saat tab di background (JS men-toggle body.perf-paused). */
+body.perf-paused *,body.perf-paused *::before,body.perf-paused *::after{animation-play-state:paused !important;}

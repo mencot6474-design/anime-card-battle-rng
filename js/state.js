@@ -351,7 +351,7 @@ function renderShell(){
       pav.innerHTML=`<img src="${state.customAvatar}" alt="Custom Avatar">`;
     }else{
       const eq=equipped(); const cid=eq&&eq.char;
-      const art=(cid&&CARDS[cid])?cardImg(cid):"";
+      const art=(cid&&CARDS[cid])?cardThumb(cid):"";
       if(art){
         const pos=CARDS[cid].pos?` style="object-position:${CARDS[cid].pos}"`:'';
         pav.innerHTML=`<img src="${art}" alt="${cardName(cid)}" ${pos}>`;
@@ -419,7 +419,11 @@ setInterval(()=>{
 },1000);
 /* Simpan sinkron saat app ditutup/pindah background supaya playtime tidak hilang. */
 addEventListener("pagehide",()=>{if(state)save();});
-document.addEventListener("visibilitychange",()=>{if(state&&document.hidden)save();});
+document.addEventListener("visibilitychange",()=>{
+  if(state&&document.hidden)save();
+  /* Hentikan animasi CSS dekoratif saat tab di background (hemat GPU/baterai). */
+  try{document.body.classList.toggle("perf-paused",document.hidden);}catch(e){}
+});
 
 /* =============== HOME (Story) — kini nyatu di layar Lobby ===============
    Daftar bab dibangun jadi helper (chapListHTML/bindChapList) supaya bisa

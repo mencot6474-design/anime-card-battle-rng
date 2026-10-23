@@ -788,7 +788,7 @@ function showTowerLoot(results,drops,title,extra){
   const totalCards=(typeof results.totalPulls==="number")?results.totalPulls:results.length;
   document.getElementById("rrTotal").textContent=fmt(totalCards)+" kartu"+(list.length?" · "+list.length+" jenis unik":"")+(totalPot?" · "+fmt(totalPot)+" potion":"")+(totalPack?" · "+fmt(totalPack)+" pack":"");
   document.getElementById("rrBody").innerHTML=lootChips+potChips+list.map(g=>{
-    const name=cardName(g.cardId),img=cardImg(g.cardId);
+    const name=cardName(g.cardId),img=cardThumb(g.cardId);
     const isShiny=g.shiny&&g.shiny!=="none", isMut=g.mut&&g.mut!=="none";
     const varTag=(isShiny||isMut)?`<span class="rrc-var">${isShiny?'<span class="rrc-shine shiny-pill">SHINY</span>':''}${isMut?mutChip(g.mut,mutPill(g.mut,'rrc-mut')):''}</span>`:'';
     let rc="rrc";if(isMut)rc+=" mut-"+g.mut;if(isShiny)rc+=" shiny";

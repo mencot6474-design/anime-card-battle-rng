@@ -252,7 +252,7 @@ function renderWeatherDock(){
   </div>`
     +(cards.length?`<div class="wp-cards">`+cards.map(c=>
         `<div class="wc-slot active" data-wc="${c.char_id}" style="--wc:${w.color}">
-          <span class="idx-art"><img src="${c.sprite_asset}" alt=""></span>
+          <span class="idx-art"><img src="${thumbSrc(c.sprite_asset)}" alt="" loading="lazy" decoding="async"></span>
           <span class="idx-body"><span class="wc-chance">${rarityText(c.tier,luckChance(c.char_id))}</span></span>
         </div>`).join("")+`</div>`:"")
     +`<div class="wp-buff">
@@ -826,7 +826,7 @@ function renderProfile(){
     +row("RAREST POOL",rarest?`${cardName(rarest.char)} · 1 IN ${fmtChance(rarestCh)}`:"—");
 
   /* ===== PARTY: pet + 2 artefak + kartu utama (portrait + pill) ===== */
-  const pslot=(img,label,pill,name)=>`<div class="prof-slot${img?"":" empty"}" title="${name}">${img?`<img src="${img}" alt="">`:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/></svg>'}<span class="ps-lab">${label}</span><span class="ps-pill">${pill}</span></div>`;
+  const pslot=(img,label,pill,name)=>`<div class="prof-slot${img?"":" empty"}" title="${name}">${img?`<img src="${thumbSrc(img)}" alt="" loading="lazy" decoding="async">`:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/></svg>'}<span class="ps-lab">${label}</span><span class="ps-pill">${pill}</span></div>`;
   const pd=state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;
   const slots=[];
   slots.push(pslot(pd?(pd.img||`assets/pets/${pd.id}.png`):"","PET",pd?`+${pd.flat||0}${pd.pct?" / +"+Math.round(pd.pct)+"%":""}`:"KOSONG",pd?pd.name:"Pet kosong"));
@@ -1002,7 +1002,7 @@ function renderBackpackPanel(){
     const mutCls=(s.mut&&s.mut!=='none')?' mut-'+s.mut:'';
     const shinyClsStr=s.shiny?' shiny':'';
     const fullMutClass=variantClass+mutCls+shinyClsStr;
-    return `<div class="bp-slot filled${bpTarget===i?' sel':''}${fullMutClass}" data-sid="${s.id}" onclick="bpPickSlot(${i})" style="--tcol:${edge}${edgeStyle}"><img src="${cardImg(s.char)}" alt=""><span class="bps-num">${i+1}</span><button class="bps-x" onclick="event.stopPropagation();bpClearSlot(${i})">&times;</button></div>`;
+    return `<div class="bp-slot filled${bpTarget===i?' sel':''}${fullMutClass}" data-sid="${s.id}" onclick="bpPickSlot(${i})" style="--tcol:${edge}${edgeStyle}"><img src="${cardThumb(s.char)}" alt="" loading="lazy" decoding="async"><span class="bps-num">${i+1}</span><button class="bps-x" onclick="event.stopPropagation();bpClearSlot(${i})">&times;</button></div>`;
   }).join('');
   const pOf=s=>{const st=cardStats(s.char,s.mut,s.trait,s.shiny);return st.hp+st.atk;};
   const visible=state.stacks.filter(bpMatchesMut).sort((a,b)=>(b.fav?1:0)-(a.fav?1:0)||pOf(b)-pOf(a)||luckChance(b.char,b.mut,b.shiny)-luckChance(a.char,a.mut,a.shiny)); /* favorit → terkuat → paling langka */
@@ -1017,7 +1017,7 @@ function renderBackpackPanel(){
     const mutCls=mut?' mut-'+mut:'';
     const shinyClsStr=s.shiny?' shiny':'';
     const fullMutClass=variantClass+mutCls+shinyClsStr;
-    return `<div class="bp-tile${inDeck?' in-deck':''}${fullMutClass}" data-sid="${s.id}" data-name="${cardName(s.char).toLowerCase()}" onclick="bpAssign('${s.id}')" style="--tcol:${edge}"><img src="${cardImg(s.char)}" alt="">${stack}${cnt}<div class="bpt-ctl"><button class="bpt-fav${s.fav?' on':''}" onclick="event.stopPropagation();bpFav('${s.id}')" title="Favorit">${s.fav?'★':'☆'}</button><button class="bpt-lock${s.lock?' on':''}" onclick="event.stopPropagation();bpLock('${s.id}')" title="Lock">${s.lock?'🔒':'🔓'}</button></div><div class="bpt-name">${cardName(s.char)}</div></div>`;
+    return `<div class="bp-tile${inDeck?' in-deck':''}${fullMutClass}" data-sid="${s.id}" data-name="${cardName(s.char).toLowerCase()}" onclick="bpAssign('${s.id}')" style="--tcol:${edge}"><img src="${cardThumb(s.char)}" alt="" width="360" height="536" loading="lazy" decoding="async">${stack}${cnt}<div class="bpt-ctl"><button class="bpt-fav${s.fav?' on':''}" onclick="event.stopPropagation();bpFav('${s.id}')" title="Favorit">${s.fav?'★':'☆'}</button><button class="bpt-lock${s.lock?' on':''}" onclick="event.stopPropagation();bpLock('${s.id}')" title="Lock">${s.lock?'🔒':'🔓'}</button></div><div class="bpt-name">${cardName(s.char)}</div></div>`;
   }).join('');
   const cntOf=m=>state.stacks.filter(s=>m==='all'?true:(m==='shiny'?!!s.shiny:(s.mut||'none')===m)).length;
   const chip=(k,lbl)=>{const on=bpMutFilter===k,themed=['shiny','gold','rainbow','secret','ultima'].includes(k);const col=!on&&!themed?(MUT_COLOR[k]||'#7DF9FF'):'';return `<button class="bp-fchip${themed?' bp-themed bp-'+k:''}${on?' on':''}" onclick="bpSetFilter('${k}')"${col?` style="border-color:${col};color:${col}"`:''}>${themed?'<span class="bp-fchip-label">'+lbl+'</span>':lbl}<em>${cntOf(k)}</em></button>`;};
@@ -1042,10 +1042,10 @@ function bpItemDef(kind){
   if(kind==='potion'){const aw=activeWeatherId();return{kind,name:'WEATHER POTION',icon:'assets/images/weather-potion.webp?v=1',emoji:'🧪',cnt:state.potions||0,
     desc:'Gacha cuaca · chance asli + pity. Hasil sama/lebih bagus = pindah + timer reset 5 menit; lebih jelek = cuaca tetep.',
     active:aw?`<br><strong style="color:${WEATHER[aw].color}">Aktif: <span style="display:inline-flex;align-items:center;gap:4px;vertical-align:middle">${weatherSvg(aw,13)}</span> ${WEATHER[aw].name}</strong>`:'',use:'bpUsePotion()'};}
-  if(kind.startsWith('luck')){const lv=+kind[4],d=LUCK_POTS[lv],b=activeLuckBuff(),bp=activeLuckBuffPct();return{kind,name:'LUCK POTION L'+lv,icon:`assets/images/pot-luck-${lv}.png`,emoji:'🍀',cnt:(state.luckPots&&state.luckPots[lv-1])||0,
+  if(kind.startsWith('luck')){const lv=+kind[4],d=LUCK_POTS[lv],b=activeLuckBuff(),bp=activeLuckBuffPct();return{kind,name:'LUCK POTION L'+lv,icon:thumbSrc(`assets/images/pot-luck-${lv}.png`),emoji:'🍀',cnt:(state.luckPots&&state.luckPots[lv-1])||0,
     desc:`+${d.flat} flat luck${d.pct?` & +${Math.round(d.pct*100)}% luck`:''} selama 5 menit per pot. Stackable — efek dijumlah, durasi nambah +5 menit tiap pot.`,
     active:b||bp?`<br><strong style="color:#5eead4">Aktif: +${b} LUCK${bp?` · +${Math.round(bp*100)}%`:''}</strong>`:'',use:`bpUseLuckPotion(${lv},1)`,useAll:`bpUseLuckPotion(${lv},'all')`};}
-  if(kind.startsWith('speed')){const lv=+kind.slice(-1),d=SPEED_POTS[lv],b=activeSpeedBuff();return{kind,name:'SPEED POTION L'+lv,icon:`assets/images/pot-speed-${lv}.png`,emoji:'⚡',cnt:(state.speedPots&&state.speedPots[lv-1])||0,
+  if(kind.startsWith('speed')){const lv=+kind.slice(-1),d=SPEED_POTS[lv],b=activeSpeedBuff();return{kind,name:'SPEED POTION L'+lv,icon:thumbSrc(`assets/images/pot-speed-${lv}.png`),emoji:'⚡',cnt:(state.speedPots&&state.speedPots[lv-1])||0,
     desc:`Roll speed +${d.add.toFixed(1)}× selama 5 menit per pot (cap total ×20). Stackable — efek dijumlah, durasi nambah +5 menit tiap pot.`,
     active:b?`<br><strong style="color:#fcd34d">Aktif: +${b.toFixed(1)}× SPEED</strong>`:'',use:`bpUseSpeedPotion(${lv},1)`,useAll:`bpUseSpeedPotion(${lv},'all')`};}
   if(kind==='r5k'){return{kind,name:'INSTAN ROLL 5K',icon:'assets/images/instanpack-5k.webp?v=trans1',emoji:'📦',cnt:(state&&state.rollPacks&&state.rollPacks.r5k)||0,
@@ -1490,7 +1490,7 @@ function artIconSvg(k){
 /* Ikon artefak CRAYON: PNG saja — tanpa SVG di belakang (berlian default gak nongol). */
 function artIconHtml(d){
   if(!d.img)return artIconSvg(d.icon);
-  return `<span class="icov"><img src="${d.img}" alt="" onerror="this.remove()"></span>`;
+  return `<span class="icov"><img src="${thumbSrc(d.img)}" alt="" loading="lazy" decoding="async" onerror="this.remove()"></span>`;
 }
 /* Tombol beli Backpack per kanal: raid/tower TIDAK dijual pakai coin — tombol jadi petunjuk sumber. */
 function bpBuyBtn(d,kind){
@@ -1521,7 +1521,7 @@ function renderBpPets(){
   const coins=state.coins||0;
   const act=state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;
   const actHtml=act?`<div class="bp-petact">
-    <div class="bp-petact-img"><img src="${act.img}" alt="${act.name}" onerror="this.parentNode.classList.add('noimg')"><span class="lp-fb">${act.emoji}</span></div>
+    <div class="bp-petact-img"><img src="${thumbSrc(act.img)}" loading="lazy" decoding="async" alt="${act.name}" onerror="this.parentNode.classList.add('noimg')"><span class="lp-fb">${act.emoji}</span></div>
     <div class="bp-petact-meta"><span class="bp-petact-l">PET AKTIF</span><span class="bp-petact-n">${act.name}</span><span class="bp-petact-e">${luckTxt(act)}</span></div>
     <button class="bp-shop-b off" style="margin-left:auto" onclick="bpTogglePet('${act.id}')">LEPAS</button></div>`
     :`<div class="bp-petact"><span class="bp-petact-none">BELUM ADA PET AKTIF — BELI &amp; PASANG DI BAWAH</span></div>`;
@@ -1530,7 +1530,7 @@ function renderBpPets(){
     const btn=eq?`<button class="bp-shop-b off" onclick="bpTogglePet('${p.id}')">LEPAS</button>`
       :owned?`<button class="bp-shop-b on" onclick="bpTogglePet('${p.id}')">PASANG</button>`
       :bpBuyBtn(p,"Pet");
-    return `<div class="bp-shop${eq?' eq':''}" style="--ec:#7DF9FF"><div class="bp-shop-ic"><img src="${p.img}" alt="${p.name}" onerror="this.parentNode.classList.add('noimg')"><span class="ph">${p.emoji}</span></div><div class="bp-shop-n">${p.name}</div><div class="bp-shop-e">${luckTxt(p)}</div>${btn}</div>`;
+    return `<div class="bp-shop${eq?' eq':''}" style="--ec:#7DF9FF"><div class="bp-shop-ic"><img src="${thumbSrc(p.img)}" loading="lazy" decoding="async" alt="${p.name}" onerror="this.parentNode.classList.add('noimg')"><span class="ph">${p.emoji}</span></div><div class="bp-shop-n">${p.name}</div><div class="bp-shop-e">${luckTxt(p)}</div>${btn}</div>`;
   }).join('');
   return `${renderGlobalLuckWidget()}<div class="bp-h">PET · 1 SLOT<div class="bp-coinrow">☘ ${totalLuck().toFixed(1)}× · ${coinIcon(15)} ${fmt(coins)}</div></div>
   ${actHtml}
@@ -1572,7 +1572,7 @@ function bpTogglePet(id){
 function lobbyPetHtml(){
   const d=state&&state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;
   if(!d)return"";
-  return `<div class="lobby-pet"><img src="${d.img}" alt="${d.name}" onerror="this.parentNode.classList.add('noimg')"><span class="lp-eb">${d.emoji}</span><span class="lp-tip"><b style="color:${d.color}">${d.name}</b><small>${luckTxt(d)}</small></span></div>`;
+  return `<div class="lobby-pet"><img src="${thumbSrc(d.img)}" alt="${d.name}" loading="lazy" decoding="async" onerror="this.parentNode.classList.add('noimg')"><span class="lp-eb">${d.emoji}</span><span class="lp-tip"><b style="color:${d.color}">${d.name}</b><small>${luckTxt(d)}</small></span></div>`;
 }
 /* ===== DEV: buka SEMUA pet + artefak untuk akun aktif (idempoten - aman dijalankan berulang) ===== */
 function devUnlockAll(){
@@ -2485,17 +2485,36 @@ function _startGlWidgetTick() {
   }, 1000);
 }
 
-/* ---- Polling 15 detik ---- */
+/* ---- Polling 15 detik ----
+   Render penuh hanya kalau data GLOBAL LUCK benar-benar berubah dan tidak ada
+   modal terbuka. Sebelumnya tiap 15 detik lobby/backpack dibangun ulang sia-sia. */
+function _glKey() {
+  var g = _globalLuckCache;
+  return g ? (g.ends_at + '|' + g.multiplier) : 'none';
+}
+function _uiModalOpen() {
+  try {
+    var ix = document.getElementById('indexModal');
+    if (ix && ix.classList.contains('show')) return true;
+    var bp = document.getElementById('backpackPanel');
+    if (bp && bp.style.display && bp.style.display !== 'none') return true;
+    var sp = document.getElementById('skillPop');
+    if (sp && sp.classList.contains('show')) return true;
+  } catch (e) {}
+  return false;
+}
 function startGlobalLuckPoll() {
   if (_globalLuckPollTimer) return;
   fetchGlobalLuck().then(function() {
-    if (typeof render === 'function' && !battleLive()) render();
+    if (typeof render === 'function' && !battleLive() && !_uiModalOpen()) render();
     _startGlWidgetTick();
   });
   _globalLuckPollTimer = setInterval(async function() {
+    var before = _glKey();
     await fetchGlobalLuck();
-    if (typeof render === 'function' && !battleLive()) render();
-    if (typeof renderShell === 'function') renderShell();
+    var changed = _glKey() !== before;
+    if (changed && typeof render === 'function' && !battleLive() && !_uiModalOpen()) render();
+    if (changed && typeof renderShell === 'function') renderShell();
     _startGlWidgetTick();
   }, 15000);
 }

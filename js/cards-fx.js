@@ -14,6 +14,16 @@ function gachaPool(){
   return MASTER_CARD_INDEX.filter(c=>!c.noGacha&&(!c.raidBoss||bossRollUnlocked(c.char_id))&&(!c.weatherOnly||c.weatherOnly===aw));
 }
 function cardImg(id){const c=CARDS[id];return c?c.sprite_asset:"";}
+/* Thumbnail ringan untuk tile kecil (index, backpack, picker, dock). Art penuh tetap
+   dipakai di battle/popup detail. Semua thumb dihasilkan tools/gen-thumbs.py. */
+function thumbSrc(src){
+  if(!src)return "";
+  const m=/^assets\/(cards\/art|pets|artifacts|images)\/([^/?#]+)\.(?:png|webp|jpe?g)$/i.exec(src);
+  if(!m)return src;
+  const dir=m[1]==="cards/art"?"cards/thumb":m[1]+"/thumb";
+  return "assets/"+dir+"/"+m[2]+".webp";
+}
+function cardThumb(id){const c=CARDS[id];return c?thumbSrc(c.sprite_asset):"";}
 function cardName(id){const c=CARDS[id];return c?c.name:"(kartu hilang)";}
 function cardType(id){const c=CARDS[id];return c?c.type:"";}
 function cardTier(id){const c=CARDS[id];return c?c.tier:"";}
