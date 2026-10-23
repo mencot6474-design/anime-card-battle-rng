@@ -1002,7 +1002,7 @@ function renderBackpackPanel(){
     const mutCls=(s.mut&&s.mut!=='none')?' mut-'+s.mut:'';
     const shinyClsStr=s.shiny?' shiny':'';
     const fullMutClass=variantClass+mutCls+shinyClsStr;
-    return `<div class="bp-slot filled${bpTarget===i?' sel':''}${fullMutClass}" data-sid="${s.id}" onclick="bpPickSlot(${i})" style="--tcol:${edge}${edgeStyle}"><img src="${cardThumb(s.char)}" alt="" loading="lazy" decoding="async"><span class="bps-num">${i+1}</span><button class="bps-x" onclick="event.stopPropagation();bpClearSlot(${i})">&times;</button></div>`;
+    return `<div class="bp-slot filled${bpTarget===i?' sel':''}${fullMutClass}${CARDS[s.char]&&CARDS[s.char].fullArt?' fa':''}" data-sid="${s.id}" onclick="bpPickSlot(${i})" style="--tcol:${edge}${edgeStyle}"><img src="${cardThumb(s.char)}" alt="" loading="lazy" decoding="async"><span class="bps-num">${i+1}</span><button class="bps-x" onclick="event.stopPropagation();bpClearSlot(${i})">&times;</button></div>`;
   }).join('');
   const pOf=s=>{const st=cardStats(s.char,s.mut,s.trait,s.shiny);return st.hp+st.atk;};
   const visible=state.stacks.filter(bpMatchesMut).sort((a,b)=>(b.fav?1:0)-(a.fav?1:0)||pOf(b)-pOf(a)||luckChance(b.char,b.mut,b.shiny)-luckChance(a.char,a.mut,a.shiny)); /* favorit → terkuat → paling langka */
@@ -1017,7 +1017,7 @@ function renderBackpackPanel(){
     const mutCls=mut?' mut-'+mut:'';
     const shinyClsStr=s.shiny?' shiny':'';
     const fullMutClass=variantClass+mutCls+shinyClsStr;
-    return `<div class="bp-tile${inDeck?' in-deck':''}${fullMutClass}" data-sid="${s.id}" data-name="${cardName(s.char).toLowerCase()}" onclick="bpAssign('${s.id}')" style="--tcol:${edge}"><img src="${cardThumb(s.char)}" alt="" width="360" height="536" loading="lazy" decoding="async">${stack}${cnt}<div class="bpt-ctl"><button class="bpt-fav${s.fav?' on':''}" onclick="event.stopPropagation();bpFav('${s.id}')" title="Favorit">${s.fav?'★':'☆'}</button><button class="bpt-lock${s.lock?' on':''}" onclick="event.stopPropagation();bpLock('${s.id}')" title="Lock">${s.lock?'🔒':'🔓'}</button></div><div class="bpt-name">${cardName(s.char)}</div></div>`;
+    return `<div class="bp-tile${inDeck?' in-deck':''}${fullMutClass}${CARDS[s.char]&&CARDS[s.char].fullArt?' fa':''}" data-sid="${s.id}" data-name="${cardName(s.char).toLowerCase()}" onclick="bpAssign('${s.id}')" style="--tcol:${edge}"><img src="${cardThumb(s.char)}" alt="" width="360" height="536" loading="lazy" decoding="async">${stack}${cnt}<div class="bpt-ctl"><button class="bpt-fav${s.fav?' on':''}" onclick="event.stopPropagation();bpFav('${s.id}')" title="Favorit">${s.fav?'★':'☆'}</button><button class="bpt-lock${s.lock?' on':''}" onclick="event.stopPropagation();bpLock('${s.id}')" title="Lock">${s.lock?'🔒':'🔓'}</button></div><div class="bpt-name">${cardName(s.char)}</div></div>`;
   }).join('');
   const cntOf=m=>state.stacks.filter(s=>m==='all'?true:(m==='shiny'?!!s.shiny:(s.mut||'none')===m)).length;
   const chip=(k,lbl)=>{const on=bpMutFilter===k,themed=['shiny','gold','rainbow','secret','ultima'].includes(k);const col=!on&&!themed?(MUT_COLOR[k]||'#7DF9FF'):'';return `<button class="bp-fchip${themed?' bp-themed bp-'+k:''}${on?' on':''}" onclick="bpSetFilter('${k}')"${col?` style="border-color:${col};color:${col}"`:''}>${themed?'<span class="bp-fchip-label">'+lbl+'</span>':lbl}<em>${cntOf(k)}</em></button>`;};
@@ -1662,7 +1662,7 @@ function activeChap(){
   return open.find(x=>x.no===(state?state.chap:1))||open.find(x=>!chapDone(x))||open[open.length-1]||CHAPTERS[0];
 }
 const LEVEL_COUNT=STORY_BIBLE.levels.length;
-const MASTER_CARD_INDEX=STORY_BIBLE.units.map(u=>({char_id:u.id,name:u.name,tier:u.tier,chance:u.chance||null,type:u.type,base_hp:u.hp,base_atk:u.atk,sprite_asset:u.art,art_image:u.art,pos:u.pos||null,passive:{name:u.skill,desc:u.desc},noGacha:!!u.noGacha,weatherOnly:u.weatherOnly||null,raidBoss:!!u.raidBoss,isStoryEnemy:!!(u.noGacha&&!u.chance)}));
+const MASTER_CARD_INDEX=STORY_BIBLE.units.map(u=>({char_id:u.id,name:u.name,tier:u.tier,chance:u.chance||null,type:u.type,base_hp:u.hp,base_atk:u.atk,sprite_asset:u.art,art_image:u.art,pos:u.pos||null,fullArt:!!u.fullArt,passive:{name:u.skill,desc:u.desc},noGacha:!!u.noGacha,weatherOnly:u.weatherOnly||null,raidBoss:!!u.raidBoss,isStoryEnemy:!!(u.noGacha&&!u.chance)}));
 
 /* =============== PREMIUM SHOP SYSTEM =============== */
 var premCurTab = 'all';

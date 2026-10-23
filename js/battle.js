@@ -221,7 +221,7 @@ function endPossession(){
   setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","MONARCH RETURNS","heal");},200);
 }
 
-function updateMeCard(){if(!bt)return;const f=document.querySelector(".fighter.me");if(f){if(bt.shadow){f.className="fighter me shadow-fighter";f.dataset.tier="EX";f.dataset.char="";f.style.borderColor="#7c3aed";f.innerHTML=meShadowHtml(bt.shadow);return;}f.className="fighter me"+mutGlow(bt.eq.mut)+shinyCls(bt.eq);f.dataset.tier=bt.eq.tier;f.dataset.char=bt.eq.char;f.style.borderColor=bt.eq.mut&&bt.eq.mut!=="none"?MUT_COLOR[bt.eq.mut]:"";f.innerHTML=meFighterHtml(bt.eq,{curHp:bt.pHp,maxHp:bt.pMax});}}
+function updateMeCard(){if(!bt)return;const f=document.querySelector(".fighter.me");if(f){if(bt.shadow){f.className="fighter me shadow-fighter";f.dataset.tier="EX";f.dataset.char="";f.style.borderColor="#7c3aed";f.innerHTML=meShadowHtml(bt.shadow);return;}f.className="fighter me"+mutGlow(bt.eq.mut)+shinyCls(bt.eq)+(isFullArt(bt.eq.char)?" full-art":"");f.dataset.tier=bt.eq.tier;f.dataset.char=bt.eq.char;f.style.borderColor=bt.eq.mut&&bt.eq.mut!=="none"?MUT_COLOR[bt.eq.mut]:"";f.innerHTML=meFighterHtml(bt.eq,{curHp:bt.pHp,maxHp:bt.pMax});}}
 function benchTile(s){
   return `<div class="bench-sq" data-tier="${s.tier}" style="border-color:${TIER_COLOR[s.tier]}" title="${cardName(s.char)}"><span class="bench-mini-tier">${s.tier}</span><img src="${cardThumb(s.char)}" alt="${cardName(s.char)}" loading="lazy" decoding="async"><span class="bhp"><i style="width:100%"></i></span></div>`;
 }
@@ -244,7 +244,7 @@ function renderBattle(){
   app.innerHTML=`
   <div class="battle-grid">
   <div class="me-col">
-    <div class="fighter me${eq?mutGlow(eq.mut):''}${shinyCls(eq)}" data-tier="${eq?eq.tier:''}" data-char="${eq?eq.char:''}"${eq?mutEdge(eq.mut):''}>${meFighterHtml(eq)}</div>
+    <div class="fighter me${eq?mutGlow(eq.mut):''}${shinyCls(eq)}${eq&&isFullArt(eq.char)?' full-art':''}" data-tier="${eq?eq.tier:''}" data-char="${eq?eq.char:''}"${eq?mutEdge(eq.mut):''}>${meFighterHtml(eq)}</div>
     ${benchHtml()}
   </div>
   <div class="vs-col"><div class="t">VS</div><div class="s" id="turnLabel">AUTO<br>BATTLE</div><button class="bspeed-btn" id="bspeedBtn" type="button">1×</button></div>

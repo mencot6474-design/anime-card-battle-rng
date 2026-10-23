@@ -28,6 +28,8 @@ function thumbSrc(src){
   return "assets/"+dir+"/"+m[2]+".webp";
 }
 function cardThumb(id){const c=CARDS[id];return c?thumbSrc(c.sprite_asset):"";}
+/* Kartu full-art: gambar sudah membawa border/frame sendiri, dirender 2:3 tanpa chrome UI. */
+function isFullArt(id){const c=CARDS[id];return !!(c&&c.fullArt);}
 function cardName(id){const c=CARDS[id];return c?c.name:"(kartu hilang)";}
 function cardType(id){const c=CARDS[id];return c?c.type:"";}
 function cardTier(id){const c=CARDS[id];return c?c.tier:"";}

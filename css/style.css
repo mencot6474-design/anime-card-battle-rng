@@ -48409,3 +48409,35 @@ html,body{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   body.battle-full .vs-col .s{font-size:clamp(8px,2vw,11px);letter-spacing:.12em;white-space:normal;line-height:1.25}
   body.battle-full .bspeed-btn{font-size:11px;padding:4px 8px;min-width:0}
 }
+
+/* ===== FULL-ART CARDS (2026-10-23) =====
+   Gambar kartu sudah membawa border ornamen sendiri, jadi chrome UI (ornate SVG,
+   crown bar, trait socket, equip rail) disembunyikan dan kartu mengikuti rasio
+   gambar 2:3 supaya border tidak terpotong. */
+body.battle-full .fighter.full-art{
+  aspect-ratio:2/3;
+  border-color:transparent !important;
+  background:#050307;
+  box-shadow:0 14px 40px rgba(0,0,0,.6);
+}
+body.battle-full .fighter.full-art .tcg-ornate-svg,
+body.battle-full .fighter.full-art .tcg-crown-bar,
+body.battle-full .fighter.full-art .tcg-trait-socket,
+body.battle-full .fighter.full-art .tcg-equip-rail{display:none !important}
+body.battle-full .fighter.full-art .f-banner img{object-fit:cover !important;object-position:center !important}
+body.battle-full .fighter.full-art .f-banner::before{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:52%;z-index:2;pointer-events:none;
+  background:linear-gradient(to top,rgba(4,2,6,.97) 0%,rgba(4,2,6,.78) 34%,rgba(4,2,6,.2) 70%,transparent 100%);
+}
+
+.hub-center.fa{aspect-ratio:2/3;border-color:transparent !important;width:calc(100% * 8 / 9);margin-inline:auto}
+.hub-center.fa .hc-img{background:#050307}
+.hub-center.fa .hc-img img{object-fit:cover;object-position:center}
+
+#indexModal .ix-cell.fa{aspect-ratio:2/3;align-self:start}
+#indexModal .ix-cell.fa img{object-fit:cover;object-position:center}
+
+.bp-tile.fa img,.bp-slot.fa img{object-fit:contain;object-position:center;background:#050307}
+
+/* Full-art di deck pick & tile kecil lain: border tetap utuh, latar gelap mengisi sisa. */
+.dp-card.fa img{object-fit:contain;object-position:center;background:#050307}
