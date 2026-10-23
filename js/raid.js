@@ -168,6 +168,7 @@ function renderRaidHub(){
     };
   });
 }
+var _rdTileHtml={},_ixHtml={},_dpHtml={};
 function renderRaidPick(){
   const stacks=state.stacks.slice().sort((a,b)=>(b.fav?1:0)-(a.fav?1:0));
   const b=raidBossOf(),df=raidDiffOf();
@@ -179,15 +180,17 @@ function renderRaidPick(){
       <div class="rd-pick-boss"><img src="${b.img}" alt="${b.name}"><div class="rpb-i"><span class="rpb-k">BOSS &middot; ${b.diffLabel}</span><span class="rpb-n">${b.name}</span><span class="rpb-hp">HP ${fmt(b.hp)} &middot; ${RAID_TURNS} TURN</span><span class="rpb-df" style="color:${df.color}">${df.l} ×${df.rw||1}</span></div></div>
     </div>
     <label class="card-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input class="card-search" id="raidSearch" type="text" placeholder="Cari kartu…" autocomplete="off"></label>
-    <div class="raid-pick-grid" id="raidPickGrid">${stacks.map(s=>{
-      const c=CARDS[s.char];
+    <div class="raid-pick-grid" id="raidPickGrid">${(()=>{const _rd={};const inner=s=>{const c=CARDS[s.char];
       const shny=s.shiny?'<span class="bpt-shiny shiny-pill">SHINY</span>':'';
       const mut=(s.mut&&s.mut!=='none')?s.mut:null;
       const trait=(s.trait&&s.trait!=='none')?s.trait:null;
       const cnt=(s.count||1)>1?`<span class="bpt-cnt">&times;${fmt(s.count)}</span>`:'';
-      const stack=(shny||mut||trait)?`<div class="bpt-top">${shny}${mut?mutChip(mut,mutPill(mut,'bpt-mut')):''}${trait?traitChip(trait,`<span class="bpt-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(12,trait)}</span>`):''}</div>`:'';
-      return `<div class="bp-tile${c.fullArt?' fa':''}" data-sid="${s.id}" data-pick="${s.id}" data-name="${c.name.toLowerCase()}" style="--tcol:${TIER_COLOR[s.tier]}"><img src="${cardThumb(s.char)}" alt="" width="360" height="536" loading="lazy" decoding="async">${stack}${cnt}<div class="bpt-ctl"><button class="bpt-fav${s.fav?' on':''}" onclick="event.stopPropagation();bpFav('${s.id}');renderRaidPick()" title="Favorit">${s.fav?'★':'☆'}</button><button class="bpt-lock${s.lock?' on':''}" onclick="event.stopPropagation();bpLock('${s.id}');renderRaidPick()" title="Lock">${s.lock?'🔒':'🔓'}</button></div><div class="bpt-name">${c.name}</div></div>`;
-    }).join("")}</div>
+      const stack=(shny||mut||trait)?`<div class="bpt-top">${shny}${mut?mutChip(mut,mutPill(mut,'bpt-mut')):''}${trait?traitChip(trait,`<span class="bpt-gem" style="color:${TRAIT_COLOR[trait]};border-color:${TRAIT_COLOR[trait]}">${traitGem(12,trait)}</span>`):''}</div>`:'';
+      return `<img src="${cardThumb(s.char)}" alt="" width="360" height="536" loading="lazy" decoding="async">${stack}${cnt}<div class="bpt-ctl"><button class="bpt-fav${s.fav?' on':''}" onclick="event.stopPropagation();bpFav('${s.id}');renderRaidPick()" title="Favorit">${s.fav?'★':'☆'}</button><button class="bpt-lock${s.lock?' on':''}" onclick="event.stopPropagation();bpLock('${s.id}');renderRaidPick()" title="Lock">${s.lock?'🔒':'🔓'}</button></div><div class="bpt-name">${c.name}</div>`;};
+      _rdTileHtml=_rd;
+      return stacks.map((s,i)=>{_rd[s.id]=inner(s);const c=CARDS[s.char];const mounted=i<48;
+      return `<div class="bp-tile${c.fullArt?' fa':''}${mounted?'':' lz-ph'}" data-lz="${s.id}" data-sid="${s.id}" data-pick="${s.id}" data-name="${c.name.toLowerCase()}" style="--tcol:${TIER_COLOR[s.tier]}">${mounted?_rd[s.id]:''}</div>`;
+    }).join("");})()}</div>
     <div class="no-result" id="raidSearch-nr">Tidak ada kartu yang cocok dengan pencarian.</div>
   </div>`;
   bpsHoverBind();bpsHoverHide(); /* hover tile -> reveal kartu penuh (stat/passive) kayak tab DECK */
@@ -199,6 +202,7 @@ function renderRaidPick(){
     raidPicked=state.stacks.find(s=>s.id===btn.dataset.pick)||state.stacks[0];
     raidView="battle";renderRaid();
   });
+  lazyMountGrid(app,_rdTileHtml);
 }
 function renderRaidBattle(){
   const b=raidBossOf(), eq=raidPicked||equipped();
@@ -773,7 +777,8 @@ function ixRender(){
     chance:(a,b)=>(a.chance==null?1e9:a.chance)-(b.chance==null?1e9:b.chance)||a.name.localeCompare(b.name)};
   list.sort(T[ixState.sort]||T.name);
   /* --- kartu full-art --- */
-  const cells=list.map(c=>{
+  _ixHtml={};
+  const cells=list.map((c,i)=>{
     const any=ownedN(c,false)+ownedN(c,true);
     const anySh=ownedN(c,true)>0;
 
@@ -826,12 +831,13 @@ function ixRender(){
       nameHtml = `<span class="ixc-name hc-name-top">${c.name}</span>`;
     }
 
-    return `<button class="${cls}" type="button" data-c="${c.char_id}" data-mut="${hasMut ? fm : 'none'}" data-shiny="${shFx ? '1' : '0'}"${lockBoss ? ' title="BELUM DIBELI - beli di TOKO RAID untuk buka roll"' : ''} style="--tc:#9AA6B2;--bc:${bc}">
-      <img src="${thumbSrc(c.sprite_asset)}" alt="${c.name}" width="360" height="536" loading="lazy" decoding="async">
+    const inner=`<img src="${thumbSrc(c.sprite_asset)}" alt="${c.name}" width="360" height="536" loading="lazy" decoding="async">
       ${c.fullArt&&(hasMut||shFx)?`<span class="ix-fa-var">${shFx?'<span class="shiny-badge shiny-pill">SHINY</span>':''}${hasMut?mutChip(fm,mutPill(fm)):''}</span>`:''}
       <span class="ixc-stack">${nameHtml}<span class="ixc-chance${hasMut && (fm === 'rainbow' || fm === 'ultima') ? ' ixc-chance-rainbow' : ''}" style="color:${chanceColor}"><span class="ixc-chance-text">${chanceHtml}</span></span></span>
-      <span class="ixc-own${isSpecificVariantOwned ? ' on' : ''}">${any}/10</span>
-    </button>`;
+      <span class="ixc-own${isSpecificVariantOwned ? ' on' : ''}">${any}/10</span>`;
+    _ixHtml[c.char_id]=inner;
+    const mounted=i<48;
+    return `<button class="${cls}${mounted?'':' lz-ph'}" type="button" data-lz="${c.char_id}" data-c="${c.char_id}" data-mut="${hasMut ? fm : 'none'}" data-shiny="${shFx ? '1' : '0'}"${lockBoss ? ' title="BELUM DIBELI - beli di TOKO RAID untuk buka roll"' : ''} style="--tc:#9AA6B2;--bc:${bc}">${mounted?inner:''}</button>`;
   }).join("");
   /* --- footer: strip progres SEGMENT per mutasi + milestone INTAN ROLL --- */
   const validCards=MASTER_CARD_INDEX.filter(c=>!c.isStoryEnemy);
@@ -865,6 +871,7 @@ function ixRender(){
   </div>`;
   document.getElementById("ixToolbar").innerHTML=toolbar;
   document.getElementById("ixBody").innerHTML=(list.length?"":`<div class="ix-empty">Tidak ada kartu yang cocok</div>`)+`<div class="ix-grid">${cells}</div>`;
+  lazyMountGrid(document.getElementById("ixBody"),_ixHtml);
   document.getElementById("ixFoot").innerHTML=strip;
   const sel=document.getElementById("ixSort");sel.value=ixState.sort;
   sel.onchange=()=>{ixState.sort=sel.value;ixRender();};
@@ -1069,14 +1076,16 @@ function renderDeckPick(){
   const b=document.getElementById("dpBody");
   if(!state.stacks.length){b.innerHTML=`<p class="sub">Deck kosong.</p>`;return;}
   const selId=cardPickCfg?cardPickCfg.getSel():traitTargetStack().id;
-  b.innerHTML=`<label class="card-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input class="card-search" id="dpSearch" type="text" placeholder="Cari kartu…" autocomplete="off"></label><div class="dp-grid" id="dpGrid">${state.stacks.map(s=>{
-    return `<button class="dp-card${isFullArt(s.char)?" fa":""}${s.id===selId?" sel":""}${s.mut&&s.mut!=="none"?(s.shiny?" dp-mut-shiny-"+s.mut:" dp-mut-"+s.mut):""}${s.shiny?" shiny":""}" data-tid="${s.id}" data-name="${cardName(s.char).toLowerCase()}">
-      <img src="${cardThumb(s.char)}" alt="" loading="lazy" decoding="async">
+  _dpHtml={};
+  b.innerHTML=`<label class="card-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input class="card-search" id="dpSearch" type="text" placeholder="Cari kartu…" autocomplete="off"></label><div class="dp-grid" id="dpGrid">${state.stacks.map((s,i)=>{
+    const inner=`<img src="${cardThumb(s.char)}" alt="" loading="lazy" decoding="async">
       ${s.shiny||(s.mut&&s.mut!=="none")||(s.trait&&s.trait!=="none")?`<span class="dp-badges">${s.shiny?'<span class="shiny-badge shiny-pill">SHINY</span>':""}${s.mut&&s.mut!=="none"?mutChip(s.mut,mutPill(s.mut,'mut-badge dp-mut')):""}${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="trait-badge dp-gem" style="border-color:${TRAIT_COLOR[s.trait]}">${traitGem(13,s.trait)}</span>`):""}</span>`:""}
-      <span class="dp-name">${cardName(s.char)}</span>
-    </button>`;}).join("")}</div><div class="no-result" id="dpSearch-nr">Tidak ada kartu yang cocok.</div>`;
+      <span class="dp-name">${cardName(s.char)}</span>`;
+    _dpHtml[s.id]=inner;const mounted=i<48;
+    return `<button class="dp-card${isFullArt(s.char)?" fa":""}${s.id===selId?" sel":""}${s.mut&&s.mut!=="none"?(s.shiny?" dp-mut-shiny-"+s.mut:" dp-mut-"+s.mut):""}${s.shiny?" shiny":""}${mounted?"":" lz-ph"}" data-lz="${s.id}" data-tid="${s.id}" data-name="${cardName(s.char).toLowerCase()}">${mounted?inner:""}</button>`;}).join("")}</div><div class="no-result" id="dpSearch-nr">Tidak ada kartu yang cocok.</div>`;
   {const dps=document.getElementById("dpSearch");if(dps){dps.value=dpSearch;dps.oninput=()=>{dpSearch=dps.value;runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));};if(dpSearch)runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));}}
   b.querySelectorAll(".dp-card").forEach(el=>el.onclick=()=>{const tid=el.getAttribute("data-tid");sfx.hit();if(cardPickCfg){cardPickCfg.onPick(tid);}else{traitTarget=tid;closeDeckPick();renderTrait();}});
+  lazyMountGrid(b.closest(".dp-box")||b,_dpHtml);
 }
 /* Trait transiden ke atas = langka; jangan ditimpa tanpa konfirmasi */
 const RARE_TRAIT_GUARD=["transiden","demigod","cosmic","bigbang"];

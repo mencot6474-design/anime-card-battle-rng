@@ -4013,7 +4013,7 @@ h1{font-size:clamp(30px,4.9vw,52px);font-weight:800;letter-spacing:-.01em;line-h
 
 
 
-.f.shiny .f-banner::after{opacity:1;animation:holoSheen 6s linear infinite}
+.f.shiny .f-banner::after{opacity:1;animation:holoSheen 6s var(--fx-sheen-tf,linear) infinite}
 
 
 
@@ -7821,7 +7821,7 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 
 
 
-  animation:holoSheen 5s linear infinite;
+  animation:holoSheen 5s var(--fx-sheen-tf,linear) infinite;
 
 
 
@@ -8697,7 +8697,7 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 
 
 
-.tcg.shiny .tcg-img::after,.hub-center.shiny .hc-img::after,.f.shiny .f-banner::after,.fighter.shiny .f-banner::after,.deck-slot.shiny .ds-art::after{opacity:.78;animation:holoSheen 6s linear infinite}
+.tcg.shiny .tcg-img::after,.hub-center.shiny .hc-img::after,.f.shiny .f-banner::after,.fighter.shiny .f-banner::after,.deck-slot.shiny .ds-art::after{opacity:.78;animation:holoSheen 6s var(--fx-sheen-tf,linear) infinite}
 
 
 
@@ -8729,7 +8729,7 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 
 
 
-[data-tier="EX"]::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;pointer-events:none;z-index:8;background:linear-gradient(115deg,#ff4d5e,#ff8fb0,#ffe1e8,#c7f2ff,#4de1ff,#ff4d5e);background-size:250% 250%;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:exFoil 5.5s linear infinite}
+[data-tier="EX"]::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;pointer-events:none;z-index:8;background:linear-gradient(115deg,#ff4d5e,#ff8fb0,#ffe1e8,#c7f2ff,#4de1ff,#ff4d5e);background-size:250% 250%;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:exFoil 5.5s var(--fx-sheen-tf,linear) infinite}
 
 
 
@@ -8757,7 +8757,7 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 
 
 
-[data-tier="UR"]::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;pointer-events:none;z-index:8;background:linear-gradient(115deg,#2f8fe2,#7fd0ff,#eafaff,#cfe9ff,#2f8fe2);background-size:250% 250%;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:exFoil 5.5s linear infinite}
+[data-tier="UR"]::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;pointer-events:none;z-index:8;background:linear-gradient(115deg,#2f8fe2,#7fd0ff,#eafaff,#cfe9ff,#2f8fe2);background-size:250% 250%;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:exFoil 5.5s var(--fx-sheen-tf,linear) infinite}
 
 
 
@@ -10313,7 +10313,7 @@ body.on-lobby .foot-profile:hover{
 
 
 
-  animation:holoSheen 5s linear infinite;
+  animation:holoSheen 5s var(--fx-sheen-tf,linear) infinite;
 
 
 
@@ -12437,7 +12437,7 @@ body.battle-full .vs-col .bspeed-btn{font-size:clamp(12px,1.4vw,15px);padding:4p
 
 
 
-#indexModal .ix-cell.shiny::after{opacity:.85;animation:holoSheen 6s linear infinite}
+#indexModal .ix-cell.shiny::after{opacity:.85;animation:holoSheen 6s var(--fx-sheen-tf,linear) infinite}
 
 
 
@@ -31321,7 +31321,7 @@ body.on-tower main {
 
 
 
-.rd-pick .bp-tile:hover::after{opacity:1;animation:bpSweep 1.1s ease-in-out infinite}
+.rd-pick .bp-tile:hover::after{opacity:1;animation:bpSweep 1.1s var(--fx-hover-tf,ease-in-out) infinite}
 
 
 
@@ -31573,7 +31573,7 @@ body.on-tower main {
 
 
 
-.backpack-panel .bp-cols{flex-direction:column;gap:12px;}
+.backpack-panel .bp-cols{flex-direction:row;align-items:stretch;gap:18px;}
 
 
 
@@ -31581,7 +31581,7 @@ body.on-tower main {
 
 
 
-  align-self:stretch;flex-direction:row;align-items:center;gap:16px;position:relative;
+  align-self:stretch;flex:0 0 auto;min-height:0;overflow:hidden;flex-direction:column;align-items:center;gap:12px;position:relative;
 
 
 
@@ -31589,7 +31589,7 @@ body.on-tower main {
 
 
 
-  border-radius:16px;padding:12px 16px;width:100%;
+  border-radius:16px;padding:12px 16px;width:168px;
 
 
 
@@ -31601,7 +31601,7 @@ body.on-tower main {
 
 
 
-  content:"";position:absolute;left:104px;right:220px;top:50%;height:1px;
+  content:"";display:none;position:absolute;left:104px;right:220px;top:50%;height:1px;
 
 
 
@@ -31621,7 +31621,7 @@ body.on-tower main {
 
 
 
-  margin:0;flex:0 0 auto;font-family:"Rajdhani",sans-serif;font-weight:800;
+  margin:0;flex:0 0 auto;width:100%;text-align:center;font-family:"Rajdhani",sans-serif;font-weight:800;
 
 
 
@@ -31633,7 +31633,7 @@ body.on-tower main {
 
 
 
-.backpack-panel .bp-slots{display:flex;flex-direction:row;gap:10px;position:relative;z-index:1;}
+.backpack-panel .bp-slots{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;position:relative;z-index:1;flex:1 1 auto;min-height:0;overflow:visible;width:100%;}
 
 
 
@@ -31641,11 +31641,11 @@ body.on-tower main {
 
 
 
-  width:96px;height:auto;aspect-ratio:3/4;max-width:none;max-height:138px;
+  width:auto;height:auto;aspect-ratio:1/1;max-width:100%;max-height:136px;
 
 
 
-  justify-self:auto;flex:none;z-index:1;border-radius:14px;
+  justify-self:auto;flex:1 1 0;min-height:0;z-index:1;border-radius:14px;
 
 
 
@@ -31817,11 +31817,11 @@ body.on-tower main {
 
 
 
-  display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;
+  display:grid;grid-template-columns:1fr;grid-template-rows:auto auto auto;width:100%;flex:0 0 auto;
 
 
 
-  align-items:center;column-gap:16px;row-gap:2px;justify-items:end;
+  align-items:center;justify-items:center;row-gap:6px;
 
 
 
@@ -31869,7 +31869,7 @@ body.on-tower main {
 
 
 
-  grid-area:1/2/3/3;font-family:"Rajdhani",sans-serif;font-weight:800;
+  grid-area:3/1/4/2;width:100%;box-sizing:border-box;white-space:nowrap;font-family:"Rajdhani",sans-serif;font-weight:800;
 
 
 
@@ -43605,7 +43605,7 @@ body.battle-full .fighter.phantom-enter {
 
 
 
-  animation:mutBorderFlowHV var(--mut-dur,3s) linear infinite alternate;
+  animation:mutBorderFlowHV var(--mut-dur,3s) var(--fx-ring-tf,linear) infinite alternate;
 
 
 
@@ -47864,7 +47864,7 @@ body.battle-full .fighter.foe.ko {
 .backpack-panel .bp-tiles{grid-template-columns:repeat(auto-fill,minmax(148px,1fr))!important;}
 .backpack-panel .bp-itemgrid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))!important;}
 .backpack-panel .bp-search{max-width:360px;}
-.backpack-panel .bp-slots .bp-slot{width:110px!important;max-height:150px!important;}
+.backpack-panel .bp-slots .bp-slot{width:auto!important;max-height:136px!important;}
 
 @media(max-width:860px){
   #indexModal .ix-head,
@@ -48554,5 +48554,72 @@ body.battle-full .fighter.full-art .f-badges .fbadge{display:inline-flex!importa
 @keyframes skfxCardHit{0%{transform:translateX(0);filter:brightness(2.4) saturate(.4)}18%{transform:translateX(-6px)}36%{transform:translateX(5px)}54%{transform:translateX(-4px)}72%{transform:translateX(2px)}100%{transform:none;filter:none}}
 .fighter.skfx-dead{filter:grayscale(1) brightness(.32) contrast(1.1)}
 .fighter.skfx-quake{animation:skfxQuake .42s linear infinite}
+/* Battle: tampilkan lagi SEMUA badge (mut/shiny/trait) yang tadinya disembunyikan, dan pindahkan cluster-nya ke pojok KIRI-ATAS kartu. */
+body.battle-full .fighter .f-badges .mut-badge,
+body.battle-full .fighter .f-badges .shiny-badge,
+body.battle-full .fighter .f-badges .fbadge,
+body.battle-full .fighter .f-badges .mut-hover,
+body.battle-full .fighter .f-badges .trait-hover{display:inline-flex !important}
+body.battle-full .fighter .f-badges{top:12px !important;left:12px !important;right:auto !important;align-items:flex-start !important}
 
 
+
+/* Badge di DEK dan picker BOSS RAID: keluarkan dari atas kartu (baris horizontal di tepi atas) biar artwork bersih. */
+.backpack-panel .bp-tile,
+.rd-pick .bp-tile{ content-visibility:visible !important; }
+.backpack-panel .bp-tile .bpt-top,
+.rd-pick .bp-tile .bpt-top{
+  top:auto !important; left:0 !important; right:auto !important;
+  bottom:calc(100% + 6px) !important;
+  flex-direction:row !important; align-items:center !important; gap:4px !important;
+}
+.backpack-panel .bp-tile .bpt-top .bpt-shiny,
+.rd-pick .bp-tile .bpt-top .bpt-shiny,
+.backpack-panel .bp-tile .bpt-top .bpt-mut,
+.rd-pick .bp-tile .bpt-top .bpt-mut{ transform:none !important; height:18px !important; padding:0 5px !important; font-size:9px !important; border-radius:5px !important; box-shadow:0 2px 6px rgba(0,0,0,.6) !important; }
+.backpack-panel .bp-tile .bpt-top .bpt-gem,
+.rd-pick .bp-tile .bpt-top .bpt-gem{ width:18px !important; height:18px !important; }
+.backpack-panel .bp-tiles{ row-gap:40px !important; padding-top:26px !important; grid-template-columns:repeat(auto-fill,minmax(112px,1fr)) !important; }
+.raid-pick-grid{ row-gap:42px !important; padding-top:28px !important; grid-template-columns:repeat(auto-fill,minmax(122px,1fr)) !important; }
+
+/* Icon favorite + lock: taro di POJOK KANAN-ATAS kartu (dek & picker), selalu kelihatan, biar konsisten dan tidak menutupi badge yang sudah keluar ke atas. */
+.backpack-panel .bp-tile .bpt-ctl,
+.rd-pick .bp-tile .bpt-ctl{
+  top:4px !important; right:4px !important; left:auto !important; bottom:auto !important;
+  flex-direction:column !important; align-items:flex-end !important; gap:4px !important;
+  opacity:1 !important; transform:none !important;
+}
+
+/* Picker Boss Raid (view raid): sembunyikan scrollbar #app tapi tetap bisa di-scroll. */
+body.on-raid #app{ scrollbar-width:none !important; -ms-overflow-style:none !important; }
+body.on-raid #app::-webkit-scrollbar{ width:0 !important; height:0 !important; display:none !important; }
+
+/* Ratakan badge di strip atas: tinggi tiap elemen seragam 20px + strip di-tengah di atas kartu biar rapi. */
+.backpack-panel .bp-tile .bpt-top,
+.rd-pick .bp-tile .bpt-top{ left:0 !important; right:0 !important; justify-content:center !important; align-items:center !important; }
+.backpack-panel .bp-tile .bpt-top > *,
+.rd-pick .bp-tile .bpt-top > *{ height:20px !important; display:inline-flex !important; align-items:center !important; box-sizing:border-box !important; }
+.backpack-panel .bp-tile .bpt-top .bpt-shiny,
+.rd-pick .bp-tile .bpt-top .bpt-shiny,
+.backpack-panel .bp-tile .bpt-top .bpt-mut,
+.rd-pick .bp-tile .bpt-top .bpt-mut{ height:20px !important; line-height:1 !important; }
+.backpack-panel .bp-tile .bpt-top .bpt-gem,
+.rd-pick .bp-tile .bpt-top .bpt-gem{ height:20px !important; width:20px !important; }
+
+/* DECK MATRIX layout baru: rail DECK AKTIF vertikal di KIRI (kartu berjejer ke bawah), KOLEKSI grid di KANAN. */
+.backpack-panel .bp-deckcol{ scrollbar-width:none; -ms-overflow-style:none; }
+.backpack-panel .bp-deckcol::-webkit-scrollbar{ width:0; height:0; display:none; }
+.backpack-panel .bp-body.deck .bp-collect{ flex:1 1 auto; min-width:0; }
+
+/* ---- FPS-LOCK: throttle animasi gradien kartu ~30fps ----
+   Animasi ring mut/shiny (mutBorderFlowHV, pakai mask-composite = repaint mahal),
+   sheen holo (holoSheen) & foil EX/UR (exFoil) dan sweep hover (bpSweep) semuanya
+   animasi background-position -> di-raster ulang tiap frame di CPU, jadi TIDAK kena
+   rAF lock JS. Saat html.fps-locked aktif (diset fps-lock.js pas di-lock), timing-
+   function-nya diganti steps() supaya nilai cuma berubah ~30x/detik -> repaint
+   berkurang drastis, gerak tetep keliatan mulus. Default (class gak ada) = smooth 60fps. */
+html.fps-locked{
+  --fx-ring-tf:steps(90);    /* durasi ring 2.4-3s  -> ~30fps */
+  --fx-sheen-tf:steps(170);  /* holoSheen/exFoil 5-6s -> ~28-34fps */
+  --fx-hover-tf:steps(33);   /* bpSweep 1.1s -> ~30fps */
+}

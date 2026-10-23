@@ -163,9 +163,9 @@ function meFighterHtml(s,opts){
   const name=cardName(s.char),fName=battleCardNameHtml(name,mut,s.shiny);
   const pwr=Math.max(1,Math.round((maxHp+st.atk)/1000));
   const traitName=trait?traitLabel(trait):(mut?mut.toUpperCase():"AWAKENED");
-  /* Full-art tidak pakai frame mutasi → badge kecil jadi penanda varian. */
-  const faVar=(isFullArt(s.char)&&(mut||s.shiny))?`${s.shiny?'<span class="shiny-badge shiny-pill">SHINY</span>':''}${mut?mutChip(mut,mutPill(mut)):''}`:"";
-  const badges=(trait?traitChip(trait,`<span class="hc-trait hc-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(14,trait)}</span>`):"")+faVar;
+  /* Badge varian tampil untuk SEMUA kartu. Urutan (atas→bawah): SHINY, mutasi, trait. */
+  const traitBadge=trait?traitChip(trait,`<span class="hc-trait hc-gem" style="color:${TRAIT_COLOR[trait]};border-color:${TRAIT_COLOR[trait]}">${traitGem(14,trait)}</span>`):"";
+  const badges=`${s.shiny?'<span class="shiny-badge shiny-pill">SHINY</span>':''}${mut?mutChip(mut,mutPill(mut)):''}${traitBadge}`;
   return `${tcgPlayerEquipRailHtml()}
     <div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}"${CARDS[s.char]&&CARDS[s.char].pos?` style="object-position:${CARDS[s.char].pos}"`:''}><div class="cyber-holo-sweep"></div>${fName}
     ${badges?`<div class="f-badges">${badges}</div>`:""}

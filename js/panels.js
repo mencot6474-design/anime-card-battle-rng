@@ -975,6 +975,34 @@ function bpAssign(stackId){
 }
 function bpFav(stackId){const s=state.stacks.find(x=>x.id===stackId);if(!s)return;s.fav=!s.fav;save();renderBackpackPanel();}
 function bpLock(stackId){const s=state.stacks.find(x=>x.id===stackId);if(!s)return;s.lock=!s.lock;save();renderBackpackPanel();}
+/* ---- LAZY-MOUNT grid kartu: kartu di luar layar tidak dibangun DOM-nya (mount-on-scroll) ----
+   Dipakai koleksi DECK, picker BOSS RAID, INDEX, dan picker KARTU. rootEl = elemen yang di-scroll. */
+var _bpTileHtml={};
+function lazyMountGrid(rootEl,htmlMap,opts){
+  if(!rootEl)return;
+  opts=opts||{};
+  if(rootEl.__lzIO){try{rootEl.__lzIO.disconnect();}catch(e){}rootEl.__lzIO=null;}
+  const phs=[].slice.call(rootEl.querySelectorAll('.lz-ph'));
+  if(!phs.length)return;
+  const fill=el=>{if(!el.classList.contains('lz-ph'))return;const k=el.getAttribute('data-lz');el.innerHTML=(htmlMap[k]!=null?htmlMap[k]:'');el.classList.remove('lz-ph');};
+  if(!('IntersectionObserver'in window)){phs.forEach(fill);return;}
+  const io=new IntersectionObserver(entries=>{
+    entries.forEach(en=>{if(en.isIntersecting){fill(en.target);io.unobserve(en.target);}});
+  },{root:rootEl,rootMargin:(opts.prefetch||300)+'px 0px'});
+  rootEl.__lzIO=io;
+  phs.forEach(el=>io.observe(el));
+}
+function bpTileInner(s){
+  const shny=s.shiny?'<span class="bpt-shiny shiny-pill">SHINY</span>':'';
+  const mut=(s.mut&&s.mut!=='none')?s.mut:null;
+  const trait=(s.trait&&s.trait!=='none')?s.trait:null;
+  const cnt=(s.count||1)>1?`<span class="bpt-cnt">&times;${fmt(s.count)}</span>`:'';
+  const stack=(shny||mut||trait)?`<div class="bpt-top">${shny}${mut?mutChip(mut,mutPill(mut,'bpt-mut')):''}${trait?traitChip(trait,`<span class="bpt-gem" style="color:${TRAIT_COLOR[trait]};border-color:${TRAIT_COLOR[trait]}">${traitGem(12,trait)}</span>`):''}</div>`:'';
+  return `<img src="${cardThumb(s.char)}" alt="" width="360" height="536" loading="lazy" decoding="async">${stack}${cnt}<div class="bpt-ctl"><button class="bpt-fav${s.fav?' on':''}" onclick="event.stopPropagation();bpFav('${s.id}')" title="Favorit">${s.fav?'★':'☆'}</button><button class="bpt-lock${s.lock?' on':''}" onclick="event.stopPropagation();bpLock('${s.id}')" title="Lock">${s.lock?'🔒':'🔓'}</button></div><div class="bpt-name">${cardName(s.char)}</div>`;
+}
+function bpLazyMountTiles(){
+  lazyMountGrid(document.querySelector('.bp-scroll'),_bpTileHtml);
+}
 function renderBackpackPanel(){
   const panel=document.getElementById('backpackPanel');if(!panel)return;
   bpsHoverBind();bpsHoverHide();
@@ -1006,26 +1034,27 @@ function renderBackpackPanel(){
   }).join('');
   const pOf=s=>{const st=cardStats(s.char,s.mut,s.trait,s.shiny);return st.hp+st.atk;};
   const visible=state.stacks.filter(bpMatchesMut).sort((a,b)=>(b.fav?1:0)-(a.fav?1:0)||pOf(b)-pOf(a)||luckChance(b.char,b.mut,b.shiny)-luckChance(a.char,a.mut,a.shiny)); /* favorit → terkuat → paling langka */
-  const tiles=visible.map(s=>{
+  /* LAZY-MOUNT: kartu di luar layar TIDAK dibangun DOM-nya. Yang di/near layar aja (INITAL pertama + IntersectionObserver pas scroll). */
+  const INITIAL=48;
+  _bpTileHtml={};
+  const tiles=visible.map((s,i)=>{
+    _bpTileHtml[s.id]=bpTileInner(s);
     const inDeck=state.deck.includes(s.id);
-    const shny=s.shiny?'<span class="bpt-shiny shiny-pill">SHINY</span>':'';
-    const mut=(s.mut&&s.mut!=='none')?s.mut:null;
-    const trait=(s.trait&&s.trait!=='none')?s.trait:null;
-    const cnt=(s.count||1)>1?`<span class="bpt-cnt">&times;${fmt(s.count)}</span>`:'';
-    const stack=(shny||mut||trait)?`<div class="bpt-top">${shny}${mut?mutChip(mut,mutPill(mut,'bpt-mut')):''}${trait?traitChip(trait,`<span class="bpt-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(12,trait)}</span>`):''}</div>`:'';
     const edge=bpCardBorderColor(s),variant=bpCardBorderKind(s),variantClass=variant?" bp-mut-"+variant:"";
+    const mut=(s.mut&&s.mut!=='none')?s.mut:null;
     const mutCls=mut?' mut-'+mut:'';
     const shinyClsStr=s.shiny?' shiny':'';
     const fullMutClass=variantClass+mutCls+shinyClsStr;
-    return `<div class="bp-tile${inDeck?' in-deck':''}${fullMutClass}${CARDS[s.char]&&CARDS[s.char].fullArt?' fa':''}" data-sid="${s.id}" data-name="${cardName(s.char).toLowerCase()}" onclick="bpAssign('${s.id}')" style="--tcol:${edge}"><img src="${cardThumb(s.char)}" alt="" width="360" height="536" loading="lazy" decoding="async">${stack}${cnt}<div class="bpt-ctl"><button class="bpt-fav${s.fav?' on':''}" onclick="event.stopPropagation();bpFav('${s.id}')" title="Favorit">${s.fav?'★':'☆'}</button><button class="bpt-lock${s.lock?' on':''}" onclick="event.stopPropagation();bpLock('${s.id}')" title="Lock">${s.lock?'🔒':'🔓'}</button></div><div class="bpt-name">${cardName(s.char)}</div></div>`;
+    const mounted=i<INITIAL;
+    return `<div class="bp-tile${inDeck?' in-deck':''}${fullMutClass}${CARDS[s.char]&&CARDS[s.char].fullArt?' fa':''}${mounted?'':' lz-ph'}" data-lz="${s.id}" data-sid="${s.id}" data-name="${cardName(s.char).toLowerCase()}" onclick="bpAssign('${s.id}')" style="--tcol:${edge}">${mounted?_bpTileHtml[s.id]:''}</div>`;
   }).join('');
   const cntOf=m=>state.stacks.filter(s=>m==='all'?true:(m==='shiny'?!!s.shiny:(s.mut||'none')===m)).length;
   const chip=(k,lbl)=>{const on=bpMutFilter===k,themed=['shiny','gold','rainbow','secret','ultima'].includes(k);const col=!on&&!themed?(MUT_COLOR[k]||'#7DF9FF'):'';return `<button class="bp-fchip${themed?' bp-themed bp-'+k:''}${on?' on':''}" onclick="bpSetFilter('${k}')"${col?` style="border-color:${col};color:${col}"`:''}>${themed?'<span class="bp-fchip-label">'+lbl+'</span>':lbl}<em>${cntOf(k)}</em></button>`;};
   const searchInput=`<input class="bp-search" type="search" placeholder="🔍 Cari kartu…" value="${deckSearch}" oninput="deckSearch=this.value;runCardSearch(this,document.querySelector('.bp-tiles'),document.getElementById('bp-nores'))">`;
   const filterRow=`<div class="bp-filter">${searchInput}${chip('all','SEMUA')+chip('shiny','SHINY')+chip('gold','GOLD')+chip('rainbow','RAINBOW')+chip('secret','SECRET')+chip('ultima','ULTIMA')}</div>`;
   panel.innerHTML=header+`<div class="bp-body deck"><div class="bp-cols">
-    <div class="bp-h">DECK AKTIF</div>
     <div class="bp-deckcol">
+      <div class="bp-h">DECK AKTIF</div>
       <div class="bp-slots">${slots}</div><div class="bp-deckmeta"><span class="bdm-l">TOTAL POWER</span><b class="bdm-v">${fmt(deckTotalPower())}</b><button class="bp-save" onclick="beep(660,.08);toast('DECK TERSIMPAN','SIAP DIPAKAI','#7DF9FF')">SIMPAN DECK</button></div>
     </div>
     <div class="bp-collect">
@@ -1036,6 +1065,7 @@ function renderBackpackPanel(){
   /* terapkan ulang query search setelah re-render (misal toggle ★) — query disimpan di deckSearch */
   const si=document.getElementById('bp-search');
   if(si&&deckSearch)runCardSearch(si,document.querySelector('.bp-tiles'),document.getElementById('bp-nores'));
+  bpLazyMountTiles();
 }
 /* Tab ITEM di backpack: tile icon ringkas; klik -> popup konfirmasi PAKAI. Item: Weather / Luck / Speed Potion. */
 function bpItemDef(kind){
