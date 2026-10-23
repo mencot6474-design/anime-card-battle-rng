@@ -7733,7 +7733,7 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 
 
 
-  animation:ixComboBorderFlow 2.4s ease-in-out infinite alternate!important;
+  animation:ixComboBorderFlow 2.4s var(--fx-combo-tf,ease-in-out) infinite alternate!important;
 
 
 
@@ -12345,7 +12345,7 @@ body.battle-full .vs-col .bspeed-btn{font-size:clamp(12px,1.4vw,15px);padding:4p
 
 
 
-  animation:ixComboBorderFlow 2.4s ease-in-out infinite alternate!important;
+  animation:ixComboBorderFlow 2.4s var(--fx-combo-tf,ease-in-out) infinite alternate!important;
 
 
 
@@ -35689,7 +35689,7 @@ body.battle-full .fighter.me,body.battle-full .fighter.foe{
 
 
 
-#indexModal .ix-cell.combo-mut{border:2px solid transparent;background:linear-gradient(160deg,#221a1e,#120e10) padding-box,var(--ix-combo-border) border-box;background-size:100% 100%,320% 100%;background-position:0 0,0 0;background-repeat:no-repeat;animation:ixComboBorderFlow 2.5s ease-in-out infinite alternate}
+#indexModal .ix-cell.combo-mut{border:2px solid transparent;background:linear-gradient(160deg,#221a1e,#120e10) padding-box,var(--ix-combo-border) border-box;background-size:100% 100%,320% 100%;background-position:0 0,0 0;background-repeat:no-repeat;animation:ixComboBorderFlow 2.5s var(--fx-combo-tf,ease-in-out) infinite alternate}
 
 
 
@@ -42585,7 +42585,7 @@ body.battle-full .fighter.phantom-enter {
 
 
 
-  animation: hubComboCardBorderFlow 2.8s ease-in-out infinite alternate !important;
+  animation: hubComboCardBorderFlow 2.8s var(--fx-combo-tf,ease-in-out) infinite alternate !important;
 
 
 
@@ -42653,7 +42653,7 @@ body.battle-full .fighter.phantom-enter {
 
 
 
-  animation: hubComboCardBorderFlow 3s ease-in-out infinite alternate !important;
+  animation: hubComboCardBorderFlow 3s var(--fx-combo-tf,ease-in-out) infinite alternate !important;
 
 
 
@@ -42721,7 +42721,7 @@ body.battle-full .fighter.phantom-enter {
 
 
 
-  animation: hubComboCardBorderFlow 2.8s ease-in-out infinite alternate !important;
+  animation: hubComboCardBorderFlow 2.8s var(--fx-combo-tf,ease-in-out) infinite alternate !important;
 
 
 
@@ -42789,7 +42789,7 @@ body.battle-full .fighter.phantom-enter {
 
 
 
-  animation: hubComboCardBorderFlow 2.4s ease-in-out infinite alternate !important;
+  animation: hubComboCardBorderFlow 2.4s var(--fx-combo-tf,ease-in-out) infinite alternate !important;
 
 
 
@@ -42865,7 +42865,7 @@ body.battle-full .fighter.phantom-enter {
 
 
 
-  animation: hubComboCardBorderFlow 3s ease-in-out infinite alternate !important;
+  animation: hubComboCardBorderFlow 3s var(--fx-combo-tf,ease-in-out) infinite alternate !important;
 
 
 
@@ -42933,7 +42933,7 @@ body.battle-full .fighter.phantom-enter {
 
 
 
-  animation: hubComboCardBorderFlow 2.8s ease-in-out infinite alternate !important;
+  animation: hubComboCardBorderFlow 2.8s var(--fx-combo-tf,ease-in-out) infinite alternate !important;
 
 
 
@@ -43001,7 +43001,7 @@ body.battle-full .fighter.phantom-enter {
 
 
 
-  animation: hubComboCardBorderFlow 3s ease-in-out infinite alternate !important;
+  animation: hubComboCardBorderFlow 3s var(--fx-combo-tf,ease-in-out) infinite alternate !important;
 
 
 
@@ -43069,7 +43069,7 @@ body.battle-full .fighter.phantom-enter {
 
 
 
-  animation: hubComboCardBorderFlow 2.8s ease-in-out infinite alternate !important;
+  animation: hubComboCardBorderFlow 2.8s var(--fx-combo-tf,ease-in-out) infinite alternate !important;
 
 
 
@@ -43137,7 +43137,7 @@ body.battle-full .fighter.phantom-enter {
 
 
 
-  animation: hubComboCardBorderFlow 2.4s ease-in-out infinite alternate !important;
+  animation: hubComboCardBorderFlow 2.4s var(--fx-combo-tf,ease-in-out) infinite alternate !important;
 
 
 
@@ -48620,6 +48620,7 @@ body.on-raid #app::-webkit-scrollbar{ width:0 !important; height:0 !important; d
    berkurang drastis, gerak tetep keliatan mulus. Default (class gak ada) = smooth 60fps. */
 html.fps-locked{
   --fx-ring-tf:steps(90);    /* durasi ring 2.4-3s  -> ~30fps */
+  --fx-combo-tf:steps(90);   /* hubComboCardBorderFlow / ixComboBorderFlow 2.4-3s -> ~30fps */
   --fx-sheen-tf:steps(170);  /* holoSheen/exFoil 5-6s -> ~28-34fps */
   --fx-hover-tf:steps(33);   /* bpSweep 1.1s -> ~30fps */
 }
