@@ -1123,6 +1123,7 @@ function toggleBackpack() {
 
   if (isVisible) {
     /* Close: refresh lobby di belakang biar hub card & bench ikut perubahan dek. */
+    document.body.classList.remove('bp-open');
     bpTarget = null;
     bpItemPopClose();
     panel.style.opacity = '0';
@@ -1130,6 +1131,7 @@ function toggleBackpack() {
     setTimeout(() => { panel.style.display = 'none'; render(); }, 300);
   } else {
     /* Open */
+    document.body.classList.add('bp-open');
     renderBackpackPanel();
     panel.style.display = 'flex';
 

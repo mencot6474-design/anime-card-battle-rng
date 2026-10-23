@@ -48628,13 +48628,47 @@ html.fps-locked{
    repaint/detik walau udah steps(90). Bekukan animasi di semua tile yang gak di-hover,
    hanya tile yang lagi di-hover aja yang hidup. Tetap terasa "kartu hidup" saat
    inspeksi, tapi grid diem = CPU lega. */
-html.fps-locked :is(.bp-tile,.bp-slot.filled,.dp-card,.rrc,#indexModal .ix-cell){
-  animation-play-state: paused !important;
-}
-html.fps-locked :is(.bp-tile,.bp-slot.filled,.dp-card,.rrc,#indexModal .ix-cell)::before{
-  animation-play-state: paused !important;
+html.fps-locked :is(.bp-tile,.bp-slot.filled,.dp-card,.rrc,#indexModal .ix-cell):not(:hover),
+html.fps-locked :is(.bp-tile,.bp-slot.filled,.dp-card,.rrc,#indexModal .ix-cell):not(:hover)::before{
+  animation-name: none !important;
 }
 html.fps-locked :is(.bp-tile,.bp-slot.filled,.dp-card,.rrc,#indexModal .ix-cell):hover,
 html.fps-locked :is(.bp-tile,.bp-slot.filled,.dp-card,.rrc,#indexModal .ix-cell):hover::before{
   animation-play-state: running !important;
+}
+/* BACKPACK-OPEN: lobby di belakang tertutup panel (fixed inset) jadi animasi
+   gradient-nya (lobbyMutBadgeFlow, bpMutationFilterFlow, hcMutNameSweep, coinShine)
+   gak keliatan tapi tetap memicu style recalc per frame -> bikin ~1.8 detik recalc
+   per 3 detik idle. Hapus animasi sepenuhnya (bukan cuma pause) supaya browser
+   keluarin mereka dari timeline. */
+html.fps-locked body.bp-open .lobby-hub *,
+html.fps-locked body.bp-open .hub-center,
+html.fps-locked body.bp-open .hub-center *,
+html.fps-locked body.bp-open .mut-hover,
+html.fps-locked body.bp-open .mut-hover *,
+html.fps-locked body.bp-open .weather-toast,
+html.fps-locked body.bp-open .weather-toast *,
+html.fps-locked body.bp-open #app > *:not(.backpack-panel),
+html.fps-locked body.bp-open #app > *:not(.backpack-panel) *,
+html.fps-locked body.bp-open .lobby-hub *::before,
+html.fps-locked body.bp-open .lobby-hub *::after,
+html.fps-locked body.bp-open .hub-center *::before,
+html.fps-locked body.bp-open .hub-center *::after,
+html.fps-locked body.bp-open .mut-hover *::before,
+html.fps-locked body.bp-open .mut-hover *::after{
+  animation: none !important;
+}
+/* chipBreath = opacity animasi di 59 shiny-badge/shiny-pill. Walau opacity
+   composited, tiap animasi aktif tetap memicu style recalc di element-nya tiap
+   frame -> main thread 1.6s/3s = ~15fps. Saat fps-locked, ganti opacity statis
+   .85 (keliatan sama aja) supaya timeline kosong. */
+html.fps-locked .shiny-badge,
+html.fps-locked .shiny-pill{
+  animation: none !important;
+  opacity: .88;
+}
+/* Filter chips di header backpack: gradient sweep tiap frame mahal, gak
+   sepadan dengan "hidup"-nya. Bekukan jadi gradien statis. */
+html.fps-locked .bp-fchip{
+  animation: none !important;
 }
