@@ -536,7 +536,7 @@ function boot(){
   /* Diagnosa: build + viewport nyata HP (tampil di semua layar) */
   (function(){
     const d=document.createElement("div");
-    const upd=()=>{d.textContent="BUILD 2026-10-20-apkfix · VP "+window.innerWidth+"×"+window.innerHeight;};
+    const upd=()=>{d.textContent="BUILD 2026-10-23-audiofix · VP "+window.innerWidth+"×"+window.innerHeight;};
     d.style.cssText="position:fixed;left:6px;bottom:6px;z-index:999999;font:10px monospace;color:#7cf;opacity:.8;pointer-events:none;text-shadow:0 1px 2px #000";
     upd();
     window.addEventListener("resize",upd);
