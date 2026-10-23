@@ -609,7 +609,7 @@ function hollowPurpleFx(o){
   const targetX=rf.left+rf.width*0.5,targetY=rf.top+rf.height*0.5;
 
   const particles=[];
-  for(let i=0;i<40;i++){
+  for(let i=0;i<FXQ(40);i++){
     particles.push({
       type:i%2===0?'red':'blue',
       ang:Math.random()*6.283,
@@ -821,7 +821,7 @@ function havocRocketFx(o){
 
   // Partikel percikan ledakan
   const particles=[];
-  for(let i=0;i<65;i++){
+  for(let i=0;i<FXQ(65);i++){
     const ang=Math.random()*6.283,spd=4+Math.random()*13;
     particles.push({
       x:tx,y:ty,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd-2,
@@ -1056,14 +1056,14 @@ function worldEnderFx(o){
   const slashes=[];
   const sparks=[];
   const bloodOrbs=[];
-  for(let i=0;i<36;i++){
+  for(let i=0;i<FXQ(36);i++){
     const a=Math.random()*6.283,spd=3+Math.random()*9;
     sparks.push({
       x:tx,y:ty,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd-1.5,
       sz:3+Math.random()*5,c:i%3===0?"#ffffff":i%2===0?"#ff1e42":"#7a0016"
     });
   }
-  for(let i=0;i<14;i++){
+  for(let i=0;i<FXQ(14);i++){
     bloodOrbs.push({
       delay:i*22,
       offX:(Math.random()-0.5)*70,
@@ -1071,8 +1071,9 @@ function worldEnderFx(o){
       r:4+Math.random()*5
     });
   }
-  for(let i=0;i<10;i++){
-    const a=(i/10)*6.283+Math.random()*0.3;
+  const slashN=FXQ(10);
+  for(let i=0;i<slashN;i++){
+    const a=(i/slashN)*6.283+Math.random()*0.3;
     slashes.push({a,len:rt.width*(0.65+Math.random()*0.65)});
   }
 
@@ -1438,7 +1439,7 @@ function gammaRayFx(o){
   const beamLen=Math.hypot(W,H)*1.2;
 
   const stars=[];
-  for(let i=0;i<75;i++){
+  for(let i=0;i<FXQ(75);i++){
     stars.push({
       x:Math.random()*W,y:Math.random()*H,
       r:1+Math.random()*2.5,
@@ -1447,12 +1448,13 @@ function gammaRayFx(o){
     });
   }
   const inParticles=[];
-  for(let i=0;i<36;i++){
-    const a=(i/36)*6.283+Math.random()*0.2;
+  const inN=FXQ(36);
+  for(let i=0;i<inN;i++){
+    const a=(i/inN)*6.283+Math.random()*0.2;
     inParticles.push({a,dist:90+Math.random()*140,spd:0.8+Math.random()*0.6,sz:2+Math.random()*3.5});
   }
   const burstShards=[];
-  for(let i=0;i<44;i++){
+  for(let i=0;i<FXQ(44);i++){
     const a=Math.random()*6.283,spd=4+Math.random()*11;
     burstShards.push({
       vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,
@@ -1660,8 +1662,9 @@ function causalityFx(sel){
   const t0=performance.now(),DUR=1150;
   /* Entry battle cut-in removed — only ultimate/passive cut-ins show */
   const rewindDots=[];
-  for(let i=0;i<32;i++){
-    const a=(i/32)*6.283;
+  const rewindN=FXQ(32);
+  for(let i=0;i<rewindN;i++){
+    const a=(i/rewindN)*6.283;
     rewindDots.push({a,dist:r.width*(0.9+Math.random()*0.9),sz:2.5+Math.random()*3.5});
   }
   let raf=0;

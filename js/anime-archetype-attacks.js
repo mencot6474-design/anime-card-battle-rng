@@ -301,7 +301,7 @@
 
     // Bintang-bintang sabit mikro / serpihan debu bulan (Moon Dust Embers)
     var moonDust = [];
-    for(var i=0; i<36; i++){
+    for(var i=0; i<FXQ(36); i++){
       moonDust.push({
         pAt: 0.05 + Math.random() * 0.42,
         side: (Math.random() - 0.5) * 65,
@@ -675,7 +675,7 @@
 
     // Partikel bara api (embers) yang tertinggal di jalur tembakan
     var trailEmbers = [];
-    for(var i=0; i<32; i++){
+    for(var i=0; i<FXQ(32); i++){
       trailEmbers.push({
         pAt: 0.05 + Math.random() * 0.4,
         side: (Math.random() - 0.5) * 28,
@@ -832,7 +832,7 @@
 
     // Kepingan salju berkilau (sparkling frost flakes) di jalur terbang
     var trailFlakes = [];
-    for(var i=0; i<28; i++){
+    for(var i=0; i<FXQ(28); i++){
       trailFlakes.push({
         pAt: 0.05 + Math.random() * 0.42,
         side: (Math.random() - 0.5) * 32,
@@ -1033,7 +1033,7 @@
     SFX.boom();
 
     // Partikel percikan orbit di sekitar orb
-    var sparkCount = 18;
+    var sparkCount = FXQ(18);
     var sparks = [];
     for(var i=0; i<sparkCount; i++){
       sparks.push({

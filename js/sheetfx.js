@@ -186,7 +186,8 @@ function spawnCurvedChainArc(x1,y1,x2,y2,color){
 function spawnRealityShards(x,y,count,cols){
   ensureFxCanvas();
   cols=cols||["#00f5d4","#c77dff","#ff2a5f","#ffffff"];
-  for(var i=0;i<(count||22);i++){
+  var shardN=Math.min(24,FXQ(count||22));
+  for(var i=0;i<shardN;i++){
     var ang=Math.random()*Math.PI*2;
     var spd=3+Math.random()*11;
     glassShards.push({
@@ -210,7 +211,8 @@ function spawnSparks(x,y,count,palette,opts){
   opts=opts||{};
   palette=palette||["#00f5d4","#c77dff","#ffffff"];
   var upward=!!(opts.upward||opts.upBias>2);
-  for(var i=0;i<(count||26);i++){
+  var sparkN=Math.min(30,FXQ(count||26));
+  for(var i=0;i<sparkN;i++){
     var ang=Math.random()*Math.PI*2;
     var spd=2+Math.random()*(opts.maxSpd||8);
     sparks.push({
