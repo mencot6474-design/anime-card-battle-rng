@@ -5285,14 +5285,6 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 
 
 
-/* ---------- latar VIDEO full-screen ultimate ARISE Jin-Woo (video vertikal ditampilin horizontal: cover penuh layar) ---------- */
-
-
-
-.jinwoo-bgfx{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
-
-
-
 /* ---------- ledakan Hollow Purple di kartu target (inti putih + bola ungu + pusaran + cincin + sinar) ---------- */
 
 
@@ -5389,11 +5381,7 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 
 
 
-/* ---------- MADARA TENSA: video Susanoo full-screen di BELAKANG kartu + hujan 15 tebasan lurus + hujan partikel ---------- */
-
-
-
-.madara-bgfx{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+/* ---------- MADARA TENSA: hujan tebasan lurus + hujan partikel ---------- */
 
 
 

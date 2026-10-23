@@ -26,7 +26,7 @@ Baca file ini dulu; jangan baca `style.css` (48.4k baris) atau `index.html` utuh
 ```
 index.html            shell, semua modal/screen markup, urutan script
 css/style.css         48.4k baris — SEMUA gaya utama (append override di akhir)
-                      blok PERF/LAYOUT terbaru: baris 48221–48423
+                      blok PERF/LAYOUT terbaru: baris 48209–48411
 css/story-carousel.css  CSS khusus modal story (diload setelah style.css)
 css/sl-system.css     roll/gacha system
 css/anim-prototipe.css  halaman prototipe (tidak dipakai game)
@@ -67,7 +67,7 @@ Urutan load (penting — fungsi global saling pakai):
 
 Tujuan: HP kentang tetap main tanpa frame drop. Semua efek baru harus ikut aturan ini.
 
-0. **Tidak ada layer background video/gambar di belakang kartu.** Semua jurus (termasuk EX) murni animasi canvas, seperti anime referensi. Sisa CSS `.jinwoo-bgfx` / `.madara-bgfx` (style.css 5292/5396) adalah **dead code** — jangan dihidupkan lagi. FX juga tidak bercabang per tier.
+0. **Tidak ada layer background video/gambar di belakang kartu.** Semua jurus (termasuk EX) murni animasi canvas, seperti anime referensi. CSS mati `.jinwoo-bgfx` / `.madara-bgfx` sudah dihapus (2026-10-23) — jangan dihidupkan lagi. FX juga tidak bercabang per tier.
 1. **Satu canvas untuk FX serangan archetype.** `anime-archetype-attacks.js` sudah memakai `#animeAtkCanvas` bersama:
    - `getCanvas()` → `ensureSharedCanvas()` (buat sekali, resize saat viewport berubah).
    - Tulis animasi sebagai `function frame(now){ ...; return true/false; }` lalu `registerFrame(frame)`.
@@ -140,8 +140,8 @@ Backpack bukan `display:fixed` bawaan — `toggleBackpack` set inline transform;
 
 ### Layout layar main = PC di semua device
 - `<meta name="viewport" content="width=1600, ...">` (index.html:5) — HP/PWA me-render layout desktop lalu mengecilkan, jadi komposisi 3 kolom sama seperti PC.
-- `html,body{text-size-adjust:100%}` (style.css:48391) mematikan font boosting Chrome/WebView HP (penyebab teks melimpah & "nabrak").
-- Jaring pengaman `@media(max-width:700px)` (style.css:48398 & 48418) memaksa arena battle tetap 3 kolom: `minmax(0,1fr) clamp(48px,12vw,96px) minmax(0,1fr)`, kartu `max-height:min(58dvh,420px)`, kolom VS `flex-direction:column; width:100%; min-width:0` (dulu 210px menabrak kartu).
+- `html,body{text-size-adjust:100%}` (style.css:48379) mematikan font boosting Chrome/WebView HP (penyebab teks melimpah & "nabrak").
+- Jaring pengaman `@media(max-width:700px)` (style.css:48386 & 48406) memaksa arena battle tetap 3 kolom: `minmax(0,1fr) clamp(48px,12vw,96px) minmax(0,1fr)`, kartu `max-height:min(58dvh,420px)`, kolom VS `flex-direction:column; width:100%; min-width:0` (dulu 210px menabrak kartu).
 - Jangan pakai `100dvh - konstanta` untuk tinggi arena; di viewport pendek (landscape HP) rumus itu runtuh.
 
 ---
@@ -177,7 +177,7 @@ Backpack bukan `display:fixed` bawaan — `toggleBackpack` set inline transform;
 - **Ubah ekonomi/harga** → konstanta di panels.js (premium/topup), raid.js (`TRAIT_COST`), tower-lobby.js (shop).
 - **Ubah save/state** → `freshState` state.js:12 + migrasi di `enterGame` boot.js:442 + supabase-sync.js.
 - **Tambah layar** → markup di index.html, render fn, route di `render()` boot.js:197 atau tombol di lobby tower-lobby.js:975.
-- **Kejar performa** → cek §2b dulu (canvas bersama, FXDPR, FXQ, animasi composited, backdrop-filter); blok override terakhir ada di style.css 48221–48423.
+- **Kejar performa** → cek §2b dulu (canvas bersama, FXDPR, FXQ, animasi composited, backdrop-filter); blok override terakhir ada di style.css 48209–48411.
 
 ---
 
