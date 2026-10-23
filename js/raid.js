@@ -223,7 +223,8 @@ function renderRaidBattle(){
 function startRaid(){
   const b=raidBossOf(), eq=raidPicked||equipped(), base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   raid={boss:b,hp:b.hp,max:b.hp,dealt:0,turn:0,cap:RAID_TURNS,atk:base.atk,fx:resolveFx(eq,b.fx||{}),cid:eq.char,over:false,timer:null,domainUsed:false,domainLeft:0,diffKey:b.diffKey,rw:b.rw,havocUses:0,havocGuard:true};
-  playFight(()=>{ if(raid&&!raid.over)raid.timer=setTimeout(raidStep,500); });
+  /* Raid: tanpa cut-in banner VS — langsung masuk arena */
+  playFight(()=>{ if(raid&&!raid.over)raid.timer=setTimeout(raidStep,500); },{skipIntro:true});
 }
 function raidStep(){
   if(!raid||raid.over)return;
