@@ -48624,3 +48624,17 @@ html.fps-locked{
   --fx-sheen-tf:steps(170);  /* holoSheen/exFoil 5-6s -> ~28-34fps */
   --fx-hover-tf:steps(33);   /* bpSweep 1.1s -> ~30fps */
 }
+/* HOVER-ONLY combo/ring: 65 tile visible × 2 animasi background-position = ~2000
+   repaint/detik walau udah steps(90). Bekukan animasi di semua tile yang gak di-hover,
+   hanya tile yang lagi di-hover aja yang hidup. Tetap terasa "kartu hidup" saat
+   inspeksi, tapi grid diem = CPU lega. */
+html.fps-locked :is(.bp-tile,.bp-slot.filled,.dp-card,.rrc,#indexModal .ix-cell){
+  animation-play-state: paused !important;
+}
+html.fps-locked :is(.bp-tile,.bp-slot.filled,.dp-card,.rrc,#indexModal .ix-cell)::before{
+  animation-play-state: paused !important;
+}
+html.fps-locked :is(.bp-tile,.bp-slot.filled,.dp-card,.rrc,#indexModal .ix-cell):hover,
+html.fps-locked :is(.bp-tile,.bp-slot.filled,.dp-card,.rrc,#indexModal .ix-cell):hover::before{
+  animation-play-state: running !important;
+}
