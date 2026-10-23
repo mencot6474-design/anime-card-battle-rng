@@ -731,6 +731,37 @@ function openIndex(){
   document.getElementById("spClose").onclick=()=>document.getElementById("skillPop").classList.remove("show");
   document.getElementById("skillPop").onclick=(e)=>{if(e.target.id==="skillPop")document.getElementById("skillPop").classList.remove("show");};
 }
+function ixLiveShimmer(){
+  /* Index = 75 tile shiny semua animasi holoSheen -> ~2000 repaint/detik -> fps drop 6.
+     Batasi concurrency: hanya ~12 tile yang PALING TENGAH viewport yang ditandai .ix-live,
+     sisanya static. Scroll -> live set rotate. Kalau fps-lock lepas, gak ngaruh (rule CSS
+     khusus html.fps-locked). */
+  const body=document.getElementById("ixBody"); if(!body) return;
+  if(body.__ixShimmerIO){try{body.__ixShimmerIO.disconnect();}catch(e){}}
+  const cells=[].slice.call(body.querySelectorAll('.ix-cell.shiny'));
+  if(!cells.length) return;
+  const MAX=12;
+  const update=()=>{
+    const vr=body.getBoundingClientRect();
+    const vc=(vr.top+vr.bottom)/2;
+    const vis=cells.filter(c=>{
+      if(c.classList.contains('lz-ph'))return false;
+      const r=c.getBoundingClientRect();
+      return r.bottom>vr.top && r.top<vr.bottom;
+    });
+    vis.sort((a,b)=>{
+      const ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect();
+      return Math.abs((ra.top+ra.bottom)/2 - vc) - Math.abs((rb.top+rb.bottom)/2 - vc);
+    });
+    cells.forEach(c=>{c.classList.remove('ix-live');});
+    vis.slice(0,MAX).forEach(c=>{c.classList.add('ix-live');});
+  };
+  const io=new IntersectionObserver(update,{root:body,rootMargin:'0px',threshold:[0,0.1]});
+  cells.forEach(c=>io.observe(c));
+  body.addEventListener('scroll',update,{passive:true});
+  body.__ixShimmerIO=io;
+  update();
+}
 function ixRender(){
   const P=idxProgress();
   const ownCnt=(c,mut,sh)=>P.owned.has(`${c.char_id}|${mut}|${sh?1:0}`);
@@ -872,6 +903,7 @@ function ixRender(){
   document.getElementById("ixToolbar").innerHTML=toolbar;
   document.getElementById("ixBody").innerHTML=(list.length?"":`<div class="ix-empty">Tidak ada kartu yang cocok</div>`)+`<div class="ix-grid">${cells}</div>`;
   lazyMountGrid(document.getElementById("ixBody"),_ixHtml);
+  ixLiveShimmer();
   document.getElementById("ixFoot").innerHTML=strip;
   const sel=document.getElementById("ixSort");sel.value=ixState.sort;
   sel.onchange=()=>{ixState.sort=sel.value;ixRender();};

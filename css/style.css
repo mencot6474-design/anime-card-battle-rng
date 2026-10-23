@@ -48645,6 +48645,14 @@ html.fps-locked #indexModal .ix-cell:not(:hover)::before,
 html.fps-locked #indexModal .ix-cell:not(:hover)::after{
   animation-name: none !important;
 }
+/* KECUALI holoSheen di .ix-cell.shiny::after: overlay shimmer hanya jalan
+   di sel yang ditandai .ix-live oleh JS (IntersectionObserver dengan cap ~12
+   sel paling-tengah viewport). Dengan 12 concurrent animasi, fps naik; sel
+   yang di-scroll keluar di-freeze otomatis. */
+html.fps-locked #indexModal .ix-cell.shiny.ix-live:not(:hover)::after{
+  animation-name: holoSheen !important;
+  animation-timing-function: steps(6) !important;
+}
 html.fps-locked :is(.bp-tile,.bp-slot.filled,.dp-card,.rrc,#indexModal .ix-cell):hover,
 html.fps-locked :is(.bp-tile,.bp-slot.filled,.dp-card,.rrc,#indexModal .ix-cell):hover::before{
   animation-play-state: running !important;
