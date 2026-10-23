@@ -31,10 +31,10 @@ function cardThumb(id){const c=CARDS[id];return c?thumbSrc(c.sprite_asset):"";}
 function cardName(id){const c=CARDS[id];return c?c.name:"(kartu hilang)";}
 function cardType(id){const c=CARDS[id];return c?c.type:"";}
 function cardTier(id){const c=CARDS[id];return c?c.tier:"";}
-/* KONVENSI JURUS TANDA TANGAN (biar nambah kartu EX/UR nanti gak bikin efek bocor ke tier bawahnya):
-   EX = jurus se-layar penuh + background video/gambar sendiri DI BELAKANG kartu (layer *-bgfx, z-1).
-   UR dan ke bawah = animasi tetap jalan (bilah, partikel, ledakan) tapi TANPA background sendiri.
-   Yang mengizinkan background = TIER kartu, bukan daftar id — jadi kartu baru ikut aturan ini otomatis. */
+/* KONVENSI JURUS: semua efek serangan digambar di satu canvas bersama
+   (anime-archetype-attacks.js: registerFrame) — TIDAK ada layer background video/gambar
+   di belakang kartu. FX tidak bercabang per tier. Nambah FX kartu baru:
+   daftarkan frame-nya di sana, partikel lewat FXQ, canvas resolusi 1x (FXDPR). */
 function passiveName(id){const c=CARDS[id];return c?c.passive.name:"";}
 document.addEventListener("error",e=>{
   const t=e.target;

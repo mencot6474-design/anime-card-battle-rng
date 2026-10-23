@@ -67,6 +67,7 @@ Urutan load (penting — fungsi global saling pakai):
 
 Tujuan: HP kentang tetap main tanpa frame drop. Semua efek baru harus ikut aturan ini.
 
+0. **Tidak ada layer background video/gambar di belakang kartu.** Semua jurus (termasuk EX) murni animasi canvas, seperti anime referensi. Sisa CSS `.jinwoo-bgfx` / `.madara-bgfx` (style.css 5292/5396) adalah **dead code** — jangan dihidupkan lagi. FX juga tidak bercabang per tier.
 1. **Satu canvas untuk FX serangan archetype.** `anime-archetype-attacks.js` sudah memakai `#animeAtkCanvas` bersama:
    - `getCanvas()` → `ensureSharedCanvas()` (buat sekali, resize saat viewport berubah).
    - Tulis animasi sebagai `function frame(now){ ...; return true/false; }` lalu `registerFrame(frame)`.
@@ -170,7 +171,7 @@ Backpack bukan `display:fixed` bawaan — `toggleBackpack` set inline transform;
 
 - **Tambah/ubah kartu** → `STORY_BIBLE` (data.js) untuk unit cerita; `MASTER_CARD_INDEX` (panels.js:1665) untuk index; art di `assets/cards/art/<slug>.png`. Jangan cascade tier/skill kalau hanya diminta ganti art — dan jangan sentuh art tanpa permintaan tersurat.
 - **Ubah skill/trait** → `cards-fx.js` (`skillText`, `fxOf`), trait tree `renderTrait` (raid.js:952), passive musuh `foe-passives.js`.
-- **Ubah FX serangan** → `anime-archetype-attacks.js` (definisi) + `sheetfx.js` (render efek) + `assets/vfx`. Wajib lewat `registerFrame` + `FXQ`, jangan bikin canvas baru.
+- **Ubah FX serangan** → `anime-archetype-attacks.js` (definisi) + `sheetfx.js` (render efek) + `assets/vfx`. Semua murni canvas (tanpa background video); wajib lewat `registerFrame` + `FXQ`, jangan bikin canvas baru.
 - **Ubah tampilan layar** → cari id modal di `index.html`, render function di tabel atas, lalu **append** override CSS di akhir `css/style.css`.
 - **Ubah gacha/rate** → panels.js area roll (536+), `roll-system.js` (prototipe), `sl-system.css`.
 - **Ubah ekonomi/harga** → konstanta di panels.js (premium/topup), raid.js (`TRAIT_COST`), tower-lobby.js (shop).
