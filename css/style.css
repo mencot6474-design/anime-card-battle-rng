@@ -48230,3 +48230,56 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{box-shadow:0 0 0 2px #7
 .ix-cell,.bp-tile,.bp-shop{content-visibility:auto;contain-intrinsic-size:170px 260px;}
 /* Animasi dekoratif berhenti saat tab di background (JS men-toggle body.perf-paused). */
 body.perf-paused *,body.perf-paused *::before,body.perf-paused *::after{animation-play-state:paused !important;}
+
+/* ===== PERF 2026-10-23 TAHAP 2 — lapisan solid + bebas blur full-screen =====
+   1) Permukaan lobby jadi opaque: tidak ada lagi komposit alpha di atas background
+      beranimasi (GPU kentang tak perlu blend tiap frame).
+   2) Buang backdrop-filter full-screen (modal/backpack/index/premium dll). Latarnya
+      sudah radial ~0.95-0.96 opaque, jadi blur nyaris tak terlihat tapi GPU tetap
+      menghitung ulang seluruh layar tiap frame. Overlay yang tadinya lebih bening
+      (modal-backdrop/pull/topup/glcf) dinaikkan alpha-nya supaya tetap "redup".
+   3) Animasi dekoratif lobby di-pause selama modal penuh terbuka. */
+body.on-lobby #topbar,body.on-tower #topbar,body.on-raid #topbar{background:#080c12}
+body.on-lobby .lobby-footer,body.on-tower .lobby-footer,body.on-raid .lobby-footer{background:#090d16}
+.foot-menu{background:#0a0e16}
+.foot-profile{background:#121826}
+.lobby-hub .hub-box{background:linear-gradient(155deg,#1f2123,#0f1113)}
+.lobby-hub .hub-box.hub-link{background:radial-gradient(ellipse at 88% 45%,var(--tile-wash),transparent 65%),linear-gradient(150deg,#0a0e16,#05070b)}
+.lobby-hub .loadout-slot{background:#090d16}
+.lobby-hub .loadout-slot .ls-tip{background:#090d16}
+.weather-panel.show{background:linear-gradient(155deg,#080e1a,#040810)}
+.bio-strip-backdrop{background:linear-gradient(90deg,#051424,#0a233c 55%,#030a14)}
+body.on-lobby .roll-overlay.mini .roll-mini-strip{background:#090d16}
+
+.modal-backdrop,.modal-profile,#indexModal,#skillPop,#premiumModal,.prem-modal-backdrop,
+#traitModal,#weatherMachineModal,#storyModal,.sc-window,#missionModal,#startModal,#dailyModal,
+#deckPickModal,#rarePromptModal,#modal,#pullModal,#rollResultPop .rr-back,.roll-overlay,
+.roll-close-out,#rollCloseBtn,
+.backpack-panel,.bpholo-backdrop,.topup-backdrop,.glcf-backdrop,#authSpin,#authDone,#welcomeModal,
+body.battle-full .fighter .f-body{
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+}
+.modal-backdrop{background:rgba(6,9,14,.94)}
+#pullModal{background:rgba(9,10,12,.92)}
+.topup-backdrop{background:rgba(0,0,0,.9)}
+.glcf-backdrop{background:rgba(0,0,0,.9)}
+
+body:has(#indexModal.show, #skillPop.show, #premiumModal.show, #traitModal.show,
+        #weatherMachineModal.show, #missionModal.show, #startModal.show, #dailyModal.show,
+        #deckPickModal.show, #rarePromptModal.show, #profModal.show, #storyModal.show, #modal.show)
+  :is(#app,#topbar,.lobby-footer,.foot-menu,.weather-panel),
+body:has(#indexModal.show, #skillPop.show, #premiumModal.show, #traitModal.show,
+        #weatherMachineModal.show, #missionModal.show, #startModal.show, #dailyModal.show,
+        #deckPickModal.show, #rarePromptModal.show, #profModal.show, #storyModal.show, #modal.show)
+  :is(#app,#topbar,.lobby-footer,.foot-menu,.weather-panel) *,
+body:has(#indexModal.show, #skillPop.show, #premiumModal.show, #traitModal.show,
+        #weatherMachineModal.show, #missionModal.show, #startModal.show, #dailyModal.show,
+        #deckPickModal.show, #rarePromptModal.show, #profModal.show, #storyModal.show, #modal.show)
+  :is(#app,#topbar,.lobby-footer,.foot-menu,.weather-panel)::before,
+body:has(#indexModal.show, #skillPop.show, #premiumModal.show, #traitModal.show,
+        #weatherMachineModal.show, #missionModal.show, #startModal.show, #dailyModal.show,
+        #deckPickModal.show, #rarePromptModal.show, #profModal.show, #storyModal.show, #modal.show)
+  :is(#app,#topbar,.lobby-footer,.foot-menu,.weather-panel)::after{
+  animation-play-state:paused !important;
+}
