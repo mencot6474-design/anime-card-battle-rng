@@ -48411,33 +48411,45 @@ html,body{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 }
 
 /* ===== FULL-ART CARDS (2026-10-23) =====
-   Gambar kartu sudah membawa border ornamen sendiri, jadi chrome UI (ornate SVG,
-   crown bar, trait socket, equip rail) disembunyikan dan kartu mengikuti rasio
-   gambar 2:3 supaya border tidak terpotong. */
+   Gambar kartu sudah membawa border ornamen sendiri, jadi SEMUA chrome kartu
+   dibuang (border 3px sistem, radius, ring/shadow tier, chrome TCG) dan kartu
+   mengikuti rasio 2:3. Selector sengaja menyalin rantai :not() milik aturan tier
+   supaya menang specificity — bukan cuma menang urutan. */
 body.battle-full .fighter.full-art{
   aspect-ratio:2/3;
-  border-color:transparent !important;
   background:#050307;
-  box-shadow:0 14px 40px rgba(0,0,0,.6);
+}
+body.battle-full .fighter.full-art[data-tier]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),
+body.battle-full .fighter.full-art[data-tier="EX"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret){
+  border:0 !important;border-radius:0 !important;
+  box-shadow:0 14px 40px rgba(0,0,0,.6) !important;
 }
 body.battle-full .fighter.full-art .tcg-ornate-svg,
 body.battle-full .fighter.full-art .tcg-crown-bar,
 body.battle-full .fighter.full-art .tcg-trait-socket,
 body.battle-full .fighter.full-art .tcg-equip-rail{display:none !important}
-body.battle-full .fighter.full-art .f-banner img{object-fit:cover !important;object-position:center !important}
+body.battle-full .fighter.full-art .f-banner img{object-fit:contain !important;object-position:center !important;background:#050307}
 body.battle-full .fighter.full-art .f-banner::before{
   content:"";position:absolute;left:0;right:0;bottom:0;height:52%;z-index:2;pointer-events:none;
   background:linear-gradient(to top,rgba(4,2,6,.97) 0%,rgba(4,2,6,.78) 34%,rgba(4,2,6,.2) 70%,transparent 100%);
 }
 
-.hub-center.fa{aspect-ratio:2/3;border-color:transparent !important;width:calc(100% * 8 / 9);margin-inline:auto}
+.hub-center.fa{aspect-ratio:2/3;width:calc(100% * 8 / 9);margin-inline:auto;background:#050307}
+.hub-center.fa:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),
+.hub-center.fa[data-tier]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret){
+  border:0 !important;border-radius:0 !important;
+  box-shadow:0 14px 40px rgba(0,0,0,.55) !important;
+  background:#050307 !important;
+}
 .hub-center.fa .hc-img{background:#050307}
-.hub-center.fa .hc-img img{object-fit:cover;object-position:center}
+.hub-center.fa .hc-img img{object-fit:contain !important;object-position:center !important;background:#050307}
 
 #indexModal .ix-cell.fa{aspect-ratio:2/3;align-self:start}
-#indexModal .ix-cell.fa img{object-fit:cover;object-position:center}
+#indexModal .ix-cell.fa:not(.m-gold):not(.m-rainbow):not(.m-secret){
+  border:0 !important;border-radius:0 !important;box-shadow:none !important;background:#050307 !important;
+}
+#indexModal .ix-cell.fa img{object-fit:contain !important;object-position:center !important}
 
-.bp-tile.fa img,.bp-slot.fa img{object-fit:contain;object-position:center;background:#050307}
-
-/* Full-art di deck pick & tile kecil lain: border tetap utuh, latar gelap mengisi sisa. */
-.dp-card.fa img{object-fit:contain;object-position:center;background:#050307}
+/* Tile kecil: art sudah punya border, jangan dobel dengan border tile. */
+.bp-tile.fa,.bp-slot.fa,.dp-card.fa{border:0 !important;border-radius:0 !important;box-shadow:none !important;background:#050307 !important}
+.bp-tile.fa img,.bp-slot.fa img,.dp-card.fa img{object-fit:contain !important;object-position:center !important;background:#050307}
