@@ -9117,15 +9117,15 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 
 
 
-  top:46px;left:14px;font-family:"Barlow Condensed";font-weight:800;font-size:14px;
+  top:46px;left:14px;font-family:"Barlow Condensed";font-weight:800;font-size:clamp(10px,1.3vh,13px);
 
 
 
-  letter-spacing:.1em;color:var(--tcol,#7DF9FF);padding:2px 8px;border-radius:0px!important;background:rgba(6,9,14,.92);
+  letter-spacing:.1em;color:var(--tcol,#7DF9FF);padding:1px 6px;border-radius:0px!important;background:rgba(6,9,14,.92);
 
 
 
-  border:1.5px solid currentColor;text-shadow:0 0 8px rgba(0,0,0,.8);
+  border:1px solid currentColor;text-shadow:0 0 8px rgba(0,0,0,.8);
 
 
 

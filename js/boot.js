@@ -589,7 +589,7 @@ function boot(){
   /* Diagnosa: build + viewport nyata HP (tampil di semua layar) */
   (function(){
     const d=document.createElement("div");
-    const upd=()=>{const a=(typeof actx!=="undefined"&&actx)?actx.state:"-";d.textContent="BUILD 2026-10-23-perf13-cardbig · VP "+window.innerWidth+"×"+window.innerHeight+" · AUD "+a+((typeof state!=="undefined"&&state&&state.muted)?" MUTE":"");};
+    const upd=()=>{const a=(typeof actx!=="undefined"&&actx)?actx.state:"-";d.textContent="BUILD 2026-10-23-perf13-chancesmall · VP "+window.innerWidth+"×"+window.innerHeight+" · AUD "+a+((typeof state!=="undefined"&&state&&state.muted)?" MUTE":"");};
     d.style.cssText="position:fixed;left:6px;bottom:6px;z-index:999999;font:10px monospace;color:#7cf;opacity:.8;pointer-events:none;text-shadow:0 1px 2px #000";
     upd();
     window.addEventListener("resize",upd);
