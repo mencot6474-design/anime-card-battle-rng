@@ -129,18 +129,7 @@ function foeFighterInnerHtml(en,es,opts){
   const skill=opts.skill||(en.id?passiveName(en.id):"Musuh");
   const pwr=Math.round(((es.hp||0)+(es.atk||0))/1000);
   const threatLbl=tier==="EX"||tier==="BOSS"?"☣ THREAT EX":(tier==="UR"?"☣ THREAT SS":"⚡ PWR "+Math.max(1,pwr)+"K");
-  const traitTag=en.boss?"OVERLORD":(mut?mut.toUpperCase():tier+" UNIT");
-  return `${tcgOrnateSvgHtml(true)}
-    <div class="tcg-crown-bar">
-      <div class="tcg-elem-medallion" title="${epithet}">${tcgElemGlyph(epithet,true)}</div>
-      <div class="tcg-star-ribbon">${tcgStarsForTier(tier)}</div>
-      <div class="tcg-tier-crest">${tier}</div>
-    </div>
-    <div class="tcg-trait-socket" title="Enemy Classification">
-      <span class="tcg-trait-gem"></span>
-      <span>${traitTag}</span>
-    </div>
-    ${tcgFoeEquipRailHtml(en)}
+  return `${tcgFoeEquipRailHtml(en)}
     <div class="f-banner">
       <img src="${en.img}" alt="${en.name}">
       <div class="cyber-holo-sweep"></div>
@@ -177,17 +166,7 @@ function meFighterHtml(s,opts){
   /* Full-art tidak pakai frame mutasi → badge kecil jadi penanda varian. */
   const faVar=(isFullArt(s.char)&&(mut||s.shiny))?`${s.shiny?'<span class="shiny-badge shiny-pill">SHINY</span>':''}${mut?mutChip(mut,mutPill(mut)):''}`:"";
   const badges=(trait?traitChip(trait,`<span class="hc-trait hc-gem" style="border-color:${TRAIT_COLOR[trait]}">${traitGem(14,trait)}</span>`):"")+faVar;
-  return `${tcgOrnateSvgHtml(false)}
-    <div class="tcg-crown-bar">
-      <div class="tcg-elem-medallion" title="${type}">${tcgElemGlyph(type,false)}</div>
-      <div class="tcg-star-ribbon">${tcgStarsForTier(tier)}</div>
-      <div class="tcg-tier-crest">${tier}</div>
-    </div>
-    <div class="tcg-trait-socket" title="Active Trait / Core">
-      <span class="tcg-trait-gem"></span>
-      <span>${traitName}</span>
-    </div>
-    ${tcgPlayerEquipRailHtml()}
+  return `${tcgPlayerEquipRailHtml()}
     <div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}"${CARDS[s.char]&&CARDS[s.char].pos?` style="object-position:${CARDS[s.char].pos}"`:''}><div class="cyber-holo-sweep"></div>${fName}
     ${badges?`<div class="f-badges">${badges}</div>`:""}
     </div>
@@ -204,14 +183,7 @@ function meFighterHtml(s,opts){
       <div class="stat-row"><div class="stat">🛡️ ${fmt(maxHp)}</div><div class="stat">${ATKIC} ${fmt(st.atk)}</div></div>
     </div>`;
 }
-function meShadowHtml(sh){return `${tcgOrnateSvgHtml(false)}
-    <div class="tcg-crown-bar">
-      <div class="tcg-elem-medallion">🌙</div>
-      <div class="tcg-star-ribbon">★★★★★</div>
-      <div class="tcg-tier-crest">SHADOW</div>
-    </div>
-    <div class="tcg-trait-socket"><span class="tcg-trait-gem"></span><span>ARISE</span></div>
-    ${tcgPlayerEquipRailHtml()}
+function meShadowHtml(sh){return `${tcgPlayerEquipRailHtml()}
     <div class="f-banner"><img src="${sh.img}" alt="${sh.name}" style="filter:grayscale(.35) brightness(.72) hue-rotate(215deg) saturate(1.5)"><div class="cyber-holo-sweep"></div><div class="f-name" style="color:#c4b5fd">SHADOW · ${sh.name}</div></div>
     <div class="hpbar"><i id="hpMe" style="width:100%"></i><span id="hpMeT">${fmt(sh.maxHp)} / ${fmt(sh.maxHp)}</span></div>
     <div class="f-body"><div class="f-type-row"><div class="f-title">Bayangan</div><span class="f-power-tag">⚡ SHADOW</span></div><div class="f-skill-plaque"><span class="f-skill-icon">👁️</span><div class="f-skill">ARISE</div></div><div class="stat-row"><div class="stat">🛡️ ${fmt(sh.maxHp)}</div><div class="stat">${ATKIC} ${fmt(sh.atk)}</div></div></div>`;}

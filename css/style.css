@@ -9081,11 +9081,11 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 
 
 
-.lobby-hub #hubCard .hc-img{transform:none!important;border-radius:0px!important;overflow:hidden}
+.lobby-hub #hubCard .hc-img{transform:none!important;border-radius:inherit!important;overflow:hidden}
 
 
 
-.lobby-hub #hubCard .hc-img img,.lobby-hub #hubCard .hc-img video{border-radius:0px!important}
+.lobby-hub #hubCard .hc-img img,.lobby-hub #hubCard .hc-img video{border-radius:inherit!important}
 
 
 
@@ -42037,7 +42037,7 @@ body.battle-full .fighter.phantom-enter {
 
 
 
-  border-radius: 0px !important;
+  border-radius: 14px !important;
 
 
 
@@ -42205,7 +42205,7 @@ body.battle-full .fighter.phantom-enter {
 
 
 
-  border-radius: 0px !important;
+  border-radius: inherit !important;
 
 
 
@@ -43577,7 +43577,7 @@ body.battle-full .fighter.phantom-enter {
 
 
 
-  content:""!important;display:block!important;position:absolute;inset:0;border-radius:inherit;padding:3px;pointer-events:none;z-index:5;
+  content:""!important;display:block!important;position:absolute;inset:0;border-radius:inherit;padding:2px;pointer-events:none;z-index:5;
 
 
 
@@ -48415,13 +48415,28 @@ html,body{-webkit-text-size-adjust:100%;text-size-adjust:100%}
    dibuang (border 3px sistem, radius, ring/shadow tier, chrome TCG) dan kartu
    mengikuti rasio 2:3. Selector sengaja menyalin rantai :not() milik aturan tier
    supaya menang specificity — bukan cuma menang urutan. */
+/* Battle: matikan border/glow mutasi, radius kartu dikontrol satu knob --card-r (semua lapisan ikut via inherit). */
+body.battle-full .fighter{--card-r:14px;border-radius:var(--card-r) !important;border-color:rgba(255,255,255,.14) !important;box-shadow:0 18px 38px rgba(0,0,0,.42) !important}
+/* Border mutasi AKTIF lagi di battle: cincin ::before gradien dibiarkan tampil (tebal ikut aturan global, kini 2px). */
+/* Art + shine/glow di dalam kartu ikut radius kartu (list "force lancip" maksa 0px & banner 14px bikin sudut nggak nyambung). */
+body.battle-full .fighter .f-banner,
+body.battle-full .fighter .f-banner img,
+body.battle-full .fighter .f-banner video,
+body.battle-full .fighter .f-banner::after,
+body.battle-full .fighter .f-banner .cyber-holo-sweep{border-radius:inherit !important}
+/* Lapisan overlay di atas kartu (rail artefact/pet, label nama, bar HP) ikut radius biar rapi & nyambung. */
+body.battle-full .fighter .tcg-equip-rail,
+body.battle-full .fighter .f-name,
+body.battle-full .fighter .hpbar,
+body.battle-full .fighter .hpbar i,
+body.battle-full .fighter .hpbar span{border-radius:inherit !important}
 body.battle-full .fighter.full-art{
   aspect-ratio:2/3;
   background:transparent;
 }
 body.battle-full .fighter.full-art[data-tier]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),
 body.battle-full .fighter.full-art[data-tier="EX"]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret){
-  border:0 !important;border-radius:0 !important;
+  border:0 !important;border-radius:var(--card-r) !important;
   box-shadow:0 10px 28px rgba(0,0,0,.4) !important;
 }
 body.battle-full .fighter.full-art .tcg-ornate-svg,
@@ -48471,7 +48486,7 @@ body.battle-full .fighter.full-art .f-banner::before{
 body.battle-full .fighter.full-art[class*="mut-"]:not(#_bv2),body.battle-full .fighter.full-art.shiny:not(#_bv2){
   --mut-flow:transparent !important;
   --mut-glow:transparent !important;
-  border:0 !important;border-width:0 !important;border-radius:0 !important;
+  border:0 !important;border-width:0 !important;border-radius:var(--card-r) !important;
   background:transparent !important;
   animation:none !important;
   outline:none !important;
