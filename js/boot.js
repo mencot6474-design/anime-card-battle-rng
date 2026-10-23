@@ -75,6 +75,23 @@ function renderSettings(){
       <div class="gm-note" id="bsNote" style="color:#a4b0be;font-size:11px;font-weight:600"></div>
     </div>
 
+    <!-- AUDIO -->
+    <div class="panel set-panel" style="background:linear-gradient(145deg,rgba(30,26,16,0.85),rgba(18,15,10,0.95));border:1px solid rgba(255,209,102,0.25);border-radius:14px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,0.3)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:rgba(255,209,102,0.15);color:#ffd166;font-size:10px;font-weight:900;padding:3px 8px;border-radius:6px;border:1px solid rgba(255,209,102,0.3)">AUDIO</span>
+        <div class="set-t" style="margin:0;color:#f1f2f6;font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffd166" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg> SOUND DIAGNOSTIC
+        </div>
+      </div>
+      <div class="set-d" style="color:#a4b0be;font-size:12px;line-height:1.4;margin-bottom:12px">Kalau battle terasa hening, cek status di bawah lalu tekan tes nada.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <button class="gm-btn" id="audToggle" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;font-weight:700;border-radius:8px;padding:8px">SUARA: -</button>
+        <button class="gm-btn" id="audTone" style="background:linear-gradient(135deg,#2ed573,#1e90ff);color:#fff;font-weight:700;border:none;border-radius:8px;padding:8px">TES NADA</button>
+      </div>
+      <button class="gm-btn" id="audHit" style="width:100%;background:linear-gradient(135deg,#ff4757,#ffa502);color:#fff;font-weight:700;border:none;border-radius:8px;padding:8px;margin-bottom:10px">TES SFX RAID (HIT + DENTUMAN)</button>
+      <div class="gm-note" id="audStat" style="color:#ffd166;font-weight:600;font-size:11px;line-height:1.5"></div>
+    </div>
+
     <!-- TOWER & AKUN -->
     <div class="panel set-panel" style="background:linear-gradient(145deg,rgba(18,22,30,0.85),rgba(12,15,20,0.95));border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,0.3)">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
@@ -118,6 +135,42 @@ function renderSettings(){
   const bsMsg=()=>{const _m=battleSpeedMax();bsNote.textContent="LEVEL KAMU: "+(state.playerLv||1)+" · SPEED AKTIF: "+state.battleSpeed+"×"+(_m<4?" · Berikutnya terbuka di LV "+(_m===1?10:_m===2?25:50):" · SUDAH MAX");};
   bsMsg();
   document.querySelectorAll("#bsRow .bs-btn").forEach(el=>{el.onclick=()=>{const n=parseInt(el.getAttribute("data-sp"),10);if(!n||n>battleSpeedMax())return;state.battleSpeed=n;save();renderSettings();};});
+  /* AUDIO — status live + toggle mute + tes nada. Diagnosa kalau battle hening di perangkat. */
+  {
+    const audStat=document.getElementById("audStat"),audToggle=document.getElementById("audToggle");
+    if(audStat&&audToggle){
+      const ctxState=()=>{try{return (typeof actx!=="undefined"&&actx)?actx.state:"belum dibuat";}catch(e){return "?";}};
+      let sayUntil=0;
+      const say=t=>{sayUntil=Date.now()+4000;audStat.textContent=t;};
+      const paint=()=>{
+        if(Date.now()<sayUntil)return;
+        audToggle.textContent="SUARA: "+(state.muted?"MATI":"NYALA");
+        audStat.textContent="AudioContext: "+ctxState()+" · SFX: "+(state.muted?"MATI":"NYALA")+" · unlocker: "+((window.__aabAudioUnlockers||[]).length);
+      };
+      paint();
+      const iv=setInterval(()=>{if(!document.body.contains(audStat)){clearInterval(iv);return;}paint();},1000);
+      audToggle.onclick=()=>{state.muted=!state.muted;save();paint();if(!state.muted){try{unlockGameAudio();if(window.CyberSfx)window.CyberSfx.katanaSlash(1);}catch(e){}}};
+      document.getElementById("audTone").onclick=()=>{
+        try{
+          unlockGameAudio();
+          const c=actxOf(),o=c.createOscillator(),g=c.createGain();
+          o.type="sine";o.frequency.value=440;g.gain.value=0.25;
+          o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.8);
+          say("Nada 440Hz diputar · AudioContext: "+c.state);
+        }catch(e){say("Nada GAGAL: "+e.message);}
+      };
+      document.getElementById("audHit").onclick=()=>{
+        if(state.muted){say("SFX sedang MATI — tekan SUARA dulu.");return;}
+        try{
+          unlockGameAudio();
+          if(!window.CyberSfx){say("CyberSfx tidak termuat");return;}
+          window.CyberSfx.katanaSlash(1);
+          setTimeout(()=>{try{if(window.CyberSfx)window.CyberSfx.aoeDetonate();}catch(e){}},260);
+          say("SFX raid diputar · AudioContext: "+ctxState());
+        }catch(e){say("SFX GAGAL: "+e.message);}
+      };
+    }
+  }
   const note=msg=>{document.getElementById("gmNote").textContent=msg;};
   const flash=msg=>{note(msg);save();renderShell();};
   document.getElementById("gmGrant").onclick=()=>{const id=document.getElementById("gmCard").value;flash(gmGrantCard(id));};
@@ -536,11 +589,12 @@ function boot(){
   /* Diagnosa: build + viewport nyata HP (tampil di semua layar) */
   (function(){
     const d=document.createElement("div");
-    const upd=()=>{d.textContent="BUILD 2026-10-23-audiofix · VP "+window.innerWidth+"×"+window.innerHeight;};
+    const upd=()=>{const a=(typeof actx!=="undefined"&&actx)?actx.state:"-";d.textContent="BUILD 2026-10-23-audiofix · VP "+window.innerWidth+"×"+window.innerHeight+" · AUD "+a+((typeof state!=="undefined"&&state&&state.muted)?" MUTE":"");};
     d.style.cssText="position:fixed;left:6px;bottom:6px;z-index:999999;font:10px monospace;color:#7cf;opacity:.8;pointer-events:none;text-shadow:0 1px 2px #000";
     upd();
     window.addEventListener("resize",upd);
     window.addEventListener("fullscreenchange",upd);
+    setInterval(upd,1500);
     document.body.appendChild(d);
   })();
 }
