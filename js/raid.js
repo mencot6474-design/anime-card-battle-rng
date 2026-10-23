@@ -235,6 +235,7 @@ function raidStep(){
   const domainActive=fx.domain&&id==="CH_EX_GOJO"&&Math.random()*100<(fx.domain.chance||100);
   const hits=[1];
   let crit=false,purple=false,ranton=false,barrageN=0,iceBlastN=0,wePhase=-1,gammaRayHit=false;
+  let psychicActive=false,bajrangActive=false,hpPurple=false,floodHit=false;
   if(fx.everyNth){
     raid.nthCount=(raid.nthCount||0)+1;
     if(raid.nthCount%fx.everyNth.n===0){
@@ -260,13 +261,26 @@ function raidStep(){
   if(ranton&&!barrageN)barrageN=hits.length;
   /* ICE BLAST (kartu BOSS): N tembakan @ pct% ATK — pola hits angka polos di raid */
   if(fx.iceBlast&&Math.random()*100<fx.iceBlast.chance){const n=Math.max(1,fx.iceBlast.hits||3),pm=(fx.iceBlast.pct!=null?fx.iceBlast.pct:100)/100;hits.length=0;for(let i=0;i<n;i++)hits.push(pm);iceBlastN=n;barrageN=n;}
+  /* 40-DAY FLOOD / HOLLOW PURPLE: serangan ke-N xmult (label HOLLOW PURPLE pakai FX ult) */
+  if(fx.flood){raid.floodCount=(raid.floodCount||0)+1;if(raid.floodCount%fx.flood.every===0){floodHit=true;hits[hits.length-1]*=(fx.flood.mult||1);if(fx.flood.label==="HOLLOW PURPLE")hpPurple=true;}}
+  /* BAJRANG GUN: sekali per raid — ×mult + FX kepalan raksasa */
+  if(fx.bajrangGun&&!raid.bajrangUsed){raid.bajrangUsed=true;bajrangActive=true;hits[hits.length-1]*=(fx.bajrangGun.mult||1);}
   // DOMAIN aktif: serangan jadi 10× barrage @30% ATK
   if(domainActive){hits.length=0;const dn=fx.domain.min||10,dm=(fx.domain.mult!=null?fx.domain.mult:0.3);for(let i=0;i<dn;i++)hits.push(dm);barrageN=dn;crit=false;purple=false;ranton=false;}
+  /* PSYCHIC BARRAGE: N batu @mult — FX ult levitasi */
+  if(fx.psychicBarrage){const pn=Math.max(1,fx.psychicBarrage.rocks||1),pm=fx.psychicBarrage.mult||1;hits.length=0;for(let i=0;i<pn;i++)hits.push(pm);psychicActive=true;barrageN=pn;raid.psyN=pn;}
   const ariseMode=id==="CH_EX_JINWOO"&&barrageN>=9;
   /* Galaxy Roar = satu semburan laser: seluruh damage ditumpuk ke satu sambaran
      supaya jatuh di menit GALAXY.hit, bukan di awal serangan. */
   const galaxyMode=id==="CH_ETERNAL_DRAGON"&&purple;
   if(galaxyMode){const m=hits[hits.length-1];hits.length=0;hits.push(m);barrageN=0;}
+  const md=ranton&&id==="CH_EX_MADARA";
+  /* Basic attack: archetype FX (6 elemen) — sama seperti battle/tower. Ult & barrage pakai FX khusus. */
+  const basicHit=!domainActive&&!ariseMode&&!md&&!galaxyMode&&!psychicActive&&!bajrangActive&&!hpPurple&&wePhase<0&&!gammaRayHit;
+  if(basicHit&&window.playAnimeArchetypeAttack){try{window.playAnimeArchetypeAttack(id,".fighter.me",".fighter.foe");}catch(e){console.error("raid archetype fx",e);}}
+  if(psychicActive&&window.psyBarrageFx)window.psyBarrageFx({n:raid.psyN||hits.length,shotCount:hits.length,t0:180});
+  if(bajrangActive&&window.bajrangGunFx)window.bajrangGunFx({t0:180});
+  if(hpPurple&&window.hollowPurpleFx)window.hollowPurpleFx({t0:180});
   let total=0;hits.forEach(m=>total+=Math.round(dmg*m));
   anim(".fighter.me","lunge-r");
   if(wePhase>=0&&window.worldEnderFx)window.worldEnderFx({fromSel:".fighter.me",toSel:".fighter.foe",phase:wePhase,revived:false});
@@ -275,34 +289,35 @@ function raidStep(){
   const setRaidBar=hp=>{const v=Math.max(0,hp);const p=Math.max(0,Math.min(100,v/raid.max*100));const b=document.getElementById("hpRaid");if(b)b.style.width=p+"%";const tt=document.getElementById("hpRaidT");if(tt)tt.textContent=fmt(v)+" / "+fmt(raid.max);};
   /* panjang rantai animasi hit ronde ini, dihitung SINKRON (di depan setTimeout) supaya cabang kematian
      bisa menunggu sambaran terakhir selesai — bukan memotong getar + angkanya lewat guard raid.over */
-  const rHstep=domainActive?80:160;
-  const rMd=ranton&&id==="CH_EX_MADARA";
-  const rWeWait=(wePhase>=0&&typeof WE_T!=="undefined")?WE_T.first:(gammaRayHit&&typeof GR_T!=="undefined")?GR_T.first:0;
+  const rHstep=(psychicActive&&typeof PSY_T!=="undefined")?PSY_T.step:(domainActive?80:160);
+  const rMd=md;
+  const rWeWait=(psychicActive&&typeof PSY_T!=="undefined")?PSY_T.first:(bajrangActive&&typeof BJ_T!=="undefined")?BJ_T.first:(hpPurple&&typeof HP_T!=="undefined")?HP_T.first:(wePhase>=0&&typeof WE_T!=="undefined")?WE_T.first:(gammaRayHit&&typeof GR_T!=="undefined")?GR_T.first:0;
   const rChainEnd=(rMd?MADARA_T.slash+Math.max(0,hits.length-1)*MADARA_T.step+40:180+rWeWait+Math.max(0,hits.length-1)*rHstep)+520;
   setTimeout(()=>{
     if(domainActive&&raid&&!raid.over){setTimeout(()=>floatText(".fighter.me","DOMAIN EXPANSION","crit"),220);}
     if(ariseMode&&raid&&!raid.over){floatText(".fighter.foe","ARMY OF SHADOWS","crit");}
-    const susStart=(ranton&&id==="CH_EX_MADARA"&&raid&&!raid.over)?MADARA_T.slash:rWeWait;
+    const susStart=(md&&raid&&!raid.over)?MADARA_T.slash:rWeWait;
     {
-      const hstep=domainActive?80:160;
+      const hstep=rHstep;
       const susDelay=susStart;
-      const md=ranton&&id==="CH_EX_MADARA";
       const dlyAt=i=> galaxyMode ? GALAXY.hit : md ? (susDelay+i*MADARA_T.step) : (i*hstep+susDelay);
       let rShown=raid.hp+total,rBarEnd=0;const rEndHp=raid.hp;
-      const ultBarrage=(domainActive||ariseMode||md);
+      const ultBarrage=(domainActive||ariseMode||md||psychicActive);
       const jwLag=(id==="CH_EX_JINWOO"&&barrageN&&!domainActive)?170:0;
       hits.forEach((m,i)=>{
         const dl=dlyAt(i),ft=dl+(md?40:0);
         /* getar DIJARAKI per sambaran (dl), sama seperti story/tower: sebelumnya hit non-Madara digetarkan
            sekaligus di menit yang sama jadi kartu cuma bergetar satu kali untuk 10× damage */
-        setTimeout(()=>{if(raid&&!raid.over){anim(".fighter.foe","hit",ultBarrage);if(window.strikeFx&&!md&&!galaxyMode)window.strikeFx(".fighter.foe",{big:crit&&i===hits.length-1,fx:fx});}},dl+jwLag);
+        setTimeout(()=>{if(raid&&!raid.over){anim(".fighter.foe","hit",ultBarrage);if(window.strikeFx&&!md&&!galaxyMode&&!psychicActive&&!bajrangActive&&!hpPurple)window.strikeFx(".fighter.foe",{big:crit&&i===hits.length-1,fx:fx});}},dl+jwLag);
         const dd=Math.round(dmg*m);rShown-=dd;rBarEnd=Math.max(rBarEnd,ft);const stepHp=Math.max(0,rShown);
         setTimeout(()=>floatText(".fighter.foe","-"+fmt(dd),(crit&&i===hits.length-1)?"crit":""),ft);
         setTimeout(()=>setRaidBar(stepHp),ft);
       });
       setTimeout(()=>setRaidBar(rEndHp),rBarEnd+520);
-      if(barrageN>1)setTimeout(()=>floatText(".fighter.foe",(iceBlastN?"ICE BLAST ×":domainActive?"UNLIMITED VOID ×":ariseMode?"ARISE ×":md?"TENSA ×":"CLEAVE ×")+barrageN,"crit"),md?MADARA_T.slash:320);
+      if(barrageN>1)setTimeout(()=>floatText(".fighter.foe",(iceBlastN?"ICE BLAST ×":domainActive?"UNLIMITED VOID ×":ariseMode?"ARISE ×":md?"TENSA ×":psychicActive?"PSYCHIC BARRAGE ×":"CLEAVE ×")+barrageN,"crit"),md?MADARA_T.slash:psychicActive?300:320);
       else if(hits.length>1&&!ranton)setTimeout(()=>floatText(".fighter.foe","DOUBLE!","crit"),260+rWeWait);
+      if(bajrangActive)setTimeout(()=>floatText(".fighter.me","BAJRANG GUN!","crit"),BJ_T.first-80);
+      if(hpPurple)setTimeout(()=>floatText(".fighter.foe","HOLLOW PURPLE","crit"),HP_T.first-80);
     }
   },180);
   raid.hp-=total;raid.dealt+=total;
@@ -327,13 +342,13 @@ function raidStep(){
   setRaidBar(raid.hp+total);
   const tl=document.getElementById("raidTurnLabel");if(tl)tl.innerHTML="TURN<br>"+raid.turn+"/"+raid.cap;
   if(raid.hp<=0){
-    const special=(domainActive||ariseMode||ranton||galaxyMode||havocFired||gammaRayHit);
+    const special=(domainActive||ariseMode||ranton||galaxyMode||havocFired||gammaRayHit||psychicActive||bajrangActive||hpPurple);
     const killWait=Math.max(rChainEnd, special?(ranton?MADARA_T.total+160:galaxyMode?GALAXY.total:1700):0);
     if(killWait>260){ setTimeout(()=>{if(raid&&!raid.over)endRaid();},killWait); }
     else endRaid();
     return;
   }
-  raid.timer=setTimeout(raidStep,ariseMode?2200:domainActive?1900:ranton?MADARA_T.total+260:galaxyMode?GALAXY.total+260:gammaRayHit?1550:1100);
+  raid.timer=setTimeout(raidStep,ariseMode?2200:domainActive?1900:ranton?MADARA_T.total+260:galaxyMode?GALAXY.total+260:bajrangActive?BJ_T.first+1300:hpPurple?HP_T.first+1000:psychicActive?Math.max(1200,PSY_T.first+(hits.length-1)*PSY_T.step+700):gammaRayHit?1550:1100);
 }
 function raidFinisher(done){
   if(!raid||raid.over){ if(done)done(); return; }
