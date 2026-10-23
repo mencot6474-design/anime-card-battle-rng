@@ -1274,7 +1274,7 @@
     // Soul Reaper (Bleach) & Noble Companion (Yuta) di sini sesuai arahan user
     // ==========================================
     if(
-      cId.includes("TITAN_HUNTER") || cId.includes("TITAN_BLADE") || cName.includes("TITAN HUNTER") || cId.includes("SOUL_REAPER") || cId.includes("NOBLE_COMPANION") || cId.includes("RIKAS_BLESSING") || cId.includes("JINWOO") ||
+      cId.includes("TITAN_HUNTER") || cId.includes("TITAN_BLADE") || cName.includes("TITAN HUNTER") || cId.includes("SOUL_REAPER") || cId.includes("NOBLE_COMPANION") || cId.includes("RIKAS_BLESSING") || cId.includes("JINWOO") || cId.includes("SHADOW_KING") || cId.includes("SHADOW_MONARCH") ||
       cId.includes("TANJIRO") || cId.includes("DRAGON_SIN") || cId.includes("COPYBLADE") || cId.includes("COPY_NINJA") || cId.includes("ZORO") || cId.includes("THREEBLADE") || cId.includes("STRUGGLER") || cId.includes("DARKIN") || cId.includes("NULLBLADE") || cId.includes("DEVIL_HUNTER") || cId.includes("RULER") || cId.includes("OMNI_SOVEREIGN") || cId.includes("WHITE_HAWK") || cId.includes("SANEMI") ||
       cName.includes("SWORD") || cName.includes("BLADE") || cName.includes("RONIN") || cName.includes("SOUL REAPER") || cName.includes("NOBLE COMPANION") ||
       skill.includes("WATER BREATHING") || skill.includes("FULL COUNTER") || skill.includes("BLADE") || skill.includes("SWORD") || skill.includes("SLASH") || skill.includes("CLEAVE") || skill.includes("KATANA") || skill.includes("WORLD ENDER") || skill.includes("BERSERKER") || skill.includes("VENUZDONOA") || skill.includes("SHUKATSU")
