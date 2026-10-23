@@ -36,6 +36,8 @@ const WEATHERS=[
   {id:"windy",      name:"WINDY",      icon:"≋",  dropWeight:3511,rar:"COMMON",   luckBonus:1.1,  speedBonus:1.1, color:"#86efac"},
 ];
 const WEATHER=Object.fromEntries(WEATHERS.map(w=>[w.id,w]));
+/* Fallback saat belum ada cuaca aktif (dulu referensi weather default tidak ada -> crash) */
+const WM_NO_WEATHER=WEATHER.windy;
 
 /* Helper render ikon vektor SVG cyberpunk untuk tiap cuaca (menggantikan native emoji) */
 function weatherSvg(id, sz=18){
@@ -1980,7 +1982,8 @@ function openWeatherMachine(){
   wmAutoRunning = false;
   if(wmAutoTimer) clearTimeout(wmAutoTimer);
   renderWeatherMachine();
-  wmRenderTimer = setInterval(renderWeatherMachine, 1000);
+  // saat auto jalan, wmAutoPaint sudah update; full render cuma bikin animasi per-tick ke-reset
+  wmRenderTimer = setInterval(() => { if(!wmAutoRunning) renderWeatherMachine(); }, 1000);
   const modal = document.getElementById('weatherMachineModal');
   if(modal) modal.classList.add('show');
   document.body.classList.add('hide-docks-modal');
@@ -2072,7 +2075,7 @@ function wmStopAuto(){
 /* wmAutoPaint: update ringan saat auto-loop — tidak re-render seluruh shell/app */
 function wmAutoPaint(){
   const aw = activeWeatherId();
-  const curDef = (aw && WEATHER[aw]) || WEATHER.sunshine;
+  const curDef = (aw && WEATHER[aw]) || WM_NO_WEATHER;
   const pPotCnt = (state && state.potions) || 0;
   const remainingTime = (state && state.weather && state.weather.endsAt && state.weather.endsAt > Date.now())
     ? fmtCountdown(state.weather.endsAt - Date.now())
@@ -2142,7 +2145,24 @@ function wmAutoPaint(){
     if(tcName){ tcName.style.color = curDef.color; tcName.textContent = curDef.name; }
     const durBadge = curPanel.querySelectorAll('.tc-badge-stat .tcb-val')[2];
     if(durBadge) durBadge.textContent = remainingTime;
+    // ikon + deskripsi pill ikut cuaca yang sedang aktif (sebelumnya beku)
+    const pill = curPanel.querySelector('.tc-trait-pill');
+    if(pill){
+      pill.style.setProperty('--tcol', curDef.color);
+      const gw = pill.querySelector('.tc-gem-wrap');
+      if(gw) gw.innerHTML = weatherSvg(aw || 'windy', 18);
+      const nm = pill.querySelector('.tc-name-glow');
+      if(nm) nm.textContent = curDef.desc || (curDef.rar + ' WEATHER');
+    }
   }
+
+  // FX per tick: sweep panel + highlight baris cuaca yang aktif + counter
+  document.querySelectorAll('.wm-rates-list .trr-item.trr-hit').forEach(el => el.classList.remove('trr-hit'));
+  const hitItem = document.querySelector('.wm-rates-list .trr-item.own');
+  if(curPanel){ curPanel.classList.remove('wm-tick'); void curPanel.offsetWidth; curPanel.classList.add('wm-tick'); }
+  if(hitItem){ void hitItem.offsetWidth; hitItem.classList.add('trr-hit'); }
+  const iterPop = document.querySelector('.wm-main .tram-n');
+  if(iterPop){ iterPop.classList.remove('tr-n-pop'); void iterPop.offsetWidth; iterPop.classList.add('tr-n-pop'); }
 
   // update coin di shell tanpa re-render
   const cv = document.getElementById('coinVal'); if(cv) cv.textContent = fmt(state.coins);
@@ -2189,7 +2209,7 @@ function renderWeatherMachine(){
   if(!bodyEl) return;
 
   const aw = activeWeatherId();
-  const curDef = (aw && WEATHER[aw]) || WEATHER.sunshine;
+  const curDef = (aw && WEATHER[aw]) || WM_NO_WEATHER;
   const remainingTime = (state && state.weather && state.weather.endsAt && state.weather.endsAt > Date.now())
     ? fmtCountdown(state.weather.endsAt - Date.now())
     : '00:00';
@@ -2256,7 +2276,7 @@ function renderWeatherMachine(){
             '<div class="tc-name" style="color:' + curDef.color + '">' + curDef.name + '</div>' +
             '<div class="tc-tline">' +
               '<span class="tc-trait-pill" style="--tcol:' + curDef.color + '">' +
-                '<span class="tc-gem-wrap">' + weatherSvg(aw||'sunshine', 18) + '</span>' +
+                '<span class="tc-gem-wrap">' + weatherSvg(aw||'windy', 18) + '</span>' +
                 '<span class="tc-name-glow">' + (curDef.desc || (curDef.rar + ' WEATHER')) + '</span>' +
               '</span>' +
             '</div>' +

@@ -48105,3 +48105,115 @@ body.on-raid:has(.rd-page) .rd-pick-head{padding-right:110px!important;}
 /* Panel dalam ikut transparan supaya foto BG tower kelihatan (sl-system/story-carousel menimpa aturan full-screen) */
 #traitModal .tr-box.tr-box{background:transparent!important;box-shadow:none!important;border:0!important;border-radius:0!important;}
 #storyModal .sc-window{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:none!important;}
+
+/* ===== Glow warna di tepi kartu dihapus (ring/border & shadow gelap tetap) ===== */
+/* 1) Halo mutasi/shiny (0 0 22px var(--mut-glow)) pada semua kartu */
+.bp-slot.filled[class*="mut-"]:not(#_bv2),.bp-slot.filled[class*="bp-mut-"]:not(#_bv2),.bp-slot.filled[class*="dp-mut-"]:not(#_bv2),.bp-slot.filled.shiny:not(#_bv2),
+.bp-tile[class*="mut-"]:not(#_bv2),.bp-tile[class*="bp-mut-"]:not(#_bv2),.bp-tile[class*="dp-mut-"]:not(#_bv2),.bp-tile.shiny:not(#_bv2),
+.lobby-hub #hubCard[class*="mut-"]:not(#_bv2),.lobby-hub #hubCard[class*="bp-mut-"]:not(#_bv2),.lobby-hub #hubCard.shiny:not(#_bv2),
+.hub-center[class*="mut-"]:not(#_bv2),.hub-center[class*="bp-mut-"]:not(#_bv2),.hub-center[class*="dp-mut-"]:not(#_bv2),.hub-center.shiny:not(#_bv2),
+.fighter[class*="mut-"]:not(#_bv2),.fighter.shiny:not(#_bv2),
+.rrc[class*="mut-"]:not(#_bv2),.rrc.shiny:not(#_bv2),
+#indexModal .ix-cell[class*="m-gold"]:not(#_bv2),#indexModal .ix-cell[class*="m-rainbow"]:not(#_bv2),#indexModal .ix-cell[class*="m-secret"]:not(#_bv2),#indexModal .ix-cell[class*="m-ultima"]:not(#_bv2),#indexModal .ix-cell.shiny:not(#_bv2),
+.sp-art-card[class*="m-gold"]:not(#_bv2),.sp-art-card[class*="m-rainbow"]:not(#_bv2),.sp-art-card[class*="m-secret"]:not(#_bv2),.sp-art-card[class*="m-ultima"]:not(#_bv2),.sp-art-card.shiny:not(#_bv2),
+.dp-card[class*="dp-mut-"]:not(#_bv2),.dp-card.shiny:not(#_bv2),
+.st-port[class*="mut-"]:not(#_bv2){
+  box-shadow:0 10px 24px rgba(0,0,0,.55)!important;
+}
+/* 2) Tower boss card & kartu raid */
+.tw-hub .tw-fcard.bossx{box-shadow:0 0 0 2px var(--violet),0 14px 30px rgba(0,0,0,.6)!important;}
+.hr-hunt-card:hover:not(.locked){box-shadow:0 12px 30px rgba(0,0,0,.7)!important;}
+.hr-hunt-card.selected{box-shadow:0 0 0 1px var(--hunt-c,#B58CFF),0 12px 32px rgba(0,0,0,.7)!important;}
+/* 3) Artefak + glow saat hover */
+.sp-art-card{box-shadow:0 0 35px rgba(0,0,0,.9)!important;}
+#indexModal .ix-cell:hover{box-shadow:0 12px 24px rgba(0,0,0,.7);}
+.prem-card:hover{box-shadow:0 14px 32px rgba(0,0,0,.7);}
+.backpack-panel .bp-tile:hover{box-shadow:0 12px 28px rgba(0,0,0,.7);}
+body.battle-full .bench-rail .bench-sq:not(.empty):hover{box-shadow:0 0 0 2px #7DF9FF;}
+
+/* ===== Glow warna pada TEKS nama kartu dihapus (shadow gelap tetap) ===== */
+/* 1) Nama di kartu lobby/roll/pick: buang halo --tcol, sisakan ekstrusi gelap */
+.roll-overlay .roll-card-showcase .hub-center .hc-name-top,
+.bps-hover .hub-center .hc-name-top{
+  text-shadow:1px 1px 0 #0b0e14,2px 2px 0 #0b0e14,3px 3px 0 #0b0e14,4px 4px 0 #0b0e14,5px 5px 0 #080a0f,6px 6px 0 #080a0f,7px 9px 16px rgba(0,0,0,.9)!important;
+}
+.roll-overlay.mini .roll-card-showcase .hub-center .hc-name-top{
+  text-shadow:1px 1px 0 #0b0e14,2px 2px 0 #0b0e14,3px 3px 0 #0b0e14,4px 4px 0 #080a0f,5px 7px 12px rgba(0,0,0,.9)!important;
+}
+/* 2) Nama ultima non-shiny (merah menyala) */
+.hub-center[class*="mut-ultima"]:not(.shiny) .hc-name-top.hc-mut-name{text-shadow:0 2px 4px rgba(0,0,0,.85)!important;}
+.fighter .f-name.f-mut-ultima{text-shadow:1px 1px 0 #000,2px 2px 0 #000,0 2px 4px rgba(0,0,0,.85)!important;}
+.rrc.mut-ultima .rrc-name-text{text-shadow:0 1px 3px rgba(0,0,0,.9)!important;}
+#indexModal .ix-cell.m-ultima:not(.shiny) .ixc-name.hc-mut-name{text-shadow:0 1px 3px rgba(0,0,0,.9)!important;}
+/* 3) Nama shiny: drop-shadow warna -> gelap saja (gradient teks tetap) */
+#indexModal .ix-cell .ixc-name.hc-name-shine.hc-name-shine-gold,
+#indexModal .ix-cell.shiny.m-gold .ixc-name,
+#indexModal .ixc-name.hc-name-shine.hc-name-shine-gold,
+.hub-center .hc-name-top.hc-name-shine.hc-name-shine-gold,
+.fighter .f-name.f-name-shine-gold,
+#indexModal .ix-cell .ixc-name.hc-name-shine.hc-name-shine-rainbow,
+#indexModal .ix-cell.shiny.m-rainbow .ixc-name,
+#indexModal .ixc-name.hc-name-shine.hc-name-shine-rainbow,
+.hub-center .hc-name-top.hc-name-shine.hc-name-shine-rainbow,
+.fighter .f-name.f-name-shine-rainbow,
+#indexModal .ix-cell .ixc-name.hc-name-shine.hc-name-shine-secret,
+#indexModal .ix-cell.shiny.m-secret .ixc-name,
+#indexModal .ixc-name.hc-name-shine.hc-name-shine-secret,
+.hub-center .hc-name-top.hc-name-shine.hc-name-shine-secret,
+.fighter .f-name.f-name-shine-secret,
+#indexModal .ix-cell .ixc-name.hc-name-shine.hc-name-shine-ultima,
+#indexModal .ix-cell.shiny.m-ultima .ixc-name,
+#indexModal .ixc-name.hc-name-shine.hc-name-shine-ultima,
+.hub-center.mut-ultima.shiny .hc-name-top.hc-name-shine,
+.fighter .f-name.f-name-shine-ultima{
+  text-shadow:none!important;
+  filter:drop-shadow(0 1px 4px rgba(0,0,0,.85))!important;
+}
+/* 4) Varian shine lain (lobby hub, roll overlay, index, fighter) */
+.hub-center .hc-name-top.hc-name-shine,
+.lobby-hub #hubCard .hc-name-top.hc-name-shine,
+.roll-overlay .roll-card-showcase .hub-center .hc-name-top.hc-name-shine,
+.roll-overlay.mini .roll-card-showcase .hub-center .hc-name-top.hc-name-shine,
+#indexModal .ixc-name.ixc-shine,
+#indexModal .ixc-name.hc-name-shine,
+.fighter .f-name.f-name-shine{
+  text-shadow:none!important;
+  filter:drop-shadow(0 1px 4px rgba(0,0,0,.85))!important;
+}
+
+/* ===== FX auto roll: trait & weather machine (per tick) ===== */
+@keyframes fxSweepIn{0%{opacity:0;transform:translateX(-40%)}35%{opacity:1}100%{opacity:0;transform:translateX(40%)}}
+@keyframes fxPopIn{0%{transform:translateY(0) scale(1)}45%{transform:translateY(-1px) scale(1.03)}100%{transform:translateY(0) scale(1)}}
+@keyframes fxNumPop{0%{opacity:.5;transform:scale(.9)}45%{opacity:1;transform:scale(1.16)}100%{opacity:1;transform:scale(1)}}
+@keyframes fxImgPop{0%{transform:scale(1) rotate(0)}45%{transform:scale(1.07) rotate(-2deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes fxNameIn{0%{opacity:.55;transform:translateX(-2px)}55%{opacity:1;transform:translateX(1px)}100%{opacity:1;transform:translateX(0)}}
+@keyframes fxBarFlash{0%,100%{filter:brightness(1)}45%{filter:brightness(1.85)}}
+@keyframes fxRowNudge{0%{transform:translateX(0)}45%{transform:translateX(3px)}100%{transform:translateX(0)}}
+
+.tr-cur::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;background:linear-gradient(100deg,transparent 8%,color-mix(in srgb,var(--tcol,#7DF9FF) 30%,transparent) 50%,transparent 92%)}
+.tr-cur.tr-tick::after,.wm-cur-panel.wm-tick::after{animation:fxSweepIn .17s ease-out}
+.tr-cur.tr-tick .tr-cur-thumb-wrap img,.wm-cur-panel.wm-tick .wm-thumb-wrap img{animation:fxImgPop .17s ease-out}
+.tr-cur.tr-tick .tc-trait-pill,.wm-cur-panel.wm-tick .tc-trait-pill{animation:fxPopIn .17s ease-out}
+.tr-cur.tr-tick .tc-badge-stat{animation:fxNameIn .17s ease-out}
+.wm-cur-panel.wm-tick .tc-name{animation:fxNameIn .17s ease-out}
+.trr-item.trr-hit{animation:fxRowNudge .16s ease-out}
+.trr-item.trr-hit .trr-bar i{animation:fxBarFlash .16s ease-out}
+.trr-item.trr-hit .trr-flag{animation:fxPopIn .16s ease-out}
+.tr-n-pop{animation:fxNumPop .16s ease-out}
+.wm-head-pill.wm-cur-badge{animation:fxNameIn .2s ease-out}
+.wm-head-pill.wm-cur-badge .wm-cur-ic{animation:fxImgPop .2s ease-out}
+@media (prefers-reduced-motion:reduce){
+  .tr-cur.tr-tick::after,.wm-cur-panel.wm-tick::after,.tr-cur.tr-tick .tr-cur-thumb-wrap img,.wm-cur-panel.wm-tick .wm-thumb-wrap img,
+  .tr-cur.tr-tick .tc-trait-pill,.wm-cur-panel.wm-tick .tc-trait-pill,.tr-cur.tr-tick .tc-badge-stat,.wm-cur-panel.wm-tick .tc-name,
+  .trr-item.trr-hit,.trr-item.trr-hit .trr-bar i,.trr-item.trr-hit .trr-flag,.tr-n-pop,
+  .wm-head-pill.wm-cur-badge,.wm-head-pill.wm-cur-badge .wm-cur-ic{animation:none!important}
+}
+
+/* ===== Baris ITERATION tidak terpotong saat angka ratusan/ribuan ===== */
+.tr-auto-meta{flex-wrap:wrap;row-gap:2px}
+.tr-auto-meta .tram-row{flex:0 1 auto;min-width:0}
+/* baris terakhir = ITERATION: jangan menyusut, biarkan wrap ke baris baru kalau sempit */
+.tr-auto-meta .tram-row:last-child{flex:0 0 auto;overflow:visible}
+.tr-auto-meta .tram-n{flex:none;overflow:visible;text-overflow:clip;white-space:nowrap}
+/* LOCKED TARGET yang boleh memendek (ellipsis) supaya ITERATION dapat ruang penuh */
+.tr-auto-meta .tram-v{flex:1 1 auto;min-width:0}

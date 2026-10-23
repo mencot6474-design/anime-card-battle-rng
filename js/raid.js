@@ -1032,10 +1032,33 @@ function renderDeckPick(){
   {const dps=document.getElementById("dpSearch");if(dps){dps.value=dpSearch;dps.oninput=()=>{dpSearch=dps.value;runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));};if(dpSearch)runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));}}
   b.querySelectorAll(".dp-card").forEach(el=>el.onclick=()=>{const tid=el.getAttribute("data-tid");sfx.hit();if(cardPickCfg){cardPickCfg.onPick(tid);}else{traitTarget=tid;closeDeckPick();renderTrait();}});
 }
-function rollTrait(){
+/* Trait transiden ke atas = langka; jangan ditimpa tanpa konfirmasi */
+const RARE_TRAIT_GUARD=["transiden","demigod","cosmic","bigbang"];
+let traitRareBusy=false;
+function isRareTrait(k){return RARE_TRAIT_GUARD.indexOf(k)>=0;}
+function confirmRareReplace(k,auto){
+  const t=TRAIT[k];if(!t)return Promise.resolve(true);
+  if(traitRareBusy)return Promise.resolve(false);
+  traitRareBusy=true;
+  const tgt=traitTargetStack();
+  const nm=tgt?cardName(tgt.char):"kartu target";
+  const body=
+    '<div class="glcf-row"><span class="glcf-label">TRAIT</span><span class="glcf-val" style="color:'+t.color+'"><b>'+t.name+'</b> · '+t.rar+'</span></div>'+
+    '<div class="glcf-row"><span class="glcf-label">POWER</span><span class="glcf-val">ATK +'+Math.round((t.atk-1)*100)+'% · HP +'+Math.round((t.hp-1)*100)+'%</span></div>'+
+    '<div class="glcf-row"><span class="glcf-label">KARTU</span><span class="glcf-val">'+nm+'</span></div>'+
+    '<div class="glcf-warn">'+(auto
+      ? 'Auto roll akan mulai mengganti trait ini. Trait hanya aman kalau sudah dicentang sebagai target (auto berhenti saat kena). Sisa coin: '+fmt(state.coins)+'.'
+      : 'Trait ini akan <b>hilang tertimpa</b> kalau kamu roll lagi. Sisa coin: '+fmt(state.coins)+'.')+'</div>';
+  return showConfirmDialog({title:"TRAIT LANGKA TERPASANG",body:body,okText:auto?"LANJUT AUTO":"ROLL JUGA"}).then(v=>{traitRareBusy=false;return v;});
+}
+async function rollTrait(){
   if(autoRoll)return; // tombol manual diblokir selama auto roll jalan
   if(state.coins<TRAIT_COST)return;
   const tgt=traitTargetStack();if(!tgt)return;
+  if(isRareTrait(tgt.trait)){
+    if(!(await confirmRareReplace(tgt.trait)))return;
+    if(autoRoll||state.coins<TRAIT_COST)return;
+  }
   state.coins-=TRAIT_COST;
   const k=rollTraitPick();
   sfx.crit();
@@ -1073,7 +1096,16 @@ function rerollRare(){pendingRare=null;pendingRareAuto=false;closeRarePrompt();r
 function targetLabel(){return autoTargets.size?[...autoTargets].map(k=>TRAIT[k]?TRAIT[k].name:"").filter(Boolean).join(" · "):"centang di DROP RATE";}
 function autoStop(){autoRoll=false;clearTimeout(autoRollTimer);autoRollTimer=null;}
 function toggleAuto(){autoRoll?stopAutoRoll():startAutoRoll();}
-function startAutoRoll(){if(state.coins<TRAIT_COST){autoToast(`BUTUH ${fmt(TRAIT_COST)} COIN UNTUK AUTO ROLL`);return;}autoRoll=true;autoRollN=0;renderTrait();autoTick();}
+async function startAutoRoll(){
+  if(autoRoll)return;
+  if(state.coins<TRAIT_COST){autoToast(`BUTUH ${fmt(TRAIT_COST)} COIN UNTUK AUTO ROLL`);return;}
+  const tgt=traitTargetStack();
+  if(tgt&&isRareTrait(tgt.trait)){
+    if(!(await confirmRareReplace(tgt.trait,true)))return;
+    if(autoRoll||state.coins<TRAIT_COST)return;
+  }
+  autoRoll=true;autoRollN=0;renderTrait();autoTick();
+}
 function stopAutoRoll(){autoStop();renderTrait();if(!state.battle&&typeof render==="function")render();}
 function traitUiRefresh(){
   const tgt=traitTargetStack();
@@ -1119,6 +1151,21 @@ function autoPaint(){
   const c=document.getElementById("trCoinVal");if(c)c.textContent=fmt(state.coins);
   const n=document.getElementById("trAutoN");if(n)n.textContent="#"+autoRollN;
 }
+/* FX per tick auto roll: retrigger class supaya animasi CSS jalan tiap roll */
+function traitFxTick(k){
+  const root=document.getElementById("traitModal");if(!root)return;
+  const t=TRAIT[k];
+  const card=document.getElementById("trPickCard");
+  if(card){
+    if(t)card.style.setProperty("--tcol",t.color);
+    card.classList.remove("tr-tick");void card.offsetWidth;card.classList.add("tr-tick");
+  }
+  const n=document.getElementById("trAutoN");
+  if(n){n.classList.remove("tr-n-pop");void n.offsetWidth;n.classList.add("tr-n-pop");}
+  root.querySelectorAll(".trr-item.trr-hit").forEach(el=>el.classList.remove("trr-hit"));
+  const own=root.querySelector(".trr-item.own");
+  if(own){void own.offsetWidth;own.classList.add("trr-hit");}
+}
 function autoTick(){
   if(!autoRoll)return;
   if(state.coins<TRAIT_COST){stopAutoRoll();save();renderShell();autoToast("AUTO ROLL STOP · COIN HABIS");return;}
@@ -1130,6 +1177,8 @@ function autoTick(){
   tgt.trait=k;
   if(autoRollN%10===0)save();
   autoPaint();
+  traitUiRefresh();
+  traitFxTick(k);
   autoRollTimer=setTimeout(autoTick,AUTO_TICK);
 }
 function resumeAutoRoll(){pendingRare=null;pendingRareAuto=false;closeRarePrompt();if(!autoRoll){renderTrait();return;}autoRollTimer=setTimeout(autoTick,AUTO_TICK);}
