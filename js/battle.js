@@ -234,6 +234,22 @@ function skFirstShadowIdx(){
   return -1;
 }
 function skKingFx(){if(!bt)return null;const k=bt.fighters.find(f=>f&&!skIsShadow(f)&&(PASSIVE_FX[f.char]||{}).shadowArmy);return k?(PASSIVE_FX[k.char].shadowArmy):null;}
+function skKingChar(){if(!bt)return"";const k=bt.fighters.find(f=>f&&!skIsShadow(f)&&(PASSIVE_FX[f.char]||{}).shadowArmy);return k?k.char:"";}
+/* Rail cadangan pemain (bukan rail musuh di kolom .foe-side) + tile King paling belakang. */
+function skPlayerRail(){
+  const me=document.querySelector(".fighter.me");
+  const col=me?me.closest(".me-col"):document.querySelector(".me-col:not(.foe-side)");
+  return col?col.querySelector(".bench-rail"):null;
+}
+/* Tile King di rail (bukan asumsi "paling belakang" — urutan party bisa berubah setelah tag-in). */
+function skKingTile(){
+  const kc=skKingChar();if(!kc)return null;
+  const rail=skPlayerRail();if(!rail)return null;
+  const want=cardThumb(kc);
+  return [...rail.querySelectorAll(".bench-sq:not(.empty)")].find(el=>{
+    const im=el.querySelector("img");return im&&im.getAttribute("src")===want;
+  })||null;
+}
 /* Semua state battle di-key per SLOT (index), jadi saat tukar posisi nilainya ikut dipindah. */
 const SK_SLOT_ARRAYS=["revUsed","atkBuff","dodgeStack","atkCount","standUsed","styleCount","burstStart","entryGuard","dodgeArmed","dodgeCount","execGuard","shatterGuard","wtCount","snatchAtk","snatchHp","regressCharges","bioGuard","splitLeft","splitMult","defyUsed","dsState","atkEntryGuard","sleepLeft","sleepArmed","shockCount","hvCount","hvUses","hvEntryGuard","weCount","bajrangUsed","meteorGuard"];
 function skRotateToRear(a,s){
@@ -1924,6 +1940,7 @@ function trySave(){
   const a=bt.active;
   /* SHADOW tumbang: stat-nya cuma stat (tanpa passive asli) & King menyerap absorbPct% stat-nya */
   if(bt.eq.sk){
+    const deadChar=bt.eq.char;
     bt.eq.dead=true;
     const kf=skKingFx();
     if(kf){
@@ -1931,7 +1948,10 @@ function trySave(){
       const aa=Math.round(bt.eq.skAtk*ap/100),hh=Math.round(bt.eq.skHp*ap/100);
       bt.skAbsorb=bt.skAbsorb||{atk:0,hp:0};
       bt.skAbsorb.atk+=aa;bt.skAbsorb.hp+=hh;
-      setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","LEGION ABSORB +"+fmt(aa)+" ATK +"+fmt(hh)+" HP","heal");},bsMs(320));
+      /* FX LEGION ABSORB: Shadow pecah -> serpihan ditarik ke tile King di rail belakang */
+      const meEl=document.querySelector(".fighter.me");
+      if(window.skfxAbsorb&&meEl)window.skfxAbsorb({meEl,toEl:skKingTile(),art:cardImg(deadChar),thumb:cardThumb(deadChar),atk:aa,hp:hh});
+      else setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","LEGION ABSORB +"+fmt(aa)+" ATK +"+fmt(hh)+" HP","heal");},bsMs(320));
     }
   }
   const fx=bt.eq.sk?{}:resolveFx(bt.eq,bt.efx);
@@ -1940,16 +1960,28 @@ function trySave(){
   if(fx.shadowArmy&&!bt.skSwapped){
     const sIdx=skFirstShadowIdx();
     if(sIdx>=0){
+      /* Snapshot sebelum rotasi: tile Shadow (asal) + art King/Shadow buat FX terbang */
+      const meEl=document.querySelector(".fighter.me");
+      const railEl=skPlayerRail();
+      const railSlots=railEl?[...railEl.querySelectorAll(".bench-sq")]:[];
+      const fromEl=railSlots[sIdx-(bt.active+1)]||null;
+      /* rect diambil SEKARANG: rail bakal di-render ulang dan elemen ini terlepas dari DOM */
+      const fromRect=fromEl?(()=>{const r=fromEl.getBoundingClientRect();return {left:r.left,top:r.top,width:r.width,height:r.height,cx:r.left+r.width/2,cy:r.top+r.height/2,bottom:r.bottom};})():null;
+      const shadowChar=bt.fighters[sIdx].char;
+      const kingChar=skKingChar();
       bt.skSwapped=true;bt.justTagged=true;
       const slot=bt.active;
       skRotateToRear(slot,sIdx);
       bt.eq=bt.fighters[slot];
       bt.pMax=bt.eq.skHp;bt.pHp=bt.pMax;bt.pGuardDr=0;
       updateMeCard();setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
-      const meEl=document.querySelector(".fighter.me");
-      if(meEl){meEl.classList.add("tag-enter");setTimeout(()=>{try{meEl.classList.remove("tag-enter");}catch(e){}},650);}
-      const rail=document.querySelector(".bench-rail");if(rail)rail.outerHTML=benchRailHtml(bt.fighters.slice(bt.active+1));
-      setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","SHADOW EXCHANGE","heal");},bsMs(300));
+      const meEl2=document.querySelector(".fighter.me");
+      if(meEl2){meEl2.classList.add("tag-enter");setTimeout(()=>{try{meEl2.classList.remove("tag-enter");}catch(e){}},650);}
+      const rail=skPlayerRail();if(rail)rail.outerHTML=benchRailHtml(bt.fighters.slice(bt.active+1));
+      /* FX SHADOW EXCHANGE: Shadow terbang ke arena, King ke tile paling belakang */
+      if(window.skfxExchange&&meEl2)window.skfxExchange({meEl:meEl2,fromRect,kingTile:skKingTile(),
+        kingArt:cardImg(kingChar),kingThumb:cardThumb(kingChar),shadowArt:cardImg(shadowChar),shadowThumb:cardThumb(shadowChar)});
+      else setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","SHADOW EXCHANGE","heal");},bsMs(300));
       return true;
     }
   }

@@ -48509,3 +48509,27 @@ body.battle-full .fighter.full-art .f-badges .fbadge{display:inline-flex!importa
 .bench-rail .bench-sq.shadow-sq{border-color:rgba(124,58,237,.75)!important;box-shadow:0 0 10px rgba(124,58,237,.4)}
 .bench-rail .bench-sq.shadow-sq img{filter:grayscale(.35) brightness(.78) hue-rotate(215deg) saturate(1.45)}
 
+/* ===== FX PASSIVE SHADOW KING (ARISE / SHADOW EXCHANGE / LEGION ABSORB) =====
+   Ghost tile = potongan art yang terbang (bukan clone markup kartu). */
+#skfxLayer{position:fixed;inset:0;z-index:74;pointer-events:none;overflow:hidden}
+.skfx-cv{position:absolute;inset:0;width:100%;height:100%}
+.skfx-vig{position:absolute;inset:0;opacity:0;transition:opacity .26s ease;
+  background:radial-gradient(ellipse at 50% 55%,rgba(124,58,237,0) 32%,rgba(76,29,149,.42) 72%,rgba(10,4,20,.68) 100%)}
+.skfx-vig.on{opacity:1}
+.skfx-flash{position:absolute;inset:0;opacity:0;
+  background:radial-gradient(closest-side,rgba(255,255,255,.85),rgba(167,139,250,.34) 46%,rgba(167,139,250,0) 76%)}
+.skfx-flash.on{animation:skfxFlash .42s ease-out forwards}
+@keyframes skfxFlash{0%{opacity:.85}100%{opacity:0}}
+.skfx-ghost{position:absolute;opacity:0;border-radius:11px;background-color:#120a1c;
+  background-size:cover;background-position:top center;border:1.5px solid rgba(167,139,250,.8);
+  box-shadow:0 0 24px rgba(124,58,237,.5),0 14px 34px rgba(0,0,0,.65);
+  filter:grayscale(.35) brightness(.82) hue-rotate(215deg) saturate(1.55);
+  will-change:transform,opacity,clip-path;transform-origin:center center;z-index:2}
+.skfx-ghost.king{filter:none;border-color:rgba(125,249,255,.65);box-shadow:0 0 22px rgba(10,14,24,.55),0 14px 34px rgba(0,0,0,.7)}
+.skfx-ghost.skfx-quake{animation:skfxQuake .42s linear infinite}
+@keyframes skfxQuake{0%,100%{translate:0 0}25%{translate:-4px 1px}50%{translate:3px -1px}75%{translate:-2px 2px}}
+.bench-rail .bench-sq.skfx-pending{opacity:0!important}
+.bench-rail .bench-sq.skfx-landed{animation:skfxPop .55s cubic-bezier(.2,.9,.25,1.15)}
+@keyframes skfxPop{0%{transform:scale(.7);filter:brightness(2) saturate(1.6)}100%{transform:scale(1)}}
+
+

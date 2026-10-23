@@ -580,7 +580,9 @@ function foeDown(){
       bt.fighters.push({char:bt.eid,mut:"none",trait:"none",shiny:false,sk:true,skAtk:skAtk,skHp:skHp});
       const rail=document.querySelector(".bench-rail");
       if(rail)rail.outerHTML=benchRailHtml(bt.fighters.slice(bt.active+1));
-      setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","ARISE · SHADOW +1","crit");},bsMs(300));
+      /* FX ARISE: arwah musuh naik dari kartu KO lalu terbang ke tile Shadow baru */
+      if(window.skfxArise)window.skfxArise({art:bt.en.img,thumb:cardThumb(bt.eid)});
+      else setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","ARISE · SHADOW +1","crit");},bsMs(300));
     }
   }
   /* ARISE (Shadow Monarch): setelah membunuh & masih ada gelombang berikutnya, bangkitkan musuh yang baru mati

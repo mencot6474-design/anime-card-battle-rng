@@ -48,8 +48,9 @@ const CloudDB = {
     });
   },
 
-  async saveState(username, stateObj) {
+  async saveState(username, stateObj, opts) {
     if (!username) return;
+    const allowGemDecrease = !!(opts && opts.allowGemDecrease);
     if (window.CURRENT_DEVICE_SESSION && stateObj) {
       stateObj.current_session_id = window.CURRENT_DEVICE_SESSION;
     }
@@ -57,11 +58,85 @@ const CloudDB = {
       save_data: stateObj,
       updated_at: new Date().toISOString()
     };
+
+    /* Prioritas: RPC merge_player_state (atomik, aman dari overwrite kredit top-up).
+     * Fallback: PATCH biasa kalau RPC belum ter-deploy.
+     * Catatan: saat fallback, premiumGems ditulis pakai nilai CLOUD
+     * supaya client tidak bisa mengarang saldo lebih besar. */
+    let usedRpc = false;
+    try {
+      const pw = this._localPassHash(username);
+      if (pw) {
+        const res = await this._rpc("merge_player_state", {
+          p_username: username.toLowerCase(),
+          p_password_hash: pw,
+          p_save_data: stateObj,
+          p_allow_gem_decrease: allowGemDecrease,
+        });
+        if (res) {
+          usedRpc = true;
+          const merged = res.premiumGems;
+          if (typeof merged === "number" && window.state) window.state.premiumGems = merged;
+          return res;
+        }
+      }
+    } catch (e) {
+      console.warn("[saveState] RPC merge gagal, fallback PATCH:", e && e.message);
+    }
+
+    if (!usedRpc) {
+      try {
+        const user = await this.getUser(username);
+        const cloudGems = user && user.save_data && typeof user.save_data.premiumGems === "number"
+          ? user.save_data.premiumGems
+          : (typeof stateObj.premiumGems === "number" ? stateObj.premiumGems : 0);
+        stateObj.premiumGems = allowGemDecrease
+          ? Math.min(stateObj.premiumGems, cloudGems)
+          : cloudGems;
+        body.save_data = stateObj;
+      } catch (e) { /* lanjut PATCH apa adanya */ }
+    }
+
     return await this._request(`player_saves?username=eq.${encodeURIComponent(username.toLowerCase())}`, {
       method: "PATCH",
       prefer: "return=minimal",
       body: JSON.stringify(body)
     });
+  },
+
+  /** Panggil RPC PostgREST (fnama dengan argumen named). */
+  async _rpc(fn, args) {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+        method: "POST",
+        headers: {
+          "apikey": SUPABASE_ANON,
+          "Authorization": `Bearer ${SUPABASE_ANON}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(args || {}),
+      });
+      const txt = await res.text();
+      if (!res.ok) {
+        console.warn("[rpc fail]", fn, res.status, txt.slice(0, 200));
+        return null;
+      }
+      try { return JSON.parse(txt); } catch (e) { return null; }
+    } catch (err) {
+      console.warn("[rpc error]", fn, err.message);
+      return null;
+    }
+  },
+
+  /** Password hash user dari localStorage (sumber login game). */
+  _localPassHash(username) {
+    try {
+      const raw = localStorage.getItem("aab-users");
+      if (!raw) return "";
+      const users = JSON.parse(raw) || {};
+      const rec = users[String(username).toLowerCase()];
+      return rec && rec.pass ? rec.pass : "";
+    } catch (e) { return ""; }
   },
 
   async updateSession(username, sessionId) {
@@ -73,15 +148,8 @@ const CloudDB = {
     if (window.state) {
       window.state.current_session_id = sessionId;
     }
-    const body = {
-      save_data: curSave,
-      updated_at: new Date().toISOString()
-    };
-    return await this._request(`player_saves?username=eq.${encodeURIComponent(username.toLowerCase())}`, {
-      method: "PATCH",
-      prefer: "return=minimal",
-      body: JSON.stringify(body)
-    });
+    /* Pakai saveState (RPC merge) supaya saldo gems tidak tertimpa snapshot lama. */
+    return await this.saveState(username, curSave);
   },
 
   async getPremiumBalance(username) {
@@ -93,35 +161,74 @@ const CloudDB = {
     return 0;
   },
 
-  async verifyAndDeductGems(username, cost, packKey, itemType) {
+  /* ===== TOP-UP GEMS (Xendit) ===== */
+
+  /** Panggil Supabase Edge Function. body = JSON payload. */
+  async invokeFunction(fnName, body) {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/${fnName}`, {
+        method: "POST",
+        headers: {
+          "apikey": SUPABASE_ANON,
+          "Authorization": `Bearer ${SUPABASE_ANON}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body || {}),
+      });
+      const txt = await res.text();
+      let data = {};
+      try { data = txt ? JSON.parse(txt) : {}; } catch (e) { data = { error: txt }; }
+      if (!res.ok) {
+        console.warn("[invokeFunction]", fnName, res.status, data);
+        return { ok: false, status: res.status, error: data.error || "HTTP " + res.status, data };
+      }
+      return Object.assign({ ok: true }, data);
+    } catch (err) {
+      console.warn("[invokeFunction fail]", fnName, err.message);
+      return { ok: false, status: 0, error: "GAGAL KONEKSI: " + err.message };
+    }
+  },
+
+  /** Saldo gems authoritative dari cloud. */
+  async getCloudGems(username) {
+    const user = await this.getUser(username);
+    return user && user.save_data && typeof user.save_data.premiumGems === "number"
+      ? user.save_data.premiumGems
+      : null;
+  },
+
+  async verifyAndDeductGems(username, cost, packKey, itemType, qty) {
+    qty = Math.max(1, parseInt(qty, 10) || 1);
+    /* state global (let di state.js) tidak otomatis jadi window.state -> pakai fallback. */
+    const ST = (window && window.state) || (typeof state !== 'undefined' ? state : null);
     if (!username) {
       // Guest mode: local check
-      if ((window.state?.premiumGems || 0) < cost) return { ok: false, msg: "GEMS TIDAK CUKUP" };
-      window.state.premiumGems -= cost;
+      if (!ST || (ST.premiumGems || 0) < cost) return { ok: false, msg: "GEMS TIDAK CUKUP" };
+      ST.premiumGems -= cost;
       if (itemType === 'weather') {
         // Cuaca langsung aktif di state lokal
       } else if (itemType === 'art') {
-        window.state.artOwned = window.state.artOwned || [];
-        if (!window.state.artOwned.includes(packKey)) window.state.artOwned.push(packKey);
+        ST.artOwned = ST.artOwned || [];
+        if (!ST.artOwned.includes(packKey)) ST.artOwned.push(packKey);
       } else if (itemType === 'pet') {
-        window.state.petOwned = window.state.petOwned || [];
-        if (!window.state.petOwned.includes(packKey)) window.state.petOwned.push(packKey);
+        ST.petOwned = ST.petOwned || [];
+        if (!ST.petOwned.includes(packKey)) ST.petOwned.push(packKey);
       } else {
-        window.state.rollPacks = window.state.rollPacks || {};
-        window.state.rollPacks[packKey] = (window.state.rollPacks[packKey] || 0) + 1;
+        ST.rollPacks = ST.rollPacks || {};
+        ST.rollPacks[packKey] = (ST.rollPacks[packKey] || 0) + qty;
       }
-      return { ok: true, balance: window.state.premiumGems };
+      return { ok: true, balance: ST.premiumGems };
     }
 
     try {
       const user = await this.getUser(username);
       if (!user) return { ok: false, msg: "AKUN TIDAK DITEMUKAN" };
       const curSave = user.save_data || {};
-      const cloudGems = typeof curSave.premiumGems === "number" ? curSave.premiumGems : (window.state?.premiumGems || 0);
-      
+      const cloudGems = typeof curSave.premiumGems === "number" ? curSave.premiumGems : ((ST && ST.premiumGems) || 0);
+
       if (cloudGems < cost) {
         // Sync local to true cloud balance
-        if (window.state) window.state.premiumGems = cloudGems;
+        if (ST) ST.premiumGems = cloudGems;
         return { ok: false, msg: "GEMS DI CLOUD TIDAK CUKUP (" + cloudGems + " < " + cost + ")" };
       }
 
@@ -136,25 +243,43 @@ const CloudDB = {
         if (!curSave.petOwned.includes(packKey)) curSave.petOwned.push(packKey);
       } else {
         curSave.rollPacks = curSave.rollPacks || {};
-        curSave.rollPacks[packKey] = (curSave.rollPacks[packKey] || 0) + 1;
+        curSave.rollPacks[packKey] = (curSave.rollPacks[packKey] || 0) + qty;
       }
 
       // Update state locally
-      if (window.state) {
-        window.state.premiumGems = curSave.premiumGems;
+      if (ST) {
+        ST.premiumGems = curSave.premiumGems;
         if (itemType === 'art') {
-          window.state.artOwned = curSave.artOwned;
+          ST.artOwned = curSave.artOwned;
         } else if (itemType === 'pet') {
-          window.state.petOwned = curSave.petOwned;
+          ST.petOwned = curSave.petOwned;
         } else if (itemType !== 'weather') {
-          window.state.rollPacks = window.state.rollPacks || {};
-          window.state.rollPacks[packKey] = curSave.rollPacks[packKey];
+          ST.rollPacks = ST.rollPacks || {};
+          ST.rollPacks[packKey] = curSave.rollPacks[packKey];
         }
       }
 
-      /* Upload state LOKAL terbaru (bukan snapshot cloud lama) supaya kartu/progress terbaru tidak ter-rollback. */
-      const payload = window.state ? window.state : curSave;
-      const res = await this.saveState(username, payload);
+      /* Upload state LOKAL terbaru (bukan snapshot cloud lama) supaya kartu/progress terbaru tidak ter-rollback.
+       * Pengurangan gems dilakukan lewat RPC spend_gems (atomik, server-side). */
+      const payload = ST ? ST : curSave;
+      const pw = this._localPassHash(username);
+      if (pw) {
+        const sp = await this._rpc("spend_gems", {
+          p_username: username.toLowerCase(),
+          p_password_hash: pw,
+          p_cost: cost,
+          p_save_data: payload,
+        });
+        if (sp && sp.ok === false) {
+          return { ok: false, msg: sp.msg || "GAGAL POTONG GEMS" };
+        }
+        if (sp && typeof sp.balance === "number") {
+          if (window.state) window.state.premiumGems = sp.balance;
+          return { ok: true, balance: sp.balance };
+        }
+        // RPC tidak tersedia -> fallback ke saveState
+      }
+      const res = await this.saveState(username, payload, { allowGemDecrease: true });
       return { ok: true, balance: curSave.premiumGems };
     } catch (err) {
       console.error("[CloudDB verifyAndDeductGems fail]", err);

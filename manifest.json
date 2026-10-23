@@ -1,11 +1,14 @@
 {
+  "id": "/anime-card-battle",
   "name": "Anime Card Battle",
   "short_name": "AnimeTCG",
   "description": "Anime Card Battle RNG Game",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "fullscreen", "minimal-ui"],
   "orientation": "landscape",
+  "prefer_related_applications": false,
   "background_color": "#0b0c10",
   "theme_color": "#1f2833",
   "icons": [

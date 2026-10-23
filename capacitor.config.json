@@ -1,0 +1,14 @@
+{
+  "appId": "com.mencot6474.animecardbattle",
+  "appName": "Anime Card Battle",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": false,
+    "webContentsDebuggingEnabled": false
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}

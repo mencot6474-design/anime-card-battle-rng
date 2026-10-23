@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v162-packmulti';
+const CACHE_NAME = 'anime-card-battle-v163-towerdrop';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

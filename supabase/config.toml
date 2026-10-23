@@ -1,0 +1,41 @@
+project_id = "utfptyzpwsbqfjybiaye"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 17
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+enabled = true
+port = 54324
+
+[functions.create-invoice]
+# Auth dicek manual di dalam fungsi (username + password hash vs player_saves).
+verify_jwt = false
+
+[functions.order-status]
+verify_jwt = false
+
+[functions.xendit-webhook]
+# Xendit tidak mengirim Supabase JWT -> verifikasi manual lewat XENDIT_CALLBACK_TOKEN
+verify_jwt = false
+
+[functions.redeem-code]
+# Client game tidak punya Supabase Auth session -> verifikasi manual username + password hash
+verify_jwt = false
+
+[functions.trakteer-webhook]
+# Trakteer tidak mengirim Supabase JWT -> verifikasi manual lewat header x-webhook-token
+verify_jwt = false
+

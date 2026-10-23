@@ -1,0 +1,24 @@
+{
+  "name": "anime-card-battle",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Anime Card Battle - PWA + Android (Capacitor) dengan top-up Gems via Google Play Billing",
+  "scripts": {
+    "build:www": "node tools/cap-sync.mjs",
+    "sync": "npm run build:www && cap sync android",
+    "open:android": "cap open android",
+    "build:android": "npm run sync && cd android && gradlew.bat assembleDebug",
+    "bundle:android": "npm run sync && cd android && gradlew.bat bundleRelease",
+    "db:push": "supabase db push",
+    "fn:deploy": "supabase functions deploy redeem-code --no-verify-jwt && supabase functions deploy trakteer-webhook --no-verify-jwt",
+    "fn:secrets": "supabase secrets set TRAKTEER_WEBHOOK_TOKEN=",
+    "deploy:web": "netlify deploy --prod --dir ."
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.2",
+    "@capacitor/core": "^6.2.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.2"
+  }
+}

@@ -11,3 +11,8 @@ backups/
 # backup lokal sesi perbaikan border
 *.bak-border*
 *.bak-*
+
+# dependensi & hasil build (berat, bisa diregenerasi — jangan di-commit)
+node_modules/
+android/
+www/
