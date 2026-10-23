@@ -740,7 +740,7 @@ function ixLiveShimmer(){
   if(body.__ixShimmerIO){try{body.__ixShimmerIO.disconnect();}catch(e){}}
   const cells=[].slice.call(body.querySelectorAll('.ix-cell.shiny'));
   if(!cells.length) return;
-  const MAX=12;
+  const MAX=8;
   const update=()=>{
     const vr=body.getBoundingClientRect();
     const vc=(vr.top+vr.bottom)/2;
