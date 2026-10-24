@@ -1032,20 +1032,21 @@ function renderLobby(){
   app.innerHTML=`
   <div class="lobby-hub">
     <div class="hub-loadout-bar" role="group" aria-label="Loadout artefak & pet">${hubLoadoutHtml()}</div>
-    <div class="hub-box h-l1 hub-link hub-link-raid" id="hubRaid" role="button" title="Masuk Boss Raid">
-      <span class="tile-index"><span class="tile-number">01</span><span class="tile-category">CYBER / RAID</span></span>
+    <div class="hub-box h-l1 hub-link hub-link-raid" id="hubRaid" role="button" title="Masuk World Boss">
+      <span class="tile-frame" aria-hidden="true"></span>
+      <span class="tile-index"><span class="tile-number">01</span><span class="tile-category">WORLD / EVENT</span></span>
       <span class="tile-art" aria-hidden="true">
         <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="50" cy="50" r="42" stroke-dasharray="6 4" opacity="0.4"/>
-          <circle cx="50" cy="50" r="32" opacity="0.6"/>
-          <path d="M50 8v14M50 78v14M8 50h14M78 50h14"/>
-          <polygon points="50,22 68,36 68,64 50,78 32,64 32,36" stroke-width="2"/>
-          <path d="M42 42l16 16M58 42l-16 16" stroke-width="2.2"/>
-          <circle cx="50" cy="50" r="6" fill="currentColor"/>
+          <circle cx="50" cy="50" r="29" stroke-width="2"/>
+          <ellipse cx="50" cy="50" rx="44" ry="14" opacity="0.55" transform="rotate(-18 50 50)" stroke-dasharray="7 5"/>
+          <path d="M50 21c10 8 15 18 15 29s-5 21-15 29c-10-8-15-18-15-29s5-21 15-29Z" opacity="0.5"/>
+          <path d="M23 50h54" opacity="0.4"/>
+          <circle cx="50" cy="50" r="4.5" fill="currentColor"/>
+          <path d="M50 5v8M50 87v8" opacity="0.75"/>
         </svg>
       </span>
-      <span class="tile-copy"><span class="hb-lbl">BOSS RAID</span><span class="hb-meta">Assault cyber menace</span></span>
-      <span class="tile-action"><span>INITIALIZE</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
+      <span class="tile-copy"><span class="hb-lbl">WORLD BOSS</span><span class="hb-meta">Hunt the shared HP pool</span></span>
+      <span class="tile-action"><span>DEPLOY</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
     </div>
     <div class="hub-box h-l2 hub-link hub-link-tower" id="hubTower" role="button" title="Masuk Infinite Tower">
       <span class="tile-index"><span class="tile-number">02</span><span class="tile-category">ASCENT / TOWER</span></span>
