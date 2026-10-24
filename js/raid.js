@@ -9,7 +9,7 @@ let wb=null, wbAt=0, wbLoading=false, wbRunId=null, wbStarting=false, wbErr=fals
    data boss yang SEDANG dipilih supaya kode lama (wb.xxx) tetap valid. */
 const wbByBoss={a:null,b:null};
 let wbRunBoss=null;   /* key boss untuk run yang sedang jalan */
-const WB_TTL=30000;
+const WB_TTL=60000; /* data hub (pool/rank) cukup di-refresh 1x / menit — hemat bandwidth */
 const WB_RETRY=8000; /* belum dapat data sama sekali -> jangan fetch tiap render */
 function wbOnline(){return !!(currentUser&&window.CloudDB&&typeof window.CloudDB.wbState==="function");}
 function wbBossName(id){const b=RAID_BOSSES.find(x=>x.id===id)||RAID_BOSSES[0];return b?b.name:"WORLD BOSS";}
@@ -164,10 +164,10 @@ function wbrStartPoll(){
   wbrPoll=setInterval(()=>{
     if(raidView!=="hub"||route()!=="#/raid"){wbrStopPoll();return;}
     /* Skip saat tab hidden — user gak ngeliat leaderboard, gak perlu makan bandwidth.
-       8s → 20s: leaderboard World Boss harian gak butuh real-time secepat itu. */
+       Leaderboard World Boss harian cukup 1x / menit. */
     if(document.hidden)return;
     wbRefresh(true,true).then(()=>wbrPatch()).catch(()=>{});
-  },20000);
+  },60000);
 }
 function wbrTopRows(){
   const b=wbBoss(), d=wbData();

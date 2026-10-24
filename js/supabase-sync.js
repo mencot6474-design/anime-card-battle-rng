@@ -462,8 +462,8 @@ window.CURRENT_DEVICE_SESSION = _currentSessionId;
 let _sessionCheckInterval = null;
 function startSessionHeartbeat(username) {
   if (_sessionCheckInterval) clearInterval(_sessionCheckInterval);
-  const SESSION_HEARTBEAT_MS = 30000; /* 4s → 30s. Kickout lag 30 detik masih wajar,
-                                        bandwidth hemat ~87%. */
+  const SESSION_HEARTBEAT_MS = 60000; /* Cek sesi 1x / menit: kickout telat 1 menit
+                                        masih wajar, hemat bandwidth. */
   _sessionCheckInterval = setInterval(async () => {
     if (!currentUser || !window.CloudDB) return;
     /* Skip saat tab hidden: user gak aktif, gak perlu di-kick real-time.
