@@ -1695,7 +1695,7 @@ function activeChap(){
   return open.find(x=>x.no===(state?state.chap:1))||open.find(x=>!chapDone(x))||open[open.length-1]||CHAPTERS[0];
 }
 const LEVEL_COUNT=STORY_BIBLE.levels.length;
-const MASTER_CARD_INDEX=STORY_BIBLE.units.map(u=>({char_id:u.id,name:u.name,tier:u.tier,chance:u.chance||null,type:u.type,base_hp:u.hp,base_atk:u.atk,sprite_asset:u.art,art_image:u.art,pos:u.pos||null,fullArt:!!u.fullArt,passive:{name:u.skill,desc:u.desc},noGacha:!!u.noGacha,weatherOnly:u.weatherOnly||null,raidBoss:!!u.raidBoss,isStoryEnemy:!!(u.noGacha&&!u.chance)}));
+const MASTER_CARD_INDEX=STORY_BIBLE.units.map(u=>({char_id:u.id,name:u.name,tier:u.tier,chance:u.chance||null,type:u.type,base_hp:u.hp,base_atk:u.atk,sprite_asset:u.art,art_image:u.art,pos:u.pos||null,fullArt:!!u.fullArt,passive:{name:u.skill,desc:u.desc},noGacha:!!u.noGacha,weatherOnly:u.weatherOnly||null,raidBoss:!!u.raidBoss,towerBoss:!!u.towerBoss,isStoryEnemy:!!(u.noGacha&&!u.chance)}));
 
 /* =============== PREMIUM SHOP SYSTEM =============== */
 var premCurTab = 'all';

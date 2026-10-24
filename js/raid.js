@@ -837,7 +837,8 @@ function ixRender(){
     const chanceColor = hasMut ? MUT_COLOR[fm] : "#9AA6B2";
     const chanceText = `1 IN ${fmtChance(effChance(c.char_id, fmSel || "none", fShiny))}`;
     const chanceHtml = hasMut && (fm === 'rainbow' || fm === 'ultima') ? mutText(fm, chanceText) : chanceText;
-    const lockBoss = !!(c.raidBoss && !bossRollUnlocked(c.char_id));
+    const lockBoss = !!((c.raidBoss||c.towerBoss) && !bossRollUnlocked(c.char_id));
+    const lockShop = c.towerBoss?"TOKO INF":"TOKO RAID";
 
     const shFx = isShinyActive;
     const comboFx = !!(shFx && hasMut);
@@ -868,7 +869,7 @@ function ixRender(){
       <span class="ixc-own${isSpecificVariantOwned ? ' on' : ''}">${any}/10</span>`;
     _ixHtml[c.char_id]=inner;
     const mounted=i<48;
-    return `<button class="${cls}${mounted?'':' lz-ph'}" type="button" data-lz="${c.char_id}" data-c="${c.char_id}" data-mut="${hasMut ? fm : 'none'}" data-shiny="${shFx ? '1' : '0'}"${lockBoss ? ' title="BELUM DIBELI - beli di TOKO RAID untuk buka roll"' : ''} style="--tc:#9AA6B2;--bc:${bc}">${mounted?inner:''}</button>`;
+    return `<button class="${cls}${mounted?'':' lz-ph'}" type="button" data-lz="${c.char_id}" data-c="${c.char_id}" data-mut="${hasMut ? fm : 'none'}" data-shiny="${shFx ? '1' : '0'}"${lockBoss ? ' title="BELUM DIBELI - beli di '+lockShop+' untuk buka roll"' : ''} style="--tc:#9AA6B2;--bc:${bc}">${mounted?inner:''}</button>`;
   }).join("");
   /* --- footer: strip progres SEGMENT per mutasi + milestone INTAN ROLL --- */
   const validCards=MASTER_CARD_INDEX.filter(c=>!c.isStoryEnemy);

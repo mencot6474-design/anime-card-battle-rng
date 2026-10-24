@@ -4,18 +4,20 @@ function FXQ(n){return Math.max(1,Math.round((n||0)*0.7));}
 function FXDPR(){return 1;}
 const CARDS=Object.fromEntries(MASTER_CARD_INDEX.map(c=>[c.char_id,c]));
 function getCardData(id){return CARDS[id]||null;}
-/* ===== GATE KARTU BOSS (TOKO RAID) =====
-   raidBoss:true -> terkunci di semua roll SEBELI dibeli; state.raidShopOwned[id]=true dibuat
-   saat pembelian di Toko Raid (persist via save) -> PERMANEN terbuka sesudahnya.
+/* ===== GATE KARTU BOSS (TOKO RAID + TOKO INF) =====
+   raidBoss:true -> terkunci sampai dibeli di Toko Raid (state.raidShopOwned).
+   towerBoss:true -> terkunci sampai dibeli di Toko INF Tower (state.towerShopOwned).
+   Salah satu flag true -> TIDAK bisa di-roll sebelum unlock; PERMANEN terbuka sesudahnya.
    Fallback: sudah punya stack kartunya (mis. save lama / grant GM). */
 function bossRollUnlocked(charId){
   if(state&&state.raidShopOwned&&state.raidShopOwned[charId])return true;
+  if(state&&state.towerShopOwned&&state.towerShopOwned[charId])return true;
   return !!(state&&state.stacks||[]).some(s=>s.char===charId);
 }
 /* Pool roll gacha BERSAMA (rngRoll + instantRollFast): buang noGacha, gate weather, gate boss. */
 function gachaPool(){
   const aw=activeWeatherId();
-  return MASTER_CARD_INDEX.filter(c=>!c.noGacha&&(!c.raidBoss||bossRollUnlocked(c.char_id))&&(!c.weatherOnly||c.weatherOnly===aw));
+  return MASTER_CARD_INDEX.filter(c=>!c.noGacha&&(!(c.raidBoss||c.towerBoss)||bossRollUnlocked(c.char_id))&&(!c.weatherOnly||c.weatherOnly===aw));
 }
 function cardImg(id){const c=CARDS[id];return c?c.sprite_asset:"";}
 /* Thumbnail ringan untuk tile kecil (index, backpack, picker, dock). Art penuh tetap

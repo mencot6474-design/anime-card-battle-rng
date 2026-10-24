@@ -17,7 +17,7 @@ const TOWER_PACK_DROPS=[
 function towerBossIndex(f){return ((f/5)-1)%TOWER_BOSS_ROSTER.length;}
 function towerHash(n){return (((n*2654435761)>>>0)%100000)||0;}
 /* Pool musuh menara: semua kartu non-eksklusif + gate kartu BOSS (sama dgn roll: terkunci sebelum dibeli). */
-function towerRegularPool(){return MASTER_CARD_INDEX.filter(c=>!c.noGacha&&(!c.raidBoss||bossRollUnlocked(c.char_id)));}
+function towerRegularPool(){return MASTER_CARD_INDEX.filter(c=>!c.noGacha&&(!(c.raidBoss||c.towerBoss)||bossRollUnlocked(c.char_id)));}
 /* Kurva kesulitan absolut (tidak ikut membengkak oleh stat mentah kartu EX).
    Kartu musuh hanya menentukan identitas/art/passive; HP & ATK ditentukan lantai.
    TIER itu kosmetik — tidak ada lagi stat scaling berdasarkan tier. */
@@ -310,7 +310,8 @@ function renderTowerShop(){
     luck3:`<img src="${thumbSrc('assets/images/pot-luck-3.png')}" alt="Luck Potion L3" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🍀'">`,
     speed1:`<img src="${thumbSrc('assets/images/pot-speed-1.png')}" alt="Speed Potion L1" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
     speed2:`<img src="${thumbSrc('assets/images/pot-speed-2.png')}" alt="Speed Potion L2" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
-    speed3:`<img src="${thumbSrc('assets/images/pot-speed-3.png')}" alt="Speed Potion L3" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`
+    speed3:`<img src="${thumbSrc('assets/images/pot-speed-3.png')}" alt="Speed Potion L3" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
+    shadowking:`<img src="${thumbSrc('assets/cards/art/shadow-king.webp')}" alt="Shadow King" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='👑'">`
   };
 
   /* Data item Cyberpunk Supply */
@@ -321,9 +322,12 @@ function renderTowerShop(){
     {k:"luck3",cat:"AUGMENT",tier:"MK-III",label:"NEURAL LUCK MK-III",sub:"+10 flat luck & +20% luck multiplier selama 5 menit. Matrix augmentasi maksimal.",cost:250,req:null,ac:"#5cf0a8"},
     {k:"speed1",cat:"OVERCLOCK",tier:"MK-I",label:"CHRONO BOOSTER MK-I",sub:"Roll speed +0.2× (≈1.2×) selama 5 menit. Mempercepat siklus putaran RNG mesin menara.",cost:10,req:null,ac:"#ffd27a"},
     {k:"speed2",cat:"OVERCLOCK",tier:"MK-II",label:"CHRONO BOOSTER MK-II",sub:"Roll speed +0.5× (≈1.5×) selama 5 menit. Overclock sinkronisasi akselerator.",cost:50,req:null,ac:"#ffd27a"},
-    {k:"speed3",cat:"OVERCLOCK",tier:"MK-III",label:"CHRONO BOOSTER MK-III",sub:"Roll speed +1.0× (2.0× instan) selama 5 menit. Siklus overdrive kecepatan tertinggi.",cost:250,req:null,ac:"#ffd27a"}
+    {k:"speed3",cat:"OVERCLOCK",tier:"MK-III",label:"CHRONO BOOSTER MK-III",sub:"Roll speed +1.0× (2.0× instan) selama 5 menit. Siklus overdrive kecepatan tertinggi.",cost:250,req:null,ac:"#ffd27a"},
+    {k:"shadowking",unlock:"CH_SHADOW_KING",cat:"KARTU TERKUNCI",tier:"EX",label:"SHADOW KING // ETERNAL LEGION",sub:"Buka PERMANEN kartu SHADOW KING dari pool roll gacha & Tower. Sekali dibeli, roll terbuka selamanya — tapi kamu tetap harus meng-roll untuk memilikinya. Chance dasar 1 in 100 jt.",cost:1000,req:null,ac:"#b45cff"}
   ];
   const stkOf=k=>k==="weather"?(state.potions||0):k.startsWith("luck")?(state.luckPots&&state.luckPots[+k.slice(-1)-1])||0:k.startsWith("speed")?(state.speedPots&&state.speedPots[+k.slice(-1)-1])||0:(state.mythicPotions||0);
+  /* Kartu unlock (mis. SHADOW KING): status TERBUKA permanen via state.towerShopOwned. */
+  const cardOwned=it=>!!(it.unlock&&state.towerShopOwned&&state.towerShopOwned[it.unlock]);
   if(window.shopSel==null||window.shopSel>=ITEMS.length)window.shopSel=0;
   let swapT=null;
 
@@ -340,7 +344,7 @@ function renderTowerShop(){
         </div>
         <div class="cps-cost-col">
           <div class="cps-cost-val">${it.cost} <small>TOKEN</small></div>
-          ${stkOf(it.k)>0?`<span class="cps-stock-badge">OWN &times;${stkOf(it.k)}</span>`:""}
+          ${it.unlock?`<span class="cps-stock-badge ${cardOwned(it)?'unlocked':'locked'}">${cardOwned(it)?'UNLOCKED':'LOCKED'}</span>`:(stkOf(it.k)>0?`<span class="cps-stock-badge">OWN &times;${stkOf(it.k)}</span>`:"")}
         </div>
       </div>`).join("");
     document.querySelectorAll(".cps-row").forEach(r=>r.onclick=()=>{window.shopSel=+r.dataset.i;renderList();renderDetail();});
@@ -351,7 +355,8 @@ function renderTowerShop(){
     if(!btn)return;
     btn.style.animation="none";void btn.offsetWidth;btn.style.animation="";
     let small="OTORISASI TRANSAKSI",big=`ACQUIRE &middot; ${it.cost} TOKEN`,dis=false;
-    if(tok<it.cost){small="SALDO TOKEN TIDAK CUKUP";big=`DEFISIT ${it.cost-tok} TOKEN`;dis=true;}
+    if(it.unlock&&cardOwned(it)){small="KARTU SUDAH TERBUKA";big="DIMILIKI PERMANEN";dis=true;}
+    else if(tok<it.cost){small="SALDO TOKEN TIDAK CUKUP";big=`DEFISIT ${it.cost-tok} TOKEN`;dis=true;}
     else if(it.req&&stkOf(it.req)<=0){small="KOMPONEN DASAR DIPERLUKAN";big="BUTUH 1 WEATHER POTION";dis=true;}
     btn.disabled=dis;
     btn.className="cyber-buy-btn" + (dis?" disabled":"");
@@ -385,7 +390,7 @@ function renderTowerShop(){
       </div>
       <div class="sd-cyber-matrix" style="--mat-ac:${it.ac}">
         <div class="scm-row"><span class="scm-k">HARGA PENUKARAN</span><span class="scm-v cyan">${it.cost} TOKEN INF</span></div>
-        <div class="scm-row"><span class="scm-k">CADANGAN AMUNISI</span><span class="scm-v green">&times;${stkOf(it.k)} UNIT</span></div>
+        ${it.unlock?`<div class="scm-row"><span class="scm-k">STATUS ROLL</span><span class="scm-v ${cardOwned(it)?"green":"red"}">${cardOwned(it)?"TERBUKA PERMANEN":"TERKUNCI - BELI UNTUK BUKA"}</span></div>`:`<div class="scm-row"><span class="scm-k">CADANGAN AMUNISI</span><span class="scm-v green">&times;${stkOf(it.k)} UNIT</span></div>`}
         ${it.req?`<div class="scm-row"><span class="scm-k">PERSYARATAN SINTESIS</span><span class="scm-v ${stkOf(it.req)>0?"green":"red"}">${stkOf(it.req)>0?"TERSEDIA &times;"+stkOf(it.req)+" WEATHER":"BUTUH 1 WEATHER POTION"}</span></div>`:""}
         <div class="scm-row"><span class="scm-k">STATUS DEPOSIT</span><span class="scm-v">${tok} / ${it.cost} TOKEN</span></div>
       </div>`;
@@ -468,15 +473,19 @@ function renderTowerShop(){
   if(bi)bi.onclick=()=>{if(bi.disabled)return;infBuy(ITEMS[window.shopSel].k);};
 }
 function infBuy(kind){
-  const cost={weather:10,luck1:10,luck2:50,luck3:250,speed1:10,speed2:50,speed3:250,mythic:50}[kind]; if(cost==null)return;
+  const cost={weather:10,luck1:10,luck2:50,luck3:250,speed1:10,speed2:50,speed3:250,mythic:50,shadowking:1000}[kind]; if(cost==null)return;
+  /* Kartu unlock permanen (mis. SHADOW KING): set state.towerShopOwned, TIDAK grant kartu (roll masih harus dimenangkan). */
+  const CARD_UNLOCK={shadowking:"CH_SHADOW_KING"}[kind];
+  if(CARD_UNLOCK&&state.towerShopOwned&&state.towerShopOwned[CARD_UNLOCK]){toast("SUDAH TERBUKA","Roll kartu ini sudah permanen terbuka","#a78bfa");return;}
   if((state.infTokens||0)<cost){toast("TOKEN KURANG","TOKEN INF TIDAK CUKUP","#f87171");return;}
   state.infTokens-=cost;
-  if(kind==='weather')state.potions=(state.potions||0)+1;
+  if(CARD_UNLOCK){state.towerShopOwned=state.towerShopOwned||{};state.towerShopOwned[CARD_UNLOCK]=true;}
+  else if(kind==='weather')state.potions=(state.potions||0)+1;
   else if(kind.startsWith('luck')){state.luckPots=state.luckPots||[0,0,0];state.luckPots[+kind.slice(-1)-1]++;}
   else if(kind.startsWith('speed')){state.speedPots=state.speedPots||[0,0,0];state.speedPots[+kind.slice(-1)-1]++;}
   save(); beep(660,.1,"sine",.07);
-  const label={weather:'WEATHER POTION',mythic:'MYTHIC POTION'}[kind]||(kind.startsWith('luck')?'LUCK POTION L'+kind.slice(-1):'SPEED POTION L'+kind.slice(-1));
-  toast(label,"-"+cost+" TOKEN","#c4b5fd");
+  const label=CARD_UNLOCK?cardName(CARD_UNLOCK):({weather:'WEATHER POTION',mythic:'MYTHIC POTION'}[kind]||(kind.startsWith('luck')?'LUCK POTION L'+kind.slice(-1):'SPEED POTION L'+kind.slice(-1)));
+  toast(label,CARD_UNLOCK?"-"+cost+" TOKEN · ROLL DIBUKA":"-"+cost+" TOKEN","#c4b5fd");
   renderShell(); if(towerView==="shop")render();
 }
 function renderTowerBattle(){

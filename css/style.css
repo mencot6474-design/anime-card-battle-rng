@@ -26506,6 +26506,18 @@ body.on-raid:has(.shop-hub) main {
 
 }
 
+/* Kartu unlock di TOKO INF: LOCKED (merah) vs UNLOCKED (hijau) */
+.cps-stock-badge.locked {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.4);
+}
+.cps-stock-badge.unlocked {
+  color: #5cf0a8;
+  background: rgba(92, 240, 168, 0.12);
+  border-color: rgba(92, 240, 168, 0.4);
+}
+
 
 
 .csc-footer {
