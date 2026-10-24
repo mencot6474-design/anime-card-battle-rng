@@ -742,3 +742,73 @@ body.on-raid:has(.wbr-hub) main#app > .tw-page{
   width:44px;height:44px;translate:-50% -50%;
   border-radius:99px;
 }
+
+/* ==========================================================================
+   ART BOSS → KARTU 2:3 + FRAME SHINY ULTIMA — override akhir (append-only)
+   Sebelumnya art ditaruh di kotak 1:1 (object-fit:contain) sehingga sisa
+   letterbox-nya kelihatan sebagai kotak gelap tanpa sudut. Sekarang art
+   mengisi kartu 2:3 membulat dengan ring gradient ultima.
+   ========================================================================== */
+.wbr-hub{--wb-card-w:min(32%,320px,42vh)}
+
+.wbr-artwrap{
+  width:var(--wb-card-w);
+  aspect-ratio:2/3;
+  border-radius:20px;
+  overflow:hidden;
+  isolation:isolate;
+  box-shadow:0 26px 62px rgba(0,0,0,.72),0 0 30px rgba(255,0,51,.24),0 0 64px rgba(125,249,255,.14);
+  transition:box-shadow .3s ease;
+}
+.wbr-art{
+  object-fit:cover;object-position:50% 32%;
+  border-radius:inherit;
+}
+/* ring ultima: gradient mutasi ULTIMA (cyan → merah → hitam → putih) */
+.wbr-artwrap::after{
+  content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
+  border-radius:inherit;padding:3px;
+  background:linear-gradient(100deg,#22d3ee 0%,#7df9ff 12%,#ff0033 26%,#000 42%,#fff 56%,#ff0033 70%,#7df9ff 86%,#22d3ee 100%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  mask-composite:exclude;
+}
+/* kilau menyapu — transform-only, aman untuk GPU lemah */
+.wbr-artwrap::before{
+  content:"";position:absolute;top:-60%;left:0;width:46%;height:220%;z-index:1;
+  background:linear-gradient(105deg,transparent 0%,rgba(255,255,255,.5) 50%,transparent 100%);
+  rotate:16deg;pointer-events:none;mix-blend-mode:screen;
+  animation:wbCardSheen 7s ease-in-out infinite;
+}
+@keyframes wbCardSheen{0%,64%{translate:-140% 0}100%{translate:360% 0}}
+
+/* ghost silhouette ikut proporsi kartu */
+.wbr-ghost{width:var(--wb-card-w);aspect-ratio:2/3}
+.wbr-ghost img{object-fit:cover;object-position:50% 32%}
+
+/* garis scanline di veil: menutupi art dengan garis 1px tiap 3px (kelihatan
+   seperti "tick" bergetar di layar 720p/HP). Vignette tetap dipertahankan. */
+.wbr-veil{
+  background:radial-gradient(112% 92% at 50% 44%,transparent 38%,rgba(3,5,10,.72) 88%,rgba(3,5,10,.95) 100%);
+}
+
+/* dots boss sekarang di topline (bukan mengambang di atas art) */
+.wbr-topline .wbr-dots{
+  position:static;translate:none;margin-left:auto;padding:0;gap:9px;z-index:auto;
+}
+.wbr-topline .wbr-dot{
+  width:30px;height:22px;border-radius:8px;
+  display:grid;place-items:center;
+  font:700 10px/1 var(--cond);letter-spacing:.12em;
+  color:rgba(232,246,255,.7);
+  background:rgba(6,14,24,.62);
+  border:1px solid rgba(53,240,255,.22);
+}
+.wbr-topline .wbr-dot.on{
+  color:#04070E;border-color:transparent;
+  background:linear-gradient(90deg,var(--holo),var(--mag));
+  box-shadow:0 0 14px rgba(53,240,255,.4);
+}
+.wbr-topline .wbr-dot::after{width:38px;height:38px}
+.wbr-topline .wbr-back{margin-left:2px}

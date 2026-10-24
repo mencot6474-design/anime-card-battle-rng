@@ -286,12 +286,12 @@ function renderRaidHub(){
         <div class="wbr-topline">
           <span class="wbr-chip live"><i class="cp-pulse-dot"></i>WORLD EVENT</span>
           <span class="wbr-chip${locked?" dim":""}">${locked?"SEGERA":modTxt}</span>
+          <div class="wbr-dots" id="wbrDots"></div>
           <button class="wbr-back" id="raidLobby" type="button" title="Kembali ke lobby">&#8592;</button>
         </div>
 
         <button class="wbr-switch l" id="wbrPrev" type="button" title="Boss sebelumnya">&#8249;</button>
         <button class="wbr-switch r" id="wbrNext" type="button" title="Boss berikutnya">&#8250;</button>
-        <div class="wbr-dots" id="wbrDots"></div>
         ${locked?`<div class="wbr-lock"><b>${b.name}</b><small>BUKA SETELAH UPDATE</small></div>`:""}
 
         <div class="wbr-plate">
@@ -377,7 +377,7 @@ function renderRaidHub(){
 function renderDots(){
   const d=document.getElementById("wbrDots");
   if(!d)return;
-  d.innerHTML=WB_BOSSES.map((b,i)=>`<button class="wbr-dot${i===wbBossIdx?" on":""}${b.locked?" locked":""}" type="button" data-i="${i}" title="${b.name}"></button>`).join("");
+  d.innerHTML=WB_BOSSES.map((b,i)=>`<button class="wbr-dot${i===wbBossIdx?" on":""}${b.locked?" locked":""}" type="button" data-i="${i}" title="${b.name}" aria-label="${b.name}">${b.key.toUpperCase()}</button>`).join("");
   Array.prototype.forEach.call(d.querySelectorAll(".wbr-dot"),el=>{
     el.onclick=()=>{
       const i=Number(el.getAttribute("data-i"));
