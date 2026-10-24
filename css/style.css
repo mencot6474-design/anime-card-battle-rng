@@ -49160,31 +49160,48 @@ html.fps-locked .bp-fchip{
 }
 
 /* ---------- Tile WORLD BOSS (lobby): bingkai ganda + bracket sudut ----------
-   Bingkai dekoratif murni (pointer-events:none). Tanpa animasi idle — cuma nyala
-   saat hover — supaya tile di lobby kentang tetap murah repaint. */
+   Bingkai dekoratif murni (pointer-events:none). Glow-nya animasi OPACITY saja
+   (compositor, bukan repaint) supaya tile di lobby kentang tetap murah. */
 .lobby-hub .hub-link-raid{
-  border-color:color-mix(in srgb,#ff4655 34%,rgba(255,255,255,.10));
+  border-color:rgba(255,86,101,.62);
   background:
-    radial-gradient(120% 130% at 92% 28%,rgba(255,70,85,.20),transparent 62%),
-    linear-gradient(158deg,rgba(26,11,15,.97),rgba(8,6,9,.99));
-  box-shadow:0 12px 32px rgba(0,0,0,.62),inset 0 1px 0 rgba(255,255,255,.07),inset 0 0 34px rgba(255,70,85,.10);
+    radial-gradient(120% 130% at 92% 28%,rgba(255,70,85,.26),transparent 62%),
+    linear-gradient(158deg,rgba(30,12,17,.97),rgba(8,6,9,.99));
+  box-shadow:0 12px 32px rgba(0,0,0,.62),inset 0 1px 0 rgba(255,255,255,.08),inset 0 0 40px rgba(255,70,85,.14);
 }
 .lobby-hub .hub-link-raid .tile-frame{
   position:absolute;inset:4px;z-index:1;pointer-events:none;border-radius:11px;
-  border:1px solid rgba(255,70,85,.24);
+  border:1.5px solid rgba(255,110,124,.42);
   background:
-    linear-gradient(#ff7b87,#ff7b87) left top/20px 2px no-repeat,
-    linear-gradient(#ff7b87,#ff7b87) left top/2px 20px no-repeat,
-    linear-gradient(#ff7b87,#ff7b87) right top/20px 2px no-repeat,
-    linear-gradient(#ff7b87,#ff7b87) right top/2px 20px no-repeat,
-    linear-gradient(#ff7b87,#ff7b87) left bottom/20px 2px no-repeat,
-    linear-gradient(#ff7b87,#ff7b87) left bottom/2px 20px no-repeat,
-    linear-gradient(#ff7b87,#ff7b87) right bottom/20px 2px no-repeat,
-    linear-gradient(#ff7b87,#ff7b87) right bottom/2px 20px no-repeat;
-  opacity:.5;transition:opacity .22s,border-color .22s,box-shadow .22s;
+    /* node sudut */
+    radial-gradient(circle at 0 0,rgba(255,255,255,.95) 0 2.5px,rgba(255,90,105,.55) 3px,transparent 5px) left top/14px 14px no-repeat,
+    radial-gradient(circle at 100% 0,rgba(255,255,255,.95) 0 2.5px,rgba(255,90,105,.55) 3px,transparent 5px) right top/14px 14px no-repeat,
+    radial-gradient(circle at 0 100%,rgba(255,255,255,.95) 0 2.5px,rgba(255,90,105,.55) 3px,transparent 5px) left bottom/14px 14px no-repeat,
+    radial-gradient(circle at 100% 100%,rgba(255,255,255,.95) 0 2.5px,rgba(255,90,105,.55) 3px,transparent 5px) right bottom/14px 14px no-repeat,
+    /* bracket sudut */
+    linear-gradient(90deg,#ff9aa4,#ff5a69) left top/26px 2.5px no-repeat,
+    linear-gradient(180deg,#ff9aa4,#ff5a69) left top/2.5px 26px no-repeat,
+    linear-gradient(270deg,#ff9aa4,#ff5a69) right top/26px 2.5px no-repeat,
+    linear-gradient(180deg,#ff9aa4,#ff5a69) right top/2.5px 26px no-repeat,
+    linear-gradient(90deg,#ff9aa4,#ff5a69) left bottom/26px 2.5px no-repeat,
+    linear-gradient(0deg,#ff9aa4,#ff5a69) left bottom/2.5px 26px no-repeat,
+    linear-gradient(270deg,#ff9aa4,#ff5a69) right bottom/26px 2.5px no-repeat,
+    linear-gradient(0deg,#ff9aa4,#ff5a69) right bottom/2.5px 26px no-repeat;
+  box-shadow:0 0 0 1px rgba(255,70,85,.14),inset 0 0 22px rgba(255,70,85,.18);
 }
+/* lapisan glow yang "bernapas" — opacity-only, tidak memicu repaint layout */
+.lobby-hub .hub-link-raid .tile-frame::after{
+  content:"";position:absolute;inset:-2px;border-radius:inherit;
+  box-shadow:inset 0 0 26px rgba(255,70,85,.34),0 0 20px rgba(255,70,85,.22);
+  opacity:.45;animation:wbTileBreathe 3.8s ease-in-out infinite;
+}
+@keyframes wbTileBreathe{0%,100%{opacity:.32}50%{opacity:.9}}
 .lobby-hub .hub-link-raid:hover .tile-frame{
-  opacity:1;border-color:rgba(255,128,138,.44);
-  box-shadow:inset 0 0 20px rgba(255,70,85,.16),0 0 18px rgba(255,70,85,.12);
+  border-color:rgba(255,190,196,.85);
+  box-shadow:0 0 0 1px rgba(255,120,132,.34),inset 0 0 30px rgba(255,70,85,.26),0 0 26px rgba(255,70,85,.26);
 }
-.lobby-hub .hub-link-raid .tile-art{opacity:.24}
+.lobby-hub .hub-link-raid:hover .tile-frame::after{opacity:1;animation:none}
+.lobby-hub .hub-link-raid .tile-art{opacity:.3}
+@media(prefers-reduced-motion:reduce){
+  .lobby-hub .hub-link-raid .tile-frame::after{animation:none;opacity:.6}
+}
