@@ -841,7 +841,7 @@ function renderProfile(){
   slots.push(pslot(cid?cardImg(cid):"","KARTU",cid?`1 IN ${fmtChance(effChance(cid,eq.mut||"none",!!eq.shiny))}`:"KOSONG",cid?cardName(cid):"Tanpa kartu"));
   const pfParty=document.getElementById("pfParty");if(pfParty)pfParty.innerHTML=slots.join("");
   /* ===== PANEL SAMPING: koleksi, progres, gear, item ===== */
-  const tile=(lab,val,sub,tcls,vcls)=>`<div class="prof-tile${tcls?" "+tcls:""}"><span class="prof-tl">${lab}</span><span class="prof-tv${vcls?" "+vcls:""}">${val}</span>${sub?`<span class="prof-ts">${sub}</span>`:""}</div>`;
+  const tile=(lab,val,sub,tcls,vcls,oc)=>`<div class="prof-tile${tcls?" "+tcls:""}"${oc?` onclick="${oc}" style="cursor:pointer"`:""}><span class="prof-tl">${lab}</span><span class="prof-tv${vcls?" "+vcls:""}">${val}</span>${sub?`<span class="prof-ts">${sub}</span>`:""}</div>`;
   const st=Array.isArray(state.stacks)?state.stacks:[];
   let copies=0, shiny=0, gold=0, rainbow=0, secret=0, ultima=0; const uni=new Set();
   for(const s of st){const c=s.count||1;copies+=c;uni.add(s.char);
@@ -864,7 +864,7 @@ function renderProfile(){
   const progres=
     tile("INFINITE TOWER",`Lantai ${(state.tower&&state.tower.best)||0}`,"")
     +tile("SKILL POINT",`${p.sp||0}`,"")
-    +tile("HADIAH HARIAN",`HARI ${di+1} / 7`,"")
+    +tile("HADIAH HARIAN",`HARI ${di+1} / 7`, (typeof DAILY_GEMS!=="undefined"&&DAILY_GEMS[di]!=null)?`KLAIM · +${fmt(DAILY_REWARDS[di]||0)} COIN · +${DAILY_GEMS[di]} GEM`:"", "", "", "openDaily()")
     +storyTiles
     +tile("BOSS RAID",`${raidDone} / ${RAID_DIFFS.length}`,"","wide");
   const gacha=

@@ -434,6 +434,7 @@ function endRaid(){
   const tokens=raidTokenFor(pct,{rw:raid.rw});
   raid.pct=pct;raid.tokens=tokens;
   if(pct>=100&&raid.diffKey){state.raidCleared=state.raidCleared||{};state.raidCleared[raid.diffKey]=true;}
+  raid.gem=(pct>=100&&raid.diffKey)?claimRaidMilestone(raid.diffKey):0;
   if(tokens>0){state.raidTokens=(state.raidTokens||0)+tokens;save();renderShell();sfx.win();}else sfx.lose();
   setTimeout(()=>{raidView="result";renderRaid();},2000);
 }
@@ -446,6 +447,7 @@ function renderRaidResult(){
     <div class="rr-title disp${pct>=100?"":" lose"}">${pct>=100?"BOSS TUMBANG":"RAID SELESAI"}</div>
     <div class="rr-pct">Damage ke Boss <b>${pct}%</b></div>
     <div class="rr-token">+${tokens} <span>TOKEN RAID</span></div>
+    ${raid&&raid.gem>0?`<div class="rr-gem"><img src="assets/images/premium-currency.webp" width="16" height="16" alt="">+${raid.gem} <span>GEM — FIRST CLEAR</span></div>`:""}
     <div class="rr-tier">${nx?`Butuh ${nx.pct}% damage untuk +${nx.tokens} token.`:"Semua tier terklaim!"}</div>
     <div class="rr-actions"><button class="btn-grad" id="rrAgain">RAID LAGI</button><button class="btn-ghost" id="rrHub">KEMBALI</button></div>
   </div></div>`;

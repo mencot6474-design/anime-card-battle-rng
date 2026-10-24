@@ -12,7 +12,7 @@ function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u));}
 function freshState(){
   const s0=STORY_BIBLE.units[0];
   const start=s0?{id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,fav:false,lock:false,mut:"none",shiny:false,trait:"none",count:1}:null;
-  const newState={coins:1000,raidTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,totalRolls:0,playSec:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},raidShopOwned:{},towerShopOwned:{},storyGemMilestones:{},tower:{best:0,auto:false},battleSpeed:1,
+  const newState={coins:1000,raidTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,totalRolls:0,playSec:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},raidShopOwned:{},towerShopOwned:{},storyGemMilestones:{},raidGemMilestones:{},dailyGemPending:0,tower:{best:0,auto:false},battleSpeed:1,
     cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],history:[],battle:null,
     player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1,sp:0,tree:{}},weather:null,weatherBest:null,potions:0,mythicPotions:0,luckPots:[0,0,0],speedPots:[0,0,0],luckBuffs:[],speedBuffs:[],infTokens:0,
     artOwned:[],artSlots:[null,null],petOwned:[],petEquipped:null,intanRolls:0,idxRewardsClaimed:0,premiumGems:50,rollPacks:{r5k:0,r10k:0,r25k:0,r50k:0,r100k:0}};
@@ -92,6 +92,8 @@ function loadStateFor(name){
   if(typeof state.intanRolls!=="number"||state.intanRolls<0)state.intanRolls=0;
   if(typeof state.premiumGems!=="number"||state.premiumGems<0)state.premiumGems=50;
   if(!state.storyGemMilestones||typeof state.storyGemMilestones!=="object")state.storyGemMilestones={};
+  if(!state.raidGemMilestones||typeof state.raidGemMilestones!=="object")state.raidGemMilestones={};
+  if(typeof state.dailyGemPending!=="number"||state.dailyGemPending<0)state.dailyGemPending=0;
   if(!state.rollPacks||typeof state.rollPacks!=="object")state.rollPacks={r5k:0,r10k:0,r25k:0,r50k:0,r100k:0};
   ['r5k','r10k','r25k','r50k','r100k'].forEach(k=>{if(typeof state.rollPacks[k]!=="number"||state.rollPacks[k]<0)state.rollPacks[k]=0;});
   if(typeof state.idxRewardsClaimed!=="number"||state.idxRewardsClaimed<0)state.idxRewardsClaimed=0;
@@ -218,8 +220,44 @@ function claimStoryMilestone(chapNo,diffKey){
   })();
   return gems;
 }
-let _cloudSaveTimer=null;
-function save(){
+/* ===== RAID GEM MILESTONES =====
+   Sekali-klaim per difficulty saat Boss Raid tamat 100% di mode tsb.
+   Basis 200 GEM (NORMAL) x rw mode — pola sama dengan story milestone. */
+const RAID_GEM_BASE=200;
+function raidGemReward(diffKey){
+  const d=(typeof RAID_DIFFS!=="undefined"?RAID_DIFFS:[]).find(x=>x.k===diffKey);
+  return Math.round(RAID_GEM_BASE*(d?d.rw:1));
+}
+function claimRaidMilestone(diffKey){
+  if(!state||!diffKey)return 0;
+  if(!state.raidGemMilestones||typeof state.raidGemMilestones!=="object")state.raidGemMilestones={};
+  if(state.raidGemMilestones[diffKey])return 0;
+  const gems=raidGemReward(diffKey);
+  if(!gems)return 0;
+  state.raidGemMilestones[diffKey]=true;
+  try{save();}catch(e){}
+  (async()=>{
+    let res;
+    try{
+      if(window.CloudDB&&typeof window.CloudDB.earnGems==="function"){
+        const u=(typeof currentUser!=="undefined"&&currentUser)?String(currentUser):"";
+        res=await window.CloudDB.earnGems(u,gems,state);
+      }else{
+        state.premiumGems=(state.premiumGems||0)+gems; res={ok:true,balance:state.premiumGems};
+      }
+    }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
+    if(res&&res.ok){
+      try{save();}catch(e){}
+      try{renderShell();}catch(e){}
+      try{toast("RAID CLEAR · "+String(diffKey).toUpperCase(),"+"+gems+" GEM","#ffd700");}catch(e){}
+    }else{
+      state.raidGemMilestones[diffKey]=false; try{save();}catch(e){}
+      try{toast("GEM RAID GAGAL",(res&&res.msg)||"Coba lagi nanti","#f87171");}catch(e){}
+    }
+  })();
+  return gems;
+}
+let _cloudSaveTimer=null;function save(){
   if(state){
     localStorage.setItem(KEY,JSON.stringify(state));
     if(currentUser && window.CloudDB){
@@ -411,6 +449,9 @@ function renderShell(){
 }
 
 /* =============== DAILY LOGIN 7 HARI =============== */
+const DAILY_GEMS=[10,15,20,25,30,40,60];
+const DAILY_GEM_TOTAL=DAILY_GEMS.reduce((a,b)=>a+b,0);
+const GEM_ICON_SM='<img src="assets/images/premium-currency.webp" width="12" height="12" alt="" style="vertical-align:-2px;border-radius:50%">';
 const DAILY_TOTAL=DAILY_REWARDS.reduce((a,b)=>a+b,0);
 function renderDaily(){
   const ready=state.lastClaim!==todayStr();
@@ -423,25 +464,57 @@ function renderDaily(){
       <div class="d">DAY ${i+1}</div>
       <div class="ic">${coinIcon(32)}</div>
       <div class="amt">${fmt(amt)}<br><small>COIN</small></div>
+      <div class="gam">${GEM_ICON_SM}+${DAILY_GEMS[i]||0} GEM</div>
     </div>`;
   }).join("");
   const foot=document.getElementById("dlFoot");
   foot.innerHTML=(ready
-    ?`<button class="dl-claim" id="dlClaim">KLAIM DAY ${idx+1} · +${fmt(DAILY_REWARDS[idx])} COIN</button>`
+    ?`<button class="dl-claim" id="dlClaim">KLAIM DAY ${idx+1} · +${fmt(DAILY_REWARDS[idx])} COIN · +${DAILY_GEMS[idx]||0} GEM</button>`
     :`<button class="dl-claim" disabled>SUDAH DIKLAIM HARI INI · KEMBALI BESOK</button>`)
-    +`<div class="dl-total">Total 7 hari: <b>${fmt(DAILY_TOTAL)}</b> coin · ${idx}/7 diklaim siklus ini</div>`;
+    +`<div class="dl-total">Total 7 hari: <b>${fmt(DAILY_TOTAL)}</b> coin · <b>${DAILY_GEM_TOTAL}</b> gem · ${idx}/7 diklaim siklus ini</div>`;
   if(ready)document.getElementById("dlClaim").onclick=claimDaily;
+  if(state.dailyGemPending>0)flushPendingDailyGems(true);
   tickDaily();
 }
 function claimDaily(){
   if(state.lastClaim===todayStr())return;
   const idx=state.dailyIndex;
+  const gems=DAILY_GEMS[idx]||0;
   state.coins+=DAILY_REWARDS[idx]||0;
+  state.dailyGemPending=(state.dailyGemPending||0)+gems;
   state.lastClaim=todayStr();
   state.dailyIndex=(idx+1)%7;
   sfx.win();save();
   renderShell();renderDaily();
+  if(gems)flushPendingDailyGems(false);
 }
+/* Gem daily dikredit lewat server (cloud-authoritative). Kalau gagal,
+   nominal disimpan di state.dailyGemPending dan dicoba lagi saat modal dibuka. */
+let _dailyGemBusy=false;
+async function flushPendingDailyGems(quiet){
+  if(_dailyGemBusy||!state||!(state.dailyGemPending>0))return;
+  const gems=state.dailyGemPending;
+  _dailyGemBusy=true;
+  let res;
+  try{
+    if(window.CloudDB&&typeof window.CloudDB.earnGems==="function"){
+      const u=(typeof currentUser!=="undefined"&&currentUser)?String(currentUser):"";
+      res=await window.CloudDB.earnGems(u,gems,state);
+    }else{
+      state.premiumGems=(state.premiumGems||0)+gems; res={ok:true,balance:state.premiumGems};
+    }
+  }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
+  _dailyGemBusy=false;
+  if(res&&res.ok){
+    state.dailyGemPending=0;
+    try{save();}catch(e){}
+    try{renderShell();}catch(e){}
+    try{toast("LOGIN HARIAN","+"+gems+" GEM","#ffd700");}catch(e){}
+  }else if(!quiet){
+    try{toast("GEM LOGIN TERTUNDA",(res&&res.msg)||"Akan dicoba lagi","#fbbf24");}catch(e){}
+  }
+}
+function openDaily(){renderDaily();document.getElementById("dailyModal").classList.add("show");}
 function closeDaily(){document.getElementById("dailyModal").classList.remove("show");if(route()==="#/lobby")render();}
 function tickDaily(){
   const ms=nextResetMs();
