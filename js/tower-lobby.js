@@ -311,11 +311,13 @@ function renderTowerShop(){
     speed1:`<img src="${thumbSrc('assets/images/pot-speed-1.png')}" alt="Speed Potion L1" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
     speed2:`<img src="${thumbSrc('assets/images/pot-speed-2.png')}" alt="Speed Potion L2" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
     speed3:`<img src="${thumbSrc('assets/images/pot-speed-3.png')}" alt="Speed Potion L3" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
-    shadowking:`<img src="${thumbSrc('assets/cards/art/shadow-king.webp')}" alt="Shadow King" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='👑'">`
+    shadowking:`<img src="${thumbSrc('assets/cards/art/shadow-king.webp')}" alt="Shadow King" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='👑'">`,
+    gem:`<img src="assets/images/premium-currency.webp" alt="Gems" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='💎'">`
   };
 
   /* Data item Cyberpunk Supply */
   const ITEMS=[
+    {k:"gem",cat:"EXCHANGE",tier:"GEM",label:"TOKEN → GEM // 100:10",sub:"Tukar 100 TOKEN INF menjadi 10 GEM premium. Bisa ditukar berulang tanpa batas — keran utama GEM dari grinding menara.",cost:100,gem:10,req:null,ac:"#ffd700"},
     {k:"weather",cat:"WEATHER",tier:"SPEC-A",label:"ATMOSPHERIC OVERRIDE",sub:"Memaksa cuaca berganti dengan peluang asli (durasi 5 menit). Bila cuaca baru memiliki tingkat rarity sama atau lebih tinggi, durasi di-reset.",cost:10,req:null,ac:"#7df9ff"},
     {k:"luck1",cat:"AUGMENT",tier:"MK-I",label:"NEURAL LUCK MK-I",sub:"+3 flat luck selama 5 menit. Stackable — durasi bertambah +5 menit tiap injeksi serum.",cost:10,req:null,ac:"#5cf0a8"},
     {k:"luck2",cat:"AUGMENT",tier:"MK-II",label:"NEURAL LUCK MK-II",sub:"+5 flat luck & +10% luck multiplier selama 5 menit. Stackable — durasi bertambah +5 menit.",cost:50,req:null,ac:"#5cf0a8"},
@@ -364,6 +366,7 @@ function renderTowerShop(){
     if(!btn||!it)return;
     btn.style.animation="none";void btn.offsetWidth;btn.style.animation="";
     let small="AUTHORIZE PROCUREMENT",big=`ACQUIRE &bull; ${fmt(it.cost)} TOKEN`,dis=false;
+    if(it.gem){small="TUKAR TOKEN → GEM";big=`+${it.gem} GEM &bull; ${fmt(it.cost)} TOKEN`;}
     if(cardOwned(it)){small="Roll sudah permanen terbuka";big="SUDAH DIMILIKI";dis=true;}
     else if(tok<it.cost){small="TOKEN INF TIDAK CUKUP";big=`DEFISIT ${fmt(it.cost-tok)} TOKEN`;dis=true;}
     else if(it.req&&stkOf(it.req)<=0){small="BUTUH WEATHER POTION";big="BUTUH 1 WEATHER POTION";dis=true;}
@@ -387,7 +390,7 @@ function renderTowerShop(){
       const isCard=!!it.unlock;
       const c=isCard?CARDS[it.unlock]:null;
       const unlocked=!isCard||cardOwned(it);
-      const cnt=isCard?state.stacks.filter(s=>s.char===it.unlock).reduce((n,s)=>n+(s.count||1),0):stkOf(it.k);
+      const cnt=isCard?state.stacks.filter(s=>s.char===it.unlock).reduce((n,s)=>n+(s.count||1),0):(it.gem?0:stkOf(it.k));
       box.innerHTML=`
       <div class="hsd-spec-header cp-spec-header" style="--spec-c:${it.ac}">
         <div class="hsd-icon-box cp-hero-ic ${isCard?'boss-art':''}">${ICONS[it.k]||"🎁"}</div>
@@ -411,7 +414,7 @@ function renderTowerShop(){
         <div class="hsd-mg-cell"><span class="hm-lbl">EXCHANGE PRICE</span><b class="hm-val gold">${fmt(it.cost)} TOKEN</b></div>
         <div class="hsd-mg-cell"><span class="hm-lbl">GACHA UNLOCK STATUS</span><b class="hm-val ${unlocked?'green':'warn'}">${isCard?(unlocked?'PERMANENT UNLOCKED':'LOCKED // BELI DULU'):'INSTANT ACTIVE'}</b></div>
         <div class="hsd-mg-cell"><span class="hm-lbl">AVAILABLE DEPOSIT</span><b class="hm-val cyan">${fmt(tok)} TOKEN</b></div>
-        <div class="hsd-mg-cell"><span class="hm-lbl">OWNED STOCK</span><b class="hm-val ${cnt>0?'green':''}">${isCard?(cnt?'&times;'+cnt:'0'):'&times;'+cnt}</b></div>
+        <div class="hsd-mg-cell"><span class="hm-lbl">OWNED STOCK</span><b class="hm-val ${cnt>0?'green':''}">${isCard?(cnt?'&times;'+cnt:'0'):(it.gem?'&#8734; UNLIMITED':'&times;'+cnt)}</b></div>
       </div>`;
       renderBuy();
     };
@@ -480,11 +483,36 @@ function renderTowerShop(){
   if(bi)bi.onclick=()=>{if(bi.disabled)return;infBuy(ITEMS[window.shopSel].k);};
 }
 function infBuy(kind){
-  const cost={weather:10,luck1:10,luck2:50,luck3:250,speed1:10,speed2:50,speed3:250,mythic:50,shadowking:1000}[kind]; if(cost==null)return;
+  const cost={gem:100,weather:10,luck1:10,luck2:50,luck3:250,speed1:10,speed2:50,speed3:250,mythic:50,shadowking:1000}[kind]; if(cost==null)return;
   /* Kartu unlock permanen (mis. SHADOW KING): set state.towerShopOwned, TIDAK grant kartu (roll masih harus dimenangkan). */
   const CARD_UNLOCK={shadowking:"CH_SHADOW_KING"}[kind];
   if(CARD_UNLOCK&&state.towerShopOwned&&state.towerShopOwned[CARD_UNLOCK]){toast("SUDAH TERBUKA","Roll kartu ini sudah permanen terbuka","#a78bfa");return;}
   if((state.infTokens||0)<cost){toast("TOKEN KURANG","TOKEN INF TIDAK CUKUP","#f87171");return;}
+  if(kind==='gem'){
+    const GEM_AMT=10;
+    state.infTokens-=cost;
+    (async()=>{
+      let res;
+      try{
+        if(window.CloudDB&&typeof window.CloudDB.earnGems==='function'){
+          const u=(typeof currentUser!=='undefined'&&currentUser)?String(currentUser):'';
+          res=await window.CloudDB.earnGems(u,GEM_AMT,state);
+        }else{
+          state.premiumGems=(state.premiumGems||0)+GEM_AMT; res={ok:true,balance:state.premiumGems};
+        }
+      }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
+      if(res&&res.ok){
+        save(); try{beep(880,.12,"sine",.07);}catch(e){}
+        toast("TUKAR BERHASIL","-"+cost+" TOKEN · +"+GEM_AMT+" GEM","#ffd700");
+      }else{
+        state.infTokens+=cost;
+        toast("TUKAR GAGAL",(res&&res.msg)||"Coba lagi nanti","#f87171");
+      }
+      try{renderShell();}catch(e){}
+      if(towerView==="shop")render();
+    })();
+    return;
+  }
   state.infTokens-=cost;
   if(CARD_UNLOCK){state.towerShopOwned=state.towerShopOwned||{};state.towerShopOwned[CARD_UNLOCK]=true;}
   else if(kind==='weather')state.potions=(state.potions||0)+1;

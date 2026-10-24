@@ -287,6 +287,40 @@ const CloudDB = {
     }
   },
 
+  /* Tambah gems dari grinding (Token INF -> Gem). WAJIB lewat server:
+     merge_player_state selalu pakai saldo cloud di mode biasa, jadi
+     "+gems" client-saja akan ke-wipe. RPC earn_gems menambah di server. */
+  async earnGems(username, gems, saveData) {
+    gems = Math.max(0, Math.floor(gems || 0));
+    const ST = (window && window.state) || (typeof state !== 'undefined' ? state : null);
+    if (!gems) return { ok: false, msg: "JUMLAH GEMS TIDAK VALID" };
+
+    if (!username) {
+      if (ST) ST.premiumGems = (ST.premiumGems || 0) + gems;
+      return { ok: true, balance: ST ? (ST.premiumGems || 0) : gems };
+    }
+
+    try {
+      const pw = this._localPassHash(username);
+      if (!pw) return { ok: false, msg: "SESI LOGIN TIDAK LENGKAP" };
+      const res = await this._rpc("earn_gems", {
+        p_username: username.toLowerCase(),
+        p_password_hash: pw,
+        p_gems: gems,
+        p_save_data: saveData || ST || {},
+      });
+      if (res && res.ok === false) return { ok: false, msg: res.msg || "GAGAL TAMBAH GEMS" };
+      if (res && typeof res.balance === "number") {
+        if (window.state) window.state.premiumGems = res.balance;
+        return { ok: true, balance: res.balance };
+      }
+      return { ok: false, msg: "RPC earn_gems BELUM TER-DEPLOY" };
+    } catch (err) {
+      console.error("[earnGems] fail", err);
+      return { ok: false, msg: "GAGAL MENGHUBUNGI CLOUD: " + err.message };
+    }
+  },
+
   async getSessionId(username) {
     const user = await this.getUser(username);
     if (user && user.save_data && user.save_data.current_session_id) {
