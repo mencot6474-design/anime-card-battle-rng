@@ -3173,15 +3173,13 @@ function finish(win){
   save();renderShell();
   const ov=document.getElementById("overlay");
   const ch=chapOf(lv),chDone=win&&chapClearedMode(ch,state.diff),nxtCh=CHAPTERS.find(c=>c.no===ch.no+1);
-  let gemGain=0,gemRepeat=false;
-  if(chDone){
-    const _msKey=ch.no+":"+state.diff;
-    if(!(state.storyGemMilestones&&state.storyGemMilestones[_msKey])){
-      gemGain=claimStoryMilestone(ch.no,state.diff);
-    }else{
-      gemGain=claimStoryRepeatGem(ch.no,state.diff);
-      gemRepeat=gemGain>0;
-    }
+  /* GEM story dibayar TIAP stage: first clear sekali per (stage x mode), replay
+     tiap kali kooldown stage itu lewat — plus bonus saat bab tamat. */
+  let gemGain=0,gemLabel="";
+  if(win){
+    if(first){const g=claimStageGem(lv,state.diff);if(g){gemGain=g;gemLabel="STAGE "+lv;}}
+    else{const g=claimStoryRepeatGem(lv,state.diff);if(g){gemGain=g;gemLabel="REPLAY STAGE "+lv;}}
+    if(chDone){const b=claimStoryMilestone(ch.no,state.diff);if(b){gemGain+=b;gemLabel+=(gemLabel?" + ":"")+"BAB "+ch.no;}}
   }
   const ovCard=document.getElementById("ovCard");
   if(ovCard){
@@ -3211,7 +3209,7 @@ function finish(win){
       ms.style.display="flex";
       ms.innerHTML='<img class="ov-gem-ms-ic" src="assets/images/premium-currency.webp" alt="" width="34" height="34">'
         +'<div class="ov-gem-ms-txt">'
-          +'<span class="ov-gem-ms-k">'+(gemRepeat?'REPEAT MILESTONE':'STORY MILESTONE')+' &bull; BAB '+ch.no+' &bull; '+diffOf().l+'</span>'
+          +'<span class="ov-gem-ms-k">STORY GEM &bull; '+gemLabel.toUpperCase()+' &bull; '+diffOf().l+'</span>'
           +'<span class="ov-gem-ms-v">+'+gemGain+' <small>GEM</small></span>'
         +'</div>';
     }else{

@@ -18912,6 +18912,76 @@ body.battle-full .vs-col .bspeed-btn{font-size:clamp(12px,1.4vw,15px);padding:4p
 
 
 
+/* GEM story: blok reward sendiri, jangan nempel di baris coin */
+
+.st-reward-gem{
+
+
+
+  margin-top:8px;
+
+
+
+  border-color:rgba(255,210,122,.34);
+
+
+
+  background:linear-gradient(120deg,rgba(30,20,8,.88),rgba(12,9,4,.95));
+
+
+
+}
+
+
+
+.st-rw-gem{
+
+
+
+  display:flex;
+
+
+
+  align-items:center;
+
+
+
+  gap:6px;
+
+
+
+  font-family:"Rajdhani","Barlow Condensed",sans-serif;
+
+
+
+  font-weight:800;
+
+
+
+  font-size:22px;
+
+
+
+  letter-spacing:.04em;
+
+
+
+  color:#8ef0ff;
+
+
+
+  text-shadow:0 0 10px rgba(125,249,255,.4);
+
+
+
+}
+
+
+
+.st-rw-gem img{border-radius:50%;filter:drop-shadow(0 0 6px rgba(255,215,0,.6))}
+
+
+
 /* Action buttons */
 
 

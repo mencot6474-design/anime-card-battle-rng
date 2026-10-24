@@ -212,26 +212,36 @@ const mutEdge=m=>m&&m!=="none"?` style="border-color:${MUT_COLOR[m]}"`:"";
 function enemyOf(level){const f=FOES[level];if(!f)return{id:null,name:"Gate Watcher L-"+level,epithet:chapOf(level).zone,img:chapOf(level).art,boss:false,tier:"R"};return{id:f.id,name:f.name,epithet:f.ep,img:f.img,boss:!!f.boss,tier:f.tier};}
 function enemyStats(level){const l=STORY_BIBLE.levels[level-1];if(!l)return{hp:120,atk:40};const c=CARDS[l.unit];if(!c)return{hp:120,atk:40};const k=MUT_MULT[diffOf().mut]||1;return{hp:Math.round(c.base_hp*(0.55+0.15*level)*k),atk:Math.round(c.base_atk*(0.35+0.13*level)*k)};}
 function firstClearReward(level){const l=STORY_BIBLE.levels[level-1];return (l?l.reward:300)*(diffOf().rw||1);}
-/* ===== STORY GEM MILESTONES =====
-   Sekali-claim per (BAB x mode) saat SEMUA tahap BAB itu tamat di mode tsb.
-   Basis per BAB (mode NORMAL) di-skala ke ekonomi Gem baru (pet 10.000).
-   Reward = basis x rw mode — pengali SAMA dengan coin, biar konsisten. */
+/* ===== STORY GEM: DIBAYAR PER STAGE + BONUS "BAB SELESAI" =====
+   Basis per BAB (mode NORMAL) di-skala ke ekonomi Gem (pet 10.000).
+   75% basis pecah ke 6 stage MENGIKUT bobot reward coin stage (bos paling besar),
+   25% sisanya jadi bonus saat bab tamat. Jadi setiap kemenangan story keluar
+   dengan GEM, bukan cuma stage 6. */
 const STORY_GEM_BASE={1:40,2:60,3:70,4:90,5:120};
-function storyGemReward(chapNo,diffKey){
+const STORY_GEM_STAGE_SHARE=0.75;
+function diffRw(diffKey){const d=DIFFS.find(x=>x.k===diffKey);return d?(d.rw||1):1;}
+function storyStageGemReward(lv,diffKey){
+  const ch=chapOf(lv);
+  if(!ch)return 0;
+  const base=STORY_GEM_BASE[ch.no]||0;
+  const st=ch.levels[lv-ch.from];
+  if(!base||!st)return 0;
+  const total=ch.levels.reduce((s,x)=>s+(x.reward||0),0)||1;
+  return Math.max(1,Math.round(base*STORY_GEM_STAGE_SHARE*diffRw(diffKey)*((st.reward||0)/total)));
+}
+function storyChapBonus(chapNo,diffKey){
   const base=STORY_GEM_BASE[chapNo]||0;
   if(!base)return 0;
-  const d=DIFFS.find(x=>x.k===diffKey);
-  return Math.round(base*(d?d.rw:1));
+  return Math.round(base*(1-STORY_GEM_STAGE_SHARE)*diffRw(diffKey));
 }
-function claimStoryMilestone(chapNo,diffKey){
-  if(!state)return 0;
+function _storyMsObj(){
+  if(!state)return null;
   if(!state.storyGemMilestones||typeof state.storyGemMilestones!=="object")state.storyGemMilestones={};
-  const key=chapNo+":"+diffKey;
-  if(state.storyGemMilestones[key])return 0;
-  const gems=storyGemReward(chapNo,diffKey);
-  if(!gems)return 0;
-  state.storyGemMilestones[key]=true;
-  try{save();}catch(e){}
+  return state.storyGemMilestones;
+}
+/* Satu pintu bayar GEM story: optimistis, saldo ikut layar, rollback kalau server nolak. */
+function _storyGemPay(gems,okTitle,okMsg,onFail){
+  if(!state||!gems)return 0;
   (async()=>{
     let res;
     try{
@@ -245,19 +255,47 @@ function claimStoryMilestone(chapNo,diffKey){
     if(res&&res.ok){
       try{save();}catch(e){}
       try{renderShell();}catch(e){}
-      try{toast("MILESTONE BAB "+chapNo+" · "+String(diffKey).toUpperCase(),"+"+gems+" GEM","#ffd700");}catch(e){}
+      try{toast(okTitle,okMsg,"#ffd700");}catch(e){}
     }else{
-      state.storyGemMilestones[key]=false; try{save();}catch(e){}
-      try{toast("MILESTONE GAGAL",(res&&res.msg)||"Coba lagi nanti","#f87171");}catch(e){}
+      if(onFail)try{onFail();}catch(e){}
+      try{save();}catch(e){}
+      try{toast("GEM GAGAL",(res&&res.msg)||"Coba lagi nanti","#f87171");}catch(e){}
     }
   })();
   return gems;
 }
-/* ===== REPEAT STORY: 20% GEM + COOLDOWN 5 MENIT PER STAGE =====
-   Replay stage yang sudah tamat memberi 20% coin & 20% GEM milestone.
-   Kooldown melekat pada stage yang dimainkan, bukan seluruh cerita. */
+/* GEM first-clear satu stage — sekali per (stage x mode). */
+function claimStageGem(lv,diffKey){
+  const ms=_storyMsObj();
+  if(!ms)return 0;
+  const key="s"+lv+":"+diffKey;
+  if(ms[key])return 0;
+  const gems=storyStageGemReward(lv,diffKey);
+  if(!gems)return 0;
+  ms[key]=true;
+  try{save();}catch(e){}
+  return _storyGemPay(gems,"STAGE "+lv+" · "+String(diffKey).toUpperCase(),"+"+gems+" GEM",()=>{ms[key]=false;});
+}
+/* Bonus saat SEMUA stage bab tamat — key lama (chap:diff) tetap dipakai, jadi
+   player yang sudah pernah klaim milestone penuh tidak dapat dua kali. */
+function claimStoryMilestone(chapNo,diffKey){
+  const ms=_storyMsObj();
+  if(!ms)return 0;
+  const key=chapNo+":"+diffKey;
+  if(ms[key])return 0;
+  const gems=storyChapBonus(chapNo,diffKey);
+  if(!gems)return 0;
+  ms[key]=true;
+  try{save();}catch(e){}
+  return _storyGemPay(gems,"BAB "+chapNo+" SELESAI · "+String(diffKey).toUpperCase(),"+"+gems+" GEM",()=>{ms[key]=false;});
+}
+/* ===== REPEAT STORY: GEM PER STAGE + COOLDOWN 5 MENIT PER STAGE =====
+   Replay stage yang sudah tamat memberi 20% coin & sebagian GEM-nya.
+   Kooldown per stage = satu-satunya pembatas faucet, jadi rotasi antar stage
+   bikin gem early game tidak susah. */
 const STORY_REPEAT_CD_MS=5*60*1000;
-const STORY_REPEAT_GEM_PCT=0.2;
+const STORY_REPEAT_GEM_PCT=0.35;
+const STORY_REPEAT_GEM_MIN=2;
 function storyCdKey(lv){return state.diff+":"+lv;}
 function storyCdLeft(lv){
   if(!state)return 0;
@@ -271,28 +309,20 @@ function storySetCd(lv){
   state.storyCd[storyCdKey(lv)]=Date.now()+STORY_REPEAT_CD_MS;
 }
 function storyInRepeatCd(lv){return !!(state&&diffProg()[state.diff][lv]&&storyCdLeft(lv)>0);}
-function claimStoryRepeatGem(chapNo,diffKey){
-  const gems=Math.round(storyGemReward(chapNo,diffKey)*STORY_REPEAT_GEM_PCT);
-  if(!gems)return 0;
-  (async()=>{
-    let res;
-    try{
-      if(window.CloudDB&&typeof window.CloudDB.earnGems==="function"){
-        const u=(typeof currentUser!=="undefined"&&currentUser)?String(currentUser):"";
-        res=await window.CloudDB.earnGems(u,gems,state);
-      }else{
-        state.premiumGems=(state.premiumGems||0)+gems; res={ok:true,balance:state.premiumGems};
-      }
-    }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
-    if(res&&res.ok){
-      try{save();}catch(e){}
-      try{renderShell();}catch(e){}
-      try{toast("REPEAT MILESTONE","+"+gems+" GEM","#ffd700");}catch(e){}
-    }else{
-      try{toast("GEM REPLAY GAGAL",(res&&res.msg)||"Coba lagi nanti","#f87171");}catch(e){}
-    }
-  })();
-  return gems;
+/* Replay gem: dibayar tiap stage, dibatasi kooldown stage itu sendiri. */
+function claimStoryRepeatGem(lv,diffKey){
+  const one=storyStageGemReward(lv,diffKey);
+  if(!one)return 0;
+  const gems=Math.max(STORY_REPEAT_GEM_MIN,Math.round(one*STORY_REPEAT_GEM_PCT));
+  return _storyGemPay(gems,"REPLAY STAGE "+lv+" · "+String(diffKey).toUpperCase(),"+"+gems+" GEM");
+}
+/* Angka GEM yang bakal dibayar stage ini (first clear vs replay) — display only. */
+function storyGemPreview(lv){
+  if(!state)return 0;
+  const one=storyStageGemReward(lv,state.diff);
+  if(!one)return 0;
+  if(!diffProg()[state.diff][lv])return one;
+  return Math.max(STORY_REPEAT_GEM_MIN,Math.round(one*STORY_REPEAT_GEM_PCT));
 }
 /* Satu pintu masuk cerita: blok replay saat cooldown masih jalan. */
 function startStoryBattle(lv){
@@ -829,6 +859,7 @@ function openStart(lv){
   const en=enemyOf(lv),es=enemyStats(lv),first=!diffProg()[state.diff][lv];
   const reward=first?firstClearReward(lv):Math.round(firstClearReward(lv)*.2);
   const cdLeft=first?0:storyCdLeft(lv);
+  const gem=storyGemPreview(lv);
   const pss=en.id&&CARDS[en.id]?CARDS[en.id].passive:null,pw=totalPower(),g=gateOf(lv),ok=pw>=g;
   const bar=Math.max(4,Math.min(100,Math.round(pw/g*100)));
   document.getElementById("startBody").innerHTML=`
@@ -848,6 +879,7 @@ function openStart(lv){
     </div>
     ${pss?`<div class="st-trait"><b>PASSIVE · ${pss.name}</b> ${pss.desc}</div>`:""}
     <div class="st-reward"><span class="st-rw-label">${first?"FIRST CLEAR":"REPLAY (20%)"} · ${diffOf().l} ×${diffOf().rw||1}</span><span class="st-rw-gold">◎ ${fmt(reward)} gold</span></div>
+    ${gem?`<div class="st-reward st-reward-gem"><span class="st-rw-label">${first?"GEM FIRST CLEAR":"GEM REPLAY"} ${first?"":"· SIAP LAGI "+storyCdText(cdLeft)}</span><span class="st-rw-gem"><img src="assets/images/premium-currency.webp" alt="" width="16" height="16">+${fmt(gem)} GEM</span></div>`:""}
     <div class="st-cd" id="stCd" style="display:${cdLeft>0?"block":"none"}">${cdLeft>0?"REPLAY TERKUNCI · COOLDOWN "+storyCdText(cdLeft):""}</div>
     <div class="st-btns">
       <button class="st-cancel" id="stCancel">BATAL</button>

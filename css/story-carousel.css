@@ -538,6 +538,8 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  flex-wrap: wrap;
+  row-gap: 6px;
 }
 .sc-dock-reward-box {
   display: flex;
@@ -565,6 +567,26 @@
   font-size: 9px;
   letter-spacing: .08em;
   color: #ffb020;
+}
+
+/* GEM per stage — blok sendiri di sebelah coin, dipisah garis tipis */
+.sc-dock-gem-box {
+  padding-left: 16px;
+  border-left: 1px solid rgba(255, 255, 255, .12);
+}
+.sc-dock-gem-val {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: #8ef0ff;
+  text-shadow: 0 0 10px rgba(125, 249, 255, .4);
+}
+.sc-dock-gem-val img {
+  border-radius: 50%;
+  filter: drop-shadow(0 0 5px rgba(255, 215, 0, .6));
 }
 
 .sc-btn-battle-launch {

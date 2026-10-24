@@ -340,6 +340,13 @@
         }
         if (rewardVal) rewardVal.textContent = isUnlocked ? `◎ ${fmt(reward)} Gold` : `—`;
 
+        const gemLbl = document.getElementById("scDockGemLbl");
+        const gemVal = document.getElementById("scDockRewardGem");
+        const gemIc = '<img src="assets/images/premium-currency.webp" alt="" width="16" height="16">';
+        const gemN = (typeof storyGemPreview === "function" && isUnlocked) ? storyGemPreview(lv) : 0;
+        if (gemLbl) gemLbl.textContent = isUnlocked ? (first ? "GEM FIRST CLEAR" : "GEM REPLAY") : "STORY GEM";
+        if (gemVal) gemVal.innerHTML = isUnlocked ? `${gemIc}+${gemN}` : `${gemIc}—`;
+
         if (battleBtn) {
           battleBtn.dataset.cdRepeat = (isUnlocked && !first && cdLeft > 0) ? "1" : "";
           if (!isUnlocked) {
