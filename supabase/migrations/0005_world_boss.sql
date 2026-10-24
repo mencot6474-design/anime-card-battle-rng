@@ -242,9 +242,10 @@ declare
   ybest    numeric;
   yrank    integer;
   ytotal   integer;
-  ybr      record;
+  ybr      public.world_boss_bracket;
   yclaimed boolean := false;
   yrow     public.world_boss_runs;
+  yjson    jsonb;
 begin
   if p_username is null then
     raise exception 'BAD_INPUT';
@@ -296,6 +297,19 @@ begin
       select 1 from public.leaderboard_claims
        where period = yper and board = 'world_boss' and username = uname
     ) into yclaimed;
+
+    yjson := jsonb_build_object(
+      'period', yper,
+      'best_pct', ybest,
+      'rank', yrank,
+      'total_players', ytotal,
+      'bracket', ybr.bracket,
+      'gems', ybr.gems,
+      'tokens', ybr.tokens,
+      'title', ybr.title,
+      'claimed', yclaimed,
+      'claimable', (not yclaimed) and (ybr.tokens > 0)
+    );
   end if;
 
   return jsonb_build_object(
@@ -308,18 +322,7 @@ begin
     'best_pct', best,
     'rank', my_rank,
     'total_players', total,
-    'yesterday', case when ybest is null then null else jsonb_build_object(
-      'period', yper,
-      'best_pct', ybest,
-      'rank', yrank,
-      'total_players', ytotal,
-      'bracket', ybr.bracket,
-      'gems', ybr.gems,
-      'tokens', ybr.tokens,
-      'title', ybr.title,
-      'claimed', yclaimed,
-      'claimable', (not yclaimed) and (ybr.tokens > 0)
-    ) end
+    'yesterday', yjson
   );
 end;
 $$;
