@@ -1,6 +1,6 @@
 [build]
   publish = "."
-  commands = { dev = "echo 'Just serving static files'" }
+  command = "echo 'Just serving static files'"
 
 [[redirects]]
   from = "/*"
