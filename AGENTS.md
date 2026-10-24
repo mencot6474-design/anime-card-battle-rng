@@ -27,18 +27,20 @@ Baca file ini dulu; jangan baca `style.css` (49.3k baris) atau `index.html` utuh
 
 ```
 index.html            shell, semua modal/screen markup, urutan script (767 baris)
-css/style.css         49.4k baris — SEMUA gaya utama (append override di akhir)
+css/style.css         49.5k baris — SEMUA gaya utama (append override di akhir)
                       blok PERF/LAYOUT: 48395–48476; blok terbaru (full-art,
                       shadow-king FX, world boss) lanjut sampai 48571–49022+;
-                      blok LEADERBOARD v2 (podium+border) mulai 49297
+                      blok LEADERBOARD v2 (podium+border) mulai 49298,
+                      blok SHEET PROFIL PLAYER PUBLIK mulai 49462
 css/story-carousel.css  CSS khusus modal story (diload setelah style.css)
 css/world-boss.css    814 baris — gaya hub World Boss / kartu ultima (juga diload)
 css/sl-system.css     roll/gacha system
 css/anim-prototipe.css  halaman prototipe (tidak dipakai game) — LOKAL SAJA, sudah di-.gitignore
 js/data.js            STORY_BIBLE (baris 100), luck helper, data cerita/unit
 js/config.js          config runtime (Supabase dll)
-js/supabase-sync.js   CloudDB: saveState (51) + flag p_skip_stacks (62), earnGems,
-                      leaderboard submit, wbState/wbStart/wbSubmit/wbClaim
+js/supabase-sync.js   CloudDB: saveState (51) + flag p_skip_stacks + withPub (66),
+                      earnGems, leaderboard (393) / avatars (404) / profile (411) /
+                      submitScore (420), wbState/wbStart/wbSubmit/wbClaim
 js/panels.js          gacha roll, profil, backpack, premium, weather, topup, global luck
 js/topup.js           modal topup (render terpisah)
 js/cards-fx.js        CARDS (index kartu), DIFFS (157), FX/skill text, mutasi (128+)
@@ -61,8 +63,10 @@ js/story-carousel.js  modal story (IIFE, ekspor ke window)
 js/raid.js            raid hub/battle/shop + index card + trait/auto-roll + World Boss
 js/ranking.js         leaderboard 5 papan (world_boss, world_boss_b, inf_tower,
                       deck_power, rarest_pull) via RPC get_leaderboard — layout v2:
-                      podium top-3 + border (RK_BD1 75 / RK_BD23 76), baris
-                      RANK|AV|NAMA|SKOR|Δ (rkRowsHtml 155), tab pil di bawah
+                      podium top-3 + border (RK_BD1 79 / RK_BD23 80), baris
+                      RANK|AV|NAMA|SKOR|Δ (rkRowsHtml 242), tab pil di bawah,
+                      foto profil asli (rkFillAvatars 161) + sheet profil player
+                      (openRkProfile 566)
 js/boot.js            router, enterGame, settings, foot menu, label BUILD
 js/pwa.js             install prompt/service worker
 js/coret.js           fitur coret dev (tombol float #crFab)
@@ -118,9 +122,10 @@ Tujuan: HP kentang tetap main tanpa frame drop. Semua efek baru harus ikut atura
   `coins, playerLv, cleared[], clearedDiff{}, deck[4], stacks[](array, bukan map), battle{}, player{luckBase,luckFlat,luckPercent,exp,lv,sp,tree{}}, weather{}, potions{}, luckPots{}, speedPots{}, artOwned[], artSlots[], petOwned[], petEquipped[], premiumGems, rollPacks{}`
 - Persist lokal: localStorage `aab-state-v2:<username>`. Contoh terukur 2026-10-25: 96,9 KB JSON, `stacks` = 73,8 KB (562 item), sisanya 23 KB.
 - Rantai save/cloud (`js/state.js`):
-  `save()` (361) → tulis localStorage + diff-check `_cloudStateKey()` (playSec dikecualikan; identik = skip total) → debounce 400 ms → `_cloudPush()` (333) → `CloudDB.saveState` → RPC `merge_player_state`.
-  Anti-bandwidth: `CLOUD_PUSH_MIN_MS = 30000` (330) membatasi push saat auto-roll, `CLOUD_STACKS_MIN_MS = 60000` (331) membatasi kirim inventori saat rolling; `flushCloudSave()` (350) dan `pushCloudNow()` selalu kirim inventori penuh (dipakai saat roll berhenti dan sebelum RPC yang membaca saldo di server).
-  Payload ringan dibuat di `supabase-sync.js:51` (`skipStacks` → `p_skip_stacks`, baris 62): salinan state tanpa `stacks`. Kalau RPC gagal → fallback PATCH **pakai state utuh** (sengaja, supaya inventori cloud tidak terhapus).
+  `save()` (387) → tulis localStorage + diff-check `_cloudStateKey()` (playSec dikecualikan; identik = skip total) → debounce 400 ms → `_cloudPush()` (359) → `CloudDB.saveState` → RPC `merge_player_state`.
+  Anti-bandwidth: `CLOUD_PUSH_MIN_MS = 30000` (330) membatasi push saat auto-roll, `CLOUD_STACKS_MIN_MS = 60000` (331) membatasi kirim inventori saat rolling; `flushCloudSave()` (376) dan `pushCloudNow()` (383) selalu kirim inventori penuh (dipakai saat roll berhenti dan sebelum RPC yang membaca saldo di server).
+  Payload ringan dibuat di `supabase-sync.js:51` (`skipStacks` → `p_skip_stacks`): salinan state tanpa `stacks`. Kalau RPC gagal → fallback PATCH **pakai state utuh** (sengaja, supaya inventori cloud tidak terhapus).
+  **`pub` (ringkasan profil publik)** disuntik `buildPubSummary()` (state.js:337) ke `opts.pub` dan dipasang lewat `withPub()` di `supabase-sync.js:66` — WAJIB di kedua jalur (RPC `p_save_data` DAN fallback PATCH), karena jalur PATCH menimpa `body.save_data` dengan `stateObj` mentah di baris ~114; pernah cuma kena jalur RPC sehingga profil player lain kosong. `merge_player_state` mengganti `save_data` secara utuh, jadi key turunan seperti `pub` harus ikut terkirim lagi tiap push.
 - `const app=document.getElementById("app")` — `js/state.js:504`; semua view di-render ke sini.
 - Routing: `render()` `js/boot.js:197` → `#/` home, `#/raid`, `#/tower`, `#/settings`, default lobby.
 - `enterGame()` `js/boot.js:442`.
@@ -184,8 +189,10 @@ Backpack bukan `display:fixed` bawaan — `toggleBackpack` set inline transform;
 - **Tower** — `tower-lobby.js` (`renderTower` 121, shop 260, `startTowerBattle` 548, `renderTowerBattle` 527) + `openTowerDropModal` 1228.
 - **Raid / auto-roll** — `raid.js` (`renderRaid` 241, `startRaid` 547, `startAutoRoll` 1576). Auto-roll = sumber beban cloud terbesar; lihat §3 sebelum mengubah ritme save.
 - **World Boss** — boss list `WB_BOSSES` raid.js:28 (`RAID_ETERNAL_DRAGON` → `world_boss`, `RAID_SHADOW_KING` → `world_boss_b`), WB shop 812 (token→gem 100:20), poll leaderboard 1×/menit (164). Damage run di-skala `RAID_DMG_SCALE = 100` (cards-fx.js:168), pool HP `WB_POOL_HP = 1e12` (167), format ringkas `fmtBig` raid.js:87. Sisi server: RPC `wb_state/wb_start/wb_submit/wb_claim` (supabase-sync.js 339–386) + migration `0005`–`0009`, `0011`. **Ambang hadiah "participant" = `best_dmg >= 1e9` (0008:92)** — perlu ditinjau lagi karena damage sudah ÷100.
-- **Leaderboard** — `js/ranking.js`: `RK_BOARDS` (9) = world_boss, world_boss_b, inf_tower, deck_power, rarest_pull; `lbState` (260) cache namespace `aab-lb2-`; refresh `RK_REFRESH_DAY_MS = 60000` (370) — ini penyumbang egress berkala terbesar, tab hidden ikut di-skip. Submit via `CloudDB.submitScore` (supabase-sync.js:398) dengan plafon 1e21 (migration 0010).
-  Layout v2 (podium + border): `rkRender` 178 merakit `rkPodiumHtml` 117 → `rkPodHtml` 102 → `rkRowsHtml` 155. Border #1 = video `assets/ui/lb-top1.mp4` (`mix-blend-mode:screen` + mask bulat) — **jangan pakai `transform` pada `.rk-pod1`**, transform bikin stacking context yang mematikan screen-blend (kotak hitam menutupi podium); naik-turun podium pakai `margin`. Border #2/#3 = `assets/ui/lb-ring.png` (sudah di-keying transparan). Profil (`inset:8%`, z2) digambar LEBAR dari lubang lalu **ditimpa border-nya** (z3): lubang hasil ukur = ring 57,5% dengan pusat 7,6% di atas tengah (`top:-3%`), video 52–56% dengan pusat 7,8% di bawah tengah (`top:-22%`); `margin-bottom` pada `.rk-ava` memberi ruang overhang border supaya nama tidak tertimpa. Avatar diambil dari `meta.av` yang di-`lbSubmit` (`lbAvMeta` 308, `cardThumb` leader) dan **wajib lewat whitelist `rkAvSrc` 87** karena meta datang dari player lain. Δ posisi dihitung lokal (`rkDeltaHtml` 136, cache `aab-lb-delta`) — server tidak menyimpan peringkat sebelumnya.
+- **Leaderboard** — `js/ranking.js`: `RK_BOARDS` (12) = world_boss, world_boss_b, inf_tower, deck_power, rarest_pull; `lbState` (352) cache namespace `aab-lb2-`; refresh `RK_REFRESH_DAY_MS = 60000` (619) — ini penyumbang egress berkala terbesar, tab hidden ikut di-skip. Submit via `CloudDB.submitScore` (supabase-sync.js:420) dengan plafon 1e21 (migration 0010).
+  Layout v2 (podium + border): `rkRender` (266) merakit `rkPodiumHtml` (204) → `rkPodHtml` (188) → `rkRowsHtml` (242). Border #1 = video `assets/ui/lb-top1.mp4` (`mix-blend-mode:screen` + mask bulat) — **jangan pakai `transform` pada `.rk-pod1`**, transform bikin stacking context yang mematikan screen-blend (kotak hitam menutupi podium); naik-turun podium pakai `margin`. Border #2/#3 = `assets/ui/lb-ring.png` (sudah di-keying transparan). Profil (`inset:8%`, z2) digambar LEBAR dari lubang lalu **ditimpa border-nya** (z3): lubang hasil ukur = ring 57,5% dengan pusat 7,6% di atas tengah (`top:-3%`), video 52–56% dengan pusat 7,8% di bawah tengah (`top:-22%`); `margin-bottom` pada `.rk-ava` memberi ruang overhang border supaya nama tidak tertimpa. Δ posisi dihitung lokal (`rkDeltaHtml` 223, cache `aab-lb-delta`) — server tidak menyimpan peringkat sebelumnya.
+  **Foto profil player lain** (`RK_AV_KEY` 102, cache `aab-lb-av`): foto = `save_data.customAvatar` yang sudah dikecilkan ke 96px WebP q0.75 di boot.js:570 (±5,6 KB; JPEG q0.78 fallback). Egres Supabase hanya menghitung DOWNLOAD, jadi foto TIDAK ikut di row leaderboard — client minta nama yang belum ada di cache lewat RPC `get_player_avatars(usernames[])` (≤80 per panggilan, `rkFillAvatars` 161) lalu `rkAvPaint` (138) menempelkannya ke `[data-rkav]`. Wadah avatar menyimpan `data-rkfb` = thumbnail kartu dari `meta.av` sebagai cadangan, **wajib** disaring `rkAvSrc` (92) / `RK_DATA_IMG` (105) karena isinya datang dari player lain; menggantinya dengan URL bebas = XSS/egress tak terbatas.
+  **Sheet profil publik** (`openRkProfile` 566 → `rpHtml` 499, markup `#rkProfModal` index.html:444, CSS blok `SHEET PROFIL PLAYER PUBLIK` style.css:49462): bacanya lewat RPC `get_player_profile(username)` yang hanya membukakan key `pub`, `playSec`, `customAvatar`, `updated_at` — BUKAN save lengkap. `pub` dibangun client (`buildPubSummary` state.js:337, ikut terkirim di kedua jalur `saveState` — lihat §4) jadi server tidak perlu tahu rumus game. Semua isi `pub` dianggap tidak dipercaya: angka di-clamp, string di-escape, `mut` di-whitelist (`RK_MUTS` 458), `char` wajib ada di `CARDS` sebelum `hubCardHtml` dipanggil.
 - **Story** — `story-carousel.js` IIFE; mengekspor `window.openStoryCarousel/openStory/closeStory/openMission/selectStoryStage/slideStoryStage/changeStoryChapter/initStoryCarousel`.
 - **Weather** — `WEATHERS` (panels.js ~17), `WEATHER` map, `weatherSvg(id,sz)`, dock `renderWeatherDock` 232, tick `startWeatherTick` 316, machine modal 2071/2299.
 - **Buff dock** — `renderBuffDock` panels.js:277.

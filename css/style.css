@@ -49451,3 +49451,99 @@ html.fps-locked .bp-fchip{
     border:2px solid rgba(255,216,106,.5);
   }
 }
+
+/* Baris & podium bisa diklik -> sheet profil player. */
+#rankModal .rk-row,
+#rankModal .rk-pod:not(.rk-pod-empty){cursor:pointer}
+#rankModal .rk-row:hover{background:rgba(125,249,255,.1)}
+#rankModal .rk-pod:hover .rk-pod-name{color:#7DF9FF}
+
+/* ==========================================================================
+   SHEET PROFIL PLAYER PUBLIK (#rkProfModal) — dirender js/ranking.js rpHtml()
+   Basis .ix-box bertema terang, ditimpa tema gelap sama seperti #rankModal.
+   ========================================================================== */
+#rkProfModal{
+  position:fixed;inset:0;display:none;place-items:center;z-index:140;padding:18px;
+  background:radial-gradient(120% 90% at 50% 40%,rgba(125,249,255,.1),rgba(3,5,9,.9) 62%);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+#rkProfModal.show{display:grid}
+.rp-box{
+  width:min(860px,94vw);max-height:88vh;min-height:0;
+  background:linear-gradient(160deg,#0d131c,#070a10);
+  border:1px solid rgba(125,249,255,.26);
+  box-shadow:0 26px 64px rgba(0,0,0,.8),0 0 34px rgba(125,249,255,.1);
+  color:#E7EEF5;padding:20px 20px 12px;
+}
+#rkProfModal .ix-eyebrow{color:#7DF9FF}
+#rkProfModal .ix-title{color:#F4F7FA}
+#rkProfModal .ix-x{color:#C4CDD6;border-color:rgba(125,249,255,.28);background:rgba(6,9,14,.7)}
+#rkProfModal .ix-x:hover{color:#7DF9FF;border-color:rgba(125,249,255,.55)}
+.rp-body{overflow-y:auto;min-height:0;padding:8px 2px 12px!important}
+
+/* 3 blok: hero kiri | kolom statistik | kartu utama. Menyempit jadi 1 kolom. */
+.rp-grid{display:grid;grid-template-columns:220px minmax(0,1fr) 200px;gap:18px;align-items:start}
+@media(max-width:860px){.rp-grid{grid-template-columns:190px minmax(0,1fr)}.rp-cardwrap{grid-column:1/-1}}
+@media(max-width:600px){.rp-grid{grid-template-columns:1fr;gap:14px}}
+.rp-hero{
+  display:flex;flex-direction:column;gap:9px;padding:14px;border-radius:14px;
+  background:linear-gradient(180deg,#171012,#120c10);border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 10px 26px rgba(0,0,0,.5);min-width:0;
+}
+.rp-face{
+  position:relative;width:100%;aspect-ratio:1;border-radius:14px;overflow:hidden;
+  background:radial-gradient(120% 120% at 50% 0%,#2b2028,#120d11 70%);
+  display:grid;place-items:center;
+  font-family:"Rajdhani",sans-serif;font-weight:900;font-size:44px;color:#f1e3c0;
+}
+.rp-face img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 22%}
+.rp-name{
+  font-family:"Barlow Condensed","Rajdhani",sans-serif;font-weight:800;font-size:20px;
+  letter-spacing:.03em;color:#F4F7FA;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.rp-lvrow{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.rp-since{
+  font-family:"Rajdhani",sans-serif;font-weight:700;font-size:10px;letter-spacing:.12em;
+  color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.rp-xp{flex:none}
+.rp-power{
+  display:flex;align-items:baseline;justify-content:space-between;gap:8px;
+  padding:8px 11px;border-radius:10px;background:rgba(125,249,255,.07);
+  border:1px solid rgba(125,249,255,.26);
+}
+.rp-power span{font-family:"Rajdhani",sans-serif;font-weight:700;font-size:9.5px;letter-spacing:.16em;color:#7DF9FF}
+.rp-power b{font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:19px;color:#EAF6FF;font-variant-numeric:tabular-nums}
+.rp-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.rp-side .prof-sec{margin:0}
+.rp-hint{
+  margin-top:7px;font-family:"Rajdhani",sans-serif;font-weight:600;font-size:10px;
+  letter-spacing:.05em;line-height:1.5;color:#64748b;
+}
+.rp-cardwrap{width:100%}
+.rp-cardwrap .hub-center{cursor:default;box-shadow:0 14px 34px rgba(0,0,0,.55)}
+/* .prof-* bertema gelap, .hub-center bertema terang -> samakan plat kartu. */
+.rp-cardwrap .hub-center{background:linear-gradient(180deg,#1b1418,#0c0a0c);border-color:transparent}
+@media(max-width:600px){
+  .rp-box{width:min(520px,96vw);padding:14px 14px 10px}
+  /* HP: foto mengecil di kiri, identitas di kanannya — sheet lebih pendek
+     (sebelumnya kolom penuh 190px foto + kartu = 3x tinggi layar).
+     Penempatan eksplisit: rule global .prof-title-tag{order:1} (bawaan layar
+     profil) mengacaukan auto-placement grid. */
+  .rp-hero{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px 12px;align-items:center}
+  .rp-face{width:96px;grid-area:1/1/3/2;font-size:30px}
+  .rp-name{grid-area:1/2/2/3;min-width:0;font-size:17px}
+  .rp-lvrow{grid-area:2/2/3/3;min-width:0}
+  .rp-hero .prof-title-tag{grid-area:3/1/4/3;order:0;justify-self:start;max-width:100%}
+  .rp-xp{grid-area:4/1/5/3}
+  .rp-power{grid-area:5/1/6/3}
+  .rp-hero .rp-hint{grid-area:6/1/7/3}
+  .rp-cardwrap{max-width:170px;margin:0 auto}
+}
+@media(max-height:520px){
+  #rkProfModal{padding:8px}
+  .rp-box{max-height:96vh;padding:10px 12px 8px}
+  #rkProfModal .ix-eyebrow{display:none}
+  #rkProfModal .ix-head{margin-bottom:4px}
+  .rp-face{max-width:130px}
+}

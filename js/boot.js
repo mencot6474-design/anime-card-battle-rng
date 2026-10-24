@@ -567,7 +567,7 @@ function boot(){
         const img = new Image();
         img.onload = ()=>{
           const cv = document.createElement("canvas");
-          const size = 128; // standard avatar dimension
+          const size = 96; // avatar: cukup untuk podium leaderboard (±106px) tanpa membesar-besarkan save
           cv.width = size; cv.height = size;
           const ctx = cv.getContext("2d");
           // center crop aspect ratio
@@ -575,7 +575,10 @@ function boot(){
           const sx = (img.width - minDim) / 2;
           const sy = (img.height - minDim) / 2;
           ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
-          state.customAvatar = cv.toDataURL("image/jpeg", 0.85);
+          /* WebP dulu (±5 KB), fallback ke JPEG kalau browser tidak mendukung —
+             toDataURL balikin PNG kalau tipe yang diminta tidak dikenal. */
+          const webp = cv.toDataURL("image/webp", 0.75);
+          state.customAvatar = webp.indexOf("data:image/webp") === 0 ? webp : cv.toDataURL("image/jpeg", 0.78);
           save();
           renderShell();
           if(typeof toast==="function") toast("AVATAR UPDATED", "FOTO PROFIL BERHASIL DIUPDATE!", "#7df9ff");

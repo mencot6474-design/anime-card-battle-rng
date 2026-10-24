@@ -5,6 +5,9 @@
    ========================================================================== */
 let rkBusy = false;
 let rkBoard = "world_boss";
+/* Baris papan yang sedang tampil — dipakai sheet profil tanpa request tambahan. */
+let rkRows = [];
+const rkBoardCache = {};
 
 const RK_BOARDS = {
   world_boss:  { label: "ETERNAL DRAGON", col: "DAMAGE", daily: true,
@@ -33,6 +36,7 @@ function closeRanking() {
   const m = document.getElementById("rankModal");
   if (!m) return;
   m.classList.remove("show");
+  closeRkProfile();
   /* Video border #1 jangan tetap muter di belakang modal (kuota + CPU player). */
   m.querySelectorAll("video").forEach(v => { try { v.pause(); } catch (e) {} });
 }
@@ -82,21 +86,103 @@ function rkUnitChip(board) {
   return (board === "inf_tower" || board === "rarest_pull") ? "" : (RK_UNIT[board] || "SKOR");
 }
 
-/* Avatar ikut di meta saat submit; path dibatasi whitelist supaya player lain
-   tidak bisa menyuntik markup/URL lewat meta.av. */
+/* Avatar bawaan papan = art kartu lead deck (dikirim lewat meta saat submit).
+   Path dibatasi whitelist supaya player lain tidak bisa menyuntik markup/URL. */
+const RK_AV_PATH = /^assets\/[A-Za-z0-9._/-]+\.(webp|png|jpg|jpeg)$/;
 function rkAvSrc(r) {
   const av = r && r.meta && typeof r.meta.av === "string" ? r.meta.av : "";
-  return /^assets\/[A-Za-z0-9._/-]+\.(webp|png|jpg|jpeg)$/.test(av) ? av : "";
+  return RK_AV_PATH.test(av) ? av : "";
+}
+
+/* ===== FOTO PROFIL PLAYER ASLI =====
+   Foto = save_data.customAvatar (data URL, sudah dikecilkan ke 96px WebP di
+   boot.js, ±3 KB). Egres Supabase dihitung dari DOWNLOAD, jadi foto tidak boleh
+   ikut row leaderboard: ambil sekali per username lewat RPC bulk get_player_avatars,
+   lalu simpan di cache localStorage — buka papan ke-2 kalinya biaya 0 byte. */
+const RK_AV_KEY = "aab-lb-av";
+const RK_AV_MAX = 150;
+/* Satu-satunya bentuk yang boleh jadi <img src>: data URL gambar murni. */
+const RK_DATA_IMG = /^data:image\/(webp|png|jpe?g);base64,[A-Za-z0-9+/=]{1,24000}$/;
+let rkAvCache = null;
+
+function rkAvStore() {
+  if (rkAvCache) return rkAvCache;
+  try { rkAvCache = JSON.parse(localStorage.getItem(RK_AV_KEY)) || {}; } catch (e) { rkAvCache = {}; }
+  return rkAvCache;
+}
+
+function rkAvPersist() {
+  const keys = Object.keys(rkAvCache);
+  while (keys.length > RK_AV_MAX) delete rkAvCache[keys.shift()];
+  try { localStorage.setItem(RK_AV_KEY, JSON.stringify(rkAvCache)); } catch (e) {}
+}
+
+function rkPhoto(username) {
+  const v = rkAvStore()[String(username || "").toLowerCase()];
+  return RK_DATA_IMG.test(v || "") ? v : "";
 }
 
 function rkFaceHtml(r, size) {
   const nm = String((r && r.username) || "?").trim();
   const ini = `<span class="rk-init"${size ? ' style="font-size:' + Math.round(size * 0.34) + 'px"' : ""}>${rkEsc((nm[0] || "?").toUpperCase())}</span>`;
-  const src = rkAvSrc(r);
-  /* Inisial selalu digambar lebih dulu: kalau file avatar hilang, hasilnya
-     tetap terbaca (img dihapus sendiri oleh onerror). */
+  const src = rkPhoto(nm);
+  /* Inisial selalu digambar lebih dulu: sebelum foto datang (atau kalau player
+     tidak punya apa-apa) hasilnya tetap terbaca. img dihapus sendiri by onerror. */
   const img = src ? `<img class="rk-face" src="${rkEsc(src)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : "";
   return ini + img;
+}
+
+/* Wajah container (data-rkav) diisi setelah fetch bulk selesai: foto asli kalau
+   ada, kalau tidak baru art kartu dari meta (data-rkfb). Saat render pertama
+   keduanya belum diambil, jadi thumbnail kartu tidak ter-download sia-sia. */
+function rkAvPaint(scope) {
+  if (!scope) return;
+  scope.querySelectorAll("[data-rkav]").forEach(el => {
+    const photo = rkPhoto(el.getAttribute("data-rkav"));
+    const cur = el.querySelector("img.rk-face");
+    if (cur) {
+      /* Foto datang menyusul setelah thumbnail dipasang -> timpa, bukan biarkan. */
+      if (!photo || cur.getAttribute("src") === photo) return;
+      cur.remove();
+    }
+    const fb = el.getAttribute("data-rkfb") || "";
+    const src = photo || (RK_AV_PATH.test(fb) ? fb : "");
+    if (!src) return;
+    const img = document.createElement("img");
+    img.className = "rk-face";
+    img.alt = "";
+    img.decoding = "async";
+    img.onerror = () => img.remove();
+    img.src = src;
+    el.appendChild(img);
+  });
+}
+
+async function rkFillAvatars(board, rows) {
+  const db = window.CloudDB;
+  if (!db || typeof db.avatars !== "function") return;
+  const store = rkAvStore();
+  const need = [];
+  for (const r of rows || []) {
+    const u = String(r.username || "").toLowerCase();
+    /* "" = sudah ditanyakan, player ini memang tidak punya foto (jangan tanya lagi). */
+    if (u && store[u] === undefined) { store[u] = ""; need.push(u); }
+  }
+  if (!need.length) return;
+  let got = 0;
+  for (let i = 0; i < need.length; i += 80) {
+    const chunk = need.slice(i, i + 80);
+    let map = null;
+    try { map = await db.avatars(chunk); } catch (e) {}
+    if (!map) continue;
+    for (const u of chunk) {
+      const v = map[u] && map[u].av;
+      if (RK_DATA_IMG.test(v || "")) { store[u] = v; got++; }
+    }
+  }
+  rkAvPersist();
+  if (!got || board !== rkBoard) return; /* tab pindah: DOM lama bukan milik kita */
+  rkAvPaint(document.getElementById("rkBody"));
 }
 
 function rkPodHtml(r, board) {
@@ -106,9 +192,10 @@ function rkPodHtml(r, board) {
     ? `<video class="rk-bd rk-bd1" src="${RK_BD1}" muted loop playsinline autoplay preload="metadata"></video>`
     : `<img class="rk-bd rk-bd23" src="${RK_BD23}" alt="" decoding="async">`;
   const unit = rkUnitChip(board);
-  return `<div class="rk-pod rk-pod${rank}">
-    <div class="rk-ava">${bd}<span class="rk-ava-core">${rkFaceHtml(r, rank === 1 ? 104 : 78)}</span></div>
-    <div class="rk-pod-name">${rkEsc(r.username)}</div>
+  const u = rkEsc(r.username);
+  return `<div class="rk-pod rk-pod${rank}" data-u="${u}" title="Lihat profil player">
+    <div class="rk-ava">${bd}<span class="rk-ava-core" data-rkav="${u}" data-rkfb="${rkEsc(rkAvSrc(r))}">${rkFaceHtml(r, rank === 1 ? 104 : 78)}</span></div>
+    <div class="rk-pod-name">${u}</div>
     <div class="rk-pod-val">${rkValFmt(board, r.value)}</div>
     ${unit ? `<div class="rk-pod-medal">${rkEsc(unit)}</div>` : ""}
   </div>`;
@@ -161,10 +248,11 @@ function rkRowsHtml(rows, board, delta) {
   const unit = rkUnitChip(board);
   return rows.map(r => {
     const mine = String(r.username).toLowerCase() === myName;
-    return `<div class="rk-row${mine ? " me" : ""}">
+    const u = rkEsc(r.username);
+    return `<div class="rk-row${mine ? " me" : ""}" data-u="${u}" title="Lihat profil player">
       <span class="rk-rank rk-top${r.rank <= 3 ? r.rank : ""}">${r.rank}</span>
-      <span class="rk-av-sm">${rkFaceHtml(r, 34)}</span>
-      <span class="rk-name">${rkEsc(r.username)}${rkSub(r, board)}</span>
+      <span class="rk-av-sm" data-rkav="${u}" data-rkfb="${rkEsc(rkAvSrc(r))}">${rkFaceHtml(r, 34)}</span>
+      <span class="rk-name">${u}${rkSub(r, board)}</span>
       <span class="rk-val">${rkValFmt(board, r.value)}${unit ? `<em class="rk-unit">${rkEsc(unit)}</em>` : ""}</span>
       <span class="rk-delta-cell">${(delta && delta[String(r.username).toLowerCase()]) || ""}</span>
     </div>`;
@@ -236,6 +324,10 @@ async function rkRender(silent) {
   if (oldVid && newVid) newVid.replaceWith(oldVid);
   else if (newVid) newVid.play().catch(() => {});
   body.scrollTop = keepScroll;
+  rkRows = res.rows || [];
+  rkBoardCache[board] = rkRows;
+  rkAvPaint(body);
+  rkFillAvatars(board, rkRows);
 }
 
 /* ===== SUBMIT SKOR 3 PAPAN MINGGUAN =====
@@ -356,11 +448,168 @@ function lbTrackSweep() {
   lbTrackOwnedBest();
 }
 
+/* ==========================================================================
+   SHEET PROFIL PLAYER PUBLIK — dibuka dari klik baris/podium papan.
+   Sumber: RPC get_player_profile (migrasi 0013) yang cuma mengembalikan field
+   yang boleh dilihat orang lain: ringkasan `pub`, playSec, foto, updated_at.
+   Semua isi `pub` dianggap TIDAK DIPERCAYA (dikirim player lain) -> angka
+   di-clamp, string di-escape, mut/trait di-whitelist, char wajib ada di CARDS.
+   ========================================================================== */
+const RK_MUTS = ["none", "gold", "rainbow", "secret", "ultima"];
+
+function rpNum(n) {
+  const v = Number(n);
+  return Number.isFinite(v) ? Math.max(0, Math.round(v)).toLocaleString("en-US") : "0";
+}
+
+function rpPlay(sec) {
+  const s = Math.max(0, Math.floor(Number(sec) || 0));
+  const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60);
+  return h > 0 ? h + "j " + m + "m" : m > 0 ? m + "m " + (s % 60) + "s" : s + "s";
+}
+
+function rpAgo(iso) {
+  const t = Date.parse(iso || "");
+  if (!Number.isFinite(t)) return "—";
+  const mi = Math.floor(Math.max(0, Date.now() - t) / 60000);
+  if (mi < 1) return "BARU SAJA";
+  if (mi < 60) return mi + " MENIT LALU";
+  const h = Math.floor(mi / 60);
+  if (h < 24) return h + " JAM LALU";
+  return Math.floor(h / 24) + " HARI LALU";
+}
+
+function rpRow(lab, val) {
+  return `<div class="prof-row"><span class="prof-rl">${lab}</span><span class="prof-rv">${val}</span></div>`;
+}
+
+/* Posisi per papan diambil dari data papan yang PERNAH dibuka sesi ini, jadi
+   sheet tidak perlu 5x panggil server. Papan yang belum pernah dibuka: "—". */
+function rpBoardRows(user) {
+  const u = String(user || "").toLowerCase();
+  const rows = Object.keys(RK_BOARDS).map(b => {
+    const list = rkBoardCache[b];
+    if (!list) return rpRow(RK_BOARDS[b].label, "—");
+    const r = list.find(x => String(x.username).toLowerCase() === u);
+    return rpRow(RK_BOARDS[b].label, r ? "#" + r.rank + " · " + rkValFmt(b, r.value) : "BELUM ADA SKOR");
+  }).join("");
+  return rows;
+}
+
+function rpHtml(p) {
+  const pub = (p.pub && typeof p.pub === "object") ? p.pub : {};
+  const name = rkEsc(p.username || "?");
+  const lv = Math.max(1, Math.min(1e6, Math.round(Number(pub.lv) || 1)));
+  const xpNeed = lv * 1000;
+  const xp = Math.max(0, Math.min(xpNeed, Math.round(Number(pub.xp) || 0)));
+  const xpPct = Math.round(xp / xpNeed * 100);
+  const title = rkEsc(String(pub.title || "ROOKIE").slice(0, 28));
+  const photo = RK_DATA_IMG.test(p.avatar || "") ? p.avatar : "";
+
+  const h = (pub.hero && typeof pub.hero === "object") ? pub.hero : null;
+  const cid = h && typeof h.c === "string" ? h.c : "";
+  const known = typeof CARDS !== "undefined" && !!CARDS[cid];
+  const eq = known ? {
+    char: cid,
+    mut: h && RK_MUTS.indexOf(h.m) >= 0 ? h.m : "none",
+    trait: h && typeof h.t === "string" && TRAIT_COLOR && TRAIT_COLOR[h.t] ? h.t : "none",
+    shiny: !!(h && h.s)
+  } : null;
+
+  const rare = (pub.rare && typeof pub.rare === "object") ? pub.rare : null;
+  const rareTxt = rare && rare.n
+    ? rkEsc(String(rare.n).slice(0, 40)) + " · 1 IN " + rkEsc(fmtChance(Math.max(0, Number(rare.o) || 0)))
+    : "—";
+
+  /* Foto profil: data URL asli player; kalau belum pernah upload foto, pakai
+     art kartu utamanya (harta milik sendiri, bukan file asing). */
+  const face = photo
+    ? `<img src="${rkEsc(photo)}" alt="" decoding="async">`
+    : known
+      ? `<img src="${rkEsc(cardImg(cid))}" alt="" decoding="async"${CARDS[cid].pos ? ` style="object-position:${rkEsc(CARDS[cid].pos)}"` : ""}>`
+      : `<span>${rkEsc((name[0] || "?"))}</span>`;
+
+  return `<div class="rp-grid">
+    <div class="rp-hero">
+      <div class="rp-face">${face}</div>
+      <div class="prof-title-tag"><span class="ptt-crown"><svg width="15" height="12" viewBox="0 0 24 18" fill="none"><path d="M2 15L4 4L9 9L12 2L15 9L20 4L22 15H2Z" fill="currentColor" stroke="rgba(255,255,255,.55)" stroke-width="1.1" stroke-linejoin="round"/></svg></span><span class="ptt-txt">${title}</span></div>
+      <div class="rp-name">${name}</div>
+      <div class="rp-lvrow"><span class="prof-lv-pill">LV <b>${lv}</b></span><span class="rp-since">${rpAgo(p.updated_at)}</span></div>
+      <div class="xpbar prof-xp rp-xp"><i style="width:${xpPct}%"></i><span>${rpNum(xp)} / ${rpNum(xpNeed)} · ${xpPct}%</span></div>
+      <div class="rp-power"><span>BATTLE POWER</span><b>${rpNum(pub.power)}</b></div>
+      ${Object.keys(pub).length ? "" : `<div class="rp-hint">Statistik player ini belum terkirim ke server — angkanya akan muncul setelah yang bersangkutan main lagi.</div>`}
+    </div>
+    <div class="rp-side">
+      <section class="prof-sec">
+        <h3 class="prof-sec-t">REKAM JEJAK</h3>
+        <div class="prof-stats">
+          ${rpRow("WAKTU BERMAIN", rpPlay(p.play))}
+          ${rpRow("TOTAL ROLL", rpNum(pub.rolls))}
+          ${rpRow("KARTU PALING LANGKA", rareTxt)}
+          ${rpRow("KARTU UTAMA", known ? rkEsc(cardName(cid)) : "—")}
+        </div>
+      </section>
+      <section class="prof-sec">
+        <h3 class="prof-sec-t">POSISI PAPAN</h3>
+        <div class="prof-stats">${rpBoardRows(p.username)}</div>
+        <div class="rp-hint">Papan bertanda — belum pernah dibuka sesi ini, jadi posisinya belum diambil.</div>
+      </section>
+    </div>
+    <div class="rp-cardwrap">${eq && typeof hubCardHtml === "function"
+      ? hubCardHtml(eq, "", false)
+      : '<div class="hub-center"><div class="hc-info"><div class="hc-name">Belum ada kartu utama</div></div></div>'}</div>
+  </div>`;
+}
+
+let rpBusy = 0;
+
+function openRkProfile(username) {
+  const m = document.getElementById("rkProfModal");
+  const body = document.getElementById("rpBody");
+  if (!m || !body) return;
+  const user = String(username || "").trim().slice(0, 64);
+  if (!user) return;
+  m.classList.add("show");
+  if (!window.CloudDB || typeof window.CloudDB.profile !== "function") {
+    body.innerHTML = `<div class="rk-empty">SERVER TIDAK TERHUBUNG<br><span>Profil player hanya tersedia saat online.</span></div>`;
+    return;
+  }
+  const ticket = ++rpBusy;
+  body.innerHTML = `<div class="rk-loading">MEMUAT PROFIL…</div>`;
+  window.CloudDB.profile(user).then(res => {
+    if (ticket !== rpBusy) return; /* request berikutnya sudah dimulai */
+    if (!res || !res.ok) {
+      body.innerHTML = `<div class="rk-empty">PROFIL TIDAK DITEMUKAN<br><span>${rkEsc(res && res.msg ? res.msg : user)} belum pernah tersimpan di server.</span></div>`;
+      return;
+    }
+    body.innerHTML = rpHtml(res);
+  }).catch(() => {
+    if (ticket !== rpBusy) return;
+    body.innerHTML = `<div class="rk-empty">GAGAL MEMUAT<br><span>Coba buka lagi sebentar lagi.</span></div>`;
+  });
+}
+
+function closeRkProfile() {
+  const m = document.getElementById("rkProfModal");
+  if (!m) return;
+  m.classList.remove("show");
+  rpBusy++;
+}
+
+/* Klik baris/podium -> profil player. .rk-pod-empty tidak punya data-u. */
 document.addEventListener("click", e => {
-  if (e.target && e.target.id === "rankModal") closeRanking();
+  const el = e.target && e.target.closest ? e.target.closest("[data-u]") : null;
+  if (!el || !el.closest("#rankModal")) return;
+  const u = el.getAttribute("data-u");
+  if (u) openRkProfile(u);
+});
+document.addEventListener("click", e => {
+  if (e.target && e.target.id === "rkProfModal") closeRkProfile();
 });
 document.addEventListener("keydown", e => {
   if (e.key !== "Escape") return;
+  const p = document.getElementById("rkProfModal");
+  if (p && p.classList.contains("show")) { closeRkProfile(); return; }
   const m = document.getElementById("rankModal");
   if (m && m.classList.contains("show")) closeRanking();
 });
@@ -383,3 +632,5 @@ setInterval(rkTick, RK_REFRESH_DAY_MS);
 window.openRanking = openRanking;
 window.closeRanking = closeRanking;
 window.rkSwitch = rkSwitch;
+window.openRkProfile = openRkProfile;
+window.closeRkProfile = closeRkProfile;

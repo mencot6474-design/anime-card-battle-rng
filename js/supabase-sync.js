@@ -60,13 +60,19 @@ const CloudDB = {
     /* RPC memakai salinan tanpa `stacks` supaya upload benar-benar ramping;
        fallback PATCH tetap pakai stateObj utuh (kalau server belum punya
        p_skip_stacks, mengirim tanpa stacks akan MENGHAPUS inventori di cloud). */
+    const pub = opts && opts.pub;
+    /* `pub` (ringkasan publik) disuntik di SEMUA jalur — fallback PATCH di bawah
+       menimpa body.save_data dengan stateObj mentah, jadi pembungkusnya dipakai
+       dua kali, bukan cuma sekali di awal. */
+    const withPub = obj => (pub && obj) ? Object.assign({}, obj, { pub }) : obj;
     let rpcPayload = stateObj;
-    if (skipStacks && stateObj) {
+    if ((skipStacks || pub) && stateObj) {
       rpcPayload = Object.assign({}, stateObj);
-      delete rpcPayload.stacks;
+      if (skipStacks) delete rpcPayload.stacks;
+      if (pub) rpcPayload.pub = pub;
     }
     const body = {
-      save_data: stateObj,
+      save_data: withPub(stateObj),
       updated_at: new Date().toISOString()
     };
 
@@ -105,7 +111,7 @@ const CloudDB = {
         stateObj.premiumGems = allowGemDecrease
           ? Math.min(stateObj.premiumGems, cloudGems)
           : cloudGems;
-        body.save_data = stateObj;
+        body.save_data = withPub(stateObj);
       } catch (e) { /* lanjut PATCH apa adanya */ }
     }
 
@@ -390,6 +396,22 @@ const CloudDB = {
       p_period: period || null,
       p_limit: limit || 100,
       p_username: username ? String(username).toLowerCase() : null,
+    });
+  },
+
+  /** Foto profil player lain, banyak sekaligus (migration 0013). Client cache
+      hasilnya per-username di localStorage supaya hanya sekali per player. */
+  async avatars(usernames) {
+    const list = (usernames || []).filter(Boolean).slice(0, 80);
+    if (!list.length) return {};
+    return await this._rpc("get_player_avatars", { p_usernames: list }) || {};
+  },
+
+  /** Profil publik satu player (ringkasan `pub` + foto) untuk sheet profil. */
+  async profile(username) {
+    if (!username) return null;
+    return await this._rpc("get_player_profile", {
+      p_username: String(username).toLowerCase(),
     });
   },
 

@@ -330,6 +330,32 @@ function _cloudStateKey(){
 const CLOUD_PUSH_MIN_MS=30000;
 const CLOUD_STACKS_MIN_MS=60000;
 function _cloudRolling(){return typeof rollState!=="undefined" && !!rollState && !!rollState.active;}
+/* Ringkasan PUBLIK player: ikut terkirim tiap cloud save supaya player lain bisa
+   membuka profilnya dari leaderboard tanpa menarik save lengkap. Sengaja TANPA
+   gems/inventori/playSec — playSec dibaca server langsung dari save, dan angka
+   yang berubah tiap detik tidak boleh membuat diff-key push selalu berbeda. */
+function buildPubSummary(){
+  if(!state)return null;
+  const p=state.player||{};
+  const out={
+    lv:p.lv||state.playerLv||1,
+    xp:p.exp||0,
+    title:state.playerTitle||"ROOKIE",
+    rolls:state.totalRolls||0,
+    power:(typeof totalPower==="function"?Math.round(totalPower()):0)
+  };
+  const eq=typeof equipped==="function"?equipped():null;
+  if(eq&&eq.char)out.hero={c:eq.char,m:eq.mut||"none",t:eq.trait||"none",s:eq.shiny?1:0};
+  /* Kartu paling langka yang DIMILIKI — sama seperti baris "rarest" di profil sendiri. */
+  let best=null,bestCh=0;
+  for(const s of (state.stacks||[])){
+    const ch=typeof effChance==="function"?effChance(s.char,s.mut||"none",!!s.shiny):0;
+    if(ch>bestCh){bestCh=ch;best=s;}
+  }
+  if(best)out.rare={n:(typeof cardName==="function"?cardName(best.char):best.char),
+    o:Math.round(bestCh),t:(typeof cardTier==="function"?cardTier(best.char):"")};
+  return out;
+}
 function _cloudPush(opts){
   if(!state||!currentUser||!window.CloudDB)return Promise.resolve(null);
   const forceStacks=!!(opts&&opts.stacks);
@@ -345,7 +371,7 @@ function _cloudPush(opts){
   _lastPushedUser=currentUser;
   if(sendStacks){_lastPushedStacksKey=stacksKey;_cloudLastStacksPush=Date.now();_cloudStacksDirty=false;}
   else if(stacksKey!==_lastPushedStacksKey)_cloudStacksDirty=true;
-  return window.CloudDB.saveState(currentUser, state, {skipStacks:!sendStacks}).catch(()=>null);
+  return window.CloudDB.saveState(currentUser, state, {skipStacks:!sendStacks, pub:buildPubSummary()}).catch(()=>null);
 }
 function flushCloudSave(){
   if(_cloudSaveTimer){clearTimeout(_cloudSaveTimer);_cloudSaveTimer=null;}
