@@ -456,7 +456,7 @@ function stackHas(char,mut){mut=mut||"none";return state.stacks.some(s=>s.char==
 const RAID_SHOP=[
   {id:"gem",name:"Token → Gem // 100:10",cost:100,gem:10,desc:"Tukar 100 TOKEN RAID menjadi 10 GEM premium. Bisa ditukar berulang tanpa batas — keran GEM dari Boss Raid.",apply:()=>""},
   {id:"coins",name:"2.000 Coin",cost:5,desc:"Koin untuk roll trait & kebutuhan lain.",apply:()=>{state.coins+=2000;return "+2.000 coin";}},
-  {id:"card_edragon",name:"Eternal Dragon",cost:120,desc:"Kartu BOSS eksklusif — beli SEKALI, roll terbuka PERMANEN di semua gacha. Chance dasar 1 in 25 jt · ICE BLAST 50% (3×75% ATK) · immune semua status effect.",card:{char:"CH_ETERNAL_DRAGON",mut:"none"},
+  {id:"card_edragon",name:"Eternal Dragon",cost:1500,desc:"Kartu BOSS eksklusif — beli SEKALI, roll terbuka PERMANEN di semua gacha. Chance dasar 1 in 25 jt · ICE BLAST 50% (3×75% ATK) · immune semua status effect.",card:{char:"CH_ETERNAL_DRAGON",mut:"none"},
     apply:()=>{state.raidShopOwned=state.raidShopOwned||{};state.raidShopOwned.CH_ETERNAL_DRAGON=true;return gmGrantCard("CH_ETERNAL_DRAGON");}},
   {id:"helm-abyss",name:"HELM ABYSS",cost:5000,desc:"Artefak CRAYON V2 — +80 flat & +120% LUCK permanen. Beli SEKALI, langsung masuk Backpack (slot artefak, equip 2 slot).",effect:"+80 FLAT & +120% LUCK",owned:()=>state.artOwned.includes("helm-abyss"),
     apply:()=>{state.artOwned=state.artOwned||[];if(!state.artOwned.includes("helm-abyss"))state.artOwned.push("helm-abyss");return "HELM ABYSS · +80 FLAT & +120% LUCK";}},
