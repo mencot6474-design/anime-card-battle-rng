@@ -51,8 +51,19 @@ const CloudDB = {
   async saveState(username, stateObj, opts) {
     if (!username) return;
     const allowGemDecrease = !!(opts && opts.allowGemDecrease);
+    /* skipStacks: jangan kirim inventori (stacks) tiap push — server menahan nilai lama.
+       Dipakai saat auto-roll supaya payload turun dari ±110 KB ke ±2 KB. */
+    const skipStacks = !!(opts && opts.skipStacks);
     if (window.CURRENT_DEVICE_SESSION && stateObj) {
       stateObj.current_session_id = window.CURRENT_DEVICE_SESSION;
+    }
+    /* RPC memakai salinan tanpa `stacks` supaya upload benar-benar ramping;
+       fallback PATCH tetap pakai stateObj utuh (kalau server belum punya
+       p_skip_stacks, mengirim tanpa stacks akan MENGHAPUS inventori di cloud). */
+    let rpcPayload = stateObj;
+    if (skipStacks && stateObj) {
+      rpcPayload = Object.assign({}, stateObj);
+      delete rpcPayload.stacks;
     }
     const body = {
       save_data: stateObj,
@@ -70,8 +81,9 @@ const CloudDB = {
         const res = await this._rpc("merge_player_state", {
           p_username: username.toLowerCase(),
           p_password_hash: pw,
-          p_save_data: stateObj,
+          p_save_data: rpcPayload,
           p_allow_gem_decrease: allowGemDecrease,
+          p_skip_stacks: skipStacks,
         });
         if (res) {
           usedRpc = true;

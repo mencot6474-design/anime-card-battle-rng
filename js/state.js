@@ -314,17 +314,28 @@ let _cloudSaveTimer=null,_cloudLastPush=0,_cloudPending=false;
    push — playSec-only save otomatis gak makan bandwidth. */
 let _lastPushedKey=null;
 let _lastPushedUser=null;
+/* Inventori (`stacks`, ±100 KB dari total save) tidak perlu ikut tiap push saat roll otomatis
+   jalan: selama rolling dikirim maks 1x/menit, dan selalu dikirim penuh begitu roll berhenti. */
+let _lastPushedStacksKey=null;
+let _cloudLastStacksPush=0;
+let _cloudStacksDirty=false;
 function _cloudStateKey(){
   if(!state)return "";
   const sk = Object.assign({}, state);
   delete sk.playSec;
   return JSON.stringify(sk);
 }
-/* HEMAT BANDWIDTH: selama roll otomatis jalan (tick ~75ms) save cloud dibatasi 1x / 5 detik,
+/* HEMAT BANDWIDTH: selama roll otomatis jalan (tick ~75ms) save cloud dibatasi 1x / 30 detik,
    bukan tiap tick. Sisa perubahan terakhir di-flush saat roll berhenti (flushCloudSave). */
-const CLOUD_PUSH_MIN_MS=5000;
-function _cloudPush(){
+const CLOUD_PUSH_MIN_MS=30000;
+const CLOUD_STACKS_MIN_MS=60000;
+function _cloudRolling(){return typeof rollState!=="undefined" && !!rollState && !!rollState.active;}
+function _cloudPush(opts){
   if(!state||!currentUser||!window.CloudDB)return Promise.resolve(null);
+  const forceStacks=!!(opts&&opts.stacks);
+  const stacksKey=JSON.stringify(state.stacks||[]);
+  /* Server menahan `stacks` lama saat p_skip_stacks=true (migration 0012). */
+  const sendStacks=forceStacks||!_cloudRolling()||Date.now()-_cloudLastStacksPush>=CLOUD_STACKS_MIN_MS;
   _cloudLastPush=Date.now();_cloudPending=false;
   /* Snapshot key SEBELUM async push biar save() berikutnya compare against state yang
      memang udah dikirim ke cloud, bukan against state saat ini (yang bisa aja berubah
@@ -332,18 +343,20 @@ function _cloudPush(){
      tetap trigger retry karena key-nya beda. */
   _lastPushedKey=_cloudStateKey();
   _lastPushedUser=currentUser;
-  return window.CloudDB.saveState(currentUser, state).catch(()=>null);
+  if(sendStacks){_lastPushedStacksKey=stacksKey;_cloudLastStacksPush=Date.now();_cloudStacksDirty=false;}
+  else if(stacksKey!==_lastPushedStacksKey)_cloudStacksDirty=true;
+  return window.CloudDB.saveState(currentUser, state, {skipStacks:!sendStacks}).catch(()=>null);
 }
 function flushCloudSave(){
   if(_cloudSaveTimer){clearTimeout(_cloudSaveTimer);_cloudSaveTimer=null;}
-  if(_cloudPending)_cloudPush();
+  if(_cloudPending||_cloudStacksDirty)_cloudPush({stacks:true});
 }
 /* Flush yang bisa di-await — dipakai RPC yang baca save_data di server (mis. klaim
    reward World Boss). Tanpa ini, spend yang masih antre debounce 400ms hilang saat
    server balikin saldo lama lalu client menimpanya. */
 function pushCloudNow(){
   if(_cloudSaveTimer){clearTimeout(_cloudSaveTimer);_cloudSaveTimer=null;}
-  return _cloudPush();
+  return _cloudPush({stacks:true});
 }
 function save(){
   if(state){
