@@ -48948,3 +48948,206 @@ html.fps-locked .bp-fchip{
 #rankModal .ix-x{color:#C4CDD6;border-color:rgba(125,249,255,.28);background:rgba(6,9,14,.7)}
 #rankModal .ix-x:hover{color:#7DF9FF;border-color:rgba(125,249,255,.55)}
 #rankModal .rk-body{background:transparent;padding:0!important;gap:0!important}
+
+/* ==========================================================================
+   WORLD BOSS HUB — satu kartu boss besar + bar total HP pool di atasnya
+   ========================================================================== */
+.cp-raid-hub{max-width:1180px}
+
+/* --- pool bar --- */
+.wb-pool{
+  padding:12px 16px 10px;border-radius:14px;
+  background:linear-gradient(135deg,rgba(30,10,18,.94),rgba(9,6,13,.99));
+  border:1px solid rgba(255,93,125,.28);
+  box-shadow:0 8px 22px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,120,150,.12);
+  font-family:"Rajdhani","Barlow Condensed",sans-serif;
+}
+.wb-pool.dim{opacity:.82}
+.wb-pool-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.wb-pool-k{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:11px;font-weight:800;letter-spacing:.16em;color:#FFB3C4;
+}
+.wb-pool-reset{font-size:10px;font-weight:700;letter-spacing:.12em;color:#8A7E92}
+.wb-pool-bar{
+  position:relative;height:16px;margin:9px 0 7px;border-radius:9px;overflow:hidden;
+  background:#170b11;border:1px solid rgba(255,93,125,.22);
+}
+.wb-pool-bar i{
+  display:block;height:100%;border-radius:8px;
+  background:linear-gradient(90deg,#7DF9FF,#B58CFF 55%,#FF5D7D);
+  box-shadow:0 0 16px rgba(255,93,125,.45);
+  transition:width .55s ease;
+}
+.wb-pool-foot{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.wb-pool-left{font-size:11px;color:#8A7E92;letter-spacing:.08em}
+.wb-pool-left b{font-family:"Bebas Neue","Barlow Condensed",sans-serif;font-size:24px;color:#FFE3EA;letter-spacing:.04em}
+.wb-pool-left small{font-size:11px;color:#8A7E92}
+.wb-pool-pct{
+  font-size:15px;font-weight:900;color:#FFD2DC;letter-spacing:.04em;
+  padding:1px 9px;border-radius:6px;background:rgba(255,93,125,.12);
+  border:1px solid rgba(255,93,125,.3);
+}
+.wb-pool-meta{margin-left:auto;font-size:10.5px;font-weight:700;letter-spacing:.1em;color:#8A7E92;text-align:right}
+
+/* --- kartu boss besar --- */
+.wb-card{
+  display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);
+  min-height:clamp(300px,42vh,440px);
+  border-radius:18px;overflow:hidden;
+  background:#120b16;
+  border:1px solid rgba(181,140,255,.26);
+  box-shadow:0 18px 42px rgba(0,0,0,.6);
+}
+.wb-card-art{position:relative;min-height:240px;overflow:hidden;background:#0b0710}
+.wb-card-art img{width:100%;height:100%;object-fit:cover;object-position:center 20%;display:block}
+.wb-art-veil{
+  position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(90deg,rgba(18,11,22,0) 45%,rgba(18,11,22,.92) 100%),
+             linear-gradient(0deg,rgba(9,5,12,.96) 2%,rgba(9,5,12,.1) 52%,rgba(9,5,12,0) 100%);
+}
+.wb-mod-tag{
+  position:absolute;left:16px;top:14px;
+  padding:5px 10px;border-radius:7px;
+  font-family:"Rajdhani","Barlow Condensed",sans-serif;font-size:10px;font-weight:800;letter-spacing:.14em;
+  color:#FFD9A8;background:rgba(10,6,14,.72);border:1px solid rgba(255,190,110,.42);
+}
+.wb-art-cap{position:absolute;left:18px;right:18px;bottom:16px;display:flex;flex-direction:column;gap:2px}
+.wb-art-k{font-family:"Rajdhani",sans-serif;font-size:10px;font-weight:800;letter-spacing:.18em;color:#B58CFF}
+.wb-art-cap b{font-family:"Bebas Neue","Barlow Condensed",sans-serif;font-size:clamp(28px,3vw,44px);line-height:1;letter-spacing:.03em;color:#FFF;text-shadow:0 3px 18px rgba(0,0,0,.8)}
+.wb-art-skill{display:inline-flex;align-items:center;gap:5px;font-family:"Rajdhani",sans-serif;font-size:11px;font-weight:800;letter-spacing:.14em;color:#FFB3C4}
+.wb-art-skill svg{color:#FF5D7D}
+
+.wb-card-body{display:flex;flex-direction:column;gap:12px;padding:18px 20px;min-width:0;background:linear-gradient(160deg,#171021,#0e0913)}
+.wb-card-head{display:flex;flex-direction:column;gap:2px}
+.wb-card-head .eyebrow{font-size:10px;letter-spacing:.16em;color:#B58CFF;font-weight:800}
+.wb-card-title{font-family:"Bebas Neue","Barlow Condensed",sans-serif;font-size:clamp(22px,2vw,30px);line-height:1;letter-spacing:.03em;color:#F6F1FA}
+.wb-card-sub{font-size:11px;line-height:1.5;color:#8A7E92}
+.wb-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.wb-stat{
+  display:flex;flex-direction:column;gap:2px;padding:8px 10px;border-radius:9px;
+  background:#160c12;border:1px solid rgba(181,140,255,.16);
+}
+.wb-stat span{font-family:"Rajdhani",sans-serif;font-size:8.5px;font-weight:800;letter-spacing:.12em;color:#7E7389}
+.wb-stat b{font-family:"Rajdhani",sans-serif;font-size:16px;font-weight:900;color:#F4F7FA;letter-spacing:.02em}
+.wb-stat b.gold{color:#FFD166}
+.wb-rewards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.wb-reward{
+  display:flex;align-items:baseline;justify-content:center;gap:6px;padding:7px 8px;border-radius:8px;
+  background:rgba(125,249,255,.06);border:1px solid rgba(125,249,255,.2);
+  font-family:"Rajdhani",sans-serif;
+}
+.wb-reward b{font-size:13px;font-weight:900;color:#7DF9FF}
+.wb-reward small{font-size:9px;font-weight:800;letter-spacing:.08em;color:#9AA7B4}
+.wb-run-line{
+  margin-top:auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding-top:10px;border-top:1px solid rgba(181,140,255,.14);
+  font-family:"Rajdhani",sans-serif;font-size:10px;font-weight:800;letter-spacing:.1em;color:#8A7E92;
+}
+.wb-run-line b{color:#F4F7FA;font-size:12px}
+.wb-dots{display:inline-flex;gap:3px;margin:0 2px}
+.wb-dots i{width:7px;height:7px;border-radius:50%;background:#2A1C2C;border:1px solid rgba(255,255,255,.18)}
+.wb-dots i.on{background:#5CF0A8;border-color:#5CF0A8;box-shadow:0 0 8px rgba(92,240,168,.55)}
+.wb-run-line .wb-best b{color:#FFD166}
+.wb-run-line .wb-rank b{color:#7DF9FF}
+.wb-claimed{margin-left:auto}
+
+/* --- dock tier + deploy --- */
+.wb-dock{
+  display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;
+  padding:12px 18px;border-radius:14px;
+  background:linear-gradient(135deg,rgba(22,14,34,.9),rgba(12,8,20,.98));
+  border:1px solid rgba(181,140,255,.28);
+  box-shadow:0 8px 24px rgba(0,0,0,.6);
+}
+.wb-dock-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0}
+.wb-dock-k{font-family:"Rajdhani",sans-serif;font-size:10px;font-weight:800;letter-spacing:.16em;color:#8A7E92}
+.wb-diffs{display:flex;gap:6px;flex-wrap:wrap}
+.wb-diff{
+  display:inline-flex;align-items:center;gap:5px;cursor:pointer;
+  padding:6px 10px;border-radius:8px;
+  font-family:"Rajdhani",sans-serif;font-size:10.5px;font-weight:800;letter-spacing:.08em;
+  color:#C9C1D2;background:#150d18;border:1px solid rgba(181,140,255,.22);
+}
+.wb-diff small{font-size:9px;font-weight:900;color:#8A7E92}
+.wb-diff:hover{border-color:var(--dc);color:#FFF}
+.wb-diff.on{color:#0B0710;background:var(--dc);border-color:var(--dc);box-shadow:0 0 14px var(--dc)}
+.wb-diff.on small{color:rgba(11,7,16,.7)}
+.wb-diff.locked{opacity:.5;cursor:not-allowed}
+.wb-dock-note{font-family:"Rajdhani",sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;color:#7E7389}
+
+@media(max-width:900px){
+  .wb-card{grid-template-columns:1fr;min-height:0}
+  .wb-card-art{min-height:200px}
+  .wb-art-veil{background:linear-gradient(0deg,rgba(9,5,12,.96) 0%,rgba(9,5,12,.15) 60%,rgba(9,5,12,0) 100%)}
+  .wb-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .wb-dock{grid-template-columns:1fr}
+  .wb-pool-meta{margin-left:0;text-align:left}
+}
+
+/* gap badge pulse-dot (teks topbar dulu ketiban dot) */
+.cp-gate-badge{gap:9px}
+
+/* mini papan peringkat di dalam kartu world boss */
+.wb-top{
+  flex:1;min-height:0;display:flex;flex-direction:column;gap:6px;
+  padding:10px 12px;border-radius:10px;
+  background:#130b16;border:1px solid rgba(181,140,255,.16);
+}
+.wb-top-head{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+  font-family:"Rajdhani",sans-serif;font-size:9.5px;font-weight:800;letter-spacing:.14em;color:#8A7E92;
+}
+.wb-top-all{
+  cursor:pointer;font:inherit;font-size:9px;font-weight:900;letter-spacing:.1em;
+  color:#7DF9FF;background:transparent;border:1px solid rgba(125,249,255,.3);
+  border-radius:6px;padding:3px 8px;
+}
+.wb-top-all:hover{background:rgba(125,249,255,.1)}
+.wb-top-rows{display:flex;flex-direction:column;gap:4px;overflow:auto;min-height:0}
+.wb-top-row{
+  display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:8px;
+  padding:5px 8px;border-radius:7px;background:rgba(255,255,255,.03);
+  font-family:"Rajdhani",sans-serif;font-size:11.5px;color:#C9C1D2;
+}
+.wb-top-row.me{background:rgba(125,249,255,.09);box-shadow:inset 0 0 0 1px rgba(125,249,255,.25)}
+.wb-tr-rank{font-weight:900;font-size:11px;color:#8A7E92}
+.wb-tr-rank.r1{color:#FFD166}
+.wb-tr-rank.r2{color:#D7DEE8}
+.wb-tr-rank.r3{color:#E0A46A}
+.wb-tr-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;letter-spacing:.04em}
+.wb-tr-val{color:#7DF9FF;font-size:12px;font-weight:900}
+.wb-top-empty{
+  font-family:"Rajdhani",sans-serif;font-size:10.5px;font-weight:700;
+  letter-spacing:.1em;color:#6F6579;padding:6px 2px;
+}
+.wb-top-rows{flex:1}
+.wb-top-row{flex:1;min-height:26px}
+/* Gambar art diposisikan absolut supaya tinggi kartu ditentukan isi kolom kanan,
+   bukan aspect-ratio gambar (dulu art meluber menutupi teks di layar pendek). */
+.wb-card{min-height:0}
+.wb-card-art{min-height:0}
+.wb-card-art img{position:absolute;inset:0;height:100%}
+@media(max-width:900px){.wb-card-art{min-height:190px}}
+@media(min-width:901px){.wb-card{flex:1 1 auto}}
+/* Layar pendek (mis. 1024x768): rapatkan topbar & pool supaya kartu boss tidak terpotong */
+@media(min-width:901px) and (max-height:830px){
+  .hr-topbar{padding:8px 14px}
+  .cp-gate-badge{font-size:13px!important}
+  .hr-gate-sub{display:none}
+  .wb-pool{padding:9px 14px 8px}
+  .wb-pool-bar{margin:7px 0 6px;height:14px}
+  .wb-pool-left b{font-size:21px}
+  .wb-card-body{gap:10px;padding:14px 16px}
+  .wb-top{padding:8px 10px;gap:5px}
+  .wb-run-line{gap:10px}
+}
+/* Panel mini board harus boleh mengecil (scroll baris) — jangan memaksa kartu meluber */
+.wb-top{flex:1 1 0!important;min-height:0}
+.wb-top-head{flex:none}
+.wb-top-rows{flex:1 1 auto;min-height:0;overflow:auto}
+.wb-top-rows{scrollbar-width:none}
+.wb-top-rows::-webkit-scrollbar{display:none;width:0;height:0}
+@media(max-height:780px){
+  .wb-top-row:nth-child(n+7){display:none}
+}

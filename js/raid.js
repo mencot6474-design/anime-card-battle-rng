@@ -42,46 +42,49 @@ function wbRefresh(force){
     return wb;
   }).catch(()=>{wbLoading=false;wbErr=true;return wb;});
 }
-function wbStripHtml(){
-  if(!wbOnline()){
-    return `<div class="wb-strip wb-off">
-      <span class="wb-k">WORLD BOSS</span>
-      <b class="wb-boss">OFFLINE</b>
-      <span class="wb-note">LOGIN UNTUK IKUT PAPAN PERINGKAT &amp; REWARD HARIAN</span>
-    </div>`;
-  }
-  if(!wb){
-    return wbErr?`<div class="wb-strip wb-off">
-      <span class="wb-k">WORLD BOSS</span>
-      <b class="wb-boss">SERVER BELUM SIAP</b>
-      <span class="wb-note">SKOR HARIAN TIDAK AKTIF — MAIN LOKAL TETAP BISA</span>
-    </div>`:`<div class="wb-strip">
-      <span class="wb-k">WORLD BOSS</span>
-      <b class="wb-boss">SYNC…</b>
-      <span class="wb-note">MENGHUBUNGI SERVER</span>
-    </div>`;
-  }
-  const used=wb.attempts_used||0;
-  const left=typeof wb.attempts_left==="number"?wb.attempts_left:Math.max(0,3-used);
-  const best=wb.best_pct||0, rank=wb.rank, total=wb.total_players||0;
-  const y=wb.yesterday;
-  const claimable=!!(y&&y.claimable&&!y.claimed);
-  let claimBtn="";
-  if(y&&y.claimed){
-    claimBtn=`<span class="wb-claimed">KLAIM KEMARIN &#10004;</span>`;
-  }else if(claimable){
-    claimBtn=`<button class="wb-claim" id="wbClaim" type="button">KLAIM +${y.gems||0} GEM · +${y.tokens||0} TOKEN${y.title?" · "+y.title:""}</button>`;
-  }
-  return `<div class="wb-strip wb-on">
-    <span class="wb-k">WORLD BOSS</span>
-    <b class="wb-boss">${wbBossName(wb.boss_id)}</b>
-    ${wbModText()?`<span class="wb-mod">${wbModText()}</span>`:""}
-    <span class="wb-att${left<=0?" empty":""}">ATTEMPT <b>${left}</b>/3</span>
-    <span class="wb-best">BEST <b>${best?fmtPct(best):"—"}</b></span>
-    <span class="wb-rank">RANK <b>${rank?"#"+rank+(total?"/"+total:""):"—"}</b></span>
-    ${y?`<span class="wb-yday">KEMARIN ${fmtPct(y.best_pct)} · #${y.rank}</span>`:""}
-    ${claimBtn}
+function fmtBig(n){
+  n=Number(n)||0;
+  const u=[[1e12,"T"],[1e9,"B"],[1e6,"M"]];
+  for(const [d,s] of u)if(n>=d){const v=Math.round(n/d*100)/100;return v.toLocaleString("en-US")+s;}
+  return fmt(n);
+}
+function wbPoolVals(){
+  const pool=Number(wb&&wb.hp_pool)||1e12;
+  const raw=wb&&typeof wb.hp_left==="number"?wb.hp_left:pool;
+  return {pool,left:Math.max(0,Math.min(pool,raw))};
+}
+/* Reset harian mengikuti lb_day() server: tengah malam Asia/Jakarta (UTC+7). */
+function wbResetText(){
+  const now=Date.now(), jkt=new Date(now+7*3600e3);
+  const next=Date.UTC(jkt.getUTCFullYear(),jkt.getUTCMonth(),jkt.getUTCDate()+1)-7*3600e3;
+  const ms=Math.max(0,next-now), h=Math.floor(ms/3600e3), m=Math.floor(ms%3600e3/60e3);
+  return h>0?h+"J "+m+"M":m+"M";
+}
+function wbPoolHtml(){
+  const {pool,left}=wbPoolVals();
+  const pct=pool>0?left/pool*100:0;
+  const off=!wbOnline();
+  const sync=!off&&!wb;
+  const meta=off?"POOL GLOBAL · LOGIN UNTUK IKUT HITUNGAN":sync?
+    (wbErr?"SERVER BELUM SIAP — MAIN LOKAL TETAP BISA":"MENGHUBUNGI SERVER…"):
+    `DAMAGE HARI INI ${fmtBig(pool-left)} · ${wb.total_players||0} HUNTER`;
+  return `<div class="wb-pool${off||sync?" dim":""}">
+    <div class="wb-pool-head">
+      <span class="wb-pool-k"><i class="cp-pulse-dot"></i>WORLD HP POOL · ${wbBossName(wb&&wb.boss_id)}</span>
+      <span class="wb-pool-reset">${off?"OFFLINE":"RESET HARIAN · "+wbResetText()+" · 00:00 WIB"}</span>
+    </div>
+    <div class="wb-pool-bar"><i style="width:${Math.max(0,Math.min(100,pct)).toFixed(2)}%"></i></div>
+    <div class="wb-pool-foot">
+      <span class="wb-pool-left"><b>${fmtBig(left)}</b><small> / ${fmtBig(pool)} HP TERSISA</small></span>
+      <span class="wb-pool-pct">${pct.toFixed(1)}%</span>
+      <span class="wb-pool-meta">${meta}</span>
+    </div>
   </div>`;
+}
+function wbAttemptDots(left){
+  let h="";
+  for(let i=0;i<3;i++)h+=`<i class="${i<left?"on":""}"></i>`;
+  return `<span class="wb-dots">${h}</span>`;
 }
 function fmtPct(v){const n=Math.round((Number(v)||0)*10)/10;return (Number.isInteger(n)?n:n.toFixed(1))+"%";}
 async function wbClaim(){
@@ -132,8 +135,16 @@ function renderRaid(){
 function renderRaidHub(){
   const curDiff=RAID_DIFFS.find(d=>d.k===state.raidDiff)||RAID_DIFFS[0];
   const b=wbBossOf(curDiff);
-  const isCleared=!!(state.raidCleared&&state.raidCleared[curDiff.k]);
-  const clearedTotal=RAID_DIFFS.filter(d=>state.raidCleared&&state.raidCleared[d.k]).length;
+  const {pool}=wbPoolVals();
+  const used=wb?wb.attempts_used||0:0;
+  const left=wb&&typeof wb.attempts_left==="number"?wb.attempts_left:Math.max(0,3-used);
+  const wbBest=wb?wb.best_pct||0:0;
+  const rank=wb&&wb.rank, totalPlayers=(wb&&wb.total_players)||0;
+  const y=wb&&wb.yesterday;
+  let claimBtn="";
+  if(y&&y.claimed)claimBtn=`<span class="wb-claimed">KLAIM KEMARIN &#10004;</span>`;
+  else if(y&&y.claimable)claimBtn=`<button class="wb-claim" id="wbClaim" type="button">KLAIM +${y.gems||0} GEM · +${y.tokens||0} TOKEN${y.title?" · "+y.title:""}</button>`;
+  const dayKey=wb&&wb.day?String(wb.day):"";
 
   app.innerHTML=`
   <div class="tw-page rd-page">
@@ -154,8 +165,8 @@ function renderRaidHub(){
             <div class="cp-chip-col"><small>RAID TOKEN</small><b class="cyan">${fmt(state.raidTokens||0)}</b></div>
           </div>
           <div class="hr-wallet-chip cp-chip subtle">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            <div class="cp-chip-col"><small>SECTORS PURGED</small><b>${clearedTotal}/${RAID_DIFFS.length}</b></div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg>
+            <div class="cp-chip-col"><small>ATTEMPT</small><b>${left}/3</b></div>
           </div>
           <button class="hr-hub-back-btn cp-back-btn" id="raidLobby" type="button" title="Return to Main Interface">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
@@ -164,77 +175,76 @@ function renderRaidHub(){
         </div>
       </div>
 
-      ${wbStripHtml()}
+      ${wbPoolHtml()}
 
-      <!-- MAIN HUNT BOARD: 4 CYBERPUNK SECTOR CARDS -->
-      <div class="hr-board-section">
-        <div class="hr-board-title cp-board-title">
-          <span class="hbt-bracket">[</span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          <span>ACTIVE SECTOR OVERVIEW &bull; SELECT CALAMITY TARGET</span>
-          <span class="hbt-bracket">]</span>
+      <!-- SATU WORLD BOSS BESAR -->
+      <div class="wb-card">
+        <div class="wb-card-art">
+          <img src="${b.img}" alt="${b.name}">
+          <div class="wb-art-veil"></div>
+          <span class="wb-mod-tag">${wbModText()||"CLEAR SKY"}</span>
+          <div class="wb-art-cap">
+            <span class="wb-art-k">WORLD BOSS${dayKey?" · "+dayKey:""}</span>
+            <b>${b.name}</b>
+            <span class="wb-art-skill"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> ${b.skill}</span>
+          </div>
         </div>
 
-        <div class="hr-cards-grid">
-          ${RAID_DIFFS.map((d,idx)=>{
-            const unl=raidDiffUnlocked(d.k);
-            const on=d.k===state.raidDiff;
-            const diffBoss=wbBossOf(d);
-            const cleared=!!(state.raidCleared&&state.raidCleared[d.k]);
-            const rankLetter=["MK-I","MK-II","MK-III","OVERCLOCK"][idx]||"EX";
-            const clr=d.color||"#B58CFF";
+        <div class="wb-card-body">
+          <div class="wb-card-head">
+            <span class="eyebrow">TARGET HARIAN &middot; ${curDiff.l}</span>
+            <span class="wb-card-sub">${wbModText()||"CLEAR SKY"} &bull; Tahan ${RAID_TURNS} siklus. Damage run = % damage &times; pool ${fmtBig(pool)} HP.</span>
+          </div>
 
-            return `
-            <div class="hr-hunt-card cp-card ${on?'selected':''} ${unl?'':'locked'}" data-rd="${d.k}" style="--hunt-c:${clr}">
-              <div class="cp-card-scanline"></div>
-              
-              <!-- CARD HEADER -->
-              <div class="hhc-top">
-                <div class="hhc-rank-badge cp-badge" style="border-color:${clr};color:${clr}">${rankLetter}</div>
-                <div class="hhc-gate-title">${d.l}</div>
-                ${cleared ? `<span class="hhc-cleared-tag cp-tag-green">&#10004; PURGED</span>` : (!unl ? `<span class="hhc-locked-tag cp-tag-red">&#128274; ENCRYPTED</span>` : `<span class="hhc-active-tag cp-tag-gold">ACTIVE</span>`)}
-              </div>
+          <div class="wb-stats">
+            <div class="wb-stat"><span>CORE HP</span><b>${fmt(b.hp)}</b></div>
+            <div class="wb-stat"><span>OUTPUT ATK</span><b>${fmt(b.power)}</b></div>
+            <div class="wb-stat"><span>SIKLUS</span><b>${RAID_TURNS}</b></div>
+            <div class="wb-stat"><span>YIELD</span><b class="gold">&times;${curDiff.rw||1}</b></div>
+          </div>
 
-              <!-- MONSTER ART FRAME -->
-              <div class="hhc-art-frame cp-art-frame">
-                <img src="${diffBoss.img}" alt="${diffBoss.name}">
-                <div class="hhc-art-gradient"></div>
-                <div class="hhc-monster-name">${diffBoss.name}</div>
-                <div class="hhc-monster-skill"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> ${diffBoss.skill.toUpperCase()}</div>
-              </div>
+          <div class="wb-rewards">
+            ${RAID_TIERS.map(t=>`<span class="wb-reward"><b>${t.pct}%</b><small>+${Math.round(t.tokens*(curDiff.rw||1))} TOKEN</small></span>`).join("")}
+          </div>
 
-              <!-- TELEMETRY STATS -->
-              <div class="hhc-stats-grid">
-                <div class="hhc-stat-box cp-stat-box">
-                  <span class="hsb-lbl">CORE HP</span>
-                  <b class="hsb-val">${fmt(diffBoss.hp)}</b>
-                </div>
-                <div class="hhc-stat-box cp-stat-box">
-                  <span class="hsb-lbl">OUTPUT ATK</span>
-                  <b class="hsb-val">${fmt(diffBoss.power)}</b>
-                </div>
-                <div class="hhc-stat-box full cp-stat-box">
-                  <span class="hsb-lbl">YIELD MULTIPLIER</span>
-                  <b class="hsb-val gold">+${Math.round(20*(d.rw||1))} TOKEN <small>(x${d.rw||1})</small></b>
-                </div>
-              </div>
+          <div class="wb-top">
+            <div class="wb-top-head">
+              <span>TOP HUNTER HARI INI</span>
+              <button class="wb-top-all" id="wbTopAll" type="button">PAPAN PENUH</button>
+            </div>
+            <div class="wb-top-rows">${(()=>{
+              if(!wbOnline())return `<span class="wb-top-empty">LOGIN UNTUK PAPAN GLOBAL</span>`;
+              if(!wb)return `<span class="wb-top-empty">SYNC…</span>`;
+              const rows=Array.isArray(wb.top)?wb.top:[];
+              if(!rows.length)return `<span class="wb-top-empty">BELUM ADA SKOR HARI INI — JADI YANG PERTAMA</span>`;
+              return rows.map(r=>`<div class="wb-top-row${currentUser&&r.username===String(currentUser).toLowerCase()?" me":""}">
+                <span class="wb-tr-rank r${r.rank}">#${r.rank}</span>
+                <span class="wb-tr-name">${r.username}</span>
+                <b class="wb-tr-val">${fmtPct(r.value)}</b>
+              </div>`).join("");
+            })()}</div>
+          </div>
 
-              <!-- CARD FOOTER / SELECT STATUS -->
-              <div class="hhc-footer-status">
-                ${unl ? (on ? `<span class="hhc-state-lbl ready cp-ready">&#9670; DEPLOY TARGET</span>` : `<span class="hhc-state-lbl">&#9671; SELECT SECTOR</span>`) : `<span class="hhc-state-lbl lock">REQUIRE CLEARANCE ${raidNextUnlock(d.k)}</span>`}
-              </div>
-            </div>`;
-          }).join("")}
+          <div class="wb-run-line">
+            <span class="wb-attempts">ATTEMPT ${wbAttemptDots(left)} <b>${left}/3</b></span>
+            <span class="wb-best">BEST <b>${wbBest?fmtPct(wbBest):"—"}</b></span>
+            <span class="wb-rank">RANK <b>${rank?"#"+rank+(totalPlayers?"/"+totalPlayers:""):"—"}</b></span>
+            ${claimBtn}
+          </div>
         </div>
       </div>
 
-      <!-- BOTTOM CONTROL PANEL: SELECTED DUNGEON BRIEFING & DEPLOY ACTION -->
-      <div class="hr-deploy-dock cp-deploy-dock">
-        <div class="hdd-briefing">
-          <div class="hdd-tag cp-dock-tag">ENGAGEMENT TARGET: <b style="color:${curDiff.color}">${curDiff.l} (${["TIER 1","TIER 2","TIER 3","OVERDRIVE"][RAID_DIFFS.findIndex(d=>d.k===curDiff.k)]||"EX"})</b></div>
-          <div class="hdd-boss-desc">
-            ${b.name} &bull; Tahan serangan monster selama <b>${RAID_TURNS} siklus</b> &bull; Reward: 30% HP &rarr; <b>+${Math.round(5*(b.rw||1))}</b> | 50% &rarr; <b>+${Math.round(10*(b.rw||1))}</b> | 100% &rarr; <b>+${Math.round(20*(b.rw||1))} Token</b>
+      <!-- CONTROL DOCK: TIER + DEPLOY -->
+      <div class="wb-dock">
+        <div class="wb-dock-left">
+          <span class="wb-dock-k">TIER</span>
+          <div class="wb-diffs">
+            ${RAID_DIFFS.map(d=>{
+              const unl=raidDiffUnlocked(d.k), on=d.k===curDiff.k;
+              return `<button class="wb-diff${on?" on":""}${unl?"":" locked"}" data-rd="${d.k}" type="button" style="--dc:${d.color||"#B58CFF"}">${unl?d.l:"&#128274; "+d.l}<small>&times;${d.rw||1}</small></button>`;
+            }).join("")}
           </div>
+          <span class="wb-dock-note">Run 100% = ${fmtBig(pool*0.01)} damage ke pool &middot; reset 00:00 WIB</span>
         </div>
 
         <div class="hdd-actions">
@@ -270,14 +280,15 @@ function renderRaidHub(){
   };
   document.getElementById("raidShopBtn").onclick=()=>{sfx.hit();raidView="shop";renderRaid();};
   {const wc=document.getElementById("wbClaim");if(wc)wc.onclick=wbClaim;}
+  {const ta=document.getElementById("wbTopAll");if(ta)ta.onclick=()=>{sfx.hit();if(typeof openRanking==="function")openRanking();else raidToast("Papan peringkat belum tersedia");};}
   wbRefresh();
   const rl=document.getElementById("raidLobby");
   if(rl)rl.onclick=()=>{try{sfx.hit();}catch(e){}location.hash="#/";};
   
-  app.querySelectorAll(".hr-hunt-card").forEach(btn=>{
+  app.querySelectorAll(".wb-diff").forEach(btn=>{
     btn.onclick=()=>{
       const k=btn.dataset.rd;
-      if(!raidDiffUnlocked(k)){raidToast("Taklukkan "+raidNextUnlock(k)+" Gate terlebih dahulu untuk membuka segel ini.");return;}
+      if(!raidDiffUnlocked(k)){raidToast("Taklukkan "+raidNextUnlock(k)+" tier terlebih dahulu untuk membuka ini.");return;}
       if(state.raidDiff===k)return;
       state.raidDiff=k;sfx.hit();save();renderRaidHub();
     };
@@ -587,6 +598,7 @@ function endRaid(){
           wb.best_pct=Math.max(wb.best_pct||0,res.best_pct||pct);
           if(res.rank)wb.rank=res.rank;
           if(typeof res.attempts_left==="number"){wb.attempts_left=res.attempts_left;wb.attempts_used=3-res.attempts_left;}
+          if(typeof res.hp_left==="number"){wb.hp_pool=res.hp_pool;wb.hp_left=res.hp_left;}
           wbAt=Date.now();
         }
       }
@@ -601,7 +613,7 @@ function renderRaidResult(){
   let wbLine="";
   if(wbOnline()&&raid){
     if(raid.wbPending)wbLine=`<div class="rr-wb">MENGIRIM SKOR WORLD BOSS…</div>`;
-    else if(raid.wbRes&&raid.wbRes.ok)wbLine=`<div class="rr-wb on">SKOR TERKIRIM · BEST ${fmtPct(raid.wbRes.best_pct)} · RANK #${raid.wbRes.rank||"—"}${raid.wbRes.total_players?"/"+raid.wbRes.total_players:""} · SISA ${raid.wbRes.attempts_left} ATTEMPT</div>`;
+    else if(raid.wbRes&&raid.wbRes.ok)wbLine=`<div class="rr-wb on">SKOR TERKIRIM · BEST ${fmtPct(raid.wbRes.best_pct)} · RANK #${raid.wbRes.rank||"—"}${raid.wbRes.total_players?"/"+raid.wbRes.total_players:""} · SISA ${raid.wbRes.attempts_left} ATTEMPT${typeof raid.wbRes.pool_dmg==="number"?" · +"+fmtBig(raid.wbRes.pool_dmg)+" DMG POOL":""}</div>`;
     else if(raid.wbRes)wbLine=`<div class="rr-wb bad">SKOR GAGAL DIKIRIM (${raid.wbRes.msg||"ERROR"}) · ATTEMPT TETAP TERPAKAI</div>`;
     else wbLine=`<div class="rr-wb">MAIN LOKAL · SKOR TIDAK DIKIRIM</div>`;
   }
