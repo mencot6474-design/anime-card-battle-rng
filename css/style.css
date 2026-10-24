@@ -6285,6 +6285,35 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 
 
 
+.ov-gem-ms {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 2px;
+  padding: 8px 14px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, rgba(255,215,0,.14), rgba(120,60,0,.18));
+  border: 1px solid rgba(255,215,0,.45);
+  box-shadow: inset 0 0 14px rgba(255,215,0,.12), 0 0 18px rgba(255,215,0,.10);
+  animation: ovGemIn .45s ease-out both;
+}
+.ov-gem-ms-ic { border-radius: 50%; filter: drop-shadow(0 0 6px rgba(255,215,0,.7)); flex: none; }
+.ov-gem-ms-txt { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.1; }
+.ov-gem-ms-k {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10.5px; font-weight: 700; letter-spacing: 1.6px;
+  color: #ffe9a8; text-transform: uppercase;
+}
+.ov-gem-ms-v {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 24px; font-weight: 800; letter-spacing: .5px; color: #ffd700;
+}
+.ov-gem-ms-v small { font-size: 11px; letter-spacing: 1.6px; color: #c9a961; font-weight: 700; }
+@keyframes ovGemIn { from { opacity: 0; transform: translateY(6px) scale(.97); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .ov-gem-ms { animation: none; } }
+
 .ov-reward {
 
 

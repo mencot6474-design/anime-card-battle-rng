@@ -3192,7 +3192,21 @@ function finish(win){
   const rw=document.getElementById("ov-reward");
   if(rw){
     rw.style.display=win?"inline-flex":"none";
-    rw.innerHTML=''+coinIcon(18)+'  +'+reward+' <small>COINS</small>'+(gemGain>0?' <span style="display:inline-flex;align-items:center;gap:4px;margin-left:10px;color:#ffd700;font-weight:800"><img src="assets/images/premium-currency.webp" width="15" height="15" alt="">+'+gemGain+' <small>GEM</small></span>':'');
+    rw.innerHTML=''+coinIcon(18)+'  +'+reward+' <small>COINS</small>';
+  }
+  const ms=document.getElementById("ovGemMilestone");
+  if(ms){
+    if(win&&gemGain>0){
+      ms.style.display="flex";
+      ms.innerHTML='<img class="ov-gem-ms-ic" src="assets/images/premium-currency.webp" alt="" width="34" height="34">'
+        +'<div class="ov-gem-ms-txt">'
+          +'<span class="ov-gem-ms-k">STORY MILESTONE &bull; BAB '+ch.no+' &bull; '+diffOf().l+'</span>'
+          +'<span class="ov-gem-ms-v">+'+gemGain+' <small>GEM</small></span>'
+        +'</div>';
+    }else{
+      ms.style.display="none";
+      ms.innerHTML="";
+    }
   }
 
   const cStat=document.getElementById("ovCombatStatus");
