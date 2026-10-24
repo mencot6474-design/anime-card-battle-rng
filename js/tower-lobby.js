@@ -331,145 +331,152 @@ function renderTowerShop(){
   if(window.shopSel==null||window.shopSel>=ITEMS.length)window.shopSel=0;
   let swapT=null;
 
-  const renderList=()=>{
-    const listEl=document.getElementById("shopList");
-    if(!listEl)return;
-    listEl.innerHTML=ITEMS.map((it,i)=>`
-      <div class="cps-row${i===window.shopSel?" sel":""}" data-i="${i}" style="--item-ac:${it.ac}">
-        <div class="cps-row-accent"></div>
-        <div class="cps-ic">${ICONS[it.k]||""}</div>
-        <div class="cps-info">
-          <div class="cps-cat"><span class="cps-tier">${it.tier}</span> &middot; ${it.cat}</div>
-          <div class="cps-name">${it.label}</div>
+  /* Re-skin TOKO INF = komponen identik TOKO RAID (grid kartu .hsg-card + inspector .hsd-*). */
+  const renderGrid=()=>{
+    const gridEl=document.getElementById("towerShopGrid");
+    if(!gridEl)return;
+    gridEl.innerHTML=ITEMS.map((it,i)=>{
+      const isSel=i===window.shopSel;
+      const isOwned=cardOwned(it);
+      const canAfford=tok>=it.cost;
+      return `
+      <div class="hsg-card cp-shop-card ${isSel?'selected':''} ${isOwned?'owned':''} ${(!canAfford&&!isOwned)?'insufficient':''}" data-i="${i}" style="--item-c:${it.ac}">
+        <div class="hsg-card-top">
+          <span class="hsg-cat-badge cp-cat">${it.cat}</span>
+          <span class="hsg-tier-tag cp-tier">${it.tier}</span>
         </div>
-        <div class="cps-cost-col">
-          <div class="cps-cost-val">${it.cost} <small>TOKEN</small></div>
-          ${it.unlock?`<span class="cps-stock-badge ${cardOwned(it)?'unlocked':'locked'}">${cardOwned(it)?'UNLOCKED':'LOCKED'}</span>`:(stkOf(it.k)>0?`<span class="cps-stock-badge">OWN &times;${stkOf(it.k)}</span>`:"")}
+        <div class="hsg-art-wrap cp-art-wrap ${it.unlock?'boss-card':''}">
+          ${ICONS[it.k]||"🎁"}
         </div>
-      </div>`).join("");
-    document.querySelectorAll(".cps-row").forEach(r=>r.onclick=()=>{window.shopSel=+r.dataset.i;renderList();renderDetail();});
+        <div class="hsg-card-name">${it.label}</div>
+        <div class="hsg-price-badge">
+          ${isOwned?`<span class="hsg-owned-lbl">&#10004; UNLOCKED</span>`:`<b>${fmt(it.cost)}</b> <small>TOKEN</small>`}
+        </div>
+      </div>`;
+    }).join("");
+    gridEl.querySelectorAll(".hsg-card").forEach(c=>{
+      c.onclick=()=>{window.shopSel=+c.dataset.i;renderGrid();renderDetail();};
+    });
   };
 
   const renderBuy=()=>{
-    const it=ITEMS[window.shopSel],btn=document.getElementById("shopBuy");
-    if(!btn)return;
+    const it=ITEMS[window.shopSel],btn=document.getElementById("towerShopBuy");
+    if(!btn||!it)return;
     btn.style.animation="none";void btn.offsetWidth;btn.style.animation="";
-    let small="OTORISASI TRANSAKSI",big=`ACQUIRE &middot; ${it.cost} TOKEN`,dis=false;
-    if(it.unlock&&cardOwned(it)){small="KARTU SUDAH TERBUKA";big="DIMILIKI PERMANEN";dis=true;}
-    else if(tok<it.cost){small="SALDO TOKEN TIDAK CUKUP";big=`DEFISIT ${it.cost-tok} TOKEN`;dis=true;}
-    else if(it.req&&stkOf(it.req)<=0){small="KOMPONEN DASAR DIPERLUKAN";big="BUTUH 1 WEATHER POTION";dis=true;}
+    let small="AUTHORIZE PROCUREMENT",big=`ACQUIRE &bull; ${fmt(it.cost)} TOKEN`,dis=false;
+    if(cardOwned(it)){small="Roll sudah permanen terbuka";big="SUDAH DIMILIKI";dis=true;}
+    else if(tok<it.cost){small="TOKEN INF TIDAK CUKUP";big=`DEFISIT ${fmt(it.cost-tok)} TOKEN`;dis=true;}
+    else if(it.req&&stkOf(it.req)<=0){small="BUTUH WEATHER POTION";big="BUTUH 1 WEATHER POTION";dis=true;}
     btn.disabled=dis;
-    btn.className="cyber-buy-btn" + (dis?" disabled":"");
+    btn.className="hsd-buy-action cp-buy-action" + (dis?" disabled":"");
     btn.innerHTML=`
-      <div class="cbb-glow"></div>
-      <div class="cbb-ic">${ICONS[it.k]||""}</div>
-      <div class="cbb-text">
+      <div class="hsd-ba-ic">${ICONS[it.k]||"🎁"}</div>
+      <div class="hsd-ba-text">
         <small>${small}</small>
         <b>${big}</b>
       </div>
-      <div class="cbb-arrow"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>`;
+      <div class="hsd-ba-arrow"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>`;
   };
 
   const renderDetail=immediate=>{
-    const it=ITEMS[window.shopSel],box=document.getElementById("shopDetail");
-    if(!box)return;
+    const it=ITEMS[window.shopSel],box=document.getElementById("towerShopDetail");
+    if(!box||!it)return;
     clearTimeout(swapT);
     const paint=()=>{
       box.classList.remove("out");
+      const isCard=!!it.unlock;
+      const c=isCard?CARDS[it.unlock]:null;
+      const unlocked=!isCard||cardOwned(it);
+      const cnt=isCard?state.stacks.filter(s=>s.char===it.unlock).reduce((n,s)=>n+(s.count||1),0):stkOf(it.k);
       box.innerHTML=`
-      <div class="sd-cyber-hero" style="--hero-ac:${it.ac}">
-        <div class="sd-hero-ic-wrap">${ICONS[it.k]||""}</div>
-        <div class="sd-hero-meta">
-          <div class="sd-hero-tag"><span class="sd-hero-tier">${it.tier}</span> PROTOCOL // ${it.cat}</div>
-          <div class="sd-hero-name">${it.label}</div>
+      <div class="hsd-spec-header cp-spec-header" style="--spec-c:${it.ac}">
+        <div class="hsd-icon-box cp-hero-ic ${isCard?'boss-art':''}">${ICONS[it.k]||"🎁"}</div>
+        <div class="hsd-meta-col">
+          <div class="hsd-meta-kicker"><span class="hsd-tier-pill">${it.tier}</span> SUPPLY DEPOT &bull; ${it.cat}</div>
+          <div class="hsd-meta-title">${it.label}</div>
+          <div class="hsd-meta-price">${fmt(it.cost)} TOKEN INF</div>
         </div>
       </div>
-      <div class="sd-cyber-spec">
-        <div class="sd-spec-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg> PARAMETER EFEK</div>
-        <p class="sd-spec-desc">${it.sub}</p>
+
+      <div class="hsd-desc-block cp-desc-block">
+        <div class="hsd-sec-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          SPECIFICATION // EFFECT PARAMETERS
+        </div>
+        <p class="hsd-desc-text">${it.sub}</p>
+        ${c?`<div class="hsd-skill-box cp-skill-box"><div class="hsb-title">&#9889; ${c.passive.name}</div><div class="hsb-text">${c.passive.desc}</div></div>`:''}
       </div>
-      <div class="sd-cyber-matrix" style="--mat-ac:${it.ac}">
-        <div class="scm-row"><span class="scm-k">HARGA PENUKARAN</span><span class="scm-v cyan">${it.cost} TOKEN INF</span></div>
-        ${it.unlock?`<div class="scm-row"><span class="scm-k">STATUS ROLL</span><span class="scm-v ${cardOwned(it)?"green":"red"}">${cardOwned(it)?"TERBUKA PERMANEN":"TERKUNCI - BELI UNTUK BUKA"}</span></div>`:`<div class="scm-row"><span class="scm-k">CADANGAN AMUNISI</span><span class="scm-v green">&times;${stkOf(it.k)} UNIT</span></div>`}
-        ${it.req?`<div class="scm-row"><span class="scm-k">PERSYARATAN SINTESIS</span><span class="scm-v ${stkOf(it.req)>0?"green":"red"}">${stkOf(it.req)>0?"TERSEDIA &times;"+stkOf(it.req)+" WEATHER":"BUTUH 1 WEATHER POTION"}</span></div>`:""}
-        <div class="scm-row"><span class="scm-k">STATUS DEPOSIT</span><span class="scm-v">${tok} / ${it.cost} TOKEN</span></div>
+
+      <div class="hsd-matrix-grid cp-matrix-grid">
+        <div class="hsd-mg-cell"><span class="hm-lbl">EXCHANGE PRICE</span><b class="hm-val gold">${fmt(it.cost)} TOKEN</b></div>
+        <div class="hsd-mg-cell"><span class="hm-lbl">GACHA UNLOCK STATUS</span><b class="hm-val ${unlocked?'green':'warn'}">${isCard?(unlocked?'PERMANENT UNLOCKED':'LOCKED // BELI DULU'):'INSTANT ACTIVE'}</b></div>
+        <div class="hsd-mg-cell"><span class="hm-lbl">AVAILABLE DEPOSIT</span><b class="hm-val cyan">${fmt(tok)} TOKEN</b></div>
+        <div class="hsd-mg-cell"><span class="hm-lbl">OWNED STOCK</span><b class="hm-val ${cnt>0?'green':''}">${isCard?(cnt?'&times;'+cnt:'0'):'&times;'+cnt}</b></div>
       </div>`;
       renderBuy();
     };
     if(immediate||!box.children.length){paint();return;}
     box.classList.add("out");
-    swapT=setTimeout(paint,120);
+    swapT=setTimeout(paint,110);
   };
 
-  app.innerHTML=`<div class="tw-page tactical-tower-page">
-  <div class="tactical-shop-hub">
-    
-    <!-- SISI KIRI: CATALOG SUPPLY GRID -->
-    <section class="cyber-shop-catalog">
-      <div class="csc-header">
-        <div class="csc-header-left">
-          <button class="cyber-back-pill" id="shopBack" type="button">
+  const lockCards=ITEMS.filter(x=>x.unlock);
+  const lcOwned=lockCards.filter(cardOwned).length;
+
+  app.innerHTML=`
+  <div class="tw-page inf-shop-page">
+    <div class="hunter-shop-hub cp-shop-hub">
+
+      <!-- TOP MARKET HEADER -->
+      <div class="hsh-header cp-header">
+        <div class="hsh-header-left">
+          <button class="hsh-back-btn cp-back-btn" id="towerShopBack" type="button">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-            <span>KEMBALI KE SPIRE</span>
+            <span>RETURN TO SPIRE</span>
           </button>
-          <div class="csc-title-wrap">
-            <span class="csc-kicker"><span class="csc-dot"></span> NEURAL PROCUREMENT // LEVEL 01+</span>
-            <div class="csc-title">TACTICAL <span class="csc-cyan">SUPPLY DEPOT</span></div>
+          <div class="hsh-title-wrap">
+            <div class="hsh-kicker"><span class="hsh-dot cp-dot"></span> PROCUREMENT MATRIX // INFINITE SPIRE</div>
+            <div class="hsh-title">TACTICAL <span class="hsh-cyan">INF SUPPLY</span></div>
           </div>
         </div>
-        <div class="csc-header-right">
-          <div class="csc-deposit-chip">
+        <div class="hsh-header-right">
+          <div class="hsh-token-chip cp-chip">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8M8 14h6"/></svg>
-            <div class="cdc-col"><small>TOKEN INF</small><b>${fmt(tok)}</b></div>
+            <div class="htc-col"><small>TOKEN INF</small><b class="cyan">${fmt(tok)}</b></div>
+          </div>
+          <div class="hsh-token-chip subtle cp-chip">
+            <div class="htc-col"><small>CORE UNLOCKED</small><b>${lcOwned}/${lockCards.length}</b></div>
           </div>
         </div>
       </div>
 
-      <!-- ITEM LIST STREAM -->
-      <div class="cyber-item-stream" id="shopList"></div>
-      
-      <div class="csc-footer">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-        <span>TOKEN DIPEROLEH DARI SETIAP LANTAI PENETRASI SPIRE (+1 BIASA / +5 BOS SEKTOR)</span>
-      </div>
-    </section>
+      <!-- MAIN MARKET SPLIT: LEFT GRID CARDS & RIGHT DETAIL INSPECTOR -->
+      <div class="hsh-content-split">
+        <section class="hsh-grid-panel cp-panel">
+          <div class="hsh-grid-subhdr">
+            <span class="hgs-txt">[ SPIRE SUPPLY &bull; KLIK UNTUK INSPEKSI TELEMETRI ]</span>
+          </div>
+          <div class="hunter-shop-grid" id="towerShopGrid"></div>
+        </section>
 
-    <!-- SISI KANAN: INSPECTION & DOSSIER PANEL -->
-    <section class="cyber-shop-dossier">
-      <div class="csd-head">
-        <div class="csd-kicker">TERMINAL INSPECTION // ITEM DOSSIER</div>
-        <div class="csd-title">LOGISTICAL <span class="csd-cyan">OVERVIEW</span></div>
-      </div>
-
-      <div class="csd-telemetry">
-        <div class="csd-tel-card">
-          <small>SALDO TOKEN</small>
-          <b class="cyan">${fmt(tok)}</b>
-        </div>
-        <div class="csd-tel-card">
-          <small>WEATHER POT</small>
-          <b>${fmt(state.potions||0)}</b>
-        </div>
+        <section class="hsh-detail-panel cp-panel">
+          <div class="hsd-panel-title cp-panel-title">TELEMETRY INSPECTION // PROCUREMENT</div>
+          <div class="hsd-detail-content" id="towerShopDetail"></div>
+          <div class="hsd-action-footer">
+            <button class="hsd-buy-action cp-buy-action" id="towerShopBuy" type="button"></button>
+          </div>
+        </section>
       </div>
 
-      <div class="csd-detail-wrap" id="shopDetail"></div>
+    </div>
+  </div>`;
 
-      <div class="csd-footnote">
-        <span class="csd-fn-icon">⚡</span>
-        <span>Drop rate di Tower: <b>Weather 5%</b> &middot; <b>Luck 10%</b> &middot; <b>Speed 10%</b> per lantai. Potion aktif dapat di-stack durasinya.</span>
-      </div>
-
-      <button id="shopBuy" class="cyber-buy-btn" type="button"></button>
-    </section>
-
-  </div></div>`;
-
-  renderList();
+  renderGrid();
   renderDetail(true);
 
-  const rb=document.getElementById("shopBack");
+  const rb=document.getElementById("towerShopBack");
   if(rb)rb.onclick=()=>{try{sfx.hit();}catch(e){}towerView="hub";render();};
-  const bi=document.getElementById("shopBuy");
+  const bi=document.getElementById("towerShopBuy");
   if(bi)bi.onclick=()=>{if(bi.disabled)return;infBuy(ITEMS[window.shopSel].k);};
 }
 function infBuy(kind){

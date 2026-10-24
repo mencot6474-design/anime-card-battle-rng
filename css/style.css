@@ -19475,6 +19475,10 @@ h1{font-size:clamp(26px,8vw,34px)}
 
 .rd-page{--text:#F4F7FA;--muted:#94A3B8;--muted2:#64748B;--cyan:#7DF9FF;--purple:#B58CFF;--line:rgba(181,140,255,.2);--line2:rgba(181,140,255,.35);--gold:#FFD27A;--green:#2ED573;color:var(--text)}
 
+/* TOKO INF pakai komponen visual TOKO RAID (.hsh/.hsg/.hsd) tapi tetap di konteks on-tower.
+   tw-page tak punya var ini -> tambahkan biar komponen raid resolve warna ungu/emas yang sama. */
+.inf-shop-page{--purple:#B58CFF;--gold:#FFD27A;}
+
 
 
 
