@@ -235,7 +235,7 @@ function renderWeatherDock(){
   const panel=document.getElementById("weatherPanel");if(!panel)return;
   const id=activeWeatherId();const w=id?WEATHER[id]:null;
   const cards=MASTER_CARD_INDEX.filter(c=>c.weatherOnly===id);
-  if(!w){panel.classList.remove("show");panel.innerHTML="";return;}
+  if(!w){panel.classList.remove("show");panel.innerHTML="";panel.dataset.wid="";return;}
   panel.style.setProperty("--wc",w.color);
   panel.innerHTML=`<div class="wp-cyber-glow"></div>
   <div class="wp-compact-head">
@@ -265,6 +265,7 @@ function renderWeatherDock(){
         <span class="wp-buff-val"><b>${w.speedBonus}×</b></span>
       </div>
     </div>`;
+  panel.dataset.wid=String(id);
   panel.classList.add("show");
   wcHoverBind();
 }
@@ -337,7 +338,9 @@ function startWeatherTick(){
     if(!state)return;
     const hadActive=!!state.weather&&Date.now()<state.weather.endsAt;
     const changed=ensureWeather(false);   /* auto-rotate: habis -> roll baru + toast */
-    if(changed||(!hadActive&&state.weather)){
+    const _wp=document.getElementById("weatherPanel");
+    const staleDock=!!_wp&&_wp.dataset.wid!==String(activeWeatherId()||""); /* isi dock != state (mis. habis auto-gacha) */
+    if(changed||(!hadActive&&state.weather)||staleDock){
       /* cuaca/buff berubah -> full rebuild + sync shell */
       renderWeatherDock();renderBuffDock();renderShell();
     }else{
@@ -2100,6 +2103,9 @@ function wmStopAuto(){
   wmAutoRunning = false;
   if(wmAutoTimer) clearTimeout(wmAutoTimer);
   renderWeatherMachine();
+  /* Loop auto cuma paint header mesin, JAMA rebuild #weatherPanel. Tanpa ini dock
+     tetap nampilin cuaca LAMA saat balik ke lobby. Samakan dock dgn state terkini. */
+  try{ renderWeatherDock(); renderBuffDock(); }catch(e){}
 }
 
 /* wmAutoPaint: update ringan saat auto-loop — tidak re-render seluruh shell/app */
@@ -2288,6 +2294,11 @@ function renderWeatherMachine(){
     '</div>';
   }).join('');
 
+  /* Render tiap detik nge-replace innerHTML -> .wm-rates-list dibuat ulang ->
+     scrollTop balik 0 (kelihatan "scroll langsung ke atas"). Simpan dulu, restore lagi. */
+  const _rlPrev = bodyEl.querySelector('.wm-rates-list');
+  const _rlScroll = _rlPrev ? _rlPrev.scrollTop : 0;
+
   bodyEl.innerHTML = '' +
     '<div class="tr-grid wm-grid">' +
       '<!-- SISI KIRI: CONTROLS & SYNTHESIZER (SEPERTI TR-MAIN) -->' +
@@ -2374,6 +2385,9 @@ function renderWeatherMachine(){
         '<div class="trr-list wm-rates-list">' + ratesHtml + '</div>' +
       '</div>' +
     '</div>';
+  /* Restore posisi scroll daftar probabilitas setelah innerHTML di-rebuild. */
+  const _rlNew = bodyEl.querySelector('.wm-rates-list');
+  if(_rlNew && _rlScroll) _rlNew.scrollTop = _rlScroll;
 }
 
 function wmSelectTarget(wId){
