@@ -204,11 +204,11 @@
         const tier = cardData ? cardData.tier : (en.boss ? "UR" : "R");
         const isCleared = !!cdh[lv];
         const isUnlocked = cellOpen && (i === 0 || !!cdh[lv - 1]);
-        const cdLeft = (isUnlocked && isCleared && typeof storyCdLeft === "function") ? storyCdLeft() : 0;
+        const cdLeft = (isUnlocked && isCleared && typeof storyCdLeft === "function") ? storyCdLeft(lv) : 0;
         const g = gateOf(lv);
 
         return `
-          <div class="sc-card tier-${tier} ${en.boss ? 'is-boss' : ''} ${isUnlocked ? '' : 'is-locked'}${cdLeft > 0 ? ' is-replay-cd' : ''}" id="sc-card-${i}" onclick="selectStoryStage(${i})">
+          <div class="sc-card tier-${tier} ${en.boss ? 'is-boss' : ''} ${isUnlocked ? '' : 'is-locked'}${cdLeft > 0 ? ' is-replay-cd' : ''}" id="sc-card-${i}" data-lv="${lv}" onclick="selectStoryStage(${i})">
             <div class="sc-card-head">
               <span class="sc-stage-badge">${en.boss ? '★ BOSS STAGE' : 'STAGE 0' + (i + 1)}</span>
               ${isCleared ? '<span class="sc-clear-status">✓ CLEARED</span>' : ''}
@@ -306,7 +306,7 @@
 
         const first = !cdh[lv];
         const reward = first ? firstClearReward(lv) : Math.round(firstClearReward(lv) * 0.2);
-        const cdLeft = first ? 0 : (typeof storyCdLeft === "function" ? storyCdLeft() : 0);
+        const cdLeft = first ? 0 : (typeof storyCdLeft === "function" ? storyCdLeft(lv) : 0);
         const cellOpen = cellUnlocked(ch, state.diff);
         const isUnlocked = cellOpen && (currentStageIdx === 0 || !!cdh[lv - 1]);
 

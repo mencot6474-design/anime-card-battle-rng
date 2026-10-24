@@ -12,7 +12,7 @@ function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u));}
 function freshState(){
   const s0=STORY_BIBLE.units[0];
   const start=s0?{id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,fav:false,lock:false,mut:"none",shiny:false,trait:"none",count:1}:null;
-  const newState={coins:1000,wbTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,totalRolls:0,playSec:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},raidShopOwned:{},towerShopOwned:{},storyGemMilestones:{},dailyGemPending:0,storyCdUntil:0,tower:{best:0,auto:false},battleSpeed:1,
+  const newState={coins:1000,wbTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,totalRolls:0,playSec:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},raidShopOwned:{},towerShopOwned:{},storyGemMilestones:{},dailyGemPending:0,storyCd:{},tower:{best:0,auto:false},battleSpeed:1,
     cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],history:[],battle:null,
     player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1,sp:0,tree:{}},weather:null,weatherBest:null,potions:0,mythicPotions:0,luckPots:[0,0,0],speedPots:[0,0,0],luckBuffs:[],speedBuffs:[],infTokens:0,
     artOwned:[],artSlots:[null,null],petOwned:[],petEquipped:null,intanRolls:0,idxRewardsClaimed:0,premiumGems:50,rollPacks:{r5k:0,r10k:0,r25k:0,r50k:0,r100k:0}};
@@ -121,7 +121,11 @@ function loadStateFor(name){
   if(typeof state.premiumGems!=="number"||state.premiumGems<0)state.premiumGems=50;
   if(!state.storyGemMilestones||typeof state.storyGemMilestones!=="object")state.storyGemMilestones={};
   if(typeof state.dailyGemPending!=="number"||state.dailyGemPending<0)state.dailyGemPending=0;
-  if(typeof state.storyCdUntil!=="number"||state.storyCdUntil<0)state.storyCdUntil=0;
+  /* COOLDOWN REPLAY per stage: map "<diff>:<lv>" -> until-ms.
+     Scalar storyCdUntil lama mengunci SEMUA stage sekali main — dibuang. */
+  if(!state.storyCd||typeof state.storyCd!=="object"||Array.isArray(state.storyCd))state.storyCd={};
+  Object.keys(state.storyCd).forEach(k=>{if(!(+state.storyCd[k]>Date.now()))delete state.storyCd[k];});
+  delete state.storyCdUntil;
   if(!state.rollPacks||typeof state.rollPacks!=="object")state.rollPacks={r5k:0,r10k:0,r25k:0,r50k:0,r100k:0};
   ['r5k','r10k','r25k','r50k','r100k'].forEach(k=>{if(typeof state.rollPacks[k]!=="number"||state.rollPacks[k]<0)state.rollPacks[k]=0;});
   if(typeof state.idxRewardsClaimed!=="number"||state.idxRewardsClaimed<0)state.idxRewardsClaimed=0;
@@ -249,14 +253,24 @@ function claimStoryMilestone(chapNo,diffKey){
   })();
   return gems;
 }
-/* ===== REPEAT STORY: 20% GEM + COOLDOWN 5 MENIT =====
+/* ===== REPEAT STORY: 20% GEM + COOLDOWN 5 MENIT PER STAGE =====
    Replay stage yang sudah tamat memberi 20% coin & 20% GEM milestone.
-   Tiap kemenangan replay memasang cooldown 5 menit sebelum replay berikutnya. */
+   Kooldown melekat pada stage yang dimainkan, bukan seluruh cerita. */
 const STORY_REPEAT_CD_MS=5*60*1000;
 const STORY_REPEAT_GEM_PCT=0.2;
-function storyCdLeft(){return state?Math.max(0,(state.storyCdUntil||0)-Date.now()):0;}
+function storyCdKey(lv){return state.diff+":"+lv;}
+function storyCdLeft(lv){
+  if(!state)return 0;
+  return Math.max(0,(+(state.storyCd||{})[storyCdKey(lv)]||0)-Date.now());
+}
 function storyCdText(ms){const s=Math.max(0,Math.ceil((ms||0)/1000));return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");}
-function storyInRepeatCd(lv){return !!(state&&diffProg()[state.diff][lv]&&storyCdLeft()>0);}
+function storySetCd(lv){
+  if(!state)return;
+  if(!state.storyCd||typeof state.storyCd!=="object")state.storyCd={};
+  Object.keys(state.storyCd).forEach(k=>{if(!(+state.storyCd[k]>Date.now()))delete state.storyCd[k];});
+  state.storyCd[storyCdKey(lv)]=Date.now()+STORY_REPEAT_CD_MS;
+}
+function storyInRepeatCd(lv){return !!(state&&diffProg()[state.diff][lv]&&storyCdLeft(lv)>0);}
 function claimStoryRepeatGem(chapNo,diffKey){
   const gems=Math.round(storyGemReward(chapNo,diffKey)*STORY_REPEAT_GEM_PCT);
   if(!gems)return 0;
@@ -283,7 +297,7 @@ function claimStoryRepeatGem(chapNo,diffKey){
 /* Satu pintu masuk cerita: blok replay saat cooldown masih jalan. */
 function startStoryBattle(lv){
   if(storyInRepeatCd(lv)){
-    try{toast("REPLAY COOLDOWN","Tunggu "+storyCdText(storyCdLeft())+" sebelum replay lagi","#fbbf24");}catch(e){}
+    try{toast("REPLAY COOLDOWN","Tunggu "+storyCdText(storyCdLeft(lv))+" sebelum replay stage ini","#fbbf24");}catch(e){}
     if(state.battle){state.battle=null;render();}
     return false;
   }
@@ -292,31 +306,34 @@ function startStoryBattle(lv){
   state.battle={level:lv};render();
   return true;
 }
+/* Tick 1 detik. Kooldown kini per stage: tiap kartu punya timer sendiri,
+   jadi yang di-refresh hanya kartu yang hitungannya sudah lewat. */
 function updateStoryCdUI(){
   if(!state)return;
-  const left=storyCdLeft(),txt=storyCdText(left);
-  const badge=document.getElementById("scDockCd");
-  if(badge){badge.textContent=left>0?"REPLAY COOLDOWN · "+txt:"";badge.style.display=left>0?"inline-flex":"none";}
-  const timers=document.querySelectorAll(".sc-cd-timer");
-  if(timers.length){
-    if(left>0)timers.forEach(el=>{el.textContent=txt;});
-    else document.querySelectorAll(".sc-card.is-replay-cd").forEach(c=>{
+  let expired=false;
+  document.querySelectorAll(".sc-card.is-replay-cd").forEach(c=>{
+    const left=storyCdLeft(+c.dataset.lv);
+    if(left>0){const t=c.querySelector(".sc-cd-timer");if(t)t.textContent=storyCdText(left);}
+    else{
       c.classList.remove("is-replay-cd");
       const ov=c.querySelector(".sc-cd-overlay");if(ov)ov.remove();
-    });
-  }
-  const sb=document.getElementById("scBtnBattle");
-  if(sb&&sb.dataset.cdRepeat==="1"){
-    if(left>0){sb.disabled=true;sb.innerHTML="<span>⏱</span> "+txt;}
-    else{
-      sb.dataset.cdRepeat="";
-      const sm=document.getElementById("storyModal");
-      if(sm&&sm.classList.contains("show")){try{updateStoryCarouselPositions(false);}catch(e){}}
+      expired=true;
     }
+  });
+  /* Dock = stage terpilih, jadi angkanya ikut kartu yang lagi di tengah. */
+  const sel=document.querySelector(".sc-card.pos-0");
+  const selLeft=sel?storyCdLeft(+sel.dataset.lv):0;
+  const sb=document.getElementById("scBtnBattle");
+  if(expired||sb&&sb.dataset.cdRepeat==="1"){
+    if(selLeft>0){if(sb)sb.innerHTML="<span>⏱</span> "+storyCdText(selLeft);}
+    else{try{updateStoryCarouselPositions(false);}catch(e){}}
   }
+  const badge=document.getElementById("scDockCd");
+  if(badge&&badge.style.display!=="none"&&selLeft>0)badge.textContent="REPLAY COOLDOWN · "+storyCdText(selLeft);
   const go=document.getElementById("stGo");
   if(go&&go.dataset.cdRepeat==="1"){
-    if(left>0){go.disabled=true;go.textContent="⏱ COOLDOWN "+txt;}
+    const left=storyCdLeft(startLv);
+    if(left>0){go.disabled=true;go.textContent="⏱ COOLDOWN "+storyCdText(left);}
     else{
       go.dataset.cdRepeat="";
       const sm=document.getElementById("startModal");
@@ -811,7 +828,7 @@ function openStart(lv){
      biar clear pertama di HARD/EXTREME/NIGHTMARE tetap bayar 100%, bukan replay 20%. */
   const en=enemyOf(lv),es=enemyStats(lv),first=!diffProg()[state.diff][lv];
   const reward=first?firstClearReward(lv):Math.round(firstClearReward(lv)*.2);
-  const cdLeft=first?0:storyCdLeft();
+  const cdLeft=first?0:storyCdLeft(lv);
   const pss=en.id&&CARDS[en.id]?CARDS[en.id].passive:null,pw=totalPower(),g=gateOf(lv),ok=pw>=g;
   const bar=Math.max(4,Math.min(100,Math.round(pw/g*100)));
   document.getElementById("startBody").innerHTML=`

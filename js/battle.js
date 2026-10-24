@@ -3163,7 +3163,7 @@ function finish(win){
   clearTimeout(bt.timer);bt.over=true;
   const lv=bt.lv,first=!diffProg()[state.diff][lv];
   const reward=win?(first?firstClearReward(lv):Math.round(firstClearReward(lv)*.2)):0;
-  if(win&&!first)state.storyCdUntil=Date.now()+STORY_REPEAT_CD_MS;
+  if(win&&!first)storySetCd(lv);
   if(win){state.cleared[lv]=true;diffProg()[state.diff][lv]=true;state.coins+=reward;state.xp+=20;
     while(state.xp>=state.playerLv*1000){state.xp-=state.playerLv*1000;state.playerLv++;}
     fanfare();
