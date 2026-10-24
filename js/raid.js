@@ -10,6 +10,7 @@ let wb=null, wbAt=0, wbLoading=false, wbRunId=null, wbStarting=false, wbErr=fals
 const wbByBoss={a:null,b:null};
 let wbRunBoss=null;   /* key boss untuk run yang sedang jalan */
 const WB_TTL=30000;
+const WB_RETRY=8000; /* belum dapat data sama sekali -> jangan fetch tiap render */
 function wbOnline(){return !!(currentUser&&window.CloudDB&&typeof window.CloudDB.wbState==="function");}
 function wbBossName(id){const b=RAID_BOSSES.find(x=>x.id===id)||RAID_BOSSES[0];return b?b.name:"WORLD BOSS";}
 function wbModText(){
@@ -59,7 +60,7 @@ function wbBossOf(diff){
    silent=true -> jangan re-render hub (dipakai polling 8s supaya tidak flicker). */
 function wbRefresh(force,silent){
   if(!wbOnline())return Promise.resolve(null);
-  if(wbLoading||(!force&&wbData()&&Date.now()-wbAt<WB_TTL))return Promise.resolve(wb);
+  if(wbLoading||(!force&&Date.now()-wbAt<(wbData()?WB_TTL:WB_RETRY)))return Promise.resolve(wb);
   wbLoading=true;
   const jobs=WB_BOSSES.map(b=>window.CloudDB.wbState(currentUser,b.id)
     .then(res=>({b,res})).catch(()=>({b,res:null})));
@@ -73,7 +74,11 @@ function wbRefresh(force,silent){
     wbErr=!okAny&&dead;
     wbAt=Date.now();
     wbSyncCur();
-    if(!silent&&route()==="#/raid"&&raidView==="hub")renderRaidHub();
+    /* Re-render HANYA kalau ada data baru. Kalau semua RPC balik null (offline / RPC
+       belum deploy / player belum punya state), wbData() tetap null -> guard TTL di atas
+       tidak pernah kena, renderRaidHub() manggil wbRefresh() lagi, dan loop render+fetch
+       berjalan terus tiap round-trip (~100ms): layar flicker & semua klik ketelan. */
+    if(okAny&&!silent&&route()==="#/raid"&&raidView==="hub")renderRaidHub();
     return wb;
   }).catch(()=>{wbLoading=false;wbErr=true;return wb;});
 }
