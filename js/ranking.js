@@ -86,7 +86,7 @@ function rkEsc(s) {
   return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
-async function rkRender() {
+async function rkRender(silent) {
   const meta = document.getElementById("rkMeta");
   const body = document.getElementById("rkBody");
   if (!meta || !body) return;
@@ -95,6 +95,7 @@ async function rkRender() {
   const online = !!(window.CloudDB && typeof window.CloudDB.leaderboard === "function" && currentUser);
 
   if (!online) {
+    if (silent) return;
     meta.innerHTML = `<span class="rk-chip">${info.label}</span><span class="rk-chip rk-dim">LOGIN UNTUK RANKING</span>`;
     body.innerHTML = `<div class="rk-empty">TIDAK TERHUBUNG KE SERVER<br><span>Ranking hanya tersedia saat online.</span></div>`;
     return;
@@ -102,8 +103,10 @@ async function rkRender() {
 
   if (rkBusy) return;
   rkBusy = true;
-  meta.innerHTML = `<span class="rk-chip">${info.label}</span><span class="rk-chip rk-dim">MEMUAT…</span>`;
-  body.innerHTML = `<div class="rk-loading">MEMUAT RANKING…</div>`;
+  if (!silent) {
+    meta.innerHTML = `<span class="rk-chip">${info.label}</span><span class="rk-chip rk-dim">MEMUAT…</span>`;
+    body.innerHTML = `<div class="rk-loading">MEMUAT RANKING…</div>`;
+  }
 
   const board = rkBoard;
   let res = null;
@@ -111,9 +114,10 @@ async function rkRender() {
   rkBusy = false;
 
   /* Tab sudah pindah selama fetch -> hasil board lama jangan menimpa. */
-  if (board !== rkBoard) { rkRender(); return; }
+  if (board !== rkBoard) { rkRender(silent); return; }
 
   if (!res || !res.ok) {
+    if (silent) return; /* refresh berkala gagal: tampilan lama dibiarkan */
     meta.innerHTML = `<span class="rk-chip">${info.label}</span><span class="rk-chip rk-bad">GAGAL MEMUAT</span>`;
     body.innerHTML = `<div class="rk-empty">SERVER TIDAK MERESPONS<br><span>Coba buka lagi sebentar lagi.</span></div>`;
     return;
@@ -242,6 +246,14 @@ document.addEventListener("keydown", e => {
   const m = document.getElementById("rankModal");
   if (m && m.classList.contains("show")) closeRanking();
 });
+
+/* Refresh papan 1x/jam selama panel terbuka: tarik progres terbaru semua akun
+   dari Supabase tanpa skeleton (tampilan lama tetap sampai data baru datang). */
+const RK_REFRESH_MS = 3600000;
+setInterval(() => {
+  const m = document.getElementById("rankModal");
+  if (m && m.classList.contains("show")) rkRender(true);
+}, RK_REFRESH_MS);
 
 window.openRanking = openRanking;
 window.closeRanking = closeRanking;
