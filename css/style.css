@@ -48396,7 +48396,7 @@ body.battle-full .fighter.shiny .f-banner::after{
 .bd-chip.art{animation:none !important;box-shadow:0 0 12px var(--sc,rgba(255,255,255,.3))}
 
 /* ===== PERF/LAYOUT 2026-10-23 · ukuran layar HP = PC =====
-   Viewport sudah dipaku `width=1600` (sama seperti PC), tapi Chrome/WebView HP
+   Viewport sudah dipaku `width=1900` (sama seperti PC), tapi Chrome/WebView HP
    masih bisa "font boosting" (membesarkan teks otomatis) karena lebar layout jauh
    lebih besar dari lebar fisik → teks melimpah & layout terasa nabrak.
    Matikan autosizing supaya skala teks identik dengan desktop. */
@@ -48405,7 +48405,7 @@ html,body{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 /* ===== LAYOUT 2026-10-23 · layar sempit ikut komposisi PC =====
    Di layar ≤700px dulu kartu ditumpuk 1 kolom dengan tinggi 440px (mudah nabrak
    & kegedean di HP). Sekarang dipaksa komposisi 3 kolom seperti desktop, hanya
-   diskalakan. Kalau HP memakai viewport desktop (width=1600) blok ini tidak aktif;
+   diskalakan. Kalau HP memakai viewport desktop (width=1900) blok ini tidak aktif;
    ini jaring pengaman untuk browser WebView yang memaksa device-width. */
 @media(max-width:700px){
   body.battle-full{overflow:hidden}

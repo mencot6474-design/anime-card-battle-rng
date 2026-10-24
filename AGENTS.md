@@ -81,7 +81,7 @@ Tujuan: HP kentang tetap main tanpa frame drop. Semua efek baru harus ikut atura
 7. **`background-attachment:fixed`** hanya boleh kalau tidak ada scroll; lobby sudah dipindah ke `scroll`.
 8. **Grid panjang** pakai `content-visibility:auto` (`.ix-cell`, `.bp-tile`, `.bp-shop`).
 9. Saat modal penuh terbuka / tab hidden, animasi dekoratif di-pause (`body.perf-paused`, `body:has(...modal.show)`).
-10. Kontrol build: label di `js/boot.js:592` — `BUILD <tanggal>-perfN · VP W×H · AUD`. Kalau balas "masih lag", cek angka `perfN` dan `VP` dulu (VP 1600 = viewport desktop dipakai).
+10. Kontrol build: label di `js/boot.js:592` — `BUILD <tanggal>-perfN · VP W×H · AUD`. Kalau balas "masih lag", cek angka `perfN` dan `VP` dulu (VP 1900 = viewport desktop dipakai).
 
 ---
 
@@ -139,7 +139,7 @@ Box dalam = `display:flex; flex-direction:column; overflow:hidden`; header `flex
 Backpack bukan `display:fixed` bawaan — `toggleBackpack` set inline transform; dinetralkan CSS `transform:none!important`.
 
 ### Layout layar main = PC di semua device
-- `<meta name="viewport" content="width=1600, ...">` (index.html:5) — HP/PWA me-render layout desktop lalu mengecilkan, jadi komposisi 3 kolom sama seperti PC.
+- `<meta name="viewport" content="width=1900, ...">` (index.html:5) — HP/PWA me-render layout desktop lalu mengecilkan, jadi komposisi 3 kolom sama seperti PC.
 - `html,body{text-size-adjust:100%}` (style.css:48379) mematikan font boosting Chrome/WebView HP (penyebab teks melimpah & "nabrak").
 - Jaring pengaman `@media(max-width:700px)` (style.css:48386 & 48406) memaksa arena battle tetap 3 kolom: `minmax(0,1fr) clamp(48px,12vw,96px) minmax(0,1fr)`, kartu `max-height:min(58dvh,420px)`, kolom VS `flex-direction:column; width:100%; min-width:0` (dulu 210px menabrak kartu).
 - Jangan pakai `100dvh - konstanta` untuk tinggi arena; di viewport pendek (landscape HP) rumus itu runtuh.
