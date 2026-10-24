@@ -27,10 +27,12 @@ Baca file ini dulu; jangan baca `style.css` (49.3k baris) atau `index.html` utuh
 
 ```
 index.html            shell, semua modal/screen markup, urutan script (767 baris)
-css/style.css         49.3k baris — SEMUA gaya utama (append override di akhir)
+css/style.css         49.4k baris — SEMUA gaya utama (append override di akhir)
                       blok PERF/LAYOUT: 48395–48476; blok terbaru (full-art,
-                      shadow-king FX, world boss) lanjut sampai 48571–49022+
+                      shadow-king FX, world boss) lanjut sampai 48571–49022+;
+                      blok LEADERBOARD v2 (podium+border) mulai 49297
 css/story-carousel.css  CSS khusus modal story (diload setelah style.css)
+css/world-boss.css    814 baris — gaya hub World Boss / kartu ultima (juga diload)
 css/sl-system.css     roll/gacha system
 css/anim-prototipe.css  halaman prototipe (tidak dipakai game) — LOKAL SAJA, sudah di-.gitignore
 js/data.js            STORY_BIBLE (baris 100), luck helper, data cerita/unit
@@ -58,7 +60,9 @@ js/foe-passives.js    passive musuh
 js/story-carousel.js  modal story (IIFE, ekspor ke window)
 js/raid.js            raid hub/battle/shop + index card + trait/auto-roll + World Boss
 js/ranking.js         leaderboard 5 papan (world_boss, world_boss_b, inf_tower,
-                      deck_power, rarest_pull) via RPC get_leaderboard, cache 60 dtk
+                      deck_power, rarest_pull) via RPC get_leaderboard — layout v2:
+                      podium top-3 + border (RK_BD1 75 / RK_BD23 76), baris
+                      RANK|AV|NAMA|SKOR|Δ (rkRowsHtml 155), tab pil di bawah
 js/boot.js            router, enterGame, settings, foot menu, label BUILD
 js/pwa.js             install prompt/service worker
 js/coret.js           fitur coret dev (tombol float #crFab)
@@ -69,7 +73,9 @@ supabase/migrations/  0001–0012 SQL (topup, earn_gems, redeem, world boss 0005
 supabase/functions/   Deno edge: create-invoice, order-status, play-verify,
                       redeem-code, trakteer-webhook (+ _shared/packs.ts)
 tools/cap-sync.mjs    copy web → www (Capacitor)
-assets/{cards,pets,artifacts,images,raid,vfx,audio,bg,frames,sprites}
+assets/{cards,pets,artifacts,images,raid,vfx,audio,bg,frames,sprites,ui}
+                      assets/ui = dekor UI (lb-top1.mp4 border podium #1,
+                      lb-ring.png border podium #2/#3) — JANGAN sentuh tanpa diminta
 docs/TOPUP.md, test-roll-system.md
 Bahan uji coba (TIDAK dilacak git, tidak ikut deploy): `proto/`, `prototipe.html`,
 `*-prototype.html`, `demo-*.html`, `js/anim-prototipe.js`, `css/anim-prototipe.css`.
@@ -178,7 +184,8 @@ Backpack bukan `display:fixed` bawaan — `toggleBackpack` set inline transform;
 - **Tower** — `tower-lobby.js` (`renderTower` 121, shop 260, `startTowerBattle` 548, `renderTowerBattle` 527) + `openTowerDropModal` 1228.
 - **Raid / auto-roll** — `raid.js` (`renderRaid` 241, `startRaid` 547, `startAutoRoll` 1576). Auto-roll = sumber beban cloud terbesar; lihat §3 sebelum mengubah ritme save.
 - **World Boss** — boss list `WB_BOSSES` raid.js:28 (`RAID_ETERNAL_DRAGON` → `world_boss`, `RAID_SHADOW_KING` → `world_boss_b`), WB shop 812 (token→gem 100:20), poll leaderboard 1×/menit (164). Damage run di-skala `RAID_DMG_SCALE = 100` (cards-fx.js:168), pool HP `WB_POOL_HP = 1e12` (167), format ringkas `fmtBig` raid.js:87. Sisi server: RPC `wb_state/wb_start/wb_submit/wb_claim` (supabase-sync.js 339–386) + migration `0005`–`0009`, `0011`. **Ambang hadiah "participant" = `best_dmg >= 1e9` (0008:92)** — perlu ditinjau lagi karena damage sudah ÷100.
-- **Leaderboard** — `js/ranking.js`: `RK_BOARDS` (9) = world_boss, world_boss_b, inf_tower, deck_power, rarest_pull; `lbState` 163 cache namespace `aab-lb2-`; refresh `RK_REFRESH_DAY_MS = 60000` (261) — ini penyumbang egress berkala terbesar, tab hidden ikut di-skip. Submit via `CloudDB.submitScore` (supabase-sync.js:398) dengan plafon 1e21 (migration 0010).
+- **Leaderboard** — `js/ranking.js`: `RK_BOARDS` (9) = world_boss, world_boss_b, inf_tower, deck_power, rarest_pull; `lbState` (260) cache namespace `aab-lb2-`; refresh `RK_REFRESH_DAY_MS = 60000` (370) — ini penyumbang egress berkala terbesar, tab hidden ikut di-skip. Submit via `CloudDB.submitScore` (supabase-sync.js:398) dengan plafon 1e21 (migration 0010).
+  Layout v2 (podium + border): `rkRender` 178 merakit `rkPodiumHtml` 117 → `rkPodHtml` 102 → `rkRowsHtml` 155. Border #1 = video `assets/ui/lb-top1.mp4` (`mix-blend-mode:screen` + mask bulat) — **jangan pakai `transform` pada `.rk-pod1`**, transform bikin stacking context yang mematikan screen-blend (kotak hitam menutupi podium); naik-turun podium pakai `margin`. Border #2/#3 = `assets/ui/lb-ring.png` (sudah di-keying transparan). Avatar diambil dari `meta.av` yang di-`lbSubmit` (`lbAvMeta` 308, `cardThumb` leader) dan **wajib lewat whitelist `rkAvSrc` 87** karena meta datang dari player lain. Δ posisi dihitung lokal (`rkDeltaHtml` 136, cache `aab-lb-delta`) — server tidak menyimpan peringkat sebelumnya.
 - **Story** — `story-carousel.js` IIFE; mengekspor `window.openStoryCarousel/openStory/closeStory/openMission/selectStoryStage/slideStoryStage/changeStoryChapter/initStoryCarousel`.
 - **Weather** — `WEATHERS` (panels.js ~17), `WEATHER` map, `weatherSvg(id,sz)`, dock `renderWeatherDock` 232, tick `startWeatherTick` 316, machine modal 2071/2299.
 - **Buff dock** — `renderBuffDock` panels.js:277.

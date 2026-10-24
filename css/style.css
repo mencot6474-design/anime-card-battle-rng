@@ -49293,3 +49293,155 @@ html.fps-locked .bp-fchip{
   .lobby-hub .hub-link .tile-frame::after,
   .lobby-hub .loadout-slot .tile-frame::after{animation:none;opacity:.55}
 }
+
+/* ==========================================================================
+   LEADERBOARD v2 — podium top-3 + border (video #1 / ring #2&#3) + kolom avatar
+   & delta posisi. Mengikuti referensi: podium di atas, tabel di tengah,
+   pemilih papan sebagai tombol pil di bawah.
+   ========================================================================== */
+.rk-podium{
+  display:grid;grid-template-columns:1fr 1.16fr 1fr;align-items:end;gap:8px;
+  width:min(660px,100%);margin:2px auto 14px;padding:22px 16px 16px;
+  background:
+    radial-gradient(60% 78% at 50% 26%,rgba(255,216,106,.10),transparent 70%),
+    linear-gradient(180deg,#171012,#120c10 62%,#0d0a0d);
+  border:1px solid rgba(255,255,255,.07);border-radius:14px;
+  box-shadow:0 14px 30px rgba(0,0,0,.55);
+}
+.rk-pod{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}
+/* Naik/turun pakai margin, BUKAN transform: transform membuat stacking context
+   baru sehingga mix-blend-mode:screen pada video top-1 tidak lagi menyaring
+   hitamnya (kotak hitam menutupi podium). */
+.rk-pod1{margin-bottom:22px}
+.rk-pod2,.rk-pod3{margin-top:6px}
+.rk-ava{position:relative;flex:none;width:94px;height:94px;display:grid;place-items:center}
+.rk-pod1 .rk-ava{width:126px;height:126px}
+.rk-ava-core{
+  position:absolute;inset:16%;z-index:2;border-radius:50%;overflow:hidden;
+  background:radial-gradient(120% 120% at 50% 0%,#2b2028,#120d11 70%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.10),0 6px 16px rgba(0,0,0,.6);
+  display:grid;place-items:center;
+}
+.rk-face{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 24%;display:block}
+.rk-init{
+  font-family:"Rajdhani",sans-serif;font-weight:800;font-size:26px;line-height:1;
+  color:#cfe0ee;letter-spacing:.02em;
+}
+.rk-pod1 .rk-init{font-size:34px;color:#f1e3c0}
+.rk-bd{position:absolute;inset:-12%;z-index:1;width:124%;height:124%;pointer-events:none;object-fit:contain}
+.rk-bd1{
+  mix-blend-mode:screen;
+  /* pinggir file video tetap kotak; mask bulat menghapus sisa kotak hitamnya */
+  -webkit-mask-image:radial-gradient(closest-side,#000 62%,transparent 88%);
+  mask-image:radial-gradient(closest-side,#000 62%,transparent 88%);
+}
+.rk-pod-name,
+.rk-pod-val,
+.rk-pod-medal{position:relative;z-index:3}
+.rk-pod-name{
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-family:"Barlow Condensed","Rajdhani",sans-serif;font-weight:700;font-size:15px;color:#E7EEF5;
+}
+.rk-pod1 .rk-pod-name{font-size:17px}
+.rk-pod-val{
+  font-family:"Rajdhani",sans-serif;font-weight:800;font-size:15px;line-height:1.1;
+  color:#7DF9FF;font-variant-numeric:tabular-nums;
+}
+.rk-pod1 .rk-pod-val{font-size:19px;color:#FFD86A}
+.rk-pod2 .rk-pod-val{color:#DCE6F0}
+.rk-pod3 .rk-pod-val{color:#E7A96B}
+.rk-pod-medal{
+  font-family:"Rajdhani",sans-serif;font-weight:800;font-size:9px;letter-spacing:.16em;
+  padding:3px 8px;border-radius:999px;line-height:1;
+  color:#9fb0bf;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);
+}
+.rk-pod1 .rk-pod-medal{color:#FFD86A;border-color:rgba(255,216,106,.34);background:rgba(255,216,106,.08)}
+.rk-pod2 .rk-pod-medal{color:#DCE6F0;border-color:rgba(220,230,240,.3);background:rgba(220,230,240,.06)}
+.rk-pod3 .rk-pod-medal{color:#E7A96B;border-color:rgba(231,169,107,.32);background:rgba(231,169,107,.07)}
+
+/* Baris tabel: RANK | AVATAR | PEMAIN | SKOR | Δ */
+#rankModal .rk-head-row,
+#rankModal .rk-row{grid-template-columns:52px 46px minmax(0,1fr) 150px 86px;gap:12px;padding:11px 18px}
+#rankModal .rk-head-row,
+#rankModal .rk-row,
+#rankModal .rk-note{width:min(1080px,100%);margin-left:auto;margin-right:auto}
+#rankModal .rk-head-row{padding:9px 18px;font-size:10px}
+.rk-av-sm{
+  position:relative;width:34px;height:34px;border-radius:50%;overflow:hidden;display:grid;place-items:center;
+  background:radial-gradient(120% 120% at 50% 0%,#2b2028,#120d11 70%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.09);
+}
+.rk-av-sm .rk-init{font-size:14px}
+.rk-val{display:flex;align-items:baseline;justify-content:flex-end;gap:6px}
+.rk-unit{
+  font-family:"Rajdhani",sans-serif;font-style:normal;font-weight:800;font-size:9px;
+  letter-spacing:.14em;color:#64748b;
+}
+.rk-delta-cell{display:flex;justify-content:flex-end}
+.rk-delta{
+  font-family:"Rajdhani",sans-serif;font-weight:800;font-size:11px;letter-spacing:.06em;
+  padding:3px 7px;border-radius:6px;line-height:1;
+  color:#64748b;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);
+}
+.rk-delta.up{color:#5CF0A8;border-color:rgba(92,240,168,.32);background:rgba(92,240,168,.08)}
+.rk-delta.down{color:#FF6B8A;border-color:rgba(255,107,138,.3);background:rgba(255,107,138,.07)}
+.rk-delta.rk-new{color:#7DF9FF;border-color:rgba(125,249,255,.3);background:rgba(125,249,255,.07)}
+
+/* Pemilih papan pindah ke bawah (pil), seperti 世界榜 / 周榜 di referensi.
+   Satu baris geser horizontal — jangan wrap, nanti menutupi tabel. */
+#rankModal .rk-tabs{
+  flex:none;justify-content:flex-start;
+  padding:12px 30px 20px;gap:8px;flex-wrap:nowrap;overflow-x:auto;
+  scrollbar-width:none;-ms-overflow-style:none;
+  border-top:1px solid rgba(125,249,255,.12);
+}
+#rankModal .rk-tabs::-webkit-scrollbar{display:none;width:0;height:0}
+.rk-tab{border-radius:999px;padding:9px 16px}
+@media(max-width:860px){
+  #rankModal .rk-tabs{padding:10px 16px 16px!important}
+  #rankModal .rk-head-row,
+  #rankModal .rk-row{grid-template-columns:38px 34px minmax(0,1fr) 96px 62px;gap:8px;padding:10px 10px}
+  .rk-podium{grid-template-columns:1fr 1.12fr 1fr;gap:4px;padding:16px 8px 12px}
+  .rk-ava{width:66px;height:66px}
+  .rk-pod1 .rk-ava{width:90px;height:90px}
+  .rk-pod-name{font-size:13px}
+  .rk-pod1 .rk-pod-name{font-size:15px}
+  .rk-pod-val{font-size:13px}
+  .rk-pod1 .rk-pod-val{font-size:16px}
+  .rk-pod1 .rk-init{font-size:26px}
+  .rk-av-sm{width:28px;height:28px}
+  .rk-unit{display:none}
+}
+/* Layar sempit: kolom avatar di tabel dihapus dulu supaya nama tidak tercekik. */
+@media(max-width:430px){
+  #rankModal .rk-head-row,
+  #rankModal .rk-row{grid-template-columns:30px minmax(0,1fr) 78px 46px;gap:6px}
+  #rankModal .rk-head-row .rk-h-av,
+  #rankModal .rk-row .rk-av-sm{display:none}
+  #rankModal .rk-head-row .rk-h-long{display:none}
+  .rk-podium{width:100%;padding:14px 4px 10px}
+  .rk-ava{width:58px;height:58px}
+  .rk-pod1 .rk-ava{width:80px;height:80px}
+}
+/* Layar pendek (HP landscape): podium dikecilkan supaya baris tabel ikut terlihat. */
+@media(max-height:470px){
+  #rankModal .ix-head{padding:8px 110px 6px 16px!important}
+  #rankModal .ix-eyebrow{display:none}
+  #rankModal .ix-title{font-size:21px}
+  .rk-podium{padding:8px 12px 6px;margin-bottom:6px}
+  .rk-ava{width:50px;height:50px}
+  .rk-pod1 .rk-ava{width:66px;height:66px}
+  .rk-pod1 .rk-init{font-size:20px}
+  .rk-pod-medal{display:none}
+  .rk-pod1{margin-bottom:10px}
+  .rk-pod2,.rk-pod3{margin-top:4px}
+  #rankModal .rk-tabs{padding:7px 16px 9px}
+  #rankModal .rk-meta{padding-top:4px!important;gap:4px}
+}
+@media(prefers-reduced-motion:reduce){
+  #rankModal .rk-bd1{display:none}
+  .rk-pod1 .rk-ava-core::after{
+    content:"";position:absolute;inset:-16%;border-radius:50%;
+    border:2px solid rgba(255,216,106,.5);
+  }
+}

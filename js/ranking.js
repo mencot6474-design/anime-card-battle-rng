@@ -31,7 +31,10 @@ function openRanking(board) {
 
 function closeRanking() {
   const m = document.getElementById("rankModal");
-  if (m) m.classList.remove("show");
+  if (!m) return;
+  m.classList.remove("show");
+  /* Video border #1 jangan tetap muter di belakang modal (kuota + CPU player). */
+  m.querySelectorAll("video").forEach(v => { try { v.pause(); } catch (e) {} });
 }
 
 function rkSwitch(board) {
@@ -66,18 +69,104 @@ function rkSub(r, board) {
   return t ? `<span class="rk-sub">${rkEsc(t)}</span>` : "";
 }
 
-function rkRowsHtml(rows, board) {
+/* ===== BORDER TOP-3 =====
+   #1 = video loop (background hitam -> mix-blend-mode:screen), #2/#3 = ring PNG
+   hasil keying dari asset user (background putih dibuang di canvas). */
+const RK_BD1 = "assets/ui/lb-top1.mp4";
+const RK_BD23 = "assets/ui/lb-ring.png";
+const RK_UNIT = { world_boss: "DMG", world_boss_b: "DMG", inf_tower: "LANTAI", deck_power: "POWER", rarest_pull: "1 IN" };
+
+/* inf_tower ("F 187") dan rarest_pull ("1 in 2.4M") sudah membawa satuannya
+   sendiri di rkValFmt, jadi chip satuan tidak perlu diulang. */
+function rkUnitChip(board) {
+  return (board === "inf_tower" || board === "rarest_pull") ? "" : (RK_UNIT[board] || "SKOR");
+}
+
+/* Avatar ikut di meta saat submit; path dibatasi whitelist supaya player lain
+   tidak bisa menyuntik markup/URL lewat meta.av. */
+function rkAvSrc(r) {
+  const av = r && r.meta && typeof r.meta.av === "string" ? r.meta.av : "";
+  return /^assets\/[A-Za-z0-9._/-]+\.(webp|png|jpg|jpeg)$/.test(av) ? av : "";
+}
+
+function rkFaceHtml(r, size) {
+  const nm = String((r && r.username) || "?").trim();
+  const ini = `<span class="rk-init"${size ? ' style="font-size:' + Math.round(size * 0.34) + 'px"' : ""}>${rkEsc((nm[0] || "?").toUpperCase())}</span>`;
+  const src = rkAvSrc(r);
+  /* Inisial selalu digambar lebih dulu: kalau file avatar hilang, hasilnya
+     tetap terbaca (img dihapus sendiri oleh onerror). */
+  const img = src ? `<img class="rk-face" src="${rkEsc(src)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : "";
+  return ini + img;
+}
+
+function rkPodHtml(r, board) {
+  if (!r) return "";
+  const rank = r.rank;
+  const bd = rank === 1
+    ? `<video class="rk-bd rk-bd1" src="${RK_BD1}" muted loop playsinline autoplay preload="metadata"></video>`
+    : `<img class="rk-bd rk-bd23" src="${RK_BD23}" alt="" decoding="async">`;
+  const unit = rkUnitChip(board);
+  return `<div class="rk-pod rk-pod${rank}">
+    <div class="rk-ava">${bd}<span class="rk-ava-core">${rkFaceHtml(r, rank === 1 ? 104 : 78)}</span></div>
+    <div class="rk-pod-name">${rkEsc(r.username)}</div>
+    <div class="rk-pod-val">${rkValFmt(board, r.value)}</div>
+    ${unit ? `<div class="rk-pod-medal">${rkEsc(unit)}</div>` : ""}
+  </div>`;
+}
+
+function rkPodiumHtml(rows, board) {
+  if (!rows || !rows.length) return "";
+  const by = {};
+  for (const r of rows.slice(0, 3)) by[r.rank] = r;
+  /* Slot kosong tetap diisi elemen: grid 3 lajur, jadi juara 1 tidak bergeser
+     ke kiri kalau baru ada satu-dua skor. */
+  const slot = r => r ? rkPodHtml(r, board) : `<div class="rk-pod rk-pod-empty"></div>`;
+  return `<div class="rk-podium">${slot(by[2])}${slot(by[1])}${slot(by[3])}</div>`;
+}
+
+/* ===== DELTA POSISI =====
+   Server cuma menyimpan skor periode berjalan, jadi selisih peringkat dihitung
+   lokal dari snapshot fetch sebelumnya (per papan, per user). */
+function rkDeltaStore() {
+  let d = {};
+  try { d = JSON.parse(localStorage.getItem("aab-lb-delta")) || {}; } catch (e) {}
+  return d;
+}
+
+function rkDeltaHtml(board, rows) {
+  const store = rkDeltaStore();
+  const prev = store[board] || {};
+  const next = {};
+  const out = {};
+  for (const r of rows) {
+    const k = String(r.username).toLowerCase();
+    next[k] = r.rank;
+    if (prev[k] == null) { out[k] = `<span class="rk-delta rk-new">BARU</span>`; continue; }
+    const d = prev[k] - r.rank;
+    out[k] = d > 0 ? `<span class="rk-delta up">▲${d}</span>`
+      : d < 0 ? `<span class="rk-delta down">▼${-d}</span>`
+      : `<span class="rk-delta same">–</span>`;
+  }
+  store[board] = next;
+  try { localStorage.setItem("aab-lb-delta", JSON.stringify(store)); } catch (e) {}
+  return out;
+}
+
+function rkRowsHtml(rows, board, delta) {
   if (!rows || !rows.length) {
     const info = RK_BOARDS[board] || RK_BOARDS.world_boss;
     return `<div class="rk-empty">BELUM ADA SKOR<br><span>Jadilah yang pertama masuk papan ${rkEsc(info.label)}.</span></div>`;
   }
   const myName = (currentUser || "").toLowerCase();
+  const unit = rkUnitChip(board);
   return rows.map(r => {
     const mine = String(r.username).toLowerCase() === myName;
     return `<div class="rk-row${mine ? " me" : ""}">
       <span class="rk-rank rk-top${r.rank <= 3 ? r.rank : ""}">${r.rank}</span>
+      <span class="rk-av-sm">${rkFaceHtml(r, 34)}</span>
       <span class="rk-name">${rkEsc(r.username)}${rkSub(r, board)}</span>
-      <span class="rk-val">${rkValFmt(board, r.value)}</span>
+      <span class="rk-val">${rkValFmt(board, r.value)}${unit ? `<em class="rk-unit">${rkEsc(unit)}</em>` : ""}</span>
+      <span class="rk-delta-cell">${(delta && delta[String(r.username).toLowerCase()]) || ""}</span>
     </div>`;
   }).join("");
 }
@@ -134,10 +223,18 @@ async function rkRender(silent) {
       : `<span class="rk-chip rk-dim">KAMU BELUM PUNYA SKOR</span>`);
 
   const keepScroll = silent ? body.scrollTop : 0;
+  const oldVid = body.querySelector("video.rk-bd1");
+  const delta = rkDeltaHtml(board, res.rows || []);
   body.innerHTML =
-    `<div class="rk-head-row"><span>RANK</span><span>PEMAIN</span><span>${info.col}</span></div>` +
-    rkRowsHtml(res.rows, board) +
+    rkPodiumHtml(res.rows, board) +
+    `<div class="rk-head-row"><span>RANK</span><span class="rk-h-av"></span><span>PEMAIN</span><span>${info.col}</span><span title="Perubahan posisi vs. tampilan sebelumnya">Δ<span class="rk-h-long"> POSISI</span></span></div>` +
+    rkRowsHtml(res.rows, board, delta) +
     `<div class="rk-note">${info.note}</div>`;
+  /* Refresh berkala: pindahkan elemen video yang sudah jalan ke DOM baru, jangan
+     download ulang 2,4 MB tiap menit. */
+  const newVid = body.querySelector("video.rk-bd1");
+  if (oldVid && newVid) newVid.replaceWith(oldVid);
+  else if (newVid) newVid.play().catch(() => {});
   body.scrollTop = keepScroll;
 }
 
@@ -206,13 +303,24 @@ async function lbSubmit(board, value, meta) {
   }
 }
 
+/* Avatar papan peringkat = art kartu lead deck (thumbnail, ±belasan KB).
+   Disimpan di meta supaya server tidak perlu ikut menyimpan data kartu. */
+function lbAvMeta() {
+  try {
+    if (typeof state === "undefined" || !state || typeof equipped !== "function") return {};
+    const lead = equipped();
+    const ch = lead && lead.char;
+    return ch && typeof cardThumb === "function" ? { av: cardThumb(ch) } : {};
+  } catch (e) { return {}; }
+}
+
 function lbTrackTower(floor) {
-  lbSubmit("inf_tower", floor, {});
+  lbSubmit("inf_tower", floor, lbAvMeta());
 }
 
 function lbTrackDeckPower() {
   if (typeof totalPower !== "function") return;
-  lbSubmit("deck_power", totalPower(), {});
+  lbSubmit("deck_power", totalPower(), lbAvMeta());
 }
 
 function lbTrackPull(charId, mut, shiny) {
@@ -222,7 +330,8 @@ function lbTrackPull(charId, mut, shiny) {
   if (!den) return;
   const nm = (typeof cardName === "function" ? cardName(charId) : (CARDS[charId].name || charId));
   const sub = nm + (shiny ? " · SHINY" : "") + (m !== "none" ? " · " + m.toUpperCase() : "");
-  lbSubmit("rarest_pull", den, { name: sub, tier: CARDS[charId].tier });
+  const meta = lbAvMeta(); meta.name = sub; meta.tier = CARDS[charId].tier;
+  lbSubmit("rarest_pull", den, meta);
 }
 
 /* Rekor dari data yang SUDAH dimiliki (save lama / deck berubah / minggu baru). */
