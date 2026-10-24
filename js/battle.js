@@ -127,6 +127,7 @@ function foeFighterInnerHtml(en,es,opts){
   const mut=opts.mut&&opts.mut!=="none"?opts.mut:null;
   const epithet=opts.subtitle||en.epithet||"Enemy";
   const skill=opts.skill||(en.id?passiveName(en.id):"Musuh");
+  const fmtHp=opts.hpFmt||fmt;
   const pwr=Math.round(((es.hp||0)+(es.atk||0))/1000);
   const threatLbl=tier==="EX"||tier==="BOSS"?"☣ THREAT EX":(tier==="UR"?"☣ THREAT SS":"⚡ PWR "+Math.max(1,pwr)+"K");
   return `${tcgFoeEquipRailHtml(en)}
@@ -135,7 +136,7 @@ function foeFighterInnerHtml(en,es,opts){
       <div class="cyber-holo-sweep"></div>
       ${battleCardNameHtml(en.name,mut,false)}
     </div>
-    <div class="hpbar"><i id="${hpId}" style="width:${hpPct}%"></i><span id="${hpTid}">${fmt(curHp)} / ${fmt(maxHp)}</span></div>
+    <div class="hpbar"><i id="${hpId}" style="width:${hpPct}%"></i><span id="${hpTid}">${fmtHp(curHp)} / ${fmtHp(maxHp)}</span></div>
     <div class="f-body">
       <div class="f-type-row">
         <div class="f-title">${epithet}</div>
@@ -145,7 +146,7 @@ function foeFighterInnerHtml(en,es,opts){
         <span class="f-skill-icon">☄️</span>
         <div class="f-skill">${skill}</div>
       </div>
-      <div class="stat-row"><div class="stat">🛡️ ${fmt(maxHp)}</div><div class="stat">${ATKIC} ${fmt(es.atk)}</div></div>
+      <div class="stat-row"><div class="stat">🛡️ ${fmtHp(maxHp)}</div><div class="stat">${ATKIC} ${fmt(es.atk)}</div></div>
     </div>`;
 }
 window.foeFighterInnerHtml=foeFighterInnerHtml;
