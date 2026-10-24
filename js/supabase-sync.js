@@ -94,7 +94,11 @@ const CloudDB = {
         if (res) {
           usedRpc = true;
           const merged = res.premiumGems;
-          if (typeof merged === "number" && window.state) window.state.premiumGems = merged;
+          const ST = this._st();
+          if (typeof merged === "number" && ST && ST.premiumGems !== merged) {
+            ST.premiumGems = merged;
+            this._paint();
+          }
           return res;
         }
       }
@@ -157,15 +161,27 @@ const CloudDB = {
     } catch (e) { return ""; }
   },
 
+  /** `state` itu `let` top-level di state.js — BUKAN properti window, jadi
+      `window.state` selalu undefined dan tulisannya hilang tanpa error apa pun.
+      Semua tempat yang perlu menyinkronkan saldo wajib lewat sini. */
+  _st() {
+    try { return (typeof state !== "undefined" && state) ? state : null; } catch (e) { return null; }
+  },
+
+  /** Saldo dari server baru terasa "hidup" kalau topbar ikut digambar ulang —
+      tanpa ini angkanya berubah di cloud tapi tetap lama di layar. */
+  _paint() {
+    try { if (typeof renderShell === "function") renderShell(); } catch (e) {}
+  },
+
   async updateSession(username, sessionId) {
     if (!username) return;
     const user = await this.getUser(username);
     if (!user) return;
     const curSave = user.save_data || {};
     curSave.current_session_id = sessionId;
-    if (window.state) {
-      window.state.current_session_id = sessionId;
-    }
+    const ST = this._st();
+    if (ST) ST.current_session_id = sessionId;
     /* Pakai saveState (RPC merge) supaya saldo gems tidak tertimpa snapshot lama. */
     return await this.saveState(username, curSave);
   },
@@ -217,8 +233,7 @@ const CloudDB = {
 
   async verifyAndDeductGems(username, cost, packKey, itemType, qty) {
     qty = Math.max(1, parseInt(qty, 10) || 1);
-    /* state global (let di state.js) tidak otomatis jadi window.state -> pakai fallback. */
-    const ST = (window && window.state) || (typeof state !== 'undefined' ? state : null);
+    const ST = this._st();
     if (!username) {
       // Guest mode: local check
       if (!ST || (ST.premiumGems || 0) < cost) return { ok: false, msg: "GEMS TIDAK CUKUP" };
@@ -292,7 +307,8 @@ const CloudDB = {
           return { ok: false, msg: sp.msg || "GAGAL POTONG GEMS" };
         }
         if (sp && typeof sp.balance === "number") {
-          if (window.state) window.state.premiumGems = sp.balance;
+          if (ST) ST.premiumGems = sp.balance;
+          this._paint();
           return { ok: true, balance: sp.balance };
         }
         // RPC tidak tersedia -> fallback ke saveState
@@ -310,11 +326,12 @@ const CloudDB = {
      "+gems" client-saja akan ke-wipe. RPC earn_gems menambah di server. */
   async earnGems(username, gems, saveData) {
     gems = Math.max(0, Math.floor(gems || 0));
-    const ST = (window && window.state) || (typeof state !== 'undefined' ? state : null);
+    const ST = this._st();
     if (!gems) return { ok: false, msg: "JUMLAH GEMS TIDAK VALID" };
 
     if (!username) {
       if (ST) ST.premiumGems = (ST.premiumGems || 0) + gems;
+      this._paint();
       return { ok: true, balance: ST ? (ST.premiumGems || 0) : gems };
     }
 
@@ -329,7 +346,8 @@ const CloudDB = {
       });
       if (res && res.ok === false) return { ok: false, msg: res.msg || "GAGAL TAMBAH GEMS" };
       if (res && typeof res.balance === "number") {
-        if (window.state) window.state.premiumGems = res.balance;
+        if (ST) ST.premiumGems = res.balance;
+        this._paint();
         return { ok: true, balance: res.balance };
       }
       return { ok: false, msg: "RPC earn_gems BELUM TER-DEPLOY" };

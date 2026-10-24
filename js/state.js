@@ -240,6 +240,7 @@ function claimStoryMilestone(chapNo,diffKey){
     }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
     if(res&&res.ok){
       try{save();}catch(e){}
+      try{renderShell();}catch(e){}
       try{toast("MILESTONE BAB "+chapNo+" · "+String(diffKey).toUpperCase(),"+"+gems+" GEM","#ffd700");}catch(e){}
     }else{
       state.storyGemMilestones[key]=false; try{save();}catch(e){}

@@ -118,6 +118,7 @@ Tujuan: HP kentang tetap main tanpa frame drop. Semua efek baru harus ikut atura
 ## 3. STATE & DATA MODEL
 
 - `let state=null, currentUser=null` — `js/state.js:25` (dua-duanya top-level `let`: tes in-page harus assign identifier polos, bukan `window.state`)
+  **`window.state` itu undefined, selalu.** `let` top-level tidak jadi properti window, jadi `if (window.state) window.state.premiumGems = x` adalah tulisannya *silent no-op* — tidak error, tidak berubah. Pernah bikin gems hasil `earn_gems` tidak pernah muncul di topbar (player mengira reward hilang). Di `supabase-sync.js` pakai `this._st()` (167) untuk membaca state dan `this._paint()` (173) untuk menggambar ulang topbar setelah saldo berubah.
 - `freshState()` — `js/state.js:12` = bentuk save:
   `coins, playerLv, cleared[], clearedDiff{}, deck[4], stacks[](array, bukan map), battle{}, player{luckBase,luckFlat,luckPercent,exp,lv,sp,tree{}}, weather{}, potions{}, luckPots{}, speedPots{}, artOwned[], artSlots[], petOwned[], petEquipped[], premiumGems, rollPacks{}`
 - Persist lokal: localStorage `aab-state-v2:<username>`. Contoh terukur 2026-10-25: 96,9 KB JSON, `stacks` = 73,8 KB (562 item), sisanya 23 KB.
