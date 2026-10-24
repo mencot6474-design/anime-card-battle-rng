@@ -70,7 +70,7 @@ const ART_DEFS=[
   {id:"pedang-api",   name:"PEDANG API",   icon:"pedang-api",   color:"#fb923c", src:"tower", flat:120, pct:100, img:"assets/artifacts/pedang-api.png"},
   {id:"helm-abyss",   name:"HELM ABYSS",   icon:"helm-abyss",   color:"#818cf8", src:"raid",  raidCost:5000,  flat:80, pct:120, img:"assets/artifacts/abyss-helm.png"},
   {id:"tameng-surgawi",name:"TAMENG SURGAWI",icon:"tameng-surgawi",color:"#fde68a",src:"coin", price:1000000000,flat:50, pct:200, img:"assets/artifacts/tameng-surgawi.png"},
-  {id:"tome-infinity", name:"TOME OF INFINITY", icon:"tome-infinity", color:"#00f0ff", src:"premium", gemPrice:500, flat:150, pct:200, img:"assets/artifacts/tome-infinity.webp?v=1"}
+  {id:"tome-infinity", name:"TOME OF INFINITY", icon:"tome-infinity", color:"#00f0ff", src:"premium", gemPrice:3000, flat:150, pct:200, img:"assets/artifacts/tome-infinity.webp?v=1"}
 ];
 const PET_DEFS=[
   {id:"doll",        name:"BONEKA TERKUTUK",img:"assets/pets/doll.png",        emoji:"🎎",price:10000000, flat:10, pct:0},
@@ -83,7 +83,7 @@ const PET_DEFS=[
   {id:"kyubi",       name:"KYUBI FOX",      img:"assets/pets/kyubi.png",      emoji:"🦊",src:"tower",flat:200,pct:300},
   {id:"nebula-wisp", name:"NEBULA WISP",    img:"assets/pets/nebula-wisp.png",emoji:"🌌",src:"raid", raidCost:15000,flat:150,pct:220},
   {id:"next-bot",    name:"NEXT-BOT",       img:"assets/pets/next-bot.png",   emoji:"🤖",src:"coin", price:5000000000,flat:120,pct:150},
-  {id:"cyber-kitsune", name:"CYBER KITSUNE", img:"assets/pets/cyber-kitsune.webp?v=1", emoji:"🦊", src:"premium", gemPrice:1000, flat:250, pct:300}
+  {id:"cyber-kitsune", name:"CYBER KITSUNE", img:"assets/pets/cyber-kitsune.webp?v=1", emoji:"🦊", src:"premium", gemPrice:10000, flat:250, pct:300}
 ];
 function luckTxt(d){const a=[];if(d.flat)a.push("+"+d.flat+" FLAT");if(d.pct)a.push("+"+d.pct+"%");return a.join(" & ")+" LUCK";}
 function artLuckFlat(){return state&&Array.isArray(state.artSlots)?state.artSlots.reduce((a,id)=>a+((ART_DEFS.find(x=>x.id===id)||{}).flat||0),0):0;}

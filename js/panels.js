@@ -1701,25 +1701,25 @@ const MASTER_CARD_INDEX=STORY_BIBLE.units.map(u=>({char_id:u.id,name:u.name,tier
 var premCurTab = 'all';
 
 var PREMIUM_PACKS = [
-  { id: 'global_luck', cat: 'all', type: 'global_luck', name: 'GLOBAL LUCK', price: 500, img: 'assets/images/weather-potion.webp?v=1', badge: 'SERVER EVENT', desc: 'Aktifkan 10× LUCK untuk SEMUA pemain di server selama 1 JAM! Username kamu akan tampil sebagai aktivator.' },
+  { id: 'global_luck', cat: 'all', type: 'global_luck', name: 'GLOBAL LUCK', price: 1200, img: 'assets/images/weather-potion.webp?v=1', badge: 'SERVER EVENT', desc: 'Aktifkan 10× LUCK untuk SEMUA pemain di server selama 1 JAM! Username kamu akan tampil sebagai aktivator.' },
   // PET & ARTEFAK
-  { id: 'tome-infinity', cat: 'equip', type: 'art', name: 'TOME OF INFINITY', price: 500, img: 'assets/artifacts/tome-infinity.webp?v=1', badge: 'MYTHIC ARTIFACT', desc: 'Kitab mistis tak terbatas! Memberikan +150 Flat Luck & +200% Luck secara permanen.' },
-  { id: 'cyber-kitsune', cat: 'equip', type: 'pet', name: 'CYBER KITSUNE', price: 1000, img: 'assets/pets/cyber-kitsune.webp?v=1', badge: 'SUPREME PET', desc: 'Rubah legendaris masa depan! Memberikan +250 Flat Luck & +300% Luck saat dipasang.' },
+  { id: 'tome-infinity', cat: 'equip', type: 'art', name: 'TOME OF INFINITY', price: 3000, img: 'assets/artifacts/tome-infinity.webp?v=1', badge: 'MYTHIC ARTIFACT', desc: 'Kitab mistis tak terbatas! Memberikan +150 Flat Luck & +200% Luck secara permanen.' },
+  { id: 'cyber-kitsune', cat: 'equip', type: 'pet', name: 'CYBER KITSUNE', price: 10000, img: 'assets/pets/cyber-kitsune.webp?v=1', badge: 'SUPREME PET', desc: 'Rubah legendaris masa depan! Memberikan +250 Flat Luck & +300% Luck saat dipasang.' },
 
   // INSTAN ROLL PACKS
-  { id: 'r5k', cat: 'pack', type: 'pack', name: 'INSTAN ROLL 5.000', amount: 5000, price: 5, img: 'assets/images/instanpack-5k.webp?v=trans1', badge: 'STARTER', desc: '5.000 tarikan kartu instan ke dalam inventori.' },
-  { id: 'r10k', cat: 'pack', type: 'pack', name: 'INSTAN ROLL 10.000', amount: 10000, price: 10, img: 'assets/images/instanpack-10k.webp?v=trans1', badge: 'POPULAR', desc: '10.000 tarikan kartu instan ke dalam inventori.' },
-  { id: 'r25k', cat: 'pack', type: 'pack', name: 'INSTAN ROLL 25.000', amount: 25000, price: 20, img: 'assets/images/instanpack-25k.webp?v=trans1', badge: 'VALUE', desc: '25.000 tarikan kartu instan ke dalam inventori.' },
-  { id: 'r50k', cat: 'pack', type: 'pack', name: 'INSTAN ROLL 50.000', amount: 50000, price: 30, img: 'assets/images/instanpack-50k.webp?v=trans1', badge: 'EPIC', desc: '50.000 tarikan kartu instan ke dalam inventori.' },
-  { id: 'r100k', cat: 'pack', type: 'pack', name: 'INSTAN ROLL 100.000', amount: 100000, price: 50, img: 'assets/images/instanpack-100k.webp?v=trans1', badge: 'ULTIMATE', desc: '100.000 tarikan kartu instan ke dalam inventori.' },
+  { id: 'r5k', cat: 'pack', type: 'pack', name: 'INSTAN ROLL 5.000', amount: 5000, price: 25, img: 'assets/images/instanpack-5k.webp?v=trans1', badge: 'STARTER', desc: '5.000 tarikan kartu instan ke dalam inventori.' },
+  { id: 'r10k', cat: 'pack', type: 'pack', name: 'INSTAN ROLL 10.000', amount: 10000, price: 50, img: 'assets/images/instanpack-10k.webp?v=trans1', badge: 'POPULAR', desc: '10.000 tarikan kartu instan ke dalam inventori.' },
+  { id: 'r25k', cat: 'pack', type: 'pack', name: 'INSTAN ROLL 25.000', amount: 25000, price: 100, img: 'assets/images/instanpack-25k.webp?v=trans1', badge: 'VALUE', desc: '25.000 tarikan kartu instan ke dalam inventori.' },
+  { id: 'r50k', cat: 'pack', type: 'pack', name: 'INSTAN ROLL 50.000', amount: 50000, price: 150, img: 'assets/images/instanpack-50k.webp?v=trans1', badge: 'EPIC', desc: '50.000 tarikan kartu instan ke dalam inventori.' },
+  { id: 'r100k', cat: 'pack', type: 'pack', name: 'INSTAN ROLL 100.000', amount: 100000, price: 250, img: 'assets/images/instanpack-100k.webp?v=trans1', badge: 'ULTIMATE', desc: '100.000 tarikan kartu instan ke dalam inventori.' },
 
   // WEATHER INSTAN (Hanya Rare sampai Awakened)
-  { id: 'w_eclipse', cat: 'weather', type: 'weather', targetWeather: 'eclipse', name: 'INSTAN ECLIPSE', price: 15, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', desc: 'Aktifkan cuaca ECLIPSE instan selama 30 menit! +300% Luck & +200% Roll Speed.' },
-  { id: 'w_doodle', cat: 'weather', type: 'weather', targetWeather: 'doodle', name: 'INSTAN DOODLE', price: 25, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', desc: 'Aktifkan cuaca DOODLE instan selama 30 menit! +400% Luck & +250% Roll Speed.' },
-  { id: 'w_glitch', cat: 'weather', type: 'weather', targetWeather: 'glitch', name: 'INSTAN GLITCH', price: 35, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', desc: 'Aktifkan cuaca GLITCH instan selama 30 menit! +500% Luck & +300% Roll Speed.' },
-  { id: 'w_goofy', cat: 'weather', type: 'weather', targetWeather: 'goofy', name: 'INSTAN GOOFY', price: 50, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', desc: 'Aktifkan cuaca GOOFY instan selama 30 menit! +600% Luck & +350% Roll Speed.' },
-  { id: 'w_arcane', cat: 'weather', type: 'weather', targetWeather: 'arcane', name: 'INSTAN ARCANE', price: 80, img: 'assets/images/weather-potion.webp?v=1', badge: 'ARCANE WEATHER', desc: 'Aktifkan anomali sihir ARCANE instan selama 30 menit! +900% Luck & +500% Roll Speed.' },
-  { id: 'w_awakened', cat: 'weather', type: 'weather', targetWeather: 'awakened', name: 'INSTAN AWAKENED', price: 150, img: 'assets/images/weather-potion.webp?v=1', badge: 'SUPREME AWAKENED', desc: 'Kekuatan tertinggi semesta AWAKENED instan selama 30 menit! +1400% Luck & +700% Roll Speed.' }
+  { id: 'w_eclipse', cat: 'weather', type: 'weather', targetWeather: 'eclipse', name: 'INSTAN ECLIPSE', price: 150, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', desc: 'Aktifkan cuaca ECLIPSE instan selama 30 menit! +300% Luck & +200% Roll Speed.' },
+  { id: 'w_doodle', cat: 'weather', type: 'weather', targetWeather: 'doodle', name: 'INSTAN DOODLE', price: 200, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', desc: 'Aktifkan cuaca DOODLE instan selama 30 menit! +400% Luck & +250% Roll Speed.' },
+  { id: 'w_glitch', cat: 'weather', type: 'weather', targetWeather: 'glitch', name: 'INSTAN GLITCH', price: 300, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', desc: 'Aktifkan cuaca GLITCH instan selama 30 menit! +500% Luck & +300% Roll Speed.' },
+  { id: 'w_goofy', cat: 'weather', type: 'weather', targetWeather: 'goofy', name: 'INSTAN GOOFY', price: 450, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', desc: 'Aktifkan cuaca GOOFY instan selama 30 menit! +600% Luck & +350% Roll Speed.' },
+  { id: 'w_arcane', cat: 'weather', type: 'weather', targetWeather: 'arcane', name: 'INSTAN ARCANE', price: 750, img: 'assets/images/weather-potion.webp?v=1', badge: 'ARCANE WEATHER', desc: 'Aktifkan anomali sihir ARCANE instan selama 30 menit! +900% Luck & +500% Roll Speed.' },
+  { id: 'w_awakened', cat: 'weather', type: 'weather', targetWeather: 'awakened', name: 'INSTAN AWAKENED', price: 1500, img: 'assets/images/weather-potion.webp?v=1', badge: 'SUPREME AWAKENED', desc: 'Kekuatan tertinggi semesta AWAKENED instan selama 30 menit! +1400% Luck & +700% Roll Speed.' }
 ];
 
 /* ---- Isi popup konfirmasi pembelian item toko premium ---- */
@@ -2404,7 +2404,7 @@ window.wmSelectTarget = wmSelectTarget;
 window.renderWeatherMachine = renderWeatherMachine;
 
 /* =============== GLOBAL LUCK SYSTEM v2 =============== */
-const GLOBAL_LUCK_COST        = 500;
+const GLOBAL_LUCK_COST        = 1200;
 const GLOBAL_LUCK_STEP_MULT   = 10;
 const GLOBAL_LUCK_MAX_MULT    = 100;
 const GLOBAL_LUCK_STEP_MS     = 3600000;   // 1 jam per stack
