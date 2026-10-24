@@ -112,6 +112,7 @@ async function rkRender(silent) {
   let res = null;
   try { res = await window.CloudDB.leaderboard(board, null, 100, currentUser); } catch (e) {}
   rkBusy = false;
+  rkLastFetchAt = Date.now();
 
   /* Tab sudah pindah selama fetch -> hasil board lama jangan menimpa. */
   if (board !== rkBoard) { rkRender(silent); return; }
@@ -132,10 +133,12 @@ async function rkRender(silent) {
       ? `<span class="rk-chip rk-own">POSISI KAMU #${me.rank} · ${rkValFmt(board, me.value)}</span>`
       : `<span class="rk-chip rk-dim">KAMU BELUM PUNYA SKOR</span>`);
 
+  const keepScroll = silent ? body.scrollTop : 0;
   body.innerHTML =
     `<div class="rk-head-row"><span>RANK</span><span>PEMAIN</span><span>${info.col}</span></div>` +
     rkRowsHtml(res.rows, board) +
     `<div class="rk-note">${info.note}</div>`;
+  body.scrollTop = keepScroll;
 }
 
 /* ===== SUBMIT SKOR 3 PAPAN MINGGUAN =====
@@ -247,13 +250,20 @@ document.addEventListener("keydown", e => {
   if (m && m.classList.contains("show")) closeRanking();
 });
 
-/* Refresh papan 1x/jam selama panel terbuka: tarik progres terbaru semua akun
-   dari Supabase tanpa skeleton (tampilan lama tetap sampai data baru datang). */
-const RK_REFRESH_MS = 3600000;
-setInterval(() => {
+/* Refresh papan selama panel terbuka, tanpa skeleton (tampilan lama tetap
+   sampai data baru datang): World Boss harian 1x/menit, papan mingguan 1x/jam. */
+const RK_REFRESH_DAY_MS = 60000;
+const RK_REFRESH_WEEK_MS = 3600000;
+let rkLastFetchAt = 0;
+
+function rkTick() {
   const m = document.getElementById("rankModal");
-  if (m && m.classList.contains("show")) rkRender(true);
-}, RK_REFRESH_MS);
+  if (!m || !m.classList.contains("show")) return;
+  const daily = !!(RK_BOARDS[rkBoard] && RK_BOARDS[rkBoard].daily);
+  if (!daily && Date.now() - rkLastFetchAt < RK_REFRESH_WEEK_MS) return;
+  rkRender(true);
+}
+setInterval(rkTick, RK_REFRESH_DAY_MS);
 
 window.openRanking = openRanking;
 window.closeRanking = closeRanking;
