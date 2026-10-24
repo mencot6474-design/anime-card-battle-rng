@@ -653,6 +653,34 @@
   border-radius: 6px;
   border: 1px solid rgba(255, 75, 90, 0.35);
 }
+/* Replay cooldown: kartu yang sudah CLEARed tampil terkunci + countdown */
+.sc-card.is-replay-cd .sc-art-frame img {
+  filter: grayscale(0.6) brightness(0.45);
+  opacity: 0.55;
+}
+.sc-card.is-replay-cd .sc-stage-badge {
+  background: rgba(38, 27, 4, 0.85);
+  border-color: rgba(255, 190, 26, 0.4);
+  color: #ffbe1a;
+}
+.sc-cd-overlay .sc-lock-icon {
+  background: rgba(30, 22, 4, 0.9);
+  border-color: rgba(255, 190, 26, 0.6);
+  color: #ffbe1a;
+  box-shadow: 0 0 18px rgba(255, 190, 26, 0.3);
+}
+.sc-cd-overlay .sc-lock-text {
+  color: #ffcf5a;
+  border-color: rgba(255, 190, 26, 0.4);
+}
+.sc-cd-timer {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  color: #ffbe1a;
+  text-shadow: 0 0 12px rgba(255, 190, 26, 0.45);
+}
 
 .sc-card.is-locked.pos-0 {
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.9), 0 0 25px rgba(255, 75, 90, 0.25) !important;

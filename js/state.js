@@ -268,6 +268,14 @@ function updateStoryCdUI(){
   const left=storyCdLeft(),txt=storyCdText(left);
   const badge=document.getElementById("scDockCd");
   if(badge){badge.textContent=left>0?"REPLAY COOLDOWN · "+txt:"";badge.style.display=left>0?"inline-flex":"none";}
+  const timers=document.querySelectorAll(".sc-cd-timer");
+  if(timers.length){
+    if(left>0)timers.forEach(el=>{el.textContent=txt;});
+    else document.querySelectorAll(".sc-card.is-replay-cd").forEach(c=>{
+      c.classList.remove("is-replay-cd");
+      const ov=c.querySelector(".sc-cd-overlay");if(ov)ov.remove();
+    });
+  }
   const sb=document.getElementById("scBtnBattle");
   if(sb&&sb.dataset.cdRepeat==="1"){
     if(left>0){sb.disabled=true;sb.innerHTML="<span>⏱</span> "+txt;}

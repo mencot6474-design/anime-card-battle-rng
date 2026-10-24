@@ -204,10 +204,11 @@
         const tier = cardData ? cardData.tier : (en.boss ? "UR" : "R");
         const isCleared = !!cdh[lv];
         const isUnlocked = cellOpen && (i === 0 || !!cdh[lv - 1]);
+        const cdLeft = (isUnlocked && isCleared && typeof storyCdLeft === "function") ? storyCdLeft() : 0;
         const g = gateOf(lv);
 
         return `
-          <div class="sc-card tier-${tier} ${en.boss ? 'is-boss' : ''} ${isUnlocked ? '' : 'is-locked'}" id="sc-card-${i}" onclick="selectStoryStage(${i})">
+          <div class="sc-card tier-${tier} ${en.boss ? 'is-boss' : ''} ${isUnlocked ? '' : 'is-locked'}${cdLeft > 0 ? ' is-replay-cd' : ''}" id="sc-card-${i}" onclick="selectStoryStage(${i})">
             <div class="sc-card-head">
               <span class="sc-stage-badge">${en.boss ? '★ BOSS STAGE' : 'STAGE 0' + (i + 1)}</span>
               ${isCleared ? '<span class="sc-clear-status">✓ CLEARED</span>' : ''}
@@ -217,7 +218,13 @@
               <img src="${en.img}" alt="${en.name}" loading="lazy" onerror="this.src='assets/cards/art/solar-brawler.webp'">
               <div class="sc-art-shade"></div>
               ${en.boss ? '<span class="sc-boss-tag">BOSS</span>' : ''}
-              ${isUnlocked ? '' : `
+              ${isUnlocked ? (cdLeft > 0 ? `
+                <div class="sc-card-lock-overlay sc-cd-overlay">
+                  <span class="sc-lock-icon">⏱</span>
+                  <span class="sc-lock-text">REPLAY TERKUNCI</span>
+                  <span class="sc-cd-timer">${typeof storyCdText === "function" ? storyCdText(cdLeft) : ""}</span>
+                </div>
+              ` : '') : `
                 <div class="sc-card-lock-overlay">
                   <span class="sc-lock-icon">🔒</span>
                   <span class="sc-lock-text">${i === 0 ? 'BAB TERKUNCI' : 'SELESAIKAN STAGE 0' + i}</span>
