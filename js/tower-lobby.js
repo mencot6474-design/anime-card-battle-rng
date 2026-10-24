@@ -998,6 +998,7 @@ function hubLoadoutHtml(){
     const d=id?ART_DEFS.find(a=>a.id===id):null;
     return d
       ? `<div class="loadout-slot art-slot filled" data-bp="artefact" role="button" tabindex="0" style="--ac:${d.color}">
+          <span class="tile-frame" aria-hidden="true"></span>
           <span class="ls-tag">ART ${i+1}</span>
           ${artIconHtml(d)}
           <span class="ls-tip"><b>${d.name}</b><small>${luckTxt(d)} · TERPASANG</small></span>
@@ -1013,6 +1014,7 @@ function hubLoadoutHtml(){
 
   const pet=lobbyPetHtml()
     ? `<div class="loadout-slot pet-slot filled" data-bp="pet" role="button" tabindex="0" title="Pet aktif — kelola di Backpack" style="--ac:#8fd3ff">
+        <span class="tile-frame" aria-hidden="true"></span>
         <span class="ls-tag">PET</span>
         ${lobbyPetHtml()}
       </div>`

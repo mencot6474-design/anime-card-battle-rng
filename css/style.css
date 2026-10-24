@@ -49171,8 +49171,10 @@ html.fps-locked .bp-fchip{
   box-shadow:0 12px 32px rgba(0,0,0,.62),inset 0 1px 0 rgba(255,255,255,.06),
              inset 0 0 40px color-mix(in srgb,var(--tile-tone) 12%,transparent);
 }
-/* Slot loadout (ART 1/2, PET) ikut memakai bingkai yang sama, versi lebih kecil. */
+/* Slot loadout (ART 1/2, PET) ikut memakai bingkai yang sama, versi lebih kecil.
+   Slot terisi memakai warna artefak/pet-nya sendiri (--ac). */
 .lobby-hub .loadout-slot{--tile-tone:#7df9ff}
+.lobby-hub .loadout-slot.filled{--tile-tone:var(--ac,#7df9ff)}
 
 .lobby-hub .hub-link .tile-frame,
 .lobby-hub .loadout-slot .tile-frame{
