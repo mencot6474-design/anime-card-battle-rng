@@ -49159,49 +49159,59 @@ html.fps-locked .bp-fchip{
   .wb-top-row:nth-child(n+7){display:none}
 }
 
-/* ---------- Tile WORLD BOSS (lobby): bingkai ganda + bracket sudut ----------
-   Bingkai dekoratif murni (pointer-events:none). Glow-nya animasi OPACITY saja
-   (compositor, bukan repaint) supaya tile di lobby kentang tetap murah. */
-.lobby-hub .hub-link-raid{
-  border-color:rgba(255,86,101,.62);
-  background:
-    radial-gradient(120% 130% at 92% 28%,rgba(255,70,85,.26),transparent 62%),
-    linear-gradient(158deg,rgba(30,12,17,.97),rgba(8,6,9,.99));
-  box-shadow:0 12px 32px rgba(0,0,0,.62),inset 0 1px 0 rgba(255,255,255,.08),inset 0 0 40px rgba(255,70,85,.14);
+/* ---------- Bingkai tile lobby (semua tile hub) ----------
+   Bingkai dekoratif murni (pointer-events:none); warnanya ikut --tile-tone tiap
+   tile. Glow "bernapas" = animasi OPACITY saja (compositor, bukan repaint),
+   di-stagger per tile supaya tidak berkedip serempak. */
+.lobby-hub .hub-link-weather{--tile-tone:#38bdf8}
+.lobby-hub .hub-link-premium{--tile-tone:#ffd700}
+
+.lobby-hub .hub-box.hub-link{
+  border-color:color-mix(in srgb,var(--tile-tone) 52%,rgba(255,255,255,.08));
+  box-shadow:0 12px 32px rgba(0,0,0,.62),inset 0 1px 0 rgba(255,255,255,.06),
+             inset 0 0 40px color-mix(in srgb,var(--tile-tone) 12%,transparent);
 }
-.lobby-hub .hub-link-raid .tile-frame{
+.lobby-hub .hub-link .tile-frame{
   position:absolute;inset:4px;z-index:1;pointer-events:none;border-radius:11px;
-  border:1.5px solid rgba(255,110,124,.42);
+  border:1.5px solid color-mix(in srgb,var(--tile-tone) 42%,transparent);
   background:
-    /* node sudut */
-    radial-gradient(circle at 0 0,rgba(255,255,255,.95) 0 2.5px,rgba(255,90,105,.55) 3px,transparent 5px) left top/14px 14px no-repeat,
-    radial-gradient(circle at 100% 0,rgba(255,255,255,.95) 0 2.5px,rgba(255,90,105,.55) 3px,transparent 5px) right top/14px 14px no-repeat,
-    radial-gradient(circle at 0 100%,rgba(255,255,255,.95) 0 2.5px,rgba(255,90,105,.55) 3px,transparent 5px) left bottom/14px 14px no-repeat,
-    radial-gradient(circle at 100% 100%,rgba(255,255,255,.95) 0 2.5px,rgba(255,90,105,.55) 3px,transparent 5px) right bottom/14px 14px no-repeat,
-    /* bracket sudut */
-    linear-gradient(90deg,#ff9aa4,#ff5a69) left top/26px 2.5px no-repeat,
-    linear-gradient(180deg,#ff9aa4,#ff5a69) left top/2.5px 26px no-repeat,
-    linear-gradient(270deg,#ff9aa4,#ff5a69) right top/26px 2.5px no-repeat,
-    linear-gradient(180deg,#ff9aa4,#ff5a69) right top/2.5px 26px no-repeat,
-    linear-gradient(90deg,#ff9aa4,#ff5a69) left bottom/26px 2.5px no-repeat,
-    linear-gradient(0deg,#ff9aa4,#ff5a69) left bottom/2.5px 26px no-repeat,
-    linear-gradient(270deg,#ff9aa4,#ff5a69) right bottom/26px 2.5px no-repeat,
-    linear-gradient(0deg,#ff9aa4,#ff5a69) right bottom/2.5px 26px no-repeat;
-  box-shadow:0 0 0 1px rgba(255,70,85,.14),inset 0 0 22px rgba(255,70,85,.18);
+    radial-gradient(circle at 0 0,rgba(255,255,255,.95) 0 2.5px,color-mix(in srgb,var(--tile-tone) 62%,transparent) 3px,transparent 5px) left top/14px 14px no-repeat,
+    radial-gradient(circle at 100% 0,rgba(255,255,255,.95) 0 2.5px,color-mix(in srgb,var(--tile-tone) 62%,transparent) 3px,transparent 5px) right top/14px 14px no-repeat,
+    radial-gradient(circle at 0 100%,rgba(255,255,255,.95) 0 2.5px,color-mix(in srgb,var(--tile-tone) 62%,transparent) 3px,transparent 5px) left bottom/14px 14px no-repeat,
+    radial-gradient(circle at 100% 100%,rgba(255,255,255,.95) 0 2.5px,color-mix(in srgb,var(--tile-tone) 62%,transparent) 3px,transparent 5px) right bottom/14px 14px no-repeat,
+    linear-gradient(90deg,color-mix(in srgb,var(--tile-tone) 72%,#fff),var(--tile-tone)) left top/26px 2.5px no-repeat,
+    linear-gradient(180deg,color-mix(in srgb,var(--tile-tone) 72%,#fff),var(--tile-tone)) left top/2.5px 26px no-repeat,
+    linear-gradient(270deg,color-mix(in srgb,var(--tile-tone) 72%,#fff),var(--tile-tone)) right top/26px 2.5px no-repeat,
+    linear-gradient(180deg,color-mix(in srgb,var(--tile-tone) 72%,#fff),var(--tile-tone)) right top/2.5px 26px no-repeat,
+    linear-gradient(90deg,color-mix(in srgb,var(--tile-tone) 72%,#fff),var(--tile-tone)) left bottom/26px 2.5px no-repeat,
+    linear-gradient(0deg,color-mix(in srgb,var(--tile-tone) 72%,#fff),var(--tile-tone)) left bottom/2.5px 26px no-repeat,
+    linear-gradient(270deg,color-mix(in srgb,var(--tile-tone) 72%,#fff),var(--tile-tone)) right bottom/26px 2.5px no-repeat,
+    linear-gradient(0deg,color-mix(in srgb,var(--tile-tone) 72%,#fff),var(--tile-tone)) right bottom/2.5px 26px no-repeat;
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--tile-tone) 18%,transparent),
+             inset 0 0 22px color-mix(in srgb,var(--tile-tone) 20%,transparent);
 }
-/* lapisan glow yang "bernapas" — opacity-only, tidak memicu repaint layout */
-.lobby-hub .hub-link-raid .tile-frame::after{
+.lobby-hub .hub-link .tile-frame::after{
   content:"";position:absolute;inset:-2px;border-radius:inherit;
-  box-shadow:inset 0 0 26px rgba(255,70,85,.34),0 0 20px rgba(255,70,85,.22);
+  box-shadow:inset 0 0 26px color-mix(in srgb,var(--tile-tone) 34%,transparent),
+             0 0 20px color-mix(in srgb,var(--tile-tone) 22%,transparent);
   opacity:.45;animation:wbTileBreathe 3.8s ease-in-out infinite;
 }
-@keyframes wbTileBreathe{0%,100%{opacity:.32}50%{opacity:.9}}
-.lobby-hub .hub-link-raid:hover .tile-frame{
-  border-color:rgba(255,190,196,.85);
-  box-shadow:0 0 0 1px rgba(255,120,132,.34),inset 0 0 30px rgba(255,70,85,.26),0 0 26px rgba(255,70,85,.26);
+@keyframes wbTileBreathe{0%,100%{opacity:.28}50%{opacity:.85}}
+#hubTower .tile-frame::after{animation-delay:-.9s}
+#hubWeather .tile-frame::after{animation-delay:-1.8s}
+#hubPremium .tile-frame::after{animation-delay:-2.5s}
+#hubIndex .tile-frame::after{animation-delay:-.5s}
+#hubTrait .tile-frame::after{animation-delay:-1.4s}
+#missionBtn .tile-frame::after{animation-delay:-2.9s}
+#hubRank .tile-frame::after{animation-delay:-2.1s}
+.lobby-hub .hub-link:hover .tile-frame{
+  border-color:color-mix(in srgb,var(--tile-tone) 55%,#fff);
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--tile-tone) 40%,transparent),
+             inset 0 0 30px color-mix(in srgb,var(--tile-tone) 28%,transparent),
+             0 0 26px color-mix(in srgb,var(--tile-tone) 26%,transparent);
 }
-.lobby-hub .hub-link-raid:hover .tile-frame::after{opacity:1;animation:none}
-.lobby-hub .hub-link-raid .tile-art{opacity:.3}
+.lobby-hub .hub-link:hover .tile-frame::after{opacity:1;animation:none}
+.lobby-hub .hub-link .tile-art{opacity:.26}
 @media(prefers-reduced-motion:reduce){
-  .lobby-hub .hub-link-raid .tile-frame::after{animation:none;opacity:.6}
+  .lobby-hub .hub-link .tile-frame::after{animation:none;opacity:.55}
 }

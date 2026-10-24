@@ -1049,6 +1049,7 @@ function renderLobby(){
       <span class="tile-action"><span>DEPLOY</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
     </div>
     <div class="hub-box h-l2 hub-link hub-link-tower" id="hubTower" role="button" title="Masuk Infinite Tower">
+      <span class="tile-frame" aria-hidden="true"></span>
       <span class="tile-index"><span class="tile-number">02</span><span class="tile-category">ASCENT / TOWER</span></span>
       <span class="tile-art" aria-hidden="true">
         <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -1063,6 +1064,7 @@ function renderLobby(){
       <span class="tile-action"><span>ASCEND</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
     </div>
     <div class="hub-box h-l3 hub-link hub-link-weather" id="hubWeather" role="button" title="Buka Weather Machine">
+      <span class="tile-frame" aria-hidden="true"></span>
       <span class="tile-index"><span class="tile-number" style="color:#38bdf8">03</span><span class="tile-category" style="color:#0ea5e9">CLIMATE / CORE</span></span>
       <span class="tile-art" aria-hidden="true">
         <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -1093,6 +1095,7 @@ function renderLobby(){
     </div>
     <div class="hub-right" role="group" aria-label="Menu fitur & ranking">
     <div class="hub-box h-r0 hub-link hub-link-premium" id="hubPremium" role="button" title="Toko Premium - Beli Roll Pack">
+      <span class="tile-frame" aria-hidden="true"></span>
       <span class="tile-index"><span class="tile-number" style="color:#FFD700">VIP</span><span class="tile-category" style="color:#FFA000">SPECIAL / SYNDICATE</span></span>
       <span class="tile-art" aria-hidden="true">
         <img src="assets/images/premium-currency.webp" alt="Premium Shop" style="width:52px;height:52px;object-fit:cover;border-radius:50%;filter:drop-shadow(0 0 10px rgba(255,215,0,.6));opacity:0.9">
@@ -1101,6 +1104,7 @@ function renderLobby(){
       <span class="tile-action" style="border-color:rgba(255,215,0,.4);color:#FFD700"><span>ACCESS</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
     </div>
     <div class="hub-box h-r1 hub-link hub-link-index" id="hubIndex" role="button" title="Buka Katalog Kartu">
+      <span class="tile-frame" aria-hidden="true"></span>
       <span class="tile-index"><span class="tile-number">04</span><span class="tile-category">DATABASE / ARCHIVE</span></span>
       <span class="tile-art" aria-hidden="true">
         <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -1117,6 +1121,7 @@ function renderLobby(){
       <span class="tile-action"><span>ACCESS</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
     </div>
     <div class="hub-box h-r2 hub-link hub-link-trait" id="hubTrait" role="button" title="Roll Trait untuk kartu aktif">
+      <span class="tile-frame" aria-hidden="true"></span>
       <span class="tile-index"><span class="tile-number">05</span><span class="tile-category">CYBER / REFINE</span></span>
       <span class="tile-art" aria-hidden="true">
         <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -1130,6 +1135,7 @@ function renderLobby(){
       <span class="tile-action"><span>REFINE</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
     </div>
     <div class="hub-box h-mission hub-link hub-link-mission" id="missionBtn" role="button" title="Buka daftar misi">
+      <span class="tile-frame" aria-hidden="true"></span>
       <span class="tile-index"><span class="tile-number">06</span><span class="tile-category">OPS / DIRECTIVES</span></span>
       <span class="tile-art" aria-hidden="true">
         <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -1147,6 +1153,7 @@ function renderLobby(){
       <span class="tile-action"><span>VIEW MISSIONS</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span>
     </div>
     <div class="hub-box h-lb hub-link hub-link-rank" id="hubRank" role="button" title="Buka Leaderboard">
+      <span class="tile-frame" aria-hidden="true"></span>
       <span class="tile-index"><span class="tile-number" style="color:#7DF9FF">07</span><span class="tile-category" style="color:#7DF9FF">PULSE / RANKING</span></span>
       <span class="tile-art" aria-hidden="true">
         <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
