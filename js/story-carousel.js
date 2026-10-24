@@ -299,6 +299,7 @@
 
         const first = !cdh[lv];
         const reward = first ? firstClearReward(lv) : Math.round(firstClearReward(lv) * 0.2);
+        const cdLeft = first ? 0 : (typeof storyCdLeft === "function" ? storyCdLeft() : 0);
         const cellOpen = cellUnlocked(ch, state.diff);
         const isUnlocked = cellOpen && (currentStageIdx === 0 || !!cdh[lv - 1]);
 
@@ -307,7 +308,10 @@
         const gateVal = document.getElementById("scDockGateVal");
         const barFill = document.getElementById("scDockBarFill");
         const rewardVal = document.getElementById("scDockRewardVal");
+        const rewardLbl = document.getElementById("scDockRwLbl");
         const battleBtn = document.getElementById("scBtnBattle");
+
+        if (rewardLbl) rewardLbl.textContent = first ? "FIRST CLEAR REWARD" : "REPLAY REWARD (20%)";
 
         if (stageLbl) stageLbl.textContent = en.boss ? `STAGE 0${currentStageIdx + 1} // BOSS ENCOUNTER` : `STAGE 0${currentStageIdx + 1} // REGULAR STAGE`;
         if (enemyName) enemyName.textContent = isUnlocked ? `${en.name} [${tier}]` : `TERKUNCI — SELESAIKAN STAGE 0${currentStageIdx}`;
@@ -330,13 +334,22 @@
         if (rewardVal) rewardVal.textContent = isUnlocked ? `◎ ${fmt(reward)} Gold` : `—`;
 
         if (battleBtn) {
+          battleBtn.dataset.cdRepeat = (isUnlocked && !first && cdLeft > 0) ? "1" : "";
           if (!isUnlocked) {
             battleBtn.disabled = true;
             battleBtn.innerHTML = `<span>🔒</span> TERKUNCI`;
+          } else if (!first && cdLeft > 0) {
+            battleBtn.disabled = true;
+            battleBtn.innerHTML = `<span>⏱</span> ${typeof storyCdText === "function" ? storyCdText(cdLeft) : "COOLDOWN"}`;
           } else {
             battleBtn.disabled = false;
             battleBtn.innerHTML = `<span>⚔</span> MULAI BATTLE`;
           }
+        }
+        const cdBadge = document.getElementById("scDockCd");
+        if (cdBadge) {
+          cdBadge.style.display = (isUnlocked && !first && cdLeft > 0) ? "inline-flex" : "none";
+          cdBadge.textContent = (isUnlocked && !first && cdLeft > 0) ? "REPLAY COOLDOWN · " + (typeof storyCdText === "function" ? storyCdText(cdLeft) : "") : "";
         }
 
         intelEl.classList.remove("dock-fade-out");
@@ -378,9 +391,7 @@
     }
 
     if (window.sfx && sfx.hit) sfx.hit();
-    closeStory();
-    state.battle = { level: lv };
-    render();
+    startStoryBattle(lv);
   }
 
   // Export to global scope
@@ -389,6 +400,7 @@
   window.closeStory = closeStory;
   window.openMission = () => openStory();
   window.selectStoryStage = selectStoryStage;
+  window.updateStoryCarouselPositions = updateStoryCarouselPositions;
   window.slideStoryStage = slideStoryStage;
   window.changeStoryChapter = changeStoryChapter;
   window.initStoryCarousel = initStoryCarousel;

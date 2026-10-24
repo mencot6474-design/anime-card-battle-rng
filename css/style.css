@@ -18786,6 +18786,24 @@ body.battle-full .vs-col .bspeed-btn{font-size:clamp(12px,1.4vw,15px);padding:4p
 
 
 
+.st-cd {
+  display: none;
+  margin: -8px 0 14px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  background: rgba(255,176,32,.1);
+  border: 1px solid rgba(255,176,32,.4);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .06em;
+  color: #ffb020;
+  text-align: center;
+}
+.st-go[disabled] {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
 .st-reward{
 
 

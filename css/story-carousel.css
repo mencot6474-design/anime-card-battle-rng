@@ -558,6 +558,14 @@
   color: #ffbe1a;
   text-shadow: 0 0 10px rgba(255, 190, 26, 0.45);
 }
+.sc-dock-cd {
+  display: none;
+  align-items: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .08em;
+  color: #ffb020;
+}
 
 .sc-btn-battle-launch {
   display: flex;

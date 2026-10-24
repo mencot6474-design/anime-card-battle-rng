@@ -3162,6 +3162,7 @@ function finish(win){
   clearTimeout(bt.timer);bt.over=true;
   const lv=bt.lv,first=!diffProg()[state.diff][lv];
   const reward=win?(first?firstClearReward(lv):Math.round(firstClearReward(lv)*.2)):0;
+  if(win&&!first)state.storyCdUntil=Date.now()+STORY_REPEAT_CD_MS;
   if(win){state.cleared[lv]=true;diffProg()[state.diff][lv]=true;state.coins+=reward;state.xp+=20;
     while(state.xp>=state.playerLv*1000){state.xp-=state.playerLv*1000;state.playerLv++;}
     fanfare();
@@ -3171,7 +3172,16 @@ function finish(win){
   save();renderShell();
   const ov=document.getElementById("overlay");
   const ch=chapOf(lv),chDone=win&&chapClearedMode(ch,state.diff),nxtCh=CHAPTERS.find(c=>c.no===ch.no+1);
-  const gemGain=chDone?claimStoryMilestone(ch.no,state.diff):0;
+  let gemGain=0,gemRepeat=false;
+  if(chDone){
+    const _msKey=ch.no+":"+state.diff;
+    if(!(state.storyGemMilestones&&state.storyGemMilestones[_msKey])){
+      gemGain=claimStoryMilestone(ch.no,state.diff);
+    }else{
+      gemGain=claimStoryRepeatGem(ch.no,state.diff);
+      gemRepeat=gemGain>0;
+    }
+  }
   const ovCard=document.getElementById("ovCard");
   if(ovCard){
     ovCard.classList.toggle("is-win",!!win);
@@ -3200,7 +3210,7 @@ function finish(win){
       ms.style.display="flex";
       ms.innerHTML='<img class="ov-gem-ms-ic" src="assets/images/premium-currency.webp" alt="" width="34" height="34">'
         +'<div class="ov-gem-ms-txt">'
-          +'<span class="ov-gem-ms-k">STORY MILESTONE &bull; BAB '+ch.no+' &bull; '+diffOf().l+'</span>'
+          +'<span class="ov-gem-ms-k">'+(gemRepeat?'REPEAT MILESTONE':'STORY MILESTONE')+' &bull; BAB '+ch.no+' &bull; '+diffOf().l+'</span>'
           +'<span class="ov-gem-ms-v">+'+gemGain+' <small>GEM</small></span>'
         +'</div>';
     }else{
@@ -3219,7 +3229,7 @@ function finish(win){
   const nx=document.getElementById("ov-next");nx.style.display="";
   if(win&&lv<ch.to){
     nx.innerHTML='<span>STAGE '+(lv+1)+'</span> <span class="ov-btn-icon">❯</span>';
-    nx.onclick=()=>{ov.classList.remove("show");state.battle={level:lv+1};render();};
+    nx.onclick=()=>{ov.classList.remove("show");startStoryBattle(lv+1);};
   }else if(win&&nxtCh){
     nx.innerHTML='<span>KEMBALI</span> <span class="ov-btn-icon">❯</span>';
     nx.onclick=()=>{ov.classList.remove("show");state.battle=null;render();};
@@ -3227,7 +3237,7 @@ function finish(win){
     nx.innerHTML='<span>SELESAI</span> <span class="ov-btn-icon">❯</span>';
     nx.onclick=()=>{ov.classList.remove("show");state.battle=null;render();};
   }
-  document.getElementById("ov-again").onclick=()=>{ov.classList.remove("show");state.battle={level:lv};render();};
+  document.getElementById("ov-again").onclick=()=>{ov.classList.remove("show");startStoryBattle(lv);};
   ov.classList.add("show");
 }
 document.getElementById("overlay").addEventListener("click",e=>{
