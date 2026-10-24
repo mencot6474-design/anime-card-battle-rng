@@ -419,7 +419,10 @@ function wbrDeployPulse(next){
     if(typeof next==="function")next();
   },180);
 }
-/* ---------- bind stage: swipe/drag ganti boss (tanpa partikel & parallax) ---------- */
+/* ---------- bind stage: swipe/drag ganti boss (tanpa partikel & parallax) ----------
+   Ambang TINGGI (dx>90 + dx>dy*2.2) supaya tap + slide jari 60–80px di HP kentang
+   tidak dianggap swipe. Ini yang bikin user dulu ngira "klik sendiri": tap meleset
+   dari panah/dot → kena stage → swipe kepicu. */
 function wbrBindStage(){
   const stage=document.getElementById("wbrStage");
   if(!stage)return;
@@ -432,7 +435,7 @@ function wbrBindStage(){
     if(!drag)return;
     drag=false;
     const dx=e.clientX-sx, dy=e.clientY-sy;
-    if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.4)goBoss(dx<0?1:-1);
+    if(Math.abs(dx)>90&&Math.abs(dx)>Math.abs(dy)*2.2)goBoss(dx<0?1:-1);
   });
   stage.addEventListener("pointercancel",()=>{drag=false;});
 }

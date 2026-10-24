@@ -717,3 +717,28 @@ body.on-raid:has(.wbr-hub) main#app > .tw-page{
 }
 .wbr-runline b{font-size:16px;color:#7DF9FF;letter-spacing:.02em}
 .wbr-runline small{margin-left:auto;color:#6f8390;letter-spacing:.1em}
+
+/* ==========================================================================
+   TAP TARGET WORLD BOSS SWITCHER — override akhir (append-only)
+   Masalah lama: panah 44x74 dan dot 26x6 << minimum 44x44 Apple/Google.
+   User tap dot meleset -> jatuh ke stage -> swipe kepicu ("klik sendiri").
+   Solusi: perbesar box panah + hit-area dot via ::after, visual tetap sama.
+   ========================================================================== */
+.wbr-switch{width:56px;height:88px}
+.wbr-switch.l{left:6px}
+.wbr-switch.r{right:6px}
+
+/* Bungkus container dot supaya ada padding kosong yang tetap bisa di-klik
+   (tidak makan area visual, cuma perlu pointer-events). */
+.wbr-dots{padding:14px 6px}
+
+/* Hit-area tiap dot 26x6 -> 44x44 tanpa mengubah bentuk visual. */
+.wbr-dot{
+  position:relative;
+  width:26px;height:6px;
+}
+.wbr-dot::after{
+  content:"";position:absolute;left:50%;top:50%;
+  width:44px;height:44px;translate:-50% -50%;
+  border-radius:99px;
+}
