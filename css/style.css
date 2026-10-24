@@ -42495,6 +42495,30 @@ body.battle-full .fighter.phantom-enter {
 
 }
 
+/* Samakan radius badge kartu LOBBY + HOVER + BATTLE dengan badge backpack:
+   chip teks (mut/shiny/tier/passive) 5px, gem/trait tetap kotak (0px) — konsisten
+   dengan .bpt-shiny/.bpt-mut (5px) & .bpt-gem (0px). Override blok "absolute 0px"
+   di atas pakai !important + selektor lebih spesifik + posisi belakangan. */
+.hub-center .hc-badges .mut-badge:not(.hc-gem),
+.hub-center .hc-badges .mut-badge.ix-chip,
+.hub-center .hc-badges .shiny-badge,
+.hub-center .hc-badges .shiny-pill,
+.bps-hover .hc-badges .mut-badge:not(.hc-gem),
+.bps-hover .hc-badges .shiny-badge,
+.mut-hover .ix-chip,
+.mut-hover .mut-badge,
+/* battle: kartu player/enemy */
+.f-badges .mut-badge:not(.hc-gem),
+.f-badges .shiny-badge,
+.f-badges .shiny-pill,
+.f-badges .fbadge:not(.hc-gem),
+.f-badges .mut-hover .mut-badge.ix-chip,
+.rrc .rrc-tier-badge,
+.rrc .rrc-shine,
+.rrc .rrc-mut:not(.hc-gem) {
+  border-radius: 5px !important;
+}
+
 
 
 
