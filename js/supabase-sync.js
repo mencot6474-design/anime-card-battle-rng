@@ -324,42 +324,51 @@ const CloudDB = {
   /* ===== WORLD BOSS (harian, skor & attempt di server) =====
      Semua butuh password hash lokal; tanpa itu RPC ditolak. Return null = offline
      atau RPC belum ter-deploy, jadi caller wajib cek null sebelum memakai hasil. */
-  async wbState(username) {
+  async wbState(username, boss) {
     const pw = this._localPassHash(username);
     if (!username || !pw) return null;
-    return await this._rpc("world_boss_state", {
+    const args = {
       p_username: String(username).toLowerCase(),
       p_password_hash: pw,
-    });
+    };
+    if (boss) args.p_boss = boss;
+    return await this._rpc("world_boss_state", args);
   },
 
-  async wbStart(username) {
+  async wbStart(username, boss) {
     const pw = this._localPassHash(username);
     if (!username || !pw) return null;
-    return await this._rpc("start_world_boss_run", {
+    const args = {
       p_username: String(username).toLowerCase(),
       p_password_hash: pw,
-    });
+    };
+    if (boss) args.p_boss = boss;
+    return await this._rpc("start_world_boss_run", args);
   },
 
-  async wbSubmit(username, runId, pct) {
+  /* dmg = damage ABSOLUT run ini (bukan persen). Server memotong pool 1T boss itu. */
+  async wbSubmit(username, runId, dmg, boss) {
     const pw = this._localPassHash(username);
     if (!username || !pw) return null;
-    return await this._rpc("submit_world_boss_run", {
+    const args = {
       p_username: String(username).toLowerCase(),
       p_password_hash: pw,
-      p_pct: Math.max(0, Math.min(100, Number(pct) || 0)),
+      p_dmg: Math.max(0, Math.min(1000000000000, Math.round(Number(dmg) || 0))),
       p_run_id: runId,
-    });
+    };
+    if (boss) args.p_boss = boss;
+    return await this._rpc("submit_world_boss_run", args);
   },
 
-  async wbClaim(username) {
+  async wbClaim(username, boss) {
     const pw = this._localPassHash(username);
     if (!username || !pw) return null;
-    return await this._rpc("claim_world_boss_reward", {
+    const args = {
       p_username: String(username).toLowerCase(),
       p_password_hash: pw,
-    });
+    };
+    if (boss) args.p_boss = boss;
+    return await this._rpc("claim_world_boss_reward", args);
   },
 
   /** Papan peringkat read-only (world_boss / inf_tower / deck_power / rarest_pull). */
@@ -373,10 +382,15 @@ const CloudDB = {
   },
 
   async getSessionId(username) {
-    const user = await this.getUser(username);
-    if (user && user.save_data && user.save_data.current_session_id) {
-      return user.save_data.current_session_id;
-    }
+    if (!username) return null;
+    /* Lightweight: hanya tarik 1 kolom JSONB current_session_id dari save_data.
+       Sebelumnya panggil getUser() yang select=* → download SELURUH payload
+       save_data (~10–50KB) tiap heartbeat. Dengan select=sid:save_data->>...,
+       response ~50 byte. Dampak: bandwidth Supabase turun ~99% dari jalur ini. */
+    const data = await this._request(
+      `player_saves?username=eq.${encodeURIComponent(String(username).toLowerCase())}&select=sid:save_data->>current_session_id`
+    );
+    if (data && data.length > 0) return data[0].sid || null;
     return null;
   },
 
@@ -448,14 +462,19 @@ window.CURRENT_DEVICE_SESSION = _currentSessionId;
 let _sessionCheckInterval = null;
 function startSessionHeartbeat(username) {
   if (_sessionCheckInterval) clearInterval(_sessionCheckInterval);
+  const SESSION_HEARTBEAT_MS = 30000; /* 4s → 30s. Kickout lag 30 detik masih wajar,
+                                        bandwidth hemat ~87%. */
   _sessionCheckInterval = setInterval(async () => {
     if (!currentUser || !window.CloudDB) return;
+    /* Skip saat tab hidden: user gak aktif, gak perlu di-kick real-time.
+       Hemat lagi ~50% buat player yang multitab / background. */
+    if (document.hidden) return;
     try {
       const serverSid = await window.CloudDB.getSessionId(currentUser);
       if (serverSid && serverSid !== window.CURRENT_DEVICE_SESSION) {
         clearInterval(_sessionCheckInterval);
         localStorage.removeItem("aab-session");
-        
+
         // Buat modal kick langsung di DOM
         const kickOverlay = document.createElement("div");
         kickOverlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999999;display:flex;align-items:center;justify-content:center;padding:20px;font-family:sans-serif;";
@@ -470,7 +489,7 @@ function startSessionHeartbeat(username) {
         document.body.appendChild(kickOverlay);
       }
     } catch(e) {}
-  }, 4000); // Check tiap 4 detik biar responsif
+  }, SESSION_HEARTBEAT_MS);
 }
 
 window.startSessionHeartbeat = startSessionHeartbeat;
