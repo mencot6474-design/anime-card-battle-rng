@@ -498,6 +498,11 @@ function rpBoardRows(user) {
 
 function rpHtml(p) {
   const pub = (p.pub && typeof p.pub === "object") ? p.pub : {};
+  /* `pub` kosong = player ini belum pernah jalan dengan build yang mengirim
+     ringkasan. Angkanya TIDAK boleh digambar 0/LV 1 — itu berita bohong, bukan
+     data. Pakai strip dan satu hint; waktu bermain + posisi papan tetap nyata
+     karena itu dibaca server langsung dari save/skor. */
+  const hasPub = Object.keys(pub).length > 0;
   const name = rkEsc(p.username || "?");
   const lv = Math.max(1, Math.min(1e6, Math.round(Number(pub.lv) || 1)));
   const xpNeed = lv * 1000;
@@ -532,19 +537,19 @@ function rpHtml(p) {
   return `<div class="rp-grid">
     <div class="rp-hero">
       <div class="rp-face">${face}</div>
-      <div class="prof-title-tag"><span class="ptt-crown"><svg width="15" height="12" viewBox="0 0 24 18" fill="none"><path d="M2 15L4 4L9 9L12 2L15 9L20 4L22 15H2Z" fill="currentColor" stroke="rgba(255,255,255,.55)" stroke-width="1.1" stroke-linejoin="round"/></svg></span><span class="ptt-txt">${title}</span></div>
+      ${hasPub ? `<div class="prof-title-tag"><span class="ptt-crown"><svg width="15" height="12" viewBox="0 0 24 18" fill="none"><path d="M2 15L4 4L9 9L12 2L15 9L20 4L22 15H2Z" fill="currentColor" stroke="rgba(255,255,255,.55)" stroke-width="1.1" stroke-linejoin="round"/></svg></span><span class="ptt-txt">${title}</span></div>` : ""}
       <div class="rp-name">${name}</div>
-      <div class="rp-lvrow"><span class="prof-lv-pill">LV <b>${lv}</b></span><span class="rp-since">${rpAgo(p.updated_at)}</span></div>
-      <div class="xpbar prof-xp rp-xp"><i style="width:${xpPct}%"></i><span>${rpNum(xp)} / ${rpNum(xpNeed)} · ${xpPct}%</span></div>
-      <div class="rp-power"><span>BATTLE POWER</span><b>${rpNum(pub.power)}</b></div>
-      ${Object.keys(pub).length ? "" : `<div class="rp-hint">Statistik player ini belum terkirim ke server — angkanya akan muncul setelah yang bersangkutan main lagi.</div>`}
+      <div class="rp-lvrow"><span class="prof-lv-pill">LV <b>${hasPub ? lv : "—"}</b></span><span class="rp-since">${rpAgo(p.updated_at)}</span></div>
+      <div class="xpbar prof-xp rp-xp"><i style="width:${hasPub ? xpPct : 0}%"></i><span>${hasPub ? rpNum(xp) + " / " + rpNum(xpNeed) + " · " + xpPct + "%" : "belum tersinkron"}</span></div>
+      <div class="rp-power"><span>BATTLE POWER</span><b>${hasPub ? rpNum(pub.power) : "—"}</b></div>
+      ${hasPub ? "" : `<div class="rp-hint">Statistik player ini belum terkirim ke server — angkanya akan muncul setelah yang bersangkutan main lagi.</div>`}
     </div>
     <div class="rp-side">
       <section class="prof-sec">
         <h3 class="prof-sec-t">REKAM JEJAK</h3>
         <div class="prof-stats">
           ${rpRow("WAKTU BERMAIN", rpPlay(p.play))}
-          ${rpRow("TOTAL ROLL", rpNum(pub.rolls))}
+          ${rpRow("TOTAL ROLL", hasPub ? rpNum(pub.rolls) : "—")}
           ${rpRow("KARTU PALING LANGKA", rareTxt)}
           ${rpRow("KARTU UTAMA", known ? rkEsc(cardName(cid)) : "—")}
         </div>

@@ -23,9 +23,13 @@ as $$
     '{}'::jsonb)
   from (
     select lower(s.username) as username,
-           left(s.save_data->>'customAvatar', 24000) as av
+           s.save_data->>'customAvatar' as av
       from public.player_saves s
      where s.save_data->>'customAvatar' like 'data:image/%'
+       -- dipotong dengan left() akan menghasilkan base64 setengah dan ditolak
+       -- client; lebih baik tidak dikirim sama sekali (nanti muncul lagi setelah
+       -- yang bersangkutan upload ulang foto ukuran baru).
+       and length(s.save_data->>'customAvatar') <= 24000
        and lower(s.username) in (
              select lower(x) from unnest(coalesce(p_usernames, '{}'::text[])) as x
            )
@@ -50,9 +54,16 @@ as $$
                'ok', true,
                'username', lower(s.username),
                'pub', coalesce(s.save_data->'pub', '{}'::jsonb),
-               'play', coalesce(nullif(s.save_data->>'playSec', '')::int, 0),
+               -- save lama menyimpan playSec sebagai float ("65076.964..."), jadi
+               -- ::int langsung melempar 22P02 dan seluruh profil gagal. Numbers
+               -- hanya di-cast setelah lolos regex; 9 digit maksimum supaya round()
+               -- tidak meluber keluar rentang integer.
+               'play', coalesce(
+                 (case when s.save_data->>'playSec' ~ '^[0-9]{1,9}(\.[0-9]+)?$'
+                       then round((s.save_data->>'playSec')::numeric)::int end), 0),
                'avatar', case when s.save_data->>'customAvatar' like 'data:image/%'
-                              then left(s.save_data->>'customAvatar', 24000)
+                               and length(s.save_data->>'customAvatar') <= 24000
+                              then s.save_data->>'customAvatar'
                               else null end,
                'updated_at', s.updated_at)
         from public.player_saves s
