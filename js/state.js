@@ -309,12 +309,29 @@ function updateStoryCdUI(){
 }
 setInterval(updateStoryCdUI,1000);
 let _cloudSaveTimer=null,_cloudLastPush=0,_cloudPending=false;
+/* Diff-based push (prioritas 2 riset bandwidth): track JSON key dari state TANPA playSec
+   (yang tick tiap detik). Kalau key identik dengan yang terakhir dikirim, skip schedule
+   push — playSec-only save otomatis gak makan bandwidth. */
+let _lastPushedKey=null;
+let _lastPushedUser=null;
+function _cloudStateKey(){
+  if(!state)return "";
+  const sk = Object.assign({}, state);
+  delete sk.playSec;
+  return JSON.stringify(sk);
+}
 /* HEMAT BANDWIDTH: selama roll otomatis jalan (tick ~75ms) save cloud dibatasi 1x / 5 detik,
    bukan tiap tick. Sisa perubahan terakhir di-flush saat roll berhenti (flushCloudSave). */
 const CLOUD_PUSH_MIN_MS=5000;
 function _cloudPush(){
   if(!state||!currentUser||!window.CloudDB)return;
   _cloudLastPush=Date.now();_cloudPending=false;
+  /* Snapshot key SEBELUM async push biar save() berikutnya compare against state yang
+     memang udah dikirim ke cloud, bukan against state saat ini (yang bisa aja berubah
+     di tengah fetch). Push failure di-track optimistis — kalau gagal, perubahan berikutnya
+     tetap trigger retry karena key-nya beda. */
+  _lastPushedKey=_cloudStateKey();
+  _lastPushedUser=currentUser;
   window.CloudDB.saveState(currentUser, state).catch(()=>{});
 }
 function flushCloudSave(){
@@ -329,6 +346,15 @@ function save(){
     if(typeof dedupStacksInPlace==="function")dedupStacksInPlace();
     localStorage.setItem(KEY,JSON.stringify(state));
     if(currentUser && window.CloudDB){
+      /* Diff check: kalau state yang akan dikirim identik dengan yang terakhir kali
+         berhasil di-push, skip schedule (cancel pending timer juga). Hemat bandwidth
+         terutama buat playSec auto-save / save() yang kepicet tanpa perubahan nyata. */
+      const key=_cloudStateKey();
+      if(key===_lastPushedKey && currentUser===_lastPushedUser){
+        if(_cloudSaveTimer){clearTimeout(_cloudSaveTimer);_cloudSaveTimer=null;}
+        _cloudPending=false;
+        return;
+      }
       const rolling=(typeof rollState!=="undefined" && rollState && rollState.active);
       if(rolling && Date.now()-_cloudLastPush<CLOUD_PUSH_MIN_MS){_cloudPending=true;return;}
       if(_cloudSaveTimer)clearTimeout(_cloudSaveTimer);
