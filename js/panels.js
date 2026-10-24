@@ -2894,7 +2894,15 @@ function renderTopupModal() {
     '</div>';
 }
 
+/* PAYWALL OFF (rilis itch.io bebas P2W): Gems hanya dari grinding.
+   Set window.TOPUP_ENABLED = true untuk menghidupkan lagi top-up. */
+window.TOPUP_ENABLED = false;
+
 function openTopup() {
+  if (!window.TOPUP_ENABLED) {
+    try { toast('TOP-UP DINONAKTIFKAN', 'Gems didapat dari grinding: Tower, Boss Raid & Story.', '#ffd700'); } catch (e) {}
+    return;
+  }
   const modal = document.getElementById('topupModal');
   if (!modal) return;
   renderTopupModal();
@@ -2911,6 +2919,10 @@ function closeTopup() {
 /* Top-up nyata: alur invoice + polling ada di js/topup.js (window.Topup).
  * Fungsi ini kept sebagai alias biar panggilan lama tidak error. */
 async function buyTopup(gemsAmount) {
+  if (!window.TOPUP_ENABLED) {
+    try { toast('TOP-UP DINONAKTIFKAN', 'Gems didapat dari grinding: Tower, Boss Raid & Story.', '#ffd700'); } catch (e) {}
+    return;
+  }
   if (window.Topup && typeof window.Topup.buy === 'function') {
     const pack = TOPUP_PACKS.find(function(p){ return p.gems === gemsAmount; });
     if (pack) return window.Topup.buy(pack.id);

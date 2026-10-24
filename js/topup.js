@@ -123,6 +123,7 @@
 
   /* ---------- Aksi utama ---------- */
   async function buy(packId) {
+    if (!window.TOPUP_ENABLED) { try { toastFn()("TOP-UP DINONAKTIFKAN", "Gems didapat dari grinding: Tower, Boss Raid & Story.", "#ffd700"); } catch (e) {} return; }
     if (busy) return;
 
     if (!isNative()) {
@@ -209,6 +210,7 @@
   }
 
   function openShop(packId) {
+    if (!window.TOPUP_ENABLED) { try { toastFn()("TOP-UP DINONAKTIFKAN", "Gems didapat dari grinding: Tower, Boss Raid & Story.", "#ffd700"); } catch (e) {} return; }
     const url = shopUrlFor(packId);
     if (!url) {
       renderInfo(
