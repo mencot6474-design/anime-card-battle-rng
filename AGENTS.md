@@ -29,7 +29,7 @@ css/style.css         48.4k baris — SEMUA gaya utama (append override di akhir
                       blok PERF/LAYOUT terbaru: baris 48209–48411
 css/story-carousel.css  CSS khusus modal story (diload setelah style.css)
 css/sl-system.css     roll/gacha system
-css/anim-prototipe.css  halaman prototipe (tidak dipakai game)
+css/anim-prototipe.css  halaman prototipe (tidak dipakai game) — LOKAL SAJA, sudah di-.gitignore
 js/data.js            STORY_BIBLE, luck helper, data cerita/unit
 js/config.js          config runtime (Supabase dll)
 js/supabase-sync.js   CloudDB (pull/push save)
@@ -52,7 +52,9 @@ js/pwa.js             install prompt/service worker
 js/coret.js           fitur coret dev (tombol float #crFab)
 assets/{cards,pets,artifacts,images,raid,vfx,audio,bg,frames,sprites}
 tools/cap-sync.mjs    copy web → www (Capacitor)
-docs/TOPUP.md, test-roll-system.md, *-prototype.html, prototipe.html
+docs/TOPUP.md, test-roll-system.md
+Bahan uji coba (TIDAK dilacak git, tidak ikut deploy): `proto/`, `prototipe.html`,
+`*-prototype.html`, `demo-*.html`, `js/anim-prototipe.js`, `css/anim-prototipe.css`.
 ```
 
 Urutan load (penting — fungsi global saling pakai):

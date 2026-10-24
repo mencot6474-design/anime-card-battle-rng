@@ -2,6 +2,11 @@ _tmp/
 # prototipe / bahan uji coba: boleh ada di mesin sendiri, jangan ikut ke repo
 proto/
 supabase/.temp/
+prototipe.html
+*-prototype.html
+demo-*.html
+css/anim-prototipe.css
+js/anim-prototipe.js
 vibe_images/
 # build artifact: salinan index.html + assets, bisa diregenerasi kapan saja
 dist/
