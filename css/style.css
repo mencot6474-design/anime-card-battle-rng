@@ -48949,6 +48949,51 @@ html.fps-locked .bp-fchip{
 #rankModal .ix-x:hover{color:#7DF9FF;border-color:rgba(125,249,255,.55)}
 #rankModal .rk-body{background:transparent;padding:0!important;gap:0!important}
 
+/* Leaderboard full-screen: header nempel atas, baris ranking scroll di body. */
+#rankModal{
+  padding:0!important;place-items:stretch!important;z-index:120;
+  background:
+    radial-gradient(110% 80% at 50% 0%,rgba(125,249,255,.07),transparent 62%),
+    #070b12!important;
+}
+#rankModal .rk-box{
+  width:100%!important;max-width:none!important;
+  height:100dvh!important;max-height:none!important;min-height:0!important;
+  margin:0!important;padding:0!important;
+  border:0!important;border-radius:0!important;box-shadow:none!important;
+  background:transparent!important;
+  display:flex!important;flex-direction:column!important;
+  overflow:hidden!important;
+  animation:none!important;
+}
+#rankModal .ix-head{
+  flex:none;margin:0!important;
+  padding:24px 120px 14px 30px!important;
+  border-bottom:1px solid rgba(125,249,255,.14)!important;
+}
+#rankModal .rk-meta{flex:none;padding:14px 120px 0 30px!important}
+#rankModal .rk-body{
+  flex:1 1 auto;min-height:0;overflow-y:auto;
+  padding:12px 30px 26px!important;
+  scrollbar-width:none;-ms-overflow-style:none;
+}
+#rankModal .rk-body::-webkit-scrollbar{display:none;width:0;height:0}
+#rankModal .rk-head-row,
+#rankModal .rk-row{grid-template-columns:70px minmax(0,1fr) 160px;gap:14px;padding:12px 18px}
+#rankModal .rk-head-row{padding:9px 18px;font-size:10px}
+#rankModal .rk-name{font-size:17px}
+#rankModal .rk-val{font-size:17px}
+#rankModal .rk-rank{font-size:14px}
+#rankModal .rk-note{padding:14px 18px 4px}
+@media(max-width:860px){
+  #rankModal .ix-head{padding:16px 110px 10px 16px!important}
+  #rankModal .rk-meta{padding:12px 16px 0!important}
+  #rankModal .rk-body{padding:10px 16px 22px!important}
+  #rankModal .rk-head-row,
+  #rankModal .rk-row{grid-template-columns:50px minmax(0,1fr) 100px;gap:10px;padding:11px 10px}
+  #rankModal .rk-name,#rankModal .rk-val{font-size:15px}
+}
+
 /* ==========================================================================
    WORLD EVENT HERO (.wbr-*) — DIPINDAH ke css/world-boss.css
    (re-skin total: stage 3D + rail kaca + 2 boss). Blok lama dihapus.
