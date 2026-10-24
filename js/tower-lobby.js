@@ -303,14 +303,14 @@ function renderTowerShop(){
   const tok=state.infTokens||0;
   /* Cyberpunk Vector Hologram Icons ala Sci-Fi AAA (Honkai / PGR / Cyberpunk 2077) */
   const ICONS={
-    weather:`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/><path d="m13 13-3 5h4l-2 5" stroke="#7df9ff"/></svg>`,
+    weather:`<img src="assets/images/weather-potion.webp?v=1" alt="Weather Potion" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🧪'">`,
     mythic:`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="rgba(192,132,252,0.25)" stroke="#c084fc"/><circle cx="12" cy="12" r="3" stroke="#fff"/></svg>`,
-    luck1:`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M6 12h12" stroke="#5cf0a8"/><circle cx="12" cy="12" r="4" fill="rgba(92,240,168,0.2)" stroke="#5cf0a8"/></svg>`,
-    luck2:`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 7h7l-5.5 4.5 2 7.5-6.5-5-6.5 5 2-7.5-5.5-4.5h7z" fill="rgba(92,240,168,0.2)" stroke="#5cf0a8"/><path d="M12 8v8M8 12h8" stroke="#fff"/></svg>`,
-    luck3:`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.5 8.5 22 9.5 17 14.5 18.5 21 12 17.5 5.5 21 7 14.5 2 9.5 8.5 8.5 12 2" fill="rgba(92,240,168,0.3)" stroke="#5cf0a8"/><circle cx="12" cy="12" r="5" stroke="#fff"/><circle cx="12" cy="12" r="2" fill="#fff"/></svg>`,
-    speed1:`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="rgba(255,210,122,0.2)" stroke="#ffd27a"/></svg>`,
-    speed2:`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="rgba(255,210,122,0.3)" stroke="#ffd27a"/><line x1="4" y1="4" x2="9" y2="4" stroke="#fff"/><line x1="2" y1="8" x2="6" y2="8" stroke="#fff"/></svg>`,
-    speed3:`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="rgba(255,210,122,0.4)" stroke="#ffd27a"/><path d="M19 4l3 3-3 3M15 14l3 3-3 3" stroke="#fff"/></svg>`
+    luck1:`<img src="${thumbSrc('assets/images/pot-luck-1.png')}" alt="Luck Potion L1" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🍀'">`,
+    luck2:`<img src="${thumbSrc('assets/images/pot-luck-2.png')}" alt="Luck Potion L2" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🍀'">`,
+    luck3:`<img src="${thumbSrc('assets/images/pot-luck-3.png')}" alt="Luck Potion L3" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🍀'">`,
+    speed1:`<img src="${thumbSrc('assets/images/pot-speed-1.png')}" alt="Speed Potion L1" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
+    speed2:`<img src="${thumbSrc('assets/images/pot-speed-2.png')}" alt="Speed Potion L2" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
+    speed3:`<img src="${thumbSrc('assets/images/pot-speed-3.png')}" alt="Speed Potion L3" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`
   };
 
   /* Data item Cyberpunk Supply */

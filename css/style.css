@@ -21929,6 +21929,10 @@ h1{font-size:clamp(26px,8vw,34px)}
 
 
 
+/* Ikon potion TOKO RAID + TOKO INF pakai gambar botol ASLI (sumber sama dgn Backpack),
+   di-contain biar botol gak kepotong — .hsg-art-wrap img=cover(100%) khusus card art. */
+.shop-pot-img{width:74%;height:74%;object-fit:contain;image-rendering:auto;}
+
 .hsg-art-wrap.boss-card {
 
 
