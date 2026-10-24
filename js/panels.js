@@ -2478,8 +2478,8 @@ function renderGlobalLuckWidget() {
   /* Ikon resmi mata uang premium (bukan emoji) */
   const gemIcon = '<img class="glw-gem-icon" src="assets/images/premium-currency.webp" alt="" width="14" height="14">';
   const btnLabel = active
-    ? (maxed ? 'MAX STACK (100×)' : 'TUMPUK +10× · ' + gemIcon + '500')
-    : 'AKTIFKAN · ' + gemIcon + '500';
+    ? (maxed ? 'MAX STACK (100×)' : 'TUMPUK +10× · ' + gemIcon + GLOBAL_LUCK_COST)
+    : 'AKTIFKAN · ' + gemIcon + GLOBAL_LUCK_COST;
   const btnDisabled = !canBuy || maxed;
   const btnClass = 'glw-btn' + (active && !maxed ? ' stack' : '');
 

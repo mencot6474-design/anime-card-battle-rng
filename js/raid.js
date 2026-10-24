@@ -501,6 +501,7 @@ function raidShopBuy(id){
         raidToast("TUKAR BERHASIL · −"+it.cost+" token · +"+GEM_AMT+" GEM");
       }else{
         state.raidTokens+=it.cost;
+        try{save();}catch(e){}
         raidToast("TUKAR GAGAL — "+(res&&res.msg||"coba lagi"));
       }
       try{renderShell();}catch(e){}

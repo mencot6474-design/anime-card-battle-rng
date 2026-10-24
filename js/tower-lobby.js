@@ -506,6 +506,7 @@ function infBuy(kind){
         toast("TUKAR BERHASIL","-"+cost+" TOKEN · +"+GEM_AMT+" GEM","#ffd700");
       }else{
         state.infTokens+=cost;
+        try{save();}catch(e){}
         toast("TUKAR GAGAL",(res&&res.msg)||"Coba lagi nanti","#f87171");
       }
       try{renderShell();}catch(e){}
