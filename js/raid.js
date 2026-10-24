@@ -158,8 +158,11 @@ function wbrStartPoll(){
   if(!wbOnline())return;
   wbrPoll=setInterval(()=>{
     if(raidView!=="hub"||route()!=="#/raid"){wbrStopPoll();return;}
+    /* Skip saat tab hidden — user gak ngeliat leaderboard, gak perlu makan bandwidth.
+       8s → 20s: leaderboard World Boss harian gak butuh real-time secepat itu. */
+    if(document.hidden)return;
     wbRefresh(true,true).then(()=>wbrPatch()).catch(()=>{});
-  },8000);
+  },20000);
 }
 function wbrTopRows(){
   const b=wbBoss(), d=wbData();

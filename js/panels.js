@@ -2607,13 +2607,17 @@ function startGlobalLuckPoll() {
     _startGlWidgetTick();
   });
   _globalLuckPollTimer = setInterval(async function() {
+    /* Skip saat tab hidden — widget gak keliatan, gak perlu poll.
+       15s → 60s: Global Luck aktif durasi jam, resolution per menit lebih dari cukup
+       buat tangkep stack baru dari player lain. Countdown tetap 1s di _glWidgetTick. */
+    if(document.hidden)return;
     var before = _glKey();
     await fetchGlobalLuck();
     var changed = _glKey() !== before;
     if (changed && typeof render === 'function' && !battleLive() && !_uiModalOpen()) render();
     if (changed && typeof renderShell === 'function') renderShell();
     _startGlWidgetTick();
-  }, 15000);
+  }, 60000);
 }
 
 /* ---- Stub banner lama (no-op — widget sekarang di backpack) ---- */
