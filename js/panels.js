@@ -408,53 +408,27 @@ function rngRoll(luckMultiplier=1,speedMultiplier=1){
 let rollState = { active: false, interval: null, currentCard: null, luck: 1, speedMultiplier: 1, hideTimer: null, fadeTimer: null, hideOverlay: false };
 let __batchRoll = false;
 
-/* Roll = SATU-SATUNYA sumber kartu baru selain Toko Raid. Hasil roll DITUMPUK dengan sistem count:
-   kartu yang sama (char + tier + varian/mut) masuk ke satu stack dan menaikkan s.count, bukan entri baru,
-   biar backpack tidak membengkak. Tiap varian (SHINY/GOLD/RAINBOW/SECRET) numpuk jadi pile sendiri. */
-/* ===== AUTO-SELL DUPLIKAT → EXP =====
-   Copy ke-2 dst dari varian yang sudah dimiliki TIDAK ikut disimpan (count mentok di DUP_KEEP_MAX),
-   langsung ditukar jadi EXP player. Efek: save_data di Supabase tidak membengkak (storage + bandwidth
-   tetap kecil) sementara progres level/SP tetap jalan. */
-const DUP_KEEP_MAX = 1;                                        /* maksimal copy disimpan per varian */
-const DUP_EXP_TIER = { R:20, SR:40, SSR:90, UR:220, EX:600, BOSS:600 };
-const DUP_EXP_MUT  = { none:1, gold:2, rainbow:3, secret:5, ultima:8 };
-const DUP_EXP_SHINY = 2;
-let __lastDupSell = null;                                      /* info duplikat terakhir (badge UI) */
-
-function dupSellValue(card, mut, shiny) {
-  if (!card) return 0;
-  const base = DUP_EXP_TIER[card.tier] || 20;
-  const mm = DUP_EXP_MUT[mut || "none"] || 1;
-  return Math.round(base * mm * (shiny ? DUP_EXP_SHINY : 1));
-}
-function dupAddExp(exp, copies) {
-  if (!state || !exp) return 0;
-  if (!state.player) state.player = { luckBase:1, luckFlat:0, luckPercent:0, exp:0, lv:state.playerLv||1, sp:0, tree:{} };
-  state.player.exp = (state.player.exp || 0) + exp;
-  state.dupSold = (state.dupSold || 0) + (copies || 1);
-  state.dupExp  = (state.dupExp  || 0) + exp;
-  return exp;
-}
-/* Potong count satu stack ke DUP_KEEP_MAX; kelebihannya dijual jadi EXP. Return EXP yang didapat. */
-function dupTrimStack(s) {
-  if (!state || !s) return 0;
-  const cap = Math.max(1, DUP_KEEP_MAX | 0);
-  const have = Math.max(1, (s.count | 0) || 1);
-  if (have <= cap) return 0;
-  const extra = have - cap;
-  const card = (typeof CARDS !== "undefined") ? CARDS[s.char] : null;
-  const gain = dupSellValue(card, s.mut, s.shiny) * extra;
-  s.count = cap;
-  dupAddExp(gain, extra);
-  __lastDupSell = { char:s.char, mut:s.mut || "none", shiny:!!s.shiny, exp:gain, copies:extra };
-  return gain;
-}
-/* Migrasi save lama (dipanggil dari loadStateFor): tumpukan count lama dipotong sekali → EXP. */
-function dupAutoSellExisting() {
-  if (!state || !Array.isArray(state.stacks)) return 0;
-  let total = 0;
-  for (const s of state.stacks) total += dupTrimStack(s);
-  return total;
+/* ===== DEDUP & NO-EXP POLICY (v202-dedup) =====
+   Setiap varian kartu (char + mut + shiny) cuma boleh ADA SATU DI SAVE. Hasil roll / instantpack
+   yang menghasilkan duplikat LANGSUNG DIBUANG — tidak ada count++ dan tidak ada konversi EXP.
+   Guard ini dipasang di dua tempat supaya save yang dikirim ke Supabase dijamin bersih:
+     1. grantRolledCard (jalur normal roll + instantpack)
+     2. save() di state.js (safety-net terakhir sebelum serialize — menutup celah import save lama,
+        dev-grant, dsb.). */
+function stackVariantKey(s){return s.char+"|"+(s.mut||"none")+"|"+(s.shiny?1:0);}
+function dedupStacksInPlace(){
+  if(!state||!Array.isArray(state.stacks))return;
+  const seen=new Set();
+  const out=[];
+  for(const s of state.stacks){
+    const k=stackVariantKey(s);
+    if(seen.has(k))continue;
+    seen.add(k);
+    s.count=1;
+    if(typeof CARDS!=="undefined"&&CARDS[s.char])s.tier=CARDS[s.char].tier;
+    out.push(s);
+  }
+  if(out.length!==state.stacks.length)state.stacks=out;
 }
 
 function grantRolledCard(charId, mut, shiny) {
@@ -463,19 +437,9 @@ function grantRolledCard(charId, mut, shiny) {
   if (!Array.isArray(state.stacks)) state.stacks = [];
   const m = mut || "none";
   const sh = !!shiny;
-  const cap = Math.max(1, DUP_KEEP_MAX | 0);
-  const s = state.stacks.find(x => x.char === charId && x.tier === card.tier && (x.mut || "none") === m && !!x.shiny === sh);
+  const s = state.stacks.find(x => x.char === charId && (x.mut || "none") === m && !!x.shiny === sh);
   if (s) {
-    const have = (s.count | 0) || 1;
-    if (have < cap) {
-      s.count = have + 1;
-    } else {
-      /* DUPLIKAT: count tidak ditambah — copy ini langsung dijual jadi EXP. */
-      s.count = cap;
-      const gain = dupSellValue(card, m, sh);
-      dupAddExp(gain, 1);
-      __lastDupSell = { char:charId, mut:m, shiny:sh, exp:gain, copies:1 };
-    }
+    /* DUPLIKAT — copy ini dibuang, stack existing tetap count=1. Save di-defer ke batch flag. */
     if(!__batchRoll){save();rollCountBadge();idxRewardSync();}
     return s;
   }
@@ -638,9 +602,7 @@ function rollTick(){
     state.player.exp=(state.player.exp||0)+50;
   }
   if(state)state.totalRolls=(state.totalRolls||0)+1;
-  __lastDupSell=null;
   grantRolledCard(result.cardId,result.mut,result.shiny);
-  result.dupExp=__lastDupSell?__lastDupSell.exp:0;   /* >0 = duplikat barusan dijual jadi EXP */
   showRollResult(result);
   renderShell(); // Update XP bar & level check
   if(rollState.active)rollState.interval=setTimeout(rollTick,Math.max(RNG_ROLL_MIN,RNG_ROLL_SPEED/rollState.speedMultiplier));
@@ -734,17 +696,6 @@ function showRollResult(result) {
   if(result.chance!==undefined){
     const ec=document.querySelector('.roll-card-showcase .hc-chance');
     if(ec)ec.textContent="1 in "+fmtChance(result.chance);
-  }
-  /* Badge AUTO-SELL: duplikat sudah dikonversi jadi EXP (tidak ditumpuk di save). */
-  if(result.dupExp>0){
-    const b=document.createElement('div');
-    b.className='rv-dupsell';
-    b.textContent='DUPLIKAT +'+fmt(result.dupExp)+' EXP';
-    b.style.cssText='position:absolute;top:6px;right:6px;z-index:6;padding:3px 8px;border-radius:999px;'
-      +'font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:10px;letter-spacing:.08em;line-height:1;'
-      +'color:#04121a;background:linear-gradient(120deg,#7df9ff,#5cf0a8);'
-      +'box-shadow:0 0 12px rgba(125,249,255,.55);white-space:nowrap;pointer-events:none;';
-    showcase.appendChild(b);
   }
 }
 
@@ -1091,7 +1042,6 @@ function renderBackpackPanel(){
     <div class="bph-left">
       <span class="bph-eyebrow">INVENTORY & GEAR SYSTEM</span>
       <h2>TACTICAL BACKPACK</h2>
-      ${(state&&state.dupSold>0)?`<span class="bph-eyebrow" style="color:#5cf0a8">AUTO-SELL DUPLIKAT &rarr; +${fmt(state.dupExp||0)} EXP (${fmt(state.dupSold)} copy)</span>`:''}
     </div>
     <button class="backpack-close" onclick="toggleBackpack()" aria-label="Tutup Backpack">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>

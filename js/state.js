@@ -56,11 +56,14 @@ function loadStateFor(name){
   
   state.stacks=state.stacks.filter(s=>CARDS[s.char]);
   
-  {const seen={};state.stacks.forEach(s=>{const k=s.char+"|"+(s.mut||"none")+"|"+(s.shiny?1:0);if(!seen[k]){seen[k]=s;s.count=s.count||1;}else{seen[k].count=(seen[k].count||1)+(s.count||1);if((s.trait&&s.trait!=="none")&&(!seen[k].trait||seen[k].trait==="none"))seen[k].trait=s.trait;}});state.stacks=Object.values(seen);}
+  /* DEDUP STRICT (v179-dedup): satu entri per varian (char|mut|shiny), count dipaksa 1.
+     Copy ekstra dibuang tanpa EXP — hemat bandwidth & storage Supabase. Trait dipertahankan
+     dari stack kedua kalau stack pertama belum punya trait. */
+  {const seen={};state.stacks.forEach(s=>{const k=s.char+"|"+(s.mut||"none")+"|"+(s.shiny?1:0);if(!seen[k]){s.count=1;seen[k]=s;}else if((s.trait&&s.trait!=="none")&&(!seen[k].trait||seen[k].trait==="none"))seen[k].trait=s.trait;});state.stacks=Object.values(seen);}
 
-  /* AUTO-SELL DUPLIKAT (migrasi save lama): copy yang sudah menumpuk dipotong ke DUP_KEEP_MAX,
-     kelebihannya ditukar jadi EXP player — sekali jalan, biar save_data di Supabase tidak membengkak. */
-  if(typeof dupAutoSellExisting==="function")dupAutoSellExisting();
+  /* Field dup-EXP lama dihapus — tidak ada lagi auto-sell, jadi save tidak menyimpannya. */
+  if(state.dupSold!==undefined)delete state.dupSold;
+  if(state.dupExp!==undefined)delete state.dupExp;
   
   if(!state.stacks.length){const st=freshState();state.stacks=st.stacks;}
   
@@ -320,6 +323,10 @@ function flushCloudSave(){
 }
 function save(){
   if(state){
+    /* Safety-net dedup sebelum serialize — menjamin payload yang masuk localStorage
+       DAN yang dikirim ke Supabase tidak pernah berisi varian (char|mut|shiny) dobel,
+       meskipun jalur lain (dev-grant, import save lama, dsb.) sempat menyuntik duplikat. */
+    if(typeof dedupStacksInPlace==="function")dedupStacksInPlace();
     localStorage.setItem(KEY,JSON.stringify(state));
     if(currentUser && window.CloudDB){
       const rolling=(typeof rollState!=="undefined" && rollState && rollState.active);
