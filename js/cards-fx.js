@@ -165,7 +165,7 @@ const DIFFS=[
    Pool HP harian global = 1T (harus sama dengan world_boss_pool_size() di server).
    Damage mentah kartu (puluhan ribu) dikali RAID_DMG_SCALE supaya masuk skala pool. */
 const WB_POOL_HP=1000000000000;
-const RAID_DMG_SCALE=10000;
+const RAID_DMG_SCALE=100;
 const RAID_DIFFS=[
   {k:"world",l:"WORLD",hp:1,atk:1,rw:1,color:"#7DF9FF"}
 ];
