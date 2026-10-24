@@ -12,7 +12,7 @@ function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u));}
 function freshState(){
   const s0=STORY_BIBLE.units[0];
   const start=s0?{id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,fav:false,lock:false,mut:"none",shiny:false,trait:"none",count:1}:null;
-  const newState={coins:1000,raidTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,totalRolls:0,playSec:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},raidShopOwned:{},towerShopOwned:{},tower:{best:0,auto:false},battleSpeed:1,
+  const newState={coins:1000,raidTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,totalRolls:0,playSec:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},raidShopOwned:{},towerShopOwned:{},storyGemMilestones:{},tower:{best:0,auto:false},battleSpeed:1,
     cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],history:[],battle:null,
     player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1,sp:0,tree:{}},weather:null,weatherBest:null,potions:0,mythicPotions:0,luckPots:[0,0,0],speedPots:[0,0,0],luckBuffs:[],speedBuffs:[],infTokens:0,
     artOwned:[],artSlots:[null,null],petOwned:[],petEquipped:null,intanRolls:0,idxRewardsClaimed:0,premiumGems:50,rollPacks:{r5k:0,r10k:0,r25k:0,r50k:0,r100k:0}};
@@ -91,6 +91,7 @@ function loadStateFor(name){
   /* INDEX REWARD: patch save lama */
   if(typeof state.intanRolls!=="number"||state.intanRolls<0)state.intanRolls=0;
   if(typeof state.premiumGems!=="number"||state.premiumGems<0)state.premiumGems=50;
+  if(!state.storyGemMilestones||typeof state.storyGemMilestones!=="object")state.storyGemMilestones={};
   if(!state.rollPacks||typeof state.rollPacks!=="object")state.rollPacks={r5k:0,r10k:0,r25k:0,r50k:0,r100k:0};
   ['r5k','r10k','r25k','r50k','r100k'].forEach(k=>{if(typeof state.rollPacks[k]!=="number"||state.rollPacks[k]<0)state.rollPacks[k]=0;});
   if(typeof state.idxRewardsClaimed!=="number"||state.idxRewardsClaimed<0)state.idxRewardsClaimed=0;
@@ -177,6 +178,46 @@ const mutEdge=m=>m&&m!=="none"?` style="border-color:${MUT_COLOR[m]}"`:"";
 function enemyOf(level){const f=FOES[level];if(!f)return{id:null,name:"Gate Watcher L-"+level,epithet:chapOf(level).zone,img:chapOf(level).art,boss:false,tier:"R"};return{id:f.id,name:f.name,epithet:f.ep,img:f.img,boss:!!f.boss,tier:f.tier};}
 function enemyStats(level){const l=STORY_BIBLE.levels[level-1];if(!l)return{hp:120,atk:40};const c=CARDS[l.unit];if(!c)return{hp:120,atk:40};const k=MUT_MULT[diffOf().mut]||1;return{hp:Math.round(c.base_hp*(0.55+0.15*level)*k),atk:Math.round(c.base_atk*(0.35+0.13*level)*k)};}
 function firstClearReward(level){const l=STORY_BIBLE.levels[level-1];return (l?l.reward:300)*(diffOf().rw||1);}
+/* ===== STORY GEM MILESTONES =====
+   Sekali-claim per (BAB x mode) saat SEMUA tahap BAB itu tamat di mode tsb.
+   Basis per BAB (mode NORMAL) di-skala ke ekonomi Gem baru (pet 10.000).
+   Reward = basis x rw mode — pengali SAMA dengan coin, biar konsisten. */
+const STORY_GEM_BASE={1:40,2:60,3:70,4:90,5:120};
+function storyGemReward(chapNo,diffKey){
+  const base=STORY_GEM_BASE[chapNo]||0;
+  if(!base)return 0;
+  const d=DIFFS.find(x=>x.k===diffKey);
+  return Math.round(base*(d?d.rw:1));
+}
+function claimStoryMilestone(chapNo,diffKey){
+  if(!state)return 0;
+  if(!state.storyGemMilestones||typeof state.storyGemMilestones!=="object")state.storyGemMilestones={};
+  const key=chapNo+":"+diffKey;
+  if(state.storyGemMilestones[key])return 0;
+  const gems=storyGemReward(chapNo,diffKey);
+  if(!gems)return 0;
+  state.storyGemMilestones[key]=true;
+  try{save();}catch(e){}
+  (async()=>{
+    let res;
+    try{
+      if(window.CloudDB&&typeof window.CloudDB.earnGems==="function"){
+        const u=(typeof currentUser!=="undefined"&&currentUser)?String(currentUser):"";
+        res=await window.CloudDB.earnGems(u,gems,state);
+      }else{
+        state.premiumGems=(state.premiumGems||0)+gems; res={ok:true,balance:state.premiumGems};
+      }
+    }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
+    if(res&&res.ok){
+      try{save();}catch(e){}
+      try{toast("MILESTONE BAB "+chapNo+" · "+String(diffKey).toUpperCase(),"+"+gems+" GEM","#ffd700");}catch(e){}
+    }else{
+      state.storyGemMilestones[key]=false; try{save();}catch(e){}
+      try{toast("MILESTONE GAGAL",(res&&res.msg)||"Coba lagi nanti","#f87171");}catch(e){}
+    }
+  })();
+  return gems;
+}
 let _cloudSaveTimer=null;
 function save(){
   if(state){

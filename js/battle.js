@@ -3171,6 +3171,7 @@ function finish(win){
   save();renderShell();
   const ov=document.getElementById("overlay");
   const ch=chapOf(lv),chDone=win&&chapClearedMode(ch,state.diff),nxtCh=CHAPTERS.find(c=>c.no===ch.no+1);
+  const gemGain=chDone?claimStoryMilestone(ch.no,state.diff):0;
   const ovCard=document.getElementById("ovCard");
   if(ovCard){
     ovCard.classList.toggle("is-win",!!win);
@@ -3191,7 +3192,7 @@ function finish(win){
   const rw=document.getElementById("ov-reward");
   if(rw){
     rw.style.display=win?"inline-flex":"none";
-    rw.innerHTML=''+coinIcon(18)+'  +'+reward+' <small>COINS</small>';
+    rw.innerHTML=''+coinIcon(18)+'  +'+reward+' <small>COINS</small>'+(gemGain>0?' <span style="display:inline-flex;align-items:center;gap:4px;margin-left:10px;color:#ffd700;font-weight:800"><img src="assets/images/premium-currency.webp" width="15" height="15" alt="">+'+gemGain+' <small>GEM</small></span>':'');
   }
 
   const cStat=document.getElementById("ovCombatStatus");
