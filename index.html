@@ -12,7 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700;800&family=Russo+One&family=Rajdhani:wght@700;800;900&display=swap" rel="stylesheet">
 <!-- External Game Icon Library: Lucide Icons -->
 <script src="https://unpkg.com/lucide@latest"></script>
-<link rel="stylesheet" href="css/style.css?v=v275-wb">
+<link rel="stylesheet" href="css/style.css?v=v277-lbDark">
 <link rel="stylesheet" href="css/sl-system.css?v=sl-v4">
 <link rel="stylesheet" href="css/story-carousel.css?v=v10-cardCd">
 <script>
@@ -416,6 +416,22 @@
   <div class="ix-body" id="missionBody"></div>
 </div></div>
 
+<div id="rankModal"><div class="ix-box rk-box">
+  <div class="ix-head">
+    <div class="ix-header-titles">
+      <div class="ix-eyebrow"><span class="ix-dot"></span>GLOBAL PULSE · DAILY STANDING</div>
+      <div class="ix-title">LEADERBOARD</div>
+    </div>
+    <div class="ix-h-tools">
+      <button class="ix-x" id="rkClose" title="Tutup" onclick="closeRanking()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="rk-meta" id="rkMeta"></div>
+  <div class="ix-body rk-body" id="rkBody"></div>
+</div></div>
+
 <div id="skillPop"><div class="sp-layout">
   <div class="sp-art-card" id="spArtCard">
     <img id="spImg" src="" alt="Card Art">
@@ -720,11 +736,12 @@
 <script src="js/state.js?v=v177-wbTitles"></script>
 <script src="js/sheetfx.js?v=v111-perf7"></script>
 <script src="js/battle.js?v=v130-repeatCd"></script>
-<script src="js/tower-lobby.js?v=v183-refundSave"></script>
+<script src="js/tower-lobby.js?v=v184-lbTile"></script>
 <script src="js/shadow-king-fx.js?v=v4-skfx4"></script>
 <script src="js/foe-passives.js?v=v62-foe-passives"></script>
 <script src="js/story-carousel.js?v=v125-cardCd"></script>
 <script src="js/raid.js?v=v152-wb"></script>
+<script src="js/ranking.js?v=v1-lb"></script>
 <script src="js/boot.js?v=v144-skfx"></script>
 <script src="js/pwa.js?v=v156-install"></script>
 

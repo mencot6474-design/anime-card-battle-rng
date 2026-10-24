@@ -1090,6 +1090,7 @@ function renderLobby(){
         <span>INSTALL APP</span>
       </button>
     </div>
+    <div class="hub-right" role="group" aria-label="Menu fitur & ranking">
     <div class="hub-box h-r0 hub-link hub-link-premium" id="hubPremium" role="button" title="Toko Premium - Beli Roll Pack">
       <span class="tile-index"><span class="tile-number" style="color:#FFD700">VIP</span><span class="tile-category" style="color:#FFA000">SPECIAL / SYNDICATE</span></span>
       <span class="tile-art" aria-hidden="true">
@@ -1144,6 +1145,21 @@ function renderLobby(){
       </span>
       <span class="tile-action"><span>VIEW MISSIONS</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span>
     </div>
+    <div class="hub-box h-lb hub-link hub-link-rank" id="hubRank" role="button" title="Buka Leaderboard">
+      <span class="tile-index"><span class="tile-number" style="color:#7DF9FF">07</span><span class="tile-category" style="color:#7DF9FF">PULSE / RANKING</span></span>
+      <span class="tile-art" aria-hidden="true">
+        <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 82h64" stroke-width="2"/>
+          <rect x="24" y="56" width="14" height="26" rx="2"/>
+          <rect x="43" y="38" width="14" height="44" rx="2" stroke-width="2.2"/>
+          <rect x="62" y="48" width="14" height="34" rx="2"/>
+          <path d="M43 26l7-8 7 8" stroke-width="2.2"/>
+          <circle cx="50" cy="22" r="3" fill="currentColor"/>
+        </svg>
+      </span>
+      <span class="tile-copy"><span class="hb-lbl" style="color:#7DF9FF;text-shadow:0 0 10px rgba(125,249,255,.35)">LEADERBOARD</span><span class="hb-meta">World Boss · rank harian</span></span>
+      <span class="tile-action" style="border-color:rgba(125,249,255,.4);color:#7DF9FF"><span>OPEN</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
+    </div>
   </div>`;
   const hc=document.getElementById("hubCard");if(hc){hc.onclick=()=>{sfx.hit();toggleBackpack();};}
   const hp=document.getElementById("hubPremium");if(hp)hp.onclick=()=>{sfx.hit();openPremiumShop();};
@@ -1154,6 +1170,7 @@ function renderLobby(){
   const ht2=document.getElementById("hubTower");if(ht2)ht2.onclick=()=>{sfx.hit();stopTower();location.hash="#/tower";};
   const hw=document.getElementById("hubWeather");if(hw)hw.onclick=()=>{sfx.hit();openWeatherMachine();};
   const mb=document.getElementById("missionBtn");if(mb)mb.onclick=()=>{sfx.hit();openMission();};
+  const hrk=document.getElementById("hubRank");if(hrk)hrk.onclick=()=>{sfx.hit();if(typeof openRanking==="function")openRanking();};
   const ms=document.getElementById("missionSub");if(ms){const done=CHAPTERS.reduce((a,c)=>a+chapProgMode(c,state.diff),0),tot=CHAPTERS.reduce((a,c)=>a+c.levels.length,0);ms.textContent=done+"/"+tot+" SELESAI";const ratio=tot?Math.min(100,Math.round(done/tot*100)):0;const meter=document.getElementById("missionMeter"),fill=document.getElementById("missionFill");if(meter){meter.setAttribute("aria-valuemax",String(tot));meter.setAttribute("aria-valuenow",String(done));}if(fill)fill.style.width=ratio+"%";}
   document.querySelectorAll(".hub-loadout-bar .loadout-slot, .stage-loadout .loadout-slot").forEach(el=>{el.onclick=()=>{sfx.hit();bpSetTab(el.dataset.bp||"pet");const p=document.getElementById("backpackPanel");if(!p||p.style.display!=="flex")toggleBackpack();};});
   if (typeof _startGlWidgetTick === "function") _startGlWidgetTick();
