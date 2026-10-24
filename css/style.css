@@ -49171,26 +49171,33 @@ html.fps-locked .bp-fchip{
   box-shadow:0 12px 32px rgba(0,0,0,.62),inset 0 1px 0 rgba(255,255,255,.06),
              inset 0 0 40px color-mix(in srgb,var(--tile-tone) 12%,transparent);
 }
-.lobby-hub .hub-link .tile-frame{
-  position:absolute;inset:4px;z-index:1;pointer-events:none;border-radius:11px;
+/* Slot loadout (ART 1/2, PET) ikut memakai bingkai yang sama, versi lebih kecil. */
+.lobby-hub .loadout-slot{--tile-tone:#7df9ff}
+
+.lobby-hub .hub-link .tile-frame,
+.lobby-hub .loadout-slot .tile-frame{
+  --tf-inset:4px;--tf-radius:11px;--tf-bracket:26px;--tf-thick:2.5px;--tf-node:14px;
+  position:absolute;inset:var(--tf-inset);z-index:1;pointer-events:none;border-radius:var(--tf-radius);
   border:1.5px solid color-mix(in srgb,var(--tile-tone) 42%,transparent);
   background:
-    radial-gradient(circle at 0 0,rgba(255,255,255,.95) 0 2.5px,color-mix(in srgb,var(--tile-tone) 62%,transparent) 3px,transparent 5px) left top/14px 14px no-repeat,
-    radial-gradient(circle at 100% 0,rgba(255,255,255,.95) 0 2.5px,color-mix(in srgb,var(--tile-tone) 62%,transparent) 3px,transparent 5px) right top/14px 14px no-repeat,
-    radial-gradient(circle at 0 100%,rgba(255,255,255,.95) 0 2.5px,color-mix(in srgb,var(--tile-tone) 62%,transparent) 3px,transparent 5px) left bottom/14px 14px no-repeat,
-    radial-gradient(circle at 100% 100%,rgba(255,255,255,.95) 0 2.5px,color-mix(in srgb,var(--tile-tone) 62%,transparent) 3px,transparent 5px) right bottom/14px 14px no-repeat,
-    linear-gradient(90deg,color-mix(in srgb,var(--tile-tone) 72%,#fff),var(--tile-tone)) left top/26px 2.5px no-repeat,
-    linear-gradient(180deg,color-mix(in srgb,var(--tile-tone) 72%,#fff),var(--tile-tone)) left top/2.5px 26px no-repeat,
-    linear-gradient(270deg,color-mix(in srgb,var(--tile-tone) 72%,#fff),var(--tile-tone)) right top/26px 2.5px no-repeat,
-    linear-gradient(180deg,color-mix(in srgb,var(--tile-tone) 72%,#fff),var(--tile-tone)) right top/2.5px 26px no-repeat,
-    linear-gradient(90deg,color-mix(in srgb,var(--tile-tone) 72%,#fff),var(--tile-tone)) left bottom/26px 2.5px no-repeat,
-    linear-gradient(0deg,color-mix(in srgb,var(--tile-tone) 72%,#fff),var(--tile-tone)) left bottom/2.5px 26px no-repeat,
-    linear-gradient(270deg,color-mix(in srgb,var(--tile-tone) 72%,#fff),var(--tile-tone)) right bottom/26px 2.5px no-repeat,
-    linear-gradient(0deg,color-mix(in srgb,var(--tile-tone) 72%,#fff),var(--tile-tone)) right bottom/2.5px 26px no-repeat;
+    radial-gradient(circle at 0 0,rgba(255,255,255,.95) 0 2.5px,color-mix(in srgb,var(--tile-tone) 62%,transparent) 3px,transparent 5px) left top/var(--tf-node) var(--tf-node) no-repeat,
+    radial-gradient(circle at 100% 0,rgba(255,255,255,.95) 0 2.5px,color-mix(in srgb,var(--tile-tone) 62%,transparent) 3px,transparent 5px) right top/var(--tf-node) var(--tf-node) no-repeat,
+    radial-gradient(circle at 0 100%,rgba(255,255,255,.95) 0 2.5px,color-mix(in srgb,var(--tile-tone) 62%,transparent) 3px,transparent 5px) left bottom/var(--tf-node) var(--tf-node) no-repeat,
+    radial-gradient(circle at 100% 100%,rgba(255,255,255,.95) 0 2.5px,color-mix(in srgb,var(--tile-tone) 62%,transparent) 3px,transparent 5px) right bottom/var(--tf-node) var(--tf-node) no-repeat,
+    linear-gradient(90deg,color-mix(in srgb,var(--tile-tone) 72%,#fff),var(--tile-tone)) left top/var(--tf-bracket) var(--tf-thick) no-repeat,
+    linear-gradient(180deg,color-mix(in srgb,var(--tile-tone) 72%,#fff),var(--tile-tone)) left top/var(--tf-thick) var(--tf-bracket) no-repeat,
+    linear-gradient(270deg,color-mix(in srgb,var(--tile-tone) 72%,#fff),var(--tile-tone)) right top/var(--tf-bracket) var(--tf-thick) no-repeat,
+    linear-gradient(180deg,color-mix(in srgb,var(--tile-tone) 72%,#fff),var(--tile-tone)) right top/var(--tf-thick) var(--tf-bracket) no-repeat,
+    linear-gradient(90deg,color-mix(in srgb,var(--tile-tone) 72%,#fff),var(--tile-tone)) left bottom/var(--tf-bracket) var(--tf-thick) no-repeat,
+    linear-gradient(0deg,color-mix(in srgb,var(--tile-tone) 72%,#fff),var(--tile-tone)) left bottom/var(--tf-thick) var(--tf-bracket) no-repeat,
+    linear-gradient(270deg,color-mix(in srgb,var(--tile-tone) 72%,#fff),var(--tile-tone)) right bottom/var(--tf-bracket) var(--tf-thick) no-repeat,
+    linear-gradient(0deg,color-mix(in srgb,var(--tile-tone) 72%,#fff),var(--tile-tone)) right bottom/var(--tf-thick) var(--tf-bracket) no-repeat;
   box-shadow:0 0 0 1px color-mix(in srgb,var(--tile-tone) 18%,transparent),
              inset 0 0 22px color-mix(in srgb,var(--tile-tone) 20%,transparent);
 }
-.lobby-hub .hub-link .tile-frame::after{
+.lobby-hub .loadout-slot .tile-frame{--tf-inset:3px;--tf-radius:13px;--tf-bracket:16px;--tf-thick:2px;--tf-node:9px;border-width:1px}
+.lobby-hub .hub-link .tile-frame::after,
+.lobby-hub .loadout-slot .tile-frame::after{
   content:"";position:absolute;inset:-2px;border-radius:inherit;
   box-shadow:inset 0 0 26px color-mix(in srgb,var(--tile-tone) 34%,transparent),
              0 0 20px color-mix(in srgb,var(--tile-tone) 22%,transparent);
@@ -49204,14 +49211,19 @@ html.fps-locked .bp-fchip{
 #hubTrait .tile-frame::after{animation-delay:-1.4s}
 #missionBtn .tile-frame::after{animation-delay:-2.9s}
 #hubRank .tile-frame::after{animation-delay:-2.1s}
-.lobby-hub .hub-link:hover .tile-frame{
+.hub-loadout-bar .loadout-slot:nth-child(2) .tile-frame::after{animation-delay:-1.2s}
+.hub-loadout-bar .loadout-slot:nth-child(3) .tile-frame::after{animation-delay:-2.4s}
+.lobby-hub .hub-link:hover .tile-frame,
+.lobby-hub .loadout-slot:hover .tile-frame{
   border-color:color-mix(in srgb,var(--tile-tone) 55%,#fff);
   box-shadow:0 0 0 1px color-mix(in srgb,var(--tile-tone) 40%,transparent),
              inset 0 0 30px color-mix(in srgb,var(--tile-tone) 28%,transparent),
              0 0 26px color-mix(in srgb,var(--tile-tone) 26%,transparent);
 }
-.lobby-hub .hub-link:hover .tile-frame::after{opacity:1;animation:none}
+.lobby-hub .hub-link:hover .tile-frame::after,
+.lobby-hub .loadout-slot:hover .tile-frame::after{opacity:1;animation:none}
 .lobby-hub .hub-link .tile-art{opacity:.26}
 @media(prefers-reduced-motion:reduce){
-  .lobby-hub .hub-link .tile-frame::after{animation:none;opacity:.55}
+  .lobby-hub .hub-link .tile-frame::after,
+  .lobby-hub .loadout-slot .tile-frame::after{animation:none;opacity:.55}
 }

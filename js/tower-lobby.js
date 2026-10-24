@@ -1003,6 +1003,7 @@ function hubLoadoutHtml(){
           <span class="ls-tip"><b>${d.name}</b><small>${luckTxt(d)} · TERPASANG</small></span>
         </div>`
       : `<div class="loadout-slot art-slot empty" data-bp="artefact" role="button" tabindex="0">
+          <span class="tile-frame" aria-hidden="true"></span>
           <span class="ls-tag">ART ${i+1}</span>
           <span class="ls-mark">${artSvg}</span>
           <span class="ls-lbl">EMPTY</span>
@@ -1016,6 +1017,7 @@ function hubLoadoutHtml(){
         ${lobbyPetHtml()}
       </div>`
     : `<div class="loadout-slot pet-slot empty" data-bp="pet" role="button" tabindex="0" title="Slot pet — kosong">
+        <span class="tile-frame" aria-hidden="true"></span>
         <span class="ls-tag">PET</span>
         <span class="ls-mark">${petSvg}</span>
         <span class="ls-lbl">EMPTY</span>
