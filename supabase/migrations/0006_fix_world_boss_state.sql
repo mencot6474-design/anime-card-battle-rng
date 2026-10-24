@@ -4,7 +4,9 @@
 -- Bug: `ybr record` diakses di dalam ekspresi jsonb_build_object(CASE ...),
 -- sehingga planner PL/pgSQL menyentuh field record walau cabang CASE tidak
 -- dijalankan -> error 55000 untuk semua user yang belum punya skor kemarin.
--- Fix: deklarasikan sebagai rowtype function (field statis = NULL sebelum diisi).
+-- Fix: jangan pakai record sama sekali. world_boss_bracket() adalah function
+-- returns table (bukan composite type), jadi tampung tiap kolom ke variabel
+-- skalar — skalar yang belum diisi bernilai NULL, bukan error.
 --
 -- Jalankan seluruh file ini di Supabase SQL Editor (aman diulang).
 
@@ -30,7 +32,10 @@ declare
   ybest    numeric;
   yrank    integer;
   ytotal   integer;
-  ybr      public.world_boss_bracket;
+  ybracket text;
+  ygems    integer;
+  ytokens  integer;
+  ytitle   text;
   yclaimed boolean := false;
   yrow     public.world_boss_runs;
   yjson    jsonb;
@@ -80,7 +85,9 @@ begin
 
   if ybest is not null then
     select count(*) into ytotal from public.leaderboard_scores where period = yper and board = 'world_boss';
-    select * into ybr from public.world_boss_bracket(yrank, ybest);
+    select bracket, gems, tokens, title
+      into ybracket, ygems, ytokens, ytitle
+      from public.world_boss_bracket(yrank, ybest);
     select exists(
       select 1 from public.leaderboard_claims
        where period = yper and board = 'world_boss' and username = uname
@@ -91,12 +98,12 @@ begin
       'best_pct', ybest,
       'rank', yrank,
       'total_players', ytotal,
-      'bracket', ybr.bracket,
-      'gems', ybr.gems,
-      'tokens', ybr.tokens,
-      'title', ybr.title,
+      'bracket', ybracket,
+      'gems', ygems,
+      'tokens', ytokens,
+      'title', ytitle,
       'claimed', yclaimed,
-      'claimable', (not yclaimed) and (ybr.tokens > 0)
+      'claimable', (not yclaimed) and (ytokens > 0)
     );
   end if;
 
