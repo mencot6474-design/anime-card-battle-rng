@@ -25,6 +25,7 @@ function openRanking(board) {
   rkBoard = RK_BOARDS[board] ? board : "world_boss";
   m.classList.add("show");
   rkSyncTabs();
+  if (typeof lbTrackSweep === "function") lbTrackSweep();
   rkRender();
 }
 
@@ -54,6 +55,7 @@ function rkFmtBig(v) {
 
 function rkValFmt(board, v) {
   if (board === "inf_tower") return "F " + Math.round(Number(v) || 0);
+  if (board === "rarest_pull") return "1 in " + fmtChance(v);
   return rkFmtBig(v);
 }
 
@@ -130,6 +132,106 @@ async function rkRender() {
     `<div class="rk-head-row"><span>RANK</span><span>PEMAIN</span><span>${info.col}</span></div>` +
     rkRowsHtml(res.rows, board) +
     `<div class="rk-note">${info.note}</div>`;
+}
+
+/* ===== SUBMIT SKOR 3 PAPAN MINGGUAN =====
+   Cache lokal per-user + per-minggu (kunci minggu ISO sama dengan server):
+   cuma kirim kalau rekor naik, dan setelah gagal tunggu 60 dtk sebelum coba lagi. */
+const LB_MIN_GAP_MS = 60000;
+let lbMem = { u: "", w: "", data: {} };
+let lbSending = {};
+let lbOwnedMemo = { u: "", w: "", n: -1 };
+
+function lbWeekKey() {
+  const wib = new Date(Date.now() + 7 * 3600000);
+  const d = new Date(Date.UTC(wib.getUTCFullYear(), wib.getUTCMonth(), wib.getUTCDate()));
+  const day = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - day);
+  const y = d.getUTCFullYear();
+  const jam1 = Date.UTC(y, 0, 1);
+  const wk = Math.ceil(((d - jam1) / 86400000 + 1) / 7);
+  return y + "-W" + (wk < 10 ? "0" + wk : wk);
+}
+
+function lbState() {
+  const u = String(currentUser || "").toLowerCase();
+  const w = lbWeekKey();
+  if (lbMem.u !== u || lbMem.w !== w) {
+    let data = {};
+    try { data = JSON.parse(localStorage.getItem("aab-lb-" + u)) || {}; } catch (e) {}
+    if (data.__w !== w) data = { __w: w };
+    lbMem = { u: u, w: w, data: data };
+  }
+  return lbMem.data;
+}
+
+function lbSaveState() {
+  try { localStorage.setItem("aab-lb-" + lbMem.u, JSON.stringify(lbMem.data)); } catch (e) {}
+}
+
+async function lbSubmit(board, value, meta) {
+  value = Math.round(Number(value) || 0);
+  if (!currentUser || value <= 0) return;
+  if (!window.CloudDB || typeof window.CloudDB.submitScore !== "function") return;
+  if (lbSending[board]) return;
+  const st = lbState();
+  const rec = st[board] || {};
+  if ((rec.v || 0) >= value) return;
+  if (rec.at && Date.now() - rec.at < LB_MIN_GAP_MS) return;
+  lbSending[board] = true;
+  let res = null;
+  try { res = await window.CloudDB.submitScore(board, value, meta || {}); } catch (e) {}
+  lbSending[board] = false;
+  if (res && res.ok) {
+    st[board] = { v: value };
+    lbSaveState();
+    const m = document.getElementById("rankModal");
+    if (m && m.classList.contains("show") && rkBoard === board) rkRender();
+  } else {
+    st[board] = { v: rec.v || 0, at: Date.now() };
+    lbSaveState();
+  }
+}
+
+function lbTrackTower(floor) {
+  lbSubmit("inf_tower", floor, {});
+}
+
+function lbTrackDeckPower() {
+  if (typeof totalPower !== "function") return;
+  lbSubmit("deck_power", totalPower(), {});
+}
+
+function lbTrackPull(charId, mut, shiny) {
+  if (typeof CARDS === "undefined" || !CARDS[charId]) return;
+  const m = mut || "none";
+  const den = typeof effChance === "function" ? effChance(charId, m, !!shiny) : 0;
+  if (!den) return;
+  const nm = (typeof cardName === "function" ? cardName(charId) : (CARDS[charId].name || charId));
+  const sub = nm + (shiny ? " · SHINY" : "") + (m !== "none" ? " · " + m.toUpperCase() : "");
+  lbSubmit("rarest_pull", den, { name: sub, tier: CARDS[charId].tier });
+}
+
+/* Rekor dari data yang SUDAH dimiliki (save lama / deck berubah / minggu baru). */
+function lbTrackOwnedBest() {
+  if (!state || !Array.isArray(state.stacks)) return;
+  const u = String(currentUser || "").toLowerCase();
+  const w = lbWeekKey();
+  if (lbOwnedMemo.u === u && lbOwnedMemo.w === w && lbOwnedMemo.n === state.stacks.length) return;
+  let best = null, bestCh = 0;
+  for (const s of state.stacks) {
+    const ch = typeof effChance === "function" ? effChance(s.char, s.mut || "none", !!s.shiny) : 0;
+    if (ch > bestCh) { bestCh = ch; best = s; }
+  }
+  lbOwnedMemo = { u: u, w: w, n: state.stacks.length };
+  if (best) lbTrackPull(best.char, best.mut, best.shiny);
+}
+
+function lbTrackSweep() {
+  if (!currentUser || !state) return;
+  lbTrackTower((state.tower && state.tower.best) || 0);
+  lbTrackDeckPower();
+  lbTrackOwnedBest();
 }
 
 document.addEventListener("click", e => {

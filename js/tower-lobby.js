@@ -778,6 +778,7 @@ function towerEnd(win){
     state.infTokens=(state.infTokens||0)+tok; towerRun.tokens=(towerRun.tokens||0)+tok;
     towerRun.cleared=f; towerRun.coins=(towerRun.coins||0)+r.coins;
     state.tower.best=Math.max(state.tower.best||0,f);
+    if(typeof lbTrackTower==="function")lbTrackTower(state.tower.best);
     save(); renderShell(); fanfare();
     toast("LANTAI "+f+" DITAKLUKKAN","+"+rr+" ROLL DISIMPAN · "+"+"+tok+" TOKEN","#7df9ff");
     packGot.forEach((nm,i)=>setTimeout(()=>toast("DROP INSTAN PACK · LANTAI "+f,nm+" · MASUK BACKPACK","#FFD700"),500*(i+1)));
@@ -1186,6 +1187,7 @@ function renderLobby(){
   const ms=document.getElementById("missionSub");if(ms){const done=CHAPTERS.reduce((a,c)=>a+chapProgMode(c,state.diff),0),tot=CHAPTERS.reduce((a,c)=>a+c.levels.length,0);ms.textContent=done+"/"+tot+" SELESAI";const ratio=tot?Math.min(100,Math.round(done/tot*100)):0;const meter=document.getElementById("missionMeter"),fill=document.getElementById("missionFill");if(meter){meter.setAttribute("aria-valuemax",String(tot));meter.setAttribute("aria-valuenow",String(done));}if(fill)fill.style.width=ratio+"%";}
   document.querySelectorAll(".hub-loadout-bar .loadout-slot, .stage-loadout .loadout-slot").forEach(el=>{el.onclick=()=>{sfx.hit();bpSetTab(el.dataset.bp||"pet");const p=document.getElementById("backpackPanel");if(!p||p.style.display!=="flex")toggleBackpack();};});
   if (typeof _startGlWidgetTick === "function") _startGlWidgetTick();
+  if (typeof lbTrackSweep === "function") lbTrackSweep();
 }
 
 /* ========== TOGGLE BACKPACK FUNCTION ========== */

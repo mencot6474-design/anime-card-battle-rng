@@ -381,6 +381,20 @@ const CloudDB = {
     });
   },
 
+  /** Kirim skor papan mingguan (inf_tower / deck_power / rarest_pull).
+      Server hanya menyimpan kalau nilai baru lebih tinggi. */
+  async submitScore(board, value, meta) {
+    const pw = this._localPassHash(currentUser);
+    if (!currentUser || !pw) return null;
+    return await this._rpc("submit_leaderboard_score", {
+      p_username: String(currentUser).toLowerCase(),
+      p_password_hash: pw,
+      p_board: board,
+      p_value: Math.max(0, Math.min(1e15, Math.round(Number(value) || 0))),
+      p_meta: meta || {},
+    });
+  },
+
   async getSessionId(username) {
     if (!username) return null;
     /* Lightweight: hanya tarik 1 kolom JSONB current_session_id dari save_data.

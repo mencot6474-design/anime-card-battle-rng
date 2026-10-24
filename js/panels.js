@@ -460,6 +460,7 @@ function grantRolledCard(charId, mut, shiny, dupToExp) {
   if (!Array.isArray(state.stacks)) state.stacks = [];
   const m = mut || "none";
   const sh = !!shiny;
+  if (!__batchRoll && typeof lbTrackPull === "function") lbTrackPull(charId, m, sh);
   const s = state.stacks.find(x => x.char === charId && (x.mut || "none") === m && !!x.shiny === sh);
   if (s) {
     /* DUPLIKAT — stack existing tetap count=1 (tidak ada copy yang nempel di save).
@@ -485,7 +486,9 @@ function instantRoll(n){
   try{ for(let i=0;i<n;i++){ const r=rngRoll(totalLuck()); if(!r)continue; grantRolledCard(r.cardId,r.mut,r.shiny,true); res.push(r);} }
   finally{ __batchRoll=false; }
   if(state)state.totalRolls=(state.totalRolls||0)+n;
-  save(); rollCountBadge(); return res;
+  save(); rollCountBadge();
+  if(typeof lbTrackOwnedBest==="function")lbTrackOwnedBest();
+  return res;
 }
 
 /* ===== INDEX REWARD: INTAN ROLL 100K =====
@@ -569,6 +572,7 @@ function instantRollFast(n, agg){
   if(groups) for(const k in groups) res.push(groups[k]);
   if(state)state.totalRolls=(state.totalRolls||0)+totalPulls;
   save(); rollCountBadge(); idxRewardSync(true);
+  if(typeof lbTrackOwnedBest==="function")lbTrackOwnedBest();
   res.totalPulls=totalPulls;
   return res;
 }
