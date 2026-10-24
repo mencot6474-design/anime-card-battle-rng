@@ -161,22 +161,33 @@ const DIFFS=[
   {k:"nightmare",l:"NIGHTMARE",mut:"secret",rw:3},
   {k:"apocalypse",l:"APOCALYPSE",mut:"ultima",rw:4.5}
 ];
+/* ========== WORLD BOSS — SATU boss, tanpa tier ==========
+   Pool HP harian global = 1T (harus sama dengan world_boss_pool_size() di server).
+   Damage mentah kartu (puluhan ribu) dikali RAID_DMG_SCALE supaya masuk skala pool. */
+const WB_POOL_HP=1000000000000;
+const RAID_DMG_SCALE=10000;
 const RAID_DIFFS=[
-  {k:"normal",l:"NORMAL",hp:1,atk:1,rw:1,color:"#6EAC4C"},
-  {k:"hard",l:"HARD",hp:2,atk:1.6,rw:1.5,color:"#E07F33"},
-  {k:"extreme",l:"EXTREME",hp:4,atk:2.2,rw:2.2,color:"#FF4D5E"},
-  {k:"nightmare",l:"NIGHTMARE",hp:8,atk:3,rw:3,color:"#B58CFF"}
+  {k:"world",l:"WORLD",hp:1,atk:1,rw:1,color:"#7DF9FF"}
 ];
 /* ========== BOSS RAID (konstanta + helper) ========== */
-const RAID_BOSSES=[{id:"RAID_ETERNAL_DRAGON",name:"Eternal Dragon",tier:"EX",skill:"Galaxy Roar",hp:30000,atk:15000,power:15000,img:"assets/cards/art/eternal-dragon.webp",banner:"assets/raid/raid-banner-hd.png",fx:{purple:{chance:100,mult:1}}}];
+const RAID_BOSSES=[
+  {id:"RAID_ETERNAL_DRAGON",name:"Eternal Dragon",tier:"EX",skill:"Galaxy Roar",hp:WB_POOL_HP,atk:15000,power:15000,img:"assets/cards/art/eternal-dragon.webp",banner:"assets/raid/raid-banner-hd.png",fx:{purple:{chance:100,mult:1}}},
+  /* Boss kedua: pool & papan terpisah (world_boss_b). */
+  {id:"RAID_SHADOW_KING",name:"Shadow King",tier:"EX",skill:"Umbra Eclipse",hp:WB_POOL_HP,atk:16500,power:16500,img:"assets/cards/art/shadow-king.webp",banner:"assets/raid/raid-banner-hd.png",fx:{purple:{chance:100,mult:1}}}
+];
 const RAID_TURNS=10;
-const RAID_TIERS=[{pct:100,tokens:20},{pct:50,tokens:10},{pct:30,tokens:5}];
-function raidDiffOf(){return RAID_DIFFS.find(d=>d.k===(state&&state.raidDiff))||RAID_DIFFS[0];}
-function raidBossOf(diff){const d=diff||raidDiffOf(),b=RAID_BOSSES[0];return Object.assign({},b,{hp:Math.round(b.hp*d.hp),atk:Math.round(b.atk*d.atk),power:Math.round(b.power*d.hp),rw:d.rw,diffKey:d.k,diffLabel:d.l,diffColor:d.color});}
-function raidDiffUnlocked(k){const i=RAID_DIFFS.findIndex(d=>d.k===k);if(i<=0)return true;return !!(state.raidCleared&&state.raidCleared[RAID_DIFFS[i-1].k]);}
-function raidNextUnlock(k){const i=RAID_DIFFS.findIndex(d=>d.k===k);return i>0?RAID_DIFFS[i-1].l:null;}
-function raidTokenFor(pct,diff){const rw=(diff&&diff.rw)||((diff?diff:raidDiffOf()).rw)||1;for(const x of RAID_TIERS){if(pct>=x.pct)return Math.round(x.tokens*rw);}return 0;}
-function raidNextTier(pct,diff){const rw=(diff&&diff.rw)||((diff?diff:raidDiffOf()).rw)||1;for(let i=RAID_TIERS.length-1;i>=0;i--){if(pct<RAID_TIERS[i].pct)return{pct:RAID_TIERS[i].pct,tokens:Math.round(RAID_TIERS[i].tokens*rw)};}return null;}
+function raidDiffOf(){return RAID_DIFFS[0];}
+function raidBossOf(diff){
+  const d=diff||raidDiffOf();
+  /* Ikut boss yang sedang dipilih di hub (WB_BOSSES dari raid.js); fallback boss 0. */
+  let b=RAID_BOSSES[0];
+  if(typeof WB_BOSSES!=="undefined"&&typeof wbBossIdx==="number"&&WB_BOSSES[wbBossIdx]){
+    b=RAID_BOSSES.find(x=>x.id===WB_BOSSES[wbBossIdx].id)||RAID_BOSSES[0];
+  }
+  return Object.assign({},b,{hp:Math.round(b.hp*d.hp),atk:Math.round(b.atk*d.atk),power:Math.round(b.power*d.hp),rw:d.rw,diffKey:d.k,diffLabel:d.l,diffColor:d.color});
+}
+function raidDiffUnlocked(k){return true;}
+function raidNextUnlock(k){return null;}
 
 /* ========== TRAIT SYSTEM ========== */
 const TRAIT_TIERS=[

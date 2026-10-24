@@ -411,15 +411,71 @@ let __batchRoll = false;
 /* Roll = SATU-SATUNYA sumber kartu baru selain Toko Raid. Hasil roll DITUMPUK dengan sistem count:
    kartu yang sama (char + tier + varian/mut) masuk ke satu stack dan menaikkan s.count, bukan entri baru,
    biar backpack tidak membengkak. Tiap varian (SHINY/GOLD/RAINBOW/SECRET) numpuk jadi pile sendiri. */
+/* ===== AUTO-SELL DUPLIKAT → EXP =====
+   Copy ke-2 dst dari varian yang sudah dimiliki TIDAK ikut disimpan (count mentok di DUP_KEEP_MAX),
+   langsung ditukar jadi EXP player. Efek: save_data di Supabase tidak membengkak (storage + bandwidth
+   tetap kecil) sementara progres level/SP tetap jalan. */
+const DUP_KEEP_MAX = 1;                                        /* maksimal copy disimpan per varian */
+const DUP_EXP_TIER = { R:20, SR:40, SSR:90, UR:220, EX:600, BOSS:600 };
+const DUP_EXP_MUT  = { none:1, gold:2, rainbow:3, secret:5, ultima:8 };
+const DUP_EXP_SHINY = 2;
+let __lastDupSell = null;                                      /* info duplikat terakhir (badge UI) */
+
+function dupSellValue(card, mut, shiny) {
+  if (!card) return 0;
+  const base = DUP_EXP_TIER[card.tier] || 20;
+  const mm = DUP_EXP_MUT[mut || "none"] || 1;
+  return Math.round(base * mm * (shiny ? DUP_EXP_SHINY : 1));
+}
+function dupAddExp(exp, copies) {
+  if (!state || !exp) return 0;
+  if (!state.player) state.player = { luckBase:1, luckFlat:0, luckPercent:0, exp:0, lv:state.playerLv||1, sp:0, tree:{} };
+  state.player.exp = (state.player.exp || 0) + exp;
+  state.dupSold = (state.dupSold || 0) + (copies || 1);
+  state.dupExp  = (state.dupExp  || 0) + exp;
+  return exp;
+}
+/* Potong count satu stack ke DUP_KEEP_MAX; kelebihannya dijual jadi EXP. Return EXP yang didapat. */
+function dupTrimStack(s) {
+  if (!state || !s) return 0;
+  const cap = Math.max(1, DUP_KEEP_MAX | 0);
+  const have = Math.max(1, (s.count | 0) || 1);
+  if (have <= cap) return 0;
+  const extra = have - cap;
+  const card = (typeof CARDS !== "undefined") ? CARDS[s.char] : null;
+  const gain = dupSellValue(card, s.mut, s.shiny) * extra;
+  s.count = cap;
+  dupAddExp(gain, extra);
+  __lastDupSell = { char:s.char, mut:s.mut || "none", shiny:!!s.shiny, exp:gain, copies:extra };
+  return gain;
+}
+/* Migrasi save lama (dipanggil dari loadStateFor): tumpukan count lama dipotong sekali → EXP. */
+function dupAutoSellExisting() {
+  if (!state || !Array.isArray(state.stacks)) return 0;
+  let total = 0;
+  for (const s of state.stacks) total += dupTrimStack(s);
+  return total;
+}
+
 function grantRolledCard(charId, mut, shiny) {
   const card = CARDS[charId];
   if (!card || !state) return null;
   if (!Array.isArray(state.stacks)) state.stacks = [];
   const m = mut || "none";
   const sh = !!shiny;
+  const cap = Math.max(1, DUP_KEEP_MAX | 0);
   const s = state.stacks.find(x => x.char === charId && x.tier === card.tier && (x.mut || "none") === m && !!x.shiny === sh);
   if (s) {
-    s.count = (s.count || 1) + 1;
+    const have = (s.count | 0) || 1;
+    if (have < cap) {
+      s.count = have + 1;
+    } else {
+      /* DUPLIKAT: count tidak ditambah — copy ini langsung dijual jadi EXP. */
+      s.count = cap;
+      const gain = dupSellValue(card, m, sh);
+      dupAddExp(gain, 1);
+      __lastDupSell = { char:charId, mut:m, shiny:sh, exp:gain, copies:1 };
+    }
     if(!__batchRoll){save();rollCountBadge();idxRewardSync();}
     return s;
   }
@@ -582,9 +638,11 @@ function rollTick(){
     state.player.exp=(state.player.exp||0)+50;
   }
   if(state)state.totalRolls=(state.totalRolls||0)+1;
+  __lastDupSell=null;
+  grantRolledCard(result.cardId,result.mut,result.shiny);
+  result.dupExp=__lastDupSell?__lastDupSell.exp:0;   /* >0 = duplikat barusan dijual jadi EXP */
   showRollResult(result);
   renderShell(); // Update XP bar & level check
-  grantRolledCard(result.cardId,result.mut,result.shiny);
   if(rollState.active)rollState.interval=setTimeout(rollTick,Math.max(RNG_ROLL_MIN,RNG_ROLL_SPEED/rollState.speedMultiplier));
 }
 
@@ -598,6 +656,8 @@ function stopRollAnimation() {
     clearTimeout(rollState.hideTimer);
     rollState.hideTimer = null;
   }
+  /* Roll berhenti → push sisa perubahan ke Supabase sekali (throttle-nya ada di state.js save()). */
+  if (typeof flushCloudSave === "function") flushCloudSave();
   const rollBtn = document.getElementById('rollBtn');
   if (rollBtn) rollBtn.classList.remove('active');
   const ra = document.getElementById('rollAutoBtn');
@@ -674,6 +734,17 @@ function showRollResult(result) {
   if(result.chance!==undefined){
     const ec=document.querySelector('.roll-card-showcase .hc-chance');
     if(ec)ec.textContent="1 in "+fmtChance(result.chance);
+  }
+  /* Badge AUTO-SELL: duplikat sudah dikonversi jadi EXP (tidak ditumpuk di save). */
+  if(result.dupExp>0){
+    const b=document.createElement('div');
+    b.className='rv-dupsell';
+    b.textContent='DUPLIKAT +'+fmt(result.dupExp)+' EXP';
+    b.style.cssText='position:absolute;top:6px;right:6px;z-index:6;padding:3px 8px;border-radius:999px;'
+      +'font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:10px;letter-spacing:.08em;line-height:1;'
+      +'color:#04121a;background:linear-gradient(120deg,#7df9ff,#5cf0a8);'
+      +'box-shadow:0 0 12px rgba(125,249,255,.55);white-space:nowrap;pointer-events:none;';
+    showcase.appendChild(b);
   }
 }
 
@@ -859,14 +930,19 @@ function renderProfile(){
   const cd=(state.clearedDiff&&typeof state.clearedDiff==="object")?state.clearedDiff:{};
   const storyTiles=DIFFS.map(d=>{const n=Object.keys(cd[d.k]||{}).length;
     return tile("STORY "+d.l,`${n}/${LEVEL_COUNT}`,"");}).join("");
-  const raidDone=RAID_DIFFS.filter(d=>state.raidCleared&&state.raidCleared[d.k]).length;
+  const raidDone=(state.raidCleared&&Object.values(state.raidCleared).some(Boolean))?1:0;
+  /* Pool & attempt per boss (2 pool terpisah) — tile dibuat ringkas, TANPA "wide". */
+  const wbVals=i=>(typeof wbPoolVals==="function")?wbPoolVals(i):{pool:1e12,left:1e12};
+  const wbAttN=i=>(typeof wbAttOf==="function")?(wbAttOf(i)==null?0:wbAttOf(i)):3;
+  const wbHP=i=>(typeof fmtBig==="function"?fmtBig(wbVals(i).left):"—")+" HP";
   const di=state.dailyIndex||0;
   const progres=
     tile("INFINITE TOWER",`Lantai ${(state.tower&&state.tower.best)||0}`,"")
     +tile("SKILL POINT",`${p.sp||0}`,"")
     +tile("HADIAH HARIAN",`HARI ${di+1} / 7`, (typeof DAILY_GEMS!=="undefined"&&DAILY_GEMS[di]!=null)?`KLAIM · +${fmt(DAILY_REWARDS[di]||0)} COIN · +${DAILY_GEMS[di]} GEM`:"", "", "", "openDaily()")
     +storyTiles
-    +tile("BOSS RAID",`${raidDone} / ${RAID_DIFFS.length}`,"","wide");
+    +tile("DRAGON",wbHP(0),`WORLD BOSS · ${wbAttN(0)}/3 ATTEMPT`)
+    +tile("SHADOW KING",wbHP(1),`WORLD BOSS · ${wbAttN(1)}/3 ATTEMPT`);
   const gacha=
     tile("BATTLE SPEED",battleSpeedEff()+"×","")
     +tile("TOTAL SUMMON",fmt(state.summons||0),"");
@@ -886,7 +962,7 @@ function renderProfile(){
   const speedPotN=(state.speedPots||[]).reduce((a,b)=>a+(b||0),0);
   const item=
     tile("COIN",fmt(state.coins||0),"")
-    +tile("TOKEN RAID",fmt(state.raidTokens||0),"")
+    +tile("TOKEN WORLD BOSS",fmt(state.wbTokens||0),"")
     +tile("TOKEN INF",fmt(state.infTokens||0),"")
     +tile("WEATHER POTION",`×${state.potions||0}`,"")
     +tile("MYTHIC POTION",`×${state.mythicPotions||0}`,"")
@@ -1015,6 +1091,7 @@ function renderBackpackPanel(){
     <div class="bph-left">
       <span class="bph-eyebrow">INVENTORY & GEAR SYSTEM</span>
       <h2>TACTICAL BACKPACK</h2>
+      ${(state&&state.dupSold>0)?`<span class="bph-eyebrow" style="color:#5cf0a8">AUTO-SELL DUPLIKAT &rarr; +${fmt(state.dupExp||0)} EXP (${fmt(state.dupSold)} copy)</span>`:''}
     </div>
     <button class="backpack-close" onclick="toggleBackpack()" aria-label="Tutup Backpack">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -1527,7 +1604,7 @@ function artIconHtml(d){
 }
 /* Tombol beli Backpack per kanal: raid/tower TIDAK dijual pakai coin — tombol jadi petunjuk sumber. */
 function bpBuyBtn(d,kind){
-  if(d.src==="raid")return `<button class="bp-shop-b off" onclick="toast('TOKO RAID','BELI PAKAI TOKEN RAID · ${fmt(d.raidCost||0)} TOKEN','#B58CFF')">TOKO RAID · ${fmt(d.raidCost||0)} TOKEN</button>`;
+  if(d.src==="raid")return `<button class="bp-shop-b off" onclick="toast('TOKO WORLD BOSS','BELI PAKAI TOKEN WORLD BOSS · ${fmt(d.raidCost||0)} TOKEN','#B58CFF')">TOKO WORLD BOSS · ${fmt(d.raidCost||0)} TOKEN</button>`;
   if(d.src==="tower")return `<button class="bp-shop-b off" onclick="toast('INF TOWER','DROP BASE CHANCE — TIDAK KENA LUCK PLAYER','#7DF9FF')">DROP · INF TOWER</button>`;
   if(d.src==="premium")return `<button class="bp-shop-b buy" style="background:linear-gradient(135deg,#e6b800,#b38600);color:#0a0800;border-color:#ffd700;" onclick="openPremiumShop()">TOKO PREMIUM · ${d.gemPrice} GEMS</button>`;
   return `<button class="bp-shop-b ${(state.coins||0)>=d.price?'buy':'poor'}" onclick="bpBuy${kind}('${d.id}')">BELI · ${coinIcon(15)} ${fmt(d.price)}</button>`;
@@ -1572,7 +1649,7 @@ function renderBpPets(){
 
 function bpBuyArt(id){
   const d=ART_DEFS.find(x=>x.id===id);if(!d||state.artOwned.includes(id))return;
-  if(d.src&&d.src!=="coin"){toast("TIDAK DIJUAL DI SINI",d.src==="raid"?"BELI DI TOKO RAID PAKAI TOKEN":"DROP BASE DI INF TOWER","#fcd34d");return;}
+  if(d.src&&d.src!=="coin"){toast("TIDAK DIJUAL DI SINI",d.src==="raid"?"BELI DI TOKO WORLD BOSS PAKAI TOKEN":"DROP BASE DI INF TOWER","#fcd34d");return;}
   if((state.coins||0)<d.price){beep(200,.09,"square",.06);toast("COIN KURANG","BUTUH ${coinIcon(15)} "+fmt(d.price),"#f87171");return;}
   state.coins-=d.price;state.artOwned.push(id);save();
   beep(680,.12,"triangle",.09);setTimeout(()=>beep(900,.12,"triangle",.08),90);
@@ -1589,7 +1666,7 @@ function bpToggleArt(id){
 function bpArtSlot(i){const id=state.artSlots[i];if(id)bpToggleArt(id);}
 function bpBuyPet(id){
   const d=PET_DEFS.find(x=>x.id===id);if(!d||state.petOwned.includes(id))return;
-  if(d.src&&d.src!=="coin"){toast("TIDAK DIJUAL DI SINI",d.src==="raid"?"BELI DI TOKO RAID PAKAI TOKEN":"DROP BASE DI INF TOWER","#fcd34d");return;}
+  if(d.src&&d.src!=="coin"){toast("TIDAK DIJUAL DI SINI",d.src==="raid"?"BELI DI TOKO WORLD BOSS PAKAI TOKEN":"DROP BASE DI INF TOWER","#fcd34d");return;}
   if((state.coins||0)<d.price){beep(200,.09,"square",.06);toast("COIN KURANG","BUTUH ${coinIcon(15)} "+fmt(d.price),"#f87171");return;}
   state.coins-=d.price;state.petOwned.push(id);save();
   beep(680,.12,"triangle",.09);setTimeout(()=>beep(900,.12,"triangle",.08),90);

@@ -3,10 +3,12 @@
    Data: RPC get_leaderboard (board world_boss, periode harian server).
    ========================================================================== */
 let rkBusy = false;
+let rkBoard = "world_boss";
 
-function openRanking() {
+function openRanking(board) {
   const m = document.getElementById("rankModal");
   if (!m) return;
+  rkBoard = board || "world_boss";
   m.classList.add("show");
   rkRender();
 }
@@ -16,14 +18,16 @@ function closeRanking() {
   if (m) m.classList.remove("show");
 }
 
-function rkFmtPct(v) {
-  const n = Math.round((Number(v) || 0) * 10) / 10;
-  return (Number.isInteger(n) ? n : n.toFixed(1)) + "%";
+function rkFmtBig(v) {
+  const n = Number(v) || 0;
+  const u = [[1e12, "T"], [1e9, "B"], [1e6, "M"]];
+  for (const [d, s] of u) if (n >= d) return (Math.round(n / d * 100) / 100).toLocaleString("en-US") + s;
+  return String(Math.round(n));
 }
 
 function rkRowsHtml(rows, me) {
   if (!rows || !rows.length) {
-    return `<div class="rk-empty">BELUM ADA SKOR HARI INI<br><span>Mainkan World Boss di BOSS RAID untuk masuk ranking.</span></div>`;
+    return `<div class="rk-empty">BELUM ADA SKOR HARI INI<br><span>Serang World Boss di hub WORLD BOSS untuk masuk ranking.</span></div>`;
   }
   const myName = (currentUser || "").toLowerCase();
   return rows.map(r => {
@@ -32,7 +36,7 @@ function rkRowsHtml(rows, me) {
     return `<div class="rk-row${mine ? " me" : ""}">
       <span class="rk-rank rk-top${r.rank <= 3 ? r.rank : ""}">${medal}</span>
       <span class="rk-name">${rkEsc(r.username)}</span>
-      <span class="rk-val">${rkFmtPct(r.value)}</span>
+      <span class="rk-val">${rkFmtBig(r.value)}</span>
     </div>`;
   }).join("");
 }
@@ -59,7 +63,7 @@ async function rkRender() {
   body.innerHTML = `<div class="rk-loading">MEMUAT RANKING…</div>`;
 
   let res = null;
-  try { res = await window.CloudDB.leaderboard("world_boss", null, 100, currentUser); } catch (e) {}
+  try { res = await window.CloudDB.leaderboard(rkBoard, null, 100, currentUser); } catch (e) {}
   rkBusy = false;
 
   if (!res || !res.ok) {
@@ -69,17 +73,19 @@ async function rkRender() {
   }
 
   const me = res.me;
+  const boardLabel = rkBoard === "world_boss_b" ? "SHADOW KING" : "ETERNAL DRAGON";
   meta.innerHTML =
+    `<span class="rk-chip">${boardLabel}</span>` +
     `<span class="rk-chip">${rkEsc(res.period)}</span>` +
     `<span class="rk-chip rk-dim">${res.total_players || 0} PEMAIN</span>` +
     (me
-      ? `<span class="rk-chip rk-own">POSISI KAMU #${me.rank} · ${rkFmtPct(me.value)}</span>`
+      ? `<span class="rk-chip rk-own">POSISI KAMU #${me.rank} · ${rkFmtBig(me.value)}</span>`
       : `<span class="rk-chip rk-dim">KAMU BELUM PUNYA SKOR</span>`);
 
   body.innerHTML =
     `<div class="rk-head-row"><span>RANK</span><span>PEMAIN</span><span>DAMAGE</span></div>` +
     rkRowsHtml(res.rows, me) +
-    `<div class="rk-note">World Boss · 3 attempt/hari · reset 00:00 WIB · reward diklaim di layar BOSS RAID.</div>`;
+    `<div class="rk-note">World Boss · 3 attempt/hari · skor = damage terbaik 1 run · reset 00:00 WIB · reward diklaim di hub WORLD BOSS.</div>`;
 }
 
 document.addEventListener("click", e => {

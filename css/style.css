@@ -48950,7 +48950,14 @@ html.fps-locked .bp-fchip{
 #rankModal .rk-body{background:transparent;padding:0!important;gap:0!important}
 
 /* ==========================================================================
-   WORLD BOSS HUB — satu kartu boss besar + bar total HP pool di atasnya
+   WORLD EVENT HERO (.wbr-*) — DIPINDAH ke css/world-boss.css
+   (re-skin total: stage 3D + rail kaca + 2 boss). Blok lama dihapus.
+   .wbr-runline (layar battle) juga ikut pindah ke file itu.
+   ========================================================================== */
+
+/* ==========================================================================
+   LEGACY .wb-* — hub World Boss lama. Tidak dipakai lagi oleh raid.js
+   (sekarang .wbr-* di atas), disimpan supaya layar lama tidak pecah.
    ========================================================================== */
 .cp-raid-hub{max-width:1180px}
 

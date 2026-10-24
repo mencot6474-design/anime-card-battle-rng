@@ -12,7 +12,7 @@ function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u));}
 function freshState(){
   const s0=STORY_BIBLE.units[0];
   const start=s0?{id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,fav:false,lock:false,mut:"none",shiny:false,trait:"none",count:1}:null;
-  const newState={coins:1000,raidTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,totalRolls:0,playSec:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},raidShopOwned:{},towerShopOwned:{},storyGemMilestones:{},dailyGemPending:0,storyCdUntil:0,tower:{best:0,auto:false},battleSpeed:1,
+  const newState={coins:1000,wbTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,totalRolls:0,playSec:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},raidShopOwned:{},towerShopOwned:{},storyGemMilestones:{},dailyGemPending:0,storyCdUntil:0,tower:{best:0,auto:false},battleSpeed:1,
     cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],history:[],battle:null,
     player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1,sp:0,tree:{}},weather:null,weatherBest:null,potions:0,mythicPotions:0,luckPots:[0,0,0],speedPots:[0,0,0],luckBuffs:[],speedBuffs:[],infTokens:0,
     artOwned:[],artSlots:[null,null],petOwned:[],petEquipped:null,intanRolls:0,idxRewardsClaimed:0,premiumGems:50,rollPacks:{r5k:0,r10k:0,r25k:0,r50k:0,r100k:0}};
@@ -57,6 +57,10 @@ function loadStateFor(name){
   state.stacks=state.stacks.filter(s=>CARDS[s.char]);
   
   {const seen={};state.stacks.forEach(s=>{const k=s.char+"|"+(s.mut||"none")+"|"+(s.shiny?1:0);if(!seen[k]){seen[k]=s;s.count=s.count||1;}else{seen[k].count=(seen[k].count||1)+(s.count||1);if((s.trait&&s.trait!=="none")&&(!seen[k].trait||seen[k].trait==="none"))seen[k].trait=s.trait;}});state.stacks=Object.values(seen);}
+
+  /* AUTO-SELL DUPLIKAT (migrasi save lama): copy yang sudah menumpuk dipotong ke DUP_KEEP_MAX,
+     kelebihannya ditukar jadi EXP player — sekali jalan, biar save_data di Supabase tidak membengkak. */
+  if(typeof dupAutoSellExisting==="function")dupAutoSellExisting();
   
   if(!state.stacks.length){const st=freshState();state.stacks=st.stacks;}
   
@@ -87,7 +91,10 @@ function loadStateFor(name){
   }
   if(!CHAPTERS.some(c=>c.no===state.chap))state.chap=1;
   if(typeof state.dailyIndex!=="number")state.dailyIndex=0;
-  if(typeof state.raidTokens!=="number")state.raidTokens=0;
+  /* TOKEN WORLD BOSS: sumber satu-satunya = klaim reward rank harian.
+     Saldo lama (raidTokens) dihapus — tidak dikonversi. */
+  if(typeof state.wbTokens!=="number"||state.wbTokens<0)state.wbTokens=0;
+  delete state.raidTokens;
   /* Gelar dari reward World Boss (ditulis server) — jaga bentuk array di client. */
   if(!Array.isArray(state.titles))state.titles=[];
   /* INDEX REWARD: patch save lama */
@@ -298,14 +305,27 @@ function updateStoryCdUI(){
   }
 }
 setInterval(updateStoryCdUI,1000);
-let _cloudSaveTimer=null;function save(){
+let _cloudSaveTimer=null,_cloudLastPush=0,_cloudPending=false;
+/* HEMAT BANDWIDTH: selama roll otomatis jalan (tick ~75ms) save cloud dibatasi 1x / 5 detik,
+   bukan tiap tick. Sisa perubahan terakhir di-flush saat roll berhenti (flushCloudSave). */
+const CLOUD_PUSH_MIN_MS=5000;
+function _cloudPush(){
+  if(!state||!currentUser||!window.CloudDB)return;
+  _cloudLastPush=Date.now();_cloudPending=false;
+  window.CloudDB.saveState(currentUser, state).catch(()=>{});
+}
+function flushCloudSave(){
+  if(_cloudSaveTimer){clearTimeout(_cloudSaveTimer);_cloudSaveTimer=null;}
+  if(_cloudPending)_cloudPush();
+}
+function save(){
   if(state){
     localStorage.setItem(KEY,JSON.stringify(state));
     if(currentUser && window.CloudDB){
+      const rolling=(typeof rollState!=="undefined" && rollState && rollState.active);
+      if(rolling && Date.now()-_cloudLastPush<CLOUD_PUSH_MIN_MS){_cloudPending=true;return;}
       if(_cloudSaveTimer)clearTimeout(_cloudSaveTimer);
-      _cloudSaveTimer=setTimeout(()=>{
-        window.CloudDB.saveState(currentUser, state).catch(()=>{});
-      }, 400);
+      _cloudSaveTimer=setTimeout(_cloudPush, 400);
     }
   }
 }
@@ -446,7 +466,7 @@ function battleLive(){
 function renderShell(){
   const cv=document.getElementById("coinVal");if(cv)cv.textContent=fmt(state.coins);
   const gv=document.getElementById("gemVal");if(gv)gv.textContent=fmt(state.premiumGems||0);
-  const rv=document.getElementById("raidVal");if(rv)rv.textContent=fmt(state.raidTokens||0);
+  const rv=document.getElementById("raidVal");if(rv)rv.textContent=fmt(state.wbTokens||0);
   const pl=document.getElementById("plvl");if(pl)pl.textContent="LVL "+state.playerLv;
   const wn=document.getElementById("whoName");if(wn)wn.textContent=currentUser||"GUEST";
   /* Profil ringkas di topbar (dipindah dari lobby). */

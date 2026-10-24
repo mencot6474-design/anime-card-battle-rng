@@ -1,0 +1,719 @@
+/* ==========================================================================
+   WORLD BOSS — CYBER-HOLO ARENA
+   Port dari proto/world-boss/index.html ke game. Prefix kelas tetap wbr-
+   supaya markup + wbrPatch() di js/raid.js jalan tanpa ubah ID.
+
+   Catatan port:
+   - .wbr-app/.wbr-top/.wbr-clock/.wbr-wallet/.wbr-demo/.wbr-ov/.wbr-card/.wbr-rw
+     TIDAK diporting (shell game sudah punya topbar + overlay sendiri).
+   - Viewport game dipaku width=1900 -> breakpoint max-width dibuang.
+   - Token (--holo/--mag/--gold/--cond/--disp/...) dipasang di .wbr-hub,
+     bukan :root, supaya tidak bocor ke layar lain.
+   ========================================================================== */
+
+/* ---------- shell: hub world boss full-bleed, 1 layar ---------- */
+body.on-raid:has(.wbr-hub) main#app{
+  height:100dvh!important;max-height:100dvh!important;min-height:0!important;
+  padding:0!important;margin:0!important;max-width:none!important;width:100%!important;
+  overflow:hidden!important;
+}
+body.on-raid:has(.wbr-hub) main#app > .tw-page{
+  height:100%;min-height:0;display:block;padding:0;margin:0;max-width:none;
+}
+
+.wbr-hub{
+  --void:#05070F;--void2:#080C18;
+  --holo:#35F0FF;--holo-dim:rgba(53,240,255,.14);
+  --mag:#FF3DAE;--violet:#8B5CFF;--gold:#FFC861;--danger:#FF3B6B;
+  --text:#E8F6FF;--muted:#7FA6B8;
+  --glass:rgba(10,20,34,.62);--line:rgba(53,240,255,.18);
+  --disp:"Russo One",Impact,sans-serif;
+  --cond:"Barlow Condensed","Arial Narrow",sans-serif;
+  --body:"Rajdhani",system-ui,sans-serif;
+  --px:0;--py:0;
+
+  position:relative;z-index:1;
+  height:100%;min-height:0;overflow:hidden;
+  padding:clamp(8px,1.2vh,14px) clamp(12px,1.4vw,20px) clamp(14px,2vh,20px);
+  display:grid;
+  grid-template-columns:minmax(0,1.34fr) minmax(330px,.66fr);
+  grid-template-rows:minmax(0,1fr);
+  gap:clamp(10px,1.1vh,16px);align-items:stretch;
+  color:var(--text);font-family:var(--body);font-weight:600;letter-spacing:.02em;
+  -webkit-font-smoothing:antialiased;
+}
+.wbr-hub :where(button){font-family:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.wbr-hub :where(img){display:block}
+.wbr-hub [hidden]{display:none!important}
+.wbr-hub .grow{flex:1}
+
+@supports not ((backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px))){
+  .wbr-hub .wbr-panel{background:rgba(8,16,28,.96)}
+}
+
+/* ==========================================================================
+   STAGE 3D — 10 lapisan kedalaman
+   ========================================================================== */
+.wbr-stage{
+  position:relative;height:100%;min-height:0;border-radius:18px;overflow:hidden;
+  border:1px solid rgba(53,240,255,.22);
+  background:
+    radial-gradient(120% 90% at 50% 8%,rgba(139,92,255,.22),transparent 62%),
+    radial-gradient(90% 70% at 50% 100%,rgba(53,240,255,.14),transparent 70%),
+    linear-gradient(180deg,#0A0F1E 0%,#060A14 46%,#04060C 100%);
+  perspective:1200px;perspective-origin:50% 46%;
+  transform-style:preserve-3d;
+  box-shadow:inset 0 0 120px rgba(0,0,0,.9),0 30px 80px rgba(0,0,0,.6);
+  isolation:isolate;
+}
+.wbr-deep{
+  position:absolute;inset:0;transform-style:preserve-3d;pointer-events:none;
+  perspective:1200px;perspective-origin:50% 46%;
+}
+.wbr-l{
+  position:absolute;inset:0;pointer-events:none;
+  translate:calc(var(--px,0) * var(--m,0) * 1px) calc(var(--py,0) * var(--m,0) * 1px);
+  transition:translate .32s cubic-bezier(.22,.61,.36,1);
+}
+.wbr-stage.nomotion .wbr-l{transition:none}
+
+/* 1 · void bloom */
+.wbr-bloom{
+  inset:-10%;
+  background:
+    radial-gradient(46% 40% at 50% 42%,rgba(53,240,255,.20),transparent 70%),
+    radial-gradient(38% 34% at 50% 62%,rgba(255,61,174,.14),transparent 72%);
+  filter:blur(6px);
+}
+
+/* 2 · floor grid */
+.wbr-floor{overflow:hidden}
+.wbr-floor::before{
+  content:"";position:absolute;left:50%;top:56%;width:190%;height:190%;margin-left:-95%;
+  transform-origin:50% 0;transform:rotateX(74deg) translateZ(-60px);
+  background-image:
+    linear-gradient(rgba(53,240,255,.20) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(53,240,255,.20) 1px,transparent 1px);
+  background-size:70px 70px;
+  -webkit-mask-image:radial-gradient(ellipse 58% 52% at 50% 26%,#000 8%,rgba(0,0,0,.55) 44%,transparent 74%);
+  mask-image:radial-gradient(ellipse 58% 52% at 50% 26%,#000 8%,rgba(0,0,0,.55) 44%,transparent 74%);
+  animation:floorRun 5.5s linear infinite;
+}
+@keyframes floorRun{from{background-position:0 0,0 0}to{background-position:0 70px,70px 0}}
+
+/* 3 · ghost silhouette (bayangan boss di belakang) */
+.wbr-ghost{
+  inset:auto;left:50%;top:50%;width:min(56%,540px);aspect-ratio:1/1;
+  transform:translate(-50%,-50%) scale(1.06) translateZ(-140px);
+  opacity:.10;filter:blur(2px) saturate(0) brightness(1.6);
+}
+.wbr-ghost img{width:100%;height:100%;object-fit:contain;opacity:.9}
+
+/* 4 · halo cincin */
+.wbr-halo{
+  inset:auto;left:50%;top:47%;width:min(50%,490px);aspect-ratio:1/1;margin:0;
+  transform:translate(-50%,-50%) translateZ(-40px);
+  border-radius:50%;
+  border:1px solid rgba(53,240,255,.16);
+  box-shadow:0 0 60px rgba(53,240,255,.14) inset,0 0 90px rgba(139,92,255,.10);
+  opacity:.9;
+}
+.wbr-halo::before,.wbr-halo::after{
+  content:"";position:absolute;border-radius:50%;inset:0;
+  border:1px dashed rgba(139,92,255,.22);
+}
+.wbr-halo::before{inset:-9%;animation:haloSpin 26s linear infinite}
+.wbr-halo::after{inset:12%;border-color:rgba(255,61,174,.16);animation:haloSpin 18s linear infinite reverse}
+@keyframes haloSpin{to{transform:rotate(360deg)}}
+
+/* 5 · pedestal */
+.wbr-ped{
+  inset:auto;left:50%;bottom:17%;width:min(40%,380px);height:74px;margin-left:0;
+  transform:translateX(-50%) rotateX(66deg) translateZ(10px);
+  border-radius:50%;
+  background:radial-gradient(50% 50% at 50% 50%,rgba(53,240,255,.30),rgba(53,240,255,.05) 58%,transparent 74%);
+  filter:blur(1px);
+  box-shadow:0 0 70px rgba(53,240,255,.26);
+}
+.wbr-ped::after{
+  content:"";position:absolute;inset:14% 20%;border-radius:50%;
+  border:1px solid rgba(255,61,174,.22);
+  animation:pedPulse 3.4s ease-in-out infinite;
+}
+@keyframes pedPulse{0%,100%{opacity:.35;transform:scale(.96)}50%{opacity:.85;transform:scale(1.04)}}
+
+/* 6 · art boss + kartu 3D */
+.wbr-artwrap{
+  position:absolute;left:50%;top:46%;width:min(52%,500px);aspect-ratio:1/1;
+  transform:translate(-50%,-50%);pointer-events:none;
+  transform-style:preserve-3d;
+  animation:artFloat 7.5s ease-in-out infinite;
+}
+@keyframes artFloat{0%,100%{translate:0 0}50%{translate:0 -12px}}
+.wbr-art{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
+  filter:drop-shadow(0 34px 60px rgba(0,0,0,.75)) drop-shadow(0 0 46px rgba(53,240,255,.28));
+  transform:translateZ(60px) scale(1);
+  translate:calc(var(--px,0) * 9px) calc(var(--py,0) * 6px);
+  transition:translate .32s cubic-bezier(.22,.61,.36,1),transform .5s cubic-bezier(.22,.61,.36,1),filter .5s ease,opacity .28s ease;
+}
+.wbr-art.alt{filter:drop-shadow(0 34px 60px rgba(0,0,0,.75)) drop-shadow(0 0 52px rgba(255,61,110,.42))}
+.wbr-artwrap.swap .wbr-art{opacity:0;transform:translateZ(60px) scale(.92) rotate(-4deg)}
+.wbr-artwrap.swap{animation:none}
+
+/* 7 · (sparks canvas dihapus — bikin berat & nutupin klik) */
+
+/* 8 · (embers/dust dihapus — partikel terlalu rame) */
+
+/* 9 · vignette + scanlines */
+.wbr-veil{
+  inset:0;
+  background:
+    radial-gradient(112% 92% at 50% 44%,transparent 38%,rgba(3,5,10,.72) 88%,rgba(3,5,10,.95) 100%),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.028) 0 1px,transparent 1px 3px);
+}
+
+/* 10 · rush streaks (saat swap boss) */
+.wbr-rush{inset:0;opacity:0;transition:opacity .2s ease}
+.wbr-rush::before{
+  content:"";position:absolute;inset:-20%;
+  background:repeating-conic-gradient(from 0deg at 50% 48%,
+    rgba(53,240,255,.0) 0deg 3deg,rgba(53,240,255,.28) 3deg 4deg,
+    rgba(255,61,174,.0) 4deg 9deg,rgba(255,61,174,.22) 9deg 10deg);
+  -webkit-mask-image:radial-gradient(circle at 50% 48%,transparent 26%,#000 62%);
+  mask-image:radial-gradient(circle at 50% 48%,transparent 26%,#000 62%);
+  animation:rushSpin 2.4s linear infinite;
+}
+.wbr-stage.swapping .wbr-rush{opacity:1}
+@keyframes rushSpin{to{transform:rotate(360deg)}}
+
+/* ==========================================================================
+   STAGE CHROME — chip, tombol back, switch boss, plate nama
+   ========================================================================== */
+.wbr-topline{
+  position:absolute;left:0;right:0;top:0;z-index:6;
+  display:flex;align-items:center;gap:8px;
+  padding:clamp(10px,1.6vh,16px) clamp(12px,1.4vw,18px);
+  background:linear-gradient(180deg,rgba(3,6,12,.72),transparent);
+}
+.wbr-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  height:26px;padding:0 10px;border-radius:7px;
+  font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(232,246,255,.82);
+  border:1px solid rgba(53,240,255,.22);
+  background:rgba(6,14,24,.62);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  white-space:nowrap;
+}
+.wbr-chip.live{color:#BFF8FF;border-color:rgba(53,240,255,.5);box-shadow:0 0 18px rgba(53,240,255,.22) inset}
+.wbr-chip.hot{color:#FFD9EC;border-color:rgba(255,61,174,.5);box-shadow:0 0 18px rgba(255,61,174,.2) inset}
+.wbr-chip.dim{color:var(--muted);border-color:rgba(127,166,184,.24)}
+.wbr-chip .cp-pulse-dot{background:var(--holo);box-shadow:0 0 10px var(--holo)}
+
+.wbr-back{
+  margin-left:auto;width:34px;height:34px;flex:0 0 34px;border-radius:9px;
+  display:grid;place-items:center;font-size:16px;line-height:1;
+  color:rgba(232,246,255,.8);
+  border:1px solid rgba(53,240,255,.22);background:rgba(6,14,24,.62);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  transition:.16s;
+}
+.wbr-back:hover{color:#fff;border-color:rgba(53,240,255,.6);background:rgba(12,28,44,.9)}
+
+/* switch boss (panah kiri/kanan di tengah stage) */
+.wbr-switch{
+  position:absolute;top:50%;z-index:7;translate:0 -50%;
+  width:44px;height:74px;border-radius:12px;
+  display:grid;place-items:center;
+  font-family:var(--disp);font-size:18px;line-height:1;
+  color:rgba(232,246,255,.72);
+  border:1px solid rgba(53,240,255,.18);
+  background:linear-gradient(180deg,rgba(8,18,30,.7),rgba(6,12,22,.5));
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  transition:.18s;
+}
+.wbr-switch.l{left:clamp(8px,1vw,14px)}
+.wbr-switch.r{right:clamp(8px,1vw,14px)}
+.wbr-switch:hover{color:#fff;border-color:rgba(53,240,255,.65);box-shadow:0 0 26px rgba(53,240,255,.28);translate:0 -50% scale(1.04)}
+.wbr-switch:active{translate:0 -50% scale(.96)}
+
+/* dots indikator boss */
+.wbr-dots{
+  position:absolute;left:50%;bottom:clamp(96px,13vh,124px);translate:-50% 0;z-index:7;
+  display:flex;align-items:center;gap:8px;
+}
+.wbr-dot{
+  width:26px;height:6px;border-radius:99px;
+  background:rgba(127,166,184,.28);
+  border:1px solid rgba(127,166,184,.3);
+  transition:.2s;
+}
+.wbr-dot.on{
+  background:linear-gradient(90deg,var(--holo),var(--mag));
+  border-color:transparent;box-shadow:0 0 16px rgba(53,240,255,.55);
+}
+.wbr-dot.locked{opacity:.5}
+
+/* plate nama + pool meter */
+.wbr-plate{
+  position:absolute;left:0;right:0;bottom:0;z-index:6;
+  padding:clamp(12px,2vh,22px) clamp(14px,1.6vw,22px) clamp(12px,1.8vh,18px);
+  background:linear-gradient(0deg,rgba(3,6,12,.92) 12%,rgba(3,6,12,.6) 58%,transparent);
+  display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;
+}
+.wbr-plate-main{min-width:0;flex:1 1 260px}
+.wbr-eyebrow{
+  display:block;font-family:var(--cond);font-size:11px;font-weight:700;
+  letter-spacing:.26em;text-transform:uppercase;color:rgba(53,240,255,.78);
+  margin-bottom:2px;
+}
+.wbr-name{
+  display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;
+  font-family:var(--disp);font-size:clamp(20px,2.5vw,34px);line-height:1.02;
+  letter-spacing:.01em;text-transform:uppercase;
+  text-shadow:0 0 26px rgba(53,240,255,.34),0 4px 18px rgba(0,0,0,.8);
+}
+.wbr-name small{
+  font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:.16em;
+  color:var(--muted);text-shadow:none;
+}
+.wbr-tags{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:7px}
+.wbr-tag{
+  display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:6px;
+  font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:rgba(232,246,255,.78);
+  border:1px solid rgba(53,240,255,.2);background:rgba(6,14,24,.55);
+}
+.wbr-tag.hot{color:#FFD9EC;border-color:rgba(255,61,174,.42)}
+.wbr-tag.gold{color:#FFE7B8;border-color:rgba(255,200,97,.42)}
+
+.wbr-pool{flex:1 1 100%;min-width:0;margin-top:2px}
+.wbr-pool-head{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:rgba(127,166,184,.95);
+}
+.wbr-pool-k{display:inline-flex;align-items:center;gap:6px;color:rgba(53,240,255,.9)}
+.wbr-pool-reset{white-space:nowrap;color:rgba(127,166,184,.8)}
+.wbr-pool-main{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:3px 0 5px}
+.wbr-pool-left{
+  font-family:var(--disp);font-size:clamp(19px,2.1vw,28px);line-height:1;
+  color:#fff;text-shadow:0 0 22px rgba(53,240,255,.4);
+  font-variant-numeric:tabular-nums;
+}
+.wbr-pool-of{font-family:var(--cond);font-size:13px;font-weight:700;letter-spacing:.1em;color:var(--muted)}
+.wbr-pool-pct{
+  margin-left:auto;font-family:var(--cond);font-size:13px;font-weight:700;letter-spacing:.1em;
+  color:#BFF8FF;
+}
+.wbr-pool-bar{
+  position:relative;height:12px;border-radius:99px;overflow:hidden;
+  background:rgba(4,10,18,.9);
+  border:1px solid rgba(53,240,255,.22);
+  box-shadow:inset 0 2px 10px rgba(0,0,0,.75);
+}
+.wbr-pool-bar > i{
+  position:absolute;inset:1px auto 1px 1px;width:100%;border-radius:99px;
+  background:linear-gradient(90deg,var(--holo),var(--violet) 62%,var(--mag));
+  box-shadow:0 0 18px rgba(53,240,255,.55);
+  transition:width .6s cubic-bezier(.22,.61,.36,1);
+}
+.wbr-pool-bar > i::after{
+  content:"";position:absolute;inset:0;border-radius:99px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);
+  background-size:40% 100%;background-repeat:no-repeat;
+  animation:sheen 2.8s linear infinite;
+}
+@keyframes sheen{0%{background-position:-40% 0}100%{background-position:140% 0}}
+.wbr-ticks{
+  position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(90deg,transparent 0 24px,rgba(3,6,12,.55) 24px 25px);
+}
+.wbr-pool-foot{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:rgba(127,166,184,.9);margin-top:5px;
+}
+.wbr-pool.dim .wbr-pool-left{color:rgba(232,246,255,.5);text-shadow:none}
+.wbr-pool.dim .wbr-pool-bar > i{filter:grayscale(1) brightness(.6)}
+
+/* ==========================================================================
+   STRIKE FX — slash, ring pulse, hit flash, angka damage
+   ========================================================================== */
+.wbr-fx{inset:0;z-index:5;pointer-events:none}
+.wbr-slash{
+  position:absolute;left:50%;top:46%;width:min(70%,640px);height:4px;
+  translate:-50% -50%;rotate:-24deg;border-radius:99px;
+  background:linear-gradient(90deg,transparent,rgba(53,240,255,.95) 32%,#fff 50%,rgba(255,61,174,.9) 68%,transparent);
+  filter:blur(1px) drop-shadow(0 0 18px rgba(53,240,255,.9));
+  opacity:0;
+}
+.wbr-stage.strike .wbr-slash{animation:slashHit .42s cubic-bezier(.2,.7,.3,1)}
+@keyframes slashHit{
+  0%{opacity:0;scale:.4 1}
+  22%{opacity:1;scale:1 1.6}
+  100%{opacity:0;scale:1.15 .2}
+}
+.wbr-ring{
+  position:absolute;left:50%;top:47%;width:180px;height:180px;
+  translate:-50% -50%;border-radius:50%;
+  border:2px solid rgba(53,240,255,.8);
+  box-shadow:0 0 40px rgba(53,240,255,.5),inset 0 0 40px rgba(53,240,255,.3);
+  opacity:0;
+}
+.wbr-stage.strike .wbr-ring{animation:ringPop .62s ease-out}
+@keyframes ringPop{
+  0%{opacity:.9;scale:.2}
+  70%{opacity:.35;scale:2.4}
+  100%{opacity:0;scale:3.1}
+}
+.wbr-flash{
+  position:absolute;inset:0;opacity:0;pointer-events:none;
+  background:radial-gradient(60% 50% at 50% 47%,rgba(53,240,255,.28),transparent 70%);
+}
+.wbr-stage.strike .wbr-flash{animation:hitFlash .34s ease-out}
+@keyframes hitFlash{0%{opacity:0}18%{opacity:1}100%{opacity:0}}
+
+.wbr-dmg{
+  position:absolute;left:50%;top:44%;z-index:8;
+  translate:-50% -50%;pointer-events:none;
+  font-family:var(--disp);font-size:clamp(22px,3vw,40px);line-height:1;
+  color:#fff;text-shadow:0 0 22px rgba(53,240,255,.9),0 3px 12px rgba(0,0,0,.9);
+  animation:dmgUp 1.15s cubic-bezier(.2,.7,.3,1) forwards;
+  white-space:nowrap;
+}
+.wbr-dmg.crit{color:#FFE7B8;text-shadow:0 0 26px rgba(255,200,97,.95),0 3px 12px rgba(0,0,0,.9)}
+.wbr-dmg small{
+  display:block;font-family:var(--cond);font-size:11px;font-weight:700;
+  letter-spacing:.2em;text-align:center;color:rgba(191,248,255,.9);
+  text-shadow:none;margin-top:2px;
+}
+@keyframes dmgUp{
+  0%{opacity:0;translate:-50% -20%;scale:.7}
+  18%{opacity:1;translate:-50% -50%;scale:1.12}
+  60%{opacity:1;translate:-50% -70%;scale:1}
+  100%{opacity:0;translate:-50% -110%;scale:.96}
+}
+
+/* toast kecil (error / info) */
+.wbr-toast{
+  position:absolute;left:50%;bottom:clamp(120px,17vh,160px);translate:-50% 0;z-index:9;
+  max-width:min(88%,420px);padding:8px 14px;border-radius:9px;
+  font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:#FFD9EC;background:rgba(30,6,16,.9);
+  border:1px solid rgba(255,61,107,.55);
+  box-shadow:0 14px 40px rgba(0,0,0,.6);
+  text-align:center;
+  animation:toastIn .22s ease-out;
+}
+@keyframes toastIn{from{opacity:0;translate:-50% 8px}to{opacity:1;translate:-50% 0}}
+
+/* ==========================================================================
+   RAIL KANAN — panel kaca
+   ========================================================================== */
+.wbr-rail{
+  display:flex;flex-direction:column;gap:clamp(8px,1vh,12px);
+  min-height:0;height:100%;overflow:hidden;
+}
+.wbr-panel{
+  position:relative;border-radius:13px;padding:clamp(9px,1.1vh,13px) clamp(10px,1vw,13px);
+  background:linear-gradient(180deg,rgba(10,20,34,.78),rgba(6,12,22,.72));
+  border:1px solid rgba(53,240,255,.16);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 16px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.05);
+  min-height:0;
+}
+.wbr-panel::before{
+  content:"";position:absolute;left:12px;right:12px;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(53,240,255,.7),transparent);
+  opacity:.6;
+}
+.wbr-ptitle{
+  display:flex;align-items:center;gap:7px;
+  font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.2em;
+  text-transform:uppercase;color:rgba(53,240,255,.85);
+  margin-bottom:7px;
+}
+.wbr-ptitle .grow{flex:1}
+.wbr-ptitle .wbr-mini{
+  font-family:var(--cond);font-size:10px;font-weight:700;letter-spacing:.14em;
+  color:var(--muted);
+}
+
+/* --- threat (pool global) --- */
+.wbr-threat{flex:0 0 auto}
+.wbr-threat-num{
+  display:flex;align-items:baseline;gap:8px;
+  font-family:var(--disp);font-size:clamp(24px,2.6vw,34px);line-height:1;
+  color:#fff;text-shadow:0 0 24px rgba(255,61,174,.45);
+  font-variant-numeric:tabular-nums;
+}
+.wbr-threat-num span{font-family:var(--cond);font-size:13px;font-weight:700;letter-spacing:.12em;color:var(--muted);text-shadow:none}
+.wbr-threat-bar{
+  position:relative;height:10px;border-radius:99px;overflow:hidden;margin:8px 0 6px;
+  background:rgba(4,10,18,.9);border:1px solid rgba(255,61,174,.22);
+  box-shadow:inset 0 2px 10px rgba(0,0,0,.8);
+}
+.wbr-threat-bar > i{
+  position:absolute;inset:1px auto 1px 1px;width:100%;border-radius:99px;
+  background:linear-gradient(90deg,var(--holo),var(--violet) 48%,var(--mag));
+  box-shadow:0 0 18px rgba(255,61,174,.5);
+  transition:width .6s cubic-bezier(.22,.61,.36,1);
+}
+.wbr-threat-foot{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:rgba(127,166,184,.9);
+}
+.wbr-threat-foot b{color:rgba(232,246,255,.92);font-weight:700}
+
+/* --- run status: pips attempts + best/rank --- */
+.wbr-run{flex:0 0 auto}
+.wbr-pips{display:flex;align-items:center;gap:5px}
+.wbr-pip{
+  width:100%;max-width:34px;height:7px;border-radius:99px;
+  background:rgba(127,166,184,.22);border:1px solid rgba(127,166,184,.3);
+  transition:.2s;
+}
+.wbr-pip.on{
+  background:linear-gradient(90deg,var(--holo),var(--violet));
+  border-color:transparent;box-shadow:0 0 12px rgba(53,240,255,.6);
+}
+.wbr-pip.on.b{background:linear-gradient(90deg,var(--mag),var(--violet));box-shadow:0 0 12px rgba(255,61,174,.6)}
+.wbr-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.wbr-stat{
+  padding:6px 8px;border-radius:8px;
+  background:rgba(4,10,18,.6);border:1px solid rgba(53,240,255,.12);
+}
+.wbr-stat-k{
+  display:block;font-family:var(--cond);font-size:10px;font-weight:700;
+  letter-spacing:.16em;text-transform:uppercase;color:rgba(127,166,184,.85);
+}
+.wbr-stat-v{
+  display:block;font-family:var(--disp);font-size:15px;line-height:1.15;
+  color:#fff;font-variant-numeric:tabular-nums;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.wbr-stat-v.gold{color:#FFE7B8}
+
+/* claim */
+.wbr-claim{
+  display:block;width:100%;margin-top:8px;height:34px;border-radius:9px;
+  font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:#08131A;background:linear-gradient(180deg,#FFE7B8,var(--gold));
+  border:1px solid rgba(255,200,97,.8);
+  box-shadow:0 8px 22px rgba(255,200,97,.28);
+  transition:.16s;
+}
+.wbr-claim:hover{filter:brightness(1.06);box-shadow:0 10px 26px rgba(255,200,97,.4)}
+.wbr-claimed{
+  display:block;margin-top:8px;text-align:center;
+  font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:rgba(46,213,115,.95);
+}
+
+/* --- reward track --- */
+.wbr-track{flex:0 1 auto;min-height:0;display:flex;flex-direction:column}
+.wbr-track-list{
+  display:flex;flex-direction:column;gap:4px;min-height:0;overflow:auto;
+  scrollbar-width:thin;scrollbar-color:rgba(53,240,255,.3) transparent;
+}
+.wbr-track-list::-webkit-scrollbar{width:5px}
+.wbr-track-list::-webkit-scrollbar-thumb{background:rgba(53,240,255,.28);border-radius:99px}
+.wbr-tr{
+  display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:7px;
+  padding:4px 7px;border-radius:7px;
+  background:rgba(4,10,18,.5);border:1px solid rgba(53,240,255,.1);
+  font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.08em;
+  color:rgba(232,246,255,.82);text-transform:uppercase;
+}
+.wbr-tr .wbr-tr-p{color:rgba(53,240,255,.9)}
+.wbr-tr .wbr-tr-r{color:rgba(127,166,184,.95);font-size:10px;letter-spacing:.1em}
+.wbr-tr.hit{
+  background:linear-gradient(90deg,rgba(53,240,255,.16),rgba(255,61,174,.1));
+  border-color:rgba(53,240,255,.42);color:#fff;
+}
+.wbr-tr.hit .wbr-tr-r{color:#FFE7B8}
+
+/* --- leaderboard --- */
+.wbr-lb{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+.wbr-lb-head{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.wbr-lb-head .wbr-ptitle{margin:0;flex:1}
+.wbr-lb-all{
+  height:24px;padding:0 9px;border-radius:7px;
+  font-family:var(--cond);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(53,240,255,.9);border:1px solid rgba(53,240,255,.28);background:rgba(6,14,24,.6);
+  transition:.16s;white-space:nowrap;
+}
+.wbr-lb-all:hover{color:#fff;border-color:rgba(53,240,255,.6)}
+.wbr-lb-rows{
+  display:flex;flex-direction:column;gap:3px;min-height:0;overflow:auto;
+  scrollbar-width:thin;scrollbar-color:rgba(53,240,255,.3) transparent;
+}
+.wbr-lb-rows::-webkit-scrollbar{width:5px}
+.wbr-lb-rows::-webkit-scrollbar-thumb{background:rgba(53,240,255,.28);border-radius:99px}
+.wbr-lb-row{
+  position:relative;display:grid;grid-template-columns:30px 1fr auto;align-items:center;gap:7px;
+  padding:5px 7px;border-radius:7px;overflow:hidden;
+  background:rgba(4,10,18,.5);border:1px solid rgba(53,240,255,.1);
+  font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:.06em;
+}
+.wbr-lb-row::before{
+  content:"";position:absolute;inset:0 auto 0 0;width:var(--w,0%);
+  background:linear-gradient(90deg,rgba(53,240,255,.16),transparent);
+  pointer-events:none;
+}
+.wbr-lb-row.me{border-color:rgba(255,200,97,.5);background:rgba(24,18,6,.55)}
+.wbr-lb-row.r1{border-color:rgba(255,200,97,.55)}
+.wbr-lb-row.r2{border-color:rgba(199,214,228,.4)}
+.wbr-lb-row.r3{border-color:rgba(205,127,50,.45)}
+.wbr-lb-rank{
+  position:relative;z-index:1;font-family:var(--disp);font-size:11px;
+  color:rgba(127,166,184,.95);
+}
+.wbr-lb-row.r1 .wbr-lb-rank{color:#FFE7B8}
+.wbr-lb-row.r2 .wbr-lb-rank{color:#E2EAF2}
+.wbr-lb-row.r3 .wbr-lb-rank{color:#E8A87C}
+.wbr-lb-name{
+  position:relative;z-index:1;color:rgba(232,246,255,.92);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.wbr-lb-val{
+  position:relative;z-index:1;font-family:var(--disp);font-size:12px;color:#fff;
+  font-variant-numeric:tabular-nums;
+}
+.wbr-lb-empty{
+  display:block;padding:14px 8px;text-align:center;
+  font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:rgba(127,166,184,.8);
+}
+
+/* --- dock: 2 tombol aksi --- */
+.wbr-dock{
+  flex:0 0 auto;display:grid;grid-template-columns:auto 1fr;gap:8px;
+}
+.wbr-btn{
+  position:relative;height:clamp(42px,5.2vh,52px);border-radius:11px;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font-family:var(--disp);font-size:13px;letter-spacing:.06em;text-transform:uppercase;
+  color:#06131A;border:1px solid rgba(53,240,255,.6);
+  background:linear-gradient(180deg,#7DF9FF,var(--holo));
+  box-shadow:0 12px 30px rgba(53,240,255,.26),inset 0 1px 0 rgba(255,255,255,.5);
+  transition:.16s;overflow:hidden;
+}
+.wbr-btn:hover{filter:brightness(1.06);box-shadow:0 16px 38px rgba(53,240,255,.38)}
+.wbr-btn:active{translate:0 1px}
+.wbr-btn.ghost{
+  color:rgba(232,246,255,.9);background:rgba(6,14,24,.7);
+  border-color:rgba(53,240,255,.24);box-shadow:none;
+  font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:.14em;
+  width:clamp(46px,4vw,58px);padding:0;
+}
+.wbr-btn.ghost:hover{background:rgba(12,28,44,.9);border-color:rgba(53,240,255,.55);color:#fff}
+.wbr-btn[disabled],.wbr-btn.dead{
+  color:rgba(127,166,184,.7);background:rgba(10,18,28,.7);
+  border-color:rgba(127,166,184,.22);box-shadow:none;cursor:not-allowed;filter:grayscale(1);
+}
+.wbr-btn.dead::after{
+  content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(45deg,transparent 0 6px,rgba(127,166,184,.14) 6px 7px);
+  pointer-events:none;
+}
+.wbr-btn .wbr-btn-k{
+  font-family:var(--cond);font-size:10px;font-weight:700;letter-spacing:.14em;
+  opacity:.72;display:block;line-height:1;
+}
+.wbr-btn .wbr-btn-main{display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.05}
+
+/* ==========================================================================
+   STATE KHUSUS
+   ========================================================================== */
+/* boss mati / pool kosong */
+.wbr-hub-dead .wbr-art{filter:grayscale(.7) brightness(.6) drop-shadow(0 24px 40px rgba(0,0,0,.8))}
+.wbr-hub-dead .wbr-halo,.wbr-hub-dead .wbr-ped::after{animation:none;opacity:.25}
+.wbr-hub-dead .wbr-pool-bar > i{filter:grayscale(1)}
+
+/* boss terkunci (belum rilis) */
+.wbr-hub-locked .wbr-art{filter:grayscale(1) brightness(.55) contrast(1.05) drop-shadow(0 24px 44px rgba(0,0,0,.85))}
+.wbr-hub-locked .wbr-l{opacity:.55}
+.wbr-hub-locked .wbr-veil{background:radial-gradient(112% 92% at 50% 44%,transparent 30%,rgba(3,5,10,.86) 86%,rgba(3,5,10,.97) 100%)}
+.wbr-lock{
+  position:absolute;left:50%;top:44%;translate:-50% -50%;z-index:8;
+  display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;
+  padding:14px 20px;border-radius:12px;
+  background:rgba(6,12,22,.82);border:1px solid rgba(255,61,174,.35);
+  box-shadow:0 20px 50px rgba(0,0,0,.6);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+.wbr-lock b{
+  font-family:var(--disp);font-size:clamp(15px,1.6vw,20px);letter-spacing:.1em;color:#FFD9EC;
+}
+.wbr-lock small{
+  font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+  color:rgba(127,166,184,.95);
+}
+
+/* ==========================================================================
+   RESPONSIVE — viewport game dipaku 1900px, jadi ini hanya jaring pengaman
+   ========================================================================== */
+@media(max-width:1100px){
+  .wbr-hub{grid-template-columns:1fr;grid-template-rows:minmax(220px,1fr) auto;overflow:auto}
+  .wbr-stage{min-height:280px}
+  .wbr-rail{height:auto;overflow:visible}
+  .wbr-lb{flex:0 0 auto}
+  .wbr-lb-rows{max-height:220px}
+  .wbr-artwrap{width:min(44%,300px);top:42%}
+  .wbr-halo{width:min(42%,290px)}
+  .wbr-ghost{width:min(46%,310px)}
+}
+
+@media(max-height:820px){
+  .wbr-hub{padding-top:6px;padding-bottom:8px;gap:8px}
+  .wbr-panel{padding:8px 10px;border-radius:11px}
+  .wbr-artwrap{width:min(46%,430px);top:44%}
+  .wbr-halo{width:min(46%,430px)}
+  .wbr-ghost{width:min(50%,450px)}
+  .wbr-ped{width:min(36%,330px)}
+  .wbr-name{font-size:clamp(18px,2.1vw,27px)}
+  .wbr-pool-left{font-size:clamp(17px,1.8vw,23px)}
+  .wbr-threat-num{font-size:clamp(20px,2.2vw,27px)}
+  .wbr-stats{gap:5px}
+  .wbr-stat{padding:5px 7px}
+  .wbr-tr{padding:3px 6px}
+  .wbr-dots{bottom:clamp(88px,12vh,110px)}
+  .wbr-btn{height:clamp(38px,4.6vh,46px)}
+}
+@media(max-height:700px){
+  .wbr-track{display:none}
+  .wbr-artwrap{width:min(40%,340px)}
+  .wbr-halo{width:min(40%,340px)}
+  .wbr-ghost{width:min(44%,360px)}
+  .wbr-lb-rows{max-height:150px}
+}
+
+/* ==========================================================================
+   REDUCED MOTION
+   ========================================================================== */
+@media(prefers-reduced-motion:reduce){
+  .wbr-hub *,.wbr-hub *::before,.wbr-hub *::after{
+    animation-duration:.001ms!important;animation-iteration-count:1!important;
+    transition-duration:.001ms!important;
+  }
+  .wbr-artwrap{animation:none}
+  .wbr-floor::before{animation:none!important}
+  .wbr-l{transition:none}
+}
+
+/* ==========================================================================
+   DAMAGE RUN LINE — dipakai layar battle (renderRaidBattle), BUKAN hub.
+   Dipindah ke sini dari style.css supaya blok .wbr-* lama bisa dibuang.
+   ========================================================================== */
+.wbr-runline{
+  max-width:1180px;margin:10px auto 0;display:flex;align-items:center;gap:10px;
+  padding:9px 14px;border-radius:12px;background:rgba(6,10,16,.8);
+  border:1px solid rgba(125,249,255,.16);
+  font:700 9.5px/1 ui-monospace,monospace;letter-spacing:.16em;color:#8ea2ae;
+}
+.wbr-runline b{font-size:16px;color:#7DF9FF;letter-spacing:.02em}
+.wbr-runline small{margin-left:auto;color:#6f8390;letter-spacing:.1em}
