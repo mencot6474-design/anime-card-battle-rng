@@ -101,6 +101,11 @@
       sharedCtx = sharedCv.getContext("2d");
     }
     var pw = Math.round(W * dpr), ph = Math.round(H * dpr);
+    /* Kotak CSS = innerWidth x innerHeight px (bukan 100vw/100vh). Di PWA/HP,
+       100vh != window.innerHeight (vh = viewport besar), bikin koordinat
+       getBoundingClientRect melenceng ke bawah. Box px -> 1:1 dgn backing store + rect. */
+    sharedCv.style.width = W + "px";
+    sharedCv.style.height = H + "px";
     if(sharedCv.width !== pw || sharedCv.height !== ph){
       sharedCv.width = pw;
       sharedCv.height = ph;

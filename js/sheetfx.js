@@ -153,6 +153,9 @@ function resizeFxCanvas(){
   var dpr=FXDPR();
   fxCv.width=Math.round(window.innerWidth*dpr);
   fxCv.height=Math.round(window.innerHeight*dpr);
+  /* Box px, bukan 100vh: 100vh != innerHeight di PWA/HP -> FX melenceng ke bawah. */
+  fxCv.style.width=window.innerWidth+"px";
+  fxCv.style.height=window.innerHeight+"px";
   if(fxCtx)fxCtx.setTransform(dpr,0,0,dpr,0,0);
 }
 function ensureDomOverlays(){
