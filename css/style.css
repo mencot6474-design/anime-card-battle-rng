@@ -25947,6 +25947,7 @@ body.on-raid:has(.shop-hub) main {
 
 
 .cyber-item-stream {
+  align-content: start; /* baris grid jangan melar ngisi tinggi → dulu jadi kartu tinggi kosong dgn ikon kecil di pojok */
 
 
 
@@ -26023,6 +26024,7 @@ body.on-raid:has(.shop-hub) main {
 
 
 .cps-row {
+  min-height: 64px; /* nampung ikon .cps-ic 52px; tanpa ini track grid auto nyusut ke tinggi teks (35px) & ikon ke-clip overflow:hidden */
 
 
 
@@ -26186,7 +26188,7 @@ body.on-raid:has(.shop-hub) main {
 
 
 
-  width: 32px; height: 32px;
+  width: 52px; height: 52px;
 
 
 
