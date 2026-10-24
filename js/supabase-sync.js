@@ -390,7 +390,7 @@ const CloudDB = {
       p_username: String(currentUser).toLowerCase(),
       p_password_hash: pw,
       p_board: board,
-      p_value: Math.max(0, Math.min(1e15, Math.round(Number(value) || 0))),
+      p_value: Math.max(0, Math.min(1e21, Math.round(Number(value) || 0))),
       p_meta: meta || {},
     });
   },

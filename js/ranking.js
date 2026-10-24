@@ -165,7 +165,7 @@ function lbState() {
   const w = lbWeekKey();
   if (lbMem.u !== u || lbMem.w !== w) {
     let data = {};
-    try { data = JSON.parse(localStorage.getItem("aab-lb-" + u)) || {}; } catch (e) {}
+    try { data = JSON.parse(localStorage.getItem("aab-lb2-" + u)) || {}; } catch (e) {}
     if (data.__w !== w) data = { __w: w };
     lbMem = { u: u, w: w, data: data };
   }
@@ -173,7 +173,7 @@ function lbState() {
 }
 
 function lbSaveState() {
-  try { localStorage.setItem("aab-lb-" + lbMem.u, JSON.stringify(lbMem.data)); } catch (e) {}
+  try { localStorage.setItem("aab-lb2-" + lbMem.u, JSON.stringify(lbMem.data)); } catch (e) {}
 }
 
 async function lbSubmit(board, value, meta) {
@@ -183,14 +183,20 @@ async function lbSubmit(board, value, meta) {
   if (lbSending[board]) return;
   const st = lbState();
   const rec = st[board] || {};
-  if ((rec.v || 0) >= value) return;
+  /* Nilai bisa dibulatkan saat bolak-balik lewat JSON server (>2^53), jadi
+     pakai toleransi kecil biar sweep tidak mengirim ulang terus. */
+  const tol = Math.max(0.5, value * 1e-12);
+  if ((rec.v || 0) >= value - tol) return;
   if (rec.at && Date.now() - rec.at < LB_MIN_GAP_MS) return;
   lbSending[board] = true;
   let res = null;
   try { res = await window.CloudDB.submitScore(board, value, meta || {}); } catch (e) {}
   lbSending[board] = false;
   if (res && res.ok) {
-    st[board] = { v: value };
+    /* Simpan nilai yang BENAR-BENAR tersimpan di server (bisa ter-clamp),
+       supaya kalau plafon server dinaikkan skor lama ikut terkirim ulang. */
+    const stored = Number(res.value);
+    st[board] = { v: Number.isFinite(stored) && stored > 0 ? stored : value };
     lbSaveState();
     const m = document.getElementById("rankModal");
     if (m && m.classList.contains("show") && rkBoard === board) rkRender();
