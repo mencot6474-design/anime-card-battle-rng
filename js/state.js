@@ -324,7 +324,7 @@ function _cloudStateKey(){
    bukan tiap tick. Sisa perubahan terakhir di-flush saat roll berhenti (flushCloudSave). */
 const CLOUD_PUSH_MIN_MS=5000;
 function _cloudPush(){
-  if(!state||!currentUser||!window.CloudDB)return;
+  if(!state||!currentUser||!window.CloudDB)return Promise.resolve(null);
   _cloudLastPush=Date.now();_cloudPending=false;
   /* Snapshot key SEBELUM async push biar save() berikutnya compare against state yang
      memang udah dikirim ke cloud, bukan against state saat ini (yang bisa aja berubah
@@ -332,11 +332,18 @@ function _cloudPush(){
      tetap trigger retry karena key-nya beda. */
   _lastPushedKey=_cloudStateKey();
   _lastPushedUser=currentUser;
-  window.CloudDB.saveState(currentUser, state).catch(()=>{});
+  return window.CloudDB.saveState(currentUser, state).catch(()=>null);
 }
 function flushCloudSave(){
   if(_cloudSaveTimer){clearTimeout(_cloudSaveTimer);_cloudSaveTimer=null;}
   if(_cloudPending)_cloudPush();
+}
+/* Flush yang bisa di-await — dipakai RPC yang baca save_data di server (mis. klaim
+   reward World Boss). Tanpa ini, spend yang masih antre debounce 400ms hilang saat
+   server balikin saldo lama lalu client menimpanya. */
+function pushCloudNow(){
+  if(_cloudSaveTimer){clearTimeout(_cloudSaveTimer);_cloudSaveTimer=null;}
+  return _cloudPush();
 }
 function save(){
   if(state){

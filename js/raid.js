@@ -186,8 +186,18 @@ async function wbClaim(){
   if(wbLoading||!wbOnline())return;
   const b=wbBoss(), d=wbData();
   wbLoading=true;
-  const res=await window.CloudDB.wbClaim(currentUser,b.id);
-  wbLoading=false;
+  let res=null;
+  try{
+    /* Klaim baca save_data di server lalu mengembalikan saldo hasil penjumlahan.
+       Flush dulu save yang masih antre debounce, kalau tidak spend terakhir hilang
+       saat client menimpa state dengan angka dari server yang basi. */
+    if(typeof pushCloudNow==="function")await pushCloudNow();
+    res=await window.CloudDB.wbClaim(currentUser,b.id);
+  }catch(e){
+    res={ok:false,msg:"NETWORK"};
+  }finally{
+    wbLoading=false;
+  }
   if(!res||res.ok===false){
     if(res&&res.msg==="ALREADY_CLAIMED"&&d&&d.yesterday){d.yesterday.claimed=true;wbAt=Date.now();}
     raidToast(res&&res.msg==="ALREADY_CLAIMED"?"Reward kemarin sudah diklaim":"Gagal klaim reward — coba lagi");
@@ -499,6 +509,11 @@ function renderRaidPick(){
         /* server tak terjangkau: boleh main lokal, skor tidak dikirim */
         wbRunId=null;raidToast("OFFLINE · MAIN LOKAL TANPA SKOR");raidView="battle";renderRaid();
       }
+    }).catch(()=>{
+      /* Promise reject (bukan respons ok:false) — tanpa ini wbStarting nyangkut true
+         dan semua tap kartu diblokir selamanya. */
+      wbStarting=false;wbRunId=null;wbRunBoss=null;
+      raidToast("OFFLINE · MAIN LOKAL TANPA SKOR");raidView="battle";renderRaid();
     });
   });
   lazyMountGrid(app,_rdTileHtml);
@@ -755,6 +770,10 @@ function endRaid(){
           wbAt=Date.now();
         }
       }
+      if(raidView==="result")renderRaidResult();
+    }).catch(()=>{
+      /* Tanpa catch, layar hasil nyangkut di "MENGIRIM DAMAGE…" selamanya. */
+      if(raid){raid.wbPending=false;raid.wbRes={ok:false,msg:"NETWORK"};}
       if(raidView==="result")renderRaidResult();
     });
   }
