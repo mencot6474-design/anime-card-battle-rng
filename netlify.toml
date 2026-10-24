@@ -1,3 +1,7 @@
 [build]
   publish = "."
   command = "echo 'Just serving static files'"
+  # Build selalu di-skip: kuota paket gratis Netlify sudah habis dan GitHub Pages
+  # yang menyajikan build terbaru. Deploy lama tetap terpasang, jadi situs Netlify
+  # tidak berubah sampai baris ini dihapus.
+  ignore = "true"
