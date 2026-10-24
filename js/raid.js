@@ -434,7 +434,6 @@ function endRaid(){
   const tokens=raidTokenFor(pct,{rw:raid.rw});
   raid.pct=pct;raid.tokens=tokens;
   if(pct>=100&&raid.diffKey){state.raidCleared=state.raidCleared||{};state.raidCleared[raid.diffKey]=true;}
-  raid.gem=(pct>=100&&raid.diffKey)?claimRaidMilestone(raid.diffKey):0;
   if(tokens>0){state.raidTokens=(state.raidTokens||0)+tokens;save();renderShell();sfx.win();}else sfx.lose();
   setTimeout(()=>{raidView="result";renderRaid();},2000);
 }
@@ -447,7 +446,6 @@ function renderRaidResult(){
     <div class="rr-title disp${pct>=100?"":" lose"}">${pct>=100?"BOSS TUMBANG":"RAID SELESAI"}</div>
     <div class="rr-pct">Damage ke Boss <b>${pct}%</b></div>
     <div class="rr-token">+${tokens} <span>TOKEN RAID</span></div>
-    ${raid&&raid.gem>0?`<div class="rr-gem"><img src="assets/images/premium-currency.webp" width="16" height="16" alt="">+${raid.gem} <span>GEM — FIRST CLEAR</span></div>`:""}
     <div class="rr-tier">${nx?`Butuh ${nx.pct}% damage untuk +${nx.tokens} token.`:"Semua tier terklaim!"}</div>
     <div class="rr-actions"><button class="btn-grad" id="rrAgain">RAID LAGI</button><button class="btn-ghost" id="rrHub">KEMBALI</button></div>
   </div></div>`;
@@ -456,6 +454,7 @@ function renderRaidResult(){
 }
 function stackHas(char,mut){mut=mut||"none";return state.stacks.some(s=>s.char===char&&(s.mut||"none")===mut);}
 const RAID_SHOP=[
+  {id:"gem",name:"Token → Gem // 100:10",cost:100,gem:10,desc:"Tukar 100 TOKEN RAID menjadi 10 GEM premium. Bisa ditukar berulang tanpa batas — keran GEM dari Boss Raid.",apply:()=>""},
   {id:"coins",name:"2.000 Coin",cost:5,desc:"Koin untuk roll trait & kebutuhan lain.",apply:()=>{state.coins+=2000;return "+2.000 coin";}},
   {id:"card_edragon",name:"Eternal Dragon",cost:120,desc:"Kartu BOSS eksklusif — beli SEKALI, roll terbuka PERMANEN di semua gacha. Chance dasar 1 in 25 jt · ICE BLAST 50% (3×75% ATK) · immune semua status effect.",card:{char:"CH_ETERNAL_DRAGON",mut:"none"},
     apply:()=>{state.raidShopOwned=state.raidShopOwned||{};state.raidShopOwned.CH_ETERNAL_DRAGON=true;return gmGrantCard("CH_ETERNAL_DRAGON");}},
@@ -484,6 +483,31 @@ function raidShopBuy(id){
   const it=RAID_SHOP.find(x=>x.id===id);if(!it)return;
   const tok=state.raidTokens||0;
   if(tok<it.cost){raidToast("TOKEN KURANG — butuh "+it.cost+" token");return;}
+  if(it.gem){
+    const GEM_AMT=it.gem;
+    state.raidTokens-=it.cost;
+    (async()=>{
+      let res;
+      try{
+        if(window.CloudDB&&typeof window.CloudDB.earnGems==="function"){
+          const u=(typeof currentUser!=="undefined"&&currentUser)?String(currentUser):"";
+          res=await window.CloudDB.earnGems(u,GEM_AMT,state);
+        }else{
+          state.premiumGems=(state.premiumGems||0)+GEM_AMT; res={ok:true,balance:state.premiumGems};
+        }
+      }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
+      if(res&&res.ok){
+        save();sfx.crit();renderShell();
+        raidToast("TUKAR BERHASIL · −"+it.cost+" token · +"+GEM_AMT+" GEM");
+      }else{
+        state.raidTokens+=it.cost;
+        raidToast("TUKAR GAGAL — "+(res&&res.msg||"coba lagi"));
+      }
+      try{renderShell();}catch(e){}
+      if(raidView==="shop")renderRaidShop();
+    })();
+    return;
+  }
   if(it.card&&stackHas(it.card.char,it.card.mut)){raidToast("Kartu itu sudah ada di Deck kamu");return;}
   if(it.owned&&it.owned()){raidToast("Sudah dibeli — permanen di Backpack");return;}
   state.raidTokens-=it.cost;
@@ -496,6 +520,7 @@ function renderRaidShop(){
   
   /* Cyberpunk Vector Hologram Icons (Custom inline SVG ala Honkai / PGR / Cyberpunk 2077) */
   const ICO={
+    gem:`<img src="assets/images/premium-currency.webp" alt="Gem" style="width:100%;height:100%;object-fit:cover;border-radius:50%;filter:drop-shadow(0 0 8px rgba(255,215,0,.55))">`,
     coins:`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8M8 14h6" stroke="#ffd27a"/></svg>`,
     card_edragon:`<img src="assets/cards/art/eternal-dragon.webp?v=trans1" onerror="this.parentNode.textContent='🐉'">`,
     "helm-abyss":`<img src="assets/artifacts/abyss-helm.png" onerror="this.parentNode.textContent='🪖'">`,
@@ -513,7 +538,8 @@ function renderRaidShop(){
   
   const ITEMS=RAID_SHOP.map(it=>{
     let cat="POTION", tier="SPEC";
-    if(it.card) { cat="EX CORE"; tier="CH-EX"; }
+    if(it.gem) { cat="EXCHANGE"; tier="GEM"; }
+    else if(it.card) { cat="EX CORE"; tier="CH-EX"; }
     else if(it.id.startsWith("helm")) { cat="RELIC GEAR"; tier="MYTHIC"; }
     else if(it.id.includes("wisp")) { cat="FAMILIAR"; tier="COSMIC"; }
     else if(it.id==="coins") { cat="CREDITS"; tier="CURR"; }
@@ -525,7 +551,7 @@ function renderRaidShop(){
       label:it.name.toUpperCase(),
       sub:it.card?"Kartu BOSS &bull; Beli sekali buka roll permanen di semua gacha":it.desc,
       cost:it.cost,
-      ac:it.card?"#B58CFF":it.id.includes("helm")?"#FFD27A":it.id.includes("wisp")?"#7DF9FF":"#5CF0A8",
+      ac:it.gem?"#ffd700":it.card?"#B58CFF":it.id.includes("helm")?"#FFD27A":it.id.includes("wisp")?"#7DF9FF":"#5CF0A8",
       cat,
       tier,
       it
@@ -574,6 +600,10 @@ function renderRaidShop(){
     btn.style.animation="none";void btn.offsetWidth;btn.style.animation="";
     const have=!!(it.it.card&&stackHas(it.it.card.char,it.it.card.mut))||(it.it.owned?it.it.owned():false);
     let small="AUTHORIZE PROCUREMENT",big=`ACQUIRE &bull; ${fmt(it.cost)} TOKEN`,dis=false;
+    if(it.it.gem){
+      small="TUKAR TOKEN → GEM (TANPA BATAS)";
+      big=`+${it.it.gem} GEM &bull; ${fmt(it.cost)} TOKEN`;
+    }
     if(have){
       small=it.it.card?"Roll gacha sudah permanen terbuka":"Permanen tersimpan di Backpack";
       big="SUDAH DIMILIKI";
@@ -643,7 +673,7 @@ function renderRaidShop(){
         </div>
         <div class="hsd-mg-cell">
           <span class="hm-lbl">OWNED STOCK</span>
-          <b class="hm-val ${cnt>0?'green':''}">${isCard ? (cnt ? 'x'+cnt : '0') : 'Tersedia'}</b>
+          <b class="hm-val ${cnt>0?'green':''}">${isCard ? (cnt ? 'x'+cnt : '0') : it.it.gem ? '&#8734; UNLIMITED' : 'Tersedia'}</b>
         </div>
       </div>`;
       renderBuy();
