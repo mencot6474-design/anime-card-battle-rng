@@ -299,6 +299,7 @@ function totalPower(){
 function gateOf(level){const e=enemyStats(level);return e.hp+e.atk;}
 const ATKIC='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></svg>';
 function skillText(charId){const c=CARDS[charId];return c?c.passive.desc:"";}
-const fmt=n=>n.toLocaleString("en-US");
+/* Jangan biarkan satu key hilang mematikan seluruh layar: angka tidak valid tampil 0. */
+const fmt=n=>(Number.isFinite(+n)?+n:0).toLocaleString("en-US");
 const fmtC=n=>{const a=Math.abs(n);const t=(v,s)=>{let r=(v>=100?Math.round(v):Math.round(v*10)/10);return (r%1?r.toFixed(1):r.toFixed(0))+s;};if(a>=1e9)return t(n/1e9,"B");if(a>=1e6)return t(n/1e6,"M");if(a>=1e3)return t(n/1e3,"K");return String(n);};
 

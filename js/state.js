@@ -100,6 +100,22 @@ function loadStateFor(name){
   delete state.raidTokens;
   /* Gelar dari reward World Boss (ditulis server) — jaga bentuk array di client. */
   if(!Array.isArray(state.titles))state.titles=[];
+  /* KEY INTI: save cloud bisa kembali TANPA key ini (baris cacat, atau ditulis build
+     lama/prototipe). Bukan cuma angka salah — renderShell memanggil fmt(state.coins)
+     dan fmt(undefined) melempar, jadi seluruh layar mati. Nilai default = sama seperti
+     freshState, mengikuti pola premiumGems di bawah. */
+  if(typeof state.coins!=="number"||state.coins<0)state.coins=1000;
+  if(typeof state.playerLv!=="number"||state.playerLv<1)state.playerLv=state.player.lv||1;
+  else state.playerLv=Math.floor(state.playerLv);
+  if(state.playerLv!==state.player.lv)state.player.lv=state.playerLv;
+  if(typeof state.xp!=="number"||state.xp<0)state.xp=0;
+  if(typeof state.summons!=="number"||state.summons<0)state.summons=0;
+  if(typeof state.lastClaim!=="string")state.lastClaim="";
+  if(typeof state.muted!=="boolean")state.muted=false;
+  if(!Array.isArray(state.history))state.history=[];
+  if(!state.cleared||typeof state.cleared!=="object")state.cleared={};
+  if(state.weather===undefined)state.weather=null;
+  if(state.weatherBest===undefined)state.weatherBest=null;
   /* INDEX REWARD: patch save lama */
   if(typeof state.intanRolls!=="number"||state.intanRolls<0)state.intanRolls=0;
   if(typeof state.premiumGems!=="number"||state.premiumGems<0)state.premiumGems=50;
