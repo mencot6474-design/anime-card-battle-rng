@@ -321,6 +321,57 @@ const CloudDB = {
     }
   },
 
+  /* ===== WORLD BOSS (harian, skor & attempt di server) =====
+     Semua butuh password hash lokal; tanpa itu RPC ditolak. Return null = offline
+     atau RPC belum ter-deploy, jadi caller wajib cek null sebelum memakai hasil. */
+  async wbState(username) {
+    const pw = this._localPassHash(username);
+    if (!username || !pw) return null;
+    return await this._rpc("world_boss_state", {
+      p_username: String(username).toLowerCase(),
+      p_password_hash: pw,
+    });
+  },
+
+  async wbStart(username) {
+    const pw = this._localPassHash(username);
+    if (!username || !pw) return null;
+    return await this._rpc("start_world_boss_run", {
+      p_username: String(username).toLowerCase(),
+      p_password_hash: pw,
+    });
+  },
+
+  async wbSubmit(username, runId, pct) {
+    const pw = this._localPassHash(username);
+    if (!username || !pw) return null;
+    return await this._rpc("submit_world_boss_run", {
+      p_username: String(username).toLowerCase(),
+      p_password_hash: pw,
+      p_pct: Math.max(0, Math.min(100, Number(pct) || 0)),
+      p_run_id: runId,
+    });
+  },
+
+  async wbClaim(username) {
+    const pw = this._localPassHash(username);
+    if (!username || !pw) return null;
+    return await this._rpc("claim_world_boss_reward", {
+      p_username: String(username).toLowerCase(),
+      p_password_hash: pw,
+    });
+  },
+
+  /** Papan peringkat read-only (world_boss / inf_tower / deck_power / rarest_pull). */
+  async leaderboard(board, period, limit, username) {
+    return await this._rpc("get_leaderboard", {
+      p_board: board,
+      p_period: period || null,
+      p_limit: limit || 100,
+      p_username: username ? String(username).toLowerCase() : null,
+    });
+  },
+
   async getSessionId(username) {
     const user = await this.getUser(username);
     if (user && user.save_data && user.save_data.current_session_id) {

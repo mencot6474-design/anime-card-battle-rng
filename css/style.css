@@ -48794,3 +48794,47 @@ html.fps-locked .shiny-pill{
 html.fps-locked .bp-fchip{
   animation: none !important;
 }
+
+/* ===== WORLD BOSS: strip status harian di hub raid + baris skor di hasil ===== */
+.wb-strip{
+  display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px;
+  margin:14px 0 2px;padding:10px 14px;border-radius:12px;
+  background:linear-gradient(135deg,rgba(14,20,34,.92),rgba(8,12,22,.98));
+  border:1px solid rgba(125,249,255,.22);
+  box-shadow:inset 0 1px 0 rgba(125,249,255,.12);
+  font-family:"Rajdhani","Barlow Condensed",sans-serif;
+  color:#94A3B8;font-size:11px;font-weight:700;letter-spacing:.1em;line-height:1.2;
+}
+.wb-strip b{color:#F4F7FA;font-size:13px;letter-spacing:.06em}
+.wb-k{flex:none;color:#7DF9FF;font-size:10px;letter-spacing:.16em;padding:3px 8px;border:1px solid rgba(125,249,255,.35);border-radius:6px}
+.wb-boss{font-size:14px !important;color:#F4F7FA;text-shadow:0 0 12px rgba(125,249,255,.35)}
+.wb-mod{color:#B58CFF}
+.wb-att b{color:#5CF0A8}
+.wb-att.empty b{color:#FF6B8A}
+.wb-rank b{color:#7DF9FF}
+.wb-yday{color:#64748B;letter-spacing:.08em}
+.wb-note{color:#64748B;letter-spacing:.08em}
+.wb-off{opacity:.9}
+.wb-off .wb-boss{color:#64748B;text-shadow:none}
+.wb-claim{
+  margin-left:auto;flex:none;cursor:pointer;
+  font:inherit;font-size:11px;font-weight:900;letter-spacing:.08em;
+  color:#0A0F18;background:linear-gradient(135deg,#7DF9FF,#5CF0A8);
+  border:none;border-radius:8px;padding:8px 14px;
+  box-shadow:0 0 16px rgba(125,249,255,.35);
+}
+.wb-claim:active{transform:translateY(1px)}
+.wb-claimed{margin-left:auto;color:#5CF0A8;font-size:10.5px;letter-spacing:.1em}
+@media(max-width:720px){
+  .wb-strip{gap:6px 10px;padding:9px 11px;margin:10px 0 0}
+  .wb-claim{flex:1 1 100%;margin-left:0;text-align:center}
+  .wb-claimed{margin-left:0}
+}
+.rr-wb{
+  margin:4px 0 0;padding:8px 12px;border-radius:10px;
+  font-size:11px;font-weight:800;letter-spacing:.08em;color:#94A3B8;
+  background:rgba(148,163,184,.08);border:1px solid rgba(148,163,184,.2);
+}
+.rr-wb.on{color:#5CF0A8;background:rgba(92,240,168,.08);border-color:rgba(92,240,168,.28)}
+.rr-wb.bad{color:#FF6B8A;background:rgba(255,107,138,.08);border-color:rgba(255,107,138,.28)}
+

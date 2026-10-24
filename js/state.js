@@ -88,6 +88,8 @@ function loadStateFor(name){
   if(!CHAPTERS.some(c=>c.no===state.chap))state.chap=1;
   if(typeof state.dailyIndex!=="number")state.dailyIndex=0;
   if(typeof state.raidTokens!=="number")state.raidTokens=0;
+  /* Gelar dari reward World Boss (ditulis server) — jaga bentuk array di client. */
+  if(!Array.isArray(state.titles))state.titles=[];
   /* INDEX REWARD: patch save lama */
   if(typeof state.intanRolls!=="number"||state.intanRolls<0)state.intanRolls=0;
   if(typeof state.premiumGems!=="number"||state.premiumGems<0)state.premiumGems=50;

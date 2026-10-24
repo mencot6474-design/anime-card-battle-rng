@@ -1,8 +1,118 @@
 /* =============== BOSS RAID (layar + engine) =============== */
 let raid=null, raidView="hub", raidPicked=null;
+/* ===== WORLD BOSS (harian, skor & attempt di server) =====
+   Attempt dipotong server saat run DIMULAI, bukan saat submit — keluar di tengah
+   run tetap memakai 1 attempt. Guest/offline tetap bisa main lokal: tidak memakai
+   attempt dan tidak mengirim skor. */
+let wb=null, wbAt=0, wbLoading=false, wbRunId=null, wbStarting=false, wbErr=false;
+const WB_TTL=30000;
+function wbOnline(){return !!(currentUser&&window.CloudDB&&typeof window.CloudDB.wbState==="function");}
+function wbBossName(id){const b=RAID_BOSSES.find(x=>x.id===id)||RAID_BOSSES[0];return b?b.name:"WORLD BOSS";}
+function wbModText(){
+  const m=wb&&wb.modifier;
+  if(!m||!m.label)return "";
+  const p=[];
+  if(m.hp_pct)p.push("HP "+(m.hp_pct>0?"+":"")+m.hp_pct+"%");
+  if(m.atk_pct)p.push("ATK "+(m.atk_pct>0?"+":"")+m.atk_pct+"%");
+  return m.label+(p.length?" · "+p.join(" · "):"");
+}
+/* Modifier harian server ikut menggeser HP boss (stat dasar tetap, hanya HP).
+   Semua pemain di hari yang sama dapat angka yang sama, jadi skor tetap adil. */
+function wbBossOf(diff){
+  const b=raidBossOf(diff);
+  const m=wb&&wb.modifier;
+  const mult=m&&typeof m.hp_pct==="number"?1+m.hp_pct/100:1;
+  if(mult===1||mult<=0)return b;
+  return Object.assign({},b,{hp:Math.max(1,Math.round(b.hp*mult))});
+}
+function wbRefresh(force){
+  if(!wbOnline())return Promise.resolve(null);
+  if(wbLoading||(!force&&wb&&Date.now()-wbAt<WB_TTL))return Promise.resolve(wb);
+  wbLoading=true;
+  return window.CloudDB.wbState(currentUser).then(res=>{
+    wbLoading=false;
+    if(!res||res.ok===false){
+      wbErr=!res||res.msg==="PLAYER_NOT_FOUND";
+      wbAt=Date.now();
+      if(route()==="#/raid"&&raidView==="hub")renderRaidHub();
+      return wb;
+    }
+    wbErr=false;wb=res;wbAt=Date.now();
+    if(route()==="#/raid"&&raidView==="hub")renderRaidHub();
+    return wb;
+  }).catch(()=>{wbLoading=false;wbErr=true;return wb;});
+}
+function wbStripHtml(){
+  if(!wbOnline()){
+    return `<div class="wb-strip wb-off">
+      <span class="wb-k">WORLD BOSS</span>
+      <b class="wb-boss">OFFLINE</b>
+      <span class="wb-note">LOGIN UNTUK IKUT PAPAN PERINGKAT &amp; REWARD HARIAN</span>
+    </div>`;
+  }
+  if(!wb){
+    return wbErr?`<div class="wb-strip wb-off">
+      <span class="wb-k">WORLD BOSS</span>
+      <b class="wb-boss">SERVER BELUM SIAP</b>
+      <span class="wb-note">SKOR HARIAN TIDAK AKTIF — MAIN LOKAL TETAP BISA</span>
+    </div>`:`<div class="wb-strip">
+      <span class="wb-k">WORLD BOSS</span>
+      <b class="wb-boss">SYNC…</b>
+      <span class="wb-note">MENGHUBUNGI SERVER</span>
+    </div>`;
+  }
+  const used=wb.attempts_used||0;
+  const left=typeof wb.attempts_left==="number"?wb.attempts_left:Math.max(0,3-used);
+  const best=wb.best_pct||0, rank=wb.rank, total=wb.total_players||0;
+  const y=wb.yesterday;
+  const claimable=!!(y&&y.claimable&&!y.claimed);
+  let claimBtn="";
+  if(y&&y.claimed){
+    claimBtn=`<span class="wb-claimed">KLAIM KEMARIN &#10004;</span>`;
+  }else if(claimable){
+    claimBtn=`<button class="wb-claim" id="wbClaim" type="button">KLAIM +${y.gems||0} GEM · +${y.tokens||0} TOKEN${y.title?" · "+y.title:""}</button>`;
+  }
+  return `<div class="wb-strip wb-on">
+    <span class="wb-k">WORLD BOSS</span>
+    <b class="wb-boss">${wbBossName(wb.boss_id)}</b>
+    ${wbModText()?`<span class="wb-mod">${wbModText()}</span>`:""}
+    <span class="wb-att${left<=0?" empty":""}">ATTEMPT <b>${left}</b>/3</span>
+    <span class="wb-best">BEST <b>${best?fmtPct(best):"—"}</b></span>
+    <span class="wb-rank">RANK <b>${rank?"#"+rank+(total?"/"+total:""):"—"}</b></span>
+    ${y?`<span class="wb-yday">KEMARIN ${fmtPct(y.best_pct)} · #${y.rank}</span>`:""}
+    ${claimBtn}
+  </div>`;
+}
+function fmtPct(v){const n=Math.round((Number(v)||0)*10)/10;return (Number.isInteger(n)?n:n.toFixed(1))+"%";}
+async function wbClaim(){
+  if(wbLoading||!wbOnline())return;
+  wbLoading=true;
+  const res=await window.CloudDB.wbClaim(currentUser);
+  wbLoading=false;
+  if(!res||res.ok===false){
+    if(res&&res.msg==="ALREADY_CLAIMED"&&wb&&wb.yesterday){wb.yesterday.claimed=true;wbAt=Date.now();}
+    raidToast(res&&res.msg==="ALREADY_CLAIMED"?"Reward kemarin sudah diklaim":"Gagal klaim reward — coba lagi");
+    if(raidView==="hub")renderRaidHub();
+    return;
+  }
+  if(typeof res.premiumGems==="number")state.premiumGems=res.premiumGems;
+  if(typeof res.raidTokens==="number")state.raidTokens=res.raidTokens;
+  if(res.title){
+    state.titles=Array.isArray(state.titles)?state.titles:[];
+    if(!state.titles.includes(res.title))state.titles.push(res.title);
+  }
+  if(wb&&wb.yesterday){wb.yesterday.claimed=true;wbAt=Date.now();}
+  try{save();}catch(e){}
+  try{renderShell();}catch(e){}
+  sfx.crit();
+  raidToast("REWARD · +"+(res.gems||0)+" GEM · +"+(res.tokens||0)+" TOKEN"+(res.title?" · "+res.title:""));
+  wbRefresh(true);
+  if(raidView==="hub")renderRaidHub();
+}
 function stopRaid(){
   if(raid){ if(raid.timer)clearTimeout(raid.timer); raid=null; }
   if(typeof fightTimer!=="undefined"&&fightTimer){ clearTimeout(fightTimer); fightTimer=null; }
+  wbRunId=null; wbStarting=false;
   raidView="hub"; raidPicked=null;
 }
 function raidToast(msg){
@@ -21,7 +131,7 @@ function renderRaid(){
 }
 function renderRaidHub(){
   const curDiff=RAID_DIFFS.find(d=>d.k===state.raidDiff)||RAID_DIFFS[0];
-  const b=raidBossOf(curDiff);
+  const b=wbBossOf(curDiff);
   const isCleared=!!(state.raidCleared&&state.raidCleared[curDiff.k]);
   const clearedTotal=RAID_DIFFS.filter(d=>state.raidCleared&&state.raidCleared[d.k]).length;
 
@@ -54,6 +164,8 @@ function renderRaidHub(){
         </div>
       </div>
 
+      ${wbStripHtml()}
+
       <!-- MAIN HUNT BOARD: 4 CYBERPUNK SECTOR CARDS -->
       <div class="hr-board-section">
         <div class="hr-board-title cp-board-title">
@@ -67,7 +179,7 @@ function renderRaidHub(){
           ${RAID_DIFFS.map((d,idx)=>{
             const unl=raidDiffUnlocked(d.k);
             const on=d.k===state.raidDiff;
-            const diffBoss=raidBossOf(d);
+            const diffBoss=wbBossOf(d);
             const cleared=!!(state.raidCleared&&state.raidCleared[d.k]);
             const rankLetter=["MK-I","MK-II","MK-III","OVERCLOCK"][idx]||"EX";
             const clr=d.color||"#B58CFF";
@@ -153,9 +265,12 @@ function renderRaidHub(){
 
   document.getElementById("raidGo").onclick=()=>{
     if(!raidDiffUnlocked(state.raidDiff)){raidToast("Gate ini masih terkunci. Taklukkan gate sebelumnya terlebih dahulu.");return;}
+    if(wbOnline()&&wb&&(wb.attempts_left||0)<=0){raidToast("ATTEMPT HARI INI HABIS · RESET 00:00 WIB");return;}
     sfx.hit();raidView="pick";renderRaid();
   };
   document.getElementById("raidShopBtn").onclick=()=>{sfx.hit();raidView="shop";renderRaid();};
+  {const wc=document.getElementById("wbClaim");if(wc)wc.onclick=wbClaim;}
+  wbRefresh();
   const rl=document.getElementById("raidLobby");
   if(rl)rl.onclick=()=>{try{sfx.hit();}catch(e){}location.hash="#/";};
   
@@ -171,7 +286,7 @@ function renderRaidHub(){
 var _rdTileHtml={},_ixHtml={},_dpHtml={};
 function renderRaidPick(){
   const stacks=state.stacks.slice().sort((a,b)=>(b.fav?1:0)-(a.fav?1:0));
-  const b=raidBossOf(),df=raidDiffOf();
+  const b=wbBossOf(),df=raidDiffOf();
   app.innerHTML=`
   <div class="rd-page rd-pick">
     <div class="rd-pick-head">
@@ -197,15 +312,40 @@ function renderRaidPick(){
   {const bk=document.getElementById("raidPickBack");if(bk)bk.onclick=()=>{sfx.hit();raidView="hub";renderRaid();};}
   {const rs=document.getElementById("raidSearch");if(rs){rs.value=raidSearch;rs.oninput=()=>{raidSearch=rs.value;runCardSearch(rs,document.getElementById("raidPickGrid"),document.getElementById("raidSearch-nr"));};if(raidSearch)runCardSearch(rs,document.getElementById("raidPickGrid"),document.getElementById("raidSearch-nr"));}}
   app.querySelectorAll("[data-pick]").forEach(btn=>btn.onclick=()=>{
+    if(wbStarting)return;
     sfx.hit();
     if(typeof hideRollResult==="function")hideRollResult();
     raidPicked=state.stacks.find(s=>s.id===btn.dataset.pick)||state.stacks[0];
-    raidView="battle";renderRaid();
+    if(!wbOnline()){wbRunId=null;raidView="battle";renderRaid();return;}
+    /* Attempt dipotong di sini (server) — run yang ditinggal tetap terhitung. */
+    wbStarting=true;
+    raidToast("MENGUNCI ATTEMPT…");
+    window.CloudDB.wbStart(currentUser).then(res=>{
+      wbStarting=false;
+      if(res&&res.ok){
+        wbRunId=res.run_id;
+        if(wb){
+          wb.attempts_used=(wb.attempts_used||0)+1;
+          wb.attempts_left=typeof res.attempts_left==="number"?res.attempts_left:Math.max(0,3-wb.attempts_used);
+          if(res.modifier)wb.modifier=res.modifier;
+          wbAt=Date.now();
+        }
+        raidView="battle";renderRaid();
+      }else if(res&&res.ok===false){
+        wbRunId=null;
+        if(res.msg==="NO_ATTEMPTS_LEFT"&&wb){wb.attempts_used=3;wb.attempts_left=0;}
+        raidToast(res.msg==="NO_ATTEMPTS_LEFT"?"ATTEMPT HARI INI HABIS · RESET 00:00 WIB":"GAGAL MULAI RUN · COBA LAGI");
+        raidView="hub";renderRaid();
+      }else{
+        /* server tak terjangkau: boleh main lokal, skor tidak dikirim */
+        wbRunId=null;raidToast("OFFLINE · MAIN LOKAL TANPA SKOR");raidView="battle";renderRaid();
+      }
+    });
   });
   lazyMountGrid(app,_rdTileHtml);
 }
 function renderRaidBattle(){
-  const b=raidBossOf(), eq=raidPicked||equipped();
+  const b=wbBossOf(), eq=raidPicked||equipped();
   app.innerHTML=`
   <div class="battle-grid raid-stage">
     <div class="me-col"><div class="fighter me${eq&&eq.mut&&eq.mut!=='none'?' mut-'+eq.mut:''}${shinyCls(eq)}" data-tier="${eq?eq.tier:''}" data-char="${eq?eq.char:''}">${meFighterHtml(eq)}</div>${typeof benchRailHtml==="function"?benchRailHtml([],"RAID STRIKER (SOLO DEPLOY)"):""}</div>
@@ -225,7 +365,7 @@ function renderRaidBattle(){
   startRaid();
 }
 function startRaid(){
-  const b=raidBossOf(), eq=raidPicked||equipped(), base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
+  const b=wbBossOf(), eq=raidPicked||equipped(), base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   /* Arena bisa di-render ulang oleh polling/loop global. Kalau raid masih hidup, lanjutkan —
      jangan bikin objek baru (turn balik 0) dan jangan tinggalkan timer lama jalan (speed dobel). */
   if(raid&&!raid.over&&raid.diffKey===b.diffKey&&raid.cid===eq.char){
@@ -435,22 +575,49 @@ function endRaid(){
   raid.pct=pct;raid.tokens=tokens;
   if(pct>=100&&raid.diffKey){state.raidCleared=state.raidCleared||{};state.raidCleared[raid.diffKey]=true;}
   if(tokens>0){state.raidTokens=(state.raidTokens||0)+tokens;save();renderShell();sfx.win();}else sfx.lose();
+  /* Kirim skor World Boss (kalau run ini dimulai lewat server). */
+  const runId=wbRunId;wbRunId=null;
+  if(runId&&window.CloudDB&&currentUser){
+    raid.wbPending=true;
+    window.CloudDB.wbSubmit(currentUser,runId,pct).then(res=>{
+      raid.wbPending=false;
+      raid.wbRes=res||{ok:false,msg:"OFFLINE"};
+      if(res&&res.ok){
+        if(wb){
+          wb.best_pct=Math.max(wb.best_pct||0,res.best_pct||pct);
+          if(res.rank)wb.rank=res.rank;
+          if(typeof res.attempts_left==="number"){wb.attempts_left=res.attempts_left;wb.attempts_used=3-res.attempts_left;}
+          wbAt=Date.now();
+        }
+      }
+      if(raidView==="result")renderRaidResult();
+    });
+  }
   setTimeout(()=>{raidView="result";renderRaid();},2000);
 }
 function renderRaidResult(){
   const pct=raid?raid.pct:0, tokens=raid?raid.tokens:0, nx=raidNextTier(pct,{rw:raid?raid.rw:1});
   const dLabel=raid?(RAID_DIFFS.find(d=>d.k===raid.diffKey)||{}).l:"";
+  let wbLine="";
+  if(wbOnline()&&raid){
+    if(raid.wbPending)wbLine=`<div class="rr-wb">MENGIRIM SKOR WORLD BOSS…</div>`;
+    else if(raid.wbRes&&raid.wbRes.ok)wbLine=`<div class="rr-wb on">SKOR TERKIRIM · BEST ${fmtPct(raid.wbRes.best_pct)} · RANK #${raid.wbRes.rank||"—"}${raid.wbRes.total_players?"/"+raid.wbRes.total_players:""} · SISA ${raid.wbRes.attempts_left} ATTEMPT</div>`;
+    else if(raid.wbRes)wbLine=`<div class="rr-wb bad">SKOR GAGAL DIKIRIM (${raid.wbRes.msg||"ERROR"}) · ATTEMPT TETAP TERPAKAI</div>`;
+    else wbLine=`<div class="rr-wb">MAIN LOKAL · SKOR TIDAK DIKIRIM</div>`;
+  }
   app.innerHTML=`
   <div class="tw-page rd-page"><div class="raid-result">
     <div class="eyebrow">HASIL RAID${dLabel?" · "+dLabel:""}</div>
     <div class="rr-title disp${pct>=100?"":" lose"}">${pct>=100?"BOSS TUMBANG":"RAID SELESAI"}</div>
     <div class="rr-pct">Damage ke Boss <b>${pct}%</b></div>
     <div class="rr-token">+${tokens} <span>TOKEN RAID</span></div>
+    ${wbLine}
     <div class="rr-tier">${nx?`Butuh ${nx.pct}% damage untuk +${nx.tokens} token.`:"Semua tier terklaim!"}</div>
     <div class="rr-actions"><button class="btn-grad" id="rrAgain">RAID LAGI</button><button class="btn-ghost" id="rrHub">KEMBALI</button></div>
   </div></div>`;
   document.getElementById("rrAgain").onclick=()=>{sfx.hit();raidView="pick";renderRaid();};
   document.getElementById("rrHub").onclick=()=>{raidView="hub";renderRaid();};
+  wbRefresh();
 }
 function stackHas(char,mut){mut=mut||"none";return state.stacks.some(s=>s.char===char&&(s.mut||"none")===mut);}
 const RAID_SHOP=[
