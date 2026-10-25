@@ -311,7 +311,6 @@ function renderTowerShop(){
     speed1:`<img src="${thumbSrc('assets/images/pot-speed-1.png')}" alt="Speed Potion L1" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
     speed2:`<img src="${thumbSrc('assets/images/pot-speed-2.png')}" alt="Speed Potion L2" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
     speed3:`<img src="${thumbSrc('assets/images/pot-speed-3.png')}" alt="Speed Potion L3" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
-    shadowking:`<img src="${thumbSrc('assets/cards/art/shadow-king.webp')}" alt="Shadow King" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='👑'">`,
     gem:`<img src="assets/images/premium-currency.webp" alt="Gems" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='💎'">`
   };
 
@@ -324,8 +323,7 @@ function renderTowerShop(){
     {k:"luck3",cat:"AUGMENT",tier:"MK-III",label:"NEURAL LUCK MK-III",sub:"+10 flat luck & +20% luck multiplier selama 5 menit. Matrix augmentasi maksimal.",cost:250,req:null,ac:"#5cf0a8"},
     {k:"speed1",cat:"OVERCLOCK",tier:"MK-I",label:"CHRONO BOOSTER MK-I",sub:"Roll speed +0.2× (≈1.2×) selama 5 menit. Mempercepat siklus putaran RNG mesin menara.",cost:10,req:null,ac:"#ffd27a"},
     {k:"speed2",cat:"OVERCLOCK",tier:"MK-II",label:"CHRONO BOOSTER MK-II",sub:"Roll speed +0.5× (≈1.5×) selama 5 menit. Overclock sinkronisasi akselerator.",cost:50,req:null,ac:"#ffd27a"},
-    {k:"speed3",cat:"OVERCLOCK",tier:"MK-III",label:"CHRONO BOOSTER MK-III",sub:"Roll speed +1.0× (2.0× instan) selama 5 menit. Siklus overdrive kecepatan tertinggi.",cost:250,req:null,ac:"#ffd27a"},
-    {k:"shadowking",unlock:"CH_SHADOW_KING",cat:"KARTU TERKUNCI",tier:"EX",label:"SHADOW KING // ETERNAL LEGION",sub:"Buka PERMANEN kartu SHADOW KING dari pool roll gacha & Tower. Sekali dibeli, roll terbuka selamanya — tapi kamu tetap harus meng-roll untuk memilikinya. Chance dasar 1 in 100 jt.",cost:1000,req:null,ac:"#b45cff"}
+    {k:"speed3",cat:"OVERCLOCK",tier:"MK-III",label:"CHRONO BOOSTER MK-III",sub:"Roll speed +1.0× (2.0× instan) selama 5 menit. Siklus overdrive kecepatan tertinggi.",cost:250,req:null,ac:"#ffd27a"}
   ];
   const stkOf=k=>k==="weather"?(state.potions||0):k.startsWith("luck")?(state.luckPots&&state.luckPots[+k.slice(-1)-1])||0:k.startsWith("speed")?(state.speedPots&&state.speedPots[+k.slice(-1)-1])||0:(state.mythicPotions||0);
   /* Kartu unlock (mis. SHADOW KING): status TERBUKA permanen via state.towerShopOwned. */
@@ -425,6 +423,10 @@ function renderTowerShop(){
 
   const lockCards=ITEMS.filter(x=>x.unlock);
   const lcOwned=lockCards.filter(cardOwned).length;
+  const unlockChip=lockCards.length?`
+          <div class="hsh-token-chip subtle cp-chip">
+            <div class="htc-col"><small>CORE UNLOCKED</small><b>${lcOwned}/${lockCards.length}</b></div>
+          </div>`:"";
 
   app.innerHTML=`
   <div class="tw-page inf-shop-page">
@@ -447,9 +449,7 @@ function renderTowerShop(){
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8M8 14h6"/></svg>
             <div class="htc-col"><small>TOKEN INF</small><b class="cyan">${fmt(tok)}</b></div>
           </div>
-          <div class="hsh-token-chip subtle cp-chip">
-            <div class="htc-col"><small>CORE UNLOCKED</small><b>${lcOwned}/${lockCards.length}</b></div>
-          </div>
+          ${unlockChip}
         </div>
       </div>
 
@@ -483,9 +483,9 @@ function renderTowerShop(){
   if(bi)bi.onclick=()=>{if(bi.disabled)return;infBuy(ITEMS[window.shopSel].k);};
 }
 function infBuy(kind){
-  const cost={gem:100,weather:10,luck1:10,luck2:50,luck3:250,speed1:10,speed2:50,speed3:250,mythic:50,shadowking:1000}[kind]; if(cost==null)return;
-  /* Kartu unlock permanen (mis. SHADOW KING): set state.towerShopOwned, TIDAK grant kartu (roll masih harus dimenangkan). */
-  const CARD_UNLOCK={shadowking:"CH_SHADOW_KING"}[kind];
+  const cost={gem:100,weather:10,luck1:10,luck2:50,luck3:250,speed1:10,speed2:50,speed3:250,mythic:50}[kind]; if(cost==null)return;
+  /* Kartu unlock permanen (mis. SHADOW KING dulu): set state.towerShopOwned, TIDAK grant kartu (roll masih harus dimenangkan). */
+  const CARD_UNLOCK={} [kind];
   if(CARD_UNLOCK&&state.towerShopOwned&&state.towerShopOwned[CARD_UNLOCK]){toast("SUDAH TERBUKA","Roll kartu ini sudah permanen terbuka","#a78bfa");return;}
   if((state.infTokens||0)<cost){toast("TOKEN KURANG","TOKEN INF TIDAK CUKUP","#f87171");return;}
   if(kind==='gem'){
