@@ -49944,23 +49944,35 @@ html.fps-locked .bp-fchip{
 @keyframes acGl2{0%,90%,100%{transform:translateX(0)}93%{transform:translateX(2px)}96%{transform:translateX(-2px)}}
 
 /* ============================================================
-   AUTH CYBER — Unit D: layar memuat "hidup" ala prototipe.
-   Emblem spiral dibungkus panel hologram yang melayang (ldFloat) +
-   garis scan menyapu (ldHscan) + readout persen (ldPct, diisi
-   runLoading). Tetap AUTO-advance (tanpa tap-gate) biar nggak ada
-   jalan buntu di HP lemah. Semua ID JS (ldFill/ldStatus/ldPct) utuh.
+   AUTH CYBER — Unit D: layar memuat = HOLOGRAM KARTU (sama seperti
+   kartu aktif di card lobby). Emblem spiral jadi fallback kalau belum
+   ada kartu; saat runLoading render hubCardHtml(equipped()) ke #ldCard,
+   .ld-holo.has-card menyembunyikan emblem & menampilkan kartu 3:4 yang
+   melayang (ldFloat) dengan sheen foil (ld-tint) + garis scan menyapu
+   (ld-hscan) + persen (ldPct). Tetap AUTO-advance, ID JS utuh.
    ============================================================ */
-#loadingScreen .ld-holo{position:relative;width:132px;height:132px;margin:0 auto 18px;border-radius:10px;overflow:hidden;display:grid;place-items:center;background:linear-gradient(160deg,rgba(20,30,48,.92),rgba(8,12,22,.95));border:1px solid var(--ln);box-shadow:0 18px 40px rgba(0,0,0,.55),var(--glow);animation:ldFloat 5s ease-in-out infinite}
-#loadingScreen .ld-holo::after{content:"";position:absolute;inset:0;background:radial-gradient(62% 42% at 50% 34%,rgba(125,249,255,.22),transparent 70%);pointer-events:none}
-#loadingScreen .ld-scan{position:absolute;left:0;right:0;height:38%;top:-45%;background:linear-gradient(180deg,transparent,rgba(125,249,255,.42),transparent);animation:ldHscan 2.6s ease-in-out infinite;pointer-events:none}
+#loadingScreen .ld-holo{position:relative;width:min(210px,58vw);aspect-ratio:3/4;margin:0 auto 18px;border-radius:18px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:radial-gradient(120% 90% at 50% -12%,rgba(125,249,255,.18),transparent 60%),linear-gradient(160deg,rgba(20,30,48,.92),rgba(8,12,22,.96));border:1px solid var(--ln);box-shadow:0 22px 50px rgba(0,0,0,.6),var(--glow);animation:ldFloat 5s ease-in-out infinite}
 @keyframes ldFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-@keyframes ldHscan{0%{top:-45%}100%{top:115%}}
-#loadingScreen .ld-holo .ld-logo{margin:0;animation:none;width:78px;height:78px;border-radius:50%;background:radial-gradient(circle at 40% 32%,rgba(125,249,255,.24),rgba(8,14,24,.6) 70%);box-shadow:0 0 22px rgba(125,249,255,.4),inset 0 0 14px rgba(125,249,255,.15)}
-#loadingScreen .ld-holo .ld-logo svg{width:46px;height:46px;animation:ldSpinSlow 9s linear infinite}
+@keyframes ldHscan{0%{top:-48%}100%{top:118%}}
 @keyframes ldSpinSlow{to{transform:rotate(360deg)}}
+@keyframes ldStatusGlow{0%,100%{opacity:.75}50%{opacity:1}}
+/* fallback emblem (dipakai saat belum ada kartu) */
+#loadingScreen .ld-emblem{position:absolute;inset:0;display:grid;place-items:center;z-index:1}
+#loadingScreen .ld-holo.has-card .ld-emblem{display:none}
+#loadingScreen .ld-emblem .ld-scan{position:absolute;left:0;right:0;height:40%;top:-45%;background:linear-gradient(180deg,transparent,rgba(125,249,255,.42),transparent);animation:ldHscan 2.6s ease-in-out infinite;pointer-events:none}
+#loadingScreen .ld-holo .ld-logo{margin:0;animation:none;width:88px;height:88px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 40% 32%,rgba(125,249,255,.24),rgba(8,14,24,.6) 70%);box-shadow:0 0 22px rgba(125,249,255,.4),inset 0 0 14px rgba(125,249,255,.15)}
+#loadingScreen .ld-holo .ld-logo svg{width:52px;height:52px;animation:ldSpinSlow 9s linear infinite}
+/* kartu hasil render hubCardHtml mengisi panggung */
+#loadingScreen .ld-cardwrap{position:relative;z-index:2;width:100%;height:100%;display:none;align-items:center;justify-content:center}
+#loadingScreen .ld-holo.has-card .ld-cardwrap{display:flex}
+#loadingScreen .ld-cardwrap .hub-center{width:100%;height:100%;border-radius:18px;cursor:default;pointer-events:none}
+#loadingScreen .ld-cardwrap .hub-center:hover{transform:none}
+/* sheen hologram di atas kartu/emblem */
+#loadingScreen .ld-glass{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;border-radius:18px}
+#loadingScreen .ld-tint{position:absolute;inset:0;background:linear-gradient(115deg,transparent 28%,rgba(125,249,255,.12) 46%,rgba(181,140,255,.16) 54%,transparent 72%);mix-blend-mode:screen}
+#loadingScreen .ld-hscan{position:absolute;left:0;right:0;height:42%;top:-48%;background:linear-gradient(180deg,transparent,rgba(125,249,255,.30),transparent);animation:ldHscan 2.8s ease-in-out infinite}
 #loadingScreen .ld-meta{display:flex;justify-content:space-between;align-items:center;margin:0 0 8px;padding:0 2px}
 #loadingScreen .ld-brand{font-family:"Rajdhani",sans-serif;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:#6d849a}
 #loadingScreen .ld-pct{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:15px;letter-spacing:.1em;color:var(--sys);text-shadow:0 0 10px rgba(125,249,255,.5)}
 #loadingScreen .ld-status{animation:ldStatusGlow 1.8s ease-in-out infinite}
-@keyframes ldStatusGlow{0%,100%{opacity:.75}50%{opacity:1}}
-@media (prefers-reduced-motion:reduce){#loadingScreen .ld-holo,#loadingScreen .ld-scan,#loadingScreen .ld-holo .ld-logo svg,#loadingScreen .ld-status{animation:none!important}}
+@media (prefers-reduced-motion:reduce){#loadingScreen .ld-holo,#loadingScreen .ld-scan,#loadingScreen .ld-hscan,#loadingScreen .ld-holo .ld-logo svg,#loadingScreen .ld-status{animation:none!important}}

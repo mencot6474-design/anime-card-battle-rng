@@ -12,7 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700;800&family=Russo+One&family=Rajdhani:wght@700;800;900&display=swap" rel="stylesheet">
 <!-- External Game Icon Library: Lucide Icons -->
 <script src="https://unpkg.com/lucide@latest"></script>
-<link rel="stylesheet" href="css/style.css?v=v320-loadFX">
+<link rel="stylesheet" href="css/style.css?v=v321-cardHolo">
 <link rel="stylesheet" href="css/world-boss.css?v=wb14-holoLower">
 <link rel="stylesheet" href="css/sl-system.css?v=sl-v4">
 <link rel="stylesheet" href="css/story-carousel.css?v=v12-storyCardBigger">
@@ -44,7 +44,11 @@
 <div id="liveVeil" aria-hidden="true"></div>
 <div id="loadingScreen" class="hidden">
   <div class="ld-inner">
-    <div class="ld-holo"><div class="ld-scan"></div><div class="ld-logo"><svg viewBox="0 0 24 24" fill="none" aria-label="Clan Uzumaki"><path d="M12 12a2 2 0 0 1 4 0 4 4 0 0 1-8 0 6 6 0 0 1 12 0 8 8 0 0 1-16 0" stroke="#fff" stroke-width="2.1" stroke-linecap="round"/></svg></div></div>
+    <div class="ld-holo">
+      <div class="ld-emblem"><div class="ld-scan"></div><div class="ld-logo"><svg viewBox="0 0 24 24" fill="none" aria-label="Clan Uzumaki"><path d="M12 12a2 2 0 0 1 4 0 4 4 0 0 1-8 0 6 6 0 0 1 12 0 8 8 0 0 1-16 0" stroke="#fff" stroke-width="2.1" stroke-linecap="round"/></svg></div></div>
+      <div class="ld-cardwrap" id="ldCard"></div>
+      <div class="ld-glass"><span class="ld-tint"></span><span class="ld-hscan"></span></div>
+    </div>
     <div class="ld-title disp">Anime <span class="ld-accent">Card Battle</span></div>
     <div class="ld-meta"><span class="ld-brand">System // Boot</span><span class="ld-pct" id="ldPct">0%</span></div>
     <div class="ld-bar"><i id="ldFill"></i></div>
@@ -780,7 +784,7 @@
 <script src="js/story-carousel.js?v=v127-storyGemStage"></script>
 <script src="js/raid.js?v=v173-wbHoloFront"></script>
 <script src="js/ranking.js?v=v16-rkPubUnknown"></script>
-<script src="js/boot.js?v=v150-loadFX"></script>
+<script src="js/boot.js?v=v151-cardHolo"></script>
 <script src="js/pwa.js?v=v156-install"></script>
 
 <!-- ========== CORET MODE (dev-only overlay anotasi) ==========

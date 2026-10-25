@@ -472,6 +472,20 @@ function runLoading(done){
   const status=document.getElementById("ldStatus");
   const pctEl=document.getElementById("ldPct");
   scr.classList.remove("hidden");
+  /* Hologram kartu aktif = sama seperti card lobby (pakai hubCardHtml yang
+     sama). Fallback ke emblem spiral kalau belum ada kartu / render gagal. */
+  const holo=scr.querySelector(".ld-holo");
+  const cardBox=document.getElementById("ldCard");
+  if(cardBox){
+    cardBox.innerHTML="";
+    try{
+      const eq=(typeof equipped==="function")?equipped():null;
+      if(eq&&eq.char&&typeof hubCardHtml==="function"){
+        cardBox.innerHTML=hubCardHtml(eq);
+        if(holo) holo.classList.add("has-card");
+      } else if(holo){ holo.classList.remove("has-card"); }
+    }catch(e){ if(holo) holo.classList.remove("has-card"); }
+  }
   const steps=["Menyinkronkan data…","Membangun deck…","Menyiapkan arena…","Memuat dunia…","Siarp!"];
   const dur=3000,t0=Date.now();
   fill.style.width="0%";
