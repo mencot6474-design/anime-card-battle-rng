@@ -1,13 +1,5 @@
 /* =============== SETTINGS =============== */
-function gmGrantCard(charId){
-  if(!CARDS[charId])return "kartu tidak dikenal";
-  const ex=state.stacks.find(x=>x.char===charId&&x.tier===CARDS[charId].tier&&(x.mut||"none")==="none");
-  if(ex){ex.count=(ex.count||1)+1;return `${CARDS[charId].name} ×${ex.count}`;}
-  state.stacks.push({id:Math.random().toString(36).slice(2,9),char:charId,tier:CARDS[charId].tier,lv:1,exp:0,fav:false,lock:false,mut:"none",shiny:false,trait:"none",count:1});
-  return `${CARDS[charId].name} ditambahkan ke deck`;
-}
 function renderSettings(){
-  const opts=MASTER_CARD_INDEX.map(c=>`<option value="${c.char_id}">${rarityText(c.tier,c.chance)} · ${c.name}</option>`).join("");
   /* BATTLE SPEED: clamp ke unlock level sebelum render panel */
   if(typeof state.battleSpeed!=="number"||state.battleSpeed<1||state.battleSpeed>4)state.battleSpeed=1;
   {const _m=battleSpeedMax();if(state.battleSpeed>_m)state.battleSpeed=_m;}
@@ -24,44 +16,6 @@ function renderSettings(){
 
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px">
     
-    <!-- GM PANEL -->
-    <div class="panel set-panel gm-panel" style="background:linear-gradient(145deg,rgba(26,20,40,0.85),rgba(15,12,25,0.95));border:1px solid rgba(197,108,240,0.3);border-radius:14px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,0.3)">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <span style="background:rgba(197,108,240,0.2);color:#c56cf0;font-size:10px;font-weight:900;padding:3px 8px;border-radius:6px;border:1px solid rgba(197,108,240,0.4)">DEV TOOL</span>
-        <div class="set-t" style="margin:0;color:#f1f2f6;font-size:16px;font-weight:800;letter-spacing:0.5px;display:flex;align-items:center;gap:8px">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c56cf0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg> GM DEBUG CONSOLE
-        </div>
-      </div>
-      <div class="set-d" style="color:#a4b0be;font-size:12px;line-height:1.4;margin-bottom:12px">Beri kartu instan, modifikasi stat mutasi glow/shiny, atau buka kunci seluruh konten game.</div>
-      
-      <div class="gm-row" style="margin-bottom:8px">
-        <select id="gmCard" class="gm-select" style="background:rgba(10,12,18,0.9);color:#fff;border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px">${opts}</select>
-        <button class="gm-btn" id="gmGrant" style="background:linear-gradient(135deg,#2ed573,#1e90ff);color:#fff;font-weight:700;border:none;border-radius:8px;padding:8px 14px">Grant</button>
-      </div>
-      <div class="gm-row" style="margin-bottom:8px">
-        <button class="gm-btn" id="gmEx" style="flex:1;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;border-radius:8px;padding:8px">Gojo + Madara</button>
-        <button class="gm-btn" id="gmAll" style="flex:1;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;border-radius:8px;padding:8px">Unlock All</button>
-        <button class="gm-btn" id="gmEquip" style="flex:1;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;border-radius:8px;padding:8px">Equip EX</button>
-      </div>
-      <div class="gm-row" style="margin-bottom:8px">
-        <select class="gm-select" id="gmMut" style="background:rgba(10,12,18,0.9);color:#fff;border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px">
-          <option value="none">MURNI</option>
-          <option value="gold">GOLD GLOW</option>
-          <option value="rainbow">RAINBOW AURA</option>
-          <option value="secret">SECRET VOID</option>
-          <option value="ultima">ULTIMA APEX</option>
-        </select>
-        <label class="gm-check" style="color:#ced6e0;font-size:12px;font-weight:700"><input type="checkbox" id="gmShiny"> SHINY</label>
-        <button class="gm-btn" id="gmMutApply" style="background:linear-gradient(135deg,#ff4757,#ff6b81);color:#fff;font-weight:700;border:none;border-radius:8px;padding:8px 12px">Pasang</button>
-      </div>
-      <div class="gm-row" style="margin-bottom:8px">
-        <button class="gm-btn" id="gmCoin" style="flex:1;background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.3);color:#ffd32a;font-weight:700;border-radius:8px;padding:8px">+10.000 Coin</button>
-        <button class="gm-btn" id="gmGems" style="flex:1;background:rgba(255,215,0,0.25);border:1px solid rgba(255,215,0,0.5);color:#ffd700;font-weight:700;border-radius:8px;padding:8px">+50 Gems</button>
-        <button class="gm-btn" id="gmLevels" style="flex:1;background:rgba(46,213,115,0.15);border:1px solid rgba(46,213,115,0.3);color:#2ed573;font-weight:700;border-radius:8px;padding:8px">Buka Level</button>
-      </div>
-      <div class="gm-note" id="gmNote" style="color:#66fcf1;font-weight:600;min-height:16px;font-size:11px"></div>
-    </div>
-
     <!-- BATTLE SPEED -->
     <div class="panel set-panel" style="background:linear-gradient(145deg,rgba(15,25,35,0.85),rgba(10,15,22,0.95));border:1px solid rgba(102,252,241,0.25);border-radius:14px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,0.3)">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
@@ -171,16 +125,6 @@ function renderSettings(){
       };
     }
   }
-  const note=msg=>{document.getElementById("gmNote").textContent=msg;};
-  const flash=msg=>{note(msg);save();renderShell();};
-  document.getElementById("gmGrant").onclick=()=>{const id=document.getElementById("gmCard").value;flash(gmGrantCard(id));};
-  document.getElementById("gmEx").onclick=()=>{const a=gmGrantCard("CH_EX_GOJO"),b=gmGrantCard("CH_EX_MADARA");flash(a+" · "+b);};
-  document.getElementById("gmAll").onclick=()=>{MASTER_CARD_INDEX.forEach(c=>gmGrantCard(c.char_id));flash("Semua "+MASTER_CARD_INDEX.length+" kartu dibuka");};
-  document.getElementById("gmEquip").onclick=()=>{const ex=state.stacks.filter(s=>s.tier==="EX");if(!ex.length){note("Belum punya kartu EX — grant dulu.");return;}state.equippedId=ex[ex.length-1].id;flash("Equipped: "+CARDS[equipped().char].name);};
-  document.getElementById("gmMutApply").onclick=()=>{const m=document.getElementById("gmMut").value;const sh=document.getElementById("gmShiny").checked;const eq=equipped();if(!eq){note("Belum ada kartu aktif.");return;}eq.mut=m;eq.shiny=sh;save();note((MUT_LABEL[m]||"MURNI")+(sh?" + SHINY":"")+" dipasang ke "+CARDS[eq.char].name+" — cek Deck untuk lihat efek.");renderShell();};
-  document.getElementById("gmCoin").onclick=()=>{state.coins+=10000;flash("Coin +10.000");};
-  const gmb=document.getElementById("gmGems");if(gmb)gmb.onclick=()=>{state.premiumGems=(state.premiumGems||0)+50;flash("Gems +50");};
-  document.getElementById("gmLevels").onclick=()=>{for(let i=1;i<=LEVEL_COUNT;i++){state.cleared[i]=true;DIFFS.forEach(d=>{diffProg()[d.k][i]=true;});}flash("Semua level terbuka");};
   let armed=false,timer=null;
   const b=document.getElementById("resetBtn");
   const disarm=()=>{armed=false;if(timer){clearTimeout(timer);timer=null;}b.classList.remove("armed");b.textContent="Reset Semua & Main Dari Awal";};
