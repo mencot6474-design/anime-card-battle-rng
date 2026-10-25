@@ -1029,6 +1029,60 @@ function hubLoadoutHtml(){
 
   return slot(0)+slot(1)+pet;
 }
+/* Tile REBIRTH di rail kanan lobby — nilai dup dikumpulin di sini, naikkan luck. */
+function rbCompact(n){n=n||0;if(n>=1e9)return (n/1e9).toFixed(n>=1e10?0:1)+'B';if(n>=1e6)return (n/1e6).toFixed(n>=1e7?0:1)+'M';if(n>=1e3)return (n/1e3).toFixed(n>=1e4?0:1)+'K';return String(Math.floor(n));}
+function hubRebirthTileHtml(){
+  const cnt=typeof rebirthCount==='function'?rebirthCount():0;
+  const es=typeof rebirthEssence==='function'?rebirthEssence():0;
+  const th=typeof rebirthThreshold==='function'?rebirthThreshold():1000000;
+  const mult=typeof rebirthLuckMult==='function'?rebirthLuckMult():1;
+  const ready=es>=th;
+  const pct=Math.max(0,Math.min(100,Math.round(es/th*100)));
+  return `
+    <div class="hub-box h-rebirth hub-link hub-link-rebirth${ready?' ready':''}" id="hubRebirth" role="button" title="Rebirth: tukar essence duplikat jadi luck permanen">
+      <span class="tile-frame" aria-hidden="true"></span>
+      <span class="tile-index"><span class="tile-number" style="color:#c084fc">R${cnt}</span><span class="tile-category" style="color:#a855f7">CYCLE / ASCENSION</span></span>
+      <span class="tile-art" aria-hidden="true">
+        <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M78 50a28 28 0 1 1-9-20.8"/>
+          <path d="M70 20l10 9-13 6" stroke-width="2.2"/>
+          <circle cx="50" cy="50" r="6" fill="currentColor"/>
+        </svg>
+      </span>
+      <span class="tile-copy"><span class="hb-lbl" style="color:#c084fc;text-shadow:0 0 10px rgba(192,132,252,.4)">REBIRTH</span><span class="hb-meta">LUCK ×${mult}</span></span>
+      <span class="rebirth-progress">
+        <span class="rebirth-meter" id="rebirthMeter" role="progressbar" aria-label="Rebirth progress" aria-valuemin="0" aria-valuemax="${th}" aria-valuenow="${es}"><span id="rebirthFill" style="width:${pct}%"></span></span>
+        <span class="rb-sub" id="rebirthSub">${rbCompact(es)} / ${rbCompact(th)}</span>
+      </span>
+      <span class="tile-action" style="border-color:rgba(192,132,252,.5);color:${ready?'#e9d5ff':'#a855f7'}"><span>${ready?'REBIRTH':'LOCKED'}</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
+    </div>`;
+}
+/* Patch tile in-place tanpa full re-render (dipanggil setelah roll selesai). */
+function updateRebirthUI(){
+  const box=document.getElementById('hubRebirth');
+  if(!box||typeof rebirthCount!=='function')return;
+  const es=rebirthEssence(),th=rebirthThreshold(),cnt=rebirthCount(),mult=rebirthLuckMult();
+  const ready=es>=th,pct=Math.max(0,Math.min(100,Math.round(es/th*100)));
+  box.classList.toggle('ready',ready);
+  const num=box.querySelector('.tile-number');if(num)num.textContent='R'+cnt;
+  const lbl=box.querySelector('.hb-meta');if(lbl)lbl.textContent='LUCK ×'+mult;
+  const fill=document.getElementById('rebirthFill');if(fill)fill.style.width=pct+'%';
+  const meter=document.getElementById('rebirthMeter');if(meter){meter.setAttribute('aria-valuemax',String(th));meter.setAttribute('aria-valuenow',String(es));}
+  const sub=document.getElementById('rebirthSub');if(sub)sub.textContent=rbCompact(es)+' / '+rbCompact(th);
+  const act=box.querySelector('.tile-action span');if(act)act.textContent=ready?'REBIRTH':'LOCKED';
+}
+function onRebirthClick(){
+  if(typeof canRebirth!=='function'||!canRebirth()){
+    const need=rebirthThreshold()-rebirthEssence();
+    if(typeof toast==='function')toast('ESSENCE KURANG','Butuh '+((typeof fmt==='function')?fmt(need):need)+' lagi','#a855f7');
+    return;
+  }
+  doRebirth();
+  const mult=rebirthLuckMult();
+  if(typeof toast==='function')toast('REBIRTH!','Luck kini ×'+mult,'#c084fc');
+  renderLobby();
+}
+
 function renderLobby(){
   if(state.battle)return renderBattle();
   const eq=equipped();
@@ -1173,6 +1227,7 @@ function renderLobby(){
       <span class="tile-copy"><span class="hb-lbl" style="color:#7DF9FF;text-shadow:0 0 10px rgba(125,249,255,.35)">LEADERBOARD</span><span class="hb-meta">World Boss · rank harian</span></span>
       <span class="tile-action" style="border-color:rgba(125,249,255,.4);color:#7DF9FF"><span>OPEN</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
     </div>
+    ${hubRebirthTileHtml()}
   </div>`;
   const hc=document.getElementById("hubCard");if(hc){hc.onclick=()=>{sfx.hit();toggleBackpack();};}
   const hp=document.getElementById("hubPremium");if(hp)hp.onclick=()=>{sfx.hit();openPremiumShop();};
@@ -1184,6 +1239,7 @@ function renderLobby(){
   const hw=document.getElementById("hubWeather");if(hw)hw.onclick=()=>{sfx.hit();openWeatherMachine();};
   const mb=document.getElementById("missionBtn");if(mb)mb.onclick=()=>{sfx.hit();openMission();};
   const hrk=document.getElementById("hubRank");if(hrk)hrk.onclick=()=>{sfx.hit();if(typeof openRanking==="function")openRanking();};
+  const hrbr=document.getElementById("hubRebirth");if(hrbr)hrbr.onclick=()=>{sfx.hit();onRebirthClick();};
   const ms=document.getElementById("missionSub");if(ms){const done=CHAPTERS.reduce((a,c)=>a+chapProgMode(c,state.diff),0),tot=CHAPTERS.reduce((a,c)=>a+c.levels.length,0);ms.textContent=done+"/"+tot+" SELESAI";const ratio=tot?Math.min(100,Math.round(done/tot*100)):0;const meter=document.getElementById("missionMeter"),fill=document.getElementById("missionFill");if(meter){meter.setAttribute("aria-valuemax",String(tot));meter.setAttribute("aria-valuenow",String(done));}if(fill)fill.style.width=ratio+"%";}
   document.querySelectorAll(".hub-loadout-bar .loadout-slot, .stage-loadout .loadout-slot").forEach(el=>{el.onclick=()=>{sfx.hit();bpSetTab(el.dataset.bp||"pet");const p=document.getElementById("backpackPanel");if(!p||p.style.display!=="flex")toggleBackpack();};});
   if (typeof _startGlWidgetTick === "function") _startGlWidgetTick();

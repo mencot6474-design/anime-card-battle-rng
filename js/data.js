@@ -90,7 +90,7 @@ function artLuckFlat(){return state&&Array.isArray(state.artSlots)?state.artSlot
 function artLuckPct(){return state&&Array.isArray(state.artSlots)?state.artSlots.reduce((a,id)=>a+((ART_DEFS.find(x=>x.id===id)||{}).pct||0),0):0;}
 function petLuckFlat(){const d=state&&state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;return d?(d.flat||0):0;}
 function petLuckPct(){const d=state&&state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;return d?(d.pct||0):0;}
-function totalLuck(){const p=state?.player||{};const base=p.luckBase??p.luck??1;const flat=(p.luckFlat||0)+treeLuckFlat()+activeLuckBuff()+artLuckFlat()+petLuckFlat();const pct=(p.luckPercent||0)+treeLuckPct()+activeLuckBuffPct()+artLuckPct()+petLuckPct();return (base+flat)*(1+pct)*weatherLuckMult()*(typeof globalLuckMult==='function'?globalLuckMult():1);}
+function totalLuck(){const p=state?.player||{};const base=p.luckBase??p.luck??1;const flat=(p.luckFlat||0)+treeLuckFlat()+activeLuckBuff()+artLuckFlat()+petLuckFlat();const pct=(p.luckPercent||0)+treeLuckPct()+activeLuckBuffPct()+artLuckPct()+petLuckPct();return (base+flat)*(1+pct)*weatherLuckMult()*(typeof globalLuckMult==='function'?globalLuckMult():1)*(typeof rebirthLuckMult==='function'?rebirthLuckMult():1);}
 // Chance yang ditampilkan ke user = peluang ASLI ternormalisasi (Fix A): rare = label mentah,
 // common = 1/P asli lewat effChance(). Luck tetap jalan di bobot roll (khusus rare) + keliatan di Profil.
 function luckChance(charId,mut,shiny){return effChance(charId,mut,shiny);}

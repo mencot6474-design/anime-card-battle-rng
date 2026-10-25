@@ -12,7 +12,7 @@ function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u));}
 function freshState(){
   const s0=STORY_BIBLE.units[0];
   const start=s0?{id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,fav:false,lock:false,mut:"none",shiny:false,trait:"none",count:1}:null;
-  const newState={coins:1000,wbTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,totalRolls:0,playSec:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},raidShopOwned:{},towerShopOwned:{},storyGemMilestones:{},dailyGemPending:0,storyCd:{},tower:{best:0,auto:false},battleSpeed:1,
+  const newState={coins:1000,wbTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,totalRolls:0,playSec:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},raidShopOwned:{},towerShopOwned:{},storyGemMilestones:{},dailyGemPending:0,storyCd:{},rebirth:{count:0,essence:0},tower:{best:0,auto:false},battleSpeed:1,
     cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],history:[],battle:null,
     player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1,sp:0,tree:{}},weather:null,weatherBest:null,potions:0,mythicPotions:0,luckPots:[0,0,0],speedPots:[0,0,0],luckBuffs:[],speedBuffs:[],infTokens:0,
     artOwned:[],artSlots:[null,null],petOwned:[],petEquipped:null,intanRolls:0,idxRewardsClaimed:0,premiumGems:50,rollPacks:{r5k:0,r10k:0,r25k:0,r50k:0,r100k:0}};
@@ -126,6 +126,11 @@ function loadStateFor(name){
   if(!state.storyCd||typeof state.storyCd!=="object"||Array.isArray(state.storyCd))state.storyCd={};
   Object.keys(state.storyCd).forEach(k=>{if(!(+state.storyCd[k]>Date.now()))delete state.storyCd[k];});
   delete state.storyCdUntil;
+  /* REBIRTH: nilai duplikat kartu masuk sini, BUKAN EXP player. count = jumlah rebirth,
+     essence = progress menuju ambang berikutnya (dipakai habis saat rebirth). */
+  if(!state.rebirth||typeof state.rebirth!=="object"||Array.isArray(state.rebirth))state.rebirth={count:0,essence:0};
+  if(typeof state.rebirth.count!=="number"||state.rebirth.count<0)state.rebirth.count=0;
+  if(typeof state.rebirth.essence!=="number"||state.rebirth.essence<0)state.rebirth.essence=0;
   if(!state.rollPacks||typeof state.rollPacks!=="object")state.rollPacks={r5k:0,r10k:0,r25k:0,r50k:0,r100k:0};
   ['r5k','r10k','r25k','r50k','r100k'].forEach(k=>{if(typeof state.rollPacks[k]!=="number"||state.rollPacks[k]<0)state.rollPacks[k]=0;});
   if(typeof state.idxRewardsClaimed!=="number"||state.idxRewardsClaimed<0)state.idxRewardsClaimed=0;
@@ -295,7 +300,30 @@ function claimStoryMilestone(chapNo,diffKey){
    bikin gem early game tidak susah. */
 const STORY_REPEAT_CD_MS=5*60*1000;
 const STORY_REPEAT_GEM_PCT=0.35;
-const STORY_REPEAT_GEM_MIN=2;
+/* ========== REBIRTH ==========
+   Nilai tiap kartu duplikat (tier × mut × shiny) masuk ke state.rebirth.essence,
+   BUKAN EXP player — jadi farming jutaan dup naikkan luck tanpa merusak level.
+   Ambang bertahap (doubling dari REBIRTH_BASE); tiap rebirth = luck ×(1+count). */
+const REBIRTH_BASE=1000000;
+function rebirthCount(){return (state&&state.rebirth&&state.rebirth.count)||0;}
+function rebirthEssence(){return (state&&state.rebirth&&state.rebirth.essence)||0;}
+function rebirthThreshold(){return Math.round(REBIRTH_BASE*Math.pow(2,rebirthCount()));}
+function rebirthLuckMult(){return 1+rebirthCount();}
+function canRebirth(){return rebirthEssence()>=rebirthThreshold();}
+function addRebirthEssence(n){
+  if(!state||!n)return 0;
+  if(!state.rebirth||typeof state.rebirth!=="object")state.rebirth={count:0,essence:0};
+  state.rebirth.essence=(state.rebirth.essence||0)+n;
+  return n;
+}
+function doRebirth(){
+  if(!state||!canRebirth())return false;
+  const cost=rebirthThreshold();
+  state.rebirth.essence=rebirthEssence()-cost;
+  state.rebirth.count=rebirthCount()+1;
+  save();
+  return true;
+}
 function storyCdKey(lv){return state.diff+":"+lv;}
 function storyCdLeft(lv){
   if(!state)return 0;

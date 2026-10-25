@@ -416,12 +416,11 @@ let __batchRoll = false;
      2. save() di state.js (safety-net terakhir sebelum serialize — menutup celah import save
         lama, dev-grant, dsb.).
    Kompensasi duplikat:
-     • Roll manual / gacha summon   → dup dibuang silent (progress player kecil per-click,
-       feedback EXP per-roll gak signifikan).
-     • Instantpack (instantRoll / instantRollFast) → dup auto-jual jadi EXP. Alasannya batch
-       bisa ratusan ribu sampai jutaan; tanpa kompensasi player ngerasa "ratusan ribu roll
-       ilang percuma". EXP ditambah per-dup, TAPI stack tidak pernah nampung copy → tetap 1
-       per varian di Supabase. */
+     • Semua jalur (roll manual & instantpack) → dup dikompensasi jadi REBIRTH essence
+       lewat addRebirthEssence(). Dulu: manual dibuang silent, instantpack jadi EXP player.
+       Sekarang nilai dup tidak lagi menyentuh state.player.exp, jadi farming jutaan dup
+       menaikkan luck (via rebirth) tanpa merusak level player.
+     • Stack tidak pernah nampung copy → tetap 1 per varian di Supabase. */
 function stackVariantKey(s){return s.char+"|"+(s.mut||"none")+"|"+(s.shiny?1:0);}
 function dedupStacksInPlace(){
   if(!state||!Array.isArray(state.stacks))return;
@@ -437,7 +436,7 @@ function dedupStacksInPlace(){
   }
   if(out.length!==state.stacks.length)state.stacks=out;
 }
-/* Harga EXP per duplikat (jalur instantpack). Tier × mut × shiny. */
+/* Harga essence per duplikat. Tier × mut × shiny. */
 const DUP_EXP_TIER = { R:20, SR:40, SSR:90, UR:220, EX:600, BOSS:600 };
 const DUP_EXP_MUT  = { none:1, gold:2, rainbow:3, secret:5, ultima:8 };
 const DUP_EXP_SHINY = 2;
@@ -448,10 +447,10 @@ function dupSellValue(card, mut, shiny){
   return Math.round(base * mm * (shiny ? DUP_EXP_SHINY : 1));
 }
 function dupAddExp(exp){
-  if(!state||!exp)return 0;
-  if(!state.player)state.player={luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:state.playerLv||1,sp:0,tree:{}};
-  state.player.exp=(state.player.exp||0)+exp;
-  return exp;
+  /* Kompensasi duplikat sekarang masuk REBIRTH essence, bukan EXP player
+     (lihat state.js REBIRTH). Fungsi ini dipertahankan cuma sebagai alias
+     supaya jalur lama tidak berubah makna angka. */
+  return typeof addRebirthEssence==="function"?addRebirthEssence(exp):0;
 }
 
 function grantRolledCard(charId, mut, shiny, dupToExp) {
@@ -464,8 +463,8 @@ function grantRolledCard(charId, mut, shiny, dupToExp) {
   const s = state.stacks.find(x => x.char === charId && (x.mut || "none") === m && !!x.shiny === sh);
   if (s) {
     /* DUPLIKAT — stack existing tetap count=1 (tidak ada copy yang nempel di save).
-       Kalau dupToExp=true (jalur instantpack), copy ini auto-jual jadi EXP. */
-    if(dupToExp)dupAddExp(dupSellValue(card, m, sh));
+       Semua dup (manual roll & instantpack) dikompensasi jadi REBIRTH essence. */
+    addRebirthEssence(dupSellValue(card, m, sh));
     if(!__batchRoll){save();rollCountBadge();idxRewardSync();}
     return s;
   }
@@ -584,6 +583,7 @@ function rollCountBadge() {
     toggle.setAttribute('data-count', count);
     toggle.classList.toggle('has-items', count > 0);
   }
+  if (typeof updateRebirthUI === "function") updateRebirthUI();
 }
 
 function startRollAnimation(luck, speedMultiplier = 1) {

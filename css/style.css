@@ -49617,3 +49617,28 @@ html.fps-locked .bp-fchip{
   #rkProfModal .ix-head{margin-bottom:4px}
   .rp-face{max-width:130px}
 }
+
+/* ==========================================================================
+   REBIRTH — tile di rail kanan lobby (nilai dup → luck permanen)
+   LB dikecilin jadi setengah, Rebirth ngisi sel sebelahnya.
+   ========================================================================== */
+.lobby-hub .hub-right>.h-lb{grid-column:auto!important}
+.lobby-hub .h-rebirth{
+  --tile-tone:#c084fc;
+  display:flex!important;flex-direction:column!important;align-items:flex-start;
+  justify-content:flex-start;gap:6px;padding-top:24px;
+  border-color:rgba(192,132,252,.3)!important;
+}
+.lobby-hub .h-rebirth .tile-art{position:absolute;inset:0;display:grid;place-items:center;opacity:.16;color:#c084fc;pointer-events:none}
+.lobby-hub .h-rebirth .tile-art svg{width:52%;height:52%}
+.lobby-hub .h-rebirth:hover .tile-art{opacity:.34}
+.lobby-hub .h-rebirth .tile-frame{position:absolute;inset:0}
+.lobby-hub .hub-right>.hub-box.h-rebirth .hb-meta{display:block!important;font-size:10px!important;color:#d8b4fe!important}
+.lobby-hub .hub-right>.hub-box.h-rebirth .hb-lbl{color:#e9d5ff!important}
+.lobby-hub .h-rebirth .rebirth-progress{width:100%;display:flex;flex-direction:column;gap:3px;margin-top:auto}
+.lobby-hub .h-rebirth .rebirth-meter{height:4px;overflow:hidden;border-radius:4px;background:rgba(168,85,247,.16);box-shadow:inset 0 1px 2px rgba(0,0,0,.6)}
+.lobby-hub .h-rebirth .rebirth-meter span{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#a855f7,#c084fc);box-shadow:0 0 10px rgba(192,132,252,.6);transition:width .35s ease}
+.lobby-hub .h-rebirth .rb-sub{font-family:"Rajdhani",sans-serif;font-size:7.5px;font-weight:800;letter-spacing:.04em;color:#c084fc;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.lobby-hub .h-rebirth.ready{border-color:rgba(192,132,252,.65)!important;box-shadow:0 0 22px rgba(168,85,247,.4),0 14px 32px rgba(0,0,0,.3)}
+.lobby-hub .h-rebirth.ready .tile-action{color:#f3e8ff!important;border-color:rgba(192,132,252,.7)!important;background:rgba(168,85,247,.22)}
+
