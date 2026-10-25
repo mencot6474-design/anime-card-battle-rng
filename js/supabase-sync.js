@@ -621,11 +621,44 @@ const CloudAuth = {
     return { ok: false, reason: "rejected" };
   },
   _inflight: {},
+  _linked: {},
+  /** Tautkan baris save lama (user_id NULL) ke uid sesi ini. Butuh migration
+      0019; kalau belum ada, cukup diperingatkan sekali (tidak fatal). */
+  async link(u) {
+    const key = this._k(u);
+    const s = this.session(key);
+    const ph = CloudDB._localPassHash(key);
+    if (!s || !s.uid || !ph) return { ok: false, reason: "no_session" };
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/link_player_auth`, {
+      method: "POST",
+      headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${s.at}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ p_username: key, p_password_hash: ph }),
+    });
+    let d = null;
+    try { d = await res.json(); } catch (e) {}
+    if (!res.ok) {
+      if (!this._linkWarned) {
+        this._linkWarned = true;
+        console.warn("[CloudAuth] link_player_auth gagal", res.status, (d && (d.message || d.msg)) || "");
+      }
+      return { ok: false, reason: "rpc_" + res.status };
+    }
+    return d || { ok: false, reason: "empty" };
+  },
+  _linkWarned: false,
   /** Versi tembak-lari untuk dipanggil setelah login sukses; tak pernah melempar. */
   kick(u) {
     const key = this._k(u);
     if (this._inflight[key]) return this._inflight[key];
     const p = this.ensure(key)
+      .then(async r => {
+        if (r && r.ok && r.uid && !this._linked[key]) {
+          const lr = await this.link(key).catch(() => null);
+          if (lr && lr.ok) this._linked[key] = true;
+          return Object.assign({}, r, { link: lr ? (lr.ok ? "ok" : (lr.msg || lr.reason)) : "err" });
+        }
+        return r;
+      })
       .catch(e => { console.warn("[CloudAuth] err", e && e.message); return { ok: false }; })
       .then(r => { delete this._inflight[key]; return r; });
     this._inflight[key] = p;
