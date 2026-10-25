@@ -362,6 +362,8 @@ async function submitAuth(){
         await window.CloudDB.registerUser(name, passH, initSt);
       } catch(err){ console.warn("Cloud register fail:", err); }
     }
+    /* Fase 1 JWT: bikin akun Auth untuk user baru (tidak memblokir UI). */
+    if(window.CloudAuth) window.CloudAuth.kick(name);
 
     finish();
     document.getElementById("auPass").value="";
@@ -384,6 +386,7 @@ async function submitAuth(){
       const targetName = name;
       users[key] = {name: targetName, pass: passH, created: Date.now()};
       saveUsers(users);
+      if(window.CloudAuth) window.CloudAuth.kick(targetName);
       if(cloudUser.save_data){
         try {
           localStorage.setItem("aab-state-v2:"+targetName, JSON.stringify(cloudUser.save_data));
@@ -404,6 +407,7 @@ async function submitAuth(){
         finish();
         return;
       }
+      if(window.CloudAuth) window.CloudAuth.kick(u.name || name);
       finish();
       enterGame(u.name || name, true);
     }
@@ -444,6 +448,9 @@ function showWelcomeWindow(name){
 async function enterGame(name,welcome){
   currentUser=name;
   localStorage.setItem(SESSION_KEY,name);
+  /* Fase 1 JWT: sesi Auth ikut dipulihkan saat auto-login (password asli
+     tidak ada di sini, jadi CloudAuth memakai hash lokal + refresh token). */
+  if(window.CloudAuth) window.CloudAuth.kick(name);
   if(window.CloudDB && window.CURRENT_DEVICE_SESSION){
     window.CloudDB.updateSession(name, window.CURRENT_DEVICE_SESSION).catch(()=>{});
     if(window.startSessionHeartbeat) window.startSessionHeartbeat(name);

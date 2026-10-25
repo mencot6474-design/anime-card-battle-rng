@@ -533,3 +533,103 @@ function startSessionHeartbeat(username) {
 
 window.startSessionHeartbeat = startSessionHeartbeat;
 window.CloudDB = CloudDB;
+
+/* =============== SUPABASE AUTH (JWT) — FASE 1 ===============
+   Tujuan: tiap login/register punya sesi Auth (auth.uid()) TANPA mengubah
+   jalur RPC lama (masih pakai p_password_hash). RPC baru (Fase 2:
+   link_player_auth) butuh token ini; Fase 1 cukup menyediakannya.
+
+   Kenapa email sintetis: Supabase Auth menuntut email/telepon, game ini
+   username. `username@game.invalid` (RFC2606) mustahil dikirimi email.
+   Password Auth = turunan hash password lokal, BUKAN password asli —
+   hashPass hanya ~7 karakter dan Supabase menuntut minimal 6.
+   Semua kegagalan di sini sengaja ditelan: login lama tidak boleh ikut mati. */
+const AUTH_SESS_KEY = "aab-auth-sess";
+const CloudAuth = {
+  _k(u) { return String(u || "").toLowerCase(); },
+  _email(u) { return this._k(u) + "@game.invalid"; },
+  _pass(u) { const h = CloudDB._localPassHash(u); return h ? "acb_" + h + "_v1" : ""; },
+  _all() { try { return JSON.parse(localStorage.getItem(AUTH_SESS_KEY)) || {}; } catch (e) { return {}; } },
+  _store(u, d) {
+    if (!d || !d.access_token) return null;
+    const rec = {
+      uid: (d.user && d.user.id) || "",
+      at: d.access_token,
+      rt: d.refresh_token || "",
+      exp: Date.now() + ((d.expires_in || 3600) * 1000) - 60000,
+    };
+    const all = this._all();
+    all[this._k(u)] = rec;
+    try { localStorage.setItem(AUTH_SESS_KEY, JSON.stringify(all)); } catch (e) {}
+    return rec;
+  },
+  session(u) { const s = this._all()[this._k(u)]; return s && s.at ? s : null; },
+  /** Token buat header Authorization; null kalau belum ada / kedaluwarsa. */
+  token(u) { const s = this.session(u); return s && s.exp > Date.now() ? s.at : null; },
+  async _post(path, body) {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/${path}`, {
+      method: "POST",
+      headers: { apikey: SUPABASE_ANON, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    let data = null;
+    try { data = await res.json(); } catch (e) {}
+    return { ok: res.ok, status: res.status, data: data || {} };
+  },
+  async refresh(u) {
+    const s = this.session(u);
+    if (!s || !s.rt) return null;
+    const r = await this._post("token?grant_type=refresh_token", { refresh_token: s.rt });
+    return r.ok ? this._store(u, r.data) : null;
+  },
+  /** Confirm email ON = signUp balas user tanpa sesi. Akun seperti itu tak
+      mungkin dikonfirmasi (email `.invalid`), jadi jangan pernah dibuat.
+      Cache-nya per page-load saja, supaya toggle yang baru diubah langsung kebaca. */
+  async _confirmOn() {
+    if (this._confirmCfg !== null) return this._confirmCfg;
+    try {
+      const res = await fetch(`${SUPABASE_URL}/auth/v1/settings`, { headers: { apikey: SUPABASE_ANON } });
+      const d = await res.json();
+      this._confirmCfg = d.mailer_autoconfirm !== true;
+    } catch (e) { this._confirmCfg = true; }
+    return this._confirmCfg;
+  },
+  _confirmCfg: null,
+  /** Pastikan user punya sesi Auth. Idempoten, aman dipanggil berkali-kali. */
+  async ensure(u) {
+    const key = this._k(u);
+    if (!key || !this._pass(key)) return { ok: false, reason: "no_local_pass" };
+    const s = this.session(key);
+    if (s && s.exp > Date.now()) return { ok: true, uid: s.uid };
+    if (s && s.rt) {
+      const r = await this.refresh(key);
+      if (r) return { ok: true, uid: r.uid };
+    }
+    if (await this._confirmOn()) return { ok: false, reason: "confirm_email_on" };
+    let r = await this._post("token?grant_type=password", { email: this._email(key), password: this._pass(key) });
+    if (r.ok) return { ok: true, uid: (this._store(key, r.data) || {}).uid || "" };
+    /* Belum punya akun Auth (login lama hanya bikin baris player_saves). */
+    r = await this._post("signup", { email: this._email(key), password: this._pass(key) });
+    if (r.ok) {
+      if (r.data.access_token) return { ok: true, uid: (this._store(key, r.data) || {}).uid || "" };
+      /* Jaring kedua: guard di atas bisa saja basi (toggle baru diubah). */
+      console.warn("[CloudAuth] akun Auth dibuat tanpa sesi — Confirm email kembali ON?");
+      return { ok: false, reason: "no_session" };
+    }
+    const msg = r.data.msg || r.data.error_description || r.data.message || "";
+    console.warn("[CloudAuth] gagal:", r.status, msg);
+    return { ok: false, reason: "rejected" };
+  },
+  _inflight: {},
+  /** Versi tembak-lari untuk dipanggil setelah login sukses; tak pernah melempar. */
+  kick(u) {
+    const key = this._k(u);
+    if (this._inflight[key]) return this._inflight[key];
+    const p = this.ensure(key)
+      .catch(e => { console.warn("[CloudAuth] err", e && e.message); return { ok: false }; })
+      .then(r => { delete this._inflight[key]; return r; });
+    this._inflight[key] = p;
+    return p;
+  },
+};
+window.CloudAuth = CloudAuth;
