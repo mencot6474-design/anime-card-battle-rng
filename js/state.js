@@ -567,6 +567,9 @@ function pushCloudNow(){
   return _cloudPush({stacks:true});
 }
 function save(){
+  /* Guard DevTools sudah memicu reset (0031): state lama di memori tidak boleh
+     menimpa save baru. Tanpa ini auto-save playSec bisa mengembalikan progres. */
+  if(window.__ACB_SAVE_LOCK__)return;
   if(state){
     /* Safety-net dedup sebelum serialize — menjamin payload yang masuk localStorage
        DAN yang dikirim ke Supabase tidak pernah berisi varian (char|mut|shiny) dobel,
