@@ -42654,6 +42654,12 @@ body.battle-full .fighter.phantom-enter {
 .f-badges .shiny-pill,
 .f-badges .fbadge:not(.hc-gem),
 .f-badges .mut-hover .mut-badge.ix-chip,
+/* battle punya aturan pemaksa 5-kelas `.fighter .f-badges .mut-hover .mut-badge.ix-chip`
+   (blok "ATURAN MUTLAK") yang menang spesifisitas → mut badge tetap kotak sementara
+   shiny (tak ter-bungkus .mut-hover) sudah 5px. Naikkan spesifisitas ke ≥ 5 kelas
+   supaya radius-nya samain seperti shiny. */
+.fighter .f-badges .mut-hover .mut-badge.ix-chip,
+.fighter .f-badges .mut-hover .mut-badge,
 .rrc .rrc-tier-badge,
 .rrc .rrc-shine,
 .rrc .rrc-mut:not(.hc-gem) {
