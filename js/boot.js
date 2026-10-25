@@ -295,6 +295,13 @@ function setAuthMode(m){
   document.getElementById("tabRegister").classList.toggle("active",m==="register");
   document.getElementById("auSubmit").textContent=m==="login"?"MASUK":"DAFTAR";
   document.getElementById("auErr").textContent="";
+  /* layar login cyber: brand pane flip ke kanan saat mode daftar */
+  var card=document.getElementById("auCard"); if(card) card.classList.toggle("flip",m==="register");
+  var hd=document.getElementById("hdMode"); if(hd) hd.textContent=m==="login"?"Hunter Login":"Hunter Register";
+  var tg=document.getElementById("brandTag");
+  if(tg) tg.innerHTML=m==="login"
+    ? 'Masuk untuk melanjutkan <b>perjalananmu</b> menaklukkan arena dan membangun shadow army.'
+    : 'Daftar untuk <b>terbangun sebagai Player</b> — progresmu langsung tersimpan di Cloud.';
 }
 function auError(msg){document.getElementById("auErr").textContent=msg;}
 async function submitAuth(){
