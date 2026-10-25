@@ -34,6 +34,18 @@ const CloudDB = {
     return null;
   },
 
+  /** Verifikasi login lewat RPC definer check_credentials (0017).
+      Anon sudah TIDAK boleh baca kolom `password`, jadi client tidak lagi
+      menarik hash buat dibandingkan sendiri — server yang cek, dan hasil RPC
+      cuma {ok, username, sid} (password tidak pernah keluar). */
+  async checkCredentials(username, passHash) {
+    if (!username || !passHash) return { ok: false, msg: "AKUN_ATAU_PASSWORD_SALAH" };
+    return await this._rpc("check_credentials", {
+      p_username: String(username).toLowerCase(),
+      p_password_hash: passHash,
+    });
+  },
+
   /* Register lewat RPC definer register_player. Sejak 0014 tabel
      player_saves dikunci (anon hanya SELECT), INSERT langsung ditolak RLS,
      jadi pendaftaran HARUS lewat RPC ini. */

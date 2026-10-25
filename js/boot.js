@@ -345,31 +345,43 @@ async function submitAuth(){
     document.getElementById("authDone").classList.remove("hidden");
   }else{
     // Mode LOGIN: prioritas cloud, fallback lokal
-    const u = cloudUser || users[key];
-    if(!u){
-      auError("Akun belum terdaftar. Silakan daftar dulu.");
+    if(cloudUser){
+      // Akun ada di cloud -> verifikasi lewat RPC definer (0017).
+      // Client tidak bisa lagi baca kolom password, jadi tidak bandingkan hash lokal.
+      let chk=null;
+      try { chk = await window.CloudDB.checkCredentials(key, passH); }
+      catch(err){ console.warn("checkCredentials err:", err); }
+      if(!chk || !chk.ok){
+        auError("Password salah.");
+        finish();
+        return;
+      }
+      const targetName = name;
+      users[key] = {name: targetName, pass: passH, created: Date.now()};
+      saveUsers(users);
+      if(cloudUser.save_data){
+        try {
+          localStorage.setItem("aab-state-v2:"+targetName, JSON.stringify(cloudUser.save_data));
+        }catch(e){}
+      }
       finish();
-      return;
-    }
-    if(u.password ? (u.password!==passH) : (u.pass!==passH)){
-      auError("Password salah.");
+      enterGame(targetName, true);
+    }else{
+      // Fallback lokal (akun lama yang belum/gagal sync ke cloud)
+      const u = users[key];
+      if(!u){
+        auError("Akun belum terdaftar. Silakan daftar dulu.");
+        finish();
+        return;
+      }
+      if(u.pass!==passH){
+        auError("Password salah.");
+        finish();
+        return;
+      }
       finish();
-      return;
+      enterGame(u.name || name, true);
     }
-
-    // Update data lokal dengan data cloud terbaru jika ada
-    const targetName = u.display_name || u.name || name;
-    users[key] = {name: targetName, pass: passH, created: Date.now()};
-    saveUsers(users);
-
-    if(cloudUser && cloudUser.save_data){
-      try {
-        localStorage.setItem("aab-state-v2:"+targetName, JSON.stringify(cloudUser.save_data));
-      }catch(e){}
-    }
-
-    finish();
-    enterGame(targetName, true);
   }
 }
 document.getElementById("adOk").onclick=()=>{
