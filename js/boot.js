@@ -304,6 +304,24 @@ function setAuthMode(m){
     : 'Daftar untuk <b>terbangun sebagai Player</b> — progresmu langsung tersimpan di Cloud.';
 }
 function auError(msg){document.getElementById("auErr").textContent=msg;}
+/* Layer ambient layar login: titik cyan naik (dipakai di prototipe;
+   belum ke-port di Unit A/B, jadi ditambahkan Unit C). Dipanggil sekali. */
+function spawnLoginParticles(n){
+  n=n||18;
+  const w=document.getElementById("acParts");
+  if(!w||w.childElementCount) return;
+  const frag=document.createDocumentFragment();
+  for(let i=0;i<n;i++){
+    const p=document.createElement("div");
+    p.className="ac-pt";
+    p.style.left=(Math.random()*100)+"%";
+    p.style.bottom="-6px";
+    p.style.animationDuration=(6+Math.random()*7).toFixed(2)+"s";
+    p.style.animationDelay=(-Math.random()*7).toFixed(2)+"s"; /* negatif: langsung tersebar, tak kosong di menit awal */
+    frag.appendChild(p);
+  }
+  w.appendChild(frag);
+}
 async function submitAuth(){
   const btn=document.getElementById("auSubmit");
   const name=document.getElementById("auUser").value.trim();
@@ -510,6 +528,7 @@ function boot(){
   const last=(s&&users[s.toLowerCase()])?users[s.toLowerCase()].name:"";
   setAuthMode(Object.keys(users).length?"login":"register");
   if(last){document.getElementById("auUser").value=last;document.getElementById("auPass").focus();}
+  spawnLoginParticles();
   
   /* ========== Roll + Deck badge init ========== */
   rollCountBadge();
