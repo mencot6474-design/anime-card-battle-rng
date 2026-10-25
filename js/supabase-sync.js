@@ -573,11 +573,12 @@ const CloudDB = {
     return await this._authRpc(username, "start_world_boss_run", args);
   },
 
-  /* dmg = damage ABSOLUT run ini (bukan persen). Server memotong pool 1T boss itu. */
+  /* dmg = damage ABSOLUT run ini (bukan persen, tanpa pengali). Server memotong
+     pool 10B boss itu dan membatasinya ke _wb_dmg_cap(save) di server. */
   async wbSubmit(username, runId, dmg, boss) {
     if (!username) return null;
     const args = {
-      p_dmg: Math.max(0, Math.min(1000000000000, Math.round(Number(dmg) || 0))),
+      p_dmg: Math.max(0, Math.min(10000000000, Math.round(Number(dmg) || 0))),
       p_run_id: runId,
     };
     if (boss) args.p_boss = boss;

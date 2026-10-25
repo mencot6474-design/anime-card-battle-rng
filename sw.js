@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v176-rpcGuard';
+const CACHE_NAME = 'anime-card-battle-v177-realDmg';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

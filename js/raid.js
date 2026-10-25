@@ -51,7 +51,7 @@ function wbAttLabel(){
   return WB_BOSSES.map((b,i)=>{const n=wbAttOf(i);return b.key.toUpperCase()+" "+(n==null?"—":n+"/3");}).join(" · ");
 }
 function wbReduceMotion(){return !!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches);}
-/* Pool World Boss SELALU 1T — modifier harian tidak menggeser HP boss lagi,
+/* Pool World Boss SELALU 10B — modifier harian tidak menggeser HP boss lagi,
    karena damage run dihitung ABSOLUT terhadap pool (bukan persen). */
 function wbBossOf(diff){
   return raidBossOf(diff);
@@ -90,7 +90,7 @@ function fmtBig(n){
 }
 function wbPoolVals(i){
   const d=wbData(i);
-  const pool=Number(d&&d.hp_pool)||1e12;
+  const pool=Number(d&&d.hp_pool)||1e10;
   if(!d)return {pool,left:pool};      // belum ada state dari server -> pool utuh
   const raw=typeof d.hp_left==="number"?d.hp_left:pool;
   return {pool,left:Math.max(0,Math.min(pool,raw))};
@@ -613,7 +613,7 @@ function raidStep(){
   if(raid.turn>raid.cap){ if(raid.hp>0){ raidFinisher(()=>endRaid()); } else { endRaid(); } return; }
   const fx=raid.fx;
   if(fx.statGrow){raid.atk=Math.round(raid.atk*(1+(fx.statGrow.pct||15)/100));setTimeout(()=>{if(raid&&!raid.over)floatText(".fighter.me","STATS +"+(fx.statGrow.pct||15)+"%","heal");},160);}
-  const dmg=Math.round(raid.atk*(fx.dmgMult||1)*RAID_DMG_SCALE), id=raid.cid;
+  const dmg=Math.round(raid.atk*(fx.dmgMult||1)), id=raid.cid;
   const domainActive=fx.domain&&id==="CH_EX_GOJO"&&Math.random()*100<(fx.domain.chance||100);
   const hits=[1];
   let crit=false,purple=false,ranton=false,barrageN=0,iceBlastN=0,wePhase=-1,gammaRayHit=false;
@@ -725,7 +725,7 @@ function raidStep(){
     raid.havocGuard=false;
     raid.havocUses=(raid.havocUses||0)+1;
     havocFired=true;
-    const rk=Math.round(raid.atk*(fx.havocRocket.pct||50)/100*RAID_DMG_SCALE);
+    const rk=Math.round(raid.atk*(fx.havocRocket.pct||50)/100);
     raid.hp-=rk;raid.dealt+=rk;
     if(window.havocRocketFx)havocRocketFx({fromSel:".fighter.me",toSel:".fighter.foe"});
     try{if(window.CyberSfx)window.CyberSfx.aoeCharge();}catch(e){}
@@ -799,7 +799,8 @@ function endRaid(){
   const pct=raid.max>0?(raid.max-Math.max(0,raid.hp))/raid.max*100:0;
   raid.pct=pct;raid.dmg=dmg;
   sfx.win();
-  /* Kirim DAMAGE ABSOLUT ke server (server potong pool 1T boss itu + simpan best_dmg). */
+  /* Kirim DAMAGE ABSOLUT (damage kartu apa adanya) ke server; server potong pool
+     boss itu + simpan best_dmg, lalu membatasi ke _wb_dmg_cap(save). */
   const runId=wbRunId, runBossKey=wbRunBoss;
   wbRunId=null;wbRunBoss=null;
   if(runId&&window.CloudDB&&currentUser){
@@ -842,7 +843,7 @@ function renderRaidResult(){
     <div class="eyebrow">HASIL WORLD BOSS</div>
     <div class="rr-title disp${pct>=100?"":" lose"}">${pct>=100?"BOSS TUMBANG":"RUN SELESAI"}</div>
     <div class="rr-pct">Damage run ini <b>${fmtBig(dmg)}</b></div>
-    <div class="rr-token">${pct.toFixed(2)}% <span>DARI POOL 1T</span></div>
+    <div class="rr-token">${pct.toFixed(2)}% <span>DARI POOL 10B</span></div>
     ${wbLine}
     <div class="rr-tier">Damage terbaik 1 run masuk papan peringkat harian. Reward rank diklaim besok di hub.</div>
     <div class="rr-actions"><button class="btn-grad" id="rrAgain">RAID LAGI</button><button class="btn-ghost" id="rrHub">KEMBALI</button></div>
