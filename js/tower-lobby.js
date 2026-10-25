@@ -783,9 +783,9 @@ function towerEnd(win){
       if(!(typeof currentUser!=="undefined"&&currentUser&&window.CloudDB&&window.CloudDB.claimTowerCoins))return;
       let res=null;
       try{res=await window.CloudDB.claimTowerCoins(currentUser,f);}catch(e){res=null;}
-      if(coinLocal&&res&&!res.ok&&res.msg==="DAILY_CAP"){
+      if(coinLocal&&res&&!res.ok&&(res.msg==="DAILY_CAP"||res.msg==="UNREACHABLE")){
         state.coins=Math.max(0,(state.coins||0)-r.coins);
-        try{toast("BATAS COIN HARIAN","Coin lantai ini tidak dibayar server","#f87171");}catch(e){}
+        try{toast(res.msg==="UNREACHABLE"?"LANTAI BELUM TERBUKA":"BATAS COIN HARIAN","Coin lantai ini tidak dibayar server","#f87171");}catch(e){}
       }
       try{save();renderShell();}catch(e){}
     })();
@@ -822,9 +822,9 @@ function towerEnd(win){
       if(!(typeof currentUser!=="undefined"&&currentUser&&window.CloudDB&&window.CloudDB.claimTowerTokens))return;
       let res=null;
       try{res=await window.CloudDB.claimTowerTokens(currentUser,f);}catch(e){res=null;}
-      if(res&&!res.ok&&res.msg==="DAILY_CAP"){
+      if(res&&!res.ok&&(res.msg==="DAILY_CAP"||res.msg==="UNREACHABLE")){
         state.infTokens=Math.max(0,(state.infTokens||0)-tok);
-        try{toast("BATAS TOKEN HARIAN","Token lantai ini tidak dibayar server","#f87171");}catch(e){}
+        try{toast(res.msg==="UNREACHABLE"?"LANTAI BELUM TERBUKA":"BATAS TOKEN HARIAN","Token lantai ini tidak dibayar server","#f87171");}catch(e){}
       }
       try{save();renderShell();}catch(e){}
     })();

@@ -3179,7 +3179,7 @@ function finish(win){
       let res=null;
       try{res=await window.CloudDB.claimStoryCoins(currentUser,lv,state.diff);}catch(e){res=null;}
       if(res&&res.ok){try{renderShell();save();}catch(e){}return;}
-      if(coinLocal&&res&&(res.msg==="COOLDOWN"||res.msg==="ALREADY"||res.msg==="DAILY_CAP")){
+      if(coinLocal&&res&&(res.msg==="COOLDOWN"||res.msg==="ALREADY"||res.msg==="DAILY_CAP"||res.msg==="UNREACHABLE")){
         state.coins=Math.max(0,(state.coins||0)-reward);
       }
       /* res null = jaringan: saldo tetap angka server (tidak ada tambahan lokal). */

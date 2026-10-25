@@ -155,6 +155,19 @@ const CloudDB = {
         if (Array.isArray(res.artSlots) && JSON.stringify(ST.artSlots) !== JSON.stringify(res.artSlots)) {
           ST.artSlots = res.artSlots; dirty = true;
         }
+        /* 0029: pack instan, cuaca, dan stok potion milik server. Nilai yang
+           diinspect lewat F12 sudah di-nol-kan merge, jadi state lokal ikut
+           dikoreksi (kalau tidak, item "hantu" tetap tampil sampai reload). */
+        if (res.rollPacks && typeof res.rollPacks === "object" && JSON.stringify(ST.rollPacks) !== JSON.stringify(res.rollPacks)) {
+          ST.rollPacks = res.rollPacks; dirty = true;
+        }
+        if (res.weather !== undefined && JSON.stringify(ST.weather || null) !== JSON.stringify(res.weather || null)) {
+          ST.weather = res.weather || null; dirty = true;
+        }
+        if (typeof res.potions === "number" && ST.potions !== res.potions) { ST.potions = res.potions; dirty = true; }
+        if (typeof res.mythicPotions === "number" && ST.mythicPotions !== res.mythicPotions) { ST.mythicPotions = res.mythicPotions; dirty = true; }
+        if (Array.isArray(res.luckPots) && JSON.stringify(ST.luckPots) !== JSON.stringify(res.luckPots)) { ST.luckPots = res.luckPots; dirty = true; }
+        if (Array.isArray(res.speedPots) && JSON.stringify(ST.speedPots) !== JSON.stringify(res.speedPots)) { ST.speedPots = res.speedPots; dirty = true; }
         if (dirty) this._paint();
       }
       /* 0028: penalti coin. Server menolak/menghapus percobaan tulis coin atau
@@ -165,6 +178,17 @@ const CloudDB = {
             ? "ITEM TANPA BAYAR · COIN DI-RESET 0"
             : "COIN TIDAK SAH · SALDO DI-RESET 0";
           if (typeof toast === "function") toast("PELANGGARAN TERDETEKSI", why, "#f87171");
+        } catch (e) {}
+      }
+      /* 0029: nilai save yang tidak sah (pack, cuaca, potion, progres, profil,
+         XP delta, klaim hadiah) sudah di-nol-kan server. Beri tahu pemain field
+         mana yang kena supaya tidak dikira bug. */
+      if (Array.isArray(res.tamper) && res.tamper.length) {
+        try {
+          const fields = Array.from(new Set(res.tamper.map(t => t && t.field).filter(Boolean))).slice(0, 4);
+          if (typeof toast === "function") {
+            toast("PELANGGARAN TERDETEKSI", "NILAI TIDAK SAH DI-NOL-KAN · " + fields.join(", "), "#f87171");
+          }
         } catch (e) {}
       }
     }
@@ -302,6 +326,14 @@ const CloudDB = {
   async verifyAndDeductGems(username, cost, packKey, itemType, qty) {
     qty = Math.max(1, parseInt(qty, 10) || 1);
     const ST = this._st();
+    /* 0029: pack instan dibeli lewat RPC `buy_pack` — harga & jumlah pack
+       ditentukan server (`pack_def` + `player_packs`). Jalur spend_gems tetap
+       dipakai untuk pet/artefak/cuaca. */
+    if (username && itemType === "pack" && typeof this.buyPack === "function") {
+      const bp = await this.buyPack(username, packKey, qty);
+      if (!bp || !bp.ok) return { ok: false, msg: (bp && bp.msg) || "GAGAL BELI PACK" };
+      return { ok: true, balance: bp.balance };
+    }
     if (!username) {
       // Guest mode: local check
       if (!ST || (ST.premiumGems || 0) < cost) return { ok: false, msg: "GEMS TIDAK CUKUP" };
@@ -472,6 +504,26 @@ const CloudDB = {
       if (typeof res.premiumGems === "number" && ST.premiumGems !== res.premiumGems) { ST.premiumGems = res.premiumGems; dirty = true; }
       if (Array.isArray(res.petOwned) && JSON.stringify(ST.petOwned) !== JSON.stringify(res.petOwned)) { ST.petOwned = res.petOwned; dirty = true; }
       if (Array.isArray(res.artOwned) && JSON.stringify(ST.artOwned) !== JSON.stringify(res.artOwned)) { ST.artOwned = res.artOwned; dirty = true; }
+      if (dirty) this._paint();
+    }
+    return res;
+  },
+
+  /* ===== BELI PACK INSTAN (0029) =====
+     Jumlah pack instan sekarang milik server (`player_packs`). Harga diambil
+     dari tabel `pack_def`, jadi F12 yang menulis state.rollPacks = 9999 tidak
+     menghasilkan apa pun: merge berikutnya membangun ulang rollPacks dari
+     ledger + jatah klaim tower/World Boss, kelebihannya di-nol-kan. */
+  async buyPack(username, packId, qty) {
+    if (!username || !packId) return { ok: false, msg: "BAD_INPUT" };
+    const n = Math.max(1, Math.min(25, parseInt(qty, 10) || 1));
+    const res = await this._authRpc(username, "buy_pack", { p_pack: String(packId), p_qty: n });
+    if (!res) return { ok: false, msg: "GAGAL MENGHUBUNGI CLOUD" };
+    const ST = this._st();
+    if (ST && res.ok) {
+      let dirty = false;
+      if (typeof res.balance === "number" && ST.premiumGems !== res.balance) { ST.premiumGems = res.balance; dirty = true; }
+      if (res.rollPacks && typeof res.rollPacks === "object") { ST.rollPacks = res.rollPacks; dirty = true; }
       if (dirty) this._paint();
     }
     return res;

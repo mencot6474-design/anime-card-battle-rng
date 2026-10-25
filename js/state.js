@@ -266,7 +266,8 @@ function _gemDone(res,okTitle,okMsg,onFail){
   }else{
     if(onFail)try{onFail();}catch(e){}
     try{save();}catch(e){}
-    try{toast("GEM GAGAL",(res&&res.msg)||"Coba lagi nanti","#f87171");}catch(e){}
+    const why=(res&&res.msg)==="UNREACHABLE"?"PROGRES BELUM TERBUKA":((res&&res.msg)||"Coba lagi nanti");
+    try{toast("GEM GAGAL",why,"#f87171");}catch(e){}
   }
 }
 function _gemUser(){
