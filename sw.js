@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v171-noDevUnlock';
+const CACHE_NAME = 'anime-card-battle-v172-itemLedger';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

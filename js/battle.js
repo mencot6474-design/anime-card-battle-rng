@@ -3163,8 +3163,13 @@ function finish(win){
   clearTimeout(bt.timer);bt.over=true;
   const lv=bt.lv,first=!diffProg()[state.diff][lv];
   const reward=win?(first?firstClearReward(lv):Math.round(firstClearReward(lv)*.2)):0;
+  /* 0028: coin HANYA ditambah lokal saat tidak ada sesi cloud. Kalau ada sesi,
+     saldo menunggu jawaban RPC (server yang membayar). Dulu angka optimis
+     ditahan walau klaim gagal, sehingga coin lokal bisa jauh di atas saldo
+     server — persis pola yang dipakai penalti 0028 untuk mendeteksi F12. */
+  const coinLocal=!(typeof currentUser!=="undefined"&&currentUser&&window.CloudDB&&window.CloudDB.claimStoryCoins);
   if(win&&!first)storySetCd(lv);
-  if(win){state.cleared[lv]=true;diffProg()[state.diff][lv]=true;state.coins+=reward;xpGain(20);
+  if(win){state.cleared[lv]=true;diffProg()[state.diff][lv]=true;if(coinLocal)state.coins+=reward;xpGain(20);
     fanfare();
     /* 0025: coin dibayar server (first clear sekali, replay ber-cooldown 5 menit).
        Angka lokal di atas cuma untuk UI; klaim yang menetapkan saldo sebenarnya.
@@ -3174,10 +3179,10 @@ function finish(win){
       let res=null;
       try{res=await window.CloudDB.claimStoryCoins(currentUser,lv,state.diff);}catch(e){res=null;}
       if(res&&res.ok){try{renderShell();save();}catch(e){}return;}
-      if(res&&(res.msg==="COOLDOWN"||res.msg==="ALREADY"||res.msg==="DAILY_CAP")){
+      if(coinLocal&&res&&(res.msg==="COOLDOWN"||res.msg==="ALREADY"||res.msg==="DAILY_CAP")){
         state.coins=Math.max(0,(state.coins||0)-reward);
       }
-      /* res null = offline/jaringan: biarkan optimis, merge akan mengoreksi. */
+      /* res null = jaringan: saldo tetap angka server (tidak ada tambahan lokal). */
       try{renderShell();save();}catch(e){}
     })();
   }else sfx.lose();

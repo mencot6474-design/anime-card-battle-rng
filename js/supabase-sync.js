@@ -140,7 +140,32 @@ const CloudDB = {
           if (typeof res.rebirth_count === "number" && ST.rebirth.count !== res.rebirth_count) { ST.rebirth.count = res.rebirth_count; dirty = true; }
           if (typeof res.rebirth_essence === "number" && ST.rebirth.essence !== res.rebirth_essence) { ST.rebirth.essence = res.rebirth_essence; dirty = true; }
         }
+        /* 0028: kepemilikan pet/artefak milik server (ledger). Item yang tidak
+           dibayar sudah dibuang merge — samakan state lokal supaya tidak ada
+           "item hantu" yang tetap tampil sampai reload. */
+        if (Array.isArray(res.petOwned) && JSON.stringify(ST.petOwned) !== JSON.stringify(res.petOwned)) {
+          ST.petOwned = res.petOwned; dirty = true;
+        }
+        if (Array.isArray(res.artOwned) && JSON.stringify(ST.artOwned) !== JSON.stringify(res.artOwned)) {
+          ST.artOwned = res.artOwned; dirty = true;
+        }
+        if (res.petEquipped !== undefined && (ST.petEquipped || null) !== (res.petEquipped || null)) {
+          ST.petEquipped = res.petEquipped || null; dirty = true;
+        }
+        if (Array.isArray(res.artSlots) && JSON.stringify(ST.artSlots) !== JSON.stringify(res.artSlots)) {
+          ST.artSlots = res.artSlots; dirty = true;
+        }
         if (dirty) this._paint();
+      }
+      /* 0028: penalti coin. Server menolak/menghapus percobaan tulis coin atau
+         item tanpa bayar, jadi pemain tahu kenapa saldonya jadi 0. */
+      if (res.penalty) {
+        try {
+          const why = res.penalty === "ITEM_NOT_PAID"
+            ? "ITEM TANPA BAYAR · COIN DI-RESET 0"
+            : "COIN TIDAK SAH · SALDO DI-RESET 0";
+          if (typeof toast === "function") toast("PELANGGARAN TERDETEKSI", why, "#f87171");
+        } catch (e) {}
       }
     }
     return res;
@@ -428,6 +453,28 @@ const CloudDB = {
 
   buyWbCoins(username) {
     return this._coinRpc(username, "buy_wb_coins", {});
+  },
+
+  /* ===== BELI ITEM (0028) =====
+     Pet/artefak berbayar coin TIDAK boleh dibeli lokal: dulu F12 cukup menulis
+     state.coins lalu bpBuyArt/bpBuyPet, dan item-nya ikut tersimpan. Sekarang
+     harga diambil dari tabel server (`item_def`), saldo dipotong + kepemilikan
+     dicatat atomik di RPC `buy_item`. Respons membawa saldo & daftar item final
+     sehingga state lokal langsung dikoreksi. */
+  async buyItem(username, itemId) {
+    if (!username || !itemId) return { ok: false, msg: "BAD_INPUT" };
+    const res = await this._authRpc(username, "buy_item", { p_item_id: String(itemId) });
+    if (!res) return { ok: false, msg: "GAGAL MENGHUBUNGI CLOUD" };
+    const ST = this._st();
+    if (ST) {
+      let dirty = false;
+      if (typeof res.coins_balance === "number" && ST.coins !== res.coins_balance) { ST.coins = res.coins_balance; dirty = true; }
+      if (typeof res.premiumGems === "number" && ST.premiumGems !== res.premiumGems) { ST.premiumGems = res.premiumGems; dirty = true; }
+      if (Array.isArray(res.petOwned) && JSON.stringify(ST.petOwned) !== JSON.stringify(res.petOwned)) { ST.petOwned = res.petOwned; dirty = true; }
+      if (Array.isArray(res.artOwned) && JSON.stringify(ST.artOwned) !== JSON.stringify(res.artOwned)) { ST.artOwned = res.artOwned; dirty = true; }
+      if (dirty) this._paint();
+    }
+    return res;
   },
 
   /* ===== TOKEN WB/INF (0026) =====

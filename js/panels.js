@@ -1625,11 +1625,29 @@ function renderBpPets(){
   <div class="bp-grid6">${cards}</div>`;
 }
 
-function bpBuyArt(id){
+/* Pesan galat RPC beli item (0028) -> teks yang bisa dibaca pemain. */
+function bpBuyErr(res){
+  const m=(res&&res.msg)||"";
+  const map={COIN_KURANG:"COIN KURANG",GEMS_TIDAK_CUKUP:"GEMS KURANG",BAD_ITEM:"ITEM TIDAK DIKENAL",
+             NOT_SOLD_HERE:"TIDAK DIJUAL DI SINI",PLAYER_NOT_FOUND:"AKUN BELUM TERSINKRON"};
+  return map[m]||m||"SERVER TIDAK MERESPONS";
+}
+async function bpBuyArt(id){
   const d=ART_DEFS.find(x=>x.id===id);if(!d||state.artOwned.includes(id))return;
   if(d.src&&d.src!=="coin"){toast("TIDAK DIJUAL DI SINI",d.src==="raid"?"BELI DI TOKO WORLD BOSS PAKAI TOKEN":"DROP BASE DI INF TOWER","#fcd34d");return;}
   if((state.coins||0)<d.price){beep(200,.09,"square",.06);toast("COIN KURANG","BUTUH ${coinIcon(15)} "+fmt(d.price),"#f87171");return;}
-  coinSpend(d.price);state.artOwned.push(id);save();
+  /* 0028: beli lewat server — harga & saldo diperiksa di RPC buy_item, jadi
+     coin hasil edit F12 ditolak di sini (bukan lagi masuk lokal lalu dibuang). */
+  const online=typeof currentUser!=="undefined"&&currentUser&&window.CloudDB&&window.CloudDB.buyItem;
+  if(online){
+    let res=null;
+    try{res=await window.CloudDB.buyItem(currentUser,id);}catch(e){res=null;}
+    if(!res||!res.ok){beep(200,.09,"square",.06);toast("TRANSAKSI GAGAL",bpBuyErr(res),"#f87171");return;}
+    if(!state.artOwned.includes(id))state.artOwned.push(id);
+  }else{
+    coinSpend(d.price);state.artOwned.push(id);
+  }
+  save();
   beep(680,.12,"triangle",.09);setTimeout(()=>beep(900,.12,"triangle",.08),90);
   toast(d.name,luckTxt(d),d.color);renderShell();renderBackpackPanel();
 }
@@ -1642,11 +1660,21 @@ function bpToggleArt(id){
   if(!battleLive()&&typeof render==="function")render();
 }
 function bpArtSlot(i){const id=state.artSlots[i];if(id)bpToggleArt(id);}
-function bpBuyPet(id){
+async function bpBuyPet(id){
   const d=PET_DEFS.find(x=>x.id===id);if(!d||state.petOwned.includes(id))return;
   if(d.src&&d.src!=="coin"){toast("TIDAK DIJUAL DI SINI",d.src==="raid"?"BELI DI TOKO WORLD BOSS PAKAI TOKEN":"DROP BASE DI INF TOWER","#fcd34d");return;}
   if((state.coins||0)<d.price){beep(200,.09,"square",.06);toast("COIN KURANG","BUTUH ${coinIcon(15)} "+fmt(d.price),"#f87171");return;}
-  coinSpend(d.price);state.petOwned.push(id);save();
+  /* 0028: idem bpBuyArt — pembelian coin divalidasi server. */
+  const online=typeof currentUser!=="undefined"&&currentUser&&window.CloudDB&&window.CloudDB.buyItem;
+  if(online){
+    let res=null;
+    try{res=await window.CloudDB.buyItem(currentUser,id);}catch(e){res=null;}
+    if(!res||!res.ok){beep(200,.09,"square",.06);toast("TRANSAKSI GAGAL",bpBuyErr(res),"#f87171");return;}
+    if(!state.petOwned.includes(id))state.petOwned.push(id);
+  }else{
+    coinSpend(d.price);state.petOwned.push(id);
+  }
+  save();
   beep(680,.12,"triangle",.09);setTimeout(()=>beep(900,.12,"triangle",.08),90);
   toast(d.name,luckTxt(d),"#7DF9FF");renderShell();renderBackpackPanel();
 }

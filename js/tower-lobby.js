@@ -772,14 +772,18 @@ function towerEnd(win){
   const f=towerRun.floor;
   if(win){
     /* Menang lantai: kasih hadiah lalu LANGSUNG naik lantai berikutnya tanpa overlay. */
-    const r=towerReward(f); state.coins+=r.coins;
+    const r=towerReward(f);
+    /* 0028: coin ditambah lokal HANYA tanpa sesi cloud; kalau ada sesi, saldo
+       menunggu RPC claim_tower_coins. Lihat catatan di battle.js finish(). */
+    const coinLocal=!(typeof currentUser!=="undefined"&&currentUser&&window.CloudDB&&window.CloudDB.claimTowerCoins);
+    if(coinLocal)state.coins+=r.coins;
     /* 0025: coin lantai dibayar server (claim_tower_coins), batas claim/hari +
        breaker coin harian. Gagal → angka lokal ditarik balik, saldo server menang. */
     (async()=>{
       if(!(typeof currentUser!=="undefined"&&currentUser&&window.CloudDB&&window.CloudDB.claimTowerCoins))return;
       let res=null;
       try{res=await window.CloudDB.claimTowerCoins(currentUser,f);}catch(e){res=null;}
-      if(res&&!res.ok&&res.msg==="DAILY_CAP"){
+      if(coinLocal&&res&&!res.ok&&res.msg==="DAILY_CAP"){
         state.coins=Math.max(0,(state.coins||0)-r.coins);
         try{toast("BATAS COIN HARIAN","Coin lantai ini tidak dibayar server","#f87171");}catch(e){}
       }
