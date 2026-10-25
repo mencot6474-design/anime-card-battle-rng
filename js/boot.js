@@ -337,12 +337,35 @@ async function submitAuth(){
   const finish=()=>{document.getElementById("authSpin").classList.add("hidden");btn.disabled=false;btn.classList.remove("press");};
   const users=getUsers(), key=name.toLowerCase(), passH=hashPass(pass);
 
-  // 1. Cek Cloud Supabase dulu jika tersedia
-  let cloudUser=null;
+  /* 1. Identitas cloud. Login: jalur Auth (JWT) dulu — signIn = bukti password,
+     lalu save dibaca lewat token (0020). Pemain lama yang belum punya akun Auth
+     diverifikasi lewat RPC check_credentials (definer), lalu sesi dibuat +
+     uid ditautkan. Anon tidak lagi dipakai sebagai bukti "akun ada" (2c). */
+  let cloudUser=null, cloudOk=false;
   if(window.CloudDB){
-    try {
-      cloudUser = await window.CloudDB.getUser(key);
-    } catch(err){ console.warn("Cloud lookup err:", err); }
+    if(authMode==="register"){
+      try {
+        cloudUser = await window.CloudDB.getUser(key);
+      } catch(err){ console.warn("Cloud lookup err:", err); }
+    }else{
+      const jwt = window.CloudAuth ? await window.CloudAuth.authenticate(key, passH) : null;
+      if(jwt && jwt.ok){
+        cloudOk=true;
+        cloudUser={username:jwt.username, save_data:jwt.save_data};
+      }else{
+        let chk=null;
+        try { chk = await window.CloudDB.checkCredentials(key, passH); }
+        catch(err){ console.warn("checkCredentials err:", err); }
+        if(chk && chk.ok){
+          cloudOk=true;
+          /* Ditautkan dulu (bukan tembak-lari): enterGame langsung membaca save lewat JWT. */
+          if(window.CloudAuth){
+            try { await window.CloudAuth.connect(key, passH); }
+            catch(err){ console.warn("Auth connect err:", err); }
+          }
+        }
+      }
+    }
   }
 
   if(authMode==="register"){
@@ -372,22 +395,12 @@ async function submitAuth(){
     document.getElementById("authDone").classList.remove("hidden");
   }else{
     // Mode LOGIN: prioritas cloud, fallback lokal
-    if(cloudUser){
-      // Akun ada di cloud -> verifikasi lewat RPC definer (0017).
-      // Client tidak bisa lagi baca kolom password, jadi tidak bandingkan hash lokal.
-      let chk=null;
-      try { chk = await window.CloudDB.checkCredentials(key, passH); }
-      catch(err){ console.warn("checkCredentials err:", err); }
-      if(!chk || !chk.ok){
-        auError("Password salah.");
-        finish();
-        return;
-      }
+    if(cloudOk){
       const targetName = name;
       users[key] = {name: targetName, pass: passH, created: Date.now()};
       saveUsers(users);
       if(window.CloudAuth) window.CloudAuth.kick(targetName);
-      if(cloudUser.save_data){
+      if(cloudUser && cloudUser.save_data){
         try {
           localStorage.setItem("aab-state-v2:"+targetName, JSON.stringify(cloudUser.save_data));
         }catch(e){}

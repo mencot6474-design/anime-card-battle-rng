@@ -29,7 +29,14 @@ const CloudDB = {
   },
 
   async getUser(username) {
-    const data = await this._request(`player_saves?username=eq.${encodeURIComponent(username.toLowerCase())}&select=*`);
+    const key = String(username || "").toLowerCase();
+    /* Fase 2b: save SENDIRI dibaca lewat JWT (get_my_save), bukan anon.
+       Fallback anon di bawah cuma jaring transisi; dicabut saat RLS 2c. */
+    if (window.CloudAuth && key) {
+      const own = await window.CloudAuth.mySave(key);
+      if (own) return { username: own.username, save_data: own.save_data, updated_at: own.updated_at };
+    }
+    const data = await this._request(`player_saves?username=eq.${encodeURIComponent(key)}&select=username,save_data,updated_at`);
     if (data && data.length > 0) return data[0];
     return null;
   },
@@ -459,6 +466,12 @@ const CloudDB = {
 
   async getSessionId(username) {
     if (!username) return null;
+    /* Fase 2b: heartbeat lewat JWT (RPC 0020), tetap ±50 byte. Fallback anon
+       hanya masa transisi sebelum RLS owner-only (2c). */
+    if (window.CloudAuth) {
+      const sid = await window.CloudAuth.mySessionId(String(username).toLowerCase());
+      if (sid !== null && sid !== undefined) return sid || null;
+    }
     /* Lightweight: hanya tarik 1 kolom JSONB current_session_id dari save_data.
        Sebelumnya panggil getUser() yang select=* → download SELURUH payload
        save_data (~10–50KB) tiap heartbeat. Dengan select=sid:save_data->>...,
@@ -548,7 +561,8 @@ const AUTH_SESS_KEY = "aab-auth-sess";
 const CloudAuth = {
   _k(u) { return String(u || "").toLowerCase(); },
   _email(u) { return this._k(u) + "@game.invalid"; },
-  _pass(u) { const h = CloudDB._localPassHash(u); return h ? "acb_" + h + "_v1" : ""; },
+  _pass(u) { return this._apw(CloudDB._localPassHash(u)); },
+  _apw(hash) { return hash ? "acb_" + hash + "_v1" : ""; },
   _all() { try { return JSON.parse(localStorage.getItem(AUTH_SESS_KEY)) || {}; } catch (e) { return {}; } },
   _store(u, d) {
     if (!d || !d.access_token) return null;
@@ -581,6 +595,71 @@ const CloudAuth = {
     if (!s || !s.rt) return null;
     const r = await this._post("token?grant_type=refresh_token", { refresh_token: s.rt });
     return r.ok ? this._store(u, r.data) : null;
+  },
+  /** Sesi yang masih layak dipakai; refresh otomatis kalau access token basi. */
+  async _fresh(u) {
+    const k = this._k(u);
+    const s = this.session(k);
+    if (!s) return null;
+    if (s.exp > Date.now()) return s;
+    return await this.refresh(k);
+  },
+  async _rpcJwt(fn, args, tok) {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+        method: "POST",
+        headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${tok}`, "Content-Type": "application/json" },
+        body: JSON.stringify(args || {}),
+      });
+      const txt = await res.text();
+      if (!res.ok) return null;
+      try { return JSON.parse(txt); } catch (e) { return null; }
+    } catch (e) { return null; }
+  },
+  /** Save MILIK PEMILIK TOKEN (RPC 0020), bukan baca anon. null = tak ada. */
+  async mySave(u) {
+    const s = await this._fresh(u);
+    if (!s) return null;
+    const d = await this._rpcJwt("get_my_save", {}, s.at);
+    return d && d.ok ? d : null;
+  },
+  async mySessionId(u) {
+    const s = await this._fresh(u);
+    if (!s) return null;
+    return await this._rpcJwt("get_my_session_id", {}, s.at);
+  },
+  /** Login cepat: bukti password = signIn Auth, save dibaca lewat JWT. */
+  async authenticate(u, passH) {
+    const key = this._k(u);
+    if (!key || !passH) return { ok: false, reason: "no_pass" };
+    const r = await this._post("token?grant_type=password", { email: this._email(key), password: this._apw(passH) });
+    if (!r.ok) return { ok: false, reason: "no_auth" };
+    this._store(key, r.data);
+    const sv = await this.mySave(key);
+    if (!sv) return { ok: false, reason: "no_save" };
+    this._linked[key] = true;
+    return { ok: true, username: sv.username, save_data: sv.save_data, updated_at: sv.updated_at };
+  },
+  /** Akun lama: hash sudah diverifikasi server (check_credentials) -> buat
+      sesi Auth, tautkan uid, lalu save-nya bisa dibaca lewat JWT. */
+  async connect(u, passH) {
+    const key = this._k(u);
+    if (!key || !passH) return { ok: false, reason: "no_pass" };
+    let s = this.session(key);
+    if (!s || s.exp <= Date.now()) {
+      let r = await this._post("token?grant_type=password", { email: this._email(key), password: this._apw(passH) });
+      if (!r.ok) {
+        if (await this._confirmOn()) return { ok: false, reason: "confirm_email_on" };
+        r = await this._post("signup", { email: this._email(key), password: this._apw(passH) });
+        if (!r.ok) return { ok: false, reason: "rejected" };
+        if (!r.data.access_token) return { ok: false, reason: "no_session" };
+      }
+      this._store(key, r.data);
+      s = this.session(key);
+    }
+    const lr = await this.link(key).catch(() => null);
+    if (lr && lr.ok) this._linked[key] = true;
+    return { ok: true, uid: (s || {}).uid || "", link: lr ? (lr.ok ? "ok" : (lr.msg || lr.reason)) : "err" };
   },
   /** Confirm email ON = signUp balas user tanpa sesi. Akun seperti itu tak
       mungkin dikonfirmasi (email `.invalid`), jadi jangan pernah dibuat.
