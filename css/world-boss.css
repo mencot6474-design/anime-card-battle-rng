@@ -812,3 +812,34 @@ body.on-raid:has(.wbr-hub) main#app > .tw-page{
 }
 .wbr-topline .wbr-dot::after{width:38px;height:38px}
 .wbr-topline .wbr-back{margin-left:2px}
+
+/* ==========================================================================
+   HOLOGRAM world card — bikin dudukan proyektor + berkas cahaya KEBACA.
+   Pedestal lama cuma ellipse cyan redup yang nyatu sama floor gelap, dan
+   nggak ada cahaya dari proyektor ke kartu. Sekarang: disc terang + ring +
+   bloom, plus kerucut cahaya naik ke belakang kartu. Animasi murni opacity.
+   ========================================================================== */
+.wbr-ped{
+  background:radial-gradient(50% 50% at 50% 50%,rgba(185,255,255,.8),rgba(53,240,255,.34) 44%,rgba(53,240,255,.08) 64%,transparent 78%);
+  width:min(30%,280px);height:54px;
+  box-shadow:0 0 54px rgba(53,240,255,.4),0 0 22px rgba(125,249,255,.42);
+  filter:blur(1.5px);
+}
+.wbr-ped::after{
+  inset:18% 24%;border:1.5px solid rgba(195,255,255,.6);
+  box-shadow:0 0 12px rgba(53,240,255,.45),inset 0 0 9px rgba(53,240,255,.35);
+}
+/* berkas cahaya dari proyektor naik ke belakang kartu */
+.wbr-beam{
+  inset:auto;left:50%;bottom:17%;width:min(28%,260px);height:34%;
+  transform:translateX(-50%);
+  background:linear-gradient(to top,rgba(125,249,255,.26),rgba(53,240,255,.08) 44%,transparent 84%);
+  clip-path:polygon(40% 100%,60% 100%,84% 0,16% 0);
+  mix-blend-mode:screen;filter:blur(1px);opacity:.7;
+  animation:wbBeam 4.2s ease-in-out infinite;
+}
+@keyframes wbBeam{0%,100%{opacity:.85}45%{opacity:.6}50%{opacity:1}72%{opacity:.78}}
+@media(prefers-reduced-motion:reduce){
+  .wbr-beam{animation:none!important}
+}
+
