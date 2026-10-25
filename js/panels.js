@@ -1632,7 +1632,7 @@ function bpBuyArt(id){
   const d=ART_DEFS.find(x=>x.id===id);if(!d||state.artOwned.includes(id))return;
   if(d.src&&d.src!=="coin"){toast("TIDAK DIJUAL DI SINI",d.src==="raid"?"BELI DI TOKO WORLD BOSS PAKAI TOKEN":"DROP BASE DI INF TOWER","#fcd34d");return;}
   if((state.coins||0)<d.price){beep(200,.09,"square",.06);toast("COIN KURANG","BUTUH ${coinIcon(15)} "+fmt(d.price),"#f87171");return;}
-  state.coins-=d.price;state.artOwned.push(id);save();
+  coinSpend(d.price);state.artOwned.push(id);save();
   beep(680,.12,"triangle",.09);setTimeout(()=>beep(900,.12,"triangle",.08),90);
   toast(d.name,luckTxt(d),d.color);renderShell();renderBackpackPanel();
 }
@@ -1649,7 +1649,7 @@ function bpBuyPet(id){
   const d=PET_DEFS.find(x=>x.id===id);if(!d||state.petOwned.includes(id))return;
   if(d.src&&d.src!=="coin"){toast("TIDAK DIJUAL DI SINI",d.src==="raid"?"BELI DI TOKO WORLD BOSS PAKAI TOKEN":"DROP BASE DI INF TOWER","#fcd34d");return;}
   if((state.coins||0)<d.price){beep(200,.09,"square",.06);toast("COIN KURANG","BUTUH ${coinIcon(15)} "+fmt(d.price),"#f87171");return;}
-  state.coins-=d.price;state.petOwned.push(id);save();
+  coinSpend(d.price);state.petOwned.push(id);save();
   beep(680,.12,"triangle",.09);setTimeout(()=>beep(900,.12,"triangle",.08),90);
   toast(d.name,luckTxt(d),"#7DF9FF");renderShell();renderBackpackPanel();
 }

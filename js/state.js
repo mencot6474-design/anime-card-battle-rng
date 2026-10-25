@@ -25,6 +25,7 @@ function fmtCountdown(ms){const s=Math.max(0,Math.floor(ms/1000));const p=x=>Str
 let state=null, currentUser=null;
 function loadStateFor(name){
   KEY="aab-state-v2:"+name;
+  _coinSpent=0;
   try{state=JSON.parse(localStorage.getItem(KEY))||freshState();}catch(e){console.warn('Load error, using fresh:', e.message);state=freshState();}
   
   // MIGRATE OLD STATE: pastikan player object + format luck baru (base+flat+percent)
@@ -432,6 +433,18 @@ function updateStoryCdUI(){
 }
 setInterval(updateStoryCdUI,1000);
 let _cloudSaveTimer=null,_cloudLastPush=0,_cloudPending=false;
+/* 0025: coin naik HANYA lewat RPC server. Belanja tetap dikerjakan lokal (biar UI
+   langsung responsif) tapi dicatat sebagai delta dan dikirim di push berikutnya
+   lewat `_coinSpend`; merge mengurangi saldo server sebesar delta itu, bukan
+   mempercayai state.coins. Menurunkan coin sendiri tidak menguntungkan cheater. */
+let _coinSpent=0;
+function coinSpend(n){
+  const amt=Math.max(0,Math.round(Number(n)||0));
+  if(!state||!amt)return 0;
+  state.coins=Math.max(0,(state.coins||0)-amt);
+  _coinSpent+=amt;
+  return amt;
+}
 /* Diff-based push (prioritas 2 riset bandwidth): track JSON key dari state TANPA playSec
    (yang tick tiap detik). Kalau key identik dengan yang terakhir dikirim, skip schedule
    push — playSec-only save otomatis gak makan bandwidth. */
@@ -494,7 +507,10 @@ function _cloudPush(opts){
   _lastPushedUser=currentUser;
   if(sendStacks){_lastPushedStacksKey=stacksKey;_cloudLastStacksPush=Date.now();_cloudStacksDirty=false;}
   else if(stacksKey!==_lastPushedStacksKey)_cloudStacksDirty=true;
-  return window.CloudDB.saveState(currentUser, state, {skipStacks:!sendStacks, pub:buildPubSummary()}).catch(()=>null);
+  const spent=_coinSpent;
+  const sentPromise=window.CloudDB.saveState(currentUser, state, {skipStacks:!sendStacks, pub:buildPubSummary(), coinSpend:spent});
+  if(spent) sentPromise.then(res=>{if(res&&res.ok)_coinSpent=Math.max(0,_coinSpent-spent);}).catch(()=>{});
+  return sentPromise.catch(()=>null);
 }
 function flushCloudSave(){
   if(_cloudSaveTimer){clearTimeout(_cloudSaveTimer);_cloudSaveTimer=null;}
@@ -743,7 +759,10 @@ function claimDaily(){
   if(state.lastClaim===todayStr())return;
   const idx=state.dailyIndex;
   const gems=DAILY_GEMS[idx]||0;
-  state.coins+=DAILY_REWARDS[idx]||0;
+  /* 0025: coin daily dibayar server (claim_daily_gem) — jangan ditambah lokal
+     kecuali memang offline, kalau tidak push berikutnya akan mengoreksinya balik. */
+  const coinsOffline=!(typeof currentUser!=="undefined"&&currentUser&&window.CloudDB&&window.CloudDB.claimDailyGem);
+  if(coinsOffline)state.coins+=(DAILY_REWARDS[idx]||0);
   state.dailyGemPending=(state.dailyGemPending||0)+gems;
   state.lastClaim=todayStr();
   state.dailyIndex=(idx+1)%7;
@@ -770,9 +789,10 @@ async function flushPendingDailyGems(quiet){
   if(res&&(res.ok||res.msg==="ALREADY_TODAY")){
     state.dailyGemPending=0;
     if(typeof res.day_index==="number")state.dailyIndex=res.day_index%7;
+    if(typeof res.coins_balance==="number")state.coins=res.coins_balance;
     try{save();}catch(e){}
     try{renderShell();}catch(e){}
-    if(res.ok)try{toast("LOGIN HARIAN","+"+(res.gems||gems)+" GEM","#ffd700");}catch(e){}
+    if(res.ok)try{toast("LOGIN HARIAN","+"+(res.gems||gems)+" GEM · +"+fmt(res.coins||0)+" COIN","#ffd700");}catch(e){}
   }else if(!quiet){
     try{toast("GEM LOGIN TERTUNDA",(res&&res.msg)||"Akan dicoba lagi","#fbbf24");}catch(e){}
   }

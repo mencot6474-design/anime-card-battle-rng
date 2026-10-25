@@ -752,6 +752,18 @@ function towerEnd(win){
   if(win){
     /* Menang lantai: kasih hadiah lalu LANGSUNG naik lantai berikutnya tanpa overlay. */
     const r=towerReward(f); state.coins+=r.coins;
+    /* 0025: coin lantai dibayar server (claim_tower_coins), batas claim/hari +
+       breaker coin harian. Gagal → angka lokal ditarik balik, saldo server menang. */
+    (async()=>{
+      if(!(typeof currentUser!=="undefined"&&currentUser&&window.CloudDB&&window.CloudDB.claimTowerCoins))return;
+      let res=null;
+      try{res=await window.CloudDB.claimTowerCoins(currentUser,f);}catch(e){res=null;}
+      if(res&&!res.ok&&res.msg==="DAILY_CAP"){
+        state.coins=Math.max(0,(state.coins||0)-r.coins);
+        try{toast("BATAS COIN HARIAN","Coin lantai ini tidak dibayar server","#f87171");}catch(e){}
+      }
+      try{save();renderShell();}catch(e){}
+    })();
     /* Drop tiap floor lolos: Instant roll 100% PASTI (DITABUNG, di-roll saat kalah) — 100 tarikan per lantai · Weather 5% · Luck +1 10% · Speed +1 10% */
     if(!towerRun.drops)towerRun.drops={weather:0,luck:0,speed:0};
     const rr=100;

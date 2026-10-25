@@ -70,6 +70,10 @@ const CloudDB = {
     /* skipStacks: jangan kirim inventori (stacks) tiap push — server menahan nilai lama.
        Dipakai saat auto-roll supaya payload turun dari ±110 KB ke ±2 KB. */
     const skipStacks = !!(opts && opts.skipStacks);
+    /* 0025: belanja coin dikirim sebagai delta, bukan nilai absolut. Selalu
+       disalin ke payload baru supaya tidak ikut tersimpan ke save_data (server
+       membuangnya setelah dipakai). */
+    const coinSpend = Math.max(0, Math.round(Number(opts && opts.coinSpend) || 0));
     if (window.CURRENT_DEVICE_SESSION && stateObj) {
       stateObj.current_session_id = window.CURRENT_DEVICE_SESSION;
     }
@@ -77,9 +81,10 @@ const CloudDB = {
        (server menahan nilai lama); `pub` = ringkasan publik buat profil. */
     const pub = opts && opts.pub;
     let rpcPayload = stateObj;
-    if ((skipStacks || pub) && stateObj) {
+    if ((skipStacks || pub || coinSpend) && stateObj) {
       rpcPayload = Object.assign({}, stateObj);
       if (skipStacks) delete rpcPayload.stacks;
+      if (coinSpend) rpcPayload._coinSpend = coinSpend;
       if (pub) rpcPayload.pub = pub;
     }
 
@@ -96,6 +101,12 @@ const CloudDB = {
       const ST = this._st();
       if (typeof merged === "number" && ST && ST.premiumGems !== merged) {
         ST.premiumGems = merged;
+        this._paint();
+      }
+      /* 0025: coin milik server. Setiap merge mengembalikan saldo final (setelah
+         _coinSpend dipotong), jadi client selalu dikoreksi ke angka server. */
+      if (typeof res.coins_balance === "number" && ST && ST.coins !== res.coins_balance) {
+        ST.coins = res.coins_balance;
         this._paint();
       }
     }
@@ -336,6 +347,11 @@ const CloudDB = {
       ST.premiumGems = res.balance;
       this._paint();
     }
+    /* 0025: claim_daily_gem juga membayar coin, jadi saldo coin ikut dikoreksi. */
+    if (res.ok && typeof res.coins_balance === "number" && ST && ST.coins !== res.coins_balance) {
+      ST.coins = res.coins_balance;
+      this._paint();
+    }
     return res;
   },
 
@@ -353,6 +369,32 @@ const CloudDB = {
 
   exchangeTokens(username, source) {
     return this._gemRpc(username, "exchange_tokens", { p_source: source });
+  },
+
+  /* ===== COIN (0025) =====
+     Penambahan coin hanya lewat RPC di server; client tidak pernah boleh menaikkan
+     sendiri (merge menahan nilai absolut client). Semua RPC mengembalikan
+     `coins_balance` = saldo final, jadi helper ini sekalian mengoreksi state. */
+  async _coinRpc(username, fn, args) {
+    const res = await this._authRpc(username, fn, args || {});
+    if (!res) return null;
+    if (res.ok && typeof res.coins_balance === "number") {
+      const ST = this._st();
+      if (ST) { ST.coins = res.coins_balance; this._paint(); }
+    }
+    return res;
+  },
+
+  claimStoryCoins(username, lv, diff) {
+    return this._coinRpc(username, "claim_story_coins", { p_lv: lv, p_diff: diff });
+  },
+
+  claimTowerCoins(username, floor) {
+    return this._coinRpc(username, "claim_tower_coins", { p_floor: floor });
+  },
+
+  buyWbCoins(username) {
+    return this._coinRpc(username, "buy_wb_coins", {});
   },
 
   /* ===== WORLD BOSS (harian, skor & attempt di server) =====

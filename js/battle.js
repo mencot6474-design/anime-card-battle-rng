@@ -3167,6 +3167,20 @@ function finish(win){
   if(win){state.cleared[lv]=true;diffProg()[state.diff][lv]=true;state.coins+=reward;state.xp+=20;
     while(state.xp>=state.playerLv*1000){state.xp-=state.playerLv*1000;state.playerLv++;}
     fanfare();
+    /* 0025: coin dibayar server (first clear sekali, replay ber-cooldown 5 menit).
+       Angka lokal di atas cuma untuk UI; klaim yang menetapkan saldo sebenarnya.
+       COOLDOWN = server belum setuju (mis. replay terlalu cepat) → tarik kembali. */
+    (async()=>{
+      if(!(typeof currentUser!=="undefined"&&currentUser&&window.CloudDB&&window.CloudDB.claimStoryCoins))return;
+      let res=null;
+      try{res=await window.CloudDB.claimStoryCoins(currentUser,lv,state.diff);}catch(e){res=null;}
+      if(res&&res.ok){try{renderShell();save();}catch(e){}return;}
+      if(res&&(res.msg==="COOLDOWN"||res.msg==="ALREADY"||res.msg==="DAILY_CAP")){
+        state.coins=Math.max(0,(state.coins||0)-reward);
+      }
+      /* res null = offline/jaringan: biarkan optimis, merge akan mengoreksi. */
+      try{renderShell();save();}catch(e){}
+    })();
   }else sfx.lose();
   state.history.unshift({char:bt.eq.char,tier:bt.eq.tier,enemy:bt.en.name+(bt.en.boss?", "+bt.en.epithet:""),boss:bt.en.boss,level:lv,result:win?"VICTORY":"DEFEAT"});
   state.history=state.history.slice(0,120);

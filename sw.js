@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v167-uidAuth';
+const CACHE_NAME = 'anime-card-battle-v168-coinSrv';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

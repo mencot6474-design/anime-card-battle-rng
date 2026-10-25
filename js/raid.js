@@ -854,7 +854,7 @@ function renderRaidResult(){
 function stackHas(char,mut){mut=mut||"none";return state.stacks.some(s=>s.char===char&&(s.mut||"none")===mut);}
 const WB_SHOP=[
   {id:"gem",name:"Token → Gem // 100:20",cost:100,gem:20,desc:"Tukar 100 TOKEN WORLD BOSS menjadi 20 GEM premium. Bisa ditukar berulang tanpa batas — keran GEM dari World Boss.",apply:()=>""},
-  {id:"coins",name:"2.000 Coin",cost:12,desc:"Koin untuk roll trait & kebutuhan lain.",apply:()=>{state.coins+=2000;return "+2.000 coin";}},
+  {id:"coins",name:"2.000 Coin",cost:12,coinBuy:true,desc:"Koin untuk roll trait & kebutuhan lain.",apply:()=>""},
   {id:"card_edragon",name:"Eternal Dragon",cost:4000,desc:"Kartu BOSS eksklusif — beli SEKALI, roll terbuka PERMANEN di semua gacha. Chance dasar 1 in 25 jt · ICE BLAST 50% (3×75% ATK) · immune semua status effect.",card:{char:"CH_ETERNAL_DRAGON",mut:"none"},
     apply:()=>{state.raidShopOwned=state.raidShopOwned||{};state.raidShopOwned.CH_ETERNAL_DRAGON=true;return gmGrantCard("CH_ETERNAL_DRAGON");}},
   {id:"card_shadowking",name:"Shadow King",cost:8000,desc:"Kartu BOSS eksklusif — beli SEKALI, LANGSUNG didapat + roll terbuka PERMANEN di semua gacha. Chance dasar 1 in 100 jt · NECROMANCER 'ETERNAL LEGION' (Shadow Army).",card:{char:"CH_SHADOW_KING",mut:"none"},
@@ -884,6 +884,33 @@ function raidShopBuy(id){
   const it=WB_SHOP.find(x=>x.id===id);if(!it)return;
   const tok=state.wbTokens||0;
   if(tok<it.cost){raidToast("TOKEN KURANG — butuh "+it.cost+" token");return;}
+  if(it.coinBuy){
+    /* 0025: coin milik server — token dipotong + coin dibayar satu RPC atomik,
+       dibatasi 100 pembelian/hari (token masih tersimpan di save_data). */
+    (async()=>{
+      let res;
+      try{
+        const u=(typeof currentUser!=="undefined"&&currentUser)?String(currentUser):"";
+        if(u&&window.CloudDB&&window.CloudDB.buyWbCoins){
+          res=await window.CloudDB.buyWbCoins(u);
+        }else{
+          state.wbTokens-=it.cost;state.coins+=2000;
+          res={ok:true,coins:2000,tokens:state.wbTokens};
+        }
+      }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
+      if(res&&res.ok){
+        if(typeof res.tokens==="number")state.wbTokens=res.tokens;
+        save();sfx.crit();renderShell();
+        raidToast("TUKAR BERHASIL · −"+it.cost+" token · +"+fmt(res.coins||2000)+" COIN");
+      }else{
+        const why=(res&&res.msg)==="TOKEN_KURANG"?"TOKEN KURANG":((res&&res.msg)==="DAILY_CAP"?"BATAS HARIAN":((res&&res.msg)||"coba lagi"));
+        raidToast("TUKAR GAGAL — "+why);
+      }
+      try{renderShell();}catch(e){}
+      if(raidView==="shop")renderRaidShop();
+    })();
+    return;
+  }
   if(it.gem){
     const GEM_AMT=it.gem;
     (async()=>{
@@ -1587,7 +1614,7 @@ async function rollTrait(){
     if(!(await confirmRareReplace(tgt.trait)))return;
     if(autoRoll||state.coins<TRAIT_COST)return;
   }
-  state.coins-=TRAIT_COST;
+  coinSpend(TRAIT_COST);
   const k=rollTraitPick();
   sfx.crit();
   if(TRAIT[k].atk>=1.5){ save(); renderShell(); renderTrait(); showRarePrompt(k); }
@@ -1698,7 +1725,7 @@ function autoTick(){
   if(!autoRoll)return;
   if(state.coins<TRAIT_COST){stopAutoRoll();save();renderShell();autoToast("AUTO ROLL STOP · COIN HABIS");return;}
   const tgt=traitTargetStack();if(!tgt){stopAutoRoll();return;}
-  state.coins-=TRAIT_COST;autoRollN++;
+  coinSpend(TRAIT_COST);autoRollN++;
   const k=rollTraitPick();
   if(autoRollN%10===0)sfx.crit(); // sfx ditahan tiap 10 roll biar gak nembak terus di 100ms
   if(autoTargets.has(k)){tgt.trait=k;autoStop();save();if(!battleLive()&&typeof render==="function")render();renderTrait();traitNotify(k);return;} // TARGET KENA → simpan + stop
