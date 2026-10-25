@@ -234,8 +234,8 @@
 /* 3D CARDS (Golden Ratio 5:7 Proportions) */
 .sc-card {
   position: absolute;
-  width: 215px;
-  height: 315px;
+  width: 250px;
+  height: 350px;
   border-radius: 14px;
   background: #081120;
   border: 1.8px solid rgba(0, 240, 255, 0.18);
@@ -265,25 +265,25 @@
   cursor: default;
 }
 .sc-card.pos-1 {
-  transform: translateX(195px) translateY(6px) translateZ(-50px) rotateY(-34deg) scale(0.85);
+  transform: translateX(228px) translateY(6px) translateZ(-50px) rotateY(-34deg) scale(0.85);
   z-index: 6;
   opacity: 0.75;
   filter: brightness(0.65) saturate(0.85);
 }
 .sc-card.pos-neg-1 {
-  transform: translateX(-195px) translateY(6px) translateZ(-50px) rotateY(34deg) scale(0.85);
+  transform: translateX(-228px) translateY(6px) translateZ(-50px) rotateY(34deg) scale(0.85);
   z-index: 6;
   opacity: 0.75;
   filter: brightness(0.65) saturate(0.85);
 }
 .sc-card.pos-2 {
-  transform: translateX(350px) translateY(14px) translateZ(-170px) rotateY(-48deg) scale(0.68);
+  transform: translateX(405px) translateY(14px) translateZ(-170px) rotateY(-48deg) scale(0.68);
   z-index: 3;
   opacity: 0.4;
   filter: brightness(0.4) saturate(0.6);
 }
 .sc-card.pos-neg-2 {
-  transform: translateX(-350px) translateY(14px) translateZ(-170px) rotateY(48deg) scale(0.68);
+  transform: translateX(-405px) translateY(14px) translateZ(-170px) rotateY(48deg) scale(0.68);
   z-index: 3;
   opacity: 0.4;
   filter: brightness(0.4) saturate(0.6);
