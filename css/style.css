@@ -49815,3 +49815,9 @@ html.fps-locked .bp-fchip{
 @media(prefers-reduced-motion:reduce){
   .lobby-hub .holo-base .hb-glow,.lobby-hub .holo-base .hb-disc,.lobby-hub .holo-base .hb-ring,.lobby-hub .holo-base .hb-rays,.lobby-hub .holo-glass .hg-scan{animation:none!important}
 }
+
+/* FIX: modal auth (spinner "Memproses", sukses daftar, sukses login) harus
+   di ATAS #authScreen (z-index inline 999999). Sebelumnya z-index:210, jadi
+   ke-render di belakang layar login dan popup sukses daftar tak pernah
+   kelihatan. Naikkan di atas 999999. */
+#authSpin,#authDone,#welcomeModal{z-index:1000001}
