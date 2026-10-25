@@ -820,22 +820,22 @@ body.on-raid:has(.wbr-hub) main#app > .tw-page{
    bloom, plus kerucut cahaya naik ke belakang kartu. Animasi murni opacity.
    ========================================================================== */
 .wbr-ped{
-  background:radial-gradient(50% 50% at 50% 50%,rgba(185,255,255,.8),rgba(53,240,255,.34) 44%,rgba(53,240,255,.08) 64%,transparent 78%);
-  width:min(30%,280px);height:54px;
-  box-shadow:0 0 54px rgba(53,240,255,.4),0 0 22px rgba(125,249,255,.42);
-  filter:blur(1.5px);
+  background:radial-gradient(50% 50% at 50% 50%,rgba(210,255,255,.95),rgba(53,240,255,.42) 40%,rgba(53,240,255,.08) 62%,transparent 76%);
+  bottom:20%;width:min(26%,240px);height:44px;
+  box-shadow:0 0 46px rgba(53,240,255,.42),0 0 18px rgba(125,249,255,.5);
+  filter:blur(1px);
 }
 .wbr-ped::after{
-  inset:18% 24%;border:1.5px solid rgba(195,255,255,.6);
-  box-shadow:0 0 12px rgba(53,240,255,.45),inset 0 0 9px rgba(53,240,255,.35);
+  inset:14% 20%;border:1.5px solid rgba(205,255,255,.7);
+  box-shadow:0 0 12px rgba(53,240,255,.5),inset 0 0 8px rgba(53,240,255,.4);
 }
 /* berkas cahaya dari proyektor naik ke belakang kartu */
 .wbr-beam{
-  inset:auto;left:50%;bottom:17%;width:min(28%,260px);height:34%;
+  inset:auto;left:50%;bottom:21%;width:min(34%,300px);height:12%;
   transform:translateX(-50%);
-  background:linear-gradient(to top,rgba(125,249,255,.26),rgba(53,240,255,.08) 44%,transparent 84%);
-  clip-path:polygon(40% 100%,60% 100%,84% 0,16% 0);
-  mix-blend-mode:screen;filter:blur(1px);opacity:.7;
+  background:linear-gradient(to top,rgba(125,249,255,.42),rgba(53,240,255,.14) 52%,transparent 94%);
+  clip-path:polygon(34% 100%,66% 100%,100% 0,0 0);
+  mix-blend-mode:screen;filter:blur(2px);opacity:.9;
   animation:wbBeam 4.2s ease-in-out infinite;
 }
 @keyframes wbBeam{0%,100%{opacity:.85}45%{opacity:.6}50%{opacity:1}72%{opacity:.78}}
