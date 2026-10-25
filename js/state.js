@@ -300,6 +300,7 @@ function claimStoryMilestone(chapNo,diffKey){
    bikin gem early game tidak susah. */
 const STORY_REPEAT_CD_MS=5*60*1000;
 const STORY_REPEAT_GEM_PCT=0.35;
+const STORY_REPEAT_GEM_MIN=2;
 /* ========== REBIRTH ==========
    Nilai tiap kartu duplikat (tier × mut × shiny) masuk ke state.rebirth.essence,
    BUKAN EXP player — jadi farming jutaan dup naikkan luck tanpa merusak level.
