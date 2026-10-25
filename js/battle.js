@@ -3164,8 +3164,7 @@ function finish(win){
   const lv=bt.lv,first=!diffProg()[state.diff][lv];
   const reward=win?(first?firstClearReward(lv):Math.round(firstClearReward(lv)*.2)):0;
   if(win&&!first)storySetCd(lv);
-  if(win){state.cleared[lv]=true;diffProg()[state.diff][lv]=true;state.coins+=reward;state.xp+=20;
-    while(state.xp>=state.playerLv*1000){state.xp-=state.playerLv*1000;state.playerLv++;}
+  if(win){state.cleared[lv]=true;diffProg()[state.diff][lv]=true;state.coins+=reward;xpGain(20);
     fanfare();
     /* 0025: coin dibayar server (first clear sekali, replay ber-cooldown 5 menit).
        Angka lokal di atas cuma untuk UI; klaim yang menetapkan saldo sebenarnya.

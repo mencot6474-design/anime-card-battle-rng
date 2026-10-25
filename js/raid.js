@@ -942,10 +942,31 @@ function raidShopBuy(id){
   }
   if(it.card&&stackHas(it.card.char,it.card.mut)){raidToast("Kartu itu sudah ada di Deck kamu");return;}
   if(it.owned&&it.owned()){raidToast("Sudah dibeli — permanen di Backpack");return;}
-  state.wbTokens-=it.cost;
-  const msg=it.apply();save();sfx.crit();renderShell();
-  raidToast(msg+" · −"+it.cost+" token");
-  renderRaidShop();
+  /* 0026: saldo token milik server. Potong dulu lewat RPC (harga diambil dari
+     token_shop_price, bukan angka client); item baru diberikan kalau server setuju. */
+  (async()=>{
+    let res;
+    try{
+      const u=(typeof currentUser!=="undefined"&&currentUser)?String(currentUser):"";
+      if(u&&window.CloudDB&&window.CloudDB.spendTokens){
+        res=await window.CloudDB.spendTokens(u,"wb",it.id);
+      }else{
+        state.wbTokens-=it.cost;
+        res={ok:true,tokens:state.wbTokens};
+      }
+    }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
+    if(res&&res.ok){
+      if(typeof res.tokens==="number")state.wbTokens=res.tokens;
+      const msg=it.apply();save();sfx.crit();renderShell();
+      raidToast(msg+" · −"+it.cost+" token");
+    }else{
+      try{save();}catch(e){}
+      const why=(res&&res.msg)==="TOKEN_KURANG"?"TOKEN KURANG":((res&&res.msg)==="DAILY_CAP"?"BATAS HARIAN":((res&&res.msg)||"coba lagi"));
+      raidToast("BELI GAGAL — "+why);
+    }
+    try{renderShell();}catch(e){}
+    renderRaidShop();
+  })();
 }
 function renderRaidShop(){
   const tok=state.wbTokens||0;

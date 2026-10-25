@@ -517,15 +517,36 @@ function infBuy(kind){
     })();
     return;
   }
-  state.infTokens-=cost;
-  if(CARD_UNLOCK){state.towerShopOwned=state.towerShopOwned||{};state.towerShopOwned[CARD_UNLOCK]=true;}
-  else if(kind==='weather')state.potions=(state.potions||0)+1;
-  else if(kind.startsWith('luck')){state.luckPots=state.luckPots||[0,0,0];state.luckPots[+kind.slice(-1)-1]++;}
-  else if(kind.startsWith('speed')){state.speedPots=state.speedPots||[0,0,0];state.speedPots[+kind.slice(-1)-1]++;}
-  save(); beep(660,.1,"sine",.07);
-  const label=CARD_UNLOCK?cardName(CARD_UNLOCK):({weather:'WEATHER POTION',mythic:'MYTHIC POTION'}[kind]||(kind.startsWith('luck')?'LUCK POTION L'+kind.slice(-1):'SPEED POTION L'+kind.slice(-1)));
-  toast(label,CARD_UNLOCK?"-"+cost+" TOKEN · ROLL DIBUKA":"-"+cost+" TOKEN","#c4b5fd");
-  renderShell(); if(towerView==="shop")render();
+  /* 0026: saldo token INF milik server. Potong dulu lewat RPC (harga dari
+     token_shop_price), item baru diberikan kalau server setuju. */
+  (async()=>{
+    let res;
+    try{
+      const u=(typeof currentUser!=="undefined"&&currentUser)?String(currentUser):"";
+      if(u&&window.CloudDB&&window.CloudDB.spendTokens){
+        res=await window.CloudDB.spendTokens(u,"inf",kind);
+      }else{
+        state.infTokens-=cost;
+        res={ok:true,tokens:state.infTokens};
+      }
+    }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
+    if(!res||!res.ok){
+      const why=(res&&res.msg)==="TOKEN_KURANG"?"TOKEN KURANG":((res&&res.msg)==="DAILY_CAP"?"BATAS HARIAN":((res&&res.msg)||"Coba lagi nanti"));
+      toast("BELI GAGAL",why,"#f87171");
+      try{renderShell();}catch(e){}
+      if(towerView==="shop")render();
+      return;
+    }
+    if(typeof res.tokens==="number")state.infTokens=res.tokens;
+    if(CARD_UNLOCK){state.towerShopOwned=state.towerShopOwned||{};state.towerShopOwned[CARD_UNLOCK]=true;}
+    else if(kind==='weather')state.potions=(state.potions||0)+1;
+    else if(kind.startsWith('luck')){state.luckPots=state.luckPots||[0,0,0];state.luckPots[+kind.slice(-1)-1]++;}
+    else if(kind.startsWith('speed')){state.speedPots=state.speedPots||[0,0,0];state.speedPots[+kind.slice(-1)-1]++;}
+    save(); beep(660,.1,"sine",.07);
+    const label=CARD_UNLOCK?cardName(CARD_UNLOCK):({weather:'WEATHER POTION',mythic:'MYTHIC POTION'}[kind]||(kind.startsWith('luck')?'LUCK POTION L'+kind.slice(-1):'SPEED POTION L'+kind.slice(-1)));
+    toast(label,CARD_UNLOCK?"-"+cost+" TOKEN · ROLL DIBUKA":"-"+cost+" TOKEN","#c4b5fd");
+    renderShell(); if(towerView==="shop")render();
+  })();
 }
 function renderTowerBattle(){
   const w=towerRun.waves[towerRun.idx];
@@ -791,6 +812,18 @@ function towerEnd(win){
     /* Token Inf: +1 per lantai, +5 per lantai bos. */
     const tok=towerIsBossFloor(f)?5:1;
     state.infTokens=(state.infTokens||0)+tok; towerRun.tokens=(towerRun.tokens||0)+tok;
+    /* 0026: token lantai dibayar server (claim_tower_tokens). Angka lokal di atas
+       cuma untuk UI; respons server yang menetapkan saldo. DAILY_CAP → tarik balik. */
+    (async()=>{
+      if(!(typeof currentUser!=="undefined"&&currentUser&&window.CloudDB&&window.CloudDB.claimTowerTokens))return;
+      let res=null;
+      try{res=await window.CloudDB.claimTowerTokens(currentUser,f);}catch(e){res=null;}
+      if(res&&!res.ok&&res.msg==="DAILY_CAP"){
+        state.infTokens=Math.max(0,(state.infTokens||0)-tok);
+        try{toast("BATAS TOKEN HARIAN","Token lantai ini tidak dibayar server","#f87171");}catch(e){}
+      }
+      try{save();renderShell();}catch(e){}
+    })();
     towerRun.cleared=f; towerRun.coins=(towerRun.coins||0)+r.coins;
     state.tower.best=Math.max(state.tower.best||0,f);
     if(typeof lbTrackTower==="function")lbTrackTower(state.tower.best);

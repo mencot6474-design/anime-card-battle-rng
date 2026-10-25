@@ -627,10 +627,8 @@ function rollTick(){
   rollState.speedMultiplier=rollSpeedNow();
   const result=rngRoll(rollState.luck,rollState.speedMultiplier);
   if(!result){stopRollAnimation();hideRollResult();return;}
-  // Tambah EXP (50/roll), simpan di state.player.exp
-  if(state&&state.player){
-    state.player.exp=(state.player.exp||0)+50;
-  }
+  // Tambah EXP (50/roll) sebagai delta server-authoritative (0026)
+  xpGain(50);
   if(state)state.totalRolls=(state.totalRolls||0)+1;
   grantRolledCard(result.cardId,result.mut,result.shiny);
   showRollResult(result);

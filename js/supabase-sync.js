@@ -74,6 +74,9 @@ const CloudDB = {
        disalin ke payload baru supaya tidak ikut tersimpan ke save_data (server
        membuangnya setelah dipakai). */
     const coinSpend = Math.max(0, Math.round(Number(opts && opts.coinSpend) || 0));
+    /* 0026: XP juga dikirim sebagai delta (transient). Nilai absolut xp/level dari
+       client dibuang server; `_xpGain` tidak pernah ikut tersimpan ke save_data. */
+    const xpGain = Math.max(0, Math.round(Number(opts && opts.xpGain) || 0));
     if (window.CURRENT_DEVICE_SESSION && stateObj) {
       stateObj.current_session_id = window.CURRENT_DEVICE_SESSION;
     }
@@ -81,10 +84,11 @@ const CloudDB = {
        (server menahan nilai lama); `pub` = ringkasan publik buat profil. */
     const pub = opts && opts.pub;
     let rpcPayload = stateObj;
-    if ((skipStacks || pub || coinSpend) && stateObj) {
+    if ((skipStacks || pub || coinSpend || xpGain) && stateObj) {
       rpcPayload = Object.assign({}, stateObj);
       if (skipStacks) delete rpcPayload.stacks;
       if (coinSpend) rpcPayload._coinSpend = coinSpend;
+      if (xpGain) rpcPayload._xpGain = xpGain;
       if (pub) rpcPayload.pub = pub;
     }
 
@@ -108,6 +112,21 @@ const CloudDB = {
       if (typeof res.coins_balance === "number" && ST && ST.coins !== res.coins_balance) {
         ST.coins = res.coins_balance;
         this._paint();
+      }
+      /* 0026: token & level/xp milik server. Nilai absolut client dibuang merge,
+         jadi setiap push mengoreksi state ke angka server — termasuk kedua cermin
+         XP (top-level xp/playerLv dan player.exp/lv). */
+      if (ST) {
+        let dirty = false;
+        if (typeof res.wbTokens === "number" && ST.wbTokens !== res.wbTokens) { ST.wbTokens = res.wbTokens; dirty = true; }
+        if (typeof res.infTokens === "number" && ST.infTokens !== res.infTokens) { ST.infTokens = res.infTokens; dirty = true; }
+        if (typeof res.playerLv === "number" && ST.playerLv !== res.playerLv) { ST.playerLv = res.playerLv; dirty = true; }
+        if (typeof res.xp === "number" && ST.xp !== res.xp) { ST.xp = res.xp; dirty = true; }
+        if (ST.player) {
+          if (typeof res.playerLv === "number" && ST.player.lv !== res.playerLv) { ST.player.lv = res.playerLv; dirty = true; }
+          if (typeof res.xp === "number" && ST.player.exp !== res.xp) { ST.player.exp = res.xp; dirty = true; }
+        }
+        if (dirty) this._paint();
       }
     }
     return res;
@@ -395,6 +414,33 @@ const CloudDB = {
 
   buyWbCoins(username) {
     return this._coinRpc(username, "buy_wb_coins", {});
+  },
+
+  /* ===== TOKEN WB/INF (0026) =====
+     Saldo token hanya berubah di server. Belanja memakai harga dari tabel
+     `token_shop_price` (bukan angka dari client), dan klaim lantai memakai
+     nominal tetap. Semua RPC mengembalikan saldo final → state dikoreksi. */
+  async _tokenRpc(username, fn, args) {
+    const res = await this._authRpc(username, fn, args || {});
+    if (!res) return null;
+    if (res.ok) {
+      const ST = this._st();
+      if (ST) {
+        let dirty = false;
+        if (typeof res.wbTokens === "number" && ST.wbTokens !== res.wbTokens) { ST.wbTokens = res.wbTokens; dirty = true; }
+        if (typeof res.infTokens === "number" && ST.infTokens !== res.infTokens) { ST.infTokens = res.infTokens; dirty = true; }
+        if (dirty) this._paint();
+      }
+    }
+    return res;
+  },
+
+  spendTokens(username, source, item) {
+    return this._tokenRpc(username, "spend_tokens", { p_source: source, p_item: item });
+  },
+
+  claimTowerTokens(username, floor) {
+    return this._tokenRpc(username, "claim_tower_tokens", { p_floor: floor });
   },
 
   /* ===== WORLD BOSS (harian, skor & attempt di server) =====

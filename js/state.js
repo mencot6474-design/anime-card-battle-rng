@@ -26,6 +26,7 @@ let state=null, currentUser=null;
 function loadStateFor(name){
   KEY="aab-state-v2:"+name;
   _coinSpent=0;
+  _xpGained=0;
   try{state=JSON.parse(localStorage.getItem(KEY))||freshState();}catch(e){console.warn('Load error, using fresh:', e.message);state=freshState();}
   
   // MIGRATE OLD STATE: pastikan player object + format luck baru (base+flat+percent)
@@ -110,6 +111,13 @@ function loadStateFor(name){
   else state.playerLv=Math.floor(state.playerLv);
   if(state.playerLv!==state.player.lv)state.player.lv=state.playerLv;
   if(typeof state.xp!=="number"||state.xp<0)state.xp=0;
+  /* 0026: level/xp sekarang milik server. Save lama punya DUA cermin (top-level
+     xp/playerLv dan player.exp/lv) yang bisa berbeda; samakan dulu dengan ambil
+     yang terbesar supaya progres lokal tidak hilang sebelum nilai dikunci. */
+  if(!state.player||typeof state.player!=="object")state.player={};
+  {const _mlv=Math.max(1,Math.floor(state.playerLv)||1,Math.floor(state.player.lv)||1);
+   const _mxp=Math.max(0,Math.floor(state.xp)||0,Math.floor(state.player.exp)||0);
+   state.playerLv=_mlv;state.xp=_mxp;state.player.lv=_mlv;state.player.exp=_mxp;}
   if(typeof state.summons!=="number"||state.summons<0)state.summons=0;
   if(typeof state.lastClaim!=="string")state.lastClaim="";
   if(typeof state.muted!=="boolean")state.muted=false;
@@ -445,6 +453,25 @@ function coinSpend(n){
   _coinSpent+=amt;
   return amt;
 }
+/* 0026: XP juga server-authoritative. Client hanya boleh MENAMBAH lewat delta
+   `_xpGain` (transient, dibuang merge); level dihitung server dengan rumus yang
+   sama (xp per level = lv*1000). Dua cermin lama (state.xp/playerLv dan
+   state.player.exp/lv) disamakan di sini supaya tidak pernah berbeda lagi. */
+let _xpGained=0;
+function xpGain(n){
+  const amt=Math.max(0,Math.round(Number(n)||0));
+  if(!state||!amt)return 0;
+  state.playerLv=Math.max(1,Math.floor(state.playerLv)||1);
+  state.xp=(state.xp||0)+amt;
+  while(state.xp>=state.playerLv*1000){
+    state.xp-=state.playerLv*1000;
+    state.playerLv++;
+    if(state.player)state.player.sp=(state.player.sp||0)+1;
+  }
+  if(state.player){state.player.lv=state.playerLv;state.player.exp=state.xp;}
+  _xpGained+=amt;
+  return amt;
+}
 /* Diff-based push (prioritas 2 riset bandwidth): track JSON key dari state TANPA playSec
    (yang tick tiap detik). Kalau key identik dengan yang terakhir dikirim, skip schedule
    push — playSec-only save otomatis gak makan bandwidth. */
@@ -508,8 +535,10 @@ function _cloudPush(opts){
   if(sendStacks){_lastPushedStacksKey=stacksKey;_cloudLastStacksPush=Date.now();_cloudStacksDirty=false;}
   else if(stacksKey!==_lastPushedStacksKey)_cloudStacksDirty=true;
   const spent=_coinSpent;
-  const sentPromise=window.CloudDB.saveState(currentUser, state, {skipStacks:!sendStacks, pub:buildPubSummary(), coinSpend:spent});
+  const gained=_xpGained;
+  const sentPromise=window.CloudDB.saveState(currentUser, state, {skipStacks:!sendStacks, pub:buildPubSummary(), coinSpend:spent, xpGain:gained});
   if(spent) sentPromise.then(res=>{if(res&&res.ok)_coinSpent=Math.max(0,_coinSpent-spent);}).catch(()=>{});
+  if(gained) sentPromise.then(res=>{if(res&&res.ok)_xpGained=Math.max(0,_xpGained-gained);}).catch(()=>{});
   return sentPromise.catch(()=>null);
 }
 function flushCloudSave(){
