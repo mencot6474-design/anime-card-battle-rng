@@ -973,8 +973,7 @@ function renderProfile(){
   fill("pfPageEkuipmen",
     sec("TERPASANG",artTile(0)+artTile(1)+tile("PET",pd?pd.name:"TIDAK ADA","")+equipCounts)
     +sec("INVENTORY ARTEFAK",ownedArt||tile("BELUM ADA ARTEFAK","·","Beli di toko untuk membuka slot","wide"))
-    +sec("INVENTORY PET",ownedPet||tile("BELUM ADA PET","·","Dapatkan pet dari raid / tower","wide"))
-    +sec("DEVELOPER",tile("DEV UNLOCK",`<button class="prof-unbtn" onclick="devUnlockAll()">BUKA SEMUA PET & ARTEFAK</button>`,"","accent")));
+    +sec("INVENTORY PET",ownedPet||tile("BELUM ADA PET","·","Dapatkan pet dari raid / tower","wide")));
   fill("pfPageItem",`<div class="prof-grid">${item}</div>`);
   fill("pfPageTitles",`<div class="prof-grid">${titlesGrid}</div>`);
 }
@@ -1663,26 +1662,6 @@ function lobbyPetHtml(){
   if(!d)return"";
   return `<div class="lobby-pet"><img src="${thumbSrc(d.img)}" alt="${d.name}" loading="lazy" decoding="async" onerror="this.parentNode.classList.add('noimg')"><span class="lp-eb">${d.emoji}</span><span class="lp-tip"><b style="color:${d.color}">${d.name}</b><small>${luckTxt(d)}</small></span></div>`;
 }
-/* ===== DEV: buka SEMUA pet + artefak untuk akun aktif (idempoten - aman dijalankan berulang) ===== */
-function devUnlockAll(){
-  if(!state)return;
-  const hadA=(state.artOwned||[]).length, hadP=(state.petOwned||[]).length;
-  state.artOwned=ART_DEFS.map(a=>a.id);
-  state.petOwned=PET_DEFS.map(p=>p.id);
-  if(!Array.isArray(state.artSlots)||state.artSlots.length!==2)state.artSlots=[null,null];
-  /* isi slot artefak yang masih kosong - pilihan lama dipertahankan */
-  const top=["pedang-api","helm-abyss"];
-  for(let i=0;i<2;i++)if(!state.artSlots[i]){const pick=top.find(id=>!state.artSlots.includes(id));if(pick)state.artSlots[i]=pick;}
-  if(!state.petEquipped)state.petEquipped="kyubi";
-  save();
-  beep(680,.12,"triangle",.09);setTimeout(()=>beep(900,.12,"triangle",.08),90);setTimeout(()=>beep(1180,.16,"triangle",.08),190);
-  toast("UNLOCK ALL",`+${state.artOwned.length-hadA} artefak + ${state.petOwned.length-hadP} pet - koleksi penuh!`,"#7DF9FF");
-  renderShell();
-  if(typeof renderBackpackPanel==="function")renderBackpackPanel();
-  if(document.getElementById("profPane"))renderProfile();
-}
-window.devUnlockAll=devUnlockAll;
-
 /* ====== Hover reveal kartu (isi = hubCardHtml, sama persis kartu lobby). Dipakai dek + weather corner. ====== */
 let __bpsHoverEl=null;
 function hoverPlace(eq,slotRect){
