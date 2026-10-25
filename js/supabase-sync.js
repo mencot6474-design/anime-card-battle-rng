@@ -338,9 +338,12 @@ const CloudDB = {
     }
   },
 
-  /* Tambah gems dari grinding (Token INF -> Gem). WAJIB lewat server:
-     merge_player_state selalu pakai saldo cloud di mode biasa, jadi
-     "+gems" client-saja akan ke-wipe. RPC earn_gems menambah di server. */
+  /* Tambah gems dari grinding (Story/Token INF/World Boss/daily). WAJIB lewat
+     server: merge_player_state selalu pakai saldo cloud di mode biasa, jadi
+     "+gems" client-saja akan ke-wipe. Sejak 0022 RPC earn_gems JWT-only:
+     identitas dari auth.uid(), nominal + kuota harian dicek server. Karena itu
+     argumen username/saveData tidak dikirim lagi (dan save lain tidak bisa
+     ditulis lewat jalur ini). */
   async earnGems(username, gems, saveData) {
     gems = Math.max(0, Math.floor(gems || 0));
     const ST = this._st();
@@ -353,21 +356,24 @@ const CloudDB = {
     }
 
     try {
-      const pw = this._localPassHash(username);
-      if (!pw) return { ok: false, msg: "SESI LOGIN TIDAK LENGKAP" };
-      const res = await this._rpc("earn_gems", {
-        p_username: username.toLowerCase(),
-        p_password_hash: pw,
-        p_gems: gems,
-        p_save_data: saveData || ST || {},
-      });
-      if (res && res.ok === false) return { ok: false, msg: res.msg || "GAGAL TAMBAH GEMS" };
-      if (res && typeof res.balance === "number") {
+      if (!window.CloudAuth) return { ok: false, msg: "SESI LOGIN TIDAK LENGKAP" };
+      const key = String(username).toLowerCase();
+      let sess = await window.CloudAuth._fresh(key);
+      if (!sess) {
+        await window.CloudAuth.kick(key);
+        sess = await window.CloudAuth._fresh(key);
+      }
+      if (!sess) return { ok: false, msg: "SESI LOGIN TIDAK LENGKAP" };
+
+      const res = await window.CloudAuth._rpcJwt("earn_gems", { p_gems: gems }, sess.at);
+      if (!res) return { ok: false, msg: "GEM GAGAL DICATAT — COBA LAGI" };
+      if (res.ok === false) return { ok: false, msg: res.msg || "GAGAL TAMBAH GEMS" };
+      if (typeof res.balance === "number") {
         if (ST) ST.premiumGems = res.balance;
         this._paint();
         return { ok: true, balance: res.balance };
       }
-      return { ok: false, msg: "RPC earn_gems BELUM TER-DEPLOY" };
+      return { ok: false, msg: "GAGAL TAMBAH GEMS" };
     } catch (err) {
       console.error("[earnGems] fail", err);
       return { ok: false, msg: "GAGAL MENGHUBUNGI CLOUD: " + err.message };
