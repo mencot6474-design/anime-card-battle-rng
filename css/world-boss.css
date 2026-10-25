@@ -820,7 +820,7 @@ body.on-raid:has(.wbr-hub) main#app > .tw-page{
    ========================================================================== */
 .wbr-ped{
   transform:translateX(-50%);
-  bottom:26%;width:min(48%,360px);height:44px;
+  bottom:19%;width:min(48%,360px);height:44px;
   background:radial-gradient(ellipse at center,rgba(205,255,255,.98),rgba(125,249,255,.5) 48%,rgba(125,249,255,.1) 72%,transparent 80%);
   box-shadow:0 0 30px rgba(125,249,255,.6);
   filter:blur(1px);
@@ -841,7 +841,7 @@ body.on-raid:has(.wbr-hub) main#app > .tw-page{
 @keyframes whbPulse{0%,100%{opacity:.85}50%{opacity:1}}
 /* berkas cahaya melebar ke atas di belakang kartu (kayak hb-rays lobby) */
 .wbr-beam{
-  inset:auto;left:50%;bottom:27%;width:min(48%,360px);height:40%;
+  inset:auto;left:50%;bottom:20%;width:min(48%,360px);height:46%;
   transform:translateX(-50%);
   background:linear-gradient(to top,rgba(125,249,255,.4),rgba(125,249,255,.1) 55%,transparent 88%);
   clip-path:polygon(41% 100%,59% 100%,100% 0,0 0);
