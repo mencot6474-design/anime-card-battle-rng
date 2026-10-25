@@ -49756,44 +49756,62 @@ html.fps-locked .bp-fchip{
    jadi logo ✓ cyan di pojok kiri-atas dihapus. */
 .backpack-panel .bp-tile.in-deck::after{content:none!important;display:none!important}
 
-/* ===== LOBBY: dudukan HOLOGRAM di bawah kartu hero =====
-   Cakram proyektor + cincin lensa + kerucut cahaya + scanline naik. Semua di
-   belakang kartu (z-index 1 vs card-float 3), murni transform/opacity (composited),
-   tanpa box-shadow yang dianimasikan. Warna cyan senada tema. */
+/* ===== LOBBY: HOLOGRAM di bawah kartu hero =====
+   Platform proyektor terang duduk di tepi BAWAH kartu (nyembul ke bawah &
+   samping, z-index 1) + berkas cahaya + sapuan scanline/glow di DEPAN kartu
+   (z-index 4, mix-blend screen) biar efek proyeksi hologram benar2 kebaca.
+   Semua animasi murni transform/opacity (composited), hemat buat HP kentang. */
 .lobby-hub .stage-center .holo-base{
-  position:absolute;left:50%;bottom:-4px;transform:translateX(-50%);
-  width:min(145%,470px);height:60%;z-index:1;pointer-events:none;
+  position:absolute;left:50%;bottom:-18px;transform:translateX(-50%);
+  width:min(150%,440px);height:150px;z-index:1;pointer-events:none;
+}
+.lobby-hub .holo-base .hb-glow{
+  position:absolute;left:50%;bottom:-16px;transform:translateX(-50%);
+  width:124%;height:120px;border-radius:50%;
+  background:radial-gradient(ellipse at center,rgba(125,249,255,.62),rgba(125,249,255,.16) 46%,transparent 70%);
+  filter:blur(7px);animation:hbPulse 3.6s ease-in-out infinite;
 }
 .lobby-hub .holo-base .hb-disc{
-  position:absolute;left:50%;bottom:0;transform:translateX(-50%);
-  width:78%;height:46px;border-radius:50%;
-  background:radial-gradient(ellipse at center,rgba(125,249,255,.6),rgba(125,249,255,.16) 52%,transparent 74%);
-  filter:blur(2px);animation:hbPulse 3.4s ease-in-out infinite;
+  position:absolute;left:50%;bottom:2px;transform:translateX(-50%);
+  width:90%;height:40px;border-radius:50%;
+  background:radial-gradient(ellipse at center,rgba(205,255,255,.98),rgba(125,249,255,.5) 48%,rgba(125,249,255,.1) 72%,transparent 80%);
+  box-shadow:0 0 28px rgba(125,249,255,.7);
+  animation:hbPulse 3.6s ease-in-out infinite;
 }
 .lobby-hub .holo-base .hb-ring{
-  position:absolute;left:50%;bottom:6px;transform:translateX(-50%);
-  width:46%;height:20px;border-radius:50%;
-  border:1.5px solid rgba(125,249,255,.75);
-  box-shadow:0 0 14px rgba(125,249,255,.45),inset 0 0 12px rgba(125,249,255,.4);
-  animation:hbPulse 3.4s ease-in-out infinite;
+  position:absolute;left:50%;bottom:9px;transform:translateX(-50%);
+  width:52%;height:19px;border-radius:50%;
+  border:1.5px solid rgba(205,255,255,.9);
+  box-shadow:0 0 13px rgba(125,249,255,.65),inset 0 0 10px rgba(125,249,255,.5);
+  animation:hbPulse 3.6s ease-in-out infinite;
 }
-.lobby-hub .holo-base .hb-cone{
-  position:absolute;left:50%;bottom:14px;transform:translateX(-50%);
-  width:100%;height:100%;
-  background:linear-gradient(to top,rgba(125,249,255,.26),rgba(125,249,255,.07) 42%,transparent 80%);
-  clip-path:polygon(33% 100%,67% 100%,100% 0,0 0);
-  mix-blend-mode:screen;opacity:.85;animation:hbFlicker 4.2s ease-in-out infinite;
+.lobby-hub .holo-base .hb-rays{
+  position:absolute;left:50%;bottom:22px;transform:translateX(-50%);
+  width:100%;height:130px;
+  background:linear-gradient(to top,rgba(125,249,255,.4),rgba(125,249,255,.1) 55%,transparent 88%);
+  clip-path:polygon(41% 100%,59% 100%,100% 0,0 0);
+  mix-blend-mode:screen;opacity:.9;animation:hbFlicker 4.2s ease-in-out infinite;
 }
-.lobby-hub .holo-base .hb-scan{
-  position:absolute;left:50%;bottom:14px;transform:translateX(-50%);
-  width:100%;height:100%;
-  background:repeating-linear-gradient(to top,rgba(125,249,255,0) 0 7px,rgba(125,249,255,.16) 7px 9px);
-  clip-path:polygon(33% 100%,67% 100%,100% 0,0 0);
-  mix-blend-mode:screen;opacity:.55;animation:hbScan 1.5s linear infinite;
+/* lapisan hologram di DEPAN kartu */
+.lobby-hub .stage-center .holo-glass{
+  position:absolute;left:50%;bottom:0;transform:translateX(-50%);
+  width:min(100%,38vh,310px);height:min(54vh,420px);max-height:100%;
+  z-index:4;pointer-events:none;overflow:hidden;mix-blend-mode:screen;
 }
-@keyframes hbPulse{0%,100%{opacity:.85;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.05)}}
-@keyframes hbFlicker{0%,100%{opacity:.85}44%{opacity:.7}46%{opacity:.95}70%{opacity:.78}}
-@keyframes hbScan{from{transform:translateX(-50%) translateY(0)}to{transform:translateX(-50%) translateY(-9px)}}
+.lobby-hub .holo-glass .hg-tint{
+  position:absolute;inset:0;
+  background:
+    linear-gradient(to top,rgba(125,249,255,.28),rgba(125,249,255,.05) 36%,transparent 62%),
+    repeating-linear-gradient(to bottom,rgba(160,255,255,0) 0 3px,rgba(160,255,255,.11) 3px 4px);
+}
+.lobby-hub .holo-glass .hg-scan{
+  position:absolute;left:0;right:0;top:0;height:26%;
+  background:linear-gradient(to bottom,transparent,rgba(205,255,255,.42),transparent);
+  opacity:.9;animation:hgSweep 4.2s cubic-bezier(.45,0,.55,1) infinite;
+}
+@keyframes hbPulse{0%,100%{opacity:.9;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.04)}}
+@keyframes hbFlicker{0%,100%{opacity:.9}45%{opacity:.72}47%{opacity:.98}72%{opacity:.8}}
+@keyframes hgSweep{0%{transform:translateY(-130%)}60%,100%{transform:translateY(430%)}}
 @media(prefers-reduced-motion:reduce){
-  .lobby-hub .holo-base .hb-disc,.lobby-hub .holo-base .hb-ring,.lobby-hub .holo-base .hb-cone,.lobby-hub .holo-base .hb-scan{animation:none!important}
+  .lobby-hub .holo-base .hb-glow,.lobby-hub .holo-base .hb-disc,.lobby-hub .holo-base .hb-ring,.lobby-hub .holo-base .hb-rays,.lobby-hub .holo-glass .hg-scan{animation:none!important}
 }

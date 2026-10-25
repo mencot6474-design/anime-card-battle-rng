@@ -1144,10 +1144,11 @@ function renderLobby(){
       ${(typeof renderGlobalLuckWidget === 'function') ? '<div class="hub-gl-widget">' + renderGlobalLuckWidget() + '</div>' : ''}
       <div class="stage-eyebrow">ACTIVE CARD</div>
       <div class="stage-center">
-        <div class="holo-base" aria-hidden="true"><span class="hb-cone"></span><span class="hb-disc"></span><span class="hb-ring"></span><span class="hb-scan"></span></div>
+        <div class="holo-base" aria-hidden="true"><span class="hb-glow"></span><span class="hb-rays"></span><span class="hb-disc"></span><span class="hb-ring"></span></div>
         <div class="card-float${eq&&CARDS[eq.char]&&CARDS[eq.char].fullArt?' fa':''}">
           ${hubCardHtml(eq,' id="hubCard"')}
         </div>
+        <div class="holo-glass" aria-hidden="true"><span class="hg-tint"></span><span class="hg-scan"></span></div>
       </div>
       <div class="stage-hint"><kbd>KLIK</kbd> UNTUK BUKA BACKPACK</div>
       <button class="hub-install-btn" id="hubInstallBtn" type="button" style="display:none" title="Install aplikasi ke perangkat">
