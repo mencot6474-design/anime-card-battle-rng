@@ -975,8 +975,10 @@ function renderRaidShop(){
     }
     btn.disabled=dis;
     btn.className="hsd-buy-action cp-buy-action" + (dis?" disabled":"");
+    /* Kartu BOSS: JANGAN pasang art di tombol buy — kotak ikon cuma 32px,
+       potret boss luber keluar tombol. Sisakan teks + panah. */
     btn.innerHTML=`
-      <div class="hsd-ba-ic">${ICO[it.k]||"🎁"}</div>
+      ${it.it.card?"":`<div class="hsd-ba-ic">${ICO[it.k]||"🎁"}</div>`}
       <div class="hsd-ba-text">
         <small>${small}</small>
         <b>${big}</b>
