@@ -118,6 +118,11 @@ end;
 $$;
 
 revoke all on function public.earn_gems(integer) from public;
+-- Supabase memberi grant default EXECUTE ke anon/authenticated untuk fungsi
+-- baru di schema public. `revoke ... from public` TIDAK mencabut grant milik
+-- role anon itu, jadi harus disebut eksplisit (kalau tidak, anon tetap bisa
+-- memanggil dan cuma ditahan oleh cek auth.uid()).
+revoke execute on function public.earn_gems(integer) from anon, authenticated;
 grant execute on function public.earn_gems(integer) to authenticated;
 
 commit;
