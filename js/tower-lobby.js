@@ -1144,6 +1144,7 @@ function renderLobby(){
       ${(typeof renderGlobalLuckWidget === 'function') ? '<div class="hub-gl-widget">' + renderGlobalLuckWidget() + '</div>' : ''}
       <div class="stage-eyebrow">ACTIVE CARD</div>
       <div class="stage-center">
+        <div class="holo-base" aria-hidden="true"><span class="hb-cone"></span><span class="hb-disc"></span><span class="hb-ring"></span><span class="hb-scan"></span></div>
         <div class="card-float${eq&&CARDS[eq.char]&&CARDS[eq.char].fullArt?' fa':''}">
           ${hubCardHtml(eq,' id="hubCard"')}
         </div>
