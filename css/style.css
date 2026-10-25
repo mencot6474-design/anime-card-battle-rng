@@ -49942,3 +49942,25 @@ html.fps-locked .bp-fchip{
 #authScreen .ac-title::after{color:var(--sys);clip-path:inset(55% 0 0 0);animation:acGl2 2.7s infinite steps(2)}
 @keyframes acGl1{0%,92%,100%{transform:translateX(0)}94%{transform:translateX(-2px)}97%{transform:translateX(2px)}}
 @keyframes acGl2{0%,90%,100%{transform:translateX(0)}93%{transform:translateX(2px)}96%{transform:translateX(-2px)}}
+
+/* ============================================================
+   AUTH CYBER — Unit D: layar memuat "hidup" ala prototipe.
+   Emblem spiral dibungkus panel hologram yang melayang (ldFloat) +
+   garis scan menyapu (ldHscan) + readout persen (ldPct, diisi
+   runLoading). Tetap AUTO-advance (tanpa tap-gate) biar nggak ada
+   jalan buntu di HP lemah. Semua ID JS (ldFill/ldStatus/ldPct) utuh.
+   ============================================================ */
+#loadingScreen .ld-holo{position:relative;width:132px;height:132px;margin:0 auto 18px;border-radius:10px;overflow:hidden;display:grid;place-items:center;background:linear-gradient(160deg,rgba(20,30,48,.92),rgba(8,12,22,.95));border:1px solid var(--ln);box-shadow:0 18px 40px rgba(0,0,0,.55),var(--glow);animation:ldFloat 5s ease-in-out infinite}
+#loadingScreen .ld-holo::after{content:"";position:absolute;inset:0;background:radial-gradient(62% 42% at 50% 34%,rgba(125,249,255,.22),transparent 70%);pointer-events:none}
+#loadingScreen .ld-scan{position:absolute;left:0;right:0;height:38%;top:-45%;background:linear-gradient(180deg,transparent,rgba(125,249,255,.42),transparent);animation:ldHscan 2.6s ease-in-out infinite;pointer-events:none}
+@keyframes ldFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes ldHscan{0%{top:-45%}100%{top:115%}}
+#loadingScreen .ld-holo .ld-logo{margin:0;animation:none;width:78px;height:78px;border-radius:50%;background:radial-gradient(circle at 40% 32%,rgba(125,249,255,.24),rgba(8,14,24,.6) 70%);box-shadow:0 0 22px rgba(125,249,255,.4),inset 0 0 14px rgba(125,249,255,.15)}
+#loadingScreen .ld-holo .ld-logo svg{width:46px;height:46px;animation:ldSpinSlow 9s linear infinite}
+@keyframes ldSpinSlow{to{transform:rotate(360deg)}}
+#loadingScreen .ld-meta{display:flex;justify-content:space-between;align-items:center;margin:0 0 8px;padding:0 2px}
+#loadingScreen .ld-brand{font-family:"Rajdhani",sans-serif;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:#6d849a}
+#loadingScreen .ld-pct{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:15px;letter-spacing:.1em;color:var(--sys);text-shadow:0 0 10px rgba(125,249,255,.5)}
+#loadingScreen .ld-status{animation:ldStatusGlow 1.8s ease-in-out infinite}
+@keyframes ldStatusGlow{0%,100%{opacity:.75}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){#loadingScreen .ld-holo,#loadingScreen .ld-scan,#loadingScreen .ld-holo .ld-logo svg,#loadingScreen .ld-status{animation:none!important}}

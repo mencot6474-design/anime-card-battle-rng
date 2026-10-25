@@ -470,14 +470,17 @@ function runLoading(done){
   document.getElementById("authSpin").classList.add("hidden");
   const fill=document.getElementById("ldFill");
   const status=document.getElementById("ldStatus");
+  const pctEl=document.getElementById("ldPct");
   scr.classList.remove("hidden");
   const steps=["Menyinkronkan data…","Membangun deck…","Menyiapkan arena…","Memuat dunia…","Siarp!"];
   const dur=3000,t0=Date.now();
   fill.style.width="0%";
+  if(pctEl) pctEl.textContent="0%";
   let completed=false;
   const iv=setInterval(()=>{
     const p=Math.min(1,(Date.now()-t0)/dur);
     fill.style.width=(p*100).toFixed(1)+"%";
+    if(pctEl) pctEl.textContent=Math.round(p*100)+"%";
     status.textContent=steps[Math.min(steps.length-1,Math.floor(p*steps.length))];
     if(p>=1&&!completed){completed=true;clearInterval(iv);setTimeout(done,250);}
   },60);
