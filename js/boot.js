@@ -420,6 +420,27 @@ document.getElementById("wlOk").onclick=()=>{
 };
 /* klik area gelap di sekitar popup = tutup juga, supaya tidak ada jalan buntu kalau tombolnya tidak terjangkau */
 document.getElementById("welcomeModal").addEventListener("click",e=>{if(e.target.id==="welcomeModal")document.getElementById("welcomeModal").classList.add("hidden");});
+function showWelcomeWindow(name){
+  const wm=document.getElementById("welcomeModal");
+  const nm=document.getElementById("wlName");
+  if(nm) nm.textContent=(name||"Hunter").toUpperCase();
+  const lv=document.getElementById("wlLvl");
+  if(lv) lv.textContent=""+(state&&state.playerLv?state.playerLv:1);
+  const pw=document.getElementById("wlPw");
+  if(pw){ try{ pw.textContent=(typeof totalPower==="function")?fmt(totalPower()):"0"; }catch(e){ pw.textContent="0"; } }
+  const parts=document.getElementById("wlParts");
+  if(parts&&!parts.childElementCount){
+    for(let i=0;i<18;i++){const p=document.createElement("div");p.className="pt";
+      p.style.left=(Math.random()*100).toFixed(1)+"%";
+      p.style.animationDuration=(6+Math.random()*7).toFixed(2)+"s";
+      p.style.animationDelay=(-Math.random()*7).toFixed(2)+"s";
+      parts.appendChild(p);}
+  }
+  wm.classList.remove("hidden");
+  /* putar ulang animasi materi tiap masuk */
+  const win=document.getElementById("wlWin");
+  if(win){ win.style.animation="none"; void win.offsetWidth; win.style.animation=""; }
+}
 async function enterGame(name,welcome){
   currentUser=name;
   localStorage.setItem(SESSION_KEY,name);
@@ -454,8 +475,7 @@ async function enterGame(name,welcome){
       location.hash="#/lobby";
       render();
       if(welcome){
-        document.getElementById("wlMsg").textContent="Selamat datang, "+name+"!";
-        document.getElementById("welcomeModal").classList.remove("hidden");
+        showWelcomeWindow(name);
       }
     } catch(e) {
       console.error('Post-login render FAILED:', e.message, e.stack);

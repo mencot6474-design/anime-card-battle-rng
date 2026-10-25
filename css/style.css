@@ -49981,3 +49981,85 @@ html.fps-locked .bp-fchip{
 #loadingScreen .ld-pct{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:15px;letter-spacing:.1em;color:var(--sys);text-shadow:0 0 10px rgba(125,249,255,.5)}
 #loadingScreen .ld-status{animation:ldStatusGlow 1.8s ease-in-out infinite}
 @media (prefers-reduced-motion:reduce){#loadingScreen .ld-holo,#loadingScreen .ld-scan,#loadingScreen .ld-hscan,#loadingScreen .ld-holo .ld-logo svg,#loadingScreen .ld-status{animation:none!important}}
+
+/* ============================================================
+   AUTH CYBER — Unit F: popup "berhasil masuk" = JENDELA SISTEM
+   ala Solo Leveling (di-ACC user di prototipe _tmp). Panel
+   clip-path berbracket, bar status berkedip, emblem hex+ring
+   pulsa, judul glitch (data-t), chip Lv/Power REAL, sapuan
+   cahaya + partikel naik. Semua animasi transform/opacity/filter
+   (composited); guard reduced-motion. ID lama dipertahankan:
+   wlOk (tombol), wlMsg (sub). Baru: wlWin, wlParts, wlName,
+   wlLvl, wlPw — diisi boot.js dengan state asli.
+   ============================================================ */
+#welcomeModal{--hot:#FF5C8A;--mut2:#6d849a;--lns:rgba(125,249,255,.16)}
+#welcomeModal .sw-parts{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
+#welcomeModal .sw-parts .pt{position:absolute;bottom:-6px;width:3px;height:3px;border-radius:50%;background:var(--sys);opacity:0;box-shadow:0 0 7px rgba(125,249,255,.9);animation:swRise linear infinite}
+@keyframes swRise{0%{transform:translateY(0) scale(.5);opacity:0}10%{opacity:.9}90%{opacity:.4}100%{transform:translateY(-220px) scale(1);opacity:0}}
+#welcomeModal .syswin{position:relative;z-index:2;width:min(460px,92vw);
+  background:linear-gradient(180deg,rgba(20,30,48,.96),rgba(9,14,24,.97));
+  border:1px solid var(--ln);
+  clip-path:polygon(0 14px,14px 0,calc(100% - 14px) 0,100% 14px,100% calc(100% - 14px),calc(100% - 14px) 100%,14px 100%,0 calc(100% - 14px));
+  box-shadow:0 24px 70px rgba(0,0,0,.65),var(--glow),inset 0 0 30px rgba(125,249,255,.05);
+  animation:swMateri .55s cubic-bezier(.2,.9,.2,1) both}
+@keyframes swMateri{
+  0%{opacity:0;transform:scale(.9) translateY(12px);filter:blur(7px) brightness(1.9)}
+  45%{opacity:1;filter:blur(0) brightness(1.25)}
+  60%{filter:brightness(.85)} 70%{filter:brightness(1.4)}
+  100%{transform:scale(1) translateY(0);filter:brightness(1)}}
+#welcomeModal .syswin::before{content:"";position:absolute;inset:3px;border:1px solid var(--lns);pointer-events:none;
+  clip-path:polygon(0 12px,12px 0,calc(100% - 12px) 0,100% 12px,100% calc(100% - 12px),calc(100% - 12px) 100%,12px 100%,0 calc(100% - 12px))}
+#welcomeModal .cnr{position:absolute;width:15px;height:15px;border:2px solid var(--sys);z-index:4;pointer-events:none}
+#welcomeModal .cnr.tl{top:5px;left:5px;border-right:0;border-bottom:0}
+#welcomeModal .cnr.tr{top:5px;right:5px;border-left:0;border-bottom:0}
+#welcomeModal .cnr.bl{bottom:5px;left:5px;border-right:0;border-top:0}
+#welcomeModal .cnr.br{bottom:5px;right:5px;border-left:0;border-top:0}
+#welcomeModal .bar{display:flex;align-items:center;gap:9px;padding:11px 20px;border-bottom:1px solid var(--lns);
+  background:linear-gradient(90deg,rgba(125,249,255,.10),transparent 60%)}
+#welcomeModal .bar .dot{width:7px;height:7px;border-radius:50%;background:var(--sys);box-shadow:var(--glow);animation:swBlink 1.4s steps(2) infinite}
+@keyframes swBlink{50%{opacity:.25}}
+#welcomeModal .bar .tag{font-family:"Rajdhani",sans-serif;font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--sys)}
+#welcomeModal .bar .tag b{color:var(--hot);font-weight:700}
+#welcomeModal .bar .glyph{margin-left:auto;font-family:"Rajdhani",sans-serif;font-size:11px;letter-spacing:.2em;color:var(--mut2)}
+#welcomeModal .body{padding:24px 28px;text-align:center;position:relative;overflow:hidden}
+#welcomeModal .sweep{position:absolute;top:0;bottom:0;left:-40%;width:40%;pointer-events:none;
+  background:linear-gradient(100deg,transparent,rgba(125,249,255,.16) 45%,rgba(181,140,255,.22) 55%,transparent);
+  transform:skewX(-14deg);animation:swSweep 3.6s ease-in-out .4s infinite}
+@keyframes swSweep{0%{left:-45%}55%{left:115%}100%{left:115%}}
+#welcomeModal .emblem{position:relative;width:104px;height:104px;margin:2px auto 14px;display:grid;place-items:center}
+#welcomeModal .ring{position:absolute;inset:0;border-radius:50%;border:1px solid var(--ln);opacity:.6}
+#welcomeModal .r1{animation:swRing 2.2s ease-out infinite}
+#welcomeModal .r2{inset:10px;border-color:rgba(181,140,255,.4);animation:swRing 2.2s ease-out .5s infinite}
+@keyframes swRing{0%{transform:scale(.92);opacity:.7;box-shadow:0 0 0 rgba(125,249,255,0)}
+  60%{opacity:.15}100%{transform:scale(1.18);opacity:0;box-shadow:0 0 26px rgba(125,249,255,.25)}}
+#welcomeModal .hex{position:absolute;inset:6px;background:linear-gradient(160deg,rgba(125,249,255,.2),rgba(181,140,255,.12));
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);animation:swHex 3.2s ease-in-out infinite}
+@keyframes swHex{0%,100%{filter:brightness(1)}50%{filter:brightness(1.35)}}
+#welcomeModal .emblem svg{position:relative;width:56px;height:56px}
+#welcomeModal .emblem svg path{stroke:var(--sys)}
+#welcomeModal .h1{position:relative;display:inline-block;font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:34px;letter-spacing:.05em;
+  text-transform:uppercase;line-height:1;color:var(--txt);text-shadow:0 0 16px rgba(125,249,255,.5);
+  animation:swThrob 2.6s ease-in-out infinite}
+@keyframes swThrob{0%,100%{text-shadow:0 0 16px rgba(125,249,255,.5)}50%{text-shadow:0 0 24px rgba(125,249,255,.85),0 0 40px rgba(181,140,255,.4)}}
+#welcomeModal .h1::before,#welcomeModal .h1::after{content:attr(data-t);position:absolute;left:0;right:0;top:0;overflow:hidden;pointer-events:none}
+#welcomeModal .h1::before{color:var(--hot);clip-path:inset(0 0 55% 0);animation:swGl1 3.4s infinite steps(2)}
+#welcomeModal .h1::after{color:var(--sys);clip-path:inset(55% 0 0 0);animation:swGl2 2.7s infinite steps(2)}
+@keyframes swGl1{0%,92%,100%{transform:translateX(0)}94%{transform:translateX(-2px)}97%{transform:translateX(2px)}}
+@keyframes swGl2{0%,90%,100%{transform:translateX(0)}93%{transform:translateX(2px)}96%{transform:translateX(-2px)}}
+#welcomeModal .sub{margin-top:10px;font-family:"Rajdhani",sans-serif;font-weight:600;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
+#welcomeModal .who{margin-top:4px;font-family:"Rajdhani",sans-serif;font-weight:700;font-size:22px;letter-spacing:.06em;color:var(--txt)}
+#welcomeModal .who .nm{color:var(--sys);text-shadow:0 0 12px rgba(125,249,255,.5)}
+#welcomeModal .chips{display:flex;justify-content:center;gap:10px;margin:18px 0 6px}
+#welcomeModal .chip{display:flex;align-items:center;gap:7px;padding:8px 14px;border:1px solid var(--lns);
+  background:rgba(9,14,24,.7);border-radius:7px;font-family:"Rajdhani",sans-serif}
+#welcomeModal .chip .k{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut2)}
+#welcomeModal .chip .v{font-weight:700;font-size:16px;letter-spacing:.04em}
+#welcomeModal .chip.lvl .v{color:var(--vio)} #welcomeModal .chip.pw .v{color:var(--hot)}
+#welcomeModal .go{margin-top:18px;width:100%;padding:13px 22px;border:none;cursor:pointer;
+  font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:17px;letter-spacing:.24em;text-transform:uppercase;
+  color:#04121a;background:linear-gradient(120deg,var(--sys),var(--vio));
+  clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%);
+  box-shadow:0 0 18px rgba(125,249,255,.45);transition:transform .08s,filter .18s}
+#welcomeModal .go:hover{filter:brightness(1.12)}
+#welcomeModal .go:active{transform:scale(.97)}
+@media (prefers-reduced-motion:reduce){#welcomeModal .syswin,#welcomeModal .sweep,#welcomeModal .ring,#welcomeModal .hex,#welcomeModal .h1,#welcomeModal .h1::before,#welcomeModal .h1::after,#welcomeModal .bar .dot,#welcomeModal .sw-parts .pt{animation:none!important}}
