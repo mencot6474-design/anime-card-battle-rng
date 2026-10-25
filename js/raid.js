@@ -223,8 +223,49 @@ async function wbClaim(){
   try{save();}catch(e){}
   try{renderShell();}catch(e){}
   sfx.crit();
-  raidToast("REWARD · +"+(res.gems||0)+" GEM · +"+(res.tokens||0)+" TOKEN"+(res.packs?" · +"+res.packs+" PACK 100K":"")+(res.title?" · "+res.title:""));
+  showWbRewardModal(res);
   wbRefresh(true,true).then(()=>{if(raidView==="hub")renderRaidHub();});
+}
+/* Modal klaim reward World Boss — rank + gelar + rincian hadiah (gem / token WB / instan pack). */
+function showWbRewardModal(res){
+  if(!res||res.ok===false)return;
+  const old=document.getElementById("wbRewardModal");if(old)old.remove();
+  const pack=res.packs||0;
+  const rank=res.rank?`#${res.rank}`:"&mdash;";
+  const sub=res.total_players?`<span class="wrm-rank-sub">/ ${fmt(res.total_players)} hunter</span>`:"";
+  const title=res.title?`<div class="wrm-title">&#9733; ${res.title}</div>`:"";
+  const el=document.createElement("div");
+  el.id="wbRewardModal";el.className="wrm-overlay";
+  el.innerHTML=`
+    <div class="wrm-card">
+      <div class="wrm-sweep"></div>
+      <div class="wrm-kicker">WORLD BOSS &middot; REWARD DIKLAIM</div>
+      <div class="wrm-rank">${rank}${sub}</div>
+      ${title}
+      <div class="wrm-rewards">
+        <div class="wrm-rw" style="--d:.06s">
+          <div class="wrm-rw-ic"><img src="assets/images/premium-currency.webp" alt="GEM"></div>
+          <div class="wrm-rw-amt">+${fmt(res.gems||0)}</div>
+          <div class="wrm-rw-lbl">GEM</div>
+        </div>
+        <div class="wrm-rw" style="--d:.16s">
+          <div class="wrm-rw-ic wrm-tok"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 10h6M9 14h6"/></svg></div>
+          <div class="wrm-rw-amt">+${fmt(res.tokens||0)}</div>
+          <div class="wrm-rw-lbl">TOKEN WB</div>
+        </div>
+        ${pack>0?`<div class="wrm-rw" style="--d:.26s">
+          <div class="wrm-rw-ic"><img src="assets/images/instanpack-100k.webp?v=trans1" alt="PACK"></div>
+          <div class="wrm-rw-amt">&times;${fmt(pack)}</div>
+          <div class="wrm-rw-lbl">INSTAN PACK 100K</div>
+        </div>`:""}
+      </div>
+      <button class="wrm-close" type="button">TUTUP</button>
+    </div>`;
+  document.body.appendChild(el);
+  const close=()=>{el.classList.remove("in");el.classList.add("out");clearTimeout(el._t);el._t=setTimeout(()=>el.remove(),280);};
+  el.querySelector(".wrm-close").onclick=close;
+  el.addEventListener("click",e=>{if(e.target===el)close();});
+  requestAnimationFrame(()=>el.classList.add("in"));
 }
 function stopRaid(){
   if(raid){ if(raid.timer)clearTimeout(raid.timer); raid=null; }
@@ -336,10 +377,10 @@ function renderRaidHub(){
         <div class="wbr-panel wbr-track">
           <div class="wbr-ptitle"><span>REWARD TRACK</span><span class="grow"></span><span class="wbr-mini">HARIAN</span></div>
           <div class="wbr-track-list">
-            <div class="wbr-tr"><span class="wbr-tr-p">#1</span><span>JUARA HARIAN</span><span class="wbr-tr-r">1.000 GEM</span></div>
-            <div class="wbr-tr"><span class="wbr-tr-p">#2-10</span><span>TOP 10 DUNIA</span><span class="wbr-tr-r">500 → 100 GEM</span></div>
-            <div class="wbr-tr"><span class="wbr-tr-p">#11-200</span><span>PAPAN ATAS</span><span class="wbr-tr-r">100 GEM</span></div>
-            <div class="wbr-tr"><span class="wbr-tr-p">ALL</span><span>PARTISIPAN</span><span class="wbr-tr-r">100 GEM · 300 TOK</span></div>
+            <div class="wbr-tr"><span class="wbr-tr-p">#1</span><span>JUARA HARIAN</span><span class="wbr-tr-r">1.000 GEM · 10K TOK · 10 PACK</span></div>
+            <div class="wbr-tr"><span class="wbr-tr-p">#2</span><span>RUNNER-UP</span><span class="wbr-tr-r">500 GEM · 5K TOK · 5 PACK</span></div>
+            <div class="wbr-tr"><span class="wbr-tr-p">#3</span><span>TOP 3</span><span class="wbr-tr-r">250 GEM · 2.5K TOK · 3 PACK</span></div>
+            <div class="wbr-tr"><span class="wbr-tr-p">ALL</span><span>PARTISIPAN</span><span class="wbr-tr-r">100 GEM · 1K TOK · 1 PACK</span></div>
           </div>
         </div>
 
