@@ -49750,3 +49750,8 @@ html.fps-locked .bp-fchip{
   .lobby-hub .hub-left>.h-l1 .tile-action,
   .lobby-hub .hub-left>.h-l2 .tile-action{padding:2px 7px!important;margin-top:0!important}
 }
+
+/* ===== BACKPACK: hapus badge centang equip pada tile koleksi yang masuk deck =====
+   Penanda "di deck" kini lewat urutan paling awal (lihat sort renderBackpackPanel),
+   jadi logo ✓ cyan di pojok kiri-atas dihapus. */
+.backpack-panel .bp-tile.in-deck::after{content:none!important;display:none!important}
