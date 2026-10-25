@@ -49951,6 +49951,11 @@ html.fps-locked .bp-fchip{
    melayang (ldFloat) dengan sheen foil (ld-tint) + garis scan menyapu
    (ld-hscan) + persen (ldPct). Tetap AUTO-advance, ID JS utuh.
    ============================================================ */
+/* BUGFIX oklusi: #authScreen (inline z 999999) belakangan di DOM & z sama,
+   jadi nempel DI ATAS loader selama 3 detik -> orang lihat login doang,
+   "nggak ada animasi memuat". Naikkan loader di atas login (tetap di bawah
+   modal welcome/authDone yang 1000001). */
+#loadingScreen{z-index:1000000}
 #loadingScreen .ld-holo{position:relative;width:min(210px,58vw);aspect-ratio:3/4;margin:0 auto 18px;border-radius:18px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:radial-gradient(120% 90% at 50% -12%,rgba(125,249,255,.18),transparent 60%),linear-gradient(160deg,rgba(20,30,48,.92),rgba(8,12,22,.96));border:1px solid var(--ln);box-shadow:0 22px 50px rgba(0,0,0,.6),var(--glow);animation:ldFloat 5s ease-in-out infinite}
 @keyframes ldFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 @keyframes ldHscan{0%{top:-48%}100%{top:118%}}
