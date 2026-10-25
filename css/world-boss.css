@@ -839,7 +839,24 @@ body.on-raid:has(.wbr-hub) main#app > .tw-page{
   animation:wbBeam 4.2s ease-in-out infinite;
 }
 @keyframes wbBeam{0%,100%{opacity:.85}45%{opacity:.6}50%{opacity:1}72%{opacity:.78}}
+/* lapisan hologram di DEPAN kartu: tint + scanline + sapuan cahaya */
+.wbr-artwrap .wbr-holo{
+  position:absolute;inset:0;z-index:3;pointer-events:none;
+  border-radius:inherit;overflow:hidden;mix-blend-mode:screen;
+}
+.wbr-holo .wh-tint{
+  position:absolute;inset:0;
+  background:
+    linear-gradient(to top,rgba(125,249,255,.24),rgba(125,249,255,.04) 36%,transparent 62%),
+    repeating-linear-gradient(to bottom,rgba(160,255,255,0) 0 3px,rgba(160,255,255,.1) 3px 4px);
+}
+.wbr-holo .wh-scan{
+  position:absolute;left:0;right:0;top:0;height:26%;
+  background:linear-gradient(to bottom,transparent,rgba(205,255,255,.34),transparent);
+  opacity:.9;animation:wbHoloSweep 4.6s cubic-bezier(.45,0,.55,1) infinite;
+}
+@keyframes wbHoloSweep{0%{transform:translateY(-130%)}60%,100%{transform:translateY(430%)}}
 @media(prefers-reduced-motion:reduce){
-  .wbr-beam{animation:none!important}
+  .wbr-beam,.wbr-holo .wh-scan{animation:none!important}
 }
 

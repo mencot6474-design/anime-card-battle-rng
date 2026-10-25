@@ -320,10 +320,11 @@ function renderRaidHub(){
           <div class="wbr-l wbr-floor" style="--z:-340px;--m:3"></div>
           <div class="wbr-l wbr-ghost" style="--z:-180px;--m:9"><img id="wbrGhost" src="${b.art}" alt=""></div>
           <div class="wbr-l wbr-halo" style="--z:-120px;--m:7"></div>
-          <div class="wbr-l wbr-ped" style="--z:-60px;--m:5"></div>
-          <div class="wbr-l wbr-beam" style="--z:-30px;--m:8"></div>
+          <div class="wbr-l wbr-ped" style="--z:-60px;--m:9"></div>
+          <div class="wbr-l wbr-beam" style="--z:-30px;--m:9"></div>
           <div class="wbr-artwrap" id="wbrArtWrap" style="--z:0px;--m:14">
             <img class="wbr-art${b.alt?" alt":""}" id="wbrArt" src="${b.art}" alt="${b.name}">
+            <div class="wbr-holo" aria-hidden="true"><span class="wh-tint"></span><span class="wh-scan"></span></div>
           </div>
           <div class="wbr-l wbr-veil" style="--z:20px;--m:1"></div>
         </div>
