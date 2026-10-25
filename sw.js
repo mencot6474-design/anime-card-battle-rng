@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v163-towerdrop';
+const CACHE_NAME = 'anime-card-battle-v164-authRls';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

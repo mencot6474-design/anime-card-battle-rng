@@ -374,17 +374,23 @@ async function submitAuth(){
       finish();
       return;
     }
-    // Register lokal
-    users[key]={name,pass:passH,created:Date.now()};
-    saveUsers(users);
-
-    // Register Cloud
+    /* Register cloud DULU: sejak 0021 register_player menjawab created:false
+       kalau username sudah dipakai, jadi status lokal jangan ditulis sebelum
+       server memutuskan. Tanpa cloud (offline) -> tetap daftar lokal. */
     const initSt = freshState();
     if(window.CloudDB){
+      let reg=null;
       try {
-        await window.CloudDB.registerUser(name, passH, initSt);
+        reg = await window.CloudDB.registerUser(name, passH, initSt);
       } catch(err){ console.warn("Cloud register fail:", err); }
+      if(reg && reg.created === false){
+        auError("Username itu sudah dipakai. Coba masuk.");
+        finish();
+        return;
+      }
     }
+    users[key]={name,pass:passH,created:Date.now()};
+    saveUsers(users);
     /* Fase 1 JWT: bikin akun Auth untuk user baru (tidak memblokir UI). */
     if(window.CloudAuth) window.CloudAuth.kick(name);
 
@@ -461,9 +467,13 @@ function showWelcomeWindow(name){
 async function enterGame(name,welcome){
   currentUser=name;
   localStorage.setItem(SESSION_KEY,name);
-  /* Fase 1 JWT: sesi Auth ikut dipulihkan saat auto-login (password asli
-     tidak ada di sini, jadi CloudAuth memakai hash lokal + refresh token). */
-  if(window.CloudAuth) window.CloudAuth.kick(name);
+  /* Sesi Auth harus SIAP sebelum updateSession & pull save: keduanya sudah
+     membaca lewat JWT, dan anon dicabut di 0021. Await ini cegah pull gagal
+     -> save lokal basi menimpa progres cloud. */
+  if(window.CloudAuth){
+    try { await window.CloudAuth.kick(name); }
+    catch(e){ console.warn("Auth kick err:", e && e.message); }
+  }
   if(window.CloudDB && window.CURRENT_DEVICE_SESSION){
     window.CloudDB.updateSession(name, window.CURRENT_DEVICE_SESSION).catch(()=>{});
     if(window.startSessionHeartbeat) window.startSessionHeartbeat(name);
