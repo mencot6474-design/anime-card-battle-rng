@@ -663,6 +663,19 @@ const CloudDB = {
   async buyGlobalLuck(username) {
     if (!username) return null;
     return await this._authRpc(username, "buy_global_luck", {});
+  },
+
+  /* RPC GUARD (0032): status "bom" + eksekusi reset.
+     `guard_status` selalu diizinkan walau akun sedang dikunci; RPC tulis lain
+     dibalas 403 GUARD_PENDING oleh pre-request hook sampai `guard_nuke` jalan. */
+  async guardStatus(username) {
+    if (!username) return null;
+    return await this._authRpc(username, "guard_status", {});
+  },
+
+  async guardNuke(username) {
+    if (!username) return null;
+    return await this._authRpc(username, "guard_nuke", { p_signal: "login" });
   }
 };
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v175-saveLock';
+const CACHE_NAME = 'anime-card-battle-v176-rpcGuard';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

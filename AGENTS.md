@@ -76,6 +76,10 @@ js/boot.js            router, enterGame, settings, foot menu, label BUILD
 js/devtools-guard.js  deteksi Inspect/F12 (size/console/debugger) → overlay
                       peringatan + RPC report_devtools (0031). Desktop-only,
                       dimuat setelah boot.js; `window.ACBGuard.status()` read-only
+js/rpc-guard.js       RPC guard (0032): panggil `guard_status` di enterGame;
+                      kalau `pending_nuke` → overlay hitung mundur 30 dtk →
+                      `guard_nuke` → hapus cache save lokal → reload.
+                      `window.ACBRpcGuard.check(user)` (dipanggil boot.js:471)
 js/pwa.js             install prompt/service worker
 js/coret.js           fitur coret dev (tombol float #crFab)
 sw.js / manifest.json PWA (service worker + precache) — tracked, naikkan versi sw bila perlu
@@ -86,8 +90,10 @@ supabase/migrations/  0001–0028 SQL (topup, earn_gems, redeem, world boss 0005
                       guard progres + cap damage WB 0027, ledger item
                       pet/artefak + penalti coin 0028, tamper guard 0029
                       (tamper_log, gating klaim, ledger pack, weather/potion/
-                      progres/pub), koreksi plafon papan 0030, devtools guard 0031
-                      (reset total via RPC report_devtools + guard_allow) — apply lewat
+                       progres/pub), koreksi plafon papan 0030, devtools guard 0031
+                      (reset total via RPC report_devtools + guard_allow), RPC
+                      guard 0032 (honeypot + pre-request fingerprint + bom 30 dtk
+                      lewat guard_status/guard_nuke + guard_cfg/guard_allow) — apply lewat
                       Management API (`_tmp/apply_sql.cjs`, token `_tmp/sbpat.txt`) atau SQL Editor.
                       `supabase db push` DILARANG: riwayat `schema_migrations` remote kosong
                       (0001–0024 dulu dijalankan manual), jadi push akan mengulang semuanya
@@ -107,7 +113,8 @@ world_boss_days), `probe_0028.cjs` (ledger item + penalti coin; seluruh uji di d
 transaksi yang di-rollback lewat `raise exception` — tidak menulis apa pun),
 `probe_0029.cjs` (tamper guard: gating klaim, ledger pack, weather/potion/progres/
 pub/LB, pola rollback yang sama), `probe_0030.cjs` (plafon papan rarest_pull/
-deck_power, rollback), `unit_00NN_client.cjs` (stub fetch), `gen_0025.cjs` / `gen_0027.cjs` / `gen_0028.cjs`
+deck_power, rollback), `probe_0032.cjs` (RPC guard: grant anon, honeypot,
+pre-request lock, nuke, fingerprint, exempt; rollback), `unit_00NN_client.cjs` (stub fetch), `gen_0025.cjs` / `gen_0027.cjs` / `gen_0028.cjs`
 (generator tabel cermin dari data.js/panels.js). `_tmp/sbpat.txt` = PAT
 Supabase — **jangan pernah** di-commit atau disalin keluar.
 ```
@@ -300,6 +307,8 @@ Backpack bukan `display:fixed` bawaan — `toggleBackpack` set inline transform;
 - **Devtools guard (0031) — reset total saat F12.** Diminta user: buka Inspect → peringatan → save kembali ke awal. **Deteksi ada di client** (`js/devtools-guard.js`, dimuat setelah `boot.js`): sinyal `size` (selisih outer/inner > 240 px, harus 2 kali berturut-turut), `console` (getter pada objek yang di-`console.log`, paling spesifik), `debugger` (jeda > 300 ms, hanya setelah interaksi, maks 1×/8 dtk). Desktop-only: dilewati kalau `navigator.webdriver`, `maxTouchPoints > 0`, PWA standalone/fullscreen. Alur: overlay peringatan + hitung mundur 6 dtk → RPC → hapus cache save lokal (`aab-state-v2:*`, `aab-lb2-*`, `aab-lb-av`, `aab-lb-delta`) → reload (save baru ditarik di `enterGame`). Sinyal `size` yang hilang sebelum hitung mundur habis **membatalkan** reset (anti false positive); sinyal `console` tidak bisa dibatalkan.
   **Hukuman di server** (`0031`): RPC `report_devtools(p_signal)` (JWT-only, anon dicabut) menulis `dev_guard` (hits/reset_at/resets/last_signal), membangun ulang `save_data` dari `_fresh_save()` (coin 1000, gem 50, lv 1, kartu starter `CH_UNSTOPPABLE_FIST`, semua progres/pot/weather/pack nol), `sp_legacy=0`, menghapus `player_items`, `player_packs`, `pack_allowance`, `story_progress`, `tower_progress`, `leaderboard_scores`, `leaderboard_claims`, lalu mencatat `tamper_log` `DEVTOOLS_RESET`. Baris `player_saves`/`auth.users` TIDAK dihapus (username tetap, bisa main dari awal). Client tidak pernah mengirim save kosong sendiri, jadi F12 tidak bisa dipakai mereset akun orang lain.
   **WAJIB: `guard_allow`.** Akun developer/owner harus ada di `public.guard_allow` (sudah diisi `admin`), kalau tidak membuka F12 saat mengembangkan game akan mereset progres sendiri. Tambah: `insert into public.guard_allow (username, note) values ('nama','owner');`. Kalau mau melunakkan hukuman, ubah ambang di `report_devtools` (default hit pertama = reset), jangan matikan RPC-nya.
+- **RPC guard (0032) — bot curl/Postman.** Tiga lapis: (a) **honeypot** `free_gems` / `admin_grant` / `dev_unlock_all` / `topup_free` — RPC umpan yang client asli tidak pernah panggil, sengaja digrant ke anon+authenticated; panggilan = bukti keras, bukan heuristik. (b) **`_rpc_pre_request`** (PostgREST `db_pre_request` di role `authenticator`) membaca `request.headers`: UA tool (`curl`/`python`/`postman`/...) atau POST tanpa `Origin`/`Referer` = strike. **Mode default `log`** (`guard_cfg.mode`) — strike hanya dicatat di `rpc_guard`; jangan ubah ke `enforce` sebelum isi tabel diperiksa, karena `_tmp/probe_*.cjs` (UA node) dan WebView aneh akan kena. (c) **pending_nuke** = semua RPC tulis dibalas 403 `GUARD_PENDING` kecuali `guard_status`/`guard_nuke`/`report_devtools`/`link_player_auth`/`auth_whoami`; client `js/rpc-guard.js` menampilkan hitung mundur 30 dtk lalu `guard_nuke` (reset lewat `_guard_nuke`, cermin `report_devtools`), dan kalau client tidak pernah datang server mengeksekusi sendiri setelah `guard_cfg.pending_ttl` (24 jam). Honeypot selalu memicu pending (`honeypot_enforce`, default on) meski mode `log`. Akun `guard_allow` tetap dikecualikan.
+  Rollback darurat kalau pre-request bermasalah: `alter role authenticator reset pgrst.db_pre_request; notify pgrst,'reload config';` (guard tetap ada, hanya pasif). Verifikasi: `node _tmp/probe_0032.cjs` (rollback, 11 skenario).
 - **Batasan deteksi DevTools (jujur).** Semua sinyal di atas heuristik dan bisa di-bypass (DevTools di-undock, breakpoint di-deactivate, `console` tidak dibuka). Hacker yang memanggil RPC langsung lewat `curl`/Postman dengan JWT sendiri **tidak terdeteksi sama sekali** — untuk itu tetap andalkan guard server 0025–0030. Jangan menaikkan agresivitas deteksi (mis. `debugger` tiap frame) karena membekukan game di HP kentang.
 - `evaluate_script` browser-use memakai key `function` (string fungsi), bukan `expression`; tab hidden bikin rAF/screenshot tak bisa dipercaya → verifikasi lewat computed style / sampling canvas.
 - Viewport sempit: jangan ukur dari `100dvh - konstanta`; cek juga bahwa override lama `@media(max-width:700px)` (mis. `.vs-col{flex-direction:row}` di 19184) tidak menang atas blok baru di EOF.
