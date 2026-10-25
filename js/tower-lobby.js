@@ -490,24 +490,27 @@ function infBuy(kind){
   if((state.infTokens||0)<cost){toast("TOKEN KURANG","TOKEN INF TIDAK CUKUP","#f87171");return;}
   if(kind==='gem'){
     const GEM_AMT=10;
-    state.infTokens-=cost;
     (async()=>{
       let res;
       try{
-        if(window.CloudDB&&typeof window.CloudDB.earnGems==='function'){
-          const u=(typeof currentUser!=='undefined'&&currentUser)?String(currentUser):'';
-          res=await window.CloudDB.earnGems(u,GEM_AMT,state);
+        const u=(typeof currentUser!=='undefined'&&currentUser)?String(currentUser):'';
+        if(u&&window.CloudDB&&window.CloudDB.exchangeTokens){
+          /* 0023: server yang potong token + bayar gem (atomik). */
+          res=await window.CloudDB.exchangeTokens(u,'inf');
         }else{
-          state.premiumGems=(state.premiumGems||0)+GEM_AMT; res={ok:true,balance:state.premiumGems};
+          state.infTokens-=cost;
+          state.premiumGems=(state.premiumGems||0)+GEM_AMT;
+          res={ok:true,gems:GEM_AMT,tokens:state.infTokens};
         }
       }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
       if(res&&res.ok){
+        if(typeof res.tokens==='number')state.infTokens=res.tokens;
         save(); try{beep(880,.12,"sine",.07);}catch(e){}
-        toast("TUKAR BERHASIL","-"+cost+" TOKEN · +"+GEM_AMT+" GEM","#ffd700");
+        toast("TUKAR BERHASIL","-"+cost+" TOKEN · +"+(res.gems||GEM_AMT)+" GEM","#ffd700");
       }else{
-        state.infTokens+=cost;
         try{save();}catch(e){}
-        toast("TUKAR GAGAL",(res&&res.msg)||"Coba lagi nanti","#f87171");
+        const why=(res&&res.msg)==="TOKEN_KURANG"?"TOKEN KURANG":((res&&res.msg)||"Coba lagi nanti");
+        toast("TUKAR GAGAL",why,"#f87171");
       }
       try{renderShell();}catch(e){}
       if(towerView==="shop")render();

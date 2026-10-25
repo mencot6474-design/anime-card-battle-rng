@@ -338,46 +338,44 @@ const CloudDB = {
     }
   },
 
-  /* Tambah gems dari grinding (Story/Token INF/World Boss/daily). WAJIB lewat
-     server: merge_player_state selalu pakai saldo cloud di mode biasa, jadi
-     "+gems" client-saja akan ke-wipe. Sejak 0022 RPC earn_gems JWT-only:
-     identitas dari auth.uid(), nominal + kuota harian dicek server. Karena itu
-     argumen username/saveData tidak dikirim lagi (dan save lain tidak bisa
-     ditulis lewat jalur ini). */
-  async earnGems(username, gems, saveData) {
-    gems = Math.max(0, Math.floor(gems || 0));
+  /* ===== GEM (0023): semua klaim per-aksi, nominal dihitung server =====
+     Client cuma menyebut AKSI (stage/bab mana, source token mana). Server
+     yang tahu nominalnya (tabel gem_story_*), jadi tidak ada parameter gem
+     yang bisa dimanipulasi lewat console. */
+  async _gemRpc(username, fn, args) {
+    if (!window.CloudAuth) return { ok: false, msg: "SESI LOGIN TIDAK LENGKAP" };
+    const key = String(username || "").toLowerCase();
+    if (!key) return { ok: false, msg: "SESI LOGIN TIDAK LENGKAP" };
+    let sess = await window.CloudAuth._fresh(key);
+    if (!sess) {
+      await window.CloudAuth.kick(key);
+      sess = await window.CloudAuth._fresh(key);
+    }
+    if (!sess) return { ok: false, msg: "SESI LOGIN TIDAK LENGKAP" };
+    const res = await window.CloudAuth._rpcJwt(fn, args || {}, sess.at);
+    if (!res) return { ok: false, msg: "GAGAL MENGHUBUNGI CLOUD" };
     const ST = this._st();
-    if (!gems) return { ok: false, msg: "JUMLAH GEMS TIDAK VALID" };
-
-    if (!username) {
-      if (ST) ST.premiumGems = (ST.premiumGems || 0) + gems;
+    if (res.ok && typeof res.balance === "number" && ST) {
+      ST.premiumGems = res.balance;
       this._paint();
-      return { ok: true, balance: ST ? (ST.premiumGems || 0) : gems };
     }
+    return res;
+  },
 
-    try {
-      if (!window.CloudAuth) return { ok: false, msg: "SESI LOGIN TIDAK LENGKAP" };
-      const key = String(username).toLowerCase();
-      let sess = await window.CloudAuth._fresh(key);
-      if (!sess) {
-        await window.CloudAuth.kick(key);
-        sess = await window.CloudAuth._fresh(key);
-      }
-      if (!sess) return { ok: false, msg: "SESI LOGIN TIDAK LENGKAP" };
+  claimStoryGem(username, no, diff, kind) {
+    return this._gemRpc(username, "claim_story_gem", { p_no: no, p_diff: diff, p_kind: kind });
+  },
 
-      const res = await window.CloudAuth._rpcJwt("earn_gems", { p_gems: gems }, sess.at);
-      if (!res) return { ok: false, msg: "GEM GAGAL DICATAT — COBA LAGI" };
-      if (res.ok === false) return { ok: false, msg: res.msg || "GAGAL TAMBAH GEMS" };
-      if (typeof res.balance === "number") {
-        if (ST) ST.premiumGems = res.balance;
-        this._paint();
-        return { ok: true, balance: res.balance };
-      }
-      return { ok: false, msg: "GAGAL TAMBAH GEMS" };
-    } catch (err) {
-      console.error("[earnGems] fail", err);
-      return { ok: false, msg: "GAGAL MENGHUBUNGI CLOUD: " + err.message };
-    }
+  claimStoryReplay(username, lv, diff) {
+    return this._gemRpc(username, "claim_story_replay", { p_lv: lv, p_diff: diff });
+  },
+
+  claimDailyGem(username) {
+    return this._gemRpc(username, "claim_daily_gem", {});
+  },
+
+  exchangeTokens(username, source) {
+    return this._gemRpc(username, "exchange_tokens", { p_source: source });
   },
 
   /* ===== WORLD BOSS (harian, skor & attempt di server) =====

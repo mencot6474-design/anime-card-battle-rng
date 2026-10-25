@@ -244,32 +244,25 @@ function _storyMsObj(){
   if(!state.storyGemMilestones||typeof state.storyGemMilestones!=="object")state.storyGemMilestones={};
   return state.storyGemMilestones;
 }
-/* Satu pintu bayar GEM story: optimistis, saldo ikut layar, rollback kalau server nolak. */
-function _storyGemPay(gems,okTitle,okMsg,onFail){
-  if(!state||!gems)return 0;
-  (async()=>{
-    let res;
-    try{
-      if(window.CloudDB&&typeof window.CloudDB.earnGems==="function"){
-        const u=(typeof currentUser!=="undefined"&&currentUser)?String(currentUser):"";
-        res=await window.CloudDB.earnGems(u,gems,state);
-      }else{
-        state.premiumGems=(state.premiumGems||0)+gems; res={ok:true,balance:state.premiumGems};
-      }
-    }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
-    if(res&&res.ok){
-      try{save();}catch(e){}
-      try{renderShell();}catch(e){}
-      try{toast(okTitle,okMsg,"#ffd700");}catch(e){}
-    }else{
-      if(onFail)try{onFail();}catch(e){}
-      try{save();}catch(e){}
-      try{toast("GEM GAGAL",(res&&res.msg)||"Coba lagi nanti","#f87171");}catch(e){}
-    }
-  })();
-  return gems;
+/* Satu pintu hasil klaim GEM: toast + rollback kalau server nolak.
+   Nominal final datang dari server (res.gems) — client cuma menghitung
+   preview untuk layar, bukan untuk pembayaran. */
+function _gemDone(res,okTitle,okMsg,onFail){
+  if(res&&res.ok){
+    try{save();}catch(e){}
+    try{renderShell();}catch(e){}
+    try{toast(okTitle,okMsg,"#ffd700");}catch(e){}
+  }else{
+    if(onFail)try{onFail();}catch(e){}
+    try{save();}catch(e){}
+    try{toast("GEM GAGAL",(res&&res.msg)||"Coba lagi nanti","#f87171");}catch(e){}
+  }
 }
-/* GEM first-clear satu stage — sekali per (stage x mode). */
+function _gemUser(){
+  return (typeof currentUser!=="undefined"&&currentUser)?String(currentUser):"";
+}
+/* GEM first-clear satu stage — sekali per (stage x mode). Server yang tahu
+   nominal & memastikan cuma dibayar sekali (0023 claim_story_gem). */
 function claimStageGem(lv,diffKey){
   const ms=_storyMsObj();
   if(!ms)return 0;
@@ -279,7 +272,18 @@ function claimStageGem(lv,diffKey){
   if(!gems)return 0;
   ms[key]=true;
   try{save();}catch(e){}
-  return _storyGemPay(gems,"STAGE "+lv+" · "+String(diffKey).toUpperCase(),"+"+gems+" GEM",()=>{ms[key]=false;});
+  (async()=>{
+    let res;
+    try{
+      const u=_gemUser();
+      if(u&&window.CloudDB&&window.CloudDB.claimStoryGem) res=await window.CloudDB.claimStoryGem(u,lv,diffKey,"stage");
+      else{state.premiumGems=(state.premiumGems||0)+gems;res={ok:true,gems};}
+    }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
+    if(res&&res.msg==="ALREADY"){try{save();}catch(e){}return;}
+    const paid=(res&&typeof res.gems==="number")?res.gems:gems;
+    _gemDone(res,"STAGE "+lv+" · "+String(diffKey).toUpperCase(),"+"+paid+" GEM",()=>{ms[key]=false;});
+  })();
+  return gems;
 }
 /* Bonus saat SEMUA stage bab tamat — key lama (chap:diff) tetap dipakai, jadi
    player yang sudah pernah klaim milestone penuh tidak dapat dua kali. */
@@ -292,7 +296,18 @@ function claimStoryMilestone(chapNo,diffKey){
   if(!gems)return 0;
   ms[key]=true;
   try{save();}catch(e){}
-  return _storyGemPay(gems,"BAB "+chapNo+" SELESAI · "+String(diffKey).toUpperCase(),"+"+gems+" GEM",()=>{ms[key]=false;});
+  (async()=>{
+    let res;
+    try{
+      const u=_gemUser();
+      if(u&&window.CloudDB&&window.CloudDB.claimStoryGem) res=await window.CloudDB.claimStoryGem(u,chapNo,diffKey,"chapter");
+      else{state.premiumGems=(state.premiumGems||0)+gems;res={ok:true,gems};}
+    }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
+    if(res&&res.msg==="ALREADY"){try{save();}catch(e){}return;}
+    const paid=(res&&typeof res.gems==="number")?res.gems:gems;
+    _gemDone(res,"BAB "+chapNo+" SELESAI · "+String(diffKey).toUpperCase(),"+"+paid+" GEM",()=>{ms[key]=false;});
+  })();
+  return gems;
 }
 /* ===== REPEAT STORY: GEM PER STAGE + COOLDOWN 5 MENIT PER STAGE =====
    Replay stage yang sudah tamat memberi 20% coin & sebagian GEM-nya.
@@ -338,12 +353,27 @@ function storySetCd(lv){
   state.storyCd[storyCdKey(lv)]=Date.now()+STORY_REPEAT_CD_MS;
 }
 function storyInRepeatCd(lv){return !!(state&&diffProg()[state.diff][lv]&&storyCdLeft(lv)>0);}
-/* Replay gem: dibayar tiap stage, dibatasi kooldown stage itu sendiri. */
+/* Replay gem: dibayar tiap stage. Kooldown 5 menit per stage ditegakkan
+   SERVER (0023 claim_story_replay), jadi rotasi stage tetap boleh. */
 function claimStoryRepeatGem(lv,diffKey){
   const one=storyStageGemReward(lv,diffKey);
   if(!one)return 0;
   const gems=Math.max(STORY_REPEAT_GEM_MIN,Math.round(one*STORY_REPEAT_GEM_PCT));
-  return _storyGemPay(gems,"REPLAY STAGE "+lv+" · "+String(diffKey).toUpperCase(),"+"+gems+" GEM");
+  (async()=>{
+    let res;
+    try{
+      const u=_gemUser();
+      if(u&&window.CloudDB&&window.CloudDB.claimStoryReplay) res=await window.CloudDB.claimStoryReplay(u,lv,diffKey);
+      else{state.premiumGems=(state.premiumGems||0)+gems;res={ok:true,gems};}
+    }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
+    if(res&&res.msg==="COOLDOWN"){
+      try{toast("REPLAY COOLDOWN","Stage ini baru saja dibayar — tunggu 5 menit","#fbbf24");}catch(e){}
+      return;
+    }
+    const paid=(res&&typeof res.gems==="number")?res.gems:gems;
+    _gemDone(res,"REPLAY STAGE "+lv+" · "+String(diffKey).toUpperCase(),"+"+paid+" GEM");
+  })();
+  return gems;
 }
 /* Angka GEM yang bakal dibayar stage ini (first clear vs replay) — display only. */
 function storyGemPreview(lv){
@@ -721,8 +751,10 @@ function claimDaily(){
   renderShell();renderDaily();
   if(gems)flushPendingDailyGems(false);
 }
-/* Gem daily dikredit lewat server (cloud-authoritative). Kalau gagal,
-   nominal disimpan di state.dailyGemPending dan dicoba lagi saat modal dibuka. */
+/* Gem daily dikredit lewat server (cloud-authoritative, 1x per hari UTC).
+   Kalau gagal, nominal disimpan di state.dailyGemPending dan dicoba lagi
+   saat modal dibuka. Nominal final = yang dibayar server (siklus 7 hari
+   dihitung server, biar tidak bisa digeser lewat console). */
 let _dailyGemBusy=false;
 async function flushPendingDailyGems(quiet){
   if(_dailyGemBusy||!state||!(state.dailyGemPending>0))return;
@@ -730,19 +762,17 @@ async function flushPendingDailyGems(quiet){
   _dailyGemBusy=true;
   let res;
   try{
-    if(window.CloudDB&&typeof window.CloudDB.earnGems==="function"){
-      const u=(typeof currentUser!=="undefined"&&currentUser)?String(currentUser):"";
-      res=await window.CloudDB.earnGems(u,gems,state);
-    }else{
-      state.premiumGems=(state.premiumGems||0)+gems; res={ok:true,balance:state.premiumGems};
-    }
+    const u=_gemUser();
+    if(u&&window.CloudDB&&window.CloudDB.claimDailyGem) res=await window.CloudDB.claimDailyGem(u);
+    else{state.premiumGems=(state.premiumGems||0)+gems;res={ok:true,gems};}
   }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
   _dailyGemBusy=false;
-  if(res&&res.ok){
+  if(res&&(res.ok||res.msg==="ALREADY_TODAY")){
     state.dailyGemPending=0;
+    if(typeof res.day_index==="number")state.dailyIndex=res.day_index%7;
     try{save();}catch(e){}
     try{renderShell();}catch(e){}
-    try{toast("LOGIN HARIAN","+"+gems+" GEM","#ffd700");}catch(e){}
+    if(res.ok)try{toast("LOGIN HARIAN","+"+(res.gems||gems)+" GEM","#ffd700");}catch(e){}
   }else if(!quiet){
     try{toast("GEM LOGIN TERTUNDA",(res&&res.msg)||"Akan dicoba lagi","#fbbf24");}catch(e){}
   }

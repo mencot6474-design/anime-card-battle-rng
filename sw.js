@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v165-gemLock';
+const CACHE_NAME = 'anime-card-battle-v166-gemAction';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
