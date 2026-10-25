@@ -369,13 +369,15 @@ async function submitAuth(){
       return;
     }
     /* Register cloud DULU: sejak 0021 register_player menjawab created:false
-       kalau username sudah dipakai, jadi status lokal jangan ditulis sebelum
-       server memutuskan. Tanpa cloud (offline) -> tetap daftar lokal. */
+       kalau username sudah dipakai. Sejak 0024 RPC itu butuh JWT (server yang
+       mengisi user_id), jadi sesi Auth dibuat lebih dulu dengan hash yang baru
+       diketik. Offline / Auth belum siap -> tetap daftar lokal seperti dulu. */
     const initSt = freshState();
     if(window.CloudDB){
+      if(window.CloudAuth) await window.CloudAuth.ensurePass(key, passH);
       let reg=null;
       try {
-        reg = await window.CloudDB.registerUser(name, passH, initSt);
+        reg = await window.CloudDB.registerUser(name, initSt);
       } catch(err){ console.warn("Cloud register fail:", err); }
       if(reg && reg.created === false){
         auError("Username itu sudah dipakai. Coba masuk.");
@@ -385,8 +387,6 @@ async function submitAuth(){
     }
     users[key]={name,pass:passH,created:Date.now()};
     saveUsers(users);
-    /* Fase 1 JWT: bikin akun Auth untuk user baru (tidak memblokir UI). */
-    if(window.CloudAuth) window.CloudAuth.kick(name);
 
     finish();
     document.getElementById("auPass").value="";

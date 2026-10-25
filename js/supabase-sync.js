@@ -53,14 +53,13 @@ const CloudDB = {
     });
   },
 
-  /* Register lewat RPC definer register_player. Sejak 0014 tabel
-     player_saves dikunci (anon hanya SELECT), INSERT langsung ditolak RLS,
-     jadi pendaftaran HARUS lewat RPC ini. */
-  async registerUser(username, passHash, initialSave) {
+  /* Register lewat RPC definer register_player (0024). Butuh JWT: pemanggil
+     wajib membuat sesi Auth dulu (CloudAuth.ensurePass) — server yang mengisi
+     player_saves.user_id dari auth.uid(). */
+  async registerUser(username, initialSave) {
     if (!username) return null;
-    return await this._rpc("register_player", {
+    return await this._authRpc(username, "register_player", {
       p_username: String(username).toLowerCase(),
-      p_password_hash: passHash,
       p_save_data: initialSave || {}
     });
   },
@@ -74,73 +73,56 @@ const CloudDB = {
     if (window.CURRENT_DEVICE_SESSION && stateObj) {
       stateObj.current_session_id = window.CURRENT_DEVICE_SESSION;
     }
-    /* RPC memakai salinan tanpa `stacks` supaya upload benar-benar ramping;
-       fallback PATCH tetap pakai stateObj utuh (kalau server belum punya
-       p_skip_stacks, mengirim tanpa stacks akan MENGHAPUS inventori di cloud). */
+    /* RPC memakai salinan tanpa `stacks` supaya upload benar-benar ramping
+       (server menahan nilai lama); `pub` = ringkasan publik buat profil. */
     const pub = opts && opts.pub;
-    /* `pub` (ringkasan publik) disuntik di SEMUA jalur — fallback PATCH di bawah
-       menimpa body.save_data dengan stateObj mentah, jadi pembungkusnya dipakai
-       dua kali, bukan cuma sekali di awal. */
-    const withPub = obj => (pub && obj) ? Object.assign({}, obj, { pub }) : obj;
     let rpcPayload = stateObj;
     if ((skipStacks || pub) && stateObj) {
       rpcPayload = Object.assign({}, stateObj);
       if (skipStacks) delete rpcPayload.stacks;
       if (pub) rpcPayload.pub = pub;
     }
-    const body = {
-      save_data: withPub(stateObj),
-      updated_at: new Date().toISOString()
-    };
 
-    /* Prioritas: RPC merge_player_state (atomik, aman dari overwrite kredit top-up).
-     * Fallback: PATCH biasa kalau RPC belum ter-deploy.
-     * Catatan: saat fallback, premiumGems ditulis pakai nilai CLOUD
-     * supaya client tidak bisa mengarang saldo lebih besar. */
-    let usedRpc = false;
-    try {
-      const pw = this._localPassHash(username);
-      if (pw) {
-        const res = await this._rpc("merge_player_state", {
-          p_username: username.toLowerCase(),
-          p_password_hash: pw,
-          p_save_data: rpcPayload,
-          p_allow_gem_decrease: allowGemDecrease,
-          p_skip_stacks: skipStacks,
-        });
-        if (res) {
-          usedRpc = true;
-          const merged = res.premiumGems;
-          const ST = this._st();
-          if (typeof merged === "number" && ST && ST.premiumGems !== merged) {
-            ST.premiumGems = merged;
-            this._paint();
-          }
-          return res;
-        }
-      }
-    } catch (e) {
-      console.warn("[saveState] RPC merge gagal, fallback PATCH:", e && e.message);
-    }
-
-    if (!usedRpc) {
-      try {
-        const user = await this.getUser(username);
-        const cloudGems = user && user.save_data && typeof user.save_data.premiumGems === "number"
-          ? user.save_data.premiumGems
-          : (typeof stateObj.premiumGems === "number" ? stateObj.premiumGems : 0);
-        stateObj.premiumGems = allowGemDecrease
-          ? Math.min(stateObj.premiumGems, cloudGems)
-          : cloudGems;
-        body.save_data = withPub(stateObj);
-      } catch (e) { /* lanjut PATCH apa adanya */ }
-    }
-
-    return await this._request(`player_saves?username=eq.${encodeURIComponent(username.toLowerCase())}`, {
-      method: "PATCH",
-      prefer: "return=minimal",
-      body: JSON.stringify(body)
+    /* Satu jalur: RPC merge_player_state (0024, identitas dari auth.uid()).
+       Tabel player_saves sudah tanpa policy UPDATE, jadi PATCH anon/authenticated
+       pasti 401 — fallback lama dihapus supaya tidak menyamar "berhasil". */
+    const res = await this._authRpc(username, "merge_player_state", {
+      p_save_data: rpcPayload,
+      p_allow_gem_decrease: allowGemDecrease,
+      p_skip_stacks: skipStacks,
     });
+    if (res) {
+      const merged = res.premiumGems;
+      const ST = this._st();
+      if (typeof merged === "number" && ST && ST.premiumGems !== merged) {
+        ST.premiumGems = merged;
+        this._paint();
+      }
+    }
+    return res;
+  },
+
+  /** RPC tulis Fase 3 (0024): identitas SATU-SATUNYA dari JWT. Server membaca
+      player_saves.user_id = auth.uid(), jadi tidak ada lagi username/hash di
+      parameter. Akun lama yang barisnya belum punya user_id ditautkan dulu
+      (link_player_auth) sebelum menulis; kalau tautan gagal, jangan diulang
+      tiap save (cukup sekali per halaman). */
+  async _authRpc(username, fn, args) {
+    if (!window.CloudAuth) return null;
+    const key = String(username || "").toLowerCase();
+    if (!key) return null;
+    let s = await window.CloudAuth._fresh(key);
+    if (!s) {
+      await window.CloudAuth.kick(key);
+      s = await window.CloudAuth._fresh(key);
+    }
+    if (!s) return null;
+    if (!window.CloudAuth._linked[key] && !window.CloudAuth._linkFailed[key]) {
+      const lr = await window.CloudAuth.link(key).catch(() => null);
+      if (lr && lr.ok) window.CloudAuth._linked[key] = true;
+      else window.CloudAuth._linkFailed[key] = true;
+    }
+    return await window.CloudAuth._rpcJwt(fn, args || {}, s.at);
   },
 
   /** Panggil RPC PostgREST (fnama dengan argumen named). */
@@ -310,26 +292,21 @@ const CloudDB = {
       }
 
       /* Upload state LOKAL terbaru (bukan snapshot cloud lama) supaya kartu/progress terbaru tidak ter-rollback.
-       * Pengurangan gems dilakukan lewat RPC spend_gems (atomik, server-side). */
+       * Pengurangan gems dilakukan lewat RPC spend_gems (atomik, server-side, 0024). */
       const payload = ST ? ST : curSave;
-      const pw = this._localPassHash(username);
-      if (pw) {
-        const sp = await this._rpc("spend_gems", {
-          p_username: username.toLowerCase(),
-          p_password_hash: pw,
-          p_cost: cost,
-          p_save_data: payload,
-        });
-        if (sp && sp.ok === false) {
-          return { ok: false, msg: sp.msg || "GAGAL POTONG GEMS" };
-        }
-        if (sp && typeof sp.balance === "number") {
-          if (ST) ST.premiumGems = sp.balance;
-          this._paint();
-          return { ok: true, balance: sp.balance };
-        }
-        // RPC tidak tersedia -> fallback ke saveState
+      const sp = await this._authRpc(username, "spend_gems", {
+        p_cost: cost,
+        p_save_data: payload,
+      });
+      if (sp && sp.ok === false) {
+        return { ok: false, msg: sp.msg || "GAGAL POTONG GEMS" };
       }
+      if (sp && typeof sp.balance === "number") {
+        if (ST) ST.premiumGems = sp.balance;
+        this._paint();
+        return { ok: true, balance: sp.balance };
+      }
+      // RPC tidak tersedia -> fallback ke saveState
       const res = await this.saveState(username, payload, { allowGemDecrease: true });
       return { ok: true, balance: curSave.premiumGems };
     } catch (err) {
@@ -379,53 +356,38 @@ const CloudDB = {
   },
 
   /* ===== WORLD BOSS (harian, skor & attempt di server) =====
-     Semua butuh password hash lokal; tanpa itu RPC ditolak. Return null = offline
-     atau RPC belum ter-deploy, jadi caller wajib cek null sebelum memakai hasil. */
+     Sejak 0024 identitas dari JWT; return null = offline / sesi belum siap,
+     jadi caller wajib cek null sebelum memakai hasil. */
   async wbState(username, boss) {
-    const pw = this._localPassHash(username);
-    if (!username || !pw) return null;
-    const args = {
-      p_username: String(username).toLowerCase(),
-      p_password_hash: pw,
-    };
+    if (!username) return null;
+    const args = {};
     if (boss) args.p_boss = boss;
-    return await this._rpc("world_boss_state", args);
+    return await this._authRpc(username, "world_boss_state", args);
   },
 
   async wbStart(username, boss) {
-    const pw = this._localPassHash(username);
-    if (!username || !pw) return null;
-    const args = {
-      p_username: String(username).toLowerCase(),
-      p_password_hash: pw,
-    };
+    if (!username) return null;
+    const args = {};
     if (boss) args.p_boss = boss;
-    return await this._rpc("start_world_boss_run", args);
+    return await this._authRpc(username, "start_world_boss_run", args);
   },
 
   /* dmg = damage ABSOLUT run ini (bukan persen). Server memotong pool 1T boss itu. */
   async wbSubmit(username, runId, dmg, boss) {
-    const pw = this._localPassHash(username);
-    if (!username || !pw) return null;
+    if (!username) return null;
     const args = {
-      p_username: String(username).toLowerCase(),
-      p_password_hash: pw,
       p_dmg: Math.max(0, Math.min(1000000000000, Math.round(Number(dmg) || 0))),
       p_run_id: runId,
     };
     if (boss) args.p_boss = boss;
-    return await this._rpc("submit_world_boss_run", args);
+    return await this._authRpc(username, "submit_world_boss_run", args);
   },
 
   async wbClaim(username, boss) {
-    const pw = this._localPassHash(username);
-    if (!username || !pw) return null;
-    const args = {
-      p_username: String(username).toLowerCase(),
-      p_password_hash: pw,
-    };
+    if (!username) return null;
+    const args = {};
     if (boss) args.p_boss = boss;
-    return await this._rpc("claim_world_boss_reward", args);
+    return await this._authRpc(username, "claim_world_boss_reward", args);
   },
 
   /** Papan peringkat read-only (world_boss / inf_tower / deck_power / rarest_pull). */
@@ -457,11 +419,8 @@ const CloudDB = {
   /** Kirim skor papan mingguan (inf_tower / deck_power / rarest_pull).
       Server hanya menyimpan kalau nilai baru lebih tinggi. */
   async submitScore(board, value, meta) {
-    const pw = this._localPassHash(currentUser);
-    if (!currentUser || !pw) return null;
-    return await this._rpc("submit_leaderboard_score", {
-      p_username: String(currentUser).toLowerCase(),
-      p_password_hash: pw,
+    if (!currentUser) return null;
+    return await this._authRpc(currentUser, "submit_leaderboard_score", {
       p_board: board,
       p_value: Math.max(0, Math.min(1e21, Math.round(Number(value) || 0))),
       p_meta: meta || {},
@@ -501,12 +460,8 @@ const CloudDB = {
      Return: { ok, balance, cost, multiplier, ends_at, activated_by }
      atau { ok:false, msg }. */
   async buyGlobalLuck(username) {
-    const pw = this._localPassHash(username);
-    if (!username || !pw) return null;
-    return await this._rpc("buy_global_luck", {
-      p_username: String(username).toLowerCase(),
-      p_password_hash: pw,
-    });
+    if (!username) return null;
+    return await this._authRpc(username, "buy_global_luck", {});
   }
 };
 
@@ -551,10 +506,11 @@ function startSessionHeartbeat(username) {
 window.startSessionHeartbeat = startSessionHeartbeat;
 window.CloudDB = CloudDB;
 
-/* =============== SUPABASE AUTH (JWT) — FASE 1 ===============
-   Tujuan: tiap login/register punya sesi Auth (auth.uid()) TANPA mengubah
-   jalur RPC lama (masih pakai p_password_hash). RPC baru (Fase 2:
-   link_player_auth) butuh token ini; Fase 1 cukup menyediakannya.
+/* =============== SUPABASE AUTH (JWT) — FASE 1–3 ===============
+   Tujuan: tiap login/register punya sesi Auth (auth.uid()) dan SEMUA RPC tulis
+   memakai token itu sebagai identitas (0024). Username & password hash tidak
+   lagi dikirim sebagai "kunci" — hash hanya dipakai untuk signIn Auth dan
+   menautkan baris save lama (link_player_auth).
 
    Kenapa email sintetis: Supabase Auth menuntut email/telepon, game ini
    username. `username@game.invalid` (RFC2606) mustahil dikirimi email.
@@ -703,8 +659,30 @@ const CloudAuth = {
     console.warn("[CloudAuth] gagal:", r.status, msg);
     return { ok: false, reason: "rejected" };
   },
+  /** Seperti ensure(), tapi password hash dikirim eksplisit. Dipakai saat
+      REGISTER: users[key] belum ditulis ke localStorage, jadi ensure() tidak
+      bisa menemukan hash-nya. Urutan: sesi → refresh → signIn → signUp. */
+  async ensurePass(u, passH) {
+    const key = this._k(u);
+    if (!key || !passH) return { ok: false, reason: "no_pass" };
+    const s = this.session(key);
+    if (s && s.exp > Date.now()) return { ok: true, uid: s.uid };
+    if (s && s.rt) {
+      const r = await this.refresh(key);
+      if (r) return { ok: true, uid: r.uid };
+    }
+    if (await this._confirmOn()) return { ok: false, reason: "confirm_email_on" };
+    let r = await this._post("token?grant_type=password", { email: this._email(key), password: this._apw(passH) });
+    if (!r.ok) r = await this._post("signup", { email: this._email(key), password: this._apw(passH) });
+    if (r.ok && r.data && r.data.access_token) {
+      const rec = this._store(key, r.data);
+      return { ok: true, uid: (rec || {}).uid || "" };
+    }
+    return { ok: false, reason: "rejected" };
+  },
   _inflight: {},
   _linked: {},
+  _linkFailed: {},
   /** Tautkan baris save lama (user_id NULL) ke uid sesi ini. Butuh migration
       0019; kalau belum ada, cukup diperingatkan sekali (tidak fatal). */
   async link(u) {
