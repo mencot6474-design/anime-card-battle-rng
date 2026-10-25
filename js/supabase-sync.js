@@ -34,17 +34,15 @@ const CloudDB = {
     return null;
   },
 
+  /* Register lewat RPC definer register_player. Sejak 0014 tabel
+     player_saves dikunci (anon hanya SELECT), INSERT langsung ditolak RLS,
+     jadi pendaftaran HARUS lewat RPC ini. */
   async registerUser(username, passHash, initialSave) {
-    const body = {
-      username: username.toLowerCase(),
-      password: passHash,
-      save_data: initialSave,
-      updated_at: new Date().toISOString()
-    };
-    return await this._request(`player_saves`, {
-      method: "POST",
-      prefer: "resolution=merge-duplicates,return=representation",
-      body: JSON.stringify(body)
+    if (!username) return null;
+    return await this._rpc("register_player", {
+      p_username: String(username).toLowerCase(),
+      p_password_hash: passHash,
+      p_save_data: initialSave || {}
     });
   },
 
