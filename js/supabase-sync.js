@@ -467,54 +467,17 @@ const CloudDB = {
     return (data && data.length > 0) ? data[0] : null;
   },
 
-  // Stack global luck — upsert logic:
-  // Jika belum ada row aktif → INSERT baru (mult=10, ends_at=now+1jam)
-  // Jika sudah ada → UPDATE: mult=min(mult+10,100), ends_at=min(ends_at+1jam, now+10jam)
-  async stackGlobalLuck(username) {
-    const STEP_MULT = 10;
-    const MAX_MULT  = 100;
-    const STEP_MS   = 3600000;      // 1 jam
-    const MAX_MS    = 36000000;     // 10 jam
-    const now       = new Date();
-    const nowISO    = now.toISOString();
-
-    // Ambil row aktif yang ada
-    const existing = await this.getGlobalLuck();
-
-    if (!existing) {
-      // INSERT baru
-      const endsAt = new Date(now.getTime() + STEP_MS).toISOString();
-      return await this._request('global_luck', {
-        method: 'POST',
-        prefer: 'return=representation',
-        body: JSON.stringify({
-          activated_by: username,
-          activated_at: nowISO,
-          ends_at: endsAt,
-          multiplier: STEP_MULT
-        })
-      });
-    } else {
-      // UPDATE: stack multiplier & waktu
-      const newMult = Math.min((existing.multiplier || 10) + STEP_MULT, MAX_MULT);
-      const curEnd  = new Date(existing.ends_at).getTime();
-      const maxEnd  = now.getTime() + MAX_MS;
-      const newEnd  = new Date(Math.min(curEnd + STEP_MS, maxEnd)).toISOString();
-      return await this._request(`global_luck?id=eq.${existing.id}`, {
-        method: 'PATCH',
-        prefer: 'return=representation',
-        body: JSON.stringify({
-          activated_by: username,
-          ends_at: newEnd,
-          multiplier: newMult
-        })
-      });
-    }
-  },
-
-  // Alias untuk backward compat (tidak dipakai lagi tapi jaga-jaga)
-  async activateGlobalLuck(username, multiplier = 10, durationMs = 3600000) {
-    return this.stackGlobalLuck(username);
+  /* Beli global luck lewat RPC atomik (server potong gem + stack buff).
+     Bukan tulis tabel global_luck langsung lagi — lihat migration 0016.
+     Return: { ok, balance, cost, multiplier, ends_at, activated_by }
+     atau { ok:false, msg }. */
+  async buyGlobalLuck(username) {
+    const pw = this._localPassHash(username);
+    if (!username || !pw) return null;
+    return await this._rpc("buy_global_luck", {
+      p_username: String(username).toLowerCase(),
+      p_password_hash: pw,
+    });
   }
 };
 

@@ -2724,7 +2724,7 @@ async function buyGlobalLuck() {
     const username = currentUser || 'GUEST';
     const isStack = !!existing;
     const prevMult = existing ? (existing.multiplier || 0) : 0;
-    const newMult = Math.min(prevMult + GLOBAL_LUCK_STEP_MULT, GLOBAL_LUCK_MAX_MULT);
+    let newMult = Math.min(prevMult + GLOBAL_LUCK_STEP_MULT, GLOBAL_LUCK_MAX_MULT);
 
     /* --- Popup konfirmasi sebelum membeli --- */
     const gemIcon = '<img class="glcf-gem-icon" src="assets/images/premium-currency.webp" alt="" width="16" height="16">';
@@ -2750,30 +2750,28 @@ async function buyGlobalLuck() {
       return;
     }
 
-    // Potong gems
-    if (currentUser && window.CloudDB) {
-      const res = await window.CloudDB.verifyAndDeductGems(currentUser, GLOBAL_LUCK_COST, 'global_luck', 'global_luck');
-      if (!res.ok) { toast('GAGAL', res.msg || 'Transaksi gagal', '#f87171'); return; }
-      state.premiumGems = res.balance;
-    } else {
-      state.premiumGems = (state.premiumGems || 0) - GLOBAL_LUCK_COST;
-      save();
+    /* Bayar + aktifkan lewat SATU RPC atomik (server yang potong gem &
+       hitung multiplier/durasi — lihat migration 0016). Client tidak lagi
+       menulis tabel global_luck langsung, jadi buff tak bisa didapat gratis. */
+    if (!window.CloudDB || typeof window.CloudDB.buyGlobalLuck !== 'function') {
+      toast('GAGAL', 'Cloud tidak tersedia', '#f87171'); return;
     }
-
-    // Upsert ke Supabase
-    if (window.CloudDB) {
-      await window.CloudDB.stackGlobalLuck(username);
+    const res = await window.CloudDB.buyGlobalLuck(username);
+    if (!res || !res.ok) {
+      toast('GAGAL', (res && res.msg) || 'Transaksi gagal', '#f87171');
+      return;
     }
+    newMult = res.multiplier;
+    state.premiumGems = res.balance;
+    save();
 
-    // Update cache lokal
-    const prevEnd    = existing ? new Date(existing.ends_at).getTime() : Date.now();
-    const newEnd     = Math.min(prevEnd + GLOBAL_LUCK_STEP_MS, Date.now() + GLOBAL_LUCK_MAX_MS);
+    // Cache dari nilai SERVER (bukan hitungan client) biar semua device sinkron.
     _globalLuckCache = {
       id: existing ? existing.id : null,
-      activated_by: username,
-      activated_at: existing ? existing.activated_at : new Date().toISOString(),
-      ends_at: new Date(newEnd).toISOString(),
-      multiplier: newMult
+      activated_by: res.activated_by || username,
+      activated_at: (existing && existing.activated_at) || new Date().toISOString(),
+      ends_at: res.ends_at,
+      multiplier: res.multiplier
     };
 
     beep(720, 0.2, 'triangle', 0.12);
