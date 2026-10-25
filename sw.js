@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v169-tokenSrv';
+const CACHE_NAME = 'anime-card-battle-v170-progressGuard';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

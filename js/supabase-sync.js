@@ -77,6 +77,11 @@ const CloudDB = {
     /* 0026: XP juga dikirim sebagai delta (transient). Nilai absolut xp/level dari
        client dibuang server; `_xpGain` tidak pernah ikut tersimpan ke save_data. */
     const xpGain = Math.max(0, Math.round(Number(opts && opts.xpGain) || 0));
+    /* 0027: essence rebirth juga delta transient (`_rebirthGain`), plus flag
+       satu-kali `_rebirthDo` supaya server yang memotong ambang & menaikkan
+       count. Nilai absolut state.rebirth dari client dibuang merge. */
+    const rebirthGain = Math.max(0, Math.round(Number(opts && opts.rebirthGain) || 0));
+    const rebirthDo = !!(opts && opts.rebirthDo);
     if (window.CURRENT_DEVICE_SESSION && stateObj) {
       stateObj.current_session_id = window.CURRENT_DEVICE_SESSION;
     }
@@ -84,11 +89,13 @@ const CloudDB = {
        (server menahan nilai lama); `pub` = ringkasan publik buat profil. */
     const pub = opts && opts.pub;
     let rpcPayload = stateObj;
-    if ((skipStacks || pub || coinSpend || xpGain) && stateObj) {
+    if ((skipStacks || pub || coinSpend || xpGain || rebirthGain || rebirthDo) && stateObj) {
       rpcPayload = Object.assign({}, stateObj);
       if (skipStacks) delete rpcPayload.stacks;
       if (coinSpend) rpcPayload._coinSpend = coinSpend;
       if (xpGain) rpcPayload._xpGain = xpGain;
+      if (rebirthGain) rpcPayload._rebirthGain = rebirthGain;
+      if (rebirthDo) rpcPayload._rebirthDo = true;
       if (pub) rpcPayload.pub = pub;
     }
 
@@ -125,6 +132,13 @@ const CloudDB = {
         if (ST.player) {
           if (typeof res.playerLv === "number" && ST.player.lv !== res.playerLv) { ST.player.lv = res.playerLv; dirty = true; }
           if (typeof res.xp === "number" && ST.player.exp !== res.xp) { ST.player.exp = res.xp; dirty = true; }
+        }
+        /* 0027: rebirth milik server. Kalau server menolak/memotong (plafon
+           harian, essence belum cukup), angka client dikembalikan ke server. */
+        if (typeof res.rebirth_count === "number" || typeof res.rebirth_essence === "number") {
+          if (!ST.rebirth || typeof ST.rebirth !== "object") ST.rebirth = { count: 0, essence: 0 };
+          if (typeof res.rebirth_count === "number" && ST.rebirth.count !== res.rebirth_count) { ST.rebirth.count = res.rebirth_count; dirty = true; }
+          if (typeof res.rebirth_essence === "number" && ST.rebirth.essence !== res.rebirth_essence) { ST.rebirth.essence = res.rebirth_essence; dirty = true; }
         }
         if (dirty) this._paint();
       }

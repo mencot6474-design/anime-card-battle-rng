@@ -27,6 +27,8 @@ function loadStateFor(name){
   KEY="aab-state-v2:"+name;
   _coinSpent=0;
   _xpGained=0;
+  _rebirthGained=0;
+  _rebirthDo=false;
   try{state=JSON.parse(localStorage.getItem(KEY))||freshState();}catch(e){console.warn('Load error, using fresh:', e.message);state=freshState();}
   
   // MIGRATE OLD STATE: pastikan player object + format luck baru (base+flat+percent)
@@ -330,6 +332,11 @@ const STORY_REPEAT_GEM_MIN=2;
    BUKAN EXP player — jadi farming jutaan dup naikkan luck tanpa merusak level.
    Ambang bertahap (doubling dari REBIRTH_BASE); tiap rebirth = luck ×(1+count). */
 const REBIRTH_BASE=1000000;
+/* 0027: essence rebirth server-authoritative. Client mengumpulkan delta
+   `_rebirthGain` (transient) dan menandai `_rebirthDo` saat menekan REBIRTH;
+   server yang memotong ambang & menaikkan count. Keduanya dikirim di push
+   berikutnya dan di-reset setelah merge sukses (pola sama seperti _coinSpend). */
+let _rebirthGained=0,_rebirthDo=false;
 function rebirthCount(){return (state&&state.rebirth&&state.rebirth.count)||0;}
 function rebirthEssence(){return (state&&state.rebirth&&state.rebirth.essence)||0;}
 function rebirthThreshold(){return Math.round(REBIRTH_BASE*Math.pow(2,rebirthCount()));}
@@ -339,6 +346,7 @@ function addRebirthEssence(n){
   if(!state||!n)return 0;
   if(!state.rebirth||typeof state.rebirth!=="object")state.rebirth={count:0,essence:0};
   state.rebirth.essence=(state.rebirth.essence||0)+n;
+  _rebirthGained+=n;
   return n;
 }
 function doRebirth(){
@@ -346,6 +354,7 @@ function doRebirth(){
   const cost=rebirthThreshold();
   state.rebirth.essence=rebirthEssence()-cost;
   state.rebirth.count=rebirthCount()+1;
+  _rebirthDo=true;
   save();
   return true;
 }
@@ -536,9 +545,13 @@ function _cloudPush(opts){
   else if(stacksKey!==_lastPushedStacksKey)_cloudStacksDirty=true;
   const spent=_coinSpent;
   const gained=_xpGained;
-  const sentPromise=window.CloudDB.saveState(currentUser, state, {skipStacks:!sendStacks, pub:buildPubSummary(), coinSpend:spent, xpGain:gained});
+  const rebGain=_rebirthGained;
+  const rebDo=_rebirthDo;
+  const sentPromise=window.CloudDB.saveState(currentUser, state, {skipStacks:!sendStacks, pub:buildPubSummary(), coinSpend:spent, xpGain:gained, rebirthGain:rebGain, rebirthDo:rebDo});
   if(spent) sentPromise.then(res=>{if(res&&res.ok)_coinSpent=Math.max(0,_coinSpent-spent);}).catch(()=>{});
   if(gained) sentPromise.then(res=>{if(res&&res.ok)_xpGained=Math.max(0,_xpGained-gained);}).catch(()=>{});
+  if(rebGain) sentPromise.then(res=>{if(res&&res.ok)_rebirthGained=Math.max(0,_rebirthGained-rebGain);}).catch(()=>{});
+  if(rebDo) sentPromise.then(res=>{if(res&&res.ok)_rebirthDo=false;}).catch(()=>{});
   return sentPromise.catch(()=>null);
 }
 function flushCloudSave(){
