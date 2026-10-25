@@ -3181,13 +3181,6 @@ function finish(win){
     else{const g=claimStoryRepeatGem(lv,state.diff);if(g){gemGain=g;gemLabel="REPLAY STAGE "+lv;}}
     if(chDone){const b=claimStoryMilestone(ch.no,state.diff);if(b){gemGain+=b;gemLabel+=(gemLabel?" + ":"")+"BAB "+ch.no;}}
   }
-  /* REPLAY (stage sudah pernah tamat): TANPA popup kemenangan — reward coins/gem +
-     cooldown stage sudah diproses di atas, jadi langsung balik ke lobby + toast ringkas. */
-  if(win && !first){
-    bt=null;state.battle=null;render();
-    if(typeof toast==="function")toast(gemGain>0?("+"+gemGain+" GEM"):"REPLAY SELESAI","Stage "+lv+" · "+diffOf().l,"#c084fc");
-    return;
-  }
   const ovCard=document.getElementById("ovCard");
   if(ovCard){
     ovCard.classList.toggle("is-win",!!win);
