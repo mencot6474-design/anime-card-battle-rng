@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v173-tamperGuard';
+const CACHE_NAME = 'anime-card-battle-v174-devGuard';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

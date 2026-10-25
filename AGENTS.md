@@ -73,6 +73,9 @@ js/ranking.js         leaderboard 5 papan (world_boss, world_boss_b, inf_tower,
                       foto profil asli (rkFillAvatars 161) + sheet profil player
                       (openRkProfile 566)
 js/boot.js            router, enterGame, settings, foot menu, label BUILD
+js/devtools-guard.js  deteksi Inspect/F12 (size/console/debugger) → overlay
+                      peringatan + RPC report_devtools (0031). Desktop-only,
+                      dimuat setelah boot.js; `window.ACBGuard.status()` read-only
 js/pwa.js             install prompt/service worker
 js/coret.js           fitur coret dev (tombol float #crFab)
 sw.js / manifest.json PWA (service worker + precache) — tracked, naikkan versi sw bila perlu
@@ -83,7 +86,8 @@ supabase/migrations/  0001–0028 SQL (topup, earn_gems, redeem, world boss 0005
                       guard progres + cap damage WB 0027, ledger item
                       pet/artefak + penalti coin 0028, tamper guard 0029
                       (tamper_log, gating klaim, ledger pack, weather/potion/
-                      progres/pub), koreksi plafon papan 0030 — apply lewat
+                      progres/pub), koreksi plafon papan 0030, devtools guard 0031
+                      (reset total via RPC report_devtools + guard_allow) — apply lewat
                       Management API (`_tmp/apply_sql.cjs`, token `_tmp/sbpat.txt`) atau SQL Editor.
                       `supabase db push` DILARANG: riwayat `schema_migrations` remote kosong
                       (0001–0024 dulu dijalankan manual), jadi push akan mengulang semuanya
@@ -108,8 +112,8 @@ deck_power, rollback), `unit_00NN_client.cjs` (stub fetch), `gen_0025.cjs` / `ge
 Supabase — **jangan pernah** di-commit atau disalin keluar.
 ```
 
-Urutan load (penting — fungsi global saling pakai; `index.html` baris 736–760):
-`fps-lock → data → config → supabase-sync → panels → topup → cards-fx → anime-archetype-attacks → state → sheetfx → battle → tower-lobby → shadow-king-fx → foe-passives → story-carousel → raid → ranking → boot → pwa → coret`
+Urutan load (penting — fungsi global saling pakai; `index.html` baris 784–808):
+`fps-lock → data → config → supabase-sync → panels → topup → cards-fx → anime-archetype-attacks → state → sheetfx → battle → tower-lobby → shadow-king-fx → foe-passives → story-carousel → raid → ranking → boot → devtools-guard → pwa → coret`
 
 `panels.js` dimuat **sebelum** `cards-fx.js` (CARDS dipakai saat render, bukan saat load). `raid.js` dimuat **setelah** `tower-lobby.js`.
 `cards-fx.js` harus tetap dimuat **sebelum** `anime-archetype-attacks.js`, `sheetfx.js`, dan `battle.js` karena `FXQ`/`FXDPR` dipakai ketiganya.
@@ -293,4 +297,9 @@ Backpack bukan `display:fixed` bawaan — `toggleBackpack` set inline transform;
 - **0029: progres cerita/tower sekarang punya frontier server.** `story_progress`/`tower_progress` di-backfill SEKALI dari save lama; setelah itu `claim_*` hanya membayar `frontier+1`. Jangan menambah jalur hadiah baru tanpa memperbarui frontier, dan jangan menganggap `cleared` client sebagai bukti (merge memangkasnya). Kalau `story_progress` hilang/reset, pemain tidak bisa klaim stage berikutnya (harus replay). Bonus bab memakai `chap*6-1` (6 stage/bab, toleransi 1 karena klaim stage terakhir & bonus bab dikirim paralel).
 - **0029: `rollPacks` sekarang dari ledger `player_packs`.** Konsumsi pack di client (roll) = penurunan, jadi merge menerima angka lebih kecil; kenaikan hanya dari `buy_pack`, jatah tower (`pack_def.tower_rate` × total klaim lantai), atau pack World Boss (`leaderboard_claims.packs`). Menambah pack langsung di client (F12 atau fitur baru tanpa RPC) akan di-nol-kan + `PACK_INFLATE`.
 - **0029: isi `stacks` tetap TIDAK bisa dibuktikan.** `_clean_stacks` men-dedup per (char, mut, shiny) → maksimum 1050 varian, dan semuanya sah bisa dicapai pemain yang roll puluhan ribu kali. Jangan menambahkan polisi rasio shiny/mut/trait: itu akan menghapus kartu pemain jujur. Penutupnya roll di server (Unit 4). Leaderboard `deck_power`/`rarest_pull` juga masih angka client (dipotong plafon papan), bukan hitung ulang dari stacks (Unit 5).
-- `evaluate_script` browser-use memakai key `function` (string fungsi), bukan `expression`; tab hidden bikin rAF/screenshot tak bisa dipercaya → verifikasi lewat computed style / sampling canvas.- Viewport sempit: jangan ukur dari `100dvh - konstanta`; cek juga bahwa override lama `@media(max-width:700px)` (mis. `.vs-col{flex-direction:row}` di 19184) tidak menang atas blok baru di EOF.
+- **Devtools guard (0031) — reset total saat F12.** Diminta user: buka Inspect → peringatan → save kembali ke awal. **Deteksi ada di client** (`js/devtools-guard.js`, dimuat setelah `boot.js`): sinyal `size` (selisih outer/inner > 240 px, harus 2 kali berturut-turut), `console` (getter pada objek yang di-`console.log`, paling spesifik), `debugger` (jeda > 300 ms, hanya setelah interaksi, maks 1×/8 dtk). Desktop-only: dilewati kalau `navigator.webdriver`, `maxTouchPoints > 0`, PWA standalone/fullscreen. Alur: overlay peringatan + hitung mundur 6 dtk → RPC → hapus cache save lokal (`aab-state-v2:*`, `aab-lb2-*`, `aab-lb-av`, `aab-lb-delta`) → reload (save baru ditarik di `enterGame`). Sinyal `size` yang hilang sebelum hitung mundur habis **membatalkan** reset (anti false positive); sinyal `console` tidak bisa dibatalkan.
+  **Hukuman di server** (`0031`): RPC `report_devtools(p_signal)` (JWT-only, anon dicabut) menulis `dev_guard` (hits/reset_at/resets/last_signal), membangun ulang `save_data` dari `_fresh_save()` (coin 1000, gem 50, lv 1, kartu starter `CH_UNSTOPPABLE_FIST`, semua progres/pot/weather/pack nol), `sp_legacy=0`, menghapus `player_items`, `player_packs`, `pack_allowance`, `story_progress`, `tower_progress`, `leaderboard_scores`, `leaderboard_claims`, lalu mencatat `tamper_log` `DEVTOOLS_RESET`. Baris `player_saves`/`auth.users` TIDAK dihapus (username tetap, bisa main dari awal). Client tidak pernah mengirim save kosong sendiri, jadi F12 tidak bisa dipakai mereset akun orang lain.
+  **WAJIB: `guard_allow`.** Akun developer/owner harus ada di `public.guard_allow` (sudah diisi `admin`), kalau tidak membuka F12 saat mengembangkan game akan mereset progres sendiri. Tambah: `insert into public.guard_allow (username, note) values ('nama','owner');`. Kalau mau melunakkan hukuman, ubah ambang di `report_devtools` (default hit pertama = reset), jangan matikan RPC-nya.
+- **Batasan deteksi DevTools (jujur).** Semua sinyal di atas heuristik dan bisa di-bypass (DevTools di-undock, breakpoint di-deactivate, `console` tidak dibuka). Hacker yang memanggil RPC langsung lewat `curl`/Postman dengan JWT sendiri **tidak terdeteksi sama sekali** — untuk itu tetap andalkan guard server 0025–0030. Jangan menaikkan agresivitas deteksi (mis. `debugger` tiap frame) karena membekukan game di HP kentang.
+- `evaluate_script` browser-use memakai key `function` (string fungsi), bukan `expression`; tab hidden bikin rAF/screenshot tak bisa dipercaya → verifikasi lewat computed style / sampling canvas.
+- Viewport sempit: jangan ukur dari `100dvh - konstanta`; cek juga bahwa override lama `@media(max-width:700px)` (mis. `.vs-col{flex-direction:row}` di 19184) tidak menang atas blok baru di EOF.
