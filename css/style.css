@@ -49642,3 +49642,15 @@ html.fps-locked .bp-fchip{
 .lobby-hub .h-rebirth.ready{border-color:rgba(192,132,252,.65)!important;box-shadow:0 0 22px rgba(168,85,247,.4),0 14px 32px rgba(0,0,0,.3)}
 .lobby-hub .h-rebirth.ready .tile-action{color:#f3e8ff!important;border-color:rgba(192,132,252,.7)!important;background:rgba(168,85,247,.22)}
 
+/* ==========================================================================
+   FIX: tile POTION di popup reward (KARTU RUN INI / hasil instan tower)
+   .rrc-pot-ic pakai position:absolute+inset tapi .rrc-potion tidak pernah
+   position:relative → icon nempel ke popup (bukan kotaknya) & hilang. Kartu
+   (.rrc.sl-item) aman karena .rrc-nya relative. Nama juga tanpa style → numpuk
+   di atas. Bikin tile relative + kunci nama ke bawah.
+   ========================================================================== */
+#rrBody .rrc-potion{position:relative}
+#rrBody .rrc-potion .rrc-pot-ic{position:absolute;inset:0 0 22px 0;display:grid;place-items:center}
+#rrBody .rrc-potion .rrc-pot-ic img{width:48px;height:48px;object-fit:contain}
+#rrBody .rrc-potion .rrc-name{position:absolute;left:2px;right:2px;bottom:4px;margin:0;text-align:center;font-family:"Rajdhani",sans-serif;font-weight:800;font-size:10px;letter-spacing:.06em;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
