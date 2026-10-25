@@ -1090,6 +1090,7 @@ function renderLobby(){
   const tier=eq?CARDS[eq.char].tier:null;
   app.innerHTML=`
   <div class="lobby-hub">
+    <div class="hub-left" role="group" aria-label="Menu mode utama">
     <div class="hub-loadout-bar" role="group" aria-label="Loadout artefak & pet">${hubLoadoutHtml()}</div>
     <div class="hub-box h-l1 hub-link hub-link-raid" id="hubRaid" role="button" title="Masuk World Boss">
       <span class="tile-frame" aria-hidden="true"></span>
@@ -1136,6 +1137,7 @@ function renderLobby(){
       </span>
       <span class="tile-copy"><span class="hb-lbl" style="color:#38bdf8;text-shadow:0 0 10px rgba(56,189,248,.35)">WEATHER MACHINE</span><span class="hb-meta">Atmospheric Catalyst & Odds</span></span>
       <span class="tile-action" style="border-color:rgba(56,189,248,.4);color:#38bdf8"><span>SYNTHESIZE</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
+    </div>
     </div>
     <div class="hub-mid">
       <div class="seam"></div>
