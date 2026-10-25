@@ -49707,3 +49707,19 @@ html.fps-locked .bp-fchip{
   box-shadow:0 0 18px rgba(180,92,255,.5)}
 .wrm-close:active{transform:translateY(1px)}
 @media(prefers-reduced-motion:reduce){.wrm-sweep,.wrm-rw{animation:none!important}.wrm-rw{opacity:1;transform:none}}
+
+/* ===== LOBBY: kartu di-paku ke sumbu tengah layar =====
+   Akar: rail kanan (.hub-right) internal 2 kolom (Leaderboard+Rebirth) jadi kolom
+   grid #3 melebar (~597px) sementara rail kiri 1 kolom (~277px) → kolom tengah
+   geser ke kiri, kartu nggak presisi di tengah. Perbaiki dengan kolom simetris:
+   dua rail sama lebar (1fr), kolom kartu auto di tengah. Berlaku di cabang 3 kolom. */
+@media(min-width:721px){
+  .lobby-hub{
+    grid-template-columns:
+      minmax(0,1fr)
+      clamp(260px,23vw,340px)
+      minmax(0,1fr)!important;
+    justify-content:center!important;
+  }
+  .lobby-hub .hub-mid{justify-self:center}
+}
