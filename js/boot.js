@@ -342,27 +342,21 @@ async function submitAuth(){
      diverifikasi lewat RPC check_credentials (definer), lalu sesi dibuat +
      uid ditautkan. Anon tidak lagi dipakai sebagai bukti "akun ada" (2c). */
   let cloudUser=null, cloudOk=false;
-  if(window.CloudDB){
-    if(authMode==="register"){
-      try {
-        cloudUser = await window.CloudDB.getUser(key);
-      } catch(err){ console.warn("Cloud lookup err:", err); }
+  if(window.CloudDB && authMode!=="register"){
+    const jwt = window.CloudAuth ? await window.CloudAuth.authenticate(key, passH) : null;
+    if(jwt && jwt.ok){
+      cloudOk=true;
+      cloudUser={username:jwt.username, save_data:jwt.save_data};
     }else{
-      const jwt = window.CloudAuth ? await window.CloudAuth.authenticate(key, passH) : null;
-      if(jwt && jwt.ok){
+      let chk=null;
+      try { chk = await window.CloudDB.checkCredentials(key, passH); }
+      catch(err){ console.warn("checkCredentials err:", err); }
+      if(chk && chk.ok){
         cloudOk=true;
-        cloudUser={username:jwt.username, save_data:jwt.save_data};
-      }else{
-        let chk=null;
-        try { chk = await window.CloudDB.checkCredentials(key, passH); }
-        catch(err){ console.warn("checkCredentials err:", err); }
-        if(chk && chk.ok){
-          cloudOk=true;
-          /* Ditautkan dulu (bukan tembak-lari): enterGame langsung membaca save lewat JWT. */
-          if(window.CloudAuth){
-            try { await window.CloudAuth.connect(key, passH); }
-            catch(err){ console.warn("Auth connect err:", err); }
-          }
+        /* Ditautkan dulu (bukan tembak-lari): enterGame langsung membaca save lewat JWT. */
+        if(window.CloudAuth){
+          try { await window.CloudAuth.connect(key, passH); }
+          catch(err){ console.warn("Auth connect err:", err); }
         }
       }
     }
