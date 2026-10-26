@@ -237,6 +237,12 @@ function renderWeatherDock(){
   const cards=MASTER_CARD_INDEX.filter(c=>c.weatherOnly===id);
   if(!w){panel.classList.remove("show");panel.innerHTML="";panel.dataset.wid="";return;}
   const byUser=(state&&state.weather&&state.weather.activated_by)?String(state.weather.activated_by):"";
+  const expectedWid=String(id)+"|"+byUser;
+  if(panel.dataset.wid===expectedWid&&panel.classList.contains("show")){
+    const wp=panel.querySelector(".wp-timer-val");
+    if(wp&&state.weather)wp.textContent=fmtCountdown(state.weather.endsAt-Date.now());
+    return;
+  }
   const safeUser=byUser.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   panel.style.setProperty("--wc",w.color);
   panel.innerHTML=`<div class="wp-cyber-glow"></div>
@@ -272,7 +278,7 @@ function renderWeatherDock(){
         <span class="wp-buff-val"><b>${w.speedBonus}×</b></span>
       </div>
     </div>`;
-  panel.dataset.wid=String(id)+"|"+byUser;
+  panel.dataset.wid=expectedWid;
   panel.classList.add("show");
   wcHoverBind();
 }
@@ -290,7 +296,19 @@ function renderBuffDock(){
   const ls=luckBuffs().slice().sort((a,b)=>a.lv-b.lv);
   const ss=speedBuffs().slice().sort((a,b)=>a.lv-b.lv);
   const adMs=(typeof adLuckLeftMs==="function")?adLuckLeftMs():0;
-  if(!ls.length&&!ss.length&&!(adMs>0)){el.classList.remove("show");el.innerHTML="";return;}
+  if(!ls.length&&!ss.length&&!(adMs>0)){
+    if(el.classList.contains("show")){el.classList.remove("show");el.innerHTML="";el.dataset.bkey="";}
+    return;
+  }
+  const bKey=(adMs>0?"ad:1|":"ad:0|")+ls.map(b=>b.lv+":"+Math.round(b.endsAt/1000)).join(",")+"|"+ss.map(b=>b.lv+":"+Math.round(b.endsAt/1000)).join(",");
+  if(el.dataset.bkey===bKey&&el.classList.contains("show")){
+    el.querySelectorAll(".bd-badge").forEach(b=>{
+      const ends=b.getAttribute("data-ends");
+      if(ends)b.textContent=fmtCountdown(+ends-now);
+    });
+    return;
+  }
+  el.dataset.bkey=bKey;
   /* Slot chip: badge timer countdown di atas + ikon tengah. emoji = fallback kalau img gagal.
      Tooltip hover (bukan title native): main = nama, sub = deskripsi passive + sisa waktu. */
   const chip=(cls,src,emoji,main,sub,ms)=>`<div class="bd-chip ${cls}">
@@ -514,9 +532,16 @@ function startWeatherTick(){
       renderWeatherDock();renderBuffDock();renderShell();
     }else{
       const wp=document.querySelector(".wp-timer-val");if(wp&&state.weather)wp.textContent=fmtCountdown(state.weather.endsAt-Date.now());
+      let buffExpired=false;
       document.querySelectorAll(".bd-badge").forEach(b=>{
-        const ends=b.getAttribute("data-ends");if(ends)b.textContent=fmtCountdown(+ends-Date.now());
+        const ends=b.getAttribute("data-ends");
+        if(ends){
+          const rem=+ends-Date.now();
+          if(rem<=0)buffExpired=true;
+          else b.textContent=fmtCountdown(rem);
+        }
       });
+      if(buffExpired)renderBuffDock();
     }
   },1000);
 }

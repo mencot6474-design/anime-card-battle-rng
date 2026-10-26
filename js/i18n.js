@@ -1402,9 +1402,16 @@
     if (_rafPending) return;
     _rafPending = true;
     requestAnimationFrame(function () {
-      _rafPending = false;
-      if (getLang() !== 'en') return;
-      translateSubtree(document.body);
+      if (getLang() !== 'en') { _rafPending = false; return; }
+      try {
+        _observer.disconnect();
+        translateSubtree(document.body);
+      } finally {
+        _rafPending = false;
+        if (document.body && getLang() === 'en') {
+          _observer.observe(document.body, { childList: true, subtree: true });
+        }
+      }
     });
   });
 
@@ -1415,7 +1422,7 @@
     syncDataObjectsLang(cur);
     if (document.body) {
       if (cur === 'en') translateSubtree(document.body);
-      _observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+      _observer.observe(document.body, { childList: true, subtree: true });
     }
   }
 

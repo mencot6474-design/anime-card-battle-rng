@@ -855,6 +855,10 @@ function renderShell(){
   // Render Topbar Cyberpunk Avatar (Support Custom Gallery Photo or Card Art)
   const pav=document.getElementById("profAv");
   if(pav){
+    const eq=equipped(); const cid=eq&&eq.char;
+    const avKey=(state&&state.customAvatar)?("c:"+state.customAvatar):(cid?("k:"+cid):"none");
+    if(pav.dataset.avKey!==avKey){
+    pav.dataset.avKey=avKey;
     if(state&&state.customAvatar){
       pav.innerHTML=`<img src="${state.customAvatar}" alt="Custom Avatar">`;
     }else{
@@ -866,6 +870,7 @@ function renderShell(){
       }else{
         pav.innerHTML='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7DF9FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6.5 8-6.5S20 16 20 20"/></svg>';
       }
+    }
     }
   }
 
