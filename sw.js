@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v210-lobbyFitCg';
+const CACHE_NAME = 'anime-card-battle-v209-cloudDailyPackSync';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
