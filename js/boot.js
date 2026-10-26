@@ -111,6 +111,13 @@ function renderSettings(){
         </button>
       </div>
 
+      <div style="margin-bottom:14px">
+        <button id="refreshUiBtn" type="button" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;font-size:12px;font-weight:800;letter-spacing:1px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.18);color:#f1f2f6;border-radius:8px;cursor:pointer;transition:all .2s ease">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
+          <span id="refreshUiTxt">${isEn ? "REFRESH GAME UI" : "REFRESH TAMPILAN (UI)"}</span>
+        </button>
+      </div>
+
       <div>
         <button class="reset-btn" id="resetBtn" style="width:100%;padding:10px;font-size:12px;font-weight:800;letter-spacing:1px;background:rgba(255,71,87,0.1);border:1px solid rgba(255,71,87,0.3);color:#ff4757;border-radius:8px;cursor:pointer">RESET DATA LOKAL</button>
       </div>
@@ -168,6 +175,21 @@ function renderSettings(){
           manualCloudBtn.disabled=false;
           if(txt) txt.textContent = oldTxt;
         }, 3000);
+      }
+    };
+  }
+
+  const refreshUiBtn=document.getElementById("refreshUiBtn");
+  if(refreshUiBtn){
+    refreshUiBtn.onclick=()=>{
+      try {
+        if(typeof renderShell === "function") renderShell();
+        renderSettings();
+        if(typeof toast === "function"){
+          toast(isEn ? "UI REFRESHED" : "TAMPILAN DIPERBARUI", isEn ? "Game interface re-rendered." : "Antarmuka game berhasil dimuat ulang.", "#66fcf1");
+        }
+      } catch(e){
+        console.error("Refresh UI err:", e);
       }
     };
   }
