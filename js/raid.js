@@ -1352,7 +1352,7 @@ function ixRender(){
     }
 
     const inner=`<img src="${thumbSrc(c.sprite_asset)}" alt="${c.name}" width="360" height="536" loading="lazy" decoding="async">
-      ${c.fullArt&&(hasMut||shFx)?`<span class="ix-fa-var">${shFx?'<span class="shiny-badge shiny-pill">SHINY</span>':''}${hasMut?mutChip(fm,mutPill(fm)):''}</span>`:''}
+      ${(hasMut||shFx)?`<span class="ix-badges hc-badges">${shFx?'<span class="shiny-badge shiny-pill">SHINY</span>':''}${hasMut?mutChip(fm,mutPill(fm)):''}</span>`:''}
       <span class="ixc-stack">${nameHtml}<span class="ixc-chance${hasMut && (fm === 'rainbow' || fm === 'ultima') ? ' ixc-chance-rainbow' : ''}" style="color:${chanceColor}"><span class="ixc-chance-text">${chanceHtml}</span></span></span>
       <span class="ixc-own${isSpecificVariantOwned ? ' on' : ''}">${any}/10</span>`;
     _ixHtml[c.char_id]=inner;

@@ -852,12 +852,14 @@ const GAME_CHANGELOGS = [
       "Tier R s/d EX kini eksklusif untuk musuh di Story Mode; badge tier pada kartu pemain (hasil Instant Roll, bench battle, profil VS) telah dihapus.",
       "Kelangkaan kartu pemain kini murni menggunakan sistem Chance (1 in N), Varian Mutasi & Shiny, serta Trait.",
       "Pembersihan opsi pengurutan di Index Kartu agar selaras tanpa tier kosmetik pada kartu pemain.",
+      "Penyelarasan posisi dan ukuran Badge Nama (kiri atas), Badge 1 in X (bawah nama), dan Badge Shiny (kanan atas) pada seluruh kartu (Instant Roll, Card Index, Roll Showcase, Hover Card) agar seragam dengan kartu di Lobby.",
       "Penyempurnaan tampilan modal Update Log & Instant Roll dengan scrollbar tersembunyi yang mulus."
     ],
     itemsEn: [
       "Tiers R through EX are now strictly exclusive to Story Mode enemies; tier badges on player cards (Instant Roll results, battle bench, VS profile) have been removed.",
       "Player card rarity is now purely governed by Chance (1 in N), Mutation & Shiny variants, and Traits.",
       "Cleaned up Card Index sort options to align without cosmetic player card tiers.",
+      "Unified layout, positioning, and sizing of Card Name (top-left), 1 in X Badge (below name), and Shiny Badge (top-right) across all cards (Instant Roll, Card Index, Roll Showcase, Hover Card) to match the Lobby Card.",
       "UI polish for Update Log and Instant Roll result modals with hidden clean scrollbars."
     ]
   },

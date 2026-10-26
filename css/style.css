@@ -54256,3 +54256,264 @@ main#app:has(.sett-wrap) {
 .bench-rail .bench-sq:not(.foe-sq) .bench-mini-tier {
   display: none !important;
 }
+
+
+/* ==========================================================================
+   UNIFORM CARD BADGE SIZING & POSITIONING (MATCHING LOBBY CARD)
+   Badge Nama (top-left), Badge 1 in X (below name), Badge Shiny (top-right)
+   ========================================================================== */
+
+/* 1. Unhide badge containers everywhere */
+.rrc .hc-badges,
+.rrc .rrc-badges,
+.rrc .rrc-var,
+.roll-overlay .roll-card-showcase .hc-badges,
+.bps-hover .hub-center .hc-badges,
+#indexModal .ix-badges,
+#indexModal .ix-fa-var {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: none !important;
+}
+
+/* 2. Global Shiny Badge & Shiny Pill standard sizing (Matching Lobby Card) */
+.shiny-pill,
+.shiny-badge,
+.rrc .shiny-pill,
+.rrc .shiny-badge,
+#indexModal .shiny-pill,
+#indexModal .shiny-badge,
+.roll-overlay .shiny-pill,
+.roll-overlay .shiny-badge,
+.bps-hover .shiny-pill,
+.bps-hover .shiny-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 20px !important;
+  min-height: 0 !important;
+  padding: 0 8px !important;
+  font-family: "Barlow Condensed", sans-serif !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: .09em !important;
+  line-height: 1 !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255,255,255,.75) !important;
+  background: linear-gradient(110deg,#2f8fe2 0%,#22d3ee 22%,#eafdff 45%,#b58cff 62%,#7df9ff 80%,#2f8fe2 100%) !important;
+  background-size: 240% 100% !important;
+  background-position: 0% 50% !important;
+  animation: lobbyMutBadgeFlow 3.6s ease-in-out infinite alternate !important;
+  color: #fff !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,.9) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  transform: none !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+}
+
+/* 3. Instant Roll Card (.rrc in #rollResultPop) - Unified with Lobby */
+.rrc {
+  position: relative !important;
+  overflow: hidden !important;
+}
+.rrc .hc-name-top,
+.rrc .rrc-name {
+  position: absolute !important;
+  top: 10px !important;
+  left: 10px !important;
+  max-width: 60% !important;
+  font-family: "Barlow Condensed", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 14px !important;
+  line-height: .98 !important;
+  letter-spacing: .03em !important;
+  color: #fff !important;
+  text-shadow: 1px 1px 0 #0b0e14, 2px 2px 0 #0b0e14, 3px 3px 0 #0b0e14, 0 0 16px rgba(0,0,0,.9) !important;
+  z-index: 6 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  transform: none !important;
+  text-align: left !important;
+}
+.rrc .hc-chance,
+.rrc .rrc-chance {
+  position: absolute !important;
+  top: 30px !important;
+  left: 10px !important;
+  font-family: "Barlow Condensed", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 10.5px !important;
+  letter-spacing: .1em !important;
+  color: var(--tcol, #7DF9FF) !important;
+  padding: 1px 6px !important;
+  border-radius: 0px !important;
+  background: rgba(6, 9, 14, .92) !important;
+  border: 1px solid currentColor !important;
+  text-shadow: 0 0 8px rgba(0,0,0,.8) !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,.6) !important;
+  z-index: 6 !important;
+  white-space: nowrap !important;
+  transform: none !important;
+}
+.rrc .hc-badges,
+.rrc .rrc-badges {
+  position: absolute !important;
+  top: 10px !important;
+  right: 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  z-index: 6 !important;
+  transform: none !important;
+}
+.rrc .rrc-cnt {
+  position: absolute !important;
+  right: 8px !important;
+  bottom: 6px !important;
+  font-family: "Barlow Condensed", sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: .04em !important;
+  color: #fff !important;
+  background: rgba(6,9,14,.88) !important;
+  border: 1px solid rgba(255,255,255,.2) !important;
+  border-radius: 4px !important;
+  padding: 0 5px !important;
+  z-index: 6 !important;
+}
+
+/* 4. Card Index Modal (#indexModal .ix-cell) - Unified with Lobby */
+#indexModal .ixc-stack {
+  position: absolute !important;
+  top: 10px !important;
+  left: 10px !important;
+  right: auto !important;
+  max-width: 60% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 4px !important;
+  z-index: 6 !important;
+  pointer-events: none !important;
+}
+#indexModal .ixc-name {
+  font-family: "Barlow Condensed", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 14px !important;
+  line-height: .98 !important;
+  letter-spacing: .03em !important;
+  color: #fff !important;
+  text-shadow: 1px 1px 0 #0b0e14, 2px 2px 0 #0b0e14, 3px 3px 0 #0b0e14, 0 0 16px rgba(0,0,0,.9) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
+  transform: none !important;
+  text-align: left !important;
+}
+#indexModal .ixc-chance,
+#indexModal .hc-chance {
+  font-family: "Barlow Condensed", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 10.5px !important;
+  letter-spacing: .1em !important;
+  padding: 1px 6px !important;
+  border-radius: 0px !important;
+  background: rgba(6, 9, 14, .92) !important;
+  border: 1px solid currentColor !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,.6) !important;
+  transform: none !important;
+  white-space: nowrap !important;
+}
+#indexModal .ix-badges,
+#indexModal .ix-fa-var {
+  position: absolute !important;
+  top: 10px !important;
+  right: 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  z-index: 6 !important;
+  transform: none !important;
+  pointer-events: none !important;
+}
+
+/* 5. Roll Overlay Reveal Showcase - Unified with Lobby */
+.roll-overlay .roll-card-showcase .hub-center .hc-name-top {
+  top: 12px !important;
+  left: 14px !important;
+  max-width: 72% !important;
+  font-family: "Barlow Condensed", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: clamp(15px, 1.9vh, 20px) !important;
+  line-height: .98 !important;
+  letter-spacing: .03em !important;
+  transform: none !important;
+  text-shadow: 1px 1px 0 #0b0e14, 2px 2px 0 #0b0e14, 3px 3px 0 #0b0e14, 0 0 16px rgba(0,0,0,.9) !important;
+}
+.roll-overlay .roll-card-showcase .hub-center .hc-chance {
+  top: 46px !important;
+  left: 14px !important;
+  bottom: auto !important;
+  font-family: "Barlow Condensed", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: clamp(10px, 1.3vh, 13px) !important;
+  letter-spacing: .1em !important;
+  padding: 1px 6px !important;
+  border-radius: 0px !important;
+  background: rgba(6, 9, 14, .92) !important;
+  border: 1px solid currentColor !important;
+  text-shadow: 0 0 8px rgba(0, 0, 0, .8) !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, .6) !important;
+  transform: none !important;
+}
+.roll-overlay .roll-card-showcase .hub-center .hc-badges {
+  top: 12px !important;
+  right: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  transform: none !important;
+}
+
+/* 6. Card Hover Preview (.bps-hover .hub-center) - Unified with Lobby */
+.bps-hover .hub-center .hc-name-top {
+  top: 12px !important;
+  left: 14px !important;
+  max-width: 72% !important;
+  font-family: "Barlow Condensed", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 16px !important;
+  line-height: .98 !important;
+  letter-spacing: .03em !important;
+  transform: none !important;
+  text-shadow: 1px 1px 0 #0b0e14, 2px 2px 0 #0b0e14, 3px 3px 0 #0b0e14, 0 0 16px rgba(0,0,0,.9) !important;
+}
+.bps-hover .hub-center .hc-chance {
+  top: 40px !important;
+  left: 14px !important;
+  font-family: "Barlow Condensed", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 11px !important;
+  letter-spacing: .1em !important;
+  padding: 1px 6px !important;
+  border-radius: 0px !important;
+  background: rgba(6, 9, 14, .92) !important;
+  border: 1px solid currentColor !important;
+  text-shadow: 0 0 8px rgba(0, 0, 0, .8) !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, .6) !important;
+  transform: none !important;
+}
+.bps-hover .hub-center .hc-badges {
+  top: 12px !important;
+  right: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  transform: none !important;
+}
