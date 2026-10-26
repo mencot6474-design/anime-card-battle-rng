@@ -374,11 +374,15 @@ async function submitAuth(){
        diketik. Offline / Auth belum siap -> tetap daftar lokal seperti dulu. */
     const initSt = freshState();
     if(window.CloudDB){
-      if(window.CloudAuth) await window.CloudAuth.ensurePass(key, passH);
+      if(window.CloudAuth) {
+        const ep = await window.CloudAuth.ensurePass(key, passH);
+        console.log("[Register CloudAuth ensurePass]:", ep);
+      }
       let reg=null;
       try {
         reg = await window.CloudDB.registerUser(name, initSt);
-      } catch(err){ console.warn("Cloud register fail:", err); }
+        console.log("[Register CloudDB registerUser]:", reg);
+      } catch(err){ console.error("Cloud register fail:", err); }
       if(reg && reg.created === false){
         auError("Username itu sudah dipakai. Coba masuk.");
         finish();

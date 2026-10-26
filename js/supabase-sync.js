@@ -847,9 +847,15 @@ const CloudAuth = {
         body: JSON.stringify(args || {}),
       });
       const txt = await res.text();
-      if (!res.ok) return null;
+      if (!res.ok) {
+        console.error(`[CloudAuth _rpcJwt error] ${fn} ${res.status}:`, txt);
+        return null;
+      }
       try { return JSON.parse(txt); } catch (e) { return null; }
-    } catch (e) { return null; }
+    } catch (e) {
+      console.error(`[CloudAuth _rpcJwt fetch failed] ${fn}:`, e.message);
+      return null;
+    }
   },
   /** Save MILIK PEMILIK TOKEN (RPC 0020), bukan baca anon. null = tak ada. */
   async mySave(u) {
