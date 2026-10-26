@@ -337,66 +337,63 @@ async function submitAuth(){
   const finish=()=>{document.getElementById("authSpin").classList.add("hidden");btn.disabled=false;btn.classList.remove("press");};
   const users=getUsers(), key=name.toLowerCase(), passH=hashPass(pass);
 
+  /* WAJIB ONLINE: Game ini sepenuhnya online dan terhubung ke Supabase.
+     Jika modul CloudDB / CloudAuth gagal dimuat atau internet terputus, tolak akses. */
+  if(!navigator.onLine || !window.CloudDB || !window.CloudAuth){
+    auError("Tidak dapat terhubung ke server Supabase. Pastikan internet aktif dan refresh halaman.");
+    finish();
+    return;
+  }
+
   /* 1. Identitas cloud. Login: jalur Auth (JWT) dulu — signIn = bukti password,
      lalu save dibaca lewat token (0020). Pemain lama yang belum punya akun Auth
      diverifikasi lewat RPC check_credentials (definer), lalu sesi dibuat +
      uid ditautkan. Anon tidak lagi dipakai sebagai bukti "akun ada" (2c). */
-  let cloudUser=null, cloudOk=false;
-  if(window.CloudDB && authMode!=="register"){
-    const jwt = window.CloudAuth ? await window.CloudAuth.authenticate(key, passH) : null;
+  let cloudUser=null, cloudOk=false, loginErrReason="";
+  if(authMode!=="register"){
+    const jwt = await window.CloudAuth.authenticate(key, passH);
     if(jwt && jwt.ok){
       cloudOk=true;
       cloudUser={username:jwt.username, save_data:jwt.save_data};
     }else{
+      loginErrReason = (jwt && jwt.reason) || "";
       let chk=null;
       try { chk = await window.CloudDB.checkCredentials(key, passH); }
       catch(err){ console.warn("checkCredentials err:", err); }
       if(chk && chk.ok){
         cloudOk=true;
         /* Ditautkan dulu (bukan tembak-lari): enterGame langsung membaca save lewat JWT. */
-        if(window.CloudAuth){
-          try { await window.CloudAuth.connect(key, passH); }
-          catch(err){ console.warn("Auth connect err:", err); }
-        }
+        try { await window.CloudAuth.connect(key, passH); }
+        catch(err){ console.warn("Auth connect err:", err); }
       }
     }
   }
 
   if(authMode==="register"){
-    if(users[key] || cloudUser){
-      auError("Username itu sudah dipakai. Coba masuk.");
+    /* Register cloud: jangan blokir hanya karena users[key] ada di localStorage lama,
+       karena bisa jadi data lokal sisa sementara akun di Supabase belum ada/sudah dihapus.
+       Biarkan server Supabase yang menjadi penentu tunggal apakah username sudah dipakai. */
+    const initSt = freshState();
+    const ep = await window.CloudAuth.ensurePass(key, passH);
+    if(!ep || !ep.ok){
+      auError("Gagal autentikasi server Supabase: " + ((ep && ep.reason) || "koneksi ditolak"));
       finish();
       return;
     }
-    /* Register cloud DULU: sejak 0021 register_player menjawab created:false
-       kalau username sudah dipakai. Sejak 0024 RPC itu butuh JWT (server yang
-       mengisi user_id), jadi sesi Auth dibuat lebih dulu dengan hash yang baru
-       diketik. Offline / Auth belum siap -> tetap daftar lokal seperti dulu. */
-    const initSt = freshState();
-    if(window.CloudDB){
-      if(window.CloudAuth) {
-        const ep = await window.CloudAuth.ensurePass(key, passH);
-        if(!ep || !ep.ok){
-          auError("Gagal autentikasi server: " + ((ep && ep.reason) || "koneksi ditolak"));
-          finish();
-          return;
-        }
-      }
-      let reg=null;
-      try {
-        reg = await window.CloudDB.registerUser(name, initSt, passH);
-      } catch(err){ console.error("Cloud register fail:", err); }
-      if(!reg || reg.ok === false){
-        const errMsg = (reg && reg.msg) || "Server menolak pendaftaran";
-        auError(errMsg === "TAKEN" ? "Username itu sudah dipakai. Coba masuk." : ("Pendaftaran cloud gagal: " + errMsg));
-        finish();
-        return;
-      }
-      if(reg && reg.created === false){
-        auError("Username itu sudah dipakai. Coba masuk.");
-        finish();
-        return;
-      }
+    let reg=null;
+    try {
+      reg = await window.CloudDB.registerUser(name, initSt, passH);
+    } catch(err){ console.error("Cloud register fail:", err); }
+    if(!reg || reg.ok === false){
+      const errMsg = (reg && reg.msg) || "Server menolak pendaftaran";
+      auError(errMsg === "TAKEN" ? "Username itu sudah dipakai di server. Coba masuk." : ("Pendaftaran cloud gagal: " + errMsg));
+      finish();
+      return;
+    }
+    if(reg && reg.created === false){
+      auError("Username itu sudah terdaftar di server. Silakan masuk (Login).");
+      finish();
+      return;
     }
     users[key]={name,pass:passH,created:Date.now()};
     saveUsers(users);
@@ -404,7 +401,7 @@ async function submitAuth(){
     finish();
     enterGame(name, true);
   }else{
-    // Mode LOGIN: prioritas cloud, fallback lokal
+    // Mode LOGIN: 100% WAJIB CLOUD SUPABASE (Tanpa fallback lokal offline)
     if(cloudOk){
       const targetName = name;
       users[key] = {name: targetName, pass: passH, created: Date.now()};
@@ -418,21 +415,13 @@ async function submitAuth(){
       finish();
       enterGame(targetName, true);
     }else{
-      // Fallback lokal (akun lama yang belum/gagal sync ke cloud)
-      const u = users[key];
-      if(!u){
-        auError("Akun belum terdaftar. Silakan daftar dulu.");
-        finish();
-        return;
+      if(loginErrReason === "no_save"){
+        auError("Akun belum memiliki data di server. Silakan klik DAFTAR untuk membuat akun di Cloud.");
+      }else{
+        auError("Username belum terdaftar di server atau password salah.");
       }
-      if(u.pass!==passH){
-        auError("Password salah.");
-        finish();
-        return;
-      }
-      if(window.CloudAuth) window.CloudAuth.kick(u.name || name);
       finish();
-      enterGame(u.name || name, true);
+      return;
     }
   }
 }
@@ -490,15 +479,17 @@ async function enterGame(name,welcome){
     if(window.startSessionHeartbeat) window.startSessionHeartbeat(name);
   }
   
-  // Sinkronisasi data cloud terbaru saat masuk game
-  if(window.CloudDB){
-    try {
-      const cUser = await window.CloudDB.getUser(name);
-      if(cUser && cUser.save_data){
-        localStorage.setItem("aab-state-v2:" + name, JSON.stringify(cUser.save_data));
-      }
-    } catch(err){ console.warn("Cloud pull fail on enterGame:", err); }
+  // Sinkronisasi data cloud terbaru saat masuk game (WAJIB ONLINE)
+  if(!window.CloudDB){
+    logout();
+    return;
   }
+  try {
+    const cUser = await window.CloudDB.getUser(name);
+    if(cUser && cUser.save_data){
+      localStorage.setItem("aab-state-v2:" + name, JSON.stringify(cUser.save_data));
+    }
+  } catch(err){ console.warn("Cloud pull fail on enterGame:", err); }
 
   try {
     loadStateFor(name);
@@ -648,6 +639,30 @@ function boot(){
       reader.readAsDataURL(file);
     });
   }
+
+  /* Jaringan: pantau koneksi internet real-time (Game wajib online) */
+  (function(){
+    let netBar=null;
+    const ensureNetBar=()=>{
+      if(netBar)return netBar;
+      netBar=document.createElement("div");
+      netBar.id="onlineGuardOverlay";
+      netBar.style.cssText="position:fixed;inset:0;background:rgba(5,7,13,0.94);z-index:9999998;display:none;align-items:center;justify-content:center;padding:20px;font-family:sans-serif;backdrop-filter:blur(8px);";
+      netBar.innerHTML=`
+        <div style="background:#0d1322;border:1px solid #ff4757;border-radius:16px;padding:28px 24px;max-width:360px;text-align:center;color:#fff;box-shadow:0 0 40px rgba(255,71,87,0.35);">
+          <div style="font-size:38px;margin-bottom:10px">📡</div>
+          <div style="font-size:17px;font-weight:800;color:#ff4757;letter-spacing:1px;margin-bottom:8px">KONEKSI TERPUTUS</div>
+          <div style="font-size:13px;color:#94a3b8;line-height:1.5;margin-bottom:20px">Game ini membutuhkan koneksi internet aktif ke server Supabase. Periksa jaringan kamu untuk melanjutkan permainan.</div>
+          <button onclick="location.reload()" style="background:linear-gradient(135deg,#ff4757,#e84118);color:#fff;border:none;padding:11px 26px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;letter-spacing:0.5px">MUAT ULANG</button>
+        </div>
+      `;
+      document.body.appendChild(netBar);
+      return netBar;
+    };
+    window.addEventListener("offline",()=>{ensureNetBar().style.display="flex";});
+    window.addEventListener("online",()=>{if(netBar)netBar.style.display="none";});
+    if(!navigator.onLine)ensureNetBar().style.display="flex";
+  })();
 
   /* Diagnosa: build + viewport nyata HP (tampil di semua layar) */
   (function(){

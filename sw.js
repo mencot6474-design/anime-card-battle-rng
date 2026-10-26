@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v179-fixRegSave';
+const CACHE_NAME = 'anime-card-battle-v180-onlineOnlyFix';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

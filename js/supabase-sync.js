@@ -743,6 +743,7 @@ const CloudDB = {
     }
     return res;
   }
+};
 
 // Auto-kick listener if another device logs in
 let _currentSessionId = localStorage.getItem("aab_device_session") || (Math.random().toString(36).slice(2) + Date.now());
