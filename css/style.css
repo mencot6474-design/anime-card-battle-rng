@@ -50063,3 +50063,282 @@ html.fps-locked .bp-fchip{
 #welcomeModal .go:hover{filter:brightness(1.12)}
 #welcomeModal .go:active{transform:scale(.97)}
 @media (prefers-reduced-motion:reduce){#welcomeModal .syswin,#welcomeModal .sweep,#welcomeModal .ring,#welcomeModal .hex,#welcomeModal .h1,#welcomeModal .h1::before,#welcomeModal .h1::after,#welcomeModal .bar .dot,#welcomeModal .sw-parts .pt{animation:none!important}}
+
+/* ==========================================================================
+   LEADERBOARD CYBERPUNK x SOLO LEVELING (Pas Layar, Pod 1-2-3 Tengah, Scroll List Max 50)
+   ========================================================================== */
+#rankModal {
+  padding: 10px 14px 12px !important;
+  background: radial-gradient(circle at 50% 0%, rgba(168, 85, 247, 0.18) 0%, transparent 60%),
+              radial-gradient(circle at 15% 50%, rgba(0, 240, 255, 0.08) 0%, transparent 45%),
+              #030408 !important;
+  overflow: hidden !important;
+}
+
+#rankModal .rk-box {
+  width: 100% !important;
+  max-width: 1360px !important;
+  height: 100% !important;
+  margin: 0 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  overflow: hidden !important;
+}
+
+/* Header Cyberpunk */
+#rankModal .ix-head {
+  padding: 8px 16px !important;
+  background: linear-gradient(180deg, rgba(14, 16, 32, 0.85) 0%, rgba(7, 8, 18, 0.4) 100%) !important;
+  border: 1px solid rgba(0, 240, 255, 0.22) !important;
+  border-radius: 6px !important;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  margin-bottom: 0 !important;
+}
+#rankModal .ix-title {
+  font-family: "Tourney", system-ui, sans-serif !important;
+  font-size: clamp(20px, 2.4vw, 26px) !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.2em !important;
+  background: linear-gradient(135deg, #ffffff 10%, #00f0ff 45%, #a855f7 75%, #ff0055 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+#rankModal .ix-eyebrow {
+  color: #00f0ff !important;
+  font-family: "Rajdhani", sans-serif !important;
+  letter-spacing: 0.3em !important;
+}
+
+/* Meta status bar */
+#rankModal .rk-meta {
+  padding: 4px 12px !important;
+  gap: 6px !important;
+  border-left: 3px solid #00f0ff;
+  background: rgba(0, 240, 255, 0.03);
+  border-radius: 4px;
+}
+
+/* Body pas layar */
+#rankModal .rk-body {
+  flex: 1 !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  gap: 8px !important;
+}
+
+/* PODIUM TOP 1, 2, 3 DI TENGAH */
+#rankModal .rk-podium {
+  flex: none !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
+  gap: 14px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  padding: 8px 12px 10px !important;
+  background: rgba(10, 12, 24, 0.6) !important;
+  border: 1px solid rgba(0, 240, 255, 0.18) !important;
+  border-radius: 10px !important;
+}
+
+#rankModal .rk-pod {
+  background: rgba(10, 12, 24, 0.85);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  border-radius: 8px;
+  padding: 6px 12px 8px;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#rankModal .rk-pod:hover {
+  transform: translateY(-3px);
+}
+
+/* Pod 1 Center - Paling Tinggi & Besar */
+#rankModal .rk-pod1 {
+  width: min(250px, 34%) !important;
+  order: 2 !important;
+  margin: 0 !important;
+  background: linear-gradient(180deg, rgba(255, 190, 11, 0.14) 0%, rgba(13, 15, 29, 0.92) 80%) !important;
+  border-color: rgba(255, 190, 11, 0.6) !important;
+  box-shadow: 0 8px 24px rgba(255, 190, 11, 0.18) !important;
+  z-index: 5;
+}
+#rankModal .rk-pod1 .rk-ava {
+  width: 96px !important;
+  height: 96px !important;
+  margin-bottom: 8px !important;
+}
+#rankModal .rk-pod1 .rk-pod-name {
+  font-size: 15px !important;
+  color: #fff !important;
+  text-shadow: 0 0 10px rgba(255, 190, 11, 0.4) !important;
+}
+#rankModal .rk-pod1 .rk-pod-val {
+  font-size: 18px !important;
+  color: #ffbe0b !important;
+}
+
+/* Pod 2 Kiri - Cyan */
+#rankModal .rk-pod2 {
+  width: min(210px, 30%) !important;
+  order: 1 !important;
+  margin: 0 !important;
+  background: linear-gradient(180deg, rgba(0, 240, 255, 0.1) 0%, rgba(10, 12, 24, 0.88) 80%) !important;
+  border-color: rgba(0, 240, 255, 0.45) !important;
+  box-shadow: 0 6px 18px rgba(0, 240, 255, 0.15) !important;
+  z-index: 4;
+}
+#rankModal .rk-pod2 .rk-ava {
+  width: 76px !important;
+  height: 76px !important;
+  margin-bottom: 6px !important;
+}
+#rankModal .rk-pod2 .rk-pod-val {
+  color: #00f0ff !important;
+}
+
+/* Pod 3 Kanan - Purple */
+#rankModal .rk-pod3 {
+  width: min(210px, 30%) !important;
+  order: 3 !important;
+  margin: 0 !important;
+  background: linear-gradient(180deg, rgba(168, 85, 247, 0.1) 0%, rgba(10, 12, 24, 0.88) 80%) !important;
+  border-color: rgba(168, 85, 247, 0.45) !important;
+  box-shadow: 0 6px 18px rgba(168, 85, 247, 0.15) !important;
+  z-index: 4;
+}
+#rankModal .rk-pod3 .rk-ava {
+  width: 76px !important;
+  height: 76px !important;
+  margin-bottom: 6px !important;
+}
+#rankModal .rk-pod3 .rk-pod-val {
+  color: #a855f7 !important;
+}
+
+/* TABEL DAFTAR RANK 4 - 50 */
+#rankModal .rk-table-wrap {
+  flex: 1 !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: rgba(10, 12, 24, 0.78) !important;
+  border: 1px solid rgba(0, 240, 255, 0.2) !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  backdrop-filter: blur(14px) !important;
+}
+
+#rankModal .rk-head-row {
+  flex: none !important;
+  background: rgba(6, 7, 16, 0.9) !important;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.2) !important;
+  color: #00f0ff !important;
+  font-family: "Rajdhani", sans-serif !important;
+  letter-spacing: 0.15em !important;
+  padding: 8px 16px !important;
+}
+
+/* Container Scroll List Max 50 Player */
+#rankModal .rk-list-scroll {
+  flex: 1 !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#rankModal .rk-list-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+#rankModal .rk-list-scroll::-webkit-scrollbar-track {
+  background: rgba(5, 6, 12, 0.6);
+}
+#rankModal .rk-list-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 240, 255, 0.25);
+  border-radius: 3px;
+}
+#rankModal .rk-list-scroll::-webkit-scrollbar-thumb:hover {
+  background: #00f0ff;
+}
+
+#rankModal .rk-row {
+  flex: none !important;
+  padding: 7px 16px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  transition: background 0.15s ease !important;
+  cursor: pointer !important;
+}
+#rankModal .rk-row:hover {
+  background: rgba(0, 240, 255, 0.06) !important;
+}
+#rankModal .rk-row.me {
+  background: linear-gradient(90deg, rgba(255, 190, 11, 0.14) 0%, rgba(255, 190, 11, 0.02) 100%) !important;
+  border-left: 3px solid #ffbe0b !important;
+}
+
+/* Tabs Scroller di Bawah */
+#rankModal .rk-tabs {
+  padding: 6px 12px 8px !important;
+  border-top: 1px solid rgba(0, 240, 255, 0.2) !important;
+  background: rgba(8, 9, 20, 0.75) !important;
+  gap: 8px !important;
+}
+#rankModal .rk-tab {
+  background: rgba(14, 16, 32, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #94a3b8 !important;
+  font-family: "Rajdhani", sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.1em !important;
+  padding: 6px 14px !important;
+  border-radius: 4px !important;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+}
+#rankModal .rk-tab:hover {
+  color: #fff !important;
+  border-color: #00f0ff !important;
+  background: rgba(0, 240, 255, 0.08) !important;
+}
+#rankModal .rk-tab.on {
+  color: #000 !important;
+  background: linear-gradient(135deg, #00f0ff 0%, #00b4d8 100%) !important;
+  border-color: #00f0ff !important;
+  font-weight: 800 !important;
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.45) !important;
+}
+
+@media (max-width: 768px) {
+  #rankModal { padding: 6px !important; }
+  #rankModal .rk-pod1 { width: 120px !important; }
+  #rankModal .rk-pod1 .rk-ava { width: 68px !important; height: 68px !important; }
+  #rankModal .rk-pod2, #rankModal .rk-pod3 { width: 100px !important; }
+  #rankModal .rk-pod2 .rk-ava, #rankModal .rk-pod3 .rk-ava { width: 56px !important; height: 56px !important; }
+  #rankModal .rk-pod-name { font-size: 11px !important; }
+  #rankModal .rk-pod-val { font-size: 13px !important; }
+}
+
+/* Styling Placeholder Pod & Baris Kosong Saat Belum Ada Player Konek */
+.rk-init-empty {
+  opacity: 0.35;
+  color: var(--cyan, #00f0ff) !important;
+}
+.rk-pod-empty {
+  opacity: 0.85;
+}
+.rk-pod-name-empty {
+  font-size: 11px !important;
+  letter-spacing: 0.12em !important;
+  color: #64748b !important;
+}
+.rk-pod-val-empty {
+  color: #64748b !important;
+}
+.rk-row-empty {
+  opacity: 0.6;
+}

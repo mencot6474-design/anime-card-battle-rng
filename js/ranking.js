@@ -213,14 +213,25 @@ function rkPodHtml(r, board) {
   </div>`;
 }
 
+function rkPodEmptyHtml(rank, board) {
+  const bd = rank === 1
+    ? `<video class="rk-bd rk-bd1" src="${RK_BD1}" muted loop playsinline autoplay preload="metadata"></video>`
+    : `<img class="rk-bd rk-bd23" src="${RK_BD23}" alt="" decoding="async">`;
+  const unit = rkUnitChip(board);
+  return `<div class="rk-pod rk-pod${rank} rk-pod-empty" title="Belum ada player di peringkat #${rank}">
+    <div class="rk-ava">${bd}<span class="rk-ava-core"><span class="rk-init rk-init-empty">?</span></span></div>
+    <div class="rk-pod-name rk-pod-name-empty">MENUNGGU PEMAIN</div>
+    <div class="rk-pod-val rk-pod-val-empty">—</div>
+    ${unit ? `<div class="rk-pod-medal">${rkEsc(unit)}</div>` : ""}
+  </div>`;
+}
+
 function rkPodiumHtml(rows, board) {
-  if (!rows || !rows.length) return "";
   const by = {};
-  for (const r of rows.slice(0, 3)) by[r.rank] = r;
-  /* Slot kosong tetap diisi elemen: grid 3 lajur, jadi juara 1 tidak bergeser
-     ke kiri kalau baru ada satu-dua skor. */
-  const slot = r => r ? rkPodHtml(r, board) : `<div class="rk-pod rk-pod-empty"></div>`;
-  return `<div class="rk-podium">${slot(by[2])}${slot(by[1])}${slot(by[3])}</div>`;
+  for (const r of (rows || []).slice(0, 3)) by[r.rank] = r;
+  /* Pod 1, 2, 3 tetap muncul dengan placeholder keren jika belum ada player */
+  const slot = (r, rank) => r ? rkPodHtml(r, board) : rkPodEmptyHtml(rank, board);
+  return `<div class="rk-podium">${slot(by[2], 2)}${slot(by[1], 1)}${slot(by[3], 3)}</div>`;
 }
 
 /* ===== DELTA POSISI =====
@@ -254,7 +265,18 @@ function rkDeltaHtml(board, rows) {
 function rkRowsHtml(rows, board, delta) {
   if (!rows || !rows.length) {
     const info = RK_BOARDS[board] || RK_BOARDS.world_boss;
-    return `<div class="rk-empty">BELUM ADA SKOR<br><span>Jadilah yang pertama masuk papan ${rkEsc(info.label)}.</span></div>`;
+    let emptyRows = "";
+    // Buat placeholder baris 4 sampai 10 agar tabel tetap terlihat berisi dan rapi
+    for (let i = 4; i <= 10; i++) {
+      emptyRows += `<div class="rk-row rk-row-empty">
+        <span class="rk-rank">${i}</span>
+        <span class="rk-av-sm"><span class="rk-init" style="font-size:12px;opacity:0.4;">—</span></span>
+        <span class="rk-name" style="opacity:0.4;font-style:italic;">Slot Terbuka</span>
+        <span class="rk-val" style="opacity:0.4;">—</span>
+        <span class="rk-delta-cell"><span class="rk-delta" style="opacity:0.3;">–</span></span>
+      </div>`;
+    }
+    return emptyRows;
   }
   const myName = (currentUser || "").toLowerCase();
   const unit = rkUnitChip(board);
@@ -285,8 +307,15 @@ async function rkRender(silent) {
 
   if (!online) {
     if (silent) return;
-    meta.innerHTML = `<span class="rk-chip">${info.label}</span><span class="rk-chip rk-dim">LOGIN UNTUK RANKING</span>`;
-    body.innerHTML = `<div class="rk-empty">TIDAK TERHUBUNG KE SERVER<br><span>Ranking hanya tersedia saat online.</span></div>`;
+    meta.innerHTML = `<span class="rk-chip">${info.label}</span><span class="rk-chip rk-dim">OFFLINE / GUEST</span><span class="rk-chip rk-bad">BELUM TERKONEKSI</span>`;
+    const emptyDelta = {};
+    body.innerHTML =
+      rkPodiumHtml([], board) +
+      `<div class="rk-table-wrap">
+        <div class="rk-head-row"><span>RANK</span><span class="rk-h-av"></span><span>PEMAIN (TOP 50)</span><span>${info.col}</span><span title="Perubahan posisi vs. tampilan sebelumnya">Δ<span class="rk-h-long"> POSISI</span></span></div>
+        <div class="rk-list-scroll">${rkRowsHtml([], board, emptyDelta)}</div>
+        <div class="rk-note">Mode Offline · Login atau sambungkan koneksi server untuk sinkronisasi ranking dunia.</div>
+      </div>`;
     return;
   }
 
@@ -308,8 +337,15 @@ async function rkRender(silent) {
 
   if (!res || !res.ok) {
     if (silent) return; /* refresh berkala gagal: tampilan lama dibiarkan */
-    meta.innerHTML = `<span class="rk-chip">${info.label}</span><span class="rk-chip rk-bad">GAGAL MEMUAT</span>`;
-    body.innerHTML = `<div class="rk-empty">SERVER TIDAK MERESPONS<br><span>Coba buka lagi sebentar lagi.</span></div>`;
+    meta.innerHTML = `<span class="rk-chip">${info.label}</span><span class="rk-chip rk-bad">SERVER TIDAK MERESPONS</span>`;
+    const emptyDelta = {};
+    body.innerHTML =
+      rkPodiumHtml([], board) +
+      `<div class="rk-table-wrap">
+        <div class="rk-head-row"><span>RANK</span><span class="rk-h-av"></span><span>PEMAIN (TOP 50)</span><span>${info.col}</span><span title="Perubahan posisi vs. tampilan sebelumnya">Δ<span class="rk-h-long"> POSISI</span></span></div>
+        <div class="rk-list-scroll">${rkRowsHtml([], board, emptyDelta)}</div>
+        <div class="rk-note">Server belum merespons · Coba tekan tombol sinkronisasi lagi sebentar lagi.</div>
+      </div>`;
     return;
   }
 
@@ -325,11 +361,18 @@ async function rkRender(silent) {
   const keepScroll = silent ? body.scrollTop : 0;
   const oldVid = body.querySelector("video.rk-bd1");
   const delta = rkDeltaHtml(board, res.rows || []);
+  /* Pod 1, 2, 3 di tengah (urutan 2 - 1 - 3). Rank 4 s/d 50 masuk ke dalam scroll list. */
+  const allRows = res.rows || [];
+  const topRows = allRows.slice(0, 3);
+  const listRows = allRows.slice(3, 50); // Maksimal 50 player yang dicatat di list
+
   body.innerHTML =
-    rkPodiumHtml(res.rows, board) +
-    `<div class="rk-head-row"><span>RANK</span><span class="rk-h-av"></span><span>PEMAIN</span><span>${info.col}</span><span title="Perubahan posisi vs. tampilan sebelumnya">Δ<span class="rk-h-long"> POSISI</span></span></div>` +
-    rkRowsHtml(res.rows, board, delta) +
-    `<div class="rk-note">${info.note}</div>`;
+    rkPodiumHtml(topRows, board) +
+    `<div class="rk-table-wrap">
+      <div class="rk-head-row"><span>RANK</span><span class="rk-h-av"></span><span>PEMAIN (TOP 50)</span><span>${info.col}</span><span title="Perubahan posisi vs. tampilan sebelumnya">Δ<span class="rk-h-long"> POSISI</span></span></div>
+      <div class="rk-list-scroll">${rkRowsHtml(listRows, board, delta)}</div>
+      <div class="rk-note">${info.note}</div>
+    </div>`;
   /* Refresh berkala: pindahkan elemen video yang sudah jalan ke DOM baru, jangan
      download ulang 2,4 MB tiap menit. */
   const newVid = body.querySelector("video.rk-bd1");

@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Leaderboard Prototype — Cyberpunk x Solo Leveling</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700&family=Rajdhani:wght@500;600;700;800&family=Tourney:ital,wght@0,700;0,800;0,900;1,900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cyan: #00f0ff;
+  --cyan-dim: rgba(0, 240, 255, 0.22);
+  --cyan-glow: rgba(0, 240, 255, 0.55);
+  --purple: #a855f7;
+  --purple-glow: rgba(168, 85, 247, 0.55);
+  --gold: #ffbe0b;
+  --gold-glow: rgba(255, 190, 11, 0.55);
+  --neon-red: #ff0055;
+  --bg-deep: #030408;
+  --bg-card: rgba(10, 12, 24, 0.78);
+  --border-tech: rgba(0, 240, 255, 0.2);
+  --text-main: #f1f5f9;
+  --text-dim: #94a3b8;
+  --text-dark: #64748b;
+  --font-display: "Tourney", system-ui, sans-serif;
+  --font-tech: "Rajdhani", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --font-body: "Exo 2", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+html, body {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden; /* PAS LAYAR, TIDAK ADA SCROLLBAR WINDOW */
+  background-color: var(--bg-deep);
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(168, 85, 247, 0.16) 0%, transparent 55%),
+    radial-gradient(circle at 15% 45%, rgba(0, 240, 255, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 85% 65%, rgba(255, 0, 85, 0.08) 0%, transparent 40%),
+    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+  color: var(--text-main);
+  font-family: var(--font-body);
+}
+
+/* CRT Scanlines & Vignette */
+.scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(rgba(18, 16, 26, 0) 50%, rgba(0, 0, 0, 0.3) 50%);
+  background-size: 100% 4px;
+  opacity: 0.3;
+  z-index: 99;
+}
+.screen-vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 90px rgba(0,0,0,0.85);
+  z-index: 98;
+}
+
+/* Container Pas Layar (Flex column 100vh) */
+.lb-app-shell {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  padding: 10px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 1360px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 10;
+}
+
+/* HEADER COMPACT */
+.lb-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px;
+  background: linear-gradient(180deg, rgba(14, 16, 32, 0.85) 0%, rgba(7, 8, 18, 0.4) 100%);
+  border: 1px solid var(--border-tech);
+  border-radius: 6px;
+  backdrop-filter: blur(10px);
+  flex-shrink: 0;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+
+.hud-tag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--cyan);
+  opacity: 0.75;
+  letter-spacing: 0.12em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.status-dot {
+  width: 6px;
+  height: 6px;
+  background: #00ff66;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #00ff66;
+}
+
+.title-center {
+  text-align: center;
+}
+.title-main {
+  font-family: var(--font-display);
+  font-size: clamp(20px, 2.5vw, 26px);
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #ffffff 10%, #00f0ff 45%, #a855f7 75%, #ff0055 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 1.1;
+  filter: drop-shadow(0 0 16px rgba(0, 240, 255, 0.35));
+}
+.title-sub {
+  font-family: var(--font-tech);
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--cyan);
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+/* TABS SCROLLER COMPACT */
+.tabs-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.tab-btn {
+  background: rgba(14, 16, 32, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-dim);
+  font-family: var(--font-tech);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 5px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+  transition: all 0.18s;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+}
+.tab-btn:hover {
+  color: #fff;
+  border-color: var(--cyan);
+  background: rgba(0, 240, 255, 0.08);
+}
+.tab-btn.active {
+  color: #000;
+  background: linear-gradient(135deg, #00f0ff 0%, #00b4d8 100%);
+  border-color: #00f0ff;
+  font-weight: 800;
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.45);
+}
+.tab-badge {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  padding: 1px 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-dim);
+}
+.tab-btn.active .tab-badge {
+  background: #000;
+  color: var(--cyan);
+}
+
+/* INFO BAR COMPACT */
+.info-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 12px;
+  background: rgba(0, 240, 255, 0.03);
+  border-left: 3px solid var(--cyan);
+  border-radius: 3px;
+  font-size: 10.5px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+.timer-tag {
+  font-family: var(--font-mono);
+  color: var(--gold);
+  font-weight: 700;
+}
+
+/* ========================================================
+   SECTION TENGAH: PODIUM TOP 1, 2, 3 (CENTERED OLYMPIC PODIUM)
+   Posisi: Rank 2 (Kiri) - Rank 1 (Tengah, Terbesar) - Rank 3 (Kanan)
+   ======================================================== */
+.podium-stage {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 14px;
+  padding: 6px 0;
+  flex-shrink: 0;
+}
+
+.pod-item {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border-tech);
+  border-radius: 10px;
+  backdrop-filter: blur(12px);
+  padding: 8px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s;
+  cursor: pointer;
+}
+.pod-item:hover {
+  transform: translateY(-4px) scale(1.02);
+}
+
+/* Rank 1 Center - Monarch (Tinggi & Menonjol) */
+.pod-1 {
+  width: 250px;
+  order: 2; /* Tengah */
+  background: linear-gradient(180deg, rgba(255, 190, 11, 0.14) 0%, rgba(13, 15, 29, 0.92) 80%);
+  border-color: rgba(255, 190, 11, 0.65);
+  box-shadow: 0 8px 30px rgba(255, 190, 11, 0.2), inset 0 0 16px rgba(255, 190, 11, 0.08);
+  z-index: 5;
+}
+.pod-1 .card-box {
+  width: 100px;
+  height: 122px;
+}
+
+/* Rank 2 Left - Cyan */
+.pod-2 {
+  width: 220px;
+  order: 1; /* Kiri */
+  background: linear-gradient(180deg, rgba(0, 240, 255, 0.1) 0%, rgba(10, 12, 24, 0.88) 80%);
+  border-color: rgba(0, 240, 255, 0.45);
+  box-shadow: 0 6px 22px rgba(0, 240, 255, 0.15);
+  z-index: 4;
+}
+.pod-2 .card-box {
+  width: 86px;
+  height: 106px;
+}
+
+/* Rank 3 Right - Purple */
+.pod-3 {
+  width: 220px;
+  order: 3; /* Kanan */
+  background: linear-gradient(180deg, rgba(168, 85, 247, 0.1) 0%, rgba(10, 12, 24, 0.88) 80%);
+  border-color: rgba(168, 85, 247, 0.45);
+  box-shadow: 0 6px 22px rgba(168, 85, 247, 0.15);
+  z-index: 4;
+}
+.pod-3 .card-box {
+  width: 86px;
+  height: 106px;
+}
+
+/* Floating Card Visualizer */
+.card-box {
+  position: relative;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+  margin-bottom: 6px;
+}
+.card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: contrast(1.15) saturate(1.2);
+  transition: transform 0.3s ease;
+}
+.pod-item:hover .card-img {
+  transform: scale(1.08);
+}
+.card-box::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 30%, rgba(0, 240, 255, 0.25) 50%, transparent 70%);
+  background-size: 100% 200%;
+  animation: scan-card 3.5s linear infinite;
+  pointer-events: none;
+}
+@keyframes scan-card {
+  0% { background-position: 0 -200%; }
+  100% { background-position: 0 200%; }
+}
+
+/* Class Tag on Card */
+.tier-tag {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  font-family: var(--font-tech);
+  font-size: 8px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid currentColor;
+  text-transform: uppercase;
+  z-index: 6;
+}
+.pod-1 .tier-tag { color: var(--gold); border-color: var(--gold); }
+.pod-2 .tier-tag { color: var(--cyan); border-color: var(--cyan); }
+.pod-3 .tier-tag { color: var(--purple); border-color: var(--purple); }
+
+/* Rank Badge Floating */
+.rank-badge-pod {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 900;
+  padding: 2px 7px;
+  border-radius: 3px;
+  z-index: 6;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.8);
+}
+.pod-1 .rank-badge-pod { background: var(--gold); color: #000; font-size: 14px; }
+.pod-2 .rank-badge-pod { background: var(--cyan); color: #000; }
+.pod-3 .rank-badge-pod { background: var(--purple); color: #000; }
+
+.pod-player-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.pod-1 .pod-player-name {
+  font-size: 14px;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(255, 190, 11, 0.4);
+}
+.pod-title-txt {
+  font-family: var(--font-tech);
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: -2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.pod-score-txt {
+  font-family: var(--font-tech);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+  line-height: 1;
+}
+.pod-1 .pod-score-txt { color: var(--gold); font-size: 21px; }
+.pod-2 .pod-score-txt { color: var(--cyan); }
+.pod-3 .pod-score-txt { color: var(--purple); }
+
+/* ========================================================
+   SECTION BAWAH: RANK 4 - 50 SCROLLABLE LIST TABLE
+   (Flex: 1, overflow-y: auto, pas layar tanpa scrollbar window)
+   ======================================================== */
+.registry-shell {
+  flex: 1; /* Ambil sisa tinggi layar */
+  min-height: 0; /* WAJIB untuk nested scroll di flexbox */
+  background: var(--bg-card);
+  border: 1px solid var(--border-tech);
+  border-radius: 8px;
+  backdrop-filter: blur(14px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.registry-header {
+  display: grid;
+  grid-template-columns: 55px 1fr 220px 48px;
+  align-items: center;
+  padding: 7px 16px;
+  background: rgba(6, 7, 16, 0.85);
+  border-bottom: 1px solid var(--border-tech);
+  font-family: var(--font-tech);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--cyan);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.th-right { text-align: right; }
+.th-center { text-align: center; }
+
+/* DAFTAR SCROLL LIST MAX 50 PLAYER */
+.registry-list {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Custom scrollbar */
+.registry-list::-webkit-scrollbar { width: 5px; }
+.registry-list::-webkit-scrollbar-track { background: rgba(5, 6, 12, 0.6); }
+.registry-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 240, 255, 0.25);
+  border-radius: 3px;
+}
+.registry-list::-webkit-scrollbar-thumb:hover { background: var(--cyan); }
+
+.row-item {
+  display: grid;
+  grid-template-columns: 55px 1fr 220px 48px;
+  align-items: center;
+  padding: 6px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.15s ease;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.row-item:hover {
+  background: rgba(0, 240, 255, 0.06);
+}
+.row-item.is-me {
+  background: linear-gradient(90deg, rgba(255, 190, 11, 0.14) 0%, rgba(255, 190, 11, 0.02) 100%);
+  border-left: 3px solid var(--gold);
+}
+.row-item.is-me .rank-col {
+  color: var(--gold);
+  font-weight: 900;
+}
+
+.rank-col {
+  font-family: var(--font-tech);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-dim);
+}
+
+.player-col {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.avatar-tiny {
+  width: 32px;
+  height: 32px;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #000;
+  flex-shrink: 0;
+}
+.avatar-tiny img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.player-details {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.player-row-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.player-name-txt {
+  font-weight: 700;
+  font-size: 12.5px;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.you-pill {
+  font-family: var(--font-tech);
+  font-size: 8.5px;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 2px;
+  background: var(--gold);
+  color: #000;
+}
+.player-title-sub {
+  font-family: var(--font-tech);
+  font-size: 10.5px;
+  color: var(--text-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.score-col {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+}
+.score-big {
+  font-family: var(--font-tech);
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.05em;
+}
+.score-unit-sub {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.trend-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.trend-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+}
+.trend-tag.up { color: #00ff66; }
+.trend-tag.down { color: #ff3b30; }
+.trend-tag.same { color: var(--text-dark); }
+
+/* FOOTER HUD SUMMARY */
+.registry-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px;
+  background: rgba(6, 7, 16, 0.85);
+  border-top: 1px solid var(--border-tech);
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.summary-chips {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.chip-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.chip-lbl {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-dim);
+}
+.chip-val {
+  font-family: var(--font-tech);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--cyan);
+}
+
+.refresh-btn {
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid var(--cyan-dim);
+  color: var(--cyan);
+  font-family: var(--font-tech);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 4px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.18s;
+  text-transform: uppercase;
+}
+.refresh-btn:hover {
+  background: var(--cyan);
+  color: #000;
+}
+
+/* MODAL INSPECTION POPUP */
+.profile-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.profile-modal-overlay.show { display: flex; }
+.profile-modal {
+  width: 100%;
+  max-width: 440px;
+  background: linear-gradient(180deg, #0e1022 0%, #05060d 100%);
+  border: 1px solid var(--border-tech);
+  border-radius: 10px;
+  box-shadow: 0 0 45px rgba(0, 240, 255, 0.25);
+  padding: 18px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: modal-pop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes modal-pop {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.profile-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.modal-header-top {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+.modal-avatar-box {
+  width: 64px;
+  height: 84px;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid var(--cyan);
+  box-shadow: 0 0 12px var(--cyan-dim);
+}
+.modal-avatar-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.modal-grid-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.stat-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 6px 10px;
+  border-radius: 4px;
+}
+.stat-lbl {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  color: var(--text-dark);
+}
+.stat-val {
+  font-family: var(--font-tech);
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--cyan);
+}
+
+/* RESPONSIVE KHUSUS MOBILE */
+@media (max-width: 768px) {
+  .hud-tag { display: none; }
+  .podium-stage {
+    gap: 8px;
+  }
+  .pod-1 { width: 130px; padding: 6px; }
+  .pod-1 .card-box { width: 68px; height: 86px; }
+  .pod-2, .pod-3 { width: 105px; padding: 6px; }
+  .pod-2 .card-box, .pod-3 .card-box { width: 56px; height: 72px; }
+  .pod-player-name { font-size: 11px; }
+  .pod-score-txt { font-size: 14px; }
+  .pod-1 .pod-score-txt { font-size: 16px; }
+  .registry-header, .row-item {
+    grid-template-columns: 36px 1fr 110px 30px;
+    padding: 6px 8px;
+  }
+  .score-big { font-size: 13px; }
+}
+</style>
+</head>
+<body>
+
+<div class="scanlines"></div>
+<div class="screen-vignette"></div>
+
+<main class="lb-app-shell">
+
+  <!-- HUD HEADER -->
+  <header class="lb-header">
+    <div class="hud-tag">
+      <span class="status-dot"></span>
+      <span>SYSTEM: HUNTER_SYNC_V4</span>
+    </div>
+    <div class="title-center">
+      <h1 class="title-main">LEADERBOARD</h1>
+      <p class="title-sub">CYBERPUNK &times; SOLO LEVELING SYSTEM</p>
+    </div>
+    <div class="hud-tag">
+      <span>SERVER: TOKYO-01 // NET: 12ms</span>
+    </div>
+  </header>
+
+  <!-- 5 BOARDS TABS -->
+  <nav class="tabs-nav" id="tabNav">
+    <button class="tab-btn active" data-board="world_boss" onclick="switchBoard('world_boss')">
+      <span>Eternal Dragon</span>
+      <span class="tab-badge">WB1</span>
+    </button>
+    <button class="tab-btn" data-board="world_boss_b" onclick="switchBoard('world_boss_b')">
+      <span>Shadow King</span>
+      <span class="tab-badge">WB2</span>
+    </button>
+    <button class="tab-btn" data-board="inf_tower" onclick="switchBoard('inf_tower')">
+      <span>Infinite Tower</span>
+      <span class="tab-badge">TOWER</span>
+    </button>
+    <button class="tab-btn" data-board="deck_power" onclick="switchBoard('deck_power')">
+      <span>Deck Power</span>
+      <span class="tab-badge">PWR</span>
+    </button>
+    <button class="tab-btn" data-board="rarest_pull" onclick="switchBoard('rarest_pull')">
+      <span>Rarest Pull</span>
+      <span class="tab-badge">RNG</span>
+    </button>
+  </nav>
+
+  <!-- BOARD METADATA INFO -->
+  <div class="info-bar">
+    <div id="boardDesc">
+      <span>⚡</span>
+      <span id="boardNote">World Boss · 3 attempt/hari · skor = damage terbaik 1 run · reset 00:00 WIB</span>
+    </div>
+    <div class="timer-tag" id="boardTimer">RESET: 10:12:05</div>
+  </div>
+
+  <!-- PODIUM TOP 1, 2, 3 DI TENGAH (OLYMPIC STAND: 2 - 1 - 3) -->
+  <section class="podium-stage" id="podiumStage">
+    <!-- Di-render dinamis oleh JavaScript -->
+  </section>
+
+  <!-- REGISTRY LIST RANK 4 - 50 DENGAN SCROLL LIST PAS LAYAR -->
+  <section class="registry-shell">
+    <div class="registry-header">
+      <div>RANK</div>
+      <div>HUNTER REGISTERED (TOP 50)</div>
+      <div class="th-right" id="scoreColTitle">DAMAGE</div>
+      <div class="th-center">TREND</div>
+    </div>
+
+    <!-- Container Scroll List: Maks 50 Player Tercatat -->
+    <div class="registry-list" id="registryList">
+      <!-- Di-render dinamis oleh JavaScript (Rank 4 sampai 50) -->
+    </div>
+
+    <!-- FOOTER HUD SUMMARY -->
+    <footer class="registry-footer">
+      <div class="summary-chips">
+        <div class="chip-item">
+          <span class="chip-lbl">MY RANK:</span>
+          <span class="chip-val" id="myRankTxt">#4</span>
+        </div>
+        <div class="chip-item">
+          <span class="chip-lbl">MY RECORD:</span>
+          <span class="chip-val" id="myScoreTxt">845,920,000</span>
+        </div>
+        <div class="chip-item">
+          <span class="chip-lbl">POOL:</span>
+          <span class="chip-val" style="color:#00ff66">50 HUNTERS RECORDED</span>
+        </div>
+      </div>
+
+      <button class="refresh-btn" onclick="triggerRefresh()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+        SYNC DATA
+      </button>
+    </footer>
+  </section>
+
+</main>
+
+<!-- PROFILE INSPECTION MODAL -->
+<div class="profile-modal-overlay" id="profileModal" onclick="closeProfile(event)">
+  <div class="profile-modal" onclick="event.stopPropagation()">
+    <button class="profile-modal-close" onclick="closeProfile()">&times;</button>
+    <div class="modal-header-top">
+      <div class="modal-avatar-box">
+        <img id="modalAvaImg" src="assets/cards/thumb/shadow-monarch.webp" alt="Avatar">
+      </div>
+      <div>
+        <div class="tier-tag" style="position:static;display:inline-block;width:fit-content" id="modalTierTag">MONARCH</div>
+        <div style="font-family:var(--font-display);font-size:16px;font-weight:800;color:#fff;margin-top:2px;" id="modalPlayerName">SHADOW_MONARCH</div>
+        <div style="font-family:var(--font-tech);font-size:11px;color:var(--text-dim);" id="modalPlayerTitle">THE RULER OF SHADOWS</div>
+      </div>
+    </div>
+
+    <div class="modal-grid-stats">
+      <div class="stat-box">
+        <div class="stat-lbl">CURRENT RANK</div>
+        <div class="stat-val" id="modalRank">#1</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-lbl">RECORD SCORE</div>
+        <div class="stat-val" id="modalScore">1,485,000,000</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-lbl">EQUIPPED CARD</div>
+        <div class="stat-val" style="font-size:12px;" id="modalCard">Shadow Monarch</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-lbl">ASSOCIATION</div>
+        <div class="stat-val" style="font-size:12px;color:var(--gold);">AHJIN GUILD</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const BOARDS_CONFIG = {
+  world_boss: {
+    label: "ETERNAL DRAGON",
+    unit: "DAMAGE",
+    note: "World Boss · 3 attempt/hari · skor = damage terbaik 1 run · reset 00:00 WIB",
+    unitCol: "DAMAGE"
+  },
+  world_boss_b: {
+    label: "SHADOW KING",
+    unit: "DAMAGE",
+    note: "Shadow King · 3 attempt/hari · skor = damage terbaik 1 run · reset 00:00 WIB",
+    unitCol: "DAMAGE"
+  },
+  inf_tower: {
+    label: "INFINITE TOWER",
+    unit: "FLOOR",
+    note: "Infinite Tower · skor = lantai tertinggi · reset mingguan (Senin)",
+    unitCol: "LANTAI"
+  },
+  deck_power: {
+    label: "DECK POWER",
+    unit: "POWER",
+    note: "Deck Power · total power deck terbaik · reset mingguan (Senin)",
+    unitCol: "POWER"
+  },
+  rarest_pull: {
+    label: "RAREST PULL",
+    unit: "RARITY",
+    note: "Rarest Pull · kartu paling langka yang pernah di-roll · reset mingguan (Senin)",
+    unitCol: "CHANCE"
+  }
+};
+
+const CARDS_POOL = [
+  { slug: "shadow-monarch", name: "Shadow Monarch", tier: "MONARCH" },
+  { slug: "shadow-king", name: "Shadow King", tier: "OVERLORD" },
+  { slug: "ant-king", name: "Ant King Beru", tier: "COMMANDER" },
+  { slug: "almighty-tyrant", name: "Almighty Tyrant", tier: "MYTHIC" },
+  { slug: "astral-devourer", name: "Astral Devourer", tier: "COSMIC" },
+  { slug: "absolute-zero", name: "Absolute Zero", tier: "SUPREME" },
+  { slug: "bloodmoon-demon", name: "Bloodmoon Demon", tier: "DEMON" },
+  { slug: "bald-king", name: "Bald King", tier: "HERO" },
+  { slug: "10th-captain", name: "10th Captain", tier: "CAPTAIN" },
+  { slug: "shadow-heir", name: "Shadow Heir", tier: "SPECIAL" },
+  { slug: "young-shadow-heir", name: "Young Heir", tier: "ELITE" }
+];
+
+const HUNTER_NAMES = [
+  "SUNG_JIN_WOO", "CHA_HAE_IN", "BERU_SOLO", "YOU (PLAYER)", "THOMAS_ANDRE",
+  "CHENG_XIAO", "IGRIS_RED", "SAITAMA_SENSEI", "HITSUGAYA_T", "GO_GUN_HEE",
+  "BAEK_YOON_HO", "CHOI_JONG_IN", "LIM_TAE_GYU", "MIN_BYUNG_GU", "WOO_JIN_CHUL",
+  "KIM_CHUL", "HWANG_DONG_SU", "KANG_TAE_SHIK", "SONG_CHI_YUL", "LEE_JOO_HEE",
+  "PARK_HEE_JIN", "YOO_JIN_HO", "HAN_SONG_YI", "KIM_SANG_SHIK", "JO_MYU_NG_HWAN",
+  "RYU_HAN_BIN", "ARTHUR_LEYWIN", "KADIS_ETRAMA", "BAM_TWENTY_FIFTH", "KHUN_AGUERO",
+  "RAK_WRAITH", "JAA_WANGNAN", "URIREK_MAZINO", "CALLAVAN_S", "YAMA_BAYLORD",
+  "WHITE_HOAQIN", "EVANKHELL_FIRE", "HANSUNG_YU", "LERO_RO", "QUANT_BLITZ",
+  "SHIBISU_LEAD", "HATZ_BLADE", "ANAK_ZAHARD", "ANDROSSI_Z", "GARAM_ZAHARD",
+  "ENRYU_RED", "PHANTAMINUM", "JIN_MORI", "DAEWI_HAN", "MIRA_YOO"
+];
+
+// GENERATE PRECISE 50 PLAYERS
+function generate50Players() {
+  const players = [];
+  let baseScore = 1500000000;
+  for (let i = 0; i < 50; i++) {
+    const card = CARDS_POOL[i % CARDS_POOL.length];
+    const isMe = (i === 3); // Player kita berada di rank 4
+    const trend = (i % 3 === 0) ? "up" : (i % 3 === 1 ? "down" : "same");
+    players.push({
+      rank: i + 1,
+      name: HUNTER_NAMES[i] || `HUNTER_${i + 1}`,
+      title: `${card.tier} HUNTER`,
+      card: card.slug,
+      cardName: card.name,
+      tier: card.tier,
+      score: Math.round(baseScore),
+      trend: trend,
+      me: isMe
+    });
+    baseScore = baseScore * 0.945; // Decay skor realistis bertahap
+  }
+  return players;
+}
+
+const PLAYERS_50 = generate50Players();
+let currentBoard = "world_boss";
+
+function formatScore(val, board) {
+  if (board === "inf_tower") return "FLOOR " + Math.round(val / 9000000);
+  if (board === "rarest_pull") return "1 in " + (Math.round(val / 1000000) * 10).toLocaleString() + "M";
+  if (val >= 1e9) return (val / 1e9).toFixed(2) + "B";
+  if (val >= 1e6) return (val / 1e6).toFixed(1) + "M";
+  return val.toLocaleString();
+}
+
+function renderLeaderboard() {
+  const cfg = BOARDS_CONFIG[currentBoard];
+  document.getElementById("boardNote").textContent = cfg.note;
+  document.getElementById("scoreColTitle").textContent = cfg.unitCol;
+
+  // 1. RENDER PODIUM (RANK 1, 2, 3) DI TENGAH
+  const podiumStage = document.getElementById("podiumStage");
+  podiumStage.innerHTML = "";
+
+  const p1 = PLAYERS_50[0]; // Monarch
+  const p2 = PLAYERS_50[1]; // S-Rank
+  const p3 = PLAYERS_50[2]; // S-Rank
+
+  // Urutan elemen DOM: Pod 2 (order: 1), Pod 1 (order: 2), Pod 3 (order: 3)
+  const topList = [
+    { p: p2, r: 2, cls: "pod-2" },
+    { p: p1, r: 1, cls: "pod-1" },
+    { p: p3, r: 3, cls: "pod-3" }
+  ];
+
+  topList.forEach(item => {
+    const el = document.createElement("article");
+    el.className = `pod-item ${item.cls}`;
+    el.onclick = () => openProfile(item.p);
+
+    el.innerHTML = `
+      <div class="card-box">
+        <span class="tier-tag">${item.p.tier}</span>
+        <img class="card-img" src="assets/cards/thumb/${item.p.card}.webp" onerror="this.src='assets/sprites/_placeholder.svg'" alt="${item.p.cardName}">
+        <span class="rank-badge-pod">#${item.r}</span>
+      </div>
+      <div class="pod-player-name">${item.p.name}</div>
+      <div class="pod-title-txt">✦ ${item.p.title}</div>
+      <div class="pod-score-txt">${formatScore(item.p.score, currentBoard)}</div>
+    `;
+    podiumStage.appendChild(el);
+  });
+
+  // 2. RENDER SCROLL LIST (RANK 4 SAMPAI 50)
+  const registryList = document.getElementById("registryList");
+  registryList.innerHTML = "";
+
+  const rank4To50 = PLAYERS_50.slice(3, 50);
+  rank4To50.forEach(p => {
+    const row = document.createElement("div");
+    row.className = `row-item ${p.me ? "is-me" : ""}`;
+    row.onclick = () => openProfile(p);
+
+    let trendIcon = '<span class="trend-tag same">—</span>';
+    if (p.trend === "up") trendIcon = '<span class="trend-tag up">▲</span>';
+    if (p.trend === "down") trendIcon = '<span class="trend-tag down">▼</span>';
+
+    row.innerHTML = `
+      <div class="rank-col">#${p.rank}</div>
+      <div class="player-col">
+        <div class="avatar-tiny">
+          <img src="assets/cards/thumb/${p.card}.webp" onerror="this.src='assets/sprites/_placeholder.svg'" alt="">
+        </div>
+        <div class="player-details">
+          <div class="player-row-top">
+            <span class="player-name-txt">${p.name}</span>
+            ${p.me ? '<span class="you-pill">YOU</span>' : ''}
+          </div>
+          <span class="player-title-sub">${p.title}</span>
+        </div>
+      </div>
+      <div class="score-col">
+        <span class="score-big">${formatScore(p.score, currentBoard)}</span>
+        <span class="score-unit-sub">${cfg.unit}</span>
+      </div>
+      <div class="trend-col">${trendIcon}</div>
+    `;
+    registryList.appendChild(row);
+  });
+}
+
+function switchBoard(board) {
+  if (!BOARDS_CONFIG[board]) return;
+  currentBoard = board;
+  document.querySelectorAll(".tab-btn").forEach(b => {
+    b.classList.toggle("active", b.dataset.board === board);
+  });
+  renderLeaderboard();
+}
+
+function openProfile(p) {
+  const modal = document.getElementById("profileModal");
+  document.getElementById("modalPlayerName").textContent = p.name;
+  document.getElementById("modalPlayerTitle").textContent = p.title;
+  document.getElementById("modalTierTag").textContent = p.tier;
+  document.getElementById("modalRank").textContent = "#" + p.rank;
+  document.getElementById("modalScore").textContent = formatScore(p.score, currentBoard);
+  document.getElementById("modalAvaImg").src = `assets/cards/thumb/${p.card}.webp`;
+  document.getElementById("modalCard").textContent = p.cardName;
+  modal.classList.add("show");
+}
+
+function closeProfile() {
+  document.getElementById("profileModal").classList.remove("show");
+}
+
+function triggerRefresh() {
+  const btn = event.currentTarget;
+  btn.style.opacity = "0.5";
+  btn.textContent = "SYNCING...";
+  setTimeout(() => {
+    btn.style.opacity = "1";
+    btn.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg> SYNC DATA`;
+    renderLeaderboard();
+  }, 350);
+}
+
+// Initial render
+renderLeaderboard();
+</script>
+</body>
+</html>
