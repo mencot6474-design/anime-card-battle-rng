@@ -1,5 +1,5 @@
 /* Kuota partikel global (~30% lebih sedikit) biar HP lemah gak frame. */
-function FXQ(n){return Math.max(1,Math.round((n||0)*0.7));}
+function FXQ(n){return 0;}
 /* Resolusi canvas FX = 1x: overlay glow tak butuh DPR penuh (HP kentang). */
 function FXDPR(){return 1;}
 const CARDS=Object.fromEntries(MASTER_CARD_INDEX.map(c=>[c.char_id,c]));

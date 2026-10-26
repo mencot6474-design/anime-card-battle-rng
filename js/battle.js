@@ -526,7 +526,7 @@ function bajrangGunFx(o){
   const ix=rf.left+rf.width/2,iy=rf.top+rf.height*0.55;           // titik benturan
   const fs=Math.max(150,Math.min(W*0.8,rf.width*2.3));              // lebar kepalan
   const cracks=[];for(let i=0;i<14;i++){const a=(i/14)*6.283+Math.random()*.3;let x=ix,y=iy;const pts=[[x,y]];const len=(0.5+Math.random()*0.9)*Math.max(W,H)*0.28;for(let s=0;s<7;s++){const d=len/7;x+=Math.cos(a+(Math.random()-.5)*.7)*d;y+=Math.sin(a+(Math.random()-.5)*.7)*d*0.55;pts.push([x,y]);}cracks.push(pts);}
-  const debris=[];for(let i=0;i<26;i++){const a=-Math.random()*Math.PI;debris.push({a,v:4+Math.random()*9,s:3+Math.random()*6,c:Math.random()<.5?"#ffd23a":"#fff"});}
+  const debris=[];for(let i=0;i<FXQ(26);i++){const a=-Math.random()*Math.PI;debris.push({a,v:4+Math.random()*9,s:3+Math.random()*6,c:Math.random()<.5?"#ffd23a":"#fff"});}
   let raf=0;
   const E3=x=>x*x*x;
   const bolt=(x1,y1,x2,y2,col,w)=>{ctx.strokeStyle=col;ctx.lineWidth=w;ctx.lineJoin="miter";ctx.beginPath();ctx.moveTo(x1,y1);const n=7;for(let i=1;i<n;i++){const k=i/n;ctx.lineTo(x1+(x2-x1)*k+(Math.random()-.5)*46,y1+(y2-y1)*k+(Math.random()-.5)*20);}ctx.lineTo(x2,y2);ctx.stroke();};

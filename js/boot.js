@@ -93,6 +93,24 @@ function renderSettings(){
         <button class="reset-btn" id="logoutBtn" style="margin:0;padding:8px 14px;font-size:12px;font-weight:700;color:#fff;background:rgba(255,71,87,0.2);border:1px solid rgba(255,71,87,0.4);border-radius:8px;cursor:pointer">Keluar Akun</button>
       </div>
 
+      <div style="background:rgba(102,252,241,0.04);border:1px solid rgba(102,252,241,0.25);border-radius:10px;padding:12px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div>
+            <div style="font-size:12px;font-weight:800;color:#66fcf1;display:flex;align-items:center;gap:6px">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+              ${isEn ? "CLOUD SYNC" : "SINKRONISASI CLOUD"}
+            </div>
+            <div id="cloudSyncNote" style="font-size:11px;color:#a4b0be;margin-top:2px">
+              ${isEn ? "Save all cards & inventory to Supabase immediately." : "Simpan semua kartu & backpack langsung ke Supabase."}
+            </div>
+          </div>
+        </div>
+        <button id="manualCloudBtn" type="button" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;font-size:12px;font-weight:800;letter-spacing:1px;background:linear-gradient(135deg,rgba(102,252,241,0.2),rgba(32,191,107,0.25));border:1px solid rgba(102,252,241,0.5);color:#66fcf1;border-radius:8px;cursor:pointer;transition:all .2s ease">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          <span id="manualCloudTxt">${isEn ? "SAVE TO CLOUD NOW" : "SIMPAN CLOUD SEKARANG"}</span>
+        </button>
+      </div>
+
       <div>
         <button class="reset-btn" id="resetBtn" style="width:100%;padding:10px;font-size:12px;font-weight:800;letter-spacing:1px;background:rgba(255,71,87,0.1);border:1px solid rgba(255,71,87,0.3);color:#ff4757;border-radius:8px;cursor:pointer">RESET DATA LOKAL</button>
       </div>
@@ -116,6 +134,43 @@ function renderSettings(){
     };
   });
   document.getElementById("logoutBtn").onclick=logout;
+  const manualCloudBtn=document.getElementById("manualCloudBtn");
+  if(manualCloudBtn){
+    manualCloudBtn.onclick=async ()=>{
+      if(manualCloudBtn.disabled) return;
+      manualCloudBtn.disabled=true;
+      const txt=document.getElementById("manualCloudTxt");
+      const note=document.getElementById("cloudSyncNote");
+      const oldTxt = txt ? txt.textContent : "";
+      if(txt) txt.textContent = isEn ? "SAVING TO CLOUD..." : "MENYIMPAN KE CLOUD...";
+      try {
+        save();
+        if(typeof pushCloudNow === "function"){
+          await pushCloudNow();
+        } else if(typeof flushCloudSave === "function"){
+          flushCloudSave();
+        }
+        const nowStr = new Date().toLocaleTimeString();
+        if(txt) txt.textContent = isEn ? "SAVED!" : "TERSIMPAN!";
+        if(note) note.innerHTML = `<span style="color:#2ed573;font-weight:700">✓ ${isEn ? "Successfully saved to Cloud at " : "Berhasil disimpan ke Cloud pukul "} ${nowStr}</span>`;
+        if(typeof toast === "function"){
+          toast(isEn ? "CLOUD SYNC" : "SINKRONISASI CLOUD", isEn ? "All cards & inventory saved to server." : "Semua kartu & backpack berhasil disimpan ke server.", "#2ed573");
+        }
+      } catch(err){
+        console.error("Manual cloud save err:", err);
+        if(txt) txt.textContent = isEn ? "SAVE FAILED" : "GAGAL MENYIMPAN";
+        if(note) note.innerHTML = `<span style="color:#ff4757;font-weight:700">✗ ${err && err.message ? err.message : "Gagal terhubung ke Cloud"}</span>`;
+        if(typeof toast === "function"){
+          toast("ERROR", isEn ? "Failed to save to cloud" : "Gagal menyimpan ke cloud", "#ff4757");
+        }
+      } finally {
+        setTimeout(()=>{
+          manualCloudBtn.disabled=false;
+          if(txt) txt.textContent = oldTxt;
+        }, 3000);
+      }
+    };
+  }
   /* Auto restart Tower Infinite — flag di state.tower.auto (default mati). */
   if(!state.tower)state.tower={best:0};
   const autoCb=document.getElementById("setAutoTower"),towerSetNote=document.getElementById("towerSetNote");
@@ -618,8 +673,17 @@ function runLoading(done){
     }
   },8000);
 }
-function logout(){
-  try { if (typeof flushCloudSave === "function") flushCloudSave(); } catch(e){}
+async function logout(){
+  try {
+    save();
+    if(typeof pushCloudNow === "function"){
+      await pushCloudNow();
+    } else if(typeof flushCloudSave === "function"){
+      flushCloudSave();
+    }
+  } catch(e){
+    console.warn("Logout cloud push error:", e);
+  }
   localStorage.removeItem(SESSION_KEY);
   location.reload();
 }
