@@ -54219,3 +54219,30 @@ main#app:has(.sett-wrap) {
   width: 0 !important;
   height: 0 !important;
 }
+
+
+/* ==========================================================================
+   INSTANT ROLL RESULT MODAL (#rollResultPop) - HIDE SCROLLBAR
+   ========================================================================== */
+#rollResultPop,
+#rollResultPop *,
+#rollResultPop .rr-card,
+#rollResultPop .rr-grid,
+#rollResultPop #rrBody,
+.rr-grid,
+.sl-grid {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE / Edge */
+}
+
+#rollResultPop::-webkit-scrollbar,
+#rollResultPop *::-webkit-scrollbar,
+#rollResultPop .rr-card::-webkit-scrollbar,
+#rollResultPop .rr-grid::-webkit-scrollbar,
+#rollResultPop #rrBody::-webkit-scrollbar,
+.rr-grid::-webkit-scrollbar,
+.sl-grid::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
