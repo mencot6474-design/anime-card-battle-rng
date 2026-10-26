@@ -1244,9 +1244,9 @@ function renderLobby(){
       <span class="tile-copy"><span class="hb-lbl">TRAIT</span><span class="hb-meta">Overclock traits</span></span>
       <span class="tile-action"><span>REFINE</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
     </div>
-    <div class="hub-box h-mission hub-link hub-link-mission" id="missionBtn" role="button" title="Buka daftar misi">
+    <div class="hub-box h-mission hub-link hub-link-mission" id="missionBtn" role="button" title="Buka Story Mode">
       <span class="tile-frame" aria-hidden="true"></span>
-      <span class="tile-index"><span class="tile-number">06</span><span class="tile-category">OPS / DIRECTIVES</span></span>
+      <span class="tile-index"><span class="tile-number">06</span><span class="tile-category">CAMPAIGN / STORY</span></span>
       <span class="tile-art" aria-hidden="true">
         <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <polygon points="50,14 82,30 82,70 50,86 18,70 18,30" stroke-width="1.8" opacity="0.4"/>
@@ -1254,13 +1254,13 @@ function renderLobby(){
           <circle cx="50" cy="50" r="28" stroke-dasharray="4 3"/>
         </svg>
       </span>
-      <span class="tile-copy"><span class="hb-lbl">MISSION LOG</span><span class="hb-meta">Tactical objectives</span></span>
+      <span class="tile-copy"><span class="hb-lbl">STORY</span><span class="hb-meta">Story Campaign</span></span>
       <span class="mission-progress">
         <span class="mission-progress-label">CLEARANCE PROTOCOL</span>
-        <span class="mission-meter" id="missionMeter" role="progressbar" aria-label="Mission progress" aria-valuemin="0"><span id="missionFill"></span></span>
+        <span class="mission-meter" id="missionMeter" role="progressbar" aria-label="Story progress" aria-valuemin="0"><span id="missionFill"></span></span>
         <span class="mb-sub" id="missionSub"></span>
       </span>
-      <span class="tile-action"><span>VIEW MISSIONS</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span>
+      <span class="tile-action"><span>PLAY STORY</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span>
     </div>
     <div class="hub-box h-lb hub-link hub-link-rank" id="hubRank" role="button" title="Buka Leaderboard">
       <span class="tile-frame" aria-hidden="true"></span>
