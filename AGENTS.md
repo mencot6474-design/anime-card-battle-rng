@@ -39,6 +39,7 @@ css/world-boss.css    814 baris — gaya hub World Boss / kartu ultima (juga dil
 css/sl-system.css     roll/gacha system
 css/anim-prototipe.css  halaman prototipe (tidak dipakai game) — LOKAL SAJA, sudah di-.gitignore
 js/data.js            STORY_BIBLE (baris 100), luck helper, data cerita/unit
+js/i18n.js            Sistem lokalisasi/bahasa (EN & ID), kamus frasa GameLang, CrazyGames requirement (default: 'en')
 js/config.js          config runtime (Supabase dll)
 js/supabase-sync.js   CloudDB: saveState (67) + flag p_skip_stacks + `_authRpc` (110, semua RPC tulis via JWT),
                       claimStoryGem/claimStoryReplay/claimDailyGem/exchangeTokens (342–354, gem 0023),
@@ -103,6 +104,7 @@ supabase/functions/   Deno edge: create-invoice, order-status, play-verify,
                       redeem-code, trakteer-webhook (+ _shared/packs.ts)
 tools/cap-sync.mjs    copy web → www (Capacitor)
 assets/{cards,pets,artifacts,images,raid,vfx,audio,bg,frames,sprites,ui}
+                      assets/audio = BGM lobby (bgm-lobby.mp3 synthwave electronic, loop), SFX
                       assets/ui = dekor UI (lb-top1.mp4 border podium #1,
                       lb-ring.png border podium #2/#3) — JANGAN sentuh tanpa diminta
 docs/TOPUP.md, test-roll-system.md
@@ -127,7 +129,8 @@ Supabase — **jangan pernah** di-commit atau disalin keluar.
 ```
 
 Urutan load (penting — fungsi global saling pakai; `index.html` baris 784–808):
-`fps-lock → data → config → supabase-sync → panels → topup → cards-fx → anime-archetype-attacks → state → sheetfx → battle → tower-lobby → shadow-king-fx → foe-passives → story-carousel → raid → ranking → boot → devtools-guard → pwa → coret`
+`fps-lock → data → i18n → config → supabase-sync → panels → topup → cards-fx → anime-archetype-attacks → state → sheetfx → battle → tower-lobby → shadow-king-fx → foe-passives → story-carousel → raid → ranking → boot → devtools-guard → pwa → coret`
+CrazyGames SDK v3 dimuat di `<head>`: `https://sdk.crazygames.com/crazygames-sdk-v3.js` (dengan handler rewarded ads di `js/panels.js`).
 
 `panels.js` dimuat **sebelum** `cards-fx.js` (CARDS dipakai saat render, bukan saat load). `raid.js` dimuat **setelah** `tower-lobby.js`.
 `cards-fx.js` harus tetap dimuat **sebelum** `anime-archetype-attacks.js`, `sheetfx.js`, dan `battle.js` karena `FXQ`/`FXDPR` dipakai ketiganya.
@@ -161,11 +164,13 @@ Tujuan: HP kentang tetap main tanpa frame drop. Semua efek baru harus ikut atura
 - `let state=null, currentUser=null` — `js/state.js:25` (dua-duanya top-level `let`: tes in-page harus assign identifier polos, bukan `window.state`)
   **`window.state` itu undefined, selalu.** `let` top-level tidak jadi properti window, jadi `if (window.state) window.state.premiumGems = x` adalah tulisannya *silent no-op* — tidak error, tidak berubah. Pernah bikin gems hasil `earn_gems` tidak pernah muncul di topbar (player mengira reward hilang). Di `supabase-sync.js` pakai `this._st()` (166) untuk membaca state dan `this._paint()` (172) untuk menggambar ulang topbar setelah saldo berubah.
 - `freshState()` — `js/state.js:12` = bentuk save:
-  `coins, playerLv, cleared[], clearedDiff{}, deck[4], stacks[](array, bukan map), battle{}, player{luckBase,luckFlat,luckPercent,exp,lv,sp,tree{}}, weather{}, potions{}, luckPots{}, speedPots{}, artOwned[], artSlots[], petOwned[], petEquipped[], premiumGems, rollPacks{}`
+  `coins, playerLv, cleared[], clearedDiff{}, deck[4], stacks[](array, bukan map), battle{}, player{luckBase,luckFlat,luckPercent,exp,lv,sp,tree{}}, weather{}, potions{}, luckPots{}, speedPots{}, artOwned[], artSlots[], petOwned[], petEquipped[], premiumGems, rollPacks{}, dailyR100kBalance, dailyClaimedDays{}`
 - Persist lokal: localStorage `aab-state-v2:<username>`. Contoh terukur 2026-10-25: 96,9 KB JSON, `stacks` = 73,8 KB (562 item), sisanya 23 KB.
 - Rantai save/cloud (`js/state.js`):
   `save()` (451) → tulis localStorage + diff-check `_cloudStateKey()` (386; playSec dikecualikan; identik = skip total) → debounce 400 ms → `_cloudPush()` (423) → `CloudDB.saveState` → RPC `merge_player_state`.
-  Anti-bandwidth: `CLOUD_PUSH_MIN_MS = 30000` (394) membatasi push saat auto-roll, `CLOUD_STACKS_MIN_MS = 60000` (395) membatasi kirim inventori saat rolling; `flushCloudSave()` (440) dan `pushCloudNow()` (447) selalu kirim inventori penuh (dipakai saat roll berhenti dan sebelum RPC yang membaca saldo di server).
+  Anti-bandwidth: `CLOUD_PUSH_MIN_MS = 30000` (394) membatasi push saat auto-roll (`skipStacks: true` kirim payload ringan ~2 KB); saat auto-roll selesai/berhenti, tab switch, logout, atau deck change, push penuh `stacks: true` langsung dipicu tanpa batasan 60 detik agar inventori kartu tidak hilang di browser lain. `flushCloudSave()` (440) dan `pushCloudNow()` (447) selalu kirim inventori penuh.
+  **Reconcile SP & Tree:** Server hanya mengontrol `playerLv` dan `xp`. Di `loadStateFor()`, total SP yang berhak dimiliki pemain dihitung otomatis: `expectedSp = Math.max(0, (state.playerLv || 1) - 1 - spentSp)`. Jika `state.player.sp` tertinggal atau 0 saat login di browser baru, ia disinkronkan ke `expectedSp` sehingga pemain level 17+ tidak kehilangan poin SP.
+  **Daily 100K Pack Sync:** `state.dailyR100kBalance` dan `state.rollPacks.r100k` disinkronkan langsung via cloud state (`merge_player_state`) agar klaim pack 7-hari pada satu browser langsung terbawa saat login di browser lain.
   Payload ringan dibuat di `supabase-sync.js:72–90` (`skipStacks` → `p_skip_stacks`): salinan state tanpa `stacks`; `_coinSpend` (0025), `_xpGain` (0026), dan `_rebirthGain`/`_rebirthDo` (0027) ikut di salinan yang sama dan dibuang server setelah dipakai. Sejak 0024 satu-satunya jalur tulis = RPC `merge_player_state`; fallback PATCH dihapus karena tabel tidak punya policy UPDATE (pasti 401) — dulu sempat menyamar "berhasil".
   **`pub` (ringkasan profil publik)** disuntik `buildPubSummary()` (state.js:401) ke `opts.pub` lalu ikut masuk `p_save_data` di `saveState` (`supabase-sync.js:83`). `merge_player_state` mengganti `save_data` secara utuh, jadi key turunan seperti `pub` harus ikut terkirim lagi tiap push; pernah lupa sehingga profil player lain kosong.
   **KEY INTI WAJIB DINORMALKAN** di `loadStateFor` (blok setelah `titles`, state.js ~103): `coins, playerLv, xp, summons, lastClaim, muted, history, cleared, weather, weatherBest`. Alasannya nyata — baris cloud `admin` kembali TANPA `coins`/`playerLv`, dan `renderShell` memanggil `fmt(state.coins)` → `TypeError` dan seluruh layar mati. `fmt` (cards-fx.js:303) sekarang juga tahan `undefined`/`NaN` (tampil 0), tapi itu pagar kedua, bukan pengganti normalisasi. Field baru = tambah satu baris di blok itu.
@@ -209,6 +214,7 @@ Luck: `luckChance, totalLuck, fmtChance` (data.js).
 | Raid | `#app` view | `startRaid` (raid.js:547) | `renderRaid` (241; hub 79, view dispatch 244–247, WB shop 812) | — |
 | Topup | `#topupModal` | `openTopup` (panels.js:2962) | `renderTopupModal` (panels.js:2840) | topup 46922 |
 | Titles | `#titlesModal` | `openTitlesModal` (panels.js:752) | `renderTitlesModal` (773) | — |
+| 7-Day Login | `#dailyModal` | `openDailyLoginModal` (panels.js:2700) | `renderDaily7Horizontal` (panels.js:2715) | style.css (blok HORIZONTAL DAILY 7 CARDS) |
 | Settings | `#app` view | `#/settings` | `renderSettings` (boot.js:9) | — |
 
 Markup modal ada di `index.html` (baris kunci):
@@ -230,6 +236,9 @@ Backpack bukan `display:fixed` bawaan — `toggleBackpack` set inline transform;
 ## 5. SISTEM
 
 - **Gacha/roll** — `startRollAnimation` panels.js:589; CSS `sl-system.css` + style.css 1368; roll packs & luck multiplier di `state.player`. Banner/video index di `raid.js` (`CARDS` cards-fx.js:5).
+- **7-Day Daily Login & Rewarded Ads** — 7-Day Login horizontal row (Day 1–7: 1, 2, 3, 4, 5, 6, 10 Instant 100K Roll Packs disimpan ke `state.rollPacks.r100k` & `dailyR100kBalance`). Tombol melayang di samping Global Luck widget di Lobby. Tombol Watch Ads: integrasi CrazyGames SDK v3 (`CrazyGames.SDK.ad.requestAd('rewarded')`) dengan fallback simulasi timer 15 detik jika dijalankan di luar portal/localhost (`runWatchAdSimulation`).
+- **BGM & Audio Lobby** — `assets/audio/bgm-lobby.mp3` diputar looping di Lobby (`playBgm()`, `pauseBgm()`, `syncBgmState()` di `js/tower-lobby.js`). Dilengkapi unlocker gesture otomatis pada klik/tap pertama serta sinkronisasi dengan status mute (`state.muted`).
+- **Lokalisasi (i18n)** — `js/i18n.js` menyediakan translasi EN & ID (`GameLang.t()`, `GameLang.set()`, `GameLang.get()`). Default bahasa diset ke English (`en`) untuk memenuhi syarat kurasi CrazyGames, dengan opsi ganti ke Indonesia (`id`) di Settings.
 - **Battle** — engine + render di `battle.js` (`renderBattle` 257, `startBattle` 1746); damage/FX/attack archetype di `anime-archetype-attacks.js` + `sheetfx.js` + `shadow-king-fx.js`; passive lawan `foe-passives.js`. Markup kartu musuh dipakai bersama lewat `foeFighterInnerHtml` (normal + raid/WB; opsi `hpFmt` untuk angka ringkas). `shakeScreen` = no-op, `hitStop` tak mem-pause apa pun, `speedLines` hanya dipakai 1 serangan.
 - **Frame-rate lock** — `js/fps-lock.js` membungkus loop JS-driven supaya gerakan tidak cepat saat FPS naik; jangan bypass dengan `requestAnimationFrame` mentah di FX baru.
 - **Tower** — `tower-lobby.js` (`renderTower` 121, shop 260, `startTowerBattle` 548, `renderTowerBattle` 527) + `openTowerDropModal` 1228.
