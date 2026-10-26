@@ -1337,52 +1337,123 @@ function openTowerDropModal(){
   const body = document.getElementById("towerDropModalBody");
   if(!m || !body) return;
 
-  const sections = [
-    {
-      key:"pasti", title:"PASTI SETIAP LANTAI",
-      items:[
-        {name:"TARIKAN KARTU INSTAN", rate:"PASTI", sub:"100 tarikan dijamin per lantai (tabung dulu, di-roll saat run tamat)", icon:TWR_CARD_ICON, cls:"guar"},
-        {name:"TOKEN INF", rate:"PASTI", sub:"+1 per lantai biasa · +5 per lantai bos (kelipatan 5)", icon:TWR_TOKEN_ICON, cls:"guar"},
-        {name:"WEATHER POTION", rate:"5%", sub:"Gacha cuaca aktif, durasi 5 menit", icon:"assets/images/weather-potion.webp?v=1", cls:""},
-        {name:"LUCK POTION L1", rate:"10%", sub:"+3 Flat Luck selama 5 menit (stackable)", icon:"assets/images/pot-luck-1.webp", cls:""},
-        {name:"SPEED POTION L1", rate:"10%", sub:"+0,2× Roll Speed selama 5 menit (stackable)", icon:"assets/images/pot-speed-1.webp", cls:""}
-      ]
-    },
-    {
-      key:"pack", title:"INSTAN PACK · DROP ACAK PER LANTAI",
-      items:TOWER_PACK_DROPS.map(p=>({
-        name:p.name, rate:p.label, sub:"Masuk tab ITEM di Backpack · siap pakai",
-        icon:p.icon, cls:""
-      }))
-    },
-    {
-      key:"rare", title:"ARTEFAK & PET · BASE RATE (TANPA LUCK)",
-      items:[
-        {name:"PEDANG API", rate:"0,1%", sub:"Artefak permanen · +120 Flat Luck & +100% Luck Multiplier (maks 1)", icon:"assets/artifacts/pedang-api.webp", cls:"ultra"},
-        {name:"KYUBI FOX", rate:"0,01%", sub:"Pet Mythic · +200 Flat Luck & +300% Luck Multiplier (maks 1)", icon:"assets/pets/kyubi.webp", cls:"ultra"}
-      ]
-    }
+  const guarItems = [
+    {name:"TARIKAN KARTU INSTAN", rate:"100× DIJAMIN", sub:"100 tarikan kartu ditabung per lantai · di-roll saat tamat", icon:TWR_CARD_ICON, cls:"guar"},
+    {name:"TOKEN INF", rate:"PASTI", sub:"+1 lantai biasa · +5 lantai bos (kelipatan 5)", icon:TWR_TOKEN_ICON, cls:"guar"},
+    {name:"WEATHER POTION", rate:"5%", sub:"Mengacak cuaca aktif durasi 5 menit", icon:"assets/images/weather-potion.webp?v=1", cls:""},
+    {name:"LUCK POTION L1", rate:"10%", sub:"+3 Flat Luck selama 5 menit (stackable)", icon:"assets/images/pot-luck-1.webp", cls:""},
+    {name:"SPEED POTION L1", rate:"10%", sub:"+0,2× Roll Speed selama 5 menit (stackable)", icon:"assets/images/pot-speed-1.webp", cls:""}
   ];
 
+  const packItems = TOWER_PACK_DROPS.map(p=>({
+    name: p.name,
+    rate: p.label,
+    sub: "Otomatis masuk ke tab ITEM di Backpack",
+    icon: p.icon,
+    cls: "pack"
+  }));
+
   body.innerHTML = `
-    <div class="twr-note">Semua drop dihitung <b>per lantai</b> yang dit taklukkan. Peluang Instan Pack, artefak & pet <b>tidak</b> dipengaruhi luck player.</div>
-    ${sections.map(sec=>`
-      <section class="twr-sec">
-        <h4 class="twr-sec-t">${sec.title}</h4>
-        <div class="twr-list">
-          ${sec.items.map(it=>`
-            <div class="twr-row">
-              <span class="twr-ic"><img src="${it.icon}" alt="${it.name}" onerror="this.parentNode.textContent='✦'"></span>
-              <span class="twr-txt">
-                <span class="twr-name">${it.name}</span>
-                <span class="twr-sub">${it.sub}</span>
+    <div class="tw-drop-h-deck">
+      <!-- COL 1: GUARANTEED & POTIONS -->
+      <div class="tw-col tw-col-guar">
+        <div class="tw-col-head">
+          <span class="tw-col-pill guar"><span class="tw-dot"></span>GUARANTEED & POTIONS</span>
+          <h3 class="tw-col-title">PASTI SETIAP LANTAI</h3>
+        </div>
+        <div class="tw-col-list">
+          ${guarItems.map(it=>`
+            <div class="tw-item-row">
+              <span class="tw-item-ic"><img src="${it.icon}" alt="${it.name}" onerror="this.parentNode.textContent='✦'"></span>
+              <span class="tw-item-txt">
+                <span class="tw-item-name">${it.name}</span>
+                <span class="tw-item-sub">${it.sub}</span>
               </span>
-              <span class="twr-rate ${it.cls}">${it.rate}</span>
+              <span class="tw-item-rate ${it.cls}">${it.rate}</span>
             </div>
           `).join("")}
         </div>
-      </section>
-    `).join("")}
+      </div>
+
+      <!-- COL 2: RANDOM PACK DROPS -->
+      <div class="tw-col tw-col-pack">
+        <div class="tw-col-head">
+          <span class="tw-col-pill pack"><span class="tw-dot"></span>RANDOM PACK DROPS</span>
+          <h3 class="tw-col-title">INSTAN ROLL PACKS</h3>
+        </div>
+        <div class="tw-col-list">
+          ${packItems.map(it=>`
+            <div class="tw-item-row">
+              <span class="tw-item-ic"><img src="${it.icon}" alt="${it.name}" onerror="this.parentNode.textContent='📦'"></span>
+              <span class="tw-item-txt">
+                <span class="tw-item-name">${it.name}</span>
+                <span class="tw-item-sub">${it.sub}</span>
+              </span>
+              <span class="tw-item-rate ${it.cls}">${it.rate}</span>
+            </div>
+          `).join("")}
+        </div>
+        <div class="tw-col-foot-note">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg>
+          <span>Siap pakai kapan saja di Backpack</span>
+        </div>
+      </div>
+
+      <!-- COL 3: ULTRA RARE / TROPHY -->
+      <div class="tw-col tw-col-rare">
+        <div class="tw-col-head">
+          <span class="tw-col-pill rare"><span class="tw-dot"></span>ULTRA RARE / TROPHY</span>
+          <h3 class="tw-col-title">ARTEFAK & PET MYTHIC</h3>
+        </div>
+        <div class="tw-col-trophy-list">
+          <!-- Pedang Api -->
+          <div class="tw-trophy-card art">
+            <div class="tw-tc-art">
+              <img src="assets/artifacts/pedang-api.webp" alt="Pedang Api" onerror="this.parentNode.textContent='⚔️'">
+            </div>
+            <div class="tw-tc-info">
+              <div class="tw-tc-top">
+                <span class="tw-tc-type">ARTEFAK PERMANEN</span>
+                <span class="tw-tc-rate ultra">0,1% · 1 in 1k</span>
+              </div>
+              <div class="tw-tc-name">PEDANG API</div>
+              <div class="tw-tc-perks">
+                <span class="tw-perk-badge"><small>FLAT</small> <b>+120 LUCK</b></span>
+                <span class="tw-perk-badge"><small>MULT</small> <b>+100% (×2)</b></span>
+              </div>
+              <div class="tw-tc-desc">Koleksi permanen (maks 1). Efek luck aktif selamanya.</div>
+            </div>
+          </div>
+
+          <!-- Kyubi Fox -->
+          <div class="tw-trophy-card pet">
+            <div class="tw-tc-art">
+              <img src="assets/pets/kyubi.webp" alt="Kyubi Fox" onerror="this.parentNode.textContent='🦊'">
+            </div>
+            <div class="tw-tc-info">
+              <div class="tw-tc-top">
+                <span class="tw-tc-type">PET MYTHIC</span>
+                <span class="tw-tc-rate ultra">0,01% · 1 in 10k</span>
+              </div>
+              <div class="tw-tc-name">KYUBI FOX</div>
+              <div class="tw-tc-perks">
+                <span class="tw-perk-badge"><small>FLAT</small> <b>+200 LUCK</b></span>
+                <span class="tw-perk-badge"><small>MULT</small> <b>+300% (×4)</b></span>
+              </div>
+              <div class="tw-tc-desc">Companion mistis (maks 1). Multiplier luck tertinggi.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ticker Footer Bar -->
+    <div class="tw-drop-footer-bar">
+      <div class="tw-df-pill">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
+        <span>Semua drop dihitung <b>per lantai</b> yang ditaklukkan. Peluang Instan Pack, Artefak & Pet adalah <b>Base Rate Murni</b> (tidak dipengaruhi Luck player).</span>
+      </div>
+    </div>
   `;
 
   m.classList.add("show");
