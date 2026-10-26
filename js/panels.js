@@ -317,6 +317,96 @@ function toast(main,sub,color){
   if(toast._tm)clearTimeout(toast._tm);
   toast._tm=setTimeout(()=>t.classList.remove("show"),2200);
 }
+
+/* ====== ANIMASI BROADCAST GLOBAL (GLOBAL LUCK & WEATHER INSTAN) ======
+   Menampilkan animasi sinematik ke seluruh pemain di server ketika ada pemain
+   yang membeli/mengaktifkan Global Luck atau Weather Instan, lengkap dengan
+   nama pembeli, efek buff, dan partikel bercahaya. */
+let _seenGlobalBroadcasts = {};
+function _markGlobalBroadcastSeen(key) {
+  if (!key) return;
+  _seenGlobalBroadcasts[key] = Date.now();
+  try { sessionStorage.setItem("acb_global_bcast_seen", JSON.stringify(_seenGlobalBroadcasts)); } catch (e) {}
+}
+function _hasSeenGlobalBroadcast(key) {
+  if (!key) return true;
+  if (!Object.keys(_seenGlobalBroadcasts).length) {
+    try { _seenGlobalBroadcasts = JSON.parse(sessionStorage.getItem("acb_global_bcast_seen") || "{}") || {}; } catch (e) {}
+  }
+  return !!_seenGlobalBroadcasts[key];
+}
+
+function showGlobalEventBroadcast(opts) {
+  opts = opts || {};
+  const eventKey = opts.key || "";
+  if (eventKey && _hasSeenGlobalBroadcast(eventKey)) return;
+  if (eventKey) _markGlobalBroadcastSeen(eventKey);
+
+  const color = opts.color || "#38bdf8";
+  const badge = opts.badge || "SERVER EVENT · GLOBAL BROADCAST";
+  const title = opts.title || "GLOBAL BUFF ACTIVATED";
+  const buyer = String(opts.buyer || "HUNTER").toUpperCase();
+  const effect = opts.effect || "";
+  const iconHtml = opts.iconHtml || "";
+
+  let host = document.getElementById("globalBroadcastHost");
+  if (!host) {
+    host = document.createElement("div");
+    host.id = "globalBroadcastHost";
+    document.body.appendChild(host);
+  }
+  if (host._hideTm) clearTimeout(host._hideTm);
+  if (host._rmTm) clearTimeout(host._rmTm);
+
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  host.innerHTML = `
+    <div class="gbcast-overlay" style="--gbc:${color}">
+      <div class="gbcast-flash"></div>
+      <div class="gbcast-rays"></div>
+      <div class="gbcast-banner">
+        <div class="gbcast-scan"></div>
+        <div class="gbcast-corner tl"></div>
+        <div class="gbcast-corner tr"></div>
+        <div class="gbcast-corner bl"></div>
+        <div class="gbcast-corner br"></div>
+        <div class="gbcast-badge"><span class="gbcast-dot"></span>${esc(badge)}</div>
+        <div class="gbcast-main-row">
+          <div class="gbcast-ic">${iconHtml}</div>
+          <div class="gbcast-texts">
+            <div class="gbcast-title">${esc(title)}</div>
+            <div class="gbcast-buyer">DIBELI & DIAKTIFKAN OLEH <b class="gbcast-buyer-name">${esc(buyer)}</b></div>
+          </div>
+        </div>
+        ${effect ? `<div class="gbcast-effect">${effect}</div>` : ""}
+      </div>
+    </div>
+  `;
+
+  try {
+    beep(523.25, 0.14, "triangle", 0.11);
+    setTimeout(() => beep(659.25, 0.16, "triangle", 0.12), 110);
+    setTimeout(() => beep(783.99, 0.18, "triangle", 0.13), 220);
+    setTimeout(() => beep(1046.5, 0.28, "triangle", 0.14), 340);
+  } catch (e) {}
+
+  const ov = host.querySelector(".gbcast-overlay");
+  if (ov) {
+    ov.onclick = () => {
+      ov.classList.add("gbcast-out");
+      setTimeout(() => { host.innerHTML = ""; }, 350);
+    };
+  }
+
+  host._hideTm = setTimeout(() => {
+    const el = host.querySelector(".gbcast-overlay");
+    if (el) el.classList.add("gbcast-out");
+  }, 4400);
+  host._rmTm = setTimeout(() => {
+    host.innerHTML = "";
+  }, 4850);
+}
+window.showGlobalEventBroadcast = showGlobalEventBroadcast;
 let weatherTickStarted=false;
 let _globalWeatherSyncBusy=false;
 let _lastGlobalWeatherPoll=0;
@@ -354,11 +444,23 @@ async function syncGlobalWeather(silent){
         if(typeof renderPremiumShop==="function"&&document.getElementById("premiumModal")?.classList.contains("show")){
           renderPremiumShop();
         }
-        if(!silent&&(prevId!==gw.id||prevBy!==(gw.activated_by||""))){
-          const subTxt=gw.activated_by
-            ?`DIAKTIFKAN OLEH ${String(gw.activated_by).toUpperCase()} · SEMUA SERVER (30 MENIT)`
-            :"ROTASI CUACA SERVER · 30 MENIT";
-          toast(`<span style="display:inline-flex;align-items:center;gap:8px">${weatherSvg(wDef.id,22)} ${wDef.name}</span>`,subTxt,wDef.color);
+        if(gw.activated_by){
+          const wKey="gw:"+gw.id+":"+gw.activated_by+":"+Math.round((Number(gw.endsAt)||0)/1000);
+          if(silent){
+            _markGlobalBroadcastSeen(wKey);
+          }else{
+            showGlobalEventBroadcast({
+              key: wKey,
+              color: wDef.color || "#38bdf8",
+              badge: "SERVER EVENT · INSTANT WEATHER",
+              title: "CUACA " + wDef.name + " DIAKTIFKAN!",
+              buyer: gw.activated_by,
+              effect: `BUFF SELURUH SERVER: <b>${wDef.luckBonus}× LUCK</b> & <b>${wDef.speedBonus}× ROLL SPEED</b> SELAMA 30 MENIT!`,
+              iconHtml: weatherSvg(wDef.id, 42)
+            });
+          }
+        }else if(!silent&&prevId!==gw.id){
+          toast(`<span style="display:inline-flex;align-items:center;gap:8px">${weatherSvg(wDef.id,22)} ${wDef.name}</span>`,"ROTASI CUACA SERVER · 30 MENIT",wDef.color);
           beep(520,.14,"sine",.06);setTimeout(()=>beep(700,.16,"sine",.06),130);
         }
         return wDef;
@@ -2145,6 +2247,18 @@ async function buyPremiumPack(packId, ev, qty){
     } else if(pack.type === 'weather'){
       const wDef = WEATHER[pack.targetWeather] || {};
       rewardMsg = 'Cuaca ' + (wDef.name || pack.name) + ' AKTIF untuk SEMUA SERVER selama 30 menit!';
+      const wEnd = (state.weather && state.weather.endsAt) || (Date.now() + WEATHER_ROTATE_MS);
+      const wBuyer = (state.weather && state.weather.activated_by) || currentUser || 'HUNTER';
+      const wKey = 'gw:' + pack.targetWeather + ':' + wBuyer + ':' + Math.round(Number(wEnd) / 1000);
+      showGlobalEventBroadcast({
+        key: wKey,
+        color: wDef.color || '#38bdf8',
+        badge: 'SERVER EVENT · INSTANT WEATHER',
+        title: 'CUACA ' + (wDef.name || pack.name) + ' DIAKTIFKAN!',
+        buyer: wBuyer,
+        effect: 'BUFF SELURUH SERVER: <b>' + (wDef.luckBonus || 1) + '× LUCK</b> & <b>' + (wDef.speedBonus || 1) + '× ROLL SPEED</b> SELAMA 30 MENIT!',
+        iconHtml: weatherSvg(pack.targetWeather, 42)
+      });
     } else {
       rewardMsg = '+' + qty + ' ' + pack.name + ' masuk ke Backpack! (' + (Number(pack.amount || 0) * qty).toLocaleString('id-ID') + ' tarikan)!';
     }
@@ -2705,7 +2819,7 @@ function _startGlWidgetTick() {
    modal terbuka. Sebelumnya tiap 15 detik lobby/backpack dibangun ulang sia-sia. */
 function _glKey() {
   var g = _globalLuckCache;
-  return g ? (g.ends_at + '|' + g.multiplier) : 'none';
+  return g ? (g.ends_at + '|' + g.multiplier + '|' + (g.activated_by || '')) : 'none';
 }
 function _uiModalOpen() {
   try {
@@ -2720,22 +2834,35 @@ function _uiModalOpen() {
 }
 function startGlobalLuckPoll() {
   if (_globalLuckPollTimer) return;
-  fetchGlobalLuck().then(function() {
+  fetchGlobalLuck().then(function(gl) {
+    if (gl && gl.ends_at && gl.multiplier) {
+      _markGlobalBroadcastSeen('gl:' + gl.multiplier + ':' + (gl.activated_by || '') + ':' + gl.ends_at);
+    }
     if (typeof render === 'function' && !battleLive() && !_uiModalOpen()) render();
     _startGlWidgetTick();
   });
   _globalLuckPollTimer = setInterval(async function() {
-    /* Skip saat tab hidden — widget gak keliatan, gak perlu poll.
-       15s → 60s: Global Luck aktif durasi jam, resolution per menit lebih dari cukup
-       buat tangkep stack baru dari player lain. Countdown tetap 1s di _glWidgetTick. */
     if(document.hidden)return;
     var before = _glKey();
-    await fetchGlobalLuck();
-    var changed = _glKey() !== before;
+    var gl = await fetchGlobalLuck();
+    var after = _glKey();
+    var changed = after !== before;
+    if (changed && gl && gl.multiplier && gl.ends_at && Date.now() < new Date(gl.ends_at).getTime()) {
+      var stacks = Math.round((gl.multiplier || 10) / GLOBAL_LUCK_STEP_MULT);
+      showGlobalEventBroadcast({
+        key: 'gl:' + gl.multiplier + ':' + (gl.activated_by || '') + ':' + gl.ends_at,
+        color: '#38bdf8',
+        badge: 'SERVER EVENT · GLOBAL LUCK',
+        title: 'GLOBAL LUCK ' + gl.multiplier + '× AKTIF!',
+        buyer: gl.activated_by || 'HUNTER',
+        effect: 'SELURUH SERVER MENDAPATKAN <b>' + gl.multiplier + '× LUCK (' + stacks + ' TUMPUK)</b> UNTUK SEMUA PEMAIN!',
+        iconHtml: globalLuckFountainSvg(42)
+      });
+    }
     if (changed && typeof render === 'function' && !battleLive() && !_uiModalOpen()) render();
     if (changed && typeof renderShell === 'function') renderShell();
     _startGlWidgetTick();
-  }, 60000);
+  }, 10000);
 }
 
 /* ---- Stub banner lama (no-op — widget sekarang di backpack) ---- */
@@ -2893,6 +3020,15 @@ async function buyGlobalLuck() {
 
     const stacks = Math.round(newMult / GLOBAL_LUCK_STEP_MULT);
     toast('💧 GLOBAL LUCK AKTIF!', newMult + '× luck (' + stacks + ' tumpuk) untuk semua server!', '#38bdf8');
+    showGlobalEventBroadcast({
+      key: 'gl:' + newMult + ':' + (res.activated_by || username) + ':' + res.ends_at,
+      color: '#38bdf8',
+      badge: 'SERVER EVENT · GLOBAL LUCK',
+      title: 'GLOBAL LUCK ' + newMult + '× AKTIF!',
+      buyer: res.activated_by || username,
+      effect: 'SELURUH SERVER MENDAPATKAN <b>' + newMult + '× LUCK (' + stacks + ' TUMPUK)</b> UNTUK SEMUA PEMAIN!',
+      iconHtml: globalLuckFountainSvg(42)
+    });
 
     if (typeof render === 'function' && !battleLive()) render();
     if (typeof renderShell === 'function') renderShell();
