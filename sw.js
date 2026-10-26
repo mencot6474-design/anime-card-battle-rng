@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v180-onlineOnlyFix';
+const CACHE_NAME = 'anime-card-battle-v181-fixAutoRoll';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

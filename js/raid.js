@@ -1637,23 +1637,6 @@ async function rollTrait(){
     if(autoRoll||state.coins<TRAIT_COST)return;
   }
   coinSpend(TRAIT_COST);
-  if(window.CloudDB && currentUser && tgt.id){
-    const res = await CloudDB.traitRoll(currentUser, tgt.id);
-    if(res && res.ok){
-      const k = res.trait || "common";
-      sfx.crit();
-      if(TRAIT[k] && TRAIT[k].atk>=1.5){ save(); renderShell(); renderTrait(); showRarePrompt(k); }
-      else { if(tgt) tgt.trait = k; save(); if(!battleLive()&&typeof render==="function")render(); renderTrait(); traitNotify(k); }
-      return;
-    }else{
-      // rollback kalau gagal
-      if(typeof coinGain === "function") coinGain(TRAIT_COST);
-      else if(state) state.coins = (state.coins||0) + TRAIT_COST;
-      if(typeof renderShell==="function") renderShell();
-      autoToast(res && res.msg ? res.msg : "TRAIT ROLL GAGAL");
-      return;
-    }
-  }
   const k=rollTraitPick();
   sfx.crit();
   if(TRAIT[k] && TRAIT[k].atk>=1.5){ save(); renderShell(); renderTrait(); showRarePrompt(k); }
@@ -1765,27 +1748,6 @@ function autoTick(){
   if(state.coins<TRAIT_COST){stopAutoRoll();save();renderShell();autoToast("AUTO ROLL STOP · COIN HABIS");return;}
   const tgt=traitTargetStack();if(!tgt){stopAutoRoll();return;}
   coinSpend(TRAIT_COST);autoRollN++;
-  if(window.CloudDB && currentUser && tgt.id){
-    CloudDB.traitRoll(currentUser, tgt.id).then(res=>{
-      if(!res || !res.ok){
-        if(typeof coinGain === "function") coinGain(TRAIT_COST); else if(state) state.coins = (state.coins||0)+TRAIT_COST;
-        stopAutoRoll(); save(); renderShell(); autoToast(res && res.msg ? res.msg : "AUTO ROLL STOP · ERROR"); return;
-      }
-      const k = res.trait || "common";
-      if(autoRollN%10===0)sfx.crit();
-      if(autoTargets.has(k)){tgt.trait=k;autoStop();save();if(!battleLive()&&typeof render==="function")render();renderTrait();traitNotify(k);return;}
-      tgt.trait=k;
-      if(autoRollN%10===0)save();
-      autoPaint();
-      traitUiRefresh();
-      traitFxTick(k);
-      autoRollTimer=setTimeout(autoTick,AUTO_TICK);
-    }).catch(()=>{
-      if(typeof coinGain === "function") coinGain(TRAIT_COST); else if(state) state.coins = (state.coins||0)+TRAIT_COST;
-      stopAutoRoll(); save(); renderShell(); autoToast("AUTO ROLL STOP · ERROR"); 
-    });
-    return;
-  }
   const k=rollTraitPick();
   if(autoRollN%10===0)sfx.crit(); // sfx ditahan tiap 10 roll biar gak nembak terus di 100ms
   if(autoTargets.has(k)){tgt.trait=k;autoStop();save();if(!battleLive()&&typeof render==="function")render();renderTrait();traitNotify(k);return;} // TARGET KENA → simpan + stop
