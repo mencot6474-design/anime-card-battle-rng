@@ -31,8 +31,9 @@
    `ACBGuard.force('size')` juga tersedia dari console.
    ========================================================================== */
 (function () {
-  /* Di localhost / 127.0.0.1 / file:// devtools guard TIDAK PERNAH aktif supaya developer bisa debug tanpa reset */
+  /* Di localhost / 127.0.0.1 / file:// / iframe (seperti CrazyGames sandbox) devtools guard TIDAK PERNAH aktif */
   if (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "file:") return;
+  try { if (window.self !== window.top) return; } catch (e) { return; }
   if (window.__ACB_DEVGUARD__) return;
   window.__ACB_DEVGUARD__ = true;
 
