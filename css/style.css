@@ -54518,3 +54518,68 @@ main#app:has(.sett-wrap) {
   align-items: center !important;
   gap: 5px !important;
 }
+
+
+/* ==========================================================================
+   BADGE 1 IN X DI PROFIL PLAYER LEADERBOARD (#rkProfModal) - DIKECILKAN
+   ========================================================================== */
+#rkProfModal .rp-cardwrap .hc-chance,
+#rkProfModal .hub-center .hc-chance,
+.rp-cardwrap .hub-center .hc-chance {
+  font-family: "Barlow Condensed", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 9.5px !important;
+  letter-spacing: 0.08em !important;
+  line-height: 1 !important;
+  padding: 1.5px 5px !important;
+  border-radius: 4px !important;
+  background: rgba(6, 9, 14, 0.92) !important;
+  border: 1px solid currentColor !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6) !important;
+  transform: none !important;
+  white-space: nowrap !important;
+  top: 28px !important;
+  left: 10px !important;
+  z-index: 6 !important;
+}
+
+#rkProfModal .rp-cardwrap .hc-name-top,
+#rkProfModal .hub-center .hc-name-top,
+.rp-cardwrap .hub-center .hc-name-top {
+  top: 8px !important;
+  left: 10px !important;
+  max-width: 62% !important;
+  font-family: "Barlow Condensed", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 13.5px !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  transform: none !important;
+}
+
+#rkProfModal .rp-cardwrap .hc-badges,
+#rkProfModal .hub-center .hc-badges,
+.rp-cardwrap .hub-center .hc-badges {
+  top: 8px !important;
+  right: 8px !important;
+  gap: 3px !important;
+  transform: none !important;
+}
+
+#rkProfModal .rp-cardwrap .shiny-pill,
+#rkProfModal .hub-center .shiny-pill,
+.rp-cardwrap .hub-center .shiny-pill {
+  height: 16px !important;
+  min-height: 0 !important;
+  padding: 0 6px !important;
+  font-size: 8.5px !important;
+  border-radius: 999px !important;
+}
+
+#rkProfModal .rp-st-wide b.rp-st-val small {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+  color: #7df9ff !important;
+  opacity: 0.9 !important;
+}
