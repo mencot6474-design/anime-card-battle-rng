@@ -52215,3 +52215,71 @@ html.fps-locked .bp-fchip{
   transform: none !important;
 }
 
+/* ====== FIX ALIGNMENT: SEJAJARKAN 7-DAY & WATCH ADS PERSIS DENGAN WIDGET GLOBAL LUCK TANPA NABRAK ====== */
+.hub-gl-row {
+  position: relative !important;
+  width: 100% !important;
+  max-width: 340px !important;
+  margin: 0 auto 14px !important;
+  transform: translateY(-32px) !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 6px !important;
+  z-index: 25 !important;
+}
+
+.hub-gl-row > .hub-gl-widget {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  transform: none !important;
+  min-width: 0 !important;
+}
+
+.hub-gl-row > .hub-float-dock {
+  position: static !important;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 5px !important;
+  flex: none !important;
+}
+
+.hub-gl-row .hfd-btn {
+  width: 44px !important;
+  height: 46px !important;
+  border-radius: 11px !important;
+  padding: 3px 2px !important;
+  flex: none !important;
+}
+
+.hub-gl-row .hfd-lbl {
+  font-size: 7px !important;
+  letter-spacing: 0.04em !important;
+}
+
+.hub-gl-row .glw-wrap,
+.hub-gl-row .hub-gl-widget .glw-wrap {
+  padding: 6px 8px !important;
+}
+
+.hub-gl-row .glw-main-row {
+  grid-template-columns: 30px minmax(0, 1fr) auto !important;
+  gap: 6px !important;
+}
+
+.hub-gl-row .glw-icon {
+  width: 30px !important;
+  height: 30px !important;
+}
+
+.hub-gl-row .glw-btn {
+  padding: 5px 7px !important;
+  font-size: 10px !important;
+}
+
+
