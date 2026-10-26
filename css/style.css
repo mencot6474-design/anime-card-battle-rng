@@ -51337,3 +51337,251 @@ html.fps-locked .bp-fchip{
   min-width: 0;
   flex: 1;
 }
+
+/* ====== GLOBAL LUCK SHRINE WIDGET REDESIGN (CYBER EMERALD-GOLD) ====== */
+.glw-wrap,
+.hub-gl-widget .glw-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 12px;
+  background: linear-gradient(135deg, rgba(6, 38, 32, 0.88) 0%, rgba(10, 22, 36, 0.92) 60%, rgba(28, 22, 8, 0.88) 100%) !important;
+  border: 1px solid rgba(52, 211, 153, 0.38) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 18px rgba(16, 185, 129, 0.14) !important;
+  overflow: hidden;
+}
+
+.glw-wrap.is-active,
+.hub-gl-widget .glw-wrap.is-active {
+  border-color: rgba(250, 204, 21, 0.55) !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6), inset 0 0 18px rgba(52, 211, 153, 0.14), 0 0 22px rgba(250, 204, 21, 0.2) !important;
+}
+
+.glw-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 12% 50%, rgba(52, 211, 153, 0.16), transparent 55%);
+  pointer-events: none;
+}
+
+.glw-icon {
+  position: relative;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.28), rgba(6, 78, 59, 0.55));
+  border: 1px solid rgba(250, 204, 21, 0.45);
+  box-shadow: 0 0 12px rgba(52, 211, 153, 0.32), inset 0 0 8px rgba(250, 204, 21, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.glw-wrap.is-active .glw-icon svg {
+  animation: glwCloverPulse 3s ease-in-out infinite;
+}
+
+@keyframes glwCloverPulse {
+  0%, 100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 4px rgba(250, 204, 21, 0.45)); }
+  50% { transform: scale(1.08) rotate(6deg); filter: drop-shadow(0 0 9px rgba(52, 211, 153, 0.75)); }
+}
+
+.glw-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.glw-head-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.glw-title {
+  font-family: "Rajdhani", "Barlow Condensed", sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.14em !important;
+  color: #fde047 !important;
+  text-shadow: 0 0 10px rgba(250, 204, 21, 0.38);
+  margin-bottom: 0 !important;
+  white-space: nowrap;
+}
+
+.glw-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(52, 211, 153, 0.5);
+  color: #6ee7b7;
+  white-space: nowrap;
+}
+
+.glw-live-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 6px #34d399;
+}
+
+.glw-idle-pill {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.14);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  color: rgba(203, 213, 225, 0.7);
+  white-space: nowrap;
+}
+
+.glw-active-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex-wrap: nowrap;
+}
+
+.glw-mult {
+  font-family: "Rajdhani", "Barlow Condensed", sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 900 !important;
+  color: #34d399 !important;
+  text-shadow: 0 0 10px rgba(52, 211, 153, 0.45);
+  letter-spacing: 0.05em !important;
+  white-space: nowrap;
+  flex: none;
+}
+
+.glw-timer-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.42);
+  border: 1px solid rgba(52, 211, 153, 0.28);
+  color: #a7f3d0;
+  flex: none;
+}
+
+.glw-timer {
+  font-family: "Rajdhani", "Barlow Condensed", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 12px !important;
+  color: #ecfdf5 !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.glw-buyer-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 150px;
+  padding: 1px 7px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.16), rgba(255, 190, 11, 0.05));
+  border: 1px solid rgba(255, 215, 0, 0.36);
+  overflow: hidden;
+}
+
+.glw-buyer-ic {
+  font-size: 9.5px;
+  line-height: 1;
+  flex: none;
+}
+
+.glw-buyer-lbl {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: rgba(255, 235, 150, 0.75);
+  flex: none;
+}
+
+.glw-buyer-name {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  color: #ffd700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.glw-off {
+  color: rgba(203, 213, 225, 0.68) !important;
+  font-style: normal !important;
+  font-size: 11px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.glw-btn {
+  position: relative;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: "Rajdhani", "Barlow Condensed", sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.08em !important;
+  padding: 7px 12px !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(250, 204, 21, 0.6) !important;
+  background: linear-gradient(135deg, #059669 0%, #047857 55%, #065f46 100%) !important;
+  color: #fef08a !important;
+  box-shadow: 0 3px 12px rgba(5, 150, 105, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.14s ease, box-shadow 0.14s ease, filter 0.14s ease !important;
+}
+
+.glw-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+  box-shadow: 0 5px 16px rgba(16, 185, 129, 0.55), 0 0 12px rgba(250, 204, 21, 0.35) !important;
+}
+
+.glw-btn.stack {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 55%, #047857 100%) !important;
+  border-color: rgba(253, 224, 71, 0.75) !important;
+  color: #fffbeb !important;
+}
+
+@media (max-width: 560px) {
+  .glw-buyer-pill {
+    max-width: 96px;
+  }
+  .glw-off {
+    font-size: 10px !important;
+  }
+}

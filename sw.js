@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v192-wpBuyerBar';
+const CACHE_NAME = 'anime-card-battle-v193-glWidgetRedesign';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

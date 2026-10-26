@@ -2704,22 +2704,39 @@ let _globalLuckCache     = null;  // cache hasil poll
 let _globalLuckPollTimer = null;  // timer poll
 let _glWidgetTimer       = null;  // timer countdown widget
 
-/* ---- SVG Icon Fountain (air pancuran) ---- */
+/* ---- SVG Icon Cyber Clover / Golden Star Luck Crest (bukan air) ---- */
 function globalLuckFountainSvg(sz) {
   sz = sz || 30;
-  return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-    '<ellipse cx="16" cy="26" rx="10" ry="3" fill="#38bdf8" opacity=".35"/>' +
-    '<rect x="6" y="24" width="20" height="3" rx="1.5" fill="#7dd3fc"/>' +
-    '<rect x="14.5" y="17" width="3" height="8" rx="1" fill="#bae6fd"/>' +
-    '<path d="M9 17 Q16 19 23 17 Q21 13 16 13 Q11 13 9 17Z" fill="#38bdf8"/>' +
-    '<rect x="15" y="9" width="2" height="5" rx="1" fill="#e0f2fe"/>' +
-    '<circle cx="16" cy="5" r="1.3" fill="#7dd3fc"/>' +
-    '<circle cx="12" cy="7" r="1" fill="#38bdf8" opacity=".8"/>' +
-    '<circle cx="20" cy="7" r="1" fill="#38bdf8" opacity=".8"/>' +
-    '<circle cx="10" cy="10" r=".8" fill="#38bdf8" opacity=".6"/>' +
-    '<circle cx="22" cy="10" r=".8" fill="#38bdf8" opacity=".6"/>' +
-    '<circle cx="14" cy="4" r=".6" fill="#bae6fd" opacity=".7"/>' +
-    '<circle cx="18" cy="4" r=".6" fill="#bae6fd" opacity=".7"/>' +
+  return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+    '<defs>' +
+      '<radialGradient id="glGlowGrad" cx="50%" cy="50%" r="50%">' +
+        '<stop offset="0%" stop-color="#ffd700" stop-opacity="0.55"/>' +
+        '<stop offset="60%" stop-color="#10b981" stop-opacity="0.22"/>' +
+        '<stop offset="100%" stop-color="#10b981" stop-opacity="0"/>' +
+      '</radialGradient>' +
+      '<linearGradient id="glLeafGrad" x1="6" y1="6" x2="30" y2="30" gradientUnits="userSpaceOnUse">' +
+        '<stop offset="0%" stop-color="#fde047"/>' +
+        '<stop offset="45%" stop-color="#34d399"/>' +
+        '<stop offset="100%" stop-color="#059669"/>' +
+      '</linearGradient>' +
+      '<linearGradient id="glGoldRim" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">' +
+        '<stop offset="0%" stop-color="#fffbeb"/>' +
+        '<stop offset="50%" stop-color="#ffd700"/>' +
+        '<stop offset="100%" stop-color="#f59e0b"/>' +
+      '</linearGradient>' +
+    '</defs>' +
+    '<circle cx="18" cy="18" r="16" fill="url(#glGlowGrad)"/>' +
+    '<polygon points="18,2.5 31.5,10.2 31.5,25.8 18,33.5 4.5,25.8 4.5,10.2" stroke="url(#glGoldRim)" stroke-width="1.2" stroke-opacity="0.55" fill="rgba(6,78,59,0.35)"/>' +
+    '<path d="M18 16.5 C15 11.5 10.5 8.5 13 6 C15 4 17.5 6 18 8.5 C18.5 6 21 4 23 6 C25.5 8.5 21 11.5 18 16.5 Z" fill="url(#glLeafGrad)" stroke="url(#glGoldRim)" stroke-width="0.9"/>' +
+    '<path d="M18 19.5 C15 24.5 10.5 27.5 13 30 C15 32 17.5 30 18 27.5 C18.5 30 21 32 23 30 C25.5 27.5 21 24.5 18 19.5 Z" fill="url(#glLeafGrad)" stroke="url(#glGoldRim)" stroke-width="0.9"/>' +
+    '<path d="M16.5 18 C11.5 15 8.5 10.5 6 13 C4 15 6 17.5 8.5 18 C6 18.5 4 21 6 23 C8.5 25.5 11.5 21 16.5 18 Z" fill="url(#glLeafGrad)" stroke="url(#glGoldRim)" stroke-width="0.9"/>' +
+    '<path d="M19.5 18 C24.5 15 27.5 10.5 30 13 C32 15 30 17.5 27.5 18 C30 18.5 32 21 30 23 C27.5 25.5 24.5 21 19.5 18 Z" fill="url(#glLeafGrad)" stroke="url(#glGoldRim)" stroke-width="0.9"/>' +
+    '<path d="M18 12.5 L19.4 16.6 L23.5 18 L19.4 19.4 L18 23.5 L16.6 19.4 L12.5 18 L16.6 16.6 Z" fill="url(#glGoldRim)"/>' +
+    '<circle cx="18" cy="18" r="1.8" fill="#ffffff"/>' +
+    '<circle cx="9" cy="8.5" r="1" fill="#fde047" opacity=".9"/>' +
+    '<circle cx="27.5" cy="9.5" r="1.1" fill="#fde047" opacity=".9"/>' +
+    '<circle cx="8.5" cy="27" r="0.9" fill="#34d399" opacity=".85"/>' +
+    '<circle cx="27" cy="27.5" r="1" fill="#fde047" opacity=".85"/>' +
     '</svg>';
 }
 
@@ -2771,22 +2788,34 @@ function renderGlobalLuckWidget() {
     ? (maxed ? 'MAX STACK (100×)' : 'TUMPUK +10× · ' + gemIcon + GLOBAL_LUCK_COST)
     : 'AKTIFKAN · ' + gemIcon + GLOBAL_LUCK_COST;
   const btnDisabled = !canBuy || maxed;
-  const btnClass = 'glw-btn' + (active && !maxed ? ' stack' : '');
+  const btnClass = 'glw-btn' + (active && !maxed ? ' stack' : '') + (maxed ? ' maxed' : '');
+
+  const buyerSafe = _escBroadcastHtml(gl && gl.activated_by ? gl.activated_by : 'HUNTER');
+  const titleBadge = active
+    ? '<span class="glw-live-pill"><span class="glw-live-dot"></span>ACTIVE · ' + stacks + '/10 STACK</span>'
+    : '<span class="glw-idle-pill">STANDBY</span>';
 
   const statusHtml = active
-    ? ('<span class="glw-mult">'+mult+'×</span>'
-       + '<span class="glw-stack">'+stacks+' tumpuk</span>'
-       + '<span class="glw-sep">·</span>'
-       + '<span class="glw-by">oleh <b>'+gl.activated_by+'</b></span>'
-       + '<span class="glw-sep">·</span>'
-       + '<span class="glw-timer" id="glWidgetTimer">'+timerStr+'</span>')
-    : '<span class="glw-off">Belum aktif — efek untuk semua pemain</span>';
+    ? ('<div class="glw-active-row">'
+       + '<span class="glw-mult">' + mult + '× LUCK</span>'
+       + '<span class="glw-timer-pill">⏱ <span class="glw-timer" id="glWidgetTimer">' + timerStr + '</span></span>'
+       + '<span class="glw-buyer-pill" title="Diaktifkan oleh ' + buyerSafe + '">'
+         + '<span class="glw-buyer-ic">👑</span>'
+         + '<span class="glw-buyer-lbl">BY</span>'
+         + '<span class="glw-buyer-name">' + buyerSafe + '</span>'
+       + '</span>'
+     + '</div>')
+    : '<span class="glw-off">Belum aktif — buff keberuntungan untuk seluruh server</span>';
   const statusClass = 'glw-status' + (active ? ' active' : '');
+  const wrapClass = 'glw-wrap' + (active ? ' is-active' : '');
 
-  return '<div class="glw-wrap" id="glLobbyWidget">'
-    + '<div class="glw-icon">' + globalLuckFountainSvg(30) + '</div>'
+  return '<div class="' + wrapClass + '" id="glLobbyWidget">'
+    + '<div class="glw-icon">' + globalLuckFountainSvg(32) + '</div>'
     + '<div class="glw-info">'
-      + '<div class="glw-title">GLOBAL LUCK</div>'
+      + '<div class="glw-head-row">'
+        + '<div class="glw-title">GLOBAL LUCK SHRINE</div>'
+        + titleBadge
+      + '</div>'
       + '<div class="' + statusClass + '">' + statusHtml + '</div>'
     + '</div>'
     + '<button class="' + btnClass + '" id="glBuyBtn" onclick="buyGlobalLuck()"'
@@ -2856,12 +2885,12 @@ function startGlobalLuckPoll() {
       var stacks = Math.round((gl.multiplier || 10) / GLOBAL_LUCK_STEP_MULT);
       showGlobalEventBroadcast({
         key: 'gl:' + gl.multiplier + ':' + (gl.activated_by || '') + ':' + gl.ends_at,
-        color: '#38bdf8',
-        badge: 'SERVER EVENT · GLOBAL LUCK',
+        color: '#34d399',
+        badge: 'SERVER EVENT · GLOBAL LUCK SHRINE',
         title: 'GLOBAL LUCK ' + gl.multiplier + '× AKTIF!',
         buyer: gl.activated_by || 'HUNTER',
         effect: 'SELURUH SERVER MENDAPATKAN <b>' + gl.multiplier + '× LUCK (' + stacks + ' TUMPUK)</b> UNTUK SEMUA PEMAIN!',
-        iconHtml: globalLuckFountainSvg(42)
+        iconHtml: globalLuckFountainSvg(44)
       });
     }
     if (changed && typeof render === 'function' && !battleLive() && !_uiModalOpen()) render();
@@ -3024,15 +3053,15 @@ async function buyGlobalLuck() {
     setTimeout(function(){ beep(1200, 0.2, 'triangle', 0.12); }, 200);
 
     const stacks = Math.round(newMult / GLOBAL_LUCK_STEP_MULT);
-    toast('💧 GLOBAL LUCK AKTIF!', newMult + '× luck (' + stacks + ' tumpuk) untuk semua server!', '#38bdf8');
+    toast('🍀 GLOBAL LUCK AKTIF!', newMult + '× luck (' + stacks + ' tumpuk) untuk semua server!', '#34d399');
     showGlobalEventBroadcast({
       key: 'gl:' + newMult + ':' + (res.activated_by || username) + ':' + res.ends_at,
-      color: '#38bdf8',
-      badge: 'SERVER EVENT · GLOBAL LUCK',
+      color: '#34d399',
+      badge: 'SERVER EVENT · GLOBAL LUCK SHRINE',
       title: 'GLOBAL LUCK ' + newMult + '× AKTIF!',
       buyer: res.activated_by || username,
       effect: 'SELURUH SERVER MENDAPATKAN <b>' + newMult + '× LUCK (' + stacks + ' TUMPUK)</b> UNTUK SEMUA PEMAIN!',
-      iconHtml: globalLuckFountainSvg(42)
+      iconHtml: globalLuckFountainSvg(44)
     });
 
     if (typeof render === 'function' && !battleLive()) render();
