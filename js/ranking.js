@@ -303,6 +303,7 @@ async function rkRender(silent) {
   if (!meta || !body) return;
 
   const board = rkBoard;
+  const info = RK_BOARDS[board] || RK_BOARDS.world_boss;
   const canFetch = !!(window.CloudDB && typeof window.CloudDB.leaderboard === "function");
 
   if (!canFetch) {
