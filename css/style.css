@@ -1801,7 +1801,7 @@ body.on-lobby .weather-panel.show{display:flex;}
 
 
 
-/* Sembunyikan dock, panel weather, roll overlay penuh, dan mini reveal strip saat modal / fitur non-lobby aktif */
+/* Sembunyikan dock, panel weather, buff dock (pot), roll overlay penuh, dan mini reveal strip saat modal / fitur non-lobby aktif */
 body:has(#indexModal.show) .lobby-footer,
 body:has(#traitModal.show) .lobby-footer,
 body:has(#weatherMachineModal.show) .lobby-footer,
@@ -1811,6 +1811,14 @@ body:has(#storyModal.show) .lobby-footer,
 body:has(#startModal.show) .lobby-footer,
 body:has(#profModal.show) .lobby-footer,
 body:has(#titlesModal.show) .lobby-footer,
+body:has(#rankModal.show) .lobby-footer,
+body:has(#dailyModal.show) .lobby-footer,
+body:has(#topupModal.show) .lobby-footer,
+body:has(#deckPickModal.show) .lobby-footer,
+body:has(#watchAdsModal.show) .lobby-footer,
+body:has(#changelogModal.show) .lobby-footer,
+body:has(#rarePromptModal.show) .lobby-footer,
+body:has(#towerDropModal.show) .lobby-footer,
 body:has(#indexModal.show) .weather-panel,
 body:has(#traitModal.show) .weather-panel,
 body:has(#weatherMachineModal.show) .weather-panel,
@@ -1820,6 +1828,32 @@ body:has(#storyModal.show) .weather-panel,
 body:has(#startModal.show) .weather-panel,
 body:has(#profModal.show) .weather-panel,
 body:has(#titlesModal.show) .weather-panel,
+body:has(#rankModal.show) .weather-panel,
+body:has(#dailyModal.show) .weather-panel,
+body:has(#topupModal.show) .weather-panel,
+body:has(#deckPickModal.show) .weather-panel,
+body:has(#watchAdsModal.show) .weather-panel,
+body:has(#changelogModal.show) .weather-panel,
+body:has(#rarePromptModal.show) .weather-panel,
+body:has(#towerDropModal.show) .weather-panel,
+body:has(#indexModal.show) .buff-dock,
+body:has(#traitModal.show) .buff-dock,
+body:has(#weatherMachineModal.show) .buff-dock,
+body:has(#premiumModal.show) .buff-dock,
+body:has(#missionModal.show) .buff-dock,
+body:has(#storyModal.show) .buff-dock,
+body:has(#startModal.show) .buff-dock,
+body:has(#profModal.show) .buff-dock,
+body:has(#titlesModal.show) .buff-dock,
+body:has(#rankModal.show) .buff-dock,
+body:has(#dailyModal.show) .buff-dock,
+body:has(#topupModal.show) .buff-dock,
+body:has(#deckPickModal.show) .buff-dock,
+body:has(#watchAdsModal.show) .buff-dock,
+body:has(#changelogModal.show) .buff-dock,
+body:has(#rarePromptModal.show) .buff-dock,
+body:has(#towerDropModal.show) .buff-dock,
+body:has(#skillPop.show) .buff-dock,
 body:has(#indexModal.show) .roll-mini-strip,
 body:has(#traitModal.show) .roll-mini-strip,
 body:has(#weatherMachineModal.show) .roll-mini-strip,
@@ -1829,6 +1863,14 @@ body:has(#storyModal.show) .roll-mini-strip,
 body:has(#startModal.show) .roll-mini-strip,
 body:has(#profModal.show) .roll-mini-strip,
 body:has(#titlesModal.show) .roll-mini-strip,
+body:has(#rankModal.show) .roll-mini-strip,
+body:has(#dailyModal.show) .roll-mini-strip,
+body:has(#topupModal.show) .roll-mini-strip,
+body:has(#deckPickModal.show) .roll-mini-strip,
+body:has(#watchAdsModal.show) .roll-mini-strip,
+body:has(#changelogModal.show) .roll-mini-strip,
+body:has(#rarePromptModal.show) .roll-mini-strip,
+body:has(#towerDropModal.show) .roll-mini-strip,
 body:has(#indexModal.show) .roll-overlay,
 body:has(#traitModal.show) .roll-overlay,
 body:has(#weatherMachineModal.show) .roll-overlay,
@@ -1838,39 +1880,41 @@ body:has(#storyModal.show) .roll-overlay,
 body:has(#startModal.show) .roll-overlay,
 body:has(#profModal.show) .roll-overlay,
 body:has(#titlesModal.show) .roll-overlay,
-body:has(#weatherMachineModal.show) .buff-dock,
-body:has(#profModal.show) .buff-dock,
-body:has(#titlesModal.show) .buff-dock,
+body:has(#rankModal.show) .roll-overlay,
+body:has(#dailyModal.show) .roll-overlay,
+body:has(#topupModal.show) .roll-overlay,
+body:has(#deckPickModal.show) .roll-overlay,
+body:has(#watchAdsModal.show) .roll-overlay,
+body:has(#changelogModal.show) .roll-overlay,
+body:has(#rarePromptModal.show) .roll-overlay,
+body:has(#towerDropModal.show) .roll-overlay,
 body.hide-docks-modal .lobby-footer,
 body.hide-docks-modal .weather-panel,
+body.hide-docks-modal .buff-dock,
 body.hide-docks-modal .roll-mini-strip,
 body.hide-docks-modal .roll-overlay,
+body.bp-open .lobby-footer,
+body.bp-open .weather-panel,
+body.bp-open .buff-dock,
+body.bp-open .roll-mini-strip,
+body.bp-open .roll-overlay,
 body.battle-full .roll-overlay,
 body.battle-full .roll-mini-strip,
+body.battle-full .weather-panel,
+body.battle-full .buff-dock,
 body.on-tower .roll-overlay,
 body.on-tower .roll-mini-strip,
+body.on-tower .weather-panel,
+body.on-tower .buff-dock,
 body.on-raid .roll-overlay,
-body.on-raid .roll-mini-strip{
-
-
-
+body.on-raid .roll-mini-strip,
+body.on-raid .weather-panel,
+body.on-raid .buff-dock{
   display:none !important;
-
-
-
 }
 
-
-
-
-
-
-
 .buff-dock{display:none;position:fixed;right:16px;bottom:16px;z-index:99;flex-direction:row;flex-wrap:wrap-reverse;justify-content:flex-end;align-items:flex-end;gap:14px 10px;max-width:calc(100vw - 32px);}
-
-
-
-.buff-dock.show{display:flex;}
+body.on-lobby .buff-dock.show{display:flex;}
 
 
 
