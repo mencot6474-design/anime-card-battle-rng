@@ -3,127 +3,226 @@ function renderSettings(){
   /* BATTLE SPEED: clamp ke unlock level sebelum render panel */
   if(typeof state.battleSpeed!=="number"||state.battleSpeed<1||state.battleSpeed>4)state.battleSpeed=1;
   {const _m=battleSpeedMax();if(state.battleSpeed>_m)state.battleSpeed=_m;}
-  const curLang = (window.GameLang && typeof window.GameLang.get === "function") ? window.GameLang.get() : (state.lang || "id");
+  const curLang = (typeof getLang === 'function' ? getLang() : (window.GameLang && typeof window.GameLang.get === "function" ? window.GameLang.get() : (state.lang || "id")));
   const isEn = curLang === "en";
-  app.innerHTML=`
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;background:linear-gradient(135deg,rgba(31,40,51,0.7),rgba(15,20,28,0.85));padding:14px 20px;border-radius:14px;border:1px solid rgba(102,252,241,0.2);box-shadow:0 8px 32px rgba(0,0,0,0.4);backdrop-filter:blur(8px)">
-    <div>
-      <div style="font-size:11px;font-weight:800;letter-spacing:2px;color:var(--cyan,#66fcf1);text-transform:uppercase">SYSTEM CONFIGURATION</div>
-      <h1 style="margin:2px 0 0;font-size:26px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;color:#fff">GAME <span style="background:linear-gradient(90deg,#66fcf1,#c56cf0);-webkit-background-clip:text;-webkit-text-fill-color:transparent">SETTINGS</span></h1>
-    </div>
-    <button onclick="location.hash='#/lobby';render();" style="display:flex;align-items:center;gap:8px;padding:10px 22px;font-size:13px;font-weight:800;letter-spacing:1px;background:linear-gradient(135deg,#c56cf0,#7d5fff);color:#fff;border:none;border-radius:10px;cursor:pointer;box-shadow:0 4px 18px rgba(125,95,255,0.4);transition:all .2s ease">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg> ${isEn ? "BACK TO LOBBY" : "KEMBALI KE LOBBY"}
-    </button>
-  </div>
 
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px">
-
-    <!-- LANGUAGE / BAHASA -->
-    <div class="panel set-panel" style="background:linear-gradient(145deg,rgba(18,16,36,0.88),rgba(10,12,24,0.96));border:1px solid rgba(197,108,240,0.35);border-radius:14px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,0.35)">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <span style="background:rgba(197,108,240,0.16);color:#e9d5ff;font-size:10px;font-weight:900;padding:3px 8px;border-radius:6px;border:1px solid rgba(197,108,240,0.38)">LOCALE</span>
-        <div class="set-t" style="margin:0;color:#f1f2f6;font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c56cf0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> ${isEn ? "LANGUAGE / BAHASA" : "BAHASA / LANGUAGE"}
+  app.innerHTML = `
+  <div class="sett-wrap">
+    <!-- HEADER -->
+    <div class="sett-header">
+      <div class="sett-head-left">
+        <div class="sett-cyber-pill">
+          <span class="sett-cyber-dot"></span>
+          <span>SYSTEM ARCHITECTURE // MATRIX CONFIG</span>
+        </div>
+        <h1 class="sett-title">
+          GAME <span class="sett-title-grad">SETTINGS</span>
+        </h1>
+        <div class="sett-subtitle">
+          ${isEn ? "AUDIO · COMBAT MATRIX · CLOUD TELEMETRY · LOCALIZATION" : "AUDIO · PENGATURAN TEMPUR · TELEMETRI CLOUD · LOKALISASI"}
         </div>
       </div>
-      <div class="set-d" style="color:#a4b0be;font-size:12px;line-height:1.4;margin-bottom:14px">${isEn ? "Select the game interface display language (saved automatically)." : "Pilih bahasa tampilan antarmuka game (tersimpan otomatis)."}</div>
-      <div id="langRow" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-        <button type="button" class="gm-btn lang-btn${!isEn ? " lang-on" : ""}" data-lang="id" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 10px;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;border:1px solid ${!isEn ? "#66fcf1" : "rgba(255,255,255,0.12)"};background:${!isEn ? "linear-gradient(135deg,rgba(102,252,241,0.22),rgba(197,108,240,0.28))" : "rgba(255,255,255,0.05)"};color:${!isEn ? "#fff" : "#a4b0be"};box-shadow:${!isEn ? "0 0 16px rgba(102,252,241,0.22)" : "none"}">
-          <span style="font-size:16px;line-height:1">🇮🇩</span>
-          <span>INDONESIA</span>
-        </button>
-        <button type="button" class="gm-btn lang-btn${isEn ? " lang-on" : ""}" data-lang="en" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 10px;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;border:1px solid ${isEn ? "#66fcf1" : "rgba(255,255,255,0.12)"};background:${isEn ? "linear-gradient(135deg,rgba(102,252,241,0.22),rgba(197,108,240,0.28))" : "rgba(255,255,255,0.05)"};color:${isEn ? "#fff" : "#a4b0be"};box-shadow:${isEn ? "0 0 16px rgba(102,252,241,0.22)" : "none"}">
-          <span style="font-size:16px;line-height:1">🇬🇧</span>
-          <span>ENGLISH</span>
+      <div class="sett-head-right">
+        <div class="sett-user-pill">
+          <span class="sett-user-dot"></span>
+          <span class="sett-user-lbl">${isEn ? "OPERATOR:" : "USER:"}</span>
+          <span class="sett-user-val">${currentUser || "GUEST"}</span>
+        </div>
+        <button class="sett-back-btn" onclick="location.hash='#/lobby';render();" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+          <span>${isEn ? "BACK TO LOBBY" : "KEMBALI KE LOBBY"}</span>
         </button>
       </div>
-      <div class="gm-note" style="color:#c56cf0;font-size:11px;font-weight:700">${isEn ? "ACTIVE LANGUAGE: ENGLISH (EN)" : "BAHASA AKTIF: INDONESIA (ID)"}</div>
-    </div>
-    
-    <!-- BATTLE SPEED -->
-    <div class="panel set-panel" style="background:linear-gradient(145deg,rgba(15,25,35,0.85),rgba(10,15,22,0.95));border:1px solid rgba(102,252,241,0.25);border-radius:14px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,0.3)">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <span style="background:rgba(102,252,241,0.15);color:#66fcf1;font-size:10px;font-weight:900;padding:3px 8px;border-radius:6px;border:1px solid rgba(102,252,241,0.3)">COMBAT</span>
-        <div class="set-t" style="margin:0;color:#f1f2f6;font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#66fcf1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> BATTLE SPEED
-        </div>
-      </div>
-      <div class="set-d" style="color:#a4b0be;font-size:12px;line-height:1.4;margin-bottom:14px">Kecepatan aksi & giliran: <b style="color:#66fcf1">2× di LV 25</b> · <b style="color:#66fcf1">3× di LV 50</b> · <b style="color:#66fcf1">4× di LV 100</b>.</div>
-      <div class="gm-row" id="bsRow" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">${[1,2,3,4].map(n=>{const lk=n>battleSpeedMax();return `<button class="gm-btn bs-btn${(!lk&&n===state.battleSpeed)?" bs-on":""}" data-sp="${n}"${lk?" disabled":""} style="padding:10px 4px;font-size:13px;font-weight:800;border-radius:8px;border:1px solid ${(!lk&&n===state.battleSpeed)?'#66fcf1':'rgba(255,255,255,0.1)'};background:${(!lk&&n===state.battleSpeed)?'linear-gradient(135deg,rgba(102,252,241,0.25),rgba(125,95,255,0.3))':'rgba(255,255,255,0.05)'};color:${lk?'#57606f':'#fff'}">${n}×</button>`;}).join("")}</div>
-      <div class="gm-note" id="bsNote" style="color:#a4b0be;font-size:11px;font-weight:600"></div>
     </div>
 
-    <!-- AUDIO -->
-    <div class="panel set-panel" style="background:linear-gradient(145deg,rgba(30,26,16,0.85),rgba(18,15,10,0.95));border:1px solid rgba(255,209,102,0.25);border-radius:14px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,0.3)">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <span style="background:rgba(255,209,102,0.15);color:#ffd166;font-size:10px;font-weight:900;padding:3px 8px;border-radius:6px;border:1px solid rgba(255,209,102,0.3)">AUDIO</span>
-        <div class="set-t" style="margin:0;color:#f1f2f6;font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffd166" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg> SOUND DIAGNOSTIC
-        </div>
-      </div>
-      <div class="set-d" style="color:#a4b0be;font-size:12px;line-height:1.4;margin-bottom:12px">Kalau battle terasa hening, cek status di bawah lalu tekan tes nada.</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-        <button class="gm-btn" id="audToggle" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;font-weight:700;border-radius:8px;padding:8px">SUARA: -</button>
-        <button class="gm-btn" id="audTone" style="background:linear-gradient(135deg,#2ed573,#1e90ff);color:#fff;font-weight:700;border:none;border-radius:8px;padding:8px">TES NADA</button>
-      </div>
-      <button class="gm-btn" id="audHit" style="width:100%;background:linear-gradient(135deg,#ff4757,#ffa502);color:#fff;font-weight:700;border:none;border-radius:8px;padding:8px;margin-bottom:10px">TES SFX RAID (HIT + DENTUMAN)</button>
-      <div class="gm-note" id="audStat" style="color:#ffd166;font-weight:600;font-size:11px;line-height:1.5"></div>
-    </div>
-
-    <!-- TOWER & AKUN -->
-    <div class="panel set-panel" style="background:linear-gradient(145deg,rgba(18,22,30,0.85),rgba(12,15,20,0.95));border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,0.3)">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <span style="background:rgba(255,165,2,0.15);color:#ffa502;font-size:10px;font-weight:900;padding:3px 8px;border-radius:6px;border:1px solid rgba(255,165,2,0.3)">SYSTEM</span>
-        <div class="set-t" style="margin:0;color:#f1f2f6;font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffa502" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> INFINITE TOWER & CLOUD
-        </div>
-      </div>
-      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px;margin-bottom:14px">
-        <label class="gm-check" style="color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;gap:8px;cursor:pointer">
-          <input type="checkbox" id="setAutoTower"> AUTO RESTART DARI LANTAI 1
-        </label>
-        <div class="gm-note" id="towerSetNote" style="color:#747d8c;font-size:11px;margin-top:4px"></div>
-      </div>
-
-      <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(102,252,241,0.05);border:1px solid rgba(102,252,241,0.2);padding:12px;border-radius:10px;margin-bottom:14px">
-        <div>
-          <div style="font-size:11px;color:#747d8c;font-weight:700">USER PROFILE</div>
-          <div style="font-size:15px;color:#66fcf1;font-weight:800">${currentUser||"-"}</div>
-        </div>
-        <button class="reset-btn" id="logoutBtn" style="margin:0;padding:8px 14px;font-size:12px;font-weight:700;color:#fff;background:rgba(255,71,87,0.2);border:1px solid rgba(255,71,87,0.4);border-radius:8px;cursor:pointer">Keluar Akun</button>
-      </div>
-
-      <div style="background:rgba(102,252,241,0.04);border:1px solid rgba(102,252,241,0.25);border-radius:10px;padding:12px;margin-bottom:14px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <div>
-            <div style="font-size:12px;font-weight:800;color:#66fcf1;display:flex;align-items:center;gap:6px">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
-              ${isEn ? "CLOUD SYNC" : "SINKRONISASI CLOUD"}
-            </div>
-            <div id="cloudSyncNote" style="font-size:11px;color:#a4b0be;margin-top:2px">
-              ${isEn ? "Save all cards & inventory to Supabase immediately." : "Simpan semua kartu & backpack langsung ke Supabase."}
-            </div>
+    <!-- HORIZONTAL 3-COLUMN DECK -->
+    <div class="sett-h-deck">
+      <!-- COL 1: COMBAT & AUDIO ENGINES -->
+      <div class="sett-col sett-col-combat">
+        <div class="sett-col-head">
+          <div class="sett-col-tag tag-cyan">SECTOR 01 // DYNAMICS</div>
+          <div class="sett-col-title">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#66fcf1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <span>${isEn ? "COMBAT & SOUND" : "TEMPUR & AUDIO"}</span>
           </div>
         </div>
-        <button id="manualCloudBtn" type="button" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;font-size:12px;font-weight:800;letter-spacing:1px;background:linear-gradient(135deg,rgba(102,252,241,0.2),rgba(32,191,107,0.25));border:1px solid rgba(102,252,241,0.5);color:#66fcf1;border-radius:8px;cursor:pointer;transition:all .2s ease">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          <span id="manualCloudTxt">${isEn ? "SAVE TO CLOUD NOW" : "SIMPAN CLOUD SEKARANG"}</span>
-        </button>
+
+        <!-- Combat Battle Speed Card -->
+        <div class="sett-card">
+          <div class="sett-card-head">
+            <span class="sett-card-badge badge-cyan">COMBAT</span>
+            <span class="sett-card-title">BATTLE SPEED</span>
+          </div>
+          <div class="sett-card-desc">
+            ${isEn ? "Combat action pace: 2× at LV 25 · 3× at LV 50 · 4× at LV 100." : "Kecepatan aksi & giliran: 2× di LV 25 · 3× di LV 50 · 4× di LV 100."}
+          </div>
+          <div class="sett-speed-grid" id="bsRow">
+            ${[1,2,3,4].map(n=>{
+              const lk=n>battleSpeedMax();
+              return `<button type="button" class="bs-btn${(!lk&&n===state.battleSpeed)?" bs-on":""}" data-sp="${n}"${lk?" disabled":""}>${n}×</button>`;
+            }).join("")}
+          </div>
+          <div class="sett-note" id="bsNote"></div>
+        </div>
+
+        <!-- Sound Diagnostic Card -->
+        <div class="sett-card">
+          <div class="sett-card-head">
+            <span class="sett-card-badge badge-amber">AUDIO</span>
+            <span class="sett-card-title">SOUND DIAGNOSTICS</span>
+          </div>
+          <div class="sett-card-desc">
+            ${isEn ? "Live audio engine status & sound channel diagnostics." : "Status live audio engine & diagnostik kanal suara pertempuran."}
+          </div>
+          <div class="sett-aud-tools">
+            <button class="sett-btn sett-btn-aud-toggle" id="audToggle" type="button">SUARA: -</button>
+            <button class="sett-btn sett-btn-aud-test" id="audTone" type="button">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M2 12h5l2-8 5 16 3-8h5"/></svg>
+              <span>TES NADA 440Hz</span>
+            </button>
+          </div>
+          <button class="sett-btn sett-btn-aud-impact" id="audHit" type="button">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <span>TES SFX RAID (HIT + DENTUMAN)</span>
+          </button>
+          <div class="sett-aud-telemetry" id="audStat"></div>
+        </div>
       </div>
 
-      <div style="margin-bottom:14px">
-        <button id="refreshUiBtn" type="button" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;font-size:12px;font-weight:800;letter-spacing:1px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.18);color:#f1f2f6;border-radius:8px;cursor:pointer;transition:all .2s ease">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
-          <span id="refreshUiTxt">${isEn ? "REFRESH GAME UI" : "REFRESH TAMPILAN (UI)"}</span>
-        </button>
+      <!-- COL 2: LOCALIZATION & TACTICAL AUTOMATION -->
+      <div class="sett-col sett-col-locale">
+        <div class="sett-col-head">
+          <div class="sett-col-tag tag-purple">SECTOR 02 // INTERFACE</div>
+          <div class="sett-col-title">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#c56cf0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            <span>${isEn ? "LOCALE & AUTOMATION" : "BAHASA & OTOMASI"}</span>
+          </div>
+        </div>
+
+        <!-- Language Selector Card -->
+        <div class="sett-card">
+          <div class="sett-card-head">
+            <span class="sett-card-badge badge-purple">LOCALE</span>
+            <span class="sett-card-title">${isEn ? "GAME LANGUAGE" : "BAHASA GAME"}</span>
+          </div>
+          <div class="sett-card-desc">
+            ${isEn ? "Select interface language (persisted automatically)." : "Pilih bahasa tampilan antarmuka (tersimpan otomatis)."}
+          </div>
+          <div class="sett-lang-grid" id="langRow">
+            <button type="button" class="sett-lang-card lang-btn${!isEn ? " lang-on" : ""}" data-lang="id">
+              <span class="sett-lang-flag">🇮🇩</span>
+              <div class="sett-lang-info">
+                <span class="sett-lang-name">INDONESIA</span>
+                <span class="sett-lang-sub">Bahasa Indonesia</span>
+              </div>
+              ${!isEn ? '<span class="sett-lang-check">✓</span>' : ''}
+            </button>
+            <button type="button" class="sett-lang-card lang-btn${isEn ? " lang-on" : ""}" data-lang="en">
+              <span class="sett-lang-flag">🇬🇧</span>
+              <div class="sett-lang-info">
+                <span class="sett-lang-name">ENGLISH</span>
+                <span class="sett-lang-sub">CrazyGames Standard</span>
+              </div>
+              ${isEn ? '<span class="sett-lang-check">✓</span>' : ''}
+            </button>
+          </div>
+          <div class="sett-note note-purple">
+            ${isEn ? "● ACTIVE LANGUAGE: ENGLISH (EN)" : "● BAHASA AKTIF: INDONESIA (ID)"}
+          </div>
+        </div>
+
+        <!-- Infinite Tower Automation Card -->
+        <div class="sett-card">
+          <div class="sett-card-head">
+            <span class="sett-card-badge badge-purple">TOWER</span>
+            <span class="sett-card-title">INFINITE TOWER DIRECTIVE</span>
+          </div>
+          <div class="sett-toggle-wrap">
+            <label class="sett-toggle-label" for="setAutoTower">
+              <input type="checkbox" id="setAutoTower" class="sett-checkbox">
+              <span class="sett-toggle-text">${isEn ? "AUTO RESTART FROM FLOOR 1" : "AUTO RESTART DARI LANTAI 1"}</span>
+            </label>
+            <div class="sett-note" id="towerSetNote"></div>
+          </div>
+        </div>
+
+        <!-- UI Calibration / Refresh Card -->
+        <div class="sett-card">
+          <div class="sett-card-head">
+            <span class="sett-card-badge badge-cyan">HUD</span>
+            <span class="sett-card-title">${isEn ? "INTERFACE CALIBRATION" : "KALIBRASI TAMPILAN"}</span>
+          </div>
+          <div class="sett-card-desc">
+            ${isEn ? "Re-render HUD layout & assets in-place without page reloading." : "Muat ulang seluruh tata letak HUD dan elemen visual tanpa reload halaman."}
+          </div>
+          <button id="refreshUiBtn" type="button" class="sett-btn sett-btn-refresh">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
+            <span id="refreshUiTxt">${isEn ? "REFRESH GAME UI" : "REFRESH TAMPILAN (UI)"}</span>
+          </button>
+        </div>
       </div>
 
-      <div>
-        <button class="reset-btn" id="resetBtn" style="width:100%;padding:10px;font-size:12px;font-weight:800;letter-spacing:1px;background:rgba(255,71,87,0.1);border:1px solid rgba(255,71,87,0.3);color:#ff4757;border-radius:8px;cursor:pointer">RESET DATA LOKAL</button>
+      <!-- COL 3: CLOUD, IDENTITY & SECURITY -->
+      <div class="sett-col sett-col-cloud">
+        <div class="sett-col-head">
+          <div class="sett-col-tag tag-emerald">SECTOR 03 // TELEMETRY</div>
+          <div class="sett-col-title">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#2ed573" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+            <span>${isEn ? "CLOUD & IDENTITY" : "CLOUD & IDENTITAS"}</span>
+          </div>
+        </div>
+
+        <!-- Operator Profile Card -->
+        <div class="sett-card">
+          <div class="sett-card-head">
+            <span class="sett-card-badge badge-emerald">ACCOUNT</span>
+            <span class="sett-card-title">OPERATOR CREDENTIALS</span>
+          </div>
+          <div class="sett-user-box">
+            <div class="sett-ub-avatar">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#66fcf1" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>
+            </div>
+            <div class="sett-ub-info">
+              <span class="sett-ub-lbl">AUTHENTICATED HUNTER</span>
+              <span class="sett-ub-name">${currentUser || "GUEST"}</span>
+            </div>
+            <button class="sett-btn-logout" id="logoutBtn" type="button" title="Logout">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              <span>${isEn ? "LOGOUT" : "KELUAR"}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Cloud Save Card -->
+        <div class="sett-card">
+          <div class="sett-card-head">
+            <span class="sett-card-badge badge-emerald">SYNC</span>
+            <span class="sett-card-title">MANUAL CLOUD SAVE</span>
+          </div>
+          <div class="sett-card-desc" id="cloudSyncNote">
+            ${isEn ? "Save all cards, backpacks & progression to Supabase server." : "Simpan seluruh kartu, backpack & progres langsung ke Supabase server."}
+          </div>
+          <button id="manualCloudBtn" type="button" class="sett-btn sett-btn-cloud">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            <span id="manualCloudTxt">${isEn ? "SAVE TO CLOUD NOW" : "SIMPAN CLOUD SEKARANG"}</span>
+          </button>
+        </div>
+
+        <!-- Factory Reset Card -->
+        <div class="sett-card">
+          <div class="sett-card-head">
+            <span class="sett-card-badge badge-red">DANGER</span>
+            <span class="sett-card-title">${isEn ? "LOCAL RECOVERY" : "PEMULIHAN LOKAL"}</span>
+          </div>
+          <div class="sett-card-desc">
+            ${isEn ? "Wipe local browser cache and restart session from scratch." : "Hapus seluruh cache browser lokal dan mulai game dari kondisi awal."}
+          </div>
+          <button class="reset-btn sett-btn-reset" id="resetBtn" type="button">RESET DATA LOKAL</button>
+        </div>
       </div>
     </div>
-
   </div>`;
+
   if(window.lucide) window.lucide.createIcons();
   document.querySelectorAll("#langRow .lang-btn").forEach(btn=>{
     btn.onclick=()=>{
@@ -196,13 +295,13 @@ function renderSettings(){
   /* Auto restart Tower Infinite — flag di state.tower.auto (default mati). */
   if(!state.tower)state.tower={best:0};
   const autoCb=document.getElementById("setAutoTower"),towerSetNote=document.getElementById("towerSetNote");
-  const towerSetMsg=()=>{towerSetNote.textContent=autoCb.checked?"AUTO RESTART AKTIF — kalah = langsung mulai run baru dari Lantai 1.":"Auto restart mati — kalah = kembali ke menu Tower.";};
+  const towerSetMsg=()=>{towerSetNote.textContent=autoCb.checked?(isEn ? "AUTO RESTART ACTIVE — defeat will immediately restart from Floor 1." : "AUTO RESTART AKTIF — kalah = langsung mulai run baru dari Lantai 1.") : (isEn ? "Auto restart inactive — defeat returns to Tower menu." : "Auto restart mati — kalah = kembali ke menu Tower.");};
   autoCb.checked=state.tower.auto===true;
   towerSetMsg();
   autoCb.onchange=()=>{state.tower.auto=autoCb.checked;save();towerSetMsg();};
   /* BATTLE SPEED — pilihan 1x-4x; 2x/3x/4x terkunci level 10/25/50. */
   const bsNote=document.getElementById("bsNote");
-  const bsMsg=()=>{const _m=battleSpeedMax();bsNote.textContent="LEVEL KAMU: "+(state.playerLv||1)+" · SPEED AKTIF: "+state.battleSpeed+"×"+(_m<4?" · Berikutnya terbuka di LV "+(_m===1?10:_m===2?25:50):" · SUDAH MAX");};
+  const bsMsg=()=>{const _m=battleSpeedMax();bsNote.textContent=(isEn ? "YOUR LEVEL: " : "LEVEL KAMU: ")+(state.playerLv||1)+(isEn ? " · SPEED: " : " · SPEED AKTIF: ")+state.battleSpeed+"×"+(_m<4?(isEn ? " · Next opens at LV " : " · Berikutnya terbuka di LV ")+(_m===1?10:_m===2?25:50):(isEn ? " · MAX REACHED" : " · SUDAH MAX"));};
   bsMsg();
   document.querySelectorAll("#bsRow .bs-btn").forEach(el=>{el.onclick=()=>{const n=parseInt(el.getAttribute("data-sp"),10);if(!n||n>battleSpeedMax())return;state.battleSpeed=n;save();renderSettings();};});
   /* AUDIO — status live + toggle mute + tes nada. Diagnosa kalau battle hening di perangkat. */
@@ -214,8 +313,8 @@ function renderSettings(){
       const say=t=>{sayUntil=Date.now()+4000;audStat.textContent=t;};
       const paint=()=>{
         if(Date.now()<sayUntil)return;
-        audToggle.textContent="SUARA: "+(state.muted?"MATI":"NYALA");
-        audStat.textContent="AudioContext: "+ctxState()+" · SFX: "+(state.muted?"MATI":"NYALA")+" · unlocker: "+((window.__aabAudioUnlockers||[]).length);
+        audToggle.textContent=(isEn ? "SOUND: " : "SUARA: ")+(state.muted?(isEn ? "OFF" : "MATI"):(isEn ? "ON" : "NYALA"));
+        audStat.textContent="AudioContext: "+ctxState()+" · SFX: "+(state.muted?(isEn ? "OFF" : "MATI"):(isEn ? "ON" : "NYALA"))+" · unlocker: "+((window.__aabAudioUnlockers||[]).length);
       };
       paint();
       const iv=setInterval(()=>{if(!document.body.contains(audStat)){clearInterval(iv);return;}paint();},1000);
@@ -226,29 +325,30 @@ function renderSettings(){
           const c=actxOf(),o=c.createOscillator(),g=c.createGain();
           o.type="sine";o.frequency.value=440;g.gain.value=0.25;
           o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.8);
-          say("Nada 440Hz diputar · AudioContext: "+c.state);
-        }catch(e){say("Nada GAGAL: "+e.message);}
+          say((isEn ? "440Hz Sine Tone Played · AudioContext: " : "Nada 440Hz diputar · AudioContext: ")+c.state);
+        }catch(e){say((isEn ? "Audio Tone FAILED: " : "Nada GAGAL: ")+e.message);}
       };
       document.getElementById("audHit").onclick=()=>{
-        if(state.muted){say("SFX sedang MATI — tekan SUARA dulu.");return;}
+        if(state.muted){say(isEn ? "SFX is currently MUTED — turn SOUND ON first." : "SFX sedang MATI — tekan SUARA dulu.");return;}
         try{
           unlockGameAudio();
           if(!window.CyberSfx){say("CyberSfx tidak termuat");return;}
           window.CyberSfx.katanaSlash(1);
           setTimeout(()=>{try{if(window.CyberSfx)window.CyberSfx.aoeDetonate();}catch(e){}},260);
-          say("SFX raid diputar · AudioContext: "+ctxState());
-        }catch(e){say("SFX GAGAL: "+e.message);}
+          say((isEn ? "Raid SFX Impact Played · AudioContext: " : "SFX raid diputar · AudioContext: ")+ctxState());
+        }catch(e){say((isEn ? "SFX FAILED: " : "SFX GAGAL: ")+e.message);}
       };
     }
   }
   let armed=false,timer=null;
   const b=document.getElementById("resetBtn");
-  const disarm=()=>{armed=false;if(timer){clearTimeout(timer);timer=null;}b.classList.remove("armed");b.textContent="Reset Semua & Main Dari Awal";};
+  const disarm=()=>{armed=false;if(timer){clearTimeout(timer);timer=null;}b.classList.remove("armed");b.textContent=isEn ? "RESET LOCAL DATA" : "RESET DATA LOKAL";};
   b.onclick=()=>{
-    if(!armed){armed=true;b.classList.add("armed");b.textContent="Yakin? Tap lagi untuk reset";timer=setTimeout(disarm,4000);}
+    if(!armed){armed=true;b.classList.add("armed");b.textContent=isEn ? "Confirm? Tap again to wipe" : "Yakin? Tap lagi untuk reset";timer=setTimeout(disarm,4000);}
     else{localStorage.removeItem(KEY);location.reload();}
   };
 }
+
 
 /* =============== ROUTER =============== */
 /* Jangan biarkan browser restore posisi scroll lama pas back/forward/refresh. */

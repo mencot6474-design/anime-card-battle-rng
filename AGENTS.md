@@ -218,7 +218,7 @@ Luck: `luckChance, totalLuck, fmtChance` (data.js).
 | 7-Day Login | `#dailyModal` | `openDailyLoginModal` (panels.js:2700) | `renderDaily7Horizontal` (panels.js:2715) | style.css (blok HORIZONTAL DAILY 7 CARDS) |
 | Rebirth (Ascension) | `#rebirthModal` | `openRebirthModal` (tower-lobby.js) | `renderRebirthModal` (tower-lobby.js) | style.css (blok REBIRTH ASCENSION MODAL HORIZONTAL) |
 | Update Log | `#changelogModal` | `openChangelogModal` (boot.js) | `renderChangelogModal` (boot.js) | style.css (blok UPDATE LOG MODAL) |
-| Settings | `#app` view | `#/settings` | `renderSettings` (boot.js:9) | — |
+| Settings | `#app` view | `#/settings` | `renderSettings` (boot.js:2) | style.css (blok HORIZONTAL CYBERPUNK SETTINGS DECK `.sett-wrap`) |
 
 Markup modal ada di `index.html` (baris kunci):
 welcomeModal 67, topbar 93, authScreen 75, app 222, profModal 124, rollResultPop 292, `#modal` 315, indexModal 317, premiumModal 339, weatherMachineModal 386, rebirthModal 447, missionModal 464, changelogModal 470, dailyModal 495, storyModal 505 (dock intel story ±548–553), startModal 577, traitModal 592, deckPickModal 605, rarePromptModal 615, towerDropModal 620, footMenu 737, backpackPanel 754, blok `<script>` 818–842 (`coret.js` 842), topupModal 783.
@@ -262,6 +262,10 @@ Backpack bukan `display:fixed` bawaan — `toggleBackpack` set inline transform;
 - **Premium shop** — panels.js 1825/1841, CSS 45337 + 47816.
 - **Profil** — panels.js 733/822, CSS 529 + 47505. Loadout slot operator interaktif: klik slot Pet/Artefak/Kartu langsung routing ke Backpack tab terkait (`toggleBackpack(tab)`), dilengkapi hover card preview pada layar desktop (`hoverPlace`). Pembaruan 1 detik berkala menggunakan dataset caching (`pfParty`) untuk menghindari re-render total yang merusak interaksi & mereset scroll.
 - **Update Log** — Modal `#changelogModal` & backdrop `#changelogBackdrop` (`index.html:470`), dibuka dari tombol `#hdrChangelog` di header navigasi samping pengaturan. Data riwayat rilis dikelola terpusat di array `GAME_CHANGELOGS` (`js/boot.js:741`), mendukung tampilan bilingual (ID & EN) otomatis via `renderChangelogModal()`, serta penutupan cepat dengan tombol ESC.
+- **Settings** — Layar konfigurasi sistem (`#/settings`, `renderSettings` boot.js:2) dengan layout **Horizontal Cyberpunk 3-Sector Deck** (`.sett-wrap`, style.css):
+  - *Sektor 1 (Combat & Sound)*: selector kecepatan tempur 1×–4× dengan unlock level + instrumen diagnostik audio (toggle suara, tes sine 440Hz, tes SFX raid, telemetry status).
+  - *Sektor 2 (Locale & Automation)*: pemilih bahasa interaktif 🇮🇩 Indonesia / 🇬🇧 English + saklar otomatisasi Infinite Tower (auto-restart lantai 1) + tombol kalibrasi UI refresh HUD.
+  - *Sektor 3 (Cloud & Identity)*: kredensial hunter operator + tombol manual cloud save Supabase dengan log waktu real-time + tombol reset data lokal bersistem safety arm 2-tap.
 - **Global luck widget** — panels.js 1606 / 2464 / 2470, CSS 46776.
 - **Topup** — panels.js 2840/2962 + topup.js; dokumentasi `docs/TOPUP.md`; edge function di `supabase/functions/`.
 - **Cloud sync** — `supabase-sync.js` (CloudDB) + `js/config.js`; URL + anon key ada di baris 2–3 (publishable, memang publik). Save: §3. Klaim gem: `claimStoryGem` 342 / `claimStoryReplay` 346 / `claimDailyGem` 350 / `exchangeTokens` 354 — semua JWT-only, nominal dihitung server (0023). Sejak 0024 RPC tulis **tidak bisa** diprobe dengan anon key (401 semua) — uji E2E harus bikin sesi Auth dulu (pola `_tmp/probe_0024.cjs`: signUp → `_rpcJwt` → cleanup). `PGRST202`/404 = signature belum ada (migration belum jalan atau klien lebih tua dari migration).
