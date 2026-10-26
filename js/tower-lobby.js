@@ -909,19 +909,15 @@ function showTowerLoot(results,drops,title,extra){
     const chanceVal=luckChance(g.cardId,g.mut,g.shiny);
     const chanceText="1 in "+fmtChance(chanceVal);
     const tier=g.tier||cardTier(g.cardId)||"";
-    const safeName=String(name).replace(/"/g,'&quot;');
-    const shinyStyle=mut==='gold'?'--sh-base:#E0BC6E;--sh-edge:rgba(224,188,110,.95);--sh-glow:rgba(224,188,110,.55)':mut==='rainbow'?'--sh-base:#B58CFF;--sh-edge:rgba(90,200,250,.95);--sh-glow:rgba(181,140,255,.55)':mut==='secret'?'--sh-base:#A855F7;--sh-edge:rgba(168,85,247,.95);--sh-glow:rgba(168,85,247,.55)':mut==='ultima'?'--sh-base:#FF0055;--sh-edge:rgba(255,51,102,.95);--sh-glow:rgba(255,0,85,.6)':'--sh-base:#22d3ee;--sh-edge:rgba(34,211,238,.95);--sh-glow:rgba(34,211,238,.55)';
-    const nameHtml=mut&&!isShiny?`<span class="rrc-name hc-name-top hc-mut-name" data-text="${safeName}">${mut==='rainbow'?mutText(mut,name):name}</span>`:isShiny?`<span class="rrc-name hc-name-top hc-name-shine${mut?' hc-name-shine-'+mut:''}" data-text="${safeName}" style="${shinyStyle}">${name}</span>`:shinyName('span','rrc-name hc-name-top','hc-name-shine',mut,isShiny,name);
-    const chanceHtml=mut==='rainbow'?mutText(mut,chanceText):chanceText;
-    const badgesHtml=(isShiny||isMut)?`<div class="rrc-badges hc-badges">${isShiny?'<span class="shiny-badge shiny-pill">SHINY</span>':''}${isMut?mutChip(g.mut,mutPill(g.mut)):''}</div>`:'';
+    const chanceColor=mut?MUT_COLOR[mut]:((tier&&TIER_COLOR[tier])||"var(--sl-cyan,#00d9ff)");
     return `<div class="${rc} sl-item" data-tier="${tier}">
       <i class="rrc-sizer"></i>
       <div class="rrc-glow"></div>
       <img src="${img}" alt="${name}" title="${name}" onerror="this.style.display='none'">
-      ${nameHtml}
-      <span class="rrc-chance hc-chance${mut==='rainbow'?' hc-chance-rainbow':''}" style="color:${mut?MUT_COLOR[mut]:"#9AA6B2"}">${chanceHtml}</span>
-      ${badgesHtml}
       ${g.n>1?`<span class="rrc-cnt">×${g.n}</span>`:''}
+      <div class="rrc-footer">
+        <span class="rrc-chance-text" style="color:${chanceColor}">${chanceText}</span>
+      </div>
     </div>`;
   }).join("");
   {const rt=document.getElementById("rrTitle");if(rt)rt.textContent=title||"KARTU RUN INI";}

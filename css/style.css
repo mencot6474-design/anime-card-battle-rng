@@ -54264,9 +54264,6 @@ main#app:has(.sett-wrap) {
    ========================================================================== */
 
 /* 1. Ensure badges container is never hidden on cards */
-.rrc .hc-badges,
-.rrc .rrc-badges,
-.rrc .rrc-var,
 .roll-overlay .roll-card-showcase .hc-badges,
 .bps-hover .hub-center .hc-badges,
 #indexModal .ix-badges,
@@ -54282,8 +54279,6 @@ main#app:has(.sett-wrap) {
 /* 2. Global Shiny Badge & Shiny Pill standard sizing (Matching Lobby Card) */
 .shiny-pill,
 .shiny-badge,
-.rrc .shiny-pill,
-.rrc .shiny-badge,
 #indexModal .shiny-pill,
 #indexModal .shiny-badge,
 .roll-overlay .shiny-pill,
@@ -54319,79 +54314,72 @@ main#app:has(.sett-wrap) {
   box-sizing: border-box !important;
 }
 
-/* 3. Instant Roll Card (.rrc in #rollResultPop) */
+/* 3. Result Cards in Tower Run & Instant Pack / Roll Modal (#rollResultPop .rrc) */
 .rrc {
   position: relative !important;
   overflow: hidden !important;
 }
+/* Hide all top badges & name tags on result cards as requested */
 .rrc .hc-name-top,
-.rrc .rrc-name {
-  position: absolute !important;
-  top: 10px !important;
-  left: 10px !important;
-  max-width: 60% !important;
-  font-family: "Barlow Condensed", sans-serif !important;
-  font-weight: 800 !important;
-  font-size: 14px !important;
-  line-height: .98 !important;
-  letter-spacing: .03em !important;
-  z-index: 6 !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  transform: none !important;
-  text-align: left !important;
-}
-.rrc .hc-name-top:not(.hc-name-shine):not(.shiny-gloss),
-.rrc .rrc-name:not(.hc-name-shine):not(.shiny-gloss) {
-  color: #fff !important;
-  text-shadow: 1px 1px 0 #0b0e14, 2px 2px 0 #0b0e14, 3px 3px 0 #0b0e14, 0 0 16px rgba(0,0,0,.9) !important;
-}
+.rrc .rrc-name,
 .rrc .hc-chance,
-.rrc .rrc-chance {
-  position: absolute !important;
-  top: 30px !important;
-  left: 10px !important;
-  font-family: "Barlow Condensed", sans-serif !important;
-  font-weight: 800 !important;
-  font-size: 10.5px !important;
-  letter-spacing: .1em !important;
-  color: var(--tcol, #7DF9FF) !important;
-  padding: 1px 6px !important;
-  border-radius: 0px !important;
-  background: rgba(6, 9, 14, .92) !important;
-  border: 1px solid currentColor !important;
-  text-shadow: 0 0 8px rgba(0,0,0,.8) !important;
-  box-shadow: 0 4px 10px rgba(0,0,0,.6) !important;
-  z-index: 6 !important;
-  white-space: nowrap !important;
-  transform: none !important;
-}
+.rrc .rrc-chance,
 .rrc .hc-badges,
-.rrc .rrc-badges {
+.rrc .rrc-badges,
+.rrc .rrc-var,
+.rrc .shiny-pill,
+.rrc .shiny-badge,
+.rrc .mut-badge,
+.rrc .rrc-tier-badge {
+  display: none !important;
+}
+/* Bottom 1 in X text only (clean text without badge box) */
+.rrc .rrc-footer {
   position: absolute !important;
-  top: 10px !important;
-  right: 10px !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 3 !important;
   display: flex !important;
+  flex-direction: column !important;
   align-items: center !important;
-  gap: 4px !important;
-  z-index: 6 !important;
-  transform: none !important;
+  justify-content: center !important;
+  padding: 14px 4px 5px !important;
+  background: linear-gradient(to top, rgba(3,7,18,0.92) 0%, rgba(3,7,18,0.7) 60%, transparent 100%) !important;
+  pointer-events: none !important;
+}
+.rrc .rrc-chance-text {
+  font-family: "Barlow Condensed", "Rajdhani", sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.04em !important;
+  color: var(--tcol, #7DF9FF) !important;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.95), 0 0 8px rgba(0,0,0,0.9) !important;
+  background: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
 }
 .rrc .rrc-cnt {
   position: absolute !important;
-  right: 8px !important;
-  bottom: 6px !important;
+  top: 5px !important;
+  right: 5px !important;
+  bottom: auto !important;
   font-family: "Barlow Condensed", sans-serif !important;
   font-size: 11px !important;
   font-weight: 800 !important;
-  letter-spacing: .04em !important;
+  letter-spacing: 0.04em !important;
   color: #fff !important;
-  background: rgba(6,9,14,.88) !important;
-  border: 1px solid rgba(255,255,255,.2) !important;
+  background: rgba(6,9,14,0.88) !important;
+  border: 1px solid rgba(255,255,255,0.2) !important;
   border-radius: 4px !important;
-  padding: 0 5px !important;
+  padding: 1px 5px !important;
   z-index: 6 !important;
+  line-height: 1.1 !important;
 }
 
 /* 4. Card Index Modal (#indexModal .ix-cell) */
