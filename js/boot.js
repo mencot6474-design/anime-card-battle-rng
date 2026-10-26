@@ -593,6 +593,7 @@ function runLoading(done){
       } else if(holo){ holo.classList.remove("has-card"); }
     }catch(e){ if(holo) holo.classList.remove("has-card"); }
   }
+  const isEn = (typeof window.GameLang !== "undefined" && typeof window.GameLang.get === "function") ? window.GameLang.get() === "en" : true;
   const steps = isEn
     ? ["Syncing telemetry…", "Assembling deck matrix…", "Calibrating arena…", "Loading sector…", "Ready!"]
     : ["Menyinkronkan data…", "Membangun deck…", "Menyiapkan arena…", "Memuat dunia…", "Siap!"];
