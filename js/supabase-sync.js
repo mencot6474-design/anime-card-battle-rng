@@ -331,12 +331,23 @@ const CloudDB = {
     qty = Math.max(1, parseInt(qty, 10) || 1);
     const ST = this._st();
     /* 0029: pack instan dibeli lewat RPC `buy_pack` — harga & jumlah pack
-       ditentukan server (`pack_def` + `player_packs`). Jalur spend_gems tetap
-       dipakai untuk pet/artefak/cuaca. */
+       ditentukan server (`pack_def` + `player_packs`). */
     if (username && itemType === "pack" && typeof this.buyPack === "function") {
       const bp = await this.buyPack(username, packKey, qty);
       if (!bp || !bp.ok) return { ok: false, msg: (bp && bp.msg) || "GAGAL BELI PACK" };
       return { ok: true, balance: bp.balance };
+    }
+    /* 0028: pet & artefak premium dibeli lewat RPC `buy_item` — atomik,
+       harga diambil dari `item_def`, dan langsung masuk `player_items` ledger. */
+    if (username && (itemType === "art" || itemType === "pet") && typeof this.buyItem === "function") {
+      const bi = await this.buyItem(username, packKey);
+      if (!bi || !bi.ok) return { ok: false, msg: (bi && bi.msg) || "GAGAL BELI ITEM" };
+      return {
+        ok: true,
+        balance: typeof bi.premiumGems === "number" ? bi.premiumGems : (ST ? ST.premiumGems : 0),
+        petOwned: bi.petOwned,
+        artOwned: bi.artOwned
+      };
     }
     if (!username) {
       // Guest mode: local check
@@ -371,7 +382,7 @@ const CloudDB = {
 
       curSave.premiumGems = cloudGems - cost;
       if (itemType === 'weather') {
-        // weather handled by caller
+        // weather sudah di-set di ST oleh pemanggil atau di bawah
       } else if (itemType === 'art') {
         curSave.artOwned = curSave.artOwned || [];
         if (!curSave.artOwned.includes(packKey)) curSave.artOwned.push(packKey);
@@ -396,23 +407,28 @@ const CloudDB = {
         }
       }
 
-      /* Upload state LOKAL terbaru (bukan snapshot cloud lama) supaya kartu/progress terbaru tidak ter-rollback.
-       * Pengurangan gems dilakukan lewat RPC spend_gems (atomik, server-side, 0024). */
-      const payload = ST ? ST : curSave;
+      /* Kirim state penuh (dengan stacks) ke spend_gems karena spend_gems memanggil
+         merge_player_state(p_save_data, false, false) — jangan hapus stacks! */
+      const rawPayload = ST ? Object.assign({}, ST) : Object.assign({}, curSave);
+      if (ST && itemType === "weather" && ST.weather) {
+        rawPayload.weather = ST.weather;
+        rawPayload.weatherBest = ST.weatherBest;
+      }
       const sp = await this._authRpc(username, "spend_gems", {
         p_cost: cost,
-        p_save_data: payload,
+        p_save_data: rawPayload,
       });
-      if (sp && sp.ok === false) {
+      if (!sp) {
+        return { ok: false, msg: "GAGAL MENGHUBUNGI SERVER SUPABASE" };
+      }
+      if (sp.ok === false) {
         return { ok: false, msg: sp.msg || "GAGAL POTONG GEMS" };
       }
-      if (sp && typeof sp.balance === "number") {
+      if (typeof sp.balance === "number") {
         if (ST) ST.premiumGems = sp.balance;
         this._paint();
         return { ok: true, balance: sp.balance };
       }
-      // RPC tidak tersedia -> fallback ke saveState
-      const res = await this.saveState(username, payload, { allowGemDecrease: true });
       return { ok: true, balance: curSave.premiumGems };
     } catch (err) {
       console.error("[CloudDB verifyAndDeductGems fail]", err);

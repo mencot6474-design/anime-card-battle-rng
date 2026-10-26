@@ -1835,6 +1835,34 @@ function openPremiumShop(){
   var closeBtn = document.getElementById('premClose');
   if(closeBtn) closeBtn.onclick = closePremiumShop;
   if(modal) modal.onclick = function(e){ if(e.target.id === 'premiumModal') closePremiumShop(); };
+  /* Sinkronkan saldo & inventori premium dari cloud saat membuka toko */
+  if (typeof currentUser !== 'undefined' && currentUser && window.CloudDB && typeof window.CloudDB.getUser === 'function') {
+    window.CloudDB.getUser(currentUser).then(function(u){
+      if (!u || !u.save_data || !state) return;
+      var sd = u.save_data;
+      var changed = false;
+      if (typeof sd.premiumGems === 'number' && state.premiumGems !== sd.premiumGems) {
+        state.premiumGems = sd.premiumGems;
+        changed = true;
+      }
+      if (Array.isArray(sd.artOwned) && JSON.stringify(state.artOwned) !== JSON.stringify(sd.artOwned)) {
+        state.artOwned = sd.artOwned;
+        changed = true;
+      }
+      if (Array.isArray(sd.petOwned) && JSON.stringify(state.petOwned) !== JSON.stringify(sd.petOwned)) {
+        state.petOwned = sd.petOwned;
+        changed = true;
+      }
+      if (sd.rollPacks && typeof sd.rollPacks === 'object' && JSON.stringify(state.rollPacks) !== JSON.stringify(sd.rollPacks)) {
+        state.rollPacks = sd.rollPacks;
+        changed = true;
+      }
+      if (changed) {
+        renderPremiumShop();
+        if (typeof renderShell === 'function') renderShell();
+      }
+    }).catch(function(){});
+  }
 }
 
 function closePremiumShop(){
@@ -1979,9 +2007,21 @@ async function buyPremiumPack(packId, ev, qty){
   if(btn) { btn.disabled = true; btn.textContent = 'MEMPROSES...'; }
 
   try {
+    var prevWeather = state.weather ? Object.assign({}, state.weather) : null;
+    var prevWeatherBest = state.weatherBest || null;
+    if(pack.type === 'weather'){
+      const wId = pack.targetWeather;
+      state.weatherBest = betterWeather(state.weatherBest, wId);
+      state.weather = { id: wId, endsAt: Date.now() + WEATHER_ROTATE_MS };
+    }
+
     if(window.CloudDB && typeof window.CloudDB.verifyAndDeductGems === 'function'){
       var res = await window.CloudDB.verifyAndDeductGems(currentUser, totalCost, pack.id, pack.type, qty);
       if(!res.ok){
+        if(pack.type === 'weather'){
+          state.weather = prevWeather;
+          state.weatherBest = prevWeatherBest;
+        }
         beep(280,.2,'sawtooth',.12);
         toast('TRANSAKSI GAGAL', res.msg || 'Saldo tidak mencukupi!', '#f87171');
         renderPremiumShop();
@@ -1990,11 +2030,17 @@ async function buyPremiumPack(packId, ev, qty){
       }
       state.premiumGems = (typeof res.balance === 'number') ? res.balance : (state.premiumGems - totalCost);
       if(pack.type === 'art'){
-        state.artOwned = state.artOwned || [];
-        if(!state.artOwned.includes(pack.id)) state.artOwned.push(pack.id);
+        if (Array.isArray(res.artOwned)) state.artOwned = res.artOwned;
+        else {
+          state.artOwned = state.artOwned || [];
+          if(!state.artOwned.includes(pack.id)) state.artOwned.push(pack.id);
+        }
       } else if(pack.type === 'pet'){
-        state.petOwned = state.petOwned || [];
-        if(!state.petOwned.includes(pack.id)) state.petOwned.push(pack.id);
+        if (Array.isArray(res.petOwned)) state.petOwned = res.petOwned;
+        else {
+          state.petOwned = state.petOwned || [];
+          if(!state.petOwned.includes(pack.id)) state.petOwned.push(pack.id);
+        }
       } else if(pack.type === 'weather'){
         const wId = pack.targetWeather;
         state.weatherBest = betterWeather(state.weatherBest, wId);
@@ -2005,6 +2051,10 @@ async function buyPremiumPack(packId, ev, qty){
       save();
     } else {
       if((state.premiumGems || 0) < totalCost){
+        if(pack.type === 'weather'){
+          state.weather = prevWeather;
+          state.weatherBest = prevWeatherBest;
+        }
         beep(280,.2,'sawtooth',.12);
         toast('GEMS KURANG', 'Butuh ' + totalCost + ' Gems untuk beli ini!', '#f87171');
         return;
