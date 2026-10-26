@@ -529,11 +529,6 @@ async function enterGame(name,welcome){
     try { if(await window.ACBRpcGuard.check(name)) return; }
     catch(e){ console.warn("RPC guard err:", e && e.message); }
   }
-  if(window.CloudDB && window.CURRENT_DEVICE_SESSION){
-    window.CloudDB.updateSession(name, window.CURRENT_DEVICE_SESSION).catch(()=>{});
-    if(window.startSessionHeartbeat) window.startSessionHeartbeat(name);
-  }
-  
   // Sinkronisasi data cloud terbaru saat masuk game (WAJIB ONLINE)
   if(!window.CloudDB){
     logout();
@@ -545,6 +540,11 @@ async function enterGame(name,welcome){
       localStorage.setItem("aab-state-v2:" + name, JSON.stringify(cUser.save_data));
     }
   } catch(err){ console.warn("Cloud pull fail on enterGame:", err); }
+
+  if(window.CloudDB && window.CURRENT_DEVICE_SESSION){
+    window.CloudDB.updateSession(name, window.CURRENT_DEVICE_SESSION).catch(()=>{});
+    if(window.startSessionHeartbeat) window.startSessionHeartbeat(name);
+  }
 
   try {
     loadStateFor(name);

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v209-cloudDailyPackSync';
+const CACHE_NAME = 'anime-card-battle-v211-fixRacePullSave';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
