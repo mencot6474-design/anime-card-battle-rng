@@ -579,7 +579,7 @@ function renderRaidBattle(){
       <div class="f-body">
         <div class="f-title">${rarityText(b.tier)} · WORLD BOSS</div>
         <div class="f-skill">${b.skill}</div>
-        <div class="stat-row"><div class="stat hp"><i>HP</i> <b>${fmtBig(b.hp)}</b></div><div class="stat atk"><i>ATK</i> <b>${fmt(999999)}</b></div></div>
+        <div class="stat-row"><div class="stat hp"><i>HP</i> <b>${fmtStat(b.hp)}</b></div><div class="stat atk"><i>ATK</i> <b>${fmtStat(999999)}</b></div></div>
       </div>`}
     </div>${typeof benchRailHtml==="function"?benchRailHtml([],"RAID CALAMITY (SINGLE BOSS)"):""}</div>
   </div>

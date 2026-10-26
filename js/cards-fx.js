@@ -302,4 +302,20 @@ function skillText(charId){const c=CARDS[charId];return c?c.passive.desc:"";}
 /* Jangan biarkan satu key hilang mematikan seluruh layar: angka tidak valid tampil 0. */
 const fmt=n=>(Number.isFinite(+n)?+n:0).toLocaleString("en-US");
 const fmtC=n=>{const a=Math.abs(n);const t=(v,s)=>{let r=(v>=100?Math.round(v):Math.round(v*10)/10);return (r%1?r.toFixed(1):r.toFixed(0))+s;};if(a>=1e9)return t(n/1e9,"B");if(a>=1e6)return t(n/1e6,"M");if(a>=1e3)return t(n/1e3,"K");return String(n);};
+function fmtStat(n){
+  n=Number(n)||0;const s=n<0?'-':'';n=Math.abs(n);
+  if(n<1000)return s+Math.round(n);
+  const tr=[{v:1e12,u:'T'},{v:1e9,u:'B'},{v:1e6,u:'M'},{v:1e3,u:'k'}];
+  for(let i=0;i<tr.length;i++){
+    const t=tr[i];
+    if(n>=t.v){
+      let val=n/t.v;let r=val>=100?Math.round(val):Math.round(val*10)/10;
+      if(r>=1000&&i>0)return s+'1'+tr[i-1].u;
+      return s+(r%1===0?r.toFixed(0):r.toFixed(1))+t.u;
+    }
+  }
+  return s+Math.round(n);
+}
+if(typeof window!=='undefined'){window.fmtStat=fmtStat;}
+
 

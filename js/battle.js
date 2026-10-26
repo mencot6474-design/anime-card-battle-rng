@@ -146,7 +146,7 @@ function foeFighterInnerHtml(en,es,opts){
         <span class="f-skill-icon">☄️</span>
         <div class="f-skill">${skill}</div>
       </div>
-      <div class="stat-row"><div class="stat hp"><i>HP</i> <b>${fmtHp(maxHp)}</b></div><div class="stat atk"><i>ATK</i> <b>${fmt(es.atk)}</b></div></div>
+      <div class="stat-row"><div class="stat hp"><i>HP</i> <b>${fmtStat(maxHp)}</b></div><div class="stat atk"><i>ATK</i> <b>${fmtStat(es.atk)}</b></div></div>
     </div>`;
 }
 window.foeFighterInnerHtml=foeFighterInnerHtml;
@@ -181,13 +181,13 @@ function meFighterHtml(s,opts){
         <span class="f-skill-icon">🔮</span>
         <div class="f-skill">${passiveName(s.char)}</div>
       </div>
-      <div class="stat-row"><div class="stat hp"><i>HP</i> <b>${fmt(maxHp)}</b></div><div class="stat atk"><i>ATK</i> <b>${fmt(st.atk)}</b></div></div>
+      <div class="stat-row"><div class="stat hp"><i>HP</i> <b>${fmtStat(maxHp)}</b></div><div class="stat atk"><i>ATK</i> <b>${fmtStat(st.atk)}</b></div></div>
     </div>`;
 }
 function meShadowHtml(sh){return `${tcgPlayerEquipRailHtml()}
     <div class="f-banner"><img src="${sh.img}" alt="${sh.name}" style="filter:grayscale(.35) brightness(.72) hue-rotate(215deg) saturate(1.5)"><div class="cyber-holo-sweep"></div><div class="f-name" style="color:#c4b5fd">SHADOW · ${sh.name}</div></div>
     <div class="hpbar"><i id="hpMe" style="width:100%"></i><span id="hpMeT">${fmt(sh.maxHp)} / ${fmt(sh.maxHp)}</span></div>
-    <div class="f-body"><div class="f-type-row"><div class="f-title">Bayangan</div><span class="f-power-tag">⚡ SHADOW</span></div><div class="f-skill-plaque"><span class="f-skill-icon">👁️</span><div class="f-skill">ARISE</div></div><div class="stat-row"><div class="stat hp"><i>HP</i> <b>${fmt(sh.maxHp)}</b></div><div class="stat atk"><i>ATK</i> <b>${fmt(sh.atk)}</b></div></div></div>`;}
+    <div class="f-body"><div class="f-type-row"><div class="f-title">Bayangan</div><span class="f-power-tag">⚡ SHADOW</span></div><div class="f-skill-plaque"><span class="f-skill-icon">👁️</span><div class="f-skill">ARISE</div></div><div class="stat-row"><div class="stat hp"><i>HP</i> <b>${fmtStat(sh.maxHp)}</b></div><div class="stat atk"><i>ATK</i> <b>${fmtStat(sh.atk)}</b></div></div></div>`;}
 /* Bayangan jatuh / giliran habis → Monarch kembali ke slot dengan HP aslinya (tak tersentuh selama possess). */
 function endPossession(){
   if(!bt||!bt.shadow)return;
