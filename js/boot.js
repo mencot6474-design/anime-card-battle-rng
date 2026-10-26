@@ -366,7 +366,7 @@ function render(){
     else if(r==="#/settings")renderSettings();
     else renderLobby();
     const hasBattle = !!state.battle || !!app.querySelector(".battle-grid");
-    const onTower = !hasBattle && !!app.querySelector(".tw-page:not(.rd-page)");
+    const onTower = !hasBattle && !!(app.querySelector(".tw-page:not(.rd-page)") || app.querySelector(".tactical-tower-page"));
     const onRaid = !hasBattle && !!app.querySelector(".rd-page");
     const onSettings = r === "#/settings" || (!hasBattle && !!app.querySelector(".sett-wrap"));
     document.body.classList.toggle("on-lobby", !hasBattle && !!app.querySelector(".lobby-hub"));
@@ -399,7 +399,7 @@ const bfSync=()=>{
   // Tombol END khusus Infinite Tower; story & raid boss auto-complete jadi nggak perlu tombol.
   document.body.classList.toggle("battle-tower", !!(grid && grid.classList.contains("tower-stage")));
   document.body.classList.toggle("battle-raid", !!(grid && grid.classList.contains("raid-stage")));
-  const onTower = !hasBattle && !!app.querySelector(".tw-page:not(.rd-page)");
+  const onTower = !hasBattle && !!(app.querySelector(".tw-page:not(.rd-page)") || app.querySelector(".tactical-tower-page"));
   const onRaid = !hasBattle && !!app.querySelector(".rd-page");
   const onSettings = !hasBattle && !!app.querySelector(".sett-wrap");
   document.body.classList.toggle("on-lobby", !hasBattle && !!app.querySelector(".lobby-hub"));
