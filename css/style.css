@@ -50561,3 +50561,194 @@ html.fps-locked .bp-fchip{
   from { transform: scale(0.96); }
   to { transform: scale(1.07); }
 }
+
+/* ====== BORDER FRAME PODIUM 1, 2, 3 BARU (CYBERPUNK HOLOGRAPHIC CARD FRAME) ====== */
+#rankModal .rk-bd,
+#rankModal .rk-bd1,
+#rankModal .rk-bd23 {
+  display: none !important;
+}
+
+#rankModal .rk-pod .rk-ava {
+  position: relative !important;
+  border-radius: 12px !important;
+  overflow: visible !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+#rankModal .rk-pod1 .rk-ava {
+  width: 88px !important;
+  height: 112px !important;
+  margin-bottom: 12px !important;
+}
+
+#rankModal .rk-pod2 .rk-ava,
+#rankModal .rk-pod3 .rk-ava {
+  width: 72px !important;
+  height: 92px !important;
+  margin-bottom: 10px !important;
+}
+
+#rankModal .rk-ava-core {
+  position: absolute !important;
+  inset: 4px !important;
+  z-index: 2 !important;
+  border-radius: 9px !important;
+  overflow: hidden !important;
+  background: radial-gradient(120% 120% at 50% 0%, #161d31, #070a14 75%) !important;
+  box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.85) !important;
+}
+
+#rankModal .rk-ava-core .rk-face,
+#rankModal .rk-av-sm .rk-face {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: 50% 18% !important;
+  filter: contrast(1.08) saturate(1.12);
+  transition: transform 0.28s ease !important;
+}
+
+#rankModal .rk-pod:hover .rk-ava-core .rk-face {
+  transform: scale(1.07) !important;
+}
+
+/* Holographic Scanline di atas Kartu Podium */
+#rankModal .rk-ava-core::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background: linear-gradient(180deg, transparent 25%, rgba(255, 255, 255, 0.22) 50%, transparent 75%) !important;
+  background-size: 100% 220% !important;
+  animation: rkCardScan 3.2s linear infinite !important;
+  pointer-events: none !important;
+  z-index: 3 !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+@keyframes rkCardScan {
+  0% { background-position: 0 -200%; }
+  100% { background-position: 0 200%; }
+}
+
+/* Container Border Frame Baru (.rk-cyber-frame) */
+#rankModal .rk-cyber-frame {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  border-radius: 12px;
+  --cf-c1: #ffbe0b;
+  --cf-c2: #fff3b0;
+  --cf-glow: rgba(255, 190, 11, 0.55);
+}
+
+#rankModal .rk-cf-1 {
+  --cf-c1: #ffbe0b;
+  --cf-c2: #fff1a8;
+  --cf-glow: rgba(255, 190, 11, 0.65);
+}
+
+#rankModal .rk-cf-2 {
+  --cf-c1: #00f0ff;
+  --cf-c2: #a5f3fc;
+  --cf-glow: rgba(0, 240, 255, 0.58);
+}
+
+#rankModal .rk-cf-3 {
+  --cf-c1: #a855f7;
+  --cf-c2: #e9d5ff;
+  --cf-glow: rgba(168, 85, 247, 0.58);
+}
+
+/* Aura Berdenyut di Belakang Bingkai */
+#rankModal .rk-cf-aura {
+  position: absolute;
+  inset: -4px;
+  border-radius: 15px;
+  background: conic-gradient(from 0deg, var(--cf-c1), transparent 35%, var(--cf-c2) 50%, transparent 85%, var(--cf-c1));
+  filter: blur(7px);
+  opacity: 0.65;
+  animation: rkCfAuraPulse 2.6s ease-in-out infinite alternate;
+}
+
+@keyframes rkCfAuraPulse {
+  0% { opacity: 0.42; transform: scale(0.98); }
+  100% { opacity: 0.82; transform: scale(1.03); }
+}
+
+/* Bingkai Utama & Inner Metallik */
+#rankModal .rk-cf-outer {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  border: 2px solid var(--cf-c1);
+  box-shadow:
+    0 0 16px var(--cf-glow),
+    inset 0 0 10px var(--cf-glow);
+}
+
+#rankModal .rk-cf-inner {
+  position: absolute;
+  inset: 3px;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+/* Sudut Mekanik Ornamen (Corner Brackets) */
+#rankModal .rk-cf-corner {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  border-color: var(--cf-c2);
+  border-style: solid;
+  filter: drop-shadow(0 0 5px var(--cf-c1));
+}
+#rankModal .rk-cf-corner.tl { top: -2px; left: -2px; border-width: 2.5px 0 0 2.5px; border-top-left-radius: 5px; }
+#rankModal .rk-cf-corner.tr { top: -2px; right: -2px; border-width: 2.5px 2.5px 0 0; border-top-right-radius: 5px; }
+#rankModal .rk-cf-corner.bl { bottom: -2px; left: -2px; border-width: 0 0 2.5px 2.5px; border-bottom-left-radius: 5px; }
+#rankModal .rk-cf-corner.br { bottom: -2px; right: -2px; border-width: 0 2.5px 2.5px 0; border-bottom-right-radius: 5px; }
+
+/* Badge Mahkota / Rank di Bawah Bingkai */
+#rankModal .rk-cf-crown {
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: "Rajdhani", sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: #05070f;
+  background: linear-gradient(135deg, var(--cf-c2) 0%, var(--cf-c1) 100%);
+  border: 1px solid #ffffff;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.85), 0 0 12px var(--cf-glow);
+  white-space: nowrap;
+}
+
+#rankModal .rk-cf-1 .rk-cf-crown {
+  font-size: 12px;
+  padding: 3px 10px;
+}
+
+/* Avatar kecil di daftar Rank 4-50 juga bergaya kartu vertikal mini */
+#rankModal .rk-av-sm {
+  width: 34px !important;
+  height: 42px !important;
+  border-radius: 6px !important;
+  border: 1px solid rgba(0, 240, 255, 0.35) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.65), 0 0 8px rgba(0, 240, 255, 0.18) !important;
+}
+
+@media (max-width: 768px) {
+  #rankModal .rk-pod1 .rk-ava { width: 66px !important; height: 84px !important; }
+  #rankModal .rk-pod2 .rk-ava, #rankModal .rk-pod3 .rk-ava { width: 54px !important; height: 68px !important; }
+  #rankModal .rk-cf-crown { font-size: 9.5px; padding: 1.5px 6px; }
+}

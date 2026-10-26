@@ -122,46 +122,62 @@ function rkPhoto(username) {
   return RK_DATA_IMG.test(v || "") ? v : "";
 }
 
-function rkFaceHtml(r, size) {
-  const nm = String((r && r.username) || "?").trim();
-  const ini = `<span class="rk-init"${size ? ' style="font-size:' + Math.round(size * 0.34) + 'px"' : ""}>${rkEsc((nm[0] || "?").toUpperCase())}</span>`;
-  // Ambil kartu yang dipakai di lobby (equip utama) kalau ada di meta
+function rkLobbyCardSrc(r) {
   const meta = r && r.meta ? r.meta : {};
-  const eqChar = meta.eqChar || (Array.isArray(meta.deck) ? meta.deck[0] : null) || (Array.isArray(meta.equipped) ? meta.equipped[0] : null);
+  let eqChar = meta.eqChar || (Array.isArray(meta.deck) ? meta.deck[0] : null) || (Array.isArray(meta.equipped) ? meta.equipped[0] : null);
+  /* Jika baris ini adalah diri sendiri dan server belum sempat punya eqChar, ambil langsung dari kartu lobby yang sedang dipasang */
+  if (!eqChar && typeof currentUser !== "undefined" && currentUser && r && String(r.username || "").toLowerCase() === String(currentUser).toLowerCase() && typeof equipped === "function") {
+    try {
+      const lead = equipped();
+      if (lead && lead.char) eqChar = lead.char;
+    } catch (e) {}
+  }
   if (eqChar && typeof cardThumb === "function") {
     try {
       const csrc = cardThumb(eqChar);
-      if (csrc) {
-        const img = `<img class="rk-face rk-face-card" src="${rkEsc(csrc)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">`;
-        return ini + img;
-      }
+      if (csrc) return csrc;
     } catch (e) {}
   }
+  if (eqChar && typeof cardImg === "function") {
+    try {
+      const isrc = cardImg(eqChar);
+      if (isrc) return isrc;
+    } catch (e) {}
+  }
+  return rkAvSrc(r);
+}
+
+function rkFaceHtml(r, size) {
+  const nm = String((r && r.username) || "?").trim();
+  const ini = `<span class="rk-init"${size ? ' style="font-size:' + Math.round(size * 0.34) + 'px"' : ""}>${rkEsc((nm[0] || "?").toUpperCase())}</span>`;
+  // Prioritas utama: kartu lobby yang sedang dipakai player
+  const cardSrc = rkLobbyCardSrc(r);
+  if (cardSrc) {
+    const img = `<img class="rk-face rk-face-card" src="${rkEsc(cardSrc)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">`;
+    return ini + img;
+  }
   const src = rkPhoto(nm);
-  /* Inisial selalu digambar lebih dulu: sebelum foto datang (atau kalau player
-     tidak punya apa-apa) hasilnya tetap terbaca. img dihapus sendiri by onerror. */
   const img = src ? `<img class="rk-face" src="${rkEsc(src)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : "";
   return ini + img;
 }
 
-/* Wajah container (data-rkav) diisi setelah fetch bulk selesai: foto asli kalau
-   ada, kalau tidak baru art kartu dari meta (data-rkfb). Saat render pertama
-   keduanya belum diambil, jadi thumbnail kartu tidak ter-download sia-sia. */
+/* Wajah container (data-rkav): utamakan kartu lobby (rk-face-card). Jika belum ada
+   gambar sama sekali, baru isi dari fallback / foto profil. */
 function rkAvPaint(scope) {
   if (!scope) return;
   scope.querySelectorAll("[data-rkav]").forEach(el => {
-    const photo = rkPhoto(el.getAttribute("data-rkav"));
     const cur = el.querySelector("img.rk-face");
+    if (cur && cur.classList.contains("rk-face-card")) return;
+    const fb = el.getAttribute("data-rkfb") || "";
+    const photo = rkPhoto(el.getAttribute("data-rkav"));
+    const src = (RK_AV_PATH.test(fb) ? fb : "") || photo;
+    if (!src) return;
     if (cur) {
-      /* Foto datang menyusul setelah thumbnail dipasang -> timpa, bukan biarkan. */
-      if (!photo || cur.getAttribute("src") === photo) return;
+      if (cur.getAttribute("src") === src) return;
       cur.remove();
     }
-    const fb = el.getAttribute("data-rkfb") || "";
-    const src = photo || (RK_AV_PATH.test(fb) ? fb : "");
-    if (!src) return;
     const img = document.createElement("img");
-    img.className = "rk-face";
+    img.className = "rk-face rk-face-card";
     img.alt = "";
     img.decoding = "async";
     img.onerror = () => img.remove();
@@ -197,16 +213,27 @@ async function rkFillAvatars(board, rows) {
   rkAvPaint(document.getElementById("rkBody"));
 }
 
+function rkPodFrameHtml(rank) {
+  return `<div class="rk-cyber-frame rk-cf-${rank}" aria-hidden="true">
+    <span class="rk-cf-aura"></span>
+    <span class="rk-cf-ring rk-cf-outer"></span>
+    <span class="rk-cf-ring rk-cf-inner"></span>
+    <span class="rk-cf-corner tl"></span>
+    <span class="rk-cf-corner tr"></span>
+    <span class="rk-cf-corner bl"></span>
+    <span class="rk-cf-corner br"></span>
+    <span class="rk-cf-crown">${rank === 1 ? "♛ #1" : "#" + rank}</span>
+  </div>`;
+}
+
 function rkPodHtml(r, board) {
   if (!r) return "";
   const rank = r.rank;
-  const bd = rank === 1
-    ? `<video class="rk-bd rk-bd1" src="${RK_BD1}" muted loop playsinline autoplay preload="metadata"></video>`
-    : `<img class="rk-bd rk-bd23" src="${RK_BD23}" alt="" decoding="async">`;
+  const bd = rkPodFrameHtml(rank);
   const unit = rkUnitChip(board);
   const u = rkEsc(r.username);
   return `<div class="rk-pod rk-pod${rank}" data-u="${u}" title="Lihat profil player">
-    <div class="rk-ava">${bd}<span class="rk-ava-core" data-rkav="${u}" data-rkfb="${rkEsc(rkAvSrc(r))}">${rkFaceHtml(r, rank === 1 ? 104 : 78)}</span></div>
+    <div class="rk-ava">${bd}<span class="rk-ava-core" data-rkav="${u}" data-rkfb="${rkEsc(rkLobbyCardSrc(r))}">${rkFaceHtml(r, rank === 1 ? 104 : 78)}</span></div>
     <div class="rk-pod-name">${u}</div>
     <div class="rk-pod-val">${rkValFmt(board, r.value)}</div>
     ${unit ? `<div class="rk-pod-medal">${rkEsc(unit)}</div>` : ""}
@@ -214,9 +241,7 @@ function rkPodHtml(r, board) {
 }
 
 function rkPodEmptyHtml(rank, board) {
-  const bd = rank === 1
-    ? `<video class="rk-bd rk-bd1" src="${RK_BD1}" muted loop playsinline autoplay preload="metadata"></video>`
-    : `<img class="rk-bd rk-bd23" src="${RK_BD23}" alt="" decoding="async">`;
+  const bd = rkPodFrameHtml(rank);
   const unit = rkUnitChip(board);
   return `<div class="rk-pod rk-pod${rank} rk-pod-empty" title="Belum ada player di peringkat #${rank}">
     <div class="rk-ava">${bd}<span class="rk-ava-core"><span class="rk-init rk-init-empty">?</span></span></div>
@@ -285,7 +310,7 @@ function rkRowsHtml(rows, board, delta) {
     const u = rkEsc(r.username);
     return `<div class="rk-row${mine ? " me" : ""}" data-u="${u}" title="Lihat profil player">
       <span class="rk-rank rk-top${r.rank <= 3 ? r.rank : ""}">${r.rank}</span>
-      <span class="rk-av-sm" data-rkav="${u}" data-rkfb="${rkEsc(rkAvSrc(r))}">${rkFaceHtml(r, 34)}</span>
+      <span class="rk-av-sm" data-rkav="${u}" data-rkfb="${rkEsc(rkLobbyCardSrc(r))}">${rkFaceHtml(r, 34)}</span>
       <span class="rk-name">${u}${rkSub(r, board)}</span>
       <span class="rk-val">${rkValFmt(board, r.value)}${unit ? `<em class="rk-unit">${rkEsc(unit)}</em>` : ""}</span>
       <span class="rk-delta-cell">${(delta && delta[String(r.username).toLowerCase()]) || ""}</span>
@@ -459,7 +484,7 @@ function lbAvMeta() {
     if (typeof state === "undefined" || !state || typeof equipped !== "function") return {};
     const lead = equipped();
     const ch = lead && lead.char;
-    return ch && typeof cardThumb === "function" ? { av: cardThumb(ch) } : {};
+    return ch && typeof cardThumb === "function" ? { av: cardThumb(ch), eqChar: ch } : (ch ? { eqChar: ch } : {});
   } catch (e) { return {}; }
 }
 
@@ -569,7 +594,7 @@ function rpHtml(p) {
   const photo = RK_DATA_IMG.test(p.avatar || "") ? p.avatar : "";
 
   const h = (pub.hero && typeof pub.hero === "object") ? pub.hero : null;
-  const cid = h && typeof h.c === "string" ? h.c : "";
+  let cid = h && typeof h.c === "string" ? h.c : (typeof p.eq_char === "string" ? p.eq_char : "");
   const known = typeof CARDS !== "undefined" && !!CARDS[cid];
   const eq = known ? {
     char: cid,
@@ -583,12 +608,11 @@ function rpHtml(p) {
     ? rkEsc(String(rare.n).slice(0, 40)) + " · 1 IN " + rkEsc(fmtChance(Math.max(0, Number(rare.o) || 0)))
     : "—";
 
-  /* Foto profil: data URL asli player; kalau belum pernah upload foto, pakai
-     art kartu utamanya (harta milik sendiri, bukan file asing). */
-  const face = photo
-    ? `<img src="${rkEsc(photo)}" alt="" decoding="async">`
-    : known
-      ? `<img src="${rkEsc(cardImg(cid))}" alt="" decoding="async"${CARDS[cid].pos ? ` style="object-position:${rkEsc(CARDS[cid].pos)}"` : ""}>`
+  /* Profil di LB selalu prioritaskan art kartu lobby player */
+  const face = known
+    ? `<img src="${rkEsc(cardImg(cid))}" alt="" decoding="async"${CARDS[cid].pos ? ` style="object-position:${rkEsc(CARDS[cid].pos)}"` : ""}>`
+    : photo
+      ? `<img src="${rkEsc(photo)}" alt="" decoding="async">`
       : `<span>${rkEsc((name[0] || "?"))}</span>`;
 
   return `<div class="rp-grid">

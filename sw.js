@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v188-towerBalance';
+const CACHE_NAME = 'anime-card-battle-v189-lbCyberCardFrame';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
