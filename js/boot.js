@@ -733,6 +733,8 @@ document.addEventListener("keydown",e=>{
   if(m&&(m.classList.contains("show")||m.style.display==="flex"))closeProfileModal();
   const c=document.getElementById("changelogModal");
   if(c&&(c.classList.contains("show")||c.style.display==="flex"))closeChangelogModal();
+  const rb=document.getElementById("rebirthModal");
+  if(rb&&rb.classList.contains("show")){if(typeof closeRebirthModal==='function')closeRebirthModal();else rb.classList.remove("show");}
 });
 
 /* ========== UPDATE LOG MODAL ========== */

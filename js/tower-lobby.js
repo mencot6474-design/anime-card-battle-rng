@@ -1122,17 +1122,10 @@ function updateRebirthUI(){
   const meter=document.getElementById('rebirthMeter');if(meter){meter.setAttribute('aria-valuemax',String(th));meter.setAttribute('aria-valuenow',String(es));}
   const sub=document.getElementById('rebirthSub');if(sub)sub.textContent=rbCompact(es)+' / '+rbCompact(th);
   const act=box.querySelector('.tile-action span');if(act)act.textContent=ready?'REBIRTH':'LOCKED';
+  const rbM=document.getElementById('rebirthModal');if(rbM&&rbM.classList.contains('show'))renderRebirthModal();
 }
 function onRebirthClick(){
-  if(typeof canRebirth!=='function'||!canRebirth()){
-    const need=rebirthThreshold()-rebirthEssence();
-    if(typeof toast==='function')toast('ESSENCE KURANG','Butuh '+((typeof fmt==='function')?fmt(need):need)+' lagi','#a855f7');
-    return;
-  }
-  doRebirth();
-  const mult=rebirthLuckMult();
-  if(typeof toast==='function')toast('REBIRTH!','Luck kini ×'+mult,'#c084fc');
-  renderLobby();
+  openRebirthModal();
 }
 
 function renderLobby(){
@@ -1407,3 +1400,194 @@ function closeTowerDropModal(){
   m.classList.remove("show");
   beep(360, 0.07, "triangle", 0.05);
 }
+
+
+/* ========== HORIZONTAL REBIRTH MODAL ========== */
+function renderRebirthModal(){
+  const body = document.getElementById("rebirthBody");
+  if (!body) return;
+  const isEn = (typeof getLang === 'function' && getLang() === 'en') || (typeof state !== 'undefined' && state && state.lang === 'en');
+  const cnt = typeof rebirthCount === 'function' ? rebirthCount() : 0;
+  const es = typeof rebirthEssence === 'function' ? rebirthEssence() : 0;
+  const th = typeof rebirthThreshold === 'function' ? rebirthThreshold() : 1000000;
+  const mult = typeof rebirthLuckMult === 'function' ? rebirthLuckMult() : 1;
+  const ready = es >= th;
+  const pct = Math.max(0, Math.min(100, Math.round(es / th * 100)));
+  const nextMult = mult + 1;
+  const need = Math.max(0, th - es);
+  const fmtEs = (typeof fmt === 'function' ? fmt(es) : es);
+  const fmtTh = (typeof fmt === 'function' ? fmt(th) : th);
+  const fmtNeed = (typeof fmt === 'function' ? fmt(need) : need);
+
+  body.innerHTML = `
+    <div class="rb-h-layout">
+      <!-- COL 1: Visual Sigil / Ascension Core -->
+      <div class="rb-col rb-col-sigil">
+        <div class="rb-sigil-wrap">
+          <div class="rb-sigil-rings">
+            <div class="rb-ring r1"></div>
+            <div class="rb-ring r2"></div>
+            <div class="rb-ring r3"></div>
+          </div>
+          <div class="rb-sigil-art">
+            <svg viewBox="0 0 100 100" fill="none" stroke="currentColor">
+              <circle cx="50" cy="50" r="40" stroke="#7e22ce" stroke-width="1.8" stroke-dasharray="5 3" opacity="0.4"/>
+              <path d="M78 50a28 28 0 1 1-9-20.8" stroke="url(#rbAscGrad)" stroke-width="3" stroke-linecap="round"/>
+              <path d="M70 20l10 9-13 6" stroke="url(#rbAscGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="50" cy="50" r="14" fill="rgba(192,132,252,0.12)" stroke="#a855f7" stroke-width="1.6"/>
+              <circle cx="50" cy="50" r="6" fill="#c084fc"/>
+              <defs>
+                <linearGradient id="rbAscGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#f5d0fe"/>
+                  <stop offset="50%" stop-color="#c084fc"/>
+                  <stop offset="100%" stop-color="#9333ea"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <div class="rb-rank-badge">
+            <span class="rb-rank-lbl">${isEn ? 'CURRENT CYCLE' : 'SIKLUS SAAT INI'}</span>
+            <span class="rb-rank-val">R${cnt}</span>
+          </div>
+        </div>
+        <div class="rb-sigil-meta">
+          <span class="rb-cycle-tag">HUNTER ASCENSION</span>
+          <span class="rb-cycle-sub">${isEn ? 'CYCLE RANK' : 'PANGKAT SIKLUS'} ${cnt} · LEVEL ${typeof state !== 'undefined' && state?.playerLv ? state.playerLv : 1}</span>
+        </div>
+      </div>
+
+      <!-- COL 2: Telemetry & Mechanics Breakdown -->
+      <div class="rb-col rb-col-info">
+        <!-- Stat Transition Cards: CURRENT -> NEXT -->
+        <div class="rb-mult-compare">
+          <div class="rb-compare-box prev">
+            <span class="rcb-tag">${isEn ? 'CURRENT PERK' : 'BONUS SAAT INI'}</span>
+            <span class="rcb-val">×${mult}</span>
+            <span class="rcb-desc">${isEn ? 'LUCK MULTIPLIER' : 'PENGALI LUCK'}</span>
+          </div>
+          <div class="rb-compare-arrow">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+          </div>
+          <div class="rb-compare-box next">
+            <span class="rcb-tag">${isEn ? 'NEXT ASCENSION' : 'KENAIKAN BERIKUTNYA'}</span>
+            <span class="rcb-val">×${nextMult}</span>
+            <span class="rcb-desc">${isEn ? '+100% PERMANENT BOOST' : '+100% BONUS PERMANEN'}</span>
+          </div>
+        </div>
+
+        <!-- Progress & Fuel Bar -->
+        <div class="rb-progress-card">
+          <div class="rb-pc-head">
+            <span class="rb-pc-lbl"><span class="rb-glow-dot"></span>${isEn ? 'ESSENCE POOL CHARGE' : 'PENGISIAN POOL ESSENCE'}</span>
+            <span class="rb-pc-nums"><b>${fmtEs}</b> / ${fmtTh}</span>
+          </div>
+          <div class="rb-bar-wrap">
+            <div class="rb-bar-fill" style="width: ${pct}%">
+              <span class="rb-bar-glow"></span>
+            </div>
+          </div>
+          <div class="rb-pc-foot">
+            <span class="rb-foot-pct">${pct}% ${isEn ? 'CHARGED' : 'TERISI'}</span>
+            <span class="rb-foot-need ${ready ? 'ready' : ''}">${ready ? (isEn ? '✓ THRESHOLD REACHED · READY TO ASCEND' : '✓ AMBANG TERCAPAI · SIAP REBIRTH') : (isEn ? `NEED ${fmtNeed} MORE ESSENCE` : `BUTUH ${fmtNeed} ESSENCE LAGI`)}</span>
+          </div>
+        </div>
+
+        <!-- Info Protocol Pill -->
+        <div class="rb-protocol-info">
+          <div class="rb-pi-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
+          </div>
+          <div class="rb-pi-text">
+            <b>${isEn ? 'HOW TO ACQUIRE ESSENCE:' : 'CARA MENDAPATKAN ESSENCE:'}</b> ${isEn ? 'Any duplicate cards obtained from Gacha Rolls or Instant Packs are automatically transmuted into Rebirth Essence without losing any Cards, Decks, or Levels.' : 'Setiap kartu duplikat yang didapat dari Gacha Roll atau Instant Pack otomatis diubah jadi Essence tanpa mengurangi Kartu, Dek, atau Level.'}
+          </div>
+        </div>
+      </div>
+
+      <!-- COL 3: Action & Rewards Confirmation -->
+      <div class="rb-col rb-col-action">
+        <div class="rb-action-head">
+          <span class="rb-ah-status ${ready ? 'ready' : 'charging'}">
+            <span class="rb-status-dot"></span>
+            ${ready ? (isEn ? 'READY TO ASCEND' : 'SIAP REBIRTH') : (isEn ? 'CHARGING ESSENCE' : 'MENGISI ESSENCE')}
+          </span>
+          <span class="rb-ah-title">ASCENSION PROTOCOL</span>
+        </div>
+
+        <div class="rb-perks-list">
+          <div class="rb-perk-item">
+            <span class="rpi-check">✓</span>
+            <span>${isEn ? '<b>Permanent:</b> Luck multiplier rises to ' : '<b>Permanen:</b> Luck multiplier naik ke '}<b>×${nextMult}</b></span>
+          </div>
+          <div class="rb-perk-item">
+            <span class="rpi-check">✓</span>
+            <span>${isEn ? '<b>Safe:</b> Cards, Decks, Artefacts & Pets stay intact' : '<b>Aman:</b> Koleksi, Dek, Artefak & Pet tetap aman'}</span>
+          </div>
+          <div class="rb-perk-item">
+            <span class="rpi-check">✓</span>
+            <span>${isEn ? '<b>Prestige:</b> Rebirth rank showcased on Hunter Profile' : '<b>Pangkat:</b> Rank Rebirth tampil di Profil Hunter'}</span>
+          </div>
+        </div>
+
+        <button type="button" class="rb-execute-btn ${ready ? 'is-ready' : 'is-locked'}" id="rbExecBtn" onclick="executeRebirthFromModal()" ${ready ? '' : 'disabled'}>
+          <span class="reb-btn-glow"></span>
+          <span class="reb-btn-content">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 2v20m-7-7 7-7 7 7"/></svg>
+            <span>${ready ? (isEn ? 'ACTIVATE REBIRTH' : 'AKTIFKAN REBIRTH') : (isEn ? 'INSUFFICIENT ESSENCE' : 'ESSENCE KURANG')}</span>
+          </span>
+          <span class="reb-btn-sub">${ready ? (isEn ? `ASCEND TO ×${nextMult} LUCK` : `NAIK KE ×${nextMult} LUCK`) : `${pct}% ${isEn ? 'CHARGED' : 'TERISI'}`}</span>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function openRebirthModal(){
+  if (typeof sfx !== 'undefined' && sfx.hit) sfx.hit();
+  renderRebirthModal();
+  const modal = document.getElementById('rebirthModal');
+  if (modal) modal.classList.add('show');
+  document.body.classList.add('hide-docks-modal');
+  const closeBtn = document.getElementById('rebirthClose');
+  if (closeBtn) closeBtn.onclick = closeRebirthModal;
+  if (modal) modal.onclick = function(e){ if(e.target === modal) closeRebirthModal(); };
+}
+
+function closeRebirthModal(){
+  const modal = document.getElementById('rebirthModal');
+  if (modal) modal.classList.remove('show');
+  document.body.classList.remove('hide-docks-modal');
+}
+
+function executeRebirthFromModal(){
+  const isEn = (typeof getLang === 'function' && getLang() === 'en') || (typeof state !== 'undefined' && state && state.lang === 'en');
+  if (typeof canRebirth !== 'function' || !canRebirth()) {
+    const need = rebirthThreshold() - rebirthEssence();
+    const fmtNeed = (typeof fmt === 'function' ? fmt(need) : need);
+    if (typeof toast === 'function') {
+      toast(
+        isEn ? 'INSUFFICIENT ESSENCE' : 'ESSENCE KURANG',
+        isEn ? ('Need ' + fmtNeed + ' more essence') : ('Butuh ' + fmtNeed + ' lagi'),
+        '#a855f7'
+      );
+    }
+    return;
+  }
+  doRebirth();
+  const mult = rebirthLuckMult();
+  if (typeof sfx !== 'undefined' && sfx.win) sfx.win();
+  if (typeof toast === 'function') {
+    toast(
+      isEn ? 'ASCENSION SUCCESS!' : 'REBIRTH BERHASIL!',
+      isEn ? ('Luck multiplier increased permanently to ×' + mult) : ('Luck multiplier naik permanen ke ×' + mult),
+      '#c084fc'
+    );
+  }
+  renderRebirthModal();
+  if (typeof updateRebirthUI === 'function') updateRebirthUI();
+  if (typeof renderShell === 'function') renderShell();
+}
+
+window.openRebirthModal = openRebirthModal;
+window.closeRebirthModal = closeRebirthModal;
+window.renderRebirthModal = renderRebirthModal;
+window.executeRebirthFromModal = executeRebirthFromModal;

@@ -14,7 +14,7 @@
 <script src="https://unpkg.com/lucide@latest"></script>
 <!-- CrazyGames SDK v3 (Official HTML5 SDK) -->
 <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
-<link rel="stylesheet" href="css/style.css?v=v337-buffDockLobbyOnly">
+<link rel="stylesheet" href="css/style.css?v=v338-rebirthModalH">
 <link rel="stylesheet" href="css/world-boss.css?v=wb14-holoLower">
 <link rel="stylesheet" href="css/sl-system.css?v=sl-v4">
 <link rel="stylesheet" href="css/story-carousel.css?v=v12-storyCardBigger">
@@ -444,6 +444,21 @@
   </div>
   <div id="wmBody" class="wm-body-wrap"></div>
 </div></div>
+<!-- REBIRTH ASCENSION MODAL (HORIZONTAL LAYOUT) -->
+<div id="rebirthModal" class="rb-modal-backdrop">
+  <div class="rb-modal-container">
+    <div class="rb-modal-head">
+      <div class="rb-head-title-wrap">
+        <div class="rb-cyber-pill"><span class="rb-cyber-dot"></span>CYCLE // ASCENSION MATRIX</div>
+        <div class="rb-modal-title">REBIRTH SYSTEM</div>
+      </div>
+      <button class="ix-x rb-close-btn" id="rebirthClose" type="button" title="Tutup">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+    <div class="rb-modal-body" id="rebirthBody"></div>
+  </div>
+</div>
 
 <div id="missionModal"><div class="ix-box mx-box">
   <div class="ix-head">
@@ -811,14 +826,14 @@
 <script src="js/state.js?v=v201-fixLobbyTick"></script>
 <script src="js/sheetfx.js?v=v111-perf7"></script>
 <script src="js/battle.js?v=v140-noParticles"></script>
-<script src="js/tower-lobby.js?v=v201-dailyAdsDock"></script>
+<script src="js/tower-lobby.js?v=v202-rebirthModal"></script>
 <script src="js/shadow-king-fx.js?v=v4-skfx4"></script>
 <script src="js/foe-passives.js?v=v62-foe-passives"></script>
 <script src="js/story-carousel.js?v=v127-storyGemStage"></script>
 <script src="js/raid.js?v=v164-fixAutoRoll"></script>
 <script src="js/ranking.js?v=v8-lbProfDossier"></script>
 <script src="js/i18n.js?v=v7-fixObserverLoop"></script>
-<script src="js/boot.js?v=v175-fixChangelogClick"></script>
+<script src="js/boot.js?v=v176-rebirthEsc"></script>
 <script src="js/devtools-guard.js?v=v2-localBypass"></script>
 <script src="js/rpc-guard.js?v=v1-rpcGuard"></script>
 <script src="js/pwa.js?v=v156-install"></script>
