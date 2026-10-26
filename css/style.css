@@ -50752,3 +50752,528 @@ html.fps-locked .bp-fchip{
   #rankModal .rk-pod2 .rk-ava, #rankModal .rk-pod3 .rk-ava { width: 54px !important; height: 68px !important; }
   #rankModal .rk-cf-crown { font-size: 9.5px; padding: 1.5px 6px; }
 }
+
+/* ==========================================================================
+   MODAL PROFIL PLAYER LEADERBOARD (#rkProfModal) — CYBERPUNK HUNTER DOSSIER
+   ========================================================================== */
+#rkProfModal {
+  background:
+    radial-gradient(circle at 50% 25%, rgba(0, 240, 255, 0.14) 0%, transparent 55%),
+    radial-gradient(circle at 80% 75%, rgba(168, 85, 247, 0.14) 0%, transparent 50%),
+    rgba(3, 5, 11, 0.88) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  padding: 14px !important;
+}
+
+#rkProfModal .rp-box {
+  width: min(940px, 95vw) !important;
+  max-height: 90vh !important;
+  background:
+    linear-gradient(160deg, rgba(12, 16, 32, 0.97) 0%, rgba(5, 7, 15, 0.99) 100%) !important;
+  border: 1.5px solid rgba(0, 240, 255, 0.38) !important;
+  border-radius: 14px !important;
+  box-shadow:
+    0 28px 75px rgba(0, 0, 0, 0.9),
+    0 0 42px rgba(0, 240, 255, 0.18),
+    inset 0 0 28px rgba(0, 240, 255, 0.05) !important;
+  padding: 14px 18px 16px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  animation: rpModalIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+}
+
+@keyframes rpModalIn {
+  from { opacity: 0; transform: scale(0.94) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+#rkProfModal .ix-head {
+  padding: 8px 14px !important;
+  margin-bottom: 10px !important;
+  background: linear-gradient(90deg, rgba(0, 240, 255, 0.1) 0%, rgba(168, 85, 247, 0.06) 60%, transparent 100%) !important;
+  border: 1px solid rgba(0, 240, 255, 0.24) !important;
+  border-radius: 8px !important;
+}
+
+#rkProfModal .ix-eyebrow {
+  color: #00f0ff !important;
+  font-family: "Rajdhani", sans-serif !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.26em !important;
+  font-size: 10px !important;
+}
+
+#rkProfModal .ix-title {
+  font-family: "Barlow Condensed", "Rajdhani", sans-serif !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.14em !important;
+  font-size: 22px !important;
+  background: linear-gradient(135deg, #ffffff 15%, #00f0ff 60%, #a855f7 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+
+/* Grid 3 Kolom Dossier: Kiri (Identitas) | Tengah (Telemetry & Standings) | Kanan (Showcase Unit) */
+#rkProfModal .rp-cyber-dossier {
+  display: grid;
+  grid-template-columns: 235px minmax(0, 1fr) 215px;
+  gap: 14px;
+  align-items: stretch;
+}
+
+/* KOLOM KIRI: KARTU IDENTITAS HUNTER */
+#rkProfModal .rp-hero-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(0, 240, 255, 0.12), transparent 65%),
+    linear-gradient(180deg, rgba(16, 22, 42, 0.92) 0%, rgba(8, 11, 22, 0.96) 100%);
+  border: 1px solid rgba(0, 240, 255, 0.28);
+  box-shadow: inset 0 0 18px rgba(0, 240, 255, 0.05), 0 10px 28px rgba(0, 0, 0, 0.55);
+}
+
+#rkProfModal .rp-hc-frame {
+  position: relative;
+  width: 146px;
+  height: 184px;
+  margin: 0 auto 2px;
+  border-radius: 12px;
+  padding: 4px;
+  background: linear-gradient(145deg, rgba(0, 240, 255, 0.5), rgba(168, 85, 247, 0.5), rgba(255, 190, 11, 0.5));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75), 0 0 20px rgba(0, 240, 255, 0.25);
+}
+
+#rkProfModal .rp-hc-aura {
+  position: absolute;
+  inset: -4px;
+  border-radius: 14px;
+  background: conic-gradient(from 0deg, #00f0ff, transparent 35%, #a855f7 55%, transparent 85%, #00f0ff);
+  filter: blur(8px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+#rkProfModal .rp-face {
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+  aspect-ratio: auto !important;
+  border-radius: 9px !important;
+  overflow: hidden !important;
+  background: radial-gradient(120% 120% at 50% 0%, #19223a, #070a14 75%) !important;
+}
+
+#rkProfModal .rp-face img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 18%;
+  filter: contrast(1.08) saturate(1.12);
+}
+
+#rkProfModal .rp-face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 25%, rgba(0, 240, 255, 0.22) 50%, transparent 75%);
+  background-size: 100% 220%;
+  animation: rkCardScan 3.2s linear infinite;
+  pointer-events: none;
+}
+
+#rkProfModal .rp-hc-tier {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 3;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: #ffbe0b;
+  background: rgba(5, 7, 15, 0.86);
+  border: 1px solid rgba(255, 190, 11, 0.65);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+}
+
+#rkProfModal .rp-hc-lv {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  z-index: 3;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: #041016;
+  background: linear-gradient(135deg, #7df9ff, #00f0ff);
+  border: 1px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
+}
+
+#rkProfModal .rp-hc-cnr {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  border-color: #7df9ff;
+  border-style: solid;
+  z-index: 4;
+  pointer-events: none;
+}
+#rkProfModal .rp-hc-cnr.tl { top: -2px; left: -2px; border-width: 2.5px 0 0 2.5px; border-top-left-radius: 4px; }
+#rkProfModal .rp-hc-cnr.tr { top: -2px; right: -2px; border-width: 2.5px 2.5px 0 0; border-top-right-radius: 4px; }
+#rkProfModal .rp-hc-cnr.bl { bottom: -2px; left: -2px; border-width: 0 0 2.5px 2.5px; border-bottom-left-radius: 4px; }
+#rkProfModal .rp-hc-cnr.br { bottom: -2px; right: -2px; border-width: 0 2.5px 2.5px 0; border-bottom-right-radius: 4px; }
+
+#rkProfModal .rp-ident {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+}
+
+#rkProfModal .rp-title-badge {
+  align-self: center !important;
+  margin: 0 !important;
+}
+
+#rkProfModal .rp-name {
+  font-family: "Barlow Condensed", "Rajdhani", sans-serif !important;
+  font-size: 22px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.06em !important;
+  color: #ffffff !important;
+  text-shadow: 0 0 14px rgba(0, 240, 255, 0.45) !important;
+  max-width: 100%;
+}
+
+#rkProfModal .rp-status-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #94a3b8;
+}
+
+#rkProfModal .rp-online-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 8px #4ade80;
+}
+
+#rkProfModal .rp-xp-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+#rkProfModal .rp-xp-top {
+  display: flex;
+  justify-content: space-between;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #94a3b8;
+}
+#rkProfModal .rp-xp-top b {
+  color: #e2e8f0;
+}
+
+#rkProfModal .rp-power-banner {
+  margin-top: auto;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(255, 190, 11, 0.16) 0%, rgba(255, 0, 85, 0.1) 100%);
+  border: 1px solid rgba(255, 190, 11, 0.5);
+  box-shadow: 0 0 18px rgba(255, 190, 11, 0.15);
+  text-align: center;
+}
+
+#rkProfModal .rp-pb-lbl {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: #ffbe0b;
+}
+
+#rkProfModal .rp-pb-val {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  color: #ffffff;
+  text-shadow: 0 0 14px rgba(255, 190, 11, 0.6);
+  line-height: 1.05;
+}
+
+/* KOLOM TENGAH: TELEMETRY & STANDINGS */
+#rkProfModal .rp-intel-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+#rkProfModal .rp-sec-box {
+  background: rgba(12, 16, 30, 0.85);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  border-radius: 11px;
+  padding: 11px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+#rkProfModal .rp-sec-hdr {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: #00f0ff;
+  text-transform: uppercase;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.15);
+}
+
+#rkProfModal .rp-sh-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00f0ff;
+  box-shadow: 0 0 8px #00f0ff;
+}
+
+#rkProfModal .rp-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+#rkProfModal .rp-stat-tile {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 7px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+#rkProfModal .rp-stat-tile.rp-st-wide {
+  grid-column: 1 / -1;
+  background: linear-gradient(90deg, rgba(168, 85, 247, 0.12), rgba(0, 240, 255, 0.06));
+  border-color: rgba(168, 85, 247, 0.35);
+}
+
+#rkProfModal .rp-st-lbl {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #94a3b8;
+}
+
+#rkProfModal .rp-st-val {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#rkProfModal .rp-st-val.cyan { color: #00f0ff; }
+#rkProfModal .rp-st-val.gold { color: #ffbe0b; }
+#rkProfModal .rp-st-val.purple { color: #c084fc; }
+#rkProfModal .rp-st-val.green { color: #4ade80; }
+#rkProfModal .rp-st-val small {
+  font-size: 11px;
+  color: #38bdf8;
+  font-weight: 700;
+}
+
+/* Daftar Peringkat 5 Papan */
+#rkProfModal .rp-boards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#rkProfModal .rp-board-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+#rkProfModal .rp-board-item.has-rk {
+  background: linear-gradient(90deg, rgba(0, 240, 255, 0.08), rgba(255, 255, 255, 0.02));
+  border-color: rgba(0, 240, 255, 0.24);
+}
+
+#rkProfModal .rp-bi-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+#rkProfModal .rp-bi-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #64748b;
+}
+#rkProfModal .rp-board-item.has-rk .rp-bi-dot {
+  background: #00f0ff;
+  box-shadow: 0 0 6px #00f0ff;
+}
+
+#rkProfModal .rp-bi-name {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #cbd5e1;
+}
+
+#rkProfModal .rp-bi-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#rkProfModal .rp-rk-pill {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+#rkProfModal .rp-rk-1 { background: #ffbe0b; color: #05070f; box-shadow: 0 0 10px rgba(255, 190, 11, 0.5); }
+#rkProfModal .rp-rk-2 { background: #00f0ff; color: #05070f; box-shadow: 0 0 10px rgba(0, 240, 255, 0.5); }
+#rkProfModal .rp-rk-3 { background: #a855f7; color: #ffffff; box-shadow: 0 0 10px rgba(168, 85, 247, 0.5); }
+#rkProfModal .rp-rk-on { background: rgba(0, 240, 255, 0.16); color: #7df9ff; border: 1px solid rgba(0, 240, 255, 0.4); }
+#rkProfModal .rp-rk-off { background: rgba(255, 255, 255, 0.05); color: #64748b; font-size: 9.5px; }
+
+#rkProfModal .rp-rk-val {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+}
+
+#rkProfModal .rp-rk-none {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 11px;
+  color: #64748b;
+}
+
+/* KOLOM KANAN: SHOWCASE KARTU LOBBY */
+#rkProfModal .rp-showcase-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 11px 12px;
+  border-radius: 12px;
+  background:
+    radial-gradient(120% 90% at 50% 100%, rgba(168, 85, 247, 0.15), transparent 65%),
+    rgba(12, 16, 30, 0.88);
+  border: 1px solid rgba(168, 85, 247, 0.32);
+}
+
+#rkProfModal .rp-cardwrap {
+  width: 100%;
+  margin: auto 0;
+}
+
+#rkProfModal .rp-unit-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  text-align: center;
+  padding-top: 4px;
+}
+
+#rkProfModal .rp-um-name {
+  font-family: "Barlow Condensed", "Rajdhani", sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #f8fafc;
+  text-transform: uppercase;
+}
+
+#rkProfModal .rp-um-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+}
+
+#rkProfModal .rp-tag {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+#rkProfModal .rp-tag-mut { background: rgba(255, 190, 11, 0.16); color: #ffbe0b; border: 1px solid rgba(255, 190, 11, 0.45); }
+#rkProfModal .rp-tag-shiny { background: rgba(0, 240, 255, 0.16); color: #00f0ff; border: 1px solid rgba(0, 240, 255, 0.45); }
+#rkProfModal .rp-tag-trait { background: rgba(168, 85, 247, 0.18); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.45); }
+
+@media (max-width: 860px) {
+  #rkProfModal .rp-cyber-dossier {
+    grid-template-columns: 210px minmax(0, 1fr);
+  }
+  #rkProfModal .rp-showcase-col {
+    grid-column: 1 / -1;
+    max-width: 260px;
+    margin: 0 auto;
+    width: 100%;
+  }
+}
+
+@media (max-width: 620px) {
+  #rkProfModal .rp-cyber-dossier {
+    grid-template-columns: 1fr;
+  }
+  #rkProfModal .rp-hc-frame {
+    width: 120px;
+    height: 152px;
+  }
+}

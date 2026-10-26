@@ -565,36 +565,49 @@ function rpRow(lab, val) {
   return `<div class="prof-row"><span class="prof-rl">${lab}</span><span class="prof-rv">${val}</span></div>`;
 }
 
-/* Posisi per papan diambil dari data papan yang PERNAH dibuka sesi ini, jadi
-   sheet tidak perlu 5x panggil server. Papan yang belum pernah dibuka: "—". */
-function rpBoardRows(user) {
+/* Posisi per papan diambil langsung dari server (p.ranks) + fallback rkBoardCache. */
+function rpBoardRows(user, srvRanks) {
   const u = String(user || "").toLowerCase();
-  const rows = Object.keys(RK_BOARDS).map(b => {
-    const list = rkBoardCache[b];
-    if (!list) return rpRow(RK_BOARDS[b].label, "—");
-    const r = list.find(x => String(x.username).toLowerCase() === u);
-    return rpRow(RK_BOARDS[b].label, r ? "#" + r.rank + " · " + rkValFmt(b, r.value) : "BELUM ADA SKOR");
+  const sr = (srvRanks && typeof srvRanks === "object") ? srvRanks : {};
+  return Object.keys(RK_BOARDS).map(b => {
+    let rankNum = null, valNum = null;
+    if (sr[b] && sr[b].rank) {
+      rankNum = sr[b].rank;
+      valNum = sr[b].value;
+    } else {
+      const list = rkBoardCache[b];
+      const r = list ? list.find(x => String(x.username).toLowerCase() === u) : null;
+      if (r) { rankNum = r.rank; valNum = r.value; }
+    }
+    const rCls = rankNum === 1 ? "rp-rk-1" : rankNum === 2 ? "rp-rk-2" : rankNum === 3 ? "rp-rk-3" : (rankNum ? "rp-rk-on" : "rp-rk-off");
+    const badge = rankNum ? `<span class="rp-rk-pill ${rCls}">#${rankNum}</span>` : `<span class="rp-rk-pill rp-rk-off">UNRANKED</span>`;
+    const scoreTxt = rankNum ? `<b class="rp-rk-val">${rkValFmt(b, valNum)}</b>` : `<span class="rp-rk-none">Belum ada skor</span>`;
+    return `<div class="rp-board-item ${rankNum ? "has-rk" : ""}">
+      <div class="rp-bi-left">
+        <span class="rp-bi-dot"></span>
+        <span class="rp-bi-name">${RK_BOARDS[b].label}</span>
+      </div>
+      <div class="rp-bi-right">${badge}${scoreTxt}</div>
+    </div>`;
   }).join("");
-  return rows;
 }
 
 function rpHtml(p) {
   const pub = (p.pub && typeof p.pub === "object") ? p.pub : {};
-  /* `pub` kosong = player ini belum pernah jalan dengan build yang mengirim
-     ringkasan. Angkanya TIDAK boleh digambar 0/LV 1 — itu berita bohong, bukan
-     data. Pakai strip dan satu hint; waktu bermain + posisi papan tetap nyata
-     karena itu dibaca server langsung dari save/skor. */
-  const hasPub = Object.keys(pub).length > 0;
-  const name = rkEsc(p.username || "?");
-  const lv = Math.max(1, Math.min(1e6, Math.round(Number(pub.lv) || 1)));
+  const name = rkEsc(p.username || "?").toUpperCase();
+  const lv = Math.max(1, Math.min(1e6, Math.round(Number(pub.lv || p.lv_raw) || 1)));
   const xpNeed = lv * 1000;
-  const xp = Math.max(0, Math.min(xpNeed, Math.round(Number(pub.xp) || 0)));
+  const xp = Math.max(0, Math.min(xpNeed, Math.round(Number(pub.xp != null ? pub.xp : p.xp_raw) || 0)));
   const xpPct = Math.round(xp / xpNeed * 100);
-  const title = rkEsc(String(pub.title || "ROOKIE").slice(0, 28));
+  const title = rkEsc(String(pub.title || "HUNTER").slice(0, 28));
   const photo = RK_DATA_IMG.test(p.avatar || "") ? p.avatar : "";
+  const powerVal = Math.max(0, Math.round(Number(pub.power || p.power_raw) || 0));
+  const rollsVal = Math.max(0, Math.round(Number(pub.rolls != null ? pub.rolls : p.rolls_raw) || 0));
+  const towerBest = Math.max(0, Math.round(Number(p.tower_best) || 0));
+  const rebirthCnt = Math.max(0, Math.round(Number(p.rebirth_cnt) || 0));
 
-  const h = (pub.hero && typeof pub.hero === "object") ? pub.hero : null;
-  let cid = h && typeof h.c === "string" ? h.c : (typeof p.eq_char === "string" ? p.eq_char : "");
+  const h = (pub.hero && typeof pub.hero === "object") ? pub.hero : ((p.hero_obj && typeof p.hero_obj === "object") ? p.hero_obj : null);
+  let cid = (h && typeof h.c === "string" && h.c) ? h.c : (typeof p.eq_char === "string" ? p.eq_char : "");
   const known = typeof CARDS !== "undefined" && !!CARDS[cid];
   const eq = known ? {
     char: cid,
@@ -605,8 +618,8 @@ function rpHtml(p) {
 
   const rare = (pub.rare && typeof pub.rare === "object") ? pub.rare : null;
   const rareTxt = rare && rare.n
-    ? rkEsc(String(rare.n).slice(0, 40)) + " · 1 IN " + rkEsc(fmtChance(Math.max(0, Number(rare.o) || 0)))
-    : "—";
+    ? rkEsc(String(rare.n).slice(0, 40)) + " <small>(1 in " + rkEsc(fmtChance(Math.max(0, Number(rare.o) || 0))) + ")</small>"
+    : (known ? rkEsc(cardName(cid)) : "—");
 
   /* Profil di LB selalu prioritaskan art kartu lobby player */
   const face = known
@@ -615,35 +628,93 @@ function rpHtml(p) {
       ? `<img src="${rkEsc(photo)}" alt="" decoding="async">`
       : `<span>${rkEsc((name[0] || "?"))}</span>`;
 
-  return `<div class="rp-grid">
-    <div class="rp-hero">
-      <div class="rp-face">${face}</div>
-      ${hasPub ? `<div class="prof-title-tag"><span class="ptt-crown"><svg width="15" height="12" viewBox="0 0 24 18" fill="none"><path d="M2 15L4 4L9 9L12 2L15 9L20 4L22 15H2Z" fill="currentColor" stroke="rgba(255,255,255,.55)" stroke-width="1.1" stroke-linejoin="round"/></svg></span><span class="ptt-txt">${title}</span></div>` : ""}
-      <div class="rp-name">${name}</div>
-      <div class="rp-lvrow"><span class="prof-lv-pill">LV <b>${hasPub ? lv : "—"}</b></span><span class="rp-since">${rpAgo(p.updated_at)}</span></div>
-      <div class="xpbar prof-xp rp-xp"><i style="width:${hasPub ? xpPct : 0}%"></i><span>${hasPub ? rpNum(xp) + " / " + rpNum(xpNeed) + " · " + xpPct + "%" : "belum tersinkron"}</span></div>
-      <div class="rp-power"><span>BATTLE POWER</span><b>${hasPub ? rpNum(pub.power) : "—"}</b></div>
-      ${hasPub ? "" : `<div class="rp-hint">Statistik player ini belum terkirim ke server — angkanya akan muncul setelah yang bersangkutan main lagi.</div>`}
-    </div>
-    <div class="rp-side">
-      <section class="prof-sec">
-        <h3 class="prof-sec-t">REKAM JEJAK</h3>
-        <div class="prof-stats">
-          ${rpRow("WAKTU BERMAIN", rpPlay(p.play))}
-          ${rpRow("TOTAL ROLL", hasPub ? rpNum(pub.rolls) : "—")}
-          ${rpRow("KARTU PALING LANGKA", rareTxt)}
-          ${rpRow("KARTU UTAMA", known ? rkEsc(cardName(cid)) : "—")}
+  const cardTierTxt = known && CARDS[cid] ? rkEsc(CARDS[cid].tier || "SR") : "HUNTER";
+  const mutTag = eq && eq.mut && eq.mut !== "none" ? `<span class="rp-tag rp-tag-mut">${rkEsc(eq.mut.toUpperCase())}</span>` : "";
+  const shinyTag = eq && eq.shiny ? `<span class="rp-tag rp-tag-shiny">✦ SHINY</span>` : "";
+  const traitTag = eq && eq.trait && eq.trait !== "none" ? `<span class="rp-tag rp-tag-trait">${rkEsc(eq.trait.toUpperCase())}</span>` : "";
+
+  return `<div class="rp-cyber-dossier">
+    <!-- KOLOM KIRI: KARTU IDENTITAS HUNTER -->
+    <div class="rp-hero-card">
+      <div class="rp-hc-frame">
+        <div class="rp-hc-aura"></div>
+        <div class="rp-face">
+          ${face}
+          <span class="rp-hc-tier">${cardTierTxt}</span>
+          <span class="rp-hc-lv">LV.${lv}</span>
         </div>
-      </section>
-      <section class="prof-sec">
-        <h3 class="prof-sec-t">POSISI PAPAN</h3>
-        <div class="prof-stats">${rpBoardRows(p.username)}</div>
-        <div class="rp-hint">Papan bertanda — belum pernah dibuka sesi ini, jadi posisinya belum diambil.</div>
-      </section>
+        <span class="rp-hc-cnr tl"></span><span class="rp-hc-cnr tr"></span>
+        <span class="rp-hc-cnr bl"></span><span class="rp-hc-cnr br"></span>
+      </div>
+
+      <div class="rp-ident">
+        <div class="prof-title-tag rp-title-badge">
+          <span class="ptt-crown"><svg width="14" height="11" viewBox="0 0 24 18" fill="none"><path d="M2 15L4 4L9 9L12 2L15 9L20 4L22 15H2Z" fill="currentColor" stroke="rgba(255,255,255,.55)" stroke-width="1.1" stroke-linejoin="round"/></svg></span>
+          <span class="ptt-txt">${title}</span>
+        </div>
+        <div class="rp-name">${name}</div>
+        <div class="rp-status-line">
+          <span class="rp-online-dot"></span>
+          <span>SYNC: ${rpAgo(p.updated_at)}</span>
+        </div>
+      </div>
+
+      <div class="rp-xp-block">
+        <div class="rp-xp-top"><span>HUNTER EXP</span><b>${rpNum(xp)} / ${rpNum(xpNeed)} (${xpPct}%)</b></div>
+        <div class="xpbar prof-xp rp-xp"><i style="width:${xpPct}%"></i></div>
+      </div>
+
+      <div class="rp-power-banner">
+        <div class="rp-pb-lbl">⚡ TOTAL BATTLE POWER</div>
+        <div class="rp-pb-val">${rpNum(powerVal)}</div>
+      </div>
     </div>
-    <div class="rp-cardwrap">${eq && typeof hubCardHtml === "function"
-      ? hubCardHtml(eq, "", false)
-      : '<div class="hub-center"><div class="hc-info"><div class="hc-name">Belum ada kartu utama</div></div></div>'}</div>
+
+    <!-- KOLOM TENGAH: STATISTIK & PERINGKAT 5 PAPAN -->
+    <div class="rp-intel-col">
+      <div class="rp-sec-box">
+        <div class="rp-sec-hdr"><span class="rp-sh-dot"></span>COMBAT &amp; RNG TELEMETRY</div>
+        <div class="rp-stat-grid">
+          <div class="rp-stat-tile">
+            <span class="rp-st-lbl">WAKTU BERMAIN</span>
+            <b class="rp-st-val cyan">${rpPlay(p.play)}</b>
+          </div>
+          <div class="rp-stat-tile">
+            <span class="rp-st-lbl">TOTAL ROLL</span>
+            <b class="rp-st-val gold">${rpNum(rollsVal)}</b>
+          </div>
+          <div class="rp-stat-tile">
+            <span class="rp-st-lbl">REKOR INF TOWER</span>
+            <b class="rp-st-val purple">${towerBest > 0 ? "FLOOR " + towerBest : "F 0"}</b>
+          </div>
+          <div class="rp-stat-tile">
+            <span class="rp-st-lbl">REBIRTH AWAKEN</span>
+            <b class="rp-st-val green">${rebirthCnt}&times; REBIRTH</b>
+          </div>
+          <div class="rp-stat-tile rp-st-wide">
+            <span class="rp-st-lbl">KARTU PALING LANGKA (RAREST PULL)</span>
+            <b class="rp-st-val">${rareTxt}</b>
+          </div>
+        </div>
+      </div>
+
+      <div class="rp-sec-box">
+        <div class="rp-sec-hdr"><span class="rp-sh-dot"></span>GLOBAL LEADERBOARD STANDINGS</div>
+        <div class="rp-boards-list">${rpBoardRows(p.username, p.ranks)}</div>
+      </div>
+    </div>
+
+    <!-- KOLOM KANAN: SHOWCASE KARTU LOBBY -->
+    <div class="rp-showcase-col">
+      <div class="rp-sec-hdr"><span class="rp-sh-dot"></span>EQUIPPED LOBBY UNIT</div>
+      <div class="rp-cardwrap">${eq && typeof hubCardHtml === "function"
+        ? hubCardHtml(eq, "", false)
+        : '<div class="hub-center"><div class="hc-info"><div class="hc-name">Belum ada kartu utama</div></div></div>'}</div>
+      <div class="rp-unit-meta">
+        <div class="rp-um-name">${known ? rkEsc(cardName(cid)) : "UNKNOWN UNIT"}</div>
+        <div class="rp-um-tags">${mutTag}${shinyTag}${traitTag}</div>
+      </div>
+    </div>
   </div>`;
 }
 

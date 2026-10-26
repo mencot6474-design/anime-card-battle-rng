@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v189-lbCyberCardFrame';
+const CACHE_NAME = 'anime-card-battle-v190-lbProfDossier';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
