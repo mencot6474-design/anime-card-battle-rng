@@ -3564,6 +3564,25 @@ function tickWatchAdsModal() {
   }
 }
 
+/* CrazyGames SDK v3 Helper Initialization */
+var _cgSdkReady = false;
+async function initCrazyGamesSdk() {
+  try {
+    if (window.CrazyGames && window.CrazyGames.SDK) {
+      await window.CrazyGames.SDK.init();
+      _cgSdkReady = true;
+      console.log("[CrazyGames SDK] Initialized successfully");
+    }
+  } catch (e) {
+    console.warn("[CrazyGames SDK] Init error / running outside portal:", e && e.message);
+  }
+}
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initCrazyGamesSdk);
+} else {
+  initCrazyGamesSdk();
+}
+
 function triggerWatchAd(kind) {
   if (_watchingAdBusy) return;
   if (kind === 'luck' && adLuckLeftMs() > 0) {
@@ -3575,6 +3594,41 @@ function triggerWatchAd(kind) {
     return;
   }
 
+  // 1. Prioritas Utama: Jika CrazyGames SDK aktif di portal CrazyGames
+  if (window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.ad) {
+    try {
+      _watchingAdBusy = true;
+      var wasMuted = (typeof state !== 'undefined' && state && state.muted);
+      var callbacks = {
+        adStarted: () => {
+          if (typeof state !== 'undefined' && state) state.muted = true;
+        },
+        adFinished: () => {
+          if (typeof state !== 'undefined' && state) state.muted = wasMuted;
+          _watchingAdBusy = false;
+          completeWatchAdReward(kind);
+        },
+        adError: (error) => {
+          if (typeof state !== 'undefined' && state) state.muted = wasMuted;
+          _watchingAdBusy = false;
+          console.warn("[CrazyGames Ad Error]", error);
+          // Fallback ke simulasi timer jika iklan belum terisi di portal
+          runWatchAdSimulation(kind);
+        }
+      };
+      window.CrazyGames.SDK.ad.requestAd('rewarded', callbacks);
+      return;
+    } catch (err) {
+      console.warn("[CrazyGames Ad requestAd exception]", err);
+    }
+  }
+
+  // 2. Fallback: Simulasi timer (untuk pengujian di localhost / dev)
+  runWatchAdSimulation(kind);
+}
+window.triggerWatchAd = triggerWatchAd;
+
+function runWatchAdSimulation(kind) {
   _watchingAdBusy = true;
   var slot = document.getElementById('wadPlayerSlot');
   var bLuck = document.getElementById('wadBtnLuck');
@@ -3618,7 +3672,6 @@ function triggerWatchAd(kind) {
     completeWatchAdReward(kind);
   }
 }
-window.triggerWatchAd = triggerWatchAd;
 
 function completeWatchAdReward(kind) {
   var now = Date.now();
