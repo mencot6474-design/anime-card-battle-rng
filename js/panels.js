@@ -2790,7 +2790,10 @@ function renderGlobalLuckWidget() {
   const btnDisabled = !canBuy || maxed;
   const btnClass = 'glw-btn' + (active && !maxed ? ' stack' : '') + (maxed ? ' maxed' : '');
 
-  const buyerSafe = _escBroadcastHtml(gl && gl.activated_by ? gl.activated_by : 'HUNTER');
+  const rawBuyer = String((gl && gl.activated_by) ? gl.activated_by : 'HUNTER');
+  const buyerSafe = rawBuyer.replace(/[&<>"']/g, function(c) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+  });
   const titleBadge = active
     ? '<span class="glw-live-pill"><span class="glw-live-dot"></span>ACTIVE · ' + stacks + '/10 STACK</span>'
     : '<span class="glw-idle-pill">STANDBY</span>';

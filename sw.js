@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v193-glWidgetRedesign';
+const CACHE_NAME = 'anime-card-battle-v194-fixGlEsc';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
