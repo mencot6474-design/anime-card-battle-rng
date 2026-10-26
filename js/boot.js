@@ -402,10 +402,7 @@ async function submitAuth(){
     saveUsers(users);
 
     finish();
-    document.getElementById("auPass").value="";
-    document.getElementById("adTitle").textContent="Akun berhasil dibuat";
-    document.getElementById("adMsg").textContent="Silakan masuk sebagai "+name+". Tersimpan di Cloud!";
-    document.getElementById("authDone").classList.remove("hidden");
+    enterGame(name, true);
   }else{
     // Mode LOGIN: prioritas cloud, fallback lokal
     if(cloudOk){
