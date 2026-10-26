@@ -56324,5 +56324,831 @@ main#app:has(.sett-wrap) {
   }
 }
 
+/* =====================================================================
+   CYBERPUNK AAA INFINITE TOWER SHOP REDESIGN
+   ===================================================================== */
+.tactical-tower-shop-page {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(ellipse 70% 60% at 85% 15%, rgba(0, 217, 255, 0.08) 0%, transparent 70%),
+              radial-gradient(ellipse 60% 50% at 15% 85%, rgba(245, 158, 11, 0.07) 0%, transparent 70%),
+              linear-gradient(180deg, #07090e 0%, #040609 100%) !important;
+  box-sizing: border-box;
+}
+
+.tactical-tower-shop-page .tactical-shop-hub {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  max-width: 1440px !important;
+  margin: 0 auto !important;
+  padding: 16px 20px !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  box-sizing: border-box !important;
+  gap: 14px !important;
+  overflow: hidden !important;
+}
+
+/* TOP MARKET HEADER */
+.tactical-tower-shop-page .tsh-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  padding: 12px 18px !important;
+  border-radius: 16px !important;
+  background: linear-gradient(180deg, rgba(14, 21, 35, 0.85) 0%, rgba(8, 12, 20, 0.95) 100%) !important;
+  border: 1px solid rgba(0, 217, 255, 0.2) !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(12px) !important;
+  flex: none !important;
+}
+
+.tactical-tower-shop-page .tsh-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.tactical-tower-shop-page .tsh-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(0, 217, 255, 0.35);
+  padding: 8px 16px;
+  border-radius: 9px;
+  color: #e2e8f0;
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: none;
+}
+
+.tactical-tower-shop-page .tsh-back-btn:hover {
+  background: rgba(0, 217, 255, 0.18);
+  border-color: #00d9ff;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 0 14px rgba(0, 217, 255, 0.3);
+}
+
+.tactical-tower-shop-page .tsh-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tactical-tower-shop-page .tsh-kicker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: #00d9ff;
+  text-transform: uppercase;
+}
+
+.tactical-tower-shop-page .tsh-kicker-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00d9ff;
+  box-shadow: 0 0 8px #00d9ff;
+  animation: nextPulse 1.6s infinite ease-in-out;
+}
+
+.tactical-tower-shop-page .tsh-title {
+  font-family: "Rajdhani", sans-serif !important;
+  font-size: clamp(22px, 2.2vw, 28px) !important;
+  font-weight: 900 !important;
+  line-height: 1.05 !important;
+  letter-spacing: 0.05em !important;
+  color: #ffffff !important;
+}
+
+.tactical-tower-shop-page .tsh-cyan {
+  color: #00d9ff;
+  text-shadow: 0 0 14px rgba(0, 217, 255, 0.5);
+}
+
+.tactical-tower-shop-page .tsh-gold {
+  color: #fbbf24;
+  text-shadow: 0 0 14px rgba(251, 191, 36, 0.5);
+}
+
+.tactical-tower-shop-page .tsh-sub {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+}
+
+/* HEADER BALANCES */
+.tactical-tower-shop-page .tsh-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tactical-tower-shop-page .tsh-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, rgba(16, 24, 38, 0.75), rgba(9, 13, 22, 0.9));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 6px 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.tactical-tower-shop-page .tsh-token-chip {
+  border-color: rgba(0, 217, 255, 0.25);
+}
+
+.tactical-tower-shop-page .tsh-gem-chip {
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+.tactical-tower-shop-page .tc-icon-wrap {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.tactical-tower-shop-page .tc-icon-wrap.token-ic {
+  background: rgba(0, 217, 255, 0.1);
+  color: #00d9ff;
+}
+
+.tactical-tower-shop-page .tc-icon-wrap.gem-ic {
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.tactical-tower-shop-page .tc-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.tactical-tower-shop-page .tc-col small {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.tactical-tower-shop-page .tc-col b {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 19px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* CONTENT SPLIT (GRID + INSPECTOR) */
+.tactical-tower-shop-page .tsh-content-split {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.4fr) minmax(370px, 1fr) !important;
+  gap: 16px !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+/* LEFT: GRID PANEL */
+.tactical-tower-shop-page .tsh-grid-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  background: linear-gradient(180deg, rgba(13, 20, 32, 0.8) 0%, rgba(7, 11, 18, 0.94) 100%) !important;
+  border: 1px solid rgba(0, 217, 255, 0.18) !important;
+  border-radius: 16px !important;
+  padding: 14px 16px !important;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(12px) !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  gap: 10px !important;
+}
+
+.tactical-tower-shop-page .tsh-grid-subhdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  flex: none;
+}
+
+.tactical-tower-shop-page .tgs-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #e2e8f0;
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+}
+
+.tactical-tower-shop-page .tsh-bracket {
+  color: #00d9ff;
+  font-weight: 800;
+}
+
+.tactical-tower-shop-page .tgs-count-tag {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+/* CARDS GRID */
+.tactical-tower-shop-page .tsh-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(136px, 1fr)) !important;
+  gap: 12px !important;
+  overflow-y: auto !important;
+  padding-right: 4px !important;
+  min-height: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+.tactical-tower-shop-page .tsh-grid::-webkit-scrollbar {
+  width: 4px;
+}
+.tactical-tower-shop-page .tsh-grid::-webkit-scrollbar-thumb {
+  background: rgba(0, 217, 255, 0.25);
+  border-radius: 4px;
+}
+
+/* INDIVIDUAL ITEM CARD */
+.tactical-tower-shop-page .tsh-card {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 8px !important;
+  border-radius: 12px !important;
+  background: linear-gradient(150deg, rgba(16, 24, 38, 0.85) 0%, rgba(9, 13, 22, 0.96) 100%) !important;
+  border: 1.2px solid rgba(255, 255, 255, 0.08) !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4) !important;
+  overflow: hidden !important;
+}
+
+.tactical-tower-shop-page .tsh-card:hover {
+  transform: translateY(-3px) scale(1.02) !important;
+  border-color: var(--item-c, #00d9ff) !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.6), 0 0 16px color-mix(in srgb, var(--item-c, #00d9ff) 35%, transparent) !important;
+}
+
+.tactical-tower-shop-page .tsh-card.selected {
+  border-color: var(--item-c, #00d9ff) !important;
+  background: linear-gradient(150deg, color-mix(in srgb, var(--item-c, #00d9ff) 18%, rgba(16, 24, 38, 0.9)), rgba(9, 13, 22, 0.98)) !important;
+  box-shadow: 0 0 0 1.5px var(--item-c, #00d9ff), 0 0 20px color-mix(in srgb, var(--item-c, #00d9ff) 40%, transparent) !important;
+}
+
+.tactical-tower-shop-page .tsh-card.insufficient {
+  opacity: 0.72;
+}
+
+.tactical-tower-shop-page .tsh-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.tactical-tower-shop-page .tsh-cat-tag {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--item-c, #7dd3fc);
+  text-transform: uppercase;
+}
+
+.tactical-tower-shop-page .tsh-tier-pill {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.tactical-tower-shop-page .tsh-art-box {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 8, 14, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.tactical-tower-shop-page .tsh-art-box .shop-pot-img {
+  width: 82%;
+  height: 82%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+  z-index: 2;
+}
+
+.tactical-tower-shop-page .tsh-card:hover .tsh-art-box .shop-pot-img {
+  transform: scale(1.1);
+}
+
+.tactical-tower-shop-page .tsh-art-halo {
+  position: absolute;
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--item-c, #00d9ff) 25%, transparent);
+  filter: blur(10px);
+  z-index: 1;
+}
+
+.tactical-tower-shop-page .tsh-art-sweep {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 45%);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.tactical-tower-shop-page .tsh-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tactical-tower-shop-page .tsh-card-name {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tactical-tower-shop-page .tsh-card-price {
+  margin-top: 1px;
+}
+
+.tactical-tower-shop-page .tsh-price-val {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-family: "Barlow Condensed", sans-serif;
+}
+
+.tactical-tower-shop-page .tsh-price-val b {
+  font-size: 14px;
+  font-weight: 900;
+  color: #fbbf24;
+}
+
+.tactical-tower-shop-page .tsh-price-val small {
+  font-size: 9px;
+  font-weight: 800;
+  color: #94a3b8;
+  letter-spacing: 0.08em;
+}
+
+.tactical-tower-shop-page .tsh-owned-lbl {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #00ffaa;
+  letter-spacing: 0.08em;
+}
+
+.tactical-tower-shop-page .tsh-card-sel-pip {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 18px 18px 0;
+  border-color: transparent var(--item-c, #00d9ff) transparent transparent;
+}
+
+/* RIGHT: DETAIL INSPECTOR PANEL */
+.tactical-tower-shop-page .tsh-detail-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  background: linear-gradient(180deg, rgba(14, 21, 35, 0.82) 0%, rgba(8, 12, 20, 0.94) 100%) !important;
+  border: 1px solid rgba(0, 217, 255, 0.2) !important;
+  border-radius: 16px !important;
+  padding: 16px 18px !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(12px) !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow-y: auto !important;
+  gap: 12px !important;
+}
+
+.tactical-tower-shop-page .tsh-detail-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  flex: none;
+}
+
+.tactical-tower-shop-page .tdh-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #e2e8f0;
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+}
+
+.tactical-tower-shop-page .tdh-status-tag {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: #00d9ff;
+  background: rgba(0, 217, 255, 0.08);
+  border: 1px solid rgba(0, 217, 255, 0.25);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.tactical-tower-shop-page .tsh-detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1 1 auto;
+}
+
+/* HERO SPEC */
+.tactical-tower-shop-page .tsh-hero-spec {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(16, 24, 40, 0.7), rgba(9, 13, 22, 0.85));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.tactical-tower-shop-page .tsh-hero-spec::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--spec-c, #00d9ff);
+  box-shadow: 0 0 10px var(--spec-c, #00d9ff);
+}
+
+.tactical-tower-shop-page .tsh-hero-art {
+  width: 66px;
+  height: 66px;
+  border-radius: 12px;
+  background: rgba(5, 8, 14, 0.8);
+  border: 1.5px solid var(--spec-c, #00d9ff);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--spec-c, #00d9ff) 35%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  position: relative;
+}
+
+.tactical-tower-shop-page .tsh-hero-art .shop-pot-img {
+  width: 78%;
+  height: 78%;
+  object-fit: contain;
+  z-index: 2;
+}
+
+.tactical-tower-shop-page .tha-glow {
+  position: absolute;
+  width: 80%;
+  height: 80%;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--spec-c, #00d9ff) 30%, transparent);
+  filter: blur(8px);
+  z-index: 1;
+}
+
+.tactical-tower-shop-page .tsh-hero-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.tactical-tower-shop-page .tsh-hero-kicker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tactical-tower-shop-page .tsh-hero-title {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 19px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+}
+
+.tactical-tower-shop-page .tsh-hero-price {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.tactical-tower-shop-page .thp-val {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 20px;
+  font-weight: 900;
+  color: #fbbf24;
+}
+
+.tactical-tower-shop-page .thp-val small {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 800;
+}
+
+.tactical-tower-shop-page .thp-sub {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  color: #00d9ff;
+  letter-spacing: 0.08em;
+}
+
+/* DESC BLOCK */
+.tactical-tower-shop-page .tsh-desc-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(10, 16, 26, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tactical-tower-shop-page .tsh-sec-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #00d9ff;
+  text-transform: uppercase;
+}
+
+.tactical-tower-shop-page .tsh-desc-text {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #cbd5e1;
+  margin: 0;
+}
+
+/* MATRIX GRID */
+.tactical-tower-shop-page .tsh-matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.tactical-tower-shop-page .tsh-mg-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(10, 16, 26, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tactical-tower-shop-page .tmg-lbl {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.tactical-tower-shop-page .tmg-val {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 15px;
+  font-weight: 900;
+  color: #e2e8f0;
+}
+
+.tactical-tower-shop-page .tmg-val.gold { color: #fbbf24; }
+.tactical-tower-shop-page .tmg-val.green { color: #00ffaa; }
+.tactical-tower-shop-page .tmg-val.cyan { color: #00d9ff; }
+.tactical-tower-shop-page .tmg-val.red { color: #f43f5e; }
+
+/* BUY CTA BUTTON */
+.tactical-tower-shop-page .tsh-action-footer {
+  margin-top: auto;
+  flex: none;
+}
+
+.tactical-tower-shop-page .tsh-buy-btn {
+  position: relative !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  padding: 12px 18px !important;
+  border-radius: 12px !important;
+  cursor: pointer !important;
+  transition: all 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+  overflow: hidden !important;
+  background: linear-gradient(135deg, #00d9ff 0%, #0284c7 60%, #0369a1 100%) !important;
+  border: 1.5px solid #7df9ff !important;
+  color: #040812 !important;
+  box-shadow: 0 8px 28px rgba(0, 217, 255, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+
+.tactical-tower-shop-page .tsh-buy-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 12px 36px rgba(0, 217, 255, 0.65), 0 0 24px rgba(125, 249, 255, 0.6) !important;
+}
+
+.tactical-tower-shop-page .tsh-buy-btn:active {
+  transform: translateY(1px) !important;
+}
+
+.tactical-tower-shop-page .tsh-buy-btn.disabled {
+  background: rgba(15, 23, 42, 0.7) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #64748b !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+.tactical-tower-shop-page .tsh-buy-btn .tbb-ic-wrap {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.tactical-tower-shop-page .tsh-buy-btn .tbb-ic-wrap .shop-pot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.tactical-tower-shop-page .tsh-buy-btn .tbb-text {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  flex: 1;
+}
+
+.tactical-tower-shop-page .tsh-buy-btn .tbb-text small {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: #082f49;
+}
+
+.tactical-tower-shop-page .tsh-buy-btn.disabled .tbb-text small {
+  color: #64748b;
+}
+
+.tactical-tower-shop-page .tsh-buy-btn .tbb-text b {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+  color: #040812;
+}
+
+.tactical-tower-shop-page .tsh-buy-btn.disabled .tbb-text b {
+  color: #94a3b8;
+}
+
+.tactical-tower-shop-page .tbb-chevrons {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 24px;
+  font-weight: 900;
+  display: flex;
+  gap: 1px;
+  color: rgba(4, 8, 18, 0.65);
+  line-height: 1;
+}
+
+.tactical-tower-shop-page .tsh-buy-btn.disabled .tbb-chevrons {
+  color: rgba(100, 116, 139, 0.4);
+}
+
+.tactical-tower-shop-page .tbb-chevrons span:nth-child(1) { animation: chevronPulse 1.2s infinite 0.1s; }
+.tactical-tower-shop-page .tbb-chevrons span:nth-child(2) { animation: chevronPulse 1.2s infinite 0.3s; }
+.tactical-tower-shop-page .tbb-chevrons span:nth-child(3) { animation: chevronPulse 1.2s infinite 0.5s; }
+
+/* RESPONSIVE SHOP BREAKPOINTS */
+@media (max-width: 900px) {
+  .tactical-tower-shop-page {
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow-y: auto !important;
+  }
+  .tactical-tower-shop-page .tactical-shop-hub {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 10px 10px 24px !important;
+  }
+  .tactical-tower-shop-page .tsh-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .tactical-tower-shop-page .tsh-header-right {
+    justify-content: flex-start !important;
+    flex-wrap: wrap !important;
+  }
+  .tactical-tower-shop-page .tsh-content-split {
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .tactical-tower-shop-page .tsh-grid-panel {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .tactical-tower-shop-page .tsh-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)) !important;
+    max-height: 340px !important;
+  }
+  .tactical-tower-shop-page .tsh-detail-panel {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
+
 
 

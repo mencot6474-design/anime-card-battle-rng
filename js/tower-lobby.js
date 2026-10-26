@@ -364,21 +364,20 @@ function renderTowerShop(){
   /* Data item Cyberpunk Supply */
   const ITEMS=[
     {k:"gem",cat:"EXCHANGE",tier:"GEM",label:"TOKEN → GEM // 100:10",sub:"Tukar 100 TOKEN INF menjadi 10 GEM premium. Bisa ditukar berulang tanpa batas — keran utama GEM dari grinding menara.",cost:100,gem:10,req:null,ac:"#ffd700"},
-    {k:"weather",cat:"WEATHER",tier:"SPEC-A",label:"ATMOSPHERIC OVERRIDE",sub:"Memaksa cuaca berganti dengan peluang asli (durasi 5 menit). Bila cuaca baru memiliki tingkat rarity sama atau lebih tinggi, durasi di-reset.",cost:10,req:null,ac:"#7df9ff"},
-    {k:"luck1",cat:"AUGMENT",tier:"MK-I",label:"NEURAL LUCK MK-I",sub:"+3 flat luck selama 5 menit. Stackable — durasi bertambah +5 menit tiap injeksi serum.",cost:10,req:null,ac:"#5cf0a8"},
-    {k:"luck2",cat:"AUGMENT",tier:"MK-II",label:"NEURAL LUCK MK-II",sub:"+5 flat luck & +10% luck multiplier selama 5 menit. Stackable — durasi bertambah +5 menit.",cost:50,req:null,ac:"#5cf0a8"},
-    {k:"luck3",cat:"AUGMENT",tier:"MK-III",label:"NEURAL LUCK MK-III",sub:"+10 flat luck & +20% luck multiplier selama 5 menit. Matrix augmentasi maksimal.",cost:250,req:null,ac:"#5cf0a8"},
-    {k:"speed1",cat:"OVERCLOCK",tier:"MK-I",label:"CHRONO BOOSTER MK-I",sub:"Roll speed +0.2× (≈1.2×) selama 5 menit. Mempercepat siklus putaran RNG mesin menara.",cost:10,req:null,ac:"#ffd27a"},
-    {k:"speed2",cat:"OVERCLOCK",tier:"MK-II",label:"CHRONO BOOSTER MK-II",sub:"Roll speed +0.5× (≈1.5×) selama 5 menit. Overclock sinkronisasi akselerator.",cost:50,req:null,ac:"#ffd27a"},
-    {k:"speed3",cat:"OVERCLOCK",tier:"MK-III",label:"CHRONO BOOSTER MK-III",sub:"Roll speed +1.0× (2.0× instan) selama 5 menit. Siklus overdrive kecepatan tertinggi.",cost:250,req:null,ac:"#ffd27a"}
+    {k:"weather",cat:"WEATHER",tier:"SPEC-A",label:"ATMOSPHERIC OVERRIDE",sub:"Memaksa cuaca berganti dengan peluang asli (durasi 5 menit). Bila cuaca baru memiliki tingkat rarity sama atau lebih tinggi, durasi di-reset.",cost:10,req:null,ac:"#00d9ff"},
+    {k:"luck1",cat:"AUGMENT",tier:"MK-I",label:"NEURAL LUCK MK-I",sub:"+3 flat luck selama 5 menit. Stackable — durasi bertambah +5 menit tiap injeksi serum.",cost:10,req:null,ac:"#00ffaa"},
+    {k:"luck2",cat:"AUGMENT",tier:"MK-II",label:"NEURAL LUCK MK-II",sub:"+5 flat luck & +10% luck multiplier selama 5 menit. Stackable — durasi bertambah +5 menit.",cost:50,req:null,ac:"#00ffaa"},
+    {k:"luck3",cat:"AUGMENT",tier:"MK-III",label:"NEURAL LUCK MK-III",sub:"+10 flat luck & +20% luck multiplier selama 5 menit. Matrix augmentasi maksimal.",cost:250,req:null,ac:"#00ffaa"},
+    {k:"speed1",cat:"OVERCLOCK",tier:"MK-I",label:"CHRONO BOOSTER MK-I",sub:"Roll speed +0.2× (≈1.2×) selama 5 menit. Mempercepat siklus putaran RNG mesin menara.",cost:10,req:null,ac:"#fbbf24"},
+    {k:"speed2",cat:"OVERCLOCK",tier:"MK-II",label:"CHRONO BOOSTER MK-II",sub:"Roll speed +0.5× (≈1.5×) selama 5 menit. Overclock sinkronisasi akselerator.",cost:50,req:null,ac:"#fbbf24"},
+    {k:"speed3",cat:"OVERCLOCK",tier:"MK-III",label:"CHRONO BOOSTER MK-III",sub:"Roll speed +1.0× (2.0× instan) selama 5 menit. Siklus overdrive kecepatan tertinggi.",cost:250,req:null,ac:"#fbbf24"}
   ];
   const stkOf=k=>k==="weather"?(state.potions||0):k.startsWith("luck")?(state.luckPots&&state.luckPots[+k.slice(-1)-1])||0:k.startsWith("speed")?(state.speedPots&&state.speedPots[+k.slice(-1)-1])||0:(state.mythicPotions||0);
-  /* Kartu unlock (mis. SHADOW KING): status TERBUKA permanen via state.towerShopOwned. */
+  /* Kartu unlock: status TERBUKA permanen via state.towerShopOwned. */
   const cardOwned=it=>!!(it.unlock&&state.towerShopOwned&&state.towerShopOwned[it.unlock]);
   if(window.shopSel==null||window.shopSel>=ITEMS.length)window.shopSel=0;
   let swapT=null;
 
-  /* Re-skin TOKO INF = komponen identik TOKO RAID (grid kartu .hsg-card + inspector .hsd-*). */
   const renderGrid=()=>{
     const gridEl=document.getElementById("towerShopGrid");
     if(!gridEl)return;
@@ -387,22 +386,27 @@ function renderTowerShop(){
       const isOwned=cardOwned(it);
       const canAfford=tok>=it.cost;
       return `
-      <div class="hsg-card cp-shop-card ${isSel?'selected':''} ${isOwned?'owned':''} ${(!canAfford&&!isOwned)?'insufficient':''}" data-i="${i}" style="--item-c:${it.ac}">
-        <div class="hsg-card-top">
-          <span class="hsg-cat-badge cp-cat">${it.cat}</span>
-          <span class="hsg-tier-tag cp-tier">${it.tier}</span>
+      <div class="tsh-card ${isSel?'selected':''} ${isOwned?'owned':''} ${(!canAfford&&!isOwned)?'insufficient':''}" data-i="${i}" style="--item-c:${it.ac}">
+        <div class="tsh-card-top">
+          <span class="tsh-cat-tag">${it.cat}</span>
+          <span class="tsh-tier-pill">${it.tier}</span>
         </div>
-        <div class="hsg-art-wrap cp-art-wrap ${it.unlock?'boss-card':''}">
+        <div class="tsh-art-box ${it.unlock?'boss-art':''}">
+          <div class="tsh-art-halo"></div>
           ${ICONS[it.k]||"🎁"}
+          <div class="tsh-art-sweep"></div>
         </div>
-        <div class="hsg-card-name">${it.label}</div>
-        <div class="hsg-price-badge">
-          ${isOwned?`<span class="hsg-owned-lbl">&#10004; UNLOCKED</span>`:`<b>${fmt(it.cost)}</b> <small>TOKEN</small>`}
+        <div class="tsh-card-body">
+          <div class="tsh-card-name" title="${it.label}">${it.label}</div>
+          <div class="tsh-card-price">
+            ${isOwned?`<span class="tsh-owned-lbl">✔ UNLOCKED</span>`:`<span class="tsh-price-val"><b>${fmt(it.cost)}</b> <small>TOKEN</small></span>`}
+          </div>
         </div>
+        ${isSel?'<div class="tsh-card-sel-pip"></div>':''}
       </div>`;
     }).join("");
-    gridEl.querySelectorAll(".hsg-card").forEach(c=>{
-      c.onclick=()=>{window.shopSel=+c.dataset.i;renderGrid();renderDetail();};
+    gridEl.querySelectorAll(".tsh-card").forEach(c=>{
+      c.onclick=()=>{ try{sfx.tap?.();}catch(e){} window.shopSel=+c.dataset.i;renderGrid();renderDetail();};
     });
   };
 
@@ -410,20 +414,21 @@ function renderTowerShop(){
     const it=ITEMS[window.shopSel],btn=document.getElementById("towerShopBuy");
     if(!btn||!it)return;
     btn.style.animation="none";void btn.offsetWidth;btn.style.animation="";
-    let small="AUTHORIZE PROCUREMENT",big=`ACQUIRE &bull; ${fmt(it.cost)} TOKEN`,dis=false;
+    let small="OTORISASI PERTUKARAN",big=`ACQUIRE &bull; ${fmt(it.cost)} TOKEN`,dis=false;
     if(it.gem){small="TUKAR TOKEN → GEM";big=`+${it.gem} GEM &bull; ${fmt(it.cost)} TOKEN`;}
     if(cardOwned(it)){small="Roll sudah permanen terbuka";big="SUDAH DIMILIKI";dis=true;}
     else if(tok<it.cost){small="TOKEN INF TIDAK CUKUP";big=`DEFISIT ${fmt(it.cost-tok)} TOKEN`;dis=true;}
     else if(it.req&&stkOf(it.req)<=0){small="BUTUH WEATHER POTION";big="BUTUH 1 WEATHER POTION";dis=true;}
     btn.disabled=dis;
-    btn.className="hsd-buy-action cp-buy-action" + (dis?" disabled":"");
+    btn.className="tsh-buy-btn" + (dis?" disabled":"");
     btn.innerHTML=`
-      <div class="hsd-ba-ic">${ICONS[it.k]||"🎁"}</div>
-      <div class="hsd-ba-text">
+      <div class="tbb-glow-scan"></div>
+      <div class="tbb-ic-wrap">${ICONS[it.k]||"🎁"}</div>
+      <div class="tbb-text">
         <small>${small}</small>
         <b>${big}</b>
       </div>
-      <div class="hsd-ba-arrow"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>`;
+      <div class="tbb-chevrons"><span>&rsaquo;</span><span>&rsaquo;</span><span>&rsaquo;</span></div>`;
   };
 
   const renderDetail=immediate=>{
@@ -436,30 +441,52 @@ function renderTowerShop(){
       const c=isCard?CARDS[it.unlock]:null;
       const unlocked=!isCard||cardOwned(it);
       const cnt=isCard?state.stacks.filter(s=>s.char===it.unlock).reduce((n,s)=>n+(s.count||1),0):(it.gem?0:stkOf(it.k));
+      const canAfford=tok>=it.cost;
       box.innerHTML=`
-      <div class="hsd-spec-header cp-spec-header" style="--spec-c:${it.ac}">
-        <div class="hsd-icon-box cp-hero-ic ${isCard?'boss-art':''}">${ICONS[it.k]||"🎁"}</div>
-        <div class="hsd-meta-col">
-          <div class="hsd-meta-kicker"><span class="hsd-tier-pill">${it.tier}</span> SUPPLY DEPOT &bull; ${it.cat}</div>
-          <div class="hsd-meta-title">${it.label}</div>
-          <div class="hsd-meta-price">${fmt(it.cost)} TOKEN INF</div>
+      <div class="tsh-hero-spec" style="--spec-c:${it.ac}">
+        <div class="tsh-hero-art ${isCard?'boss-art':''}">
+          <div class="tha-glow"></div>
+          ${ICONS[it.k]||"🎁"}
+        </div>
+        <div class="tsh-hero-meta">
+          <div class="tsh-hero-kicker">
+            <span class="tsh-tier-pill">${it.tier}</span>
+            <span class="tsh-cat-tag">${it.cat} DEPOT</span>
+          </div>
+          <div class="tsh-hero-title">${it.label}</div>
+          <div class="tsh-hero-price">
+            <span class="thp-val">${fmt(it.cost)} <small>TOKEN INF</small></span>
+            ${it.gem ? `<span class="thp-sub">✦ HASIL: +${it.gem} GEMS</span>` : `<span class="thp-sub">✦ AKTIVASI INVENTORI</span>`}
+          </div>
         </div>
       </div>
 
-      <div class="hsd-desc-block cp-desc-block">
-        <div class="hsd-sec-label">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-          SPECIFICATION // EFFECT PARAMETERS
+      <div class="tsh-desc-block">
+        <div class="tsh-sec-label">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <span>SPESIFIKASI & PARAMETER EFEK</span>
         </div>
-        <p class="hsd-desc-text">${it.sub}</p>
-        ${c?`<div class="hsd-skill-box cp-skill-box"><div class="hsb-title">&#9889; ${c.passive.name}</div><div class="hsb-text">${c.passive.desc}</div></div>`:''}
+        <p class="tsh-desc-text">${it.sub}</p>
+        ${c?`<div class="tsh-skill-box"><div class="tsb-title">⚡ ${c.passive.name}</div><div class="tsb-desc">${c.passive.desc}</div></div>`:''}
       </div>
 
-      <div class="hsd-matrix-grid cp-matrix-grid">
-        <div class="hsd-mg-cell"><span class="hm-lbl">EXCHANGE PRICE</span><b class="hm-val gold">${fmt(it.cost)} TOKEN</b></div>
-        <div class="hsd-mg-cell"><span class="hm-lbl">GACHA UNLOCK STATUS</span><b class="hm-val ${unlocked?'green':'warn'}">${isCard?(unlocked?'PERMANENT UNLOCKED':'LOCKED // BELI DULU'):'INSTANT ACTIVE'}</b></div>
-        <div class="hsd-mg-cell"><span class="hm-lbl">AVAILABLE DEPOSIT</span><b class="hm-val cyan">${fmt(tok)} TOKEN</b></div>
-        <div class="hsd-mg-cell"><span class="hm-lbl">OWNED STOCK</span><b class="hm-val ${cnt>0?'green':''}">${isCard?(cnt?'&times;'+cnt:'0'):(it.gem?'&#8734; UNLIMITED':'&times;'+cnt)}</b></div>
+      <div class="tsh-matrix-grid">
+        <div class="tsh-mg-cell">
+          <span class="tmg-lbl">BIAYA PERTUKARAN</span>
+          <b class="tmg-val gold">${fmt(it.cost)} TOKEN</b>
+        </div>
+        <div class="tsh-mg-cell">
+          <span class="tmg-lbl">STATUS AKTIVASI</span>
+          <b class="tmg-val ${unlocked?'green':'warn'}">${isCard?(unlocked?'PERMANENT UNLOCKED':'LOCKED // BELI DULU'):'INSTANT ACTIVE'}</b>
+        </div>
+        <div class="tsh-mg-cell">
+          <span class="tmg-lbl">SALDO TOKEN ANDA</span>
+          <b class="tmg-val ${canAfford?'cyan':'red'}">${fmt(tok)} TOKEN</b>
+        </div>
+        <div class="tsh-mg-cell">
+          <span class="tmg-lbl">STOK DI INVENTORI</span>
+          <b class="tmg-val ${cnt>0?'green':''}">${isCard?(cnt?'×'+cnt:'0'):(it.gem?'∞ UNLIMITED':'×'+cnt)}</b>
+        </div>
       </div>`;
       renderBuy();
     };
@@ -471,49 +498,72 @@ function renderTowerShop(){
   const lockCards=ITEMS.filter(x=>x.unlock);
   const lcOwned=lockCards.filter(cardOwned).length;
   const unlockChip=lockCards.length?`
-          <div class="hsh-token-chip subtle cp-chip">
-            <div class="htc-col"><small>CORE UNLOCKED</small><b>${lcOwned}/${lockCards.length}</b></div>
+          <div class="tsh-chip subtle">
+            <div class="tc-col"><small>CORE UNLOCKED</small><b>${lcOwned}/${lockCards.length}</b></div>
           </div>`:"";
 
   app.innerHTML=`
-  <div class="tw-page inf-shop-page">
-    <div class="hunter-shop-hub cp-shop-hub">
+  <div class="tactical-tower-page tactical-tower-shop-page">
+    <div class="tactical-shop-hub">
 
       <!-- TOP MARKET HEADER -->
-      <div class="hsh-header cp-header">
-        <div class="hsh-header-left">
-          <button class="hsh-back-btn cp-back-btn" id="towerShopBack" type="button">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-            <span>RETURN TO SPIRE</span>
+      <header class="tsh-header">
+        <div class="tsh-header-left">
+          <button class="tsh-back-btn" id="towerShopBack" type="button" title="Kembali ke Menara">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            <span>KEMBALI KE MENARA</span>
           </button>
-          <div class="hsh-title-wrap">
-            <div class="hsh-kicker"><span class="hsh-dot cp-dot"></span> PROCUREMENT MATRIX // INFINITE SPIRE</div>
-            <div class="hsh-title">TACTICAL <span class="hsh-cyan">INF SUPPLY</span></div>
+          <div class="tsh-titles">
+            <div class="tsh-kicker"><span class="tsh-kicker-dot"></span>NEURAL PROCUREMENT // SPIRE SUPPLY DEPOT</div>
+            <div class="tsh-title">TOWER <span class="tsh-cyan">MARKET</span></div>
+            <div class="tsh-sub">PERTUKARAN TOKEN HASIL PENETRASI LANTAI &bull; TANPA BATAS</div>
           </div>
         </div>
-        <div class="hsh-header-right">
-          <div class="hsh-token-chip cp-chip">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8M8 14h6"/></svg>
-            <div class="htc-col"><small>TOKEN INF</small><b class="cyan">${fmt(tok)}</b></div>
+        <div class="tsh-header-right">
+          <div class="tsh-chip tsh-token-chip">
+            <div class="tc-icon-wrap token-ic">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8M8 14h6"/></svg>
+            </div>
+            <div class="tc-col"><small>SALDO TOKEN INF</small><b class="tsh-cyan">${fmt(tok)}</b></div>
+          </div>
+          <div class="tsh-chip tsh-gem-chip">
+            <div class="tc-icon-wrap gem-ic">
+              <img src="assets/images/premium-currency.webp" alt="Gems" width="16" height="16">
+            </div>
+            <div class="tc-col"><small>SALDO GEMS</small><b class="tsh-gold">${fmt(state.premiumGems||0)}</b></div>
           </div>
           ${unlockChip}
         </div>
-      </div>
+      </header>
 
       <!-- MAIN MARKET SPLIT: LEFT GRID CARDS & RIGHT DETAIL INSPECTOR -->
-      <div class="hsh-content-split">
-        <section class="hsh-grid-panel cp-panel">
-          <div class="hsh-grid-subhdr">
-            <span class="hgs-txt">[ SPIRE SUPPLY &bull; KLIK UNTUK INSPEKSI TELEMETRI ]</span>
+      <div class="tsh-content-split">
+        <section class="tsh-grid-panel">
+          <div class="tsh-grid-subhdr">
+            <div class="tgs-left">
+              <span class="tsh-bracket">[</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <span class="tgs-txt">KATALOG SUPLAI TAKTIS</span>
+              <span class="tsh-bracket">]</span>
+            </div>
+            <span class="tgs-count-tag">${ITEMS.length} SUPLAI TERSEDIA</span>
           </div>
-          <div class="hunter-shop-grid" id="towerShopGrid"></div>
+          <div class="tsh-grid" id="towerShopGrid"></div>
         </section>
 
-        <section class="hsh-detail-panel cp-panel">
-          <div class="hsd-panel-title cp-panel-title">TELEMETRY INSPECTION // PROCUREMENT</div>
-          <div class="hsd-detail-content" id="towerShopDetail"></div>
-          <div class="hsd-action-footer">
-            <button class="hsd-buy-action cp-buy-action" id="towerShopBuy" type="button"></button>
+        <section class="tsh-detail-panel">
+          <div class="tsh-detail-hdr">
+            <div class="tdh-left">
+              <span class="tsh-bracket">[</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              <span class="tdh-txt">TELEMETRY INSPECTOR</span>
+              <span class="tsh-bracket">]</span>
+            </div>
+            <span class="tdh-status-tag">PROCUREMENT TERMINAL</span>
+          </div>
+          <div class="tsh-detail-content" id="towerShopDetail"></div>
+          <div class="tsh-action-footer">
+            <button class="tsh-buy-btn" id="towerShopBuy" type="button"></button>
           </div>
         </section>
       </div>
