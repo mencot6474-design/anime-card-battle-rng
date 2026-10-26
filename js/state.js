@@ -168,10 +168,12 @@ function loadStateFor(name){
   ['r5k','r10k','r25k','r50k','r100k'].forEach(k=>{if(typeof state.rollPacks[k]!=="number"||state.rollPacks[k]<0)state.rollPacks[k]=0;});
   try{
     var _dKey="acb_daily_r100k_v1:"+String(name||"guest").toLowerCase();
-    var _dBal=Math.max(0,parseInt(localStorage.getItem(_dKey),10)||0,typeof state.dailyR100kBalance==="number"?Math.floor(state.dailyR100kBalance):0);
-    state.dailyR100kBalance=_dBal;
-    try{localStorage.setItem(_dKey,String(_dBal));}catch(e){}
-    if((state.rollPacks.r100k||0)<_dBal)state.rollPacks.r100k=_dBal;
+    var _savedCloudBal = (typeof state.dailyR100kBalance === "number" && state.dailyR100kBalance >= 0) ? Math.floor(state.dailyR100kBalance) : 0;
+    var _savedLsBal = parseInt(localStorage.getItem(_dKey), 10) || 0;
+    var _dBal = Math.max(0, _savedCloudBal, _savedLsBal);
+    state.dailyR100kBalance = _dBal;
+    try { localStorage.setItem(_dKey, String(_dBal)); } catch(e){}
+    if ((state.rollPacks.r100k || 0) < _dBal) state.rollPacks.r100k = _dBal;
   }catch(e){}
   if(typeof state.idxRewardsClaimed!=="number"||state.idxRewardsClaimed<0)state.idxRewardsClaimed=0;
   /* STAT PROFIL: total roll gabungan (dice + instan pack) & waktu bermain.
@@ -887,25 +889,28 @@ function _dailyR100kKey(){
 }
 function getDailyR100kBalance(){
   try{
-    var ls=parseInt(localStorage.getItem(_dailyR100kKey()),10)||0;
     var st=(state&&typeof state.dailyR100kBalance==="number")?Math.floor(state.dailyR100kBalance):0;
-    return Math.max(0,ls,st);
+    var ls=parseInt(localStorage.getItem(_dailyR100kKey()),10)||0;
+    var maxVal=Math.max(0,st,ls);
+    if(state&&state.dailyR100kBalance!==maxVal)state.dailyR100kBalance=maxVal;
+    return maxVal;
   }catch(e){return 0;}
 }
 function setDailyR100kBalance(val){
   var v=Math.max(0,Math.floor(Number(val)||0));
   try{localStorage.setItem(_dailyR100kKey(),String(v));}catch(e){}
-  if(state)state.dailyR100kBalance=v;
+  if(state){
+    state.dailyR100kBalance=v;
+    state.rollPacks=state.rollPacks||{r5k:0,r10k:0,r25k:0,r50k:0,r100k:0};
+    state.rollPacks.r100k=Math.max(v,state.rollPacks.r100k||0);
+  }
   return v;
 }
 function addDailyR100kPacks(qty){
   var add=Math.max(0,Math.floor(Number(qty)||0));
   if(!add)return getDailyR100kBalance();
-  var next=setDailyR100kBalance(getDailyR100kBalance()+add);
-  if(state){
-    state.rollPacks=state.rollPacks||{r5k:0,r10k:0,r25k:0,r50k:0,r100k:0};
-    state.rollPacks.r100k=Math.max(next,(state.rollPacks.r100k||0)+add);
-  }
+  var cur=getDailyR100kBalance();
+  var next=setDailyR100kBalance(cur+add);
   return next;
 }
 function consumeDailyR100kPacks(usedQty){
