@@ -54259,11 +54259,11 @@ main#app:has(.sett-wrap) {
 
 
 /* ==========================================================================
-   UNIFORM CARD BADGE SIZING & POSITIONING (MATCHING LOBBY CARD)
-   Badge Nama (top-left), Badge 1 in X (below name), Badge Shiny (top-right)
+   UNIFORM CARD BADGE SIZING (MATCHING LOBBY CARD)
+   Hover card (.bps-hover) keeps floating elements outside as requested.
    ========================================================================== */
 
-/* 1. Unhide badge containers everywhere */
+/* 1. Ensure badges container is never hidden on cards */
 .rrc .hc-badges,
 .rrc .rrc-badges,
 .rrc .rrc-var,
@@ -54315,7 +54315,7 @@ main#app:has(.sett-wrap) {
   box-sizing: border-box !important;
 }
 
-/* 3. Instant Roll Card (.rrc in #rollResultPop) - Unified with Lobby */
+/* 3. Instant Roll Card (.rrc in #rollResultPop) */
 .rrc {
   position: relative !important;
   overflow: hidden !important;
@@ -54387,7 +54387,7 @@ main#app:has(.sett-wrap) {
   z-index: 6 !important;
 }
 
-/* 4. Card Index Modal (#indexModal .ix-cell) - Unified with Lobby */
+/* 4. Card Index Modal (#indexModal .ix-cell) */
 #indexModal .ixc-stack {
   position: absolute !important;
   top: 10px !important;
@@ -54443,23 +54443,63 @@ main#app:has(.sett-wrap) {
   pointer-events: none !important;
 }
 
-/* 5. Roll Overlay Reveal Showcase - Unified with Lobby */
-.roll-overlay .roll-card-showcase .hub-center .hc-name-top {
-  top: 12px !important;
-  left: 14px !important;
-  max-width: 72% !important;
+/* 5. Hover Card (.bps-hover): Tetap di LUAR (floating outside card) */
+.bps-hover .hub-center .hc-name-top {
+  top: -10px !important;
+  left: -11px !important;
+  max-width: none !important;
   font-family: "Barlow Condensed", sans-serif !important;
   font-weight: 800 !important;
-  font-size: clamp(15px, 1.9vh, 20px) !important;
+  font-size: 16px !important;
   line-height: .98 !important;
   letter-spacing: .03em !important;
-  transform: none !important;
-  text-shadow: 1px 1px 0 #0b0e14, 2px 2px 0 #0b0e14, 3px 3px 0 #0b0e14, 0 0 16px rgba(0,0,0,.9) !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  transform: skewX(-4deg) !important;
+  text-shadow: 1px 1px 0 #0b0e14, 2px 2px 0 #0b0e14, 3px 3px 0 #0b0e14, 4px 4px 0 #0b0e14, 5px 5px 0 #080a0f, 6px 6px 0 #080a0f, 7px 9px 16px rgba(0,0,0,.9), 0 0 22px color-mix(in srgb,var(--tcol,#2F8FE2) 55%,transparent) !important;
+}
+.bps-hover .hub-center .hc-chance {
+  top: 18px !important;
+  left: -4px !important;
+  font-family: "Barlow Condensed", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 11px !important;
+  letter-spacing: .12em !important;
+  text-transform: uppercase !important;
+  padding: 1px 6px !important;
+  border-radius: 0px !important;
+  background: rgba(6,9,14,.92) !important;
+  border: 1px solid currentColor !important;
+  text-shadow: 0 0 8px rgba(0,0,0,.8) !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,.6) !important;
+  transform: skewX(-4deg) !important;
+  white-space: nowrap !important;
+}
+.bps-hover .hub-center .hc-badges {
+  top: -11px !important;
+  right: -10px !important;
+  gap: 4px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* 6. Roll Overlay Showcase: Tetap floating di luar seperti aslinya */
+.roll-overlay .roll-card-showcase .hub-center .hc-name-top {
+  top: -14px !important;
+  left: -16px !important;
+  max-width: none !important;
+  font-family: "Barlow Condensed", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: clamp(20px, 2.6vh, 26px) !important;
+  line-height: .98 !important;
+  letter-spacing: .03em !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  transform: skewX(-4deg) !important;
 }
 .roll-overlay .roll-card-showcase .hub-center .hc-chance {
-  top: 46px !important;
-  left: 14px !important;
-  bottom: auto !important;
+  top: 26px !important;
+  left: -6px !important;
   font-family: "Barlow Condensed", sans-serif !important;
   font-weight: 800 !important;
   font-size: clamp(10px, 1.3vh, 13px) !important;
@@ -54468,52 +54508,13 @@ main#app:has(.sett-wrap) {
   border-radius: 0px !important;
   background: rgba(6, 9, 14, .92) !important;
   border: 1px solid currentColor !important;
-  text-shadow: 0 0 8px rgba(0, 0, 0, .8) !important;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, .6) !important;
-  transform: none !important;
+  transform: skewX(-4deg) !important;
+  white-space: nowrap !important;
 }
 .roll-overlay .roll-card-showcase .hub-center .hc-badges {
-  top: 12px !important;
-  right: 12px !important;
+  top: -16px !important;
+  right: -14px !important;
   display: flex !important;
   align-items: center !important;
   gap: 5px !important;
-  transform: none !important;
-}
-
-/* 6. Card Hover Preview (.bps-hover .hub-center) - Unified with Lobby */
-.bps-hover .hub-center .hc-name-top {
-  top: 12px !important;
-  left: 14px !important;
-  max-width: 72% !important;
-  font-family: "Barlow Condensed", sans-serif !important;
-  font-weight: 800 !important;
-  font-size: 16px !important;
-  line-height: .98 !important;
-  letter-spacing: .03em !important;
-  transform: none !important;
-  text-shadow: 1px 1px 0 #0b0e14, 2px 2px 0 #0b0e14, 3px 3px 0 #0b0e14, 0 0 16px rgba(0,0,0,.9) !important;
-}
-.bps-hover .hub-center .hc-chance {
-  top: 40px !important;
-  left: 14px !important;
-  font-family: "Barlow Condensed", sans-serif !important;
-  font-weight: 800 !important;
-  font-size: 11px !important;
-  letter-spacing: .1em !important;
-  padding: 1px 6px !important;
-  border-radius: 0px !important;
-  background: rgba(6, 9, 14, .92) !important;
-  border: 1px solid currentColor !important;
-  text-shadow: 0 0 8px rgba(0, 0, 0, .8) !important;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, .6) !important;
-  transform: none !important;
-}
-.bps-hover .hub-center .hc-badges {
-  top: 12px !important;
-  right: 12px !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 5px !important;
-  transform: none !important;
 }
