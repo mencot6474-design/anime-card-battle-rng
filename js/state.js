@@ -12,7 +12,7 @@ function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u));}
 function freshState(){
   const s0=STORY_BIBLE.units[0];
   const start=s0?{id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,fav:false,lock:false,mut:"none",shiny:false,trait:"none",count:1}:null;
-  const newState={coins:1000,wbTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,totalRolls:0,playSec:0,muted:false,diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},raidShopOwned:{},towerShopOwned:{},storyGemMilestones:{},dailyGemPending:0,storyCd:{},rebirth:{count:0,essence:0},tower:{best:0,auto:false},battleSpeed:1,
+  const newState={coins:1000,wbTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,totalRolls:0,playSec:0,muted:false,lang:"en",diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},raidShopOwned:{},towerShopOwned:{},storyGemMilestones:{},dailyGemPending:0,storyCd:{},rebirth:{count:0,essence:0},tower:{best:0,auto:false},battleSpeed:1,
     cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],history:[],battle:null,
     player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1,sp:0,tree:{}},weather:null,weatherBest:null,potions:0,mythicPotions:0,luckPots:[0,0,0],speedPots:[0,0,0],luckBuffs:[],speedBuffs:[],infTokens:0,
     artOwned:[],artSlots:[null,null],petOwned:[],petEquipped:null,intanRolls:0,idxRewardsClaimed:0,premiumGems:50,rollPacks:{r5k:0,r10k:0,r25k:0,r50k:0,r100k:0}};

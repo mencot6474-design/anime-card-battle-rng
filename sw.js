@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v201-daily7PackHolo';
+const CACHE_NAME = 'anime-card-battle-v202-defaultEnglish';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

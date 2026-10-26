@@ -19,7 +19,7 @@
       var saved = localStorage.getItem(LANG_STORAGE_KEY);
       if (saved === 'en' || saved === 'id') return saved;
     } catch (e) {}
-    return 'id';
+    return 'en';
   }
 
   /* ================== 1. TERJEMAHAN PASSIVE KARTU (74 UNIT) ================== */
