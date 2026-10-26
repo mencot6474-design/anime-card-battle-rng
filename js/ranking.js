@@ -302,19 +302,19 @@ async function rkRender(silent) {
   const body = document.getElementById("rkBody");
   if (!meta || !body) return;
 
-  const info = RK_BOARDS[rkBoard] || RK_BOARDS.world_boss;
-  const online = !!(window.CloudDB && typeof window.CloudDB.leaderboard === "function" && currentUser);
+  const board = rkBoard;
+  const canFetch = !!(window.CloudDB && typeof window.CloudDB.leaderboard === "function");
 
-  if (!online) {
+  if (!canFetch) {
     if (silent) return;
-    meta.innerHTML = `<span class="rk-chip">${info.label}</span><span class="rk-chip rk-dim">OFFLINE / GUEST</span><span class="rk-chip rk-bad">BELUM TERKONEKSI</span>`;
+    meta.innerHTML = `<span class="rk-chip">${info.label}</span><span class="rk-chip rk-dim">OFFLINE</span><span class="rk-chip rk-bad">MODUL TIDAK TERSEDIA</span>`;
     const emptyDelta = {};
     body.innerHTML =
       rkPodiumHtml([], board) +
       `<div class="rk-table-wrap">
         <div class="rk-head-row"><span>RANK</span><span class="rk-h-av"></span><span>PEMAIN (TOP 50)</span><span>${info.col}</span><span title="Perubahan posisi vs. tampilan sebelumnya">Δ<span class="rk-h-long"> POSISI</span></span></div>
         <div class="rk-list-scroll">${rkRowsHtml([], board, emptyDelta)}</div>
-        <div class="rk-note">Mode Offline · Login atau sambungkan koneksi server untuk sinkronisasi ranking dunia.</div>
+        <div class="rk-note">Mode Offline · Sambungkan koneksi internet untuk sinkronisasi ranking dunia.</div>
       </div>`;
     return;
   }
@@ -326,9 +326,8 @@ async function rkRender(silent) {
     body.innerHTML = `<div class="rk-loading">MEMUAT RANKING…</div>`;
   }
 
-  const board = rkBoard;
   let res = null;
-  try { res = await window.CloudDB.leaderboard(board, null, 100, currentUser); } catch (e) {}
+  try { res = await window.CloudDB.leaderboard(board, null, 100, currentUser || null); } catch (e) {}
   rkBusy = false;
   rkLastFetchAt = Date.now();
 
@@ -354,9 +353,11 @@ async function rkRender(silent) {
     `<span class="rk-chip">${info.label}</span>` +
     `<span class="rk-chip">${rkEsc(res.period)}</span>` +
     `<span class="rk-chip rk-dim">${res.total_players || 0} PEMAIN</span>` +
-    (me
-      ? `<span class="rk-chip rk-own">POSISI KAMU #${me.rank} · ${rkValFmt(board, me.value)}</span>`
-      : `<span class="rk-chip rk-dim">KAMU BELUM PUNYA SKOR</span>`);
+    (currentUser
+      ? (me
+          ? `<span class="rk-chip rk-own">POSISI KAMU #${me.rank} · ${rkValFmt(board, me.value)}</span>`
+          : `<span class="rk-chip rk-dim">KAMU BELUM PUNYA SKOR</span>`)
+      : `<span class="rk-chip rk-dim">LOGIN UNTUK MENCATAT SKOR</span>`);
 
   const keepScroll = silent ? body.scrollTop : 0;
   const oldVid = body.querySelector("video.rk-bd1");
