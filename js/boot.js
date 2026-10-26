@@ -740,6 +740,26 @@ document.addEventListener("keydown",e=>{
 /* ========== UPDATE LOG MODAL ========== */
 const GAME_CHANGELOGS = [
   {
+    version: "v1.4.3",
+    date: "27 Okt 2026",
+    title: "Rebirth Matrix & UI Stabilization",
+    titleEn: "Rebirth Matrix & UI Stabilization",
+    items: [
+      "Modal Rebirth Horizontal Cyberpunk baru dengan visual Sigil Core, live Essence meter, dan Ascension Protocol.",
+      "Perbaikan scroll reset & auto-tick pada menu Pengaturan dan Lobby (eliminasi re-render 1 detik via caching DOM).",
+      "Pemisahan Buff Potion Dock: kini eksklusif tampil di Lobby dan otomatis tersembunyi saat membuka Index, Profil, atau Modal.",
+      "Interaktivitas Slot Operator Profil: klik slot Pet/Artefak/Kartu langsung menuju Backpack + Hover Card Preview.",
+      "Optimalisasi observer sistem lokalisasi multi-bahasa (English & Bahasa Indonesia) bebas rekursi."
+    ],
+    itemsEn: [
+      "New Cyberpunk Horizontal Rebirth Modal featuring Sigil Core, live Essence meter, and Ascension Protocol.",
+      "Fixed scroll reset & auto-tick glitch in Settings and Lobby (preventing 1-second interval DOM wipes via dataset caching).",
+      "Buff Potion Dock isolation: strictly visible in Lobby and automatically hidden when opening Index, Profile, or Modals.",
+      "Interactive Profile Operator Slots: click Pet/Artefact/Card slots to navigate to Backpack + Card Hover Preview.",
+      "Multi-language (EN / ID) localization observer optimization with recursion-free DOM traversal."
+    ]
+  },
+  {
     version: "v1.4.2",
     date: "26 Okt 2026",
     title: "Performance & Cloud Sync Update",
@@ -790,21 +810,26 @@ function closeChangelogModal(){
 function renderChangelogModal(){
   const list = document.getElementById("changelogList");
   if(!list) return;
-  const isEn = (window.GameLang && typeof window.GameLang.get === "function") ? window.GameLang.get() === "en" : true;
-  list.innerHTML = GAME_CHANGELOGS.map(log => `
+  const isEn = (typeof getLang === 'function' && getLang() === 'en') || 
+               (typeof state !== 'undefined' && state && state.lang === 'en') ||
+               (window.GameLang && typeof window.GameLang.get === "function" && window.GameLang.get() === "en");
+  list.innerHTML = GAME_CHANGELOGS.map(log => {
+    const title = (isEn && log.titleEn) ? log.titleEn : log.title;
+    const items = (isEn && log.itemsEn) ? log.itemsEn : log.items;
+    return `
     <div style="background:linear-gradient(135deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02));border:1px solid rgba(102,252,241,0.2);border-radius:12px;padding:14px;box-shadow:0 4px 16px rgba(0,0,0,0.3)">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:6px">
         <div style="display:flex;align-items:center;gap:8px">
           <span style="background:rgba(102,252,241,0.2);color:#66fcf1;font-size:11px;font-weight:900;padding:2px 8px;border-radius:6px;border:1px solid rgba(102,252,241,0.4)">${log.version}</span>
-          <span style="font-size:13px;font-weight:800;color:#fff">${log.title}</span>
+          <span style="font-size:13px;font-weight:800;color:#fff">${title}</span>
         </div>
         <span style="font-size:11px;color:#a4b0be;font-weight:600">${log.date}</span>
       </div>
       <ul style="margin:0;padding-left:18px;color:#dcdde1;font-size:12px;line-height:1.6">
-        ${log.items.map(it => `<li>${it}</li>`).join("")}
+        ${items.map(it => `<li>${it}</li>`).join("")}
       </ul>
     </div>
-  `).join("");
+  `}).join("");
 }
 window.openChangelogModal = openChangelogModal;
 window.closeChangelogModal = closeChangelogModal;
