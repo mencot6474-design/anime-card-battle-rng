@@ -126,11 +126,23 @@ function renderTower(){
 function towerPreviewCard(w,isBoss,role,idx){
   const id=w.eid, c=CARDS[id]; if(!c) return "";
   const tier=c.tier,bossBadge=isBoss&&idx===0;
-  return `<div class="tw-fcard${bossBadge?" bossx":""}" data-tier="${tier}" style="animation-delay:${-idx*0.7}s">
-    <img src="${c.sprite_asset}" alt="${c.name}"${c.pos?` style="object-position:${c.pos}"`:''}>
-    <span class="fn">${c.name}</span>
-    ${bossBadge?'<span class="fb">BOSS</span>':''}
-    <span class="fs"><span class="hp"><i>HP</i> <b>${fmtStat(w.es.hp)}</b></span><span class="atk"><i>ATK</i> <b>${fmtStat(w.es.atk)}</b></span></span>
+  const waveNum=idx+1;
+  return `<div class="tw-fcard${bossBadge?" bossx":""}" data-tier="${tier}">
+    <div class="tw-fcard-inner">
+      <div class="tw-fcard-top">
+        <span class="tw-fcard-wave">WAVE 0${waveNum}</span>
+        ${bossBadge?'<span class="fb bossx">⚠️ BOSS</span>':`<span class="tw-fcard-role">${role==="main"?"VANGUARD":"RESERVE"}</span>`}
+      </div>
+      <div class="tw-fcard-img">
+        <img src="${c.sprite_asset}" alt="${c.name}"${c.pos?` style="object-position:${c.pos}"`:''}>
+        <div class="tw-fcard-sweep"></div>
+      </div>
+      <div class="tw-fcard-meta">
+        <span class="tw-fcard-type">${c.type || "COMBATANT"}</span>
+        <span class="fn" title="${c.name}">${c.name}</span>
+        <div class="fs"><span class="hp"><i>HP</i> <b>${fmtStat(w.es.hp)}</b></span><span class="atk"><i>ATK</i> <b>${fmtStat(w.es.atk)}</b></span></div>
+      </div>
+    </div>
   </div>`;
 }
 function renderTowerHub(){
@@ -149,7 +161,6 @@ function renderTowerHub(){
     const isCurrent = f === start;
     const isCleared = f <= best;
     const isRecord = f === best && best > 0;
-    const nodeStatus = isCurrent ? "ACTIVE" : (isCleared ? "CLEARED" : "LOCKED");
     const cls = (isCurrent ? "node-active" : (isCleared ? "node-cleared" : "node-locked")) + (isB ? " node-boss" : "");
 
     fl += `<div class="spire-node ${cls}">
@@ -172,9 +183,9 @@ function renderTowerHub(){
   <div class="tactical-tower-hub">
     
     <!-- SISI KIRI: SPIRE NODE STREAM (PGR / Star Rail Style) -->
-    <section class="spire-stream-panel">
+    <aside class="spire-stream-panel">
       <div class="spire-stream-hdr">
-        <div class="ssh-tag"><span class="ssh-dot"></span> SECTOR TOPOLOGY</div>
+        <div class="ssh-tag"><span class="ssh-dot"></span> SECTOR MATRIX</div>
         <div class="ssh-title">ASCENT STREAM</div>
       </div>
       <div class="spire-node-list">${fl}</div>
@@ -182,22 +193,24 @@ function renderTowerHub(){
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
         <span>CONTINUOUS RUN &middot; UNTIL DEFEAT</span>
       </div>
-    </section>
+    </aside>
 
     <!-- SISI KANAN: TACTICAL MISSION DOSSIER -->
-    <section class="tactical-dossier-panel">
+    <main class="tactical-dossier-panel">
       
       <!-- HEADER DOSSIER -->
       <div class="dossier-header">
         <div class="dh-titles">
-          <div class="dh-kicker">NEURAL MATRIX // INFINITE ASCENT PROTOCOL</div>
+          <div class="dh-kicker"><span class="dh-kicker-dot"></span>NEURAL SPIRE // INFINITE ASCENT PROTOCOL</div>
           <div class="dh-title">INFINITE <span class="dh-cyan">TOWER</span></div>
           <div class="dh-sub">PENETRASI MENARA VIRTUAL TANPA BATAS DARI LANTAI 01 HINGGA OVERLOAD</div>
         </div>
-        <button class="dh-lobby-btn" id="towerLobby" type="button" title="Kembali ke Lobby">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-          <span>LOBBY</span>
-        </button>
+        <div class="dh-actions">
+          <button class="dh-lobby-btn" id="towerLobby" type="button" title="Kembali ke Lobby">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            <span>LOBBY</span>
+          </button>
+        </div>
       </div>
 
       <!-- HUD TELEMETRY METRICS -->
@@ -207,6 +220,7 @@ function renderTowerHub(){
           <div class="dm-data">
             <span class="dm-label">RECORD HIGHEST</span>
             <b class="dm-val">FL.${String(best).padStart(2, "0")}</b>
+            <span class="dm-sub-tag">${best>=50?'✦ APEX CLIMBER':(best>=25?'⚡ HIGH REACH':'STANDBY')}</span>
           </div>
         </div>
         <div class="dm-card dm-tokens">
@@ -214,6 +228,7 @@ function renderTowerHub(){
           <div class="dm-data">
             <span class="dm-label">TOKEN INF</span>
             <b class="dm-val">${fmt(state.infTokens||0)}</b>
+            <span class="dm-sub-tag">DEPOSIT TERSEDIA</span>
           </div>
         </div>
         <div class="dm-card dm-start">
@@ -221,6 +236,7 @@ function renderTowerHub(){
           <div class="dm-data">
             <span class="dm-label">START SECTOR</span>
             <b class="dm-val">FL.${String(start).padStart(2, "0")}</b>
+            <span class="dm-sub-tag">READY TO ENGAGE</span>
           </div>
         </div>
       </div>
@@ -228,10 +244,13 @@ function renderTowerHub(){
       <!-- ENCOUNTER TARGET DOSSIER (ENEMY LIST) -->
       <div class="dossier-sec">
         <div class="dossier-sec-hdr">
-          <span class="dsh-bracket">[</span>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>
-          <span class="dsh-txt">TARGET PROTOCOL &middot; LANTAI ${start}</span>
-          <span class="dsh-bracket">]</span>
+          <div class="dsh-left">
+            <span class="dsh-bracket">[</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>
+            <span class="dsh-txt">TARGET PROTOCOL &middot; LANTAI ${start}</span>
+            <span class="dsh-bracket">]</span>
+          </div>
+          <span class="dsh-status-tag">${boss?'⚠️ HAZARD: BOSS ENCOUNTER':'STANDARD WAVE QUEUE'}</span>
         </div>
         <div class="tw-foes">${waves.map((w,i)=>towerPreviewCard(w,boss,i===0?"main":"tag",i)).join("")}</div>
       </div>
@@ -239,19 +258,46 @@ function renderTowerHub(){
       <!-- TACTICAL CLEAR REWARDS CHIPS -->
       <div class="dossier-sec">
         <div class="dossier-sec-hdr">
-          <span class="dsh-bracket">[</span>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-          <span class="dsh-txt">CLEARANCE SUPPLY MATRIX</span>
-          <span class="dsh-bracket">]</span>
+          <div class="dsh-left">
+            <span class="dsh-bracket">[</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            <span class="dsh-txt">CLEARANCE SUPPLY MATRIX</span>
+            <span class="dsh-bracket">]</span>
+          </div>
           <button class="r-info-pill-btn" id="twDropRateBtn" type="button" title="Lihat Probabilitas Drop Rate">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-            <span>DROP RATE</span>
+            <span>PROBABILITAS DROP</span>
           </button>
         </div>
         <div class="rewards-summary-bar">
-          <div class="r-chip"><span class="rc-dot c"></span> <b>+25 Roll</b> (Tabungan)</div>
-          <div class="r-chip"><span class="rc-dot v"></span> <b>+1 Token</b> (Boss +5)</div>
-          <div class="r-chip"><span class="rc-dot g"></span> <b>Potion Supply</b> (Weather/Luck/Speed)</div>
+          <div class="r-chip r-chip-rolls">
+            <span class="rc-dot c"></span>
+            <div class="rc-info">
+              <span class="rc-label">TARIKAN KARTU</span>
+              <b>+100 Roll / Lantai</b>
+            </div>
+          </div>
+          <div class="r-chip r-chip-tokens">
+            <span class="rc-dot v"></span>
+            <div class="rc-info">
+              <span class="rc-label">TOKEN MENARA</span>
+              <b>+1 Token (Boss +5)</b>
+            </div>
+          </div>
+          <div class="r-chip r-chip-pots">
+            <span class="rc-dot g"></span>
+            <div class="rc-info">
+              <span class="rc-label">POTION SUPPLY</span>
+              <b>Drop 5% &ndash; 10%</b>
+            </div>
+          </div>
+          <div class="r-chip r-chip-rare">
+            <span class="rc-dot r"></span>
+            <div class="rc-info">
+              <span class="rc-label">ULTRA RARE</span>
+              <b>Pedang Api &bull; Kyubi</b>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -273,10 +319,11 @@ function renderTowerHub(){
             <small>INITIALIZE RUN &middot; FLOOR ${start}</small>
             <b>MULAI PENETRASI</b>
           </div>
+          <div class="tb-chevrons"><span>&rsaquo;</span><span>&rsaquo;</span><span>&rsaquo;</span></div>
         </button>
       </div>
 
-    </section>
+    </main>
   </div></div>`;
 
   const g=document.getElementById("towerGo");if(g)g.onclick=()=>{sfx.hit();towerStartRun();};
