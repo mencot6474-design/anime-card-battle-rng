@@ -144,6 +144,13 @@ function loadStateFor(name){
   if(typeof state.rebirth.essence!=="number"||state.rebirth.essence<0)state.rebirth.essence=0;
   if(!state.rollPacks||typeof state.rollPacks!=="object")state.rollPacks={r5k:0,r10k:0,r25k:0,r50k:0,r100k:0};
   ['r5k','r10k','r25k','r50k','r100k'].forEach(k=>{if(typeof state.rollPacks[k]!=="number"||state.rollPacks[k]<0)state.rollPacks[k]=0;});
+  try{
+    var _dKey="acb_daily_r100k_v1:"+String(name||"guest").toLowerCase();
+    var _dBal=Math.max(0,parseInt(localStorage.getItem(_dKey),10)||0,typeof state.dailyR100kBalance==="number"?Math.floor(state.dailyR100kBalance):0);
+    state.dailyR100kBalance=_dBal;
+    try{localStorage.setItem(_dKey,String(_dBal));}catch(e){}
+    if((state.rollPacks.r100k||0)<_dBal)state.rollPacks.r100k=_dBal;
+  }catch(e){}
   if(typeof state.idxRewardsClaimed!=="number"||state.idxRewardsClaimed<0)state.idxRewardsClaimed=0;
   /* STAT PROFIL: total roll gabungan (dice + instan pack) & waktu bermain.
      Save lama tanpa counter: isi dari jumlah kartu yang sudah dimiliki. */
@@ -773,38 +780,145 @@ function renderShell(){
   try{if(typeof startGlobalLuckPoll==='function')startGlobalLuckPoll();}catch(e){}
 }
 
-/* =============== DAILY LOGIN 7 HARI =============== */
+/* =============== DAILY LOGIN 7 HARI (INSTAN ROLL PACK 100K) =============== */
+const DAILY_PACKS_100K=[1,2,3,4,5,6,10];
+const DAILY_PACKS_TOTAL=DAILY_PACKS_100K.reduce((a,b)=>a+b,0);
 const DAILY_GEMS=[10,15,20,25,30,40,60];
 const DAILY_GEM_TOTAL=DAILY_GEMS.reduce((a,b)=>a+b,0);
 const GEM_ICON_SM='<img src="assets/images/premium-currency.webp" width="12" height="12" alt="" style="vertical-align:-2px;border-radius:50%">';
 const DAILY_TOTAL=DAILY_REWARDS.reduce((a,b)=>a+b,0);
+
+function _dailyR100kKey(){
+  var u=(typeof currentUser!=="undefined"&&currentUser)?String(currentUser).toLowerCase():"guest";
+  return "acb_daily_r100k_v1:"+u;
+}
+function getDailyR100kBalance(){
+  try{
+    var ls=parseInt(localStorage.getItem(_dailyR100kKey()),10)||0;
+    var st=(state&&typeof state.dailyR100kBalance==="number")?Math.floor(state.dailyR100kBalance):0;
+    return Math.max(0,ls,st);
+  }catch(e){return 0;}
+}
+function setDailyR100kBalance(val){
+  var v=Math.max(0,Math.floor(Number(val)||0));
+  try{localStorage.setItem(_dailyR100kKey(),String(v));}catch(e){}
+  if(state)state.dailyR100kBalance=v;
+  return v;
+}
+function addDailyR100kPacks(qty){
+  var add=Math.max(0,Math.floor(Number(qty)||0));
+  if(!add)return getDailyR100kBalance();
+  var next=setDailyR100kBalance(getDailyR100kBalance()+add);
+  if(state){
+    state.rollPacks=state.rollPacks||{r5k:0,r10k:0,r25k:0,r50k:0,r100k:0};
+    state.rollPacks.r100k=Math.max(next,(state.rollPacks.r100k||0)+add);
+  }
+  return next;
+}
+function consumeDailyR100kPacks(usedQty){
+  var u=Math.max(0,Math.floor(Number(usedQty)||0));
+  var cur=getDailyR100kBalance();
+  if(cur<=0||u<=0)return 0;
+  var deduct=Math.min(cur,u);
+  setDailyR100kBalance(cur-deduct);
+  return deduct;
+}
+window.getDailyR100kBalance=getDailyR100kBalance;
+window.setDailyR100kBalance=setDailyR100kBalance;
+window.addDailyR100kPacks=addDailyR100kPacks;
+window.consumeDailyR100kPacks=consumeDailyR100kPacks;
+
+function openBackpackFromDaily(){
+  closeDaily();
+  try{
+    if(typeof bpSetTab==="function")bpSetTab("item");
+    var p=document.getElementById("backpackPanel");
+    if(p&&!p.classList.contains("open")&&typeof toggleBackpack==="function"){
+      toggleBackpack();
+    }else if(typeof renderBackpackPanel==="function"){
+      renderBackpackPanel();
+    }
+  }catch(e){}
+}
+window.openBackpackFromDaily=openBackpackFromDaily;
+
 function renderDaily(){
   const ready=state.lastClaim!==todayStr();
-  const idx=state.dailyIndex;
-  document.getElementById("dlGrid").innerHTML=DAILY_REWARDS.map((amt,i)=>{
+  const idx=(typeof state.dailyIndex==="number"?state.dailyIndex:0)%7;
+  const packIcon='assets/images/instanpack-100k.webp?v=trans1';
+  const curBag=(state&&state.rollPacks&&state.rollPacks.r100k)||0;
+
+  /* Update modal header badge if present */
+  const box=document.querySelector("#dailyModal .dl-box");
+  if(box){
+    const countEl=box.querySelector(".dl-count");
+    if(countEl && !box.querySelector(".dl-subbar")){
+      countEl.outerHTML=`<div class="dl-subbar">
+        <div class="dl-sub-pill prog"><span class="dl-pulse"></span>SIKLUS LOGIN: <b id="dlProgTxt">HARI ${idx+1} / 7</b></div>
+        <div class="dl-sub-pill bag" onclick="openBackpackFromDaily()" title="Lihat di Backpack">📦 STOK PACK 100K DI BACKPACK: <b id="dlBagCnt">×${fmt(curBag)}</b></div>
+        <div class="dl-sub-pill timer">⏳ RESET HARIAN: <b id="dlCount">00:00:00</b></div>
+      </div>`;
+    }else{
+      const pt=document.getElementById("dlProgTxt");if(pt)pt.textContent=`HARI ${idx+1} / 7`;
+      const bc=document.getElementById("dlBagCnt");if(bc)bc.textContent=`×${fmt(curBag)}`;
+    }
+  }
+
+  document.getElementById("dlGrid").innerHTML=DAILY_PACKS_100K.map((packCnt,i)=>{
     let cls="locked";
     if(i<idx)cls="claimed";
     else if(i===idx&&ready)cls="ready";
-    return `<div class="dl-tile ${cls}">
-      <div class="d">DAY ${i+1}</div>
-      <div class="ic">${coinIcon(32)}</div>
-      <div class="amt">${fmt(amt)}<br><small>COIN</small></div>
-      <div class="gam">${GEM_ICON_SM}+${DAILY_GEMS[i]||0} GEM</div>
+    else if(i===idx&&!ready)cls="today-done";
+    const isFinale=(i===6);
+    const totalPulls=packCnt*100000;
+    const pullsLabel=totalPulls>=1000000?(totalPulls/1000000).toFixed(1).replace(/\.0$/,'')+'M ROLL':(totalPulls/1000)+'K ROLL';
+    let statusBadge='<span class="dlt-status locked">🔒 TERKUNCI</span>';
+    if(cls==="claimed"||cls==="today-done")statusBadge='<span class="dlt-status claimed">✓ DIKLAIM</span>';
+    else if(cls==="ready")statusBadge='<span class="dlt-status ready">★ SIAP KLAIM</span>';
+
+    return `<div class="dl-tile ${cls}${isFinale?' is-finale':''}" ${cls==='ready'?'onclick="claimDaily()"':''}>
+      <div class="dlt-top">
+        <span class="d">DAY ${i+1}</span>
+        ${isFinale?'<span class="dlt-finale-tag">GRAND FINALE</span>':''}
+      </div>
+      <div class="dlt-visual">
+        <div class="dlt-aura"></div>
+        <img class="dlt-pack-img" src="${packIcon}" alt="Instan Pack 100K" onerror="this.style.display='none'">
+        <span class="dlt-qty-badge">${packCnt}×</span>
+      </div>
+      <div class="dlt-info">
+        <div class="dlt-pack-name">${packCnt}× PACK 100K</div>
+        <div class="dlt-pulls-sub">${pullsLabel} INSTAN</div>
+        <div class="dlt-bonus-row">
+          <span class="dlt-b-coin">${coinIcon(11)} +${fmt(DAILY_REWARDS[i]||0)}</span>
+          <span class="dlt-b-gem">${GEM_ICON_SM} +${DAILY_GEMS[i]||0}</span>
+        </div>
+      </div>
+      ${statusBadge}
     </div>`;
   }).join("");
+
+  const todayPack=DAILY_PACKS_100K[idx]||1;
   const foot=document.getElementById("dlFoot");
-  foot.innerHTML=(ready
-    ?`<button class="dl-claim" id="dlClaim">KLAIM DAY ${idx+1} · +${fmt(DAILY_REWARDS[idx])} COIN · +${DAILY_GEMS[idx]||0} GEM</button>`
-    :`<button class="dl-claim" disabled>SUDAH DIKLAIM HARI INI · KEMBALI BESOK</button>`)
-    +`<div class="dl-total">Total 7 hari: <b>${fmt(DAILY_TOTAL)}</b> coin · <b>${DAILY_GEM_TOTAL}</b> gem · ${idx}/7 diklaim siklus ini</div>`;
+  foot.innerHTML=`<div class="dl-foot-row">
+    ${ready
+      ?`<button class="dl-claim" id="dlClaim">🎁 KLAIM DAY ${idx+1} · +${todayPack}× INSTAN ROLL PACK 100K (SIMPAN KE BACKPACK)</button>`
+      :`<button class="dl-claim" disabled>✓ SUDAH DIKLAIM HARI INI · KEMBALI BESOK</button>`}
+    <button type="button" class="dl-bag-btn" onclick="openBackpackFromDaily()">📦 BUKA BACKPACK</button>
+  </div>
+  <div class="dl-total">Total 7 Hari: <b>${DAILY_PACKS_TOTAL}× Instan Roll Pack 100K (${fmt(DAILY_PACKS_TOTAL*100000)} Roll)</b> otomatis masuk ke <b>Backpack → Tab Item</b> · +<b>${fmt(DAILY_TOTAL)}</b> Coin · +<b>${DAILY_GEM_TOTAL}</b> Gem</div>`;
   if(ready)document.getElementById("dlClaim").onclick=claimDaily;
   if(state.dailyGemPending>0)flushPendingDailyGems(true);
   tickDaily();
+  if(window.GameLang&&typeof window.GameLang.refresh==="function")window.GameLang.refresh();
 }
 function claimDaily(){
   if(state.lastClaim===todayStr())return;
-  const idx=state.dailyIndex;
+  const idx=(typeof state.dailyIndex==="number"?state.dailyIndex:0)%7;
   const gems=DAILY_GEMS[idx]||0;
+  const packQty=DAILY_PACKS_100K[idx]||1;
+  /* Simpan Instan Roll Pack 100K ke dalam Backpack (state.rollPacks.r100k) */
+  addDailyR100kPacks(packQty);
   /* 0025: coin daily dibayar server (claim_daily_gem) — jangan ditambah lokal
      kecuali memang offline, kalau tidak push berikutnya akan mengoreksinya balik. */
   const coinsOffline=!(typeof currentUser!=="undefined"&&currentUser&&window.CloudDB&&window.CloudDB.claimDailyGem);
@@ -813,7 +927,11 @@ function claimDaily(){
   state.lastClaim=todayStr();
   state.dailyIndex=(idx+1)%7;
   sfx.win();save();
+  try{toast("DAY "+(idx+1)+" LOGIN REWARD!","+"+packQty+"× INSTAN ROLL PACK 100K disimpan ke Backpack!","#ffd700");}catch(e){}
   renderShell();renderDaily();
+  if(typeof renderLobby==="function"&&typeof route==="function"&&route()==="#/lobby"&&!battleLive()){
+    try{renderLobby();}catch(e){}
+  }
   if(gems)flushPendingDailyGems(false);
 }
 /* Gem daily dikredit lewat server (cloud-authoritative, 1x per hari UTC).

@@ -52359,5 +52359,540 @@ html.fps-locked .bp-fchip{
   }
 }
 
+/* ========================================================
+   MODAL 7 HARI LOGIN (HORIZONTAL 7-CARD ROW & CYBER REDESIGN)
+   ======================================================== */
+#dailyModal {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(6, 8, 14, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+#dailyModal.show {
+  display: flex !important;
+  animation: dlFadeIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes dlFadeIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+#dailyModal .dl-box {
+  position: relative;
+  width: min(1080px, 96vw);
+  max-width: 1080px;
+  max-height: 94vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: radial-gradient(circle at 50% 0%, rgba(20, 32, 54, 0.95), rgba(9, 12, 18, 0.98) 72%);
+  border: 1px solid rgba(125, 249, 255, 0.28);
+  border-radius: 20px;
+  padding: 24px 26px 22px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.8), 0 0 40px rgba(125, 249, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  box-sizing: border-box;
+  color: #fff;
+}
+
+#dailyModal .dl-glow-top {
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #7DF9FF, #FFD700, #7DF9FF, transparent);
+  box-shadow: 0 0 20px 2px #7DF9FF;
+  pointer-events: none;
+}
+
+#dailyModal .dl-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 12px;
+}
+
+#dailyModal .dl-eyebrow {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: #7DF9FF;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+  text-shadow: 0 0 10px rgba(125, 249, 255, 0.5);
+}
+
+#dailyModal .dl-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 26px;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  background: linear-gradient(90deg, #FFFFFF 0%, #7DF9FF 55%, #FFD700 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6));
+}
+
+#dailyModal .ix-x {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: #cfd6dd;
+  font-size: 16px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+#dailyModal .ix-x:hover {
+  background: rgba(255, 80, 80, 0.25);
+  border-color: #ff5555;
+  color: #fff;
+  transform: scale(1.05);
+}
+
+/* Subbar Pills (Progress, Backpack counter, Reset Timer) */
+#dailyModal .dl-subbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 18px;
+  padding: 8px 12px;
+  background: rgba(10, 16, 26, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+}
+
+#dailyModal .dl-sub-pill {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  color: #a4b0be;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#dailyModal .dl-sub-pill b {
+  color: #fff;
+  font-weight: 900;
+}
+
+#dailyModal .dl-sub-pill.prog b {
+  color: #7DF9FF;
+  text-shadow: 0 0 8px rgba(125, 249, 255, 0.4);
+}
+
+#dailyModal .dl-sub-pill.bag {
+  background: rgba(255, 215, 0, 0.08);
+  border: 1px solid rgba(255, 215, 0, 0.25);
+  padding: 3px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+#dailyModal .dl-sub-pill.bag:hover {
+  background: rgba(255, 215, 0, 0.18);
+  border-color: #FFD700;
+  transform: translateY(-1px);
+}
+
+#dailyModal .dl-sub-pill.bag b {
+  color: #FFD700;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+}
+
+#dailyModal .dl-sub-pill.timer b {
+  color: #ffa502;
+  font-variant-numeric: tabular-nums;
+}
+
+#dailyModal .dl-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #7DF9FF;
+  box-shadow: 0 0 8px #7DF9FF;
+  animation: dlPulseDot 1.4s infinite alternate;
+}
+
+@keyframes dlPulseDot {
+  from { opacity: 0.4; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1.15); }
+}
+
+/* Horizontal 7-Column Grid */
+#dailyModal .dl-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+/* 7-Day Card Tile */
+#dailyModal .dl-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: linear-gradient(180deg, rgba(18, 26, 40, 0.85) 0%, rgba(10, 15, 24, 0.95) 100%);
+  border: 1px solid rgba(125, 249, 255, 0.18);
+  border-radius: 14px;
+  padding: 10px 8px 10px;
+  text-align: center;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+  min-height: 220px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+#dailyModal .dl-tile:hover {
+  transform: translateY(-3px);
+  border-color: rgba(125, 249, 255, 0.45);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* Top Day Ribbon */
+#dailyModal .dlt-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+#dailyModal .dl-tile .d {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  color: #7DF9FF;
+  text-transform: uppercase;
+}
+
+#dailyModal .dlt-finale-tag {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  color: #0b0f17;
+  background: linear-gradient(90deg, #FFD700, #FFA500);
+  padding: 1px 5px;
+  border-radius: 4px;
+  text-shadow: none;
+  font-weight: 900;
+}
+
+/* Visual Pedestal with Pack Icon & Badge */
+#dailyModal .dlt-visual {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  margin: 6px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#dailyModal .dlt-aura {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(125, 249, 255, 0.2), transparent 70%);
+  pointer-events: none;
+  transition: background 0.2s ease;
+}
+
+#dailyModal .dlt-pack-img {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.55));
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 2;
+}
+
+#dailyModal .dl-tile:hover .dlt-pack-img {
+  transform: scale(1.08) rotate(2deg);
+}
+
+#dailyModal .dlt-qty-badge {
+  position: absolute;
+  bottom: -3px;
+  right: -3px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: linear-gradient(135deg, #0984e3, #00cec9);
+  padding: 3px 6px;
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.6);
+  z-index: 3;
+}
+
+/* Info Labels */
+#dailyModal .dlt-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 4px 0 8px;
+}
+
+#dailyModal .dlt-pack-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  color: #FFD700;
+  white-space: nowrap;
+}
+
+#dailyModal .dlt-pulls-sub {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #e2e8f0;
+  letter-spacing: 0.04em;
+}
+
+#dailyModal .dlt-bonus-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 8.5px;
+  font-weight: 700;
+  color: #94a3b8;
+  margin-top: 3px;
+  line-height: 1.2;
+}
+
+#dailyModal .dlt-b-coin {
+  color: #ffd166;
+}
+
+#dailyModal .dlt-b-gem {
+  color: #67e8f9;
+}
+
+/* Status Badges */
+#dailyModal .dlt-status {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  padding: 4px 4px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+#dailyModal .dlt-status.locked {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #64748b;
+}
+
+#dailyModal .dlt-status.claimed {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: #4ade80;
+}
+
+#dailyModal .dlt-status.ready {
+  background: linear-gradient(90deg, #00b894, #00cec9);
+  color: #0b111e;
+  font-weight: 900;
+  box-shadow: 0 0 12px rgba(0, 206, 201, 0.5);
+  animation: dlReadyPulse 1.2s infinite alternate;
+}
+
+@keyframes dlReadyPulse {
+  from { box-shadow: 0 0 6px rgba(0, 206, 201, 0.3); transform: scale(0.98); }
+  to { box-shadow: 0 0 16px rgba(0, 206, 201, 0.8); transform: scale(1.02); }
+}
+
+/* Card State: READY TO CLAIM (GLOWING HERO) */
+#dailyModal .dl-tile.ready {
+  cursor: pointer;
+  border: 1.5px solid #00cec9;
+  background: radial-gradient(circle at 50% 20%, rgba(0, 206, 201, 0.22), rgba(12, 18, 28, 0.96) 75%);
+  box-shadow: 0 0 24px rgba(0, 206, 201, 0.35), 0 10px 24px rgba(0, 0, 0, 0.6);
+}
+
+#dailyModal .dl-tile.ready .dlt-aura {
+  background: radial-gradient(circle, rgba(0, 206, 201, 0.45), transparent 70%);
+  animation: dlRotateAura 3s linear infinite;
+}
+
+@keyframes dlRotateAura {
+  from { transform: rotate(0deg) scale(0.95); }
+  to { transform: rotate(360deg) scale(1.05); }
+}
+
+/* Card State: CLAIMED */
+#dailyModal .dl-tile.claimed,
+#dailyModal .dl-tile.today-done {
+  opacity: 0.68;
+  border-color: rgba(34, 197, 94, 0.22);
+}
+
+#dailyModal .dl-tile.claimed:hover,
+#dailyModal .dl-tile.today-done:hover {
+  opacity: 0.85;
+}
+
+/* Card State: DAY 7 GRAND FINALE */
+#dailyModal .dl-tile.is-finale {
+  border: 1.5px solid rgba(255, 215, 0, 0.45);
+  background: radial-gradient(circle at 50% 15%, rgba(255, 215, 0, 0.18), rgba(18, 14, 26, 0.98) 75%);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.18);
+}
+
+#dailyModal .dl-tile.is-finale .d {
+  color: #FFD700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+#dailyModal .dl-tile.is-finale .dlt-aura {
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.35), transparent 70%);
+}
+
+#dailyModal .dl-tile.is-finale .dlt-qty-badge {
+  background: linear-gradient(135deg, #e17055, #d63031);
+  color: #fff;
+  border-color: #ffd700;
+  font-size: 14px;
+  box-shadow: 0 0 10px rgba(214, 48, 49, 0.7);
+}
+
+#dailyModal .dl-tile.is-finale.ready {
+  border-color: #FFD700;
+  box-shadow: 0 0 32px rgba(255, 215, 0, 0.5), 0 10px 28px rgba(0, 0, 0, 0.7);
+}
+
+/* Footer & Claim Buttons */
+#dailyModal .dl-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#dailyModal .dl-foot-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+#dailyModal .dl-claim {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 16px;
+  letter-spacing: 0.08em;
+  padding: 14px 20px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(90deg, #00cec9, #0984e3, #6c5ce7);
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(9, 132, 227, 0.45);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+#dailyModal .dl-claim:hover:not([disabled]) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(9, 132, 227, 0.65);
+  filter: brightness(1.1);
+}
+
+#dailyModal .dl-claim[disabled] {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #718096;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+#dailyModal .dl-bag-btn {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  padding: 0 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  background: rgba(255, 215, 0, 0.1);
+  color: #FFD700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+#dailyModal .dl-bag-btn:hover {
+  background: rgba(255, 215, 0, 0.22);
+  border-color: #FFD700;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(255, 215, 0, 0.25);
+}
+
+#dailyModal .dl-total {
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.5;
+  text-align: center;
+}
+
+#dailyModal .dl-total b {
+  color: #f1f5f9;
+}
+
+/* Responsive Handling: Tablet & Mobile Scroll */
+@media (max-width: 900px) {
+  #dailyModal .dl-grid {
+    grid-template-columns: repeat(7, 132px);
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(125, 249, 255, 0.3) rgba(10, 16, 26, 0.6);
+  }
+  #dailyModal .dl-tile {
+    scroll-snap-align: start;
+    min-width: 132px;
+  }
+  #dailyModal .dl-foot-row {
+    grid-template-columns: 1fr;
+  }
+  #dailyModal .dl-bag-btn {
+    padding: 10px 14px;
+  }
+}
+
+
 
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v200-glFullWidthDock';
+const CACHE_NAME = 'anime-card-battle-v201-daily7PackHolo';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

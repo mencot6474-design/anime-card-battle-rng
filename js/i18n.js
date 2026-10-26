@@ -588,7 +588,15 @@
 
     // Daily Login & Watch Ads Modal
     'LOGIN HARIAN': 'DAILY LOGIN',
+    '7 HARI LOGIN REWARD': '7-DAY LOGIN REWARD',
     'RESET DALAM': 'RESETS IN',
+    '✓ DIKLAIM': '✓ CLAIMED',
+    '★ SIAP KLAIM': '★ READY TO CLAIM',
+    '🔒 TERKUNCI': '🔒 LOCKED',
+    '✓ SUDAH DIKLAIM HARI INI · KEMBALI BESOK': '✓ CLAIMED TODAY · COME BACK TOMORROW',
+    '📦 BUKA BACKPACK': '📦 OPEN BACKPACK',
+    'Backpack → Tab Item': 'Backpack → Items Tab',
+    'Lihat di Backpack': 'View in Backpack',
     'REFRESH 5 MENIT': '5-MIN REFRESH',
     'COOLDOWN 30 MENIT': '30-MIN COOLDOWN',
     'SIAP DITONTON · DURASI 5 MENIT': 'READY TO WATCH · 5-MINUTE DURATION',
@@ -759,7 +767,17 @@
     [/REWARD DALAM\s+(\d+)s/g, 'REWARD IN $1s'],
     [/⏳ AKTIF\s*\(/g, '⏳ ACTIVE ('],
     [/⏳ TUNGGU\s+/g, '⏳ WAIT '],
-    [/sisa\s+(\d+:\d+)/g, '$1 left']
+    [/sisa\s+(\d+:\d+)/g, '$1 left'],
+    [/SIKLUS LOGIN:/g, 'LOGIN CYCLE:'],
+    [/HARI\s+(\d+)\s*\/\s*7/g, 'DAY $1 / 7'],
+    [/📦 STOK PACK 100K DI BACKPACK:/g, '📦 100K PACKS IN BACKPACK:'],
+    [/⏳ RESET HARIAN:/g, '⏳ DAILY RESET:'],
+    [/(\d+(?:\.\d+)?[KM])\s+ROLL\s+INSTAN/g, '$1 INSTANT ROLLS'],
+    [/🎁 KLAIM DAY\s+(\d+)\s*·\s*\+(\d+)× INSTAN ROLL PACK 100K \(SIMPAN KE BACKPACK\)/g, '🎁 CLAIM DAY $1 · +$2× 100K INSTANT ROLL PACK (SAVE TO BACKPACK)'],
+    [/Total 7 Hari:/g, '7-Day Total:'],
+    [/(\d+)× Instan Roll Pack 100K \(([\d.,]+)\s*Roll\)/g, '$1× 100K Instant Roll Packs ($2 Rolls)'],
+    [/otomatis masuk ke/g, 'automatically stored in'],
+    [/\+(\d+)× INSTAN ROLL PACK 100K disimpan ke Backpack!/g, '+$1× 100K INSTANT ROLL PACK saved to Backpack!']
   ];
 
   function translateTextString(str) {

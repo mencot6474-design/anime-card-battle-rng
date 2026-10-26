@@ -91,8 +91,9 @@ const CloudDB = {
     /* RPC memakai salinan tanpa `stacks` supaya upload benar-benar ramping
        (server menahan nilai lama); `pub` = ringkasan publik buat profil. */
     const pub = opts && opts.pub;
+    const dailyBonusR100k = (typeof window.getDailyR100kBalance === "function") ? window.getDailyR100kBalance() : 0;
     let rpcPayload = stateObj;
-    if ((skipStacks || pub || coinSpend || xpGain || rebirthGain || rebirthDo) && stateObj) {
+    if ((skipStacks || pub || coinSpend || xpGain || rebirthGain || rebirthDo || dailyBonusR100k > 0) && stateObj) {
       rpcPayload = Object.assign({}, stateObj);
       if (skipStacks) delete rpcPayload.stacks;
       if (coinSpend) rpcPayload._coinSpend = coinSpend;
@@ -100,6 +101,11 @@ const CloudDB = {
       if (rebirthGain) rpcPayload._rebirthGain = rebirthGain;
       if (rebirthDo) rpcPayload._rebirthDo = true;
       if (pub) rpcPayload.pub = pub;
+      if (dailyBonusR100k > 0 && rpcPayload.rollPacks && typeof rpcPayload.rollPacks === "object") {
+        rpcPayload.rollPacks = Object.assign({}, rpcPayload.rollPacks, {
+          r100k: Math.max(0, (rpcPayload.rollPacks.r100k || 0) - dailyBonusR100k)
+        });
+      }
     }
 
     /* Satu jalur: RPC merge_player_state (0024, identitas dari auth.uid()).
@@ -161,8 +167,14 @@ const CloudDB = {
         /* 0029: pack instan, cuaca, dan stok potion milik server. Nilai yang
            diinspect lewat F12 sudah di-nol-kan merge, jadi state lokal ikut
            dikoreksi (kalau tidak, item "hantu" tetap tampil sampai reload). */
-        if (res.rollPacks && typeof res.rollPacks === "object" && JSON.stringify(ST.rollPacks) !== JSON.stringify(res.rollPacks)) {
-          ST.rollPacks = res.rollPacks; dirty = true;
+        if (res.rollPacks && typeof res.rollPacks === "object") {
+          const mergedPacks = Object.assign({}, res.rollPacks);
+          if (dailyBonusR100k > 0) {
+            mergedPacks.r100k = (mergedPacks.r100k || 0) + dailyBonusR100k;
+          }
+          if (JSON.stringify(ST.rollPacks) !== JSON.stringify(mergedPacks)) {
+            ST.rollPacks = mergedPacks; dirty = true;
+          }
         }
         if (res.weather !== undefined && JSON.stringify(ST.weather || null) !== JSON.stringify(res.weather || null)) {
           ST.weather = res.weather || null; dirty = true;
@@ -556,7 +568,12 @@ const CloudDB = {
     if (ST && res.ok) {
       let dirty = false;
       if (typeof res.balance === "number" && ST.premiumGems !== res.balance) { ST.premiumGems = res.balance; dirty = true; }
-      if (res.rollPacks && typeof res.rollPacks === "object") { ST.rollPacks = res.rollPacks; dirty = true; }
+      if (res.rollPacks && typeof res.rollPacks === "object") {
+        const dBon = (typeof window.getDailyR100kBalance === "function") ? window.getDailyR100kBalance() : 0;
+        ST.rollPacks = Object.assign({}, res.rollPacks);
+        if (dBon > 0) ST.rollPacks.r100k = (ST.rollPacks.r100k || 0) + dBon;
+        dirty = true;
+      }
       if (dirty) this._paint();
     }
     return res;
@@ -592,7 +609,12 @@ const CloudDB = {
     if (ST) {
       let dirty = false;
       if (Array.isArray(res.stacks)) { ST.stacks = res.stacks; dirty = true; }
-      if (res.rollPacks && typeof res.rollPacks === "object") { ST.rollPacks = res.rollPacks; dirty = true; }
+      if (res.rollPacks && typeof res.rollPacks === "object") {
+        const dBon = (typeof window.getDailyR100kBalance === "function") ? window.getDailyR100kBalance() : 0;
+        ST.rollPacks = Object.assign({}, res.rollPacks);
+        if (dBon > 0) ST.rollPacks.r100k = (ST.rollPacks.r100k || 0) + dBon;
+        dirty = true;
+      }
       if (res.rebirthGain > 0 && ST.rebirth) {
         ST.rebirth.essence = (ST.rebirth.essence || 0) + res.rebirthGain;
         dirty = true;
