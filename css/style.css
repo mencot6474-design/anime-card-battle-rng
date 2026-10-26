@@ -52282,4 +52282,82 @@ html.fps-locked .bp-fchip{
   font-size: 10px !important;
 }
 
+/* ====== RESTORE FULL WIDTH GLOBAL LUCK WIDGET + FLOATING RIGHT DOCK WITH SPACING ====== */
+.hub-gl-row {
+  position: relative !important;
+  display: block !important;
+  width: 100% !important;
+  max-width: 340px !important;
+  margin: 0 auto 16px !important;
+  transform: translateY(-34px) !important;
+  z-index: 30 !important;
+}
+
+.hub-gl-row > .hub-gl-widget {
+  width: 100% !important;
+  max-width: 340px !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+.hub-gl-row .glw-wrap,
+.hub-gl-row .hub-gl-widget .glw-wrap {
+  padding: 8px 10px !important;
+}
+
+.hub-gl-row .glw-main-row {
+  grid-template-columns: 34px minmax(0, 1fr) auto !important;
+  gap: 8px !important;
+}
+
+.hub-gl-row .glw-icon {
+  width: 34px !important;
+  height: 34px !important;
+}
+
+.hub-gl-row .glw-btn {
+  padding: 6px 9px !important;
+  font-size: 11px !important;
+}
+
+.hub-gl-row > .hub-float-dock {
+  position: absolute !important;
+  left: calc(100% + 12px) !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 10px !important;
+  z-index: 35 !important;
+}
+
+.hub-gl-row .hfd-btn {
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 13px !important;
+  padding: 4px 2px !important;
+}
+
+.hub-gl-row .hfd-lbl {
+  font-size: 7.5px !important;
+  letter-spacing: 0.06em !important;
+}
+
+@media (max-width: 900px) {
+  .hub-gl-row {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 8px !important;
+    transform: translateY(-20px) !important;
+  }
+  .hub-gl-row > .hub-float-dock {
+    position: static !important;
+    transform: none !important;
+    gap: 12px !important;
+  }
+}
+
+
 

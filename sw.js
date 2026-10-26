@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v199-glDockAligned';
+const CACHE_NAME = 'anime-card-battle-v200-glFullWidthDock';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
