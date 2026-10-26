@@ -368,9 +368,11 @@ function render(){
     const hasBattle = !!state.battle || !!app.querySelector(".battle-grid");
     const onTower = !hasBattle && !!app.querySelector(".tw-page:not(.rd-page)");
     const onRaid = !hasBattle && !!app.querySelector(".rd-page");
+    const onSettings = r === "#/settings" || (!hasBattle && !!app.querySelector(".sett-wrap"));
     document.body.classList.toggle("on-lobby", !hasBattle && !!app.querySelector(".lobby-hub"));
     document.body.classList.toggle("on-tower", onTower);
     document.body.classList.toggle("on-raid", onRaid);
+    document.body.classList.toggle("on-settings", onSettings);
     document.documentElement.classList.toggle("on-tower-root", onTower);
     /* Class tambahan di <html>: kunci scroll tanpa :has() (WebView APK lama bisa nggak support). */
     document.documentElement.classList.toggle("view-locked", hasBattle||!!app.querySelector(".lobby-hub")||onTower||onRaid);
@@ -399,9 +401,11 @@ const bfSync=()=>{
   document.body.classList.toggle("battle-raid", !!(grid && grid.classList.contains("raid-stage")));
   const onTower = !hasBattle && !!app.querySelector(".tw-page:not(.rd-page)");
   const onRaid = !hasBattle && !!app.querySelector(".rd-page");
+  const onSettings = !hasBattle && !!app.querySelector(".sett-wrap");
   document.body.classList.toggle("on-lobby", !hasBattle && !!app.querySelector(".lobby-hub"));
   document.body.classList.toggle("on-tower", onTower);
   document.body.classList.toggle("on-raid", onRaid);
+  document.body.classList.toggle("on-settings", onSettings);
   document.documentElement.classList.toggle("on-tower-root", onTower);
   document.documentElement.classList.toggle("view-locked", hasBattle||!!app.querySelector(".lobby-hub")||onTower||onRaid);
   /* Safety: dokumen selalu di posisi paling atas HANYA jika di view yang terkunci (battle/lobby/tower/raid).

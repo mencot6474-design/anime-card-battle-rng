@@ -53457,6 +53457,77 @@ html.fps-locked .bp-fchip{
 /* ==========================================================================
    HORIZONTAL CYBERPUNK SETTINGS DECK (FULL-WIDTH NO-CUTOFF)
    ========================================================================== */
+/* Dark cyberpunk theme & background for Settings screen */
+body.on-settings,
+body:has(.sett-wrap) {
+  background: #080c13 url("../assets/bg/lobby.jpg") center center / cover no-repeat fixed !important;
+  color: #F4F7FA !important;
+  overflow-x: hidden !important;
+}
+
+body.on-settings::before,
+body:has(.sett-wrap)::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 30%, rgba(8,12,19,.4) 0%, rgba(8,12,19,.82) 80%, rgba(6,9,14,.94) 100%),
+    linear-gradient(rgba(125,249,255,.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(125,249,255,.015) 1px, transparent 1px);
+  background-size: 100% 100%, 28px 28px, 28px 28px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body.on-settings #liveVeil,
+body:has(.sett-wrap) #liveVeil {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+/* Dark topbar on Settings */
+body.on-settings #topbar,
+body:has(.sett-wrap) #topbar {
+  background: #080c12 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
+}
+
+body.on-settings #topbar,
+body.on-settings #topbar *,
+body:has(.sett-wrap) #topbar,
+body:has(.sett-wrap) #topbar * {
+  color: #F4F7FA !important;
+}
+
+body.on-settings #topbar .pill,
+body:has(.sett-wrap) #topbar .pill {
+  background: rgba(12, 18, 26, 0.85) !important;
+  border: 1px solid rgba(125, 249, 255, 0.25) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  color: #fff !important;
+}
+
+body.on-settings #topbar .pill.coins,
+body:has(.sett-wrap) #topbar .pill.coins {
+  border-color: rgba(255, 209, 102, 0.4) !important;
+  color: #ffd166 !important;
+}
+
+body.on-settings #topbar .pill.gems,
+body:has(.sett-wrap) #topbar .pill.gems {
+  border-color: rgba(243, 166, 131, 0.4) !important;
+  color: #f3a683 !important;
+}
+
+body.on-settings #topbar .nav-btn,
+body:has(.sett-wrap) #topbar .nav-btn {
+  background: rgba(12, 18, 26, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  color: #66fcf1 !important;
+}
+
+body.on-settings main#app,
 body:has(.sett-wrap) main#app,
 main#app:has(.sett-wrap) {
   width: 100% !important;
@@ -53465,6 +53536,8 @@ main#app:has(.sett-wrap) {
   padding: 10px 16px 40px !important;
   box-sizing: border-box !important;
   overflow-x: hidden !important;
+  position: relative;
+  z-index: 1;
 }
 
 .sett-wrap {
