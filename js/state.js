@@ -718,6 +718,63 @@ function fightShout(){
   impactBoom();
 }
 /* ---------- suara serangan Gojo: Hollow Purple (charge → boom tebal + crackle) ---------- */
+/* =============== BACKGROUND MUSIC (BGM) SYSTEM =============== */
+let bgmAudio = null;
+let bgmInitialized = false;
+
+function initBgm() {
+  if (bgmAudio) return bgmAudio;
+  bgmAudio = new Audio("assets/audio/bgm-lobby.ogg");
+  bgmAudio.loop = true;
+  bgmAudio.volume = 0.35;
+  bgmAudio.preload = "auto";
+  return bgmAudio;
+}
+
+function playBgm() {
+  if (!state || state.muted) return;
+  const a = initBgm();
+  if (a.paused) {
+    a.play().catch(() => {
+      /* Browser autoplay block — tunggu interaksi user pertama */
+    });
+  }
+}
+
+function pauseBgm() {
+  if (bgmAudio && !bgmAudio.paused) {
+    try { bgmAudio.pause(); } catch (e) {}
+  }
+}
+
+function syncBgmState() {
+  if (!state) return;
+  if (state.muted) {
+    pauseBgm();
+  } else if (!battleLive()) {
+    playBgm();
+  }
+}
+
+window.initBgm = initBgm;
+window.playBgm = playBgm;
+window.pauseBgm = pauseBgm;
+window.syncBgmState = syncBgmState;
+
+// User gesture unlocker untuk browser autoplay policy
+function unlockBgmAutoplay() {
+  if (bgmInitialized) return;
+  bgmInitialized = true;
+  initBgm();
+  syncBgmState();
+  ['click', 'touchstart', 'keydown'].forEach(evt => {
+    window.removeEventListener(evt, unlockBgmAutoplay, { capture: true });
+  });
+}
+['click', 'touchstart', 'keydown'].forEach(evt => {
+  window.addEventListener(evt, unlockBgmAutoplay, { capture: true, once: true });
+});
+
 /* =============== SHELL RENDER =============== */
 const app=document.getElementById("app");
 const ROUTES={"#/lobby":"LOBBY","#/":"STORY","#/raid":"BOSS RAID","#/tower":"INFINITE TOWER","#/settings":"PENGATURAN"};
@@ -735,6 +792,7 @@ function battleLive(){
 }
 // Button footer kiri = menu (ikon hamburger statis di index.html).
 function renderShell(){
+  try { syncBgmState(); } catch (e) {}
   const cv=document.getElementById("coinVal");if(cv)cv.textContent=fmt(state.coins);
   const gv=document.getElementById("gemVal");if(gv)gv.textContent=fmt(state.premiumGems||0);
   const rv=document.getElementById("raidVal");if(rv)rv.textContent=fmt(state.wbTokens||0);

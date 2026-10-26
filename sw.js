@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v205-crazyGamesSdk';
+const CACHE_NAME = 'anime-card-battle-v206-bgmLobby';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

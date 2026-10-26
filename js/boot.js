@@ -142,7 +142,7 @@ function renderSettings(){
       };
       paint();
       const iv=setInterval(()=>{if(!document.body.contains(audStat)){clearInterval(iv);return;}paint();},1000);
-      audToggle.onclick=()=>{state.muted=!state.muted;save();paint();if(!state.muted){try{unlockGameAudio();if(window.CyberSfx)window.CyberSfx.katanaSlash(1);}catch(e){}}};
+      audToggle.onclick=()=>{state.muted=!state.muted;save();paint();if(!state.muted){try{unlockGameAudio();if(window.CyberSfx)window.CyberSfx.katanaSlash(1);}catch(e){}}if(typeof syncBgmState==="function")syncBgmState();};
       document.getElementById("audTone").onclick=()=>{
         try{
           unlockGameAudio();
