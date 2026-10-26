@@ -48341,11 +48341,11 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{box-shadow:0 0 0 2px #7
 
 /* ===== Glow warna pada TEKS nama kartu dihapus (shadow gelap tetap) ===== */
 /* 1) Nama di kartu lobby/roll/pick: buang halo --tcol, sisakan ekstrusi gelap */
-.roll-overlay .roll-card-showcase .hub-center .hc-name-top,
-.bps-hover .hub-center .hc-name-top{
+.roll-overlay .roll-card-showcase .hub-center .hc-name-top:not(.hc-name-shine):not(.shiny-gloss),
+.bps-hover .hub-center .hc-name-top:not(.hc-name-shine):not(.shiny-gloss){
   text-shadow:1px 1px 0 #0b0e14,2px 2px 0 #0b0e14,3px 3px 0 #0b0e14,4px 4px 0 #0b0e14,5px 5px 0 #080a0f,6px 6px 0 #080a0f,7px 9px 16px rgba(0,0,0,.9)!important;
 }
-.roll-overlay.mini .roll-card-showcase .hub-center .hc-name-top{
+.roll-overlay.mini .roll-card-showcase .hub-center .hc-name-top:not(.hc-name-shine):not(.shiny-gloss){
   text-shadow:1px 1px 0 #0b0e14,2px 2px 0 #0b0e14,3px 3px 0 #0b0e14,4px 4px 0 #080a0f,5px 7px 12px rgba(0,0,0,.9)!important;
 }
 /* 2) Nama ultima non-shiny (merah menyala) */
@@ -54335,14 +54335,17 @@ main#app:has(.sett-wrap) {
   font-size: 14px !important;
   line-height: .98 !important;
   letter-spacing: .03em !important;
-  color: #fff !important;
-  text-shadow: 1px 1px 0 #0b0e14, 2px 2px 0 #0b0e14, 3px 3px 0 #0b0e14, 0 0 16px rgba(0,0,0,.9) !important;
   z-index: 6 !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   transform: none !important;
   text-align: left !important;
+}
+.rrc .hc-name-top:not(.hc-name-shine):not(.shiny-gloss),
+.rrc .rrc-name:not(.hc-name-shine):not(.shiny-gloss) {
+  color: #fff !important;
+  text-shadow: 1px 1px 0 #0b0e14, 2px 2px 0 #0b0e14, 3px 3px 0 #0b0e14, 0 0 16px rgba(0,0,0,.9) !important;
 }
 .rrc .hc-chance,
 .rrc .rrc-chance {
@@ -54411,14 +54414,16 @@ main#app:has(.sett-wrap) {
   font-size: 14px !important;
   line-height: .98 !important;
   letter-spacing: .03em !important;
-  color: #fff !important;
-  text-shadow: 1px 1px 0 #0b0e14, 2px 2px 0 #0b0e14, 3px 3px 0 #0b0e14, 0 0 16px rgba(0,0,0,.9) !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   max-width: 100% !important;
   transform: none !important;
   text-align: left !important;
+}
+#indexModal .ixc-name:not(.hc-name-shine):not(.shiny-gloss):not(.ixc-shine) {
+  color: #fff !important;
+  text-shadow: 1px 1px 0 #0b0e14, 2px 2px 0 #0b0e14, 3px 3px 0 #0b0e14, 0 0 16px rgba(0,0,0,.9) !important;
 }
 #indexModal .ixc-chance,
 #indexModal .hc-chance {
@@ -54460,6 +54465,8 @@ main#app:has(.sett-wrap) {
   white-space: nowrap !important;
   overflow: visible !important;
   transform: skewX(-4deg) !important;
+}
+.bps-hover .hub-center .hc-name-top:not(.hc-name-shine):not(.shiny-gloss) {
   text-shadow: 1px 1px 0 #0b0e14, 2px 2px 0 #0b0e14, 3px 3px 0 #0b0e14, 4px 4px 0 #0b0e14, 5px 5px 0 #080a0f, 6px 6px 0 #080a0f, 7px 9px 16px rgba(0,0,0,.9), 0 0 22px color-mix(in srgb,var(--tcol,#2F8FE2) 55%,transparent) !important;
 }
 .bps-hover .hub-center .hc-chance {
@@ -54500,6 +54507,9 @@ main#app:has(.sett-wrap) {
   white-space: nowrap !important;
   overflow: visible !important;
   transform: skewX(-4deg) !important;
+}
+.roll-overlay .roll-card-showcase .hub-center .hc-name-top:not(.hc-name-shine):not(.shiny-gloss) {
+  text-shadow: 1px 1px 0 #0b0e14, 2px 2px 0 #0b0e14, 3px 3px 0 #0b0e14, 0 0 16px rgba(0,0,0,.9) !important;
 }
 .roll-overlay .roll-card-showcase .hub-center .hc-chance {
   top: 26px !important;
@@ -54603,14 +54613,17 @@ main#app:has(.sett-wrap) {
   font-size: 14px !important;
   line-height: .98 !important;
   letter-spacing: .03em !important;
-  color: #fff !important;
-  text-shadow: 1px 1px 0 #0b0e14, 2px 2px 0 #0b0e14, 3px 3px 0 #0b0e14, 0 0 16px rgba(0,0,0,.9) !important;
   z-index: 6 !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   transform: none !important;
   text-align: left !important;
+}
+#loadingScreen .ld-cardwrap .hub-center .hc-name-top:not(.hc-name-shine):not(.shiny-gloss),
+#loadingScreen #ldCard .hc-name-top:not(.hc-name-shine):not(.shiny-gloss) {
+  color: #fff !important;
+  text-shadow: 1px 1px 0 #0b0e14, 2px 2px 0 #0b0e14, 3px 3px 0 #0b0e14, 0 0 16px rgba(0,0,0,.9) !important;
 }
 
 #loadingScreen .ld-cardwrap .hub-center .hc-chance,
@@ -54677,4 +54690,52 @@ main#app:has(.sett-wrap) {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
+}
+
+/* ==========================================================================
+   SHINY CARD NAME SHADOW FIX:
+   Eliminate black text-shadow artifacts that bleed into gradient clipped text.
+   Restore vibrant shiny gradient fill and colorful alpha drop-shadow glow.
+   ========================================================================== */
+.hc-name-shine,
+.shiny-gloss,
+.ixc-shine,
+[class*="hc-name-shine"],
+[class*="f-name-shine"],
+.hub-center.shiny .hc-name-top,
+.hub-center .hc-name-top.hc-name-shine,
+.lobby-hub #hubCard .hc-name-top.hc-name-shine,
+.roll-overlay .hub-center .hc-name-top.hc-name-shine,
+.bps-hover .hub-center .hc-name-top.hc-name-shine,
+.rrc .hc-name-top.hc-name-shine,
+.rrc .rrc-name.hc-name-shine,
+#indexModal .ixc-name.hc-name-shine,
+#indexModal .ixc-name.ixc-shine,
+#loadingScreen .hc-name-shine,
+#rkProfModal .hc-name-shine,
+.fighter .f-name.f-name-shine {
+  text-shadow: none !important;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-stroke: 0 transparent !important;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.85)) drop-shadow(0 0 6px var(--sh-glow, rgba(34,211,238,0.55))) !important;
+}
+
+/* Pseudo-elements for shiny shimmer effect */
+.hc-name-shine::after,
+.shiny-gloss::after,
+.ixc-name.hc-name-shine::after,
+.hc-name-top.hc-name-shine::after,
+.f-name.f-name-shine::after {
+  text-shadow: none !important;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* Shiny gloss inner text */
+.shiny-gloss,
+.shiny-gloss span {
+  text-shadow: none !important;
 }
