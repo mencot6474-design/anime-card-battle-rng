@@ -376,13 +376,22 @@ async function submitAuth(){
     if(window.CloudDB){
       if(window.CloudAuth) {
         const ep = await window.CloudAuth.ensurePass(key, passH);
-        console.log("[Register CloudAuth ensurePass]:", ep);
+        if(!ep || !ep.ok){
+          auError("Gagal autentikasi server: " + ((ep && ep.reason) || "koneksi ditolak"));
+          finish();
+          return;
+        }
       }
       let reg=null;
       try {
         reg = await window.CloudDB.registerUser(name, initSt);
-        console.log("[Register CloudDB registerUser]:", reg);
       } catch(err){ console.error("Cloud register fail:", err); }
+      if(!reg || reg.ok === false){
+        const errMsg = (reg && reg.msg) || "Server menolak pendaftaran";
+        auError(errMsg === "TAKEN" ? "Username itu sudah dipakai. Coba masuk." : ("Pendaftaran cloud gagal: " + errMsg));
+        finish();
+        return;
+      }
       if(reg && reg.created === false){
         auError("Username itu sudah dipakai. Coba masuk.");
         finish();
