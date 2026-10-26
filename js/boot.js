@@ -384,7 +384,7 @@ async function submitAuth(){
       }
       let reg=null;
       try {
-        reg = await window.CloudDB.registerUser(name, initSt);
+        reg = await window.CloudDB.registerUser(name, initSt, passH);
       } catch(err){ console.error("Cloud register fail:", err); }
       if(!reg || reg.ok === false){
         const errMsg = (reg && reg.msg) || "Server menolak pendaftaran";

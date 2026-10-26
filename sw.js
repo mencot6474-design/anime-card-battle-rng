@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v178-fixAuthBypass';
+const CACHE_NAME = 'anime-card-battle-v179-fixRegSave';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

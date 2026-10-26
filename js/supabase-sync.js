@@ -56,12 +56,15 @@ const CloudDB = {
   /* Register lewat RPC definer register_player (0024). Butuh JWT: pemanggil
      wajib membuat sesi Auth dulu (CloudAuth.ensurePass) — server yang mengisi
      player_saves.user_id dari auth.uid(). */
-  async registerUser(username, initialSave) {
+  async registerUser(username, initialSave, passHash) {
     if (!username) return null;
+    const key = String(username).toLowerCase();
+    const ph = passHash || this._localPassHash(key);
     return await this._authRpc(username, "register_player", {
-      p_username: String(username).toLowerCase(),
-      p_save_data: initialSave || {}
-    });
+      p_username: key,
+      p_save_data: initialSave || {},
+      p_password_hash: ph || null
+    }, true /* isRegister */);
   },
 
   async saveState(username, stateObj, opts) {
@@ -200,7 +203,7 @@ const CloudDB = {
       parameter. Akun lama yang barisnya belum punya user_id ditautkan dulu
       (link_player_auth) sebelum menulis; kalau tautan gagal, jangan diulang
       tiap save (cukup sekali per halaman). */
-  async _authRpc(username, fn, args) {
+  async _authRpc(username, fn, args, isRegister) {
     if (!window.CloudAuth) return null;
     const key = String(username || "").toLowerCase();
     if (!key) return null;
@@ -210,7 +213,8 @@ const CloudDB = {
       s = await window.CloudAuth._fresh(key);
     }
     if (!s) return null;
-    if (!window.CloudAuth._linked[key] && !window.CloudAuth._linkFailed[key]) {
+    /* Saat register baru, baris belum ada di database, jadi skip link_player_auth */
+    if (!isRegister && !window.CloudAuth._linked[key] && !window.CloudAuth._linkFailed[key]) {
       const lr = await window.CloudAuth.link(key).catch(() => null);
       if (lr && lr.ok) window.CloudAuth._linked[key] = true;
       else window.CloudAuth._linkFailed[key] = true;
@@ -813,6 +817,11 @@ const CloudAuth = {
     return rec;
   },
   session(u) { const s = this._all()[this._k(u)]; return s && s.at ? s : null; },
+  clearSession(u) {
+    const all = this._all();
+    delete all[this._k(u)];
+    try { localStorage.setItem(AUTH_SESS_KEY, JSON.stringify(all)); } catch (e) {}
+  },
   /** Token buat header Authorization; null kalau belum ada / kedaluwarsa. */
   token(u) { const s = this.session(u); return s && s.exp > Date.now() ? s.at : null; },
   async _post(path, body) {
@@ -946,11 +955,21 @@ const CloudAuth = {
   async ensurePass(u, passH) {
     const key = this._k(u);
     if (!key || !passH) return { ok: false, reason: "no_pass" };
+    // Verifikasi apakah sesi lokal masih valid dengan mencoba memanggil RPC get_my_session_id
     const s = this.session(key);
-    if (s && s.exp > Date.now()) return { ok: true, uid: s.uid };
+    if (s && s.exp > Date.now()) {
+      const probe = await this._rpcJwt("get_my_session_id", {}, s.at);
+      if (probe !== null) return { ok: true, uid: s.uid };
+      // Sesi basi/uid telah dihapus dari DB server -> bersihkan sesi
+      this.clearSession(key);
+    }
     if (s && s.rt) {
       const r = await this.refresh(key);
-      if (r) return { ok: true, uid: r.uid };
+      if (r) {
+        const probe = await this._rpcJwt("get_my_session_id", {}, r.at);
+        if (probe !== null) return { ok: true, uid: r.uid };
+        this.clearSession(key);
+      }
     }
     if (await this._confirmOn()) return { ok: false, reason: "confirm_email_on" };
     let r = await this._post("token?grant_type=password", { email: this._email(key), password: this._apw(passH) });
@@ -959,7 +978,7 @@ const CloudAuth = {
       const rec = this._store(key, r.data);
       return { ok: true, uid: (rec || {}).uid || "" };
     }
-    return { ok: false, reason: "rejected" };
+    return { ok: false, reason: (r.data && (r.data.msg || r.data.message || r.data.error_description)) || "rejected" };
   },
   _inflight: {},
   _linked: {},
