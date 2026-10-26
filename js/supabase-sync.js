@@ -349,6 +349,19 @@ const CloudDB = {
         artOwned: bi.artOwned
       };
     }
+    /* Weather instan dibeli lewat RPC atomik `buy_weather` — langsung potong gems
+       dan aktifkan cuaca selama 30 menit di server tanpa terhalang merge payload. */
+    if (username && itemType === "weather" && typeof this.buyWeather === "function") {
+      const wId = String(packKey || "").replace(/^w_/, "");
+      const bw = await this.buyWeather(username, wId, cost);
+      if (!bw || !bw.ok) return { ok: false, msg: (bw && bw.msg) || "GAGAL BELI CUACA" };
+      return {
+        ok: true,
+        balance: typeof bw.balance === "number" ? bw.balance : (ST ? ST.premiumGems : 0),
+        weather: bw.weather,
+        weatherBest: bw.weatherBest
+      };
+    }
     if (!username) {
       // Guest mode: local check
       if (!ST || (ST.premiumGems || 0) < cost) return { ok: false, msg: "GEMS TIDAK CUKUP" };
@@ -544,6 +557,24 @@ const CloudDB = {
       let dirty = false;
       if (typeof res.balance === "number" && ST.premiumGems !== res.balance) { ST.premiumGems = res.balance; dirty = true; }
       if (res.rollPacks && typeof res.rollPacks === "object") { ST.rollPacks = res.rollPacks; dirty = true; }
+      if (dirty) this._paint();
+    }
+    return res;
+  },
+
+  async buyWeather(username, weatherId, cost) {
+    if (!username || !weatherId) return { ok: false, msg: "BAD_INPUT" };
+    const res = await this._authRpc(username, "buy_weather", {
+      p_weather: String(weatherId),
+      p_cost: Math.max(0, parseInt(cost, 10) || 0),
+    });
+    if (!res) return { ok: false, msg: "GAGAL MENGHUBUNGI CLOUD" };
+    const ST = this._st();
+    if (ST && res.ok) {
+      let dirty = false;
+      if (typeof res.balance === "number" && ST.premiumGems !== res.balance) { ST.premiumGems = res.balance; dirty = true; }
+      if (res.weather && typeof res.weather === "object") { ST.weather = res.weather; dirty = true; }
+      if (res.weatherBest) { ST.weatherBest = res.weatherBest; dirty = true; }
       if (dirty) this._paint();
     }
     return res;

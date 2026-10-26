@@ -2044,7 +2044,9 @@ async function buyPremiumPack(packId, ev, qty){
       } else if(pack.type === 'weather'){
         const wId = pack.targetWeather;
         state.weatherBest = betterWeather(state.weatherBest, wId);
-        state.weather = { id: wId, endsAt: Date.now() + WEATHER_ROTATE_MS };
+        state.weather = (res && res.weather && typeof res.weather === 'object')
+          ? res.weather
+          : { id: wId, endsAt: Date.now() + WEATHER_ROTATE_MS };
       } else {
         // Pack (Instan Pack) sudah ditambahkan oleh verifyAndDeductGems (qty) -> jangan dobel.
       }
@@ -2069,7 +2071,9 @@ async function buyPremiumPack(packId, ev, qty){
       } else if(pack.type === 'weather'){
         const wId = pack.targetWeather;
         state.weatherBest = betterWeather(state.weatherBest, wId);
-        state.weather = { id: wId, endsAt: Date.now() + WEATHER_ROTATE_MS };
+        state.weather = (res && res.weather && typeof res.weather === 'object')
+          ? res.weather
+          : { id: wId, endsAt: Date.now() + WEATHER_ROTATE_MS };
       } else {
         state.rollPacks = state.rollPacks || {};
         state.rollPacks[pack.id] = (state.rollPacks[pack.id] || 0) + qty;
