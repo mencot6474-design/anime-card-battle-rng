@@ -137,16 +137,10 @@
     else sharedRaf = 0;
   }
 
-  // Flash & Impact Frame ala Anime Shonen
+  // Flash & Impact Frame ala Anime Shonen - DINONAKTIFKAN (menghilangkan flash putih di basic attack)
   function triggerImpactFrame(ctx, W, H, progress){
-    // Di tengah tumbukan: 1-2 frame flash monokrom
-    if(progress > 0.46 && progress < 0.52){
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, W, H);
-    } else if(progress >= 0.52 && progress < 0.58){
-      ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
-      ctx.fillRect(0, 0, W, H);
-    }
+    // Flash putih dihapus sesuai permintaan
+    return;
   }
 
   // 1. 👊 BRAWLER ARCHETYPE (Gatling Mirage Barrage / Ora Ora Multi-Fist Impact Stream)
