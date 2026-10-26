@@ -54973,6 +54973,89 @@ main#app:has(.sett-wrap) {
 #towerDropModal.show .tw-drop-modal {
   transform: scale(1) translateY(0);
 }
+#towerDropModal .ix-head,
+#towerDropModal .tw-drop-head {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 12px 20px !important;
+  margin: 0 !important;
+  border-bottom: 1px solid rgba(0, 217, 255, 0.22) !important;
+  background: linear-gradient(90deg, rgba(0, 217, 255, 0.12) 0%, rgba(5, 8, 16, 0.8) 75%, transparent 100%) !important;
+  box-sizing: border-box !important;
+  min-height: 58px !important;
+  flex: none !important;
+}
+#towerDropModal .ix-header-titles,
+#towerDropModal .tw-head-left {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  min-width: 0 !important;
+  flex: 1 !important;
+}
+#towerDropModal .ix-eyebrow,
+#towerDropModal .tw-cyber-eyebrow {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-family: var(--font-display, "Orbitron", "Rajdhani", sans-serif) !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.12em !important;
+  color: #00ffaa !important;
+  text-transform: uppercase !important;
+  text-shadow: 0 0 8px rgba(0, 255, 170, 0.5) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
+}
+#towerDropModal .ix-dot,
+#towerDropModal .tw-cyber-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: #00ffaa !important;
+  box-shadow: 0 0 8px #00ffaa !important;
+  flex: none !important;
+}
+#towerDropModal .ix-title,
+#towerDropModal .tw-head-title {
+  margin: 0 !important;
+  font-family: var(--font-display, "Orbitron", "Rajdhani", sans-serif) !important;
+  font-size: clamp(15px, 1.6vw, 20px) !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.08em !important;
+  color: #f8fafc !important;
+  text-shadow: 0 0 16px rgba(0, 217, 255, 0.5), 0 2px 4px rgba(0, 0, 0, 0.8) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  line-height: 1.15 !important;
+}
+#towerDropModal .ix-x,
+#towerDropModal .tw-drop-close {
+  width: 32px !important;
+  height: 32px !important;
+  flex: none !important;
+  margin-left: 14px !important;
+  border: 1px solid rgba(0, 217, 255, 0.4) !important;
+  border-radius: 9px !important;
+  background: rgba(0, 217, 255, 0.08) !important;
+  color: #7df9ff !important;
+  display: grid !important;
+  place-items: center !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+#towerDropModal .ix-x:hover,
+#towerDropModal .tw-drop-close:hover {
+  background: #00e5ff !important;
+  color: #040914 !important;
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.7) !important;
+  transform: scale(1.05) !important;
+}
 #towerDropModal .tw-drop-modal-body {
   padding: 14px 18px 16px !important;
   display: flex !important;
@@ -55038,6 +55121,10 @@ main#app:has(.sett-wrap) {
   font-weight: 800;
   letter-spacing: 0.16em;
   text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 .tw-col-pill .tw-dot {
   width: 5px;
@@ -55059,6 +55146,9 @@ main#app:has(.sett-wrap) {
   font-weight: 900;
   letter-spacing: 0.06em;
   color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tw-col-list {
