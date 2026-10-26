@@ -376,7 +376,16 @@ async function submitAuth(){
     const initSt = freshState();
     const ep = await window.CloudAuth.ensurePass(key, passH);
     if(!ep || !ep.ok){
-      auError("Gagal autentikasi server Supabase: " + ((ep && ep.reason) || "koneksi ditolak"));
+      const rsn = (ep && ep.reason) || "koneksi ditolak";
+      if(rsn === "USER_EXISTS"){
+        auError("Username ini sudah terdaftar di server (dengan password berbeda). Silakan klik MASUK atau pilih username lain.");
+      }else if(rsn === "RATE_LIMIT"){
+        auError("Terlalu banyak percobaan daftar dalam waktu singkat. Tunggu 1 menit lalu coba lagi.");
+      }else if(rsn === "confirm_email_on"){
+        auError("Fitur Confirm Email di Supabase masih aktif. Matikan dulu di pengaturan Auth Supabase.");
+      }else{
+        auError("Gagal mendaftar ke server: " + rsn);
+      }
       finish();
       return;
     }

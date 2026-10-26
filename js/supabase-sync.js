@@ -852,7 +852,16 @@ window.CloudDB = CloudDB;
 const AUTH_SESS_KEY = "aab-auth-sess";
 const CloudAuth = {
   _k(u) { return String(u || "").toLowerCase(); },
-  _email(u) { return this._k(u) + "@game.invalid"; },
+  /* Encode karakter non-alphanumeric (mis. '@', titik ganda, simbol) menjadi hex
+     agar email sintetis selalu 100% valid menurut validator Supabase Auth,
+     sekaligus tetap 100% kompatibel untuk username huruf/angka/underscore biasa. */
+  _email(u) {
+    const k = this._k(u);
+    if (/^[a-z0-9_]+$/.test(k)) return k + "@game.invalid";
+    const safe = k.replace(/[^a-z0-9]/g, c => "_" + c.charCodeAt(0).toString(16) + "_");
+    return "u_" + safe + "@game.invalid";
+  },
+  _legacyEmail(u) { return this._k(u) + "@game.invalid"; },
   _pass(u) { return this._apw(CloudDB._localPassHash(u)); },
   _apw(hash) { return hash ? "acb_" + hash + "_v1" : ""; },
   _all() { try { return JSON.parse(localStorage.getItem(AUTH_SESS_KEY)) || {}; } catch (e) { return {}; } },
@@ -935,7 +944,10 @@ const CloudAuth = {
   async authenticate(u, passH) {
     const key = this._k(u);
     if (!key || !passH) return { ok: false, reason: "no_pass" };
-    const r = await this._post("token?grant_type=password", { email: this._email(key), password: this._apw(passH) });
+    let r = await this._post("token?grant_type=password", { email: this._email(key), password: this._apw(passH) });
+    if (!r.ok && this._email(key) !== this._legacyEmail(key)) {
+      r = await this._post("token?grant_type=password", { email: this._legacyEmail(key), password: this._apw(passH) });
+    }
     if (!r.ok) return { ok: false, reason: "no_auth" };
     this._store(key, r.data);
     const sv = await this.mySave(key);
@@ -951,6 +963,9 @@ const CloudAuth = {
     let s = this.session(key);
     if (!s || s.exp <= Date.now()) {
       let r = await this._post("token?grant_type=password", { email: this._email(key), password: this._apw(passH) });
+      if (!r.ok && this._email(key) !== this._legacyEmail(key)) {
+        r = await this._post("token?grant_type=password", { email: this._legacyEmail(key), password: this._apw(passH) });
+      }
       if (!r.ok) {
         if (await this._confirmOn()) return { ok: false, reason: "confirm_email_on" };
         r = await this._post("signup", { email: this._email(key), password: this._apw(passH) });
@@ -989,6 +1004,9 @@ const CloudAuth = {
     }
     if (await this._confirmOn()) return { ok: false, reason: "confirm_email_on" };
     let r = await this._post("token?grant_type=password", { email: this._email(key), password: this._pass(key) });
+    if (!r.ok && this._email(key) !== this._legacyEmail(key)) {
+      r = await this._post("token?grant_type=password", { email: this._legacyEmail(key), password: this._pass(key) });
+    }
     if (r.ok) return { ok: true, uid: (this._store(key, r.data) || {}).uid || "" };
     /* Belum punya akun Auth (login lama hanya bikin baris player_saves). */
     r = await this._post("signup", { email: this._email(key), password: this._pass(key) });
@@ -1026,12 +1044,25 @@ const CloudAuth = {
     }
     if (await this._confirmOn()) return { ok: false, reason: "confirm_email_on" };
     let r = await this._post("token?grant_type=password", { email: this._email(key), password: this._apw(passH) });
-    if (!r.ok) r = await this._post("signup", { email: this._email(key), password: this._apw(passH) });
+    if (!r.ok && this._email(key) !== this._legacyEmail(key)) {
+      r = await this._post("token?grant_type=password", { email: this._legacyEmail(key), password: this._apw(passH) });
+    }
+    if (!r.ok) {
+      r = await this._post("signup", { email: this._email(key), password: this._apw(passH) });
+    }
     if (r.ok && r.data && r.data.access_token) {
       const rec = this._store(key, r.data);
       return { ok: true, uid: (rec || {}).uid || "" };
     }
-    return { ok: false, reason: (r.data && (r.data.msg || r.data.message || r.data.error_description)) || "rejected" };
+    const rawReason = (r.data && (r.data.msg || r.data.message || r.data.error_description)) || "rejected";
+    const errCode = (r.data && r.data.error_code) || "";
+    if (errCode === "user_already_exists" || /already registered/i.test(rawReason)) {
+      return { ok: false, reason: "USER_EXISTS" };
+    }
+    if (errCode === "over_email_send_rate_limit" || errCode === "over_request_rate_limit" || r.status === 429) {
+      return { ok: false, reason: "RATE_LIMIT" };
+    }
+    return { ok: false, reason: rawReason };
   },
   _inflight: {},
   _linked: {},
