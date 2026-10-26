@@ -754,6 +754,12 @@ const CloudDB = {
     return await this._rpc("get_global_weather", {});
   },
 
+  // Ambil jumlah player yang sedang aktif / online di semua server
+  async getOnlinePlayersCount() {
+    const n = await this._rpc("get_online_players_count", {});
+    return (typeof n === "number" && n > 0) ? n : 1;
+  },
+
   /* Beli global luck lewat RPC atomik (server potong gem + stack buff).
      Bukan tulis tabel global_luck langsung lagi — lihat migration 0016.
      Return: { ok, balance, cost, multiplier, ends_at, activated_by }

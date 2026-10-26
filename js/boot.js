@@ -673,16 +673,23 @@ function boot(){
     if(!navigator.onLine)ensureNetBar().style.display="flex";
   })();
 
-  /* Diagnosa: build + viewport nyata HP (tampil di semua layar) */
+  /* Indikator jumlah player aktif / online di pojok kiri bawah (menggantikan label BUILD) */
   (function(){
     const d=document.createElement("div");
-    const upd=()=>{const a=(typeof actx!=="undefined"&&actx)?actx.state:"-";d.textContent="BUILD 2026-10-23-perf14-skfx · VP "+window.innerWidth+"×"+window.innerHeight+" · AUD "+a+((typeof state!=="undefined"&&state&&state.muted)?" MUTE":"");};
-    d.style.cssText="position:fixed;left:6px;bottom:6px;z-index:999999;font:10px monospace;color:#7cf;opacity:.8;pointer-events:none;text-shadow:0 1px 2px #000";
-    upd();
-    window.addEventListener("resize",upd);
-    window.addEventListener("fullscreenchange",upd);
-    setInterval(upd,1500);
+    d.id="activePlayersBadge";
+    d.style.cssText="position:fixed;left:8px;bottom:8px;z-index:999999;display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:999px;background:rgba(8,12,24,0.82);border:1px solid rgba(74,222,128,0.35);font:700 10.5px 'Rajdhani',monospace;letter-spacing:0.08em;color:#e2e8f0;pointer-events:none;box-shadow:0 2px 10px rgba(0,0,0,0.6);backdrop-filter:blur(4px);";
+    d.innerHTML='<span style="width:6px;height:6px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80;display:inline-block;"></span><span>ACTIVE PLAYER ON: <b id="apCountVal" style="color:#4ade80;">1</b></span>';
     document.body.appendChild(d);
+    const pollActivePlayers=async()=>{
+      if(document.hidden||!navigator.onLine||!window.CloudDB||typeof window.CloudDB.getOnlinePlayersCount!=="function")return;
+      try{
+        const cnt=await window.CloudDB.getOnlinePlayersCount();
+        const el=document.getElementById("apCountVal");
+        if(el&&typeof cnt==="number"&&cnt>=1)el.textContent=cnt.toLocaleString("id-ID");
+      }catch(e){}
+    };
+    setTimeout(pollActivePlayers,1200);
+    setInterval(pollActivePlayers,25000);
   })();
 }
 
