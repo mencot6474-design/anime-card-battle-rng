@@ -304,8 +304,9 @@ const bfSync=()=>{
   document.body.classList.toggle("on-raid", onRaid);
   document.documentElement.classList.toggle("on-tower-root", onTower);
   document.documentElement.classList.toggle("view-locked", hasBattle||!!app.querySelector(".lobby-hub")||onTower||onRaid);
-  /* Safety: dokumen selalu di posisi paling atas (observer ini jalan di luar render()). */
-  if(window.scrollX||window.scrollY) window.scrollTo(0,0);
+  /* Safety: dokumen selalu di posisi paling atas HANYA jika di view yang terkunci (battle/lobby/tower/raid).
+     Jangan paksa scroll ke 0 saat pemain sedang berada di Settings agar halaman settings bisa di-scroll bebas. */
+  if((hasBattle||!!app.querySelector(".lobby-hub")||onTower||onRaid) && (window.scrollX||window.scrollY)) window.scrollTo(0,0);
 };
 /* Pin scrollY=0 selama battle — WebView APK suka auto-scroll ke tombol yang di-tap
    di tengah battle → layer fixed (#dmgLayer/canvas VFX) meleset dari kartunya. */
