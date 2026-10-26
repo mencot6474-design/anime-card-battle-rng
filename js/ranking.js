@@ -125,6 +125,18 @@ function rkPhoto(username) {
 function rkFaceHtml(r, size) {
   const nm = String((r && r.username) || "?").trim();
   const ini = `<span class="rk-init"${size ? ' style="font-size:' + Math.round(size * 0.34) + 'px"' : ""}>${rkEsc((nm[0] || "?").toUpperCase())}</span>`;
+  // Ambil kartu yang dipakai di lobby (equip utama) kalau ada di meta
+  const meta = r && r.meta ? r.meta : {};
+  const eqChar = meta.eqChar || (Array.isArray(meta.deck) ? meta.deck[0] : null) || (Array.isArray(meta.equipped) ? meta.equipped[0] : null);
+  if (eqChar && typeof cardThumb === "function") {
+    try {
+      const csrc = cardThumb(eqChar);
+      if (csrc) {
+        const img = `<img class="rk-face rk-face-card" src="${rkEsc(csrc)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">`;
+        return ini + img;
+      }
+    } catch (e) {}
+  }
   const src = rkPhoto(nm);
   /* Inisial selalu digambar lebih dulu: sebelum foto datang (atau kalau player
      tidak punya apa-apa) hasilnya tetap terbaca. img dihapus sendiri by onerror. */

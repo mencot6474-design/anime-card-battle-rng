@@ -653,10 +653,20 @@ const CloudDB = {
       Server hanya menyimpan kalau nilai baru lebih tinggi. */
   async submitScore(board, value, meta) {
     if (!currentUser) return null;
+    let m = meta || {};
+    try {
+      if (!m.eqChar && typeof equipped === "function") {
+        const eq = equipped();
+        if (eq && eq.char) m.eqChar = eq.char;
+      }
+      if (!m.deck && typeof state !== "undefined" && state && Array.isArray(state.deck)) {
+        m.deck = state.deck.filter(Boolean).slice(0,4);
+      }
+    } catch (e) {}
     return await this._authRpc(currentUser, "submit_leaderboard_score", {
       p_board: board,
       p_value: Math.max(0, Math.min(1e21, Math.round(Number(value) || 0))),
-      p_meta: meta || {},
+      p_meta: m,
     });
   },
 
