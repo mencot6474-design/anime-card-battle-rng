@@ -22,8 +22,8 @@ function towerRegularPool(){return MASTER_CARD_INDEX.filter(c=>!c.noGacha&&(!(c.
    Kartu musuh hanya menentukan identitas/art/passive; HP & ATK ditentukan lantai.
    TIER itu kosmetik — tidak ada lagi stat scaling berdasarkan tier. */
 const TOWER_TIER_K={R:1,SR:1,SSR:1,UR:1,EX:1};
-function towerEnemyHP(f){return Math.round(140*Math.pow(1.18,f-1));}
-function towerEnemyATK(f){return Math.round(58*Math.pow(1.16,f-1));}
+function towerEnemyHP(f){return Math.max(1,Math.floor(f||1))*1000;}
+function towerEnemyATK(f){return Math.max(1,Math.floor(f||1))*500;}
 function towerMakeWave(charId,f,isBoss,role){
   try { const c=CARDS[charId]; if(!c)return null;
   const hpK=isBoss?(role==="main"?2.2:1.4):1;

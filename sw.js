@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v187-fixEmailAuth';
+const CACHE_NAME = 'anime-card-battle-v188-towerBalance';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
