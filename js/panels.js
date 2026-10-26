@@ -2783,9 +2783,9 @@ function renderGlobalLuckWidget() {
   }
 
   /* Ikon resmi mata uang premium (bukan emoji) */
-  const gemIcon = '<img class="glw-gem-icon" src="assets/images/premium-currency.webp" alt="" width="14" height="14">';
+  const gemIcon = '<img class="glw-gem-icon" src="assets/images/premium-currency.webp" alt="" width="13" height="13">';
   const btnLabel = active
-    ? (maxed ? 'MAX STACK (100×)' : 'TUMPUK +10× · ' + gemIcon + GLOBAL_LUCK_COST)
+    ? (maxed ? 'MAX 100×' : '+10× · ' + gemIcon + GLOBAL_LUCK_COST)
     : 'AKTIFKAN · ' + gemIcon + GLOBAL_LUCK_COST;
   const btnDisabled = !canBuy || maxed;
   const btnClass = 'glw-btn' + (active && !maxed ? ' stack' : '') + (maxed ? ' maxed' : '');
@@ -2795,35 +2795,39 @@ function renderGlobalLuckWidget() {
     return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
   });
   const titleBadge = active
-    ? '<span class="glw-live-pill"><span class="glw-live-dot"></span>ACTIVE · ' + stacks + '/10 STACK</span>'
-    : '<span class="glw-idle-pill">STANDBY</span>';
+    ? '<span class="glw-live-pill"><span class="glw-live-dot"></span>' + stacks + '/10 STACK</span>'
+    : '<span class="glw-idle-pill">OFFLINE</span>';
 
   const statusHtml = active
-    ? ('<div class="glw-active-row">'
-       + '<span class="glw-mult">' + mult + '× LUCK</span>'
-       + '<span class="glw-timer-pill">⏱ <span class="glw-timer" id="glWidgetTimer">' + timerStr + '</span></span>'
-       + '<span class="glw-buyer-pill" title="Diaktifkan oleh ' + buyerSafe + '">'
+    ? ('<div class="glw-active-grid">'
+       + '<div class="glw-stat-row">'
+         + '<span class="glw-mult">' + mult + '× LUCK</span>'
+         + '<span class="glw-timer-pill">⏱ <span class="glw-timer" id="glWidgetTimer">' + timerStr + '</span></span>'
+       + '</div>'
+       + '<div class="glw-buyer-pill" title="Diaktifkan oleh ' + buyerSafe + '">'
          + '<span class="glw-buyer-ic">👑</span>'
-         + '<span class="glw-buyer-lbl">BY</span>'
-         + '<span class="glw-buyer-name">' + buyerSafe + '</span>'
-       + '</span>'
+         + '<span class="glw-buyer-lbl">BY:</span>'
+         + '<span class="glw-buyer-name">' + buyerSafe.toUpperCase() + '</span>'
+       + '</div>'
      + '</div>')
-    : '<span class="glw-off">Belum aktif — buff keberuntungan untuk seluruh server</span>';
+    : '<span class="glw-off">Buff keberuntungan seluruh server (+10×/stack)</span>';
   const statusClass = 'glw-status' + (active ? ' active' : '');
   const wrapClass = 'glw-wrap' + (active ? ' is-active' : '');
 
   return '<div class="' + wrapClass + '" id="glLobbyWidget">'
-    + '<div class="glw-icon">' + globalLuckFountainSvg(32) + '</div>'
-    + '<div class="glw-info">'
-      + '<div class="glw-head-row">'
-        + '<div class="glw-title">GLOBAL LUCK SHRINE</div>'
-        + titleBadge
+    + '<div class="glw-main-row">'
+      + '<div class="glw-icon">' + globalLuckFountainSvg(30) + '</div>'
+      + '<div class="glw-info">'
+        + '<div class="glw-head-row">'
+          + '<div class="glw-title">GLOBAL LUCK</div>'
+          + titleBadge
+        + '</div>'
+        + '<div class="' + statusClass + '">' + statusHtml + '</div>'
       + '</div>'
-      + '<div class="' + statusClass + '">' + statusHtml + '</div>'
+      + '<button class="' + btnClass + '" id="glBuyBtn" onclick="buyGlobalLuck()"'
+        + (btnDisabled ? ' disabled' : '') + '>' + btnLabel + '</button>'
     + '</div>'
-    + '<button class="' + btnClass + '" id="glBuyBtn" onclick="buyGlobalLuck()"'
-      + (btnDisabled ? ' disabled' : '') + '>' + btnLabel + '</button>'
-    + '</div>';
+  + '</div>';
 }
 
 /* ---- Ticker countdown widget (update tiap detik) ---- */
