@@ -52,42 +52,42 @@
     <div class="ld-title disp">Anime <span class="ld-accent">Card Battle</span></div>
     <div class="ld-meta"><span class="ld-brand">System // Boot</span><span class="ld-pct" id="ldPct">0%</span></div>
     <div class="ld-bar"><i id="ldFill"></i></div>
-    <div class="ld-status" id="ldStatus">Memuat…</div>
+    <div class="ld-status" id="ldStatus">Loading…</div>
   </div>
 </div>
 <div id="authSpin" class="hidden">
   <div class="as-box">
     <div class="as-ring"></div>
-    <div class="as-txt" id="asTxt">Memproses…</div>
+    <div class="as-txt" id="asTxt">Processing…</div>
   </div>
 </div>
 <div id="authDone" class="hidden">
   <div class="as-box">
     <div class="as-check">✓</div>
-    <div class="as-title" id="adTitle">Akun berhasil dibuat</div>
-    <div class="as-txt" id="adMsg">Silakan masuk dengan akun barumu.</div>
-    <button class="as-btn" id="adOk">KE LOGIN</button>
+    <div class="as-title" id="adTitle">Account successfully created</div>
+    <div class="as-txt" id="adMsg">Please log in with your new account.</div>
+    <button class="as-btn" id="adOk">TO LOGIN</button>
   </div>
 </div>
 <div id="welcomeModal" class="hidden">
   <div class="sw-parts" id="wlParts" aria-hidden="true"></div>
   <div class="syswin" id="wlWin">
     <span class="cnr tl"></span><span class="cnr tr"></span><span class="cnr bl"></span><span class="cnr br"></span>
-    <div class="bar"><span class="dot"></span><span class="tag">System // <b>Verifikasi Berhasil</b></span><span class="glyph">&#9672; ACCESS</span></div>
+    <div class="bar"><span class="dot"></span><span class="tag">System // <b>Access Granted</b></span><span class="glyph">&#9672; ACCESS</span></div>
     <div class="body">
       <div class="sweep"></div>
       <div class="emblem">
         <span class="ring r1"></span><span class="ring r2"></span><span class="hex"></span>
         <svg viewBox="0 0 24 24" fill="none" aria-label="Clan Uzumaki"><path d="M12 12a2 2 0 0 1 4 0 4 4 0 0 1-8 0 6 6 0 0 1 12 0 8 8 0 0 1-16 0" stroke="#fff" stroke-width="2.1" stroke-linecap="round"/></svg>
       </div>
-      <div class="h1" data-t="AKSES DIBERIKAN">AKSES DIBERIKAN</div>
-      <div class="sub" id="wlMsg">Selamat datang kembali, Hunter</div>
+      <div class="h1" data-t="AKSES DIBERIKAN">ACCESS GRANTED</div>
+      <div class="sub" id="wlMsg">Welcome back, Hunter</div>
       <div class="who">&lt;<span class="nm" id="wlName">HUNTER</span>&gt;</div>
       <div class="chips">
         <div class="chip lvl"><span class="k">Lv</span><span class="v" id="wlLvl">1</span></div>
         <div class="chip pw"><span class="k">Power</span><span class="v" id="wlPw">0</span></div>
       </div>
-      <button class="go" id="wlOk">Masuki Arena</button>
+      <button class="go" id="wlOk">Enter Arena</button>
     </div>
   </div>
 </div>
@@ -102,18 +102,18 @@
         <div class="ac-emblem"><div class="ac-hex"></div><svg viewBox="0 0 24 24" fill="none" aria-label="Clan Uzumaki"><path d="M12 12a2 2 0 0 1 4 0 4 4 0 0 1-8 0 6 6 0 0 1 12 0 8 8 0 0 1-16 0" stroke="#7DF9FF" stroke-width="2.1" stroke-linecap="round"/></svg></div>
         <div class="ac-title" data-t="Anime Card Battle">Anime <b>Card</b> Battle</div>
         <div class="ac-sub">Battle Arena</div>
-        <div class="ac-tag" id="brandTag">Masuk untuk melanjutkan <b>perjalananmu</b> menaklukkan arena dan membangun shadow army.</div>
+        <div class="ac-tag" id="brandTag" data-t="Masuk untuk melanjutkan perjalananmu menaklukkan arena dan membangun shadow army.">Log in to continue your journey conquering the arena and building your shadow army.</div>
       </div>
       <div class="ac-pane ac-form-pane">
         <div class="ac-tabs">
-          <button class="ac-tab active" id="tabLogin">MASUK</button>
-          <button class="ac-tab" id="tabRegister">DAFTAR</button>
+          <button class="ac-tab active" id="tabLogin" data-t="MASUK">LOGIN</button>
+          <button class="ac-tab" id="tabRegister" data-t="DAFTAR">REGISTER</button>
         </div>
-        <div class="ac-fld"><label class="ac-lbl">Username</label><input class="ac-input" id="auUser" type="text" placeholder="nama shinobi" autocomplete="off" maxlength="16"></div>
-        <div class="ac-fld"><label class="ac-lbl">Password</label><input class="ac-input" id="auPass" type="password" placeholder="••••••" autocomplete="off" maxlength="24"></div>
+        <div class="ac-fld"><label class="ac-lbl" data-t="Username">Username</label><input class="ac-input" id="auUser" type="text" placeholder="hunter name" autocomplete="off" maxlength="16"></div>
+        <div class="ac-fld"><label class="ac-lbl" data-t="Password">Password</label><input class="ac-input" id="auPass" type="password" placeholder="••••••" autocomplete="off" maxlength="24"></div>
         <div class="ac-err" id="auErr"></div>
-        <button class="ac-go" id="auSubmit">MASUK</button>
-        <div class="ac-note"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg> Progres tersinkron ke Cloud</div>
+        <button class="ac-go" id="auSubmit" data-t="MASUK">LOGIN</button>
+        <div class="ac-note"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg> <span data-t="Progres tersinkron ke Cloud">Progress synced to Cloud</span></div>
       </div>
     </div>
   </div>
@@ -800,7 +800,7 @@
 <script src="js/raid.js?v=v164-fixAutoRoll"></script>
 <script src="js/ranking.js?v=v8-lbProfDossier"></script>
 <script src="js/i18n.js?v=v5-defaultEnglish"></script>
-<script src="js/boot.js?v=v167-defaultEnglish"></script>
+<script src="js/boot.js?v=v168-authEn"></script>
 <script src="js/devtools-guard.js?v=v2-localBypass"></script>
 <script src="js/rpc-guard.js?v=v1-rpcGuard"></script>
 <script src="js/pwa.js?v=v156-install"></script>

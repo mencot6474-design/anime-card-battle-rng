@@ -331,17 +331,20 @@ window.addEventListener("hashchange",()=>{
 let authMode="login";
 function setAuthMode(m){
   authMode=m;
+  const isEn = (window.GameLang && typeof window.GameLang.get === "function") ? window.GameLang.get() === "en" : true;
   document.getElementById("tabLogin").classList.toggle("active",m==="login");
   document.getElementById("tabRegister").classList.toggle("active",m==="register");
-  document.getElementById("auSubmit").textContent=m==="login"?"MASUK":"DAFTAR";
+  document.getElementById("auSubmit").textContent = m === "login" ? (isEn ? "LOGIN" : "MASUK") : (isEn ? "REGISTER" : "DAFTAR");
+  document.getElementById("tabLogin").textContent = isEn ? "LOGIN" : "MASUK";
+  document.getElementById("tabRegister").textContent = isEn ? "REGISTER" : "DAFTAR";
   document.getElementById("auErr").textContent="";
   /* layar login cyber: brand pane flip ke kanan saat mode daftar */
   var card=document.getElementById("auCard"); if(card) card.classList.toggle("flip",m==="register");
-  var hd=document.getElementById("hdMode"); if(hd) hd.textContent=m==="login"?"Hunter Login":"Hunter Register";
+  var hd=document.getElementById("hdMode"); if(hd) hd.textContent=m==="login"?(isEn?"Hunter Login":"Hunter Login"):(isEn?"Hunter Register":"Hunter Register");
   var tg=document.getElementById("brandTag");
   if(tg) tg.innerHTML=m==="login"
-    ? 'Masuk untuk melanjutkan <b>perjalananmu</b> menaklukkan arena dan membangun shadow army.'
-    : 'Daftar untuk <b>terbangun sebagai Player</b> — progresmu langsung tersimpan di Cloud.';
+    ? (isEn ? 'Log in to continue your <b>journey</b> conquering the arena and building your shadow army.' : 'Masuk untuk melanjutkan <b>perjalananmu</b> menaklukkan arena dan membangun shadow army.')
+    : (isEn ? 'Register to <b>awaken as a Player</b> — your progress syncs directly to the Cloud.' : 'Daftar untuk <b>terbangun sebagai Player</b> — progresmu langsung tersimpan di Cloud.');
 }
 function auError(msg){document.getElementById("auErr").textContent=msg;}
 /* Layer ambient layar login: titik cyan naik (dipakai di prototipe;
@@ -371,7 +374,10 @@ async function submitAuth(){
   if(/\s/.test(name)){auError("Username tidak boleh ada spasi.");return;}
   if(pass.length<3){auError("Password minimal 3 karakter.");return;}
   btn.disabled=true;btn.classList.add("press");
-  document.getElementById("asTxt").textContent=authMode==="register"?"Mendaftarkan ke Cloud…":"Menghubungkan ke Cloud…";
+  const isEn = (window.GameLang && typeof window.GameLang.get === "function") ? window.GameLang.get() === "en" : true;
+  document.getElementById("asTxt").textContent = authMode === "register"
+    ? (isEn ? "Registering to Cloud…" : "Mendaftarkan ke Cloud…")
+    : (isEn ? "Connecting to Cloud…" : "Menghubungkan ke Cloud…");
   document.getElementById("authSpin").classList.remove("hidden");
 
   const finish=()=>{document.getElementById("authSpin").classList.add("hidden");btn.disabled=false;btn.classList.remove("press");};
@@ -587,7 +593,9 @@ function runLoading(done){
       } else if(holo){ holo.classList.remove("has-card"); }
     }catch(e){ if(holo) holo.classList.remove("has-card"); }
   }
-  const steps=["Menyinkronkan data…","Membangun deck…","Menyiapkan arena…","Memuat dunia…","Siarp!"];
+  const steps = isEn
+    ? ["Syncing telemetry…", "Assembling deck matrix…", "Calibrating arena…", "Loading sector…", "Ready!"]
+    : ["Menyinkronkan data…", "Membangun deck…", "Menyiapkan arena…", "Memuat dunia…", "Siap!"];
   const dur=3000,t0=Date.now();
   fill.style.width="0%";
   if(pctEl) pctEl.textContent="0%";
