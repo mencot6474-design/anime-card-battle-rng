@@ -3,6 +3,8 @@ function renderSettings(){
   /* BATTLE SPEED: clamp ke unlock level sebelum render panel */
   if(typeof state.battleSpeed!=="number"||state.battleSpeed<1||state.battleSpeed>4)state.battleSpeed=1;
   {const _m=battleSpeedMax();if(state.battleSpeed>_m)state.battleSpeed=_m;}
+  const curLang = (window.GameLang && typeof window.GameLang.get === "function") ? window.GameLang.get() : (state.lang || "id");
+  const isEn = curLang === "en";
   app.innerHTML=`
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;background:linear-gradient(135deg,rgba(31,40,51,0.7),rgba(15,20,28,0.85));padding:14px 20px;border-radius:14px;border:1px solid rgba(102,252,241,0.2);box-shadow:0 8px 32px rgba(0,0,0,0.4);backdrop-filter:blur(8px)">
     <div>
@@ -10,11 +12,33 @@ function renderSettings(){
       <h1 style="margin:2px 0 0;font-size:26px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;color:#fff">GAME <span style="background:linear-gradient(90deg,#66fcf1,#c56cf0);-webkit-background-clip:text;-webkit-text-fill-color:transparent">SETTINGS</span></h1>
     </div>
     <button onclick="location.hash='#/lobby';render();" style="display:flex;align-items:center;gap:8px;padding:10px 22px;font-size:13px;font-weight:800;letter-spacing:1px;background:linear-gradient(135deg,#c56cf0,#7d5fff);color:#fff;border:none;border-radius:10px;cursor:pointer;box-shadow:0 4px 18px rgba(125,95,255,0.4);transition:all .2s ease">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg> KEMBALI KE LOBBY
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg> ${isEn ? "BACK TO LOBBY" : "KEMBALI KE LOBBY"}
     </button>
   </div>
 
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px">
+
+    <!-- LANGUAGE / BAHASA -->
+    <div class="panel set-panel" style="background:linear-gradient(145deg,rgba(18,16,36,0.88),rgba(10,12,24,0.96));border:1px solid rgba(197,108,240,0.35);border-radius:14px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,0.35)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="background:rgba(197,108,240,0.16);color:#e9d5ff;font-size:10px;font-weight:900;padding:3px 8px;border-radius:6px;border:1px solid rgba(197,108,240,0.38)">LOCALE</span>
+        <div class="set-t" style="margin:0;color:#f1f2f6;font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c56cf0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> ${isEn ? "LANGUAGE / BAHASA" : "BAHASA / LANGUAGE"}
+        </div>
+      </div>
+      <div class="set-d" style="color:#a4b0be;font-size:12px;line-height:1.4;margin-bottom:14px">${isEn ? "Select the game interface display language (saved automatically)." : "Pilih bahasa tampilan antarmuka game (tersimpan otomatis)."}</div>
+      <div id="langRow" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <button type="button" class="gm-btn lang-btn${!isEn ? " lang-on" : ""}" data-lang="id" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 10px;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;border:1px solid ${!isEn ? "#66fcf1" : "rgba(255,255,255,0.12)"};background:${!isEn ? "linear-gradient(135deg,rgba(102,252,241,0.22),rgba(197,108,240,0.28))" : "rgba(255,255,255,0.05)"};color:${!isEn ? "#fff" : "#a4b0be"};box-shadow:${!isEn ? "0 0 16px rgba(102,252,241,0.22)" : "none"}">
+          <span style="font-size:16px;line-height:1">🇮🇩</span>
+          <span>INDONESIA</span>
+        </button>
+        <button type="button" class="gm-btn lang-btn${isEn ? " lang-on" : ""}" data-lang="en" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 10px;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;border:1px solid ${isEn ? "#66fcf1" : "rgba(255,255,255,0.12)"};background:${isEn ? "linear-gradient(135deg,rgba(102,252,241,0.22),rgba(197,108,240,0.28))" : "rgba(255,255,255,0.05)"};color:${isEn ? "#fff" : "#a4b0be"};box-shadow:${isEn ? "0 0 16px rgba(102,252,241,0.22)" : "none"}">
+          <span style="font-size:16px;line-height:1">🇬🇧</span>
+          <span>ENGLISH</span>
+        </button>
+      </div>
+      <div class="gm-note" style="color:#c56cf0;font-size:11px;font-weight:700">${isEn ? "ACTIVE LANGUAGE: ENGLISH (EN)" : "BAHASA AKTIF: INDONESIA (ID)"}</div>
+    </div>
     
     <!-- BATTLE SPEED -->
     <div class="panel set-panel" style="background:linear-gradient(145deg,rgba(15,25,35,0.85),rgba(10,15,22,0.95));border:1px solid rgba(102,252,241,0.25);border-radius:14px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,0.3)">
@@ -76,6 +100,21 @@ function renderSettings(){
 
   </div>`;
   if(window.lucide) window.lucide.createIcons();
+  document.querySelectorAll("#langRow .lang-btn").forEach(btn=>{
+    btn.onclick=()=>{
+      const l=btn.getAttribute("data-lang");
+      if(window.GameLang&&typeof window.GameLang.set==="function"){
+        window.GameLang.set(l);
+      }else{
+        state.lang=(l==="en")?"en":"id";
+        save();
+        renderSettings();
+      }
+      if(typeof toast==="function"){
+        toast(l==="en"?"LANGUAGE UPDATED":"BAHASA DIUBAH",l==="en"?"Display language set to English":"Bahasa tampilan diubah ke Indonesia","#c56cf0");
+      }
+    };
+  });
   document.getElementById("logoutBtn").onclick=logout;
   /* Auto restart Tower Infinite — flag di state.tower.auto (default mati). */
   if(!state.tower)state.tower={best:0};
@@ -161,6 +200,7 @@ function render(){
     /* Reset scroll dokumen tiap ganti view — sisa scroll lama jangan bocor
        ke view baru (efek "nempel ke topbar" di lobby/raid/battle). */
     window.scrollTo(0,0);
+    if(window.GameLang&&typeof window.GameLang.refresh==="function")window.GameLang.refresh();
   } catch (e) {
     console.error('Render error:', e);
     document.body.innerHTML = `<div style="padding:40px;color:red"><h1>Error!</h1><p>${e.message}</p><pre>${e.stack}</pre></div>`;

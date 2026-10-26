@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v195-glCompactGrid';
+const CACHE_NAME = 'anime-card-battle-v196-i18nLang';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
