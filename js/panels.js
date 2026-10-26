@@ -236,6 +236,7 @@ function renderWeatherDock(){
   const id=activeWeatherId();const w=id?WEATHER[id]:null;
   const cards=MASTER_CARD_INDEX.filter(c=>c.weatherOnly===id);
   if(!w){panel.classList.remove("show");panel.innerHTML="";panel.dataset.wid="";return;}
+  const byUser=(state&&state.weather&&state.weather.activated_by)?String(state.weather.activated_by):"";
   panel.style.setProperty("--wc",w.color);
   panel.innerHTML=`<div class="wp-cyber-glow"></div>
   <div class="wp-compact-head">
@@ -244,6 +245,7 @@ function renderWeatherDock(){
       <span class="wp-ic" style="color:${w.color}">${weatherSvg(w.id, 16)}</span>
       <span class="wp-name-txt">${w.name}</span>
       <span class="wp-rarity-badge" style="--rc:${w.color}">${w.rar}</span>
+      ${byUser?`<span class="wp-rarity-badge" style="--rc:#ffd700;color:#ffd700;border-color:rgba(255,215,0,.4)" title="Diaktifkan oleh ${byUser}">⚡ ${byUser.toUpperCase()}</span>`:""}
     </div>
     <div class="wp-timer">
       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -265,7 +267,7 @@ function renderWeatherDock(){
         <span class="wp-buff-val"><b>${w.speedBonus}×</b></span>
       </div>
     </div>`;
-  panel.dataset.wid=String(id);
+  panel.dataset.wid=String(id)+"|"+byUser;
   panel.classList.add("show");
   wcHoverBind();
 }
@@ -316,38 +318,90 @@ function toast(main,sub,color){
   toast._tm=setTimeout(()=>t.classList.remove("show"),2200);
 }
 let weatherTickStarted=false;
+let _globalWeatherSyncBusy=false;
+let _lastGlobalWeatherPoll=0;
+const GLOBAL_WEATHER_POLL_MS=8000;
+
+async function syncGlobalWeather(silent){
+  if(!state||!window.CloudDB||typeof window.CloudDB.getGlobalWeather!=="function")return null;
+  if(_globalWeatherSyncBusy)return null;
+  _globalWeatherSyncBusy=true;
+  try{
+    const gw=await window.CloudDB.getGlobalWeather();
+    _lastGlobalWeatherPoll=Date.now();
+    if(!gw||!gw.ok||!gw.id||!WEATHER[gw.id])return null;
+    const wDef=WEATHER[gw.id];
+    const now=Date.now();
+    const cur=state.weather&&state.weather.endsAt>now?state.weather:null;
+    const isGlobalInstant=!!gw.activated_by;
+    const curKey=cur?(cur.id+"|"+(cur.activated_by||"")+"|"+Math.round((cur.endsAt||0)/1000)):"";
+    const newKey=gw.id+"|"+(gw.activated_by||"")+"|"+Math.round((gw.endsAt||0)/1000);
+
+    // Terapkan cuaca global jika:
+    // 1. Belum ada cuaca aktif di client, ATAU
+    // 2. Ada yang membeli Weather Instan di server (activated_by ada) yang berbeda dari state sekarang, ATAU
+    // 3. Cuaca global server memiliki rarity lebih bagus/sama atau cuaca saat ini juga berasal dari server global
+    const curIsPersonalPotion=cur&&!cur.activated_by&&((cur.endsAt-now)<=WEATHER_MS+5000)&&cur.id!==gw.id;
+    if(!cur||isGlobalInstant||!curIsPersonalPotion||weatherRank(gw.id)<=weatherRank(cur.id)){
+      if(curKey!==newKey){
+        const prevId=cur?cur.id:null;
+        const prevBy=cur?(cur.activated_by||""):"";
+        state.weather={id:gw.id,endsAt:Number(gw.endsAt)||now+WEATHER_ROTATE_MS,activated_by:gw.activated_by||null};
+        state.weatherBest=betterWeather(state.weatherBest,gw.id);
+        renderWeatherDock();
+        renderBuffDock();
+        renderShell();
+        if(typeof renderPremiumShop==="function"&&document.getElementById("premiumModal")?.classList.contains("show")){
+          renderPremiumShop();
+        }
+        if(!silent&&(prevId!==gw.id||prevBy!==(gw.activated_by||""))){
+          const subTxt=gw.activated_by
+            ?`DIAKTIFKAN OLEH ${String(gw.activated_by).toUpperCase()} · SEMUA SERVER (30 MENIT)`
+            :"ROTASI CUACA SERVER · 30 MENIT";
+          toast(`<span style="display:inline-flex;align-items:center;gap:8px">${weatherSvg(wDef.id,22)} ${wDef.name}</span>`,subTxt,wDef.color);
+          beep(520,.14,"sine",.06);setTimeout(()=>beep(700,.16,"sine",.06),130);
+        }
+        return wDef;
+      }
+    }
+  }catch(e){}finally{
+    _globalWeatherSyncBusy=false;
+  }
+  return null;
+}
+window.syncGlobalWeather=syncGlobalWeather;
+
 function startWeatherTick(){
   if(weatherTickStarted)return;weatherTickStarted=true;
-  /* ensureWeather: window habis / save lama tanpa weather -> roll cuaca ALAMI berikutnya
-     (weighted, tanpa pity - bebas turun kelas), 30 menit. weatherBest tetep ke-update
-     biar stat "cuaca terbaik pernah" akurat. silent=true buat seeding pas boot (tanpa toast). */
+  /* ensureWeather: sinkronkan cuaca dari server global_weather agar semua server/pemain
+     mendapat rotasi 30 menit yang sama persis + langsung merasakan Weather Instan yang dibeli pemain lain. */
   const ensureWeather=silent=>{
     if(!state)return null;
-    if(state.weather&&Date.now()<state.weather.endsAt)return null;
-    const w=rollWeather();
-    state.weatherBest=betterWeather(state.weatherBest,w.id);
-    state.weather={id:w.id,endsAt:Date.now()+WEATHER_ROTATE_MS};
-    save();
-    if(!silent){toast(`<span style="display:inline-flex;align-items:center;gap:8px">${weatherSvg(w.id,22)} ${w.name}</span>`,"CUACA BERUBAH · 30 MENIT",w.color);beep(520,.14,"sine",.06);setTimeout(()=>beep(700,.16,"sine",.06),130);}
-    return w;
+    if(state.weather&&Date.now()<state.weather.endsAt){
+      if(Date.now()-_lastGlobalWeatherPoll>=GLOBAL_WEATHER_POLL_MS&&!document.hidden){
+        syncGlobalWeather(false);
+      }
+      return null;
+    }
+    syncGlobalWeather(silent);
+    return null;
   };
   window.ensureWeather=ensureWeather;
-  ensureWeather(true);           /* seed cuaca pertama pas boot (tanpa toast) */
-  renderShell();                 /* refresh UI dgn weather sudah ada */
+  syncGlobalWeather(true);       /* tarik cuaca global server pas boot */
+  renderShell();                 /* refresh UI */
   setInterval(()=>{
     if(!state)return;
     const hadActive=!!state.weather&&Date.now()<state.weather.endsAt;
-    const changed=ensureWeather(false);   /* auto-rotate: habis -> roll baru + toast */
+    ensureWeather(false);
     const _wp=document.getElementById("weatherPanel");
-    const staleDock=!!_wp&&_wp.dataset.wid!==String(activeWeatherId()||""); /* isi dock != state (mis. habis auto-gacha) */
-    if(changed||(!hadActive&&state.weather)||staleDock){
-      /* cuaca/buff berubah -> full rebuild + sync shell */
+    const byUser=(state&&state.weather&&state.weather.activated_by)?String(state.weather.activated_by):"";
+    const expectedWid=activeWeatherId()?(String(activeWeatherId())+"|"+byUser):"";
+    const staleDock=!!_wp&&_wp.dataset.wid!==expectedWid;
+    if((!hadActive&&state.weather)||staleDock){
       renderWeatherDock();renderBuffDock();renderShell();
     }else{
-      /* cuaca tidak berubah -> update hanya countdown timer (tanpa rebuild panel) */
       const wp=document.querySelector(".wp-timer-val");if(wp&&state.weather)wp.textContent=fmtCountdown(state.weather.endsAt-Date.now());
       document.querySelectorAll(".bd-badge").forEach(b=>{
-        /* badge timer buff: update teks countdown dari data-ends (disimpan saat render) */
         const ends=b.getAttribute("data-ends");if(ends)b.textContent=fmtCountdown(+ends-Date.now());
       });
     }
@@ -1802,8 +1856,8 @@ function premConfirmBody(pack, qty) {
     efek = 'Pet sakti masuk Backpack. ' + (pack.desc || '');
   } else if (pack.type === 'weather') {
     var wName = (WEATHER[pack.targetWeather] && WEATHER[pack.targetWeather].name) || pack.name;
-    labelEfek = 'CUACA';
-    efek = 'Cuaca <b>' + wName + '</b> langsung aktif selama <b>30 MENIT</b>. ' + (pack.desc || '');
+    labelEfek = 'CUACA SERVER';
+    efek = 'Cuaca <b>' + wName + '</b> langsung aktif untuk <b>SEMUA PEMAIN DI SERVER</b> selama <b>30 MENIT</b>. ' + (pack.desc || '');
   }
   var totalPrice = Number(pack.price || 0) * qty;
   return '<div class="glcf-row"><span class="glcf-label">ITEM</span><span class="glcf-val"><b>' + pack.name + '</b>' +
@@ -1814,7 +1868,7 @@ function premConfirmBody(pack, qty) {
       (qty > 1 ? ' <span style="opacity:.7">(' + pack.price + ' × ' + qty + ')</span>' : '') + '</span></div>' +
     '<div class="glcf-row"><span class="glcf-label">SALDO</span><span class="glcf-val">' + gemIcon + ' ' + fmt(state.premiumGems || 0) + ' Gems</span></div>' +
     '<div class="glcf-warn">Gems langsung dipotong dan <b>tidak bisa dikembalikan</b>.' +
-      (pack.type === 'weather' ? ' Cuaca langsung aktif selama 30 menit.' : '') + '</div>';
+      (pack.type === 'weather' ? ' Cuaca langsung aktif untuk semua pemain di server selama 30 menit.' : '') + '</div>';
 }
 
 function premSetTab(tabKey){
@@ -1901,9 +1955,10 @@ function renderPremiumShop(){
       var isCurActive = (activeWeatherNow === p.targetWeather);
       var wDef = WEATHER[p.targetWeather];
       var rem = (isCurActive && state.weather && state.weather.endsAt > Date.now()) ? fmtCountdown(state.weather.endsAt - Date.now()) : '';
+      var byWho = (isCurActive && state.weather && state.weather.activated_by) ? (' · OLEH ' + String(state.weather.activated_by).toUpperCase()) : '';
       ownedTxt = isCurActive
-        ? '<span style="color:' + (wDef ? wDef.color : '#38bdf8') + '">SEDANG AKTIF (⏱ ' + rem + ')</span>'
-        : '<span style="color:#94a3b8">AKTIFKAN LANGSUNG 30 MENIT</span>';
+        ? '<span style="color:' + (wDef ? wDef.color : '#38bdf8') + '">SEDANG AKTIF DI SERVER (⏱ ' + rem + byWho + ')</span>'
+        : '<span style="color:#94a3b8">AKTIFKAN KE SEMUA SERVER (30 MENIT)</span>';
     } else {
       var owned = (state.rollPacks && state.rollPacks[p.id]) || 0;
       ownedTxt = 'DIMILIKI DI BACKPACK: <b>' + owned + '</b>';
@@ -2089,7 +2144,7 @@ async function buyPremiumPack(packId, ev, qty){
       rewardMsg = '+' + pack.name + ' berhasil dibuka & masuk Backpack!';
     } else if(pack.type === 'weather'){
       const wDef = WEATHER[pack.targetWeather] || {};
-      rewardMsg = 'Cuaca ' + (wDef.name || pack.name) + ' AKTIF selama 30 menit!';
+      rewardMsg = 'Cuaca ' + (wDef.name || pack.name) + ' AKTIF untuk SEMUA SERVER selama 30 menit!';
     } else {
       rewardMsg = '+' + qty + ' ' + pack.name + ' masuk ke Backpack! (' + (Number(pack.amount || 0) * qty).toLocaleString('id-ID') + ' tarikan)!';
     }

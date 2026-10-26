@@ -749,6 +749,11 @@ const CloudDB = {
     return (data && data.length > 0) ? data[0] : null;
   },
 
+  // Ambil global weather server (auto-rotate 30 menit + weather instan dari pemain lain)
+  async getGlobalWeather() {
+    return await this._rpc("get_global_weather", {});
+  },
+
   /* Beli global luck lewat RPC atomik (server potong gem + stack buff).
      Bukan tulis tabel global_luck langsung lagi — lihat migration 0016.
      Return: { ok, balance, cost, multiplier, ends_at, activated_by }
