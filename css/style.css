@@ -54765,3 +54765,104 @@ main#app:has(.sett-wrap) {
 .shiny-gloss span {
   text-shadow: none !important;
 }
+
+/* ==========================================================================
+   CARD HP & ATK STATS PLACEHOLDER (MATCHING TOWER INFINITE STYLE)
+   No heart/sword icons, dark container box, HP on left, ATK on right
+   ========================================================================== */
+.hc-stats,
+.hub-center .hc-stats,
+.lobby-hub #hubCard .hc-stats,
+.roll-overlay .hub-center .hc-stats,
+.bps-hover .hub-center .hc-stats,
+#loadingScreen .ld-cardwrap .hc-stats,
+#loadingScreen #ldCard .hc-stats,
+#profModal .prof-hero-card .hc-stats,
+.stat-row,
+.cr-stats,
+.st-stats {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  background: rgba(6, 10, 18, 0.88) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 4px !important;
+  padding: 3px 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  font-family: "Rajdhani", "Barlow Condensed", sans-serif !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.03em !important;
+  text-shadow: none !important;
+}
+
+.lobby-hub #hubCard .hc-stats {
+  padding: 5px 12px !important;
+  font-size: clamp(14px, 1.8vh, 18px) !important;
+  border-radius: 6px !important;
+  margin-top: 6px !important;
+}
+
+.hc-stats i,
+.hub-center .hc-stats i,
+.lobby-hub #hubCard .hc-stats i,
+.stat-row i,
+.cr-stats i,
+.st-stats i {
+  font-style: normal !important;
+  color: #94a3b8 !important;
+  font-weight: 700 !important;
+  margin-right: 5px !important;
+  letter-spacing: 0.05em !important;
+}
+
+.hc-stats .hp,
+.hub-center .hc-stats .hp,
+.lobby-hub #hubCard .hc-stats .hp,
+.stat-row .stat.hp,
+.stat-row .hp,
+.cr-stats .hp,
+.st-stats .hp {
+  display: inline-flex !important;
+  align-items: center !important;
+  color: #2ed573 !important;
+  justify-content: flex-start !important;
+}
+
+.hc-stats .hp b,
+.hub-center .hc-stats .hp b,
+.lobby-hub #hubCard .hc-stats .hp b,
+.stat-row .stat.hp b,
+.stat-row .hp b,
+.cr-stats .hp b,
+.st-stats .hp b {
+  color: #2ed573 !important;
+  font-weight: 800 !important;
+  text-shadow: 0 0 6px rgba(46, 213, 115, 0.4) !important;
+}
+
+.hc-stats .atk,
+.hub-center .hc-stats .atk,
+.lobby-hub #hubCard .hc-stats .atk,
+.stat-row .stat.atk,
+.stat-row .atk,
+.cr-stats .atk,
+.st-stats .atk {
+  display: inline-flex !important;
+  align-items: center !important;
+  color: #ffa502 !important;
+  justify-content: flex-end !important;
+}
+
+.hc-stats .atk b,
+.hub-center .hc-stats .atk b,
+.lobby-hub #hubCard .hc-stats .atk b,
+.stat-row .stat.atk b,
+.stat-row .atk b,
+.cr-stats .atk b,
+.st-stats .atk b {
+  color: #ffa502 !important;
+  font-weight: 800 !important;
+  text-shadow: 0 0 6px rgba(255, 165, 2, 0.4) !important;
+}

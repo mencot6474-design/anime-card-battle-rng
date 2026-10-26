@@ -1215,7 +1215,7 @@ function openStart(lv){
         <div class="eyebrow" style="color:${en.boss?"var(--pink)":"var(--cyan)"}">LEVEL ${lv}${en.boss?" · BOSS":""}</div>
         <div class="st-name">${en.name}</div>
         <div class="st-ep">${en.epithet} ${diffOf().mut&&diffOf().mut!=="none"?mutChip(diffOf().mut,mutBox(diffOf().mut,"st-mut")):""}</div>
-        <div class="st-stats"><span>♡ ${fmt(es.hp)}</span><span>${ATKIC} ${fmt(es.atk)}</span></div>
+        <div class="st-stats"><span class="hp"><i>HP</i> <b>${fmt(es.hp)}</b></span><span class="atk"><i>ATK</i> <b>${fmt(es.atk)}</b></span></div>
       </div>
     </div>
     <div class="st-gate ${ok?"ok":"bad"}">

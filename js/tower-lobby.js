@@ -78,7 +78,7 @@ function towerFoeHtml(w){
     <div class="f-body">
       <div class="f-title">${en.epithet}</div>
       <div class="f-skill">${en.id?passiveName(en.id):"Musuh"}</div>
-      <div class="stat-row"><div class="stat">&#9825; ${fmt(es.hp)}</div><div class="stat">${ATKIC} ${fmt(es.atk)}</div></div>
+      <div class="stat-row"><div class="stat hp"><i>HP</i> <b>${fmt(es.hp)}</b></div><div class="stat atk"><i>ATK</i> <b>${fmt(es.atk)}</b></div></div>
     </div>`}
   </div>`;
 }
@@ -949,7 +949,7 @@ function openModal(id){
       <div class="eyebrow" style="color:${(s.tier&&TIER_COLOR[s.tier])||'#7DF9FF'}">${rarityText(s.tier,luckChance(s.char,s.mut,s.shiny))}${s.mut&&s.mut!=="none"?` · ${mutChip(s.mut,mutPill(s.mut))}`:""}${s.shiny?' · <span class="shiny-badge shiny-pill">SHINY</span>':""}</div>
       <div class="md-name">${c.name}</div>
       <div class="cr-title" style="margin-bottom:8px">${c.type}</div>
-      <div class="cr-stats"><span>♡ ${fmt(st.hp)}</span><span>${ATKIC} ${fmt(st.atk)}</span></div>
+      <div class="cr-stats"><span class="hp"><i>HP</i> <b>${fmt(st.hp)}</b></span><span class="atk"><i>ATK</i> <b>${fmt(st.atk)}</b></span></div>
       <div class="cr-skill" style="margin-bottom:4px"><span class="ds-skill-badge">✦ ${c.passive.name}<span class="sk-txt">${skillText(s.char)}</span></span></div>
       <div class="md-actions">
         <button class="md-btn primary" id="md-use">${(function(){const di=state.deck.indexOf(s.id);return di>=0?("DI DEK · SLOT "+(di+1)):"PASANG KE DEK";})()}</button>
@@ -1039,7 +1039,7 @@ function hubCardHtml(eq,idAttr,showHideBtn){
         <div class="hc-info">
           <div class="hc-skill">${passiveName(eq.char)}</div>
           <div class="hc-desc">${skillText(eq.char)}</div>
-          <div class="hc-stats"><div class="hp">♡ ${fmt(st.hp)}</div><div class="atk">${ATKIC} ${fmt(st.atk)}</div></div>
+          <div class="hc-stats"><div class="hp"><i>HP</i> <b>${fmt(st.hp)}</b></div><div class="atk"><i>ATK</i> <b>${fmt(st.atk)}</b></div></div>
         </div>
         ${hideBtn}
     </div>`;
