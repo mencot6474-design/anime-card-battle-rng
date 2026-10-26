@@ -337,7 +337,7 @@ document.getElementById("bfExit").onclick=()=>{
 };
 document.getElementById("mxClose").onclick=()=>{sfx.hit();closeMission();};
 document.getElementById("missionModal").onclick=(e)=>{if(e.target.id==="missionModal")closeMission();};
-document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>{
+document.querySelectorAll(".nav-btn[data-route]").forEach(b=>b.onclick=()=>{
   stopBattleLoop();stopRaid();stopTower();state.battle=null;closeStory();
   if(location.hash===b.dataset.route||(!location.hash&&b.dataset.route==="#/lobby"))render();
   else location.hash=b.dataset.route;
