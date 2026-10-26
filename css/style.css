@@ -54154,3 +54154,68 @@ main#app:has(.sett-wrap) {
     gap: 14px;
   }
 }
+
+
+/* ==========================================================================
+   UPDATE LOG (CHANGELOG) MODAL - PINNED HEADER & HIDDEN SCROLLBAR
+   ========================================================================== */
+#changelogModal {
+  width: min(680px, calc(100vw - 28px)) !important;
+  max-width: 680px !important;
+  max-height: min(720px, calc(100dvh - 60px)) !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+}
+
+#changelogModal .titles-modal-inner {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  max-height: min(720px, calc(100dvh - 60px)) !important;
+  padding: 20px 24px 24px !important;
+  overflow: hidden !important;
+  gap: 12px !important;
+  box-sizing: border-box !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+#changelogModal .titles-modal-inner::-webkit-scrollbar,
+#changelogModal::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Modal Title Header: stays pinned at top */
+#changelogModal .tm-header {
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding-bottom: 14px !important;
+  margin-bottom: 2px !important;
+  border-bottom: 1px solid rgba(102, 252, 241, 0.2) !important;
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+/* Scrollable Changelog List with hidden scrollbar */
+#changelogModal #changelogList {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  padding-right: 0 !important;
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE / Edge */
+}
+
+#changelogModal #changelogList::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
