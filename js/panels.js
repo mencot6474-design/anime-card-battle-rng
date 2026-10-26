@@ -608,6 +608,11 @@ function startRollAnimation(luck, speedMultiplier = 1) {
   // Set initial delay based on speed multiplier
   const initialDelay = Math.max(RNG_ROLL_MIN, RNG_ROLL_SPEED / rollState.speedMultiplier);
   
+  if (window.CloudDB && currentUser) {
+    rollState.interval = setTimeout(rollTick, initialDelay);
+    return;
+  }
+  
   rollState.interval = setTimeout(rollTick, initialDelay);
 }
 
@@ -625,6 +630,28 @@ function rollTick(){
   if(!rollState.active)return;
   rollState.luck=rollState.luckPinned||rollLuckNow();
   rollState.speedMultiplier=rollSpeedNow();
+  if(window.CloudDB && currentUser){
+    rollState._pulling = true;
+    CloudDB.rollPull(currentUser, 1).then(res=>{
+      rollState._pulling = false;
+      if(!rollState.active)return;
+      if(!res || !res.ok || !Array.isArray(res.results) || !res.results[0]){stopRollAnimation();hideRollResult();return;}
+      const r=res.results[0];
+      xpGain(50);
+      if(state)state.totalRolls=(state.totalRolls||0)+1;
+      // Sync rarest_pull tracking
+      if(!__batchRoll && typeof lbTrackPull === "function") lbTrackPull(r.cardId, r.mut||"none", !!r.shiny);
+      if(typeof lbTrackOwnedBest==="function")lbTrackOwnedBest();
+      rollCountBadge(); idxRewardSync();
+      showRollResult({cardId:r.cardId, mut:r.mut||"none", shiny:!!r.shiny, chance:r.chance});
+      renderShell();
+      if(rollState.active)rollState.interval=setTimeout(rollTick,Math.max(RNG_ROLL_MIN,RNG_ROLL_SPEED/rollState.speedMultiplier));
+    }).catch(()=>{
+      rollState._pulling = false;
+      if(rollState.active)rollState.interval=setTimeout(rollTick,Math.max(RNG_ROLL_MIN,RNG_ROLL_SPEED/rollState.speedMultiplier));
+    });
+    return;
+  }
   const result=rngRoll(rollState.luck,rollState.speedMultiplier);
   if(!result){stopRollAnimation();hideRollResult();return;}
   // Tambah EXP (50/roll) sebagai delta server-authoritative (0026)
@@ -1370,6 +1397,20 @@ function bpUseIntanRoll(n){
   bpItemPopClose();
   beep(440,.18,"triangle",.1);setTimeout(()=>beep(880,.24,"triangle",.08),150);
   const pulls=100000*use;
+  if(window.CloudDB && currentUser){
+    CloudDB.rollPull(currentUser, pulls).then(res=>{
+      if(res && res.ok && Array.isArray(res.results)){
+        showTowerLoot(res.results,{weather:0,luck:0,speed:0},"HASIL INTAN ROLL · "+fmt(pulls)+" ("+use+"×)");
+        if(typeof rollCountBadge==='function')rollCountBadge();
+        if(typeof renderBackpackPanel==='function')renderBackpackPanel();
+        if(typeof idxRewardSync==='function')idxRewardSync();
+      }else{
+        toast("GAGAL","ROLL SERVER ERROR","#f87171");
+        state.intanRolls=(state.intanRolls||0)+use;save();renderBackpackPanel();
+      }
+    });
+    return;
+  }
   const loot=instantRollFast(pulls,true);
   showTowerLoot(loot,{weather:0,luck:0,speed:0},"HASIL INTAN ROLL · "+fmt(pulls)+" ("+use+"×)");
   renderBackpackPanel();
@@ -1385,6 +1426,20 @@ function bpUseRollPack(packKey, rollAmount, n){
   bpItemPopClose();
   beep(520,.18,"triangle",.1);setTimeout(()=>beep(940,.24,"triangle",.08),150);
   const pulls=rollAmount*use;
+  if(window.CloudDB && currentUser){
+    CloudDB.rollPull(currentUser, pulls, packKey).then(res=>{
+      if(res && res.ok && Array.isArray(res.results)){
+        showTowerLoot(res.results,{weather:0,luck:0,speed:0},'HASIL INSTAN ROLL · ' + pulls.toLocaleString()+" ("+use+"×)");
+        if(typeof rollCountBadge==='function')rollCountBadge();
+        if(typeof renderBackpackPanel==='function')renderBackpackPanel();
+        if(typeof idxRewardSync==='function')idxRewardSync();
+      }else{
+        toast("GAGAL","ROLL SERVER ERROR","#f87171");
+        state.rollPacks[packKey]=(state.rollPacks[packKey]||0)+use;save();renderBackpackPanel();
+      }
+    });
+    return;
+  }
   const loot=instantRollFast(pulls,true);
   showTowerLoot(loot,{weather:0,luck:0,speed:0},'HASIL INSTAN ROLL · ' + pulls.toLocaleString()+" ("+use+"×)");
   renderBackpackPanel();

@@ -529,6 +529,37 @@ const CloudDB = {
     return res;
   },
 
+  /** Unit 4: server-authoritative roll */
+  async rollPull(username, count, packKey) {
+    if (!username) return null;
+    const n = Math.max(1, Math.min(100, parseInt(count, 10) || 1));
+    const args = { p_count: n };
+    if (packKey) args.p_pack = String(packKey);
+    const res = await this._authRpc(username, "roll_pull", args);
+    if (!res || !res.ok) return res;
+    const ST = this._st();
+    if (ST) {
+      let dirty = false;
+      if (Array.isArray(res.stacks)) { ST.stacks = res.stacks; dirty = true; }
+      if (res.rollPacks && typeof res.rollPacks === "object") { ST.rollPacks = res.rollPacks; dirty = true; }
+      if (res.rebirthGain > 0 && ST.rebirth) {
+        ST.rebirth.essence = (ST.rebirth.essence || 0) + res.rebirthGain;
+        dirty = true;
+      } else if (res.rebirthGain > 0 && !ST.rebirth) {
+        ST.rebirth = { count: 0, essence: res.rebirthGain };
+        dirty = true;
+      }
+      if (typeof res.totalRolls === "number" || res.totalRolls === undefined) {
+        // server updated totalRolls in save; keep client in sync
+        ST.totalRolls = (ST.totalRolls || 0) + n;
+        dirty = true;
+      }
+      if (dirty) this._paint();
+      try { if (typeof rollCountBadge === "function") rollCountBadge(); if (typeof idxRewardSync === "function") idxRewardSync(); } catch(e){}
+    }
+    return res;
+  },
+
   /* ===== TOKEN WB/INF (0026) =====
      Saldo token hanya berubah di server. Belanja memakai harga dari tabel
      `token_shop_price` (bukan angka dari client), dan klaim lantai memakai
@@ -677,8 +708,27 @@ const CloudDB = {
   async guardNuke(username) {
     if (!username) return null;
     return await this._authRpc(username, "guard_nuke", { p_signal: "login" });
+  },
+
+  /** Unit 4b: server-authoritative trait reroll */
+  async traitRoll(username, stackId) {
+    if (!username || !stackId) return null;
+    const res = await this._authRpc(username, "trait_roll", { p_stack_id: stackId });
+    if (!res) return null;
+    if (res.ok) {
+      const ST = this._st();
+      if (ST) {
+        if (typeof res.coins === "number" && ST.coins !== res.coins) { ST.coins = res.coins; }
+        if (Array.isArray(ST.stacks)) {
+          const s = ST.stacks.find(x => x && x.id === stackId);
+          if (s) s.trait = res.trait || "common";
+        }
+        this._paint();
+        try { if (typeof renderTrait === "function") renderTrait(); } catch(e){}
+      }
+    }
+    return res;
   }
-};
 
 // Auto-kick listener if another device logs in
 let _currentSessionId = localStorage.getItem("aab_device_session") || (Math.random().toString(36).slice(2) + Date.now());
