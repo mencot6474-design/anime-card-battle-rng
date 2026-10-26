@@ -53,9 +53,12 @@ js/cards-fx.js        CARDS (index kartu), DIFFS (157), FX/skill text, mutasi (1
                       + GLOBAL: FXQ(n) kuota partikel 70% (baris 2), FXDPR() = 1 (4)
                       + konstanta raid/WB: WB_POOL_HP 167 (1e10, 0033 — TIDAK ada
                         pengali damage lagi; damage kartu dikirim apa adanya)
+                      + FORMATTER: fmt(n) format ribuan koma; fmtStat(n) format ringkas
+                        stat HP & ATK kartu (1000->1k, 100000->100k, 1e6->1M) baris 305
 js/anime-archetype-attacks.js  definisi attack per archetype
                       + SATU canvas bersama #animeAtkCanvas (ensureSharedCanvas /
                         registerFrame / sharedTick, ~baris 90–135)
+                      + White impact screen flash pada basic attack ditiadakan (visual comfort & FPS)
 js/shadow-king-fx.js  FX passive Shadow King (arise/shadow exchange/legion absorb),
                       engine hasil port dari prototipe; timing lewat bsMs()
 js/fps-lock.js        frame-rate lock global untuk semua loop JS-driven (partikel,
@@ -65,7 +68,10 @@ js/state.js           state global, auth, renderShell, home, mission, story hook
                       `_rebirthGained`/`_rebirthDo` (0027, di blok REBIRTH)
 js/sheetfx.js         efek lembar/slash battle (canvas FX terpisah, DPR via FXDPR)
 js/battle.js          battle engine + render (semua canvas pakai FXDPR, partikel via FXQ)
+                      + stat-row HP & ATK tanpa icon box placeholder gelap ala Tower Inf (149, 184, 190)
 js/tower-lobby.js     lobby hub, tower, backpack toggle, modal helper, modal Rebirth horizontal (openRebirthModal/renderRebirthModal/executeRebirthFromModal)
+                      + standardisasi kartu: box HP & ATK gelap (tanpa ikon), tatanan vertikal badge loading,
+                        kartu hasil tower & instant pack (.rrc) bersih hanya teks 1 in X di footer tanpa badge
 js/foe-passives.js    passive musuh
 js/story-carousel.js  modal story (IIFE, ekspor ke window)
 js/raid.js            raid hub/battle/shop + index card + trait/auto-roll + World Boss
@@ -189,7 +195,7 @@ Rantai data kartu:
 → `DIFFS` (`js/cards-fx.js:157`), `CHAPTERS` (`js/panels.js:1745`).
 Mutasi: `SHINY_MULT` (126), `MUT_MULT / MUT_CHANCE_MULT / MUT_LABEL / MUT_COLOR` (`js/cards-fx.js` 128–136).
 
-Helper kartu: `cardImg, cardName, cardStats, traitChip, mutChip, fxOf, skillText` (cards-fx.js).
+Helper kartu: `cardImg, cardName, cardStats, fmtStat, traitChip, mutChip, fxOf, skillText` (cards-fx.js).
 Luck: `luckChance, totalLuck, fmtChance` (data.js).
 
 ---
@@ -298,6 +304,11 @@ Backpack bukan `display:fixed` bawaan — `toggleBackpack` set inline transform;
 ## 6. RESEP "MAU UBAH X"
 
 - **Sistem Tier R s/d EX (Eksklusif Musuh Story)**: Tier seperti R, SR, SSR, UR, EX HANYA berlaku untuk musuh di Story Mode (`noGacha: true`). Kartu pemain TIDAK memiliki tier kosmetik R s/d EX — kelangkaan kartu pemain murni ditentukan oleh `chance` (1 in N), varian (Mutasi & Shiny), dan Trait. Badge tier dihilangkan dari hasil Instant Roll, bench battle pemain, dan layar VS pemain.
+- **Format Angka Stat Kartu HP & ATK**: Seluruh stat HP & ATK kartu di game (lobby, battle, preview tower, story, modal backpack, dll) menggunakan format `fmtStat(n)` di `js/cards-fx.js`. Nilai `< 1000` tetap utuh, `≥ 1000` disingkat `1k`, `100k`, `≥ 1e6` disingkat `1M`, `1B`, `1T`. Format DOM menggunakan placeholder box gelap tanpa ikon: `<div class="stat hp"><i>HP</i> <b>${fmtStat(hp)}</b></div><div class="stat atk"><i>ATK</i> <b>${fmtStat(atk)}</b></div></div>`.
+- **Hasil Run Tower Inf & Instant Pack (`.rrc`)**: Kartu hasil run Tower Infinite dan Instant Roll Pack (`.rrc`) menyembunyikan semua badge (tier, shiny, mutation, trait) via `.rrc .hc-badges{display:none!important}` agar ringkas dan rapi, hanya menyisakan teks "1 in X" di footer bawah (`.rrc-chance`).
+- **Urutan & Tata Letak Badge Kartu**: Standar urutan badge vertikal dari atas ke bawah: SHINY (paling atas) → Mutasi (tengah) → Trait (bawah). Teks chance (1 in X) di bagian paling bawah. Pada kartu layar loading, badge ditata tumpuk vertikal dengan ukuran badge yang sama persis seperti di kartu Lobby.
+- **Hover Card Preview Integrity**: Preview saat hover kartu di profil player desktop memposisikan nama dan badge melayang di luar kartu, dengan ukuran badge diselaraskan dengan standar kartu lobby.
+
 - **Tambah/ubah kartu** → `STORY_BIBLE` (data.js:100) untuk unit cerita; `MASTER_CARD_INDEX` (panels.js:1755) untuk index; art di `assets/cards/art/<slug>.png` (deck/list pakai `assets/cards/thumb/`). Jangan cascade tier/skill kalau hanya diminta ganti art — dan jangan sentuh art tanpa permintaan tersurat.
 - **Ubah skill/trait** → `cards-fx.js` (`skillText`, `fxOf`), trait tree `renderTrait` (raid.js:1382), passive musuh `foe-passives.js` + `shadow-king-fx.js`.
 - **Ubah FX serangan** → `anime-archetype-attacks.js` (definisi) + `sheetfx.js` (render efek) + `assets/vfx`. Semua murni canvas (tanpa background video); wajib lewat `registerFrame` + `FXQ`, jangan bikin canvas baru.
@@ -342,3 +353,9 @@ Backpack bukan `display:fixed` bawaan — `toggleBackpack` set inline transform;
 - Viewport sempit: jangan ukur dari `100dvh - konstanta`; cek juga bahwa override lama `@media(max-width:700px)` (mis. `.vs-col{flex-direction:row}` di 19184) tidak menang atas blok baru di EOF.
 - **Anti-Flicker & Scroll-Preserve pada Timer Berkala:** Jangan pernah me-re-render atau menghapus-buat ulang (`innerHTML = ...`) elemen DOM di interval 1 detik (Lobby, Settings, Profil) jika kontennya tidak berubah. Gunakan dataset caching (`expectedWid`, `bKey`, `avKey`, `pfParty`) atau in-place attribute mutation. Merusak DOM secara periodik mereset posisi scroll pengguna dan memicu kedipan visual (flicker).
 - **MutationObserver di `i18n.js`:** Dilarang mengamati `characterData: true` pada `document.body` dan dilarang membiarkan observer aktif saat sedang memanipulasi teks node dalam loop terjemahan. Hal ini akan memicu siklus rekursi mutasi tak hingga (infinite loop) yang membekukan halaman dan merusak event scroll.
+- **Perbedaan Formatter Angka (`fmt` vs `fmtStat` vs `fmtBig`):**
+  - `fmt(n)`: format ribuan dengan pemisah koma (`1,000`, `100,000`, `1,000,000`) untuk uang, koin, gem, token, dan XP.
+  - `fmtStat(n)`: format ringkas padat (`1k`, `100k`, `1.5M`, `1B`) khusus stat HP & ATK kartu agar pas di dalam placeholder box kartu tanpa melimpah di mobile/desktop.
+  - `fmtBig(n)`: format khusus pool HP raid boss.
+- **Hapus Flash Putih Basic Attack:** Efek screen white flash pada basic attack archetype dilarang dihidupkan kembali demi kenyamanan visual pemain (anti eye-strain saat battle loop cepat) dan kestabilan performa canvas.
+- **Shadow Teks Nama Shiny:** Glow teks kartu shiny di lobby & loading screen menggunakan CSS vars (`--sh-base`, `--sh-edge`, `--sh-glow`) dengan layer text-shadow ber-alpha bersih. Jangan menambahkan drop-shadow ambient gelap/pekat karena akan memicu glitch bug visual teks menghitam.
