@@ -51277,3 +51277,63 @@ html.fps-locked .bp-fchip{
     height: 152px;
   }
 }
+
+/* ====== WEATHER DOCK BUYER BAR (.wp-buyer-bar) — ANTI LUBER ====== */
+.weather-panel {
+  bottom: 34px !important; /* di atas badge ACTIVE PLAYER ON */
+}
+@media (max-width: 900px) {
+  .weather-panel {
+    bottom: 92px !important;
+  }
+}
+
+.weather-panel .wp-compact-head {
+  width: 100%;
+  min-width: 0;
+}
+
+.weather-panel .wp-buyer-bar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  max-width: 248px;
+  min-width: 0;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.16) 0%, rgba(255, 190, 11, 0.04) 100%);
+  border: 1px solid rgba(255, 215, 0, 0.38);
+  box-shadow: inset 0 0 10px rgba(255, 215, 0, 0.08);
+  overflow: hidden;
+}
+
+.weather-panel .wp-buyer-ic {
+  font-size: 10px;
+  line-height: 1;
+  flex: none;
+  filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.6));
+}
+
+.weather-panel .wp-buyer-lbl {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: rgba(255, 235, 150, 0.78);
+  flex: none;
+}
+
+.weather-panel .wp-buyer-name {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: #ffd700;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.45);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1;
+}

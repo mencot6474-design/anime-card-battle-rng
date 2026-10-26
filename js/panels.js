@@ -237,6 +237,7 @@ function renderWeatherDock(){
   const cards=MASTER_CARD_INDEX.filter(c=>c.weatherOnly===id);
   if(!w){panel.classList.remove("show");panel.innerHTML="";panel.dataset.wid="";return;}
   const byUser=(state&&state.weather&&state.weather.activated_by)?String(state.weather.activated_by):"";
+  const safeUser=byUser.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   panel.style.setProperty("--wc",w.color);
   panel.innerHTML=`<div class="wp-cyber-glow"></div>
   <div class="wp-compact-head">
@@ -245,13 +246,17 @@ function renderWeatherDock(){
       <span class="wp-ic" style="color:${w.color}">${weatherSvg(w.id, 16)}</span>
       <span class="wp-name-txt">${w.name}</span>
       <span class="wp-rarity-badge" style="--rc:${w.color}">${w.rar}</span>
-      ${byUser?`<span class="wp-rarity-badge" style="--rc:#ffd700;color:#ffd700;border-color:rgba(255,215,0,.4)" title="Diaktifkan oleh ${byUser}">⚡ ${byUser.toUpperCase()}</span>`:""}
     </div>
     <div class="wp-timer">
       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       <span class="wp-timer-val">${fmtCountdown(state.weather.endsAt-Date.now())}</span>
     </div>
   </div>`
+    +(byUser?`<div class="wp-buyer-bar" title="Diaktifkan oleh ${safeUser}">
+      <span class="wp-buyer-ic">👑</span>
+      <span class="wp-buyer-lbl">BY:</span>
+      <span class="wp-buyer-name">${safeUser.toUpperCase()}</span>
+    </div>`:"")
     +(cards.length?`<div class="wp-cards">`+cards.map(c=>
         `<div class="wc-slot active" data-wc="${c.char_id}" style="--wc:${w.color}">
           <span class="idx-art"><img src="${thumbSrc(c.sprite_asset)}" alt="" loading="lazy" decoding="async"></span>
