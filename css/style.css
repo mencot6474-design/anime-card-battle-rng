@@ -54658,12 +54658,35 @@ main#app:has(.sett-wrap) {
   top: 10px !important;
   right: 10px !important;
   display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+  justify-content: flex-start !important;
   gap: 4px !important;
   z-index: 6 !important;
   transform: none !important;
   pointer-events: none !important;
+}
+
+#loadingScreen .ld-cardwrap .hub-center .hc-badges .shiny-badge,
+#loadingScreen #ldCard .hc-badges .shiny-badge,
+#loadingScreen .ld-cardwrap .hub-center .shiny-pill,
+#loadingScreen #ldCard .shiny-pill {
+  order: 1 !important;
+  min-height: 20px !important;
+  height: 20px !important;
+  padding: 0 8px !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#loadingScreen .ld-cardwrap .hub-center .hc-badges .mut-hover,
+#loadingScreen #ldCard .hc-badges .mut-hover,
+#loadingScreen .ld-cardwrap .hub-center .hc-badges .mut-badge,
+#loadingScreen #ldCard .hc-badges .mut-badge {
+  order: 2 !important;
 }
 
 #loadingScreen .ld-cardwrap .hub-center .hc-badges .mut-badge.ix-chip,
@@ -54678,15 +54701,18 @@ main#app:has(.sett-wrap) {
   justify-content: center !important;
 }
 
-#loadingScreen .ld-cardwrap .hub-center .hc-badges .shiny-badge,
-#loadingScreen #ldCard .hc-badges .shiny-badge,
-#loadingScreen .ld-cardwrap .hub-center .shiny-pill,
-#loadingScreen #ldCard .shiny-pill {
-  min-height: 20px !important;
+#loadingScreen .ld-cardwrap .hub-center .hc-badges .trait-hover,
+#loadingScreen #ldCard .hc-badges .trait-hover,
+#loadingScreen .ld-cardwrap .hub-center .hc-badges .hc-trait,
+#loadingScreen #ldCard .hc-badges .hc-trait {
+  order: 3 !important;
+}
+
+#loadingScreen .ld-cardwrap .hub-center .hc-badges .hc-trait.hc-gem,
+#loadingScreen #ldCard .hc-badges .hc-trait.hc-gem {
+  width: 20px !important;
   height: 20px !important;
-  padding: 0 8px !important;
-  font-size: 10px !important;
-  line-height: 1 !important;
+  padding: 0 !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
