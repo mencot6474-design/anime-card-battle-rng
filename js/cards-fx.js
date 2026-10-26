@@ -171,9 +171,9 @@ const RAID_DIFFS=[
 ];
 /* ========== BOSS RAID (konstanta + helper) ========== */
 const RAID_BOSSES=[
-  {id:"RAID_ETERNAL_DRAGON",name:"Eternal Dragon",tier:"EX",skill:"Galaxy Roar",hp:WB_POOL_HP,atk:15000,power:15000,img:"assets/cards/art/eternal-dragon.webp",banner:"assets/raid/raid-banner-hd.png",fx:{purple:{chance:100,mult:1}}},
+  {id:"RAID_ETERNAL_DRAGON",name:"Eternal Dragon",tier:"EX",skill:"Galaxy Roar",hp:WB_POOL_HP,atk:15000,power:15000,img:"assets/cards/art/eternal-dragon.webp",banner:"assets/raid/raid-banner-hd.webp",fx:{purple:{chance:100,mult:1}}},
   /* Boss kedua: pool & papan terpisah (world_boss_b). */
-  {id:"RAID_SHADOW_KING",name:"Shadow King",tier:"EX",skill:"Umbra Eclipse",hp:WB_POOL_HP,atk:16500,power:16500,img:"assets/cards/art/shadow-king.webp",banner:"assets/raid/raid-banner-hd.png",fx:{purple:{chance:100,mult:1}}}
+  {id:"RAID_SHADOW_KING",name:"Shadow King",tier:"EX",skill:"Umbra Eclipse",hp:WB_POOL_HP,atk:16500,power:16500,img:"assets/cards/art/shadow-king.webp",banner:"assets/raid/raid-banner-hd.webp",fx:{purple:{chance:100,mult:1}}}
 ];
 const RAID_TURNS=10;
 function raidDiffOf(){return RAID_DIFFS[0];}

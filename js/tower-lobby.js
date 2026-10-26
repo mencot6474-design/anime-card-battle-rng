@@ -305,12 +305,12 @@ function renderTowerShop(){
   const ICONS={
     weather:`<img src="assets/images/weather-potion.webp?v=1" alt="Weather Potion" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🧪'">`,
     mythic:`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="rgba(192,132,252,0.25)" stroke="#c084fc"/><circle cx="12" cy="12" r="3" stroke="#fff"/></svg>`,
-    luck1:`<img src="${thumbSrc('assets/images/pot-luck-1.png')}" alt="Luck Potion L1" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🍀'">`,
-    luck2:`<img src="${thumbSrc('assets/images/pot-luck-2.png')}" alt="Luck Potion L2" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🍀'">`,
-    luck3:`<img src="${thumbSrc('assets/images/pot-luck-3.png')}" alt="Luck Potion L3" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🍀'">`,
-    speed1:`<img src="${thumbSrc('assets/images/pot-speed-1.png')}" alt="Speed Potion L1" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
-    speed2:`<img src="${thumbSrc('assets/images/pot-speed-2.png')}" alt="Speed Potion L2" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
-    speed3:`<img src="${thumbSrc('assets/images/pot-speed-3.png')}" alt="Speed Potion L3" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
+    luck1:`<img src="${thumbSrc('assets/images/pot-luck-1.webp')}" alt="Luck Potion L1" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🍀'">`,
+    luck2:`<img src="${thumbSrc('assets/images/pot-luck-2.webp')}" alt="Luck Potion L2" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🍀'">`,
+    luck3:`<img src="${thumbSrc('assets/images/pot-luck-3.webp')}" alt="Luck Potion L3" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🍀'">`,
+    speed1:`<img src="${thumbSrc('assets/images/pot-speed-1.webp')}" alt="Speed Potion L1" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
+    speed2:`<img src="${thumbSrc('assets/images/pot-speed-2.webp')}" alt="Speed Potion L2" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
+    speed3:`<img src="${thumbSrc('assets/images/pot-speed-3.webp')}" alt="Speed Potion L3" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
     gem:`<img src="assets/images/premium-currency.webp" alt="Gems" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='💎'">`
   };
 
@@ -811,8 +811,8 @@ function towerEnd(win){
     /* DROP LANGKAH CRAYON V2 — BASE murni TANPA luck player (totalLuck TIDAK dipakai): pedang-api 0,1% · kyubi 0,01% per lantai. */
     const rare=[];
     towerRun.rareDrops=towerRun.rareDrops||[];
-    if(!state.artOwned.includes("pedang-api")&&Math.random()<0.001){state.artOwned.push("pedang-api");rare.push("ARTEFAK PEDANG API · +120 FLAT & +100% LUCK");towerRun.rareDrops.push({kind:'art',id:"pedang-api",name:"PEDANG API",icon:"assets/artifacts/pedang-api.png",n:1});}
-    if(!state.petOwned.includes("kyubi")&&Math.random()<0.0001){state.petOwned.push("kyubi");rare.push("PET KYUBI FOX · +200 FLAT & +300% LUCK");towerRun.rareDrops.push({kind:'pet',id:"kyubi",name:"KYUBI FOX",icon:"assets/pets/kyubi.png",n:1});}
+    if(!state.artOwned.includes("pedang-api")&&Math.random()<0.001){state.artOwned.push("pedang-api");rare.push("ARTEFAK PEDANG API · +120 FLAT & +100% LUCK");towerRun.rareDrops.push({kind:'art',id:"pedang-api",name:"PEDANG API",icon:"assets/artifacts/pedang-api.webp",n:1});}
+    if(!state.petOwned.includes("kyubi")&&Math.random()<0.0001){state.petOwned.push("kyubi");rare.push("PET KYUBI FOX · +200 FLAT & +300% LUCK");towerRun.rareDrops.push({kind:'pet',id:"kyubi",name:"KYUBI FOX",icon:"assets/pets/kyubi.webp",n:1});}
     /* Token Inf: +1 per lantai, +5 per lantai bos. */
     const tok=towerIsBossFloor(f)?5:1;
     state.infTokens=(state.infTokens||0)+tok; towerRun.tokens=(towerRun.tokens||0)+tok;
@@ -877,7 +877,7 @@ function showTowerLoot(results,drops,title,extra){
   results=results||[];
   const d=drops||{weather:0,luck:0,speed:0};
   const ex=extra||{};
-  const POTION=[{k:'weather',name:'WEATHER',icon:'assets/images/weather-potion.webp?v=1',emoji:'🧪'},{k:'luck',name:'LUCK',icon:'assets/images/pot-luck-1.png',emoji:'🍀'},{k:'speed',name:'SPEED',icon:'assets/images/pot-speed-1.png',emoji:'⚡'}];
+  const POTION=[{k:'weather',name:'WEATHER',icon:'assets/images/weather-potion.webp?v=1',emoji:'🧪'},{k:'luck',name:'LUCK',icon:'assets/images/pot-luck-1.webp',emoji:'🍀'},{k:'speed',name:'SPEED',icon:'assets/images/pot-speed-1.webp',emoji:'⚡'}];
   const totalPot=POTION.reduce((s,p)=>s+(d[p.k]||0),0);
   /* Chips Instan Pack + artefak/pet dari drop Tower (icon ASLI dari backpack). */
   const packChips=TOWER_PACK_DROPS.filter(p=>(ex.packDrops&&ex.packDrops[p.k])>0).map(p=>{const n=ex.packDrops[p.k]||0;return `<div class="twr-loot-chip" title="${p.name}"><span class="twr-loot-ic"><img src="${p.icon}" alt="${p.name}" onerror="this.onerror=null;this.parentNode.textContent='📦'"></span><span class="twr-loot-name">${p.name}</span>${n>1?`<span class="twr-loot-cnt">×${n}</span>`:''}</div>`;}).join("");
@@ -888,7 +888,7 @@ function showTowerLoot(results,drops,title,extra){
       if(r.kind==='art'&&typeof ART_DEFS!=="undefined"){const d=ART_DEFS.find(x=>x.id===r.id);if(d&&d.img)icon=d.img;}
       else if(r.kind==='pet'&&typeof PET_DEFS!=="undefined"){const d=PET_DEFS.find(x=>x.id===r.id);if(d&&d.img)icon=d.img;}
     }catch(e){}
-    if(!icon)icon='assets/images/icon-index-card.png';
+    if(!icon)icon='assets/images/icon-index-card.webp';
     const fb=r.kind==='pet'?'🐾':(r.kind==='art'?'◈':'✦');
     return `<div class="twr-loot-chip rare" title="${r.name}"><span class="twr-loot-ic"><img src="${icon}" alt="${r.name}" onerror="this.onerror=null;this.parentNode.textContent='${fb}'"></span><span class="twr-loot-name">${r.name}</span></div>`;
   }).join("");
@@ -1338,7 +1338,7 @@ function toggleBackpack() {
 /* ========== MODAL BREAKDOWN DROP RATE INFINITE TOWER ==========
    Redesign minimalis: 3 blok ringkas (PASTI / INSTAN PACK / ARTEFAK & PET).
    Semua ikon pakai file ASLI yang sudah ada (backpack/premium shop), bukan emoji. */
-const TWR_CARD_ICON="assets/images/icon-index-card.png";
+const TWR_CARD_ICON="assets/images/icon-index-card.webp";
 const TWR_TOKEN_ICON="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237df9ff' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 6v12M8 10h8M8 14h6'/%3E%3C/svg%3E";
 function openTowerDropModal(){
   const m = document.getElementById("towerDropModal");
@@ -1352,8 +1352,8 @@ function openTowerDropModal(){
         {name:"TARIKAN KARTU INSTAN", rate:"PASTI", sub:"100 tarikan dijamin per lantai (tabung dulu, di-roll saat run tamat)", icon:TWR_CARD_ICON, cls:"guar"},
         {name:"TOKEN INF", rate:"PASTI", sub:"+1 per lantai biasa · +5 per lantai bos (kelipatan 5)", icon:TWR_TOKEN_ICON, cls:"guar"},
         {name:"WEATHER POTION", rate:"5%", sub:"Gacha cuaca aktif, durasi 5 menit", icon:"assets/images/weather-potion.webp?v=1", cls:""},
-        {name:"LUCK POTION L1", rate:"10%", sub:"+3 Flat Luck selama 5 menit (stackable)", icon:"assets/images/pot-luck-1.png", cls:""},
-        {name:"SPEED POTION L1", rate:"10%", sub:"+0,2× Roll Speed selama 5 menit (stackable)", icon:"assets/images/pot-speed-1.png", cls:""}
+        {name:"LUCK POTION L1", rate:"10%", sub:"+3 Flat Luck selama 5 menit (stackable)", icon:"assets/images/pot-luck-1.webp", cls:""},
+        {name:"SPEED POTION L1", rate:"10%", sub:"+0,2× Roll Speed selama 5 menit (stackable)", icon:"assets/images/pot-speed-1.webp", cls:""}
       ]
     },
     {
@@ -1366,8 +1366,8 @@ function openTowerDropModal(){
     {
       key:"rare", title:"ARTEFAK & PET · BASE RATE (TANPA LUCK)",
       items:[
-        {name:"PEDANG API", rate:"0,1%", sub:"Artefak permanen · +120 Flat Luck & +100% Luck Multiplier (maks 1)", icon:"assets/artifacts/pedang-api.png", cls:"ultra"},
-        {name:"KYUBI FOX", rate:"0,01%", sub:"Pet Mythic · +200 Flat Luck & +300% Luck Multiplier (maks 1)", icon:"assets/pets/kyubi.png", cls:"ultra"}
+        {name:"PEDANG API", rate:"0,1%", sub:"Artefak permanen · +120 Flat Luck & +100% Luck Multiplier (maks 1)", icon:"assets/artifacts/pedang-api.webp", cls:"ultra"},
+        {name:"KYUBI FOX", rate:"0,01%", sub:"Pet Mythic · +200 Flat Luck & +300% Luck Multiplier (maks 1)", icon:"assets/pets/kyubi.webp", cls:"ultra"}
       ]
     }
   ];

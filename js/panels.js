@@ -300,7 +300,7 @@ function renderBuffDock(){
     </div>`;
   let html="";
   if(adMs>0){
-    html+=chip("luck","assets/images/pot-luck-3.png","🎬",
+    html+=chip("luck","assets/images/pot-luck-3.webp","🎬",
       "ADS 2× LUCK BOOST",
       `2× TOTAL LUCK · sisa ${fmtCountdown(adMs)}`,adMs);
   }
@@ -1317,7 +1317,7 @@ function bpItemDef(kind){
   if(kind==='r100k'){const _dBal=(typeof window.getDailyR100kBalance==='function')?window.getDailyR100kBalance():0;return{kind,name:'INSTAN ROLL 100K',icon:'assets/images/instanpack-100k.webp?v=trans1',emoji:'📦',cnt:Math.max(_dBal,(state&&state.rollPacks&&state.rollPacks.r100k)||0),
     desc:'SPECIAL ROLL PACK - Berisi 100.000 tarikan kartu instan ke dalam koleksi.',
     active:'',isPack:true,use:"bpUseRollPack('r100k', 100000, window.bpPackN)"};}
-  if(kind==='intan'){return{kind,name:'INTAN ROLL 100K',icon:(state.intanRolls&&state.intanRolls>0?'assets/images/icon-index-card.png':'assets/sprites/_placeholder.svg'),emoji:'💎',cnt:state.intanRolls||0,
+  if(kind==='intan'){return{kind,name:'INTAN ROLL 100K',icon:(state.intanRolls&&state.intanRolls>0?'assets/images/icon-index-card.webp':'assets/sprites/_placeholder.svg'),emoji:'💎',cnt:state.intanRolls||0,
     desc:'ITEM INDEX REWARD — didapat otomatis tiap 5 varian kartu terkumpul di Card Index (semua mutasi + varian shiny dihitung). Pakai = langsung menarik 100.000 roll kartu ke koleksi.',
     active:'',isPack:true,use:'bpUseIntanRoll(window.bpPackN)'};}
   return null;
@@ -3492,7 +3492,7 @@ function renderWatchAdsModal() {
           + '<div class="wad-card-ribbon">REFRESH 5 MENIT</div>'
           + '<div class="wad-card-main">'
             + '<div class="wad-ic-box luck">'
-              + '<img src="assets/images/pot-luck-3.png" alt="2x Luck" onerror="this.style.display=\'none\'">'
+              + '<img src="assets/images/pot-luck-3.webp" alt="2x Luck" onerror="this.style.display=\'none\'">'
               + '<span class="wad-ic-badge">2×</span>'
             + '</div>'
             + '<div class="wad-info">'

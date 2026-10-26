@@ -60,29 +60,29 @@ function effChance(charId,mut,shiny){
    Semua passive LUCK (flat + persen) — kuat buat chance ekstrem (1 in miliaran).
    Artefak: beli pakai coin, equip maks 2 slot — LUCK artefak hanya dihitung dari slot terpasang. Pet: beli pakai coin, equip 1. */
 const ART_DEFS=[
-  {id:"manik", name:"MANIK REZEKI",       icon:"manik", color:"#5eead4", price:10000000, flat:5,  pct:0, img:"assets/artifacts/manik.png"},
-  {id:"medal", name:"MEDAL KEBERUNTUNGAN",icon:"medal", color:"#fcd34d", price:20000000, flat:10, pct:10, img:"assets/artifacts/medal.png"},
-  {id:"giok",  name:"GIOK HOKI",          icon:"giok",  color:"#4ade80", price:35000000, flat:25, pct:0, img:"assets/artifacts/giok.png"},
-  {id:"batu",  name:"BATU UNTUNG",        icon:"batu",  color:"#7DF9FF", price:50000000, flat:0,  pct:25, img:"assets/artifacts/batu.png"},
-  {id:"cincin",name:"CINCIN ES",          icon:"cincin",color:"#93c5fd", price:70000000, flat:50, pct:30, img:"assets/artifacts/cincin.png"},
-  {id:"intan", name:"INTAN KUASA",        icon:"intan", color:"#f0abfc", price:100000000,flat:75, pct:75, img:"assets/artifacts/intan.png"},
+  {id:"manik", name:"MANIK REZEKI",       icon:"manik", color:"#5eead4", price:10000000, flat:5,  pct:0, img:"assets/artifacts/manik.webp"},
+  {id:"medal", name:"MEDAL KEBERUNTUNGAN",icon:"medal", color:"#fcd34d", price:20000000, flat:10, pct:10, img:"assets/artifacts/medal.webp"},
+  {id:"giok",  name:"GIOK HOKI",          icon:"giok",  color:"#4ade80", price:35000000, flat:25, pct:0, img:"assets/artifacts/giok.webp"},
+  {id:"batu",  name:"BATU UNTUNG",        icon:"batu",  color:"#7DF9FF", price:50000000, flat:0,  pct:25, img:"assets/artifacts/batu.webp"},
+  {id:"cincin",name:"CINCIN ES",          icon:"cincin",color:"#93c5fd", price:70000000, flat:50, pct:30, img:"assets/artifacts/cincin.webp"},
+  {id:"intan", name:"INTAN KUASA",        icon:"intan", color:"#f0abfc", price:100000000,flat:75, pct:75, img:"assets/artifacts/intan.webp"},
   /* CRAYON V2 — kanal via src: "coin" (Backpack) · "raid" (Toko Raid, cost=token) · "tower" (drop Inf Tower, base rate TANPA luck). */
-  {id:"pedang-api",   name:"PEDANG API",   icon:"pedang-api",   color:"#fb923c", src:"tower", flat:120, pct:100, img:"assets/artifacts/pedang-api.png"},
-  {id:"helm-abyss",   name:"HELM ABYSS",   icon:"helm-abyss",   color:"#818cf8", src:"raid",  raidCost:5000,  flat:80, pct:120, img:"assets/artifacts/abyss-helm.png"},
-  {id:"tameng-surgawi",name:"TAMENG SURGAWI",icon:"tameng-surgawi",color:"#fde68a",src:"coin", price:1000000000,flat:50, pct:200, img:"assets/artifacts/tameng-surgawi.png"},
+  {id:"pedang-api",   name:"PEDANG API",   icon:"pedang-api",   color:"#fb923c", src:"tower", flat:120, pct:100, img:"assets/artifacts/pedang-api.webp"},
+  {id:"helm-abyss",   name:"HELM ABYSS",   icon:"helm-abyss",   color:"#818cf8", src:"raid",  raidCost:5000,  flat:80, pct:120, img:"assets/artifacts/abyss-helm.webp"},
+  {id:"tameng-surgawi",name:"TAMENG SURGAWI",icon:"tameng-surgawi",color:"#fde68a",src:"coin", price:1000000000,flat:50, pct:200, img:"assets/artifacts/tameng-surgawi.webp"},
   {id:"tome-infinity", name:"TOME OF INFINITY", icon:"tome-infinity", color:"#00f0ff", src:"premium", gemPrice:3000, flat:150, pct:200, img:"assets/artifacts/tome-infinity.webp?v=1"}
 ];
 const PET_DEFS=[
-  {id:"doll",        name:"BONEKA TERKUTUK",img:"assets/pets/doll.png",        emoji:"🎎",price:10000000, flat:10, pct:0},
-  {id:"otherworldly",name:"MAKHLUK LAIN",   img:"assets/pets/otherworldly.png",emoji:"👾",price:20000000, flat:25, pct:0},
-  {id:"titan",       name:"TITAN BUAS",     img:"assets/pets/titan.png",       emoji:"🗿",price:35000000, flat:50, pct:0},
-  {id:"dragon",      name:"BONE DRAGON",    img:"assets/pets/dragon.png",      emoji:"🐉",price:50000000, flat:50, pct:15},
-  {id:"nine-tail",   name:"EKOR SEMBILAN",  img:"assets/pets/nine-tail.png",   emoji:"🐺",price:70000000, flat:50, pct:25},
-  {id:"bijuu",       name:"BIJUU",          img:"assets/pets/bijuu.png",       emoji:"🦊",price:100000000,flat:100,pct:50},
+  {id:"doll",        name:"BONEKA TERKUTUK",img:"assets/pets/doll.webp",        emoji:"🎎",price:10000000, flat:10, pct:0},
+  {id:"otherworldly",name:"MAKHLUK LAIN",   img:"assets/pets/otherworldly.webp",emoji:"👾",price:20000000, flat:25, pct:0},
+  {id:"titan",       name:"TITAN BUAS",     img:"assets/pets/titan.webp",       emoji:"🗿",price:35000000, flat:50, pct:0},
+  {id:"dragon",      name:"BONE DRAGON",    img:"assets/pets/dragon.webp",      emoji:"🐉",price:50000000, flat:50, pct:15},
+  {id:"nine-tail",   name:"EKOR SEMBILAN",  img:"assets/pets/nine-tail.webp",   emoji:"🐺",price:70000000, flat:50, pct:25},
+  {id:"bijuu",       name:"BIJUU",          img:"assets/pets/bijuu.webp",       emoji:"🦊",price:100000000,flat:100,pct:50},
   /* CRAYON V2 — pet BARU (pet lama tidak ditimpa). src sama seperti artefak. */
-  {id:"kyubi",       name:"KYUBI FOX",      img:"assets/pets/kyubi.png",      emoji:"🦊",src:"tower",flat:200,pct:300},
-  {id:"nebula-wisp", name:"NEBULA WISP",    img:"assets/pets/nebula-wisp.png",emoji:"🌌",src:"raid", raidCost:15000,flat:150,pct:220},
-  {id:"next-bot",    name:"NEXT-BOT",       img:"assets/pets/next-bot.png",   emoji:"🤖",src:"coin", price:5000000000,flat:120,pct:150},
+  {id:"kyubi",       name:"KYUBI FOX",      img:"assets/pets/kyubi.webp",      emoji:"🦊",src:"tower",flat:200,pct:300},
+  {id:"nebula-wisp", name:"NEBULA WISP",    img:"assets/pets/nebula-wisp.webp",emoji:"🌌",src:"raid", raidCost:15000,flat:150,pct:220},
+  {id:"next-bot",    name:"NEXT-BOT",       img:"assets/pets/next-bot.webp",   emoji:"🤖",src:"coin", price:5000000000,flat:120,pct:150},
   {id:"cyber-kitsune", name:"CYBER KITSUNE", img:"assets/pets/cyber-kitsune.webp?v=1", emoji:"🦊", src:"premium", gemPrice:10000, flat:250, pct:300}
 ];
 function luckTxt(d){const a=[];if(d.flat)a.push("+"+d.flat+" FLAT");if(d.pct)a.push("+"+d.pct+"%");return a.join(" & ")+" LUCK";}

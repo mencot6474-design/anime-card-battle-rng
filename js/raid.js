@@ -27,7 +27,7 @@ function wbModText(){
    Server (migration 0009) menyimpan state per boss; client ambil keduanya paralel. */
 const WB_BOSSES=[
   {key:"a",id:"RAID_ETERNAL_DRAGON",board:"world_boss",name:"ETERNAL DRAGON",tag:"EX · WORLD BOSS",
-   skill:"Galaxy Roar",mod:"GRAVITY SURGE",art:"assets/raid/eternal-dragon-hd.png",alt:false,
+   skill:"Galaxy Roar",mod:"GRAVITY SURGE",art:"assets/raid/eternal-dragon-hd.webp",alt:false,
    holo:"#35F0FF",mag:"#FF3DAE",locked:false},
   {key:"b",id:"RAID_SHADOW_KING",board:"world_boss_b",name:"SHADOW KING",tag:"EX · WORLD BOSS",
    skill:"Umbra Eclipse",mod:"SHADOW TIDE",art:"assets/cards/art/shadow-king.webp",alt:true,
@@ -978,14 +978,14 @@ function renderRaidShop(){
     coins:`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8M8 14h6" stroke="#ffd27a"/></svg>`,
     card_edragon:`<img src="assets/cards/art/eternal-dragon.webp?v=trans1" onerror="this.parentNode.textContent='🐉'">`,
     card_shadowking:`<img src="${thumbSrc('assets/cards/art/shadow-king.webp')}" alt="Shadow King" onerror="this.parentNode.textContent='👑'">`,
-    "helm-abyss":`<img src="assets/artifacts/abyss-helm.png" onerror="this.parentNode.textContent='🪖'">`,
-    "nebula-wisp":`<img src="assets/pets/nebula-wisp.png" onerror="this.parentNode.textContent='🌌'">`,
-    luck1:`<img src="${thumbSrc('assets/images/pot-luck-1.png')}" alt="Luck Potion L1" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🍀'">`,
-    luck2:`<img src="${thumbSrc('assets/images/pot-luck-2.png')}" alt="Luck Potion L2" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🍀'">`,
-    luck3:`<img src="${thumbSrc('assets/images/pot-luck-3.png')}" alt="Luck Potion L3" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🍀'">`,
-    speed1:`<img src="${thumbSrc('assets/images/pot-speed-1.png')}" alt="Speed Potion L1" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
-    speed2:`<img src="${thumbSrc('assets/images/pot-speed-2.png')}" alt="Speed Potion L2" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
-    speed3:`<img src="${thumbSrc('assets/images/pot-speed-3.png')}" alt="Speed Potion L3" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`
+    "helm-abyss":`<img src="assets/artifacts/abyss-helm.webp" onerror="this.parentNode.textContent='🪖'">`,
+    "nebula-wisp":`<img src="assets/pets/nebula-wisp.webp" onerror="this.parentNode.textContent='🌌'">`,
+    luck1:`<img src="${thumbSrc('assets/images/pot-luck-1.webp')}" alt="Luck Potion L1" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🍀'">`,
+    luck2:`<img src="${thumbSrc('assets/images/pot-luck-2.webp')}" alt="Luck Potion L2" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🍀'">`,
+    luck3:`<img src="${thumbSrc('assets/images/pot-luck-3.webp')}" alt="Luck Potion L3" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🍀'">`,
+    speed1:`<img src="${thumbSrc('assets/images/pot-speed-1.webp')}" alt="Speed Potion L1" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
+    speed2:`<img src="${thumbSrc('assets/images/pot-speed-2.webp')}" alt="Speed Potion L2" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
+    speed3:`<img src="${thumbSrc('assets/images/pot-speed-3.webp')}" alt="Speed Potion L3" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`
   };
   
   const cardItems=WB_SHOP.filter(x=>x.card);

@@ -15,9 +15,9 @@ var SHEETS={
   white_hit:{src:"combat/sheets/256/white/white_hit.png",frames:12,fps:30,cols:8,rows:2,cw:256,ch:256,ax:.5,ay:.5},
   white_spark:{src:"combat/sheets/256/white/white_spark.png",frames:16,fps:30,cols:8,rows:2,cw:256,ch:256,ax:.5,ay:.5},
   gold_crit:{src:"combat/sheets/256/gold/gold_crit.png",frames:20,fps:30,cols:8,rows:3,cw:256,ch:256,ax:.5,ay:.5},
-  fire_impact:{src:"spell/sheets/256/fire/fire_impact.png",frames:24,fps:30,cols:8,rows:3,cw:256,ch:256,ax:.5,ay:.5},
+  fire_impact:{src:"spell/sheets/256/fire/fire_impact.webp",frames:24,fps:30,cols:8,rows:3,cw:256,ch:256,ax:.5,ay:.5},
   ice_bolt:{src:"spell/sheets/256/ice/ice_bolt.png",frames:16,fps:24,cols:8,rows:2,cw:256,ch:128,ax:.78,ay:.5,loop:true},
-  ice_impact:{src:"spell/sheets/256/ice/ice_impact.png",frames:24,fps:30,cols:8,rows:3,cw:256,ch:256,ax:.5,ay:.5},
+  ice_impact:{src:"spell/sheets/256/ice/ice_impact.webp",frames:24,fps:30,cols:8,rows:3,cw:256,ch:256,ax:.5,ay:.5},
   burn_start:{src:"status/sheets/256/burn/burn_start.png",frames:16,fps:24,cols:8,rows:2,cw:256,ch:256,ax:.5,ay:.9},
   burn_loop:{src:"status/sheets/256/burn/burn_loop.png",frames:24,fps:24,cols:8,rows:3,cw:256,ch:256,ax:.5,ay:.9,loop:true},
   burn_end:{src:"status/sheets/256/burn/burn_end.png",frames:16,fps:24,cols:8,rows:2,cw:256,ch:256,ax:.5,ay:.9},
@@ -636,4 +636,4 @@ setInterval(function(){
   _stWasActive=active;
 },220);
 window.sheetStatusSync=statusSync;
-})();
+})();
