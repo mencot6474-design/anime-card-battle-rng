@@ -54270,7 +54270,9 @@ main#app:has(.sett-wrap) {
 .roll-overlay .roll-card-showcase .hc-badges,
 .bps-hover .hub-center .hc-badges,
 #indexModal .ix-badges,
-#indexModal .ix-fa-var {
+#indexModal .ix-fa-var,
+#loadingScreen .ld-cardwrap .hc-badges,
+#loadingScreen #ldCard .hc-badges {
   display: flex !important;
   opacity: 1 !important;
   visibility: visible !important;
@@ -54287,7 +54289,9 @@ main#app:has(.sett-wrap) {
 .roll-overlay .shiny-pill,
 .roll-overlay .shiny-badge,
 .bps-hover .shiny-pill,
-.bps-hover .shiny-badge {
+.bps-hover .shiny-badge,
+#loadingScreen .shiny-pill,
+#loadingScreen .shiny-badge {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -54582,4 +54586,95 @@ main#app:has(.sett-wrap) {
   letter-spacing: 0.04em !important;
   color: #7df9ff !important;
   opacity: 0.9 !important;
+}
+
+/* ==========================================================================
+   LOADING SCREEN CARD (#loadingScreen .ld-cardwrap .hub-center) - UNIFIED WITH LOBBY
+   Badge 1 in x, nama, dan badges disamakan ukuran dan gaya badge seperti lobby
+   ========================================================================== */
+#loadingScreen .ld-cardwrap .hub-center .hc-name-top,
+#loadingScreen #ldCard .hc-name-top {
+  position: absolute !important;
+  top: 10px !important;
+  left: 10px !important;
+  max-width: 60% !important;
+  font-family: "Barlow Condensed", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 14px !important;
+  line-height: .98 !important;
+  letter-spacing: .03em !important;
+  color: #fff !important;
+  text-shadow: 1px 1px 0 #0b0e14, 2px 2px 0 #0b0e14, 3px 3px 0 #0b0e14, 0 0 16px rgba(0,0,0,.9) !important;
+  z-index: 6 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  transform: none !important;
+  text-align: left !important;
+}
+
+#loadingScreen .ld-cardwrap .hub-center .hc-chance,
+#loadingScreen #ldCard .hc-chance {
+  position: absolute !important;
+  top: 30px !important;
+  left: 10px !important;
+  font-family: "Barlow Condensed", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: clamp(10px, 1.3vh, 13px) !important;
+  letter-spacing: .1em !important;
+  color: var(--tcol, #7DF9FF) !important;
+  padding: 1px 6px !important;
+  border-radius: 0px !important;
+  background: rgba(6, 9, 14, .92) !important;
+  border: 1px solid currentColor !important;
+  text-shadow: 0 0 8px rgba(0, 0, 0, .8) !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, .6) !important;
+  z-index: 6 !important;
+  white-space: nowrap !important;
+  transform: none !important;
+}
+
+#loadingScreen .ld-cardwrap .hc-chance.hc-chance-rainbow,
+#loadingScreen #ldCard .hc-chance.hc-chance-rainbow {
+  border-radius: 0px !important;
+}
+
+#loadingScreen .ld-cardwrap .hub-center .hc-badges,
+#loadingScreen #ldCard .hc-badges {
+  position: absolute !important;
+  top: 10px !important;
+  right: 10px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 4px !important;
+  z-index: 6 !important;
+  transform: none !important;
+  pointer-events: none !important;
+}
+
+#loadingScreen .ld-cardwrap .hub-center .hc-badges .mut-badge.ix-chip,
+#loadingScreen #ldCard .hc-badges .mut-badge.ix-chip {
+  min-height: 20px !important;
+  height: 20px !important;
+  padding: 0 8px !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#loadingScreen .ld-cardwrap .hub-center .hc-badges .shiny-badge,
+#loadingScreen #ldCard .hc-badges .shiny-badge,
+#loadingScreen .ld-cardwrap .hub-center .shiny-pill,
+#loadingScreen #ldCard .shiny-pill {
+  min-height: 20px !important;
+  height: 20px !important;
+  padding: 0 8px !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
