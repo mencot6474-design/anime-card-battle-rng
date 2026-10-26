@@ -724,7 +724,7 @@ let bgmInitialized = false;
 
 function initBgm() {
   if (bgmAudio) return bgmAudio;
-  bgmAudio = new Audio("assets/audio/bgm-lobby.ogg");
+  bgmAudio = new Audio("assets/audio/bgm-lobby.mp3");
   bgmAudio.loop = true;
   bgmAudio.volume = 0.35;
   bgmAudio.preload = "auto";
