@@ -844,6 +844,28 @@ document.addEventListener("keydown",e=>{
 /* ========== UPDATE LOG MODAL ========== */
 const GAME_CHANGELOGS = [
   {
+    version: "v1.4.5",
+    date: "27 Okt 2026",
+    title: "Format Stat Ringkas (1k/100k) & Visual Card Polish",
+    titleEn: "Compact Stat Formatting (1k/100k) & Visual Card Polish",
+    items: [
+      "Angka stat HP dan ATK kartu kini otomatis disingkat (1000 jadi 1k, 100000 jadi 100k, 1M, dll) agar lebih rapi dan nyaman dibaca.",
+      "Tampilan box stat HP & ATK kartu distandardisasi menjadi box placeholder gelap tanpa ikon di semua layar (Lobby, Battle, Tower Preview, Story, dan Modal Kartu).",
+      "Pembersihan kartu hasil run Tower Infinite dan Instant Roll Pack (.rrc): badge di-hide dan hanya menyisakan teks '1 in X' yang bersih di footer bawah.",
+      "Penataan badge pada kartu loading screen diubah menjadi tumpuk vertikal (Shiny di atas, Mutasi di tengah, Trait di bawah) dengan ukuran seragam seperti di kartu Lobby.",
+      "Penghapusan efek white flash pada basic attack archetype untuk kenyamanan visual pemain.",
+      "Perbaikan bug bayangan (shadow) menghitam pada teks nama kartu Shiny di Lobby & Loading screen."
+    ],
+    itemsEn: [
+      "HP and ATK card stats are now automatically abbreviated (1,000 to 1k, 100,000 to 100k, 1M, etc.) for a clean and readable layout.",
+      "Standardized HP & ATK stat containers into dark, sleek placeholder boxes without icons across all screens (Lobby, Battle, Tower Preview, Story, and Card Modals).",
+      "Cleaned up Tower Infinite and Instant Roll Pack result cards (.rrc): hidden all badges, showing only clean '1 in X' chance text at the bottom footer.",
+      "Loading screen card badges reorganized into a vertical stack (Shiny top, Mutation middle, Trait bottom) with standardized lobby badge sizing.",
+      "Removed white screen flash frames on basic archetype attacks for improved visual comfort.",
+      "Fixed blackened text-shadow visual artifact on Shiny card names in Lobby & Loading screen."
+    ]
+  },
+  {
     version: "v1.4.4",
     date: "27 Okt 2026",
     title: "Eksklusivitas Tier Musuh Cerita & UI Polish",
