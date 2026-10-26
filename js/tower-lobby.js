@@ -1193,7 +1193,10 @@ function renderLobby(){
     </div>
     <div class="hub-mid">
       <div class="seam"></div>
-      ${(typeof renderGlobalLuckWidget === 'function') ? '<div class="hub-gl-widget">' + renderGlobalLuckWidget() + '</div>' : ''}
+      <div class="hub-gl-row">
+        ${(typeof renderGlobalLuckWidget === 'function') ? '<div class="hub-gl-widget">' + renderGlobalLuckWidget() + '</div>' : ''}
+        ${(typeof renderLobbyFloatingIcons === 'function') ? renderLobbyFloatingIcons() : ''}
+      </div>
       <div class="stage-eyebrow">ACTIVE CARD</div>
       <div class="stage-center">
         <div class="holo-base" aria-hidden="true"><span class="hb-glow"></span><span class="hb-rays"></span><span class="hb-disc"></span><span class="hb-ring"></span></div>

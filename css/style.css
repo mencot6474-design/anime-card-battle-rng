@@ -51723,3 +51723,495 @@ html.fps-locked .bp-fchip{
   color: #fde047 !important;
   opacity: 0.9 !important;
 }
+
+/* ====== FLOATING 7-DAY LOGIN & WATCH ADS DOCK (NEXT TO GLOBAL LUCK) + WATCH ADS MODAL ====== */
+.hub-gl-row {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 25;
+}
+
+.hub-float-dock {
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 7px;
+  z-index: 30;
+  pointer-events: auto;
+}
+
+.hfd-btn {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 13px;
+  border: 1px solid rgba(125, 249, 255, 0.35);
+  background: linear-gradient(160deg, rgba(10, 18, 34, 0.94), rgba(6, 10, 22, 0.96));
+  color: #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 4px 2px;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  animation: hfdFloatBob 3.2s ease-in-out infinite;
+}
+
+.hfd-btn.hfd-ads {
+  animation-delay: -1.6s;
+  border-color: rgba(250, 204, 21, 0.45);
+  background: linear-gradient(160deg, rgba(28, 20, 8, 0.94), rgba(12, 10, 18, 0.96));
+}
+
+.hfd-btn.hfd-daily.is-ready {
+  border-color: rgba(56, 189, 248, 0.75);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.32), 0 6px 18px rgba(0, 0, 0, 0.55);
+}
+
+.hfd-btn.hfd-ads.is-ready {
+  border-color: rgba(250, 204, 21, 0.78);
+  box-shadow: 0 0 16px rgba(250, 204, 21, 0.32), 0 6px 18px rgba(0, 0, 0, 0.55);
+}
+
+.hfd-btn.hfd-ads.is-active {
+  border-color: rgba(74, 222, 128, 0.85);
+  background: linear-gradient(160deg, rgba(8, 32, 22, 0.95), rgba(6, 16, 14, 0.96));
+  box-shadow: 0 0 18px rgba(74, 222, 128, 0.4), 0 6px 18px rgba(0, 0, 0, 0.55);
+}
+
+.hfd-btn:hover {
+  transform: translateY(-3px) scale(1.05);
+}
+
+.hfd-btn:active {
+  transform: translateY(0) scale(0.96);
+}
+
+@keyframes hfdFloatBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.hfd-ic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #38bdf8;
+  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.45));
+}
+
+.hfd-btn.hfd-ads .hfd-ic {
+  color: #facc15;
+  filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.5));
+}
+
+.hfd-btn.hfd-ads.is-active .hfd-ic {
+  color: #4ade80;
+  filter: drop-shadow(0 0 6px rgba(74, 222, 128, 0.55));
+}
+
+.hfd-lbl {
+  font-family: var(--font-display, "Orbitron", "Rajdhani", sans-serif);
+  font-size: 7.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #f8fafc;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.hfd-btn.hfd-ads .hfd-lbl {
+  color: #fde047;
+}
+
+.hfd-btn.hfd-ads.is-active .hfd-lbl {
+  color: #4ade80;
+}
+
+.hfd-dot {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ef4444;
+  border: 2px solid #090d16;
+  box-shadow: 0 0 8px #ef4444;
+  animation: hfdPulseDot 1.4s ease-in-out infinite;
+}
+
+.hfd-dot.ads {
+  background: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+}
+
+@keyframes hfdPulseDot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.25); opacity: 0.85; }
+}
+
+/* Responsif layar sempit: pasang tepat di samping kanan dalam baris jika tidak muat keluar */
+@media (max-width: 1080px) {
+  .hub-gl-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px;
+    max-width: 360px;
+  }
+  .hub-float-dock {
+    position: static;
+    transform: none;
+    gap: 5px;
+  }
+  .hfd-btn {
+    width: 42px;
+    height: 44px;
+    border-radius: 11px;
+  }
+}
+
+/* ====== WATCH ADS MODAL ====== */
+.wad-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  background: rgba(3, 6, 14, 0.82);
+  backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.wad-backdrop.show {
+  display: flex;
+}
+
+.wad-box {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  background: linear-gradient(165deg, rgba(12, 18, 34, 0.98), rgba(7, 11, 22, 0.99));
+  border: 1px solid rgba(56, 189, 248, 0.38);
+  border-radius: 18px;
+  padding: 20px;
+  color: #f1f5f9;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.75), 0 0 32px rgba(56, 189, 248, 0.14);
+  overflow: hidden;
+}
+
+.wad-glow-top {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 75%;
+  height: 110px;
+  background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.25), transparent 70%);
+  pointer-events: none;
+}
+
+.wad-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.wad-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: #38bdf8;
+  margin-bottom: 3px;
+}
+
+.wad-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+}
+
+.wad-title {
+  margin: 0;
+  font-family: var(--font-display, "Orbitron", "Rajdhani", sans-serif);
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: #ffffff;
+}
+
+.wad-subbanner {
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 12px;
+  color: #cbd5e1;
+  line-height: 1.45;
+  margin-bottom: 14px;
+}
+
+.wad-subbanner b {
+  color: #fde047;
+}
+
+.wad-player-slot {
+  margin-bottom: 14px;
+}
+
+.wad-sim-screen {
+  background: linear-gradient(135deg, rgba(16, 28, 48, 0.96), rgba(9, 15, 28, 0.98));
+  border: 1px solid rgba(250, 204, 21, 0.55);
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: 0 0 20px rgba(250, 204, 21, 0.18);
+}
+
+.wad-sim-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #fde047;
+  margin-bottom: 6px;
+}
+
+.wad-sim-Headline {
+  font-size: 13px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.wad-sim-bar {
+  width: 100%;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.wad-sim-bar i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #38bdf8, #4ade80, #facc15);
+  transition: width 0.35s ease;
+}
+
+.wad-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wad-card {
+  position: relative;
+  border-radius: 14px;
+  padding: 14px;
+  background: linear-gradient(155deg, rgba(16, 26, 46, 0.9), rgba(10, 15, 28, 0.94));
+  border: 1px solid rgba(74, 222, 128, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  overflow: hidden;
+}
+
+.wad-card.luck.is-active {
+  border-color: rgba(74, 222, 128, 0.85);
+  box-shadow: 0 0 22px rgba(74, 222, 128, 0.18), inset 0 0 18px rgba(74, 222, 128, 0.06);
+}
+
+.wad-card.pack {
+  border-color: rgba(250, 204, 21, 0.4);
+}
+
+.wad-card-ribbon {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(74, 222, 128, 0.16);
+  border: 1px solid rgba(74, 222, 128, 0.45);
+  color: #4ade80;
+}
+
+.wad-card-ribbon.gold {
+  background: rgba(250, 204, 21, 0.16);
+  border-color: rgba(250, 204, 21, 0.48);
+  color: #fde047;
+}
+
+.wad-card-main {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.wad-ic-box {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  background: radial-gradient(circle at 50% 35%, rgba(74, 222, 128, 0.25), rgba(8, 14, 26, 0.95));
+  border: 1px solid rgba(74, 222, 128, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wad-ic-box.pack {
+  background: radial-gradient(circle at 50% 35%, rgba(250, 204, 21, 0.25), rgba(8, 14, 26, 0.95));
+  border-color: rgba(250, 204, 21, 0.5);
+}
+
+.wad-ic-box img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
+}
+
+.wad-ic-badge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 900;
+  background: #10b981;
+  color: #052e16;
+  border: 1px solid #a7f3d0;
+}
+
+.wad-ic-badge.gold {
+  background: #facc15;
+  color: #422006;
+  border-color: #fef08a;
+}
+
+.wad-info {
+  min-width: 0;
+  padding-right: 4px;
+}
+
+.wad-card-title {
+  font-family: var(--font-display, "Orbitron", "Rajdhani", sans-serif);
+  font-size: 14px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+  padding-right: 95px;
+}
+
+.wad-card-desc {
+  font-size: 11.5px;
+  color: #cbd5e1;
+  line-height: 1.4;
+  margin-bottom: 7px;
+}
+
+.wad-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 6px;
+  letter-spacing: 0.04em;
+}
+
+.wad-status-pill.ready {
+  background: rgba(56, 189, 248, 0.14);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #7dd3fc;
+}
+
+.wad-status-pill.active {
+  background: rgba(34, 197, 94, 0.18);
+  border: 1px solid rgba(74, 222, 128, 0.65);
+  color: #4ade80;
+}
+
+.wad-status-pill.cd {
+  background: rgba(251, 191, 36, 0.14);
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  color: #fde047;
+}
+
+.wad-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 8px #4ade80;
+  animation: hfdPulseDot 1.2s ease-in-out infinite;
+}
+
+.wad-btn {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-family: var(--font-display, "Orbitron", "Rajdhani", sans-serif);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  border: 1px solid rgba(74, 222, 128, 0.6);
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+  transition: transform 0.15s ease, filter 0.15s ease, opacity 0.15s ease;
+}
+
+.wad-btn.pack {
+  border-color: rgba(250, 204, 21, 0.7);
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fffbeb;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+}
+
+.wad-btn:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.wad-btn:disabled,
+.wad-btn.disabled {
+  background: rgba(30, 41, 59, 0.85) !important;
+  border-color: rgba(148, 163, 184, 0.28) !important;
+  color: #94a3b8 !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+

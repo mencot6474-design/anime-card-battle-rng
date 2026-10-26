@@ -289,7 +289,8 @@ function renderBuffDock(){
   const now=Date.now();
   const ls=luckBuffs().slice().sort((a,b)=>a.lv-b.lv);
   const ss=speedBuffs().slice().sort((a,b)=>a.lv-b.lv);
-  if(!ls.length&&!ss.length){el.classList.remove("show");el.innerHTML="";return;}
+  const adMs=(typeof adLuckLeftMs==="function")?adLuckLeftMs():0;
+  if(!ls.length&&!ss.length&&!(adMs>0)){el.classList.remove("show");el.innerHTML="";return;}
   /* Slot chip: badge timer countdown di atas + ikon tengah. emoji = fallback kalau img gagal.
      Tooltip hover (bukan title native): main = nama, sub = deskripsi passive + sisa waktu. */
   const chip=(cls,src,emoji,main,sub,ms)=>`<div class="bd-chip ${cls}">
@@ -298,6 +299,11 @@ function renderBuffDock(){
       <span class="bd-tip"><b>${main}</b><small>${sub}</small></span>
     </div>`;
   let html="";
+  if(adMs>0){
+    html+=chip("luck","assets/images/pot-luck-3.png","🎬",
+      "ADS 2× LUCK BOOST",
+      `2× TOTAL LUCK · sisa ${fmtCountdown(adMs)}`,adMs);
+  }
   ls.forEach(b=>{
     const lTxt=b.lv>0?"L"+b.lv+" ":"";
     const p=b.pct||0;
@@ -3291,4 +3297,350 @@ document.addEventListener('click', function(e) {
 window.openTopup  = openTopup;
 window.closeTopup = closeTopup;
 window.buyTopup   = buyTopup;
+
+/* =============== FLOATING DAILY 7-DAY LOGIN & WATCH ADS REWARD SYSTEM ===============
+ * 1. Menampilkan 2 ikon mengambang (Floating Dock) di samping kanan widget Global Luck:
+ *    - 7-Day Login (dengan titik merah notif jika hari ini belum diklaim)
+ *    - Watch Ads (dengan badge status READY / ACTIVE)
+ * 2. Modal Watch Ads berisi 2 Reward:
+ *    - 2× LUCK BOOST (aktif 5 menit di modal & Buff Dock; bisa ditonton lagi setelah buff 5 menit habis)
+ *    - INSTAN PACK 100K (langsung menarik 100.000 roll kartu instan; cooldown 30 menit sebelum bisa ditonton lagi)
+ */
+const AD_LUCK_DURATION_MS = 5 * 60 * 1000;   // 5 menit
+const AD_PACK_COOLDOWN_MS = 30 * 60 * 1000;  // 30 menit
+const AD_WATCH_SIM_SEC    = 5;               // 5 detik simulasi tayangan iklan
+
+function _adStorageKey() {
+  var u = (typeof currentUser !== 'undefined' && currentUser) ? String(currentUser).toLowerCase() : 'guest';
+  return 'acb_ad_rewards_v1:' + u;
+}
+
+function _loadAdState() {
+  var st = (typeof state !== 'undefined' && state) ? state : null;
+  var raw = null;
+  try { raw = JSON.parse(localStorage.getItem(_adStorageKey()) || 'null'); } catch (e) {}
+  var luckEndsAt = Math.max(
+    (st && typeof st.adLuckEndsAt === 'number') ? st.adLuckEndsAt : 0,
+    (raw && typeof raw.luckEndsAt === 'number') ? raw.luckEndsAt : 0
+  );
+  var packCdEndsAt = Math.max(
+    (st && typeof st.adPackCdEndsAt === 'number') ? st.adPackCdEndsAt : 0,
+    (raw && typeof raw.packCdEndsAt === 'number') ? raw.packCdEndsAt : 0
+  );
+  if (st) {
+    st.adLuckEndsAt = luckEndsAt;
+    st.adPackCdEndsAt = packCdEndsAt;
+  }
+  return { luckEndsAt: luckEndsAt, packCdEndsAt: packCdEndsAt };
+}
+
+function _saveAdState(luckEndsAt, packCdEndsAt) {
+  var st = (typeof state !== 'undefined' && state) ? state : null;
+  if (st) {
+    if (typeof luckEndsAt === 'number') st.adLuckEndsAt = luckEndsAt;
+    if (typeof packCdEndsAt === 'number') st.adPackCdEndsAt = packCdEndsAt;
+  }
+  try {
+    var cur = _loadAdState();
+    var next = {
+      luckEndsAt: typeof luckEndsAt === 'number' ? luckEndsAt : cur.luckEndsAt,
+      packCdEndsAt: typeof packCdEndsAt === 'number' ? packCdEndsAt : cur.packCdEndsAt
+    };
+    localStorage.setItem(_adStorageKey(), JSON.stringify(next));
+  } catch (e) {}
+  try { if (typeof save === 'function') save(); } catch (e) {}
+}
+
+function adLuckLeftMs() {
+  var d = _loadAdState();
+  return Math.max(0, (d.luckEndsAt || 0) - Date.now());
+}
+
+function adPackCdLeftMs() {
+  var d = _loadAdState();
+  return Math.max(0, (d.packCdEndsAt || 0) - Date.now());
+}
+
+function adLuckMult() {
+  return adLuckLeftMs() > 0 ? 2 : 1;
+}
+
+window.adLuckLeftMs   = adLuckLeftMs;
+window.adPackCdLeftMs = adPackCdLeftMs;
+window.adLuckMult     = adLuckMult;
+
+function renderLobbyFloatingIcons() {
+  var dailyReady = false;
+  try {
+    if (typeof state !== 'undefined' && state && typeof todayStr === 'function') {
+      dailyReady = state.lastClaim !== todayStr();
+    }
+  } catch (e) {}
+
+  var luckMs = adLuckLeftMs();
+  var packMs = adPackCdLeftMs();
+  var adsReady = (luckMs <= 0) || (packMs <= 0);
+
+  var calendarSvg = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+    + '<rect x="3" y="4" width="18" height="18" rx="3"/>'
+    + '<line x1="16" y1="2" x2="16" y2="6"/>'
+    + '<line x1="8" y1="2" x2="8" y2="6"/>'
+    + '<line x1="3" y1="10" x2="21" y2="10"/>'
+    + '<path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01" stroke-width="2.6"/>'
+    + '</svg>';
+
+  var adsSvg = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+    + '<rect x="2" y="5" width="20" height="14" rx="3"/>'
+    + '<polygon points="10 9 15 12 10 15 10 9" fill="currentColor"/>'
+    + '</svg>';
+
+  return '<div class="hub-float-dock" id="hubFloatDock">'
+    + '<button type="button" class="hfd-btn hfd-daily' + (dailyReady ? ' is-ready' : '') + '" onclick="if(typeof sfx!==\'undefined\'&&sfx.hit)sfx.hit();openDaily()" title="7-Day Login Reward">'
+      + (dailyReady ? '<span class="hfd-dot"></span>' : '')
+      + '<span class="hfd-ic">' + calendarSvg + '</span>'
+      + '<span class="hfd-lbl">7-DAY</span>'
+    + '</button>'
+    + '<button type="button" class="hfd-btn hfd-ads' + (luckMs > 0 ? ' is-active' : (adsReady ? ' is-ready' : '')) + '" onclick="if(typeof sfx!==\'undefined\'&&sfx.hit)sfx.hit();openWatchAdsModal()" title="Watch Ads — Free 2× Luck & Instant Pack 100K">'
+      + (adsReady ? '<span class="hfd-dot ads"></span>' : '')
+      + '<span class="hfd-ic">' + adsSvg + '</span>'
+      + '<span class="hfd-lbl" id="hfdAdsLbl">' + (luckMs > 0 ? '2× ON' : 'FREE ADS') + '</span>'
+    + '</button>'
+  + '</div>';
+}
+window.renderLobbyFloatingIcons = renderLobbyFloatingIcons;
+
+var _watchAdsModalTimer = null;
+var _watchingAdBusy = false;
+
+function ensureWatchAdsModal() {
+  var m = document.getElementById('watchAdsModal');
+  if (m) return m;
+  m = document.createElement('div');
+  m.id = 'watchAdsModal';
+  m.className = 'wad-backdrop';
+  m.addEventListener('click', function(e) {
+    if (e.target === m && !_watchingAdBusy) closeWatchAdsModal();
+  });
+  document.body.appendChild(m);
+  return m;
+}
+
+function openWatchAdsModal() {
+  var m = ensureWatchAdsModal();
+  renderWatchAdsModal();
+  m.classList.add('show');
+  if (_watchAdsModalTimer) clearInterval(_watchAdsModalTimer);
+  _watchAdsModalTimer = setInterval(function() {
+    if (!m.classList.contains('show')) {
+      clearInterval(_watchAdsModalTimer);
+      _watchAdsModalTimer = null;
+      return;
+    }
+    if (!_watchingAdBusy) tickWatchAdsModal();
+  }, 1000);
+}
+
+function closeWatchAdsModal() {
+  if (_watchingAdBusy) return;
+  var m = document.getElementById('watchAdsModal');
+  if (m) m.classList.remove('show');
+  if (_watchAdsModalTimer) {
+    clearInterval(_watchAdsModalTimer);
+    _watchAdsModalTimer = null;
+  }
+}
+
+window.openWatchAdsModal  = openWatchAdsModal;
+window.closeWatchAdsModal = closeWatchAdsModal;
+
+function renderWatchAdsModal() {
+  var m = ensureWatchAdsModal();
+  var luckMs = adLuckLeftMs();
+  var packMs = adPackCdLeftMs();
+  var luckActive = luckMs > 0;
+  var packOnCd   = packMs > 0;
+
+  var luckStatusHtml = luckActive
+    ? '<div class="wad-status-pill active"><span class="wad-live-dot"></span>AKTIF DI MODAL · SISA <b id="wadLuckTimer">' + fmtCountdown(luckMs) + '</b></div>'
+    : '<div class="wad-status-pill ready">SIAP DITONTON · DURASI 5 MENIT</div>';
+
+  var packStatusHtml = packOnCd
+    ? '<div class="wad-status-pill cd">COOLDOWN · SIAP DALAM <b id="wadPackTimer">' + fmtCountdown(packMs) + '</b></div>'
+    : '<div class="wad-status-pill ready">SIAP DITONTON · REFRESH TIAP 30 MENIT</div>';
+
+  m.innerHTML = ''
+    + '<div class="wad-box">'
+      + '<div class="wad-glow-top"></div>'
+      + '<div class="wad-head">'
+        + '<div class="wad-head-left">'
+          + '<div class="wad-eyebrow"><span class="wad-pulse"></span>SPONSORED TERMINAL · FREE REWARDS</div>'
+          + '<h2 class="wad-title">WATCH ADS REWARD</h2>'
+        + '</div>'
+        + '<button type="button" class="ix-x" onclick="closeWatchAdsModal()" title="Tutup">✕</button>'
+      + '</div>'
+      + '<div class="wad-subbanner">'
+        + 'Tonton iklan singkat untuk mengaktifkan <b>2× Total Luck</b> selama 5 menit atau klaim <b>Instan Roll Pack 100K</b> gratis!'
+      + '</div>'
+      + '<div id="wadPlayerSlot" class="wad-player-slot" style="display:none"></div>'
+      + '<div class="wad-grid">'
+        /* CARD 1: 2x LUCK 5 MINUTES */
+        + '<div class="wad-card luck' + (luckActive ? ' is-active' : '') + '" id="wadCardLuck">'
+          + '<div class="wad-card-ribbon">REFRESH 5 MENIT</div>'
+          + '<div class="wad-card-main">'
+            + '<div class="wad-ic-box luck">'
+              + '<img src="assets/images/pot-luck-3.png" alt="2x Luck" onerror="this.style.display=\'none\'">'
+              + '<span class="wad-ic-badge">2×</span>'
+            + '</div>'
+            + '<div class="wad-info">'
+              + '<div class="wad-card-title">2× LUCK OVERDRIVE</div>'
+              + '<div class="wad-card-desc">Menggandakan (<b>×2</b>) total keberuntunganmu selama <b>5 menit</b> penuh. Bisa ditonton lagi segera setelah durasi buff 5 menit habis!</div>'
+              + '<div id="wadLuckStatusWrap">' + luckStatusHtml + '</div>'
+            + '</div>'
+          + '</div>'
+          + '<button type="button" class="wad-btn luck' + (luckActive ? ' disabled' : '') + '" id="wadBtnLuck" onclick="triggerWatchAd(\'luck\')"' + (luckActive ? ' disabled' : '') + '>'
+            + (luckActive
+              ? ('<span>⏳ AKTIF (' + fmtCountdown(luckMs) + ')</span>')
+              : '<span>🎬 TONTON IKLAN · AKTIFKAN 2× LUCK</span>')
+          + '</button>'
+        + '</div>'
+
+        /* CARD 2: INSTAN PACK 100K (30 MIN COOLDOWN) */
+        + '<div class="wad-card pack' + (packOnCd ? ' is-cd' : '') + '" id="wadCardPack">'
+          + '<div class="wad-card-ribbon gold">COOLDOWN 30 MENIT</div>'
+          + '<div class="wad-card-main">'
+            + '<div class="wad-ic-box pack">'
+              + '<img src="assets/images/instanpack-100k.webp?v=trans1" alt="Instan Pack 100K" onerror="this.style.display=\'none\'">'
+              + '<span class="wad-ic-badge gold">100K</span>'
+            + '</div>'
+            + '<div class="wad-info">'
+              + '<div class="wad-card-title">INSTAN ROLL PACK 100K</div>'
+              + '<div class="wad-card-desc">Langsung mendapatkan & membuka <b>100.000 tarikan kartu instan</b> sekaligus! Bisa ditonton kembali setiap <b>30 menit</b>.</div>'
+              + '<div id="wadPackStatusWrap">' + packStatusHtml + '</div>'
+            + '</div>'
+          + '</div>'
+          + '<button type="button" class="wad-btn pack' + (packOnCd ? ' disabled' : '') + '" id="wadBtnPack" onclick="triggerWatchAd(\'pack100k\')"' + (packOnCd ? ' disabled' : '') + '>'
+            + (packOnCd
+              ? ('<span>⏳ TUNGGU ' + fmtCountdown(packMs) + '</span>')
+              : '<span>🎬 TONTON IKLAN · KLAIM PACK 100K</span>')
+          + '</button>'
+        + '</div>'
+      + '</div>'
+    + '</div>';
+
+  if (window.GameLang && typeof window.GameLang.refresh === 'function') {
+    window.GameLang.refresh();
+  }
+}
+
+function tickWatchAdsModal() {
+  var luckMs = adLuckLeftMs();
+  var packMs = adPackCdLeftMs();
+
+  var lt = document.getElementById('wadLuckTimer');
+  var pt = document.getElementById('wadPackTimer');
+  var bl = document.getElementById('wadBtnLuck');
+  var bp = document.getElementById('wadBtnPack');
+
+  // Jika state berubah dari aktif -> habis, re-render penuh modal
+  if ((lt && luckMs <= 0) || (!lt && luckMs > 0) || (pt && packMs <= 0) || (!pt && packMs > 0)) {
+    renderWatchAdsModal();
+    if (typeof renderShell === 'function') renderShell();
+    return;
+  }
+
+  if (lt && luckMs > 0) lt.textContent = fmtCountdown(luckMs);
+  if (bl && luckMs > 0) {
+    var isEn = (window.GameLang && window.GameLang.get() === 'en');
+    bl.innerHTML = '<span>⏳ ' + (isEn ? 'ACTIVE' : 'AKTIF') + ' (' + fmtCountdown(luckMs) + ')</span>';
+  }
+  if (pt && packMs > 0) pt.textContent = fmtCountdown(packMs);
+  if (bp && packMs > 0) {
+    var isEn2 = (window.GameLang && window.GameLang.get() === 'en');
+    bp.innerHTML = '<span>⏳ ' + (isEn2 ? 'WAIT ' : 'TUNGGU ') + fmtCountdown(packMs) + '</span>';
+  }
+}
+
+function triggerWatchAd(kind) {
+  if (_watchingAdBusy) return;
+  if (kind === 'luck' && adLuckLeftMs() > 0) {
+    toast('BUFF MASIH AKTIF', 'Tunggu durasi 5 menit selesai untuk menonton lagi.', '#fbbf24');
+    return;
+  }
+  if (kind === 'pack100k' && adPackCdLeftMs() > 0) {
+    toast('MASIH COOLDOWN', 'Tunggu ' + fmtCountdown(adPackCdLeftMs()) + ' lagi untuk klaim Pack 100K.', '#fbbf24');
+    return;
+  }
+
+  _watchingAdBusy = true;
+  var slot = document.getElementById('wadPlayerSlot');
+  var bLuck = document.getElementById('wadBtnLuck');
+  var bPack = document.getElementById('wadBtnPack');
+  if (bLuck) bLuck.disabled = true;
+  if (bPack) bPack.disabled = true;
+
+  var secLeft = AD_WATCH_SIM_SEC;
+  if (slot) {
+    slot.style.display = 'block';
+    var renderPlayer = function() {
+      var pct = Math.round(((AD_WATCH_SIM_SEC - secLeft) / AD_WATCH_SIM_SEC) * 100);
+      slot.innerHTML = ''
+        + '<div class="wad-sim-screen">'
+          + '<div class="wad-sim-top">'
+            + '<span class="wad-sim-tag">🎬 SPONSORED BROADCAST</span>'
+            + '<span class="wad-sim-timer">REWARD DALAM ' + secLeft + 's</span>'
+          + '</div>'
+          + '<div class="wad-sim-Headline">'
+            + (kind === 'luck' ? '🍀 MENYIAPKAN 2× LUCK OVERDRIVE (5 MENIT)…' : '📦 MENYIAPKAN INSTAN ROLL PACK 100K…')
+          + '</div>'
+          + '<div class="wad-sim-bar"><i style="width:' + pct + '%"></i></div>'
+        + '</div>';
+      if (window.GameLang && typeof window.GameLang.refresh === 'function') window.GameLang.refresh();
+    };
+    renderPlayer();
+
+    var iv = setInterval(function() {
+      secLeft--;
+      if (secLeft > 0) {
+        renderPlayer();
+      } else {
+        clearInterval(iv);
+        _watchingAdBusy = false;
+        if (slot) { slot.style.display = 'none'; slot.innerHTML = ''; }
+        completeWatchAdReward(kind);
+      }
+    }, 1000);
+  } else {
+    _watchingAdBusy = false;
+    completeWatchAdReward(kind);
+  }
+}
+window.triggerWatchAd = triggerWatchAd;
+
+function completeWatchAdReward(kind) {
+  var now = Date.now();
+  if (kind === 'luck') {
+    _saveAdState(now + AD_LUCK_DURATION_MS, null);
+    try { if (typeof sfx !== 'undefined' && sfx.win) sfx.win(); } catch (e) {}
+    toast('2× LUCK AKTIF (5 MENIT)!', 'Total keberuntunganmu digandakan ×2 selama 5 menit!', '#4ade80');
+    renderWatchAdsModal();
+    if (typeof renderShell === 'function') renderShell();
+    if (typeof renderLobby === 'function' && typeof route === 'function' && route() === '#/lobby' && !battleLive()) {
+      var lbl = document.getElementById('hfdAdsLbl');
+      if (lbl) lbl.textContent = '2× ON';
+    }
+  } else if (kind === 'pack100k') {
+    _saveAdState(null, now + AD_PACK_COOLDOWN_MS);
+    try { if (typeof sfx !== 'undefined' && sfx.win) sfx.win(); } catch (e) {}
+    renderWatchAdsModal();
+    closeWatchAdsModal();
+    var pulls = 100000;
+    var loot = (typeof instantRollFast === 'function') ? instantRollFast(pulls, true) : [];
+    if (typeof showTowerLoot === 'function') {
+      showTowerLoot(loot, { weather: 0, luck: 0, speed: 0 }, 'REWARD WATCH ADS · 100,000 ROLL');
+    }
+    toast('INSTAN PACK 100K DITERIMA!', '100.000 tarikan kartu instan berhasil dibuka!', '#ffd700');
+    if (typeof renderShell === 'function') renderShell();
+  }
+}
+
 

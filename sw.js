@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v197-fullEn';
+const CACHE_NAME = 'anime-card-battle-v198-dailyAdsDock';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

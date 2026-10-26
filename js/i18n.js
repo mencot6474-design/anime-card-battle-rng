@@ -584,7 +584,26 @@
     'BAB TERKUNCI': 'CHAPTER LOCKED',
     'POWER KAMU': 'YOUR POWER',
     'GATE MUSUH': 'ENEMY GATE',
-    'Kekuatan belum cukup · Upgrade kartu': 'Insufficient power · Upgrade your cards'
+    'Kekuatan belum cukup · Upgrade kartu': 'Insufficient power · Upgrade your cards',
+
+    // Daily Login & Watch Ads Modal
+    'LOGIN HARIAN': 'DAILY LOGIN',
+    'RESET DALAM': 'RESETS IN',
+    'REFRESH 5 MENIT': '5-MIN REFRESH',
+    'COOLDOWN 30 MENIT': '30-MIN COOLDOWN',
+    'SIAP DITONTON · DURASI 5 MENIT': 'READY TO WATCH · 5-MINUTE DURATION',
+    'SIAP DITONTON · REFRESH TIAP 30 MENIT': 'READY TO WATCH · REFRESHES EVERY 30 MIN',
+    '🎬 TONTON IKLAN · AKTIFKAN 2× LUCK': '🎬 WATCH AD · ACTIVATE 2× LUCK',
+    '🎬 TONTON IKLAN · KLAIM PACK 100K': '🎬 WATCH AD · CLAIM 100K PACK',
+    '🍀 MENYIAPKAN 2× LUCK OVERDRIVE (5 MENIT)…': '🍀 PREPARING 2× LUCK OVERDRIVE (5 MINUTES)…',
+    '📦 MENYIAPKAN INSTAN ROLL PACK 100K…': '📦 PREPARING INSTANT ROLL PACK 100K…',
+    '2× LUCK AKTIF (5 MENIT)!': '2× LUCK ACTIVE (5 MINUTES)!',
+    'Total keberuntunganmu digandakan ×2 selama 5 menit!': 'Your total luck is doubled (×2) for 5 minutes!',
+    'INSTAN PACK 100K DITERIMA!': '100K INSTANT PACK CLAIMED!',
+    '100.000 tarikan kartu instan berhasil dibuka!': '100,000 instant card pulls opened!',
+    'BUFF MASIH AKTIF': 'BUFF STILL ACTIVE',
+    'Tunggu durasi 5 menit selesai untuk menonton lagi.': 'Wait for the 5-minute duration to finish before watching again.',
+    'MASIH COOLDOWN': 'ON COOLDOWN'
   };
 
   // Masukkan seluruh CARD_DESC_EN ke EXACT_MAP (key = deskripsi asli bahasa Indonesia jika ditemukan)
@@ -720,7 +739,27 @@
     [/selama\s+(\d+)\s+giliran/g, 'for $1 turns'],
     [/(\d+)\s+giliran/g, '$1 turns'],
     [/pengurangan damage/g, 'damage reduction'],
-    [/kartu aktif musuh/g, 'active enemy card']
+    [/kartu aktif musuh/g, 'active enemy card'],
+
+    // Watch Ads Dynamic Strings
+    [/Tonton iklan singkat untuk mengaktifkan/g, 'Watch a short ad to activate'],
+    [/selama 5 menit atau klaim/g, 'for 5 minutes or claim a free'],
+    [/gratis!/g, 'for free!'],
+    [/Menggandakan \(/g, 'Doubles ('],
+    [/\) total keberuntunganmu selama/g, ') your total luck for'],
+    [/5 menit/g, '5 minutes'],
+    [/penuh\. Bisa ditonton lagi segera setelah durasi buff 5 menit habis!/g, 'straight. Can be watched again right after the 5-minute buff expires!'],
+    [/Bisa ditonton lagi segera setelah durasi buff 5 minutes habis!/g, 'Can be watched again right after the 5-minute buff expires!'],
+    [/Langsung mendapatkan & membuka/g, 'Instantly receive & open'],
+    [/100\.000 tarikan kartu instan/g, '100,000 instant card pulls'],
+    [/sekaligus! Bisa ditonton kembali setiap/g, 'at once! Can be watched again every'],
+    [/30 menit/g, '30 minutes'],
+    [/AKTIF DI MODAL\s*·\s*SISA/g, 'ACTIVE IN MODAL · LEFT'],
+    [/COOLDOWN\s*·\s*SIAP DALAM/g, 'COOLDOWN · READY IN'],
+    [/REWARD DALAM\s+(\d+)s/g, 'REWARD IN $1s'],
+    [/⏳ AKTIF\s*\(/g, '⏳ ACTIVE ('],
+    [/⏳ TUNGGU\s+/g, '⏳ WAIT '],
+    [/sisa\s+(\d+:\d+)/g, '$1 left']
   ];
 
   function translateTextString(str) {
