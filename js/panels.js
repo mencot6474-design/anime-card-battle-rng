@@ -623,7 +623,7 @@ function dedupStacksInPlace(){
     if(seen.has(k))continue;
     seen.add(k);
     s.count=1;
-    if(typeof CARDS!=="undefined"&&CARDS[s.char])s.tier=CARDS[s.char].tier;
+    if(typeof CARDS!=="undefined"&&CARDS[s.char])s.tier=CARDS[s.char].tier||null;
     out.push(s);
   }
   if(out.length!==state.stacks.length)state.stacks=out;
@@ -634,7 +634,17 @@ const DUP_EXP_MUT  = { none:1, gold:2, rainbow:3, secret:5, ultima:8 };
 const DUP_EXP_SHINY = 2;
 function dupSellValue(card, mut, shiny){
   if(!card)return 0;
-  const base = DUP_EXP_TIER[card.tier] || 20;
+  let base = 20;
+  if(card.tier && DUP_EXP_TIER[card.tier]){
+    base = DUP_EXP_TIER[card.tier];
+  } else if(card.chance){
+    const ch = card.chance;
+    if(ch >= 1000000) base = 600;
+    else if(ch >= 500000) base = 220;
+    else if(ch >= 150000) base = 90;
+    else if(ch >= 50000) base = 40;
+    else base = 20;
+  }
   const mm   = DUP_EXP_MUT[mut || "none"] || 1;
   return Math.round(base * mm * (shiny ? DUP_EXP_SHINY : 1));
 }
@@ -891,8 +901,8 @@ function showRollResult(result) {
   const eq = {char:result.cardId, mut:result.mut||"none", shiny:!!result.shiny, trait:"none"};
   showcase.innerHTML = hubCardHtml(eq, null, true);
   const mut = eq.mut!=="none" ? eq.mut : null;
-  showcase.style.borderColor = mut ? MUT_COLOR[mut] : (TIER_COLOR[CARDS[eq.char].tier] || "var(--cyan)");
-  showcase.style.setProperty('--tcol', mut ? (MUT_COLOR[mut] || '#7DF9FF') : (TIER_COLOR[CARDS[eq.char].tier] || '#7DF9FF'));
+  showcase.style.borderColor = mut ? MUT_COLOR[mut] : ((CARDS[eq.char].tier && TIER_COLOR[CARDS[eq.char].tier]) || "var(--cyan)");
+  showcase.style.setProperty('--tcol', mut ? (MUT_COLOR[mut] || '#7DF9FF') : ((CARDS[eq.char].tier && TIER_COLOR[CARDS[eq.char].tier]) || '#7DF9FF'));
 
   // Buka overlay. Animasi masuk HANYA sekali (saat pertama tampil) supaya tidak flicker muncul-hilang tiap tick.
   const wasVisible = overlay.style.display === 'flex';
@@ -901,7 +911,7 @@ function showRollResult(result) {
   if (!wasVisible) {
     showcase.style.transition = 'none';
     showcase.classList.remove('rv-slam'); void showcase.offsetWidth; showcase.classList.add('rv-slam');
-    const tcol = mut ? (MUT_COLOR[mut] || '#7DF9FF') : (TIER_COLOR[CARDS[eq.char].tier] || '#7DF9FF');
+    const tcol = mut ? (MUT_COLOR[mut] || '#7DF9FF') : ((CARDS[eq.char].tier && TIER_COLOR[CARDS[eq.char].tier]) || '#7DF9FF');
     setTimeout(() => rvFx(showcase, overlay, tcol), 560);
   } else {
     showcase.classList.remove('rv-slam');
@@ -2013,7 +2023,7 @@ function activeChap(){
   return open.find(x=>x.no===(state?state.chap:1))||open.find(x=>!chapDone(x))||open[open.length-1]||CHAPTERS[0];
 }
 const LEVEL_COUNT=STORY_BIBLE.levels.length;
-const MASTER_CARD_INDEX=STORY_BIBLE.units.map(u=>({char_id:u.id,name:u.name,tier:u.tier,chance:u.chance||null,type:u.type,base_hp:u.hp,base_atk:u.atk,sprite_asset:u.art,art_image:u.art,pos:u.pos||null,fullArt:!!u.fullArt,passive:{name:u.skill,desc:u.desc},noGacha:!!u.noGacha,weatherOnly:u.weatherOnly||null,raidBoss:!!u.raidBoss,towerBoss:!!u.towerBoss,isStoryEnemy:!!(u.noGacha&&!u.chance)}));
+const MASTER_CARD_INDEX=STORY_BIBLE.units.map(u=>({char_id:u.id,name:u.name,tier:(u.noGacha&&!u.chance)?u.tier:null,chance:u.chance||null,type:u.type,base_hp:u.hp,base_atk:u.atk,sprite_asset:u.art,art_image:u.art,pos:u.pos||null,fullArt:!!u.fullArt,passive:{name:u.skill,desc:u.desc},noGacha:!!u.noGacha,weatherOnly:u.weatherOnly||null,raidBoss:!!u.raidBoss,towerBoss:!!u.towerBoss,isStoryEnemy:!!(u.noGacha&&!u.chance)}));
 
 /* =============== PREMIUM SHOP SYSTEM =============== */
 var premCurTab = 'all';

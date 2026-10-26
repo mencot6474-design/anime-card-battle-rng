@@ -297,6 +297,7 @@ Backpack bukan `display:fixed` bawaan — `toggleBackpack` set inline transform;
 
 ## 6. RESEP "MAU UBAH X"
 
+- **Sistem Tier R s/d EX (Eksklusif Musuh Story)**: Tier seperti R, SR, SSR, UR, EX HANYA berlaku untuk musuh di Story Mode (`noGacha: true`). Kartu pemain TIDAK memiliki tier kosmetik R s/d EX — kelangkaan kartu pemain murni ditentukan oleh `chance` (1 in N), varian (Mutasi & Shiny), dan Trait. Badge tier dihilangkan dari hasil Instant Roll, bench battle pemain, dan layar VS pemain.
 - **Tambah/ubah kartu** → `STORY_BIBLE` (data.js:100) untuk unit cerita; `MASTER_CARD_INDEX` (panels.js:1755) untuk index; art di `assets/cards/art/<slug>.png` (deck/list pakai `assets/cards/thumb/`). Jangan cascade tier/skill kalau hanya diminta ganti art — dan jangan sentuh art tanpa permintaan tersurat.
 - **Ubah skill/trait** → `cards-fx.js` (`skillText`, `fxOf`), trait tree `renderTrait` (raid.js:1382), passive musuh `foe-passives.js` + `shadow-king-fx.js`.
 - **Ubah FX serangan** → `anime-archetype-attacks.js` (definisi) + `sheetfx.js` (render efek) + `assets/vfx`. Semua murni canvas (tanpa background video); wajib lewat `registerFrame` + `FXQ`, jangan bikin canvas baru.

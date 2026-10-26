@@ -628,7 +628,7 @@ function rpHtml(p) {
       ? `<img src="${rkEsc(photo)}" alt="" decoding="async">`
       : `<span>${rkEsc((name[0] || "?"))}</span>`;
 
-  const cardTierTxt = known && CARDS[cid] ? rkEsc(CARDS[cid].tier || "SR") : "HUNTER";
+  const cardTierTxt = known && CARDS[cid] && CARDS[cid].tier ? rkEsc(CARDS[cid].tier) : "";
   const mutTag = eq && eq.mut && eq.mut !== "none" ? `<span class="rp-tag rp-tag-mut">${rkEsc(eq.mut.toUpperCase())}</span>` : "";
   const shinyTag = eq && eq.shiny ? `<span class="rp-tag rp-tag-shiny">✦ SHINY</span>` : "";
   const traitTag = eq && eq.trait && eq.trait !== "none" ? `<span class="rp-tag rp-tag-trait">${rkEsc(eq.trait.toUpperCase())}</span>` : "";
@@ -640,7 +640,7 @@ function rpHtml(p) {
         <div class="rp-hc-aura"></div>
         <div class="rp-face">
           ${face}
-          <span class="rp-hc-tier">${cardTierTxt}</span>
+          ${cardTierTxt ? `<span class="rp-hc-tier">${cardTierTxt}</span>` : ""}
           <span class="rp-hc-lv">LV.${lv}</span>
         </div>
         <span class="rp-hc-cnr tl"></span><span class="rp-hc-cnr tr"></span>

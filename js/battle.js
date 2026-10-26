@@ -236,10 +236,11 @@ function skRotateToRear(a,s){
   SK_SLOT_ARRAYS.forEach(k=>{const arr=bt[k];if(Array.isArray(arr)){const old=arr.slice();bt[k]=order.map(i=>old[i]);}});
 }
 
-function updateMeCard(){if(!bt)return;const f=document.querySelector(".fighter.me");if(f){if(bt.shadow){f.className="fighter me shadow-fighter";f.dataset.tier="EX";f.dataset.char="";f.style.borderColor="#7c3aed";f.innerHTML=meShadowHtml(bt.shadow);return;}f.className="fighter me"+mutGlow(bt.eq.mut)+shinyCls(bt.eq)+(isFullArt(bt.eq.char)?" full-art":"")+(bt.eq.sk?" shadow-fighter":"");f.dataset.tier=bt.eq.tier||cardTier(bt.eq.char)||"SR";f.dataset.char=bt.eq.char;f.style.borderColor=bt.eq.mut&&bt.eq.mut!=="none"?MUT_COLOR[bt.eq.mut]:"";f.innerHTML=meFighterHtml(bt.eq,{curHp:bt.pHp,maxHp:bt.pMax});}}
+function updateMeCard(){if(!bt)return;const f=document.querySelector(".fighter.me");if(f){if(bt.shadow){f.className="fighter me shadow-fighter";f.dataset.tier="EX";f.dataset.char="";f.style.borderColor="#7c3aed";f.innerHTML=meShadowHtml(bt.shadow);return;}f.className="fighter me"+mutGlow(bt.eq.mut)+shinyCls(bt.eq)+(isFullArt(bt.eq.char)?" full-art":"")+(bt.eq.sk?" shadow-fighter":"");f.dataset.tier=bt.eq.tier||cardTier(bt.eq.char)||"";f.dataset.char=bt.eq.char;f.style.borderColor=bt.eq.mut&&bt.eq.mut!=="none"?MUT_COLOR[bt.eq.mut]:"";f.innerHTML=meFighterHtml(bt.eq,{curHp:bt.pHp,maxHp:bt.pMax});}}
 function benchTile(s){
-  const tier=s.tier||cardTier(s.char)||"SR";
-  return `<div class="bench-sq${s.sk?" shadow-sq":""}" data-tier="${tier}" style="border-color:${TIER_COLOR[tier]}" title="${s.sk?"SHADOW · ":""}${cardName(s.char)}"><span class="bench-mini-tier">${tier}</span><img src="${cardThumb(s.char)}" alt="${cardName(s.char)}" loading="lazy" decoding="async"><span class="bhp"><i style="width:100%"></i></span></div>`;
+  const tier=s.tier||cardTier(s.char)||"";
+  const col=(tier&&TIER_COLOR[tier])||"var(--line2)";
+  return `<div class="bench-sq${s.sk?" shadow-sq":""}" data-tier="${tier}" style="border-color:${col}" title="${s.sk?"SHADOW · ":""}${cardName(s.char)}"><img src="${cardThumb(s.char)}" alt="${cardName(s.char)}" loading="lazy" decoding="async"><span class="bhp"><i style="width:100%"></i></span></div>`;
 }
 /* Rail cadangan = 3 kotak gambar sejajar (sisa dek setelah fighter aktif), ditambal placeholder biar tetap 3. */
 function benchRailHtml(remaining,caption){

@@ -54246,3 +54246,13 @@ main#app:has(.sett-wrap) {
   width: 0 !important;
   height: 0 !important;
 }
+
+
+/* ==========================================================================
+   TIER REMOVAL FOR PLAYER CARDS (Tiers R-EX are exclusive to Story Enemies)
+   ========================================================================== */
+.rrc-tier-badge,
+#bioPlayerTier,
+.bench-rail .bench-sq:not(.foe-sq) .bench-mini-tier {
+  display: none !important;
+}

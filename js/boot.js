@@ -844,6 +844,24 @@ document.addEventListener("keydown",e=>{
 /* ========== UPDATE LOG MODAL ========== */
 const GAME_CHANGELOGS = [
   {
+    version: "v1.4.4",
+    date: "27 Okt 2026",
+    title: "Eksklusivitas Tier Musuh Cerita & UI Polish",
+    titleEn: "Story Enemy Tier Exclusivity & UI Polish",
+    items: [
+      "Tier R s/d EX kini eksklusif untuk musuh di Story Mode; badge tier pada kartu pemain (hasil Instant Roll, bench battle, profil VS) telah dihapus.",
+      "Kelangkaan kartu pemain kini murni menggunakan sistem Chance (1 in N), Varian Mutasi & Shiny, serta Trait.",
+      "Pembersihan opsi pengurutan di Index Kartu agar selaras tanpa tier kosmetik pada kartu pemain.",
+      "Penyempurnaan tampilan modal Update Log & Instant Roll dengan scrollbar tersembunyi yang mulus."
+    ],
+    itemsEn: [
+      "Tiers R through EX are now strictly exclusive to Story Mode enemies; tier badges on player cards (Instant Roll results, battle bench, VS profile) have been removed.",
+      "Player card rarity is now purely governed by Chance (1 in N), Mutation & Shiny variants, and Traits.",
+      "Cleaned up Card Index sort options to align without cosmetic player card tiers.",
+      "UI polish for Update Log and Instant Roll result modals with hidden clean scrollbars."
+    ]
+  },
+  {
     version: "v1.4.3",
     date: "27 Okt 2026",
     title: "Rebirth Matrix & UI Stabilization",

@@ -1290,8 +1290,7 @@ function playFight(cb,opts){
       }
       if(pName)pName.textContent=cardName(eq.char);
       if(pTier){
-        pTier.textContent=eq.tier||"SSR";
-        pTier.setAttribute("data-tier",eq.tier||"SSR");
+        pTier.style.display="none";
       }
       if(pSub)pSub.textContent=eq.shiny?"SHINY OPERATOR · READY":"TACTICAL OPERATOR · READY";
     }
