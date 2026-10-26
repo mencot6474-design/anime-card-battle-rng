@@ -920,9 +920,9 @@ function showRollResult(result) {
 
 // Modal profil: open/close + update data
 function openProfileModal(){
-  const b=document.getElementById("profBackdrop");const m=document.getElementById("profModal");if(b){b.classList.add("show");b.style.display="block";}if(m){m.classList.add("show");m.style.display="flex";renderProfile();profTabGo("overview");}
+  const b=document.getElementById("profBackdrop");const m=document.getElementById("profModal");if(b){b.classList.add("show");b.style.display="block";}if(m){m.classList.add("show");m.style.display="flex";renderProfile();profTabGo("overview");profHoverBind();}
 }
-function closeProfileModal(){const b=document.getElementById("profBackdrop");const m=document.getElementById("profModal");if(b){b.classList.remove("show");b.style.display="none";}if(m){m.classList.remove("show");m.style.display="none";}}
+function closeProfileModal(){hoverHide();const b=document.getElementById("profBackdrop");const m=document.getElementById("profModal");if(b){b.classList.remove("show");b.style.display="none";}if(m){m.classList.remove("show");m.style.display="none";}}
 
 /* Tab menu profil (gaya menu karakter): rail kiri + halaman kanan */
 const PROF_TABS={overview:"OPERATOR STATS",koleksi:"KOLEKSI",progres:"PROGRES",ekuipmen:"EKUIPMEN",item:"ITEM & BUFF",titles:"TITLES"};
@@ -1020,11 +1020,16 @@ function renderProfile(){
   /* Hero = kartu utama tampil sebagai CARD, pakai markup yang sama dengan kartu lobby. */
   const av=document.getElementById("pfAv");
   const heroKey=eq?[eq.id,eq.char,eq.mut||"",eq.trait||"",eq.shiny?1:0].join("|"):"none";
-  if(av&&av.dataset.heroKey!==heroKey){
-    av.dataset.heroKey=heroKey;
-    av.innerHTML=(eq&&typeof hubCardHtml==="function")
-      ?hubCardHtml(eq,'',false)
-      :'<div class="hub-center"><div class="hc-info"><div class="hc-name">Belum ada kartu</div></div></div>';
+  if(av){
+    av.style.cursor="pointer";
+    av.title="Klik untuk kelola Dek di Backpack";
+    av.onclick=()=>{if(typeof sfx!=="undefined"&&sfx.hit)sfx.hit();closeProfileModal();if(typeof toggleBackpack==="function"){toggleBackpack();if(typeof bpSetTab==="function")bpSetTab("deck");}};
+    if(av.dataset.heroKey!==heroKey){
+      av.dataset.heroKey=heroKey;
+      av.innerHTML=(eq&&typeof hubCardHtml==="function")
+        ?hubCardHtml(eq,'',false)
+        :'<div class="hub-center"><div class="hc-info"><div class="hc-name">Belum ada kartu</div></div></div>';
+    }
   }
   const bg=document.getElementById("pfBg");
   const bgSrc=(state&&state.customAvatar)?state.customAvatar:(cid&&CARDS[cid]?cardImg(cid):"");
@@ -1070,17 +1075,53 @@ function renderProfile(){
     +row("RAREST POOL",rarest?`${cardName(rarest.char)} · 1 IN ${fmtChance(rarestCh)}`:"—");
 
   /* ===== PARTY: pet + 2 artefak + kartu utama (portrait + pill) ===== */
-  const pslot=(img,label,pill,name)=>`<div class="prof-slot${img?"":" empty"}" title="${name}">${img?`<img src="${thumbSrc(img)}" alt="" loading="lazy" decoding="async">`:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/></svg>'}<span class="ps-lab">${label}</span><span class="ps-pill">${pill}</span></div>`;
+  const pslot=(img,label,pill,name,slotKind,clickAction,hoverKind)=>`<div class="prof-slot${img?"":" empty"}" data-slot="${slotKind||""}" ${hoverKind?`data-hover="${hoverKind}"`:""} title="${name}" ${clickAction?`onclick="${clickAction}" style="cursor:pointer"`:""} role="button" tabindex="0">${img?`<img src="${thumbSrc(img)}" alt="" loading="lazy" decoding="async">`:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/></svg>'}<span class="ps-lab">${label}</span><span class="ps-pill">${pill}</span></div>`;
   const pd=state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;
   const slots=[];
-  slots.push(pslot(pd?(pd.img||`assets/pets/${pd.id}.png`):"","PET",pd?`+${pd.flat||0}${pd.pct?" / +"+Math.round(pd.pct)+"%":""}`:"KOSONG",pd?pd.name:"Pet kosong"));
+  slots.push(pslot(
+    pd?(pd.img||`assets/pets/${pd.id}.png`):"",
+    "PET",
+    pd?`+${pd.flat||0}${pd.pct?" / +"+Math.round(pd.pct)+"%":""}`:"KOSONG",
+    pd?pd.name:"Pet kosong — klik untuk pasang",
+    "pet",
+    "if(typeof sfx!==\"undefined\"&&sfx.hit)sfx.hit();closeProfileModal();if(typeof toggleBackpack===\"function\"){toggleBackpack();if(typeof bpSetTab===\"function\")bpSetTab(\"pet\");}"
+  ));
   [0,1].forEach(i=>{
     const aid=state.artSlots&&state.artSlots[i];
     const ad=aid?ART_DEFS.find(x=>x.id===aid):null;
-    slots.push(pslot(ad?(ad.img||""):"","ARTEFAK "+(i+1),ad?`+${ad.flat||0}${ad.pct?" / +"+ad.pct+"%":""}`:"KOSONG",ad?ad.name:"Artefak kosong"));
+    slots.push(pslot(
+      ad?(ad.img||""):"",
+      "ARTEFAK "+(i+1),
+      ad?`+${ad.flat||0}${ad.pct?" / +"+ad.pct+"%":""}`:"KOSONG",
+      ad?ad.name:"Artefak kosong — klik untuk pasang",
+      "artefact",
+      "if(typeof sfx!==\"undefined\"&&sfx.hit)sfx.hit();closeProfileModal();if(typeof toggleBackpack===\"function\"){toggleBackpack();if(typeof bpSetTab===\"function\")bpSetTab(\"artefact\");}"
+    ));
   });
-  slots.push(pslot(cid?cardImg(cid):"","KARTU",cid?`1 IN ${fmtChance(effChance(cid,eq.mut||"none",!!eq.shiny))}`:"KOSONG",cid?cardName(cid):"Tanpa kartu"));
-  const pfParty=document.getElementById("pfParty");if(pfParty)pfParty.innerHTML=slots.join("");
+  slots.push(pslot(
+    cid?cardImg(cid):"",
+    "KARTU",
+    cid?`1 IN ${fmtChance(effChance(cid,eq.mut||"none",!!eq.shiny))}`:"KOSONG",
+    cid?cardName(cid):"Tanpa kartu — klik untuk ganti",
+    "card",
+    "if(typeof sfx!==\"undefined\"&&sfx.hit)sfx.hit();closeProfileModal();if(typeof toggleBackpack===\"function\"){toggleBackpack();if(typeof bpSetTab===\"function\")bpSetTab(\"deck\");}",
+    "card"
+  ));
+  const partyKey=[
+    state.petEquipped||'none',
+    (state.artSlots&&state.artSlots[0])||'none',
+    (state.artSlots&&state.artSlots[1])||'none',
+    cid||'none',
+    eq?(eq.mut||'none'):'',
+    eq?(eq.trait||'none'):'',
+    eq&&eq.shiny?'1':'0'
+  ].join('|');
+  const pfParty=document.getElementById("pfParty");
+  if(pfParty&&pfParty.dataset.partyKey!==partyKey){
+    pfParty.dataset.partyKey=partyKey;
+    pfParty.innerHTML=slots.join("");
+  }
+  profHoverBind();
   /* ===== PANEL SAMPING: koleksi, progres, gear, item ===== */
   const tile=(lab,val,sub,tcls,vcls,oc)=>`<div class="prof-tile${tcls?" "+tcls:""}"${oc?` onclick="${oc}" style="cursor:pointer"`:""}><span class="prof-tl">${lab}</span><span class="prof-tv${vcls?" "+vcls:""}">${val}</span>${sub?`<span class="prof-ts">${sub}</span>`:""}</div>`;
   const st=Array.isArray(state.stacks)?state.stacks:[];
@@ -1908,6 +1949,25 @@ function bpsHoverShow(sid,slotRect){
 function hoverHide(){if(__bpsHoverEl)__bpsHoverEl.classList.remove('show');}
 function bpsHoverHide(){hoverHide();}
 /* Hover reveal kartu weather corner -> pakai hoverPlace/hoverHide yang sama kayak dek. */
+function profHoverBind(){
+  if(window.__profHoverBound)return;window.__profHoverBound=true;
+  const SEL='.prof-slot[data-hover="card"], #pfAv, .prof-hero-card';
+  document.addEventListener("mouseover",e=>{
+    const el=e.target.closest&&e.target.closest(SEL);
+    if(!el)return;
+    const eq=equipped();
+    if(eq&&eq.char&&CARDS[eq.char]){
+      hoverPlace(eq, el.getBoundingClientRect());
+    }
+  });
+  document.addEventListener("mouseout",e=>{
+    const el=e.target.closest&&e.target.closest(SEL);
+    if(!el)return;
+    const to=e.relatedTarget;
+    if(to&&to.closest&&to.closest(SEL)===el)return;
+    hoverHide();
+  });
+}
 function wcHoverBind(){
   if(window.__wcBound)return;window.__wcBound=true;
   const SEL='.wc-slot[data-wc]';
