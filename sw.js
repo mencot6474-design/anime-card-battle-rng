@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v207-bgmMp3';
+const CACHE_NAME = 'anime-card-battle-v208-spReconcile';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

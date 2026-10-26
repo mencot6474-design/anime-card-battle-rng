@@ -45,8 +45,30 @@ function loadStateFor(name){
     console.log('[MIGRATE] Legacy luck',legacyLuck,'-> luckBase');
   }
   // MIGRATE: skill tree (SP + node yang dibeli)
-  if(typeof state.player.sp!=="number")state.player.sp=0;
   if(!state.player.tree||typeof state.player.tree!=="object")state.player.tree={};
+  if(typeof state.player.sp!=="number")state.player.sp=0;
+
+  /* REKONSILIASI OTOMATIS SKILL POINT (SP):
+     Setiap naik 1 level pemain berhak atas 1 SP (Total SP = playerLv - 1).
+     Hitung SP yang sudah terpakai di tree, sisa yang belum terpakai otomatis dipulihkan.
+     Menjamin jika pemain level 17 login di browser baru, SP tidak hilang / reset. */
+  try {
+    const _pLv = Math.max(1, Math.floor(state.playerLv || (state.player && state.player.lv) || 1));
+    const _earnedSp = Math.max(0, _pLv - 1);
+    let _spentSp = 0;
+    if (typeof TREE_NODES !== "undefined" && Array.isArray(TREE_NODES)) {
+      TREE_NODES.forEach(n => {
+        if (n && n.id !== "root" && state.player.tree[n.id]) {
+          _spentSp += (n.cost || 0);
+        }
+      });
+    }
+    const _expectedSp = Math.max(0, _earnedSp - _spentSp);
+    if ((state.player.sp || 0) < _expectedSp) {
+      console.log(`[SP RECONCILE] Recovered SP for LV ${_pLv}: ${_expectedSp} SP (was ${state.player.sp})`);
+      state.player.sp = _expectedSp;
+    }
+  } catch(e) { console.warn("[SP RECONCILE ERR]", e); }
   /* BATTLE SPEED: migrasi save lama + clamp ke unlock level (LV10→2x, LV25→3x, LV50→4x) */
   if(typeof state.battleSpeed!=="number"||state.battleSpeed<1||state.battleSpeed>4||Math.floor(state.battleSpeed)!==state.battleSpeed)state.battleSpeed=1;
   {const _lv=state.playerLv||1,_max=_lv>=50?4:_lv>=25?3:_lv>=10?2:1;if(state.battleSpeed>_max)state.battleSpeed=_max;}
@@ -540,8 +562,8 @@ function _cloudPush(opts){
   if(!state||!currentUser||!window.CloudDB)return Promise.resolve(null);
   const forceStacks=!!(opts&&opts.stacks);
   const stacksKey=JSON.stringify(state.stacks||[]);
-  /* Server menahan `stacks` lama saat p_skip_stacks=true (migration 0012). */
-  const sendStacks=forceStacks||!_cloudRolling()||Date.now()-_cloudLastStacksPush>=CLOUD_STACKS_MIN_MS;
+  /* Saat rolling: hemat bandwidth (skipStacks). Saat tidak rolling atau forceStacks: kirim kartu penuh */
+  const sendStacks=forceStacks || !_cloudRolling();
   _cloudLastPush=Date.now();_cloudPending=false;
   /* Snapshot key SEBELUM async push biar save() berikutnya compare against state yang
      memang udah dikirim ke cloud, bukan against state saat ini (yang bisa aja berubah
@@ -802,7 +824,20 @@ function renderShell(){
   if(state&&state.player){
     // Level up check: EXP per level = playerLv * 1000, naik LV setiap penuh -> +1 SP.
     while((state.player.exp||0)>=state.player.lv*1000){
-      state.player.exp-=state.player.lv*1000;state.player.lv=(state.player.lv||0)+1;state.playerLv=state.player.lv;state.player.sp=(state.player.sp||0)+1;}
+      state.player.exp-=state.player.lv*1000;
+      state.player.lv=(state.player.lv||0)+1;
+      state.playerLv=state.player.lv;
+      state.player.sp=(state.player.sp||0)+1;
+    }
+    /* Audit tambahan agar SP selalu konsisten dengan player.lv */
+    if(typeof state.player.sp==="number"){
+      let _curSpent = 0;
+      if (typeof TREE_NODES !== "undefined" && Array.isArray(TREE_NODES) && state.player.tree) {
+        TREE_NODES.forEach(n => { if (n && n.id !== "root" && state.player.tree[n.id]) _curSpent += (n.cost || 0); });
+      }
+      const _minSp = Math.max(0, (state.player.lv - 1) - _curSpent);
+      if(state.player.sp < _minSp) state.player.sp = _minSp;
+    }
     const xpNeed=state.player.lv*1000,xpPct=Math.max(0,Math.min(100,Math.round(state.player.exp/xpNeed*100)));
     const tf=document.getElementById("tbXpFill");if(tf)tf.style.width=xpPct+"%";
     const txt=document.getElementById("tbXpText");if(txt)txt.textContent=`${state.player.exp} / ${xpNeed}`;
@@ -1039,9 +1074,9 @@ setInterval(()=>{
   if(document.getElementById("dailyModal").classList.contains("show"))renderDaily();
 },1000);
 /* Simpan sinkron saat app ditutup/pindah background supaya playtime tidak hilang. */
-addEventListener("pagehide",()=>{if(state)save();});
+addEventListener("pagehide",()=>{if(state){save();flushCloudSave();}});
 document.addEventListener("visibilitychange",()=>{
-  if(state&&document.hidden)save();
+  if(state&&document.hidden){save();flushCloudSave();}
   /* Hentikan animasi CSS dekoratif saat tab di background (hemat GPU/baterai). */
   try{document.body.classList.toggle("perf-paused",document.hidden);}catch(e){}
 });

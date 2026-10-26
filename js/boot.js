@@ -619,6 +619,7 @@ function runLoading(done){
   },8000);
 }
 function logout(){
+  try { if (typeof flushCloudSave === "function") flushCloudSave(); } catch(e){}
   localStorage.removeItem(SESSION_KEY);
   location.reload();
 }
