@@ -53455,14 +53455,26 @@ html.fps-locked .bp-fchip{
 
 
 /* ==========================================================================
-   HORIZONTAL CYBERPUNK SETTINGS DECK
+   HORIZONTAL CYBERPUNK SETTINGS DECK (FULL-WIDTH NO-CUTOFF)
    ========================================================================== */
+body:has(.sett-wrap) main#app,
+main#app:has(.sett-wrap) {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 10px 16px 40px !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+}
+
 .sett-wrap {
-  width: min(1420px, calc(100vw - 32px));
-  margin: 14px auto 36px;
+  width: 100% !important;
+  max-width: 1400px !important;
+  margin: 0 auto 36px !important;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
+  box-sizing: border-box !important;
   animation: settFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 @keyframes settFadeIn {
@@ -53475,16 +53487,21 @@ html.fps-locked .bp-fchip{
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 22px;
-  background: linear-gradient(135deg, rgba(22, 18, 38, 0.92) 0%, rgba(12, 14, 26, 0.96) 100%);
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px 18px;
+  background: linear-gradient(135deg, rgba(22, 18, 38, 0.94) 0%, rgba(12, 14, 26, 0.98) 100%);
   border: 1px solid rgba(192, 132, 252, 0.28);
-  border-radius: 16px;
+  border-radius: 14px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-sizing: border-box;
+  width: 100%;
 }
 .sett-head-left {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 .sett-cyber-pill {
   display: inline-flex;
@@ -53506,7 +53523,7 @@ html.fps-locked .bp-fchip{
 }
 .sett-title {
   margin: 2px 0 0;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 900;
   font-family: var(--font-display, "Orbitron", "Rajdhani", "Barlow Condensed", sans-serif);
   letter-spacing: 0.08em;
@@ -53518,7 +53535,7 @@ html.fps-locked .bp-fchip{
   -webkit-text-fill-color: transparent;
 }
 .sett-subtitle {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
   color: #a4b0be;
@@ -53527,32 +53544,34 @@ html.fps-locked .bp-fchip{
 .sett-head-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  flex-shrink: 0;
 }
 .sett-user-pill {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(102, 252, 241, 0.25);
-  padding: 8px 14px;
-  border-radius: 10px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  flex-shrink: 0;
 }
 .sett-user-dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: #2ed573;
   box-shadow: 0 0 8px #2ed573;
 }
 .sett-user-lbl {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 800;
   color: #a4b0be;
   letter-spacing: 0.06em;
 }
 .sett-user-val {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 900;
   color: #66fcf1;
   letter-spacing: 0.04em;
@@ -53560,19 +53579,21 @@ html.fps-locked .bp-fchip{
 .sett-back-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
+  gap: 7px;
+  padding: 8px 16px;
   font-family: var(--font-display, "Orbitron", "Rajdhani", sans-serif);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.08em;
   background: linear-gradient(135deg, #7d5fff 0%, #c56cf0 100%);
   color: #fff;
   border: 1px solid rgba(197, 108, 240, 0.5);
-  border-radius: 10px;
+  border-radius: 9px;
   cursor: pointer;
   box-shadow: 0 4px 18px rgba(125, 95, 255, 0.4);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .sett-back-btn:hover {
   transform: translateY(-2px);
@@ -53587,20 +53608,24 @@ html.fps-locked .bp-fchip{
 .sett-h-deck {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  gap: 12px;
   align-items: stretch;
+  width: 100%;
+  box-sizing: border-box;
 }
 .sett-col {
-  background: linear-gradient(165deg, rgba(16, 14, 30, 0.92) 0%, rgba(10, 10, 20, 0.97) 100%);
+  background: linear-gradient(165deg, rgba(16, 14, 30, 0.94) 0%, rgba(10, 10, 20, 0.98) 100%);
   border: 1px solid rgba(192, 132, 252, 0.18);
-  border-radius: 16px;
-  padding: 18px;
+  border-radius: 14px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.45);
+  min-width: 0;
+  box-sizing: border-box;
 }
 .sett-col::before {
   content: "";
@@ -53624,8 +53649,8 @@ html.fps-locked .bp-fchip{
 .sett-col-head {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding-bottom: 10px;
+  gap: 3px;
+  padding-bottom: 8px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 .sett-col-tag {
@@ -53642,8 +53667,8 @@ html.fps-locked .bp-fchip{
 .sett-col-title {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 16px;
+  gap: 7px;
+  font-size: 15px;
   font-weight: 800;
   color: #fff;
   letter-spacing: 0.04em;
@@ -53653,12 +53678,14 @@ html.fps-locked .bp-fchip{
 .sett-card {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 12px;
-  padding: 14px;
+  border-radius: 11px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   transition: border-color 0.2s, background 0.2s;
+  min-width: 0;
+  box-sizing: border-box;
 }
 .sett-card:hover {
   border-color: rgba(192, 132, 252, 0.28);
@@ -53672,7 +53699,7 @@ html.fps-locked .bp-fchip{
 .sett-card-badge {
   font-size: 9px;
   font-weight: 900;
-  padding: 2px 7px;
+  padding: 2px 6px;
   border-radius: 5px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -53703,7 +53730,7 @@ html.fps-locked .bp-fchip{
   border: 1px solid rgba(255, 71, 87, 0.35);
 }
 .sett-card-title {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.05em;
   color: #f1f2f6;
@@ -53711,25 +53738,29 @@ html.fps-locked .bp-fchip{
 .sett-card-desc {
   font-size: 11px;
   color: #a4b0be;
-  line-height: 1.45;
+  line-height: 1.4;
 }
 
 /* Speed Grid */
 .sett-speed-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
 }
 .sett-speed-grid .bs-btn {
-  padding: 10px 4px;
-  font-size: 13px;
+  padding: 8px 2px;
+  font-size: 12px;
   font-weight: 800;
-  border-radius: 8px;
+  border-radius: 7px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
   color: #fff;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-width: 0;
+  box-sizing: border-box;
+  text-align: center;
 }
 .sett-speed-grid .bs-btn:not(:disabled):hover {
   border-color: rgba(102, 252, 241, 0.5);
@@ -53753,21 +53784,24 @@ html.fps-locked .bp-fchip{
 .sett-aud-tools {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 6px;
+  width: 100%;
 }
 .sett-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px 14px;
-  font-size: 12px;
+  gap: 6px;
+  padding: 8px 10px;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   border: none;
+  min-width: 0;
+  box-sizing: border-box;
 }
 .sett-btn-aud-toggle {
   background: rgba(255, 255, 255, 0.08);
@@ -53802,26 +53836,28 @@ html.fps-locked .bp-fchip{
 .sett-aud-telemetry {
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(255, 209, 102, 0.2);
-  border-radius: 8px;
-  padding: 8px 12px;
+  border-radius: 7px;
+  padding: 6px 10px;
   color: #ffd166;
   font-family: monospace;
   font-size: 10px;
-  line-height: 1.5;
+  line-height: 1.4;
+  word-break: break-all;
 }
 
 /* Language Cards */
 .sett-lang-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 8px;
+  width: 100%;
 }
 .sett-lang-card {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: 10px;
+  gap: 8px;
+  padding: 10px 10px;
+  border-radius: 9px;
   cursor: pointer;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.04);
@@ -53829,6 +53865,8 @@ html.fps-locked .bp-fchip{
   transition: all 0.2s ease;
   position: relative;
   text-align: left;
+  min-width: 0;
+  box-sizing: border-box;
 }
 .sett-lang-card:hover {
   border-color: rgba(197, 108, 240, 0.4);
@@ -53839,108 +53877,127 @@ html.fps-locked .bp-fchip{
   border-color: #66fcf1;
   background: linear-gradient(135deg, rgba(102, 252, 241, 0.18), rgba(197, 108, 240, 0.24));
   color: #fff;
-  box-shadow: 0 0 16px rgba(102, 252, 241, 0.2);
+  box-shadow: 0 0 14px rgba(102, 252, 241, 0.2);
 }
 .sett-lang-flag {
-  font-size: 22px;
+  font-size: 18px;
   line-height: 1;
+  flex-shrink: 0;
 }
 .sett-lang-info {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
 }
 .sett-lang-name {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 .sett-lang-sub {
   font-size: 9px;
   font-weight: 600;
   opacity: 0.75;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .sett-lang-check {
   margin-left: auto;
   font-weight: 900;
   color: #66fcf1;
-  font-size: 14px;
+  font-size: 13px;
+  flex-shrink: 0;
 }
 
 /* Toggle Switch */
 .sett-toggle-wrap {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 .sett-toggle-label {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
 }
 .sett-checkbox {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   accent-color: #c56cf0;
   cursor: pointer;
+  flex-shrink: 0;
 }
 .sett-toggle-text {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
   color: #fff;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
 }
 
 /* User Box */
 .sett-user-box {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 8px;
   background: rgba(102, 252, 241, 0.04);
   border: 1px solid rgba(102, 252, 241, 0.2);
-  border-radius: 10px;
-  padding: 10px 14px;
+  border-radius: 9px;
+  padding: 8px 12px;
+  min-width: 0;
+  box-sizing: border-box;
 }
 .sett-ub-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
   background: rgba(102, 252, 241, 0.1);
   border: 1px solid rgba(102, 252, 241, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 .sett-ub-info {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
   flex: 1;
 }
 .sett-ub-lbl {
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 800;
   letter-spacing: 0.08em;
   color: #747d8c;
 }
 .sett-ub-name {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 900;
   color: #66fcf1;
   letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .sett-btn-logout {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  font-size: 11px;
+  gap: 5px;
+  padding: 6px 10px;
+  font-size: 10px;
   font-weight: 800;
   color: #ff6b81;
   background: rgba(255, 71, 87, 0.14);
   border: 1px solid rgba(255, 71, 87, 0.35);
-  border-radius: 8px;
+  border-radius: 7px;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 .sett-btn-logout:hover {
   background: rgba(255, 71, 87, 0.24);
@@ -53956,7 +54013,7 @@ html.fps-locked .bp-fchip{
 }
 .sett-btn-cloud:hover:not(:disabled) {
   background: linear-gradient(135deg, rgba(102, 252, 241, 0.3), rgba(46, 213, 115, 0.35));
-  box-shadow: 0 0 18px rgba(102, 252, 241, 0.3);
+  box-shadow: 0 0 16px rgba(102, 252, 241, 0.3);
   transform: translateY(-1px);
 }
 .sett-btn-cloud:disabled {
@@ -53981,14 +54038,14 @@ html.fps-locked .bp-fchip{
 /* Reset Button */
 .sett-btn-reset {
   width: 100%;
-  padding: 10px;
-  font-size: 11px;
+  padding: 9px;
+  font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.08em;
   background: rgba(255, 71, 87, 0.12);
   border: 1px solid rgba(255, 71, 87, 0.35);
   color: #ff4757;
-  border-radius: 8px;
+  border-radius: 7px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -54010,7 +54067,7 @@ html.fps-locked .bp-fchip{
 
 /* Notes & Labels */
 .sett-note {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: #a4b0be;
   line-height: 1.4;
@@ -54018,8 +54075,9 @@ html.fps-locked .bp-fchip{
 .note-purple { color: #c56cf0; font-weight: 700; }
 
 /* Responsive adjustments */
-@media (max-width: 1080px) {
+@media (max-width: 960px) {
   .sett-h-deck {
     grid-template-columns: 1fr;
+    gap: 14px;
   }
 }
