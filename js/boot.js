@@ -731,7 +731,81 @@ document.addEventListener("keydown",e=>{
   if(e.key!=="Escape")return;
   const m=document.getElementById("profModal");
   if(m&&(m.classList.contains("show")||m.style.display==="flex"))closeProfileModal();
+  const c=document.getElementById("changelogModal");
+  if(c&&(c.classList.contains("show")||c.style.display==="flex"))closeChangelogModal();
 });
+
+/* ========== UPDATE LOG MODAL ========== */
+const GAME_CHANGELOGS = [
+  {
+    version: "v1.4.2",
+    date: "26 Okt 2026",
+    title: "Performance & Cloud Sync Update",
+    items: [
+      "Fitur Manual Cloud Save di menu Pengaturan (simpan seluruh kartu & backpack langsung ke Supabase).",
+      "Pembersihan partikel pertempuran (0 FX particles) untuk meningkatkan performa di HP kentang.",
+      "Perbaikan navigasi scroll pada halaman Pengaturan.",
+      "Tombol Refresh Game UI untuk memuat ulang elemen tampilan tanpa refresh halaman.",
+      "Tombol Update Log baru di header navigasi."
+    ]
+  },
+  {
+    version: "v1.4.1",
+    date: "26 Okt 2026",
+    title: "CrazyGames SDK & 7-Day Rewards",
+    items: [
+      "Integrasi resmi CrazyGames SDK v3 (Rewarded Ads dengan hadiah 2x Global Luck & Instant 100K Pack).",
+      "Sistem 7-Day Attendance Reward horizontal baru dengan Instant Roll Packs langsung ke Backpack.",
+      "BGM baru Cyberpunk Electronic Synthwave di Lobby dengan autoplay gesture unlock.",
+      "Dukungan multi-bahasa penuh (English & Bahasa Indonesia) dengan selector di Pengaturan."
+    ]
+  },
+  {
+    version: "v1.4.0",
+    date: "25 Okt 2026",
+    title: "Security & Leaderboard v2",
+    items: [
+      "Pembaruan Leaderboard v2 dengan podium visual Top 3 dan dossier profil publik.",
+      "Anti-cheat terpadu: DevTools Guard (0031) & RPC Guard Honeypot (0032).",
+      "World Boss damage kalkulasi nyata & perbaikan sinkronisasi cloud state."
+    ]
+  }
+];
+
+function openChangelogModal(){
+  const b=document.getElementById("changelogBackdrop"), m=document.getElementById("changelogModal");
+  if(b){b.classList.add("show");b.style.display="block";b.onclick=closeChangelogModal;}
+  if(m){
+    m.classList.add("show");m.style.display="flex";
+    renderChangelogModal();
+  }
+}
+function closeChangelogModal(){
+  const b=document.getElementById("changelogBackdrop"), m=document.getElementById("changelogModal");
+  if(b){b.classList.remove("show");b.style.display="none";}
+  if(m){m.classList.remove("show");m.style.display="none";}
+}
+function renderChangelogModal(){
+  const list = document.getElementById("changelogList");
+  if(!list) return;
+  const isEn = (window.GameLang && typeof window.GameLang.get === "function") ? window.GameLang.get() === "en" : true;
+  list.innerHTML = GAME_CHANGELOGS.map(log => `
+    <div style="background:linear-gradient(135deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02));border:1px solid rgba(102,252,241,0.2);border-radius:12px;padding:14px;box-shadow:0 4px 16px rgba(0,0,0,0.3)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:6px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="background:rgba(102,252,241,0.2);color:#66fcf1;font-size:11px;font-weight:900;padding:2px 8px;border-radius:6px;border:1px solid rgba(102,252,241,0.4)">${log.version}</span>
+          <span style="font-size:13px;font-weight:800;color:#fff">${log.title}</span>
+        </div>
+        <span style="font-size:11px;color:#a4b0be;font-weight:600">${log.date}</span>
+      </div>
+      <ul style="margin:0;padding-left:18px;color:#dcdde1;font-size:12px;line-height:1.6">
+        ${log.items.map(it => `<li>${it}</li>`).join("")}
+      </ul>
+    </div>
+  `).join("");
+}
+window.openChangelogModal = openChangelogModal;
+window.closeChangelogModal = closeChangelogModal;
 function boot(){
   document.getElementById("loadingScreen").classList.add("hidden");
   document.getElementById("authScreen").classList.remove("hidden");
