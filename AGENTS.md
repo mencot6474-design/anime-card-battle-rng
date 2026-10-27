@@ -35,7 +35,7 @@ css/style.css         49.5k baris — SEMUA gaya utama (append override di akhir
                       blok LEADERBOARD v2 (podium+border) mulai 49298,
                       blok SHEET PROFIL PLAYER PUBLIK mulai 49462
 css/story-carousel.css  CSS khusus modal story (diload setelah style.css)
-css/world-boss.css    814 baris — gaya hub World Boss / kartu ultima (juga diload)
+css/world-boss.css    1.8k baris — gaya hub World Boss / kartu 3D / Shadow Hunter Armory full-bleed (prototipe v2)
 css/sl-system.css     roll/gacha system
 css/anim-prototipe.css  halaman prototipe (tidak dipakai game) — LOKAL SAJA, sudah di-.gitignore
 js/data.js            STORY_BIBLE (baris 100), luck helper, data cerita/unit
@@ -74,7 +74,7 @@ js/tower-lobby.js     lobby hub, tower, backpack toggle, modal helper, modal Reb
                         kartu hasil tower & instant pack (.rrc) bersih hanya teks 1 in X di footer tanpa badge
 js/foe-passives.js    passive musuh
 js/story-carousel.js  modal story (IIFE, ekspor ke window)
-js/raid.js            raid hub/battle/shop + index card + trait/auto-roll + World Boss
+js/raid.js            raid hub/battle/shop + index card + trait/auto-roll + World Boss (in-place DOM sync syncBossDOM)
 js/ranking.js         leaderboard 5 papan (world_boss, world_boss_b, inf_tower,
                       deck_power, rarest_pull) via RPC get_leaderboard — layout v2:
                       podium top-3 + border (RK_BD1 79 / RK_BD23 80), baris
@@ -359,3 +359,6 @@ Backpack bukan `display:fixed` bawaan — `toggleBackpack` set inline transform;
   - `fmtBig(n)`: format khusus pool HP raid boss.
 - **Hapus Flash Putih Basic Attack:** Efek screen white flash pada basic attack archetype dilarang dihidupkan kembali demi kenyamanan visual pemain (anti eye-strain saat battle loop cepat) dan kestabilan performa canvas.
 - **Shadow Teks Nama Shiny:** Glow teks kartu shiny di lobby & loading screen menggunakan CSS vars (`--sh-base`, `--sh-edge`, `--sh-glow`) dengan layer text-shadow ber-alpha bersih. Jangan menambahkan drop-shadow ambient gelap/pekat karena akan memicu glitch bug visual teks menghitam.
+- **World Boss Hub & Toko Armory Full-Bleed (Hindari Tag `<main>` Bersarang):** `#viewHub` dan `#viewShop` wajib dibungkus tag `<div>` (bukan `<main>`). Di `style.css:3833`, ada aturan global `main { max-width: var(--wrap); margin: 0 auto; }` yang membatasi setiap elemen `<main>` hanya 1080px dan memusatkannya ke tengah (menyisakan ruang hitam kosong di kiri-kanan). Seluruh viewport World Boss & Shop menggunakan aturan `width: 100% !important; max-width: 100% !important; margin: 0 !important;` agar membentang full-bleed dari ujung ke ujung.
+- **Anti-Flicker Swipe Boss (`syncBossDOM`):** Saat pemain melakukan swipe boss (Eternal Dragon ↔ Shadow King di `goBoss()`), dilarang memanggil `renderRaidHub()` karena akan menghapus-buat ulang seluruh DOM `#app` dan memicu ulang CSS `fadeIn`, membuat layar berkedip. Gunakan `syncBossDOM()` untuk memperbarui gambar, label, HP bar, attempt kristal, dan status deploy secara in-place di DOM yang sudah ada.
+- **Guard Null Array Save Baru di Toko WB (`WB_SHOP`):** Pengecekan kepemilikan item artefak/pet wajib memakai fallback guard `(state.artOwned || []).includes(...)` dan `(state.petOwned || []).includes(...)`. Akun atau save data yang baru belum memiliki array tersebut, dan pemanggilan `.includes()` langsung tanpa fallback akan melempar `TypeError` yang memutus render rak toko di item ke-4.

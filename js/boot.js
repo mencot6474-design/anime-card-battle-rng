@@ -844,6 +844,26 @@ document.addEventListener("keydown",e=>{
 /* ========== UPDATE LOG MODAL ========== */
 const GAME_CHANGELOGS = [
   {
+    version: "v1.4.6",
+    date: "27 Okt 2026",
+    title: "World Boss Hub & Toko Armory Full-Bleed & Anti-Flicker",
+    titleEn: "World Boss Hub & Armory Shop Full-Bleed & Anti-Flicker",
+    items: [
+      "Pembaruan tampilan World Boss Hub & Toko Shadow Hunter Armory menjadi 1-layar full-bleed cyberpunk tanpa batas tepi hitam kosong.",
+      "Ukuran kartu Toko World Boss diselaraskan dengan prototipe asli (lebar 300px, chamber display 145px, font terbaca jelas dan proporsional).",
+      "Perbaikan bug layar berkedip saat swipe boss (Eternal Dragon ↔ Shadow King) dengan sistem pembaruan in-place DOM tanpa refresh layar penuh.",
+      "Perbaikan crash render toko World Boss saat mengecek item artefak dan pet pada save data baru.",
+      "Standardisasi bahasa Inggris pada kategori toko, label parameter, telemetry hub, dan item Shadow Hunter Armory."
+    ],
+    itemsEn: [
+      "Overhauled World Boss Hub & Shadow Hunter Armory into a sleek full-bleed cyberpunk 1-screen matrix eliminating unused black borders.",
+      "World Boss Shop cards synchronized directly from prototype_v2.html (300px card width, 145px display chamber, crisp readable typography).",
+      "Fixed screen flicker bug when swiping/switching bosses (Eternal Dragon ↔ Shadow King) via in-place DOM synchronization.",
+      "Resolved unhandled null reference crash in World Boss shop when inspecting artifact & pet ownership on new saves.",
+      "Standardized full English localization across shop categories, parameter badges, hub telemetry, and armory supplies."
+    ]
+  },
+  {
     version: "v1.4.5",
     date: "27 Okt 2026",
     title: "Format Stat Ringkas (1k/100k) & Visual Card Polish",
