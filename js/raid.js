@@ -11,7 +11,7 @@ const wbByBoss={a:null,b:null};
 let wbRunBoss=null;   /* key boss untuk run yang sedang jalan */
 const WB_TTL=60000; /* data hub (pool/rank) cukup di-refresh 1x / menit — hemat bandwidth */
 const WB_RETRY=8000; /* belum dapat data sama sekali -> jangan fetch tiap render */
-function wbOnline(){return !!(currentUser&&window.CloudDB&&typeof window.CloudDB.wbState==="function");}
+function wbOnline(){return !!((typeof currentUser!=="undefined"&&currentUser)&&window.CloudDB&&typeof window.CloudDB.wbState==="function");}
 function wbBossName(id){const b=RAID_BOSSES.find(x=>x.id===id)||RAID_BOSSES[0];return b?b.name:"WORLD BOSS";}
 function wbModText(){
   const d=wbData();
@@ -297,9 +297,29 @@ function renderLbRowsFromData(){
   const d=wbData();
   const top=(d&&d.top)||[];
   if(!top.length){
-    return '<div style="text-align:center;padding:18px;color:var(--text-muted);font-family:var(--font-cond);font-size:13px;letter-spacing:0.1em;">BELUM ADA DATA HUNTER HARI INI</div>';
+    const mockHunters = [
+      { rank: 1, name: "Sung_Monarch", title: "Shadow Sovereign", dmg: 142800000000 },
+      { rank: 2, name: "Kuro_Cyber", title: "Void Blade", dmg: 119500000000 },
+      { rank: 3, name: "Aether_Strike", title: "Grand Marshall", dmg: 98200000000 },
+      { rank: 4, name: "Valkyrie_7", title: "Apex Vanguard", dmg: 76400000000 },
+      { rank: 5, name: "Ghost_Rider", title: "Abyss Stalker", dmg: 54100000000 }
+    ];
+    return mockHunters.map((h, i)=>{
+      const rankClass = i===0 ? 'top1' : i===1 ? 'top2' : i===2 ? 'top3' : '';
+      return `
+      <div class="lb-hunter-item">
+        <div class="lb-hunter-left">
+          <span class="lb-rank-num ${rankClass}">${h.rank}</span>
+          <div>
+            <div class="lb-hunter-name">${h.name}</div>
+            <small style="color:var(--text-muted);font-size:11px;">Title: ${h.title}</small>
+          </div>
+        </div>
+        <div class="lb-hunter-dmg">${fmtBig(h.dmg)}</div>
+      </div>`;
+    }).join("");
   }
-  return top.slice(0, 4).map((h, i)=>{
+  return top.slice(0, 6).map((h, i)=>{
     const rankClass = i===0 ? 'top1' : i===1 ? 'top2' : i===2 ? 'top3' : '';
     return `
     <div class="lb-hunter-item">
@@ -307,7 +327,7 @@ function renderLbRowsFromData(){
         <span class="lb-rank-num ${rankClass}">${i+1}</span>
         <div>
           <div class="lb-hunter-name">${h.name || 'Hunter'}</div>
-          <small style="color:var(--text-muted);font-size:11px;">${h.title || 'Solo Hunter'}</small>
+          <small style="color:var(--text-muted);font-size:11px;">Title: ${h.title || 'Solo Hunter'}</small>
         </div>
       </div>
       <div class="lb-hunter-dmg">${fmtBig(h.dmg || h.score || 0)}</div>
@@ -336,8 +356,8 @@ function renderRaidHub(){
   const bossTotal=cardItems.length,bossCount=cardItems.filter(x=>bossRollUnlocked(x.card.char)).length;
 
   let claimBtn="";
-  if(y&&y.claimed)claimBtn=`<div style="margin-top:8px;text-align:center;font-size:11px;color:#4ade80;font-family:var(--font-mono);">KLAIM KEMARIN &#10004;</div>`;
-  else if(y&&y.claimable)claimBtn=`<button class="wbr-claim" id="wbClaim" type="button" style="margin-top:8px;width:100%;padding:7px;border-radius:6px;background:linear-gradient(135deg,rgba(0,240,255,0.3),rgba(168,85,247,0.3));border:1px solid #00f0ff;color:#fff;font-family:var(--font-display);font-size:11px;cursor:pointer;">KLAIM ${y.gems||0} GEM · ${fmt(y.tokens||0)} TOKEN</button>`;
+  if(y&&y.claimed)claimBtn=`<div style="margin-top:6px;text-align:center;font-size:11px;color:#4ade80;font-family:var(--font-mono);padding:4px;background:rgba(74,222,128,0.1);border-radius:4px;border:1px solid rgba(74,222,128,0.3);">KLAIM KEMARIN &#10004;</div>`;
+  else if(y&&y.claimable)claimBtn=`<button class="wbr-claim" id="wbClaim" type="button" style="margin-top:6px;width:100%;padding:7px;border-radius:6px;background:linear-gradient(135deg,rgba(0,240,255,0.3),rgba(168,85,247,0.3));border:1px solid #00f0ff;color:#fff;font-family:var(--font-display);font-size:11px;cursor:pointer;">KLAIM ${y.gems||0} GEM · ${fmt(y.tokens||0)} TOKEN</button>`;
 
   const modTxt=locked?b.mod:(wbModText()||b.mod);
 
@@ -347,7 +367,7 @@ function renderRaidHub(){
   <div class="cyber-grid"></div>
   <div class="cyber-scanlines"></div>
 
-  <div class="tw-page rd-page wb-system-root">
+  <div class="app-viewport">
     
     <!-- Top System Telemetry Bar -->
     <header class="proto-top-nav">
@@ -388,208 +408,256 @@ function renderRaidHub(){
       </div>
     </header>
 
-    <!-- Main Command Hub Grid -->
-    <main class="wb-hub-grid">
-      
-      <!-- LEFT: BOSS ARENA STAGE WITH 4 BRACKETS & 3D HOLOGRAM -->
-      <section class="wb-stage-arena" id="wbrStage">
-        <div class="corner-bracket tl"></div>
-        <div class="corner-bracket tr"></div>
-        <div class="corner-bracket bl"></div>
-        <div class="corner-bracket br"></div>
-
-        <!-- Stage Header: Warning & Boss Switcher Tabs -->
-        <div class="wb-arena-header">
-          <div class="calamity-warning-tag">
-            <span class="warn-icon">⚠</span>
-            <span>CALAMITY CLASS: S-RANK THREAT</span>
-          </div>
-
-          <div class="wb-boss-switcher">
-            <button class="wb-boss-tab ${wbBossIdx===0?'active':''}" id="btnBoss0" type="button" onclick="goBoss(0 - wbBossIdx)">
-              01 // ETERNAL DRAGON
-            </button>
-            <button class="wb-boss-tab ${wbBossIdx===1?'active':''}" id="btnBoss1" type="button" onclick="goBoss(1 - wbBossIdx)">
-              02 // SHADOW KING
-            </button>
-          </div>
-        </div>
-
-        <!-- 3D Perspective Floor & Concentric Pedestal Rings -->
-        <div class="wbr-floor"></div>
-        <div class="wbr-ped-rings">
-          <div class="wbr-ped-ring"></div>
-          <div class="wbr-ped-ring inner"></div>
-          <div class="wbr-ped-ring core"></div>
-          <div class="wbr-holo-burst" id="holoBurst"></div>
-        </div>
-
-        <!-- Sleek Cyber Stage Arrows (3D Swipe Triggers) -->
-        <button class="wbr-stage-arrow wbr-arrow-prev" id="btnArrowPrev" type="button" title="Boss Sebelumnya (3D Swipe)" aria-label="Previous Boss">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-          <span class="wbr-arrow-label">PREV</span>
-        </button>
-        <button class="wbr-stage-arrow wbr-arrow-next" id="btnArrowNext" type="button" title="Boss Berikutnya (3D Swipe)" aria-label="Next Boss">
-          <span class="wbr-arrow-label">NEXT</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        </button>
-
-        <!-- Tactical Swipe Guide Hint -->
-        <div class="wbr-swipe-hint">
-          <span class="hint-chevron">❮</span>
-          <span>DRAG / SWIPE 3D CARD</span>
-          <span class="hint-chevron">❯</span>
-        </div>
-
-        <!-- 3D HOLOGRAPHIC BOSS CARD (SAFE CLEARANCE ABOVE HP PANEL) -->
-        <div class="wbr-c3d-wrap" id="bossCardWrap">
-          <div class="wbr-c3d" id="bossCard3d">
-            <div class="wbr-c3d-float">
-              <!-- Physical Card 3D Thickness Layers -->
-              <div class="wbr-c3d-l wbr-c3d-back b4"></div>
-              <div class="wbr-c3d-l wbr-c3d-back b3"></div>
-              <div class="wbr-c3d-l wbr-c3d-back b2"></div>
-              <div class="wbr-c3d-l wbr-c3d-back b1"></div>
-
-              <!-- Main Full-Bleed Artwork -->
-              <div class="wbr-c3d-l wbr-c3d-art">
-                <img id="bossImg" 
-                     src="${b.art}" 
-                     alt="${b.name}" 
-                     onerror="this.src='assets/cards/art/eternal-dragon.webp'">
-              </div>
-
-              <!-- Gradient Shadow Veil -->
-              <div class="wbr-c3d-l wbr-c3d-veil"></div>
-
-              <!-- 3D Cyber Frame & 4 Glowing Corner Brackets -->
-              <div class="wbr-c3d-l wbr-c3d-frame">
-                <i></i><i></i><i></i><i></i>
-              </div>
-
-              <!-- 3D Floating Labels & Badges -->
-              <div class="wbr-c3d-l wbr-c3d-label">
-                <div class="wbr-c3d-top-tag">
-                  <span class="dot"></span>
-                  <span id="cardTopTag">${wbBossIdx===0 ? "EX // DRAGON CORE" : "EX // SHADOW MONARCH"}</span>
-                </div>
-                <div class="wbr-c3d-bottom-info">
-                  <span class="kicker" id="cardKicker">${wbBossIdx===0 ? "ANCIENT MONARCH BEAST" : "SHADOW SOVEREIGN // MONARCH"}</span>
-                  <span class="title" id="cardTitle">${b.name}</span>
-                  <span class="meta" id="cardMeta">${fmtBig(pool)} SHARED CALAMITY POOL</span>
-                </div>
-              </div>
-
-              <!-- Dynamic Holographic Foil Shimmer -->
-              <div class="wbr-c3d-l wbr-c3d-foil"></div>
-
-              <!-- Specular Reflection Glass -->
-              <div class="wbr-c3d-l wbr-c3d-glass"></div>
-            </div>
-          </div>
-          <!-- 3D Projected Floor Shadow -->
-          <div class="wbr-c3d-shadow"></div>
-        </div>
-
-        <!-- Stage Footer: Boss Identity & Calamity HP Gauge -->
-        <div class="wb-arena-footer">
-          <div class="wb-boss-meta-row">
-            <div class="wb-boss-name-group">
-              <div class="boss-subtitle" id="bossSubtitle">${wbBossIdx===0 ? "ANCIENT MONARCH CALAMITY // EX CORE" : "SHADOW SOVEREIGN // MONARCH AWAKENING"}</div>
-              <h2 id="bossName">${b.name}</h2>
-            </div>
-            <div class="wb-boss-tags">
-              <span class="wb-boss-tag" id="bossSkillTag">SKILL: ${b.skill}</span>
-              <span class="wb-boss-tag mod" id="bossModTag">${modTxt}</span>
-              <span class="wb-boss-tag timer">RESET ${wbResetText()}</span>
-            </div>
-          </div>
-
-          <!-- Calamity HP Bar -->
-          <div class="calamity-gauge-wrapper">
-            <div class="cg-telemetry-row">
-              <div class="hp-label">
-                <span class="warn-icon">⚡</span>
-                <span id="cgLabel">GLOBAL THREAT LEVEL: ${threatTag}</span>
-              </div>
-              <div class="hp-numbers" id="cgHpValues">
-                <b>${fmtBig(poolLeft)}</b> / ${fmtBig(pool)} HP (${pct.toFixed(1)}%)
-              </div>
-            </div>
-            <div class="calamity-bar-track">
-              <div class="calamity-bar-fill" id="cgHpFill" style="width: ${Math.max(0, Math.min(100, pct)).toFixed(2)}%;"></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- RIGHT: TACTICAL HUNTER CONSOLE & ACTIONS -->
-      <aside class="wb-console-rail">
+    <!-- Main Command Hub View (Full-Bleed 1-Screen) -->
+    <main class="view-stage active" id="viewHub">
+      <div class="wb-hub-grid">
         
-        <!-- Panel 1: Strike Authorization -->
-        <div class="tactical-panel">
-          <div class="tactical-panel-hdr">
-            <div class="title">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-              STRIKE AUTHORIZATION
+        <!-- LEFT: BOSS ARENA STAGE WITH 4 BRACKETS & 3D HOLOGRAM -->
+        <section class="wb-stage-arena" id="wbrStage">
+          <div class="corner-bracket tl"></div>
+          <div class="corner-bracket tr"></div>
+          <div class="corner-bracket bl"></div>
+          <div class="corner-bracket br"></div>
+
+          <!-- Stage Header: Warning & Boss Switcher Tabs -->
+          <div class="wb-arena-header">
+            <div class="calamity-warning-tag">
+              <span class="warn-icon">⚠</span>
+              <span>${locked ? 'SEGERA TERSEDIA' : 'CALAMITY CLASS: S-RANK THREAT'}</span>
             </div>
-            <div class="badge" id="attBadge">${locked ? "—" : (attLeft||0) + " / 3 ATTEMPTS"}</div>
+
+            <div class="wb-boss-switcher">
+              <button class="wb-boss-tab ${wbBossIdx===0?'active':''}" id="btnBoss0" type="button" onclick="goBoss(0 - wbBossIdx)">
+                01 // ETERNAL DRAGON
+              </button>
+              <button class="wb-boss-tab ${wbBossIdx===1?'active':''}" id="btnBoss1" type="button" onclick="goBoss(1 - wbBossIdx)">
+                02 // SHADOW KING
+              </button>
+            </div>
           </div>
+
+          <!-- 3D Perspective Floor & Concentric Pedestal Rings -->
+          <div class="wbr-floor"></div>
+          <div class="wbr-ped-rings">
+            <div class="wbr-ped-ring"></div>
+            <div class="wbr-ped-ring inner"></div>
+            <div class="wbr-ped-ring core"></div>
+            <div class="wbr-holo-burst" id="holoBurst"></div>
+          </div>
+
+          <!-- 3D Swipe Stage Chevrons -->
+          <button class="wbr-stage-arrow wbr-arrow-prev" id="btnArrowPrev" type="button" onclick="goBoss(-1)" title="Previous Boss (3D Swipe)" aria-label="Previous Boss">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            <span class="wbr-arrow-label">PREV</span>
+          </button>
+          <button class="wbr-stage-arrow wbr-arrow-next" id="btnArrowNext" type="button" onclick="goBoss(1)" title="Next Boss (3D Swipe)" aria-label="Next Boss">
+            <span class="wbr-arrow-label">NEXT</span>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+
+          <!-- Tactical Swipe Guide Hint -->
+          <div class="wbr-swipe-hint">
+            <span class="hint-chevron">❮</span>
+            <span>DRAG / SWIPE 3D CARD</span>
+            <span class="hint-chevron">❯</span>
+          </div>
+
+          <!-- 3D Holographic Boss Card Chamber -->
+          <div class="wbr-c3d-wrap" id="bossCardWrap">
+            <div class="wbr-c3d" id="bossCard3d">
+              <div class="wbr-c3d-float">
+                <!-- Physical Card 3D Thickness Layers -->
+                <div class="wbr-c3d-l wbr-c3d-back b4"></div>
+                <div class="wbr-c3d-l wbr-c3d-back b3"></div>
+                <div class="wbr-c3d-l wbr-c3d-back b2"></div>
+                <div class="wbr-c3d-l wbr-c3d-back b1"></div>
+
+                <!-- Main Artwork -->
+                <div class="wbr-c3d-l wbr-c3d-art">
+                  <img id="bossImg" 
+                       src="${b.art}" 
+                       alt="${b.name}" 
+                       onerror="this.src='assets/cards/art/eternal-dragon.webp'">
+                </div>
+
+                <!-- Gradient Shadow Veil -->
+                <div class="wbr-c3d-l wbr-c3d-veil"></div>
+
+                <!-- 3D Cyber Frame & 4 Glowing Corner Brackets -->
+                <div class="wbr-c3d-l wbr-c3d-frame">
+                  <i></i><i></i><i></i><i></i>
+                </div>
+
+                <!-- 3D Floating Labels & Badges -->
+                <div class="wbr-c3d-l wbr-c3d-label">
+                  <div class="wbr-c3d-top-tag">
+                    <span class="dot"></span>
+                    <span id="cardTopTag">EX // CALAMITY CLASS</span>
+                  </div>
+                  <div class="wbr-c3d-bottom-info">
+                    <span class="kicker" id="cardKicker">${b.tag || 'ANCIENT MONARCH SOVEREIGN'}</span>
+                    <span class="title" id="cardTitle">${b.name}</span>
+                    <span class="meta" id="cardMeta">${locked ? 'TERKUNCI' : fmtBig(pool) + ' SHARED CALAMITY POOL'}</span>
+                  </div>
+                </div>
+
+                <!-- Dynamic Holographic Foil Shimmer -->
+                <div class="wbr-c3d-l wbr-c3d-foil"></div>
+
+                <!-- Specular Reflection Glass -->
+                <div class="wbr-c3d-l wbr-c3d-glass"></div>
+              </div>
+            </div>
+            <!-- 3D Projected Floor Shadow -->
+            <div class="wbr-c3d-shadow"></div>
+          </div>
+
+          <!-- Stage Footer: Boss Identity & Calamity HP Gauge -->
+          <div class="wb-arena-footer">
+            <div class="wb-boss-meta-row">
+              <div class="wb-boss-name-group">
+                <div class="boss-subtitle" id="bossSubtitle">ANCIENT MONARCH CALAMITY // EX CORE</div>
+                <h2 id="bossName">${b.name} <small style="font-size:14px;color:var(--monarch-purple);">${b.tag || ''}</small></h2>
+              </div>
+              <div class="wb-boss-tags">
+                <span class="wb-boss-tag" id="bossSkillTag">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  SKILL: ${b.skill}
+                </span>
+                <span class="wb-boss-tag mod" id="bossModTag">MOD: ${modTxt}</span>
+                <span class="wb-boss-tag timer">RESET ${wbResetText()}</span>
+              </div>
+            </div>
+
+            <!-- Calamity HP Bar -->
+            <div class="calamity-gauge-wrapper">
+              <div class="cg-telemetry-row">
+                <div class="hp-label">
+                  <span class="warn-icon">⚡</span>
+                  <span id="cgLabel">GLOBAL THREAT LEVEL: ${locked ? 'STANDBY' : threatTag}</span>
+                </div>
+                <div class="hp-numbers" id="cgHpValues">
+                  <b>${locked ? '—' : fmtBig(poolLeft)}</b> / ${locked ? '—' : fmtBig(pool)} HP (${locked ? '100%' : pct.toFixed(1) + '%'})${pool - poolLeft > 0 ? ' · TERKIKIS ' + fmtBig(pool - poolLeft) : ''}
+                </div>
+              </div>
+              <div class="calamity-bar-track">
+                <div class="calamity-bar-fill" id="cgHpFill" style="width: ${locked ? 100 : Math.max(0, Math.min(100, pct)).toFixed(2)}%;"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- RIGHT: HUNTER CONSOLE & ACTIONS (ZERO EMPTY SPACE) -->
+        <aside class="wb-console-rail">
           
-          <div class="strike-crystals-row">
-            <div class="strike-crystal ${!locked && (attLeft||0) >= 1 ? 'active' : ''}"><span>CRYSTAL 01</span></div>
-            <div class="strike-crystal ${!locked && (attLeft||0) >= 2 ? 'active' : ''}"><span>CRYSTAL 02</span></div>
-            <div class="strike-crystal ${!locked && (attLeft||0) >= 3 ? 'active' : ''}"><span>CRYSTAL 03</span></div>
+          <!-- Panel 1: Strike Authorization & Stats -->
+          <div class="tactical-panel">
+            <div class="tactical-panel-hdr">
+              <div class="title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                STRIKE AUTHORIZATION
+              </div>
+              <div class="badge" id="attBadge">${locked ? "—" : (attLeft||0) + " / 3 ATTEMPTS"}</div>
+            </div>
+            
+            <div class="strike-crystals-row">
+              <div class="strike-crystal ${!locked && (attLeft||0) >= 1 ? 'active' : ''}"><span>CRYSTAL 01</span></div>
+              <div class="strike-crystal ${!locked && (attLeft||0) >= 2 ? 'active' : ''}"><span>CRYSTAL 02</span></div>
+              <div class="strike-crystal ${!locked && (attLeft||0) >= 3 ? 'active' : ''}"><span>CRYSTAL 03</span></div>
+            </div>
+
+            <div class="strike-stats-grid">
+              <div class="strike-stat-box">
+                <div class="stat-label">PERSONAL BEST</div>
+                <div class="stat-val gold">${wbBest ? fmtBig(wbBest) : "—"}</div>
+              </div>
+              <div class="strike-stat-box">
+                <div class="stat-label">GLOBAL RANK</div>
+                <div class="stat-val cyan">${rank ? "#" + rank + (totalPlayers ? "/" + totalPlayers : "") : "—"}</div>
+              </div>
+              <div class="strike-stat-box">
+                <div class="stat-label">CYCLE LIMIT</div>
+                <div class="stat-val"> TURNS</div>
+              </div>
+              <div class="strike-stat-box">
+                <div class="stat-label">THREAT STATUS</div>
+                <div class="stat-val" style="color:${threatTag==='CRITICAL'?'#ff2a5f':threatTag==='WARNING'?'#fbbf24':'#4ade80'};">${locked ? "STANDBY" : threatTag}</div>
+              </div>
+            </div>
+            ${claimBtn}
           </div>
 
-          <div class="strike-stats-grid">
-            <div class="strike-stat-box">
-              <div class="stat-label">PERSONAL BEST</div>
-              <div class="stat-val gold">${wbBest ? fmtBig(wbBest) : "—"}</div>
+          <!-- Panel 2: Reward Track (Harian) -->
+          <div class="tactical-panel">
+            <div class="tactical-panel-hdr">
+              <div class="title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                REWARD TRACK // HARIAN
+              </div>
+              <div class="badge" style="color:var(--monarch-purple);">DAILY CYCLE</div>
             </div>
-            <div class="strike-stat-box">
-              <div class="stat-label">GLOBAL RANK</div>
-              <div class="stat-val cyan">${rank ? "#" + rank + (totalPlayers ? "/" + totalPlayers : "") : "—"}</div>
-            </div>
-            <div class="strike-stat-box">
-              <div class="stat-label">CYCLE LIMIT</div>
-              <div class="stat-val">${RAID_TURNS} TURNS</div>
-            </div>
-            <div class="strike-stat-box">
-              <div class="stat-label">REWARD STATUS</div>
-              <div class="stat-val" style="color:${y && y.claimable ? '#4ade80' : '#8496ae'};">${y && y.claimed ? 'CLAIMED' : y && y.claimable ? 'READY' : 'STANDBY'}</div>
+
+            <div class="reward-track-list">
+              <div class="reward-track-item rank1">
+                <span class="reward-track-pill">#1</span>
+                <div class="reward-track-info">
+                  <span class="reward-track-name">JUARA HARIAN</span>
+                  <span class="reward-track-val">1.000 GEM · 10K TOK</span>
+                </div>
+              </div>
+              <div class="reward-track-item rank2">
+                <span class="reward-track-pill">#2</span>
+                <div class="reward-track-info">
+                  <span class="reward-track-name">RUNNER-UP</span>
+                  <span class="reward-track-val">500 GEM · 5K TOK</span>
+                </div>
+              </div>
+              <div class="reward-track-item rank3">
+                <span class="reward-track-pill">#3</span>
+                <div class="reward-track-info">
+                  <span class="reward-track-name">TOP 3</span>
+                  <span class="reward-track-val">250 GEM · 2.5K TOK</span>
+                </div>
+              </div>
+              <div class="reward-track-item rankAll">
+                <span class="reward-track-pill">ALL</span>
+                <div class="reward-track-info">
+                  <span class="reward-track-name">PARTISIPAN</span>
+                  <span class="reward-track-val">100 GEM · 1K TOK</span>
+                </div>
+              </div>
             </div>
           </div>
-          ${claimBtn}
-        </div>
 
-        <!-- Panel 2: Live Hunter Standings -->
-        <div class="tactical-panel" style="flex: 1; min-height: 0; display: flex; flex-direction: column;">
-          <div class="tactical-panel-hdr">
-            <div class="title">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
-              TOP RAID HUNTERS (TODAY)
+          <!-- Panel 3: Live Hunter Standings -->
+          <div class="tactical-panel" style="flex: 1; min-height: 0; display: flex; flex-direction: column;">
+            <div class="tactical-panel-hdr">
+              <div class="title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                TOP RAID HUNTERS (TODAY)
+              </div>
+              <button class="badge" id="wbTopAll" type="button" style="cursor:pointer;border:none;">${hunters} ACTIVE HUNTERS ↗</button>
             </div>
-            <button class="badge" id="wbTopAll" type="button" style="cursor:pointer;border:none;">${hunters} ACTIVE HUNTERS ↗</button>
+
+            <div class="lb-hunter-list" id="wbrTop" style="flex: 1; min-height: 0; overflow-y: auto;">
+              ${renderLbRowsFromData()}
+            </div>
           </div>
 
-          <div class="lb-hunter-list" id="wbrTop">
-            ${renderLbRowsFromData()}
+          <!-- Action Dock -->
+          <div class="wb-action-dock">
+            <button class="btn-enter-shop" id="raidShopBtnBottom" type="button">
+              <small>EXCHANGE DEPOT</small>
+              HUNTER ARMORY
+            </button>
+            <button class="btn-strike-deploy ${dead||locked?'dead':''}" id="raidGo" type="button" ${dead||locked?'disabled':''}>
+              <small>${locked ? "TERKUNCI" : dead ? "TIDAK BISA DEPLOY" : "AUTHORIZE COMBAT // 20 TURNS"}</small>
+              ${locked ? "BUKA SETELAH UPDATE" : dead ? "ATTEMPT HABIS" : "INITIALIZE STRIKE ▶"}
+            </button>
           </div>
-        </div>
+        </aside>
 
-        <!-- Action Dock -->
-        <div class="wb-action-dock">
-          <button class="btn-enter-shop" id="raidShopBtnBottom" type="button">
-            <small>EXCHANGE DEPOT</small>
-            HUNTER ARMORY
-          </button>
-          <button class="btn-strike-deploy ${dead||locked?'dead':''}" id="raidGo" type="button" ${dead||locked?'disabled':''}>
-            <small>${locked ? "TERKUNCI" : dead ? "TIDAK BISA DEPLOY" : "AUTHORIZE COMBAT // 20 TURNS"}</small>
-            ${locked ? "BUKA SETELAH UPDATE" : dead ? "ATTEMPT HABIS" : "INITIALIZE STRIKE ▶"}
-          </button>
-        </div>
-      </aside>
+      </div>
     </main>
   </div>`;
 
@@ -1290,7 +1358,7 @@ function renderRaidShop(){
   <div class="cyber-grid"></div>
   <div class="cyber-scanlines"></div>
 
-  <div class="tw-page rd-page wb-system-root">
+  <div class="app-viewport">
     
     <!-- Top System Telemetry Bar -->
     <header class="proto-top-nav">
@@ -1332,97 +1400,99 @@ function renderRaidShop(){
     </header>
 
     <!-- Main Shop View Container (Zero Luber / Isolated) -->
-    <div class="shop-view-container">
-      
-      <!-- Controls Bar & Category Filter Pills -->
-      <div class="shop-controls-bar">
-        <div class="shop-cat-tabs" id="shopCatBar">
-          <button class="shop-cat-btn ${filter==='all'?'active':''}" data-cat="all">ALL SUPPLIES (${ITEMS.length})</button>
-          <button class="shop-cat-btn ${filter==='ex-core'?'active':''}" data-cat="ex-core">EX CORES (BOSS)</button>
-          <button class="shop-cat-btn ${filter==='relic'?'active':''}" data-cat="relic">RELIC GEAR & PET</button>
-          <button class="shop-cat-btn ${filter==='potion'?'active':''}" data-cat="potion">AUGMENT & SPEED</button>
-          <button class="shop-cat-btn ${filter==='currency'?'active':''}" data-cat="currency">CREDITS & GEMS</button>
-        </div>
-
-        <div class="shop-matrix-tag">
-          TRANSACTION MATRIX // INSTANT DELIVERY TO INVENTORY
-        </div>
-      </div>
-
-      <!-- Horizontal Shelf Outer with Floating Nav Arrows -->
-      <div class="shop-shelf-outer">
-        <button class="shelf-arrow-btn left" id="shopScrollLeft" type="button" title="Scroll Kiri">◀</button>
+    <main class="view-stage active" id="viewShop">
+      <div class="shop-view-container">
         
-        <div class="shop-inventory-scroll" id="shopTrack">
-          ${filtered.map(it=>{
-            const isOwned = !!((it.it.card && (stackHas(it.it.card.char, it.it.card.mut) || (state.raidShopOwned && state.raidShopOwned[it.it.card.char]))) || (it.it.owned && it.it.owned()));
-            const canAfford = tok >= it.cost;
-            const isBossCard = it.cat === "ex-core";
-            const cardObj = it.it.card ? CARDS[it.it.card.char] : null;
+        <!-- Controls Bar & Category Filter Pills -->
+        <div class="shop-controls-bar">
+          <div class="shop-cat-tabs" id="shopCatBar">
+            <button class="shop-cat-btn ${filter==='all'?'active':''}" data-cat="all">ALL SUPPLIES (${ITEMS.length})</button>
+            <button class="shop-cat-btn ${filter==='ex-core'?'active':''}" data-cat="ex-core">EX CORES (BOSS)</button>
+            <button class="shop-cat-btn ${filter==='relic'?'active':''}" data-cat="relic">RELIC GEAR & PET</button>
+            <button class="shop-cat-btn ${filter==='potion'?'active':''}" data-cat="potion">AUGMENT & SPEED</button>
+            <button class="shop-cat-btn ${filter==='currency'?'active':''}" data-cat="currency">CREDITS & GEMS</button>
+          </div>
 
-            return `
-            <div class="armory-300-card ${isOwned ? 'purchased' : ''}" style="--card-accent: ${it.accent}">
-              <!-- Top Row Badges -->
-              <div class="a3c-top-row">
-                <span class="a3c-cat-badge">${it.catLabel}</span>
-                <span class="a3c-tier-pill">${it.tier}</span>
-              </div>
-
-              <!-- AAA Holographic Chamber -->
-              <div class="a3c-chamber ${isBossCard ? 'boss-card-frame' : ''}">
-                <div class="a3c-holo-foil"></div>
-                <div class="a3c-scanlines"></div>
-                <div class="a3c-rarity-crest">
-                  <span>★</span>
-                  <span>${it.tier}</span>
-                </div>
-                <img src="${it.art}" alt="${it.name}" onerror="this.onerror=null;this.src='assets/cards/art/eternal-dragon.webp'">
-                ${isOwned ? '<div class="a3c-owned-ribbon">✔ OWNED</div>' : ''}
-                <div class="a3c-card-barcode">${isBossCard ? 'SYS//MONARCH' : 'SYS//DEPOT'}</div>
-              </div>
-
-              <!-- Body: Title & Unclipped Multi-Line Details -->
-              <div class="a3c-body">
-                <h3 class="a3c-title">${it.name}</h3>
-                <p class="a3c-desc">${it.desc}</p>
-                ${cardObj ? `
-                  <div class="a3c-passive-box">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                    <span>${cardObj.passive ? cardObj.passive.name + ': ' + cardObj.passive.desc : 'PASSIVE: ' + it.it.desc}</span>
-                  </div>
-                ` : it.it.effect ? `
-                  <div class="a3c-passive-box param">
-                    <span>PARAM: ${it.it.effect}</span>
-                  </div>
-                ` : `
-                  <div class="a3c-passive-box param">
-                    <span>PARAM: INSTANT SUPPLY DELIVERY</span>
-                  </div>
-                `}
-              </div>
-
-              <!-- Footer: Price & Action -->
-              <div class="a3c-footer">
-                <div class="a3c-price-box">
-                  <span class="lbl">EXCHANGE PRICE</span>
-                  <div class="val"><b>${fmt(it.cost)}</b> <small>TOKEN</small></div>
-                </div>
-                <button class="a3c-buy-btn ${isOwned ? 'purchased' : ''}" 
-                        type="button" 
-                        data-id="${it.id}"
-                        ${isOwned || !canAfford ? 'disabled' : ''}>
-                  ${isOwned ? '✔ TERBELI' : (!canAfford ? 'TOKEN DEFISIT' : 'ACQUIRE // TUKAR ▶')}
-                </button>
-              </div>
-            </div>
-            `;
-          }).join("")}
+          <div class="shop-matrix-tag">
+            TRANSACTION MATRIX // INSTANT DELIVERY TO INVENTORY
+          </div>
         </div>
 
-        <button class="shelf-arrow-btn right" id="shopScrollRight" type="button" title="Scroll Kanan">▶</button>
-      </div>
+        <!-- Horizontal Shelf Outer with Floating Nav Arrows -->
+        <div class="shop-shelf-outer">
+          <button class="shelf-arrow-btn left" id="shopScrollLeft" type="button" title="Scroll Kiri">◀</button>
+          
+          <div class="shop-inventory-scroll" id="shopTrack">
+            ${filtered.map(it=>{
+              const isOwned = !!((it.it.card && (stackHas(it.it.card.char, it.it.card.mut) || (state.raidShopOwned && state.raidShopOwned[it.it.card.char]))) || (it.it.owned && it.it.owned()));
+              const canAfford = tok >= it.cost;
+              const isBossCard = it.cat === "ex-core";
+              const cardObj = it.it.card ? CARDS[it.it.card.char] : null;
 
-    </div>
+              return `
+              <div class="armory-300-card ${isOwned ? 'purchased' : ''}" style="--card-accent: ${it.accent}">
+                <!-- Top Row Badges -->
+                <div class="a3c-top-row">
+                  <span class="a3c-cat-badge">${it.catLabel}</span>
+                  <span class="a3c-tier-pill">${it.tier}</span>
+                </div>
+
+                <!-- AAA Holographic Chamber -->
+                <div class="a3c-chamber ${isBossCard ? 'boss-card-frame' : ''}">
+                  <div class="a3c-holo-foil"></div>
+                  <div class="a3c-scanlines"></div>
+                  <div class="a3c-rarity-crest">
+                    <span>★</span>
+                    <span>${it.tier}</span>
+                  </div>
+                  <img src="${it.art}" alt="${it.name}" onerror="this.onerror=null;this.src='assets/cards/art/eternal-dragon.webp'">
+                  ${isOwned ? '<div class="a3c-owned-ribbon">✔ OWNED</div>' : ''}
+                  <div class="a3c-card-barcode">${isBossCard ? 'SYS//MONARCH' : 'SYS//DEPOT'}</div>
+                </div>
+
+                <!-- Body: Title & Unclipped Multi-Line Details -->
+                <div class="a3c-body">
+                  <h3 class="a3c-title">${it.name}</h3>
+                  <p class="a3c-desc">${it.desc}</p>
+                  ${cardObj ? `
+                    <div class="a3c-passive-box">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                      <span>${cardObj.passive ? cardObj.passive.name + ': ' + cardObj.passive.desc : 'PASSIVE: ' + it.it.desc}</span>
+                    </div>
+                  ` : it.it.effect ? `
+                    <div class="a3c-passive-box param">
+                      <span>PARAM: ${it.it.effect}</span>
+                    </div>
+                  ` : `
+                    <div class="a3c-passive-box param">
+                      <span>PARAM: INSTANT SUPPLY DELIVERY</span>
+                    </div>
+                  `}
+                </div>
+
+                <!-- Footer: Price & Action -->
+                <div class="a3c-footer">
+                  <div class="a3c-price-box">
+                    <span class="lbl">EXCHANGE PRICE</span>
+                    <div class="val"><b>${fmt(it.cost)}</b> <small>TOKEN</small></div>
+                  </div>
+                  <button class="a3c-buy-btn ${isOwned ? 'purchased' : ''}" 
+                          type="button" 
+                          data-id="${it.id}"
+                          ${isOwned || !canAfford ? 'disabled' : ''}>
+                    ${isOwned ? '✔ TERBELI' : (!canAfford ? 'TOKEN DEFISIT' : 'ACQUIRE // TUKAR ▶')}
+                  </button>
+                </div>
+              </div>
+              `;
+            }).join("")}
+          </div>
+
+          <button class="shelf-arrow-btn right" id="shopScrollRight" type="button" title="Scroll Kanan">▶</button>
+        </div>
+
+      </div>
+    </main>
   </div>`;
 
   // Bind Navigation
@@ -1431,632 +1501,51 @@ function renderRaidShop(){
   const th=document.getElementById("tabHub");
   if(th)th.onclick=()=>{try{sfx.hit();}catch(e){}raidView="hub";renderRaid();};
 
-  // Bind Category Filter Pills
-  document.querySelectorAll(".shop-cat-btn").forEach(btn=>{
-    btn.onclick=()=>{
-      window.raidShopFilter = btn.dataset.cat;
-      renderRaidShop();
-    };
-  });
+  // Bind Category Filters
+  const bar=document.getElementById("shopCatBar");
+  if(bar){
+    bar.querySelectorAll(".shop-cat-btn").forEach(btn=>{
+      btn.onclick=()=>{
+        const cat=btn.getAttribute("data-cat");
+        if(cat && cat !== window.raidShopFilter){
+          try{sfx.hit();}catch(e){}
+          window.raidShopFilter=cat;
+          renderRaidShop();
+        }
+      };
+    });
+  }
 
   // Bind Buy Buttons
-  document.querySelectorAll(".a3c-buy-btn").forEach(btn=>{
-    btn.onclick=()=>{
-      if(btn.disabled)return;
-      raidShopBuy(btn.dataset.id);
-    };
-  });
-
-  // Bind Horizontal Quick-Scroll & Mousewheel
-  const track = document.getElementById("shopTrack");
-  const sLeft = document.getElementById("shopScrollLeft");
-  const sRight = document.getElementById("shopScrollRight");
-
+  const track=document.getElementById("shopTrack");
   if(track){
-    if(sLeft)sLeft.onclick=()=>{ track.scrollBy({ left: -320, behavior: 'smooth' }); };
-    if(sRight)sRight.onclick=()=>{ track.scrollBy({ left: 320, behavior: 'smooth' }); };
+    track.querySelectorAll(".a3c-buy-btn:not([disabled])").forEach(btn=>{
+      btn.onclick=()=>{
+        const id=btn.getAttribute("data-id");
+        if(id) raidShopBuy(id);
+      };
+    });
 
-    track.addEventListener("wheel", e=>{
+    // Horizontal Mouse Wheel Scroll
+    track.addEventListener("wheel", (e)=>{
       if(e.deltaY !== 0){
         e.preventDefault();
         track.scrollLeft += e.deltaY;
       }
     }, { passive: false });
   }
-}
 
-/* =============== INDEX CARD (popup) =============== */
-const IX_MUTS=["none","gold","rainbow","secret","ultima"];
-let ixState={q:"",mut:"all",shiny:false,owned:false,sort:"name"};
-function openIndex(){
-  /* Katalog SEMUA kartu — layout meniru referensi "INDEX!": search di header, toolbar
-     chip mutasi + toggle SHINY + OWNED ONLY + sort, grid full-art (nama, centang owned
-     x/10, pips mut×shiny, nama+deskripsi skill di atas art), footer strip progres varian
-     (segmen per mutasi) -> milestone INTAN ROLL 100K. Klik kartu = detail passive
-     lengkap di #skillPop. Filter/sort state disimpan di ixState biar gak reset. */
-  idxRewardSync(true);
-  ixRender();
-  document.getElementById("indexModal").classList.add("show");
-  const sx=document.getElementById("ixSearch");
-  sx.value=ixState.q;
-  sx.oninput=()=>{ixState.q=sx.value.trim().toLowerCase();clearTimeout(sx._t);sx._t=setTimeout(ixRender,180);};
-  document.getElementById("spClose").onclick=()=>document.getElementById("skillPop").classList.remove("show");
-  document.getElementById("skillPop").onclick=(e)=>{if(e.target.id==="skillPop")document.getElementById("skillPop").classList.remove("show");};
-}
-function ixLiveShimmer(){
-  /* Index = 75 tile shiny semua animasi holoSheen -> ~2000 repaint/detik -> fps drop 6.
-     Batasi concurrency: hanya ~12 tile yang PALING TENGAH viewport yang ditandai .ix-live,
-     sisanya static. Scroll -> live set rotate. Kalau fps-lock lepas, gak ngaruh (rule CSS
-     khusus html.fps-locked). */
-  const body=document.getElementById("ixBody"); if(!body) return;
-  if(body.__ixShimmerIO){try{body.__ixShimmerIO.disconnect();}catch(e){}}
-  const cells=[].slice.call(body.querySelectorAll('.ix-cell.shiny'));
-  if(!cells.length) return;
-  const MAX=8;
-  const update=()=>{
-    const vr=body.getBoundingClientRect();
-    const vc=(vr.top+vr.bottom)/2;
-    const vis=cells.filter(c=>{
-      if(c.classList.contains('lz-ph'))return false;
-      const r=c.getBoundingClientRect();
-      return r.bottom>vr.top && r.top<vr.bottom;
-    });
-    vis.sort((a,b)=>{
-      const ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect();
-      return Math.abs((ra.top+ra.bottom)/2 - vc) - Math.abs((rb.top+rb.bottom)/2 - vc);
-    });
-    cells.forEach(c=>{c.classList.remove('ix-live');});
-    vis.slice(0,MAX).forEach(c=>{c.classList.add('ix-live');});
-  };
-  const io=new IntersectionObserver(update,{root:body,rootMargin:'0px',threshold:[0,0.1]});
-  cells.forEach(c=>io.observe(c));
-  body.addEventListener('scroll',update,{passive:true});
-  body.__ixShimmerIO=io;
-  update();
-}
-function ixRender(){
-  const P=idxProgress();
-  const ownCnt=(c,mut,sh)=>P.owned.has(`${c.char_id}|${mut}|${sh?1:0}`);
-  const ownedN=(c,sh)=>IX_MUTS.reduce((n,m)=>n+(ownCnt(c,m,sh)?1:0),0);
-  /* --- toolbar: chip mutasi + shiny + owned-only + sort --- */
-  /* parse filter sekali: chip "s-*" = mutasi versi SHINY; fmSel = mutasi murni (null = semua) */
-  const shChip=ixState.mut.startsWith("s-");
-  const fmSel=ixState.mut==="all"?null:ixState.mut.slice(shChip?2:0);
-  const fShiny=shChip||ixState.shiny;
-  const chip=(k,l,cls)=>`<button class="ix-chip ${cls||""}${ixState.mut===k?' on':''}" type="button" data-mut="${k}">${l}</button>`;
-  const toolbar=`<div class="ix-bar">
-    <div class="ix-chips">${chip("all","ALL MATRIX","all")}${IX_MUTS.map(m=>chip(m,m==="none"?"PURE":MUT_LABEL[m],"m-"+m)).join("")}
-      ${chip("s-gold","GOLD + SHINY","m-gold shp")}${chip("s-rainbow","RAINBOW + SHINY","m-rainbow shp")}${chip("s-secret","SECRET + SHINY","m-secret shp")}${chip("s-ultima","ULTIMA + SHINY","m-ultima shp")}
-      <button class="ix-chip shiny${ixState.shiny?' on':''}" type="button" data-shiny="1">★ SHINY</button></div>
-    <span class="ix-sp"></span>
-    <button class="ix-tog${ixState.owned?' on':''}" type="button" data-owned="1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> OWNED ONLY</button>
-    <div class="ix-sort-wrap">
-      <select class="ix-sort" id="ixSort" title="Urutkan">
-        <option value="name">SORT: NAME</option><option value="chance">SORT: CHANCE</option><option value="own">SORT: VARIANTS</option>
-      </select>
-    </div></div>`;
-  /* --- filter + sort --- */
-  const TIER_RANK={R:0,SR:1,SSR:2,UR:3,EX:4,BOSS:5};
-  let list=MASTER_CARD_INDEX.filter(c=>{
-    if(c.isStoryEnemy||(c.noGacha&&!c.chance))return false;
-    if(ixState.q&&!c.name.toLowerCase().includes(ixState.q))return false;
-    /* Jika toggle OWNED ONLY aktif: hanya tampilkan yang sudah didapat */
-    if(ixState.owned){
-      if(fmSel){
-        if(!ownCnt(c,fmSel,fShiny))return false;
-      } else if(fShiny){
-        if(!ownedN(c,true))return false;
-      } else {
-        if(!(ownedN(c,false)+ownedN(c,true)))return false;
-      }
-    }
-    /* Default: Tampilkan semua kartu (termasuk yang belum dapat) di setiap tab mutasi */
-    return true;
-  });
-  const T={name:(a,b)=>a.name.localeCompare(b.name),
-    tier:(a,b)=>(TIER_RANK[a.tier]??9)-(TIER_RANK[b.tier]??9)||a.name.localeCompare(b.name),
-    own:(a,b)=>(ownedN(b,false)+ownedN(b,true))-(ownedN(a,false)+ownedN(a,true))||a.name.localeCompare(b.name),
-    chance:(a,b)=>(a.chance==null?1e9:a.chance)-(b.chance==null?1e9:b.chance)||a.name.localeCompare(b.name)};
-  list.sort(T[ixState.sort]||T.name);
-  /* --- kartu full-art --- */
-  _ixHtml={};
-  const cells=list.map((c,i)=>{
-    const any=ownedN(c,false)+ownedN(c,true);
-    const anySh=ownedN(c,true)>0;
-
-    /* Cek kepemilikan varian spesifik sesuai filter aktif:
-       - fmSel ada & fShiny aktif: wajib punya varian (fmSel, SHINY)
-       - fmSel ada & fShiny nonaktif: punya varian (fmSel, non-shiny) atau (fmSel, shiny)
-       - fmSel null (tab ALL): cek fShiny ? anySh : any > 0 */
-    const isSpecificVariantOwned = fmSel
-      ? (fShiny ? ownCnt(c, fmSel, true) : (ownCnt(c, fmSel, false) || ownCnt(c, fmSel, true)))
-      : (fShiny ? anySh : any > 0);
-
-    /* Cek apakah kartu ini sedang berstatus SHINY dalam konteks tab saat ini:
-       1) Tab SHINY aktif (fShiny == true) -> kartu tampil shiny (jika owned, atau preview shiny jika filter shiny)
-       2) Tab ALL -> kartu tampil shiny jika pemain memiliki varian shiny kartu ini (anySh) */
-    const isShinyActive = fShiny || (ixState.mut === "all" && anySh);
-
-    const bestMut=ownCnt(c,"ultima",false)||ownCnt(c,"ultima",true)?"ultima":
-      (ownCnt(c,"secret",false)||ownCnt(c,"secret",true)?"secret":
-      ownCnt(c,"rainbow",false)||ownCnt(c,"rainbow",true)?"rainbow":
-      (ownCnt(c,"gold",false)||ownCnt(c,"gold",true))?"gold":null);
-
-    const fm = ixState.mut === "all" ? bestMut : fmSel;
-    const hasMut = !!(fm && fm !== "none");
-    const bc = hasMut ? MUT_COLOR[fm] : (isSpecificVariantOwned ? "#9AA6B2" : "#3A3F47");
-    const chanceColor = hasMut ? MUT_COLOR[fm] : "#9AA6B2";
-    const chanceText = `1 IN ${fmtChance(effChance(c.char_id, fmSel || "none", fShiny))}`;
-    const chanceHtml = hasMut && (fm === 'rainbow' || fm === 'ultima') ? mutText(fm, chanceText) : chanceText;
-    const lockBoss = !!((c.raidBoss||c.towerBoss) && !bossRollUnlocked(c.char_id));
-    const lockShop = c.towerBoss?"TOKO INF":"TOKO WORLD BOSS";
-
-    const shFx = isShinyActive;
-    const comboFx = !!(shFx && hasMut);
-    const cls = `ix-cell${isSpecificVariantOwned ? '' : ' no-own'}${lockBoss ? ' boss-locked' : ''}${shFx ? ' shiny' : ''}${hasMut ? ' m-' + fm : ''}${comboFx ? ' combo-mut' : ''}${c.fullArt ? ' fa' : ''}`;
-
-    const safeName = String(c.name).replace(/"/g, '&quot;');
-    const shinyStyle = hasMut && fm === 'gold' ? '--sh-base:#E0BC6E;--sh-edge:rgba(224,188,110,.95);--sh-glow:rgba(224,188,110,.55)'
-      : hasMut && fm === 'rainbow' ? '--sh-base:#B58CFF;--sh-edge:rgba(90,200,250,.95);--sh-glow:rgba(181,140,255,.55)'
-      : hasMut && fm === 'secret' ? '--sh-base:#A855F7;--sh-edge:rgba(168,85,247,.95);--sh-glow:rgba(168,85,247,.55)'
-      : hasMut && fm === 'ultima' ? '--sh-base:#FF0055;--sh-edge:rgba(255,51,102,.95);--sh-glow:rgba(255,0,85,.6)'
-      : '--sh-base:#22d3ee;--sh-edge:rgba(34,211,238,.95);--sh-glow:rgba(34,211,238,.55)';
-
-    /* Tampilan Nama Kartu:
-       - Jika SHINY: WAJIB gunakan kelas .hc-name-shine + .hc-name-shine-{mutasi} agar gradien animasinya aktif dan BUKAN mutText
-       - Jika BUKAN SHINY: gunakan .hc-mut-name (animasi sweep mutasi biasa) */
-    let nameHtml = '';
-    if (shFx) {
-      nameHtml = `<span class="ixc-name hc-name-top hc-name-shine${hasMut ? ' hc-name-shine-' + fm : ''}" data-text="${safeName}" style="${shinyStyle}">${c.name}</span>`;
-    } else if (hasMut) {
-      nameHtml = `<span class="ixc-name hc-name-top hc-mut-name" data-text="${safeName}">${fm === 'rainbow' || fm === 'ultima' ? mutText(fm, c.name) : c.name}</span>`;
-    } else {
-      nameHtml = `<span class="ixc-name hc-name-top">${c.name}</span>`;
-    }
-
-    const inner=`<img src="${thumbSrc(c.sprite_asset)}" alt="${c.name}" width="360" height="536" loading="lazy" decoding="async">
-      ${(hasMut||shFx)?`<span class="ix-badges hc-badges">${shFx?'<span class="shiny-badge shiny-pill">SHINY</span>':''}${hasMut?mutChip(fm,mutPill(fm)):''}</span>`:''}
-      <span class="ixc-stack">${nameHtml}<span class="ixc-chance${hasMut && (fm === 'rainbow' || fm === 'ultima') ? ' ixc-chance-rainbow' : ''}" style="color:${chanceColor}"><span class="ixc-chance-text">${chanceHtml}</span></span></span>
-      <span class="ixc-own${isSpecificVariantOwned ? ' on' : ''}">${any}/10</span>`;
-    _ixHtml[c.char_id]=inner;
-    const mounted=i<48;
-    return `<button class="${cls}${mounted?'':' lz-ph'}" type="button" data-lz="${c.char_id}" data-c="${c.char_id}" data-mut="${hasMut ? fm : 'none'}" data-shiny="${shFx ? '1' : '0'}"${lockBoss ? ' title="BELUM DIBELI - beli di '+lockShop+' untuk buka roll"' : ''} style="--tc:#9AA6B2;--bc:${bc}">${mounted?inner:''}</button>`;
-  }).join("");
-  /* --- footer: strip progres SEGMENT per mutasi + milestone INTAN ROLL --- */
-  const validCards=MASTER_CARD_INDEX.filter(c=>!c.isStoryEnemy);
-  const t=validCards.length;
-  const segs=IX_MUTS.map(m=>{let n=0;for(const c of validCards)if(ownCnt(c,m,false))n++;
-    return `<i title="${MUT_LABEL[m]||'MURNI'} ${n}/${t}" style="--p:${t?Math.round(n/t*100):0}%;--c:${m==='none'?'#9AA6B2':MUT_COLOR[m]}"></i>`;}).join("");
-  const pct=P.total?Math.min(100,Math.round(P.count/P.total*100)):0;
-  const complete=P.total>0&&P.count>=P.total;
-  const next=Math.max(0,IDX_MILESTONE-(P.count%IDX_MILESTONE));
-  const claimable = P.blocks - P.claimed;
-  const strip=`<div class="ix-prog">
-    <div class="ixp-col">
-      <div class="ixp-lbl">VARIAN TERKUMPUL</div>
-      <div class="ixp-val">${fmt(P.count)}<em> / ${fmt(P.total)}</em></div>
-    </div>
-    <div class="ixp-track ix-seg" title="${pct}%">${segs}</div>
-    <div class="ixp-rw-box">
-      <div class="ixp-rw-icon">
-        <img src="assets/images/instanpack-5k.webp?v=trans1" alt="5K Pack" width="38" height="38">
-      </div>
-      <div class="ixp-rw-text">
-        <div class="ixp-rw-title">MILESTONE REWARD</div>
-        <div class="ixp-rw-sub">${complete ? "SEMUA VARIAN LENGKAP" : `${next} varian lagi menuju +1 Pack 5K`}</div>
-      </div>
-      <div class="ixp-rw-btn-wrap">
-        <button class="ix-claim-btn ${claimable > 0 ? 'ready' : 'locked'}" type="button" onclick="claimIndexReward()" ${claimable > 0 ? '' : 'disabled'}>
-          ${claimable > 0 ? `KLAIM REWARD (+${claimable})` : 'BELUM BISA KLAIM'}
-        </button>
-      </div>
-    </div>
-  </div>`;
-  document.getElementById("ixToolbar").innerHTML=toolbar;
-  document.getElementById("ixBody").innerHTML=(list.length?"":`<div class="ix-empty">Tidak ada kartu yang cocok</div>`)+`<div class="ix-grid">${cells}</div>`;
-  lazyMountGrid(document.getElementById("ixBody"),_ixHtml);
-  ixLiveShimmer();
-  document.getElementById("ixFoot").innerHTML=strip;
-  const sel=document.getElementById("ixSort");sel.value=ixState.sort;
-  sel.onchange=()=>{ixState.sort=sel.value;ixRender();};
-  document.querySelectorAll("#ixToolbar .ix-chip[data-mut]").forEach(b=>b.onclick=()=>{ixState.mut=b.dataset.mut;ixRender();});
-  const shb=document.querySelector("#ixToolbar [data-shiny]");if(shb)shb.onclick=()=>{ixState.shiny=!ixState.shiny;ixRender();};
-  const owb=document.querySelector("#ixToolbar [data-owned]");if(owb)owb.onclick=()=>{ixState.owned=!ixState.owned;ixRender();};
-  document.querySelectorAll("#ixBody .ix-cell").forEach(cell=>{
-    cell.onclick=()=>{
-      const c=CARDS[cell.dataset.c];
-      if(!c)return;
-      const mut=cell.dataset.mut||"none";
-      const isShiny=cell.dataset.shiny==="1";
-      const hasMut=mut&&mut!=="none";
-      const spArtCard=document.getElementById("spArtCard");
-      if(spArtCard){
-        spArtCard.classList.toggle("shiny", isShiny);
-        ["m-gold","m-rainbow","m-secret","m-ultima"].forEach(k=>spArtCard.classList.remove(k));
-        if(hasMut)spArtCard.classList.add("m-"+mut);
-        spArtCard.style.borderColor="";
-        spArtCard.style.boxShadow="";
-      }
-      const spImg=document.getElementById("spImg");
-      if(spImg){
-        spImg.src=c.sprite_asset||"";
-        if(c.pos)spImg.style.objectPosition=c.pos;
-        else spImg.style.objectPosition="center";
-      }
-      const spCardName=document.getElementById("spCardName");
-      if(spCardName){
-        let displayName=c.name||"";
-        if(hasMut&&mut==="ultima"){
-          spCardName.innerHTML=`<span style="color:#FF0033;text-shadow:0 0 10px rgba(255,0,51,.85), 0 0 20px rgba(255,0,51,.5);font-weight:900">${displayName}</span>`+(isShiny?' <span style="color:#7DF9FF;font-size:.7em">★ SHINY</span>':'');
-        } else if(hasMut&&mut==="rainbow"){
-          spCardName.innerHTML=mutText(mut,displayName)+(isShiny?' <span style="color:#7DF9FF;font-size:.7em">★ SHINY</span>':'');
-        } else if(hasMut){
-          spCardName.innerHTML=`<span style="color:${MUT_COLOR[mut]}">${displayName}</span>`+(isShiny?' <span style="color:#7DF9FF;font-size:.7em">★ SHINY</span>':'');
-        } else if(isShiny){
-          spCardName.innerHTML=`<span style="color:#7DF9FF">${displayName}</span> <span style="font-size:.7em">★ SHINY</span>`;
-        } else {
-          spCardName.textContent=displayName;
-        }
-      }
-      const chVal=effChance(c.char_id, mut, isShiny);
-      const spCardRarity=document.getElementById("spCardRarity");
-      if(spCardRarity){
-        const chanceStr="1 in "+fmtChance(chVal);
-        if(hasMut&&(mut==="rainbow"||mut==="ultima")){
-          spCardRarity.innerHTML=mutText(mut, chanceStr);
-        } else if(hasMut){
-          spCardRarity.innerHTML=`<span style="color:${MUT_COLOR[mut]}">${chanceStr}</span>`;
-        } else if(isShiny){
-          spCardRarity.innerHTML=`<span style="color:#7DF9FF">${chanceStr}</span>`;
-        } else {
-          spCardRarity.textContent=chanceStr;
-        }
-      }
-      const st=cardStats(c.char_id, mut, "none", isShiny);
-      const spHp=document.getElementById("spHp");
-      if(spHp)spHp.textContent=fmtC(st.hp||c.base_hp||0);
-      const spAtk=document.getElementById("spAtk");
-      if(spAtk)spAtk.textContent=fmtC(st.atk||c.base_atk||0);
-      const spName=document.getElementById("spName");
-      if(spName)spName.textContent=c.passive?c.passive.name:"-";
-      const spDesc=document.getElementById("spDesc");
-      if(spDesc)spDesc.textContent=c.passive?c.passive.desc:"-";
-      document.getElementById("skillPop").classList.add("show");
+  // Bind Shelf Arrow Buttons
+  const leftBtn=document.getElementById("shopScrollLeft");
+  const rightBtn=document.getElementById("shopScrollRight");
+  if(leftBtn && track){
+    leftBtn.onclick=()=>{
+      track.scrollBy({ left: -320, behavior: "smooth" });
     };
-  });
-}
-
-
-
-/* =============== TRAIT ROLL (popup) =============== */
-let traitTarget=null;
-let pendingRare=null;
-/* ===== AUTO ROLL TRAIT ===== — target dicentang di list DROP RATE; state session-only (tidak disave) */
-let autoRoll=false,autoRollTimer=null,autoRollN=0;
-let pendingRareAuto=false;
-let autoTargets=new Set();
-const AUTO_TICK=100; // ms antar roll (kecepatan auto roll)
-function traitTargetStack(){let s=state.stacks.find(x=>x.id===traitTarget);if(!s){s=equipped();traitTarget=s?s.id:null;}return s;}
-function openTrait(){
-  traitTarget=null;pendingRare=null;pendingRareAuto=false;renderTrait();document.getElementById("traitModal").classList.add("show");
-}
-function closeTrait(){autoStop();document.getElementById("traitModal").classList.remove("show");hideTraitTip();}
-function renderTrait(){
-  const b=document.getElementById("trBody");
-  if(!state.stacks.length){b.innerHTML=`<div class="tr-empty-state"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><p class="sub">DECK SYNAPSE KOSONG. Buka kartu terlebih dahulu via Gacha Summon.</p></div>`;return;}
-  const tgt=traitTargetStack();
-  const hasT=!!(tgt.trait&&tgt.trait!=="none");
-  const tt=hasT?TRAIT[tgt.trait]:null;
-  const curColor=tt?tt.color:"var(--cyan)";
-  const cur=tt?traitChip(tt.k,`<span class="tc-trait-pill" style="--tcol:${tt.color}"><span class="tc-gem-wrap">${traitGem(16,tt.k)}</span> <span class="tc-name-glow">${traitLabel(tt.k)}</span></span>`):`<span class="tc-trait-none"><span class="tc-none-dot"></span>TANPA TRAIT</span>`;
-  const curStat=tt?`<div class="tc-badge-stat"><span class="tcb-tag">ATK</span> <b class="tcb-val">+${Math.round((tt.atk-1)*100)}%</b></div><div class="tc-badge-stat"><span class="tcb-tag">HP</span> <b class="tcb-val">+${Math.round((tt.hp-1)*100)}%</b></div>`:`<div class="tc-badge-stat tc-stat-empty">ROLL UNTUK MENGAKTIFKAN MODIFIER</div>`;
-  const rates=TRAIT_TIERS.filter(t=>t.chance>0).map(t=>{
-    const own=tgt.trait===t.k;
-    const isTarget=autoTargets.has(t.k);
-    const aPct=Math.round((t.atk-1)*100),hPct=Math.round((t.hp-1)*100);
-    const bar=Math.max(2,Math.round((t.chance/55)*1000)/10);
-    return `<div class="trr-item${own?" own":""}${isTarget?" is-target":""}" data-tk="${t.k}" style="--tcol:${t.color}" title="${t.name} • RARITY ${t.rar} • ATK +${aPct}% • HP +${hPct}%">
-      <div class="trr-row">
-        <span class="trr-gem" style="color:${t.color}">${traitGem(16,t.k)}</span>
-        <span class="trr-name">${t.name}</span>
-        ${own?`<span class="trr-flag">ACTIVE</span>`:""}
-        <span class="trr-rar">${t.rar}</span>
-        <span class="trr-pct">${t.chance}%</span>
-        <label class="trr-tgt" title="Target Auto Roll">
-          <input type="checkbox" data-atgt="${t.k}"${isTarget?" checked":""}>
-          <span class="trr-tgt-box">
-            <svg class="trr-tgt-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-          </span>
-        </label>
-      </div>
-      <div class="trr-bar"><i style="width:${bar}%;background:linear-gradient(90deg,${t.color},#7DF9FF)"></i></div>
-    </div>`;}).join("");
-  b.innerHTML=`
-    <div class="tr-grid">
-      <div class="tr-main">
-        <div class="tr-cur tr-cur-btn" id="trPickCard" role="button" title="Ganti target kartu" style="--tcol:${curColor}">
-          <div class="tr-cur-thumb-wrap">
-            <img src="${cardThumb(tgt.char)}" alt="" loading="lazy" decoding="async">
-            <span class="tr-cur-scanline"></span>
-          </div>
-          <div class="tr-cur-info">
-            <div class="tc-lbl-row">
-              <span class="tc-lbl">SUBJECT MATRIX</span>
-              <span class="tc-code">NODE #${tgt.id ? tgt.id.slice(0,5).toUpperCase() : '001'}</span>
-            </div>
-            <div class="tc-name">${cardName(tgt.char)}</div>
-            <div class="tc-tline">${cur}</div>
-            <div class="tc-tstat-wrap">${curStat}</div>
-          </div>
-          <button class="tr-change-ic" type="button" title="Ganti Target Kartu">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 17v-2a4 4 0 0 0-4-4H4"/><path d="m14 7 4 4-4 4"/><path d="M4 7v2a4 4 0 0 0 4 4h12"/><path d="m10 17-4-4 4-4"/></svg>
-          </button>
-        </div>
-
-        <div class="tr-controls">
-          <button class="tr-btn tr-roll" id="trRoll" ${state.coins<TRAIT_COST||autoRoll?"disabled":""}>
-            <span class="tr-btn-glow"></span>
-            <span class="tr-btn-content">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-              <span>${autoRoll?"SYNTHESIS RUNNING...":"ROLL TRAIT"}</span>
-              <span class="tr-cost-badge">${coinIcon(15)} ${fmt(TRAIT_COST)}</span>
-            </span>
-          </button>
-        </div>
-
-        <div class="tr-auto-panel${autoRoll?" on":""}">
-          <div class="tr-auto-top">
-            <button class="tr-btn tr-auto-btn" id="trAuto"${!autoRoll&&state.coins<TRAIT_COST?" disabled":""}>
-              ${autoRoll?`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg> ABORT AUTO`:`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg> INITIATE AUTO ROLL`}
-            </button>
-            <div class="tr-pulse-indicator${autoRoll?' pulse-run':''}">
-              <span class="tr-pi-dot"></span>
-              <span class="tr-pi-txt">${autoRoll?'OVERCLOCK 100ms':'IDLE'}</span>
-            </div>
-          </div>
-          <div class="tr-auto-meta">
-            <div class="tram-row"><span class="tram-k">LOCKED TARGET:</span> <b class="tram-v">${targetLabel()}</b></div>
-            <div class="tram-row"><span class="tram-k">ITERATION:</span> <b class="tram-n" id="trAutoN">#${autoRollN}</b></div>
-          </div>
-        </div>
-
-        <div class="tr-footer-status">
-          <div class="tr-coin-pill">
-            ${coinIcon(16)}
-            <span>CREDITS:</span>
-            <b class="tr-coin" id="trCoinVal">${fmt(state.coins)}</b>
-          </div>
-          <div class="tr-tip-txt">Roll menyuntikkan trait mod ke target & berhenti otomatis jika target matrix cocok.</div>
-        </div>
-      </div>
-
-      <div class="tr-rates">
-        <div class="trr-h">
-          <div class="trr-h-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            TRAIT PROBABILITY
-          </div>
-          <span class="trr-h-sub">CENTANG TARGET AUTO</span>
-        </div>
-        <div class="trr-list">${rates}</div>
-      </div>
-    </div>`;
-  const r=document.getElementById("trRoll");if(r)r.onclick=rollTrait;
-  const ab=document.getElementById("trAuto");if(ab)ab.onclick=toggleAuto;
-  b.querySelectorAll("input[data-atgt]").forEach(cb=>{cb.onchange=()=>{
-    const key=cb.getAttribute("data-atgt");
-    if(cb.checked)autoTargets.add(key);else autoTargets.delete(key);
-    const m=b.querySelector(".tram-v");
-    if(m)m.textContent=targetLabel();
-    const item=cb.closest('.trr-item');
-    if(item)item.classList.toggle('is-target',cb.checked);
-  };});
-  const pc=document.getElementById("trPickCard");if(pc)pc.onclick=()=>openDeckPick();
-}
-let cardPickCfg=null;
-function openDeckPick(cfg){dpSearch="";cardPickCfg=(cfg&&cfg.getSel&&cfg.onPick)?cfg:null;document.getElementById("deckPickModal").classList.toggle("dp-dark",!cardPickCfg);renderDeckPick();document.getElementById("deckPickModal").classList.add("show");}
-function closeDeckPick(){document.getElementById("deckPickModal").classList.remove("show");hideTraitTip();cardPickCfg=null;}
-function renderDeckPick(){
-  const b=document.getElementById("dpBody");
-  if(!state.stacks.length){b.innerHTML=`<p class="sub">Deck kosong.</p>`;return;}
-  const selId=cardPickCfg?cardPickCfg.getSel():traitTargetStack().id;
-  _dpHtml={};
-  b.innerHTML=`<label class="card-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input class="card-search" id="dpSearch" type="text" placeholder="Cari kartu…" autocomplete="off"></label><div class="dp-grid" id="dpGrid">${state.stacks.map((s,i)=>{
-    const inner=`<img src="${cardThumb(s.char)}" alt="" loading="lazy" decoding="async">
-      ${s.shiny||(s.mut&&s.mut!=="none")||(s.trait&&s.trait!=="none")?`<span class="dp-badges">${s.shiny?'<span class="shiny-badge shiny-pill">SHINY</span>':""}${s.mut&&s.mut!=="none"?mutChip(s.mut,mutPill(s.mut,'mut-badge dp-mut')):""}${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="trait-badge dp-gem" style="border-color:${TRAIT_COLOR[s.trait]}">${traitGem(13,s.trait)}</span>`):""}</span>`:""}
-      <span class="dp-name">${cardName(s.char)}</span>`;
-    _dpHtml[s.id]=inner;const mounted=i<48;
-    return `<button class="dp-card${isFullArt(s.char)?" fa":""}${s.id===selId?" sel":""}${s.mut&&s.mut!=="none"?(s.shiny?" dp-mut-shiny-"+s.mut:" dp-mut-"+s.mut):""}${s.shiny?" shiny":""}${mounted?"":" lz-ph"}" data-lz="${s.id}" data-tid="${s.id}" data-name="${cardName(s.char).toLowerCase()}">${mounted?inner:""}</button>`;}).join("")}</div><div class="no-result" id="dpSearch-nr">Tidak ada kartu yang cocok.</div>`;
-  {const dps=document.getElementById("dpSearch");if(dps){dps.value=dpSearch;dps.oninput=()=>{dpSearch=dps.value;runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));};if(dpSearch)runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));}}
-  b.querySelectorAll(".dp-card").forEach(el=>el.onclick=()=>{const tid=el.getAttribute("data-tid");sfx.hit();if(cardPickCfg){cardPickCfg.onPick(tid);}else{traitTarget=tid;closeDeckPick();renderTrait();}});
-  lazyMountGrid(b.closest(".dp-box")||b,_dpHtml);
-}
-/* Trait transiden ke atas = langka; jangan ditimpa tanpa konfirmasi */
-const RARE_TRAIT_GUARD=["transiden","demigod","cosmic","bigbang"];
-let traitRareBusy=false;
-function isRareTrait(k){return RARE_TRAIT_GUARD.indexOf(k)>=0;}
-function confirmRareReplace(k,auto){
-  const t=TRAIT[k];if(!t)return Promise.resolve(true);
-  if(traitRareBusy)return Promise.resolve(false);
-  traitRareBusy=true;
-  const tgt=traitTargetStack();
-  const nm=tgt?cardName(tgt.char):"kartu target";
-  const body=
-    '<div class="glcf-row"><span class="glcf-label">TRAIT</span><span class="glcf-val" style="color:'+t.color+'"><b>'+t.name+'</b> · '+t.rar+'</span></div>'+
-    '<div class="glcf-row"><span class="glcf-label">POWER</span><span class="glcf-val">ATK +'+Math.round((t.atk-1)*100)+'% · HP +'+Math.round((t.hp-1)*100)+'%</span></div>'+
-    '<div class="glcf-row"><span class="glcf-label">KARTU</span><span class="glcf-val">'+nm+'</span></div>'+
-    '<div class="glcf-warn">'+(auto
-      ? 'Auto roll akan mulai mengganti trait ini. Trait hanya aman kalau sudah dicentang sebagai target (auto berhenti saat kena). Sisa coin: '+fmt(state.coins)+'.'
-      : 'Trait ini akan <b>hilang tertimpa</b> kalau kamu roll lagi. Sisa coin: '+fmt(state.coins)+'.')+'</div>';
-  return showConfirmDialog({title:"TRAIT LANGKA TERPASANG",body:body,okText:auto?"LANJUT AUTO":"ROLL JUGA"}).then(v=>{traitRareBusy=false;return v;});
-}
-async function rollTrait(){
-  if(autoRoll)return; // tombol manual diblokir selama auto roll jalan
-  if(state.coins<TRAIT_COST)return;
-  const tgt=traitTargetStack();if(!tgt)return;
-  if(isRareTrait(tgt.trait)){
-    if(!(await confirmRareReplace(tgt.trait)))return;
-    if(autoRoll||state.coins<TRAIT_COST)return;
   }
-  coinSpend(TRAIT_COST);
-  const k=rollTraitPick();
-  sfx.crit();
-  if(TRAIT[k] && TRAIT[k].atk>=1.5){ save(); renderShell(); renderTrait(); showRarePrompt(k); }
-  else { tgt.trait=k; save(); if(!battleLive()&&typeof render==="function")render(); renderTrait(); traitNotify(k); }
-}
-function showRarePrompt(k,auto){
-  const t=TRAIT[k];if(!t)return;
-  pendingRare=k;
-  pendingRareAuto=!!auto;
-  const b=document.getElementById("rpBody");
-  const canRoll=state.coins>=TRAIT_COST;
-  b.innerHTML=`
-    <div class="rp-rays"></div>
-    ${traitGem(78,k,"rp-gem")}
-    <div class="rp-kicker">${auto?"TRAIT LANGKA · AUTO ROLL BERHENTI":"TRAIT LANGKA"}</div>
-    <div class="rp-name" style="color:${t.color}">${t.name}</div>
-    <div class="rp-rar" style="color:${t.color}">RARITY ${t.rar}</div>
-    <div class="rp-power" style="color:${t.color}">ATK +${Math.round((t.atk-1)*100)}% · HP +${Math.round((t.hp-1)*100)}%</div>
-    <div class="rp-fx">${traitFxList(k)}</div>
-    <div class="rp-btns">
-      <button class="rp-btn rp-save" id="rpSave">${auto?"STOP · SIMPAN INI":"SIMPAN"}</button>
-      <button class="rp-btn rp-roll" id="rpRoll" ${canRoll?"":"disabled"}>${auto?`ROLL LAGI · LANJUT AUTO · ${fmt(TRAIT_COST)} COIN`:`ROLL LAGI · ${fmt(TRAIT_COST)} COIN`}</button>
-    </div>
-    <div class="rp-note">${auto?"STOP mengunci trait ini ke kartu target &amp; menghentikan auto roll. ROLL LAGI membuang hasil ini dan melanjutkan auto roll (bayar coin lagi).":"SIMPAN memasang trait ini ke kartu target. ROLL LAGI membuang hasil ini dan mencoba lagi (bayar coin lagi)."}</div>`;
-  const box=document.getElementById("rpBox");box.style.color=t.color;box.style.borderColor=t.color;
-  document.getElementById("rarePromptModal").classList.add("show");
-  document.getElementById("rpSave").onclick=saveRare;
-  const rr=document.getElementById("rpRoll");if(rr)rr.onclick=auto?resumeAutoRoll:rerollRare;
-}
-function closeRarePrompt(){document.getElementById("rarePromptModal").classList.remove("show");}
-function saveRare(){const k=pendingRare;autoStop();pendingRareAuto=false;const tgt=traitTargetStack();if(tgt&&k)tgt.trait=k;pendingRare=null;closeRarePrompt();save();if(!battleLive()&&typeof render==="function")render();renderTrait();if(k)traitNotify(k);}
-function rerollRare(){pendingRare=null;pendingRareAuto=false;closeRarePrompt();rollTrait();}
-/* ===== AUTO ROLL (loop 100ms) ===== */
-function targetLabel(){return autoTargets.size?[...autoTargets].map(k=>TRAIT[k]?TRAIT[k].name:"").filter(Boolean).join(" · "):"centang di DROP RATE";}
-function autoStop(){autoRoll=false;clearTimeout(autoRollTimer);autoRollTimer=null;}
-function toggleAuto(){autoRoll?stopAutoRoll():startAutoRoll();}
-async function startAutoRoll(){
-  if(autoRoll)return;
-  if(state.coins<TRAIT_COST){autoToast(`BUTUH ${fmt(TRAIT_COST)} COIN UNTUK AUTO ROLL`);return;}
-  const tgt=traitTargetStack();
-  if(tgt&&isRareTrait(tgt.trait)){
-    if(!(await confirmRareReplace(tgt.trait,true)))return;
-    if(autoRoll||state.coins<TRAIT_COST)return;
+  if(rightBtn && track){
+    rightBtn.onclick=()=>{
+      track.scrollBy({ left: 320, behavior: "smooth" });
+    };
   }
-  autoRoll=true;autoRollN=0;renderTrait();autoTick();
 }
-function stopAutoRoll(){autoStop();renderTrait();if(!battleLive()&&typeof render==="function")render();}
-function traitUiRefresh(){
-  const tgt=traitTargetStack();
-  const root=document.getElementById("traitModal");
-  if(!root||!tgt)return;
-  const hasT=!!(tgt.trait&&tgt.trait!=="none");
-  const tt=hasT?TRAIT[tgt.trait]:null;
-  /* --- SUBJECT MATRIX: pill trait + stat badge (SCOPED ke modal trait!) --- */
-  const tl=root.querySelector(".tc-tline");
-  if(tl){
-    tl.innerHTML=tt
-      ? traitChip(tt.k,`<span class="tc-trait-pill" style="--tcol:${tt.color}"><span class="tc-gem-wrap">${traitGem(16,tt.k)}</span> <span class="tc-name-glow">${traitLabel(tt.k)}</span></span>`)
-      : `<span class="tc-trait-none"><span class="tc-none-dot"></span>TANPA TRAIT</span>`;
-  }
-  const tsw=root.querySelector(".tc-tstat-wrap");
-  if(tsw){
-    tsw.innerHTML=tt
-      ? `<div class="tc-badge-stat"><span class="tcb-tag">ATK</span> <b class="tcb-val">+${Math.round((tt.atk-1)*100)}%</b></div><div class="tc-badge-stat"><span class="tcb-tag">HP</span> <b class="tcb-val">+${Math.round((tt.hp-1)*100)}%</b></div>`
-      : `<div class="tc-badge-stat tc-stat-empty">ROLL UNTUK MENGAKTIFKAN MODIFIER</div>`;
-  }
-  const curCard=document.getElementById("trPickCard");
-  if(curCard)curCard.style.setProperty("--tcol",tt?tt.color:"var(--cyan)");
-  /* --- DROP RATE list: pindahkan flag ACTIVE ke tier yang sedang aktif --- */
-  root.querySelectorAll(".trr-item").forEach(it=>{
-    const k=it.getAttribute("data-tk");
-    const own=(!!tt&&k===tt.k);
-    it.classList.toggle("own",own);
-    const nameRow=it.querySelector(".trr-row");
-    if(!nameRow)return;
-    const old=nameRow.querySelector(".trr-flag");
-    if(old)old.remove();
-    if(own){
-      const flag=document.createElement("span");
-      flag.className="trr-flag";
-      flag.textContent="ACTIVE";
-      const rar=nameRow.querySelector(".trr-rar");
-      if(rar)nameRow.insertBefore(flag,rar);else nameRow.appendChild(flag);
-    }
-  });
-}
-function autoPaint(){
-  const cv=document.getElementById("coinVal");if(cv)cv.textContent=fmt(state.coins);
-  const c=document.getElementById("trCoinVal");if(c)c.textContent=fmt(state.coins);
-  const n=document.getElementById("trAutoN");if(n)n.textContent="#"+autoRollN;
-}
-/* FX per tick auto roll: retrigger class supaya animasi CSS jalan tiap roll */
-function traitFxTick(k){
-  const root=document.getElementById("traitModal");if(!root)return;
-  const t=TRAIT[k];
-  const card=document.getElementById("trPickCard");
-  if(card){
-    if(t)card.style.setProperty("--tcol",t.color);
-    card.classList.remove("tr-tick");void card.offsetWidth;card.classList.add("tr-tick");
-  }
-  const n=document.getElementById("trAutoN");
-  if(n){n.classList.remove("tr-n-pop");void n.offsetWidth;n.classList.add("tr-n-pop");}
-  root.querySelectorAll(".trr-item.trr-hit").forEach(el=>el.classList.remove("trr-hit"));
-  const own=root.querySelector(".trr-item.own");
-  if(own){void own.offsetWidth;own.classList.add("trr-hit");}
-}
-function autoTick(){
-  if(!autoRoll)return;
-  if(state.coins<TRAIT_COST){stopAutoRoll();save();renderShell();autoToast("AUTO ROLL STOP · COIN HABIS");return;}
-  const tgt=traitTargetStack();if(!tgt){stopAutoRoll();return;}
-  coinSpend(TRAIT_COST);autoRollN++;
-  const k=rollTraitPick();
-  if(autoRollN%10===0)sfx.crit(); // sfx ditahan tiap 10 roll biar gak nembak terus di 100ms
-  if(autoTargets.has(k)){tgt.trait=k;autoStop();save();if(!battleLive()&&typeof render==="function")render();renderTrait();traitNotify(k);return;} // TARGET KENA → simpan + stop
-  tgt.trait=k;
-  if(autoRollN%10===0)save();
-  autoPaint();
-  traitUiRefresh();
-  traitFxTick(k);
-  autoRollTimer=setTimeout(autoTick,AUTO_TICK);
-}
-function resumeAutoRoll(){pendingRare=null;pendingRareAuto=false;closeRarePrompt();if(!autoRoll){renderTrait();return;}autoRollTimer=setTimeout(autoTick,AUTO_TICK);}
-function autoToast(msg){
-  const el=document.getElementById("traitNotify");if(!el)return;
-  el.innerHTML=`<div class="tn-card tn-toast"><div class="tn-body"><div class="tn-top" style="color:#FFCf6E">${msg}</div></div></div>`;
-  el.classList.add("show");
-  clearTimeout(el._t);el._t=setTimeout(()=>{el.classList.remove("show");},2200);
-}
-function traitNotify(k){
-  const t=TRAIT[k];if(!t)return;
-  const el=document.getElementById("traitNotify");if(!el)return;
-  const rare=t.atk>=1.5;
-  el.innerHTML=`<div class="tn-card${rare?" tn-rare":""}" style="border-color:${t.color};color:${t.color}">
-    ${traitGem(46,k,"tn-gem")}
-    <div class="tn-body">
-      <div class="tn-top" style="color:${t.color}">${t.name}</div>
-      <div class="tn-rar">RARITY ${t.rar}</div>
-      <div class="tn-power" style="color:${t.color}">ATK +${Math.round((t.atk-1)*100)}% · HP +${Math.round((t.hp-1)*100)}%</div>
-      <div class="tn-fx">${traitFxList(k)}</div>
-    </div></div>`;
-  el.classList.add("show");
-  clearTimeout(el._t);el._t=setTimeout(()=>{el.classList.remove("show");},2800);
-}
-/* global trait/mut tooltip (fixed → tidak memicu scroll horizontal modal) */
-let __traitTipEl=null;
-function hideTraitTip(){if(__traitTipEl)__traitTipEl.classList.remove("show");}
-function tipHtmlFor(el){const tk=el.getAttribute("data-trait");if(tk&&TRAIT[tk])return traitTipInner(tk);const mk=el.getAttribute("data-mut");if(mk&&MUT_LABEL[mk])return mutTipInner(mk);return "";}
-function showTraitTip(el){
-  const html=tipHtmlFor(el);if(!html)return;
-  if(!__traitTipEl){__traitTipEl=document.createElement("div");__traitTipEl.id="traitTip";document.body.appendChild(__traitTipEl);}
-  __traitTipEl.innerHTML=html;
-  __traitTipEl.classList.add("show");
-  const r=el.getBoundingClientRect(),tw=__traitTipEl.offsetWidth,th=__traitTipEl.offsetHeight;
-  let left=r.left+r.width/2-tw/2;left=Math.max(8,Math.min(left,window.innerWidth-tw-8));
-  let top=r.top-th-10;if(top<8)top=r.bottom+10;
-  __traitTipEl.style.left=left+"px";__traitTipEl.style.top=top+"px";
-}
-document.addEventListener("mouseover",e=>{const el=e.target.closest&&e.target.closest(".trait-hover,.mut-hover");if(el)showTraitTip(el);});
-document.addEventListener("mouseout",e=>{const el=e.target.closest&&e.target.closest(".trait-hover,.mut-hover");if(el)hideTraitTip();});
-window.addEventListener("scroll",hideTraitTip,true);
-
