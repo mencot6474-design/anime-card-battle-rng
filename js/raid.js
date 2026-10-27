@@ -887,7 +887,7 @@ function renderRaidPick(){
   app.innerHTML=`
   <div class="rd-page rd-pick">
     <div class="rd-pick-head">
-      <button class="rd-pick-back" id="raidPickBack" title="Kembali ke hub raid"><span class="back-arrow">&#8592;</span> <span class="back-txt">KEMBALI</span></button>
+      <button class="rd-pick-back" id="raidPickBack" title="Kembali ke hub raid" aria-label="Kembali">&#8592;</button>
       <div class="rd-pick-ttl"><span class="eyebrow">TACTICAL STRIKER SELECTION</span><b>PILIH KARTU vs ${b.name.toUpperCase()}</b></div>
       <div class="rd-pick-boss">
         <img src="${bossArt}" alt="${b.name}">

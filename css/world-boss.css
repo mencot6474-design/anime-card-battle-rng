@@ -1828,8 +1828,8 @@ html body.on-raid .rd-page.rd-pick {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  gap: 16px !important;
-  padding: 12px 18px !important;
+  gap: 14px !important;
+  padding: 10px 16px !important;
   background: rgba(7, 12, 24, 0.88) !important;
   border: 1px solid rgba(0, 240, 255, 0.28) !important;
   border-radius: 12px !important;
@@ -1837,28 +1837,35 @@ html body.on-raid .rd-page.rd-pick {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), inset 0 0 16px rgba(0, 240, 255, 0.05) !important;
   flex-shrink: 0 !important;
   margin-bottom: 12px !important;
+  box-sizing: border-box !important;
 }
 
-.rd-pick-back {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 8px !important;
+html body.on-raid .rd-pick .rd-pick-back,
+.rd-pick-head .rd-pick-back,
+.rd-pick .rd-pick-back {
+  width: 40px !important;
   height: 40px !important;
-  padding: 0 16px !important;
+  min-width: 40px !important;
+  max-width: 40px !important;
+  border-radius: 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
   background: rgba(0, 240, 255, 0.08) !important;
   border: 1px solid rgba(0, 240, 255, 0.45) !important;
-  border-radius: 8px !important;
   color: var(--cyber-cyan, #00f0ff) !important;
-  font-family: 'Barlow Condensed', sans-serif !important;
-  font-weight: 700 !important;
-  font-size: 14px !important;
-  letter-spacing: 0.1em !important;
+  font-size: 20px !important;
+  line-height: 1 !important;
   cursor: pointer !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  flex-shrink: 0 !important;
+  flex: 0 0 40px !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
 }
 
-.rd-pick-back:hover {
+.rd-pick .rd-pick-back:hover {
   background: var(--cyber-cyan, #00f0ff) !important;
   color: #030509 !important;
   box-shadow: 0 0 16px rgba(0, 240, 255, 0.6) !important;
@@ -1871,6 +1878,7 @@ html body.on-raid .rd-page.rd-pick {
   gap: 2px !important;
   flex: 1 1 auto !important;
   min-width: 0 !important;
+  overflow: hidden !important;
 }
 
 .rd-pick-ttl .eyebrow {
@@ -2032,13 +2040,79 @@ html body.on-raid .rd-page.rd-pick {
   background: rgba(0, 240, 255, 0.7) !important;
 }
 
+/* Striker Grid Layout: row-gap 46px & padding-top 36px mencegah badge nabrak kartu baris atas */
 .rd-pick .raid-pick-grid {
   display: grid !important;
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
-  gap: 12px !important;
-  padding: 4px 2px 28px 2px !important;
+  column-gap: 14px !important;
+  row-gap: 46px !important;
+  padding: 36px 6px 40px 6px !important;
   width: 100% !important;
   box-sizing: border-box !important;
+}
+
+/* Pastikan Tile Kartu & Badge Tidak Bertabrakan */
+.rd-pick .bp-tile {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.rd-pick .bp-tile .bpt-top {
+  position: absolute !important;
+  top: auto !important;
+  bottom: calc(100% + 6px) !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 3px !important;
+  z-index: 10 !important;
+  pointer-events: none !important;
+}
+
+.rd-pick .bp-tile .bpt-top > * {
+  pointer-events: auto !important;
+  height: 20px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+}
+
+.rd-pick .bp-tile .bpt-top .bpt-shiny,
+.rd-pick .bp-tile .bpt-top .bpt-mut {
+  height: 18px !important;
+  line-height: 1 !important;
+  font-size: 9px !important;
+  padding: 0 5px !important;
+  border-radius: 4px !important;
+  white-space: nowrap !important;
+  transform: none !important;
+  margin: 0 !important;
+}
+
+.rd-pick .bp-tile .bpt-top .bpt-gem {
+  width: 18px !important;
+  height: 18px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.rd-pick .bp-tile .bpt-ctl {
+  position: absolute !important;
+  top: 4px !important;
+  right: 4px !important;
+  left: auto !important;
+  bottom: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  z-index: 8 !important;
+  opacity: 1 !important;
+  transform: none !important;
 }
 
 @media (max-width: 768px) {
@@ -2050,10 +2124,15 @@ html body.on-raid .rd-page.rd-pick {
     gap: 10px !important;
     margin-bottom: 8px !important;
   }
-  .rd-pick-back {
-    height: 34px !important;
-    padding: 0 10px !important;
-    font-size: 12px !important;
+  html body.on-raid .rd-pick .rd-pick-back,
+  .rd-pick-head .rd-pick-back,
+  .rd-pick .rd-pick-back {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    max-width: 36px !important;
+    flex: 0 0 36px !important;
+    font-size: 18px !important;
   }
   .rd-pick-boss {
     padding: 4px 8px !important;
@@ -2072,7 +2151,9 @@ html body.on-raid .rd-page.rd-pick {
     display: none !important;
   }
   .rd-pick .raid-pick-grid {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)) !important;
-    gap: 8px !important;
+    grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)) !important;
+    column-gap: 10px !important;
+    row-gap: 42px !important;
+    padding: 32px 4px 36px 4px !important;
   }
 }
