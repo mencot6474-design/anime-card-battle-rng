@@ -185,27 +185,7 @@ const CloudDB = {
         if (Array.isArray(res.speedPots) && JSON.stringify(ST.speedPots) !== JSON.stringify(res.speedPots)) { ST.speedPots = res.speedPots; dirty = true; }
         if (dirty) this._paint();
       }
-      /* 0028: penalti coin. Server menolak/menghapus percobaan tulis coin atau
-         item tanpa bayar, jadi pemain tahu kenapa saldonya jadi 0. */
-      if (res.penalty) {
-        try {
-          const why = res.penalty === "ITEM_NOT_PAID"
-            ? "ITEM TANPA BAYAR · COIN DI-RESET 0"
-            : "COIN TIDAK SAH · SALDO DI-RESET 0";
-          if (typeof toast === "function") toast("PELANGGARAN TERDETEKSI", why, "#f87171");
-        } catch (e) {}
-      }
-      /* 0029: nilai save yang tidak sah (pack, cuaca, potion, progres, profil,
-         XP delta, klaim hadiah) sudah di-nol-kan server. Beri tahu pemain field
-         mana yang kena supaya tidak dikira bug. */
-      if (Array.isArray(res.tamper) && res.tamper.length) {
-        try {
-          const fields = Array.from(new Set(res.tamper.map(t => t && t.field).filter(Boolean))).slice(0, 4);
-          if (typeof toast === "function") {
-            toast("PELANGGARAN TERDETEKSI", "NILAI TIDAK SAH DI-NOL-KAN · " + fields.join(", "), "#f87171");
-          }
-        } catch (e) {}
-      }
+// Nilai otomatis sinkron dengan data asli server
     }
     return res;
   },

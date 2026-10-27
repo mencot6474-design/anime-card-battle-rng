@@ -704,13 +704,6 @@ async function enterGame(name,welcome){
     try { await window.CloudAuth.kick(name); }
     catch(e){ console.warn("Auth kick err:", e && e.message); }
   }
-  /* RPC GUARD (0032): akun yang ketahuan memanggil RPC lewat curl/Postman/script
-     sudah dikunci server (403 GUARD_PENDING). Tampilkan bom 30 detik lalu reset
-     SEBELUM save lama ditarik. Balasan true = reset berjalan, hentikan enterGame. */
-  if(window.ACBRpcGuard){
-    try { if(await window.ACBRpcGuard.check(name)) return; }
-    catch(e){ console.warn("RPC guard err:", e && e.message); }
-  }
   // Sinkronisasi data cloud terbaru saat masuk game (WAJIB ONLINE)
   if(!window.CloudDB){
     logout();
