@@ -137,6 +137,9 @@ function wbrPatch(){
   if(f)f.style.width=Math.max(0,Math.min(100,pct)).toFixed(2)+"%";
   const tf=document.getElementById("wbrThreatFill");
   if(tf)tf.style.width=Math.max(0,Math.min(100,pct)).toFixed(2)+"%";
+  const cgF=document.getElementById("cgHpFill");if(cgF)cgF.style.width=Math.max(0,Math.min(100,pct)).toFixed(2)+"%";
+  const cgV=document.getElementById("cgHpValues");if(cgV)cgV.innerHTML=`<b>${fmtBig(left)}</b> / ${fmtBig(pool)} HP (${pct.toFixed(1)}%)`;
+  const ab=document.getElementById("attBadge");if(ab)ab.textContent=wbAttLabel();
   set("wbrLeft",fmtBig(left));
   set("wbrPct",pct.toFixed(1)+"%");
   set("wbrThreatPct",pct.toFixed(1)+"%");
@@ -288,6 +291,30 @@ function renderRaid(){
   if(raidView==="shop")return renderRaidShop();
   renderRaidHub();
 }
+
+/* Helper format leaderboard rows like prototype */
+function renderLbRowsFromData(){
+  const d=wbData();
+  const top=(d&&d.top)||[];
+  if(!top.length){
+    return '<div style="text-align:center;padding:18px;color:var(--text-muted);font-family:var(--font-cond);font-size:13px;letter-spacing:0.1em;">BELUM ADA DATA HUNTER HARI INI</div>';
+  }
+  return top.slice(0, 4).map((h, i)=>{
+    const rankClass = i===0 ? 'top1' : i===1 ? 'top2' : i===2 ? 'top3' : '';
+    return `
+    <div class="lb-hunter-item">
+      <div class="lb-hunter-left">
+        <span class="lb-rank-num ${rankClass}">${i+1}</span>
+        <div>
+          <div class="lb-hunter-name">${h.name || 'Hunter'}</div>
+          <small style="color:var(--text-muted);font-size:11px;">${h.title || 'Solo Hunter'}</small>
+        </div>
+      </div>
+      <div class="lb-hunter-dmg">${fmtBig(h.dmg || h.score || 0)}</div>
+    </div>`;
+  }).join("");
+}
+
 function renderRaidHub(){
   wbrStopPoll();
   wbSyncCur();
@@ -302,24 +329,94 @@ function renderRaidHub(){
   const hunters=(!locked&&d&&d.total_players)||0;
   const y=!locked&&d&&d.yesterday;
   const dead=!locked&&(poolLeft<=0||attLeft<=0);
-  const threatTag=pct<15?"KRITIS":pct<40?"WASPADA":"STABIL";
+  const threatTag=pct<15?"CRITICAL":pct<40?"WARNING":"STABLE";
+  const tok=state.wbTokens||0;
+
+  const cardItems=WB_SHOP.filter(x=>x.card);
+  const bossTotal=cardItems.length,bossCount=cardItems.filter(x=>bossRollUnlocked(x.card.char)).length;
+
   let claimBtn="";
-  if(y&&y.claimed)claimBtn=`<span class="wbr-claimed">KLAIM KEMARIN &#10004;</span>`;
-  else if(y&&y.claimable)claimBtn=`<button class="wbr-claim" id="wbClaim" type="button">KLAIM ${y.gems||0} GEM · ${fmt(y.tokens||0)} TOKEN${y.packs?" · "+y.packs+"× PACK 100K":""}${y.title?" · "+y.title:""}</button>`;
-  const dayKey=(!locked&&d&&d.day)?String(d.day):"";
+  if(y&&y.claimed)claimBtn=`<div style="margin-top:10px;text-align:center;font-size:12px;color:#4ade80;font-family:var(--font-mono);">KLAIM KEMARIN &#10004;</div>`;
+  else if(y&&y.claimable)claimBtn=`<button class="wbr-claim" id="wbClaim" type="button" style="margin-top:10px;width:100%;padding:8px;border-radius:6px;background:linear-gradient(135deg,rgba(0,240,255,0.3),rgba(168,85,247,0.3));border:1px solid #00f0ff;color:#fff;font-family:var(--font-display);font-size:11px;cursor:pointer;">KLAIM ${y.gems||0} GEM · ${fmt(y.tokens||0)} TOKEN</button>`;
+
   const modTxt=locked?b.mod:(wbModText()||b.mod);
-  const deployK=locked?"TERKUNCI":dead?"POOL TUMBANG / ATTEMPT HABIS":"INITIALIZE STRIKE";
-  const deployT=locked?"BUKA SETELAH UPDATE":dead?"TIDAK BISA DEPLOY":"DEPLOY &#9654;";
 
   app.innerHTML=`
-  <div class="tw-page rd-page">
-    <div class="wbr-hub${dead?" wbr-hub-dead":""}${locked?" wbr-hub-locked":""}" id="wbrHub">
-      <section class="wbr-stage" id="wbrStage">
-        
-        <!-- 3D Perspective Floor Grid -->
-        <div class="wbr-floor"></div>
+  <!-- Atmospheric Cyber Abyss Layers -->
+  <div class="cyber-abyss-bg"></div>
+  <div class="cyber-grid"></div>
+  <div class="cyber-scanlines"></div>
 
-        <!-- Concentric Pedestal Rings & Shockwave Burst -->
+  <div class="tw-page rd-page">
+    
+    <!-- Top System Telemetry Bar -->
+    <header class="proto-top-nav">
+      <div class="system-title-tag">
+        <div class="system-icon-pulse"></div>
+        <div class="system-label-text">
+          SYSTEM: <b>HUNTER RAID MATRIX</b> // <span class="monarch-tag">MONARCH S-RANK GATE</span>
+        </div>
+      </div>
+
+      <!-- Navigation Pills -->
+      <div class="proto-tab-pills">
+        <button class="proto-tab-btn" id="raidLobby" type="button" title="Kembali ke Lobby">
+          ◀ LOBBY
+        </button>
+        <button class="proto-tab-btn active" id="tabHub" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          WORLD BOSS COMMAND
+        </button>
+        <button class="proto-tab-btn" id="raidShopBtn" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          SHADOW HUNTER ARMORY
+        </button>
+      </div>
+
+      <!-- Live Token & Cores Telemetry -->
+      <div class="live-currencies">
+        <div class="currency-pill">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8M8 14h6"/></svg>
+          <div class="label">WB TOKEN:</div>
+          <div class="value" id="dispToken">${fmt(tok)}</div>
+        </div>
+        <div class="currency-pill">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <div class="label">CORES:</div>
+          <div class="value" style="color:var(--monarch-purple);" id="dispCores">${bossCount} / ${bossTotal}</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Command Hub Grid -->
+    <main class="wb-hub-grid">
+      
+      <!-- LEFT: BOSS ARENA STAGE WITH 4 BRACKETS & 3D HOLOGRAM -->
+      <section class="wb-stage-arena" id="wbrStage">
+        <div class="corner-bracket tl"></div>
+        <div class="corner-bracket tr"></div>
+        <div class="corner-bracket bl"></div>
+        <div class="corner-bracket br"></div>
+
+        <!-- Stage Header: Warning & Boss Switcher Tabs -->
+        <div class="wb-arena-header">
+          <div class="calamity-warning-tag">
+            <span class="warn-icon">⚠</span>
+            <span>CALAMITY CLASS: S-RANK THREAT</span>
+          </div>
+
+          <div class="wb-boss-switcher">
+            <button class="wb-boss-tab ${wbBossIdx===0?'active':''}" id="btnBoss0" type="button" onclick="goBoss(0 - wbBossIdx)">
+              01 // ETERNAL DRAGON
+            </button>
+            <button class="wb-boss-tab ${wbBossIdx===1?'active':''}" id="btnBoss1" type="button" onclick="goBoss(1 - wbBossIdx)">
+              02 // SHADOW KING
+            </button>
+          </div>
+        </div>
+
+        <!-- 3D Perspective Floor & Concentric Pedestal Rings -->
+        <div class="wbr-floor"></div>
         <div class="wbr-ped-rings">
           <div class="wbr-ped-ring"></div>
           <div class="wbr-ped-ring inner"></div>
@@ -327,21 +424,28 @@ function renderRaidHub(){
           <div class="wbr-holo-burst" id="holoBurst"></div>
         </div>
 
-        <!-- Floating Stage Navigation Arrows (3D Swipe Triggers) -->
-        <button class="wbr-stage-arrow wbr-arrow-prev" id="wbrPrev" type="button" title="Boss sebelumnya (3D Swipe)" aria-label="Boss sebelumnya">
+        <!-- Sleek Cyber Stage Arrows (3D Swipe Triggers) -->
+        <button class="wbr-stage-arrow wbr-arrow-prev" id="btnArrowPrev" type="button" title="Boss Sebelumnya (3D Swipe)" aria-label="Previous Boss">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
           <span class="wbr-arrow-label">PREV</span>
         </button>
-        <button class="wbr-stage-arrow wbr-arrow-next" id="wbrNext" type="button" title="Boss berikutnya (3D Swipe)" aria-label="Boss berikutnya">
+        <button class="wbr-stage-arrow wbr-arrow-next" id="btnArrowNext" type="button" title="Boss Berikutnya (3D Swipe)" aria-label="Next Boss">
           <span class="wbr-arrow-label">NEXT</span>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </button>
+
+        <!-- Tactical Swipe Guide Hint -->
+        <div class="wbr-swipe-hint">
+          <span class="hint-chevron">❮</span>
+          <span>DRAG / SWIPE 3D CARD</span>
+          <span class="hint-chevron">❯</span>
+        </div>
 
         <!-- 3D HOLOGRAPHIC BOSS CARD (SAFE CLEARANCE ABOVE HP PANEL) -->
         <div class="wbr-c3d-wrap" id="bossCardWrap">
           <div class="wbr-c3d" id="bossCard3d">
             <div class="wbr-c3d-float">
-              <!-- 4-Layer Physical Depth Back Plates -->
+              <!-- Physical Card 3D Thickness Layers -->
               <div class="wbr-c3d-l wbr-c3d-back b4"></div>
               <div class="wbr-c3d-l wbr-c3d-back b3"></div>
               <div class="wbr-c3d-l wbr-c3d-back b2"></div>
@@ -349,7 +453,10 @@ function renderRaidHub(){
 
               <!-- Main Full-Bleed Artwork -->
               <div class="wbr-c3d-l wbr-c3d-art">
-                <img id="wbrArt" src="${b.art}" alt="${b.name}" onerror="this.src='assets/cards/art/eternal-dragon.webp'">
+                <img id="bossImg" 
+                     src="${b.art}" 
+                     alt="${b.name}" 
+                     onerror="this.src='assets/cards/art/eternal-dragon.webp'">
               </div>
 
               <!-- Gradient Shadow Veil -->
@@ -364,16 +471,16 @@ function renderRaidHub(){
               <div class="wbr-c3d-l wbr-c3d-label">
                 <div class="wbr-c3d-top-tag">
                   <span class="dot"></span>
-                  <span id="wbrCardTag">${b.tag || "EX // CALAMITY CLASS"}</span>
+                  <span id="cardTopTag">${wbBossIdx===0 ? "EX // DRAGON CORE" : "EX // SHADOW MONARCH"}</span>
                 </div>
                 <div class="wbr-c3d-bottom-info">
-                  <span class="kicker" id="wbrCardKicker">${wbBossIdx===0 ? "ANCIENT MONARCH BEAST" : "SHADOW SOVEREIGN // MONARCH"}</span>
-                  <span class="title" id="wbrCardTitle">${b.name}</span>
-                  <span class="meta" id="wbrCardMeta">${fmtBig(pool)} SHARED CALAMITY POOL</span>
+                  <span class="kicker" id="cardKicker">${wbBossIdx===0 ? "ANCIENT MONARCH BEAST" : "SHADOW SOVEREIGN // MONARCH"}</span>
+                  <span class="title" id="cardTitle">${b.name}</span>
+                  <span class="meta" id="cardMeta">${fmtBig(pool)} SHARED CALAMITY POOL</span>
                 </div>
               </div>
 
-              <!-- Prismatic Holographic Foil -->
+              <!-- Dynamic Holographic Foil Shimmer -->
               <div class="wbr-c3d-l wbr-c3d-foil"></div>
 
               <!-- Specular Reflection Glass -->
@@ -384,86 +491,109 @@ function renderRaidHub(){
           <div class="wbr-c3d-shadow"></div>
         </div>
 
-        <!-- Tactical Swipe Guide Hint -->
-        <div class="wbr-swipe-hint">
-          <span class="hint-chevron">❮</span>
-          <span>DRAG / SWIPE 3D CARD</span>
-          <span class="hint-chevron">❯</span>
-        </div>
-
-        <!-- Topline Telemetry -->
-        <div class="wbr-topline">
-          <span class="wbr-chip live"><i class="cp-pulse-dot"></i>WORLD EVENT</span>
-          <span class="wbr-chip${locked?" dim":""}">${locked?"SEGERA":modTxt}</span>
-          <div class="wbr-dots" id="wbrDots"></div>
-          <button class="wbr-back" id="raidLobby" type="button" title="Kembali ke lobby">&#8592;</button>
-        </div>
-
-        ${locked?`<div class="wbr-lock"><b>${b.name}</b><small>BUKA SETELAH UPDATE</small></div>`:""}
-
-        <!-- Bottom HP Panel & Meta Info -->
-        <div class="wbr-plate">
-          <div class="wbr-plate-main">
-            <span class="wbr-eyebrow">WORLD BOSS${dayKey?" · "+dayKey:""}</span>
-            <h1 class="wbr-name">${b.name} <small>${b.tag}</small></h1>
-            <div class="wbr-tags">
-              <span class="wbr-tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>${b.skill}</span>
-              <span class="wbr-tag hot">${modTxt}</span>
-              <span class="wbr-tag gold">RESET ${wbResetText()}</span>
+        <!-- Stage Footer: Boss Identity & Calamity HP Gauge -->
+        <div class="wb-arena-footer">
+          <div class="wb-boss-meta-row">
+            <div class="wb-boss-name-group">
+              <div class="boss-subtitle" id="bossSubtitle">${wbBossIdx===0 ? "ANCIENT MONARCH CALAMITY // EX CORE" : "SHADOW SOVEREIGN // MONARCH AWAKENING"}</div>
+              <h2 id="bossName">${b.name}</h2>
+            </div>
+            <div class="wb-boss-tags">
+              <span class="wb-boss-tag" id="bossSkillTag">SKILL: ${b.skill}</span>
+              <span class="wb-boss-tag mod" id="bossModTag">${modTxt}</span>
+              <span class="wb-boss-tag timer">RESET ${wbResetText()}</span>
             </div>
           </div>
-          ${wbPoolHtml()}
+
+          <!-- Calamity HP Bar -->
+          <div class="calamity-gauge-wrapper">
+            <div class="cg-telemetry-row">
+              <div class="hp-label">
+                <span class="warn-icon">⚡</span>
+                <span id="cgLabel">GLOBAL THREAT LEVEL: ${threatTag}</span>
+              </div>
+              <div class="hp-numbers" id="cgHpValues">
+                <b>${fmtBig(poolLeft)}</b> / ${fmtBig(pool)} HP (${pct.toFixed(1)}%)
+              </div>
+            </div>
+            <div class="calamity-bar-track">
+              <div class="calamity-bar-fill" id="cgHpFill" style="width: ${Math.max(0, Math.min(100, pct)).toFixed(2)}%;"></div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <aside class="wbr-rail">
-        <div class="wbr-panel wbr-threat">
-          <div class="wbr-ptitle"><i class="cp-pulse-dot"></i><span>THREAT LEVEL</span><span class="grow"></span><span class="wbr-mini">${locked?"STANDBY":threatTag}</span></div>
-          <div class="wbr-threat-num"><b id="wbrThreatPct">${pct.toFixed(1)}%</b><span>HP TERSISA</span></div>
-          <div class="wbr-threat-bar"><i id="wbrThreatFill" style="width:${Math.max(0,Math.min(100,pct)).toFixed(2)}%"></i></div>
-          <div class="wbr-threat-foot"><span id="wbrFootDrain">${locked?"TERKIKIS 0":"TERKIKIS "+fmtBig(pool-poolLeft)}</span><span id="wbrFootHunters">${hunters} HUNTER</span></div>
-        </div>
+      <!-- RIGHT: TACTICAL HUNTER CONSOLE & ACTIONS -->
+      <aside class="wb-console-rail">
+        
+        <!-- Panel 1: Strike Authorization -->
+        <div class="tactical-panel">
+          <div class="tactical-panel-hdr">
+            <div class="title">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              STRIKE AUTHORIZATION
+            </div>
+            <div class="badge" id="attBadge">${locked ? "—" : (attLeft||0) + " / 3 ATTEMPTS"}</div>
+          </div>
+          
+          <div class="strike-crystals-row">
+            <div class="strike-crystal ${!locked && (attLeft||0) >= 1 ? 'active' : ''}"><span>CRYSTAL 01</span></div>
+            <div class="strike-crystal ${!locked && (attLeft||0) >= 2 ? 'active' : ''}"><span>CRYSTAL 02</span></div>
+            <div class="strike-crystal ${!locked && (attLeft||0) >= 3 ? 'active' : ''}"><span>CRYSTAL 03</span></div>
+          </div>
 
-        <div class="wbr-panel wbr-run">
-          <div class="wbr-ptitle"><span>RUN STATUS</span><span class="grow"></span><span class="wbr-mini" id="wbrAttLabel">${wbAttLabel()}</span></div>
-          <div class="wbr-pips" id="wbrPips">${[0,1,2].map(i=>`<i class="wbr-pip${!locked&&i<(attLeft||0)?" on":""}"></i>`).join("")}</div>
-          <div class="wbr-stats">
-            <div class="wbr-stat"><span class="wbr-stat-k">BEST DMG</span><b class="wbr-stat-v gold" id="wbrBest">${wbBest?fmtBig(wbBest):"—"}</b></div>
-            <div class="wbr-stat"><span class="wbr-stat-k">RANK</span><b class="wbr-stat-v" id="wbrRank">${rank?"#"+rank+(totalPlayers?"/"+totalPlayers:""):"—"}</b></div>
-            <div class="wbr-stat"><span class="wbr-stat-k">SIKLUS</span><b class="wbr-stat-v">${RAID_TURNS} TURN</b></div>
-            <div class="wbr-stat"><span class="wbr-stat-k">ATTEMPT</span><b class="wbr-stat-v">${locked?"—":(attLeft||0)+"/3"}</b></div>
+          <div class="strike-stats-grid">
+            <div class="strike-stat-box">
+              <div class="stat-label">PERSONAL BEST</div>
+              <div class="stat-val gold">${wbBest ? fmtBig(wbBest) : "—"}</div>
+            </div>
+            <div class="strike-stat-box">
+              <div class="stat-label">GLOBAL RANK</div>
+              <div class="stat-val cyan">${rank ? "#" + rank + (totalPlayers ? "/" + totalPlayers : "") : "—"}</div>
+            </div>
+            <div class="strike-stat-box">
+              <div class="stat-label">CYCLE LIMIT</div>
+              <div class="stat-val">${RAID_TURNS} TURNS</div>
+            </div>
+            <div class="strike-stat-box">
+              <div class="stat-label">REWARD STATUS</div>
+              <div class="stat-val" style="color:${y && y.claimable ? '#4ade80' : '#8496ae'};">${y && y.claimed ? 'CLAIMED' : y && y.claimable ? 'READY' : 'STANDBY'}</div>
+            </div>
           </div>
           ${claimBtn}
         </div>
 
-        <div class="wbr-panel wbr-track">
-          <div class="wbr-ptitle"><span>REWARD TRACK</span><span class="grow"></span><span class="wbr-mini">HARIAN</span></div>
-          <div class="wbr-track-list">
-            <div class="wbr-tr"><span class="wbr-tr-p">#1</span><span>JUARA HARIAN</span><span class="wbr-tr-r">1.000 GEM · 10K TOK · 10 PACK</span></div>
-            <div class="wbr-tr"><span class="wbr-tr-p">#2</span><span>RUNNER-UP</span><span class="wbr-tr-r">500 GEM · 5K TOK · 5 PACK</span></div>
-            <div class="wbr-tr"><span class="wbr-tr-p">#3</span><span>TOP 3</span><span class="wbr-tr-r">250 GEM · 2.5K TOK · 3 PACK</span></div>
-            <div class="wbr-tr"><span class="wbr-tr-p">ALL</span><span>PARTISIPAN</span><span class="wbr-tr-r">100 GEM · 1K TOK · 1 PACK</span></div>
+        <!-- Panel 2: Live Hunter Standings -->
+        <div class="tactical-panel" style="flex: 1; display: flex; flex-direction: column;">
+          <div class="tactical-panel-hdr">
+            <div class="title">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+              TOP RAID HUNTERS (TODAY)
+            </div>
+            <button class="badge" id="wbTopAll" type="button" style="cursor:pointer;border:none;">${hunters} ACTIVE HUNTERS ↗</button>
+          </div>
+
+          <div class="lb-hunter-list" id="wbrTop">
+            ${renderLbRowsFromData()}
           </div>
         </div>
 
-        <div class="wbr-panel wbr-lb">
-          <div class="wbr-lb-head">
-            <div class="wbr-ptitle"><span>TOP HUNTER HARI INI</span><span class="grow"></span><span class="wbr-mini">${hunters}</span></div>
-            <button class="wbr-lb-all" id="wbTopAll" type="button">PAPAN PENUH</button>
-          </div>
-          <div class="wbr-lb-rows" id="wbrTop">${wbrTopRows()}</div>
-        </div>
-
-        <div class="wbr-dock">
-          <button class="wbr-btn ghost" id="raidShopBtn" type="button" title="World Boss Shop">SHOP</button>
-          <button class="wbr-btn${dead||locked?" dead":""}" id="raidGo" type="button"${dead||locked?" disabled":""}>
-            <span class="wbr-btn-main"><span class="wbr-btn-k">${deployK}</span><span>${deployT}</span></span>
+        <!-- Action Dock -->
+        <div class="wb-action-dock">
+          <button class="btn-enter-shop" id="raidShopBtnBottom" type="button">
+            <small>EXCHANGE DEPOT</small>
+            HUNTER ARMORY
+          </button>
+          <button class="btn-strike-deploy ${dead||locked?'dead':''}" id="raidGo" type="button" ${dead||locked?'disabled':''}>
+            <small>${locked ? "TERKUNCI" : dead ? "TIDAK BISA DEPLOY" : "AUTHORIZE COMBAT // 20 TURNS"}</small>
+            ${locked ? "BUKA SETELAH UPDATE" : dead ? "ATTEMPT HABIS" : "INITIALIZE STRIKE ▶"}
           </button>
         </div>
       </aside>
-    </div>
+    </main>
   </div>`;
 
+  // Action listeners
   document.getElementById("raidGo").onclick=()=>{
     if(locked){raidToast("BOSS INI BELUM TERSEDIA");return;}
     if(poolLeft<=0){raidToast("WORLD BOSS SUDAH TUMBANG · RESET 00:00 WIB");return;}
@@ -471,12 +601,13 @@ function renderRaidHub(){
     wbrDeployPulse(()=>{sfx.hit();raidView="pick";renderRaid();});
   };
   document.getElementById("raidShopBtn").onclick=()=>{sfx.hit();raidView="shop";renderRaid();};
+  {const rsb=document.getElementById("raidShopBtnBottom");if(rsb)rsb.onclick=()=>{sfx.hit();raidView="shop";renderRaid();};}
   {const wc=document.getElementById("wbClaim");if(wc)wc.onclick=wbClaim;}
   {const ta=document.getElementById("wbTopAll");if(ta)ta.onclick=()=>{sfx.hit();if(typeof openRanking==="function")openRanking(b.board);else raidToast("Papan peringkat belum tersedia");};}
   {const rl=document.getElementById("raidLobby");if(rl)rl.onclick=()=>{try{sfx.hit();}catch(e){}location.hash="#/";};}
-  {const pv=document.getElementById("wbrPrev");if(pv)pv.onclick=()=>goBoss(-1);}
-  {const nx=document.getElementById("wbrNext");if(nx)nx.onclick=()=>goBoss(1);}
-  renderDots();
+  {const pv=document.getElementById("btnArrowPrev");if(pv)pv.onclick=()=>goBoss(-1);}
+  {const nx=document.getElementById("btnArrowNext");if(nx)nx.onclick=()=>goBoss(1);}
+
   wbrBindStage();
   wbRefresh();
   wbrStartPoll();
