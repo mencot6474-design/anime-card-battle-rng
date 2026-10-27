@@ -429,10 +429,10 @@ body.on-raid {
   position: absolute;
   left: 50%;
   bottom: 82px;
-  width: min(92%, 680px);
-  height: 90px;
-  margin-left: 0;
-  transform: translateX(-50%) rotateX(74deg);
+  width: 260px;
+  height: 68px;
+  margin-left: -130px;
+  transform: rotateX(74deg);
   border-radius: 50%;
   pointer-events: none;
   z-index: 2;
@@ -482,12 +482,13 @@ body.on-raid {
 /* 3D Holographic Card Chassis */
 .wbr-c3d {
   position: relative;
-  height: 95%;
-  width: calc(100% - 16px);
-  max-width: calc(100% - 16px);
+  height: 84%;
+  aspect-ratio: 3/4.15;
+  max-width: 86%;
   transform-style: preserve-3d;
   transform: translateX(var(--dx, 0px)) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
   transition: transform 0.15s ease-out;
+  will-change: transform;
 }
 
 /* Card Floating Levitation */
@@ -674,8 +675,8 @@ body.on-raid {
   position: absolute;
   left: 50%;
   bottom: -10px;
-  width: 90%;
-  height: 24px;
+  width: 65%;
+  height: 22px;
   transform: translate(-50%, 0) rotateX(74deg);
   border-radius: 50%;
   background: radial-gradient(closest-side, rgba(0, 240, 255, 0.65), rgba(0, 240, 255, 0.18) 60%, transparent 85%);
@@ -830,38 +831,39 @@ body.on-raid {
 .tactical-panel {
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
-  border-radius: 8px;
-  padding: 9px 12px;
+  border-radius: 7px;
+  padding: 7px 9px;
   backdrop-filter: blur(14px);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
   position: relative;
+  flex-shrink: 0;
 }
 .tactical-panel-hdr {
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding-bottom: 5px;
-  margin-bottom: 7px;
+  padding-bottom: 3px;
+  margin-bottom: 5px;
 }
 .tactical-panel-hdr .title {
   font-family: var(--font-cond);
-  font-size: 12px;
+  font-size: 10.5px;
   letter-spacing: 0.1em;
   color: var(--cyber-cyan);
   text-transform: uppercase;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 .tactical-panel-hdr .title svg {
-  width: 13px;
-  height: 13px;
+  width: 12px;
+  height: 12px;
 }
 .tactical-panel-hdr .badge {
   font-family: var(--font-mono);
-  font-size: 9.5px;
-  padding: 2px 6px;
+  font-size: 8.5px;
+  padding: 1px 5px;
   border-radius: 3px;
   background: rgba(0, 240, 255, 0.12);
   color: var(--cyber-cyan);
@@ -1089,13 +1091,13 @@ body.on-raid {
   flex-wrap: wrap;
 }
 .shop-cat-btn {
-  padding: 4px 10px;
+  padding: 3px 8px;
   background: rgba(10, 16, 32, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 4px;
   color: var(--text-muted);
   font-family: var(--font-cond);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.05em;
   cursor: pointer;
@@ -1150,10 +1152,10 @@ body.on-raid {
 
 /* 280px HORIZONTAL SEJAJAR BALANCED CARD */
 .armory-300-card {
-  width: 300px;
-  min-width: 300px;
-  max-width: 300px;
-  flex: 0 0 300px;
+  width: 250px;
+  min-width: 250px;
+  max-width: 250px;
+  flex: 0 0 250px;
   height: 100%;
   max-height: 100%;
   display: flex;
@@ -1161,13 +1163,13 @@ body.on-raid {
   justify-content: space-between;
   background: linear-gradient(180deg, rgba(14, 22, 42, 0.94) 0%, rgba(7, 11, 24, 0.98) 100%);
   border: 1.2px solid rgba(0, 240, 255, 0.2);
-  border-top: 3.5px solid var(--card-accent, var(--cyber-cyan));
-  border-radius: 9px;
-  padding: 10px 12px;
+  border-top: 3px solid var(--card-accent, var(--cyber-cyan));
+  border-radius: 7px;
+  padding: 7px 8px;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
   box-sizing: border-box;
 }
 .armory-300-card:hover {
@@ -1190,10 +1192,10 @@ body.on-raid {
 }
 .a3c-cat-badge {
   font-family: var(--font-cond);
-  font-size: 9.5px;
+  font-size: 8px;
   font-weight: 800;
   letter-spacing: 0.1em;
-  padding: 2px 5px;
+  padding: 1px 4px;
   border-radius: 3px;
   background: rgba(255, 255, 255, 0.08);
   color: var(--card-accent, var(--cyber-cyan));
@@ -1201,9 +1203,9 @@ body.on-raid {
 }
 .a3c-tier-pill {
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 8px;
   font-weight: 700;
-  padding: 2px 5px;
+  padding: 1px 4px;
   border-radius: 3px;
   background: rgba(0, 0, 0, 0.85);
   border: 1px solid var(--card-accent, var(--cyber-cyan));
@@ -1215,7 +1217,7 @@ body.on-raid {
 .a3c-chamber {
   position: relative;
   width: 100%;
-  height: 135px;
+  height: 90px;
   background: 
     radial-gradient(circle at 50% 20%, rgba(168, 85, 247, 0.3) 0%, rgba(10, 16, 32, 0.95) 75%),
     linear-gradient(180deg, #0f172a 0%, #030509 100%);
@@ -1369,19 +1371,19 @@ body.on-raid {
 
 .a3c-title {
   font-family: var(--font-display);
-  font-size: 15px;
+  font-size: 12px;
   color: #fff;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.2;
+  line-height: 1.15;
   margin: 0;
 }
 .a3c-desc {
-  font-size: 12px;
+  font-size: 9px;
   color: var(--text-muted);
-  line-height: 1.38;
+  line-height: 1.25;
   display: block;
   word-break: break-word;
   margin: 0;
@@ -1389,17 +1391,17 @@ body.on-raid {
 .a3c-passive-box {
   background: rgba(168, 85, 247, 0.14);
   border: 1px solid rgba(168, 85, 247, 0.35);
-  border-radius: 4px;
-  padding: 4px 7px;
-  font-size: 11px;
-  line-height: 1.36;
+  border-radius: 3px;
+  padding: 2px 5px;
+  font-size: 8px;
+  line-height: 1.25;
   color: #e9d5ff;
   display: flex;
   align-items: flex-start;
-  gap: 5px;
+  gap: 3px;
   white-space: normal;
   word-break: break-word;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 .a3c-passive-box svg {
   flex: none;
@@ -1430,38 +1432,37 @@ body.on-raid {
 }
 .a3c-price-box .lbl {
   font-family: var(--font-cond);
-  font-size: 9.5px;
+  font-size: 8px;
   font-weight: 700;
   color: var(--text-muted);
   letter-spacing: 0.06em;
 }
 .a3c-price-box .val b {
   font-family: var(--font-mono);
-  font-size: 16px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--cyber-cyan);
 }
 .a3c-price-box .val small {
   font-family: var(--font-cond);
-  font-size: 10px;
+  font-size: 8px;
   color: var(--text-muted);
 }
 .a3c-buy-btn {
   width: 100%;
-  padding: 7px 10px;
+  padding: 4px 6px;
   background: linear-gradient(135deg, rgba(0, 240, 255, 0.22) 0%, rgba(0, 240, 255, 0.08) 100%);
   border: 1.2px solid var(--cyber-cyan);
-  border-radius: 5px;
+  border-radius: 4px;
   color: #fff;
   font-family: var(--font-display);
-  font-size: 12.5px;
-  font-weight: 700;
+  font-size: 9.5px;
   letter-spacing: 0.05em;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 4px;
   transition: all 0.2s ease;
 }
 .a3c-buy-btn:hover:not(:disabled) {
