@@ -1063,17 +1063,15 @@ body.on-raid {
   width: 100% !important;
   max-width: 100% !important;
   height: 100% !important;
-  display: flex !important;
-  flex-direction: column !important;
+  display: flex;
+  flex-direction: column;
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
-  border-radius: 8px;
-  padding: 6px 12px;
+  border-radius: 12px;
+  padding: 20px 24px;
   backdrop-filter: blur(16px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
   min-height: 0;
-  box-sizing: border-box;
-  overflow: hidden;
 }
 
 /* Shop Subheader & Category Filter Pills */
@@ -1081,25 +1079,24 @@ body.on-raid {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 5px;
-  gap: 8px;
-  flex-shrink: 0;
+  margin-bottom: 16px;
+  gap: 16px;
 }
 .shop-cat-tabs {
   display: flex;
-  gap: 5px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 .shop-cat-btn {
-  padding: 3px 8px;
+  padding: 8px 16px;
   background: rgba(10, 16, 32, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  border-radius: 6px;
   color: var(--text-muted);
   font-family: var(--font-cond);
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -1111,31 +1108,23 @@ body.on-raid {
   background: rgba(0, 240, 255, 0.16);
   border-color: var(--cyber-cyan);
   color: #fff;
-  box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
-}
-.shop-matrix-tag {
-  font-family: var(--font-mono);
-  font-size: 8.5px;
-  letter-spacing: 0.08em;
-  color: var(--text-dim);
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.3);
 }
 
 .shop-inventory-scroll {
-  flex: 1 1 0%;
+  flex: 1;
   min-height: 0;
-  height: 100%;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 4px 6px 8px 6px;
+  padding: 10px 4px 18px 4px;
   display: flex;
   flex-direction: row;
-  gap: 12px;
+  gap: 16px;
   align-items: stretch;
-  box-sizing: border-box;
 }
 /* Custom Scrollbar for horizontal shelf */
 .shop-inventory-scroll::-webkit-scrollbar {
-  height: 6px;
+  height: 7px;
 }
 .shop-inventory-scroll::-webkit-scrollbar-track {
   background: rgba(5, 8, 16, 0.7);
@@ -1150,33 +1139,31 @@ body.on-raid {
   background: var(--cyber-cyan);
 }
 
-/* 280px HORIZONTAL SEJAJAR BALANCED CARD */
+/* 300px HORIZONTAL SEJAJAR CARD */
 .armory-300-card {
-  width: 250px;
-  min-width: 250px;
-  max-width: 250px;
-  flex: 0 0 250px;
-  height: 100%;
-  max-height: 100%;
+  width: 300px;
+  min-width: 300px;
+  max-width: 300px;
+  flex: 0 0 300px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   background: linear-gradient(180deg, rgba(14, 22, 42, 0.94) 0%, rgba(7, 11, 24, 0.98) 100%);
   border: 1.2px solid rgba(0, 240, 255, 0.2);
-  border-top: 3px solid var(--card-accent, var(--cyber-cyan));
-  border-radius: 7px;
-  padding: 7px 8px;
+  border-top: 3.5px solid var(--card-accent, var(--cyber-cyan));
+  border-radius: 10px;
+  padding: 14px;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
   box-sizing: border-box;
 }
 .armory-300-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
   border-color: rgba(0, 240, 255, 0.45);
   border-top-color: var(--card-accent, var(--cyber-cyan));
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.7), 0 0 14px color-mix(in srgb, var(--card-accent, var(--cyber-cyan)) 30%, transparent);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7), 0 0 16px color-mix(in srgb, var(--card-accent, var(--cyber-cyan)) 30%, transparent);
 }
 .armory-300-card.purchased {
   border-top-color: #22c55e;
@@ -1187,15 +1174,14 @@ body.on-raid {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 3px;
-  flex-shrink: 0;
+  margin-bottom: 8px;
 }
 .a3c-cat-badge {
   font-family: var(--font-cond);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.1em;
-  padding: 1px 4px;
+  letter-spacing: 0.12em;
+  padding: 2px 7px;
   border-radius: 3px;
   background: rgba(255, 255, 255, 0.08);
   color: var(--card-accent, var(--cyber-cyan));
@@ -1203,9 +1189,9 @@ body.on-raid {
 }
 .a3c-tier-pill {
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 9.5px;
   font-weight: 700;
-  padding: 1px 4px;
+  padding: 2px 6px;
   border-radius: 3px;
   background: rgba(0, 0, 0, 0.85);
   border: 1px solid var(--card-accent, var(--cyber-cyan));
@@ -1213,58 +1199,64 @@ body.on-raid {
   text-transform: uppercase;
 }
 
-/* AAA Holographic Chamber */
+/* ==========================================================================
+   AAA HOLOGRAPHIC BOSS CARD CHAMBER (CYBERPUNK × SOLO LEVELING)
+   Reference: Solo Leveling: Arise (Shadow Monarch Gate) & Honkai Star Rail (Light Cones)
+   ========================================================================== */
 .a3c-chamber {
   position: relative;
   width: 100%;
-  height: 90px;
+  height: 145px;
   background: 
     radial-gradient(circle at 50% 20%, rgba(168, 85, 247, 0.3) 0%, rgba(10, 16, 32, 0.95) 75%),
     linear-gradient(180deg, #0f172a 0%, #030509 100%);
-  border: 1.2px solid rgba(0, 240, 255, 0.3);
-  border-radius: 5px;
+  border: 1.5px solid rgba(0, 240, 255, 0.3);
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  margin-bottom: 5px;
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.9), 0 3px 12px rgba(0, 0, 0, 0.6);
+  margin-bottom: 10px;
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.9), 0 4px 16px rgba(0, 0, 0, 0.6);
   perspective: 600px;
-  flex-shrink: 0;
 }
 
+/* Corner Cybernetic Clamps */
 .a3c-chamber::before {
   content: "";
   position: absolute;
-  inset: 2px;
+  inset: 3px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
+  border-radius: 6px;
   pointer-events: none;
   z-index: 4;
 }
 
+/* Boss Card Artwork Full Depth */
 .a3c-chamber img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center 20%;
-  filter: contrast(1.15) brightness(1.05) drop-shadow(0 0 12px var(--card-accent, var(--cyber-cyan)));
+  filter: contrast(1.15) brightness(1.05) drop-shadow(0 0 15px var(--card-accent, var(--cyber-cyan)));
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease;
   z-index: 1;
 }
 .armory-300-card:hover .a3c-chamber img {
-  transform: scale(1.06) translateY(-1px);
-  filter: contrast(1.2) brightness(1.12) drop-shadow(0 0 20px var(--card-accent, var(--cyber-cyan)));
+  transform: scale(1.08) translateY(-2px);
+  filter: contrast(1.2) brightness(1.15) drop-shadow(0 0 25px var(--card-accent, var(--cyber-cyan)));
 }
 
+/* For Non-Card consumable items, keep them contained inside dark chamber */
 .armory-300-card[data-type="potion"] .a3c-chamber img,
 .armory-300-card[data-type="relic"] .a3c-chamber img,
 .armory-300-card[data-type="gem"] .a3c-chamber img {
-  width: 65%;
-  height: 65%;
+  width: 70%;
+  height: 70%;
   object-fit: contain;
 }
 
+/* Dynamic Holographic Foil Shimmer */
 .a3c-holo-foil {
   position: absolute;
   inset: 0;
@@ -1294,6 +1286,7 @@ body.on-raid {
   100% { background-position: -200% 0%; }
 }
 
+/* Monarch Scanlines & Reticle */
 .a3c-scanlines {
   position: absolute;
   inset: 0;
@@ -1303,127 +1296,116 @@ body.on-raid {
   opacity: 0.6;
 }
 
+/* Gilded Rarity Crest Top Left */
 .a3c-rarity-crest {
   position: absolute;
-  top: 3px;
-  left: 3px;
+  top: 6px;
+  left: 6px;
   z-index: 5;
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
   border: 1px solid var(--card-accent, var(--cyber-cyan));
   color: var(--card-accent, var(--cyber-cyan));
   font-family: var(--font-mono);
-  font-size: 7.5px;
+  font-size: 9px;
   font-weight: 800;
-  padding: 1px 3px;
-  border-radius: 3px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
 }
 
+/* System Barcode Bottom Right */
 .a3c-card-barcode {
   position: absolute;
-  bottom: 3px;
-  right: 3px;
+  bottom: 5px;
+  right: 6px;
   z-index: 5;
   font-family: var(--font-mono);
-  font-size: 7px;
-  letter-spacing: 0.1em;
+  font-size: 8px;
+  letter-spacing: 0.15em;
   color: rgba(255, 255, 255, 0.6);
   background: rgba(0, 0, 0, 0.7);
-  padding: 1px 3px;
+  padding: 1px 5px;
   border-radius: 2px;
+  text-transform: uppercase;
 }
 
+/* Status Ribbon */
 .a3c-owned-ribbon {
   position: absolute;
-  top: 3px;
-  right: 3px;
+  top: 6px;
+  right: 6px;
   z-index: 5;
   font-family: var(--font-mono);
-  font-size: 7.5px;
+  font-size: 9px;
   font-weight: 800;
   color: #4ade80;
   background: rgba(5, 46, 22, 0.9);
   border: 1px solid rgba(74, 222, 128, 0.5);
-  padding: 1px 4px;
-  border-radius: 3px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
 }
-
 /* Card Body */
 .a3c-body {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  flex: 1 1 0%;
-  min-height: 0;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  padding-right: 2px;
+  gap: 5px;
+  flex: 1;
 }
-.a3c-body::-webkit-scrollbar {
-  width: 3px;
-}
-.a3c-body::-webkit-scrollbar-thumb {
-  background: rgba(0, 240, 255, 0.25);
-  border-radius: 3px;
-}
-
 .a3c-title {
   font-family: var(--font-display);
-  font-size: 12px;
+  font-size: 16px;
   color: #fff;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.15;
-  margin: 0;
 }
 .a3c-desc {
-  font-size: 9px;
+  font-size: 12px;
   color: var(--text-muted);
-  line-height: 1.25;
+  line-height: 1.45;
   display: block;
+  overflow: visible;
   word-break: break-word;
-  margin: 0;
 }
 .a3c-passive-box {
   background: rgba(168, 85, 247, 0.14);
   border: 1px solid rgba(168, 85, 247, 0.35);
-  border-radius: 3px;
-  padding: 2px 5px;
-  font-size: 8px;
-  line-height: 1.25;
+  border-radius: 6px;
+  padding: 6px 9px;
+  font-size: 11px;
+  line-height: 1.42;
   color: #e9d5ff;
   display: flex;
   align-items: flex-start;
-  gap: 3px;
+  gap: 6px;
   white-space: normal;
   word-break: break-word;
-  margin-top: 2px;
+  margin-top: 4px;
+  box-shadow: inset 0 0 12px rgba(168, 85, 247, 0.12);
 }
 .a3c-passive-box svg {
   flex: none;
-  margin-top: 1px;
-  width: 9px;
-  height: 9px;
+  margin-top: 2px;
 }
 .a3c-passive-box.param {
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.12);
   color: #94a3b8;
 }
-
 /* Card Footer: Price & Buy */
 .a3c-footer {
-  margin-top: 3px;
+  margin-top: 10px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 6px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-top: 4px;
-  flex-shrink: 0;
+  padding-top: 8px;
 }
 .a3c-price-box {
   display: flex;
@@ -1432,43 +1414,43 @@ body.on-raid {
 }
 .a3c-price-box .lbl {
   font-family: var(--font-cond);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--text-muted);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
 }
 .a3c-price-box .val b {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--cyber-cyan);
 }
 .a3c-price-box .val small {
   font-family: var(--font-cond);
-  font-size: 8px;
+  font-size: 10px;
   color: var(--text-muted);
 }
 .a3c-buy-btn {
   width: 100%;
-  padding: 4px 6px;
+  padding: 8px;
   background: linear-gradient(135deg, rgba(0, 240, 255, 0.22) 0%, rgba(0, 240, 255, 0.08) 100%);
   border: 1.2px solid var(--cyber-cyan);
-  border-radius: 4px;
+  border-radius: 6px;
   color: #fff;
   font-family: var(--font-display);
-  font-size: 9.5px;
-  letter-spacing: 0.05em;
+  font-size: 12px;
+  letter-spacing: 0.06em;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 6px;
   transition: all 0.2s ease;
 }
 .a3c-buy-btn:hover:not(:disabled) {
   background: var(--cyber-cyan);
   color: #030509;
-  box-shadow: 0 0 12px rgba(0, 240, 255, 0.45);
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.45);
 }
 .a3c-buy-btn:disabled {
   opacity: 0.45;
