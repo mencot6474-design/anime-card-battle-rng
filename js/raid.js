@@ -336,8 +336,8 @@ function renderRaidHub(){
   const bossTotal=cardItems.length,bossCount=cardItems.filter(x=>bossRollUnlocked(x.card.char)).length;
 
   let claimBtn="";
-  if(y&&y.claimed)claimBtn=`<div style="margin-top:10px;text-align:center;font-size:12px;color:#4ade80;font-family:var(--font-mono);">KLAIM KEMARIN &#10004;</div>`;
-  else if(y&&y.claimable)claimBtn=`<button class="wbr-claim" id="wbClaim" type="button" style="margin-top:10px;width:100%;padding:8px;border-radius:6px;background:linear-gradient(135deg,rgba(0,240,255,0.3),rgba(168,85,247,0.3));border:1px solid #00f0ff;color:#fff;font-family:var(--font-display);font-size:11px;cursor:pointer;">KLAIM ${y.gems||0} GEM · ${fmt(y.tokens||0)} TOKEN</button>`;
+  if(y&&y.claimed)claimBtn=`<div style="margin-top:8px;text-align:center;font-size:11px;color:#4ade80;font-family:var(--font-mono);">KLAIM KEMARIN &#10004;</div>`;
+  else if(y&&y.claimable)claimBtn=`<button class="wbr-claim" id="wbClaim" type="button" style="margin-top:8px;width:100%;padding:7px;border-radius:6px;background:linear-gradient(135deg,rgba(0,240,255,0.3),rgba(168,85,247,0.3));border:1px solid #00f0ff;color:#fff;font-family:var(--font-display);font-size:11px;cursor:pointer;">KLAIM ${y.gems||0} GEM · ${fmt(y.tokens||0)} TOKEN</button>`;
 
   const modTxt=locked?b.mod:(wbModText()||b.mod);
 
@@ -347,7 +347,7 @@ function renderRaidHub(){
   <div class="cyber-grid"></div>
   <div class="cyber-scanlines"></div>
 
-  <div class="tw-page rd-page">
+  <div class="tw-page rd-page wb-system-root">
     
     <!-- Top System Telemetry Bar -->
     <header class="proto-top-nav">
@@ -426,12 +426,12 @@ function renderRaidHub(){
 
         <!-- Sleek Cyber Stage Arrows (3D Swipe Triggers) -->
         <button class="wbr-stage-arrow wbr-arrow-prev" id="btnArrowPrev" type="button" title="Boss Sebelumnya (3D Swipe)" aria-label="Previous Boss">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
           <span class="wbr-arrow-label">PREV</span>
         </button>
         <button class="wbr-stage-arrow wbr-arrow-next" id="btnArrowNext" type="button" title="Boss Berikutnya (3D Swipe)" aria-label="Next Boss">
           <span class="wbr-arrow-label">NEXT</span>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </button>
 
         <!-- Tactical Swipe Guide Hint -->
@@ -564,7 +564,7 @@ function renderRaidHub(){
         </div>
 
         <!-- Panel 2: Live Hunter Standings -->
-        <div class="tactical-panel" style="flex: 1; display: flex; flex-direction: column;">
+        <div class="tactical-panel" style="flex: 1; min-height: 0; display: flex; flex-direction: column;">
           <div class="tactical-panel-hdr">
             <div class="title">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
@@ -1285,46 +1285,75 @@ function renderRaidShop(){
   const filtered = ITEMS.filter(it => filter === "all" || it.cat === filter);
 
   app.innerHTML=`
-  <div class="tw-page rd-page">
-    <div class="hunter-shop-hub cp-v2">
+  <!-- Atmospheric Cyber Abyss Layers -->
+  <div class="cyber-abyss-bg"></div>
+  <div class="cyber-grid"></div>
+  <div class="cyber-scanlines"></div>
+
+  <div class="tw-page rd-page wb-system-root">
+    
+    <!-- Top System Telemetry Bar -->
+    <header class="proto-top-nav">
+      <div class="system-title-tag">
+        <div class="system-icon-pulse"></div>
+        <div class="system-label-text">
+          SYSTEM: <b>HUNTER RAID MATRIX</b> // <span class="monarch-tag">SHADOW HUNTER ARMORY</span>
+        </div>
+      </div>
+
+      <!-- Navigation Pills -->
+      <div class="proto-tab-pills">
+        <button class="proto-tab-btn" id="raidShopBack" type="button" title="Kembali ke World Boss">
+          ◀ WORLD BOSS
+        </button>
+        <button class="proto-tab-btn" id="tabHub" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          WORLD BOSS COMMAND
+        </button>
+        <button class="proto-tab-btn active" id="tabShop" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          SHADOW HUNTER ARMORY
+        </button>
+      </div>
+
+      <!-- Live Token & Cores Telemetry -->
+      <div class="live-currencies">
+        <div class="currency-pill">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8M8 14h6"/></svg>
+          <div class="label">WB TOKEN:</div>
+          <div class="value" id="dispToken">${fmt(tok)}</div>
+        </div>
+        <div class="currency-pill">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <div class="label">CORES:</div>
+          <div class="value" style="color:var(--monarch-purple);" id="dispCores">${bossCount} / ${bossTotal}</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Shop View Container (Zero Luber / Isolated) -->
+    <div class="shop-view-container">
       
-      <!-- Top Market Header -->
-      <div class="hsh-header cp-v2">
-        <div class="hsh-header-left">
-          <button class="hsh-back-btn" id="raidShopBack" type="button">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-            <span>KEMBALI KE WORLD BOSS</span>
-          </button>
-          <div class="hsh-title-wrap">
-            <div class="kicker"><span class="cp-pulse-dot" style="display:inline-block;width:8px;height:8px;background:#00f0ff;border-radius:50%;margin-right:6px;"></span>HUNTER ARMORY // ALL SUPPLIES</div>
-            <h2>WORLD BOSS <span>EXCHANGE</span></h2>
-          </div>
+      <!-- Controls Bar & Category Filter Pills -->
+      <div class="shop-controls-bar">
+        <div class="shop-cat-tabs" id="shopCatBar">
+          <button class="shop-cat-btn ${filter==='all'?'active':''}" data-cat="all">ALL SUPPLIES (${ITEMS.length})</button>
+          <button class="shop-cat-btn ${filter==='ex-core'?'active':''}" data-cat="ex-core">EX CORES (BOSS)</button>
+          <button class="shop-cat-btn ${filter==='relic'?'active':''}" data-cat="relic">RELIC GEAR & PET</button>
+          <button class="shop-cat-btn ${filter==='potion'?'active':''}" data-cat="potion">AUGMENT & SPEED</button>
+          <button class="shop-cat-btn ${filter==='currency'?'active':''}" data-cat="currency">CREDITS & GEMS</button>
         </div>
-        <div class="hsh-header-right">
-          <div class="hsh-token-chip cp-v2">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8M8 14h6"/></svg>
-            <div><div class="lbl">WB TOKEN</div><div class="val">${fmt(tok)}</div></div>
-          </div>
-          <div class="hsh-token-chip cp-v2">
-            <div><div class="lbl">BOSS CORES</div><div class="val">${bossCount}/${bossTotal}</div></div>
-          </div>
+
+        <div class="shop-matrix-tag">
+          TRANSACTION MATRIX // INSTANT DELIVERY TO INVENTORY
         </div>
       </div>
 
-      <!-- Category Filter Pills -->
-      <div class="shop-cat-bar" id="shopCatBar">
-        <button class="shop-cat-btn ${filter==='all'?'active':''}" data-cat="all">ALL SUPPLIES (${ITEMS.length})</button>
-        <button class="shop-cat-btn ${filter==='ex-core'?'active':''}" data-cat="ex-core">EX BOSS CORES</button>
-        <button class="shop-cat-btn ${filter==='relic'?'active':''}" data-cat="relic">RELICS & FAMILIARS</button>
-        <button class="shop-cat-btn ${filter==='potion'?'active':''}" data-cat="potion">POTIONS & OVERCLOCK</button>
-        <button class="shop-cat-btn ${filter==='currency'?'active':''}" data-cat="currency">CURRENCY EXCHANGE</button>
-      </div>
-
-      <!-- 300px Horizontal Shelf Track Wrapper -->
-      <div class="armory-300-shelf-wrap">
-        <button class="shelf-scroll-btn left" id="shelfScrollLeft" type="button" title="Scroll Kiri">◀</button>
+      <!-- Horizontal Shelf Outer with Floating Nav Arrows -->
+      <div class="shop-shelf-outer">
+        <button class="shelf-arrow-btn left" id="shopScrollLeft" type="button" title="Scroll Kiri">◀</button>
         
-        <div class="armory-300-track" id="shopTrack">
+        <div class="shop-inventory-scroll" id="shopTrack">
           ${filtered.map(it=>{
             const isOwned = !!((it.it.card && (stackHas(it.it.card.char, it.it.card.mut) || (state.raidShopOwned && state.raidShopOwned[it.it.card.char]))) || (it.it.owned && it.it.owned()));
             const canAfford = tok >= it.cost;
@@ -1390,15 +1419,17 @@ function renderRaidShop(){
           }).join("")}
         </div>
 
-        <button class="shelf-scroll-btn right" id="shelfScrollRight" type="button" title="Scroll Kanan">▶</button>
+        <button class="shelf-arrow-btn right" id="shopScrollRight" type="button" title="Scroll Kanan">▶</button>
       </div>
 
     </div>
   </div>`;
 
-  // Bind Back Button
+  // Bind Navigation
   const rb=document.getElementById("raidShopBack");
   if(rb)rb.onclick=()=>{try{sfx.hit();}catch(e){}raidView="hub";renderRaid();};
+  const th=document.getElementById("tabHub");
+  if(th)th.onclick=()=>{try{sfx.hit();}catch(e){}raidView="hub";renderRaid();};
 
   // Bind Category Filter Pills
   document.querySelectorAll(".shop-cat-btn").forEach(btn=>{
@@ -1418,8 +1449,8 @@ function renderRaidShop(){
 
   // Bind Horizontal Quick-Scroll & Mousewheel
   const track = document.getElementById("shopTrack");
-  const sLeft = document.getElementById("shelfScrollLeft");
-  const sRight = document.getElementById("shelfScrollRight");
+  const sLeft = document.getElementById("shopScrollLeft");
+  const sRight = document.getElementById("shopScrollRight");
 
   if(track){
     if(sLeft)sLeft.onclick=()=>{ track.scrollBy({ left: -320, behavior: 'smooth' }); };
