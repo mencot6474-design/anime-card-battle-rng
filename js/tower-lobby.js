@@ -30,14 +30,14 @@ function towerMakeWave(charId,f,isBoss,role){
   const atkK=isBoss?(role==="main"?1.35:1.15):1;
   const tk=TOWER_TIER_K[c.tier]||1;
   const es={hp:Math.round(towerEnemyHP(f)*hpK*tk),atk:Math.round(towerEnemyATK(f)*atkK*tk)};
-  const eid=charId,efx=PASSIVE_FX[eid]||{};const en={id:eid,name:c.name,epithet:isBoss?(role==="main"?"BOS LANTAI":"PENJAGA TAG"):c.type,img:c.sprite_asset||'_placeholder.boss',boss:!!isBoss,tier:c.tier,mut:"none"};
+  const eid=charId,efx=PASSIVE_FX[eid]||{};const en={id:eid,name:c.name,epithet:isBoss?(role==="main"?"FLOOR BOSS":"TAG GUARDIAN"):c.type,img:c.sprite_asset||'_placeholder.boss',boss:!!isBoss,tier:c.tier,mut:"none"};
   return {en,es,eid,efx};} catch(e){console.error("towerMakeWave error:",e);return null;}
   const hpK=isBoss?(role==="main"?2.2:1.4):1;
   const atkK=isBoss?(role==="main"?1.35:1.15):1;
   const tk=TOWER_TIER_K[c.tier]||1;
   const es={hp:Math.round(towerEnemyHP(f)*hpK*tk),atk:Math.round(towerEnemyATK(f)*atkK*tk)};
   const eid=charId,efx=PASSIVE_FX[eid]||{};
-  const en={id:eid,name:c.name,epithet:isBoss?(role==="main"?"BOS LANTAI":"PENJAGA TAG"):c.type,img:c.sprite_asset,boss:!!isBoss,tier:c.tier,mut:"none"};
+  const en={id:eid,name:c.name,epithet:isBoss?(role==="main"?"FLOOR BOSS":"TAG GUARDIAN"):c.type,img:c.sprite_asset,boss:!!isBoss,tier:c.tier,mut:"none"};
   return {en,es,eid,efx};
 }
 function towerWaves(f){
@@ -203,10 +203,10 @@ function renderTowerHub(){
         <div class="dh-titles">
           <div class="dh-kicker"><span class="dh-kicker-dot"></span>NEURAL SPIRE // INFINITE ASCENT PROTOCOL</div>
           <div class="dh-title">INFINITE <span class="dh-cyan">TOWER</span></div>
-          <div class="dh-sub">PENETRASI MENARA VIRTUAL TANPA BATAS DARI LANTAI 01 HINGGA OVERLOAD</div>
+          <div class="dh-sub">ENDLESS VIRTUAL SPIRE PENETRATION FROM FLOOR 01 TO OVERLOAD</div>
         </div>
         <div class="dh-actions">
-          <button class="dh-lobby-btn" id="towerLobby" type="button" title="Kembali ke Lobby">
+          <button class="dh-lobby-btn" id="towerLobby" type="button" title="Return to Lobby">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
             <span>LOBBY</span>
           </button>
@@ -226,9 +226,9 @@ function renderTowerHub(){
         <div class="dm-card dm-tokens">
           <div class="dm-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8M8 14h6"/></svg></div>
           <div class="dm-data">
-            <span class="dm-label">TOKEN INF</span>
+            <span class="dm-label">TOWER TOKENS</span>
             <b class="dm-val">${fmt(state.infTokens||0)}</b>
-            <span class="dm-sub-tag">DEPOSIT TERSEDIA</span>
+            <span class="dm-sub-tag">AVAILABLE DEPOSIT</span>
           </div>
         </div>
         <div class="dm-card dm-start">
@@ -247,7 +247,7 @@ function renderTowerHub(){
           <div class="dsh-left">
             <span class="dsh-bracket">[</span>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>
-            <span class="dsh-txt">TARGET PROTOCOL &middot; LANTAI ${start}</span>
+            <span class="dsh-txt">TARGET PROTOCOL &middot; FLOOR ${start}</span>
             <span class="dsh-bracket">]</span>
           </div>
           <span class="dsh-status-tag">${boss?'⚠️ HAZARD: BOSS ENCOUNTER':'STANDARD WAVE QUEUE'}</span>
@@ -264,23 +264,23 @@ function renderTowerHub(){
             <span class="dsh-txt">CLEARANCE SUPPLY MATRIX</span>
             <span class="dsh-bracket">]</span>
           </div>
-          <button class="r-info-pill-btn" id="twDropRateBtn" type="button" title="Lihat Probabilitas Drop Rate">
+          <button class="r-info-pill-btn" id="twDropRateBtn" type="button" title="View Drop Rate Probabilities">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-            <span>PROBABILITAS DROP</span>
+            <span>DROP PROBABILITY</span>
           </button>
         </div>
         <div class="rewards-summary-bar">
           <div class="r-chip r-chip-rolls">
             <span class="rc-dot c"></span>
             <div class="rc-info">
-              <span class="rc-label">TARIKAN KARTU</span>
-              <b>+100 Roll / Lantai</b>
+              <span class="rc-label">CARD ROLLS</span>
+              <b>+100 Rolls / Floor</b>
             </div>
           </div>
           <div class="r-chip r-chip-tokens">
             <span class="rc-dot v"></span>
             <div class="rc-info">
-              <span class="rc-label">TOKEN MENARA</span>
+              <span class="rc-label">TOWER TOKENS</span>
               <b>+1 Token (Boss +5)</b>
             </div>
           </div>
@@ -295,7 +295,7 @@ function renderTowerHub(){
             <span class="rc-dot r"></span>
             <div class="rc-info">
               <span class="rc-label">ULTRA RARE</span>
-              <b>Pedang Api &bull; Kyubi</b>
+              <b>Flame Sword &bull; Kyubi</b>
             </div>
           </div>
         </div>
@@ -308,7 +308,7 @@ function renderTowerHub(){
           <div class="tb-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
           <div class="tb-content">
             <small>EXCHANGE MARKET</small>
-            <b>TOKO INF</b>
+            <b>TOWER SHOP</b>
           </div>
         </button>
 
@@ -317,7 +317,7 @@ function renderTowerHub(){
           <div class="tb-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
           <div class="tb-content">
             <small>INITIALIZE RUN &middot; FLOOR ${start}</small>
-            <b>MULAI PENETRASI</b>
+            <b>INITIATE PENETRATION</b>
           </div>
           <div class="tb-chevrons"><span>&rsaquo;</span><span>&rsaquo;</span><span>&rsaquo;</span></div>
         </button>
@@ -361,16 +361,16 @@ function renderTowerShop(){
     gem:`<img src="assets/images/premium-currency.webp" alt="Gems" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='💎'">`
   };
 
-  /* Data item Cyberpunk Supply */
+  /* Data item Cyberpunk Supply - FULL ENGLISH */
   const ITEMS=[
-    {k:"gem",cat:"EXCHANGE",tier:"GEM",label:"TOKEN → GEM // 100:10",sub:"Tukar 100 TOKEN INF menjadi 10 GEM premium. Bisa ditukar berulang tanpa batas.",cost:100,gem:10,req:null,ac:"#ffd700"},
-    {k:"weather",cat:"WEATHER",tier:"SPEC-A",label:"ATMOSPHERIC OVERRIDE",sub:"Memaksa cuaca berganti dengan peluang asli (durasi 5 menit).",cost:10,req:null,ac:"#00d9ff"},
-    {k:"luck1",cat:"AUGMENT",tier:"MK-I",label:"NEURAL LUCK MK-I",sub:"+3 flat luck selama 5 menit. Stackable — durasi bertambah +5 menit tiap injeksi serum.",cost:10,req:null,ac:"#00ffaa"},
-    {k:"luck2",cat:"AUGMENT",tier:"MK-II",label:"NEURAL LUCK MK-II",sub:"+5 flat luck & +10% luck multiplier selama 5 menit. Stackable.",cost:50,req:null,ac:"#00ffaa"},
-    {k:"luck3",cat:"AUGMENT",tier:"MK-III",label:"NEURAL LUCK MK-III",sub:"+10 flat luck & +20% luck multiplier selama 5 menit. Matrix augmentasi maksimal.",cost:250,req:null,ac:"#00ffaa"},
-    {k:"speed1",cat:"OVERCLOCK",tier:"MK-I",label:"CHRONO BOOSTER MK-I",sub:"Roll speed +0.2× (≈1.2×) selama 5 menit. Mempercepat siklus putaran RNG mesin.",cost:10,req:null,ac:"#fbbf24"},
-    {k:"speed2",cat:"OVERCLOCK",tier:"MK-II",label:"CHRONO BOOSTER MK-II",sub:"Roll speed +0.5× (≈1.5×) selama 5 menit. Overclock sinkronisasi akselerator.",cost:50,req:null,ac:"#fbbf24"},
-    {k:"speed3",cat:"OVERCLOCK",tier:"MK-III",label:"CHRONO BOOSTER MK-III",sub:"Roll speed +1.0× (2.0× instan) selama 5 menit. Siklus overdrive kecepatan tertinggi.",cost:250,req:null,ac:"#fbbf24"}
+    {k:"gem",cat:"EXCHANGE",tier:"GEM",label:"TOKEN → GEM // 100:10",sub:"Exchange 100 TOWER TOKENS for 10 Premium GEMS. Repeatable without limits.",cost:100,gem:10,req:null,ac:"#ffd700"},
+    {k:"weather",cat:"WEATHER",tier:"SPEC-A",label:"ATMOSPHERIC OVERRIDE",sub:"Force climate shift with native probability (5 minute duration).",cost:10,req:null,ac:"#00d9ff"},
+    {k:"luck1",cat:"AUGMENT",tier:"MK-I",label:"NEURAL LUCK MK-I",sub:"+3 flat luck for 5 minutes. Stackable — duration increases +5 minutes per use.",cost:10,req:null,ac:"#00ffaa"},
+    {k:"luck2",cat:"AUGMENT",tier:"MK-II",label:"NEURAL LUCK MK-II",sub:"+5 flat luck & +10% luck multiplier for 5 minutes. Stackable.",cost:50,req:null,ac:"#00ffaa"},
+    {k:"luck3",cat:"AUGMENT",tier:"MK-III",label:"NEURAL LUCK MK-III",sub:"+10 flat luck & +20% luck multiplier for 5 minutes. Peak augmentation matrix.",cost:250,req:null,ac:"#00ffaa"},
+    {k:"speed1",cat:"OVERCLOCK",tier:"MK-I",label:"CHRONO BOOSTER MK-I",sub:"Roll speed +0.2× (≈1.2×) for 5 minutes. Accelerates spire RNG cycle.",cost:10,req:null,ac:"#fbbf24"},
+    {k:"speed2",cat:"OVERCLOCK",tier:"MK-II",label:"CHRONO BOOSTER MK-II",sub:"Roll speed +0.5× (≈1.5×) for 5 minutes. Accelerator synchronization overclock.",cost:50,req:null,ac:"#fbbf24"},
+    {k:"speed3",cat:"OVERCLOCK",tier:"MK-III",label:"CHRONO BOOSTER MK-III",sub:"Roll speed +1.0× (2.0× instant) for 5 minutes. Maximum overdrive velocity.",cost:250,req:null,ac:"#fbbf24"}
   ];
 
   const stkOf=k=>k==="weather"?(state.potions||0):k.startsWith("luck")?(state.luckPots&&state.luckPots[+k.slice(-1)-1])||0:k.startsWith("speed")?(state.speedPots&&state.speedPots[+k.slice(-1)-1])||0:(state.mythicPotions||0);
@@ -381,7 +381,7 @@ function renderTowerShop(){
     const canAfford=tok>=it.cost;
     const cnt=it.unlock?state.stacks.filter(s=>s.char===it.unlock).reduce((n,s)=>n+(s.count||1),0):(it.gem?0:stkOf(it.k));
     const dis=isOwned || !canAfford || (it.req && stkOf(it.req)<=0);
-    const btnLabel=isOwned ? '✔ TERBUKA' : (!canAfford ? `DEFISIT ${fmt(it.cost-tok)}` : (it.gem ? `TUKAR (+10 GEM)` : `BELI SUPLAI`));
+    const btnLabel=isOwned ? '✔ UNLOCKED' : (!canAfford ? `DEFICIT ${fmt(it.cost-tok)}` : (it.gem ? `EXCHANGE (+10 GEMS)` : `ACQUIRE SUPPLY`));
 
     return `
     <div class="tsh-h-card ${!canAfford&&!isOwned?'insufficient':''} ${isOwned?'owned':''}" style="--item-c:${it.ac}">
@@ -405,16 +405,16 @@ function renderTowerShop(){
         <div class="thc-meta-row">
           <span class="thc-stock-pill">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-            <span>TERSISTEM: <b>${it.unlock ? (cnt ? '×'+cnt : '0') : (it.gem ? '∞ UNLIMITED' : '×'+cnt)}</b></span>
+            <span>IN STOCK: <b>${it.unlock ? (cnt ? '×'+cnt : '0') : (it.gem ? '∞ UNLIMITED' : '×'+cnt)}</b></span>
           </span>
-          ${it.gem ? '<span class="thc-perk-pill">✦ HASIL: +10 GEM</span>' : ''}
+          ${it.gem ? '<span class="thc-perk-pill">✦ YIELD: +10 GEMS</span>' : ''}
         </div>
       </div>
 
       <div class="thc-right">
         <div class="thc-price-box">
-          <span class="thc-price-lbl">BIAYA TUKAR</span>
-          <div class="thc-price-val"><b>${fmt(it.cost)}</b> <small>TOKEN</small></div>
+          <span class="thc-price-lbl">EXCHANGE COST</span>
+          <div class="thc-price-val"><b>${fmt(it.cost)}</b> <small>TOKENS</small></div>
         </div>
         <button class="thc-buy-btn ${dis?'disabled':''}" type="button" data-kind="${it.k}" ${dis?'disabled':''} title="${it.label}">
           <span class="thc-btn-scan"></span>
@@ -432,14 +432,14 @@ function renderTowerShop(){
       <!-- TOP MARKET HEADER -->
       <header class="tsh-header">
         <div class="tsh-header-left">
-          <button class="tsh-back-btn" id="towerShopBack" type="button" title="Kembali ke Menara">
+          <button class="tsh-back-btn" id="towerShopBack" type="button" title="Return to Spire">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-            <span>KEMBALI KE MENARA</span>
+            <span>RETURN TO SPIRE</span>
           </button>
           <div class="tsh-titles">
             <div class="tsh-kicker"><span class="tsh-kicker-dot"></span>NEURAL PROCUREMENT MATRIX // SPIRE DEPOT</div>
             <div class="tsh-title">TOWER <span class="tsh-cyan">MARKET</span></div>
-            <div class="tsh-sub">KATALOG SUPLAI HORIZONTAL &bull; PERTUKARAN TOKEN HASIL PENETRASI LANTAI TANPA BATAS</div>
+            <div class="tsh-sub">TACTICAL SUPPLY CATALOG &bull; UNLIMITED SPIRE TOKEN EXCHANGE MATRIX</div>
           </div>
         </div>
         <div class="tsh-header-right">
@@ -447,27 +447,27 @@ function renderTowerShop(){
             <div class="tc-icon-wrap token-ic">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8M8 14h6"/></svg>
             </div>
-            <div class="tc-col"><small>SALDO TOKEN INF</small><b class="tsh-cyan">${fmt(tok)}</b></div>
+            <div class="tc-col"><small>TOWER TOKENS</small><b class="tsh-cyan">${fmt(tok)}</b></div>
           </div>
           <div class="tsh-chip tsh-gem-chip">
             <div class="tc-icon-wrap gem-ic">
               <img src="assets/images/premium-currency.webp" alt="Gems" width="16" height="16">
             </div>
-            <div class="tc-col"><small>SALDO GEMS</small><b class="tsh-gold">${fmt(state.premiumGems||0)}</b></div>
+            <div class="tc-col"><small>GEMS BALANCE</small><b class="tsh-gold">${fmt(state.premiumGems||0)}</b></div>
           </div>
         </div>
       </header>
 
-      <!-- HORIZONTAL SUPLAI CATALOG GRID -->
+      <!-- HORIZONTAL SUPPLY CATALOG GRID -->
       <main class="tsh-h-container">
         <div class="tsh-h-subhdr">
           <div class="ths-left">
             <span class="tsh-bracket">[</span>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            <span class="ths-txt">KATALOG SUPLAI TAKTIS HORIZONTAL</span>
+            <span class="ths-txt">TACTICAL HORIZONTAL SUPPLY CATALOG</span>
             <span class="tsh-bracket">]</span>
           </div>
-          <span class="ths-count-tag">${ITEMS.length} SUPLAI TERSEDIA</span>
+          <span class="ths-count-tag">${ITEMS.length} SUPPLIES AVAILABLE</span>
         </div>
         <div class="tsh-h-grid">${cardsHtml}</div>
       </main>
@@ -491,10 +491,10 @@ function renderTowerShop(){
 }
 function infBuy(kind){
   const cost={gem:100,weather:10,luck1:10,luck2:50,luck3:250,speed1:10,speed2:50,speed3:250,mythic:50}[kind]; if(cost==null)return;
-  /* Kartu unlock permanen (mis. SHADOW KING dulu): set state.towerShopOwned, TIDAK grant kartu (roll masih harus dimenangkan). */
+  /* Kartu unlock permanen */
   const CARD_UNLOCK={} [kind];
-  if(CARD_UNLOCK&&state.towerShopOwned&&state.towerShopOwned[CARD_UNLOCK]){toast("SUDAH TERBUKA","Roll kartu ini sudah permanen terbuka","#a78bfa");return;}
-  if((state.infTokens||0)<cost){toast("TOKEN KURANG","TOKEN INF TIDAK CUKUP","#f87171");return;}
+  if(CARD_UNLOCK&&state.towerShopOwned&&state.towerShopOwned[CARD_UNLOCK]){toast("ALREADY UNLOCKED","Card roll is already permanently unlocked","#a78bfa");return;}
+  if((state.infTokens||0)<cost){toast("INSUFFICIENT TOKENS","NOT ENOUGH TOWER TOKENS","#f87171");return;}
   if(kind==='gem'){
     const GEM_AMT=10;
     (async()=>{
@@ -502,7 +502,7 @@ function infBuy(kind){
       try{
         const u=(typeof currentUser!=='undefined'&&currentUser)?String(currentUser):'';
         if(u&&window.CloudDB&&window.CloudDB.exchangeTokens){
-          /* 0023: server yang potong token + bayar gem (atomik). */
+          /* 0023: server potong token + bayar gem (atomik). */
           res=await window.CloudDB.exchangeTokens(u,'inf');
         }else{
           state.infTokens-=cost;
@@ -513,19 +513,18 @@ function infBuy(kind){
       if(res&&res.ok){
         if(typeof res.tokens==='number')state.infTokens=res.tokens;
         save(); try{beep(880,.12,"sine",.07);}catch(e){}
-        toast("TUKAR BERHASIL","-"+cost+" TOKEN · +"+(res.gems||GEM_AMT)+" GEM","#ffd700");
+        toast("EXCHANGE SUCCESSFUL","-"+cost+" TOKENS · +"+(res.gems||GEM_AMT)+" GEMS","#ffd700");
       }else{
         try{save();}catch(e){}
-        const why=(res&&res.msg)==="TOKEN_KURANG"?"TOKEN KURANG":((res&&res.msg)||"Coba lagi nanti");
-        toast("TUKAR GAGAL",why,"#f87171");
+        const why=(res&&res.msg)==="TOKEN_KURANG"?"INSUFFICIENT TOKENS":((res&&res.msg)||"Please try again later");
+        toast("EXCHANGE FAILED",why,"#f87171");
       }
       try{renderShell();}catch(e){}
       if(towerView==="shop")render();
     })();
     return;
   }
-  /* 0026: saldo token INF milik server. Potong dulu lewat RPC (harga dari
-     token_shop_price), item baru diberikan kalau server setuju. */
+  /* 0026: saldo token INF milik server */
   (async()=>{
     let res;
     try{
@@ -538,8 +537,8 @@ function infBuy(kind){
       }
     }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
     if(!res||!res.ok){
-      const why=(res&&res.msg)==="TOKEN_KURANG"?"TOKEN KURANG":((res&&res.msg)==="DAILY_CAP"?"BATAS HARIAN":((res&&res.msg)||"Coba lagi nanti"));
-      toast("BELI GAGAL",why,"#f87171");
+      const why=(res&&res.msg)==="TOKEN_KURANG"?"INSUFFICIENT TOKENS":((res&&res.msg)==="DAILY_CAP"?"DAILY CAP REACHED":((res&&res.msg)||"Please try again later"));
+      toast("PURCHASE FAILED",why,"#f87171");
       try{renderShell();}catch(e){}
       if(towerView==="shop")render();
       return;
@@ -551,7 +550,7 @@ function infBuy(kind){
     else if(kind.startsWith('speed')){state.speedPots=state.speedPots||[0,0,0];state.speedPots[+kind.slice(-1)-1]++;}
     save(); beep(660,.1,"sine",.07);
     const label=CARD_UNLOCK?cardName(CARD_UNLOCK):({weather:'WEATHER POTION',mythic:'MYTHIC POTION'}[kind]||(kind.startsWith('luck')?'LUCK POTION L'+kind.slice(-1):'SPEED POTION L'+kind.slice(-1)));
-    toast(label,CARD_UNLOCK?"-"+cost+" TOKEN · ROLL DIBUKA":"-"+cost+" TOKEN","#c4b5fd");
+    toast(label,CARD_UNLOCK?"-"+cost+" TOKENS · ROLL UNLOCKED":"-"+cost+" TOKENS","#c4b5fd");
     renderShell(); if(towerView==="shop")render();
   })();
 }
@@ -565,7 +564,7 @@ function renderTowerBattle(){
     <div class="fighter me${eq?mutGlow(eq.mut):''}${shinyCls(eq)}" data-tier="${eq?eq.tier:''}" data-char="${eq?eq.char:''}"${eq?mutEdge(eq.mut):''}>${meFighterHtml(eq)}</div>
     ${benchHtml()}
   </div>
-  <div class="vs-col"><div class="t">VS</div><div class="s" id="turnLabel">LANTAI <b>${towerRun.floor}</b> · ${towerIsBossFloor(towerRun.floor)?"BOS":"GELOMBANG <b>"+(towerRun.idx+1)+"/"+towerRun.waves.length+"</b>"}</div><button class="bspeed-btn" id="bspeedBtn" type="button">1×</button></div>
+  <div class="vs-col"><div class="t">VS</div><div class="s" id="turnLabel">FLOOR <b>${towerRun.floor}</b> · ${towerIsBossFloor(towerRun.floor)?"BOSS ENCOUNTER":"WAVE <b>"+(towerRun.idx+1)+"/"+towerRun.waves.length+"</b>"}</div><button class="bspeed-btn" id="bspeedBtn" type="button">1×</button></div>
   <div class="me-col foe-side" id="foeSide">${towerFoeSide(w)}</div>
   </div>`;
   wireSpeedBtn();
@@ -768,7 +767,7 @@ bt.pBurn=0;bt.pFreeze=0;bt.pPoisonCut=0;bt.pInk=0;bt.pInkPct=0;
     const foeEl=side?side.querySelector(".fighter.foe"):null;
     if(foeEl){enterFx(foeEl);}
     if(typeof applyFoeEntryPassives==="function")applyFoeEntryPassives();
-    const tl=document.getElementById("turnLabel");if(tl)tl.innerHTML="LANTAI <b>"+towerRun.floor+"</b> · GELOMBANG <b>"+(towerRun.idx+1)+"/"+towerRun.waves.length+"</b>";
+    const tl=document.getElementById("turnLabel");if(tl)tl.innerHTML="FLOOR <b>"+towerRun.floor+"</b> · WAVE <b>"+(towerRun.idx+1)+"/"+towerRun.waves.length+"</b>";
     floatText(".fighter.foe","TAG-IN!","tagin");
     /* Musuh baru masuk = giliran MUSUH yang jalan. GET EXCITED satu-satunya yang menyela (serangan ekstra pemain). */
     if(bt.excited){bt.excited=false;floatText(".fighter.foe","EXTRA ATTACK!","crit");schedPhase(1000,playerPhase);}else{schedPhase(1000,enemyPhase);}
@@ -792,7 +791,7 @@ function towerEnd(win){
       try{res=await window.CloudDB.claimTowerCoins(currentUser,f);}catch(e){res=null;}
       if(coinLocal&&res&&!res.ok&&(res.msg==="DAILY_CAP"||res.msg==="UNREACHABLE")){
         state.coins=Math.max(0,(state.coins||0)-r.coins);
-        try{toast(res.msg==="UNREACHABLE"?"LANTAI BELUM TERBUKA":"BATAS COIN HARIAN","Coin lantai ini tidak dibayar server","#f87171");}catch(e){}
+        try{toast(res.msg==="UNREACHABLE"?"FLOOR LOCKED":"DAILY COIN LIMIT","Floor coins not credited by server","#f87171");}catch(e){}
       }
       try{save();renderShell();}catch(e){}
     })();
@@ -815,23 +814,22 @@ function towerEnd(win){
         packGot.push(d.name);
       }
     });
-    /* DROP LANGKAH CRAYON V2 — BASE murni TANPA luck player (totalLuck TIDAK dipakai): pedang-api 0,1% · kyubi 0,01% per lantai. */
+    /* DROP LANGKAH CRAYON V2 — BASE murni TANPA luck player: pedang-api 0,1% · kyubi 0,01% per lantai. */
     const rare=[];
     towerRun.rareDrops=towerRun.rareDrops||[];
-    if(!state.artOwned.includes("pedang-api")&&Math.random()<0.001){state.artOwned.push("pedang-api");rare.push("ARTEFAK PEDANG API · +120 FLAT & +100% LUCK");towerRun.rareDrops.push({kind:'art',id:"pedang-api",name:"PEDANG API",icon:"assets/artifacts/pedang-api.webp",n:1});}
+    if(!state.artOwned.includes("pedang-api")&&Math.random()<0.001){state.artOwned.push("pedang-api");rare.push("ARTIFACT FLAME SWORD · +120 FLAT & +100% LUCK");towerRun.rareDrops.push({kind:'art',id:"pedang-api",name:"FLAME SWORD",icon:"assets/artifacts/pedang-api.webp",n:1});}
     if(!state.petOwned.includes("kyubi")&&Math.random()<0.0001){state.petOwned.push("kyubi");rare.push("PET KYUBI FOX · +200 FLAT & +300% LUCK");towerRun.rareDrops.push({kind:'pet',id:"kyubi",name:"KYUBI FOX",icon:"assets/pets/kyubi.webp",n:1});}
     /* Token Inf: +1 per lantai, +5 per lantai bos. */
     const tok=towerIsBossFloor(f)?5:1;
     state.infTokens=(state.infTokens||0)+tok; towerRun.tokens=(towerRun.tokens||0)+tok;
-    /* 0026: token lantai dibayar server (claim_tower_tokens). Angka lokal di atas
-       cuma untuk UI; respons server yang menetapkan saldo. DAILY_CAP → tarik balik. */
+    /* 0026: token lantai dibayar server (claim_tower_tokens). */
     (async()=>{
       if(!(typeof currentUser!=="undefined"&&currentUser&&window.CloudDB&&window.CloudDB.claimTowerTokens))return;
       let res=null;
       try{res=await window.CloudDB.claimTowerTokens(currentUser,f);}catch(e){res=null;}
       if(res&&!res.ok&&(res.msg==="DAILY_CAP"||res.msg==="UNREACHABLE")){
         state.infTokens=Math.max(0,(state.infTokens||0)-tok);
-        try{toast(res.msg==="UNREACHABLE"?"LANTAI BELUM TERBUKA":"BATAS TOKEN HARIAN","Token lantai ini tidak dibayar server","#f87171");}catch(e){}
+        try{toast(res.msg==="UNREACHABLE"?"FLOOR LOCKED":"DAILY TOKEN LIMIT","Floor tokens not credited by server","#f87171");}catch(e){}
       }
       try{save();renderShell();}catch(e){}
     })();
@@ -839,17 +837,14 @@ function towerEnd(win){
     state.tower.best=Math.max(state.tower.best||0,f);
     if(typeof lbTrackTower==="function")lbTrackTower(state.tower.best);
     save(); renderShell(); fanfare();
-    toast("LANTAI "+f+" DITAKLUKKAN","+"+rr+" ROLL DISIMPAN · "+"+"+tok+" TOKEN","#7df9ff");
-    packGot.forEach((nm,i)=>setTimeout(()=>toast("DROP INSTAN PACK · LANTAI "+f,nm+" · MASUK BACKPACK","#FFD700"),500*(i+1)));
-    rare.forEach((m,i)=>setTimeout(()=>toast("DROP LANGKAH · LANTAI "+f,m,"#fb923c"),700*(i+1)));
+    toast("FLOOR "+f+" CONQUERED","+"+rr+" ROLLS STORED · +"+tok+" TOKENS","#7df9ff");
+    packGot.forEach((nm,i)=>setTimeout(()=>toast("INSTANT PACK DROP · FLOOR "+f,nm+" · ADDED TO BACKPACK","#FFD700"),500*(i+1)));
+    rare.forEach((m,i)=>setTimeout(()=>toast("RARE DROP · FLOOR "+f,m,"#fb923c"),700*(i+1)));
     bt=null;
     towerEnter(f+1);
     return;
   }
-  /* Kalah: run berhenti — cairkan SEMUA roll yang ditabung SEBELUM sfx/DOM apa pun
-     (apapun yang error sesudahnya, reward tetap aman & pendingRolls gak dobel).
-     TANPA overlay KALAH: langsung balik ke hub Tower tepat di balik popup hasil roll,
-     dan kalau AUTO RESTART aktif, run baru Lantai 1 menyusul setelah popup ditutup. */
+  /* Kalah: run berhenti — cairkan SEMUA roll yang ditabung SEBELUM sfx/DOM apa pun */
   const pending=towerRun.pendingRolls||0;
   let loot=[];
   try{ loot=pending>0?instantRoll(pending):[]; }
@@ -861,7 +856,7 @@ function towerEnd(win){
   const auto=!!(state&&state.tower&&state.tower.auto);
   towerLossAutoPending=auto;
   try{ save(); renderShell(); }catch(e){}
-  try{ toast("RUN BERAKHIR DI LANTAI "+f,"LANTAI DITAKLUKKAN: "+reached+" · KARTU +"+fmt(towerRun.cards||0)+" · TOKEN +"+fmt(towerRun.tokens||0),"#f87171"); }catch(e){}
+  try{ toast("RUN ENDED AT FLOOR "+f,"FLOORS CONQUERED: "+reached+" · CARDS +"+fmt(towerRun.cards||0)+" · TOKENS +"+fmt(towerRun.tokens||0),"#f87171"); }catch(e){}
   /* Popup hasil roll (kartu + potion) tetap tampil — z-220, di atas segalanya. */
   try{ showTowerLoot(loot,dr,null,{packDrops:towerRun.packDrops,rareDrops:towerRun.rareDrops}); }
   catch(err){ console.error("showTowerLoot error",err); }
@@ -907,7 +902,7 @@ function showTowerLoot(results,drops,title,extra){
   results.forEach(r=>{const key=r.cardId+"|"+(r.mut||"none")+"|"+(r.shiny||"none");{const g=(groups[key]||(groups[key]={cardId:r.cardId,tier:r.tier,mut:r.mut||"none",shiny:!!(r.shiny&&r.shiny!=="none"),n:0}));g.n+=(typeof r.n==="number"?r.n:1);}});
   const list=Object.values(groups).sort((a,b)=>luckChance(b.cardId,b.mut,b.shiny)-luckChance(a.cardId,a.mut,a.shiny)||b.n-a.n);
   const totalCards=(typeof results.totalPulls==="number")?results.totalPulls:results.length;
-  document.getElementById("rrTotal").textContent=fmt(totalCards)+" kartu"+(list.length?" · "+list.length+" jenis unik":"")+(totalPot?" · "+fmt(totalPot)+" potion":"")+(totalPack?" · "+fmt(totalPack)+" pack":"");
+  document.getElementById("rrTotal").textContent=fmt(totalCards)+" cards"+(list.length?" · "+list.length+" unique":"")+(totalPot?" · "+fmt(totalPot)+" potions":"")+(totalPack?" · "+fmt(totalPack)+" packs":"");
   document.getElementById("rrBody").innerHTML=lootChips+potChips+list.map(g=>{
     const name=cardName(g.cardId),img=cardThumb(g.cardId);
     const isShiny=g.shiny&&g.shiny!=="none", isMut=g.mut&&g.mut!=="none";
@@ -927,7 +922,7 @@ function showTowerLoot(results,drops,title,extra){
       </div>
     </div>`;
   }).join("");
-  {const rt=document.getElementById("rrTitle");if(rt)rt.textContent=title||"KARTU RUN INI";}
+  {const rt=document.getElementById("rrTitle");if(rt)rt.textContent=title||"TOWER RUN SPOILS";}
   pop.classList.add("show");
   try{armRollPopAutoClose(5000);}catch(e){} /* auto-claim 5 detik: gak nahan AFK / auto-run tower */
 }
@@ -1345,17 +1340,17 @@ function openTowerDropModal(){
   if(!m || !body) return;
 
   const guarItems = [
-    {name:"TARIKAN KARTU INSTAN", rate:"100× DIJAMIN", sub:"100 tarikan kartu ditabung per lantai · di-roll saat tamat", icon:TWR_CARD_ICON, cls:"guar"},
-    {name:"TOKEN INF", rate:"PASTI", sub:"+1 lantai biasa · +5 lantai bos (kelipatan 5)", icon:TWR_TOKEN_ICON, cls:"guar"},
-    {name:"WEATHER POTION", rate:"5%", sub:"Mengacak cuaca aktif durasi 5 menit", icon:"assets/images/weather-potion.webp?v=1", cls:""},
-    {name:"LUCK POTION L1", rate:"10%", sub:"+3 Flat Luck selama 5 menit (stackable)", icon:"assets/images/pot-luck-1.webp", cls:""},
-    {name:"SPEED POTION L1", rate:"10%", sub:"+0,2× Roll Speed selama 5 menit (stackable)", icon:"assets/images/pot-speed-1.webp", cls:""}
+    {name:"INSTANT CARD ROLLS", rate:"100× GUARANTEED", sub:"100 card rolls banked per floor · rolled upon defeat", icon:TWR_CARD_ICON, cls:"guar"},
+    {name:"TOWER TOKENS", rate:"GUARANTEED", sub:"+1 regular floor · +5 boss floor (every 5 floors)", icon:TWR_TOKEN_ICON, cls:"guar"},
+    {name:"WEATHER POTION", rate:"5%", sub:"Randomizes active weather (5 minute duration)", icon:"assets/images/weather-potion.webp?v=1", cls:""},
+    {name:"LUCK POTION L1", rate:"10%", sub:"+3 Flat Luck for 5 minutes (stackable)", icon:"assets/images/pot-luck-1.webp", cls:""},
+    {name:"SPEED POTION L1", rate:"10%", sub:"+0.2× Roll Speed for 5 minutes (stackable)", icon:"assets/images/pot-speed-1.webp", cls:""}
   ];
 
   const packItems = TOWER_PACK_DROPS.map(p=>({
     name: p.name,
     rate: p.label,
-    sub: "Otomatis masuk ke tab ITEM di Backpack",
+    sub: "Automatically stored in Backpack ITEMS tab",
     icon: p.icon,
     cls: "pack"
   }));
@@ -1366,7 +1361,7 @@ function openTowerDropModal(){
       <div class="tw-col tw-col-guar">
         <div class="tw-col-head">
           <span class="tw-col-pill guar"><span class="tw-dot"></span>GUARANTEED & POTIONS</span>
-          <h3 class="tw-col-title">PASTI SETIAP LANTAI</h3>
+          <h3 class="tw-col-title">EVERY FLOOR REWARDS</h3>
         </div>
         <div class="tw-col-list">
           ${guarItems.map(it=>`
@@ -1386,7 +1381,7 @@ function openTowerDropModal(){
       <div class="tw-col tw-col-pack">
         <div class="tw-col-head">
           <span class="tw-col-pill pack"><span class="tw-dot"></span>RANDOM PACK DROPS</span>
-          <h3 class="tw-col-title">INSTAN ROLL PACKS</h3>
+          <h3 class="tw-col-title">INSTANT ROLL PACKS</h3>
         </div>
         <div class="tw-col-list">
           ${packItems.map(it=>`
@@ -1402,7 +1397,7 @@ function openTowerDropModal(){
         </div>
         <div class="tw-col-foot-note">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg>
-          <span>Siap pakai kapan saja di Backpack</span>
+          <span>Ready to use anytime in your Backpack</span>
         </div>
       </div>
 
@@ -1410,25 +1405,25 @@ function openTowerDropModal(){
       <div class="tw-col tw-col-rare">
         <div class="tw-col-head">
           <span class="tw-col-pill rare"><span class="tw-dot"></span>ULTRA RARE / TROPHY</span>
-          <h3 class="tw-col-title">ARTEFAK & PET MYTHIC</h3>
+          <h3 class="tw-col-title">MYTHIC ARTIFACTS & PETS</h3>
         </div>
         <div class="tw-col-trophy-list">
           <!-- Pedang Api -->
           <div class="tw-trophy-card art">
             <div class="tw-tc-art">
-              <img src="assets/artifacts/pedang-api.webp" alt="Pedang Api" onerror="this.parentNode.textContent='⚔️'">
+              <img src="assets/artifacts/pedang-api.webp" alt="Flame Sword" onerror="this.parentNode.textContent='⚔️'">
             </div>
             <div class="tw-tc-info">
               <div class="tw-tc-top">
-                <span class="tw-tc-type">ARTEFAK PERMANEN</span>
-                <span class="tw-tc-rate ultra">0,1% · 1 in 1k</span>
+                <span class="tw-tc-type">PERMANENT ARTIFACT</span>
+                <span class="tw-tc-rate ultra">0.1% · 1 in 1k</span>
               </div>
-              <div class="tw-tc-name">PEDANG API</div>
+              <div class="tw-tc-name">FLAME SWORD</div>
               <div class="tw-tc-perks">
                 <span class="tw-perk-badge"><small>FLAT</small> <b>+120 LUCK</b></span>
                 <span class="tw-perk-badge"><small>MULT</small> <b>+100% (×2)</b></span>
               </div>
-              <div class="tw-tc-desc">Koleksi permanen (maks 1). Efek luck aktif selamanya.</div>
+              <div class="tw-tc-desc">Permanent relic (max 1). Luck bonus active forever.</div>
             </div>
           </div>
 
@@ -1439,15 +1434,15 @@ function openTowerDropModal(){
             </div>
             <div class="tw-tc-info">
               <div class="tw-tc-top">
-                <span class="tw-tc-type">PET MYTHIC</span>
-                <span class="tw-tc-rate ultra">0,01% · 1 in 10k</span>
+                <span class="tw-tc-type">MYTHIC PET</span>
+                <span class="tw-tc-rate ultra">0.01% · 1 in 10k</span>
               </div>
               <div class="tw-tc-name">KYUBI FOX</div>
               <div class="tw-tc-perks">
                 <span class="tw-perk-badge"><small>FLAT</small> <b>+200 LUCK</b></span>
                 <span class="tw-perk-badge"><small>MULT</small> <b>+300% (×4)</b></span>
               </div>
-              <div class="tw-tc-desc">Companion mistis (maks 1). Multiplier luck tertinggi.</div>
+              <div class="tw-tc-desc">Mystical companion (max 1). Highest luck multiplier.</div>
             </div>
           </div>
         </div>
@@ -1458,7 +1453,7 @@ function openTowerDropModal(){
     <div class="tw-drop-footer-bar">
       <div class="tw-df-pill">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
-        <span>Semua drop dihitung <b>per lantai</b> yang ditaklukkan. Peluang Instan Pack, Artefak & Pet adalah <b>Base Rate Murni</b> (tidak dipengaruhi Luck player).</span>
+        <span>All drops calculated <b>per cleared floor</b>. Instant Pack, Artifact & Pet odds are <b>Pure Base Rates</b> (not affected by player Luck).</span>
       </div>
     </div>
   `;
