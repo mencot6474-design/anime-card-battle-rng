@@ -356,8 +356,8 @@ function renderRaidHub(){
   const bossTotal=cardItems.length,bossCount=cardItems.filter(x=>bossRollUnlocked(x.card.char)).length;
 
   let claimBtn="";
-  if(y&&y.claimed)claimBtn=`<div style="margin-top:6px;text-align:center;font-size:11px;color:#4ade80;font-family:var(--font-mono);padding:4px;background:rgba(74,222,128,0.1);border-radius:4px;border:1px solid rgba(74,222,128,0.3);">KLAIM KEMARIN &#10004;</div>`;
-  else if(y&&y.claimable)claimBtn=`<button class="wbr-claim" id="wbClaim" type="button" style="margin-top:6px;width:100%;padding:7px;border-radius:6px;background:linear-gradient(135deg,rgba(0,240,255,0.3),rgba(168,85,247,0.3));border:1px solid #00f0ff;color:#fff;font-family:var(--font-display);font-size:11px;cursor:pointer;">KLAIM ${y.gems||0} GEM · ${fmt(y.tokens||0)} TOKEN</button>`;
+  if(y&&y.claimed)claimBtn=`<div style="margin-top:4px;text-align:center;font-size:9.5px;color:#4ade80;font-family:var(--font-mono);padding:3px;background:rgba(74,222,128,0.1);border-radius:4px;border:1px solid rgba(74,222,128,0.3);">KLAIM KEMARIN &#10004;</div>`;
+  else if(y&&y.claimable)claimBtn=`<button class="wbr-claim" id="wbClaim" type="button" style="margin-top:4px;width:100%;padding:4px 6px;border-radius:4px;background:linear-gradient(135deg,rgba(0,240,255,0.3),rgba(168,85,247,0.3));border:1px solid #00f0ff;color:#fff;font-family:var(--font-display);font-size:9.5px;cursor:pointer;">KLAIM ${y.gems||0} GEM · ${fmt(y.tokens||0)} TOKEN</button>`;
 
   const modTxt=locked?b.mod:(wbModText()||b.mod);
 
@@ -517,7 +517,7 @@ function renderRaidHub(){
             <div class="wb-boss-meta-row">
               <div class="wb-boss-name-group">
                 <div class="boss-subtitle" id="bossSubtitle">ANCIENT MONARCH CALAMITY // EX CORE</div>
-                <h2 id="bossName">${b.name} <small style="font-size:14px;color:var(--monarch-purple);">${b.tag || ''}</small></h2>
+                <h2 id="bossName">${b.name} <small style="font-size:10px;color:var(--monarch-purple);">${b.tag || ''}</small></h2>
               </div>
               <div class="wb-boss-tags">
                 <span class="wb-boss-tag" id="bossSkillTag">
@@ -630,7 +630,7 @@ function renderRaidHub(){
           </div>
 
           <!-- Panel 3: Live Hunter Standings -->
-          <div class="tactical-panel" style="flex: 1; min-height: 0; display: flex; flex-direction: column;">
+          <div class="tactical-panel" style="flex: 1 1 0%; min-height: 50px; max-height: 110px; display: flex; flex-direction: column;">
             <div class="tactical-panel-hdr">
               <div class="title">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>

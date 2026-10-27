@@ -113,7 +113,7 @@ body.on-raid {
   opacity: 0.65;
 }
 
-/* Master Layout Frame */
+/* Master Layout Frame - Ultra Precision Compact Fullscreen */
 .app-viewport {
   position: relative !important;
   z-index: 10 !important;
@@ -122,7 +122,7 @@ body.on-raid {
   max-height: 100dvh !important;
   display: flex !important;
   flex-direction: column !important;
-  padding: 10px 16px 12px !important;
+  padding: 6px 10px 8px !important;
   max-width: 100% !important;
   margin: 0 auto !important;
   box-sizing: border-box !important;
@@ -134,26 +134,28 @@ body.on-raid {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
-  padding: 8px 16px;
+  margin-bottom: 6px;
+  padding: 4px 10px;
   background: rgba(7, 12, 24, 0.85);
   border: 1px solid rgba(0, 240, 255, 0.25);
   border-radius: 8px;
   backdrop-filter: blur(14px);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  flex-shrink: 0;
+  min-height: 38px;
 }
 
 .system-title-tag {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 .system-icon-pulse {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   background: var(--cyber-cyan);
   border-radius: 50%;
-  box-shadow: 0 0 12px var(--cyber-cyan);
+  box-shadow: 0 0 10px var(--cyber-cyan);
   animation: pulse-dot 1.8s infinite;
 }
 @keyframes pulse-dot {
@@ -162,8 +164,8 @@ body.on-raid {
 }
 .system-label-text {
   font-family: var(--font-cond);
-  font-size: 13px;
-  letter-spacing: 0.15em;
+  font-size: 11px;
+  letter-spacing: 0.12em;
   color: var(--text-muted);
   text-transform: uppercase;
 }
@@ -180,25 +182,29 @@ body.on-raid {
 .proto-tab-pills {
   display: flex;
   background: rgba(3, 5, 10, 0.7);
-  padding: 4px;
+  padding: 2px 4px;
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  gap: 4px;
+  gap: 3px;
 }
 .proto-tab-btn {
-  padding: 8px 22px;
+  padding: 4px 12px;
   background: transparent;
   color: var(--text-muted);
   border: 1px solid transparent;
   border-radius: 4px;
   font-family: var(--font-display);
-  font-size: 13px;
-  letter-spacing: 0.06em;
+  font-size: 11px;
+  letter-spacing: 0.05em;
   cursor: pointer;
   transition: all 0.25s ease;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+}
+.proto-tab-btn svg {
+  width: 13px;
+  height: 13px;
 }
 .proto-tab-btn:hover {
   color: var(--text-main);
@@ -208,35 +214,37 @@ body.on-raid {
   background: linear-gradient(135deg, rgba(0, 240, 255, 0.22), rgba(168, 85, 247, 0.18));
   color: #fff;
   border-color: var(--cyber-cyan);
-  box-shadow: 0 0 16px rgba(0, 240, 255, 0.35);
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.35);
 }
 
 .live-currencies {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 8px;
 }
 .currency-pill {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
   background: rgba(10, 16, 32, 0.75);
   border: 1px solid rgba(0, 240, 255, 0.2);
-  padding: 6px 14px;
-  border-radius: 6px;
+  padding: 3px 8px;
+  border-radius: 5px;
 }
 .currency-pill svg {
+  width: 13px;
+  height: 13px;
   color: var(--cyber-cyan);
 }
 .currency-pill .label {
-  font-size: 11px;
+  font-size: 9px;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 .currency-pill .value {
   font-family: var(--font-mono);
-  font-size: 15px;
+  font-size: 12px;
   color: var(--cyber-cyan);
   font-weight: 700;
 }
@@ -245,9 +253,10 @@ body.on-raid {
    VIEW 1: WORLD BOSS COMMAND CENTER (CALAMITY MONARCH RAID)
    ========================================================================== */
 .view-stage {
-  flex: 1 !important;
+  flex: 1 1 0% !important;
   min-height: 0 !important;
-  height: calc(100% - 56px) !important;
+  height: auto !important;
+  max-height: 100% !important;
   display: none !important;
   animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   box-sizing: border-box !important;
@@ -264,11 +273,11 @@ body.on-raid {
 .wb-hub-grid {
   width: 100% !important;
   height: 100% !important;
-  flex: 1 !important;
+  flex: 1 1 0% !important;
   min-height: 0 !important;
   display: grid !important;
-  grid-template-columns: minmax(0, 1.45fr) minmax(380px, 0.82fr) !important;
-  gap: 14px !important;
+  grid-template-columns: minmax(0, 1.45fr) minmax(290px, 0.78fr) !important;
+  gap: 8px !important;
   box-sizing: border-box !important;
   overflow: hidden !important;
 }
@@ -276,33 +285,40 @@ body.on-raid {
 /* LEFT MONOLITH ARENA STAGE */
 .wb-stage-arena {
   position: relative;
-  border-radius: 14px;
+  border-radius: 10px;
   overflow: hidden;
-  border: 1px solid rgba(0, 240, 255, 0.25);
+  border: 1.5px solid rgba(0, 240, 255, 0.35);
   background: 
-    radial-gradient(80% 60% at 50% 30%, rgba(168, 85, 247, 0.2), transparent 75%),
-    radial-gradient(70% 50% at 50% 90%, rgba(0, 240, 255, 0.15), transparent 70%),
-    linear-gradient(180deg, #090e1c 0%, #050812 60%, #020409 100%);
+    radial-gradient(120% 90% at 50% 8%, rgba(168, 85, 247, 0.28), transparent 65%),
+    radial-gradient(90% 70% at 50% 100%, rgba(0, 240, 255, 0.18), transparent 70%),
+    linear-gradient(180deg, #090e1c 0%, #050812 55%, #020409 100%);
+  perspective: 1400px;
+  perspective-origin: 50% 46%;
+  transform-style: preserve-3d;
+  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.9), 0 20px 50px rgba(0, 0, 0, 0.7);
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 24px;
-  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.85), 0 20px 50px rgba(0, 0, 0, 0.6);
+  padding: 8px 10px;
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
 }
 
 /* Tactical Corner Brackets */
 .corner-bracket {
   position: absolute;
-  width: 14px;
-  height: 14px;
+  width: 10px;
+  height: 10px;
   border: 2px solid var(--cyber-cyan);
   pointer-events: none;
   z-index: 5;
 }
-.corner-bracket.tl { top: 8px; left: 8px; border-right: 0; border-bottom: 0; }
-.corner-bracket.tr { top: 8px; right: 8px; border-left: 0; border-bottom: 0; }
-.corner-bracket.bl { bottom: 8px; left: 8px; border-right: 0; border-top: 0; }
-.corner-bracket.br { bottom: 8px; right: 8px; border-left: 0; border-top: 0; }
+.corner-bracket.tl { top: 6px; left: 6px; border-right: 0; border-bottom: 0; }
+.corner-bracket.tr { top: 6px; right: 6px; border-left: 0; border-bottom: 0; }
+.corner-bracket.bl { bottom: 6px; left: 6px; border-right: 0; border-top: 0; }
+.corner-bracket.br { bottom: 6px; right: 6px; border-left: 0; border-top: 0; }
 
 /* Top Stage Telemetry */
 .wb-arena-header {
@@ -311,21 +327,23 @@ body.on-raid {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
+  margin-bottom: 4px;
 }
 .calamity-warning-tag {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
   background: rgba(255, 42, 95, 0.15);
   border: 1px solid var(--threat-red);
-  padding: 6px 14px;
+  padding: 3px 8px;
   border-radius: 4px;
   color: var(--threat-red);
   font-family: var(--font-cond);
-  font-size: 14px;
+  font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: 0.12em;
-  box-shadow: 0 0 18px var(--threat-glow);
+  letter-spacing: 0.08em;
+  box-shadow: 0 0 12px var(--threat-glow);
 }
 .calamity-warning-tag .warn-icon {
   animation: blink-warn 1.2s infinite;
@@ -338,17 +356,17 @@ body.on-raid {
 /* Boss Selector Tabs */
 .wb-boss-switcher {
   display: flex;
-  gap: 8px;
+  gap: 5px;
 }
 .wb-boss-tab {
-  padding: 6px 16px;
+  padding: 3px 10px;
   background: rgba(10, 16, 32, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 4px;
   color: var(--text-muted);
   font-family: var(--font-display);
-  font-size: 12px;
-  letter-spacing: 0.05em;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -360,27 +378,7 @@ body.on-raid {
   background: rgba(0, 240, 255, 0.18);
   border-color: var(--cyber-cyan);
   color: #fff;
-  box-shadow: 0 0 14px rgba(0, 240, 255, 0.35);
-}
-
-/* ==========================================================================
-   3D PERSPECTIVE STAGE & HOLOGRAPHIC CALAMITY BOSS CARD
-   Reference: Solo Leveling: Arise (Monarch Gate) & Punishing Gray Raven
-   ========================================================================== */
-.wb-stage-arena {
-  position: relative;
-  border-radius: 14px;
-  overflow: hidden;
-  border: 1.5px solid rgba(0, 240, 255, 0.35);
-  background: 
-    radial-gradient(120% 90% at 50% 8%, rgba(168, 85, 247, 0.28), transparent 65%),
-    radial-gradient(90% 70% at 50% 100%, rgba(0, 240, 255, 0.18), transparent 70%),
-    linear-gradient(180deg, #090e1c 0%, #050812 55%, #020409 100%);
-  perspective: 1400px;
-  perspective-origin: 50% 46%;
-  transform-style: preserve-3d;
-  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.9), 0 25px 60px rgba(0, 0, 0, 0.7);
-  isolation: isolate;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.35);
 }
 
 /* 3D Floor Grid with Animated Forward Running Perspective */
@@ -418,10 +416,10 @@ body.on-raid {
 .wbr-ped-rings {
   position: absolute;
   left: 50%;
-  bottom: 140px;
-  width: 320px;
-  height: 88px;
-  margin-left: -160px;
+  bottom: 82px;
+  width: 260px;
+  height: 68px;
+  margin-left: -130px;
   transform: rotateX(74deg);
   border-radius: 50%;
   pointer-events: none;
@@ -454,8 +452,8 @@ body.on-raid {
   position: absolute;
   left: 0;
   right: 0;
-  top: 54px;
-  bottom: 145px; /* SAFE CLEARANCE: NEVER COVERS OR TOUCHES BOTTOM HP PANEL */
+  top: 38px;
+  bottom: 84px; /* SAFE COMPACT CLEARANCE ABOVE BOTTOM HP PANEL */
   display: grid;
   place-items: center;
   perspective: 1400px;
@@ -678,49 +676,59 @@ body.on-raid {
 /* Bottom HP Panel (Panel Darah) - Absolute and Cleanly Separated */
 .wb-arena-footer {
   position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 14px;
+  left: 8px;
+  right: 8px;
+  bottom: 6px;
   z-index: 10;
-  background: rgba(7, 12, 24, 0.92);
+  background: rgba(7, 12, 24, 0.94);
   border: 1px solid rgba(0, 240, 255, 0.3);
-  border-radius: 10px;
-  padding: 14px 20px;
+  border-radius: 8px;
+  padding: 6px 10px;
   backdrop-filter: blur(16px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.85);
+  box-sizing: border-box;
 }
 .wb-boss-meta-row {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 4px;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.wb-boss-name-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }
 .wb-boss-name-group h2 {
   font-family: var(--font-display);
-  font-size: 34px;
+  font-size: 17px;
   color: #fff;
   letter-spacing: 0.04em;
   line-height: 1.1;
-  text-shadow: 0 0 20px rgba(0, 240, 255, 0.45);
+  text-shadow: 0 0 15px rgba(0, 240, 255, 0.45);
+  margin: 0;
 }
 .wb-boss-name-group .boss-subtitle {
   font-family: var(--font-cond);
-  font-size: 15px;
+  font-size: 9px;
   color: var(--cyber-cyan);
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 .wb-boss-tags {
   display: flex;
-  gap: 8px;
+  gap: 4px;
+  flex-wrap: wrap;
 }
 .wb-boss-tag {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 12px;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 9px;
   font-family: var(--font-mono);
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -741,30 +749,30 @@ body.on-raid {
 .calamity-gauge-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 3px;
 }
 .cg-telemetry-row {
   display: flex;
   justify-content: space-between;
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 9.5px;
 }
 .cg-telemetry-row .hp-label {
   color: var(--threat-red);
   font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 .cg-telemetry-row .hp-numbers {
   color: #fff;
 }
 .calamity-bar-track {
   position: relative;
-  height: 18px;
+  height: 9px;
   background: rgba(15, 23, 42, 0.95);
   border: 1px solid rgba(255, 42, 95, 0.35);
-  border-radius: 4px;
+  border-radius: 3px;
   overflow: hidden;
   box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.9);
 }
@@ -782,53 +790,68 @@ body.on-raid {
   top: 0;
   bottom: 0;
   right: 0;
-  width: 4px;
+  width: 3px;
   background: #fff;
-  box-shadow: 0 0 10px #fff;
+  box-shadow: 0 0 8px #fff;
 }
 
 /* RIGHT TACTICAL HUNTER CONSOLE (RAIL) */
 .wb-console-rail {
   display: flex !important;
   flex-direction: column !important;
-  gap: 10px !important;
+  gap: 6px !important;
   height: 100% !important;
   min-height: 0 !important;
   box-sizing: border-box !important;
-  overflow: hidden !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scrollbar-width: thin;
+  padding-right: 2px;
+}
+.wb-console-rail::-webkit-scrollbar {
+  width: 4px;
+}
+.wb-console-rail::-webkit-scrollbar-thumb {
+  background: rgba(0, 240, 255, 0.3);
+  border-radius: 4px;
 }
 
 .tactical-panel {
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
-  border-radius: 10px;
-  padding: 16px 18px;
+  border-radius: 7px;
+  padding: 7px 9px;
   backdrop-filter: blur(14px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
   position: relative;
+  flex-shrink: 0;
 }
 .tactical-panel-hdr {
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding-bottom: 10px;
-  margin-bottom: 12px;
+  padding-bottom: 3px;
+  margin-bottom: 5px;
 }
 .tactical-panel-hdr .title {
   font-family: var(--font-cond);
-  font-size: 14px;
-  letter-spacing: 0.12em;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
   color: var(--cyber-cyan);
   text-transform: uppercase;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
+}
+.tactical-panel-hdr .title svg {
+  width: 12px;
+  height: 12px;
 }
 .tactical-panel-hdr .badge {
   font-family: var(--font-mono);
-  font-size: 11px;
-  padding: 2px 8px;
+  font-size: 8.5px;
+  padding: 1px 5px;
   border-radius: 3px;
   background: rgba(0, 240, 255, 0.12);
   color: var(--cyber-cyan);
@@ -837,20 +860,20 @@ body.on-raid {
 /* Strike Authorization Pips */
 .strike-crystals-row {
   display: flex;
-  gap: 8px;
-  margin-bottom: 14px;
+  gap: 5px;
+  margin-bottom: 5px;
 }
 .strike-crystal {
   flex: 1;
-  height: 28px;
+  height: 18px;
   background: rgba(15, 23, 42, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  border-radius: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 8.5px;
   color: var(--text-dim);
   transition: all 0.3s ease;
 }
@@ -858,7 +881,7 @@ body.on-raid {
   background: linear-gradient(135deg, rgba(0, 240, 255, 0.25), rgba(168, 85, 247, 0.25));
   border-color: var(--cyber-cyan);
   color: #fff;
-  box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
 }
 .strike-crystal.active span {
   animation: glow-pulse 2s infinite;
@@ -872,25 +895,26 @@ body.on-raid {
 .strike-stats-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 4px;
 }
 .strike-stat-box {
   background: rgba(5, 8, 16, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 6px;
-  padding: 10px 12px;
+  border-radius: 4px;
+  padding: 3px 6px;
 }
 .strike-stat-box .stat-label {
-  font-size: 11px;
+  font-size: 8px;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 4px;
+  letter-spacing: 0.04em;
+  margin-bottom: 1px;
 }
 .strike-stat-box .stat-val {
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 12px;
   color: #fff;
+  line-height: 1.1;
 }
 .strike-stat-box .stat-val.gold { color: var(--hunter-gold); }
 .strike-stat-box .stat-val.cyan { color: var(--cyber-cyan); }
@@ -899,16 +923,19 @@ body.on-raid {
 .lb-hunter-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 3px;
+  max-height: 85px;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 .lb-hunter-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
+  padding: 3px 5px;
   background: rgba(7, 12, 24, 0.65);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
+  border-radius: 3px;
   transition: all 0.2s ease;
 }
 .lb-hunter-item:hover {
@@ -918,18 +945,18 @@ body.on-raid {
 .lb-hunter-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
 }
 .lb-rank-num {
   font-family: var(--font-mono);
   font-weight: 700;
-  font-size: 13px;
-  width: 24px;
-  height: 24px;
+  font-size: 8.5px;
+  width: 16px;
+  height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
+  border-radius: 3px;
   background: rgba(255, 255, 255, 0.08);
   color: var(--text-muted);
 }
@@ -937,13 +964,13 @@ body.on-raid {
 .lb-rank-num.top2 { background: rgba(203, 213, 225, 0.2); color: #e2e8f0; border: 1px solid #cbd5e1; }
 .lb-rank-num.top3 { background: rgba(180, 83, 9, 0.2); color: #f59e0b; border: 1px solid #f59e0b; }
 .lb-hunter-name {
-  font-size: 13px;
+  font-size: 9px;
   font-weight: 600;
   color: var(--text-main);
 }
 .lb-hunter-dmg {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 9px;
   color: var(--cyber-cyan);
   font-weight: 700;
 }
@@ -952,18 +979,19 @@ body.on-raid {
 .wb-action-dock {
   margin-top: auto;
   display: flex;
-  gap: 12px;
+  gap: 6px;
+  flex-shrink: 0;
 }
 .btn-enter-shop {
   flex: 0.9;
-  padding: 16px;
+  padding: 6px 8px;
   background: rgba(10, 18, 36, 0.9);
   border: 1px solid rgba(0, 240, 255, 0.4);
-  border-radius: 8px;
+  border-radius: 5px;
   color: var(--cyber-cyan);
   font-family: var(--font-display);
-  font-size: 15px;
-  letter-spacing: 0.08em;
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -973,31 +1001,31 @@ body.on-raid {
 }
 .btn-enter-shop:hover {
   background: rgba(0, 240, 255, 0.15);
-  box-shadow: 0 0 20px rgba(0, 240, 255, 0.35);
-  transform: translateY(-2px);
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.35);
+  transform: translateY(-1px);
 }
 .btn-enter-shop small {
   font-family: var(--font-cond);
-  font-size: 11px;
-  letter-spacing: 0.15em;
+  font-size: 8px;
+  letter-spacing: 0.1em;
   color: var(--text-muted);
   text-transform: uppercase;
 }
 
 .btn-strike-deploy {
   flex: 1.5;
-  padding: 16px 20px;
+  padding: 6px 10px;
   background: linear-gradient(135deg, #ff2a5f 0%, #a855f7 100%);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
+  border-radius: 5px;
   color: #fff;
   font-family: var(--font-display);
-  font-size: 17px;
-  letter-spacing: 0.08em;
+  font-size: 11px;
+  letter-spacing: 0.05em;
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 8px 25px rgba(255, 42, 95, 0.45);
+  box-shadow: 0 6px 18px rgba(255, 42, 95, 0.4);
   transition: all 0.25s ease;
   display: flex;
   flex-direction: column;
@@ -1005,13 +1033,13 @@ body.on-raid {
   justify-content: center;
 }
 .btn-strike-deploy:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 35px rgba(255, 42, 95, 0.65);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(255, 42, 95, 0.6);
 }
 .btn-strike-deploy small {
   font-family: var(--font-cond);
-  font-size: 11px;
-  letter-spacing: 0.15em;
+  font-size: 8px;
+  letter-spacing: 0.1em;
   color: rgba(255, 255, 255, 0.85);
   text-transform: uppercase;
 }
@@ -1026,11 +1054,13 @@ body.on-raid {
   flex-direction: column;
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
-  border-radius: 12px;
-  padding: 20px 24px;
+  border-radius: 8px;
+  padding: 6px 10px;
   backdrop-filter: blur(16px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
   min-height: 0;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 /* Shop Subheader & Category Filter Pills */
@@ -1038,24 +1068,25 @@ body.on-raid {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
-  gap: 16px;
+  margin-bottom: 5px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 .shop-cat-tabs {
   display: flex;
-  gap: 8px;
+  gap: 5px;
   flex-wrap: wrap;
 }
 .shop-cat-btn {
-  padding: 8px 16px;
+  padding: 3px 8px;
   background: rgba(10, 16, 32, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
+  border-radius: 4px;
   color: var(--text-muted);
   font-family: var(--font-cond);
-  font-size: 14px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -1067,23 +1098,31 @@ body.on-raid {
   background: rgba(0, 240, 255, 0.16);
   border-color: var(--cyber-cyan);
   color: #fff;
-  box-shadow: 0 0 14px rgba(0, 240, 255, 0.3);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
+.shop-matrix-tag {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
 }
 
 .shop-inventory-scroll {
-  flex: 1;
+  flex: 1 1 0%;
   min-height: 0;
+  height: 100%;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 10px 4px 18px 4px;
+  padding: 2px 4px 6px 4px;
   display: flex;
   flex-direction: row;
-  gap: 16px;
+  gap: 8px;
   align-items: stretch;
+  box-sizing: border-box;
 }
 /* Custom Scrollbar for horizontal shelf */
 .shop-inventory-scroll::-webkit-scrollbar {
-  height: 7px;
+  height: 6px;
 }
 .shop-inventory-scroll::-webkit-scrollbar-track {
   background: rgba(5, 8, 16, 0.7);
@@ -1098,31 +1137,33 @@ body.on-raid {
   background: var(--cyber-cyan);
 }
 
-/* 300px HORIZONTAL SEJAJAR CARD */
+/* 250px HORIZONTAL SEJAJAR COMPACT CARD */
 .armory-300-card {
-  width: 300px;
-  min-width: 300px;
-  max-width: 300px;
-  flex: 0 0 300px;
+  width: 250px;
+  min-width: 250px;
+  max-width: 250px;
+  flex: 0 0 250px;
+  height: 100%;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   background: linear-gradient(180deg, rgba(14, 22, 42, 0.94) 0%, rgba(7, 11, 24, 0.98) 100%);
   border: 1.2px solid rgba(0, 240, 255, 0.2);
-  border-top: 3.5px solid var(--card-accent, var(--cyber-cyan));
-  border-radius: 10px;
-  padding: 14px;
+  border-top: 3px solid var(--card-accent, var(--cyber-cyan));
+  border-radius: 7px;
+  padding: 7px 8px;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
   box-sizing: border-box;
 }
 .armory-300-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-2px);
   border-color: rgba(0, 240, 255, 0.45);
   border-top-color: var(--card-accent, var(--cyber-cyan));
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7), 0 0 16px color-mix(in srgb, var(--card-accent, var(--cyber-cyan)) 30%, transparent);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.7), 0 0 14px color-mix(in srgb, var(--card-accent, var(--cyber-cyan)) 30%, transparent);
 }
 .armory-300-card.purchased {
   border-top-color: #22c55e;
@@ -1133,14 +1174,15 @@ body.on-raid {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 3px;
+  flex-shrink: 0;
 }
 .a3c-cat-badge {
   font-family: var(--font-cond);
-  font-size: 10px;
+  font-size: 8px;
   font-weight: 800;
-  letter-spacing: 0.12em;
-  padding: 2px 7px;
+  letter-spacing: 0.1em;
+  padding: 1px 4px;
   border-radius: 3px;
   background: rgba(255, 255, 255, 0.08);
   color: var(--card-accent, var(--cyber-cyan));
@@ -1148,9 +1190,9 @@ body.on-raid {
 }
 .a3c-tier-pill {
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 8px;
   font-weight: 700;
-  padding: 2px 6px;
+  padding: 1px 4px;
   border-radius: 3px;
   background: rgba(0, 0, 0, 0.85);
   border: 1px solid var(--card-accent, var(--cyber-cyan));
@@ -1158,64 +1200,58 @@ body.on-raid {
   text-transform: uppercase;
 }
 
-/* ==========================================================================
-   AAA HOLOGRAPHIC BOSS CARD CHAMBER (CYBERPUNK × SOLO LEVELING)
-   Reference: Solo Leveling: Arise (Shadow Monarch Gate) & Honkai Star Rail (Light Cones)
-   ========================================================================== */
+/* AAA Holographic Chamber */
 .a3c-chamber {
   position: relative;
   width: 100%;
-  height: 145px;
+  height: 90px;
   background: 
     radial-gradient(circle at 50% 20%, rgba(168, 85, 247, 0.3) 0%, rgba(10, 16, 32, 0.95) 75%),
     linear-gradient(180deg, #0f172a 0%, #030509 100%);
-  border: 1.5px solid rgba(0, 240, 255, 0.3);
-  border-radius: 8px;
+  border: 1.2px solid rgba(0, 240, 255, 0.3);
+  border-radius: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  margin-bottom: 10px;
-  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.9), 0 4px 16px rgba(0, 0, 0, 0.6);
+  margin-bottom: 5px;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.9), 0 3px 12px rgba(0, 0, 0, 0.6);
   perspective: 600px;
+  flex-shrink: 0;
 }
 
-/* Corner Cybernetic Clamps */
 .a3c-chamber::before {
   content: "";
   position: absolute;
-  inset: 3px;
+  inset: 2px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
+  border-radius: 4px;
   pointer-events: none;
   z-index: 4;
 }
 
-/* Boss Card Artwork Full Depth */
 .a3c-chamber img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center 20%;
-  filter: contrast(1.15) brightness(1.05) drop-shadow(0 0 15px var(--card-accent, var(--cyber-cyan)));
+  filter: contrast(1.15) brightness(1.05) drop-shadow(0 0 12px var(--card-accent, var(--cyber-cyan)));
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease;
   z-index: 1;
 }
 .armory-300-card:hover .a3c-chamber img {
-  transform: scale(1.08) translateY(-2px);
-  filter: contrast(1.2) brightness(1.15) drop-shadow(0 0 25px var(--card-accent, var(--cyber-cyan)));
+  transform: scale(1.06) translateY(-1px);
+  filter: contrast(1.2) brightness(1.12) drop-shadow(0 0 20px var(--card-accent, var(--cyber-cyan)));
 }
 
-/* For Non-Card consumable items, keep them contained inside dark chamber */
 .armory-300-card[data-type="potion"] .a3c-chamber img,
 .armory-300-card[data-type="relic"] .a3c-chamber img,
 .armory-300-card[data-type="gem"] .a3c-chamber img {
-  width: 70%;
-  height: 70%;
+  width: 65%;
+  height: 65%;
   object-fit: contain;
 }
 
-/* Dynamic Holographic Foil Shimmer */
 .a3c-holo-foil {
   position: absolute;
   inset: 0;
@@ -1245,7 +1281,6 @@ body.on-raid {
   100% { background-position: -200% 0%; }
 }
 
-/* Monarch Scanlines & Reticle */
 .a3c-scanlines {
   position: absolute;
   inset: 0;
@@ -1255,116 +1290,127 @@ body.on-raid {
   opacity: 0.6;
 }
 
-/* Gilded Rarity Crest Top Left */
 .a3c-rarity-crest {
   position: absolute;
-  top: 6px;
-  left: 6px;
+  top: 3px;
+  left: 3px;
   z-index: 5;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
   border: 1px solid var(--card-accent, var(--cyber-cyan));
   color: var(--card-accent, var(--cyber-cyan));
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 7.5px;
   font-weight: 800;
-  padding: 2px 6px;
-  border-radius: 4px;
-  letter-spacing: 0.05em;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+  padding: 1px 3px;
+  border-radius: 3px;
 }
 
-/* System Barcode Bottom Right */
 .a3c-card-barcode {
   position: absolute;
-  bottom: 5px;
-  right: 6px;
+  bottom: 3px;
+  right: 3px;
   z-index: 5;
   font-family: var(--font-mono);
-  font-size: 8px;
-  letter-spacing: 0.15em;
+  font-size: 7px;
+  letter-spacing: 0.1em;
   color: rgba(255, 255, 255, 0.6);
   background: rgba(0, 0, 0, 0.7);
-  padding: 1px 5px;
+  padding: 1px 3px;
   border-radius: 2px;
-  text-transform: uppercase;
 }
 
-/* Status Ribbon */
 .a3c-owned-ribbon {
   position: absolute;
-  top: 6px;
-  right: 6px;
+  top: 3px;
+  right: 3px;
   z-index: 5;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 7.5px;
   font-weight: 800;
   color: #4ade80;
   background: rgba(5, 46, 22, 0.9);
   border: 1px solid rgba(74, 222, 128, 0.5);
-  padding: 2px 7px;
-  border-radius: 4px;
-  box-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
+  padding: 1px 4px;
+  border-radius: 3px;
 }
+
 /* Card Body */
 .a3c-body {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  flex: 1;
+  gap: 2px;
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding-right: 2px;
 }
+.a3c-body::-webkit-scrollbar {
+  width: 3px;
+}
+.a3c-body::-webkit-scrollbar-thumb {
+  background: rgba(0, 240, 255, 0.25);
+  border-radius: 3px;
+}
+
 .a3c-title {
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: 12px;
   color: #fff;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.15;
+  margin: 0;
 }
 .a3c-desc {
-  font-size: 12px;
+  font-size: 9px;
   color: var(--text-muted);
-  line-height: 1.45;
+  line-height: 1.25;
   display: block;
-  overflow: visible;
   word-break: break-word;
+  margin: 0;
 }
 .a3c-passive-box {
   background: rgba(168, 85, 247, 0.14);
   border: 1px solid rgba(168, 85, 247, 0.35);
-  border-radius: 6px;
-  padding: 6px 9px;
-  font-size: 11px;
-  line-height: 1.42;
+  border-radius: 3px;
+  padding: 2px 5px;
+  font-size: 8px;
+  line-height: 1.25;
   color: #e9d5ff;
   display: flex;
   align-items: flex-start;
-  gap: 6px;
+  gap: 3px;
   white-space: normal;
   word-break: break-word;
-  margin-top: 4px;
-  box-shadow: inset 0 0 12px rgba(168, 85, 247, 0.12);
+  margin-top: 2px;
 }
 .a3c-passive-box svg {
   flex: none;
-  margin-top: 2px;
+  margin-top: 1px;
+  width: 9px;
+  height: 9px;
 }
 .a3c-passive-box.param {
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.12);
   color: #94a3b8;
 }
+
 /* Card Footer: Price & Buy */
 .a3c-footer {
-  margin-top: 10px;
+  margin-top: 3px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 3px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-top: 8px;
+  padding-top: 4px;
+  flex-shrink: 0;
 }
 .a3c-price-box {
   display: flex;
@@ -1373,43 +1419,43 @@ body.on-raid {
 }
 .a3c-price-box .lbl {
   font-family: var(--font-cond);
-  font-size: 10px;
+  font-size: 8px;
   font-weight: 700;
   color: var(--text-muted);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
 }
 .a3c-price-box .val b {
   font-family: var(--font-mono);
-  font-size: 16px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--cyber-cyan);
 }
 .a3c-price-box .val small {
   font-family: var(--font-cond);
-  font-size: 10px;
+  font-size: 8px;
   color: var(--text-muted);
 }
 .a3c-buy-btn {
   width: 100%;
-  padding: 8px;
+  padding: 4px 6px;
   background: linear-gradient(135deg, rgba(0, 240, 255, 0.22) 0%, rgba(0, 240, 255, 0.08) 100%);
   border: 1.2px solid var(--cyber-cyan);
-  border-radius: 6px;
+  border-radius: 4px;
   color: #fff;
   font-family: var(--font-display);
-  font-size: 12px;
-  letter-spacing: 0.06em;
+  font-size: 9.5px;
+  letter-spacing: 0.05em;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 4px;
   transition: all 0.2s ease;
 }
 .a3c-buy-btn:hover:not(:disabled) {
   background: var(--cyber-cyan);
   color: #030509;
-  box-shadow: 0 0 14px rgba(0, 240, 255, 0.45);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.45);
 }
 .a3c-buy-btn:disabled {
   opacity: 0.45;
@@ -1424,6 +1470,7 @@ body.on-raid {
   color: #86efac;
   opacity: 1;
 }
+
 /* Toast Notification Overlay */
 .proto-toast {
   position: fixed;
@@ -1455,16 +1502,16 @@ body.on-raid {
    ========================================================================== */
 .wbr-stage-arrow {
   position: absolute;
-  top: 48%;
+  top: 46%;
   transform: translateY(-50%);
   z-index: 25;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  width: 44px;
-  height: 84px;
+  gap: 2px;
+  width: 32px;
+  height: 52px;
   background: rgba(7, 13, 26, 0.78);
   border: 1px solid rgba(0, 240, 255, 0.35);
   border-radius: 8px;
@@ -1500,7 +1547,9 @@ body.on-raid {
 /* Subtle Swipe Hint Pill */
 .wbr-swipe-hint {
   position: absolute;
-  bottom: 124px;
+  bottom: 78px;
+  padding: 2px 10px;
+  font-size: 9.5px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -1670,17 +1719,17 @@ body.on-raid {
 .reward-track-list {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  padding: 4px 0 2px;
+  gap: 4px;
+  padding: 1px 0;
 }
 .reward-track-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
+  gap: 4px;
+  padding: 3px 5px;
   background: rgba(10, 16, 32, 0.65);
   border: 1px solid rgba(0, 240, 255, 0.15);
-  border-radius: 6px;
+  border-radius: 4px;
   font-family: var(--font-cond);
 }
 .reward-track-item.rank1 { border-color: rgba(255, 183, 3, 0.4); background: rgba(255, 183, 3, 0.08); }
@@ -1690,10 +1739,10 @@ body.on-raid {
 
 .reward-track-pill {
   font-family: var(--font-display);
-  font-size: 11px;
+  font-size: 8px;
   font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 1px 4px;
+  border-radius: 3px;
   line-height: 1;
 }
 .reward-track-item.rank1 .reward-track-pill { background: #ffb703; color: #000; }
@@ -1707,15 +1756,15 @@ body.on-raid {
   min-width: 0;
 }
 .reward-track-name {
-  font-size: 11px;
+  font-size: 8px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   color: var(--text-muted);
   text-transform: uppercase;
 }
 .reward-track-val {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 8px;
   color: var(--text-main);
   white-space: nowrap;
   overflow: hidden;
@@ -1725,7 +1774,7 @@ body.on-raid {
 /* Shelf Outer Container with Floating Arrow Buttons */
 .shop-shelf-outer {
   position: relative;
-  flex: 1;
+  flex: 1 1 0%;
   min-height: 0;
   height: 100%;
   display: flex;
@@ -1739,25 +1788,25 @@ body.on-raid {
   top: 50%;
   transform: translateY(-50%);
   z-index: 20;
-  width: 36px;
-  height: 72px;
+  width: 24px;
+  height: 48px;
   background: rgba(7, 13, 26, 0.88);
   border: 1px solid rgba(0, 240, 255, 0.4);
-  border-radius: 6px;
+  border-radius: 4px;
   color: var(--cyber-cyan);
-  font-size: 16px;
+  font-size: 11px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   backdrop-filter: blur(8px);
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7);
   transition: all 0.2s;
 }
 .shelf-arrow-btn:hover {
   background: rgba(0, 240, 255, 0.25);
   color: #fff;
-  box-shadow: 0 0 20px rgba(0, 240, 255, 0.6);
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.6);
 }
-.shelf-arrow-btn.left { left: 4px; }
-.shelf-arrow-btn.right { right: 4px; }
+.shelf-arrow-btn.left { left: 2px; }
+.shelf-arrow-btn.right { right: 2px; }
