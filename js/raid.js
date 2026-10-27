@@ -883,26 +883,42 @@ var _rdTileHtml={},_ixHtml={},_dpHtml={};
 function renderRaidPick(){
   const stacks=state.stacks.slice().sort((a,b)=>(b.fav?1:0)-(a.fav?1:0));
   const b=wbBossOf();
+  const bossArt = b.img || b.art || (b.name && b.name.toLowerCase().includes("shadow") ? "assets/cards/art/shadow-king.webp" : "assets/raid/eternal-dragon-hd.webp");
   app.innerHTML=`
   <div class="rd-page rd-pick">
     <div class="rd-pick-head">
-      <button class="rd-pick-back" id="raidPickBack" title="Kembali ke hub raid">&#8592;</button>
-      <div class="rd-pick-ttl"><span class="eyebrow">PILIH KARTU RAID</span><b>SATU KARTU vs ${b.name.toUpperCase()}</b></div>
-      <div class="rd-pick-boss"><img src="${b.img}" alt="${b.name}"><div class="rpb-i"><span class="rpb-k">BOSS &middot; ${b.diffLabel}</span><span class="rpb-n">${b.name}</span><span class="rpb-hp">HP ${fmtBig(b.hp)} &middot; ${RAID_TURNS} TURN</span></div></div>
+      <button class="rd-pick-back" id="raidPickBack" title="Kembali ke hub raid"><span class="back-arrow">&#8592;</span> <span class="back-txt">KEMBALI</span></button>
+      <div class="rd-pick-ttl"><span class="eyebrow">TACTICAL STRIKER SELECTION</span><b>PILIH KARTU vs ${b.name.toUpperCase()}</b></div>
+      <div class="rd-pick-boss">
+        <img src="${bossArt}" alt="${b.name}">
+        <div class="rpb-i">
+          <span class="rpb-k">TARGET BOSS &middot; ${b.diffLabel || "WORLD BOSS"}</span>
+          <span class="rpb-n">${b.name}</span>
+          <span class="rpb-hp">HP ${fmtBig(b.hp)} &middot; ${RAID_TURNS} TURN</span>
+        </div>
+      </div>
     </div>
-    <label class="card-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input class="card-search" id="raidSearch" type="text" placeholder="Cari kartu…" autocomplete="off"></label>
-    <div class="raid-pick-grid" id="raidPickGrid">${(()=>{const _rd={};const inner=s=>{const c=CARDS[s.char];
-      const shny=s.shiny?'<span class="bpt-shiny shiny-pill">SHINY</span>':'';
-      const mut=(s.mut&&s.mut!=='none')?s.mut:null;
-      const trait=(s.trait&&s.trait!=='none')?s.trait:null;
-      const cnt=(s.count||1)>1?`<span class="bpt-cnt">&times;${fmt(s.count)}</span>`:'';
-      const stack=(shny||mut||trait)?`<div class="bpt-top">${shny}${mut?mutChip(mut,mutPill(mut,'bpt-mut')):''}${trait?traitChip(trait,`<span class="bpt-gem" style="color:${TRAIT_COLOR[trait]};border-color:${TRAIT_COLOR[trait]}">${traitGem(12,trait)}</span>`):''}</div>`:'';
-      return `<img src="${cardThumb(s.char)}" alt="" width="360" height="536" loading="lazy" decoding="async">${stack}${cnt}<div class="bpt-ctl"><button class="bpt-fav${s.fav?' on':''}" onclick="event.stopPropagation();bpFav('${s.id}');renderRaidPick()" title="Favorit">${s.fav?'★':'☆'}</button><button class="bpt-lock${s.lock?' on':''}" onclick="event.stopPropagation();bpLock('${s.id}');renderRaidPick()" title="Lock">${s.lock?'🔒':'🔓'}</button></div><div class="bpt-name">${c.name}</div>`;};
-      _rdTileHtml=_rd;
-      return stacks.map((s,i)=>{_rd[s.id]=inner(s);const c=CARDS[s.char];const mounted=i<48;
-      return `<div class="bp-tile${c.fullArt?' fa':''}${mounted?'':' lz-ph'}" data-lz="${s.id}" data-sid="${s.id}" data-pick="${s.id}" data-name="${c.name.toLowerCase()}" style="--tcol:${(s.tier&&TIER_COLOR[s.tier])||'var(--line2)'}">${mounted?_rd[s.id]:''}</div>`;
-    }).join("");})()}</div>
-    <div class="no-result" id="raidSearch-nr">Tidak ada kartu yang cocok dengan pencarian.</div>
+    <div class="rd-pick-filter-bar">
+      <label class="card-search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+        <input class="card-search" id="raidSearch" type="text" placeholder="Cari kartu striker..." autocomplete="off">
+      </label>
+      <div class="rd-pick-counter"><span class="rpc-val">${stacks.length}</span> KARTU TERSEDIA</div>
+    </div>
+    <div class="rd-pick-scroll-wrap">
+      <div class="raid-pick-grid bp-grid" id="raidPickGrid">${(()=>{const _rd={};const inner=s=>{const c=CARDS[s.char];
+        const shny=s.shiny?'<span class="bpt-shiny shiny-pill">SHINY</span>':'';
+        const mut=(s.mut&&s.mut!=='none')?s.mut:null;
+        const trait=(s.trait&&s.trait!=='none')?s.trait:null;
+        const cnt=(s.count||1)>1?`<span class="bpt-cnt">&times;${fmt(s.count)}</span>`:'';
+        const stack=(shny||mut||trait)?`<div class="bpt-top">${shny}${mut?mutChip(mut,mutPill(mut,'bpt-mut')):''}${trait?traitChip(trait,`<span class="bpt-gem" style="color:${TRAIT_COLOR[trait]};border-color:${TRAIT_COLOR[trait]}">${traitGem(12,trait)}</span>`):''}</div>`:'';
+        return `<img src="${cardThumb(s.char)}" alt="" width="360" height="536" loading="lazy" decoding="async">${stack}${cnt}<div class="bpt-ctl"><button class="bpt-fav${s.fav?' on':''}" onclick="event.stopPropagation();bpFav('${s.id}');renderRaidPick()" title="Favorit">${s.fav?'★':'☆'}</button><button class="bpt-lock${s.lock?' on':''}" onclick="event.stopPropagation();bpLock('${s.id}');renderRaidPick()" title="Lock">${s.lock?'🔒':'🔓'}</button></div><div class="bpt-name">${c.name}</div>`;};
+        _rdTileHtml=_rd;
+        return stacks.map((s,i)=>{_rd[s.id]=inner(s);const c=CARDS[s.char];const mounted=i<48;
+        return `<div class="bp-tile${c.fullArt?' fa':''}${mounted?'':' lz-ph'}" data-lz="${s.id}" data-sid="${s.id}" data-pick="${s.id}" data-name="${c.name.toLowerCase()}" style="--tcol:${(s.tier&&TIER_COLOR[s.tier])||'var(--line2)'}">${mounted?_rd[s.id]:''}</div>`;
+      }).join("");})()}</div>
+      <div class="no-result" id="raidSearch-nr">Tidak ada kartu yang cocok dengan pencarian.</div>
+    </div>
   </div>`;
   bpsHoverBind();bpsHoverHide(); /* hover tile -> reveal kartu penuh (stat/passive) kayak tab DECK */
   {const bk=document.getElementById("raidPickBack");if(bk)bk.onclick=()=>{sfx.hit();raidView="hub";renderRaid();};}
@@ -1594,6 +1610,268 @@ function renderRaidShop(){
     };
   }
 }
+
+/* =============== INDEX CARD (popup) =============== */
+const IX_MUTS=["none","gold","rainbow","secret","ultima"];
+let ixState={q:"",mut:"all",shiny:false,owned:false,sort:"name"};
+function openIndex(){
+  /* Katalog SEMUA kartu — layout meniru referensi "INDEX!": search di header, toolbar
+     chip mutasi + toggle SHINY + OWNED ONLY + sort, grid full-art (nama, centang owned
+     x/10, pips mut×shiny, nama+deskripsi skill di atas art), footer strip progres varian
+     (segmen per mutasi) -> milestone INTAN ROLL 100K. Klik kartu = detail passive
+     lengkap di #skillPop. Filter/sort state disimpan di ixState biar gak reset. */
+  idxRewardSync(true);
+  ixRender();
+  document.getElementById("indexModal").classList.add("show");
+  const sx=document.getElementById("ixSearch");
+  sx.value=ixState.q;
+  sx.oninput=()=>{ixState.q=sx.value.trim().toLowerCase();clearTimeout(sx._t);sx._t=setTimeout(ixRender,180);};
+  document.getElementById("spClose").onclick=()=>document.getElementById("skillPop").classList.remove("show");
+  document.getElementById("skillPop").onclick=(e)=>{if(e.target.id==="skillPop")document.getElementById("skillPop").classList.remove("show");};
+}
+function ixLiveShimmer(){
+  /* Index = 75 tile shiny semua animasi holoSheen -> ~2000 repaint/detik -> fps drop 6.
+     Batasi concurrency: hanya ~12 tile yang PALING TENGAH viewport yang ditandai .ix-live,
+     sisanya static. Scroll -> live set rotate. Kalau fps-lock lepas, gak ngaruh (rule CSS
+     khusus html.fps-locked). */
+  const body=document.getElementById("ixBody"); if(!body) return;
+  if(body.__ixShimmerIO){try{body.__ixShimmerIO.disconnect();}catch(e){}}
+  const cells=[].slice.call(body.querySelectorAll('.ix-cell.shiny'));
+  if(!cells.length) return;
+  const MAX=8;
+  const update=()=>{
+    const vr=body.getBoundingClientRect();
+    const vc=(vr.top+vr.bottom)/2;
+    const vis=cells.filter(c=>{
+      if(c.classList.contains('lz-ph'))return false;
+      const r=c.getBoundingClientRect();
+      return r.bottom>vr.top && r.top<vr.bottom;
+    });
+    vis.sort((a,b)=>{
+      const ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect();
+      return Math.abs((ra.top+ra.bottom)/2 - vc) - Math.abs((rb.top+rb.bottom)/2 - vc);
+    });
+    cells.forEach(c=>{c.classList.remove('ix-live');});
+    vis.slice(0,MAX).forEach(c=>{c.classList.add('ix-live');});
+  };
+  const io=new IntersectionObserver(update,{root:body,rootMargin:'0px',threshold:[0,0.1]});
+  cells.forEach(c=>io.observe(c));
+  body.addEventListener('scroll',update,{passive:true});
+  body.__ixShimmerIO=io;
+  update();
+}
+function ixRender(){
+  const P=idxProgress();
+  const ownCnt=(c,mut,sh)=>P.owned.has(`${c.char_id}|${mut}|${sh?1:0}`);
+  const ownedN=(c,sh)=>IX_MUTS.reduce((n,m)=>n+(ownCnt(c,m,sh)?1:0),0);
+  /* --- toolbar: chip mutasi + shiny + owned-only + sort --- */
+  /* parse filter sekali: chip "s-*" = mutasi versi SHINY; fmSel = mutasi murni (null = semua) */
+  const shChip=ixState.mut.startsWith("s-");
+  const fmSel=ixState.mut==="all"?null:ixState.mut.slice(shChip?2:0);
+  const fShiny=shChip||ixState.shiny;
+  const chip=(k,l,cls)=>`<button class="ix-chip ${cls||""}${ixState.mut===k?' on':''}" type="button" data-mut="${k}">${l}</button>`;
+  const toolbar=`<div class="ix-bar">
+    <div class="ix-chips">${chip("all","ALL MATRIX","all")}${IX_MUTS.map(m=>chip(m,m==="none"?"PURE":MUT_LABEL[m],"m-"+m)).join("")}
+      ${chip("s-gold","GOLD + SHINY","m-gold shp")}${chip("s-rainbow","RAINBOW + SHINY","m-rainbow shp")}${chip("s-secret","SECRET + SHINY","m-secret shp")}${chip("s-ultima","ULTIMA + SHINY","m-ultima shp")}
+      <button class="ix-chip shiny${ixState.shiny?' on':''}" type="button" data-shiny="1">★ SHINY</button></div>
+    <span class="ix-sp"></span>
+    <button class="ix-tog${ixState.owned?' on':''}" type="button" data-owned="1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> OWNED ONLY</button>
+    <div class="ix-sort-wrap">
+      <select class="ix-sort" id="ixSort" title="Urutkan">
+        <option value="name">SORT: NAME</option><option value="chance">SORT: CHANCE</option><option value="own">SORT: VARIANTS</option>
+      </select>
+    </div></div>`;
+  /* --- filter + sort --- */
+  const TIER_RANK={R:0,SR:1,SSR:2,UR:3,EX:4,BOSS:5};
+  let list=MASTER_CARD_INDEX.filter(c=>{
+    if(c.isStoryEnemy||(c.noGacha&&!c.chance))return false;
+    if(ixState.q&&!c.name.toLowerCase().includes(ixState.q))return false;
+    /* Jika toggle OWNED ONLY aktif: hanya tampilkan yang sudah didapat */
+    if(ixState.owned){
+      if(fmSel){
+        if(!ownCnt(c,fmSel,fShiny))return false;
+      } else if(fShiny){
+        if(!ownedN(c,true))return false;
+      } else {
+        if(!(ownedN(c,false)+ownedN(c,true)))return false;
+      }
+    }
+    /* Default: Tampilkan semua kartu (termasuk yang belum dapat) di setiap tab mutasi */
+    return true;
+  });
+  const T={name:(a,b)=>a.name.localeCompare(b.name),
+    tier:(a,b)=>(TIER_RANK[a.tier]??9)-(TIER_RANK[b.tier]??9)||a.name.localeCompare(b.name),
+    own:(a,b)=>(ownedN(b,false)+ownedN(b,true))-(ownedN(a,false)+ownedN(a,true))||a.name.localeCompare(b.name),
+    chance:(a,b)=>(a.chance==null?1e9:a.chance)-(b.chance==null?1e9:b.chance)||a.name.localeCompare(b.name)};
+  list.sort(T[ixState.sort]||T.name);
+  /* --- kartu full-art --- */
+  _ixHtml={};
+  const cells=list.map((c,i)=>{
+    const any=ownedN(c,false)+ownedN(c,true);
+    const anySh=ownedN(c,true)>0;
+
+    /* Cek kepemilikan varian spesifik sesuai filter aktif:
+       - fmSel ada & fShiny aktif: wajib punya varian (fmSel, SHINY)
+       - fmSel ada & fShiny nonaktif: punya varian (fmSel, non-shiny) atau (fmSel, shiny)
+       - fmSel null (tab ALL): cek fShiny ? anySh : any > 0 */
+    const isSpecificVariantOwned = fmSel
+      ? (fShiny ? ownCnt(c, fmSel, true) : (ownCnt(c, fmSel, false) || ownCnt(c, fmSel, true)))
+      : (fShiny ? anySh : any > 0);
+
+    /* Cek apakah kartu ini sedang berstatus SHINY dalam konteks tab saat ini:
+       1) Tab SHINY aktif (fShiny == true) -> kartu tampil shiny (jika owned, atau preview shiny jika filter shiny)
+       2) Tab ALL -> kartu tampil shiny jika pemain memiliki varian shiny kartu ini (anySh) */
+    const isShinyActive = fShiny || (ixState.mut === "all" && anySh);
+
+    const bestMut=ownCnt(c,"ultima",false)||ownCnt(c,"ultima",true)?"ultima":
+      (ownCnt(c,"secret",false)||ownCnt(c,"secret",true)?"secret":
+      ownCnt(c,"rainbow",false)||ownCnt(c,"rainbow",true)?"rainbow":
+      (ownCnt(c,"gold",false)||ownCnt(c,"gold",true))?"gold":null);
+
+    const fm = ixState.mut === "all" ? bestMut : fmSel;
+    const hasMut = !!(fm && fm !== "none");
+    const bc = hasMut ? MUT_COLOR[fm] : (isSpecificVariantOwned ? "#9AA6B2" : "#3A3F47");
+    const chanceColor = hasMut ? MUT_COLOR[fm] : "#9AA6B2";
+    const chanceText = `1 IN ${fmtChance(effChance(c.char_id, fmSel || "none", fShiny))}`;
+    const chanceHtml = hasMut && (fm === 'rainbow' || fm === 'ultima') ? mutText(fm, chanceText) : chanceText;
+    const lockBoss = !!((c.raidBoss||c.towerBoss) && !bossRollUnlocked(c.char_id));
+    const lockShop = c.towerBoss?"TOKO INF":"TOKO WORLD BOSS";
+
+    const shFx = isShinyActive;
+    const comboFx = !!(shFx && hasMut);
+    const cls = `ix-cell${isSpecificVariantOwned ? '' : ' no-own'}${lockBoss ? ' boss-locked' : ''}${shFx ? ' shiny' : ''}${hasMut ? ' m-' + fm : ''}${comboFx ? ' combo-mut' : ''}${c.fullArt ? ' fa' : ''}`;
+
+    const safeName = String(c.name).replace(/"/g, '&quot;');
+    const shinyStyle = hasMut && fm === 'gold' ? '--sh-base:#E0BC6E;--sh-edge:rgba(224,188,110,.95);--sh-glow:rgba(224,188,110,.55)'
+      : hasMut && fm === 'rainbow' ? '--sh-base:#B58CFF;--sh-edge:rgba(90,200,250,.95);--sh-glow:rgba(181,140,255,.55)'
+      : hasMut && fm === 'secret' ? '--sh-base:#A855F7;--sh-edge:rgba(168,85,247,.95);--sh-glow:rgba(168,85,247,.55)'
+      : hasMut && fm === 'ultima' ? '--sh-base:#FF0055;--sh-edge:rgba(255,51,102,.95);--sh-glow:rgba(255,0,85,.6)'
+      : '--sh-base:#22d3ee;--sh-edge:rgba(34,211,238,.95);--sh-glow:rgba(34,211,238,.55)';
+
+    /* Tampilan Nama Kartu:
+       - Jika SHINY: WAJIB gunakan kelas .hc-name-shine + .hc-name-shine-{mutasi} agar gradien animasinya aktif dan BUKAN mutText
+       - Jika BUKAN SHINY: gunakan .hc-mut-name (animasi sweep mutasi biasa) */
+    let nameHtml = '';
+    if (shFx) {
+      nameHtml = `<span class="ixc-name hc-name-top hc-name-shine${hasMut ? ' hc-name-shine-' + fm : ''}" data-text="${safeName}" style="${shinyStyle}">${c.name}</span>`;
+    } else if (hasMut) {
+      nameHtml = `<span class="ixc-name hc-name-top hc-mut-name" data-text="${safeName}">${fm === 'rainbow' || fm === 'ultima' ? mutText(fm, c.name) : c.name}</span>`;
+    } else {
+      nameHtml = `<span class="ixc-name hc-name-top">${c.name}</span>`;
+    }
+
+    const inner=`<img src="${thumbSrc(c.sprite_asset)}" alt="${c.name}" width="360" height="536" loading="lazy" decoding="async">
+      ${(hasMut||shFx)?`<span class="ix-badges hc-badges">${shFx?'<span class="shiny-badge shiny-pill">SHINY</span>':''}${hasMut?mutChip(fm,mutPill(fm)):''}</span>`:''}
+      <span class="ixc-stack">${nameHtml}<span class="ixc-chance${hasMut && (fm === 'rainbow' || fm === 'ultima') ? ' ixc-chance-rainbow' : ''}" style="color:${chanceColor}"><span class="ixc-chance-text">${chanceHtml}</span></span></span>
+      <span class="ixc-own${isSpecificVariantOwned ? ' on' : ''}">${any}/10</span>`;
+    _ixHtml[c.char_id]=inner;
+    const mounted=i<48;
+    return `<button class="${cls}${mounted?'':' lz-ph'}" type="button" data-lz="${c.char_id}" data-c="${c.char_id}" data-mut="${hasMut ? fm : 'none'}" data-shiny="${shFx ? '1' : '0'}"${lockBoss ? ' title="BELUM DIBELI - beli di '+lockShop+' untuk buka roll"' : ''} style="--tc:#9AA6B2;--bc:${bc}">${mounted?inner:''}</button>`;
+  }).join("");
+  /* --- footer: strip progres SEGMENT per mutasi + milestone INTAN ROLL --- */
+  const validCards=MASTER_CARD_INDEX.filter(c=>!c.isStoryEnemy);
+  const t=validCards.length;
+  const segs=IX_MUTS.map(m=>{let n=0;for(const c of validCards)if(ownCnt(c,m,false))n++;
+    return `<i title="${MUT_LABEL[m]||'MURNI'} ${n}/${t}" style="--p:${t?Math.round(n/t*100):0}%;--c:${m==='none'?'#9AA6B2':MUT_COLOR[m]}"></i>`;}).join("");
+  const pct=P.total?Math.min(100,Math.round(P.count/P.total*100)):0;
+  const complete=P.total>0&&P.count>=P.total;
+  const next=Math.max(0,IDX_MILESTONE-(P.count%IDX_MILESTONE));
+  const claimable = P.blocks - P.claimed;
+  const strip=`<div class="ix-prog">
+    <div class="ixp-col">
+      <div class="ixp-lbl">VARIAN TERKUMPUL</div>
+      <div class="ixp-val">${fmt(P.count)}<em> / ${fmt(P.total)}</em></div>
+    </div>
+    <div class="ixp-track ix-seg" title="${pct}%">${segs}</div>
+    <div class="ixp-rw-box">
+      <div class="ixp-rw-icon">
+        <img src="assets/images/instanpack-5k.webp?v=trans1" alt="5K Pack" width="38" height="38">
+      </div>
+      <div class="ixp-rw-text">
+        <div class="ixp-rw-title">MILESTONE REWARD</div>
+        <div class="ixp-rw-sub">${complete ? "SEMUA VARIAN LENGKAP" : `${next} varian lagi menuju +1 Pack 5K`}</div>
+      </div>
+      <div class="ixp-rw-btn-wrap">
+        <button class="ix-claim-btn ${claimable > 0 ? 'ready' : 'locked'}" type="button" onclick="claimIndexReward()" ${claimable > 0 ? '' : 'disabled'}>
+          ${claimable > 0 ? `KLAIM REWARD (+${claimable})` : 'BELUM BISA KLAIM'}
+        </button>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById("ixToolbar").innerHTML=toolbar;
+  document.getElementById("ixBody").innerHTML=(list.length?"":`<div class="ix-empty">Tidak ada kartu yang cocok</div>`)+`<div class="ix-grid">${cells}</div>`;
+  lazyMountGrid(document.getElementById("ixBody"),_ixHtml);
+  ixLiveShimmer();
+  document.getElementById("ixFoot").innerHTML=strip;
+  const sel=document.getElementById("ixSort");sel.value=ixState.sort;
+  sel.onchange=()=>{ixState.sort=sel.value;ixRender();};
+  document.querySelectorAll("#ixToolbar .ix-chip[data-mut]").forEach(b=>b.onclick=()=>{ixState.mut=b.dataset.mut;ixRender();});
+  const shb=document.querySelector("#ixToolbar [data-shiny]");if(shb)shb.onclick=()=>{ixState.shiny=!ixState.shiny;ixRender();};
+  const owb=document.querySelector("#ixToolbar [data-owned]");if(owb)owb.onclick=()=>{ixState.owned=!ixState.owned;ixRender();};
+  document.querySelectorAll("#ixBody .ix-cell").forEach(cell=>{
+    cell.onclick=()=>{
+      const c=CARDS[cell.dataset.c];
+      if(!c)return;
+      const mut=cell.dataset.mut||"none";
+      const isShiny=cell.dataset.shiny==="1";
+      const hasMut=mut&&mut!=="none";
+      const spArtCard=document.getElementById("spArtCard");
+      if(spArtCard){
+        spArtCard.classList.toggle("shiny", isShiny);
+        ["m-gold","m-rainbow","m-secret","m-ultima"].forEach(k=>spArtCard.classList.remove(k));
+        if(hasMut)spArtCard.classList.add("m-"+mut);
+        spArtCard.style.borderColor="";
+        spArtCard.style.boxShadow="";
+      }
+      const spImg=document.getElementById("spImg");
+      if(spImg){
+        spImg.src=c.sprite_asset||"";
+        if(c.pos)spImg.style.objectPosition=c.pos;
+        else spImg.style.objectPosition="center";
+      }
+      const spCardName=document.getElementById("spCardName");
+      if(spCardName){
+        let displayName=c.name||"";
+        if(hasMut&&mut==="ultima"){
+          spCardName.innerHTML=`<span style="color:#FF0033;text-shadow:0 0 10px rgba(255,0,51,.85), 0 0 20px rgba(255,0,51,.5);font-weight:900">${displayName}</span>`+(isShiny?' <span style="color:#7DF9FF;font-size:.7em">★ SHINY</span>':'');
+        } else if(hasMut&&mut==="rainbow"){
+          spCardName.innerHTML=mutText(mut,displayName)+(isShiny?' <span style="color:#7DF9FF;font-size:.7em">★ SHINY</span>':'');
+        } else if(hasMut){
+          spCardName.innerHTML=`<span style="color:${MUT_COLOR[mut]}">${displayName}</span>`+(isShiny?' <span style="color:#7DF9FF;font-size:.7em">★ SHINY</span>':'');
+        } else if(isShiny){
+          spCardName.innerHTML=`<span style="color:#7DF9FF">${displayName}</span> <span style="font-size:.7em">★ SHINY</span>`;
+        } else {
+          spCardName.textContent=displayName;
+        }
+      }
+      const chVal=effChance(c.char_id, mut, isShiny);
+      const spCardRarity=document.getElementById("spCardRarity");
+      if(spCardRarity){
+        const chanceStr="1 in "+fmtChance(chVal);
+        if(hasMut&&(mut==="rainbow"||mut==="ultima")){
+          spCardRarity.innerHTML=mutText(mut, chanceStr);
+        } else if(hasMut){
+          spCardRarity.innerHTML=`<span style="color:${MUT_COLOR[mut]}">${chanceStr}</span>`;
+        } else if(isShiny){
+          spCardRarity.innerHTML=`<span style="color:#7DF9FF">${chanceStr}</span>`;
+        } else {
+          spCardRarity.textContent=chanceStr;
+        }
+      }
+      const st=cardStats(c.char_id, mut, "none", isShiny);
+      const spHp=document.getElementById("spHp");
+      if(spHp)spHp.textContent=fmtC(st.hp||c.base_hp||0);
+      const spAtk=document.getElementById("spAtk");
+      if(spAtk)spAtk.textContent=fmtC(st.atk||c.base_atk||0);
+      const spName=document.getElementById("spName");
+      if(spName)spName.textContent=c.passive?c.passive.name:"-";
+      const spDesc=document.getElementById("spDesc");
+      if(spDesc)spDesc.textContent=c.passive?c.passive.desc:"-";
+      document.getElementById("skillPop").classList.add("show");
+    };
+  });
+}
+window.openIndex = openIndex;
 
 /* =============== TRAIT ROLL (popup) =============== */
 let traitTarget=null;
