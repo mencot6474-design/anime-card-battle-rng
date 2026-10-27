@@ -11,7 +11,7 @@ const wbByBoss={a:null,b:null};
 let wbRunBoss=null;   /* key boss untuk run yang sedang jalan */
 const WB_TTL=60000; /* data hub (pool/rank) cukup di-refresh 1x / menit — hemat bandwidth */
 const WB_RETRY=8000; /* belum dapat data sama sekali -> jangan fetch tiap render */
-function wbOnline(){return !!(currentUser&&window.CloudDB&&typeof window.CloudDB.wbState==="function");}
+function wbOnline(){return !!((typeof currentUser!=="undefined"&&currentUser)&&window.CloudDB&&typeof window.CloudDB.wbState==="function");}
 function wbBossName(id){const b=RAID_BOSSES.find(x=>x.id===id)||RAID_BOSSES[0];return b?b.name:"WORLD BOSS";}
 function wbModText(){
   const d=wbData();
@@ -137,6 +137,9 @@ function wbrPatch(){
   if(f)f.style.width=Math.max(0,Math.min(100,pct)).toFixed(2)+"%";
   const tf=document.getElementById("wbrThreatFill");
   if(tf)tf.style.width=Math.max(0,Math.min(100,pct)).toFixed(2)+"%";
+  const cgF=document.getElementById("cgHpFill");if(cgF)cgF.style.width=Math.max(0,Math.min(100,pct)).toFixed(2)+"%";
+  const cgV=document.getElementById("cgHpValues");if(cgV)cgV.innerHTML=`<b>${fmtBig(left)}</b> / ${fmtBig(pool)} HP (${pct.toFixed(1)}%)`;
+  const ab=document.getElementById("attBadge");if(ab)ab.textContent=wbAttLabel();
   set("wbrLeft",fmtBig(left));
   set("wbrPct",pct.toFixed(1)+"%");
   set("wbrThreatPct",pct.toFixed(1)+"%");
@@ -288,6 +291,50 @@ function renderRaid(){
   if(raidView==="shop")return renderRaidShop();
   renderRaidHub();
 }
+
+/* Helper format leaderboard rows like prototype */
+function renderLbRowsFromData(){
+  const d=wbData();
+  const top=(d&&d.top)||[];
+  if(!top.length){
+    const mockHunters = [
+      { rank: 1, name: "Sung_Monarch", title: "Shadow Sovereign", dmg: 142800000000 },
+      { rank: 2, name: "Kuro_Cyber", title: "Void Blade", dmg: 119500000000 },
+      { rank: 3, name: "Aether_Strike", title: "Grand Marshall", dmg: 98200000000 },
+      { rank: 4, name: "Valkyrie_7", title: "Apex Vanguard", dmg: 76400000000 },
+      { rank: 5, name: "Ghost_Rider", title: "Abyss Stalker", dmg: 54100000000 }
+    ];
+    return mockHunters.map((h, i)=>{
+      const rankClass = i===0 ? 'top1' : i===1 ? 'top2' : i===2 ? 'top3' : '';
+      return `
+      <div class="lb-hunter-item">
+        <div class="lb-hunter-left">
+          <span class="lb-rank-num ${rankClass}">${h.rank}</span>
+          <div>
+            <div class="lb-hunter-name">${h.name}</div>
+            <small style="color:var(--text-muted);font-size:11px;">Title: ${h.title}</small>
+          </div>
+        </div>
+        <div class="lb-hunter-dmg">${fmtBig(h.dmg)}</div>
+      </div>`;
+    }).join("");
+  }
+  return top.slice(0, 6).map((h, i)=>{
+    const rankClass = i===0 ? 'top1' : i===1 ? 'top2' : i===2 ? 'top3' : '';
+    return `
+    <div class="lb-hunter-item">
+      <div class="lb-hunter-left">
+        <span class="lb-rank-num ${rankClass}">${i+1}</span>
+        <div>
+          <div class="lb-hunter-name">${h.name || 'Hunter'}</div>
+          <small style="color:var(--text-muted);font-size:11px;">Title: ${h.title || 'Solo Hunter'}</small>
+        </div>
+      </div>
+      <div class="lb-hunter-dmg">${fmtBig(h.dmg || h.score || 0)}</div>
+    </div>`;
+  }).join("");
+}
+
 function renderRaidHub(){
   wbrStopPoll();
   wbSyncCur();
@@ -302,108 +349,319 @@ function renderRaidHub(){
   const hunters=(!locked&&d&&d.total_players)||0;
   const y=!locked&&d&&d.yesterday;
   const dead=!locked&&(poolLeft<=0||attLeft<=0);
-  const threatTag=pct<15?"KRITIS":pct<40?"WASPADA":"STABIL";
+  const threatTag=pct<15?"CRITICAL":pct<40?"WARNING":"STABLE";
+  const tok=state.wbTokens||0;
+
+  const cardItems=WB_SHOP.filter(x=>x.card);
+  const bossTotal=cardItems.length,bossCount=cardItems.filter(x=>bossRollUnlocked(x.card.char)).length;
+
   let claimBtn="";
-  if(y&&y.claimed)claimBtn=`<span class="wbr-claimed">KLAIM KEMARIN &#10004;</span>`;
-  else if(y&&y.claimable)claimBtn=`<button class="wbr-claim" id="wbClaim" type="button">KLAIM ${y.gems||0} GEM · ${fmt(y.tokens||0)} TOKEN${y.packs?" · "+y.packs+"× PACK 100K":""}${y.title?" · "+y.title:""}</button>`;
-  const dayKey=(!locked&&d&&d.day)?String(d.day):"";
+  if(y&&y.claimed)claimBtn=`<div style="margin-top:6px;text-align:center;font-size:11px;color:#4ade80;font-family:var(--font-mono);padding:4px;background:rgba(74,222,128,0.1);border-radius:4px;border:1px solid rgba(74,222,128,0.3);">KLAIM KEMARIN &#10004;</div>`;
+  else if(y&&y.claimable)claimBtn=`<button class="wbr-claim" id="wbClaim" type="button" style="margin-top:6px;width:100%;padding:7px;border-radius:6px;background:linear-gradient(135deg,rgba(0,240,255,0.3),rgba(168,85,247,0.3));border:1px solid #00f0ff;color:#fff;font-family:var(--font-display);font-size:11px;cursor:pointer;">KLAIM ${y.gems||0} GEM · ${fmt(y.tokens||0)} TOKEN</button>`;
+
   const modTxt=locked?b.mod:(wbModText()||b.mod);
-  const deployK=locked?"TERKUNCI":dead?"POOL TUMBANG / ATTEMPT HABIS":"INITIALIZE STRIKE";
-  const deployT=locked?"BUKA SETELAH UPDATE":dead?"TIDAK BISA DEPLOY":"DEPLOY &#9654;";
 
   app.innerHTML=`
-  <div class="tw-page rd-page">
-    <div class="wbr-hub${dead?" wbr-hub-dead":""}${locked?" wbr-hub-locked":""}" id="wbrHub">
-      <section class="wbr-stage" id="wbrStage">
-        <div class="wbr-deep">
-          <div class="wbr-l wbr-bloom" style="--z:-420px;--m:2"></div>
-          <div class="wbr-l wbr-floor" style="--z:-340px;--m:3"></div>
-          <div class="wbr-l wbr-ghost" style="--z:-180px;--m:9"><img id="wbrGhost" src="${b.art}" alt=""></div>
-          <div class="wbr-l wbr-halo" style="--z:-120px;--m:7"></div>
-          <div class="wbr-l wbr-ped" style="--z:-60px;--m:9"></div>
-          <div class="wbr-l wbr-beam" style="--z:-30px;--m:9"></div>
-          <div class="wbr-artwrap" id="wbrArtWrap" style="--z:0px;--m:14">
-            <img class="wbr-art${b.alt?" alt":""}" id="wbrArt" src="${b.art}" alt="${b.name}">
-            <div class="wbr-holo" aria-hidden="true"><span class="wh-tint"></span><span class="wh-scan"></span></div>
-          </div>
-          <div class="wbr-l wbr-veil" style="--z:20px;--m:1"></div>
+  <!-- Atmospheric Cyber Abyss Layers -->
+  <div class="cyber-abyss-bg"></div>
+  <div class="cyber-grid"></div>
+  <div class="cyber-scanlines"></div>
+
+  <div class="app-viewport rd-page">
+    
+    <!-- Top System Telemetry Bar -->
+    <header class="proto-top-nav">
+      <div class="system-title-tag">
+        <div class="system-icon-pulse"></div>
+        <div class="system-label-text">
+          SYSTEM: <b>HUNTER RAID MATRIX</b> // <span class="monarch-tag">MONARCH S-RANK GATE</span>
         </div>
-        <div class="wbr-l wbr-rush" style="--z:30px;--m:2"></div>
-        <div class="wbr-l wbr-fx" style="--z:40px;--m:1"><div class="wbr-slash"></div><div class="wbr-ring"></div><div class="wbr-flash"></div></div>
+      </div>
 
-        <div class="wbr-topline">
-          <span class="wbr-chip live"><i class="cp-pulse-dot"></i>WORLD EVENT</span>
-          <span class="wbr-chip${locked?" dim":""}">${locked?"SEGERA":modTxt}</span>
-          <div class="wbr-dots" id="wbrDots"></div>
-          <button class="wbr-back" id="raidLobby" type="button" title="Kembali ke lobby">&#8592;</button>
+      <!-- Navigation Pills -->
+      <div class="proto-tab-pills">
+        <button class="proto-tab-btn" id="raidLobby" type="button" title="Kembali ke Lobby">
+          ◀ LOBBY
+        </button>
+        <button class="proto-tab-btn active" id="tabHub" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          WORLD BOSS COMMAND
+        </button>
+        <button class="proto-tab-btn" id="raidShopBtn" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          SHADOW HUNTER ARMORY
+        </button>
+      </div>
+
+      <!-- Live Token & Cores Telemetry -->
+      <div class="live-currencies">
+        <div class="currency-pill">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8M8 14h6"/></svg>
+          <div class="label">WB TOKEN:</div>
+          <div class="value" id="dispToken">${fmt(tok)}</div>
         </div>
+        <div class="currency-pill">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <div class="label">CORES:</div>
+          <div class="value" style="color:var(--monarch-purple);" id="dispCores">${bossCount} / ${bossTotal}</div>
+        </div>
+      </div>
+    </header>
 
-        <button class="wbr-switch l" id="wbrPrev" type="button" title="Boss sebelumnya">&#8249;</button>
-        <button class="wbr-switch r" id="wbrNext" type="button" title="Boss berikutnya">&#8250;</button>
-        ${locked?`<div class="wbr-lock"><b>${b.name}</b><small>BUKA SETELAH UPDATE</small></div>`:""}
+    <!-- Main Command Hub View (Full-Bleed 1-Screen) -->
+    <main class="view-stage active" id="viewHub">
+      <div class="wb-hub-grid">
+        
+        <!-- LEFT: BOSS ARENA STAGE WITH 4 BRACKETS & 3D HOLOGRAM -->
+        <section class="wb-stage-arena" id="wbrStage">
+          <div class="corner-bracket tl"></div>
+          <div class="corner-bracket tr"></div>
+          <div class="corner-bracket bl"></div>
+          <div class="corner-bracket br"></div>
 
-        <div class="wbr-plate">
-          <div class="wbr-plate-main">
-            <span class="wbr-eyebrow">WORLD BOSS${dayKey?" · "+dayKey:""}</span>
-            <h1 class="wbr-name">${b.name} <small>${b.tag}</small></h1>
-            <div class="wbr-tags">
-              <span class="wbr-tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>${b.skill}</span>
-              <span class="wbr-tag hot">${modTxt}</span>
-              <span class="wbr-tag gold">RESET ${wbResetText()}</span>
+          <!-- Stage Header: Warning & Boss Switcher Tabs -->
+          <div class="wb-arena-header">
+            <div class="calamity-warning-tag">
+              <span class="warn-icon">⚠</span>
+              <span>${locked ? 'SEGERA TERSEDIA' : 'CALAMITY CLASS: S-RANK THREAT'}</span>
+            </div>
+
+            <div class="wb-boss-switcher">
+              <button class="wb-boss-tab ${wbBossIdx===0?'active':''}" id="btnBoss0" type="button" onclick="goBoss(0 - wbBossIdx)">
+                01 // ETERNAL DRAGON
+              </button>
+              <button class="wb-boss-tab ${wbBossIdx===1?'active':''}" id="btnBoss1" type="button" onclick="goBoss(1 - wbBossIdx)">
+                02 // SHADOW KING
+              </button>
             </div>
           </div>
-          ${wbPoolHtml()}
-        </div>
-      </section>
 
-      <aside class="wbr-rail">
-        <div class="wbr-panel wbr-threat">
-          <div class="wbr-ptitle"><i class="cp-pulse-dot"></i><span>THREAT LEVEL</span><span class="grow"></span><span class="wbr-mini">${locked?"STANDBY":threatTag}</span></div>
-          <div class="wbr-threat-num"><b id="wbrThreatPct">${pct.toFixed(1)}%</b><span>HP TERSISA</span></div>
-          <div class="wbr-threat-bar"><i id="wbrThreatFill" style="width:${Math.max(0,Math.min(100,pct)).toFixed(2)}%"></i></div>
-          <div class="wbr-threat-foot"><span id="wbrFootDrain">${locked?"TERKIKIS 0":"TERKIKIS "+fmtBig(pool-poolLeft)}</span><span id="wbrFootHunters">${hunters} HUNTER</span></div>
-        </div>
-
-        <div class="wbr-panel wbr-run">
-          <div class="wbr-ptitle"><span>RUN STATUS</span><span class="grow"></span><span class="wbr-mini" id="wbrAttLabel">${wbAttLabel()}</span></div>
-          <div class="wbr-pips" id="wbrPips">${[0,1,2].map(i=>`<i class="wbr-pip${!locked&&i<(attLeft||0)?" on":""}"></i>`).join("")}</div>
-          <div class="wbr-stats">
-            <div class="wbr-stat"><span class="wbr-stat-k">BEST DMG</span><b class="wbr-stat-v gold" id="wbrBest">${wbBest?fmtBig(wbBest):"—"}</b></div>
-            <div class="wbr-stat"><span class="wbr-stat-k">RANK</span><b class="wbr-stat-v" id="wbrRank">${rank?"#"+rank+(totalPlayers?"/"+totalPlayers:""):"—"}</b></div>
-            <div class="wbr-stat"><span class="wbr-stat-k">SIKLUS</span><b class="wbr-stat-v">${RAID_TURNS} TURN</b></div>
-            <div class="wbr-stat"><span class="wbr-stat-k">ATTEMPT</span><b class="wbr-stat-v">${locked?"—":(attLeft||0)+"/3"}</b></div>
+          <!-- 3D Perspective Floor & Concentric Pedestal Rings -->
+          <div class="wbr-floor"></div>
+          <div class="wbr-ped-rings">
+            <div class="wbr-ped-ring"></div>
+            <div class="wbr-ped-ring inner"></div>
+            <div class="wbr-ped-ring core"></div>
+            <div class="wbr-holo-burst" id="holoBurst"></div>
           </div>
-          ${claimBtn}
-        </div>
 
-        <div class="wbr-panel wbr-track">
-          <div class="wbr-ptitle"><span>REWARD TRACK</span><span class="grow"></span><span class="wbr-mini">HARIAN</span></div>
-          <div class="wbr-track-list">
-            <div class="wbr-tr"><span class="wbr-tr-p">#1</span><span>JUARA HARIAN</span><span class="wbr-tr-r">1.000 GEM · 10K TOK · 10 PACK</span></div>
-            <div class="wbr-tr"><span class="wbr-tr-p">#2</span><span>RUNNER-UP</span><span class="wbr-tr-r">500 GEM · 5K TOK · 5 PACK</span></div>
-            <div class="wbr-tr"><span class="wbr-tr-p">#3</span><span>TOP 3</span><span class="wbr-tr-r">250 GEM · 2.5K TOK · 3 PACK</span></div>
-            <div class="wbr-tr"><span class="wbr-tr-p">ALL</span><span>PARTISIPAN</span><span class="wbr-tr-r">100 GEM · 1K TOK · 1 PACK</span></div>
-          </div>
-        </div>
-
-        <div class="wbr-panel wbr-lb">
-          <div class="wbr-lb-head">
-            <div class="wbr-ptitle"><span>TOP HUNTER HARI INI</span><span class="grow"></span><span class="wbr-mini">${hunters}</span></div>
-            <button class="wbr-lb-all" id="wbTopAll" type="button">PAPAN PENUH</button>
-          </div>
-          <div class="wbr-lb-rows" id="wbrTop">${wbrTopRows()}</div>
-        </div>
-
-        <div class="wbr-dock">
-          <button class="wbr-btn ghost" id="raidShopBtn" type="button" title="World Boss Shop">SHOP</button>
-          <button class="wbr-btn${dead||locked?" dead":""}" id="raidGo" type="button"${dead||locked?" disabled":""}>
-            <span class="wbr-btn-main"><span class="wbr-btn-k">${deployK}</span><span>${deployT}</span></span>
+          <!-- 3D Swipe Stage Chevrons -->
+          <button class="wbr-stage-arrow wbr-arrow-prev" id="btnArrowPrev" type="button" onclick="goBoss(-1)" title="Previous Boss (3D Swipe)" aria-label="Previous Boss">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            <span class="wbr-arrow-label">PREV</span>
           </button>
-        </div>
-      </aside>
-    </div>
+          <button class="wbr-stage-arrow wbr-arrow-next" id="btnArrowNext" type="button" onclick="goBoss(1)" title="Next Boss (3D Swipe)" aria-label="Next Boss">
+            <span class="wbr-arrow-label">NEXT</span>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+
+          <!-- Tactical Swipe Guide Hint -->
+          <div class="wbr-swipe-hint">
+            <span class="hint-chevron">❮</span>
+            <span>DRAG / SWIPE 3D CARD</span>
+            <span class="hint-chevron">❯</span>
+          </div>
+
+          <!-- 3D Holographic Boss Card Chamber -->
+          <div class="wbr-c3d-wrap" id="bossCardWrap">
+            <div class="wbr-c3d" id="bossCard3d">
+              <div class="wbr-c3d-float">
+                <!-- Physical Card 3D Thickness Layers -->
+                <div class="wbr-c3d-l wbr-c3d-back b4"></div>
+                <div class="wbr-c3d-l wbr-c3d-back b3"></div>
+                <div class="wbr-c3d-l wbr-c3d-back b2"></div>
+                <div class="wbr-c3d-l wbr-c3d-back b1"></div>
+
+                <!-- Main Artwork -->
+                <div class="wbr-c3d-l wbr-c3d-art">
+                  <img id="bossImg" 
+                       src="${b.art}" 
+                       alt="${b.name}" 
+                       onerror="this.src='assets/cards/art/eternal-dragon.webp'">
+                </div>
+
+                <!-- Gradient Shadow Veil -->
+                <div class="wbr-c3d-l wbr-c3d-veil"></div>
+
+                <!-- 3D Cyber Frame & 4 Glowing Corner Brackets -->
+                <div class="wbr-c3d-l wbr-c3d-frame">
+                  <i></i><i></i><i></i><i></i>
+                </div>
+
+                <!-- 3D Floating Labels & Badges -->
+                <div class="wbr-c3d-l wbr-c3d-label">
+                  <div class="wbr-c3d-top-tag">
+                    <span class="dot"></span>
+                    <span id="cardTopTag">EX // CALAMITY CLASS</span>
+                  </div>
+                  <div class="wbr-c3d-bottom-info">
+                    <span class="kicker" id="cardKicker">${b.tag || 'ANCIENT MONARCH SOVEREIGN'}</span>
+                    <span class="title" id="cardTitle">${b.name}</span>
+                    <span class="meta" id="cardMeta">${locked ? 'TERKUNCI' : fmtBig(pool) + ' SHARED CALAMITY POOL'}</span>
+                  </div>
+                </div>
+
+                <!-- Dynamic Holographic Foil Shimmer -->
+                <div class="wbr-c3d-l wbr-c3d-foil"></div>
+
+                <!-- Specular Reflection Glass -->
+                <div class="wbr-c3d-l wbr-c3d-glass"></div>
+              </div>
+            </div>
+            <!-- 3D Projected Floor Shadow -->
+            <div class="wbr-c3d-shadow"></div>
+          </div>
+
+          <!-- Stage Footer: Boss Identity & Calamity HP Gauge -->
+          <div class="wb-arena-footer">
+            <div class="wb-boss-meta-row">
+              <div class="wb-boss-name-group">
+                <div class="boss-subtitle" id="bossSubtitle">ANCIENT MONARCH CALAMITY // EX CORE</div>
+                <h2 id="bossName">${b.name} <small style="font-size:14px;color:var(--monarch-purple);">${b.tag || ''}</small></h2>
+              </div>
+              <div class="wb-boss-tags">
+                <span class="wb-boss-tag" id="bossSkillTag">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  SKILL: ${b.skill}
+                </span>
+                <span class="wb-boss-tag mod" id="bossModTag">MOD: ${modTxt}</span>
+                <span class="wb-boss-tag timer">RESET ${wbResetText()}</span>
+              </div>
+            </div>
+
+            <!-- Calamity HP Bar -->
+            <div class="calamity-gauge-wrapper">
+              <div class="cg-telemetry-row">
+                <div class="hp-label">
+                  <span class="warn-icon">⚡</span>
+                  <span id="cgLabel">GLOBAL THREAT LEVEL: ${locked ? 'STANDBY' : threatTag}</span>
+                </div>
+                <div class="hp-numbers" id="cgHpValues">
+                  <b>${locked ? '—' : fmtBig(poolLeft)}</b> / ${locked ? '—' : fmtBig(pool)} HP (${locked ? '100%' : pct.toFixed(1) + '%'})${pool - poolLeft > 0 ? ' · TERKIKIS ' + fmtBig(pool - poolLeft) : ''}
+                </div>
+              </div>
+              <div class="calamity-bar-track">
+                <div class="calamity-bar-fill" id="cgHpFill" style="width: ${locked ? 100 : Math.max(0, Math.min(100, pct)).toFixed(2)}%;"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- RIGHT: HUNTER CONSOLE & ACTIONS (ZERO EMPTY SPACE) -->
+        <aside class="wb-console-rail">
+          
+          <!-- Panel 1: Strike Authorization & Stats -->
+          <div class="tactical-panel">
+            <div class="tactical-panel-hdr">
+              <div class="title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                STRIKE AUTHORIZATION
+              </div>
+              <div class="badge" id="attBadge">${locked ? "—" : (attLeft||0) + " / 3 ATTEMPTS"}</div>
+            </div>
+            
+            <div class="strike-crystals-row">
+              <div class="strike-crystal ${!locked && (attLeft||0) >= 1 ? 'active' : ''}"><span>CRYSTAL 01</span></div>
+              <div class="strike-crystal ${!locked && (attLeft||0) >= 2 ? 'active' : ''}"><span>CRYSTAL 02</span></div>
+              <div class="strike-crystal ${!locked && (attLeft||0) >= 3 ? 'active' : ''}"><span>CRYSTAL 03</span></div>
+            </div>
+
+            <div class="strike-stats-grid">
+              <div class="strike-stat-box">
+                <div class="stat-label">PERSONAL BEST</div>
+                <div class="stat-val gold">${wbBest ? fmtBig(wbBest) : "—"}</div>
+              </div>
+              <div class="strike-stat-box">
+                <div class="stat-label">GLOBAL RANK</div>
+                <div class="stat-val cyan">${rank ? "#" + rank + (totalPlayers ? "/" + totalPlayers : "") : "—"}</div>
+              </div>
+              <div class="strike-stat-box">
+                <div class="stat-label">CYCLE LIMIT</div>
+                <div class="stat-val">${RAID_TURNS} TURNS</div>
+              </div>
+              <div class="strike-stat-box">
+                <div class="stat-label">THREAT STATUS</div>
+                <div class="stat-val" style="color:${threatTag==='CRITICAL'?'#ff2a5f':threatTag==='WARNING'?'#fbbf24':'#4ade80'};">${locked ? "STANDBY" : threatTag}</div>
+              </div>
+            </div>
+            ${claimBtn}
+          </div>
+
+          <!-- Panel 2: Reward Track (Harian) -->
+          <div class="tactical-panel">
+            <div class="tactical-panel-hdr">
+              <div class="title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                REWARD TRACK // HARIAN
+              </div>
+              <div class="badge" style="color:var(--monarch-purple);">DAILY CYCLE</div>
+            </div>
+
+            <div class="reward-track-list">
+              <div class="reward-track-item rank1">
+                <span class="reward-track-pill">#1</span>
+                <div class="reward-track-info">
+                  <span class="reward-track-name">JUARA HARIAN</span>
+                  <span class="reward-track-val">1.000 GEM · 10K TOK</span>
+                </div>
+              </div>
+              <div class="reward-track-item rank2">
+                <span class="reward-track-pill">#2</span>
+                <div class="reward-track-info">
+                  <span class="reward-track-name">RUNNER-UP</span>
+                  <span class="reward-track-val">500 GEM · 5K TOK</span>
+                </div>
+              </div>
+              <div class="reward-track-item rank3">
+                <span class="reward-track-pill">#3</span>
+                <div class="reward-track-info">
+                  <span class="reward-track-name">TOP 3</span>
+                  <span class="reward-track-val">250 GEM · 2.5K TOK</span>
+                </div>
+              </div>
+              <div class="reward-track-item rankAll">
+                <span class="reward-track-pill">ALL</span>
+                <div class="reward-track-info">
+                  <span class="reward-track-name">PARTISIPAN</span>
+                  <span class="reward-track-val">100 GEM · 1K TOK</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel 3: Live Hunter Standings -->
+          <div class="tactical-panel" style="flex: 1; min-height: 0; display: flex; flex-direction: column;">
+            <div class="tactical-panel-hdr">
+              <div class="title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                TOP RAID HUNTERS (TODAY)
+              </div>
+              <button class="badge" id="wbTopAll" type="button" style="cursor:pointer;border:none;">${hunters} ACTIVE HUNTERS ↗</button>
+            </div>
+
+            <div class="lb-hunter-list" id="wbrTop" style="flex: 1; min-height: 0; overflow-y: auto;">
+              ${renderLbRowsFromData()}
+            </div>
+          </div>
+
+          <!-- Action Dock -->
+          <div class="wb-action-dock">
+            <button class="btn-enter-shop" id="raidShopBtnBottom" type="button">
+              <small>EXCHANGE DEPOT</small>
+              HUNTER ARMORY
+            </button>
+            <button class="btn-strike-deploy ${dead||locked?'dead':''}" id="raidGo" type="button" ${dead||locked?'disabled':''}>
+              <small>${locked ? "TERKUNCI" : dead ? "TIDAK BISA DEPLOY" : "AUTHORIZE COMBAT // 20 TURNS"}</small>
+              ${locked ? "BUKA SETELAH UPDATE" : dead ? "ATTEMPT HABIS" : "INITIALIZE STRIKE ▶"}
+            </button>
+          </div>
+        </aside>
+
+      </div>
+    </main>
   </div>`;
 
+  // Action listeners
   document.getElementById("raidGo").onclick=()=>{
     if(locked){raidToast("BOSS INI BELUM TERSEDIA");return;}
     if(poolLeft<=0){raidToast("WORLD BOSS SUDAH TUMBANG · RESET 00:00 WIB");return;}
@@ -411,12 +669,13 @@ function renderRaidHub(){
     wbrDeployPulse(()=>{sfx.hit();raidView="pick";renderRaid();});
   };
   document.getElementById("raidShopBtn").onclick=()=>{sfx.hit();raidView="shop";renderRaid();};
+  {const rsb=document.getElementById("raidShopBtnBottom");if(rsb)rsb.onclick=()=>{sfx.hit();raidView="shop";renderRaid();};}
   {const wc=document.getElementById("wbClaim");if(wc)wc.onclick=wbClaim;}
   {const ta=document.getElementById("wbTopAll");if(ta)ta.onclick=()=>{sfx.hit();if(typeof openRanking==="function")openRanking(b.board);else raidToast("Papan peringkat belum tersedia");};}
   {const rl=document.getElementById("raidLobby");if(rl)rl.onclick=()=>{try{sfx.hit();}catch(e){}location.hash="#/";};}
-  {const pv=document.getElementById("wbrPrev");if(pv)pv.onclick=()=>goBoss(-1);}
-  {const nx=document.getElementById("wbrNext");if(nx)nx.onclick=()=>goBoss(1);}
-  renderDots();
+  {const pv=document.getElementById("btnArrowPrev");if(pv)pv.onclick=()=>goBoss(-1);}
+  {const nx=document.getElementById("btnArrowNext");if(nx)nx.onclick=()=>goBoss(1);}
+
   wbrBindStage();
   wbRefresh();
   wbrStartPoll();
@@ -434,7 +693,7 @@ function renderDots(){
     };
   });
 }
-/* ---------- ganti boss (panah / swipe / dot) ---------- */
+/* ---------- ganti boss (3D Directional Swipe / panah / swipe / dot) ---------- */
 let wbrSwapping=false;
 function goBoss(dir){
   const n=WB_BOSSES.length;
@@ -442,25 +701,42 @@ function goBoss(dir){
   const next=((wbBossIdx+dir)%n+n)%n;
   if(next===wbBossIdx)return;
   try{sfx.hit();}catch(e){}
-  const stage=document.getElementById("wbrStage");
-  const wrap=document.getElementById("wbrArtWrap");
-  if(wbReduceMotion()||!stage||!wrap){wbBossIdx=next;renderRaidHub();return;}
+  const card=document.getElementById("bossCard3d");
+  const burst=document.getElementById("holoBurst");
+
+  if(wbReduceMotion()||!card){
+    wbBossIdx=next;
+    renderRaidHub();
+    return;
+  }
+
   wbrSwapping=true;
-  stage.classList.add("swapping");
-  wrap.classList.add("swap");
+  const exitClass=dir>0?"swipe-exit-left":"swipe-exit-right";
+  const enterClass=dir>0?"swipe-enter-right":"swipe-enter-left";
+
+  card.className="wbr-c3d "+exitClass;
+
   setTimeout(()=>{
     wbBossIdx=next;
     renderRaidHub();
-    const st=document.getElementById("wbrStage"),wr=document.getElementById("wbrArtWrap");
-    if(st)st.classList.add("swapping");
-    if(wr)wr.classList.add("swap");
-    setTimeout(()=>{
-      const s2=document.getElementById("wbrStage"),w2=document.getElementById("wbrArtWrap");
-      if(s2)s2.classList.remove("swapping");
-      if(w2)w2.classList.remove("swap");
+    const newCard=document.getElementById("bossCard3d");
+    const newBurst=document.getElementById("holoBurst");
+    if(newBurst){
+      newBurst.classList.remove("pulse");
+      void newBurst.offsetWidth;
+      newBurst.classList.add("pulse");
+    }
+    if(newCard){
+      newCard.className="wbr-c3d "+enterClass;
+      setTimeout(()=>{
+        newCard.className="wbr-c3d";
+        newCard.style.transform="";
+        wbrSwapping=false;
+      }, 420);
+    }else{
       wbrSwapping=false;
-    },70);
-  },180);
+    }
+  }, 320);
 }
 /* ---------- pulse deploy (1 ring + flash 180ms) ---------- */
 let wbrDeployT=0;
@@ -477,25 +753,85 @@ function wbrDeployPulse(next){
     if(typeof next==="function")next();
   },180);
 }
-/* ---------- bind stage: swipe/drag ganti boss (tanpa partikel & parallax) ----------
-   Ambang TINGGI (dx>90 + dx>dy*2.2) supaya tap + slide jari 60–80px di HP kentang
-   tidak dianggap swipe. Ini yang bikin user dulu ngira "klik sendiri": tap meleset
-   dari panah/dot → kena stage → swipe kepicu. */
+/* ---------- bind stage: real-time 3D drag physics & swipe gesture ---------- */
 function wbrBindStage(){
   const stage=document.getElementById("wbrStage");
-  if(!stage)return;
-  let sx=0,sy=0,drag=false;
-  stage.addEventListener("pointerdown",e=>{
+  const cardWrap=document.getElementById("bossCardWrap");
+  const card=document.getElementById("bossCard3d");
+  if(!stage||!cardWrap||!card)return;
+
+  let isPointerDown=false, startX=0, startY=0, dragDistX=0, hasDragged=false;
+
+  cardWrap.addEventListener("pointerdown", e=>{
+    if(wbrSwapping)return;
     if(e.target&&e.target.closest&&e.target.closest("button"))return;
-    drag=true;sx=e.clientX;sy=e.clientY;
+    isPointerDown=true;
+    hasDragged=false;
+    startX=e.clientX;
+    startY=e.clientY;
+    dragDistX=0;
+    try{cardWrap.setPointerCapture(e.pointerId);}catch(err){}
+    card.style.transition="none";
   });
-  stage.addEventListener("pointerup",e=>{
-    if(!drag)return;
-    drag=false;
-    const dx=e.clientX-sx, dy=e.clientY-sy;
-    if(Math.abs(dx)>90&&Math.abs(dx)>Math.abs(dy)*2.2)goBoss(dx<0?1:-1);
+
+  cardWrap.addEventListener("pointermove", e=>{
+    if(!isPointerDown||wbrSwapping)return;
+    const dx=e.clientX-startX;
+    const dy=e.clientY-startY;
+    if(Math.abs(dx)>6||Math.abs(dy)>6)hasDragged=true;
+    if(hasDragged){
+      dragDistX=dx;
+      const rotY=Math.max(-46, Math.min(46, dx*0.15));
+      const rotZ=Math.max(-8, Math.min(8, dx*0.03));
+      const transZ=-Math.min(190, Math.abs(dx)*0.55);
+      const scale=Math.max(0.82, 1-Math.abs(dx)*0.0006);
+      card.style.transform=`translateX(${dx}px) translateZ(${transZ}px) rotateY(${rotY}deg) rotateZ(${rotZ}deg) scale(${scale})`;
+      card.style.filter=`brightness(${1+Math.abs(dx)*0.0018}) drop-shadow(0 0 ${Math.min(40, Math.abs(dx)*0.3)}px rgba(0, 240, 255, 0.45))`;
+    }
   });
-  stage.addEventListener("pointercancel",()=>{drag=false;});
+
+  const endDrag=e=>{
+    if(!isPointerDown)return;
+    isPointerDown=false;
+    try{cardWrap.releasePointerCapture(e.pointerId);}catch(err){}
+    if(wbrSwapping)return;
+    card.style.filter="";
+    if(hasDragged&&Math.abs(dragDistX)>65){
+      const dir=dragDistX<0?1:-1;
+      card.style.transition="";
+      goBoss(dir);
+    } else {
+      card.style.transition="transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28)";
+      card.style.transform="translateX(0px) rotateX(0deg) rotateY(0deg) translateZ(0px) scale(1)";
+      setTimeout(()=>{
+        if(!isPointerDown&&!wbrSwapping){card.style.transition="";}
+      }, 400);
+    }
+  };
+
+  cardWrap.addEventListener("pointerup", endDrag);
+  cardWrap.addEventListener("pointercancel", endDrag);
+
+  // Normal mousemove parallax tilt when not dragging
+  stage.addEventListener("mousemove", e=>{
+    if(isPointerDown||wbrSwapping)return;
+    const rect=stage.getBoundingClientRect();
+    const x=((e.clientX-rect.left)/rect.width-0.5)*2;
+    const y=((e.clientY-rect.top)/rect.height-0.5)*2;
+    const rx=(-y*14).toFixed(2);
+    const ry=(x*16).toFixed(2);
+    const dx=(x*12).toFixed(1);
+    card.style.setProperty("--rx", rx+"deg");
+    card.style.setProperty("--ry", ry+"deg");
+    card.style.setProperty("--dx", dx+"px");
+  });
+
+  stage.addEventListener("mouseleave", ()=>{
+    if(isPointerDown||wbrSwapping)return;
+    card.style.setProperty("--rx", "0deg");
+    card.style.setProperty("--ry", "0deg");
+    card.style.setProperty("--dx", "0px");
+  });
 }
 
 var _rdTileHtml={},_ixHtml={},_dpHtml={};
@@ -969,501 +1305,250 @@ function raidShopBuy(id){
     renderRaidShop();
   })();
 }
+/* =============== TOKO RAID: 300PX HORIZONTAL SHELF (ANTI-LUBER) =============== */
+window.raidShopFilter = window.raidShopFilter || "all";
+
 function renderRaidShop(){
   const tok=state.wbTokens||0;
-  
-  /* Cyberpunk Vector Hologram Icons (Custom inline SVG ala Honkai / PGR / Cyberpunk 2077) */
-  const ICO={
-    gem:`<img src="assets/images/premium-currency.webp" alt="Gem" style="width:100%;height:100%;object-fit:cover;border-radius:50%;filter:drop-shadow(0 0 8px rgba(255,215,0,.55))">`,
-    coins:`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8M8 14h6" stroke="#ffd27a"/></svg>`,
-    card_edragon:`<img src="assets/cards/art/eternal-dragon.webp?v=trans1" onerror="this.parentNode.textContent='🐉'">`,
-    card_shadowking:`<img src="${thumbSrc('assets/cards/art/shadow-king.webp')}" alt="Shadow King" onerror="this.parentNode.textContent='👑'">`,
-    "helm-abyss":`<img src="assets/artifacts/abyss-helm.webp" onerror="this.parentNode.textContent='🪖'">`,
-    "nebula-wisp":`<img src="assets/pets/nebula-wisp.webp" onerror="this.parentNode.textContent='🌌'">`,
-    luck1:`<img src="${thumbSrc('assets/images/pot-luck-1.webp')}" alt="Luck Potion L1" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🍀'">`,
-    luck2:`<img src="${thumbSrc('assets/images/pot-luck-2.webp')}" alt="Luck Potion L2" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🍀'">`,
-    luck3:`<img src="${thumbSrc('assets/images/pot-luck-3.webp')}" alt="Luck Potion L3" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🍀'">`,
-    speed1:`<img src="${thumbSrc('assets/images/pot-speed-1.webp')}" alt="Speed Potion L1" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
-    speed2:`<img src="${thumbSrc('assets/images/pot-speed-2.webp')}" alt="Speed Potion L2" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
-    speed3:`<img src="${thumbSrc('assets/images/pot-speed-3.webp')}" alt="Speed Potion L3" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`
-  };
-  
+
   const cardItems=WB_SHOP.filter(x=>x.card);
   const bossTotal=cardItems.length,bossCount=cardItems.filter(x=>bossRollUnlocked(x.card.char)).length;
-  
+
   const ITEMS=WB_SHOP.map(it=>{
-    let cat="POTION", tier="SPEC";
-    if(it.gem) { cat="EXCHANGE"; tier="GEM"; }
-    else if(it.card) { cat="EX CORE"; tier="CH-EX"; }
-    else if(it.id.startsWith("helm")) { cat="RELIC GEAR"; tier="MYTHIC"; }
-    else if(it.id.includes("wisp")) { cat="FAMILIAR"; tier="COSMIC"; }
-    else if(it.id==="coins") { cat="CREDITS"; tier="CURR"; }
-    else if(it.id.includes("luck")) { cat="AUGMENT"; tier="MK-"+it.id.replace("luck",""); }
-    else if(it.id.includes("speed")) { cat="OVERCLOCK"; tier="MK-"+it.id.replace("speed",""); }
+    let cat="potion", catLabel="POTION", tier="SPEC", accent="#00f0ff", art="assets/images/pot-luck-1.webp";
+
+    if(it.id==="gem"){
+      cat="currency"; catLabel="EXCHANGE"; tier="GEM"; accent="#ffd700"; art="assets/images/premium-currency.webp";
+    } else if(it.id==="coins"){
+      cat="currency"; catLabel="CREDITS"; tier="COINS"; accent="#ffd27a"; art="assets/images/coins.webp";
+    } else if(it.id==="card_edragon"){
+      cat="ex-core"; catLabel="EX CORE"; tier="EX-CH"; accent="#00f0ff"; art="assets/raid/eternal-dragon-hd.webp";
+    } else if(it.id==="card_shadowking"){
+      cat="ex-core"; catLabel="EX CORE"; tier="EX-CH"; accent="#a855f7"; art="assets/cards/art/shadow-king.webp";
+    } else if(it.id.startsWith("helm")){
+      cat="relic"; catLabel="RELIC GEAR"; tier="MYTHIC"; accent="#ffb703"; art="assets/artifacts/abyss-helm.webp";
+    } else if(it.id.includes("wisp")){
+      cat="relic"; catLabel="FAMILIAR"; tier="COSMIC"; accent="#7df9ff"; art="assets/pets/nebula-wisp.webp";
+    } else if(it.id.includes("luck")){
+      cat="potion"; catLabel="AUGMENT"; tier="MK-"+it.id.replace("luck",""); accent="#4ade80"; art="assets/images/pot-luck-"+it.id.replace("luck","")+".webp";
+    } else if(it.id.includes("speed")){
+      cat="potion"; catLabel="OVERCLOCK"; tier="MK-"+it.id.replace("speed",""); accent="#fbbf24"; art="assets/images/pot-speed-"+it.id.replace("speed","")+".webp";
+    }
 
     return {
-      k:it.id,
-      label:it.name.toUpperCase(),
-      sub:it.card?"Kartu BOSS &bull; Beli sekali buka roll permanen di semua gacha":it.desc,
-      cost:it.cost,
-      ac:it.gem?"#ffd700":it.card?"#B58CFF":it.id.includes("helm")?"#FFD27A":it.id.includes("wisp")?"#7DF9FF":"#5CF0A8",
+      id: it.id,
+      name: it.name.toUpperCase(),
+      desc: it.desc,
+      cost: it.cost,
       cat,
+      catLabel,
       tier,
+      accent,
+      art,
       it
     };
   });
 
-  if(window.raidShopSel==null||window.raidShopSel>=ITEMS.length)window.raidShopSel=0;
-  let swapT=null;
-
-  const renderGrid=()=>{
-    const gridEl=document.getElementById("hunterShopGrid");
-    if(!gridEl)return;
-    gridEl.innerHTML=ITEMS.map((it,i)=>{
-      const isSel=i===window.raidShopSel;
-      const isOwned=!!((it.it.card&&stackHas(it.it.card.char,it.it.card.mut))||(it.it.owned&&it.it.owned()));
-      const canAfford=(tok>=it.cost);
-
-      return `
-      <div class="hsg-card cp-shop-card ${isSel?'selected':''} ${isOwned?'owned':''} ${!canAfford&&!isOwned?'insufficient':''}" data-i="${i}" style="--item-c:${it.ac}">
-        <div class="hsg-card-top">
-          <span class="hsg-cat-badge cp-cat">${it.cat}</span>
-          <span class="hsg-tier-tag cp-tier">${it.tier}</span>
-        </div>
-        <div class="hsg-art-wrap cp-art-wrap ${it.it.card?'boss-card':''}">
-          ${ICO[it.k]||"🎁"}
-        </div>
-        <div class="hsg-card-name">${it.label}</div>
-        <div class="hsg-price-badge">
-          ${isOwned ? `<span class="hsg-owned-lbl">&#10004; PURCHASED</span>` : `<b>${fmt(it.cost)}</b> <small>TOKEN</small>`}
-        </div>
-      </div>`;
-    }).join("");
-
-    gridEl.querySelectorAll(".hsg-card").forEach(c=>{
-      c.onclick=()=>{
-        window.raidShopSel=+c.dataset.i;
-        renderGrid();
-        renderDetail();
-      };
-    });
-  };
-
-  const renderBuy=()=>{
-    const it=ITEMS[window.raidShopSel],btn=document.getElementById("raidShopBuy");
-    if(!btn||!it)return;
-    btn.style.animation="none";void btn.offsetWidth;btn.style.animation="";
-    const have=!!(it.it.card&&stackHas(it.it.card.char,it.it.card.mut))||(it.it.owned?it.it.owned():false);
-    let small="AUTHORIZE PROCUREMENT",big=`ACQUIRE &bull; ${fmt(it.cost)} TOKEN`,dis=false;
-    if(it.it.gem){
-      small="TUKAR TOKEN → GEM (TANPA BATAS)";
-      big=`+${it.it.gem} GEM &bull; ${fmt(it.cost)} TOKEN`;
-    }
-    if(have){
-      small=it.it.card?"Roll gacha sudah permanen terbuka":"Permanen tersimpan di Backpack";
-      big="SUDAH DIMILIKI";
-      dis=true;
-    } else if(tok<it.cost){
-      small="INSUFFICIENT WORLD BOSS TOKENS";
-      big=`DEFISIT ${fmt(it.cost-tok)} TOKEN`;
-      dis=true;
-    }
-    btn.disabled=dis;
-    btn.className="hsd-buy-action cp-buy-action" + (dis?" disabled":"");
-    /* Kartu BOSS: JANGAN pasang art di tombol buy — kotak ikon cuma 32px,
-       potret boss luber keluar tombol. Sisakan teks + panah. */
-    btn.innerHTML=`
-      ${it.it.card?"":`<div class="hsd-ba-ic">${ICO[it.k]||"🎁"}</div>`}
-      <div class="hsd-ba-text">
-        <small>${small}</small>
-        <b>${big}</b>
-      </div>
-      <div class="hsd-ba-arrow"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>`;
-  };
-
-  const renderDetail=immediate=>{
-    const it=ITEMS[window.raidShopSel],box=document.getElementById("raidShopDetail");
-    if(!box||!it)return;
-    clearTimeout(swapT);
-    const paint=()=>{
-      box.classList.remove("out");
-      const isCard=!!it.it.card;
-      const c=isCard?CARDS[it.it.card.char]:null;
-      const unlocked=!isCard||bossRollUnlocked(it.it.card.char);
-      const cnt=isCard?state.stacks.filter(s=>s.char===it.it.card.char).reduce((n,s)=>n+(s.count||1),0):0;
-      
-      box.innerHTML=`
-      <div class="hsd-spec-header cp-spec-header" style="--spec-c:${it.ac}">
-        <div class="hsd-icon-box cp-hero-ic ${isCard?'boss-art':''}">${ICO[it.k]||"🎁"}</div>
-        <div class="hsd-meta-col">
-          <div class="hsd-meta-kicker"><span class="hsd-tier-pill">${it.tier}</span> SUPPLY DEPOT &bull; ${it.cat}</div>
-          <div class="hsd-meta-title">${it.label}</div>
-          <div class="hsd-meta-price">${fmt(it.cost)} WORLD BOSS TOKENS</div>
-        </div>
-      </div>
-
-      <div class="hsd-desc-block cp-desc-block">
-        <div class="hsd-sec-label">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-          SPECIFICATION // EFFECT PARAMETERS
-        </div>
-        <p class="hsd-desc-text">${it.it.desc}</p>
-        ${c ? `
-        <div class="hsd-skill-box cp-skill-box">
-          <div class="hsb-title">&#9889; ${c.passive.name}</div>
-          <div class="hsb-text">${c.passive.desc}</div>
-        </div>` : ''}
-      </div>
-
-      <div class="hsd-matrix-grid cp-matrix-grid">
-        <div class="hsd-mg-cell">
-          <span class="hm-lbl">EXCHANGE PRICE</span>
-          <b class="hm-val gold">${fmt(it.cost)} TOKEN</b>
-        </div>
-        <div class="hsd-mg-cell">
-          <span class="hm-lbl">GACHA UNLOCK STATUS</span>
-          <b class="hm-val ${unlocked?'green':'warn'}">${isCard ? (unlocked?'PERMANENT UNLOCKED':'LOCKED // PURCHASE FIRST') : 'INSTANT ACTIVE'}</b>
-        </div>
-        <div class="hsd-mg-cell">
-          <span class="hm-lbl">AVAILABLE DEPOSIT</span>
-          <b class="hm-val cyan">${fmt(tok)} TOKEN</b>
-        </div>
-        <div class="hsd-mg-cell">
-          <span class="hm-lbl">OWNED STOCK</span>
-          <b class="hm-val ${cnt>0?'green':''}">${isCard ? (cnt ? 'x'+cnt : '0') : it.it.gem ? '&#8734; UNLIMITED' : 'Tersedia'}</b>
-        </div>
-      </div>`;
-      renderBuy();
-    };
-    if(immediate||!box.children.length){paint();return;}
-    box.classList.add("out");
-    swapT=setTimeout(paint,110);
-  };
+  const filter = window.raidShopFilter;
+  const filtered = ITEMS.filter(it => filter === "all" || it.cat === filter);
 
   app.innerHTML=`
-  <div class="tw-page rd-page">
-    <div class="hunter-shop-hub cp-shop-hub">
-      
-      <!-- TOP MARKET HEADER -->
-      <div class="hsh-header cp-header">
-        <div class="hsh-header-left">
-          <button class="hsh-back-btn cp-back-btn" id="raidShopBack" type="button">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-            <span>KEMBALI KE WORLD BOSS</span>
-          </button>
-          <div class="hsh-title-wrap">
-            <div class="hsh-kicker"><span class="hsh-dot cp-dot"></span> PROCUREMENT MATRIX // LEVEL 01+</div>
-            <div class="hsh-title">WORLD BOSS <span class="hsh-cyan">EXCHANGE</span></div>
-          </div>
-        </div>
-        <div class="hsh-header-right">
-          <div class="hsh-token-chip cp-chip">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8M8 14h6"/></svg>
-            <div class="htc-col"><small>WORLD BOSS TOKEN</small><b class="cyan">${fmt(tok)}</b></div>
-          </div>
-          <div class="hsh-token-chip subtle cp-chip">
-            <div class="htc-col"><small>BOSS CORES</small><b>${bossCount}/${bossTotal}</b></div>
-          </div>
+  <!-- Atmospheric Cyber Abyss Layers -->
+  <div class="cyber-abyss-bg"></div>
+  <div class="cyber-grid"></div>
+  <div class="cyber-scanlines"></div>
+
+  <div class="app-viewport rd-page">
+    
+    <!-- Top System Telemetry Bar -->
+    <header class="proto-top-nav">
+      <div class="system-title-tag">
+        <div class="system-icon-pulse"></div>
+        <div class="system-label-text">
+          SYSTEM: <b>HUNTER RAID MATRIX</b> // <span class="monarch-tag">SHADOW HUNTER ARMORY</span>
         </div>
       </div>
 
-      <!-- MAIN MARKET SPLIT: LEFT GRID CARDS & RIGHT DETAIL INSPECTOR -->
-      <div class="hsh-content-split">
-        <!-- LEFT: HUNTER SHOP GRID -->
-        <section class="hsh-grid-panel cp-panel">
-          <div class="hsh-grid-subhdr">
-            <span class="hgs-txt">[ EXCLUSIVE ARMORY SUPPLY &bull; CLICK TO INSPECT TELEMETRY ]</span>
-          </div>
-          <div class="hunter-shop-grid" id="hunterShopGrid"></div>
-        </section>
-
-        <!-- RIGHT: INSPECT SPECIFICATION PANEL -->
-        <section class="hsh-detail-panel cp-panel">
-          <div class="hsd-panel-title cp-panel-title">TELEMETRY INSPECTION // PROCUREMENT</div>
-          <div class="hsd-detail-content" id="raidShopDetail"></div>
-          <div class="hsd-action-footer">
-            <button class="hsd-buy-action cp-buy-action" id="raidShopBuy" type="button"></button>
-          </div>
-        </section>
-      </div>
-
-    </div>
-  </div>`;
-
-  renderGrid();
-  renderDetail(true);
-
-  const rb=document.getElementById("raidShopBack");
-  if(rb)rb.onclick=()=>{try{sfx.hit();}catch(e){}raidView="hub";renderRaid();};
-  const bi=document.getElementById("raidShopBuy");
-  if(bi)bi.onclick=()=>{
-    if(bi.disabled)return;
-    raidShopBuy(ITEMS[window.raidShopSel].k);
-  };
-}
-
-/* =============== INDEX CARD (popup) =============== */
-const IX_MUTS=["none","gold","rainbow","secret","ultima"];
-let ixState={q:"",mut:"all",shiny:false,owned:false,sort:"name"};
-function openIndex(){
-  /* Katalog SEMUA kartu — layout meniru referensi "INDEX!": search di header, toolbar
-     chip mutasi + toggle SHINY + OWNED ONLY + sort, grid full-art (nama, centang owned
-     x/10, pips mut×shiny, nama+deskripsi skill di atas art), footer strip progres varian
-     (segmen per mutasi) -> milestone INTAN ROLL 100K. Klik kartu = detail passive
-     lengkap di #skillPop. Filter/sort state disimpan di ixState biar gak reset. */
-  idxRewardSync(true);
-  ixRender();
-  document.getElementById("indexModal").classList.add("show");
-  const sx=document.getElementById("ixSearch");
-  sx.value=ixState.q;
-  sx.oninput=()=>{ixState.q=sx.value.trim().toLowerCase();clearTimeout(sx._t);sx._t=setTimeout(ixRender,180);};
-  document.getElementById("spClose").onclick=()=>document.getElementById("skillPop").classList.remove("show");
-  document.getElementById("skillPop").onclick=(e)=>{if(e.target.id==="skillPop")document.getElementById("skillPop").classList.remove("show");};
-}
-function ixLiveShimmer(){
-  /* Index = 75 tile shiny semua animasi holoSheen -> ~2000 repaint/detik -> fps drop 6.
-     Batasi concurrency: hanya ~12 tile yang PALING TENGAH viewport yang ditandai .ix-live,
-     sisanya static. Scroll -> live set rotate. Kalau fps-lock lepas, gak ngaruh (rule CSS
-     khusus html.fps-locked). */
-  const body=document.getElementById("ixBody"); if(!body) return;
-  if(body.__ixShimmerIO){try{body.__ixShimmerIO.disconnect();}catch(e){}}
-  const cells=[].slice.call(body.querySelectorAll('.ix-cell.shiny'));
-  if(!cells.length) return;
-  const MAX=8;
-  const update=()=>{
-    const vr=body.getBoundingClientRect();
-    const vc=(vr.top+vr.bottom)/2;
-    const vis=cells.filter(c=>{
-      if(c.classList.contains('lz-ph'))return false;
-      const r=c.getBoundingClientRect();
-      return r.bottom>vr.top && r.top<vr.bottom;
-    });
-    vis.sort((a,b)=>{
-      const ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect();
-      return Math.abs((ra.top+ra.bottom)/2 - vc) - Math.abs((rb.top+rb.bottom)/2 - vc);
-    });
-    cells.forEach(c=>{c.classList.remove('ix-live');});
-    vis.slice(0,MAX).forEach(c=>{c.classList.add('ix-live');});
-  };
-  const io=new IntersectionObserver(update,{root:body,rootMargin:'0px',threshold:[0,0.1]});
-  cells.forEach(c=>io.observe(c));
-  body.addEventListener('scroll',update,{passive:true});
-  body.__ixShimmerIO=io;
-  update();
-}
-function ixRender(){
-  const P=idxProgress();
-  const ownCnt=(c,mut,sh)=>P.owned.has(`${c.char_id}|${mut}|${sh?1:0}`);
-  const ownedN=(c,sh)=>IX_MUTS.reduce((n,m)=>n+(ownCnt(c,m,sh)?1:0),0);
-  /* --- toolbar: chip mutasi + shiny + owned-only + sort --- */
-  /* parse filter sekali: chip "s-*" = mutasi versi SHINY; fmSel = mutasi murni (null = semua) */
-  const shChip=ixState.mut.startsWith("s-");
-  const fmSel=ixState.mut==="all"?null:ixState.mut.slice(shChip?2:0);
-  const fShiny=shChip||ixState.shiny;
-  const chip=(k,l,cls)=>`<button class="ix-chip ${cls||""}${ixState.mut===k?' on':''}" type="button" data-mut="${k}">${l}</button>`;
-  const toolbar=`<div class="ix-bar">
-    <div class="ix-chips">${chip("all","ALL MATRIX","all")}${IX_MUTS.map(m=>chip(m,m==="none"?"PURE":MUT_LABEL[m],"m-"+m)).join("")}
-      ${chip("s-gold","GOLD + SHINY","m-gold shp")}${chip("s-rainbow","RAINBOW + SHINY","m-rainbow shp")}${chip("s-secret","SECRET + SHINY","m-secret shp")}${chip("s-ultima","ULTIMA + SHINY","m-ultima shp")}
-      <button class="ix-chip shiny${ixState.shiny?' on':''}" type="button" data-shiny="1">★ SHINY</button></div>
-    <span class="ix-sp"></span>
-    <button class="ix-tog${ixState.owned?' on':''}" type="button" data-owned="1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> OWNED ONLY</button>
-    <div class="ix-sort-wrap">
-      <select class="ix-sort" id="ixSort" title="Urutkan">
-        <option value="name">SORT: NAME</option><option value="chance">SORT: CHANCE</option><option value="own">SORT: VARIANTS</option>
-      </select>
-    </div></div>`;
-  /* --- filter + sort --- */
-  const TIER_RANK={R:0,SR:1,SSR:2,UR:3,EX:4,BOSS:5};
-  let list=MASTER_CARD_INDEX.filter(c=>{
-    if(c.isStoryEnemy||(c.noGacha&&!c.chance))return false;
-    if(ixState.q&&!c.name.toLowerCase().includes(ixState.q))return false;
-    /* Jika toggle OWNED ONLY aktif: hanya tampilkan yang sudah didapat */
-    if(ixState.owned){
-      if(fmSel){
-        if(!ownCnt(c,fmSel,fShiny))return false;
-      } else if(fShiny){
-        if(!ownedN(c,true))return false;
-      } else {
-        if(!(ownedN(c,false)+ownedN(c,true)))return false;
-      }
-    }
-    /* Default: Tampilkan semua kartu (termasuk yang belum dapat) di setiap tab mutasi */
-    return true;
-  });
-  const T={name:(a,b)=>a.name.localeCompare(b.name),
-    tier:(a,b)=>(TIER_RANK[a.tier]??9)-(TIER_RANK[b.tier]??9)||a.name.localeCompare(b.name),
-    own:(a,b)=>(ownedN(b,false)+ownedN(b,true))-(ownedN(a,false)+ownedN(a,true))||a.name.localeCompare(b.name),
-    chance:(a,b)=>(a.chance==null?1e9:a.chance)-(b.chance==null?1e9:b.chance)||a.name.localeCompare(b.name)};
-  list.sort(T[ixState.sort]||T.name);
-  /* --- kartu full-art --- */
-  _ixHtml={};
-  const cells=list.map((c,i)=>{
-    const any=ownedN(c,false)+ownedN(c,true);
-    const anySh=ownedN(c,true)>0;
-
-    /* Cek kepemilikan varian spesifik sesuai filter aktif:
-       - fmSel ada & fShiny aktif: wajib punya varian (fmSel, SHINY)
-       - fmSel ada & fShiny nonaktif: punya varian (fmSel, non-shiny) atau (fmSel, shiny)
-       - fmSel null (tab ALL): cek fShiny ? anySh : any > 0 */
-    const isSpecificVariantOwned = fmSel
-      ? (fShiny ? ownCnt(c, fmSel, true) : (ownCnt(c, fmSel, false) || ownCnt(c, fmSel, true)))
-      : (fShiny ? anySh : any > 0);
-
-    /* Cek apakah kartu ini sedang berstatus SHINY dalam konteks tab saat ini:
-       1) Tab SHINY aktif (fShiny == true) -> kartu tampil shiny (jika owned, atau preview shiny jika filter shiny)
-       2) Tab ALL -> kartu tampil shiny jika pemain memiliki varian shiny kartu ini (anySh) */
-    const isShinyActive = fShiny || (ixState.mut === "all" && anySh);
-
-    const bestMut=ownCnt(c,"ultima",false)||ownCnt(c,"ultima",true)?"ultima":
-      (ownCnt(c,"secret",false)||ownCnt(c,"secret",true)?"secret":
-      ownCnt(c,"rainbow",false)||ownCnt(c,"rainbow",true)?"rainbow":
-      (ownCnt(c,"gold",false)||ownCnt(c,"gold",true))?"gold":null);
-
-    const fm = ixState.mut === "all" ? bestMut : fmSel;
-    const hasMut = !!(fm && fm !== "none");
-    const bc = hasMut ? MUT_COLOR[fm] : (isSpecificVariantOwned ? "#9AA6B2" : "#3A3F47");
-    const chanceColor = hasMut ? MUT_COLOR[fm] : "#9AA6B2";
-    const chanceText = `1 IN ${fmtChance(effChance(c.char_id, fmSel || "none", fShiny))}`;
-    const chanceHtml = hasMut && (fm === 'rainbow' || fm === 'ultima') ? mutText(fm, chanceText) : chanceText;
-    const lockBoss = !!((c.raidBoss||c.towerBoss) && !bossRollUnlocked(c.char_id));
-    const lockShop = c.towerBoss?"TOKO INF":"TOKO WORLD BOSS";
-
-    const shFx = isShinyActive;
-    const comboFx = !!(shFx && hasMut);
-    const cls = `ix-cell${isSpecificVariantOwned ? '' : ' no-own'}${lockBoss ? ' boss-locked' : ''}${shFx ? ' shiny' : ''}${hasMut ? ' m-' + fm : ''}${comboFx ? ' combo-mut' : ''}${c.fullArt ? ' fa' : ''}`;
-
-    const safeName = String(c.name).replace(/"/g, '&quot;');
-    const shinyStyle = hasMut && fm === 'gold' ? '--sh-base:#E0BC6E;--sh-edge:rgba(224,188,110,.95);--sh-glow:rgba(224,188,110,.55)'
-      : hasMut && fm === 'rainbow' ? '--sh-base:#B58CFF;--sh-edge:rgba(90,200,250,.95);--sh-glow:rgba(181,140,255,.55)'
-      : hasMut && fm === 'secret' ? '--sh-base:#A855F7;--sh-edge:rgba(168,85,247,.95);--sh-glow:rgba(168,85,247,.55)'
-      : hasMut && fm === 'ultima' ? '--sh-base:#FF0055;--sh-edge:rgba(255,51,102,.95);--sh-glow:rgba(255,0,85,.6)'
-      : '--sh-base:#22d3ee;--sh-edge:rgba(34,211,238,.95);--sh-glow:rgba(34,211,238,.55)';
-
-    /* Tampilan Nama Kartu:
-       - Jika SHINY: WAJIB gunakan kelas .hc-name-shine + .hc-name-shine-{mutasi} agar gradien animasinya aktif dan BUKAN mutText
-       - Jika BUKAN SHINY: gunakan .hc-mut-name (animasi sweep mutasi biasa) */
-    let nameHtml = '';
-    if (shFx) {
-      nameHtml = `<span class="ixc-name hc-name-top hc-name-shine${hasMut ? ' hc-name-shine-' + fm : ''}" data-text="${safeName}" style="${shinyStyle}">${c.name}</span>`;
-    } else if (hasMut) {
-      nameHtml = `<span class="ixc-name hc-name-top hc-mut-name" data-text="${safeName}">${fm === 'rainbow' || fm === 'ultima' ? mutText(fm, c.name) : c.name}</span>`;
-    } else {
-      nameHtml = `<span class="ixc-name hc-name-top">${c.name}</span>`;
-    }
-
-    const inner=`<img src="${thumbSrc(c.sprite_asset)}" alt="${c.name}" width="360" height="536" loading="lazy" decoding="async">
-      ${(hasMut||shFx)?`<span class="ix-badges hc-badges">${shFx?'<span class="shiny-badge shiny-pill">SHINY</span>':''}${hasMut?mutChip(fm,mutPill(fm)):''}</span>`:''}
-      <span class="ixc-stack">${nameHtml}<span class="ixc-chance${hasMut && (fm === 'rainbow' || fm === 'ultima') ? ' ixc-chance-rainbow' : ''}" style="color:${chanceColor}"><span class="ixc-chance-text">${chanceHtml}</span></span></span>
-      <span class="ixc-own${isSpecificVariantOwned ? ' on' : ''}">${any}/10</span>`;
-    _ixHtml[c.char_id]=inner;
-    const mounted=i<48;
-    return `<button class="${cls}${mounted?'':' lz-ph'}" type="button" data-lz="${c.char_id}" data-c="${c.char_id}" data-mut="${hasMut ? fm : 'none'}" data-shiny="${shFx ? '1' : '0'}"${lockBoss ? ' title="BELUM DIBELI - beli di '+lockShop+' untuk buka roll"' : ''} style="--tc:#9AA6B2;--bc:${bc}">${mounted?inner:''}</button>`;
-  }).join("");
-  /* --- footer: strip progres SEGMENT per mutasi + milestone INTAN ROLL --- */
-  const validCards=MASTER_CARD_INDEX.filter(c=>!c.isStoryEnemy);
-  const t=validCards.length;
-  const segs=IX_MUTS.map(m=>{let n=0;for(const c of validCards)if(ownCnt(c,m,false))n++;
-    return `<i title="${MUT_LABEL[m]||'MURNI'} ${n}/${t}" style="--p:${t?Math.round(n/t*100):0}%;--c:${m==='none'?'#9AA6B2':MUT_COLOR[m]}"></i>`;}).join("");
-  const pct=P.total?Math.min(100,Math.round(P.count/P.total*100)):0;
-  const complete=P.total>0&&P.count>=P.total;
-  const next=Math.max(0,IDX_MILESTONE-(P.count%IDX_MILESTONE));
-  const claimable = P.blocks - P.claimed;
-  const strip=`<div class="ix-prog">
-    <div class="ixp-col">
-      <div class="ixp-lbl">VARIAN TERKUMPUL</div>
-      <div class="ixp-val">${fmt(P.count)}<em> / ${fmt(P.total)}</em></div>
-    </div>
-    <div class="ixp-track ix-seg" title="${pct}%">${segs}</div>
-    <div class="ixp-rw-box">
-      <div class="ixp-rw-icon">
-        <img src="assets/images/instanpack-5k.webp?v=trans1" alt="5K Pack" width="38" height="38">
-      </div>
-      <div class="ixp-rw-text">
-        <div class="ixp-rw-title">MILESTONE REWARD</div>
-        <div class="ixp-rw-sub">${complete ? "SEMUA VARIAN LENGKAP" : `${next} varian lagi menuju +1 Pack 5K`}</div>
-      </div>
-      <div class="ixp-rw-btn-wrap">
-        <button class="ix-claim-btn ${claimable > 0 ? 'ready' : 'locked'}" type="button" onclick="claimIndexReward()" ${claimable > 0 ? '' : 'disabled'}>
-          ${claimable > 0 ? `KLAIM REWARD (+${claimable})` : 'BELUM BISA KLAIM'}
+      <!-- Navigation Pills -->
+      <div class="proto-tab-pills">
+        <button class="proto-tab-btn" id="raidShopBack" type="button" title="Kembali ke World Boss">
+          ◀ WORLD BOSS
+        </button>
+        <button class="proto-tab-btn" id="tabHub" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          WORLD BOSS COMMAND
+        </button>
+        <button class="proto-tab-btn active" id="tabShop" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          SHADOW HUNTER ARMORY
         </button>
       </div>
-    </div>
+
+      <!-- Live Token & Cores Telemetry -->
+      <div class="live-currencies">
+        <div class="currency-pill">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8M8 14h6"/></svg>
+          <div class="label">WB TOKEN:</div>
+          <div class="value" id="dispToken">${fmt(tok)}</div>
+        </div>
+        <div class="currency-pill">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <div class="label">CORES:</div>
+          <div class="value" style="color:var(--monarch-purple);" id="dispCores">${bossCount} / ${bossTotal}</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Shop View Container (Zero Luber / Isolated) -->
+    <main class="view-stage active" id="viewShop">
+      <div class="shop-view-container">
+        
+        <!-- Controls Bar & Category Filter Pills -->
+        <div class="shop-controls-bar">
+          <div class="shop-cat-tabs" id="shopCatBar">
+            <button class="shop-cat-btn ${filter==='all'?'active':''}" data-cat="all">ALL SUPPLIES (${ITEMS.length})</button>
+            <button class="shop-cat-btn ${filter==='ex-core'?'active':''}" data-cat="ex-core">EX CORES (BOSS)</button>
+            <button class="shop-cat-btn ${filter==='relic'?'active':''}" data-cat="relic">RELIC GEAR & PET</button>
+            <button class="shop-cat-btn ${filter==='potion'?'active':''}" data-cat="potion">AUGMENT & SPEED</button>
+            <button class="shop-cat-btn ${filter==='currency'?'active':''}" data-cat="currency">CREDITS & GEMS</button>
+          </div>
+
+          <div class="shop-matrix-tag">
+            TRANSACTION MATRIX // INSTANT DELIVERY TO INVENTORY
+          </div>
+        </div>
+
+        <!-- Horizontal Shelf Outer with Floating Nav Arrows -->
+        <div class="shop-shelf-outer">
+          <button class="shelf-arrow-btn left" id="shopScrollLeft" type="button" title="Scroll Kiri">◀</button>
+          
+          <div class="shop-inventory-scroll" id="shopTrack">
+            ${filtered.map(it=>{
+              const isOwned = !!((it.it.card && (stackHas(it.it.card.char, it.it.card.mut) || (state.raidShopOwned && state.raidShopOwned[it.it.card.char]))) || (it.it.owned && it.it.owned()));
+              const canAfford = tok >= it.cost;
+              const isBossCard = it.cat === "ex-core";
+              const cardObj = it.it.card ? CARDS[it.it.card.char] : null;
+
+              return `
+              <div class="armory-300-card ${isOwned ? 'purchased' : ''}" style="--card-accent: ${it.accent}">
+                <!-- Top Row Badges -->
+                <div class="a3c-top-row">
+                  <span class="a3c-cat-badge">${it.catLabel}</span>
+                  <span class="a3c-tier-pill">${it.tier}</span>
+                </div>
+
+                <!-- AAA Holographic Chamber -->
+                <div class="a3c-chamber ${isBossCard ? 'boss-card-frame' : ''}">
+                  <div class="a3c-holo-foil"></div>
+                  <div class="a3c-scanlines"></div>
+                  <div class="a3c-rarity-crest">
+                    <span>★</span>
+                    <span>${it.tier}</span>
+                  </div>
+                  <img src="${it.art}" alt="${it.name}" onerror="this.onerror=null;this.src='assets/cards/art/eternal-dragon.webp'">
+                  ${isOwned ? '<div class="a3c-owned-ribbon">✔ OWNED</div>' : ''}
+                  <div class="a3c-card-barcode">${isBossCard ? 'SYS//MONARCH' : 'SYS//DEPOT'}</div>
+                </div>
+
+                <!-- Body: Title & Unclipped Multi-Line Details -->
+                <div class="a3c-body">
+                  <h3 class="a3c-title">${it.name}</h3>
+                  <p class="a3c-desc">${it.desc}</p>
+                  ${cardObj ? `
+                    <div class="a3c-passive-box">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                      <span>${cardObj.passive ? cardObj.passive.name + ': ' + cardObj.passive.desc : 'PASSIVE: ' + it.it.desc}</span>
+                    </div>
+                  ` : it.it.effect ? `
+                    <div class="a3c-passive-box param">
+                      <span>PARAM: ${it.it.effect}</span>
+                    </div>
+                  ` : `
+                    <div class="a3c-passive-box param">
+                      <span>PARAM: INSTANT SUPPLY DELIVERY</span>
+                    </div>
+                  `}
+                </div>
+
+                <!-- Footer: Price & Action -->
+                <div class="a3c-footer">
+                  <div class="a3c-price-box">
+                    <span class="lbl">EXCHANGE PRICE</span>
+                    <div class="val"><b>${fmt(it.cost)}</b> <small>TOKEN</small></div>
+                  </div>
+                  <button class="a3c-buy-btn ${isOwned ? 'purchased' : ''}" 
+                          type="button" 
+                          data-id="${it.id}"
+                          ${isOwned || !canAfford ? 'disabled' : ''}>
+                    ${isOwned ? '✔ TERBELI' : (!canAfford ? 'TOKEN DEFISIT' : 'ACQUIRE // TUKAR ▶')}
+                  </button>
+                </div>
+              </div>
+              `;
+            }).join("")}
+          </div>
+
+          <button class="shelf-arrow-btn right" id="shopScrollRight" type="button" title="Scroll Kanan">▶</button>
+        </div>
+
+      </div>
+    </main>
   </div>`;
-  document.getElementById("ixToolbar").innerHTML=toolbar;
-  document.getElementById("ixBody").innerHTML=(list.length?"":`<div class="ix-empty">Tidak ada kartu yang cocok</div>`)+`<div class="ix-grid">${cells}</div>`;
-  lazyMountGrid(document.getElementById("ixBody"),_ixHtml);
-  ixLiveShimmer();
-  document.getElementById("ixFoot").innerHTML=strip;
-  const sel=document.getElementById("ixSort");sel.value=ixState.sort;
-  sel.onchange=()=>{ixState.sort=sel.value;ixRender();};
-  document.querySelectorAll("#ixToolbar .ix-chip[data-mut]").forEach(b=>b.onclick=()=>{ixState.mut=b.dataset.mut;ixRender();});
-  const shb=document.querySelector("#ixToolbar [data-shiny]");if(shb)shb.onclick=()=>{ixState.shiny=!ixState.shiny;ixRender();};
-  const owb=document.querySelector("#ixToolbar [data-owned]");if(owb)owb.onclick=()=>{ixState.owned=!ixState.owned;ixRender();};
-  document.querySelectorAll("#ixBody .ix-cell").forEach(cell=>{
-    cell.onclick=()=>{
-      const c=CARDS[cell.dataset.c];
-      if(!c)return;
-      const mut=cell.dataset.mut||"none";
-      const isShiny=cell.dataset.shiny==="1";
-      const hasMut=mut&&mut!=="none";
-      const spArtCard=document.getElementById("spArtCard");
-      if(spArtCard){
-        spArtCard.classList.toggle("shiny", isShiny);
-        ["m-gold","m-rainbow","m-secret","m-ultima"].forEach(k=>spArtCard.classList.remove(k));
-        if(hasMut)spArtCard.classList.add("m-"+mut);
-        spArtCard.style.borderColor="";
-        spArtCard.style.boxShadow="";
-      }
-      const spImg=document.getElementById("spImg");
-      if(spImg){
-        spImg.src=c.sprite_asset||"";
-        if(c.pos)spImg.style.objectPosition=c.pos;
-        else spImg.style.objectPosition="center";
-      }
-      const spCardName=document.getElementById("spCardName");
-      if(spCardName){
-        let displayName=c.name||"";
-        if(hasMut&&mut==="ultima"){
-          spCardName.innerHTML=`<span style="color:#FF0033;text-shadow:0 0 10px rgba(255,0,51,.85), 0 0 20px rgba(255,0,51,.5);font-weight:900">${displayName}</span>`+(isShiny?' <span style="color:#7DF9FF;font-size:.7em">★ SHINY</span>':'');
-        } else if(hasMut&&mut==="rainbow"){
-          spCardName.innerHTML=mutText(mut,displayName)+(isShiny?' <span style="color:#7DF9FF;font-size:.7em">★ SHINY</span>':'');
-        } else if(hasMut){
-          spCardName.innerHTML=`<span style="color:${MUT_COLOR[mut]}">${displayName}</span>`+(isShiny?' <span style="color:#7DF9FF;font-size:.7em">★ SHINY</span>':'');
-        } else if(isShiny){
-          spCardName.innerHTML=`<span style="color:#7DF9FF">${displayName}</span> <span style="font-size:.7em">★ SHINY</span>`;
-        } else {
-          spCardName.textContent=displayName;
+
+  // Bind Navigation
+  const rb=document.getElementById("raidShopBack");
+  if(rb)rb.onclick=()=>{try{sfx.hit();}catch(e){}raidView="hub";renderRaid();};
+  const th=document.getElementById("tabHub");
+  if(th)th.onclick=()=>{try{sfx.hit();}catch(e){}raidView="hub";renderRaid();};
+
+  // Bind Category Filters
+  const bar=document.getElementById("shopCatBar");
+  if(bar){
+    bar.querySelectorAll(".shop-cat-btn").forEach(btn=>{
+      btn.onclick=()=>{
+        const cat=btn.getAttribute("data-cat");
+        if(cat && cat !== window.raidShopFilter){
+          try{sfx.hit();}catch(e){}
+          window.raidShopFilter=cat;
+          renderRaidShop();
         }
+      };
+    });
+  }
+
+  // Bind Buy Buttons
+  const track=document.getElementById("shopTrack");
+  if(track){
+    track.querySelectorAll(".a3c-buy-btn:not([disabled])").forEach(btn=>{
+      btn.onclick=()=>{
+        const id=btn.getAttribute("data-id");
+        if(id) raidShopBuy(id);
+      };
+    });
+
+    // Horizontal Mouse Wheel Scroll
+    track.addEventListener("wheel", (e)=>{
+      if(e.deltaY !== 0){
+        e.preventDefault();
+        track.scrollLeft += e.deltaY;
       }
-      const chVal=effChance(c.char_id, mut, isShiny);
-      const spCardRarity=document.getElementById("spCardRarity");
-      if(spCardRarity){
-        const chanceStr="1 in "+fmtChance(chVal);
-        if(hasMut&&(mut==="rainbow"||mut==="ultima")){
-          spCardRarity.innerHTML=mutText(mut, chanceStr);
-        } else if(hasMut){
-          spCardRarity.innerHTML=`<span style="color:${MUT_COLOR[mut]}">${chanceStr}</span>`;
-        } else if(isShiny){
-          spCardRarity.innerHTML=`<span style="color:#7DF9FF">${chanceStr}</span>`;
-        } else {
-          spCardRarity.textContent=chanceStr;
-        }
-      }
-      const st=cardStats(c.char_id, mut, "none", isShiny);
-      const spHp=document.getElementById("spHp");
-      if(spHp)spHp.textContent=fmtC(st.hp||c.base_hp||0);
-      const spAtk=document.getElementById("spAtk");
-      if(spAtk)spAtk.textContent=fmtC(st.atk||c.base_atk||0);
-      const spName=document.getElementById("spName");
-      if(spName)spName.textContent=c.passive?c.passive.name:"-";
-      const spDesc=document.getElementById("spDesc");
-      if(spDesc)spDesc.textContent=c.passive?c.passive.desc:"-";
-      document.getElementById("skillPop").classList.add("show");
+    }, { passive: false });
+  }
+
+  // Bind Shelf Arrow Buttons
+  const leftBtn=document.getElementById("shopScrollLeft");
+  const rightBtn=document.getElementById("shopScrollRight");
+  if(leftBtn && track){
+    leftBtn.onclick=()=>{
+      track.scrollBy({ left: -320, behavior: "smooth" });
     };
-  });
+  }
+  if(rightBtn && track){
+    rightBtn.onclick=()=>{
+      track.scrollBy({ left: 320, behavior: "smooth" });
+    };
+  }
 }
-
-
 
 /* =============== TRAIT ROLL (popup) =============== */
 let traitTarget=null;
