@@ -315,22 +315,83 @@ function renderRaidHub(){
   <div class="tw-page rd-page">
     <div class="wbr-hub${dead?" wbr-hub-dead":""}${locked?" wbr-hub-locked":""}" id="wbrHub">
       <section class="wbr-stage" id="wbrStage">
-        <div class="wbr-deep">
-          <div class="wbr-l wbr-bloom" style="--z:-420px;--m:2"></div>
-          <div class="wbr-l wbr-floor" style="--z:-340px;--m:3"></div>
-          <div class="wbr-l wbr-ghost" style="--z:-180px;--m:9"><img id="wbrGhost" src="${b.art}" alt=""></div>
-          <div class="wbr-l wbr-halo" style="--z:-120px;--m:7"></div>
-          <div class="wbr-l wbr-ped" style="--z:-60px;--m:9"></div>
-          <div class="wbr-l wbr-beam" style="--z:-30px;--m:9"></div>
-          <div class="wbr-artwrap" id="wbrArtWrap" style="--z:0px;--m:14">
-            <img class="wbr-art${b.alt?" alt":""}" id="wbrArt" src="${b.art}" alt="${b.name}">
-            <div class="wbr-holo" aria-hidden="true"><span class="wh-tint"></span><span class="wh-scan"></span></div>
-          </div>
-          <div class="wbr-l wbr-veil" style="--z:20px;--m:1"></div>
-        </div>
-        <div class="wbr-l wbr-rush" style="--z:30px;--m:2"></div>
-        <div class="wbr-l wbr-fx" style="--z:40px;--m:1"><div class="wbr-slash"></div><div class="wbr-ring"></div><div class="wbr-flash"></div></div>
+        
+        <!-- 3D Perspective Floor Grid -->
+        <div class="wbr-floor"></div>
 
+        <!-- Concentric Pedestal Rings & Shockwave Burst -->
+        <div class="wbr-ped-rings">
+          <div class="wbr-ped-ring"></div>
+          <div class="wbr-ped-ring inner"></div>
+          <div class="wbr-ped-ring core"></div>
+          <div class="wbr-holo-burst" id="holoBurst"></div>
+        </div>
+
+        <!-- Floating Stage Navigation Arrows (3D Swipe Triggers) -->
+        <button class="wbr-stage-arrow wbr-arrow-prev" id="wbrPrev" type="button" title="Boss sebelumnya (3D Swipe)" aria-label="Boss sebelumnya">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          <span class="wbr-arrow-label">PREV</span>
+        </button>
+        <button class="wbr-stage-arrow wbr-arrow-next" id="wbrNext" type="button" title="Boss berikutnya (3D Swipe)" aria-label="Boss berikutnya">
+          <span class="wbr-arrow-label">NEXT</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+
+        <!-- 3D HOLOGRAPHIC BOSS CARD (SAFE CLEARANCE ABOVE HP PANEL) -->
+        <div class="wbr-c3d-wrap" id="bossCardWrap">
+          <div class="wbr-c3d" id="bossCard3d">
+            <div class="wbr-c3d-float">
+              <!-- 4-Layer Physical Depth Back Plates -->
+              <div class="wbr-c3d-l wbr-c3d-back b4"></div>
+              <div class="wbr-c3d-l wbr-c3d-back b3"></div>
+              <div class="wbr-c3d-l wbr-c3d-back b2"></div>
+              <div class="wbr-c3d-l wbr-c3d-back b1"></div>
+
+              <!-- Main Full-Bleed Artwork -->
+              <div class="wbr-c3d-l wbr-c3d-art">
+                <img id="wbrArt" src="${b.art}" alt="${b.name}" onerror="this.src='assets/cards/art/eternal-dragon.webp'">
+              </div>
+
+              <!-- Gradient Shadow Veil -->
+              <div class="wbr-c3d-l wbr-c3d-veil"></div>
+
+              <!-- 3D Cyber Frame & 4 Glowing Corner Brackets -->
+              <div class="wbr-c3d-l wbr-c3d-frame">
+                <i></i><i></i><i></i><i></i>
+              </div>
+
+              <!-- 3D Floating Labels & Badges -->
+              <div class="wbr-c3d-l wbr-c3d-label">
+                <div class="wbr-c3d-top-tag">
+                  <span class="dot"></span>
+                  <span id="wbrCardTag">${b.tag || "EX // CALAMITY CLASS"}</span>
+                </div>
+                <div class="wbr-c3d-bottom-info">
+                  <span class="kicker" id="wbrCardKicker">${wbBossIdx===0 ? "ANCIENT MONARCH BEAST" : "SHADOW SOVEREIGN // MONARCH"}</span>
+                  <span class="title" id="wbrCardTitle">${b.name}</span>
+                  <span class="meta" id="wbrCardMeta">${fmtBig(pool)} SHARED CALAMITY POOL</span>
+                </div>
+              </div>
+
+              <!-- Prismatic Holographic Foil -->
+              <div class="wbr-c3d-l wbr-c3d-foil"></div>
+
+              <!-- Specular Reflection Glass -->
+              <div class="wbr-c3d-l wbr-c3d-glass"></div>
+            </div>
+          </div>
+          <!-- 3D Projected Floor Shadow -->
+          <div class="wbr-c3d-shadow"></div>
+        </div>
+
+        <!-- Tactical Swipe Guide Hint -->
+        <div class="wbr-swipe-hint">
+          <span class="hint-chevron">❮</span>
+          <span>DRAG / SWIPE 3D CARD</span>
+          <span class="hint-chevron">❯</span>
+        </div>
+
+        <!-- Topline Telemetry -->
         <div class="wbr-topline">
           <span class="wbr-chip live"><i class="cp-pulse-dot"></i>WORLD EVENT</span>
           <span class="wbr-chip${locked?" dim":""}">${locked?"SEGERA":modTxt}</span>
@@ -338,10 +399,9 @@ function renderRaidHub(){
           <button class="wbr-back" id="raidLobby" type="button" title="Kembali ke lobby">&#8592;</button>
         </div>
 
-        <button class="wbr-switch l" id="wbrPrev" type="button" title="Boss sebelumnya">&#8249;</button>
-        <button class="wbr-switch r" id="wbrNext" type="button" title="Boss berikutnya">&#8250;</button>
         ${locked?`<div class="wbr-lock"><b>${b.name}</b><small>BUKA SETELAH UPDATE</small></div>`:""}
 
+        <!-- Bottom HP Panel & Meta Info -->
         <div class="wbr-plate">
           <div class="wbr-plate-main">
             <span class="wbr-eyebrow">WORLD BOSS${dayKey?" · "+dayKey:""}</span>
@@ -434,7 +494,7 @@ function renderDots(){
     };
   });
 }
-/* ---------- ganti boss (panah / swipe / dot) ---------- */
+/* ---------- ganti boss (3D Directional Swipe / panah / swipe / dot) ---------- */
 let wbrSwapping=false;
 function goBoss(dir){
   const n=WB_BOSSES.length;
@@ -442,25 +502,42 @@ function goBoss(dir){
   const next=((wbBossIdx+dir)%n+n)%n;
   if(next===wbBossIdx)return;
   try{sfx.hit();}catch(e){}
-  const stage=document.getElementById("wbrStage");
-  const wrap=document.getElementById("wbrArtWrap");
-  if(wbReduceMotion()||!stage||!wrap){wbBossIdx=next;renderRaidHub();return;}
+  const card=document.getElementById("bossCard3d");
+  const burst=document.getElementById("holoBurst");
+
+  if(wbReduceMotion()||!card){
+    wbBossIdx=next;
+    renderRaidHub();
+    return;
+  }
+
   wbrSwapping=true;
-  stage.classList.add("swapping");
-  wrap.classList.add("swap");
+  const exitClass=dir>0?"swipe-exit-left":"swipe-exit-right";
+  const enterClass=dir>0?"swipe-enter-right":"swipe-enter-left";
+
+  card.className="wbr-c3d "+exitClass;
+
   setTimeout(()=>{
     wbBossIdx=next;
     renderRaidHub();
-    const st=document.getElementById("wbrStage"),wr=document.getElementById("wbrArtWrap");
-    if(st)st.classList.add("swapping");
-    if(wr)wr.classList.add("swap");
-    setTimeout(()=>{
-      const s2=document.getElementById("wbrStage"),w2=document.getElementById("wbrArtWrap");
-      if(s2)s2.classList.remove("swapping");
-      if(w2)w2.classList.remove("swap");
+    const newCard=document.getElementById("bossCard3d");
+    const newBurst=document.getElementById("holoBurst");
+    if(newBurst){
+      newBurst.classList.remove("pulse");
+      void newBurst.offsetWidth;
+      newBurst.classList.add("pulse");
+    }
+    if(newCard){
+      newCard.className="wbr-c3d "+enterClass;
+      setTimeout(()=>{
+        newCard.className="wbr-c3d";
+        newCard.style.transform="";
+        wbrSwapping=false;
+      }, 420);
+    }else{
       wbrSwapping=false;
-    },70);
-  },180);
+    }
+  }, 320);
 }
 /* ---------- pulse deploy (1 ring + flash 180ms) ---------- */
 let wbrDeployT=0;
@@ -477,25 +554,85 @@ function wbrDeployPulse(next){
     if(typeof next==="function")next();
   },180);
 }
-/* ---------- bind stage: swipe/drag ganti boss (tanpa partikel & parallax) ----------
-   Ambang TINGGI (dx>90 + dx>dy*2.2) supaya tap + slide jari 60–80px di HP kentang
-   tidak dianggap swipe. Ini yang bikin user dulu ngira "klik sendiri": tap meleset
-   dari panah/dot → kena stage → swipe kepicu. */
+/* ---------- bind stage: real-time 3D drag physics & swipe gesture ---------- */
 function wbrBindStage(){
   const stage=document.getElementById("wbrStage");
-  if(!stage)return;
-  let sx=0,sy=0,drag=false;
-  stage.addEventListener("pointerdown",e=>{
+  const cardWrap=document.getElementById("bossCardWrap");
+  const card=document.getElementById("bossCard3d");
+  if(!stage||!cardWrap||!card)return;
+
+  let isPointerDown=false, startX=0, startY=0, dragDistX=0, hasDragged=false;
+
+  cardWrap.addEventListener("pointerdown", e=>{
+    if(wbrSwapping)return;
     if(e.target&&e.target.closest&&e.target.closest("button"))return;
-    drag=true;sx=e.clientX;sy=e.clientY;
+    isPointerDown=true;
+    hasDragged=false;
+    startX=e.clientX;
+    startY=e.clientY;
+    dragDistX=0;
+    try{cardWrap.setPointerCapture(e.pointerId);}catch(err){}
+    card.style.transition="none";
   });
-  stage.addEventListener("pointerup",e=>{
-    if(!drag)return;
-    drag=false;
-    const dx=e.clientX-sx, dy=e.clientY-sy;
-    if(Math.abs(dx)>90&&Math.abs(dx)>Math.abs(dy)*2.2)goBoss(dx<0?1:-1);
+
+  cardWrap.addEventListener("pointermove", e=>{
+    if(!isPointerDown||wbrSwapping)return;
+    const dx=e.clientX-startX;
+    const dy=e.clientY-startY;
+    if(Math.abs(dx)>6||Math.abs(dy)>6)hasDragged=true;
+    if(hasDragged){
+      dragDistX=dx;
+      const rotY=Math.max(-46, Math.min(46, dx*0.15));
+      const rotZ=Math.max(-8, Math.min(8, dx*0.03));
+      const transZ=-Math.min(190, Math.abs(dx)*0.55);
+      const scale=Math.max(0.82, 1-Math.abs(dx)*0.0006);
+      card.style.transform=`translateX(${dx}px) translateZ(${transZ}px) rotateY(${rotY}deg) rotateZ(${rotZ}deg) scale(${scale})`;
+      card.style.filter=`brightness(${1+Math.abs(dx)*0.0018}) drop-shadow(0 0 ${Math.min(40, Math.abs(dx)*0.3)}px rgba(0, 240, 255, 0.45))`;
+    }
   });
-  stage.addEventListener("pointercancel",()=>{drag=false;});
+
+  const endDrag=e=>{
+    if(!isPointerDown)return;
+    isPointerDown=false;
+    try{cardWrap.releasePointerCapture(e.pointerId);}catch(err){}
+    if(wbrSwapping)return;
+    card.style.filter="";
+    if(hasDragged&&Math.abs(dragDistX)>65){
+      const dir=dragDistX<0?1:-1;
+      card.style.transition="";
+      goBoss(dir);
+    } else {
+      card.style.transition="transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28)";
+      card.style.transform="translateX(0px) rotateX(0deg) rotateY(0deg) translateZ(0px) scale(1)";
+      setTimeout(()=>{
+        if(!isPointerDown&&!wbrSwapping){card.style.transition="";}
+      }, 400);
+    }
+  };
+
+  cardWrap.addEventListener("pointerup", endDrag);
+  cardWrap.addEventListener("pointercancel", endDrag);
+
+  // Normal mousemove parallax tilt when not dragging
+  stage.addEventListener("mousemove", e=>{
+    if(isPointerDown||wbrSwapping)return;
+    const rect=stage.getBoundingClientRect();
+    const x=((e.clientX-rect.left)/rect.width-0.5)*2;
+    const y=((e.clientY-rect.top)/rect.height-0.5)*2;
+    const rx=(-y*14).toFixed(2);
+    const ry=(x*16).toFixed(2);
+    const dx=(x*12).toFixed(1);
+    card.style.setProperty("--rx", rx+"deg");
+    card.style.setProperty("--ry", ry+"deg");
+    card.style.setProperty("--dx", dx+"px");
+  });
+
+  stage.addEventListener("mouseleave", ()=>{
+    if(isPointerDown||wbrSwapping)return;
+    card.style.setProperty("--rx", "0deg");
+    card.style.setProperty("--ry", "0deg");
+    card.style.setProperty("--dx", "0px");
+  });
 }
 
 var _rdTileHtml={},_ixHtml={},_dpHtml={};
@@ -969,237 +1106,201 @@ function raidShopBuy(id){
     renderRaidShop();
   })();
 }
+/* =============== TOKO RAID: 300PX HORIZONTAL SHELF (ANTI-LUBER) =============== */
+window.raidShopFilter = window.raidShopFilter || "all";
+
 function renderRaidShop(){
   const tok=state.wbTokens||0;
-  
-  /* Cyberpunk Vector Hologram Icons (Custom inline SVG ala Honkai / PGR / Cyberpunk 2077) */
-  const ICO={
-    gem:`<img src="assets/images/premium-currency.webp" alt="Gem" style="width:100%;height:100%;object-fit:cover;border-radius:50%;filter:drop-shadow(0 0 8px rgba(255,215,0,.55))">`,
-    coins:`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8M8 14h6" stroke="#ffd27a"/></svg>`,
-    card_edragon:`<img src="assets/cards/art/eternal-dragon.webp?v=trans1" onerror="this.parentNode.textContent='🐉'">`,
-    card_shadowking:`<img src="${thumbSrc('assets/cards/art/shadow-king.webp')}" alt="Shadow King" onerror="this.parentNode.textContent='👑'">`,
-    "helm-abyss":`<img src="assets/artifacts/abyss-helm.webp" onerror="this.parentNode.textContent='🪖'">`,
-    "nebula-wisp":`<img src="assets/pets/nebula-wisp.webp" onerror="this.parentNode.textContent='🌌'">`,
-    luck1:`<img src="${thumbSrc('assets/images/pot-luck-1.webp')}" alt="Luck Potion L1" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🍀'">`,
-    luck2:`<img src="${thumbSrc('assets/images/pot-luck-2.webp')}" alt="Luck Potion L2" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🍀'">`,
-    luck3:`<img src="${thumbSrc('assets/images/pot-luck-3.webp')}" alt="Luck Potion L3" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🍀'">`,
-    speed1:`<img src="${thumbSrc('assets/images/pot-speed-1.webp')}" alt="Speed Potion L1" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
-    speed2:`<img src="${thumbSrc('assets/images/pot-speed-2.webp')}" alt="Speed Potion L2" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
-    speed3:`<img src="${thumbSrc('assets/images/pot-speed-3.webp')}" alt="Speed Potion L3" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`
-  };
-  
+
   const cardItems=WB_SHOP.filter(x=>x.card);
   const bossTotal=cardItems.length,bossCount=cardItems.filter(x=>bossRollUnlocked(x.card.char)).length;
-  
+
   const ITEMS=WB_SHOP.map(it=>{
-    let cat="POTION", tier="SPEC";
-    if(it.gem) { cat="EXCHANGE"; tier="GEM"; }
-    else if(it.card) { cat="EX CORE"; tier="CH-EX"; }
-    else if(it.id.startsWith("helm")) { cat="RELIC GEAR"; tier="MYTHIC"; }
-    else if(it.id.includes("wisp")) { cat="FAMILIAR"; tier="COSMIC"; }
-    else if(it.id==="coins") { cat="CREDITS"; tier="CURR"; }
-    else if(it.id.includes("luck")) { cat="AUGMENT"; tier="MK-"+it.id.replace("luck",""); }
-    else if(it.id.includes("speed")) { cat="OVERCLOCK"; tier="MK-"+it.id.replace("speed",""); }
+    let cat="potion", catLabel="POTION", tier="SPEC", accent="#00f0ff", art="assets/images/pot-luck-1.webp";
+
+    if(it.id==="gem"){
+      cat="currency"; catLabel="EXCHANGE"; tier="GEM"; accent="#ffd700"; art="assets/images/premium-currency.webp";
+    } else if(it.id==="coins"){
+      cat="currency"; catLabel="CREDITS"; tier="COINS"; accent="#ffd27a"; art="assets/images/coins.webp";
+    } else if(it.id==="card_edragon"){
+      cat="ex-core"; catLabel="EX CORE"; tier="EX-CH"; accent="#00f0ff"; art="assets/raid/eternal-dragon-hd.webp";
+    } else if(it.id==="card_shadowking"){
+      cat="ex-core"; catLabel="EX CORE"; tier="EX-CH"; accent="#a855f7"; art="assets/cards/art/shadow-king.webp";
+    } else if(it.id.startsWith("helm")){
+      cat="relic"; catLabel="RELIC GEAR"; tier="MYTHIC"; accent="#ffb703"; art="assets/artifacts/abyss-helm.webp";
+    } else if(it.id.includes("wisp")){
+      cat="relic"; catLabel="FAMILIAR"; tier="COSMIC"; accent="#7df9ff"; art="assets/pets/nebula-wisp.webp";
+    } else if(it.id.includes("luck")){
+      cat="potion"; catLabel="AUGMENT"; tier="MK-"+it.id.replace("luck",""); accent="#4ade80"; art="assets/images/pot-luck-"+it.id.replace("luck","")+".webp";
+    } else if(it.id.includes("speed")){
+      cat="potion"; catLabel="OVERCLOCK"; tier="MK-"+it.id.replace("speed",""); accent="#fbbf24"; art="assets/images/pot-speed-"+it.id.replace("speed","")+".webp";
+    }
 
     return {
-      k:it.id,
-      label:it.name.toUpperCase(),
-      sub:it.card?"Kartu BOSS &bull; Beli sekali buka roll permanen di semua gacha":it.desc,
-      cost:it.cost,
-      ac:it.gem?"#ffd700":it.card?"#B58CFF":it.id.includes("helm")?"#FFD27A":it.id.includes("wisp")?"#7DF9FF":"#5CF0A8",
+      id: it.id,
+      name: it.name.toUpperCase(),
+      desc: it.desc,
+      cost: it.cost,
       cat,
+      catLabel,
       tier,
+      accent,
+      art,
       it
     };
   });
 
-  if(window.raidShopSel==null||window.raidShopSel>=ITEMS.length)window.raidShopSel=0;
-  let swapT=null;
-
-  const renderGrid=()=>{
-    const gridEl=document.getElementById("hunterShopGrid");
-    if(!gridEl)return;
-    gridEl.innerHTML=ITEMS.map((it,i)=>{
-      const isSel=i===window.raidShopSel;
-      const isOwned=!!((it.it.card&&stackHas(it.it.card.char,it.it.card.mut))||(it.it.owned&&it.it.owned()));
-      const canAfford=(tok>=it.cost);
-
-      return `
-      <div class="hsg-card cp-shop-card ${isSel?'selected':''} ${isOwned?'owned':''} ${!canAfford&&!isOwned?'insufficient':''}" data-i="${i}" style="--item-c:${it.ac}">
-        <div class="hsg-card-top">
-          <span class="hsg-cat-badge cp-cat">${it.cat}</span>
-          <span class="hsg-tier-tag cp-tier">${it.tier}</span>
-        </div>
-        <div class="hsg-art-wrap cp-art-wrap ${it.it.card?'boss-card':''}">
-          ${ICO[it.k]||"🎁"}
-        </div>
-        <div class="hsg-card-name">${it.label}</div>
-        <div class="hsg-price-badge">
-          ${isOwned ? `<span class="hsg-owned-lbl">&#10004; PURCHASED</span>` : `<b>${fmt(it.cost)}</b> <small>TOKEN</small>`}
-        </div>
-      </div>`;
-    }).join("");
-
-    gridEl.querySelectorAll(".hsg-card").forEach(c=>{
-      c.onclick=()=>{
-        window.raidShopSel=+c.dataset.i;
-        renderGrid();
-        renderDetail();
-      };
-    });
-  };
-
-  const renderBuy=()=>{
-    const it=ITEMS[window.raidShopSel],btn=document.getElementById("raidShopBuy");
-    if(!btn||!it)return;
-    btn.style.animation="none";void btn.offsetWidth;btn.style.animation="";
-    const have=!!(it.it.card&&stackHas(it.it.card.char,it.it.card.mut))||(it.it.owned?it.it.owned():false);
-    let small="AUTHORIZE PROCUREMENT",big=`ACQUIRE &bull; ${fmt(it.cost)} TOKEN`,dis=false;
-    if(it.it.gem){
-      small="TUKAR TOKEN → GEM (TANPA BATAS)";
-      big=`+${it.it.gem} GEM &bull; ${fmt(it.cost)} TOKEN`;
-    }
-    if(have){
-      small=it.it.card?"Roll gacha sudah permanen terbuka":"Permanen tersimpan di Backpack";
-      big="SUDAH DIMILIKI";
-      dis=true;
-    } else if(tok<it.cost){
-      small="INSUFFICIENT WORLD BOSS TOKENS";
-      big=`DEFISIT ${fmt(it.cost-tok)} TOKEN`;
-      dis=true;
-    }
-    btn.disabled=dis;
-    btn.className="hsd-buy-action cp-buy-action" + (dis?" disabled":"");
-    /* Kartu BOSS: JANGAN pasang art di tombol buy — kotak ikon cuma 32px,
-       potret boss luber keluar tombol. Sisakan teks + panah. */
-    btn.innerHTML=`
-      ${it.it.card?"":`<div class="hsd-ba-ic">${ICO[it.k]||"🎁"}</div>`}
-      <div class="hsd-ba-text">
-        <small>${small}</small>
-        <b>${big}</b>
-      </div>
-      <div class="hsd-ba-arrow"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>`;
-  };
-
-  const renderDetail=immediate=>{
-    const it=ITEMS[window.raidShopSel],box=document.getElementById("raidShopDetail");
-    if(!box||!it)return;
-    clearTimeout(swapT);
-    const paint=()=>{
-      box.classList.remove("out");
-      const isCard=!!it.it.card;
-      const c=isCard?CARDS[it.it.card.char]:null;
-      const unlocked=!isCard||bossRollUnlocked(it.it.card.char);
-      const cnt=isCard?state.stacks.filter(s=>s.char===it.it.card.char).reduce((n,s)=>n+(s.count||1),0):0;
-      
-      box.innerHTML=`
-      <div class="hsd-spec-header cp-spec-header" style="--spec-c:${it.ac}">
-        <div class="hsd-icon-box cp-hero-ic ${isCard?'boss-art':''}">${ICO[it.k]||"🎁"}</div>
-        <div class="hsd-meta-col">
-          <div class="hsd-meta-kicker"><span class="hsd-tier-pill">${it.tier}</span> SUPPLY DEPOT &bull; ${it.cat}</div>
-          <div class="hsd-meta-title">${it.label}</div>
-          <div class="hsd-meta-price">${fmt(it.cost)} WORLD BOSS TOKENS</div>
-        </div>
-      </div>
-
-      <div class="hsd-desc-block cp-desc-block">
-        <div class="hsd-sec-label">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-          SPECIFICATION // EFFECT PARAMETERS
-        </div>
-        <p class="hsd-desc-text">${it.it.desc}</p>
-        ${c ? `
-        <div class="hsd-skill-box cp-skill-box">
-          <div class="hsb-title">&#9889; ${c.passive.name}</div>
-          <div class="hsb-text">${c.passive.desc}</div>
-        </div>` : ''}
-      </div>
-
-      <div class="hsd-matrix-grid cp-matrix-grid">
-        <div class="hsd-mg-cell">
-          <span class="hm-lbl">EXCHANGE PRICE</span>
-          <b class="hm-val gold">${fmt(it.cost)} TOKEN</b>
-        </div>
-        <div class="hsd-mg-cell">
-          <span class="hm-lbl">GACHA UNLOCK STATUS</span>
-          <b class="hm-val ${unlocked?'green':'warn'}">${isCard ? (unlocked?'PERMANENT UNLOCKED':'LOCKED // PURCHASE FIRST') : 'INSTANT ACTIVE'}</b>
-        </div>
-        <div class="hsd-mg-cell">
-          <span class="hm-lbl">AVAILABLE DEPOSIT</span>
-          <b class="hm-val cyan">${fmt(tok)} TOKEN</b>
-        </div>
-        <div class="hsd-mg-cell">
-          <span class="hm-lbl">OWNED STOCK</span>
-          <b class="hm-val ${cnt>0?'green':''}">${isCard ? (cnt ? 'x'+cnt : '0') : it.it.gem ? '&#8734; UNLIMITED' : 'Tersedia'}</b>
-        </div>
-      </div>`;
-      renderBuy();
-    };
-    if(immediate||!box.children.length){paint();return;}
-    box.classList.add("out");
-    swapT=setTimeout(paint,110);
-  };
+  const filter = window.raidShopFilter;
+  const filtered = ITEMS.filter(it => filter === "all" || it.cat === filter);
 
   app.innerHTML=`
   <div class="tw-page rd-page">
-    <div class="hunter-shop-hub cp-shop-hub">
+    <div class="hunter-shop-hub cp-v2">
       
-      <!-- TOP MARKET HEADER -->
-      <div class="hsh-header cp-header">
+      <!-- Top Market Header -->
+      <div class="hsh-header cp-v2">
         <div class="hsh-header-left">
-          <button class="hsh-back-btn cp-back-btn" id="raidShopBack" type="button">
+          <button class="hsh-back-btn" id="raidShopBack" type="button">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
             <span>KEMBALI KE WORLD BOSS</span>
           </button>
           <div class="hsh-title-wrap">
-            <div class="hsh-kicker"><span class="hsh-dot cp-dot"></span> PROCUREMENT MATRIX // LEVEL 01+</div>
-            <div class="hsh-title">WORLD BOSS <span class="hsh-cyan">EXCHANGE</span></div>
+            <div class="kicker"><span class="cp-pulse-dot" style="display:inline-block;width:8px;height:8px;background:#00f0ff;border-radius:50%;margin-right:6px;"></span>HUNTER ARMORY // ALL SUPPLIES</div>
+            <h2>WORLD BOSS <span>EXCHANGE</span></h2>
           </div>
         </div>
         <div class="hsh-header-right">
-          <div class="hsh-token-chip cp-chip">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8M8 14h6"/></svg>
-            <div class="htc-col"><small>WORLD BOSS TOKEN</small><b class="cyan">${fmt(tok)}</b></div>
+          <div class="hsh-token-chip cp-v2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8M8 14h6"/></svg>
+            <div><div class="lbl">WB TOKEN</div><div class="val">${fmt(tok)}</div></div>
           </div>
-          <div class="hsh-token-chip subtle cp-chip">
-            <div class="htc-col"><small>BOSS CORES</small><b>${bossCount}/${bossTotal}</b></div>
+          <div class="hsh-token-chip cp-v2">
+            <div><div class="lbl">BOSS CORES</div><div class="val">${bossCount}/${bossTotal}</div></div>
           </div>
         </div>
       </div>
 
-      <!-- MAIN MARKET SPLIT: LEFT GRID CARDS & RIGHT DETAIL INSPECTOR -->
-      <div class="hsh-content-split">
-        <!-- LEFT: HUNTER SHOP GRID -->
-        <section class="hsh-grid-panel cp-panel">
-          <div class="hsh-grid-subhdr">
-            <span class="hgs-txt">[ EXCLUSIVE ARMORY SUPPLY &bull; CLICK TO INSPECT TELEMETRY ]</span>
-          </div>
-          <div class="hunter-shop-grid" id="hunterShopGrid"></div>
-        </section>
+      <!-- Category Filter Pills -->
+      <div class="shop-cat-bar" id="shopCatBar">
+        <button class="shop-cat-btn ${filter==='all'?'active':''}" data-cat="all">ALL SUPPLIES (${ITEMS.length})</button>
+        <button class="shop-cat-btn ${filter==='ex-core'?'active':''}" data-cat="ex-core">EX BOSS CORES</button>
+        <button class="shop-cat-btn ${filter==='relic'?'active':''}" data-cat="relic">RELICS & FAMILIARS</button>
+        <button class="shop-cat-btn ${filter==='potion'?'active':''}" data-cat="potion">POTIONS & OVERCLOCK</button>
+        <button class="shop-cat-btn ${filter==='currency'?'active':''}" data-cat="currency">CURRENCY EXCHANGE</button>
+      </div>
 
-        <!-- RIGHT: INSPECT SPECIFICATION PANEL -->
-        <section class="hsh-detail-panel cp-panel">
-          <div class="hsd-panel-title cp-panel-title">TELEMETRY INSPECTION // PROCUREMENT</div>
-          <div class="hsd-detail-content" id="raidShopDetail"></div>
-          <div class="hsd-action-footer">
-            <button class="hsd-buy-action cp-buy-action" id="raidShopBuy" type="button"></button>
-          </div>
-        </section>
+      <!-- 300px Horizontal Shelf Track Wrapper -->
+      <div class="armory-300-shelf-wrap">
+        <button class="shelf-scroll-btn left" id="shelfScrollLeft" type="button" title="Scroll Kiri">◀</button>
+        
+        <div class="armory-300-track" id="shopTrack">
+          ${filtered.map(it=>{
+            const isOwned = !!((it.it.card && (stackHas(it.it.card.char, it.it.card.mut) || (state.raidShopOwned && state.raidShopOwned[it.it.card.char]))) || (it.it.owned && it.it.owned()));
+            const canAfford = tok >= it.cost;
+            const isBossCard = it.cat === "ex-core";
+            const cardObj = it.it.card ? CARDS[it.it.card.char] : null;
+
+            return `
+            <div class="armory-300-card ${isOwned ? 'purchased' : ''}" style="--card-accent: ${it.accent}">
+              <!-- Top Row Badges -->
+              <div class="a3c-top-row">
+                <span class="a3c-cat-badge">${it.catLabel}</span>
+                <span class="a3c-tier-pill">${it.tier}</span>
+              </div>
+
+              <!-- AAA Holographic Chamber -->
+              <div class="a3c-chamber ${isBossCard ? 'boss-card-frame' : ''}">
+                <div class="a3c-holo-foil"></div>
+                <div class="a3c-scanlines"></div>
+                <div class="a3c-rarity-crest">
+                  <span>★</span>
+                  <span>${it.tier}</span>
+                </div>
+                <img src="${it.art}" alt="${it.name}" onerror="this.onerror=null;this.src='assets/cards/art/eternal-dragon.webp'">
+                ${isOwned ? '<div class="a3c-owned-ribbon">✔ OWNED</div>' : ''}
+                <div class="a3c-card-barcode">${isBossCard ? 'SYS//MONARCH' : 'SYS//DEPOT'}</div>
+              </div>
+
+              <!-- Body: Title & Unclipped Multi-Line Details -->
+              <div class="a3c-body">
+                <h3 class="a3c-title">${it.name}</h3>
+                <p class="a3c-desc">${it.desc}</p>
+                ${cardObj ? `
+                  <div class="a3c-passive-box">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    <span>${cardObj.passive ? cardObj.passive.name + ': ' + cardObj.passive.desc : 'PASSIVE: ' + it.it.desc}</span>
+                  </div>
+                ` : it.it.effect ? `
+                  <div class="a3c-passive-box param">
+                    <span>PARAM: ${it.it.effect}</span>
+                  </div>
+                ` : `
+                  <div class="a3c-passive-box param">
+                    <span>PARAM: INSTANT SUPPLY DELIVERY</span>
+                  </div>
+                `}
+              </div>
+
+              <!-- Footer: Price & Action -->
+              <div class="a3c-footer">
+                <div class="a3c-price-box">
+                  <span class="lbl">EXCHANGE PRICE</span>
+                  <div class="val"><b>${fmt(it.cost)}</b> <small>TOKEN</small></div>
+                </div>
+                <button class="a3c-buy-btn ${isOwned ? 'purchased' : ''}" 
+                        type="button" 
+                        data-id="${it.id}"
+                        ${isOwned || !canAfford ? 'disabled' : ''}>
+                  ${isOwned ? '✔ TERBELI' : (!canAfford ? 'TOKEN DEFISIT' : 'ACQUIRE // TUKAR ▶')}
+                </button>
+              </div>
+            </div>
+            `;
+          }).join("")}
+        </div>
+
+        <button class="shelf-scroll-btn right" id="shelfScrollRight" type="button" title="Scroll Kanan">▶</button>
       </div>
 
     </div>
   </div>`;
 
-  renderGrid();
-  renderDetail(true);
-
+  // Bind Back Button
   const rb=document.getElementById("raidShopBack");
   if(rb)rb.onclick=()=>{try{sfx.hit();}catch(e){}raidView="hub";renderRaid();};
-  const bi=document.getElementById("raidShopBuy");
-  if(bi)bi.onclick=()=>{
-    if(bi.disabled)return;
-    raidShopBuy(ITEMS[window.raidShopSel].k);
-  };
+
+  // Bind Category Filter Pills
+  document.querySelectorAll(".shop-cat-btn").forEach(btn=>{
+    btn.onclick=()=>{
+      window.raidShopFilter = btn.dataset.cat;
+      renderRaidShop();
+    };
+  });
+
+  // Bind Buy Buttons
+  document.querySelectorAll(".a3c-buy-btn").forEach(btn=>{
+    btn.onclick=()=>{
+      if(btn.disabled)return;
+      raidShopBuy(btn.dataset.id);
+    };
+  });
+
+  // Bind Horizontal Quick-Scroll & Mousewheel
+  const track = document.getElementById("shopTrack");
+  const sLeft = document.getElementById("shelfScrollLeft");
+  const sRight = document.getElementById("shelfScrollRight");
+
+  if(track){
+    if(sLeft)sLeft.onclick=()=>{ track.scrollBy({ left: -320, behavior: 'smooth' }); };
+    if(sRight)sRight.onclick=()=>{ track.scrollBy({ left: 320, behavior: 'smooth' }); };
+
+    track.addEventListener("wheel", e=>{
+      if(e.deltaY !== 0){
+        e.preventDefault();
+        track.scrollLeft += e.deltaY;
+      }
+    }, { passive: false });
+  }
 }
 
 /* =============== INDEX CARD (popup) =============== */

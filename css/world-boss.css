@@ -870,3 +870,983 @@ body.on-raid:has(.wbr-hub) main#app > .tw-page{
   .wbr-beam,.wbr-holo .wh-scan,.wbr-ped::before,.wbr-ped::after{animation:none!important}
 }
 
+
+
+
+/* ==========================================================================
+   CYBERPUNK × SOLO LEVELING AAA REDESIGN SYSTEM
+   - 3D Holographic Boss Card with 4-Layer Depth Plates & Frame Brackets
+   - Direction-Aware 3D Swipe Transitions & Laser Beam Scanner
+   - Concentric Hologram Pedestal Rings & Floor Grid with Forward Run
+   - Interactive Real-Time 3D Drag & Touch Gestures
+   - Toko World Boss: 300px Horizontal Shelf Track (Anti-Luber, Unclipped Text)
+   ========================================================================== */
+
+:root {
+  --monarch-purple: #a855f7;
+  --monarch-glow: rgba(168, 85, 247, 0.45);
+  --cyber-cyan: #00f0ff;
+  --cyber-cyan-dim: rgba(0, 240, 255, 0.16);
+  --threat-red: #ff2a5f;
+  --threat-glow: rgba(255, 42, 95, 0.4);
+  --hunter-gold: #ffb703;
+  --hunter-gold-glow: rgba(255, 183, 3, 0.35);
+}
+
+/* --------------------------------------------------------------------------
+   1. 3D ARENA STAGE & PEDESTAL
+   -------------------------------------------------------------------------- */
+.wbr-stage {
+  perspective: 1400px !important;
+  perspective-origin: 50% 46% !important;
+  transform-style: preserve-3d !important;
+}
+
+/* 3D Floor Grid with Animated Perspective */
+.wbr-floor {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+.wbr-floor::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 200%;
+  height: 200%;
+  margin-left: -100%;
+  transform-origin: 50% 0;
+  transform: rotateX(74deg) translateZ(-50px);
+  background-image:
+    linear-gradient(rgba(0, 240, 255, 0.22) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.22) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 60% 50% at 50% 30%, #000 10%, rgba(0,0,0,0.5) 45%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 60% 50% at 50% 30%, #000 10%, rgba(0,0,0,0.5) 45%, transparent 75%);
+  animation: floorRun 5.5s linear infinite;
+}
+@keyframes floorRun {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 0 60px, 60px 0; }
+}
+
+/* Concentric Hologram Pedestal Rings */
+.wbr-ped-rings {
+  position: absolute;
+  left: 50%;
+  bottom: 140px;
+  width: 320px;
+  height: 88px;
+  margin-left: -160px;
+  transform: rotateX(74deg);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+}
+.wbr-ped-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0, 240, 255, 0.45);
+  box-shadow: 0 0 35px rgba(0, 240, 255, 0.4), inset 0 0 40px rgba(0, 240, 255, 0.2);
+}
+.wbr-ped-ring.inner {
+  inset: 15%;
+  border: 1px dashed rgba(168, 85, 247, 0.6);
+  animation: spinPed 24s linear infinite reverse;
+}
+.wbr-ped-ring.core {
+  inset: 32%;
+  border: 1px solid rgba(255, 42, 95, 0.5);
+  animation: spinPed 16s linear infinite;
+}
+@keyframes spinPed {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Pedestal Shockwave Burst */
+.wbr-holo-burst {
+  position: absolute;
+  inset: -15%;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+}
+.wbr-holo-burst.pulse {
+  animation: holoBurstExpand 0.65s cubic-bezier(0.12, 0.8, 0.25, 1) forwards;
+}
+@keyframes holoBurstExpand {
+  0% {
+    transform: scale(0.5);
+    opacity: 1;
+    border: 2.5px solid var(--cyber-cyan);
+    box-shadow: 0 0 35px var(--cyber-cyan), inset 0 0 25px rgba(0, 240, 255, 0.5);
+  }
+  60% {
+    opacity: 0.8;
+    border: 2px solid var(--monarch-purple);
+    box-shadow: 0 0 50px var(--monarch-purple), inset 0 0 35px rgba(168, 85, 247, 0.4);
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+    border: 1px solid transparent;
+    box-shadow: 0 0 60px rgba(0, 240, 255, 0);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   2. FLOATING STAGE ARROWS & SWIPE HINT
+   -------------------------------------------------------------------------- */
+.wbr-stage-arrow {
+  position: absolute;
+  top: 48%;
+  transform: translateY(-50%);
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 44px;
+  height: 84px;
+  background: rgba(7, 13, 26, 0.78);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  border-radius: 8px;
+  color: var(--cyber-cyan);
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), inset 0 0 14px rgba(0, 240, 255, 0.12);
+}
+.wbr-stage-arrow:hover {
+  background: rgba(0, 240, 255, 0.2);
+  border-color: var(--cyber-cyan);
+  box-shadow: 0 0 28px rgba(0, 240, 255, 0.65), inset 0 0 20px rgba(0, 240, 255, 0.3);
+  transform: translateY(-50%) scale(1.08);
+  color: #fff;
+}
+.wbr-stage-arrow:active {
+  transform: translateY(-50%) scale(0.94);
+}
+.wbr-arrow-prev { left: 18px; }
+.wbr-arrow-next { right: 18px; }
+.wbr-arrow-label {
+  font-family: var(--disp, "Russo One", sans-serif);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--muted, #8496ae);
+  text-transform: uppercase;
+}
+.wbr-stage-arrow:hover .wbr-arrow-label {
+  color: var(--cyber-cyan);
+}
+
+.wbr-swipe-hint {
+  position: absolute;
+  bottom: 124px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  background: rgba(3, 6, 14, 0.75);
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  color: #8496ae;
+  font-family: var(--cond, "Barlow Condensed", sans-serif);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  pointer-events: none;
+  z-index: 15;
+  backdrop-filter: blur(6px);
+  opacity: 0.88;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+}
+.wbr-swipe-hint .hint-chevron {
+  color: var(--cyber-cyan);
+  font-weight: 700;
+  animation: chevronPulse 1.4s infinite alternate ease-in-out;
+}
+@keyframes chevronPulse {
+  0% { opacity: 0.35; transform: scale(0.85); }
+  100% { opacity: 1; transform: scale(1.2); }
+}
+
+/* --------------------------------------------------------------------------
+   3. 3D HOLOGRAPHIC BOSS CARD CHASSIS & DEPTH LAYERS
+   -------------------------------------------------------------------------- */
+.wbr-c3d-wrap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50px;
+  bottom: 135px; /* Clear of bottom HP gauge */
+  display: grid;
+  place-items: center;
+  perspective: 1400px;
+  perspective-origin: 50% 46%;
+  transform-style: preserve-3d;
+  pointer-events: auto;
+  z-index: 5;
+  cursor: grab;
+  touch-action: pan-y;
+}
+.wbr-c3d-wrap:active {
+  cursor: grabbing;
+}
+
+.wbr-c3d {
+  position: relative;
+  height: 84%;
+  aspect-ratio: 3/4.15;
+  max-width: 86%;
+  transform-style: preserve-3d;
+  transform: translateX(var(--dx, 0px)) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.15s ease-out;
+  will-change: transform;
+}
+
+.wbr-c3d-float {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  animation: cardFloat 6.5s ease-in-out infinite;
+}
+@keyframes cardFloat {
+  0%, 100% { transform: translateY(0px) rotateZ(-0.3deg); }
+  50% { transform: translateY(-10px) rotateZ(0.3deg); }
+}
+
+.wbr-c3d-l {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  transform-style: preserve-3d;
+}
+
+/* 4-Layer Physical Depth Back Plates */
+.wbr-c3d-back {
+  background: linear-gradient(160deg, #0b1526, #040810);
+  border: 1px solid rgba(0, 240, 255, 0.22);
+  box-shadow: inset 0 0 25px rgba(0, 240, 255, 0.15);
+}
+.wbr-c3d-back.b4 { transform: translateZ(-24px); opacity: 0.6; }
+.wbr-c3d-back.b3 { transform: translateZ(-18px); opacity: 0.75; }
+.wbr-c3d-back.b2 { transform: translateZ(-12px); opacity: 0.88; }
+.wbr-c3d-back.b1 { transform: translateZ(-6px); }
+
+/* Artwork Plate */
+.wbr-c3d-art {
+  transform: translateZ(0);
+  border-radius: 13px;
+  overflow: hidden;
+  background: #04070e;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(0, 240, 255, 0.35);
+}
+.wbr-c3d-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 28%;
+  filter: saturate(1.1) contrast(1.08) brightness(1.04);
+  transition: filter 0.3s;
+}
+
+/* Gradient Shadow Veil */
+.wbr-c3d-veil {
+  transform: translateZ(4px);
+  pointer-events: none;
+  background: linear-gradient(0deg, rgba(3, 6, 12, 0.95) 0%, rgba(3, 6, 12, 0.4) 30%, transparent 60%);
+  border-radius: 13px;
+}
+
+/* 3D Cyber Frame & 4 Glowing Corner Brackets */
+.wbr-c3d-frame {
+  transform: translateZ(10px);
+  pointer-events: none;
+  border: 1.5px solid rgba(0, 240, 255, 0.5);
+  box-shadow: inset 0 0 20px rgba(0, 240, 255, 0.25), 0 0 25px rgba(0, 240, 255, 0.3);
+  border-radius: 13px;
+}
+.wbr-c3d-frame i {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2.5px solid var(--cyber-cyan);
+  filter: drop-shadow(0 0 6px var(--cyber-cyan));
+}
+.wbr-c3d-frame i:nth-child(1) { top: -2px; left: -2px; border-right: 0; border-bottom: 0; border-top-left-radius: 6px; }
+.wbr-c3d-frame i:nth-child(2) { top: -2px; right: -2px; border-left: 0; border-bottom: 0; border-top-right-radius: 6px; }
+.wbr-c3d-frame i:nth-child(3) { bottom: -2px; left: -2px; border-right: 0; border-top: 0; border-bottom-left-radius: 6px; }
+.wbr-c3d-frame i:nth-child(4) { bottom: -2px; right: -2px; border-left: 0; border-top: 0; border-bottom-right-radius: 6px; }
+
+/* 3D Floating Labels */
+.wbr-c3d-label {
+  transform: translateZ(22px);
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 16px;
+}
+.wbr-c3d-top-tag {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(3, 6, 14, 0.88);
+  border: 1px solid var(--cyber-cyan);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-family: var(--cond, "Barlow Condensed", sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cyber-cyan);
+  letter-spacing: 0.14em;
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);
+}
+.wbr-c3d-top-tag .dot {
+  width: 6px;
+  height: 6px;
+  background: var(--cyber-cyan);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--cyber-cyan);
+}
+.wbr-c3d-bottom-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.wbr-c3d-bottom-info .kicker {
+  font-family: var(--cond, "Barlow Condensed", sans-serif);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: #00f0ff;
+  text-transform: uppercase;
+}
+.wbr-c3d-bottom-info .title {
+  font-family: var(--disp, "Russo One", sans-serif);
+  font-size: 22px;
+  line-height: 1.05;
+  color: #fff;
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 20px rgba(0, 240, 255, 0.6), 0 4px 12px #000;
+}
+.wbr-c3d-bottom-info .meta {
+  font-family: var(--mono, "JetBrains Mono", monospace);
+  font-size: 11px;
+  color: #8496ae;
+  letter-spacing: 0.05em;
+}
+
+/* Holographic Prism Foil Sheen */
+.wbr-c3d-foil {
+  transform: translateZ(16px);
+  pointer-events: none;
+  border-radius: 13px;
+  mix-blend-mode: color-dodge;
+  opacity: 0.42;
+  background: conic-gradient(
+    from 180deg at 50% 50%,
+    rgba(255, 0, 128, 0.25),
+    rgba(0, 240, 255, 0.35),
+    rgba(168, 85, 247, 0.3),
+    rgba(255, 183, 3, 0.25),
+    rgba(0, 240, 255, 0.35),
+    rgba(255, 0, 128, 0.25)
+  );
+  animation: foilSpin 16s linear infinite;
+}
+@keyframes foilSpin {
+  0% { transform: translateZ(16px) rotate(0deg); }
+  100% { transform: translateZ(16px) rotate(360deg); }
+}
+
+/* Specular Reflection Glass */
+.wbr-c3d-glass {
+  transform: translateZ(28px);
+  pointer-events: none;
+  border-radius: 13px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.32) 0%,
+    rgba(255, 255, 255, 0.05) 30%,
+    transparent 50%,
+    rgba(0, 240, 255, 0.12) 100%
+  );
+}
+
+/* 3D Floor Shadow */
+.wbr-c3d-shadow {
+  position: absolute;
+  bottom: 0px;
+  left: 50%;
+  width: 220px;
+  height: 50px;
+  margin-left: -110px;
+  transform: rotateX(74deg) translateZ(-40px);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.6) 45%, transparent 75%);
+  filter: blur(10px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* --------------------------------------------------------------------------
+   4. 3D DIRECTIONAL SWIPE TRANSITIONS & KEYFRAMES
+   -------------------------------------------------------------------------- */
+.wbr-c3d.swipe-exit-left {
+  animation: cardSwipeExitLeft 0.32s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+  pointer-events: none !important;
+}
+.wbr-c3d.swipe-exit-right {
+  animation: cardSwipeExitRight 0.32s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+  pointer-events: none !important;
+}
+.wbr-c3d.swipe-enter-right {
+  animation: cardSwipeEnterRight 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  pointer-events: none !important;
+}
+.wbr-c3d.swipe-enter-left {
+  animation: cardSwipeEnterLeft 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  pointer-events: none !important;
+}
+
+@keyframes cardSwipeExitLeft {
+  0% {
+    transform: translateX(var(--dx, 0px)) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(0) scale(1);
+    opacity: 1;
+    filter: brightness(1);
+  }
+  35% {
+    filter: brightness(1.7) drop-shadow(0 0 30px var(--cyber-cyan)) blur(0.5px);
+  }
+  100% {
+    transform: translateX(-135%) translateZ(-340px) rotateY(-56deg) rotateZ(-12deg) scale(0.65);
+    opacity: 0;
+    filter: brightness(2.2) drop-shadow(0 0 50px var(--cyber-cyan)) blur(5px);
+  }
+}
+
+@keyframes cardSwipeExitRight {
+  0% {
+    transform: translateX(var(--dx, 0px)) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(0) scale(1);
+    opacity: 1;
+    filter: brightness(1);
+  }
+  35% {
+    filter: brightness(1.7) drop-shadow(0 0 30px var(--monarch-purple)) blur(0.5px);
+  }
+  100% {
+    transform: translateX(135%) translateZ(-340px) rotateY(56deg) rotateZ(12deg) scale(0.65);
+    opacity: 0;
+    filter: brightness(2.2) drop-shadow(0 0 50px var(--monarch-purple)) blur(5px);
+  }
+}
+
+@keyframes cardSwipeEnterRight {
+  0% {
+    transform: translateX(135%) translateZ(-340px) rotateY(56deg) rotateZ(12deg) scale(0.65);
+    opacity: 0;
+    filter: brightness(2.4) drop-shadow(0 0 60px var(--cyber-cyan)) blur(6px);
+  }
+  50% {
+    filter: brightness(1.4) drop-shadow(0 0 25px var(--cyber-cyan)) blur(1px);
+  }
+  100% {
+    transform: translateX(0px) rotateX(0deg) rotateY(0deg) translateZ(0) scale(1);
+    opacity: 1;
+    filter: brightness(1) drop-shadow(0 20px 45px rgba(0,0,0,0.85)) blur(0);
+  }
+}
+
+@keyframes cardSwipeEnterLeft {
+  0% {
+    transform: translateX(-135%) translateZ(-340px) rotateY(-56deg) rotateZ(-12deg) scale(0.65);
+    opacity: 0;
+    filter: brightness(2.4) drop-shadow(0 0 60px var(--monarch-purple)) blur(6px);
+  }
+  50% {
+    filter: brightness(1.4) drop-shadow(0 0 25px var(--monarch-purple)) blur(1px);
+  }
+  100% {
+    transform: translateX(0px) rotateX(0deg) rotateY(0deg) translateZ(0) scale(1);
+    opacity: 1;
+    filter: brightness(1) drop-shadow(0 20px 45px rgba(0,0,0,0.85)) blur(0);
+  }
+}
+
+/* Hologram Laser Scanning Beam on Entrance */
+.wbr-c3d.swipe-enter-right .wbr-c3d-art::after,
+.wbr-c3d.swipe-enter-left .wbr-c3d-art::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 6px;
+  background: linear-gradient(90deg, transparent, #00f0ff 30%, #fff 50%, #00f0ff 70%, transparent);
+  box-shadow: 0 0 20px #00f0ff, 0 0 40px #fff;
+  animation: laserBeamScan 0.42s ease-out forwards;
+  pointer-events: none;
+  z-index: 20;
+}
+@keyframes laserBeamScan {
+  0% { top: 0%; opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+/* --------------------------------------------------------------------------
+   5. TOKO WORLD BOSS: 300PX HORIZONTAL SHELF TRACK (ANTI-LUBER)
+   -------------------------------------------------------------------------- */
+.hunter-shop-hub.cp-v2 {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 20px;
+  background: radial-gradient(80% 60% at 50% 10%, rgba(168, 85, 247, 0.12), transparent 75%),
+              linear-gradient(180deg, #070c18 0%, #040710 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(0, 240, 255, 0.22);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Shop Header */
+.hsh-header.cp-v2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+.hsh-header.cp-v2 .hsh-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.hsh-header.cp-v2 .hsh-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  background: rgba(10, 16, 32, 0.7);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: 6px;
+  color: #00f0ff;
+  font-family: var(--disp, "Russo One", sans-serif);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.hsh-header.cp-v2 .hsh-back-btn:hover {
+  background: rgba(0, 240, 255, 0.18);
+  border-color: #00f0ff;
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);
+  color: #fff;
+}
+.hsh-header.cp-v2 .hsh-title-wrap .kicker {
+  font-family: var(--cond, "Barlow Condensed", sans-serif);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: #8496ae;
+}
+.hsh-header.cp-v2 .hsh-title-wrap h2 {
+  font-family: var(--disp, "Russo One", sans-serif);
+  font-size: 20px;
+  color: #fff;
+  letter-spacing: 0.06em;
+}
+.hsh-header.cp-v2 .hsh-title-wrap h2 span {
+  color: #00f0ff;
+}
+
+.hsh-header.cp-v2 .hsh-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.hsh-token-chip.cp-v2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(8, 14, 28, 0.85);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  padding: 6px 16px;
+  border-radius: 6px;
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.15);
+}
+.hsh-token-chip.cp-v2 .lbl {
+  font-size: 11px;
+  color: #8496ae;
+  text-transform: uppercase;
+}
+.hsh-token-chip.cp-v2 .val {
+  font-family: var(--mono, monospace);
+  font-size: 16px;
+  font-weight: 700;
+  color: #00f0ff;
+}
+
+/* Category Filter Bar */
+.shop-cat-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.shop-cat-btn {
+  padding: 6px 16px;
+  background: rgba(10, 16, 32, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  color: #8496ae;
+  font-family: var(--cond, "Barlow Condensed", sans-serif);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.shop-cat-btn:hover {
+  border-color: #00f0ff;
+  color: #fff;
+  background: rgba(0, 240, 255, 0.08);
+}
+.shop-cat-btn.active {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.25), rgba(168, 85, 247, 0.2));
+  border-color: #00f0ff;
+  color: #fff;
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.35);
+}
+
+/* Horizontal Shelf Wrapper with Quick Scroll Buttons */
+.armory-300-shelf-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+}
+.shelf-scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 20;
+  width: 36px;
+  height: 64px;
+  background: rgba(6, 12, 24, 0.88);
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  border-radius: 6px;
+  color: #00f0ff;
+  font-size: 16px;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.shelf-scroll-btn:hover {
+  background: rgba(0, 240, 255, 0.25);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+  color: #fff;
+}
+.shelf-scroll-btn.left { left: 4px; }
+.shelf-scroll-btn.right { right: 4px; }
+
+/* 300px Horizontal Cards Track */
+.armory-300-track {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  padding: 8px 12px 14px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 240, 255, 0.3) rgba(5, 10, 20, 0.6);
+}
+.armory-300-track::-webkit-scrollbar {
+  height: 8px;
+}
+.armory-300-track::-webkit-scrollbar-track {
+  background: rgba(5, 10, 20, 0.6);
+  border-radius: 4px;
+}
+.armory-300-track::-webkit-scrollbar-thumb {
+  background: rgba(0, 240, 255, 0.3);
+  border-radius: 4px;
+}
+.armory-300-track::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 240, 255, 0.6);
+}
+
+/* STRICT 300PX HORIZONTAL ARMORY CARD (ANTI-LUBER) */
+.armory-300-card {
+  width: 300px;
+  min-width: 300px;
+  max-width: 300px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: rgba(9, 15, 28, 0.88);
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  border-radius: 12px;
+  padding: 14px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+.armory-300-card:hover {
+  transform: translateY(-4px);
+  border-color: #00f0ff;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.8), 0 0 24px rgba(0, 240, 255, 0.25);
+}
+.armory-300-card.purchased {
+  border-color: rgba(74, 222, 128, 0.35);
+  background: rgba(6, 16, 20, 0.82);
+}
+
+/* Card Top Badges */
+.a3c-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.a3c-cat-badge {
+  font-family: var(--cond, "Barlow Condensed", sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--card-accent, #00f0ff);
+  text-transform: uppercase;
+}
+.a3c-tier-pill {
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(0, 240, 255, 0.12);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  font-family: var(--mono, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* Holographic Artwork Chamber */
+.a3c-chamber {
+  position: relative;
+  width: 100%;
+  height: 145px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #040812;
+  border: 1px solid rgba(0, 240, 255, 0.22);
+  margin-bottom: 12px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.a3c-chamber.boss-card-frame {
+  border: 1.5px solid rgba(168, 85, 247, 0.6);
+  box-shadow: 0 0 24px rgba(168, 85, 247, 0.35), inset 0 0 20px rgba(168, 85, 247, 0.2);
+}
+.a3c-holo-foil {
+  position: absolute;
+  inset: 0;
+  background: conic-gradient(from 0deg, rgba(255,0,128,0.15), rgba(0,240,255,0.2), rgba(168,85,247,0.15), rgba(255,0,128,0.15));
+  mix-blend-mode: color-dodge;
+  opacity: 0.5;
+  pointer-events: none;
+}
+.a3c-scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 1px, transparent 1px, transparent 3px);
+  pointer-events: none;
+  opacity: 0.6;
+}
+.a3c-rarity-crest {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(3, 6, 12, 0.85);
+  border: 1px solid rgba(255, 183, 3, 0.5);
+  border-radius: 4px;
+  padding: 2px 6px;
+  color: #ffb703;
+  font-family: var(--cond, "Barlow Condensed", sans-serif);
+  font-size: 10px;
+  font-weight: 700;
+}
+.a3c-chamber img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+.armory-300-card:hover .a3c-chamber img {
+  transform: scale(1.05);
+}
+.a3c-owned-ribbon {
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 6, 12, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4ade80;
+  font-family: var(--disp, "Russo One", sans-serif);
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  z-index: 6;
+  backdrop-filter: blur(2px);
+}
+.a3c-card-barcode {
+  position: absolute;
+  bottom: 6px;
+  right: 8px;
+  font-family: var(--mono, monospace);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.45);
+  z-index: 5;
+}
+
+/* Card Body: Title, Description, Passive (Full multi-line unclipped wrap) */
+.a3c-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.a3c-title {
+  font-family: var(--disp, "Russo One", sans-serif);
+  font-size: 15px;
+  color: #fff;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+}
+.a3c-desc {
+  font-family: var(--cond, "Barlow Condensed", sans-serif);
+  font-size: 13px;
+  color: #94a3b8;
+  line-height: 1.45;
+  white-space: normal;
+  word-break: break-word;
+}
+.a3c-passive-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(168, 85, 247, 0.12);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  color: #e2e8f0;
+  font-family: var(--cond, "Barlow Condensed", sans-serif);
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: normal;
+  word-break: break-word;
+}
+.a3c-passive-box svg {
+  color: #a855f7;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.a3c-passive-box.param {
+  background: rgba(0, 240, 255, 0.08);
+  border-color: rgba(0, 240, 255, 0.25);
+  color: #7dd3fc;
+}
+
+/* Card Footer: Price & Action */
+.a3c-footer {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.a3c-price-box {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.a3c-price-box .lbl {
+  font-family: var(--cond, "Barlow Condensed", sans-serif);
+  font-size: 11px;
+  color: #8496ae;
+  letter-spacing: 0.08em;
+}
+.a3c-price-box .val {
+  font-family: var(--mono, monospace);
+  font-size: 15px;
+  color: #00f0ff;
+  font-weight: 700;
+}
+.a3c-price-box .val small {
+  font-size: 10px;
+  color: #8496ae;
+}
+.a3c-buy-btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #00f0ff;
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.25), rgba(168, 85, 247, 0.2));
+  color: #fff;
+  font-family: var(--disp, "Russo One", sans-serif);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.25);
+  text-align: center;
+}
+.a3c-buy-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.4), rgba(168, 85, 247, 0.35));
+  box-shadow: 0 0 24px rgba(0, 240, 255, 0.5);
+  transform: translateY(-1px);
+}
+.a3c-buy-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: none;
+}
+.a3c-buy-btn.purchased {
+  border-color: rgba(74, 222, 128, 0.5);
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.12);
+}
