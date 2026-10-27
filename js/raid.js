@@ -693,7 +693,58 @@ function renderDots(){
     };
   });
 }
-/* ---------- ganti boss (3D Directional Swipe / panah / swipe / dot) ---------- */
+/* ---------- in-place boss DOM sync (zero flicker / no full re-render) ---------- */
+function syncBossDOM(){
+  const b=wbBoss();
+  const locked=!!b.locked;
+  const d=wbData();
+  const {pool,left:poolLeft}=wbPoolVals();
+  const pct=pool>0?poolLeft/pool*100:0;
+  const attLeft=wbAttOf(wbBossIdx);
+  const threatTag=pct<15?"CRITICAL":pct<40?"WARNING":"STABLE";
+  const modTxt=locked?b.mod:(wbModText()||b.mod);
+  const dead=!locked&&(poolLeft<=0||attLeft<=0);
+
+  const b0=document.getElementById("btnBoss0"); if(b0) b0.classList.toggle("active", wbBossIdx===0);
+  const b1=document.getElementById("btnBoss1"); if(b1) b1.classList.toggle("active", wbBossIdx===1);
+
+  const img=document.getElementById("bossImg");
+  if(img){
+    img.src=b.art;
+    img.alt=b.name;
+    img.onerror=function(){this.src="assets/cards/art/eternal-dragon.webp";};
+  }
+
+  const cTag=document.getElementById("cardTopTag"); if(cTag) cTag.textContent=wbBossIdx===0?"EX // CALAMITY CLASS":"EX // SHADOW MONARCH";
+  const cTitle=document.getElementById("cardTitle"); if(cTitle) cTitle.textContent=b.name;
+  const cKicker=document.getElementById("cardKicker"); if(cKicker) cKicker.textContent=b.tag||'ANCIENT MONARCH SOVEREIGN';
+  const cMeta=document.getElementById("cardMeta"); if(cMeta) cMeta.textContent=locked?'TERKUNCI':fmtBig(pool)+' SHARED CALAMITY POOL';
+
+  const bName=document.getElementById("bossName"); if(bName) bName.innerHTML=`${b.name} <small style="font-size:10px;color:var(--monarch-purple);">${b.tag || ''}</small>`;
+  const bSub=document.getElementById("bossSubtitle"); if(bSub) bSub.textContent=b.subtitle || "ANCIENT MONARCH CALAMITY // EX CORE";
+  const bSkill=document.getElementById("bossSkillTag"); if(bSkill) bSkill.innerHTML=`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> SKILL: ${b.skill}`;
+  const bMod=document.getElementById("bossModTag"); if(bMod) bMod.textContent=`MOD: ${modTxt}`;
+
+  const cgHpVal=document.getElementById("cgHpValues"); if(cgHpVal) cgHpVal.innerHTML=`<b>${locked ? '—' : fmtBig(poolLeft)}</b> / ${locked ? '—' : fmtBig(pool)} HP (${locked ? '100%' : pct.toFixed(1) + '%'})${pool - poolLeft > 0 ? ' · TERKIKIS ' + fmtBig(pool - poolLeft) : ''}`;
+  const cgHpFill=document.getElementById("cgHpFill"); if(cgHpFill) cgHpFill.style.width=`${locked ? 100 : Math.max(0, Math.min(100, pct)).toFixed(2)}%`;
+  const cgLabel=document.getElementById("cgLabel"); if(cgLabel) cgLabel.textContent=`GLOBAL THREAT LEVEL: ${locked ? 'STANDBY' : threatTag}`;
+
+  const attBadge=document.getElementById("attBadge"); if(attBadge) attBadge.textContent=locked ? "—" : (attLeft||0) + " / 3 ATTEMPTS";
+  const crys=document.querySelectorAll(".strike-crystal");
+  if(crys.length>=3){
+    crys[0].classList.toggle("active", !locked && (attLeft||0) >= 1);
+    crys[1].classList.toggle("active", !locked && (attLeft||0) >= 2);
+    crys[2].classList.toggle("active", !locked && (attLeft||0) >= 3);
+  }
+
+  const sBtn=document.getElementById("wbStrike");
+  if(sBtn){
+    sBtn.disabled=locked||dead;
+    sBtn.innerHTML=locked ? `<small>TIDAK DAPAT DEPLOY</small>BOSS TERKUNCI` : (attLeft<=0 ? `<small>CANNOT DEPLOY</small>ATTEMPT HABIS` : (poolLeft<=0 ? `<small>TARGET DEFEATED</small>TERELIMINASI` : `<small>AUTHORIZE COMBAT // 20 TURNS</small>INITIALIZE STRIKE ▶`));
+  }
+}
+
+/* ---------- ganti boss (3D Directional Swipe in-place - ZERO FLICKER) ---------- */
 let wbrSwapping=false;
 function goBoss(dir){
   const n=WB_BOSSES.length;
@@ -706,7 +757,7 @@ function goBoss(dir){
 
   if(wbReduceMotion()||!card){
     wbBossIdx=next;
-    renderRaidHub();
+    syncBossDOM();
     return;
   }
 
@@ -718,24 +769,18 @@ function goBoss(dir){
 
   setTimeout(()=>{
     wbBossIdx=next;
-    renderRaidHub();
-    const newCard=document.getElementById("bossCard3d");
-    const newBurst=document.getElementById("holoBurst");
-    if(newBurst){
-      newBurst.classList.remove("pulse");
-      void newBurst.offsetWidth;
-      newBurst.classList.add("pulse");
+    syncBossDOM();
+    if(burst){
+      burst.classList.remove("pulse");
+      void burst.offsetWidth;
+      burst.classList.add("pulse");
     }
-    if(newCard){
-      newCard.className="wbr-c3d "+enterClass;
-      setTimeout(()=>{
-        newCard.className="wbr-c3d";
-        newCard.style.transform="";
-        wbrSwapping=false;
-      }, 420);
-    }else{
+    card.className="wbr-c3d "+enterClass;
+    setTimeout(()=>{
+      card.className="wbr-c3d";
+      card.style.transform="";
       wbrSwapping=false;
-    }
+    }, 420);
   }, 320);
 }
 /* ---------- pulse deploy (1 ring + flash 180ms) ---------- */
