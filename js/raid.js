@@ -630,7 +630,7 @@ function renderRaidHub(){
           </div>
 
           <!-- Panel 3: Live Hunter Standings -->
-          <div class="tactical-panel" style="flex: 1 1 0%; min-height: 50px; max-height: 110px; display: flex; flex-direction: column;">
+          <div class="tactical-panel" style="flex: 1 1 auto; min-height: 120px; display: flex; flex-direction: column;">
             <div class="tactical-panel-hdr">
               <div class="title">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
@@ -1196,9 +1196,9 @@ const WB_SHOP=[
     apply:()=>{state.raidShopOwned=state.raidShopOwned||{};state.raidShopOwned.CH_ETERNAL_DRAGON=true;return gmGrantCard("CH_ETERNAL_DRAGON");}},
   {id:"card_shadowking",name:"Shadow King",cost:8000,desc:"Kartu BOSS eksklusif — beli SEKALI, LANGSUNG didapat + roll terbuka PERMANEN di semua gacha. Chance dasar 1 in 100 jt · NECROMANCER 'ETERNAL LEGION' (Shadow Army).",card:{char:"CH_SHADOW_KING",mut:"none"},
     apply:()=>{state.raidShopOwned=state.raidShopOwned||{};state.raidShopOwned.CH_SHADOW_KING=true;return gmGrantCard("CH_SHADOW_KING");}},
-  {id:"helm-abyss",name:"HELM ABYSS",cost:12000,desc:"Artefak CRAYON V2 — +80 flat & +120% LUCK permanen. Beli SEKALI, langsung masuk Backpack (slot artefak, equip 2 slot).",effect:"+80 FLAT & +120% LUCK",owned:()=>state.artOwned.includes("helm-abyss"),
+  {id:"helm-abyss",name:"HELM ABYSS",cost:12000,desc:"Artefak CRAYON V2 — +80 flat & +120% LUCK permanen. Beli SEKALI, langsung masuk Backpack (slot artefak, equip 2 slot).",effect:"+80 FLAT & +120% LUCK",owned:()=>(state.artOwned||[]).includes("helm-abyss"),
     apply:()=>{state.artOwned=state.artOwned||[];if(!state.artOwned.includes("helm-abyss"))state.artOwned.push("helm-abyss");return "HELM ABYSS · +80 FLAT & +120% LUCK";}},
-  {id:"nebula-wisp",name:"NEBULA WISP",cost:30000,desc:"Pet CRAYON V2 — +150 flat & +220% LUCK permanen. Beli SEKALI, langsung masuk Backpack (slot pet, equip 1).",effect:"+150 FLAT & +220% LUCK",owned:()=>state.petOwned.includes("nebula-wisp"),
+  {id:"nebula-wisp",name:"NEBULA WISP",cost:30000,desc:"Pet CRAYON V2 — +150 flat & +220% LUCK permanen. Beli SEKALI, langsung masuk Backpack (slot pet, equip 1).",effect:"+150 FLAT & +220% LUCK",owned:()=>(state.petOwned||[]).includes("nebula-wisp"),
     apply:()=>{state.petOwned=state.petOwned||[];if(!state.petOwned.includes("nebula-wisp"))state.petOwned.push("nebula-wisp");return "NEBULA WISP · +150 FLAT & +220% LUCK";}},
   /* LUCK & SPEED POTION L1-L3 — consumable, harga token sama dgn Toko Inf. */
   {id:"luck1",name:"Luck Potion L1",cost:25,desc:"+3 flat luck selama 5 menit. Stackable — efek dijumlah, durasi nambah +5 menit tiap pot.",effect:"+3 FLAT LUCK · 5 MENIT",
