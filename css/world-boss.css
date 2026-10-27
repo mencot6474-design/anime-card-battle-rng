@@ -254,7 +254,7 @@ body.on-raid {
   overflow: hidden !important;
 }
 .view-stage.active {
-  display: flex;
+  display: flex !important;
 }
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(6px); }

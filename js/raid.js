@@ -367,7 +367,7 @@ function renderRaidHub(){
   <div class="cyber-grid"></div>
   <div class="cyber-scanlines"></div>
 
-  <div class="app-viewport">
+  <div class="app-viewport rd-page">
     
     <!-- Top System Telemetry Bar -->
     <header class="proto-top-nav">
@@ -577,7 +577,7 @@ function renderRaidHub(){
               </div>
               <div class="strike-stat-box">
                 <div class="stat-label">CYCLE LIMIT</div>
-                <div class="stat-val"> TURNS</div>
+                <div class="stat-val">${RAID_TURNS} TURNS</div>
               </div>
               <div class="strike-stat-box">
                 <div class="stat-label">THREAT STATUS</div>
@@ -1358,7 +1358,7 @@ function renderRaidShop(){
   <div class="cyber-grid"></div>
   <div class="cyber-scanlines"></div>
 
-  <div class="app-viewport">
+  <div class="app-viewport rd-page">
     
     <!-- Top System Telemetry Bar -->
     <header class="proto-top-nav">
