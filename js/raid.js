@@ -409,7 +409,7 @@ function renderRaidHub(){
     </header>
 
     <!-- Main Command Hub View (Full-Bleed 1-Screen) -->
-    <main class="view-stage active" id="viewHub">
+    <div class="view-stage active" id="viewHub">
       <div class="wb-hub-grid">
         
         <!-- LEFT: BOSS ARENA STAGE WITH 4 BRACKETS & 3D HOLOGRAM -->
@@ -658,7 +658,7 @@ function renderRaidHub(){
         </aside>
 
       </div>
-    </main>
+    </div>
   </div>`;
 
   // Action listeners
@@ -1400,7 +1400,7 @@ function renderRaidShop(){
     </header>
 
     <!-- Main Shop View Container (Zero Luber / Isolated) -->
-    <main class="view-stage active" id="viewShop">
+    <div class="view-stage active" id="viewShop">
       <div class="shop-view-container">
         
         <!-- Controls Bar & Category Filter Pills -->
@@ -1492,7 +1492,7 @@ function renderRaidShop(){
         </div>
 
       </div>
-    </main>
+    </div>
   </div>`;
 
   // Bind Navigation
