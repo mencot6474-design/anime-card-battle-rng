@@ -662,6 +662,65 @@ async function submitAuth(){
     }
   }
 }
+
+async function loginAsGuest(){
+  const btn=document.getElementById("auGuestBtn");
+  if(btn){btn.disabled=true;btn.textContent="CONNECTING...";}
+  document.getElementById("authSpin").classList.remove("hidden");
+  document.getElementById("asTxt").textContent="Entering Game as Guest...";
+
+  let guestUser=localStorage.getItem("aab_guest_user");
+  let guestPass=localStorage.getItem("aab_guest_pass");
+
+  if(window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.user){
+    try {
+      const cgUser = await window.CrazyGames.SDK.user.getUser();
+      if(cgUser && cgUser.username){
+        guestUser = "CG_" + cgUser.username.replace(/[^a-zA-Z0-9_]/g, "").slice(0, 15);
+      }
+    } catch(e){}
+  }
+
+  if(!guestUser){
+    const randNum=Math.floor(10000 + Math.random()*90000);
+    guestUser="Hunter_"+randNum;
+    guestPass="GP_"+Math.random().toString(36).substring(2,12);
+    localStorage.setItem("aab_guest_user",guestUser);
+    localStorage.setItem("aab_guest_pass",guestPass);
+  }
+  if(!guestPass){
+    guestPass="GP_Hunter_"+guestUser;
+    localStorage.setItem("aab_guest_pass",guestPass);
+  }
+
+  const key=guestUser.toLowerCase();
+  const passH=hashPass(guestPass);
+  const users=getUsers();
+
+  if(window.CloudAuth && window.CloudDB && navigator.onLine){
+    try {
+      const ep = await window.CloudAuth.ensurePass(key, passH);
+      if(ep && ep.ok){
+        const initSt=freshState();
+        await window.CloudDB.registerUser(guestUser, initSt, passH);
+      } else {
+        await window.CloudAuth.authenticate(key, passH);
+      }
+    } catch(err){
+      console.warn("Guest cloud sync fallback:", err);
+    }
+  }
+
+  users[key]={name:guestUser, pass:passH, created:Date.now()};
+  saveUsers(users);
+
+  document.getElementById("authSpin").classList.add("hidden");
+  if(btn){btn.disabled=false;btn.textContent="⚡ PLAY AS GUEST (INSTANT)";}
+
+  enterGame(guestUser, false);
+}
+window.loginAsGuest=loginAsGuest;
+
 document.getElementById("adOk").onclick=()=>{
   document.getElementById("authDone").classList.add("hidden");
   setAuthMode("login");
@@ -781,7 +840,7 @@ function runLoading(done){
     fill.style.width=(p*100).toFixed(1)+"%";
     if(pctEl) pctEl.textContent=Math.round(p*100)+"%";
     status.textContent=steps[Math.min(steps.length-1,Math.floor(p*steps.length))];
-    if(p>=1&&!completed){completed=true;clearInterval(iv);setTimeout(done,250);}
+    if(p>=1&&!completed){completed=true;clearInterval(iv);if(window.cgLoadingStop) window.cgLoadingStop();setTimeout(done,250);}
   },60);
   // Timeout guard - force through after 8 seconds
   setTimeout(()=>{
@@ -993,6 +1052,12 @@ function renderChangelogModal(){
 window.openChangelogModal = openChangelogModal;
 window.closeChangelogModal = closeChangelogModal;
 function boot(){
+  if(window.cgLoadingStart) window.cgLoadingStart();
+  if(typeof isCrazyGames==="function" && isCrazyGames()){
+    console.log("[CrazyGames SDK] Auto-entering game as Guest for zero friction...");
+    loginAsGuest();
+    return;
+  }
   document.getElementById("loadingScreen").classList.add("hidden");
   document.getElementById("authScreen").classList.remove("hidden");
   document.getElementById("tabLogin").onclick=()=>setAuthMode("login");

@@ -14,7 +14,8 @@
 <script src="https://unpkg.com/lucide@latest"></script>
 <!-- CrazyGames SDK v3 (Official HTML5 SDK) -->
 <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
-<link rel="stylesheet" href="css/style.css?v=v358-towerShopHorizontal">
+<script src="js/crazygames.js?v=v1-officialIntegration"></script>
+<link rel="stylesheet" href="css/style.css?v=v359-crazygamesOnboarding">
 <link rel="stylesheet" href="css/world-boss.css?v=wb34-fixPickBadgeAndBack">
 <link rel="stylesheet" href="css/sl-system.css?v=sl-v4">
 <link rel="stylesheet" href="css/story-carousel.css?v=v12-storyCardBigger">
@@ -115,6 +116,10 @@
         <div class="ac-fld"><label class="ac-lbl" data-t="Password">Password</label><input class="ac-input" id="auPass" type="password" placeholder="••••••" autocomplete="off" maxlength="24"></div>
         <div class="ac-err" id="auErr"></div>
         <button class="ac-go" id="auSubmit" data-t="MASUK">LOGIN</button>
+        <div class="ac-divider"><span>OR</span></div>
+        <button class="ac-guest-btn" id="auGuestBtn" type="button" onclick="loginAsGuest()">
+          <span class="ac-guest-icon">⚡</span> PLAY AS GUEST (INSTANT)
+        </button>
         <div class="ac-note"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg> <span data-t="Progres tersinkron ke Cloud">Progress synced to Cloud</span></div>
       </div>
     </div>
@@ -819,21 +824,21 @@
 <script src="js/data.js?v=v126-storyEnemyTierOnly"></script>
 <script src="js/config.js?v=v156-trakteer"></script>
 <script src="js/supabase-sync.js?v=v11-noZeroPenalty"></script>
-<script src="js/panels.js?v=v179-storyEnemyTierOnly"></script>
+<script src="js/panels.js?v=v180-cgLifecycle"></script>
 <script src="js/topup.js?v=v158-paywallOff"></script>
 <script src="js/cards-fx.js?v=v84-fmtStatCompact"></script>
 <script src="js/anime-archetype-attacks.js?v=v114-noBasicAttackFlash"></script>
 <script src="js/state.js?v=v204-fmtStatCompact"></script>
 <script src="js/sheetfx.js?v=v111-perf7"></script>
 <script src="js/battle.js?v=v143-fmtStatCompact"></script>
-<script src="js/tower-lobby.js?v=v213-towerEnglish"></script>
+<script src="js/tower-lobby.js?v=v214-cgLifecycle"></script>
 <script src="js/shadow-king-fx.js?v=v4-skfx4"></script>
 <script src="js/foe-passives.js?v=v62-foe-passives"></script>
 <script src="js/story-carousel.js?v=v127-storyGemStage"></script>
-<script src="js/raid.js?v=v185-fixPickBadgeAndBack"></script>
+<script src="js/raid.js?v=v186-cgLifecycle"></script>
 <script src="js/ranking.js?v=v9-storyEnemyTierOnly"></script>
 <script src="js/i18n.js?v=v7-fixObserverLoop"></script>
-<script src="js/boot.js?v=v185-removeDevtoolsGuard"></script>
+<script src="js/boot.js?v=v186-crazygamesGuestAuto"></script>
 <script src="js/pwa.js?v=v156-install"></script>
 
 <!-- ========== CORET MODE (dev-only overlay anotasi) ==========

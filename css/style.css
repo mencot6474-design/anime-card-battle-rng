@@ -56939,3 +56939,130 @@ body:has(.tactical-tower-shop-page) main#app {
 
 
 
+
+/* ==========================================================================
+   CRAZYGAMES ZERO-FRICTION & FTUE ONBOARDING STYLES
+   ========================================================================== */
+.ac-divider {
+  display: flex !important;
+  align-items: center !important;
+  margin: 12px 0 8px !important;
+  color: var(--mut2, #6d849a) !important;
+  font-family: 'Rajdhani', sans-serif !important;
+  font-size: 11px !important;
+  letter-spacing: 0.15em !important;
+}
+.ac-divider::before, .ac-divider::after {
+  content: "" !important;
+  flex: 1 !important;
+  border-bottom: 1px solid var(--lns, rgba(125,249,255,.16)) !important;
+}
+.ac-divider span {
+  padding: 0 10px !important;
+}
+.ac-guest-btn {
+  width: 100% !important;
+  padding: 12px !important;
+  border: 1px solid rgba(125, 249, 255, 0.45) !important;
+  border-radius: 5px !important;
+  cursor: pointer !important;
+  font-family: 'Barlow Condensed', sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 16px !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  color: #7df9ff !important;
+  background: rgba(125, 249, 255, 0.08) !important;
+  box-shadow: 0 0 14px rgba(125, 249, 255, 0.15) !important;
+  transition: all 0.15s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+}
+.ac-guest-btn:hover {
+  background: rgba(125, 249, 255, 0.22) !important;
+  color: #fff !important;
+  box-shadow: 0 0 20px rgba(125, 249, 255, 0.45) !important;
+}
+.ftue-guide-wrap {
+  position: fixed !important;
+  z-index: 99999 !important;
+  pointer-events: none !important;
+  inset: 0 !important;
+}
+.ftue-bubble {
+  position: absolute !important;
+  pointer-events: auto !important;
+  background: rgba(7, 13, 26, 0.94) !important;
+  border: 1px solid rgba(0, 240, 255, 0.6) !important;
+  border-radius: 12px !important;
+  padding: 12px 34px 12px 16px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 24px rgba(0, 240, 255, 0.4) !important;
+  backdrop-filter: blur(12px) !important;
+  color: #fff !important;
+  font-family: 'Barlow Condensed', sans-serif !important;
+  animation: ftueBounce 2s infinite ease-in-out !important;
+  max-width: 280px !important;
+}
+.ftue-bubble.roll-step {
+  bottom: 85px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+.ftue-bubble.deck-step {
+  bottom: 85px !important;
+  left: calc(50% - 110px) !important;
+}
+.ftue-badge {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.18em !important;
+  color: #7df9ff !important;
+  text-transform: uppercase !important;
+  margin-bottom: 2px !important;
+}
+.ftue-title {
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.05em !important;
+  color: #fff !important;
+  margin-bottom: 2px !important;
+}
+.ftue-desc {
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  color: #cbd5e1 !important;
+  line-height: 1.3 !important;
+}
+.ftue-skip {
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 50% !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #94a3b8 !important;
+  font-size: 10px !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.ftue-skip:hover {
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.25) !important;
+}
+@keyframes ftueBounce {
+  0%, 100% { transform: translate(-50%, 0); }
+  50% { transform: translate(-50%, -6px); }
+}
+.ftue-bubble.deck-step {
+  animation: ftueBounceDeck 2s infinite ease-in-out !important;
+}
+@keyframes ftueBounceDeck {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}

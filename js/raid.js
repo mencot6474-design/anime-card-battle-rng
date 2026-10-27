@@ -284,7 +284,7 @@ function raidToast(msg){
 }
 function renderRaid(){
   hoverHide(); /* fix: popup hover picker jangan nyusul ke battle — mouseout gak fire saat DOM di-replace */
-  if(raidView!=="hub")wbrStopPoll();
+  if(raidView!=="hub")wbrStopPoll(); else if(window.cgGameplayStop) window.cgGameplayStop();
   if(raidView==="pick")return renderRaidPick();
   if(raidView==="battle")return renderRaidBattle();
   if(raidView==="result")return renderRaidResult();
@@ -964,6 +964,7 @@ function renderRaidPick(){
   lazyMountGrid(app,_rdTileHtml);
 }
 function renderRaidBattle(){
+  if(window.cgGameplayStart) window.cgGameplayStart();
   const b=wbBossOf(), eq=raidPicked||equipped();
   app.innerHTML=`
   <div class="battle-grid raid-stage">

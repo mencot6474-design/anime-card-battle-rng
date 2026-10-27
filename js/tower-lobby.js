@@ -576,6 +576,7 @@ function renderTowerBattle(){
   playFight(startTowerBattle,{skipIntro:true});
 }
 function startTowerBattle(){
+  if(window.cgGameplayStart) window.cgGameplayStart();
   /* Battle lama (over) jangan nutup battle baru; battle hidup → jangan di-reset */
   if(bt&&!bt.over)return;
   if(bt&&bt.over){if(bt.timer)clearTimeout(bt.timer);bt=null;}
@@ -1284,7 +1285,15 @@ function renderLobby(){
   </div>`;
   const hc=document.getElementById("hubCard");if(hc){hc.onclick=()=>{sfx.hit();toggleBackpack();};}
   const hp=document.getElementById("hubPremium");if(hp)hp.onclick=()=>{sfx.hit();openPremiumShop();};
-  const gp=document.getElementById("gemPill");if(gp)gp.onclick=()=>{sfx.hit();openTopup();};
+  const gp=document.getElementById("gemPill");if(gp)gp.onclick=()=>{
+  sfx.hit();
+  if(typeof isCrazyGames === "function" && isCrazyGames()){
+    if(typeof openWatchAdsModal === "function") openWatchAdsModal();
+    else if(typeof triggerWatchAd === "function") triggerWatchAd('gems');
+  } else {
+    openTopup();
+  }
+};
   const hi=document.getElementById("hubIndex");if(hi)hi.onclick=()=>{sfx.hit();openIndex();};
   const ht=document.getElementById("hubTrait");if(ht)ht.onclick=()=>{sfx.hit();openTrait();};
   const hr=document.getElementById("hubRaid");if(hr)hr.onclick=()=>{sfx.hit();raidView="hub";location.hash="#/raid";};

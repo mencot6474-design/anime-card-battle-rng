@@ -799,6 +799,7 @@ function startRollAnimation(luck, speedMultiplier = 1) {
   // Clamp speed multiplier → jangan pernah di bawah RNG_ROLL_MIN (75ms). Speed pohon + potion + cuaca, cap 20x.
   rollState.speedMultiplier = rollSpeedNow();
   rollState.active = true;
+  if(window.cgGameplayStart) window.cgGameplayStart();
   rollState.hideOverlay = false;
 
   const rollBtn = document.getElementById('rollBtn');
@@ -832,6 +833,9 @@ function rollTick(){
   xpGain(50);
   if(state)state.totalRolls=(state.totalRolls||0)+1;
   grantRolledCard(result.cardId,result.mut,result.shiny);
+  if(result.shiny || (result.mut && result.mut !== 'none')) {
+    if(window.cgHappyTime) window.cgHappyTime();
+  }
   showRollResult(result);
   renderShell(); // Update XP bar & level check
   if(rollState.active)rollState.interval=setTimeout(rollTick,Math.max(RNG_ROLL_MIN,RNG_ROLL_SPEED/rollState.speedMultiplier));
@@ -839,6 +843,7 @@ function rollTick(){
 
 function stopRollAnimation() {
   rollState.active = false;
+  if(window.cgGameplayStop) window.cgGameplayStop();
   if (rollState.interval) {
     clearTimeout(rollState.interval);
     rollState.interval = null;
@@ -3791,6 +3796,14 @@ function completeWatchAdReward(kind) {
       showTowerLoot(loot, { weather: 0, luck: 0, speed: 0 }, 'REWARD WATCH ADS · 100,000 ROLL');
     }
     toast('INSTAN PACK 100K DITERIMA!', '100.000 tarikan kartu instan berhasil dibuka!', '#ffd700');
+    if (typeof renderShell === 'function') renderShell();
+  } else if (kind === 'gems') {
+    if (typeof state !== 'undefined' && state) {
+      state.premiumGems = (state.premiumGems || 0) + 25;
+      if (typeof save === 'function') save();
+    }
+    try { if (typeof sfx !== 'undefined' && sfx.win) sfx.win(); } catch (e) {}
+    toast('FREE REWARD CLAIMED!', '+25 GEMS DITERIMA DARI CRAZYGAMES REWARD!', '#7df9ff');
     if (typeof renderShell === 'function') renderShell();
   }
 }
