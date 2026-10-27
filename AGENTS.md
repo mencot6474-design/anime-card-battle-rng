@@ -35,7 +35,7 @@ css/style.css         49.5k baris — SEMUA gaya utama (append override di akhir
                       blok LEADERBOARD v2 (podium+border) mulai 49298,
                       blok SHEET PROFIL PLAYER PUBLIK mulai 49462
 css/story-carousel.css  CSS khusus modal story (diload setelah style.css)
-css/world-boss.css    1.8k baris — gaya hub World Boss / kartu 3D / Shadow Hunter Armory full-bleed (prototipe v2)
+css/world-boss.css    2.1k baris — gaya hub World Boss / kartu 3D / Shadow Hunter Armory full-bleed (prototipe v2) + Tactical Striker Picker layout (.rd-pick) scroll container
 css/sl-system.css     roll/gacha system
 css/anim-prototipe.css  halaman prototipe (tidak dipakai game) — LOKAL SAJA, sudah di-.gitignore
 js/data.js            STORY_BIBLE (baris 100), luck helper, data cerita/unit
@@ -74,7 +74,7 @@ js/tower-lobby.js     lobby hub, tower, backpack toggle, modal helper, modal Reb
                         kartu hasil tower & instant pack (.rrc) bersih hanya teks 1 in X di footer tanpa badge
 js/foe-passives.js    passive musuh
 js/story-carousel.js  modal story (IIFE, ekspor ke window)
-js/raid.js            raid hub/battle/shop + index card + trait/auto-roll + World Boss (in-place DOM sync syncBossDOM)
+js/raid.js            raid hub/battle/shop + Card Index (openIndex/ixRender) + trait/auto-roll + World Boss (in-place DOM sync syncBossDOM) + Tactical Striker Picker (renderRaidPick)
 js/ranking.js         leaderboard 5 papan (world_boss, world_boss_b, inf_tower,
                       deck_power, rarest_pull) via RPC get_leaderboard — layout v2:
                       podium top-3 + border (RK_BD1 79 / RK_BD23 80), baris
@@ -362,3 +362,7 @@ Backpack bukan `display:fixed` bawaan — `toggleBackpack` set inline transform;
 - **World Boss Hub & Toko Armory Full-Bleed (Hindari Tag `<main>` Bersarang):** `#viewHub` dan `#viewShop` wajib dibungkus tag `<div>` (bukan `<main>`). Di `style.css:3833`, ada aturan global `main { max-width: var(--wrap); margin: 0 auto; }` yang membatasi setiap elemen `<main>` hanya 1080px dan memusatkannya ke tengah (menyisakan ruang hitam kosong di kiri-kanan). Seluruh viewport World Boss & Shop menggunakan aturan `width: 100% !important; max-width: 100% !important; margin: 0 !important;` agar membentang full-bleed dari ujung ke ujung.
 - **Anti-Flicker Swipe Boss (`syncBossDOM`):** Saat pemain melakukan swipe boss (Eternal Dragon ↔ Shadow King di `goBoss()`), dilarang memanggil `renderRaidHub()` karena akan menghapus-buat ulang seluruh DOM `#app` dan memicu ulang CSS `fadeIn`, membuat layar berkedip. Gunakan `syncBossDOM()` untuk memperbarui gambar, label, HP bar, attempt kristal, dan status deploy secara in-place di DOM yang sudah ada.
 - **Guard Null Array Save Baru di Toko WB (`WB_SHOP`):** Pengecekan kepemilikan item artefak/pet wajib memakai fallback guard `(state.artOwned || []).includes(...)` dan `(state.petOwned || []).includes(...)`. Akun atau save data yang baru belum memiliki array tersebut, dan pemanggilan `.includes()` langsung tanpa fallback akan melempar `TypeError` yang memutus render rak toko di item ke-4.
+- **Card Index Modal (`openIndex`):** Fungsi katalog Card Index (`openIndex()`, `ixLiveShimmer()`, `ixRender()`) berada di `js/raid.js` dan wajib diekspos secara global melalui `window.openIndex = openIndex;`. Fungsi ini terhubung dengan `#indexModal` di `index.html` dan tombol index di lobby (`tower-lobby.js:1288`).
+- **World Boss Tactical Striker Picker Layout & Scroll Container:** Pada mode World Boss, elemen `#app` dikunci dengan `position: fixed !important; inset: 0 !important; overflow: hidden !important;`. Layar pemilihan kartu striker (`.rd-page.rd-pick` di `renderRaidPick()`) wajib memiliki container scroll khusus (`.rd-pick-scroll-wrap`) dengan properti `flex: 1 1 0% !important; min-height: 0 !important; overflow-y: auto !important;` agar grid kartu tidak meluber ke luar batas viewport dan bisa di-scroll secara mulus.
+- **Badge Kartu Striker & Aturan `row-gap` (`.raid-pick-grid`):** Badge kartu (`.bpt-top`: Shiny, Mutasi, Gem) melayang setinggi ~26px di atas kartu (`bottom: calc(100% + 6px)`). Grid kartu pada picker wajib menggunakan `row-gap: 46px !important;` (dan `42px` di mobile) serta `padding-top: 36px !important;`. Dilarang mempersempit gap (misalnya `gap: 12px`), karena akan menyebabkan badge baris bawah menabrak bagian bawah kartu di baris atasnya serta menabrak filter search bar di baris teratas.
+- **Tombol Back Anti-Luber (`.rd-pick-back`):** Tombol kembali di header picker World Boss wajib menggunakan icon ringkas panah `&#8592;` (tanpa menambahkan teks string panjang seperti `"KEMBALI"` di dalam markup). Tombol dikunci dengan dimensi isolasi `40px × 40px` (`flex: 0 0 40px !important; overflow: hidden !important;`) agar tidak meluber keluar dari batas tombol fixed di resolusi desktop maupun mobile.
