@@ -1549,3 +1549,336 @@ function renderRaidShop(){
     };
   }
 }
+
+/* =============== TRAIT ROLL (popup) =============== */
+let traitTarget=null;
+let pendingRare=null;
+/* ===== AUTO ROLL TRAIT ===== — target dicentang di list DROP RATE; state session-only (tidak disave) */
+let autoRoll=false,autoRollTimer=null,autoRollN=0;
+let pendingRareAuto=false;
+let autoTargets=new Set();
+const AUTO_TICK=100; // ms antar roll (kecepatan auto roll)
+function traitTargetStack(){let s=state.stacks.find(x=>x.id===traitTarget);if(!s){s=equipped();traitTarget=s?s.id:null;}return s;}
+function openTrait(){
+  traitTarget=null;pendingRare=null;pendingRareAuto=false;renderTrait();document.getElementById("traitModal").classList.add("show");
+}
+function closeTrait(){autoStop();document.getElementById("traitModal").classList.remove("show");hideTraitTip();}
+function renderTrait(){
+  const b=document.getElementById("trBody");
+  if(!state.stacks.length){b.innerHTML=`<div class="tr-empty-state"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><p class="sub">DECK SYNAPSE KOSONG. Buka kartu terlebih dahulu via Gacha Summon.</p></div>`;return;}
+  const tgt=traitTargetStack();
+  const hasT=!!(tgt.trait&&tgt.trait!=="none");
+  const tt=hasT?TRAIT[tgt.trait]:null;
+  const curColor=tt?tt.color:"var(--cyan)";
+  const cur=tt?traitChip(tt.k,`<span class="tc-trait-pill" style="--tcol:${tt.color}"><span class="tc-gem-wrap">${traitGem(16,tt.k)}</span> <span class="tc-name-glow">${traitLabel(tt.k)}</span></span>`):`<span class="tc-trait-none"><span class="tc-none-dot"></span>TANPA TRAIT</span>`;
+  const curStat=tt?`<div class="tc-badge-stat"><span class="tcb-tag">ATK</span> <b class="tcb-val">+${Math.round((tt.atk-1)*100)}%</b></div><div class="tc-badge-stat"><span class="tcb-tag">HP</span> <b class="tcb-val">+${Math.round((tt.hp-1)*100)}%</b></div>`:`<div class="tc-badge-stat tc-stat-empty">ROLL UNTUK MENGAKTIFKAN MODIFIER</div>`;
+  const rates=TRAIT_TIERS.filter(t=>t.chance>0).map(t=>{
+    const own=tgt.trait===t.k;
+    const isTarget=autoTargets.has(t.k);
+    const aPct=Math.round((t.atk-1)*100),hPct=Math.round((t.hp-1)*100);
+    const bar=Math.max(2,Math.round((t.chance/55)*1000)/10);
+    return `<div class="trr-item${own?" own":""}${isTarget?" is-target":""}" data-tk="${t.k}" style="--tcol:${t.color}" title="${t.name} • RARITY ${t.rar} • ATK +${aPct}% • HP +${hPct}%">
+      <div class="trr-row">
+        <span class="trr-gem" style="color:${t.color}">${traitGem(16,t.k)}</span>
+        <span class="trr-name">${t.name}</span>
+        ${own?`<span class="trr-flag">ACTIVE</span>`:""}
+        <span class="trr-rar">${t.rar}</span>
+        <span class="trr-pct">${t.chance}%</span>
+        <label class="trr-tgt" title="Target Auto Roll">
+          <input type="checkbox" data-atgt="${t.k}"${isTarget?" checked":""}>
+          <span class="trr-tgt-box">
+            <svg class="trr-tgt-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          </span>
+        </label>
+      </div>
+      <div class="trr-bar"><i style="width:${bar}%;background:linear-gradient(90deg,${t.color},#7DF9FF)"></i></div>
+    </div>`;}).join("");
+  b.innerHTML=`
+    <div class="tr-grid">
+      <div class="tr-main">
+        <div class="tr-cur tr-cur-btn" id="trPickCard" role="button" title="Ganti target kartu" style="--tcol:${curColor}">
+          <div class="tr-cur-thumb-wrap">
+            <img src="${cardThumb(tgt.char)}" alt="" loading="lazy" decoding="async">
+            <span class="tr-cur-scanline"></span>
+          </div>
+          <div class="tr-cur-info">
+            <div class="tc-lbl-row">
+              <span class="tc-lbl">SUBJECT MATRIX</span>
+              <span class="tc-code">NODE #${tgt.id ? tgt.id.slice(0,5).toUpperCase() : '001'}</span>
+            </div>
+            <div class="tc-name">${cardName(tgt.char)}</div>
+            <div class="tc-tline">${cur}</div>
+            <div class="tc-tstat-wrap">${curStat}</div>
+          </div>
+          <button class="tr-change-ic" type="button" title="Ganti Target Kartu">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 17v-2a4 4 0 0 0-4-4H4"/><path d="m14 7 4 4-4 4"/><path d="M4 7v2a4 4 0 0 0 4 4h12"/><path d="m10 17-4-4 4-4"/></svg>
+          </button>
+        </div>
+
+        <div class="tr-controls">
+          <button class="tr-btn tr-roll" id="trRoll" ${state.coins<TRAIT_COST||autoRoll?"disabled":""}>
+            <span class="tr-btn-glow"></span>
+            <span class="tr-btn-content">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              <span>${autoRoll?"SYNTHESIS RUNNING...":"ROLL TRAIT"}</span>
+              <span class="tr-cost-badge">${coinIcon(15)} ${fmt(TRAIT_COST)}</span>
+            </span>
+          </button>
+        </div>
+
+        <div class="tr-auto-panel${autoRoll?" on":""}">
+          <div class="tr-auto-top">
+            <button class="tr-btn tr-auto-btn" id="trAuto"${!autoRoll&&state.coins<TRAIT_COST?" disabled":""}>
+              ${autoRoll?`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg> ABORT AUTO`:`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg> INITIATE AUTO ROLL`}
+            </button>
+            <div class="tr-pulse-indicator${autoRoll?' pulse-run':''}">
+              <span class="tr-pi-dot"></span>
+              <span class="tr-pi-txt">${autoRoll?'OVERCLOCK 100ms':'IDLE'}</span>
+            </div>
+          </div>
+          <div class="tr-auto-meta">
+            <div class="tram-row"><span class="tram-k">LOCKED TARGET:</span> <b class="tram-v">${targetLabel()}</b></div>
+            <div class="tram-row"><span class="tram-k">ITERATION:</span> <b class="tram-n" id="trAutoN">#${autoRollN}</b></div>
+          </div>
+        </div>
+
+        <div class="tr-footer-status">
+          <div class="tr-coin-pill">
+            ${coinIcon(16)}
+            <span>CREDITS:</span>
+            <b class="tr-coin" id="trCoinVal">${fmt(state.coins)}</b>
+          </div>
+          <div class="tr-tip-txt">Roll menyuntikkan trait mod ke target & berhenti otomatis jika target matrix cocok.</div>
+        </div>
+      </div>
+
+      <div class="tr-rates">
+        <div class="trr-h">
+          <div class="trr-h-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            TRAIT PROBABILITY
+          </div>
+          <span class="trr-h-sub">CENTANG TARGET AUTO</span>
+        </div>
+        <div class="trr-list">${rates}</div>
+      </div>
+    </div>`;
+  const r=document.getElementById("trRoll");if(r)r.onclick=rollTrait;
+  const ab=document.getElementById("trAuto");if(ab)ab.onclick=toggleAuto;
+  b.querySelectorAll("input[data-atgt]").forEach(cb=>{cb.onchange=()=>{
+    const key=cb.getAttribute("data-atgt");
+    if(cb.checked)autoTargets.add(key);else autoTargets.delete(key);
+    const m=b.querySelector(".tram-v");
+    if(m)m.textContent=targetLabel();
+    const item=cb.closest('.trr-item');
+    if(item)item.classList.toggle('is-target',cb.checked);
+  };});
+  const pc=document.getElementById("trPickCard");if(pc)pc.onclick=()=>openDeckPick();
+}
+let cardPickCfg=null;
+function openDeckPick(cfg){dpSearch="";cardPickCfg=(cfg&&cfg.getSel&&cfg.onPick)?cfg:null;document.getElementById("deckPickModal").classList.toggle("dp-dark",!cardPickCfg);renderDeckPick();document.getElementById("deckPickModal").classList.add("show");}
+function closeDeckPick(){document.getElementById("deckPickModal").classList.remove("show");hideTraitTip();cardPickCfg=null;}
+function renderDeckPick(){
+  const b=document.getElementById("dpBody");
+  if(!state.stacks.length){b.innerHTML=`<p class="sub">Deck kosong.</p>`;return;}
+  const selId=cardPickCfg?cardPickCfg.getSel():traitTargetStack().id;
+  _dpHtml={};
+  b.innerHTML=`<label class="card-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input class="card-search" id="dpSearch" type="text" placeholder="Cari kartu…" autocomplete="off"></label><div class="dp-grid" id="dpGrid">${state.stacks.map((s,i)=>{
+    const inner=`<img src="${cardThumb(s.char)}" alt="" loading="lazy" decoding="async">
+      ${s.shiny||(s.mut&&s.mut!=="none")||(s.trait&&s.trait!=="none")?`<span class="dp-badges">${s.shiny?'<span class="shiny-badge shiny-pill">SHINY</span>':""}${s.mut&&s.mut!=="none"?mutChip(s.mut,mutPill(s.mut,'mut-badge dp-mut')):""}${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="trait-badge dp-gem" style="border-color:${TRAIT_COLOR[s.trait]}">${traitGem(13,s.trait)}</span>`):""}</span>`:""}
+      <span class="dp-name">${cardName(s.char)}</span>`;
+    _dpHtml[s.id]=inner;const mounted=i<48;
+    return `<button class="dp-card${isFullArt(s.char)?" fa":""}${s.id===selId?" sel":""}${s.mut&&s.mut!=="none"?(s.shiny?" dp-mut-shiny-"+s.mut:" dp-mut-"+s.mut):""}${s.shiny?" shiny":""}${mounted?"":" lz-ph"}" data-lz="${s.id}" data-tid="${s.id}" data-name="${cardName(s.char).toLowerCase()}">${mounted?inner:""}</button>`;}).join("")}</div><div class="no-result" id="dpSearch-nr">Tidak ada kartu yang cocok.</div>`;
+  {const dps=document.getElementById("dpSearch");if(dps){dps.value=dpSearch;dps.oninput=()=>{dpSearch=dps.value;runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));};if(dpSearch)runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));}}
+  b.querySelectorAll(".dp-card").forEach(el=>el.onclick=()=>{const tid=el.getAttribute("data-tid");sfx.hit();if(cardPickCfg){cardPickCfg.onPick(tid);}else{traitTarget=tid;closeDeckPick();renderTrait();}});
+  lazyMountGrid(b.closest(".dp-box")||b,_dpHtml);
+}
+/* Trait transiden ke atas = langka; jangan ditimpa tanpa konfirmasi */
+const RARE_TRAIT_GUARD=["transiden","demigod","cosmic","bigbang"];
+let traitRareBusy=false;
+function isRareTrait(k){return RARE_TRAIT_GUARD.indexOf(k)>=0;}
+function confirmRareReplace(k,auto){
+  const t=TRAIT[k];if(!t)return Promise.resolve(true);
+  if(traitRareBusy)return Promise.resolve(false);
+  traitRareBusy=true;
+  const tgt=traitTargetStack();
+  const nm=tgt?cardName(tgt.char):"kartu target";
+  const body=
+    '<div class="glcf-row"><span class="glcf-label">TRAIT</span><span class="glcf-val" style="color:'+t.color+'"><b>'+t.name+'</b> · '+t.rar+'</span></div>'+
+    '<div class="glcf-row"><span class="glcf-label">POWER</span><span class="glcf-val">ATK +'+Math.round((t.atk-1)*100)+'% · HP +'+Math.round((t.hp-1)*100)+'%</span></div>'+
+    '<div class="glcf-row"><span class="glcf-label">KARTU</span><span class="glcf-val">'+nm+'</span></div>'+
+    '<div class="glcf-warn">'+(auto
+      ? 'Auto roll akan mulai mengganti trait ini. Trait hanya aman kalau sudah dicentang sebagai target (auto berhenti saat kena). Sisa coin: '+fmt(state.coins)+'.'
+      : 'Trait ini akan <b>hilang tertimpa</b> kalau kamu roll lagi. Sisa coin: '+fmt(state.coins)+'.')+'</div>';
+  return showConfirmDialog({title:"TRAIT LANGKA TERPASANG",body:body,okText:auto?"LANJUT AUTO":"ROLL JUGA"}).then(v=>{traitRareBusy=false;return v;});
+}
+async function rollTrait(){
+  if(autoRoll)return; // tombol manual diblokir selama auto roll jalan
+  if(state.coins<TRAIT_COST)return;
+  const tgt=traitTargetStack();if(!tgt)return;
+  if(isRareTrait(tgt.trait)){
+    if(!(await confirmRareReplace(tgt.trait)))return;
+    if(autoRoll||state.coins<TRAIT_COST)return;
+  }
+  coinSpend(TRAIT_COST);
+  const k=rollTraitPick();
+  sfx.crit();
+  if(TRAIT[k] && TRAIT[k].atk>=1.5){ save(); renderShell(); renderTrait(); showRarePrompt(k); }
+  else { tgt.trait=k; save(); if(!battleLive()&&typeof render==="function")render(); renderTrait(); traitNotify(k); }
+}
+function showRarePrompt(k,auto){
+  const t=TRAIT[k];if(!t)return;
+  pendingRare=k;
+  pendingRareAuto=!!auto;
+  const b=document.getElementById("rpBody");
+  const canRoll=state.coins>=TRAIT_COST;
+  b.innerHTML=`
+    <div class="rp-rays"></div>
+    ${traitGem(78,k,"rp-gem")}
+    <div class="rp-kicker">${auto?"TRAIT LANGKA · AUTO ROLL BERHENTI":"TRAIT LANGKA"}</div>
+    <div class="rp-name" style="color:${t.color}">${t.name}</div>
+    <div class="rp-rar" style="color:${t.color}">RARITY ${t.rar}</div>
+    <div class="rp-power" style="color:${t.color}">ATK +${Math.round((t.atk-1)*100)}% · HP +${Math.round((t.hp-1)*100)}%</div>
+    <div class="rp-fx">${traitFxList(k)}</div>
+    <div class="rp-btns">
+      <button class="rp-btn rp-save" id="rpSave">${auto?"STOP · SIMPAN INI":"SIMPAN"}</button>
+      <button class="rp-btn rp-roll" id="rpRoll" ${canRoll?"":"disabled"}>${auto?`ROLL LAGI · LANJUT AUTO · ${fmt(TRAIT_COST)} COIN`:`ROLL LAGI · ${fmt(TRAIT_COST)} COIN`}</button>
+    </div>
+    <div class="rp-note">${auto?"STOP mengunci trait ini ke kartu target &amp; menghentikan auto roll. ROLL LAGI membuang hasil ini dan melanjutkan auto roll (bayar coin lagi).":"SIMPAN memasang trait ini ke kartu target. ROLL LAGI membuang hasil ini dan mencoba lagi (bayar coin lagi)."}</div>`;
+  const box=document.getElementById("rpBox");box.style.color=t.color;box.style.borderColor=t.color;
+  document.getElementById("rarePromptModal").classList.add("show");
+  document.getElementById("rpSave").onclick=saveRare;
+  const rr=document.getElementById("rpRoll");if(rr)rr.onclick=auto?resumeAutoRoll:rerollRare;
+}
+function closeRarePrompt(){document.getElementById("rarePromptModal").classList.remove("show");}
+function saveRare(){const k=pendingRare;autoStop();pendingRareAuto=false;const tgt=traitTargetStack();if(tgt&&k)tgt.trait=k;pendingRare=null;closeRarePrompt();save();if(!battleLive()&&typeof render==="function")render();renderTrait();if(k)traitNotify(k);}
+function rerollRare(){pendingRare=null;pendingRareAuto=false;closeRarePrompt();rollTrait();}
+/* ===== AUTO ROLL (loop 100ms) ===== */
+function targetLabel(){return autoTargets.size?[...autoTargets].map(k=>TRAIT[k]?TRAIT[k].name:"").filter(Boolean).join(" · "):"centang di DROP RATE";}
+function autoStop(){autoRoll=false;clearTimeout(autoRollTimer);autoRollTimer=null;}
+function toggleAuto(){autoRoll?stopAutoRoll():startAutoRoll();}
+async function startAutoRoll(){
+  if(autoRoll)return;
+  if(state.coins<TRAIT_COST){autoToast(`BUTUH ${fmt(TRAIT_COST)} COIN UNTUK AUTO ROLL`);return;}
+  const tgt=traitTargetStack();
+  if(tgt&&isRareTrait(tgt.trait)){
+    if(!(await confirmRareReplace(tgt.trait,true)))return;
+    if(autoRoll||state.coins<TRAIT_COST)return;
+  }
+  autoRoll=true;autoRollN=0;renderTrait();autoTick();
+}
+function stopAutoRoll(){autoStop();renderTrait();if(!battleLive()&&typeof render==="function")render();}
+function traitUiRefresh(){
+  const tgt=traitTargetStack();
+  const root=document.getElementById("traitModal");
+  if(!root||!tgt)return;
+  const hasT=!!(tgt.trait&&tgt.trait!=="none");
+  const tt=hasT?TRAIT[tgt.trait]:null;
+  /* --- SUBJECT MATRIX: pill trait + stat badge (SCOPED ke modal trait!) --- */
+  const tl=root.querySelector(".tc-tline");
+  if(tl){
+    tl.innerHTML=tt
+      ? traitChip(tt.k,`<span class="tc-trait-pill" style="--tcol:${tt.color}"><span class="tc-gem-wrap">${traitGem(16,tt.k)}</span> <span class="tc-name-glow">${traitLabel(tt.k)}</span></span>`)
+      : `<span class="tc-trait-none"><span class="tc-none-dot"></span>TANPA TRAIT</span>`;
+  }
+  const tsw=root.querySelector(".tc-tstat-wrap");
+  if(tsw){
+    tsw.innerHTML=tt
+      ? `<div class="tc-badge-stat"><span class="tcb-tag">ATK</span> <b class="tcb-val">+${Math.round((tt.atk-1)*100)}%</b></div><div class="tc-badge-stat"><span class="tcb-tag">HP</span> <b class="tcb-val">+${Math.round((tt.hp-1)*100)}%</b></div>`
+      : `<div class="tc-badge-stat tc-stat-empty">ROLL UNTUK MENGAKTIFKAN MODIFIER</div>`;
+  }
+  const curCard=document.getElementById("trPickCard");
+  if(curCard)curCard.style.setProperty("--tcol",tt?tt.color:"var(--cyan)");
+  /* --- DROP RATE list: pindahkan flag ACTIVE ke tier yang sedang aktif --- */
+  root.querySelectorAll(".trr-item").forEach(it=>{
+    const k=it.getAttribute("data-tk");
+    const own=(!!tt&&k===tt.k);
+    it.classList.toggle("own",own);
+    const nameRow=it.querySelector(".trr-row");
+    if(!nameRow)return;
+    const old=nameRow.querySelector(".trr-flag");
+    if(old)old.remove();
+    if(own){
+      const flag=document.createElement("span");
+      flag.className="trr-flag";
+      flag.textContent="ACTIVE";
+      const rar=nameRow.querySelector(".trr-rar");
+      if(rar)nameRow.insertBefore(flag,rar);else nameRow.appendChild(flag);
+    }
+  });
+}
+function autoPaint(){
+  const cv=document.getElementById("coinVal");if(cv)cv.textContent=fmt(state.coins);
+  const c=document.getElementById("trCoinVal");if(c)c.textContent=fmt(state.coins);
+  const n=document.getElementById("trAutoN");if(n)n.textContent="#"+autoRollN;
+}
+/* FX per tick auto roll: retrigger class supaya animasi CSS jalan tiap roll */
+function traitFxTick(k){
+  const root=document.getElementById("traitModal");if(!root)return;
+  const t=TRAIT[k];
+  const card=document.getElementById("trPickCard");
+  if(card){
+    if(t)card.style.setProperty("--tcol",t.color);
+    card.classList.remove("tr-tick");void card.offsetWidth;card.classList.add("tr-tick");
+  }
+  const n=document.getElementById("trAutoN");
+  if(n){n.classList.remove("tr-n-pop");void n.offsetWidth;n.classList.add("tr-n-pop");}
+  root.querySelectorAll(".trr-item.trr-hit").forEach(el=>el.classList.remove("trr-hit"));
+  const own=root.querySelector(".trr-item.own");
+  if(own){void own.offsetWidth;own.classList.add("trr-hit");}
+}
+function autoTick(){
+  if(!autoRoll)return;
+  if(state.coins<TRAIT_COST){stopAutoRoll();save();renderShell();autoToast("AUTO ROLL STOP · COIN HABIS");return;}
+  const tgt=traitTargetStack();if(!tgt){stopAutoRoll();return;}
+  coinSpend(TRAIT_COST);autoRollN++;
+  const k=rollTraitPick();
+  if(autoRollN%10===0)sfx.crit(); // sfx ditahan tiap 10 roll biar gak nembak terus di 100ms
+  if(autoTargets.has(k)){tgt.trait=k;autoStop();save();if(!battleLive()&&typeof render==="function")render();renderTrait();traitNotify(k);return;} // TARGET KENA → simpan + stop
+  tgt.trait=k;
+  if(autoRollN%10===0)save();
+  autoPaint();
+  traitUiRefresh();
+  traitFxTick(k);
+  autoRollTimer=setTimeout(autoTick,AUTO_TICK);
+}
+function resumeAutoRoll(){pendingRare=null;pendingRareAuto=false;closeRarePrompt();if(!autoRoll){renderTrait();return;}autoRollTimer=setTimeout(autoTick,AUTO_TICK);}
+function autoToast(msg){
+  const el=document.getElementById("traitNotify");if(!el)return;
+  el.innerHTML=`<div class="tn-card tn-toast"><div class="tn-body"><div class="tn-top" style="color:#FFCf6E">${msg}</div></div></div>`;
+  el.classList.add("show");
+  clearTimeout(el._t);el._t=setTimeout(()=>{el.classList.remove("show");},2200);
+}
+function traitNotify(k){
+  const t=TRAIT[k];if(!t)return;
+  const el=document.getElementById("traitNotify");if(!el)return;
+  const rare=t.atk>=1.5;
+  el.innerHTML=`<div class="tn-card${rare?" tn-rare":""}" style="border-color:${t.color};color:${t.color}">
+    ${traitGem(46,k,"tn-gem")}
+    <div class="tn-body">
+      <div class="tn-top" style="color:${t.color}">${t.name}</div>
+      <div class="tn-rar">RARITY ${t.rar}</div>
+      <div class="tn-power" style="color:${t.color}">ATK +${Math.round((t.atk-1)*100)}% · HP +${Math.round((t.hp-1)*100)}%</div>
+      <div class="tn-fx">${traitFxList(k)}</div>
+    </div></div>`;
+  el.classList.add("show");
+  clearTimeout(el._t);el._t=setTimeout(()=>{el.classList.remove("show");},2800);
+}
+/* global trait/mut tooltip (fixed → tidak memicu scroll horizontal modal) */
+let __traitTipEl=null;
+function hideTraitTip(){if(__traitTipEl)__traitTipEl.classList.remove("show");}
+function tipHtmlFor(el){const tk=el.getAttribute("data-trait");if(tk&&TRAIT[tk])return traitTipInner(tk);const mk=el.getAttribute("data-mut");if(mk&&MUT_LABEL[mk])return mutTipInner(mk);return "";}
+function showTraitTip(el){
+  const html=tipHtmlFor(el);if(!html)return;
+  if(!__traitTipEl){__traitTipEl=document.createElement("div");__traitTipEl.id="traitTip";document.body.appendChild(__traitTipEl);}
+  __traitTipEl.innerHTML=html;
+  __traitTipEl.classList.add("show");
+  const r=el.getBoundingClientRect(),tw=__traitTipEl.offsetWidth,th=__traitTipEl.offsetHeight;
+  let left=r.left+r.width/2-tw/2;left=Math.max(8,Math.min(left,window.innerWidth-tw-8));
+  let top=r.top-th-10;if(top<8)top=r.bottom+10;
+  __traitTipEl.style.left=left+"px";__traitTipEl.style.top=top+"px";
+}
+document.addEventListener("mouseover",e=>{const el=e.target.closest&&e.target.closest(".trait-hover,.mut-hover");if(el)showTraitTip(el);});
+document.addEventListener("mouseout",e=>{const el=e.target.closest&&e.target.closest(".trait-hover,.mut-hover");if(el)hideTraitTip();});
+window.addEventListener("scroll",hideTraitTip,true);
+

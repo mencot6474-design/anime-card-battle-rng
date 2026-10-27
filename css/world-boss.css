@@ -67,8 +67,8 @@ html body.on-raid #app {
   --font-mono: "JetBrains Mono", monospace;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-html, body {
+body.on-raid, body.on-raid * { box-sizing: border-box; }
+body.on-raid {
   width: 100%;
   height: 100%;
   background: var(--void-bg);
