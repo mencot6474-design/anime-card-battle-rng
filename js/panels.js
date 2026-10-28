@@ -1715,7 +1715,7 @@ function bpItemDef(kind){
   if(kind==='r50k'){return{kind,name:'INSTAN ROLL 50K',icon:'assets/images/instanpack-50k.webp?v=trans1',emoji:'📦',cnt:(state&&state.rollPacks&&state.rollPacks.r50k)||0,
     desc:'SPECIAL ROLL PACK - Berisi 50.000 tarikan kartu instan ke dalam koleksi.',
     active:'',isPack:true,use:"bpUseRollPack('r50k', 50000, window.bpPackN)"};}
-  if(kind==='r100k'){const _dBal=(typeof window.getDailyR100kBalance==='function')?window.getDailyR100kBalance():0;return{kind,name:'INSTAN ROLL 100K',icon:'assets/images/instanpack-100k.webp?v=trans1',emoji:'📦',cnt:Math.max(_dBal,(state&&state.rollPacks&&state.rollPacks.r100k)||0),
+  if(kind==='r100k'){return{kind,name:'INSTAN ROLL 100K',icon:'assets/images/instanpack-100k.webp?v=trans1',emoji:'📦',cnt:(state&&state.rollPacks&&state.rollPacks.r100k)||0,
     desc:'SPECIAL ROLL PACK - Berisi 100.000 tarikan kartu instan ke dalam koleksi.',
     active:'',isPack:true,use:"bpUseRollPack('r100k', 100000, window.bpPackN)"};}
   if(kind==='intan'){return{kind,name:'INTAN ROLL 100K',icon:(state.intanRolls&&state.intanRolls>0?'assets/images/icon-index-card.webp':'assets/sprites/_placeholder.svg'),emoji:'💎',cnt:state.intanRolls||0,
@@ -1962,13 +1962,11 @@ async function bpUseIntanRoll(n){
 function bpUseRollPack(packKey, rollAmount, n){
   n=Math.max(1,parseInt(n,10)||1);
   state.rollPacks = state.rollPacks || {};
-  const dBal=(packKey==='r100k'&&typeof window.getDailyR100kBalance==='function')?window.getDailyR100kBalance():0;
-  const owned=Math.max(dBal, state.rollPacks[packKey]||0);
+  /* 0040: tidak ada lagi `dailyR100kBalance` — jumlah pack yang terlihat di sini
+     adalah cermin ledger `player_packs` (klaim client di-nol-kan merge kalau lebih). */
+  const owned=state.rollPacks[packKey]||0;
   if(owned<1){toast("PACK HABIS","TIDAK ADA ITEM","#f87171");return;}
   const use=Math.min(n,owned);
-  if(packKey==='r100k'&&typeof window.consumeDailyR100kPacks==='function'){
-    window.consumeDailyR100kPacks(use);
-  }
   state.rollPacks[packKey]=Math.max(0,owned-use);
   save();
   bpItemPopClose();

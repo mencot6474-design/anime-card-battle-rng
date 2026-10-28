@@ -169,15 +169,12 @@ function loadStateFor(name){
   if(typeof state.rebirth.essence!=="number"||state.rebirth.essence<0)state.rebirth.essence=0;
   if(!state.rollPacks||typeof state.rollPacks!=="object")state.rollPacks={r5k:0,r10k:0,r25k:0,r50k:0,r100k:0};
   ['r5k','r10k','r25k','r50k','r100k'].forEach(k=>{if(typeof state.rollPacks[k]!=="number"||state.rollPacks[k]<0)state.rollPacks[k]=0;});
-  try{
-    var _dKey="acb_daily_r100k_v1:"+String(name||"guest").toLowerCase();
-    var _savedCloudBal = (typeof state.dailyR100kBalance === "number" && state.dailyR100kBalance >= 0) ? Math.floor(state.dailyR100kBalance) : 0;
-    var _savedLsBal = parseInt(localStorage.getItem(_dKey), 10) || 0;
-    var _dBal = Math.max(0, _savedCloudBal, _savedLsBal);
-    state.dailyR100kBalance = _dBal;
-    try { localStorage.setItem(_dKey, String(_dBal)); } catch(e){}
-    if ((state.rollPacks.r100k || 0) < _dBal) state.rollPacks.r100k = _dBal;
-  }catch(e){}
+  /* 0040: `dailyR100kBalance` (bonus login yang dulu cuma angka localStorage) DIMATIKAN.
+     Pack harian sekarang lahir di `player_packs` lewat claim_daily_gem, jadi tidak ada
+     lagi saldo bayangan yang harus digabung ke rollPacks — dan tidak ada lagi lubang
+     "F12 setDailyR100kBalance(9999)" yang tidak dilihat server. */
+  try{ localStorage.removeItem("acb_daily_r100k_v1:"+String(name||"guest").toLowerCase()); }catch(e){}
+  delete state.dailyR100kBalance;
   if(typeof state.idxRewardsClaimed!=="number"||state.idxRewardsClaimed<0)state.idxRewardsClaimed=0;
   /* STAT PROFIL: total roll gabungan (dice + instan pack) & waktu bermain.
      Save lama tanpa counter: isi dari jumlah kartu yang sudah dimiliki. */
@@ -1063,48 +1060,9 @@ const DAILY_GEM_TOTAL=DAILY_GEMS.reduce((a,b)=>a+b,0);
 const GEM_ICON_SM='<img src="assets/images/premium-currency.webp" width="12" height="12" alt="" style="vertical-align:-2px;border-radius:50%">';
 const DAILY_TOTAL=DAILY_REWARDS.reduce((a,b)=>a+b,0);
 
-function _dailyR100kKey(){
-  var u=(typeof currentUser!=="undefined"&&currentUser)?String(currentUser).toLowerCase():"guest";
-  return "acb_daily_r100k_v1:"+u;
-}
-function getDailyR100kBalance(){
-  try{
-    var st=(state&&typeof state.dailyR100kBalance==="number")?Math.floor(state.dailyR100kBalance):0;
-    var ls=parseInt(localStorage.getItem(_dailyR100kKey()),10)||0;
-    var maxVal=Math.max(0,st,ls);
-    if(state&&state.dailyR100kBalance!==maxVal)state.dailyR100kBalance=maxVal;
-    return maxVal;
-  }catch(e){return 0;}
-}
-function setDailyR100kBalance(val){
-  var v=Math.max(0,Math.floor(Number(val)||0));
-  try{localStorage.setItem(_dailyR100kKey(),String(v));}catch(e){}
-  if(state){
-    state.dailyR100kBalance=v;
-    state.rollPacks=state.rollPacks||{r5k:0,r10k:0,r25k:0,r50k:0,r100k:0};
-    state.rollPacks.r100k=Math.max(v,state.rollPacks.r100k||0);
-  }
-  return v;
-}
-function addDailyR100kPacks(qty){
-  var add=Math.max(0,Math.floor(Number(qty)||0));
-  if(!add)return getDailyR100kBalance();
-  var cur=getDailyR100kBalance();
-  var next=setDailyR100kBalance(cur+add);
-  return next;
-}
-function consumeDailyR100kPacks(usedQty){
-  var u=Math.max(0,Math.floor(Number(usedQty)||0));
-  var cur=getDailyR100kBalance();
-  if(cur<=0||u<=0)return 0;
-  var deduct=Math.min(cur,u);
-  setDailyR100kBalance(cur-deduct);
-  return deduct;
-}
-window.getDailyR100kBalance=getDailyR100kBalance;
-window.setDailyR100kBalance=setDailyR100kBalance;
-window.addDailyR100kPacks=addDailyR100kPacks;
-window.consumeDailyR100kPacks=consumeDailyR100kPacks;
+/* 0040: sistem `dailyR100kBalance` (get/set/add/consume + kunci localStorage) DIHAPUS.
+   Pack harian lahir di ledger server lewat claim_daily_gem dan masuk ke
+   state.rollPacks.r100k dari respons RPC itu. */
 
 function openBackpackFromDaily(){
   closeDaily();
@@ -1195,13 +1153,14 @@ function claimDaily(){
   const idx=(typeof state.dailyIndex==="number"?state.dailyIndex:0)%7;
   const gems=DAILY_GEMS[idx]||0;
   const packQty=DAILY_PACKS_100K[idx]||1;
-  /* Simpan Instan Roll Pack 100K ke dalam Backpack (state.rollPacks.r100k) */
-  addDailyR100kPacks(packQty);
+  /* 0040: pack TIDAK diberi di sini lagi. claim_daily_gem yang membayarnya ke
+     `player_packs` (lihat flushPendingDailyGems) — angka client tidak dipercaya. */
   /* 0025: coin daily dibayar server (claim_daily_gem) — jangan ditambah lokal
      kecuali memang offline, kalau tidak push berikutnya akan mengoreksinya balik. */
   const coinsOffline=!(typeof currentUser!=="undefined"&&currentUser&&window.CloudDB&&window.CloudDB.claimDailyGem);
   if(coinsOffline)state.coins+=(DAILY_REWARDS[idx]||0);
   state.dailyGemPending=(state.dailyGemPending||0)+gems;
+  state.dailyPackPending=(state.dailyPackPending||0)+packQty;
   state.lastClaim=todayStr();
   state.dailyIndex=(idx+1)%7;
   sfx.win();save();
@@ -1225,16 +1184,25 @@ async function flushPendingDailyGems(quiet){
   try{
     const u=_gemUser();
     if(u&&window.CloudDB&&window.CloudDB.claimDailyGem) res=await window.CloudDB.claimDailyGem(u);
-    else{state.premiumGems=(state.premiumGems||0)+gems;res={ok:true,gems};}
+    else{state.premiumGems=(state.premiumGems||0)+gems;res={ok:true,gems,packs:(state.dailyPackPending||0)};}
   }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
   _dailyGemBusy=false;
   if(res&&(res.ok||res.msg==="ALREADY_TODAY")){
     state.dailyGemPending=0;
     if(typeof res.day_index==="number")state.dailyIndex=res.day_index%7;
     if(typeof res.coins_balance==="number")state.coins=res.coins_balance;
+    /* 0040: pack harian bayar di server. `pack_qty` = saldo final di `player_packs`,
+       jadi pakai nilai itu apa adanya (bukan +=) supaya cermin client tidak pernah
+       bisa lebih besar dari ledger. Offline/ guest: tidak ada ledger, pakai jatah
+       lokal — akun begitu memang tidak bisa push save. */
+    state.rollPacks = state.rollPacks || {r5k:0,r10k:0,r25k:0,r50k:0,r100k:0};
+    if(typeof res.pack_qty==="number")state.rollPacks.r100k=Math.max(0,res.pack_qty);
+    else if(res.ok&&(res.packs||0)>0)state.rollPacks.r100k=(state.rollPacks.r100k||0)+res.packs;
+    if(res.ok)state.dailyPackPending=0;
     try{save();}catch(e){}
     try{renderShell();}catch(e){}
-    if(res.ok)try{toast("LOGIN HARIAN","+"+(res.gems||gems)+" GEM · +"+fmt(res.coins||0)+" COIN","#ffd700");}catch(e){}
+    try{if(typeof renderBackpackPanel==="function")renderBackpackPanel();}catch(e){}
+    if(res.ok)try{toast("LOGIN HARIAN","+"+(res.gems||gems)+" GEM · +"+fmt(res.coins||0)+" COIN"+((res.packs||0)>0?" · +"+res.packs+"× PACK 100K":""),"#ffd700");}catch(e){}
   }else if(!quiet){
     try{toast("GEM LOGIN TERTUNDA",(res&&res.msg)||"Akan dicoba lagi","#fbbf24");}catch(e){}
   }

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v246-intanLedger';
+const CACHE_NAME = 'anime-card-battle-v247-dailyPackServer';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
