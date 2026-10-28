@@ -58706,3 +58706,260 @@ body.on-lobby .lobby-footer {
     max-height:calc(100dvh - 96px)!important;
   }
 }
+
+/* =========================================================================
+   TASK 5 · DECK / TEAM-BUILDER MOBILE (Unit 6-5) — slot rail + card picker
+   per orientation.
+   APPEND-ONLY at EOF; every rule gated on `@media (pointer:coarse)` AND
+   prefixed html.m-portrait / html.m-landscape (set by js/mobile-shell.js only
+   on coarse pointers) => fine-pointer desktop never matches: zero regression.
+
+   WHY THESE WIN (the LATE-!IMPORTANT TRAP): the deck UI is re-skinned AFTER
+   style.css by css/lobby-prototype.css (:4377+ "AAA Loadout Pod") using
+   `#backpackPanel .bp-slots{display:flex!important}` (1,1,0),
+   `#backpackPanel .bp-slots .bp-slot{width:100%!important;min-width:100%!important;
+   height:clamp(64px,8.8vh,72px)!important;max-height:74px!important}` (1,2,0),
+   `.backpack-panel .bp-deckcol{width:330px!important;min-width:310px!important}`
+   (0,2,0) and css/sl-system.css + lobby-prototype :3296
+   `#deckPickModal{padding:clamp(...)!important;overflow-y:auto!important}`.
+   A file loaded LATER only wins a same-weight !important tie; a HIGHER-
+   SPECIFICITY !important always wins. So the rail/slot rules below are keyed
+   `html.m-* #backpackPanel .bp-slots .bp-slot` (1,3,1) and the panel-chrome
+   rules `html.m-* #backpackPanel …` (1,2,1) — every one out-ranks its (1,2,0)/
+   (1,1,0)/(0,3,0) counterpart regardless of source order. style.css's own late
+   traps — S:48071 (0,2,1)+!important, S:48112 @media(max-width:720px)
+   width:66px!important (0,3,0), S:48137 @media(max-height:620px)
+   width:60px!important (0,3,0) — are likewise out-ranked at EOF.
+
+   DESIGN (task-5 brief): token-driven grid per orientation — PORTRAIT keeps the
+   4-row slot rail (--m-bp-rows:repeat(4,minmax(0,1fr))) full-width above a
+   scrollable card archive; on short phones (<=640h, e.g. 320x568) the rail
+   wraps BESIDE the compacted deckmeta so both stay inside the initial viewport.
+   LANDSCAPE folds the rail to 2x2 (repeat(2,minmax(0,1fr)) rows) inside a
+   narrow rail so header+tabs+rail+save all fit a 390px-high viewport. The card
+   picker (.dp-box sheet inside the #deckPickModal backdrop) gets the brief's
+   column tokens: portrait minmax(min(28vw,96px),1fr), landscape minmax(84px,1fr);
+   the backdrop can never become the page scroller (overflow:hidden!important)
+   and the sheet fits the viewport — extra cards scroll INSIDE .dp-box, the
+   sanctioned mobile picker pattern, while close/search/first card stay in the
+   initial view (R-Reachability: no control is ever display:none'd or pushed
+   below the fold).
+   ========================================================================= */
+@media (pointer:coarse){
+
+  /* ---- orientation TOKENS ---- */
+  html.m-portrait{
+    --m-dp-cols:repeat(auto-fill,minmax(min(28vw,96px),1fr));   /* brief */
+    --m-bp-rows:repeat(4,minmax(0,1fr));                        /* brief */
+    --m-bp-rail-cols:1fr;
+    --m-bp-slot-h:72px;
+    --m-bp-rail-gap:8px;
+    --m-bp-art-w:38px; --m-bp-art-h:46px;
+  }
+  html.m-landscape{
+    --m-dp-cols:repeat(auto-fill,minmax(84px,1fr));             /* brief */
+    --m-bp-rows:repeat(2,minmax(0,1fr));                        /* brief */
+    --m-bp-rail-cols:repeat(2,minmax(0,1fr));
+    --m-bp-slot-h:48px;
+    --m-bp-rail-gap:6px;
+    --m-bp-art-w:30px; --m-bp-art-h:36px;
+  }
+
+  /* ---- brief Step-2 rules, verbatim (drive the token grid on bare
+     .dp-grid/.bp-slots consumers outside the re-skinned backpack DOM) ---- */
+  html.m-portrait .dp-grid{ grid-template-columns:repeat(auto-fill,minmax(min(28vw,96px),1fr)) !important; }
+  html.m-portrait .bp-slots{ grid-template-rows:repeat(4,minmax(0,1fr)) !important; }
+  html.m-landscape .dp-grid{ grid-template-columns:repeat(auto-fill,minmax(84px,1fr)) !important; }
+  html.m-landscape .bp-slots{ grid-template-rows:repeat(2,minmax(0,1fr)) !important; }
+
+  /* ---- BACKPACK CHROME: compact header; close pinned to the panel corner so
+     the eyebrow/stats can never shove it past the viewport edge (RED guard:
+     .backpack-close right=405 on a 390 screen). Panel is fixed inset:0, so
+     absolute top/right = viewport corner — always reachable. ---- */
+  html.m-portrait #backpackPanel .backpack-header,
+  html.m-landscape #backpackPanel .backpack-header{
+    padding:8px 52px 6px 12px!important;
+    min-width:0!important;
+  }
+  #backpackPanel .bph-left{ min-width:0!important; flex:1 1 auto!important; overflow:hidden!important; }
+  #backpackPanel .bph-eyebrow{ min-width:0!important; overflow:hidden!important; }
+  #backpackPanel .bph-title{ font-size:15px!important; white-space:nowrap!important; overflow:hidden!important; text-overflow:ellipsis!important; }
+  #backpackPanel .bph-right{ flex:0 0 auto!important; }
+  #backpackPanel .bph-stats{ gap:5px!important; flex-wrap:wrap!important; justify-content:flex-end!important; }
+  html.m-portrait #backpackPanel .bph-code{ display:none!important; }  /* info text, not a control */
+  html.m-portrait #backpackPanel .backpack-close,
+  html.m-landscape #backpackPanel .backpack-close{
+    position:absolute!important; top:8px!important; right:8px!important;
+    width:36px!important; height:36px!important; z-index:120!important;
+  }
+
+  /* ---- TAB STRIP: wraps to 2 rows, every tab stays visible (R-Reachability:
+     tab switch is a deck action control) ---- */
+  #backpackPanel .bp-tabs{
+    margin:6px 10px 0!important; padding:5px 6px!important; gap:5px!important;
+    flex-wrap:wrap!important; overflow:visible!important;
+  }
+  #backpackPanel .bp-tab{
+    flex:1 1 30%!important; min-width:0!important; white-space:nowrap!important;
+    padding:5px 7px!important; font-size:12px!important; letter-spacing:.05em!important;
+  }
+  #backpackPanel .bp-tab .bp-tab-l{ overflow:hidden!important; text-overflow:ellipsis!important; }
+  #backpackPanel .bp-tab .bp-tab-num{ display:none!important; }   /* numeric tag; tab label stays */
+
+  /* ---- BODY / COLUMNS ---- */
+  #backpackPanel .bp-body,
+  #backpackPanel .bp-body.deck{
+    height:auto!important;               /* beats LP:4383 calc(100vh-138px)!important */
+    padding:8px 10px 10px!important;
+  }
+  #backpackPanel .bp-cols{
+    gap:10px!important; padding:8px 10px 10px!important;
+  }
+  html.m-portrait #backpackPanel .bp-cols{ flex-direction:column!important; align-items:stretch!important; }
+  html.m-landscape #backpackPanel .bp-cols{ flex-direction:row!important; align-items:stretch!important; }
+
+  /* ---- SLOT RAIL: force the token grid (beats LP:4461 display:flex!important
+     (1,1,0)) and token bar size (beats LP:4482 (1,2,0)+!important AND the
+     style.css S:48112/48137 66px/60px width locks) ---- */
+  html.m-portrait #backpackPanel .bp-slots,
+  html.m-landscape #backpackPanel .bp-slots{
+    display:grid!important;
+    grid-template-columns:var(--m-bp-rail-cols)!important;
+    grid-template-rows:var(--m-bp-rows)!important;
+    gap:var(--m-bp-rail-gap)!important;
+    flex:0 0 auto!important;
+    width:100%!important;
+    overflow:visible!important;
+  }
+  html.m-portrait #backpackPanel .bp-slots .bp-slot,
+  html.m-landscape #backpackPanel .bp-slots .bp-slot{
+    width:100%!important; min-width:0!important; max-width:100%!important;
+    height:var(--m-bp-slot-h)!important; min-height:0!important; max-height:var(--m-bp-slot-h)!important;
+    aspect-ratio:auto!important;
+    flex:1 1 auto!important;
+    padding:5px 8px!important; gap:8px!important;
+  }
+  #backpackPanel .bp-slots .bp-slot .bps-role{ top:3px!important; left:8px!important; font-size:8px!important; }
+  #backpackPanel .bp-slots .bp-slot .bps-art-wrap{
+    width:var(--m-bp-art-w)!important; height:var(--m-bp-art-h)!important; margin-top:4px!important;
+  }
+  #backpackPanel .bp-slots .bp-slot .bps-name{ font-size:11.5px!important; }
+  #backpackPanel .bp-slots .bp-slot .bps-pwr{ font-size:9px!important; padding:0 4px!important; }
+  #backpackPanel .bp-slots .bp-slot .bps-chip{ font-size:7.5px!important; }
+  #backpackPanel .bp-slots .bp-slot .bps-x{ width:18px!important; height:18px!important; font-size:13px!important; }
+  #backpackPanel .bp-slots .bp-slot .bps-empty-body{ margin-top:4px!important; gap:8px!important; }
+  #backpackPanel .bp-slots .bp-slot .bps-prompt{ font-size:9px!important; }
+
+  /* ---- RAIL COLUMN: portrait full-width top block; landscape narrow rail.
+     flex-wrap:nowrap kills the style.css @720 `flex-wrap:wrap` lock that made
+     a COLUMN deckcol push .bp-deckmeta into a second (off-viewport) column. ---- */
+  html.m-portrait #backpackPanel .bp-deckcol{
+    width:100%!important; min-width:0!important; max-width:none!important;
+    flex:0 0 auto!important; flex-direction:column!important; flex-wrap:nowrap!important;
+    gap:8px!important; padding:10px 12px!important;
+  }
+  html.m-landscape #backpackPanel .bp-deckcol{
+    width:min(42vw,240px)!important; min-width:0!important; max-width:240px!important;
+    flex:0 0 auto!important; flex-direction:column!important; flex-wrap:nowrap!important;
+    gap:6px!important; padding:8px 10px!important;
+  }
+  #backpackPanel .bp-deckmeta{ min-width:0!important; }
+  #backpackPanel .bp-col-head{ margin-bottom:5px!important; padding-bottom:5px!important; }
+  #backpackPanel .bp-col-head .bp-h{ font-size:11px!important; }
+  #backpackPanel .bp-deck-count{ font-size:9px!important; }
+  /* meta compacted so SIMPAN KONFIGURASI (confirm control) stays in-view */
+  #backpackPanel .bp-deckmeta{ margin-top:6px!important; padding-top:6px!important; gap:6px!important; }
+  #backpackPanel .bdm-core{ padding:4px 8px!important; }
+  #backpackPanel .bdm-label{ font-size:9px!important; letter-spacing:.06em!important; }
+  #backpackPanel .bdm-v{ font-size:16px!important; }
+  #backpackPanel .bdm-tag{ font-size:8px!important; }
+  #backpackPanel .bp-save{ padding:8px 10px!important; font-size:11.5px!important; letter-spacing:.06em!important; }
+
+  @media (max-height:640px){
+    /* short portrait (320x568): slimmer bars + rail|meta side-by-side so BOTH
+       the save control AND the archive filter row stay above the fold */
+    html.m-portrait{ --m-bp-slot-h:44px; }
+    html.m-portrait #backpackPanel .bp-deckcol{
+      flex-direction:row!important; flex-wrap:wrap!important; align-items:stretch!important; gap:8px!important;
+    }
+    html.m-portrait #backpackPanel .bp-deckcol .bp-col-head{ flex:1 1 100%!important; }
+    html.m-portrait #backpackPanel .bp-slots{ flex:1 1 58%!important; min-width:0!important; }
+    html.m-portrait #backpackPanel .bp-deckmeta{ flex:1 1 34%!important; margin-top:0!important; padding-top:0!important; min-width:0!important; }
+    html.m-portrait #backpackPanel .bp-save{ white-space:normal!important; font-size:10px!important; padding:6px 8px!important; }
+    html.m-portrait #backpackPanel .bdm-label{ white-space:normal!important; }
+    html.m-portrait #backpackPanel .bp-deckcol{ padding:8px 10px!important; }
+  }
+
+  /* short landscape (844/850x390): deckcol is STRETCHED to the bp-cols row
+     height (~199px), so the rail+meta content must fit that budget or the
+     SIMPAN confirm button drops below the fold. All values !important +
+     (1,3,x) to outrank the lobby-prototype late bars. */
+  @media (max-height:640px){
+    html.m-landscape #backpackPanel .bp-col-head{ margin-bottom:0!important; padding-bottom:0!important; height:auto!important; min-height:14px!important; }
+    html.m-landscape #backpackPanel .bp-col-head .bp-h{ flex-shrink:1!important; min-width:0!important; }
+    html.m-landscape #backpackPanel .bp-deckmeta{ margin-top:0!important; padding-top:0!important; gap:3px!important; }
+    html.m-landscape #backpackPanel .bp-slots{ gap:4px!important; }
+    html.m-landscape #backpackPanel .bp-slots .bp-slot{ height:42px!important; max-height:42px!important; padding:3px 6px!important; }
+    html.m-landscape #backpackPanel .bp-slots .bps-art{ width:26px!important; height:32px!important; }
+    html.m-landscape #backpackPanel .bdm-core{ padding:2px 6px!important; gap:0!important; }
+    html.m-landscape #backpackPanel .bdm-v{ font-size:14px!important; }
+    html.m-landscape #backpackPanel .bp-save{ padding:5px 8px!important; font-size:10.5px!important; }
+  }
+
+  /* deckcol head row: LP:4413/4424/4441 lock nowrap + flex-shrink:0 +
+     min-width:auto, so the 11px "SQUADRON DECK" title can NEVER fit a 320px
+     phone column — the nowrap min-content (≈273px) pushed [ 2 / 4 ] to
+     x297 (off a 320 viewport). Let the title shrink instead; the count chip
+     (info) shrinks as fallback. Base font-size here is 11px, so it also
+     outranks LP's (1,2,0)+!important 14px rule without needing a token. */
+  #backpackPanel .bp-col-head{ min-width:0!important; }
+  #backpackPanel .bp-col-head .bp-h{ flex-shrink:1!important; min-width:0!important; }
+  #backpackPanel .bp-col-head .bp-deck-count{ flex-shrink:1!important; min-width:0!important; letter-spacing:.02em!important; }
+
+  /* ---- CARD ARCHIVE COLUMN ---- */
+  #backpackPanel .bp-collect{
+    padding:8px 10px!important; flex:1 1 0!important; min-height:0!important; min-width:0!important;
+  }
+  #backpackPanel .bp-colhead{ gap:6px!important; margin-bottom:8px!important; }
+  #backpackPanel .bp-colhead-top .bp-h{ font-size:11px!important; }
+  #backpackPanel .bp-total-tag{ font-size:9px!important; }
+  #backpackPanel .bp-filter{ gap:6px!important; padding-bottom:4px!important; }
+  #backpackPanel .bp-fchip{ flex:0 0 auto!important; font-size:10px!important; padding:3px 7px!important; }
+  #backpackPanel .bp-search{
+    flex:0 1 120px!important; min-width:96px!important; max-width:150px!important; height:32px!important;
+  }
+  html.m-portrait #backpackPanel .bp-tiles{
+    grid-template-columns:repeat(auto-fill,minmax(min(40vw,120px),1fr))!important; gap:10px!important;
+  }
+  html.m-landscape #backpackPanel .bp-tiles{
+    grid-template-columns:repeat(auto-fill,minmax(100px,1fr))!important; gap:10px!important;
+  }
+
+  /* ---- DECK PICKER (#deckPickModal backdrop + .dp-box sheet) ----
+     Backdrop: kill the LP:3296 `padding:clamp(...)+overflow-y:auto!important`
+     (1,0,0) so it can NEVER become the page scroller; the sheet fits the
+     viewport and scrolls its own card grid (S:17646 overflow-y:auto). */
+  html.m-portrait #deckPickModal,
+  html.m-landscape #deckPickModal{
+    padding:8px!important;
+    overflow:hidden!important;
+    overflow-y:hidden!important;
+    box-sizing:border-box!important;
+  }
+  html.m-portrait .dp-box,
+  html.m-landscape .dp-box{
+    max-height:calc(100dvh - 16px)!important;
+    padding:12px 14px!important;
+  }
+  html.m-portrait .dp-grid,
+  html.m-landscape .dp-grid{
+    grid-template-columns:var(--m-dp-cols)!important;   /* tokens == brief values */
+    gap:8px!important;
+  }
+  #deckPickModal .ix-head{ padding:4px 6px 8px!important; gap:8px!important; }
+  #deckPickModal .ix-head .eyebrow{ font-size:9px!important; }
+  #deckPickModal .ix-head .ix-title{ font-size:15px!important; }
+  #deckPickModal .card-search-wrap{ margin-bottom:8px!important; }
+  #deckPickModal .card-search{ height:34px!important; font-size:12.5px!important; }
+  #deckPickModal .dp-name{ font-size:10px!important; }
+}

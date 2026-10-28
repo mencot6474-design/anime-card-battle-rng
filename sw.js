@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v254-battleReachFix';
+const CACHE_NAME = 'anime-card-battle-v254-deckMobile';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
