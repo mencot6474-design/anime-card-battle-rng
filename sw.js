@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v248-bulkRollServer';
+const CACHE_NAME = 'anime-card-battle-v249-claimIndexReward';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

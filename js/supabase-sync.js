@@ -605,6 +605,27 @@ const CloudDB = {
     return res;
   },
 
+  /** 0042 (Unit 5b-3): klaim reward index = +N pack r5k. Server menghitung
+      `owned` dari tiga ledger varian sah (`stacks_legacy`, `stacks_legacy_5b3`,
+      `roll_history dup=false`) — BUKAN dari cermin `save_data.stacks`, jadi
+      F12 menambah kartu palsu di client tidak menaikkan progress. Tombol KLAIM
+      di footer Index wajib lewat RPC ini; tanpa sesi cloud (guest) caller
+      pakai jalur lokal. Return null = tidak ada sesi cloud. */
+  async claimIndexReward(username) {
+    if (!username) return null;
+    const res = await this._authRpc(username, "claim_index_reward", {});
+    if (!res) return null;
+    const ST = this._st();
+    if (ST) {
+      if (res.rollPacks && typeof res.rollPacks === "object") ST.rollPacks = res.rollPacks;
+      if (typeof res.blocks === "number") ST.idxRewardsClaimed = res.blocks;
+      if (typeof res.owned === "number") ST.idxServerOwned = res.owned;
+      this._paint();
+      try { if (typeof save === "function") save(); } catch (e) {}
+    }
+    return res;
+  },
+
   /* Efek sebuah RPC roll (roll_pull / bulk_roll) ke cermin client.
      SEMUA angka diambil dari respons server — tidak pernah `+=` hasil lokal,
      kecuali dua delta yang memang sengaja delta (esens dup & totalRolls) karena

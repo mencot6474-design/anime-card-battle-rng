@@ -702,15 +702,40 @@ function idxVariantKey(s){return s.char+"|"+(s.mut||"none")+"|"+(s.shiny?1:0);}
 function idxProgress(){
   const owned=new Set((state&&state.stacks||[]).map(idxVariantKey));
   const total=(typeof MASTER_CARD_INDEX!=="undefined"?MASTER_CARD_INDEX.filter(c=>!c.isStoryEnemy).length:0)*8;
-  const count=owned.size;
+  /* 0042: `idxServerOwned` diisi oleh RPC claim_index_reward — kalau ada, pakai
+     angka server supaya tombol KLAIM tidak menampilkan "+N" palsu untuk pemain
+     yang F12-nya nambahin stacks. Tanpa server (guest / sebelum klaim pertama),
+     fallback ke cermin client. */
+  const count=(state&&typeof state.idxServerOwned==="number")?state.idxServerOwned:owned.size;
   return {owned:owned,count:count,total:total,blocks:Math.floor(count/IDX_MILESTONE),claimed:(state&&state.idxRewardsClaimed)||0};
 }
 function idxRewardSync(silent){
   // Hanya read progress, klaim dilakukan manual oleh pemain lewat tombol di Index footer
   return 0;
 }
-function claimIndexReward(){
+async function claimIndexReward(){
   if(!state)return;
+  /* 0042 (Unit 5b-3): klaim dihitung SERVER dari ledger varian sah, bukan dari
+     cermin save_data.stacks. Tombol ini sekarang RPC; kalau sesi cloud hidup
+     tapi RPC gagal (network / JWT expired), TIDAK fallback ke client-mint —
+     itu persis lubang yang kita tutup. */
+  if(typeof srOn==="function"&&srOn()&&typeof CloudDB!=="undefined"&&CloudDB.claimIndexReward){
+    const r=await CloudDB.claimIndexReward(currentUser);
+    if(!r){ toast("INDEX REWARD","KONEKSI KE SERVER PUTUS · COBA LAGI","#f87171"); return; }
+    if(!r.ok){
+      const ms=Math.max(1,Number(r.milestone)||IDX_MILESTONE);
+      const need=Math.max(0,ms-((Number(r.owned)||0)%ms));
+      toast("BELUM BISA KLAIM","Server: kumpulkan "+need+" varian index lagi!","#f87171");
+      if(typeof ixRender==="function")ixRender();
+      return;
+    }
+    const gain=Math.max(1,Number(r.gain)||1);
+    beep(640,.16,"triangle",.09);setTimeout(()=>beep(960,.22,"triangle",.08),120);
+    toast("INDEX REWARD DIKLAIM!","+"+gain+" INSTAN ROLL 5.000 PACK · CEK BACKPACK","#FFD700");
+    if(typeof ixRender==="function")ixRender();
+    return;
+  }
+  /* Jalur lokal hanya untuk guest (tidak ada save di server yang bisa dicuri). */
   const P=idxProgress();
   const gain=P.blocks-P.claimed;
   if(gain<=0){
