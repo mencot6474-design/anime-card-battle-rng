@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v258-storyMobile';
+const CACHE_NAME = 'anime-card-battle-v259-dailyMobile';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

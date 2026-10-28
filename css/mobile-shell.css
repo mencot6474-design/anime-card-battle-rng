@@ -173,3 +173,94 @@ html.m-landscape .m-tabbar { display: none !important; }
   html.m-landscape #storyModal .sc-card.pos-2 { transform: translateX(185px) translateY(14px) translateZ(-170px) rotateY(-48deg) scale(0.6) !important; }
   html.m-landscape #storyModal .sc-card.pos-neg-2 { transform: translateX(-185px) translateY(14px) translateZ(-170px) rotateY(48deg) scale(0.6) !important; }
 }
+
+/* =========================================================================
+   TIER-2 DAILY (7-day login reward) — #dailyModal
+   Desktop ships .dl-box as a centered min(1080,96vw) card whose 7 tiles run a
+   fixed 132px scroll-snap ROW and the box scrolls vertically (max-height:94vh).
+   On a phone that pushes the claim button + footer below the fold (harness
+   PANEL-OVF on .dl-foot / .dl-tile). Convert to a full-height flex SHEET:
+   head + subbar pinned top, footer pinned bottom, the tile grid is the flexible
+   middle that scrolls on its own — so close / first tile / claim footer are
+   always in the initial un-scrolled view.
+   ========================================================================= */
+@media (pointer:coarse) {
+  html.m-portrait #dailyModal,
+  html.m-landscape #dailyModal {
+    padding: 0 !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+  }
+  html.m-portrait #dailyModal .dl-box,
+  html.m-landscape #dailyModal .dl-box {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    min-height: 0 !important;
+    border-radius: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    padding: calc(10px + var(--safe-top)) 12px calc(10px + var(--safe-bottom)) 12px !important;
+  }
+  /* Pinned header band + flexible scrolling grid + pinned footer band. */
+  #dailyModal .dl-box > .dl-head,
+  #dailyModal .dl-box > .dl-subbar { flex: 0 0 auto; }
+  #dailyModal .dl-box > .dl-grid {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    align-content: start;
+    -webkit-overflow-scrolling: touch;
+  }
+  #dailyModal .dl-box > .dl-foot { flex: 0 0 auto; }
+
+  /* Kill the desktop 132px scroll-snap row; wrap the tiles into a column grid. */
+  #dailyModal .dl-grid {
+    grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)) !important;
+    overflow-x: visible !important;
+    scroll-snap-type: none !important;
+    gap: 8px !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  #dailyModal .dl-tile { min-width: 0 !important; scroll-snap-align: none !important; }
+
+  /* Compact the tile internals so a full tile fits the middle band on short
+     (landscape ~390px) viewports without scrolling past the footer. */
+  #dailyModal .dl-tile { padding: 7px 6px 7px !important; }
+  #dailyModal .dlt-visual { width: 48px !important; height: 48px !important; margin: 3px auto !important; }
+  #dailyModal .dlt-pack-img { width: 40px !important; height: 40px !important; }
+  #dailyModal .dlt-qty-badge { font-size: 11px !important; padding: 2px 5px !important; }
+  #dailyModal .dlt-info { margin: 2px 0 5px !important; }
+  #dailyModal .dlt-pack-name { font-size: 11px !important; }
+  #dailyModal .dlt-pulls-sub { font-size: 8.5px !important; }
+  #dailyModal .dlt-bonus-row { font-size: 8px !important; }
+  #dailyModal .dlt-status { font-size: 8.5px !important; padding: 3px 3px !important; }
+
+  /* Trim the header/subbar/footer chrome for the small screen. */
+  #dailyModal .dl-title { font-size: 20px !important; }
+  #dailyModal .dl-eyebrow { font-size: 10px !important; }
+  #dailyModal .dl-subbar { margin-bottom: 10px !important; padding: 6px 10px !important; gap: 6px 10px !important; }
+  #dailyModal .dl-sub-pill { font-size: 11px !important; }
+  #dailyModal .dl-foot { margin-top: 10px !important; gap: 7px !important; }
+  #dailyModal .dl-foot-row { grid-template-columns: minmax(0, 1fr) auto !important; gap: 8px !important; }
+  #dailyModal .dl-claim { font-size: 13px !important; padding: 11px 12px !important; line-height: 1.2 !important; }
+  #dailyModal .dl-bag-btn { padding: 0 12px !important; font-size: 12px !important; }
+  #dailyModal .dl-total { font-size: 10px !important; line-height: 1.4 !important; }
+}
+
+/* Landscape is short (~390px): shrink tiles further so one row + pinned footer
+   clear the claim button without the grid pushing the footer off-screen. */
+@media (pointer:coarse) and (orientation:landscape) {
+  #dailyModal .dl-box > .dl-grid { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)) !important; }
+  #dailyModal .dl-tile { min-height: 132px !important; }
+  #dailyModal .dlt-bonus-row { display: none !important; }
+}
+/* Portrait has the vertical room; keep tiles readable. */
+@media (pointer:coarse) and (orientation:portrait) {
+  #dailyModal .dl-tile { min-height: 168px !important; }
+}
