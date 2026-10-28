@@ -52,11 +52,13 @@
       act: function () { location.hash = "#/"; } },
     { key: "summon",  label: "Summon",  icon: "dice",
       act: function () {
-        // Open-only gacha entry: openPremiumShop() (js/panels.js:2501, exported
-        // on window) shows #premiumModal without performing a roll. The old
-        // behaviour clicked #rollBtn, which spent a real roll — wrong for a
-        // navigation tab. Fallback: command drawer.
-        if (typeof window.openPremiumShop === "function") window.openPremiumShop();
+        // Summon = the dock's one-tap roll (no open-only gacha screen exists;
+        // the premium shop is a separate store, already reachable via the
+        // lobby foot-menu). Reuse the real #rollBtn handler so all its gating
+        // (server srOn()/srOne, anti-spam lock, currency spend, reveal) is
+        // reused verbatim. Fallback: command drawer if #rollBtn is absent.
+        var rb = document.getElementById("rollBtn");
+        if (rb) rb.click();
         else if (window.openCommandDrawer) window.openCommandDrawer();
       } },
     { key: "deck",    label: "Deck",    icon: "layers",
