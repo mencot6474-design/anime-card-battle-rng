@@ -58388,3 +58388,23 @@ body.on-lobby .lobby-footer {
     padding: 0 12px !important;
   }
 }
+
+/* =========================================================================
+   MOBILE LOBBY STAGE (Unit 6-2) — token-driven single-column hub on touch.
+   Appended at EOF of style.css so, on equal !important weight, this source
+   beats the earlier .lobby-hub grid defs (S:8970 minmax(...)+max-width:1120px
+   and the S:9842 re-declaration). The `html.m-portrait`/`html.m-landscape`
+   prefix (0,2,1) also out-ranks the bare `.lobby-hub` (0,1,0) rules directly.
+   NOTE: the current lobby-prototype DOM renders the stage as a flex
+   `.lobby-hub.stage-root` (LP:1898 display:flex !important) and the .hub-* /
+   .card-float grid children are NOT present in that DOM (verified via the CDP
+   rect dump in _tmp/task2-inspect.cjs — .hub-right/.hub-mid/.card-float are
+   null). So these grid rules are forward-looking / inert today: they cost
+   nothing, honour --card-cols if a grid variant returns, and cannot regress
+   the prototype's flex stage. Desktop (pointer:fine) never matches this media
+   query and never gets .m-* classes -> zero desktop regression.
+   ========================================================================= */
+@media (pointer:coarse){
+  html.m-portrait  .lobby-hub{ grid-template-columns:1fr !important; max-width:100% !important; }
+  html.m-landscape .lobby-hub{ grid-template-columns:1fr !important; max-width:100% !important; }
+}

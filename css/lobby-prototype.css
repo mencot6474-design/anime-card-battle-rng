@@ -5122,3 +5122,69 @@ body.bp-open .backpack-panel,
   color: #ffffff !important;
   box-shadow: 0 0 14px rgba(239, 68, 68, 0.5) !important;
 }
+
+/* =========================================================================
+   MOBILE LOBBY CONTENT (Unit 6-2) — portrait + landscape dock/HUD/trigger.
+   Appended at the VERY END of lobby-prototype.css (the last content file
+   before mobile-shell.css) so that, on equal !important weight, THIS source
+   wins the cascade over every earlier lobby anchor:
+     LP:2163  .lobby-footer  {left:50%;transform:translateX(-50%);bottom:16px}
+     LP:2671  html body.on-lobby .lobby-footer  {same, (0,2,2)}
+     LP:2216+ .center-dock/.backpack-toggle/.roll-btn/.roll-auto-btn paddings
+     LP:2655  .telemetry-feed {top:200px;left:30px}
+     LP:2819  html body.on-lobby .cmd-trigger-btn
+   and over style.css's dead @media(max-width:600px) dock block (earlier file).
+   Each selector is prefixed `html.m-portrait`/`html.m-landscape` and keeps the
+   `body.on-lobby` token the desktop anchors use, so specificity alone
+   ((0,3,2) vs LP's (0,2,2)) guarantees the override takes. Desktop pointer:fine
+   never matches (pointer:coarse) and never gets .m-* -> zero regression.
+   ========================================================================= */
+@media (pointer:coarse){
+
+  /* ---------------- PORTRAIT ---------------- */
+  /* Dock fits [8..W-8] and floats ABOVE the bottom tabbar (nav-h + safe-area). */
+  html.m-portrait body.on-lobby .lobby-footer{
+    left:8px !important;
+    right:8px !important;
+    width:auto !important;
+    max-width:calc(100vw - 16px) !important;
+    transform:none !important;
+    bottom:calc(var(--nav-h) + var(--safe-bottom) + 6px) !important;
+    justify-content:center !important;
+  }
+  /* The tabbar already carries labelled actions (Home / Summon / Deck / Koleksi
+     / More), so the floating dock collapses to a compact ICON bar on portrait —
+     it then fits even a 320px-wide phone with every target >=44px. Labels are
+     dropped AND the desktop min-widths are released (LP:2754 roll-btn 195px,
+     and the (0,2,2) backpack/roll min-widths) so the buttons actually shrink;
+     without min-width:0 the hidden labels still left ~471px of dead width that
+     pushed .roll-auto-btn off-screen. */
+  html.m-portrait body.on-lobby .foot-main{ gap:8px !important; padding:6px 10px !important; min-width:0 !important; }
+  html.m-portrait body.on-lobby .center-dock{ gap:8px !important; min-width:0 !important; }
+  html.m-portrait body.on-lobby .bp-txt,
+  html.m-portrait body.on-lobby .roll-txt{ display:none !important; }
+  html.m-portrait body.on-lobby .foot-profile{ width:44px !important; height:44px !important; }
+  html.m-portrait body.on-lobby .backpack-toggle{ height:46px !important; min-width:0 !important; width:auto !important; padding:0 14px !important; flex:0 0 auto !important; }
+  html.m-portrait body.on-lobby .roll-btn{ height:48px !important; min-width:0 !important; width:auto !important; padding:0 18px !important; flex:0 0 auto !important; }
+  html.m-portrait body.on-lobby .roll-auto-btn{ height:44px !important; min-width:0 !important; padding:0 12px !important; flex:0 0 auto !important; }
+  /* Telemetry sits just under the HUD, clear of the 68px topbar. */
+  html.m-portrait .telemetry-feed{ top:calc(var(--hud-top) + 4px) !important; left:8px !important; }
+  /* Command trigger is redundant here — the drawer is opened from the More tab. */
+  html.m-portrait body.on-lobby .cmd-trigger-btn{ display:none !important; }
+
+  /* ---------------- LANDSCAPE ---------------- */
+  /* Left rail is var(--nav-w) wide; dock starts right of it and hugs the bottom.
+     Labels are kept (a 844px viewport has room for the full dock). */
+  html.m-landscape body.on-lobby .lobby-footer{
+    left:calc(var(--nav-w) + 8px) !important;
+    right:8px !important;
+    width:auto !important;
+    max-width:calc(100vw - var(--nav-w) - 16px) !important;
+    transform:none !important;
+    bottom:8px !important;
+    justify-content:center !important;
+  }
+  /* Pull the feed clear of the rail (x:30 would otherwise hide under 0..56). */
+  html.m-landscape .telemetry-feed{ top:calc(var(--hud-top) + 4px) !important; left:calc(var(--nav-w) + 8px) !important; }
+  html.m-landscape body.on-lobby .cmd-trigger-btn{ display:none !important; }
+}
