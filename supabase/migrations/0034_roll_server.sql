@@ -417,6 +417,8 @@ declare
   v_rarest_ch numeric := -1e18;
   v_rarest  jsonb := NULL;
   v_stacks  jsonb := '[]'::jsonb;
+  v_new     jsonb := '[]'::jsonb;
+  v_ns      jsonb;
   v_s       jsonb;
   v_i       integer;
   v_ns_id   text;
@@ -527,16 +529,21 @@ begin
       v_dup_count := v_dup_count + 1;
       v_ess := v_ess + public._dup_sell_value(v_pick->>'tier', (v_pick->>'bc')::numeric, v_pick->>'mut', (v_pick->>'shiny')='true');
       v_res := v_res || jsonb_build_array(jsonb_build_object(
-        'cardId',v_pick->>'char','mut',v_pick->>'mut','shiny',(v_pick->>'shiny')='true',
+        'cardId',v_pick->>'char','tier',v_pick->>'tier','mut',v_pick->>'mut','shiny',(v_pick->>'shiny')='true',
         'chance',(v_pick->>'ch')::numeric,'eff',v_eff,'dup',true));
     else
       v_new_count := v_new_count + 1;
       v_ns_id := substr(md5(random()::text || clock_timestamp()::text),1,9);
-      v_stacks := v_stacks || jsonb_build_array(jsonb_build_object(
+      /* Stack yang BARU DIBUAT server dikirim balik (v_new) supaya id client == id di DB.
+         Bukan seluruh 'stacks' (74 KB), hanya yang lahir dari roll ini (<= 100 x ~130 B). */
+      v_ns := jsonb_build_object(
         'id',v_ns_id,'char',v_pick->>'char','tier',v_pick->>'tier','fav',false,'lock',false,
-        'mut',v_pick->>'mut','shiny',(v_pick->>'shiny')='true','trait','none','count',1));
+        'mut',v_pick->>'mut','shiny',(v_pick->>'shiny')='true','trait','none','count',1);
+      v_stacks := v_stacks || jsonb_build_array(v_ns);
+      v_new := v_new || jsonb_build_array(v_ns);
       v_res := v_res || jsonb_build_array(jsonb_build_object(
-        'cardId',v_pick->>'char','mut',v_pick->>'mut','shiny',(v_pick->>'shiny')='true',
+        'cardId',v_pick->>'char','tier',v_pick->>'tier','stackId',v_ns_id,
+        'mut',v_pick->>'mut','shiny',(v_pick->>'shiny')='true',
         'chance',(v_pick->>'ch')::numeric,'eff',v_eff,'dup',false));
       if (v_pick->>'ch')::numeric > v_rarest_ch then
         v_rarest_ch := (v_pick->>'ch')::numeric;
@@ -555,9 +562,10 @@ begin
 
   update public.player_saves set save_data = v_save, updated_at = now() where user_id = v_uid;
 
-  /* TIDAK mengembalikan 'stacks' (74 KB di save terukur) — client menempel
-     hasil dari 'results' saja. Hemat egress free tier. */
+  /* TIDAK mengembalikan seluruh 'stacks' (74 KB di save terukur) — hanya yang baru lahir
+     ('newStacks') + saldo pack + delta essence/totalRolls. Hemat egress free tier. */
   return jsonb_build_object('ok',true,'results',v_res,'total',v_cnt,
+    'newStacks',v_new,'rollPacks',coalesce(v_save->'rollPacks','{}'::jsonb),
     'newCount',v_new_count,'dupCount',v_dup_count,'rebirthGain',v_ess,
     'rarestPull',v_rarest,'luck',v_l,'luckServer',v_l_srv);
 

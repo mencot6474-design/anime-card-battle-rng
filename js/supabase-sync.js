@@ -577,38 +577,64 @@ const CloudDB = {
     return res;
   },
 
-  /** Unit 4: server-authoritative roll */
+  /** Unit 4 (0034-0036): roll server-authoritative.
+      Server yang ngacak, nulis stacks baru, bayar esens dup, dan nambah totalRolls
+      ke save_data. Respons TIDAK membawa seluruh koleksi (74 KB) — cuma yang baru
+      lahir (`newStacks`) plus delta esens, jadi hemat egress free tier.
+      Return null = tidak ada sesi cloud → caller wajib pakai jalur RNG lokal. */
   async rollPull(username, count, packKey) {
     if (!username) return null;
     const n = Math.max(1, Math.min(100, parseInt(count, 10) || 1));
     const args = { p_count: n };
     if (packKey) args.p_pack = String(packKey);
     const res = await this._authRpc(username, "roll_pull", args);
-    if (!res || !res.ok) return res;
+    if (!res || !res.ok) return res || null;
     const ST = this._st();
     if (ST) {
-      let dirty = false;
-      if (Array.isArray(res.stacks)) { ST.stacks = res.stacks; dirty = true; }
-      if (res.rollPacks && typeof res.rollPacks === "object") {
+      if (packKey && res.rollPacks && typeof res.rollPacks === "object") {
         const dBon = (typeof window.getDailyR100kBalance === "function") ? window.getDailyR100kBalance() : 0;
         ST.rollPacks = Object.assign({}, res.rollPacks);
         if (dBon > 0) ST.rollPacks.r100k = (ST.rollPacks.r100k || 0) + dBon;
-        dirty = true;
       }
-      if (res.rebirthGain > 0 && ST.rebirth) {
-        ST.rebirth.essence = (ST.rebirth.essence || 0) + res.rebirthGain;
-        dirty = true;
-      } else if (res.rebirthGain > 0 && !ST.rebirth) {
-        ST.rebirth = { count: 0, essence: res.rebirthGain };
-        dirty = true;
+      if (Array.isArray(res.newStacks) && res.newStacks.length) {
+        if (!Array.isArray(ST.stacks)) ST.stacks = [];
+        if (!Array.isArray(ST.deck)) ST.deck = [null, null, null, null];
+        ST.deck.length = 4;
+        /* Kunci varian (char|mut|shiny) — BUKAN id: save lama bisa punya id berbeda
+           untuk varian yang sama, dan dedup policy game tetap 1 stack per varian. */
+        const key = (s) => s.char + "|" + (s.mut || "none") + "|" + (s.shiny ? 1 : 0);
+        const have = new Set(ST.stacks.map(key));
+        for (const ns of res.newStacks) {
+          if (!ns || !ns.char || have.has(key(ns))) continue;
+          have.add(key(ns));
+          ST.stacks.push({ id: ns.id, char: ns.char, tier: ns.tier || null, fav: false, lock: false,
+                           mut: ns.mut || "none", shiny: !!ns.shiny, trait: ns.trait || "none", count: 1 });
+          const empty = ST.deck.indexOf(null);
+          if (empty >= 0 && typeof setDeckSlot === "function") setDeckSlot(empty, ns.id);
+        }
       }
-      if (typeof res.totalRolls === "number" || res.totalRolls === undefined) {
-        // server updated totalRolls in save; keep client in sync
-        ST.totalRolls = (ST.totalRolls || 0) + n;
-        dirty = true;
+      /* Esens dup: pakai DELTA dari server, bukan set nilai final.
+         Nilai final server = X_db + gain; kalau client punya kenaikan lokal yang belum
+         ke-push (jalur instantRoll / offline), set final akan MEMBUANG kartu/esens player. */
+      if (res.rebirthGain > 0) {
+        if (typeof addRebirthEssence === "function") addRebirthEssence(res.rebirthGain);
+        else if (ST.rebirth) ST.rebirth.essence = (ST.rebirth.essence || 0) + res.rebirthGain;
       }
-      if (dirty) this._paint();
-      try { if (typeof rollCountBadge === "function") rollCountBadge(); if (typeof idxRewardSync === "function") idxRewardSync(); } catch(e){}
+      /* totalRolls dinaikkan SEKALIGUS di sini, bukan per-reveal: satu batch =
+         `res.total` pull yang sudah terjadi di server (kartunya juga sudah ditulis),
+         jadi kalau client baru menghitung saat kartu di-reveal, pemain yang tutup
+         tab / stop di tengah antrean membuat push berikutnya MENURUNKAN counter. */
+      if (typeof res.total === "number" && res.total > 0) {
+        ST.totalRolls = (ST.totalRolls || 0) + res.total;
+      }
+      this._paint();
+      try {
+        if (typeof rollCountBadge === "function") rollCountBadge();
+        if (typeof idxRewardSync === "function") idxRewardSync(true);
+        if (typeof lbTrackPull === "function" && Array.isArray(res.results))
+          for (const r of res.results) lbTrackPull(r.cardId, r.mut || "none", !!r.shiny);
+        if (typeof save === "function") save();
+      } catch (e) {}
     }
     return res;
   },

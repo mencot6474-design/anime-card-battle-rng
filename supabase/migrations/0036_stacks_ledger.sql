@@ -83,6 +83,8 @@ declare
   v_rarest_ch numeric := -1e18;
   v_rarest  jsonb := NULL;
   v_stacks  jsonb := '[]'::jsonb;
+  v_new     jsonb := '[]'::jsonb;
+  v_ns      jsonb;
   v_s       jsonb;
   v_i       integer;
   v_ns_id   text;
@@ -193,18 +195,23 @@ begin
       v_dup_count := v_dup_count + 1;
       v_ess := v_ess + public._dup_sell_value(v_pick->>'tier', (v_pick->>'bc')::numeric, v_pick->>'mut', (v_pick->>'shiny')='true');
       v_res := v_res || jsonb_build_array(jsonb_build_object(
-        'cardId',v_pick->>'char','mut',v_pick->>'mut','shiny',(v_pick->>'shiny')='true',
+        'cardId',v_pick->>'char','tier',v_pick->>'tier','mut',v_pick->>'mut','shiny',(v_pick->>'shiny')='true',
         'chance',(v_pick->>'ch')::numeric,'eff',v_eff,'dup',true));
       insert into public.roll_history (username,user_id,card_id,mut,shiny,dup,pack)
         values (v_uname,v_uid,v_pick->>'char',v_pick->>'mut',(v_pick->>'shiny')='true',true,p_pack);
     else
       v_new_count := v_new_count + 1;
       v_ns_id := substr(md5(random()::text || clock_timestamp()::text),1,9);
-      v_stacks := v_stacks || jsonb_build_array(jsonb_build_object(
+      /* Stack yang BARU DIBUAT server dikirim balik (v_new) supaya id client == id di DB.
+         Bukan seluruh 'stacks' (74 KB), hanya yang lahir dari roll ini (<= 100 x ~130 B). */
+      v_ns := jsonb_build_object(
         'id',v_ns_id,'char',v_pick->>'char','tier',v_pick->>'tier','fav',false,'lock',false,
-        'mut',v_pick->>'mut','shiny',(v_pick->>'shiny')='true','trait','none','count',1));
+        'mut',v_pick->>'mut','shiny',(v_pick->>'shiny')='true','trait','none','count',1);
+      v_stacks := v_stacks || jsonb_build_array(v_ns);
+      v_new := v_new || jsonb_build_array(v_ns);
       v_res := v_res || jsonb_build_array(jsonb_build_object(
-        'cardId',v_pick->>'char','mut',v_pick->>'mut','shiny',(v_pick->>'shiny')='true',
+        'cardId',v_pick->>'char','tier',v_pick->>'tier','stackId',v_ns_id,
+        'mut',v_pick->>'mut','shiny',(v_pick->>'shiny')='true',
         'chance',(v_pick->>'ch')::numeric,'eff',v_eff,'dup',false));
       insert into public.roll_history (username,user_id,card_id,mut,shiny,dup,pack)
         values (v_uname,v_uid,v_pick->>'char',v_pick->>'mut',(v_pick->>'shiny')='true',false,p_pack);
@@ -225,9 +232,10 @@ begin
 
   update public.player_saves set save_data = v_save, updated_at = now() where user_id = v_uid;
 
-  /* TIDAK mengembalikan 'stacks' (74 KB di save terukur) — client menempel
-     hasil dari 'results' saja. Hemat egress free tier. */
+  /* TIDAK mengembalikan seluruh 'stacks' (74 KB di save terukur) — hanya yang baru lahir
+     ('newStacks') + saldo pack + delta essence/totalRolls. Hemat egress free tier. */
   return jsonb_build_object('ok',true,'results',v_res,'total',v_cnt,
+    'newStacks',v_new,'rollPacks',coalesce(v_save->'rollPacks','{}'::jsonb),
     'newCount',v_new_count,'dupCount',v_dup_count,'rebirthGain',v_ess,
     'rarestPull',v_rarest,'luck',v_l,'luckServer',v_l_srv);
 
@@ -286,9 +294,14 @@ begin
   end loop;
 
   if jsonb_array_length(v_drop) > 0 then
+    /* Detail DIBATASI (20 contoh + jumlah): jalur instantRollFast (INTAN 100K, masih
+       client-side di unit ini) menyuntik ratusan kartu tanpa riwayat -> tanpa batas,
+       tamper_log membengkak oleh satu baris raksasa. */
     perform public._tamper(p_uname, 'STACK_UNLEDGERED', 'stacks',
       jsonb_array_length(p_stacks)::text, jsonb_array_length(v_out)::text,
-      jsonb_build_object('enforce', v_enforce, 'dropped', v_drop));
+      jsonb_build_object('enforce', v_enforce, 'droppedCount', jsonb_array_length(v_drop),
+                         'droppedSample', (select coalesce(jsonb_agg(d), '[]'::jsonb)
+                                             from (select d from jsonb_array_elements(v_drop) d limit 20) s)));
   end if;
 
   if coalesce(v_enforce, 0) <= 0 then
@@ -427,11 +440,21 @@ begin
                    - '_rebirthDo' - 'tamper';
 
   -- Deduplikasi stacks
-  merged := public._clean_stacks(merged);
+  merged := jsonb_set(merged, '{stacks}', public._clean_stacks(merged->'stacks'), true);
 
   -- 0036: kartu harus punya bukti (snapshot legacy ATAU riwayat roll server).
   -- Selama roll_config.ledger_enforce = 0 ini HANYA mencatat (shadow), tidak membuang.
-  merged := public._validate_stacks_ledger(uname, merged);
+  -- PENTING: _validate_stacks_ledger menerima dan MENGEMBALIKAN ARRAY stacks, bukan
+  -- save utuh — hasilnya harus dipasang kembali ke '{stacks}'. Menulis
+  -- "merged := _validate_stacks_ledger(...)" membuat merged jadi array dan seluruh
+  -- jsonb_set berikutnya gagal ("path element ... is not an integer").
+  merged := jsonb_set(merged, '{stacks}',
+                      public._validate_stacks_ledger(uname, merged->'stacks'), true);
+  merged := jsonb_set(merged, '{deck}', public._clean_deck(merged->'deck', merged->'stacks'), true);
+  merged := jsonb_set(merged, '{equippedId}',
+    public._clean_equip(merged->>'equippedId', merged->'stacks'), true);
+  merged := jsonb_set(merged, '{equippedId2}',
+    public._clean_equip(merged->>'equippedId2', merged->'stacks'), true);
 
   -- Gem authoritative server
   new_gems := cur_gems;
