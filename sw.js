@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v211-fixRacePullSave';
+const CACHE_NAME = 'anime-card-battle-v245-serverRollQueue';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

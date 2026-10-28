@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 310 460" fill="none">
+  <!-- Outer Gold Frame -->
+  <path d="M24 2 L286 2 L308 24 L308 436 L286 458 L24 458 L2 436 L2 24 Z" stroke="rgba(251, 191, 36, 0.75)" stroke-width="2.2" fill="none" filter="drop-shadow(0 0 10px rgba(251, 191, 36, 0.5))"/>
+  
+  <!-- Inner Line -->
+  <path d="M28 8 L282 8 L302 28 L302 432 L282 452 L28 452 L8 432 L8 28 Z" stroke="rgba(255, 255, 255, 0.2)" stroke-width="1" fill="none"/>
+  
+  <!-- Top Corners Gold Tech Clamps -->
+  <polygon points="2,24 24,2 42,2 42,14 14,42 2,42" fill="#fbbf24" opacity="0.95"/>
+  <polygon points="308,24 286,2 268,2 268,14 296,42 308,42" fill="#fbbf24" opacity="0.95"/>
+  
+  <!-- Bottom Corners Gold Clamps -->
+  <polygon points="2,436 24,458 42,458 42,446 14,418 2,418" fill="#f59e0b" opacity="0.95"/>
+  <polygon points="308,436 286,458 268,458 268,446 296,418 308,418" fill="#f59e0b" opacity="0.95"/>
+
+  <!-- Energy Capacitors (Corner jewels) -->
+  <circle cx="22" cy="22" r="3" fill="#ffffff" filter="drop-shadow(0 0 4px #ffffff)"/>
+  <circle cx="288" cy="22" r="3" fill="#ffffff" filter="drop-shadow(0 0 4px #ffffff)"/>
+  <circle cx="22" cy="438" r="3" fill="#ffffff" filter="drop-shadow(0 0 4px #ffffff)"/>
+  <circle cx="288" cy="438" r="3" fill="#ffffff" filter="drop-shadow(0 0 4px #ffffff)"/>
+
+  <!-- Top Center Golden Sun Crest -->
+  <polygon points="135,2 175,2 165,14 145,14" fill="#fbbf24"/>
+  <circle cx="155" cy="8" r="2.5" fill="#ffffff"/>
+
+  <!-- Side Accent Rails -->
+  <line x1="2" y1="180" x2="2" y2="280" stroke="#fbbf24" stroke-width="3" opacity="0.8"/>
+  <line x1="308" y1="180" x2="308" y2="280" stroke="#fbbf24" stroke-width="3" opacity="0.8"/>
+</svg>

@@ -373,6 +373,14 @@ function render(){
     document.body.classList.toggle("on-tower", onTower);
     document.body.classList.toggle("on-raid", onRaid);
     document.body.classList.toggle("on-settings", onSettings);
+
+  if (onSettings) {
+
+    const bg = typeof getLobbyActiveBg === 'function' ? getLobbyActiveBg() : 'assets/bg/lobby-wuwa-genshin.webp';
+
+    document.documentElement.style.setProperty("--sett-bg", 'url("' + bg + '")');
+
+  }
     document.documentElement.classList.toggle("on-tower-root", onTower);
     /* Class tambahan di <html>: kunci scroll tanpa :has() (WebView APK lama bisa nggak support). */
     document.documentElement.classList.toggle("view-locked", hasBattle||!!app.querySelector(".lobby-hub")||onTower||onRaid);
@@ -392,6 +400,7 @@ const bfSync=()=>{
   const grid = app.querySelector(".battle-grid");
   const hasBattle = !!grid;
   document.body.classList.toggle("battle-full", hasBattle);
+  if(hasBattle && window.syncBattleBackground) window.syncBattleBackground();
   // Tinggi topbar asli → --tbh cuma pas battle (v34 revert). Lobby sengaja pakai default 64px
   // biar geometri main calc(100dvh - 64) balik persis ke state v31 yang center-nya pas;
   // sisa potensi ke-scroll sudah dikunci di CSS: html:has(body.on-lobby){overflow:hidden}.
@@ -419,13 +428,31 @@ window.addEventListener("scroll",()=>{
 },{passive:true});
 /* Latar arena battle di-inject sekali ke <body> (bukan #app, biar nggak kehapus tiap render).
    CSS nge-gate tampilnya cuma saat body.battle-full, jadi di luar battle dia tak kelihatan. */
-(function mountArena(){
-  if(document.querySelector(".battle-arena"))return;
-  const a=document.createElement("div");
-  a.className="battle-arena";a.setAttribute("aria-hidden","true");
-  a.innerHTML='<div class="ar-sky"></div><div class="ar-floor"></div><div class="ar-horizon"></div><div class="ar-spot me"></div><div class="ar-spot foe"></div><div class="ar-speed"></div><div class="ar-seam"></div><div class="ar-vig"></div>';
-  document.body.appendChild(a);
-})();
+window.syncBattleBackground = function() {
+  const bgLayer = document.getElementById("battleBgLayer");
+  if (!bgLayer) return;
+  const activeBg = (typeof getLobbyActiveBg === "function") 
+    ? getLobbyActiveBg() 
+    : ((window.state && window.state.lobbyBg && window.LOBBY_BGS && window.LOBBY_BGS[window.state.lobbyBg]) 
+        ? window.LOBBY_BGS[window.state.lobbyBg].src 
+        : 'assets/bg/lobby-wuwa-genshin.webp');
+  bgLayer.style.backgroundImage = 'url("' + activeBg + '")';
+};
+
+window.mountArena = function mountArena(){
+  let a = document.querySelector(".battle-arena");
+  if(!a){
+    a = document.createElement("div");
+    a.className = "battle-arena";
+    a.setAttribute("aria-hidden", "true");
+    document.body.appendChild(a);
+  }
+  if(!a.querySelector("#battleBgLayer")){
+    a.innerHTML = '<div class="battle-bg-layer" id="battleBgLayer"></div><div class="ar-overlay"></div><div class="ar-sky"></div><div class="ar-floor"></div><div class="ar-horizon"></div><div class="ar-spot me"></div><div class="ar-spot foe"></div><div class="ar-speed"></div><div class="ar-seam"></div><div class="ar-vig"></div>';
+  }
+  if(window.syncBattleBackground) window.syncBattleBackground();
+};
+mountArena();
 if(app){
   try {
     new MutationObserver(bfSync).observe(app,{childList:true,subtree:true});
@@ -451,15 +478,30 @@ document.querySelectorAll(".nav-btn[data-route]").forEach(b=>b.onclick=()=>{
    walau player pindah layar / membuka backpack -> AFK aman. ===== */
 (function wireRollDock(){
   const rb=document.getElementById("rollBtn");
-  if(rb)rb.addEventListener("click",()=>{
+  if(rb)rb.addEventListener("click",async()=>{
     /* Opsi 1: satu klik = satu roll. Kartu di-reveal sebentar, lalu overlay nutup sendiri (bukan loop).
        Kunci selama reveal tampil biar gak bisa di-spam. */
     if(rollState.hideTimer)return;
     if(rollState.active)stopRollAnimation();
-    if(rollState.hideTimer){clearTimeout(rollState.hideTimer);rollState.hideTimer=null;}
-    const result=rngRoll(1,1);
-    if(!result){beep(220,0.15,"square",0.08);return;}
-    grantRolledCard(result.cardId, result.mut, result.shiny);
+    let result=null, fromServer=false;
+    if(typeof srOn==="function"&&srOn()){
+      /* Kunci dulu SEBELUM await: tanpa ini klik cepat menembus RPC dan menghasilkan
+         dua roll lokal untuk satu klik (roll = gratis -> kartu dobel). */
+      rollState.hideTimer=setTimeout(()=>{rollState.hideTimer=null;},15000);
+      result=await srOne(1);
+      if(!rollState.hideTimer)return;                 /* sudah di-clear jalur lain -> batalkan */
+      clearTimeout(rollState.hideTimer);
+      fromServer=!!result;
+      if(!result){beep(220,0.15,"square",0.08);rollState.hideTimer=setTimeout(()=>{rollState.hideTimer=null;},400);return;}
+    } else {
+      result=rngRoll(1,1);
+      if(!result){beep(220,0.15,"square",0.08);return;}
+    }
+    /* Counter lifetime: jalur lokal menghitung di sini; jalur server sudah dihitung
+       di CloudDB.rollPull begitu pull-nya turun (nilai itu sama dengan yang ditulis
+       roll_pull di save_data, jadi push client tidak lagi menurunkannya). */
+    if(!fromServer && state)state.totalRolls=(state.totalRolls||0)+1;
+    if(!fromServer)grantRolledCard(result.cardId, result.mut, result.shiny);
     showRollResult(result);
     beep(440,0.15,"sine",0.1);
     rollState.hideTimer=setTimeout(()=>{hideRollResult();rollState.hideTimer=null;},1600);
@@ -891,6 +933,10 @@ document.addEventListener("keydown",e=>{
   if(c&&(c.classList.contains("show")||c.style.display==="flex"))closeChangelogModal();
   const rb=document.getElementById("rebirthModal");
   if(rb&&rb.classList.contains("show")){if(typeof closeRebirthModal==='function')closeRebirthModal();else rb.classList.remove("show");}
+  const bp=document.getElementById("backpackPanel");
+  if(bp&&(document.body.classList.contains("bp-open")||bp.classList.contains("open")||(bp.style.display&&bp.style.display!=="none"))){
+    if(typeof toggleBackpack==="function")toggleBackpack();
+  }
 });
 
 /* ========== UPDATE LOG MODAL ========== */

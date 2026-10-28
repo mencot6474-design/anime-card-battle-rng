@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 84" preserveAspectRatio="none" fill="none">
+  <defs>
+    <linearGradient id="holoPodGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(56, 189, 248, 0.95)"/>
+      <stop offset="45%" stop-color="rgba(192, 132, 252, 0.55)"/>
+      <stop offset="80%" stop-color="rgba(56, 189, 248, 0.95)"/>
+      <stop offset="100%" stop-color="rgba(129, 140, 248, 0.8)"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Precision Holographic Chamfered Glass Border -->
+  <path d="M14 2 L266 2 L278 14 L278 70 L266 82 L14 82 L2 70 L2 14 Z" 
+        stroke="url(#holoPodGrad)" stroke-width="1.5" fill="none"
+        filter="drop-shadow(0 0 6px rgba(56, 189, 248, 0.35))"/>
+
+  <!-- Inner Hairline Reflection -->
+  <path d="M16 5 L264 5 L275 16 L275 68 L264 79 L16 79 L5 68 L5 16 Z" 
+        stroke="rgba(255, 255, 255, 0.1)" stroke-width="0.8" fill="none"/>
+
+  <!-- Top-Left Precision HUD Bracket [ -->
+  <path d="M2 22 L2 14 L14 2 L22 2" stroke="#ffffff" stroke-width="2" fill="none"/>
+  <rect x="5" y="5" width="2.5" height="2.5" fill="#38bdf8"/>
+  <line x1="26" y1="2" x2="40" y2="2" stroke="#38bdf8" stroke-width="1.5"/>
+  <line x1="2" y1="26" x2="2" y2="40" stroke="#38bdf8" stroke-width="1.5"/>
+
+  <!-- Top-Right Precision HUD Bracket ] -->
+  <path d="M278 22 L278 14 L266 2 L258 2" stroke="#ffffff" stroke-width="2" fill="none"/>
+  <rect x="272.5" y="5" width="2.5" height="2.5" fill="#38bdf8"/>
+  <line x1="254" y1="2" x2="240" y2="2" stroke="#38bdf8" stroke-width="1.5"/>
+
+  <!-- Bottom-Left Precision HUD Bracket [ -->
+  <path d="M2 62 L2 70 L14 82 L22 82" stroke="#ffffff" stroke-width="2" fill="none"/>
+  <rect x="5" y="76.5" width="2.5" height="2.5" fill="#38bdf8"/>
+  <line x1="26" y1="82" x2="40" y2="82" stroke="#38bdf8" stroke-width="1.5"/>
+
+  <!-- Bottom-Right Precision HUD Bracket ] -->
+  <path d="M278 62 L278 70 L266 82 L258 82" stroke="#ffffff" stroke-width="2" fill="none"/>
+  <rect x="272.5" y="76.5" width="2.5" height="2.5" fill="#38bdf8"/>
+  <line x1="254" y1="82" x2="240" y2="82" stroke="#38bdf8" stroke-width="1.5"/>
+  <line x1="278" y1="58" x2="278" y2="44" stroke="#38bdf8" stroke-width="1.5"/>
+
+  <!-- Micro Tech Ticks -->
+  <line x1="130" y1="2" x2="150" y2="2" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+  <line x1="130" y1="82" x2="150" y2="82" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+</svg>

@@ -273,6 +273,7 @@ function renderBattle(){
   </div>
   </div>`;
   wireSpeedBtn();
+  if (typeof window.syncBattleBackground === "function") window.syncBattleBackground();
   playFight(startBattle);
 }
 function floatText(sel,txt,cls,customLbl){

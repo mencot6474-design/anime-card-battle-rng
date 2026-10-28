@@ -29,6 +29,9 @@ function loadStateFor(name){
   _xpGained=0;
   _rebirthGained=0;
   _rebirthDo=false;
+  /* Unit 4: antrean hasil roll server terikat akun — hasil akun lama jangan ikut
+     direveal di akun baru (kartunya sudah tercatat di save akun lama). */
+  try{ if(typeof srReset==="function") srReset(); }catch(e){}
   try{state=JSON.parse(localStorage.getItem(KEY))||freshState();}catch(e){console.warn('Load error, using fresh:', e.message);state=freshState();}
   
   // MIGRATE OLD STATE: pastikan player object + format luck baru (base+flat+percent)
@@ -641,27 +644,199 @@ function setDeckSlot(i,id){
   save();
 }
 
-/* =============== AUDIO =============== */
+/* =============== AUDIO (AAA HYBRID REAL SFX + SUB-BASS POOL) =============== */
 let actx=null;
+function actxOf(){
+  if(!actx&&(window.AudioContext||window.webkitAudioContext)){
+    actx=new (window.AudioContext||window.webkitAudioContext)();
+  }
+  if(actx&&actx.state==='suspended'){
+    actx.resume().catch(()=>{});
+  }
+  return actx;
+}
+
 function beep(freq,dur,type,gain){
-  if(state.muted)return;
+  if(typeof state!=='undefined'&&state&&state.muted)return;
   try{
-  actx=actx||new (window.AudioContext||window.webkitAudioContext)();
-  const o=actx.createOscillator(),g=actx.createGain();
-  o.type=type||"square";o.frequency.value=freq;
-  g.gain.setValueAtTime(gain||.05,actx.currentTime);
-  g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+(dur||.08));
-  o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+(dur||.08));
+    const a=actxOf();
+    if(!a)return;
+    const o=a.createOscillator(),g=a.createGain();
+    o.type=type||"square";o.frequency.value=freq;
+    g.gain.setValueAtTime(gain||.05,a.currentTime);
+    g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+(dur||.08));
+    o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+(dur||.08));
   }catch(e){}
 }
-const sfx={
-  hit:()=>{if(window.CyberSfx)window.CyberSfx.katanaSlash(1);else beep(180,.07);},
-  crit:()=>{if(window.CyberSfx)window.CyberSfx.katanaFinisher();else beep(560,.12,"sawtooth",.06);},
-  dodge:()=>{if(window.CyberSfx)window.CyberSfx.matrixSpace();else beep(760,.06,"sine");},
-  win:()=>{[523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,.14,"triangle",.06),i*110));},
-  lose:()=>{[330,262,196].forEach((f,i)=>setTimeout(()=>beep(f,.18,"sine",.06),i*140));},
-  pull:()=>beep(880,.2,"sine",.05)
+
+/* 50Hz Tactile Sub-Bass Thump Generator (Gives physical weight to actions) */
+function playSubBass(freq=55,dur=0.18,vol=0.25){
+  if(typeof state!=='undefined'&&state&&state.muted)return;
+  try{
+    const a=actxOf();
+    if(!a)return;
+    const now=a.currentTime;
+    const osc=a.createOscillator();
+    const gain=a.createGain();
+    osc.connect(gain);
+    gain.connect(a.destination);
+    osc.type='sine';
+    osc.frequency.setValueAtTime(freq,now);
+    osc.frequency.exponentialRampToValueAtTime(25,now+dur);
+    gain.gain.setValueAtTime(vol,now);
+    gain.gain.exponentialRampToValueAtTime(0.001,now+dur);
+    osc.start(now);
+    osc.stop(now+dur);
+  }catch(e){}
+}
+
+/* Real Audio Pool (Glass taps, mechanical switches, crystal jingles, whooshes) */
+const _sfxClips = {
+  click: 'assets/audio/sfx/interface/click_002.ogg',
+  hover: 'assets/audio/sfx/interface/glass_004.ogg',
+  deck: 'assets/audio/sfx/interface/drop_002.ogg',
+  open: 'assets/audio/sfx/interface/maximize_008.ogg',
+  close: 'assets/audio/sfx/interface/minimize_008.ogg',
+  confirm: 'assets/audio/sfx/interface/confirmation_001.ogg',
+  switch: 'assets/audio/sfx/interface/switch_001.ogg',
+  pull: 'assets/audio/sfx/sci-fi/engineCircular_001.ogg',
+  impact: 'assets/audio/sfx/sci-fi/impactMetal_001.ogg',
+  jingle: 'assets/audio/sfx/jingles/jingles_PIZZI10.ogg',
+  win: 'assets/audio/sfx/jingles/jingles_HIT15.ogg',
+  lose: 'assets/audio/sfx/jingles/jingles_HIT07.ogg'
 };
+
+const _soundPool = {};
+try {
+  for(const k in _sfxClips){
+    _soundPool[k] = [];
+    for(let i=0; i<3; i++){
+      const aud = new Audio(_sfxClips[k]);
+      aud.preload = 'auto';
+      _soundPool[k].push(aud);
+    }
+  }
+} catch(e){}
+
+function _playSfxPool(key, vol=0.75){
+  if(typeof state!=='undefined'&&state&&state.muted)return;
+  try{
+    const src = _sfxClips[key] || _sfxClips.click;
+    if(!src) return;
+    const pool = _soundPool[key];
+    let snd = null;
+    if(pool && pool.length){
+      snd = pool.find(a => a.paused && !a.error);
+      if(!snd && pool[0] && !pool[0].error) snd = pool[0];
+    }
+    if(snd){
+      snd.volume = Math.min(1, Math.max(0, vol));
+      snd.currentTime = 0;
+      const p = snd.play();
+      if(p && typeof p.catch === 'function'){
+        p.catch(() => {
+          try {
+            const fresh = new Audio(src);
+            fresh.volume = vol;
+            fresh.play().catch(()=>{});
+          } catch(e){}
+        });
+      }
+    } else {
+      const fresh = new Audio(src);
+      fresh.volume = vol;
+      fresh.play().catch(()=>{});
+    }
+  }catch(e){}
+}
+
+const sfx={
+  hit:()=>{
+    playSubBass(60, 0.12, 0.22);
+    _playSfxPool('click', 0.8);
+  },
+  click:()=>{
+    playSubBass(60, 0.12, 0.22);
+    _playSfxPool('click', 0.8);
+  },
+  hover:()=>{
+    _playSfxPool('hover', 0.4);
+  },
+  crit:()=>{
+    playSubBass(55, 0.25, 0.35);
+    if(window.CyberSfx)window.CyberSfx.katanaFinisher();
+    else _playSfxPool('confirm', 0.8);
+  },
+  dodge:()=>{
+    if(window.CyberSfx)window.CyberSfx.matrixSpace();
+    else _playSfxPool('hover', 0.5);
+  },
+  win:()=>{
+    playSubBass(60, 0.35, 0.35);
+    _playSfxPool('win', 0.85);
+  },
+  lose:()=>{
+    _playSfxPool('lose', 0.75);
+  },
+  pull:()=>{
+    playSubBass(45, 0.35, 0.4);
+    _playSfxPool('pull', 0.75);
+    setTimeout(()=>_playSfxPool('jingle', 0.8), 280);
+  },
+  open:()=>{
+    playSubBass(65, 0.16, 0.25);
+    _playSfxPool('open', 0.75);
+  },
+  close:()=>{
+    playSubBass(50, 0.14, 0.18);
+    _playSfxPool('close', 0.7);
+  },
+  confirm:()=>{
+    playSubBass(70, 0.14, 0.22);
+    _playSfxPool('confirm', 0.8);
+  },
+  deck:()=>{
+    playSubBass(60, 0.16, 0.22);
+    _playSfxPool('deck', 0.8);
+  },
+  switch:()=>{
+    playSubBass(65, 0.12, 0.18);
+    _playSfxPool('switch', 0.7);
+  },
+  subBass:playSubBass
+};
+
+/* Global Tactical AAA UI Audio Delegation (Capturing) */
+if(typeof window!=='undefined'){
+  let _lastUiHover=0;
+  window.addEventListener('mouseover', (e)=>{
+    if(typeof state!=='undefined'&&state&&state.muted)return;
+    const t=e.target;
+    if(!t)return;
+    const btn=t.closest('button, .btn, .nav-tab, .cmd-btn, .hub-btn, .card-slot, .loadout-slot, .tree-node, .char-card, .fighter, .sett-btn');
+    if(btn&&Date.now()-_lastUiHover>75){
+      _lastUiHover=Date.now();
+      _playSfxPool('hover', 0.38);
+    }
+  }, {passive:true, capture:true});
+
+  window.addEventListener('click', (e)=>{
+    if(typeof state!=='undefined'&&state&&state.muted)return;
+    const t=e.target;
+    if(!t)return;
+    const btn=t.closest('button, .btn, .nav-tab, .cmd-btn, .hub-btn, .card-slot, .loadout-slot, .tree-node, .char-card, .md-btn, .close-btn, .tab-btn, .sett-btn');
+    if(btn){
+      playSubBass(60, 0.12, 0.22);
+      _playSfxPool('click', 0.8);
+    }
+  }, {passive:true, capture:true});
+
+  window.testAAA = function(){
+    if(typeof state!=='undefined'&&state)state.muted=false;
+    sfx.pull();
+    console.log('[AAA AUDIO] Test Pull + Sub-Bass triggered!');
+  };
+}
 
 /* Unlock audio: WebView Android/iOS menahan AudioContext yang dibuat tanpa gesture user
    (mis. SFX ronde raid yang dipicu setTimeout) dalam state "suspended" → suara hening.
@@ -875,7 +1050,7 @@ function renderShell(){
   }
 
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.route===route()));
-  try{const pm=document.getElementById("profModal");if(pm&&pm.style.display!=="none"&&pm.style.display!=="")renderProfile();}catch(e){}
+  try{if(typeof updateProfileLiveNumbers==="function")updateProfileLiveNumbers();}catch(e){}
   try{renderWeatherDock();renderBuffDock();startWeatherTick();}catch(e){}
   try{if(typeof startGlobalLuckPoll==='function')startGlobalLuckPoll();}catch(e){}
 }

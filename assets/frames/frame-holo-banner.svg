@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 580 124" preserveAspectRatio="none" fill="none">
+  <defs>
+    <linearGradient id="holoBannerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(56, 189, 248, 0.95)"/>
+      <stop offset="35%" stop-color="rgba(192, 132, 252, 0.6)"/>
+      <stop offset="70%" stop-color="rgba(56, 189, 248, 0.95)"/>
+      <stop offset="100%" stop-color="rgba(129, 140, 248, 0.85)"/>
+    </linearGradient>
+    <linearGradient id="holoShimmer" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="rgba(255, 255, 255, 0)"/>
+      <stop offset="50%" stop-color="rgba(255, 255, 255, 0.25)"/>
+      <stop offset="100%" stop-color="rgba(255, 255, 255, 0)"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Precision Holographic Chamfered Glass Border -->
+  <path d="M22 2 L558 2 L578 22 L578 102 L558 122 L22 122 L2 102 L2 22 Z" 
+        stroke="url(#holoBannerGrad)" stroke-width="1.75" fill="none"
+        filter="drop-shadow(0 0 8px rgba(56, 189, 248, 0.45))"/>
+
+  <!-- Inner Hairline Reflection -->
+  <path d="M25 6 L555 6 L574 25 L574 99 L555 118 L25 118 L6 99 L6 25 Z" 
+        stroke="rgba(255, 255, 255, 0.12)" stroke-width="1" fill="none"/>
+
+  <!-- Top-Left Precision HUD Bracket [ -->
+  <path d="M2 32 L2 22 L22 2 L32 2" stroke="#ffffff" stroke-width="2.5" fill="none"/>
+  <rect x="7" y="7" width="3.5" height="3.5" fill="#38bdf8"/>
+  <line x1="38" y1="2" x2="56" y2="2" stroke="#38bdf8" stroke-width="2"/>
+  <line x1="2" y1="38" x2="2" y2="56" stroke="#38bdf8" stroke-width="2"/>
+
+  <!-- Top-Right Precision HUD Bracket ] -->
+  <path d="M578 32 L578 22 L558 2 L548 2" stroke="#ffffff" stroke-width="2.5" fill="none"/>
+  <rect x="569.5" y="7" width="3.5" height="3.5" fill="#38bdf8"/>
+  <line x1="542" y1="2" x2="524" y2="2" stroke="#38bdf8" stroke-width="2"/>
+  <line x1="578" y1="38" x2="578" y2="56" stroke="#38bdf8" stroke-width="2"/>
+
+  <!-- Bottom-Left Precision HUD Bracket [ -->
+  <path d="M2 92 L2 102 L22 122 L32 122" stroke="#ffffff" stroke-width="2.5" fill="none"/>
+  <rect x="7" y="113.5" width="3.5" height="3.5" fill="#38bdf8"/>
+  <line x1="38" y1="122" x2="56" y2="122" stroke="#38bdf8" stroke-width="2"/>
+  <line x1="2" y1="86" x2="2" y2="68" stroke="#38bdf8" stroke-width="2"/>
+
+  <!-- Bottom-Right Precision HUD Bracket ] -->
+  <path d="M578 92 L578 102 L558 122 L548 122" stroke="#ffffff" stroke-width="2.5" fill="none"/>
+  <rect x="569.5" y="113.5" width="3.5" height="3.5" fill="#38bdf8"/>
+  <line x1="542" y1="122" x2="524" y2="122" stroke="#38bdf8" stroke-width="2"/>
+  <line x1="578" y1="86" x2="578" y2="68" stroke="#38bdf8" stroke-width="2"/>
+
+  <!-- Side Holographic Target Crosshairs -->
+  <g stroke="#38bdf8" stroke-width="1.2">
+    <circle cx="2" cy="62" r="5" fill="none"/>
+    <line x1="2" y1="53" x2="2" y2="71"/>
+    <line x1="-3" y1="62" x2="7" y2="62"/>
+
+    <circle cx="578" cy="62" r="5" fill="none"/>
+    <line x1="578" y1="53" x2="578" y2="71"/>
+    <line x1="573" y1="62" x2="583" y2="62"/>
+  </g>
+
+  <!-- Top Center Telemetry Tag -->
+  <g transform="translate(290, 10)">
+    <line x1="-70" y1="-2" x2="70" y2="-2" stroke="url(#holoShimmer)" stroke-width="1"/>
+    <text x="0" y="0" font-family="'JetBrains Mono', 'Orbitron', monospace" font-size="7" font-weight="700" fill="rgba(255,255,255,0.75)" text-anchor="middle" letter-spacing="2.5">HOLO GLASS // COMBAT TERMINAL</text>
+  </g>
+</svg>

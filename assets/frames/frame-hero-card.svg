@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 310 460" fill="none">
+  <!-- Outer Angled Frame Path -->
+  <path d="M24 2 L286 2 L308 24 L308 436 L286 458 L24 458 L2 436 L2 24 Z" stroke="rgba(192, 132, 252, 0.6)" stroke-width="2" fill="none" filter="drop-shadow(0 0 8px rgba(192, 132, 252, 0.4))"/>
+  
+  <!-- Inner Hairline -->
+  <path d="M28 8 L282 8 L302 28 L302 432 L282 452 L28 452 L8 432 L8 28 Z" stroke="rgba(255, 255, 255, 0.15)" stroke-width="1" fill="none"/>
+  
+  <!-- Top Left Corner Tech Clamp -->
+  <polygon points="2,24 24,2 38,2 38,12 12,38 2,38" fill="#c084fc" opacity="0.85"/>
+  <circle cx="20" cy="20" r="2.5" fill="#ffffff"/>
+  
+  <!-- Top Right Corner Tech Clamp -->
+  <polygon points="308,24 286,2 272,2 272,12 298,38 308,38" fill="#c084fc" opacity="0.85"/>
+  <circle cx="290" cy="20" r="2.5" fill="#ffffff"/>
+
+  <!-- Bottom Left Corner Clamp -->
+  <polygon points="2,436 24,458 38,458 38,448 12,422 2,422" fill="#9333ea" opacity="0.85"/>
+  <circle cx="20" cy="440" r="2.5" fill="#ffffff"/>
+
+  <!-- Bottom Right Corner Clamp -->
+  <polygon points="308,436 286,458 272,458 272,448 298,422 308,422" fill="#9333ea" opacity="0.85"/>
+  <circle cx="290" cy="440" r="2.5" fill="#ffffff"/>
+
+  <!-- Side Grip Ticks Left -->
+  <rect x="0" y="210" width="4" height="40" fill="#38bdf8" opacity="0.8"/>
+  <line x1="6" y1="215" x2="14" y2="215" stroke="#38bdf8" stroke-width="1.5" opacity="0.7"/>
+  <line x1="6" y1="225" x2="14" y2="225" stroke="#38bdf8" stroke-width="1.5" opacity="0.7"/>
+  <line x1="6" y1="235" x2="14" y2="235" stroke="#38bdf8" stroke-width="1.5" opacity="0.7"/>
+  <line x1="6" y1="245" x2="14" y2="245" stroke="#38bdf8" stroke-width="1.5" opacity="0.7"/>
+
+  <!-- Side Grip Ticks Right -->
+  <rect x="306" y="210" width="4" height="40" fill="#38bdf8" opacity="0.8"/>
+  <line x1="296" y1="215" x2="304" y2="215" stroke="#38bdf8" stroke-width="1.5" opacity="0.7"/>
+  <line x1="296" y1="225" x2="304" y2="225" stroke="#38bdf8" stroke-width="1.5" opacity="0.7"/>
+  <line x1="296" y1="235" x2="304" y2="235" stroke="#38bdf8" stroke-width="1.5" opacity="0.7"/>
+  <line x1="296" y1="245" x2="304" y2="245" stroke="#38bdf8" stroke-width="1.5" opacity="0.7"/>
+
+  <!-- Top Center Crown Notch -->
+  <polygon points="135,2 175,2 165,12 145,12" fill="#38bdf8" opacity="0.75"/>
+</svg>

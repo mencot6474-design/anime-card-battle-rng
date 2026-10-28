@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 310 460" fill="none">
+  <defs>
+    <!-- Gold Metallic Gradients -->
+    <linearGradient id="goldPlate" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="25%" stop-color="#eab308"/>
+      <stop offset="50%" stop-color="#ca8a04"/>
+      <stop offset="75%" stop-color="#facc15"/>
+      <stop offset="100%" stop-color="#854d0e"/>
+    </linearGradient>
+    <linearGradient id="goldTrim" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="30%" stop-color="#fef08a"/>
+      <stop offset="70%" stop-color="#d97706"/>
+      <stop offset="100%" stop-color="#78350f"/>
+    </linearGradient>
+    <radialGradient id="gemGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="40%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </radialGradient>
+    <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Heavy Beveled Outer Armor Silhouette -->
+  <path d="M28 2 L282 2 L308 28 L308 432 L282 458 L28 458 L2 432 L2 28 Z" 
+        stroke="url(#goldPlate)" stroke-width="4" fill="none" filter="url(#goldGlow)"/>
+
+  <!-- Inner Hairline Filigree -->
+  <path d="M32 9 L278 9 L301 32 L301 428 L278 451 L32 451 L9 428 L9 32 Z" 
+        stroke="url(#goldTrim)" stroke-width="1.5" stroke-dasharray="8 3" fill="none"/>
+
+  <!-- Top Crown Majestic Crest -->
+  <g transform="translate(155, 0)">
+    <!-- Central Solar Diamond -->
+    <polygon points="0,-8 18,12 0,22 -18,12" fill="url(#goldPlate)"/>
+    <polygon points="0,-4 12,12 0,18 -12,12" fill="#fff" opacity="0.8"/>
+    <!-- Wings -->
+    <path d="M-18 10 L-42 4 L-32 14 L-15 16 Z" fill="url(#goldPlate)"/>
+    <path d="M18 10 L42 4 L32 14 L15 16 Z" fill="url(#goldPlate)"/>
+    <!-- Runic jewel center -->
+    <circle cx="0" cy="12" r="3.5" fill="url(#gemGlow)"/>
+  </g>
+
+  <!-- 4 Heavy Tech-Clamped Corner Filigrees -->
+  <!-- Top-Left -->
+  <g>
+    <polygon points="2,28 28,2 48,2 48,10 16,42 2,42" fill="url(#goldPlate)"/>
+    <circle cx="24" cy="24" r="4.5" fill="url(#gemGlow)" stroke="#fff" stroke-width="1"/>
+    <line x1="2" y1="28" x2="28" y2="2" stroke="#fff" stroke-width="2"/>
+  </g>
+  <!-- Top-Right -->
+  <g>
+    <polygon points="308,28 282,2 262,2 262,10 294,42 308,42" fill="url(#goldPlate)"/>
+    <circle cx="286" cy="24" r="4.5" fill="url(#gemGlow)" stroke="#fff" stroke-width="1"/>
+    <line x1="308" y1="28" x2="282" y2="2" stroke="#fff" stroke-width="2"/>
+  </g>
+  <!-- Bottom-Left -->
+  <g>
+    <polygon points="2,432 28,458 48,458 48,450 16,418 2,418" fill="url(#goldPlate)"/>
+    <circle cx="24" cy="436" r="4.5" fill="url(#gemGlow)" stroke="#fff" stroke-width="1"/>
+    <line x1="2" y1="432" x2="28" y2="458" stroke="#fff" stroke-width="2"/>
+  </g>
+  <!-- Bottom-Right -->
+  <g>
+    <polygon points="308,432 282,458 262,458 262,450 294,418 308,418" fill="url(#goldPlate)"/>
+    <circle cx="286" cy="436" r="4.5" fill="url(#gemGlow)" stroke="#fff" stroke-width="1"/>
+    <line x1="308" y1="432" x2="282" y2="458" stroke="#fff" stroke-width="2"/>
+  </g>
+
+  <!-- Side Regal Grip Rails -->
+  <g fill="url(#goldPlate)">
+    <!-- Left Grips -->
+    <rect x="0" y="195" width="5" height="70" rx="1"/>
+    <polygon points="5,205 14,215 5,225"/>
+    <polygon points="5,235 14,245 5,255"/>
+    <!-- Right Grips -->
+    <rect x="305" y="195" width="5" height="70" rx="1"/>
+    <polygon points="305,205 296,215 305,225"/>
+    <polygon points="305,235 296,245 305,255"/>
+  </g>
+
+  <!-- Bottom Crest Plaque -->
+  <g transform="translate(155, 458)">
+    <polygon points="-35,0 -25,-12 25,-12 35,0" fill="url(#goldPlate)"/>
+    <circle cx="0" cy="-6" r="3" fill="url(#gemGlow)"/>
+  </g>
+</svg>

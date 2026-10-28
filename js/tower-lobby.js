@@ -1130,202 +1130,938 @@ function onRebirthClick(){
   openRebirthModal();
 }
 
-function renderLobby(){
-  if(state.battle)return renderBattle();
-  const eq=equipped();
-  const st=eq?cardStats(eq.char,eq.mut,eq.trait,eq.shiny):null;
-  const tier=eq?CARDS[eq.char].tier:null;
-  app.innerHTML=`
-  <div class="lobby-hub">
-    <div class="hub-left" role="group" aria-label="Menu mode utama">
-    <div class="hub-loadout-bar" role="group" aria-label="Loadout artefak & pet">${hubLoadoutHtml()}</div>
-    <div class="hub-box h-l1 hub-link hub-link-raid" id="hubRaid" role="button" title="Masuk World Boss">
-      <span class="tile-frame" aria-hidden="true"></span>
-      <span class="tile-index"><span class="tile-number">01</span><span class="tile-category">WORLD / EVENT</span></span>
-      <span class="tile-art" aria-hidden="true">
-        <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="50" cy="50" r="29" stroke-width="2"/>
-          <ellipse cx="50" cy="50" rx="44" ry="14" opacity="0.55" transform="rotate(-18 50 50)" stroke-dasharray="7 5"/>
-          <path d="M50 21c10 8 15 18 15 29s-5 21-15 29c-10-8-15-18-15-29s5-21 15-29Z" opacity="0.5"/>
-          <path d="M23 50h54" opacity="0.4"/>
-          <circle cx="50" cy="50" r="4.5" fill="currentColor"/>
-          <path d="M50 5v8M50 87v8" opacity="0.75"/>
-        </svg>
-      </span>
-      <span class="tile-copy"><span class="hb-lbl">WORLD BOSS</span><span class="hb-meta">Hunt the shared HP pool</span></span>
-      <span class="tile-action"><span>DEPLOY</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
-    </div>
-    <div class="hub-box h-l2 hub-link hub-link-tower" id="hubTower" role="button" title="Masuk Infinite Tower">
-      <span class="tile-frame" aria-hidden="true"></span>
-      <span class="tile-index"><span class="tile-number">02</span><span class="tile-category">ASCENT / TOWER</span></span>
-      <span class="tile-art" aria-hidden="true">
-        <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="50,10 76,28 76,72 50,90 24,72 24,28" stroke-dasharray="5 3" opacity="0.35"/>
-          <path d="M50 15L70 30L50 45L30 30Z" stroke-width="2"/>
-          <path d="M30 46l20 15 20-15M30 62l20 15 20-15" stroke-width="2"/>
-          <line x1="50" y1="15" x2="50" y2="85" stroke-dasharray="4 4" opacity="0.7"/>
-          <circle cx="50" cy="15" r="3.5" fill="currentColor"/>
-        </svg>
-      </span>
-      <span class="tile-copy"><span class="hb-lbl">INFINITE TOWER</span><span class="hb-meta">Climb neural layers</span></span>
-      <span class="tile-action"><span>ASCEND</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
-    </div>
-    <div class="hub-box h-l3 hub-link hub-link-weather" id="hubWeather" role="button" title="Buka Weather Machine">
-      <span class="tile-frame" aria-hidden="true"></span>
-      <span class="tile-index"><span class="tile-number" style="color:#38bdf8">03</span><span class="tile-category" style="color:#0ea5e9">CLIMATE / CORE</span></span>
-      <span class="tile-art" aria-hidden="true">
-        <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="50" cy="50" r="38" stroke-dasharray="5 3" opacity="0.4"/>
-          <path d="M50 18v12M50 70v12M18 50h12M70 50h12" stroke-width="2"/>
-          <path d="M28 28l9 9M63 63l9 9M28 72l9-9M63 37l9-9" stroke-width="1.6" opacity="0.6"/>
-          <circle cx="50" cy="50" r="16" stroke-width="2.2" fill="currentColor" fill-opacity="0.15"/>
-          <circle cx="50" cy="50" r="6" fill="currentColor"/>
-        </svg>
-      </span>
-      <span class="tile-copy"><span class="hb-lbl" style="color:#38bdf8;text-shadow:0 0 10px rgba(56,189,248,.35)">WEATHER MACHINE</span><span class="hb-meta">Atmospheric Catalyst & Odds</span></span>
-      <span class="tile-action" style="border-color:rgba(56,189,248,.4);color:#38bdf8"><span>SYNTHESIZE</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
-    </div>
-    </div>
-    <div class="hub-mid">
-      <div class="seam"></div>
-      <div class="hub-gl-row">
-        ${(typeof renderGlobalLuckWidget === 'function') ? '<div class="hub-gl-widget">' + renderGlobalLuckWidget() + '</div>' : ''}
-        ${(typeof renderLobbyFloatingIcons === 'function') ? renderLobbyFloatingIcons() : ''}
-      </div>
-      <div class="stage-eyebrow">ACTIVE CARD</div>
-      <div class="stage-center">
-        <div class="holo-base" aria-hidden="true"><span class="hb-glow"></span><span class="hb-rays"></span><span class="hb-disc"></span><span class="hb-ring"></span></div>
-        <div class="card-float${eq&&CARDS[eq.char]&&CARDS[eq.char].fullArt?' fa':''}">
-          ${hubCardHtml(eq,' id="hubCard"')}
-        </div>
-        <div class="holo-glass" aria-hidden="true"><span class="hg-tint"></span><span class="hg-scan"></span></div>
-      </div>
-      <div class="stage-hint"><kbd>KLIK</kbd> UNTUK BUKA BACKPACK</div>
-      <button class="hub-install-btn" id="hubInstallBtn" type="button" style="display:none" title="Install aplikasi ke perangkat">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
-        <span>INSTALL APP</span>
-      </button>
-    </div>
-    <div class="hub-right" role="group" aria-label="Menu fitur & ranking">
-    <div class="hub-box h-r0 hub-link hub-link-premium" id="hubPremium" role="button" title="Toko Premium - Beli Roll Pack">
-      <span class="tile-frame" aria-hidden="true"></span>
-      <span class="tile-index"><span class="tile-number" style="color:#FFD700">VIP</span><span class="tile-category" style="color:#FFA000">SPECIAL / SYNDICATE</span></span>
-      <span class="tile-art" aria-hidden="true">
-        <img src="assets/images/premium-currency.webp" alt="Premium Shop" style="width:52px;height:52px;object-fit:cover;border-radius:50%;filter:drop-shadow(0 0 10px rgba(255,215,0,.6));opacity:0.9">
-      </span>
-      <span class="tile-copy"><span class="hb-lbl" style="color:#FFD700;text-shadow:0 0 10px rgba(255,215,0,.4)">PREMIUM SHOP</span><span class="hb-meta">Instant roll packs</span></span>
-      <span class="tile-action" style="border-color:rgba(255,215,0,.4);color:#FFD700"><span>ACCESS</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
-    </div>
-    <div class="hub-box h-r1 hub-link hub-link-index" id="hubIndex" role="button" title="Buka Katalog Kartu">
-      <span class="tile-frame" aria-hidden="true"></span>
-      <span class="tile-index"><span class="tile-number">04</span><span class="tile-category">DATABASE / ARCHIVE</span></span>
-      <span class="tile-art" aria-hidden="true">
-        <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="22" y="20" width="56" height="60" rx="4" stroke-width="2"/>
-          <line x1="32" y1="36" x2="68" y2="36" stroke-width="2"/>
-          <line x1="32" y1="48" x2="60" y2="48"/>
-          <line x1="32" y1="60" x2="52" y2="60"/>
-          <path d="M64 60h12v12H64z" fill="currentColor" opacity="0.3"/>
-          <circle cx="70" cy="66" r="14" stroke-dasharray="4 2"/>
-          <path d="M80 76l10 10" stroke-width="2.4"/>
-        </svg>
-      </span>
-      <span class="tile-copy"><span class="hb-lbl">CARD INDEX</span><span class="hb-meta">Neural database</span></span>
-      <span class="tile-action"><span>ACCESS</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
-    </div>
-    <div class="hub-box h-r2 hub-link hub-link-trait" id="hubTrait" role="button" title="Roll Trait untuk kartu aktif">
-      <span class="tile-frame" aria-hidden="true"></span>
-      <span class="tile-index"><span class="tile-number">05</span><span class="tile-category">CYBER / REFINE</span></span>
-      <span class="tile-art" aria-hidden="true">
-        <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="50" cy="50" r="38" stroke-dasharray="6 4" opacity="0.35"/>
-          <polygon points="50,16 60,38 84,50 60,62 50,84 40,62 16,50 40,38" stroke-width="2"/>
-          <circle cx="50" cy="50" r="5" fill="currentColor"/>
-          <path d="M22 22l8 8M78 22l-8 8M22 78l8-8M78 78l-8-8" opacity="0.5"/>
-        </svg>
-      </span>
-      <span class="tile-copy"><span class="hb-lbl">TRAIT</span><span class="hb-meta">Overclock traits</span></span>
-      <span class="tile-action"><span>REFINE</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
-    </div>
-    <div class="hub-box h-mission hub-link hub-link-mission" id="missionBtn" role="button" title="Buka Story Mode">
-      <span class="tile-frame" aria-hidden="true"></span>
-      <span class="tile-index"><span class="tile-number">06</span><span class="tile-category">CAMPAIGN / STORY</span></span>
-      <span class="tile-art" aria-hidden="true">
-        <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="50,14 82,30 82,70 50,86 18,70 18,30" stroke-width="1.8" opacity="0.4"/>
-          <path d="M34 50l10 10 22-22" stroke-width="2.4"/>
-          <circle cx="50" cy="50" r="28" stroke-dasharray="4 3"/>
-        </svg>
-      </span>
-      <span class="tile-copy"><span class="hb-lbl">STORY</span><span class="hb-meta">Story Campaign</span></span>
-      <span class="mission-progress">
-        <span class="mission-progress-label">CLEARANCE PROTOCOL</span>
-        <span class="mission-meter" id="missionMeter" role="progressbar" aria-label="Story progress" aria-valuemin="0"><span id="missionFill"></span></span>
-        <span class="mb-sub" id="missionSub"></span>
-      </span>
-      <span class="tile-action"><span>PLAY STORY</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span>
-    </div>
-    <div class="hub-box h-lb hub-link hub-link-rank" id="hubRank" role="button" title="Buka Leaderboard">
-      <span class="tile-frame" aria-hidden="true"></span>
-      <span class="tile-index"><span class="tile-number" style="color:#7DF9FF">07</span><span class="tile-category" style="color:#7DF9FF">PULSE / RANKING</span></span>
-      <span class="tile-art" aria-hidden="true">
-        <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 82h64" stroke-width="2"/>
-          <rect x="24" y="56" width="14" height="26" rx="2"/>
-          <rect x="43" y="38" width="14" height="44" rx="2" stroke-width="2.2"/>
-          <rect x="62" y="48" width="14" height="34" rx="2"/>
-          <path d="M43 26l7-8 7 8" stroke-width="2.2"/>
-          <circle cx="50" cy="22" r="3" fill="currentColor"/>
-        </svg>
-      </span>
-      <span class="tile-copy"><span class="hb-lbl" style="color:#7DF9FF;text-shadow:0 0 10px rgba(125,249,255,.35)">LEADERBOARD</span><span class="hb-meta">World Boss · rank harian</span></span>
-      <span class="tile-action" style="border-color:rgba(125,249,255,.4);color:#7DF9FF"><span>OPEN</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
-    </div>
-    ${hubRebirthTileHtml()}
-  </div>`;
-  const hc=document.getElementById("hubCard");if(hc){hc.onclick=()=>{sfx.hit();toggleBackpack();};}
-  const hp=document.getElementById("hubPremium");if(hp)hp.onclick=()=>{sfx.hit();openPremiumShop();};
-  const gp=document.getElementById("gemPill");if(gp)gp.onclick=()=>{
-  sfx.hit();
-  if(typeof isCrazyGames === "function" && isCrazyGames()){
-    if(typeof openWatchAdsModal === "function") openWatchAdsModal();
-    else if(typeof triggerWatchAd === "function") triggerWatchAd('gems');
-  } else {
-    openTopup();
-  }
+
+/* ==========================================================================
+   LIVING AAA ANIME HERO STANDEE & STAGE ENGINE (100% PURE AAA FIDELITY)
+   ========================================================================== */
+
+const LOBBY_FRAMES = {
+  holo: { src: 'assets/frames/frame-holo-glass.svg', theme: 'theme-holo', name: 'HOLO GLASS' },
+  gilded: { src: 'assets/frames/frame-gilded-ssr.svg', theme: 'theme-gilded', name: 'GILDED SSR' },
+  suncrest: { src: 'assets/frames/frame-card-ssr.svg', theme: 'theme-gilded', name: 'SUN CREST' },
+  mech: { src: 'assets/frames/frame-tactical-mech.svg', theme: 'theme-mech', name: 'TACTICAL MECH' },
+  void: { src: 'assets/frames/frame-void-relic.svg', theme: 'theme-void', name: 'VOID RELIC' },
+  cyber: { src: 'assets/frames/frame-hero-card.svg', theme: 'theme-void', name: 'CYBER ARMOR' },
+  none: { src: '', theme: 'theme-none', name: 'NO FRAME' }
 };
-  const hi=document.getElementById("hubIndex");if(hi)hi.onclick=()=>{sfx.hit();openIndex();};
-  const ht=document.getElementById("hubTrait");if(ht)ht.onclick=()=>{sfx.hit();openTrait();};
-  const hr=document.getElementById("hubRaid");if(hr)hr.onclick=()=>{sfx.hit();raidView="hub";location.hash="#/raid";};
-  const ht2=document.getElementById("hubTower");if(ht2)ht2.onclick=()=>{sfx.hit();stopTower();location.hash="#/tower";};
-  const hw=document.getElementById("hubWeather");if(hw)hw.onclick=()=>{sfx.hit();openWeatherMachine();};
-  const mb=document.getElementById("missionBtn");if(mb)mb.onclick=()=>{sfx.hit();openMission();};
-  const hrk=document.getElementById("hubRank");if(hrk)hrk.onclick=()=>{sfx.hit();if(typeof openRanking==="function")openRanking();};
-  const hrbr=document.getElementById("hubRebirth");if(hrbr)hrbr.onclick=()=>{sfx.hit();onRebirthClick();};
-  const ms=document.getElementById("missionSub");if(ms){const done=CHAPTERS.reduce((a,c)=>a+chapProgMode(c,state.diff),0),tot=CHAPTERS.reduce((a,c)=>a+c.levels.length,0);ms.textContent=done+"/"+tot+" SELESAI";const ratio=tot?Math.min(100,Math.round(done/tot*100)):0;const meter=document.getElementById("missionMeter"),fill=document.getElementById("missionFill");if(meter){meter.setAttribute("aria-valuemax",String(tot));meter.setAttribute("aria-valuenow",String(done));}if(fill)fill.style.width=ratio+"%";}
-  document.querySelectorAll(".hub-loadout-bar .loadout-slot, .stage-loadout .loadout-slot").forEach(el=>{el.onclick=()=>{sfx.hit();bpSetTab(el.dataset.bp||"pet");const p=document.getElementById("backpackPanel");if(!p||p.style.display!=="flex")toggleBackpack();};});
-  if (typeof _startGlWidgetTick === "function") _startGlWidgetTick();
-  if (typeof lbTrackSweep === "function") lbTrackSweep();
+
+const LOBBY_BGS = {
+  sanctuary: { src: 'assets/bg/lobby-wuwa-genshin.webp', name: 'WUWA HORIZON' },
+  solaris: { src: 'assets/bg/lobby-solaris-city.webp', name: 'SOLARIS CITY' },
+  abyss: { src: 'assets/bg/lobby-void-abyss.webp', name: 'VOID ABYSS' },
+  observatory: { src: 'assets/bg/lobby-astral-observatory.webp', name: 'ASTRAL SPIRE' }
+};
+window.LOBBY_BGS = LOBBY_BGS;
+
+function getLobbyActiveBg() {
+  if (typeof state !== 'undefined' && state && state.lobbyBg && LOBBY_BGS[state.lobbyBg]) {
+    return LOBBY_BGS[state.lobbyBg].src;
+  }
+  return LOBBY_BGS.sanctuary.src;
 }
+window.getLobbyActiveBg = getLobbyActiveBg;
+
+function getLobbyActiveFrame() {
+  const key = (typeof state !== 'undefined' && state && state.lobbyFrame && LOBBY_FRAMES[state.lobbyFrame]) 
+    ? state.lobbyFrame 
+    : 'holo';
+  return LOBBY_FRAMES[key];
+}
+
+window.cycleLobbyBackground = function() {
+  if (typeof playSound === 'function') playSound('switch');
+  else if (window.sfx && sfx.hit) sfx.hit();
+  const keys = Object.keys(LOBBY_BGS);
+  let curIdx = keys.indexOf(state.lobbyBg || 'sanctuary');
+  if (curIdx === -1) curIdx = 0;
+  const nextKey = keys[(curIdx + 1) % keys.length];
+  state.lobbyBg = nextKey;
+  if (typeof saveState === 'function') saveState();
+
+  const layer = document.getElementById('stageBgLayer');
+  if (layer) {
+    layer.style.opacity = '0.25';
+    setTimeout(() => {
+      layer.style.backgroundImage = 'url("' + LOBBY_BGS[nextKey].src + '")';
+      layer.style.opacity = '1';
+    }, 160);
+  }
+  if (typeof showToast === 'function') showToast('LOBBY: ' + LOBBY_BGS[nextKey].name);
+  if (typeof window.syncBattleBackground === 'function') window.syncBattleBackground();
+};
+
+window.cycleCardFrame = function() {
+  if (typeof playSound === 'function') playSound('switch');
+  else if (window.sfx && sfx.hit) sfx.hit();
+  const keys = Object.keys(LOBBY_FRAMES);
+  let curIdx = keys.indexOf(state.lobbyFrame || 'holo');
+  if (curIdx === -1) curIdx = 0;
+  const nextKey = keys[(curIdx + 1) % keys.length];
+  state.lobbyFrame = nextKey;
+  if (typeof saveState === 'function') saveState();
+
+  const plate = document.getElementById('heroCardPlate');
+  const frameSvg = document.getElementById('heroFrameSvg');
+  const cfg = LOBBY_FRAMES[nextKey];
+  if (plate) plate.className = 'hero-card-plate ' + cfg.theme;
+  if (frameSvg) {
+    if (cfg.src) {
+      frameSvg.style.display = 'block';
+      frameSvg.src = cfg.src;
+    } else {
+      frameSvg.style.display = 'none';
+    }
+  }
+  if (typeof showToast === 'function') showToast('FRAME: ' + cfg.name);
+};
+
+/* Living Hero Standee HTML */
+function hubLivingStandeeHtml(eq) {
+  const frameCfg = getLobbyActiveFrame();
+  const frameSvgUrl = frameCfg.src;
+  const frameTheme = frameCfg.theme;
+
+  if (!eq || !eq.char || !CARDS[eq.char]) {
+    return `
+    <div class="celestial-rune-ring" id="celestialRune">
+      <div class="celestial-inner-hex"></div>
+    </div>
+    <div class="hero-standee-wrap" id="heroStandeeWrap" onclick="if(window.sfx&&sfx.hit)sfx.hit();if(typeof toggleBackpack==='function')toggleBackpack();" title="Pilih Hunter di Deck">
+      <div class="hero-standee-rimlight" id="heroRimlight"></div>
+      <div class="hero-card-plate ${frameTheme}" id="heroCardPlate">
+        <div class="hero-card-art">
+          <div class="hero-standee-char" id="heroStandeeChar" style="background-image: url('assets/cards/art/shadow-king.webp');"></div>
+          <div class="holo-foil-sheen" id="holoFoil"></div>
+        </div>
+        ${frameSvgUrl ? `<img class="hero-frame-svg" id="heroFrameSvg" src="${frameSvgUrl}" alt="Hero Frame" />` : ''}
+      </div>
+
+    </div>`;
+  }
+
+  const c = CARDS[eq.char];
+  const charImg = (typeof cardImg === 'function') ? cardImg(eq.char) : 'assets/cards/art/shadow-king.webp';
+  const name = (typeof cardName === 'function') ? cardName(eq.char) : c.name;
+  const tier = c.tier || 'SSR';
+  const tierCol = (typeof TIER_COLOR !== 'undefined' && TIER_COLOR[tier]) ? TIER_COLOR[tier] : '#38bdf8';
+  const mut = (eq.mut && eq.mut !== 'none') ? eq.mut : null;
+  const trait = (eq.trait && eq.trait !== 'none') ? eq.trait : null;
+  const skill = (typeof passiveName === 'function') ? passiveName(eq.char) : 'Combat Protocol';
+  const sText = (typeof skillText === 'function') ? skillText(eq.char) : 'Tactical Overdrive';
+  const pos = c.pos ? ('background-position:' + c.pos + ';') : '';
+
+  return `
+  <!-- Rotating Celestial Runic Glyphs -->
+  <div class="celestial-rune-ring" id="celestialRune">
+    <div class="celestial-inner-hex"></div>
+  </div>
+
+  <!-- The Hunter Character Stage with Cyber Armor Frame Overlay -->
+  <div class="hero-standee-wrap" id="heroStandeeWrap" onclick="if(window.sfx&&sfx.hit)sfx.hit();if(typeof toggleBackpack==='function')toggleBackpack();" title="Klik Hunter untuk Kelola Party &amp; Deck">
+    <!-- Ambient Rimlight Backglow -->
+    <div class="hero-standee-rimlight" id="heroRimlight" style="--tier-col:${tierCol};"></div>
+
+    <!-- Beveled Chamfer Plate with Hero Frame -->
+    <div class="hero-card-plate ${frameTheme}" id="heroCardPlate">
+      <div class="hero-card-art">
+        <div class="hero-standee-char" id="heroStandeeChar" style="background-image: url('${charImg}'); ${pos}"></div>
+        <!-- Dynamic Prismatic Holographic Foil Sheen -->
+        <div class="holo-foil-sheen" id="holoFoil"></div>
+      </div>
+      ${frameSvgUrl ? `<img class="hero-frame-svg" id="heroFrameSvg" src="${frameSvgUrl}" alt="Hero Frame" />` : ''}
+    </div>
+
+
+  </div>`;
+}
+
+/* ================= AMBIENT CANVAS & PARTICLES ================= */
+let _ambientCanvasAnimId = null;
+
+function initAmbientCanvas() {
+  const canvas = document.getElementById('ambientCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let cw = canvas.width = window.innerWidth;
+  let ch = canvas.height = window.innerHeight;
+
+  const onResize = () => {
+    cw = canvas.width = window.innerWidth;
+    ch = canvas.height = window.innerHeight;
+  };
+  window.removeEventListener('resize', onResize);
+  window.addEventListener('resize', onResize, { passive: true });
+
+  const particles = [];
+  for (let i = 0; i < 45; i++) {
+    particles.push({
+      x: Math.random() * cw,
+      y: Math.random() * ch,
+      vx: (Math.random() - 0.5) * 0.45,
+      vy: -0.35 - Math.random() * 0.55,
+      r: 1 + Math.random() * 2.2,
+      alpha: 0.15 + Math.random() * 0.6,
+      color: Math.random() > 0.45 ? 'rgba(56, 189, 248, ' : 'rgba(192, 132, 252, '
+    });
+  }
+
+  if (_ambientCanvasAnimId) cancelAnimationFrame(_ambientCanvasAnimId);
+
+  function anim() {
+    if (!document.getElementById('ambientCanvas')) return;
+    ctx.clearRect(0, 0, cw, ch);
+    for (let p of particles) {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.y < -10) p.y = ch + 10;
+      if (p.x < -10) p.x = cw + 10;
+      if (p.x > cw + 10) p.x = -10;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color + p.alpha + ')';
+      ctx.fill();
+    }
+    _ambientCanvasAnimId = requestAnimationFrame(anim);
+  }
+  anim();
+}
+
+/* ================= 3D KINETIC HERO PARALLAX ================= */
+let _parallaxBound = false;
+
+function initKineticParallax() {
+  if (_parallaxBound) return;
+  _parallaxBound = true;
+
+  const updateParallax = (clientX, clientY) => {
+    const wrap = document.getElementById('heroStandeeWrap');
+    if (!wrap) return;
+    const char = document.getElementById('heroStandeeChar');
+    const rimlight = document.getElementById('heroRimlight');
+    const badge = document.getElementById('heroTacticalBadge');
+    const rune = document.getElementById('celestialRune');
+    const foil = document.getElementById('holoFoil');
+    const bgLayer = document.getElementById('stageBgLayer');
+
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const xNorm = (clientX / w) - 0.5;
+    const yNorm = (clientY / h) - 0.5;
+
+    const rotY = xNorm * 14;
+    const rotX = -yNorm * 14;
+
+    wrap.style.transform = 'rotateX(' + rotX + 'deg) rotateY(' + rotY + 'deg)';
+    if (char) char.style.transform = 'translate3d(' + (xNorm * 6) + 'px, ' + (yNorm * 6) + 'px, 0)';
+    if (foil) foil.style.transform = 'translate(' + (xNorm * 35) + '%, ' + (yNorm * 35) + '%)';
+    if (bgLayer) bgLayer.style.transform = 'scale(1.05) translate3d(' + (-xNorm * 18) + 'px, ' + (-yNorm * 18) + 'px, 0)';
+    if (rimlight) rimlight.style.transform = 'translate3d(' + (-xNorm * 15) + 'px, ' + (-yNorm * 15) + 'px, -20px) scale(1.05)';
+    if (badge) badge.style.transform = 'translate3d(' + (xNorm * 38) + 'px, ' + (yNorm * 38) + 'px, 75px)';
+    if (rune) rune.style.transform = 'translate3d(' + (-xNorm * 25) + 'px, ' + (-yNorm * 25) + 'px, -60px)';
+  };
+
+  window.addEventListener('mousemove', (e) => {
+    updateParallax(e.clientX, e.clientY);
+  }, { passive: true });
+
+  window.addEventListener('touchmove', (e) => {
+    if (e.touches && e.touches[0]) {
+      updateParallax(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  }, { passive: true });
+
+  window.addEventListener('mouseleave', () => {
+    const wrap = document.getElementById('heroStandeeWrap');
+    if (!wrap) return;
+    wrap.style.transform = 'rotateX(0deg) rotateY(0deg)';
+    const char = document.getElementById('heroStandeeChar');
+    if (char) char.style.transform = 'translate3d(0,0,0)';
+    const foil = document.getElementById('holoFoil');
+    if (foil) foil.style.transform = 'translate(0, 0)';
+    const bgLayer = document.getElementById('stageBgLayer');
+    if (bgLayer) bgLayer.style.transform = 'scale(1.05) translate3d(0, 0, 0)';
+    const rimlight = document.getElementById('heroRimlight');
+    if (rimlight) rimlight.style.transform = 'translate3d(0,0,-20px)';
+    const badge = document.getElementById('heroTacticalBadge');
+    if (badge) badge.style.transform = 'translate3d(0,0,75px)';
+    const rune = document.getElementById('celestialRune');
+    if (rune) rune.style.transform = 'translate3d(0,0,-60px)';
+  });
+}
+
+/* ================= LIVE TICKING TELEMETRY ================= */
+let _telemetryTimer = null;
+
+function initTelemetryTicker() {
+  if (_telemetryTimer) return;
+  _telemetryTimer = setInterval(() => {
+    const coords = document.getElementById('telCoords');
+    const freq = document.getElementById('telFreq');
+    if (!coords || !freq) {
+      clearInterval(_telemetryTimer);
+      _telemetryTimer = null;
+      return;
+    }
+    const lat = (35.680 + Math.random() * 0.02).toFixed(3);
+    const lon = (139.690 + Math.random() * 0.02).toFixed(3);
+    coords.textContent = 'POS: ' + lat + ' // ' + lon;
+    const f = (142.75 + Math.random() * 0.15).toFixed(2);
+    freq.textContent = 'CARRIER: ' + f + ' MHz';
+  }, 1200);
+}
+
+/* ================= DRAWER CONTROLLER & SWIPE GESTURES ================= */
+window.openCommandDrawer = function() {
+  const d = document.getElementById('commandDrawer');
+  const b = document.getElementById('drawerBackdrop');
+  if (d && d.parentElement !== document.body) document.body.appendChild(d);
+  if (b && b.parentElement !== document.body) document.body.appendChild(b);
+  if (d) d.classList.add('open');
+  if (b) b.classList.add('open');
+  document.body.classList.add('drawer-open');
+
+  const closeBtn = document.getElementById('drwCloseBtn');
+  if (closeBtn) {
+    closeBtn.onclick = function(e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      closeCommandDrawer();
+    };
+  }
+  if (b) {
+    b.onclick = function(e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      closeCommandDrawer();
+    };
+  }
+
+  if (typeof playSubBass === 'function') playSubBass(70, 0.2, 0.22);
+  if (typeof playSound === 'function') playSound('open');
+  else if (window.sfx && typeof sfx.open === 'function') sfx.open();
+};
+
+window.closeCommandDrawer = function() {
+  const d = document.getElementById('commandDrawer');
+  const b = document.getElementById('drawerBackdrop');
+  if (d) d.classList.remove('open');
+  if (b) b.classList.remove('open');
+  document.body.classList.remove('drawer-open');
+  if (typeof playSubBass === 'function') playSubBass(50, 0.15, 0.15);
+  if (typeof playSound === 'function') playSound('close');
+  else if (window.sfx && typeof sfx.close === 'function') sfx.close();
+};
+
+window.cleanupCommandDrawer = function() {
+  const d = document.getElementById('commandDrawer');
+  const b = document.getElementById('drawerBackdrop');
+  if (d) d.remove();
+  if (b) b.remove();
+  document.body.classList.remove('drawer-open');
+};
+
+window.toggleCommandDrawer = function() {
+  const d = document.getElementById('commandDrawer');
+  if (d && d.classList.contains('open')) closeCommandDrawer();
+  else openCommandDrawer();
+};
+
+let _drawerGesturesBound = false;
+function initCommandDrawerGestures() {
+  if (_drawerGesturesBound) return;
+  _drawerGesturesBound = true;
+
+  // Keyboard shortcut: ESC to close, M to toggle
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const d = document.getElementById('commandDrawer');
+      if (d && d.classList.contains('open')) {
+        closeCommandDrawer();
+      }
+    } else if (e.key === 'm' || e.key === 'M') {
+      // If typing in input, ignore
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+      toggleCommandDrawer();
+    }
+  });
+
+  // Touch swipe gesture: swipe left from edge opens, swipe right closes
+  let touchStartX = 0;
+  let touchStartY = 0;
+
+  window.addEventListener('touchstart', (e) => {
+    if (e.touches && e.touches[0]) {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }
+  }, { passive: true });
+
+  window.addEventListener('touchend', (e) => {
+    if (!e.changedTouches || !e.changedTouches[0]) return;
+    const diffX = e.changedTouches[0].clientX - touchStartX;
+    const diffY = Math.abs(e.changedTouches[0].clientY - touchStartY);
+    if (diffY > 80) return; // vertical scroll, ignore
+
+    const d = document.getElementById('commandDrawer');
+    const isOpen = d && d.classList.contains('open');
+
+    // Swipe left from right edge (starts in rightmost 25% of screen)
+    if (!isOpen && diffX < -60 && touchStartX > window.innerWidth * 0.72) {
+      openCommandDrawer();
+    }
+    // Swipe right to close
+    else if (isOpen && diffX > 60) {
+      closeCommandDrawer();
+    }
+  }, { passive: true });
+}
+
+/* ================= MAIN RENDER LOBBY ================= */
+function renderLobby(){
+  if(state.battle){
+    if(typeof cleanupCommandDrawer==='function') cleanupCommandDrawer();
+    return renderBattle();
+  }
+  const _oldDrw = document.getElementById('commandDrawer');
+  if(_oldDrw && _oldDrw.parentElement === document.body) _oldDrw.remove();
+  const _oldBd = document.getElementById('drawerBackdrop');
+  if(_oldBd && _oldBd.parentElement === document.body) _oldBd.remove();
+  document.body.classList.remove('drawer-open');
+  const eq = equipped();
+  const activeBg = getLobbyActiveBg();
+
+  app.innerHTML = `
+  <div class="lobby-hub stage-root" id="stage">
+    <!-- 1. Cinematic AAA Anime Landscape Background Layer -->
+    <div class="stage-bg-layer" id="stageBgLayer" style="background-image: url('${activeBg}');"></div>
+    <div class="stage-vignette"></div>
+    <div class="distant-skyline"></div>
+    <div class="floor-fog"></div>
+    <canvas id="ambientCanvas"></canvas>
+
+    <!-- 2. Live Ticking Telemetry Feed (Top Left) -->
+    <div class="telemetry-feed" id="telemetryFeed">
+      <span id="telCoords">POS: 35.689 // 139.692</span>
+      <span id="telSync">NEURAL SYNC: 99.4%</span>
+      <span id="telFreq">CARRIER: 142.80 MHz</span>
+    </div>
+
+    <!-- 3. The Living Anime Hero Standee (PURE AAA - ZERO CLUTTER) -->
+    <main class="hero-stage-container" id="heroStage">
+      ${hubLivingStandeeHtml(eq)}
+
+
+    </main>
+
+    <!-- 4. Minimalist Right-Edge Tactical Command Trigger Handle -->
+    <div class="cmd-trigger-btn" id="cmdTriggerBtn" title="Buka Command Terminal (M / Swipe Kiri)" onclick="openCommandDrawer()">
+      <div class="cmd-icon-core">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </div>
+      <span class="cmd-trigger-label">COMMAND</span>
+    </div>
+
+    <!-- 5. Backdrop Overlay for Command Drawer -->
+    <div id="drawerBackdrop" onclick="closeCommandDrawer()"></div>
+
+    <!-- 6. Archon Command Drawer (The Living Swipe Menu) -->
+    <aside id="commandDrawer">
+      <div class="drw-head">
+        <div class="drw-title-wrap">
+          <div class="drw-eyebrow">
+            <span class="live-dot"></span>
+            <span>TACTICAL HUD // ARCHON COMMAND ONLINE</span>
+          </div>
+          <div class="drw-title">ARCHON COMMAND TERMINAL</div>
+        </div>
+        <button class="drw-close-btn" id="drwCloseBtn" onclick="closeCommandDrawer()" title="Tutup (ESC / Swipe Kanan)">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="drw-body">
+        <!-- 1. OPERASI TEMPUR UTAMA -->
+        <section>
+          <div class="cat-header">
+            <span class="cat-title">OPERASI TEMPUR UTAMA</span>
+            <span class="cat-meta">COMBAT DEPLOYMENT</span>
+          </div>
+
+          <!-- Banner 1: Story Campaign -->
+          <div class="hero-banner-card menu-card stagger-in" style="--stagger: 1;" id="drwStoryBtn">
+            <img class="banner-frame-svg" src="assets/frames/frame-holo-banner.svg" alt="Frame" />
+            <div class="banner-bg" style="background-image: url('assets/images/story-bab3-shibuya.webp');"></div>
+            <div class="banner-overlay"></div>
+            <div class="specular-shine"></div>
+            <div class="banner-content">
+              <div class="banner-left">
+                <div class="banner-icon-pod glow-cyan">
+                  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"></polygon>
+                    <line x1="13" y1="19" x2="19" y2="13"></line>
+                    <line x1="16" y1="16" x2="20" y2="20"></line>
+                    <line x1="19" y1="21" x2="21" y2="19"></line>
+                  </svg>
+                </div>
+                <div class="banner-info">
+                  <div class="banner-badge-row">
+                    <span class="banner-tag tag-cyan">STORY CAMPAIGN // CHAPTERS</span>
+                    <span id="drwStoryPercent" style="font-family:var(--font-mono);font-size:11px;color:#38bdf8;font-weight:700">ACTIVE</span>
+                  </div>
+                  <div class="banner-title">STORY CAMPAIGN</div>
+                  <div class="banner-metric-row">
+                    <span class="bm-val" id="missionSub" style="color:#ffffff">PROGRESS</span>
+                    <span style="color:var(--text-dim)">•</span>
+                    <span style="color:#fbbf24;font-weight:700">CLEARANCE REWARDS</span>
+                  </div>
+                  <div class="banner-progress-wrap">
+                    <div class="banner-progress-fill fill-cyan" id="missionFill" style="width: 50%;"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="banner-cta">
+                <span>MASUK</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Banner 2: World Boss Raid -->
+          <div class="hero-banner-card menu-card stagger-in" style="--stagger: 2;" id="drwRaidBtn">
+            <img class="banner-frame-svg" src="assets/frames/frame-holo-banner.svg" alt="Frame" />
+            <div class="banner-bg" style="background-image: url('assets/raid/raid-banner-hd.webp');"></div>
+            <div class="banner-overlay"></div>
+            <div class="specular-shine"></div>
+            <div class="banner-content">
+              <div class="banner-left">
+                <div class="banner-icon-pod glow-crimson">
+                  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="22" y1="12" x2="18" y2="12"></line>
+                    <line x1="6" y1="12" x2="2" y2="12"></line>
+                    <line x1="12" y1="6" x2="12" y2="2"></line>
+                    <line x1="12" y1="22" x2="12" y2="18"></line>
+                    <circle cx="12" cy="12" r="4"></circle>
+                  </svg>
+                </div>
+                <div class="banner-info">
+                  <div class="banner-badge-row">
+                    <span class="banner-tag tag-crimson"><span class="live-dot" style="background:#fb7185"></span>GLOBAL RAID // LIVE</span>
+                    <span style="font-family:var(--font-mono);font-size:11px;color:#fb7185;font-weight:700">SHARED HP</span>
+                  </div>
+                  <div class="banner-title">WORLD BOSS RAID</div>
+                  <div class="banner-metric-row">
+                    <span class="bm-val" style="color:#ffffff">SHADOW DRAGON</span>
+                    <span style="color:var(--text-dim)">•</span>
+                    <span style="color:#fb7185;font-weight:700">TOP 10% LOOT</span>
+                  </div>
+                  <div class="banner-progress-wrap">
+                    <div class="banner-progress-fill fill-crimson" style="width: 68%;"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="banner-cta">
+                <span>DEPLOY</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tactical Split Cards: Infinite Spire & Leaderboard -->
+          <div class="op-split-grid">
+            <div class="op-card menu-card stagger-in" style="--stagger: 3;" id="drwTowerBtn">
+              <img class="pod-frame-svg" src="assets/frames/frame-holo-pod.svg" alt="Holo Glass Frame" />
+              <div class="specular-shine"></div>
+              <div class="op-top-row">
+                <div class="op-icon-pod glow-purple">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                    <polyline points="2 17 12 22 22 17"></polyline>
+                    <polyline points="2 12 12 17 22 12"></polyline>
+                  </svg>
+                </div>
+                <span class="banner-tag tag-purple">NEURAL SPIRE</span>
+              </div>
+              <div class="op-info">
+                <div class="op-title">INFINITE TOWER</div>
+                <span class="op-metric">CLIMB NEURAL FLOORS</span>
+              </div>
+            </div>
+
+            <div class="op-card menu-card stagger-in" style="--stagger: 4;" id="drwRankBtn">
+              <img class="pod-frame-svg" src="assets/frames/frame-holo-pod.svg" alt="Holo Glass Frame" />
+              <div class="specular-shine"></div>
+              <div class="op-top-row">
+                <div class="op-icon-pod glow-gold">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                    <path d="M4 22h16"></path>
+                    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                    <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                  </svg>
+                </div>
+                <span class="banner-tag tag-gold">GLOBAL RANK</span>
+              </div>
+              <div class="op-info">
+                <div class="op-title" style="color:#fbbf24">LEADERBOARD</div>
+                <span class="op-metric" style="color:#fbbf24">TOP HUNTERS CLASSIFIED</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. AKTIVITAS HARIAN & BOOSTER -->
+        <section>
+          <div class="cat-header">
+            <span class="cat-title">AKTIVITAS HARIAN &amp; BOOSTER</span>
+            <span class="cat-meta">DAILY OPERATIONS</span>
+          </div>
+
+          <div class="modular-grid">
+            <!-- 7-Day Login -->
+            <div class="mod-pod menu-card stagger-in" style="--stagger: 5;" id="drwDailyBtn">
+              <img class="pod-frame-svg" src="assets/frames/frame-holo-pod.svg" alt="Frame" />
+              <div class="specular-shine"></div>
+              <div class="pod-icon-wrap glow-emerald">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                  <polyline points="9 16 11 18 15 13"></polyline>
+                </svg>
+              </div>
+              <div class="pod-content">
+                <div class="pod-head">
+                  <span class="pod-name">7-Day Login</span>
+                  <span class="banner-tag tag-emerald">HARIAN</span>
+                </div>
+                <span class="pod-sub" id="drwDailySub">KLAIM REWARD HARIAN</span>
+              </div>
+            </div>
+
+            <!-- Free Ads & Luck Booster -->
+            <div class="mod-pod menu-card stagger-in" style="--stagger: 6;" id="drwAdsBtn">
+              <img class="pod-frame-svg" src="assets/frames/frame-holo-pod.svg" alt="Frame" />
+              <div class="specular-shine"></div>
+              <div class="pod-icon-wrap glow-gold">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  <line x1="19" y1="5" x2="19" y2="19"></line>
+                </svg>
+              </div>
+              <div class="pod-content">
+                <div class="pod-head">
+                  <span class="pod-name">Free 2x Luck</span>
+                  <span class="banner-tag tag-gold">BOOST</span>
+                </div>
+                <span class="pod-sub" id="drwAdsSub">FREE 2X LUCK &amp; PACK</span>
+              </div>
+            </div>
+
+            <!-- Global Luck -->
+            <div class="mod-pod menu-card stagger-in" style="--stagger: 7;" id="drwGlBtn">
+              <img class="pod-frame-svg" src="assets/frames/frame-holo-pod.svg" alt="Frame" />
+              <div class="specular-shine"></div>
+              <div class="pod-icon-wrap glow-cyan">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+              </div>
+              <div class="pod-content">
+                <div class="pod-head">
+                  <span class="pod-name">Global Luck</span>
+                  <span class="banner-tag tag-cyan">SERVER</span>
+                </div>
+                <span class="pod-sub" id="drwGlSub">PENGALI LUCK KOMUNITAS</span>
+              </div>
+            </div>
+
+            <!-- Weather Machine -->
+            <div class="mod-pod menu-card stagger-in" style="--stagger: 8;" id="drwWeatherBtn">
+              <img class="pod-frame-svg" src="assets/frames/frame-holo-pod.svg" alt="Frame" />
+              <div class="specular-shine"></div>
+              <div class="pod-icon-wrap glow-cyan">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9"></path>
+                  <polyline points="13 11 9 17 15 17 11 23"></polyline>
+                </svg>
+              </div>
+              <div class="pod-content">
+                <div class="pod-head">
+                  <span class="pod-name">Weather Synth</span>
+                  <span class="banner-tag tag-cyan">CLIMATE</span>
+                </div>
+                <span class="pod-sub" id="drwWeatherSub">ATMOSPHERIC BUFF</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. SISTEM & ARSIP -->
+        <section>
+          <div class="cat-header">
+            <span class="cat-title">SISTEM &amp; ARSIP</span>
+            <span class="cat-meta">SYSTEM &amp; GEAR</span>
+          </div>
+
+          <div class="modular-grid">
+            <!-- Trait Overclock -->
+            <div class="mod-pod menu-card stagger-in" style="--stagger: 9;" id="drwTraitBtn">
+              <img class="pod-frame-svg" src="assets/frames/frame-holo-pod.svg" alt="Frame" />
+              <div class="specular-shine"></div>
+              <div class="pod-icon-wrap glow-gold">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+                  <rect x="9" y="9" width="6" height="6"></rect>
+                  <line x1="9" y1="1" x2="9" y2="4"></line>
+                  <line x1="15" y1="1" x2="15" y2="4"></line>
+                  <line x1="9" y1="20" x2="9" y2="23"></line>
+                  <line x1="15" y1="20" x2="15" y2="23"></line>
+                  <line x1="20" y1="9" x2="23" y2="9"></line>
+                  <line x1="20" y1="14" x2="23" y2="14"></line>
+                  <line x1="1" y1="9" x2="4" y2="9"></line>
+                  <line x1="1" y1="14" x2="4" y2="14"></line>
+                </svg>
+              </div>
+              <div class="pod-content">
+                <div class="pod-head">
+                  <span class="pod-name">Trait Overclock</span>
+                  <span class="banner-tag tag-gold">REFINE</span>
+                </div>
+                <span class="pod-sub">OPTIMASI STAT PASIF</span>
+              </div>
+            </div>
+
+            <!-- Neural Archive -->
+            <div class="mod-pod menu-card stagger-in" style="--stagger: 10;" id="drwIndexBtn">
+              <img class="pod-frame-svg" src="assets/frames/frame-holo-pod.svg" alt="Frame" />
+              <div class="specular-shine"></div>
+              <div class="pod-icon-wrap glow-cyan">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                  <line x1="8" y1="6" x2="16" y2="6"></line>
+                  <line x1="8" y1="10" x2="14" y2="10"></line>
+                </svg>
+              </div>
+              <div class="pod-content">
+                <div class="pod-head">
+                  <span class="pod-name">Neural Archive</span>
+                  <span class="banner-tag tag-cyan">DATABASE</span>
+                </div>
+                <span class="pod-sub">KATALOG KARTU</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. FASILITAS & ASCENSION -->
+        <section>
+          <div class="cat-header">
+            <span class="cat-title">FASILITAS &amp; ASCENSION</span>
+            <span class="cat-meta">SPECIAL PROTOCOLS</span>
+          </div>
+
+          <div class="modular-grid">
+            <!-- Premium Shop -->
+            <div class="mod-pod menu-card stagger-in" style="--stagger: 11;" id="drwPremiumBtn">
+              <img class="pod-frame-svg" src="assets/frames/frame-holo-pod.svg" alt="Frame" />
+              <div class="specular-shine"></div>
+              <div class="pod-icon-wrap glow-gold">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="6 3 18 3 22 9 12 22 2 9 6 3"></polygon>
+                  <line x1="12" y1="22" x2="6" y2="9"></line>
+                  <line x1="12" y1="22" x2="18" y2="9"></line>
+                  <line x1="2" y1="9" x2="22" y2="9"></line>
+                </svg>
+              </div>
+              <div class="pod-content">
+                <div class="pod-head">
+                  <span class="pod-name">Supply Shop</span>
+                  <span class="banner-tag tag-gold">VIP</span>
+                </div>
+                <span class="pod-sub">INSTANT ROLL PACKS</span>
+              </div>
+            </div>
+
+            <!-- Rebirth Protocol -->
+            <div class="mod-pod menu-card stagger-in" style="--stagger: 12;" id="drwRebirthBtn">
+              <img class="pod-frame-svg" src="assets/frames/frame-holo-pod.svg" alt="Frame" />
+              <div class="specular-shine"></div>
+              <div class="pod-icon-wrap glow-crimson">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                </svg>
+              </div>
+              <div class="pod-content">
+                <div class="pod-head">
+                  <span class="pod-name">Rebirth Protocol</span>
+                  <span class="banner-tag tag-crimson">REBIRTH</span>
+                </div>
+                <span class="pod-sub" id="drwRebirthSub">PENGALI SINGULARITAS</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </aside>
+  </div>`;
+
+  // Lift Command Drawer & Backdrop directly to document.body for root layering above topbar
+  const _drw = document.getElementById('commandDrawer');
+  const _bd = document.getElementById('drawerBackdrop');
+  if (_drw && _drw.parentElement !== document.body) document.body.appendChild(_drw);
+  if (_bd && _bd.parentElement !== document.body) document.body.appendChild(_bd);
+  const _drwClose = document.getElementById('drwCloseBtn');
+  if (_drwClose) {
+    _drwClose.onclick = function(e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      closeCommandDrawer();
+    };
+  }
+  if (_bd) {
+    _bd.onclick = function(e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      closeCommandDrawer();
+    };
+  }
+
+  // === Dynamic Metric Calculations & Event Bindings ===
+  // 1. Mission / Story Progress
+  try {
+    const ms = document.getElementById('missionSub');
+    const fill = document.getElementById('missionFill');
+    const percentEl = document.getElementById('drwStoryPercent');
+    if (typeof CHAPTERS !== 'undefined' && Array.isArray(CHAPTERS)) {
+      const done = CHAPTERS.reduce((a, c) => a + (typeof chapProgMode === 'function' ? chapProgMode(c, state.diff) : 0), 0);
+      const tot = CHAPTERS.reduce((a, c) => a + c.levels.length, 0);
+      const ratio = tot ? Math.min(100, Math.round(done / tot * 100)) : 0;
+      if (ms) ms.textContent = done + ' / ' + tot + ' SELESAI';
+      if (fill) fill.style.width = ratio + '%';
+      if (percentEl) percentEl.textContent = ratio + '% COMPLETE';
+    }
+  } catch(e) {}
+
+  // 2. 7-Day Login status
+  try {
+    const dailySub = document.getElementById('drwDailySub');
+    if (dailySub) {
+      const isReady = (typeof state !== 'undefined' && state && typeof todayStr === 'function') ? (state.lastClaim !== todayStr()) : false;
+      dailySub.textContent = isReady ? 'SIAP DIKLAIM!' : 'SUDAH DIKLAIM HARI INI';
+      dailySub.style.color = isReady ? '#34d399' : '#64748b';
+    }
+  } catch(e) {}
+
+  // 3. Free Ads status
+  try {
+    const adsSub = document.getElementById('drwAdsSub');
+    if (adsSub) {
+      const luckMs = typeof adLuckLeftMs === 'function' ? adLuckLeftMs() : 0;
+      if (luckMs > 0) {
+        adsSub.textContent = '2x LUCK AKTIF (' + Math.ceil(luckMs / 60000) + 'm)';
+        adsSub.style.color = '#fbbf24';
+      } else {
+        adsSub.textContent = 'TONTON ADS UNTUK 2x LUCK';
+      }
+    }
+  } catch(e) {}
+
+  // 4. Global Luck status
+  try {
+    const glSub = document.getElementById('drwGlSub');
+    if (glSub) {
+      const gl = typeof _globalLuckCache !== 'undefined' ? _globalLuckCache : null;
+      const glActive = gl && Date.now() < new Date(gl.ends_at).getTime();
+      if (glActive) {
+        glSub.textContent = (gl.multiplier || 2) + 'x LUCK AKTIF';
+        glSub.style.color = '#38bdf8';
+      } else {
+        glSub.textContent = 'PENGALI LUCK SERVER';
+      }
+    }
+  } catch(e) {}
+
+  // 5. Weather Synth status
+  try {
+    const wSub = document.getElementById('drwWeatherSub');
+    if (wSub && typeof state !== 'undefined' && state && state.weather) {
+      wSub.textContent = 'CUACA: ' + (state.weather.name || state.weather.type || 'CLEAR').toUpperCase();
+    }
+  } catch(e) {}
+
+  // 6. Rebirth Protocol status
+  try {
+    const rbSub = document.getElementById('drwRebirthSub');
+    if (rbSub && typeof state !== 'undefined' && state) {
+      const rbCount = state.rebirthCount || 0;
+      const rbMult = typeof rebirthLuckMult === 'function' ? rebirthLuckMult(rbCount) : (1 + rbCount * 0.5);
+      rbSub.textContent = 'R' + rbCount + ' // LUCK ' + rbMult.toFixed(1) + 'x';
+    }
+  } catch(e) {}
+
+  // === Drawer Button Clicks ===
+  const bindClick = (id, fn) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.onclick = (e) => {
+        e.stopPropagation();
+        if (typeof playSound === 'function') playSound('click');
+        else if (window.sfx && sfx.hit) sfx.hit();
+        closeCommandDrawer();
+        setTimeout(fn, 120);
+      };
+    }
+  };
+
+  bindClick('drwStoryBtn', () => { if (typeof openMission === 'function') openMission(); });
+  bindClick('drwRaidBtn', () => { window.raidView = 'hub'; window.location.hash = '#/raid'; });
+  bindClick('drwTowerBtn', () => { if (typeof stopTower === 'function') stopTower(); window.location.hash = '#/tower'; });
+  bindClick('drwRankBtn', () => { if (typeof openRanking === 'function') openRanking(); });
+  bindClick('drwDailyBtn', () => { if (typeof openDaily === 'function') openDaily(); });
+  bindClick('drwAdsBtn', () => { if (typeof openWatchAdsModal === 'function') openWatchAdsModal(); });
+  bindClick('drwGlBtn', () => { if (typeof buyGlobalLuck === 'function') buyGlobalLuck(); });
+  bindClick('drwWeatherBtn', () => { if (typeof openWeatherMachine === 'function') openWeatherMachine(); });
+  bindClick('drwTraitBtn', () => { if (typeof openTrait === 'function') openTrait(); });
+  bindClick('drwIndexBtn', () => { if (typeof openIndex === 'function') openIndex(); });
+  bindClick('drwPremiumBtn', () => { if (typeof openPremiumShop === 'function') openPremiumShop(); });
+  bindClick('drwRebirthBtn', () => { if (typeof onRebirthClick === 'function') onRebirthClick(); });
+
+  // Initialize interactive engines
+  initAmbientCanvas();
+  initKineticParallax();
+  initTelemetryTicker();
+  initCommandDrawerGestures();
+  if (typeof initAAAInteractiveSuite === 'function') initAAAInteractiveSuite();
+}
+
 
 /* ========== TOGGLE BACKPACK FUNCTION ========== */
 function toggleBackpack() {
   const panel = document.getElementById('backpackPanel');
   if (!panel) return;
 
-  const isVisible = panel.style.display !== 'none' && panel.style.display !== '';
+  const isVisible = document.body.classList.contains('bp-open') || panel.classList.contains('open') || (panel.style.display !== 'none' && panel.style.display !== '');
 
   if (isVisible) {
     /* Close: refresh lobby di belakang biar hub card & bench ikut perubahan dek. */
     document.body.classList.remove('bp-open');
+    panel.classList.remove('open');
     bpTarget = null;
     bpItemPopClose();
     panel.style.opacity = '0';
     panel.style.transform = 'translate(-50%, -45%) scale(0.95)';
-    setTimeout(() => { panel.style.display = 'none'; render(); }, 300);
+    setTimeout(() => { panel.style.display = 'none'; render(); }, 250);
   } else {
     /* Open */
     document.body.classList.add('bp-open');
+    panel.classList.add('open');
     renderBackpackPanel();
     panel.style.display = 'flex';
 
@@ -1672,3 +2408,84 @@ window.openRebirthModal = openRebirthModal;
 window.closeRebirthModal = closeRebirthModal;
 window.renderRebirthModal = renderRebirthModal;
 window.executeRebirthFromModal = executeRebirthFromModal;
+
+
+/* ================= AAA HIGH-PERFORMANCE AUDIO & INTERACTIVE SUITE ================= */
+(function() {
+  const audioClips = {
+    hover: 'assets/audio/sfx/interface/glass_004.ogg',
+    click: 'assets/audio/sfx/interface/click_002.ogg',
+    open: 'assets/audio/sfx/interface/maximize_008.ogg',
+    close: 'assets/audio/sfx/interface/minimize_008.ogg',
+    confirm: 'assets/audio/sfx/interface/confirmation_001.ogg',
+    deck: 'assets/audio/sfx/interface/drop_002.ogg',
+    roll: 'assets/audio/sfx/sci-fi/engineCircular_001.ogg',
+    jingle: 'assets/audio/sfx/jingles/jingles_PIZZI10.ogg',
+    switch: 'assets/audio/sfx/interface/switch_001.ogg'
+  };
+
+  const soundPool = {};
+  for (let key in audioClips) {
+    soundPool[key] = [];
+    for (let i = 0; i < 3; i++) {
+      const a = new Audio(audioClips[key]);
+      a.volume = (key === 'hover') ? 0.35 : 0.65;
+      soundPool[key].push(a);
+    }
+  }
+
+  window.playSound = function(type) {
+    if (typeof state !== 'undefined' && state && state.muted) return;
+    try {
+      const pool = soundPool[type] || soundPool['click'];
+      if (pool && pool.length) {
+        const snd = pool.find(a => a.paused) || pool[0];
+        snd.currentTime = 0;
+        snd.play().catch(() => {});
+      }
+    } catch (e) {}
+  };
+
+  let audioCtx = null;
+  function getAudioCtx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+
+  window.playSubBass = function(freq = 55, dur = 0.18, vol = 0.25) {
+    if (typeof state !== 'undefined' && state && state.muted) return;
+    try {
+      const c = getAudioCtx();
+      const now = c.currentTime;
+      const osc = c.createOscillator();
+      const gain = c.createGain();
+      osc.connect(gain);
+      gain.connect(c.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now);
+      osc.frequency.exponentialRampToValueAtTime(25, now + dur);
+      gain.gain.setValueAtTime(vol, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+      osc.start(now);
+      osc.stop(now + dur);
+    } catch (e) {}
+  };
+})();
+
+function initAAAInteractiveSuite() {
+  // 3. Tactile Hover Audio
+  document.querySelectorAll('.menu-card, .dock-btn-deck, .dock-btn-roll, .cmd-trigger-btn, .currency-pill, .tb-avatar-pod').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      if (typeof playSound === 'function') playSound('hover');
+    });
+  });
+
+  // 4. Auto-open drawer if requested in URL
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('drawer') === '1') {
+      setTimeout(() => { if (typeof openCommandDrawer === 'function') openCommandDrawer(); }, 400);
+    }
+    } catch(e) {}
+}

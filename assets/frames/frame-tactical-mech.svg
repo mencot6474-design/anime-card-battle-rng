@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 310 460" fill="none">
+  <defs>
+    <linearGradient id="cyberNeon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+    <linearGradient id="obsidianMetal" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="50%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <pattern id="hazardStripes" width="10" height="10" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="0" y2="10" stroke="#facc15" stroke-width="4" />
+      <line x1="5" y1="0" x2="5" y2="10" stroke="#0f172a" stroke-width="6" />
+    </pattern>
+  </defs>
+
+  <!-- Heavy Outer Chassis -->
+  <path d="M32 0 L278 0 L310 32 L310 428 L278 460 L32 460 L0 428 L0 32 Z" 
+        stroke="#38bdf8" stroke-width="2" fill="none" opacity="0.85"/>
+
+  <!-- Inner Cyan Laser Circuit Rail -->
+  <path d="M35 8 L275 8 L302 35 L302 425 L275 452 L35 452 L8 425 L8 35 Z" 
+        stroke="rgba(56, 189, 248, 0.45)" stroke-width="1.2" fill="none"/>
+
+  <!-- Heavy Corner Armor Pods -->
+  <!-- Top Left -->
+  <g>
+    <polygon points="0,32 32,0 56,0 56,12 18,50 0,50" fill="url(#obsidianMetal)" stroke="#38bdf8" stroke-width="1.5"/>
+    <rect x="6" y="6" width="36" height="4" fill="url(#hazardStripes)" transform="rotate(-45 6 6)"/>
+    <circle cx="26" cy="26" r="3" fill="#38bdf8"/>
+  </g>
+  <!-- Top Right -->
+  <g>
+    <polygon points="310,32 278,0 254,0 254,12 292,50 310,50" fill="url(#obsidianMetal)" stroke="#38bdf8" stroke-width="1.5"/>
+    <circle cx="284" cy="26" r="3" fill="#38bdf8"/>
+  </g>
+  <!-- Bottom Left -->
+  <g>
+    <polygon points="0,428 32,460 56,460 56,448 18,410 0,410" fill="url(#obsidianMetal)" stroke="#38bdf8" stroke-width="1.5"/>
+    <circle cx="26" cy="434" r="3" fill="#38bdf8"/>
+  </g>
+  <!-- Bottom Right -->
+  <g>
+    <polygon points="310,428 278,460 254,460 254,448 292,410 310,410" fill="url(#obsidianMetal)" stroke="#38bdf8" stroke-width="1.5"/>
+    <circle cx="284" cy="434" r="3" fill="#38bdf8"/>
+  </g>
+
+  <!-- Top Center HUD Status Fin -->
+  <g transform="translate(155, 0)">
+    <polygon points="-40,0 -30,14 30,14 40,0" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+    <text x="0" y="10" font-family="'JetBrains Mono', monospace" font-size="7" font-weight="800" fill="#38bdf8" text-anchor="middle" letter-spacing="1.5">HUNTER // OVERDRIVE</text>
+  </g>
+
+  <!-- Side Heat Dissipation Fins -->
+  <!-- Left -->
+  <g fill="#38bdf8" opacity="0.8">
+    <rect x="0" y="160" width="4" height="12"/>
+    <rect x="0" y="180" width="4" height="20"/>
+    <rect x="0" y="208" width="4" height="35"/>
+    <rect x="0" y="251" width="4" height="20"/>
+    <rect x="0" y="279" width="4" height="12"/>
+    <!-- Crosshair Bracket Left -->
+    <path d="M12 220 L6 225 L6 235 L12 240" stroke="#38bdf8" stroke-width="1.5" fill="none"/>
+  </g>
+  <!-- Right -->
+  <g fill="#38bdf8" opacity="0.8">
+    <rect x="306" y="160" width="4" height="12"/>
+    <rect x="306" y="180" width="4" height="20"/>
+    <rect x="306" y="208" width="4" height="35"/>
+    <rect x="306" y="251" width="4" height="20"/>
+    <rect x="306" y="279" width="4" height="12"/>
+    <!-- Crosshair Bracket Right -->
+    <path d="M298 220 L304 225 L304 235 L298 240" stroke="#38bdf8" stroke-width="1.5" fill="none"/>
+  </g>
+
+  <!-- Bottom Tactical Lock Bracket -->
+  <g transform="translate(155, 460)">
+    <polygon points="-50,0 -35,-14 35,-14 50,0" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+    <rect x="-25" y="-8" width="50" height="3" fill="#38bdf8"/>
+  </g>
+</svg>

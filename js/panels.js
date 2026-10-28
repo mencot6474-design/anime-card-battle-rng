@@ -788,6 +788,103 @@ function rollCountBadge() {
   if (typeof updateRebirthUI === "function") updateRebirthUI();
 }
 
+/* ===== ROLL SERVER-AUTHORITATIVE (Unit 4 — RPC roll_pull, migrasi 0034-0036) =====
+   Roll manual + AUTO memakai hasil dari server: server yang ngacak, nulis kartu baru,
+   bayar esens dup, dan menaikkan totalRolls di save_data. Client cuma mirror.
+
+   KENAPA TIDAK BOLEH FALLBACK KE RNG LOKAL SAAT SESI HIDUP:
+   roll itu gratis, jadi satu klik = satu kartu. Kalau RPC-nya jalan di server tapi
+   client ikut ngacak lokal (karena queue kosong / RPC lambat), pemain dapat DUA kartu
+   untuk satu klik dan server tidak bisa membedakan itu dari save biasa. Maka:
+     - tanpa sesi cloud (main lokal / offline)   -> jalur lama, rngRoll() client, tetap bisa main;
+     - dengan sesi                               -> antrean hasil server; kalau RPC gagal,
+       tick berikutnya JEDA (bukan roll lokal), lalu toast setelah beberapa detik.
+   PREFETCH 1 RPC = 10 hasil: batas 120 RPC/menit (0033) tetap aman untuk speed maksimum
+   (RNG_ROLL_MAX_MULT), dan latensi RPC tersembunyi di balik animasi reveal. */
+const SROLL_BATCH = 10;      /* hasil per RPC (roll_pull clamp 1..100, 10 cukup buat 1-2 detik auto) */
+const SROLL_KEEP = 4;        /* di bawah ini antrean diam-diam diisi lagi */
+const SRoll = { q: [], busy: null, downUntil: 0, lastErr: "", warnAt: 0 };
+function srSession(){
+  try {
+    if (!(window.CloudDB && window.CloudAuth && typeof currentUser !== "undefined" && currentUser && state)) return false;
+    /* Aturan: TANPA sesi cloud (belum login / offline) = jalur lama RNG lokal, persis
+       seperti sebelum Unit 4 — pemain itu toh tidak bisa push save, jadi tidak ada
+       yang bisa dicurangi lewat jalur ini. DENGAN sesi = wajib server; di situ fallback
+       lokal DILARANG karena server bisa melihat kartu yang tidak pernah di-pull. */
+    const s = window.CloudAuth.session(currentUser);
+    return !!(s && s.at && (!s.exp || s.exp > Date.now()));
+  }
+  catch (e) { return false; }
+}
+/* true = roll WAJIB dari server. */
+function srOn(){ return srSession(); }
+function srShape(r, sp){
+  return { cardId: r.cardId, tier: r.tier || null, mut: r.mut || "none", shiny: !!r.shiny,
+           chance: r.chance, effChance: r.eff, speedBoost: sp || 1,
+           server: true, dup: !!r.dup, stackId: r.stackId || null };
+}
+function srWarn(){
+  /* Jangan toast tiap tick — satu peringatan per beberapa detik cukup. */
+  if (Date.now() - SRoll.warnAt < 6000) return;
+  SRoll.warnAt = Date.now();
+  if (typeof toast === "function") toast("SERVER ROLL SIBUK", "Sambungan ke server terputus — roll dijeda sebentar.", "#f87171");
+}
+/* Isi antrean sampai >= min. Fire-and-forget untuk tick yang lagi jalan; di-await
+   untuk roll manual pertama. Return promise<boolean> = apakah hasil tersedia.
+   `batch` = jumlah pull sekali RPC. ROLL MANUAL WAJIB 1 (lihat srOne): batch besar
+   untuk satu klik berarti 9 kartu sudah masuk backpack padahal cuma 1 di-reveal,
+   dan reload halaman membuat sisanya hangus sebagai kartu "gratis" per klik. */
+function srEnsure(min, batch){
+  if (!srOn()) return Promise.resolve(false);
+  if (SRoll.q.length >= (min || SROLL_KEEP)) return Promise.resolve(true);
+  if (SRoll.busy) return SRoll.busy;
+  if (Date.now() < SRoll.downUntil) return Promise.resolve(false);
+  const n = Math.max(1, Math.min(100, batch || SROLL_BATCH));
+  SRoll.busy = (async () => {
+    try {
+      const res = await CloudDB.rollPull(currentUser, n, null);
+      SRoll.busy = null;
+      if (res && res.ok) {
+        SRoll.downUntil = 0; SRoll.lastErr = "";
+        for (const r of (res.results || [])) SRoll.q.push(srShape(r));
+        return SRoll.q.length > 0;
+      }
+      SRoll.lastErr = (res && res.msg) || "RPC_GAGAL";
+      SRoll.downUntil = Date.now() + 2500;
+      srWarn();
+      return false;
+    } catch (e) {
+      SRoll.busy = null; SRoll.lastErr = (e && e.message) || "ERROR";
+      SRoll.downUntil = Date.now() + 2500; srWarn();
+      return false;
+    }
+  })();
+  return SRoll.busy;
+}
+/* Ambil satu hasil siap pakai; null kalau belum ada. */
+function srTake(sp){
+  if (!SRoll.q.length) return null;
+  const r = SRoll.q.shift();
+  r.speedBoost = sp || 1;
+  /* Keep-warm HANYA untuk auto-roll. Kalau jalan di reveal manual, satu klik
+         diam-diam menarik 10 pull (9 kartu masuk backpack tanpa pernah di-reveal). */
+  if (rollState && rollState.active) srEnsure(SROLL_KEEP);
+  return r;
+}
+/* Ganti akun / logout: hasil di antrean sudah jadi milik akun LAMA di server,
+   jadi tidak boleh direveal di akun baru. */
+function srReset(){ SRoll.q.length = 0; SRoll.busy = null; SRoll.downUntil = 0; SRoll.lastErr = ""; }
+window.srReset = srReset;
+/* Jalan roll manual: antrean dulu, kalau kosong tunggu satu RPC (reveal telat ~ratusan ms,
+   itu harga dari peluang yang jujur). null = server bermasalah, caller jangan ngacak lokal.
+   batch 1: satu klik = satu pull = satu kartu, persis seperti jalur lama. */
+async function srOne(sp){
+  const now = srTake(sp);
+  if (now) return now;
+  const ok = await srEnsure(1, 1);
+  return ok ? srTake(sp) : null;
+}
+
 function startRollAnimation(luck, speedMultiplier = 1) {
   if (rollState.active) return;
 
@@ -810,6 +907,7 @@ function startRollAnimation(luck, speedMultiplier = 1) {
 
   // Set initial delay based on speed multiplier
   const initialDelay = Math.max(RNG_ROLL_MIN, RNG_ROLL_SPEED / rollState.speedMultiplier);
+  if (srOn()) srEnsure(SROLL_KEEP); /* prefetch diam-diam biar tick pertama tidak nunggu RPC */
   rollState.interval = setTimeout(rollTick, initialDelay);
 }
 
@@ -823,22 +921,47 @@ function rollSpeedNow(){
   const base=(rollState&&rollState.speedBase)||1;
   return Math.max(1,Math.min(base*playerSpeedMult()*weatherSpeedMult(),RNG_ROLL_MAX_MULT));
 }
-function rollTick(){
+function srScheduleNext(){
+  if(!rollState.active)return;
+  rollState.interval=setTimeout(rollTick,Math.max(RNG_ROLL_MIN,RNG_ROLL_SPEED/rollState.speedMultiplier));
+}
+async function rollTick(){
   if(!rollState.active)return;
   rollState.luck=rollState.luckPinned||rollLuckNow();
   rollState.speedMultiplier=rollSpeedNow();
-  const result=rngRoll(rollState.luck,rollState.speedMultiplier);
-  if(!result){stopRollAnimation();hideRollResult();return;}
+  let result=null, fromServer=false;
+  if(srOn()){
+    result=srTake(rollState.speedMultiplier);
+    fromServer=!!result;
+    if(!result){
+      await srEnsure(1);
+      if(!rollState.active)return;               /* player tekan stop saat nunggu RPC */
+      result=srTake(rollState.speedMultiplier);
+      fromServer=!!result;
+      if(!result){ srScheduleNext(); return; }   /* server sibuk: JEDA, bukan roll lokal */
+    }
+  } else {
+    result=rngRoll(rollState.luck,rollState.speedMultiplier);
+    if(!result){stopRollAnimation();hideRollResult();return;}
+  }
   // Tambah EXP (50/roll) sebagai delta server-authoritative (0026)
   xpGain(50);
-  if(state)state.totalRolls=(state.totalRolls||0)+1;
-  grantRolledCard(result.cardId,result.mut,result.shiny);
+  /* Jalur lokal: counter lifetime naik di sini. Jalur server TIDAK: roll_pull sudah
+     menambahkan `res.total` di CloudDB.rollPull begitu batch turun (termasuk kartu yang
+     belum di-reveal), jadi menghitung di sini = dobel. */
+  if(!fromServer && state)state.totalRolls=(state.totalRolls||0)+1;
+  if(!fromServer)grantRolledCard(result.cardId,result.mut,result.shiny);
+  else if(typeof rollCountBadge==="function"){
+    /* Kartu baru + esens dup sudah diterapkan CloudDB.rollPull saat batch turun
+       (itu penting: server sudah menulisnya di DB, jadi client tidak boleh grant ulang). */
+    rollCountBadge();
+  }
   if(result.shiny || (result.mut && result.mut !== 'none')) {
     if(window.cgHappyTime) window.cgHappyTime();
   }
   showRollResult(result);
   renderShell(); // Update XP bar & level check
-  if(rollState.active)rollState.interval=setTimeout(rollTick,Math.max(RNG_ROLL_MIN,RNG_ROLL_SPEED/rollState.speedMultiplier));
+  srScheduleNext();
 }
 
 function stopRollAnimation() {
@@ -940,7 +1063,67 @@ function openProfileModal(){
 function closeProfileModal(){hoverHide();const b=document.getElementById("profBackdrop");const m=document.getElementById("profModal");if(b){b.classList.remove("show");b.style.display="none";}if(m){m.classList.remove("show");m.style.display="none";}}
 
 /* Tab menu profil (gaya menu karakter): rail kiri + halaman kanan */
-const PROF_TABS={overview:"OPERATOR STATS",koleksi:"KOLEKSI",progres:"PROGRES",ekuipmen:"EKUIPMEN",item:"ITEM & BUFF",titles:"TITLES"};
+const PROF_TABS={overview:"RINGKASAN OPERATOR",stats:"STATISTIK & TELEMETRI",achievements:"PENCAPAIAN & TITLE",koleksi:"KOLEKSI KARTU",progres:"PROGRES PETUALANGAN",ekuipmen:"EKUIPMEN & ARTEFAK",item:"ITEM & BUFF",titles:"TITLES & GELAR"};
+
+
+
+window.onStatCardClick = function(key, encodedInfo) {
+  const info = decodeURIComponent(encodedInfo);
+  if (typeof showToast === 'function') {
+    showToast(info);
+  } else if (typeof toast === 'function') {
+    toast("TELEMETRI " + key.toUpperCase(), info, "#38bdf8");
+  }
+};
+
+function updateProfileLiveNumbers(){
+  if(!state)return;
+  const pm=document.getElementById("profModal");
+  if(!pm || pm.style.display==="none" || pm.style.display==="")return;
+  const p=state.player||{};
+  const lv=p.lv||state.playerLv||1;
+  const xpNeed=lv*1000, curExp=p.exp||0;
+  const xpPct=Math.max(0,Math.min(100,Math.round(curExp/xpNeed*100)));
+  const spm=playerSpeedMult(), swm=weatherSpeedMult();
+  const eff=Math.min(spm*swm,RNG_ROLL_MAX_MULT);
+  const playSec=Math.floor(state.playSec||0);
+  const fmtPlay=()=>{const h=Math.floor(playSec/3600),m=Math.floor(playSec%3600/60);return h>0?`${h}j ${m}m`:m>0?`${m}m ${playSec%60}s`:`${playSec}s`;};
+
+  const _Kc=rollCommonScale();
+  let rarest=null, rarestCh=-Infinity;
+  for(const s of (state.stacks||[])){
+    const c=CARDS[s.char]; if(!c)continue;
+    const den=(c.chance||chanceOf(c.tier))*(s.shiny?SHINY_CHANCE_MULT:1)*(MUT_CHANCE_MULT[s.mut||"none"]||1);
+    const ch=den>=ROLL_RARE_DEN?den:den/_Kc;
+    if(ch>rarestCh){rarestCh=ch;rarest=s;}
+  }
+
+  const setText=(id,val)=>{
+    const el=document.getElementById(id);
+    if(el&&el.textContent!==String(val))el.textContent=val;
+  };
+  setText("pfLv",lv);
+  setText("pfPower",fmt(totalPower()));
+  setText("pfXpText",`${fmt(curExp)} / ${fmt(xpNeed)} · ${xpPct}%`);
+  const xf=document.getElementById("pfXpFill");
+  if(xf&&xf.style.width!==(xpPct+"%"))xf.style.width=xpPct+"%";
+
+  const updateCardVal=(key,val,sub)=>{
+    const vals=document.querySelectorAll(`[data-psc-val="${key}"]`);
+    vals.forEach(el=>{if(el.textContent!==String(val))el.textContent=val;});
+    if(sub!=null){
+      const subs=document.querySelectorAll(`[data-psc-sub="${key}"]`);
+      subs.forEach(el=>{if(el.textContent!==String(sub))el.textContent=sub;});
+    }
+  };
+  updateCardVal("power",fmt(totalPower()));
+  updateCardVal("luck",totalLuck().toFixed(1)+"×");
+  updateCardVal("speed",eff.toFixed(1)+"×");
+  updateCardVal("time",fmtPlay());
+  updateCardVal("rolls",fmt(state.totalRolls||0));
+  updateCardVal("rarest",rarest?cardName(rarest.char):"—",rarest?`1 IN ${fmtChance(rarestCh)}`:"NO DATA");
+}
+window.updateProfileLiveNumbers=updateProfileLiveNumbers;
 window.profTab="overview";
 function profTabGo(k){
   if(!PROF_TABS[k])return;
@@ -1066,7 +1249,22 @@ function renderProfile(){
   }
   const tb=document.getElementById("pfTitlesBtn");
   if(tb)tb.onclick=()=>{ openTitlesModal(); };
-  const row=(lab,val)=>`<div class="prof-row"><span class="prof-rl">${lab}</span><span class="prof-rv">${val}</span></div>`;
+  const statCard = (key, lab, val, iconSvg, color, sub, infoText) => `
+    <div class="prof-stat-card psc-${key}" onclick="onStatCardClick('${key}', '${encodeURIComponent(infoText || lab)}')" title="Klik untuk rincian ${lab}">
+      <div class="psc-bar" style="background:${color};box-shadow:0 0 12px ${color}"></div>
+      <div class="psc-head">
+        <span class="psc-icon" style="color:${color}">${iconSvg}</span>
+        <span class="psc-label">${lab}</span>
+      </div>
+      <div class="psc-body">
+        <span class="psc-val" data-psc-val="${key}" style="color:${color}">${val}</span>
+        ${sub ? `<span class="psc-sub" data-psc-sub="${key}">${sub}</span>` : ''}
+      </div>
+      <div class="psc-interactive-hint">INFO ↗</div>
+      <span class="psc-corner tl"></span>
+      <span class="psc-corner br"></span>
+    </div>`;
+
   const spm=playerSpeedMult(), swm=weatherSpeedMult();
   const eff=Math.min(spm*swm,RNG_ROLL_MAX_MULT);
   const pfStats=document.getElementById("pfStats");
@@ -1081,13 +1279,45 @@ function renderProfile(){
     const ch=den>=ROLL_RARE_DEN?den:den/_Kc;
     if(ch>rarestCh){rarestCh=ch;rarest=s;}
   }
-  if(pfStats)pfStats.innerHTML=
-    row("BATTLE POWER",fmt(totalPower()))
-    +row("CURRENT LUCK",totalLuck().toFixed(1)+"×")
-    +row("ROLL SPEED",eff.toFixed(1)+"×")
-    +row("WAKTU BERMAIN",fmtPlay())
-    +row("TOTAL ROLL",fmt(state.totalRolls||0))
-    +row("RAREST POOL",rarest?`${cardName(rarest.char)} · 1 IN ${fmtChance(rarestCh)}`:"—");
+
+  const icPower = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`;
+  const icLuck = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>`;
+  const icSpeed = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 19 2 12 11 5 11 19"/><polygon points="22 19 13 12 22 5 22 19"/></svg>`;
+  const icTime = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
+  const icRolls = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+  const icRarest = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>`;
+
+  const statsHtml = 
+    statCard("power", "BATTLE POWER", fmt(totalPower()), icPower, "#fbbf24", "OPERATOR RATING", `BATTLE POWER: ${fmt(totalPower())} — Total kekuatan tempur kartu aktif + dek + artefak.`)
+    +statCard("luck", "CURRENT LUCK", totalLuck().toFixed(1)+"×", icLuck, "#38bdf8", "ROLL PROBABILITY", `CURRENT LUCK: ${totalLuck().toFixed(1)}× — Pengganda peluang mendapatkan kartu langka.`)
+    +statCard("speed", "ROLL SPEED", eff.toFixed(1)+"×", icSpeed, "#34d399", "CYCLE TEMPO", `ROLL SPEED: ${eff.toFixed(1)}× — Kecepatan perputaran auto-roll dan summon.`)
+    +statCard("time", "WAKTU BERMAIN", fmtPlay(), icTime, "#c084fc", "SESSION ARCHIVE", `WAKTU BERMAIN: ${fmtPlay()} — Akumulasi waktu operasional akun.`)
+    +statCard("rolls", "TOTAL ROLL", fmt(state.totalRolls||0), icRolls, "#f472b6", "LIFETIME SUMMON", `TOTAL ROLL: ${fmt(state.totalRolls||0)} — Total pemanggilan kartu sepanjang masa.`)
+    +statCard("rarest", "RAREST POOL", rarest ? cardName(rarest.char) : "—", icRarest, "#fb923c", rarest ? `1 IN ${fmtChance(rarestCh)}` : "NO DATA", rarest ? `KARTU PALING LANGKA: ${cardName(rarest.char)} (1 IN ${fmtChance(rarestCh)})` : "Belum ada kartu langka yang dimiliki.");
+
+  if(pfStats && !pfStats.querySelector('.psc-power')) {
+    pfStats.innerHTML = statsHtml;
+  }
+  const pfPageStatsGrid = document.getElementById("pfPageStatsGrid");
+  if(pfPageStatsGrid && !pfPageStatsGrid.querySelector('.psc-power')) {
+    pfPageStatsGrid.innerHTML = statsHtml;
+  }
+  updateProfileLiveNumbers();
+
+  const pfStatsBreakdown = document.getElementById("pfStatsBreakdown");
+  if(pfStatsBreakdown && !pfStatsBreakdown.dataset.rendered) {
+    pfStatsBreakdown.dataset.rendered = "1";
+    pfStatsBreakdown.innerHTML = `
+      <div class="prof-breakdown-card">
+        <div class="pbc-title">FORMULA BATTLE POWER</div>
+        <div class="pbc-desc">Dihitung dari kombinasi Base ATK + HP kartu utama yang dipasang di dek, bonus mutasi (Gold/Rainbow/Secret/Ultima), serta boost persentase artefak &amp; pet.</div>
+      </div>
+      <div class="prof-breakdown-card">
+        <div class="pbc-title">ALGORITMA LUCK &amp; GACHA PROBABILITY</div>
+        <div class="pbc-desc">Total Luck = Base (1.0) × Pet Multiplier × Weather Machine × Buff Potion. Setiap kelipatan 1.0× meningkatkan frekuensi kemunculan kartu tier Legendary &amp; Mythic.</div>
+      </div>
+    `;
+  }
 
   /* ===== PARTY: pet + 2 artefak + kartu utama (portrait + pill) ===== */
   const pslot=(img,label,pill,name,slotKind,clickAction,hoverKind)=>`<div class="prof-slot${img?"":" empty"}" data-slot="${slotKind||""}" ${hoverKind?`data-hover="${hoverKind}"`:""} title="${name}" ${clickAction?`onclick="${clickAction}" style="cursor:pointer"`:""} role="button" tabindex="0">${img?`<img src="${thumbSrc(img)}" alt="" loading="lazy" decoding="async">`:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/></svg>'}<span class="ps-lab">${label}</span><span class="ps-pill">${pill}</span></div>`;
@@ -1204,25 +1434,37 @@ function renderProfile(){
     {n:"RAID SLAYER",d:"Kalahkan 1 boss raid",ok:raidDone>=1},
     {n:"ELITE",d:"Capai level 25",ok:lv>=25}
   ];
-  const titlesGrid=titles.map(t=>tile(t.n,t.ok?"✓ DIRAIH":"· belum",t.d,t.ok?"accent":"",t.ok?"prof-ok":"")).join("");
+  const titlesGrid=titles.map(t=>tile(t.n,t.ok?"✓ DIRAIH":"· belum",t.d,t.ok?"accent":"",t.ok?"prof-ok":"","openTitlesModal()")).join("");
   const earned=titles.filter(t=>t.ok);
   const sec=(t,grid)=>`<section class="prof-sec"><h3 class="prof-sec-t">${t}</h3><div class="prof-grid">${grid}</div></section>`;
   const kolPct=Math.round(uni.size/Math.max(1,totalCards)*100);
-  const fill=(id,html)=>{const el=document.getElementById(id);if(el)el.innerHTML=html;};
+  const fill=(id,html,key)=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    if(key!=null && el.dataset.renderedKey===key)return;
+    if(key!=null) el.dataset.renderedKey=key;
+    el.innerHTML=html;
+  };
+  const achieveKey = [earned.length, titles.length, ...earned.map(t=>t.n)].join('|');
   fill("pfAchieve",earned.length
-    ?tile("TITLE DIRAIH",`${earned.length} / ${titles.length}`,"","accent")+earned.map(t=>tile(t.n,"✓ DIRAIH",t.d,"accent","prof-ok")).join("")
-    :tile("BELUM ADA TITLE","·","Selesaikan misi awal untuk membuka pencapaian","wide"));
+    ?tile("TITLE DIRAIH",`${earned.length} / ${titles.length}`,"Klik untuk kelola title","accent","","profTabGo('achievements')")+earned.map(t=>tile(t.n,"✓ DIRAIH",t.d,"accent","prof-ok","openTitlesModal()")).join("")
+    :tile("BELUM ADA TITLE","·","Selesaikan misi awal untuk membuka pencapaian","wide","","openTitlesModal()"), achieveKey);
+  fill("pfPageAchieveGrid", titlesGrid, achieveKey);
+  const kolKey = [uni.size, totalCards, copies, shiny, gold, rainbow, secret, ultima].join('|');
   fill("pfPageKoleksi",
     `<div class="prof-kbar"><i style="width:${kolPct}%"></i><span>${uni.size} / ${totalCards} KARTU · ${kolPct}%</span></div>`
     +sec("KOLEKSI KARTU",koleksi)
-    +sec("GACHA",gacha));
-  fill("pfPageProgres",`<div class="prof-grid">${progres}</div>`);
+    +sec("GACHA",gacha), kolKey);
+  const progKey = [(state.tower&&state.tower.best)||0, p.sp||0, di, Object.keys(cd).length].join('|');
+  fill("pfPageProgres",`<div class="prof-grid">${progres}</div>`, progKey);
+  const eqKey = [partyKey, (state.artOwned||[]).length, (state.petOwned||[]).length].join('|');
   fill("pfPageEkuipmen",
     sec("TERPASANG",artTile(0)+artTile(1)+tile("PET",pd?pd.name:"TIDAK ADA","")+equipCounts)
     +sec("INVENTORY ARTEFAK",ownedArt||tile("BELUM ADA ARTEFAK","·","Beli di toko untuk membuka slot","wide"))
-    +sec("INVENTORY PET",ownedPet||tile("BELUM ADA PET","·","Dapatkan pet dari raid / tower","wide")));
-  fill("pfPageItem",`<div class="prof-grid">${item}</div>`);
-  fill("pfPageTitles",`<div class="prof-grid">${titlesGrid}</div>`);
+    +sec("INVENTORY PET",ownedPet||tile("BELUM ADA PET","·","Dapatkan pet dari raid / tower","wide")), eqKey);
+  const itemKey = [state.coins||0, state.wbTokens||0, state.infTokens||0, state.potions||0, state.mythicPotions||0, luckPotN, speedPotN, wAct?wAct.id:'none', activeLuckBuff(), activeSpeedBuff()].join('|');
+  fill("pfPageItem",`<div class="prof-grid">${item}</div>`, itemKey);
+  fill("pfPageTitles",`<div class="prof-grid">${titlesGrid}</div>`, achieveKey);
 }
 
 
@@ -1302,7 +1544,12 @@ function bpTileInner(s){
   const trait=(s.trait&&s.trait!=='none')?s.trait:null;
   const cnt=(s.count||1)>1?`<span class="bpt-cnt">&times;${fmt(s.count)}</span>`:'';
   const stack=(shny||mut||trait)?`<div class="bpt-top">${shny}${mut?mutChip(mut,mutPill(mut,'bpt-mut')):''}${trait?traitChip(trait,`<span class="bpt-gem" style="color:${TRAIT_COLOR[trait]};border-color:${TRAIT_COLOR[trait]}">${traitGem(12,trait)}</span>`):''}</div>`:'';
-  return `<img src="${cardThumb(s.char)}" alt="" width="360" height="536" loading="lazy" decoding="async">${stack}${cnt}<div class="bpt-ctl"><button class="bpt-fav${s.fav?' on':''}" onclick="event.stopPropagation();bpFav('${s.id}')" title="Favorit">${s.fav?'★':'☆'}</button><button class="bpt-lock${s.lock?' on':''}" onclick="event.stopPropagation();bpLock('${s.id}')" title="Lock">${s.lock?'🔒':'🔓'}</button></div><div class="bpt-name">${cardName(s.char)}</div>`;
+  const inDk=state&&state.deck&&state.deck.includes(s.id);
+  const inDkBadge=inDk?'<div class="bpt-in-deck-badge"><span>EQUIPPED</span></div>':'';
+  const cData=CARDS[s.char];
+  const tier=cData?(cData.tier||'COMMON'):'COMMON';
+  const tCol=(cData&&TIER_COLOR[tier])||'#94a3b8';
+  return `<img src="${cardThumb(s.char)}" alt="" width="360" height="536" loading="lazy" decoding="async">${inDkBadge}${stack}${cnt}<div class="bpt-ctl"><button class="bpt-fav${s.fav?' on':''}" onclick="event.stopPropagation();bpFav('${s.id}')" title="Favorit">${s.fav?'★':'☆'}</button><button class="bpt-lock${s.lock?' on':''}" onclick="event.stopPropagation();bpLock('${s.id}')" title="Lock">${s.lock?'🔒':'🔓'}</button></div><div class="bpt-hud-foot"><div class="bpt-name">${cardName(s.char)}</div><div class="bpt-tier-bar" style="background:${tCol};box-shadow:0 0 6px ${tCol}"></div></div>`;
 }
 function bpLazyMountTiles(){
   lazyMountGrid(document.querySelector('.bp-scroll'),_bpTileHtml);
@@ -1310,36 +1557,87 @@ function bpLazyMountTiles(){
 function renderBackpackPanel(){
   const panel=document.getElementById('backpackPanel');if(!panel)return;
   bpsHoverBind();bpsHoverHide();
-  const TABS=[{k:'deck',l:'DECK MATRIX'},{k:'tree',l:'SKILL TREE'},{k:'item',l:'POTION & ITEMS'},{k:'artefact',l:'ARTEFACTS'},{k:'pet',l:'COMPANION PETS'}];
-  const tabbar=`<div class="bp-tabs">${TABS.map(t=>`<button class="bp-tab${bpTab===t.k?' on':''}" onclick="bpSetTab('${t.k}')">${t.l}</button>`).join('')}</div>`;
+  const TABS=[
+    {k:'deck',num:'01',l:'DECK MATRIX',ic:`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`},
+    {k:'tree',num:'02',l:'SKILL TREE',ic:`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><circle cx="6" cy="19" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="17.07" x2="10.41" y2="7.93"/><line x1="15.41" y1="17.07" x2="13.59" y2="7.93"/></svg>`},
+    {k:'item',num:'03',l:'POTION & ITEMS',ic:`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>`},
+    {k:'artefact',num:'04',l:'ARTEFACTS',ic:`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`},
+    {k:'pet',num:'05',l:'COMPANION PETS',ic:`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6z"/><path d="M9.5 12l1.8 1.8L15 10"/></svg>`}
+  ];
+  const tabbar=`<nav class="bp-tabs" role="tablist">${TABS.map(t=>`<button class="bp-tab${bpTab===t.k?' on':''}" onclick="if(typeof sfx!=='undefined'&&sfx.click)sfx.click();bpSetTab('${t.k}')" role="tab" aria-selected="${bpTab===t.k}"><span class="bp-tab-num">${t.num}</span><span class="bp-tab-ic">${t.ic}</span><span class="bp-tab-l">${t.l}</span><span class="bp-tab-laser"></span></button>`).join('')}</nav>`;
+  const coins=state.coins||0;
   const header=`<div class="backpack-header">
     <div class="bph-left">
-      <span class="bph-eyebrow">INVENTORY & GEAR SYSTEM</span>
-      <h2>TACTICAL BACKPACK</h2>
+      <div class="bph-eyebrow">
+        <span class="bph-dot"></span>
+        <span class="bph-sys">NEURAL MATRIX // LOADOUT ARMORY</span>
+        <span class="bph-code">OPERATOR: ${currentUser||'GUEST'}</span>
+      </div>
+      <h2 class="bph-title">TACTICAL BACKPACK</h2>
     </div>
-    <button class="backpack-close" onclick="toggleBackpack()" aria-label="Tutup Backpack">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
+    <div class="bph-right">
+      <div class="bph-stats">
+        <div class="bph-stat-pill" title="Koin">${typeof coinIcon==='function'?coinIcon(15):'<img src="assets/images/coin.webp" width="15" height="15" alt="Coin">'}<b>${fmt(coins)}</b></div>
+        <div class="bph-stat-pill" title="Current Luck"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.2"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg><b style="color:#38bdf8">${totalLuck().toFixed(1)}x</b></div>
+      </div>
+      <button class="backpack-close" onclick="toggleBackpack()" aria-label="Tutup Backpack" title="Tutup [ESC]">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
   </div>${tabbar}`;
+
   if(bpTab==='tree'){panel.innerHTML=header+`<div class="bp-body tree">${renderBpTree()}</div>`;stMount();return;}
   if(bpTab==='item'){panel.innerHTML=header+`<div class="bp-body">${renderBpItems()}</div>`;return;}
   if(bpTab==='artefact'){panel.innerHTML=header+`<div class="bp-body">${renderBpArts()}</div>`;return;}
   if(bpTab==='pet'){panel.innerHTML=header+`<div class="bp-body">${renderBpPets()}</div>`;return;}
+
   /* tab DECK (default) */
-  if(!state.stacks.length){panel.innerHTML=header+`<div class="bp-empty">Belum punya kartu. Tekan &#127922; untuk Roll.</div>`;return;}
+  if(!state.stacks.length){panel.innerHTML=header+`<div class="bp-empty">Belum punya kartu. Tekan ROLL untuk mendapatkan kartu.</div>`;return;}
+
+  const ROLES=['01 // LEADER','02 // SUPPORT','03 // VANGUARD','04 // REAR'];
+  const ROLE_COLS=['#fbbf24','#38bdf8','#34d399','#c084fc'];
   const slots=[0,1,2,3].map(i=>{
     const id=state.deck[i];const s=id?state.stacks.find(x=>x.id===id):null;
-    if(!s)return `<div class="bp-slot${bpTarget===i?' sel':''}" onclick="bpPickSlot(${i})"><span class="bps-plus">+</span><span class="bps-num">${i+1}</span></div>`;
+    const rLbl=ROLES[i]; const rCol=ROLE_COLS[i];
+    if(!s)return `
+      <div class="bp-slot empty${bpTarget===i?' sel':''}" onclick="bpPickSlot(${i})" title="Pilih Slot ${i+1}">
+        <span class="bps-role" style="color:${rCol}">${rLbl}</span>
+        <div class="bps-empty-body">
+          <div class="bps-plus-circle"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          <span class="bps-prompt">ASSIGN CARD</span>
+        </div>
+        <span class="bps-corner tl"></span>
+        <span class="bps-corner br"></span>
+      </div>`;
     const edge=bpCardBorderColor(s),variant=bpCardBorderKind(s),variantClass=variant?" bp-mut-"+variant:"",edgeStyle=variant?"":";border-color:"+edge;
     const mutCls=(s.mut&&s.mut!=='none')?' mut-'+s.mut:'';
     const shinyClsStr=s.shiny?' shiny':'';
     const fullMutClass=variantClass+mutCls+shinyClsStr;
-    return `<div class="bp-slot filled${bpTarget===i?' sel':''}${fullMutClass}${CARDS[s.char]&&CARDS[s.char].fullArt?' fa':''}" data-sid="${s.id}" onclick="bpPickSlot(${i})" style="--tcol:${edge}${edgeStyle}"><img src="${cardThumb(s.char)}" alt="" loading="lazy" decoding="async">${CARDS[s.char]&&CARDS[s.char].fullArt&&((s.mut&&s.mut!=='none')||s.shiny)?`<span class="bps-fa-var">${s.shiny?'<span class="shiny-badge shiny-pill">SHINY</span>':''}${s.mut&&s.mut!=='none'?mutChip(s.mut,mutPill(s.mut)):''}</span>`:''}<span class="bps-num">${i+1}</span><button class="bps-x" onclick="event.stopPropagation();bpClearSlot(${i})">&times;</button></div>`;
+    const cStats=cardStats(s.char,s.mut,s.trait,s.shiny);
+    const pwr=(cStats.hp||0)+(cStats.atk||0);
+    return `
+      <div class="bp-slot filled${bpTarget===i?' sel':''}${fullMutClass}${CARDS[s.char]&&CARDS[s.char].fullArt?' fa':''}" data-sid="${s.id}" onclick="bpPickSlot(${i})" style="--tcol:${edge}${edgeStyle}">
+        <span class="bps-role" style="color:${rCol}">${rLbl}</span>
+        <div class="bps-art-wrap">
+          <img src="${cardThumb(s.char)}" alt="" loading="lazy" decoding="async">
+        </div>
+        <div class="bps-info">
+          <div class="bps-name">${cardName(s.char)}</div>
+          <div class="bps-stats">
+            <span class="bps-pwr" title="Combat Power"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-1px;margin-right:2px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>${fmt(pwr)}</span>
+            ${s.shiny?'<span class="bps-chip shiny">SHINY</span>':''}
+            ${s.mut&&s.mut!=='none'?`<span class="bps-chip mut-${s.mut}">${s.mut.toUpperCase()}</span>`:''}
+          </div>
+        </div>
+        <button class="bps-x" onclick="event.stopPropagation();bpClearSlot(${i})" title="Lepas Kartu">&times;</button>
+        <span class="bps-corner tl"></span>
+        <span class="bps-corner br"></span>
+      </div>`;
   }).join('');
+
   const pOf=s=>{const st=cardStats(s.char,s.mut,s.trait,s.shiny);return st.hp+st.atk;};
   const inDk=s=>state.deck.includes(s.id);
-  const visible=state.stacks.filter(bpMatchesMut).sort((a,b)=>(inDk(b)?1:0)-(inDk(a)?1:0)||(b.fav?1:0)-(a.fav?1:0)||pOf(b)-pOf(a)||luckChance(b.char,b.mut,b.shiny)-luckChance(a.char,a.mut,a.shiny)); /* di deck → favorit → terkuat → paling langka */
-  /* LAZY-MOUNT: kartu di luar layar TIDAK dibangun DOM-nya. Yang di/near layar aja (INITAL pertama + IntersectionObserver pas scroll). */
+  const visible=state.stacks.filter(bpMatchesMut).sort((a,b)=>(inDk(b)?1:0)-(inDk(a)?1:0)||(b.fav?1:0)-(a.fav?1:0)||pOf(b)-pOf(a)||luckChance(b.char,b.mut,b.shiny)-luckChance(a.char,a.mut,a.shiny));
   const INITIAL=48;
   _bpTileHtml={};
   const tiles=visible.map((s,i)=>{
@@ -1355,15 +1653,37 @@ function renderBackpackPanel(){
   }).join('');
   const cntOf=m=>state.stacks.filter(s=>m==='all'?true:(m==='shiny'?!!s.shiny:(s.mut||'none')===m)).length;
   const chip=(k,lbl)=>{const on=bpMutFilter===k,themed=['shiny','gold','rainbow','secret','ultima'].includes(k);const col=!on&&!themed?(MUT_COLOR[k]||'#7DF9FF'):'';return `<button class="bp-fchip${themed?' bp-themed bp-'+k:''}${on?' on':''}" onclick="bpSetFilter('${k}')"${col?` style="border-color:${col};color:${col}"`:''}>${themed?'<span class="bp-fchip-label">'+lbl+'</span>':lbl}<em>${cntOf(k)}</em></button>`;};
-  const searchInput=`<input class="bp-search" type="search" placeholder="🔍 Cari kartu…" value="${deckSearch}" oninput="deckSearch=this.value;runCardSearch(this,document.querySelector('.bp-tiles'),document.getElementById('bp-nores'))">`;
+  const searchInput=`<input class="bp-search" type="search" placeholder="Cari kartu / mutasi..." value="${deckSearch}" oninput="deckSearch=this.value;runCardSearch(this,document.querySelector('.bp-tiles'),document.getElementById('bp-nores'))">`;
   const filterRow=`<div class="bp-filter">${searchInput}${chip('all','SEMUA')+chip('shiny','SHINY')+chip('gold','GOLD')+chip('rainbow','RAINBOW')+chip('secret','SECRET')+chip('ultima','ULTIMA')}</div>`;
   panel.innerHTML=header+`<div class="bp-body deck"><div class="bp-cols">
     <div class="bp-deckcol">
-      <div class="bp-h">DECK AKTIF</div>
-      <div class="bp-slots">${slots}</div><div class="bp-deckmeta"><span class="bdm-l">TOTAL POWER</span><b class="bdm-v">${fmt(deckTotalPower())}</b><button class="bp-save" onclick="beep(660,.08);toast('DECK TERSIMPAN','SIAP DIPAKAI','#7DF9FF')">SIMPAN DECK</button></div>
+      <div class="bp-col-head">
+        <span class="bp-h">SQUADRON DECK</span>
+        <span class="bp-deck-count">[ ${state.deck.filter(Boolean).length} / 4 ]</span>
+      </div>
+      <div class="bp-slots">${slots}</div>
+      <div class="bp-deckmeta">
+        <div class="bdm-core">
+          <div class="bdm-label"><span class="bdm-dot"></span><span>SQUADRON COMBAT POWER</span></div>
+          <div class="bdm-val-row">
+            <b class="bdm-v">${fmt(deckTotalPower())}</b>
+            <span class="bdm-tag">DEPLOYABLE</span>
+          </div>
+        </div>
+        <button class="bp-save" onclick="if(typeof sfx!=='undefined'&&sfx.confirm)sfx.confirm();toast('DECK TERSIMPAN','SQUADRON SIAP TEMPUR','#7DF9FF')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          <span>SIMPAN KONFIGURASI</span>
+        </button>
+      </div>
     </div>
     <div class="bp-collect">
-      <div class="bp-colhead">${filterRow}<div class="bp-h">KOLEKSI</div></div>
+      <div class="bp-colhead">
+        <div class="bp-colhead-top">
+          <span class="bp-h">CARD ARCHIVE // VAULT</span>
+          <span class="bp-total-tag">TOTAL: ${visible.length} KARTU</span>
+        </div>
+        ${filterRow}
+      </div>
       ${visible.length?`<div class="bp-scroll"><div class="bp-tiles">${tiles}</div><div class="bp-empty" id="bp-nores" style="display:none;padding:18px 0">Kartu tidak ditemukan.</div></div>`:`<div class="bp-empty" style="padding:18px 0">Tidak ada kartu varian ini.</div>`}
     </div>
   </div></div>`;
