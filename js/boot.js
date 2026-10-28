@@ -6,6 +6,37 @@ function renderSettings(){
   const curLang = (typeof getLang === 'function' ? getLang() : (window.GameLang && typeof window.GameLang.get === "function" ? window.GameLang.get() : (state.lang || "id")));
   const isEn = curLang === "en";
 
+  /* Kartu "Tautkan Akun" — HANYA build non-CrazyGames. Di CG identitas sudah
+     CG_<user> (progres ikut akun CG), dan menampilkan form akun bisa dianggap
+     pelanggaran, jadi kartu ini sengaja dikosongkan. */
+  const _onCG = (typeof window.isCrazyGames==="function" && window.isCrazyGames());
+  const _linked = localStorage.getItem("aab-linked-user");
+  const _linkCard = _onCG ? "" : `
+        <!-- Link / Claim Account Card (non-CrazyGames only) -->
+        <div class="sett-card sett-card-link">
+          <div class="sett-card-head">
+            <span class="sett-card-badge badge-emerald">ACCOUNT</span>
+            <span class="sett-card-title">${isEn ? "LINK ACCOUNT" : "TAUTKAN AKUN"}</span>
+          </div>
+          <div class="sett-card-desc" id="linkStatus">
+            ${_linked
+              ? (isEn ? `Linked as <b style="color:#66fcf1">${_linked}</b>. Your progress follows this account on any device.`
+                      : `Tertaut sebagai <b style="color:#66fcf1">${_linked}</b>. Progres ikut akun ini di perangkat mana pun.`)
+              : (isEn ? `Currently a <b>guest</b> on this device. Set a username &amp; password to keep your progress and continue elsewhere.`
+                      : `Sekarang kamu <b>guest</b> di perangkat ini. Tentukan username &amp; password supaya progres tersimpan permanen &amp; bisa dilanjut di device lain.`)}
+          </div>
+          <div class="sett-link-fields">
+            <input class="sett-link-input" id="linkUser" type="text" maxlength="16" autocomplete="off" placeholder="${isEn ? "username" : "nama akun"}">
+            <input class="sett-link-input" id="linkPass" type="password" maxlength="24" autocomplete="new-password" placeholder="${isEn ? "password" : "password"}">
+          </div>
+          <div class="sett-link-actions">
+            <button type="button" class="sett-btn sett-btn-claim" id="linkClaimBtn">${isEn ? "CLAIM PROGRESS" : "KLAIM PROGRES"}</button>
+            <button type="button" class="sett-btn sett-btn-signin" id="linkLoginBtn">${isEn ? "SIGN IN" : "MASUK AKUN"}</button>
+          </div>
+          <div class="sett-note note-emerald" id="linkMsg"></div>
+          ${_linked ? `<button type="button" class="sett-link-unlink" id="linkUnlinkBtn">${isEn ? "Unlink on this device" : "Putuskan tautan di perangkat ini"}</button>` : ``}
+        </div>`;
+
   app.innerHTML = `
   <div class="sett-wrap">
     <!-- HEADER -->
@@ -192,7 +223,7 @@ function renderSettings(){
             </button>
           </div>
         </div>
-
+${_linkCard}
         <!-- Cloud Save Card -->
         <div class="sett-card">
           <div class="sett-card-head">
@@ -240,6 +271,18 @@ function renderSettings(){
     };
   });
   document.getElementById("logoutBtn").onclick=logout;
+
+  /* Tautkan Akun (non-CrazyGames). Elemen hanya ada kalau kartunya dirender. */
+  {
+    const claimBtn=document.getElementById("linkClaimBtn");
+    const signinBtn=document.getElementById("linkLoginBtn");
+    const unlinkBtn=document.getElementById("linkUnlinkBtn");
+    const lock=()=>{ if(claimBtn)claimBtn.disabled=true; if(signinBtn)signinBtn.disabled=true; };
+    const unlock=()=>{ if(claimBtn)claimBtn.disabled=false; if(signinBtn)signinBtn.disabled=false; };
+    if(claimBtn) claimBtn.onclick=()=>{ lock(); claimNamedAccount().finally(unlock); };
+    if(signinBtn) signinBtn.onclick=()=>{ lock(); signInNamedAccount().finally(unlock); };
+    if(unlinkBtn) unlinkBtn.onclick=()=>{ if(confirm(isEn?"Unlink this account on this device? You'll resume as a guest here. (Your cloud account is safe.)":"Putuskan tautan akun ini di perangkat ini? Kamu akan balik jadi guest di sini. (Akun cloud-mu tetap aman.)")) unlinkAccount(); };
+  }
   const manualCloudBtn=document.getElementById("manualCloudBtn");
   if(manualCloudBtn){
     manualCloudBtn.onclick=async ()=>{
@@ -711,6 +754,30 @@ async function loginAsGuest(){
   document.getElementById("authSpin").classList.remove("hidden");
   document.getElementById("asTxt").textContent="Entering Game as Guest...";
 
+  /* Non-CrazyGames: kalau ada akun bernama yang sudah tertaut di device ini,
+     lanjutkan akun itu (bukan guest acak) — jadi pemain yang sudah "tautkan
+     akun" di Pengaturan tetap masuk ke save yang sama tiap buka game.
+     Di CrazyGames blok ini dilewati: identitas CG_<user> yang mengurus
+     kontinuitas, dan tidak ada form akun sama sekali (kebijakan platform). */
+  if(!(typeof window.isCrazyGames==="function" && window.isCrazyGames())){
+    const lu=localStorage.getItem("aab-linked-user");
+    const lp=localStorage.getItem("aab-linked-pass");
+    if(lu && lp && window.CloudAuth){
+      try{
+        const jwt=await window.CloudAuth.authenticate(String(lu).toLowerCase(), lp);
+        if(jwt && jwt.ok){
+          const users=getUsers();
+          users[String(lu).toLowerCase()]={name:lu, pass:lp, created:Date.now()};
+          saveUsers(users);
+          if(jwt.save_data){ try{ localStorage.setItem("aab-state-v2:"+lu, JSON.stringify(jwt.save_data)); }catch(e){} }
+          document.getElementById("authSpin").classList.add("hidden");
+          enterGame(lu, false);
+          return;
+        }
+      }catch(e){ console.warn("Akun tertaut gagal dilanjutkan, fallback guest:", e && e.message); }
+    }
+  }
+
   let guestUser=localStorage.getItem("aab_guest_user");
   let guestPass=localStorage.getItem("aab_guest_pass");
 
@@ -762,6 +829,87 @@ async function loginAsGuest(){
   enterGame(guestUser, false);
 }
 window.loginAsGuest=loginAsGuest;
+
+/* =============== TAUTKAN AKUN (HANYA build non-CrazyGames) ===============
+   CrazyGames melarang form akun & sudah punya identitas CG_<user> sendiri,
+   jadi kartu ini tidak dirender di CG (lihat renderSettings). Fungsinya:
+     - claimNamedAccount(): bikin akun bernama baru yang DISEED progres guest
+       saat ini -> pemain bisa lanjut di device lain pakai nama+password itu.
+     - signInNamedAccount(): masuk ke akun bernama yang sudah ada -> muat save-nya.
+     - unlinkAccount(): lupa tautan di device ini; boot berikutnya balik guest.
+   Semua memakai primitif CloudAuth/CloudDB yang sudah ada (ensurePass,
+   registerUser, connect, authenticate) — tidak ada RPC baru. */
+function _linkMsg(t){ const m=document.getElementById("linkMsg"); if(m) m.textContent=t; }
+function _rememberLink(name, passH){
+  try{
+    const users=getUsers();
+    users[String(name).toLowerCase()]={name, pass:passH, created:Date.now()};
+    saveUsers(users);
+    localStorage.setItem("aab-linked-user", name);
+    localStorage.setItem("aab-linked-pass", passH);
+  }catch(e){}
+}
+async function claimNamedAccount(){
+  const uEl=document.getElementById("linkUser"), pEl=document.getElementById("linkPass");
+  const name=(uEl&&uEl.value||"").trim(), pass=(pEl&&pEl.value||"");
+  if(typeof window.isCrazyGames==="function" && window.isCrazyGames()){ _linkMsg("Nonaktif di CrazyGames."); return; }
+  if(!/^[a-zA-Z0-9_]{3,16}$/.test(name)){ _linkMsg("Username 3–16 karakter (huruf/angka/_ saja)."); return; }
+  if(pass.length<4){ _linkMsg("Password minimal 4 karakter."); return; }
+  if(!window.CloudAuth || !window.CloudDB || !navigator.onLine){ _linkMsg("Butuh koneksi Cloud. Periksa internet lalu coba lagi."); return; }
+  const key=name.toLowerCase(), passH=hashPass(pass);
+  _linkMsg("Menyiapkan akun…");
+  try{
+    const ep=await window.CloudAuth.ensurePass(key, passH);
+    if(!ep || !ep.ok){
+      const r=(ep && ep.reason) || "ditolak";
+      _linkMsg(r==="USER_EXISTS" ? "Nama itu sudah dipakai. Pakai “Masuk Akun” kalau itu punyamu." : ("Gagal menyiapkan akun: "+r));
+      return;
+    }
+    const cur = JSON.parse(JSON.stringify(state || freshState()));
+    const reg=await window.CloudDB.registerUser(name, cur, passH);
+    if(!reg || reg.ok===false){ _linkMsg("Server menolak klaim: "+((reg&&reg.msg)||"unknown")); return; }
+    try{ await window.CloudAuth.connect(key, passH); }catch(e){}
+    try{ localStorage.setItem("aab-state-v2:"+name, JSON.stringify(cur)); }catch(e){}
+    _rememberLink(name, passH);
+    localStorage.removeItem("aab_guest_user"); localStorage.removeItem("aab_guest_pass");
+    _linkMsg("Tertaut sebagai "+name+". Memuat…");
+    enterGame(name, false);
+  }catch(e){ console.error("claim err:", e); _linkMsg("Error: "+(e&&e.message||e)); }
+}
+async function signInNamedAccount(){
+  const uEl=document.getElementById("linkUser"), pEl=document.getElementById("linkPass");
+  const name=(uEl&&uEl.value||"").trim(), pass=(pEl&&pEl.value||"");
+  if(typeof window.isCrazyGames==="function" && window.isCrazyGames()){ _linkMsg("Nonaktif di CrazyGames."); return; }
+  if(!name || !pass){ _linkMsg("Isi username dan password."); return; }
+  if(!window.CloudAuth || !window.CloudDB || !navigator.onLine){ _linkMsg("Butuh koneksi Cloud. Periksa internet lalu coba lagi."); return; }
+  const key=name.toLowerCase(), passH=hashPass(pass);
+  _linkMsg("Masuk…");
+  try{
+    let jwt=await window.CloudAuth.authenticate(key, passH);
+    if(!jwt || !jwt.ok){
+      const chk=await window.CloudDB.checkCredentials(key, passH).catch(()=>null);
+      if(chk && chk.ok){ try{ await window.CloudAuth.connect(key, passH); }catch(e){} jwt={ok:true, username:(chk.username||name)}; }
+    }
+    if(jwt && jwt.ok){
+      const target=jwt.username||name;
+      if(jwt.save_data){ try{ localStorage.setItem("aab-state-v2:"+target, JSON.stringify(jwt.save_data)); }catch(e){} }
+      _rememberLink(target, passH);
+      localStorage.removeItem("aab_guest_user"); localStorage.removeItem("aab_guest_pass");
+      _linkMsg("Masuk sebagai "+target+". Memuat…");
+      enterGame(target, true);
+    } else {
+      _linkMsg("Username/password salah, atau akun belum punya save di server.");
+    }
+  }catch(e){ console.error("signIn err:", e); _linkMsg("Error: "+(e&&e.message||e)); }
+}
+function unlinkAccount(){
+  localStorage.removeItem("aab-linked-user");
+  localStorage.removeItem("aab-linked-pass");
+  location.reload();
+}
+window.claimNamedAccount=claimNamedAccount;
+window.signInNamedAccount=signInNamedAccount;
+window.unlinkAccount=unlinkAccount;
 
 document.getElementById("adOk").onclick=()=>{
   document.getElementById("authDone").classList.add("hidden");

@@ -54090,6 +54090,90 @@ main#app:has(.sett-wrap) {
   line-height: 1.4;
 }
 .note-purple { color: #c56cf0; font-weight: 700; }
+.note-emerald { color: #2ed573; font-weight: 700; }
+
+/* Tautkan Akun card (non-CrazyGames only) */
+.sett-card-link {
+  border-color: rgba(46, 213, 115, 0.18);
+}
+.sett-card-link:hover {
+  border-color: rgba(46, 213, 115, 0.34);
+}
+.sett-link-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.sett-card-link .sett-link-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #f4f8fc !important;
+  background: rgba(8, 12, 22, 0.85) !important;
+  border: 1px solid rgba(125, 249, 255, 0.28) !important;
+  border-radius: 8px !important;
+  outline: none !important;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.sett-card-link .sett-link-input::placeholder {
+  color: #4f6478;
+  font-weight: 600;
+}
+.sett-card-link .sett-link-input:focus {
+  border-color: #7df9ff !important;
+  box-shadow: 0 0 12px rgba(125, 249, 255, 0.35), inset 0 2px 6px rgba(0, 0, 0, 0.5) !important;
+}
+.sett-link-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.sett-card-link .sett-btn-claim {
+  background: linear-gradient(135deg, rgba(46, 213, 115, 0.30), rgba(102, 252, 241, 0.22)) !important;
+  border: 1px solid rgba(46, 213, 115, 0.5) !important;
+  color: #2ed573 !important;
+}
+.sett-card-link .sett-btn-claim:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(46, 213, 115, 0.42), rgba(102, 252, 241, 0.32)) !important;
+  box-shadow: 0 0 14px rgba(46, 213, 115, 0.28) !important;
+  transform: translateY(-1px) !important;
+}
+.sett-card-link .sett-btn-signin {
+  background: rgba(255, 255, 255, 0.07) !important;
+  border: 1px solid rgba(125, 249, 255, 0.3) !important;
+  color: #e2e8f0 !important;
+}
+.sett-card-link .sett-btn-signin:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.13) !important;
+  border-color: #7df9ff !important;
+  color: #fff !important;
+  transform: translateY(-1px) !important;
+}
+.sett-btn-claim:disabled,
+.sett-btn-signin:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+.sett-link-unlink {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 2px 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #747d8c;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.sett-link-unlink:hover {
+  color: #ff6b81;
+}
 
 /* Responsive adjustments */
 @media (max-width: 960px) {
