@@ -5172,6 +5172,75 @@ body.bp-open .backpack-panel,
   /* Command trigger is redundant here — the drawer is opened from the More tab. */
   html.m-portrait body.on-lobby .cmd-trigger-btn{ display:none !important; }
 
+  /* PORTRAIT HUD FIX — the desktop topbar is a single nowrap row (profile +
+     spacer + coin/gem pills + switcher/settings/changelog buttons). On a 320-
+     390px phone that intrinsic row is ~490px wide, so #gemVal / .tb-settings /
+     #tbChangelog spill past the right edge (the global overflow sweep caught
+     them). Compaction is scoped to (pointer:coarse)+html.m-portrait+body.on-lobby
+     ONLY. Note the extra `body.on-lobby` is required for SPECIFICITY: the base
+     rule `html :is(body.on-lobby,...) #topbar .nav-btn{display:flex!important}`
+     (LP:2544) sits at (1,2,2) and would otherwise outrank a plain
+     `html.m-portrait #topbar .tb-*` selector. The same controls stay reachable
+     on mobile via the bottom tabbar (Home / Summon / Deck / Koleksi / More) and
+     the .foot-menu popover (PENGATURAN), so this is a layout fix, not a feature
+     removal. */
+  html.m-portrait body.on-lobby #topbar{ padding-left:6px !important; padding-right:6px !important; gap:4px !important; }
+  html.m-portrait body.on-lobby .tb-profile{ gap:6px !important; }
+  html.m-portrait body.on-lobby .tb-id{ min-width:0 !important; }
+  html.m-portrait body.on-lobby .tb-id .tb-top{ flex-wrap:wrap; gap:2px 4px; }
+  html.m-portrait body.on-lobby .tb-id .xpbar{ display:none !important; }
+  html.m-portrait body.on-lobby #topbar .spacer{ flex:0 1 auto !important; }
+  html.m-portrait body.on-lobby #topbar .tb-actions{ gap:4px !important; }
+  html.m-portrait body.on-lobby #topbar .pill{ padding-left:6px !important; padding-right:6px !important; gap:4px !important; font-size:12px !important; height:30px !important; max-width:76px !important; }
+  html.m-portrait body.on-lobby #topbar .pill .coin-icon-wrap{ flex:0 0 auto !important; }
+  html.m-portrait body.on-lobby #topbar .pill .coin-icon-wrap img{ width:15px !important; height:15px !important; }
+  /* Secondary HUD buttons on portrait are reachable elsewhere (foot-menu
+     PENGATURAN + drawer), so drop the topbar copies that cannot fit. */
+  html.m-portrait body.on-lobby #topbar .tb-switcher{ display:none !important; }
+  html.m-portrait body.on-lobby #topbar .tb-settings{ display:none !important; }
+  html.m-portrait body.on-lobby #topbar .tb-changelog{ display:none !important; }
+  /* The power chip (#tbPw "⚡ n") duplicates the deck/card readout; keeping LVL
+     is enough in the HUD, so drop it on every portrait phone to reclaim width. */
+  html.m-portrait body.on-lobby #topbar #tbPw{ display:none !important; }
+  /* Extra tightening for the narrowest portrait phones (<=360px, e.g. iPhone SE
+     1st-gen 320px): smaller pills / tighter gaps so coin+gem clear the edge.
+     Nested under the same (pointer:coarse)+html.m-portrait+on-lobby context. */
+  @media (max-width:360px){
+    html.m-portrait body.on-lobby #topbar{ gap:3px !important; padding-left:5px !important; padding-right:5px !important; }
+    html.m-portrait body.on-lobby .tb-profile{ gap:4px !important; }
+    html.m-portrait body.on-lobby #topbar .tb-actions{ gap:3px !important; }
+    html.m-portrait body.on-lobby #topbar .pill{ max-width:58px !important; padding-left:5px !important; padding-right:5px !important; gap:3px !important; font-size:11px !important; }
+    html.m-portrait body.on-lobby #topbar .pill .coin-icon-wrap img{ width:13px !important; height:13px !important; }
+  }
+
+  /* PORTRAIT DRAWER FIX — the #commandDrawer is width:min(580px,92vw), so on a
+     phone its hero-banner cards (.banner-content flex row: banner-left icon+info
+     + banner-cta) are ~150px narrower than desktop. The fixed .banner-progress-wrap
+     (220px) + 28px content padding + 58px icon + 20px gap made banner-info refuse
+     to shrink, pushing the "MASUK ->" .banner-cta past the panel right edge (the
+     global sweep caught the CTA span + arrow svg clipped at the drawer border).
+     Scope is (pointer:coarse)+html.m-portrait only; desktop keeps the original
+     220px/28px layout. */
+  html.m-portrait body.on-lobby #commandDrawer .banner-content{ padding:0 12px !important; }
+  html.m-portrait body.on-lobby #commandDrawer .banner-left{ gap:10px !important; min-width:0 !important; flex:1 1 auto !important; }
+  html.m-portrait body.on-lobby #commandDrawer .banner-info{ min-width:0 !important; flex:1 1 auto !important; }
+  html.m-portrait body.on-lobby #commandDrawer .banner-icon-pod{ width:44px !important; height:44px !important; }
+  html.m-portrait body.on-lobby #commandDrawer .banner-progress-wrap{ width:100% !important; max-width:150px !important; }
+  html.m-portrait body.on-lobby #commandDrawer .banner-metric-row{ gap:8px !important; font-size:10px !important; min-width:0 !important; }
+  html.m-portrait body.on-lobby #commandDrawer .banner-title{ font-size:15px !important; }
+  html.m-portrait body.on-lobby #commandDrawer .banner-badge-row{ gap:6px !important; }
+  html.m-portrait body.on-lobby #commandDrawer .banner-cta{ flex:0 0 auto !important; font-size:12px !important; gap:4px !important; }
+  html.m-portrait body.on-lobby #commandDrawer .hero-banner-card{ overflow:hidden !important; }
+  /* Head spill: the fixed 68px .drw-head vertically-centers .drw-title-wrap; on
+     the narrower 320px drawer the eyebrow+title wrap exceeds 68px and pokes ~3px
+     above the viewport top. Let the head size to its content (top-anchored) and
+     trim the title/eyebrow so the header text always fits the phone drawer. */
+  html.m-portrait body.on-lobby #commandDrawer .drw-head{ height:auto !important; min-height:56px !important; align-items:flex-start !important; padding:8px 14px !important; }
+  html.m-portrait body.on-lobby #commandDrawer .drw-title-wrap{ min-width:0 !important; }
+  html.m-portrait body.on-lobby #commandDrawer .drw-title{ font-size:14px !important; line-height:1.15 !important; }
+  html.m-portrait body.on-lobby #commandDrawer .drw-eyebrow{ font-size:9px !important; }
+
+
   /* ---------------- LANDSCAPE ---------------- */
   /* Left rail is var(--nav-w) wide; dock starts right of it and hugs the bottom.
      Labels are kept (a 844px viewport has room for the full dock). */
