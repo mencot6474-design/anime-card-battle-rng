@@ -833,7 +833,6 @@ async function enterGame(name,welcome){
   }
   runLoading(()=>{
     try {
-      document.getElementById("authScreen").classList.add("hidden");
       document.getElementById("loadingScreen").classList.add("hidden");
       location.hash="#/lobby";
       render();
@@ -843,7 +842,6 @@ async function enterGame(name,welcome){
     } catch(e) {
       console.error('Post-login render FAILED:', e.message, e.stack);
       document.getElementById("loadingScreen").classList.add("hidden");
-      document.getElementById("authScreen").classList.add("hidden");
       document.getElementById("app").innerHTML='<div style="padding:40px;color:red"><h1>Render Error</h1><pre>'+e.message+'<br>'+e.stack+'</pre></div>';
     }
   });
@@ -1106,23 +1104,16 @@ window.openChangelogModal = openChangelogModal;
 window.closeChangelogModal = closeChangelogModal;
 function boot(){
   if(window.cgLoadingStart) window.cgLoadingStart();
-  if(typeof isCrazyGames==="function" && isCrazyGames()){
-    console.log("[CrazyGames SDK] Auto-entering game as Guest for zero friction...");
-    loginAsGuest();
-    return;
-  }
-  document.getElementById("loadingScreen").classList.add("hidden");
-  document.getElementById("authScreen").classList.remove("hidden");
-  document.getElementById("tabLogin").onclick=()=>setAuthMode("login");
-  document.getElementById("tabRegister").onclick=()=>setAuthMode("register");
-  document.getElementById("auSubmit").onclick=submitAuth;
-  ["auUser","auPass"].forEach(id=>document.getElementById(id).addEventListener("keydown",e=>{if(e.key==="Enter")submitAuth();}));
-  const s=localStorage.getItem(SESSION_KEY), users=getUsers();
-  const last=(s&&users[s.toLowerCase()])?users[s.toLowerCase()].name:"";
-  setAuthMode(Object.keys(users).length?"login":"register");
-  if(last){document.getElementById("auUser").value=last;document.getElementById("auPass").focus();}
-  spawnLoginParticles();
-  
+  /* CrazyGames melarang gerbang login, jadi TIDAK ada panel login sama sekali.
+    boot() selalu masuk otomatis sebagai guest: identitas diambil dari SDK
+     CrazyGames bila tersedia (CG_<user>), else Hunter_<acak> yang tersimpan di
+     localStorage. Tampilkan layar loading dulu supaya tak pernah ada flash/blank,
+     lalu loginAsGuest() -> enterGame() -> lobby. Klaim/tautkan akun opsional
+     ada di Pengaturan, bukan di gerbang depan. */
+  const _ls=document.getElementById("loadingScreen");
+  if(_ls) _ls.classList.remove("hidden");
+  loginAsGuest();
+
   /* ========== Roll + Deck badge init ========== */
   rollCountBadge();
   if(window.videoBoot) window.videoBoot();

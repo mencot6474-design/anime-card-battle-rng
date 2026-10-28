@@ -97,37 +97,10 @@
     </div>
   </div>
 </div>
-<div id="authScreen" style="position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;background:#05070d;padding:16px;overflow:hidden;">
-  <div class="ac-bg"></div><div class="ac-grid"></div><div class="ac-scan"></div><div class="ac-vig"></div><div class="ac-parts" id="acParts" aria-hidden="true"></div>
-  <div class="ac-card" id="auCard">
-    <span class="ac-corner ac-c1"></span><span class="ac-corner ac-c2"></span><span class="ac-corner ac-c3"></span><span class="ac-corner ac-c4"></span>
-    <div class="ac-hd"><span class="ac-dot"></span> System // <span id="hdMode">Hunter Login</span></div>
-    <div class="ac-body">
-      <div class="ac-pane ac-brand-pane">
-        <div class="ac-deco"></div>
-        <div class="ac-emblem"><div class="ac-hex"></div><svg viewBox="0 0 24 24" fill="none" aria-label="Clan Uzumaki"><path d="M12 12a2 2 0 0 1 4 0 4 4 0 0 1-8 0 6 6 0 0 1 12 0 8 8 0 0 1-16 0" stroke="#7DF9FF" stroke-width="2.1" stroke-linecap="round"/></svg></div>
-        <div class="ac-title" data-t="Anime Card Battle">Anime <b>Card</b> Battle</div>
-        <div class="ac-sub">Battle Arena</div>
-        <div class="ac-tag" id="brandTag" data-t="Masuk untuk melanjutkan perjalananmu menaklukkan arena dan membangun shadow army.">Log in to continue your journey conquering the arena and building your shadow army.</div>
-      </div>
-      <div class="ac-pane ac-form-pane">
-        <div class="ac-tabs">
-          <button class="ac-tab active" id="tabLogin" data-t="MASUK">LOGIN</button>
-          <button class="ac-tab" id="tabRegister" data-t="DAFTAR">REGISTER</button>
-        </div>
-        <div class="ac-fld"><label class="ac-lbl" data-t="Username">Username</label><input class="ac-input" id="auUser" type="text" placeholder="hunter name" autocomplete="off" maxlength="16"></div>
-        <div class="ac-fld"><label class="ac-lbl" data-t="Password">Password</label><input class="ac-input" id="auPass" type="password" placeholder="••••••" autocomplete="off" maxlength="24"></div>
-        <div class="ac-err" id="auErr"></div>
-        <button class="ac-go" id="auSubmit" data-t="MASUK">LOGIN</button>
-        <div class="ac-divider"><span>OR</span></div>
-        <button class="ac-guest-btn" id="auGuestBtn" type="button" onclick="loginAsGuest()">
-          <span class="ac-guest-icon">⚡</span> PLAY AS GUEST (INSTANT)
-        </button>
-        <div class="ac-note"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg> <span data-t="Progres tersinkron ke Cloud">Progress synced to Cloud</span></div>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- Gerbang login DIHAPUS (kebijakan CrazyGames: tidak boleh ada panel login).
+     boot() kini selalu auto-masuk sebagai guest. Opsional "tautkan akun" ada
+     di Pengaturan (renderSettings). Elemen #loadingScreen/#authSpin/#welcomeModal
+     di atas tetap dipertahankan. -->
 <header id="topbar">
   <div class="tb-profile">
     <div class="tb-av-wrapper">
@@ -891,7 +864,7 @@
 <script src="js/raid.js?v=v186-cgLifecycle"></script>
 <script src="js/ranking.js?v=v9-storyEnemyTierOnly"></script>
 <script src="js/i18n.js?v=v7-fixObserverLoop"></script>
-<script src="js/boot.js?v=v245-footMenuReach"></script>
+<script src="js/boot.js?v=v246-noLoginGate"></script>
 <script src="js/pwa.js?v=v156-install"></script>
 
 <!-- ========== CORET MODE (dev-only overlay anotasi) ==========
