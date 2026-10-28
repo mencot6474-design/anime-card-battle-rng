@@ -58658,12 +58658,32 @@ body.on-lobby .lobby-footer {
   }
   html.m-portrait body.battle-full #topbar .pill .coin-icon-wrap{ flex:0 0 auto!important; }
   html.m-portrait body.battle-full #topbar .pill .coin-icon-wrap img{ width:15px!important; height:15px!important; }
-  /* redundant global-chrome secondary icons (reachable on the lobby foot-menu). */
-  html.m-portrait body.battle-full #topbar .tb-settings{ display:none!important; }
-  html.m-portrait body.battle-full #topbar .tb-changelog,
-  html.m-portrait body.battle-full #topbar #tbChangelog{ display:none!important; }
+  /* #tbPw (power readout chip) is a display-only duplicate of the profile card
+     stat; harmless to keep compacted-out of the immersive battle topbar. */
   html.m-portrait body.battle-full #topbar #tbPw,
   html.m-portrait body.battle-full #topbar .tb-pw{ display:none!important; }
+
+  /* FIX ROUND 1 — R-Reachability: Settings (.tb-settings -> #/settings) and
+     Update Log (#tbChangelog -> openChangelogModal) are global-chrome controls.
+     During a portrait story battle their compensating entry (the lobby
+     foot-menu) is GONE — boot.js:414 drops body.on-lobby the instant a battle
+     starts, and the mobile nav "More"/#commandDrawer has no settings/changelog
+     row. Hiding them (a608a53) made them unreachable. Instead COMPACT them into
+     bounds the same way the coin/gem pills above were compacted: icon-only,
+     smaller hit-box + svg, zero margin — kept VISIBLE so their live handlers
+     (boot.js:471 [data-route]; #tbChangelog inline openChangelogModal) stay
+     reachable. Same treatment for the tbEnv/tbFrame switchers so the whole right
+     cluster clears the viewport with 0 offenders at 390 and 320. The tb-pw chip
+     directly above stays display:none (display-only duplicate). Portrait-scoped
+     + coarse-only: landscape battle (which never touches #topbar here) and
+     desktop fine-pointer are unaffected. */
+  html.m-portrait body.battle-full #topbar .tb-actions .nav-btn{
+    width:30px!important; height:30px!important; min-width:0!important;
+    border-radius:9px!important; margin-left:0!important; padding:0!important;
+  }
+  html.m-portrait body.battle-full #topbar .tb-actions .nav-btn svg{
+    width:16px!important; height:16px!important;
+  }
   /* narrowest portrait phones (<=360px): tighter pills so coin+gem+avatar clear. */
   @media (max-width:360px){
     html.m-portrait body.battle-full #topbar{ gap:3px!important; padding-left:5px!important; padding-right:5px!important; }
