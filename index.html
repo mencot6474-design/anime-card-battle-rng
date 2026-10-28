@@ -20,14 +20,14 @@
 <link rel="stylesheet" href="css/world-boss.css?v=wb34-fixPickBadgeAndBack">
 <link rel="stylesheet" href="css/sl-system.css?v=sl-v4">
 <link rel="stylesheet" href="css/story-carousel.css?v=v12-storyCardBigger">
-<link rel="stylesheet" href="css/lobby-prototype.css?v=v256-lobbyMobileHudFix">
+<link rel="stylesheet" href="css/lobby-prototype.css?v=v258-lobbyMobileFootMenuReach">
 <link rel="stylesheet" href="css/mobile-shell.css?v=v2-mobileShellFix">
 <script>
   /* Link toko Trakteer (fallback — utama ada di js/config.js). */
   window.TRAKTEER_SHOP_URL = "";
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=v242-fixLobbyLoadingBackpackHidden').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=v258-lobbyMobileFootMenuReach').catch(() => {});
     });
   }
 </script>
@@ -855,6 +855,9 @@
       <button class="fm-item" type="button" role="menuitem" onclick="footMenuGo('backpack')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M8 14h8"/></svg><span>BACKPACK</span></button>
       <button class="fm-item" type="button" role="menuitem" onclick="footMenuGo('premium')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15L4 4L9 9L12 2L15 9L20 4L22 15H2Z"/></svg><span>PREMIUM SHOP</span></button>
       <button class="fm-item" type="button" role="menuitem" onclick="footMenuGo('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="9" cy="7" r="2.4"/><circle cx="15" cy="17" r="2.4"/></svg><span>PENGATURAN</span></button>
+      <button class="fm-item fm-mobile-only" type="button" role="menuitem" onclick="footMenuGo('changelog')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>UPDATE LOG</span></button>
+      <button class="fm-item fm-mobile-only" type="button" role="menuitem" onclick="footMenuGo('bg')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg><span>GANTI LATAR</span></button>
+      <button class="fm-item fm-mobile-only" type="button" role="menuitem" onclick="footMenuGo('frame')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg><span>GANTI BINGKAI</span></button>
       <button class="fm-item danger" type="button" role="menuitem" onclick="footMenuGo('logout')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg><span>KELUAR</span></button>
     </div>
   </div>
@@ -888,7 +891,7 @@
 <script src="js/raid.js?v=v186-cgLifecycle"></script>
 <script src="js/ranking.js?v=v9-storyEnemyTierOnly"></script>
 <script src="js/i18n.js?v=v7-fixObserverLoop"></script>
-<script src="js/boot.js?v=v244-serverRollQueue"></script>
+<script src="js/boot.js?v=v245-footMenuReach"></script>
 <script src="js/pwa.js?v=v156-install"></script>
 
 <!-- ========== CORET MODE (dev-only overlay anotasi) ==========

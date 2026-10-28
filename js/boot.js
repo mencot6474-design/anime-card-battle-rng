@@ -923,6 +923,13 @@ function footMenuGo(k){
   else if(k==="backpack")toggleBackpack();
   else if(k==="premium")openPremiumShop();
   else if(k==="settings")location.hash="#/settings";
+  /* Mobile-only reachability: the portrait HUD fix hides the topbar changelog +
+     switcher buttons (they overflow a 320-390px phone), so expose the SAME actions
+     through this popover. These call the real globals the topbar buttons call
+     (index.html:160-163): openChangelogModal / cycleLobbyBackground / cycleCardFrame. */
+  else if(k==="changelog"){if(typeof openChangelogModal==="function")openChangelogModal();}
+  else if(k==="bg"){if(typeof cycleLobbyBackground==="function")cycleLobbyBackground();}
+  else if(k==="frame"){if(typeof cycleCardFrame==="function")cycleCardFrame();}
   else if(k==="logout"){if(confirm("Keluar dari akun ini?"))logout();}
 }
 document.addEventListener("keydown",e=>{

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v257-lobbyMobileHudFix';
+const CACHE_NAME = 'anime-card-battle-v258-lobbyMobileFootMenuReach';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

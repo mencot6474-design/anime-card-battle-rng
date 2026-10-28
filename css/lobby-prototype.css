@@ -5123,6 +5123,14 @@ body.bp-open .backpack-panel,
   box-shadow: 0 0 14px rgba(239, 68, 68, 0.5) !important;
 }
 
+/* FOOT-MENU MOBILE-ONLY ENTRIES (Unit 6-2c). The portrait HUD fix hides the
+   topbar Update-Log + switcher buttons; they are re-exposed via the foot-menu
+   popover items below. Hidden on desktop (pointer:fine) where the topbar buttons
+   already work; revealed only inside @media (pointer:coarse). `.fm-item.fm-mobile-only`
+   (0,2,0) outranks the base `.fm-item` (0,1,0) in style.css:1713 so the default
+   hide wins without touching desktop markup. */
+.fm-item.fm-mobile-only{ display:none !important; }
+
 /* =========================================================================
    MOBILE LOBBY CONTENT (Unit 6-2) — portrait + landscape dock/HUD/trigger.
    Appended at the VERY END of lobby-prototype.css (the last content file
@@ -5140,6 +5148,12 @@ body.bp-open .backpack-panel,
    never matches (pointer:coarse) and never gets .m-* -> zero regression.
    ========================================================================= */
 @media (pointer:coarse){
+
+  /* Reveal the foot-menu mobile-only entries (Update Log / ganti latar / ganti
+     bingkai) that replace the portrait-hidden topbar buttons. Source order after
+     the base `.fm-item.fm-mobile-only{display:none}` rule, so equal-weight +important
+     makes this the winner on touch devices. */
+  .fm-item.fm-mobile-only{ display:flex !important; }
 
   /* ---------------- PORTRAIT ---------------- */
   /* Dock fits [8..W-8] and floats ABOVE the bottom tabbar (nav-h + safe-area). */
