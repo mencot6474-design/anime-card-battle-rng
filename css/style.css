@@ -59037,3 +59037,138 @@ body.on-lobby .lobby-footer {
     html.m-landscape #backpackPanel .bp-aslot-hint{ font-size:10px !important; padding-left:4px !important; }
   }
 }
+
+/* =========================================================================
+   TASK 7 · INDEX / COLLECTION MODAL MOBILE (Unit 6-7) — safe-area fullscreen
+   sheet per orientation + tokenized tile grid.
+   APPEND-ONLY at EOF; every rule gated on `@media (pointer:coarse)` AND
+   prefixed html.m-portrait / html.m-landscape (set by js/mobile-shell.js only
+   on coarse pointers) => fine-pointer desktop never matches: zero regression.
+
+   THE TWO LATE-!IMPORTANT COMPETITORS (both beat with (1,2,1)+!important
+   html.m-* #indexModal .ix-grid / .ix-box id-mirrors — higher specificity than
+   every desktop competitor regardless of source order):
+
+   (A) BACKDROP PAGE-SCROLLER TRAP — lobby-prototype.css:3300 (loads AFTER
+       style.css) gives #indexModal `padding:clamp(14px,3vh,32px)
+       clamp(12px,2vw,24px)!important; box-sizing:border-box!important;
+       overflow-y:auto!important` at (1,0,0)+!important. That turns the backdrop
+       itself into the scroller: the global sweep then marks the entire tall
+       .ix-grid (75 tiles = ~36000px) "scroll-REACHABLE" (rule 6 / reachY) and
+       offenders:[] goes GREEN while the real sheet still overflows the viewport
+       bottom. This is the vacuous-green trap the brief warns about; the harness
+       panelGuard catches it via panelScrolled + the out-of-viewport .ix-box /
+       first .ix-cell. Fix: neutralize the backdrop padding + overflow so it can
+       NEVER be a page scroller, and make the sheet's OWN body (.ix-body, base
+       S:12190 overflow-y:auto) the sanctioned internal scroller instead.
+
+   (B) TILE-GRID COLUMN LOCK — style.css:47998 `#indexModal .ix-grid{
+       grid-template-columns:repeat(auto-fill,minmax(165px,1fr))!important;
+       gap:14px!important }` at (1,1,0)+!important wins over the auto-fill defs
+       at S:14758/.ix-grid(72px), S:12214, S:13338(115px). On a 390/320 phone the
+       165px floor yields a SINGLE monster column (measured: 1 track of 262-332px,
+       tile bottom 894px off an 844 viewport). Tokenize it to the brief's
+       minmax(min(28vw,120px),1fr) (portrait) / minmax(120px,1fr) (landscape) —
+       our (1,2,1)+!important mirror dominates the (1,1,0)+!important lock.
+   ========================================================================= */
+@media (pointer:coarse){
+
+  /* ---- BACKDROP: cannot scroll, no padding -> the sheet cannot hide content
+     below a page-scroller (competitor A). place-items pins the sheet to the top
+     of the safe area instead of centering a taller-than-viewport box. ---- */
+  html.m-portrait #indexModal,
+  html.m-landscape #indexModal{
+    padding:0 !important;
+    overflow:hidden !important;
+    overflow-y:hidden !important;
+    box-sizing:border-box !important;
+    place-items:start stretch !important;
+  }
+
+  /* ---- SHEET (.ix-box): fill the SAFE AREA. Competitor B box geometry comes
+     from base .ix-box S:11130 (max-height:88vh) + #indexModal .ix-box S:11166
+     (width:min(1060px,96vw);max-height:90vh) — BOTH non-!important, so our
+     (1,2,1)+!important id-mirror wins outright. max-height:none releases the
+     88vh/90vh cap so the sheet is exactly the safe-area viewport; the body then
+     scrolls internally. Portrait lifts the bottom by --nav-h(+safe-bottom) so
+     the tabbar stays uncovered; landscape shifts right of the --nav-w rail. ---- */
+  html.m-portrait #indexModal .ix-box{
+    width:100vw !important; max-width:100vw !important;
+    height:calc(100dvh - var(--nav-h) - var(--safe-bottom)) !important;
+    max-height:none !important;
+    box-sizing:border-box !important;
+    border-radius:0 !important;
+    padding:10px 12px 8px !important;
+  }
+  html.m-landscape #indexModal .ix-box{
+    width:calc(100vw - var(--nav-w)) !important; max-width:none !important;
+    height:100dvh !important; max-height:none !important;
+    box-sizing:border-box !important;
+    border-radius:0 !important;
+    margin-left:var(--nav-w) !important;
+    padding:8px 12px 8px !important;
+  }
+
+  /* ---- INTERNAL SCROLLER: the flex column must hand the grow/shrink to
+     .ix-body (base has NO flex -> it would grow to the 36000px grid and re-
+     overflow the sheet). head/toolbar/foot stay fixed (flex:none) so the
+     always-present chrome — close + search + filter toolbar + a chip + the
+     FIRST tile — is pinned to the INITIAL un-scrolled view (R-Reachability:
+     tiles/filters/sort are the sole entry to the catalog detail + filtering,
+     so NONE may be display:none; they scroll INSIDE the body instead). ---- */
+  html.m-portrait #indexModal .ix-body,
+  html.m-landscape #indexModal .ix-body{
+    flex:1 1 auto !important; min-height:0 !important; overflow-y:auto !important;
+  }
+  html.m-portrait #indexModal .ix-head,
+  html.m-portrait #indexModal .ix-toolbar,
+  html.m-portrait #indexModal .ix-foot,
+  html.m-landscape #indexModal .ix-head,
+  html.m-landscape #indexModal .ix-toolbar,
+  html.m-landscape #indexModal .ix-foot{ flex:none !important; }
+
+  /* ---- COMPACT CHROME so the tall grid never pushes the footer / first tile
+     below the safe-area fold (the 320x568 + 844/850x390 failures). Header:
+     shrink the huge Russo-One title + eyebrow. TOOLBAR: the desktop filter
+     strip wraps ~11 mutation chips + OWNED + SORT across a phone width into a
+     294px block, which at 320 (and at every landscape height) eats the whole
+     sheet. Make it a SINGLE horizontal-SCROLL row (the sanctioned tab-strip
+     pattern — chips/toggle/sort stay PRESENT + reachable by scrolling, never
+     display:none per R-Reachability); the global sweep marks the off-edge
+     chips reachX inside this overflow-x scroller. flex:0 0 auto on the chips
+     keeps them from shrinking to nothing so they actually protrude + scroll. ---- */
+  html.m-portrait #indexModal .ix-head,
+  html.m-landscape #indexModal .ix-head{ padding:2px 0 6px !important; gap:8px !important; margin-bottom:0 !important; }
+  html.m-portrait #indexModal .ix-title,
+  html.m-landscape #indexModal .ix-title{ font-size:15px !important; }
+  html.m-portrait #indexModal .ix-eyebrow,
+  html.m-landscape #indexModal .ix-eyebrow{ font-size:9px !important; }
+  html.m-portrait #indexModal .ix-toolbar,
+  html.m-landscape #indexModal .ix-toolbar{ overflow-x:auto !important; overflow-y:hidden !important; scrollbar-width:none !important; }
+  html.m-portrait #indexModal .ix-toolbar::-webkit-scrollbar,
+  html.m-landscape #indexModal .ix-toolbar::-webkit-scrollbar{ width:0;height:0;display:none; }
+  html.m-portrait #indexModal .ix-bar,
+  html.m-landscape #indexModal .ix-bar{ flex-wrap:nowrap !important; min-width:100% !important; }
+  html.m-portrait #indexModal .ix-chips,
+  html.m-landscape #indexModal .ix-chips{ flex-wrap:nowrap !important; }
+  html.m-portrait #indexModal .ix-chip,
+  html.m-portrait #indexModal .ix-tog,
+  html.m-portrait #indexModal .ix-sort-wrap,
+  html.m-landscape #indexModal .ix-chip,
+  html.m-landscape #indexModal .ix-tog,
+  html.m-landscape #indexModal .ix-sort-wrap{ flex:0 0 auto !important; }
+
+  /* ---- FOOTER: the milestone strip is decorative-ish but its claim button is
+     the only footer action; keep it flex-wrapping so it never overruns a 320px
+     width, and cap its height so the box bottom + the last tile fit. ---- */
+  html.m-portrait #indexModal .ix-foot,
+  html.m-landscape #indexModal .ix-foot{ padding:6px 8px 8px !important; }
+  html.m-portrait #indexModal .ix-prog,
+  html.m-landscape #indexModal .ix-prog{ flex-wrap:wrap !important; gap:6px !important; }
+  html.m-portrait #indexModal .ixp-rw-box,
+  html.m-landscape #indexModal .ixp-rw-box{ flex-wrap:wrap !important; min-width:0 !important; }
+
+  /* ---- TILE GRID: token auto-fill (competitor B). ---- */
+  html.m-portrait #indexModal .ix-grid{ grid-template-columns:repeat(auto-fill,minmax(min(28vw,120px),1fr)) !important; gap:8px !important; }
+  html.m-landscape #indexModal .ix-grid{ grid-template-columns:repeat(auto-fill,minmax(120px,1fr)) !important; gap:10px !important; }
+}

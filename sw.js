@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v255-backpackMobile';
+const CACHE_NAME = 'anime-card-battle-v256-indexMobile';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
