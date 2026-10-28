@@ -1,6 +1,9 @@
 /* =========================================================================
    mobile-shell.js — Unit 6-1: touch-only responsive shell foundation.
-   Runs ONLY on coarse-pointer / touch devices; desktop keeps width=1900.
+   Runs ONLY when the primary pointer is COARSE; a touch-capable desktop
+   (precision trackpad => maxTouchPoints>0 but pointer:fine) is treated as
+   desktop and keeps width=1900. Detection matches the codebase's own mobile
+   notion (css/style.css:201 gates on `(pointer:coarse)` alone).
    - Swaps the hard-locked <meta viewport> to real device-width (touch only).
    - Keeps <html> orientation classes current: .m-portrait / .m-landscape.
    - Builds + swaps a bottom tabbar (portrait) or left rail (landscape)
@@ -10,10 +13,13 @@
 (function () {
   "use strict";
 
-  var COARSE = (window.matchMedia && window.matchMedia("(pointer:coarse)").matches)
-    || ("ontouchstart" in window)
-    || (navigator.maxTouchPoints > 0);
-  if (!COARSE) return; // desktop: leave width=1900 completely untouched.
+  // Gate on the PRIMARY pointer being coarse ONLY. The previous OR-branches
+  // (`'ontouchstart' in window`, `navigator.maxTouchPoints > 0`) wrongly caught
+  // touch-capable desktops (a precision trackpad reports maxTouchPoints>0 while
+  // its primary pointer stays `fine`), handing them device-width + nav +
+  // overflow-x:clip and breaking the "desktop keeps width=1900" contract.
+  const COARSE = window.matchMedia('(pointer:coarse)').matches;
+  if (!COARSE) return; // desktop (incl. touch-capable fine-pointer): leave width=1900 untouched.
 
   /* ---------------------------------------------------------------------
      1) Real device viewport (only on touch). This is THE fix for every

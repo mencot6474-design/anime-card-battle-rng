@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v250-mobileShell';
+const CACHE_NAME = 'anime-card-battle-v251-mobileShellFix';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

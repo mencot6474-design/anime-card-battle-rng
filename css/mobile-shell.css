@@ -36,6 +36,16 @@ html.m-landscape {
 html.m-portrait #rotateHint { display: none !important; }
 html.m-landscape #rotateHint { display: none !important; }
 
+/* FIRST-PAINT FLASH KILLER (JS-independent): the .m-portrait class above is
+   applied by mobile-shell.js, which runs after HTML parse — so a portrait
+   phone briefly showed the fullscreen rotateHint overlay during the gate at
+   style.css:201. This symmetric rule uses the SAME media condition as that
+   gate, so it neutralizes the overlay from the very first paint, before any
+   JS runs. Zero desktop impact: still gated on (pointer:coarse). */
+@media (orientation:portrait) and (pointer:coarse) {
+  #rotateHint { display: none !important; }
+}
+
 /* Root: no horizontal luber ever. Also stops off-by-one bugs hiding behind
    a stray horizontal scroll. Applied only on touch orientation roots. */
 html.m-portrait, html.m-portrait body,
