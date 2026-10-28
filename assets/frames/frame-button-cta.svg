@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 56" preserveAspectRatio="none" fill="none">
+  <!-- Outer Angled Prism Frame -->
+  <path d="M16 2 L224 2 L238 16 L238 40 L224 54 L16 54 L2 40 L2 16 Z" stroke="rgba(125, 211, 252, 0.7)" stroke-width="2" fill="none" filter="drop-shadow(0 0 8px rgba(56, 189, 248, 0.5))"/>
+  
+  <!-- Left Corner Fin -->
+  <polygon points="2,16 16,2 26,2 26,8 8,26 2,26" fill="#38bdf8"/>
+  
+  <!-- Right Corner Fin -->
+  <polygon points="238,40 224,54 214,54 214,48 232,30 238,30" fill="#38bdf8"/>
+</svg>

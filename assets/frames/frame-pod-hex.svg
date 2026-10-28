@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 84" preserveAspectRatio="none" fill="none">
+  <!-- Angled Chamfer Hexagon -->
+  <path d="M16 2 L268 2 L278 12 L278 72 L264 82 L12 82 L2 72 L2 16 Z" stroke="rgba(255, 255, 255, 0.12)" stroke-width="1.5" fill="none"/>
+  
+  <!-- Top Left Fin -->
+  <polygon points="2,16 16,2 30,2 30,6 8,28 2,28" fill="#38bdf8" opacity="0.85"/>
+  
+  <!-- Bottom Right Fin -->
+  <polygon points="278,68 264,82 250,82 250,78 272,56 278,56" fill="#38bdf8" opacity="0.85"/>
+  
+  <!-- Edge Notches -->
+  <rect x="276" y="34" width="3" height="16" fill="#38bdf8" opacity="0.75"/>
+</svg>

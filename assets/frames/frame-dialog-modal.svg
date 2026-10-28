@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 320" preserveAspectRatio="none" fill="none">
+  <!-- Outer Angled Shell -->
+  <path d="M28 2 L452 2 L478 28 L478 292 L452 318 L28 318 L2 292 L2 28 Z" stroke="rgba(56, 189, 248, 0.55)" stroke-width="2" fill="none" filter="drop-shadow(0 0 14px rgba(56, 189, 248, 0.35))"/>
+  
+  <!-- Inner Border Line -->
+  <path d="M32 8 L448 8 L472 32 L472 288 L448 312 L32 312 L8 288 L8 32 Z" stroke="rgba(255, 255, 255, 0.12)" stroke-width="1" fill="none"/>
+  
+  <!-- Top Left Corner Clamp -->
+  <polygon points="2,28 28,2 48,2 48,8 14,42 2,42" fill="#38bdf8" opacity="0.9"/>
+  <circle cx="26" cy="24" r="2.5" fill="#ffffff"/>
+
+  <!-- Top Right Corner Clamp -->
+  <polygon points="478,28 452,2 432,2 432,8 466,42 478,42" fill="#38bdf8" opacity="0.9"/>
+  <circle cx="454" cy="24" r="2.5" fill="#ffffff"/>
+
+  <!-- Bottom Left Corner Clamp -->
+  <polygon points="2,292 28,318 48,318 48,312 14,278 2,278" fill="#38bdf8" opacity="0.9"/>
+  <circle cx="26" cy="296" r="2.5" fill="#ffffff"/>
+
+  <!-- Bottom Right Corner Clamp -->
+  <polygon points="478,292 452,318 432,318 432,312 466,278 478,278" fill="#38bdf8" opacity="0.9"/>
+  <circle cx="454" cy="296" r="2.5" fill="#ffffff"/>
+
+  <!-- Top Center Accent Tab -->
+  <polygon points="200,2 280,2 270,12 210,12" fill="#38bdf8" opacity="0.8"/>
+  
+  <!-- Side Vent Lines Left -->
+  <line x1="2" y1="140" x2="10" y2="140" stroke="#38bdf8" stroke-width="2" opacity="0.7"/>
+  <line x1="2" y1="150" x2="14" y2="150" stroke="#38bdf8" stroke-width="2" opacity="0.9"/>
+  <line x1="2" y1="160" x2="14" y2="160" stroke="#38bdf8" stroke-width="2" opacity="0.9"/>
+  <line x1="2" y1="170" x2="10" y2="170" stroke="#38bdf8" stroke-width="2" opacity="0.7"/>
+
+  <!-- Side Vent Lines Right -->
+  <line x1="470" y1="140" x2="478" y2="140" stroke="#38bdf8" stroke-width="2" opacity="0.7"/>
+  <line x1="466" y1="150" x2="478" y2="150" stroke="#38bdf8" stroke-width="2" opacity="0.9"/>
+  <line x1="466" y1="160" x2="478" y2="160" stroke="#38bdf8" stroke-width="2" opacity="0.9"/>
+  <line x1="470" y1="170" x2="478" y2="170" stroke="#38bdf8" stroke-width="2" opacity="0.7"/>
+</svg>

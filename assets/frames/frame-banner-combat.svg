@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 580 120" preserveAspectRatio="none" fill="none">
+  <!-- Outer Angled Frame -->
+  <path d="M24 2 L566 2 L578 14 L578 96 L556 118 L14 118 L2 106 L2 24 Z" stroke="rgba(56, 189, 248, 0.45)" stroke-width="2" fill="none" filter="drop-shadow(0 0 10px rgba(56, 189, 248, 0.3))"/>
+  
+  <!-- Slanted Corner Accents -->
+  <polygon points="2,24 24,2 40,2 40,8 10,38 2,38" fill="#38bdf8" opacity="0.9"/>
+  <polygon points="578,96 556,118 540,118 540,112 570,82 578,82" fill="#38bdf8" opacity="0.9"/>
+  
+  <!-- Top Right Header Notch -->
+  <polygon points="520,2 566,2 578,14 578,24 532,24" fill="rgba(56, 189, 248, 0.25)"/>
+  
+  <!-- Technical Ticks -->
+  <line x1="60" y1="6" x2="120" y2="6" stroke="#38bdf8" stroke-width="2" opacity="0.6"/>
+  <line x1="130" y1="6" x2="145" y2="6" stroke="#38bdf8" stroke-width="2" opacity="0.4"/>
+  <line x1="150" y1="6" x2="155" y2="6" stroke="#38bdf8" stroke-width="2" opacity="0.4"/>
+</svg>
