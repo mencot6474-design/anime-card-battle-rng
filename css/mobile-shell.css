@@ -326,3 +326,39 @@ html.m-landscape .m-tabbar { display: none !important; }
   #watchAdsModal .wad-card-desc { display: none !important; }
   #watchAdsModal .wad-card { gap: 7px !important; }
 }
+
+/* =========================================================================
+   TIER-2 GLOBAL — floating PWA install CTA (#pwaInstallBtn, pwa.js)
+   pwa.js APPENDS this pill as a trailing child of <body>. On a phone every
+   migrated page/modal is a full-height (100dvh) sheet, so the pill lands
+   BELOW the fold (bottom overflow) and is unreachable without scrolling the
+   document. Re-anchor it as a corner-fixed floating pill that stays inside
+   the initial viewport instead of hiding it — the install affordance has no
+   duplicate entry on mobile, so removing it would drop the feature (R-Reach-
+   ability). Offset clears the bottom tabbar (portrait --nav-h) and the left
+   rail (landscape --nav-w) so it never covers a nav control. z 9000 keeps it
+   above page content but under the modals (9500+). display is still driven by
+   pwa.js; body.battle-full keeps hiding it (style.css:58677) — untouched here.
+   ========================================================================= */
+@media (pointer:coarse) and (orientation:portrait) {
+  html.m-portrait #pwaInstallBtn {
+    position: fixed !important;
+    top: auto !important;
+    left: 12px !important;
+    right: auto !important;
+    bottom: calc(var(--nav-h) + var(--safe-bottom) + 10px) !important;
+    margin: 0 !important;
+    z-index: 9000;
+  }
+}
+@media (pointer:coarse) and (orientation:landscape) {
+  html.m-landscape #pwaInstallBtn {
+    position: fixed !important;
+    top: auto !important;
+    left: calc(var(--nav-w) + var(--safe-left) + 12px) !important;
+    right: auto !important;
+    bottom: calc(var(--safe-bottom) + 10px) !important;
+    margin: 0 !important;
+    z-index: 9000;
+  }
+}
