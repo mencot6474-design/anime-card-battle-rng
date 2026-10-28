@@ -264,3 +264,65 @@ html.m-landscape .m-tabbar { display: none !important; }
 @media (pointer:coarse) and (orientation:portrait) {
   #dailyModal .dl-tile { min-height: 168px !important; }
 }
+
+/* =========================================================================
+   TIER-2 ADS (watch-ad reward terminal) — body-appended #watchAdsModal
+   Desktop centers .wad-box (max-width:560) whose two reward cards stack in a
+   tall column; on a phone the box overflows BOTH the top (head/close clipped)
+   and the bottom (the second card's CTA clipped) since .wad-box is overflow:hidden
+   with no scroll. Convert to a full-height flex sheet. Portrait: cards stacked,
+   compacted so both CTAs clear the fold. Landscape (~390px tall): drop the
+   subbanner + long descriptions and put the two cards SIDE BY SIDE so both
+   buttons share one visible row.
+   ========================================================================= */
+@media (pointer:coarse) {
+  html.m-portrait #watchAdsModal,
+  html.m-landscape #watchAdsModal {
+    padding: 0 !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+  }
+  #watchAdsModal .wad-box {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    min-height: 0 !important;
+    border-radius: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    padding: calc(12px + var(--safe-top)) 14px calc(12px + var(--safe-bottom)) 14px !important;
+  }
+  #watchAdsModal .wad-head { flex: 0 0 auto; margin-bottom: 8px !important; }
+  #watchAdsModal .wad-title { font-size: 17px !important; }
+  #watchAdsModal .wad-subbanner {
+    flex: 0 0 auto;
+    margin-bottom: 10px !important;
+    font-size: 11px !important;
+    padding: 7px 10px !important;
+    line-height: 1.35 !important;
+  }
+  #watchAdsModal .wad-player-slot { flex: 0 0 auto; }
+  #watchAdsModal .wad-grid { flex: 1 1 auto; min-height: 0; display: flex; gap: 10px !important; }
+  #watchAdsModal .wad-card { flex: 1 1 0; min-height: 0; padding: 10px !important; gap: 8px !important; }
+  #watchAdsModal .wad-card-main { grid-template-columns: 48px minmax(0, 1fr) !important; gap: 9px !important; }
+  #watchAdsModal .wad-ic-box { width: 48px !important; height: 48px !important; }
+  #watchAdsModal .wad-ic-box img { width: 38px !important; height: 38px !important; }
+  #watchAdsModal .wad-card-title { font-size: 12.5px !important; padding-right: 8px !important; margin-bottom: 2px !important; }
+  #watchAdsModal .wad-card-desc { font-size: 10.5px !important; line-height: 1.3 !important; margin-bottom: 5px !important; }
+  #watchAdsModal .wad-status-pill { font-size: 9.5px !important; padding: 2px 7px !important; }
+  #watchAdsModal .wad-btn { font-size: 11.5px !important; padding: 9px 10px !important; }
+}
+/* Portrait keeps both descriptions; two stacked cards still clear the fold. */
+@media (pointer:coarse) and (orientation:portrait) {
+  #watchAdsModal .wad-grid { flex-direction: column !important; }
+}
+/* Landscape: trim to a single card row so both CTAs stay in the initial view. */
+@media (pointer:coarse) and (orientation:landscape) {
+  #watchAdsModal .wad-grid { flex-direction: row !important; }
+  #watchAdsModal .wad-subbanner { display: none !important; }
+  #watchAdsModal .wad-card-desc { display: none !important; }
+  #watchAdsModal .wad-card { gap: 7px !important; }
+}
