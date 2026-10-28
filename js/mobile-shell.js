@@ -52,11 +52,11 @@
       act: function () { location.hash = "#/"; } },
     { key: "summon",  label: "Summon",  icon: "dice",
       act: function () {
-        // Reuse the dock's roll entry (boot.js wires #rollBtn to an anonymous
-        // async handler). There is no named openSummon(); clicking the existing
-        // button reuses that exact code path. Fallback: command drawer.
-        var rb = document.getElementById("rollBtn");
-        if (rb && typeof rb.click === "function") rb.click();
+        // Open-only gacha entry: openPremiumShop() (js/panels.js:2501, exported
+        // on window) shows #premiumModal without performing a roll. The old
+        // behaviour clicked #rollBtn, which spent a real roll — wrong for a
+        // navigation tab. Fallback: command drawer.
+        if (typeof window.openPremiumShop === "function") window.openPremiumShop();
         else if (window.openCommandDrawer) window.openCommandDrawer();
       } },
     { key: "deck",    label: "Deck",    icon: "layers",

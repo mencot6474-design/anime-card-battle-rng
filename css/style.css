@@ -58408,3 +58408,134 @@ body.on-lobby .lobby-footer {
   html.m-portrait  .lobby-hub{ grid-template-columns:1fr !important; max-width:100% !important; }
   html.m-landscape .lobby-hub{ grid-template-columns:1fr !important; max-width:100% !important; }
 }
+
+/* =========================================================================
+   SUMMON/ROLL MOBILE (Unit 6-3) — token-driven roll reveal + fit-viewport
+   gacha/premium shop sheet on touch.
+   APPEND-ONLY at EOF; every rule is gated on `@media (pointer:coarse)` AND
+   prefixed with html.m-portrait / html.m-landscape (set by js/mobile-shell.js
+   only on coarse pointers). A fine-pointer desktop matches neither gate ->
+   byte-identical desktop cascade, zero regression.
+
+   WHY THESE WIN (EOF !important gotcha): the desktop high-priority blocks
+   earlier in this file — S:48011 `#premiumModal .prem-modal-inner{overflow-y:
+   auto!important}` (0,1,1), S:48019 `#premiumModal .prem-grid{...
+   grid-template-columns:repeat(auto-fill,minmax(240px,1fr))!important...`
+   (1,1,0), S:48075 `#premiumModal .prem-head{padding:16px 110px 10px
+   16px!important}` inside @media(max-width:860px) (1,1,0), S:48084
+   `#premiumModal .prem-grid{...minmax(160px,1fr)!important}` (1,1,0), and
+   S:2300 `.roll-overlay:not(.mini) .roll-actions{transform:translate(
+   calc(150px - 100%),-258px)}` (0,3,0) — are all out-ranked by the
+   `html.m-* ...` selectors below: (1,2,1)/(0,2,1) >= the old (1,1,0)/(0,1,1)
+   when both are !important, and the EOF position additionally breaks any
+   equal-weight tie. The mobile rules re-declare every conflicting longhand.
+   ========================================================================= */
+@media (pointer:coarse){
+
+  /* ---- ROLL RESULT REVEAL: card tokenized to the viewport, no 300px lock ---- */
+  html.m-portrait .roll-overlay:not(.mini) .roll-card-showcase{
+    width:min(70vw,260px)!important;   /* was 300px (S:2200); aspect 3/4 keeps h<=347 */
+    max-height:calc(100vh - 56px);     /* short-portrait safety (never binds at 568+) */
+  }
+  html.m-portrait .roll-overlay:not(.mini) .roll-actions{
+    /* S:2300 anchors the buttons with translate(calc(150px - 100%),-258px),
+       geometry tuned to the 300px card — off-screen the moment the card
+       shrinks. Return to normal flow: the overlay is a centered flex column,
+       so static placement parks the actions directly under the card. */
+    position:static!important;
+    transform:none!important;
+    left:auto!important; top:auto!important;
+    margin:16px auto 0!important;
+    display:flex; gap:12px; justify-content:center;
+  }
+  html.m-landscape .roll-overlay:not(.mini) .roll-card-showcase{
+    width:min(38vw,220px)!important;   /* <=293 tall; + actions fits a 390px-high viewport */
+    max-height:calc(100vh - 92px);
+  }
+  html.m-landscape .roll-overlay:not(.mini) .roll-actions{
+    position:static!important;
+    transform:none!important;
+    left:auto!important; top:auto!important;
+    margin:10px auto 0!important;
+    display:flex; gap:12px; justify-content:center;
+  }
+
+  /* ---- PREMIUM / GACHA SHOP: panel FITS the viewport; only the grid scrolls
+     (same sheet pattern as #commandDrawer's .drw-body). The full-viewport
+     backdrop must never become the page scroller: with inner capped at 100dvh
+     + overflow hidden, nothing below the fold hides behind a panel scroll.
+     The backdrop's 18px padding + place-items:center pushes a full-height inner
+     25/14/17px past the bottom edge (RED v4 PANEL-OVF); zero the padding on
+     mobile so inner (0,0)-(Vw,Vh) is exactly flush with the viewport. ---- */
+  html.m-portrait #premiumModal.prem-modal-backdrop,
+  html.m-landscape #premiumModal.prem-modal-backdrop{
+    padding:0!important;
+  }
+  html.m-portrait #premiumModal .prem-modal-inner,
+  html.m-landscape #premiumModal .prem-modal-inner{
+    width:100vw!important;
+    max-width:100vw!important;
+    max-height:100dvh!important;       /* beats S:45545 max-height:88vh (no !imp) */
+    border-radius:0!important;
+    overflow-y:hidden!important;       /* beats S:48011 overflow-y:auto!important (0,1,1) */
+  }
+  /* Compact chrome so the scroller gets real height at 568/390 viewports. */
+  html.m-portrait #premiumModal .prem-head,
+  html.m-landscape #premiumModal .prem-head{
+    padding:10px 46px 8px 12px!important;   /* 46px right keeps #premClose (38px, flex:none) inside */
+    gap:8px!important;
+  }
+  html.m-portrait #premiumModal .prem-title,
+  html.m-landscape #premiumModal .prem-title{font-size:18px!important;}
+  html.m-portrait #premiumModal .prem-badge,
+  html.m-landscape #premiumModal .prem-badge{font-size:9.5px;letter-spacing:.12em;}
+  html.m-portrait #premiumModal .prem-balance-pill,
+  html.m-landscape #premiumModal .prem-balance-pill{padding:4px 8px!important;gap:5px!important;}
+  html.m-portrait #premiumModal .prem-bal-txt,
+  html.m-landscape #premiumModal .prem-bal-txt{display:none;}  /* label; gem icon + value stay */
+  html.m-portrait #premiumModal .prem-balance-pill strong,
+  html.m-landscape #premiumModal .prem-balance-pill strong{font-size:15px!important;}
+  html.m-portrait #premiumModal .prem-subbanner,
+  html.m-landscape #premiumModal .prem-subbanner{
+    padding:6px 12px!important;
+    margin:8px 12px 0!important;
+    font-size:11px!important;
+  }
+  html.m-portrait #premiumModal .prem-tabs-bar,
+  html.m-landscape #premiumModal .prem-tabs-bar{
+    padding:8px 12px 0!important;
+    flex-wrap:wrap;                     /* ALL selector tabs stay visible — not hidden behind a horizontal scroller */
+    gap:6px!important;
+  }
+  html.m-portrait #premiumModal .prem-tab-btn,
+  html.m-landscape #premiumModal .prem-tab-btn{
+    padding:5px 10px!important;
+    font-size:10.5px!important;
+    letter-spacing:.05em;
+  }
+  /* The grid IS the scroller: fits the panel, tiles fit the phone width.
+     Beats S:48019/S:48084 minmax(240px/160px,1fr)!important — those are
+     (1,1,0)+!important; these are (1,2,1)+!important at EOF. */
+  html.m-portrait #premiumModal .prem-grid{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow-y:auto!important;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+    padding:10px 12px 14px!important;
+    grid-template-columns:repeat(auto-fill,minmax(150px,1fr))!important;
+    gap:10px!important;
+  }
+  html.m-landscape #premiumModal .prem-grid{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow-y:auto!important;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+    padding:8px 14px 12px!important;
+    grid-template-columns:repeat(auto-fill,minmax(170px,1fr))!important;
+    gap:12px!important;
+  }
+}
