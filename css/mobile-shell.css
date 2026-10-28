@@ -1,0 +1,121 @@
+/* =========================================================================
+   mobile-shell.css — Unit 6-1 responsive shell.
+   ALL rules are scoped to (pointer:coarse) and/or html.m-portrait/.m-landscape,
+   so desktop (which never gets those root classes and is not pointer:coarse)
+   is completely unaffected. Loads AFTER style.css + lobby-prototype.css so its
+   !important beats the portrait "rotate your phone" gate at style.css:201-209.
+   ========================================================================= */
+
+/* ---- Design tokens on the orientation roots ---- */
+html.m-portrait {
+  --nav-h: 60px;
+  --nav-w: 100%;
+  --card-cols: 2;
+  --card-w: 44%;
+  --modal-w: 100%;
+  --hud-top: 64px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+html.m-landscape {
+  --nav-h: 100%;
+  --nav-w: 56px;
+  --card-cols: 4;
+  --card-w: 22%;
+  --modal-w: 100%;
+  --hud-top: 44px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+/* The game BLOCKED portrait with a "rotate your phone" overlay (style.css
+   :201-209, z-index 9999). We now SUPPORT portrait, so kill it. This file
+   loads after style.css so !important wins the cascade. */
+html.m-portrait #rotateHint { display: none !important; }
+html.m-landscape #rotateHint { display: none !important; }
+
+/* Root: no horizontal luber ever. Also stops off-by-one bugs hiding behind
+   a stray horizontal scroll. Applied only on touch orientation roots. */
+html.m-portrait, html.m-portrait body,
+html.m-landscape, html.m-landscape body { overflow-x: clip; }
+
+/* Content must leave room for the nav.
+   Portrait: fixed bottom tabbar -> reserve bottom padding on the scroll root.
+   Landscape: fixed left rail -> reserve left padding on the scroll root.
+   #app is the per-screen container; #topbar is the shared sticky HUD. */
+html.m-portrait #app,
+html.m-portrait .lobby-hub {
+  padding-bottom: calc(var(--nav-h) + var(--safe-bottom));
+}
+html.m-portrait #topbar {
+  padding-top: calc(12px + var(--safe-top));
+}
+html.m-landscape #app,
+html.m-landscape .lobby-hub {
+  padding-left: calc(var(--nav-w) + var(--safe-left));
+}
+html.m-landscape #topbar {
+  padding-left: calc(12px + var(--nav-w) + var(--safe-left));
+  padding-top: calc(12px + var(--safe-top));
+}
+
+/* ---- Nav component (portrait bottom tabbar) ---- */
+html.m-portrait .m-tabbar {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 6000;
+  height: calc(var(--nav-h) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  display: flex;
+  background: #0d1117;
+  border-top: 1px solid #222;
+}
+html.m-portrait .m-tabbar button {
+  flex: 1;
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font: 600 11px/1.1 "Barlow Condensed", sans-serif;
+  color: #9aa6b2;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+html.m-portrait .m-tabbar button[aria-current="page"] { color: #fff; }
+
+/* ---- Nav component (landscape left rail) ---- */
+html.m-landscape .m-rail {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 6000;
+  width: var(--nav-w);
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--safe-top);
+  background: #0d1117;
+  border-right: 1px solid #222;
+}
+html.m-landscape .m-rail button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  color: #9aa6b2;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+html.m-landscape .m-rail button[aria-current="page"] { color: #fff; }
+
+/* Belt-and-braces: never show the other orientation's nav variant. */
+html.m-portrait .m-rail { display: none !important; }
+html.m-landscape .m-tabbar { display: none !important; }

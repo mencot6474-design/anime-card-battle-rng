@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v249-claimIndexReward';
+const CACHE_NAME = 'anime-card-battle-v250-mobileShell';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
