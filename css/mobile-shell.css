@@ -362,3 +362,39 @@ html.m-landscape .m-tabbar { display: none !important; }
     z-index: 9000;
   }
 }
+
+/* ---- Unit 27: Raid / World-Boss hub (screens 5c) ----
+   world-boss.css pins `html body.on-raid #app` to fixed inset:0 padding:0 and
+   forces .app-viewport to 100dvw×100dvh. On touch that slides the immersive
+   hub under the bottom tabbar (portrait) / left rail (landscape) and the
+   `minmax(340px,…)` hub grid crushes the arena at ≤390px. These higher-
+   specificity overrides re-inset the shell and stack the grid to one column in
+   portrait so the console rail flows below the arena (vertical scroll on the
+   viewport). Desktop keeps every original world-boss.css rule. */
+@media (pointer:coarse) {
+  html.m-portrait  body.on-raid #app { padding: 0 0 calc(var(--nav-h) + var(--safe-bottom)) 0 !important; }
+  html.m-landscape body.on-raid #app { padding: var(--safe-top) var(--safe-right) var(--safe-bottom) calc(var(--nav-w) + var(--safe-left)) !important; }
+
+  /* viewport fills the padded #app content box, not the raw dvw/dvh */
+  body.on-raid .app-viewport {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+  body.on-raid .proto-top-nav,
+  body.on-raid .proto-tab-pills,
+  body.on-raid .live-currencies { flex-wrap: wrap !important; gap: 6px !important; }
+
+  /* PORTRAIT: single-column stack (arena on top, console rail below) */
+  html.m-portrait body.on-raid .wb-hub-grid {
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+  html.m-portrait body.on-raid .wb-stage-arena { height: auto !important; min-height: 380px !important; }
+  html.m-portrait body.on-raid .wb-console-rail { height: auto !important; overflow: visible !important; }
+}

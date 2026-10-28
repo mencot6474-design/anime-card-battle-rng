@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v261-towerHub';
+const CACHE_NAME = 'anime-card-battle-v262-raidHub';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
