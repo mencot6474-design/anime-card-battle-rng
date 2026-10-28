@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v245-serverRollQueue';
+const CACHE_NAME = 'anime-card-battle-v246-intanLedger';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

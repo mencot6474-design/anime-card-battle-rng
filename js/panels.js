@@ -1927,18 +1927,36 @@ function bpUseSpeedPotion(lv,all){
   toast("SPEED POTION L"+lv+(n>1?" ×"+n:""),"SPEED +"+r.add.toFixed(1)+"× · "+Math.round(r.ms/60000)+" MENIT","#fcd34d");
   bpItemPopClose();renderShell();renderBackpackPanel();
 }
-/* Pakai INTAN ROLL 100K: tarik 100.000 roll sekaligus (×N paket), lalu tampilkan ringkasan loot. */
-function bpUseIntanRoll(n){
+/* Pakai INTAN ROLL 100K: tarik 100.000 roll sekaligus (×N paket), lalu tampilkan ringkasan loot.
+   0039: dengan sesi cloud intan DIPOTONG DI SERVER lewat spend_intan() sebelum roll jalan —
+   `state.intanRolls` cuma cermin, dan merge menulis balik kredit server, jadi angka F12 tidak
+   bisa dipakai mencetak intan lagi. RPC gagal = TIDAK ada roll (kalau roll jalan duluan lalu
+   kredit tidak kepotong, item-nya bisa dipakai selamanya). Tanpa sesi = jalur lokal lama. */
+async function bpUseIntanRoll(n){
   n=Math.max(1,parseInt(n,10)||1);
   const owned=state.intanRolls||0;
   if(owned<1){toast("INTAN ROLL habis","GAK ADA ITEM","#f87171");return;}
   const use=Math.min(n,owned);
-  state.intanRolls=owned-use;save();
   bpItemPopClose();
+  let pulls=100000*use, spent=use;
+  if(typeof srOn==="function"&&srOn()){
+    const r=await CloudDB.spendIntan(currentUser,use);
+    if(!r||!r.ok){
+      const msg=!r?"KONEKSI KE SERVER PUTUS":(r.msg==="NO_INTAN"?"KREDIT INTAN SUDAH HABIS":"DITOLAK SERVER");
+      toast("INTAN DITOLAK SERVER",msg+" · COBA LAGI","#f87171");
+      renderBackpackPanel();
+      return;
+    }
+    /* Server yang memutuskan berapa intan yang benar-benar kepotong: client boleh
+       saja mengklaim 999, kreditnya cuma 2 -> yang dipakai 2, bukan 999. */
+    spent=Math.max(1,Number(r.spent)||use);
+    pulls=Number(r.pulls)||pulls;
+  }else{
+    state.intanRolls=owned-use;save();
+  }
   beep(440,.18,"triangle",.1);setTimeout(()=>beep(880,.24,"triangle",.08),150);
-  const pulls=100000*use;
   const loot=instantRollFast(pulls,true);
-  showTowerLoot(loot,{weather:0,luck:0,speed:0},"HASIL INTAN ROLL · "+fmt(pulls)+" ("+use+"×)");
+  showTowerLoot(loot,{weather:0,luck:0,speed:0},"HASIL INTAN ROLL · "+fmt(pulls)+" ("+spent+"×)");
   renderBackpackPanel();
 }
 function bpUseRollPack(packKey, rollAmount, n){

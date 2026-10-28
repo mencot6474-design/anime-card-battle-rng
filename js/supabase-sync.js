@@ -639,6 +639,26 @@ const CloudDB = {
     return res;
   },
 
+  /** 0039: INTAN ROLL 100K = kredit server (`player_saves.intan_credit`).
+      Satu-satunya cara memakai intan: RPC ini memotong kredit dan membalas jumlah
+      tarikan yang sah. Merge menulis balik kredit ke `intanRolls`, jadi angka client
+      tidak pernah dipercaya — tanpa RPC, intan tidak bisa dikonsumsi maupun dicetak.
+      Return null = tidak ada sesi cloud → caller wajib pakai jalur RNG lokal. */
+  async spendIntan(username, qty) {
+    if (!username) return null;
+    const n = Math.max(1, Math.min(50, parseInt(qty, 10) || 1));
+    const res = await this._authRpc(username, "spend_intan", { p_qty: n });
+    const ST = this._st();
+    /* Kredit server ikut dikoreksi saat DITOLAK juga (msg NO_INTAN membawa credit):
+       tanpa sesi reload/login, cermin client bisa tertinggal dari server. */
+    if (ST && res && typeof res.credit === "number" && ST.intanRolls !== res.credit) {
+      ST.intanRolls = Math.max(0, res.credit);
+      this._paint();
+      try { if (typeof save === "function") save(); } catch (e) {}
+    }
+    return res || null;
+  },
+
   /* ===== TOKEN WB/INF (0026) =====
      Saldo token hanya berubah di server. Belanja memakai harga dari tabel
      `token_shop_price` (bukan angka dari client), dan klaim lantai memakai
