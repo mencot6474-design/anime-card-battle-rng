@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v257-summonTabFix';
+const CACHE_NAME = 'anime-card-battle-v258-storyMobile';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

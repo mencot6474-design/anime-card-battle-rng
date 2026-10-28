@@ -129,3 +129,47 @@ html.m-landscape .m-rail button[aria-current="page"] { color: #fff; }
 /* Belt-and-braces: never show the other orientation's nav variant. */
 html.m-portrait .m-rail { display: none !important; }
 html.m-landscape .m-tabbar { display: none !important; }
+
+/* =========================================================================
+   TIER 2 — STORY carousel modal (#storyModal / .sc-window)
+   Desktop story-carousel.css gives .sc-window a fixed 560px min-height and a
+   100vh-based height that, centered inside the #storyModal padding, pushes its
+   bottom action dock (the battle-launch button) below the phone fold in BOTH
+   orientations. On touch we make the sheet a true full-viewport column so the
+   head + coverflow + launch button all sit inside [0..H]. Desktop untouched.
+   ========================================================================= */
+@media (pointer:coarse) {
+  html.m-portrait #storyModal,
+  html.m-landscape #storyModal {
+    padding: 0 !important;
+    place-items: stretch !important;
+  }
+  html.m-portrait #storyModal .sc-window,
+  html.m-landscape #storyModal .sc-window {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    min-height: 0 !important;
+    border-radius: 0 !important;
+  }
+  /* Head: the chapter title box is a FIXED 300px on desktop and squeezes the
+     diff-group + close on a narrow phone. Let it shrink instead. */
+  html.m-portrait #storyModal .sc-chap-title-box {
+    width: auto !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+  /* Landscape is short (~390px): shrink the coverflow cards so the center card
+     and its stage fit between the head and the action dock. */
+  html.m-landscape #storyModal .sc-carousel-stage { min-height: 0 !important; }
+  html.m-landscape #storyModal .sc-card { width: 150px !important; height: 210px !important; }
+  html.m-landscape #storyModal .sc-card.pos-1 { transform: translateX(120px) translateY(6px) translateZ(-50px) rotateY(-32deg) scale(0.85) !important; }
+  html.m-landscape #storyModal .sc-card.pos-neg-1 { transform: translateX(-120px) translateY(6px) translateZ(-50px) rotateY(32deg) scale(0.85) !important; }
+  /* The far ±2 cards sit mostly off-screen at ±405px; pull them in so they never
+     widen the scroll canvas (root overflow-x is clipped, but keep them tidy). */
+  html.m-portrait #storyModal .sc-card.pos-2 { transform: translateX(150px) translateY(14px) translateZ(-170px) rotateY(-48deg) scale(0.6) !important; }
+  html.m-portrait #storyModal .sc-card.pos-neg-2 { transform: translateX(-150px) translateY(14px) translateZ(-170px) rotateY(48deg) scale(0.6) !important; }
+  html.m-landscape #storyModal .sc-card.pos-2 { transform: translateX(185px) translateY(14px) translateZ(-170px) rotateY(-48deg) scale(0.6) !important; }
+  html.m-landscape #storyModal .sc-card.pos-neg-2 { transform: translateX(-185px) translateY(14px) translateZ(-170px) rotateY(48deg) scale(0.6) !important; }
+}
