@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v247-dailyPackServer';
+const CACHE_NAME = 'anime-card-battle-v248-bulkRollServer';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

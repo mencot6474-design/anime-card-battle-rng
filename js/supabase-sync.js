@@ -576,53 +576,82 @@ const CloudDB = {
     const args = { p_count: n };
     if (packKey) args.p_pack = String(packKey);
     const res = await this._authRpc(username, "roll_pull", args);
-    if (!res || !res.ok) return res || null;
-    const ST = this._st();
-    if (ST) {
-      if (packKey && res.rollPacks && typeof res.rollPacks === "object") {
-        ST.rollPacks = res.rollPacks;
-      }
-      if (Array.isArray(res.newStacks) && res.newStacks.length) {
-        if (!Array.isArray(ST.stacks)) ST.stacks = [];
-        if (!Array.isArray(ST.deck)) ST.deck = [null, null, null, null];
-        ST.deck.length = 4;
-        /* Kunci varian (char|mut|shiny) — BUKAN id: save lama bisa punya id berbeda
-           untuk varian yang sama, dan dedup policy game tetap 1 stack per varian. */
-        const key = (s) => s.char + "|" + (s.mut || "none") + "|" + (s.shiny ? 1 : 0);
-        const have = new Set(ST.stacks.map(key));
-        for (const ns of res.newStacks) {
-          if (!ns || !ns.char || have.has(key(ns))) continue;
-          have.add(key(ns));
-          ST.stacks.push({ id: ns.id, char: ns.char, tier: ns.tier || null, fav: false, lock: false,
-                           mut: ns.mut || "none", shiny: !!ns.shiny, trait: ns.trait || "none", count: 1 });
-          const empty = ST.deck.indexOf(null);
-          if (empty >= 0 && typeof setDeckSlot === "function") setDeckSlot(empty, ns.id);
-        }
-      }
-      /* Esens dup: pakai DELTA dari server, bukan set nilai final.
-         Nilai final server = X_db + gain; kalau client punya kenaikan lokal yang belum
-         ke-push (jalur instantRoll / offline), set final akan MEMBUANG kartu/esens player. */
-      if (res.rebirthGain > 0) {
-        if (typeof addRebirthEssence === "function") addRebirthEssence(res.rebirthGain);
-        else if (ST.rebirth) ST.rebirth.essence = (ST.rebirth.essence || 0) + res.rebirthGain;
-      }
-      /* totalRolls dinaikkan SEKALIGUS di sini, bukan per-reveal: satu batch =
-         `res.total` pull yang sudah terjadi di server (kartunya juga sudah ditulis),
-         jadi kalau client baru menghitung saat kartu di-reveal, pemain yang tutup
-         tab / stop di tengah antrean membuat push berikutnya MENURUNKAN counter. */
-      if (typeof res.total === "number" && res.total > 0) {
-        ST.totalRolls = (ST.totalRolls || 0) + res.total;
-      }
-      this._paint();
-      try {
-        if (typeof rollCountBadge === "function") rollCountBadge();
-        if (typeof idxRewardSync === "function") idxRewardSync(true);
-        if (typeof lbTrackPull === "function" && Array.isArray(res.results))
-          for (const r of res.results) lbTrackPull(r.cardId, r.mut || "none", !!r.shiny);
-        if (typeof save === "function") save();
-      } catch (e) {}
-    }
+    if (!res) return null;
+    this._applyPullResult(res);
     return res;
+  },
+
+  /** 0041 (Unit 5b-2): PAKAI PACK = potong ledger server (`player_packs`) + acak di
+      server. Client tidak lagi punya hak memotong `state.rollPacks`: tanpa RPC ini
+      angka itu cuma cermin, jadi pack hasil forgery F12 tidak bisa dikonsumsi maupun
+      dicetak. Server clamp ke `roll_config.bulk_max_packs` (10) per panggilan dan
+      membalas `used` sebenarnya — caller yang mau 50 pack harus loop.
+      Return null = tidak ada sesi → caller pakai jalur RNG lokal. */
+  async bulkRoll(username, packKey, qty) {
+    if (!username || !packKey) return null;
+    const n = Math.max(1, Math.min(50, parseInt(qty, 10) || 1));
+    const res = await this._authRpc(username, "bulk_roll", { p_pack: String(packKey), p_qty: n });
+    if (!res) return null;
+    /* Cermin saldo ikut dikoreksi WALAU panggilan ditolak (PACK_EMPTY): ledger server
+       adalah kebenaran, dan tanpa reload/masuk-ulang cermin client bisa tertinggal
+       (mis. mirror 2 tapi ledger 0) sehingga tombol terus menampilkan pack hantu. */
+    const ST = this._st();
+    if (ST && !res.ok && res.rollPacks && typeof res.rollPacks === "object") {
+      ST.rollPacks = res.rollPacks;
+      this._paint();
+      try { if (typeof save === "function") save(); } catch (e) {}
+    }
+    this._applyPullResult(res);
+    return res;
+  },
+
+  /* Efek sebuah RPC roll (roll_pull / bulk_roll) ke cermin client.
+     SEMUA angka diambil dari respons server — tidak pernah `+=` hasil lokal,
+     kecuali dua delta yang memang sengaja delta (esens dup & totalRolls) karena
+     nilainya bisa bertambah di jalur offline sejak push terakhir. */
+  _applyPullResult(res) {
+    const ST = this._st();
+    if (!ST || !res || !res.ok) return;
+    if (res.rollPacks && typeof res.rollPacks === "object") ST.rollPacks = res.rollPacks;
+    if (Array.isArray(res.newStacks) && res.newStacks.length) {
+      if (!Array.isArray(ST.stacks)) ST.stacks = [];
+      if (!Array.isArray(ST.deck)) ST.deck = [null, null, null, null];
+      ST.deck.length = 4;
+      /* Kunci varian (char|mut|shiny) — BUKAN id: save lama bisa punya id berbeda
+         untuk varian yang sama, dan dedup policy game tetap 1 stack per varian. */
+      const key = (s) => s.char + "|" + (s.mut || "none") + "|" + (s.shiny ? 1 : 0);
+      const have = new Set(ST.stacks.map(key));
+      for (const ns of res.newStacks) {
+        if (!ns || !ns.char || have.has(key(ns))) continue;
+        have.add(key(ns));
+        ST.stacks.push({ id: ns.id, char: ns.char, tier: ns.tier || null, fav: false, lock: false,
+                         mut: ns.mut || "none", shiny: !!ns.shiny, trait: ns.trait || "none", count: 1 });
+        const empty = ST.deck.indexOf(null);
+        if (empty >= 0 && typeof setDeckSlot === "function") setDeckSlot(empty, ns.id);
+      }
+    }
+    /* Esens dup: pakai DELTA dari server, bukan set nilai final.
+       Nilai final server = X_db + gain; kalau client punya kenaikan lokal yang belum
+       ke-push (jalur instantRoll / offline), set final akan MEMBUANG kartu/esens player. */
+    if (res.rebirthGain > 0) {
+      if (typeof addRebirthEssence === "function") addRebirthEssence(res.rebirthGain);
+      else if (ST.rebirth) ST.rebirth.essence = (ST.rebirth.essence || 0) + res.rebirthGain;
+    }
+    /* totalRolls dinaikkan SEKALIGUS di sini, bukan per-reveal: satu batch =
+       `res.total` pull yang sudah terjadi di server (kartunya juga sudah ditulis),
+       jadi kalau client baru menghitung saat kartu di-reveal, pemain yang tutup
+       tab / stop di tengah antrean membuat push berikutnya MENURUNKAN counter. */
+    if (typeof res.total === "number" && res.total > 0) {
+      ST.totalRolls = (ST.totalRolls || 0) + res.total;
+    }
+    this._paint();
+    try {
+      if (typeof rollCountBadge === "function") rollCountBadge();
+      if (typeof idxRewardSync === "function") idxRewardSync(true);
+      if (typeof lbTrackPull === "function" && Array.isArray(res.results))
+        for (const r of res.results) lbTrackPull(r.cardId, r.mut || "none", !!r.shiny);
+      if (typeof save === "function") save();
+    } catch (e) {}
   },
 
   /** 0039: INTAN ROLL 100K = kredit server (`player_saves.intan_credit`).

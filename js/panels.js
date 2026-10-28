@@ -1959,7 +1959,7 @@ async function bpUseIntanRoll(n){
   showTowerLoot(loot,{weather:0,luck:0,speed:0},"HASIL INTAN ROLL · "+fmt(pulls)+" ("+spent+"×)");
   renderBackpackPanel();
 }
-function bpUseRollPack(packKey, rollAmount, n){
+async function bpUseRollPack(packKey, rollAmount, n){
   n=Math.max(1,parseInt(n,10)||1);
   state.rollPacks = state.rollPacks || {};
   /* 0040: tidak ada lagi `dailyR100kBalance` — jumlah pack yang terlihat di sini
@@ -1967,10 +1967,49 @@ function bpUseRollPack(packKey, rollAmount, n){
   const owned=state.rollPacks[packKey]||0;
   if(owned<1){toast("PACK HABIS","TIDAK ADA ITEM","#f87171");return;}
   const use=Math.min(n,owned);
-  state.rollPacks[packKey]=Math.max(0,owned-use);
-  save();
   bpItemPopClose();
   beep(520,.18,"triangle",.1);setTimeout(()=>beep(940,.24,"triangle",.08),150);
+  /* 0041 (Unit 5b-2): dengan sesi cloud pack DIPOTONG DI SERVER lewat bulk_roll() dan
+     kartu diacak di sana — `state.rollPacks` cuma cermin, jadi angka F12 tidak bisa
+     dipakai mencetak pack maupun isinya. Server clamp 10 pack per panggilan
+     (roll_config.bulk_max_packs) karena rate limit 120 RPC/menit, jadi pemakaian
+     banyak pack = beberapa RPC. Cermin server ikut dibalas tiap panggilan, jadi
+     sisa loop dihitung ulang dari nilai itu: mirror palsu 999999 tetap berhenti
+     begitu ledger aslinya habis (chunk berikutnya PACK_EMPTY).
+     RPC gagal di tengah jalan = tetap tampilkan yang SUDAH dibayar server (kartunya
+     sudah ditulis di DB); yang belum jalan tidak di-roll. */
+  if(typeof srOn==="function"&&srOn()&&typeof CloudDB!=="undefined"&&CloudDB.bulkRoll){
+    const groups={}, order=[];
+    let total=0, spent=0, left=use, guard=0;
+    while(left>0 && guard++<12){
+      const r=await CloudDB.bulkRoll(currentUser,packKey,Math.min(left,10));
+      if(!r||!r.ok){
+        const msg=!r?"KONEKSI KE SERVER PUTUS":(r.msg==="PACK_EMPTY"?"LEDGER SERVER: PACK HABIS":"DITOLAK SERVER: "+(r.msg||""));
+        if(spent===0){ toast("PACK DITOLAK SERVER",msg+" · COBA LAGI","#f87171"); renderBackpackPanel(); return; }
+        toast("ROLL DIHENTIKAN SERVER",msg+" · "+fmt(spent)+"× SUDAH MASUK","#fcd34d");
+        break;
+      }
+      const used=Math.max(1,Number(r.used)||1);
+      spent+=used; total+=Number(r.total)||0;
+      for(const g of (r.results||[])){
+        const key=g.cardId+"|"+(g.mut||"none")+"|"+(g.shiny?1:0);
+        let it=groups[key];
+        if(!it){ it=groups[key]={cardId:g.cardId,tier:g.tier,mut:g.mut||"none",shiny:!!g.shiny,chance:g.chance,n:0}; order.push(key); }
+        it.n+=Number(g.n)||1;
+      }
+      left=Math.min(left-used, state.rollPacks[packKey]||0);
+    }
+    const loot=order.map(k=>groups[k]);
+    loot.totalPulls=total;
+    if(!total){ renderBackpackPanel(); return; }
+    showTowerLoot(loot,{weather:0,luck:0,speed:0},'HASIL INSTAN ROLL · ' + fmt(total)+" ("+spent+"×)");
+    renderBackpackPanel();
+    return;
+  }
+  /* Tanpa sesi cloud: jalur lokal lama (tidak ada yang bisa dilindungi — tidak ada
+     account, jadi tidak ada ekonomi yang dipertaruhkan). */
+  state.rollPacks[packKey]=Math.max(0,owned-use);
+  save();
   const pulls=rollAmount*use;
   const loot=instantRollFast(pulls,true);
   showTowerLoot(loot,{weather:0,luck:0,speed:0},'HASIL INSTAN ROLL · ' + pulls.toLocaleString()+" ("+use+"×)");
