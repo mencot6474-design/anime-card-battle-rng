@@ -58963,3 +58963,77 @@ body.on-lobby .lobby-footer {
   #deckPickModal .card-search{ height:34px!important; font-size:12.5px!important; }
   #deckPickModal .dp-name{ font-size:10px!important; }
 }
+
+/* =========================================================================
+   TASK 6 · BACKPACK PANEL MOBILE (Unit 6-6) — safe-area fullscreen sheet per
+   orientation + tokenized collect grids + fixed hover popup.
+   APPEND-ONLY at EOF; every rule gated on `@media (pointer:coarse)` AND
+   prefixed html.m-portrait / html.m-landscape (set by js/mobile-shell.js only
+   on coarse pointers) => fine-pointer desktop never matches: zero regression.
+
+   THE LATE-!IMPORTANT TRAP (why this, not the brief's 90vw line): the brief's
+   premise — style.css:2584 `width:90vw;max-width:1100px;height:min(80vh,620px)`
+   centered with `transform:translate(-50%,-50%)` — is DEAD in the shipped
+   cascade. css/lobby-prototype.css (loaded AFTER style.css) already overrides
+   `.backpack-panel` at BOTH :3308 and :4135 with `position:fixed!important;
+   inset:0!important;width:100vw!important;height:100dvh!important;transform:
+   none!important` (0,1,0)+!important. Empirically measured (_tmp/t6-geom.cjs,
+   fine-pointer 1440x900): the effective DESKTOP sheet is ALREADY full-bleed
+   [0,0,1440,900] — so we do NOT resurrect 90vw (that would be a desktop
+   REGRESSION). What is missing on phones is NAV-AWARENESS: the full-bleed sheet
+   (z:90000) covers the portrait bottom tabbar and the landscape left rail
+   (nav z:6000), and it reserves no room for them. So Task 6 (a) shrinks the
+   sheet to the safe area so the nav stays reachable — portrait lifts the bottom
+   by --nav-h(+safe-bottom), landscape shifts left by --nav-w — and (b) tokenizes
+   the ITEM collect grid to the brief's auto-fill minmax so 320px phones get a
+   2-up tile row instead of a single 254px monster. To WIN the tie against LP's
+   (0,1,0)+!important we key the geometry `html.m-portrait .backpack-panel`
+   (0,2,1)+!important — higher specificity ⇒ later-source order is irrelevant —
+   AND mirror it at `html.m-portrait #backpackPanel` (1,1,1)+!important so no
+   id-scoped competitor can outrank it. The same (0,2,1)> (0,2,0) argument beats
+   style.css:48069 (`.backpack-panel .bp-itemgrid` minmax(150px) +!important) and
+   :2652/:2660/:3263/:3641 desktop grid locks for the item grid.
+   ========================================================================= */
+@media (pointer:coarse){
+
+  /* ---- PANEL SHEET: fill the SAFE AREA, leave the nav uncovered. The body
+     (.bp-body / .bp-scroll / .dp-box) stays the sanctioned internal scroller,
+     so the chrome (header + close + tabs) is pinned to the initial un-scrolled
+     view while the grids scroll INSIDE the sheet. ---- */
+  html.m-portrait .backpack-panel{ width:100vw !important; max-width:100vw !important; height:calc(100dvh - var(--nav-h) - var(--safe-bottom)) !important; top:0 !important; left:0 !important; right:0 !important; bottom:auto !important; transform:none !important; border-radius:0; }
+  html.m-landscape .backpack-panel{ width:calc(100vw - var(--nav-w)) !important; max-width:none !important; height:100dvh !important; left:var(--nav-w) !important; right:0 !important; top:0 !important; bottom:0 !important; transform:none !important; }
+  /* id-scoped mirrors so no lobby-prototype / later competitor outranks us */
+  html.m-portrait #backpackPanel{ width:100vw !important; max-width:100vw !important; height:calc(100dvh - var(--nav-h) - var(--safe-bottom)) !important; top:0 !important; left:0 !important; right:0 !important; bottom:auto !important; transform:none !important; border-radius:0; }
+  html.m-landscape #backpackPanel{ width:calc(100vw - var(--nav-w)) !important; max-width:none !important; height:100dvh !important; left:var(--nav-w) !important; right:0 !important; top:0 !important; bottom:0 !important; transform:none !important; }
+
+  /* ---- ITEM tab tile grid (renderBpItems -> .bp-itemgrid, style.css:2660/
+     48069) + the brief's .bp-items-grid alias: token-driven auto-fill so a
+     320px phone fits 2 tiles/row instead of one 254px column. (0,2,1)+!important
+     beats the (0,2,0)+!important desktop locks above by specificity. ---- */
+  html.m-portrait .bp-items-grid, html.m-portrait .bp-itemgrid{ grid-template-columns:repeat(auto-fill,minmax(min(42vw,150px),1fr)) !important; }
+  html.m-landscape .bp-items-grid, html.m-landscape .bp-itemgrid{ grid-template-columns:repeat(auto-fill,minmax(140px,1fr)) !important; }
+  html.m-portrait #backpackPanel .bp-itemgrid, html.m-portrait #backpackPanel .bp-items-grid{ grid-template-columns:repeat(auto-fill,minmax(min(42vw,150px),1fr)) !important; }
+  html.m-landscape #backpackPanel .bp-itemgrid, html.m-landscape #backpackPanel .bp-items-grid{ grid-template-columns:repeat(auto-fill,minmax(140px,1fr)) !important; }
+
+  /* ---- HOVER CARD POPUP (style.css:3685, JS .bps-hover): fixed 190px width.
+     js/panels.js hoverPlace() already clamps the popup inside the viewport
+     (left/top/height), and .hub-center is overflow:hidden + aspect-ratio 3/4,
+     so it never escapes; the max-width below only guarantees the card can never
+     exceed a <206px viewport. Display:none unless .show => not swept in steady
+     state. pointer-events:none preserved. ---- */
+  html.m-portrait .bps-hover, html.m-landscape .bps-hover{ width:190px !important; max-width:calc(100vw - 16px) !important; pointer-events:none !important; }
+
+  /* ---- ARTEFACT / PET shop grid (style.css:2708 .bp-grid6, minmax(168px)):
+     auto-fill already yields >=1 col and never overflows, but tokenising it
+     keeps a balanced multi-up grid on wider phones without clipping a card.
+     Short landscape (844/850x390): compact the fixed-76px equip slots so the
+     slot row + its hint text never push the slot controls past the narrow rail
+     sheet (R-Reachability: aslot = the un-equip entry point, keep in view). ---- */
+  html.m-portrait #backpackPanel .bp-grid6{ grid-template-columns:repeat(auto-fill,minmax(min(46vw,168px),1fr)) !important; }
+  html.m-landscape #backpackPanel .bp-grid6{ grid-template-columns:repeat(auto-fill,minmax(min(42vw,168px),1fr)) !important; }
+  @media (max-height:420px){
+    html.m-landscape #backpackPanel .bp-aslot{ width:64px !important; height:64px !important; }
+    html.m-landscape #backpackPanel .bp-aslot svg{ width:26px !important; height:26px !important; }
+    html.m-landscape #backpackPanel .bp-aslot-hint{ font-size:10px !important; padding-left:4px !important; }
+  }
+}
