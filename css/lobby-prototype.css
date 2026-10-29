@@ -5342,39 +5342,103 @@ body.bp-open .backpack-panel,
 
 
   /* ---------------- LANDSCAPE ---------------- */
-  /* Left rail is var(--nav-w) wide; dock starts right of it and hugs the bottom.
-     Labels are kept (a 844px viewport has room for the full dock). */
+  /* A landscape phone only has ~240px of vertical band: #topbar measures 68px
+     and the dock 74px, so the 270:390 hero card is height-bound (it maxes at
+     ~166px wide no matter what). The stopgap's mistake was centring that 156px
+     card in the full ~790px of width, leaving it floating alone in a void.
+     Landscape instead composes a deliberate band: rail | hero card hugged to
+     the rail (rune ring attached) | ambient telemetry in the freed width.
+     The dock is compacted 74 -> ~58px to hand the card its height budget. */
   html.m-landscape body.on-lobby .lobby-footer{
-    left:calc(var(--nav-w) + 8px) !important;
-    right:8px !important;
+    left:calc(var(--nav-w) + 6px) !important;
+    right:6px !important;
     width:auto !important;
-    max-width:calc(100vw - var(--nav-w) - 16px) !important;
+    max-width:calc(100vw - var(--nav-w) - 12px) !important;
     transform:none !important;
-    bottom:8px !important;
+    bottom:6px !important;
     justify-content:center !important;
+    z-index:6100 !important;
   }
-  /* Pull the feed clear of the rail (x:30 would otherwise hide under 0..56). */
-  html.m-landscape .telemetry-feed{ top:calc(var(--hud-top) + 4px) !important; left:calc(var(--nav-w) + 8px) !important; }
-  html.m-landscape body.on-lobby .cmd-trigger-btn{ display:none !important; }
-  /* Landscape phones are ~390px tall: the desktop 270x390 standee + 10px/0
-     stage padding got cropped by the topbar and dock. Fit it to the band
-     between topbar (68) and dock (62 + 8) with a 10px breather. */
+  /* .roll-btn is the tallest dock child (56px) and therefore sets the dock
+     height; shaving it plus .foot-main's 8px padding is the only way to buy
+     band back for the card. */
+  html.m-landscape body.on-lobby .foot-main{ padding:5px 14px !important; }
+  html.m-landscape body.on-lobby .center-dock{ gap:10px !important; }
+  html.m-landscape body.on-lobby .roll-btn{ height:48px !important; }
+  html.m-landscape body.on-lobby .backpack-toggle{ height:44px !important; }
+  html.m-landscape body.on-lobby .roll-auto-btn{ height:42px !important; }
+  /* One token drives the card, so the decorative ring can track it. */
   html.m-landscape body.on-lobby .lobby-hub{ padding-bottom:0 !important; }
   html.m-landscape body.on-lobby .hero-stage-container{
+    --hero-h: min(640px, calc(100vh - var(--hud-top) - 86px));
+    --hero-w: calc(var(--hero-h) * 0.6923);
     box-sizing:border-box !important;
     min-height:0 !important;
-    padding-top:76px !important;
-    padding-bottom:78px !important;
+    padding-top:calc(var(--hud-top) + 4px) !important;
+    padding-bottom:calc(64px + var(--safe-bottom, 0px)) !important;
+    padding-left:calc(var(--nav-w) + 36px) !important;
+    align-items:flex-start !important;
+    justify-content:center !important;
   }
   html.m-landscape body.on-lobby .hero-standee-wrap{
-    width:calc((100vh - 168px) * 0.6923) !important;
-    height:auto !important;
-    aspect-ratio:270 / 390 !important;
+    width:var(--hero-w) !important;
+    height:var(--hero-h) !important;
+    aspect-ratio:auto !important;
     margin-bottom:0 !important;
   }
   html.m-landscape body.on-lobby .hero-frame-svg{ width:100% !important; height:100% !important; }
+  /* This abspos flex child and the card share the container's cross-start and
+     vertical centre, so a quarter-card negative margin re-centres the ring on
+     the card without touching its spin transform. */
   html.m-landscape body.on-lobby .celestial-rune-ring{
-    width:min(60vh, 340px) !important;
-    height:min(60vh, 340px) !important;
+    width:calc(var(--hero-w) * 1.5) !important;
+    height:calc(var(--hero-w) * 1.5) !important;
+    margin-left:calc(var(--hero-w) * -0.25) !important;
+  }
+  /* The left-anchor exists to stop a ~166px card floating in ~790px of a
+     PHONE's width. A wide desktop window has no such void problem — centring
+     reads better there, so the anchor only applies below 1000px (the widest
+     landscape phones sit around 960px). Must stay AFTER the two rules above:
+     same specificity, so source order is what makes these win. */
+  @media (min-width:1000px){
+    html.m-landscape body.on-lobby .hero-stage-container{
+      align-items:center !important;
+      padding-left:calc(var(--nav-w) + 16px) !important;
+    }
+    html.m-landscape body.on-lobby .celestial-rune-ring{ margin-left:0 !important; }
+  }
+  /* Telemetry moves into the width the card no longer needs, and starts below
+     the active-players pill so the two do not stack on the same corner. */
+  html.m-landscape .telemetry-feed{
+    top:calc(var(--hud-top) + 34px) !important;
+    left:auto !important;
+    right:14px !important;
+    max-width:44% !important;
+  }
+  html.m-landscape body.on-lobby .cmd-trigger-btn{ display:none !important; }
+  /* The "CODE INSPECT: OFF / ALT" dev chip lives inside the full-viewport
+     #codeInspectorContainer and would sit on top of the rail — same fix as
+     portrait. */
+  html.m-landscape #codeInspectorContainer{ display:none !important; }
+  /* bottom:8px puts this pill inside the rail column (0..56) in landscape. */
+  html.m-landscape #activePlayersBadge{
+    top:calc(72px + var(--safe-top, 0px)) !important;
+    bottom:auto !important;
+    left:auto !important;
+    right:8px !important;
+    font-size:9px !important;
+    padding:2px 7px !important;
+  }
+  /* The toast is centred by a base transform that also lifts it 14px
+     (translate(-10px,-14px)), so --hud-top + 10 painted at y=60, still under
+     the 68px HUD. +24 pays that translate back. (Portrait carries the same
+     latent offset at lobby-prototype.css:5222 and is left alone until the
+     toast can be observed with a real weather message.) */
+  html.m-landscape body.on-lobby #weatherToast{
+    max-width:calc(100vw - var(--nav-w) - 90px) !important;
+    font-size:10px !important;
+    padding:4px 8px !important;
+    top:calc(var(--hud-top) + 24px) !important;
+    opacity:0.7 !important;
   }
 }

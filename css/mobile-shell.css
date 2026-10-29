@@ -25,7 +25,10 @@ html.m-landscape {
   --card-cols: 4;
   --card-w: 22%;
   --modal-w: 100%;
-  --hud-top: 44px;
+  /* Measured: #topbar is 68px tall in landscape at 700/850/1280 wide, same as
+     portrait. The old 44px made `.telemetry-feed` (top:calc(--hud-top + 4px))
+     start at 48px and tuck its first line under the HUD. */
+  --hud-top: 64px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
@@ -110,12 +113,18 @@ html.m-landscape .m-rail {
   width: var(--nav-w);
   display: flex;
   flex-direction: column;
-  padding-top: var(--safe-top);
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: var(--safe-top) 0 var(--safe-bottom);
   background: #0d1117;
   border-right: 1px solid #222;
 }
 html.m-landscape .m-rail button {
-  flex: 1;
+  /* Was flex:1, which stretched each tab into a 78-160px cell and spread the
+     icons across the whole rail height. Fixed 52px keeps a >=44px tap target
+     and groups the five tabs in the middle of the band. */
+  flex: 0 0 52px;
   display: flex;
   align-items: center;
   justify-content: center;
