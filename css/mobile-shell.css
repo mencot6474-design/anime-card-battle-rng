@@ -340,6 +340,231 @@ html.m-landscape .m-tabbar { display: none !important; }
 }
 
 /* =========================================================================
+   TIER-2 PROFILE — #profModal (menu operator)
+   lobby-prototype.css restyles the profile for wide screens only: its
+   @media(max-width:900px) branch still gives the hero 260-400px of height and
+   leaves .prof-modal-inner as a SCROLLING grid, so on the phone shell the
+   pane was measured at 57px tall (portrait 390x844) and entirely BELOW the
+   fold (landscape 850x390 rail y=428 / pane y=625). Convert to the tier-2
+   sheet: head strip pinned, tab rail as horizontal pills, the pane is the
+   only scroller. The hero card is hubCardHtml (canonical lobby card) — do
+   NOT restyle its internals; shrink it with transform:scale on its natural
+   280px box, the accepted clone pattern.
+   ========================================================================= */
+@media (orientation:portrait) {
+  html.m-portrait #profModal .prof-modal-inner {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: none !important;
+    grid-template-rows: none !important;
+    overflow: hidden !important;
+  }
+  /* Hero strip: scaled card left, identity info right. padding-left clears
+     the close X pinned at 12px (game convention: top-right is CORET's). */
+  html.m-portrait #profModal .prof-hero {
+    flex: 0 0 auto;
+    flex-direction: row !important;
+    align-items: center !important;
+    height: auto !important;
+    min-height: 0 !important;
+    gap: 10px !important;
+    padding: 8px 14px 10px 56px !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid rgba(56,189,248,.2) !important;
+  }
+  html.m-portrait #profModal .prof-hero-stage {
+    flex: 0 0 auto !important;
+    width: 108px !important;
+    height: 152px !important;
+    padding: 0 !important;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+  }
+  html.m-portrait #profModal .prof-hero-card {
+    width: 280px !important;
+    height: 400px !important;
+    max-width: none !important;
+    max-height: none !important;
+    align-self: flex-start !important;
+    justify-self: flex-start !important;
+    transform: scale(.38) !important;
+    transform-origin: top left !important;
+  }
+  html.m-portrait #profModal .prof-hero-card:hover {
+    transform: scale(.38) !important;
+  }
+  html.m-portrait #profModal .prof-hero-info {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    gap: 6px !important;
+    background: none !important;
+    border-top: 0 !important;
+  }
+  html.m-portrait #profModal .prof-name { font-size: 18px !important; }
+  html.m-portrait #profModal .prof-hero-foot { display: none !important; }
+
+  html.m-portrait #profModal .prof-main { flex: 1 1 auto !important; min-height: 0 !important; }
+  html.m-portrait #profModal .prof-main-head { padding: 10px 14px 8px !important; gap: 10px !important; }
+  html.m-portrait #profModal .prof-eyebrow { display: none !important; }
+  html.m-portrait #profModal .prof-h1 { font-size: 16px !important; }
+  html.m-portrait #profModal .prof-power-v { font-size: 20px !important; }
+  html.m-portrait #profModal .prof-main-body { flex-direction: column !important; }
+
+  /* Tab rail -> horizontal scroll pills (no visible scrollbar). */
+  html.m-portrait #profModal .prof-rail {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    flex-direction: row !important;
+    padding: 6px 10px !important;
+    gap: 6px !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid rgba(56,189,248,.12) !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  html.m-portrait #profModal .prof-rail::-webkit-scrollbar { display: none !important; }
+  html.m-portrait #profModal .prof-tab {
+    flex: 0 0 auto !important;
+    padding: 7px 10px !important;
+    font-size: 10.5px !important;
+    gap: 7px !important;
+    white-space: nowrap !important;
+  }
+  html.m-portrait #profModal .prof-tab svg { width: 14px !important; height: 14px !important; }
+
+  /* Pane = the ONLY scroller. */
+  html.m-portrait #profModal .prof-pane {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    padding: 12px 12px calc(18px + var(--safe-bottom)) !important;
+  }
+  html.m-portrait #profModal .prof-stats { grid-template-columns: repeat(2, minmax(0,1fr)) !important; gap: 8px !important; }
+  html.m-portrait #profModal .prof-stat-card { min-height: 68px !important; padding: 9px 10px 9px 13px !important; }
+  html.m-portrait #profModal .psc-val { font-size: 16px !important; }
+  html.m-portrait #profModal .psc-head { margin-bottom: 4px !important; }
+  html.m-portrait #profModal .prof-party-row { gap: 6px !important; margin-bottom: 14px !important; }
+  html.m-portrait #profModal .prof-grid { grid-template-columns: repeat(2, minmax(0,1fr)) !important; }
+}
+
+/* Short viewports (phone landscape AND low desktop windows): same sheet,
+   tighter hero so head + pills + scrollable pane all clear the fold.
+   Kept as max-height (not orientation:landscape) on purpose — matches the
+   existing landscape lobby gate and survives narrow desktop windows. */
+@media (max-height: 480px) {
+  html.m-landscape #profModal .prof-modal-inner {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: none !important;
+    overflow: hidden !important;
+  }
+  html.m-landscape #profModal .prof-hero {
+    flex: 0 0 auto;
+    flex-direction: row !important;
+    align-items: center !important;
+    height: auto !important;
+    min-height: 0 !important;
+    gap: 10px !important;
+    padding: 6px 14px 7px 56px !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid rgba(56,189,248,.2) !important;
+  }
+  html.m-landscape #profModal .prof-hero-stage {
+    flex: 0 0 auto !important;
+    width: 76px !important;
+    height: 106px !important;
+    padding: 0 !important;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+  }
+  html.m-landscape #profModal .prof-hero-card {
+    width: 280px !important;
+    height: 400px !important;
+    max-width: none !important;
+    max-height: none !important;
+    align-self: flex-start !important;
+    justify-self: flex-start !important;
+    transform: scale(.265) !important;
+    transform-origin: top left !important;
+  }
+  html.m-landscape #profModal .prof-hero-card:hover {
+    transform: scale(.265) !important;
+  }
+  html.m-landscape #profModal .prof-hero-info {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    gap: 4px !important;
+    background: none !important;
+    border-top: 0 !important;
+  }
+  html.m-landscape #profModal .prof-title-tag { font-size: 9px !important; }
+  html.m-landscape #profModal .prof-name { font-size: 15px !important; }
+  html.m-landscape #profModal .prof-hero-foot { display: none !important; }
+  /* XP bar carries the real numbers; trim the deck label so one row stays clear. */
+  html.m-landscape #profModal .prof-deck { display: none !important; }
+
+  html.m-landscape #profModal .prof-main { flex: 1 1 auto !important; min-height: 0 !important; }
+  /* Head folds into the hero band: keep only BATTLE POWER, floating top-right. */
+  html.m-landscape #profModal .prof-main-head {
+    position: absolute !important;
+    top: 8px !important;
+    right: 14px !important;
+    left: auto !important;
+    width: auto !important;
+    display: flex !important;
+    padding: 0 !important;
+    gap: 0 !important;
+    border-bottom: 0 !important;
+    z-index: 20 !important;
+  }
+  html.m-landscape #profModal .prof-main-titles { display: none !important; }
+  html.m-landscape #profModal .prof-power { font-size: 0 !important; }
+  html.m-landscape #profModal .prof-power-v { font-size: 16px !important; }
+  html.m-landscape #profModal .prof-power-lab { font-size: 8px !important; }
+
+  html.m-landscape #profModal .prof-main-body { flex-direction: column !important; }
+  html.m-landscape #profModal .prof-rail {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    flex-direction: row !important;
+    padding: 5px 10px !important;
+    gap: 6px !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid rgba(56,189,248,.12) !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  html.m-landscape #profModal .prof-rail::-webkit-scrollbar { display: none !important; }
+  html.m-landscape #profModal .prof-tab {
+    flex: 0 0 auto !important;
+    padding: 5px 9px !important;
+    font-size: 10px !important;
+    gap: 6px !important;
+    white-space: nowrap !important;
+  }
+  html.m-landscape #profModal .prof-tab svg { width: 13px !important; height: 13px !important; }
+
+  html.m-landscape #profModal .prof-pane {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    padding: 8px 14px calc(14px + var(--safe-bottom)) !important;
+  }
+  html.m-landscape #profModal .prof-stats { grid-template-columns: repeat(auto-fill, minmax(150px,1fr)) !important; gap: 8px !important; }
+  html.m-landscape #profModal .prof-stat-card { min-height: 58px !important; padding: 7px 9px 7px 12px !important; }
+  html.m-landscape #profModal .psc-val { font-size: 15px !important; }
+  html.m-landscape #profModal .psc-head { margin-bottom: 2px !important; }
+  html.m-landscape #profModal .prof-party-row { gap: 8px !important; margin-bottom: 12px !important; }
+  html.m-landscape #profModal .prof-grid { grid-template-columns: repeat(auto-fill, minmax(150px,1fr)) !important; }
+}
+
+/* =========================================================================
    TIER-2 GLOBAL — floating PWA install CTA (#pwaInstallBtn, pwa.js)
    pwa.js APPENDS this pill as a trailing child of <body>. On a phone every
    migrated page/modal is a full-height (100dvh) sheet, so the pill lands
