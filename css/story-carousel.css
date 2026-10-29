@@ -1135,9 +1135,6 @@
   animation: none !important;
 }
 
-@keyframes bioFlashHits {
-  0%, 100% { opacity: 0; }
-}
 
 /* Old FIGHT Word / Slash - Di-hide */
 #fightFx .ff-word,
