@@ -238,9 +238,16 @@ Glob `_tmp/*.cjs` **bukan** milik db-sync. Pembagian nyata: ui-ux = `_tmp/layout
 1. Sebelum dispatch pekerja berikutnya, mandor **wajib** `stop_chat_session` yang aktif sampai balasannya `status:"idle"`. Pekerja yang sudah selesai tapi masih `running` tetap dihitung menempati slot.
 2. Giliran saat ini (urut berdasarkan apa yang memblokir apa): **ui-css** (Unit A #3/#4/#7/#9 + FQ-10) → **ui-ux** (re-run detektor Set-fix + angka final) → **core** (keputusan FXQ) → **vfx** (CTA-1 mute) → **db-sync** (sisa audit jalur duit). Satu selesai, baru naik satu.
 3. **Alasan aturan ini:** token mandor jebol pada 2026-10-30 saat 5 sesi jalan bareng. Bukan karena pekerja boros, tapi karena setiap verifikasi laporan menyerap transkrip sesi penuh.
-4. **Hemat token wajib buat mandor:** `read_chat_session` hanya boleh dipanggil dengan `{turnLimit:1, includeToolOutputs:false}`. Payload penuh satu sesi pekerja = puluhan ribu token. Verifikasi temuan lebih baik pakai `Read`/`Grep` langsung ke file `_tmp/*.md` hasil kerjanya.
-5. **Cron heartbeat & watchdog tetap MATI** (`7f452653` dan `f01bca12`, dua-duanya sudah `enabled:false` + `pauseReason:"failureCircuit"`). Jangan diaktifkan lagi tanpa perintah tersurat user — keduanya justru memperbesar konsumsi token.
-6. **Laporan pekerja dipotong:** balas ke mandor **maks 12 baris**; bukti panjang masuk file `_tmp/` milik si penulis, bukan chat. Yang dilarang di chat: menempel isi JSON dump, daftar screenshot, atau kutipan kode berparagraf-paragraf.
+
+### Disiplin token — berlaku buat mandor DAN pekerja
+
+1. `read_chat_session` hanya boleh dipanggil dengan `{turnLimit:1, includeToolOutputs:false}`. Verifikasi temuan = `Read`/`Grep` ke file `_tmp/` milik penulisnya, bukan ke transkrip.
+2. **Laporan itu file, bukan chat.** Delapan baris PERTAMA tiap laporan `_tmp/*.md` wajib format baku supaya mandor cukup baca 8 baris:
+   `VONIS:` satu kata (LULUS / GAGAL / BLOCKED) · `ANGKA:` hasil terukur · `BUKTI:` perintah yang bisa diulang · `LANJUT:` satu aksi berikutnya · `BUTUH-KEPUTUSAN:` kosong kalau tidak ada.
+3. Pekerja **jangan** ping mandor di tengah kerja. Selesaikan → tulis file → baru lapor. Pengecualian ping: butuh izin di luar §2c, atau ketemu cacat di file divisi lain.
+4. Balasan ke mandor maks 12 baris. Dilarang menempel JSON dump, daftar screenshot, atau kutipan kode berparagraf.
+5. **Ledger mandor** = `_tmp/mandor_ledger.md`: ≤25 baris, **ditimpa** tiap unit (bukan ditambah), berisi HEAD, giliran, blocker, dan keputusan yang menunggu. Kalau ledger dan isi chat bertentangan, **ledger yang benar** — chat bisa dipadatkan, ledger tidak.
+6. Cron heartbeat/watchdog tetap mati. Jangan minta dihidupkan; keduanya pemboros.
 
 ---
 
