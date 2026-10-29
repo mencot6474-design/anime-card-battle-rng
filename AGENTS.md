@@ -227,6 +227,8 @@ File prototipe (`prototipe.html`, `*-prototype.html`, `demo-*.html`, `js/anim-pr
 
 Glob `_tmp/*.cjs` **bukan** milik db-sync. Pembagian nyata: ui-ux = `_tmp/layout*`, `_tmp/audit*`, `_tmp/ui_*`; gate rilis/CSS = `_tmp/ab_swap*.js`, `_tmp/dominated.js`, `_tmp/mobile-harness.cjs`, `_tmp/cdp_run.cjs`; db-sync = yang di tabel. Jangan menjalankan atau mengedit harness divisi lain; tanya pemiliknya.
 
+**Kecuali** lima harness gerbang CSS yang diwariskan ke **ui-css** sebagai alat kerjanya (pembuatnya, sesi rilis Tahap B `59200e2e`, sudah selesai): `_tmp/dominated.js`, `_tmp/ab_swap.js`, `_tmp/ab_swap2.js`, `_tmp/mobile-harness.cjs`, `_tmp/cdp_run.cjs`. ui-css boleh menjalankan dan memperbaruinya; hasil ukurnya tetap harus bisa direproduksi, dan gerbangnya `BEDA=0` untuk kondisi yang tidak disentuh + `errs=0` + `lain=0`.
+
 ---
 
 ## 3. STATE & DATA MODEL
