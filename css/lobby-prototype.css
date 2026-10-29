@@ -760,6 +760,8 @@
   right: 20px !important;
   bottom: auto !important;
   left: auto !important;
+  /* wave-1 salah buang: tanpa ini panel cuac jadi kotak di #/settings (lihat _tmp/snap_panelblast.json) */
+  display: none;
   flex-direction: column !important;
   gap: 6px !important;
   padding: 8px 12px !important;
