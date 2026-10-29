@@ -1,4 +1,6 @@
-/* Kuota partikel global (~30% lebih sedikit) biar HP lemah gak frame. */
+/* Kuota partikel = 0 (semua jumlah partikel FX dipadamkan). Bukan "30% lebih sedikit":
+   FXQ() sengaja mengembalikan 0 supaya battle tetap lancar di HP kentang — keputusan user
+   2026-10-30, jangan dihidupkan tanpa perintah. */
 function FXQ(n){return 0;}
 /* Resolusi canvas FX = 1x: overlay glow tak butuh DPR penuh (HP kentang). */
 function FXDPR(){return 1;}
