@@ -194,6 +194,41 @@ Tujuan: HP kentang tetap main tanpa frame drop. Semua efek baru harus ikut atura
 
 ---
 
+## 2c. KEPEMILIKAN FILE & BATAS DIVISI (kontrak tim, 2026-10-30)
+
+> Bedakan: "2a → 2b → 2c" di §5 adalah **fase deploy migrasi RLS**, bukan rujukan ke bagian ini.
+
+Aturan keras: **pekerja hanya menyentuh file miliknya.** Kalau perbaikan yang diminta ternyata jatuh di file divisi lain, JANGAN tetap jalan — lapor ke mandor, mandor yang memecah tugasnya. Tabrakan file = kerjaan ilang ketimpa.
+
+### Pemilik
+
+| Divisi | File yang dipegang | Dilarang |
+|---|---|---|
+| **mandor** (orchestrator + QC) | `index.html` **hanya baris versi**, `sw.js` **hanya `CACHE_NAME``, commit/push, gate verifikasi | menulis logika permainan atau CSS sendiri; mendelegasikan lagi ke sesi lain |
+| **core** (logic, state, math) | `js/state.js`, `js/data.js`, `js/cards-fx.js`, `js/battle.js`, `js/panels.js`, `js/tower-lobby.js`, `js/raid.js`, `js/foe-passives.js`, `js/i18n.js`, `js/ranking.js`, `js/topup.js`, `roll-system.js` | menyentuh `ctx.*` baru (lihat konflik 1), mengutak-atik cascade CSS, memotong saldo tanpa delta (`_coinSpend`/`_xpGain`/`_rebirthGain`) |
+| **vfx** (canvas & render loop) | `js/anime-archetype-attacks.js`, `js/sheetfx.js`, `js/shadow-king-fx.js`, `js/fps-lock.js`. API `FXQ`/`FXDPR` (didefinisikan di `js/cards-fx.js:2,4`) dan `registerFrame` (`js/anime-archetype-attacks.js:119`) dipanggil, **bukan** diedit | bikin `<canvas>` baru per serangan; layer video/gambar di belakang kartu; mengubah HP/stat/state pemain |
+| **ui-ux** (struktur & journey) | markup `index.html` (modal/screen, **bukan** `?v=`), blok `renderXxx()` di `js/mobile-shell.js`, `js/story-carousel.js`, `js/pwa.js` | `innerHTML` berkala per-timer (flicker + scroll loncat), matematika battle/drop rate, **edit `css/*`** (lihat aturan 3) |
+| **ui-css** (styling & cascade) | `css/style.css`, `css/mobile-shell.css`, `css/world-boss.css`, `css/sl-system.css`, `css/story-carousel.css`, **`css/lobby-prototype.css`** | append-only override di ujung file; `backdrop-filter` di permukaan besar; `background-attachment:fixed` di area scroll; menganimasikan `box-shadow`/`width`/`height`/`top` |
+| **db-sync** (DB, RPC, otoritas server) | `supabase/**`, `js/supabase-sync.js`, `js/config.js`, `js/rpc-guard.js`, `js/devtools-guard.js`, `js/code-inspector.js`. Harness DB: `_tmp/apply_sql.cjs`, `_tmp/inspect_state.cjs`, `_tmp/probe_*.cjs` | `supabase db push` (lewat Management API); mencetak isi `_tmp/sbpat.txt`; menghidupkan hukuman nuke/zeroing saldo (aturan revert 0037) |
+
+### Empat konflik matriks vs kenyataan repo (sudah diputuskan, jangan didebat ulang di tengah jalan)
+
+1. **`js/battle.js` sudah berisi 74 panggilan `ctx.*`** (`:370`, `:420`, `:505`, `:546`, `:667`, …) padahal file itu milik core. Larangan "core dilarang menyentuh canvas" gak bisa dipakai mentah. Jadi aturannya: **FX BARU tidak boleh digambar di `battle.js`** — core cuma men-set trigger dan memanggil API vfx. 74 blok yang sudah ada = hutang teknis, dipindah keluar secara bertahap per-blok dengan gate A/B; **jangan** direfactor sekaligus.
+2. **Template `renderXxx()` tinggal di file milik core.** Markup yang jadi tanggung jawab ui-ux hidup di dalam `js/panels.js`, `js/battle.js`, `js/tower-lobby.js`, `js/raid.js`. Jadi kepemilikan bersifat **per-blok, bukan per-file**: ui-ux memegang urutan/struktur DOM di blok `renderXxx()` itu; core memegang nilai yang dimasukkan ke dalamnya. Mandor wajib **mengurutkan (serialize)**: tidak ada dua pekerja menyentuh satu file di batch yang sama, urutannya core → ui-ux → ui-css.
+3. **Persyaratan layout bukan pemilik file CSS.** Ergonomi (target sentuh ≥44px, panel solid, anti-keptong, full-bleed modal) adalah hak ui-ux untuk **menuntut**, tapi wujud perbaikannya deklarasi CSS di file ui-css. Jalur yang benar: ui-ux menulis daftar (`_tmp/fix_queue_uiux.md`: selector + ukuran yang diminta + alasan + bukti ukur), **ui-css yang mengeksekusi**. ui-ux tidak pernah mengedit `css/*`.
+4. **`sw.js` wajib ikut gerbang cache-bust.** AGENTS.md aturan 3 cuma menyebut `index.html`, tapi `sw.js:1` (`anime-card-battle-v267-domB1`) melayani precache — HP kentang bisa dapat CSS basi walau `?v=` sudah naik, dan itu sudah pernah kejadian (dicatat di §5 soal `roll_ledger`). Gerbang rilis mandor = **3 langkah, semua wajib**: (a) bump `?v=` di `index.html` (30 token terukur 2026-10-30), (b) bump `CACHE_NAME` di `sw.js`, (c) `grep -c <token baru>` membuktikan keduanya sebelum commit.
+
+### Yang TIDAK ada pemiliknya — status "khusus izin"
+
+`js/boot.js` (router + `enterGame` + label BUILD) dan `js/crazygames.js` adalah jalur boot/lifecycle yang menyilang semua divisi. **Tidak ada pekerja yang mengeditnya tanpa persetujuan tersurat user lewat mandor.** Temuan audit #6 (boot ngunci saat Supabase tak terjangkau) masuk sini, jadi itu **diskusi desain**, bukan tiket perbaikan.
+File prototipe (`prototipe.html`, `*-prototype.html`, `demo-*.html`, `js/anim-prototipe.js`, `css/anim-prototipe.css`) dan `*.bak-*` sudah di-ignore — tidak dimiliki siapa pun, jangan di-commit.
+
+### Harness `_tmp/` dimiliki pembuatnya
+
+Glob `_tmp/*.cjs` **bukan** milik db-sync. Pembagian nyata: ui-ux = `_tmp/layout*`, `_tmp/audit*`, `_tmp/ui_*`; gate rilis/CSS = `_tmp/ab_swap*.js`, `_tmp/dominated.js`, `_tmp/mobile-harness.cjs`, `_tmp/cdp_run.cjs`; db-sync = yang di tabel. Jangan menjalankan atau mengedit harness divisi lain; tanya pemiliknya.
+
+---
+
 ## 3. STATE & DATA MODEL
 
 - `let state=null, currentUser=null` — `js/state.js:25` (dua-duanya top-level `let`: tes in-page harus assign identifier polos, bukan `window.state`)
