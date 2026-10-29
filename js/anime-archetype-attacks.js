@@ -924,6 +924,22 @@
       var midX = lx;
       var midY = ly;
 
+      // Halo cyan lembut mengelilingi prisma (2 pass, pengganti shadowBlur)
+      ctx.beginPath();
+      ctx.moveTo(tipX, tipY);
+      ctx.lineTo(midX + perpX * w, midY + perpY * w);
+      ctx.lineTo(backX, backY);
+      ctx.lineTo(midX - perpX * w, midY - perpY * w);
+      ctx.closePath();
+      ctx.strokeStyle = "#38bdf8";
+      ctx.globalAlpha = 0.10;
+      ctx.lineWidth = 18 * scale;
+      ctx.stroke();
+      ctx.globalAlpha = 0.20;
+      ctx.lineWidth = 9 * scale;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
       // Sisi kristal kiri (highlight terang)
       ctx.fillStyle = "#ffffff";
       ctx.beginPath();
@@ -960,8 +976,7 @@
       ctx.globalCompositeOperation = "lighter";
 
       // FASE 1: 3 TOMBAK KRISTAL ES MELUNCUR MENEMBUS UDARA (0.0 -> 0.42)
-      ctx.shadowColor = "#38bdf8";
-      ctx.shadowBlur = 24;
+      // Glow tombak = halo pass (kontrak §2b: tanpa shadowBlur per bentuk)
 
       for(var l=0; l<lances.length; l++){
         var lc = lances[l];
@@ -979,11 +994,20 @@
           gradTrail.addColorStop(0, "rgba(56, 189, 248, 0)");
           gradTrail.addColorStop(0.5, "rgba(186, 230, 253, 0.4)");
           gradTrail.addColorStop(1, "rgba(255, 255, 255, 0.85)");
-          ctx.strokeStyle = gradTrail;
-          ctx.lineWidth = 5 * lc.scale;
+          // Halo jejak kabut beku (2 pass lebar tipis, pengganti blur)
           ctx.beginPath();
           ctx.moveTo(tX, tY);
           ctx.lineTo(curLx, curLy);
+          ctx.strokeStyle = "#38bdf8";
+          ctx.globalAlpha = 0.10;
+          ctx.lineWidth = 16 * lc.scale;
+          ctx.stroke();
+          ctx.globalAlpha = 0.18;
+          ctx.lineWidth = 10 * lc.scale;
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+          ctx.strokeStyle = gradTrail;
+          ctx.lineWidth = 5 * lc.scale;
           ctx.stroke();
 
           // Render tombak es kristal
@@ -1325,4 +1349,5 @@
     fxBrawler(x1, y1, x2, y2, "#ff5722", "#ff9800");
     return true;
   };
+window.registerFrame = registerFrame;
 })();
