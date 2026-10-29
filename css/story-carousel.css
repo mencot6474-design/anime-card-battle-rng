@@ -5,38 +5,15 @@
 #storyModal {
   position: fixed;
   inset: 0;
-  background: radial-gradient(120% 90% at 50% 40%, rgba(125,249,255,.08), rgba(3,6,15,.96) 65%);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   display: none;
-  place-items: center;
-  z-index: 90;
-  padding: 12px;
   perspective: 1400px;
 }
 #storyModal.show {
   display: grid;
 }
 
-.sc-window {
-  position: relative;
-  width: 100%;
-  max-width: 1040px;
-  height: calc(100vh - 65px);
-  max-height: 720px;
-  min-height: 560px;
-  background: rgba(7, 14, 28, 0.96);
-  backdrop-filter: blur(20px);
-  border: 1.5px solid rgba(0, 240, 255, 0.22);
-  border-radius: 18px;
-  box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.85),
-    0 0 40px rgba(0, 102, 255, 0.2),
-    inset 0 0 20px rgba(0, 240, 255, 0.05);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
 
 /* Corner Accents */
 .sc-corner {
@@ -57,12 +34,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 20px;
-  border-bottom: 1px solid rgba(0, 240, 255, 0.18);
   background: rgba(4, 8, 18, 0.95);
   position: relative;
   z-index: 5;
-  flex-shrink: 0;
 }
 .sc-chap-nav {
   display: flex;
@@ -170,7 +144,6 @@
   color: #8494ab;
   display: grid;
   place-items: center;
-  cursor: pointer;
   font-size: 16px;
   transition: all 0.2s;
 }
@@ -182,7 +155,6 @@
 
 /* CAROUSEL STAGE */
 .sc-carousel-stage {
-  flex: 1;
   position: relative;
   display: flex;
   align-items: center;
@@ -191,7 +163,6 @@
   perspective: 1400px;
   transform-style: preserve-3d;
   padding: 14px 0;
-  min-height: 330px;
 }
 
 .sc-stage-arrow {
@@ -268,7 +239,6 @@
   transform: translateX(228px) translateY(6px) translateZ(-50px) rotateY(-34deg) scale(0.85);
   z-index: 6;
   opacity: 0.75;
-  filter: brightness(0.65) saturate(0.85);
 }
 .sc-card.pos-neg-1 {
   transform: translateX(-228px) translateY(6px) translateZ(-50px) rotateY(34deg) scale(0.85);
@@ -280,7 +250,6 @@
   transform: translateX(405px) translateY(14px) translateZ(-170px) rotateY(-48deg) scale(0.68);
   z-index: 3;
   opacity: 0.4;
-  filter: brightness(0.4) saturate(0.6);
 }
 .sc-card.pos-neg-2 {
   transform: translateX(-405px) translateY(14px) translateZ(-170px) rotateY(48deg) scale(0.68);
@@ -341,7 +310,6 @@
   letter-spacing: 0.8px;
 }
 .sc-card.is-boss .sc-stage-badge {
-  color: #ff2a7a;
   text-shadow: 0 0 8px #ff2a7a;
 }
 .sc-clear-status {
@@ -477,7 +445,6 @@
   gap: 16px;
   position: relative;
   z-index: 5;
-  flex-shrink: 0;
 }
 .sc-dock-intel {
   display: flex;
@@ -825,7 +792,6 @@
   border-radius: 14px;
   overflow: hidden;
   z-index: 10;
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.8);
 }
 
 /* TOP STRIP: PLAYER (SLIDES IN FROM LEFT) */
@@ -879,7 +845,6 @@
     rgba(10, 35, 60, 0.92) 55%, 
     rgba(3, 10, 20, 0.88) 100%
   );
-  backdrop-filter: blur(10px);
   z-index: 1;
 }
 .bio-strip-backdrop.foe-backdrop {

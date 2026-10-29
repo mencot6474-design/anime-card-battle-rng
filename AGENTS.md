@@ -10,7 +10,7 @@ Baca file ini dulu; jangan baca `style.css` (49.3k baris) atau `index.html` utuh
 1. **Jangan refactor besar / hapus kode** tanpa diminta eksplisit. User sensitif ke perubahan tak diminta.
 2. **ART JANGAN DISENTUH.** Jangan ganti / timpa / pindah file gambar apa pun (kartu, pet, artefak, item, thumbnail, `assets/**`) kecuali user minta tersurat "ganti art". "Optimasi" tidak pernah berarti menyentuh gambar.
 3. **Cache-busting:** setiap edit file JS/CSS → naikkan `?v=` di `index.html` (script JS di baris 736–760, CSS di baris 15–18). Kalau tidak, user lihat versi lama.
-4. **CSS append-only:** perubahan gaya ditambahkan di **akhir `css/style.css`** sebagai blok override. Jangan edit aturan lama di tengah file (bisa menabrak ratusan layar lain).
+4. **CSS: tidak lagi append-only.** Aturan lama (tumpuk override di akhir `css/style.css`) adalah penyebab 60k baris dan SUDAH DIGANTI: ubah deklarasi pemenang di tempatnya, per layar, jangan tambah strata override baru. Karena satu selector bisa ditimpa di 4 stylesheet (`style.css` → `world-boss/sl-system/story-carousel` → `lobby-prototype.css` → `mobile-shell.css`, urutan muat `index.html:18-24`), sebelum membuang/mengubah apa pun cek siapa pemenang cascade sungguhan lewat harness `_tmp/dominated.js` (bukti 58 kondisi) + `_tmp/ab_swap.js` (A/B computed-style, gerbang `BEDA=0`). Gaya yang cuma hidup di state runtime (kelas `body.*`, `html.m-*`) tidak boleh dinilai dari `index.html` saja.
 5. **Commit** pakai identitas inline (tidak ada global config):
    `git -c user.name="Qoder" -c user.email="qoder@local" commit -m "..."`
    Stage **file spesifik**, JANGAN `git add -A` (folder prototipe bisa nyangkut).
@@ -29,7 +29,7 @@ Baca file ini dulu; jangan baca `style.css` (49.3k baris) atau `index.html` utuh
 
 ```
 index.html            shell, semua modal/screen markup, urutan script (767 baris)
-css/style.css         49.5k baris — SEMUA gaya utama (append override di akhir)
+css/style.css         54,5k baris — SEMUA gaya utama (edit pemenang di tempat, bukan append)
                       blok PERF/LAYOUT: 48395–48476; blok terbaru (full-art,
                       shadow-king FX, world boss) lanjut sampai 48571–49022+;
                       blok LEADERBOARD v2 (podium+border) mulai 49298,
@@ -262,10 +262,12 @@ welcomeModal 67, topbar 93, authScreen 75, app 222, profModal 124, rollResultPop
 Box dalam = `display:flex; flex-direction:column; overflow:hidden`; header `flex:none` (padding-right 110–120px supaya tidak ketutup tombol dev `#crFab`), body `flex:1; min-height:0` dan hanya body yang scroll.
 Backpack bukan `display:fixed` bawaan — `toggleBackpack` set inline transform; dinetralkan CSS `transform:none!important`.
 
-### Layout layar main = PC di semua device
-- `<meta name="viewport" content="width=1900, ...">` (index.html:5) — HP/PWA me-render layout desktop lalu mengecilkan, jadi komposisi 3 kolom sama seperti PC.
-- `html,body{text-size-adjust:100%}` (style.css:48474) mematikan font boosting Chrome/WebView HP (penyebab teks melimpah & "nabrak").
-- Jaring pengaman `@media(max-width:700px)` (style.css:48481 & 48501) memaksa arena battle tetap 3 kolom: `minmax(0,1fr) clamp(48px,12vw,96px) minmax(0,1fr)`, kartu `max-height:min(58dvh,420px)`, kolom VS `flex-direction:column; width:100%; min-width:0` (dulu 210px menabrak kartu).
+### Layout HP = shell mobile yang default (sejak 2026-10-29, bukan "PC dikecilkan" lagi)
+- `css/mobile-shell.css` dimuat PALAH AKHIR dan jadi layout default di SEMUA device: gate `(pointer:coarse)` / lebar sudah DICABUT, bloknya tanpa kondisi atau dipisah orientasi lewat kelas `html.m-portrait` / `html.m-landscape` yang selalu di-set `js/mobile-shell.js:35`. Kalau style bentrok, shell ini yang menang.
+- `<meta name="viewport" content="width=1900, ...">` (index.html:5) masih dipakai untuk layout dasar desktop; shell mobile menimpa lewat `!important`-nya sendiri, bukan lewat viewport.
+- Gate lama "putar HP" masih ada di `@media (orientation:portrait) and (pointer:coarse)` (style.css:184) — mobile-shell.css sengaja dimuat setelahnya supaya menelan `#rotateHint`.
+- `html,body{text-size-adjust:100%}` (style.css:44837) mematikan font boosting Chrome/WebView HP (penyebab teks melimpah & "nabrak").
+- Jaring pengaman `@media(max-width:700px)` (style.css:44844 & 44864) memaksa arena battle tetap 3 kolom untuk WebView yang memaksa `device-width`.
 - Jangan pakai `100dvh - konstanta` untuk tinggi arena; di viewport pendek (landscape HP) rumus itu runtuh.
 
 ---
@@ -369,7 +371,7 @@ Backpack bukan `display:fixed` bawaan — `toggleBackpack` set inline transform;
 - **Tambah/ubah kartu** → `STORY_BIBLE` (data.js:100) untuk unit cerita; `MASTER_CARD_INDEX` (panels.js:1755) untuk index; art di `assets/cards/art/<slug>.png` (deck/list pakai `assets/cards/thumb/`). Jangan cascade tier/skill kalau hanya diminta ganti art — dan jangan sentuh art tanpa permintaan tersurat.
 - **Ubah skill/trait** → `cards-fx.js` (`skillText`, `fxOf`), trait tree `renderTrait` (raid.js:1382), passive musuh `foe-passives.js` + `shadow-king-fx.js`.
 - **Ubah FX serangan** → `anime-archetype-attacks.js` (definisi) + `sheetfx.js` (render efek) + `assets/vfx`. Semua murni canvas (tanpa background video); wajib lewat `registerFrame` + `FXQ`, jangan bikin canvas baru.
-- **Ubah tampilan layar** → cari id modal di `index.html` (lihat daftar baris di §4), render function di tabel §4, lalu **append** override CSS di akhir `css/style.css`.
+- **Ubah tampilan layar** → cari id modal di `index.html` (lihat daftar baris di §4), render function di tabel §4, lalu ubah aturan yang MEMANG menang di layar itu (cek pemenang cascade lewat harness, lihat aturan 4 di atas). Jangan tambah blok override baru di akhir file.
 - **Ubah gacha/rate** → panels.js area roll (589+), `sl-system.css`, konstanta `DIFFS`/mutasi di cards-fx.js (128–160). Prototipe ritme roll ada di `_tmp/`/`proto/` (tidak dilacak git).
 - **Ubah ekonomi/harga** → konstanta di panels.js (premium/topup), `TRAIT_COST` + `WB_SHOP` (raid.js:855), shop tower di tower-lobby.js:318. Harga yang dibayar server ada di tabel: `token_shop_price` (0026), `coin_story_stage` (0025), `item_def` (0028: harga coin/gem pet & artefak + `src`), `pack_def` (0029: harga gem + `tower_rate` pack instan) — ubah client + regenerate tabelnya, jangan hanya salah satu. `pack_def` TIDAK lagi buta jumlah tarikan: sejak 0040 ada kolom `pulls` (5K/10K/25K/50K/100K, default 0 NOT NULL) sebagai sumber server — kalau `PACK_ROLL_AMOUNT` (panels.js:1819) berubah, update `pack_def.pulls` DAN baris `roll_config('intan_pulls')` (0039: 100.000 tarikan per intan) juga, kalau tidak server memotong pack/intan untuk jumlah yang salah. Tabel cermin 0027 (`card_stat`, `tree_node`, `pet_def`, `art_def`) regenerate dengan `node _tmp/gen_0027.cjs`; `item_def` dengan `node _tmp/gen_0028.cjs`; tabel Unit 4 (`roll_pool_def`, `roll_mut_rates`, `luck_def`, `trait_def` + seed `roll_config` di 0034/0035, dan `stacks_legacy` di 0036) dengan `node _tmp/gen_0034.cjs` lalu `node _tmp/gen_0036.cjs` — **0036 menyusun ulang `merge_player_state` dari 0037 dan `roll_pull` dari 0034, jadi jalankan `gen_0034.cjs` dulu**. Tabel cermin Unit 4 adalah SATU-SATUNYA cara generator menulis SQL-nya; jangan sunting `0034/0035/0036` manual, kalau pool kartu / chance mutasi / TRAIT_TIERS / `MASTER_CARD_INDEX` berubah di client = regenerate + apply ulang, kalau tidak server membayar angka lama (kartu baru tidak bisa di-pull, tier salah, item/pack baru tidak bisa dibeli).
 - **Ubah save/state** → `freshState` state.js:12 + migrasi di `enterGame` boot.js:442 + `supabase-sync.js`. Kalau menambah field besar (mis. inventori baru), pikirkan dulu dampaknya ke payload push (§3) — `stacks` sudah 74 KB.

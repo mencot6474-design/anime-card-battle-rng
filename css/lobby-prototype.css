@@ -21,23 +21,12 @@
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
     body.on-lobby {
       width: 100%; height: 100%;
-      background: var(--bg-void);
-      color: var(--text-white);
       font-family: var(--font-sans);
-      overflow: hidden;
       -webkit-font-smoothing: antialiased;
     }
 
     /* ================= MAIN LOBBY STAGE & LIVING KINETIC ATMOSPHERE ================= */
     #stage {
-      position: absolute;
-      inset: 0;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      background: 
-        radial-gradient(ellipse at 50% 28%, rgba(28, 38, 75, 0.5) 0%, rgba(8, 12, 26, 0.9) 60%, #020408 100%),
-        linear-gradient(180deg, #040612 0%, #010205 100%);
       transition: transform 0.6s var(--ease-spring), filter 0.6s var(--ease-spring);
     }
     #stage.dof-blur {
@@ -55,16 +44,8 @@
 
     /* Cinematic AAA Anime Landscape Background (WuWa x Genshin) */
     .stage-bg-layer {
-      position: absolute;
-      inset: -35px;
       background-image: url('assets/bg/lobby-wuwa-genshin.webp');
-      background-size: cover;
-      background-position: center 38%;
-      filter: brightness(0.65) saturate(1.15) contrast(1.08);
-      transform: scale(1.05);
       transition: transform 0.18s ease-out;
-      pointer-events: none;
-      z-index: 1;
     }
 
 
@@ -176,24 +157,10 @@
 
 
     .hero-standee-char {
-      position: absolute;
-      inset: -12px;
       background-image: url('assets/cards/art/shadow-king.webp');
-      background-size: cover;
-      background-repeat: no-repeat;
-      background-position: center 20%;
-      transition: transform 0.12s ease-out;
     }
 
     .hero-frame-svg {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 10;
-      object-fit: fill;
-      filter: drop-shadow(0 0 10px rgba(250, 204, 21, 0.6));
       transition: filter 0.3s ease;
     }
 
@@ -207,9 +174,6 @@
     }
     .hero-card-plate.theme-void {
       filter: drop-shadow(0 22px 45px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 20px rgba(192, 132, 252, 0.5));
-    }
-    .hero-card-plate.theme-holo {
-      filter: drop-shadow(0 22px 45px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 16px rgba(125, 211, 252, 0.4));
     }
     .hero-card-plate.theme-none {
       filter: drop-shadow(0 22px 45px rgba(0, 0, 0, 0.95));
@@ -317,24 +281,7 @@
 
     /* Minimalist Trigger Handle */
     .cmd-trigger-btn {
-      position: absolute;
-      right: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      z-index: 25;
-      width: 52px;
-      height: 68px;
-      background: rgba(10, 15, 28, 0.85);
-      backdrop-filter: blur(20px);
-      clip-path: polygon(14px 0, 100% 0, 100% 100%, 14px 100%, 0 calc(100% - 14px), 0 14px);
-      border-left: 2px solid var(--accent-cyan);
-      box-shadow: -12px 0 35px rgba(0, 0, 0, 0.65);
       color: var(--accent-cyan);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s var(--ease-spring);
     }
     .cmd-trigger-btn:hover {
       width: 64px;
@@ -358,52 +305,8 @@
       100% { opacity: 1; transform: translateX(0) scale(1); }
     }
 
-    .drw-head {
-      height: 76px;
-      padding: 0 32px;
-      border-bottom: 1px solid var(--border-hairline);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-shrink: 0;
-    }
-    .drw-title-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-    .drw-eyebrow {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.14em;
-      color: var(--accent-cyan);
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
-    .drw-eyebrow .live-dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: #22c55e; box-shadow: 0 0 8px #22c55e;
-      animation: pulseGreen 2s infinite;
-    }
-    .drw-title {
-      font-family: var(--font-display);
-      font-size: 19px;
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      color: #ffffff;
-    }
 
 
-    .drw-body {
-      flex: 1;
-      overflow-y: auto;
-      padding: 24px 30px;
-      display: flex;
-      flex-direction: column;
-      gap: 28px;
-    }
     .drw-body::-webkit-scrollbar { width: 4px; }
     .drw-body::-webkit-scrollbar-thumb {
       background: rgba(255, 255, 255, 0.15);
@@ -575,17 +478,11 @@
     }
 
     .op-card {
-      position: relative;
-      background: rgba(14, 20, 36, 0.6);
-      clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
       border-left: 2px solid var(--accent-cyan);
       padding: 18px;
       display: flex;
       flex-direction: column;
       gap: 10px;
-      cursor: pointer;
-      overflow: hidden;
-      transition: all 0.25s var(--ease-spring);
     }
     .op-card:hover {
       background: rgba(20, 28, 52, 0.85);
@@ -637,16 +534,10 @@
     }
 
     .mod-pod {
-      position: relative;
-      background: rgba(14, 20, 36, 0.6);
-      clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
       padding: 14px 18px;
       display: flex;
       align-items: center;
       gap: 14px;
-      cursor: pointer;
-      overflow: hidden;
-      transition: all 0.24s var(--ease-spring);
     }
     .mod-pod:hover {
       background: rgba(22, 32, 58, 0.85);
@@ -869,8 +760,6 @@
   right: 20px !important;
   bottom: auto !important;
   left: auto !important;
-  z-index: 30 !important;
-  display: none;
   flex-direction: column !important;
   gap: 6px !important;
   padding: 8px 12px !important;
@@ -883,7 +772,6 @@
   box-shadow: 0 10px 30px rgba(0,0,0,.7), 0 0 16px color-mix(in srgb, var(--wc, #38bdf8) 22%, transparent) !important;
   max-width: 260px !important;
 }
-body.on-lobby .weather-panel.show { display: flex !important; }
 
 /* Hide Lobby HUD elements when modals are open */
 body:has(#indexModal.show) .lobby-tactical-hud,
@@ -912,15 +800,7 @@ body.bp-open .lobby-tactical-hud {
 
 
 
-/* ==========================================================================
-   PIXEL-PERFECT AAA MASTER POLISH (EXACT MATCH TO PROTOTYPE.PNG)
-   ========================================================================== */
 
-/* 1. Global Lobby Canvas & Reset Old Backgrounds */
-body.on-lobby {
-  background: #020408 !important;
-  overflow: hidden !important;
-}
 
 body.on-lobby::before {
   display: none !important;
@@ -1201,9 +1081,6 @@ body.on-lobby [id*="coret"] {
   padding: 0 !important;
 }
 
-body.on-lobby .lobby-footer {
-  display: flex !important;
-}
 
 .foot-main {
   display: flex !important;
@@ -1696,8 +1573,6 @@ html body.on-lobby .lobby-footer {
 html body.on-lobby .foot-main {
   display: flex !important;
   align-items: center !important;
-  gap: 12px !important;
-  padding: 8px 18px !important;
   background: rgba(10, 15, 28, 0.8) !important;
   backdrop-filter: blur(22px) !important;
   -webkit-backdrop-filter: blur(22px) !important;
@@ -1718,16 +1593,10 @@ html body.on-lobby .center-dock {
 }
 
 html body.on-lobby .backpack-toggle {
-  height: 52px !important;
-  min-width: 170px !important;
   width: auto !important;
-  padding: 0 24px !important;
   background: rgba(255, 255, 255, 0.05) !important;
   color: #ffffff !important;
   font-family: var(--font-tac, 'Rajdhani', sans-serif) !important;
-  font-size: 15px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.06em !important;
   display: flex !important;
   align-items: center !important;
   gap: 10px !important;
@@ -1756,18 +1625,12 @@ html body.on-lobby .backpack-toggle .bp-txt {
 }
 
 html body.on-lobby .roll-btn {
-  height: 56px !important;
-  min-width: 195px !important;
   width: auto !important;
-  padding: 0 38px !important;
   background: linear-gradient(135deg, #0284c7 0%, #2563eb 50%, #4f46e5 100%) !important;
   clip-path: polygon(16px 0%, calc(100% - 16px) 0%, 100% 16px, 100% calc(100% - 16px), calc(100% - 16px) 100%, 16px 100%, 0% calc(100% - 16px), 0% 16px) !important;
   box-shadow: 0 6px 24px rgba(37, 99, 235, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
   color: #ffffff !important;
   font-family: var(--font-display, 'Orbitron', sans-serif) !important;
-  font-size: 16px !important;
-  font-weight: 800 !important;
-  letter-spacing: 0.08em !important;
   display: flex !important;
   align-items: center !important;
   gap: 12px !important;
@@ -1905,7 +1768,6 @@ html body.on-lobby .weather-panel {
   right: 24px !important;
   bottom: auto !important;
   left: auto !important;
-  z-index: 30 !important;
   padding: 8px 14px !important;
   border-radius: 0 !important;
   clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px) !important;
@@ -1956,11 +1818,6 @@ html body.on-lobby .stage-loadout .loadout-slot .ls-mark svg {
 }
 
 
-/* Clean Lobby: Hide floating weatherPanel on lobby */
-html body.on-lobby .weather-panel,
-html body.on-lobby #weatherPanel {
-  display: none !important;
-}
 
 /* ================= ARCHON COMMAND DRAWER (SWIPE MENU) OVERLAY ================= */
 #drawerBackdrop {
@@ -2312,28 +2169,18 @@ html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)
 /* 2. Backpack Panel: Fixed Full-Screen Cyber Tactical Modal */
 #backpackPanel,
 .backpack-panel {
-  display: none !important;
-  position: fixed !important;
-  inset: 0 !important;
   top: 0 !important;
   left: 0 !important;
   right: 0 !important;
   bottom: 0 !important;
-  width: 100vw !important;
   height: 100vh !important;
-  height: 100dvh !important;
   max-width: 100vw !important;
   max-height: 100dvh !important;
   transform: none !important;
-  z-index: 90000 !important;
   background: radial-gradient(110% 80% at 50% 0%, rgba(56, 189, 248, 0.08) 0%, transparent 60%), #070b12 !important;
-  box-sizing: border-box !important;
-  margin: 0 !important;
-  padding: 0 !important;
   border: none !important;
   border-radius: 0 !important;
   box-shadow: none !important;
-  overflow: hidden !important;
 }
 
 
@@ -3086,7 +2933,6 @@ main#app:has(.sett-wrap) {
 
 #backpackPanel,
 .backpack-panel {
-  display: none !important;
   position: fixed !important;
   inset: 0 !important;
   width: 100vw !important;

@@ -102,7 +102,6 @@
 
 /* #towerDropModal .tw-drop-modal: ::before sudah dipakai garis atas -> corners via ::after */
 #towerDropModal .tw-drop-modal{
-  position:relative;
   border-radius:12px !important;
   border:1.5px solid var(--sl-edge) !important;
   background:
@@ -170,8 +169,7 @@
   border:1px solid rgba(0,217,255,.45) !important;
   border-radius:8px !important;
   color:#cfefff !important;background:rgba(0,217,255,.06) !important;
-  display:grid;place-items:center;
-  transition:all var(--sl-ease);
+  place-items:center;
 }
 #deckPickModal .ix-x:hover,
 #traitModal .ix-x:hover,
@@ -291,14 +289,6 @@
 .trr-item.is-target .trr-tgt{background:var(--sl-cyan) !important;color:#040914 !important}
 
 
-/* ==========================================================================
-   6. BACKPACK PANEL & RAID PICK HEAD
-   ========================================================================== */
-.backpack-panel{
-  border:1.5px solid var(--sl-edge) !important;
-  border-radius:12px !important;
-  box-shadow:var(--sl-glow) !important;
-}
 .backpack-panel .bp-head,
 .rd-pick .rd-pick-head{
   border:1px solid var(--sl-edge-soft) !important;
@@ -434,9 +424,6 @@
 .rd-page .hunter-raid-hub .hdd-btn-text small{font-size:clamp(7px,1.05vh,9px) !important}
 .rd-page .hunter-raid-hub .hdd-btn-text b{font-size:clamp(11px,1.7vh,15px) !important}
 .rd-page .hunter-raid-hub .hdd-btn.deploy{min-width:clamp(120px,15vw,170px) !important}
-/* Padding main raid dipadatkan (toko pakai :has(.shop-hub) -> tetap menang);
-   bawah lebih lega supaya dock/panel tidak nempel tepi layar (sl-v4) */
-body.on-raid main{padding:clamp(10px,1.8vh,18px) clamp(14px,3.6vw,40px) clamp(12px,2.4vh,22px) !important}
 /* Tier cadangan layar sangat pendek */
 @media(max-height:650px){
   .rd-page .hunter-raid-hub .hhc-gate-title{font-size:clamp(9px,1.6vh,13px) !important}
