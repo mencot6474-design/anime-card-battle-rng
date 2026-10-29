@@ -54,7 +54,8 @@ js/panels.js          gacha roll, profil, backpack, premium, weather, topup, glo
                         srOne/srReset) dan rollTick 928 (jalur server, tanpa fallback lokal)
 js/topup.js           modal topup (render terpisah)
 js/cards-fx.js        CARDS (index kartu), DIFFS (157), FX/skill text, mutasi (128+)
-                      + GLOBAL: FXQ(n) kuota partikel 70% (baris 2), FXDPR() = 1 (4)
+                      + GLOBAL: FXQ(n) = SELALU 0 (baris 2; bukan kuota 70% — lihat 2b#3),
+                        FXDPR() = 1 (4)
                       + konstanta raid/WB: WB_POOL_HP 167 (1e10, 0033 — TIDAK ada
                         pengali damage lagi; damage kartu dikirim apa adanya)
                       + FORMATTER: fmt(n) format ribuan koma; fmtStat(n) format ringkas
@@ -71,7 +72,8 @@ js/state.js           state global, auth, renderShell, home, mission, story hook
                       save/cloud push (lihat §3), `coinSpend` (441) & `xpGain` (0025/0026),
                       `_rebirthGained`/`_rebirthDo` (0027, di blok REBIRTH)
 js/sheetfx.js         efek lembar/slash battle (canvas FX terpisah, DPR via FXDPR)
-js/battle.js          battle engine + render (semua canvas pakai FXDPR, partikel via FXQ)
+js/battle.js          battle engine + render (semua canvas pakai FXDPR; partikel FXQ
+                      kini = 0 jadi loop ber-FXQ TIDAK menggambar apa pun — lihat 2b#3)
                       + stat-row HP & ATK tanpa icon box placeholder gelap ala Tower Inf (149, 184, 190)
 js/tower-lobby.js     lobby hub, tower, backpack toggle, modal helper, modal Rebirth horizontal (openRebirthModal/renderRebirthModal/executeRebirthFromModal)
                       + standardisasi kartu: box HP & ATK gelap (tanpa ikon), tatanan vertikal badge loading,
@@ -183,7 +185,7 @@ Tujuan: HP kentang tetap main tanpa frame drop. Semua efek baru harus ikut atura
    - `return false` = efek selesai, otomatis di-unregister. **Jangan** `cv.remove()` / `requestAnimationFrame` sendiri / bikin `<canvas>` baru per serangan.
    - `sharedTick` clear sekali per frame lalu memanggil semua frame aktif — tidak ada canvas menumpuk saat efek overlap.
 2. **Resolusi canvas FX = 1x.** Semua canvas FX (archetype, `sheetfx`, `battle.js`) memakai `FXDPR()`, bukan `devicePixelRatio`. Overlay glow tidak butuh DPR penuh.
-3. **Kuota partikel lewat `FXQ(n)`** (≈70%). Jangan tulis jumlah partikel mentah yang besar. `sheetfx` juga punya cap (`Math.min(24, FXQ(...))` untuk shard, `Math.min(30, ...)` untuk spark).
+3. **Kuota partikel lewat `FXQ(n)`** — **ATTENSI: sejak commit `252fecf` ("disable battle particles") isinya `return 0;`**, jadi bukan "≈70%" melainkan **semua loop partikel ber-FXQ menggambar NOL objek** (16 pemanggil: battle.js 10, anime-archetype-attacks.js 4, sheetfx.js 2). Versi sebelum itu `Math.max(1,Math.round(n*0.7))` (tidak pernah nol). Komentar di `js/cards-fx.js:1` masih menulis "kuota ~30% lebih sedikit" = **menyesatkan, jangan dipercaya**. Kalau mau partikel hidup, itu keputusan core + izin user (konsekuensinya beban frame), bukan sesuatu yang boleh diam-diam dinaikkan pekerja. Jangan tulis jumlah partikel mentah yang besar; `sheetfx` juga punya cap (`Math.min(24, FXQ(...))` shard, `Math.min(30, ...)` spark) yang selama ini ikut tercap nol.
 4. **Hindari `shadowBlur` per partikel.** Untuk glow banyak objek, pakai pass halo (bentuk lebih besar + `globalAlpha` rendah). `shadowBlur` masih boleh untuk objek sedikit (arc/beam/ring).
 5. **CSS battle hanya animasi composited** (`transform`, `opacity`). Sudah dibekukan/diganti di blok PERF: `--battle-border-shift` (tak terpakai), aura Jin-Woo, nama shiny/mutasi, `.sp-crystal`, `.sp-num`, sheen banner shiny, `.bd-chip`.
 6. **`backdrop-filter` dilarang** di permukaan besar / di atas background beranimasi (modal, topbar, footer, fighter body). Latar sudah opaque — tambahkan alpha, jangan blur.
@@ -213,7 +215,7 @@ Aturan keras: **pekerja hanya menyentuh file miliknya.** Kalau perbaikan yang di
 
 ### Empat konflik matriks vs kenyataan repo (sudah diputuskan, jangan didebat ulang di tengah jalan)
 
-1. **`js/battle.js` sudah berisi 74 panggilan `ctx.*`** (`:370`, `:420`, `:505`, `:546`, `:667`, …) padahal file itu milik core. Larangan "core dilarang menyentuh canvas" gak bisa dipakai mentah. Jadi aturannya: **FX BARU tidak boleh digambar di `battle.js`** — core cuma men-set trigger dan memanggil API vfx. 74 blok yang sudah ada = hutang teknis, dipindah keluar secara bertahap per-blok dengan gate A/B; **jangan** direfactor sekaligus.
+1. **`js/battle.js` sudah berisi 476 baris `ctx.*`** (708 occurrence; terukur `grep -c 'ctx\.' js/battle.js` 2026-10-30), semuanya di **9 fungsi FX self-contained** (`psyBarrageFx` 26, `rubberBounceFx` 15, `bajrangGunFx` 30, `hollowPurpleFx` 56, `havocRocketFx` 86, `worldEnderFx` 159, `worldEnderReviveFx` 11, `gammaRayFx` 68, `causalityFx` 25 — peta lengkap + jangkar baris di `_tmp/vfx_contract_audit.md`). Angka lama "74" di kontrak ini **salah** dan sudah dikoreksi. Padahal file itu milik core, jadi larangan "core dilarang menyentuh canvas" gak bisa dipakai mentah. Aturannya tetap: **FX BARU tidak boleh digambar di `battle.js`** — core cuma men-set trigger dan memanggil API vfx. 9 blok yang sudah ada = hutang teknis (masing-masing bikin `<canvas>` sendiri + `appendChild` ke body + loop `requestAnimationFrame` sendiri + `cv.remove()` selesai = melanggar 2b#1/#3/#4), dipindah keluar secara bertahap per-blok dengan gate A/B, urutan beban `worldEnderFx` → `havocRocketFx` → `gammaRayFx` → `hollowPurpleFx` → sisanya; **jangan** direfactor sekaligus.
 2. **Template `renderXxx()` tinggal di file milik core.** Markup yang jadi tanggung jawab ui-ux hidup di dalam `js/panels.js`, `js/battle.js`, `js/tower-lobby.js`, `js/raid.js`. Jadi kepemilikan bersifat **per-blok, bukan per-file**: ui-ux memegang urutan/struktur DOM di blok `renderXxx()` itu; core memegang nilai yang dimasukkan ke dalamnya. Mandor wajib **mengurutkan (serialize)**: tidak ada dua pekerja menyentuh satu file di batch yang sama, urutannya core → ui-ux → ui-css.
 3. **Persyaratan layout bukan pemilik file CSS.** Ergonomi (target sentuh ≥44px, panel solid, anti-keptong, full-bleed modal) adalah hak ui-ux untuk **menuntut**, tapi wujud perbaikannya deklarasi CSS di file ui-css. Jalur yang benar: ui-ux menulis daftar (`_tmp/fix_queue_uiux.md`: selector + ukuran yang diminta + alasan + bukti ukur), **ui-css yang mengeksekusi**. ui-ux tidak pernah mengedit `css/*`.
 4. **`sw.js` wajib ikut gerbang cache-bust.** AGENTS.md aturan 3 cuma menyebut `index.html`, tapi `sw.js:1` (`anime-card-battle-v267-domB1`) melayani precache — HP kentang bisa dapat CSS basi walau `?v=` sudah naik, dan itu sudah pernah kejadian (dicatat di §5 soal `roll_ledger`). Gerbang rilis mandor = **3 langkah, semua wajib**: (a) bump `?v=` di `index.html` (30 token terukur 2026-10-30), (b) bump `CACHE_NAME` di `sw.js`, (c) `grep -c <token baru>` membuktikan keduanya sebelum commit.
