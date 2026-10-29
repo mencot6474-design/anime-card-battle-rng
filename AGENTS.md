@@ -231,6 +231,17 @@ Glob `_tmp/*.cjs` **bukan** milik db-sync. Pembagian nyata: ui-ux = `_tmp/layout
 
 **Kecuali** lima harness gerbang CSS yang diwariskan ke **ui-css** sebagai alat kerjanya (pembuatnya, sesi rilis Tahap B `59200e2e`, sudah selesai): `_tmp/dominated.js`, `_tmp/ab_swap.js`, `_tmp/ab_swap2.js`, `_tmp/mobile-harness.cjs`, `_tmp/cdp_run.cjs`. ui-css boleh menjalankan dan memperbaruinya; hasil ukurnya tetap harus bisa direproduksi, dan gerbangnya `BEDA=0` untuk kondisi yang tidak disentuh + `errs=0` + `lain=0`.
 
+### MODE SERIAL — satu pekerja bergilir (perintah user 2026-10-30, berlaku di atas segalanya)
+
+**Maksimum SATU sesi pekerja berjalan pada satu waktu.** Tidak ada lagi 5 divisi paralel. Aturan turunannya:
+
+1. Sebelum dispatch pekerja berikutnya, mandor **wajib** `stop_chat_session` yang aktif sampai balasannya `status:"idle"`. Pekerja yang sudah selesai tapi masih `running` tetap dihitung menempati slot.
+2. Giliran saat ini (urut berdasarkan apa yang memblokir apa): **ui-css** (Unit A #3/#4/#7/#9 + FQ-10) → **ui-ux** (re-run detektor Set-fix + angka final) → **core** (keputusan FXQ) → **vfx** (CTA-1 mute) → **db-sync** (sisa audit jalur duit). Satu selesai, baru naik satu.
+3. **Alasan aturan ini:** token mandor jebol pada 2026-10-30 saat 5 sesi jalan bareng. Bukan karena pekerja boros, tapi karena setiap verifikasi laporan menyerap transkrip sesi penuh.
+4. **Hemat token wajib buat mandor:** `read_chat_session` hanya boleh dipanggil dengan `{turnLimit:1, includeToolOutputs:false}`. Payload penuh satu sesi pekerja = puluhan ribu token. Verifikasi temuan lebih baik pakai `Read`/`Grep` langsung ke file `_tmp/*.md` hasil kerjanya.
+5. **Cron heartbeat & watchdog tetap MATI** (`7f452653` dan `f01bca12`, dua-duanya sudah `enabled:false` + `pauseReason:"failureCircuit"`). Jangan diaktifkan lagi tanpa perintah tersurat user — keduanya justru memperbesar konsumsi token.
+6. **Laporan pekerja dipotong:** balas ke mandor **maks 12 baris**; bukti panjang masuk file `_tmp/` milik si penulis, bukan chat. Yang dilarang di chat: menempel isi JSON dump, daftar screenshot, atau kutipan kode berparagraf-paragraf.
+
 ---
 
 ## 3. STATE & DATA MODEL
