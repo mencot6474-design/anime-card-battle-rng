@@ -5163,7 +5163,7 @@ body.bp-open .backpack-panel,
     width:auto !important;
     max-width:calc(100vw - 16px) !important;
     transform:none !important;
-    bottom:calc(var(--nav-h) + var(--safe-bottom) + 6px) !important;
+    bottom:calc(var(--nav-h, 60px) + var(--safe-bottom, 0px)) !important;
     justify-content:center !important;
   }
   /* The tabbar already carries labelled actions (Home / Summon / Deck / Koleksi
@@ -5181,10 +5181,71 @@ body.bp-open .backpack-panel,
   html.m-portrait body.on-lobby .backpack-toggle{ height:46px !important; min-width:0 !important; width:auto !important; padding:0 14px !important; flex:0 0 auto !important; }
   html.m-portrait body.on-lobby .roll-btn{ height:48px !important; min-width:0 !important; width:auto !important; padding:0 18px !important; flex:0 0 auto !important; }
   html.m-portrait body.on-lobby .roll-auto-btn{ height:44px !important; min-width:0 !important; padding:0 12px !important; flex:0 0 auto !important; }
+
+  /* HERO CARD: scale to fit between topbar and dock on portrait. */
+  /* Card size is derived from the FREE BAND between the 68px topbar and the
+     dock (62px) + tabbar (--nav-h): width = band height * 270/390, capped by
+     84vw and 330px. Without the vh term a short phone (320x568) overflowed the
+     band and the card top collided with the topbar. */
+  html.m-portrait body.on-lobby .hero-standee-wrap{
+    width:min(84vw, 330px, calc((100vh - 260px) * 0.6923)) !important;
+    height:auto !important;
+    aspect-ratio:270 / 390 !important;
+    margin-bottom:0 !important;
+  }
+  html.m-portrait body.on-lobby .celestial-rune-ring{
+    width:min(120vw, 460px) !important;
+    height:min(120vw, 460px) !important;
+  }
+  /* Center the card inside the visible band (topbar .. dock), not inside a
+     stage that overflows the viewport. */
+  html.m-portrait body.on-lobby .lobby-hub{ padding-bottom:0 !important; }
+  html.m-portrait body.on-lobby .hero-stage-container{
+    box-sizing:border-box !important;
+    min-height:0 !important;
+    padding-top:80px !important;
+    padding-bottom:calc(var(--nav-h, 60px) + 66px) !important;
+  }
+  html.m-portrait body.on-lobby .hero-frame-svg{
+    width:100% !important; height:100% !important;
+  }
+  html.m-portrait body.on-lobby .hero-card-plate{
+    inset:0 !important;
+  }
+  /* Weather toast: compact, below topbar, left-aligned, clear of card. */
+  html.m-portrait body.on-lobby #weatherToast{
+    max-width:calc(100vw - 70px) !important;
+    font-size:10px !important;
+    padding:4px 8px !important;
+    top:calc(68px + var(--safe-top, 0px)) !important;
+    left:8px !important;
+    opacity:0.7 !important;
+  }
+  /* CI badge: hide on mobile — it is a dev tool that overlaps the tabbar. */
+  html.m-portrait #codeInspectorContainer{ display:none !important; }
+  /* Active players badge: position at top-right below topbar, clear of dock. */
+  html.m-portrait #activePlayersBadge{
+    top:calc(72px + var(--safe-top, 0px)) !important;
+    bottom:auto !important;
+    left:auto !important;
+    right:8px !important;
+    font-size:9px !important;
+    padding:2px 7px !important;
+  }
+  /* Dock must be clearly visible above the tabbar. */
+  html.m-portrait body.on-lobby .lobby-footer{
+    z-index:6100 !important;
+  }
   /* Telemetry sits just under the HUD, clear of the 68px topbar. */
   html.m-portrait .telemetry-feed{ top:calc(var(--hud-top) + 4px) !important; left:8px !important; }
-  /* Command trigger is redundant here — the drawer is opened from the More tab. */
-  html.m-portrait body.on-lobby .cmd-trigger-btn{ display:none !important; }
+  /* Command trigger: keep visible as a compact tab on the right edge. */
+  html.m-portrait body.on-lobby .cmd-trigger-btn{
+    width:36px !important; height:52px !important;
+    right:0 !important; top:50% !important;
+    clip-path:polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0 calc(100% - 10px), 0 10px) !important;
+    border-left-width:1.5px !important;
+  }
+  html.m-portrait body.on-lobby .cmd-trigger-btn svg{ width:16px !important; height:16px !important; }
 
   /* PORTRAIT HUD FIX — the desktop topbar is a single nowrap row (profile +
      spacer + coin/gem pills + switcher/settings/changelog buttons). On a 320-
@@ -5198,20 +5259,34 @@ body.bp-open .backpack-panel,
      on mobile via the bottom tabbar (Home / Summon / Deck / Koleksi / More) and
      the .foot-menu popover (PENGATURAN), so this is a layout fix, not a feature
      removal. */
-  html.m-portrait body.on-lobby #topbar{ padding-left:6px !important; padding-right:6px !important; gap:4px !important; }
-  html.m-portrait body.on-lobby .tb-profile{ gap:6px !important; }
-  html.m-portrait body.on-lobby .tb-id{ min-width:0 !important; }
-  html.m-portrait body.on-lobby .tb-id .tb-top{ flex-wrap:wrap; gap:2px 4px; }
+  html.m-portrait body.on-lobby #topbar{ padding-left:6px !important; padding-right:6px !important; gap:4px !important; overflow:visible !important; }
+  html.m-portrait body.on-lobby .tb-profile{ gap:4px !important; min-width:0 !important; flex:0 0 auto !important; }
+  html.m-portrait body.on-lobby .tb-av-wrapper{ width:32px !important; height:32px !important; }
+  html.m-portrait body.on-lobby .tb-av{ width:32px !important; height:32px !important; }
+  html.m-portrait body.on-lobby .tb-id{ min-width:0 !important; overflow:hidden !important; }
+  html.m-portrait body.on-lobby .tb-id .tb-top{ flex-wrap:nowrap; gap:2px 4px; }
+  html.m-portrait body.on-lobby .tb-id .tb-name{ display:none !important; }
   html.m-portrait body.on-lobby .tb-id .xpbar{ display:none !important; }
-  html.m-portrait body.on-lobby #topbar .spacer{ flex:0 1 auto !important; }
-  html.m-portrait body.on-lobby #topbar .tb-actions{ gap:4px !important; }
-  html.m-portrait body.on-lobby #topbar .pill{ padding-left:6px !important; padding-right:6px !important; gap:4px !important; font-size:12px !important; height:30px !important; max-width:76px !important; }
+  html.m-portrait body.on-lobby .tb-chips{ gap:4px !important; }
+  html.m-portrait body.on-lobby .tb-lvl{ padding:0 6px !important; font-size:10px !important; height:24px !important; clip-path:none !important; border-left-width:2px !important; }
+  html.m-portrait body.on-lobby #topbar .spacer{ flex:1 1 0 !important; min-width:2px !important; }
+  html.m-portrait body.on-lobby #topbar .tb-actions{ gap:3px !important; flex:0 1 auto !important; min-width:0 !important; }
+  html.m-portrait body.on-lobby #topbar .pill{ padding:0 5px !important; gap:2px !important; font-size:10px !important; height:24px !important; flex-shrink:1 !important; clip-path:none !important; border-left-width:1.5px !important; }
+  html.m-portrait body.on-lobby #topbar .pill.coins,
+  html.m-portrait body.on-lobby #topbar .pill.gems{ padding:0 5px !important; gap:2px !important; font-size:10px !important; height:24px !important; flex-shrink:1 !important; clip-path:none !important; border-left-width:1.5px !important; }
   html.m-portrait body.on-lobby #topbar .pill .coin-icon-wrap{ flex:0 0 auto !important; }
-  html.m-portrait body.on-lobby #topbar .pill .coin-icon-wrap img{ width:15px !important; height:15px !important; }
+  html.m-portrait body.on-lobby #topbar .pill .coin-icon-wrap img{ width:13px !important; height:13px !important; }
+  html.m-portrait body.on-lobby #topbar .pill .coin-icon-wrap svg{ width:13px !important; height:13px !important; }
   /* Secondary HUD buttons on portrait are reachable elsewhere (foot-menu
-     PENGATURAN + drawer), so drop the topbar copies that cannot fit. */
+     PENGATURAN + drawer). Pengaturan stays in the HUD as a compact gear — it is
+     the only way back from a stray route without opening the drawer. */
   html.m-portrait body.on-lobby #topbar .tb-switcher{ display:none !important; }
-  html.m-portrait body.on-lobby #topbar .tb-settings{ display:none !important; }
+  html.m-portrait body.on-lobby #topbar .tb-settings{
+    display:flex !important;
+    width:28px !important; min-width:28px !important; height:28px !important;
+    padding:0 !important;
+  }
+  html.m-portrait body.on-lobby #topbar .tb-settings svg{ width:15px !important; height:15px !important; }
   html.m-portrait body.on-lobby #topbar .tb-changelog{ display:none !important; }
   /* The power chip (#tbPw "⚡ n") duplicates the deck/card readout; keeping LVL
      is enough in the HUD, so drop it on every portrait phone to reclaim width. */
@@ -5223,8 +5298,17 @@ body.bp-open .backpack-panel,
     html.m-portrait body.on-lobby #topbar{ gap:3px !important; padding-left:5px !important; padding-right:5px !important; }
     html.m-portrait body.on-lobby .tb-profile{ gap:4px !important; }
     html.m-portrait body.on-lobby #topbar .tb-actions{ gap:3px !important; }
-    html.m-portrait body.on-lobby #topbar .pill{ max-width:58px !important; padding-left:5px !important; padding-right:5px !important; gap:3px !important; font-size:11px !important; }
-    html.m-portrait body.on-lobby #topbar .pill .coin-icon-wrap img{ width:13px !important; height:13px !important; }
+    /* No max-width here: capping the pill at 58px clipped the coin value
+       ("81,888" -> "81,8"). The row still fits because the spacer absorbs the
+       remaining width; only the type/icon shrink on the narrowest phones. */
+    html.m-portrait body.on-lobby #topbar .pill{ padding-left:4px !important; padding-right:4px !important; gap:2px !important; font-size:10px !important; flex-shrink:0 !important; }
+    html.m-portrait body.on-lobby #topbar .pill .coin-icon-wrap img{ width:12px !important; height:12px !important; }
+    html.m-portrait body.on-lobby #topbar .pill .coin-icon-wrap svg{ width:12px !important; height:12px !important; }
+    /* Diagnostic telemetry collides with the hero card once the free band gets
+       short (<=700px tall), so it stays hidden there. */
+  }
+  @media (max-height:700px){
+    html.m-portrait body.on-lobby .telemetry-feed{ display:none !important; }
   }
 
   /* PORTRAIT DRAWER FIX — the #commandDrawer is width:min(580px,92vw), so on a
@@ -5270,4 +5354,25 @@ body.bp-open .backpack-panel,
   /* Pull the feed clear of the rail (x:30 would otherwise hide under 0..56). */
   html.m-landscape .telemetry-feed{ top:calc(var(--hud-top) + 4px) !important; left:calc(var(--nav-w) + 8px) !important; }
   html.m-landscape body.on-lobby .cmd-trigger-btn{ display:none !important; }
+  /* Landscape phones are ~390px tall: the desktop 270x390 standee + 10px/0
+     stage padding got cropped by the topbar and dock. Fit it to the band
+     between topbar (68) and dock (62 + 8) with a 10px breather. */
+  html.m-landscape body.on-lobby .lobby-hub{ padding-bottom:0 !important; }
+  html.m-landscape body.on-lobby .hero-stage-container{
+    box-sizing:border-box !important;
+    min-height:0 !important;
+    padding-top:76px !important;
+    padding-bottom:78px !important;
+  }
+  html.m-landscape body.on-lobby .hero-standee-wrap{
+    width:calc((100vh - 168px) * 0.6923) !important;
+    height:auto !important;
+    aspect-ratio:270 / 390 !important;
+    margin-bottom:0 !important;
+  }
+  html.m-landscape body.on-lobby .hero-frame-svg{ width:100% !important; height:100% !important; }
+  html.m-landscape body.on-lobby .celestial-rune-ring{
+    width:min(60vh, 340px) !important;
+    height:min(60vh, 340px) !important;
+  }
 }
