@@ -5214,14 +5214,19 @@ body.bp-open .backpack-panel,
   html.m-portrait body.on-lobby .hero-card-plate{
     inset:0 !important;
   }
-  /* Weather toast: compact, below topbar, left-aligned, clear of card. */
+  /* Weather toast: compact and below topbar. Two traps here:
+     (1) the base centres the box with `left:50%` + translate(-50%), so pinning
+         `left:8px` fought that transform and pushed ~45px of the toast off the
+         left edge — keep the base centring;
+     (2) the base hides it with opacity:0 and reveals it via `.show`, so forcing
+         opacity here painted an empty box on screen permanently.
+     `top` is the resting-position only while hidden; when shown the transform
+     is translate(-50%,0), so top itself must clear the 68px HUD. */
   html.m-portrait body.on-lobby #weatherToast{
     max-width:calc(100vw - 70px) !important;
     font-size:10px !important;
     padding:4px 8px !important;
-    top:calc(68px + var(--safe-top, 0px)) !important;
-    left:8px !important;
-    opacity:0.7 !important;
+    top:calc(76px + var(--safe-top, 0px)) !important;
   }
   /* CI badge: hide on mobile — it is a dev tool that overlaps the tabbar. */
   html.m-portrait #codeInspectorContainer{ display:none !important; }
@@ -5429,16 +5434,14 @@ body.bp-open .backpack-panel,
     font-size:9px !important;
     padding:2px 7px !important;
   }
-  /* The toast is centred by a base transform that also lifts it 14px
-     (translate(-10px,-14px)), so --hud-top + 10 painted at y=60, still under
-     the 68px HUD. +24 pays that translate back. (Portrait carries the same
-     latent offset at lobby-prototype.css:5222 and is left alone until the
-     toast can be observed with a real weather message.) */
+  /* Same two traps as portrait (see the rule above): no forced opacity, and the
+     base `left:50%` + translate(-50%) centring is left intact. --hud-top is
+     64px in landscape, so +12 puts the shown box at y=76, clearing the 68px
+     topbar and sitting above the hero card. */
   html.m-landscape body.on-lobby #weatherToast{
     max-width:calc(100vw - var(--nav-w) - 90px) !important;
     font-size:10px !important;
     padding:4px 8px !important;
-    top:calc(var(--hud-top) + 24px) !important;
-    opacity:0.7 !important;
+    top:calc(var(--hud-top) + 12px) !important;
   }
 }
