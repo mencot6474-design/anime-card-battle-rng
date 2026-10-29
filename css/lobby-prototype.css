@@ -5144,10 +5144,11 @@ body.bp-open .backpack-panel,
    and over style.css's dead @media(max-width:600px) dock block (earlier file).
    Each selector is prefixed `html.m-portrait`/`html.m-landscape` and keeps the
    `body.on-lobby` token the desktop anchors use, so specificity alone
-   ((0,3,2) vs LP's (0,2,2)) guarantees the override takes. Desktop pointer:fine
-   never matches (pointer:coarse) and never gets .m-* -> zero regression.
+   ((0,3,2) vs LP's (0,2,2)) guarantees the override takes. A wide desktop
+   matches neither (pointer:coarse) nor (max-width:720px) and never gets .m-*
+   -> zero regression; a narrow desktop window opts into the phone layout.
    ========================================================================= */
-@media (pointer:coarse){
+@media (pointer:coarse), (max-width: 720px){
 
   /* Reveal the foot-menu mobile-only entries (Update Log / ganti latar / ganti
      bingkai) that replace the portrait-hidden topbar buttons. Source order after

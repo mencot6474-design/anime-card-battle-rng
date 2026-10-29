@@ -1,10 +1,10 @@
 /* =========================================================================
    mobile-shell.js — Unit 6-1: touch-only responsive shell foundation.
-   Runs ONLY when the primary pointer is COARSE; a touch-capable desktop
-   (precision trackpad => maxTouchPoints>0 but pointer:fine) is treated as
-   desktop and keeps width=1900. Detection matches the codebase's own mobile
-   notion (css/style.css:201 gates on `(pointer:coarse)` alone).
-   - Swaps the hard-locked <meta viewport> to real device-width (touch only).
+   Activates for a coarse primary pointer (touch) OR a desktop window no wider
+   than 720px CSS px, so the phone layout can be checked on a PC without a
+   handset. A touch-capable desktop (precision trackpad => maxTouchPoints>0 but
+   pointer:fine) at a normal window width stays desktop.
+   - Swaps the hard-locked <meta viewport> to real device-width (and back).
    - Keeps <html> orientation classes current: .m-portrait / .m-landscape.
    - Builds + swaps a bottom tabbar (portrait) or left rail (landscape)
      OUTSIDE #app so router render() innerHTML overwrites never wipe it.
@@ -13,30 +13,45 @@
 (function () {
   "use strict";
 
-  // Gate on the PRIMARY pointer being coarse ONLY. The previous OR-branches
-  // (`'ontouchstart' in window`, `navigator.maxTouchPoints > 0`) wrongly caught
-  // touch-capable desktops (a precision trackpad reports maxTouchPoints>0 while
-  // its primary pointer stays `fine`), handing them device-width + nav +
-  // overflow-x:clip and breaking the "desktop keeps width=1900" contract.
-  const COARSE = window.matchMedia('(pointer:coarse)').matches;
-  if (!COARSE) return; // desktop (incl. touch-capable fine-pointer): leave width=1900 untouched.
+  var COARSE_MQ = window.matchMedia('(pointer:coarse)');
+  var NARROW_MQ = window.matchMedia('(max-width: 720px)');
+  function shellWanted() { return COARSE_MQ.matches || NARROW_MQ.matches; }
+
+  var VIEWPORT_META = document.querySelector('meta[name="viewport"]');
+  var DESKTOP_VIEWPORT = VIEWPORT_META ? VIEWPORT_META.getAttribute("content") : null;
 
   /* ---------------------------------------------------------------------
-     1) Real device viewport (only on touch). This is THE fix for every
-        dead mobile @media rule. Desktop never reaches here.
+     1) Real device viewport (mobile shell only). This is THE fix for every
+        dead mobile @media rule.
      --------------------------------------------------------------------- */
   function applyViewport() {
-    var m = document.querySelector('meta[name="viewport"]');
-    if (m) m.setAttribute("content",
+    if (!VIEWPORT_META) return;
+    VIEWPORT_META.setAttribute("content",
       "width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no");
+  }
+  function revertViewport() {
+    if (VIEWPORT_META && DESKTOP_VIEWPORT !== null) VIEWPORT_META.setAttribute("content", DESKTOP_VIEWPORT);
   }
 
   /* ---------------------------------------------------------------------
-     2) Orientation root classes, kept current on every change.
+     2) Orientation root classes + nav, re-synced whenever the shell is
+        wanted or the window crosses the 720px threshold.
      --------------------------------------------------------------------- */
   var portraitMQ = window.matchMedia("(orientation:portrait)");
+  var installed = null; // tri-state: unknown / shell on / shell off
   function applyOrientation() {
     var r = document.documentElement;
+    if (!shellWanted()) {
+      if (installed === false) return;
+      installed = false;
+      r.classList.remove("m-portrait", "m-landscape");
+      var stale = document.querySelector(".m-tabbar,.m-rail");
+      if (stale && stale.parentNode) stale.parentNode.removeChild(stale);
+      revertViewport();
+      return;
+    }
+    installed = true;
+    applyViewport();
     var isPortrait = portraitMQ.matches;
     r.classList.toggle("m-portrait", isPortrait);
     r.classList.toggle("m-landscape", !isPortrait);
@@ -155,18 +170,21 @@
   }
 
   function init() {
-    applyViewport();
     applyOrientation();
 
-    if (portraitMQ.addEventListener) portraitMQ.addEventListener("change", applyOrientation);
-    else if (portraitMQ.addListener) portraitMQ.addListener(applyOrientation);
+    [portraitMQ, COARSE_MQ, NARROW_MQ].forEach(function (mq) {
+      if (mq.addEventListener) mq.addEventListener("change", applyOrientation);
+      else if (mq.addListener) mq.addListener(applyOrientation);
+    });
     window.addEventListener("orientationchange", applyOrientation);
     window.addEventListener("resize", applyOrientation);
     window.addEventListener("hashchange", refreshActive);
 
     // Re-assert the device-width viewport if the router/boot code ever resets
-    // the <meta> back to the desktop lock (idempotent; cheap).
+    // the <meta> back to the desktop lock (idempotent; cheap). Only while the
+    // shell is wanted — a wide desktop window must keep the 1900 lock.
     new MutationObserver(function () {
+      if (!shellWanted()) return;
       var m = document.querySelector('meta[name="viewport"]');
       if (m && /width=1900/.test(m.getAttribute("content") || "")) applyViewport();
     }).observe(document.head, { childList: true, subtree: true, attributes: true, attributeFilter: ["content"] });

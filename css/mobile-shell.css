@@ -1,9 +1,12 @@
 /* =========================================================================
    mobile-shell.css — Unit 6-1 responsive shell.
-   ALL rules are scoped to (pointer:coarse) and/or html.m-portrait/.m-landscape,
-   so desktop (which never gets those root classes and is not pointer:coarse)
-   is completely unaffected. Loads AFTER style.css + lobby-prototype.css so its
-   !important beats the portrait "rotate your phone" gate at style.css:201-209.
+   Rules are scoped to (pointer:coarse) OR (max-width: 720px) and/or
+   html.m-portrait/.m-landscape. The width arm lets a narrow desktop window
+   render the phone layout for checking it on a PC; a wide desktop matches
+   neither and, because mobile-shell.js only adds .m-* while the shell is
+   wanted, stays on the width=1900 layout. Loads AFTER style.css +
+   lobby-prototype.css so its !important beats the portrait "rotate your phone"
+   gate at style.css:201-209.
    ========================================================================= */
 
 /* ---- Design tokens on the orientation roots ---- */
@@ -41,8 +44,9 @@ html.m-landscape #rotateHint { display: none !important; }
    phone briefly showed the fullscreen rotateHint overlay during the gate at
    style.css:201. This symmetric rule uses the SAME media condition as that
    gate, so it neutralizes the overlay from the very first paint, before any
-   JS runs. Zero desktop impact: still gated on (pointer:coarse). */
-@media (orientation:portrait) and (pointer:coarse) {
+   JS runs. This rule uses the SAME media condition as that gate, so it
+   neutralizes the overlay from the very first paint, before any JS runs. */
+@media (orientation:portrait) and (pointer:coarse), (orientation:portrait) and (max-width: 720px) {
   #rotateHint { display: none !important; }
 }
 
@@ -138,7 +142,7 @@ html.m-landscape .m-tabbar { display: none !important; }
    orientations. On touch we make the sheet a true full-viewport column so the
    head + coverflow + launch button all sit inside [0..H]. Desktop untouched.
    ========================================================================= */
-@media (pointer:coarse) {
+@media (pointer:coarse), (max-width: 720px) {
   html.m-portrait #storyModal,
   html.m-landscape #storyModal {
     padding: 0 !important;
@@ -184,7 +188,7 @@ html.m-landscape .m-tabbar { display: none !important; }
    middle that scrolls on its own — so close / first tile / claim footer are
    always in the initial un-scrolled view.
    ========================================================================= */
-@media (pointer:coarse) {
+@media (pointer:coarse), (max-width: 720px) {
   html.m-portrait #dailyModal,
   html.m-landscape #dailyModal {
     padding: 0 !important;
@@ -255,13 +259,13 @@ html.m-landscape .m-tabbar { display: none !important; }
 
 /* Landscape is short (~390px): shrink tiles further so one row + pinned footer
    clear the claim button without the grid pushing the footer off-screen. */
-@media (pointer:coarse) and (orientation:landscape) {
+@media (pointer:coarse) and (orientation:landscape), (max-width: 720px) and (orientation:landscape) {
   #dailyModal .dl-box > .dl-grid { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)) !important; }
   #dailyModal .dl-tile { min-height: 132px !important; }
   #dailyModal .dlt-bonus-row { display: none !important; }
 }
 /* Portrait has the vertical room; keep tiles readable. */
-@media (pointer:coarse) and (orientation:portrait) {
+@media (pointer:coarse) and (orientation:portrait), (max-width: 720px) and (orientation:portrait) {
   #dailyModal .dl-tile { min-height: 168px !important; }
 }
 
@@ -275,7 +279,7 @@ html.m-landscape .m-tabbar { display: none !important; }
    subbanner + long descriptions and put the two cards SIDE BY SIDE so both
    buttons share one visible row.
    ========================================================================= */
-@media (pointer:coarse) {
+@media (pointer:coarse), (max-width: 720px) {
   html.m-portrait #watchAdsModal,
   html.m-landscape #watchAdsModal {
     padding: 0 !important;
@@ -316,11 +320,11 @@ html.m-landscape .m-tabbar { display: none !important; }
   #watchAdsModal .wad-btn { font-size: 11.5px !important; padding: 9px 10px !important; }
 }
 /* Portrait keeps both descriptions; two stacked cards still clear the fold. */
-@media (pointer:coarse) and (orientation:portrait) {
+@media (pointer:coarse) and (orientation:portrait), (max-width: 720px) and (orientation:portrait) {
   #watchAdsModal .wad-grid { flex-direction: column !important; }
 }
 /* Landscape: trim to a single card row so both CTAs stay in the initial view. */
-@media (pointer:coarse) and (orientation:landscape) {
+@media (pointer:coarse) and (orientation:landscape), (max-width: 720px) and (orientation:landscape) {
   #watchAdsModal .wad-grid { flex-direction: row !important; }
   #watchAdsModal .wad-subbanner { display: none !important; }
   #watchAdsModal .wad-card-desc { display: none !important; }
@@ -340,7 +344,7 @@ html.m-landscape .m-tabbar { display: none !important; }
    above page content but under the modals (9500+). display is still driven by
    pwa.js; body.battle-full keeps hiding it (style.css:58677) — untouched here.
    ========================================================================= */
-@media (pointer:coarse) and (orientation:portrait) {
+@media (pointer:coarse) and (orientation:portrait), (max-width: 720px) and (orientation:portrait) {
   html.m-portrait #pwaInstallBtn {
     position: fixed !important;
     top: auto !important;
@@ -351,7 +355,7 @@ html.m-landscape .m-tabbar { display: none !important; }
     z-index: 9000;
   }
 }
-@media (pointer:coarse) and (orientation:landscape) {
+@media (pointer:coarse) and (orientation:landscape), (max-width: 720px) and (orientation:landscape) {
   html.m-landscape #pwaInstallBtn {
     position: fixed !important;
     top: auto !important;
@@ -371,7 +375,7 @@ html.m-landscape .m-tabbar { display: none !important; }
    specificity overrides re-inset the shell and stack the grid to one column in
    portrait so the console rail flows below the arena (vertical scroll on the
    viewport). Desktop keeps every original world-boss.css rule. */
-@media (pointer:coarse) {
+@media (pointer:coarse), (max-width: 720px) {
   html.m-portrait  body.on-raid #app { padding: 0 0 calc(var(--nav-h) + var(--safe-bottom)) 0 !important; }
   html.m-landscape body.on-raid #app { padding: var(--safe-top) var(--safe-right) var(--safe-bottom) calc(var(--nav-w) + var(--safe-left)) !important; }
 

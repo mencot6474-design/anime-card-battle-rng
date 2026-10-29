@@ -58488,7 +58488,7 @@ body.on-lobby .lobby-footer {
    the prototype's flex stage. Desktop (pointer:fine) never matches this media
    query and never gets .m-* classes -> zero desktop regression.
    ========================================================================= */
-@media (pointer:coarse){
+@media (pointer:coarse), (max-width: 720px){
   html.m-portrait  .lobby-hub{ grid-template-columns:1fr !important; max-width:100% !important; }
   html.m-landscape .lobby-hub{ grid-template-columns:1fr !important; max-width:100% !important; }
 }
@@ -58514,7 +58514,7 @@ body.on-lobby .lobby-footer {
    when both are !important, and the EOF position additionally breaks any
    equal-weight tie. The mobile rules re-declare every conflicting longhand.
    ========================================================================= */
-@media (pointer:coarse){
+@media (pointer:coarse), (max-width: 720px){
 
   /* ---- ROLL RESULT REVEAL: card tokenized to the viewport, no 300px lock ---- */
   html.m-portrait .roll-overlay:not(.mini) .roll-card-showcase{
@@ -58670,7 +58670,7 @@ body.on-lobby .lobby-footer {
    hidden or restructured. Damage-float transient positioning stays JS raw-px
    (js/battle.js:300) and is excluded from the harness fit assertion.
    ========================================================================= */
-@media (pointer:coarse){
+@media (pointer:coarse), (max-width: 720px){
 
   /* ---- both orientations ---- */
   /* (1) suppress the floating install CTA over an immersive battle. */
@@ -58829,7 +58829,7 @@ body.on-lobby .lobby-footer {
    initial view (R-Reachability: no control is ever display:none'd or pushed
    below the fold).
    ========================================================================= */
-@media (pointer:coarse){
+@media (pointer:coarse), (max-width: 720px){
 
   /* ---- orientation TOKENS ---- */
   html.m-portrait{
@@ -59078,7 +59078,7 @@ body.on-lobby .lobby-footer {
    style.css:48069 (`.backpack-panel .bp-itemgrid` minmax(150px) +!important) and
    :2652/:2660/:3263/:3641 desktop grid locks for the item grid.
    ========================================================================= */
-@media (pointer:coarse){
+@media (pointer:coarse), (max-width: 720px){
 
   /* ---- PANEL SHEET: fill the SAFE AREA, leave the nav uncovered. The body
      (.bp-body / .bp-scroll / .dp-box) stays the sanctioned internal scroller,
@@ -59155,7 +59155,7 @@ body.on-lobby .lobby-footer {
        minmax(min(28vw,120px),1fr) (portrait) / minmax(120px,1fr) (landscape) —
        our (1,2,1)+!important mirror dominates the (1,1,0)+!important lock.
    ========================================================================= */
-@media (pointer:coarse){
+@media (pointer:coarse), (max-width: 720px){
 
   /* ---- BACKDROP: cannot scroll, no padding -> the sheet cannot hide content
      below a page-scroller (competitor A). place-items pins the sheet to the top
