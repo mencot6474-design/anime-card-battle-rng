@@ -234,8 +234,17 @@
           var tX = curFx - (dx / distTotal) * tLen;
           var tY = curFy - (dy / distTotal) * tLen;
 
+          // Halo murah (pass bentuk lebih besar + alpha rendah) — pengganti shadowBlur per tinju, §2b #4
+          ctx.strokeStyle = colMain;
+          ctx.globalAlpha = 0.22;
+          ctx.lineWidth = 17 * fst.scale;
+          ctx.beginPath();
+          ctx.moveTo(tX, tY);
+          ctx.lineTo(curFx, curFy);
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+
           ctx.strokeStyle = colGlow;
-          ctx.shadowColor = colMain; ctx.shadowBlur = 16;
           ctx.lineWidth = 5 * fst.scale;
           ctx.beginPath();
           ctx.moveTo(tX, tY);
@@ -256,9 +265,16 @@
           var hx = x2 + hit.offsetX;
           var hy = y2 + hit.offsetY;
 
-          // Cincin hantaman tinju bertubi-tubi
+          // Cincin hantaman tinju bertubi-tubi (halo pass, bukan shadowBlur — §2b #4)
+          ctx.globalAlpha = 0.18 * hFade;
+          ctx.strokeStyle = colGlow;
+          ctx.lineWidth = 28 * hFade;
+          ctx.beginPath();
+          ctx.arc(hx, hy, hp * hit.radius * 2, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.globalAlpha = 1;
           ctx.strokeStyle = colMain;
-          ctx.shadowColor = colGlow; ctx.shadowBlur = 24;
           ctx.lineWidth = 8 * hFade;
           ctx.beginPath();
           ctx.arc(hx, hy, hp * hit.radius * 2, 0, Math.PI * 2);
@@ -794,7 +810,12 @@
           var ex = embBaseX + perpX * emb.side + emb.driftX * age;
           var ey = embBaseY + perpY * emb.side + emb.driftY * age;
           ctx.fillStyle = emb.color;
-          ctx.shadowColor = "#f97316"; ctx.shadowBlur = 10;
+          /* Halo murah: lingkaran besar + alpha rendah (pengganti shadowBlur per bara, §2b #4) */
+          ctx.globalAlpha = 0.2 * (1 - age);
+          ctx.beginPath();
+          ctx.arc(ex, ey, emb.size * (1 - age) * 2.6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 1;
           ctx.beginPath();
           ctx.arc(ex, ey, emb.size * (1 - age), 0, Math.PI * 2);
           ctx.fill();

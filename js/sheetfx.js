@@ -29,7 +29,7 @@ var SHEETS={
 /* ===== PROCEDURAL WEB AUDIO SYNTHESIZER (PGR × SOLO LEVELING SFX) ===== */
 var CyberSfx=(function(){
   var ac=null;
-  function isMuted(){return !!(window.state&&window.state.muted);}
+  function isMuted(){return typeof state!=="undefined" && !!state && !!state.muted;}
   function ctx(){
     if(isMuted())return null;
     if(!ac){
