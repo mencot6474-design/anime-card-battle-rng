@@ -748,6 +748,15 @@ async function submitAuth(){
   }
 }
 
+/* Janji yang tidak pernah settle (SDK/DB mati setengah jalan) tidak boleh bisa
+   menahan pemain di layar "Entering Game as Guest...". */
+function _withTimeout(p, ms, label){
+  return Promise.race([
+    Promise.resolve(p),
+    new Promise(function(_, reject){ setTimeout(function(){ reject(new Error((label||"request")+" > "+ms+"ms")); }, ms); })
+  ]);
+}
+
 async function loginAsGuest(){
   const btn=document.getElementById("auGuestBtn");
   if(btn){btn.disabled=true;btn.textContent="CONNECTING...";}
@@ -764,7 +773,7 @@ async function loginAsGuest(){
     const lp=localStorage.getItem("aab-linked-pass");
     if(lu && lp && window.CloudAuth){
       try{
-        const jwt=await window.CloudAuth.authenticate(String(lu).toLowerCase(), lp);
+        const jwt=await _withTimeout(window.CloudAuth.authenticate(String(lu).toLowerCase(), lp), 6000, "authenticate(linked)");
         if(jwt && jwt.ok){
           const users=getUsers();
           users[String(lu).toLowerCase()]={name:lu, pass:lp, created:Date.now()};
@@ -781,13 +790,26 @@ async function loginAsGuest(){
   let guestUser=localStorage.getItem("aab_guest_user");
   let guestPass=localStorage.getItem("aab_guest_pass");
 
-  if(window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.user){
+  /* SDK v3 selalu ikut termuat di <head>, jadi "objeknya ada" BUKAN bukti kita
+     main di portal CrazyGames. Di luar portal, SDK.user.getUser() tidak pernah
+     resolve (SDK-nya belum init) dan pemain macet selamanya di spinner guest.
+     Tunggu hasil init() maksimal 3 detik: di portal __cgSdkReady jadi true dan
+     identitas CG_<user> dipakai, di mana pun selain itu kita lanjut guest lokal. */
+  if(window.CrazyGames && window.CrazyGames.SDK && !window.__cgSdkDone){
+    await new Promise(function(resolve){
+      const t0=Date.now();
+      const iv=setInterval(function(){
+        if(window.__cgSdkDone || Date.now()-t0>3000){ clearInterval(iv); resolve(); }
+      },100);
+    });
+  }
+  if(window.__cgSdkReady && window.CrazyGames.SDK.user){
     try {
-      const cgUser = await window.CrazyGames.SDK.user.getUser();
+      const cgUser = await _withTimeout(window.CrazyGames.SDK.user.getUser(), 3000, "CrazyGames getUser");
       if(cgUser && cgUser.username){
         guestUser = "CG_" + cgUser.username.replace(/[^a-zA-Z0-9_]/g, "").slice(0, 15);
       }
-    } catch(e){}
+    } catch(e){ console.warn("CrazyGames getUser dilewati:", e && e.message); }
   }
 
   if(!guestUser){
@@ -808,12 +830,12 @@ async function loginAsGuest(){
 
   if(window.CloudAuth && window.CloudDB && navigator.onLine){
     try {
-      const ep = await window.CloudAuth.ensurePass(key, passH);
+      const ep = await _withTimeout(window.CloudAuth.ensurePass(key, passH), 6000, "ensurePass");
       if(ep && ep.ok){
         const initSt=freshState();
-        await window.CloudDB.registerUser(guestUser, initSt, passH);
+        await _withTimeout(window.CloudDB.registerUser(guestUser, initSt, passH), 6000, "registerUser");
       } else {
-        await window.CloudAuth.authenticate(key, passH);
+        await _withTimeout(window.CloudAuth.authenticate(key, passH), 6000, "authenticate");
       }
     } catch(err){
       console.warn("Guest cloud sync fallback:", err);

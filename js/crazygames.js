@@ -5,11 +5,16 @@
 (function () {
   'use strict';
 
-  // Deteksi lingkungan CrazyGames (iframe, referrer, atau query param)
+  // Deteksi lingkungan CrazyGames (SDK yang SUDAH berhasil init, iframe
+  // crazygames, atau query param). Jangan pakai "window.CrazyGames.SDK ada" —
+  // script SDK selalu ikut termuat di <head>, jadi di GitHub Pages / preview
+  // lokal pun objeknya ada; jalur itu membuat loginAsGuest() menunggu
+  // SDK.user.getUser() yang tidak pernah resolve di luar portal (SDK-nya belum
+  // / tidak bisa init) sehingga pemain macet di "Entering Game as Guest...".
   function isCrazyGamesEnvironment() {
     try {
       if (location.search.includes('crazygames=1')) return true;
-      if (window.CrazyGames && window.CrazyGames.SDK) return true;
+      if (window.__cgSdkReady) return true;
       if (window.self !== window.top) {
         if (document.referrer && document.referrer.includes('crazygames')) return true;
         try {
@@ -19,7 +24,6 @@
             }
           }
         } catch(e) {}
-        return true;
       }
     } catch (e) {}
     return false;
@@ -34,10 +38,15 @@
       if (window.CrazyGames && window.CrazyGames.SDK) {
         await window.CrazyGames.SDK.init();
         _cgInitialized = true;
+        window.__cgSdkReady = true;
         console.log('[CrazyGames SDK v3] Initialized successfully');
       }
     } catch (e) {
       console.warn('[CrazyGames SDK v3] Init note:', e && e.message);
+    } finally {
+      // "sudah mencoba" != "berhasil": boot.js menunggu sinyal ini supaya tidak
+      // salah memilih identitas (CG_<user> vs guest lokal) saat init masih jalan.
+      window.__cgSdkDone = true;
     }
   }
 
