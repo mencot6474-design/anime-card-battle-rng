@@ -12,55 +12,41 @@ function renderSettings(){
   const _onCG = (typeof window.isCrazyGames==="function" && window.isCrazyGames());
   const _linked = localStorage.getItem("aab-linked-user");
   const _linkCard = _onCG ? "" : `
-        <!-- Link / Claim Account Card (non-CrazyGames only) -->
-        <div class="sett-card sett-card-link">
-          <div class="sett-card-head">
-            <span class="sett-card-badge badge-emerald">ACCOUNT</span>
-            <span class="sett-card-title">${isEn ? "LINK ACCOUNT" : "TAUTKAN AKUN"}</span>
-          </div>
-          <div class="sett-card-desc" id="linkStatus">
-            ${_linked
-              ? (isEn ? `Linked as <b style="color:#66fcf1">${_linked}</b>. Your progress follows this account on any device.`
-                      : `Tertaut sebagai <b style="color:#66fcf1">${_linked}</b>. Progres ikut akun ini di perangkat mana pun.`)
-              : (isEn ? `Currently a <b>guest</b> on this device. Set a username &amp; password to keep your progress and continue elsewhere.`
-                      : `Sekarang kamu <b>guest</b> di perangkat ini. Tentukan username &amp; password supaya progres tersimpan permanen &amp; bisa dilanjut di device lain.`)}
-          </div>
-          <div class="sett-link-fields">
-            <input class="sett-link-input" id="linkUser" type="text" maxlength="16" autocomplete="off" placeholder="${isEn ? "username" : "nama akun"}">
-            <input class="sett-link-input" id="linkPass" type="password" maxlength="24" autocomplete="new-password" placeholder="${isEn ? "password" : "password"}">
-          </div>
-          <div class="sett-link-actions">
-            <button type="button" class="sett-btn sett-btn-claim" id="linkClaimBtn">${isEn ? "CLAIM PROGRESS" : "KLAIM PROGRES"}</button>
-            <button type="button" class="sett-btn sett-btn-signin" id="linkLoginBtn">${isEn ? "SIGN IN" : "MASUK AKUN"}</button>
-          </div>
-          <div class="sett-note note-emerald" id="linkMsg"></div>
-          ${_linked ? `<button type="button" class="sett-link-unlink" id="linkUnlinkBtn">${isEn ? "Unlink on this device" : "Putuskan tautan di perangkat ini"}</button>` : ``}
-        </div>`;
+          <article class="card">
+            <div class="chead"><span class="badge" style="--bc:var(--emerald)"><i class="ic i-lock"></i>${isEn ? "ACCOUNT" : "AKUN"}</span><span class="ctitle">${isEn ? "LINK ACCOUNT" : "TAUTKAN AKUN"}</span></div>
+            <div class="desc" id="linkStatus">
+              ${_linked
+                ? (isEn ? `Linked as <b class="hl-user">${_linked}</b>. Your progress follows this account on any device.`
+                        : `Tertaut sebagai <b class="hl-user">${_linked}</b>. Progres ikut akun ini di perangkat mana pun.`)
+                : (isEn ? `Currently a <b>guest</b> on this device. Set a username &amp; password to keep your progress and continue elsewhere.`
+                        : `Sekarang kamu <b>guest</b> di perangkat ini. Tentukan username &amp; password supaya progres tersimpan permanen &amp; bisa dilanjut di device lain.`)}
+            </div>
+            <div class="fields">
+              <input class="in" id="linkUser" type="text" maxlength="16" autocomplete="off" placeholder="${isEn ? "username" : "nama akun"}">
+              <input class="in" id="linkPass" type="password" maxlength="24" autocomplete="new-password" placeholder="${isEn ? "password" : "password"}">
+            </div>
+            <div class="row">
+              <button type="button" class="btn emerald" id="linkClaimBtn"><i class="ic i-check"></i><span>${isEn ? "CLAIM PROGRESS" : "KLAIM PROGRES"}</span></button>
+              <button type="button" class="btn emerald" id="linkLoginBtn"><i class="ic i-hood"></i><span>${isEn ? "SIGN IN" : "MASUK AKUN"}</span></button>
+            </div>
+            <div class="note" id="linkMsg"></div>
+            ${_linked ? `<button type="button" class="btn red" id="linkUnlinkBtn"><i class="ic i-lock"></i><span>${isEn ? "Unlink on this device" : "Putuskan tautan di perangkat ini"}</span></button>` : ``}
+          </article>`;
+
 
   app.innerHTML = `
   <div class="sett-wrap">
-    <!-- HEADER -->
-    <div class="sett-header">
-      <div class="sett-head-left">
-        <div class="sett-cyber-pill">
-          <span class="sett-cyber-dot"></span>
-          <span>SYSTEM ARCHITECTURE // MATRIX CONFIG</span>
-        </div>
-        <h1 class="sett-title">
-          GAME <span class="sett-title-grad">SETTINGS</span>
-        </h1>
-        <div class="sett-subtitle">
-          ${isEn ? "AUDIO · COMBAT MATRIX · CLOUD TELEMETRY · LOCALIZATION" : "AUDIO · PENGATURAN TEMPUR · TELEMETRI CLOUD · LOKALISASI"}
-        </div>
+    <!-- HEADER (rata, chamfer — sama _tmp/proto_more_v2.html .head) -->
+    <div class="sett-head">
+      <div class="hl">
+        <div class="eyebrow"><i class="d"></i>SYSTEM ARCHITECTURE // MATRIX CONFIG</div>
+        <h1>GAME <em>SETTINGS</em></h1>
+        <div class="sub">${isEn ? "AUDIO · COMBAT MATRIX · CLOUD TELEMETRY · LOCALIZATION" : "AUDIO · PENGATURAN TEMPUR · TELEMETRI CLOUD · LOKALISASI"}</div>
       </div>
-      <div class="sett-head-right">
-        <div class="sett-user-pill">
-          <span class="sett-user-dot"></span>
-          <span class="sett-user-lbl">${isEn ? "OPERATOR:" : "USER:"}</span>
-          <span class="sett-user-val">${currentUser || "GUEST"}</span>
-        </div>
-        <button class="sett-back-btn" onclick="location.hash='#/lobby';render();" type="button">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      <div class="hr">
+        <div class="upill"><i class="d"></i>${isEn ? "USER:" : "PEMAIN:"} <b>${currentUser || "GUEST"}</b></div>
+        <button class="back" onclick="location.hash='#/lobby';render();" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
           <span>${isEn ? "BACK TO LOBBY" : "KEMBALI KE LOBBY"}</span>
         </button>
       </div>
@@ -68,203 +54,103 @@ function renderSettings(){
 
     <!-- SEKTOR AKORDEON (desain terkunci: _tmp/proto_more_v2.html) -->
     <div class="sett-deck">
-      <!-- SEKTOR 01: COMBAT & AUDIO -->
-      <section class="sett-fold open" data-fold="dynamics">
+
+      <!-- SEKTOR 01 // DYNAMICS -->
+      <section class="sett-fold open" data-fold="dynamics" style="--sc:var(--cyan)">
         <button type="button" class="sett-fh" aria-expanded="true" aria-controls="settFb1">
           <span class="sett-fbar" aria-hidden="true"></span>
-          <span class="sett-fic" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
-          <span class="sett-ft">
-            <span class="sett-ftag">SECTOR 01 // DYNAMICS</span>
-            <span class="sett-fnm">${isEn ? "COMBAT & SOUND" : "TEMPUR & AUDIO"}</span>
-          </span>
-          <span class="sett-fstat"><b id="stSpeed">-</b><span class="sett-s2">· <span id="stSound">-</span></span><span class="sett-ch" aria-hidden="true"></span></span>
+          <span class="fic"><i class="ic i-bolt"></i></span>
+          <span class="ft"><span class="ftag">SECTOR 01 // DYNAMICS</span><span class="fnm">${isEn ? "COMBAT & SOUND" : "TEMPUR & AUDIO"}</span></span>
+          <span class="fstat"><b id="stSpeed">-</b>·<span id="stSound">-</span>·<span class="ch" aria-hidden="true"></span></span>
         </button>
         <div class="sett-fb" id="settFb1">
-
-        <!-- Combat Battle Speed Card -->
-        <div class="sett-card">
-          <div class="sett-card-head">
-            <span class="sett-card-badge badge-cyan">COMBAT</span>
-            <span class="sett-card-title">BATTLE SPEED</span>
-          </div>
-          <div class="sett-card-desc">
-            ${isEn ? "Combat action pace: 2× at LV 25 · 3× at LV 50 · 4× at LV 100." : "Kecepatan aksi & giliran: 2× di LV 25 · 3× di LV 50 · 4× di LV 100."}
-          </div>
-          <div class="sett-speed-grid" id="bsRow">
-            ${[1,2,3,4].map(n=>{
-              const lk=n>battleSpeedMax();
-              return `<button type="button" class="bs-btn${(!lk&&n===state.battleSpeed)?" bs-on":""}" data-sp="${n}"${lk?" disabled":""}>${n}×</button>`;
-            }).join("")}
-          </div>
-          <div class="sett-note" id="bsNote"></div>
-        </div>
-
-        <!-- Sound Diagnostic Card -->
-        <div class="sett-card">
-          <div class="sett-card-head">
-            <span class="sett-card-badge badge-amber">AUDIO</span>
-            <span class="sett-card-title">SOUND DIAGNOSTICS</span>
-          </div>
-          <div class="sett-card-desc">
-            ${isEn ? "Live audio engine status & sound channel diagnostics." : "Status live audio engine & diagnostik kanal suara pertempuran."}
-          </div>
-          <div class="sett-aud-tools">
-            <button class="sett-btn sett-btn-aud-toggle" id="audToggle" type="button">SUARA: -</button>
-            <button class="sett-btn sett-btn-aud-test" id="audTone" type="button">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M2 12h5l2-8 5 16 3-8h5"/></svg>
-              <span>TES NADA 440Hz</span>
-            </button>
-          </div>
-          <button class="sett-btn sett-btn-aud-impact" id="audHit" type="button">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            <span>TES SFX RAID (HIT + DENTUMAN)</span>
-          </button>
-          <div class="sett-aud-telemetry" id="audStat"></div>
-        </div>
+          <article class="card">
+            <div class="chead"><span class="badge" style="--bc:var(--cyan)"><i class="ic i-swords"></i>COMBAT</span><span class="ctitle">BATTLE SPEED</span></div>
+            <div class="desc">${isEn ? "Combat action pace: 2× at LV 25 · 3× at LV 50 · 4× at LV 100." : "Kecepatan aksi & giliran: 2× di LV 25 · 3× di LV 50 · 4× di LV 100."}</div>
+            <div class="speed" id="bsRow">
+              ${[1,2,3,4].map(n=>{
+                const lk=n>battleSpeedMax();
+                const on=(!lk&&n===state.battleSpeed);
+                const lab=n===1?"":`<small>LV${n===2?25:n===3?50:100}</small>`;
+                return `<button type="button" class="bs${on?" on":""}" data-sp="${n}"${lk?" disabled":""}>${lk?'<i class="ic i-lock"></i>':''}${n}×${lab}</button>`;
+              }).join("")}
+            </div>
+            <div class="note on" id="bsNote"></div>
+          </article>
+          <article class="card">
+            <div class="chead"><span class="badge" style="--bc:var(--gold)"><i class="ic i-sound"></i>AUDIO</span><span class="ctitle">SOUND DIAGNOSTICS</span></div>
+            <div class="desc">${isEn ? "Live audio engine status & sound channel diagnostics." : "Status live audio engine & diagnostik kanal suara pertempuran."}</div>
+            <div class="row">
+              <button type="button" class="btn" id="audToggle"><i class="ic i-sound"></i><span>SUARA: -</span></button>
+              <button type="button" class="btn amber" id="audTone"><i class="ic i-sound"></i><span>${isEn ? "TEST 440Hz TONE" : "TES NADA 440Hz"}</span></button>
+            </div>
+            <button type="button" class="btn amber" id="audHit"><i class="ic i-axe"></i><span>${isEn ? "TEST RAID SFX (HIT + BLAST)" : "TES SFX RAID (HIT + DENTUMAN)"}</span></button>
+            <div class="tel" id="audStat"></div>
+          </article>
         </div>
       </section>
 
-      <!-- SEKTOR 02: LOKALISASI & OTOMASI -->
-      <section class="sett-fold" data-fold="interface">
+      <!-- SEKTOR 02 // INTERFACE -->
+      <section class="sett-fold" data-fold="interface" style="--sc:var(--purple)">
         <button type="button" class="sett-fh" aria-expanded="false" aria-controls="settFb2">
           <span class="sett-fbar" aria-hidden="true"></span>
-          <span class="sett-fic" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
-          <span class="sett-ft">
-            <span class="sett-ftag">SECTOR 02 // INTERFACE</span>
-            <span class="sett-fnm">${isEn ? "LOCALE & AUTOMATION" : "BAHASA & OTOMASI"}</span>
-          </span>
-          <span class="sett-fstat"><b id="stLang">-</b><span class="sett-s2">· <span id="stTower">-</span></span><span class="sett-ch" aria-hidden="true"></span></span>
+          <span class="fic"><i class="ic i-gear"></i></span>
+          <span class="ft"><span class="ftag">SECTOR 02 // INTERFACE</span><span class="fnm">${isEn ? "LOCALE & AUTOMATION" : "BAHASA & OTOMASI"}</span></span>
+          <span class="fstat"><b id="stLang">-</b>·<span id="stTower">-</span>·<span class="ch" aria-hidden="true"></span></span>
         </button>
         <div class="sett-fb" id="settFb2">
-
-        <!-- Language Selector Card -->
-        <div class="sett-card">
-          <div class="sett-card-head">
-            <span class="sett-card-badge badge-purple">LOCALE</span>
-            <span class="sett-card-title">${isEn ? "GAME LANGUAGE" : "BAHASA GAME"}</span>
-          </div>
-          <div class="sett-card-desc">
-            ${isEn ? "Select interface language (persisted automatically)." : "Pilih bahasa tampilan antarmuka (tersimpan otomatis)."}
-          </div>
-          <div class="sett-lang-grid" id="langRow">
-            <button type="button" class="sett-lang-card lang-btn${!isEn ? " lang-on" : ""}" data-lang="id">
-              <span class="sett-lang-flag">🇮🇩</span>
-              <div class="sett-lang-info">
-                <span class="sett-lang-name">INDONESIA</span>
-                <span class="sett-lang-sub">Bahasa Indonesia</span>
-              </div>
-              ${!isEn ? '<span class="sett-lang-check">✓</span>' : ''}
-            </button>
-            <button type="button" class="sett-lang-card lang-btn${isEn ? " lang-on" : ""}" data-lang="en">
-              <span class="sett-lang-flag">🇬🇧</span>
-              <div class="sett-lang-info">
-                <span class="sett-lang-name">ENGLISH</span>
-                <span class="sett-lang-sub">CrazyGames Standard</span>
-              </div>
-              ${isEn ? '<span class="sett-lang-check">✓</span>' : ''}
-            </button>
-          </div>
-          <div class="sett-note note-purple">
-            ${isEn ? "● ACTIVE LANGUAGE: ENGLISH (EN)" : "● BAHASA AKTIF: INDONESIA (ID)"}
-          </div>
-        </div>
-
-        <!-- Infinite Tower Automation Card -->
-        <div class="sett-card">
-          <div class="sett-card-head">
-            <span class="sett-card-badge badge-purple">TOWER</span>
-            <span class="sett-card-title">INFINITE TOWER DIRECTIVE</span>
-          </div>
-          <div class="sett-toggle-wrap">
-            <label class="sett-toggle-label" for="setAutoTower">
-              <input type="checkbox" id="setAutoTower" class="sett-checkbox">
-              <span class="sett-toggle-text">${isEn ? "AUTO RESTART FROM FLOOR 1" : "AUTO RESTART DARI LANTAI 1"}</span>
-            </label>
-            <div class="sett-note" id="towerSetNote"></div>
-          </div>
-        </div>
-
-        <!-- UI Calibration / Refresh Card -->
-        <div class="sett-card">
-          <div class="sett-card-head">
-            <span class="sett-card-badge badge-cyan">HUD</span>
-            <span class="sett-card-title">${isEn ? "INTERFACE CALIBRATION" : "KALIBRASI TAMPILAN"}</span>
-          </div>
-          <div class="sett-card-desc">
-            ${isEn ? "Re-render HUD layout & assets in-place without page reloading." : "Muat ulang seluruh tata letak HUD dan elemen visual tanpa reload halaman."}
-          </div>
-          <button id="refreshUiBtn" type="button" class="sett-btn sett-btn-refresh">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
-            <span id="refreshUiTxt">${isEn ? "REFRESH GAME UI" : "REFRESH TAMPILAN (UI)"}</span>
-          </button>
-        </div>
+          <article class="card">
+            <div class="chead"><span class="badge" style="--bc:var(--purple)"><i class="ic i-book"></i>LOCALE</span><span class="ctitle">${isEn ? "GAME LANGUAGE" : "BAHASA GAME"}</span></div>
+            <div class="desc">${isEn ? "Select interface language (persisted automatically)." : "Pilih bahasa tampilan antarmuka (tersimpan otomatis)."}</div>
+            <div class="lang" id="langRow">
+              <button type="button" class="lc lang-btn${!isEn ? " on" : ""}" data-lang="id"><span class="code">ID</span><span class="li"><b>INDONESIA</b><span>Bahasa Indonesia</span></span><i class="ic ck i-check"></i></button>
+              <button type="button" class="lc lang-btn${isEn ? " on" : ""}" data-lang="en"><span class="code">EN</span><span class="li"><b>ENGLISH</b><span>CrazyGames Standard</span></span><i class="ic ck i-check"></i></button>
+            </div>
+            <div class="note on" id="langNote">${isEn ? "● ACTIVE LANGUAGE: ENGLISH (EN)" : "● BAHASA AKTIF: INDONESIA (ID)"}</div>
+          </article>
+          <article class="card">
+            <div class="chead"><span class="badge" style="--bc:var(--purple)"><i class="ic i-tower"></i>TOWER</span><span class="ctitle">INFINITE TOWER DIRECTIVE</span></div>
+            <label class="sw"><span class="t">${isEn ? "AUTO RESTART FROM FLOOR 1" : "AUTO RESTART DARI LANTAI 1"}</span><input type="checkbox" id="setAutoTower" class="setsw"><span class="k" aria-hidden="true"></span></label>
+            <div class="note" id="towerSetNote"></div>
+          </article>
+          <article class="card">
+            <div class="chead"><span class="badge" style="--bc:var(--cyan)"><i class="ic i-hud"></i>HUD</span><span class="ctitle">${isEn ? "INTERFACE CALIBRATION" : "KALIBRASI TAMPILAN"}</span></div>
+            <div class="desc">${isEn ? "Re-render HUD layout & assets in-place without page reloading." : "Muat ulang seluruh tata letak HUD dan elemen visual tanpa reload halaman."}</div>
+            <button type="button" class="btn" id="refreshUiBtn"><i class="ic i-sync"></i><span id="refreshUiTxt">${isEn ? "REFRESH GAME UI" : "REFRESH TAMPILAN (UI)"}</span></button>
+          </article>
         </div>
       </section>
 
-      <!-- SEKTOR 03: CLOUD, IDENTITAS & KEAMANAN -->
-      <section class="sett-fold" data-fold="telemetry">
+      <!-- SEKTOR 03 // TELEMETRY -->
+      <section class="sett-fold" data-fold="telemetry" style="--sc:var(--emerald)">
         <button type="button" class="sett-fh" aria-expanded="false" aria-controls="settFb3">
           <span class="sett-fbar" aria-hidden="true"></span>
-          <span class="sett-fic" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg></span>
-          <span class="sett-ft">
-            <span class="sett-ftag">SECTOR 03 // TELEMETRY</span>
-            <span class="sett-fnm">${isEn ? "CLOUD & IDENTITY" : "CLOUD & IDENTITAS"}</span>
-          </span>
-          <span class="sett-fstat"><b id="stUser">GUEST</b><span class="sett-s2">· <span id="stCloud">-</span></span><span class="sett-ch" aria-hidden="true"></span></span>
+          <span class="fic"><i class="ic i-lock"></i></span>
+          <span class="ft"><span class="ftag">SECTOR 03 // TELEMETRY</span><span class="fnm">${isEn ? "CLOUD & IDENTITY" : "CLOUD & IDENTITAS"}</span></span>
+          <span class="fstat"><b id="stUser">GUEST</b>·<span id="stCloud">-</span>·<span class="ch" aria-hidden="true"></span></span>
         </button>
         <div class="sett-fb" id="settFb3">
-
-        <!-- Operator Profile Card -->
-        <div class="sett-card">
-          <div class="sett-card-head">
-            <span class="sett-card-badge badge-emerald">ACCOUNT</span>
-            <span class="sett-card-title">OPERATOR CREDENTIALS</span>
-          </div>
-          <div class="sett-user-box">
-            <div class="sett-ub-avatar">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#66fcf1" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>
-            </div>
-            <div class="sett-ub-info">
-              <span class="sett-ub-lbl">AUTHENTICATED HUNTER</span>
-              <span class="sett-ub-name">${currentUser || "GUEST"}</span>
-            </div>
-            <button class="sett-btn-logout" id="logoutBtn" type="button" title="Logout">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-              <span>${isEn ? "LOGOUT" : "KELUAR"}</span>
-            </button>
-          </div>
-        </div>
+          <article class="card">
+            <div class="chead"><span class="badge" style="--bc:var(--emerald)"><i class="ic i-hood"></i>ACCOUNT</span><span class="ctitle">OPERATOR CREDENTIALS</span></div>
+            <div class="ubox"><span class="av"><i class="ic i-hood"></i></span><span class="ui"><small>AUTHENTICATED HUNTER</small><b>${currentUser || "GUEST"}</b></span>
+              <button type="button" class="out" id="logoutBtn" title="Logout">${isEn ? "LOGOUT" : "KELUAR"}</button></div>
+          </article>
 ${_linkCard}
-        <!-- Cloud Save Card -->
-        <div class="sett-card">
-          <div class="sett-card-head">
-            <span class="sett-card-badge badge-emerald">SYNC</span>
-            <span class="sett-card-title">MANUAL CLOUD SAVE</span>
-          </div>
-          <div class="sett-card-desc" id="cloudSyncNote">
-            ${isEn ? "Save all cards, backpacks & progression to Supabase server." : "Simpan seluruh kartu, backpack & progres langsung ke Supabase server."}
-          </div>
-          <button id="manualCloudBtn" type="button" class="sett-btn sett-btn-cloud">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-            <span id="manualCloudTxt">${isEn ? "SAVE TO CLOUD NOW" : "SIMPAN CLOUD SEKARANG"}</span>
-          </button>
-        </div>
-
-        <!-- Factory Reset Card -->
-        <div class="sett-card">
-          <div class="sett-card-head">
-            <span class="sett-card-badge badge-red">DANGER</span>
-            <span class="sett-card-title">${isEn ? "LOCAL RECOVERY" : "PEMULIHAN LOKAL"}</span>
-          </div>
-          <div class="sett-card-desc">
-            ${isEn ? "Wipe local browser cache and restart session from scratch." : "Hapus seluruh cache browser lokal dan mulai game dari kondisi awal."}
-          </div>
-          <button class="reset-btn sett-btn-reset" id="resetBtn" type="button">RESET DATA LOKAL</button>
-        </div>
+          <article class="card">
+            <div class="chead"><span class="badge" style="--bc:var(--emerald)"><i class="ic i-scroll"></i>SYNC</span><span class="ctitle">MANUAL CLOUD SAVE</span></div>
+            <div class="desc" id="cloudSyncNote">${isEn ? "Save all cards, backpacks & progression to Supabase server." : "Simpan seluruh kartu, backpack & progres langsung ke Supabase server."}</div>
+            <button type="button" class="btn emerald" id="manualCloudBtn"><i class="ic i-scroll"></i><span id="manualCloudTxt">${isEn ? "SAVE TO CLOUD NOW" : "SIMPAN CLOUD SEKARANG"}</span></button>
+          </article>
+          <article class="card">
+            <div class="chead"><span class="badge" style="--bc:var(--crimson)"><i class="ic i-fire"></i>DANGER</span><span class="ctitle">${isEn ? "LOCAL RECOVERY" : "PEMULIHAN LOKAL"}</span></div>
+            <div class="desc">${isEn ? "Wipe local browser cache and restart session from scratch." : "Hapus seluruh cache browser lokal dan mulai game dari kondisi awal."}</div>
+            <button type="button" class="btn red reset-btn" id="resetBtn"><i class="ic i-fire"></i><span>RESET DATA LOKAL</span></button>
+          </article>
         </div>
       </section>
     </div>
   </div>`;
+
 
   if(window.lucide) window.lucide.createIcons();
 
@@ -343,14 +229,14 @@ ${_linkCard}
         }
         const nowStr = new Date().toLocaleTimeString();
         if(txt) txt.textContent = isEn ? "SAVED!" : "TERSIMPAN!";
-        if(note) note.innerHTML = `<span style="color:#2ed573;font-weight:700">✓ ${isEn ? "Successfully saved to Cloud at " : "Berhasil disimpan ke Cloud pukul "} ${nowStr}</span>`;
+        if(note) note.innerHTML = `<span style="color:var(--emerald,#34d399);font-weight:700">● ${isEn ? "Successfully saved to Cloud at " : "Berhasil disimpan ke Cloud pukul "} ${nowStr}</span>`;
         if(typeof toast === "function"){
           toast(isEn ? "CLOUD SYNC" : "SINKRONISASI CLOUD", isEn ? "All cards & inventory saved to server." : "Semua kartu & backpack berhasil disimpan ke server.", "#2ed573");
         }
       } catch(err){
         console.error("Manual cloud save err:", err);
         if(txt) txt.textContent = isEn ? "SAVE FAILED" : "GAGAL MENYIMPAN";
-        if(note) note.innerHTML = `<span style="color:#ff4757;font-weight:700">✗ ${err && err.message ? err.message : "Gagal terhubung ke Cloud"}</span>`;
+        if(note) note.innerHTML = `<span style="color:var(--crimson,#fb7185);font-weight:700">● ${err && err.message ? err.message : "Gagal terhubung ke Cloud"}</span>`;
         if(typeof toast === "function"){
           toast("ERROR", isEn ? "Failed to save to cloud" : "Gagal menyimpan ke cloud", "#ff4757");
         }
@@ -388,7 +274,7 @@ ${_linkCard}
   const bsNote=document.getElementById("bsNote");
   const bsMsg=()=>{const _m=battleSpeedMax();bsNote.textContent=(isEn ? "YOUR LEVEL: " : "LEVEL KAMU: ")+(state.playerLv||1)+(isEn ? " · SPEED: " : " · SPEED AKTIF: ")+state.battleSpeed+"×"+(_m<4?(isEn ? " · Next opens at LV " : " · Berikutnya terbuka di LV ")+(_m===1?10:_m===2?25:50):(isEn ? " · MAX REACHED" : " · SUDAH MAX"));};
   bsMsg();
-  document.querySelectorAll("#bsRow .bs-btn").forEach(el=>{el.onclick=()=>{const n=parseInt(el.getAttribute("data-sp"),10);if(!n||n>battleSpeedMax())return;state.battleSpeed=n;save();renderSettings();};});
+  document.querySelectorAll("#bsRow .bs").forEach(el=>{el.onclick=()=>{const n=parseInt(el.getAttribute("data-sp"),10);if(!n||n>battleSpeedMax())return;state.battleSpeed=n;save();renderSettings();};});
   /* AUDIO — status live + toggle mute + tes nada. Diagnosa kalau battle hening di perangkat. */
   {
     const audStat=document.getElementById("audStat"),audToggle=document.getElementById("audToggle");
@@ -398,7 +284,7 @@ ${_linkCard}
       const say=t=>{sayUntil=Date.now()+4000;audStat.textContent=t;};
       const paint=()=>{
         if(Date.now()<sayUntil)return;
-        audToggle.textContent=(isEn ? "SOUND: " : "SUARA: ")+(state.muted?(isEn ? "OFF" : "MATI"):(isEn ? "ON" : "NYALA"));
+        audToggle.querySelector("span").textContent=(isEn ? "SOUND: " : "SUARA: ")+(state.muted?(isEn ? "OFF" : "MATI"):(isEn ? "ON" : "NYALA"));
         audStat.textContent="AudioContext: "+ctxState()+" · SFX: "+(state.muted?(isEn ? "OFF" : "MATI"):(isEn ? "ON" : "NYALA"))+" · unlocker: "+((window.__aabAudioUnlockers||[]).length);
         settPaintStats();
       };
@@ -428,9 +314,9 @@ ${_linkCard}
   }
   let armed=false,timer=null;
   const b=document.getElementById("resetBtn");
-  const disarm=()=>{armed=false;if(timer){clearTimeout(timer);timer=null;}b.classList.remove("armed");b.textContent=isEn ? "RESET LOCAL DATA" : "RESET DATA LOKAL";};
+  const disarm=()=>{armed=false;if(timer){clearTimeout(timer);timer=null;}b.classList.remove("armed");b.querySelector("span").textContent=isEn ? "RESET LOCAL DATA" : "RESET DATA LOKAL";};
   b.onclick=()=>{
-    if(!armed){armed=true;b.classList.add("armed");b.textContent=isEn ? "Confirm? Tap again to wipe" : "Yakin? Tap lagi untuk reset";timer=setTimeout(disarm,4000);}
+    if(!armed){armed=true;b.classList.add("armed");b.querySelector("span").textContent=isEn ? "Confirm? Tap again to wipe" : "Yakin? Tap lagi untuk reset";timer=setTimeout(disarm,4000);}
     else{localStorage.removeItem(KEY);location.reload();}
   };
 }
@@ -464,7 +350,7 @@ function render(){
 
     const bg = typeof getLobbyActiveBg === 'function' ? getLobbyActiveBg() : 'assets/bg/lobby-wuwa-genshin.webp';
 
-    document.documentElement.style.setProperty("--sett-bg", 'url("' + bg + '")');
+    document.documentElement.style.setProperty("--sett-bg", 'url("' + (/^(\.\.|https?:|\/)/.test(bg) ? bg : '../' + bg) + '")');
 
   }
     document.documentElement.classList.toggle("on-tower-root", onTower);
