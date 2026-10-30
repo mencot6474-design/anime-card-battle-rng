@@ -44443,6 +44443,16 @@ body.battle-full .fighter.foe.ko {
 
 /* --- TOWER INF --- */
 body.on-tower:has(.tactical-tower-page) main#app{padding:0!important;}
+/* CACAT NYATA (terukur 850x390, tiket "label dossier tabrak node" ternyata artefak klip):
+   padding:0 di atas menghapus jatah rail yang jadi konvensi semua layar sentuh
+   (mobile-shell.css:72-75 `html.m-landscape #app{padding-left:calc(var(--nav-w)+...)}`),
+   sehingga rail fixed `nav.m-rail` (lebar --nav-w=56px, z-index 6000) menutupi sisi KIRI
+   dossier: `elementFromPoint(40,34)` di tengah .ssh-tag = nav.m-rail (bukan dirinya), dan
+   awal teks "SECTOR MATRIX" / "ASCENT STREAM" terpotong. Diperbaiki mengikuti pola yang
+   sudah dipakai Raid (mobile-shell.css:617): landscape inset kiri, portrait tetap penuh. */
+html.m-landscape body.on-tower:has(.tactical-tower-page) main#app{
+  padding: 0 0 0 calc(var(--nav-w) + var(--safe-left)) !important;
+}
 .tactical-tower-page{
   height:100%!important;max-height:100%!important;overflow:hidden!important;
   display:flex!important;flex-direction:column!important;
