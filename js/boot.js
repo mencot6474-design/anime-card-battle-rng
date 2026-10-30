@@ -66,17 +66,20 @@ function renderSettings(){
       </div>
     </div>
 
-    <!-- HORIZONTAL 3-COLUMN DECK -->
-    <div class="sett-h-deck">
-      <!-- COL 1: COMBAT & AUDIO ENGINES -->
-      <div class="sett-col sett-col-combat">
-        <div class="sett-col-head">
-          <div class="sett-col-tag tag-cyan">SECTOR 01 // DYNAMICS</div>
-          <div class="sett-col-title">
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#66fcf1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            <span>${isEn ? "COMBAT & SOUND" : "TEMPUR & AUDIO"}</span>
-          </div>
-        </div>
+    <!-- SEKTOR AKORDEON (desain terkunci: _tmp/proto_more_v2.html) -->
+    <div class="sett-deck">
+      <!-- SEKTOR 01: COMBAT & AUDIO -->
+      <section class="sett-fold open" data-fold="dynamics">
+        <button type="button" class="sett-fh" aria-expanded="true" aria-controls="settFb1">
+          <span class="sett-fbar" aria-hidden="true"></span>
+          <span class="sett-fic" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
+          <span class="sett-ft">
+            <span class="sett-ftag">SECTOR 01 // DYNAMICS</span>
+            <span class="sett-fnm">${isEn ? "COMBAT & SOUND" : "TEMPUR & AUDIO"}</span>
+          </span>
+          <span class="sett-fstat"><b id="stSpeed">-</b><span class="sett-s2">· <span id="stSound">-</span></span><span class="sett-ch" aria-hidden="true"></span></span>
+        </button>
+        <div class="sett-fb" id="settFb1">
 
         <!-- Combat Battle Speed Card -->
         <div class="sett-card">
@@ -118,17 +121,21 @@ function renderSettings(){
           </button>
           <div class="sett-aud-telemetry" id="audStat"></div>
         </div>
-      </div>
-
-      <!-- COL 2: LOCALIZATION & TACTICAL AUTOMATION -->
-      <div class="sett-col sett-col-locale">
-        <div class="sett-col-head">
-          <div class="sett-col-tag tag-purple">SECTOR 02 // INTERFACE</div>
-          <div class="sett-col-title">
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#c56cf0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-            <span>${isEn ? "LOCALE & AUTOMATION" : "BAHASA & OTOMASI"}</span>
-          </div>
         </div>
+      </section>
+
+      <!-- SEKTOR 02: LOKALISASI & OTOMASI -->
+      <section class="sett-fold" data-fold="interface">
+        <button type="button" class="sett-fh" aria-expanded="false" aria-controls="settFb2">
+          <span class="sett-fbar" aria-hidden="true"></span>
+          <span class="sett-fic" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
+          <span class="sett-ft">
+            <span class="sett-ftag">SECTOR 02 // INTERFACE</span>
+            <span class="sett-fnm">${isEn ? "LOCALE & AUTOMATION" : "BAHASA & OTOMASI"}</span>
+          </span>
+          <span class="sett-fstat"><b id="stLang">-</b><span class="sett-s2">· <span id="stTower">-</span></span><span class="sett-ch" aria-hidden="true"></span></span>
+        </button>
+        <div class="sett-fb" id="settFb2">
 
         <!-- Language Selector Card -->
         <div class="sett-card">
@@ -191,17 +198,21 @@ function renderSettings(){
             <span id="refreshUiTxt">${isEn ? "REFRESH GAME UI" : "REFRESH TAMPILAN (UI)"}</span>
           </button>
         </div>
-      </div>
-
-      <!-- COL 3: CLOUD, IDENTITY & SECURITY -->
-      <div class="sett-col sett-col-cloud">
-        <div class="sett-col-head">
-          <div class="sett-col-tag tag-emerald">SECTOR 03 // TELEMETRY</div>
-          <div class="sett-col-title">
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#2ed573" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
-            <span>${isEn ? "CLOUD & IDENTITY" : "CLOUD & IDENTITAS"}</span>
-          </div>
         </div>
+      </section>
+
+      <!-- SEKTOR 03: CLOUD, IDENTITAS & KEAMANAN -->
+      <section class="sett-fold" data-fold="telemetry">
+        <button type="button" class="sett-fh" aria-expanded="false" aria-controls="settFb3">
+          <span class="sett-fbar" aria-hidden="true"></span>
+          <span class="sett-fic" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg></span>
+          <span class="sett-ft">
+            <span class="sett-ftag">SECTOR 03 // TELEMETRY</span>
+            <span class="sett-fnm">${isEn ? "CLOUD & IDENTITY" : "CLOUD & IDENTITAS"}</span>
+          </span>
+          <span class="sett-fstat"><b id="stUser">GUEST</b><span class="sett-s2">· <span id="stCloud">-</span></span><span class="sett-ch" aria-hidden="true"></span></span>
+        </button>
+        <div class="sett-fb" id="settFb3">
 
         <!-- Operator Profile Card -->
         <div class="sett-card">
@@ -250,11 +261,42 @@ ${_linkCard}
           </div>
           <button class="reset-btn sett-btn-reset" id="resetBtn" type="button">RESET DATA LOKAL</button>
         </div>
-      </div>
+        </div>
+      </section>
     </div>
   </div>`;
 
   if(window.lucide) window.lucide.createIcons();
+
+  /* AKORDEON V2 — satu sektor terbuka di layar sempit (<700px), bebas di atasnya.
+     Tubuh sektor tidak dianimasikan tingginya (display:none↔flex) supaya tidak ada
+     animasi layout; yang bergerak hanya opacity/transform panel + chevron. */
+  document.querySelectorAll(".sett-fold .sett-fh").forEach(h=>{
+    h.onclick=()=>{
+      const f=h.parentElement, open=!f.classList.contains("open");
+      if(open&&window.innerWidth<700){
+        document.querySelectorAll(".sett-fold.open").forEach(x=>{
+          if(x!==f){x.classList.remove("open");const xh=x.querySelector(".sett-fh");if(xh)xh.setAttribute("aria-expanded","false");}
+        });
+      }
+      f.classList.toggle("open",open);
+      h.setAttribute("aria-expanded",open?"true":"false");
+    };
+  });
+
+  /* Strip status di header sektor — dibaca ulang tiap render + tiap aksi yang
+     mengubah nilai di belakangnya, supaya header tidak pernah basi. */
+  const settPaintStats=()=>{
+    const st=(id,txt)=>{const el=document.getElementById(id);if(el)el.textContent=txt;};
+    st("stSpeed",state.battleSpeed+"×");
+    st("stSound",isEn?(state.muted?"MUTED":"ON"):(state.muted?"MATI":"NYALA"));
+    st("stLang",isEn?"EN":"ID");
+    st("stTower",((state.tower&&state.tower.auto)?(isEn?"AUTO ON":"AUTO NYALA"):(isEn?"AUTO OFF":"AUTO MATI")));
+    st("stUser",(currentUser||"GUEST").slice(0,12));
+    st("stCloud",_onCG?(isEn?"CG ACCOUNT":"AKUN CG"):(_linked?(isEn?"LINKED":"TAUTA"):(isEn?"GUEST":"GUEST")));
+  };
+  settPaintStats();
+
   document.querySelectorAll("#langRow .lang-btn").forEach(btn=>{
     btn.onclick=()=>{
       const l=btn.getAttribute("data-lang");
@@ -341,7 +383,7 @@ ${_linkCard}
   const towerSetMsg=()=>{towerSetNote.textContent=autoCb.checked?(isEn ? "AUTO RESTART ACTIVE — defeat will immediately restart from Floor 1." : "AUTO RESTART AKTIF — kalah = langsung mulai run baru dari Lantai 1.") : (isEn ? "Auto restart inactive — defeat returns to Tower menu." : "Auto restart mati — kalah = kembali ke menu Tower.");};
   autoCb.checked=state.tower.auto===true;
   towerSetMsg();
-  autoCb.onchange=()=>{state.tower.auto=autoCb.checked;save();towerSetMsg();};
+  autoCb.onchange=()=>{state.tower.auto=autoCb.checked;save();towerSetMsg();settPaintStats();};
   /* BATTLE SPEED — pilihan 1x-4x; 2x/3x/4x terkunci level 10/25/50. */
   const bsNote=document.getElementById("bsNote");
   const bsMsg=()=>{const _m=battleSpeedMax();bsNote.textContent=(isEn ? "YOUR LEVEL: " : "LEVEL KAMU: ")+(state.playerLv||1)+(isEn ? " · SPEED: " : " · SPEED AKTIF: ")+state.battleSpeed+"×"+(_m<4?(isEn ? " · Next opens at LV " : " · Berikutnya terbuka di LV ")+(_m===1?10:_m===2?25:50):(isEn ? " · MAX REACHED" : " · SUDAH MAX"));};
@@ -358,6 +400,7 @@ ${_linkCard}
         if(Date.now()<sayUntil)return;
         audToggle.textContent=(isEn ? "SOUND: " : "SUARA: ")+(state.muted?(isEn ? "OFF" : "MATI"):(isEn ? "ON" : "NYALA"));
         audStat.textContent="AudioContext: "+ctxState()+" · SFX: "+(state.muted?(isEn ? "OFF" : "MATI"):(isEn ? "ON" : "NYALA"))+" · unlocker: "+((window.__aabAudioUnlockers||[]).length);
+        settPaintStats();
       };
       paint();
       const iv=setInterval(()=>{if(!document.body.contains(audStat)){clearInterval(iv);return;}paint();},1000);
