@@ -1634,6 +1634,8 @@ function renderBackpackPanel(){
 
   const ROLES=['01 // LEADER','02 // SUPPORT','03 // VANGUARD','04 // REAR'];
   const ROLE_COLS=['#fbbf24','#38bdf8','#34d399','#c084fc'];
+  /* escape minimal utk atribut title (nama kartu bisa memuat & atau ") — lokal, dekat pemakaian */
+  const slotNameAttr=v=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
   const slots=[0,1,2,3].map(i=>{
     const id=state.deck[i];const s=id?state.stacks.find(x=>x.id===id):null;
     const rLbl=ROLES[i]; const rCol=ROLE_COLS[i];
@@ -1660,7 +1662,7 @@ function renderBackpackPanel(){
           <img src="${cardThumb(s.char)}" alt="" loading="lazy" decoding="async">
         </div>
         <div class="bps-info">
-          <div class="bps-name">${cardName(s.char)}</div>
+          <div class="bps-name" title="${slotNameAttr(cardName(s.char))}">${cardName(s.char)}</div>
           <div class="bps-stats">
             <span class="bps-pwr" title="Combat Power"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-1px;margin-right:2px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>${fmt(pwr)}</span>
             ${s.shiny?'<span class="bps-chip shiny">SHINY</span>':''}
