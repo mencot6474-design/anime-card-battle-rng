@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v269-iceHalo';
+const CACHE_NAME = 'anime-card-battle-v270-blurHygiene';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

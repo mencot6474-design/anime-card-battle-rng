@@ -399,6 +399,8 @@
       ctx.shadowColor = colMain;
       ctx.shadowBlur = 35;
       ctx.fill();
+      // Blur cukup utk 1 fill badan sabit; garis punggung digambar bersih di atasnya
+      ctx.shadowBlur = 0;
 
       // Tulang punggung sabit bulan putih super tajam
       ctx.strokeStyle = "#ffffff";
@@ -486,14 +488,21 @@
         ctx.beginPath();
         ctx.arc(x2, y2, bp * 180, 0, Math.PI * 2);
         ctx.stroke();
+        // Blur HANYA utk 2 cincin; tebasan & serpihan pakai halo pass
+        ctx.shadowBlur = 0;
 
         // 2. Belahan Tebasan Bulan Melengkung Ganda di Kartu Target
         var cleaveLen = bp * 175;
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 5 * fade;
         ctx.beginPath();
         ctx.moveTo(x2 + perpX * cleaveLen, y2 + perpY * cleaveLen);
         ctx.quadraticCurveTo(x2 + (dx/distTotal)*35, y2 + (dy/distTotal)*35, x2 - perpX * cleaveLen, y2 - perpY * cleaveLen);
+        ctx.strokeStyle = colMain;
+        ctx.globalAlpha = 0.18;
+        ctx.lineWidth = 16 * fade;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 5 * fade;
         ctx.stroke();
 
         // 3. Debris pecahan sabit bulan mini (Moon Shards) memancar ke segala arah
@@ -506,11 +515,16 @@
           ctx.save();
           ctx.translate(cx, cy);
           ctx.rotate(csh.rot + timeSec * 4);
+          ctx.beginPath();
+          ctx.arc(0, 0, csh.radius * fade, -Math.PI * 0.35, Math.PI * 0.35);
+          ctx.strokeStyle = colMain;
+          ctx.globalAlpha = 0.2;
+          ctx.lineWidth = 8 * fade;
+          ctx.stroke();
+          ctx.globalAlpha = 1;
           ctx.strokeStyle = csh.color;
           ctx.lineWidth = 2 * fade;
           // Busur sabit mini
-          ctx.beginPath();
-          ctx.arc(0, 0, csh.radius * fade, -Math.PI * 0.35, Math.PI * 0.35);
           ctx.stroke();
           ctx.restore();
         }
@@ -580,7 +594,14 @@
         var jy = (Math.random() - 0.5) * 6;
         ctx.lineTo(originX + points[i].x + jx, originY + points[i].y + jy);
       }
+      // Halo lebar redup + inti putih (pengganti shadowBlur 16 per cabang, §2b #4)
+      ctx.lineWidth = width * 3.2;
+      ctx.globalAlpha = 0.18 * alpha;
+      ctx.strokeStyle = colMain;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
       ctx.lineWidth = width;
+      ctx.strokeStyle = "#ffffff";
       ctx.stroke();
     }
 
@@ -644,6 +665,8 @@
         ctx.moveTo(x1, y1);
         ctx.lineTo(curX, curY);
         ctx.stroke();
+        // Blur habis di 3 stroke kilat saja; spark pakai halo (dulu ikut ter-blur 15 x24/frame)
+        ctx.shadowBlur = 0;
       }
 
       // Spark Ion Listrik di Sekitar Lintasan
@@ -654,6 +677,12 @@
           var sx = x1 + dx * (spk.pAt / 0.28) + perpX * spk.side + spk.driftX * age;
           var sy = y1 + dy * (spk.pAt / 0.28) + perpY * spk.side + spk.driftY * age;
           ctx.fillStyle = spk.color;
+          /* Halo murah: lingkaran besar + alpha rendah (pengganti shadowBlur per spark, §2b #4) */
+          ctx.globalAlpha = 0.2 * (1 - age);
+          ctx.beginPath();
+          ctx.arc(sx, sy, spk.size * (1 - age) * 2.6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 1;
           ctx.beginPath();
           ctx.arc(sx, sy, spk.size * (1 - age), 0, Math.PI * 2);
           ctx.fill();
@@ -678,6 +707,8 @@
         ctx.beginPath();
         ctx.arc(x2, y2, ep * 170, 0, Math.PI * 2);
         ctx.stroke();
+        // Blur cukup utk 2 cincin sengatan; bola plasma = gradien radial, tak butuh blur
+        ctx.shadowBlur = 0;
 
         // 2. Kilatan Bola Plasma Listrik di Tengah
         var plasmaR = 48 * Math.sin(ep * Math.PI);
@@ -692,9 +723,7 @@
           ctx.fill();
         }
 
-        // 3. Cabang Sambaran Petir Liar Menyetrum Target
-        ctx.strokeStyle = "#ffffff";
-        ctx.shadowColor = colMain; ctx.shadowBlur = 16;
+        // 3. Cabang Sambaran Petir Liar Menyetrum Target (halo pass di drawFork, tanpa blur)
         for(var f=0; f<impactForks.length; f++){
           drawFork(impactForks[f], x2, y2, 3 * fade, fade);
         }
@@ -784,16 +813,29 @@
         ctx.closePath();
         ctx.shadowColor = "#f97316"; ctx.shadowBlur = 28;
         ctx.fill();
+        // Blur cukup utk 1 fill badan api; inti & orb pakai halo pass
+        ctx.shadowBlur = 0;
 
         // Inti putih super panas (White-hot Core)
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 4;
         ctx.beginPath();
         ctx.moveTo(curX - (dx/distTotal)*40, curY - (dy/distTotal)*40);
         ctx.lineTo(curX + (dx/distTotal)*12, curY + (dy/distTotal)*12);
+        ctx.strokeStyle = "#fbbf24";
+        ctx.globalAlpha = 0.2;
+        ctx.lineWidth = 12;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 4;
         ctx.stroke();
 
         // Kilatan orb kecil di ujung moncong
+        ctx.fillStyle = "#fbbf24";
+        ctx.globalAlpha = 0.25;
+        ctx.beginPath();
+        ctx.arc(curX, curY, 13, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
         ctx.fillStyle = "#ffffff";
         ctx.beginPath();
         ctx.arc(curX, curY, 8, 0, Math.PI * 2);
@@ -839,12 +881,19 @@
         ctx.beginPath();
         ctx.arc(x2, y2, blastR, 0, Math.PI * 2);
         ctx.fill();
+        // Blur cukup utk 1 kubah gradien; cincin & pilar bara pakai halo pass
+        ctx.shadowBlur = 0;
 
         // 2. Cincin gelombang panas api (shockwave)
-        ctx.lineWidth = 10 * fade;
-        ctx.strokeStyle = "#fbbf24";
         ctx.beginPath();
         ctx.arc(x2, y2, bp * 165, 0, Math.PI * 2);
+        ctx.lineWidth = 22 * fade;
+        ctx.strokeStyle = "#f97316";
+        ctx.globalAlpha = 0.18;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        ctx.lineWidth = 10 * fade;
+        ctx.strokeStyle = "#fbbf24";
         ctx.stroke();
 
         // 3. Lidah semburan bara ke atas & samping
@@ -854,6 +903,12 @@
           var bx = x2 + bpil.vx * timeSec;
           var by = y2 + bpil.vy * timeSec + 0.5 * (-120) * (timeSec * timeSec);
           ctx.fillStyle = bpil.color;
+          /* Halo murah: lingkaran besar + alpha rendah (pengganti shadowBlur per pilar, §2b #4) */
+          ctx.globalAlpha = 0.2 * fade;
+          ctx.beginPath();
+          ctx.arc(bx, by, bpil.size * fade * 2.4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = fade;
           ctx.beginPath();
           ctx.arc(bx, by, bpil.size * fade, 0, Math.PI * 2);
           ctx.fill();
@@ -1048,17 +1103,24 @@
         ctx.beginPath();
         ctx.arc(x2, y2, bp * 175, 0, Math.PI * 2);
         ctx.stroke();
+        // Blur HANYA utk 2 cincin (by-design §2b#4); sisanya halo pass
+        ctx.shadowBlur = 0;
 
         // 2. Kilatan bintang es heksagonal di pusat benturan
         var starR = 50 * Math.sin(bp * Math.PI);
         if(starR > 0){
           for(var s=0; s<6; s++){
             var sa = (s / 6) * Math.PI * 2;
-            ctx.strokeStyle = "#ffffff";
-            ctx.lineWidth = 3.5 * fade;
             ctx.beginPath();
             ctx.moveTo(x2, y2);
             ctx.lineTo(x2 + Math.cos(sa) * starR, y2 + Math.sin(sa) * starR);
+            ctx.strokeStyle = "#38bdf8";
+            ctx.globalAlpha = 0.16;
+            ctx.lineWidth = 11 * fade;
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 3.5 * fade;
             ctx.stroke();
           }
         }
@@ -1083,6 +1145,12 @@
           ctx.lineTo(0, shd.h / 2);
           ctx.lineTo(-shd.w / 2, 0);
           ctx.closePath();
+          // Halo cyan lembut (pengganti blur 28 yang dulu merembet ke sini)
+          ctx.strokeStyle = "#38bdf8";
+          ctx.globalAlpha = 0.22 * fade;
+          ctx.lineWidth = 6;
+          ctx.stroke();
+          ctx.globalAlpha = fade;
           ctx.fill();
           ctx.restore();
         }
@@ -1176,6 +1244,8 @@
         ctx.strokeStyle = colMain;
         ctx.shadowColor = colGlow; ctx.shadowBlur = 18;
         ctx.stroke();
+        // Blur habis di 2 helix + 1 beam; orb & spark berikutnya digambar bersih
+        ctx.shadowBlur = 0;
       }
 
       // Bola Energi (Plasma Orb) di kepala proyektil
@@ -1191,6 +1261,12 @@
         ctx.arc(curX, curY, orbRadius * 2, 0, Math.PI * 2);
         ctx.fill();
 
+        ctx.fillStyle = "#ffffff";
+        ctx.globalAlpha = 0.22;
+        ctx.beginPath();
+        ctx.arc(curX, curY, orbRadius * 1.1, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
         ctx.fillStyle = "#ffffff";
         ctx.beginPath();
         ctx.arc(curX, curY, orbRadius * 0.55, 0, Math.PI * 2);
@@ -1228,6 +1304,8 @@
         ctx.beginPath();
         ctx.arc(x2, y2, bp * 165, 0, Math.PI * 2);
         ctx.stroke();
+        // Blur cukup utk 2 cincin; kubah gradien & debris pakai halo pass
+        ctx.shadowBlur = 0;
 
         // 2. Kilatan kubah plasma di titik tabrakan
         var burstRad = 55 * Math.sin(bp * Math.PI);
@@ -1249,6 +1327,12 @@
           var debX = x2 + deb.vx * timeSec;
           var debY = y2 + deb.vy * timeSec;
           ctx.fillStyle = deb.color;
+          /* Halo murah: lingkaran besar + alpha rendah (pengganti shadowBlur per debris, §2b #4) */
+          ctx.globalAlpha = 0.2 * fade;
+          ctx.beginPath();
+          ctx.arc(debX, debY, deb.size * fade * 2.4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = fade;
           ctx.beginPath();
           ctx.arc(debX, debY, deb.size * fade, 0, Math.PI * 2);
           ctx.fill();
