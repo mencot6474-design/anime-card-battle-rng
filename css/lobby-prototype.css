@@ -3411,6 +3411,12 @@ body.bp-open .backpack-panel,
   gap: 3px !important;
   margin-top: 8px !important;
   min-width: 0 !important;
+  /* B2a langkah 2: tombol .bps-x (20px, right:8) duduk DI ATAS ujung kanan kolom teks,
+     jadi ellipsis .bps-name tercetak di bawahnya -> potongan tampak seperti glyph terpancung.
+     Gutter dari token orientasi (style.css html.m-portrait / html.m-landscape) memindahkan
+     tepi dalam kolom ke kiri tombol. box-sizing:border-box global -> rect luar .bps-info,
+     .bp-slot dan .bps-art TIDAK berubah. Fallback 0px = jalur non-mobile tak tersentuh. */
+  padding-right: var(--m-bp-name-g, 0px) !important;
 }
 
 #backpackPanel .bp-slots .bp-slot .bps-name,

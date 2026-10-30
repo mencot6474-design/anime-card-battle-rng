@@ -54153,6 +54153,10 @@ body.on-raid .lobby-tactical-hud {
     --m-bp-slot-h:72px;
     --m-bp-rail-gap:8px;
     --m-bp-art-w:38px; --m-bp-art-h:46px;
+    /* gutter kanan utk kolom teks .bps-info: jatah tombol .bps-x (lebar 20 + right 8)
+       supaya ellipsis .bps-name tidak tercetak di bawah tombol. Portrait punya 84.2px
+       kolom -> 24px sisa 60.2px; landscape cuma 43/38px -> 14px. */
+    --m-bp-name-g:24px;
   }
   html.m-landscape{
     --m-dp-cols:repeat(auto-fill,minmax(84px,1fr));             /* brief */
@@ -54161,6 +54165,9 @@ body.on-raid .lobby-tactical-hud {
     --m-bp-slot-h:48px;
     --m-bp-rail-gap:6px;
     --m-bp-art-w:30px; --m-bp-art-h:36px;
+    /* lihat --m-bp-name-g di blok html.m-portrait: kolom teks landscape cuma 43px(850)/
+       38px(1400), gutter 14px memindahkan titik tengah nama keluar dari tombol .bps-x. */
+    --m-bp-name-g:14px;
   }
 
   /* ---- brief Step-2 rules, verbatim (drive the token grid on bare
