@@ -47786,7 +47786,7 @@ html.fps-locked .bp-fchip{
   font-weight: 800;
   letter-spacing: 0.14em;
   color: #38bdf8;
-  margin-bottom: 3px;
+  margin-bottom: 4px;
 }
 
 .wad-pulse {
@@ -48195,7 +48195,7 @@ html.fps-locked .bp-fchip{
 #dailyModal .dl-eyebrow {
   font-family: 'Barlow Condensed', sans-serif;
   font-weight: 800;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 #dailyModal .dl-title {
@@ -51239,12 +51239,11 @@ main#app:has(.sett-wrap) {
 .tactical-tower-page .tactical-dossier-panel {
   display: flex !important;
   flex-direction: column !important;
-  background: linear-gradient(180deg, rgba(14, 21, 35, 0.78) 0%, rgba(8, 12, 20, 0.92) 100%) !important;
+  background: #160c0f !important;
   border: 1px solid rgba(0, 217, 255, 0.18) !important;
   border-radius: 16px !important;
   padding: 16px 20px !important;
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
-  backdrop-filter: blur(12px) !important;
   min-height: 0 !important;
   height: 100% !important;
   overflow-y: auto !important;
@@ -53235,7 +53234,7 @@ body.on-lobby .stage-eyebrow {
 .drw-title-wrap {
   display: flex !important;
   flex-direction: column !important;
-  gap: 2px !important;
+  gap: 4px !important;
 }
 
 .drw-eyebrow {
@@ -53264,7 +53263,7 @@ body.on-lobby .stage-eyebrow {
   font-weight: 800 !important;
   letter-spacing: 0.06em !important;
   color: #F4F8FC !important;
-  text-shadow: 0 0 10px rgba(125, 249, 255, 0.4) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6) !important;
 }
 
 .drw-close-btn {

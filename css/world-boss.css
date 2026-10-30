@@ -792,6 +792,7 @@ body.on-raid {
 
 /* RIGHT TACTICAL HUNTER CONSOLE (RAIL) */
 .wb-console-rail {
+  background: #160c0f;
   display: flex !important;
   flex-direction: column !important;
   gap: 6px !important;
@@ -891,7 +892,7 @@ body.on-raid {
   gap: 4px;
 }
 .strike-stat-box {
-  background: rgba(5, 8, 16, 0.6);
+  background: #171012;
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 5px;
   padding: 5px 8px;

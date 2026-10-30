@@ -44,7 +44,7 @@
 
     /* Cinematic AAA Anime Landscape Background (WuWa x Genshin) */
     .stage-bg-layer {
-      background-image: url('assets/bg/lobby-wuwa-genshin.webp');
+      background-image: url('../assets/bg/lobby-wuwa-genshin.webp');
       transition: transform 0.18s ease-out;
     }
 
@@ -157,7 +157,7 @@
 
 
     .hero-standee-char {
-      background-image: url('assets/cards/art/shadow-king.webp');
+      background-image: url('../assets/cards/art/shadow-king.webp');
     }
 
     .hero-frame-svg {
@@ -2010,9 +2010,7 @@ html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)
   align-items: center !important;
   height: 28px !important;
   padding: 0 10px !important;
-  background: linear-gradient(135deg, rgba(8, 24, 42, 0.88) 0%, rgba(6, 12, 22, 0.95) 100%) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
+  background: linear-gradient(135deg, rgb(8, 24, 42) 0%, rgb(6, 12, 22) 100%) !important;
   clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%) !important;
   border: 1px solid rgba(56, 189, 248, 0.45) !important;
   border-left: 2.5px solid #38bdf8 !important;
@@ -2022,7 +2020,7 @@ html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)
   font-weight: 800 !important;
   letter-spacing: 0.08em !important;
   color: #7dd3fc !important;
-  text-shadow: 0 0 10px rgba(56, 189, 248, 0.6) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6) !important;
   white-space: nowrap !important;
   cursor: default !important;
   transition: all 0.25s var(--ease-spring) !important;
@@ -2990,7 +2988,7 @@ body.bp-open .backpack-panel,
 .backpack-panel .bph-left {
   display: flex !important;
   flex-direction: column !important;
-  gap: 3px !important;
+  gap: 4px !important;
 }
 
 .backpack-panel .bph-eyebrow {
