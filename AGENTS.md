@@ -3,6 +3,22 @@
 Vanilla JS SPA. Tanpa build step untuk web. Semua state global, semua render via string HTML.
 Baca file ini dulu; jangan baca `style.css` (49.3k baris) atau `index.html` utuh kecuali terpaksa — pakai anchor di bawah + grep.
 
+## 0. STATUS PROYEK (baca ini dulu — snapshot, timpa tiap milestone)
+
+**Tujuan**: game rapih & bisa dimainkan di **HP portrait + landscape** → publish ke **CrazyGames**. Yang rusak cuma UI/UX; mekanik & data udah ~70% jadi (lihat §5).
+**Alur kerja**: desain prototipe di `_tmp/` → user **kunci** → **port ke produksi** serial per divisi → **QC mandor** (fungsi **+ fidelitas visual vs prototipe**, bukan cuma angka) → commit per unit + bump `?v=`/`CACHE_NAME` (§2c.4) → push kalau diminta.
+**Fase sekarang**: PORT produksi, bertahap per layar (lobby → settings → drawer → P0 → sweep → gate rilis).
+
+| Layar | Prototipe sumber (`_tmp/`) | Status produksi |
+|---|---|---|
+| **Lobby** | `proto_lobby_v12.html` — DIKUNCI | ⏳ port jalan (renderLobby + CSS + tab bar) |
+| **Settings / tab More** | `proto_more_v2.html` (accordion) — DIKUNCI | ✅ port + push: `ac0d262`→`8091725`→`9da9d28` |
+| **Command drawer / swipe menu** | `proto_drawer_v2.html` (accordion) — DIKUNCI | ⏳ antre setelah lobby |
+| **Tab bar** (4 tab, Summon dihapus) | — | ⏳ ikut unit lobby |
+
+**P0 mobile** (bukti terukur, antre — lihat §4/ledger): K-GRID koleksi di 320 · `#pwaInstallBtn` nutupin dock · tab active-state · story-title/daily-close 44px.
+**Mandor aktif** = sesi ini; pekerja = sesi divisi terpisah (**MODE SERIAL**, §2c). Sumber kebenaran giliran & keputusan = `_tmp/mandor_ledger.md` (ditimpa tiap unit).
+
 ---
 
 ## 1. ATURAN KERJA (WAJIB)
@@ -224,6 +240,7 @@ Aturan keras: **pekerja hanya menyentuh file miliknya.** Kalau perbaikan yang di
 ### Yang TIDAK ada pemiliknya — status "khusus izin"
 
 `js/boot.js` (router + `enterGame` + label BUILD) dan `js/crazygames.js` adalah jalur boot/lifecycle yang menyilang semua divisi. **Tidak ada pekerja yang mengeditnya tanpa persetujuan tersurat user lewat mandor.** Temuan audit #6 (boot ngunci saat Supabase tak terjangkau) masuk sini, jadi itu **diskusi desain**, bukan tiket perbaikan.
+**Pengecualian terdokumentasi — port produksi per-unit (mandor yang otorisasi, scope sempit):** fungsi render di boot.js boleh diedit pekerja utk port desain yang sudah dikunci, HANYA fungsi render-nya + binding-nya, wajib pertahankan semua id/handler/i18n/kondisional. Sudah jalan: `renderSettings` (Settings V2, commit `ac0d262`/`8091725`). Mandor QC fungsi **+ visual** sebelum commit.
 File prototipe (`prototipe.html`, `*-prototype.html`, `demo-*.html`, `js/anim-prototipe.js`, `css/anim-prototipe.css`) dan `*.bak-*` sudah di-ignore — tidak dimiliki siapa pun, jangan di-commit.
 
 ### Harness `_tmp/` dimiliki pembuatnya
@@ -237,7 +254,7 @@ Glob `_tmp/*.cjs` **bukan** milik db-sync. Pembagian nyata: ui-ux = `_tmp/layout
 **Maksimum SATU sesi pekerja berjalan pada satu waktu.** Tidak ada lagi 5 divisi paralel. Aturan turunannya:
 
 1. Sebelum dispatch pekerja berikutnya, mandor **wajib** `stop_chat_session` yang aktif sampai balasannya `status:"idle"`. Pekerja yang sudah selesai tapi masih `running` tetap dihitung menempati slot.
-2. Giliran saat ini (urut berdasarkan apa yang memblokir apa): **ui-css** (Unit A #3/#4/#7/#9 + FQ-10) → **ui-ux** (re-run detektor Set-fix + angka final) → **core** (keputusan FXQ) → **vfx** (CTA-1 mute) → **db-sync** (sisa audit jalur duit). Satu selesai, baru naik satu.
+2. Giliran saat ini = **fase PORT produksi**, serial per layar: lobby (jalan) → settings (✅ push) → drawer → P0 → sweep. Urutan detail + blocker + keputusan = **`_tmp/mandor_ledger.md`** (sumber kebenaran, ditimpa tiap unit). Satu unit selesai + di-QC mandor + commit, baru naik berikutnya.
 3. **Alasan aturan ini:** token mandor jebol pada 2026-10-30 saat 5 sesi jalan bareng. Bukan karena pekerja boros, tapi karena setiap verifikasi laporan menyerap transkrip sesi penuh.
 
 ### Disiplin token — berlaku buat mandor DAN pekerja
@@ -290,7 +307,7 @@ Luck: `luckChance, totalLuck, fmtChance` (data.js).
 
 | Layar | Modal / root | Buka | Render | CSS (style.css ±) |
 |---|---|---|---|---|
-| Home | `#app` | `render()` | `renderHome` (state.js:805) → `renderLobby` (tower-lobby.js:1032) | lobby 3436+ |
+| Home | `#app` | `render()` | `renderHome` (state.js) → `renderLobby` (tower-lobby.js) | **desain v12** (prototipe `_tmp/proto_lobby_v12.html`, DIKUNCI; port jalan): root WAJIB tetap `.lobby-hub` (deteksi `on-lobby` boot.js), struktur `.app/.top/.mid/.stage/.panel/.tabbar`, kartu rasio 310/460 holo-glass, riwayat+potion+global-luck+weather di panel, mode hub Story/Tower/Raid |
 | Story | `#storyModal` | `openStory` (state.js:806 → `window.openStoryCarousel`) | `openStory` IIFE (story-carousel.js:69) | `css/story-carousel.css:21` `.sc-window` |
 | Index kartu | `#indexModal` | `openIndex` (raid.js:1108) | `ixRender` (raid.js:1154) | 47800 |
 | Trait / skill tree | `#traitModal` | `openTrait` (raid.js:1378) | `renderTrait` (raid.js:1382) | 47834 |
@@ -310,7 +327,7 @@ Luck: `luckChance, totalLuck, fmtChance` (data.js).
 | 7-Day Login | `#dailyModal` | `openDailyLoginModal` (panels.js:2700) | `renderDaily7Horizontal` (panels.js:2715) | style.css (blok HORIZONTAL DAILY 7 CARDS) |
 | Rebirth (Ascension) | `#rebirthModal` | `openRebirthModal` (tower-lobby.js) | `renderRebirthModal` (tower-lobby.js) | style.css (blok REBIRTH ASCENSION MODAL HORIZONTAL) |
 | Update Log | `#changelogModal` | `openChangelogModal` (boot.js) | `renderChangelogModal` (boot.js) | style.css (blok UPDATE LOG MODAL) |
-| Settings | `#app` view | `#/settings` | `renderSettings` (boot.js:2) | style.css (blok HORIZONTAL CYBERPUNK SETTINGS DECK `.sett-wrap`) |
+| Settings | `#app` view | `#/settings` | `renderSettings` (boot.js:2) | style.css blok `.sett-wrap` — **desain V2 accordion** (prototipe `_tmp/proto_more_v2.html`, DIKUNCI; port+push `8091725`): 3 sektor `.sett-fold` (Dynamics/Interface/Telemetry), header `.sett-fh`+strip status, satu-buka portrait, ikon mask `i-*`, chamfer, hide-scrollbar |
 
 Markup modal ada di `index.html` (baris kunci):
 welcomeModal 67, topbar 93, authScreen 75, app 222, profModal 124, rollResultPop 292, `#modal` 315, indexModal 317, premiumModal 339, weatherMachineModal 386, rebirthModal 447, missionModal 464, changelogModal 470, dailyModal 495, storyModal 505 (dock intel story ±548–553), startModal 577, traitModal 592, deckPickModal 605, rarePromptModal 615, towerDropModal 620, footMenu 737, backpackPanel 754, blok `<script>` 818–842 (`coret.js` 842), topupModal 783.
