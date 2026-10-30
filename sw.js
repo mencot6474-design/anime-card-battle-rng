@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v280-bpsGutter';
+const CACHE_NAME = 'anime-card-battle-v281-bpChip';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

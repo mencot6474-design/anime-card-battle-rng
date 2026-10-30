@@ -3280,6 +3280,58 @@ body.bp-open .backpack-panel,
   display: none !important;
 }
 
+/* chip dek berjajar 4 (1 baris) supaya tinggi kolom dek tidak meledak.
+   Prefix `html` perlu: blok mobile di style.css memakai `html.m-portrait #backpackPanel ...`
+   (1,2,1) dan mengalahkan `#backpackPanel ...` (1,2,0). */
+html #backpackPanel .bp-deckcol .bp-slots {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  grid-template-rows: none !important;
+  align-items: start !important;
+  gap: 6px !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  overflow: visible !important;
+}
+
+html #backpackPanel .bp-deckcol {
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+}
+
+html #backpackPanel .bp-deckcol .bp-slot {
+  align-self: start !important;
+  width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  aspect-ratio: 1 / 1 !important;
+  padding: 0 !important;
+}
+
+html #backpackPanel .bp-deckcol .bp-deckmeta {
+  flex: 0 0 auto !important;
+  width: 100% !important;
+}
+
+/* portrait: chip dibatasi 48px supaya kolom dek tidak lebih tinggi dari sebelumnya
+   (146px) dan header CARD ARCHIVE tetap di dalam panel */
+html.m-portrait #backpackPanel .bp-deckcol .bp-slots {
+  justify-content: center !important;
+  gap: 8px !important;
+}
+html.m-portrait #backpackPanel .bp-deckcol .bp-slot {
+  max-width: 48px !important;
+  max-height: 48px !important;
+}
+html.m-portrait #backpackPanel .bp-deckcol {
+  gap: 6px !important;
+  padding: 8px 10px !important;
+}
+html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
+  margin-bottom: 2px !important;
+  padding-bottom: 4px !important;
+}
+
 /* 5. AAA Loadout Pod (Slot) - Full Width Squadron Bay */
 #backpackPanel .bp-slots .bp-slot,
 .backpack-panel .bp-slots .bp-slot,
@@ -3289,16 +3341,17 @@ body.bp-open .backpack-panel,
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  justify-content: flex-start !important;
-  gap: 12px !important;
-  min-height: 66px !important;
-  height: clamp(64px, 8.8vh, 72px) !important;
-  max-height: 74px !important;
+  justify-content: center !important;
+  gap: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
   width: 100% !important;
-  min-width: 100% !important;
+  min-width: 0 !important;
   max-width: 100% !important;
-  aspect-ratio: auto !important;
-  padding: 8px 12px !important;
+  /* slot dek = chip kartu 1:1, isinya artwork saja (teks dipindah ke tooltip) */
+  aspect-ratio: 1 / 1 !important;
+  padding: 0 !important;
   background: linear-gradient(135deg, rgba(16, 24, 42, 0.85) 0%, rgba(8, 12, 22, 0.95) 100%) !important;
   border: 1px solid rgba(56, 189, 248, 0.22) !important;
   border-radius: 9px !important;
@@ -3382,17 +3435,19 @@ body.bp-open .backpack-panel,
   color: #94a3b8 !important;
 }
 
-/* Filled Slot */
+/* Filled Slot: art mengisi penuh chip, bukan 42x52 di kiri */
 #backpackPanel .bp-slots .bp-slot .bps-art-wrap,
 .backpack-panel .bps-art-wrap {
-  width: 42px !important;
-  height: 52px !important;
-  border-radius: 6px !important;
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: inherit !important;
   overflow: hidden !important;
   border: 1.5px solid var(--tcol, rgba(56, 189, 248, 0.4)) !important;
   flex: none !important;
-  margin-top: 8px !important;
-  box-shadow: 0 0 10px color-mix(in srgb, var(--tcol, #38bdf8) 35%, transparent) !important;
+  margin: 0 !important;
+  box-shadow: none !important;
 }
 
 #backpackPanel .bp-slots .bp-slot .bps-art-wrap img,
@@ -3411,12 +3466,13 @@ body.bp-open .backpack-panel,
   gap: 3px !important;
   margin-top: 8px !important;
   min-width: 0 !important;
-  /* B2a langkah 2: tombol .bps-x (20px, right:8) duduk DI ATAS ujung kanan kolom teks,
-     jadi ellipsis .bps-name tercetak di bawahnya -> potongan tampak seperti glyph terpancung.
-     Gutter dari token orientasi (style.css html.m-portrait / html.m-landscape) memindahkan
-     tepi dalam kolom ke kiri tombol. box-sizing:border-box global -> rect luar .bps-info,
-     .bp-slot dan .bps-art TIDAK berubah. Fallback 0px = jalur non-mobile tak tersentuh. */
-  padding-right: var(--m-bp-name-g, 0px) !important;
+}
+
+/* chip dek tidak memuat teks: nama kartu ada di title/tooltip slot */
+#backpackPanel .bp-slots .bp-slot .bps-info,
+#backpackPanel .bp-slots .bp-slot .bps-role,
+#backpackPanel .bp-slots .bp-slot .bps-prompt {
+  display: none !important;
 }
 
 #backpackPanel .bp-slots .bp-slot .bps-name,
@@ -3471,13 +3527,13 @@ body.bp-open .backpack-panel,
 #backpackPanel .bp-slots .bp-slot .bps-x,
 .backpack-panel .bps-x {
   position: absolute !important;
-  top: 7px !important;
-  right: 8px !important;
-  width: 20px !important;
-  height: 20px !important;
+  top: 4px !important;
+  right: 4px !important;
+  width: 22px !important;
+  height: 22px !important;
   border-radius: 5px !important;
-  border: 1px solid rgba(239, 68, 68, 0.45) !important;
-  background: rgba(239, 68, 68, 0.16) !important;
+  border: 1px solid rgba(239, 68, 68, 0.7) !important;
+  background: rgba(12, 8, 10, 0.72) !important;
   color: #f87171 !important;
   font-size: 15px !important;
   line-height: 1 !important;
