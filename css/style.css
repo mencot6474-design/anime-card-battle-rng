@@ -43979,6 +43979,16 @@ body.battle-full .fighter.foe.ko {
   cursor: pointer;
   transition: all 0.16s ease;
 }
+/* KEPUTUSAN MANDOR (K3): target sentuh 44px untuk CTA install dijaga lewat GERBANG PERANTI
+   (pointer:coarse), BUKAN lewat kelas html.m-portrait / html.m-landscape satu-satunya --
+   itulah sumber cacat "67x17" (mobile-shell.css:583/595 menyalakan min-height hanya saat kelas
+   itu terpasang). Desktop (fine pointer) tetap 17px: tidak ada aturan tinggi yang berubah di
+   sana, jadi tidak ada perubahan visual untuk tetikus. */
+@media (pointer:coarse){
+  .pwa-install-btn,
+  .hub-install-btn { min-height: 44px; }
+}
+
 .pwa-install-btn:hover,
 .hub-install-btn:hover {
   color: #ffd700;
@@ -44387,8 +44397,6 @@ body.battle-full .fighter.foe.ko {
 
 @media(max-width:720px){
   #traitModal .tr-grid,#weatherMachineModal .wm-grid{grid-template-columns:1fr!important;gap:16px!important;}
-  .backpack-panel .bp-tabs{flex-wrap:wrap;overflow:visible;}
-  .backpack-panel .bp-tab{flex:1 1 30%;}
   .backpack-panel .bp-deckcol{flex-wrap:wrap;gap:10px;padding:10px 12px!important;}
   .backpack-panel .bp-deckcol::after{display:none;}
   .backpack-panel .bp-slots .bp-slot{width:66px!important;max-height:92px!important;}
@@ -53961,8 +53969,17 @@ body.on-raid .lobby-tactical-hud {
 
   /* ---- both orientations ---- */
   /* (1) suppress the floating install CTA over an immersive battle. */
+  /* (1) suppress the floating install CTA over an immersive battle, DAN (cacat round-2 #1,
+        keputusan MANDOR = SEMBUNYIKAN, jangan naikkan z-index) di atas modal apa pun.
+        Yang menabrak dock modal adalah pill hasil pwa.js: satu elemen
+        `button#pwaInstallBtn.pwa-install-btn.hub-install-btn` (bukan dua tombol terpisah).
+        `body.hide-docks-modal` dipasang js/panels.js tiap modal terbuka, jadi gerbangnya
+        CSS-murni dan tidak menyentuh js/pwa.js (hak ui-ux). Di lobby/hub tanpa modal pill
+        tetap terlihat (R-Reachability: satu-satunya jalur install tidak hilang). */
   html body.battle-full #pwaInstallBtn,
-  body.battle-full > .pwa-install-btn:not(#hubInstallBtn){ display:none!important; }
+  body.battle-full > .pwa-install-btn:not(#hubInstallBtn),
+  body.hide-docks-modal .pwa-install-btn,
+  body.hide-docks-modal #hubInstallBtn{ display:none!important; }
 
   /* bound the grid to the viewport so the late body.battle-full .battle-grid
      max-width:1320px !important (S:4377 / S:38522) can never push it wider
@@ -54168,11 +54185,17 @@ body.on-raid .lobby-tactical-hud {
   /* ---- TAB STRIP: wraps to 2 rows, every tab stays visible (R-Reachability:
      tab switch is a deck action control) ---- */
   #backpackPanel .bp-tabs{
-    margin:6px 10px 0!important; padding:5px 6px!important; gap:5px!important;
-    flex-wrap:wrap!important; overflow:visible!important;
+    margin:6px 10px 0!important; padding:1px 6px!important; gap:5px!important;
+    /* B1 (keputusan mandor, CSS-only, deklarasi PEMENANG diedit di tempat): SATU baris +
+       geser horizontal, sama seperti jalur desktop (style.css .backpack-panel .bp-tabs pakai
+       overflow-x:auto). flex-wrap:wrap di sini yang membuat 5 tab jadi 3 baris = 105px dan
+       merampas ruang baris filter chip di bawahnya. */
+    flex-wrap:nowrap!important; overflow:visible!important; overflow-x:auto!important; overflow-y:hidden!important;
+    scrollbar-width:none;
   }
+  #backpackPanel .bp-tabs::-webkit-scrollbar{display:none;}
   #backpackPanel .bp-tab{
-    flex:1 1 30%!important; min-width:0!important; white-space:nowrap!important;
+    flex:0 0 auto!important; min-width:0!important; white-space:nowrap!important;
     min-height:44px!important;
     padding:10px 7px!important; font-size:12px!important; letter-spacing:.05em!important;
   }
@@ -54307,6 +54330,25 @@ body.on-raid .lobby-tactical-hud {
   #backpackPanel .bp-fchip{ flex:0 0 auto!important; font-size:10px!important; padding:3px 7px!important; }
   #backpackPanel .bp-search{
     flex:0 1 120px!important; min-width:96px!important; max-width:150px!important; height:32px!important;
+  }
+  /* WRAP CHIP (KEPUTUSAN USER, tiket lanjutan) + core sudah memindahkan .bp-filter ke puncak
+     .bp-body.deck (ruang di bawahnya 320x568 = 328px), jadi gate min-height kuBUKA.
+     Akar kenapa flex-wrap:wrap saja tidak menghasilkan 2 baris di 320: .bp-search duduk di
+     container flex yang sama dan memakan lebar baris pertama, sehingga baris chip ke-2 tetap
+     tidak terbentuk/kepanjangan. Solusi CSS pada deklarasi PEMENANG (id-scoped, dipasang setelah
+     aturan .bp-search di atas supaya menang urutan): search satu baris sendiri, 6 chip = 2 baris
+     x 44px, tanpa overflow horizontal. */
+  @media (max-width:400px){
+    #backpackPanel .bp-filter{
+      flex-wrap:wrap!important; align-content:flex-start!important;
+      row-gap:7px!important; column-gap:6px!important;
+      overflow-x:visible!important; overflow-y:visible!important;
+    }
+    #backpackPanel .bp-search{ flex:1 1 100%!important; max-width:none!important; }
+    #backpackPanel .bp-fchip{
+      flex:0 0 auto!important; min-height:44px!important; height:auto!important;
+      white-space:nowrap!important;
+    }
   }
   html.m-portrait #backpackPanel .bp-tiles{
     grid-template-columns:repeat(auto-fill,minmax(min(40vw,120px),1fr))!important; gap:10px!important;

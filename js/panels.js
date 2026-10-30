@@ -1527,6 +1527,18 @@ let bpTarget = null;
 let bpMutFilter = "all"; /* filter varian koleksi: all|none|gold|rainbow|secret|shiny */
 let bpTab = "deck"; /* tab Backpack: deck | item | artefact | pet */
 function bpSetTab(t){bpTab=t;bpTarget=null;bpItemPopClose();renderBackpackPanel();}
+/* nav.bp-tabs = satu baris + overflow-x:auto, jadi tab 04/05 bisa terlipat di luar layar.
+   Pusatkan tab aktif HANYA kalau dia belum terlihat seluruhnya — kalau user sudah geser
+   manual ke posisi yang masih memuat tab aktif, scrollLeft-nya jangan dilompat. */
+function bpCenterActiveTab(){
+  const nav=document.querySelector('.backpack-panel .bp-tabs')||document.querySelector('.bp-tabs');
+  if(!nav)return;
+  const tab=nav.querySelector('.bp-tab.on')||nav.firstElementChild;
+  if(!tab)return;
+  const nr=nav.getBoundingClientRect(),tr=tab.getBoundingClientRect();
+  if(tr.width&&tr.left>=nr.left&&tr.right<=nr.right)return;
+  nav.scrollLeft=tab.offsetLeft-(nav.clientWidth-tab.offsetWidth)/2;
+}
 function deckTotalPower(){return totalPower();} /* delegate ke totalPower() — satu sumber, sinkron selamanya */
 function bpPickSlot(i){bpTarget=(bpTarget===i?null:i);renderBackpackPanel();}
 function bpSetFilter(m){bpMutFilter=m;renderBackpackPanel();}
@@ -1590,6 +1602,7 @@ function renderBackpackPanel(){
     {k:'pet',num:'05',l:'COMPANION PETS',ic:`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6z"/><path d="M9.5 12l1.8 1.8L15 10"/></svg>`}
   ];
   const tabbar=`<nav class="bp-tabs" role="tablist">${TABS.map(t=>`<button class="bp-tab${bpTab===t.k?' on':''}" onclick="if(typeof sfx!=='undefined'&&sfx.click)sfx.click();bpSetTab('${t.k}')" role="tab" aria-selected="${bpTab===t.k}"><span class="bp-tab-num">${t.num}</span><span class="bp-tab-ic">${t.ic}</span><span class="bp-tab-l">${t.l}</span><span class="bp-tab-laser"></span></button>`).join('')}</nav>`;
+  queueMicrotask(bpCenterActiveTab);
   const coins=state.coins||0;
   const header=`<div class="backpack-header">
     <div class="bph-left">
@@ -1680,7 +1693,13 @@ function renderBackpackPanel(){
   const chip=(k,lbl)=>{const on=bpMutFilter===k,themed=['shiny','gold','rainbow','secret','ultima'].includes(k);const col=!on&&!themed?(MUT_COLOR[k]||'#7DF9FF'):'';return `<button class="bp-fchip${themed?' bp-themed bp-'+k:''}${on?' on':''}" onclick="bpSetFilter('${k}')"${col?` style="border-color:${col};color:${col}"`:''}>${themed?'<span class="bp-fchip-label">'+lbl+'</span>':lbl}<em>${cntOf(k)}</em></button>`;};
   const searchInput=`<input class="bp-search" type="search" placeholder="Cari kartu / mutasi..." value="${deckSearch}" oninput="deckSearch=this.value;runCardSearch(this,document.querySelector('.bp-tiles'),document.getElementById('bp-nores'))">`;
   const filterRow=`<div class="bp-filter">${searchInput}${chip('all','SEMUA')+chip('shiny','SHINY')+chip('gold','GOLD')+chip('rainbow','RAINBOW')+chip('secret','SECRET')+chip('ultima','ULTIMA')}</div>`;
-  panel.innerHTML=header+`<div class="bp-body deck"><div class="bp-cols">
+  /* .bp-filter jadi anak PERTAMA .bp-body.deck (di antara nav.bp-tabs dan grid):
+     di HP portrait .bp-cols fleksinya column, jadi selama filter masih di dalam
+     .bp-colhead ia baru mulai setelah deck slots + meta habis dan kehabisan ruang
+     (defisit ±30px buat 2 baris chip). .bp-body sudah flex-column (style.css:2466)
+     dan .bp-cols flex:1 + min-height:0, jadi baris filter mengambil ruang dari grid,
+     bukan dari viewport — grid tetap scrollable, hanya lebih pendek. */
+  panel.innerHTML=header+`<div class="bp-body deck">${filterRow}<div class="bp-cols">
     <div class="bp-deckcol">
       <div class="bp-col-head">
         <span class="bp-h">SQUADRON DECK</span>
@@ -1707,7 +1726,6 @@ function renderBackpackPanel(){
           <span class="bp-h">CARD ARCHIVE // VAULT</span>
           <span class="bp-total-tag">TOTAL: ${visible.length} KARTU</span>
         </div>
-        ${filterRow}
       </div>
       ${visible.length?`<div class="bp-scroll"><div class="bp-tiles">${tiles}</div><div class="bp-empty" id="bp-nores" style="display:none;padding:18px 0">Kartu tidak ditemukan.</div></div>`:`<div class="bp-empty" style="padding:18px 0">Tidak ada kartu varian ini.</div>`}
     </div>
