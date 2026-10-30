@@ -1943,7 +1943,10 @@ html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)
 }
 html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-name {
   font-family: var(--font-display, 'Orbitron', sans-serif) !important;
-  font-size: 15px !important;
+  /* Cap 90px (blok max-width:900px) bikin nama 8 karakter kepotong ellipsis di HP landscape;
+     satu-satunya jalur tanpa menggeser chip/pill adalah mengecilkan tipe sampai muat 90px.
+     clamp() membiarkan desktop tetap 15px (1.55vw > 15px di atas ~968px). */
+  font-size: clamp(12px, 1.55vw, 15px) !important;
   font-weight: 800 !important;
   letter-spacing: 0.08em !important;
   color: #ffffff !important;

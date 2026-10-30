@@ -54297,6 +54297,13 @@ body.on-raid .lobby-tactical-hud {
   #backpackPanel .bp-colhead-top .bp-h{ font-size:11px!important; }
   #backpackPanel .bp-total-tag{ font-size:9px!important; }
   #backpackPanel .bp-filter{ gap:6px!important; padding-bottom:4px!important; }
+  /* Keputusan mandor/user: kolom header melebar penuh di portrait sempit saja, supaya
+     eyebrow tidak melipat 4 baris dan judul tidak terpotong ellipsis. Baris kanannya
+     (counter + close) pindah ke baris kedua — masih harus terukur terlihat & kena tap. */
+  @media (max-width:520px){
+    #backpackPanel .backpack-header{ flex-wrap:wrap!important; }
+    #backpackPanel .bph-left{ flex:1 1 100%!important; }
+  }
   #backpackPanel .bp-fchip{ flex:0 0 auto!important; font-size:10px!important; padding:3px 7px!important; }
   #backpackPanel .bp-search{
     flex:0 1 120px!important; min-width:96px!important; max-width:150px!important; height:32px!important;
