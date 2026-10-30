@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v270-blurHygiene';
+const CACHE_NAME = 'anime-card-battle-v271-lobbyAmbient';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

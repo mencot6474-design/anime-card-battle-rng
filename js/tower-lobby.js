@@ -1292,6 +1292,17 @@ function initAmbientCanvas() {
   window.removeEventListener('resize', onResize);
   window.addEventListener('resize', onResize, { passive: true });
 
+  /* Titik ambient bergerak <1px/frame, jadi ~20 gambar/detik terasa sama dengan 60.
+     Tanpa batas ini loop meraster kanvas se-viewport 60x/detik: 98% waktu idle
+     lobby kepakai buat kerja yang tidak bisa dilihat player.
+     DRAW_GAP = jarak antar-gambar; STEP_MS = satuan kecepatan lama (1 langkah per frame 60Hz),
+     dipakai biar titik-titiknya tidak melambat cuma karena digambar lebih jarang. */
+  const DRAW_GAP = 1000 / 24;
+  const STEP_MS = 1000 / 60;
+  let lastDraw = -Infinity;
+  let resumeAt = 0;
+  window.addEventListener('scroll', () => { resumeAt = performance.now() + 200; }, { passive: true, capture: true });
+
   const particles = [];
   for (let i = 0; i < 45; i++) {
     particles.push({
@@ -1307,12 +1318,19 @@ function initAmbientCanvas() {
 
   if (_ambientCanvasAnimId) cancelAnimationFrame(_ambientCanvasAnimId);
 
-  function anim() {
+  function anim(now) {
     if (!document.getElementById('ambientCanvas')) return;
+    _ambientCanvasAnimId = requestAnimationFrame(anim);
+    const t = now || performance.now();
+    const elapsed = t - lastDraw;
+    if (elapsed < DRAW_GAP) return;
+    if (document.hidden || document.body.classList.contains('perf-paused') || t < resumeAt) return;
+    const steps = Math.min(6, elapsed / STEP_MS);
+    lastDraw = t;
     ctx.clearRect(0, 0, cw, ch);
     for (let p of particles) {
-      p.x += p.vx;
-      p.y += p.vy;
+      p.x += p.vx * steps;
+      p.y += p.vy * steps;
       if (p.y < -10) p.y = ch + 10;
       if (p.x < -10) p.x = cw + 10;
       if (p.x > cw + 10) p.x = -10;
@@ -1322,9 +1340,8 @@ function initAmbientCanvas() {
       ctx.fillStyle = p.color + p.alpha + ')';
       ctx.fill();
     }
-    _ambientCanvasAnimId = requestAnimationFrame(anim);
   }
-  anim();
+  anim(performance.now());
 }
 
 /* ================= 3D KINETIC HERO PARALLAX ================= */
