@@ -52,8 +52,8 @@
 
 
     @keyframes fogPulse {
-      0% { opacity: 0.65; transform: translateX(-50%) scale(0.92); }
-      100% { opacity: 1; transform: translateX(-50%) scale(1.1); }
+      0% { opacity: 0.65; transform: translateX(-50%); }
+      100% { opacity: 1; transform: translateX(-50%); }
     }
 
 
@@ -150,8 +150,8 @@
     }
 
     @keyframes rimLightPulse {
-      0% { opacity: 0.6; transform: translateZ(-20px) scale(0.95); }
-      100% { opacity: 0.95; transform: translateZ(-20px) scale(1.05); }
+      0% { opacity: 0.6; transform: translateZ(-20px); }
+      100% { opacity: 0.95; transform: translateZ(-20px); }
     }
 
 
