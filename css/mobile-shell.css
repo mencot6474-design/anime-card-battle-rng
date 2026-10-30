@@ -428,6 +428,7 @@ html.m-landscape .m-tabbar { display: none !important; }
   html.m-portrait #profModal .prof-rail::-webkit-scrollbar { display: none !important; }
   html.m-portrait #profModal .prof-tab {
     flex: 0 0 auto !important;
+    min-height: 44px !important;
     padding: 7px 10px !important;
     font-size: 10.5px !important;
     gap: 7px !important;
@@ -543,6 +544,7 @@ html.m-landscape .m-tabbar { display: none !important; }
   html.m-landscape #profModal .prof-rail::-webkit-scrollbar { display: none !important; }
   html.m-landscape #profModal .prof-tab {
     flex: 0 0 auto !important;
+    min-height: 44px !important;
     padding: 5px 9px !important;
     font-size: 10px !important;
     gap: 6px !important;
@@ -580,6 +582,7 @@ html.m-landscape .m-tabbar { display: none !important; }
 @media (orientation:portrait) {
   html.m-portrait #pwaInstallBtn {
     position: fixed !important;
+    min-height: 44px !important;
     top: auto !important;
     left: 12px !important;
     right: auto !important;
@@ -591,6 +594,7 @@ html.m-landscape .m-tabbar { display: none !important; }
 @media (orientation:landscape) {
   html.m-landscape #pwaInstallBtn {
     position: fixed !important;
+    min-height: 44px !important;
     top: auto !important;
     left: calc(var(--nav-w) + var(--safe-left) + 12px) !important;
     right: auto !important;

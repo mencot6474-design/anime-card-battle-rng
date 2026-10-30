@@ -189,7 +189,8 @@ body.on-raid {
   gap: 3px;
 }
 .proto-tab-btn {
-  padding: 4px 12px;
+  padding: 10px 12px;
+  min-height: 44px;
   background: transparent;
   color: var(--text-muted);
   border: 1px solid transparent;

@@ -3030,7 +3030,7 @@ body.bp-open .backpack-panel,
   font-weight: 900 !important;
   letter-spacing: 0.08em !important;
   color: #ffffff !important;
-  text-shadow: 0 0 18px rgba(56, 189, 248, 0.45) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6) !important;
   margin: 0 !important;
   line-height: 1.1 !important;
 }
