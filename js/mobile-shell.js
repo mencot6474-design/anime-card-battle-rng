@@ -40,22 +40,14 @@
   /* ---------------------------------------------------------------------
      5) Nav component — built into document.body (not #app).
         Each act reuses the exact existing open call from the dock/drawer.
+        4 tab (bukan 5): "Summon" dibuang karena tombol ROLL di bar lobby
+        sudah memanggil handler #rollBtn yang sama persis — satu aksi, satu
+        kontrol. Roll tetap bisa diakses dari lobby.
      --------------------------------------------------------------------- */
   var TABS = [
-    { key: "home",    label: "Home",    icon: "home",
+    { key: "home",    label: "Home",    icon: "i-home",
       act: function () { location.hash = "#/"; } },
-    { key: "summon",  label: "Summon",  icon: "dice",
-      act: function () {
-        // Summon = the dock's one-tap roll (no open-only gacha screen exists;
-        // the premium shop is a separate store, already reachable via the
-        // lobby foot-menu). Reuse the real #rollBtn handler so all its gating
-        // (server srOn()/srOne, anti-spam lock, currency spend, reveal) is
-        // reused verbatim. Fallback: command drawer if #rollBtn is absent.
-        var rb = document.getElementById("rollBtn");
-        if (rb) rb.click();
-        else if (window.openCommandDrawer) window.openCommandDrawer();
-      } },
-    { key: "deck",    label: "Deck",    icon: "layers",
+    { key: "deck",    label: "Deck",    icon: "i-deck",
       act: function () {
         // Exact existing team-builder open (panels.js:1249): open backpack,
         // then switch to the 'deck' tab. Only opens if currently closed.
@@ -66,36 +58,73 @@
         else if (window.openCommandDrawer) { window.openCommandDrawer(); return; }
         if (typeof bpSetTab === "function") bpSetTab("deck");
       } },
-    { key: "koleksi", label: "Koleksi", icon: "grid",
+    { key: "koleksi", label: "Koleksi", icon: "i-book",
       act: function () {
         if (typeof renderBackpackPanel === "function") renderBackpackPanel();
         var p = document.getElementById("backpackPanel");
         var isOpen = p && (document.body.classList.contains("bp-open")
           || (p.style.display !== "none" && p.style.display !== ""));
         if (!isOpen && typeof toggleBackpack === "function") toggleBackpack();
+        else if (typeof bpSetTab === "function") bpSetTab("item");
       } },
-    { key: "more",    label: "More",    icon: "menu",
+    { key: "more",    label: "More",    icon: "i-gear",
       act: function () {
         if (typeof openCommandDrawer === "function") openCommandDrawer();
       } }
   ];
 
-  var ICONS = {
-    home:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>',
-    dice:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.4" fill="currentColor"/><circle cx="16" cy="8" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="8" cy="16" r="1.4" fill="currentColor"/><circle cx="16" cy="16" r="1.4" fill="currentColor"/></svg>',
-    layers: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>',
-    grid:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>',
-    menu:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>'
+  /* Ikon = file SVG asli project yang di-tint lewat mask (currentColor),
+     bukan inline-SVG karangan: warna ikut state aktif, dan rupa = lobby v12. */
+  var ICON_URL = {
+    "i-home":   "assets/icons/portal.svg",
+    "i-deck":   "assets/icons/card-play.svg",
+    "i-book":   "assets/icons/backpack.svg",
+    "i-gear":   "assets/icons/gears.svg"
   };
+  function iconHtml(name) {
+    return '<i class="ic ' + name + '" aria-hidden="true" style="-webkit-mask:url(' +
+      ICON_URL[name] + ') center/contain no-repeat;mask:url(' + ICON_URL[name] +
+      ') center/contain no-repeat"></i>';
+  }
 
   function currentHash() {
     var h = location.hash || "#/";
     return h;
   }
+  function bpOpen() {
+    var p = document.getElementById("backpackPanel");
+    /* HANYA class: toggleBackpack() (js/tower-lobby.js:2069) melepas bp-open/.open
+       secara sinkron saat menutup, tapi panel.style.display baru jadi "none" 250ms
+       kemudian (animasi fade). Ikut baca display = tab bisa "nyangkut" selama
+       jendela animasi itu. */
+    return !!(p && (document.body.classList.contains("bp-open") || p.classList.contains("open")));
+  }
+  function drawerOpen() {
+    return document.body.classList.contains("drawer-open");
+  }
+  /* "deck vs Koleksi" bukan rute — sumbernya tab aktif Backpack. Baca binding
+     global panels.js (bpTab) duluan, fallback ke DOM (.bp-tab.on). */
+  function bpCurrentTab() {
+    try { if (typeof bpTab !== "undefined" && bpTab) return String(bpTab); } catch (e) {}
+    var t = document.querySelector(".bp-tabs .bp-tab.on");
+    if (t) {
+      var m = /bpSetTab\(['"]([^'"]+)['"]\)/.exec(t.getAttribute("onclick") || "");
+      if (m) return m[1];
+    }
+    return "deck";
+  }
   function isActive(key) {
     var h = currentHash();
-    if (key === "home") return h === "#/" || h === "" || h === "#/lobby" || h === "#/";
+    /* Prioritas dari lapisan yang paling di atas: drawer (More) > panel Backpack
+       (deck/koleksi) > rute. Tanpa ini "More" tidak pernah bisa aktif selama
+       panel masih terbuka di belakangnya. */
+    if (drawerOpen()) return key === "more";
+    if (bpOpen()) {
+      var t = bpCurrentTab();
+      return key === "deck" ? t === "deck" : (key === "koleksi" && t !== "deck");
+    }
     if (key === "more") return h === "#/settings";
+    if (key === "home") return h === "#/" || h === "" || h === "#/lobby";
     return false;
   }
 
@@ -104,9 +133,10 @@
       var b = document.createElement("button");
       b.type = "button";
       b.setAttribute("data-mtab", t.key);
+      b.setAttribute("role", "tab");
       b.setAttribute("aria-label", t.label);
       if (isActive(t.key)) b.setAttribute("aria-current", "page");
-      var icon = ICONS[t.icon] || ICONS.menu;
+      var icon = iconHtml(t.icon);
       if (isPortrait) {
         b.innerHTML = icon + '<span class="m-tab-label">' + t.label + "</span>";
       } else {
@@ -124,10 +154,17 @@
   function refreshActive() {
     var nav = document.querySelector(".m-tabbar,.m-rail");
     if (!nav) return;
-    nav.querySelectorAll("[data-mtab]").forEach(function (b) {
-      if (isActive(b.getAttribute("data-mtab"))) b.setAttribute("aria-current", "page");
-      else b.removeAttribute("aria-current");
+    var activeIndex = -1;
+    [].slice.call(nav.querySelectorAll("[data-mtab]")).forEach(function (b, i) {
+      if (isActive(b.getAttribute("data-mtab"))) {
+        b.setAttribute("aria-current", "page");
+        activeIndex = i;
+      } else {
+        b.removeAttribute("aria-current");
+      }
     });
+    var ind = nav.querySelector(".ind");
+    if (ind) ind.style.setProperty("--i", activeIndex < 0 ? 0 : activeIndex);
   }
 
   function buildNav(isPortrait) {
@@ -141,9 +178,10 @@
     if (!nav) {
       nav = document.createElement("nav");
       nav.className = wantClass;
+      nav.setAttribute("role", "tablist");
       nav.setAttribute("aria-label", isPortrait ? "Main navigation" : "Main navigation rail");
       document.body.appendChild(nav);
-      nav.innerHTML = "";
+      nav.innerHTML = isPortrait ? '<span class="ind" aria-hidden="true"></span>' : "";
       makeButtons(isPortrait).forEach(function (b) { nav.appendChild(b); });
     }
   }
@@ -156,6 +194,22 @@
     window.addEventListener("orientationchange", applyOrientation);
     window.addEventListener("resize", applyOrientation);
     window.addEventListener("hashchange", refreshActive);
+
+    /* Deck/Koleksi aktif ikut state panel Backpack, bukan hash — jadi pantau
+       class <body> (bp-open/drawer-open) dan display #backpackPanel. Debounce
+       rAF supaya tidak refresh tiap mutasi. */
+    var _raf = 0;
+    function queueRefresh() {
+      if (_raf) return;
+      _raf = requestAnimationFrame(function () { _raf = 0; refreshActive(); });
+    }
+    new MutationObserver(queueRefresh).observe(document.body, {
+      attributes: true, attributeFilter: ["class"]
+    });
+    var _bp = document.getElementById("backpackPanel");
+    if (_bp) new MutationObserver(queueRefresh).observe(_bp, {
+      attributes: true, attributeFilter: ["class", "style"]
+    });
 
     // Re-assert the device-width viewport if the router/boot code ever resets
     // the <meta> back to the old desktop lock (idempotent; cheap).

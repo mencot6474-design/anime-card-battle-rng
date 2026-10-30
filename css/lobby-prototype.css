@@ -4309,3 +4309,710 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
     top:calc(var(--hud-top) + 12px) !important;
   }
 }
+
+/* ==========================================================================
+   LOBBY v12 — port produksi dari _tmp/proto_lobby_v12.html (desain DIKUNCI user).
+   BAHAYA YANG DIHINDARI: stylesheet ini dipakai 4 layar lain (lobby lama
+   .lobby-hub.stage-root, command drawer, settings, profile, battle) dan kelas
+   v12 itu GENERIK (.app/.top/.mid/.stage/.panel/.hero/.tabbar/.rail/.cta/.hud/
+   .pots/.glw/.wx/.hlist/.rollbar/.tgl/.card). SEMUA aturan v12 di bawah ini
+   di-prefiks root ".l12" (dipasang di .lobby-hub oleh renderLobby) sehingga:
+     - sebelum TAHAP 2 blok ini inert (tidak ada .l12 di DOM) -> layar lain mustahil berubah;
+     - sesudah TAHAP 2 pun jangkauannya cuma subtree lobby.
+   Pengecualian: blok NAV paling bawah menyetel .m-tabbar/.m-rail milik
+   js/mobile-shell.js — root-nya sendiri sudah unik (hanya dipakai nav itu).
+   Nilai (ukuran/warna/chamfer/font) disalin VERBATIM dari prototipe.
+   ========================================================================== */
+.l12 {
+  --bg:#04060c; --panel:#0a0f18; --panel2:#0d1420; --hair:rgba(0,240,255,.14);
+  --cyan:#00f0ff; --ice:#a8f4ff; --gold:#fbbf24; --purple:#c084fc; --crimson:#fb7185;
+  --white:#f8fafc; --silver:#93a5b8; --dim:#5c7285; --cy:#00f0ff; --mg:#ff2bd6;
+  --disp:'Orbitron','Rajdhani',system-ui,sans-serif;
+  --tac:'Rajdhani','Barlow Condensed','Segoe UI',sans-serif;
+  --mono:'JetBrains Mono','Consolas',monospace;
+  --sil:polygon(5.81% 0,94.19% 0,100% 3.91%,100% 96.09%,94.19% 100%,5.81% 100%,0 96.09%,0 3.91%);
+  color:var(--white);
+  font-family:'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif;
+  font-size:12px;
+}
+.l12 *, .l12 *::before, .l12 *::after { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+.l12 .ic {
+  display:inline-block; width:18px; height:18px; flex:none; background:currentColor;
+  -webkit-mask:var(--m) center/contain no-repeat; mask:var(--m) center/contain no-repeat;
+}
+.l12 .i-coin{--m:url(../assets/icons/coins.svg)}
+.l12 .i-gem{--m:url(../assets/icons/gems.svg)}
+.l12 .i-clover{--m:url(../assets/icons/clover.svg)}
+.l12 .i-dice{--m:url(../assets/icons/rolling-dices.svg)}
+.l12 .i-loop{--m:url(../assets/icons/ouroboros.svg)}
+.l12 .i-fast{--m:url(../assets/icons/lightning-trio.svg)}
+.l12 .i-story{--m:url(../assets/icons/scroll-unfurled.svg)}
+.l12 .i-tower{--m:url(../assets/icons/tower-fall.svg)}
+.l12 .i-raid{--m:url(../assets/icons/spiked-dragon-head.svg)}
+.l12 .i-sun{--m:url(../assets/icons/sun-cloud.svg)}
+.l12 .pot { display:block; object-fit:contain; flex:none; }
+
+/* ---- shell + orientasi dasar (prototipe .app) ---- */
+.l12 {
+  position:relative; height:100%; display:flex; flex-direction:column; overflow:hidden;
+  background:
+    radial-gradient(90% 62% at 50% -6%, rgba(0,240,255,.10) 0%, transparent 62%),
+    radial-gradient(70% 52% at 100% 104%, rgba(255,43,214,.08) 0%, transparent 64%),
+    linear-gradient(180deg,#071120 0%,#050a14 55%,#03060c 100%);
+}
+.l12 .colw { flex:1; min-width:0; min-height:0; display:flex; flex-direction:column; }
+
+/* ---- rail glow: tiap rail elemen sendiri; keyframes HANYA opacity+transform ---- */
+.l12 .rail {
+  position:absolute; pointer-events:none; z-index:8; opacity:.55;
+  transform-origin:50% 50%; will-change:opacity; animation:l12RailPulse 9s ease-in-out infinite;
+}
+.l12 .rail::before { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent,var(--rc,var(--cy)),transparent); }
+.l12 .rail::after {
+  content:''; position:absolute; left:0; right:0; top:-11px; bottom:-11px;
+  background:linear-gradient(180deg,transparent,rgba(0,240,255,.28) 38%,rgba(0,240,255,.40) 50%,rgba(0,240,255,.28) 62%,transparent);
+}
+.l12 .rail-top { left:0; right:0; bottom:-1px; height:1px; animation-duration:9s; animation-delay:-2s; }
+.l12 .rail-roll { left:0; right:0; top:-1px; height:1px; --rc:var(--mg); animation-duration:11s; animation-delay:-5.5s; }
+.l12 .rail-panel { left:-1px; top:0; bottom:0; width:1px; animation-duration:12s; animation-delay:-7s; }
+.l12 .rail-panel::before { background:linear-gradient(180deg,transparent,var(--cy),transparent); }
+.l12 .rail-panel::after { left:-11px; right:-11px; top:0; bottom:0; background:linear-gradient(90deg,transparent,rgba(0,240,255,.28) 38%,rgba(0,240,255,.40) 50%,rgba(0,240,255,.28) 62%,transparent); }
+.l12 .rail-horizon { left:0; right:0; top:78%; height:1px; z-index:2; --rc:var(--mg); animation-duration:10s; animation-delay:-4s; }
+@keyframes l12RailPulse { 0%,100%{opacity:.32;transform:scaleX(.9)} 50%{opacity:1;transform:scaleX(1)} }
+
+/* ---- L1 topbar ---- */
+.l12 .top {
+  position:relative; z-index:6; flex:none; display:flex; align-items:center;
+  justify-content:space-between; gap:8px; height:44px; padding:0 12px;
+  background:var(--panel); border-bottom:1px solid var(--hair);
+}
+.l12 .lvl { display:flex; align-items:center; gap:8px; font-family:var(--tac); font-size:12px; letter-spacing:.08em; color:var(--ice); }
+.l12 .lvl .bar { width:64px; height:5px; background:#0c1526; border:1px solid rgba(125,211,252,.22); overflow:hidden; }
+.l12 .lvl .bar > span { display:block; height:100%; width:62%; background:linear-gradient(90deg,var(--cy),var(--mg)); }
+.l12 .res { display:flex; gap:6px; }
+.l12 .pill {
+  display:flex; align-items:center; gap:5px; height:28px; padding:0 9px;
+  background:var(--panel2); border:1px solid var(--hair);
+  font-family:var(--mono); font-size:11px; color:var(--silver);
+}
+.l12 .pill .i-coin { color:var(--gold); }
+.l12 .pill .i-gem { color:var(--ice); }
+
+/* ---- L2 stage + hero ---- */
+.l12 .mid { flex:1; min-height:0; display:flex; flex-direction:row; }
+.l12 .stage { position:relative; flex:1 1 auto; min-width:0; min-height:0; overflow:hidden; }
+.l12 .horizon { position:absolute; left:0; right:0; top:78%; height:1px; background:linear-gradient(90deg,transparent,rgba(0,240,255,.55),transparent); z-index:1; }
+.l12 .floor-grid {
+  position:absolute; left:0; right:0; top:78%; bottom:0; z-index:1; pointer-events:none;
+  background-image:repeating-linear-gradient(90deg,rgba(0,240,255,.13) 0 1px,transparent 1px 34px),repeating-linear-gradient(0deg,rgba(0,240,255,.09) 0 1px,transparent 1px 26px);
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 34%); mask-image:linear-gradient(180deg,transparent,#000 34%);
+}
+.l12 .ground { position:absolute; left:0; right:0; top:78%; bottom:0; background:linear-gradient(180deg,rgba(56,189,248,.07),transparent 46%); z-index:1; }
+.l12 .ped { position:absolute; left:50%; top:78%; width:66%; height:40px; transform:translate(-50%,-50%); border-radius:50%; background:radial-gradient(ellipse at center,rgba(56,189,248,.16) 0%,rgba(56,189,248,.04) 46%,transparent 70%); z-index:2; }
+.l12 .hero {
+  position:absolute; left:50%; bottom:6%; transform:translateX(-50%);
+  height:88%; aspect-ratio:310/460; width:auto; max-width:96%;
+  background:transparent; overflow:visible; z-index:3; box-shadow:none;
+  animation:l12FloatY 6s ease-in-out infinite;
+}
+.l12 .hero::before { content:''; position:absolute; inset:0; z-index:1; background:var(--panel); clip-path:var(--sil); }
+.l12 .hero .cast, .l12 .hero .glow { position:absolute; inset:0; pointer-events:none; clip-path:var(--sil); }
+.l12 .hero .cast { z-index:3; background:linear-gradient(180deg,rgba(0,0,0,0) 44%,rgba(0,0,0,.34) 74%,rgba(0,0,0,.62) 100%); }
+.l12 .hero .glow {
+  z-index:5; opacity:.5; mix-blend-mode:screen; animation:l12GlowBreath 9s ease-in-out infinite;
+  background:
+    radial-gradient(78% 34% at 50% 100%,rgba(0,240,255,.55),transparent 72%),
+    radial-gradient(70% 30% at 50% 0%,rgba(255,43,214,.42),transparent 70%),
+    radial-gradient(58% 26% at 50% 50%,rgba(0,240,255,.2),transparent 74%);
+}
+.l12 .hero .glow::after { content:''; position:absolute; inset:6% 0; background:radial-gradient(60% 22% at 50% 100%,rgba(0,240,255,.5),transparent 74%); opacity:.5; animation:l12GlowTravel 11s ease-in-out infinite; }
+@keyframes l12GlowBreath { 0%,100%{opacity:.30} 50%{opacity:.74} }
+@keyframes l12GlowTravel { 0%,100%{opacity:.28;transform:translateY(4%)} 50%{opacity:.7;transform:translateY(-3%)} }
+.l12 .hero .artbox {
+  position:absolute; inset:3px; overflow:hidden; z-index:2;
+  clip-path:polygon(4.93% 0,95.07% 0,100% 3.3%,100% 96.7%,95.07% 100%,4.93% 100%,0 96.7%,0 3.3%);
+}
+.l12 .hero .art { width:100%; height:100%; object-fit:cover; object-position:top center; display:block; }
+.l12 .hero .frm { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:6; }
+.l12 .sheen { position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:4; clip-path:var(--sil); }
+.l12 .sheen::after {
+  content:''; position:absolute; top:-20%; bottom:-20%; left:-60%; width:36%;
+  background:linear-gradient(105deg,transparent,rgba(255,255,255,.13),transparent);
+  animation:l12Sweep 7s linear infinite;
+}
+@keyframes l12Sweep { 0%{transform:translateX(0) skewX(-14deg)} 45%{transform:translateX(430%) skewX(-14deg)} 100%{transform:translateX(430%) skewX(-14deg)} }
+@keyframes l12FloatY { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-4px)} }
+/* badge di dalam safe-area bingkai (hindari clamp sudut + mahkota atas) */
+.l12 .hero .nm, .l12 .hero .rr, .l12 .hero .pwr, .l12 .hero .traits {
+  position:absolute; z-index:7; display:flex; align-items:center;
+  font-family:var(--tac); letter-spacing:.06em;
+  background:rgba(6,9,18,.9); border:1px solid var(--hair); color:var(--ice);
+}
+.l12 .hero .nm { left:7%; top:11%; height:18px; padding:0 7px; font-size:9px; max-width:54%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.l12 .hero .rr { right:7%; top:11%; height:18px; padding:0 7px; font-family:var(--mono); font-size:9px; font-weight:700; background:var(--gold); color:#1a1200; border-color:rgba(0,0,0,.25); }
+.l12 .hero .pwr { left:7%; bottom:12%; height:20px; padding:0 7px; gap:5px; font-family:var(--mono); font-size:11px; color:var(--white); }
+.l12 .hero .pwr i { font-style:normal; font-family:var(--tac); font-size:8px; letter-spacing:.1em; color:var(--silver); }
+.l12 .hero .traits { right:9%; bottom:12%; gap:3px; background:none; border:0; flex-wrap:wrap; justify-content:flex-end; width:59%; }
+.l12 .hero .traits i { height:16px; padding:0 5px; display:flex; align-items:center; font-style:normal; font-size:8px; white-space:nowrap; background:rgba(6,9,18,.86); border:1px solid rgba(0,240,255,.32); color:var(--ice); }
+
+/* ---- L3 panel info ---- */
+.l12 .panel {
+  position:relative; z-index:5; flex:0 0 40%; min-width:0; min-height:0;
+  display:grid; grid-template-columns:minmax(0,1fr);
+  grid-template-rows:auto auto minmax(0,1fr) auto auto auto auto auto;
+  gap:5px; padding:8px; background:var(--panel); border-left:1px solid var(--hair);
+  overflow:hidden; align-content:start;
+}
+.l12 .op { display:flex; align-items:center; gap:8px; min-width:0; }
+.l12 .avatar { position:relative; width:46px; height:46px; flex:none; background:url(../assets/frames/frame-avatar.svg) center/contain no-repeat; }
+.l12 .avatar img { position:absolute; inset:6px; width:calc(100% - 12px); height:calc(100% - 12px); object-fit:cover; object-position:top; border-radius:3px; }
+.l12 .op .t { min-width:0; flex:1; }
+.l12 .op .t b { display:block; font-family:var(--tac); font-size:11px; letter-spacing:.08em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.l12 .op .luck { display:flex; align-items:center; gap:4px; font-family:var(--mono); font-size:9px; color:var(--silver); white-space:nowrap; }
+.l12 .op .luck .i-clover { width:11px; height:11px; color:var(--gold); }
+.l12 .op .luck b { color:var(--gold); font-weight:600; }
+.l12 .op .luckbar { height:3px; margin-top:3px; background:#0c1526; overflow:hidden; }
+.l12 .op .luckbar > span { display:block; height:100%; width:41%; background:linear-gradient(90deg,var(--gold),#fde68a); }
+.l12 .hud { display:contents; min-width:0; }
+.l12 .idwrap { display:contents; min-width:0; }
+
+/* ---- L4 potion luck & speed ---- */
+.l12 .pots { display:flex; flex-direction:column; gap:4px; min-width:0; }
+.l12 .pot-row {
+  display:flex; align-items:center; gap:5px; min-height:22px; padding:0 5px;
+  background:var(--panel2); border:1px solid var(--hair);
+  font-family:var(--tac); font-size:9.5px; letter-spacing:.06em; color:var(--ice);
+}
+.l12 .pot-row .pimg { width:17px; height:17px; flex:none; object-fit:contain; }
+.l12 .pot-row .plab { color:var(--dim); font-size:8.5px; letter-spacing:.1em; flex:none; white-space:nowrap; }
+.l12 .pot-row b { color:var(--gold); font-weight:700; font-family:var(--mono); font-size:10px; flex:none; white-space:nowrap; }
+.l12 .pot-row .tr { flex:1; min-width:12px; height:3px; background:#0c1526; overflow:hidden; }
+.l12 .pot-row .tr > span { display:block; height:100%; width:41%; background:linear-gradient(90deg,var(--gold),#fde68a); }
+.l12 .pot-row .tm { font-family:var(--mono); font-size:9px; color:var(--silver); flex:none; white-space:nowrap; }
+.l12 .pot-row[data-block="pot-speed"] b { color:var(--cyan); }
+.l12 .pot-row[data-block="pot-speed"] .tr > span { background:linear-gradient(90deg,var(--cyan),#bafeff); }
+
+/* ---- L5 GLOBAL LUCK ---- */
+.l12 .glw {
+  position:relative; display:grid; grid-template-columns:30px minmax(0,1fr) auto;
+  align-items:center; gap:7px; padding:6px 8px; overflow:hidden;
+  background:linear-gradient(135deg,rgba(6,38,32,.88),rgba(10,22,36,.92) 60%,rgba(28,22,8,.88));
+  border:1px solid rgba(52,211,153,.38);
+}
+.l12 .glw::before { content:''; position:absolute; inset:0; pointer-events:none; background:radial-gradient(circle at 12% 50%,rgba(52,211,153,.16),transparent 55%); }
+.l12 .glw .gicon { position:relative; width:30px; height:30px; flex:none; display:flex; align-items:center; justify-content:center; border-radius:8px; background:radial-gradient(circle at 50% 50%,rgba(16,185,129,.28),rgba(6,78,59,.55)); border:1px solid rgba(250,204,21,.45); color:#6ee7b7; }
+.l12 .glw .gicon .ic { width:17px; height:17px; }
+.l12 .glw .ginfo { position:relative; min-width:0; display:flex; flex-direction:column; gap:2px; }
+.l12 .glw .ghead { display:flex; align-items:center; gap:5px; min-width:0; flex-wrap:nowrap; }
+.l12 .glw .gtitle { font-family:var(--tac); font-size:9.5px; font-weight:700; letter-spacing:.1em; color:#d1fae5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.l12 .glw .gpill { flex:none; display:inline-flex; align-items:center; gap:3px; font-family:var(--tac); font-size:8px; font-weight:800; letter-spacing:.08em; padding:1px 5px; border-radius:999px; background:rgba(16,185,129,.2); border:1px solid rgba(52,211,153,.5); color:#6ee7b7; white-space:nowrap; }
+.l12 .glw .gdot { width:5px; height:5px; border-radius:50%; background:#34d399; flex:none; }
+.l12 .glw .grow { display:flex; align-items:center; gap:5px; min-width:0; flex-wrap:nowrap; }
+.l12 .glw .gmult { font-family:var(--tac); font-size:13px; font-weight:800; color:#34d399; letter-spacing:.04em; flex:none; white-space:nowrap; }
+.l12 .glw .gtm { font-family:var(--mono); font-size:9.5px; padding:1px 5px; border-radius:4px; background:rgba(0,0,0,.42); border:1px solid rgba(52,211,153,.28); color:#a7f3d0; flex:none; white-space:nowrap; }
+.l12 .glw .gbtn {
+  position:relative; flex:none; display:flex; align-items:center; justify-content:center; gap:4px;
+  min-height:44px; padding:4px 7px; border-radius:7px; border:1px solid rgba(250,204,21,.6);
+  background:linear-gradient(135deg,#059669,#047857 55%,#065f46); color:#fef08a;
+  font-family:var(--tac); font-size:9.5px; font-weight:700; letter-spacing:.04em;
+  white-space:nowrap; cursor:pointer;
+}
+.l12 .glw .gbtn img { width:13px; height:13px; }
+
+/* ---- L6 WEATHER dock ---- */
+.l12 .wx {
+  display:flex; align-items:center; justify-content:space-between; gap:6px;
+  min-height:34px; padding:5px 8px;
+  background:linear-gradient(90deg,rgba(12,30,46,.92),rgba(9,17,28,.92));
+  border:1px solid rgba(125,211,252,.22);
+}
+.l12 .wx .winfo { display:flex; align-items:center; gap:5px; min-width:0; }
+.l12 .wx .rdot { width:6px; height:6px; border-radius:50%; flex:none; background:var(--cyan); }
+.l12 .wx .wic { width:17px; height:17px; flex:none; color:var(--gold); }
+.l12 .wx .wimg { width:16px; height:16px; flex:none; object-fit:contain; }
+.l12 .wx .wname { font-family:var(--tac); font-size:10px; font-weight:700; letter-spacing:.05em; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+.l12 .wx .wrr { flex:none; font-family:var(--mono); font-size:8px; padding:1px 4px; border:1px solid rgba(251,113,133,.5); color:var(--crimson); background:rgba(251,113,133,.12); border-radius:3px; white-space:nowrap; }
+.l12 .wx .wtm { display:flex; align-items:center; gap:3px; flex:none; font-family:var(--mono); font-size:9.5px; color:var(--ice); }
+
+/* ---- L5 party strip ---- */
+.l12 .plist { display:flex; align-items:center; gap:5px; min-width:0; }
+.l12 .pslot { position:relative; flex:1; min-width:0; aspect-ratio:1/1; max-height:48px; background:url(../assets/frames/frame-slot.svg) center/100% 100% no-repeat; }
+.l12 .pslot img { position:absolute; inset:5px; width:calc(100% - 10px); height:calc(100% - 10px); object-fit:cover; object-position:top; }
+.l12 .pslot::after { content:''; position:absolute; inset:5px; border:1.5px solid transparent; }
+.l12 .pslot.r-ur::after { border-color:rgba(251,191,36,.9); }
+.l12 .pslot.r-ssr::after { border-color:rgba(251,113,133,.85); }
+.l12 .pslot.r-sr::after { border-color:rgba(192,132,252,.85); }
+.l12 .pslot.empty { opacity:.55; }
+.l12 .pslot.empty .plus { position:absolute; inset:5px; display:flex; align-items:center; justify-content:center; border:1px dashed rgba(148,163,184,.6); color:var(--dim); font-family:var(--tac); font-size:15px; }
+.l12 .cmb { flex:none; display:flex; flex-direction:column; align-items:center; justify-content:center; height:34px; padding:0 5px; border:1px solid rgba(251,191,36,.45); background:rgba(251,191,36,.1); color:var(--gold); font-family:var(--mono); font-size:10px; line-height:1; }
+.l12 .cmb small { font-family:var(--tac); font-size:6px; letter-spacing:.1em; color:var(--silver); margin-top:2px; }
+
+/* ---- L5b riwayat pull ---- */
+.l12 .hist { display:none; flex-direction:column; gap:3px; min-height:0; }
+.l12 .hist .hh { font-family:var(--tac); font-size:8px; letter-spacing:.14em; color:var(--dim); }
+.l12 .hstrip { display:flex; flex-direction:column; gap:2px; min-height:0; min-width:0; scrollbar-width:none; -ms-overflow-style:none; }
+.l12 .hstrip::-webkit-scrollbar { display:none; width:0; height:0; }
+.l12 .ph-row {
+  display:flex; align-items:center; gap:6px; min-height:24px; padding:2px 5px;
+  background:var(--panel2); border:1px solid var(--hair);
+}
+.l12 .ph-row img { width:20px; height:20px; flex:none; object-fit:cover; object-position:top; }
+.l12 .ph-row .pn { flex:1; min-width:0; font-family:var(--tac); font-size:9px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.l12 .ph-row .pt { font-family:var(--mono); font-size:8px; color:var(--dim); }
+.l12 .ph-row.more { display:none; }
+
+/* chamfer seragam (prototipe) — BUKAN border-radius */
+.l12 .pill, .l12 .cmb, .l12 .ph-row { clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px); }
+.l12 .pot-row { clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px); }
+.l12 .glw { clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px); }
+.l12 .wx { clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px); }
+
+/* ---- L6 tiga pintu mode ---- */
+.l12 .hlist { display:flex; align-items:center; gap:8px; min-width:0; justify-content:center; width:100%; max-width:360px; margin:0 auto; }
+.l12 .hrow {
+  position:relative; flex:1 1 0; min-width:0; min-height:46px; max-width:112px;
+  display:flex; flex-direction:row; align-items:center; justify-content:center; gap:3px;
+  background:url(../assets/frames/frame-pod-hex.svg) center/100% 100% no-repeat;
+  color:var(--ice); text-decoration:none; font-family:var(--tac); font-size:9px;
+  letter-spacing:.08em; padding:0 4px; cursor:pointer;
+}
+.l12 .hrow .ic { width:13px; height:13px; }
+.l12 .hrow .bd { height:14px; padding:0 4px; display:flex; align-items:center; border-radius:7px; font-family:var(--mono); font-size:9px; background:rgba(251,113,133,.14); color:var(--crimson); border:1px solid rgba(251,113,133,.38); }
+.l12 .hrow:nth-child(2) .bd { background:rgba(192,132,252,.12); color:var(--purple); border-color:rgba(192,132,252,.38); }
+.l12 .hrow:nth-child(3) .bd { background:rgba(56,189,248,.12); color:var(--cyan); border-color:rgba(56,189,248,.38); }
+
+/* ---- L7 rollbar ---- */
+.l12 .rollbar {
+  position:relative; z-index:7; flex:none; display:flex; gap:6px; padding:8px 10px;
+  background:var(--panel); border-top:1px solid var(--hair);
+}
+.l12 .cta {
+  position:relative; flex:1; min-height:56px; display:flex; align-items:center; justify-content:center; gap:8px;
+  border:0; background:url(../assets/frames/frame-button-cta.svg) center/100% 100% no-repeat,linear-gradient(180deg,#0d283b,#081a29);
+  color:var(--ice); font-family:var(--disp); font-size:15px; letter-spacing:.16em; cursor:pointer; overflow:hidden;
+}
+.l12 .cta .ic { width:20px; height:20px; }
+.l12 .cta:active { transform:scale(.985); }
+.l12 .cta .rip { position:absolute; left:50%; top:50%; width:14px; height:14px; margin:-7px; border-radius:50%; border:2px solid rgba(125,211,252,.8); opacity:0; transform:scale(.3); pointer-events:none; }
+.l12 .cta.press .rip { animation:l12Rip .55s ease-out; }
+@keyframes l12Rip { 0%{opacity:.9;transform:scale(.3)} 100%{opacity:0;transform:scale(14)} }
+.l12 .tgl {
+  display:flex; flex-wrap:nowrap; white-space:nowrap; align-items:center; justify-content:center; gap:4px;
+  min-width:66px; min-height:44px; padding:0 8px; border:1px solid var(--hair);
+  background:var(--panel2); color:var(--silver); font-family:var(--tac); font-size:10px;
+  letter-spacing:.08em; cursor:pointer;
+  clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px);
+}
+.l12 .tgl .ic { width:15px; height:15px; }
+.l12 .tgl .dot { width:6px; height:6px; border-radius:50%; background:#3a4250; box-shadow:none; }
+.l12 .tgl.on { color:var(--gold); border-color:rgba(251,191,36,.55); }
+.l12 .tgl.on .dot { background:var(--gold); }
+.l12 .tgl .st { font-family:var(--mono); font-size:8px; color:var(--dim); letter-spacing:.04em; }
+.l12 .tgl.on .st { color:var(--gold); }
+
+/* ---- orientasi: PORTRAIT ---- */
+@media (orientation:portrait) {
+  .l12 .mid { flex-direction:column; }
+  .l12 .stage { flex:1 1 auto; }
+  .l12 .panel { flex:0 0 auto; border-left:0; border-top:1px solid var(--hair); }
+  .l12 .rail-panel { left:0; right:0; top:-1px; bottom:auto; width:auto; height:1px; }
+  .l12 .rail-panel::before { background:linear-gradient(90deg,transparent,var(--cy),transparent); }
+  .l12 .rail-panel::after { left:0; right:0; top:-11px; bottom:-11px; background:linear-gradient(180deg,transparent,rgba(0,240,255,.28) 38%,rgba(0,240,255,.40) 50%,rgba(0,240,255,.28) 62%,transparent); }
+  .l12 .hud { display:flex; flex-direction:row; align-items:center; gap:3px; min-width:0; margin-top:6px; }
+  .l12 .pots { flex:1 1 0; min-width:0; display:flex; flex-direction:row; gap:3px; }
+  .l12 .pot-row, .l12 .glw, .l12 .wx { flex:1 1 0; min-width:0; }
+  .l12 .pot-row .plab, .l12 .pot-row .tr, .l12 .pot-row .tm,
+  .l12 .glw .gtitle, .l12 .glw .gpill, .l12 .glw .gtm,
+  .l12 .wx .wname, .l12 .wx .wrr, .l12 .wx .rdot, .l12 .wx .wimg { display:none; }
+  .l12 .pot-row, .l12 .wx { justify-content:center; min-height:44px; padding:0 2px; gap:2px; }
+  .l12 .pot-row .pimg { width:13px; height:13px; }
+  .l12 .glw { grid-template-columns:minmax(0,1fr) auto; flex:1.3 1 0; padding:0 3px; gap:3px; min-height:26px; }
+  .l12 .glw .gicon { display:none; }
+  .l12 .glw .ginfo { display:flex; flex-direction:column; justify-content:center; }
+  .l12 .glw .ghead { display:flex; }
+  .l12 .glw .gmult { font-size:9.5px; white-space:nowrap; }
+  .l12 .glw .gbtn { display:flex; min-width:44px; min-height:44px; padding:0 5px; gap:3px; font-size:8.5px; border-radius:6px; align-self:center; }
+  .l12 .glw .gbtn img { width:11px; height:11px; }
+  .l12 .wx .wic { width:13px; height:13px; }
+  .l12 .wx .wtm { font-size:9px; gap:2px; }
+  .l12 .idwrap { display:flex; flex-direction:row; align-items:center; gap:6px; min-width:0; }
+  .l12 .op { flex:1 1 auto; min-width:0; }
+  .l12 .plist { flex:0 0 auto; gap:3px; }
+  .l12 .pslot { max-height:26px; width:26px; flex:none; }
+  .l12 .pslot img { inset:3px; width:calc(100% - 6px); height:calc(100% - 6px); }
+  .l12 .cmb { height:26px; font-size:9px; padding:0 4px; }
+  .l12 .cmb small { font-size:5.5px; }
+  .l12 .hist { display:flex; flex-direction:column; gap:2px; flex:none; max-height:44px; min-width:0; }
+  .l12 .hist .hh { font-size:7.5px; line-height:8px; }
+  .l12 .hstrip { flex-direction:row; flex:none; height:30px; gap:4px; min-width:0; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; }
+  .l12 .ph-row { flex:none; width:auto; max-width:132px; min-height:30px; height:30px; padding:0 5px; gap:4px; }
+  .l12 .ph-row img { width:22px; height:22px; }
+  .l12 .ph-row .pn { font-size:9px; max-width:64px; }
+  .l12 .ph-row .pt { font-size:8px; }
+  .l12 .ph-row.more { display:flex; }
+  .l12 .hrow { font-size:10.5px; }
+}
+
+/* ---- orientasi: LANDSCAPE (HP mendatar) ----
+   Prototipe menaruh NAV DI DALAM .app (anaknya .tabbar + .colw), jadi .app boleh
+   flex-direction:row di landscape. Di produksi nav-nya .m-rail position:fixed milik
+   js/mobile-shell.js dan anak .l12 cuma .colw, jadi root TETAP column dan jatah nav
+   diberikan lewat padding root (lihat blok jembatan di bawah). */
+@media (orientation:landscape) {
+  .l12 .panel { flex:0 0 40%; grid-template-rows:auto auto minmax(0,1fr) auto auto auto auto auto; align-content:start; gap:3px; padding:4px 6px; }
+  .l12 .op .avatar { width:40px; height:40px; }
+  .l12 .pslot { max-height:48px; }
+  .l12 .ph-row { min-height:22px; }
+  .l12 .hist { display:flex; gap:2px; }
+  .l12 .pot-row { min-height:20px; }
+  .l12 .glw { padding:4px 6px; gap:5px; }
+  .l12 .glw .gicon { width:24px; height:24px; }
+  .l12 .glw .gicon .ic { width:14px; height:14px; }
+  .l12 .wx { min-height:28px; padding:3px 6px; }
+  .l12 .hlist { max-width:420px; }
+  .l12 .hrow { min-height:46px; max-width:130px; font-size:10px; }
+  .l12 .hero { height:92%; }
+  .l12 .hero .pwr i { display:none; }
+  .l12 .hero .traits { width:50%; }
+}
+@media (orientation:landscape) and (max-height:480px) {
+  .l12 .idwrap { display:flex; flex-direction:row; align-items:center; gap:6px; min-width:0; }
+  .l12 .op { flex:1 1 auto; min-width:0; }
+  .l12 .op .avatar { width:24px; height:24px; }
+  .l12 .op .t b { font-size:10px; }
+  .l12 .plist { flex:0 0 auto; gap:3px; }
+  .l12 .pslot { max-height:26px; width:26px; flex:none; }
+  .l12 .cmb { height:26px; font-size:9px; padding:0 4px; }
+  .l12 .cmb small { font-size:5.5px; }
+  .l12 .panel { gap:3px; padding:2px 5px; }
+  .l12 .ph-row { min-height:14px; padding:1px 4px; gap:5px; }
+  .l12 .ph-row img { width:14px; height:14px; }
+  .l12 .ph-row .pn { font-size:8.5px; }
+  .l12 .hist { gap:2px; margin-bottom:6px; }
+  .l12 .pot-row { min-height:16px; font-size:9.5px; }
+  .l12 .pot-row .pimg { width:15px; height:15px; }
+  .l12 .pot-row b { font-size:9.5px; }
+  .l12 .pot-row .tm { font-size:8.5px; }
+  .l12 .pot-row .plab { font-size:8px; letter-spacing:.06em; }
+  .l12 .glw { padding:0 5px; gap:5px; }
+  .l12 .glw .gicon { width:20px; height:20px; }
+  .l12 .glw .gicon .ic { width:12px; height:12px; }
+  .l12 .glw .gmult { font-size:11px; }
+  .l12 .glw .gtitle { font-size:8.5px; }
+  .l12 .glw .gpill { font-size:7px; padding:0 4px; }
+  .l12 .glw .gtm { font-size:8.5px; }
+  .l12 .glw .gbtn { min-height:44px; padding:0 6px; font-size:8.5px; }
+  .l12 .glw .gbtn img { width:11px; height:11px; }
+  .l12 .wx { min-height:18px; padding:2px 5px; }
+  .l12 .wx .wic { width:14px; height:14px; }
+  .l12 .wx .wimg { width:13px; height:13px; }
+  .l12 .wx .wname { font-size:9px; }
+  .l12 .wx .wtm { font-size:8.5px; }
+  .l12 .wx .wrr { font-size:7px; }
+}
+
+/* ---- 320x568: chrome dirampingkan supaya kartu tetap besar ---- */
+@media (max-width:359px) {
+  .l12 .tgl .st { display:none; }
+  .l12 .top { height:34px; padding:0 10px; }
+  .l12 .rollbar { padding:3px 8px; }
+  .l12 .cta { min-height:52px; font-size:13px; }
+  .l12 .tgl { min-width:56px; }
+  .l12 .panel { gap:2px; padding:2px 4px; }
+  .l12 .op .avatar { width:26px; height:26px; }
+  .l12 .op .t b { font-size:10px; }
+  .l12 .plist { gap:3px; }
+  .l12 .pslot { max-height:26px; }
+  .l12 .pslot img { inset:3px; width:calc(100% - 6px); height:calc(100% - 6px); }
+  .l12 .cmb { height:26px; font-size:9px; padding:0 4px; }
+  .l12 .hrow { min-height:44px; }
+  .l12 .hero { height:calc(100% - 8px); bottom:4px; }
+  .l12 .hero .traits { bottom:calc(12% + 22px); }
+}
+
+/* ---- desktop / layar lebar ---- */
+@media (min-width:1000px) {
+  .l12 .stage { flex:0 0 56%; }
+  .l12 .panel { flex:0 0 44%; gap:10px; padding:14px; grid-template-columns:minmax(0,1fr); grid-template-rows:auto auto auto auto auto auto auto auto; align-content:space-between; }
+  .l12 .hist { display:flex; align-self:start; gap:4px; }
+  .l12 .ph-row { min-height:28px; padding:3px 7px; }
+  .l12 .ph-row img { width:24px; height:24px; }
+  .l12 .ph-row .pn { font-size:11px; }
+  .l12 .ph-row .pt { font-size:9.5px; }
+  .l12 .ph-row.more { display:flex; }
+  .l12 .hlist { grid-column:1; grid-row:8; flex-direction:row; gap:10px; align-self:end; max-width:420px; }
+  .l12 .hrow { flex:1 1 0; min-height:50px; max-height:none; max-width:150px; font-size:10.5px; gap:5px; }
+  .l12 .hrow .ic { width:16px; height:16px; }
+  .l12 .hrow .bd { font-size:9px; height:15px; padding:0 5px; }
+  .l12 .hero { height:84%; }
+  .l12 .hero .pwr i { display:inline; }
+  .l12 .hero .traits { width:59%; }
+  .l12 .op .avatar { width:60px; height:60px; }
+  .l12 .op .t b { font-size:14px; }
+  .l12 .op .luck { font-size:11px; }
+  .l12 .op .luckbar { height:4px; }
+  .l12 .pot-row { min-height:26px; font-size:11px; padding:0 8px; gap:7px; }
+  .l12 .pot-row .pimg { width:21px; height:21px; }
+  .l12 .pot-row .plab { font-size:9.5px; }
+  .l12 .pot-row b { font-size:12px; }
+  .l12 .pot-row .tm { font-size:11px; }
+  .l12 .glw { padding:8px 10px; gap:9px; }
+  .l12 .glw .gicon { width:34px; height:34px; }
+  .l12 .glw .gicon .ic { width:20px; height:20px; }
+  .l12 .glw .gtitle { font-size:11.5px; }
+  .l12 .glw .gmult { font-size:16px; }
+  .l12 .glw .gtm { font-size:11px; }
+  .l12 .glw .gpill { font-size:9px; }
+  .l12 .glw .gbtn { font-size:11px; min-height:44px; padding:0 10px; }
+  .l12 .wx { min-height:40px; padding:6px 10px; gap:8px; }
+  .l12 .wx .wic { width:20px; height:20px; }
+  .l12 .wx .wimg { width:19px; height:19px; }
+  .l12 .wx .wname { font-size:12px; }
+  .l12 .wx .wtm { font-size:11px; }
+  .l12 .wx .wrr { font-size:9px; }
+  .l12 .pslot { max-height:84px; }
+  .l12 .pslot img { inset:7px; width:calc(100% - 14px); height:calc(100% - 14px); }
+  .l12 .cmb { height:44px; font-size:12px; }
+  .l12 .rollbar { justify-content:center; padding:10px 14px; }
+  .l12 .cta { flex:0 1 820px; font-size:18px; min-height:64px; }
+  .l12 .tgl { min-width:104px; min-height:56px; font-size:12px; }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .l12 .hero, .l12 .sheen::after, .l12 .rail, .l12 .hero .glow, .l12 .hero .glow::after,
+  .l12 .cta.press .rip { animation:none !important; transition:none !important; }
+}
+
+/* ==========================================================================
+   NAV BAWAH / RAIL — js/mobile-shell.js (.m-tabbar portrait / .m-rail landscape)
+   Root-nya sendiri unik, jadi aman disetel langsung: ini tabbar yang sama yang
+   di prototipe jadi .tabbar. Warna dasar tetap punya mobile-shell.css; yang di
+   sini cuma ukuran ikon mask + indikator geser .ind + chamfer, meniru v12.
+   ========================================================================== */
+html.m-portrait .m-tabbar { border-top:1px solid rgba(0,240,255,.14); background:#0a0f18; }
+html.m-portrait .m-tabbar .ind {
+  position:absolute; top:0; left:0; width:25%; height:2px;
+  background:linear-gradient(90deg,#00f0ff,#ff2bd6);
+  transform:translateX(calc(var(--i,0) * 100%));
+  transition:transform .25s cubic-bezier(.16,1,.3,1);
+  pointer-events:none;
+}
+html.m-portrait .m-tabbar .ic,
+html.m-landscape .m-rail .ic {
+  width:20px; height:20px; display:inline-block; flex:none; background:currentColor;
+}
+html.m-portrait .m-tabbar button { color:#93a5b8; font-family:'Rajdhani','Barlow Condensed',sans-serif; letter-spacing:.06em; }
+html.m-portrait .m-tabbar button[aria-current="page"] { color:#a8f4ff; }
+html.m-landscape .m-rail { background:#0a0f18; border-right:1px solid rgba(0,240,255,.14); }
+html.m-landscape .m-rail button { color:#93a5b8; }
+html.m-landscape .m-rail button[aria-current="page"] { color:#a8f4ff; }
+
+/* ==========================================================================
+   TAHAP 2 — jembatan node hidup ke layout v12.
+   Node produksi (#rollBtn, #rollAutoBtn, #footAv, #activePlayersBadge) DIPINDAH
+   apa adanya ke slot v12 (listener-nya milik js/boot.js), jadi di sini hanya
+   dilepas gaya lamanya dan diberi bentuk .cta/.tgl/pod prototipe.
+   Semua rule butuh .lobby-hub.l12 -> tidak berlaku sebelum port, dan tidak
+   pernah mengenai layar lain.
+   ========================================================================== */
+
+/* Placeholder slot tidak boleh memakan tempat di flex row. */
+.l12 .l12-slot { display: none; }
+
+/* Bar produksi digantikan .top v12: badge "ACTIVE PLAYER ON" ikut dipindah ke
+   .top, dock tengah (PARTY & DECK / ROLL / AUTO) ditutup karena isinya sudah
+   punya rumah baru (party strip + .rollbar). #footMenu TIDAK dihapus — dia
+   anak .lobby-footer dan tetap dipakai tombol menu yang dipindah. */
+html:has(.lobby-hub.l12) body.on-lobby header#topbar,
+html:has(.lobby-hub.l12) body.on-lobby #topbar,
+html:has(.lobby-hub.l12) body.on-lobby .lobby-footer .center-dock { display: none !important; }
+html:has(.lobby-hub.l12) body.on-lobby .lobby-footer { pointer-events: none; }
+html:has(.lobby-hub.l12) body.on-lobby .lobby-footer .foot-menu { pointer-events: auto; }
+
+/* #footAv = pemanggil menu, jadi pod kecil di kiri bar. */
+#footAv.l12-menu.l12-menu {
+  flex: none; width: 30px; height: 30px; padding: 0; display: flex;
+  align-items: center; justify-content: center; color: var(--ice);
+  background: var(--panel2); border: 1px solid var(--hair); cursor: pointer;
+}
+#footAv.l12-menu svg { width: 16px; height: 16px; }
+
+/* ROLL = .cta prototipe: bingkai frame-button-cta + Orbitron.
+   ANGKA = prototipe 320px (.cta 145x52, .tgl 71x52) & 390px (.cta 173x56, .tgl 91x56).
+   Kenapa !important: blok lobby LAMA di file ini masih mengikat node yang sama via
+   kelas lamanya dan menang cascade (importance dievaluasi sebelum spesifikisitas):
+     html.m-portrait body.on-lobby .roll-btn{height:48px!important;width:auto!important;
+                                             padding:0 18px!important;flex:0 0 auto!important}   (L4048)
+     html.m-landscape body.on-lobby .roll-btn{height:48px!important}                             (L4236)
+   Tanpa penimpaan itu CTA menyusut jadi 56px lebar (seharusnya ~146) dan rollbar jadi 63px
+   (seharusnya 59), yang mencuri 8px tinggi panggung. Selector digapit
+   .lobby-hub.l12 .rollbar #rollBtn.cta supaya hanya node di dalam root v12 yang kena. */
+html body.on-lobby .lobby-hub.l12 .rollbar #rollBtn.cta {
+  position: relative; flex: 1 1 0 !important; min-width: 0 !important;
+  width: auto !important; height: auto !important; margin: 0 !important;
+  min-height: 56px !important; padding: 0 10px !important;
+  display: flex; align-items: center;
+  justify-content: center; gap: 8px; border-radius: 0;
+  border: 0; overflow: hidden; cursor: pointer;
+  background: url(../assets/frames/frame-button-cta.svg) center/100% 100% no-repeat, linear-gradient(180deg,#0d283b,#081a29);
+  color: var(--ice); font-family: var(--disp); font-size: 15px; letter-spacing: .16em;
+  box-shadow: none; text-shadow: none;
+}
+.l12 .rollbar #rollBtn.cta .roll-ic { width: 20px; height: 20px; flex: none; }
+.l12 .rollbar #rollBtn.cta .roll-txt { font: inherit; letter-spacing: inherit; color: inherit; }
+.l12 .rollbar #rollBtn.cta:active { transform: scale(.985); }
+
+/* AUTO = .tgl prototipe + indikator .on (dijaga renderLobby dari state asli). */
+html body.on-lobby .lobby-hub.l12 .rollbar #rollAutoBtn.tgl {
+  display: flex; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 4px;
+  flex: 0 0 auto !important; min-width: 71px !important; width: auto !important;
+  height: auto !important; min-height: 56px !important; margin: 0 !important; padding: 0 10px !important;
+  color: var(--silver); font-family: var(--tac); font-size: 10px; letter-spacing: .08em;
+  background: var(--panel2); border: 1px solid var(--hair); border-radius: 0; cursor: pointer;
+  box-shadow: none; text-shadow: none;
+}
+.l12 .rollbar #rollAutoBtn.tgl .ra-txt { font: inherit; color: inherit; }.l12 .rollbar #rollAutoBtn.tgl .ra-indicator {
+  width: 6px; height: 6px; border-radius: 50%; background: #3a4250; box-shadow: none; flex: none;
+}
+.l12 .rollbar #rollAutoBtn.tgl.on { color: var(--gold); border-color: rgba(251,191,36,.55); }
+.l12 .rollbar #rollAutoBtn.tgl.on .ra-indicator { background: var(--gold); }
+
+/* Latar foto + kanvas partikel produksi sekarang anak .stage (overflow:hidden).
+   Keduanya position:fixed, jadi tetap se layar dan tidak ikut terpotong. */
+.l12 .stage .stage-bg-layer, .l12 .stage #ambientCanvas { pointer-events: none; }
+.l12 .stage #ambientCanvas { z-index: 2; }
+
+/* Kartu hero bisa diklik (kelola party) -> kursor pointer seperti standee lama.
+   .pslot TIDAK diberi pointer: dia cermin party (display-only). Akses kelola tetap
+   satu jalur: kartu hero + tombol PARTY & DECK (satu aksi, satu kontrol). */
+.l12 .hero { cursor: pointer; }
+
+/* Root: pastikan shell v12 mengisi tinggi #app walau #app tidak punya tinggi tetap. */
+.lobby-hub.l12 { min-height: 100%; }
+
+/* ---- MENETRALKAN ATURAN LOBBY LAMA YANG MASIH TEMPEL VIA .lobby-hub ----
+   Root v12 WAJIB tetap .lobby-hub (js/boot.js:150 mendeteksi lobby dari kelas itu),
+   tapi blok lobby LAMA di file ini masih punya rule yang menyasar .lobby-hub / #stage
+   dengan !important:
+     body.on-lobby .lobby-hub      { align-items:center!important; justify-content:center!important;
+                                     padding:0 16px 80px 16px!important }
+     .lobby-hub.stage-root, #stage { position:fixed!important; width:100vw!important; height:100vh!important }
+     html.m-landscape body.on-lobby .lobby-hub { padding-bottom:0!important }
+   Buktinya (CDP CSS.getMatchedStylesForNode, 1400x900): align-items:center bikin .colw
+   shrink-wrap sehingga kartu hero cuma 207px lebar (rasio 0.316, bukan 0.6739), dan
+   padding !important menelan jatah nav dari mobile-shell.css sehingga tab bar / rail
+   menutupi ROLL. Semua penimpaan di bawah digapit #stage.lobby-hub.l12 supaya TIDAK
+   berlaku ke lobby lama (kalau desain v12 dimatikan) dan tidak ke layar lain. */
+html body.on-lobby #stage.lobby-hub.l12 {
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  padding: 0 !important;
+  height: 100dvh !important;
+  width: 100% !important;
+}
+html.m-portrait body.on-lobby #stage.lobby-hub.l12 {
+  padding-bottom: calc(var(--nav-h) + var(--safe-bottom, 0px)) !important;
+}
+html.m-landscape body.on-lobby #stage.lobby-hub.l12 {
+  padding-left: calc(var(--nav-w) + var(--safe-left, 0px)) !important;
+  padding-bottom: var(--safe-bottom, 0px) !important;
+}
+
+/* ---- HUD lama = duplikat HUD v12 ----
+   #buffDock (chip potion) & #weatherPanel digambar js/panels.js DI LUAR #app dan
+   menimpa .hlist/.hrow di 320 saat buff aktif (bukti gate: oklusi:hrow=bd-chip/bd-ic).
+   v12 sudah punya baris potion + weather sendiri, jadi yang lama disembunyikan selama
+   .l12 terpasang. Timer-nya tetap jalan (display only, tidak ada perubahan JS). */
+html:has(.lobby-hub.l12) body.on-lobby #buffDock,
+html:has(.lobby-hub.l12) body.on-lobby #weatherPanel { display: none !important; }
+
+/* ---- #pwaInstallBtn: satu-satunya jalur install, tidak boleh dihapus ----
+   js/pwa.js menempelkan pill ini sebagai anak terakhir <body>; css/mobile-shell.css
+   sudah menambatkan-nya ke bawah-kiri (portrait) / bawah-setelah-rail (landscape) biar
+   tidak menutupi NAV. Di layout v12 zona itu sekarang dipakai .hlist dan .rollbar, jadi
+   pill ditambatkan ke gutter KIRI panggung, tepat di bawah .top — di 4 viewport uji gutters
+   itu kosong (kartu hero selalu di tengah). Bentuknya dijadikan ikon saja 44x44 supaya muat
+   di gutter 320px (49px); label "INSTALL" disembunyikan tapi nama aksesibel tetap ada dari
+   atribut title="Install aplikasi (PWA)" yang dibuat pwa.js. */
+html.m-portrait body.on-lobby:has(.lobby-hub.l12) #pwaInstallBtn {
+  position: fixed !important;
+  top: calc(env(safe-area-inset-top, 0px) + 46px) !important;
+  bottom: auto !important; left: 4px !important; right: auto !important;
+}
+html.m-landscape body.on-lobby:has(.lobby-hub.l12) #pwaInstallBtn {
+  position: fixed !important;
+  top: calc(env(safe-area-inset-top, 0px) + 46px) !important;
+  bottom: auto !important;
+  left: calc(var(--nav-w) + var(--safe-left, 0px) + 4px) !important; right: auto !important;
+}
+html body.on-lobby:has(.lobby-hub.l12) #pwaInstallBtn {
+  width: 44px !important; min-height: 44px !important; padding: 0 !important;
+  margin: 0 !important; gap: 0; justify-content: center;
+}
+html body.on-lobby:has(.lobby-hub.l12) #pwaInstallBtn > span { display: none; }
+
+
+/* Di 320px prototipe memotong tinggi dock jadi 52px (sisa 4px buat tap 44 tetap aman).
+   Aturan ID di atas menang dari media query generik, jadi angka 52 harus diulang
+   dengan penimpaan yang sama-sama !important. */
+@media (max-width:359px) {
+  html body.on-lobby .lobby-hub.l12 .rollbar #rollBtn.cta { min-height: 52px !important; font-size: 13px !important; }
+  html body.on-lobby .lobby-hub.l12 .rollbar #rollAutoBtn.tgl { min-height: 52px !important; min-width: 71px !important; }
+}
+
+/* ---- 850x390: baris potion menempel blok GLOBAL LUCK ----
+   Akar masalah BUKAN tinggi barisnya. Di landscape pendek .idwrap jadi 1 item grid
+   (display:flex), jadi urutan item bergeser: idwrap(1) hist(2) pots(3) glw(4) wx(5) hlist(6).
+   Prototipe menaruh lintasan fleksibel minmax(0,1fr) di baris KE-3 — yang sekarang diisi
+   .pots — sehingga .pots dipatok 32px padahal isinya 2 x 16 + gap 4 = 36. Item meluber 4px
+   dan menyentuh .glw (bukti gate: rect speed b=191 vs gl t=190; prototipe sendiri mepet di
+   1px karena sebab yang sama). Perbaikan: pindahkan lintasan 1fr ke baris .hist (baris 2),
+   yang memang punya daftar gulir, lalu biarkan sisanya auto. Tidak ada angka prototipe yang
+   berubah (tetap 16px/baris), tabrakan hilang. */
+@media (orientation:landscape) and (max-height:480px) {
+  .l12 .panel { grid-template-rows: auto minmax(0,1fr) auto auto auto auto auto auto; }
+}
+
+/* ---- TIGA KACAT YANG HANYA KELIHAT DI SCREENSHOT (angka gerbang hijau semua) ----
+   Semua blok lobby LAMA di file ini masih menang cascade karena !important, dan node
+   yang kupindah (keputusan A = RELOKASI) tetap membawa kelas lamanya:
+
+   1) L1729  body.on-lobby #footAv, html body.on-lobby .foot-profile {display:none!important}
+      (penimpaan HARUS menyebut ID #footAv: aturan lama body.on-lobby #footAv punya ID, kelas saja kalah)
+      -> tombol menu yang sudah duduk di .top jadi HILANG total: profil/title/backpack/
+         premium/keluar tidak bisa dibuka dari lobby. Dibuka kembali khusus di dalam .l12.
+   2) L4045  html.m-portrait body.on-lobby .roll-txt {display:none!important}
+      -> tombol ROLL tinggal ikon dadu tanpa tulisan (prototipe: "SUMMON / ROLL").
+   3) L4098/L4293 html.m-* #activePlayersBadge -> pill "ACTIVE PLAYER ON: n" ditambatkan
+      ke pojok kanan-atas panggung, menimpa badge tier "R" di kartu (lihat 320/390.png).
+      v12 tidak punya rumah untuk pill 180px di layar 320px (gutter kartu cuma 49px),
+      jadi dipadatkan jadi titik + angka di gutter kiri, di bawah pill install.
+      Ini KEPUTUSAN YANG MINTA RESTU USER: alternatifnya hilangkan total. */
+html body.on-lobby .lobby-hub.l12 #footAv.l12-menu {
+  display: flex !important; width: 30px !important; height: 30px !important;
+}
+html.m-portrait body.on-lobby .lobby-hub.l12 .roll-txt { display: inline !important; }
+html body.on-lobby:has(.lobby-hub.l12) #activePlayersBadge {
+  left: 4px !important; right: auto !important; bottom: auto !important;
+  top: calc(env(safe-area-inset-top, 0px) + 96px) !important;
+  height: 34px !important; max-width: 44px !important; padding: 0 4px !important;
+  gap: 0 !important; border-radius: 0 !important; font-size: 0 !important;
+  justify-content: center !important; overflow: hidden !important; white-space: nowrap !important;
+}
+/* Di landscape gutter kiri terisi RAIL (0..--nav-w), jadi pill-nya harus mulai
+   setelah rail — sama seperti perlakuan #pwaInstallBtn di atas. */
+html.m-landscape body.on-lobby:has(.lobby-hub.l12) #activePlayersBadge {
+  left: calc(var(--nav-w) + var(--safe-left, 0px) + 4px) !important;
+}
+html body.on-lobby:has(.lobby-hub.l12) #activePlayersBadge > span:first-child { flex: none; }
+html body.on-lobby:has(.lobby-hub.l12) #activePlayersBadge b { font-size: 11px; }
+
+/* Tombol menu .top cuma 30x30 (bar-nya tinggi 34 di 320px; dipaksakan 44 akan
+   mencuri 10px tinggi panggung = kartu makin kecil). Area sentuhnya yang dibesarkan
+   ke 44x44 lewat ::after transparan — angka visual tetap prototipe, jempol dapat 44px.
+   Arahnya asimetris (-2 atas / -12 bawah): bar .top nempel tepi atas layar, jadi melebar ke
+   atas terpotong viewport dan mentok 34px; ke bawah mah bebas (area panggung kosong). */
+#footAv.l12-menu { position: relative; }
+#footAv.l12-menu::after { content: ''; position: absolute; inset: -2px -8px -20px -8px; }
+/* Catatan: tombol ini SENGAJA tidak pakai clip-path chamfer. clip-path memotong
+   hit-testing, jadi area sentuh 44px dari ::after akan terpotong kembali. */

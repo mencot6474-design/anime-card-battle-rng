@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v282-settIcon';
+const CACHE_NAME = 'anime-card-battle-v283-lobbyV12';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

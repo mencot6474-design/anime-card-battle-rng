@@ -1533,6 +1533,7 @@ function initCommandDrawerGestures() {
 }
 
 /* ================= MAIN RENDER LOBBY ================= */
+let _l12HudTick = null;   /* timer HUD v12 (potion / global luck / weather) */
 function renderLobby(){
   if(state.battle){
     if(typeof cleanupCommandDrawer==='function') cleanupCommandDrawer();
@@ -1546,37 +1547,212 @@ function renderLobby(){
   const eq = equipped();
   const activeBg = getLobbyActiveBg();
 
+  /* ---- RELOKASI (teknik A): parkir dulu node hidup SEBELUM #app ditimpa.
+     Node yang sudah dipindah ke dalam #app akan MUSNAH bersama innerHTML, jadi
+     tiap render mereka diparkir di luar #app (identitas elemen + listener
+     boot.js/panels.js ikut pindah, bukan disalin -> nol duplikat id). ---- */
+  let _l12Park = document.getElementById("l12Park");
+  if (!_l12Park) {
+    _l12Park = document.createElement("div");
+    _l12Park.id = "l12Park";
+    _l12Park.style.cssText = "display:none!important";
+    document.body.appendChild(_l12Park);
+  }
+  ["rollBtn", "rollAutoBtn", "footAv"].forEach(function (id) {
+    const n = document.getElementById(id);
+    if (n && n.parentElement !== _l12Park) _l12Park.appendChild(n);
+  });
+
+  /* ---- DATA ASLI (tidak ada yang pseudo) ---- */
+  const _fmt = (typeof fmt === "function") ? fmt : (n => String(n));
+  const _lv = state.playerLv || 1;
+  const _xpNeed = Math.max(1, _lv * 1000);                       /* state.js:507 — xp per level = lv*1000 */
+  const _xpPct = Math.max(0, Math.min(100, Math.round((state.xp || 0) / _xpNeed * 100)));
+  const _coins = _fmt(state.coins || 0);
+  const _gems = _fmt(state.premiumGems || 0);
+  const _luckMult = (typeof totalLuck === "function") ? totalLuck() : 1;
+  const _luckFlat = (state.player && state.player.luckFlat) || 0;
+  const _luckPct = (state.player && state.player.luckPercent) || 0;
+  /* Meter luck = skala 0..10x (produksi TIDAK punya target "3000" seperti prototipe). */
+  const _luckPctW = Math.max(3, Math.min(100, Math.round(_luckMult / 10 * 100)));
+
+  const _deck = Array.isArray(state.deck) ? state.deck : [null, null, null, null];
+  const _byId = {};
+  (state.stacks || []).forEach(s => { if (s && s.id) _byId[s.id] = s; });
+  const _party = _deck.slice(0, 4).map(id => (id && _byId[id]) ? _byId[id] : null);
+  const _combo = _party.filter(Boolean).length;
+
+  /* RIWAYAT PULL: produksi tidak punya log pull ber-timestamp; state.stacks
+     DI-APPEND dalam urutan kedatangan (panels.js:674) -> 6 terbaru = riwayat. */
+  const _recent = (state.stacks || []).slice(-6).reverse();
+
+  /* POTION (sumber sama dengan #buffDock milik panels.js) */
+  const _now = Date.now();
+  const _cd = (typeof fmtCountdown === "function") ? fmtCountdown : (ms => Math.ceil(ms / 1000) + "s");
+  const _luckBuffs = (typeof luckBuffs === "function") ? luckBuffs().slice().sort((a, b) => a.lv - b.lv) : [];
+  const _speedBuffs = (typeof speedBuffs === "function") ? speedBuffs().slice().sort((a, b) => a.lv - b.lv) : [];
+  const _potLuck = _luckBuffs[_luckBuffs.length - 1] || null;
+  const _potSpeed = _speedBuffs[_speedBuffs.length - 1] || null;
+  const _adLuckMs = (typeof adLuckLeftMs === "function") ? adLuckLeftMs() : 0;
+
+  /* GLOBAL LUCK */
+  const _gl = (typeof _globalLuckCache !== "undefined") ? _globalLuckCache : null;
+  const _glActive = !!(_gl && _now < new Date(_gl.ends_at).getTime());
+  const _glMult = _glActive ? (_gl.multiplier || 0) : 0;
+  const _glLeft = _glActive ? (new Date(_gl.ends_at).getTime() - _now) : 0;
+  const _glStacks = Math.min(10, Math.round(_glMult / 10) || (_glActive ? 1 : 0));
+  const _glCost = (typeof GLOBAL_LUCK_COST !== "undefined") ? GLOBAL_LUCK_COST : 0;
+  const _glCan = (state.premiumGems || 0) >= _glCost;
+
+  /* WEATHER */
+  const _wId = (typeof activeWeatherId === "function") ? activeWeatherId() : null;
+  const _w = (_wId && typeof WEATHER !== "undefined" && WEATHER[_wId]) ? WEATHER[_wId] : null;
+  const _wLeft = (state.weather && state.weather.endsAt) ? Math.max(0, state.weather.endsAt - _now) : 0;
+  const _wRr = _w ? (String(_w.rarity || _w.tier || "R").toUpperCase()) : "";
+
+  /* MODE HUB — progress asli */
+  let _storyBadge = "CH" + ((state.chap || 0) + 1);
+  if (typeof CHAPTERS !== "undefined" && Array.isArray(CHAPTERS) && typeof chapProgMode === "function") {
+    const _done = CHAPTERS.reduce((a, c) => a + chapProgMode(c, state.diff), 0);
+    const _tot = CHAPTERS.reduce((a, c) => a + c.levels.length, 0);
+    if (_tot) _storyBadge = Math.round(_done / _tot * 100) + "%";
+  }
+  const _towerBadge = "F" + ((state.tower && state.tower.best) || 0);
+  const _raidBadge = "#" + ((state.raidCleared && state.raidCleared.normal) ? Object.keys(state.raidCleared.normal).length : 0);
+
+  /* HERO */
+  const _potWin = (typeof WEATHER_MS !== "undefined") ? WEATHER_MS : 300000;  /* panels.js:16 — window potion 5 menit */
+  const _luckTxt = [_luckFlat ? "+" + _luckFlat : "", _luckPct ? "+" + Math.round(_luckPct * 100) + "%" : ""].filter(Boolean).join(" · ");
+  const _frameCfg = (typeof getLobbyActiveFrame === "function") ? getLobbyActiveFrame() : { src: "" };
+  const _hasEq = !!(eq && eq.char && CARDS[eq.char]);
+  const _c = _hasEq ? CARDS[eq.char] : null;
+  const _art = _hasEq ? ((typeof cardImg === "function") ? cardImg(eq.char) : "assets/cards/art/shadow-king.webp") : "assets/cards/art/shadow-king.webp";
+  const _heroName = _hasEq ? ((typeof cardName === "function") ? cardName(eq.char) : _c.name) : "NO FIGHTER";
+  const _heroTier = _hasEq ? (_c.tier || "SSR") : "—";
+  const _heroPower = (typeof totalPower === "function") ? _fmt(totalPower()) : "0";
+  const _pos = (_c && _c.pos) ? ("object-position:" + _c.pos + ";") : "";
+  const _passive = _hasEq && (typeof passiveName === "function") ? passiveName(eq.char) : "";
+  const _mut = (eq && eq.mut && eq.mut !== "none") ? eq.mut.toUpperCase() : "";
+  const _trait = (eq && eq.trait && eq.trait !== "none") ? eq.trait.toUpperCase() : "";
+  const _slotThumb = (s) => {
+    if (!s) return "";
+    const st = CARDS[s.char];
+    const thumb = (typeof cardThumb === "function") ? cardThumb(s.char) : ((st && st.thumb) ? st.thumb : "assets/cards/thumb/" + s.char + ".webp");
+    return `<img src="${thumb}" alt="">`;
+  };
+
   app.innerHTML = `
-  <div class="lobby-hub stage-root" id="stage">
-    <!-- 1. Cinematic AAA Anime Landscape Background Layer -->
-    <div class="stage-bg-layer" id="stageBgLayer" style="background-image: url('${activeBg}');"></div>
-    <div class="stage-vignette"></div>
-    <div class="distant-skyline"></div>
-    <div class="floor-fog"></div>
-    <canvas id="ambientCanvas"></canvas>
+  <div class="lobby-hub stage-root l12" id="stage">
+    <div class="colw">
 
-    <!-- 2. Live Ticking Telemetry Feed (Top Left) -->
-    <div class="telemetry-feed" id="telemetryFeed">
-      <span id="telCoords">POS: 35.689 // 139.692</span>
-      <span id="telSync">NEURAL SYNC: 99.4%</span>
-      <span id="telFreq">CARRIER: 142.80 MHz</span>
-    </div>
+      <!-- L1 TOPBAR: level+xp bar asli, saldo coin/gem asli, menu #footAv (node hidup) -->
+      <header class="top">
+        <span class="rail rail-top" aria-hidden="true"></span>
+        <span class="l12-slot" id="slotMenu"></span>
+        <div class="lvl"><span>LV ${_lv}</span><span class="bar"><span style="width:${_xpPct}%"></span></span></div>
+        <div class="res">
+          <span class="pill"><i class="ic i-coin"></i>${_coins}</span>
+          <span class="pill"><i class="ic i-gem"></i>${_gems}</span>
+        </div>
+      </header>
 
-    <!-- 3. The Living Anime Hero Standee (PURE AAA - ZERO CLUTTER) -->
-    <main class="hero-stage-container" id="heroStage">
-      ${hubLivingStandeeHtml(eq)}
+      <div class="mid">
+        <!-- L2 STAGE: foto lobby + partikel produksi DIPERTAHANKAN, ditambah
+             lantai arena v12; kartu hero rasio terkunci 310/460. -->
+        <div class="stage">
+          <div class="stage-bg-layer" id="stageBgLayer" style="background-image: url('${activeBg}');"></div>
+          <canvas id="ambientCanvas"></canvas>
+          <div class="horizon"></div><div class="floor-grid"></div><div class="ground"></div><div class="ped"></div>
+          <span class="rail rail-horizon" aria-hidden="true"></span>
+          <div class="hero" id="heroStandeeWrap" title="Klik Hunter untuk Kelola Party &amp; Deck">
+            <div class="artbox"><img class="art" src="${_art}" alt="" style="${_pos}"></div>
+            <span class="cast" aria-hidden="true"></span>
+            <div class="sheen" aria-hidden="true"></div>
+            <span class="glow" aria-hidden="true"></span>
+            ${_frameCfg.src ? `<img class="frm" src="${_frameCfg.src}" alt="">` : ""}
+            <span class="nm">${_heroName}</span><span class="rr">${_heroTier}</span>
+            <span class="pwr"><b>${_heroPower}</b><i>POWER</i></span>
+            <span class="traits">${_passive ? `<i>${_passive}</i>` : ""}${_mut ? `<i>${_mut}</i>` : ""}${_trait ? `<i>${_trait}</i>` : ""}</span>
+          </div>
+        </div>
 
+        <!-- L3 PANEL -->
+        <div class="panel">
+          <span class="rail rail-panel" aria-hidden="true"></span>
+          <div class="idwrap">
+            <div class="op">
+              <div class="avatar">${_slotThumb(_party[0] || (state.stacks && state.stacks[state.stacks.length - 1]) || null)}</div>
+              <div class="t">
+                <b>${(currentUser || "OPERATOR").toUpperCase()}</b>
+                <span class="luck"><i class="ic i-clover"></i>×${_luckMult.toFixed(2)}<b>${_luckTxt}</b></span>
+                <span class="luckbar"><span style="width:${_luckPctW}%"></span></span>
+              </div>
+            </div>
+            <div class="plist" id="l12Party">
+              ${_party.map(s => s
+                ? `<div class="pslot r-${String(s.tier || "s").toLowerCase()}" data-slot="1">${_slotThumb(s)}</div>`
+                : `<div class="pslot empty" data-slot="0"><span class="plus">+</span></div>`).join("")}
+              <span class="cmb">${_combo}/4<small>COMBO</small></span>
+            </div>
+          </div>
 
-    </main>
+          <!-- L5b RIWAYAT PULL (6 card terbaru dari state.stacks) -->
+          <div class="hist" data-block="history">
+            <span class="hh">RIWAYAT PULL</span>
+            <div class="hstrip">
+              ${_recent.length ? _recent.map((s, i) => {
+                const nm = (typeof cardName === "function") ? cardName(s.char) : (CARDS[s.char] ? CARDS[s.char].name : s.char);
+                return `<div class="ph-row${i > 2 ? " more" : ""}">${_slotThumb(s)}<span class="pn">${nm}</span><span class="pt">${s.tier || ""}</span></div>`;
+              }).join("") : `<div class="ph-row"><span class="pn">belum ada pull</span></div>`}
+            </div>
+          </div>
 
-    <!-- 4. Minimalist Right-Edge Tactical Command Trigger Handle -->
-    <div class="cmd-trigger-btn" id="cmdTriggerBtn" title="Buka Command Terminal (M / Swipe Kiri)" onclick="openCommandDrawer()">
-      <div class="cmd-icon-core">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
+          <!-- L4/L5/L6 HUD: potion + global luck + weather -->
+          <div class="hud">
+            <div class="pots">
+              <div class="pot-row" data-block="pot-luck" id="l12PotLuck">
+                <img class="pimg" src="assets/images/pot-luck-${_potLuck ? _potLuck.lv : 1}.webp" alt="">
+                <span class="plab">POTION LUCK</span><b id="l12PotLuckVal">${_potLuck ? "+" + (_potLuck.flat||0) + " L" + _potLuck.lv : (_adLuckMs>0?"ADS ×2":"OFF")}</b>
+                <span class="tr"><span id="l12PotLuckBar" style="width:${_potLuck ? Math.max(4, Math.min(100, Math.round((_potLuck.endsAt - _now) / _potWin * 100))) : 0}%"></span></span>
+                <span class="tm" id="l12PotLuckTm">${_potLuck ? _cd(_potLuck.endsAt - _now) : (_adLuckMs > 0 ? _cd(_adLuckMs) : "--:--")}</span>
+              </div>
+              <div class="pot-row" data-block="pot-speed" id="l12PotSpeed">
+                <img class="pimg" src="assets/images/pot-speed-${_potSpeed ? _potSpeed.lv : 1}.webp" alt="">
+                <span class="plab">POTION SPEED</span><b id="l12PotSpeedVal">${_potSpeed ? "+" + (_potSpeed.add||0).toFixed(1) + "× L" + _potSpeed.lv : "OFF"}</b>
+                <span class="tr"><span id="l12PotSpeedBar" style="width:${_potSpeed ? Math.max(4, Math.min(100, Math.round((_potSpeed.endsAt - _now) / _potWin * 100))) : 0}%"></span></span>
+                <span class="tm" id="l12PotSpeedTm">${_potSpeed ? _cd(_potSpeed.endsAt - _now) : "--:--"}</span>
+              </div>
+            </div>
+            <div class="glw" data-block="global-luck" role="status" id="l12Glw">
+              <span class="gicon"><i class="ic i-clover"></i></span>
+              <span class="ginfo">
+                <span class="ghead"><span class="gtitle">GLOBAL LUCK</span><span class="gpill"><span class="gdot"></span><span id="l12GlStack">${_glStacks}/10 STACK</span></span></span>
+                <span class="grow"><span class="gmult" id="l12GlMult">${_glMult ? _glMult + "× LUCK" : "OFF"}</span><span class="gtm" id="l12GlTm">${_glActive ? _cd(_glLeft) : "--:--"}</span></span>
+              </span>
+              <button class="gbtn" type="button" id="l12GlBuy"${_glCan ? "" : " disabled"}>+10×<img src="assets/images/premium-currency.webp" alt=""></button>
+            </div>
+            <div class="wx" data-block="weather" role="status" id="l12Wx">
+              <span class="winfo"><span class="rdot"></span><i class="ic wic i-sun"></i><span class="wname" id="l12WxName">${_w ? String(_w.name || _wId).toUpperCase() : "NO WEATHER"}</span><span class="wrr" id="l12WxRr">${_wRr}</span></span>
+              <span class="wtm"><img class="wimg" src="assets/images/weather-potion.webp" alt=""><span id="l12WxTm">${_wLeft ? _cd(_wLeft) : "--:--"}</span></span>
+            </div>
+          </div>
+
+          <!-- L6 MODE HUB -->
+          <div class="hlist">
+            <a class="hrow" href="#/" data-hub="story"><i class="ic i-story"></i><span>STORY</span><b class="bd">${_storyBadge}</b></a>
+            <a class="hrow" href="#/tower" data-hub="tower"><i class="ic i-tower"></i><span>TOWER</span><b class="bd">${_towerBadge}</b></a>
+            <a class="hrow" href="#/raid" data-hub="raid"><i class="ic i-raid"></i><span>RAID</span><b class="bd">${_raidBadge}</b></a>
+          </div>
+        </div>
       </div>
-      <span class="cmd-trigger-label">COMMAND</span>
+
+      <!-- L7 ROLLBAR — node ROLL/AUTO asli didudukkan di sini (teknik A).
+           QUICK sengaja TIDAK dibuat: fiturnya belum ada di produksi. -->
+      <div class="rollbar">
+        <span class="rail rail-roll" aria-hidden="true"></span>
+        <span class="l12-slot" id="slotRoll"></span>
+        <span class="l12-slot" id="slotAuto"></span>
+      </div>
     </div>
 
     <!-- 5. Backdrop Overlay for Command Drawer -->
@@ -1930,6 +2106,94 @@ function renderLobby(){
       </div>
     </aside>
   </div>`;
+
+  /* ---- TAHAP 2: dudukan node hidup ke slot v12 (teknik A) ----
+     replaceWith(node) = node yang SAMA pindah, listener boot.js (#rollBtn) dan
+     state panels.js tetap menempel; placeholder .l12-slot ikut hilang sehingga
+     tidak ada id ganda. Dipanggil ulang tiap render karena innerHTML membuat
+     slot baru dan node-nya ada di park. */
+  const _l12Place = (slotId, elId, cls) => {
+    const slot = document.getElementById(slotId);
+    const node = document.getElementById(elId);
+    if (!slot || !node) return false;
+    if (cls) node.classList.add(cls);
+    slot.replaceWith(node);
+    return true;
+  };
+  _l12Place("slotRoll", "rollBtn", "cta");
+  _l12Place("slotAuto", "rollAutoBtn", "tgl");
+  _l12Place("slotMenu", "footAv", "l12-menu");
+
+  /* ---- TIMER HUD (potion / global luck / weather) ----
+     panels.js cuma me-repaint #buffDock/#weatherPanel/#glLobbyWidget miliknya,
+     jadi baris v12 ini disegar sendiri dari SUMBER YANG SAMA (luckBuffs(),
+     speedBuffs(), _globalLuckCache, state.weather) — bukan angka palsu.
+     Interval dibersihkan sendiri begitu lobby tidak ada (pola _telemetryTimer). */
+  if (_l12HudTick) clearInterval(_l12HudTick);
+  _l12HudTick = setInterval(() => {
+    if (!document.querySelector(".lobby-hub.l12")) { clearInterval(_l12HudTick); _l12HudTick = null; return; }
+    const now = Date.now();
+    const put = (id, txt) => { const e = document.getElementById(id); if (e && e.textContent !== txt) e.textContent = txt; };
+    const wid = (id, pct) => { const e = document.getElementById(id); if (e) e.style.width = pct + "%"; };
+    const lb = (typeof luckBuffs === "function") ? luckBuffs().sort((a, b) => a.lv - b.lv).pop() : null;
+    const sb = (typeof speedBuffs === "function") ? speedBuffs().sort((a, b) => a.lv - b.lv).pop() : null;
+    const adMs = (typeof adLuckLeftMs === "function") ? adLuckLeftMs() : 0;
+    const win = (typeof WEATHER_MS !== "undefined") ? WEATHER_MS : 300000;
+    if (lb) {
+      put("l12PotLuckVal", "+" + (lb.flat || 0) + " L" + lb.lv);
+      put("l12PotLuckTm", (typeof fmtCountdown === "function") ? fmtCountdown(lb.endsAt - now) : "");
+      wid("l12PotLuckBar", Math.max(2, Math.min(100, Math.round((lb.endsAt - now) / win * 100))));
+    } else {
+      put("l12PotLuckVal", adMs > 0 ? "ADS ×2" : "OFF");
+      put("l12PotLuckTm", adMs > 0 ? ((typeof fmtCountdown === "function") ? fmtCountdown(adMs) : "") : "--:--");
+      wid("l12PotLuckBar", 0);
+    }
+    if (sb) {
+      put("l12PotSpeedVal", "+" + (sb.add || 0).toFixed(1) + "× L" + sb.lv);
+      put("l12PotSpeedTm", (typeof fmtCountdown === "function") ? fmtCountdown(sb.endsAt - now) : "");
+      wid("l12PotSpeedBar", Math.max(2, Math.min(100, Math.round((sb.endsAt - now) / win * 100))));
+    } else {
+      put("l12PotSpeedVal", "OFF"); put("l12PotSpeedTm", "--:--"); wid("l12PotSpeedBar", 0);
+    }
+    const gl = (typeof _globalLuckCache !== "undefined") ? _globalLuckCache : null;
+    const glOn = !!(gl && now < new Date(gl.ends_at).getTime());
+    put("l12GlMult", glOn ? ((gl.multiplier || 0) + "× LUCK") : "OFF");
+    put("l12GlTm", glOn ? ((typeof fmtCountdown === "function") ? fmtCountdown(new Date(gl.ends_at).getTime() - now) : "") : "--:--");
+    put("l12GlStack", Math.min(10, glOn ? Math.max(1, Math.round((gl.multiplier || 0) / 10)) : 0) + "/10 STACK");
+    const wLeft = (state.weather && state.weather.endsAt) ? Math.max(0, state.weather.endsAt - now) : 0;
+    put("l12WxTm", wLeft ? ((typeof fmtCountdown === "function") ? fmtCountdown(wLeft) : "") : "--:--");
+  }, 1000);
+
+  /* ---- BINDING TOMBOL LOBBY (v12) ---- */
+  /* .pslot SENGAJA tidak dibinding: aksinya (kelola party & deck) sudah dipegang
+     kartu hero di bawah — dua kontrol untuk satu aksi membingungkan dan di 320px
+     slot 26px mustahil jadi target sentuh 44px. Strip party = cermin, bukan tombol. */
+  /* Kartu hero = kelola party juga (sama seperti standee lama). */
+  const _hero = document.getElementById("heroStandeeWrap");
+  if (_hero) _hero.onclick = () => {
+    if (typeof sfx !== "undefined" && sfx.hit) sfx.hit();
+    if (typeof toggleBackpack === "function") toggleBackpack();
+  };
+  /* +10x GLOBAL LUCK -> fungsi beli asli panels.js, bukan duplikat logika. */
+  const _glBuy = document.getElementById("l12GlBuy");
+  if (_glBuy) _glBuy.onclick = () => {
+    if (typeof buyGlobalLuck === "function") buyGlobalLuck();
+    renderLobby();
+  };
+  /* AUTO: indikator ON/OFF ikut state asli (#rollAutoBtn sudah punya handler
+     milik js/boot.js:494 + js/panels.js). Node ini DIPINDAH, bukan dibuat ulang,
+     jadi listener paint-nya harus dipasang SEKALI — kalau tidak, tiap renderLobby()
+      nambah satu listener (bukti CDP: click 6 -> 9 sesudah 3 render). */
+  const _auto = document.getElementById("rollAutoBtn");
+  if (_auto) {
+    const paintAuto = () => _auto.classList.toggle("on", !!(_auto.getAttribute("aria-pressed") === "true" || _auto.classList.contains("active") || (typeof state !== "undefined" && state.autoRoll)));
+    paintAuto();
+    if (!_auto.__l12Paint) {
+      _auto.__l12Paint = true;
+      _auto.addEventListener("click", () => setTimeout(paintAuto, 0));
+    }
+  }
+  /* MODE HUB: hrow = <a href="#/..."> — navigasi hash asli, tanpa handler baru. */
 
   // Lift Command Drawer & Backdrop directly to document.body for root layering above topbar
   const _drw = document.getElementById('commandDrawer');
