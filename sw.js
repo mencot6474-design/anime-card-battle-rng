@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v286-settHeadTight';
+const CACHE_NAME = 'anime-card-battle-v287-settHeadTight2';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
