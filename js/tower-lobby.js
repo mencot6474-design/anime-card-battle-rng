@@ -1773,14 +1773,12 @@ function renderLobby(){
     <!-- 5. Backdrop Overlay for Command Drawer -->
     <div id="drawerBackdrop" onclick="closeCommandDrawer()"></div>
 
-    <!-- 6. Archon Command Drawer (The Living Swipe Menu) -->
+    <!-- 6. Archon Command Drawer V2 — Accordion Hub -->
     <aside id="commandDrawer">
+      <span class="rail rail-l" aria-hidden="true"></span>
       <div class="drw-head">
-        <div class="drw-title-wrap">
-          <div class="drw-eyebrow">
-            <span class="live-dot"></span>
-            <span>TACTICAL HUD // ARCHON COMMAND ONLINE</span>
-          </div>
+        <div style="min-width:0">
+          <div class="drw-eyebrow"><span class="live-dot"></span><span>TACTICAL HUD // ARCHON COMMAND ONLINE</span></div>
           <div class="drw-title">ARCHON COMMAND TERMINAL</div>
         </div>
         <button class="drw-close-btn" id="drwCloseBtn" onclick="closeCommandDrawer()" title="Tutup (ESC / Swipe Kanan)">
@@ -1791,333 +1789,88 @@ function renderLobby(){
         </button>
       </div>
 
-      <div class="drw-body">
-        <!-- 1. OPERASI TEMPUR UTAMA -->
-        <section>
-          <div class="cat-header">
-            <span class="cat-title">OPERASI TEMPUR UTAMA</span>
-            <span class="cat-meta">COMBAT DEPLOYMENT</span>
-          </div>
+      <div class="drw-body" id="drwBody">
 
-          <!-- Banner 1: Story Campaign -->
-          <div class="hero-banner-card menu-card stagger-in" style="--stagger: 1;" id="drwStoryBtn">
-            <img class="banner-frame-svg" src="assets/frames/frame-holo-banner.svg" alt="Frame" />
-            <div class="banner-bg" style="background-image: url('assets/images/story-bab3-shibuya.webp');"></div>
-            <div class="banner-overlay"></div>
-            <div class="specular-shine"></div>
-            <div class="banner-content">
-              <div class="banner-left">
-                <div class="banner-icon-pod glow-cyan">
-                  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"></polygon>
-                    <line x1="13" y1="19" x2="19" y2="13"></line>
-                    <line x1="16" y1="16" x2="20" y2="20"></line>
-                    <line x1="19" y1="21" x2="21" y2="19"></line>
-                  </svg>
-                </div>
-                <div class="banner-info">
-                  <div class="banner-badge-row">
-                    <span class="banner-tag tag-cyan">STORY CAMPAIGN // CHAPTERS</span>
-                    <span id="drwStoryPercent" style="font-family:var(--font-mono);font-size:11px;color:#38bdf8;font-weight:700">ACTIVE</span>
-                  </div>
-                  <div class="banner-title">STORY CAMPAIGN</div>
-                  <div class="banner-metric-row">
-                    <span class="bm-val" id="missionSub" style="color:#ffffff">PROGRESS</span>
-                    <span style="color:var(--text-dim)">•</span>
-                    <span style="color:#fbbf24;font-weight:700">CLEARANCE REWARDS</span>
-                  </div>
-                  <div class="banner-progress-wrap">
-                    <div class="banner-progress-fill fill-cyan" id="missionFill" style="width: 50%;"></div>
-                  </div>
-                </div>
-              </div>
-              <div class="banner-cta">
-                <span>MASUK</span>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-              </div>
+        <!-- FOLD 1: OPERASI TEMPUR UTAMA -->
+        <section class="fold open" data-fold="combat" style="--sc:var(--cyan)">
+          <button class="fh" type="button" aria-expanded="true" aria-controls="fb1">
+            <span class="fbar" aria-hidden="true"></span>
+            <span class="fic"><i class="ic i-raid"></i></span>
+            <span class="ft"><span class="ftag">COMBAT DEPLOYMENT</span><span class="fnm">OPERASI TEMPUR UTAMA</span></span>
+            <span class="fstat"><b id="foldCombatStat">${_storyBadge}</b><span class="s2"> · RAID LIVE</span><span class="ch" aria-hidden="true"></span></span>
+          </button>
+          <div class="fb" id="fb1">
+            <div class="row menu-card" id="drwStoryBtn" style="--rc:var(--cyan)" role="button" tabindex="0">
+              <span class="pod"><i class="ic i-story"></i></span><span class="ri"><span class="rn">STORY CAMPAIGN</span><span class="rs" id="missionSub">PROGRESS 12/24 BAB · CLEARANCE REWARDS</span></span>
+              <span class="rt"><span class="vl" id="drwStoryPercent">ACTIVE</span></span>
+              <span class="pb"><span style="width:50%" id="missionFill"></span></span>
             </div>
-          </div>
-
-          <!-- Banner 2: World Boss Raid -->
-          <div class="hero-banner-card menu-card stagger-in" style="--stagger: 2;" id="drwRaidBtn">
-            <img class="banner-frame-svg" src="assets/frames/frame-holo-banner.svg" alt="Frame" />
-            <div class="banner-bg" style="background-image: url('assets/raid/raid-banner-hd.webp');"></div>
-            <div class="banner-overlay"></div>
-            <div class="specular-shine"></div>
-            <div class="banner-content">
-              <div class="banner-left">
-                <div class="banner-icon-pod glow-crimson">
-                  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="22" y1="12" x2="18" y2="12"></line>
-                    <line x1="6" y1="12" x2="2" y2="12"></line>
-                    <line x1="12" y1="6" x2="12" y2="2"></line>
-                    <line x1="12" y1="22" x2="12" y2="18"></line>
-                    <circle cx="12" cy="12" r="4"></circle>
-                  </svg>
-                </div>
-                <div class="banner-info">
-                  <div class="banner-badge-row">
-                    <span class="banner-tag tag-crimson"><span class="live-dot" style="background:#fb7185"></span>GLOBAL RAID // LIVE</span>
-                    <span style="font-family:var(--font-mono);font-size:11px;color:#fb7185;font-weight:700">SHARED HP</span>
-                  </div>
-                  <div class="banner-title">WORLD BOSS RAID</div>
-                  <div class="banner-metric-row">
-                    <span class="bm-val" style="color:#ffffff">SHADOW DRAGON</span>
-                    <span style="color:var(--text-dim)">•</span>
-                    <span style="color:#fb7185;font-weight:700">TOP 10% LOOT</span>
-                  </div>
-                  <div class="banner-progress-wrap">
-                    <div class="banner-progress-fill fill-crimson" style="width: 68%;"></div>
-                  </div>
-                </div>
-              </div>
-              <div class="banner-cta">
-                <span>DEPLOY</span>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-              </div>
+            <div class="row menu-card" id="drwRaidBtn" style="--rc:var(--crimson)" role="button" tabindex="0">
+              <span class="pod"><i class="ic i-raid"></i></span><span class="ri"><span class="rn">WORLD BOSS RAID <span class="live" aria-hidden="true"></span></span><span class="rs">SHADOW DRAGON · TOP 10% LOOT</span></span>
+              <span class="rt"><span class="vl">SHARED HP 68%</span></span>
+              <span class="pb"><span style="width:68%"></span></span>
             </div>
-          </div>
-
-          <!-- Tactical Split Cards: Infinite Spire & Leaderboard -->
-          <div class="op-split-grid">
-            <div class="op-card menu-card stagger-in" style="--stagger: 3;" id="drwTowerBtn">
-              <img class="pod-frame-svg" src="assets/frames/frame-holo-pod.svg" alt="Holo Glass Frame" />
-              <div class="specular-shine"></div>
-              <div class="op-top-row">
-                <div class="op-icon-pod glow-purple">
-                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-                    <polyline points="2 17 12 22 22 17"></polyline>
-                    <polyline points="2 12 12 17 22 12"></polyline>
-                  </svg>
-                </div>
-                <span class="banner-tag tag-purple">NEURAL SPIRE</span>
-              </div>
-              <div class="op-info">
-                <div class="op-title">INFINITE TOWER</div>
-                <span class="op-metric">CLIMB NEURAL FLOORS</span>
-              </div>
+            <div class="row menu-card" id="drwTowerBtn" style="--rc:var(--purple)" role="button" tabindex="0">
+              <span class="pod"><i class="ic i-tower"></i></span><span class="ri"><span class="rn">INFINITE TOWER</span><span class="rs" id="drwTowerSub">NEURAL SPIRE · CLIMB NEURAL FLOORS</span></span>
+              <span class="rt"><span class="vl">${_towerBadge}</span></span>
             </div>
-
-            <div class="op-card menu-card stagger-in" style="--stagger: 4;" id="drwRankBtn">
-              <img class="pod-frame-svg" src="assets/frames/frame-holo-pod.svg" alt="Holo Glass Frame" />
-              <div class="specular-shine"></div>
-              <div class="op-top-row">
-                <div class="op-icon-pod glow-gold">
-                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-                    <path d="M4 22h16"></path>
-                    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
-                    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
-                    <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
-                  </svg>
-                </div>
-                <span class="banner-tag tag-gold">GLOBAL RANK</span>
-              </div>
-              <div class="op-info">
-                <div class="op-title" style="color:#fbbf24">LEADERBOARD</div>
-                <span class="op-metric" style="color:#fbbf24">TOP HUNTERS CLASSIFIED</span>
-              </div>
+            <div class="row menu-card" id="drwRankBtn" style="--rc:var(--gold)" role="button" tabindex="0">
+              <span class="pod"><i class="ic i-rank"></i></span><span class="ri"><span class="rn">LEADERBOARD</span><span class="rs" id="drwRankSub">GLOBAL RANK · TOP HUNTERS CLASSIFIED</span></span>
+              <span class="rt"><span class="vl">${_raidBadge}</span></span>
             </div>
           </div>
         </section>
 
-        <!-- 2. AKTIVITAS HARIAN & BOOSTER -->
-        <section>
-          <div class="cat-header">
-            <span class="cat-title">AKTIVITAS HARIAN &amp; BOOSTER</span>
-            <span class="cat-meta">DAILY OPERATIONS</span>
-          </div>
-
-          <div class="modular-grid">
-            <!-- 7-Day Login -->
-            <div class="mod-pod menu-card stagger-in" style="--stagger: 5;" id="drwDailyBtn">
-              <img class="pod-frame-svg" src="assets/frames/frame-holo-pod.svg" alt="Frame" />
-              <div class="specular-shine"></div>
-              <div class="pod-icon-wrap glow-emerald">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                  <line x1="16" y1="2" x2="16" y2="6"></line>
-                  <line x1="8" y1="2" x2="8" y2="6"></line>
-                  <line x1="3" y1="10" x2="21" y2="10"></line>
-                  <polyline points="9 16 11 18 15 13"></polyline>
-                </svg>
-              </div>
-              <div class="pod-content">
-                <div class="pod-head">
-                  <span class="pod-name">7-Day Login</span>
-                  <span class="banner-tag tag-emerald">HARIAN</span>
-                </div>
-                <span class="pod-sub" id="drwDailySub">KLAIM REWARD HARIAN</span>
-              </div>
-            </div>
-
-            <!-- Free Ads & Luck Booster -->
-            <div class="mod-pod menu-card stagger-in" style="--stagger: 6;" id="drwAdsBtn">
-              <img class="pod-frame-svg" src="assets/frames/frame-holo-pod.svg" alt="Frame" />
-              <div class="specular-shine"></div>
-              <div class="pod-icon-wrap glow-gold">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                  <line x1="19" y1="5" x2="19" y2="19"></line>
-                </svg>
-              </div>
-              <div class="pod-content">
-                <div class="pod-head">
-                  <span class="pod-name">Free 2x Luck</span>
-                  <span class="banner-tag tag-gold">BOOST</span>
-                </div>
-                <span class="pod-sub" id="drwAdsSub">FREE 2X LUCK &amp; PACK</span>
-              </div>
-            </div>
-
-            <!-- Global Luck -->
-            <div class="mod-pod menu-card stagger-in" style="--stagger: 7;" id="drwGlBtn">
-              <img class="pod-frame-svg" src="assets/frames/frame-holo-pod.svg" alt="Frame" />
-              <div class="specular-shine"></div>
-              <div class="pod-icon-wrap glow-cyan">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                </svg>
-              </div>
-              <div class="pod-content">
-                <div class="pod-head">
-                  <span class="pod-name">Global Luck</span>
-                  <span class="banner-tag tag-cyan">SERVER</span>
-                </div>
-                <span class="pod-sub" id="drwGlSub">PENGALI LUCK KOMUNITAS</span>
-              </div>
-            </div>
-
-            <!-- Weather Machine -->
-            <div class="mod-pod menu-card stagger-in" style="--stagger: 8;" id="drwWeatherBtn">
-              <img class="pod-frame-svg" src="assets/frames/frame-holo-pod.svg" alt="Frame" />
-              <div class="specular-shine"></div>
-              <div class="pod-icon-wrap glow-cyan">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9"></path>
-                  <polyline points="13 11 9 17 15 17 11 23"></polyline>
-                </svg>
-              </div>
-              <div class="pod-content">
-                <div class="pod-head">
-                  <span class="pod-name">Weather Synth</span>
-                  <span class="banner-tag tag-cyan">CLIMATE</span>
-                </div>
-                <span class="pod-sub" id="drwWeatherSub">ATMOSPHERIC BUFF</span>
-              </div>
-            </div>
+        <!-- FOLD 2: AKTIVITAS HARIAN & BOOSTER -->
+        <section class="fold" data-fold="daily" style="--sc:var(--emerald)">
+          <button class="fh" type="button" aria-expanded="false" aria-controls="fb2">
+            <span class="fbar" aria-hidden="true"></span>
+            <span class="fic"><i class="ic i-daily"></i></span>
+            <span class="ft"><span class="ftag">DAILY OPERATIONS</span><span class="fnm">AKTIVITAS HARIAN &amp; BOOSTER</span></span>
+            <span class="fstat"><b>1 KLAIM</b><span class="s2"> · LUCK ${Math.round(_luckMult)}×</span><span class="ch" aria-hidden="true"></span></span>
+          </button>
+          <div class="fb" id="fb2">
+            <div class="row menu-card" id="drwDailyBtn" style="--rc:var(--emerald)" role="button" tabindex="0"><span class="pod"><i class="ic i-daily"></i></span><span class="ri"><span class="rn">7-Day Login</span><span class="rs" id="drwDailySub">KLAIM REWARD HARIAN</span></span><span class="rt"><span class="vl">HARI 3/7</span></span></div>
+            <div class="row menu-card" id="drwAdsBtn" style="--rc:var(--gold)" role="button" tabindex="0"><span class="pod"><i class="ic i-ads"></i></span><span class="ri"><span class="rn">Free 2x Luck</span><span class="rs" id="drwAdsSub">FREE 2X LUCK &amp; PACK</span></span><span class="rt"><span class="vl">3 TERSISA</span></span></div>
+            <div class="row menu-card" id="drwGlBtn" style="--rc:var(--cyan)" role="button" tabindex="0"><span class="pod"><i class="ic i-gl"></i></span><span class="ri"><span class="rn">Global Luck</span><span class="rs" id="drwGlSub">PENGALI LUCK KOMUNITAS</span></span><span class="rt"><span class="vl">${Math.round(_luckMult)}× · 12:40</span></span></div>
+            <div class="row menu-card" id="drwWeatherBtn" style="--rc:var(--purple)" role="button" tabindex="0"><span class="pod"><i class="ic i-wx"></i></span><span class="ri"><span class="rn">Weather Synth</span><span class="rs" id="drwWeatherSub">ATMOSPHERIC BUFF</span></span><span class="rt"><span class="vl">CLEAR SKY</span></span></div>
           </div>
         </section>
 
-        <!-- 3. SISTEM & ARSIP -->
-        <section>
-          <div class="cat-header">
-            <span class="cat-title">SISTEM &amp; ARSIP</span>
-            <span class="cat-meta">SYSTEM &amp; GEAR</span>
-          </div>
-
-          <div class="modular-grid">
-            <!-- Trait Overclock -->
-            <div class="mod-pod menu-card stagger-in" style="--stagger: 9;" id="drwTraitBtn">
-              <img class="pod-frame-svg" src="assets/frames/frame-holo-pod.svg" alt="Frame" />
-              <div class="specular-shine"></div>
-              <div class="pod-icon-wrap glow-gold">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="4" y="4" width="16" height="16" rx="2"></rect>
-                  <rect x="9" y="9" width="6" height="6"></rect>
-                  <line x1="9" y1="1" x2="9" y2="4"></line>
-                  <line x1="15" y1="1" x2="15" y2="4"></line>
-                  <line x1="9" y1="20" x2="9" y2="23"></line>
-                  <line x1="15" y1="20" x2="15" y2="23"></line>
-                  <line x1="20" y1="9" x2="23" y2="9"></line>
-                  <line x1="20" y1="14" x2="23" y2="14"></line>
-                  <line x1="1" y1="9" x2="4" y2="9"></line>
-                  <line x1="1" y1="14" x2="4" y2="14"></line>
-                </svg>
-              </div>
-              <div class="pod-content">
-                <div class="pod-head">
-                  <span class="pod-name">Trait Overclock</span>
-                  <span class="banner-tag tag-gold">REFINE</span>
-                </div>
-                <span class="pod-sub">OPTIMASI STAT PASIF</span>
-              </div>
-            </div>
-
-            <!-- Neural Archive -->
-            <div class="mod-pod menu-card stagger-in" style="--stagger: 10;" id="drwIndexBtn">
-              <img class="pod-frame-svg" src="assets/frames/frame-holo-pod.svg" alt="Frame" />
-              <div class="specular-shine"></div>
-              <div class="pod-icon-wrap glow-cyan">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                  <line x1="8" y1="6" x2="16" y2="6"></line>
-                  <line x1="8" y1="10" x2="14" y2="10"></line>
-                </svg>
-              </div>
-              <div class="pod-content">
-                <div class="pod-head">
-                  <span class="pod-name">Neural Archive</span>
-                  <span class="banner-tag tag-cyan">DATABASE</span>
-                </div>
-                <span class="pod-sub">KATALOG KARTU</span>
-              </div>
-            </div>
+        <!-- FOLD 3: SISTEM & ARSIP -->
+        <section class="fold" data-fold="system" style="--sc:var(--purple)">
+          <button class="fh" type="button" aria-expanded="false" aria-controls="fb3">
+            <span class="fbar" aria-hidden="true"></span>
+            <span class="fic"><i class="ic i-trait"></i></span>
+            <span class="ft"><span class="ftag">SYSTEM &amp; GEAR</span><span class="fnm">SISTEM &amp; ARSIP</span></span>
+            <span class="fstat"><b>ID</b><span class="s2"> · v1.4.2</span><span class="ch" aria-hidden="true"></span></span>
+          </button>
+          <div class="fb" id="fb3">
+            <div class="row menu-card" id="drwTraitBtn" style="--rc:var(--cyan)" role="button" tabindex="0"><span class="pod"><i class="ic i-trait"></i></span><span class="ri"><span class="rn">Trait Overclock</span><span class="rs" id="drwTraitSub">OPTIMASI STAT PASIF</span></span><span class="rt"><span class="vl">+18%</span></span></div>
+            <div class="row menu-card" id="drwIndexBtn" style="--rc:var(--emerald)" role="button" tabindex="0"><span class="pod"><i class="ic i-index"></i></span><span class="ri"><span class="rn">Neural Archive</span><span class="rs" id="drwIndexSub">KATALOG KARTU</span></span><span class="rt"><span class="vl">148/312</span></span></div>
+            <div class="row menu-card" id="drwSettingsBtn" style="--rc:var(--ice)" role="button" tabindex="0"><span class="pod"><i class="ic i-set"></i></span><span class="ri"><span class="rn">SETTINGS</span><span class="rs">SUARA · TEMPUR · BAHASA · CLOUD</span></span><span class="rt"><span class="vl">1×</span></span></div>
+            <div class="row menu-card" id="drwChangelogBtn" style="--rc:var(--gold)" role="button" tabindex="0"><span class="pod"><i class="ic i-log"></i></span><span class="ri"><span class="rn">CHANGELOG</span><span class="rs">RIWAYAT PEMBARUAN</span></span><span class="rt"><span class="vl">v1.4.2</span></span></div>
           </div>
         </section>
 
-        <!-- 4. FASILITAS & ASCENSION -->
-        <section>
-          <div class="cat-header">
-            <span class="cat-title">FASILITAS &amp; ASCENSION</span>
-            <span class="cat-meta">SPECIAL PROTOCOLS</span>
-          </div>
-
-          <div class="modular-grid">
-            <!-- Premium Shop -->
-            <div class="mod-pod menu-card stagger-in" style="--stagger: 11;" id="drwPremiumBtn">
-              <img class="pod-frame-svg" src="assets/frames/frame-holo-pod.svg" alt="Frame" />
-              <div class="specular-shine"></div>
-              <div class="pod-icon-wrap glow-gold">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polygon points="6 3 18 3 22 9 12 22 2 9 6 3"></polygon>
-                  <line x1="12" y1="22" x2="6" y2="9"></line>
-                  <line x1="12" y1="22" x2="18" y2="9"></line>
-                  <line x1="2" y1="9" x2="22" y2="9"></line>
-                </svg>
-              </div>
-              <div class="pod-content">
-                <div class="pod-head">
-                  <span class="pod-name">Supply Shop</span>
-                  <span class="banner-tag tag-gold">VIP</span>
-                </div>
-                <span class="pod-sub">INSTANT ROLL PACKS</span>
-              </div>
-            </div>
-
-            <!-- Rebirth Protocol -->
-            <div class="mod-pod menu-card stagger-in" style="--stagger: 12;" id="drwRebirthBtn">
-              <img class="pod-frame-svg" src="assets/frames/frame-holo-pod.svg" alt="Frame" />
-              <div class="specular-shine"></div>
-              <div class="pod-icon-wrap glow-crimson">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
-                </svg>
-              </div>
-              <div class="pod-content">
-                <div class="pod-head">
-                  <span class="pod-name">Rebirth Protocol</span>
-                  <span class="banner-tag tag-crimson">REBIRTH</span>
-                </div>
-                <span class="pod-sub" id="drwRebirthSub">PENGALI SINGULARITAS</span>
-              </div>
-            </div>
+        <!-- FOLD 4: FASILITAS & ASCENSION -->
+        <section class="fold" data-fold="special" style="--sc:var(--gold)">
+          <button class="fh" type="button" aria-expanded="false" aria-controls="fb4">
+            <span class="fbar" aria-hidden="true"></span>
+            <span class="fic"><i class="ic i-shop"></i></span>
+            <span class="ft"><span class="ftag">SPECIAL PROTOCOLS</span><span class="fnm">FASILITAS &amp; ASCENSION</span></span>
+            <span class="fstat"><b>${_gems}</b><span class="s2"> · READY</span><span class="ch" aria-hidden="true"></span></span>
+          </button>
+          <div class="fb" id="fb4">
+            <div class="row menu-card" id="drwPremiumBtn" style="--rc:var(--gold)" role="button" tabindex="0"><span class="pod"><i class="ic i-shop"></i></span><span class="ri"><span class="rn">Supply Shop</span><span class="rs" id="drwPremiumSub">INSTANT ROLL PACKS</span></span><span class="rt"><span class="vl">${_gems} GEM</span></span></div>
+            <div class="row menu-card" id="drwRebirthBtn" style="--rc:var(--mg)" role="button" tabindex="0"><span class="pod"><i class="ic i-rebirth"></i></span><span class="ri"><span class="rn">Rebirth Protocol</span><span class="rs" id="drwRebirthSub">PENGALI SINGULARITAS</span></span><span class="rt"><span class="vl">LV ${_lv}</span></span></div>
           </div>
         </section>
+      </div>
+
+      <div class="drw-foot">
+        <span class="drw-foot-k"><i class="live-dot"></i>${(currentUser || "OPERATOR").toUpperCase()} · LV <b>${_lv}</b></span>
+        <span class="drw-foot-r"><b>ESC</b> / <b>X</b> = TUTUP</span>
       </div>
     </aside>
   </div>`;
@@ -2376,6 +2129,30 @@ function renderLobby(){
   bindClick('drwIndexBtn', () => { if (typeof openIndex === 'function') openIndex(); });
   bindClick('drwPremiumBtn', () => { if (typeof openPremiumShop === 'function') openPremiumShop(); });
   bindClick('drwRebirthBtn', () => { if (typeof onRebirthClick === 'function') onRebirthClick(); });
+  bindClick('drwSettingsBtn', () => { location.hash = '#/settings'; });
+  bindClick('drwChangelogBtn', () => { if (typeof openChangelogModal === 'function') openChangelogModal(); });
+
+  /* ---- V2 ACCORDION TOGGLE ----
+     Portrait (<700px): buka satu fold → tutup fold lain (sama seperti Settings V2).
+     Desktop (≥700px): bebas, bisa buka banyak fold sekaligus. */
+  const _narrow = () => innerWidth < 700;
+  document.querySelectorAll('#commandDrawer .fh').forEach(h => {
+    h.addEventListener('click', () => {
+      const f = h.parentElement;
+      const willOpen = !f.classList.contains('open');
+      if (willOpen && _narrow()) {
+        document.querySelectorAll('#commandDrawer .fold.open').forEach(x => {
+          if (x !== f) {
+            x.classList.remove('open');
+            const xh = x.querySelector('.fh');
+            if (xh) xh.setAttribute('aria-expanded', 'false');
+          }
+        });
+      }
+      f.classList.toggle('open', willOpen);
+      h.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    });
+  });
 
   // Initialize interactive engines
   initAmbientCanvas();

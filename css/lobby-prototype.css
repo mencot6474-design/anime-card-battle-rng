@@ -1904,8 +1904,324 @@ body.drawer-open .lobby-footer {
 }
 
 .drw-body {
-  padding-bottom: 60px !important;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  scrollbar-width: none;
 }
+.drw-body::-webkit-scrollbar { display: none; }
+#commandDrawer .drw-body > * { flex: none; }
+
+/* ================= DRAWER V2 — ACCORDION HUB =================
+   4 section fold (pola Settings V2): header jadi kontrol accordion,
+   strip status live di header, tubuh display:none saat tertutup.
+   Class: .fold .fh .fb .row .fic .ft .fstat .ch .pod .ri .rn .rs .rt .vl .pb .live */
+#commandDrawer {
+  --cyan: #00f0ff; --ice: #a8f4ff; --gold: #fbbf24; --purple: #c084fc; --crimson: #fb7185;
+  --emerald: #34d399; --white: #f8fafc; --silver: #93a5b8; --dim: #5c7285;
+  --panel: #0a0f18; --panel2: #0d1420;
+  --hair: rgba(0, 240, 255, 0.14); --cy: #00f0ff; --mg: #ff2bd6;
+}
+#commandDrawer .fold {
+  --sc: var(--accent-cyan, #38bdf8);
+  flex: none;
+  position: relative;
+  background: rgba(10, 15, 28, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.14);
+  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+}
+#commandDrawer .fh {
+  position: relative;
+  flex: none;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 10px 8px 6px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+#commandDrawer .fh .fbar {
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--sc), transparent);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform .3s cubic-bezier(.16, 1, .3, 1);
+}
+#commandDrawer .fold.open .fh .fbar { transform: scaleX(1); }
+#commandDrawer .fh .fic {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px; height: 34px;
+  color: var(--sc);
+  background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.07), transparent 70%);
+  border: 1px solid var(--sc);
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+}
+#commandDrawer .fh .fic .ic { width: 18px; height: 18px; }
+#commandDrawer .fh .ft {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+#commandDrawer .fh .ftag {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 7.5px;
+  letter-spacing: .12em;
+  color: var(--sc);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#commandDrawer .fh .fnm {
+  font-family: var(--font-tac, 'Rajdhani', sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#commandDrawer .fh .fstat {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: none;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 8px;
+  letter-spacing: .02em;
+  color: var(--text-silver, #93a5b8);
+  white-space: nowrap;
+  max-width: 44%;
+}
+#commandDrawer .fh .fstat b {
+  color: var(--sc);
+  font-weight: 600;
+}
+#commandDrawer .fh .ch {
+  position: relative;
+  flex: none;
+  width: 16px; height: 16px;
+  color: var(--sc);
+}
+#commandDrawer .fh .ch::before {
+  content: '';
+  position: absolute;
+  left: 50%; top: 42%;
+  width: 8px; height: 8px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translate(-50%, -50%) rotate(45deg);
+  transition: transform .24s cubic-bezier(.16, 1, .3, 1);
+}
+#commandDrawer .fold.open .fh .ch::before {
+  transform: translate(-50%, -50%) rotate(-135deg);
+}
+#commandDrawer .fb {
+  display: none;
+  padding: 0 8px 8px;
+  border-top: 1px solid rgba(56, 189, 248, 0.14);
+}
+#commandDrawer .fold.open {
+  display: flex;
+  flex-direction: column;
+}
+#commandDrawer .fold.open .fb {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+  grid-auto-rows: minmax(54px, 64px);
+  align-content: start;
+  animation: drwPanelIn .22s ease-out;
+}
+@keyframes drwPanelIn {
+  0% { opacity: 0; transform: translateY(-8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* V2 row entry */
+#commandDrawer .row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: 8px;
+  min-height: 54px;
+  padding: 7px 8px;
+  background: rgba(13, 20, 32, 0.9);
+  border: 1px solid rgba(56, 189, 248, 0.14);
+  cursor: pointer;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  transition: border-color .2s ease, background .2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+#commandDrawer .row:hover {
+  border-color: rgba(56, 189, 248, 0.35);
+  background: rgba(16, 28, 48, 0.95);
+}
+#commandDrawer .row:active { transform: scale(0.98); }
+#commandDrawer .row .pod {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px; height: 32px;
+  color: var(--rc, var(--sc, #38bdf8));
+  background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.08), transparent 72%);
+  border: 1px solid var(--rc, var(--sc, #38bdf8));
+  clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
+}
+#commandDrawer .row .pod .ic { width: 17px; height: 17px; }
+#commandDrawer .row .ri {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+#commandDrawer .row .rn {
+  font-family: var(--font-tac, 'Rajdhani', sans-serif);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#commandDrawer .row .rs {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 8px;
+  letter-spacing: .04em;
+  color: var(--text-silver, #93a5b8);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+#commandDrawer .row .rt {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  min-width: 0;
+}
+#commandDrawer .row .vl {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+  color: var(--rc, var(--sc, #38bdf8));
+  white-space: nowrap;
+}
+#commandDrawer .row .pb {
+  position: absolute;
+  left: 8px; right: 8px; bottom: 5px;
+  height: 3px;
+  background: rgba(12, 21, 38, 0.8);
+  overflow: hidden;
+}
+#commandDrawer .row .pb > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--rc, var(--sc, #38bdf8)), rgba(255,255,255,.55));
+}
+#commandDrawer .row .live {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  color: #fb7185;
+  background: currentColor;
+  margin-left: 5px;
+  vertical-align: middle;
+  animation: drwDotBreath 2.4s ease-in-out infinite;
+}
+@keyframes drwDotBreath {
+  0%, 100% { opacity: .35; }
+  50% { opacity: 1; }
+}
+
+/* Drawer V2 footer */
+.drw-foot {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 12px;
+  background: rgba(10, 15, 28, 0.95);
+  border-top: 1px solid rgba(56, 189, 248, 0.14);
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 8px;
+  letter-spacing: .08em;
+  color: var(--text-dim, #5c7285);
+}
+.drw-foot b { color: var(--accent-ice, #a8f4ff); font-weight: 600; }
+.drw-foot-k {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.drw-foot-k .live-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: #34d399;
+  animation: drwDotBreath 3s ease-in-out infinite;
+}
+.drw-foot-r {
+  flex: none;
+  white-space: nowrap;
+}
+
+/* Responsive: portrait satu-kolom, desktop dua-kolom */
+@media (max-width: 420px) {
+  #commandDrawer .fh .fstat .s2 { display: none; }
+  #commandDrawer .fh .fstat { max-width: 26%; }
+}
+@media (min-width: 700px) {
+  #commandDrawer .fold.open .fb {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+/* Icon classes for drawer V2 (drawer is lifted to body, outside .l12 namespace) */
+#commandDrawer .ic {
+  display: inline-block; width: 18px; height: 18px; flex: none; background: currentColor;
+  -webkit-mask: var(--m) center/contain no-repeat; mask: var(--m) center/contain no-repeat;
+}
+#commandDrawer .i-story { --m: url(../assets/icons/scroll-unfurled.svg); }
+#commandDrawer .i-raid { --m: url(../assets/icons/spiked-dragon-head.svg); }
+#commandDrawer .i-tower { --m: url(../assets/icons/tower-fall.svg); }
+#commandDrawer .i-rank { --m: url(../assets/icons/trophy-cup.svg); }
+#commandDrawer .i-daily { --m: url(../assets/icons/star-swirl.svg); }
+#commandDrawer .i-ads { --m: url(../assets/icons/lightning-trio.svg); }
+#commandDrawer .i-gl { --m: url(../assets/icons/clover.svg); }
+#commandDrawer .i-wx { --m: url(../assets/icons/sun-cloud.svg); }
+#commandDrawer .i-trait { --m: url(../assets/icons/dna2.svg); }
+#commandDrawer .i-index { --m: url(../assets/icons/spell-book.svg); }
+#commandDrawer .i-set { --m: url(../assets/icons/gears.svg); }
+#commandDrawer .i-log { --m: url(../assets/icons/sparkles.svg); }
+#commandDrawer .i-shop { --m: url(../assets/icons/cut-diamond.svg); }
+#commandDrawer .i-rebirth { --m: url(../assets/icons/ouroboros.svg); }
 
 /* Color Tags & Glows */
 .glow-emerald { color: #34d399 !important; filter: drop-shadow(0 0 8px rgba(52, 211, 153, 0.45)) !important; }
