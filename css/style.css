@@ -49192,7 +49192,7 @@ main#app:has(.sett-wrap) {
 .sett-wrap {
   width: 100% !important;
   max-width: 1400px !important;
-  margin: 0 auto 36px !important;
+  margin: -8px auto 36px !important;
   display: flex;
   flex-direction: column;
   gap: 14px;
