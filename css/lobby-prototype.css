@@ -4540,7 +4540,7 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 /* ---- L5 party strip ---- */
 .l12 .plist { display:flex; align-items:center; gap:5px; min-width:0; }
 .l12 .pslot { position:relative; flex:1; min-width:0; aspect-ratio:1/1; height:auto; max-width:48px; background:url(../assets/frames/frame-slot.svg) center/100% 100% no-repeat; }
-.l12 .pslot img { position:absolute; inset:5px; width:calc(100% - 10px); height:calc(100% - 10px); object-fit:cover; object-position:top; }
+.l12 .pslot img { position:absolute; inset:5px; width:calc(100% - 10px); height:calc(100% - 10px); object-fit:cover; object-position:top; clip-path: polygon(15.6% 3.1%, 84.4% 3.1%, 96.9% 15.6%, 96.9% 84.4%, 84.4% 96.9%, 15.6% 96.9%, 3.1% 84.4%, 3.1% 15.6%); }
 .l12 .pslot::after { content:''; position:absolute; inset:5px; border:1.5px solid transparent; }
 .l12 .pslot.r-ur::after { border-color:rgba(251,191,36,.9); }
 .l12 .pslot.r-ssr::after { border-color:rgba(251,113,133,.85); }
