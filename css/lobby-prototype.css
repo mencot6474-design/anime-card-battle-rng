@@ -4859,9 +4859,9 @@ html body.on-lobby .lobby-hub.l12 .rollbar #rollAutoBtn.tgl {
 .l12 .stage .stage-bg-layer, .l12 .stage #ambientCanvas { pointer-events: none; }
 .l12 .stage #ambientCanvas { z-index: 2; }
 
-/* Kartu hero bisa diklik (kelola party) -> kursor pointer seperti standee lama.
-   .pslot TIDAK diberi pointer: dia cermin party (display-only). Akses kelola tetap
-   satu jalur: kartu hero + tombol PARTY & DECK (satu aksi, satu kontrol). */
+/* Kartu hero DAN slot party bisa diklik (kelola party/deck) -> kursor pointer.
+   Avatar profil klik = buka modal profil. Semua interaksi interaktif punya
+   hover/active feedback (brightness/opacity) dan touch target min 44px. */
 .l12 .hero { cursor: pointer; }
 
 /* Root: pastikan shell v12 mengisi tinggi #app walau #app tidak punya tinggi tetap. */
@@ -5007,6 +5007,40 @@ html body.on-lobby:has(.lobby-hub.l12) #activePlayersBadge b { font-size: 11px; 
   border: 0; margin: 0; text-align: center; text-decoration: none;
   background-color: transparent; font: inherit; font-size: 9px;
   font-family: var(--tac); letter-spacing: .08em; color: var(--ice);
+}
+
+/* ---- avatar profil & slot party sekarang <button> ----
+   Reset UA stylesheet supaya background SVG frame tetap terlihat
+   dan tidak ada border/padding bawaan button. */
+.l12 button.avatar, .l12 button.pslot {
+  appearance: none; -webkit-appearance: none; -moz-appearance: none;
+  border: 0; padding: 0; margin: 0; background: transparent;
+  cursor: pointer; font: inherit; color: inherit; text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+/* Kembalikan background frame SVG yang di-reset di atas */
+.l12 button.avatar { background: url(../assets/frames/frame-avatar.svg) center/contain no-repeat; }
+.l12 button.pslot  { background: url(../assets/frames/frame-slot.svg) center/100% 100% no-repeat; }
+
+/* Hover / active feedback untuk avatar & pslot (selaras pola .hero) */
+.l12 button.avatar, .l12 button.pslot { transition: filter .12s ease, opacity .12s ease; }
+@media (hover: hover) {
+  .l12 button.avatar:hover, .l12 button.pslot:hover { filter: brightness(1.1); }
+}
+.l12 button.avatar:active, .l12 button.pslot:active { opacity: .85; }
+@media (prefers-reduced-motion: reduce) {
+  .l12 button.avatar, .l12 button.pslot { transition: none; }
+}
+
+/* ---- Touch target 44px untuk button.avatar & button.pslot ----
+   Di portrait 320, avatar = 26px dan pslot = 26px (di bawah minimum 44px).
+   ::before memperluas area sentuh 9px di setiap sisi (26 + 18 = 44px)
+   tanpa mengubah layout atau visual frame SVG. */
+.l12 button.avatar::before, .l12 button.pslot::before {
+  content: '';
+  position: absolute;
+  inset: -9px;
+  z-index: -1;
 }
 
 /* ---- harga di tombol +10x (selaras widget asli panels.js: "+10× · 1200") ----
