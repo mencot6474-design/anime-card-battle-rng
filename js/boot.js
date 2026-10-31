@@ -477,6 +477,11 @@ document.querySelectorAll(".nav-btn[data-route]").forEach(b=>b.onclick=()=>{
     showRollResult(result);
     beep(440,0.15,"sine",0.1);
     rollState.hideTimer=setTimeout(()=>{hideRollResult();rollState.hideTimer=null;},1600);
+    /* RIWAYAT PULL lobby v12: kartu sudah masuk state.stacks di grantRolledCard,
+       tapi stripnya dibangun oleh renderLobby(). Refresh ringan (BUKAN renderLobby
+       penuh) — strip berubah di belakang overlay, jadi saat reveal tutup kartu baru
+       sudah ada. renderLobby() di titik ini menutupi overlay / memicu render-loop. */
+    if(typeof window.l12RefreshRiwayat==="function")window.l12RefreshRiwayat();
   });
   const bt=document.getElementById("backpackToggle");
   if(bt)bt.addEventListener("click",toggleBackpack);

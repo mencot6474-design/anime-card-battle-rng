@@ -5016,3 +5016,98 @@ html body.on-lobby:has(.lobby-hub.l12) #activePlayersBadge b { font-size: 11px; 
 #footAv.l12-menu::after { content: ''; position: absolute; inset: -2px -8px -20px -8px; }
 /* Catatan: tombol ini SENGAJA tidak pakai clip-path chamfer. clip-path memotong
    hit-testing, jadi area sentuh 44px dari ::after akan terpotong kembali. */
+
+/* ==========================================================================
+   FOLLOW-UP INTERAKTIVITAS (tiket: riwayat live / mode hub / +10x / feedback)
+   ========================================================================== */
+
+/* ---- .hrow sekarang <button>, bukan <a> ----
+   UA stylesheet memberi border/padding/background-color/button-face pada
+   <button>; tanpa reset ini pod mode hub dapat garis tepi abu-abu + warna native. */
+.l12 button.hrow {
+  appearance: none; -webkit-appearance: none; -moz-appearance: none;
+  border: 0; margin: 0; text-align: center; text-decoration: none;
+  background-color: transparent; font: inherit; font-size: 9px;
+  font-family: var(--tac); letter-spacing: .08em; color: var(--ice);
+}
+
+/* ---- harga di tombol +10x (selaras widget asli panels.js: "+10× · 1200") ----
+   Dua baris di semua mode supaya lebar blok GLOBAL LUCK tidak berubah dari
+   angka gerbang (label pendek, harga kecil di bawahnya). */
+.l12 .glw .gbtn { flex-direction: column; align-items: center; gap: 1px; line-height: 1.05; }
+.l12 .glw .gbtn .gprice { display: flex; align-items: center; gap: 2px; font-family: var(--mono); font-size: 8px; opacity: .92; }
+.l12 .glw .gbtn .gprice img { width: 9px; height: 9px; }
+
+/* ---- tombol yang TIDAK bisa ditekan harus terbaca begitu ----
+   Selama ini user mengira rusak karena tombol harga gem terlihat sama saja. */
+.l12 .glw .gbtn.unaff { opacity: .48; filter: saturate(.35); cursor: not-allowed; }
+.l12 .glw .gbtn:disabled { opacity: .38; filter: saturate(.2); cursor: not-allowed; transform: none; }
+.l12 .glw .gbtn.maxed { opacity: .6; }
+
+/* ---- FEEDBACK HOVER / TEKAN ----
+   HANYA transform / opacity / filter: tidak ada perubahan ukuran, posisi, atau
+   box-shadow, jadi tidak ada reflow dan tidak ada repaint area besar di HP kentang.
+   :hover dibungkus @media (hover:hover) supaya perangkat sentuh tidak kena hover
+   yang nyangkut setelah tap. */
+.l12 .hrow, .l12 .glw .gbtn, .l12 .rollbar #rollBtn.cta, .l12 .rollbar #rollAutoBtn.tgl,
+#footAv.l12-menu, html.m-portrait .m-tabbar button, html.m-landscape .m-rail button {
+  transition: transform .12s ease, opacity .12s ease, filter .12s ease;
+}
+@media (hover: hover) {
+  .l12 .hrow:hover, #footAv.l12-menu:hover { transform: translateY(-1px); filter: brightness(1.22); }
+  .l12 .glw .gbtn:hover:not(:disabled):not(.unaff) { transform: translateY(-1px); filter: brightness(1.16); }
+  .l12 .rollbar #rollBtn.cta:hover { filter: brightness(1.1); }
+  .l12 .rollbar #rollAutoBtn.tgl:hover { filter: brightness(1.2); }
+  html.m-portrait .m-tabbar button:hover, html.m-landscape .m-rail button:hover { filter: brightness(1.25); }
+}
+.l12 .hrow:active, .l12 .glw .gbtn:active:not(:disabled), #footAv.l12-menu:active,
+.l12 .rollbar #rollAutoBtn.tgl:active, html.m-portrait .m-tabbar button:active,
+html.m-landscape .m-rail button:active { transform: scale(.97); }
+.l12 .rollbar #rollBtn.cta:active { transform: scale(.985); }
+@media (prefers-reduced-motion: reduce) {
+  .l12 .hrow, .l12 .glw .gbtn, .l12 .rollbar #rollBtn.cta, .l12 .rollbar #rollAutoBtn.tgl,
+  #footAv.l12-menu, html.m-portrait .m-tabbar button, html.m-landscape .m-rail button {
+    transition: none; transform: none;
+  }
+}
+
+/* ---- Transisi node LAMA yang direlokasi dipangkas ke transform/opacity/filter ----
+   #rollBtn bawa kelas .roll-btn (L1157), #rollAutoBtn bawa .roll-auto-btn (L1182),
+   #footAv bawa .foot-profile (L1099). Ketiganya men-set `transition:all …!important`
+   dan hover-nya ikut mengubah background/box-shadow (bukti CDP, 1400x900:
+   transitionProperty "#rollBtn"=all, "#footAv"=all). `all` = box-shadow & background
+   ikut dianimasi -> repaint tiap hover, persis yang dihindari di HP kentang, dan
+   .roll-btn:hover lama ANGKAT (-3px scale 1.03) + drop-shadow 18px: beda rasa dari
+   permukaan v12 lain dan filter blur besar di CTA selebar panggung.
+   Aturan lama menang karena !important, jadi penimpaan ini juga !important DAN
+   menyebut ID elemen (spesifisitas lebih tinggi -> yang menang di grup importance).
+   Angka hover/active disamakan dengan blok FEEDBACK di atas: translateY(-1px) +
+   brightness, tekan scale(.97) — cuma transform/opacity/filter. */
+html body.on-lobby .lobby-hub.l12 #rollBtn.cta,
+html body.on-lobby .lobby-hub.l12 #rollAutoBtn.tgl,
+html body.on-lobby .lobby-hub.l12 #footAv.l12-menu {
+  transition: transform .12s ease, opacity .12s ease, filter .12s ease !important;
+}
+@media (hover: hover) {
+  html body.on-lobby .lobby-hub.l12 #rollBtn.cta:hover {
+    transform: translateY(-1px) !important; filter: brightness(1.12) !important; }
+  html body.on-lobby .lobby-hub.l12 #rollAutoBtn.tgl:hover,
+  html body.on-lobby .lobby-hub.l12 #footAv.l12-menu:hover {
+    transform: translateY(-1px) !important; filter: brightness(1.22) !important; }
+  html body.on-lobby .lobby-hub.l12 #rollAutoBtn.tgl:hover { background: var(--panel2) !important; }
+}
+html body.on-lobby .lobby-hub.l12 #rollBtn.cta:active { transform: scale(.97) !important; }
+html body.on-lobby .lobby-hub.l12 #rollAutoBtn.tgl:active,
+html body.on-lobby .lobby-hub.l12 #footAv.l12-menu:active { transform: scale(.97) !important; }
+
+/* ---- Kartu hero juga permukaan interaktif (klik = kelola party) ----
+   transform SENGAAT tidak dipakai: .hero sudah punya animasi idle, dan menimpa
+   transform saat :active membuat kartu melompat dari alur animasinya. Jadi hover
+   = brightness (hanya di @media hover:hover; perangkat sentuh tidak pernah
+   "nyangkut hover"), tekan = opacity. Dua-duinya properti yang dikomposisi GPU. */
+.l12 .hero { transition: filter .12s ease, opacity .12s ease; }
+@media (hover: hover) {
+  .l12 .hero:hover { filter: brightness(1.06); }
+}
+.l12 .hero:active { opacity: .9; }
+@media (prefers-reduced-motion: reduce) { .l12 .hero { transition: none; } }

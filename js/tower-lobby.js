@@ -1534,6 +1534,47 @@ function initCommandDrawerGestures() {
 
 /* ================= MAIN RENDER LOBBY ================= */
 let _l12HudTick = null;   /* timer HUD v12 (potion / global luck / weather) */
+
+/* ---- SIMPAN REFERENSI NODE HIDUP YANG DIRELOKASI ----
+   #rollBtn/#rollAutoBtn/#footAv aslinya anak .lobby-footer (luar #app, index.html:795).
+   Setelah dipindah ke slot v12 mereka jadi anak #app -> innerHTML layar lain
+   (#/tower, #/raid, battle) MELEPAS mereka dari DOM. Tanpa referensi kuat node-nya
+   di-GC dan hilang permanen (ROLL/AUTO/menu lenyap saat balik ke lobby). Registry
+   ini menahan object-nya, jadi renderLobby berikutnya bisa mengadopsi kembali
+   node yang SAMA beserta listener boot.js-nya. */
+const _l12Live = Object.create(null);
+
+/* ---- RIWAYAT PULL v12: SATU sumber, dua pemakai ----
+   renderLobby() memakainya untuk markup awal, window.l12RefreshRiwayat() untuk
+   menyegar strip SETELAH roll tanpa render penuh. Refresh ringan ini penting:
+   jalur auto-roll ada di panels.js (bukan hak editku) dan reveal roll menutupi
+   layar, jadi renderLobby() penuh di titik itu = overlay ketutup / render-loop. */
+function _l12SlotThumb(s) {
+  if (!s) return "";
+  const st = (typeof CARDS !== "undefined") ? CARDS[s.char] : null;
+  const thumb = (typeof cardThumb === "function") ? cardThumb(s.char) : ((st && st.thumb) ? st.thumb : "assets/cards/thumb/" + s.char + ".webp");
+  return `<img src="${thumb}" alt="">`;
+}
+
+function _l12RiwayatHtml() {
+  const recent = ((typeof state !== "undefined" && state.stacks) || []).slice(-6).reverse();
+  if (!recent.length) return `<div class="ph-row"><span class="pn">belum ada pull</span></div>`;
+  return recent.map((s, i) => {
+    const nm = (typeof cardName === "function") ? cardName(s.char) : ((typeof CARDS !== "undefined" && CARDS[s.char]) ? CARDS[s.char].name : s.char);
+    return `<div class="ph-row${i > 2 ? " more" : ""}">${_l12SlotThumb(s)}<span class="pn">${nm}</span><span class="pt">${s.tier || ""}</span></div>`;
+  }).join("");
+}
+
+/* Dipegang boot.js sesudah reveal roll tutup (js/boot.js:479) dan oleh tick HUD.
+   Return false kalau lobby v12 tidak terpasang (layar lain / battle). */
+window.l12RefreshRiwayat = function () {
+  const strip = document.querySelector(".lobby-hub.l12 .hstrip");
+  if (!strip) return false;
+  const html = _l12RiwayatHtml();
+  if (strip.innerHTML !== html) strip.innerHTML = html;
+  return true;
+};
+
 function renderLobby(){
   if(state.battle){
     if(typeof cleanupCommandDrawer==='function') cleanupCommandDrawer();
@@ -1559,7 +1600,11 @@ function renderLobby(){
     document.body.appendChild(_l12Park);
   }
   ["rollBtn", "rollAutoBtn", "footAv"].forEach(function (id) {
-    const n = document.getElementById(id);
+    let n = document.getElementById(id);
+    /* Tidak ada di DOM -> mungkin baru dilepas innerHTML layar lain; adopsi dari registry. */
+    if (!n && _l12Live[id]) n = _l12Live[id];
+    /* Masih ada di DOM tapi belum pernah direlokasi (render pertama) -> kenali. */
+    if (n) _l12Live[id] = n;
     if (n && n.parentElement !== _l12Park) _l12Park.appendChild(n);
   });
 
@@ -1583,8 +1628,10 @@ function renderLobby(){
   const _combo = _party.filter(Boolean).length;
 
   /* RIWAYAT PULL: produksi tidak punya log pull ber-timestamp; state.stacks
-     DI-APPEND dalam urutan kedatangan (panels.js:674) -> 6 terbaru = riwayat. */
-  const _recent = (state.stacks || []).slice(-6).reverse();
+     DI-APPEND dalam urutan kedatangan (panels.js:674) -> 6 terbaru = riwayat.
+     Build-nya dipindah ke _l12RiwayatHtml() supaya refresh sesudah roll memakai
+     fungsi yang sama (tidak ada dua salinan markup). */
+  const _slotThumb = _l12SlotThumb;
 
   /* POTION (sumber sama dengan #buffDock milik panels.js) */
   const _now = Date.now();
@@ -1603,6 +1650,11 @@ function renderLobby(){
   const _glStacks = Math.min(10, Math.round(_glMult / 10) || (_glActive ? 1 : 0));
   const _glCost = (typeof GLOBAL_LUCK_COST !== "undefined") ? GLOBAL_LUCK_COST : 0;
   const _glCan = (state.premiumGems || 0) >= _glCost;
+  const _glMaxMult = (typeof GLOBAL_LUCK_MAX_MULT !== "undefined") ? GLOBAL_LUCK_MAX_MULT : 100;
+  const _glMaxed = _glMult >= _glMaxMult;
+  /* Label ikut widget asli panels.js:3317 (AKTIFKAN / +10× / MAX 100×) + HARGA
+     selalu tampil: user mengira tombolnya rusak karena harganya tak pernah kelihatan. */
+  const _glLabel = _glActive ? (_glMaxed ? "MAX " + _glMaxMult + "×" : "+10×") : "AKTIFKAN";
 
   /* WEATHER */
   const _wId = (typeof activeWeatherId === "function") ? activeWeatherId() : null;
@@ -1634,12 +1686,6 @@ function renderLobby(){
   const _passive = _hasEq && (typeof passiveName === "function") ? passiveName(eq.char) : "";
   const _mut = (eq && eq.mut && eq.mut !== "none") ? eq.mut.toUpperCase() : "";
   const _trait = (eq && eq.trait && eq.trait !== "none") ? eq.trait.toUpperCase() : "";
-  const _slotThumb = (s) => {
-    if (!s) return "";
-    const st = CARDS[s.char];
-    const thumb = (typeof cardThumb === "function") ? cardThumb(s.char) : ((st && st.thumb) ? st.thumb : "assets/cards/thumb/" + s.char + ".webp");
-    return `<img src="${thumb}" alt="">`;
-  };
 
   app.innerHTML = `
   <div class="lobby-hub stage-root l12" id="stage">
@@ -1696,15 +1742,10 @@ function renderLobby(){
             </div>
           </div>
 
-          <!-- L5b RIWAYAT PULL (6 card terbaru dari state.stacks) -->
+          <!-- L5b RIWAYAT PULL (6 kartu terbaru dari state.stacks) -->
           <div class="hist" data-block="history">
             <span class="hh">RIWAYAT PULL</span>
-            <div class="hstrip">
-              ${_recent.length ? _recent.map((s, i) => {
-                const nm = (typeof cardName === "function") ? cardName(s.char) : (CARDS[s.char] ? CARDS[s.char].name : s.char);
-                return `<div class="ph-row${i > 2 ? " more" : ""}">${_slotThumb(s)}<span class="pn">${nm}</span><span class="pt">${s.tier || ""}</span></div>`;
-              }).join("") : `<div class="ph-row"><span class="pn">belum ada pull</span></div>`}
-            </div>
+            <div class="hstrip">${_l12RiwayatHtml()}</div>
           </div>
 
           <!-- L4/L5/L6 HUD: potion + global luck + weather -->
@@ -1729,7 +1770,7 @@ function renderLobby(){
                 <span class="ghead"><span class="gtitle">GLOBAL LUCK</span><span class="gpill"><span class="gdot"></span><span id="l12GlStack">${_glStacks}/10 STACK</span></span></span>
                 <span class="grow"><span class="gmult" id="l12GlMult">${_glMult ? _glMult + "× LUCK" : "OFF"}</span><span class="gtm" id="l12GlTm">${_glActive ? _cd(_glLeft) : "--:--"}</span></span>
               </span>
-              <button class="gbtn" type="button" id="l12GlBuy"${_glCan ? "" : " disabled"}>+10×<img src="assets/images/premium-currency.webp" alt=""></button>
+              <button class="gbtn${_glActive && !_glMaxed ? " stack" : ""}${_glMaxed ? " maxed" : ""}${_glCan ? "" : " unaff"}" type="button" id="l12GlBuy"${_glMaxed ? " disabled" : ""}${_glCan ? "" : ' aria-disabled="true"'} title="${_glCan ? 'Beli/ tumpuk Global Luck' : 'Gems kurang — butuh ' + _glCost}"><span id="l12GlBuyLab">${_glLabel}</span><span class="gprice"><img src="assets/images/premium-currency.webp" alt=""><span id="l12GlBuyCost">${_glCost}</span></span></button>
             </div>
             <div class="wx" data-block="weather" role="status" id="l12Wx">
               <span class="winfo"><span class="rdot"></span><i class="ic wic i-sun"></i><span class="wname" id="l12WxName">${_w ? String(_w.name || _wId).toUpperCase() : "NO WEATHER"}</span><span class="wrr" id="l12WxRr">${_wRr}</span></span>
@@ -1737,11 +1778,14 @@ function renderLobby(){
             </div>
           </div>
 
-          <!-- L6 MODE HUB -->
+          <!-- L6 MODE HUB — BUTTON, bukan <a href>. href="#/" untuk STORY itu no-op
+               (hash sudah #/lobby) dan href polos ke #/tower / #/raid MELEWATI setup
+               yang dilakukan handler drawer (stopTower / raidView). Handler diikat ke
+               fungsi ASLI yang sudah terbukti jalan: openMission / stopTower+hash / raidView. -->
           <div class="hlist">
-            <a class="hrow" href="#/" data-hub="story"><i class="ic i-story"></i><span>STORY</span><b class="bd">${_storyBadge}</b></a>
-            <a class="hrow" href="#/tower" data-hub="tower"><i class="ic i-tower"></i><span>TOWER</span><b class="bd">${_towerBadge}</b></a>
-            <a class="hrow" href="#/raid" data-hub="raid"><i class="ic i-raid"></i><span>RAID</span><b class="bd">${_raidBadge}</b></a>
+            <button class="hrow" type="button" data-hub="story"><i class="ic i-story"></i><span>STORY</span><b class="bd">${_storyBadge}</b></button>
+            <button class="hrow" type="button" data-hub="tower"><i class="ic i-tower"></i><span>TOWER</span><b class="bd">${_towerBadge}</b></button>
+            <button class="hrow" type="button" data-hub="raid"><i class="ic i-raid"></i><span>RAID</span><b class="bd">${_raidBadge}</b></button>
           </div>
         </div>
       </div>
@@ -2162,6 +2206,27 @@ function renderLobby(){
     put("l12GlStack", Math.min(10, glOn ? Math.max(1, Math.round((gl.multiplier || 0) / 10)) : 0) + "/10 STACK");
     const wLeft = (state.weather && state.weather.endsAt) ? Math.max(0, state.weather.endsAt - now) : 0;
     put("l12WxTm", wLeft ? ((typeof fmtCountdown === "function") ? fmtCountdown(wLeft) : "") : "--:--");
+    /* RIWAYAT PULL ikut disegar di tick ini: jalur AUTO-roll memanggil
+       grantRolledCard di panels.js (file yang tidak kuotorisasi), jadi manual-roll
+       di-hook langsung oleh boot.js dan auto-roll tertangkap di sini. */
+    window.l12RefreshRiwayat();
+    /* +10x: label, harga, dan status mampu/tidak ikut saldo gem yang berubah
+       tanpa re-render penuh (mis. setelah beli atau setelah reward masuk). */
+    const glCost = (typeof GLOBAL_LUCK_COST !== "undefined") ? GLOBAL_LUCK_COST : 0;
+    const glMax = (typeof GLOBAL_LUCK_MAX_MULT !== "undefined") ? GLOBAL_LUCK_MAX_MULT : 100;
+    const glCan = (state.premiumGems || 0) >= glCost;
+    const glMaxed = glOn && ((gl.multiplier || 0) >= glMax);
+    put("l12GlBuyLab", glOn ? (glMaxed ? "MAX " + glMax + "×" : "+10×") : "AKTIFKAN");
+    put("l12GlBuyCost", String(glCost));
+    const gb = document.getElementById("l12GlBuy");
+    if (gb) {
+      gb.classList.toggle("unaff", !glCan);
+      gb.classList.toggle("maxed", glMaxed);
+      gb.classList.toggle("stack", glOn && !glMaxed);
+      gb.disabled = glMaxed;
+      if (glCan) gb.removeAttribute("aria-disabled"); else gb.setAttribute("aria-disabled", "true");
+      gb.title = glCan ? (glMaxed ? "Global Luck sudah MAX" : "Beli / tumpuk Global Luck") : ("Gems kurang — butuh " + glCost);
+    }
   }, 1000);
 
   /* ---- BINDING TOMBOL LOBBY (v12) ---- */
@@ -2174,12 +2239,41 @@ function renderLobby(){
     if (typeof sfx !== "undefined" && sfx.hit) sfx.hit();
     if (typeof toggleBackpack === "function") toggleBackpack();
   };
-  /* +10x GLOBAL LUCK -> fungsi beli asli panels.js, bukan duplikat logika. */
+  /* +10x GLOBAL LUCK -> fungsi beli asli panels.js, bukan duplikat logika.
+     Tombol SENGAJA tidak di-disable saat gems kurang: buyGlobalLuck() sudah
+     memberi toast 'GEMS TIDAK CUKUP · Butuh N Gems' (panels.js:3524). Kalau
+     disabled, klik tidak sampai ke sana dan tombol cuma diam -> dikira rusak.
+     Yang MAXED memang disabled (tidak ada yang bisa dibeli lagi).
+     buyGlobalLuck() async: renderLobby() dipanggil SESUDAH janji selesai, tidak
+     lagi sinkron seperti sebelumnya (waktu itu buff belum terpasang -> angka basi). */
   const _glBuy = document.getElementById("l12GlBuy");
   if (_glBuy) _glBuy.onclick = () => {
-    if (typeof buyGlobalLuck === "function") buyGlobalLuck();
-    renderLobby();
+    if (typeof sfx !== "undefined" && sfx.hit) sfx.hit();
+    if (typeof buyGlobalLuck !== "function") return;
+    const r = buyGlobalLuck();
+    if (r && typeof r.then === "function") {
+      r.then(() => { if (document.querySelector(".lobby-hub.l12")) renderLobby(); }).catch(() => {});
+    }
   };
+  /* MODE HUB: handler ASLI yang sama dengan command drawer (lihat bindClick
+     'drwStoryBtn'/'drwTowerBtn'/'drwRaidBtn' di bawah). .onclick (bukan
+     addEventListener) supaya idempoten lintas render — nol kebocoran listener. */
+  document.querySelectorAll(".lobby-hub.l12 .hrow[data-hub]").forEach(el => {
+    const hub = el.getAttribute("data-hub");
+    el.onclick = () => {
+      if (typeof sfx !== "undefined" && sfx.hit) sfx.hit();
+      if (hub === "story") {
+        if (typeof openMission === "function") openMission();
+        else location.hash = "#/";
+      } else if (hub === "tower") {
+        if (typeof stopTower === "function") stopTower();
+        location.hash = "#/tower";
+      } else if (hub === "raid") {
+        window.raidView = "hub";
+        location.hash = "#/raid";
+      }
+    };
+  });
   /* AUTO: indikator ON/OFF ikut state asli (#rollAutoBtn sudah punya handler
      milik js/boot.js:494 + js/panels.js). Node ini DIPINDAH, bukan dibuat ulang,
      jadi listener paint-nya harus dipasang SEKALI — kalau tidak, tiap renderLobby()
