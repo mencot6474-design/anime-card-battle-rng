@@ -2197,14 +2197,16 @@ function renderLobby(){
   }, 1000);
 
   /* ---- BINDING TOMBOL LOBBY (v12) ---- */
-  /* .pslot SENGAJA tidak dibinding: aksinya (kelola party & deck) sudah dipegang
-     kartu hero di bawah — dua kontrol untuk satu aksi membingungkan dan di 320px
-     slot 26px mustahil jadi target sentuh 44px. Strip party = cermin, bukan tombol. */
-  /* Kartu hero = kelola party juga (sama seperti standee lama). */
+  /* .pslot SEKARANG clickable (user request 2026-10-31): inline onclick ke #/deck
+     di template renderLobby(). Touch target 44px via ::before pseudo-element.
+     Kartu hero juga clickable ke #/deck (handler JavaScript di bawah). */
+  /* Kartu hero + slot party = kelola deck (user request 2026-10-31).
+     Hero standee dan pslot sekarang <button> dengan inline onclick ke #/deck.
+     Handler JavaScript ini memperkuat inline onclick + tambah sfx. */
   const _hero = document.getElementById("heroStandeeWrap");
   if (_hero) _hero.onclick = () => {
     if (typeof sfx !== "undefined" && sfx.hit) sfx.hit();
-    if (typeof toggleBackpack === "function") toggleBackpack();
+    location.hash = "#/deck";
   };
   /* +10x GLOBAL LUCK -> fungsi beli asli panels.js, bukan duplikat logika.
      Tombol SENGAJA tidak di-disable saat gems kurang: buyGlobalLuck() sudah
