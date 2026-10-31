@@ -44554,6 +44554,7 @@ body.on-tower:has(.tactical-tower-page) main#app,
 body.on-raid:has(.rd-page) main#app,
 body.on-settings:has(.sett-wrap) main#app{
   height:100dvh!important;max-height:100dvh!important;min-height:0!important;
+  padding-top:0!important;
 }
 /* sisakan ruang kanan-atas untuk tombol dev CORET */
 body.on-tower:has(.tactical-tower-page) .dossier-header,
@@ -54864,7 +54865,7 @@ html body.on-settings::before {
 /* ---- HEADER (prototipe .head) ---- */
 .sett-wrap .sett-head {
   position:relative; display:flex; flex-wrap:wrap; align-items:center;
-  justify-content:space-between; gap:6px; padding:8px 10px;
+  justify-content:space-between; gap:6px; padding:4px 10px 8px 10px;
   background:var(--panel); border:1px solid var(--hair);
   clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);
   border-radius:0; box-sizing:border-box; width:100%;
