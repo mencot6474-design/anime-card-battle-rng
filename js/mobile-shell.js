@@ -67,7 +67,7 @@
         if (!isOpen && typeof toggleBackpack === "function") toggleBackpack();
         else if (typeof bpSetTab === "function") bpSetTab("item");
       } },
-    { key: "more",    label: "More",    icon: "i-gear",
+    { key: "more",    label: "More",    icon: "i-menu",
       act: function () {
         if (typeof openCommandDrawer === "function") openCommandDrawer();
       } }
@@ -79,7 +79,11 @@
     "i-home":   "assets/icons/portal.svg",
     "i-deck":   "assets/icons/card-play.svg",
     "i-book":   "assets/icons/backpack.svg",
-    "i-gear":   "assets/icons/gears.svg"
+    /* "More" = pembuka command DRAWER, bukan Settings. Gerigi (gears.svg) dulu
+       dipakai di sini padahal secara universal berarti Settings (dan Settings di
+       produksi memang berikon gerigi di dalam drawer) -> menipu. Scroll = daftar
+       perintah. Aksi & label tidak berubah. */
+    "i-menu":   "assets/icons/scroll-unfurled.svg"
   };
   function iconHtml(name) {
     return '<i class="ic ' + name + '" aria-hidden="true" style="-webkit-mask:url(' +

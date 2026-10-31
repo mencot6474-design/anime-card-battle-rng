@@ -4459,7 +4459,10 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 .l12 .panel {
   position:relative; z-index:5; flex:0 0 40%; min-width:0; min-height:0;
   display:grid; grid-template-columns:minmax(0,1fr);
-  grid-template-rows:auto auto minmax(0,1fr) auto auto auto auto auto;
+  /* 3 lintasan = 3 item grid di portrait (.idwrap, .hud, .hlist). .hud/.idwrap
+     bisa display:contents di mode lain -> jumlah item berubah dan tiap blok media
+     di bawah menyetel ulang jumlah lintasannya sendiri. */
+  grid-template-rows:auto minmax(0,1fr) auto;
   gap:5px; padding:8px; background:var(--panel); border-left:1px solid var(--hair);
   overflow:hidden; align-content:start;
 }
@@ -4536,7 +4539,7 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 
 /* ---- L5 party strip ---- */
 .l12 .plist { display:flex; align-items:center; gap:5px; min-width:0; }
-.l12 .pslot { position:relative; flex:1; min-width:0; aspect-ratio:1/1; max-height:48px; background:url(../assets/frames/frame-slot.svg) center/100% 100% no-repeat; }
+.l12 .pslot { position:relative; flex:1; min-width:0; aspect-ratio:1/1; height:auto; max-width:48px; background:url(../assets/frames/frame-slot.svg) center/100% 100% no-repeat; }
 .l12 .pslot img { position:absolute; inset:5px; width:calc(100% - 10px); height:calc(100% - 10px); object-fit:cover; object-position:top; }
 .l12 .pslot::after { content:''; position:absolute; inset:5px; border:1.5px solid transparent; }
 .l12 .pslot.r-ur::after { border-color:rgba(251,191,36,.9); }
@@ -4547,22 +4550,8 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 .l12 .cmb { flex:none; display:flex; flex-direction:column; align-items:center; justify-content:center; height:34px; padding:0 5px; border:1px solid rgba(251,191,36,.45); background:rgba(251,191,36,.1); color:var(--gold); font-family:var(--mono); font-size:10px; line-height:1; }
 .l12 .cmb small { font-family:var(--tac); font-size:6px; letter-spacing:.1em; color:var(--silver); margin-top:2px; }
 
-/* ---- L5b riwayat pull ---- */
-.l12 .hist { display:none; flex-direction:column; gap:3px; min-height:0; }
-.l12 .hist .hh { font-family:var(--tac); font-size:8px; letter-spacing:.14em; color:var(--dim); }
-.l12 .hstrip { display:flex; flex-direction:column; gap:2px; min-height:0; min-width:0; scrollbar-width:none; -ms-overflow-style:none; }
-.l12 .hstrip::-webkit-scrollbar { display:none; width:0; height:0; }
-.l12 .ph-row {
-  display:flex; align-items:center; gap:6px; min-height:24px; padding:2px 5px;
-  background:var(--panel2); border:1px solid var(--hair);
-}
-.l12 .ph-row img { width:20px; height:20px; flex:none; object-fit:cover; object-position:top; }
-.l12 .ph-row .pn { flex:1; min-width:0; font-family:var(--tac); font-size:9px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.l12 .ph-row .pt { font-family:var(--mono); font-size:8px; color:var(--dim); }
-.l12 .ph-row.more { display:none; }
-
 /* chamfer seragam (prototipe) — BUKAN border-radius */
-.l12 .pill, .l12 .cmb, .l12 .ph-row { clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px); }
+.l12 .pill, .l12 .cmb { clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px); }
 .l12 .pot-row { clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px); }
 .l12 .glw { clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px); }
 .l12 .wx { clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px); }
@@ -4638,18 +4627,10 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   .l12 .idwrap { display:flex; flex-direction:row; align-items:center; gap:6px; min-width:0; }
   .l12 .op { flex:1 1 auto; min-width:0; }
   .l12 .plist { flex:0 0 auto; gap:3px; }
-  .l12 .pslot { max-height:26px; width:26px; flex:none; }
+  .l12 .pslot { width:26px; max-width:26px; flex:none; }
   .l12 .pslot img { inset:3px; width:calc(100% - 6px); height:calc(100% - 6px); }
   .l12 .cmb { height:26px; font-size:9px; padding:0 4px; }
   .l12 .cmb small { font-size:5.5px; }
-  .l12 .hist { display:flex; flex-direction:column; gap:2px; flex:none; max-height:44px; min-width:0; }
-  .l12 .hist .hh { font-size:7.5px; line-height:8px; }
-  .l12 .hstrip { flex-direction:row; flex:none; height:30px; gap:4px; min-width:0; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; }
-  .l12 .ph-row { flex:none; width:auto; max-width:132px; min-height:30px; height:30px; padding:0 5px; gap:4px; }
-  .l12 .ph-row img { width:22px; height:22px; }
-  .l12 .ph-row .pn { font-size:9px; max-width:64px; }
-  .l12 .ph-row .pt { font-size:8px; }
-  .l12 .ph-row.more { display:flex; }
   .l12 .hrow { font-size:10.5px; }
 }
 
@@ -4659,11 +4640,10 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
    js/mobile-shell.js dan anak .l12 cuma .colw, jadi root TETAP column dan jatah nav
    diberikan lewat padding root (lihat blok jembatan di bawah). */
 @media (orientation:landscape) {
-  .l12 .panel { flex:0 0 40%; grid-template-rows:auto auto minmax(0,1fr) auto auto auto auto auto; align-content:start; gap:3px; padding:4px 6px; }
+  /* landscape non-pendek: .idwrap & .hud display:contents -> 6 item (op, plist, pots, glw, wx, hlist) */
+  .l12 .panel { flex:0 0 40%; grid-template-rows:auto auto auto auto auto auto; align-content:space-between; gap:3px; padding:4px 6px; }
   .l12 .op .avatar { width:40px; height:40px; }
-  .l12 .pslot { max-height:48px; }
-  .l12 .ph-row { min-height:22px; }
-  .l12 .hist { display:flex; gap:2px; }
+  .l12 .pslot { max-width:48px; }
   .l12 .pot-row { min-height:20px; }
   .l12 .glw { padding:4px 6px; gap:5px; }
   .l12 .glw .gicon { width:24px; height:24px; }
@@ -4681,14 +4661,10 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   .l12 .op .avatar { width:24px; height:24px; }
   .l12 .op .t b { font-size:10px; }
   .l12 .plist { flex:0 0 auto; gap:3px; }
-  .l12 .pslot { max-height:26px; width:26px; flex:none; }
+  .l12 .pslot { width:26px; max-width:26px; flex:none; }
   .l12 .cmb { height:26px; font-size:9px; padding:0 4px; }
   .l12 .cmb small { font-size:5.5px; }
   .l12 .panel { gap:3px; padding:2px 5px; }
-  .l12 .ph-row { min-height:14px; padding:1px 4px; gap:5px; }
-  .l12 .ph-row img { width:14px; height:14px; }
-  .l12 .ph-row .pn { font-size:8.5px; }
-  .l12 .hist { gap:2px; margin-bottom:6px; }
   .l12 .pot-row { min-height:16px; font-size:9.5px; }
   .l12 .pot-row .pimg { width:15px; height:15px; }
   .l12 .pot-row b { font-size:9.5px; }
@@ -4722,7 +4698,7 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   .l12 .op .avatar { width:26px; height:26px; }
   .l12 .op .t b { font-size:10px; }
   .l12 .plist { gap:3px; }
-  .l12 .pslot { max-height:26px; }
+  .l12 .pslot { max-width:26px; }
   .l12 .pslot img { inset:3px; width:calc(100% - 6px); height:calc(100% - 6px); }
   .l12 .cmb { height:26px; font-size:9px; padding:0 4px; }
   .l12 .hrow { min-height:44px; }
@@ -4733,14 +4709,15 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 /* ---- desktop / layar lebar ---- */
 @media (min-width:1000px) {
   .l12 .stage { flex:0 0 56%; }
-  .l12 .panel { flex:0 0 44%; gap:10px; padding:14px; grid-template-columns:minmax(0,1fr); grid-template-rows:auto auto auto auto auto auto auto auto; align-content:space-between; }
-  .l12 .hist { display:flex; align-self:start; gap:4px; }
-  .l12 .ph-row { min-height:28px; padding:3px 7px; }
-  .l12 .ph-row img { width:24px; height:24px; }
-  .l12 .ph-row .pn { font-size:11px; }
-  .l12 .ph-row .pt { font-size:9.5px; }
-  .l12 .ph-row.more { display:flex; }
-  .l12 .hlist { grid-column:1; grid-row:8; flex-direction:row; gap:10px; align-self:end; max-width:420px; }
+  /* desktop: sama seperti landscape non-pendek -> 6 item, hlist sengaja baris TERAKHIR */
+  /* desktop: blok HUD rapat di atas, baris MODE HUB dipatok ke dasar panel
+     (lintasan TERAKHIR 1fr + .hlist align-self:end yang sudah ada di bawah).
+     space-between di sini bikin 5 gap ~85px -> baris UI terlihat melayang. */
+  /* desktop: riwayat dihapus -> ~250px ruang bebas. Slot party dilepas sampai lebar
+     alamiah flex (127px, tetap 1:1) supaya jadi jangkar visual, sisa ruang dibagi rata
+     (space-between): gap ~46px, bukan satu pita kosong di tengah. */
+  .l12 .panel { flex:0 0 44%; gap:10px; padding:14px; grid-template-columns:minmax(0,1fr); grid-template-rows:auto auto auto auto auto auto; align-content:space-between; }
+  .l12 .hlist { grid-column:1; grid-row:6; flex-direction:row; gap:10px; align-self:end; max-width:420px; }
   .l12 .hrow { flex:1 1 0; min-height:50px; max-height:none; max-width:150px; font-size:10.5px; gap:5px; }
   .l12 .hrow .ic { width:16px; height:16px; }
   .l12 .hrow .bd { font-size:9px; height:15px; padding:0 5px; }
@@ -4770,7 +4747,7 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   .l12 .wx .wname { font-size:12px; }
   .l12 .wx .wtm { font-size:11px; }
   .l12 .wx .wrr { font-size:9px; }
-  .l12 .pslot { max-height:84px; }
+  .l12 .pslot { max-width:130px; }
   .l12 .pslot img { inset:7px; width:calc(100% - 14px); height:calc(100% - 14px); }
   .l12 .cmb { height:44px; font-size:12px; }
   .l12 .rollbar { justify-content:center; padding:10px 14px; }
@@ -4960,17 +4937,18 @@ html body.on-lobby:has(.lobby-hub.l12) #pwaInstallBtn > span { display: none; }
   html body.on-lobby .lobby-hub.l12 .rollbar #rollAutoBtn.tgl { min-height: 52px !important; min-width: 71px !important; }
 }
 
-/* ---- 850x390: baris potion menempel blok GLOBAL LUCK ----
-   Akar masalah BUKAN tinggi barisnya. Di landscape pendek .idwrap jadi 1 item grid
-   (display:flex), jadi urutan item bergeser: idwrap(1) hist(2) pots(3) glw(4) wx(5) hlist(6).
-   Prototipe menaruh lintasan fleksibel minmax(0,1fr) di baris KE-3 — yang sekarang diisi
-   .pots — sehingga .pots dipatok 32px padahal isinya 2 x 16 + gap 4 = 36. Item meluber 4px
-   dan menyentuh .glw (bukti gate: rect speed b=191 vs gl t=190; prototipe sendiri mepet di
-   1px karena sebab yang sama). Perbaikan: pindahkan lintasan 1fr ke baris .hist (baris 2),
-   yang memang punya daftar gulir, lalu biarkan sisanya auto. Tidak ada angka prototipe yang
-   berubah (tetap 16px/baris), tabrakan hilang. */
+/* ---- (dahulu) 850x390: baris potion menempel blok GLOBAL LUCK ----
+   Dulu perlu: .idwrap jadi 1 item grid di landscape pendek sehingga urutan bergeser
+   dan lintasan 1fr prototipe (baris 3) jatuh ke .pots -> meluber 4px ke .glw.
+   Solusinya memindahkan 1fr ke baris .hist. RIWAYAT PULL sekarang DIHAPUS, dan blok
+   @media (orientation:landscape) di _l12_style.css sudah memakai semua-auto +
+   align-content:space-between, jadi tidak ada lintasan fleksibel yang bisa jatuh ke
+   blok potion. Override ini dihapus bersama sumber masalahnya. */
+/* landscape PENDEK (850x390): .idwrap kembali jadi 1 item (display:flex) -> 5 item,
+   jadi jumlah lintasannya 5, bukan 6. Kalau salah hitung, space-between menyisakan
+   void di bawah panel (terukur 38px saat riwayat masih ada). */
 @media (orientation:landscape) and (max-height:480px) {
-  .l12 .panel { grid-template-rows: auto minmax(0,1fr) auto auto auto auto auto auto; }
+  .l12 .panel { grid-template-rows: auto auto auto auto auto; align-content:space-between; }
 }
 
 /* ---- TIGA KACAT YANG HANYA KELIHAT DI SCREENSHOT (angka gerbang hijau semua) ----

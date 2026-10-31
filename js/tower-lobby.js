@@ -1544,36 +1544,15 @@ let _l12HudTick = null;   /* timer HUD v12 (potion / global luck / weather) */
    node yang SAMA beserta listener boot.js-nya. */
 const _l12Live = Object.create(null);
 
-/* ---- RIWAYAT PULL v12: SATU sumber, dua pemakai ----
-   renderLobby() memakainya untuk markup awal, window.l12RefreshRiwayat() untuk
-   menyegar strip SETELAH roll tanpa render penuh. Refresh ringan ini penting:
-   jalur auto-roll ada di panels.js (bukan hak editku) dan reveal roll menutupi
-   layar, jadi renderLobby() penuh di titik itu = overlay ketutup / render-loop. */
+/* ---- Thumb kartu utk panel operator (avatar + 4 slot party) ----
+   RIWAYAT PULL sudah DIHAPUS dari lobby v12 (perintah user 2026-10-31: "hapus aja
+   ga guna"), tapi fungsi ini tetap dipakai .avatar dan .pslot di renderLobby(). */
 function _l12SlotThumb(s) {
   if (!s) return "";
   const st = (typeof CARDS !== "undefined") ? CARDS[s.char] : null;
   const thumb = (typeof cardThumb === "function") ? cardThumb(s.char) : ((st && st.thumb) ? st.thumb : "assets/cards/thumb/" + s.char + ".webp");
   return `<img src="${thumb}" alt="">`;
 }
-
-function _l12RiwayatHtml() {
-  const recent = ((typeof state !== "undefined" && state.stacks) || []).slice(-6).reverse();
-  if (!recent.length) return `<div class="ph-row"><span class="pn">belum ada pull</span></div>`;
-  return recent.map((s, i) => {
-    const nm = (typeof cardName === "function") ? cardName(s.char) : ((typeof CARDS !== "undefined" && CARDS[s.char]) ? CARDS[s.char].name : s.char);
-    return `<div class="ph-row${i > 2 ? " more" : ""}">${_l12SlotThumb(s)}<span class="pn">${nm}</span><span class="pt">${s.tier || ""}</span></div>`;
-  }).join("");
-}
-
-/* Dipegang boot.js sesudah reveal roll tutup (js/boot.js:479) dan oleh tick HUD.
-   Return false kalau lobby v12 tidak terpasang (layar lain / battle). */
-window.l12RefreshRiwayat = function () {
-  const strip = document.querySelector(".lobby-hub.l12 .hstrip");
-  if (!strip) return false;
-  const html = _l12RiwayatHtml();
-  if (strip.innerHTML !== html) strip.innerHTML = html;
-  return true;
-};
 
 function renderLobby(){
   if(state.battle){
@@ -1626,12 +1605,6 @@ function renderLobby(){
   (state.stacks || []).forEach(s => { if (s && s.id) _byId[s.id] = s; });
   const _party = _deck.slice(0, 4).map(id => (id && _byId[id]) ? _byId[id] : null);
   const _combo = _party.filter(Boolean).length;
-
-  /* RIWAYAT PULL: produksi tidak punya log pull ber-timestamp; state.stacks
-     DI-APPEND dalam urutan kedatangan (panels.js:674) -> 6 terbaru = riwayat.
-     Build-nya dipindah ke _l12RiwayatHtml() supaya refresh sesudah roll memakai
-     fungsi yang sama (tidak ada dua salinan markup). */
-  const _slotThumb = _l12SlotThumb;
 
   /* POTION (sumber sama dengan #buffDock milik panels.js) */
   const _now = Date.now();
@@ -1727,7 +1700,7 @@ function renderLobby(){
           <span class="rail rail-panel" aria-hidden="true"></span>
           <div class="idwrap">
             <div class="op">
-              <div class="avatar">${_slotThumb(_party[0] || (state.stacks && state.stacks[state.stacks.length - 1]) || null)}</div>
+              <div class="avatar">${_l12SlotThumb(_party[0] || (state.stacks && state.stacks[state.stacks.length - 1]) || null)}</div>
               <div class="t">
                 <b>${(currentUser || "OPERATOR").toUpperCase()}</b>
                 <span class="luck"><i class="ic i-clover"></i>×${_luckMult.toFixed(2)}<b>${_luckTxt}</b></span>
@@ -1736,17 +1709,15 @@ function renderLobby(){
             </div>
             <div class="plist" id="l12Party">
               ${_party.map(s => s
-                ? `<div class="pslot r-${String(s.tier || "s").toLowerCase()}" data-slot="1">${_slotThumb(s)}</div>`
+                ? `<div class="pslot r-${String(s.tier || "s").toLowerCase()}" data-slot="1">${_l12SlotThumb(s)}</div>`
                 : `<div class="pslot empty" data-slot="0"><span class="plus">+</span></div>`).join("")}
               <span class="cmb">${_combo}/4<small>COMBO</small></span>
             </div>
           </div>
 
-          <!-- L5b RIWAYAT PULL (6 kartu terbaru dari state.stacks) -->
-          <div class="hist" data-block="history">
-            <span class="hh">RIWAYAT PULL</span>
-            <div class="hstrip">${_l12RiwayatHtml()}</div>
-          </div>
+          <!-- L5b RIWAYAT PULL: DIHAPUS (perintah user 2026-10-31). Ruang ini sekarang
+               diisi HUD di bawahnya — lihat .l12 .panel grid-template-rows di
+               css/lobby-prototype.css (blok .l12). -->
 
           <!-- L4/L5/L6 HUD: potion + global luck + weather -->
           <div class="hud">
@@ -2206,10 +2177,6 @@ function renderLobby(){
     put("l12GlStack", Math.min(10, glOn ? Math.max(1, Math.round((gl.multiplier || 0) / 10)) : 0) + "/10 STACK");
     const wLeft = (state.weather && state.weather.endsAt) ? Math.max(0, state.weather.endsAt - now) : 0;
     put("l12WxTm", wLeft ? ((typeof fmtCountdown === "function") ? fmtCountdown(wLeft) : "") : "--:--");
-    /* RIWAYAT PULL ikut disegar di tick ini: jalur AUTO-roll memanggil
-       grantRolledCard di panels.js (file yang tidak kuotorisasi), jadi manual-roll
-       di-hook langsung oleh boot.js dan auto-roll tertangkap di sini. */
-    window.l12RefreshRiwayat();
     /* +10x: label, harga, dan status mampu/tidak ikut saldo gem yang berubah
        tanpa re-render penuh (mis. setelah beli atau setelah reward masuk). */
     const glCost = (typeof GLOBAL_LUCK_COST !== "undefined") ? GLOBAL_LUCK_COST : 0;
