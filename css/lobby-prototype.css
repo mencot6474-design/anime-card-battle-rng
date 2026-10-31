@@ -1826,9 +1826,9 @@ html body.on-lobby .stage-loadout .loadout-slot .ls-mark svg {
   position: fixed !important;
   inset: 0 !important;
   z-index: 99990 !important;
-  background: rgba(3, 6, 14, 0.82) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
+  background: rgba(3, 6, 14, 0.5) !important;
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
   opacity: 0 !important;
   pointer-events: none !important;
   transition: opacity 0.35s ease !important;
