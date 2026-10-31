@@ -54879,14 +54879,14 @@ html body.on-settings::before {
 html.m-landscape body.on-settings main#app {
   padding-left: calc(var(--nav-w, 56px) + var(--safe-left, 0px)) !important;
 }
-/* Fix centering: parent padding-left 56px menggeser content area ke kanan,
-   sehingga .sett-wrap (margin:auto) center di parent = 50vw+28, bukan 50vw.
-   Transform translateX(-28px) menggeser visual rendering 28px ke kiri agar
-   center elemen = center viewport. Parent overflow-x:hidden mengklip 28px
-   kiri (bawah nav rail); konten aman karena .sett-head padding 14px.
-   Scoped ke html.m-landscape agar portrait tidak terpengaruh. */
+/* Fix centering: parent padding-left 56px (untuk nav rail) menggeser content
+   area ke kanan, sehingga .sett-wrap (margin:auto) center di parent, bukan di
+   viewport. REVERTED transform translateX(-28px) karena bikin header overlap
+   nav rail ("hadeh malah masuk ke tab bar").
+   Pakai max-width constraint agar header tidak lebih lebar dari available space
+   (viewport - nav rail - padding), sehingga tetap di area yang benar. */
 html.m-landscape body.on-settings .sett-wrap {
-  transform: translateX(calc(var(--nav-w, 56px) / -2)) !important;
+  max-width: calc(100vw - var(--nav-w, 56px) - 40px) !important;
 }
 
 /* Garis cyan di bawah header = .rail prototipe (_tmp/proto_more_v2.html:20-23),
