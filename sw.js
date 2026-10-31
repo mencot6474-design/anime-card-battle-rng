@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v288-settHeadUp';
+const CACHE_NAME = 'anime-card-battle-v289-settPosFix';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
