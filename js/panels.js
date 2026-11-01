@@ -2538,43 +2538,142 @@ function bpBuyBtn(d,kind){
   if(d.src==="premium")return `<button class="bp-shop-b buy" style="background:linear-gradient(135deg,#e6b800,#b38600);color:#0a0800;border-color:#ffd700;" onclick="openPremiumShop()">TOKO PREMIUM · ${d.gemPrice} GEMS</button>`;
   return `<button class="bp-shop-b ${(state.coins||0)>=d.price?'buy':'poor'}" onclick="bpBuy${kind}('${d.id}')">BELI · ${coinIcon(15)} ${fmt(d.price)}</button>`;
 }
+/* ====== TAB RELIC & PET (prototipe bp3 #v-relic / #v-pet, DIKUNCI user) — PRESENTASI SAJA.
+   Bentuk RELIC: .bp-relicboard -> .btitle + .bp-coinrow + .eqslots (2 slot) + .igroup-h + .relicgrid.
+   Bentuk PET : .bp-petboard  -> .btitle + .bp-coinrow + .bp-petheroes + .igroup-h + .petgrid.
+   Yang TIDAK disentuh (mekanik user): kepemilikan/slot tetap state.artOwned / state.artSlots (2) /
+   state.petOwned / state.petEquipped; pasang-lepas tetap bpToggleArt/bpTogglePet; lepas dari slot
+   tetap bpArtSlot(i); beli tetap bpBuyBtn(d,'Art'|'Pet') — string kanal aslinya ("TOKO WORLD BOSS ·
+   n TOKEN", "DROP · INF TOWER", "TOKO PREMIUM · n GEMS", "BELI · n") dipanggil dari helper itu,
+   TIDAK ditulis ulang di sini. Angka tetap totalLuck()/luckTxt(d), warna tetap d.color,
+   renderGlobalLuckWidget() tetap paling atas. Nol emoji: glif luck = assets/icons/clover.svg,
+   slot kosong = SVG plus, span fallback emoji (glif pet) dibuang — <img alt> sudah cukup.
+   Warna lewat custom property --ec (pola sama seperti port TREE/ITEM), bukan inline color. */
+const BP_CLOVER='<img class="bp-luckglyph" src="assets/icons/clover.svg" alt="" width="13" height="13" loading="lazy" decoding="async">';
+const BP_PLUS='<svg class="bp-eqplus" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg>';
+const BP_LOCK='<img class="bp-tlock" src="assets/icons/padlock.svg" alt="" loading="lazy" decoding="async">';
+const BP_X='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg>';
+/* Art tile: webp asli (thumbSrc) atau SVG fallback artIconSvg — file gambar tidak disentuh. */
+function bpGearArtHtml(d,cls){
+  if(!d.img)return artIconSvg(d.icon);
+  return `<img${cls?' class="'+cls+'"':''} src="${thumbSrc(d.img)}" alt="${d.name}" loading="lazy" decoding="async">`;
+}
+/* Badge status kartu — dari state + ART_DEFS/PET_DEFS yang ada (d.src), bukan aturan baru.
+   Lencana non-aktif hanya SINGKATAN kanal (TOKEN WB / DROP / GEM / COIN); kalimat kanal yang
+   sebenarnya tetap milik bpBuyBtn() dan muncul utuh di modal — tidak ditulis ulang di sini. */
+function bpGearStatus(d,owned,active){
+  if(active)return{t:'AKTIF',cls:'act'};
+  if(owned)return{t:'MILIK',cls:'own'};
+  return{t:d.src==='raid'?'TOKEN WB':d.src==='tower'?'DROP':d.src==='premium'?'GEM':'COIN',cls:'lock '+(d.src||'coin')};
+}
+/* Baris angka global (luck + coin) — sama seperti sebelumnya, TANPA glif shamrock. */
+function bpGearCoinRow(coins){
+  return `<div class="bp-coinrow">${BP_CLOVER}<b class="num">${totalLuck().toFixed(1)}×</b><span class="bp-sep" aria-hidden="true">·</span>${coinIcon(15)}<b class="num">${fmt(coins)}</b></div>`;
+}
+/* Slot artefak terisi = pintu LEPAS via bpArtSlot(i) — perilaku lama persis. */
+function bpRelicSlotHtml(i){
+  const id=state.artSlots[i],d=id?ART_DEFS.find(x=>x.id===id):null;
+  if(!d)return `<button type="button" class="eqslot empty" onclick="toast('SLOT KOSONG','BELI ARTEFAK DULU','#fcd34d')" aria-label="Slot ${i+1} kosong">${BP_PLUS}<span class="ek">SLOT ${i+1} KOSONG</span></button>`;
+  return `<button type="button" class="eqslot on" style="--ec:${d.color}" onclick="bpArtSlot(${i})" aria-label="Slot ${i+1}: ${d.name} — klik untuk lepas">
+    <span class="eqk">SLOT ${i+1}</span>${bpGearArtHtml(d,'eqart')}
+    <span class="eqmeta"><span class="eqn">${d.name}</span><span class="eql num">${luckTxt(d)}</span><span class="eqs">TERPASANG · KLIK UNTUK LEPAS</span></span></button>`;
+}
+function bpRelicTileHtml(d){
+  const owned=state.artOwned.includes(d.id),eq=state.artSlots.includes(d.id);
+  const s=bpGearStatus(d,owned,eq);
+  return `<button type="button" class="relictile${owned?'':' locked'}${eq?' eqd':''}" style="--ec:${d.color}" aria-label="${d.name} · ${luckTxt(d)}" onclick="bpGearModalOpen('art','${d.id}')">
+    <span class="rtchip ${s.cls}">${s.t}</span>${BP_LOCK}<span class="rts" aria-hidden="true"></span>${bpGearArtHtml(d)}
+    <span class="rtn">${d.name}</span><span class="rtv num">${luckTxt(d)}</span></button>`;
+}
 function renderBpArts(){
   const coins=state.coins||0;
-  const slots=[0,1].map(i=>{
-    const id=state.artSlots[i],d=id?ART_DEFS.find(x=>x.id===id):null;
-    if(!d)return `<div class="bp-aslot empty" onclick="toast('SLOT KOSONG','BELI ARTEFAK DULU','#fcd34d')"><span>◈</span></div>`;
-    return `<div class="bp-aslot filled" style="--ec:${d.color}" onclick="bpArtSlot(${i})">${artIconHtml(d)}<span class="bp-aslot-n">${d.name}</span><button class="bp-aslot-x" onclick="event.stopPropagation();bpArtSlot(${i})">&times;</button></div>`;
-  }).join('');
-  const cards=ART_DEFS.map(d=>{
-    const owned=state.artOwned.includes(d.id),eq=state.artSlots.includes(d.id);
-    const btn=eq?`<button class="bp-shop-b off" onclick="bpToggleArt('${d.id}')">LEPAS</button>`
-      :owned?`<button class="bp-shop-b on" onclick="bpToggleArt('${d.id}')">PASANG</button>`
-      :bpBuyBtn(d,"Art");
-    return `<div class="bp-shop${eq?' eq':''}" style="--ec:${d.color}"><div class="bp-shop-ic">${artIconHtml(d)}</div><div class="bp-shop-n">${d.name}</div><div class="bp-shop-e">${luckTxt(d)}</div>${btn}</div>`;
-  }).join('');
-  return `${renderGlobalLuckWidget()}<div class="bp-h">ARTEFAK · 2 SLOT<div class="bp-coinrow">☘ ${totalLuck().toFixed(1)}× · ${coinIcon(15)} ${fmt(coins)}</div></div>
-  <div class="bp-slotsrow">${slots}<div class="bp-aslot-hint">Klik slot untuk lepas<br>Beli artefak dulu untuk pasang</div></div>
-  <div class="bp-grid6">${cards}</div>`;
+  return `${renderGlobalLuckWidget()}<div class="bp-relicboard"><div class="btitle">RELIC · SLOT ARTEFAK (MAKS 2)</div>${bpGearCoinRow(coins)}
+  <div class="eqslots">${[0,1].map(i=>bpRelicSlotHtml(i)).join('')}</div>
+  <div class="igroup-h">ARTEFAK</div>
+  <div class="relicgrid">${ART_DEFS.map(d=>bpRelicTileHtml(d)).join('')}</div></div>`;
+}
+/* Hero pet aktif = blok besar di atas grid; state kosong TIDAK collapse — elemennya selalu ada
+   dengan kelas .none + tiga baris pesan, jadi tinggi blok dijaga CSS (min-height), bukan oleh data. */
+function bpPetHeroHtml(){
+  const d=state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;
+  if(!d)return `<div class="pethero none"><span class="phinfo"><span class="phk">PET AKTIF</span><span class="phn">TIDAK ADA PET AKTIF</span><span class="phst">PILIH PET DI BAWAH INI · KLIK KARTU UNTUK DETAIL</span></span></div>`;
+  return `<button type="button" class="pethero on" style="--ec:#7DF9FF" onclick="bpGearModalOpen('pet','${d.id}')" aria-label="${d.name} — pet aktif, klik untuk detail">
+    ${bpGearArtHtml(d,'phimg')}
+    <span class="phinfo"><span class="phk">PET AKTIF</span><span class="phn">${d.name}</span>
+      <span class="phstat"><span class="phs"><span class="k">LUCK FLAT</span><span class="v num">+${d.flat||0}</span></span><span class="phs"><span class="k">LUCK %</span><span class="v num">+${d.pct||0}%</span></span></span>
+      <span class="phst">${luckTxt(d)}</span></span></button>`;
+}
+function bpPetTileHtml(p){
+  const owned=state.petOwned.includes(p.id),eq=state.petEquipped===p.id;
+  const s=bpGearStatus(p,owned,eq);
+  return `<button type="button" class="pettile${owned?'':' locked'}${eq?' act':''}" style="--ec:#7DF9FF" aria-label="${p.name} · ${luckTxt(p)}" onclick="bpGearModalOpen('pet','${p.id}')">
+    <span class="ptchip ${s.cls}">${s.t}</span>${BP_LOCK}<span class="onair" aria-hidden="true"></span>${bpGearArtHtml(p)}
+    <span class="ptn">${p.name}</span><span class="ptv num">${luckTxt(p)}</span></button>`;
 }
 function renderBpPets(){
   const coins=state.coins||0;
-  const act=state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;
-  const actHtml=act?`<div class="bp-petact">
-    <div class="bp-petact-img"><img src="${thumbSrc(act.img)}" loading="lazy" decoding="async" alt="${act.name}" onerror="this.parentNode.classList.add('noimg')"><span class="lp-fb">${act.emoji}</span></div>
-    <div class="bp-petact-meta"><span class="bp-petact-l">PET AKTIF</span><span class="bp-petact-n">${act.name}</span><span class="bp-petact-e">${luckTxt(act)}</span></div>
-    <button class="bp-shop-b off" style="margin-left:auto" onclick="bpTogglePet('${act.id}')">LEPAS</button></div>`
-    :`<div class="bp-petact"><span class="bp-petact-none">BELUM ADA PET AKTIF — BELI &amp; PASANG DI BAWAH</span></div>`;
-  const cards=PET_DEFS.map(p=>{
-    const owned=state.petOwned.includes(p.id),eq=state.petEquipped===p.id;
-    const btn=eq?`<button class="bp-shop-b off" onclick="bpTogglePet('${p.id}')">LEPAS</button>`
-      :owned?`<button class="bp-shop-b on" onclick="bpTogglePet('${p.id}')">PASANG</button>`
-      :bpBuyBtn(p,"Pet");
-    return `<div class="bp-shop${eq?' eq':''}" style="--ec:#7DF9FF"><div class="bp-shop-ic"><img src="${thumbSrc(p.img)}" loading="lazy" decoding="async" alt="${p.name}" onerror="this.parentNode.classList.add('noimg')"><span class="ph">${p.emoji}</span></div><div class="bp-shop-n">${p.name}</div><div class="bp-shop-e">${luckTxt(p)}</div>${btn}</div>`;
-  }).join('');
-  return `${renderGlobalLuckWidget()}<div class="bp-h">PET · 1 SLOT<div class="bp-coinrow">☘ ${totalLuck().toFixed(1)}× · ${coinIcon(15)} ${fmt(coins)}</div></div>
-  ${actHtml}
-  <div class="bp-grid6">${cards}</div>`;
+  return `${renderGlobalLuckWidget()}<div class="bp-petboard"><div class="btitle">PET · 1 SLOT AKTIF</div>${bpGearCoinRow(coins)}
+  <div class="bp-petheroes">${bpPetHeroHtml()}</div>
+  <div class="igroup-h">SEMUA PET</div>
+  <div class="petgrid">${PET_DEFS.map(p=>bpPetTileHtml(p)).join('')}</div></div>`;
 }
+/* ---- Modal detail artefak/pet: memakai KELAS yang SUDAH ada dan sudah bergaya
+   (.bp-cardmodal + .bp-cm-*), tapi elemen body-level sendiri (#bpGearModal) supaya
+   bpCardModalSync (milik tab DECK) tidak perlu disentuh. Bukan gaya modal ketiga. ---- */
+let _bpGearModal=null;
+function bpGearModalOpen(kind,id){bpCardModalClose();_bpGearModal={kind,id};bpGearModalSync();}
+function bpGearModalClose(){const e=document.getElementById('bpGearModal');if(e)e.remove();_bpGearModal=null;}
+function bpGearModalSync(){
+  if(!_bpGearModal)return;
+  const isPet=_bpGearModal.kind==='pet';
+  const d=(isPet?PET_DEFS:ART_DEFS).find(x=>x.id===_bpGearModal.id);
+  if(!d){bpGearModalClose();return;}
+  let el=document.getElementById('bpGearModal');
+  if(!el){
+    el=document.createElement('div');el.id='bpGearModal';el.className='bp-cardmodal bp-gearmodal';
+    el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');
+    el.addEventListener('click',ev=>{
+      if(ev.target===el){bpGearModalClose();return;}
+      /* tombol beli datang dari bpBuyBtn (onclick milik helper itu) — modal ditutup setelahnya
+         supaya re-render panel menampilkan status kepemilikan yang baru. */
+      if(ev.target.closest&&ev.target.closest('.bp-shop-b'))bpGearModalClose();
+    });
+    document.body.appendChild(el);
+  }
+  const owned=isPet?state.petOwned.includes(d.id):state.artOwned.includes(d.id);
+  const active=isPet?state.petEquipped===d.id:state.artSlots.includes(d.id);
+  const stat=(k,v)=>`<div class="bp-cm-st"><span class="bp-cm-k">${k}</span><span class="bp-cm-v">${v}</span></div>`;
+  const ownLine=active?(isPet?'PET AKTIF':'TERPASANG · SLOT '+(state.artSlots.indexOf(d.id)+1)):(owned?'DIMILIKI':'BELUM DIMILIKI');
+  const toggle="bpToggle"+(isPet?'Pet':'Art')+"('"+d.id+"')";
+  const acts=active?`<button class="bp-cm-btn warn" type="button" onclick="${toggle};bpGearModalClose()">LEPAS</button>`
+    :owned?`<button class="bp-cm-btn pri" type="button" onclick="${toggle};bpGearModalClose()">PASANG</button>`
+    :`<div class="bp-cm-buy">${bpBuyBtn(d,isPet?'Pet':'Art')}</div>`;
+  el.setAttribute('aria-label',d.name);
+  el.innerHTML=`<div class="bp-cm-panel">
+    <button class="bp-cm-x" type="button" onclick="bpGearModalClose()" aria-label="Tutup" title="Tutup [ESC]">${BP_X}</button>
+    <div class="bp-cm-top">
+      <div class="bp-cm-art gear">${d.img?`<img src="${d.img}" alt="${d.name}" decoding="async">`:artIconSvg(d.icon)}</div>
+      <div class="bp-cm-info">
+        <div class="bp-cm-name">${d.name}</div>
+        <span class="bp-cm-chip">${isPet?'PET':'ARTEFAK'}</span>
+        <div class="bp-cm-stats">${stat('LUCK FLAT','+'+(d.flat||0))}${stat('LUCK %','+'+(d.pct||0)+'%')}</div>
+        <div class="bp-cm-own${active?' on':''}">${ownLine}</div>
+      </div>
+    </div>
+    <div class="bp-cm-pass"><span class="bp-cm-k">EFEK</span><div class="bp-cm-skill">${luckTxt(d)}</div></div>
+    <div class="bp-cm-acts">${acts}</div>
+  </div>`;
+}
+/* Esc berjenjang untuk modal gear (capture, sebelum boot.js menutup backpack) + tutup saat
+   pindah tab / menekan tutup — pola sama seperti rantai modal kartu. */
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Escape'||!_bpGearModal)return;
+  e.stopPropagation();e.preventDefault();bpGearModalClose();
+},true);
+document.addEventListener('click',function(e){
+  if(!_bpGearModal)return;
+  if(e.target.closest&&e.target.closest('.bp-tab,.backpack-close'))bpGearModalClose();
+},true);
 
 /* Pesan galat RPC beli item (0028) -> teks yang bisa dibaca pemain. */
 function bpBuyErr(res){
