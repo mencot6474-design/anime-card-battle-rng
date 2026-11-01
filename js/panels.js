@@ -1909,23 +1909,27 @@ const BP_ITEM_GROUPS=[
   {cls:'roll',label:'ROLL PACK',test:k=>bpPackRollAmountOf(k)>0},
 ];
 const BP_ITEM_BCOL={luck:'#5eead4',speed:'#ffd27a',roll:'#ff2e88'};
-/* Efek singkat di kartu — angka yang SUDAH ada di data yang dipakai bpItemDef().desc:
-   durasi dari POTION_BUFF_MS, flat/pct dari LUCK_POTS, add dari SPEED_POTS, rolls dari PACK_ROLL_AMOUNT. */
-function bpItemEffText(kind){
-  const dur=Math.round(POTION_BUFF_MS/60000)+' MENIT';
-  if(kind.startsWith('luck')){const p=LUCK_POTS[+kind.slice(4)];if(!p)return '';
-    return `+${p.flat} FLAT LUCK${p.pct?` · +${Math.round(p.pct*100)}%`:''} · ${dur}`;}
-  if(kind.startsWith('speed')){const p=SPEED_POTS[+kind.slice(5)];if(!p)return '';
-    return `ROLL +${p.add.toFixed(1)}× · ${dur}`;}
-  const rolls=bpPackRollAmountOf(kind);
-  return rolls>0?`${fmt(rolls)} TARIKAN · INSTAN`:'';
-}
-/* ×0 = kartu nonaktif visual + aria, TAPI tetap bisa diklik: atribut `disabled` asli
-   sengaja TIDAK dipakai supaya jalur info/beli di bpItemPop tidak pernah hilang. */
+/* Kartu ×0 tetap bisa diklik (badge ×0 redup + aria-disabled) supaya jalur info/beli di
+   bpItemPop tidak pernah hilang; YANG dinonaktifkan hanya tombol aksi (disabled). */
 function bpItemCardHtml(kind){
   const d=bpItemDef(kind);if(!d)return '';
   const has=d.cnt>0;
-  return `<button type="button" class="bp-itemcard${has?'':' off'}" data-item="${kind}" aria-disabled="${has?'false':'true'}" aria-label="${d.name} · dimiliki ×${fmt(d.cnt)}" onclick="bpItemPop('${kind}')"><span class="bi-qty${has?'':' zero'}">×${fmt(d.cnt)}</span><span class="bi-ic"><img src="${d.icon}" alt="${d.name}" loading="lazy" decoding="async"></span><span class="bi-name">${d.name}</span><span class="bi-eff">${bpItemEffText(kind)}</span><span class="bi-act${d.isPack?' roll':''}" aria-hidden="true">${d.isPack?'GULUNG':'PAKAI'}</span></button>`;
+  /* Kartu = DIV role=button (bukan <button>) supaya tombol aksi di dalamnya tetap HTML valid.
+     Tombol aksi = BUTTON sungguhan (prototipe _tmp/proto_backpack_v3.html .potuse):
+     klik tombol -> pakai 1 item (TIDAK buka modal); klik badan kartu -> bpItemPop(). */
+  return `<div class="bp-itemcard${has?'':' off'}" data-item="${kind}" role="button" tabindex="0" aria-disabled="${has?'false':'true'}" aria-label="${d.name} · dimiliki ×${fmt(d.cnt)}" onclick="bpItemPop('${kind}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();bpItemPop('${kind}');}"><span class="bi-qty${has?'':' zero'}">×${fmt(d.cnt)}</span><span class="bi-ic"><img src="${d.icon}" alt="${d.name}" loading="lazy" decoding="async"></span><span class="bi-name">${d.name}</span><button type="button" class="bi-act${d.isPack?' roll':''}" onclick="event.stopPropagation();bpItemUse('${kind}')" ${has?'':'disabled'}>${d.isPack?'GULUNG':'PAKAI'}</button></div>`;
+}
+/* Pakai 1 item LANGSUNG dari kartu (tidak lewat modal) — memakai handler yang sudah ada,
+   tidak ada mekanik baru: PAKAI potion = 1 pot (bukan 'all'), GULUNG pack = 1 paket.
+   x0 = tidak ada aksi (tombol disabled + guard jumlah). */
+function bpItemUse(kind){
+  const d=bpItemDef(kind);if(!d)return;
+  if((d.cnt||0)<=0)return;
+  if(kind.startsWith('luck')){bpUseLuckPotion(+kind.slice(4),1);return;}
+  if(kind.startsWith('speed')){bpUseSpeedPotion(+kind.slice(5),1);return;}
+  if(kind==='potion'){bpUsePotion();return;}
+  if(kind==='intan'){bpUseIntanRoll(1);return;}
+  if(d.isPack){bpUseRollPack(kind,bpPackRollAmountOf(kind),1);return;}
 }
 /* Chip buff = sumber yang sama dengan dock lobby (renderBuffDock ~293): luckBuffs()/
    speedBuffs() per level + boost ADS; countdown pakai fmtCountdown yang sama. */
@@ -2022,7 +2026,6 @@ function bpItemPop(kind){
       </div>
 
       <div class="bpholo-info-box">
-        <div class="bpholo-desc">${d.desc}</div>
         ${d.active?`<div class="bpholo-active-eff">${d.active}</div>`:''}
         ${odds}
         ${multi}

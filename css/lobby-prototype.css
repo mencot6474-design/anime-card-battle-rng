@@ -6299,3 +6299,110 @@ html body.on-lobby .lobby-hub.l12 #footAv.l12-menu:active { transform: scale(.97
   text-shadow:0 0 12px currentColor,0 1px 4px rgba(4,7,13,.95);
 }
 
+/* ================= ITEM TAB — POLISH 2026-11-02 (port .potuse prototipe v3)
+   MASALAH (user 2026-11-02): (a) tombol aksi kartu = SPAN hiasan tanpa handler -> teks
+   "EQUIP" (padanan i18n dari PAKAI) dan tidak berfungsi; (b) baris efek (.bi-eff)
+   bikin tinggi kartu ragged (138/138/150/138); (c) judul board nempel tab bar +
+   pill hijau "ACTIVE PLAYER ON" (HUD lobby, position:fixed z-index 999999) menutupi
+   sudut kiri atas judul.
+
+   PERBAIKAN (kartu item saja — DECK/SKILL TREE/RELIC/PET tidak tersentuh):
+   (1) kartu = DIV role=button (bukan <button>) + <button class="bi-act"> NYATA di
+       dalamnya (HTML valid), PAKAI/GULUNG => pakai 1 item, TIDAK membuka modal;
+       disabled saat stok 0 (prototipe .potuse[disabled]).
+   (2) .bi-eff dihapus dari DOM -> semua kartu sama tinggi (kota dikunci 2 baris).
+   (3) tombol aksi: prototype .potuse (min-height 44px, radius 10px, weight 900,
+       letter-spacing .2em, aksen per grup: luck teal / speed amber / roll magenta).
+   (4) judul board + strip buff dikasih ruang bernapas (tidak ada yang terpotong).
+   (5) pill HUD lobby disembunyikan saat Backpack terbuka (mirip body.bp-open
+       #topbar / .lobby-footer) — itu elemen HUD lobby, bukan bagian tab.
+
+   Tanpa backdrop-filter, tanpa animasi box-shadow/width/height/top, tanpa
+   background-attachment:fixed. Target sentuh semua >= 44px. ==================== */
+
+/* ---------- (0) pill HUD lobby tidak menimpa panel Backpack ---------- */
+html body.bp-open #activePlayersBadge { display:none !important; }
+
+/* ---------- (1) papan + judul: ruang bernapas di bawah tab bar ---------- */
+.backpack-panel .bp-itemboard { padding:12px 1px 16px; }
+.backpack-panel .bp-itemboard .btitle {
+  margin:0 0 14px; padding:0; font-size:10px; font-weight:800; letter-spacing:.32em;
+  color:var(--bp-txd,#8aa3bd); min-height:12px;
+}
+/* strip buff: tetap satu baris, napas cukup, tidak nempel kartu */
+.backpack-panel .bp-itemboard .buffstrip { margin:0 0 14px; padding:9px 12px; min-height:40px; }
+.backpack-panel .bp-itemboard .igroup { margin-bottom:16px; }
+
+/* ---------- (2) kartu item: DIV role=button, tinggi seragam ---------- */
+.backpack-panel .bp-itemboard .bp-itemcards { align-items:stretch; }
+.backpack-panel .bp-itemboard .bp-itemcard {
+  position:relative; display:flex; flex-direction:column; align-items:stretch;
+  margin:0; padding:11px; border:0; border-radius:13px;
+  text-align:left; cursor:pointer; color:var(--bp-tx,#e8f6ff);
+  font-family:var(--font-tac,'Rajdhani',sans-serif);
+  background:linear-gradient(165deg,#182742 0%,#101a2c 58%,#0c1422 100%);
+  box-shadow:0 8px 18px rgba(0,0,0,.42); transition:transform .16s ease;
+}
+/* ×0: kartu tetap bisa diklik (buka modal info) — yang nonaktif hanya tombol aksi */
+.backpack-panel .bp-itemboard .bp-itemcard.off { opacity:.55; }
+.backpack-panel .bp-itemboard .bp-itemcard.off .bi-act { filter:none; }
+
+/* ---------- (3) ikon 46x46 + drop-shadow lembut (prototipe .potcard .pic) ---------- */
+.backpack-panel .bp-itemboard .bi-ic { display:block; flex:none; width:46px; height:46px; margin:0 0 7px; }
+.backpack-panel .bp-itemboard .bi-ic img {
+  display:block; width:100%; height:100%; object-fit:contain;
+  filter:drop-shadow(0 5px 10px rgba(0,0,0,.6));
+}
+
+/* ---------- (4) nama: kotak 2 baris dikunci -> SEMUA kartu sama tinggi ---------- */
+.backpack-panel .bp-itemboard .bi-name {
+  display:block; min-height:2.4em; max-height:2.4em; overflow:hidden;
+  font-size:11.5px; font-weight:900; letter-spacing:.08em; line-height:1.2;
+  overflow-wrap:anywhere;
+}
+
+/* ---------- (5) badge jumlah: mono/amber, redup + ring saat 0 ---------- */
+.backpack-panel .bp-itemboard .bi-qty {
+  position:absolute; right:9px; top:8px; padding:4px 8px; border-radius:8px;
+  font-family:var(--font-mono,'Courier New',monospace); font-size:11px; font-weight:700;
+  line-height:1; white-space:nowrap; font-variant-numeric:tabular-nums;
+  color:var(--bp-am,#ffd27a); background:#0a101c; box-shadow:inset 0 0 0 1px rgba(255,210,122,.3);
+}
+.backpack-panel .bp-itemboard .bi-qty.zero {
+  color:var(--bp-txd,#8aa3bd); box-shadow:inset 0 0 0 1px rgba(140,180,220,.2);
+}
+
+/* ---------- (6) TOMBOL AKSI SUNGGUHAN (prototipe .potuse) ----------
+   --bcol diwarisi dari .igroup (luck teal / speed amber / roll magenta). */
+.backpack-panel .bp-itemboard .bi-act {
+  display:flex; align-items:center; justify-content:center; align-self:stretch;
+  width:100%; min-height:44px; margin-top:auto; padding:0 6px;
+  border:0; border-radius:10px; -webkit-appearance:none; appearance:none;
+  font-family:var(--font-tac,'Rajdhani',sans-serif); font-size:11px; font-weight:900;
+  letter-spacing:.2em; line-height:1; text-align:center; text-transform:uppercase;
+  white-space:nowrap; cursor:pointer; pointer-events:auto;
+  color:#04121c;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--bcol,#00d9ff) 88%,#ffffff 12%) 0%,var(--bcol,#00d9ff) 100%);
+  box-shadow:0 6px 16px color-mix(in srgb,var(--bcol,#00d9ff) 25%,transparent);
+  transition:transform .14s ease,opacity .14s ease;
+}
+.backpack-panel .bp-itemboard .bi-act:hover { transform:translateY(-2px); }
+.backpack-panel .bp-itemboard .bi-act:active { transform:translateY(0); }
+.backpack-panel .bp-itemboard .bi-act:focus-visible { outline:2px solid var(--bp-cy,#00d9ff); outline-offset:2px; }
+/* varian roll pack: magenta prototipe, teks gelap */
+.backpack-panel .bp-itemboard .bi-act.roll {
+  color:#1c0410; background:linear-gradient(180deg,#ff5fa5,#d61462);
+  box-shadow:0 6px 16px rgba(255,46,136,.25);
+}
+/* stok 0: mati jelas (prototipe .potuse[disabled]) */
+.backpack-panel .bp-itemboard .bi-act:disabled,
+.backpack-panel .bp-itemboard .bi-act[disabled] {
+  background:rgba(140,180,220,.1); color:var(--bp-txd,#8aa3bd);
+  box-shadow:inset 0 0 0 1px rgba(140,180,220,.16);
+  cursor:default; transform:none;
+}
+@media (prefers-reduced-motion:reduce) {
+  .backpack-panel .bp-itemboard .bi-act { transition:none; }
+  .backpack-panel .bp-itemboard .bi-act:hover { transform:none; }
+}
+

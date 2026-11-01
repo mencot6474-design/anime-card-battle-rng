@@ -478,6 +478,7 @@
     'JUMLAH ROLL:': 'ROLL AMOUNT:',
     'PAKAI SEKARANG': 'USE NOW',
     'GABUNG SEMUA': 'MERGE ALL',
+    'TIDAK ADA BUFF BERJALAN': 'NO ACTIVE BUFF',
     'ARTEFAK · 2 SLOT': 'ARTIFACTS · 2 SLOTS',
     'PET · 1 SLOT': 'PET · 1 SLOT',
     'Klik slot untuk lepas': 'Click slot to unequip',
@@ -540,7 +541,8 @@
     'TANPA TITLE': 'NO TITLE',
     'Tidak menampilkan gelar di profil': 'Do not display a title on your profile',
     'DIPAKAI': 'EQUIPPED',
-    'PAKAI': 'EQUIP',
+    'PAKAI': 'USE',
+    'GULUNG': 'ROLL',
     'BELUM TERBUKA': 'LOCKED',
 
     // Card Index Modal
@@ -1309,7 +1311,17 @@
     [/Token lantai ini tidak dibayar server/g, 'Floor token not granted by server'],
     [/PASTI SETIAP LANTAI/g, 'GUARANTEED EVERY FLOOR'],
     [/TARIKAN KARTU INSTAN/g, 'INSTANT CARD PULLS'],
-    [/INSTAN PACK · DROP ACAK PER LANTAI/g, 'INSTANT PACK · RANDOM FLOOR DROP']
+    [/INSTAN PACK · DROP ACAK PER LANTAI/g, 'INSTANT PACK · RANDOM FLOOR DROP'],
+
+    // === Item tab (2026-11-02): tombol aksi + modal item, label komposit & sisa kata ID ===
+    // Scoped ke item tab: PAKAI -> USE (bukan EQUIP), GULUNG -> ROLL (EXACT_MAP).
+    // JANGAN tambah regex global (TARIKAN/MENIT) — itu mengubah layar lain (cuaca, global luck).
+    [/PAKAI SEKARANG \((\d+)× paket\)/g, 'USE NOW ($1× packs)'],
+    [/PAKAI SEKARANG \((\d+)×\)/g, 'USE NOW ($1×)'],
+    [/PAKAI SEKARANG/g, 'USE NOW'],
+    [/PAKAI ×(\d+)/g, 'USE ×$1'],
+    [/Aktif:/g, 'Active:'],
+    [/dimiliki/g, 'owned']
   ];
 
   function translateTextString(str) {
