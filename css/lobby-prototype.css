@@ -3353,9 +3353,10 @@ body.bp-open .backpack-panel,
 .backpack-panel .bp-hdr-stats {
   display: flex !important;
   align-items: center !important;
-  gap: 14px !important;
+  gap: 16px !important;
   flex: none !important;
   min-width: 0 !important;
+  margin-right: 20px !important;
 }
 
 .backpack-panel .bp-hstat {
@@ -3419,7 +3420,7 @@ body.bp-open .backpack-panel,
 @media (max-width:400px) {
   .backpack-panel .bp-wordmark { font-size: 19px !important; }
   .backpack-panel .bp-wordmark small { display: none !important; }
-  .backpack-panel .bp-hdr-stats { gap: 9px !important; }
+  .backpack-panel .bp-hdr-stats { gap: 12px !important; margin-right: 14px !important; }
   .backpack-panel .bp-hstat-k { font-size: 8px !important; letter-spacing: 0.18em !important; }
   .backpack-panel .bp-hstat-v { font-size: 13px !important; }
   .backpack-panel .bp-opchip { font-size: 9px !important; max-width: 96px !important; padding: 3px 6px !important; }

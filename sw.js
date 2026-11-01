@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v307-gearCleanTitle';
+const CACHE_NAME = 'anime-card-battle-v308-powerSpacing';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
