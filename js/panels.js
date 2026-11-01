@@ -1642,12 +1642,12 @@ function renderBackpackPanel(){
   ];
   const tabbar=`<nav class="bp-tabs" role="tablist">${TABS.map(t=>`<button class="bp-tab${bpTab===t.k?' on':''}" onclick="if(typeof sfx!=='undefined'&&sfx.click)sfx.click();bpSetTab('${t.k}')" role="tab" aria-selected="${bpTab===t.k}"><span class="bp-tab-num">${t.num}</span><span class="bp-tab-ic">${t.ic}</span><span class="bp-tab-l">${t.l}</span><span class="bp-tab-laser"></span></button>`).join('')}</nav>`;
   queueMicrotask(bpCenterActiveTab);
-  const coins=state.coins||0;
   /* HEADER prototipe v3 (locked, _tmp/proto_backpack_v3.html 20-27): wordmark + accent rule + 2 stat REAL.
      KARTU = state.stacks.length (sumber sama seperti "KOLEKSI n" di bar DECK), POWER = deckTotalPower()
      via fmt() (formatter angka besar backpack, tabular-nums + nowrap supaya tidak kepotong tengah digit).
-     Pill koin/luck + tombol tutup + identitas operator DIPERTAHANKAN (data hidup), ditaruh di kanan
-     setelah stat. Kelas .bph-left/.bph-eyebrow/.bph-title/.bph-dot/.bph-sys/.bph-code tidak di-emit lagi. */
+     Tombol tutup + identitas operator DIPERTAHANKAN (data hidup), ditaruh di kanan setelah stat.
+     Pill koin + luck DIHAPUS dari header (permintaan user) — kelas .bph-stats/.bph-stat-pill tidak
+     di-emit lagi; .bph-left/.bph-eyebrow/.bph-title/.bph-dot/.bph-sys/.bph-code juga tidak. */
   const _bpPower=(typeof deckTotalPower==='function'?deckTotalPower():0);
   const header=`<div class="backpack-header">
     <div class="bp-wordmark">BACKPACK<small>SQUADRON COMMAND</small></div>
@@ -1658,10 +1658,6 @@ function renderBackpackPanel(){
     </div>
     <div class="bph-right">
       <span class="bp-opchip" title="Operator">${currentUser||'GUEST'}</span>
-      <div class="bph-stats">
-        <div class="bph-stat-pill" title="Koin">${typeof coinIcon==='function'?coinIcon(15):'<img src="assets/images/coin.webp" width="15" height="15" alt="Coin">'}<b>${fmt(coins)}</b></div>
-        <div class="bph-stat-pill" title="Current Luck"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.2"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg><b style="color:#38bdf8">${totalLuck().toFixed(1)}x</b></div>
-      </div>
       <button class="backpack-close" onclick="toggleBackpack()" aria-label="Tutup Backpack" title="Tutup [ESC]">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
@@ -1720,7 +1716,7 @@ function renderBackpackPanel(){
     const nm=cardName(s.char);
     const mounted=i<INITIAL;
     const mcol=mut?(MUT_COLOR[mut]||'#7DF9FF'):'#7DF9FF'; /* shiny-only juga #7DF9FF, sama seperti bpCardBorderColor */
-    return `<div class="bp-tile${bpInDeck(s)?' in-deck':''}${cData&&cData.fullArt?' fa':''}${mounted?'':' lz-ph'}" data-lz="${s.id}" data-sid="${s.id}" data-name="${nm.toLowerCase()}" aria-label="${nm}" role="button" onclick="bpCardModalOpen('${s.id}')" style="--pw:${pw.toFixed(3)};--tcol:${(cData&&TIER_COLOR[tier])||'#94a3b8'};--mcol:${mcol};--wcol:${w?w.color:'transparent'}">${mounted?_bpTileHtml[s.id]:''}</div>`;
+    return `<div class="bp-tile${bpInDeck(s)?' in-deck':''}${cData&&cData.fullArt?' fa':''}${mounted?'':' lz-ph'}${bpCardBorderKind(s)?' bp-mut-'+bpCardBorderKind(s):''}" data-lz="${s.id}" data-sid="${s.id}" data-name="${nm.toLowerCase()}" aria-label="${nm}" role="button" onclick="bpCardModalOpen('${s.id}')" style="--pw:${pw.toFixed(3)};--tcol:${(cData&&TIER_COLOR[tier])||'#94a3b8'};--mcol:${mcol};--wcol:${w?w.color:'transparent'}">${mounted?_bpTileHtml[s.id]:''}</div>`;
   }).join('');
   /* COLLECTION BAR prototipe (v3 .coll-bar): KOLEKSI n + FAV + MUT(popover: baris mutasi + URUTKAN) + search.
      URUTKAN sengaja DI DALAM popover (prototipe v3) — 4 tombol di bar memecah bar jadi 2-5 baris

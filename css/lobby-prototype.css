@@ -3730,9 +3730,13 @@ body.bp-open .backpack-panel,
 html #backpackPanel .bp-deckcol .bp-slots {
   display: grid !important;
   grid-template-columns: 1fr !important;
-  grid-auto-rows: minmax(0, 1fr) !important;
+  /* S-RAIL (item 1+2): baris = tinggi kotak 1:1, BUKAN 1fr. `minmax(0,1fr)` +
+     `height:100%` di bawah inilah yang menyayat art 2:3 jadi strip lebar-pendek. */
+  grid-auto-rows: auto !important;
   grid-template-rows: none !important;
-  align-items: stretch !important;
+  align-items: start !important;
+  align-content: center !important;
+  justify-items: center !important;
   gap: 7px !important;
   flex: 1 1 auto !important;
   min-height: 0 !important;
@@ -3746,12 +3750,16 @@ html #backpackPanel .bp-deckcol {
 }
 
 html #backpackPanel .bp-deckcol .bp-slot {
-  align-self: stretch !important;
-  justify-self: stretch !important;
+  align-self: start !important;
+  justify-self: center !important;
   width: 100% !important;
-  height: 100% !important;
+  /* S-RAIL: sisi = min(lebar rail, ruang tinggi untuk 4 slot + POWER) -> selalu 1:1 dan
+     4 slot + readout POWER tetap muat satu layar tanpa scroll (diisi ulang per
+     breakpoint di blok @media di bawah). Berlaku untuk slot terisi KOSONG (identik). */
+  max-width: min(100%, calc((100dvh - 268px) / 4)) !important;
+  height: auto !important;
   max-height: none !important;
-  aspect-ratio: auto !important;
+  aspect-ratio: 1 / 1 !important;
   padding: 0 !important;
 }
 
@@ -3760,15 +3768,53 @@ html #backpackPanel .bp-deckcol .bp-deckmeta {
   width: 100% !important;
 }
 
-/* portrait: chip dibatasi 48px supaya kolom dek tidak lebih tinggi dari sebelumnya
-   (146px) dan header CARD ARCHIVE tetap di dalam panel */
+/* S-RAIL (item 2) — state m-portrait: 4 slot KOTAK 1:1 identik (terisi maupun kosong),
+   sisi = min(lebar rail, ruang tinggi untuk 4 slot + readout POWER) sehingga tidak pernah
+   perlu scroll. Membatalkan `aspect-ratio:auto` + `height:100%` + `min-height:44px` dari
+   blok re-skin mobile di style.css:54273 — itulah penyebab slot portrait 80x44 (pendek). */
 html.m-portrait #backpackPanel .bp-deckcol .bp-slots {
   justify-content: center !important;
+  align-content: center !important;
+  justify-items: center !important;
   gap: 7px !important;
+  grid-template-rows: none !important;
+  grid-auto-rows: auto !important;
 }
-html.m-portrait #backpackPanel .bp-deckcol .bp-slot {
-  max-width: none !important;
+html.m-portrait #backpackPanel .bp-deckcol .bp-slot,
+html.m-portrait #backpackPanel .bp-deckcol .bp-slots .bp-slot {
+  width: 100% !important;
+  max-width: min(100%, calc((100dvh - 366px) / 4)) !important;
+  height: auto !important;
+  min-height: 0 !important;
   max-height: none !important;
+  aspect-ratio: 1 / 1 !important;
+  justify-self: center !important;
+  align-self: start !important;
+}
+
+/* S-RAIL (item 1+2) — state m-landscape (HP landscape 850x390 DAN desktop 1400x900):
+   rail tinggi & sempit, jadi sisi kotak dikunci oleh TINGGI BARIS (4 baris 1fr dari ruang
+   yang tersisa di atas/bawah readout POWER), bukan oleh lebar rail dan bukan konstanta dvh.
+   Hasil: 1:1 presisi, art 2:3 tampil UTUH (contain), 4 slot + POWER muat satu layar. */
+html.m-landscape #backpackPanel .bp-deckcol .bp-slots {
+  grid-template-columns: 1fr !important;
+  grid-template-rows: repeat(4, minmax(0, 1fr)) !important;
+  grid-auto-rows: minmax(0, 1fr) !important;
+  align-content: stretch !important;
+  justify-items: center !important;
+  gap: 7px !important;
+  overflow: hidden !important;
+}
+html.m-landscape #backpackPanel .bp-deckcol .bp-slot,
+html.m-landscape #backpackPanel .bp-deckcol .bp-slots .bp-slot {
+  width: auto !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  aspect-ratio: 1 / 1 !important;
+  justify-self: center !important;
+  align-self: stretch !important;
 }
 html.m-portrait #backpackPanel .bp-deckcol {
   gap: 6px !important;
@@ -3797,17 +3843,33 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   min-width: 0 !important;
   max-width: 100% !important;
   /* slot dek = chip kartu 1:1, isinya artwork saja (teks dipindah ke tooltip) */
-  aspect-ratio: auto !important;
+  aspect-ratio: 1 / 1 !important;
   padding: 0 !important;
-  background: rgba(10, 16, 28, 0.6) !important;
+  /* S-RAIL (item 1): SOLID, bukan rgba(10,16,28,.6) — letterbox art yang di-contain
+     harus warna permukaan panel yang sama, tidak boleh tembus ke bawahnya. */
+  background: #0d1421 !important;
   border: 0 !important;
   border-radius: 12px !important;
   cursor: pointer !important;
   transition: transform 0.2s ease !important;
   overflow: hidden !important;
   box-sizing: border-box !important;
-  justify-self: stretch !important;
-  align-self: stretch !important;
+  justify-self: center !important;
+  align-self: start !important;
+}
+
+/* S-MUT (item 3): kartu terpasang yang BERMUTASI (atau shiny) di rak = ring tipis 2px
+   warna mutasi aslinya. Kelas .bp-mut-<varian> + --tcol sudah di-emit renderBackpackPanel
+   (bpCardBorderKind / bpCardBorderColor -> MUT_COLOR atau #7DF9FF utk shiny). Ring diam:
+   animation dimatikan, tidak ada gradient frame ornate. Slot tanpa mutasi tetap borderless
+   (border:0 di blok di atas). */
+#backpackPanel .bp-slots .bp-slot.filled[class*="bp-mut-"],
+.backpack-panel .bp-slot.filled[class*="bp-mut-"] {
+  border: 2px solid var(--tcol, #7DF9FF) !important;
+  outline: none !important;
+  animation: none !important;
+  background: #0d1421 !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.65) !important;
 }
 
 #backpackPanel .bp-slots .bp-slot:hover,
@@ -3893,14 +3955,19 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   flex: none !important;
   margin: 0 !important;
   box-shadow: inset 0 0 0 1.5px rgba(0, 217, 255, 0.5), inset 0 0 18px rgba(0, 217, 255, 0.22) !important;
+  /* S-RAIL (item 1): dasar SOLID navy rail — art di-contain pakai letterbox warna ini,
+     jadi pita sisa di kiri/kanan terlihat sebagai bingkai, bukan sebagai bug. */
+  background: #0d1421 !important;
 }
 
 #backpackPanel .bp-slots .bp-slot .bps-art-wrap img,
 .backpack-panel .bps-art-wrap img {
   width: 100% !important;
   height: 100% !important;
-  object-fit: cover !important;
-  object-position: top !important;
+  /* S-RAIL (item 1): `cover` + `top` memotong art 2:3 jadi strip; `contain` menampilkan
+     kartu terpasang UTUH (tidak ada piksel yang dipangkas) dan rata tengah. */
+  object-fit: contain !important;
+  object-position: center center !important;
 }
 
 #backpackPanel .bp-slots .bp-slot .bps-info,
@@ -4252,6 +4319,22 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   cursor: pointer !important;
   transition: transform 0.18s ease !important;
   content-visibility: auto !important;
+}
+
+/* S-MUT (item 3): persis seperti rak — HANYA tile yang bermutasi / shiny yang dapat ring
+   tipis 2px (--mcol = MUT_COLOR, #7DF9FF utk shiny tanpa mutasi; di-emit renderBackpackPanel
+   + kelas .bp-mut-<varian> sekarang ikut di-emit ke tile). Sisa tile (~74) tetap borderless
+   total. Ring diam: animation none + bayangan dikembalikan ke drop gelap standar, jadi
+   tidak ada halo gradient ornate dari blok .bp-tile[class*=mut-] lama di style.css. */
+#backpackPanel .bp-tiles .bp-tile[class*="bp-mut-"],
+.backpack-panel .bp-tile[class*="bp-mut-"] {
+  border-width: 2px !important;
+  border-style: solid !important;
+  border-color: var(--mcol, #7DF9FF) !important;
+  outline: none !important;
+  animation: none !important;
+  background: #0e1626 !important;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45) !important;
 }
 
 .backpack-panel .bp-tile.in-deck {
@@ -4800,8 +4883,12 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   #backpackPanel .bp-mutpop { max-height:calc(100dvh - 322px) !important; }
 }
 @media (max-height:560px) {
-  html.m-landscape #backpackPanel .bp-slots { grid-template-columns:1fr !important; grid-auto-rows:minmax(0,1fr) !important; flex:1 1 auto !important; justify-content:stretch !important; overflow:hidden !important; }
-  html.m-landscape #backpackPanel .bp-slots .bp-slot { height:100% !important; max-height:none !important; max-width:none !important; aspect-ratio:auto !important; min-height:24px !important; width:100% !important; }
+  /* S-RAIL HP landscape (850x390): sama seperti state m-landscape di atas — sisi kotak
+     dikunci oleh tinggi baris (ruang rail tersisa dibagi 4), BUKAN oleh `height:100%` +
+     `aspect-ratio:auto` (versi lama = strip lebar-pendek) dan BUKAN oleh lebar rail.
+     4 slot + readout POWER tetap di layar, tanpa scroll; slot yang diperkecil. */
+  html.m-landscape #backpackPanel .bp-slots { grid-template-columns:1fr !important; grid-template-rows:repeat(4,minmax(0,1fr)) !important; grid-auto-rows:minmax(0,1fr) !important; flex:1 1 auto !important; align-content:stretch !important; justify-items:center !important; overflow:hidden !important; }
+  html.m-landscape #backpackPanel .bp-slots .bp-slot { width:auto !important; height:100% !important; max-height:none !important; max-width:100% !important; aspect-ratio:1/1 !important; min-height:0 !important; align-self:stretch !important; justify-self:center !important; }
   html.m-landscape #backpackPanel .bp-deckcol { flex-direction:column !important; }
 }
 @media (prefers-reduced-motion:reduce) {
