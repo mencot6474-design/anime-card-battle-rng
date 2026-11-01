@@ -4295,6 +4295,140 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 .bp-cardmodal .bp-cm-btn.gold { background:rgba(255,210,122,.14); color:var(--bp-am,#ffd27a); box-shadow:inset 0 0 0 1px rgba(255,210,122,.45); }
 .bp-cardmodal .bp-cm-btn.gold.on { background:linear-gradient(180deg,#ffe1a0,#e8b25e); color:#241603; }
 .bp-cardmodal .bp-cm-btn.lockbtn.on { background:rgba(0,217,255,.16); color:#7df9ff; box-shadow:inset 0 0 0 1px rgba(0,217,255,.45); }
+/* ================= SKILL TREE PORT v3 "CONSTELLATION"
+   Geometri/warna = _tmp/bp3.css:247-304 (prototipe terkunci 2026-11-01), komposisi =
+   _tmp/bp3b_390x844_skill.png. Kelas baru hanya hasil js/panels.js renderBpTree/slNodeHtml —
+   semua selector dikunci di bawah .backpack-panel (atau .bp-treedetail, panel yang di-append ke
+   body oleh bpTreeDetailSync) supaya tidak menyentuh layar lain.
+   §2b: animasi HANYA transform/opacity (glow drop-shadow STATIS, coreBreathe filter prototipe
+   dibuang); panel SOLID; tanpa backdrop-filter; tanpa border pada hex. ================= */
+.backpack-panel { --bp-mg:#ff2e88; --bp-lk:#5eead4; }
+.backpack-panel .bp-body.tree { gap:10px; }
+/* --- papan: flex column supaya .bpweb-view mengambil sisa tinggi dan jadi satu-satunya scroller */
+.backpack-panel .bp-body.tree .board { flex:1 1 auto; min-height:0; display:flex; flex-direction:column; margin:0; padding:12px; border-radius:16px; background:#0b1220; box-shadow:inset 0 1px 0 rgba(140,220,255,.06); }
+.backpack-panel .bp-body.tree .btitle { flex:none; display:flex; align-items:center; gap:10px; margin-bottom:10px; font-family:var(--font-tac,'Rajdhani',sans-serif); font-size:10px; font-weight:800; letter-spacing:.32em; color:var(--bp-txd); }
+.backpack-panel .bp-body.tree .btitle::after { content:""; flex:1; height:1px; background:linear-gradient(90deg,rgba(0,217,255,.35),transparent); }
+.backpack-panel .webhead { flex:none; display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:8px; }
+.backpack-panel .spbox { display:flex; align-items:baseline; gap:9px; padding:6px 16px; border-radius:12px; background:linear-gradient(180deg,rgba(255,210,122,.10),rgba(17,26,43,.55)); box-shadow:inset 0 0 0 1px rgba(255,210,122,.35); }
+.backpack-panel .spbox .k { font-family:var(--font-tac,'Rajdhani',sans-serif); font-size:9px; font-weight:900; letter-spacing:.3em; color:var(--bp-am); }
+.backpack-panel .spbox .sp { font-size:30px; font-weight:700; line-height:1; color:var(--bp-am); text-shadow:0 0 20px rgba(255,210,122,.5); }
+.backpack-panel .weblegend { display:flex; gap:14px; flex-wrap:wrap; font-family:var(--font-tac,'Rajdhani',sans-serif); font-size:9px; font-weight:700; letter-spacing:.14em; color:var(--bp-txd); }
+.backpack-panel .weblegend i { display:inline-block; width:9px; height:9px; margin-right:5px; border-radius:50%; vertical-align:-1px; }
+.backpack-panel .weblegend .l1 i { background:var(--bp-lk); box-shadow:0 0 8px var(--bp-lk); }
+.backpack-panel .weblegend .l2 i { background:transparent; box-shadow:inset 0 0 0 2px var(--bp-am); animation:bpReadyPulse 1.6s ease-in-out infinite; }
+.backpack-panel .weblegend .l3 i { background:#24344d; }
+/* --- SCROLL CONTAINER: scrollbar disembunyikan (sama seperti DECK/ITEM), gulir tetap jalan.
+       padding-bottom = ruang label baris terakhir (y 92%) supaya tidak terpotong. --- */
+.backpack-panel .bpweb-view { flex:1 1 auto; min-height:0; position:relative; overflow:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; padding-bottom:26px; scrollbar-width:none; -ms-overflow-style:none; }
+.backpack-panel .bpweb-view::-webkit-scrollbar { width:0; height:0; display:none; }
+.backpack-panel .web { position:relative; width:100%; max-width:660px; margin:0 auto; aspect-ratio:1/1.12; min-height:340px; }
+/* desktop: tinggi pane > lebar => kunci lebar dari tinggi supaya papan tidak perlu digulir
+   (rasio komposisi prototipe tetap; 52dvh ~ tinggi .bpweb-view di panel full-screen) */
+@media (min-width:900px) { .backpack-panel .web { max-width:min(660px,52dvh); } }
+/* --- edge: viewBox 0 0 100 100 + preserveAspectRatio=none => stroke WAJIB non-scaling-stroke
+       supaya tidak gepeng (1.4px asli di semua rasio). --- */
+.backpack-panel .weblines { position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; }
+.backpack-panel .weblines line { stroke:rgba(140,180,220,.24); stroke-width:1.4; vector-effect:non-scaling-stroke; }
+.backpack-panel .weblines line.live { stroke-opacity:.85; }
+.backpack-panel .weblines line.live.luck { stroke:var(--bp-lk); filter:drop-shadow(0 0 3px rgba(94,234,212,.7)); }
+.backpack-panel .weblines line.live.speed { stroke:var(--bp-am); filter:drop-shadow(0 0 3px rgba(255,210,122,.7)); }
+.backpack-panel .weblines line.live.booster { stroke:var(--bp-mg); filter:drop-shadow(0 0 3px rgba(255,46,136,.7)); }
+.backpack-panel .weblines line.live.root { stroke:var(--bp-cy); filter:drop-shadow(0 0 3px rgba(0,217,255,.7)); }
+/* --- node: posisi dari inline style="left:x%;top:y%" (BPWEB_POS) — transform menengahkan --- */
+.backpack-panel .wnode { position:absolute; transform:translate(-50%,-50%); width:52px; height:46px; min-width:44px; min-height:46px; display:flex; align-items:center; justify-content:center; padding:0; border:0; background:none; -webkit-appearance:none; appearance:none; color:inherit; font-family:var(--font-tac,'Rajdhani',sans-serif); cursor:pointer; transition:transform .16s ease; }
+.backpack-panel .wnode:hover { transform:translate(-50%,-50%) scale(1.08); }
+.backpack-panel .wnode:focus-visible { outline:2px solid var(--bp-cy); outline-offset:3px; }
+.backpack-panel .whex { position:relative; display:flex; align-items:center; justify-content:center; width:34px; height:38px; background:#182338; clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); }
+.backpack-panel .wnode .wlabel { position:absolute; top:calc(100% - 2px); left:50%; transform:translateX(-50%); width:max-content; max-width:86px; font-size:8px; font-weight:800; line-height:1.2; letter-spacing:.06em; text-align:center; color:var(--bp-txd); pointer-events:none; text-shadow:0 1px 4px rgba(4,7,13,.95); }
+.backpack-panel .wnode .wcost { position:absolute; top:-9px; left:50%; transform:translateX(-50%); font-family:var(--font-mono,monospace); font-size:8px; font-weight:700; color:var(--bp-am); opacity:.9; pointer-events:none; text-shadow:0 1px 3px rgba(4,7,13,.95); }
+/* state 1: owned = fill cabang penuh + glow statis */
+.backpack-panel .wnode.owned.luck .whex { background:var(--bp-lk); filter:drop-shadow(0 0 7px rgba(94,234,212,.65)); }
+.backpack-panel .wnode.owned.speed .whex { background:var(--bp-am); filter:drop-shadow(0 0 7px rgba(255,210,122,.65)); }
+.backpack-panel .wnode.owned.booster .whex { background:var(--bp-mg); filter:drop-shadow(0 0 7px rgba(255,46,136,.6)); }
+.backpack-panel .wnode.owned .wlabel { color:#dff3ff; }
+/* state 2: ready = gradient cabang 28% + pulse (hanya opacity) */
+.backpack-panel .wnode.ready.luck .whex { background:linear-gradient(180deg,rgba(94,234,212,.28),rgba(10,16,28,.85)); }
+.backpack-panel .wnode.ready.speed .whex { background:linear-gradient(180deg,rgba(255,210,122,.28),rgba(10,16,28,.85)); }
+.backpack-panel .wnode.ready.booster .whex { background:linear-gradient(180deg,rgba(255,46,136,.28),rgba(10,16,28,.85)); }
+.backpack-panel .wnode.ready .whex { animation:bpReadyPulse 1.7s ease-in-out infinite; }
+.backpack-panel .wnode.ready .wlabel { color:#eaffff; }
+/* state 3: poor = bentuk siap tapi tak terbeli: cabang redup, tanpa pulse, biaya merah */
+.backpack-panel .wnode.poor.luck .whex { background:linear-gradient(180deg,rgba(94,234,212,.14),rgba(10,16,28,.9)); }
+.backpack-panel .wnode.poor.speed .whex { background:linear-gradient(180deg,rgba(255,210,122,.14),rgba(10,16,28,.9)); }
+.backpack-panel .wnode.poor.booster .whex { background:linear-gradient(180deg,rgba(255,46,136,.14),rgba(10,16,28,.9)); }
+.backpack-panel .wnode.poor .whex { opacity:.45; }
+.backpack-panel .wnode.poor .wcost { color:#ff9ab6; }
+.backpack-panel .wnode.poor .wlabel { opacity:.7; }
+/* state 4: locked = gelap + gembok <img> (mask-image dilarang: gagal di file://) */
+.backpack-panel .wnode.locked .whex { background:#141d2e; opacity:.55; }
+.backpack-panel .wnode.locked .wlabel { opacity:.5; }
+.backpack-panel .wnode .wlock { display:block; width:13px; height:13px; opacity:.95; filter:invert(.6) sepia(.1) saturate(.4) brightness(1.25); }
+/* FONDASI (core) = pusat konstelasi: hex lebih besar + cincin (transform/opacity saja) */
+.backpack-panel .wnode.core .whex { width:44px; height:48px; background:radial-gradient(circle at 50% 42%,#bfefff 0%,var(--bp-cy) 46%,#0a6f92 100%); filter:drop-shadow(0 0 12px rgba(0,217,255,.75)); }
+.backpack-panel .wnode.core .wlabel { color:#eaffff; font-size:9px; letter-spacing:.18em; }
+.backpack-panel .wnode.core::after { content:""; position:absolute; left:50%; top:50%; width:60px; height:60px; margin:-30px 0 0 -30px; border-radius:50%; box-shadow:inset 0 0 0 1px rgba(0,217,255,.35); pointer-events:none; animation:bpCoreRing 4s ease-in-out infinite; }
+@keyframes bpCoreRing { 0%,100% { transform:scale(.92); opacity:.5; } 50% { transform:scale(1.06); opacity:.9; } }
+@keyframes bpReadyPulse { 0%,100% { opacity:.62; } 50% { opacity:1; } }
+/* label cabang tanpa emoji */
+.backpack-panel .btag { position:absolute; transform:translate(-50%,-50%); font-family:var(--font-tac,'Rajdhani',sans-serif); font-size:9px; font-weight:900; letter-spacing:.3em; pointer-events:none; text-shadow:0 0 12px currentColor; }
+.backpack-panel .btag.luck { color:var(--bp-lk); }
+.backpack-panel .btag.speed { color:var(--bp-am); }
+.backpack-panel .btag.booster { color:var(--bp-mg); }
+/* --- DETAIL node (js/panels.js bpTreeDetailSync; elemen di-append ke <body>, jadi kuncinya
+       kelas .bp-treedetail — tetap khusus tab tree). Scrim = elemen itu sendiri (JS menutup
+       saat ev.target===el), kartu di dalamnya. --- */
+.bp-treedetail { position:fixed; inset:0; width:100vw; height:100dvh; min-height:0; z-index:95000; display:flex; align-items:center; justify-content:center; padding:16px; box-sizing:border-box; background:rgba(5,8,14,.8); }
+.bp-treedetail .bp-td-card { position:relative; width:min(420px,100%); max-height:calc(100dvh - 32px); overflow-y:auto; overscroll-behavior:contain; scrollbar-width:none; -ms-overflow-style:none; box-sizing:border-box; padding:16px; border-radius:18px; background:linear-gradient(170deg,#16233a 0%,#111a2b 45%,#0c1422 100%); box-shadow:0 30px 80px rgba(0,0,0,.7), inset 0 1px 0 rgba(140,220,255,.1); color:#e8f6ff; font-family:var(--font-tac,'Rajdhani',sans-serif); }
+.bp-treedetail .bp-td-card::-webkit-scrollbar { display:none; }
+.bp-treedetail .bp-td-x { position:absolute; right:8px; top:8px; width:44px; height:44px; min-width:44px; min-height:44px; display:flex; align-items:center; justify-content:center; border:0; border-radius:12px; background:none; color:#8aa3bd; cursor:pointer; transition:transform .15s ease; }
+.bp-treedetail .bp-td-x:hover { transform:scale(1.1); color:#fff; }
+.bp-treedetail .bp-td-head { display:flex; align-items:center; gap:12px; padding-right:44px; }
+.bp-treedetail .bp-td-icon { width:44px; height:44px; flex:none; object-fit:contain; filter:drop-shadow(0 0 10px var(--bcol,rgba(0,217,255,.5))); }
+.bp-treedetail .bp-td-name { font-size:17px; font-weight:900; letter-spacing:.1em; color:#fff; }
+.bp-treedetail .bp-td-chip { display:inline-block; margin-top:4px; padding:2px 8px; border-radius:6px; font-size:8.5px; font-weight:900; letter-spacing:.22em; color:#08111d; background:var(--bcol,#7df9ff); }
+.bp-treedetail .bp-td-stats { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+.bp-treedetail .bp-td-stat { flex:1 1 96px; min-width:0; padding:8px 10px; border-radius:11px; background:#0e1626; box-shadow:inset 0 0 0 1px rgba(140,180,220,.16); display:flex; flex-direction:column; gap:3px; }
+.bp-treedetail .bp-td-stat.wide { flex:1 1 100%; }
+.bp-treedetail .bp-td-k { font-size:8px; font-weight:900; letter-spacing:.26em; color:#8aa3bd; }
+.bp-treedetail .bp-td-v { font-family:var(--font-mono,monospace); font-size:15px; font-weight:700; color:#e8f6ff; }
+.bp-treedetail .bp-td-v.sm { font-family:var(--font-tac,'Rajdhani',sans-serif); font-size:11px; font-weight:700; letter-spacing:.04em; }
+.bp-treedetail .bp-td-status { padding:7px 12px; border-radius:10px; font-size:10px; font-weight:900; letter-spacing:.18em; text-align:center; background:#0e1626; color:#a9c1d9; box-shadow:inset 0 0 0 1px rgba(140,180,220,.2); }
+.bp-treedetail .bp-td-status.on { background:rgba(94,234,212,.12); color:#5eead4; box-shadow:inset 0 0 0 1px rgba(94,234,212,.4); }
+.bp-treedetail .bp-td-eff { margin-top:12px; padding:10px 12px; border-radius:12px; background:#0b1220; box-shadow:inset 0 0 0 1px rgba(140,180,220,.14); }
+.bp-treedetail .bp-td-gain { margin-top:4px; font-size:13px; font-weight:800; letter-spacing:.04em; color:var(--bcol,#7df9ff); }
+.bp-treedetail .bp-td-desc { margin:6px 0 0; font-size:11.5px; line-height:1.45; color:#a9c1d9; }
+.bp-treedetail .bp-td-acts { display:flex; gap:8px; margin-top:12px; }
+.bp-treedetail .bp-td-btn { flex:1; min-height:44px; min-width:44px; padding:0 16px; border:0; border-radius:11px; font-family:var(--font-tac,'Rajdhani',sans-serif); font-size:12px; font-weight:900; letter-spacing:.16em; color:#04121c; background:linear-gradient(180deg,#19e2ff,#0aa6d6); cursor:pointer; transition:transform .15s ease; }
+.bp-treedetail .bp-td-btn:hover { transform:translateY(-2px); }
+/* --- ≤360px: label turun satu step supaya tidak melebar keluar kanvas (node tetap 52px) --- */
+@media (max-width:360px) {
+  .backpack-panel .wnode .wlabel { font-size:7px; max-width:64px; letter-spacing:.03em; }
+  .backpack-panel .wnode .wcost { font-size:7px; }
+  .backpack-panel .btag { font-size:8px; letter-spacing:.2em; }
+  .backpack-panel .bp-body.tree .board { padding:9px; }
+}
+/* --- landscape HP pendek (850x390): spbar + kepala papan diringkas, papan tetap 1 kolom,
+       .web tetap min-height 340 => .bpweb-view yang gulir (bukan node yang mengecil). --- */
+@media (max-height:560px) {
+  .backpack-panel .bp-body.tree { gap:6px; }
+  .backpack-panel .sp-hint { display:none; }
+  .backpack-panel .sp-banner { padding:8px 14px; gap:12px; }
+  .backpack-panel .sp-meta { gap:5px; }
+  .backpack-panel .sp-num { font-size:26px; }
+  .backpack-panel .bp-body.tree .board { padding:8px; }
+  .backpack-panel .bp-body.tree .btitle { display:none; }
+  .backpack-panel .web { max-width:420px; }
+  .backpack-panel .webhead { margin-bottom:6px; gap:10px; }
+  .backpack-panel .spbox { padding:3px 10px; }
+  .backpack-panel .spbox .sp { font-size:20px; }
+  .backpack-panel .bpweb-view { padding-bottom:22px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .backpack-panel .wnode.ready .whex,
+  .backpack-panel .wnode.core::after,
+  .backpack-panel .weblegend .l2 i { animation:none; }
+  .backpack-panel .wnode, .backpack-panel .wnode:hover { transition:none; transform:translate(-50%,-50%); }
+}
 /* --- ≤400px (dulu ≤360; BPD-GEO: tile @390 turun ke ~70px jadi penanda ikut turun): penanda tile
    turun SATU step (tidak ada yang dihapus) + URUTKAN 2x2 --- */
 @media (max-width:400px) {

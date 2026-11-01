@@ -2730,11 +2730,11 @@ body.on-lobby .roll-overlay.mini.collapsed .roll-card-showcase{display:none;}
 
 
 
-.spbar{display:flex;flex-direction:column;align-items:stretch;gap:7px}
+.spbar{display:flex;flex-direction:column;align-items:stretch;gap:7px;flex:none}
 
 
 
-.sp-banner{position:relative;display:flex;align-items:center;gap:18px;padding:13px 22px;border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.015))}
+.sp-banner{position:relative;display:flex;align-items:center;gap:18px;padding:13px 22px;border-radius:16px;background:#101a2c}
 
 
 
