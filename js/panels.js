@@ -2285,29 +2285,54 @@ function stLinesHtml(sp){
   for(let i=1;i<spd.length;i++)out+=seg(spd[i-1],spd[i],"speed");
   return `<svg class="st-lines" viewBox="0 0 100 100" preserveAspectRatio="none">${out}</svg>`;
 }
-function slNodeHtml(n,sp){
-  const owned=treeOwned(n.id);
+/* ===== SKILL TREE CONSTELLATION (prototipe terkunci bp3 v3) — PRESENTASI SAJA.
+   BPWEB_POS = koordinat persen kanvas: root di puncak, LUCK melengkung kiri, SPEED kanan,
+   BOOSTER kolom tengah. TREE_NODES tetap satu-satunya sumber nama/biaya/req/gain —
+   jumlah node dan edge dibaca dari data, tidak di-hardcode. ===== */
+const BPWEB_POS={root:[50,7],
+  lk1:[28,20],lk2:[16,34],lk3:[11,49],lk4:[10,65],lk5:[16,80],
+  sp1:[72,20],sp2:[84,34],sp3:[89,49],sp4:[90,65],sp5:[84,80],
+  bst1:[50,31],bst2:[50,46],bst3:[50,61],bst4:[50,76],bst5:[50,92]};
+/* Empat state sama persis seperti slNodeHtml lama: owned / ready (dulu avail) / poor / locked. */
+function bpTreeState(n,sp){
+  if(n.branch==='root'||treeOwned(n.id))return 'owned';
   const preqMet=n.req.every(r=>r==='root'||treeOwned(r));
-  const affordable=sp>=n.cost;
-  const st=owned?'owned':(preqMet&&affordable?'avail':(preqMet?'poor':'locked'));
-  let gain,cls;
-  if(n.branch==='luck'){
-    gain='+'+n.luck+' LUCK'+(n.luckPct?' · +'+Math.round(n.luckPct*100)+'% mult':'');
-    cls='sl-luck';
-  } else if(n.branch==='speed'){
-    gain='+'+n.speed.toFixed(1)+'× roll speed';
-    cls='sl-speed';
-  } else {
-    // booster: tampilkan flat + pct sekaligus
-    gain='+'+n.luck+' LUCK · +'+Math.round((n.luckPct||0)*100)+'% mult';
-    cls='sl-booster';
+  if(!preqMet)return 'locked';
+  return sp>=n.cost?'ready':'poor';
+}
+function bpNodeGain(n){
+  if(n.branch==='luck')return '+'+n.luck+' LUCK'+(n.luckPct?' · +'+Math.round(n.luckPct*100)+'% mult':'');
+  if(n.branch==='speed')return '+'+n.speed.toFixed(1)+'× roll speed';
+  if(n.branch==='booster')return '+'+n.luck+' LUCK · +'+Math.round((n.luckPct||0)*100)+'% mult';
+  return 'AKAR';
+}
+/* SVG edge layer: SATU garis per entri req di TREE_NODES (root→lk1…, root→sp1…, booster dari req-nya sendiri). */
+function bpWebLinesHtml(){
+  const segs=[];
+  for(const n of TREE_NODES){
+    if(n.id==='root')continue;
+    const B=BPWEB_POS[n.id];if(!B)continue;
+    for(const r of n.req){
+      const A=BPWEB_POS[r];if(!A)continue;
+      const live=(r==='root'||treeOwned(r))&&treeOwned(n.id);
+      const cls=(live?'live '+(r==='root'&&n.branch!=='booster'?'root':n.branch):'')+' ln-'+n.branch;
+      segs.push(`<line class="${cls.trim()}" x1="${A[0]}" y1="${A[1]}" x2="${B[0]}" y2="${B[1]}"/>`);
+    }
   }
-  return `<div class="sl-node ${cls} ${st}"${owned?'':` onclick="bpTreeBuy('${n.id}')"`}>
-    <div class="sl-num">${n.tier}</div>
-    <div class="sl-name">${n.name}</div>
-    <div class="sl-gain">${gain}</div>
-    <div class="sl-cost">${owned?'MILIKI':n.cost+' SP'}</div>
-  </div>`;
+  return `<svg class="weblines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${segs.join('')}</svg>`;
+}
+/* Node heksagon konstelasi. Klik tetap lewat jalur lama bpTreeBuy (beli langsung — beda dari prototipe yang buka detail dulu; dicatat di laporan). */
+function slNodeHtml(n,sp){
+  const st=bpTreeState(n,sp);
+  const core=n.branch==='root';
+  const br=core?'root':n.branch;
+  const gain=bpNodeGain(n);
+  const p=BPWEB_POS[n.id]||[50,50];
+  const cost=(!core&&st!=='owned'&&st!=='locked')?`<span class="wcost num">${n.cost} SP</span>`:'';
+  const clickable=(!core&&st!=='owned');
+  return `<button type="button" class="wnode ${br} ${st}${core?' core':''}" data-node="${n.id}" aria-label="${n.name} — ${gain}" title="${n.name} — ${gain} · ${n.desc}" style="left:${p[0]}%;top:${p[1]}%"${clickable?` onclick="bpTreeBuy('${n.id}')"`:''}>
+    ${cost}<span class="whex">${st==='locked'&&!core?'<img class="wlock" src="assets/icons/padlock.svg" alt="">':''}</span><span class="wlabel">${n.name}</span>
+  </button>`;
 }
 
 function renderBpTree(){
@@ -2328,19 +2353,24 @@ function renderBpTree(){
     </div>
     <div class="sp-hint">${hint}</div>
   </div>
-  <div class="sl-tree">
-    <div class="sl-branch sl-luck">
-      <div class="sl-branch-title">☘ LUCK</div>
-      ${TREE_NODES.filter(n=>n.branch==='luck').map(n=>slNodeHtml(n,sp)).join('')}
+  <div class="board">
+    <div class="btitle">CONSTELLATION · PETA SKILL</div>
+    <div class="webhead">
+      <div class="spbox"><span class="k">SKILL POINT</span><span class="sp num">${sp}</span></div>
+      <div class="weblegend">
+        <span class="l1"><i></i>DIMILIKI</span>
+        <span class="l2"><i></i>SIAP BELI</span>
+        <span class="l3"><i></i>TERKUNCI</span>
+      </div>
     </div>
-    <div class="sl-branch sl-speed">
-      <div class="sl-branch-title">⚡ SPEED</div>
-      ${TREE_NODES.filter(n=>n.branch==='speed').map(n=>slNodeHtml(n,sp)).join('')}
-    </div>
-    <div class="sl-branch sl-booster">
-      <div class="sl-branch-title">🔥 LUCK BOOSTER</div>
-      <div class="sl-branch-req">Butuh lk5 &amp; sp5 terbuka</div>
-      ${TREE_NODES.filter(n=>n.branch==='booster').map(n=>slNodeHtml(n,sp)).join('')}
+    <div class="bpweb-view">
+      <div class="web">
+        ${bpWebLinesHtml()}
+        ${TREE_NODES.map(n=>slNodeHtml(n,sp)).join('')}
+        <span class="btag luck" style="left:22%;top:10%">LUCK</span>
+        <span class="btag speed" style="left:78%;top:10%">SPEED</span>
+        <span class="btag booster" style="left:50%;top:21.5%" title="Butuh lk5 &amp; sp5 terbuka">BOOSTER</span>
+      </div>
     </div>
   </div>`;
 }
