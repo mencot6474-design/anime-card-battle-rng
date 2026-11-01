@@ -203,13 +203,13 @@
 }
 /* sweep garis cyan bawah ala system window saat hover */
 #deckPickModal .dp-card::after,
-.bp-tile::after{
+.rd-pick .bp-tile::after{
   content:"";position:absolute;left:8%;right:8%;bottom:4px;height:2px;pointer-events:none;z-index:3;
   background:linear-gradient(90deg,transparent,var(--sl-cyan),transparent);
   transform:scaleX(0);transform-origin:left;transition:transform .25s ease;
 }
 #deckPickModal .dp-card:hover::after,
-.bp-tile:hover::after{transform:scaleX(1)}
+.rd-pick .bp-tile:hover::after{transform:scaleX(1)}
 .bp-tile{position:relative}
 /* state TERPILIH: frame penuh cyan + glow */
 #deckPickModal .dp-card.sel{

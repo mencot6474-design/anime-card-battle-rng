@@ -3505,25 +3505,24 @@ body.bp-open .backpack-panel,
 
 .backpack-panel .bp-cols {
   display: flex !important;
-  gap: 22px !important;
+  gap: 12px !important;
   height: 100% !important;
-  padding: 18px clamp(16px, 3vw, 36px) 22px !important;
+  padding: 10px clamp(10px, 2vw, 26px) 12px !important;
   box-sizing: border-box !important;
 }
 
 /* 4. Left Column: Deck Squadron */
 .backpack-panel .bp-deckcol {
-  width: 330px !important;
-  min-width: 310px !important;
-  max-width: 350px !important;
+  width: clamp(96px, 21vw, 158px) !important;
+  min-width: 96px !important;
+  max-width: 158px !important;
   display: flex !important;
   flex-direction: column !important;
-  background: linear-gradient(180deg, rgba(12, 19, 36, 0.88) 0%, rgba(6, 10, 20, 0.96) 100%) !important;
-  border: 1px solid rgba(56, 189, 248, 0.22) !important;
-  border-radius: 14px !important;
-  padding: 16px 16px 14px !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
-  backdrop-filter: blur(14px) !important;
+  background: linear-gradient(180deg, #121b2c 0%, #0d1421 100%) !important;
+  border: 0 !important;
+  border-radius: 16px !important;
+  padding: 10px 9px !important;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(140, 220, 255, 0.07) !important;
   box-sizing: border-box !important;
   flex: none !important;
 }
@@ -3601,13 +3600,15 @@ body.bp-open .backpack-panel,
    (1,2,1) dan mengalahkan `#backpackPanel ...` (1,2,0). */
 html #backpackPanel .bp-deckcol .bp-slots {
   display: grid !important;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  grid-template-columns: 1fr !important;
+  grid-auto-rows: minmax(0, 1fr) !important;
   grid-template-rows: none !important;
-  align-items: start !important;
-  gap: 6px !important;
-  flex: 0 0 auto !important;
+  align-items: stretch !important;
+  gap: 7px !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
   width: 100% !important;
-  overflow: visible !important;
+  overflow: hidden !important;
 }
 
 html #backpackPanel .bp-deckcol {
@@ -3616,11 +3617,12 @@ html #backpackPanel .bp-deckcol {
 }
 
 html #backpackPanel .bp-deckcol .bp-slot {
-  align-self: start !important;
+  align-self: stretch !important;
+  justify-self: stretch !important;
   width: 100% !important;
-  height: auto !important;
+  height: 100% !important;
   max-height: none !important;
-  aspect-ratio: 1 / 1 !important;
+  aspect-ratio: auto !important;
   padding: 0 !important;
 }
 
@@ -3633,15 +3635,15 @@ html #backpackPanel .bp-deckcol .bp-deckmeta {
    (146px) dan header CARD ARCHIVE tetap di dalam panel */
 html.m-portrait #backpackPanel .bp-deckcol .bp-slots {
   justify-content: center !important;
-  gap: 8px !important;
+  gap: 7px !important;
 }
 html.m-portrait #backpackPanel .bp-deckcol .bp-slot {
-  max-width: 48px !important;
-  max-height: 48px !important;
+  max-width: none !important;
+  max-height: none !important;
 }
 html.m-portrait #backpackPanel .bp-deckcol {
   gap: 6px !important;
-  padding: 8px 10px !important;
+  padding: 9px 8px !important;
 }
 html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   margin-bottom: 2px !important;
@@ -3666,13 +3668,13 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   min-width: 0 !important;
   max-width: 100% !important;
   /* slot dek = chip kartu 1:1, isinya artwork saja (teks dipindah ke tooltip) */
-  aspect-ratio: 1 / 1 !important;
+  aspect-ratio: auto !important;
   padding: 0 !important;
-  background: linear-gradient(135deg, rgba(16, 24, 42, 0.85) 0%, rgba(8, 12, 22, 0.95) 100%) !important;
-  border: 1px solid rgba(56, 189, 248, 0.22) !important;
-  border-radius: 9px !important;
+  background: rgba(10, 16, 28, 0.6) !important;
+  border: 0 !important;
+  border-radius: 12px !important;
   cursor: pointer !important;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: transform 0.2s ease !important;
   overflow: hidden !important;
   box-sizing: border-box !important;
   justify-self: stretch !important;
@@ -3681,16 +3683,13 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 
 #backpackPanel .bp-slots .bp-slot:hover,
 .backpack-panel .bp-slot:hover {
-  transform: translateX(4px) !important;
-  border-color: rgba(56, 189, 248, 0.55) !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 16px rgba(56, 189, 248, 0.25) !important;
+  transform: translateY(-1px) !important;
 }
 
 #backpackPanel .bp-slots .bp-slot.sel,
 .backpack-panel .bp-slot.sel {
-  border-color: #38bdf8 !important;
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.22) 0%, rgba(10, 18, 32, 0.96) 100%) !important;
-  box-shadow: 0 0 24px rgba(56, 189, 248, 0.45), inset 0 0 16px rgba(56, 189, 248, 0.15) !important;
+  background: linear-gradient(135deg, rgba(0, 217, 255, 0.12) 0%, rgba(10, 18, 32, 0.96) 100%) !important;
+  box-shadow: inset 0 0 0 2px rgba(0, 217, 255, 0.75), 0 10px 22px rgba(0, 0, 0, 0.45) !important;
 }
 
 #backpackPanel .bp-slots .bp-slot .bps-role,
@@ -3709,9 +3708,10 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 /* Empty Slot */
 #backpackPanel .bp-slots .bp-slot.empty,
 .backpack-panel .bp-slot.empty {
-  border: 1.5px dashed rgba(56, 189, 248, 0.3) !important;
+  border: 0 !important;
   justify-content: center !important;
-  background: rgba(12, 18, 30, 0.45) !important;
+  background: linear-gradient(160deg, rgba(0, 217, 255, 0.06), rgba(10, 16, 28, 0.5) 55%) !important;
+  box-shadow: inset 0 0 0 1px rgba(0, 217, 255, 0.18), 0 8px 18px rgba(0, 0, 0, 0.35) !important;
 }
 
 #backpackPanel .bp-slots .bp-slot.empty:hover,
@@ -3732,14 +3732,14 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 
 #backpackPanel .bp-slots .bp-slot .bps-plus-circle,
 .backpack-panel .bps-plus-circle {
-  width: 28px !important;
-  height: 28px !important;
+  width: 26px !important;
+  height: 26px !important;
   border-radius: 50% !important;
-  border: 1.5px dashed rgba(56, 189, 248, 0.5) !important;
+  border: 0 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  color: #38bdf8 !important;
+  color: rgba(0, 217, 255, 0.6) !important;
 }
 
 #backpackPanel .bp-slots .bp-slot .bps-prompt,
@@ -3760,10 +3760,10 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   height: 100% !important;
   border-radius: inherit !important;
   overflow: hidden !important;
-  border: 1.5px solid var(--tcol, rgba(56, 189, 248, 0.4)) !important;
+  border: 0 !important;
   flex: none !important;
   margin: 0 !important;
-  box-shadow: none !important;
+  box-shadow: inset 0 0 0 1.5px rgba(0, 217, 255, 0.5), inset 0 0 18px rgba(0, 217, 255, 0.22) !important;
 }
 
 #backpackPanel .bp-slots .bp-slot .bps-art-wrap img,
@@ -3843,13 +3843,13 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 #backpackPanel .bp-slots .bp-slot .bps-x,
 .backpack-panel .bps-x {
   position: absolute !important;
-  top: 4px !important;
-  right: 4px !important;
-  width: 22px !important;
-  height: 22px !important;
-  border-radius: 5px !important;
-  border: 1px solid rgba(239, 68, 68, 0.7) !important;
-  background: rgba(12, 8, 10, 0.72) !important;
+  top: 0 !important;
+  right: 0 !important;
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 0 12px 0 12px !important;
+  border: 0 !important;
+  background: rgba(12, 8, 10, 0.5) !important;
   color: #f87171 !important;
   font-size: 15px !important;
   line-height: 1 !important;
@@ -3857,16 +3857,17 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  transition: all 0.2s ease !important;
+  transition: transform 0.2s ease !important;
   z-index: 5 !important;
 }
 
+#backpackPanel .bp-slots .bp-slot .bps-x svg,
+.backpack-panel .bps-x svg { width: 14px !important; height: 14px !important; }
+
 #backpackPanel .bp-slots .bp-slot .bps-x:hover,
 .backpack-panel .bps-x:hover {
-  background: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.65) !important;
   color: #ffffff !important;
-  transform: scale(1.15) !important;
-  box-shadow: 0 0 10px #ef4444 !important;
 }
 
 #backpackPanel .bp-slots .bp-slot .bps-corner,
@@ -3878,10 +3879,8 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   border-style: solid !important;
   pointer-events: none !important;
 }
-#backpackPanel .bp-slots .bp-slot .bps-corner.tl,
-.backpack-panel .bps-corner.tl { top: 3px; left: 3px; border-width: 1.5px 0 0 1.5px; }
-#backpackPanel .bp-slots .bp-slot .bps-corner.br,
-.backpack-panel .bps-corner.br { bottom: 3px; right: 3px; border-width: 0 1.5px 1.5px 0; }
+#backpackPanel .bp-slots .bp-slot .bps-corner,
+.backpack-panel .bps-corner { display: none !important; }
 
 /* 6. Deck Meta: Power & Save CTA */
 .backpack-panel .bp-deckmeta {
@@ -3897,10 +3896,11 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   display: flex !important;
   flex-direction: column !important;
   gap: 2px !important;
-  background: rgba(15, 23, 42, 0.7) !important;
+  background: linear-gradient(180deg, rgba(255, 210, 122, 0.08), #0e1626) !important;
   padding: 6px 10px !important;
-  border-radius: 8px !important;
-  border: 1px solid rgba(56, 189, 248, 0.2) !important;
+  border-radius: 12px !important;
+  border: 0 !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 210, 122, 0.22) !important;
 }
 
 .backpack-panel .bdm-label {
@@ -3950,24 +3950,23 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   align-items: center !important;
   justify-content: center !important;
   gap: 8px !important;
-  padding: 12px !important;
-  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
-  border: 1px solid #38bdf8 !important;
-  border-radius: 8px !important;
-  color: #ffffff !important;
+  min-height: 44px !important;
+  padding: 8px 10px !important;
+  background: linear-gradient(180deg, #19e2ff, #0aa6d6) !important;
+  border: 0 !important;
+  border-radius: 11px !important;
+  color: #04121c !important;
   font-family: var(--font-tac, 'Rajdhani', sans-serif) !important;
-  font-size: 14px !important;
-  font-weight: 800 !important;
-  letter-spacing: 0.12em !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.14em !important;
   cursor: pointer !important;
-  transition: all 0.22s ease !important;
-  box-shadow: 0 4px 18px rgba(2, 132, 199, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+  transition: transform 0.15s ease !important;
+  box-shadow: 0 6px 16px rgba(0, 217, 255, 0.25) !important;
 }
 
 .backpack-panel .bp-save:hover {
-  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important;
   transform: translateY(-2px) !important;
-  box-shadow: 0 6px 24px rgba(14, 165, 233, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
 }
 
 /* 7. Right Column: Card Archive Vault */
@@ -3976,12 +3975,11 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   min-width: 0 !important;
   display: flex !important;
   flex-direction: column !important;
-  background: linear-gradient(180deg, rgba(12, 19, 36, 0.8) 0%, rgba(6, 10, 20, 0.92) 100%) !important;
-  border: 1px solid rgba(56, 189, 248, 0.22) !important;
-  border-radius: 14px !important;
-  padding: 16px 20px !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
-  backdrop-filter: blur(14px) !important;
+  background: #101828 !important;
+  border: 0 !important;
+  border-radius: 16px !important;
+  padding: 9px !important;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(140, 220, 255, 0.05) !important;
   box-sizing: border-box !important;
   overflow: hidden !important;
 }
@@ -4022,16 +4020,24 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 .backpack-panel .bp-filter {
   display: flex !important;
   align-items: center !important;
-  gap: 8px !important;
-  flex-wrap: nowrap !important;
-  overflow-x: auto !important;
+  gap: 5px !important;
+  flex-wrap: wrap !important;
+  row-gap: 4px !important;
+  overflow: visible !important;
+  position: relative !important;
+  z-index: 12 !important;
+  background: #111a2b !important;
+  border-radius: 10px !important;
+  padding: 4px 6px !important;
+  margin-bottom: 8px !important;
+  flex: none !important;
 }
 
 .backpack-panel .bp-search {
-  flex: 0 1 200px !important;
-  min-width: 160px !important;
-  max-width: 220px !important;
-  height: 36px !important;
+  flex: 1 1 150px !important;
+  min-width: 130px !important;
+  max-width: 260px !important;
+  height: 44px !important;
   padding: 0 12px 0 34px !important;
   background: rgba(15, 23, 42, 0.85) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="%2338bdf8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>') no-repeat 11px center !important;
   border: 1px solid rgba(56, 189, 248, 0.28) !important;
@@ -4045,8 +4051,8 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 }
 
 .backpack-panel .bp-search:focus {
-  border-color: #38bdf8 !important;
-  box-shadow: 0 0 16px rgba(56, 189, 248, 0.35) !important;
+  border-color: transparent !important;
+  box-shadow: inset 0 0 0 1px rgba(0, 217, 255, 0.55) !important;
 }
 
 .backpack-panel .bp-fchip {
@@ -4100,27 +4106,43 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 
 .backpack-panel .bp-tiles {
   display: grid !important;
-  grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)) !important;
-  gap: 12px !important;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)) !important;
+  gap: 9px !important;
   padding: 4px 2px !important;
 }
 
 .backpack-panel .bp-tile {
   position: relative !important;
-  aspect-ratio: 2/3 !important;
-  border-radius: 9px !important;
+  aspect-ratio: 5/7 !important;
+  border-radius: 11px !important;
   overflow: hidden !important;
-  border: 1.5px solid var(--tcol, rgba(56, 189, 248, 0.25)) !important;
-  background: rgba(15, 23, 42, 0.9) !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5) !important;
+  border: 0 !important;
+  outline: none !important;
+  background: #0e1626 !important;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45) !important;
   cursor: pointer !important;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: transform 0.18s ease !important;
+  content-visibility: auto !important;
+}
+
+.backpack-panel .bp-tile.in-deck {
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45) !important;
+}
+
+.backpack-panel .bp-tile img {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: top !important;
+  border: 0 !important;
+  border-radius: 0 !important;
 }
 
 .backpack-panel .bp-tile:hover {
-  transform: translateY(-4px) scale(1.03) !important;
-  border-color: var(--tcol, #38bdf8) !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7), 0 0 18px color-mix(in srgb, var(--tcol, #38bdf8) 45%, transparent) !important;
+  transform: translateY(-4px) scale(1.02) !important;
+  box-shadow: 0 14px 26px rgba(0, 0, 0, 0.55) !important;
   z-index: 10 !important;
 }
 
@@ -4174,6 +4196,167 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 }
 
 /* 9. Item Grid AAA Enhancement */
+
+/* ================= DECK PORT v3 "SQUADRON COMMAND" (geometry = _tmp/bp3.css terkunci 2026-11-01).
+   Hanya kelas BARU hasil step-2 (js/panels.js renderBackpackPanel) — tidak menimpa aturan
+   kelas lama; netralisasi border tile/slot sudah diedit di aturan pemenangnya masing-masing.
+   Performa §2b: animasi HANYA transform/opacity; tanpa backdrop-filter; tanpa border di tile. ==== */
+.backpack-panel { --bp-cy:#00d9ff; --bp-am:#ffd27a; --bp-tx:#e8f6ff; --bp-txd:#8aa3bd; }
+.backpack-panel .bp-scroll { overscroll-behavior: contain !important; }
+/* --- bar: KOLEKSI + FAV + MUT + URUTKAN + search --- */
+.backpack-panel .bp-kol { flex:none; font-family:var(--font-tac,'Rajdhani',sans-serif); font-size:9.5px; font-weight:800; letter-spacing:.18em; color:var(--bp-txd); white-space:nowrap; }
+.backpack-panel .bp-kol-n { font-family:var(--font-mono,monospace); font-variant-numeric:tabular-nums; font-weight:800; color:var(--bp-cy); margin-left:2px; }
+.backpack-panel .bp-favtog,
+.backpack-panel .bp-mutbtn { flex:none; min-height:44px; min-width:44px; display:inline-flex; align-items:center; justify-content:center; gap:5px; padding:0 10px; border:0; border-radius:10px; background:#0e1626; box-shadow:inset 0 0 0 1px rgba(140,180,220,.18); font-family:var(--font-tac,'Rajdhani',sans-serif); font-size:9.5px; font-weight:800; letter-spacing:.14em; color:var(--bp-txd); cursor:pointer; transition:transform .15s ease; }
+.backpack-panel .bp-favtog:hover,
+.backpack-panel .bp-mutbtn:hover { transform:translateY(-1px); }
+.backpack-panel .bp-favtog svg { width:13px; height:13px; }
+.backpack-panel .bp-favtog.on { color:var(--bp-am); background:#151321; box-shadow:inset 0 0 0 1px rgba(255,210,122,.5); }
+.backpack-panel .bp-mutbtn { color:var(--mc,var(--bp-txd)); gap:4px; padding:0 8px; }
+.backpack-panel .bp-mutbtn.on { background:#131b2c; box-shadow:inset 0 0 0 1px var(--mc,rgba(140,180,220,.18)); }
+.backpack-panel .bp-mb-glyph { display:flex; align-items:center; justify-content:center; width:14px; height:14px; color:inherit; }
+.backpack-panel .bp-mb-glyph svg { width:14px; height:14px; display:block; }
+.backpack-panel .bp-mb-glyph .bp-glyph { width:14px; height:14px; }
+.backpack-panel .bp-mb-caret { width:9px; height:9px; opacity:.6; color:var(--bp-txd); }
+.backpack-panel .bp-seg { flex:none; display:flex; align-items:center; gap:3px; margin-left:auto; }
+.backpack-panel .bp-seg-h { font-family:var(--font-tac,'Rajdhani',sans-serif); font-size:8px; font-weight:900; letter-spacing:.22em; color:var(--bp-txd); white-space:nowrap; padding:0 3px; }
+.backpack-panel .bp-sbtn { flex:none; min-height:44px; min-width:44px; display:flex; align-items:center; justify-content:center; padding:2px 4px; border:0; border-radius:9px; background:#0e1626; box-shadow:inset 0 0 0 1px rgba(140,180,220,.12); color:var(--bp-txd); font-family:var(--font-tac,'Rajdhani',sans-serif); font-size:8.6px; font-weight:900; letter-spacing:.04em; cursor:pointer; transition:transform .14s ease; }
+.backpack-panel .bp-sbtn:hover { transform:translateY(-1px); }
+.backpack-panel .bp-sbtn.on { color:#04121c; background:linear-gradient(180deg,#19e2ff,#0aa6d6); box-shadow:none; }
+.backpack-panel .bp-mutpop { min-width:0; width:min(252px,100%); }
+/* --- popover MUTASI: panel solid, 7 baris, gulir bila lebih, scrollbar sembunyi --- */
+.backpack-panel .bp-mutpop { position:absolute; right:2px; top:calc(100% + 4px); z-index:30; width:min(252px,100%); min-width:220px; max-height:min(64vh,500px); overflow-y:auto; overscroll-behavior:contain; scrollbar-width:none; -ms-overflow-style:none; padding:7px 8px 8px; border-radius:14px; background:linear-gradient(170deg,#1a2942 0%,#111a2b 52%,#0d1524 100%); box-shadow:0 24px 48px rgba(0,0,0,.66); transform-origin:top right; animation:bpPopIn .17s cubic-bezier(.3,1.3,.4,1); }
+.backpack-panel .bp-mutpop::-webkit-scrollbar { display:none; }
+@keyframes bpPopIn { from{transform:scale(.94) translateY(-6px);opacity:0} to{transform:none;opacity:1} }
+.backpack-panel .bp-pop-h { font-family:var(--font-tac,'Rajdhani',sans-serif); font-size:8.5px; letter-spacing:.3em; color:var(--bp-txd); font-weight:900; margin:7px 3px 5px; }
+.backpack-panel .bp-pop-list { display:flex; flex-direction:column; gap:5px; }
+.backpack-panel .bp-mrow { display:flex; align-items:center; gap:9px; width:100%; min-height:44px; padding:0 8px; border:0; border-radius:10px; text-align:left; background:rgba(10,16,28,.62); box-shadow:inset 0 0 0 1px rgba(140,180,220,.1); color:var(--bp-txd); cursor:pointer; transition:transform .14s ease; }
+.backpack-panel .bp-mrow:hover { transform:translateX(2px); }
+.backpack-panel .bp-mrow-sw { flex:none; display:flex; align-items:center; justify-content:center; width:15px; height:15px; color:var(--mc,#8aa3bd); }
+.backpack-panel .bp-mrow-sw svg { width:15px; height:15px; display:block; }
+.backpack-panel .bp-mrow-sw .bp-glyph { width:15px; height:15px; background-color:var(--mc,#fff); }
+.backpack-panel .bp-mrow-lb { flex:1; min-width:0; font-family:var(--font-tac,'Rajdhani',sans-serif); font-size:10px; font-weight:900; letter-spacing:.13em; color:#cfe2f2; white-space:nowrap; }
+.backpack-panel .bp-mrow-cn { flex:none; margin-left:auto; min-width:26px; text-align:right; font-family:var(--font-mono,monospace); font-variant-numeric:tabular-nums; font-size:10px; font-weight:800; color:var(--bp-txd); }
+.backpack-panel .bp-mrow.on { background:linear-gradient(90deg,rgba(0,217,255,.12),rgba(10,16,28,.62)); box-shadow:inset 0 0 0 1px var(--mc,rgba(140,180,220,.3)); }
+.backpack-panel .bp-mrow.on .bp-mrow-lb { color:var(--mc,#8aa3bd); }
+.backpack-panel .bp-mrow.on .bp-mrow-cn { color:#eaffff; }
+/* --- glif mutasi (bentuk clip-path ala bp3.css; warna asli via --mcol/--mc) --- */
+.backpack-panel .bp-glyph { display:block; width:12px; height:12px; position:relative; overflow:hidden; background:var(--mcol,#fff); filter:drop-shadow(0 1px 3px rgba(0,0,0,.92)); }
+.backpack-panel .bp-glyph.g-gold { clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%); }
+.backpack-panel .bp-glyph.g-rainbow { clip-path:polygon(50% 2%,100% 98%,0 98%); background-image:linear-gradient(120deg,#FF6B81,#FFB347,#FFE66D,#6BE08A,#B9C2CC,#B98CFF,#FF6BD6); }
+.backpack-panel .bp-glyph.g-secret { clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%); background-image:linear-gradient(120deg,#C084FC,#A855F7,#E9D5FF,#9333EA,#FFFFFF,#C084FC); }
+.backpack-panel .bp-glyph.g-ultima { clip-path:polygon(50% 0,61% 27%,88% 12%,79% 41%,100% 50%,79% 59%,88% 88%,61% 73%,50% 100%,39% 73%,12% 88%,21% 59%,0 50%,21% 41%,12% 12%,39% 27%); background-image:linear-gradient(120deg,#FF0055,#FF3366,#FF88AA,#FFFFFF,#FF0055,#FFAA00); }
+.backpack-panel .bp-glyph.g-shiny { background:none; width:11px; height:11px; color:#eafdff; overflow:visible; filter:drop-shadow(0 0 4px rgba(125,249,255,.8)); }
+.backpack-panel .bp-glyph.g-rainbow::after,
+.backpack-panel .bp-glyph.g-secret::after,
+.backpack-panel .bp-glyph.g-ultima::after { content:""; position:absolute; inset:-45%; background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.9) 50%,transparent 62%); transform:translateX(-150%); opacity:.85; animation:bpShim 2.8s ease-in-out infinite; will-change:transform,opacity; }
+@keyframes bpShim { 0%,8%{transform:translateX(-150%)} 52%,100%{transform:translateX(150%)} }
+/* --- penanda tile: TANPA border/glow; geometri = prototipe (sudut terbagi, no-overlap) --- */
+.backpack-panel .bpt-tier { position:absolute; left:5px; top:5px; z-index:2; font-family:var(--font-mono,monospace); font-size:8.5px; font-weight:700; letter-spacing:.08em; padding:2px 6px; border-radius:6px; color:#08111d; background:rgba(8,14,24,.66); pointer-events:none; }
+.backpack-panel .bp-tile .bpt-fav { position:absolute; right:5px; top:5px; z-index:2; width:13px; height:13px; border:0; background:none; border-radius:0; padding:0; color:var(--bp-am); filter:drop-shadow(0 1px 3px rgba(0,0,0,.9)); display:block; pointer-events:none; }
+.backpack-panel .bpt-mut { position:absolute; right:5px; top:21px; z-index:2; display:flex; align-items:center; gap:2px; height:13px; padding:0; border:0; background:none; color:var(--mcol,#7DF9FF); pointer-events:none; }
+.backpack-panel .bpt-w { position:absolute; left:5px; bottom:6px; z-index:2; width:13px; height:13px; color:var(--wcol,transparent); filter:drop-shadow(0 1px 3px rgba(0,0,0,.95)); pointer-events:none; }
+.backpack-panel .bpt-w svg { width:100%; height:100%; display:block; }
+.backpack-panel .bpt-ndot { position:absolute; left:6px; top:24px; z-index:2; width:6px; height:6px; border-radius:50%; background:#eafeff; pointer-events:none; }
+.backpack-panel .bpt-ndot::after { content:""; position:absolute; inset:-3px; border-radius:50%; pointer-events:none; background:radial-gradient(circle,rgba(125,249,255,.62),transparent 68%); animation:bpNdPulse 1.9s ease-in-out infinite; will-change:transform,opacity; }
+@keyframes bpNdPulse { 0%,100%{transform:scale(.62);opacity:.3} 50%{transform:scale(1.55);opacity:.95} }
+.backpack-panel .bpt-pw { position:absolute; left:5px; right:5px; bottom:2px; z-index:2; height:3px; border-radius:2px; background:rgba(8,14,24,.66); pointer-events:none; }
+.backpack-panel .bpt-pw::after { content:""; position:absolute; left:0; top:0; bottom:0; min-width:3px; max-width:100%; border-radius:2px; width:calc(var(--pw,.035) * 100%); background:linear-gradient(90deg,#0aa6d6,#19e2ff); }
+.backpack-panel .bpt-eqdot { position:absolute; right:5px; bottom:6px; z-index:2; width:8px; height:8px; border-radius:50%; background:var(--bp-cy); box-shadow:0 0 8px var(--bp-cy); pointer-events:none; }
+/* --- rack: nomor slot halus; kosong = frame tipis + plus --- */
+.backpack-panel .bps-num { position:absolute; left:6px; bottom:5px; z-index:3; font-family:var(--font-mono,monospace); font-size:9px; font-weight:800; letter-spacing:.12em; color:rgba(232,246,255,.85); text-shadow:0 1px 4px rgba(0,0,0,.9); pointer-events:none; }
+/* --- modal kartu #bp-cardmodal (ditempel di document.body oleh panels.js) --- */
+.bp-cardmodal { position:fixed; inset:0; width:100vw; height:100dvh; min-height:0; border-radius:0; z-index:95000; display:flex; align-items:center; justify-content:center; padding:16px; box-sizing:border-box; background:rgba(5,8,14,.78); color:var(--bp-tx,#e8f6ff); font-family:var(--font-tac,'Rajdhani',sans-serif); }
+.bp-cardmodal .bp-cm-panel { position:relative; width:min(560px,100%); max-height:calc(100dvh - 32px); overflow-y:auto; overscroll-behavior:contain; scrollbar-width:none; -ms-overflow-style:none; background:linear-gradient(170deg,#16233a 0%,#111a2b 45%,#0c1422 100%); border-radius:18px; box-shadow:0 30px 80px rgba(0,0,0,.7), inset 0 1px 0 rgba(140,220,255,.1); padding:16px; }
+.bp-cardmodal .bp-cm-panel::-webkit-scrollbar { display:none; }
+.bp-cardmodal .bp-cm-x { position:absolute; right:8px; top:8px; z-index:5; width:44px; height:44px; min-width:44px; min-height:44px; display:flex; align-items:center; justify-content:center; border:0; border-radius:12px; background:none; color:var(--bp-txd,#8aa3bd); cursor:pointer; transition:transform .15s ease; }
+.bp-cardmodal .bp-cm-x:hover { transform:scale(1.1); color:#fff; }
+.bp-cardmodal .bp-cm-top { display:flex; gap:14px; align-items:stretch; }
+.bp-cardmodal .bp-cm-art { position:relative; width:min(178px,36vw); aspect-ratio:5/7; border-radius:14px; overflow:hidden; flex:none; background:#0d111a; box-shadow:0 16px 36px rgba(0,0,0,.6), inset 0 0 0 1.5px rgba(0,217,255,.5); }
+.bp-cardmodal .bp-cm-art img { width:100%; height:100%; object-fit:cover; border:0; }
+.bp-cardmodal .bp-cm-info { flex:1; min-width:0; display:flex; flex-direction:column; gap:6px; }
+.bp-cardmodal .bp-cm-name { font-size:clamp(17px,3.2vw,25px); font-weight:900; text-transform:uppercase; letter-spacing:.04em; line-height:1.05; padding-right:36px; overflow-wrap:anywhere; }
+.bp-cardmodal .bp-cm-chip { align-self:flex-start; font-family:var(--font-mono,monospace); font-size:10px; font-weight:700; padding:3px 9px; border-radius:7px; background:rgba(8,14,24,.85); white-space:nowrap; }
+.bp-cardmodal .bp-cm-mut { align-self:flex-start; font-size:10px; font-weight:900; letter-spacing:.16em; white-space:nowrap; }
+.bp-cardmodal .bp-cm-stats { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:2px; }
+.bp-cardmodal .bp-cm-st { min-width:0; background:rgba(10,16,28,.65); border-radius:10px; padding:6px 8px; box-shadow:inset 0 0 0 1px rgba(140,180,220,.12); }
+.bp-cardmodal .bp-cm-k { display:block; font-size:8px; letter-spacing:.14em; color:var(--bp-txd,#8aa3bd); font-weight:800; white-space:nowrap; }
+.bp-cardmodal .bp-cm-v { display:block; font-family:var(--font-mono,'Courier New',monospace); font-variant-numeric:tabular-nums; font-size:14px; font-weight:700; line-height:1.25; white-space:nowrap; overflow-wrap:normal; }
+.bp-cardmodal .bp-cm-own { font-family:var(--font-mono,monospace); font-size:9.5px; letter-spacing:.12em; color:var(--bp-txd,#8aa3bd); }
+.bp-cardmodal .bp-cm-own.on { color:var(--bp-cy,#00d9ff); }
+.bp-cardmodal .bp-cm-pass { margin-top:10px; background:rgba(10,16,28,.7); border-radius:12px; padding:10px 12px; box-shadow:inset 0 0 0 1px rgba(0,217,255,.14); }
+.bp-cardmodal .bp-cm-skill { font-size:11px; font-weight:900; letter-spacing:.1em; color:var(--bp-am,#ffd27a); margin:4px 0 3px; }
+.bp-cardmodal .bp-cm-desc { font-size:12.5px; line-height:1.5; color:#c9dcee; margin:0; }
+.bp-cardmodal .bp-cm-acts { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.bp-cardmodal .bp-cm-btn { min-height:44px; min-width:44px; padding:0 16px; border:0; border-radius:11px; font-weight:900; font-size:12px; letter-spacing:.16em; font-family:var(--font-tac,'Rajdhani',sans-serif); display:inline-flex; align-items:center; justify-content:center; gap:7px; flex:1; min-width:120px; background:rgba(10,16,28,.7); color:var(--bp-txd,#8aa3bd); cursor:pointer; transition:transform .15s ease; }
+.bp-cardmodal .bp-cm-btn:hover { transform:translateY(-2px); }
+.bp-cardmodal .bp-cm-btn.pri { background:linear-gradient(180deg,#19e2ff,#0aa6d6); color:#04121c; box-shadow:0 8px 22px rgba(0,217,255,.3); }
+.bp-cardmodal .bp-cm-btn.warn { background:rgba(255,46,136,.16); color:#ff8ab8; box-shadow:inset 0 0 0 1px rgba(255,46,136,.5); }
+.bp-cardmodal .bp-cm-btn.gold { background:rgba(255,210,122,.14); color:var(--bp-am,#ffd27a); box-shadow:inset 0 0 0 1px rgba(255,210,122,.45); }
+.bp-cardmodal .bp-cm-btn.gold.on { background:linear-gradient(180deg,#ffe1a0,#e8b25e); color:#241603; }
+.bp-cardmodal .bp-cm-btn.lockbtn.on { background:rgba(0,217,255,.16); color:#7df9ff; box-shadow:inset 0 0 0 1px rgba(0,217,255,.45); }
+/* --- ≤360px: penanda tile turun SATU step (tidak ada yang dihapus) + URUTKAN 2x2 --- */
+@media (max-width:360px) {
+  .backpack-panel .bp-tiles { grid-template-columns:repeat(auto-fill,minmax(66px,1fr)) !important; gap:6px !important; }
+  .backpack-panel .bp-kol { font-size:8px; letter-spacing:.06em; }
+  .backpack-panel .bp-favtog { padding:0 7px; gap:3px; font-size:8.5px; }
+  .backpack-panel .bp-favtog svg { width:11px; height:11px; }
+  .backpack-panel .bp-mutbtn { padding:0 6px; gap:3px; font-size:8.5px; }
+  .backpack-panel .bp-mutbtn .bp-mb-glyph, .backpack-panel .bp-mutbtn .bp-mb-glyph svg, .backpack-panel .bp-mutbtn .bp-glyph { width:11px; height:11px; }
+  .backpack-panel .bp-mb-caret { width:7px; height:7px; }
+  .backpack-panel .bp-seg { flex-wrap:wrap; justify-content:flex-end; flex:1 1 100%; max-width:100%; min-width:0; }
+  .backpack-panel .bp-sbtn { min-width:56px; font-size:7.6px; }
+  .backpack-panel .bpt-mut { top:19px; height:11px; }
+  .backpack-panel .bpt-mut .bp-glyph { width:10px; height:10px; }
+  .backpack-panel .bpt-mut .bp-glyph.g-shiny { width:9px; height:9px; }
+  .backpack-panel .bpt-w { left:4px; bottom:5px; width:10px; height:10px; }
+  .backpack-panel .bpt-ndot { left:5px; top:22px; width:5px; height:5px; }
+  .backpack-panel .bpt-pw { left:4px; right:4px; bottom:1.5px; height:2px; }
+  .backpack-panel .bpt-tier { left:4px; top:4px; font-size:7.5px; padding:1px 5px; }
+}
+/* --- landscape HP pendek: penanda turun satu step, rack tetap 4 slot tanpa scroller --- */
+@media (max-height:560px) {
+  .backpack-panel .bp-body.deck .bp-col-head { display:none !important; }
+  .backpack-panel .bp-deckcol { padding:6px !important; gap:5px !important; }
+  .backpack-panel .bp-collect { padding:6px !important; }
+  .backpack-panel .bp-tiles { grid-template-columns:repeat(auto-fill,minmax(60px,1fr)) !important; gap:6px !important; }
+  .backpack-panel .bp-sbtn { min-height:44px; }
+  .backpack-panel .bpt-mut { top:19px; height:11px; }
+  .backpack-panel .bpt-mut .bp-glyph { width:10px; height:10px; }
+  .backpack-panel .bpt-w { bottom:5px; width:10px; height:10px; }
+  .backpack-panel .bpt-ndot { top:22px; width:5px; height:5px; }
+  .backpack-panel .bpt-pw { bottom:1.5px; height:2px; }
+  .backpack-panel .bp-deckmeta { margin-top:4px !important; padding-top:4px !important; gap:4px !important; }
+  .backpack-panel .bdm-core { padding:3px 8px !important; }
+  .backpack-panel .bdm-v { font-size:15px !important; }
+  .backpack-panel .bp-save { min-height:40px !important; padding:6px 8px !important; font-size:9.5px !important; }
+}
+@media (max-width:400px) {
+  #backpackPanel .bp-deckcol { width:clamp(80px,20vw,112px) !important; min-width:0 !important; padding:8px 7px !important; }
+  #backpackPanel .bp-body.deck .bp-col-head { display:none !important; }
+  #backpackPanel .bdm-label { font-size:7.5px !important; white-space:normal !important; letter-spacing:.04em !important; }
+  #backpackPanel .bdm-val-row { flex-direction:column !important; align-items:flex-start !important; }
+  #backpackPanel .bdm-tag { display:none !important; }
+  #backpackPanel .bp-save { white-space:normal !important; text-align:center !important; font-size:9.5px !important; padding:6px 8px !important; line-height:1.25 !important; }
+  .backpack-panel .bp-seg-h { display:none; }
+  .backpack-panel .bp-kol { font-size:8px; letter-spacing:.08em; }
+  .backpack-panel .bp-favtog { padding:0 7px; gap:3px; font-size:8.5px; }
+  .backpack-panel .bp-mutbtn { padding:0 6px; gap:3px; font-size:8.5px; }
+  .backpack-panel .bp-filter { gap:4px !important; padding:4px !important; }
+}
+@media (max-height:560px) {
+  html.m-landscape #backpackPanel .bp-slots { grid-template-columns:1fr !important; grid-auto-rows:minmax(0,1fr) !important; flex:1 1 auto !important; justify-content:stretch !important; overflow:hidden !important; }
+  html.m-landscape #backpackPanel .bp-slots .bp-slot { height:100% !important; max-height:none !important; max-width:none !important; aspect-ratio:auto !important; min-height:24px !important; width:100% !important; }
+  html.m-landscape #backpackPanel .bp-deckcol { flex-direction:column !important; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .backpack-panel .bp-glyph.g-rainbow::after,
+  .backpack-panel .bp-glyph.g-secret::after,
+  .backpack-panel .bp-glyph.g-ultima::after,
+  .backpack-panel .bpt-ndot::after { animation:none !important; }
+  .backpack-panel .bp-mutpop { animation:none !important; }
+}
+
 .backpack-panel .bp-itemgrid {
   display: grid !important;
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
