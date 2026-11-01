@@ -2639,6 +2639,7 @@ function bpGearModalSync(){
     :owned?`<button class="bp-cm-btn pri" type="button" onclick="${toggle};bpGearModalClose()">PASANG</button>`
     :`<div class="bp-cm-buy">${bpBuyBtn(d,isPet?'Pet':'Art')}</div>`;
   el.setAttribute('aria-label',d.name);
+  el.style.setProperty('--ec',isPet?'#7DF9FF':d.color); /* sumber sama seperti grid: artefak d.color, pet #7DF9FF (renderBpArts/renderBpPets) */
   el.innerHTML=`<div class="bp-cm-panel">
     <button class="bp-cm-x" type="button" onclick="bpGearModalClose()" aria-label="Tutup" title="Tutup [ESC]">${BP_X}</button>
     <div class="bp-cm-top">

@@ -4311,7 +4311,15 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 .backpack-panel .webhead { flex:none; display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:8px; }
 .backpack-panel .spbox { display:flex; align-items:baseline; gap:9px; padding:6px 16px; border-radius:12px; background:linear-gradient(180deg,rgba(255,210,122,.10),rgba(17,26,43,.55)); box-shadow:inset 0 0 0 1px rgba(255,210,122,.35); }
 .backpack-panel .spbox .k { font-family:var(--font-tac,'Rajdhani',sans-serif); font-size:9px; font-weight:900; letter-spacing:.3em; color:var(--bp-am); }
-.backpack-panel .spbox .sp { font-size:30px; font-weight:700; line-height:1; color:var(--bp-am); text-shadow:0 0 20px rgba(255,210,122,.5); }
+.backpack-panel .spbox .sp { flex:none; font-size:30px; font-weight:700; line-height:1; color:var(--bp-am); text-shadow:0 0 20px rgba(255,210,122,.5); }
+/* sub-baris goal+hint (60ef311) dipindah ke dalam .spbox tapi belum punya gaya:
+   goal satu baris di kanan angka (nowrap, jangan pecah tengah kata), hint di bawahnya
+   lebih kecil+redup; dua baris ini tetap lebih pendek dari angka 30px -> tinggi box
+   tidak naik, konstelasi tidak terdorong. Hint sudah disembunyikan di landscape pendek. */
+.backpack-panel .spbox .sp-sub { display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:2px; min-width:0; }
+.backpack-panel .spbox .sp-goal { max-width:150px; font-size:9px; font-weight:800; line-height:1.15; letter-spacing:.14em; color:#dff3ff; text-shadow:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.backpack-panel .spbox .sp-goal.ready { color:var(--bp-lk); }
+.backpack-panel .spbox .sp-hint { font-size:8px; line-height:1.2; letter-spacing:.03em; color:#8aa3bd; text-align:left; }
 .backpack-panel .weblegend { display:flex; gap:14px; flex-wrap:wrap; font-family:var(--font-tac,'Rajdhani',sans-serif); font-size:9px; font-weight:700; letter-spacing:.14em; color:var(--bp-txd); }
 .backpack-panel .weblegend i { display:inline-block; width:9px; height:9px; margin-right:5px; border-radius:50%; vertical-align:-1px; }
 .backpack-panel .weblegend .l1 i { background:var(--bp-lk); box-shadow:0 0 8px var(--bp-lk); }
