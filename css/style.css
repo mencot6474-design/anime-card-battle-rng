@@ -54366,10 +54366,28 @@ body.on-raid .lobby-tactical-hud {
     }
   }
   html.m-portrait #backpackPanel .bp-tiles{
-    grid-template-columns:repeat(auto-fill,minmax(88px,1fr))!important; gap:9px!important;
+    grid-template-columns:repeat(auto-fill,minmax(66px,1fr))!important; gap:9px!important;
   }
   html.m-landscape #backpackPanel .bp-tiles{
     grid-template-columns:repeat(auto-fill,minmax(100px,1fr))!important; gap:10px!important;
+  }
+  /* BPD-GEO (ui-css #2): pendek (850x390) = lantai prototype 60px/gap6 + rail dipangkas +
+     padding deck dikecil => 8-9 kolom; popover MUT dibatasi relatif viewport. */
+  @media (max-height:640px){
+    html.m-landscape #backpackPanel .bp-tiles{grid-template-columns:repeat(auto-fill,minmax(60px,1fr))!important;gap:6px!important;}
+    html.m-landscape #backpackPanel .bp-deckcol{width:min(190px,30vw)!important;max-width:190px!important;}
+    #backpackPanel .bp-body.deck{padding-left:6px!important;padding-right:6px!important;}
+    #backpackPanel .bp-body.deck .bp-cols{padding-left:6px!important;padding-right:6px!important;gap:8px!important;}
+    #backpackPanel .bp-body.deck .bp-collect{padding:6px!important;}
+    #backpackPanel .bp-mutpop{max-height:calc(100dvh - 210px)!important;}
+  }
+  /* BPD-GEO portrait sempit (320/390): ruang horizontal reclaimed (3 kolom @390, 2 @320),
+     bar dua baris, popover MUT capped + scrollbar-hidden (sudah di LP:4228). */
+  @media (max-width:400px){
+    #backpackPanel .bp-body.deck{padding-left:6px!important;padding-right:6px!important;}
+    #backpackPanel .bp-body.deck .bp-cols{padding-left:6px!important;padding-right:6px!important;gap:8px!important;}
+    #backpackPanel .bp-body.deck .bp-collect{padding:6px!important;}
+    #backpackPanel .bp-mutpop{max-height:calc(100dvh - 322px)!important;}
   }
 
   /* ---- DECK PICKER (#deckPickModal backdrop + .dp-box sheet) ----

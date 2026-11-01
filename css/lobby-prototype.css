@@ -4295,8 +4295,9 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 .bp-cardmodal .bp-cm-btn.gold { background:rgba(255,210,122,.14); color:var(--bp-am,#ffd27a); box-shadow:inset 0 0 0 1px rgba(255,210,122,.45); }
 .bp-cardmodal .bp-cm-btn.gold.on { background:linear-gradient(180deg,#ffe1a0,#e8b25e); color:#241603; }
 .bp-cardmodal .bp-cm-btn.lockbtn.on { background:rgba(0,217,255,.16); color:#7df9ff; box-shadow:inset 0 0 0 1px rgba(0,217,255,.45); }
-/* --- ≤360px: penanda tile turun SATU step (tidak ada yang dihapus) + URUTKAN 2x2 --- */
-@media (max-width:360px) {
+/* --- ≤400px (dulu ≤360; BPD-GEO: tile @390 turun ke ~70px jadi penanda ikut turun): penanda tile
+   turun SATU step (tidak ada yang dihapus) + URUTKAN 2x2 --- */
+@media (max-width:400px) {
   .backpack-panel .bp-tiles { grid-template-columns:repeat(auto-fill,minmax(66px,1fr)) !important; gap:6px !important; }
   .backpack-panel .bp-kol { font-size:8px; letter-spacing:.06em; }
   .backpack-panel .bp-favtog { padding:0 7px; gap:3px; font-size:8.5px; }
@@ -4321,11 +4322,18 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   .backpack-panel .bp-collect { padding:6px !important; }
   .backpack-panel .bp-tiles { grid-template-columns:repeat(auto-fill,minmax(60px,1fr)) !important; gap:6px !important; }
   .backpack-panel .bp-sbtn { min-height:44px; }
+  /* BPD-GEO landscape pendek (850x390): reclaim yang sama + batas popover; lantai tile
+     prototype 60px/gap6 (LP:4322) tetap menang atas base 88px => 8-9 kolom. */
+  .backpack-panel .bp-body.deck { padding-left:6px !important; padding-right:6px !important; }
+  .backpack-panel .bp-body.deck .bp-cols { padding-left:6px !important; padding-right:6px !important; gap:8px !important; }
+  .backpack-panel .bp-body.deck .bp-collect { padding:6px !important; }
+  #backpackPanel .bp-mutpop { max-height:calc(100dvh - 210px) !important; }
   .backpack-panel .bpt-mut { top:19px; height:11px; }
   .backpack-panel .bpt-mut .bp-glyph { width:10px; height:10px; }
   .backpack-panel .bpt-w { bottom:5px; width:10px; height:10px; }
   .backpack-panel .bpt-ndot { top:22px; width:5px; height:5px; }
   .backpack-panel .bpt-pw { bottom:1.5px; height:2px; }
+  .backpack-panel .bpt-tier { left:4px; top:4px; font-size:7.5px; padding:1px 5px; } /* BPD-GEO: tile 62px landscape — chip tier turun satu step, tidak menabrak bpt-mut */
   .backpack-panel .bp-deckmeta { margin-top:4px !important; padding-top:4px !important; gap:4px !important; }
   .backpack-panel .bdm-core { padding:3px 8px !important; }
   .backpack-panel .bdm-v { font-size:15px !important; }
@@ -4343,6 +4351,17 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   .backpack-panel .bp-favtog { padding:0 7px; gap:3px; font-size:8.5px; }
   .backpack-panel .bp-mutbtn { padding:0 6px; gap:3px; font-size:8.5px; }
   .backpack-panel .bp-filter { gap:4px !important; padding:4px !important; }
+  /* BPD-GEO (ui-css #2, tiket geometri mandor): ruang horizontal reclaimed + lantai tile turun
+     (3 kolom @390, 2 kolom @320), bar dua baris (search baris sendiri), popover MUT dibatasi
+     relatif viewport (URUTKAN terjangkau + gulir, scrollbar sembunyi). Semua scoped .bp-body.deck
+     => tab item/relic/pet/skill tidak tersentuh. */
+  .backpack-panel .bp-body.deck { padding-left:6px !important; padding-right:6px !important; }
+  .backpack-panel .bp-body.deck .bp-cols { padding-left:6px !important; padding-right:6px !important; gap:8px !important; }
+  .backpack-panel .bp-body.deck .bp-collect { padding:6px !important; }
+  .backpack-panel .bp-body.deck .bp-tiles { grid-template-columns:repeat(auto-fill,minmax(66px,1fr)) !important; gap:9px !important; }
+  .backpack-panel .bp-body.deck .bp-filter { flex-wrap:wrap !important; row-gap:6px !important; }
+  .backpack-panel .bp-body.deck .bp-search { flex:1 1 100% !important; min-width:0 !important; max-width:none !important; }
+  #backpackPanel .bp-mutpop { max-height:calc(100dvh - 322px) !important; }
 }
 @media (max-height:560px) {
   html.m-landscape #backpackPanel .bp-slots { grid-template-columns:1fr !important; grid-auto-rows:minmax(0,1fr) !important; flex:1 1 auto !important; justify-content:stretch !important; overflow:hidden !important; }
