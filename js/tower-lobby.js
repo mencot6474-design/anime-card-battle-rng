@@ -2166,6 +2166,7 @@ function renderLobby(){
 /* ========== TOGGLE BACKPACK FUNCTION ========== */
 function toggleBackpack() {
   const panel = document.getElementById('backpackPanel');
+  const backdrop = document.getElementById('backpackBackdrop');
   if (!panel) return;
 
   const isVisible = document.body.classList.contains('bp-open') || panel.classList.contains('open') || (panel.style.display !== 'none' && panel.style.display !== '');
@@ -2174,23 +2175,21 @@ function toggleBackpack() {
     /* Close: refresh lobby di belakang biar hub card & bench ikut perubahan dek. */
     document.body.classList.remove('bp-open');
     panel.classList.remove('open');
+    if (backdrop) backdrop.style.display = 'none';
     bpTarget = null;
     bpItemPopClose();
-    panel.style.opacity = '0';
-    panel.style.transform = 'translate(-50%, -45%) scale(0.95)';
+    panel.style.removeProperty('opacity');
+    panel.style.removeProperty('transform');
     setTimeout(() => { panel.style.display = 'none'; render(); }, 250);
   } else {
     /* Open */
     document.body.classList.add('bp-open');
     panel.classList.add('open');
+    if (backdrop) backdrop.style.display = 'block';
     renderBackpackPanel();
     panel.style.display = 'flex';
-
-    setTimeout(() => {
-      panel.style.opacity = '1';
-      panel.style.transform = 'translate(-50%, -50%) scale(1)';
-    }, 10);
-
+    panel.style.removeProperty('opacity');
+    panel.style.removeProperty('transform');
     beep(520, 0.1, 'triangle', 0.07);
   }
 }

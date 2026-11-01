@@ -6427,37 +6427,95 @@ html body.bp-open #activePlayersBadge { display:none !important; }
 .backpack-panel .bp-petboard .pethero.none .phk { color:var(--bp-cy,#00d9ff); }
 .backpack-panel .bp-petboard .pethero.none .phn { font-size:13px; }
 
-/* ================= REWORK BACKPACK CLEAN & POLISH ================= */
-.backpack-panel .bp-scroll {
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
+/* ================= BACKPACK BOTTOM SHEET DRAWER (OPSI A) ================= */
+#backpackBackdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 89999 !important;
+  background: rgba(3, 6, 12, 0.72) !important;
+  backdrop-filter: blur(5px) !important;
+  -webkit-backdrop-filter: blur(5px) !important;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease !important;
 }
-.backpack-panel .bp-scroll::-webkit-scrollbar {
-  width: 0 !important;
-  height: 0 !important;
-  display: none !important;
+body.bp-open #backpackBackdrop {
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
-.backpack-panel .bp-tile {
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
-  border-radius: 9px !important;
+
+/* Base sheet in portrait: Bottom Drawer setinggi 82vh meluncur dari bawah */
+html.m-portrait #backpackPanel,
+html.m-portrait .backpack-panel {
+  position: fixed !important;
+  top: auto !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  height: 82vh !important;
+  height: 82dvh !important;
+  max-height: 85dvh !important;
+  border-radius: 24px 24px 0 0 !important;
+  border: 1px solid rgba(56, 189, 248, 0.22) !important;
+  border-bottom: none !important;
+  box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.85), 0 0 35px rgba(56, 189, 248, 0.12) !important;
+  transform: translateY(100%) !important;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease !important;
+  opacity: 0 !important;
 }
-.backpack-panel .bp-tile img {
-  border-radius: 9px !important;
+html.m-portrait body.bp-open #backpackPanel,
+html.m-portrait body.bp-open .backpack-panel,
+html.m-portrait #backpackPanel.open,
+html.m-portrait .backpack-panel.open {
+  transform: translateY(0) !important;
+  opacity: 1 !important;
 }
-.backpack-panel .bpt-tier {
-  font-size: 8px !important;
-  font-weight: 800 !important;
-  letter-spacing: 0.05em !important;
-  padding: 1px 5px !important;
-  border-radius: 4px !important;
-  background: rgba(6, 11, 20, 0.85) !important;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.5) !important;
+
+/* Handle bar di atas drawer */
+html.m-portrait .backpack-panel::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 4.5px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.35);
+  z-index: 10;
 }
-.backpack-panel .bpt-fav {
-  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.9)) !important;
-}
-.bp-cardmodal .bp-cm-panel {
+
+/* Landscape / Desktop: Panel Mengambang Elegan (Floating Modal) */
+html.m-landscape #backpackPanel,
+html.m-landscape .backpack-panel,
+html:not(.m-portrait) #backpackPanel,
+html:not(.m-portrait) .backpack-panel {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  bottom: auto !important;
+  right: auto !important;
+  width: min(1080px, calc(100vw - 32px)) !important;
+  height: min(720px, calc(100dvh - 32px)) !important;
+  border-radius: 20px !important;
   border: 1px solid rgba(56, 189, 248, 0.25) !important;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85), 0 0 25px rgba(14, 165, 233, 0.15) !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.88), 0 0 40px rgba(56, 189, 248, 0.15) !important;
+  transform: translate(-50%, -46%) scale(0.96) !important;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease !important;
+  opacity: 0 !important;
 }
+html.m-landscape body.bp-open #backpackPanel,
+html.m-landscape body.bp-open .backpack-panel,
+html:not(.m-portrait) body.bp-open #backpackPanel,
+html:not(.m-portrait) body.bp-open .backpack-panel,
+html.m-landscape #backpackPanel.open,
+html.m-landscape .backpack-panel.open,
+html:not(.m-portrait) #backpackPanel.open,
+html:not(.m-portrait) .backpack-panel.open {
+  transform: translate(-50%, -50%) scale(1) !important;
+  opacity: 1 !important;
+}
+
 
