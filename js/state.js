@@ -34,8 +34,60 @@ function todayStr(){const d=new Date();return d.getFullYear()+"-"+String(d.getMo
 function nextResetMs(){const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate()+1,0,0,0,0)-n;}
 function fmtCountdown(ms){const s=Math.max(0,Math.floor(ms/1000));const p=x=>String(x).padStart(2,"0");const h=Math.floor(s/3600);const m=Math.floor(s%3600/60);const sec=s%60;if(h>0)return p(h)+":"+p(m)+":"+p(sec);return p(m)+":"+p(sec);}
 let state=null, currentUser=null;
+/* Guard normalisasi template story: sekali per loadStateFor, BUKAN per render. */
+let _noGachaMig=false;
+/* MIGRASI TEMPLATE STORY -> KARTU ASLI (generalisasi migrasi starter c4dff83 yang cuma
+   mengurus CH_UNSTOPPABLE_FIST dan sekadar console.warn untuk noGacha sisanya).
+   Setiap unit noGacha di STORY_BIBLE berbagi FILE ART dengan kartu koleksi aslinya, jadi
+   stack yang memegang template dipindah ke kembarannya: karakter yang sama, stat asli —
+   bukan penghapusan, pemain tidak kehilangan apa pun. Predikat SATU-SATUNYA
+   CARDS[char].noGacha === true; kartu cuaca eksklusif dan boss raid/tower LEGIT tidak
+   pernah tersentuh (roll math / drop rate / freshState tidak dibaca di sini).
+   - kembar ada                  -> char ditulis ulang + tier disegarkan dari CARDS
+   - varian kembar sudah dimiliki (char|mut|shiny) -> hasil migrasi dibuang, entri asli
+     pemain dipertahankan, deck/equippedId/equippedId2 yang menunjuk stack buangan
+     dipindah ke id yang bertahan (DECK MENYIMPAN STACK-ID, bukan char-id)
+   - tanpa kembar                -> stack dibuang, slot deck yang menunjuknya di-null */
+function migrateNoGachaTemplates(force){
+  if(_noGachaMig&&!force)return -1;
+  _noGachaMig=true;
+  if(!state||!Array.isArray(state.stacks))return 0;
+  const isT=s=>!!(s&&CARDS[s.char]&&CARDS[s.char].noGacha===true);
+  const tmpl=state.stacks.filter(isT);
+  if(!tmpl.length)return 0;
+  const pool=Object.values(CARDS), twins={}, many=[];
+  for(const t of pool){
+    if(t.noGacha!==true)continue;
+    const cand=pool.filter(c=>c!==t&&c.noGacha!==true&&c.sprite_asset&&c.sprite_asset===t.sprite_asset);
+    if(cand.length>1){ many.push(t.char_id+"x"+cand.length); cand.sort((a,b)=>(a.chance==null?Infinity:a.chance)-(b.chance==null?Infinity:b.chance)); }
+    if(cand.length)twins[t.char_id]=cand[0].char_id;
+  }
+  const _vk=s=>s.char+"|"+(s.mut||"none")+"|"+(s.shiny?1:0);
+  const tids=new Set(tmpl.map(s=>s.id)), keeper={};
+  state.stacks.forEach(s=>{ if(!tids.has(s.id)&&!keeper[_vk(s)]) keeper[_vk(s)]=s; });
+  const drop=new Set(), migrated=[], collided=[], unpaired=[];
+  for(const s of tmpl){
+    const from=s.char, twin=twins[from];
+    if(!twin){ unpaired.push(from); drop.add(s.id); continue; }
+    s.char=twin; s.tier=(CARDS[twin].tier==null?null:CARDS[twin].tier);
+    if(keeper[_vk(s)]){ drop.add(s.id); collided.push(from+"->"+twin); }
+    else{ keeper[_vk(s)]=s; migrated.push(from+"->"+twin); }
+  }
+  const remap=id=>{ if(!id)return id; const s=state.stacks.find(x=>x.id===id); if(!s)return id;
+    if(drop.has(s.id)){ const g=keeper[_vk(s)]; return g?g.id:null; } return isT(s)?null:id; };
+  state.deck=(Array.isArray(state.deck)?state.deck:[null,null,null,null]).map(remap);
+  state.equippedId=remap(state.equippedId);
+  state.equippedId2=remap(state.equippedId2);
+  state.stacks=state.stacks.filter(s=>!drop.has(s.id));
+  console.log('[MIGRATE NOGACHA] pindah '+migrated.length+':'+(migrated.join(',')||'-')+
+    ' | varian kembar dibuang '+collided.length+':'+(collided.join(',')||'-')+
+    ' | tanpa kembar dihapus '+unpaired.length+':'+(Array.from(new Set(unpaired)).join(',')||'-')+
+    (many.length?' | kembar ambigu '+many.length+':'+many.join(',')+' (ambil paling langka)':''));
+  return migrated.length+drop.size;
+}
 function loadStateFor(name){
   KEY="aab-state-v2:"+name;
+  _noGachaMig=false;
   _coinSpent=0;
   _xpGained=0;
   _rebirthGained=0;
@@ -96,32 +148,10 @@ function loadStateFor(name){
   
   state.stacks=state.stacks.filter(s=>CARDS[s.char]);
   
-  /* MIGRASI STARTER (save yang terlanjur dibuat build lama): stack CH_UNSTOPPABLE_FIST =
-     template story yang sempat diberikan freshState(). Nama+art kembar dengan kartu asli,
-     jadi char-nya dipindah ke CH_GREEN_BEAST. Tabrakan varian (char|mut|shiny) dengan
-     CH_GREEN_BEAST yang memang sudah dimiliki player: HASIL MIGRASI yang dibuang, entri
-     aslinya dipertahankan (dedup di bawah menyimpan entri PERTAMA, jadi urutan array tidak
-     boleh menentukan siapa yang kalah). Deck menyimpan STACK-ID, jadi slot yang menunjuk
-     stack buangan dipindah ke id yang bertahan. nothing else touched.
-     noGacha LAIN di save: DIBIARKAN + dilaporkan (menghapus kartu pemain lebih buruk dari
-     hantu kosmetik). */
-  {const BAD="CH_UNSTOPPABLE_FIST",REAL="CH_GREEN_BEAST";
-   const _vk=s=>s.char+"|"+(s.mut||"none")+"|"+(s.shiny?1:0);
-   const moved=state.stacks.filter(s=>s.char===BAD);
-   if(moved.length){
-     const movedIds=new Set(moved.map(s=>s.id));
-     const keeper={};state.stacks.forEach(s=>{if(!movedIds.has(s.id))keeper[_vk(s)]=s;});
-     moved.forEach(s=>{s.char=REAL;});
-     const drop=new Set(moved.filter(s=>keeper[_vk(s)]).map(s=>s.id));
-     const remap=id=>{const s=state.stacks.find(x=>x.id===id);return (s&&drop.has(s.id)&&keeper[_vk(s)])?keeper[_vk(s)].id:id;};
-     state.deck=(Array.isArray(state.deck)?state.deck:[null,null,null,null]).map(remap);
-     state.equippedId=remap(state.equippedId);state.equippedId2=remap(state.equippedId2);
-     state.stacks=state.stacks.filter(s=>!drop.has(s.id));
-     console.log('[MIGRATE STARTER]',BAD,'->',REAL,'| dipindah:',moved.length-drop.size,'| dupel varian dibuang:',drop.size);
-   }
-   const ghosts=state.stacks.filter(s=>CARDS[s.char]&&CARDS[s.char].noGacha).map(s=>s.char);
-   if(ghosts.length)console.warn('[NOGACHA DI SAVE] dibiarkan (lapor, jangan hapus):',Array.from(new Set(ghosts)).join(","));
-  }
+  /* MIGRASI TEMPLATE STORY (lihat migrateNoGachaTemplates di atas): menggantikan blok
+     lama yang hanya menangani CH_UNSTOPPABLE_FIST dan membiarkan noGacha lain sebagai
+     hantu. Semua 30 template ditangani; tabrakan varian tetap menyimpan entri pemain. */
+  migrateNoGachaTemplates();
   
   /* DEDUP STRICT (v179-dedup): satu entri per varian (char|mut|shiny), count dipaksa 1.
      Copy ekstra dibuang tanpa EXP — hemat bandwidth & storage Supabase. Trait dipertahankan
