@@ -10,8 +10,19 @@ window.coinIcon = coinIcon;
 function getUsers(){try{return JSON.parse(localStorage.getItem(USERS_KEY))||{};}catch(e){return {};}}
 function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u));}
 function freshState(){
-  const s0=STORY_BIBLE.units[0];
-  const start=s0?{id:Math.random().toString(36).slice(2,9),char:s0.id,tier:s0.tier,fav:false,lock:false,mut:"none",shiny:false,trait:"none",count:1}:null;
+  /* STARTER = kartu koleksi ASLI (CH_GREEN_BEAST), BUKAN STORY_BIBLE.units[0].
+     units[0] = CH_UNSTOPPABLE_FIST: template musuh story (noGacha, HP 211/ATK 105) yang
+     nama tampilan & file art-nya kembar dengan kartu asli CH_GREEN_BEAST (HP 320, chance
+     100k) — jadi akun baru memegang kartu yang tampak seperti di index tapi berisi stat
+     story. Fallback defensif: id tidak ada → entri PERTAMA yang bukan noGacha dan punya
+     chance; tidak pernah template. Sumber = array yang sudah dibaca kode ini (units),
+     supaya tidak bergantung pada urutan muat MASTER_CARD_INDEX/CARDS. */
+  const _units=(Array.isArray(STORY_BIBLE.units)?STORY_BIBLE.units:(typeof MASTER_CARD_INDEX!=="undefined"?MASTER_CARD_INDEX:[]));
+  const _idOf=c=>c.id||c.char_id;
+  const _real=c=>!!c&&!c.noGacha&&typeof c.chance==="number"&&c.chance>0;
+  const _want=_units.find(c=>_idOf(c)==="CH_GREEN_BEAST");
+  const s0=_real(_want)?_want:(_units.find(c=>_real(c))||null);
+  const start=s0?{id:Math.random().toString(36).slice(2,9),char:_idOf(s0),tier:(s0.tier==null?null:s0.tier),fav:false,lock:false,mut:"none",shiny:false,trait:"none",count:1}:null;
   const newState={coins:1000,wbTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,totalRolls:0,playSec:0,muted:false,lang:"en",diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},raidShopOwned:{},towerShopOwned:{},storyGemMilestones:{},dailyGemPending:0,storyCd:{},rebirth:{count:0,essence:0},tower:{best:0,auto:false},battleSpeed:1,
     cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],history:[],battle:null,
     player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1,sp:0,tree:{}},weather:null,weatherBest:null,potions:0,mythicPotions:0,luckPots:[0,0,0],speedPots:[0,0,0],luckBuffs:[],speedBuffs:[],infTokens:0,
@@ -84,6 +95,33 @@ function loadStateFor(name){
   if(!state.stacks||!state.stacks.length){const st=freshState();state.stacks=st.stacks;state.equippedId=st.equippedId;}
   
   state.stacks=state.stacks.filter(s=>CARDS[s.char]);
+  
+  /* MIGRASI STARTER (save yang terlanjur dibuat build lama): stack CH_UNSTOPPABLE_FIST =
+     template story yang sempat diberikan freshState(). Nama+art kembar dengan kartu asli,
+     jadi char-nya dipindah ke CH_GREEN_BEAST. Tabrakan varian (char|mut|shiny) dengan
+     CH_GREEN_BEAST yang memang sudah dimiliki player: HASIL MIGRASI yang dibuang, entri
+     aslinya dipertahankan (dedup di bawah menyimpan entri PERTAMA, jadi urutan array tidak
+     boleh menentukan siapa yang kalah). Deck menyimpan STACK-ID, jadi slot yang menunjuk
+     stack buangan dipindah ke id yang bertahan. nothing else touched.
+     noGacha LAIN di save: DIBIARKAN + dilaporkan (menghapus kartu pemain lebih buruk dari
+     hantu kosmetik). */
+  {const BAD="CH_UNSTOPPABLE_FIST",REAL="CH_GREEN_BEAST";
+   const _vk=s=>s.char+"|"+(s.mut||"none")+"|"+(s.shiny?1:0);
+   const moved=state.stacks.filter(s=>s.char===BAD);
+   if(moved.length){
+     const movedIds=new Set(moved.map(s=>s.id));
+     const keeper={};state.stacks.forEach(s=>{if(!movedIds.has(s.id))keeper[_vk(s)]=s;});
+     moved.forEach(s=>{s.char=REAL;});
+     const drop=new Set(moved.filter(s=>keeper[_vk(s)]).map(s=>s.id));
+     const remap=id=>{const s=state.stacks.find(x=>x.id===id);return (s&&drop.has(s.id)&&keeper[_vk(s)])?keeper[_vk(s)].id:id;};
+     state.deck=(Array.isArray(state.deck)?state.deck:[null,null,null,null]).map(remap);
+     state.equippedId=remap(state.equippedId);state.equippedId2=remap(state.equippedId2);
+     state.stacks=state.stacks.filter(s=>!drop.has(s.id));
+     console.log('[MIGRATE STARTER]',BAD,'->',REAL,'| dipindah:',moved.length-drop.size,'| dupel varian dibuang:',drop.size);
+   }
+   const ghosts=state.stacks.filter(s=>CARDS[s.char]&&CARDS[s.char].noGacha).map(s=>s.char);
+   if(ghosts.length)console.warn('[NOGACHA DI SAVE] dibiarkan (lapor, jangan hapus):',Array.from(new Set(ghosts)).join(","));
+  }
   
   /* DEDUP STRICT (v179-dedup): satu entri per varian (char|mut|shiny), count dipaksa 1.
      Copy ekstra dibuang tanpa EXP — hemat bandwidth & storage Supabase. Trait dipertahankan
