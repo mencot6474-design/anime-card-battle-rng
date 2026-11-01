@@ -2402,25 +2402,15 @@ function slNodeHtml(n,sp){
 function renderBpTree(){
   const sp=(state&&state.player&&state.player.sp)||0;
   const goal=TREE_NODES.filter(n=>n.id!=='root'&&!treeOwned(n.id)&&n.req.every(r=>r==='root'||treeOwned(r))).sort((a,b)=>a.cost-b.cost)[0];
-  const pct=goal?Math.min(100,Math.round(sp/goal.cost*100)):100;
   const ready=!!goal&&sp>=goal.cost;
   const hint=sp>0?'beli node buat naikkan stat':'naikkan LV buat dapet SP';
   const goalTxt=goal?(goal.name+' · '+goal.cost+' SP'+(ready?' — SIAP!':'')):'SEMUA NODE TERBUKA';
-  return `<div class="spbar">
-    <div class="sp-banner">
-      <div class="sp-crystal"></div>
-      <div class="sp-meta">
-        <div class="sp-label">SKILL POINT <span class="sp-goal${ready?' ready':''}">${goalTxt}</span></div>
-        <div class="sp-track"><div class="sp-fill${ready?' full':''}" style="width:${pct}%"></div></div>
-      </div>
-      <div class="sp-num">${sp}</div>
-    </div>
-    <div class="sp-hint">${hint}</div>
-  </div>
-  <div class="board">
+  /* SATU readout SP (prototipe bp3b): kotak di dalam board; goal + hint banner lama
+     bertahan sebagai baris kompak .sp-sub di dalam .spbox — bukan blok .spbar kedua. */
+  return `<div class="board">
     <div class="btitle">CONSTELLATION · PETA SKILL</div>
     <div class="webhead">
-      <div class="spbox"><span class="k">SKILL POINT</span><span class="sp num">${sp}</span></div>
+      <div class="spbox"><span class="k">SKILL POINT</span><span class="sp num">${sp}</span><span class="sp-sub"><span class="sp-goal${ready?' ready':''}">${goalTxt}</span><span class="sp-hint">${hint}</span></span></div>
       <div class="weblegend">
         <span class="l1"><i></i>DIMILIKI</span>
         <span class="l2"><i></i>SIAP BELI</span>
