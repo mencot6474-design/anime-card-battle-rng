@@ -89,22 +89,22 @@ function weatherSpeedMult(){const id=activeWeatherId();return id?WEATHER[id].spe
    luck nambah luckFlat, speed nambah pengali roll-speed permanen (total kena cap 20x). ====== */
 const TREE_NODES=[
   {id:"root",  branch:"root", tier:0,name:"FONDASI",       cost:0,luck:0,   speed:0,  req:[],                      desc:"Titik awal pohon skill."},
-  {id:"lk1",   branch:"luck", tier:1,name:"PEKA",          cost:1,luck:5,   speed:0,  req:["root"],                desc:"Mata mulai tajam cari yang langka."},
-  {id:"lk2",   branch:"luck", tier:2,name:"TERLIHAT",      cost:3,luck:10,  speed:0,  req:["lk1"],                 desc:"Peluang kartu bagus naik."},
-  {id:"lk3",   branch:"luck", tier:3,name:"MENTARI",       cost:5,luck:15,  speed:0,  req:["lk2"],                 desc:"Rezeki mulai ngalir."},
-  {id:"lk4",   branch:"luck", tier:4,name:"BERTUAH",       cost:10,luck:20, speed:0,  req:["lk3"],                 desc:"Tuaian hoki melimpah."},
-  {id:"lk5",   branch:"luck", tier:5,name:"MUARA REZEKI",  cost:15,luck:25, luckPct:0.1, speed:0, req:["lk4"],      desc:"Semua aliran hoki bermuara ke lo. +10% pengali luck."},
-  {id:"sp1",   branch:"speed",tier:1,name:"RINGAN",        cost:1,luck:0,   speed:0.4,req:["root"],                desc:"Roll mulai ngebut."},
-  {id:"sp2",   branch:"speed",tier:2,name:"CEPAT",         cost:3,luck:0,   speed:0.6,req:["sp1"],                 desc:"Jeda antar-roll mengecil."},
-  {id:"sp3",   branch:"speed",tier:3,name:"PETIR",         cost:5,luck:0,   speed:0.8,req:["sp2"],                 desc:"Sambaran roll super cepat."},
-  {id:"sp4",   branch:"speed",tier:4,name:"KILAT",         cost:10,luck:0,  speed:1.0,req:["sp3"],                 desc:"Nyaris gak kerasa nunggu."},
-  {id:"sp5",   branch:"speed",tier:5,name:"CAHAYA",        cost:15,luck:0,  speed:1.2,req:["sp4"],                desc:"Mentok jalur speed pohon (kumulatif 5.0×) — total roll speed bisa lebih tinggi +potion/cuaca."},
+  {id:"lk1",   branch:"luck", tier:1,name:"LUCK 1",          cost:1,luck:5,   speed:0,  req:["root"],                desc:"Mata mulai tajam cari yang langka."},
+  {id:"lk2",   branch:"luck", tier:2,name:"LUCK 2",      cost:3,luck:10,  speed:0,  req:["lk1"],                 desc:"Peluang kartu bagus naik."},
+  {id:"lk3",   branch:"luck", tier:3,name:"LUCK 3",       cost:5,luck:15,  speed:0,  req:["lk2"],                 desc:"Rezeki mulai ngalir."},
+  {id:"lk4",   branch:"luck", tier:4,name:"LUCK 4",       cost:10,luck:20, speed:0,  req:["lk3"],                 desc:"Tuaian hoki melimpah."},
+  {id:"lk5",   branch:"luck", tier:5,name:"LUCK 5",  cost:15,luck:25, luckPct:0.1, speed:0, req:["lk4"],      desc:"Semua aliran hoki bermuara ke lo. +10% pengali luck."},
+  {id:"sp1",   branch:"speed",tier:1,name:"SPEED 1",        cost:1,luck:0,   speed:0.4,req:["root"],                desc:"Roll mulai ngebut."},
+  {id:"sp2",   branch:"speed",tier:2,name:"SPEED 2",         cost:3,luck:0,   speed:0.6,req:["sp1"],                 desc:"Jeda antar-roll mengecil."},
+  {id:"sp3",   branch:"speed",tier:3,name:"SPEED 3",         cost:5,luck:0,   speed:0.8,req:["sp2"],                 desc:"Sambaran roll super cepat."},
+  {id:"sp4",   branch:"speed",tier:4,name:"SPEED 4",         cost:10,luck:0,  speed:1.0,req:["sp3"],                 desc:"Nyaris gak kerasa nunggu."},
+  {id:"sp5",   branch:"speed",tier:5,name:"SPEED 5",        cost:15,luck:0,  speed:1.2,req:["sp4"],                desc:"Mentok jalur speed pohon (kumulatif 5.0×) — total roll speed bisa lebih tinggi +potion/cuaca."},
   /* ===== LUCK BOOSTER (panel ketiga, butuh lk5 & sp5 terbuka dulu) ===== */
-  {id:"bst1",  branch:"booster",tier:1,name:"AMPLIFIKASI I",   cost:10,luck:50, luckPct:0.25,speed:0, req:["lk5","sp5"], desc:"Booster pertama — daya luck meledak. +50 flat · +25% pengali."},
-  {id:"bst2",  branch:"booster",tier:2,name:"AMPLIFIKASI II",  cost:10,luck:50, luckPct:0.25,speed:0, req:["bst1"],      desc:"Gelombang kedua amplifikasi luck. +50 flat · +25% pengali."},
-  {id:"bst3",  branch:"booster",tier:3,name:"AMPLIFIKASI III", cost:10,luck:50, luckPct:0.25,speed:0, req:["bst2"],      desc:"Tiga lapis resonansi luck. +50 flat · +25% pengali."},
-  {id:"bst4",  branch:"booster",tier:4,name:"AMPLIFIKASI IV",  cost:10,luck:50, luckPct:0.25,speed:0, req:["bst3"],      desc:"Hampir puncak — luck mendidih. +50 flat · +25% pengali."},
-  {id:"bst5",  branch:"booster",tier:5,name:"SINGULARITAS",    cost:20,luck:100,luckPct:0.50,speed:0, req:["bst4"],      desc:"Puncak pohon booster — luck menembus batas. +100 flat · +50% pengali."},
+  {id:"bst1",  branch:"booster",tier:1,name:"BOOSTER 1",   cost:10,luck:50, luckPct:0.25,speed:0, req:["lk5","sp5"], desc:"Booster pertama — daya luck meledak. +50 flat · +25% pengali."},
+  {id:"bst2",  branch:"booster",tier:2,name:"BOOSTER 2",  cost:10,luck:50, luckPct:0.25,speed:0, req:["bst1"],      desc:"Gelombang kedua amplifikasi luck. +50 flat · +25% pengali."},
+  {id:"bst3",  branch:"booster",tier:3,name:"BOOSTER 3", cost:10,luck:50, luckPct:0.25,speed:0, req:["bst2"],      desc:"Tiga lapis resonansi luck. +50 flat · +25% pengali."},
+  {id:"bst4",  branch:"booster",tier:4,name:"BOOSTER 4",  cost:10,luck:50, luckPct:0.25,speed:0, req:["bst3"],      desc:"Hampir puncak — luck mendidih. +50 flat · +25% pengali."},
+  {id:"bst5",  branch:"booster",tier:5,name:"BOOSTER 5",    cost:20,luck:100,luckPct:0.50,speed:0, req:["bst4"],      desc:"Puncak pohon booster — luck menembus batas. +100 flat · +50% pengali."},
 ];
 const TREE=Object.fromEntries(TREE_NODES.map(n=>[n.id,n]));
 function treeOwned(id){return !!(state&&state.player&&state.player.tree&&state.player.tree[id]);}
