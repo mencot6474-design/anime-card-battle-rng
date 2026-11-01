@@ -6426,3 +6426,38 @@ html body.bp-open #activePlayersBadge { display:none !important; }
 .backpack-panel .bp-petboard .pethero.none { min-height:84px; padding:12px 14px; }
 .backpack-panel .bp-petboard .pethero.none .phk { color:var(--bp-cy,#00d9ff); }
 .backpack-panel .bp-petboard .pethero.none .phn { font-size:13px; }
+
+/* ================= REWORK BACKPACK CLEAN & POLISH ================= */
+.backpack-panel .bp-scroll {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+.backpack-panel .bp-scroll::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+}
+.backpack-panel .bp-tile {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+  border-radius: 9px !important;
+}
+.backpack-panel .bp-tile img {
+  border-radius: 9px !important;
+}
+.backpack-panel .bpt-tier {
+  font-size: 8px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.05em !important;
+  padding: 1px 5px !important;
+  border-radius: 4px !important;
+  background: rgba(6, 11, 20, 0.85) !important;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5) !important;
+}
+.backpack-panel .bpt-fav {
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.9)) !important;
+}
+.bp-cardmodal .bp-cm-panel {
+  border: 1px solid rgba(56, 189, 248, 0.25) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85), 0 0 25px rgba(14, 165, 233, 0.15) !important;
+}
+
