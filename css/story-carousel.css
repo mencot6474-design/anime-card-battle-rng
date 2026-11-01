@@ -422,22 +422,17 @@
   overflow: visible;
 }
 .path-base {
-  stroke: rgba(255, 255, 255, 0.12);
-  stroke-width: 3px;
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 3;
   stroke-dasharray: 6 6;
   fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
 }
 .path-cleared {
   stroke: url(#cyanGlowGrad);
-  stroke-width: 4px;
+  stroke-width: 4;
   fill: none;
   stroke-linecap: round;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
-  filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.75)) drop-shadow(0 0 12px rgba(99, 102, 241, 0.4));
+  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.6));
 }
 
 .map-node {
@@ -614,43 +609,43 @@
   letter-spacing: 0.3px;
 }
 
-/* Hide clunky text boxes under node name */
-.node-label-box .node-tag-sub,
 .node-tag-sub {
-  display: none !important;
+  display: block !important;
+  font-size: 8.5px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  letter-spacing: 0.5px;
+  margin-top: 2px;
 }
 
-/* BOSS NODE & CRITICAL TARGET */
+/* 1. DIAMOND BOSS NODE (100% PROTOTYPE SPEC) */
 .map-node.boss-node .node-orb-container,
 .map-node.is-boss .node-orb-container {
-  width: 72px;
-  height: 72px;
+  width: 74px;
+  height: 74px;
 }
 .map-node.boss-node .node-avatar-frame,
 .map-node.is-boss .node-avatar-frame {
-  clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
-  border-radius: 0;
-  transform: none;
-  border: none;
-  box-shadow: none;
-  filter: drop-shadow(0 0 12px var(--neon-crimson));
+  border-radius: 16px;
+  transform: rotate(45deg);
+  border: 2px solid var(--neon-crimson);
+  box-shadow: 0 0 20px var(--neon-crimson-glow);
+  overflow: hidden;
 }
 .map-node.boss-node .node-avatar-frame .node-img,
 .map-node.is-boss .node-avatar-frame .node-img {
-  transform: scale(1.15);
+  transform: rotate(-45deg) scale(1.35);
 }
 .map-node.boss-node .node-outer-ring,
 .map-node.is-boss .node-outer-ring {
-  clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
-  border-radius: 0;
-  transform: scale(1.14);
-  background: linear-gradient(135deg, rgba(244, 63, 94, 0.85), rgba(225, 29, 72, 0.45));
-  border: none;
-  animation: bossHexPulse 2s ease-in-out infinite alternate;
+  border-radius: 20px;
+  transform: rotate(45deg);
+  border: 2px solid rgba(244, 63, 94, 0.5);
+  animation: pulseBoss 2s ease-in-out infinite alternate;
 }
-@keyframes bossHexPulse {
-  0% { transform: scale(1.12); opacity: 0.65; filter: drop-shadow(0 0 6px var(--neon-crimson)); }
-  100% { transform: scale(1.22); opacity: 1; filter: drop-shadow(0 0 16px var(--neon-crimson)); }
+@keyframes pulseBoss {
+  0% { transform: rotate(45deg) scale(1); opacity: 0.6; }
+  100% { transform: rotate(45deg) scale(1.1); opacity: 1; filter: drop-shadow(0 0 8px var(--neon-crimson)); }
 }
 .map-node.boss-node .node-stage-num-tag,
 .map-node.is-boss .node-stage-num-tag {
@@ -658,44 +653,28 @@
   color: #ffffff;
   border-color: #ff4d6d;
   font-weight: 800;
-  top: -8px;
+  top: -9px;
 }
 .map-node.boss-node .sc-node-check-badge,
 .map-node.is-boss .sc-node-check-badge {
-  top: -3px;
-  right: 2px;
-  transform: none;
+  bottom: -4px;
+  right: 50%;
+  transform: translateX(50%) rotate(-45deg);
 }
 
-.boss-threat-pill,
-.sc-critical-target {
-  background: rgba(244, 63, 94, 0.18);
-  border: 1px solid rgba(244, 63, 94, 0.6);
-  color: #ff4d6d;
-  font-size: 0 !important;
+.boss-threat-pill {
+  background: rgba(244, 63, 94, 0.2);
+  border: 1px solid var(--neon-crimson);
+  color: var(--neon-crimson);
+  font-size: 8px;
   font-weight: 800;
   font-family: var(--font-mono);
-  padding: 1px 6px;
+  padding: 1px 5px;
   border-radius: 3px;
-  margin-top: 3px;
-  display: inline-flex;
+  margin-top: 2px;
+  display: flex;
   align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 10px rgba(244, 63, 94, 0.3);
-  line-height: 1.2;
-}
-.boss-threat-pill .ic {
-  display: none !important;
-}
-.boss-threat-pill::before,
-.sc-critical-target::before {
-  content: 'CRITICAL TARGET';
-  font-size: 7.5px;
-  font-family: var(--font-mono);
-  font-weight: 800;
-  letter-spacing: 0.8px;
-  color: #ff4d6d;
-  white-space: nowrap;
+  gap: 3px;
 }
 
 /* ==========================================================================
@@ -1062,14 +1041,23 @@
   filter: none;
   transform: none;
 }
-.btn-launch-battle.boss-deploy:not(:disabled) {
-  background: linear-gradient(135deg, #e11d48 0%, #f43f5e 50%, #9333ea 100%);
+.btn-launch-battle.boss-deploy:not(:disabled),
+#btnDeploy.boss-deploy:not(:disabled),
+#scStartBattleBtn.boss-deploy:not(:disabled) {
+  background: linear-gradient(135deg, #f43f5e, #be123c) !important;
   color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 20px rgba(244, 63, 94, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 15px rgba(244, 63, 94, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
 }
-.btn-launch-battle.boss-deploy:hover:not(:disabled) {
-  box-shadow: 0 6px 26px rgba(244, 63, 94, 0.7), 0 0 14px rgba(147, 51, 234, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+.btn-launch-battle.boss-deploy:hover:not(:disabled),
+#btnDeploy.boss-deploy:hover:not(:disabled),
+#scStartBattleBtn.boss-deploy:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(244, 63, 94, 0.65), 0 0 14px rgba(244, 63, 94, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+}
+.btn-mq-deploy.boss-deploy:not(:disabled) {
+  background: linear-gradient(135deg, #f43f5e, #be123c) !important;
+  box-shadow: 0 2px 10px rgba(244, 63, 94, 0.4) !important;
 }
 
 /* Mobile Quick Dock */

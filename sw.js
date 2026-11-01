@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v317-cinzelStoryPolish';
+const CACHE_NAME = 'anime-card-battle-v319-diamondBossMapSync';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

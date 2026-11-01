@@ -10,24 +10,24 @@
   let ambientRafId = null;
 
   // Responsive Node Coordinates
-  // Wide / Landscape: horizontal wave across container with plenty of bottom margin
+  // Wide / Landscape: dramatic undulating wave (prototype-accurate)
   const COORDS_WIDE = [
-    { xPct: 8,  yPct: 50 },
-    { xPct: 24, yPct: 34 },
-    { xPct: 40, yPct: 50 },
-    { xPct: 56, yPct: 34 },
-    { xPct: 72, yPct: 50 },
-    { xPct: 88, yPct: 40 }  // Boss Node
+    { xPct: 10, yPct: 62 },
+    { xPct: 26, yPct: 32 },
+    { xPct: 42, yPct: 62 },
+    { xPct: 58, yPct: 32 },
+    { xPct: 74, yPct: 62 },
+    { xPct: 90, yPct: 38 }  // Boss Node
   ];
 
-  // Mobile Portrait: vertical S-curve placed in safe area (8% to 70%), never obstructed by dock
+  // Mobile Portrait: vertical S-curve calibrated to fit 100% inside screen above dock
   const COORDS_PORTRAIT = [
-    { xPct: 28, yPct: 8  },
-    { xPct: 72, yPct: 20 },
-    { xPct: 28, yPct: 32 },
-    { xPct: 72, yPct: 44 },
-    { xPct: 28, yPct: 56 },
-    { xPct: 50, yPct: 70 }  // Boss Node
+    { xPct: 26, yPct: 10 },
+    { xPct: 74, yPct: 23 },
+    { xPct: 26, yPct: 36 },
+    { xPct: 74, yPct: 49 },
+    { xPct: 28, yPct: 62 },
+    { xPct: 50, yPct: 76 }  // Boss Node
   ];
 
   function checkIsPortrait() {
@@ -370,7 +370,8 @@
     const badgeEl = document.getElementById("chapBadgeNo");
     const nameEl = document.getElementById("chapTitleName");
     if (badgeEl) badgeEl.textContent = `BAB 0${ch.no}`;
-    if (nameEl) nameEl.textContent = ch.zone;
+    const chapNames = {"1":"DESA LEMBAH NINJA","2":"ORBIT PLANET HIJAU","3":"KORIDOR STASIUN SHIBUYA","4":"MUSHIMA TOWN","5":"ISTANA INFINITE TSUDZUMI"};
+    if (nameEl) nameEl.textContent = chapNames[ch.no] || ch.zone;
 
     // Prev / Next Chapter Buttons
     const prevBtn = document.getElementById("scPrevChap");
@@ -441,17 +442,27 @@
     const isPortrait = checkIsPortrait();
     const coords = isPortrait ? COORDS_PORTRAIT : COORDS_WIDE;
 
-    // SVG Configuration: 0 0 1000 1000 percentage coordinate space
-    svg.setAttribute("viewBox", "0 0 1000 1000");
-    svg.setAttribute("preserveAspectRatio", "none");
+    const rect = canvasEl.getBoundingClientRect();
+    const canvasW = canvasEl.offsetWidth || rect.width || (isPortrait ? 370 : 800);
+    const canvasH = canvasEl.offsetHeight || rect.height || (isPortrait ? 680 : 380);
 
-    const p0 = { x: coords[0].xPct * 10, y: coords[0].yPct * 10 };
+    const pixelCoords = coords.map(c => ({
+      x: Math.round((c.xPct / 100) * canvasW),
+      y: Math.round((c.yPct / 100) * canvasH)
+    }));
+
+    svg.setAttribute("viewBox", `0 0 ${canvasW} ${canvasH}`);
+    svg.setAttribute("width", canvasW);
+    svg.setAttribute("height", canvasH);
+    svg.removeAttribute("preserveAspectRatio");
+
+    const p0 = pixelCoords[0];
     let pathBaseD = `M ${p0.x} ${p0.y}`;
     let pathClearedD = `M ${p0.x} ${p0.y}`;
 
-    for (let i = 1; i < coords.length; i++) {
-      const prevP = { x: coords[i - 1].xPct * 10, y: coords[i - 1].yPct * 10 };
-      const currP = { x: coords[i].xPct * 10, y: coords[i].yPct * 10 };
+    for (let i = 1; i < pixelCoords.length; i++) {
+      const prevP = pixelCoords[i - 1];
+      const currP = pixelCoords[i];
       let segment = "";
       if (isPortrait) {
         const cpY = (prevP.y + currP.y) / 2;
@@ -495,7 +506,15 @@
       nodeEl.style.left = `${c.xPct}%`;
       nodeEl.style.top = `${c.yPct}%`;
 
-      const stageTag = isBoss ? `0${i + 1}-BOSS` : `0${i + 1}`;
+      const stageCode = `0${ch.no}-0${i + 1}`;
+      const stageTag = isBoss ? `${stageCode} BOSS` : stageCode;
+
+      let subLabelHtml = "";
+      if (isBoss) {
+        subLabelHtml = `<div class="boss-threat-pill"><span class="ic ic-xs i-dragon"></span> BOSS</div>`;
+      } else {
+        subLabelHtml = `<div class="node-tag-sub">STAGE 0${i + 1}</div>`;
+      }
 
       nodeEl.innerHTML = `
         <div class="node-orb-container">
@@ -509,6 +528,7 @@
         </div>
         <div class="node-label-box">
           <div class="node-enemy-title">${isUnlocked ? en.name : 'ENCRYPTED'}</div>
+          ${subLabelHtml}
         </div>
       `;
 
@@ -529,8 +549,13 @@
     const isUnlocked = cellOpen && (currentStageIdx === 0 || !!cdh[lv - 1]);
     const isCleared = !!cdh[lv];
     const first = !cdh[lv];
-    const reqPower = gateOf(lv);
-    const playerPower = totalPower();
+
+    // Stats & Power Gate from Game Core
+    const es = typeof enemyStats === "function" ? enemyStats(lv) : { hp: 120, atk: 40 };
+    const eHp = es.hp || 0;
+    const eAtk = es.atk || 0;
+    const reqPower = typeof gateOf === "function" ? gateOf(lv) : (eHp + eAtk);
+    const playerPower = typeof totalPower === "function" ? totalPower() : 0;
 
     const stageCodeEl = document.getElementById("dwStageCode");
     const stageNameEl = document.getElementById("dwStageName");
@@ -538,7 +563,7 @@
     const enemyNameEl = document.getElementById("dwEnemyName");
 
     if (stageCodeEl) {
-      stageCodeEl.textContent = `STAGE 0${currentStageIdx + 1} // ${en.boss ? 'BOSS GATE' : 'SECTOR COMBAT'}`;
+      stageCodeEl.textContent = `STAGE 0${ch.no}-0${currentStageIdx + 1} // ${en.boss ? 'BOSS GATE' : 'SECTOR COMBAT'}`;
     }
     if (stageNameEl) {
       stageNameEl.textContent = isUnlocked ? en.name : "ENCRYPTED TARGET";
@@ -551,13 +576,18 @@
       enemyImgEl.style.filter = isUnlocked ? "none" : "grayscale(100%) brightness(0.4)";
     }
 
-    // Card Reference & Tier / Type
-    const cardRef = typeof CARDS !== "undefined" && CARDS ? CARDS.find(c => c.name === en.name || c.id === en.id) : null;
+    // Card Reference via en.id && CARDS[en.id]
+    const cardRef = (typeof CARDS !== "undefined" && CARDS && en.id && CARDS[en.id])
+      ? CARDS[en.id]
+      : ((typeof MASTER_CARD_INDEX !== "undefined" && Array.isArray(MASTER_CARD_INDEX))
+          ? MASTER_CARD_INDEX.find(c => c.char_id === en.id || c.name === en.name)
+          : null);
+
     const tierEl = document.getElementById("dwTierBadge");
     const typeEl = document.getElementById("dwTypeBadge");
 
-    const tierVal = cardRef ? cardRef.tier : (en.boss ? "UR" : "R");
-    const typeVal = cardRef ? cardRef.type : "OFFENSIVE";
+    const tierVal = cardRef ? (cardRef.tier || (en.boss ? "UR" : "R")) : (en.boss ? "UR" : "R");
+    const typeVal = cardRef ? (cardRef.type || "OFFENSIVE") : "OFFENSIVE";
 
     if (tierEl) tierEl.textContent = tierVal;
     if (typeEl) {
@@ -567,17 +597,25 @@
     // HP & ATK Stats
     const hpEl = document.getElementById("dwEnemyHp");
     const atkEl = document.getElementById("dwEnemyAtk");
-    if (hpEl) hpEl.textContent = isUnlocked ? (en.hp || 0).toLocaleString() : "???";
-    if (atkEl) atkEl.textContent = isUnlocked ? (en.atk || 0).toLocaleString() : "???";
+    if (hpEl) hpEl.textContent = isUnlocked ? eHp.toLocaleString() : "???";
+    if (atkEl) atkEl.textContent = isUnlocked ? eAtk.toLocaleString() : "???";
 
-    // Signature Skill Info
+    // Signature Skill Info via cardRef.passive
     const skillTitleEl = document.getElementById("dwAbilityTitle");
     const skillDescEl = document.getElementById("dwAbilityDesc");
+
+    const skillName = cardRef
+      ? (cardRef.passive?.name || cardRef.skill || en.name)
+      : (en.boss ? "ANCIENT BOSS WILL" : en.name);
+    const skillDesc = cardRef
+      ? (cardRef.passive?.desc || cardRef.desc || (en.boss ? "Musuh bos utama bab dengan pertahanan dan serangan luar biasa." : "Unit pertahanan garda depan."))
+      : (en.boss ? "Musuh bos utama bab dengan pertahanan dan serangan luar biasa." : "Unit pertahanan garda depan.");
+
     if (skillTitleEl) {
-      skillTitleEl.textContent = isUnlocked ? (cardRef ? `SIGNATURE: ${cardRef.skill || "SKILL"}` : (en.boss ? "SIGNATURE: ANCIENT BOSS WILL" : "COMBAT DRILL")) : "SIGNATURE: ENCRYPTED";
+      skillTitleEl.textContent = isUnlocked ? `SIGNATURE: ${skillName}` : "SIGNATURE: ENCRYPTED";
     }
     if (skillDescEl) {
-      skillDescEl.textContent = isUnlocked ? (cardRef ? (cardRef.desc || "Tidak ada data pasif khusus.") : (en.boss ? "Musuh tingkat tinggi dengan pertahanan kuat." : "Unit patroli garda depan.")) : "Intel jurus musuh belum terbuka. Kalahkan stage sebelumnya untuk membongkar taktik lawan.";
+      skillDescEl.textContent = isUnlocked ? skillDesc : "Intel jurus musuh belum terbuka. Kalahkan stage sebelumnya untuk membongkar taktik lawan.";
     }
 
     // Combat Readiness Gauge
@@ -630,7 +668,7 @@
     }
 
     // Deploy CTA Button
-    const deployBtn = document.getElementById("btnDeploy");
+    const deployBtn = document.getElementById("btnDeploy") || document.getElementById("scStartBattleBtn");
     if (deployBtn) {
       deployBtn.dataset.cdRepeat = (isUnlocked && !first && cdLeft > 0) ? "1" : "";
       if (!isUnlocked) {
@@ -655,11 +693,12 @@
     const btnMqDeploy = document.getElementById("btnMqDeploy");
 
     if (mqImg) mqImg.src = en.img;
-    if (mqCode) mqCode.textContent = `STAGE 0${currentStageIdx + 1}`;
+    if (mqCode) mqCode.textContent = `STAGE 0${ch.no}-0${currentStageIdx + 1}`;
     if (mqName) mqName.textContent = isUnlocked ? en.name : "TERKUNCI";
     if (btnMqDeploy) {
       btnMqDeploy.disabled = !isUnlocked || (!first && cdLeft > 0);
-      btnMqDeploy.innerHTML = `<span class="ic ic-xs i-swords"></span> ${isUnlocked ? 'BATTLE' : 'KUNCI'}`;
+      btnMqDeploy.className = en.boss ? "btn-mq-deploy boss-deploy" : "btn-mq-deploy";
+      btnMqDeploy.innerHTML = `<span class="ic ic-xs ${en.boss ? 'i-dragon' : 'i-swords'}"></span> ${isUnlocked ? (en.boss ? 'BOSS' : 'BATTLE') : 'KUNCI'}`;
     }
   }
 
