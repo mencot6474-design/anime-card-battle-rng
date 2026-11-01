@@ -6,6 +6,8 @@
   let currentStageIdx = 0; // index inside current chapter levels (0..5)
   let boundGestures = false;
   let canvasResizeObserver = null;
+  let ambientParticles = [];
+  let ambientRafId = null;
 
   // Responsive Node Coordinates
   // Wide / Landscape: horizontal wave across container with plenty of bottom margin
@@ -34,6 +36,105 @@
       return canvasEl.offsetHeight > canvasEl.offsetWidth || canvasEl.offsetWidth <= 560;
     }
     return window.matchMedia("(orientation: portrait)").matches || window.innerWidth <= 640;
+  }
+
+  // Ambient Canvas Particles Loop (Lightweight, soft cyan & indigo floating upward)
+  function initAmbientParticles(w, h) {
+    ambientParticles = [];
+    const colors = [
+      { r: 56,  g: 189, b: 248 }, // soft cyan
+      { r: 129, g: 140, b: 248 }  // soft indigo
+    ];
+    for (let i = 0; i < 24; i++) {
+      const col = colors[i % 2];
+      ambientParticles.push({
+        x: Math.random() * (w || 800),
+        y: Math.random() * (h || 600),
+        r: Math.random() * 1.4 + 0.8,
+        vx: (Math.random() - 0.5) * 0.35,
+        vy: -(Math.random() * 0.35 + 0.15),
+        alpha: Math.random() * 0.35 + 0.15,
+        colorPrefix: `rgba(${col.r}, ${col.g}, ${col.b}, `
+      });
+    }
+  }
+
+  function resizeAmbientCanvas() {
+    const cv = document.getElementById("storyAmbientCanvas");
+    if (!cv) return { w: 0, h: 0 };
+    const w = cv.offsetWidth || cv.parentElement?.offsetWidth || window.innerWidth;
+    const h = cv.offsetHeight || cv.parentElement?.offsetHeight || window.innerHeight;
+    if (cv.width !== w || cv.height !== h) {
+      cv.width = w;
+      cv.height = h;
+    }
+    return { w, h };
+  }
+
+  function startAmbientLoop() {
+    const modal = document.getElementById("storyModal");
+    if (!modal || (!modal.classList.contains("show") && !modal.classList.contains("active"))) return;
+    const cv = document.getElementById("storyAmbientCanvas");
+    if (!cv) return;
+    const ctx = cv.getContext("2d");
+    if (!ctx) return;
+
+    if (ambientRafId) {
+      cancelAnimationFrame(ambientRafId);
+      ambientRafId = null;
+    }
+
+    const { w, h } = resizeAmbientCanvas();
+    if (!ambientParticles.length || ambientParticles.length < 24) {
+      initAmbientParticles(w, h);
+    }
+
+    function step() {
+      const modalNow = document.getElementById("storyModal");
+      if (!modalNow || (!modalNow.classList.contains("show") && !modalNow.classList.contains("active"))) {
+        stopAmbientLoop();
+        return;
+      }
+
+      const curW = cv.width || cv.offsetWidth;
+      const curH = cv.height || cv.offsetHeight;
+
+      ctx.clearRect(0, 0, curW, curH);
+
+      for (let i = 0; i < ambientParticles.length; i++) {
+        const p = ambientParticles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.y < -10) {
+          p.y = curH + 10;
+          p.x = Math.random() * curW;
+        }
+        if (p.x < -10) p.x = curW + 10;
+        if (p.x > curW + 10) p.x = -10;
+
+        ctx.fillStyle = p.colorPrefix + p.alpha + ")";
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ambientRafId = requestAnimationFrame(step);
+    }
+
+    ambientRafId = requestAnimationFrame(step);
+  }
+
+  function stopAmbientLoop() {
+    if (ambientRafId) {
+      cancelAnimationFrame(ambientRafId);
+      ambientRafId = null;
+    }
+    const cv = document.getElementById("storyAmbientCanvas");
+    if (cv) {
+      const ctx = cv.getContext("2d");
+      if (ctx) ctx.clearRect(0, 0, cv.width, cv.height);
+    }
   }
 
   function initStoryCarousel() {
@@ -136,7 +237,8 @@
 
       const handleResize = () => {
         const modal = document.getElementById("storyModal");
-        if (modal && modal.classList.contains("show")) {
+        if (modal && (modal.classList.contains("show") || modal.classList.contains("active"))) {
+          resizeAmbientCanvas();
           renderTacticalNodes();
         }
       };
@@ -152,7 +254,8 @@
     if (canvasEl && window.ResizeObserver && !canvasResizeObserver) {
       canvasResizeObserver = new ResizeObserver(() => {
         const modal = document.getElementById("storyModal");
-        if (modal && modal.classList.contains("show")) {
+        if (modal && (modal.classList.contains("show") || modal.classList.contains("active"))) {
+          resizeAmbientCanvas();
           renderTacticalNodes();
         }
       });
@@ -199,7 +302,10 @@
 
       buildStoryChapterDOM();
 
+      startAmbientLoop();
+
       requestAnimationFrame(() => {
+        resizeAmbientCanvas();
         renderTacticalNodes();
         updateStoryDrawer();
       });
@@ -211,7 +317,11 @@
 
   function closeStory() {
     const modal = document.getElementById("storyModal");
-    if (modal) modal.classList.remove("show");
+    if (modal) {
+      modal.classList.remove("show");
+      modal.classList.remove("active");
+    }
+    stopAmbientLoop();
     closeDrawerOrSheet();
     closeLoreModal();
   }
@@ -385,16 +495,7 @@
       nodeEl.style.left = `${c.xPct}%`;
       nodeEl.style.top = `${c.yPct}%`;
 
-      let statusBadgeHtml = "";
-      if (isBoss) {
-        statusBadgeHtml = `<div class="boss-threat-pill"><span class="ic ic-xs i-dragon"></span> BOSS</div>`;
-      } else if (isCleared) {
-        statusBadgeHtml = `<span class="node-tag-sub cleared"><span class="ic ic-xs i-check"></span> SELESAI</span>`;
-      } else if (isUnlocked) {
-        statusBadgeHtml = `<span class="node-tag-sub ready">SIAP</span>`;
-      } else {
-        statusBadgeHtml = `<span class="node-tag-sub locked"><span class="ic ic-xs i-lock"></span> KUNCI</span>`;
-      }
+      const stageTag = isBoss ? `0${i + 1}-BOSS` : `0${i + 1}`;
 
       nodeEl.innerHTML = `
         <div class="node-orb-container">
@@ -402,12 +503,12 @@
           <div class="node-avatar-frame">
             <img class="node-img" src="${en.img}" alt="${en.name}" loading="lazy" onerror="this.src='assets/cards/art/solar-brawler.webp'">
             ${!isUnlocked ? `<div class="node-lock-mask"><span class="ic ic-sm i-lock"></span></div>` : ''}
+            ${isCleared ? `<span class="sc-node-check-badge">✓</span>` : ''}
           </div>
-          <div class="node-stage-num-tag">0${i + 1}</div>
+          <div class="node-stage-num-tag">${stageTag}</div>
         </div>
         <div class="node-label-box">
           <div class="node-enemy-title">${isUnlocked ? en.name : 'ENCRYPTED'}</div>
-          ${statusBadgeHtml}
         </div>
       `;
 
@@ -659,11 +760,14 @@
   window.openStoryCarousel = openStory;
   window.openStory = openStory;
   window.closeStory = closeStory;
+  window.closeStoryCarousel = closeStory;
   window.openMission = () => openStory();
   window.selectStoryStage = selectStoryStage;
   window.slideStoryStage = slideStoryStage;
   window.changeStoryChapter = changeStoryChapter;
   window.initStoryCarousel = initStoryCarousel;
+  window.startAmbientLoop = startAmbientLoop;
+  window.stopAmbientLoop = stopAmbientLoop;
   window.battleStage = (lv) => {
     if (typeof startStoryBattle === "function") startStoryBattle(lv);
   };

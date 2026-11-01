@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700;800&family=Russo+One&family=Rajdhani:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@400;600;700;800&display=swap">
 <!-- External Game Icon Library: Lucide Icons -->
 <script src="https://unpkg.com/lucide@latest"></script>
 <!-- CrazyGames SDK v3 (Official HTML5 SDK) -->
@@ -19,7 +20,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Rajdhani:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/world-boss.css?v=v274-touch44">
 <link rel="stylesheet" href="css/sl-system.css?v=v295-bpHdr">
-<link rel="stylesheet" href="css/story-carousel.css?v=v316-pureNodeMapPort">
+<link rel="stylesheet" href="css/story-carousel.css?v=v317-cinzelStoryPolish">
 <link rel="stylesheet" href="css/lobby-prototype.css?v=v310-noTreeBoardPlate">
 <link rel="stylesheet" href="css/mobile-shell.css?v=v315-storyPrecisionSync">
 <script>
@@ -586,6 +587,7 @@
 </div></div>
 
 <div id="storyModal" class="story-viewport">
+  <canvas id="storyAmbientCanvas" class="story-ambient-canvas"></canvas>
   <div class="cyber-grid"></div>
 
   <!-- COMPACT HEADER -->
@@ -977,7 +979,7 @@
 <script src="js/tower-lobby.js?v=v305-lobbyClickFix"></script>
 <script src="js/shadow-king-fx.js?v=v4-skfx4"></script>
 <script src="js/foe-passives.js?v=v62-foe-passives"></script>
-<script src="js/story-carousel.js?v=v316-pureNodeMapPort"></script>
+<script src="js/story-carousel.js?v=v317-cinzelStoryPolish"></script>
 <script src="js/raid.js?v=v186-cgLifecycle"></script>
 <script src="js/ranking.js?v=v9-storyEnemyTierOnly"></script>
 <script src="js/i18n.js?v=v302-relicPet"></script>

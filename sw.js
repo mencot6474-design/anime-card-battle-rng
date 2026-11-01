@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v316-pureNodeMapPort';
+const CACHE_NAME = 'anime-card-battle-v317-cinzelStoryPolish';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
