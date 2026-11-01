@@ -2576,7 +2576,7 @@ function bpRelicTileHtml(d){
   const s=bpGearStatus(d,owned,eq);
   return `<button type="button" class="relictile${owned?'':' locked'}${eq?' eqd':''}" style="--ec:${d.color}" aria-label="${d.name} · ${luckTxt(d)}" onclick="bpGearModalOpen('art','${d.id}')">
     <span class="rtchip ${s.cls}">${s.t}</span>${BP_LOCK}<span class="rts" aria-hidden="true"></span>${bpGearArtHtml(d)}
-    <span class="rtn">${d.name}</span><span class="rtv num">${luckTxt(d)}</span></button>`;
+    <span class="rtn">${d.name}</span></button>`;
 }
 function renderBpArts(){
   return `<div class="bp-relicboard"><div class="btitle">RELIC · SLOT ARTEFAK (MAKS 2)</div>
@@ -2600,7 +2600,7 @@ function bpPetTileHtml(p){
   const s=bpGearStatus(p,owned,eq);
   return `<button type="button" class="pettile${owned?'':' locked'}${eq?' act':''}" style="--ec:#7DF9FF" aria-label="${p.name} · ${luckTxt(p)}" onclick="bpGearModalOpen('pet','${p.id}')">
     <span class="ptchip ${s.cls}">${s.t}</span>${BP_LOCK}<span class="onair" aria-hidden="true"></span>${bpGearArtHtml(p)}
-    <span class="ptn">${p.name}</span><span class="ptv num">${luckTxt(p)}</span></button>`;
+    <span class="ptn">${p.name}</span></button>`;
 }
 function renderBpPets(){
   return `<div class="bp-petboard"><div class="btitle">PET · 1 SLOT AKTIF</div>

@@ -4741,7 +4741,7 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 .backpack-panel .eqslot .eqs { margin-top:4px; font-family:var(--font-mono,'Courier New',monospace); font-size:8.5px; letter-spacing:.1em; color:var(--bp-txd,#8aa3bd); }
 .backpack-panel .eqslot .ek { font-size:9px; font-weight:800; letter-spacing:.26em; color:var(--bp-txd,#8aa3bd); }
 .backpack-panel .relicgrid, .backpack-panel .petgrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:11px; }
-.backpack-panel .relictile, .backpack-panel .pettile { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; aspect-ratio:1/1.08; min-height:44px; margin:0; padding:8px 6px 6px; border:0; border-radius:13px; -webkit-appearance:none; appearance:none; overflow:hidden; text-align:center; cursor:pointer; color:var(--bp-tx,#e8f6ff); font-family:var(--font-tac,'Rajdhani',sans-serif); background:linear-gradient(170deg,#16233a 0%,#0d1524 100%); box-shadow:0 8px 18px rgba(0,0,0,.4); transition:transform .16s ease; }
+.backpack-panel .relictile, .backpack-panel .pettile { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; aspect-ratio:1/1.05; min-height:44px; margin:0; padding:8px 6px 10px; border:0; border-radius:13px; -webkit-appearance:none; appearance:none; overflow:hidden; text-align:center; cursor:pointer; color:var(--bp-tx,#e8f6ff); font-family:var(--font-tac,'Rajdhani',sans-serif); background:linear-gradient(170deg,#16233a 0%,#0d1524 100%); box-shadow:0 8px 18px rgba(0,0,0,.4); transition:transform .16s ease; }
 .backpack-panel .relictile:hover, .backpack-panel .pettile:hover { transform:translateY(-3px); }
 .backpack-panel .relictile:focus-visible, .backpack-panel .pettile:focus-visible { outline:2px solid var(--bp-cy,#00d9ff); outline-offset:2px; }
 .backpack-panel .relictile>img, .backpack-panel .pettile>img { position:absolute; left:50%; top:36%; width:56%; max-width:56%; height:auto; max-height:56%; object-fit:contain; transform:translate(-50%,-50%); filter:drop-shadow(0 6px 12px rgba(0,0,0,.6)); }
@@ -4749,7 +4749,7 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 .backpack-panel .relictile .bp-tlock, .backpack-panel .pettile .bp-tlock { position:absolute; left:50%; top:16%; z-index:2; display:block; width:14px; height:14px; transform:translateX(-50%); opacity:.9; }
 .backpack-panel .relictile:not(.locked) .bp-tlock, .backpack-panel .pettile:not(.locked) .bp-tlock { display:none; }
 .backpack-panel .relictile.locked>img, .backpack-panel .pettile.locked>img { filter:grayscale(.75) brightness(.55) drop-shadow(0 6px 12px rgba(0,0,0,.6)); }
-.backpack-panel .rtn, .backpack-panel .ptn { position:relative; font-size:8.5px; font-weight:900; letter-spacing:.05em; line-height:1.2; color:#dff0ff; text-shadow:0 1px 3px rgba(4,7,13,.9); overflow-wrap:anywhere; }
+.backpack-panel .rtn, .backpack-panel .ptn { position:relative; font-size:9.5px; font-weight:900; letter-spacing:.05em; line-height:1.2; color:#dff0ff; text-shadow:0 1px 3px rgba(4,7,13,.9); overflow-wrap:anywhere; }
 .backpack-panel .relictile.locked .rtn, .backpack-panel .pettile.locked .ptn { color:var(--bp-txd,#8aa3bd); }
 .backpack-panel .rtv, .backpack-panel .ptv { position:relative; margin-top:2px; font-family:var(--font-mono,'Courier New',monospace); font-size:8px; color:var(--ec,var(--bp-cy,#00d9ff)); white-space:nowrap; text-shadow:0 1px 3px rgba(4,7,13,.9); }
 .backpack-panel .pettile .ptv { color:var(--bp-lk,#5eead4); }
