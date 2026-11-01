@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v301-itemUse';
+const CACHE_NAME = 'anime-card-battle-v302-relicPet';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

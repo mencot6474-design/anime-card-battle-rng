@@ -486,6 +486,12 @@
     'SLOT KOSONG': 'EMPTY SLOT',
     'BELI ARTEFAK DULU': 'BUY AN ARTIFACT FIRST',
     'PET AKTIF': 'ACTIVE PET',
+    'RELIC · SLOT ARTEFAK (MAKS 2)': 'RELIC · ARTEFACT SLOTS (MAX 2)',
+    'PET · 1 SLOT AKTIF': 'PET · 1 ACTIVE SLOT',
+    'TIDAK ADA PET AKTIF': 'NO ACTIVE PET',
+    'PILIH PET DI BAWAH INI · KLIK KARTU UNTUK DETAIL': 'PICK A PET BELOW · TAP A CARD FOR DETAILS',
+    'ARTEFAK': 'ARTEFACTS',
+    'SEMUA PET': 'ALL PETS',
     'BELUM ADA PET AKTIF — BELI & PASANG DI BAWAH': 'NO ACTIVE PET — BUY & EQUIP BELOW',
     'Belum punya item di tas.': 'No items in your backpack yet.',
     'Gacha cuaca acak 5 menit (tidak mengubah kartu di tas).': 'Random 5-minute weather roll (does not affect cards in your backpack).',
@@ -1321,6 +1327,7 @@
     [/PAKAI SEKARANG/g, 'USE NOW'],
     [/PAKAI ×(\d+)/g, 'USE ×$1'],
     [/Aktif:/g, 'Active:'],
+    [/SLOT (\d+) KOSONG/g, 'SLOT $1 EMPTY'],
     [/dimiliki/g, 'owned']
   ];
 

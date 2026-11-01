@@ -6406,3 +6406,23 @@ html body.bp-open #activePlayersBadge { display:none !important; }
   .backpack-panel .bp-itemboard .bi-act:hover { transform:none; }
 }
 
+
+/* ================= ARTEFACTS + COMPANION PETS — POLISH 2026-11-02 (mandor) =================
+   Yang dibenerin: judul board yang nempel ke widget GLOBAL LUCK, slot artefak kosong
+   yang jadi "void" 120px, dan hero pet kosong yang jadi kotak besar 110px.
+   Semua selector dikunci ke .bp-relicboard / .bp-petboard -> tab lain tidak tersentuh. */
+.backpack-panel .bp-relicboard .btitle,
+.backpack-panel .bp-petboard .btitle { margin:2px 0 12px; min-height:12px; }
+
+/* slot artefak kosong: ring tipis + hatch (bukan kotak kosong 120px) */
+.backpack-panel .bp-relicboard .eqslot.empty {
+  min-height:92px;
+  background:repeating-linear-gradient(115deg,#0b1220 0 10px,#0d1420 10px 12px);
+  box-shadow:inset 0 0 0 1px rgba(140,180,220,.16);
+}
+.backpack-panel .bp-relicboard .eqslot.empty .ek { color:rgba(148,163,184,.8); }
+
+/* hero pet kosong: strip ringkas, kicker warna aksen */
+.backpack-panel .bp-petboard .pethero.none { min-height:84px; padding:12px 14px; }
+.backpack-panel .bp-petboard .pethero.none .phk { color:var(--bp-cy,#00d9ff); }
+.backpack-panel .bp-petboard .pethero.none .phn { font-size:13px; }
