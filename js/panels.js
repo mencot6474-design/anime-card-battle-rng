@@ -1525,6 +1525,7 @@ function hideRollResult() {
    Alur: klik slot => jadikan target; klik tile koleksi => pasang ke target (atau slot kosong pertama). */
 let bpTarget = null;
 let bpMutFilter = "all"; /* filter varian koleksi: all|none|gold|rainbow|secret|shiny */
+let bpSortMode = "baku"; /* urutan koleksi DECK (segmented URUTKAN): baku|baru|power|cuaca */
 let bpTab = "deck"; /* tab Backpack: deck | item | artefact | pet */
 function bpSetTab(t){bpTab=t;bpTarget=null;bpItemPopClose();renderBackpackPanel();}
 /* nav.bp-tabs = satu baris + overflow-x:auto, jadi tab 04/05 bisa terlipat di luar layar.
@@ -1542,6 +1543,31 @@ function bpCenterActiveTab(){
 function deckTotalPower(){return totalPower();} /* delegate ke totalPower() — satu sumber, sinkron selamanya */
 function bpPickSlot(i){bpTarget=(bpTarget===i?null:i);renderBackpackPanel();}
 function bpSetFilter(m){bpMutFilter=m;renderBackpackPanel();}
+function bpSetSort(k){bpSortMode=k;renderBackpackPanel();}
+/* POWER varian = HP+ATK sesudah pengali mutasi/shiny/trait (cardStats) — satu rumus utk slot, tile, dan meter daya. */
+function bpPowerOf(s){const st=cardStats(s.char,s.mut,s.trait,s.shiny);return st.hp+st.atk;}
+function bpMutCountOf(m){return state.stacks.filter(s=>m==='all'?true:(m==='shiny'?!!s.shiny:(s.mut||'none')===m)).length;}
+/* cuaca kartu = kepemilikan asli CARDS[char].weatherOnly (sumber: MASTER_CARD_INDEX/STORY_BIBLE), bukan tebakan */
+function bpWeatherOf(s){const c=CARDS[s.char];const id=c&&c.weatherOnly;return id?(WEATHER[id]||null):null;}
+/* rank ikut weatherRank() asli (dropWeight ASC, paling langka = 0); 99 = bukan kartu cuaca -> nyangkut di belakang */
+function bpWeatherRankOf(s){const w=bpWeatherOf(s);return w?weatherRank(w.id):99;}
+/* state.stacks di-push tiap roll (js/panels.js:674) => ekor array = varian paling BARU; 12 terakhir = "baru". */
+let _bpNewIds=null,_bpNewKey="";
+function bpIsNew(s){const st=state.stacks,n=st.length,key=n+":"+(n?st[n-1].id:"");if(key!==_bpNewKey){_bpNewKey=key;_bpNewIds=new Set(st.slice(Math.max(0,n-12)).map(x=>x.id));}return _bpNewIds.has(s.id);}
+function bpInDeck(s){return state.deck.includes(s.id);}
+/* BAKU = rantai sort lama (sebelumnya inline di renderBackpackPanel) — urutan default, jangan diubah tanpa ACC user. */
+function bpCompareBaku(a,b){return (bpInDeck(b)?1:0)-(bpInDeck(a)?1:0)||(b.fav?1:0)-(a.fav?1:0)||bpPowerOf(b)-bpPowerOf(a)||luckChance(b.char,b.mut,b.shiny)-luckChance(a.char,a.mut,a.shiny);}
+/* daftar koleksi tersaring (bpMatchesMut) + terurut sesuai bpSortMode; BARU = posisi stack paling ekor dulu. */
+function bpSortedStacks(){
+  const list=state.stacks.filter(bpMatchesMut);
+  if(bpSortMode==="baru"){const pos=new Map();state.stacks.forEach((s,i)=>pos.set(s.id,i));list.sort((a,b)=>((pos.get(b.id)||0)-(pos.get(a.id)||0))||bpCompareBaku(a,b));}
+  else if(bpSortMode==="power"){list.sort((a,b)=>bpPowerOf(b)-bpPowerOf(a)||bpCompareBaku(a,b));}
+  else if(bpSortMode==="cuaca"){list.sort((a,b)=>bpWeatherRankOf(a)-bpWeatherRankOf(b)||bpCompareBaku(a,b));}
+  else{list.sort(bpCompareBaku);}
+  return list;
+}
+/* porsi daya tile = bpPowerOf(s) / max daya list yang lagi tampil (0..1); floor --pw prototipe (0.035) urusan markup. */
+function bpPowerNorm(s,list){let mx=0;if(Array.isArray(list))for(let i=0;i<list.length;i++){const p=bpPowerOf(list[i]);if(p>mx)mx=p;}if(mx<=0)return 0;const r=bpPowerOf(s)/mx;return r<0?0:(r>1?1:r);}
 function bpMatchesMut(s){return bpMutFilter==="all"||(bpMutFilter==="shiny"?!!s.shiny:(s.mut||"none")===bpMutFilter);}
 function bpCardBorderColor(s){if(s.mut&&s.mut!=="none"&&MUT_COLOR[s.mut])return MUT_COLOR[s.mut];if(s.shiny)return "#7DF9FF";return "var(--line2)";}
 function bpCardBorderKind(s){if(s.shiny&&s.mut&&s.mut!=="none"&&MUT_COLOR[s.mut])return "shiny-"+s.mut;if(s.mut&&s.mut!=="none"&&MUT_COLOR[s.mut])return s.mut;if(s.shiny)return "shiny";return "";}
@@ -1675,9 +1701,7 @@ function renderBackpackPanel(){
       </div>`;
   }).join('');
 
-  const pOf=s=>{const st=cardStats(s.char,s.mut,s.trait,s.shiny);return st.hp+st.atk;};
-  const inDk=s=>state.deck.includes(s.id);
-  const visible=state.stacks.filter(bpMatchesMut).sort((a,b)=>(inDk(b)?1:0)-(inDk(a)?1:0)||(b.fav?1:0)-(a.fav?1:0)||pOf(b)-pOf(a)||luckChance(b.char,b.mut,b.shiny)-luckChance(a.char,a.mut,a.shiny));
+  const visible=bpSortedStacks();
   const INITIAL=48;
   _bpTileHtml={};
   const tiles=visible.map((s,i)=>{
@@ -1691,8 +1715,7 @@ function renderBackpackPanel(){
     const mounted=i<INITIAL;
     return `<div class="bp-tile${inDeck?' in-deck':''}${fullMutClass}${CARDS[s.char]&&CARDS[s.char].fullArt?' fa':''}${mounted?'':' lz-ph'}" data-lz="${s.id}" data-sid="${s.id}" data-name="${cardName(s.char).toLowerCase()}" onclick="bpAssign('${s.id}')" style="--tcol:${edge}">${mounted?_bpTileHtml[s.id]:''}</div>`;
   }).join('');
-  const cntOf=m=>state.stacks.filter(s=>m==='all'?true:(m==='shiny'?!!s.shiny:(s.mut||'none')===m)).length;
-  const chip=(k,lbl)=>{const on=bpMutFilter===k,themed=['shiny','gold','rainbow','secret','ultima'].includes(k);const col=!on&&!themed?(MUT_COLOR[k]||'#7DF9FF'):'';return `<button class="bp-fchip${themed?' bp-themed bp-'+k:''}${on?' on':''}" onclick="bpSetFilter('${k}')"${col?` style="border-color:${col};color:${col}"`:''}>${themed?'<span class="bp-fchip-label">'+lbl+'</span>':lbl}<em>${cntOf(k)}</em></button>`;};
+  const chip=(k,lbl)=>{const on=bpMutFilter===k,themed=['shiny','gold','rainbow','secret','ultima'].includes(k);const col=!on&&!themed?(MUT_COLOR[k]||'#7DF9FF'):'';return `<button class="bp-fchip${themed?' bp-themed bp-'+k:''}${on?' on':''}" onclick="bpSetFilter('${k}')"${col?` style="border-color:${col};color:${col}"`:''}>${themed?'<span class="bp-fchip-label">'+lbl+'</span>':lbl}<em>${bpMutCountOf(k)}</em></button>`;};
   const searchInput=`<input id="bp-search" class="bp-search" type="search" placeholder="Cari kartu / mutasi..." value="${deckSearch}" oninput="deckSearch=this.value;runCardSearch(this,document.querySelector('.bp-tiles'),document.getElementById('bp-nores'))">`;
   const filterRow=`<div class="bp-filter">${searchInput}${chip('all','SEMUA')+chip('shiny','SHINY')+chip('gold','GOLD')+chip('rainbow','RAINBOW')+chip('secret','SECRET')+chip('ultima','ULTIMA')}</div>`;
   /* .bp-filter jadi anak PERTAMA .bp-body.deck (di antara nav.bp-tabs dan grid):

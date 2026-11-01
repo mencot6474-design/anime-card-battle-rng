@@ -314,8 +314,8 @@ Luck: `luckChance, totalLuck, fmtChance` (data.js).
 | Weather machine | `#weatherMachineModal` | `openWeatherMachine` (panels.js:2071) | `renderWeatherMachine` (panels.js:2299) | 47834 |
 | Premium shop | `#premiumModal` | `openPremiumShop` (panels.js:1825) | `renderPremiumShop` (panels.js:1841) | 47816, base 45337 |
 | Profil | `#profModal` | `openProfileModal` (panels.js:733) | `renderProfile` (panels.js:822) | 529, fullscreen 47505/47701 |
-| Backpack | `#backpackPanel` | `toggleBackpack` (tower-lobby.js:1194) | `renderBackpackPanel` (panels.js:1066) | 47859, base 2539 |
-| Backpack tab item | — | — | `renderBpItems` (1161) / tree 1520 / arts 1592 / pets 1610 | — |
+| Backpack | `#backpackPanel` (index.html:845, `style="display:none"` → diisi `renderBackpackPanel`) | `toggleBackpack` (tower-lobby.js:2167) | `renderBackpackPanel` (panels.js:1594) | `.bp-*` tersebar: **style.css 418 occurrence** (blok ±47859 + base 2539), **lobby-prototype.css 150** (2490 & 3254 — dua blok `.backpack-panel`!), **sl-system.css 9** (190–221 `.bp-tile`), **mobile-shell.css 0** |
+| Backpack tab item | — | — | `renderBpItems` (1771) / tree `renderBpTree` 2189 / arts `renderBpArts` 2261 / pets `renderBpPets` 2279 | — |
 | Mission | `#missionModal` | `openMission` (state.js:780) | — | — |
 | Start battle | `#startModal` | `openStart` (state.js:855) | — | — |
 | Deck pick | `#deckPickModal` | `openDeckPick` (raid.js:1495) | `renderDeckPick` (raid.js:1497) | — |
