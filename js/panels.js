@@ -1716,18 +1716,22 @@ function renderBackpackPanel(){
     const mcol=mut?(MUT_COLOR[mut]||'#7DF9FF'):'#7DF9FF'; /* shiny-only juga #7DF9FF, sama seperti bpCardBorderColor */
     return `<div class="bp-tile${bpInDeck(s)?' in-deck':''}${cData&&cData.fullArt?' fa':''}${mounted?'':' lz-ph'}" data-lz="${s.id}" data-sid="${s.id}" data-name="${nm.toLowerCase()}" aria-label="${nm}" role="button" onclick="bpCardModalOpen('${s.id}')" style="--pw:${pw.toFixed(3)};--tcol:${(cData&&TIER_COLOR[tier])||'#94a3b8'};--mcol:${mcol};--wcol:${w?w.color:'transparent'}">${mounted?_bpTileHtml[s.id]:''}</div>`;
   }).join('');
-  /* COLLECTION BAR prototipe (v3 .coll-bar): KOLEKSI n + FAV + MUT(popover) + URUTKAN(seg) + search.
+  /* COLLECTION BAR prototipe (v3 .coll-bar): KOLEKSI n + FAV + MUT(popover: baris mutasi + URUTKAN) + search.
+     URUTKAN sengaja DI DALAM popover (prototipe v3) — 4 tombol di bar memecah bar jadi 2-5 baris
+     di 320-390px dan meruntuhkan grid jadi ~1 kolom.
      Bar = anak PERTAMA .bp-collect, di atas .bp-scroll: di HP bar mengambil ruang dari grid,
      grid tetap scrollable (posisi baru; .bp-colhead "CARD ARCHIVE // VAULT" diganti KOLEKSI). */
   const rows=BP_MUT_KEYS.map(k=>`<button class="bp-mrow${bpMutFilter===k?' on':''}" onclick="event.stopPropagation();bpMutPick('${k}')" aria-pressed="${bpMutFilter===k}" style="--mc:${BP_MUT_COLORS[k]}"><span class="bp-mrow-sw">${BP_MUT_SWATCH(k)}</span><span class="bp-mrow-lb">${BP_MUT_NAMES[k]}</span><b class="bp-mrow-cn">${bpMutCountOf(k)}</b></button>`).join('');
-  const pop=_bpMutPopOpen?`<div class="bp-mutpop" id="bpMutPop" role="group" aria-label="Penyaring mutasi koleksi"><div class="bp-pop-h">MUTASI</div><div class="bp-pop-list">${rows}</div></div>`:'';
-  const seg=BP_SORT_KEYS.map(k=>`<button class="bp-sbtn${bpSortMode===k?' on':''}" onclick="bpSetSort('${k}')" aria-pressed="${bpSortMode===k}">${BP_SORT_NAMES[k]}</button>`).join('');
+  /* PROTOTIPE v3: URUTKAN ada DI DALAM popover MUT (bukan di bar) supaya bar satu baris di 320-390px.
+     onclick pakai event.stopPropagation() — sama seperti .bp-mrow: re-render melepas node lama,
+     tanpa itu listener klik-luar menutup popover tepat setelah memilih sort. */
+  const seg=BP_SORT_KEYS.map(k=>`<button class="bp-sbtn${bpSortMode===k?' on':''}" onclick="event.stopPropagation();bpSetSort('${k}')" aria-pressed="${bpSortMode===k}">${BP_SORT_NAMES[k]}</button>`).join('');
+  const pop=_bpMutPopOpen?`<div class="bp-mutpop" id="bpMutPop" role="group" aria-label="Penyaring mutasi koleksi"><div class="bp-pop-h">MUTASI</div><div class="bp-pop-list">${rows}</div><div class="bp-pop-h">URUTKAN</div><div class="bp-seg" role="group" aria-label="Urutkan koleksi">${seg}</div></div>`:'';
   const searchInput=`<input id="bp-search" class="bp-search" type="search" placeholder="Cari kartu / mutasi..." value="${deckSearch}" oninput="deckSearch=this.value;runCardSearch(this,document.querySelector('.bp-tiles'),document.getElementById('bp-nores'))">`;
   const filterRow=`<div class="bp-filter">
       <span class="bp-kol">KOLEKSI <b class="bp-kol-n">${visible.length}</b></span>
       <button class="bp-favtog${bpFavOnly?' on':''}" onclick="bpSetFavOnly()" aria-pressed="${bpFavOnly}" title="Hanya kartu favorit"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${BP_STAR_PATH}"/></svg><span>FAV</span></button>
       <button class="bp-mutbtn${bpMutFilter!=='all'?' on':''}" id="bp-mutbtn" onclick="event.stopPropagation();bpMutPopToggle()" aria-expanded="${_bpMutPopOpen}" aria-haspopup="true" aria-controls="bpMutPop" style="--mc:${BP_MUT_COLORS[bpMutFilter]}"><span class="bp-mb-glyph">${BP_MUT_SWATCH(bpMutFilter)}</span><span>MUT</span><svg class="bp-mb-caret" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
-      <div class="bp-seg" role="group" aria-label="Urutkan koleksi"><span class="bp-seg-h">URUTKAN</span>${seg}</div>
       ${searchInput}
       ${pop}
     </div>`;
