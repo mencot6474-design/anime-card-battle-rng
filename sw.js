@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v291-settRailFix';
+const CACHE_NAME = 'anime-card-battle-v292-bpDeck';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
