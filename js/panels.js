@@ -1601,18 +1601,28 @@ function lazyMountGrid(rootEl,htmlMap,opts){
   rootEl.__lzIO=io;
   phs.forEach(el=>io.observe(el));
 }
+/* TILE prototipe (v3 .tile): TANPA TEKS — art + chip tier + bintang fav + glif mut/shiny +
+   mark cuaca + dot BARU + meter power + dot equipped. Nilai lewat CSS custom property di
+   container (--pw/--tcol/--mcol/--wcol, lihat builder deck) supaya ui-css cukup membaca. */
 function bpTileInner(s){
-  const shny=s.shiny?'<span class="bpt-shiny shiny-pill">SHINY</span>':'';
-  const mut=(s.mut&&s.mut!=='none')?s.mut:null;
-  const trait=(s.trait&&s.trait!=='none')?s.trait:null;
-  const cnt=(s.count||1)>1?`<span class="bpt-cnt">&times;${fmt(s.count)}</span>`:'';
-  const stack=(shny||mut||trait)?`<div class="bpt-top">${shny}${mut?mutChip(mut,mutPill(mut,'bpt-mut')):''}${trait?traitChip(trait,`<span class="bpt-gem" style="color:${TRAIT_COLOR[trait]};border-color:${TRAIT_COLOR[trait]}">${traitGem(12,trait)}</span>`):''}</div>`:'';
-  const inDk=state&&state.deck&&state.deck.includes(s.id);
-  const inDkBadge=inDk?'<div class="bpt-in-deck-badge"><span>EQUIPPED</span></div>':'';
   const cData=CARDS[s.char];
-  const tier=cData?(cData.tier||'COMMON'):'COMMON';
+  const tier=(cData&&cData.tier)||'COMMON';
   const tCol=(cData&&TIER_COLOR[tier])||'#94a3b8';
-  return `<img src="${cardThumb(s.char)}" alt="" width="360" height="536" loading="lazy" decoding="async">${inDkBadge}${stack}${cnt}<div class="bpt-ctl"><button class="bpt-fav${s.fav?' on':''}" onclick="event.stopPropagation();bpFav('${s.id}')" title="Favorit">${s.fav?'★':'☆'}</button><button class="bpt-lock${s.lock?' on':''}" onclick="event.stopPropagation();bpLock('${s.id}')" title="Lock">${s.lock?'🔒':'🔓'}</button></div><div class="bpt-hud-foot"><div class="bpt-name">${cardName(s.char)}</div><div class="bpt-tier-bar" style="background:${tCol};box-shadow:0 0 6px ${tCol}"></div></div>`;
+  const mut=(s.mut&&s.mut!=='none')?s.mut:null;
+  const w=bpWeatherOf(s);
+  /* bentuk glif mutasi = clip-path ui-css (.bp-glyph.g-<mut>), warna dari --mcol; SHINY = bintang SVG inline */
+  let glyphs='';
+  if(mut)glyphs+=`<i class="bp-glyph g-${mut}"></i>`;
+  if(s.shiny)glyphs+=`<svg class="bp-glyph g-shiny" width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${BP_STAR_PATH}"/></svg>`;
+  const fav=s.fav?`<svg class="bpt-fav" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${BP_STAR_PATH}"/></svg>`:'';
+  return `<img src="${cardThumb(s.char)}" alt="" width="360" height="536" loading="lazy" decoding="async">`
+    +`<span class="bpt-tier" style="color:${tCol}">${tier}</span>`
+    +fav
+    +(glyphs?`<span class="bpt-mut">${glyphs}</span>`:'')
+    +(w?`<span class="bpt-w" style="color:${w.color}">${weatherSvg(w.id,13)}</span>`:'')
+    +(bpIsNew(s)?'<span class="bpt-ndot" aria-hidden="true"></span>':'')
+    +'<span class="bpt-pw" aria-hidden="true"></span>'
+    +(bpInDeck(s)?'<span class="bpt-eqdot" aria-hidden="true"></span>':'');
 }
 function bpLazyMountTiles(){
   lazyMountGrid(document.querySelector('.bp-scroll'),_bpTileHtml);
@@ -1620,6 +1630,8 @@ function bpLazyMountTiles(){
 function renderBackpackPanel(){
   const panel=document.getElementById('backpackPanel');if(!panel)return;
   bpsHoverBind();bpsHoverHide();
+  /* guard anti-menggantung (kontrak): re-render ke tab lain / koleksi kosong = tutup popover+modal */
+  if(bpTab!=='deck'||!state.stacks.length){bpCardModalClose();_bpMutPopOpen=false;}
   const TABS=[
     {k:'deck',num:'01',l:'DECK MATRIX',ic:`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`},
     {k:'tree',num:'02',l:'SKILL TREE',ic:`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><circle cx="6" cy="19" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="17.07" x2="10.41" y2="7.93"/><line x1="15.41" y1="17.07" x2="13.59" y2="7.93"/></svg>`},
@@ -1658,20 +1670,17 @@ function renderBackpackPanel(){
   /* tab DECK (default) */
   if(!state.stacks.length){panel.innerHTML=header+`<div class="bp-empty">Belum punya kartu. Tekan ROLL untuk mendapatkan kartu.</div>`;return;}
 
-  const ROLES=['01 // LEADER','02 // SUPPORT','03 // VANGUARD','04 // REAR'];
-  const ROLE_COLS=['#fbbf24','#38bdf8','#34d399','#c084fc'];
-  /* escape minimal utk atribut title (nama kartu bisa memuat & atau ") — lokal, dekat pemakaian */
-  const slotNameAttr=v=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  /* RACK prototipe (v3 .conduit .slot): 4 slot vertikal rata — TANPA role text, TANPA nama
+     kartu di slot terisi (keputusan user). Nama hanya lewat aria-label. Kosong = frame
+     minimal + "+" SVG. Kelas .bps-* dipertahankan supaya CSS lama tetap.anchor. */
   const slots=[0,1,2,3].map(i=>{
     const id=state.deck[i];const s=id?state.stacks.find(x=>x.id===id):null;
-    const rLbl=ROLES[i]; const rCol=ROLE_COLS[i];
     if(!s)return `
-      <div class="bp-slot empty${bpTarget===i?' sel':''}" onclick="bpPickSlot(${i})" title="Pilih Slot ${i+1}">
-        <span class="bps-role" style="color:${rCol}">${rLbl}</span>
+      <div class="bp-slot empty${bpTarget===i?' sel':''}" onclick="bpPickSlot(${i})" title="Pilih Slot ${i+1}" aria-label="Slot ${i+1} kosong">
         <div class="bps-empty-body">
-          <div class="bps-plus-circle"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
-          <span class="bps-prompt">ASSIGN CARD</span>
+          <div class="bps-plus-circle"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg></div>
         </div>
+        <span class="bps-num" aria-hidden="true">0${i+1}</span>
         <span class="bps-corner tl"></span>
         <span class="bps-corner br"></span>
       </div>`;
@@ -1679,52 +1688,50 @@ function renderBackpackPanel(){
     const mutCls=(s.mut&&s.mut!=='none')?' mut-'+s.mut:'';
     const shinyClsStr=s.shiny?' shiny':'';
     const fullMutClass=variantClass+mutCls+shinyClsStr;
-    const cStats=cardStats(s.char,s.mut,s.trait,s.shiny);
-    const pwr=(cStats.hp||0)+(cStats.atk||0);
     return `
-      <div class="bp-slot filled${bpTarget===i?' sel':''}${fullMutClass}${CARDS[s.char]&&CARDS[s.char].fullArt?' fa':''}" data-sid="${s.id}" onclick="bpPickSlot(${i})" style="--tcol:${edge}${edgeStyle}">
-        <span class="bps-role" style="color:${rCol}">${rLbl}</span>
+      <div class="bp-slot filled${bpTarget===i?' sel':''}${fullMutClass}${CARDS[s.char]&&CARDS[s.char].fullArt?' fa':''}" data-sid="${s.id}" onclick="bpPickSlot(${i})" aria-label="Slot ${i+1}: ${cardName(s.char)}" style="--tcol:${edge}${edgeStyle}">
         <div class="bps-art-wrap">
           <img src="${cardThumb(s.char)}" alt="" loading="lazy" decoding="async">
         </div>
-        <div class="bps-info">
-          <div class="bps-name" title="${slotNameAttr(cardName(s.char))}">${cardName(s.char)}</div>
-          <div class="bps-stats">
-            <span class="bps-pwr" title="Combat Power"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-1px;margin-right:2px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>${fmt(pwr)}</span>
-            ${s.shiny?'<span class="bps-chip shiny">SHINY</span>':''}
-            ${s.mut&&s.mut!=='none'?`<span class="bps-chip mut-${s.mut}">${s.mut.toUpperCase()}</span>`:''}
-          </div>
-        </div>
-        <button class="bps-x" onclick="event.stopPropagation();bpClearSlot(${i})" title="Lepas Kartu">&times;</button>
+        <span class="bps-num" aria-hidden="true">0${i+1}</span>
+        <button class="bps-x" onclick="event.stopPropagation();bpClearSlot(${i})" title="Lepas Kartu" aria-label="Lepas kartu dari slot ${i+1}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
         <span class="bps-corner tl"></span>
         <span class="bps-corner br"></span>
       </div>`;
   }).join('');
 
-  const visible=bpSortedStacks();
+  const _vis0=bpSortedStacks();
+  const visible=bpFavOnly?_vis0.filter(s=>s.fav):_vis0; /* FAV-only hanya berlaku di tab DECK (desain prototipe) */
   const INITIAL=48;
   _bpTileHtml={};
   const tiles=visible.map((s,i)=>{
     _bpTileHtml[s.id]=bpTileInner(s);
-    const inDeck=state.deck.includes(s.id);
-    const edge=bpCardBorderColor(s),variant=bpCardBorderKind(s),variantClass=variant?" bp-mut-"+variant:"";
+    const cData=CARDS[s.char];
+    const tier=(cData&&cData.tier)||'COMMON';
     const mut=(s.mut&&s.mut!=='none')?s.mut:null;
-    const mutCls=mut?' mut-'+mut:'';
-    const shinyClsStr=s.shiny?' shiny':'';
-    const fullMutClass=variantClass+mutCls+shinyClsStr;
+    const w=bpWeatherOf(s);
+    const pw=Math.max(0.035,bpPowerNorm(s,visible)); /* floor 0.035 prototipe — meter tak pernah hilang total */
+    const nm=cardName(s.char);
     const mounted=i<INITIAL;
-    return `<div class="bp-tile${inDeck?' in-deck':''}${fullMutClass}${CARDS[s.char]&&CARDS[s.char].fullArt?' fa':''}${mounted?'':' lz-ph'}" data-lz="${s.id}" data-sid="${s.id}" data-name="${cardName(s.char).toLowerCase()}" onclick="bpAssign('${s.id}')" style="--tcol:${edge}">${mounted?_bpTileHtml[s.id]:''}</div>`;
+    const mcol=mut?(MUT_COLOR[mut]||'#7DF9FF'):'#7DF9FF'; /* shiny-only juga #7DF9FF, sama seperti bpCardBorderColor */
+    return `<div class="bp-tile${bpInDeck(s)?' in-deck':''}${cData&&cData.fullArt?' fa':''}${mounted?'':' lz-ph'}" data-lz="${s.id}" data-sid="${s.id}" data-name="${nm.toLowerCase()}" aria-label="${nm}" role="button" onclick="bpCardModalOpen('${s.id}')" style="--pw:${pw.toFixed(3)};--tcol:${(cData&&TIER_COLOR[tier])||'#94a3b8'};--mcol:${mcol};--wcol:${w?w.color:'transparent'}">${mounted?_bpTileHtml[s.id]:''}</div>`;
   }).join('');
-  const chip=(k,lbl)=>{const on=bpMutFilter===k,themed=['shiny','gold','rainbow','secret','ultima'].includes(k);const col=!on&&!themed?(MUT_COLOR[k]||'#7DF9FF'):'';return `<button class="bp-fchip${themed?' bp-themed bp-'+k:''}${on?' on':''}" onclick="bpSetFilter('${k}')"${col?` style="border-color:${col};color:${col}"`:''}>${themed?'<span class="bp-fchip-label">'+lbl+'</span>':lbl}<em>${bpMutCountOf(k)}</em></button>`;};
+  /* COLLECTION BAR prototipe (v3 .coll-bar): KOLEKSI n + FAV + MUT(popover) + URUTKAN(seg) + search.
+     Bar = anak PERTAMA .bp-collect, di atas .bp-scroll: di HP bar mengambil ruang dari grid,
+     grid tetap scrollable (posisi baru; .bp-colhead "CARD ARCHIVE // VAULT" diganti KOLEKSI). */
+  const rows=BP_MUT_KEYS.map(k=>`<button class="bp-mrow${bpMutFilter===k?' on':''}" onclick="event.stopPropagation();bpMutPick('${k}')" aria-pressed="${bpMutFilter===k}" style="--mc:${BP_MUT_COLORS[k]}"><span class="bp-mrow-sw">${BP_MUT_SWATCH(k)}</span><span class="bp-mrow-lb">${BP_MUT_NAMES[k]}</span><b class="bp-mrow-cn">${bpMutCountOf(k)}</b></button>`).join('');
+  const pop=_bpMutPopOpen?`<div class="bp-mutpop" id="bpMutPop" role="group" aria-label="Penyaring mutasi koleksi"><div class="bp-pop-h">MUTASI</div><div class="bp-pop-list">${rows}</div></div>`:'';
+  const seg=BP_SORT_KEYS.map(k=>`<button class="bp-sbtn${bpSortMode===k?' on':''}" onclick="bpSetSort('${k}')" aria-pressed="${bpSortMode===k}">${BP_SORT_NAMES[k]}</button>`).join('');
   const searchInput=`<input id="bp-search" class="bp-search" type="search" placeholder="Cari kartu / mutasi..." value="${deckSearch}" oninput="deckSearch=this.value;runCardSearch(this,document.querySelector('.bp-tiles'),document.getElementById('bp-nores'))">`;
-  const filterRow=`<div class="bp-filter">${searchInput}${chip('all','SEMUA')+chip('shiny','SHINY')+chip('gold','GOLD')+chip('rainbow','RAINBOW')+chip('secret','SECRET')+chip('ultima','ULTIMA')}</div>`;
-  /* .bp-filter jadi anak PERTAMA .bp-body.deck (di antara nav.bp-tabs dan grid):
-     di HP portrait .bp-cols fleksinya column, jadi selama filter masih di dalam
-     .bp-colhead ia baru mulai setelah deck slots + meta habis dan kehabisan ruang
-     (defisit ±30px buat 2 baris chip). .bp-body sudah flex-column (style.css:2466)
-     dan .bp-cols flex:1 + min-height:0, jadi baris filter mengambil ruang dari grid,
-     bukan dari viewport — grid tetap scrollable, hanya lebih pendek. */
-  panel.innerHTML=header+`<div class="bp-body deck">${filterRow}<div class="bp-cols">
+  const filterRow=`<div class="bp-filter">
+      <span class="bp-kol">KOLEKSI <b class="bp-kol-n">${visible.length}</b></span>
+      <button class="bp-favtog${bpFavOnly?' on':''}" onclick="bpSetFavOnly()" aria-pressed="${bpFavOnly}" title="Hanya kartu favorit"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${BP_STAR_PATH}"/></svg><span>FAV</span></button>
+      <button class="bp-mutbtn${bpMutFilter!=='all'?' on':''}" id="bp-mutbtn" onclick="event.stopPropagation();bpMutPopToggle()" aria-expanded="${_bpMutPopOpen}" aria-haspopup="true" aria-controls="bpMutPop" style="--mc:${BP_MUT_COLORS[bpMutFilter]}"><span class="bp-mb-glyph">${BP_MUT_SWATCH(bpMutFilter)}</span><span>MUT</span><svg class="bp-mb-caret" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="bp-seg" role="group" aria-label="Urutkan koleksi"><span class="bp-seg-h">URUTKAN</span>${seg}</div>
+      ${searchInput}
+      ${pop}
+    </div>`;
+  panel.innerHTML=header+`<div class="bp-body deck"><div class="bp-cols">
     <div class="bp-deckcol">
       <div class="bp-col-head">
         <span class="bp-h">SQUADRON DECK</span>
@@ -1746,12 +1753,7 @@ function renderBackpackPanel(){
       </div>
     </div>
     <div class="bp-collect">
-      <div class="bp-colhead">
-        <div class="bp-colhead-top">
-          <span class="bp-h">CARD ARCHIVE // VAULT</span>
-          <span class="bp-total-tag">TOTAL: ${visible.length} KARTU</span>
-        </div>
-      </div>
+      ${filterRow}
       ${visible.length?`<div class="bp-scroll"><div class="bp-tiles">${tiles}</div><div class="bp-empty" id="bp-nores" style="display:none;padding:18px 0">Kartu tidak ditemukan.</div></div>`:`<div class="bp-empty" style="padding:18px 0">Tidak ada kartu varian ini.</div>`}
     </div>
   </div></div>`;
@@ -1759,7 +1761,102 @@ function renderBackpackPanel(){
   const si=document.getElementById('bp-search');
   if(si&&deckSearch)runCardSearch(si,document.querySelector('.bp-tiles'),document.getElementById('bp-nores'));
   bpLazyMountTiles();
+  bpCardModalSync(); /* modal di luar panel: disinkron in-place tiap re-render, tidak pernah dobel */
 }
+/* ===== DECK port step-2 (ui-ux): FAV-only + popover MUT + modal kartu (prototipe v3) =====
+   Semua angka hanya lewat fungsi core step-1 (bpSortedStacks/bpMutCountOf/bpWeatherOf/
+   bpIsNew/bpPowerNorm/bpPowerOf) — tidak ada perhitungan ulang di sini. */
+let bpFavOnly=false;
+let _bpMutPopOpen=false;
+let _bpCardModalId=null;
+const BP_STAR_PATH='M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3-5.8 3 1.1-6.5L2.6 9.4l6.5-.9z';
+const BP_MUT_KEYS=['all','none','shiny','gold','rainbow','secret','ultima'];
+const BP_MUT_NAMES={all:'SEMUA',none:'BIASA',shiny:'SHINY',gold:'GOLD',rainbow:'RAINBOW',secret:'SECRET',ultima:'ULTIMA'};
+/* warna baris popover = prototipe colorOf(): all/none/shiny bukan MUT_COLOR, sisanya verbatim MUT_COLOR */
+const BP_MUT_COLORS={all:'#8aa3bd',none:'#00d9ff',shiny:'#eaffff',gold:'#E0BC6E',rainbow:'#B58CFF',secret:'#A855F7',ultima:'#FF0055'};
+const BP_SORT_KEYS=['baku','baru','power','cuaca'];
+const BP_SORT_NAMES={baku:'BAKU',baru:'TERBARU',power:'POWER',cuaca:'CUACA'};
+/* swatch non-teks per mutasi (prototipe swatchOf): garis=tua, lingkaran=BIASA, bintang=SHINY,
+   bentuk gold/rainbow/secret/ultima = clip-path ui-css di .bp-glyph.g-<mut> */
+function BP_MUT_SWATCH(k){
+  if(k==='all')return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>';
+  if(k==='none')return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="12" cy="12" r="7.5"/></svg>';
+  if(k==='shiny')return `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${BP_STAR_PATH}"/></svg>`;
+  return `<i class="bp-glyph g-${k}"></i>`;
+}
+function bpSetFavOnly(){bpFavOnly=!bpFavOnly;renderBackpackPanel();}
+function bpMutPopToggle(){_bpMutPopOpen=!_bpMutPopOpen;renderBackpackPanel();}
+function bpMutPopClose(){if(!_bpMutPopOpen)return;_bpMutPopOpen=false;const p=document.getElementById('bpMutPop');if(p)p.remove();const b=document.getElementById('bp-mutbtn');if(b)b.setAttribute('aria-expanded','false');}
+/* pilih filter dari popover: bpSetFilter re-render penuh; popover sengaja tetap terbuka
+   (prototipe: count & aktif ikut ter-update) — klik luar / Esc menutup */
+function bpMutPick(k){bpSetFilter(k);}
+function bpCardModalOpen(id){_bpCardModalId=id;bpCardModalSync();}
+function bpCardModalClose(){const e=document.getElementById('bpCardModal');if(e)e.remove();_bpCardModalId=null;}
+/* Modal kartu (pengganti bpAssign langsung di tile). Elemen body-level ala bpItemPop:
+   dibuat saat sync, dihapus saat close; re-render cukup sync ulang -> tak pernah duplikat. */
+function bpCardModalSync(){
+  if(!_bpCardModalId){bpCardModalClose();return;}
+  const s=state.stacks.find(x=>x.id===_bpCardModalId);
+  if(!s){bpCardModalClose();return;}
+  let el=document.getElementById('bpCardModal');
+  if(!el){
+    el=document.createElement('div');el.id='bpCardModal';el.className='bp-cardmodal';
+    el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');
+    el.addEventListener('click',ev=>{if(ev.target===el)bpCardModalClose();});
+    document.body.appendChild(el);
+  }
+  const c=CARDS[s.char];
+  const tier=(c&&c.tier)||'COMMON';
+  const tCol=(c&&TIER_COLOR[tier])||'#94a3b8';
+  const st=cardStats(s.char,s.mut,s.trait,s.shiny);
+  const mut=(s.mut&&s.mut!=='none')?s.mut:null;
+  const mcol=mut?(MUT_COLOR[mut]||'#7DF9FF'):(s.shiny?'#7DF9FF':tCol);
+  const slot=state.deck.indexOf(s.id);
+  const w=bpWeatherOf(s);
+  el.setAttribute('aria-label',cardName(s.char));
+  /* defect prototipe "13,3 / 00": angka besar patah dua baris -> fmtStat (compact) + nowrap di markup */
+  const stat=(k,v,extra)=>`<div class="bp-cm-st"><span class="bp-cm-k">${k}</span><span class="bp-cm-v" style="white-space:nowrap${extra?';'+extra:''}">${v}</span></div>`;
+  const mutLbl=(mut||s.shiny)?`<span class="bp-cm-mut" style="color:${mcol}">${s.shiny?'SHINY':''}${s.shiny&&mut?' · ':''}${mut?(MUT_LABEL[mut]||''):''}</span>`:'';
+  el.innerHTML=`
+    <div class="bp-cm-panel">
+      <button class="bp-cm-x" onclick="bpCardModalClose()" aria-label="Tutup" title="Tutup [ESC]"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+      <div class="bp-cm-top">
+        <div class="bp-cm-art"><img src="${cardThumb(s.char)}" alt="${cardName(s.char)}" decoding="async"></div>
+        <div class="bp-cm-info">
+          <div class="bp-cm-name"${mut?` style="color:${MUT_COLOR[mut]||'#7DF9FF'}"`:''}>${cardName(s.char)}</div>
+          <span class="bp-cm-chip" style="color:${tCol}">${tier}${w?' · '+w.name:''}</span>
+          ${mutLbl}
+          <div class="bp-cm-stats">
+            ${stat('ATK',fmtStat(st.atk))}
+            ${stat('HP',fmtStat(st.hp))}
+            ${stat('PELUANG',rarityText(tier,luckChance(s.char,s.mut,s.shiny)),'color:#9fb4cc')}
+            ${stat('POWER',fmtStat(st.hp+st.atk),'color:'+mcol)}
+          </div>
+          <div class="bp-cm-own${slot>=0?' on':''}">${slot>=0?'DI DEK · SLOT '+(slot+1):'DIMILIKI'}</div>
+        </div>
+      </div>
+      <div class="bp-cm-pass"><span class="bp-cm-k">PASSIVE</span><div class="bp-cm-skill">${c&&c.passive?c.passive.name:''}</div><p class="bp-cm-desc">${c&&c.passive?c.passive.desc:''}</p></div>
+      <div class="bp-cm-acts">
+        <button class="bp-cm-btn pri" onclick="bpAssign('${s.id}')">EQUIP</button>
+        ${slot>=0?`<button class="bp-cm-btn warn" onclick="bpClearSlot(${slot})">UNEQUIP</button>`:''}
+        <button class="bp-cm-btn gold${s.fav?' on':''}" onclick="bpFav('${s.id}')" aria-pressed="${!!s.fav}"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${BP_STAR_PATH}"/></svg><span>FAV</span></button>
+        <button class="bp-cm-btn lockbtn${s.lock?' on':''}" onclick="bpLock('${s.id}')" aria-pressed="${!!s.lock}" title="${s.lock?'Buka kunci kartu':'Kunci kartu'}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10.5" width="16" height="10" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg><span>LOCK</span></button>
+      </div>
+    </div>`;
+}
+/* Esc berjenjang (capture, sebelum boot.js menutup backpack): modal > popover > bawaan. */
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Escape')return;
+  if(document.getElementById('bpCardModal')){e.stopPropagation();e.preventDefault();bpCardModalClose();return;}
+  if(_bpMutPopOpen){e.stopPropagation();bpMutPopClose();}
+},true);
+/* klik-luar menutup popover MUT (baris dlm popover sudah stopPropagation sendiri) */
+document.addEventListener('click',function(e){
+  if(!_bpMutPopOpen)return;
+  const pop=document.getElementById('bpMutPop');if(pop&&pop.contains(e.target))return;
+  const btn=document.getElementById('bp-mutbtn');if(btn&&btn.contains(e.target))return;
+  bpMutPopClose();
+});
 /* Tab ITEM di backpack: tile icon ringkas; klik -> popup konfirmasi PAKAI. Item: Weather / Luck / Speed Potion. */
 function bpItemDef(kind){
   if(kind==='potion'){const aw=activeWeatherId();return{kind,name:'WEATHER POTION',icon:'assets/images/weather-potion.webp?v=1',emoji:'🧪',cnt:state.potions||0,
