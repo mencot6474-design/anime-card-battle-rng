@@ -1,26 +1,55 @@
 /* ==========================================================================
-   STORY-CAROUSEL.JS — 3D COVERFLOW STORY CAMPAIGN ENGINE (LOCAL INTEGRATION)
+   STORY-CAROUSEL.JS — TACTICAL NODE MAP STORY SYSTEM (LOCAL INTEGRATION)
    ========================================================================== */
 
 (function(){
   let currentStageIdx = 0; // index inside current chapter levels (0..5)
   let boundGestures = false;
 
+  // Responsive Node Coordinates
+  // Wide / Landscape: horizontal wave across container
+  const COORDS_WIDE = [
+    { xPct: 10, yPct: 62 },
+    { xPct: 26, yPct: 32 },
+    { xPct: 42, yPct: 62 },
+    { xPct: 58, yPct: 32 },
+    { xPct: 74, yPct: 62 },
+    { xPct: 90, yPct: 38 }  // Boss Node
+  ];
+
+  // Mobile Portrait: vertical S-curve flowing top to bottom
+  const COORDS_PORTRAIT = [
+    { xPct: 26, yPct: 10 },
+    { xPct: 74, yPct: 25 },
+    { xPct: 26, yPct: 40 },
+    { xPct: 74, yPct: 55 },
+    { xPct: 28, yPct: 70 },
+    { xPct: 50, yPct: 86 }  // Boss Node
+  ];
+
   function initStoryCarousel() {
     const prevBtn = document.getElementById("scPrevChap");
     const nextBtn = document.getElementById("scNextChap");
-    const prevStg = document.getElementById("scPrevStage");
-    const nextStg = document.getElementById("scNextStage");
     const battleBtn = document.getElementById("scBtnBattle");
+    const mqDeployBtn = document.getElementById("scMqDeployBtn");
     const closeBtn = document.getElementById("smClose");
+    const drawerCloseBtn = document.getElementById("scDrawerClose");
+    const mqExpandBtn = document.getElementById("scMqExpandBtn");
+    const mobileDock = document.getElementById("scMobileDock");
+    const loreBtn = document.getElementById("scBtnLore");
+    const loreCloseBtn = document.getElementById("scLoreClose");
 
     if (prevBtn) prevBtn.onclick = () => { if (window.sfx && sfx.hit) sfx.hit(); changeStoryChapter(-1); };
     if (nextBtn) nextBtn.onclick = () => { if (window.sfx && sfx.hit) sfx.hit(); changeStoryChapter(1); };
-    if (prevStg) prevStg.onclick = () => { slideStoryStage(-1); };
-    if (nextStg) nextStg.onclick = () => { slideStoryStage(1); };
 
     if (battleBtn) {
       battleBtn.onclick = () => {
+        launchSelectedBattle();
+      };
+    }
+    if (mqDeployBtn) {
+      mqDeployBtn.onclick = (e) => {
+        e.stopPropagation();
         launchSelectedBattle();
       };
     }
@@ -32,7 +61,36 @@
       };
     }
 
-    // Bind keyboard and gestures once
+    if (drawerCloseBtn) {
+      drawerCloseBtn.onclick = () => {
+        closeDrawerOrSheet();
+      };
+    }
+
+    if (mobileDock) {
+      mobileDock.onclick = () => {
+        openBottomSheet();
+      };
+    }
+    if (mqExpandBtn) {
+      mqExpandBtn.onclick = (e) => {
+        e.stopPropagation();
+        openBottomSheet();
+      };
+    }
+
+    if (loreBtn) {
+      loreBtn.onclick = () => {
+        openLoreModal();
+      };
+    }
+    if (loreCloseBtn) {
+      loreCloseBtn.onclick = () => {
+        closeLoreModal();
+      };
+    }
+
+    // Bind keyboard and resize once
     if (!boundGestures) {
       boundGestures = true;
       window.addEventListener("keydown", (e) => {
@@ -40,29 +98,22 @@
         if (!modal || !modal.classList.contains("show")) return;
         if (e.key === "ArrowLeft") slideStoryStage(-1);
         if (e.key === "ArrowRight") slideStoryStage(1);
-        if (e.key === "Escape") closeStory();
+        if (e.key === "Escape") {
+          const lore = document.getElementById("scLoreOverlay");
+          if (lore && lore.classList.contains("open")) {
+            closeLoreModal();
+          } else {
+            closeStory();
+          }
+        }
       });
 
-      const stageEl = document.getElementById("scCarouselStage");
-      if (stageEl) {
-        let touchStartX = 0;
-        stageEl.addEventListener("touchstart", e => { touchStartX = e.touches[0].clientX; }, { passive: true });
-        stageEl.addEventListener("touchend", e => {
-          const diffX = e.changedTouches[0].clientX - touchStartX;
-          if (Math.abs(diffX) > 40) {
-            if (diffX > 0) slideStoryStage(-1);
-            else slideStoryStage(1);
-          }
-        }, { passive: true });
-
-        stageEl.addEventListener("wheel", (e) => {
-          const modal = document.getElementById("storyModal");
-          if (!modal || !modal.classList.contains("show")) return;
-          e.preventDefault();
-          if (e.deltaY > 20) slideStoryStage(1);
-          else if (e.deltaY < -20) slideStoryStage(-1);
-        }, { passive: false });
-      }
+      window.addEventListener("resize", () => {
+        const modal = document.getElementById("storyModal");
+        if (modal && modal.classList.contains("show")) {
+          renderTacticalNodes();
+        }
+      });
     }
   }
 
@@ -101,7 +152,8 @@
       if (mm) mm.classList.remove("show");
 
       buildStoryChapterDOM();
-      document.getElementById("storyModal").classList.add("show");
+      const modal = document.getElementById("storyModal");
+      if (modal) modal.classList.add("show");
     } catch(err) {
       console.error("openStory error:", err);
       try { toast("STORY ERROR", (err && err.message) || "gagal membuka cerita", "#ff5c5c"); } catch(e) {}
@@ -111,6 +163,8 @@
   function closeStory() {
     const modal = document.getElementById("storyModal");
     if (modal) modal.classList.remove("show");
+    closeDrawerOrSheet();
+    closeLoreModal();
   }
 
   function changeStoryChapter(dir) {
@@ -154,7 +208,7 @@
     const ch = activeChap();
     const currentChapNo = ch.no;
 
-    // Header Title (Fixed 300px centered box)
+    // Header Title
     const chapTitleEl = document.getElementById("scChapTitle");
     if (chapTitleEl) {
       chapTitleEl.textContent = `BAB 0${ch.no} · ${ch.zone}`;
@@ -168,6 +222,9 @@
 
     // Render Difficulty Pills
     const diffGroup = document.getElementById("scDiffGroup");
+    const diffBadge = document.getElementById("scDiffBadge");
+    if (diffBadge) diffBadge.textContent = state.diff.toUpperCase();
+
     if (diffGroup && typeof DIFFS !== "undefined" && DIFFS) {
       diffGroup.innerHTML = DIFFS.map(d => {
         const unl = cellUnlocked(ch, d.k);
@@ -192,183 +249,284 @@
       });
     }
 
-    // Render 6 Persistent Cards
-    const track = document.getElementById("scCarouselTrack");
-    if (track) {
-      const cdh = diffProg()[state.diff];
-      const cellOpen = cellUnlocked(ch, state.diff);
-      track.innerHTML = ch.levels.map((_, i) => {
-        const lv = ch.from + i;
-        const en = enemyOf(lv);
-        const cardData = en.id && CARDS[en.id] ? CARDS[en.id] : null;
-        const tier = cardData ? cardData.tier : (en.boss ? "UR" : "R");
-        const isCleared = !!cdh[lv];
-        const isUnlocked = cellOpen && (i === 0 || !!cdh[lv - 1]);
-        const cdLeft = (isUnlocked && isCleared && typeof storyCdLeft === "function") ? storyCdLeft(lv) : 0;
-        const g = gateOf(lv);
-
-        return `
-          <div class="sc-card tier-${tier} ${en.boss ? 'is-boss' : ''} ${isUnlocked ? '' : 'is-locked'}${cdLeft > 0 ? ' is-replay-cd' : ''}" id="sc-card-${i}" data-lv="${lv}" onclick="selectStoryStage(${i})">
-            <div class="sc-card-head">
-              <span class="sc-stage-badge">${en.boss ? '★ BOSS STAGE' : 'STAGE 0' + (i + 1)}</span>
-              ${isCleared ? '<span class="sc-clear-status">✓ CLEARED</span>' : ''}
-            </div>
-
-            <div class="sc-art-frame">
-              <img src="${en.img}" alt="${en.name}" loading="lazy" onerror="this.src='assets/cards/art/solar-brawler.webp'">
-              <div class="sc-art-shade"></div>
-              ${en.boss ? '<span class="sc-boss-tag">BOSS</span>' : ''}
-              ${isUnlocked ? (cdLeft > 0 ? `
-                <div class="sc-card-lock-overlay sc-cd-overlay">
-                  <span class="sc-lock-icon">⏱</span>
-                  <span class="sc-lock-text">REPLAY TERKUNCI</span>
-                  <span class="sc-cd-timer">${typeof storyCdText === "function" ? storyCdText(cdLeft) : ""}</span>
-                </div>
-              ` : '') : `
-                <div class="sc-card-lock-overlay">
-                  <span class="sc-lock-icon">🔒</span>
-                  <span class="sc-lock-text">${i === 0 ? 'BAB TERKUNCI' : 'SELESAIKAN STAGE 0' + i}</span>
-                </div>
-              `}
-            </div>
-
-            <div class="sc-card-info">
-              <div class="sc-tier-row">
-                <span class="sc-tier-pill sc-tier-${tier}">${tier}</span>
-                <span class="sc-gate-val">${isUnlocked ? 'GATE ' + fmt(g) : 'TERKUNCI'}</span>
-              </div>
-              <div class="sc-card-name">${isUnlocked ? en.name : 'ENCRYPTED TARGET'}</div>
-            </div>
-          </div>
-        `;
-      }).join("");
+    // Update Sub-Bar Progress
+    const cdh = diffProg()[state.diff];
+    let clearedCount = 0;
+    for (let i = 0; i < ch.levels.length; i++) {
+      if (cdh[ch.from + i]) clearedCount++;
     }
+    const totalCount = ch.levels.length;
+    const pct = Math.round((clearedCount / totalCount) * 100);
 
-    // Render Dots
-    const dotsEl = document.getElementById("scDotsIndicator");
-    if (dotsEl) {
-      const cdh = diffProg()[state.diff];
-      const cellOpen = cellUnlocked(ch, state.diff);
-      dotsEl.innerHTML = ch.levels.map((_, i) => {
-        const lv = ch.from + i;
-        const isUnlocked = cellOpen && (i === 0 || !!cdh[lv - 1]);
-        return `<div class="sc-dot-node ${isUnlocked ? '' : 'locked'}" id="sc-dot-${i}" onclick="selectStoryStage(${i})" title="Stage 0${i+1}"></div>`;
-      }).join("");
-    }
+    const progTxt = document.getElementById("scChapProgressTxt");
+    const progFill = document.getElementById("scChapProgressFill");
+    if (progTxt) progTxt.textContent = `${clearedCount} / ${totalCount} SELESAI (${pct}%)`;
+    if (progFill) progFill.style.width = `${pct}%`;
 
-    updateStoryCarouselPositions(true);
+    // Render Tactical Map Nodes & Connections
+    renderTacticalNodes();
+
+    // Update Drawer Briefing Info
+    updateStoryDrawer();
   }
 
-  function updateStoryCarouselPositions(immediate = false) {
+  function renderTacticalNodes() {
     const ch = activeChap();
     const cdh = diffProg()[state.diff];
+    const cellOpen = cellUnlocked(ch, state.diff);
 
+    const canvasEl = document.getElementById("scMapCanvas");
+    const container = document.getElementById("scMapNodes");
+    const svg = document.getElementById("scMapSvg");
+    if (!canvasEl || !container || !svg) return;
+
+    container.innerHTML = "";
+
+    const rect = canvasEl.getBoundingClientRect();
+    const isPortrait = window.innerWidth <= 600 || (rect.width > 0 && rect.width <= 480);
+    const coords = isPortrait ? COORDS_PORTRAIT : COORDS_WIDE;
+
+    const canvasW = canvasEl.offsetWidth || rect.width || (isPortrait ? 360 : 750);
+    const canvasH = canvasEl.offsetHeight || rect.height || (isPortrait ? 600 : 340);
+
+    const pixelCoords = coords.map(c => ({
+      x: Math.round((c.xPct / 100) * canvasW),
+      y: Math.round((c.yPct / 100) * canvasH)
+    }));
+
+    // Build SVG Connecting Paths
+    let pathBaseD = `M ${pixelCoords[0].x} ${pixelCoords[0].y}`;
+    let pathClearedD = `M ${pixelCoords[0].x} ${pixelCoords[0].y}`;
+
+    for (let i = 1; i < pixelCoords.length; i++) {
+      const p0 = pixelCoords[i - 1];
+      const p1 = pixelCoords[i];
+      let segment = "";
+      if (isPortrait) {
+        const cpY = (p0.y + p1.y) / 2;
+        segment = ` C ${p0.x} ${cpY}, ${p1.x} ${cpY}, ${p1.x} ${p1.y}`;
+      } else {
+        const cpX = (p0.x + p1.x) / 2;
+        segment = ` C ${cpX} ${p0.y}, ${cpX} ${p1.y}, ${p1.x} ${p1.y}`;
+      }
+      pathBaseD += segment;
+      const prevLv = ch.from + (i - 1);
+      const currLv = ch.from + i;
+      if (cdh[prevLv] && (cdh[currLv] || (i === currentStageIdx))) {
+        pathClearedD += segment;
+      }
+    }
+
+    svg.innerHTML = `
+      <defs>
+        <linearGradient id="scCyanGlowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#38bdf8" />
+          <stop offset="100%" stop-color="#818cf8" />
+        </linearGradient>
+      </defs>
+      <path class="sc-path-base" d="${pathBaseD}" />
+      <path class="sc-path-cleared" d="${pathClearedD}" />
+    `;
+
+    // Spawn 6 Nodes
     ch.levels.forEach((_, i) => {
-      const cardEl = document.getElementById(`sc-card-${i}`);
-      if (!cardEl) return;
+      const lv = ch.from + i;
+      const en = enemyOf(lv);
+      const isCleared = !!cdh[lv];
+      const isUnlocked = cellOpen && (i === 0 || !!cdh[lv - 1]);
+      const isSelected = i === currentStageIdx;
+      const isBoss = !!en.boss;
+      const p = pixelCoords[i];
 
-      const offset = i - currentStageIdx;
-      let posClass = "pos-hidden";
-      if (offset === 0) posClass = "pos-0";
-      else if (offset === 1) posClass = "pos-1";
-      else if (offset === -1) posClass = "pos-neg-1";
-      else if (offset === 2) posClass = "pos-2";
-      else if (offset === -2) posClass = "pos-neg-2";
+      const nodeEl = document.createElement("div");
+      nodeEl.className = `sc-node ${isBoss ? 'is-boss' : ''} ${isSelected ? 'active' : ''} ${isCleared ? 'cleared' : ''} ${isUnlocked ? '' : 'locked'}`;
+      nodeEl.id = `sc-node-${i}`;
+      nodeEl.style.left = `${p.x}px`;
+      nodeEl.style.top = `${p.y}px`;
 
-      cardEl.classList.remove("pos-0", "pos-1", "pos-neg-1", "pos-2", "pos-neg-2", "pos-hidden");
-      cardEl.classList.add(posClass);
-      cardEl.style.transform = "";
+      let statusBadgeHtml = "";
+      if (isBoss) {
+        statusBadgeHtml = `<span class="sc-node-tag boss"><span class="ic ic-xs i-dragon"></span> BOSS</span>`;
+      } else if (isCleared) {
+        statusBadgeHtml = `<span class="sc-node-tag cleared"><span class="ic ic-xs i-check"></span> SELESAI</span>`;
+      } else if (isUnlocked) {
+        statusBadgeHtml = `<span class="sc-node-tag ready">SIAP</span>`;
+      } else {
+        statusBadgeHtml = `<span class="sc-node-tag locked"><span class="ic ic-xs i-lock"></span> KUNCI</span>`;
+      }
+
+      nodeEl.innerHTML = `
+        <div class="sc-node-orb">
+          <div class="sc-node-ring"></div>
+          <div class="sc-node-avatar">
+            <img class="sc-node-img" src="${en.img}" alt="${en.name}" loading="lazy" onerror="this.src='assets/cards/art/solar-brawler.webp'">
+            ${!isUnlocked ? `<div class="sc-node-lock-mask"><span class="ic ic-sm i-lock"></span></div>` : ''}
+          </div>
+          <div class="sc-node-num">0${i + 1}</div>
+        </div>
+        <div class="sc-node-meta">
+          <div class="sc-node-name">${isUnlocked ? en.name : 'ENCRYPTED'}</div>
+          ${statusBadgeHtml}
+        </div>
+      `;
+
+      nodeEl.onclick = () => {
+        selectStoryStage(i);
+      };
+
+      container.appendChild(nodeEl);
     });
+  }
 
-    // Update Dots
-    ch.levels.forEach((_, i) => {
-      const dot = document.getElementById(`sc-dot-${i}`);
-      if (dot) dot.classList.toggle("active", i === currentStageIdx);
-    });
+  function updateStoryDrawer() {
+    const ch = activeChap();
+    const cdh = diffProg()[state.diff];
+    const cellOpen = cellUnlocked(ch, state.diff);
 
-    // Update Bottom Dock with Crossfade
-    const intelEl = document.getElementById("scDockIntel");
-    const readEl = document.getElementById("scDockReadiness");
+    const lv = ch.from + currentStageIdx;
+    const en = enemyOf(lv);
+    const cardData = (en.id && CARDS[en.id]) ? CARDS[en.id] : null;
+    const tier = cardData ? cardData.tier : (en.boss ? "UR" : "R");
+    const skill = cardData && cardData.skill ? cardData.skill : (en.skill || "IMPACT STRIKE");
+    const desc = cardData && cardData.desc ? cardData.desc : (en.desc || "Serangan jurus lawan.");
+    const type = cardData && cardData.type ? cardData.type : (en.boss ? "Offensive" : "Balanced");
 
-    if (intelEl && readEl) {
-      intelEl.classList.add("dock-fade-out");
-      readEl.classList.add("dock-fade-out");
+    const g = gateOf(lv);
+    const pw = totalPower();
+    const ok = pw >= g;
+    const bar = Math.max(4, Math.min(100, Math.round((pw / g) * 100)));
+    const diffPct = Math.round(((pw - g) / g) * 100);
 
-      setTimeout(() => {
-        const lv = ch.from + currentStageIdx;
-        const en = enemyOf(lv);
-        const cardData = en.id && CARDS[en.id] ? CARDS[en.id] : null;
-        const tier = cardData ? cardData.tier : (en.boss ? "UR" : "R");
-        const g = gateOf(lv);
-        const pw = totalPower();
-        const ok = pw >= g;
-        const bar = Math.max(4, Math.min(100, Math.round(pw / g * 100)));
+    const first = !cdh[lv];
+    const reward = first ? firstClearReward(lv) : Math.round(firstClearReward(lv) * 0.2);
+    const cdLeft = first ? 0 : (typeof storyCdLeft === "function" ? storyCdLeft(lv) : 0);
+    const isUnlocked = cellOpen && (currentStageIdx === 0 || !!cdh[lv - 1]);
 
-        const first = !cdh[lv];
-        const reward = first ? firstClearReward(lv) : Math.round(firstClearReward(lv) * 0.2);
-        const cdLeft = first ? 0 : (typeof storyCdLeft === "function" ? storyCdLeft(lv) : 0);
-        const cellOpen = cellUnlocked(ch, state.diff);
-        const isUnlocked = cellOpen && (currentStageIdx === 0 || !!cdh[lv - 1]);
+    // Drawer Header & Target Card
+    const stageNum = document.getElementById("scDockStageNum");
+    const enemyName = document.getElementById("scDockEnemyName");
+    const targetTitle = document.getElementById("scDockTargetTitle");
+    const enemyImg = document.getElementById("scDockEnemyImg");
+    const tierPill = document.getElementById("scDockTier");
+    const typePill = document.getElementById("scDockType");
+    const statusPill = document.getElementById("scDockStatusPill");
+    const hpVal = document.getElementById("scDockHp");
+    const atkVal = document.getElementById("scDockAtk");
 
-        const stageLbl = document.getElementById("scDockStageNum");
-        const enemyName = document.getElementById("scDockEnemyName");
-        const gateVal = document.getElementById("scDockGateVal");
-        const barFill = document.getElementById("scDockBarFill");
-        const rewardVal = document.getElementById("scDockRewardVal");
-        const rewardLbl = document.getElementById("scDockRwLbl");
-        const battleBtn = document.getElementById("scBtnBattle");
+    if (stageNum) stageNum.textContent = en.boss ? `STAGE 0${currentStageIdx + 1} // BOSS GATE` : `STAGE 0${currentStageIdx + 1} // TACTICAL STAGE`;
+    if (enemyName) enemyName.textContent = isUnlocked ? en.name : `STAGE 0${currentStageIdx + 1} TERKUNCI`;
+    if (targetTitle) targetTitle.textContent = isUnlocked ? en.name : "ENCRYPTED TARGET";
+    if (enemyImg) enemyImg.src = en.img;
 
-        if (rewardLbl) rewardLbl.textContent = first ? "FIRST CLEAR REWARD" : "REPLAY REWARD (20%)";
+    if (tierPill) tierPill.textContent = tier;
+    if (typePill) typePill.innerHTML = `<span class="ic ic-xs ${en.boss ? 'i-dragon' : 'i-swords'}"></span> ${type.toUpperCase()}`;
 
-        if (stageLbl) stageLbl.textContent = en.boss ? `STAGE 0${currentStageIdx + 1} // BOSS ENCOUNTER` : `STAGE 0${currentStageIdx + 1} // REGULAR STAGE`;
-        if (enemyName) enemyName.textContent = isUnlocked ? `${en.name} [${tier}]` : `TERKUNCI — SELESAIKAN STAGE 0${currentStageIdx}`;
-        if (gateVal) {
-          if (!isUnlocked) {
-            gateVal.innerHTML = `<span style="color:#ff4b5a">STAGE MASIH TERKUNCI</span>`;
-          } else {
-            gateVal.innerHTML = `${fmt(g)} (${ok ? '<span style="color:#00ffaa">SIAP TEMPUR</span>' : '<span style="color:#ff334b">POWER KURANG</span>'})`;
-          }
-        }
-        if (barFill) {
-          if (!isUnlocked) {
-            barFill.style.width = "0%";
-            barFill.style.background = "#334155";
-          } else {
-            barFill.style.width = bar + "%";
-            barFill.style.background = ok ? 'linear-gradient(90deg, #1b6bff, #00ffaa)' : 'linear-gradient(90deg, #ff8c00, #ff334b)';
-          }
-        }
-        if (rewardVal) rewardVal.textContent = isUnlocked ? `◎ ${fmt(reward)} Gold` : `—`;
+    if (statusPill) {
+      if (!isUnlocked) {
+        statusPill.className = "sc-status-pill locked";
+        statusPill.innerHTML = `<span class="ic ic-xs i-lock"></span> TERKUNCI`;
+      } else if (!first) {
+        statusPill.className = "sc-status-pill cleared";
+        statusPill.innerHTML = `<span class="ic ic-xs i-check"></span> SELESAI`;
+      } else {
+        statusPill.className = "sc-status-pill ready";
+        statusPill.innerHTML = `SIAP TEMPUR`;
+      }
+    }
 
-        const gemLbl = document.getElementById("scDockGemLbl");
-        const gemVal = document.getElementById("scDockRewardGem");
-        const gemIc = '<img src="assets/images/premium-currency.webp" alt="" width="16" height="16">';
-        const gemN = (typeof storyGemPreview === "function" && isUnlocked) ? storyGemPreview(lv) : 0;
-        if (gemLbl) gemLbl.textContent = isUnlocked ? (first ? "GEM FIRST CLEAR" : "GEM REPLAY") : "STORY GEM";
-        if (gemVal) gemVal.innerHTML = isUnlocked ? `${gemIc}+${gemN}` : `${gemIc}—`;
+    if (hpVal) hpVal.textContent = isUnlocked ? fmt(en.hp) : "???";
+    if (atkVal) atkVal.textContent = isUnlocked ? fmt(en.atk) : "???";
 
-        if (battleBtn) {
-          battleBtn.dataset.cdRepeat = (isUnlocked && !first && cdLeft > 0) ? "1" : "";
-          if (!isUnlocked) {
-            battleBtn.disabled = true;
-            battleBtn.innerHTML = `<span>🔒</span> TERKUNCI`;
-          } else if (!first && cdLeft > 0) {
-            battleBtn.disabled = true;
-            battleBtn.innerHTML = `<span>⏱</span> ${typeof storyCdText === "function" ? storyCdText(cdLeft) : "COOLDOWN"}`;
-          } else {
-            battleBtn.disabled = false;
-            battleBtn.innerHTML = `<span>⚔</span> MULAI BATTLE`;
-          }
-        }
-        const cdBadge = document.getElementById("scDockCd");
-        if (cdBadge) {
-          cdBadge.style.display = (isUnlocked && !first && cdLeft > 0) ? "inline-flex" : "none";
-          cdBadge.textContent = (isUnlocked && !first && cdLeft > 0) ? "REPLAY COOLDOWN · " + (typeof storyCdText === "function" ? storyCdText(cdLeft) : "") : "";
-        }
+    // Ability Intel
+    const skillTitle = document.getElementById("scDockSkillTitle");
+    const skillDesc = document.getElementById("scDockSkillDesc");
+    if (skillTitle) skillTitle.textContent = isUnlocked ? `JURUS: ${skill}` : "JURUS RAHASIA";
+    if (skillDesc) skillDesc.textContent = isUnlocked ? desc : `Selesaikan Stage 0${currentStageIdx} untuk membedah jurus rahasia lawan.`;
 
-        intelEl.classList.remove("dock-fade-out");
-        readEl.classList.remove("dock-fade-out");
-      }, 120);
+    // Power Readiness
+    const powerStatus = document.getElementById("scDockPowerStatus");
+    const gateVal = document.getElementById("scDockGateVal");
+    const barFill = document.getElementById("scDockBarFill");
+
+    if (powerStatus) {
+      if (!isUnlocked) {
+        powerStatus.textContent = "TERKUNCI";
+        powerStatus.style.color = "var(--neon-crimson)";
+      } else if (ok) {
+        powerStatus.textContent = `UNGGUL +${diffPct}%`;
+        powerStatus.style.color = "var(--neon-emerald)";
+      } else {
+        powerStatus.textContent = `KURANG ${diffPct}%`;
+        powerStatus.style.color = "var(--neon-crimson)";
+      }
+    }
+
+    if (gateVal) {
+      if (!isUnlocked) {
+        gateVal.innerHTML = `<span style="color:var(--neon-crimson)">STAGE MASIH TERKUNCI</span>`;
+      } else {
+        gateVal.innerHTML = `REQ <b>${fmt(g)}</b> / KAMU <b>${fmt(pw)}</b>`;
+      }
+    }
+
+    if (barFill) {
+      if (!isUnlocked) {
+        barFill.style.width = "0%";
+      } else {
+        barFill.style.width = `${bar}%`;
+        barFill.style.background = ok ? 'linear-gradient(90deg, #10b981, #38bdf8)' : 'linear-gradient(90deg, #f43f5e, #fb7185)';
+      }
+    }
+
+    // Rewards
+    const rewardVal = document.getElementById("scDockRewardVal");
+    const rewardLbl = document.getElementById("scDockRwLbl");
+    const gemVal = document.getElementById("scDockRewardGem");
+    const gemN = (typeof storyGemPreview === "function" && isUnlocked) ? storyGemPreview(lv) : 0;
+
+    if (rewardLbl) rewardLbl.textContent = first ? "HADIAH FIRST CLEAR" : "HADIAH REPLAY (20%)";
+    if (rewardVal) rewardVal.textContent = isUnlocked ? `◎ ${fmt(reward)} Gold` : "—";
+    if (gemVal) gemVal.textContent = isUnlocked ? `+${gemN} Gems` : "—";
+
+    // Cooldown badge
+    const cdBadge = document.getElementById("scDockCd");
+    if (cdBadge) {
+      const showCd = isUnlocked && !first && cdLeft > 0;
+      cdBadge.style.display = showCd ? "inline-flex" : "none";
+      cdBadge.textContent = showCd ? `REPLAY COOLDOWN · ${typeof storyCdText === "function" ? storyCdText(cdLeft) : ""}` : "";
+    }
+
+    // Launch Button
+    const battleBtn = document.getElementById("scBtnBattle");
+    if (battleBtn) {
+      battleBtn.dataset.cdRepeat = (isUnlocked && !first && cdLeft > 0) ? "1" : "";
+      if (!isUnlocked) {
+        battleBtn.disabled = true;
+        battleBtn.className = "sc-btn-battle-launch";
+        battleBtn.innerHTML = `<span class="ic ic-sm i-lock"></span> TERKUNCI`;
+      } else if (!first && cdLeft > 0) {
+        battleBtn.disabled = true;
+        battleBtn.className = "sc-btn-battle-launch";
+        battleBtn.innerHTML = `<span class="ic ic-sm i-bolt"></span> ${typeof storyCdText === "function" ? storyCdText(cdLeft) : "COOLDOWN"}`;
+      } else {
+        battleBtn.disabled = false;
+        battleBtn.className = en.boss ? "sc-btn-battle-launch boss" : "sc-btn-battle-launch";
+        battleBtn.innerHTML = `<span class="ic ic-sm ${en.boss ? 'i-dragon' : 'i-swords'}"></span> ${en.boss ? 'DEPLOY BOSS RAID' : 'MULAI BATTLE'}`;
+      }
+    }
+
+    // Mobile Quick Dock
+    const mqImg = document.getElementById("scMqImg");
+    const mqCode = document.getElementById("scMqCode");
+    const mqName = document.getElementById("scMqName");
+    const mqDeploy = document.getElementById("scMqDeployBtn");
+
+    if (mqImg) mqImg.src = en.img;
+    if (mqCode) mqCode.textContent = `STAGE 0${currentStageIdx + 1}`;
+    if (mqName) mqName.textContent = isUnlocked ? en.name : "TERKUNCI";
+    if (mqDeploy) {
+      mqDeploy.disabled = !isUnlocked || (!first && cdLeft > 0);
+      mqDeploy.innerHTML = `<span class="ic ic-xs i-swords"></span> ${isUnlocked ? 'BATTLE' : 'KUNCI'}`;
     }
   }
 
@@ -376,16 +534,56 @@
     if (idx === currentStageIdx) return;
     if (window.sfx && sfx.hit) sfx.hit();
     currentStageIdx = idx;
-    updateStoryCarouselPositions(false);
+
+    // Update active class on nodes
+    const ch = activeChap();
+    ch.levels.forEach((_, i) => {
+      const nodeEl = document.getElementById(`sc-node-${i}`);
+      if (nodeEl) nodeEl.classList.toggle("active", i === currentStageIdx);
+    });
+
+    updateStoryDrawer();
   }
 
   function slideStoryStage(dir) {
     const ch = activeChap();
     const next = currentStageIdx + dir;
     if (next < 0 || next >= ch.levels.length) return;
+    selectStoryStage(next);
+  }
+
+  function openBottomSheet() {
     if (window.sfx && sfx.hit) sfx.hit();
-    currentStageIdx = next;
-    updateStoryCarouselPositions(false);
+    const drawer = document.getElementById("scBriefingDrawer");
+    if (drawer) drawer.classList.add("expanded");
+  }
+
+  function closeDrawerOrSheet() {
+    const drawer = document.getElementById("scBriefingDrawer");
+    if (drawer) drawer.classList.remove("expanded");
+  }
+
+  function openLoreModal() {
+    if (window.sfx && sfx.hit) sfx.hit();
+    const ch = activeChap();
+    const overlay = document.getElementById("scLoreOverlay");
+    const title = document.getElementById("scLoreTitle");
+    const content = document.getElementById("scLoreContent");
+
+    if (title) title.textContent = `ARSIP CERITA: BAB 0${ch.no} · ${ch.zone}`;
+    if (content) {
+      if (Array.isArray(ch.lore) && ch.lore.length) {
+        content.innerHTML = ch.lore.map(p => `<p>${p}</p>`).join("");
+      } else {
+        content.innerHTML = `<p>Arsip catatan bab ini telah terenkripsi dalam memori sistem.</p>`;
+      }
+    }
+    if (overlay) overlay.classList.add("open");
+  }
+
+  function closeLoreModal() {
+    const overlay = document.getElementById("scLoreOverlay");
+    if (overlay) overlay.classList.remove("open");
   }
 
   function launchSelectedBattle() {
@@ -404,7 +602,18 @@
       return;
     }
 
+    const first = !cdh[lv];
+    const cdLeft = first ? 0 : (typeof storyCdLeft === "function" ? storyCdLeft(lv) : 0);
+    if (!first && cdLeft > 0) {
+      if (window.sfx && sfx.lose) sfx.lose();
+      try {
+        toast("COOLDOWN", `Replay stage ini masih menunggu waktu jeda!`, "#ff4b5a");
+      } catch(e) {}
+      return;
+    }
+
     if (window.sfx && sfx.hit) sfx.hit();
+    closeStory();
     startStoryBattle(lv);
   }
 
@@ -414,7 +623,6 @@
   window.closeStory = closeStory;
   window.openMission = () => openStory();
   window.selectStoryStage = selectStoryStage;
-  window.updateStoryCarouselPositions = updateStoryCarouselPositions;
   window.slideStoryStage = slideStoryStage;
   window.changeStoryChapter = changeStoryChapter;
   window.initStoryCarousel = initStoryCarousel;

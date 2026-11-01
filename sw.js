@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v313-cleanStory';
+const CACHE_NAME = 'anime-card-battle-v314-tacticalNodeMap';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

@@ -19,7 +19,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Rajdhani:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/world-boss.css?v=v274-touch44">
 <link rel="stylesheet" href="css/sl-system.css?v=v295-bpHdr">
-<link rel="stylesheet" href="css/story-carousel.css?v=v313-cleanStory">
+<link rel="stylesheet" href="css/story-carousel.css?v=v314-tacticalNodeMap">
 <link rel="stylesheet" href="css/lobby-prototype.css?v=v310-noTreeBoardPlate">
 <link rel="stylesheet" href="css/mobile-shell.css?v=v283-lobbyV12">
 <script>
@@ -587,17 +587,14 @@
 
 <div id="storyModal">
   <div class="sc-window">
-    <div class="sc-corner sc-corner-tl"></div>
-    <div class="sc-corner sc-corner-tr"></div>
-    <div class="sc-corner sc-corner-bl"></div>
-    <div class="sc-corner sc-corner-br"></div>
+    <div class="sc-ambient-grid"></div>
 
     <!-- Header & Bab Navigation -->
     <div class="sc-head">
       <div class="sc-chap-nav">
         <button class="btn-sc-nav" id="scPrevChap" type="button" aria-label="Bab Sebelumnya">❮</button>
-        <div class="sc-chap-title-box">
-          <div class="sc-chap-eyebrow">STORY CAMPAIGN ARCHIVE</div>
+        <div class="sc-chap-title-box" id="scChapTitleBox">
+          <span class="sc-chap-eyebrow">STORY ARCHIVE</span>
           <div class="sc-chap-title" id="scChapTitle">BAB 01 · DESA LEMBAH NINJA</div>
         </div>
         <button class="btn-sc-nav" id="scNextChap" type="button" aria-label="Bab Berikutnya">❯</button>
@@ -607,55 +604,155 @@
         <div class="sc-diff-group" id="scDiffGroup">
           <!-- Dynamic difficulty buttons -->
         </div>
+        <button class="sc-btn-lore" id="scBtnLore" type="button" title="Arsip Cerita">
+          <span class="ic ic-sm i-scroll"></span> LORE
+        </button>
         <button class="sc-close-btn" id="smClose" type="button" aria-label="Tutup">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <span class="ic ic-sm i-cancel"></span>
         </button>
       </div>
     </div>
 
-    <!-- 3D Carousel Stage -->
-    <div class="sc-carousel-stage" id="scCarouselStage">
-      <button class="sc-stage-arrow sc-arrow-left" id="scPrevStage" type="button" aria-label="Kartu Sebelumnya">❮</button>
-      <button class="sc-stage-arrow sc-arrow-right" id="scNextStage" type="button" aria-label="Kartu Berikutnya">❯</button>
-
-      <div class="sc-carousel-track" id="scCarouselTrack">
-        <!-- 6 Persistent Enemy Cards Injected Here -->
+    <!-- Sub-header Progress Bar (Dedicated, Non-Colliding) -->
+    <div class="sc-sub-bar">
+      <div class="sc-sub-progress">
+        <span class="sc-sub-lbl">PROGRES BAB: <b id="scChapProgressTxt">0 / 6 SELESAI (0%)</b></span>
+        <div class="sc-sub-track">
+          <div class="sc-sub-fill" id="scChapProgressFill" style="width: 0%;"></div>
+        </div>
+      </div>
+      <div class="sc-sub-meta">
+        <span class="sc-diff-badge" id="scDiffBadge">NORMAL</span>
       </div>
     </div>
 
-    <!-- Dots Pagination Indicator -->
-    <div class="sc-dots-indicator" id="scDotsIndicator"></div>
-
-    <!-- Bottom Action Dock -->
-    <div class="sc-action-dock">
-      <div class="sc-dock-intel" id="scDockIntel">
-        <div class="sc-dock-stage-lbl" id="scDockStageNum">STAGE 01 // REGULAR STAGE</div>
-        <div class="sc-dock-enemy-name" id="scDockEnemyName">STAGE TARGET</div>
-      </div>
-
-      <div class="sc-dock-readiness" id="scDockReadiness">
-        <div class="sc-dock-rd-labels">
-          <span>GATE REQUIREMENT</span>
-          <b id="scDockGateVal">1,000</b>
-        </div>
-        <div class="sc-dock-bar">
-          <div class="sc-dock-bar-fill" id="scDockBarFill" style="width: 100%;"></div>
+    <!-- Main Stage: Tactical Node Map & Side Briefing Drawer -->
+    <div class="sc-main-stage">
+      <!-- Tactical Node Map Viewport -->
+      <div class="sc-map-viewport" id="scMapViewport">
+        <div class="sc-map-canvas" id="scMapCanvas">
+          <svg class="sc-map-svg" id="scMapSvg">
+            <defs>
+              <linearGradient id="scCyanGlowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#38bdf8" />
+                <stop offset="100%" stop-color="#818cf8" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="sc-map-nodes" id="scMapNodes"></div>
         </div>
       </div>
 
-      <div class="sc-dock-action-wrap">
-        <div class="sc-dock-reward-box">
-          <span class="sc-dock-rw-lbl" id="scDockRwLbl">FIRST CLEAR REWARD</span>
-          <span class="sc-dock-rw-val" id="scDockRewardVal">◎ 1,000</span>
-          <span class="sc-dock-cd" id="scDockCd"></span>
+      <!-- Stage Briefing Drawer / Side Panel -->
+      <aside class="sc-briefing-drawer" id="scBriefingDrawer">
+        <div class="sc-drawer-head">
+          <div class="sc-drawer-title-group">
+            <span class="sc-drawer-badge" id="scDockStageNum">STAGE 01 // REGULAR STAGE</span>
+            <div class="sc-drawer-name" id="scDockEnemyName">STAGE TARGET</div>
+          </div>
+          <button class="sc-drawer-close" id="scDrawerClose" type="button" aria-label="Tutup Panel">
+            <span class="ic ic-sm i-cancel"></span>
+          </button>
         </div>
-        <div class="sc-dock-reward-box sc-dock-gem-box">
-          <span class="sc-dock-rw-lbl" id="scDockGemLbl">STORY GEM</span>
-          <span class="sc-dock-gem-val" id="scDockRewardGem"><img src="assets/images/premium-currency.webp" alt="" width="16" height="16">+0</span>
+
+        <div class="sc-drawer-body">
+          <!-- Target Profile Card -->
+          <div class="sc-target-card">
+            <div class="sc-target-art-frame">
+              <img id="scDockEnemyImg" src="assets/cards/art/green-beast.webp" alt="Enemy Art" onerror="this.src='assets/cards/art/green-beast.webp'">
+            </div>
+            <div class="sc-target-info">
+              <div class="sc-target-tags">
+                <span class="sc-tier-pill" id="scDockTier">R</span>
+                <span class="sc-type-pill" id="scDockType">OFFENSIVE</span>
+                <span class="sc-status-pill" id="scDockStatusPill">SIAP TEMPUR</span>
+              </div>
+              <div class="sc-target-title" id="scDockTargetTitle">GREEN BEAST</div>
+              <div class="sc-target-stats">
+                <span>HP: <b id="scDockHp">0</b></span>
+                <span>ATK: <b id="scDockAtk">0</b></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Target Ability Info -->
+          <div class="sc-ability-box">
+            <div class="sc-ability-head">
+              <span class="ic ic-xs i-bolt"></span>
+              <span id="scDockSkillTitle">SIGNATURE SKILL</span>
+            </div>
+            <p class="sc-ability-desc" id="scDockSkillDesc">Deskripsi jurus lawan.</p>
+          </div>
+
+          <!-- Power Readiness Gauge -->
+          <div class="sc-readiness-box" id="scDockReadiness">
+            <div class="sc-readiness-head">
+              <span class="sc-rd-lbl">DAYA TEMPUR DECK</span>
+              <span class="sc-rd-status" id="scDockPowerStatus">SIAP TEMPUR</span>
+            </div>
+            <div class="sc-readiness-meter">
+              <div class="sc-rd-track">
+                <div class="sc-rd-fill" id="scDockBarFill" style="width: 100%;"></div>
+              </div>
+              <div class="sc-rd-val" id="scDockGateVal">1,000</div>
+            </div>
+          </div>
+
+          <!-- Real Game Rewards -->
+          <div class="sc-rewards-section">
+            <span class="sc-sec-sub">HADIAH PERTEMPURAN</span>
+            <div class="sc-reward-chips">
+              <div class="sc-rw-chip gold">
+                <span class="ic ic-xs i-coins"></span>
+                <span id="scDockRewardVal">◎ 1,000</span>
+              </div>
+              <div class="sc-rw-chip gem">
+                <span class="ic ic-xs i-gem"></span>
+                <span id="scDockRewardGem">+0 Gems</span>
+              </div>
+            </div>
+            <span class="sc-rw-type-lbl" id="scDockRwLbl">FIRST CLEAR REWARD</span>
+            <div class="sc-cd-badge" id="scDockCd" style="display:none;"></div>
+          </div>
         </div>
-        <button class="sc-btn-battle-launch" id="scBtnBattle" type="button">
-          <span>⚔</span> MULAI BATTLE
-        </button>
+
+        <!-- Drawer Footer / Launch Button -->
+        <div class="sc-drawer-foot">
+          <button class="sc-btn-battle-launch" id="scBtnBattle" type="button">
+            <span class="ic ic-sm i-swords"></span> MULAI BATTLE
+          </button>
+        </div>
+      </aside>
+
+      <!-- Mobile Quick Dock (Floating Bottom Pill, Collapsed by Default on Mobile) -->
+      <div class="sc-mobile-dock" id="scMobileDock">
+        <div class="sc-mq-left">
+          <div class="sc-mq-avatar">
+            <img id="scMqImg" src="assets/cards/art/green-beast.webp" alt="Target" onerror="this.src='assets/cards/art/green-beast.webp'">
+          </div>
+          <div class="sc-mq-meta">
+            <span class="sc-mq-code" id="scMqCode">STAGE 01</span>
+            <span class="sc-mq-name" id="scMqName">TARGET</span>
+          </div>
+        </div>
+        <div class="sc-mq-right">
+          <button class="sc-mq-deploy" id="scMqDeployBtn" type="button">
+            <span class="ic ic-xs i-swords"></span> BATTLE
+          </button>
+          <button class="sc-mq-expand" id="scMqExpandBtn" type="button" aria-label="Buka Detail">▲</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lore Dossier Modal Overlay -->
+    <div class="sc-lore-overlay" id="scLoreOverlay">
+      <div class="sc-lore-card">
+        <div class="sc-lore-head">
+          <span class="ic ic-sm i-scroll"></span>
+          <span id="scLoreTitle">ARSIP CERITA</span>
+        </div>
+        <div class="sc-lore-content" id="scLoreContent"></div>
+        <button class="sc-lore-close" id="scLoreClose" type="button">TUTUP ARSIP</button>
       </div>
     </div>
   </div>
@@ -861,7 +958,7 @@
 <script src="js/tower-lobby.js?v=v305-lobbyClickFix"></script>
 <script src="js/shadow-king-fx.js?v=v4-skfx4"></script>
 <script src="js/foe-passives.js?v=v62-foe-passives"></script>
-<script src="js/story-carousel.js?v=v313-cleanStory"></script>
+<script src="js/story-carousel.js?v=v314-tacticalNodeMap"></script>
 <script src="js/raid.js?v=v186-cgLifecycle"></script>
 <script src="js/ranking.js?v=v9-storyEnemyTierOnly"></script>
 <script src="js/i18n.js?v=v302-relicPet"></script>
