@@ -2394,7 +2394,7 @@ function slNodeHtml(n,sp){
   const br=core?'root':n.branch;
   const gain=bpNodeGain(n);
   const p=BPWEB_POS[n.id]||[50,50];
-  const cost=(!core&&st!=='owned'&&st!=='locked')?`<span class="wcost num">${n.cost} SP</span>`:'';
+  const cost=(!core&&st!=='owned')?`<span class="wcost num">${n.cost} SP</span>`:'';
   return `<button type="button" class="wnode ${br} ${st}${core?' core':''}" data-node="${n.id}" aria-label="${n.name} — ${gain}" aria-expanded="${_bpTreeDetailId===n.id?'true':'false'}" title="${n.name} — ${gain} · ${n.desc}" style="left:${p[0]}%;top:${p[1]}%" onclick="bpTreeDetailToggle('${n.id}')">
     ${cost}<span class="whex">${st==='locked'&&!core?'<img class="wlock" src="assets/icons/padlock.svg" alt="">':''}</span><span class="wlabel">${n.name}</span>
   </button>`;

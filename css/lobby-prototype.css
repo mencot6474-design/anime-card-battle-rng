@@ -6190,3 +6190,112 @@ html body.on-lobby .lobby-hub.l12 #footAv.l12-menu:active { transform: scale(.97
 }
 .l12 .hero:active { opacity: .9; }
 @media (prefers-reduced-motion: reduce) { .l12 .hero { transition: none; } }
+
+/* ================= SKILL TREE · CONSTELLATION POLISH v4 (ui-css, 2026-11-01)
+   MASALAH: tab SKILL TREE di produksi terbaca sebagai "wireframe/templete" — semua node
+   selain FONDASI nyaris transparan di atas papan solid #0b1220 (poor .whex opacity .45
+   dengan gradien 14%, locked .whex #141d2e opacity .55) dan semua edge satu warna abu.
+   Prototipe terkunci (_tmp/bp3.css) jauh lebih "dirancang"; celah utamanya: node poor/
+   locked belum punya siluet+rim, dan edge belum berwarna per cabang.
+
+   PERBAIKAN (VISUAL SAJA — tidak ada perubahan mekanik/data/SP/state node):
+   (1) EDGE per cabang: kelas .ln-luck/.ln-speed/.ln-booster SUDAH ada di DOM
+       (bpWebLinesHtml) tapi belum dipakai CSS -> stroke = warna cabang, stroke-opacity
+       .36 (redup tapi cabang terbaca). Edge .live tetap terang + glow seperti prototipe.
+       stroke-width 1.4px + vector-effect:non-scaling-stroke TIDAK disentuh (SVG pakai
+       preserveAspectRatio="none" -> stroke polos akan gepeng).
+   (2) NODE: semua state (owned/ready/poor/locked) punya siluet heksagon + RIM tipis
+       2px warna cabang. Teknik: .whex = hex LUAR (warna rim), ::before inset:2px =
+       hex DALAM (inti) -> celah 2px = rim. poor/locked = "logam tak menyala"
+       (inti baja gelap + rim redup), TIDAK invisible lagi (opacity .45/.55 dibuang).
+   (3) LABEL poor/locked lebih terang & opacity >= .7 (sebelumnya .5/.7).
+   (4) CHIP biaya SP ikut tampil di node locked (dimmed -> tidak terbaca "siap beli").
+   (5) TAG cabang (LUCK/SPEED/BOOSTER) tetap warna cabang + halo gelap biar tetap
+       terbaca di atas edge yang sekarang berwarna.
+
+  Semua selector dikunci di .backpack-panel .bp-body.tree -> tab DECK/ITEM/RELIC/PET
+   tidak tersentuh. Tanpa animasi box-shadow/width/height/top; tanpa backdrop-filter;
+   glow HANYA di node owned/ready + edge live (HP kentang). ================================== */
+
+/* ---------- (1) EDGE per cabang (kelas .ln-* dari bpWebLinesHtml) ---------- */
+.backpack-panel .bp-body.tree .weblines line.ln-luck    { stroke:var(--bp-lk); stroke-opacity:.36; }
+.backpack-panel .bp-body.tree .weblines line.ln-speed   { stroke:var(--bp-am); stroke-opacity:.36; }
+.backpack-panel .bp-body.tree .weblines line.ln-booster { stroke:var(--bp-mg); stroke-opacity:.36; }
+/* .live di BELAKAN .ln-* (spesifisitas sama, menang lewat urutan) -> stroke-opacity penuh */
+.backpack-panel .bp-body.tree .weblines line.live { stroke-opacity:.92; }
+/* edge root tetap cyan seperti prototipe (kelas "live root") */
+.backpack-panel .bp-body.tree .weblines line.live.root { stroke:var(--bp-cy); stroke-opacity:.92; }
+
+/* ---------- (2a) NODE: hex DALAM (inti) -> celah 2px = rim tipis ---------- */
+/* :not(.core) supaya FONDASI (root) tidak ikut: root punya radial-gradient sendiri. */
+.backpack-panel .bp-body.tree .wnode:not(.core) .whex::before {
+  content:""; position:absolute; inset:2px;
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
+}
+/* owned: hex tetap SOLID + glow (aturan lama) -> facet dalam supaya rim solid kelihatan */
+.backpack-panel .bp-body.tree .wnode.owned:not(.core) .whex::before {
+  background-color:rgba(0,0,0,.10);
+  background-image:linear-gradient(180deg,rgba(255,255,255,.26) 0%,rgba(0,0,0,.20) 100%);
+}
+/* ready: inti gelap -> rim cabang mengelilingi, glow statis, pulse lama tetap jalan */
+.backpack-panel .bp-body.tree .wnode.ready:not(.core) .whex::before {
+  background-color:rgba(8,14,26,.70);
+  background-image:linear-gradient(180deg,rgba(8,14,26,.46) 0%,rgba(8,14,26,.86) 100%);
+}
+/* poor: inti baja (node "logam tak menyala") */
+.backpack-panel .bp-body.tree .wnode.poor:not(.core) .whex::before {
+  background-color:#101a2c;
+  background-image:linear-gradient(180deg,#1d2a44 0%,#101a2c 100%);
+}
+/* locked: inti hampir papan — tetap ter-shape, cuma paling redup */
+.backpack-panel .bp-body.tree .wnode.locked:not(.core) .whex::before {
+  background-color:#0b1322;
+  background-image:linear-gradient(180deg,#131c2e 0%,#0b1322 100%);
+}
+
+/* ---------- (2b) NODE: RIM (hex LUAR = .whex background) + opacity ---------- */
+/* poor: rim cabang jelas, inti baja -> hex terbaca sebagai node (bukan ghost) */
+.backpack-panel .bp-body.tree .wnode.poor .whex { opacity:1; }
+.backpack-panel .bp-body.tree .wnode.poor.luck .whex    { background-color:#1b2740; background-image:linear-gradient(180deg,rgba(94,234,212,.60) 0%,rgba(94,234,212,.24) 100%); }
+.backpack-panel .bp-body.tree .wnode.poor.speed .whex   { background-color:#1b2740; background-image:linear-gradient(180deg,rgba(255,210,122,.60) 0%,rgba(255,210,122,.24) 100%); }
+.backpack-panel .bp-body.tree .wnode.poor.booster .whex { background-color:#1b2740; background-image:linear-gradient(180deg,rgba(255,46,136,.58) 0%,rgba(255,46,136,.22) 100%); }
+/* locked: rim paling redup (tetap berwarna cabang, tidak hilang) */
+.backpack-panel .bp-body.tree .wnode.locked .whex { opacity:1; }
+.backpack-panel .bp-body.tree .wnode.locked.luck .whex    { background-color:#141d2f; background-image:linear-gradient(180deg,rgba(94,234,212,.36) 0%,rgba(94,234,212,.14) 100%); }
+.backpack-panel .bp-body.tree .wnode.locked.speed .whex   { background-color:#141d2f; background-image:linear-gradient(180deg,rgba(255,210,122,.36) 0%,rgba(255,210,122,.14) 100%); }
+.backpack-panel .bp-body.tree .wnode.locked.booster .whex { background-color:#141d2f; background-image:linear-gradient(180deg,rgba(255,46,136,.34) 0%,rgba(255,46,136,.13) 100%); }
+/* ready: rim cabang + glow statis (paling terang dari state non-owned) */
+.backpack-panel .bp-body.tree .wnode.ready.luck .whex    { background-color:#101a2c; background-image:linear-gradient(180deg,rgba(94,234,212,.46) 0%,rgba(94,234,212,.18) 100%); filter:drop-shadow(0 0 6px rgba(94,234,212,.45)); }
+.backpack-panel .bp-body.tree .wnode.ready.speed .whex   { background-color:#101a2c; background-image:linear-gradient(180deg,rgba(255,210,122,.46) 0%,rgba(255,210,122,.18) 100%); filter:drop-shadow(0 0 6px rgba(255,210,122,.45)); }
+.backpack-panel .bp-body.tree .wnode.ready.booster .whex { background-color:#101a2c; background-image:linear-gradient(180deg,rgba(255,46,136,.44) 0%,rgba(255,46,136,.17) 100%); filter:drop-shadow(0 0 6px rgba(255,46,136,.42)); }
+/* pulse node "siap beli" dibatasi di .76 (prototipe .62) supaya node tidak pernah
+  =redup tak terbaca di HP kentang; legend .l2 i tetap pakai bpReadyPulse apa adanya. */
+.backpack-panel .bp-body.tree .wnode.ready .whex { animation:bpTreeReadyPulse 1.7s ease-in-out infinite; }
+@keyframes bpTreeReadyPulse { 0%,100% { opacity:.76; } 50% { opacity:1; } }
+/* reduced-motion: ikut mematikan pulse baru (spesifisitas lebih tinggi dari aturan lama) */
+@media (prefers-reduced-motion:reduce) {
+  .backpack-panel .bp-body.tree .wnode.ready .whex { animation:none; }
+}
+
+/* ---------- (3) LABEL poor/locked: lebih terang + opacity >= .7 ---------- */
+.backpack-panel .bp-body.tree .wnode.poor .wlabel {
+  opacity:.82; color:#b7cbdf;
+  text-shadow:0 1px 4px rgba(4,7,13,.95),0 0 7px rgba(4,7,13,.85);
+}
+.backpack-panel .bp-body.tree .wnode.locked .wlabel {
+  opacity:.78; color:#a4b9cf;
+  text-shadow:0 1px 4px rgba(4,7,13,.95),0 0 7px rgba(4,7,13,.85);
+}
+
+/* ---------- (4) CHIP biaya: locked tampil redup (bukan "siap beli") ---------- */
+.backpack-panel .bp-body.tree .wnode .wcost {
+  text-shadow:0 0 3px rgba(4,7,13,1),0 1px 3px rgba(4,7,13,1),0 0 7px rgba(4,7,13,.9);
+}
+.backpack-panel .bp-body.tree .wnode.locked .wcost { color:rgba(255,210,122,.52); opacity:1; }
+.backpack-panel .bp-body.tree .wnode.poor .wcost { opacity:.95; }
+
+/* ---------- (5) TAG cabang tetap terbaca di atas edge berwarna ---------- */
+.backpack-panel .bp-body.tree .btag {
+  text-shadow:0 0 12px currentColor,0 1px 4px rgba(4,7,13,.95);
+}
+
