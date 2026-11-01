@@ -1894,10 +1894,72 @@ function bpItemDef(kind){
     active:'',isPack:true,use:'bpUseIntanRoll(window.bpPackN)'};}
   return null;
 }
+/* ===== TAB ITEM (prototipe bp3 #v-item, DIKUNCI user) — PRESENTASI SAJA =====
+   Bentuk: .bp-itemboard -> .btitle + strip BUFF AKTIF (chip live per buff) + grup kartu
+   (.igroup + .igroup-h). SATU sumber daftar = `kinds` di renderBpItems; grup = predikat,
+   bukan jumlah hardcoded. Kartu HANYA pintu masuk: onclick tetap bpItemPop(kind) (popup lama
+   punya jalur pakai/multiplier — tidak diganti, tidak diduplikasi). Nol emoji, nol onerror:
+   <img alt> saja. Semua angka dari data nyata: bpItemDef / LUCK_POTS / SPEED_POTS /
+   POTION_BUFF_MS / PACK_ROLL_AMOUNT — tidak ada field atau aturan baru.
+   Warna grup lewat custom property --bcol (bukan inline color), pola sama seperti port TREE. */
+const BP_ITEM_GROUPS=[
+  {cls:'luck',label:'LUCK POTION',test:k=>k.startsWith('luck')},
+  {cls:'speed',label:'SPEED POTION',test:k=>k.startsWith('speed')},
+  {cls:'roll',label:'ROLL PACK',test:k=>bpPackRollAmountOf(k)>0},
+];
+const BP_ITEM_BCOL={luck:'#5eead4',speed:'#ffd27a',roll:'#ff2e88'};
+/* Efek singkat di kartu — angka yang SUDAH ada di data yang dipakai bpItemDef().desc:
+   durasi dari POTION_BUFF_MS, flat/pct dari LUCK_POTS, add dari SPEED_POTS, rolls dari PACK_ROLL_AMOUNT. */
+function bpItemEffText(kind){
+  const dur=Math.round(POTION_BUFF_MS/60000)+' MENIT';
+  if(kind.startsWith('luck')){const p=LUCK_POTS[+kind.slice(4)];if(!p)return '';
+    return `+${p.flat} FLAT LUCK${p.pct?` · +${Math.round(p.pct*100)}%`:''} · ${dur}`;}
+  if(kind.startsWith('speed')){const p=SPEED_POTS[+kind.slice(5)];if(!p)return '';
+    return `ROLL +${p.add.toFixed(1)}× · ${dur}`;}
+  const rolls=bpPackRollAmountOf(kind);
+  return rolls>0?`${fmt(rolls)} TARIKAN · INSTAN`:'';
+}
+/* ×0 = kartu nonaktif visual + aria, TAPI tetap bisa diklik: atribut `disabled` asli
+   sengaja TIDAK dipakai supaya jalur info/beli di bpItemPop tidak pernah hilang. */
+function bpItemCardHtml(kind){
+  const d=bpItemDef(kind);if(!d)return '';
+  const has=d.cnt>0;
+  return `<button type="button" class="bp-itemcard${has?'':' off'}" data-item="${kind}" aria-disabled="${has?'false':'true'}" aria-label="${d.name} · dimiliki ×${fmt(d.cnt)}" onclick="bpItemPop('${kind}')"><span class="bi-qty${has?'':' zero'}">×${fmt(d.cnt)}</span><span class="bi-ic"><img src="${d.icon}" alt="${d.name}" loading="lazy" decoding="async"></span><span class="bi-name">${d.name}</span><span class="bi-eff">${bpItemEffText(kind)}</span><span class="bi-act${d.isPack?' roll':''}" aria-hidden="true">${d.isPack?'GULUNG':'PAKAI'}</span></button>`;
+}
+/* Chip buff = sumber yang sama dengan dock lobby (renderBuffDock ~293): luckBuffs()/
+   speedBuffs() per level + boost ADS; countdown pakai fmtCountdown yang sama. */
+function bpItemBuffChip(cls,label,ms){
+  return `<span class="buffchip ${cls}" style="--bcol:${BP_ITEM_BCOL[cls]||''}"><span class="bi-lbl">${label}</span><b class="num" data-bpcd="${Date.now()+Math.max(0,ms)}">${fmtCountdown(ms)}</b></span>`;
+}
+function bpItemBuffStripHtml(){
+  const ls=luckBuffs().slice().sort((a,b)=>a.lv-b.lv);
+  const ss=speedBuffs().slice().sort((a,b)=>a.lv-b.lv);
+  const adMs=(typeof adLuckLeftMs==='function')?adLuckLeftMs():0;
+  const chips=[];
+  if(adMs>0)chips.push(bpItemBuffChip('luck','ADS 2× LUCK',adMs));
+  ls.forEach(b=>chips.push(bpItemBuffChip('luck',`LUCK L${b.lv} · +${b.flat||0} FLAT${b.pct?` & +${Math.round(b.pct*100)}%`:''}`,b.endsAt-Date.now())));
+  ss.forEach(b=>chips.push(bpItemBuffChip('speed',`SPEED L${b.lv} · +${(b.add||0).toFixed(1)}×`,b.endsAt-Date.now())));
+  return `<div class="buffstrip" id="bpItemBuffStrip"><span class="bk">BUFF AKTIF</span>${chips.length?chips.join(''):'<span class="bnone">TIDAK ADA BUFF BERJALAN</span>'}</div>`;
+}
+/* Tick per detik ala dock: HANYA textContent badge (tanpa innerHTML berkala = anti flicker/
+   anti scroll loncat). Rebuild strip sekali saja saat semua buff habis -> strip tidak pernah
+   hilang tinggi, pesannya "TIDAK ADA BUFF BERJALAN". Early-return kalau tab lain yang aktif. */
+function bpItemBuffTick(){
+  const strip=document.getElementById('bpItemBuffStrip');if(!strip)return;
+  const nums=strip.querySelectorAll('[data-bpcd]');if(!nums.length)return;
+  let alive=0;
+  nums.forEach(el=>{const rem=+el.getAttribute('data-bpcd')-Date.now();el.textContent=fmtCountdown(rem);if(rem>0)alive++;});
+  if(!alive)strip.innerHTML='<span class="bk">BUFF AKTIF</span><span class="bnone">TIDAK ADA BUFF BERJALAN</span>';
+}
+setInterval(bpItemBuffTick,1000);
 function renderBpItems(){
   const kinds=['luck1','luck2','luck3','speed1','speed2','speed3','r5k','r10k','r25k','r50k','r100k'];
-  const tiles=kinds.map(k=>{const d=bpItemDef(k);return `<div class="bp-itemtile${d.cnt>0?'':' empty'}" onclick="bpItemPop('${k}')"><div class="bp-itemtile-ic"><img src="${d.icon}" alt="${d.name}" onerror="this.parentNode.textContent='${d.emoji}'"></div><span class="bp-itemtile-cnt">×${fmt(d.cnt)}</span></div>`;}).join('');
-  return `<div class="bp-h">ITEM</div><div class="bp-itemgrid">${tiles}</div>`;
+  const groups=BP_ITEM_GROUPS.map(g=>{
+    const ks=kinds.filter(k=>g.test(k)&&bpItemDef(k));
+    if(!ks.length)return '';
+    return `<div class="igroup" style="--bcol:${BP_ITEM_BCOL[g.cls]}"><div class="igroup-h ${g.cls}">${g.label}</div><div class="bp-itemcards">${ks.map(k=>bpItemCardHtml(k)).join('')}</div></div>`;
+  }).join('');
+  return `<div class="bp-itemboard"><div class="btitle">ITEM · POTION &amp; ROLL PACK</div>${bpItemBuffStripHtml()}${groups}</div>`;
 }
 function bpItemPop(kind){
   bpItemPopClose();
