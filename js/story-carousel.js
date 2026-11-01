@@ -1,5 +1,5 @@
 /* ==========================================================================
-   STORY-CAROUSEL.JS — TACTICAL NODE MAP STORY SYSTEM (LOCAL INTEGRATION)
+   STORY-CAROUSEL.JS — PURE TACTICAL NODE MAP SYSTEM (PORTED FROM PROTO)
    ========================================================================== */
 
 (function(){
@@ -29,7 +29,7 @@
   ];
 
   function checkIsPortrait() {
-    const canvasEl = document.getElementById("scMapCanvas");
+    const canvasEl = document.getElementById("mapCanvas");
     if (canvasEl && canvasEl.offsetWidth > 0 && canvasEl.offsetHeight > 0) {
       return canvasEl.offsetHeight > canvasEl.offsetWidth || canvasEl.offsetWidth <= 560;
     }
@@ -37,36 +37,53 @@
   }
 
   function initStoryCarousel() {
+    const btnBack = document.getElementById("scBtnBack");
+    const closeBtn = document.getElementById("smClose");
     const prevBtn = document.getElementById("scPrevChap");
     const nextBtn = document.getElementById("scNextChap");
-    const battleBtn = document.getElementById("scBtnBattle");
-    const mqDeployBtn = document.getElementById("scMqDeployBtn");
-    const closeBtn = document.getElementById("smClose");
+    const chapInfo = document.getElementById("scChapInfo");
+    const btnDeploy = document.getElementById("btnDeploy");
+    const btnMqDeploy = document.getElementById("btnMqDeploy");
     const drawerCloseBtn = document.getElementById("scDrawerClose");
-    const mqExpandBtn = document.getElementById("scMqExpandBtn");
-    const mobileDock = document.getElementById("scMobileDock");
-    const loreBtn = document.getElementById("scBtnLore");
-    const loreCloseBtn = document.getElementById("scLoreClose");
+    const btnToggleDrawer = document.getElementById("btnToggleDrawer");
+    const mqExpandBtn = document.getElementById("btnMqExpand");
+    const mobileDock = document.getElementById("mobileQuickDock");
+    const loreSubBtn = document.getElementById("btnLoreSub");
+    const loreCloseBtn = document.getElementById("btnLoreClose");
 
-    if (prevBtn) prevBtn.onclick = () => { if (window.sfx && sfx.hit) sfx.hit(); changeStoryChapter(-1); };
-    if (nextBtn) nextBtn.onclick = () => { if (window.sfx && sfx.hit) sfx.hit(); changeStoryChapter(1); };
-
-    if (battleBtn) {
-      battleBtn.onclick = () => {
-        launchSelectedBattle();
+    if (btnBack) {
+      btnBack.onclick = () => {
+        if (window.sfx && sfx.hit) sfx.hit();
+        closeStory();
       };
     }
-    if (mqDeployBtn) {
-      mqDeployBtn.onclick = (e) => {
-        e.stopPropagation();
-        launchSelectedBattle();
-      };
-    }
-
     if (closeBtn) {
       closeBtn.onclick = () => {
         if (window.sfx && sfx.hit) sfx.hit();
         closeStory();
+      };
+    }
+
+    if (prevBtn) prevBtn.onclick = () => { if (window.sfx && sfx.hit) sfx.hit(); changeStoryChapter(-1); };
+    if (nextBtn) nextBtn.onclick = () => { if (window.sfx && sfx.hit) sfx.hit(); changeStoryChapter(1); };
+    if (chapInfo) chapInfo.onclick = () => { openLoreModal(); };
+
+    if (btnToggleDrawer) {
+      btnToggleDrawer.onclick = () => {
+        const drawer = document.getElementById("stageBriefingDrawer");
+        if (drawer) drawer.classList.toggle("minimized");
+      };
+    }
+
+    if (btnDeploy) {
+      btnDeploy.onclick = () => {
+        launchSelectedBattle();
+      };
+    }
+    if (btnMqDeploy) {
+      btnMqDeploy.onclick = (e) => {
+        e.stopPropagation();
+        launchSelectedBattle();
       };
     }
 
@@ -88,8 +105,8 @@
       };
     }
 
-    if (loreBtn) {
-      loreBtn.onclick = () => {
+    if (loreSubBtn) {
+      loreSubBtn.onclick = () => {
         openLoreModal();
       };
     }
@@ -108,7 +125,7 @@
         if (e.key === "ArrowLeft") slideStoryStage(-1);
         if (e.key === "ArrowRight") slideStoryStage(1);
         if (e.key === "Escape") {
-          const lore = document.getElementById("scLoreOverlay");
+          const lore = document.getElementById("loreModal");
           if (lore && lore.classList.contains("open")) {
             closeLoreModal();
           } else {
@@ -131,7 +148,7 @@
     }
 
     // Attach ResizeObserver to canvas if available
-    const canvasEl = document.getElementById("scMapCanvas");
+    const canvasEl = document.getElementById("mapCanvas");
     if (canvasEl && window.ResizeObserver && !canvasResizeObserver) {
       canvasResizeObserver = new ResizeObserver(() => {
         const modal = document.getElementById("storyModal");
@@ -182,7 +199,6 @@
 
       buildStoryChapterDOM();
 
-      // Trigger crisp layout pass once modal display is active
       requestAnimationFrame(() => {
         renderTacticalNodes();
         updateStoryDrawer();
@@ -219,7 +235,6 @@
     state.chap = nextChapNo;
     save();
 
-    // Reset to first uncleared stage in new chapter
     const cdh = diffProg()[state.diff];
     let foundStage = 0;
     for (let i = 0; i < nextChap.levels.length; i++) {
@@ -242,10 +257,10 @@
     const currentChapNo = ch.no;
 
     // Header Title
-    const chapTitleEl = document.getElementById("scChapTitle");
-    if (chapTitleEl) {
-      chapTitleEl.textContent = `BAB 0${ch.no} · ${ch.zone}`;
-    }
+    const badgeEl = document.getElementById("chapBadgeNo");
+    const nameEl = document.getElementById("chapTitleName");
+    if (badgeEl) badgeEl.textContent = `BAB 0${ch.no}`;
+    if (nameEl) nameEl.textContent = ch.zone;
 
     // Prev / Next Chapter Buttons
     const prevBtn = document.getElementById("scPrevChap");
@@ -255,17 +270,15 @@
 
     // Render Difficulty Pills
     const diffGroup = document.getElementById("scDiffGroup");
-    const diffBadge = document.getElementById("scDiffBadge");
-    if (diffBadge) diffBadge.textContent = state.diff.toUpperCase();
-
     if (diffGroup && typeof DIFFS !== "undefined" && DIFFS) {
       diffGroup.innerHTML = DIFFS.map(d => {
         const unl = cellUnlocked(ch, d.k);
         const on = d.k === state.diff;
-        return `<button class="btn-sc-diff${on ? ' active' : ''}${unl ? '' : ' locked'}" data-d="${d.k}" ${unl ? '' : 'disabled'}>${d.l}</button>`;
+        const diffClass = d.k === 'hard' ? 'active-hrd' : d.k === 'nightmare' ? 'active-ngt' : 'active-nor';
+        return `<button class="diff-btn${on ? ' ' + diffClass : ''}" data-d="${d.k}" ${unl ? '' : 'disabled'}>${d.l.substring(0, 3).toUpperCase()}</button>`;
       }).join("");
 
-      diffGroup.querySelectorAll(".btn-sc-diff").forEach(b => {
+      diffGroup.querySelectorAll(".diff-btn").forEach(b => {
         b.onclick = () => {
           const k = b.dataset.d;
           if (!cellUnlocked(ch, k)) {
@@ -291,8 +304,8 @@
     const totalCount = ch.levels.length;
     const pct = Math.round((clearedCount / totalCount) * 100);
 
-    const progTxt = document.getElementById("scChapProgressTxt");
-    const progFill = document.getElementById("scChapProgressFill");
+    const progTxt = document.getElementById("subProgText");
+    const progFill = document.getElementById("subProgFill");
     if (progTxt) progTxt.textContent = `${clearedCount} / ${totalCount} SELESAI (${pct}%)`;
     if (progFill) progFill.style.width = `${pct}%`;
 
@@ -308,9 +321,9 @@
     const cdh = diffProg()[state.diff];
     const cellOpen = cellUnlocked(ch, state.diff);
 
-    const canvasEl = document.getElementById("scMapCanvas");
-    const container = document.getElementById("scMapNodes");
-    const svg = document.getElementById("scMapSvg");
+    const canvasEl = document.getElementById("mapCanvas");
+    const container = document.getElementById("mapNodesContainer");
+    const svg = document.getElementById("mapSvg");
     if (!canvasEl || !container || !svg) return;
 
     container.innerHTML = "";
@@ -322,7 +335,6 @@
     svg.setAttribute("viewBox", "0 0 1000 1000");
     svg.setAttribute("preserveAspectRatio", "none");
 
-    // Build SVG Connecting Paths mathematically mapped to node percentage coordinates
     const p0 = { x: coords[0].xPct * 10, y: coords[0].yPct * 10 };
     let pathBaseD = `M ${p0.x} ${p0.y}`;
     let pathClearedD = `M ${p0.x} ${p0.y}`;
@@ -348,13 +360,13 @@
 
     svg.innerHTML = `
       <defs>
-        <linearGradient id="scCyanGlowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <linearGradient id="cyanGlowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stop-color="#38bdf8" />
           <stop offset="100%" stop-color="#818cf8" />
         </linearGradient>
       </defs>
-      <path class="sc-path-base" d="${pathBaseD}" />
-      <path class="sc-path-cleared" d="${pathClearedD}" />
+      <path class="path-base" d="${pathBaseD}" />
+      <path class="path-cleared" d="${pathClearedD}" />
     `;
 
     // Spawn 6 Nodes
@@ -368,34 +380,33 @@
       const c = coords[i];
 
       const nodeEl = document.createElement("div");
-      nodeEl.className = `sc-node ${isBoss ? 'is-boss' : ''} ${isSelected ? 'active' : ''} ${isCleared ? 'cleared' : ''} ${isUnlocked ? '' : 'locked'}`;
-      nodeEl.id = `sc-node-${i}`;
-      // Sub-pixel percentage positioning: exactly coincident with SVG path points
+      nodeEl.className = `map-node ${isBoss ? 'boss-node' : ''} ${isSelected ? 'active-node' : ''} ${isCleared ? 'cleared' : ''} ${isUnlocked ? '' : 'locked'}`;
+      nodeEl.id = `map-node-${i}`;
       nodeEl.style.left = `${c.xPct}%`;
       nodeEl.style.top = `${c.yPct}%`;
 
       let statusBadgeHtml = "";
       if (isBoss) {
-        statusBadgeHtml = `<span class="sc-node-tag boss"><span class="ic ic-xs i-dragon"></span> BOSS</span>`;
+        statusBadgeHtml = `<div class="boss-threat-pill"><span class="ic ic-xs i-dragon"></span> BOSS</div>`;
       } else if (isCleared) {
-        statusBadgeHtml = `<span class="sc-node-tag cleared"><span class="ic ic-xs i-check"></span> SELESAI</span>`;
+        statusBadgeHtml = `<span class="node-tag-sub cleared"><span class="ic ic-xs i-check"></span> SELESAI</span>`;
       } else if (isUnlocked) {
-        statusBadgeHtml = `<span class="sc-node-tag ready">SIAP</span>`;
+        statusBadgeHtml = `<span class="node-tag-sub ready">SIAP</span>`;
       } else {
-        statusBadgeHtml = `<span class="sc-node-tag locked"><span class="ic ic-xs i-lock"></span> KUNCI</span>`;
+        statusBadgeHtml = `<span class="node-tag-sub locked"><span class="ic ic-xs i-lock"></span> KUNCI</span>`;
       }
 
       nodeEl.innerHTML = `
-        <div class="sc-node-orb">
-          <div class="sc-node-ring"></div>
-          <div class="sc-node-avatar">
-            <img class="sc-node-img" src="${en.img}" alt="${en.name}" loading="lazy" onerror="this.src='assets/cards/art/solar-brawler.webp'">
-            ${!isUnlocked ? `<div class="sc-node-lock-mask"><span class="ic ic-sm i-lock"></span></div>` : ''}
+        <div class="node-orb-container">
+          <div class="node-outer-ring"></div>
+          <div class="node-avatar-frame">
+            <img class="node-img" src="${en.img}" alt="${en.name}" loading="lazy" onerror="this.src='assets/cards/art/solar-brawler.webp'">
+            ${!isUnlocked ? `<div class="node-lock-mask"><span class="ic ic-sm i-lock"></span></div>` : ''}
           </div>
-          <div class="sc-node-num">0${i + 1}</div>
+          <div class="node-stage-num-tag">0${i + 1}</div>
         </div>
-        <div class="sc-node-meta">
-          <div class="sc-node-name">${isUnlocked ? en.name : 'ENCRYPTED'}</div>
+        <div class="node-label-box">
+          <div class="node-enemy-title">${isUnlocked ? en.name : 'ENCRYPTED'}</div>
           ${statusBadgeHtml}
         </div>
       `;
@@ -420,20 +431,19 @@
     const reqPower = gateOf(lv);
     const playerPower = totalPower();
 
-    // Stage Number & Enemy Name
-    const stageNumEl = document.getElementById("scDockStageNum");
-    const enemyNameEl = document.getElementById("scDockEnemyName");
-    const targetTitleEl = document.getElementById("scDockTargetTitle");
-    const enemyImgEl = document.getElementById("scDockEnemyImg");
+    const stageCodeEl = document.getElementById("dwStageCode");
+    const stageNameEl = document.getElementById("dwStageName");
+    const enemyImgEl = document.getElementById("dwEnemyImg");
+    const enemyNameEl = document.getElementById("dwEnemyName");
 
-    if (stageNumEl) {
-      stageNumEl.textContent = `STAGE 0${currentStageIdx + 1} // ${en.boss ? 'BOSS THREAT' : 'SECTOR COMBAT'}`;
+    if (stageCodeEl) {
+      stageCodeEl.textContent = `STAGE 0${currentStageIdx + 1} // ${en.boss ? 'BOSS GATE' : 'SECTOR COMBAT'}`;
+    }
+    if (stageNameEl) {
+      stageNameEl.textContent = isUnlocked ? en.name : "ENCRYPTED TARGET";
     }
     if (enemyNameEl) {
-      enemyNameEl.textContent = isUnlocked ? en.name : "ENCRYPTED TARGET";
-    }
-    if (targetTitleEl) {
-      targetTitleEl.textContent = isUnlocked ? en.name : "LOCKED INTEL";
+      enemyNameEl.textContent = isUnlocked ? en.name : "ENCRYPTED";
     }
     if (enemyImgEl) {
       enemyImgEl.src = en.img;
@@ -442,119 +452,113 @@
 
     // Card Reference & Tier / Type
     const cardRef = typeof CARDS !== "undefined" && CARDS ? CARDS.find(c => c.name === en.name || c.id === en.id) : null;
-    const tierEl = document.getElementById("scDockTier");
-    const typeEl = document.getElementById("scDockType");
-    const statusPillEl = document.getElementById("scDockStatusPill");
+    const tierEl = document.getElementById("dwTierBadge");
+    const typeEl = document.getElementById("dwTypeBadge");
 
     const tierVal = cardRef ? cardRef.tier : (en.boss ? "UR" : "R");
     const typeVal = cardRef ? cardRef.type : "OFFENSIVE";
 
     if (tierEl) tierEl.textContent = tierVal;
-    if (typeEl) typeEl.textContent = typeVal.toUpperCase();
-
-    if (statusPillEl) {
-      if (isCleared) {
-        statusPillEl.className = "sc-status-pill cleared";
-        statusPillEl.textContent = "✓ CLEARED";
-      } else if (isUnlocked) {
-        statusPillEl.className = "sc-status-pill ready";
-        statusPillEl.textContent = "SIAP TEMPUR";
-      } else {
-        statusPillEl.className = "sc-status-pill locked";
-        statusPillEl.textContent = "🔒 TERKUNCI";
-      }
+    if (typeEl) {
+      typeEl.innerHTML = `<span class="ic ic-xs ${en.boss ? 'i-dragon' : 'i-swords'}"></span> ${typeVal.toUpperCase()}`;
     }
 
     // HP & ATK Stats
-    const hpEl = document.getElementById("scDockHp");
-    const atkEl = document.getElementById("scDockAtk");
+    const hpEl = document.getElementById("dwEnemyHp");
+    const atkEl = document.getElementById("dwEnemyAtk");
     if (hpEl) hpEl.textContent = isUnlocked ? (en.hp || 0).toLocaleString() : "???";
     if (atkEl) atkEl.textContent = isUnlocked ? (en.atk || 0).toLocaleString() : "???";
 
     // Signature Skill Info
-    const skillTitleEl = document.getElementById("scDockSkillTitle");
-    const skillDescEl = document.getElementById("scDockSkillDesc");
+    const skillTitleEl = document.getElementById("dwAbilityTitle");
+    const skillDescEl = document.getElementById("dwAbilityDesc");
     if (skillTitleEl) {
-      skillTitleEl.textContent = isUnlocked ? (cardRef ? (cardRef.skill || "SIGNATURE SKILL") : (en.boss ? "ANCIENT BOSS WILL" : "COMBAT DRILL")) : "ENCRYPTED SKILL";
+      skillTitleEl.textContent = isUnlocked ? (cardRef ? `SIGNATURE: ${cardRef.skill || "SKILL"}` : (en.boss ? "SIGNATURE: ANCIENT BOSS WILL" : "COMBAT DRILL")) : "SIGNATURE: ENCRYPTED";
     }
     if (skillDescEl) {
       skillDescEl.textContent = isUnlocked ? (cardRef ? (cardRef.desc || "Tidak ada data pasif khusus.") : (en.boss ? "Musuh tingkat tinggi dengan pertahanan kuat." : "Unit patroli garda depan.")) : "Intel jurus musuh belum terbuka. Kalahkan stage sebelumnya untuk membongkar taktik lawan.";
     }
 
     // Combat Readiness Gauge
-    const readinessFill = document.getElementById("scDockBarFill");
-    const powerStatusEl = document.getElementById("scDockPowerStatus");
-    const gateValEl = document.getElementById("scDockGateVal");
+    const readinessFill = document.getElementById("dwPowerBar");
+    const powerDiffBadge = document.getElementById("dwPowerDiffBadge");
+    const reqPowerEl = document.getElementById("dwReqPower");
+    const playerPowerEl = document.getElementById("dwPlayerPower");
 
     const powerRatio = reqPower > 0 ? Math.min(100, Math.round((playerPower / reqPower) * 100)) : 100;
     const isReady = playerPower >= reqPower;
 
     if (readinessFill) readinessFill.style.width = `${powerRatio}%`;
-    if (powerStatusEl) {
-      powerStatusEl.textContent = isReady ? "SIAP TEMPUR" : "BAHAYA (UNDERPOWER)";
-      powerStatusEl.className = `sc-rd-status ${isReady ? 'ready' : 'danger'}`;
+    if (powerDiffBadge) {
+      if (isReady) {
+        const diffPct = reqPower > 0 ? Math.round(((playerPower - reqPower) / reqPower) * 100) : 100;
+        powerDiffBadge.textContent = `UNGGUL +${diffPct}%`;
+        powerDiffBadge.className = "readiness-status-badge ready";
+      } else {
+        const diffPct = reqPower > 0 ? Math.round(((playerPower - reqPower) / reqPower) * 100) : -100;
+        powerDiffBadge.textContent = `BAHAYA ${diffPct}%`;
+        powerDiffBadge.className = "readiness-status-badge danger";
+      }
     }
-    if (gateValEl) {
-      gateValEl.textContent = `DECK ${playerPower.toLocaleString()} / REQ ${reqPower.toLocaleString()}`;
-    }
+    if (reqPowerEl) reqPowerEl.textContent = reqPower.toLocaleString();
+    if (playerPowerEl) playerPowerEl.textContent = playerPower.toLocaleString();
 
     // Real Game Rewards
-    const rewardValEl = document.getElementById("scDockRewardVal");
-    const rewardGemEl = document.getElementById("scDockRewardGem");
-    const rwLblEl = document.getElementById("scDockRwLbl");
-    const cdEl = document.getElementById("scDockCd");
-
     const coinReward = typeof firstClearReward === "function" ? firstClearReward(lv) : (en.boss ? 50000 : 10000);
     const gemReward = typeof storyGemPreview === "function" ? storyGemPreview(lv) : 0;
     const cdLeft = first ? 0 : (typeof storyCdLeft === "function" ? storyCdLeft(lv) : 0);
 
-    if (rewardValEl) rewardValEl.textContent = `◎ ${coinReward.toLocaleString()}`;
-    if (rewardGemEl) {
-      rewardGemEl.textContent = `+${gemReward} Gems`;
-      rewardGemEl.parentElement.style.display = gemReward > 0 ? "flex" : "none";
-    }
+    const rewardCoinEl = document.getElementById("dwRewardCoin");
+    const rewardGemEl = document.getElementById("dwRewardGem");
+    const gemBox = document.getElementById("dwGemBox");
+    const rwLblEl = document.getElementById("dwRwLbl");
+    const cdBadge = document.getElementById("dwCdBadge");
+
+    if (rewardCoinEl) rewardCoinEl.textContent = `+${coinReward.toLocaleString()} COINS`;
+    if (rewardGemEl) rewardGemEl.textContent = `+${gemReward} GEMS`;
+    if (gemBox) gemBox.style.display = gemReward > 0 ? "flex" : "none";
     if (rwLblEl) rwLblEl.textContent = first ? "FIRST CLEAR REWARD" : "REPEAT REWARD";
 
-    if (cdEl) {
+    if (cdBadge) {
       if (!first && cdLeft > 0) {
-        cdEl.style.display = "inline-flex";
-        cdEl.textContent = typeof storyCdText === "function" ? storyCdText(cdLeft) : `CD: ${cdLeft}s`;
+        cdBadge.style.display = "block";
+        cdBadge.textContent = typeof storyCdText === "function" ? storyCdText(cdLeft) : `CD: ${cdLeft}s`;
       } else {
-        cdEl.style.display = "none";
+        cdBadge.style.display = "none";
       }
     }
 
-    // Launch Battle Button
-    const battleBtn = document.getElementById("scBtnBattle");
-    if (battleBtn) {
-      battleBtn.dataset.cdRepeat = (isUnlocked && !first && cdLeft > 0) ? "1" : "";
+    // Deploy CTA Button
+    const deployBtn = document.getElementById("btnDeploy");
+    if (deployBtn) {
+      deployBtn.dataset.cdRepeat = (isUnlocked && !first && cdLeft > 0) ? "1" : "";
       if (!isUnlocked) {
-        battleBtn.disabled = true;
-        battleBtn.className = "sc-btn-battle-launch";
-        battleBtn.innerHTML = `<span class="ic ic-sm i-lock"></span> TERKUNCI`;
+        deployBtn.disabled = true;
+        deployBtn.className = "btn-launch-battle";
+        deployBtn.innerHTML = `<span class="ic ic-sm i-lock"></span> TERKUNCI`;
       } else if (!first && cdLeft > 0) {
-        battleBtn.disabled = true;
-        battleBtn.className = "sc-btn-battle-launch";
-        battleBtn.innerHTML = `<span class="ic ic-sm i-bolt"></span> ${typeof storyCdText === "function" ? storyCdText(cdLeft) : "COOLDOWN"}`;
+        deployBtn.disabled = true;
+        deployBtn.className = "btn-launch-battle";
+        deployBtn.innerHTML = `<span class="ic ic-sm i-bolt"></span> ${typeof storyCdText === "function" ? storyCdText(cdLeft) : "COOLDOWN"}`;
       } else {
-        battleBtn.disabled = false;
-        battleBtn.className = en.boss ? "sc-btn-battle-launch boss" : "sc-btn-battle-launch";
-        battleBtn.innerHTML = `<span class="ic ic-sm ${en.boss ? 'i-dragon' : 'i-swords'}"></span> ${en.boss ? 'DEPLOY BOSS RAID' : 'MULAI BATTLE'}`;
+        deployBtn.disabled = false;
+        deployBtn.className = en.boss ? "btn-launch-battle boss-deploy" : "btn-launch-battle";
+        deployBtn.innerHTML = `<span class="ic ic-sm ${en.boss ? 'i-dragon' : 'i-swords'}"></span> ${en.boss ? 'DEPLOY BOSS RAID' : 'MASUK PERTEMPURAN'}`;
       }
     }
 
     // Mobile Quick Dock
-    const mqImg = document.getElementById("scMqImg");
-    const mqCode = document.getElementById("scMqCode");
-    const mqName = document.getElementById("scMqName");
-    const mqDeploy = document.getElementById("scMqDeployBtn");
+    const mqImg = document.getElementById("mqEnemyImg");
+    const mqCode = document.getElementById("mqStageCode");
+    const mqName = document.getElementById("mqEnemyName");
+    const btnMqDeploy = document.getElementById("btnMqDeploy");
 
     if (mqImg) mqImg.src = en.img;
     if (mqCode) mqCode.textContent = `STAGE 0${currentStageIdx + 1}`;
     if (mqName) mqName.textContent = isUnlocked ? en.name : "TERKUNCI";
-    if (mqDeploy) {
-      mqDeploy.disabled = !isUnlocked || (!first && cdLeft > 0);
-      mqDeploy.innerHTML = `<span class="ic ic-xs i-swords"></span> ${isUnlocked ? 'BATTLE' : 'KUNCI'}`;
+    if (btnMqDeploy) {
+      btnMqDeploy.disabled = !isUnlocked || (!first && cdLeft > 0);
+      btnMqDeploy.innerHTML = `<span class="ic ic-xs i-swords"></span> ${isUnlocked ? 'BATTLE' : 'KUNCI'}`;
     }
   }
 
@@ -566,8 +570,8 @@
     // Update active class on nodes
     const ch = activeChap();
     ch.levels.forEach((_, i) => {
-      const nodeEl = document.getElementById(`sc-node-${i}`);
-      if (nodeEl) nodeEl.classList.toggle("active", i === currentStageIdx);
+      const nodeEl = document.getElementById(`map-node-${i}`);
+      if (nodeEl) nodeEl.classList.toggle("active-node", i === currentStageIdx);
     });
 
     updateStoryDrawer();
@@ -582,29 +586,23 @@
 
   function openBottomSheet() {
     if (window.sfx && sfx.hit) sfx.hit();
-    const drawer = document.getElementById("scBriefingDrawer");
-    if (drawer) {
-      drawer.classList.add("expanded");
-      drawer.classList.add("open");
-    }
+    const drawer = document.getElementById("stageBriefingDrawer");
+    if (drawer) drawer.classList.add("expanded-sheet");
   }
 
   function closeDrawerOrSheet() {
-    const drawer = document.getElementById("scBriefingDrawer");
-    if (drawer) {
-      drawer.classList.remove("expanded");
-      drawer.classList.remove("open");
-    }
+    const drawer = document.getElementById("stageBriefingDrawer");
+    if (drawer) drawer.classList.remove("expanded-sheet");
   }
 
   function openLoreModal() {
     if (window.sfx && sfx.hit) sfx.hit();
     const ch = activeChap();
-    const overlay = document.getElementById("scLoreOverlay");
-    const title = document.getElementById("scLoreTitle");
-    const content = document.getElementById("scLoreContent");
+    const overlay = document.getElementById("loreModal");
+    const title = document.getElementById("loreModalTitle");
+    const content = document.getElementById("loreModalBody");
 
-    if (title) title.textContent = `ARSIP CERITA: BAB 0${ch.no} · ${ch.zone}`;
+    if (title) title.innerHTML = `<span class="ic ic-md i-scroll"></span> DOSSIER ARSIP: BAB 0${ch.no} · ${ch.zone}`;
     if (content) {
       if (Array.isArray(ch.lore) && ch.lore.length) {
         content.innerHTML = ch.lore.map(p => `<p>${p}</p>`).join("");
@@ -616,7 +614,7 @@
   }
 
   function closeLoreModal() {
-    const overlay = document.getElementById("scLoreOverlay");
+    const overlay = document.getElementById("loreModal");
     if (overlay) overlay.classList.remove("open");
   }
 
@@ -648,7 +646,13 @@
 
     if (window.sfx && sfx.hit) sfx.hit();
     closeStory();
-    startStoryBattle(lv);
+
+    // Call real game battle launch
+    if (typeof startStoryBattle === "function") {
+      startStoryBattle(lv);
+    } else if (typeof battleStage === "function") {
+      battleStage(lv);
+    }
   }
 
   // Export to global scope
@@ -660,4 +664,7 @@
   window.slideStoryStage = slideStoryStage;
   window.changeStoryChapter = changeStoryChapter;
   window.initStoryCarousel = initStoryCarousel;
+  window.battleStage = (lv) => {
+    if (typeof startStoryBattle === "function") startStoryBattle(lv);
+  };
 })();

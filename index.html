@@ -19,7 +19,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Rajdhani:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/world-boss.css?v=v274-touch44">
 <link rel="stylesheet" href="css/sl-system.css?v=v295-bpHdr">
-<link rel="stylesheet" href="css/story-carousel.css?v=v315-storyPrecisionSync">
+<link rel="stylesheet" href="css/story-carousel.css?v=v316-pureNodeMapPort">
 <link rel="stylesheet" href="css/lobby-prototype.css?v=v310-noTreeBoardPlate">
 <link rel="stylesheet" href="css/mobile-shell.css?v=v315-storyPrecisionSync">
 <script>
@@ -585,175 +585,194 @@
   <div class="dl-foot" id="dlFoot"></div>
 </div></div>
 
-<div id="storyModal">
-  <div class="sc-window">
-    <div class="sc-ambient-grid"></div>
+<div id="storyModal" class="story-viewport">
+  <div class="cyber-grid"></div>
 
-    <!-- Header & Bab Navigation -->
-    <div class="sc-head">
-      <div class="sc-chap-nav">
-        <button class="btn-sc-nav" id="scPrevChap" type="button" aria-label="Bab Sebelumnya">❮</button>
-        <div class="sc-chap-title-box" id="scChapTitleBox">
-          <span class="sc-chap-eyebrow">STORY ARCHIVE</span>
-          <div class="sc-chap-title" id="scChapTitle">BAB 01 · DESA LEMBAH NINJA</div>
+  <!-- COMPACT HEADER -->
+  <header class="story-header">
+    <div class="hdr-left">
+      <button class="btn-back" id="scBtnBack" type="button">
+        <span class="ic ic-sm i-swords"></span> LOBBY
+      </button>
+      
+      <!-- Chapter Selector -->
+      <div class="chap-selector-pill">
+        <button class="chap-nav-btn" id="scPrevChap" type="button">‹</button>
+        <div class="chap-text-info" id="scChapInfo">
+          <span class="chap-badge-no" id="chapBadgeNo">BAB 01</span>
+          <span class="chap-title-name" id="chapTitleName">DESA LEMBAH NINJA</span>
         </div>
-        <button class="btn-sc-nav" id="scNextChap" type="button" aria-label="Bab Berikutnya">❯</button>
-      </div>
-
-      <div class="sc-head-right">
-        <div class="sc-diff-group" id="scDiffGroup">
-          <!-- Dynamic difficulty buttons -->
-        </div>
-        <button class="sc-btn-lore" id="scBtnLore" type="button" title="Arsip Cerita">
-          <span class="ic ic-sm i-scroll"></span> LORE
-        </button>
-        <button class="sc-close-btn" id="smClose" type="button" aria-label="Tutup">
-          <span class="ic ic-sm i-cancel"></span>
-        </button>
+        <button class="chap-nav-btn" id="scNextChap" type="button">›</button>
       </div>
     </div>
 
-    <!-- Sub-header Progress Bar (Dedicated, Non-Colliding) -->
-    <div class="sc-sub-bar">
-      <div class="sc-sub-progress">
-        <span class="sc-sub-lbl">PROGRES BAB: <b id="scChapProgressTxt">0 / 6 SELESAI (0%)</b></span>
-        <div class="sc-sub-track">
-          <div class="sc-sub-fill" id="scChapProgressFill" style="width: 0%;"></div>
-        </div>
-      </div>
-      <div class="sc-sub-meta">
-        <span class="sc-diff-badge" id="scDiffBadge">NORMAL</span>
+    <div class="hdr-right">
+      <!-- Difficulty Bar -->
+      <div class="diff-toggle-bar" id="scDiffGroup"></div>
+
+      <!-- Toggle Drawer in Landscape/Desktop -->
+      <button class="btn-intel-toggle" id="btnToggleDrawer" type="button">
+        <span class="ic ic-xs i-scroll"></span> INTEL
+      </button>
+
+      <button class="drawer-close-btn" id="smClose" type="button" aria-label="Tutup">
+        <span class="ic ic-sm i-cancel"></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- SUB-HEADER: DEDICATED PROGRESSION STRIP -->
+  <div class="story-sub-bar">
+    <div class="sub-bar-progress">
+      <span class="sub-prog-label">
+        <span>PROGRES BAB:</span>
+        <b id="subProgText">0 / 6 SELESAI (0%)</b>
+      </span>
+      <div class="sub-prog-track">
+        <div class="sub-prog-fill" id="subProgFill" style="width: 0%;"></div>
       </div>
     </div>
 
-    <!-- Main Stage: Tactical Node Map & Side Briefing Drawer -->
-    <div class="sc-main-stage">
-      <!-- Tactical Node Map Viewport -->
-      <div class="sc-map-viewport" id="scMapViewport">
-        <div class="sc-map-canvas" id="scMapCanvas">
-          <svg class="sc-map-svg" id="scMapSvg">
+    <div class="sub-bar-actions">
+      <button class="btn-sub-chest" id="btnLoreSub" style="background:rgba(56,189,248,0.1); border-color:rgba(56,189,248,0.3); color:var(--neon-cyan)" type="button">
+        <span class="ic ic-xs i-scroll"></span> LORE
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN STAGE AREA -->
+  <main class="story-main">
+    <div class="stage-canvas-area" id="stageCanvasArea">
+      <!-- TACTICAL NODE MAP -->
+      <div class="tactical-node-map" id="tacticalMapContainer">
+        <div class="map-inner-canvas" id="mapCanvas">
+          <svg class="map-svg-connections" id="mapSvg" viewBox="0 0 1000 1000" preserveAspectRatio="none">
             <defs>
-              <linearGradient id="scCyanGlowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <linearGradient id="cyanGlowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stop-color="#38bdf8" />
                 <stop offset="100%" stop-color="#818cf8" />
               </linearGradient>
             </defs>
           </svg>
-          <div class="sc-map-nodes" id="scMapNodes"></div>
-        </div>
-      </div>
-
-      <!-- Stage Briefing Drawer / Side Panel -->
-      <aside class="sc-briefing-drawer" id="scBriefingDrawer">
-        <div class="sc-drawer-head">
-          <div class="sc-drawer-title-group">
-            <span class="sc-drawer-badge" id="scDockStageNum">STAGE 01 // REGULAR STAGE</span>
-            <div class="sc-drawer-name" id="scDockEnemyName">STAGE TARGET</div>
-          </div>
-          <button class="sc-drawer-close" id="scDrawerClose" type="button" aria-label="Tutup Panel">
-            <span class="ic ic-sm i-cancel"></span>
-          </button>
-        </div>
-
-        <div class="sc-drawer-body">
-          <!-- Target Profile Card -->
-          <div class="sc-target-card">
-            <div class="sc-target-art-frame">
-              <img id="scDockEnemyImg" src="assets/cards/art/green-beast.webp" alt="Enemy Art" onerror="this.src='assets/cards/art/green-beast.webp'">
-            </div>
-            <div class="sc-target-info">
-              <div class="sc-target-tags">
-                <span class="sc-tier-pill" id="scDockTier">R</span>
-                <span class="sc-type-pill" id="scDockType">OFFENSIVE</span>
-                <span class="sc-status-pill" id="scDockStatusPill">SIAP TEMPUR</span>
-              </div>
-              <div class="sc-target-title" id="scDockTargetTitle">GREEN BEAST</div>
-              <div class="sc-target-stats">
-                <span>HP: <b id="scDockHp">0</b></span>
-                <span>ATK: <b id="scDockAtk">0</b></span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Target Ability Info -->
-          <div class="sc-ability-box">
-            <div class="sc-ability-head">
-              <span class="ic ic-xs i-bolt"></span>
-              <span id="scDockSkillTitle">SIGNATURE SKILL</span>
-            </div>
-            <p class="sc-ability-desc" id="scDockSkillDesc">Deskripsi jurus lawan.</p>
-          </div>
-
-          <!-- Power Readiness Gauge -->
-          <div class="sc-readiness-box" id="scDockReadiness">
-            <div class="sc-readiness-head">
-              <span class="sc-rd-lbl">DAYA TEMPUR DECK</span>
-              <span class="sc-rd-status" id="scDockPowerStatus">SIAP TEMPUR</span>
-            </div>
-            <div class="sc-readiness-meter">
-              <div class="sc-rd-track">
-                <div class="sc-rd-fill" id="scDockBarFill" style="width: 100%;"></div>
-              </div>
-              <div class="sc-rd-val" id="scDockGateVal">1,000</div>
-            </div>
-          </div>
-
-          <!-- Real Game Rewards -->
-          <div class="sc-rewards-section">
-            <span class="sc-sec-sub">HADIAH PERTEMPURAN</span>
-            <div class="sc-reward-chips">
-              <div class="sc-rw-chip gold">
-                <span class="ic ic-xs i-coins"></span>
-                <span id="scDockRewardVal">◎ 1,000</span>
-              </div>
-              <div class="sc-rw-chip gem">
-                <span class="ic ic-xs i-gem"></span>
-                <span id="scDockRewardGem">+0 Gems</span>
-              </div>
-            </div>
-            <span class="sc-rw-type-lbl" id="scDockRwLbl">FIRST CLEAR REWARD</span>
-            <div class="sc-cd-badge" id="scDockCd" style="display:none;"></div>
-          </div>
-        </div>
-
-        <!-- Drawer Footer / Launch Button -->
-        <div class="sc-drawer-foot">
-          <button class="sc-btn-battle-launch" id="scBtnBattle" type="button">
-            <span class="ic ic-sm i-swords"></span> MULAI BATTLE
-          </button>
-        </div>
-      </aside>
-
-      <!-- Mobile Quick Dock (Floating Bottom Pill, Collapsed by Default on Mobile) -->
-      <div class="sc-mobile-dock" id="scMobileDock">
-        <div class="sc-mq-left">
-          <div class="sc-mq-avatar">
-            <img id="scMqImg" src="assets/cards/art/green-beast.webp" alt="Target" onerror="this.src='assets/cards/art/green-beast.webp'">
-          </div>
-          <div class="sc-mq-meta">
-            <span class="sc-mq-code" id="scMqCode">STAGE 01</span>
-            <span class="sc-mq-name" id="scMqName">TARGET</span>
-          </div>
-        </div>
-        <div class="sc-mq-right">
-          <button class="sc-mq-deploy" id="scMqDeployBtn" type="button">
-            <span class="ic ic-xs i-swords"></span> BATTLE
-          </button>
-          <button class="sc-mq-expand" id="scMqExpandBtn" type="button" aria-label="Buka Detail">▲</button>
+          <div id="mapNodesContainer"></div>
         </div>
       </div>
     </div>
 
-    <!-- Lore Dossier Modal Overlay -->
-    <div class="sc-lore-overlay" id="scLoreOverlay">
-      <div class="sc-lore-card">
-        <div class="sc-lore-head">
-          <span class="ic ic-sm i-scroll"></span>
-          <span id="scLoreTitle">ARSIP CERITA</span>
+    <!-- RIGHT BRIEFING DRAWER -->
+    <aside class="stage-briefing-drawer" id="stageBriefingDrawer">
+      <div class="drawer-header">
+        <div class="drawer-title-group">
+          <span class="drawer-stage-badge" id="dwStageCode">STAGE 01 // SECTOR COMBAT</span>
+          <h2 class="drawer-stage-name" id="dwStageName">STAGE TARGET</h2>
         </div>
-        <div class="sc-lore-content" id="scLoreContent"></div>
-        <button class="sc-lore-close" id="scLoreClose" type="button">TUTUP ARSIP</button>
+        <button class="drawer-close-btn" id="scDrawerClose" type="button">
+          <span class="ic ic-sm i-cancel"></span>
+        </button>
       </div>
+
+      <div class="drawer-body">
+        <!-- Target Card -->
+        <div class="target-profile-card">
+          <div class="target-art-frame">
+            <img class="target-art-img" id="dwEnemyImg" src="assets/cards/art/green-beast.webp" alt="Target" onerror="this.src='assets/cards/art/solar-brawler.webp'">
+          </div>
+          <div class="target-details">
+            <div class="target-tags-row">
+              <span class="strip-tier" id="dwTierBadge">R</span>
+              <span class="strip-status-pill" id="dwTypeBadge">
+                <span class="ic ic-xs i-swords"></span> OFFENSIVE
+              </span>
+            </div>
+            <h3 class="target-name" id="dwEnemyName">GREEN BEAST</h3>
+            <div class="target-stat-pills">
+              <span class="target-stat-item">HP: <b id="dwEnemyHp">0</b></span>
+              <span class="target-stat-item">ATK: <b id="dwEnemyAtk">0</b></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Target Ability -->
+        <div class="target-ability-box">
+          <div class="ability-title-row">
+            <span class="ic ic-xs i-bolt"></span>
+            <span id="dwAbilityTitle">SIGNATURE SKILL</span>
+          </div>
+          <p class="ability-desc" id="dwAbilityDesc">
+            Deskripsi jurus lawan.
+          </p>
+        </div>
+
+        <!-- Readiness Gauge -->
+        <div class="readiness-box">
+          <div class="readiness-header">
+            <span class="readiness-lbl">DAYA TEMPUR</span>
+            <span class="readiness-status-badge" id="dwPowerDiffBadge">SIAP TEMPUR</span>
+          </div>
+          <div class="readiness-meter">
+            <div class="rd-bar-track">
+              <div class="rd-bar-fill" id="dwPowerBar" style="width: 100%;"></div>
+            </div>
+            <div class="rd-numbers">
+              REQ <b id="dwReqPower">0</b> / KAMU <b id="dwPlayerPower">0</b>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rewards -->
+        <div class="rewards-box">
+          <span class="sec-sub-title">HADIAH PERTEMPURAN</span>
+          <div class="reward-chips-row">
+            <div class="reward-chip gem" id="dwGemBox">
+              <span class="ic ic-xs i-gem"></span>
+              <span id="dwRewardGem">+0 GEMS</span>
+            </div>
+            <div class="reward-chip coin">
+              <span class="ic ic-xs i-coins"></span>
+              <span id="dwRewardCoin">+0 COINS</span>
+            </div>
+          </div>
+          <span class="sec-sub-title" id="dwRwLbl" style="font-size:8px;margin-top:2px;color:var(--text-faint)">FIRST CLEAR REWARD</span>
+          <div id="dwCdBadge" style="display:none;font-family:var(--font-mono);font-size:9px;color:var(--neon-gold);font-weight:700;"></div>
+        </div>
+      </div>
+
+      <!-- Drawer Action Footer -->
+      <div class="drawer-footer">
+        <button class="btn-launch-battle" id="btnDeploy" type="button">
+          <span class="ic ic-sm i-swords"></span> MASUK PERTEMPURAN
+        </button>
+      </div>
+    </aside>
+
+    <!-- MOBILE PORTRAIT FLOATING QUICK BAR -->
+    <div class="mobile-quick-dock" id="mobileQuickDock">
+      <div class="mq-left">
+        <div class="mq-avatar-frame">
+          <img id="mqEnemyImg" src="assets/cards/art/green-beast.webp" alt="Target" onerror="this.src='assets/cards/art/solar-brawler.webp'">
+        </div>
+        <div class="mq-meta">
+          <span class="mq-stage-code" id="mqStageCode">STAGE 01</span>
+          <span class="mq-name" id="mqEnemyName">TARGET</span>
+        </div>
+      </div>
+      <div class="mq-right">
+        <button class="btn-mq-deploy" id="btnMqDeploy" type="button">
+          <span class="ic ic-xs i-swords"></span> BATTLE
+        </button>
+        <button class="btn-mq-expand" id="btnMqExpand" type="button" aria-label="Buka Detail">▲</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- CHAPTER LORE MODAL -->
+  <div class="lore-modal-backdrop" id="loreModal">
+    <div class="lore-modal-card">
+      <h2 class="lore-title" id="loreModalTitle">
+        <span class="ic ic-md i-scroll"></span> DOSSIER ARSIP: BAB 01
+      </h2>
+      <div class="lore-body" id="loreModalBody"></div>
+      <button class="btn-lore-close" id="btnLoreClose" type="button">TUTUP</button>
     </div>
   </div>
 </div>
@@ -958,7 +977,7 @@
 <script src="js/tower-lobby.js?v=v305-lobbyClickFix"></script>
 <script src="js/shadow-king-fx.js?v=v4-skfx4"></script>
 <script src="js/foe-passives.js?v=v62-foe-passives"></script>
-<script src="js/story-carousel.js?v=v315-storyPrecisionSync"></script>
+<script src="js/story-carousel.js?v=v316-pureNodeMapPort"></script>
 <script src="js/raid.js?v=v186-cgLifecycle"></script>
 <script src="js/ranking.js?v=v9-storyEnemyTierOnly"></script>
 <script src="js/i18n.js?v=v302-relicPet"></script>
