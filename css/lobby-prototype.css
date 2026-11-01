@@ -3964,10 +3964,13 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 .backpack-panel .bps-art-wrap img {
   width: 100% !important;
   height: 100% !important;
-  /* S-RAIL (item 1): `cover` + `top` memotong art 2:3 jadi strip; `contain` menampilkan
-     kartu terpasang UTUH (tidak ada piksel yang dipangkas) dan rata tengah. */
-  object-fit: contain !important;
-  object-position: center center !important;
+  /* Slot dek = chip 1:1 (identik dengan placeholder). Art sumber 2:3 (242x360)
+     jadi HARUS di-cover supaya gambarnya ikut mengisi kotak 1:1, bukan pita
+     sempit di tengah (contain) — sama seperti prototipe v3 .slot .sart.
+     object-position digeser ke atas (22%) supaya wajah karakter tetap di frame
+     saat 33% tinggi bawah terpotong. */
+  object-fit: cover !important;
+  object-position: 50% 22% !important;
 }
 
 #backpackPanel .bp-slots .bp-slot .bps-info,
@@ -4041,29 +4044,45 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   position: absolute !important;
   top: 0 !important;
   right: 0 !important;
+  /* hit area tetap 44px, tapi glyph-nya nempel di pojok: art sudah mengisi kotak
+     1:1, jadi X merah besar di tengah art akan menutupi karakter. */
   width: 44px !important;
   height: 44px !important;
-  border-radius: 0 12px 0 12px !important;
+  padding: 2px 2px 0 0 !important;
+  box-sizing: border-box !important;
+  align-items: flex-start !important;
+  justify-content: flex-end !important;
+  border-radius: 0 !important;
   border: 0 !important;
-  background: rgba(12, 8, 10, 0.5) !important;
+  background: transparent !important;
   color: #f87171 !important;
   font-size: 15px !important;
   line-height: 1 !important;
   cursor: pointer !important;
   display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
   transition: transform 0.2s ease !important;
   z-index: 5 !important;
 }
 
 #backpackPanel .bp-slots .bp-slot .bps-x svg,
-.backpack-panel .bps-x svg { width: 14px !important; height: 14px !important; }
+.backpack-panel .bps-x svg {
+  width: 11px !important;
+  height: 11px !important;
+  padding: 2px !important;
+  box-sizing: content-box !important;
+  border-radius: 5px !important;
+  background: rgba(10, 14, 23, 0.78) !important;
+}
 
 #backpackPanel .bp-slots .bp-slot .bps-x:hover,
 .backpack-panel .bps-x:hover {
-  background: rgba(239, 68, 68, 0.65) !important;
+  background: transparent !important;
   color: #ffffff !important;
+}
+
+#backpackPanel .bp-slots .bp-slot .bps-x:hover svg,
+.backpack-panel .bps-x:hover svg {
+  background: rgba(220, 38, 38, 0.9) !important;
 }
 
 #backpackPanel .bp-slots .bp-slot .bps-corner,
