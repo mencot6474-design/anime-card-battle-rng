@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v312-storyBossGlow';
+const CACHE_NAME = 'anime-card-battle-v311-afkBackgroundWorker';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
