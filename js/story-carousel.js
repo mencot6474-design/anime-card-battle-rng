@@ -207,21 +207,26 @@
         const cdLeft = (isUnlocked && isCleared && typeof storyCdLeft === "function") ? storyCdLeft(lv) : 0;
         const g = gateOf(lv);
 
+        const pw = totalPower();
+        const ok = pw >= g;
+        const gateBadgeClass = !isUnlocked ? 'sc-gate-locked' : (ok ? 'sc-gate-ready' : 'sc-gate-under');
+        const gateBadgeText = !isUnlocked ? '🔒 LOCKED' : (ok ? '✓ READY' : '⚠ UNDER');
+
         return `
           <div class="sc-card tier-${tier} ${en.boss ? 'is-boss' : ''} ${isUnlocked ? '' : 'is-locked'}${cdLeft > 0 ? ' is-replay-cd' : ''}" id="sc-card-${i}" data-lv="${lv}" onclick="selectStoryStage(${i})">
             <div class="sc-card-head">
-              <span class="sc-stage-badge">${en.boss ? '★ BOSS STAGE' : 'STAGE 0' + (i + 1)}</span>
-              ${isCleared ? '<span class="sc-clear-status">✓ CLEARED</span>' : ''}
+              <span class="sc-stage-badge ${en.boss ? 'boss-badge' : ''}">${en.boss ? '★ BOSS ENCOUNTER' : 'STAGE 0' + (i + 1)}</span>
+              ${isCleared ? '<span class="sc-clear-status">✓ CLEARED</span>' : '<span class="sc-pending-status">UNCLEARED</span>'}
             </div>
 
             <div class="sc-art-frame">
               <img src="${en.img}" alt="${en.name}" loading="lazy" onerror="this.src='assets/cards/art/solar-brawler.webp'">
               <div class="sc-art-shade"></div>
-              ${en.boss ? '<span class="sc-boss-tag">BOSS</span>' : ''}
+              ${en.boss ? '<div class="sc-boss-glow-badge"><span class="boss-flame">🔥</span> BOSS STAGE</div>' : ''}
               ${isUnlocked ? (cdLeft > 0 ? `
                 <div class="sc-card-lock-overlay sc-cd-overlay">
                   <span class="sc-lock-icon">⏱</span>
-                  <span class="sc-lock-text">REPLAY TERKUNCI</span>
+                  <span class="sc-lock-text">REPLAY COOLDOWN</span>
                   <span class="sc-cd-timer">${typeof storyCdText === "function" ? storyCdText(cdLeft) : ""}</span>
                 </div>
               ` : '') : `
@@ -235,7 +240,7 @@
             <div class="sc-card-info">
               <div class="sc-tier-row">
                 <span class="sc-tier-pill sc-tier-${tier}">${tier}</span>
-                <span class="sc-gate-val">${isUnlocked ? 'GATE ' + fmt(g) : 'TERKUNCI'}</span>
+                <span class="sc-gate-chip ${gateBadgeClass}">${gateBadgeText} · ${isUnlocked ? fmt(g) : '???'}</span>
               </div>
               <div class="sc-card-name">${isUnlocked ? en.name : 'ENCRYPTED TARGET'}</div>
             </div>
