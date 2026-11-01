@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v305-lobbyClickFix';
+const CACHE_NAME = 'anime-card-battle-v306-cleanGear';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

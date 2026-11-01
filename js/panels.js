@@ -1657,7 +1657,6 @@ function renderBackpackPanel(){
       <div class="bp-hstat"><div class="bp-hstat-k">POWER</div><div class="bp-hstat-v am">${fmt(_bpPower)}</div></div>
     </div>
     <div class="bph-right">
-      <span class="bp-opchip" title="Operator">${currentUser||'GUEST'}</span>
       <button class="backpack-close" onclick="toggleBackpack()" aria-label="Tutup Backpack" title="Tutup [ESC]">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
@@ -2580,8 +2579,7 @@ function bpRelicTileHtml(d){
     <span class="rtn">${d.name}</span><span class="rtv num">${luckTxt(d)}</span></button>`;
 }
 function renderBpArts(){
-  const coins=state.coins||0;
-  return `${renderGlobalLuckWidget()}<div class="bp-relicboard"><div class="btitle">RELIC · SLOT ARTEFAK (MAKS 2)</div>${bpGearCoinRow(coins)}
+  return `<div class="bp-relicboard"><div class="btitle">RELIC · SLOT ARTEFAK (MAKS 2)</div>
   <div class="eqslots">${[0,1].map(i=>bpRelicSlotHtml(i)).join('')}</div>
   <div class="igroup-h">ARTEFAK</div>
   <div class="relicgrid">${ART_DEFS.map(d=>bpRelicTileHtml(d)).join('')}</div></div>`;
@@ -2605,8 +2603,7 @@ function bpPetTileHtml(p){
     <span class="ptn">${p.name}</span><span class="ptv num">${luckTxt(p)}</span></button>`;
 }
 function renderBpPets(){
-  const coins=state.coins||0;
-  return `${renderGlobalLuckWidget()}<div class="bp-petboard"><div class="btitle">PET · 1 SLOT AKTIF</div>${bpGearCoinRow(coins)}
+  return `<div class="bp-petboard"><div class="btitle">PET · 1 SLOT AKTIF</div>
   <div class="bp-petheroes">${bpPetHeroHtml()}</div>
   <div class="igroup-h">SEMUA PET</div>
   <div class="petgrid">${PET_DEFS.map(p=>bpPetTileHtml(p)).join('')}</div></div>`;
