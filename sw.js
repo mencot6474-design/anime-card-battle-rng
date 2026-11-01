@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v304-bpBottomSheet';
+const CACHE_NAME = 'anime-card-battle-v305-lobbyClickFix';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

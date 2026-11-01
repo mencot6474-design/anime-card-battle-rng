@@ -1683,7 +1683,7 @@ function renderLobby(){
           <canvas id="ambientCanvas"></canvas>
           <div class="horizon"></div><div class="floor-grid"></div><div class="ground"></div><div class="ped"></div>
           <span class="rail rail-horizon" aria-hidden="true"></span>
-          <div class="hero" id="heroStandeeWrap" title="Klik Hunter untuk Kelola Party &amp; Deck" onclick="location.hash='#/deck'">
+          <div class="hero" id="heroStandeeWrap" title="Klik Hunter untuk Kelola Party &amp; Deck" onclick="if(window.sfx&&sfx.hit)sfx.hit();if(typeof toggleBackpack==='function')toggleBackpack();">
             <div class="artbox"><img class="art" src="${_art}" alt="" style="${_pos}"></div>
             <span class="cast" aria-hidden="true"></span>
             <div class="sheen" aria-hidden="true"></div>
@@ -1709,8 +1709,8 @@ function renderLobby(){
             </div>
             <div class="plist" id="l12Party">
               ${_party.map(s => s
-                ? `<button class="pslot r-${String(s.tier || "s").toLowerCase()}" data-slot="1" type="button" onclick="location.hash='#/deck'">${_l12SlotThumb(s)}</button>`
-                : `<button class="pslot empty" data-slot="0" type="button" onclick="location.hash='#/deck'"><span class="plus">+</span></button>`).join("")}
+                ? `<button class="pslot r-${String(s.tier || "s").toLowerCase()}" data-slot="1" type="button" onclick="if(window.sfx&&sfx.hit)sfx.hit();if(typeof toggleBackpack==='function')toggleBackpack();">${_l12SlotThumb(s)}</button>`
+                : `<button class="pslot empty" data-slot="0" type="button" onclick="if(window.sfx&&sfx.hit)sfx.hit();if(typeof toggleBackpack==='function')toggleBackpack();"><span class="plus">+</span></button>`).join("")}
               <span class="cmb">${_combo}/4<small>COMBO</small></span>
             </div>
           </div>
