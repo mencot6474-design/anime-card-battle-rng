@@ -3295,13 +3295,142 @@ body.bp-open .backpack-panel,
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  height: 74px !important;
-  min-height: 74px !important;
+  /* v3 port: tinggi mengikuti isi (wordmark 2 baris + stat); tetap flex:none supaya
+     hanya .bp-body yang scroll (pola full-screen AGENTS.md §4). Padding KANAN tidak diubah. */
+  height: auto !important;
+  min-height: 62px !important;
   padding: 0 clamp(16px, 3vw, 36px) !important;
   background: linear-gradient(180deg, rgba(12, 19, 36, 0.98) 0%, rgba(6, 10, 22, 0.94) 100%) !important;
   border-bottom: 1px solid rgba(56, 189, 248, 0.22) !important;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.7), inset 0 -1px 0 rgba(56, 189, 248, 0.35) !important;
   flex: none !important;
+  overflow: hidden !important;
+}
+
+/* --- HEADER PORT v3 (prototipe _tmp/proto_backpack_v3.html 20-27 + _tmp/bp3.css 44-59) ---
+   wordmark + accent rule + stat KARTU/POWER. Warna = palet produksi yang sudah dipakai
+   backpack (cyan #38bdf8, amber #fbbf24, slate #94a3b8/#f8fafc); tidak ada panel translusen
+   baru, tidak ada backdrop-filter, tidak ada properti yang dianimasikan. */
+.backpack-panel .bp-wordmark {
+  flex: none !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  font-family: var(--font-display, 'Orbitron', monospace) !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  font-size: clamp(19px, 2.7vw, 30px) !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  background: linear-gradient(180deg, #ffffff 30%, #9adcff 75%, #3fb6e8 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+  text-shadow: 0 0 22px rgba(56, 189, 248, 0.18) !important;
+}
+
+.backpack-panel .bp-wordmark small {
+  display: block !important;
+  font-family: var(--font-mono, monospace) !important;
+  font-size: 9.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.34em !important;
+  line-height: 1.4 !important;
+  color: #94a3b8 !important;
+  -webkit-text-fill-color: #94a3b8 !important;
+  margin-top: 3px !important;
+  white-space: nowrap !important;
+}
+
+.backpack-panel .bp-hdr-line {
+  flex: 1 1 32px !important;
+  min-width: 24px !important;
+  height: 2px !important;
+  align-self: center !important;
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.5), transparent) !important;
+}
+
+.backpack-panel .bp-hdr-stats {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  flex: none !important;
+  min-width: 0 !important;
+}
+
+.backpack-panel .bp-hstat {
+  text-align: right !important;
+  flex: none !important;
+  min-width: 0 !important;
+}
+
+.backpack-panel .bp-hstat-k {
+  font-family: var(--font-mono, monospace) !important;
+  font-size: 9px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.26em !important;
+  text-transform: uppercase !important;
+  color: #94a3b8 !important;
+  white-space: nowrap !important;
+}
+
+.backpack-panel .bp-hstat-v {
+  font-family: var(--font-display, 'Orbitron', monospace) !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: #f8fafc !important;
+  font-variant-numeric: tabular-nums !important;
+  white-space: nowrap !important;
+  flex: none !important;
+  overflow-wrap: normal !important;
+  line-height: 1.15 !important;
+}
+
+.backpack-panel .bp-hstat-v.am {
+  color: #fbbf24 !important;
+}
+
+/* identitas operator (informasi lama, tetap terbaca) — chip kecil di kanan, depan pill */
+.backpack-panel .bp-opchip {
+  display: inline-flex !important;
+  align-items: center !important;
+  flex: none !important;
+  min-width: 0 !important;
+  max-width: 132px !important;
+  padding: 4px 8px !important;
+  font-family: var(--font-mono, monospace) !important;
+  font-size: 9.5px !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: #e2e8f0 !important;
+  background: rgba(56, 189, 248, 0.12) !important;
+  border: 1px solid rgba(56, 189, 248, 0.25) !important;
+  border-radius: 6px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* ruang sempit: kata kecil + rule dilicinkan seperti prototipe (bp3.css 506-518) */
+@media (max-width:640px) {
+  .backpack-panel .bp-hdr-line { display: none !important; }
+}
+
+@media (max-width:400px) {
+  .backpack-panel .bp-wordmark { font-size: 19px !important; }
+  .backpack-panel .bp-wordmark small { display: none !important; }
+  .backpack-panel .bp-hdr-stats { gap: 9px !important; }
+  .backpack-panel .bp-hstat-k { font-size: 8px !important; letter-spacing: 0.18em !important; }
+  .backpack-panel .bp-hstat-v { font-size: 13px !important; }
+  .backpack-panel .bp-opchip { font-size: 9px !important; max-width: 96px !important; padding: 3px 6px !important; }
+  .backpack-panel .bph-right { gap: 6px !important; }
+  .backpack-panel .bph-stat-pill { padding: 5px 8px !important; font-size: 12px !important; }
+}
+
+@media (max-height:430px) {
+  .backpack-panel .backpack-header { min-height: 48px !important; }
+  .backpack-panel .bp-wordmark { font-size: 18px !important; }
+  .backpack-panel .bp-wordmark small { display: none !important; }
 }
 
 .backpack-panel .bph-left {

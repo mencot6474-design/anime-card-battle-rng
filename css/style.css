@@ -54192,7 +54192,9 @@ body.on-raid .lobby-tactical-hud {
   html.m-portrait #backpackPanel .backpack-close,
   html.m-landscape #backpackPanel .backpack-close{
     position:absolute!important; top:8px!important; right:8px!important;
-    width:36px!important; height:36px!important; z-index:120!important;
+    /* ≥44px target sentuh (aturan ui-ux). right:8 + lebar 44 = 52px = persis padding-right
+       header di atas, jadi pill/wordmark tidak pernah menutupi tombolnya. */
+    width:44px!important; height:44px!important; z-index:120!important;
   }
 
   /* ---- TAB STRIP: wraps to 2 rows, every tab stays visible (R-Reachability:
