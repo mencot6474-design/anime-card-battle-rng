@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v297-noGachaMig';
+const CACHE_NAME = 'anime-card-battle-v298-rackLand';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
