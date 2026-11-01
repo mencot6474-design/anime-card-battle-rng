@@ -5,27 +5,36 @@
 (function(){
   let currentStageIdx = 0; // index inside current chapter levels (0..5)
   let boundGestures = false;
+  let canvasResizeObserver = null;
 
   // Responsive Node Coordinates
-  // Wide / Landscape: horizontal wave across container
+  // Wide / Landscape: horizontal wave across container with plenty of bottom margin
   const COORDS_WIDE = [
-    { xPct: 10, yPct: 62 },
-    { xPct: 26, yPct: 32 },
-    { xPct: 42, yPct: 62 },
-    { xPct: 58, yPct: 32 },
-    { xPct: 74, yPct: 62 },
-    { xPct: 90, yPct: 38 }  // Boss Node
+    { xPct: 8,  yPct: 50 },
+    { xPct: 24, yPct: 34 },
+    { xPct: 40, yPct: 50 },
+    { xPct: 56, yPct: 34 },
+    { xPct: 72, yPct: 50 },
+    { xPct: 88, yPct: 40 }  // Boss Node
   ];
 
-  // Mobile Portrait: vertical S-curve flowing top to bottom
+  // Mobile Portrait: vertical S-curve placed in safe area (8% to 70%), never obstructed by dock
   const COORDS_PORTRAIT = [
-    { xPct: 26, yPct: 10 },
-    { xPct: 74, yPct: 25 },
-    { xPct: 26, yPct: 40 },
-    { xPct: 74, yPct: 55 },
-    { xPct: 28, yPct: 70 },
-    { xPct: 50, yPct: 86 }  // Boss Node
+    { xPct: 28, yPct: 8  },
+    { xPct: 72, yPct: 20 },
+    { xPct: 28, yPct: 32 },
+    { xPct: 72, yPct: 44 },
+    { xPct: 28, yPct: 56 },
+    { xPct: 50, yPct: 70 }  // Boss Node
   ];
+
+  function checkIsPortrait() {
+    const canvasEl = document.getElementById("scMapCanvas");
+    if (canvasEl && canvasEl.offsetWidth > 0 && canvasEl.offsetHeight > 0) {
+      return canvasEl.offsetHeight > canvasEl.offsetWidth || canvasEl.offsetWidth <= 560;
+    }
+    return window.matchMedia("(orientation: portrait)").matches || window.innerWidth <= 640;
+  }
 
   function initStoryCarousel() {
     const prevBtn = document.getElementById("scPrevChap");
@@ -108,12 +117,29 @@
         }
       });
 
-      window.addEventListener("resize", () => {
+      const handleResize = () => {
+        const modal = document.getElementById("storyModal");
+        if (modal && modal.classList.contains("show")) {
+          renderTacticalNodes();
+        }
+      };
+
+      window.addEventListener("resize", handleResize);
+      try {
+        window.matchMedia("(orientation: portrait)").addEventListener("change", handleResize);
+      } catch(e) {}
+    }
+
+    // Attach ResizeObserver to canvas if available
+    const canvasEl = document.getElementById("scMapCanvas");
+    if (canvasEl && window.ResizeObserver && !canvasResizeObserver) {
+      canvasResizeObserver = new ResizeObserver(() => {
         const modal = document.getElementById("storyModal");
         if (modal && modal.classList.contains("show")) {
           renderTacticalNodes();
         }
       });
+      canvasResizeObserver.observe(canvasEl);
     }
   }
 
@@ -151,9 +177,16 @@
       const mm = document.getElementById("missionModal");
       if (mm) mm.classList.remove("show");
 
-      buildStoryChapterDOM();
       const modal = document.getElementById("storyModal");
       if (modal) modal.classList.add("show");
+
+      buildStoryChapterDOM();
+
+      // Trigger crisp layout pass once modal display is active
+      requestAnimationFrame(() => {
+        renderTacticalNodes();
+        updateStoryDrawer();
+      });
     } catch(err) {
       console.error("openStory error:", err);
       try { toast("STORY ERROR", (err && err.message) || "gagal membuka cerita", "#ff5c5c"); } catch(e) {}
@@ -282,32 +315,28 @@
 
     container.innerHTML = "";
 
-    const rect = canvasEl.getBoundingClientRect();
-    const isPortrait = window.innerWidth <= 600 || (rect.width > 0 && rect.width <= 480);
+    const isPortrait = checkIsPortrait();
     const coords = isPortrait ? COORDS_PORTRAIT : COORDS_WIDE;
 
-    const canvasW = canvasEl.offsetWidth || rect.width || (isPortrait ? 360 : 750);
-    const canvasH = canvasEl.offsetHeight || rect.height || (isPortrait ? 600 : 340);
+    // SVG Configuration: 0 0 1000 1000 percentage coordinate space
+    svg.setAttribute("viewBox", "0 0 1000 1000");
+    svg.setAttribute("preserveAspectRatio", "none");
 
-    const pixelCoords = coords.map(c => ({
-      x: Math.round((c.xPct / 100) * canvasW),
-      y: Math.round((c.yPct / 100) * canvasH)
-    }));
+    // Build SVG Connecting Paths mathematically mapped to node percentage coordinates
+    const p0 = { x: coords[0].xPct * 10, y: coords[0].yPct * 10 };
+    let pathBaseD = `M ${p0.x} ${p0.y}`;
+    let pathClearedD = `M ${p0.x} ${p0.y}`;
 
-    // Build SVG Connecting Paths
-    let pathBaseD = `M ${pixelCoords[0].x} ${pixelCoords[0].y}`;
-    let pathClearedD = `M ${pixelCoords[0].x} ${pixelCoords[0].y}`;
-
-    for (let i = 1; i < pixelCoords.length; i++) {
-      const p0 = pixelCoords[i - 1];
-      const p1 = pixelCoords[i];
+    for (let i = 1; i < coords.length; i++) {
+      const prevP = { x: coords[i - 1].xPct * 10, y: coords[i - 1].yPct * 10 };
+      const currP = { x: coords[i].xPct * 10, y: coords[i].yPct * 10 };
       let segment = "";
       if (isPortrait) {
-        const cpY = (p0.y + p1.y) / 2;
-        segment = ` C ${p0.x} ${cpY}, ${p1.x} ${cpY}, ${p1.x} ${p1.y}`;
+        const cpY = (prevP.y + currP.y) / 2;
+        segment = ` C ${prevP.x} ${cpY}, ${currP.x} ${cpY}, ${currP.x} ${currP.y}`;
       } else {
-        const cpX = (p0.x + p1.x) / 2;
-        segment = ` C ${cpX} ${p0.y}, ${cpX} ${p1.y}, ${p1.x} ${p1.y}`;
+        const cpX = (prevP.x + currP.x) / 2;
+        segment = ` C ${cpX} ${prevP.y}, ${cpX} ${currP.y}, ${currP.x} ${currP.y}`;
       }
       pathBaseD += segment;
       const prevLv = ch.from + (i - 1);
@@ -336,13 +365,14 @@
       const isUnlocked = cellOpen && (i === 0 || !!cdh[lv - 1]);
       const isSelected = i === currentStageIdx;
       const isBoss = !!en.boss;
-      const p = pixelCoords[i];
+      const c = coords[i];
 
       const nodeEl = document.createElement("div");
       nodeEl.className = `sc-node ${isBoss ? 'is-boss' : ''} ${isSelected ? 'active' : ''} ${isCleared ? 'cleared' : ''} ${isUnlocked ? '' : 'locked'}`;
       nodeEl.id = `sc-node-${i}`;
-      nodeEl.style.left = `${p.x}px`;
-      nodeEl.style.top = `${p.y}px`;
+      // Sub-pixel percentage positioning: exactly coincident with SVG path points
+      nodeEl.style.left = `${c.xPct}%`;
+      nodeEl.style.top = `${c.yPct}%`;
 
       let statusBadgeHtml = "";
       if (isBoss) {
@@ -380,123 +410,121 @@
 
   function updateStoryDrawer() {
     const ch = activeChap();
-    const cdh = diffProg()[state.diff];
-    const cellOpen = cellUnlocked(ch, state.diff);
-
     const lv = ch.from + currentStageIdx;
     const en = enemyOf(lv);
-    const cardData = (en.id && CARDS[en.id]) ? CARDS[en.id] : null;
-    const tier = cardData ? cardData.tier : (en.boss ? "UR" : "R");
-    const skill = cardData && cardData.skill ? cardData.skill : (en.skill || "IMPACT STRIKE");
-    const desc = cardData && cardData.desc ? cardData.desc : (en.desc || "Serangan jurus lawan.");
-    const type = cardData && cardData.type ? cardData.type : (en.boss ? "Offensive" : "Balanced");
-
-    const g = gateOf(lv);
-    const pw = totalPower();
-    const ok = pw >= g;
-    const bar = Math.max(4, Math.min(100, Math.round((pw / g) * 100)));
-    const diffPct = Math.round(((pw - g) / g) * 100);
-
-    const first = !cdh[lv];
-    const reward = first ? firstClearReward(lv) : Math.round(firstClearReward(lv) * 0.2);
-    const cdLeft = first ? 0 : (typeof storyCdLeft === "function" ? storyCdLeft(lv) : 0);
+    const cdh = diffProg()[state.diff];
+    const cellOpen = cellUnlocked(ch, state.diff);
     const isUnlocked = cellOpen && (currentStageIdx === 0 || !!cdh[lv - 1]);
+    const isCleared = !!cdh[lv];
+    const first = !cdh[lv];
+    const reqPower = gateOf(lv);
+    const playerPower = totalPower();
 
-    // Drawer Header & Target Card
-    const stageNum = document.getElementById("scDockStageNum");
-    const enemyName = document.getElementById("scDockEnemyName");
-    const targetTitle = document.getElementById("scDockTargetTitle");
-    const enemyImg = document.getElementById("scDockEnemyImg");
-    const tierPill = document.getElementById("scDockTier");
-    const typePill = document.getElementById("scDockType");
-    const statusPill = document.getElementById("scDockStatusPill");
-    const hpVal = document.getElementById("scDockHp");
-    const atkVal = document.getElementById("scDockAtk");
+    // Stage Number & Enemy Name
+    const stageNumEl = document.getElementById("scDockStageNum");
+    const enemyNameEl = document.getElementById("scDockEnemyName");
+    const targetTitleEl = document.getElementById("scDockTargetTitle");
+    const enemyImgEl = document.getElementById("scDockEnemyImg");
 
-    if (stageNum) stageNum.textContent = en.boss ? `STAGE 0${currentStageIdx + 1} // BOSS GATE` : `STAGE 0${currentStageIdx + 1} // TACTICAL STAGE`;
-    if (enemyName) enemyName.textContent = isUnlocked ? en.name : `STAGE 0${currentStageIdx + 1} TERKUNCI`;
-    if (targetTitle) targetTitle.textContent = isUnlocked ? en.name : "ENCRYPTED TARGET";
-    if (enemyImg) enemyImg.src = en.img;
+    if (stageNumEl) {
+      stageNumEl.textContent = `STAGE 0${currentStageIdx + 1} // ${en.boss ? 'BOSS THREAT' : 'SECTOR COMBAT'}`;
+    }
+    if (enemyNameEl) {
+      enemyNameEl.textContent = isUnlocked ? en.name : "ENCRYPTED TARGET";
+    }
+    if (targetTitleEl) {
+      targetTitleEl.textContent = isUnlocked ? en.name : "LOCKED INTEL";
+    }
+    if (enemyImgEl) {
+      enemyImgEl.src = en.img;
+      enemyImgEl.style.filter = isUnlocked ? "none" : "grayscale(100%) brightness(0.4)";
+    }
 
-    if (tierPill) tierPill.textContent = tier;
-    if (typePill) typePill.innerHTML = `<span class="ic ic-xs ${en.boss ? 'i-dragon' : 'i-swords'}"></span> ${type.toUpperCase()}`;
+    // Card Reference & Tier / Type
+    const cardRef = typeof CARDS !== "undefined" && CARDS ? CARDS.find(c => c.name === en.name || c.id === en.id) : null;
+    const tierEl = document.getElementById("scDockTier");
+    const typeEl = document.getElementById("scDockType");
+    const statusPillEl = document.getElementById("scDockStatusPill");
 
-    if (statusPill) {
-      if (!isUnlocked) {
-        statusPill.className = "sc-status-pill locked";
-        statusPill.innerHTML = `<span class="ic ic-xs i-lock"></span> TERKUNCI`;
-      } else if (!first) {
-        statusPill.className = "sc-status-pill cleared";
-        statusPill.innerHTML = `<span class="ic ic-xs i-check"></span> SELESAI`;
+    const tierVal = cardRef ? cardRef.tier : (en.boss ? "UR" : "R");
+    const typeVal = cardRef ? cardRef.type : "OFFENSIVE";
+
+    if (tierEl) tierEl.textContent = tierVal;
+    if (typeEl) typeEl.textContent = typeVal.toUpperCase();
+
+    if (statusPillEl) {
+      if (isCleared) {
+        statusPillEl.className = "sc-status-pill cleared";
+        statusPillEl.textContent = "✓ CLEARED";
+      } else if (isUnlocked) {
+        statusPillEl.className = "sc-status-pill ready";
+        statusPillEl.textContent = "SIAP TEMPUR";
       } else {
-        statusPill.className = "sc-status-pill ready";
-        statusPill.innerHTML = `SIAP TEMPUR`;
+        statusPillEl.className = "sc-status-pill locked";
+        statusPillEl.textContent = "🔒 TERKUNCI";
       }
     }
 
-    if (hpVal) hpVal.textContent = isUnlocked ? fmt(en.hp) : "???";
-    if (atkVal) atkVal.textContent = isUnlocked ? fmt(en.atk) : "???";
+    // HP & ATK Stats
+    const hpEl = document.getElementById("scDockHp");
+    const atkEl = document.getElementById("scDockAtk");
+    if (hpEl) hpEl.textContent = isUnlocked ? (en.hp || 0).toLocaleString() : "???";
+    if (atkEl) atkEl.textContent = isUnlocked ? (en.atk || 0).toLocaleString() : "???";
 
-    // Ability Intel
-    const skillTitle = document.getElementById("scDockSkillTitle");
-    const skillDesc = document.getElementById("scDockSkillDesc");
-    if (skillTitle) skillTitle.textContent = isUnlocked ? `JURUS: ${skill}` : "JURUS RAHASIA";
-    if (skillDesc) skillDesc.textContent = isUnlocked ? desc : `Selesaikan Stage 0${currentStageIdx} untuk membedah jurus rahasia lawan.`;
+    // Signature Skill Info
+    const skillTitleEl = document.getElementById("scDockSkillTitle");
+    const skillDescEl = document.getElementById("scDockSkillDesc");
+    if (skillTitleEl) {
+      skillTitleEl.textContent = isUnlocked ? (cardRef ? (cardRef.skill || "SIGNATURE SKILL") : (en.boss ? "ANCIENT BOSS WILL" : "COMBAT DRILL")) : "ENCRYPTED SKILL";
+    }
+    if (skillDescEl) {
+      skillDescEl.textContent = isUnlocked ? (cardRef ? (cardRef.desc || "Tidak ada data pasif khusus.") : (en.boss ? "Musuh tingkat tinggi dengan pertahanan kuat." : "Unit patroli garda depan.")) : "Intel jurus musuh belum terbuka. Kalahkan stage sebelumnya untuk membongkar taktik lawan.";
+    }
 
-    // Power Readiness
-    const powerStatus = document.getElementById("scDockPowerStatus");
-    const gateVal = document.getElementById("scDockGateVal");
-    const barFill = document.getElementById("scDockBarFill");
+    // Combat Readiness Gauge
+    const readinessFill = document.getElementById("scDockBarFill");
+    const powerStatusEl = document.getElementById("scDockPowerStatus");
+    const gateValEl = document.getElementById("scDockGateVal");
 
-    if (powerStatus) {
-      if (!isUnlocked) {
-        powerStatus.textContent = "TERKUNCI";
-        powerStatus.style.color = "var(--neon-crimson)";
-      } else if (ok) {
-        powerStatus.textContent = `UNGGUL +${diffPct}%`;
-        powerStatus.style.color = "var(--neon-emerald)";
+    const powerRatio = reqPower > 0 ? Math.min(100, Math.round((playerPower / reqPower) * 100)) : 100;
+    const isReady = playerPower >= reqPower;
+
+    if (readinessFill) readinessFill.style.width = `${powerRatio}%`;
+    if (powerStatusEl) {
+      powerStatusEl.textContent = isReady ? "SIAP TEMPUR" : "BAHAYA (UNDERPOWER)";
+      powerStatusEl.className = `sc-rd-status ${isReady ? 'ready' : 'danger'}`;
+    }
+    if (gateValEl) {
+      gateValEl.textContent = `DECK ${playerPower.toLocaleString()} / REQ ${reqPower.toLocaleString()}`;
+    }
+
+    // Real Game Rewards
+    const rewardValEl = document.getElementById("scDockRewardVal");
+    const rewardGemEl = document.getElementById("scDockRewardGem");
+    const rwLblEl = document.getElementById("scDockRwLbl");
+    const cdEl = document.getElementById("scDockCd");
+
+    const coinReward = typeof firstClearReward === "function" ? firstClearReward(lv) : (en.boss ? 50000 : 10000);
+    const gemReward = typeof storyGemPreview === "function" ? storyGemPreview(lv) : 0;
+    const cdLeft = first ? 0 : (typeof storyCdLeft === "function" ? storyCdLeft(lv) : 0);
+
+    if (rewardValEl) rewardValEl.textContent = `◎ ${coinReward.toLocaleString()}`;
+    if (rewardGemEl) {
+      rewardGemEl.textContent = `+${gemReward} Gems`;
+      rewardGemEl.parentElement.style.display = gemReward > 0 ? "flex" : "none";
+    }
+    if (rwLblEl) rwLblEl.textContent = first ? "FIRST CLEAR REWARD" : "REPEAT REWARD";
+
+    if (cdEl) {
+      if (!first && cdLeft > 0) {
+        cdEl.style.display = "inline-flex";
+        cdEl.textContent = typeof storyCdText === "function" ? storyCdText(cdLeft) : `CD: ${cdLeft}s`;
       } else {
-        powerStatus.textContent = `KURANG ${diffPct}%`;
-        powerStatus.style.color = "var(--neon-crimson)";
+        cdEl.style.display = "none";
       }
     }
 
-    if (gateVal) {
-      if (!isUnlocked) {
-        gateVal.innerHTML = `<span style="color:var(--neon-crimson)">STAGE MASIH TERKUNCI</span>`;
-      } else {
-        gateVal.innerHTML = `REQ <b>${fmt(g)}</b> / KAMU <b>${fmt(pw)}</b>`;
-      }
-    }
-
-    if (barFill) {
-      if (!isUnlocked) {
-        barFill.style.width = "0%";
-      } else {
-        barFill.style.width = `${bar}%`;
-        barFill.style.background = ok ? 'linear-gradient(90deg, #10b981, #38bdf8)' : 'linear-gradient(90deg, #f43f5e, #fb7185)';
-      }
-    }
-
-    // Rewards
-    const rewardVal = document.getElementById("scDockRewardVal");
-    const rewardLbl = document.getElementById("scDockRwLbl");
-    const gemVal = document.getElementById("scDockRewardGem");
-    const gemN = (typeof storyGemPreview === "function" && isUnlocked) ? storyGemPreview(lv) : 0;
-
-    if (rewardLbl) rewardLbl.textContent = first ? "HADIAH FIRST CLEAR" : "HADIAH REPLAY (20%)";
-    if (rewardVal) rewardVal.textContent = isUnlocked ? `◎ ${fmt(reward)} Gold` : "—";
-    if (gemVal) gemVal.textContent = isUnlocked ? `+${gemN} Gems` : "—";
-
-    // Cooldown badge
-    const cdBadge = document.getElementById("scDockCd");
-    if (cdBadge) {
-      const showCd = isUnlocked && !first && cdLeft > 0;
-      cdBadge.style.display = showCd ? "inline-flex" : "none";
-      cdBadge.textContent = showCd ? `REPLAY COOLDOWN · ${typeof storyCdText === "function" ? storyCdText(cdLeft) : ""}` : "";
-    }
-
-    // Launch Button
+    // Launch Battle Button
     const battleBtn = document.getElementById("scBtnBattle");
     if (battleBtn) {
       battleBtn.dataset.cdRepeat = (isUnlocked && !first && cdLeft > 0) ? "1" : "";
@@ -555,12 +583,18 @@
   function openBottomSheet() {
     if (window.sfx && sfx.hit) sfx.hit();
     const drawer = document.getElementById("scBriefingDrawer");
-    if (drawer) drawer.classList.add("expanded");
+    if (drawer) {
+      drawer.classList.add("expanded");
+      drawer.classList.add("open");
+    }
   }
 
   function closeDrawerOrSheet() {
     const drawer = document.getElementById("scBriefingDrawer");
-    if (drawer) drawer.classList.remove("expanded");
+    if (drawer) {
+      drawer.classList.remove("expanded");
+      drawer.classList.remove("open");
+    }
   }
 
   function openLoreModal() {
