@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v310-noTreeBoardPlate';
+const CACHE_NAME = 'anime-card-battle-v311-afkBackgroundWorker';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

@@ -1296,11 +1296,76 @@ setInterval(()=>{
 },1000);
 /* Simpan sinkron saat app ditutup/pindah background supaya playtime tidak hilang. */
 addEventListener("pagehide",()=>{if(state){save();flushCloudSave();}});
+/* Background AFK & Tab Resume Engine (Web Worker Heartbeat + State Recovery) */
+(function initAfkHeartbeat(){
+  let worker = null;
+  try {
+    const blob = new Blob([
+      "let timer = null;\n" +
+      "self.onmessage = function(e){\n" +
+      "  if(e.data && e.data.type === 'start'){\n" +
+      "    if(timer) clearInterval(timer);\n" +
+      "    timer = setInterval(function(){ self.postMessage('tick'); }, 1000);\n" +
+      "  } else if(e.data && e.data.type === 'delay'){\n" +
+      "    setTimeout(function(){ self.postMessage('roll_tick'); }, Math.max(50, e.data.ms || 100));\n" +
+      "  } else if(e.data && e.data.type === 'stop'){\n" +
+      "    if(timer) { clearInterval(timer); timer = null; }\n" +
+      "  }\n" +
+      "};"
+    ], { type: "application/javascript" });
+    worker = new Worker(URL.createObjectURL(blob));
+    worker.onmessage = function(e){
+      if(e.data === 'tick'){
+        if(typeof tickDaily === "function") tickDaily();
+        if(document.hidden && state){
+          state.playSec = (state.playSec || 0) + 1;
+        }
+      } else if(e.data === 'roll_tick'){
+        if(document.hidden && typeof rollState !== "undefined" && rollState && rollState.active){
+          if(typeof window.forceResumeRoll === "function") window.forceResumeRoll();
+        }
+      }
+    };
+    worker.postMessage({ type: 'start' });
+  } catch(err) {
+    console.warn("AFK Worker fallback to timer:", err);
+  }
+
+  window.__afkHeartbeat = {
+    postDelay: function(ms){
+      if(worker && document.hidden){
+        worker.postMessage({ type: 'delay', ms: ms });
+      }
+    }
+  };
+})();
+
+function handleTabWakeup(){
+  try{ document.body.classList.remove("perf-paused"); }catch(e){}
+  /* Pastikan invisible overlay tersembunyi tidak memblokir klik */
+  try{
+    const ov = document.getElementById("rollOverlay");
+    if(ov && ov.style.display !== "none" && typeof rollState !== "undefined" && rollState && rollState.hideOverlay){
+      ov.style.display = "none";
+    }
+  }catch(e){}
+  /* Bangunkan kembali auto roll jika tertidur/stuck di background */
+  try{
+    if(typeof rollState !== "undefined" && rollState && rollState.active){
+      if(typeof window.forceResumeRoll === "function") window.forceResumeRoll();
+    }
+  }catch(e){}
+}
+
 document.addEventListener("visibilitychange",()=>{
-  if(state&&document.hidden){save();flushCloudSave();}
-  /* Hentikan animasi CSS dekoratif saat tab di background (hemat GPU/baterai). */
-  try{document.body.classList.toggle("perf-paused",document.hidden);}catch(e){}
+  if(!document.hidden){
+    handleTabWakeup();
+  } else {
+    if(state){save();flushCloudSave();}
+    try{document.body.classList.add("perf-paused");}catch(e){}
+  }
 });
+window.addEventListener("focus", handleTabWakeup);
 
 /* =============== HOME (Story) — kini nyatu di layar Lobby ===============
    Daftar bab dibangun jadi helper (chapListHTML/bindChapList) supaya bisa

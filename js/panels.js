@@ -948,8 +948,18 @@ function rollSpeedNow(){
 }
 function srScheduleNext(){
   if(!rollState.active)return;
-  rollState.interval=setTimeout(rollTick,Math.max(RNG_ROLL_MIN,RNG_ROLL_SPEED/rollState.speedMultiplier));
+  const d=Math.max(RNG_ROLL_MIN,RNG_ROLL_SPEED/rollState.speedMultiplier);
+  if(rollState.interval){clearTimeout(rollState.interval);rollState.interval=null;}
+  rollState.interval=setTimeout(rollTick,d);
+  if(window.__afkHeartbeat&&typeof window.__afkHeartbeat.postDelay==="function"){
+    window.__afkHeartbeat.postDelay(d);
+  }
 }
+window.forceResumeRoll=function(){
+  if(!rollState||!rollState.active)return;
+  if(rollState.interval){clearTimeout(rollState.interval);rollState.interval=null;}
+  rollTick();
+};
 async function rollTick(){
   if(!rollState.active)return;
   rollState.luck=rollState.luckPinned||rollLuckNow();
