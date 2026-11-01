@@ -4537,7 +4537,7 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 .backpack-panel { --bp-mg:#ff2e88; --bp-lk:#5eead4; }
 .backpack-panel .bp-body.tree { gap:10px; }
 /* --- papan: flex column supaya .bpweb-view mengambil sisa tinggi dan jadi satu-satunya scroller */
-.backpack-panel .bp-body.tree .board { flex:1 1 auto; min-height:0; display:flex; flex-direction:column; margin:0; padding:12px; border-radius:16px; background:#0b1220; box-shadow:inset 0 1px 0 rgba(140,220,255,.06); }
+.backpack-panel .bp-body.tree .board { flex:1 1 auto; min-height:0; display:flex; flex-direction:column; margin:0; padding:4px 0 0; border-radius:0; background:transparent; box-shadow:none; }
 .backpack-panel .bp-body.tree .btitle { flex:none; display:flex; align-items:center; gap:10px; margin-bottom:10px; font-family:var(--font-tac,'Rajdhani',sans-serif); font-size:10px; font-weight:800; letter-spacing:.32em; color:var(--bp-txd); }
 .backpack-panel .bp-body.tree .btitle::after { content:""; flex:1; height:1px; background:linear-gradient(90deg,rgba(0,217,255,.35),transparent); }
 .backpack-panel .webhead { flex:none; display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:8px; }
