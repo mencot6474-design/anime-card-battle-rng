@@ -1632,6 +1632,7 @@ function renderBackpackPanel(){
   bpsHoverBind();bpsHoverHide();
   /* guard anti-menggantung (kontrak): re-render ke tab lain / koleksi kosong = tutup popover+modal */
   if(bpTab!=='deck'||!state.stacks.length){bpCardModalClose();_bpMutPopOpen=false;}
+  if(bpTab!=='tree'){bpTreeDetailClose();} /* pindah tab = detail skill tree ikut hilang */
   const TABS=[
     {k:'deck',num:'01',l:'DECK MATRIX',ic:`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`},
     {k:'tree',num:'02',l:'SKILL TREE',ic:`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><circle cx="6" cy="19" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="17.07" x2="10.41" y2="7.93"/><line x1="15.41" y1="17.07" x2="13.59" y2="7.93"/></svg>`},
@@ -1662,7 +1663,7 @@ function renderBackpackPanel(){
     </div>
   </div>${tabbar}`;
 
-  if(bpTab==='tree'){panel.innerHTML=header+`<div class="bp-body tree">${renderBpTree()}</div>`;stMount();return;}
+  if(bpTab==='tree'){panel.innerHTML=header+`<div class="bp-body tree">${renderBpTree()}</div>`;stMount();bpTreeDetailSync();return;}
   if(bpTab==='item'){panel.innerHTML=header+`<div class="bp-body">${renderBpItems()}</div>`;return;}
   if(bpTab==='artefact'){panel.innerHTML=header+`<div class="bp-body">${renderBpArts()}</div>`;return;}
   if(bpTab==='pet'){panel.innerHTML=header+`<div class="bp-body">${renderBpPets()}</div>`;return;}
@@ -1852,6 +1853,7 @@ function bpCardModalSync(){
 document.addEventListener('keydown',function(e){
   if(e.key!=='Escape')return;
   if(document.getElementById('bpCardModal')){e.stopPropagation();e.preventDefault();bpCardModalClose();return;}
+  if(document.getElementById('bpTreeDetail')){e.stopPropagation();e.preventDefault();bpTreeDetailClose();return;}
   if(_bpMutPopOpen){e.stopPropagation();bpMutPopClose();}
 },true);
 /* klik-luar menutup popover MUT (baris dlm popover sudah stopPropagation sendiri) */
@@ -2321,7 +2323,8 @@ function bpWebLinesHtml(){
   }
   return `<svg class="weblines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${segs.join('')}</svg>`;
 }
-/* Node heksagon konstelasi. Klik tetap lewat jalur lama bpTreeBuy (beli langsung — beda dari prototipe yang buka detail dulu; dicatat di laporan). */
+/* Node heksagon konstelasi. Klik -> DETAIL node (prototipe bp3 openNode): beli lewat tombol BELI
+   di detail, bukan langsung. Toggle: klik node terbuka yang sama = tutup; hanya satu detail aktif. */
 function slNodeHtml(n,sp){
   const st=bpTreeState(n,sp);
   const core=n.branch==='root';
@@ -2329,8 +2332,7 @@ function slNodeHtml(n,sp){
   const gain=bpNodeGain(n);
   const p=BPWEB_POS[n.id]||[50,50];
   const cost=(!core&&st!=='owned'&&st!=='locked')?`<span class="wcost num">${n.cost} SP</span>`:'';
-  const clickable=(!core&&st!=='owned');
-  return `<button type="button" class="wnode ${br} ${st}${core?' core':''}" data-node="${n.id}" aria-label="${n.name} — ${gain}" title="${n.name} — ${gain} · ${n.desc}" style="left:${p[0]}%;top:${p[1]}%"${clickable?` onclick="bpTreeBuy('${n.id}')"`:''}>
+  return `<button type="button" class="wnode ${br} ${st}${core?' core':''}" data-node="${n.id}" aria-label="${n.name} — ${gain}" aria-expanded="${_bpTreeDetailId===n.id?'true':'false'}" title="${n.name} — ${gain} · ${n.desc}" style="left:${p[0]}%;top:${p[1]}%" onclick="bpTreeDetailToggle('${n.id}')">
     ${cost}<span class="whex">${st==='locked'&&!core?'<img class="wlock" src="assets/icons/padlock.svg" alt="">':''}</span><span class="wlabel">${n.name}</span>
   </button>`;
 }
@@ -2387,6 +2389,68 @@ function bpTreeBuy(id){
   else { g=r.node.luck+' LUCK · +'+Math.round((r.node.luckPct||0)*100)+'% mult'; col='#f97316'; }
   toast(r.node.name,'+'+g,col);
   renderShell();renderBackpackPanel();
+}
+/* ===== DETAIL NODE SKILL TREE (prototipe bp3 openNode, 594-621) — PRESENTASI + BELI =====
+   Modul-lokal kayak bpTarget/bpMutFilter: SATU flag node terpilih, tidak dipersist.
+   Elemen body-level ala bpCardModal/bpItemPop: dibuat saat sync, dihapus saat close,
+   re-render cukup sync ulang -> tak pernah dobel. Angka dari TREE_NODES + state.player.sp,
+   beli lewat bpTreeBuy (tidak diubah/diduplikasi). Warna cabang lewat --bcol (bukan inline). */
+let _bpTreeDetailId=null;
+const BP_TREE_BCOL={root:'#5eead4',luck:'#5eead4',speed:'#ffd27a',booster:'#ff2e88'};
+/* Ikon real proyek (assets/icons sudah diverifikasi ada): clover=luck, lightning-trio=speed, sparkles=booster. */
+const BP_TREE_ICON={root:'clover.svg',luck:'clover.svg',speed:'lightning-trio.svg',booster:'sparkles.svg'};
+function bpTreePreqNames(n){return n.req.length?n.req.map(r=>{const p=TREE[r];return p?p.name:r;}).join(' + '):'—';}
+function bpTreeDetailToggle(id){ _bpTreeDetailId=(_bpTreeDetailId===id?null:id); bpTreeDetailSync(); }
+function bpTreeDetailClose(){
+  const e=document.getElementById('bpTreeDetail'); if(e)e.remove();
+  _bpTreeDetailId=null;
+  document.querySelectorAll('.wnode[data-node]').forEach(b=>b.setAttribute('aria-expanded','false'));
+}
+/* Beli dari detail: tutup dulu (biar sync pasca-re-render tidak membuka ulang), lalu jalur lama. */
+function bpTreeDetailBuy(id){ bpTreeDetailClose(); bpTreeBuy(id); }
+function bpTreeDetailSync(){
+  const nodes=document.querySelectorAll('.wnode[data-node]');
+  if(!_bpTreeDetailId){
+    const gone=document.getElementById('bpTreeDetail'); if(gone)gone.remove();
+    nodes.forEach(b=>b.setAttribute('aria-expanded','false'));
+    return;
+  }
+  const n=TREE[_bpTreeDetailId];
+  if(!n){ _bpTreeDetailId=null; const gone=document.getElementById('bpTreeDetail'); if(gone)gone.remove(); return; }
+  nodes.forEach(b=>b.setAttribute('aria-expanded', b.dataset.node===_bpTreeDetailId?'true':'false'));
+  let el=document.getElementById('bpTreeDetail');
+  if(!el){
+    el=document.createElement('div'); el.id='bpTreeDetail'; el.className='bp-treedetail';
+    el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true');
+    el.addEventListener('click',ev=>{ if(ev.target===el)bpTreeDetailClose(); });
+    document.body.appendChild(el);
+  }
+  const sp=(state&&state.player&&state.player.sp)||0;
+  const st=bpTreeState(n,sp);
+  const core=n.branch==='root';
+  const gain=bpNodeGain(n);
+  const stTxt=st==='owned'?'DIMILIKI':st==='ready'?'SIAP DIBUKA':st==='locked'?'Buka node sebelumnya dulu':'SP kurang';
+  const buyable=!core&&st==='ready';
+  const bcol=BP_TREE_BCOL[n.branch]||BP_TREE_BCOL.luck;
+  const ic='assets/icons/'+(BP_TREE_ICON[n.branch]||BP_TREE_ICON.luck);
+  const x='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg>';
+  el.setAttribute('aria-label',n.name);
+  el.innerHTML=`<div class="bp-td-card" style="--bcol:${bcol}">
+    <button class="bp-td-x" type="button" onclick="bpTreeDetailClose()" aria-label="Tutup detail ${n.name}" title="Tutup [ESC]">${x}</button>
+    <div class="bp-td-head">
+      <img class="bp-td-icon" src="${ic}" alt="" decoding="async">
+      <div class="bp-td-id"><div class="bp-td-name">${n.name}</div>
+        <span class="bp-td-chip">${n.branch.toUpperCase()} · ${n.cost} SP</span></div>
+    </div>
+    <div class="bp-td-stats">
+      <div class="bp-td-stat"><span class="bp-td-k">BIAYA</span><span class="bp-td-v num">${n.cost} SP</span></div>
+      <div class="bp-td-stat"><span class="bp-td-k">SP LO</span><span class="bp-td-v num">${sp}</span></div>
+      <div class="bp-td-stat wide"><span class="bp-td-k">PRASYARAT</span><span class="bp-td-v sm">${bpTreePreqNames(n)}</span></div>
+    </div>
+    <div class="bp-td-status${st==='owned'?' on':''}">${stTxt}</div>
+    <div class="bp-td-eff"><span class="bp-td-k">EFEK</span><div class="bp-td-gain">${gain}</div><p class="bp-td-desc">${n.desc}</p></div>
+    ${buyable?`<div class="bp-td-acts"><button class="bp-td-btn pri" type="button" onclick="bpTreeDetailBuy('${n.id}')">BELI · ${n.cost} SP</button></div>`:''}
+  </div>`;
 }
 
 
