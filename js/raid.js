@@ -968,10 +968,12 @@ function renderRaidBattle(){
   const b=wbBossOf(), eq=raidPicked||equipped();
   app.innerHTML=`
   <div class="battle-grid raid-stage">
+    ${typeof tcgPlayerEquipRailHtml==="function"?tcgPlayerEquipRailHtml():""}
+    ${typeof tcgFoeEquipRailHtml==="function"?tcgFoeEquipRailHtml():""}
     <div class="me-col"><div class="fighter me${eq&&eq.mut&&eq.mut!=='none'?' mut-'+eq.mut:''}${shinyCls(eq)}" data-tier="${eq?eq.tier:''}" data-char="${eq?eq.char:''}">${meFighterHtml(eq)}</div>${typeof benchRailHtml==="function"?benchRailHtml([],"RAID STRIKER (SOLO DEPLOY)"):""}</div>
-    <div class="vs-col"><div class="t">VS</div><div class="s" id="raidTurnLabel">TURN<br>0/${RAID_TURNS}</div></div>
+    <div class="vs-col"><div class="s" id="raidTurnLabel">TURN<br>0/${RAID_TURNS}</div></div>
     <div class="me-col foe-side"><div class="fighter foe" data-tier="EX">
-      ${typeof foeFighterInnerHtml==="function"?foeFighterInnerHtml({name:b.name,img:b.img,tier:"BOSS",boss:true},{hp:b.hp,atk:999999},{hpId:"hpRaid",hpTid:"hpRaidT",subtitle:"WORLD BOSS",skill:b.skill,hpFmt:fmtBig}):`
+      ${typeof foeFighterInnerHtml==="function"?foeFighterInnerHtml({name:b.name,img:b.img,tier:"BOSS",boss:true},{hp:b.hp,atk:999999},{hpId:"hpRaid",hpTid:"hpRaidT",subtitle:"WORLD BOSS",skill:b.skill,hpFmt:typeof fmtBattleK==="function"?fmtBattleK:fmtBig}):`
       <div class="f-banner"><img src="${b.img}" alt="${b.name}"><div class="f-name">${b.name}</div></div>
       <div class="hpbar"><i id="hpRaid"></i><span id="hpRaidT">${fmtBig(b.hp)} / ${fmtBig(b.hp)}</span></div>
       <div class="f-body">
@@ -995,8 +997,9 @@ function startRaid(){
     if(tl)tl.innerHTML="TURN<br>"+raid.turn+"/"+raid.cap;
     const hb=document.getElementById("hpRaid"),ht=document.getElementById("hpRaidT");
     const hp=Math.max(0,raid.hp);
-    if(hb)hb.style.width=Math.max(0,Math.min(100,hp/raid.max*100))+"%";
-    if(ht)ht.textContent=fmtBig(hp)+" / "+fmtBig(raid.max);
+    const p=Math.max(0,Math.min(100,hp/raid.max*100))+"%";
+    if(hb){hb.style.width=p;const tr=hb.parentElement?hb.parentElement.querySelector(".hp-trail"):null;if(tr)tr.style.width=p;}
+    if(ht)ht.textContent=(typeof fmtBattleK==="function"?fmtBattleK(hp):fmtBig(hp));
     {const rd=document.getElementById("wbrRunDmg");if(rd)rd.textContent=fmtBig(raid.dealt||0);}
     return;
   }
@@ -1074,7 +1077,7 @@ function raidStep(){
   if(wePhase>=0&&window.worldEnderFx)window.worldEnderFx({fromSel:".fighter.me",toSel:".fighter.foe",phase:wePhase,revived:false});
   if(gammaRayHit&&window.gammaRayFx)window.gammaRayFx({fromSel:".fighter.me",toSel:".fighter.foe"});
   /* All cut-in removed */
-  const setRaidBar=hp=>{const v=Math.max(0,hp);const p=Math.max(0,Math.min(100,v/raid.max*100));const b=document.getElementById("hpRaid");if(b)b.style.width=p+"%";const tt=document.getElementById("hpRaidT");if(tt)tt.textContent=fmtBig(v)+" / "+fmtBig(raid.max);};
+  const setRaidBar=hp=>{const v=Math.max(0,hp);const p=Math.max(0,Math.min(100,v/raid.max*100))+"%";const b=document.getElementById("hpRaid");if(b){b.style.width=p;const tr=b.parentElement?b.parentElement.querySelector(".hp-trail"):null;if(tr)tr.style.width=p;}const tt=document.getElementById("hpRaidT");if(tt)tt.textContent=(typeof fmtBattleK==="function"?fmtBattleK(v):fmtBig(v));};
   /* panjang rantai animasi hit ronde ini, dihitung SINKRON (di depan setTimeout) supaya cabang kematian
      bisa menunggu sambaran terakhir selesai — bukan memotong getar + angkanya lewat guard raid.over */
   const rHstep=(psychicActive&&typeof PSY_T!=="undefined")?PSY_T.step:(domainActive?80:160);
@@ -1175,8 +1178,8 @@ function raidFinisher(done){
     for(let h=0;h<HITS;h++){ setTimeout(()=>{ const t=document.querySelector(".fighter.me"); if(t){anim(".fighter.me","hit");floatText(".fighter.me","-"+fmt(DMG),"crit");} },60+h*80); }
     impactBoom();
     for(let h=0;h<HITS;h++){ setTimeout(()=>playClip(punchAudio),60+h*80); }
-    const bar=document.getElementById("hpMe");if(bar)bar.style.width="0%";
-    const t=document.getElementById("hpMeT");if(t)t.textContent="0 / 0";
+    const bar=document.getElementById("hpMe");if(bar){bar.style.width="0%";const tr=bar.parentElement?bar.parentElement.querySelector(".hp-trail"):null;if(tr)tr.style.width="0%";}
+    const t=document.getElementById("hpMeT");if(t)t.textContent="0";
     meEl.classList.add("ko");
     if(++impacts>=N) setTimeout(()=>{ if(done)done(); },760);
   };

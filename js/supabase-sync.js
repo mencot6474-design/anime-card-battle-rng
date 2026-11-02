@@ -312,18 +312,74 @@ const CloudDB = {
   async verifyAndDeductGems(username, cost, packKey, itemType, qty) {
     qty = Math.max(1, parseInt(qty, 10) || 1);
     const ST = this._st();
+
+    /* Helper fallback pembelian lokal: dipakai untuk mode guest, localhost/CG preview,
+       atau saat sesi CloudAuth tidak tersedia / saldo lokal lebih tinggi dari mirror cloud. */
+    const applyLocalPurchase = () => {
+      if (!ST || (ST.premiumGems || 0) < cost) return null;
+      ST.premiumGems = Math.max(0, (ST.premiumGems || 0) - cost);
+      if (itemType === "weather") {
+        // Cuaca langsung aktif di state lokal (di-set oleh pemanggil)
+      } else if (itemType === "art") {
+        ST.artOwned = ST.artOwned || [];
+        if (!ST.artOwned.includes(packKey)) ST.artOwned.push(packKey);
+      } else if (itemType === "pet") {
+        ST.petOwned = ST.petOwned || [];
+        if (!ST.petOwned.includes(packKey)) ST.petOwned.push(packKey);
+      } else {
+        ST.rollPacks = ST.rollPacks || {};
+        ST.rollPacks[packKey] = (ST.rollPacks[packKey] || 0) + qty;
+      }
+      this._paint();
+      return {
+        ok: true,
+        balance: ST.premiumGems,
+        petOwned: ST.petOwned,
+        artOwned: ST.artOwned,
+        weather: ST.weather,
+        weatherBest: ST.weatherBest
+      };
+    };
+
+    const shouldFallbackLocal = (res) => {
+      if (!ST || (ST.premiumGems || 0) < cost) return false;
+      if (!res) return true;
+      const m = String(res.msg || "").toUpperCase();
+      return (
+        m.includes("SESI LOGIN") ||
+        m.includes("GAGAL MENGHUBUNGI") ||
+        m.includes("PLAYER_NOT_FOUND") ||
+        m.includes("AKUN TIDAK DITEMUKAN") ||
+        m.includes("GEMS_TIDAK_CUKUP") ||
+        m.includes("GEMS DI CLOUD TIDAK CUKUP") ||
+        m.includes("GUARD_PENDING")
+      );
+    };
+
     /* 0029: pack instan dibeli lewat RPC `buy_pack` — harga & jumlah pack
        ditentukan server (`pack_def` + `player_packs`). */
     if (username && itemType === "pack" && typeof this.buyPack === "function") {
       const bp = await this.buyPack(username, packKey, qty);
-      if (!bp || !bp.ok) return { ok: false, msg: (bp && bp.msg) || "GAGAL BELI PACK" };
+      if (!bp || !bp.ok) {
+        if (shouldFallbackLocal(bp)) {
+          const loc = applyLocalPurchase();
+          if (loc) return loc;
+        }
+        return { ok: false, msg: (bp && bp.msg) || "GAGAL BELI PACK" };
+      }
       return { ok: true, balance: bp.balance };
     }
     /* 0028: pet & artefak premium dibeli lewat RPC `buy_item` — atomik,
        harga diambil dari `item_def`, dan langsung masuk `player_items` ledger. */
     if (username && (itemType === "art" || itemType === "pet") && typeof this.buyItem === "function") {
       const bi = await this.buyItem(username, packKey);
-      if (!bi || !bi.ok) return { ok: false, msg: (bi && bi.msg) || "GAGAL BELI ITEM" };
+      if (!bi || !bi.ok) {
+        if (shouldFallbackLocal(bi)) {
+          const loc = applyLocalPurchase();
+          if (loc) return loc;
+        }
+        return { ok: false, msg: (bi && bi.msg) || "GAGAL BELI ITEM" };
+      }
       return {
         ok: true,
         balance: typeof bi.premiumGems === "number" ? bi.premiumGems : (ST ? ST.premiumGems : 0),
@@ -336,7 +392,13 @@ const CloudDB = {
     if (username && itemType === "weather" && typeof this.buyWeather === "function") {
       const wId = String(packKey || "").replace(/^w_/, "");
       const bw = await this.buyWeather(username, wId, cost);
-      if (!bw || !bw.ok) return { ok: false, msg: (bw && bw.msg) || "GAGAL BELI CUACA" };
+      if (!bw || !bw.ok) {
+        if (shouldFallbackLocal(bw)) {
+          const loc = applyLocalPurchase();
+          if (loc) return loc;
+        }
+        return { ok: false, msg: (bw && bw.msg) || "GAGAL BELI CUACA" };
+      }
       return {
         ok: true,
         balance: typeof bw.balance === "number" ? bw.balance : (ST ? ST.premiumGems : 0),
@@ -346,21 +408,9 @@ const CloudDB = {
     }
     if (!username) {
       // Guest mode: local check
-      if (!ST || (ST.premiumGems || 0) < cost) return { ok: false, msg: "GEMS TIDAK CUKUP" };
-      ST.premiumGems -= cost;
-      if (itemType === 'weather') {
-        // Cuaca langsung aktif di state lokal
-      } else if (itemType === 'art') {
-        ST.artOwned = ST.artOwned || [];
-        if (!ST.artOwned.includes(packKey)) ST.artOwned.push(packKey);
-      } else if (itemType === 'pet') {
-        ST.petOwned = ST.petOwned || [];
-        if (!ST.petOwned.includes(packKey)) ST.petOwned.push(packKey);
-      } else {
-        ST.rollPacks = ST.rollPacks || {};
-        ST.rollPacks[packKey] = (ST.rollPacks[packKey] || 0) + qty;
-      }
-      return { ok: true, balance: ST.premiumGems };
+      const loc = applyLocalPurchase();
+      if (!loc) return { ok: false, msg: "GEMS TIDAK CUKUP" };
+      return loc;
     }
 
     try {

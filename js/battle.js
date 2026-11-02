@@ -100,54 +100,57 @@ function tcgOrnateSvgHtml(isFoe){
   </svg>
   <div class="cryo-glass-overlay"></div>`;
 }
+function fmtBattleK(n){
+  n=Number(n)||0;
+  const s=n<0?"-":"";
+  const a=Math.abs(n);
+  if(a>=1e12)return s+Math.round(a/1e12)+"T";
+  if(a>=1e9)return s+Math.round(a/1e9)+"B";
+  if(a>=1e6)return s+Math.round(a/1e6)+"M";
+  if(a>=1e3)return s+Math.round(a/1e3)+"K";
+  return s+Math.round(a);
+}
+window.fmtBattleK=fmtBattleK;
+
 function tcgPlayerEquipRailHtml(){
   const slots=(state&&Array.isArray(state.artSlots))?state.artSlots:[null,null];
   const a1=slots[0]?ART_DEFS.find(x=>x.id===slots[0]):null;
   const a2=slots[1]?ART_DEFS.find(x=>x.id===slots[1]):null;
   const pet=state&&state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;
-  const s1=a1?`<div class="tcg-item-socket" title="${a1.name} (${luckTxt(a1)})"><img src="${a1.img}" alt="${a1.name}"></div>`:`<div class="tcg-item-socket" title="Slot Artefak 1 (Kosong)"><span class="sock-empty-dot"></span></div>`;
-  const s2=a2?`<div class="tcg-item-socket" title="${a2.name} (${luckTxt(a2)})"><img src="${a2.img}" alt="${a2.name}"></div>`:`<div class="tcg-item-socket" title="Slot Artefak 2 (Kosong)"><span class="sock-empty-dot"></span></div>`;
-  const sp=pet?`<div class="tcg-item-socket pet-socket" title="${pet.name} (${luckTxt(pet)})"><img src="${pet.img}" alt="${pet.name}"></div>`:`<div class="tcg-item-socket pet-socket" title="Slot Pet (Kosong)"><span class="sock-empty-dot"></span></div>`;
-  return `<div class="tcg-equip-rail">${s1}${s2}${sp}</div>`;
+  const s1=a1?`<div class="tcg-item-socket" title="${a1.name} (${luckTxt(a1)})"><img src="${a1.img}" alt="${a1.name}"><span class="sock-tier-dot"></span></div>`:`<div class="tcg-item-socket empty" title="Slot Artefak 1 (Kosong)"><span class="sock-empty-dot"></span></div>`;
+  const s2=a2?`<div class="tcg-item-socket" title="${a2.name} (${luckTxt(a2)})"><img src="${a2.img}" alt="${a2.name}"><span class="sock-tier-dot"></span></div>`:`<div class="tcg-item-socket empty" title="Slot Artefak 2 (Kosong)"><span class="sock-empty-dot"></span></div>`;
+  const sp=pet?`<div class="tcg-item-socket pet-socket" title="${pet.name} (${luckTxt(pet)})"><img src="${pet.img}" alt="${pet.name}"><span class="sock-tier-dot"></span></div>`:`<div class="tcg-item-socket pet-socket empty" title="Slot Pet (Kosong)"><span class="sock-empty-dot"></span></div>`;
+  return `<div class="tcg-equip-rail me-equip-rail">${s1}${s2}${sp}</div>`;
 }
+window.tcgPlayerEquipRailHtml=tcgPlayerEquipRailHtml;
+
 function tcgFoeEquipRailHtml(){
-  return `<div class="tcg-equip-rail">
-    <div class="tcg-item-socket" title="Enemy Relic I (Kosong)"><span class="sock-empty-dot"></span></div>
-    <div class="tcg-item-socket" title="Enemy Relic II (Kosong)"><span class="sock-empty-dot"></span></div>
-    <div class="tcg-item-socket pet-socket" title="Enemy Familiar (Kosong)"><span class="sock-empty-dot"></span></div>
+  return `<div class="tcg-equip-rail foe-equip-rail">
+    <div class="tcg-item-socket empty" title="Enemy Relic I (Kosong)"><span class="sock-empty-dot"></span></div>
+    <div class="tcg-item-socket empty" title="Enemy Relic II (Kosong)"><span class="sock-empty-dot"></span></div>
+    <div class="tcg-item-socket pet-socket empty" title="Enemy Familiar (Kosong)"><span class="sock-empty-dot"></span></div>
   </div>`;
 }
+window.tcgFoeEquipRailHtml=tcgFoeEquipRailHtml;
+
 function foeFighterInnerHtml(en,es,opts){
   opts=opts||{};
-  const tier=en.tier||"SSR";
   const hpId=opts.hpId||"hpFoe",hpTid=opts.hpTid||"hpFoeT";
   const maxHp=Math.max(1,es.hp||1);
   const curHp=opts.curHp!=null?Math.max(0,Math.min(maxHp,opts.curHp)):maxHp;
   const hpPct=Math.max(0,Math.min(100,curHp/maxHp*100));
-  const mut=opts.mut&&opts.mut!=="none"?opts.mut:null;
-  const epithet=opts.subtitle||en.epithet||"Enemy";
-  const skill=opts.skill||(en.id?passiveName(en.id):"Musuh");
-  const fmtHp=opts.hpFmt||fmt;
-  const pwr=Math.round(((es.hp||0)+(es.atk||0))/1000);
-  const threatLbl=tier==="EX"||tier==="BOSS"?"☣ THREAT EX":(tier==="UR"?"☣ THREAT SS":"⚡ PWR "+Math.max(1,pwr)+"K");
-  return `${tcgFoeEquipRailHtml(en)}
-    <div class="f-banner">
-      <img src="${en.img}" alt="${en.name}">
-      <div class="cyber-holo-sweep"></div>
-      ${battleCardNameHtml(en.name,mut,false)}
+  const fmtHp=opts.hpFmt||fmtBattleK;
+  return `<div class="f-banner">
+    <img src="${en.img}" alt="${en.name}">
+    <div class="f-banner-vignette"></div>
+  </div>
+  <div class="f-body">
+    <div class="hpbar"><div class="hp-trail" style="width:${hpPct}%"></div><i id="${hpId}" style="width:${hpPct}%"></i></div>
+    <div class="stat-row">
+      <div class="stat atk"><i>ATK</i> <b>${fmtBattleK(es.atk)}</b></div>
+      <div class="stat hp"><i>HP</i> <b id="${hpTid}">${fmtHp(curHp)}</b></div>
     </div>
-    <div class="hpbar"><i id="${hpId}" style="width:${hpPct}%"></i><span id="${hpTid}">${fmtHp(curHp)} / ${fmtHp(maxHp)}</span></div>
-    <div class="f-body">
-      <div class="f-type-row">
-        <div class="f-title">${epithet}</div>
-        <span class="f-power-tag">${threatLbl}</span>
-      </div>
-      <div class="f-skill-plaque">
-        <span class="f-skill-icon">☄️</span>
-        <div class="f-skill">${skill}</div>
-      </div>
-      <div class="stat-row"><div class="stat hp"><i>HP</i> <b>${fmtStat(maxHp)}</b></div><div class="stat atk"><i>ATK</i> <b>${fmtStat(es.atk)}</b></div></div>
-    </div>`;
+  </div>`;
 }
 window.foeFighterInnerHtml=foeFighterInnerHtml;
 
@@ -157,37 +160,31 @@ function meFighterHtml(s,opts){
   const maxHp=opts.maxHp!=null?Math.max(1,opts.maxHp):Math.max(1,st.hp||1);
   const curHp=opts.curHp!=null?Math.max(0,Math.min(maxHp,opts.curHp)):maxHp;
   const hpPct=Math.max(0,Math.min(100,curHp/maxHp*100));
-  const mut=(s.mut&&s.mut!=="none")?s.mut:null;
-  const trait=(s.trait&&s.trait!=="none")?s.trait:null;
-  const tier=s.tier||cardTier(s.char)||"SR";
-  const type=cardType(s.char);
-  const name=cardName(s.char),fName=battleCardNameHtml(name,mut,s.shiny);
-  const pwr=Math.max(1,Math.round((maxHp+st.atk)/1000));
-  const traitName=trait?traitLabel(trait):(mut?mut.toUpperCase():"AWAKENED");
-  /* Badge varian tampil untuk SEMUA kartu. Urutan (atas→bawah): SHINY, mutasi, trait. */
-  const traitBadge=trait?traitChip(trait,`<span class="hc-trait hc-gem" style="color:${TRAIT_COLOR[trait]};border-color:${TRAIT_COLOR[trait]}">${traitGem(14,trait)}</span>`):"";
-  const badges=`${s.shiny?'<span class="shiny-badge shiny-pill">SHINY</span>':''}${mut?mutChip(mut,mutPill(mut)):''}${traitBadge}`;
-  return `${tcgPlayerEquipRailHtml()}
-    <div class="f-banner"><img src="${cardImg(s.char)}" alt="${cardName(s.char)}"${CARDS[s.char]&&CARDS[s.char].pos?` style="object-position:${CARDS[s.char].pos}"`:''}><div class="cyber-holo-sweep"></div>${fName}
-    ${badges?`<div class="f-badges">${badges}</div>`:""}
+  return `<div class="f-banner">
+    <img src="${cardImg(s.char)}" alt="${cardName(s.char)}"${CARDS[s.char]&&CARDS[s.char].pos?` style="object-position:${CARDS[s.char].pos}"`:''}>
+    <div class="f-banner-vignette"></div>
+  </div>
+  <div class="f-body">
+    <div class="hpbar"><div class="hp-trail" style="width:${hpPct}%"></div><i id="hpMe" style="width:${hpPct}%"></i></div>
+    <div class="stat-row">
+      <div class="stat atk"><i>ATK</i> <b id="meAtkT">${fmtBattleK(st.atk)}</b></div>
+      <div class="stat hp"><i>HP</i> <b id="hpMeT">${fmtBattleK(curHp)}</b></div>
     </div>
-    <div class="hpbar"><i id="hpMe" style="width:${hpPct}%"></i><span id="hpMeT">${fmt(curHp)} / ${fmt(maxHp)}</span></div>
-    <div class="f-body">
-      <div class="f-type-row">
-        <div class="f-title">${type}</div>
-        <span class="f-power-tag">⚡ PWR ${pwr}K</span>
-      </div>
-      <div class="f-skill-plaque">
-        <span class="f-skill-icon">🔮</span>
-        <div class="f-skill">${passiveName(s.char)}</div>
-      </div>
-      <div class="stat-row"><div class="stat hp"><i>HP</i> <b>${fmtStat(maxHp)}</b></div><div class="stat atk"><i>ATK</i> <b>${fmtStat(st.atk)}</b></div></div>
-    </div>`;
+  </div>`;
 }
-function meShadowHtml(sh){return `${tcgPlayerEquipRailHtml()}
-    <div class="f-banner"><img src="${sh.img}" alt="${sh.name}" style="filter:grayscale(.35) brightness(.72) hue-rotate(215deg) saturate(1.5)"><div class="cyber-holo-sweep"></div><div class="f-name" style="color:#c4b5fd">SHADOW · ${sh.name}</div></div>
-    <div class="hpbar"><i id="hpMe" style="width:100%"></i><span id="hpMeT">${fmt(sh.maxHp)} / ${fmt(sh.maxHp)}</span></div>
-    <div class="f-body"><div class="f-type-row"><div class="f-title">Bayangan</div><span class="f-power-tag">⚡ SHADOW</span></div><div class="f-skill-plaque"><span class="f-skill-icon">👁️</span><div class="f-skill">ARISE</div></div><div class="stat-row"><div class="stat hp"><i>HP</i> <b>${fmtStat(sh.maxHp)}</b></div><div class="stat atk"><i>ATK</i> <b>${fmtStat(sh.atk)}</b></div></div></div>`;}
+function meShadowHtml(sh){
+  return `<div class="f-banner">
+    <img src="${sh.img}" alt="${sh.name}" style="filter:grayscale(.35) brightness(.72) hue-rotate(215deg) saturate(1.5)">
+    <div class="f-banner-vignette"></div>
+  </div>
+  <div class="f-body">
+    <div class="hpbar"><div class="hp-trail" style="width:100%"></div><i id="hpMe" style="width:100%"></i></div>
+    <div class="stat-row">
+      <div class="stat atk"><i>ATK</i> <b id="meAtkT">${fmtBattleK(sh.atk)}</b></div>
+      <div class="stat hp"><i>HP</i> <b id="hpMeT">${fmtBattleK(sh.maxHp)}</b></div>
+    </div>
+  </div>`;
+}
 /* Bayangan jatuh / giliran habis → Monarch kembali ke slot dengan HP aslinya (tak tersentuh selama possess). */
 function endPossession(){
   if(!bt||!bt.shadow)return;
@@ -260,11 +257,13 @@ function renderBattle(){
   const eq=equipped();
   app.innerHTML=`
   <div class="battle-grid">
+  ${tcgPlayerEquipRailHtml()}
+  ${tcgFoeEquipRailHtml()}
   <div class="me-col">
     <div class="fighter me${eq?mutGlow(eq.mut):''}${shinyCls(eq)}${eq&&isFullArt(eq.char)?' full-art':''}" data-tier="${eq?eq.tier:''}" data-char="${eq?eq.char:''}"${eq?mutEdge(eq.mut):''}>${meFighterHtml(eq)}</div>
     ${benchHtml()}
   </div>
-  <div class="vs-col"><div class="t">VS</div><div class="s" id="turnLabel">AUTO<br>BATTLE</div><button class="bspeed-btn" id="bspeedBtn" type="button">1×</button></div>
+  <div class="vs-col"><div class="s" id="turnLabel" style="display:none"></div><button class="bspeed-btn" id="bspeedBtn" type="button">1×</button></div>
   <div class="me-col foe-side">
     <div class="fighter foe${mutGlow(diffOf().mut)}" data-tier="${en.tier||''}"${mutEdge(diffOf().mut)}>
       ${foeFighterInnerHtml(en,es,{mut:diffOf().mut})}
@@ -2083,8 +2082,12 @@ if(fx.worldCorrupt){bt.wc={c:0,atk:Math.round(cardStats(bt.eq.char,bt.eq.mut,bt.
 }
 function setBar(id,tid,cur,max){
   const b=document.getElementById(id);if(!b)return;
-  b.style.width=Math.max(0,cur/max*100)+"%";
-  const t=tid?document.getElementById(tid):null;if(t)t.textContent=fmt(Math.max(0,cur))+" / "+fmt(max);
+  const pct=Math.max(0,Math.min(100,cur/max*100))+"%";
+  b.style.width=pct;
+  const tr=b.parentElement?b.parentElement.querySelector(".hp-trail"):null;
+  if(tr)tr.style.width=pct;
+  const t=tid?document.getElementById(tid):null;
+  if(t)t.textContent=fmtBattleK(Math.max(0,cur));
 }
 function step(){ if(!bt||bt.over)return; schedPhase(0,playerPhase); }
 // Safe scheduler: guarantees the battle can never hang. If a phase throws,

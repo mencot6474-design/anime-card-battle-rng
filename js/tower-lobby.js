@@ -560,11 +560,13 @@ function renderTowerBattle(){
   const eq=equipped(),st=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   app.innerHTML=`
   <div class="battle-grid tower-stage">
+  ${typeof tcgPlayerEquipRailHtml==="function"?tcgPlayerEquipRailHtml():""}
+  ${typeof tcgFoeEquipRailHtml==="function"?tcgFoeEquipRailHtml():""}
   <div class="me-col">
     <div class="fighter me${eq?mutGlow(eq.mut):''}${shinyCls(eq)}" data-tier="${eq?eq.tier:''}" data-char="${eq?eq.char:''}"${eq?mutEdge(eq.mut):''}>${meFighterHtml(eq)}</div>
     ${benchHtml()}
   </div>
-  <div class="vs-col"><div class="t">VS</div><div class="s" id="turnLabel">FLOOR <b>${towerRun.floor}</b> · ${towerIsBossFloor(towerRun.floor)?"BOSS ENCOUNTER":"WAVE <b>"+(towerRun.idx+1)+"/"+towerRun.waves.length+"</b>"}</div><button class="bspeed-btn" id="bspeedBtn" type="button">1×</button></div>
+  <div class="vs-col"><div class="s" id="turnLabel">FLOOR <b>${towerRun.floor}</b> · ${towerIsBossFloor(towerRun.floor)?"BOSS ENCOUNTER":"WAVE <b>"+(towerRun.idx+1)+"/"+towerRun.waves.length+"</b>"}</div><button class="bspeed-btn" id="bspeedBtn" type="button">1×</button></div>
   <div class="me-col foe-side" id="foeSide">${towerFoeSide(w)}</div>
   </div>`;
   wireSpeedBtn();
@@ -1176,7 +1178,8 @@ window.cycleLobbyBackground = function() {
   if (curIdx === -1) curIdx = 0;
   const nextKey = keys[(curIdx + 1) % keys.length];
   state.lobbyBg = nextKey;
-  if (typeof saveState === 'function') saveState();
+  if (typeof save === 'function') save();
+  else if (typeof saveState === 'function') saveState();
 
   const layer = document.getElementById('stageBgLayer');
   if (layer) {
@@ -1184,9 +1187,10 @@ window.cycleLobbyBackground = function() {
     setTimeout(() => {
       layer.style.backgroundImage = 'url("' + LOBBY_BGS[nextKey].src + '")';
       layer.style.opacity = '1';
-    }, 160);
+    }, 140);
   }
-  if (typeof showToast === 'function') showToast('LOBBY: ' + LOBBY_BGS[nextKey].name);
+  if (typeof toast === 'function') toast('STAGE BACKGROUND', LOBBY_BGS[nextKey].name, '#38bdf8');
+  else if (typeof showToast === 'function') showToast('LOBBY: ' + LOBBY_BGS[nextKey].name);
   if (typeof window.syncBattleBackground === 'function') window.syncBattleBackground();
 };
 
@@ -1198,21 +1202,37 @@ window.cycleCardFrame = function() {
   if (curIdx === -1) curIdx = 0;
   const nextKey = keys[(curIdx + 1) % keys.length];
   state.lobbyFrame = nextKey;
-  if (typeof saveState === 'function') saveState();
+  if (typeof save === 'function') save();
+  else if (typeof saveState === 'function') saveState();
 
-  const plate = document.getElementById('heroCardPlate');
-  const frameSvg = document.getElementById('heroFrameSvg');
   const cfg = LOBBY_FRAMES[nextKey];
+  const plate = document.getElementById('heroCardPlate');
   if (plate) plate.className = 'hero-card-plate ' + cfg.theme;
-  if (frameSvg) {
+
+  const heroWrap = document.getElementById('heroStandeeWrap');
+  if (heroWrap && heroWrap.classList.contains('hero')) {
+    heroWrap.setAttribute('data-frame-theme', cfg.theme || '');
+  }
+
+  let frameEl = document.getElementById('heroFrameSvg') || document.querySelector('#heroStandeeWrap .frm');
+  if (!frameEl && heroWrap) {
+    frameEl = document.createElement('img');
+    frameEl.className = 'frm';
+    frameEl.id = 'heroFrameSvg';
+    frameEl.alt = '';
+    heroWrap.appendChild(frameEl);
+  }
+  if (frameEl) {
     if (cfg.src) {
-      frameSvg.style.display = 'block';
-      frameSvg.src = cfg.src;
+      frameEl.style.display = 'block';
+      frameEl.src = cfg.src;
     } else {
-      frameSvg.style.display = 'none';
+      frameEl.style.display = 'none';
+      frameEl.removeAttribute('src');
     }
   }
-  if (typeof showToast === 'function') showToast('FRAME: ' + cfg.name);
+  if (typeof toast === 'function') toast('BINGKAI KARTU HERO', cfg.name, '#fbbf24');
+  else if (typeof showToast === 'function') showToast('FRAME: ' + cfg.name);
 };
 
 /* Living Hero Standee HTML */
@@ -1534,6 +1554,7 @@ function initCommandDrawerGestures() {
 
 /* ================= MAIN RENDER LOBBY ================= */
 let _l12HudTick = null;   /* timer HUD v12 (potion / global luck / weather) */
+let _lastWxId = undefined;
 
 /* ---- SIMPAN REFERENSI NODE HIDUP YANG DIRELOKASI ----
    #rollBtn/#rollAutoBtn/#footAv aslinya anak .lobby-footer (luar #app, index.html:795).
@@ -1614,6 +1635,10 @@ function renderLobby(){
   const _potLuck = _luckBuffs[_luckBuffs.length - 1] || null;
   const _potSpeed = _speedBuffs[_speedBuffs.length - 1] || null;
   const _adLuckMs = (typeof adLuckLeftMs === "function") ? adLuckLeftMs() : 0;
+  const _lkPots = Array.isArray(state.luckPots) ? state.luckPots : [0,0,0];
+  const _spPots = Array.isArray(state.speedPots) ? state.speedPots : [0,0,0];
+  const _lkStock = (_lkPots[0]||0) + (_lkPots[1]||0) + (_lkPots[2]||0);
+  const _spStock = (_spPots[0]||0) + (_spPots[1]||0) + (_spPots[2]||0);
 
   /* GLOBAL LUCK */
   const _gl = (typeof _globalLuckCache !== "undefined") ? _globalLuckCache : null;
@@ -1664,14 +1689,32 @@ function renderLobby(){
   <div class="lobby-hub stage-root l12" id="stage">
     <div class="colw">
 
-      <!-- L1 TOPBAR: level+xp bar asli, saldo coin/gem asli, menu #footAv (node hidup) -->
+      <!-- L1 TOPBAR: Cyberpunk Tactical Command Header -->
       <header class="top">
         <span class="rail rail-top" aria-hidden="true"></span>
-        <span class="l12-slot" id="slotMenu"></span>
-        <div class="lvl"><span>LV ${_lv}</span><span class="bar"><span style="width:${_xpPct}%"></span></span></div>
-        <div class="res">
-          <span class="pill"><i class="ic i-coin"></i>${_coins}</span>
-          <span class="pill"><i class="ic i-gem"></i>${_gems}</span>
+        <div class="top-l">
+          <div class="l12-lvl-pod" onclick="if(typeof openProfileModal==='function')openProfileModal();" role="button" tabindex="0">
+            <span class="lv-badge">LV <b id="l12TopLv">${_lv}</b></span>
+            <div class="lv-info">
+              <span class="lv-meta">
+                <span class="lv-title" onclick="event.stopPropagation();if(typeof openTitlesModal==='function')openTitlesModal();" title="Klik untuk ganti Title">[${(state.playerTitle || "ROOKIE").toUpperCase()}]</span>
+                <span class="lv-pct" id="l12TopXpPct">${_xpPct}%</span>
+              </span>
+              <span class="bar"><span id="l12TopXpBar" style="width:${_xpPct}%"></span></span>
+            </div>
+          </div>
+          <button class="top-chip pwr-chip" type="button" onclick="if(typeof toggleBackpack==='function')toggleBackpack();" title="Total Combat Power ? Klik buka Deck"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="color:var(--gold);flex:none;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><b id="l12TopPwr">${_heroPower}</b></button>
+        </div>
+        <div class="top-r">
+          <div class="res">
+            <button class="pill coin-pill" type="button" onclick="if(typeof openPremiumShop==='function')openPremiumShop();" title="Gold Coins"><span class="p-ic">${typeof coinIcon === 'function' ? coinIcon(15) : '<i class="ic i-coin"></i>'}</span><b id="l12TopCoins">${_coins}</b></button>
+            <button class="pill gem-pill" type="button" onclick="if(typeof openPremiumShop==='function')openPremiumShop();" title="Premium Gems ? Klik buka Supply Shop"><img class="p-gem-img" src="assets/images/premium-currency.webp" alt=""><b id="l12TopGems">${_gems}</b><span class="p-plus">+</span></button>
+          </div>
+          <div class="top-acts">
+            <button class="top-act-btn" type="button" onclick="if(typeof cycleLobbyBackground==='function')cycleLobbyBackground();" title="Ganti Background Panggung"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></button>
+            <button class="top-act-btn" type="button" onclick="if(typeof cycleCardFrame==='function')cycleCardFrame();" title="Ganti Bingkai Kartu Hero"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></button>
+            <button class="top-act-btn" type="button" onclick="location.hash='#/settings'" title="Pengaturan"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+          </div>
         </div>
       </header>
 
@@ -1688,7 +1731,7 @@ function renderLobby(){
             <span class="cast" aria-hidden="true"></span>
             <div class="sheen" aria-hidden="true"></div>
             <span class="glow" aria-hidden="true"></span>
-            ${_frameCfg.src ? `<img class="frm" src="${_frameCfg.src}" alt="">` : ""}
+            <img class="frm" id="heroFrameSvg" src="${_frameCfg.src || ''}" alt="" style="${_frameCfg.src ? 'display:block;' : 'display:none;'}">
             <span class="nm">${_heroName}</span><span class="rr">${_heroTier}</span>
             <span class="pwr"><b>${_heroPower}</b><i>POWER</i></span>
             <span class="traits">${_passive ? `<i>${_passive}</i>` : ""}${_mut ? `<i>${_mut}</i>` : ""}${_trait ? `<i>${_trait}</i>` : ""}</span>
@@ -1715,25 +1758,35 @@ function renderLobby(){
             </div>
           </div>
 
-          <!-- L5b RIWAYAT PULL: DIHAPUS (perintah user 2026-10-31). Ruang ini sekarang
-               diisi HUD di bawahnya — lihat .l12 .panel grid-template-rows di
-               css/lobby-prototype.css (blok .l12). -->
+          <!-- L5b RIWAYAT ROLL: 10 SLOT TERBARU (ANTI-LAG) -->
+          <div class="rhist" id="l12RollHistWrap">
+            <div class="rh-head">
+              <span class="rh-title"><i class="rh-dot"></i>RIWAYAT ROLL <small>(MAX 10 TERBARU)</small></span>
+              <span class="rh-total" id="l12RollTotal">TOTAL: ${_fmt(state.totalRolls || 0)}</span>
+            </div>
+            <div class="rh-strip" id="l12RollHist">
+              <!-- 10 static slots rendered by _l12PaintRollHist() -->
+            </div>
+          </div>
 
           <!-- L4/L5/L6 HUD: potion + global luck + weather -->
           <div class="hud">
             <div class="pots">
-              <div class="pot-row" data-block="pot-luck" id="l12PotLuck">
+              <div class="pot-row" data-block="pot-luck" id="l12PotLuck" role="button" tabindex="0" title="Klik untuk pakai Potion" onclick="window.l12TogglePotionTray('luck')">
                 <img class="pimg" src="assets/images/pot-luck-${_potLuck ? _potLuck.lv : 1}.webp" alt="">
-                <span class="plab">POTION LUCK</span><b id="l12PotLuckVal">${_potLuck ? "+" + (_potLuck.flat||0) + " L" + _potLuck.lv : (_adLuckMs>0?"ADS ×2":"OFF")}</b>
+                <span class="plab">LUCK POT</span><b id="l12PotLuckVal">${_potLuck ? "+" + (_potLuck.flat||0) + " L" + _potLuck.lv : (_adLuckMs>0?"ADS ×2":"OFF")}</b>
                 <span class="tr"><span id="l12PotLuckBar" style="width:${_potLuck ? Math.max(4, Math.min(100, Math.round((_potLuck.endsAt - _now) / _potWin * 100))) : 0}%"></span></span>
                 <span class="tm" id="l12PotLuckTm">${_potLuck ? _cd(_potLuck.endsAt - _now) : (_adLuckMs > 0 ? _cd(_adLuckMs) : "--:--")}</span>
+                <span class="pstock" id="l12PotLuckStock">🧪${_lkStock}</span><span class="puse-tag">PAKAI ▾</span>
               </div>
-              <div class="pot-row" data-block="pot-speed" id="l12PotSpeed">
+              <div class="pot-row" data-block="pot-speed" id="l12PotSpeed" role="button" tabindex="0" title="Klik untuk pakai Potion" onclick="window.l12TogglePotionTray('speed')">
                 <img class="pimg" src="assets/images/pot-speed-${_potSpeed ? _potSpeed.lv : 1}.webp" alt="">
-                <span class="plab">POTION SPEED</span><b id="l12PotSpeedVal">${_potSpeed ? "+" + (_potSpeed.add||0).toFixed(1) + "× L" + _potSpeed.lv : "OFF"}</b>
+                <span class="plab">SPEED POT</span><b id="l12PotSpeedVal">${_potSpeed ? "+" + (_potSpeed.add||0).toFixed(1) + "× L" + _potSpeed.lv : "OFF"}</b>
                 <span class="tr"><span id="l12PotSpeedBar" style="width:${_potSpeed ? Math.max(4, Math.min(100, Math.round((_potSpeed.endsAt - _now) / _potWin * 100))) : 0}%"></span></span>
                 <span class="tm" id="l12PotSpeedTm">${_potSpeed ? _cd(_potSpeed.endsAt - _now) : "--:--"}</span>
+                <span class="pstock" id="l12PotSpeedStock">🧪${_spStock}</span><span class="puse-tag">PAKAI ▾</span>
               </div>
+              <div class="pot-tray" id="l12PotTray" style="display:none;"></div>
             </div>
             <div class="glw" data-block="global-luck" role="status" id="l12Glw">
               <span class="gicon"><i class="ic i-clover"></i></span>
@@ -1744,8 +1797,23 @@ function renderLobby(){
               <button class="gbtn${_glActive && !_glMaxed ? " stack" : ""}${_glMaxed ? " maxed" : ""}${_glCan ? "" : " unaff"}" type="button" id="l12GlBuy"${_glMaxed ? " disabled" : ""}${_glCan ? "" : ' aria-disabled="true"'} title="${_glCan ? 'Beli/ tumpuk Global Luck' : 'Gems kurang — butuh ' + _glCost}"><span id="l12GlBuyLab">${_glLabel}</span><span class="gprice"><img src="assets/images/premium-currency.webp" alt=""><span id="l12GlBuyCost">${_glCost}</span></span></button>
             </div>
             <div class="wx" data-block="weather" role="status" id="l12Wx">
-              <span class="winfo"><span class="rdot"></span><i class="ic wic i-sun"></i><span class="wname" id="l12WxName">${_w ? String(_w.name || _wId).toUpperCase() : "NO WEATHER"}</span><span class="wrr" id="l12WxRr">${_wRr}</span></span>
-              <span class="wtm"><img class="wimg" src="assets/images/weather-potion.webp" alt=""><span id="l12WxTm">${_wLeft ? _cd(_wLeft) : "--:--"}</span></span>
+              <div class="wx-head">
+                <span class="winfo">
+                  <span class="rdot" style="background:${_w ? _w.color : 'var(--cyan)'};"></span>
+                  <i class="ic wic i-sun"></i>
+                  <span class="wname" id="l12WxName">${_w ? String(_w.name || _wId).toUpperCase() : "CLEAR SKY · NO ANOMALY"}</span>
+                  <span class="wrr" id="l12WxRr">${_wRr || "IDLE"}</span>
+                  <span class="wbuff-chip">${_w ? _w.luckBonus + "× LUCK · " + _w.speedBonus + "× SPD" : "TARGET WEATHER CARDS"}</span>
+                </span>
+                <div class="wtm-wrap">
+                  <span class="wtm" id="l12WxTm">${_wLeft ? _cd(_wLeft) : "--:--"}</span>
+                  <button class="wx-act-btn" id="l12WxBtn" type="button" onclick="if(typeof openWeatherMachine==='function')openWeatherMachine();" title="Buka Weather Synthesis & Machine">
+                    <img class="wimg" src="assets/images/weather-potion.webp" alt="">
+                    <span>SYNTH (${(state.potions||0) + (state.mythicPotions||0)})</span>
+                  </button>
+                </div>
+              </div>
+              <div class="wx-cards" id="l12WxCards"></div>
             </div>
           </div>
 
@@ -1890,7 +1958,7 @@ function renderLobby(){
   };
   _l12Place("slotRoll", "rollBtn", "cta");
   _l12Place("slotAuto", "rollAutoBtn", "tgl");
-  _l12Place("slotMenu", "footAv", "l12-menu");
+  /* #footAv burger removed from header per user request */
 
   /* ---- TIMER HUD (potion / global luck / weather) ----
      panels.js cuma me-repaint #buffDock/#weatherPanel/#glLobbyWidget miliknya,
@@ -1903,6 +1971,27 @@ function renderLobby(){
     const now = Date.now();
     const put = (id, txt) => { const e = document.getElementById(id); if (e && e.textContent !== txt) e.textContent = txt; };
     const wid = (id, pct) => { const e = document.getElementById(id); if (e) e.style.width = pct + "%"; };
+
+    // 1. Live Header Telemetry & Live Stats
+    if (typeof state !== "undefined" && state) {
+      put("l12TopLv", String(state.playerLv || 1));
+      const xpNeed = Math.max(1, (state.playerLv || 1) * 1000);
+      const xpPct = Math.max(0, Math.min(100, Math.round((state.xp || 0) / xpNeed * 100)));
+      put("l12TopXpPct", xpPct + "%");
+      wid("l12TopXpBar", xpPct);
+      put("l12TopCoins", (typeof fmt === "function") ? fmt(state.coins || 0) : String(state.coins || 0));
+      put("l12TopGems", (typeof fmt === "function") ? fmt(state.premiumGems || 0) : String(state.premiumGems || 0));
+      put("l12TopPwr", (typeof totalPower === "function") ? ((typeof fmt === "function") ? fmt(totalPower()) : String(totalPower())) : "0");
+      put("l12RollTotal", "TOTAL: " + ((typeof fmt === "function") ? fmt(state.totalRolls || 0) : (state.totalRolls || 0)));
+
+      // Live Potion Stock update
+      const curLkP = Array.isArray(state.luckPots) ? state.luckPots : [0,0,0];
+      const curSpP = Array.isArray(state.speedPots) ? state.speedPots : [0,0,0];
+      put("l12PotLuckStock", "🧪" + ((curLkP[0]||0) + (curLkP[1]||0) + (curLkP[2]||0)));
+      put("l12PotSpeedStock", "🧪" + ((curSpP[0]||0) + (curSpP[1]||0) + (curSpP[2]||0)));
+    }
+
+    // 2. Potion Buffs
     const lb = (typeof luckBuffs === "function") ? luckBuffs().sort((a, b) => a.lv - b.lv).pop() : null;
     const sb = (typeof speedBuffs === "function") ? speedBuffs().sort((a, b) => a.lv - b.lv).pop() : null;
     const adMs = (typeof adLuckLeftMs === "function") ? adLuckLeftMs() : 0;
@@ -1923,18 +2012,34 @@ function renderLobby(){
     } else {
       put("l12PotSpeedVal", "OFF"); put("l12PotSpeedTm", "--:--"); wid("l12PotSpeedBar", 0);
     }
+
+    // 3. Global Luck
     const gl = (typeof _globalLuckCache !== "undefined") ? _globalLuckCache : null;
     const glOn = !!(gl && now < new Date(gl.ends_at).getTime());
     put("l12GlMult", glOn ? ((gl.multiplier || 0) + "× LUCK") : "OFF");
     put("l12GlTm", glOn ? ((typeof fmtCountdown === "function") ? fmtCountdown(new Date(gl.ends_at).getTime() - now) : "") : "--:--");
     put("l12GlStack", Math.min(10, glOn ? Math.max(1, Math.round((gl.multiplier || 0) / 10)) : 0) + "/10 STACK");
-    const wLeft = (state.weather && state.weather.endsAt) ? Math.max(0, state.weather.endsAt - now) : 0;
+
+    // 4. Weather live check & auto-refresh cards if weather changes
+    const wLeft = (state && state.weather && state.weather.endsAt) ? Math.max(0, state.weather.endsAt - now) : 0;
     put("l12WxTm", wLeft ? ((typeof fmtCountdown === "function") ? fmtCountdown(wLeft) : "") : "--:--");
-    /* +10x: label, harga, dan status mampu/tidak ikut saldo gem yang berubah
-       tanpa re-render penuh (mis. setelah beli atau setelah reward masuk). */
+    const curWxId = (typeof activeWeatherId === "function") ? activeWeatherId() : null;
+    if (curWxId !== _lastWxId) {
+      _lastWxId = curWxId;
+      const curW = (curWxId && typeof WEATHER !== "undefined" && WEATHER[curWxId]) ? WEATHER[curWxId] : null;
+      put("l12WxName", curW ? String(curW.name || curWxId).toUpperCase() : "CLEAR SKY · NO ANOMALY");
+      put("l12WxRr", curW ? String(curW.rarity || curW.rar || "COMMON").toUpperCase() : "IDLE");
+      const rdot = document.querySelector("#l12Wx .rdot");
+      if (rdot) rdot.style.background = curW ? curW.color : "var(--cyan)";
+      const wchip = document.querySelector("#l12Wx .wbuff-chip");
+      if (wchip) wchip.textContent = curW ? (curW.luckBonus + "× LUCK · " + curW.speedBonus + "× SPD") : "TARGET WEATHER CARDS";
+      _l12RenderWxCards(curWxId);
+    }
+
+    /* +10x: label, harga, dan status mampu/tidak ikut saldo gem */
     const glCost = (typeof GLOBAL_LUCK_COST !== "undefined") ? GLOBAL_LUCK_COST : 0;
     const glMax = (typeof GLOBAL_LUCK_MAX_MULT !== "undefined") ? GLOBAL_LUCK_MAX_MULT : 100;
-    const glCan = (state.premiumGems || 0) >= glCost;
+    const glCan = (state && state.premiumGems || 0) >= glCost;
     const glMaxed = glOn && ((gl.multiplier || 0) >= glMax);
     put("l12GlBuyLab", glOn ? (glMaxed ? "MAX " + glMax + "×" : "+10×") : "AKTIFKAN");
     put("l12GlBuyCost", String(glCost));
@@ -2160,8 +2265,274 @@ function renderLobby(){
   initTelemetryTicker();
   initCommandDrawerGestures();
   if (typeof initAAAInteractiveSuite === 'function') initAAAInteractiveSuite();
+
+  // Render Weather Cards & Roll History
+  _l12RenderWxCards(_wId);
+  l12PaintRollHist();
+  _hookRollHistory();
 }
 
+/* ==========================================================================
+   L12 HELPER ENGINES: WEATHER CARDS, POTION TRAY, AND ROLL HISTORY STRIP
+   ========================================================================== */
+
+/* ---- WEATHER CARDS ENGINE ---- */
+function _l12RenderWxCards(activeWeatherId) {
+  const container = document.getElementById("l12WxCards");
+  if (!container) return;
+  let cards = [];
+  if (typeof window.l12GetWeatherCards === "function") {
+    cards = window.l12GetWeatherCards(activeWeatherId);
+  } else if (typeof MASTER_CARD_INDEX !== "undefined") {
+    cards = activeWeatherId
+      ? MASTER_CARD_INDEX.filter(c => c && c.weatherOnly === activeWeatherId)
+      : MASTER_CARD_INDEX.filter(c => c && !!c.weatherOnly).slice(0, 8);
+  }
+  if (!cards || !cards.length) {
+    container.innerHTML = '<span class="wx-cards-empty">NO EXCLUSIVE CARDS</span>';
+    return;
+  }
+  const displayCards = activeWeatherId ? cards : cards.slice(0, 8);
+  const stacks = (typeof state !== "undefined" && state && Array.isArray(state.stacks)) ? state.stacks : [];
+  const ownedSet = new Set(stacks.map(s => s && s.char));
+
+  container.innerHTML = displayCards.map(c => {
+    const cid = c.char_id || c.id;
+    const isOwned = typeof c.owned === "boolean" ? c.owned : ownedSet.has(cid);
+    const thumb = c.thumb || ((typeof cardThumb === "function") ? cardThumb(cid) : "");
+    const tier = c.tier || "UR";
+    const wId = c.weatherId || c.weatherOnly || "";
+    const wCol = c.weatherColor || ((typeof WEATHER !== "undefined" && WEATHER[wId] && WEATHER[wId].color) ? WEATHER[wId].color : "#38bdf8");
+    const tag = (!activeWeatherId && wId) ? String(wId).slice(0, 4).toUpperCase() : tier;
+    const rawCh = c.chance || ((typeof luckChance === "function") ? luckChance(cid) : 0);
+    const chanceStr = (typeof fmtChance === "function") ? fmtChance(rawCh) : rawCh;
+    const wName = c.weatherName || wId.toUpperCase();
+    return `
+      <div class="wx-card-slot wc-slot ${isOwned ? 'owned' : 'unowned'}"
+           style="--wc:${wCol}"
+           data-wc="${cid}"
+           onclick="if(typeof openWeatherMachine==='function')openWeatherMachine();"
+           title="${c.name} [${wName}] ? ${tier} ? 1 in ${chanceStr} (${isOwned ? 'OWNED' : 'BELUM MILIKI'})">
+        <img src="${thumb}" alt="${c.name}" loading="lazy">
+        <span class="wx-c-tag">${tag}</span>
+        <span class="wx-c-ch">1:${chanceStr}</span>
+      </div>
+    `;
+  }).join("");
+
+  if (typeof wcHoverBind === "function") {
+    try { wcHoverBind(); } catch(e) {}
+  }
+}
+
+/* ---- QUICK-USE POTION POPOVER TRAY ---- */
+window.l12TogglePotionTray = function(type) {
+  const tray = document.getElementById("l12PotTray");
+  if (!tray) return;
+  const isOpen = tray.classList.contains("open") && tray.getAttribute("data-active-type") === type;
+  if (isOpen) {
+    window.l12ClosePotionTray();
+    return;
+  }
+  tray.setAttribute("data-active-type", type);
+  tray.classList.add("open");
+  tray.style.display = "flex";
+  _l12RefreshPotionTray(type);
+};
+
+window.l12ClosePotionTray = function() {
+  const tray = document.getElementById("l12PotTray");
+  if (tray) {
+    tray.classList.remove("open");
+    tray.style.display = "none";
+    tray.removeAttribute("data-active-type");
+  }
+};
+
+function _l12RefreshPotionTray(type) {
+  const tray = document.getElementById("l12PotTray");
+  if (!tray) return;
+  const t = type || tray.getAttribute("data-active-type") || "luck";
+  const pots = t === "luck"
+    ? (Array.isArray(state && state.luckPots) ? state.luckPots : [0,0,0])
+    : (Array.isArray(state && state.speedPots) ? state.speedPots : [0,0,0]);
+  const isLuck = t === "luck";
+  const title = isLuck ? "?? LUCK POTION (PILIH LEVEL)" : "? SPEED POTION (PILIH LEVEL)";
+  const effs = isLuck
+    ? ["+3 LUCK", "+5 & +10%", "+10 & +20%"]
+    : ["+0.2? SPD", "+0.5? SPD", "+1.0? SPD"];
+
+  tray.innerHTML = `
+    <div class="pot-tray-head">
+      <span>${title}</span>
+      <button class="pot-tray-close" type="button" onclick="window.l12ClosePotionTray()" title="Tutup" style="background:none;border:0;color:var(--ice);cursor:pointer;font-size:11px;padding:0 4px;">?</button>
+    </div>
+    <div class="pot-tray-grid">
+      ${[1, 2, 3].map(lv => {
+        const stk = pots[lv - 1] || 0;
+        const canUse = stk > 0;
+        return `
+          <button class="pot-lv-btn ${canUse ? 'ready' : 'empty'}" type="button"
+                  onclick="window.l12InvokePotion('${t}', ${lv})"
+                  title="${canUse ? 'Pakai 1 botol Level ' + lv + ' (+5 menit)' : 'Stok habis ? dapatkan di Shop / Tower'}">
+            <div style="display:flex;align-items:center;justify-content:space-between;width:100%;font-size:8.5px;">
+              <b style="color:var(--gold)">LV.${lv}</b>
+              <span style="font-family:var(--mono);color:${canUse ? '#6ee7b7' : '#94a3b8'}">x${stk}</span>
+            </div>
+            <img src="assets/images/pot-${t}-${lv}.webp" alt="L${lv}" style="width:22px;height:22px;object-fit:contain;">
+            <span style="font-size:8px;color:var(--ice);white-space:nowrap;">${effs[lv - 1]}</span>
+            <span style="font-size:7.5px;font-weight:800;padding:1px 5px;background:${canUse ? 'rgba(16,185,129,0.22)' : 'rgba(148,163,184,0.12)'};border:1px solid ${canUse ? 'rgba(52,211,153,0.55)' : 'rgba(148,163,184,0.25)'};color:${canUse ? '#6ee7b7' : '#94a3b8'}">${canUse ? '+ PAKAI' : 'HABIS'}</span>
+          </button>
+        `;
+      }).join("")}
+    </div>
+  `;
+
+  const curLkP = Array.isArray(state && state.luckPots) ? state.luckPots : [0,0,0];
+  const curSpP = Array.isArray(state && state.speedPots) ? state.speedPots : [0,0,0];
+  const lkStock = (curLkP[0]||0) + (curLkP[1]||0) + (curLkP[2]||0);
+  const spStock = (curSpP[0]||0) + (curSpP[1]||0) + (curSpP[2]||0);
+  const lkEl = document.getElementById("l12PotLuckStock");
+  if (lkEl) lkEl.textContent = "??" + lkStock;
+  const spEl = document.getElementById("l12PotSpeedStock");
+  if (spEl) spEl.textContent = "??" + spStock;
+}
+
+window.l12InvokePotion = function(type, lv) {
+  let res = null;
+  if (typeof window.l12UsePotionQuick === "function") {
+    res = window.l12UsePotionQuick(type, lv);
+  } else if (type === "luck" && typeof useLuckPotion === "function") {
+    res = useLuckPotion(lv, 1);
+  } else if (type === "speed" && typeof useSpeedPotion === "function") {
+    res = useSpeedPotion(lv, 1);
+  }
+  _l12RefreshPotionTray(type);
+  const now = Date.now();
+  const win = (typeof WEATHER_MS !== "undefined") ? WEATHER_MS : 300000;
+  const lb = (typeof luckBuffs === "function") ? luckBuffs().slice().sort((a, b) => a.lv - b.lv).pop() : null;
+  const sb = (typeof speedBuffs === "function") ? speedBuffs().slice().sort((a, b) => a.lv - b.lv).pop() : null;
+  if (lb) {
+    const v = document.getElementById("l12PotLuckVal"); if (v) v.textContent = "+" + (lb.flat || 0) + " L" + lb.lv;
+    const t = document.getElementById("l12PotLuckTm"); if (t && typeof fmtCountdown === "function") t.textContent = fmtCountdown(lb.endsAt - now);
+    const b = document.getElementById("l12PotLuckBar"); if (b) b.style.width = Math.max(4, Math.min(100, Math.round((lb.endsAt - now) / win * 100))) + "%";
+  }
+  if (sb) {
+    const v = document.getElementById("l12PotSpeedVal"); if (v) v.textContent = "+" + (sb.add || 0).toFixed(1) + "? L" + sb.lv;
+    const t = document.getElementById("l12PotSpeedTm"); if (t && typeof fmtCountdown === "function") t.textContent = fmtCountdown(sb.endsAt - now);
+    const b = document.getElementById("l12PotSpeedBar"); if (b) b.style.width = Math.max(4, Math.min(100, Math.round((sb.endsAt - now) / win * 100))) + "%";
+  }
+  return res;
+};
+
+/* ---- ROLL HISTORY 10-SLOT STRIP ENGINE (ANTI-LAG) ---- */
+let _rhLastPaint = 0;
+let _rhRafTimer = null;
+
+function l12ScheduleRollHistPaint() {
+  if (_rhRafTimer) return;
+  const now = Date.now();
+  const delay = Math.max(0, 150 - (now - _rhLastPaint));
+  _rhRafTimer = setTimeout(() => {
+    _rhRafTimer = null;
+    requestAnimationFrame(() => {
+      _rhLastPaint = Date.now();
+      l12PaintRollHist();
+    });
+  }, delay);
+}
+window.l12ScheduleRollHistPaint = l12ScheduleRollHistPaint;
+
+function l12PaintRollHist() {
+  const container = document.getElementById("l12RollHist");
+  if (!container) return;
+  const tot = document.getElementById("l12RollTotal");
+  if (tot && typeof state !== "undefined" && state) {
+    tot.textContent = "TOTAL: " + ((typeof fmt === "function") ? fmt(state.totalRolls || 0) : (state.totalRolls || 0));
+  }
+
+  if (typeof state !== "undefined" && state && Array.isArray(state.rollHistory) && state.rollHistory.length > 10) {
+    state.rollHistory.length = 10;
+  }
+  const list = (typeof state !== "undefined" && state && Array.isArray(state.rollHistory)) ? state.rollHistory.slice(0, 10) : [];
+  let html = "";
+  for (let i = 0; i < 10; i++) {
+    const item = list[i];
+    if (item && item.char) {
+      const c = (typeof CARDS !== "undefined" && CARDS[item.char]) ? CARDS[item.char] : null;
+      const thumb = (typeof cardThumb === "function") ? cardThumb(item.char) : ((c && c.thumb) ? c.thumb : "assets/cards/thumb/" + item.char + ".webp");
+      const tier = (c && c.tier) ? String(c.tier).toLowerCase() : "c";
+      const tierClass = "r-" + tier;
+      const mutClass = (item.mut && item.mut !== "none") ? ("mut-" + String(item.mut).toLowerCase()) : "";
+      const isShiny = !!item.shiny;
+      const isLatest = (i === 0);
+      const chVal = item.chance || (c ? c.chance : 0);
+      const chanceStr = (typeof fmtChance === "function") ? ("1:" + fmtChance(chVal)) : (chVal ? ("1:" + chVal) : "?");
+      const name = c ? c.name : item.char;
+
+      let bdgTxt = c ? (c.tier || "R") : "R";
+      if (item.mut && item.mut !== "none") {
+        bdgTxt = String(item.mut).slice(0, 3).toUpperCase();
+      } else if (isShiny) {
+        bdgTxt = "?" + bdgTxt;
+      }
+      if (isLatest) {
+        bdgTxt = "NEW";
+      }
+
+      html += `
+        <div class="rh-slot filled ${tierClass} ${mutClass} ${isShiny ? 'shiny' : ''} ${isLatest ? 'latest' : ''}"
+             role="button" tabindex="0"
+             onclick="window.l12ClickHistCard('${item.char}', '${item.mut || "none"}', ${isShiny}, ${chVal})"
+             title="#${i + 1} ${name} (${c ? c.tier : ''}${item.mut && item.mut !== 'none' ? ' ? ' + item.mut.toUpperCase() : ''}${isShiny ? ' ? SHINY' : ''}) ? ${chanceStr}">
+          <img src="${thumb}" alt="${name}" loading="lazy">
+          <span class="rh-bdg">${bdgTxt}</span>
+          <span class="rh-ch">${chanceStr}</span>
+        </div>
+      `;
+    } else {
+      html += `<div class="rh-slot empty"><span>#${i + 1}</span></div>`;
+    }
+  }
+  container.innerHTML = html;
+}
+window.l12PaintRollHist = l12PaintRollHist;
+
+window.l12ClickHistCard = function(charId, mut, shiny, chance) {
+  if (typeof rollState !== "undefined" && rollState && rollState.active) {
+    const c = (typeof CARDS !== "undefined" && CARDS[charId]) ? CARDS[charId] : null;
+    const name = c ? c.name : charId;
+    const chStr = (typeof fmtChance === "function") ? fmtChance(chance) : chance;
+    if (typeof toast === "function") {
+      toast(name.toUpperCase(), "1 in " + chStr + (mut && mut !== "none" ? " ? " + mut.toUpperCase() : "") + (shiny ? " ? SHINY" : ""), "#38bdf8");
+    }
+  } else if (typeof showRollResult === "function") {
+    showRollResult({ cardId: charId, mut: mut || "none", shiny: !!shiny, chance: chance || 0 }, true);
+  }
+};
+
+/* ---- HOOK ROLL HISTORY TO GACHA ROLLS ---- */
+function _hookRollHistory() {
+  if (typeof state !== "undefined" && state) {
+    if (!Array.isArray(state.rollHistory)) state.rollHistory = [];
+    if (state.rollHistory.length === 0 && Array.isArray(state.stacks) && state.stacks.length > 0) {
+      state.rollHistory = state.stacks.slice(-10).reverse().map(s => {
+        const c = (typeof CARDS !== "undefined" && CARDS[s.char]) ? CARDS[s.char] : null;
+        return {
+          char: s.char,
+          tier: (c && c.tier) || s.tier || "R",
+          mut: s.mut || 'none',
+          shiny: !!s.shiny,
+          chance: (c && c.chance) || 100,
+          ts: Date.now()
+        };
+      });
+    }
+    if (state.rollHistory.length > 10) {
+      state.rollHistory.length = 10;
+    }
+  }
+}
 
 /* ========== TOGGLE BACKPACK FUNCTION ========== */
 function toggleBackpack() {

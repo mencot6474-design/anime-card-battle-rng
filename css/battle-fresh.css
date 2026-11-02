@@ -1,0 +1,1335 @@
+/* ==========================================================================
+   BATTLE FRESH CSS — 1:1 PORTING DARI PROTO/BATTLE-FRESH.HTML
+   Anime Card Battle RNG — Divisi UI-CSS Styling Specialist
+   Scope Ketat: body.battle-full .battle-grid, #fightFx, #overlay
+   ========================================================================== */
+
+/* 1. MAIN BATTLE ARENA GRID (DESKTOP min-width: 701px) */
+html body.battle-full main#app {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding-top: 0 !important;
+  padding-right: 0 !important;
+  padding-bottom: 0 !important;
+  box-sizing: border-box !important;
+}
+
+html.m-portrait body.battle-full main#app {
+  padding-left: 0 !important;
+  padding-bottom: calc(var(--nav-h, 60px) + var(--safe-bottom, 0px)) !important;
+}
+
+html.m-landscape body.battle-full main#app {
+  padding-left: calc(var(--nav-w, 56px) + var(--safe-left, 0px)) !important;
+}
+
+@media (min-width: 701px) {
+  html body.battle-full .battle-grid,
+  html.m-landscape body.battle-full .battle-grid {
+    position: relative !important;
+    max-width: 720px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: calc(100dvh - var(--tbh, 64px)) !important;
+    margin-inline: auto !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr) !important;
+    gap: 8px !important;
+    padding: 12px 20px !important;
+    align-items: center !important;
+    justify-items: center !important;
+    perspective: none !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* 2. FIGHTER COLUMNS */
+html body.battle-full .battle-grid .me-col,
+html body.battle-full .battle-grid .foe-side,
+html.m-portrait body.battle-full .battle-grid .me-col,
+html.m-portrait body.battle-full .battle-grid .foe-side,
+html.m-landscape body.battle-full .battle-grid .me-col,
+html.m-landscape body.battle-full .battle-grid .foe-side {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  max-height: 500px !important;
+  position: relative !important;
+}
+
+/* 3. CENTER COLUMN (.vs-col) — CLEAN OPEN SPACE (NO VS EMBLEM) */
+html body.battle-full .battle-grid .vs-col,
+html.m-portrait body.battle-full .battle-grid .vs-col,
+html.m-landscape body.battle-full .battle-grid .vs-col {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 28px !important;
+  z-index: 15 !important;
+  pointer-events: none !important;
+}
+
+html body.battle-full .battle-grid .vs-col .t,
+html body.battle-full .battle-grid .vs-col .s,
+html body.battle-full .battle-grid .vs-col .vs-circle,
+html body.battle-full .battle-grid .vs-col .vs-txt {
+  display: none !important;
+}
+
+/* Floating Battle Speed Group & Raid Turn Label */
+html body.battle-full .battle-grid #pgrSpeedGroup,
+html body.battle-full .battle-grid #bspeedBtn,
+html body.battle-full .battle-grid .bspeed-btn {
+  position: fixed !important;
+  top: calc(var(--tbh, 56px) + 10px) !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 30 !important;
+  pointer-events: auto !important;
+}
+
+html body.battle-full .battle-grid #bspeedBtn,
+html body.battle-full .battle-grid .bspeed-btn {
+  background: rgba(11, 16, 29, 0.9) !important;
+  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+  color: #38bdf8 !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  padding: 4px 12px !important;
+  border-radius: 99px !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5) !important;
+  transition: transform 0.15s ease, border-color 0.15s ease, color 0.15s ease !important;
+}
+
+html body.battle-full .battle-grid #bspeedBtn:hover,
+html body.battle-full .battle-grid .bspeed-btn:hover {
+  border-color: #38bdf8 !important;
+  transform: translateX(-50%) scale(1.06) !important;
+  color: #ffffff !important;
+}
+
+html body.battle-full .battle-grid #raidTurnLabel {
+  position: fixed !important;
+  top: calc(var(--tbh, 56px) + 48px) !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 30 !important;
+  background: rgba(15, 23, 42, 0.9) !important;
+  border: 1px solid rgba(244, 63, 94, 0.45) !important;
+  border-radius: 99px !important;
+  padding: 2px 10px !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  color: #fda4af !important;
+  pointer-events: none !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* 4. HEROIC FULL-ART FIGHTER CARDS (.fighter) */
+html body.battle-full .battle-grid .fighter,
+html body.battle-full .battle-grid .fighter.me,
+html body.battle-full .battle-grid .fighter.foe,
+html body.battle-full .battle-grid .fighter.ko {
+  rotate: 0deg !important;
+  scale: 1 !important;
+}
+
+html body.battle-full .battle-grid .fighter,
+html body.battle-full .battle-grid .fighter.me,
+html body.battle-full .battle-grid .fighter.foe,
+html body.battle-full .battle-grid .fighter.full-art,
+html body.battle-full .battle-grid .fighter.full-art[data-tier]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),
+html body.battle-full .battle-grid .fighter.full-art[class*="mut-"]:not(#_bv2) {
+  position: relative !important;
+  width: 100% !important;
+  max-width: 235px !important;
+  height: 100% !important;
+  max-height: 325px !important;
+  aspect-ratio: 235 / 325 !important;
+  border-radius: 14px !important;
+  background: #0b101d !important;
+  border: 2px solid rgba(56, 189, 248, 0.55) !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.78), 0 0 20px rgba(56, 189, 248, 0.2) !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-end !important;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), filter 0.2s ease, border-color 0.25s ease !important;
+}
+
+html body.battle-full .battle-grid .fighter::before,
+html body.battle-full .battle-grid .fighter::after,
+html body.battle-full .battle-grid .fighter.full-art .f-banner::before {
+  display: none !important;
+}
+
+html body.battle-full .battle-grid .fighter.foe {
+  border-color: rgba(244, 63, 94, 0.6) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.78), 0 0 24px rgba(244, 63, 94, 0.22) !important;
+}
+
+html body.battle-full .battle-grid .fighter.shadow-mode {
+  border-color: #a855f7 !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 28px rgba(168, 85, 247, 0.45) !important;
+}
+
+/* Full-Art Banner & Dark Vignette Gradient */
+html body.battle-full .battle-grid .fighter .f-banner {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 1 !important;
+  overflow: hidden !important;
+}
+
+html body.battle-full .battle-grid .fighter .f-banner img,
+html body.battle-full .battle-grid .fighter.full-art .f-banner img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: top center !important;
+  transition: transform 0.35s ease, filter 0.3s ease !important;
+}
+
+html body.battle-full .battle-grid .fighter:hover .f-banner img {
+  transform: scale(1.03);
+}
+
+html body.battle-full .battle-grid .fighter .f-banner-vignette,
+html body.battle-full .battle-grid .fighter .f-banner::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background: linear-gradient(
+    180deg,
+    rgba(5, 8, 15, 0) 0%,
+    rgba(5, 8, 15, 0) 65%,
+    rgba(6, 10, 19, 0.85) 86%,
+    #060913 100%
+  ) !important;
+  pointer-events: none !important;
+  z-index: 2 !important;
+}
+
+/* Sembunyikan elemen dekorasi lama yang merusak proporsi full-art */
+html body.battle-full .battle-grid .fighter .f-head,
+html body.battle-full .battle-grid .fighter .f-desc,
+html body.battle-full .battle-grid .fighter .f-skill,
+html body.battle-full .battle-grid .fighter .f-flavor,
+html body.battle-full .battle-grid .fighter .f-type-tag {
+  display: none !important;
+}
+
+/* 5. BOTTOM CARD HUD (.f-body) — HANYA HP BAR + ATK & HP PILLS */
+html body.battle-full .battle-grid .fighter .f-body {
+  position: relative !important;
+  z-index: 4 !important;
+  margin-top: auto !important;
+  padding: 10px 12px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  background: linear-gradient(180deg, rgba(6, 9, 17, 0) 0%, rgba(6, 9, 17, 0.88) 45%, rgba(5, 8, 15, 0.96) 100%) !important;
+  border: none !important;
+}
+
+/* Segmented Tactical HP Bar */
+html body.battle-full .battle-grid .hpbar {
+  position: relative !important;
+  width: 100% !important;
+  height: 16px !important;
+  margin: 0 !important;
+  background: rgba(15, 23, 42, 0.92) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 6px !important;
+  overflow: hidden !important;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.85) !important;
+}
+
+html body.battle-full .battle-grid .hpbar .hp-trail {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  background: rgba(255, 255, 255, 0.65) !important;
+  transition: width 0.55s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  z-index: 1 !important;
+}
+
+html body.battle-full .battle-grid .hpbar i {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  background: linear-gradient(90deg, #059669 0%, #10b981 55%, #38bdf8 100%) !important;
+  transition: width 0.22s ease-out !important;
+  z-index: 2 !important;
+  border-radius: 0 !important;
+}
+
+html body.battle-full .battle-grid .fighter.foe .hpbar i {
+  background: linear-gradient(90deg, #be123c 0%, #f43f5e 60%, #fb923c 100%) !important;
+}
+
+html body.battle-full .battle-grid .hpbar span {
+  position: relative !important;
+  z-index: 3 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 8px !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95) !important;
+}
+
+/* Stat Row: ATK & HP Pills */
+html body.battle-full .battle-grid .stat-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 6px !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+html body.battle-full .battle-grid .stat {
+  flex: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  background: rgba(11, 16, 29, 0.88) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  padding: 4px 8px !important;
+  border-radius: 6px !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 10.5px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.55) !important;
+}
+
+html body.battle-full .battle-grid .stat i {
+  font-style: normal !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  color: #94a3b8 !important;
+  letter-spacing: 0.5px !important;
+}
+
+html body.battle-full .battle-grid .stat.atk b {
+  color: #facc15 !important;
+  font-weight: 800 !important;
+}
+
+html body.battle-full .battle-grid .stat.hp b {
+  color: #10b981 !important;
+  font-weight: 800 !important;
+}
+
+html body.battle-full .battle-grid .fighter.foe .stat.hp b {
+  color: #fda4af !important;
+}
+
+/* 6. STANDBY BENCH RAIL (.bench-rail) */
+html body.battle-full .battle-grid .bench-rail,
+html body.battle-full .battle-grid .me-col:not(.foe-side) .bench-rail,
+html body.battle-full .battle-grid .foe-side .bench-rail,
+html.m-portrait body.battle-full .battle-grid .bench-rail,
+html.m-landscape body.battle-full .battle-grid .bench-rail {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 6px 12px !important;
+  background: rgba(9, 13, 23, 0.88) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55) !important;
+  flex-shrink: 0 !important;
+  width: auto !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+html body.battle-full .battle-grid .bench-rail::before,
+html body.battle-full .battle-grid .bench-rail::after,
+html body.battle-full .battle-grid .me-col:not(.foe-side) .bench-rail::before,
+html body.battle-full .battle-grid .foe-side .bench-rail::before {
+  display: none !important;
+  content: none !important;
+}
+
+html body.battle-full .battle-grid .bench-sq {
+  position: relative !important;
+  width: 44px !important;
+  height: 44px !important;
+  aspect-ratio: 1/1 !important;
+  border-radius: 8px !important;
+  background: #0d1424 !important;
+  border: 1.5px solid rgba(56, 189, 248, 0.45) !important;
+  overflow: hidden !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: transform 0.15s ease, border-color 0.15s ease !important;
+}
+
+html body.battle-full .battle-grid .bench-sq:hover:not(.empty) {
+  transform: translateY(-2px) !important;
+  border-color: #ffffff !important;
+}
+
+html body.battle-full .battle-grid .bench-sq img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: top center !important;
+}
+
+html body.battle-full .battle-grid .bench-sq.shadow-sq {
+  border-color: #c084fc !important;
+  box-shadow: 0 0 12px rgba(192, 132, 252, 0.45) !important;
+}
+
+html body.battle-full .battle-grid .bench-sq.shadow-sq::after {
+  content: "SHADOW" !important;
+  position: absolute !important;
+  top: 2px !important;
+  left: 2px !important;
+  right: 2px !important;
+  background: rgba(124, 58, 237, 0.88) !important;
+  color: #ffffff !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 6.5px !important;
+  font-weight: 800 !important;
+  text-align: center !important;
+  border-radius: 2px !important;
+  line-height: 1.2 !important;
+}
+
+html body.battle-full .battle-grid .bench-sq.empty {
+  border: 1px dashed rgba(255, 255, 255, 0.12) !important;
+  color: rgba(255, 255, 255, 0.2) !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 11px !important;
+  cursor: default !important;
+  background: transparent !important;
+}
+
+html body.battle-full .battle-grid .bench-sq .bhp {
+  position: absolute !important;
+  left: 3px !important;
+  right: 3px !important;
+  bottom: 3px !important;
+  height: 4px !important;
+  background: rgba(0, 0, 0, 0.75) !important;
+  border-radius: 99px !important;
+  overflow: hidden !important;
+  z-index: 2 !important;
+}
+
+html body.battle-full .battle-grid .bench-sq .bhp i {
+  display: block !important;
+  height: 100% !important;
+  width: 100% !important;
+  background: #10b981 !important;
+}
+
+html body.battle-full .battle-grid .bench-sq.shadow-sq .bhp i {
+  background: #c084fc !important;
+}
+
+/* 7. ARTEFACT & PET EQUIPMENT RAILS (POJOK KIRI & KANAN ARENA) */
+html body.battle-full .battle-grid > .tcg-equip-rail,
+html body.battle-full .tcg-equip-rail {
+  position: fixed !important;
+  top: calc(var(--tbh, 56px) + 12px) !important;
+  left: calc(var(--nav-w, 0px) + var(--safe-left, 0px) + 16px) !important;
+  right: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  z-index: 25 !important;
+  padding: 6px !important;
+  border-radius: 12px !important;
+  background: rgba(7, 11, 20, 0.78) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6) !important;
+  transform: none !important;
+}
+
+html body.battle-full .battle-grid > .tcg-equip-rail.foe-equip-rail,
+html body.battle-full .tcg-equip-rail.foe-equip-rail {
+  left: auto !important;
+  right: 16px !important;
+}
+
+html body.battle-full .tcg-item-socket {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 9px !important;
+  transform: none !important;
+  background: rgba(11, 16, 28, 0.92) !important;
+  border: 1px solid rgba(56, 189, 248, 0.38) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6), inset 0 0 8px rgba(56, 189, 248, 0.12) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  cursor: pointer !important;
+  transition: transform 0.15s ease, border-color 0.15s ease !important;
+}
+
+html body.battle-full .tcg-item-socket:hover {
+  transform: scale(1.08) !important;
+  border-color: #38bdf8 !important;
+}
+
+html body.battle-full .tcg-item-socket.pet-socket {
+  border-color: rgba(250, 204, 21, 0.45) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6), inset 0 0 8px rgba(250, 204, 21, 0.15) !important;
+}
+
+html body.battle-full .tcg-item-socket img {
+  width: 24px !important;
+  height: 24px !important;
+  transform: none !important;
+  object-fit: contain !important;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8)) !important;
+}
+
+html body.battle-full .tcg-item-socket .sock-tier-dot {
+  position: absolute !important;
+  bottom: -2px !important;
+  right: -2px !important;
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 50% !important;
+  background: #38bdf8 !important;
+  border: 1.5px solid #05070d !important;
+}
+
+html body.battle-full .tcg-item-socket.pet-socket .sock-tier-dot {
+  background: #facc15 !important;
+}
+
+html body.battle-full .tcg-item-socket.empty {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  opacity: 0.45 !important;
+}
+
+html body.battle-full .sock-empty-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* 8. COMBAT ANIMATIONS & FLOATING DAMAGE */
+html body.battle-full .battle-grid .fighter.lunge-right {
+  transform: translateX(38px) scale(1.04) rotate(2deg) !important;
+}
+
+html body.battle-full .battle-grid .fighter.lunge-left {
+  transform: translateX(-38px) scale(1.04) rotate(-2deg) !important;
+}
+
+html body.battle-full .battle-grid .fighter.hit-shake {
+  animation: fighterHitShake 0.38s ease-in-out !important;
+}
+
+@keyframes fighterHitShake {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-8px, 2px) rotate(-1.5deg); }
+  40% { transform: translate(8px, -2px) rotate(1.5deg); }
+  60% { transform: translate(-5px, 1px) rotate(-1deg); }
+  80% { transform: translate(4px, 0) rotate(0.5deg); }
+}
+
+#dmgLayer {
+  position: absolute !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  z-index: 45 !important;
+  overflow: hidden !important;
+}
+
+.dmg-float {
+  position: absolute !important;
+  transform: translate(-50%, -50%) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  pointer-events: none !important;
+  animation: dmgFloatUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+.dmg-float .lbl {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  letter-spacing: 1px !important;
+  color: #38bdf8 !important;
+  background: rgba(5, 8, 15, 0.88) !important;
+  padding: 1px 6px !important;
+  border-radius: 4px !important;
+  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+  margin-bottom: 2px !important;
+  white-space: nowrap !important;
+}
+
+.dmg-float .num {
+  font-family: 'Orbitron', 'Rajdhani', sans-serif !important;
+  font-size: 26px !important;
+  font-weight: 900 !important;
+  color: #ffffff !important;
+  text-shadow: 2px 2px 0 #05070d, -1px -1px 0 #05070d, 0 0 16px rgba(56, 189, 248, 0.8) !important;
+  white-space: nowrap !important;
+}
+
+.dmg-float.crit .lbl {
+  color: #facc15 !important;
+  border-color: rgba(250, 204, 21, 0.6) !important;
+}
+
+.dmg-float.crit .num {
+  font-size: 32px !important;
+  color: #facc15 !important;
+  text-shadow: 2px 2px 0 #05070d, 0 0 22px rgba(250, 204, 21, 0.95) !important;
+}
+
+.dmg-float.heal .lbl {
+  color: #6ee7b7 !important;
+  border-color: rgba(16, 185, 129, 0.6) !important;
+}
+
+.dmg-float.heal .num {
+  font-size: 24px !important;
+  color: #34d399 !important;
+  text-shadow: 2px 2px 0 #05070d, 0 0 18px rgba(16, 185, 129, 0.8) !important;
+}
+
+@keyframes dmgFloatUp {
+  0% { opacity: 0; transform: translate(-50%, 10px) scale(0.7); }
+  18% { opacity: 1; transform: translate(-50%, -8px) scale(1.08); }
+  32% { transform: translate(-50%, -14px) scale(1); }
+  80% { opacity: 1; transform: translate(-50%, -28px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -42px) scale(0.92); }
+}
+
+/* 9. BATTLE ENTRY CUT-IN OVERLAY (#fightFx & #battleIntroOverlay) */
+#fightFx {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 950 !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  transition: opacity 0.25s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(3, 6, 14, 0.82) !important;
+  overflow: hidden !important;
+}
+
+#fightFx.go,
+#fightFx.active {
+  opacity: 1 !important;
+}
+
+#fightFx .ff-slash,
+#fightFx .ff-word,
+#fightFx .bio-center-divider-zone {
+  display: none !important;
+}
+
+#fightFx .entry-split-stage,
+#battleIntroOverlay .entry-split-stage {
+  position: relative !important;
+  width: 100% !important;
+  height: 220px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  overflow: hidden !important;
+  border-top: 2px solid rgba(56, 189, 248, 0.65) !important;
+  border-bottom: 2px solid rgba(244, 63, 94, 0.65) !important;
+  background: linear-gradient(90deg, rgba(8, 22, 48, 0.96) 0%, rgba(7, 10, 20, 0.98) 50%, rgba(48, 10, 24, 0.96) 100%) !important;
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.95) !important;
+}
+
+#fightFx .entry-side,
+#battleIntroOverlay .entry-side {
+  position: relative !important;
+  width: 48% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  padding: 0 28px !important;
+  transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+#fightFx .entry-side.me-entry,
+#battleIntroOverlay .entry-side.me-entry {
+  transform: translateX(-110%) !important;
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.22) 0%, transparent 100%) !important;
+}
+
+#fightFx .entry-side.foe-entry,
+#battleIntroOverlay .entry-side.foe-entry {
+  flex-direction: row-reverse !important;
+  text-align: right !important;
+  transform: translateX(110%) !important;
+  background: linear-gradient(270deg, rgba(244, 63, 94, 0.22) 0%, transparent 100%) !important;
+}
+
+#fightFx.go .entry-side.me-entry,
+#fightFx.go .entry-side.foe-entry,
+#fightFx.active .entry-side.me-entry,
+#fightFx.active .entry-side.foe-entry {
+  transform: translateX(0) !important;
+}
+
+#fightFx .entry-art,
+#battleIntroOverlay .entry-art {
+  width: 145px !important;
+  height: 190px !important;
+  object-fit: cover !important;
+  object-position: top center !important;
+  border-radius: 10px !important;
+  border: 2px solid #38bdf8 !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.85) !important;
+  transform: skewX(-6deg) !important;
+  flex-shrink: 0 !important;
+}
+
+#fightFx .entry-side.foe-entry .entry-art,
+#battleIntroOverlay .entry-side.foe-entry .entry-art {
+  border-color: #f43f5e !important;
+  transform: skewX(6deg) !important;
+}
+
+#fightFx .entry-meta,
+#battleIntroOverlay .entry-meta {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  min-width: 0 !important;
+}
+
+#fightFx .entry-tag,
+#battleIntroOverlay .entry-tag {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 2px !important;
+  color: #38bdf8 !important;
+}
+
+#fightFx .entry-side.foe-entry .entry-tag,
+#battleIntroOverlay .entry-side.foe-entry .entry-tag {
+  color: #f43f5e !important;
+}
+
+#fightFx .entry-name,
+#battleIntroOverlay .entry-name {
+  font-family: 'Orbitron', 'Rajdhani', sans-serif !important;
+  font-size: 20px !important;
+  font-weight: 900 !important;
+  color: #ffffff !important;
+  letter-spacing: 1px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  text-shadow: 0 4px 14px rgba(0, 0, 0, 0.9) !important;
+}
+
+#fightFx .entry-sub,
+#battleIntroOverlay .entry-sub {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #facc15 !important;
+}
+
+#fightFx .entry-center-stamp,
+#battleIntroOverlay .entry-center-stamp {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) scale(2.2) !important;
+  opacity: 0 !important;
+  z-index: 5 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 10px 22px !important;
+  border-radius: 12px !important;
+  background: rgba(6, 9, 18, 0.96) !important;
+  border: 2px solid #facc15 !important;
+  box-shadow: 0 0 35px rgba(250, 204, 21, 0.55) !important;
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1) 0.16s, opacity 0.25s ease 0.16s !important;
+}
+
+#fightFx.go .entry-center-stamp,
+#fightFx.active .entry-center-stamp {
+  transform: translate(-50%, -50%) scale(1) !important;
+  opacity: 1 !important;
+}
+
+#fightFx .entry-center-stamp .st-kicker,
+#battleIntroOverlay .entry-center-stamp .st-kicker {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  letter-spacing: 2.5px !important;
+  color: #94a3b8 !important;
+}
+
+#fightFx .entry-center-stamp .st-main,
+#battleIntroOverlay .entry-center-stamp .st-main {
+  font-family: 'Orbitron', 'Rajdhani', sans-serif !important;
+  font-size: 22px !important;
+  font-weight: 900 !important;
+  letter-spacing: 2px !important;
+  color: #facc15 !important;
+  text-shadow: 0 0 16px rgba(250, 204, 21, 0.75) !important;
+}
+
+/* 10. BATTLE RESULT POPUP MODAL (#overlay & .ov-card) */
+#overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 900 !important;
+  background: rgba(3, 6, 14, 0.82) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 0.26s ease !important;
+}
+
+#overlay.show {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+#overlay .ov-card,
+#overlay .result-card {
+  width: 100% !important;
+  max-width: 460px !important;
+  background: linear-gradient(180deg, rgba(13, 20, 36, 0.98) 0%, rgba(7, 11, 21, 0.99) 100%) !important;
+  border: 2px solid rgba(250, 204, 21, 0.55) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.92), 0 0 36px rgba(250, 204, 21, 0.22) !important;
+  padding: 22px 24px 20px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 14px !important;
+  transform: translateY(18px) scale(0.95) !important;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+#overlay.show .ov-card,
+#overlay.show .result-card {
+  transform: translateY(0) scale(1) !important;
+}
+
+#overlay .ov-card.is-lose,
+#overlay .result-card.defeat-mode {
+  border-color: rgba(244, 63, 94, 0.6) !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.92), 0 0 36px rgba(244, 63, 94, 0.25) !important;
+}
+
+#overlay .ov-sys-badge,
+#overlay .res-kicker {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 2.5px !important;
+  color: #38bdf8 !important;
+  text-transform: uppercase !important;
+}
+
+#overlay .ov-card.is-lose .ov-sys-badge,
+#overlay .result-card.defeat-mode .res-kicker {
+  color: #f43f5e !important;
+}
+
+#overlay .ov-title,
+#overlay .res-title {
+  font-family: 'Orbitron', 'Rajdhani', sans-serif !important;
+  font-size: 32px !important;
+  font-weight: 900 !important;
+  letter-spacing: 3px !important;
+  background: linear-gradient(180deg, #ffffff 0%, #facc15 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+  filter: drop-shadow(0 4px 16px rgba(250, 204, 21, 0.45)) !important;
+  line-height: 1 !important;
+}
+
+#overlay .ov-card.is-lose .ov-title,
+#overlay .result-card.defeat-mode .res-title {
+  background: linear-gradient(180deg, #ffffff 0%, #f43f5e 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+  filter: drop-shadow(0 4px 16px rgba(244, 63, 94, 0.5)) !important;
+}
+
+#overlay .ov-title-bg {
+  display: none !important;
+}
+
+#overlay .ov-body-content {
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+#overlay .ov-reward-card {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  padding: 12px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+#overlay .ov-reward-lbl {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 9.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 1px !important;
+  color: #94a3b8 !important;
+}
+
+#overlay .ov-telemetry-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  width: 100% !important;
+}
+
+#overlay .ov-tel-box {
+  flex: 1 !important;
+  background: rgba(9, 14, 26, 0.9) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 8px !important;
+  padding: 8px 10px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+}
+
+#overlay .ov-tel-lbl {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 8.5px !important;
+  font-weight: 700 !important;
+  color: #94a3b8 !important;
+}
+
+#overlay .ov-tel-val {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  color: #f8fafc !important;
+}
+
+#overlay .ov-actions,
+#overlay .res-actions {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin-top: 6px !important;
+}
+
+#overlay .ov-btn-retry,
+#overlay .res-btn {
+  flex: 1 !important;
+  height: 40px !important;
+  border-radius: 10px !important;
+  font-family: 'Orbitron', 'Rajdhani', sans-serif !important;
+  font-size: 11.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 1px !important;
+  cursor: pointer !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  background: rgba(15, 23, 42, 0.9) !important;
+  color: #e2e8f0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  transition: all 0.15s ease !important;
+}
+
+#overlay .ov-btn-retry:hover,
+#overlay .res-btn:hover {
+  border-color: #38bdf8 !important;
+  color: #ffffff !important;
+}
+
+#overlay .ov-btn-primary,
+#overlay .res-btn.primary {
+  flex: 1 !important;
+  height: 40px !important;
+  border-radius: 10px !important;
+  font-family: 'Orbitron', 'Rajdhani', sans-serif !important;
+  font-size: 11.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 1px !important;
+  cursor: pointer !important;
+  border: 1px solid rgba(56, 189, 248, 0.75) !important;
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.45) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  transition: all 0.15s ease !important;
+}
+
+#overlay .ov-card.is-lose .ov-btn-primary {
+  background: linear-gradient(135deg, #be123c 0%, #e11d48 100%) !important;
+  border-color: rgba(244, 63, 94, 0.75) !important;
+  box-shadow: 0 6px 18px rgba(225, 29, 72, 0.45) !important;
+}
+
+/* 11. RESPONSIVE: MOBILE PORTRAIT */
+@media (max-width: 700px) {
+  html body.battle-full .battle-grid,
+  html.m-portrait body.battle-full .battle-grid {
+    max-width: 360px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin-inline: auto !important;
+    grid-template-columns: minmax(0, 1fr) 10px minmax(0, 1fr) !important;
+    gap: 4px !important;
+    padding: 8px 10px !important;
+    height: calc(100dvh - var(--tbh, 56px) - var(--nav-h, 60px)) !important;
+    box-sizing: border-box !important;
+  }
+
+  html body.battle-full .battle-grid .me-col,
+  html body.battle-full .battle-grid .foe-side,
+  html.m-portrait body.battle-full .battle-grid .me-col,
+  html.m-portrait body.battle-full .battle-grid .foe-side,
+  html.m-portrait body.battle-full .me-col {
+    max-width: 155px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    gap: 8px !important;
+    max-height: none !important;
+  }
+
+  html body.battle-full .battle-grid .fighter,
+  html body.battle-full .battle-grid .fighter.me,
+  html body.battle-full .battle-grid .fighter.foe,
+  html body.battle-full .battle-grid .fighter.full-art,
+  html body.battle-full .battle-grid .fighter.full-art[data-tier]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),
+  html body.battle-full .battle-grid .fighter.full-art[class*="mut-"]:not(#_bv2),
+  html.m-portrait body.battle-full .battle-grid .fighter,
+  html.m-portrait body.battle-full .fighter {
+    max-width: 150px !important;
+    max-height: 240px !important;
+    width: 150px !important;
+    height: 240px !important;
+    flex: 0 0 240px !important;
+    aspect-ratio: 150 / 240 !important;
+    border-radius: 12px !important;
+  }
+
+  html body.battle-full .tcg-equip-rail,
+  html.m-portrait body.battle-full .tcg-equip-rail {
+    flex-direction: row !important;
+    top: calc(var(--tbh, 48px) + 6px) !important;
+    left: 8px !important;
+    right: auto !important;
+    padding: 4px !important;
+    gap: 5px !important;
+  }
+
+  html body.battle-full .tcg-equip-rail.foe-equip-rail,
+  html.m-portrait body.battle-full .tcg-equip-rail.foe-equip-rail {
+    left: auto !important;
+    right: 8px !important;
+  }
+
+  html body.battle-full .tcg-item-socket,
+  html.m-portrait body.battle-full .tcg-item-socket {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 7px !important;
+  }
+
+  html body.battle-full .tcg-item-socket img,
+  html.m-portrait body.battle-full .tcg-item-socket img {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  html body.battle-full .battle-grid .bench-rail,
+  html.m-portrait body.battle-full .battle-grid .bench-rail,
+  html.m-portrait body.battle-full .bench-rail {
+    padding: 5px 7px !important;
+    gap: 5px !important;
+    flex-wrap: nowrap !important;
+  }
+
+  html body.battle-full .battle-grid .bench-rail .bench-sq,
+  html.m-portrait body.battle-full .battle-grid .bench-rail .bench-sq,
+  html.m-portrait body.battle-full .bench-rail .bench-sq {
+    width: 36px !important;
+    height: 36px !important;
+    flex: 0 0 36px !important;
+    aspect-ratio: 1/1 !important;
+  }
+
+  html body.battle-full .hpbar,
+  html.m-portrait body.battle-full .hpbar {
+    height: 14px !important;
+  }
+
+  html body.battle-full .hpbar span,
+  html.m-portrait body.battle-full .hpbar span {
+    font-size: 8.5px !important;
+    padding: 0 4px !important;
+  }
+
+  html body.battle-full .stat,
+  html.m-portrait body.battle-full .stat {
+    padding: 3px 6px !important;
+    font-size: 9.5px !important;
+  }
+
+  #fightFx .entry-split-stage,
+  #battleIntroOverlay .entry-split-stage {
+    height: 170px !important;
+  }
+
+  #fightFx .entry-side,
+  #battleIntroOverlay .entry-side {
+    padding: 0 10px !important;
+    gap: 8px !important;
+  }
+
+  #fightFx .entry-art,
+  #battleIntroOverlay .entry-art {
+    width: 82px !important;
+    height: 130px !important;
+  }
+
+  #fightFx .entry-name,
+  #battleIntroOverlay .entry-name {
+    font-size: 13px !important;
+  }
+
+  #fightFx .entry-center-stamp,
+  #battleIntroOverlay .entry-center-stamp {
+    padding: 6px 12px !important;
+  }
+
+  #fightFx .entry-center-stamp .st-main,
+  #battleIntroOverlay .entry-center-stamp .st-main {
+    font-size: 15px !important;
+  }
+}
+
+/* 12. RESPONSIVE: MOBILE LANDSCAPE */
+@media (max-height: 520px) and (orientation: landscape), (max-height: 520px) {
+  html body.battle-full .battle-grid,
+  html.m-landscape body.battle-full .battle-grid {
+    max-width: 390px !important;
+    grid-template-columns: minmax(0, 1fr) 16px minmax(0, 1fr) !important;
+    grid-template-rows: 1fr !important;
+    gap: 6px !important;
+    padding: 36px 12px 6px !important;
+    height: calc(100dvh - var(--tbh, 68px)) !important;
+    box-sizing: border-box !important;
+    align-items: center !important;
+  }
+
+  html body.battle-full .battle-grid #pgrSpeedGroup,
+  html body.battle-full .battle-grid #bspeedBtn,
+  html body.battle-full .battle-grid .bspeed-btn,
+  html.m-landscape body.battle-full .battle-grid #pgrSpeedGroup,
+  html.m-landscape body.battle-full .battle-grid #bspeedBtn,
+  html.m-landscape body.battle-full .battle-grid .bspeed-btn {
+    top: calc(var(--tbh, 68px) + 4px) !important;
+    transform: translateX(-50%) scale(0.78) !important;
+    transform-origin: top center !important;
+  }
+
+  html body.battle-full .battle-grid .me-col,
+  html body.battle-full .battle-grid .foe-side,
+  html.m-landscape body.battle-full .battle-grid .me-col,
+  html.m-landscape body.battle-full .battle-grid .foe-side,
+  html.m-landscape body.battle-full .me-col {
+    max-width: 155px !important;
+    gap: 5px !important;
+    max-height: 100% !important;
+    height: auto !important;
+    justify-content: center !important;
+  }
+
+  html body.battle-full .battle-grid .fighter,
+  html body.battle-full .battle-grid .fighter.me,
+  html body.battle-full .battle-grid .fighter.foe,
+  html body.battle-full .battle-grid .fighter.full-art,
+  html body.battle-full .battle-grid .fighter.full-art[data-tier]:not(.mut-gold):not(.mut-rainbow):not(.mut-secret),
+  html body.battle-full .battle-grid .fighter.full-art[class*="mut-"]:not(#_bv2),
+  html.m-landscape body.battle-full .battle-grid .fighter,
+  html.m-landscape body.battle-full .fighter {
+    max-width: 132px !important;
+    max-height: 185px !important;
+    width: 132px !important;
+    height: 185px !important;
+    flex: 0 0 185px !important;
+    aspect-ratio: 132 / 185 !important;
+    border-radius: 11px !important;
+  }
+
+  html body.battle-full .tcg-equip-rail,
+  html.m-landscape body.battle-full .tcg-equip-rail {
+    top: calc(var(--tbh, 44px) + 8px) !important;
+    left: calc(var(--nav-w, 0px) + var(--safe-left, 0px) + 12px) !important;
+    right: auto !important;
+    padding: 5px !important;
+    gap: 6px !important;
+    flex-direction: column !important;
+  }
+
+  html body.battle-full .tcg-equip-rail.foe-equip-rail,
+  html.m-landscape body.battle-full .tcg-equip-rail.foe-equip-rail {
+    left: auto !important;
+    right: 12px !important;
+  }
+
+  html body.battle-full .tcg-item-socket,
+  html.m-landscape body.battle-full .tcg-item-socket {
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 7px !important;
+  }
+
+  html body.battle-full .tcg-item-socket img,
+  html.m-landscape body.battle-full .tcg-item-socket img {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  html body.battle-full .battle-grid .bench-rail,
+  html.m-landscape body.battle-full .bench-rail {
+    padding: 5px 8px !important;
+    gap: 6px !important;
+  }
+
+  html body.battle-full .battle-grid .bench-rail .bench-sq,
+  html.m-landscape body.battle-full .bench-rail .bench-sq {
+    width: 34px !important;
+    height: 34px !important;
+    aspect-ratio: 1/1 !important;
+  }
+
+  html body.battle-full .hpbar,
+  html.m-landscape body.battle-full .hpbar {
+    height: 13px !important;
+  }
+
+  html body.battle-full .stat,
+  html.m-landscape body.battle-full .stat {
+    padding: 2px 5px !important;
+    font-size: 9px !important;
+  }
+
+  #overlay .ov-card,
+  #overlay .result-card {
+    max-width: 520px !important;
+    padding: 12px 18px !important;
+    gap: 8px !important;
+  }
+
+  #overlay .ov-title,
+  #overlay .res-title {
+    font-size: 22px !important;
+  }
+
+  #overlay .ov-btn-primary,
+  #overlay .ov-btn-retry,
+  #overlay .res-btn {
+    height: 32px !important;
+    font-size: 10.5px !important;
+  }
+}
+
+/* ==========================================================================
+   BATTLE: HEADER (#topbar) DISEMBUNYIKAN + ARENA CENTER PRESISI
+   Header disembunyikan saat battle; --tbh dinolkan supaya tinggi arena
+   tidak menyisakan ruang kosong di atas. Arena (kartu kiri/kanan) berada
+   tepat di tengah viewport secara horizontal & vertikal.
+   ========================================================================== */
+html body.battle-full { --tbh: 0px !important; }
+html body.battle-full #topbar { display: none !important; }
+html body.battle-full main#app {
+  min-height: 100dvh !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+html body.battle-full .battle-grid,
+html.m-landscape body.battle-full .battle-grid,
+html.m-portrait body.battle-full .battle-grid {
+  height: 100dvh !important;
+  margin: 0 auto !important;
+  align-content: center !important;
+  align-items: center !important;
+  justify-items: center !important;
+  place-self: center !important;
+}
+html.m-portrait body.battle-full .battle-grid {
+  height: calc(100dvh - var(--nav-h, 60px) - var(--safe-bottom, 0px)) !important;
+}
+html body.battle-full .battle-grid #pgrSpeedGroup,
+html body.battle-full .battle-grid #bspeedBtn,
+html body.battle-full .battle-grid .bspeed-btn { top: 10px !important; }
+html body.battle-full .battle-grid #raidTurnLabel { top: 48px !important; }

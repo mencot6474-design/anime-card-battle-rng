@@ -228,6 +228,81 @@ function useSpeedPotion(lv,n){
   save();
   return{ok:true,add:e.add,ms:POTION_BUFF_MS*n};
 }
+
+/* ==========================================================================
+   LOBBY v12 HELPER: QUICK POTION & WEATHER CARDS
+   ========================================================================== */
+window.l12GetPotionSummary = function(type){
+  if(!state) return { stocks: [0,0,0], totalStock: 0, activeBuffs: [], topBuff: null };
+  const isLuck = type === 'luck';
+  const rawStocks = isLuck ? (state.luckPots || [0,0,0]) : (state.speedPots || [0,0,0]);
+  const stocks = [Number(rawStocks[0])||0, Number(rawStocks[1])||0, Number(rawStocks[2])||0];
+  const totalStock = stocks[0] + stocks[1] + stocks[2];
+  const activeBuffs = isLuck ? (typeof luckBuffs === 'function' ? luckBuffs() : []) : (typeof speedBuffs === 'function' ? speedBuffs() : []);
+  let topBuff = null;
+  if(activeBuffs && activeBuffs.length){
+    topBuff = activeBuffs.slice().sort((a,b)=>(b.lv||0)-(a.lv||0))[0];
+  }
+  return { stocks, totalStock, activeBuffs, topBuff };
+};
+
+window.l12UsePotionQuick = function(type, lv){
+  lv = Math.max(1, Math.min(3, parseInt(lv, 10) || 1));
+  const isLuck = type === 'luck';
+  const r = isLuck ? useLuckPotion(lv, 1) : useSpeedPotion(lv, 1);
+  if(r && r.ok){
+    if(typeof beep === "function") beep(560, 0.12, "triangle", 0.09);
+    const pName = isLuck ? "LUCK POTION L" + lv : "SPEED POTION L" + lv;
+    const pDetail = isLuck ? ("+" + (r.flat||0) + " FLAT" + (r.pct ? " & +" + Math.round(r.pct*100) + "%" : "") + " (+5 MENIT)") : ("+" + (r.add||0).toFixed(1) + "x SPEED (+5 MENIT)");
+    if(typeof toast === "function") toast(pName + " DIAKTIFKAN", pDetail, "#38bdf8");
+    if(typeof renderBuffDock === "function") renderBuffDock();
+    if(typeof renderShell === "function") renderShell();
+    return r;
+  } else {
+    if(typeof beep === "function") beep(240, 0.12, "square", 0.08);
+    if(typeof toast === "function") toast("STOK POTION HABIS", "Beli atau dapatkan Potion di Infinite Shop / Raid Shop / Tower!", "#f87171");
+    return r || { ok: false, reason: "NO_POTION" };
+  }
+};
+
+window.l12GetWeatherCards = function(weatherId){
+  if(typeof MASTER_CARD_INDEX === "undefined" || !Array.isArray(MASTER_CARD_INDEX)) return [];
+  const validWeather = weatherId && typeof WEATHER !== "undefined" && WEATHER[weatherId];
+  let rawCards = [];
+  if(validWeather){
+    rawCards = MASTER_CARD_INDEX.filter(c => c && c.weatherOnly === weatherId);
+  } else {
+    rawCards = MASTER_CARD_INDEX
+      .filter(c => c && !!c.weatherOnly)
+      .slice()
+      .sort((a,b) => ((b.chance || (typeof chanceOf === "function" ? chanceOf(b.tier) : 0)) - (a.chance || (typeof chanceOf === "function" ? chanceOf(a.tier) : 0))))
+      .slice(0, 8);
+  }
+  return rawCards.map(c => {
+    const cid = c.char_id || c.id;
+    const wId = c.weatherOnly;
+    const wDef = (typeof WEATHER !== "undefined" && WEATHER[wId]) || null;
+    const ch = (typeof luckChance === "function") ? luckChance(cid) : (c.chance || 0);
+    const rLabel = (typeof rarityText === "function") ? rarityText(c.tier, ch) : ("1 in " + ch);
+    const tSrc = (typeof thumbSrc === "function") ? thumbSrc(c.sprite_asset) : (c.sprite_asset || "");
+    const isOwned = !!(state && Array.isArray(state.stacks) && state.stacks.some(s => s && s.char === cid));
+    return {
+      char_id: cid,
+      name: c.name || cid,
+      tier: c.tier || "R",
+      sprite_asset: c.sprite_asset,
+      thumb: tSrc,
+      weatherId: wId,
+      weatherName: (wDef && wDef.name) || wId,
+      weatherColor: (wDef && wDef.color) || "#38bdf8",
+      chance: ch,
+      rarityLabel: rLabel,
+      owned: isOwned
+    };
+  });
+};
+function _l12_end_pot(){
+}
 /* Panel weather GABUNGAN (pojok kiri bawah): nama + "Ends in Xs" di atas, baris kartu
    weatherOnly (gaya index, hover reveal penuh) di tengah, buff luck/rollspeed di bawah.
    Nongol cuma pas weather aktif. Dipanggil tiap renderShell & tick detik. */
@@ -681,11 +756,45 @@ function grantRolledCard(charId, mut, shiny, dupToExp) {
 }
 /* Instant roll massal (dipakai reward Infinite Tower): n roll sekaligus, simpan sekali di akhir.
    Dup di jalur ini dikompensasi EXP. */
+const MAX_ROLL_HISTORY = 10;
+let _rhistRaf = 0;
+function pushRollHistory(entry, skipPaint) {
+  if (!state || !entry) return;
+  const cid = entry.cardId || entry.char;
+  if (!cid || !CARDS[cid]) return;
+  if (!Array.isArray(state.rollHistory)) state.rollHistory = [];
+  const c = CARDS[cid];
+  const mut = entry.mut || "none";
+  const shiny = !!entry.shiny;
+  const ch = entry.chance || ((c.chance || (typeof chanceOf === "function" ? chanceOf(c.tier) : 100)) * (shiny ? (typeof SHINY_CHANCE_MULT !== "undefined" ? SHINY_CHANCE_MULT : 50) : 1) * ((typeof MUT_CHANCE_MULT !== "undefined" ? MUT_CHANCE_MULT[mut] : 1) || 1));
+  state.rollHistory.unshift({
+    char: cid,
+    tier: c.tier || "C",
+    mut: mut,
+    shiny: shiny,
+    chance: ch,
+    n: entry.n || 1,
+    ts: Date.now()
+  });
+  if (state.rollHistory.length > MAX_ROLL_HISTORY) {
+    state.rollHistory.length = MAX_ROLL_HISTORY;
+  }
+  if (!skipPaint && typeof window.l12ScheduleRollHistPaint === "function") {
+    window.l12ScheduleRollHistPaint();
+  }
+}
+window.pushRollHistory = pushRollHistory;
+window.MAX_ROLL_HISTORY = MAX_ROLL_HISTORY;
+
 function instantRoll(n){
   __batchRoll=true;
   const res=[];
   try{ for(let i=0;i<n;i++){ const r=rngRoll(totalLuck()); if(!r)continue; grantRolledCard(r.cardId,r.mut,r.shiny,true); res.push(r);} }
   finally{ __batchRoll=false; }
+  if(res.length){
+    res.slice(-10).forEach(r=>pushRollHistory(r,true));
+    if(typeof window.l12ScheduleRollHistPaint==="function")window.l12ScheduleRollHistPaint();
+  }
   if(state)state.totalRolls=(state.totalRolls||0)+n;
   save(); rollCountBadge();
   if(typeof lbTrackOwnedBest==="function")lbTrackOwnedBest();
@@ -796,6 +905,10 @@ function instantRollFast(n, agg){
     }
   } finally{ __batchRoll=false; }
   if(groups) for(const k in groups) res.push(groups[k]);
+  if(res.length){
+    res.slice().sort((a,b)=>(a.chance||0)-(b.chance||0)).slice(-10).forEach(g=>pushRollHistory(g,true));
+    if(typeof window.l12ScheduleRollHistPaint==="function")window.l12ScheduleRollHistPaint();
+  }
   if(state)state.totalRolls=(state.totalRolls||0)+totalPulls;
   save(); rollCountBadge(); idxRewardSync(true);
   if(typeof lbTrackOwnedBest==="function")lbTrackOwnedBest();
@@ -1047,10 +1160,13 @@ function rvFx(card, overlay, tcol) {
   } catch (e) {}
 }
 
-function showRollResult(result) {
+function showRollResult(result, fromHistoryPreview) {
+  if (result && !fromHistoryPreview) {
+    pushRollHistory(result);
+  }
   const overlay = document.getElementById('rollOverlay');
   if (!overlay) return;
-  if (rollState.hideOverlay) return;
+  if (rollState.hideOverlay && !fromHistoryPreview) return;
   const showcase = overlay.querySelector('.roll-card-showcase');
   if (!showcase) return;
   /* fix race: batalkan fade-out pending - timeout lama jangan nutup reveal baru */
@@ -2248,6 +2364,10 @@ async function bpUseRollPack(packKey, rollAmount, n){
     const loot=order.map(k=>groups[k]);
     loot.totalPulls=total;
     if(!total){ renderBackpackPanel(); return; }
+    if(loot.length){
+      loot.slice().sort((a,b)=>(a.chance||0)-(b.chance||0)).slice(-10).forEach(g=>pushRollHistory(g,true));
+      if(typeof window.l12ScheduleRollHistPaint==="function")window.l12ScheduleRollHistPaint();
+    }
     showTowerLoot(loot,{weather:0,luck:0,speed:0},'HASIL INSTAN ROLL · ' + fmt(total)+" ("+spent+"×)");
     renderBackpackPanel();
     return;
@@ -2835,25 +2955,25 @@ const MASTER_CARD_INDEX=STORY_BIBLE.units.map(u=>({char_id:u.id,name:u.name,tier
 var premCurTab = 'all';
 
 var PREMIUM_PACKS = [
-  { id: 'global_luck', cat: 'all', type: 'global_luck', name: 'GLOBAL LUCK', price: 1200, img: 'assets/images/weather-potion.webp?v=1', badge: 'SERVER EVENT', desc: 'Aktifkan 10× LUCK untuk SEMUA pemain di server selama 1 JAM! Username kamu akan tampil sebagai aktivator.' },
+  { id: 'global_luck', cat: 'all', type: 'global_luck', name: 'GLOBAL LUCK', price: 1200, img: 'assets/images/weather-potion.webp?v=1', badge: 'SERVER EVENT', color: '#34d399', stats: ['10× SERVER LUCK', 'DURASI 60 MENIT', 'MAX 100×'], desc: 'Aktifkan 10× LUCK untuk SEMUA pemain di server selama 1 JAM! Username kamu akan tampil sebagai aktivator.' },
   // PET & ARTEFAK
-  { id: 'tome-infinity', cat: 'equip', type: 'art', name: 'TOME OF INFINITY', price: 3000, img: 'assets/artifacts/tome-infinity.webp?v=1', badge: 'MYTHIC ARTIFACT', desc: 'Kitab mistis tak terbatas! Memberikan +150 Flat Luck & +200% Luck secara permanen.' },
-  { id: 'cyber-kitsune', cat: 'equip', type: 'pet', name: 'CYBER KITSUNE', price: 10000, img: 'assets/pets/cyber-kitsune.webp?v=1', badge: 'SUPREME PET', desc: 'Rubah legendaris masa depan! Memberikan +250 Flat Luck & +300% Luck saat dipasang.' },
+  { id: 'tome-infinity', cat: 'equip', type: 'art', name: 'TOME OF INFINITY', price: 3000, img: 'assets/artifacts/tome-infinity.webp?v=1', badge: 'MYTHIC ARTIFACT', color: '#38bdf8', stats: ['+150 FLAT LUCK', '+200% LUCK', 'PERMANEN'], desc: 'Kitab mistis tak terbatas! Memberikan +150 Flat Luck & +200% Luck secara permanen.' },
+  { id: 'cyber-kitsune', cat: 'equip', type: 'pet', name: 'CYBER KITSUNE', price: 10000, img: 'assets/pets/cyber-kitsune.webp?v=1', badge: 'SUPREME PET', color: '#f43f5e', stats: ['+250 FLAT LUCK', '+300% LUCK', 'SUPREME TIER'], desc: 'Rubah legendaris masa depan! Memberikan +250 Flat Luck & +300% Luck saat dipasang.' },
 
   // INSTAN ROLL PACKS
-  { id: 'r5k', cat: 'pack', type: 'pack', name: 'INSTAN ROLL 5.000', amount: 5000, price: 25, img: 'assets/images/instanpack-5k.webp?v=trans1', badge: 'STARTER', desc: '5.000 tarikan kartu instan ke dalam inventori.' },
-  { id: 'r10k', cat: 'pack', type: 'pack', name: 'INSTAN ROLL 10.000', amount: 10000, price: 50, img: 'assets/images/instanpack-10k.webp?v=trans1', badge: 'POPULAR', desc: '10.000 tarikan kartu instan ke dalam inventori.' },
-  { id: 'r25k', cat: 'pack', type: 'pack', name: 'INSTAN ROLL 25.000', amount: 25000, price: 100, img: 'assets/images/instanpack-25k.webp?v=trans1', badge: 'VALUE', desc: '25.000 tarikan kartu instan ke dalam inventori.' },
-  { id: 'r50k', cat: 'pack', type: 'pack', name: 'INSTAN ROLL 50.000', amount: 50000, price: 150, img: 'assets/images/instanpack-50k.webp?v=trans1', badge: 'EPIC', desc: '50.000 tarikan kartu instan ke dalam inventori.' },
-  { id: 'r100k', cat: 'pack', type: 'pack', name: 'INSTAN ROLL 100.000', amount: 100000, price: 250, img: 'assets/images/instanpack-100k.webp?v=trans1', badge: 'ULTIMATE', desc: '100.000 tarikan kartu instan ke dalam inventori.' },
+  { id: 'r5k', cat: 'pack', type: 'pack', name: 'INSTAN ROLL 5.000', amount: 5000, price: 25, img: 'assets/images/instanpack-5k.webp?v=trans1', badge: 'STARTER PACK', color: '#38bdf8', stats: ['5.000 PULLS', 'INSTANT LOOT', 'MULTI-BUY'], desc: '5.000 tarikan kartu instan ke dalam inventori Backpack.' },
+  { id: 'r10k', cat: 'pack', type: 'pack', name: 'INSTAN ROLL 10.000', amount: 10000, price: 50, img: 'assets/images/instanpack-10k.webp?v=trans1', badge: 'POPULAR PACK', color: '#2dd4bf', stats: ['10.000 PULLS', 'INSTANT LOOT', 'MULTI-BUY'], desc: '10.000 tarikan kartu instan ke dalam inventori Backpack.' },
+  { id: 'r25k', cat: 'pack', type: 'pack', name: 'INSTAN ROLL 25.000', amount: 25000, price: 100, img: 'assets/images/instanpack-25k.webp?v=trans1', badge: 'VALUE PACK', color: '#a855f7', stats: ['25.000 PULLS', 'BEST VALUE', 'MULTI-BUY'], desc: '25.000 tarikan kartu instan ke dalam inventori Backpack.' },
+  { id: 'r50k', cat: 'pack', type: 'pack', name: 'INSTAN ROLL 50.000', amount: 50000, price: 150, img: 'assets/images/instanpack-50k.webp?v=trans1', badge: 'EPIC PACK', color: '#f59e0b', stats: ['50.000 PULLS', 'HIGH YIELD', 'MULTI-BUY'], desc: '50.000 tarikan kartu instan ke dalam inventori Backpack.' },
+  { id: 'r100k', cat: 'pack', type: 'pack', name: 'INSTAN ROLL 100.000', amount: 100000, price: 250, img: 'assets/images/instanpack-100k.webp?v=trans1', badge: 'ULTIMATE PACK', color: '#ec4899', stats: ['100.000 PULLS', 'MAX OVERDRIVE', 'MULTI-BUY'], desc: '100.000 tarikan kartu instan ke dalam inventori Backpack.' },
 
   // WEATHER INSTAN (Hanya Rare sampai Awakened)
-  { id: 'w_eclipse', cat: 'weather', type: 'weather', targetWeather: 'eclipse', name: 'INSTAN ECLIPSE', price: 150, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', desc: 'Aktifkan cuaca ECLIPSE instan selama 30 menit! +300% Luck & +200% Roll Speed.' },
-  { id: 'w_doodle', cat: 'weather', type: 'weather', targetWeather: 'doodle', name: 'INSTAN DOODLE', price: 200, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', desc: 'Aktifkan cuaca DOODLE instan selama 30 menit! +400% Luck & +250% Roll Speed.' },
-  { id: 'w_glitch', cat: 'weather', type: 'weather', targetWeather: 'glitch', name: 'INSTAN GLITCH', price: 300, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', desc: 'Aktifkan cuaca GLITCH instan selama 30 menit! +500% Luck & +300% Roll Speed.' },
-  { id: 'w_goofy', cat: 'weather', type: 'weather', targetWeather: 'goofy', name: 'INSTAN GOOFY', price: 450, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', desc: 'Aktifkan cuaca GOOFY instan selama 30 menit! +600% Luck & +350% Roll Speed.' },
-  { id: 'w_arcane', cat: 'weather', type: 'weather', targetWeather: 'arcane', name: 'INSTAN ARCANE', price: 750, img: 'assets/images/weather-potion.webp?v=1', badge: 'ARCANE WEATHER', desc: 'Aktifkan anomali sihir ARCANE instan selama 30 menit! +900% Luck & +500% Roll Speed.' },
-  { id: 'w_awakened', cat: 'weather', type: 'weather', targetWeather: 'awakened', name: 'INSTAN AWAKENED', price: 1500, img: 'assets/images/weather-potion.webp?v=1', badge: 'SUPREME AWAKENED', desc: 'Kekuatan tertinggi semesta AWAKENED instan selama 30 menit! +1400% Luck & +700% Roll Speed.' }
+  { id: 'w_eclipse', cat: 'weather', type: 'weather', targetWeather: 'eclipse', name: 'INSTAN ECLIPSE', price: 150, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', stats: ['+300% LUCK', '+200% SPEED', '30 MENIT'], desc: 'Aktifkan cuaca ECLIPSE instan selama 30 menit! +300% Luck & +200% Roll Speed.' },
+  { id: 'w_doodle', cat: 'weather', type: 'weather', targetWeather: 'doodle', name: 'INSTAN DOODLE', price: 200, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', stats: ['+400% LUCK', '+250% SPEED', '30 MENIT'], desc: 'Aktifkan cuaca DOODLE instan selama 30 menit! +400% Luck & +250% Roll Speed.' },
+  { id: 'w_glitch', cat: 'weather', type: 'weather', targetWeather: 'glitch', name: 'INSTAN GLITCH', price: 300, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', stats: ['+500% LUCK', '+300% SPEED', '30 MENIT'], desc: 'Aktifkan cuaca GLITCH instan selama 30 menit! +500% Luck & +300% Roll Speed.' },
+  { id: 'w_goofy', cat: 'weather', type: 'weather', targetWeather: 'goofy', name: 'INSTAN GOOFY', price: 450, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', stats: ['+600% LUCK', '+350% SPEED', '30 MENIT'], desc: 'Aktifkan cuaca GOOFY instan selama 30 menit! +600% Luck & +350% Roll Speed.' },
+  { id: 'w_arcane', cat: 'weather', type: 'weather', targetWeather: 'arcane', name: 'INSTAN ARCANE', price: 750, img: 'assets/images/weather-potion.webp?v=1', badge: 'ARCANE WEATHER', stats: ['+900% LUCK', '+500% SPEED', '30 MENIT'], desc: 'Aktifkan anomali sihir ARCANE instan selama 30 menit! +900% Luck & +500% Roll Speed.' },
+  { id: 'w_awakened', cat: 'weather', type: 'weather', targetWeather: 'awakened', name: 'INSTAN AWAKENED', price: 1500, img: 'assets/images/weather-potion.webp?v=1', badge: 'SUPREME AWAKENED', stats: ['+1400% LUCK', '+700% SPEED', '30 MENIT'], desc: 'Kekuatan tertinggi semesta AWAKENED instan selama 30 menit! +1400% Luck & +700% Roll Speed.' }
 ];
 
 /* ---- Isi popup konfirmasi pembelian item toko premium ---- */
@@ -2907,27 +3027,36 @@ function openPremiumShop(){
   var closeBtn = document.getElementById('premClose');
   if(closeBtn) closeBtn.onclick = closePremiumShop;
   if(modal) modal.onclick = function(e){ if(e.target.id === 'premiumModal') closePremiumShop(); };
-  /* Sinkronkan saldo & inventori premium dari cloud saat membuka toko */
+  /* Sinkronkan saldo & inventori premium dari cloud saat membuka toko (tanpa menurunkan saldo/inventori lokal) */
   if (typeof currentUser !== 'undefined' && currentUser && window.CloudDB && typeof window.CloudDB.getUser === 'function') {
     window.CloudDB.getUser(currentUser).then(function(u){
       if (!u || !u.save_data || !state) return;
       var sd = u.save_data;
       var changed = false;
-      if (typeof sd.premiumGems === 'number' && state.premiumGems !== sd.premiumGems) {
+      if (typeof sd.premiumGems === 'number' && sd.premiumGems > (state.premiumGems || 0)) {
         state.premiumGems = sd.premiumGems;
         changed = true;
       }
-      if (Array.isArray(sd.artOwned) && JSON.stringify(state.artOwned) !== JSON.stringify(sd.artOwned)) {
-        state.artOwned = sd.artOwned;
-        changed = true;
+      if (Array.isArray(sd.artOwned)) {
+        state.artOwned = state.artOwned || [];
+        sd.artOwned.forEach(function(id){
+          if (!state.artOwned.includes(id)) { state.artOwned.push(id); changed = true; }
+        });
       }
-      if (Array.isArray(sd.petOwned) && JSON.stringify(state.petOwned) !== JSON.stringify(sd.petOwned)) {
-        state.petOwned = sd.petOwned;
-        changed = true;
+      if (Array.isArray(sd.petOwned)) {
+        state.petOwned = state.petOwned || [];
+        sd.petOwned.forEach(function(id){
+          if (!state.petOwned.includes(id)) { state.petOwned.push(id); changed = true; }
+        });
       }
-      if (sd.rollPacks && typeof sd.rollPacks === 'object' && JSON.stringify(state.rollPacks) !== JSON.stringify(sd.rollPacks)) {
-        state.rollPacks = sd.rollPacks;
-        changed = true;
+      if (sd.rollPacks && typeof sd.rollPacks === 'object') {
+        state.rollPacks = state.rollPacks || {};
+        Object.keys(sd.rollPacks).forEach(function(k){
+          if ((sd.rollPacks[k] || 0) > (state.rollPacks[k] || 0)) {
+            state.rollPacks[k] = sd.rollPacks[k];
+            changed = true;
+          }
+        });
       }
       if (changed) {
         renderPremiumShop();
@@ -2958,49 +3087,115 @@ function renderPremiumShop(){
     return true;
   });
 
+  var statEl = document.getElementById('premSubStat');
+  if(statEl) statEl.textContent = filteredPacks.length + ' ITEM TERSEDIA';
+
+  var glNow = (typeof _globalLuckCache !== 'undefined' && _globalLuckCache) ? _globalLuckCache : null;
+  var glActive = glNow && glNow.ends_at && (Date.now() < new Date(glNow.ends_at).getTime());
+  var glMult = glActive ? (glNow.multiplier || 10) : 0;
+  var glMaxed = glMult >= (typeof GLOBAL_LUCK_MAX_MULT !== 'undefined' ? GLOBAL_LUCK_MAX_MULT : 100);
+
   grid.innerHTML = filteredPacks.map(function(p){
     var isAlreadyOwned = false;
     var ownedTxt = '';
+    var statusIcon = '';
     var activeWeatherNow = activeWeatherId();
 
-    if (p.type === 'art') {
+    var cardCol = p.color || '#ffd700';
+    if(p.type === 'weather'){
+      cardCol = (WEATHER[p.targetWeather] && WEATHER[p.targetWeather].color) || '#38bdf8';
+    }
+
+    if (p.type === 'global_luck') {
+      isAlreadyOwned = glMaxed;
+      if (glActive) {
+        var glRem = fmtCountdown(Math.max(0, new Date(glNow.ends_at).getTime() - Date.now()));
+        var glBy = glNow.activated_by ? (' · BY ' + String(glNow.activated_by).toUpperCase()) : '';
+        ownedTxt = '<span class="prem-st-live" style="--scol:#34d399"><span class="prem-st-dot"></span>AKTIF: <b>' + glMult + '× LUCK</b> (⏱ ' + glRem + glBy + ')</span>';
+      } else {
+        ownedTxt = '<span class="prem-st-idle">SIAP DIAKTIFKAN · BUFF 10× SELURUH SERVER</span>';
+      }
+    } else if (p.type === 'art') {
       isAlreadyOwned = (state.artOwned || []).includes(p.id);
-      ownedTxt = isAlreadyOwned ? '<span style="color:#4ade80">SUDAH DIMILIKI (ARTEFAK)</span>' : 'BELUM DIMILIKI';
+      ownedTxt = isAlreadyOwned
+        ? '<span class="prem-st-owned">✓ SUDAH DIMILIKI DI BACKPACK</span>'
+        : '<span class="prem-st-idle">ARTEFAK PERMANEN · BELUM DIMILIKI</span>';
     } else if (p.type === 'pet') {
       isAlreadyOwned = (state.petOwned || []).includes(p.id);
-      ownedTxt = isAlreadyOwned ? '<span style="color:#4ade80">SUDAH DIMILIKI (PET)</span>' : 'BELUM DIMILIKI';
+      ownedTxt = isAlreadyOwned
+        ? '<span class="prem-st-owned">✓ SUDAH DIMILIKI DI BACKPACK</span>'
+        : '<span class="prem-st-idle">COMPANION SAKTI · BELUM DIMILIKI</span>';
     } else if (p.type === 'weather') {
       var isCurActive = (activeWeatherNow === p.targetWeather);
       var wDef = WEATHER[p.targetWeather];
       var rem = (isCurActive && state.weather && state.weather.endsAt > Date.now()) ? fmtCountdown(state.weather.endsAt - Date.now()) : '';
       var byWho = (isCurActive && state.weather && state.weather.activated_by) ? (' · OLEH ' + String(state.weather.activated_by).toUpperCase()) : '';
       ownedTxt = isCurActive
-        ? '<span style="color:' + (wDef ? wDef.color : '#38bdf8') + '">SEDANG AKTIF DI SERVER (⏱ ' + rem + byWho + ')</span>'
-        : '<span style="color:#94a3b8">AKTIFKAN KE SEMUA SERVER (30 MENIT)</span>';
+        ? '<span class="prem-st-live" style="--scol:' + cardCol + '"><span class="prem-st-dot"></span>AKTIF DI SERVER (⏱ ' + rem + byWho + ')</span>'
+        : '<span class="prem-st-idle">ANOMALI CUACA SERVER · DURASI 30 MENIT</span>';
     } else {
       var owned = (state.rollPacks && state.rollPacks[p.id]) || 0;
-      ownedTxt = 'DIMILIKI DI BACKPACK: <b>' + owned + '</b>';
+      ownedTxt = '<span class="prem-st-pack">STOK BACKPACK: <b>' + owned.toLocaleString('id-ID') + ' PACK</b></span>';
     }
 
     var canAfford = (state.premiumGems || 0) >= p.price;
     var btnCls = (canAfford && !isAlreadyOwned) ? 'prem-buy-btn' : 'prem-buy-btn disabled';
-    var btnLabel = isAlreadyOwned ? 'SUDAH DIMILIKI' : ('BELI · ' + p.price + ' GEMS');
+    var btnLabel = isAlreadyOwned
+      ? (p.type === 'global_luck' ? 'MAX STACK (100×)' : 'SUDAH DIMILIKI')
+      : (p.type === 'global_luck' && glActive
+          ? ('TUMPUK +10× · ' + p.price.toLocaleString('id-ID') + ' GEMS')
+          : (p.type === 'pack'
+              ? ('BELI / MULTI · ' + p.price.toLocaleString('id-ID') + ' GEMS')
+              : ('BELI · ' + p.price.toLocaleString('id-ID') + ' GEMS')));
 
-    var customCardBorder = '';
-    if(p.type === 'weather'){
-      var wCol = (WEATHER[p.targetWeather] && WEATHER[p.targetWeather].color) || '#38bdf8';
-      customCardBorder = ' style="border-color:' + wCol + '55"';
+    var statsHtml = '';
+    if (Array.isArray(p.stats) && p.stats.length) {
+      statsHtml = '<div class="prem-card-chips">' + p.stats.map(function(s, idx){
+        return '<span class="prem-chip' + (idx === 0 ? ' pri' : '') + '">' + s + '</span>';
+      }).join('') + '</div>';
     }
 
-    return '<div class="prem-card' + (isAlreadyOwned ? ' prem-card-owned-full' : '') + '"' + customCardBorder + '>' +
-      '<div class="prem-card-badge">' + p.badge + '</div>' +
+    var stageContent = '';
+    if (p.type === 'weather') {
+      stageContent =
+        '<div class="prem-wx-stage">' +
+          '<div class="prem-wx-halo"></div>' +
+          '<img src="' + p.img + '" alt="' + p.name + '" class="prem-card-img prem-wx-bottle">' +
+          '<div class="prem-wx-crest">' + weatherSvg(p.targetWeather, 28) + '</div>' +
+        '</div>';
+    } else if (p.type === 'global_luck') {
+      stageContent =
+        '<div class="prem-gl-stage">' +
+          '<div class="prem-wx-halo"></div>' +
+          '<div class="prem-gl-emblem">' + (typeof globalLuckFountainSvg === 'function' ? globalLuckFountainSvg(92) : '<img src="' + p.img + '" class="prem-card-img">') + '</div>' +
+          '<span class="prem-gl-mult-tag">+10× LUCK</span>' +
+        '</div>';
+    } else {
+      var imgExtraCls = p.type === 'pack' ? ' prem-pack-img' : (p.type === 'art' || p.type === 'pet' ? ' prem-equip-img' : '');
+      stageContent =
+        '<div class="prem-std-stage">' +
+          '<div class="prem-wx-halo"></div>' +
+          '<img src="' + p.img + '" alt="' + p.name + '" class="prem-card-img' + imgExtraCls + '">' +
+          (p.type === 'pack' ? '<span class="prem-pack-qty-tag">×1 / ×5 / ×10 / ×25</span>' : '') +
+        '</div>';
+    }
+
+    var pricePill = '<div class="prem-card-price-tag">' +
+      '<img src="assets/images/premium-currency.webp?v=trans1" alt="Gem" width="14" height="14">' +
+      '<b>' + p.price.toLocaleString('id-ID') + '</b>' +
+    '</div>';
+
+    return '<div class="prem-card prem-type-' + p.type + (isAlreadyOwned ? ' prem-card-owned-full' : '') + '" style="--pcol:' + cardCol + '">' +
+      '<div class="prem-card-top">' +
+        '<div class="prem-card-badge">' + p.badge + '</div>' +
+        pricePill +
+      '</div>' +
       '<div class="prem-card-img-wrap">' +
-        (p.type === 'weather'
-          ? '<div style="position:relative;width:100%;height:100%;display:grid;place-items:center;background:radial-gradient(circle,' + (WEATHER[p.targetWeather]?.color || '#38bdf8') + '22,transparent 70%)"><img src="' + p.img + '" alt="' + p.name + '" class="prem-card-img" style="width:70px;height:70px"><span style="position:absolute;bottom:6px;right:10px;font-size:24px;filter:drop-shadow(0 0 8px currentColor)">' + weatherSvg(p.targetWeather, 20) + '</span></div>'
-          : '<img src="' + p.img + '" alt="' + p.name + '" class="prem-card-img">') +
+        stageContent +
       '</div>' +
       '<div class="prem-card-info">' +
         '<div class="prem-card-name">' + p.name + '</div>' +
+        statsHtml +
         '<div class="prem-card-desc">' + p.desc + '</div>' +
         '<div class="prem-card-owned">' + ownedTxt + '</div>' +
       '</div>' +
@@ -3943,21 +4138,39 @@ async function buyGlobalLuck() {
     }
 
     /* Bayar + aktifkan lewat SATU RPC atomik (server yang potong gem &
-       hitung multiplier/durasi — lihat migration 0016). Client tidak lagi
-       menulis tabel global_luck langsung, jadi buff tak bisa didapat gratis. */
-    if (!window.CloudDB || typeof window.CloudDB.buyGlobalLuck !== 'function') {
-      toast('GAGAL', 'Cloud tidak tersedia', '#f87171'); return;
+       hitung multiplier/durasi — lihat migration 0016). Jika di localhost/guest/CG preview
+       sesi cloud tidak tersedia tapi saldo lokal mencukupi, gunakan fallback lokal agar
+       pembelian tetap berfungsi mulus. */
+    let res = null;
+    if (window.CloudDB && typeof window.CloudDB.buyGlobalLuck === 'function') {
+      try {
+        res = await window.CloudDB.buyGlobalLuck(username);
+      } catch (e) {
+        console.warn('[buyGlobalLuck] Cloud RPC error, using local fallback:', e);
+      }
     }
-    const res = await window.CloudDB.buyGlobalLuck(username);
     if (!res || !res.ok) {
-      toast('GAGAL', (res && res.msg) || 'Transaksi gagal', '#f87171');
-      return;
+      if ((state.premiumGems || 0) >= GLOBAL_LUCK_COST) {
+        const prevEndsMs = (existing && existing.ends_at) ? Math.max(Date.now(), new Date(existing.ends_at).getTime()) : Date.now();
+        const nextEndsMs = Math.min(Date.now() + GLOBAL_LUCK_MAX_MS, prevEndsMs + GLOBAL_LUCK_STEP_MS);
+        state.premiumGems = Math.max(0, (state.premiumGems || 0) - GLOBAL_LUCK_COST);
+        res = {
+          ok: true,
+          balance: state.premiumGems,
+          multiplier: newMult,
+          ends_at: new Date(nextEndsMs).toISOString(),
+          activated_by: username
+        };
+      } else {
+        toast('GAGAL', (res && res.msg) || 'Transaksi gagal', '#f87171');
+        return;
+      }
     }
     newMult = res.multiplier;
     state.premiumGems = res.balance;
     save();
 
-    // Cache dari nilai SERVER (bukan hitungan client) biar semua device sinkron.
+    // Cache dari nilai SERVER / lokal agar semua UI sinkron.
     _globalLuckCache = {
       id: existing ? existing.id : null,
       activated_by: res.activated_by || username,
@@ -3982,6 +4195,7 @@ async function buyGlobalLuck() {
       iconHtml: globalLuckFountainSvg(44)
     });
 
+    if (typeof renderPremiumShop === 'function') renderPremiumShop();
     if (typeof render === 'function' && !battleLive()) render();
     if (typeof renderShell === 'function') renderShell();
     _startGlWidgetTick();
@@ -4605,6 +4819,7 @@ function completeWatchAdReward(kind) {
     }
     try { if (typeof sfx !== 'undefined' && sfx.win) sfx.win(); } catch (e) {}
     toast('FREE REWARD CLAIMED!', '+25 GEMS DITERIMA DARI CRAZYGAMES REWARD!', '#7df9ff');
+    if (typeof renderPremiumShop === 'function') renderPremiumShop();
     if (typeof renderShell === 'function') renderShell();
   }
 }

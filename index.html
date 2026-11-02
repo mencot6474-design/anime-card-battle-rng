@@ -16,19 +16,20 @@
 <!-- CrazyGames SDK v3 (Official HTML5 SDK) -->
 <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
 <script src="js/crazygames.js?v=v2-sdkReadyGate"></script>
-<link rel="stylesheet" href="css/style.css?v=v295-bpHdr">
+<link rel="stylesheet" href="css/style.css?v=v332-battleNoHeader">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Rajdhani:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/world-boss.css?v=v274-touch44">
 <link rel="stylesheet" href="css/sl-system.css?v=v295-bpHdr">
 <link rel="stylesheet" href="css/story-carousel.css?v=v327-storyCleanPolish">
-<link rel="stylesheet" href="css/lobby-prototype.css?v=v327-storyCleanPolish">
+<link rel="stylesheet" href="css/lobby-prototype.css?v=v332-battleNoHeader">
 <link rel="stylesheet" href="css/mobile-shell.css?v=v315-storyPrecisionSync">
+<link rel="stylesheet" href="css/battle-fresh.css?v=v3-battleNoHeader">
 <script>
   /* Link toko Trakteer (fallback — utama ada di js/config.js). */
   window.TRAKTEER_SHOP_URL = "";
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=v301-itemUse').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=v332-battleNoHeader').catch(() => {});
     });
   }
 </script>
@@ -412,37 +413,52 @@
   <div class="prem-modal-inner">
     <div class="prem-head">
       <div class="prem-h-left">
-        <span class="prem-badge"><span class="prem-pulse"></span>EXCLUSIVE SYNDICATE</span>
+        <span class="prem-badge"><span class="prem-pulse"></span>SYNDICATE BLACK-MARKET EMPORIUM</span>
         <h2 class="prem-title">PREMIUM SHOP</h2>
       </div>
-      <div class="prem-balance-pill">
-        <img src="assets/images/premium-currency.webp" alt="Gem" width="22" height="22">
-        <span class="prem-bal-txt">SALDO:</span>
-        <strong id="premBalVal">0</strong>
+      <div class="prem-head-right">
+        <div class="prem-balance-pill" title="Saldo Premium Gems">
+          <img src="assets/images/premium-currency.webp" alt="Gem" width="22" height="22">
+          <span class="prem-bal-txt">SALDO:</span>
+          <strong id="premBalVal">0</strong>
+        </div>
+        <button class="prem-free-gems-btn" type="button" onclick="triggerWatchAd('gems')" title="Tonton iklan singkat untuk +25 Gems Gratis">
+          <span class="prem-fg-ic">🎬</span>
+          <span class="prem-fg-txt">+25 GEMS</span>
+        </button>
+        <button class="ix-x" id="premClose" type="button" title="Tutup">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
-      <button class="ix-x" id="premClose" type="button" title="Tutup">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
     </div>
     
     <div class="prem-subbanner">
       <span class="prem-sub-ic">✦</span>
-      <span class="prem-sub-txt">Toko Resmi Premium Syndicate — Tarik ribuan kartu instan, koleksi artefak & pet sakti, serta aktivasi anomali cuaca legendaris langsung dengan Premium Gems!</span>
+      <span class="prem-sub-txt">Bursa Resmi Syndicate — Aktifkan Global Luck 10× se-server, tarik hingga 100.000 kartu instan, miliki artefak & pet kasta tertinggi, atau panggil anomali cuaca legendaris!</span>
+      <span class="prem-sub-stat" id="premSubStat">14 ITEM TERSEDIA</span>
     </div>
 
     <!-- Category Tabs -->
     <div class="prem-tabs-bar" id="premTabs">
       <button class="prem-tab-btn on" type="button" data-cat="all" onclick="premSetTab('all')">
-        <span class="prem-tab-dot"></span>SEMUA ITEM
+        <span class="prem-tab-dot"></span>
+        <span>SEMUA ITEM</span>
+        <b class="prem-tab-cnt" id="premCntAll">14</b>
       </button>
       <button class="prem-tab-btn" type="button" data-cat="pack" onclick="premSetTab('pack')">
-        <span class="prem-tab-dot"></span>INSTAN ROLL
+        <span class="prem-tab-dot"></span>
+        <span>INSTAN ROLL</span>
+        <b class="prem-tab-cnt" id="premCntPack">5</b>
       </button>
       <button class="prem-tab-btn" type="button" data-cat="equip" onclick="premSetTab('equip')">
-        <span class="prem-tab-dot"></span>PET & ARTEFAK
+        <span class="prem-tab-dot"></span>
+        <span>PET & ARTEFAK</span>
+        <b class="prem-tab-cnt" id="premCntEquip">2</b>
       </button>
       <button class="prem-tab-btn" type="button" data-cat="weather" onclick="premSetTab('weather')">
-        <span class="prem-tab-dot"></span>WEATHER INSTAN
+        <span class="prem-tab-dot"></span>
+        <span>WEATHER INSTAN</span>
+        <b class="prem-tab-cnt" id="premCntWeather">6</b>
       </button>
     </div>
 
@@ -858,53 +874,42 @@
     <div class="bio-bg-speedlines"></div>
     <div class="bio-dark-vignette"></div>
 
-    <!-- UPPER CUT-IN STRIP: PLAYER (SLIDES FROM LEFT) -->
-    <div class="bio-cutin-strip bio-cutin-top" id="bioPlayerStrip">
-      <div class="bio-strip-backdrop"></div>
-      <div class="bio-strip-content">
-        <div class="bio-strip-portrait-frame">
-          <img id="bioPlayerImg" class="bio-strip-img" src="" alt="Player Fighter">
-          <div class="bio-portrait-glare"></div>
-        </div>
-        <div class="bio-strip-info">
-          <div class="bio-strip-header">
-            <span class="bio-badge-tag bio-badge-player">OPERATOR</span>
+    <div class="entry-split-stage">
+      <!-- UPPER CUT-IN STRIP: PLAYER -->
+      <div class="bio-cutin-strip bio-cutin-top entry-side me-entry" id="bioPlayerStrip">
+        <div class="bio-strip-backdrop"></div>
+        <img id="bioPlayerImg" class="bio-strip-img entry-art" src="" alt="Player Fighter">
+        <div class="entry-meta bio-strip-info">
+          <div class="entry-tag-row bio-strip-header">
+            <span class="entry-tag bio-badge-tag bio-badge-player">OPERATOR</span>
             <span class="bio-tier-pill" id="bioPlayerTier" style="display:none"></span>
           </div>
-          <div class="bio-strip-name" id="bioPlayerName">PLAYER</div>
-          <div class="bio-strip-sub" id="bioPlayerSub">CHALLENGER DEPLOYED</div>
+          <div class="entry-name bio-strip-name" id="bioPlayerName">PLAYER</div>
+          <span class="entry-sub bio-strip-sub" id="bioPlayerSub">CHALLENGER DEPLOYED</span>
         </div>
+        <div class="bio-strip-laser bio-laser-top"></div>
       </div>
-      <div class="bio-strip-laser bio-laser-top"></div>
-    </div>
 
-    <!-- CENTER VS BADGE (STANDS BETWEEN THE TWO STRIPS, NO CARDS COLLIDING) -->
-    <div class="bio-center-divider-zone">
-      <div class="bio-mid-line"></div>
-      <div class="bio-vs-pill">
-        <span class="bio-vs-v">V</span><span class="bio-vs-s">S</span>
+      <!-- CENTER VS BADGE / STAMP -->
+      <div class="entry-center-stamp">
+        <span class="st-kicker" id="bioStageCode">TACTICAL CLASH</span>
+        <span class="st-main">ENGAGE!</span>
       </div>
-      <div class="bio-vs-protocol">TACTICAL CLASH</div>
-    </div>
 
-    <!-- LOWER CUT-IN STRIP: ENEMY / BOSS (SLIDES FROM RIGHT) -->
-    <div class="bio-cutin-strip bio-cutin-bot" id="bioFoeStrip">
-      <div class="bio-strip-backdrop foe-backdrop"></div>
-      <div class="bio-strip-content foe-content">
-        <div class="bio-strip-info foe-info">
-          <div class="bio-strip-header foe-header">
+      <!-- LOWER CUT-IN STRIP: ENEMY / BOSS -->
+      <div class="bio-cutin-strip bio-cutin-bot entry-side foe-entry" id="bioFoeStrip">
+        <div class="bio-strip-backdrop foe-backdrop"></div>
+        <div class="entry-meta bio-strip-info foe-info">
+          <div class="entry-tag-row bio-strip-header foe-header">
             <span class="bio-tier-pill foe-tier" id="bioFoeTier">UR</span>
-            <span class="bio-badge-tag bio-badge-foe" id="bioFoeRole">HOSTILE</span>
+            <span class="entry-tag bio-badge-tag bio-badge-foe" id="bioFoeRole">HOSTILE</span>
           </div>
-          <div class="bio-strip-name foe-name" id="bioFoeName">ENEMY</div>
-          <div class="bio-strip-sub foe-sub" id="bioFoeSub">STAGE OPPONENT</div>
+          <div class="entry-name bio-strip-name foe-name" id="bioFoeName">ENEMY</div>
+          <span class="entry-sub bio-strip-sub foe-sub" id="bioFoeSub">STAGE OPPONENT</span>
         </div>
-        <div class="bio-strip-portrait-frame foe-frame">
-          <img id="bioFoeImg" class="bio-strip-img" src="" alt="Enemy Fighter">
-          <div class="bio-portrait-glare foe-glare"></div>
-        </div>
+        <img id="bioFoeImg" class="bio-strip-img entry-art" src="" alt="Enemy Fighter">
+        <div class="bio-strip-laser bio-laser-bot"></div>
       </div>
-      <div class="bio-strip-laser bio-laser-bot"></div>
     </div>
 
     <div class="bio-impact-flash" id="bioImpactFlash"></div>
@@ -984,19 +989,19 @@
 <script src="js/data.js?v=v126-storyEnemyTierOnly"></script>
 <script src="js/config.js?v=v156-trakteer"></script>
 <script src="js/mobile-shell.js?v=v285-lobbyClean"></script>
-<script src="js/supabase-sync.js?v=v17-claimIndexReward"></script>
-<script src="js/panels.js?v=v311-afkBackgroundWorker"></script>
+<script src="js/supabase-sync.js?v=v332-battleNoHeader"></script>
+<script src="js/panels.js?v=v332-battleNoHeader"></script>
 <script src="js/topup.js?v=v158-paywallOff"></script>
 <script src="js/cards-fx.js?v=v84-fmtStatCompact"></script>
 <script src="js/anime-archetype-attacks.js?v=v117-blurHygiene"></script>
-<script src="js/state.js?v=v311-afkBackgroundWorker"></script>
+<script src="js/state.js?v=v312-battleFreshProto"></script>
 <script src="js/sheetfx.js?v=v112-isMutedLexical"></script>
-<script src="js/battle.js?v=v242-fixLobbyLoadingBackpackHidden"></script>
-<script src="js/tower-lobby.js?v=v305-lobbyClickFix"></script>
+<script src="js/battle.js?v=v243-battleFreshProto"></script>
+<script src="js/tower-lobby.js?v=v306-battleFreshProto"></script>
 <script src="js/shadow-king-fx.js?v=v4-skfx4"></script>
 <script src="js/foe-passives.js?v=v62-foe-passives"></script>
 <script src="js/story-carousel.js?v=v319-diamondBossMapSync"></script>
-<script src="js/raid.js?v=v186-cgLifecycle"></script>
+<script src="js/raid.js?v=v187-battleFreshProto"></script>
 <script src="js/ranking.js?v=v9-storyEnemyTierOnly"></script>
 <script src="js/i18n.js?v=v302-relicPet"></script>
 <script src="js/boot.js?v=v285-lobbyClean"></script>

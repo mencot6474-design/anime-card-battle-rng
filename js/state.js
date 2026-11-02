@@ -24,7 +24,7 @@ function freshState(){
   const s0=_real(_want)?_want:(_units.find(c=>_real(c))||null);
   const start=s0?{id:Math.random().toString(36).slice(2,9),char:_idOf(s0),tier:(s0.tier==null?null:s0.tier),fav:false,lock:false,mut:"none",shiny:false,trait:"none",count:1}:null;
   const newState={coins:1000,wbTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,totalRolls:0,playSec:0,muted:false,lang:"en",diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},raidShopOwned:{},towerShopOwned:{},storyGemMilestones:{},dailyGemPending:0,storyCd:{},rebirth:{count:0,essence:0},tower:{best:0,auto:false},battleSpeed:1,
-    cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],history:[],battle:null,
+    cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],history:[],rollHistory:[],battle:null,
     player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1,sp:0,tree:{}},weather:null,weatherBest:null,potions:0,mythicPotions:0,luckPots:[0,0,0],speedPots:[0,0,0],luckBuffs:[],speedBuffs:[],infTokens:0,
     artOwned:[],artSlots:[null,null],petOwned:[],petEquipped:null,intanRolls:0,idxRewardsClaimed:0,premiumGems:50,rollPacks:{r5k:0,r10k:0,r25k:0,r50k:0,r100k:0}};
   console.log('[FRESH STATE] Initialized player:',newState.player);
@@ -217,6 +217,8 @@ function loadStateFor(name){
   if(typeof state.lastClaim!=="string")state.lastClaim="";
   if(typeof state.muted!=="boolean")state.muted=false;
   if(!Array.isArray(state.history))state.history=[];
+  if(!Array.isArray(state.rollHistory))state.rollHistory=[];
+  if(state.rollHistory.length>10)state.rollHistory.length=10;
   if(!state.cleared||typeof state.cleared!=="object")state.cleared={};
   if(state.weather===undefined)state.weather=null;
   if(state.weatherBest===undefined)state.weatherBest=null;
@@ -1524,10 +1526,12 @@ function playFight(cb,opts){
   try{
     const eq=equipped();
     let foeName="ENEMY", foeImg="", foeTier="BOSS", isBoss=false, subText="STAGE TARGET";
+    let foeAtk=0, foeHp=0, stageCode="BATTLE";
 
     if(state.battle&&state.battle.level!==undefined&&typeof enemyOf==="function"){
       const lv=state.battle.level;
       const en=enemyOf(lv);
+      stageCode="STAGE "+lv;
       if(en){
         foeName=en.name||("STAGE "+lv);
         foeImg=en.img||"";
@@ -1535,19 +1539,38 @@ function playFight(cb,opts){
         isBoss=!!en.boss;
         subText=isBoss?"BOSS ENCOUNTER":"SECTOR CLEARANCE";
       }
+      if(typeof enemyStats==="function"){
+        const es=enemyStats(lv);
+        foeAtk=es.atk||0;
+        foeHp=es.hp||0;
+      }
     }else if(typeof raid!=="undefined"&&raid&&raid.boss){
       foeName=raid.boss.name||"RAID BOSS";
       foeImg=raid.boss.img||"";
       foeTier="RAID";
       isBoss=true;
       subText="SECTOR THREAT LEVEL: MAXIMUM";
+      foeAtk=999999;
+      foeHp=raid.boss.hp||0;
+      stageCode="RAID BOSS";
     }else if(typeof towerRun!=="undefined"&&towerRun&&towerRun.waves&&towerRun.waves[towerRun.idx]){
       const w=towerRun.waves[towerRun.idx];
       foeName=w.en?w.en.name:"TOWER GUARDIAN";
       foeImg=w.en?w.en.img:"";
       foeTier="FLOOR "+(towerRun.idx+1);
       subText="INFINITE SPIRE ANOMALY";
+      if(w.es){
+        foeAtk=w.es.atk||0;
+        foeHp=w.es.hp||0;
+      }
+      stageCode="FLOOR "+(towerRun.idx+1);
     }
+
+    const pSt = (eq && typeof cardStats==="function") ? cardStats(eq.char, eq.mut, eq.trait, eq.shiny) : {atk:0, hp:0};
+    const fk = typeof fmtBattleK === "function" ? fmtBattleK : (typeof fmtStat === "function" ? fmtStat : String);
+
+    const scEl=document.getElementById("bioStageCode");
+    if(scEl) scEl.textContent=stageCode;
 
     const pImg=document.getElementById("bioPlayerImg");
     const pName=document.getElementById("bioPlayerName");
@@ -1568,7 +1591,7 @@ function playFight(cb,opts){
       if(pTier){
         pTier.style.display="none";
       }
-      if(pSub)pSub.textContent=eq.shiny?"SHINY OPERATOR · READY":"TACTICAL OPERATOR · READY";
+      if(pSub)pSub.textContent=`ATK ${fk(pSt.atk)} · HP ${fk(pSt.hp)}`;
     }
 
     const fImg=document.getElementById("bioFoeImg");
@@ -1588,9 +1611,9 @@ function playFight(cb,opts){
     }
     if(fRole){
       fRole.textContent=isBoss?"BOSS":"HOSTILE";
-      fRole.className="bio-badge-side foe"+(isBoss?" boss":"");
+      fRole.className="entry-tag bio-badge-tag bio-badge-foe bio-badge-side foe"+(isBoss?" boss":"");
     }
-    if(fSub)fSub.textContent=subText;
+    if(fSub)fSub.textContent=`ATK ${fk(foeAtk)} · HP ${fk(foeHp)}`;
 
   }catch(err){
     console.warn("VS Intro populate err:",err);
