@@ -503,15 +503,8 @@
       nodeEl.style.left = `${c.xPct}%`;
       nodeEl.style.top = `${c.yPct}%`;
 
-      const stageCode = `0${ch.no}-0${i + 1}`;
-      const stageTag = isBoss ? `${stageCode} BOSS` : stageCode;
-
-      let subLabelHtml = "";
-      if (isBoss) {
-        subLabelHtml = `<div class="boss-threat-pill"><span class="ic ic-xs i-dragon"></span> BOSS</div>`;
-      } else {
-        subLabelHtml = `<div class="node-tag-sub">STAGE 0${i + 1}</div>`;
-      }
+      const stageCode = `STAGE 0${i + 1}`;
+      const stageTag = isBoss ? `${stageCode} // BOSS` : stageCode;
 
       nodeEl.innerHTML = `
         <div class="node-orb-container">
@@ -519,13 +512,9 @@
           <div class="node-avatar-frame">
             <img class="node-img" src="${en.img}" alt="${en.name}" loading="lazy" onerror="this.src='assets/cards/art/solar-brawler.webp'">
             ${!isUnlocked ? `<div class="node-lock-mask"><span class="ic ic-sm i-lock"></span></div>` : ''}
-            ${isCleared ? `<span class="sc-node-check-badge">✓</span>` : ''}
           </div>
+          ${isCleared ? `<span class="sc-node-check-badge">✓</span>` : ''}
           <div class="node-stage-num-tag">${stageTag}</div>
-        </div>
-        <div class="node-label-box">
-          <div class="node-enemy-title">${isUnlocked ? en.name : 'ENCRYPTED'}</div>
-          ${subLabelHtml}
         </div>
       `;
 
