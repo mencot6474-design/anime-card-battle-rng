@@ -17,7 +17,7 @@ Baca file ini dulu; jangan baca `style.css` (49.3k baris) atau `index.html` utuh
 | **Tab bar** (4 tab, Summon dihapus) | — | ⏳ ikut unit lobby |
 
 **P0 mobile** (bukti terukur, antre — lihat §4/ledger): K-GRID koleksi di 320 · `#pwaInstallBtn` nutupin dock · tab active-state · story-title/daily-close 44px.
-**Mandor aktif** = sesi ini; pekerja = sesi divisi terpisah (**MODE SERIAL**, §2c). Sumber kebenaran giliran & keputusan = `_tmp/mandor_ledger.md` (ditimpa tiap unit).
+**Mandor aktif** = sesi ini; pekerja = sesi divisi terpisah (**MODE PARALEL**, §2c — 5 divisi boleh jalan bareng asalkan tiketnya disjoint per file). Sumber kebenaran giliran & keputusan = `_tmp/mandor_ledger.md` (ditimpa tiap unit).
 
 ---
 
@@ -249,13 +249,17 @@ Glob `_tmp/*.cjs` **bukan** milik db-sync. Pembagian nyata: ui-ux = `_tmp/layout
 
 **Kecuali** lima harness gerbang CSS yang diwariskan ke **ui-css** sebagai alat kerjanya (pembuatnya, sesi rilis Tahap B `59200e2e`, sudah selesai): `_tmp/dominated.js`, `_tmp/ab_swap.js`, `_tmp/ab_swap2.js`, `_tmp/mobile-harness.cjs`, `_tmp/cdp_run.cjs`. ui-css boleh menjalankan dan memperbaruinya; hasil ukurnya tetap harus bisa direproduksi, dan gerbangnya `BEDA=0` untuk kondisi yang tidak disentuh + `errs=0` + `lain=0`.
 
-### MODE SERIAL — satu pekerja bergilir (perintah user 2026-10-30, berlaku di atas segalanya)
+### MODE PARALEL — 5 divisi boleh jalan bersamaan (perintah user 2026-11-02, menggantikan MODE SERIAL 2026-10-30)
 
-**Maksimum SATU sesi pekerja berjalan pada satu waktu.** Tidak ada lagi 5 divisi paralel. Aturan turunannya:
+**Lebih dari satu pekerja boleh berjalan sekaligus.** Yang menjaga supaya pelajaran 2026-10-30 tidak terulang:
 
-1. Sebelum dispatch pekerja berikutnya, mandor **wajib** `stop_chat_session` yang aktif sampai balasannya `status:"idle"`. Pekerja yang sudah selesai tapi masih `running` tetap dihitung menempati slot.
-2. Giliran saat ini = **fase PORT produksi**, serial per layar: lobby (jalan) → settings (✅ push) → drawer → P0 → sweep. Urutan detail + blocker + keputusan = **`_tmp/mandor_ledger.md`** (sumber kebenaran, ditimpa tiap unit). Satu unit selesai + di-QC mandor + commit, baru naik berikutnya.
-3. **Alasan aturan ini:** token mandor jebol pada 2026-10-30 saat 5 sesi jalan bareng. Bukan karena pekerja boros, tapi karena setiap verifikasi laporan menyerap transkrip sesi penuh.
+1. **Tiket WAJIB saling disjoint di level file.** Dua pekerja dalam satu batch tidak boleh menyentuh file yang sama — termasuk `_tmp/`, jadi tiap divisi pakai prefiks namanya sendiri (`db_*`, `css_gate*`, `proto_*`, `ui_*`). Kalau dua divisi butuh file yang sama, mandor memecah atau mengurutkan tugasnya. Tabrakan file = kerjaan ilang ketimpa.
+2. **Maksimum satu pekerja per divisi.** Lima divisi = lima slot; jangan menumpuk dua tiket untuk satu divisi.
+3. **Yang masih serial cuma di DALAM satu divisi:** tiket berikutnya baru dibuka setelah tiket sebelumnya di-QC + di-commit. Urutan lintas divisi tetap ditulis di `_tmp/mandor_ledger.md`.
+4. **Verifikasi mandor = angka, bukan transkrip.** Pekerja menulis laporan ke `_tmp/` dengan 8 baris pertama berformat baku (Disiplin token no.2); mandor membaca header itu saja lalu mencocokkan jangkar & angkanya sendiri lewat `Read`/`Grep`. Penyebab jebolnya token 2026-10-30 adalah menyerap transkrip sesi penuh — bukan jumlah pekerjanya.
+5. **Ledger = satu sumber kebenaran** (`_tmp/mandor_ledger.md`, ditimpa tiap unit): daftar pekerja yang hidup, file yang dipegang masing-masing, blocker, dan keputusan yang menunggu user.
+6. **Kalau dua laporan bertabrakan** (dua-duanya klaim LULUS tapi angkanya beda), mandor membekukan kedua tiket, mengukur ulang sendiri, baru melanjutkan satu jalur.
+7. Batas keras yang tidak berubah oleh mode ini: §2c kepemilikan file, §2b kontrak performa/FX, §1 aturan 1-2 (jangan refactor besar, art jangan disentuh), dan gerbang cache-bust 3 langkah.
 
 ### Disiplin token — berlaku buat mandor DAN pekerja
 
