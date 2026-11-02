@@ -269,7 +269,13 @@ Glob `_tmp/*.cjs` **bukan** milik db-sync. Pembagian nyata: ui-ux = `_tmp/layout
 3. Pekerja **jangan** ping mandor di tengah kerja. Selesaikan → tulis file → baru lapor. Pengecualian ping: butuh izin di luar §2c, atau ketemu cacat di file divisi lain.
 4. Balasan ke mandor maks 12 baris. Dilarang menempel JSON dump, daftar screenshot, atau kutipan kode berparagraf.
 5. **Ledger mandor** = `_tmp/mandor_ledger.md`: ≤25 baris, **ditimpa** tiap unit (bukan ditambah), berisi HEAD, giliran, blocker, dan keputusan yang menunggu. Kalau ledger dan isi chat bertentangan, **ledger yang benar** — chat bisa dipadatkan, ledger tidak.
-6. Cron heartbeat/watchdog tetap mati. Jangan minta dihidupkan; keduanya pemboros.
+6. **HEARTBEAT 5 MENIT — wajib buat semua pekerja (perintah user 2026-11-02, menggantikan aturan lama "cron heartbeat/watchdog tetap mati").** Setiap pekerja yang memegang tiket WAJIB memperbarui `_tmp/hb_<divisi>.md` **setiap ≤5 menit** selama bekerja, satu baris per detak: `HH:MM · langkah sekarang · perkiraan % selesai · estimasi sisa · blocker`. Waktu diambil dari perintah nyata (`date +%H:%M`), bukan ingatan. Aturan turunannya:
+   - Detak pertama ditulis SEBELUM alat berat pertama dijalankan, jadi mandor bisa membedakan "kerja lama" dari "macet".
+   - Tiket tanpa detak >6 menit dianggap macet → mandor menghentikan dan mengambil alih diagnosis.
+   - Pekerja TIDAK menghapus/menimpa file heartbeat divisi lain; heartbeat adalah log append-only.
+   - **Batas mekanisme yang jujur:** sub-agent yang dijalankan lewat `Agent` tidak punya kanal mengirim pesan ke mandor di tengah jalan — bagi mereka "lapor" = menulis file heartbeat ini. Ping sungguhan ke sesi chat mandor hanya nyata kalau pekerja dibuat sebagai **sesi chat** (`create_chat_session` + `send_message_to_chat_session`); mandor yang memutuskan per tiket, dan kalau sesi, tiket WAJIB menyebut `sessionId` mandor.
+7. **WATCHDOG mandor tiap 5 menit** (`mcp__builtin__qoder_cron`, interval 300000 ms, satu tugas bernama `Watchdog 5 pekerja (ui-ux/ui-css/core/vfx/db-sync)` — JANGAN membuat duplikat, `update` yang ada): baca `_tmp/hb_*.md` + `_tmp/mandor_ledger.md` + `git status --short`, lalu tulis satu baris ke `_tmp/watchdog.log` (`OK` / `STALE <divisi> <menit>` / `DIRTY <file>`) dan, kalau ada STALE/DIRTY, satu file `_tmp/watchdog_ALERT.md`. Read-only: dilarang mengedit file produksi, dilarang perintah git yang menulis, dilarang mematikan proses selain PID milik sendiri, dilarang membaca keras `_tmp/sbpat.txt`.
+   Catatan kegagalan masa lalu (jangan diulang): versi 2026-10-30 macet karena ia mem-poll **sesi chat** yang ID-nya basi lalu kena `failureCircuit` 3× dan `expiresAt` terlewat. Watchdog wajib memeriksa file heartbeat (bukan sesi), selalu punya `expiresAt` di masa depan atau `null`, dan tiap `enable` ulang harus dipastikan `pauseReason` kosong.
 
 ---
 
