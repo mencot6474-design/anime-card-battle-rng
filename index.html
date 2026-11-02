@@ -20,8 +20,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Rajdhani:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/world-boss.css?v=v274-touch44">
 <link rel="stylesheet" href="css/sl-system.css?v=v295-bpHdr">
-<link rel="stylesheet" href="css/story-carousel.css?v=v325-protoExactFix">
-<link rel="stylesheet" href="css/lobby-prototype.css?v=v325-protoExactFix">
+<link rel="stylesheet" href="css/story-carousel.css?v=v327-storyCleanPolish">
+<link rel="stylesheet" href="css/lobby-prototype.css?v=v327-storyCleanPolish">
 <link rel="stylesheet" href="css/mobile-shell.css?v=v315-storyPrecisionSync">
 <script>
   /* Link toko Trakteer (fallback — utama ada di js/config.js). */
@@ -716,9 +716,26 @@
           </div>
         </div>
 
+        <!-- 3-Star Objectives -->
+        <div class="star-objectives-box">
+          <span class="sec-sub-title">TARGET BINTANG</span>
+          <div class="objective-row">
+            <span class="ic ic-xs i-sparkle" style="color:var(--neon-gold)"></span>
+            <span>Tumbangkan penjaga arena</span>
+          </div>
+          <div class="objective-row">
+            <span class="ic ic-xs i-sparkle" style="color:var(--neon-gold)"></span>
+            <span>Menang dalam &lt; 15 giliran</span>
+          </div>
+          <div class="objective-row">
+            <span class="ic ic-xs i-sparkle" style="color:var(--neon-gold)"></span>
+            <span>Pertahankan sisa HP &gt; 50%</span>
+          </div>
+        </div>
+
         <!-- Rewards -->
         <div class="rewards-box">
-          <span class="sec-sub-title">HADIAH PERTEMPURAN</span>
+          <span class="sec-sub-title">HADIAH SELESAI</span>
           <div class="reward-chips-row">
             <div class="reward-chip gem" id="dwGemBox">
               <span class="ic ic-xs i-gem"></span>
@@ -736,6 +753,10 @@
 
       <!-- Drawer Action Footer -->
       <div class="drawer-footer">
+        <div class="stamina-cost-row">
+          <span>BIAYA ENERGI</span>
+          <span><span class="ic ic-xs i-bolt" style="color:var(--neon-gold)"></span> 10 STAMINA</span>
+        </div>
         <button class="btn-launch-battle" id="btnDeploy" type="button">
           <span class="ic ic-sm i-swords"></span> MASUK PERTEMPURAN
         </button>

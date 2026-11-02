@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v325-protoExactFix';
+const CACHE_NAME = 'anime-card-battle-v327-storyCleanPolish';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

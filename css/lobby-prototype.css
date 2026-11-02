@@ -2466,7 +2466,6 @@ html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)
 /* Ensure modal backdrops center their inner boxes cleanly with safe top padding */
 #indexModal,
 #traitModal,
-#storyModal,
 #dailyModal,
 #weatherMachineModal,
 #premiumModal,
