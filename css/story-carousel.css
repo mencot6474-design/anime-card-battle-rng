@@ -583,30 +583,11 @@
 }
 
 .node-stage-num-tag {
-  position: absolute;
-  top: -6px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #0b0f19;
-  border: 1px solid var(--border-subtle);
-  color: #ffffff;
-  font-size: 9px;
-  font-family: var(--font-mono);
-  font-weight: 700;
-  padding: 1px 6px;
-  border-radius: var(--radius-full);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.6);
-  white-space: nowrap;
-}
-.map-node.active-node .node-stage-num-tag,
-.map-node.selected .node-stage-num-tag {
-  background: var(--neon-cyan);
-  color: #030712;
-  border-color: var(--neon-cyan);
+  display: none !important;
 }
 
 .node-label-box {
-  margin-top: 6px;
+  margin-top: 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -614,20 +595,45 @@
   text-align: center;
   pointer-events: none;
   width: max-content;
-  max-width: 120px;
+  max-width: 130px;
+  gap: 3px;
 }
 .node-enemy-title {
   display: none !important;
 }
 
+.node-tag-stage,
 .node-tag-sub {
-  display: block !important;
-  font-size: 9px;
-  color: var(--text-muted);
+  display: inline-block !important;
+  font-size: 10px;
   font-family: var(--font-mono);
-  letter-spacing: 0.5px;
-  margin-top: 2px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  color: #e2e8f0;
+  background: rgba(11, 15, 25, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
   text-transform: uppercase;
+  transition: all var(--trans-fast);
+}
+.map-node.active-node .node-tag-stage,
+.map-node.selected .node-tag-stage {
+  background: var(--neon-cyan);
+  color: #030712;
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
+}
+.map-node.boss-node .node-tag-stage {
+  border-color: rgba(244, 63, 94, 0.5);
+  color: #ffd1dc;
+}
+.map-node.boss-node.active-node .node-tag-stage {
+  background: var(--neon-crimson);
+  color: #ffffff;
+  border-color: #ff4d6d;
+  box-shadow: 0 0 12px rgba(244, 63, 94, 0.7);
 }
 
 /* 1. DIAMOND BOSS NODE (100% PROTOTYPE SPEC) */
@@ -659,18 +665,13 @@
   0% { transform: rotate(45deg) scale(1); opacity: 0.6; }
   100% { transform: rotate(45deg) scale(1.1); opacity: 1; filter: drop-shadow(0 0 8px var(--neon-crimson)); }
 }
-.map-node.boss-node .node-stage-num-tag,
-.map-node.is-boss .node-stage-num-tag {
-  background: var(--neon-crimson);
-  color: #ffffff;
-  border-color: #ff4d6d;
-  font-weight: 800;
-  top: -9px;
+.map-node.boss-node .node-label-box {
+  margin-top: 14px;
 }
 .map-node.boss-node .sc-node-check-badge,
 .map-node.is-boss .sc-node-check-badge {
-  top: -4px;
-  right: -4px;
+  top: 0px;
+  right: 0px;
   bottom: auto;
   transform: none;
 }
@@ -691,22 +692,22 @@
 }
 
 /* ==========================================================================
-   BRIEFING DRAWER (SPACIOUS & EXPANDED 330px)
+   BRIEFING DRAWER (SPACIOUS & EXPANDED 330px - PROPORTIONATE MARGINS)
    ========================================================================== */
 .stage-briefing-drawer {
   position: relative;
-  width: 330px;
-  min-width: 330px;
-  max-width: 330px;
-  height: calc(100% - 24px);
-  margin: 12px 14px 12px 0;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 324px;
+  min-width: 324px;
+  max-width: 324px;
+  height: calc(100% - 28px);
+  margin: 14px 18px 14px 0;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(10, 14, 23, 0.96);
   display: flex;
   flex-direction: column;
   z-index: 20;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   overflow: hidden;
   transition: transform var(--trans-spring), width var(--trans-spring), margin var(--trans-spring);
 }
@@ -719,8 +720,8 @@
 }
 
 .drawer-header {
-  padding: 14px 18px 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 16px 20px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -729,7 +730,7 @@
 .drawer-title-group {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   min-width: 0;
 }
 .drawer-stage-badge {
@@ -771,7 +772,7 @@
 }
 
 .drawer-body {
-  padding: 14px 16px;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -789,10 +790,10 @@
   position: relative;
   display: flex;
   gap: 14px;
-  background: rgba(18, 24, 38, 0.7);
-  border: 1px solid var(--border-subtle);
-  border-radius: 12px;
-  padding: 12px 14px;
+  background: rgba(18, 24, 38, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 14px 16px;
   flex-shrink: 0;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 16px rgba(0, 0, 0, 0.4);
 }
@@ -870,13 +871,13 @@
 
 .target-ability-box,
 .sc-ability-box {
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid var(--border-subtle);
-  border-radius: 10px;
-  padding: 12px 14px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 7px;
   flex-shrink: 0;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 4px 16px rgba(0, 0, 0, 0.3);
 }
@@ -898,10 +899,10 @@
 
 .readiness-box,
 .sc-readiness-box {
-  background: rgba(18, 24, 38, 0.7);
-  border: 1px solid var(--border-subtle);
-  border-radius: 10px;
-  padding: 12px 14px;
+  background: rgba(18, 24, 38, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -967,10 +968,10 @@
 .rewards-box,
 .sc-rewards-box,
 .reward-summary-box {
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid var(--border-subtle);
-  border-radius: 10px;
-  padding: 12px 14px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1194,7 +1195,7 @@
 .lore-modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(4, 6, 10, 0.85);
+  background: rgba(4, 6, 10, 0.88);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   z-index: 60;
@@ -1204,7 +1205,7 @@
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--trans-normal);
-  padding: 16px;
+  padding: 24px;
 }
 .lore-modal-backdrop.open {
   opacity: 1;
@@ -1214,10 +1215,10 @@
   width: 90%;
   max-width: 620px;
   background: linear-gradient(180deg, #0e1526 0%, #080c16 100%);
-  border: 1px solid rgba(56, 189, 248, 0.35);
-  border-radius: 18px;
-  padding: 28px 32px;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 30px rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 20px;
+  padding: 32px 36px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(56, 189, 248, 0.15);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -1230,10 +1231,10 @@
   letter-spacing: 0.5px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   padding-bottom: 14px;
-  margin-bottom: 12px;
+  margin-bottom: 0px;
 }
 .lore-body {
   font-family: var(--font-main);
@@ -1243,14 +1244,17 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  max-height: 60vh;
+  max-height: 55vh;
   overflow-y: auto;
-  padding: 4px 6px;
+  padding: 16px 20px;
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 .lore-body p,
 .lore-paragraph {
   margin: 0;
-  color: #e2e8f0;
+  color: #cbd5e1;
   letter-spacing: 0.3px;
   line-height: 1.85;
 }
@@ -1259,12 +1263,12 @@
   background: rgba(56, 189, 248, 0.15);
   border: 1px solid rgba(56, 189, 248, 0.4);
   color: #38bdf8;
-  padding: 8px 24px;
-  border-radius: 8px;
-  margin-top: 10px;
+  padding: 10px 28px;
+  border-radius: 10px;
+  margin-top: 8px;
   cursor: pointer;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 13px;
   transition: var(--trans-fast);
 }
 .btn-lore-close:hover {

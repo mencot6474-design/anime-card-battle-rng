@@ -514,7 +514,10 @@
             ${!isUnlocked ? `<div class="node-lock-mask"><span class="ic ic-sm i-lock"></span></div>` : ''}
           </div>
           ${isCleared ? `<span class="sc-node-check-badge">✓</span>` : ''}
-          <div class="node-stage-num-tag">${stageTag}</div>
+        </div>
+        <div class="node-label-box">
+          <div class="node-tag-stage">${stageCode}</div>
+          ${isBoss ? `<div class="boss-threat-pill"><span class="ic ic-xs i-dragon"></span> BOSS</div>` : ''}
         </div>
       `;
 

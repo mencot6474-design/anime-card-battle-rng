@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v321-floatingDrawerSingleCheckLoreSpacious';
+const CACHE_NAME = 'anime-card-battle-v322-stageBelowDrawerFloatingLoreSpacious';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
