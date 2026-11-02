@@ -734,7 +734,7 @@
     const chapNames = {"1":"DESA LEMBAH NINJA","2":"ORBIT PLANET HIJAU","3":"KORIDOR STASIUN SHIBUYA","4":"MUSHIMA TOWN","5":"ISTANA INFINITE TSUDZUMI"};
     const cName = chapNames[ch.no] || ch.zone || `BAB 0${ch.no}`;
 
-    if (title) title.innerHTML = `<span class="ic ic-md i-scroll"></span> DOSSIER ARSIP: BAB 0${ch.no} · ${cName}`;
+    if (title) title.innerHTML = `<span class="ic ic-md i-scroll"></span> DOSSIER ARSIP: ${cName}`;
     if (content) {
       if (Array.isArray(ch.lore) && ch.lore.length) {
         content.innerHTML = ch.lore.map(p => `<p class="lore-paragraph">${p}</p>`).join("");

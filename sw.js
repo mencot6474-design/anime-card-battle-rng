@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v323-pureProtoDockDrawerSpaciousLore';
+const CACHE_NAME = 'anime-card-battle-v324-exactProtoSpecDrawerLore';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
