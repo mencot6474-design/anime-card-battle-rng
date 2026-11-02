@@ -146,7 +146,6 @@
     const btnDeploy = document.getElementById("btnDeploy");
     const btnMqDeploy = document.getElementById("btnMqDeploy");
     const drawerCloseBtn = document.getElementById("scDrawerClose");
-    const btnToggleDrawer = document.getElementById("btnToggleDrawer");
     const mqExpandBtn = document.getElementById("btnMqExpand");
     const mobileDock = document.getElementById("mobileQuickDock");
     const loreSubBtn = document.getElementById("btnLoreSub");
@@ -168,13 +167,6 @@
     if (prevBtn) prevBtn.onclick = () => { if (window.sfx && sfx.hit) sfx.hit(); changeStoryChapter(-1); };
     if (nextBtn) nextBtn.onclick = () => { if (window.sfx && sfx.hit) sfx.hit(); changeStoryChapter(1); };
     if (chapInfo) chapInfo.onclick = () => { openLoreModal(); };
-
-    if (btnToggleDrawer) {
-      btnToggleDrawer.onclick = () => {
-        const drawer = document.getElementById("stageBriefingDrawer");
-        if (drawer) drawer.classList.toggle("minimized");
-      };
-    }
 
     if (btnDeploy) {
       btnDeploy.onclick = () => {
@@ -385,8 +377,13 @@
       diffGroup.innerHTML = DIFFS.map(d => {
         const unl = cellUnlocked(ch, d.k);
         const on = d.k === state.diff;
-        const diffClass = d.k === 'hard' ? 'active-hrd' : d.k === 'nightmare' ? 'active-ngt' : 'active-nor';
-        return `<button class="diff-btn${on ? ' ' + diffClass : ''}" data-d="${d.k}" ${unl ? '' : 'disabled'}>${d.l.substring(0, 3).toUpperCase()}</button>`;
+        const diffClass = d.k === 'hard' ? 'active-hrd'
+          : d.k === 'extreme' ? 'active-ext'
+          : d.k === 'nightmare' ? 'active-ngt'
+          : d.k === 'apocalypse' ? 'active-apo'
+          : 'active-nor';
+        const labelText = d.l || d.k.toUpperCase();
+        return `<button class="diff-btn${on ? ' ' + diffClass : ''}" data-d="${d.k}" ${unl ? '' : 'disabled'}>${labelText}</button>`;
       }).join("");
 
       diffGroup.querySelectorAll(".diff-btn").forEach(b => {
@@ -742,12 +739,15 @@
     const title = document.getElementById("loreModalTitle");
     const content = document.getElementById("loreModalBody");
 
-    if (title) title.innerHTML = `<span class="ic ic-md i-scroll"></span> DOSSIER ARSIP: BAB 0${ch.no} · ${ch.zone}`;
+    const chapNames = {"1":"DESA LEMBAH NINJA","2":"ORBIT PLANET HIJAU","3":"KORIDOR STASIUN SHIBUYA","4":"MUSHIMA TOWN","5":"ISTANA INFINITE TSUDZUMI"};
+    const cName = chapNames[ch.no] || ch.zone || `BAB 0${ch.no}`;
+
+    if (title) title.innerHTML = `<span class="ic ic-md i-scroll"></span> DOSSIER ARSIP: BAB 0${ch.no} · ${cName}`;
     if (content) {
       if (Array.isArray(ch.lore) && ch.lore.length) {
-        content.innerHTML = ch.lore.map(p => `<p>${p}</p>`).join("");
+        content.innerHTML = ch.lore.map(p => `<p class="lore-paragraph">${p}</p>`).join("");
       } else {
-        content.innerHTML = `<p>Arsip catatan bab ini telah terenkripsi dalam memori sistem.</p>`;
+        content.innerHTML = `<p class="lore-paragraph">Arsip catatan bab ini telah terenkripsi dalam memori sistem.</p>`;
       }
     }
     if (overlay) overlay.classList.add("open");

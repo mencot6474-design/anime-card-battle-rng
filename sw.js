@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v319-diamondBossMapSync';
+const CACHE_NAME = 'anime-card-battle-v320-spaciousDrawerLoreDiff';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
