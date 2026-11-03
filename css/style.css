@@ -31,8 +31,6 @@ body{
 
 }
 
-#liveVeil{position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.0),rgba(198,205,215,.55))}
-
 /* ---------- TEMA PAPER/INK: banner ber-gambar & splash EX tetap teks terang (latarnya gambar/gelap) ---------- */
 
 .story-banner,#exSplash,.sm-hero{
@@ -2032,11 +2030,9 @@ body.battle-full .f-body{flex:0 0 auto;}
 
 body.battle-full .bench{flex:none}
 
-#bfExit{display:none;position:fixed;left:clamp(10px,2vw,22px);bottom:clamp(16px,4vh,34px);z-index:60;align-items:center;justify-content:center;gap:7px;min-width:74px;padding:11px 16px;border-radius:14px;font-family:"Barlow Condensed";font-size:15px;letter-spacing:.12em;font-weight:700;text-transform:uppercase;cursor:pointer;border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 6px 18px rgba(0,0,0,.28);background:rgba(215,60,70,.92);color:#fff}
 
-#bfExit:hover{background:rgba(215,60,70,1)}
 
-body.battle-full.battle-tower #bfExit{display:inline-flex}
+
 
 @media(max-width:700px){
 
@@ -2480,15 +2476,6 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 
 /* Speed-lines: garis momentum nyapu layar pas impact (kartu normal). Lapisan bawah (z42) biar FX ult nempel di atas. */
 
-#speedLayer{position:fixed;inset:0;z-index:42;pointer-events:none;overflow:hidden}
-
-#speedLayer .spd-line{position:absolute;left:-30%;width:55%;height:2px;border-radius:2px;opacity:0;
-
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.92),transparent);animation:spdSweep .34s ease-out forwards}
-
-#speedLayer.crit .spd-line{height:3px;box-shadow:0 0 10px rgba(255,120,120,.6);
-
-  background:linear-gradient(90deg,transparent,#fff,rgba(255,90,90,.85),transparent)}
 
 /* Reversal Red: inti merah + percikan,target terlempar mundur (kanan menjauh) */
 
@@ -3743,7 +3730,6 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 
 .rc-card.out{opacity:0;transform:scale(.9);transition:.35s}
 
-#pullModal.show{display:grid}
 
 .pm-card .t{position:absolute;top:5px;left:5px;font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.1em;padding:1px 7px;border-radius:5px;background:rgba(12,14,16,.85)}
 
@@ -3776,8 +3762,6 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 .card-search-wrap>svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:16px;height:16px;pointer-events:none}
 
 .no-result{display:none;font-weight:600;font-size:13px;padding:22px 4px;text-align:center}
-
-#cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:14px;margin-top:14px}
 
 .badge-row.br{top:auto;bottom:8px;left:auto;right:8px}
 
@@ -18877,7 +18861,6 @@ body.battle-full .fighter.full-art .f-badges .fbadge{display:inline-flex!importa
 
 /* ===== FX PASSIVE SHADOW KING (ARISE / SHADOW EXCHANGE / LEGION ABSORB) =====
    Ghost tile = potongan art yang terbang (bukan clone markup kartu). */
-#skfxLayer{position:fixed;inset:0;z-index:74;pointer-events:none;overflow:hidden}
 .skfx-cv{position:absolute;inset:0;width:100%;height:100%}
 .skfx-vig{position:absolute;inset:0;opacity:0;transition:opacity .26s ease;
   background:radial-gradient(ellipse at 50% 55%,rgba(124,58,237,0) 32%,rgba(76,29,149,.42) 72%,rgba(10,4,20,.68) 100%)}
@@ -20150,12 +20133,6 @@ html.fps-locked .bp-fchip{
 }
 
 /* ====== ANIMASI BROADCAST GLOBAL (GLOBAL LUCK & WEATHER INSTAN) ====== */
-#globalBroadcastHost {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 999999;
-}
 .gbcast-overlay {
   position: fixed;
   inset: 0;
