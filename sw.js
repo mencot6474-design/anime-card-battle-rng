@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v355-cssDeadCodeBatch5';
+const CACHE_NAME = 'anime-card-battle-v356-cssModalFix';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
