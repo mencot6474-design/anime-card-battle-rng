@@ -3752,21 +3752,20 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 .lobby-hub #hubCard .hc-badges{display:none!important}
 .lobby-hub #hubCard .hc-chance{display:none!important}
 
-/* LOBBY HOLO SHINE — prismatic multi-layer, always active (bukan cuma shiny) */
+/* LOBBY HOLO SHINE — compositor-safe (transform+opacity only, no background-position/filter) */
 .lobby-hub #hubCard .hc-img::after{
-  content:"";position:absolute;inset:0;pointer-events:none;z-index:3;
+  content:"";position:absolute;top:0;bottom:0;left:-100%;width:300%;pointer-events:none;z-index:3;
   background:
     linear-gradient(125deg,transparent 0%,transparent 30%,rgba(255,0,128,.08) 36%,rgba(0,240,255,.18) 42%,rgba(255,255,255,.55) 48%,rgba(180,120,255,.22) 53%,rgba(0,255,200,.10) 58%,transparent 64%,transparent 100%),
     linear-gradient(245deg,transparent 0%,transparent 34%,rgba(125,249,255,.12) 40%,rgba(255,255,255,.35) 47%,rgba(255,100,200,.14) 53%,transparent 60%,transparent 100%);
-  background-size:220% 100%,180% 100%;
-  background-position:180% 0,-80% 0;
+  background-size:50% 100%,50% 100%;
+  background-position:0 0,100% 0;
   background-repeat:no-repeat;
   mix-blend-mode:screen;
   opacity:.85;
-  animation:lobbyHoloA 7s cubic-bezier(.4,0,.2,1) infinite,lobbyHoloB 11s linear infinite;
+  animation:lobbyHoloSweep 7s cubic-bezier(.4,0,.2,1) infinite;
 }
-@keyframes lobbyHoloA{0%{background-position:180% 0,-80% 0}100%{background-position:-80% 0,180% 0}}
-@keyframes lobbyHoloB{0%{filter:hue-rotate(0deg) brightness(1)}50%{filter:hue-rotate(25deg) brightness(1.15)}100%{filter:hue-rotate(0deg) brightness(1)}}
+@keyframes lobbyHoloSweep{0%{transform:translateX(0)}100%{transform:translateX(33.33%)}}
 
 .lobby-hub #hubCard .hc-stats{transform:none!important}
 

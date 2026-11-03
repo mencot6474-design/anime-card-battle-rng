@@ -5819,16 +5819,15 @@ body.on-battle #topbar {
 }
 .l12 .colw { flex:1; min-width:0; min-height:0; display:flex; flex-direction:column; }
 
-/* ---- rail glow: flowing energy stream + traveling scan dot ---- */
+/* ---- rail glow: flowing energy stream (compositor-safe: transform+opacity only) ---- */
 .l12 .rail {
   position:absolute; pointer-events:none; z-index:8; opacity:.7;
-  transform-origin:50% 50%;
+  overflow:hidden;
   animation:l12RailBreathe 4s ease-in-out infinite;
 }
 .l12 .rail::before {
-  content:''; position:absolute; inset:0;
+  content:''; position:absolute; top:0; bottom:0; width:200%;
   background:linear-gradient(90deg,transparent 0%,var(--rc,var(--cy)) 20%,#fff 50%,var(--rc,var(--cy)) 80%,transparent 100%);
-  background-size:200% 100%;
   animation:l12RailFlow 3s linear infinite;
 }
 .l12 .rail::after {
@@ -5836,24 +5835,25 @@ body.on-battle #topbar {
   background:linear-gradient(180deg,transparent,rgba(0,240,255,.22) 35%,rgba(0,240,255,.45) 50%,rgba(0,240,255,.22) 65%,transparent);
   animation:l12GlowPulse 3s ease-in-out infinite;
 }
-/* traveling scan dot */
-.l12 .rail .rail-dot,
-.l12 .rail::marker { display:none; }
 .l12 .rail-top { left:0; right:0; bottom:-1px; height:2px; animation-duration:4s; animation-delay:0s; }
-.l12 .rail-top::before { animation-duration:2.8s; }
+.l12 .rail-top::before { left:0; animation-duration:2.8s; }
 .l12 .rail-roll { left:0; right:0; top:-1px; height:2px; --rc:var(--mg); animation-duration:4.5s; animation-delay:-1.5s; }
-.l12 .rail-roll::before { animation-duration:3.4s; animation-direction:reverse; }
+.l12 .rail-roll::before { right:0; left:auto; animation-duration:3.4s; animation-direction:reverse; }
 .l12 .rail-panel { left:-1px; top:0; bottom:0; width:2px; animation-duration:5s; animation-delay:-2.5s; }
-.l12 .rail-panel::before { background:linear-gradient(180deg,transparent 0%,var(--cy) 20%,#fff 50%,var(--cy) 80%,transparent 100%); background-size:100% 200%; animation:l12RailFlowV 3.6s linear infinite; }
+.l12 .rail-panel::before { top:0; left:0; right:0; width:auto; height:200%;
+  background:linear-gradient(180deg,transparent 0%,var(--cy) 20%,#fff 50%,var(--cy) 80%,transparent 100%);
+  animation:l12RailFlowV 3.6s linear infinite; }
 .l12 .rail-panel::after { left:-11px; right:-11px; top:0; bottom:0; background:linear-gradient(90deg,transparent,rgba(0,240,255,.22) 35%,rgba(0,240,255,.45) 50%,rgba(0,240,255,.22) 65%,transparent); }
 .l12 .rail-horizon { left:0; right:0; top:78%; height:2px; z-index:2; --rc:var(--mg); animation-duration:4.2s; animation-delay:-3s; }
-.l12 .rail-horizon::before { animation-duration:4s; }
+.l12 .rail-horizon::before { left:0; animation-duration:4s; }
 .l12 .rail-l { left:-1px; top:0; bottom:0; width:2px; animation-duration:5.5s; animation-delay:-1s; }
-.l12 .rail-l::before { background:linear-gradient(180deg,transparent 0%,var(--cy) 20%,#fff 50%,var(--cy) 80%,transparent 100%); background-size:100% 200%; animation:l12RailFlowV 4.2s linear infinite; }
+.l12 .rail-l::before { top:0; left:0; right:0; width:auto; height:200%;
+  background:linear-gradient(180deg,transparent 0%,var(--cy) 20%,#fff 50%,var(--cy) 80%,transparent 100%);
+  animation:l12RailFlowV 4.2s linear infinite; }
 .l12 .rail-l::after { left:-11px; right:-11px; top:0; bottom:0; background:linear-gradient(90deg,transparent,rgba(0,240,255,.22) 35%,rgba(0,240,255,.45) 50%,rgba(0,240,255,.22) 65%,transparent); }
 @keyframes l12RailBreathe { 0%,100%{opacity:.45} 50%{opacity:1} }
-@keyframes l12RailFlow { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-@keyframes l12RailFlowV { 0%{background-position:0 200%} 100%{background-position:0 -200%} }
+@keyframes l12RailFlow { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+@keyframes l12RailFlowV { 0%{transform:translateY(0)} 100%{transform:translateY(-50%)} }
 @keyframes l12GlowPulse { 0%,100%{opacity:.4;transform:scaleY(.92)} 50%{opacity:1;transform:scaleY(1)} }
 
 /* ---- L1 topbar ---- */
@@ -5995,19 +5995,18 @@ body.on-battle #topbar {
   filter:blur(1px);
 }
 .l12 .sheen::before {
-  content:''; position:absolute; inset:0; pointer-events:none;
+  content:''; position:absolute; top:-100%; left:0; right:0; height:300%; pointer-events:none;
   background:linear-gradient(160deg,
     transparent 20%,
     rgba(0,240,255,.04) 35%,
     rgba(180,120,255,.06) 50%,
     rgba(0,240,255,.03) 65%,
     transparent 80%);
-  background-size:100% 300%;
   animation:l12HoloShift 8s ease-in-out infinite;
   mix-blend-mode:screen;
 }
 @keyframes l12Sweep { 0%{transform:translateX(0) skewX(-14deg)} 50%{transform:translateX(520%) skewX(-14deg)} 100%{transform:translateX(520%) skewX(-14deg)} }
-@keyframes l12HoloShift { 0%,100%{background-position:50% 0%} 50%{background-position:50% 100%} }
+@keyframes l12HoloShift { 0%,100%{transform:translateY(0)} 50%{transform:translateY(33.33%)} }
 @keyframes l12FloatY { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-4px)} }
 /* badge di dalam safe-area bingkai — HIDDEN per user request (clean card) */
 .l12 .hero .nm, .l12 .hero .rr, .l12 .hero .pwr, .l12 .hero .traits {
@@ -6287,8 +6286,10 @@ body.on-battle #topbar {
   .l12 .mid { flex-direction:column; }
   .l12 .stage { flex:1 1 auto; min-height:190px; }
   .l12 .panel { flex:0 0 auto; border-left:0; border-top:1px solid var(--hair); grid-template-rows:repeat(4, auto); gap:4px; padding:6px 8px; }
-  .l12 .rail-panel { left:0; right:0; top:-1px; bottom:auto; width:auto; height:2px; }
-  .l12 .rail-panel::before { background:linear-gradient(90deg,transparent 0%,var(--cy) 20%,#fff 50%,var(--cy) 80%,transparent 100%); background-size:200% 100%; animation:l12RailFlow 3.6s linear infinite; }
+  .l12 .rail-panel { left:0; right:0; top:-1px; bottom:auto; width:auto; height:2px; overflow:hidden; }
+  .l12 .rail-panel::before { top:0; bottom:0; left:0; width:200%; height:auto;
+    background:linear-gradient(90deg,transparent 0%,var(--cy) 20%,#fff 50%,var(--cy) 80%,transparent 100%);
+    animation:l12RailFlow 3.6s linear infinite; }
   .l12 .rail-panel::after { left:0; right:0; top:-11px; bottom:-11px; background:linear-gradient(180deg,transparent,rgba(0,240,255,.22) 35%,rgba(0,240,255,.45) 50%,rgba(0,240,255,.22) 65%,transparent); }
   .l12 .hud { display:grid; grid-template-columns:1.1fr 0.9fr; gap:4px; min-width:0; margin-top:2px; }
   .l12 .pots { grid-column:1; display:flex; flex-direction:column; gap:3px; min-width:0; }
