@@ -32647,11 +32647,11 @@ body.battle-full .fighter.me,body.battle-full .fighter.foe{
 
 
 
-.backpack-panel .bp-slot.filled:not([class*="bp-mut-"]){border:0!important;}
+.backpack-panel .bp-slot.filled:not([class*="bp-mut-"]){border:0!important;box-shadow:none!important;}
 
 
 
-.backpack-panel .bp-tile:not([class*="bp-mut-"]){border:0!important;outline:none!important;}
+.backpack-panel .bp-tile:not([class*="bp-mut-"]){border:0!important;outline:none!important;box-shadow:none!important;}
 
 
 
