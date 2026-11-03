@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v335-bpHoverCards';
+const CACHE_NAME = 'anime-card-battle-v336-bpCleanDeckAndCollection';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
