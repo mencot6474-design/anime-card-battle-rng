@@ -4343,12 +4343,21 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
    tidak ada halo gradient ornate dari blok .bp-tile[class*=mut-] lama di style.css. */
 #backpackPanel .bp-tiles .bp-tile[class*="bp-mut-"],
 .backpack-panel .bp-tile[class*="bp-mut-"] {
-  border-width: 2px !important;
+  border-width: 1.5px !important;
   border-style: solid !important;
   border-color: var(--mcol, #7DF9FF) !important;
   outline: none !important;
   animation: none !important;
   background: #0e1626 !important;
+}
+
+/* SATU OUTLINE TUNGGAL: Matikan ::before foil mask ganda */
+#backpackPanel .bp-tiles .bp-tile::before,
+.backpack-panel .bp-tile::before,
+#backpackPanel .bp-slot.filled::before,
+.backpack-panel .bp-slot.filled::before {
+  content: none !important;
+  display: none !important;
 }
 
 .backpack-panel .bp-tile.in-deck {
@@ -4390,27 +4399,32 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 
 .backpack-panel .bpt-hud-foot {
   position: absolute !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  background: linear-gradient(180deg, transparent 0%, rgba(6, 10, 20, 0.85) 40%, rgba(3, 5, 12, 0.98) 100%) !important;
-  padding: 14px 6px 5px !important;
+  top: 4px !important;
+  left: 5px !important;
+  right: auto !important;
+  bottom: auto !important;
+  max-width: calc(100% - 34px) !important;
+  background: none !important;
+  padding: 0 !important;
   display: flex !important;
   flex-direction: column !important;
-  gap: 3px !important;
-  z-index: 4 !important;
+  gap: 2px !important;
+  z-index: 6 !important;
+  pointer-events: none !important;
 }
 
-.backpack-panel .bpt-hud-foot .bpt-name {
-  font-family: var(--font-tac, 'Rajdhani', sans-serif) !important;
+.backpack-panel .bpt-hud-foot .bpt-name,
+.backpack-panel .bpt-hud-foot .bpt-name-txt {
+  font-family: "Barlow Condensed", var(--font-tac, 'Rajdhani', sans-serif) !important;
   font-size: 11px !important;
   font-weight: 800 !important;
   color: #ffffff !important;
-  text-align: center !important;
+  text-align: left !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
-  text-shadow: 0 1px 3px #000 !important;
+  transform: skewX(-4deg) !important;
+  text-shadow: 1px 1px 0 #0b0e14, 2px 2px 0 #0b0e14, 0 0 8px rgba(0,0,0,0.95), 0 0 14px color-mix(in srgb, var(--tcol, #2F8FE2) 65%, transparent) !important;
 }
 
 .backpack-panel .bpt-tier-bar {
@@ -4478,7 +4492,7 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 @keyframes bpShim { 0%,8%{transform:translateX(-150%)} 52%,100%{transform:translateX(150%)} }
 /* --- penanda tile: TANPA border/glow; geometri = prototipe (sudut terbagi, no-overlap) --- */
 .backpack-panel .bpt-tier { position:absolute; left:5px; top:5px; z-index:2; font-family:var(--font-mono,monospace); font-size:8.5px; font-weight:700; letter-spacing:.08em; padding:2px 6px; border-radius:6px; color:#08111d; background:rgba(8,14,24,.66); pointer-events:none; }
-.backpack-panel .bp-tile .bpt-fav { position:absolute; right:5px; top:5px; z-index:2; width:13px; height:13px; border:0; background:none; border-radius:0; padding:0; color:var(--bp-am); filter:drop-shadow(0 1px 3px rgba(0,0,0,.9)); display:block; pointer-events:none; }
+.backpack-panel .bp-tile .bpt-fav { position:absolute; right:5px; bottom:6px; z-index:6; width:13px; height:13px; border:0; background:none; border-radius:0; padding:0; color:var(--bp-am); filter:drop-shadow(0 1px 3px rgba(0,0,0,.95)); display:block; pointer-events:none; }
 .backpack-panel .bpt-mut { position:absolute; right:5px; top:21px; z-index:2; display:flex; align-items:center; gap:2px; height:13px; padding:0; border:0; background:none; color:var(--mcol,#7DF9FF); pointer-events:none; }
 .backpack-panel .bpt-w { position:absolute; left:5px; bottom:6px; z-index:2; width:13px; height:13px; color:var(--wcol,transparent); filter:drop-shadow(0 1px 3px rgba(0,0,0,.95)); pointer-events:none; }
 .backpack-panel .bpt-w svg { width:100%; height:100%; display:block; }

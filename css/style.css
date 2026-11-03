@@ -55199,11 +55199,13 @@ html.m-landscape body.on-settings .sett-wrap {
   .sett-wrap *::before,
   .sett-wrap *::after { animation:none !important; transition:none !important; }
 }
+}
 
 /* ==========================================================================
-   BACKPACK: SQUADRON DECK (POLOSAN ART) & KOLEKSI CARDS (NAMA & BADGE RAPI)
+   BACKPACK: SQUADRON DECK (POLOSAN ART) & KOLEKSI CARDS (PERSIS CARD HOVER)
    - Deck Aktif (.bp-slot.filled): art polosan + nomor slot 01-04 + tombol lepas (.bps-x)
-   - Koleksi Cards (.bp-tile): art penuh, badge stack di atas (.bpt-top), nama kartu di bawah (.bpt-hud-foot)
+   - Koleksi Cards (.bp-tile): SATU OUTLINE TUNGGAL, nama kartu di KIRI ATAS (.bpt-hud-foot),
+     badges di KANAN ATAS (.bpt-top), art penuh, tidak ada double border / ::before foil
    ========================================================================== */
 
 /* 1. Grid Koleksi Card: spacing rapi dan proporsional */
@@ -55222,24 +55224,52 @@ html.m-landscape #backpackPanel .bp-tiles {
   gap: 10px !important;
 }
 
-/* 2. Tile Koleksi: Card container presisi, tidak terpotong */
+/* 2. Tile Koleksi: Card container presisi, SATU OUTLINE TUNGGAL (BERSIH) */
 .backpack-panel .bp-tile {
   position: relative !important;
   aspect-ratio: 5/7 !important;
   border-radius: 12px !important;
   overflow: hidden !important;
   background: #0e1626 !important;
-  border: 1.5px solid var(--line2, rgba(125,249,255,.24)) !important;
+  border: 1px solid var(--tcol, rgba(125,249,255,.22)) !important;
+  outline: none !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease !important;
   cursor: pointer !important;
 }
 
+/* SATU OUTLINE TUNGGAL: Matikan ::before foil mask ganda pada tile koleksi & slot deck */
+.backpack-panel .bp-tile::before,
+.backpack-panel .bp-slot.filled::before,
+#backpackPanel .bp-tiles .bp-tile::before,
+#backpackPanel .bp-slot.filled::before {
+  content: none !important;
+  display: none !important;
+}
+
+/* Border tunggal bersih untuk kartu mutasi / shiny (warna spesifik sesuai mutasi) */
+.backpack-panel .bp-tile[class*="bp-mut-"],
+.backpack-panel .bp-tile[class*="mut-"],
+.backpack-panel .bp-tile.shiny,
+#backpackPanel .bp-tiles .bp-tile[class*="bp-mut-"] {
+  border-width: 1.5px !important;
+  border-style: solid !important;
+  border-color: var(--mcol, #7DF9FF) !important;
+  outline: none !important;
+}
+
 .backpack-panel .bp-tile:hover {
   transform: translateY(-3px) scale(1.02) !important;
   border-color: #7DF9FF !important;
-  box-shadow: 0 10px 24px rgba(0,0,0,0.7), 0 0 14px rgba(125,249,255,0.3) !important;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.7), 0 0 12px rgba(125,249,255,0.3) !important;
   z-index: 5 !important;
+}
+
+.backpack-panel .bp-tile[class*="bp-mut-"]:hover,
+.backpack-panel .bp-tile[class*="mut-"]:hover,
+.backpack-panel .bp-tile.shiny:hover {
+  border-color: var(--mcol, #7DF9FF) !important;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.7), 0 0 14px color-mix(in srgb, var(--mcol, #7DF9FF) 45%, transparent) !important;
 }
 
 /* Gambar art koleksi */
@@ -55254,32 +55284,34 @@ html.m-landscape #backpackPanel .bp-tiles {
   border: none !important;
 }
 
-/* 3. Badge Stack di Atas (.bpt-top): SHINY, Mutasi, Trait Gem */
+/* 3. Badge Stack di POJOK KANAN ATAS (.bpt-top): Persis Card Hover (.hc-badges) */
 .backpack-panel .bp-tile .bpt-top {
   position: absolute !important;
   top: 4px !important;
-  left: 4px !important;
-  right: auto !important;
+  right: 4px !important;
+  left: auto !important;
   bottom: auto !important;
   display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 3px !important;
-  z-index: 5 !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+  gap: 2.5px !important;
+  z-index: 7 !important;
   pointer-events: none !important;
 }
 
 .backpack-panel .bp-tile .bpt-top .bpt-shiny,
-.backpack-panel .bp-tile .bpt-top .bpt-mut {
-  height: 15px !important;
-  line-height: 15px !important;
-  padding: 0 5px !important;
+.backpack-panel .bp-tile .bpt-top .bpt-mut,
+.backpack-panel .bp-tile .bpt-top .mut-chip,
+.backpack-panel .bp-tile .bpt-top .mut-pill {
+  height: 14px !important;
+  line-height: 14px !important;
+  padding: 0 4px !important;
   font-family: "Barlow Condensed", sans-serif !important;
   font-weight: 800 !important;
-  font-size: 8.5px !important;
-  letter-spacing: .06em !important;
-  border-radius: 4px !important;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.7) !important;
+  font-size: 8px !important;
+  letter-spacing: .05em !important;
+  border-radius: 3px !important;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.8) !important;
   transform: none !important;
   display: inline-flex !important;
   align-items: center !important;
@@ -55287,11 +55319,11 @@ html.m-landscape #backpackPanel .bp-tiles {
 }
 
 .backpack-panel .bp-tile .bpt-top .bpt-gem {
-  width: 15px !important;
-  height: 15px !important;
+  width: 14px !important;
+  height: 14px !important;
   padding: 0 !important;
   border-radius: 3px !important;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.7) !important;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.8) !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -55299,64 +55331,142 @@ html.m-landscape #backpackPanel .bp-tiles {
 }
 
 .backpack-panel .bp-tile .bpt-top .bpt-gem svg {
-  width: 10px !important;
-  height: 10px !important;
+  width: 9px !important;
+  height: 9px !important;
 }
 
-/* 4. Nama Kartu di Bawah (.bpt-hud-foot): banner kontras elegan */
+/* 4. Nama Kartu di POJOK KIRI ATAS (.bpt-hud-foot): Persis Card Hover (.hc-name-top) */
 .backpack-panel .bp-tile .bpt-hud-foot {
   position: absolute !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  z-index: 4 !important;
-  padding: 16px 5px 5px !important;
-  background: linear-gradient(to top, rgba(5,8,15,0.96) 0%, rgba(5,8,15,0.75) 65%, transparent 100%) !important;
-  border-radius: 0 0 11px 11px !important;
+  top: 4px !important;
+  left: 5px !important;
+  right: auto !important;
+  bottom: auto !important;
+  max-width: calc(100% - 34px) !important;
+  z-index: 6 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: none !important;
+  border-radius: 0 !important;
   pointer-events: none !important;
   display: flex !important;
   flex-direction: column !important;
-  align-items: center !important;
-  justify-content: flex-end !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
 }
 
 .backpack-panel .bp-tile .bpt-name-txt {
   display: block !important;
-  width: 100% !important;
-  text-align: center !important;
-  font-family: "Rajdhani", "Barlow Condensed", sans-serif !important;
+  width: auto !important;
+  max-width: 100% !important;
+  text-align: left !important;
+  font-family: "Barlow Condensed", "Rajdhani", sans-serif !important;
   font-weight: 800 !important;
   font-size: 11px !important;
-  letter-spacing: .03em !important;
+  line-height: 1 !important;
+  letter-spacing: .02em !important;
   color: #ffffff !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.95), 0 0 6px rgba(0,0,0,0.8) !important;
-  line-height: 1.1 !important;
+  transform: skewX(-4deg) !important;
+  text-shadow: 1px 1px 0 #0b0e14, 2px 2px 0 #0b0e14, 0 0 8px rgba(0,0,0,0.95), 0 0 14px color-mix(in srgb, var(--tcol, #2F8FE2) 65%, transparent) !important;
 }
 
-/* Bintang Favorit pojok kanan atas */
+/* Dukungan elemen Chance & Stats bila tersedia secara proporsional */
+.backpack-panel .bp-tile .hc-chance,
+.backpack-panel .bp-tile .bpt-chance {
+  position: absolute !important;
+  top: 18px !important;
+  left: 5px !important;
+  font-family: "Barlow Condensed", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 8px !important;
+  letter-spacing: .08em !important;
+  text-transform: uppercase !important;
+  color: var(--tcol, #7DF9FF) !important;
+  padding: 0 4px !important;
+  border-radius: 3px !important;
+  background: rgba(6,9,14,.88) !important;
+  border: 1px solid currentColor !important;
+  transform: skewX(-4deg) !important;
+  z-index: 6 !important;
+  pointer-events: none !important;
+}
+
+.backpack-panel .bp-tile .hc-stats,
+.backpack-panel .bp-tile .bpt-stats {
+  position: absolute !important;
+  bottom: 4px !important;
+  left: 4px !important;
+  right: 4px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  font-family: "Barlow Condensed", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 9px !important;
+  letter-spacing: .04em !important;
+  padding: 1px 4px !important;
+  background: rgba(6,10,18,.85) !important;
+  border-radius: 3px !important;
+  z-index: 6 !important;
+  pointer-events: none !important;
+}
+
+/* Bintang Favorit di pojok kanan bawah */
 .backpack-panel .bp-tile .bpt-fav {
   position: absolute !important;
-  top: 5px !important;
+  bottom: 6px !important;
   right: 5px !important;
-  z-index: 5 !important;
-  width: 14px !important;
-  height: 14px !important;
+  top: auto !important;
+  left: auto !important;
+  z-index: 6 !important;
+  width: 13px !important;
+  height: 13px !important;
   color: #fcd34d !important;
   filter: drop-shadow(0 1px 3px rgba(0,0,0,0.95)) !important;
   pointer-events: none !important;
 }
 
-/* Cuaca penanda pojok kiri atas / bawah */
+.backpack-panel .bp-tile.in-deck .bpt-fav {
+  right: 17px !important;
+}
+
+/* Cuaca penanda di pojok kiri bawah */
 .backpack-panel .bp-tile .bpt-w {
   position: absolute !important;
-  bottom: 5px !important;
+  bottom: 6px !important;
   left: 5px !important;
+  top: auto !important;
+  right: auto !important;
   z-index: 6 !important;
+  width: 13px !important;
+  height: 13px !important;
   filter: drop-shadow(0 1px 3px rgba(0,0,0,0.95)) !important;
   pointer-events: none !important;
+}
+
+/* Power bar meter di dasar kartu */
+.backpack-panel .bp-tile .bpt-pw {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 5 !important;
+  height: 3px !important;
+  border-radius: 0 0 11px 11px !important;
+  background: rgba(8,14,24,.75) !important;
+  pointer-events: none !important;
+}
+.backpack-panel .bp-tile .bpt-pw::after {
+  content: "" !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  border-radius: 0 0 0 11px !important;
+  width: calc(var(--pw, .035) * 100%) !important;
+  background: linear-gradient(90deg, #0aa6d6, #19e2ff) !important;
 }
 
 /* 5. DECK AKTIF: POLOSAN ART SAJA */
