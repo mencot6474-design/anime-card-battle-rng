@@ -1756,7 +1756,7 @@ function bpTileInner(s){
   const chanceText=rarityText(tier,luckChance(s.char,s.mut,s.shiny));
   const fav=s.fav?`<svg class="bpt-fav" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${BP_STAR_PATH}"/></svg>`:'';
 
-  const chanceSpan=`<span class="hc-chance bpt-chance${mut==='rainbow'?' hc-chance-rainbow':''}" style="color:${mut?MUT_COLOR[mut]:((tier&&TIER_COLOR[tier])||"#9AA6B2")}">${mut==='rainbow'?mutText(mut,chanceText):chanceText}</span>`;
+  const chanceSpan=`<span class="hc-chance bpt-chance${mut==='rainbow'?' hc-chance-rainbow':''}" style="background:none !important;border:none !important;box-shadow:none !important;padding:0 !important;border-radius:0 !important;transform:none !important;text-shadow:0 1px 3px rgba(0,0,0,0.95), 0 0 2px #000 !important;color:${mut?MUT_COLOR[mut]:((tier&&TIER_COLOR[tier])||"#9AA6B2")}">${mut==='rainbow'?mutText(mut,chanceText):chanceText}</span>`;
 
   const badgesHtml=trait
     ?`<div class="hc-badges bpt-top">${traitChip(trait,`<span class="hc-trait hc-gem bpt-gem" style="color:${TRAIT_COLOR[trait]};border-color:${TRAIT_COLOR[trait]}">${traitGem(12,trait)}</span>`)}</div>`

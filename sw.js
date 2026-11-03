@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v341-fixLuckWeatherDeckOutline';
+const CACHE_NAME = 'anime-card-battle-v342-bpChanceTextOnly';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

@@ -4644,27 +4644,36 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 .backpack-panel .bp-tile .hc-chance,
 .backpack-panel .bp-tile .bpt-chance {
   position: absolute !important;
-  top: 4px !important;
-  left: 4px !important;
+  top: 5px !important;
+  left: 5px !important;
   right: auto !important;
   bottom: auto !important;
   font-family: "Barlow Condensed", sans-serif !important;
   font-weight: 800 !important;
-  font-size: 8.5px !important;
-  letter-spacing: .08em !important;
+  font-size: 9px !important;
+  letter-spacing: .06em !important;
   text-transform: uppercase !important;
   color: var(--tcol, #7DF9FF) !important;
-  padding: 1px 5px !important;
-  border-radius: 3px !important;
-  background: rgba(6,9,14,.92) !important;
-  border: 1px solid currentColor !important;
-  transform: skewX(-4deg) !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 0 6px rgba(0, 0, 0, 0.85) !important;
   z-index: 5 !important;
   pointer-events: none !important;
-  line-height: 1.15 !important;
+  line-height: 1 !important;
   white-space: nowrap !important;
   display: inline-block !important;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.8) !important;
+}
+
+.backpack-panel .bp-tile .hc-chance.hc-chance-rainbow,
+.backpack-panel .bp-tile .bpt-chance.hc-chance-rainbow {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
 }
 .backpack-panel .bp-tile .bpt-fav { position:absolute !important; right:4px !important; bottom: 21px !important; z-index:6 !important; width:12px !important; height:12px !important; border:0 !important; background:none !important; border-radius:0 !important; padding:0 !important; color:var(--bp-am) !important; filter:drop-shadow(0 1px 3px rgba(0,0,0,.95)) !important; display:block !important; pointer-events:none !important; }
 .backpack-panel .bp-tile.in-deck .bpt-fav { right:15px !important; }
@@ -5034,7 +5043,7 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   .backpack-panel .bpt-w { left:4px; bottom: 21px !important; width:10px; height:10px; }
   .backpack-panel .bpt-ndot { left:5px; top:22px; width:5px; height:5px; }
   .backpack-panel .bpt-pw { left:4px; right:4px; bottom:1.5px; height:2px; }
-  .backpack-panel .bpt-tier { left:4px; top:4px; font-size:7.5px; padding:1px 5px; }
+  .backpack-panel .bpt-tier { left:4px; top:4px; font-size:7.5px; padding:0 !important; background:transparent !important; border:none !important; box-shadow:none !important; }
 }
 /* --- landscape HP pendek: penanda turun satu step, rack tetap 4 slot tanpa scroller --- */
 @media (max-height:560px) {
@@ -5054,7 +5063,7 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   .backpack-panel .bpt-w { bottom: 21px !important; width:10px; height:10px; }
   .backpack-panel .bpt-ndot { top:22px; width:5px; height:5px; }
   .backpack-panel .bpt-pw { bottom:1.5px; height:2px; }
-  .backpack-panel .bpt-tier { left:4px; top:4px; font-size:7.5px; padding:1px 5px; } /* BPD-GEO: tile 62px landscape — chip tier turun satu step, tidak menabrak bpt-mut */
+  .backpack-panel .bpt-tier { left:4px; top:4px; font-size:7.5px; padding:0 !important; background:transparent !important; border:none !important; box-shadow:none !important; } /* BPD-GEO: tile 62px landscape */
   .backpack-panel .bp-deckmeta { margin-top:4px !important; padding-top:4px !important; gap:4px !important; }
   .backpack-panel .bdm-core { padding:3px 8px !important; }
   .backpack-panel .bdm-v { font-size:15px !important; }
