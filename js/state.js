@@ -1342,14 +1342,22 @@ addEventListener("pagehide",()=>{if(state){save();flushCloudSave();}});
   };
 })();
 
+let _wakeupDebounce=0;
 function handleTabWakeup(){
+  /* Debounce: focus+visibilitychange bisa fire bareng, jangan dobel */
+  const now=Date.now();
+  if(now-_wakeupDebounce<400)return;
+  _wakeupDebounce=now;
   try{ document.body.classList.remove("perf-paused"); }catch(e){}
-  /* Pastikan invisible overlay tersembunyi tidak memblokir klik */
+  /* UNCONDITIONAL: hide rollOverlay regardless of state.
+     forceResumeRoll below will re-show it properly if auto-roll active. */
   try{
     const ov = document.getElementById("rollOverlay");
-    if(ov && ov.style.display !== "none" && typeof rollState !== "undefined" && rollState && rollState.hideOverlay){
-      ov.style.display = "none";
-    }
+    if(ov){ ov.style.display="none"; ov.classList.remove("visible"); }
+  }catch(e){}
+  /* Clear any stuck modal backdrops */
+  try{
+    document.querySelectorAll(".modal-backdrop.show").forEach(el=>el.classList.remove("show"));
   }catch(e){}
   /* Bangunkan kembali auto roll jika tertidur/stuck di background */
   try{

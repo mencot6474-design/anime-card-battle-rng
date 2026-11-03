@@ -5822,7 +5822,7 @@ body.on-battle #topbar {
 /* ---- rail glow: flowing energy stream + traveling scan dot ---- */
 .l12 .rail {
   position:absolute; pointer-events:none; z-index:8; opacity:.7;
-  transform-origin:50% 50%; will-change:opacity,background-position;
+  transform-origin:50% 50%;
   animation:l12RailBreathe 4s ease-in-out infinite;
 }
 .l12 .rail::before {
