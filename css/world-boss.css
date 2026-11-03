@@ -2180,12 +2180,10 @@ html.m-portrait  #wbView.wbv2{ bottom: calc(var(--nav-h, 60px) + var(--safe-bott
 html.m-landscape #wbView .wbv2-lb-modal{ left: calc(var(--nav-w, 56px) + var(--safe-left, 0px)); right:0; width:auto }
 html.m-portrait  #wbView .wbv2-lb-modal{ bottom: calc(var(--nav-h, 60px) + var(--safe-bottom, 0px)); height:auto }
 #wbView.wbv2 .wbv2-bgfx{ position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden;
-  background:radial-gradient(120% 90% at 50% 28%,rgba(36,49,80,.30),transparent 62%) }
+  background:radial-gradient(ellipse at 50% 30%,rgba(30,58,95,.25) 0%,transparent 60%) }
 #wbView.wbv2 .wbv2-bgfx::after{ content:""; position:absolute; inset:0;
-  background:radial-gradient(140% 105% at 50% 46%,transparent 52%,rgba(0,0,0,.55)) }
-#wbView.wbv2 .wbv2-sweep{ position:absolute; top:0; bottom:0; left:-55%; width:55%;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent); animation:wbv2Bgx 12s linear infinite }
-@keyframes wbv2Bgx{ 0%{transform:translateX(0)} 100%{transform:translateX(320%)} }
+  background:radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(0,0,0,.4) 100%) }
+#wbView.wbv2 .wbv2-sweep{ display:none }
 
 /* ---------- PITA ATAS / SUBBAR (minimal: HP pool + reset) ---------- */
 #wbView.wbv2 .wbv2-subbar{ order:-1; flex:none; display:flex; align-items:center; gap:8px;
@@ -2221,13 +2219,13 @@ html.m-portrait  #wbView .wbv2-lb-modal{ bottom: calc(var(--nav-h, 60px) + var(-
 
 /* ---------- STAGE (asimetris: kolom kiri + art kanan) ---------- */
 #wbView.wbv2 .wbv2-stage{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column;
-  padding:6px 8px; position:relative; z-index:1 }
+  padding:8px 10px; position:relative; z-index:1 }
 #wbView.wbv2 .wbv2-stage.wbv2-strike{ animation:wbv2Strike 220ms ease-out 1 }
 @keyframes wbv2Strike{ 0%{transform:translateY(0)} 35%{transform:translateY(-2px)} 100%{transform:translateY(0)} }
 #wbView.wbv2 .wbv2-stagebody{ flex:1 1 auto; min-height:0; display:flex; flex-direction:row;
   gap:8px; align-items:stretch }
 #wbView.wbv2 .wbv2-col{ flex:0 0 clamp(48px,13vw,64px); min-width:0; position:relative;
-  padding-bottom:12px; display:flex; flex-direction:column; gap:4px; align-items:stretch }
+  padding-bottom:12px; display:flex; flex-direction:column; gap:6px; align-items:stretch }
 #wbView.wbv2 .wbv2-eyebrow{ flex:none; width:100%; padding:5px 4px; font-family:var(--fd);
   font-size:8px; font-weight:800; line-height:1.2; letter-spacing:.05em; color:var(--dim);
   text-align:center; text-transform:uppercase; background:rgba(15,20,32,.6);
@@ -2248,10 +2246,11 @@ html.m-portrait  #wbView .wbv2-lb-modal{ bottom: calc(var(--nav-h, 60px) + var(-
   align-self:stretch; background:rgba(17,24,39,.8);
   border:1px solid var(--line); overflow:hidden; border-radius:6px }
 #wbView.wbv2 .wbv2-gfill{ position:absolute; left:0; right:0; bottom:0; height:38%; opacity:.9;
-  background:linear-gradient(0deg,rgba(53,224,255,.30) 0%,rgba(53,224,255,.30) 60%,var(--cyan) 60%,var(--cyan) 100%) }
+  background:linear-gradient(0deg,rgba(56,189,248,.15) 0%,rgba(56,189,248,.25) 60%,var(--cyan) 98%,var(--cyan) 100%);
+  border-radius:0 0 5px 5px }
 #wbView.wbv2 .wbv2-gtick{ position:absolute; left:0; right:0; height:1px;
-  background:rgba(53,224,255,.30); z-index:2 }
-#wbView.wbv2 .wbv2-gtick-minor{ background:rgba(53,224,255,.14) }
+  background:rgba(56,189,248,.15); z-index:2 }
+#wbView.wbv2 .wbv2-gtick-minor{ background:rgba(56,189,248,.07) }
 #wbView.wbv2 .wbv2-gmark{ position:absolute; left:-2px; right:-2px; height:2px;
   background-color:var(--ink); opacity:.95; z-index:4 }
 #wbView.wbv2 .wbv2-gph{ position:absolute; left:50%; transform:translateX(-50%); bottom:calc(38% + 4px);
@@ -2288,9 +2287,7 @@ html.m-portrait  #wbView .wbv2-lb-modal{ bottom: calc(var(--nav-h, 60px) + var(-
 #wbView.wbv2 .wbv2-brk2{ top:7px; right:7px; border-left:0; border-bottom:0 }
 #wbView.wbv2 .wbv2-brk3{ bottom:7px; left:7px; border-right:0; border-top:0 }
 #wbView.wbv2 .wbv2-brk4{ bottom:7px; right:7px; border-left:0; border-top:0 }
-#wbView.wbv2 .wbv2-mock-corner{ position:absolute; left:10px; bottom:42px; z-index:3; font-family:var(--fm);
-  font-size:7px; letter-spacing:.08em; color:var(--gold); opacity:.5; pointer-events:none;
-  background-color:rgba(6,10,18,.6); padding:1px 4px }
+#wbView.wbv2 .wbv2-mock-corner{ display:none }
 #wbView.wbv2 .wbv2-bossname-wrap{ position:absolute; left:0; right:0; bottom:0; z-index:4; max-width:100%;
   padding:10px 12px 10px; background:linear-gradient(to top,rgba(8,12,20,.95),transparent); border-radius:0 0 10px 10px }
 #wbView.wbv2 .wbv2-bossname{ font-family:var(--fd); font-size:clamp(13px,3.5vw,17px); font-weight:800;
@@ -2325,24 +2322,23 @@ html.m-portrait  #wbView .wbv2-lb-modal{ bottom: calc(var(--nav-h, 60px) + var(-
 
 /* ---------- RAIL REWARD: LANDSCAPE saja (portrait = node gauge yang tampil) ---------- */
 #wbView.wbv2 .wbv2-rail{ display:none; flex:1 1 auto; min-width:0; position:relative;
-  flex-direction:column; justify-content:space-evenly; gap:2px; background-color:var(--panel);
-  background-image:var(--tex); border:1px solid rgba(53,224,255,.22); padding:8px 9px; overflow:hidden;border-radius:8px;
-   }
-#wbView.wbv2 .wbv2-rh{ font-family:var(--fm); font-size:10px; letter-spacing:.14em; color:var(--muted);
-  text-transform:uppercase; margin-bottom:2px }
-/* wrap: rail landscape cuma ~118px (sisa 794 - dock 236 - stage). Tanpa wrap,
-   .wbv2-rst terdorong ke luar rail dan ter-clip di bawah .wbv2-dock (bukan font
-   yang dikecilkan — kolomnya yang dirapikan). */
-#wbView.wbv2 .wbv2-rrow{ display:flex; flex-wrap:wrap; align-items:center; gap:4px; row-gap:3px; padding:9px 0;
-  border-bottom:1px solid rgba(53,224,255,.18) }
+  flex-direction:column; justify-content:flex-start; gap:0; background:rgba(12,16,24,.85);
+  border:1px solid var(--line); padding:10px 12px; overflow:hidden; border-radius:8px;
+  backdrop-filter:blur(6px) }
+#wbView.wbv2 .wbv2-rh{ font-family:var(--fd); font-size:9px; letter-spacing:.12em; color:var(--dim);
+  text-transform:uppercase; margin-bottom:6px; padding-bottom:4px; border-bottom:1px solid var(--line) }
+#wbView.wbv2 .wbv2-rrow{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; row-gap:3px; padding:8px 0;
+  border-bottom:1px solid rgba(56,189,248,.08) }
 #wbView.wbv2 .wbv2-rrow:last-child{ border-bottom:0 }
-#wbView.wbv2 .wbv2-ric{ width:28px; height:28px; flex:none; background-color:var(--ic);
-  -webkit-mask:var(--im) center/contain no-repeat; mask:var(--im) center/contain no-repeat }
-#wbView.wbv2 .wbv2-rlb{ font-family:var(--fd); font-size:13px; font-weight:700; color:var(--ink);
+#wbView.wbv2 .wbv2-ric{ width:24px; height:24px; flex:none; background-color:var(--ic);
+  -webkit-mask:var(--im) center/contain no-repeat; mask:var(--im) center/contain no-repeat;
+  filter:drop-shadow(0 0 4px rgba(56,189,248,.3)) }
+#wbView.wbv2 .wbv2-rlb{ font-family:var(--fd); font-size:12px; font-weight:700; color:var(--ink);
   letter-spacing:.02em; white-space:nowrap }
-#wbView.wbv2 .wbv2-rph{ font-family:var(--fm); font-size:9px; color:var(--dim); margin-left:auto }
-#wbView.wbv2 .wbv2-rst{ font-family:var(--fm); font-size:9px; font-weight:700; letter-spacing:.04em;
-  padding:1px 5px; border:1px solid var(--line); white-space:nowrap; flex:none;  }
+#wbView.wbv2 .wbv2-rph{ font-family:var(--fm); font-size:8.5px; color:var(--dim); margin-left:auto }
+#wbView.wbv2 .wbv2-rst{ font-family:var(--fm); font-size:8.5px; font-weight:700; letter-spacing:.04em;
+  padding:2px 6px; border:1px solid var(--line); border-radius:3px; white-space:nowrap; flex:none;
+  background:rgba(15,20,32,.6) }
 /* status per fase — P1 menulis wbv2-rrow-done / -cur / -lock (raid.js:205) */
 #wbView.wbv2 .wbv2-rrow-done .wbv2-rst{ color:var(--green); border-color:rgba(46,213,115,.5) }
 #wbView.wbv2 .wbv2-rrow-done .wbv2-ric{ opacity:.5 }
@@ -2357,12 +2353,13 @@ html.m-portrait  #wbView .wbv2-lb-modal{ bottom: calc(var(--nav-h, 60px) + var(-
   backdrop-filter:blur(8px) }
 #wbView.wbv2 .wbv2-deckline{ display:flex; gap:8px; align-items:center }
 #wbView.wbv2 .wbv2-deck{ display:flex; gap:6px; flex:1; min-width:0 }
-#wbView.wbv2 .wbv2-cell{ flex:1; min-width:0; min-height:64px; height:64px; overflow:hidden;border-radius:6px;
-  position:relative; border:2px solid var(--line); background-color:var(--steel);  }
-#wbView.wbv2 .wbv2-cell.wbv2-lead{ border-color:var(--cyan) }
-#wbView.wbv2 .wbv2-cell.wbv2-mid{ border-color:var(--gold) }
-#wbView.wbv2 .wbv2-cell.wbv2-sup{ border-color:var(--violet) }
-#wbView.wbv2 .wbv2-cell.wbv2-res{ border-color:var(--muted) }
+#wbView.wbv2 .wbv2-cell{ flex:1; min-width:0; min-height:64px; height:64px; overflow:hidden; border-radius:8px;
+  position:relative; border:1.5px solid var(--line); background:rgba(17,24,39,.8);
+  box-shadow:0 2px 8px rgba(0,0,0,.3) }
+#wbView.wbv2 .wbv2-cell.wbv2-lead{ border-color:rgba(56,189,248,.5); box-shadow:0 0 12px rgba(56,189,248,.15) }
+#wbView.wbv2 .wbv2-cell.wbv2-mid{ border-color:rgba(251,191,36,.5); box-shadow:0 0 12px rgba(251,191,36,.12) }
+#wbView.wbv2 .wbv2-cell.wbv2-sup{ border-color:rgba(167,139,250,.5); box-shadow:0 0 12px rgba(167,139,250,.12) }
+#wbView.wbv2 .wbv2-cell.wbv2-res{ border-color:rgba(136,153,170,.4) }
 #wbView.wbv2 .wbv2-cell > img{ width:100%; height:100%; object-fit:cover; display:block }
 #wbView.wbv2 .wbv2-cellr{ position:absolute; left:0; right:0; bottom:0; background-color:rgba(10,15,24,.9);
   font-family:var(--fm); font-size:7px; line-height:1.12; text-align:center; padding:2px; color:var(--ink);
@@ -2411,9 +2408,9 @@ html.m-portrait  #wbView .wbv2-lb-modal{ bottom: calc(var(--nav-h, 60px) + var(-
    di DUA sudut berseberangan (kiri-atas & kanan-bawah), dan teks rata-kanan di 320px
    membuat ujung KIRI-nya yang ikut termakan setelah inset kanan dipasang. white-space
    dibiarkan normal (bukan nowrap) supaya label panjang turun baris, bukan meluber keluar. */
-#wbView.wbv2 .wbv2-hammer-meta{ position:absolute; left:calc(10% + 6px); right:calc(10% + 6px); bottom:2px; margin:0;
-  font-family:var(--fm); font-size:7.5px; letter-spacing:.1em; color:var(--dim);
-  text-transform:uppercase; text-align:right; line-height:1; white-space:normal }
+#wbView.wbv2 .wbv2-hammer-meta{ position:absolute; left:calc(10% + 6px); right:calc(10% + 6px); bottom:3px; margin:0;
+  font-family:var(--fm); font-size:7.5px; letter-spacing:.08em; color:var(--dim);
+  text-transform:uppercase; text-align:right; line-height:1; white-space:normal; opacity:.7 }
 
 /* ---------- MODAL PAPAN PERINGKIT (pola layar penuh 4: header flex:none, body flex:1 scroll) ---------- */
 #wbView.wbv2 .wbv2-lb-modal{ position:fixed; inset:0; width:100vw; height:100dvh; min-height:0;
