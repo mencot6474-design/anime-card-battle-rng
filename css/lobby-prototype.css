@@ -4330,10 +4330,7 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   aspect-ratio: 5/7 !important;
   border-radius: 11px !important;
   overflow: hidden !important;
-  border: 0 !important;
-  outline: none !important;
   background: #0e1626 !important;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45) !important;
   cursor: pointer !important;
   transition: transform 0.18s ease !important;
   content-visibility: auto !important;

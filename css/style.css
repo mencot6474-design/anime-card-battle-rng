@@ -32647,13 +32647,15 @@ body.battle-full .fighter.me,body.battle-full .fighter.foe{
 
 
 
-.backpack-panel .bp-slot.filled:not([class*="bp-mut-"]){border:0!important;box-shadow:none!important;}
-.backpack-panel .bp-slot.filled:not([class*="bp-mut-"]):hover{border:0!important;box-shadow:none!important;}
+/* RADICAL FIX: Removed conflicting rules for bp-slot */
+/* .backpack-panel .bp-slot.filled:not([class*="bp-mut-"]){border:0!important;box-shadow:none!important;} */
+/* .backpack-panel .bp-slot.filled:not([class*="bp-mut-"]):hover{border:0!important;box-shadow:none!important;} */
 
 
 
-.backpack-panel .bp-tile:not([class*="bp-mut-"]){border:0!important;outline:none!important;box-shadow:none!important;}
-.backpack-panel .bp-tile:not([class*="bp-mut-"]):hover{border:0!important;outline:none!important;box-shadow:none!important;}
+/* RADICAL FIX: Removed conflicting rules - nuklear override at end of file handles all borders */
+/* .backpack-panel .bp-tile:not([class*="bp-mut-"]){border:0!important;outline:none!important;box-shadow:none!important;} */
+/* .backpack-panel .bp-tile:not([class*="bp-mut-"]):hover{border:0!important;outline:none!important;box-shadow:none!important;} */
 
 
 
@@ -55198,4 +55200,50 @@ html.m-landscape body.on-settings .sett-wrap {
   .sett-wrap *,
   .sett-wrap *::before,
   .sett-wrap *::after { animation:none !important; transition:none !important; }
+}
+
+/* ===== RADICAL FIX: NUKLEAR RESET + REBUILD ===== */
+/* Step 1: Hapus SEMUA border/outline/box-shadow dari bp-tile dan bp-slot */
+.backpack-panel .bp-tile,
+.backpack-panel .bp-tile::before,
+.backpack-panel .bp-tile::after,
+.backpack-panel .bp-slot,
+.backpack-panel .bp-slot.filled,
+.backpack-panel .bp-slot::before,
+.backpack-panel .bp-slot::after {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Step 2: Rebuild dengan HANYA 1 border sederhana */
+.backpack-panel .bp-tile {
+  border: 2px solid var(--line2, rgba(125,249,255,.28)) !important;
+  border-radius: 14px !important;
+}
+
+.backpack-panel .bp-slot.filled {
+  border: 2px solid var(--tcol, rgba(125,249,255,.28)) !important;
+  border-radius: 12px !important;
+}
+
+/* Mutation cards: border warna sesuai mutation */
+.backpack-panel .bp-tile[class*="bp-mut-"],
+.backpack-panel .bp-tile.shiny,
+.backpack-panel .bp-slot.filled[class*="bp-mut-"],
+.backpack-panel .bp-slot.filled.shiny {
+  border-color: var(--mcol, #7DF9FF) !important;
+}
+
+/* Hover state: JANGAN tambah box-shadow, cukup brighten border */
+.backpack-panel .bp-tile:hover,
+.backpack-panel .bp-slot.filled:hover {
+  border-color: #7DF9FF !important;
+  box-shadow: none !important;
+}
+
+/* Full art cards: tetap no border */
+.backpack-panel .bp-tile.fa,
+.backpack-panel .bp-slot.fa {
+  border: none !important;
 }
