@@ -3458,59 +3458,8 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 
 /* Ambient glow overlay behind card art */
 
-.rrc-glow{
 
-  position:absolute;
 
-  inset:0;
-
-  background:radial-gradient(circle at 50% 30%,rgba(0,217,255,.15),transparent 70%);
-
-  pointer-events:none;
-
-}
-
-.rrc-footer{
-
-  position:absolute;
-
-  left:0;
-
-  right:0;
-
-  bottom:0;
-
-  z-index:2;
-
-  display:flex;
-
-  flex-direction:column;
-
-  align-items:center;
-
-  gap:1px;
-
-  padding:12px 3px 3px;
-
-  background:linear-gradient(to top,rgba(3,7,18,.96) 0%,rgba(3,7,18,.8) 70%,transparent 100%);
-
-}
-
-.rrc-chance-text{
-
-  font-family:"Outfit",sans-serif;
-
-  font-size:8.5px;
-
-  font-weight:600;
-
-  letter-spacing:.03em;
-
-  color:var(--sl-cyan,#00d9ff);
-
-  text-shadow:0 0 6px rgba(0,217,255,.6);
-
-}
 
 /* Mutation borders for Solo Leveling items */
 
@@ -3572,31 +3521,6 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{filter:none;transform:s
 
 }
 
-.rrc-cnt{
-
-  position:absolute;
-
-  top:2px;
-
-  right:4px;
-
-  z-index:3;
-
-  color:#38bdf8;
-
-  font-family:"Barlow Condensed",sans-serif;
-
-  font-weight:800;
-
-  font-size:15px;
-
-  line-height:1;
-
-  letter-spacing:.02em;
-
-  text-shadow:0 1px 3px rgba(0,0,0,.95),0 0 8px rgba(0,217,255,.7);
-
-}
 
 .rrc-potion{
 
@@ -6091,35 +6015,6 @@ body.battle-full .vs-col .bspeed-btn{font-size:clamp(12px,1.4vw,15px);padding:4p
 
 .chap-list .story-banner.full .sb-no{color:rgba(107,224,138,.1)}
 
-.sb-tag{
-
-  position:absolute;
-
-  top:12px;
-
-  left:14px;
-
-  z-index:3;
-
-  font-family:"Rajdhani","Barlow Condensed",sans-serif;
-
-  font-weight:800;
-
-  font-size:10px;
-
-  letter-spacing:.2em;
-
-  color:#060a10;
-
-  background:#7DF9FF;
-
-  padding:2px 8px;
-
-  border-radius:4px;
-
-  box-shadow:0 0 10px rgba(125,249,255,.5);
-
-}
 
 .chap-list .story-banner .sb-chip{
 
@@ -6221,19 +6116,6 @@ body.battle-full .vs-col .bspeed-btn{font-size:clamp(12px,1.4vw,15px);padding:4p
 
 .chap-list .story-banner .sb-pw.bad{color:#FF6B8A;font-weight:800}
 
-.sb-bar{
-
-  position:absolute;
-
-  left:0;right:0;bottom:0;
-
-  height:4px;
-
-  z-index:3;
-
-  background:rgba(255,255,255,.08);
-
-}
 
 .sb-bar i{
 
@@ -19029,11 +18911,6 @@ html.fps-locked .bp-fchip{
 }
 
 .wb-att.empty b{color:#FF6B8A}
-.rr-wb{
-  margin:4px 0 0;padding:8px 12px;border-radius:10px;
-  font-size:11px;font-weight:800;letter-spacing:.08em;color:#94A3B8;
-  background:rgba(148,163,184,.08);border:1px solid rgba(148,163,184,.2);
-}
 .rr-wb.on{color:#5CF0A8;background:rgba(92,240,168,.08);border-color:rgba(92,240,168,.28)}
 .rr-wb.bad{color:#FF6B8A;background:rgba(255,107,138,.08);border-color:rgba(255,107,138,.28)}
 
