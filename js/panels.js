@@ -427,11 +427,35 @@ function renderBuffDock(){
 }
 function toast(main,sub,color){
   const t=document.getElementById("weatherToast");if(!t)return;
-  t.style.setProperty("--wdc",color||"#38b7ff");
-  t.innerHTML=`${main}${sub?`<small>${sub}</small>`:""}`;
-  t.classList.add("show");
-  if(toast._tm)clearTimeout(toast._tm);
-  toast._tm=setTimeout(()=>t.classList.remove("show"),2200);
+  const col=color||"#38bdf8";
+  t.style.setProperty("--wdc",col);
+
+  try {
+    if(typeof sfx!=="undefined"&&sfx&&typeof sfx.pop==="function") sfx.pop();
+    else if(typeof beep==="function") beep(620,.08,"sine",.04);
+  } catch(e) {}
+
+  t.innerHTML=`
+    <div class="cp-toast-frame" style="position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;min-width:180px;">
+      <span class="cp-toast-corner tl" style="position:absolute;top:-2px;left:-2px;width:6px;height:6px;border-top:2px solid var(--wdc,${col});border-left:2px solid var(--wdc,${col});pointer-events:none;"></span>
+      <span class="cp-toast-corner tr" style="position:absolute;top:-2px;right:-2px;width:6px;height:6px;border-top:2px solid var(--wdc,${col});border-right:2px solid var(--wdc,${col});pointer-events:none;"></span>
+      <span class="cp-toast-corner bl" style="position:absolute;bottom:-2px;left:-2px;width:6px;height:6px;border-bottom:2px solid var(--wdc,${col});border-left:2px solid var(--wdc,${col});pointer-events:none;"></span>
+      <span class="cp-toast-corner br" style="position:absolute;bottom:-2px;right:-2px;width:6px;height:6px;border-bottom:2px solid var(--wdc,${col});border-right:2px solid var(--wdc,${col});pointer-events:none;"></span>
+      <div class="cp-toast-scanline" style="position:absolute;inset:0;background:linear-gradient(rgba(18,28,38,0) 50%, rgba(0,0,0,0.25) 50%), linear-gradient(90deg, rgba(255,0,0,0.03), rgba(0,255,0,0.01), rgba(0,0,255,0.03));background-size:100% 2px, 3px 100%;pointer-events:none;opacity:0.6;"></div>
+      <div class="cp-toast-tag" style="display:inline-flex;align-items:center;gap:5px;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:800;letter-spacing:0.12em;color:var(--wdc,${col});text-transform:uppercase;opacity:0.95;">
+        <span class="cp-toast-dot" style="display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--wdc,${col});box-shadow:0 0 6px var(--wdc,${col});"></span>
+        <span>SYSTEM // NOTIFICATION</span>
+      </div>
+      <div class="cp-toast-main" style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;letter-spacing:0.04em;color:#fff;line-height:1.2;text-transform:uppercase;">${main}</div>
+      ${sub ? `<div class="cp-toast-sub" style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.02em;color:#94a3b8;line-height:1.25;margin-top:2px;">${sub}</div>` : ''}
+    </div>
+  `;
+  t.classList.add("show","cp-toast");
+  if(toast._tm) clearTimeout(toast._tm);
+  const dur = (sub && String(sub).length > 30) ? 2800 : 2300;
+  toast._tm = setTimeout(() => {
+    t.classList.remove("show");
+  }, dur);
 }
 
 /* ====== ANIMASI BROADCAST GLOBAL (GLOBAL LUCK & WEATHER INSTAN) ======

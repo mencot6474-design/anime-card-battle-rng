@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v343-bpSharpCardHideBattleHdr';
+const CACHE_NAME = 'anime-card-battle-v344-cyberpunkNotificationsAAA';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
