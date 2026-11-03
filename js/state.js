@@ -1344,36 +1344,39 @@ addEventListener("pagehide",()=>{if(state){save();flushCloudSave();}});
 
 function handleTabWakeup(){
   try{ document.body.classList.remove("perf-paused"); }catch(e){}
-  /* Aggressively dismiss any stuck full-screen overlays that block clicks */
+  /* NUCLEAR: force-close every possible click-blocker */
   try{
     const ov = document.getElementById("rollOverlay");
-    if(ov && ov.style.display !== "none"){
-      if(typeof rollState === "undefined" || !rollState || !rollState.active || rollState.hideOverlay){
-        ov.style.display = "none";
-      }
-    }
+    if(ov){ ov.style.display="none"; ov.classList.remove("mini"); }
+  }catch(e){}
+  try{ document.querySelectorAll(".bpholo-backdrop").forEach(el=>el.remove()); }catch(e){}
+  try{
+    const m = document.getElementById("modal");
+    if(m) m.classList.remove("show");
   }catch(e){}
   try{
-    const ip = document.getElementById("itemPop");
-    if(ip) ip.remove();
-  }catch(e){}
-  try{
+    document.body.classList.remove("drawer-open","bp-open");
     const bd = document.getElementById("drawerBackdrop");
-    if(bd && !document.body.classList.contains("drawer-open")) bd.style.display="none";
+    if(bd) bd.style.display="none";
+    const drw = document.getElementById("commandDrawer");
+    if(drw) drw.classList.remove("open");
+    const bp = document.querySelector(".backpack-panel");
+    if(bp) bp.classList.remove("open");
   }catch(e){}
   try{
     const ls = document.getElementById("loadingScreen");
-    if(ls && !ls.classList.contains("hidden") && typeof state !== "undefined" && state && !state.battle){
-      ls.classList.add("hidden");
-    }
+    if(ls && !ls.classList.contains("hidden")) ls.classList.add("hidden");
   }catch(e){}
-  try{ document.body.style.pointerEvents=""; }catch(e){}
-  /* Bangunkan kembali auto roll jika tertidur/stuck di background */
-  try{
-    if(typeof rollState !== "undefined" && rollState && rollState.active){
-      if(typeof window.forceResumeRoll === "function") window.forceResumeRoll();
-    }
-  }catch(e){}
+  try{ document.body.style.pointerEvents=""; document.documentElement.style.pointerEvents=""; }catch(e){}
+  /* Delayed: let roll system resume on its own timer, don't force it immediately
+     (forceResumeRoll re-shows overlay in broken mid-animation state) */
+  setTimeout(()=>{
+    try{
+      if(typeof rollState!=="undefined"&&rollState&&rollState.active&&typeof window.forceResumeRoll==="function"){
+        window.forceResumeRoll();
+      }
+    }catch(e){}
+  },800);
 }
 
 document.addEventListener("visibilitychange",()=>{
