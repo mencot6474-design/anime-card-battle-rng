@@ -7583,7 +7583,7 @@ h1{font-size:clamp(26px,8vw,34px)}
 
 .ld-accent{-webkit-background-clip:text;background-clip:text;}
 
-#authSpin,#authDone,#welcomeModal{position:fixed;inset:0;place-items:center;overflow:auto;padding:18px;}
+#authSpin,#authDone,#welcomeModal{position:fixed;inset:0;display:grid;place-items:center;overflow:auto;padding:18px;}
 
 #authSpin.hidden,#authDone.hidden,#welcomeModal.hidden{display:none}
 
