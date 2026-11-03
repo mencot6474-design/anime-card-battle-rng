@@ -1057,6 +1057,7 @@ body.on-lobby .buff-dock.show{display:flex;}
 .roll-overlay{position:fixed;inset:0;background:rgba(18,28,38,.94);z-index:150;display:none;align-items:center;justify-content:center;flex-direction:column;}
 
 .roll-overlay.visible{display:flex;}
+.roll-overlay.force-hidden{display:none!important;pointer-events:none!important;}
 
 .roll-card-showcase{position:relative;width:300px;aspect-ratio:3/4;border-radius:18px;border:3px solid var(--cyan);background:#12151a;box-shadow:0 20px 80px rgba(18,28,38,.6);animation:card-reveal .5s ease-out;}
 

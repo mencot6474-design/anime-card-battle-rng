@@ -1348,12 +1348,17 @@ function handleTabWakeup(){
   if(now-_wakeupDebounce<600)return;
   _wakeupDebounce=now;
   try{ document.body.classList.remove("perf-paused"); }catch(e){}
-  /* Hide rollOverlay unconditionally — auto-roll's own AFK worker will
-     re-show it on next tick. Don't call forceResumeRoll here (it was
-     re-showing the overlay in broken mid-animation state). */
+  /* Kill rollOverlay: remove .mini because CSS has display:block!important on
+     body.on-lobby .roll-overlay.mini which beats inline style.display="none".
+     Also add .force-hidden with its own !important rule (see style.css). */
   try{
     const ov = document.getElementById("rollOverlay");
-    if(ov){ ov.style.display="none"; ov.classList.remove("visible"); }
+    if(ov){
+      ov.classList.remove("visible","mini");
+      ov.classList.add("force-hidden");
+      /* Remove force-hidden after a tick so normal roll flow can resume */
+      setTimeout(()=>{try{ov.classList.remove("force-hidden");}catch(e){}},100);
+    }
   }catch(e){}
   try{
     document.querySelectorAll(".modal-backdrop.show").forEach(el=>el.classList.remove("show"));
