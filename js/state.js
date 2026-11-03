@@ -1368,15 +1368,17 @@ function handleTabWakeup(){
     if(ls && !ls.classList.contains("hidden")) ls.classList.add("hidden");
   }catch(e){}
   try{ document.body.style.pointerEvents=""; document.documentElement.style.pointerEvents=""; }catch(e){}
-  /* Delayed: let roll system resume on its own timer, don't force it immediately
-     (forceResumeRoll re-shows overlay in broken mid-animation state) */
+  /* FULL DOM REBUILD — same as reload but no network. Clears any stuck state
+     that individual overlay cleanup misses (CSS !important, orphaned nodes,
+     mid-animation frozen elements, etc). */
   setTimeout(()=>{
+    try{ if(typeof render==="function"&&!document.hidden) render(); }catch(e){}
     try{
       if(typeof rollState!=="undefined"&&rollState&&rollState.active&&typeof window.forceResumeRoll==="function"){
         window.forceResumeRoll();
       }
     }catch(e){}
-  },800);
+  },150);
 }
 
 document.addEventListener("visibilitychange",()=>{
