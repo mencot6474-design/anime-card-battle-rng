@@ -2347,10 +2347,16 @@ html.m-portrait  #wbView .wbv2-lb-modal{ bottom: calc(var(--nav-h, 60px) + var(-
 /* penanda baris mock (nominal belum dari server): garis emas 2px, tanpa teks, tanpa glow */
 #wbView.wbv2 .wbv2-rrow.wbv2-mock{ border-right:2px solid rgba(224,188,110,.45); padding-right:6px }
 
-/* ---------- DOCK ---------- */
-#wbView.wbv2 .wbv2-dock{ flex:none; position:relative; z-index:1; background:rgba(15,20,32,.9);
-  border-top:1px solid var(--line); padding:10px 12px 14px; border-radius:0;
-  backdrop-filter:blur(8px) }
+/* ---------- DOCK (box panel: reward + actions) ---------- */
+#wbView.wbv2 .wbv2-dock{ flex:none; position:relative; z-index:1;
+  background:rgba(12,16,24,.92); border:1px solid var(--line); border-radius:10px;
+  padding:10px 12px 12px; margin:0 8px 8px; backdrop-filter:blur(8px);
+  box-shadow:0 -4px 20px rgba(0,0,0,.4) }
+#wbView.wbv2 .wbv2-dock .wbv2-rail{ display:flex; flex-direction:row; flex-wrap:wrap; gap:4px 12px;
+  background:none; border:none; border-bottom:1px solid var(--line); padding:0 0 8px; margin-bottom:8px;
+  border-radius:0; backdrop-filter:none; overflow:visible }
+#wbView.wbv2 .wbv2-dock .wbv2-rh{ width:100%; margin-bottom:4px }
+#wbView.wbv2 .wbv2-dock .wbv2-rrow{ border-bottom:none; padding:4px 0; flex:0 0 auto }
 #wbView.wbv2 .wbv2-deckline{ display:flex; gap:8px; align-items:center }
 #wbView.wbv2 .wbv2-deck{ display:flex; gap:6px; flex:1; min-width:0 }
 #wbView.wbv2 .wbv2-cell{ flex:1; min-width:0; min-height:64px; height:64px; overflow:hidden; border-radius:8px;
