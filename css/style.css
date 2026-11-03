@@ -15204,6 +15204,27 @@ body.battle-full .fighter.foe.ko {
   overflow-y:auto!important;
   overflow:scroll!important;
 }
+.bpholo-glow{position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 30%,color-mix(in srgb,var(--holo-tone,#7DF9FF) 8%,transparent),transparent 70%);z-index:0}
+.bpholo-header{position:relative;z-index:1;width:100%;text-align:center;margin-bottom:6px}
+.bpholo-category{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-weight:700;letter-spacing:.14em;color:#64748b;text-transform:uppercase}
+.bpholo-dot{width:5px;height:5px;border-radius:50%;background:var(--holo-tone,#7DF9FF);box-shadow:0 0 6px var(--holo-tone,#7DF9FF);animation:bphDotPulse 2s ease-in-out infinite}
+@keyframes bphDotPulse{0%,100%{opacity:.5}50%{opacity:1}}
+.bpholo-title{margin:4px 0 0;font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;letter-spacing:.06em;color:#f1f5f9;text-transform:uppercase}
+.bpholo-showcase{position:relative;z-index:1;width:100%;display:flex;align-items:center;justify-content:center;
+  height:clamp(90px,18vh,140px);margin:4px 0 8px;flex:none}
+.bpholo-pedestal{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:70%;height:18px;border-radius:50%;
+  background:radial-gradient(ellipse,color-mix(in srgb,var(--holo-tone,#7DF9FF) 25%,transparent),transparent 70%);filter:blur(4px)}
+.bpholo-ic-wrap{position:relative;display:flex;align-items:center;justify-content:center;
+  width:clamp(64px,12vh,96px);height:clamp(64px,12vh,96px)}
+.bpholo-img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 4px 12px rgba(0,0,0,.6)) drop-shadow(0 0 8px color-mix(in srgb,var(--holo-tone,#7DF9FF) 30%,transparent))}
+.bpholo-inventory-pill{position:relative;z-index:1;display:inline-flex;align-items:center;gap:6px;
+  padding:4px 12px;border-radius:20px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);margin-bottom:8px}
+.bpholo-inv-lbl{font-size:9px;font-weight:700;letter-spacing:.1em;color:#64748b;text-transform:uppercase}
+.bpholo-inv-val{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:var(--holo-tone,#7DF9FF)}
+.bpholo-info-box{position:relative;z-index:1;width:100%;text-align:center;margin-bottom:10px}
+.bpholo-active-eff{font-size:11px;color:#94a3b8;line-height:1.5;margin-bottom:4px}
+.bpholo-actions{position:relative;z-index:1;width:100%;display:flex;flex-direction:column;gap:6px}
 
 
 .bpholo-x {
