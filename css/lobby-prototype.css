@@ -2440,7 +2440,6 @@ html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-xpbar {
 #profModal,
 #titlesModal,
 #changelogModal,
-#rollResultPop,
 #indexModal,
 #premiumModal,
 #weatherMachineModal,
@@ -2461,6 +2460,113 @@ html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-xpbar {
 .modal-profile,
 .screen-overlay {
   z-index: 90000 !important;
+}
+
+/* ===== INSTANT PACK RESULT MODAL (Z-INDEX ELEVATION: 100000) ===== */
+#rollResultPop {
+  position: fixed !important;
+  inset: 0 !important;
+  display: none !important;
+  place-items: center !important;
+  padding: 16px !important;
+  z-index: 100000 !important;
+}
+#rollResultPop.show {
+  display: grid !important;
+  z-index: 100000 !important;
+}
+#rollResultPop .rr-back {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 1 !important;
+  background: radial-gradient(circle at 50% 50%, rgba(10,18,36,0.88) 0%, rgba(2,4,9,0.96) 100%) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+#rollResultPop .rr-card {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+/* ===== HOLO-GLASS ITEM INSPECTOR POPUP (Z-INDEX: 95000) ===== */
+.bpholo-backdrop {
+  z-index: 95000 !important;
+}
+
+/* ===== INSTANT PACK & MULTI-OPEN CYBERPUNK SEGMENTED TOGGLE ===== */
+.bpholo-panel .wo-multi,
+.bpholo-panel .wo-multi.bp-pack-toggle {
+  display: flex !important;
+  gap: 5px !important;
+  justify-content: center !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  width: 100% !important;
+  margin: 6px 0 10px !important;
+  box-sizing: border-box !important;
+}
+.bpholo-panel .wo-multi button,
+.bpholo-panel .wo-multi.bp-pack-toggle button {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  padding: 7px 3px !important;
+  font-family: var(--font-display, 'Orbitron', 'Barlow Condensed', sans-serif) !important;
+  font-size: 12.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.04em !important;
+  border-radius: 6px !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  background: rgba(10, 15, 24, 0.72) !important;
+  color: #94a3b8 !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  transition: all 0.16s ease !important;
+  box-sizing: border-box !important;
+}
+.bpholo-panel .wo-multi button:hover:not(:disabled):not(.on),
+.bpholo-panel .wo-multi.bp-pack-toggle button:hover:not(:disabled):not(.on) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: color-mix(in srgb, var(--holo-tone, #FFD700) 60%, rgba(255,255,255,0.4)) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+}
+.bpholo-panel .wo-multi button.on,
+.bpholo-panel .wo-multi.bp-pack-toggle button.on {
+  background: color-mix(in srgb, var(--holo-tone, #FFD700) 90%, #ffffff) !important;
+  border-color: #ffffff !important;
+  color: #05080f !important;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--holo-tone, #FFD700) 65%, transparent), 0 2px 6px rgba(0,0,0,0.4) !important;
+  transform: translateY(-1px) scale(1.02) !important;
+  font-weight: 900 !important;
+}
+.bpholo-panel .wo-multi button:disabled,
+.bpholo-panel .wo-multi.bp-pack-toggle button:disabled {
+  opacity: 0.28 !important;
+  cursor: not-allowed !important;
+  border-style: dashed !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(4, 7, 12, 0.4) !important;
+  color: #64748b !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+.bpholo-panel .wo-multi button.btn-all,
+.bpholo-panel .wo-multi.bp-pack-toggle button.btn-all,
+.bpholo-panel .wo-multi button[data-pn="all"],
+.bpholo-panel .wo-multi.bp-pack-toggle button[data-pn="all"] {
+  border-color: color-mix(in srgb, var(--holo-tone, #FFD700) 60%, #00f0ff) !important;
+  background: linear-gradient(145deg, rgba(255, 215, 0, 0.08), rgba(0, 240, 255, 0.06)) !important;
+  color: color-mix(in srgb, var(--holo-tone, #FFD700) 80%, #ffffff) !important;
+}
+.bpholo-panel .wo-multi button.btn-all.on,
+.bpholo-panel .wo-multi.bp-pack-toggle button.btn-all.on,
+.bpholo-panel .wo-multi button[data-pn="all"].on,
+.bpholo-panel .wo-multi.bp-pack-toggle button[data-pn="all"].on {
+  background: linear-gradient(135deg, #FFF099, #FFD700) !important;
+  border-color: #ffffff !important;
+  color: #05080f !important;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.75), 0 0 8px rgba(0, 240, 255, 0.4) !important;
 }
 
 /* Ensure modal backdrops center their inner boxes cleanly with safe top padding */

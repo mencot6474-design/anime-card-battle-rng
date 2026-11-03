@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v344-cyberpunkNotificationsAAA';
+const CACHE_NAME = 'anime-card-battle-v345-instantPackToggleZIndexFix';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

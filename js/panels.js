@@ -2156,12 +2156,20 @@ function bpItemPop(kind){
   const multi=isGacha?`<div class="bpholo-multi-wrap"><div class="bpholo-multi-label">JUMLAH ROLL:</div><div class="wo-multi">${[1,5,25,100].map(n=>`<button data-n="${n}" class="${bpMultiN===n?'on':''}" onclick="bpSetMulti(${n})">${n}×</button>`).join('')}</div></div>`:'';
   const isPack=!!d.isPack;
   if(isPack){
-    /* clamp multiplier ke stok yang dimiliki */
+    /* Inisialisasi pack counter & default multiplier */
     bpPopupKind=kind; bpPackCnt=d.cnt; bpPackRollAmount=(kind==='intan')?100000:bpPackRollAmountOf(kind);
-    if(bpPackN>d.cnt)bpPackN=1;
+    if(d.cnt>=10){ bpPackN=10; window.bpPackIsAll=false; }
+    else if(d.cnt>0 && d.cnt<10){ bpPackN=d.cnt; window.bpPackIsAll=true; }
+    else { bpPackN=1; window.bpPackIsAll=false; }
     window.bpPackN=bpPackN;
   }
-  const packMulti=isPack?`<div class="bpholo-multi-wrap"><div class="bpholo-multi-label">JUMLAH PAKET:</div><div class="wo-multi">${PACK_MULTI_LIST.map(n=>`<button data-pn="${n}" class="${bpPackN===n?'on':''}" ${d.cnt<n?'disabled':''} onclick="bpSetPackN(${n})">${n}×</button>`).join('')}</div>${bpPackInfoHTML(d.cnt)}`:'';
+  const packMulti=isPack?`<div class="bpholo-multi-wrap"><div class="bpholo-multi-label">JUMLAH PAKET:</div><div class="wo-multi bp-pack-toggle">${PACK_MULTI_LIST.map(val => {
+    const isAll = (val === 'ALL');
+    const isDisabled = isAll ? (d.cnt < 1) : (d.cnt < val);
+    const isSelected = isAll ? (window.bpPackIsAll || (d.cnt > 0 && d.cnt < 10 && bpPackN === d.cnt)) : (!window.bpPackIsAll && bpPackN === val);
+    const label = isAll ? 'ALL' : (val + '×');
+    return `<button data-pn="${val}" class="${isSelected ? 'on' : ''} ${isAll ? 'btn-all' : ''}" ${isDisabled ? 'disabled' : ''} onclick="bpSetPackN('${val}')">${label}</button>`;
+  }).join('')}</div>${bpPackInfoHTML(d.cnt)}`:'';
   const canUse=d.cnt>0;
 
   let themeTone="#7DF9FF";
@@ -2216,7 +2224,7 @@ function bpItemPop(kind){
       <div class="bpholo-actions">
         <button class="bpholo-btn-use ${canUse?'':'disabled'}" ${canUse?'':'disabled'} type="button">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          <span>PAKAI SEKARANG${isGacha&&bpMultiN>1?' ('+bpMultiN+'×)':''}${isPack&&bpPackN>1?' ('+bpPackN+'× paket)':''}</span>
+          <span>${isPack ? (window.bpPackIsAll ? ('PAKAI SEMUA (' + fmt(bpPackN) + '× paket)') : ('PAKAI SEKARANG' + (bpPackN > 1 ? ' (' + fmt(bpPackN) + '× paket)' : ''))) : ('PAKAI SEKARANG' + (isGacha && bpMultiN > 1 ? ' (' + bpMultiN + '×)' : ''))}</span>
         </button>
         ${d.useAll&&d.cnt>1?`<button class="bpholo-btn-all" onclick="${d.useAll}">GABUNG SEMUA (×${fmt(d.cnt)})</button>`:''}
         <button class="bpholo-btn-dismiss" onclick="bpItemPopClose()" type="button">TUTUP</button>
@@ -2232,39 +2240,64 @@ function bpItemPop(kind){
 }
 /* Toggle jumlah roll gacha (1 / 5 / 25 / 100) di popup potion. */
 let bpMultiN=1;
-/* Toggle jumlah pemakaian Instan Pack (1 / 10 / 25 / 100) — tanpa batas jumlah tarikan. */
-const PACK_MULTI_LIST=[1,10,25,100];
-const PACK_ROLL_AMOUNT={r5k:5000,r10k:10000,r25k:25000,r50k:50000,r100k:100000};
-let bpPackN=1;
-let bpPopupKind='';
-let bpPackCnt=0;
-let bpPackRollAmount=0;
-window.bpPackN=1;
+/* Toggle jumlah pemakaian Instan Pack (10 / 25 / 50 / 100 / ALL) — tanpa batas jumlah tarikan. */
+const PACK_MULTI_LIST = [10, 25, 50, 100, 'ALL'];
+const PACK_ROLL_AMOUNT = {r5k:5000, r10k:10000, r25k:25000, r50k:50000, r100k:100000};
+let bpPackN = 10;
+let bpPopupKind = '';
+let bpPackCnt = 0;
+let bpPackRollAmount = 0;
+window.bpPackN = 10;
+window.bpPackIsAll = false;
 function bpPackRollAmountOf(kind){return PACK_ROLL_AMOUNT[kind]||0;}
 function bpPackInfoHTML(cnt){
-  const n=bpPackN;
-  const packs=Math.min(n,Math.max(0,cnt||0));
-  const pulls=bpPackRollAmount*packs;
-  return `<div class="bpholo-packinfo">PAKAI <b>${packs}</b> PAKET · TOTAL <b>${fmt(pulls)}</b> TARIKAN</div>`;
+  const n = bpPackN;
+  const packs = Math.min(n, Math.max(0, cnt || 0));
+  const pulls = bpPackRollAmount * packs;
+  return `<div class="bpholo-packinfo">PAKAI <b>${fmt(packs)}</b> PAKET · TOTAL <b>${fmt(pulls)}</b> TARIKAN</div>`;
 }
 function bpSetPackN(n){
-  n=Math.max(1,parseInt(n,10)||1);
-  const cnt=(typeof bpPackCnt==='number')?bpPackCnt:0;
-  if(n>cnt){toast("STOK TIDAK CUKUP","PUNYA "+fmt(cnt)+" PAKET","#f87171");return;}
-  bpPackN=n; window.bpPackN=n;
-  document.querySelectorAll('#itemPop .wo-multi button[data-pn]').forEach(b=>b.classList.toggle('on',+b.dataset.pn===n));
-  const info=document.querySelector('#itemPop .bpholo-packinfo');
-  if(info&&info.outerHTML!==undefined){
-    const tmp=document.createElement('div'); tmp.innerHTML=bpPackInfoHTML(cnt);
-    info.replaceWith(tmp.firstElementChild||info);
+  const cnt = (typeof bpPackCnt === 'number') ? bpPackCnt : 0;
+  if(n === 'ALL' || n === 'all'){
+    if(cnt < 1){
+      toast("STOK HABIS", "TIDAK ADA PAKET", "#f87171");
+      return;
+    }
+    bpPackN = cnt;
+    window.bpPackN = cnt;
+    window.bpPackIsAll = true;
+    document.querySelectorAll('#itemPop .wo-multi button[data-pn]').forEach(b => {
+      b.classList.toggle('on', b.dataset.pn === 'ALL');
+    });
+  } else {
+    window.bpPackIsAll = false;
+    const num = parseInt(n, 10);
+    if(num > cnt){
+      toast("STOK TIDAK CUKUP", "PUNYA " + fmt(cnt) + " PAKET", "#f87171");
+      return;
+    }
+    bpPackN = num;
+    window.bpPackN = num;
+    document.querySelectorAll('#itemPop .wo-multi button[data-pn]').forEach(b => {
+      b.classList.toggle('on', b.dataset.pn === String(num));
+    });
   }
-  const use=document.querySelector('#itemPop .bpholo-btn-use span');
-  if(use){
-    const isGacha=(bpPopupKind==='potion'||bpPopupKind==='mythic');
-    use.textContent='PAKAI SEKARANG'+(isGacha&&bpMultiN>1?' ('+bpMultiN+'×)':'')+(bpPackN>1?' ('+bpPackN+'× paket)':'');
+  const info = document.querySelector('#itemPop .bpholo-packinfo');
+  if(info && info.outerHTML !== undefined){
+    const tmp = document.createElement('div');
+    tmp.innerHTML = bpPackInfoHTML(cnt);
+    info.replaceWith(tmp.firstElementChild || info);
+  }
+  const useSpan = document.querySelector('#itemPop .bpholo-btn-use span');
+  if(useSpan){
+    if(window.bpPackIsAll){
+      useSpan.textContent = `PAKAI SEMUA (${fmt(bpPackN)}× paket)`;
+    } else {
+      useSpan.textContent = `PAKAI SEKARANG${bpPackN > 1 ? ' (' + fmt(bpPackN) + '× paket)' : ''}`;
+    }
   }
 }
-window.bpSetPackN=bpSetPackN;
+window.bpSetPackN = bpSetPackN;
 function bpSetMulti(n){
   bpMultiN=n;
   document.querySelectorAll('#itemPop .wo-multi button[data-n]').forEach(b=>b.classList.toggle('on',+b.dataset.n===n));
@@ -2399,7 +2432,8 @@ async function bpUseRollPack(packKey, rollAmount, n){
   if(typeof srOn==="function"&&srOn()&&typeof CloudDB!=="undefined"&&CloudDB.bulkRoll){
     const groups={}, order=[];
     let total=0, spent=0, left=use, guard=0;
-    while(left>0 && guard++<12){
+    const maxGuards = Math.max(20, Math.ceil(use / 10) + 5);
+    while(left>0 && guard++<maxGuards){
       const r=await CloudDB.bulkRoll(currentUser,packKey,Math.min(left,10));
       if(!r||!r.ok){
         const msg=!r?"KONEKSI KE SERVER PUTUS":(r.msg==="PACK_EMPTY"?"LEDGER SERVER: PACK HABIS":"DITOLAK SERVER: "+(r.msg||""));
