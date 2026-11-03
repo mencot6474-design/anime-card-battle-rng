@@ -2570,6 +2570,21 @@ html.m-portrait  #wbView .wbv2-lb-modal{ bottom: calc(var(--nav-h, 60px) + var(-
 }
 @keyframes wbv2BgDrift{0%{transform:scale(1.05) translate(0,0)}100%{transform:scale(1.08) translate(-15px,-10px)}}
 
+/* Holo rails (proto .holo-rail) */
+#wbView.wbv2 .wbv2-holorail{ position:absolute; top:10%; bottom:10%; width:2px; z-index:2; pointer-events:none }
+#wbView.wbv2 .wbv2-holorail.left{ left:24px }
+#wbView.wbv2 .wbv2-holorail.right{ right:24px }
+#wbView.wbv2 .wbv2-holorail::before{ content:""; position:absolute; inset:0;
+  background:linear-gradient(to bottom,transparent,var(--cyan),transparent);
+  opacity:.4; animation:wbv2RailPulse 3s ease-in-out infinite }
+#wbView.wbv2 .wbv2-holorail::after{ content:""; position:absolute; top:0; left:-3px; width:8px; height:8px;
+  border-radius:50%; background:var(--cyan);
+  box-shadow:0 0 12px var(--cyan),0 0 24px rgba(56,189,248,.4);
+  animation:wbv2RailDot 4s ease-in-out infinite }
+#wbView.wbv2 .wbv2-holorail.right::after{ animation-delay:2s }
+@keyframes wbv2RailPulse{0%,100%{opacity:.3}50%{opacity:.7}}
+@keyframes wbv2RailDot{0%{top:0}50%{top:calc(100% - 8px)}100%{top:0}}
+
 /* #9 Topbar (proto .topbar) */
 #wbView.wbv2 .wbv2-topbar{
   order:-1; flex:none; display:flex; align-items:center; justify-content:space-between; gap:12px;

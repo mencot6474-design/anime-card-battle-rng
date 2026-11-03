@@ -411,6 +411,8 @@ function renderRaidHub(){
   app.innerHTML=`
   <div id="wbView" class="wbv2 rd-page">
     <div class="wbv2-bgfx" aria-hidden="true"><div class="wbv2-sweep"></div></div>
+    <div class="wbv2-holorail left" aria-hidden="true"></div>
+    <div class="wbv2-holorail right" aria-hidden="true"></div>
 
     <div class="wbv2-topbar">
       <div class="wbv2-tabs" id="wbv2Tabs">${tabs}</div>
