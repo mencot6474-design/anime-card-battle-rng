@@ -6006,7 +6006,7 @@ body.on-battle #topbar {
   animation:l12HoloShift 8s ease-in-out infinite;
   mix-blend-mode:screen;
 }
-@keyframes l12Sweep { 0%{transform:translateX(0) skewX(-14deg)} 40%{transform:translateX(380%) skewX(-14deg)} 100%{transform:translateX(380%) skewX(-14deg)} }
+@keyframes l12Sweep { 0%{transform:translateX(0) skewX(-14deg)} 50%{transform:translateX(520%) skewX(-14deg)} 100%{transform:translateX(520%) skewX(-14deg)} }
 @keyframes l12HoloShift { 0%,100%{background-position:50% 0%} 50%{background-position:50% 100%} }
 @keyframes l12FloatY { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-4px)} }
 /* badge di dalam safe-area bingkai — HIDDEN per user request (clean card) */
