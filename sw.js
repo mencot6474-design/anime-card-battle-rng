@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v340-bpBadgesStatsClean';
+const CACHE_NAME = 'anime-card-battle-v341-fixLuckWeatherDeckOutline';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

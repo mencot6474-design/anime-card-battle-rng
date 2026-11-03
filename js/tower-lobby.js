@@ -1658,7 +1658,7 @@ function renderLobby(){
   const _wId = (typeof activeWeatherId === "function") ? activeWeatherId() : null;
   const _w = (_wId && typeof WEATHER !== "undefined" && WEATHER[_wId]) ? WEATHER[_wId] : null;
   const _wLeft = (state.weather && state.weather.endsAt) ? Math.max(0, state.weather.endsAt - _now) : 0;
-  const _wRr = _w ? (String(_w.rarity || _w.tier || "R").toUpperCase()) : "";
+  const _wRr = _w ? (String(_w.rar || _w.rarity || "COMMON").toUpperCase()) : "";
 
   /* MODE HUB — progress asli */
   let _storyBadge = "CH" + ((state.chap || 0) + 1);
@@ -1800,9 +1800,9 @@ function renderLobby(){
               <div class="wx-head">
                 <span class="winfo">
                   <span class="rdot" style="background:${_w ? _w.color : 'var(--cyan)'};"></span>
-                  <i class="ic wic i-sun"></i>
+                  <span class="wic" id="l12WxIcon" style="display:inline-flex;align-items:center;justify-content:center;color:${_w ? _w.color : 'var(--gold)'};">${_w ? ((typeof weatherSvg==='function')?weatherSvg(_w.id,17):'') : ((typeof weatherSvg==='function')?weatherSvg('sunny',17):'<i class="ic i-sun"></i>')}</span>
                   <span class="wname" id="l12WxName">${_w ? String(_w.name || _wId).toUpperCase() : "CLEAR SKY · NO ANOMALY"}</span>
-                  <span class="wrr" id="l12WxRr">${_wRr || "IDLE"}</span>
+                  <span class="wrr" id="l12WxRr" style="${_w ? `border-color:${_w.color};color:${_w.color};background:color-mix(in srgb,${_w.color} 15%,transparent);` : ''}">${_wRr || "IDLE"}</span>
                   <span class="wbuff-chip">${_w ? _w.luckBonus + "× LUCK · " + _w.speedBonus + "× SPD" : "TARGET WEATHER CARDS"}</span>
                 </span>
                 <div class="wtm-wrap">
@@ -1960,6 +1960,62 @@ function renderLobby(){
   _l12Place("slotAuto", "rollAutoBtn", "tgl");
   /* #footAv burger removed from header per user request */
 
+/* ---- LIVE WEATHER DOCK ENGINE (LOBBY V12) ----
+   Menyinkronkan icon vektor SVG, warna, nama, rarity badge, buff chip, dan kartu eksklusif
+   secara instan setiap ada rotasi cuaca / weather potion tanpa menunggu tick. */
+function l12UpdateWeatherDock(force){
+  const wxEl = document.getElementById("l12Wx");
+  if (!wxEl) return;
+  const now = Date.now();
+  const curWxId = (typeof activeWeatherId === "function") ? activeWeatherId() : null;
+  const wLeft = (state && state.weather && state.weather.endsAt) ? Math.max(0, state.weather.endsAt - now) : 0;
+  const tmEl = document.getElementById("l12WxTm");
+  if (tmEl) tmEl.textContent = wLeft ? ((typeof fmtCountdown === "function") ? fmtCountdown(wLeft) : "") : "--:--";
+
+  if (!force && curWxId === _lastWxId) return;
+  _lastWxId = curWxId;
+
+  const curW = (curWxId && typeof WEATHER !== "undefined" && WEATHER[curWxId]) ? WEATHER[curWxId] : null;
+  const wColor = curW ? curW.color : "var(--cyan)";
+  const wName = curW ? String(curW.name || curWxId).toUpperCase() : "CLEAR SKY · NO ANOMALY";
+  const wRar = curW ? String(curW.rar || curW.rarity || "COMMON").toUpperCase() : "IDLE";
+  const wBuff = curW ? (curW.luckBonus + "× LUCK · " + curW.speedBonus + "× SPD") : "TARGET WEATHER CARDS";
+
+  const nameEl = document.getElementById("l12WxName");
+  if (nameEl) nameEl.textContent = wName;
+
+  const rrEl = document.getElementById("l12WxRr");
+  if (rrEl) {
+    rrEl.textContent = wRar;
+    rrEl.style.borderColor = curW ? curW.color : "rgba(251,113,133,.5)";
+    rrEl.style.color = curW ? curW.color : "var(--crimson)";
+    rrEl.style.background = curW ? `color-mix(in srgb, ${curW.color} 15%, transparent)` : "rgba(251,113,133,.12)";
+  }
+
+  const iconEl = document.getElementById("l12WxIcon") || wxEl.querySelector(".wic");
+  if (iconEl) {
+    iconEl.id = "l12WxIcon";
+    iconEl.style.color = curW ? curW.color : "var(--gold)";
+    iconEl.innerHTML = (typeof weatherSvg === "function") ? weatherSvg(curWxId || "sunny", 17) : '<i class="ic i-sun"></i>';
+  }
+
+  const rdot = wxEl.querySelector(".rdot");
+  if (rdot) rdot.style.background = wColor;
+
+  const wchip = wxEl.querySelector(".wbuff-chip");
+  if (wchip) wchip.textContent = wBuff;
+
+  const btnSpan = wxEl.querySelector("#l12WxBtn span");
+  if (btnSpan && state) {
+    btnSpan.textContent = `SYNTH (${(state.potions || 0) + (state.mythicPotions || 0)})`;
+  }
+
+  if (typeof _l12RenderWxCards === "function") {
+    _l12RenderWxCards(curWxId);
+  }
+}
+window.l12UpdateWeatherDock = l12UpdateWeatherDock;
+
   /* ---- TIMER HUD (potion / global luck / weather) ----
      panels.js cuma me-repaint #buffDock/#weatherPanel/#glLobbyWidget miliknya,
      jadi baris v12 ini disegar sendiri dari SUMBER YANG SAMA (luckBuffs(),
@@ -1992,8 +2048,8 @@ function renderLobby(){
     }
 
     // 2. Potion Buffs
-    const lb = (typeof luckBuffs === "function") ? luckBuffs().sort((a, b) => a.lv - b.lv).pop() : null;
-    const sb = (typeof speedBuffs === "function") ? speedBuffs().sort((a, b) => a.lv - b.lv).pop() : null;
+    const lb = (typeof luckBuffs === "function") ? luckBuffs().slice().sort((a, b) => a.lv - b.lv).pop() : null;
+    const sb = (typeof speedBuffs === "function") ? speedBuffs().slice().sort((a, b) => a.lv - b.lv).pop() : null;
     const adMs = (typeof adLuckLeftMs === "function") ? adLuckLeftMs() : 0;
     const win = (typeof WEATHER_MS !== "undefined") ? WEATHER_MS : 300000;
     if (lb) {
@@ -2021,20 +2077,7 @@ function renderLobby(){
     put("l12GlStack", Math.min(10, glOn ? Math.max(1, Math.round((gl.multiplier || 0) / 10)) : 0) + "/10 STACK");
 
     // 4. Weather live check & auto-refresh cards if weather changes
-    const wLeft = (state && state.weather && state.weather.endsAt) ? Math.max(0, state.weather.endsAt - now) : 0;
-    put("l12WxTm", wLeft ? ((typeof fmtCountdown === "function") ? fmtCountdown(wLeft) : "") : "--:--");
-    const curWxId = (typeof activeWeatherId === "function") ? activeWeatherId() : null;
-    if (curWxId !== _lastWxId) {
-      _lastWxId = curWxId;
-      const curW = (curWxId && typeof WEATHER !== "undefined" && WEATHER[curWxId]) ? WEATHER[curWxId] : null;
-      put("l12WxName", curW ? String(curW.name || curWxId).toUpperCase() : "CLEAR SKY · NO ANOMALY");
-      put("l12WxRr", curW ? String(curW.rarity || curW.rar || "COMMON").toUpperCase() : "IDLE");
-      const rdot = document.querySelector("#l12Wx .rdot");
-      if (rdot) rdot.style.background = curW ? curW.color : "var(--cyan)";
-      const wchip = document.querySelector("#l12Wx .wbuff-chip");
-      if (wchip) wchip.textContent = curW ? (curW.luckBonus + "× LUCK · " + curW.speedBonus + "× SPD") : "TARGET WEATHER CARDS";
-      _l12RenderWxCards(curWxId);
-    }
+    l12UpdateWeatherDock();
 
     /* +10x: label, harga, dan status mampu/tidak ikut saldo gem */
     const glCost = (typeof GLOBAL_LUCK_COST !== "undefined") ? GLOBAL_LUCK_COST : 0;
@@ -2268,6 +2311,7 @@ function renderLobby(){
 
   // Render Weather Cards & Roll History
   _l12RenderWxCards(_wId);
+  l12UpdateWeatherDock(true);
   l12PaintRollHist();
   _hookRollHistory();
 }

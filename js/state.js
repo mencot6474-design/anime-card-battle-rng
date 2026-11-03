@@ -1118,7 +1118,7 @@ function renderShell(){
 
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.route===route()));
   try{if(typeof updateProfileLiveNumbers==="function")updateProfileLiveNumbers();}catch(e){}
-  try{renderWeatherDock();renderBuffDock();startWeatherTick();}catch(e){}
+  try{renderWeatherDock();renderBuffDock();startWeatherTick();if(typeof l12UpdateWeatherDock==='function')l12UpdateWeatherDock(true);}catch(e){}
   try{if(typeof startGlobalLuckPoll==='function')startGlobalLuckPoll();}catch(e){}
 }
 

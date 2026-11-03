@@ -40332,7 +40332,7 @@ body.battle-full .fighter.phantom-enter {
 
 
 
-.bp-slot.filled[class*="mut-"]:not(#_bv2),.bp-slot.filled[class*="bp-mut-"]:not(#_bv2),.bp-slot.filled[class*="dp-mut-"]:not(#_bv2),.bp-slot.filled.shiny:not(#_bv2),
+
 
 
 
@@ -40404,19 +40404,7 @@ body.battle-full .fighter.phantom-enter {
 
 
 
-.bp-slot.filled[class*="mut-"]:not(#_bv2)::before,
 
-
-
-.bp-slot.filled[class*="bp-mut-"]:not(#_bv2)::before,
-
-
-
-.bp-slot.filled[class*="dp-mut-"]:not(#_bv2)::before,
-
-
-
-.bp-slot.filled.shiny:not(#_bv2)::before,
 
 
 
@@ -44590,7 +44578,7 @@ body.on-raid:has(.rd-page) .rd-pick-head{padding-right:110px!important;}
 
 /* ===== Glow warna di tepi kartu dihapus (ring/border & shadow gelap tetap) ===== */
 /* 1) Halo mutasi/shiny (0 0 22px var(--mut-glow)) pada semua kartu */
-.bp-slot.filled[class*="mut-"]:not(#_bv2),.bp-slot.filled[class*="bp-mut-"]:not(#_bv2),.bp-slot.filled[class*="dp-mut-"]:not(#_bv2),.bp-slot.filled.shiny:not(#_bv2),
+
 .bp-tile[class*="mut-"]:not(#_bv2),.bp-tile[class*="bp-mut-"]:not(#_bv2),.bp-tile[class*="dp-mut-"]:not(#_bv2),.bp-tile.shiny:not(#_bv2),
 .lobby-hub #hubCard[class*="mut-"]:not(#_bv2),.lobby-hub #hubCard[class*="bp-mut-"]:not(#_bv2),.lobby-hub #hubCard.shiny:not(#_bv2),
 .hub-center[class*="mut-"]:not(#_bv2),.hub-center[class*="bp-mut-"]:not(#_bv2),.hub-center[class*="dp-mut-"]:not(#_bv2),.hub-center.shiny:not(#_bv2),
@@ -55236,13 +55224,28 @@ html.m-landscape #backpackPanel .bp-tiles {
   cursor: pointer !important;
 }
 
-/* SATU OUTLINE TUNGGAL: Matikan ::before foil mask ganda pada tile koleksi & slot deck */
+/* SATU OUTLINE TUNGGAL: Matikan ::before dan ::after foil mask ganda pada tile koleksi & slot deck */
 .backpack-panel .bp-tile::before,
+.backpack-panel .bp-tile::after,
 .backpack-panel .bp-slot.filled::before,
+.backpack-panel .bp-slot.filled::after,
 #backpackPanel .bp-tiles .bp-tile::before,
-#backpackPanel .bp-slot.filled::before {
+#backpackPanel .bp-tiles .bp-tile::after,
+#backpackPanel .bp-slot.filled::before,
+#backpackPanel .bp-slot.filled::after,
+#backpackPanel .bp-slots .bp-slot.filled::before,
+#backpackPanel .bp-slots .bp-slot.filled::after,
+#backpackPanel .bp-slot.filled:not(#_bv2)::before,
+#backpackPanel .bp-slot.filled:not(#_bv2)::after,
+.bp-slot.filled:not(#_bv2)::before,
+.bp-slot.filled:not(#_bv2)::after,
+.bp-slot.filled::before,
+.bp-slot.filled::after {
   content: none !important;
   display: none !important;
+  animation: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 /* Border tunggal bersih untuk kartu mutasi / shiny (warna spesifik sesuai mutasi) */
@@ -55530,29 +55533,53 @@ html.m-landscape #backpackPanel .bp-tiles {
   background: linear-gradient(90deg, #0aa6d6, #19e2ff) !important;
 }
 
-/* 5. DECK AKTIF: POLOSAN ART SAJA */
-.backpack-panel .bp-slot.filled {
+/* 5. DECK AKTIF: POLOSAN ART SAJA (SATU OUTLINE TUNGGAL BERSIH) */
+.backpack-panel .bp-slot.filled,
+#backpackPanel .bp-slots .bp-slot.filled {
   position: relative !important;
   aspect-ratio: 1/1 !important;
   border-radius: 12px !important;
   overflow: hidden !important;
-  border: 2px solid var(--tcol, rgba(125,249,255,.35)) !important;
+  border: 1.5px solid var(--tcol, rgba(125,249,255,.35)) !important;
+  outline: none !important;
   background: #0d131f !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
 }
 
-.backpack-panel .bp-slot.filled:hover {
+.backpack-panel .bp-slot.filled[class*="bp-mut-"],
+.backpack-panel .bp-slot.filled[class*="mut-"],
+.backpack-panel .bp-slot.filled.shiny,
+#backpackPanel .bp-slots .bp-slot.filled[class*="bp-mut-"],
+#backpackPanel .bp-slots .bp-slot.filled[class*="mut-"],
+#backpackPanel .bp-slots .bp-slot.filled.shiny {
+  border: 1.5px solid var(--tcol, #7DF9FF) !important;
+  outline: none !important;
+}
+
+.backpack-panel .bp-slot.filled:hover,
+#backpackPanel .bp-slots .bp-slot.filled:hover {
   border-color: #7DF9FF !important;
   box-shadow: 0 8px 20px rgba(0,0,0,0.7), 0 0 12px rgba(125,249,255,0.3) !important;
 }
 
-.backpack-panel .bp-slot .bps-art-wrap {
+.backpack-panel .bp-slot .bps-art-wrap,
+#backpackPanel .bp-slots .bp-slot .bps-art-wrap {
   position: absolute !important;
   inset: 0 !important;
   width: 100% !important;
   height: 100% !important;
   border-radius: inherit !important;
   overflow: hidden !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.backpack-panel .bp-slot .bps-corner,
+#backpackPanel .bp-slots .bp-slot .bps-corner {
+  display: none !important;
+  content: none !important;
+  border: none !important;
 }
 
 .backpack-panel .bp-slot .bps-art-wrap img {

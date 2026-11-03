@@ -73,6 +73,9 @@ function weatherSvg(id, sz=18){
       return `<svg class="w-svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M8 19v2M8 13v2M12 21v2M12 15v2M16 19v2M16 13v2"/></svg>`;
     case "windy": // Wind gusts
       return `<svg class="w-svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>`;
+    case "sunny":
+    case "clear":
+      return `<svg class="w-svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>`;
     default:
       return `<svg class="w-svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>`;
   }
@@ -174,6 +177,8 @@ function useWeatherPotion(){
   state.potions--;
   const r=applyPotionRoll(potionWeatherRoll());
   save();
+  if(typeof l12UpdateWeatherDock === 'function') l12UpdateWeatherDock(true);
+  if(typeof renderWeatherDock === 'function') renderWeatherDock();
   return {ok:true,kept:r.kept,weather:r.weather};
 }
 /* Mythic Weather Potion: aturan gacha sama, tapi AWAKENED chance 3%. */
@@ -182,6 +187,8 @@ function useMythicWeatherPotion(){
   state.mythicPotions--;
   const r=applyPotionRoll(potionWeatherRoll({boostAwakened:true}));
   save();
+  if(typeof l12UpdateWeatherDock === 'function') l12UpdateWeatherDock(true);
+  if(typeof renderWeatherDock === 'function') renderWeatherDock();
   return {ok:true,kept:r.kept,weather:r.weather};
 }
 const WEATHER_POTION_PRICE=5000;
@@ -195,12 +202,14 @@ const SPEED_POTS=[null,{add:0.2},{add:0.5},{add:1.0}];
 function activeLuckBuff(){return luckBuffs().reduce((s,b)=>s+(b.flat||0),0);}
 function activeLuckBuffPct(){return luckBuffs().reduce((s,b)=>s+(b.pct||0),0);}
 function activeSpeedBuff(){return speedBuffs().reduce((s,b)=>s+(b.add||0),0);}
-function luckBuffs(){if(!state||!Array.isArray(state.luckBuffs))return[];const now=Date.now();state.luckBuffs=state.luckBuffs.filter(b=>b&&b.endsAt>now);return state.luckBuffs;}
-function speedBuffs(){if(!state||!Array.isArray(state.speedBuffs))return[];const now=Date.now();state.speedBuffs=state.speedBuffs.filter(b=>b&&b.endsAt>now);return state.speedBuffs;}
+function luckBuffs(){if(!state||!Array.isArray(state.luckBuffs))return[];const now=Date.now();state.luckBuffs=state.luckBuffs.filter(b=>b&&b.endsAt>now);return state.luckBuffs.slice();}
+function speedBuffs(){if(!state||!Array.isArray(state.speedBuffs))return[];const now=Date.now();state.speedBuffs=state.speedBuffs.filter(b=>b&&b.endsAt>now);return state.speedBuffs.slice();}
 function useLuckPotion(lv,n){
   lv=Math.max(1,Math.min(3,lv|0));n=Math.max(1,n|0);
   const def=LUCK_POTS[lv];
-  if(!state||!def||(state.luckPots[lv-1]||0)<n)return{ok:false,reason:"NO_POTION"};
+  if(!state||!def)return{ok:false,reason:"NO_POTION"};
+  if(!Array.isArray(state.luckPots))state.luckPots=[0,0,0];
+  if((state.luckPots[lv-1]||0)<n)return{ok:false,reason:"NO_POTION"};
   state.luckPots[lv-1]-=n;
   const now=Date.now();
   if(!Array.isArray(state.luckBuffs))state.luckBuffs=[];
@@ -216,7 +225,9 @@ function useLuckPotion(lv,n){
 function useSpeedPotion(lv,n){
   lv=Math.max(1,Math.min(3,lv|0));n=Math.max(1,n|0);
   const def=SPEED_POTS[lv];
-  if(!state||!def||(state.speedPots[lv-1]||0)<n)return{ok:false,reason:"NO_POTION"};
+  if(!state||!def)return{ok:false,reason:"NO_POTION"};
+  if(!Array.isArray(state.speedPots))state.speedPots=[0,0,0];
+  if((state.speedPots[lv-1]||0)<n)return{ok:false,reason:"NO_POTION"};
   state.speedPots[lv-1]-=n;
   const now=Date.now();
   if(!Array.isArray(state.speedBuffs))state.speedBuffs=[];
@@ -307,6 +318,7 @@ function _l12_end_pot(){
    weatherOnly (gaya index, hover reveal penuh) di tengah, buff luck/rollspeed di bawah.
    Nongol cuma pas weather aktif. Dipanggil tiap renderShell & tick detik. */
 function renderWeatherDock(){
+  if(typeof l12UpdateWeatherDock === 'function') l12UpdateWeatherDock(true);
   const panel=document.getElementById("weatherPanel");if(!panel)return;
   const id=activeWeatherId();const w=id?WEATHER[id]:null;
   const cards=MASTER_CARD_INDEX.filter(c=>c.weatherOnly===id);
@@ -605,7 +617,9 @@ function startWeatherTick(){
     const staleDock=!!_wp&&_wp.dataset.wid!==expectedWid;
     if((!hadActive&&state.weather)||staleDock){
       renderWeatherDock();renderBuffDock();renderShell();
+      if(typeof l12UpdateWeatherDock === 'function') l12UpdateWeatherDock(true);
     }else{
+      if(typeof l12UpdateWeatherDock === 'function') l12UpdateWeatherDock();
       const wp=document.querySelector(".wp-timer-val");if(wp&&state.weather)wp.textContent=fmtCountdown(state.weather.endsAt-Date.now());
       let buffExpired=false;
       document.querySelectorAll(".bd-badge").forEach(b=>{
