@@ -15201,8 +15201,7 @@ body.battle-full .fighter.foe.ko {
   text-align: center;
   overflow: hidden;
   max-height:85vh!important;
-  overflow-y:auto!important;
-  overflow:scroll!important;
+  overflow:hidden!important;
 }
 .bpholo-glow{position:absolute;inset:0;border-radius:inherit;pointer-events:none;
   background:radial-gradient(ellipse at 50% 30%,color-mix(in srgb,var(--holo-tone,#7DF9FF) 8%,transparent),transparent 70%);z-index:0}
