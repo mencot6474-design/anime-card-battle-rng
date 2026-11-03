@@ -17026,7 +17026,7 @@ body.battle-full .fighter .f-body{
   -webkit-backdrop-filter:none !important;
   backdrop-filter:none !important;
 }
-.glcf-backdrop{background:rgba(0,0,0,.9)}
+.glcf-backdrop{background:rgba(0,0,0,.95)!important}
 
 body:has(#indexModal.show, #skillPop.show, #premiumModal.show, #traitModal.show,
         #weatherMachineModal.show, #missionModal.show, #startModal.show, #dailyModal.show,
