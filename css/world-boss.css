@@ -2514,36 +2514,12 @@ html.m-portrait  #wbView .wbv2-lb-modal{ bottom: calc(var(--nav-h, 60px) + var(-
 #wbView.wbv2 .wbv2-sm{ font-size:10.5px }
 
 /* ---------- LANDSCAPE PENDEK: pita full-width + 3 pane berisi + rail reward ---------- */
+/* Landscape: tetap column layout (topbar atas, boss tengah, dock bawah) — sama seperti portrait */
 @media (orientation:landscape){
-  #wbView.wbv2{ flex-direction:row }
-  #wbView.wbv2 .wbv2-subbar{ position:absolute; top:0; left:0; right:0; z-index:6; order:0;
-    padding:3px 10px; font-size:8px; letter-spacing:0; border-bottom:1px solid var(--line) }
-  #wbView.wbv2 .wbv2-subbar .wbv2-reset{ font-size:8px; letter-spacing:0 }
-  #wbView.wbv2 .wbv2-meta{ max-width:22vw }
-  #wbView.wbv2 .wbv2-stage{ flex:1 1 auto; min-width:0; min-height:0; padding:26px 6px 6px }
-  #wbView.wbv2 .wbv2-dock{ flex:none; width:236px; border-top:0; border-left:1px solid var(--line);
-    display:flex; flex-direction:column; justify-content:space-evenly; padding-top:26px;
-    padding-bottom:18px }  /* band 18px = tempat .wbv2-hammer-meta turun baris di dock 236px
-                              (box 176,8px < label terpanjang 183,8px) tanpa menyentuh HAMBAT */
-  #wbView.wbv2 .wbv2-col{ flex:0 0 150px; min-width:0; gap:6px; align-items:stretch }
-  #wbView.wbv2 .wbv2-eyebrow{ font-size:9px }
-  #wbView.wbv2 .wbv2-tabs{ flex-direction:row; gap:4px }
-  #wbView.wbv2 .wbv2-tab{ flex:1; min-height:44px; font-size:9px }
-  #wbView.wbv2 .wbv2-gauge{ margin:0 }
-  /* 1 info 1 tempat PER orientasi: node reward mati di landscape, rail yang hidup */
-  #wbView.wbv2 .wbv2-gauge .wbv2-gnode{ display:none }
-  #wbView.wbv2 .wbv2-artwrap{ flex:0 0 auto; width:auto; height:100%; min-height:0;
-    aspect-ratio:var(--ar,0.732) }
-  #wbView.wbv2 .wbv2-bossart{ flex:0 0 auto; width:auto; height:100%; aspect-ratio:var(--ar,0.732) }
-  #wbView.wbv2 .wbv2-bossart > img{ width:100%; height:100%; left:0; right:auto }
-  #wbView.wbv2 .wbv2-bossname{ font-size:11.5px }
-  #wbView.wbv2 .wbv2-rail{ display:flex }
-  #wbView.wbv2 .wbv2-chip{ font-size:7px; padding:2px 4px }
-  #wbView.wbv2 .wbv2-deckline{ flex-direction:column; align-items:stretch; gap:6px }
-  #wbView.wbv2 .wbv2-deck{ display:grid; grid-template-columns:repeat(2,1fr); gap:5px; width:100% }
-  #wbView.wbv2 .wbv2-cell{ width:auto; height:132px }
-  #wbView.wbv2 .wbv2-actrow{ margin-top:0 }
-  #wbView.wbv2 .wbv2-hammer-meta{ text-align:left }
+  #wbView.wbv2{ flex-direction:column }
+  #wbView.wbv2 .wbv2-stage{ padding:8px 10px }
+  #wbView.wbv2 .wbv2-bossart{ max-height:55vh }
+  #wbView.wbv2 .wbv2-reward-panel,#wbView.wbv2 .wbv2-lb-panel{ display:none }
 }
 @media (max-width:399px){
   #wbView.wbv2 .wbv2-skillbar{ left:6px; top:6px }
@@ -2568,4 +2544,384 @@ html.m-portrait  #wbView .wbv2-lb-modal{ bottom: calc(var(--nav-h, 60px) + var(-
    #crFab — hanya kalau lebarnya cukup (di 320px ruang itu bikin judul menimpa chip papan) */
 @media (min-width:560px){
   #wbView.wbv2 .wbv2-lb-head{ padding-right:112px }
+}
+
+/* =======================================================================================
+   PORT PROTO WB 3D — RONDE 2 (markup renderRaidHub() sudah mirror struktur prototipe)
+   Target: HANYA kelas yang benar-benar dirender js/raid.js renderRaidHub() + helper.
+   Sumber visual: _tmp/proto_wb_3d.html. Rule lama untuk kelas yang sudah dihapus
+   (.wbv2-col/.wbv2-gauge/.wbv2-subbar/.wbv2-bossname) jadi dead code — tidak diganggu.
+   Fungsional dipertahankan: inset nav shell, chrome hide, .wbv2-lb-modal (tidak diubah).
+   NOTE: .wbv2-holorail & .wbv2-particle TIDAK dirender markup → sengaja tidak di-port.
+   ======================================================================================= */
+
+/* ---- Akar: #wbView sudah flex-column (topbar/stage/dock) — cukup tambah bg void-abyss ---- */
+#wbView.wbv2{ background:#020408 }
+
+/* #1 Background void-abyss + slow drift + vignette */
+#wbView.wbv2 .wbv2-bgfx{
+  position:absolute; inset:-40px; z-index:0; pointer-events:none; overflow:hidden;
+  background:url(../assets/bg/lobby-void-abyss.webp) center/cover no-repeat;
+  animation:wbv2BgDrift 30s ease-in-out infinite alternate;
+  filter:brightness(.5) saturate(.7);
+}
+#wbView.wbv2 .wbv2-bgfx::after{
+  content:""; position:absolute; inset:40px; pointer-events:none;
+  background:radial-gradient(ellipse at 50% 45%,transparent 30%,rgba(2,4,8,.7) 70%,rgba(2,4,8,.95) 100%);
+}
+@keyframes wbv2BgDrift{0%{transform:scale(1.05) translate(0,0)}100%{transform:scale(1.08) translate(-15px,-10px)}}
+
+/* #9 Topbar (proto .topbar) */
+#wbView.wbv2 .wbv2-topbar{
+  order:-1; flex:none; display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:14px 24px;
+  background:linear-gradient(to bottom,rgba(2,4,8,.92),rgba(2,4,8,.4),transparent);
+  border-bottom:1px solid rgba(56,189,248,.08); position:relative; z-index:5;
+}
+#wbView.wbv2 .wbv2-tabs{ display:flex; gap:4px }
+#wbView.wbv2 .wbv2-tab{
+  padding:8px 16px; border-radius:6px; border:1px solid var(--line);
+  background:rgba(8,12,22,.6); color:var(--muted); cursor:pointer;
+  font-family:var(--fm); font-size:10px; font-weight:700; letter-spacing:.1em; white-space:nowrap;
+  transition:all .2s; -webkit-appearance:none; appearance:none; min-height:44px;
+}
+#wbView.wbv2 .wbv2-tab:hover{ border-color:rgba(56,189,248,.3); color:var(--ink) }
+#wbView.wbv2 .wbv2-tab.on{
+  background:rgba(56,189,248,.12); border-color:rgba(56,189,248,.5); color:var(--cyan);
+  box-shadow:0 0 12px rgba(56,189,248,.15); text-shadow:0 0 8px rgba(56,189,248,.4);
+}
+/* pool pill (proto .pool-info) */
+#wbView.wbv2 .wbv2-pool{
+  display:flex; align-items:center; gap:10px; font-family:var(--fm); font-size:12px; color:var(--muted);
+  background:rgba(8,12,22,.7); border:1px solid var(--line); border-radius:8px; padding:8px 14px;
+  backdrop-filter:blur(8px); box-shadow:0 2px 12px rgba(0,0,0,.3); white-space:nowrap;
+}
+#wbView.wbv2 .wbv2-pool-k{ color:var(--dim); letter-spacing:.1em }
+#wbView.wbv2 .wbv2-pool b{ color:var(--cyan); font-size:15px; text-shadow:0 0 10px rgba(56,189,248,.5) }
+#wbView.wbv2 .wbv2-sep{ width:1px; height:14px; background:var(--line) }
+#wbView.wbv2 .wbv2-reset{ color:var(--dim); font-size:11px }
+
+/* #2/#3 Stage = boss-area + rings */
+#wbView.wbv2 .wbv2-bossarea{
+  flex:1 1 auto; min-height:0; position:relative; display:flex; align-items:center; justify-content:center;
+  perspective:1400px; overflow:visible; padding:10px;
+}
+#wbView.wbv2 .wbv2-ringwrap{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  pointer-events:none; z-index:1;
+}
+#wbView.wbv2 .wbv2-ring{
+  position:absolute; border-radius:50%; border:1px solid rgba(56,189,248,.15);
+  animation:wbv2RingSpin 20s linear infinite;
+}
+#wbView.wbv2 .wbv2-ring.wbv2-r1{ width:110%; height:110%; border-color:rgba(56,189,248,.1); animation-duration:25s }
+#wbView.wbv2 .wbv2-ring.wbv2-r2{ width:125%; height:125%; border-color:rgba(167,139,250,.08); animation-duration:35s; animation-direction:reverse }
+#wbView.wbv2 .wbv2-ring.wbv2-r3{ width:140%; height:140%; border-color:rgba(56,189,248,.05); animation-duration:45s }
+#wbView.wbv2 .wbv2-ring::before{
+  content:""; position:absolute; top:-3px; left:50%; width:6px; height:6px; border-radius:50%;
+  background:var(--cyan); box-shadow:0 0 8px var(--cyan); opacity:.6;
+}
+#wbView.wbv2 .wbv2-ring.wbv2-r2::before{ background:var(--violet); box-shadow:0 0 8px var(--violet) }
+@keyframes wbv2RingSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* #4 Boss card (proto .boss-card / .boss-frame) */
+#wbView.wbv2 .wbv2-bossart{
+  position:relative; z-index:3; width:min(380px,60vw); aspect-ratio:var(--ar,0.75);
+  max-height:70vh; transform:rotateY(-3deg) rotateX(2deg);
+  transition:transform .4s cubic-bezier(.2,.8,.2,1); border-radius:20px; overflow:visible;
+  flex:none;
+}
+#wbView.wbv2 .wbv2-bossart:hover{ transform:rotateY(0) rotateX(0) scale(1.02) }
+#wbView.wbv2 .wbv2-bossframe{
+  position:absolute; inset:-4px; border-radius:22px; overflow:hidden;
+  border:1.5px solid rgba(56,189,248,.25);
+  box-shadow:0 0 40px rgba(56,189,248,.1),0 0 80px rgba(56,189,248,.05),0 30px 60px rgba(0,0,0,.8);
+  background:rgba(8,12,22,.6);
+}
+#wbView.wbv2 .wbv2-bossframe img{
+  width:100%; height:100%; object-fit:cover; object-position:center top; display:block; border-radius:20px;
+}
+#wbView.wbv2 .wbv2-bossframe::after{
+  content:""; position:absolute; inset:0; border-radius:20px; pointer-events:none;
+  background:linear-gradient(to top,rgba(2,4,8,.85) 0%,rgba(2,4,8,.2) 30%,transparent 55%);
+}
+#wbView.wbv2 .wbv2-bossframe::before{
+  content:""; position:absolute; left:0; right:0; height:30%; top:-35%; z-index:2; pointer-events:none;
+  background:linear-gradient(180deg,transparent,rgba(56,189,248,.12),transparent);
+  animation:wbv2HoloScan 4s ease-in-out infinite;
+}
+@keyframes wbv2HoloScan{0%{top:-35%}50%{top:105%}100%{top:-35%}}
+
+/* #5 HP overlay (proto .hp-overlay) */
+#wbView.wbv2 .wbv2-hp-overlay{
+  position:absolute; bottom:0; left:0; right:0; padding:20px 24px; z-index:4;
+}
+#wbView.wbv2 .wbv2-hp-name{
+  font-size:clamp(18px,3.5vw,26px); font-weight:800; letter-spacing:.02em; text-transform:uppercase;
+  color:#fff; text-shadow:0 2px 12px rgba(0,0,0,.9),0 0 20px rgba(56,189,248,.2); margin-bottom:10px;
+}
+#wbView.wbv2 .wbv2-hpbar{
+  position:relative; height:10px; background:rgba(255,255,255,.06); border-radius:5px; overflow:hidden;
+  border:1px solid rgba(255,255,255,.08);
+}
+#wbView.wbv2 .wbv2-hp-fill{
+  position:absolute; left:0; top:0; bottom:0; display:block; border-radius:5px;
+  background:linear-gradient(90deg,#dc2626,#f97316,#fbbf24);
+  box-shadow:0 0 16px rgba(239,68,68,.5),inset 0 1px 0 rgba(255,255,255,.2);
+  transition:width .6s ease;
+}
+#wbView.wbv2 .wbv2-hp-fill::after{
+  content:""; position:absolute; right:0; top:0; bottom:0; width:3px;
+  background:#fff; box-shadow:0 0 8px #fff; border-radius:2px;
+}
+#wbView.wbv2 .wbv2-hp-nums{
+  display:flex; justify-content:space-between; margin-top:6px;
+  font-family:var(--fm); font-size:11px; color:var(--muted);
+}
+#wbView.wbv2 .wbv2-hp-nums b{ color:var(--ink); text-shadow:0 0 6px rgba(56,189,248,.3) }
+
+/* LB button inside card (proto .lb-btn) */
+#wbView.wbv2 .wbv2-lb{
+  position:absolute; top:12px; right:12px; z-index:5; width:40px; height:40px;
+  display:grid; place-items:center; border-radius:8px;
+  border:1px solid rgba(251,191,36,.3); background:rgba(2,4,8,.7); color:var(--gold);
+  cursor:pointer; backdrop-filter:blur(6px); transition:all .2s; -webkit-appearance:none; appearance:none;
+}
+#wbView.wbv2 .wbv2-lb svg{ width:18px; height:18px }
+#wbView.wbv2 .wbv2-lb:hover{ border-color:rgba(251,191,36,.6); box-shadow:0 0 16px rgba(251,191,36,.2); background:rgba(251,191,36,.1) }
+#wbView.wbv2 .wbv2-lb:active{ transform:scale(.92) }
+
+/* #6 Side panels (proto .side-panel) */
+#wbView.wbv2 .wbv2-reward-panel,
+#wbView.wbv2 .wbv2-lb-panel{
+  position:absolute; top:50%; transform:translateY(-50%); width:220px; z-index:4;
+  background:rgba(8,12,20,.55); border:1px solid rgba(56,189,248,.12); border-radius:12px;
+  padding:14px 16px; backdrop-filter:blur(12px); box-shadow:0 4px 24px rgba(0,0,0,.4);
+}
+#wbView.wbv2 .wbv2-reward-panel{ left:calc(50% - min(190px,30vw) - 270px) }
+#wbView.wbv2 .wbv2-lb-panel{ right:calc(50% - min(190px,30vw) - 270px) }
+#wbView.wbv2 .wbv2-sp-title{
+  font-size:9px; font-weight:700; letter-spacing:.15em; color:var(--dim); text-transform:uppercase;
+  margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid rgba(56,189,248,.1);
+}
+/* reward rows (proto .rw-row) */
+#wbView.wbv2 .wbv2-rw-row{ display:flex; align-items:center; gap:8px; padding:7px 0;
+  border-bottom:1px solid rgba(56,189,248,.05); white-space:nowrap }
+#wbView.wbv2 .wbv2-rw-row:last-child{ border-bottom:none }
+#wbView.wbv2 .wbv2-rw-icon{ width:18px; height:18px; display:flex; align-items:center; justify-content:center;
+  font-size:11px; opacity:.8; flex:none; color:var(--gold) }
+#wbView.wbv2 .wbv2-rw-label{ flex:none; font-size:10px; color:var(--muted); letter-spacing:.03em; width:64px }
+#wbView.wbv2 .wbv2-rw-val{ flex:1; font-family:var(--fm); font-size:9px; color:var(--dim);
+  overflow:hidden; text-overflow:ellipsis }
+/* lb rows (proto .lb-row) */
+#wbView.wbv2 .wbv2-lb-row{ display:flex; align-items:center; gap:8px; padding:6px 0;
+  border-bottom:1px solid rgba(56,189,248,.05) }
+#wbView.wbv2 .wbv2-lb-row:last-child{ border-bottom:none }
+#wbView.wbv2 .wbv2-lb-rank{ font-family:var(--fm); font-size:9px; color:var(--dim); width:16px; text-align:center }
+#wbView.wbv2 .wbv2-lb-rank.wbv2-top{ color:var(--gold) }
+#wbView.wbv2 .wbv2-lb-name{ flex:1; font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+#wbView.wbv2 .wbv2-lb-dmg{ font-family:var(--fm); font-size:10px; color:var(--cyan); font-weight:700 }
+@media(max-width:900px){
+  #wbView.wbv2 .wbv2-reward-panel, #wbView.wbv2 .wbv2-lb-panel{ display:none }
+}
+
+/* #7 Dock (proto .dock / .dock-inner / .dock-rail) */
+#wbView.wbv2 .wbv2-dock{
+  flex:none; padding:0 28px 20px; position:relative; z-index:5; background:transparent;
+}
+#wbView.wbv2 .wbv2-actrow{
+  position:relative; display:flex; align-items:center; gap:14px;
+  background:rgba(8,12,20,.5); border:1px solid rgba(56,189,248,.1); border-radius:12px;
+  padding:14px 18px; overflow:hidden; backdrop-filter:blur(12px);
+}
+#wbView.wbv2 .wbv2-dock-rails{ position:absolute; left:12px; right:12px; top:0; bottom:20px; pointer-events:none; z-index:6 }
+#wbView.wbv2 .wbv2-drail{
+  position:absolute; left:0; right:0; height:1px; opacity:.5;
+  background:linear-gradient(90deg,transparent 5%,rgba(56,189,248,.25) 30%,rgba(56,189,248,.4) 50%,rgba(56,189,248,.25) 70%,transparent 95%);
+  animation:wbv2RailBreathe 4s ease-in-out infinite;
+}
+#wbView.wbv2 .wbv2-drail-top{ top:0 }
+#wbView.wbv2 .wbv2-drail-bot{ bottom:0; animation-delay:2s }
+@keyframes wbv2RailBreathe{0%,100%{opacity:.3}50%{opacity:.7}}
+#wbView.wbv2 .wbv2-hammer-meta{ display:block; text-align:right; margin-top:8px;
+  font-family:var(--fm); font-size:9px; letter-spacing:.08em; color:var(--dim) }
+
+/* crystals (proto .crystals / .crystal) */
+#wbView.wbv2 .wbv2-crystals{ display:flex; gap:7px; align-items:center; padding:8px 14px;
+  clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);
+  background:rgba(56,189,248,.02); border:1px solid rgba(56,189,248,.08) }
+#wbView.wbv2 .wbv2-cr{ width:12px; height:12px; transform:rotate(45deg); border-radius:1px;
+  border:1.5px solid rgba(56,189,248,.4); transition:all .3s; display:inline-block }
+#wbView.wbv2 .wbv2-cr.wbv2-on{ background:linear-gradient(135deg,#7dd3fc,var(--cyan));
+  border-color:var(--cyan); box-shadow:0 0 12px rgba(56,189,248,.6) }
+#wbView.wbv2 .wbv2-cr.wbv2-off{ border-color:rgba(56,189,248,.12); opacity:.3 }
+
+/* stats pills (proto .dock-stats / .stat-pill) */
+#wbView.wbv2 .wbv2-dstats{ display:flex; gap:12px; align-items:center; flex:1; min-width:0 }
+#wbView.wbv2 .wbv2-pill{ display:flex; align-items:center; gap:8px; padding:8px 14px; border-radius:0;
+  background:rgba(56,189,248,.03); border:1px solid rgba(56,189,248,.12);
+  clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);
+  font-family:var(--fm); font-size:12px; color:var(--muted);
+  transition:border-color .2s,box-shadow .2s }
+#wbView.wbv2 .wbv2-pill:hover{ border-color:rgba(56,189,248,.3); box-shadow:0 0 12px rgba(56,189,248,.1) }
+#wbView.wbv2 .wbv2-pill b{ color:var(--ink); font-size:13px; font-weight:700 }
+#wbView.wbv2 .wbv2-unit{ font-size:8px; color:var(--dim); margin-left:2px; letter-spacing:.08em }
+#wbView.wbv2 .wbv2-si{ width:18px; height:18px; flex:none; display:inline-flex; align-items:center; justify-content:center;
+  background-color:var(--ic,var(--cyan)); -webkit-mask:var(--im) center/contain no-repeat; mask:var(--im) center/contain no-repeat }
+
+/* action buttons (proto .btn-shop / .btn-attack) */
+#wbView.wbv2 .wbv2-shopbtn{
+  padding:14px 24px; border:none; cursor:pointer;
+  font-family:var(--fd); font-size:12px; font-weight:700; letter-spacing:.1em;
+  transition:all .15s; -webkit-appearance:none; appearance:none; position:relative; overflow:hidden;
+  text-transform:uppercase;
+  clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));
+  background:rgba(56,189,248,.08); color:var(--cyan);
+}
+#wbView.wbv2 .wbv2-shopbtn:hover{ background:rgba(56,189,248,.25); text-shadow:0 0 8px rgba(56,189,248,.6) }
+#wbView.wbv2 .wbv2-shopbtn:active{ transform:scale(.95) }
+#wbView.wbv2 .wbv2-hammer{
+  padding:14px 26px; border:none; cursor:pointer;
+  font-family:var(--fd); font-size:12px; font-weight:700; letter-spacing:.1em;
+  transition:all .15s; -webkit-appearance:none; appearance:none; position:relative; overflow:hidden;
+  text-transform:uppercase; margin-left:auto;
+  clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);
+  background:linear-gradient(180deg,#ef4444 0%,#b91c1c 60%,#7f1d1d 100%);
+  color:#fff; min-width:140px; text-shadow:0 1px 3px rgba(0,0,0,.6);
+}
+#wbView.wbv2 .wbv2-hammer::before{ content:""; position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent) }
+#wbView.wbv2 .wbv2-hammer::after{ content:""; position:absolute; top:0; left:-100%; width:50%; height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);
+  animation:wbv2BtnSheen 3s ease-in-out infinite }
+#wbView.wbv2 .wbv2-hammer:hover{ filter:brightness(1.15); transform:translateY(-1px) }
+#wbView.wbv2 .wbv2-hammer:active{ transform:scale(.95) }
+#wbView.wbv2 .wbv2-hammer.off{ background:linear-gradient(180deg,#3a3f4a,#262a33); color:var(--dim); opacity:.7 }
+@keyframes wbv2BtnSheen{0%{left:-50%}50%{left:120%}100%{left:120%}}
+
+/* ---- responsive (mirror proto media queries) ---- */
+@media(max-width:500px){
+  #wbView.wbv2 .wbv2-bossart{ width:80vw }
+  #wbView.wbv2 .wbv2-topbar{ padding:10px 14px; flex-wrap:wrap; gap:8px }
+  #wbView.wbv2 .wbv2-dock{ padding:0 14px 14px }
+  #wbView.wbv2 .wbv2-actrow{ flex-wrap:wrap; gap:10px; padding:12px 14px }
+  #wbView.wbv2 .wbv2-dstats{ order:3; width:100% }
+  #wbView.wbv2 .wbv2-hammer{ margin-left:0; flex:1 }
+  #wbView.wbv2 .wbv2-shopbtn{ flex:1 }
+}
+@media(max-height:500px){
+  #wbView.wbv2 .wbv2-bossart{ max-height:55vh }
+  #wbView.wbv2 .wbv2-topbar{ padding:8px 16px }
+  #wbView.wbv2 .wbv2-dock{ padding:0 16px 10px }
+  #wbView.wbv2 .wbv2-actrow{ padding:10px 14px }
+}
+
+/* ---- FIX leak geometri baseline (append-only, menang by source order) ---- */
+#wbView.wbv2 .wbv2-tabs{ display:flex; flex-direction:row; width:auto; min-width:0; flex:none; margin:0; gap:4px }
+#wbView.wbv2 .wbv2-tab{ width:auto; flex:none; text-align:center; font-size:10px; letter-spacing:.1em }
+#wbView.wbv2 .wbv2-bossarea{ flex-direction:row }
+#wbView.wbv2 .wbv2-dock{ border:none; border-radius:0; background-color:transparent }
+
+/* ---- NETRALISIR blok landscape LAMA (2517) agar sesuai prototipe ---- */
+/* Proto tetap flex-COLUMN (topbar atas / kartu tengah / dock bawah), side-panel absolute.
+   Rule lama men-set row + dock 236px kolom di kanan → dibatalkan di sini (menang by order). */
+@media (orientation:landscape){
+  #wbView.wbv2{ flex-direction:column }
+  #wbView.wbv2 .wbv2-stage{ padding:10px }
+  #wbView.wbv2 .wbv2-bossarea{ padding:10px }
+  #wbView.wbv2 .wbv2-dock{ width:auto; flex:none; flex-direction:row; display:block;
+    border-left:none; justify-content:flex-start; padding:0 28px 16px }
+  #wbView.wbv2 .wbv2-bossart{ height:auto; width:min(300px,42vw); max-height:62vh }
+  #wbView.wbv2 .wbv2-actrow{ margin-top:0 }
+  #wbView.wbv2 .wbv2-hammer-meta{ text-align:right }
+  #wbView.wbv2 .wbv2-topbar{ order:-1; position:static }
+}
+
+/* ---- perketat ≤500px: cegah clipping tepi POOL pill & HAMBAT ---- */
+@media(max-width:500px){
+  #wbView.wbv2 .wbv2-topbar{ padding:10px 12px; gap:8px }
+  #wbView.wbv2 .wbv2-pool{ flex-wrap:wrap; font-size:11px; padding:6px 10px; max-width:100%; overflow:hidden }
+  #wbView.wbv2 .wbv2-pool b{ font-size:13px }
+  #wbView.wbv2 .wbv2-reset{ font-size:10px }
+  #wbView.wbv2 .wbv2-tab{ padding:8px 12px; font-size:9px }
+  #wbView.wbv2 .wbv2-dock{ padding:0 12px 12px }
+  #wbView.wbv2 .wbv2-actrow{ padding:10px 12px; gap:8px; flex-wrap:wrap }
+  #wbView.wbv2 .wbv2-crystals{ padding:7px 12px }
+  #wbView.wbv2 .wbv2-pill{ padding:7px 10px; font-size:11px }
+  #wbView.wbv2 .wbv2-pill b{ font-size:12px }
+  #wbView.wbv2 .wbv2-shopbtn{ flex:1 1 auto; min-width:0; padding:12px 14px }
+  #wbView.wbv2 .wbv2-hammer{ flex:1 1 auto; min-width:0; margin-left:0; padding:12px 14px }
+}
+
+/* ---- ≤420px: hapus teks reset & paksa kontrol menyusut (anti-clip) ---- */
+@media(max-width:420px){
+  #wbView.wbv2 .wbv2-topbar{ padding:8px 10px; gap:6px }
+  #wbView.wbv2 .wbv2-reset{ display:none }
+  #wbView.wbv2 .wbv2-sep{ display:none }
+  #wbView.wbv2 .wbv2-pool{ white-space:normal; padding:5px 8px; gap:6px; font-size:10px; min-width:0 }
+  #wbView.wbv2 .wbv2-pool b{ font-size:12px }
+  #wbView.wbv2 .wbv2-tab{ padding:7px 9px; font-size:8.5px; letter-spacing:.06em }
+  #wbView.wbv2 .wbv2-dock{ padding:0 8px 10px }
+  #wbView.wbv2 .wbv2-actrow{ padding:9px 9px; gap:7px }
+  #wbView.wbv2 .wbv2-crystals{ padding:6px 9px; gap:5px }
+  #wbView.wbv2 .wbv2-cr{ width:10px; height:10px }
+  #wbView.wbv2 .wbv2-dstats{ gap:7px }
+  #wbView.wbv2 .wbv2-pill{ padding:6px 8px; gap:5px; font-size:10px; min-width:0 }
+  #wbView.wbv2 .wbv2-pill b{ font-size:11px }
+  #wbView.wbv2 .wbv2-shopbtn,#wbView.wbv2 .wbv2-hammer{ flex:1 1 0; min-width:0; padding:11px 8px; font-size:11px; letter-spacing:.06em }
+}
+
+/* ---- ≤420px layout aman (pool turun baris, tombol 2 baris) ---- */
+@media(max-width:420px){
+  #wbView.wbv2 .wbv2-topbar{ flex-wrap:wrap }
+  #wbView.wbv2 .wbv2-pool{ order:2; flex:1 1 100%; justify-content:flex-start; white-space:normal; min-width:0; width:100% }
+  #wbView.wbv2 .wbv2-tabs{ order:1; flex:0 0 auto }
+  #wbView.wbv2 .wbv2-actrow{ flex-wrap:wrap; overflow:hidden }
+  #wbView.wbv2 .wbv2-crystals{ order:1 }
+  #wbView.wbv2 .wbv2-dstats{ order:2; flex:1 1 auto; width:auto; min-width:0; justify-content:flex-end }
+  #wbView.wbv2 .wbv2-shopbtn{ order:3; flex:1 1 0 }
+  #wbView.wbv2 .wbv2-hammer{ order:4; flex:1 1 0 }
+}
+
+/* ---- ≤420px FINAL: paksa pool baris sendiri + tombol baris sendiri, tanpa clip ---- */
+@media(max-width:420px){
+  #wbView.wbv2 .wbv2-topbar{ display:flex; flex-wrap:wrap; align-items:flex-start }
+  #wbView.wbv2 .wbv2-tabs{ flex:0 0 auto; order:1 }
+  #wbView.wbv2 .wbv2-pool{ flex:0 0 100%; order:2; width:100%; margin-top:6px; justify-content:flex-start;
+    white-space:normal; overflow:visible }
+  #wbView.wbv2 .wbv2-dock{ padding:0 8px 10px }
+  #wbView.wbv2 .wbv2-actrow{ display:flex; flex-wrap:wrap; gap:8px; overflow:visible; padding:10px }
+  #wbView.wbv2 .wbv2-crystals{ flex:0 0 auto; order:1 }
+  #wbView.wbv2 .wbv2-dstats{ flex:1 1 auto; order:2; min-width:0; justify-content:flex-end }
+  #wbView.wbv2 .wbv2-shopbtn{ flex:1 1 40%; order:3; min-width:0 }
+  #wbView.wbv2 .wbv2-hammer{ flex:1 1 40%; order:4; min-width:0; margin-left:0 }
+}
+
+/* ---- FIX akar clip tombol: baseline min-width:140 + flex:0 0 auto bikin teks > kotak ---- */
+/* ≤500: tombol menyusut bebas (min-width:0) + baris sendiri; pool turun baris. Menang by order. */
+@media(max-width:500px){
+  #wbView.wbv2 .wbv2-topbar{ display:flex; flex-wrap:wrap; align-items:center; gap:8px }
+  #wbView.wbv2 .wbv2-tabs{ flex:0 0 auto; order:1 }
+  #wbView.wbv2 .wbv2-pool{ flex:1 1 100%; order:2; width:100%; min-width:0; justify-content:flex-start;
+    white-space:normal; overflow:visible }
+  #wbView.wbv2 .wbv2-actrow{ display:flex; flex-wrap:wrap; gap:8px; overflow:hidden }
+  #wbView.wbv2 .wbv2-crystals{ flex:0 0 auto; order:1 }
+  #wbView.wbv2 .wbv2-dstats{ flex:1 1 auto; order:2; min-width:0; justify-content:flex-end }
+  #wbView.wbv2 .wbv2-shopbtn{ flex:1 1 0; order:3; min-width:0; width:auto; padding:12px 10px }
+  #wbView.wbv2 .wbv2-hammer{ flex:1 1 0; order:4; min-width:0; width:auto; margin-left:0; padding:12px 10px;
+    letter-spacing:.04em }
+}
+
+/* ---- ≤420px: TOKO & HAMBAT full-width bertumpuk (mustahil clip horizontal) ---- */
+@media(max-width:420px){
+  #wbView.wbv2 .wbv2-actrow{ flex-wrap:wrap }
+  #wbView.wbv2 .wbv2-shopbtn{ flex:1 1 100%; order:3 }
+  #wbView.wbv2 .wbv2-hammer{ flex:1 1 100%; order:4; width:100% }
+}
+
+/* ---- ≤500px: TOKO & HAMBAT full-width bertumpuk (anti-clip, match di viewport kecil nyata) ---- */
+@media(max-width:500px){
+  #wbView.wbv2 .wbv2-actrow{ flex-wrap:wrap }
+  #wbView.wbv2 .wbv2-shopbtn{ flex:1 1 100%; order:3; width:100% }
+  #wbView.wbv2 .wbv2-hammer{ flex:1 1 100%; order:4; width:100%; margin-left:0 }
 }

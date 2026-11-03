@@ -92,43 +92,6 @@ function fmtBig(n){
    satu aturan CSS `body.on-raid:has(#wbView) #topbar, ... #pwaInstallBtn{display:none!important}`
    menang atas inline non-important tanpa observer body-wide (bayar di battle = salah
    tempat di HP lemah). JS ini HANYA menjaga anchor: body.on-raid + #wbView. */
-/* Modifier harian (d.modifier dari RPC wb_state / wbStart) -> satu token pendek,
-   maks 3 kata, tanpa kalimat. String kosong = tidak ada data -> chip tak ditampilkan. */
-function wbModShort(){
-  const d=wbData();
-  const m=d&&d.modifier;
-  if(!m||!m.label)return "";
-  const t=[String(m.label).toUpperCase()];
-  if(m.hp_pct)t.push("HP"+(m.hp_pct>0?"+":"")+m.hp_pct+"%");
-  if(m.atk_pct)t.push("ATK"+(m.atk_pct>0?"+":"")+m.atk_pct+"%");
-  return t.slice(0,3).join(" ");
-}
-function wbModChip(){
-  const el=document.getElementById("wbv2ModChip");
-  if(!el)return;
-  const t=wbModShort();
-  el.textContent=t;
-  el.style.display=t?"":"none";
-}
-/* Token cuaca server berjalan (state.weather + WEATHERS dari panels.js) —
-   data yang tadinya cuma lewat toast float, kini nempel di baris chip. */
-function wbWxToken(){
-  try{
-    const w=state&&state.weather;
-    if(!w||Date.now()>=w.endsAt)return "";
-    const def=(typeof WEATHERS!=="undefined")?WEATHERS.find(x=>x.id===w.id):null;
-    const name=String((def&&def.name)||w.id||"").toUpperCase().replace(/^(CUACA|LIGHT|HEAVY)\s+/,"");
-    const ms=w.endsAt-Date.now(),h=Math.floor(ms/3600e3),m=Math.floor(ms%3600e3/60e3);
-    return name+" "+(h>0?h+"J "+m+"M":m+"M");
-  }catch(e){return "";}
-}
-function wbWxChip(){
-  const el=document.getElementById("wbv2WxChip");
-  if(!el)return;
-  const t=wbWxToken();
-  el.textContent=t;
-  el.style.display=t?"":"none";
-}
 function wbPoolVals(i){
   const d=wbData(i);
   const pool=Number(d&&d.hp_pool)||1e10;
@@ -167,29 +130,24 @@ function wbPoolHtml(){
     <div class="wbr-pool-foot"><span id="wbrPoolMeta">${meta}</span></div>
   </div>`;
 }
-/* Patch ringan 60 detik ke markup wbv2 — satu-satunya writer selain renderRaidHub/
-   syncBossDOM; semua id di bawah hanya dimiliki renderRaidHub (kontrak §2: satu jalur). */
+/* Patch ringan 60 detik ke markup wbv2 (proto_wb_3d) — writer kedua setelah
+   renderRaidHub/syncBossDOM pada id yang sama; tidak ada writer lain. */
 function wbrPatch(){
-  const b=wbBoss(), d=wbData();
+  const d=wbData();
+  const locked=!!wbBoss().locked;
   const {pool,left}=wbPoolVals();
   const pct=pool>0?left/pool*100:0;
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  const f=document.getElementById("wbv2Gfill");
-  if(f)f.style.height=Math.max(0,Math.min(100,(pool>0?(pool-left)/pool*100:0))).toFixed(1)+"%";
-  set("wbv2HpLeft",fmtBig(left));
-  set("wbv2HpPool",fmtBig(pool));
-  set("wbv2Pct",pct.toFixed(1)+"%");
-  set("wbv2Reset","RESET "+wbResetText());
-  const crys=document.getElementById("wbv2Crystals");
-  if(crys)crys.innerHTML=wbCrystalsHtml();
+  const f=document.getElementById("wbv2HpFill");
+  if(f)f.style.width=locked?"0%":Math.max(0,Math.min(100,pct)).toFixed(1)+"%";
+  set("wbv2HpLeft",locked?"—":fmtBig(left));set("wbv2HpPool",locked?"—":fmtBig(pool));
+  set("wbv2HpNumLeft",locked?"—":fmtBig(left));set("wbv2HpNumPool",locked?"—":"/ "+fmtBig(pool));
+  set("wbv2Reset","⟳ RESET "+wbResetText());
+  const crys=document.getElementById("wbv2Crystals");if(crys)crys.innerHTML=wbCrystalsHtml();
   set("wbv2Pb",d&&d.best_dmg?fmtBig(d.best_dmg):"—");
   set("wbv2Tok",fmt(state.wbTokens||0));
-  /* gauge + rail dibangun ulang dari pool berjalan — strukturnya kecil (<=15 node) */
-  const g=document.getElementById("wbv2Gauge");if(g)g.innerHTML=wbGaugeHtml();
-  const r=document.getElementById("wbv2Rail");if(r)r.innerHTML=wbRailHtml();
-  set("wbv2CodeRail","PHASE "+wbPhaseCur().cur+"/"+WBV2_PHASES);
-  wbModChip();
-  wbWxChip();
+  const rp=document.getElementById("wbv2LbPanelRows");if(rp)rp.innerHTML=wbLbPanelHtml();
+  wbv2HammerState();
   const m=document.getElementById("wbv2LbModal");
   if(m&&m.classList.contains("show"))wbLbPaint();
 }
@@ -206,64 +164,29 @@ function wbrStartPoll(){
     wbRefresh(true,true).then(()=>wbrPatch()).catch(()=>{});
   },60000);
 }
-/* ===== WB V2 — konstanta & helper markup prototipe proto_wb_v1 (P1 port) =====
-   Fase gauge = segmentasi visual pool 10B (desain terkunci prototipe), progression
-   dihitung dari data pool NYATA. TIPE reward per fase dari jalur klaim nyata
-   (wbClaim membalas gems/tokens/packs/title); NOMINAL per fase tidak punya sumber
-   server -> rail hanya menampilkan tipe + kelas wbv2-mock. */
-const WBV2_PHASES=5;
-const WBV2_PHASE_REWARDS=[
-  {mask:"assets/icons/gems.svg",ic:"var(--cyan)",lab:"GEM"},
-  {mask:"assets/icons/coins.svg",ic:"var(--gold)",lab:"TOKEN"},
-  {mask:"assets/icons/gems.svg",ic:"var(--cyan)",lab:"GEM"},
-  {mask:"assets/icons/card-draw.svg",ic:"var(--crimson)",lab:"PACK"},
-  {mask:"assets/icons/crown.svg",ic:"var(--violet)",lab:"TITLE"}
-];
+/* ===== WB V2 — konstanta & helper markup prototipe _tmp/proto_wb_3d.html ===== */
 function wbEsc(s){const v=String(s==null?"":s);return v.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
-/* URL ikon untuk --im (CSS mask). Wajib absolut: url() relatif di dalam var()
-   diselesaikan Chrome terhadap basis stylesheet (css/...), bukan halaman -> 404. */
+/* URL ikon untuk --im (CSS mask) — url() relatif dalam var() diselesaikan terhadap
+   basis stylesheet, jadi selalu absolut dari dokumen. */
 function wbIconU(p){try{return new URL(p,document.baseURI||location.href).href}catch(e){return p}}
-function wbPhaseCur(){
-  const {pool,left}=wbPoolVals();
-  const per=pool/WBV2_PHASES,broken=Math.max(0,pool-left);
-  return {per,broken,pct:pool>0?Math.max(0,Math.min(100,broken/pool*100)):0,
-    cur:Math.min(WBV2_PHASES,Math.floor(broken/per)+1)};
-}
-function wbGaugeHtml(){
-  const {per,broken,pct,cur}=wbPhaseCur();
-  let h=`<div class="wbv2-gfill" id="wbv2Gfill" style="height:${pct.toFixed(1)}%"></div>`;
-  for(let k=1;k<10;k++)h+=`<i class="wbv2-gtick${k%2?" wbv2-gtick-minor":""}" style="bottom:${k*10}%"></i>`;
-  h+=`<i class="wbv2-gmark" style="bottom:${pct.toFixed(1)}%"></i><span class="wbv2-gph" style="bottom:calc(${pct.toFixed(1)}% + 4px)">F${cur}</span>`;
-  WBV2_PHASE_REWARDS.forEach((r,i)=>{
-    h+=`<span class="wbv2-gnode${broken>=(i+1)*per?" wbv2-broken":""}" data-i="${i}" style="bottom:${(i*100/WBV2_PHASES).toFixed(2)}%;--im:url('${wbIconU(r.mask)}');--ic:${r.ic};--ring:${r.ic}"><span class="wbv2-gi"></span></span>`;
-  });
-  return h;
-}
-function wbRailHtml(){
-  const {per,broken,cur}=wbPhaseCur();
-  let h='<div class="wbv2-rh">REWARD FASE</div>';
-  WBV2_PHASE_REWARDS.forEach((r,i)=>{
-    const p=Math.max(0,Math.min(per,broken-i*per))/per*100;
-    const st=p>=100?"done":p>0?"cur":"lock";
-    h+=`<div class="wbv2-rrow wbv2-rrow-${st} wbv2-mock"><span class="wbv2-ric" style="--im:url('${wbIconU(r.mask)}');--ic:${r.ic}"></span><span class="wbv2-rlb">${r.lab}</span><span class="wbv2-rph">F${i+1}</span><span class="wbv2-rst">${st==="done"?"JEBOL":st==="cur"?"JALAN":"BELUM"}</span></div>`;
-  });
-  h+=`<span class="wbv2-pcode wbv2-pc-rail" id="wbv2CodeRail">PHASE ${cur}/${WBV2_PHASES}</span>`;
-  return h;
-}
-function wbDeckHtml(){
-  const ROLES=["wbv2-lead","wbv2-mid","wbv2-sup","wbv2-res"];
-  const deck=(state&&Array.isArray(state.deck)?state.deck:[null,null,null,null]).slice(0,4);
-  while(deck.length<4)deck.push(null);
-  return deck.map((id,i)=>{
-    const st=id?((state.stacks||[]).find(s=>s.id===id)||null):null;
-    if(st&&CARDS[st.char])return `<div class="wbv2-cell ${ROLES[i]}"><img src="${cardThumb(st.char)}" alt="" width="120" height="180" loading="lazy" decoding="async"><div class="wbv2-cellr">${wbEsc(cardName(st.char))}</div></div>`;
-    return `<div class="wbv2-cell ${ROLES[i]}"><div class="wbv2-cellr">SLOT KOSONG</div></div>`;
-  }).join("");
+/* Bracket reward HARIAN = cermin world_boss_bracket() dari
+   supabase/migrations/0010_wb_reward_rebalance.sql — server satu-satunya otoritas
+   payout; angka ini hanya cermin tampilan. */
+const WBV2_BRACKETS=[
+  {tag:"Top 1",gems:1000,tokens:10000,packs:10,title:"APEX SLAYER"},
+  {tag:"Top 2",gems:500,tokens:5000,packs:5},
+  {tag:"Top 3",gems:250,tokens:2500,packs:3},
+  {tag:"Sisanya",gems:100,tokens:1000,packs:1}
+];
+function wbRewardPanelHtml(){
+  return '<div class="wbv2-sp-title">REWARD HARIAN</div>'+WBV2_BRACKETS.map(b=>
+    `<div class="wbv2-rw-row"><span class="wbv2-rw-icon">${b.tag==="Top 1"?"&#9819;":"&#9679;"}</span><span class="wbv2-rw-label">${b.tag}</span><span class="wbv2-rw-val">+${fmt(b.gems)} Gem · +${fmt(b.tokens)} Tkn · ${b.packs}× Pack${b.title?" · "+b.title:""}</span></div>`
+  ).join("");
 }
 /* Kristal attempt = wbAttOf (dibatasi 3, sama dengan kuota server attempts_used). */
 function wbCrystalsHtml(){
   const n=Math.min(3,wbAttOf(wbBossIdx)||0);
-  return [0,1,2].map(i=>`<span class="wbv2-cr ${i<n?"on":"off"}"></span>`).join("");
+  return [0,1,2].map(i=>`<span class="wbv2-cr${i<n?" wbv2-on":" wbv2-off"}"></span>`).join("");
 }
 function wbv2Dead(){
   const b=wbBoss(),{left}=wbPoolVals();
@@ -276,11 +199,21 @@ function wbv2HammerState(){
   const el=document.getElementById("wbv2Hammer");
   if(el){
     el.classList.toggle("off",dead||!!b.locked);
-    el.innerHTML=`<span class="wbv2-hico" style="--im:url('${wbIconU("assets/icons/sword-spin.svg")}')"></span>${b.locked?"TERKUNCI":dead?(att!=null&&att<=0?"ATTEMPT HABIS":"BOSS TUMBANG"):"HAMBAT"}`;
+    el.textContent=b.locked?"TERKUNCI":dead?(att!=null&&att<=0?"ATTEMPT HABIS":"BOSS TUMBANG"):"HAMBAT";
   }
   const hm=document.getElementById("wbv2HammerMeta");
   if(hm)hm.textContent=b.locked?"BOSS TERKUNCI":dead?(att!=null&&att<=0?"TIDAK BISA DEPLOY · RESET "+wbResetText():"TARGET DEFEATED · RESET "+wbResetText()):`AUTHORIZE COMBAT // ${RAID_TURNS} TURNS`;
 }
+/* Panel TOP DAMAGE (kanan panggung) — data dari wbLbS (jalur get_leaderboard). */
+function wbLbPanelHtml(){
+  if(!wbOnline())return '<div class="wbv2-lb-row"><span class="wbv2-lb-name">LOGIN UNTUK PAPAN GLOBAL</span></div>';
+  if(wbLbS.busy&&!(wbLbS.rows||[]).length)return '<div class="wbv2-lb-row"><span class="wbv2-lb-name">MEMUAT…</span></div>';
+  if(wbLbS.err)return '<div class="wbv2-lb-row"><span class="wbv2-lb-name">SERVER TIDAK MERESPONS</span></div>';
+  const rows=(wbLbS.rows||[]).slice(0,5);
+  if(!rows.length)return '<div class="wbv2-lb-row"><span class="wbv2-lb-name">BELUM ADA PEMBURU</span></div>';
+  return rows.map(r=>`<div class="wbv2-lb-row"><span class="wbv2-lb-rank${(Number(r.rank)||99)<=3?" wbv2-top":""}">${r.rank}</span><span class="wbv2-lb-name">${wbEsc(r.username)}</span><b class="wbv2-lb-dmg">${fmtBig(r.value)}</b></div>`).join("");
+}
+
 /* ---------- modal papan peringkat: SATU-satunya tempat papan (kontrak §2) ----------
    Data: jalur CloudDB.leaderboard (RPC get_leaderboard) yang sudah ada, per papan. */
 const wbLbS={board:null,rows:null,me:null,busy:false,err:false};
@@ -297,7 +230,7 @@ function wbLbFetch(board){
       else{wbLbS.rows=null;wbLbS.err=true;}
     })
     .catch(()=>{wbLbS.busy=false;wbLbS.rows=null;wbLbS.err=true;})
-    .finally(()=>{const m=document.getElementById("wbv2LbModal");if(m&&m.classList.contains("show"))wbLbPaint();});
+    .finally(()=>{const rp0=document.getElementById("wbv2LbPanelRows");if(rp0)rp0.innerHTML=wbLbPanelHtml();const m=document.getElementById("wbv2LbModal");if(m&&m.classList.contains("show"))wbLbPaint();});
 }
 const WBV2_AV_PATH=/^assets\/[A-Za-z0-9._/-]+\.(webp|png|jpg|jpeg)$/;
 function wbLbRowHtml(r,i,you){
@@ -310,6 +243,7 @@ function wbLbRowHtml(r,i,you){
 /* Panggilan SATU-satunya yang menulis daftar papan — dipakai buka modal, pindah
    papan, patch 60s, dan fetch. Tidak ada writer kedua (cacat lama #wbrTop). */
 function wbLbPaint(){
+  const rp0=document.getElementById("wbv2LbPanelRows");if(rp0)rp0.innerHTML=wbLbPanelHtml();
   const body=document.getElementById("wbv2LbBody");
   if(!body)return;
   const meName=(typeof currentUser!=="undefined"&&currentUser)?String(currentUser).toLowerCase():"";
@@ -445,7 +379,7 @@ function raidToast(msg){
 }
 function renderRaid(){
   hoverHide(); /* fix: popup hover picker jangan nyusul ke battle — mouseout gak fire saat DOM di-replace */
-  /* Anchor persembunyian chrome global (lihat catatan P2 di atas wbModShort):
+  /* Anchor persembunyian chrome global (lihat catatan P2 di atas wbPoolVals):
      aturan CSS body.on-raid:has(#wbView) yang bekerja, JS hanya menjaga kelas. */
   document.body.classList.toggle("on-raid",route()==="#/raid");
   if(raidView!=="hub")wbrStopPoll(); else if(window.cgGameplayStop) window.cgGameplayStop();
@@ -468,65 +402,58 @@ function renderRaidHub(){
   const locked=!!b.locked;
   const d=wbData();
   const {pool,left:poolLeft}=wbPoolVals();
-  const broken=pool-poolLeft;
-  const ph=wbPhaseCur();
-  const attLeft=wbAttOf(wbBossIdx);
-  const off=!wbOnline();
-  const sync=!off&&!d;
-  const meta=locked?"BUKA SETELAH UPDATE":off?"LOGIN UNTUK IKUT POOL GLOBAL":sync?(wbErr?"SERVER BELUM SIAP · MAIN LOKAL":"MENGHUBUNGI SERVER…"):`${d.total_players||0} HUNTER · TERKIKIS ${fmtBig(broken)}`;
+  const pct=pool>0?Math.max(0,Math.min(100,poolLeft/pool*100)):0;
   const hpTxt=locked?"—":fmtBig(poolLeft);
-  const threat=locked?"STANDBY":ph.pct>=80?"POOL HAMPIR JEBOL":ph.pct>=40?"PERANG BERJALAN":"FASE AWAL";
-  const dead=wbv2Dead();
-  const tok=state.wbTokens||0;
-  const attTxt=locked||attLeft==null?"—":attLeft+"/3";
-  const tabs=WB_BOSSES.map((x,i)=>`<button class="wbv2-tab${i===wbBossIdx?" on":""}" type="button" data-i="${i}" style="color:${x.holo}">${wbEsc(x.tab||x.name)}</button>`).join("");
+  const poolTxt=locked?"—":fmtBig(pool);
+  const off=!wbOnline();
+  const tabs=WB_BOSSES.map((x,i)=>`<button class="wbv2-tab${i===wbBossIdx?" on":""}" type="button" data-i="${i}">${wbEsc(x.tab||x.name)}</button>`).join("");
   const boards=WB_BOSSES.map(x=>`<button class="wbv2-lbb${x.board===b.board?" on":""}" type="button" data-board="${x.board}">${wbEsc(x.tab||x.name)}</button>`).join("");
   app.innerHTML=`
   <div id="wbView" class="wbv2 rd-page">
     <div class="wbv2-bgfx" aria-hidden="true"><div class="wbv2-sweep"></div></div>
-    <div class="wbv2-subbar">
-      <span class="wbv2-dot"></span><span class="wbv2-reset" id="wbv2Reset">${locked?"RESET —":"RESET "+wbResetText()}</span>
-      <span class="wbv2-ghead"><span class="wbv2-poolic" style="--im:url('${wbIconU("assets/icons/gems.svg")}')"></span><span class="wbv2-gnum"><b id="wbv2HpLeft">${hpTxt}</b><small>/<span id="wbv2HpPool">${locked?"—":fmtBig(pool)}</span></small></span></span>
-      <span class="wbv2-meta" id="wbv2Meta">${meta}</span>
-      <span class="wbv2-pct" id="wbv2Pct">${locked?"":ph.pct.toFixed(1)+"%"}</span>
-      <span class="wbv2-gate">${threat}</span>
+
+    <div class="wbv2-topbar">
+      <div class="wbv2-tabs" id="wbv2Tabs">${tabs}</div>
+      <div class="wbv2-pool">
+        <span class="wbv2-pool-k">POOL</span><b id="wbv2HpLeft">${hpTxt}</b><span>/ <span id="wbv2HpPool">${poolTxt}</span></span>
+        <span class="wbv2-sep"></span>
+        <span class="wbv2-reset" id="wbv2Reset">${locked?"⟳ RESET —":"⟳ RESET "+wbResetText()}</span>
+      </div>
     </div>
 
-    <section class="wbv2-stage">
-      <div class="wbv2-stagebody">
-        <aside class="wbv2-col">
-          <span class="wbv2-eyebrow">WORLD<br>BOSS</span>
-          <div class="wbv2-tabs" id="wbv2Tabs">${tabs}</div>
-          <div class="wbv2-gauge" id="wbv2Gauge">${wbGaugeHtml()}</div>
-          <span class="wbv2-pcode wbv2-pc-col" id="wbv2CodeCol">WB//${wbEsc(b.key.toUpperCase())}·F${ph.cur}</span>
-        </aside>
-        <div class="wbv2-artwrap">
-          <div class="wbv2-bossart" id="wbv2Art">
-            <img id="wbv2BossImg" src="${b.art}" alt="${wbEsc(b.name)}">
-            <span class="wbv2-skillbar">
-              <span class="wbv2-chip"><i class="wbv2-ci" style="--im:url('${wbIconU("assets/icons/flame.svg")}');--ic:var(--cyan)"></i><span id="wbv2Skill">${wbEsc(b.skill)}</span></span>
-              <span class="wbv2-chip"><i class="wbv2-ci" style="--im:url('${wbIconU("assets/icons/crossed-swords.svg")}');--ic:var(--muted)"></i><span id="wbv2TurnsChip">${RAID_TURNS}</span></span>
-              <span class="wbv2-chip wbv2-att"><span id="wbv2AttChip">${attTxt}</span></span>
-              <span class="wbv2-chip wbv2-mod" id="wbv2ModChip"></span>
-              <span class="wbv2-chip wbv2-wx" id="wbv2WxChip"></span>
-            </span>
-            <button class="wbv2-lb" id="wbv2LbBtn" type="button" aria-label="Papan peringkat" title="Papan peringkat"><span class="wbv2-lbi" style="--im:url('${wbIconU("assets/icons/trophy-cup.svg")}')"></span></button>
-            <div class="wbv2-bossname-wrap"><div class="wbv2-bossname" id="wbv2BossName">${wbEsc(b.name)}</div></div>
-            <i class="wbv2-brk wbv2-brk1"></i><i class="wbv2-brk wbv2-brk2"></i><i class="wbv2-brk wbv2-brk3"></i><i class="wbv2-brk wbv2-brk4"></i>
-            <span class="wbv2-mock-corner">FASE MOCK</span>
-          </div>
+    <section class="wbv2-stage wbv2-bossarea">
+      <div class="wbv2-ringwrap" aria-hidden="true"><i class="wbv2-ring wbv2-r1"></i><i class="wbv2-ring wbv2-r2"></i><i class="wbv2-ring wbv2-r3"></i></div>
+
+      <aside class="wbv2-reward-panel" id="wbv2RewardPanel">${wbRewardPanelHtml()}</aside>
+
+      <aside class="wbv2-lb-panel" id="wbv2LbPanel">
+        <div class="wbv2-sp-title">TOP DAMAGE</div>
+        <div id="wbv2LbPanelRows">${wbLbPanelHtml()}</div>
+      </aside>
+
+      <div class="wbv2-bossart" id="wbv2Art">
+        <div class="wbv2-bossframe"><img id="wbv2BossImg" src="${b.art}" alt="${wbEsc(b.name)}"></div>
+        <div class="wbv2-hp-overlay">
+          <div class="wbv2-hp-name" id="wbv2BossName">${wbEsc(b.name)}</div>
+          <div class="wbv2-hpbar"><i class="wbv2-hp-fill" id="wbv2HpFill" style="width:${locked?0:pct.toFixed(1)}%"></i></div>
+          <div class="wbv2-hp-nums"><b id="wbv2HpNumLeft">${hpTxt}</b><span id="wbv2HpNumPool">${locked?"—":"/ "+poolTxt}</span></div>
         </div>
+        <button class="wbv2-lb" id="wbv2LbBtn" type="button" aria-label="Papan peringkat ${wbEsc(b.name)}" title="Papan peringkat"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4z"/><path d="M7 6H4a2 2 0 0 0 2 4h1M17 6h3a2 2 0 0 1-2 4h-1"/></svg></button>
       </div>
     </section>
 
     <section class="wbv2-dock">
+      <div class="wbv2-dock-rails" aria-hidden="true"><i class="wbv2-drail wbv2-drail-top"></i><i class="wbv2-drail wbv2-drail-bot"></i></div>
       <div class="wbv2-actrow">
-        <span class="wbv2-attn"><i class="wbv2-si" style="--im:url('${wbIconU("assets/icons/cut-diamond.svg")}');--ic:var(--cyan)"></i><span class="wbv2-crystals" id="wbv2Crystals">${wbCrystalsHtml()}</span></span>
-        <span class="wbv2-dstats"><span><i class="wbv2-si" style="--im:url('${wbIconU("assets/icons/trophy-cup.svg")}');--ic:var(--gold)"></i><b id="wbv2Pb">${d&&d.best_dmg?fmtBig(d.best_dmg):"—"}</b></span><span><i class="wbv2-si" style="--im:url('${wbIconU("assets/icons/coins.svg")}');--ic:var(--gold)"></i><b id="wbv2Tok">${fmt(tok)}</b></span></span>
-        <button class="wbv2-shopbtn" id="wbv2ShopBtn" type="button"><i class="wbv2-si" style="--im:url('${wbIconU("assets/icons/backpack.svg")}');--ic:var(--cyan)"></i>TOKO</button>
-        <button class="wbv2-hammer${dead||locked?" off":""}" id="wbv2Hammer" type="button"><span class="wbv2-hico" style="--im:url('${wbIconU("assets/icons/sword-spin.svg")}')"></span>${locked?"TERKUNCI":dead?(attLeft!=null&&attLeft<=0?"ATTEMPT HABIS":"BOSS TUMBANG"):"HAMBAT"}</button>
+        <span class="wbv2-crystals" id="wbv2Crystals">${wbCrystalsHtml()}</span>
+        <span class="wbv2-dstats">
+          <span class="wbv2-pill"><i class="wbv2-si" style="--im:url('${wbIconU("assets/icons/trophy-cup.svg")}');--ic:var(--gold)"></i><b id="wbv2Pb">${d&&d.best_dmg?fmtBig(d.best_dmg):"—"}</b><small class="wbv2-unit">DMG</small></span>
+          <span class="wbv2-pill"><i class="wbv2-si" style="--im:url('${wbIconU("assets/icons/coins.svg")}');--ic:var(--cyan)"></i><b id="wbv2Tok">${fmt(state.wbTokens||0)}</b><small class="wbv2-unit">TKN</small></span>
+        </span>
+        <button class="wbv2-shopbtn" id="wbv2ShopBtn" type="button">TOKO</button>
+        <button class="wbv2-hammer${wbv2Dead()?" off":""}" id="wbv2Hammer" type="button">${locked?"TERKUNCI":wbv2Dead()?(wbAttOf(wbBossIdx)!=null&&wbAttOf(wbBossIdx)<=0?"ATTEMPT HABIS":"BOSS TUMBANG"):"HAMBAT"}</button>
       </div>
-      <small class="wbv2-hammer-meta" id="wbv2HammerMeta">${locked?"BOSS TERKUNCI":dead?(attLeft!=null&&attLeft<=0?"TIDAK BISA DEPLOY · RESET "+wbResetText():"TARGET DEFEATED · RESET "+wbResetText()):`AUTHORIZE COMBAT // ${RAID_TURNS} TURNS`}</small>
+      <small class="wbv2-hammer-meta" id="wbv2HammerMeta">${locked?"BOSS TERKUNCI":wbv2Dead()?(wbAttOf(wbBossIdx)!=null&&wbAttOf(wbBossIdx)<=0?"TIDAK BISA DEPLOY · RESET "+wbResetText():"TARGET DEFEATED · RESET "+wbResetText()):`AUTHORIZE COMBAT // ${RAID_TURNS} TURNS`}</small>
     </section>
 
     <div class="wbv2-lb-modal" id="wbv2LbModal" aria-hidden="true">
@@ -574,25 +501,18 @@ function renderRaidHub(){
     document.addEventListener("keydown",wbHubKeyHandler);
   }
 
-  wbModChip();
-  wbWxChip();
   wbRefresh();
   wbrStartPoll();
+  /* panel TOP DAMAGE real-time: muat papan boss aktif lewat jalur nyata. */
+  if(wbOnline())wbLbFetch(b.board);
 }
-/* ---------- sinkron in-place saat ganti boss (satu-satunya writer pane) ----------
-   Cacat lama: menulis #wbStrike yang tidak pernah dirender hub -> kini #wbv2Hammer.
-   b.subtitle tidak ada di WB_BOSSES -> tidak dipakai. */
+/* ---------- sinkron in-place saat ganti boss (satu-satunya writer pane) ---------- */
 function syncBossDOM(){
   const b=wbBoss();
   const locked=!!b.locked;
   const d=wbData();
   const {pool,left:poolLeft}=wbPoolVals();
-  const ph=wbPhaseCur();
-  const attLeft=wbAttOf(wbBossIdx);
-  const off=!wbOnline();
-  const sync=!off&&!d;
-  const meta=locked?"BUKA SETELAH UPDATE":off?"LOGIN UNTUK IKUT POOL GLOBAL":sync?(wbErr?"SERVER BELUM SIAP · MAIN LOKAL":"MENGHUBUNGI SERVER…"):`${d.total_players||0} HUNTER · TERKIKIS ${fmtBig(pool-poolLeft)}`;
-  const threat=locked?"STANDBY":ph.pct>=80?"POOL HAMPIR JEBOL":ph.pct>=40?"PERANG BERJALAN":"FASE AWAL";
+  const pct=pool>0?Math.max(0,Math.min(100,poolLeft/pool*100)):0;
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
 
   document.querySelectorAll("#wbv2Tabs .wbv2-tab").forEach((t,i)=>t.classList.toggle("on",i===wbBossIdx));
@@ -607,27 +527,22 @@ function syncBossDOM(){
     if(img.complete&&img.naturalWidth)setAR();
   }
   set("wbv2BossName",b.name);
-  set("wbv2Skill",b.skill);
-  set("wbv2TurnsChip",String(RAID_TURNS));
-  set("wbv2AttChip",locked||attLeft==null?"—":attLeft+"/3");
-  set("wbv2CodeCol","WB//"+b.key.toUpperCase()+"·F"+ph.cur);
+  const f=document.getElementById("wbv2HpFill");
+  if(f&&!locked)f.style.width=pct.toFixed(1)+"%";
+  if(locked&&f)f.style.width="0%";
   set("wbv2HpLeft",locked?"—":fmtBig(poolLeft));
   set("wbv2HpPool",locked?"—":fmtBig(pool));
-  set("wbv2Pct",locked?"":ph.pct.toFixed(1)+"%");
-  set("wbv2Meta",meta);
-  set("wbv2Reset",locked?"RESET —":"RESET "+wbResetText());
-  const gate=document.querySelector(".wbv2-gate");if(gate)gate.textContent=threat;
-  const g=document.getElementById("wbv2Gauge");if(g)g.innerHTML=wbGaugeHtml();
-  const r=document.getElementById("wbv2Rail");if(r)r.innerHTML=wbRailHtml();
+  set("wbv2HpNumLeft",locked?"—":fmtBig(poolLeft));
+  set("wbv2HpNumPool",locked?"—":"/ "+fmtBig(pool));
+  set("wbv2Reset",locked?"⟳ RESET —":"⟳ RESET "+wbResetText());
   const crys=document.getElementById("wbv2Crystals");if(crys)crys.innerHTML=wbCrystalsHtml();
   set("wbv2Pb",d&&d.best_dmg?fmtBig(d.best_dmg):"—");
   const lk=document.getElementById("wbv2LbBtn");if(lk)lk.setAttribute("aria-label","Papan peringkat "+b.name);
+  const rp=document.getElementById("wbv2LbPanelRows");if(rp)rp.innerHTML=wbLbPanelHtml();
   wbv2HammerState();
-  wbModChip();
-  wbWxChip();
-  /* papan per-boss: kalau modal terbuka, muat papan boss baru lewat jalur nyata. */
-  const m=document.getElementById("wbv2LbModal");
-  if(m&&m.classList.contains("show"))wbLbFetch(b.board);
+  /* papan per-boss: panel + modal ikut papan boss baru lewat jalur nyata. */
+  if(wbOnline())wbLbFetch(b.board);
+  else{const m=document.getElementById("wbv2LbModal");if(m&&m.classList.contains("show"))wbLbPaint();}
 }
 /* ---------- ganti boss: satu jalur aksi (tab & swipe memanggil setBoss) ---------- */
 function setBoss(i){
