@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v362-railFlow';
+const CACHE_NAME = 'anime-card-battle-v363-cleanCard';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

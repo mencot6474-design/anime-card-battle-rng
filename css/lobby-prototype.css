@@ -5981,24 +5981,38 @@ body.on-battle #topbar {
 .l12 .hero .frm { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:6; }
 .l12 .sheen { position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:4; clip-path:var(--sil); }
 .l12 .sheen::after {
-  content:''; position:absolute; top:-20%; bottom:-20%; left:-60%; width:36%;
-  background:linear-gradient(105deg,transparent,rgba(255,255,255,.13),transparent);
-  animation:l12Sweep 7s linear infinite;
+  content:''; position:absolute; top:-20%; bottom:-20%; left:-60%; width:42%;
+  background:linear-gradient(105deg,
+    transparent 0%,
+    rgba(0,240,255,.06) 18%,
+    rgba(180,120,255,.12) 30%,
+    rgba(255,255,255,.28) 44%,
+    rgba(255,255,255,.42) 50%,
+    rgba(125,249,255,.18) 58%,
+    rgba(255,43,214,.10) 70%,
+    transparent 100%);
+  animation:l12Sweep 5.5s cubic-bezier(.4,0,.2,1) infinite;
+  filter:blur(1px);
 }
-@keyframes l12Sweep { 0%{transform:translateX(0) skewX(-14deg)} 45%{transform:translateX(430%) skewX(-14deg)} 100%{transform:translateX(430%) skewX(-14deg)} }
+.l12 .sheen::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(160deg,
+    transparent 20%,
+    rgba(0,240,255,.04) 35%,
+    rgba(180,120,255,.06) 50%,
+    rgba(0,240,255,.03) 65%,
+    transparent 80%);
+  background-size:100% 300%;
+  animation:l12HoloShift 8s ease-in-out infinite;
+  mix-blend-mode:screen;
+}
+@keyframes l12Sweep { 0%{transform:translateX(0) skewX(-14deg)} 40%{transform:translateX(380%) skewX(-14deg)} 100%{transform:translateX(380%) skewX(-14deg)} }
+@keyframes l12HoloShift { 0%,100%{background-position:50% 0%} 50%{background-position:50% 100%} }
 @keyframes l12FloatY { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-4px)} }
-/* badge di dalam safe-area bingkai (hindari clamp sudut + mahkota atas) */
+/* badge di dalam safe-area bingkai — HIDDEN per user request (clean card) */
 .l12 .hero .nm, .l12 .hero .rr, .l12 .hero .pwr, .l12 .hero .traits {
-  position:absolute; z-index:7; display:flex; align-items:center;
-  font-family:var(--tac); letter-spacing:.06em;
-  background:rgba(6,9,18,.9); border:1px solid var(--hair); color:var(--ice);
+  display:none!important;
 }
-.l12 .hero .nm { left:7%; top:11%; height:18px; padding:0 7px; font-size:9px; max-width:54%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.l12 .hero .rr { right:7%; top:11%; height:18px; padding:0 7px; font-family:var(--mono); font-size:9px; font-weight:700; background:var(--gold); color:#1a1200; border-color:rgba(0,0,0,.25); }
-.l12 .hero .pwr { left:7%; bottom:12%; height:20px; padding:0 7px; gap:5px; font-family:var(--mono); font-size:11px; color:var(--white); }
-.l12 .hero .pwr i { font-style:normal; font-family:var(--tac); font-size:8px; letter-spacing:.1em; color:var(--silver); }
-.l12 .hero .traits { right:9%; bottom:12%; gap:3px; background:none; border:0; flex-wrap:wrap; justify-content:flex-end; width:59%; }
-.l12 .hero .traits i { height:16px; padding:0 5px; display:flex; align-items:center; font-style:normal; font-size:8px; white-space:nowrap; background:rgba(6,9,18,.86); border:1px solid rgba(0,240,255,.32); color:var(--ice); }
 
 /* ---- L3 panel info ---- */
 .l12 .panel {
