@@ -1344,26 +1344,19 @@ addEventListener("pagehide",()=>{if(state){save();flushCloudSave();}});
 
 let _wakeupDebounce=0;
 function handleTabWakeup(){
-  /* Debounce: focus+visibilitychange bisa fire bareng, jangan dobel */
   const now=Date.now();
-  if(now-_wakeupDebounce<400)return;
+  if(now-_wakeupDebounce<600)return;
   _wakeupDebounce=now;
   try{ document.body.classList.remove("perf-paused"); }catch(e){}
-  /* UNCONDITIONAL: hide rollOverlay regardless of state.
-     forceResumeRoll below will re-show it properly if auto-roll active. */
+  /* Hide rollOverlay unconditionally — auto-roll's own AFK worker will
+     re-show it on next tick. Don't call forceResumeRoll here (it was
+     re-showing the overlay in broken mid-animation state). */
   try{
     const ov = document.getElementById("rollOverlay");
     if(ov){ ov.style.display="none"; ov.classList.remove("visible"); }
   }catch(e){}
-  /* Clear any stuck modal backdrops */
   try{
     document.querySelectorAll(".modal-backdrop.show").forEach(el=>el.classList.remove("show"));
-  }catch(e){}
-  /* Bangunkan kembali auto roll jika tertidur/stuck di background */
-  try{
-    if(typeof rollState !== "undefined" && rollState && rollState.active){
-      if(typeof window.forceResumeRoll === "function") window.forceResumeRoll();
-    }
   }catch(e){}
 }
 
@@ -1374,7 +1367,6 @@ document.addEventListener("visibilitychange",()=>{
     if(state){save();flushCloudSave();}
   }
 });
-window.addEventListener("focus", handleTabWakeup);
 
 /* =============== HOME (Story) — kini nyatu di layar Lobby ===============
    Daftar bab dibangun jadi helper (chapListHTML/bindChapList) supaya bisa
