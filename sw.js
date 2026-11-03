@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v364-itemPopFix';
+const CACHE_NAME = 'anime-card-battle-v365-compositorSafe';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
