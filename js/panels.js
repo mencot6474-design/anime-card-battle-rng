@@ -1951,7 +1951,7 @@ function bpCardModalSync(){
         <div class="bp-cm-art"><img src="${cardThumb(s.char)}" alt="${cardName(s.char)}" decoding="async"></div>
         <div class="bp-cm-info">
           <div class="bp-cm-name"${mut?` style="color:${MUT_COLOR[mut]||'#7DF9FF'}"`:''}>${cardName(s.char)}</div>
-          <span class="bp-cm-chip" style="color:${tCol}">${tier}${w?' · '+w.name:''}</span>
+          ${w?`<span class="bp-cm-chip" style="color:${tCol}">${w.name}</span>`:''}
           ${mutLbl}
           <div class="bp-cm-stats">
             ${stat('ATK',fmtStat(st.atk))}
