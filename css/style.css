@@ -49493,6 +49493,309 @@ html.fps-locked .bp-fchip{
   }
 }
 
+/* ==========================================================================
+   REBIRTH ASCENSION PROTOCOL — CINEMATIC CUT-IN OVERLAY & SUPERCHARGE EFFECTS
+   ========================================================================== */
+
+/* 1. Master Overlay Container */
+#rebirthAscensionCutin {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 100005 !important;
+  display: none !important;
+  place-items: center !important;
+  pointer-events: auto !important;
+  padding: 16px !important;
+  box-sizing: border-box !important;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(147, 51, 234, 0.28) 0%, rgba(10, 6, 22, 0.94) 60%, rgba(3, 2, 8, 0.98) 100%),
+    linear-gradient(90deg, rgba(192, 132, 252, 0.04) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(192, 132, 252, 0.04) 1px, transparent 1px),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.3) 0px, rgba(0, 0, 0, 0.3) 1.5px, transparent 1.5px, transparent 3px) !important;
+  background-size: 100% 100%, 28px 28px, 28px 28px, 100% 3px !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  overflow: hidden !important;
+}
+
+#rebirthAscensionCutin.show {
+  display: grid !important;
+  animation: rbCutinFadeIn 0.3s ease-out forwards;
+}
+
+/* Screen flash on burst */
+#rebirthAscensionCutin.flash::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #ffffff;
+  pointer-events: none;
+  z-index: 10;
+  animation: rbScreenFlash 0.6s ease-out forwards;
+}
+
+/* 2. Main Cut-in Card */
+#rebirthAscensionCutin .rb-cutin-card {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: min(92vw, 480px);
+  padding: 32px 24px;
+  box-sizing: border-box;
+  background:
+    radial-gradient(80% 60% at 50% 0%, rgba(192, 132, 252, 0.18) 0%, transparent 70%),
+    linear-gradient(135deg, rgba(20, 12, 34, 0.96) 0%, rgba(8, 5, 16, 0.98) 100%);
+  border: 1.5px solid rgba(192, 132, 252, 0.45);
+  border-radius: 4px;
+  box-shadow: 0 0 40px rgba(147, 51, 234, 0.4), inset 0 0 20px rgba(192, 132, 252, 0.15), 0 20px 60px rgba(0, 0, 0, 0.85);
+  animation: rbCardPop 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Cyberpunk corner brackets pada card */
+#rebirthAscensionCutin .rb-cutin-card::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border: 1px solid transparent;
+  pointer-events: none;
+  background:
+    linear-gradient(to right, #c084fc 12px, transparent 12px) top left,
+    linear-gradient(to bottom, #c084fc 12px, transparent 12px) top left,
+    linear-gradient(to left, #c084fc 12px, transparent 12px) top right,
+    linear-gradient(to bottom, #c084fc 12px, transparent 12px) top right,
+    linear-gradient(to right, #ffd700 12px, transparent 12px) bottom left,
+    linear-gradient(to top, #ffd700 12px, transparent 12px) bottom left,
+    linear-gradient(to left, #ffd700 12px, transparent 12px) bottom right,
+    linear-gradient(to top, #ffd700 12px, transparent 12px) bottom right;
+  background-size: 12px 12px;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 0 6px #c084fc);
+}
+
+/* 3. Eyebrow Tag Pill */
+.rb-cutin-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #c084fc;
+  padding: 4px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(192, 132, 252, 0.5);
+  background: rgba(147, 51, 234, 0.14);
+  box-shadow: 0 0 12px rgba(192, 132, 252, 0.3);
+  margin-bottom: 20px;
+}
+.rb-cutin-pill .rb-pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00f0ff;
+  box-shadow: 0 0 8px #00f0ff;
+  animation: cyberDotPulse 1.2s ease-in-out infinite;
+}
+
+/* 4. Multi-Ring Sigil Spinner */
+.rb-cutin-sigil-wrap {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin: 8px 0 20px;
+  display: grid;
+  place-items: center;
+}
+.rb-cutin-sigil-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px dashed rgba(192, 132, 252, 0.7);
+  box-shadow: 0 0 24px rgba(147, 51, 234, 0.5), inset 0 0 16px rgba(192, 132, 252, 0.2);
+  animation: rbSigilSpin 6s linear infinite;
+}
+.rb-cutin-sigil-ring.r2 {
+  inset: 14px;
+  border: 1.5px dotted rgba(255, 215, 0, 0.7);
+  box-shadow: 0 0 18px rgba(255, 215, 0, 0.4);
+  animation-duration: 4s;
+  animation-direction: reverse;
+}
+.rb-cutin-sigil-ring.r3 {
+  inset: 28px;
+  border: 1.5px solid rgba(0, 240, 255, 0.6);
+  animation-duration: 8s;
+}
+.rb-cutin-core-icon {
+  position: relative;
+  z-index: 2;
+  width: 64px;
+  height: 64px;
+  filter: drop-shadow(0 0 16px #c084fc) drop-shadow(0 0 28px #ffd700);
+  animation: rbSigilChargePulse 1.2s ease-in-out infinite alternate;
+}
+
+/* 5. Title & Typography */
+.rb-cutin-title {
+  margin: 0 0 12px;
+  font-family: var(--font-display, 'Orbitron', 'Rajdhani', sans-serif);
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #fff099 0%, #ffd700 50%, #c084fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 18px rgba(255, 215, 0, 0.65));
+}
+
+/* 6. Cycle Number Giant */
+.rb-cutin-cycle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 16px;
+}
+.rb-cutin-cycle-lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+.rb-cutin-cycle-num {
+  font-family: var(--font-display, 'Orbitron', 'Rajdhani', sans-serif);
+  font-size: 42px;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: 0.08em;
+  color: #ffd700;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(192, 132, 252, 0.5), 0 2px 4px rgba(0, 0, 0, 0.9);
+}
+
+/* 7. Multiplier Benefit Banner */
+.rb-cutin-mult {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 12px 16px;
+  box-sizing: border-box;
+  background: rgba(147, 51, 234, 0.12);
+  border: 1px solid color-mix(in srgb, #c084fc 50%, #00f0ff 40%);
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(147, 51, 234, 0.25), inset 0 0 12px rgba(0, 240, 255, 0.08);
+}
+.rb-cutin-mult-val {
+  font-family: var(--font-display, 'Orbitron', 'Barlow Condensed', sans-serif);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+}
+.rb-cutin-mult-val .rb-arrow {
+  color: #00f0ff;
+  margin: 0 6px;
+  text-shadow: 0 0 8px #00f0ff;
+}
+.rb-cutin-mult-val .rb-new {
+  color: #ffd700;
+  font-weight: 900;
+  font-size: 17px;
+  text-shadow: 0 0 12px rgba(255, 215, 0, 0.8);
+}
+.rb-cutin-mult-badge {
+  font-family: 'JetBrains Mono', 'Orbitron', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: #4ade80;
+  text-shadow: 0 0 8px rgba(74, 222, 128, 0.7);
+  text-transform: uppercase;
+}
+
+/* 8. Supercharge Effects on Rebirth Modal */
+.rb-sigil-wrap.is-charging {
+  animation: rbSigilChargePulse 0.4s ease-in-out infinite alternate !important;
+}
+.rb-sigil-wrap.is-charging .rb-ring {
+  border-color: #ffd700 !important;
+  animation-duration: 2s !important;
+}
+.rb-execute-btn.is-ascending {
+  filter: brightness(1.2) !important;
+  pointer-events: none !important;
+  box-shadow: 0 0 30px #c084fc, 0 0 50px rgba(255, 215, 0, 0.6) !important;
+  transform: scale(0.98) !important;
+}
+
+/* 9. Keyframe Animations */
+@keyframes rbCutinFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes rbCardPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.85) translateY(20px);
+    filter: brightness(1.8);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.03) translateY(-2px);
+    filter: brightness(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: brightness(1);
+  }
+}
+
+@keyframes rbSigilSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rbSigilChargePulse {
+  0% {
+    filter: drop-shadow(0 0 12px rgba(192, 132, 252, 0.6)) brightness(1);
+    transform: scale(1);
+  }
+  100% {
+    filter: drop-shadow(0 0 32px #ffd700) drop-shadow(0 0 50px #c084fc) brightness(1.35);
+    transform: scale(1.06);
+  }
+}
+
+@keyframes rbScreenFlash {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 
 
 body.on-settings::before,

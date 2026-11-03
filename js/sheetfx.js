@@ -29,7 +29,7 @@ var SHEETS={
 /* ===== PROCEDURAL WEB AUDIO SYNTHESIZER (PGR × SOLO LEVELING SFX) ===== */
 var CyberSfx=(function(){
   var ac=null;
-  function isMuted(){return typeof state!=="undefined" && !!state && !!state.muted;}
+  function isMuted(){return !!(window.state&&window.state.muted);}
   function ctx(){
     if(isMuted())return null;
     if(!ac){
@@ -120,6 +120,34 @@ var CyberSfx=(function(){
       var p=1+(idx||0)*0.15;
       tone({type:"triangle",f1:920*p,f2:260,dur:0.14,gain:0.16});
       noiseBurst({dur:0.1,filterType:"bandpass",freq:2800*p,q:2.5,gain:0.18});
+    },
+    rebirthAscendCharge:function(){
+      var c=ctx();if(!c)return;
+      var t0=c.currentTime, dur=0.5;
+      var osc=c.createOscillator(), flt=c.createBiquadFilter(), g=c.createGain();
+      osc.type="sawtooth";
+      osc.frequency.setValueAtTime(45,t0);
+      osc.frequency.exponentialRampToValueAtTime(220,t0+0.25);
+      osc.frequency.exponentialRampToValueAtTime(480,t0+dur);
+      flt.type="bandpass";
+      flt.frequency.setValueAtTime(90,t0);
+      flt.frequency.exponentialRampToValueAtTime(960,t0+dur);
+      flt.Q.value=3.0;
+      g.gain.setValueAtTime(0.001,t0);
+      g.gain.linearRampToValueAtTime(0.24,t0+0.04);
+      g.gain.setValueAtTime(0.24,t0+dur*0.75);
+      g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+      osc.connect(flt);flt.connect(g);g.connect(c.destination);
+      osc.start(t0);osc.stop(t0+dur+0.02);
+      tone({type:"sine",f1:45,f2:220,dur:0.35,gain:0.2});
+    },
+    rebirthAscendBoom:function(){
+      tone({type:"sine",f1:35,f2:18,dur:0.8,gain:0.45});
+      noiseBurst({dur:0.55,filterType:"lowpass",freq:1400,endFreq:120,q:1.2,gain:0.35});
+      [523,659,784,1046].forEach(function(f,idx){
+        tone({type:"triangle",f1:f,f2:f*1.01,dur:0.48-idx*0.04,gain:0.13,delay:0.045*idx});
+        tone({type:"sine",f1:f,f2:f,dur:0.55,gain:0.08,delay:0.045*idx});
+      });
     },
     /* AudioContext yang dibuat di luar gesture (mis. di dalam setTimeout battle) tetap
        "suspended" di WebView Android → hening. Resume dipicu listener gesture di state.js. */
@@ -527,6 +555,32 @@ window.playOverdriveAoeFx=function(dmg,opts){
       setTimeout(function(){sq.classList.remove("aoe-struck");},480);
     },stepDelay);
   });
+};
+
+/* ===== REBIRTH ASCENSION PROTOCOL VFX ===== */
+window.playRebirthAscensionVfx = function(cx, cy) {
+  ensureFxCanvas();
+  if (typeof cx !== 'number' || typeof cy !== 'number') {
+    cx = window.innerWidth / 2;
+    cy = window.innerHeight / 2;
+  }
+  // 1. Triple shockwave pulse rings: Ungu Ascension, Cyan Quantum, Emas Keberuntungan
+  spawnPulseRing(cx, cy, 280, "#c084fc", 4.0);
+  setTimeout(function(){ spawnPulseRing(cx, cy, 380, "#7df9ff", 3.2); }, 80);
+  setTimeout(function(){ spawnPulseRing(cx, cy, 460, "#ffd700", 2.8); }, 160);
+
+  // 2. Reality Shards burst keluar
+  spawnRealityShards(cx, cy, 32, ["#c084fc", "#e879f9", "#7df9ff", "#ffd700", "#ffffff"]);
+
+  // 3. High density sparks
+  spawnSparks(cx, cy, 45, ["#f5d0fe", "#c084fc", "#7df9ff", "#ffd700", "#ffffff"], { upward: false, maxSpd: 9 });
+
+  // 4. Katana Arc crosstrike flare di tengah
+  spawnKatanaArc(cx, cy, -0.78, "#c084fc", "#ffffff", 200);
+  spawnKatanaArc(cx, cy, 0.78, "#ffd700", "#ffffff", 200);
+
+  // 5. Screen shake intensitas tinggi
+  if (typeof shakeScreen === 'function') shakeScreen(true);
 };
 
 /* ===== STATUS WATCHER — MURNI ORNATE CARD OVERLAYS (.is-frozen / .is-stunned / .is-burning) + CANVAS 2D + CYBERSFX ===== */

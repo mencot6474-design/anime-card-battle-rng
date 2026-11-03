@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v345-instantPackToggleZIndexFix';
+const CACHE_NAME = 'anime-card-battle-v346-rebirthCinematicAnimation';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

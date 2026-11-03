@@ -2924,19 +2924,93 @@ function executeRebirthFromModal(){
     }
     return;
   }
-  doRebirth();
-  const mult = rebirthLuckMult();
-  if (typeof sfx !== 'undefined' && sfx.win) sfx.win();
-  if (typeof toast === 'function') {
-    toast(
-      isEn ? 'ASCENSION SUCCESS!' : 'REBIRTH BERHASIL!',
-      isEn ? ('Luck multiplier increased permanently to ×' + mult) : ('Luck multiplier naik permanen ke ×' + mult),
-      '#c084fc'
-    );
+
+  const oldMult = (typeof rebirthLuckMult === 'function') ? rebirthLuckMult() : 1;
+  const oldCnt = (typeof rebirthCount === 'function') ? rebirthCount() : 0;
+  const nextMult = oldMult + 1;
+  const nextCnt = oldCnt + 1;
+
+  const execBtn = document.getElementById('rbExecBtn');
+  if (execBtn) {
+    execBtn.classList.add('is-ascending');
+    execBtn.disabled = true;
+    const btnSpan = execBtn.querySelector('.reb-btn-content span') || execBtn.querySelector('span');
+    if (btnSpan) btnSpan.textContent = 'ASCENDING...';
   }
-  renderRebirthModal();
-  if (typeof updateRebirthUI === 'function') updateRebirthUI();
-  if (typeof renderShell === 'function') renderShell();
+
+  const sigilWrap = document.querySelector('.rb-sigil-wrap');
+  if (sigilWrap) sigilWrap.classList.add('is-charging');
+
+  if (window.CyberSfx && typeof window.CyberSfx.rebirthAscendCharge === 'function') {
+    window.CyberSfx.rebirthAscendCharge();
+  } else if (typeof playSubBass === 'function') {
+    playSubBass(50, 0.4, 0.3);
+  }
+
+  setTimeout(() => {
+    if (typeof doRebirth === 'function') doRebirth();
+
+    let cutin = document.getElementById('rebirthAscensionCutin');
+    if (!cutin) {
+      cutin = document.createElement('div');
+      cutin.id = 'rebirthAscensionCutin';
+      cutin.className = 'rb-cutin-backdrop';
+      document.body.appendChild(cutin);
+    }
+
+    cutin.innerHTML = `
+      <div class="rb-cutin-card">
+        <div class="rb-cutin-pill"><span class="rb-cutin-dot"></span>SYSTEM OVERRIDE // QUANTUM ASCENSION PROTOCOL</div>
+        <div class="rb-cutin-sigil-ring">
+          <svg viewBox="0 0 100 100" class="rb-cutin-svg">
+            <circle cx="50" cy="50" r="42" stroke="#c084fc" stroke-width="2" stroke-dasharray="6 4" opacity="0.6"/>
+            <circle cx="50" cy="50" r="32" stroke="#ffd700" stroke-width="2.5" stroke-dasharray="10 6"/>
+            <circle cx="50" cy="50" r="20" stroke="#7df9ff" stroke-width="2"/>
+            <circle cx="50" cy="50" r="7" fill="#ffffff"/>
+          </svg>
+        </div>
+        <div class="rb-cutin-title">REBIRTH ASCENSION</div>
+        <div class="rb-cutin-cycle">CYCLE R${nextCnt}</div>
+        <div class="rb-cutin-cycle-sub">${isEn ? 'CONSCIOUSNESS ELEVATED' : 'KESADARAN TINGKAT TINGGI TERCAPAI'}</div>
+        <div class="rb-cutin-mult">
+          <span class="rcm-lbl">LUCK MULTIPLIER:</span>
+          <span class="rcm-val">×${oldMult} <i class="rcm-arr">➔</i> <b>×${nextMult}</b></span>
+          <span class="rcm-badge">+100% PERMANENT BOOST</span>
+        </div>
+      </div>
+    `;
+
+    cutin.classList.add('show');
+
+    if (typeof window.playRebirthAscensionVfx === 'function') {
+      window.playRebirthAscensionVfx(window.innerWidth / 2, window.innerHeight / 2);
+    }
+
+    if (window.CyberSfx && typeof window.CyberSfx.rebirthAscendBoom === 'function') {
+      window.CyberSfx.rebirthAscendBoom();
+    } else if (typeof sfx !== 'undefined' && sfx.win) {
+      sfx.win();
+    }
+
+    setTimeout(() => {
+      if (cutin) cutin.classList.remove('show');
+      if (sigilWrap) sigilWrap.classList.remove('is-charging');
+      if (execBtn) execBtn.classList.remove('is-ascending');
+
+      if (typeof renderRebirthModal === 'function') renderRebirthModal();
+      if (typeof updateRebirthUI === 'function') updateRebirthUI();
+      if (typeof renderShell === 'function') renderShell();
+
+      if (typeof toast === 'function') {
+        toast(
+          isEn ? 'ASCENSION SUCCESS!' : 'REBIRTH BERHASIL!',
+          isEn ? ('Luck multiplier increased permanently to ×' + nextMult) : ('Luck multiplier naik permanen ke ×' + nextMult),
+          '#c084fc'
+        );
+      }
+    }, 2200);
+
+  }, 500);
 }
 
 window.openRebirthModal = openRebirthModal;
