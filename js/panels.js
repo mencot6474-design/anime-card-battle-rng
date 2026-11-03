@@ -1742,12 +1742,6 @@ function bpTileInner(s){
   const chanceText=rarityText(tier,luckChance(s.char,s.mut,s.shiny));
   const fav=s.fav?`<svg class="bpt-fav" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${BP_STAR_PATH}"/></svg>`:'';
 
-  const nameTop=mut&&!s.shiny
-    ?`<span class="hc-name-top bpt-name-txt hc-mut-name" data-text="${String(cName).replace(/"/g,'&quot;')}">${mut==='rainbow'?mutText(mut,cName):cName}</span>`
-    :s.shiny
-    ?`<span class="hc-name-top bpt-name-txt hc-name-shine${mut?' hc-name-shine-'+mut:''}" data-text="${String(cName).replace(/"/g,'&quot;')}" style="${mut==='gold'?'--sh-base:#E0BC6E;--sh-edge:rgba(224,188,110,.95);--sh-glow:rgba(224,188,110,.55)':mut==='rainbow'?'--sh-base:#B58CFF;--sh-edge:rgba(90,200,250,.95);--sh-glow:rgba(181,140,255,.55)':mut==='secret'?'--sh-base:#A855F7;--sh-edge:rgba(168,85,247,.95);--sh-glow:rgba(168,85,247,.55)':mut==='ultima'?'--sh-base:#FF0055;--sh-edge:rgba(255,51,102,.95);--sh-glow:rgba(255,0,85,.6)':'--sh-base:#22d3ee;--sh-edge:rgba(34,211,238,.95);--sh-glow:rgba(34,211,238,.55)'}">${cName}</span>`
-    :shinyName('span','hc-name-top bpt-name-txt','hc-name-shine',mut,s.shiny,cName);
-
   const chanceSpan=`<span class="hc-chance bpt-chance${mut==='rainbow'?' hc-chance-rainbow':''}" style="color:${mut?MUT_COLOR[mut]:((tier&&TIER_COLOR[tier])||"#9AA6B2")}">${mut==='rainbow'?mutText(mut,chanceText):chanceText}</span>`;
 
   const badgesHtml=(mut||trait||s.shiny)
@@ -1757,7 +1751,6 @@ function bpTileInner(s){
   return `<div class="hub-center bp-card-hub${cData.fullArt?' fa':''}${mut?' mut-'+mut:''}${shinyCls(s)}" data-tier="${tier}" style="--tcol:${mut?MUT_COLOR[mut]:((tier&&TIER_COLOR[tier])||'#7DF9FF')}${mut&&!s.shiny?`;border-color:${MUT_COLOR[mut]}`:''};width:100%;height:100%;aspect-ratio:inherit;border-radius:12px;overflow:hidden;position:relative;">
       <div class="hc-img" style="position:relative;width:100%;height:100%;overflow:hidden;border-radius:inherit;">
         <img src="${cardThumb(s.char)}" alt="${cName}" width="360" height="536" loading="lazy" decoding="async"${cData.pos?` style="object-position:${cData.pos}"`:''}>
-        ${nameTop}
         ${chanceSpan}
         ${badgesHtml}
         ${fav}
@@ -1765,7 +1758,7 @@ function bpTileInner(s){
         ${bpIsNew(s)?'<span class="bpt-ndot" aria-hidden="true"></span>':''}
       </div>
       <div class="hc-info">
-        <div class="hc-stats bpt-stats">
+        <div class="hc-stats bpt-stats" style="display:flex;justify-content:center;align-items:center;gap:8px;">
           <div class="hp"><i>HP</i> <b>${fmtStat(st.hp)}</b></div>
           <div class="atk"><i>ATK</i> <b>${fmtStat(st.atk)}</b></div>
         </div>

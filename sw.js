@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v338-bpCardHoverPerfect';
+const CACHE_NAME = 'anime-card-battle-v339-bpCleanBadgesLayout';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

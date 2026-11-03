@@ -4397,34 +4397,16 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   z-index: 5 !important;
 }
 
-.backpack-panel .bpt-hud-foot {
-  position: absolute !important;
-  top: 4px !important;
-  left: 5px !important;
-  right: auto !important;
-  bottom: auto !important;
-  max-width: calc(100% - 34px) !important;
-  background: none !important;
-  padding: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 2px !important;
-  z-index: 6 !important;
-  pointer-events: none !important;
-}
-
+.backpack-panel .bpt-hud-foot,
+.backpack-panel .bp-tile .bpt-hud-foot,
 .backpack-panel .bpt-hud-foot .bpt-name,
-.backpack-panel .bpt-hud-foot .bpt-name-txt {
-  font-family: "Barlow Condensed", var(--font-tac, 'Rajdhani', sans-serif) !important;
-  font-size: 11px !important;
-  font-weight: 800 !important;
-  color: #ffffff !important;
-  text-align: left !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  transform: skewX(-4deg) !important;
-  text-shadow: 1px 1px 0 #0b0e14, 2px 2px 0 #0b0e14, 0 0 8px rgba(0,0,0,0.95), 0 0 14px color-mix(in srgb, var(--tcol, #2F8FE2) 65%, transparent) !important;
+.backpack-panel .bpt-hud-foot .bpt-name-txt,
+.backpack-panel .bp-tile .bpt-name,
+.backpack-panel .bp-tile .bpt-name-txt,
+.backpack-panel .bp-tile .hc-name-top,
+.backpack-panel .bp-tile .hc-name,
+.backpack-panel .bpt-tier-bar {
+  display: none !important;
 }
 
 .backpack-panel .bpt-tier-bar {
@@ -4491,7 +4473,32 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 .backpack-panel .bp-glyph.g-ultima::after { content:""; position:absolute; inset:-45%; background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.9) 50%,transparent 62%); transform:translateX(-150%); opacity:.85; animation:bpShim 2.8s ease-in-out infinite; will-change:transform,opacity; }
 @keyframes bpShim { 0%,8%{transform:translateX(-150%)} 52%,100%{transform:translateX(150%)} }
 /* --- penanda tile: TANPA border/glow; geometri = prototipe (sudut terbagi, no-overlap) --- */
-.backpack-panel .bpt-tier { position:absolute; left:5px; top:5px; z-index:2; font-family:var(--font-mono,monospace); font-size:8.5px; font-weight:700; letter-spacing:.08em; padding:2px 6px; border-radius:6px; color:#08111d; background:rgba(8,14,24,.66); pointer-events:none; }
+.backpack-panel .bpt-tier,
+.backpack-panel .bp-tile .hc-chance,
+.backpack-panel .bp-tile .bpt-chance {
+  position: absolute !important;
+  top: 4px !important;
+  left: 4px !important;
+  right: auto !important;
+  bottom: auto !important;
+  font-family: "Barlow Condensed", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 8.5px !important;
+  letter-spacing: .08em !important;
+  text-transform: uppercase !important;
+  color: var(--tcol, #7DF9FF) !important;
+  padding: 1px 5px !important;
+  border-radius: 3px !important;
+  background: rgba(6,9,14,.92) !important;
+  border: 1px solid currentColor !important;
+  transform: skewX(-4deg) !important;
+  z-index: 5 !important;
+  pointer-events: none !important;
+  line-height: 1.15 !important;
+  white-space: nowrap !important;
+  display: inline-block !important;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.8) !important;
+}
 .backpack-panel .bp-tile .bpt-fav { position:absolute; right:5px; bottom:6px; z-index:6; width:13px; height:13px; border:0; background:none; border-radius:0; padding:0; color:var(--bp-am); filter:drop-shadow(0 1px 3px rgba(0,0,0,.95)); display:block; pointer-events:none; }
 .backpack-panel .bpt-mut { position:absolute; right:5px; top:21px; z-index:2; display:flex; align-items:center; gap:2px; height:13px; padding:0; border:0; background:none; color:var(--mcol,#7DF9FF); pointer-events:none; }
 .backpack-panel .bpt-w { position:absolute; left:5px; bottom:6px; z-index:2; width:13px; height:13px; color:var(--wcol,transparent); filter:drop-shadow(0 1px 3px rgba(0,0,0,.95)); pointer-events:none; }
