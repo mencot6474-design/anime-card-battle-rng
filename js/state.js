@@ -1344,13 +1344,30 @@ addEventListener("pagehide",()=>{if(state){save();flushCloudSave();}});
 
 function handleTabWakeup(){
   try{ document.body.classList.remove("perf-paused"); }catch(e){}
-  /* Pastikan invisible overlay tersembunyi tidak memblokir klik */
+  /* Aggressively dismiss any stuck full-screen overlays that block clicks */
   try{
     const ov = document.getElementById("rollOverlay");
-    if(ov && ov.style.display !== "none" && typeof rollState !== "undefined" && rollState && rollState.hideOverlay){
-      ov.style.display = "none";
+    if(ov && ov.style.display !== "none"){
+      if(typeof rollState === "undefined" || !rollState || !rollState.active || rollState.hideOverlay){
+        ov.style.display = "none";
+      }
     }
   }catch(e){}
+  try{
+    const ip = document.getElementById("itemPop");
+    if(ip) ip.remove();
+  }catch(e){}
+  try{
+    const bd = document.getElementById("drawerBackdrop");
+    if(bd && !document.body.classList.contains("drawer-open")) bd.style.display="none";
+  }catch(e){}
+  try{
+    const ls = document.getElementById("loadingScreen");
+    if(ls && !ls.classList.contains("hidden") && typeof state !== "undefined" && state && !state.battle){
+      ls.classList.add("hidden");
+    }
+  }catch(e){}
+  try{ document.body.style.pointerEvents=""; }catch(e){}
   /* Bangunkan kembali auto roll jika tertidur/stuck di background */
   try{
     if(typeof rollState !== "undefined" && rollState && rollState.active){
