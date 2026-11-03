@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v348-rebirthModalFrontAnimationBehind';
+const CACHE_NAME = 'anime-card-battle-v350-cleanBlankLines';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
