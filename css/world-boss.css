@@ -2519,7 +2519,6 @@ html.m-portrait  #wbView .wbv2-lb-modal{ bottom: calc(var(--nav-h, 60px) + var(-
   #wbView.wbv2{ flex-direction:column }
   #wbView.wbv2 .wbv2-stage{ padding:8px 10px }
   #wbView.wbv2 .wbv2-bossart{ max-height:55vh }
-  #wbView.wbv2 .wbv2-reward-panel,#wbView.wbv2 .wbv2-lb-panel{ display:none }
 }
 @media (max-width:399px){
   #wbView.wbv2 .wbv2-skillbar{ left:6px; top:6px }
@@ -2626,7 +2625,7 @@ html.m-portrait  #wbView .wbv2-lb-modal{ bottom: calc(var(--nav-h, 60px) + var(-
 
 /* #4 Boss card (proto .boss-card / .boss-frame) */
 #wbView.wbv2 .wbv2-bossart{
-  position:relative; z-index:3; width:min(380px,60vw); aspect-ratio:var(--ar,0.75);
+  position:relative; z-index:3; width:min(380px,60vw); aspect-ratio:3/4;
   max-height:70vh; transform:rotateY(-3deg) rotateX(2deg);
   transition:transform .4s cubic-bezier(.2,.8,.2,1); border-radius:20px; overflow:visible;
   flex:none;
@@ -2721,7 +2720,7 @@ html.m-portrait  #wbView .wbv2-lb-modal{ bottom: calc(var(--nav-h, 60px) + var(-
 #wbView.wbv2 .wbv2-lb-rank.wbv2-top{ color:var(--gold) }
 #wbView.wbv2 .wbv2-lb-name{ flex:1; font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
 #wbView.wbv2 .wbv2-lb-dmg{ font-family:var(--fm); font-size:10px; color:var(--cyan); font-weight:700 }
-@media(max-width:900px){
+@media(max-width:600px){
   #wbView.wbv2 .wbv2-reward-panel, #wbView.wbv2 .wbv2-lb-panel{ display:none }
 }
 
