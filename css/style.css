@@ -55235,6 +55235,12 @@ html.m-landscape body.on-settings .sett-wrap {
   border-color: var(--mcol, #7DF9FF) !important;
 }
 
+/* HOVER SEMUA: semua card tampil seperti hover state permanently */
+.backpack-panel .bp-tile:not([class*="bp-mut-"]):not(.shiny),
+.backpack-panel .bp-slot.filled:not([class*="bp-mut-"]):not(.shiny) {
+  border-color: #7DF9FF !important;
+}
+
 /* Hover state: JANGAN tambah box-shadow, cukup brighten border */
 .backpack-panel .bp-tile:hover,
 .backpack-panel .bp-slot.filled:hover {
