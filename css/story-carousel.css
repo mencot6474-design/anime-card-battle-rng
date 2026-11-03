@@ -217,6 +217,7 @@ body:has(#storyModal.show) #pwaInstallBtn {
   padding: 4px 10px;
   border-radius: var(--radius-full);
   min-width: 0;
+  overflow-x: auto;
 }
 #storyModal .chap-nav-btn {
   width: 24px;
