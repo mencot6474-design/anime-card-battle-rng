@@ -1343,63 +1343,18 @@ addEventListener("pagehide",()=>{if(state){save();flushCloudSave();}});
 })();
 
 function handleTabWakeup(){
-  /* Brute-force: find what's blocking clicks at screen center and kill it */
+  try{ document.body.classList.remove("perf-paused"); }catch(e){}
+  /* Pastikan invisible overlay tersembunyi tidak memblokir klik */
   try{
-    const cx=Math.round(window.innerWidth/2), cy=Math.round(window.innerHeight/2);
-    const blocker=document.elementFromPoint(cx,cy);
-    if(blocker){
-      const app=document.getElementById("app");
-      const nav=document.querySelector("nav.m-rail,.m-rail");
-      const isApp=app&&(app===blocker||app.contains(blocker));
-      const isNav=nav&&(nav===blocker||nav.contains(blocker));
-      if(!isApp&&!isNav&&blocker!==document.body&&blocker!==document.documentElement){
-        /* Something unknown is covering the app — nuke it */
-        blocker.style.display="none";
-        blocker.style.pointerEvents="none";
-        /* Also check its parent chain for fixed overlays */
-        let p=blocker.parentElement;
-        while(p&&p!==document.body&&p!==document.documentElement){
-          const cs=getComputedStyle(p);
-          if(cs.position==="fixed"&&p!==app&&!p.contains(app)){
-            p.style.display="none";
-            p.style.pointerEvents="none";
-          }
-          p=p.parentElement;
-        }
-      }
+    const ov = document.getElementById("rollOverlay");
+    if(ov && ov.style.display !== "none" && typeof rollState !== "undefined" && rollState && rollState.hideOverlay){
+      ov.style.display = "none";
     }
   }catch(e){}
-  /* Also sweep known overlays */
+  /* Bangunkan kembali auto roll jika tertidur/stuck di background */
   try{
-    const ov=document.getElementById("rollOverlay");
-    if(ov){ov.classList.remove("visible","mini");ov.style.display="none";}
-  }catch(e){}
-  try{
-    const o2=document.getElementById("overlay");
-    if(o2)o2.classList.remove("show");
-  }catch(e){}
-  try{document.querySelectorAll(".bpholo-backdrop,#itemPop").forEach(el=>el.remove());}catch(e){}
-  try{
-    document.querySelectorAll(".modal-backdrop.show,[id$='Modal'].show,[id$='modal'].show").forEach(el=>el.classList.remove("show"));
-    document.querySelectorAll(".modal-backdrop").forEach(el=>{el.style.display="none";});
-  }catch(e){}
-  try{
-    document.body.classList.remove("drawer-open","bp-open","hide-docks-modal","battle-full","perf-paused");
-    const bd=document.getElementById("drawerBackdrop");if(bd)bd.style.display="none";
-    const bpb=document.getElementById("backpackBackdrop");if(bpb)bpb.style.display="none";
-    const drw=document.getElementById("commandDrawer");if(drw)drw.classList.remove("open");
-  }catch(e){}
-  try{
-    const ls=document.getElementById("loadingScreen");
-    if(ls&&!ls.classList.contains("hidden"))ls.classList.add("hidden");
-  }catch(e){}
-  try{document.body.style.pointerEvents="";document.documentElement.style.pointerEvents="";}catch(e){}
-  /* Rebuild app DOM */
-  try{if(typeof render==="function")render();}catch(e){}
-  /* Resume auto-roll after rebuild */
-  try{
-    if(typeof rollState!=="undefined"&&rollState&&rollState.active&&typeof window.forceResumeRoll==="function"){
-      setTimeout(()=>{try{window.forceResumeRoll();}catch(e){}},300);
+    if(typeof rollState !== "undefined" && rollState && rollState.active){
+      if(typeof window.forceResumeRoll === "function") window.forceResumeRoll();
     }
   }catch(e){}
 }
