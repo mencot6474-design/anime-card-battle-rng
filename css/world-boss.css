@@ -2120,3 +2120,435 @@ html body.on-raid .rd-pick .rd-pick-back,
     padding: 32px 4px 36px 4px !important;
   }
 }
+
+/* =======================================================================================
+   WB HUB v2 — port docs/prototypes/proto_wb_v1.html (commit b393a9f, DIKUNCI user)
+   Divisi ui-css, tiket P2 + P2.1. Satu blok di ujung file; kelas wb- dan wbr- lama utuh.
+   Semua selector di-scope #wbView supaya tidak ada tabrakan cascade dengan hub lama.
+   P2.1: nama kelas = MARKUP ASLI P1 (js/raid.js renderRaidHub + wbLbPaint), diverifikasi
+   lewat _tmp/port_p2_capture.cjs -> _tmp/port_p2_markup.html. Kelas state ditulis P1
+   TANPA prefix (on/off/show) -> selector majemuk ter-scope, bukan .on{} telanjang.
+   Nilai visual (chamfer, warna, garis, jarak, tipografi, tekstur) disalin dari blok
+   style prototipe. Target sentuh dinaikkan ke 44px (prototipe 22/30/40px) karena tiket.
+   Kontrak performa 2b/4: tanpa backdrop-filter, animasi hanya transform/opacity,
+   tekstur scanline+grid statis, 6 keyframes (batas 6), nol !important.
+   ======================================================================================= */
+#wbView.wbv2{
+  --bg:#0a0f18; --panel:#171012; --panel2:#160c0f; --steel:#12182a; --line:#243150;
+  --ink:#F4F7FA; --muted:#9AA6B2; --dim:#5b6675;
+  --cyan:#35e0ff; --mag:#ff2e88; --violet:#B98CFF; --gold:#E0BC6E; --green:#2ED573; --crimson:#f43f5e;
+  --fd:'Orbitron','Rajdhani',system-ui,sans-serif; --fb:'Rajdhani','Segoe UI',system-ui,sans-serif;
+  --fm:'JetBrains Mono',ui-monospace,Consolas,monospace;
+  --tex:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,rgba(0,0,0,0) 1px 3px),repeating-linear-gradient(0deg,rgba(53,224,255,.05) 0 1px,rgba(0,0,0,0) 1px 24px),repeating-linear-gradient(90deg,rgba(53,224,255,.05) 0 1px,rgba(0,0,0,0) 1px 24px);
+  --chamf:polygon(10% 0,100% 0,100% 90%,90% 100%,0 100%,0 10%);
+  position:fixed; inset:0; width:100vw; height:100dvh; min-height:0;
+  display:flex; flex-direction:column; overflow:hidden;
+  background-color:var(--bg); color:var(--ink); font:14px/1.35 var(--fb);
+}
+#wbView.wbv2, #wbView.wbv2 *, #wbView.wbv2 *::before, #wbView.wbv2 *::after{ box-sizing:border-box; border-radius:0 }
+/* Chrome global disembunyikan di SELURUH rute raid — pengganti MutationObserver/inline-hide
+   core (P1.3) yang kepicu di tiap mutasi DOM, dan (adendum P2.4) tempat bersandar core setelah
+   monkey-patch `window.toast` dicopot di P1.6: tanpa `#weatherToast` di daftar ini, toast rotasi
+   cuaca (css/style.css:2045 position:fixed left:50% top:16% z-index:210; aturannya yang
+   memposisikan hanya ada di lobby — css/lobby-prototype.css:5155/:5371 scoped body.on-lobby)
+   balik menutupi art boss.
+   Sah karena js/pwa.js dan js/boot.js menulis style.display TANPA !important, dan css/style.css:2049
+   `.weather-toast.show` hanya menyentuh opacity/transform — !important author mengalahkan keduanya.
+   Bentuk `body.on-raid` (bukan `body.on-raid:has(#wbView)`) = pilihan mandor: semua sub-layar raid
+   membawa .rd-page (js/raid.js:485 hub, :668 pick, :1023 result, :1206 battle) sehingga
+   css/style.css:44551 sudah menyembunyikan #topbar di rute yang sama — tidak ada yang berubah
+   untuk #topbar, dan #pwaInstallBtn/#activePlayersBadge ikut aman di pick/battle/result.
+   Spesifisitas (1,1,1)+!important tetap menang atas inline non-important; pola yang sama sudah
+   dipakai css/lobby-prototype.css:6533 (html body.bp-open #activePlayersBadge{display:none!important}). */
+body.on-raid #topbar,
+body.on-raid #pwaInstallBtn,
+body.on-raid #weatherToast,
+body.on-raid #activePlayersBadge{ display:none!important }
+/* Nav shell produksi = sibling #app di body (js/mobile-shell.js:187 appendChild ke body),
+   z-index 6000. #app sendiri position:fixed z-index:100 => STACKING CONTEXT, jadi
+   #wbView dan modalnya TERPEROSOK di level 100: z-index berapa pun di dalam sini
+   gak akan pernah bisa nindihin rail/tabbar. Karena itu CARANYA BUKAN z-index,
+   tapi inset — sama kayak yang udah dilakukan shell buat konten lain
+   (css/mobile-shell.css:64-74 kasih padding ke #app; padding itu GAK ngefek ke
+   elemen position:fixed, makanya #wbView yang inset:0 dulu meluncur ke bawah rail).
+   .wbv2-lb-modal juga fixed, jadi di-inset sendiri (tetap nutupin hub-nya). */
+html.m-landscape #wbView.wbv2{ left: calc(var(--nav-w, 56px) + var(--safe-left, 0px)); right:0; width:auto }
+html.m-portrait  #wbView.wbv2{ bottom: calc(var(--nav-h, 60px) + var(--safe-bottom, 0px)); height:auto }
+html.m-landscape #wbView .wbv2-lb-modal{ left: calc(var(--nav-w, 56px) + var(--safe-left, 0px)); right:0; width:auto }
+html.m-portrait  #wbView .wbv2-lb-modal{ bottom: calc(var(--nav-h, 60px) + var(--safe-bottom, 0px)); height:auto }
+#wbView.wbv2 .wbv2-bgfx{ position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden;
+  background:radial-gradient(120% 90% at 50% 28%,rgba(36,49,80,.30),transparent 62%) }
+#wbView.wbv2 .wbv2-bgfx::after{ content:""; position:absolute; inset:0;
+  background:radial-gradient(140% 105% at 50% 46%,transparent 52%,rgba(0,0,0,.55)) }
+#wbView.wbv2 .wbv2-sweep{ position:absolute; top:0; bottom:0; left:-55%; width:55%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent); animation:wbv2Bgx 12s linear infinite }
+@keyframes wbv2Bgx{ 0%{transform:translateX(0)} 100%{transform:translateX(320%)} }
+
+/* ---------- PITA ATAS / SUBBAR (meta sistem + nav + gate fase) ---------- */
+#wbView.wbv2 .wbv2-subbar{ order:-1; flex:none; display:flex; align-items:center; gap:6px;
+  padding:4px 10px; background-color:var(--panel2); background-image:var(--tex);
+  border-bottom:1px solid rgba(53,224,255,.22); font-size:9.5px; color:var(--muted);
+  letter-spacing:.04em; white-space:nowrap; overflow:hidden; clip-path:var(--chamf) }
+#wbView.wbv2 .wbv2-dot{ width:8px; height:8px; flex:none; background-color:var(--green);
+  animation:wbv2Blip 1.6s ease-in-out infinite }
+@keyframes wbv2Blip{ 0%,100%{opacity:.35} 50%{opacity:1} }
+#wbView.wbv2 .wbv2-subbar .wbv2-dot{ width:7px; height:7px }
+#wbView.wbv2 .wbv2-reset{ white-space:nowrap }
+#wbView.wbv2 .wbv2-ghead{ margin-left:auto; display:flex; align-items:baseline; gap:4px }
+#wbView.wbv2 .wbv2-gnum{ font-family:var(--fm); line-height:1; min-width:0 }
+#wbView.wbv2 .wbv2-gnum b{ font-size:12px; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums }
+#wbView.wbv2 .wbv2-subbar .wbv2-gnum b{ font-size:11px }
+#wbView.wbv2 .wbv2-gnum small{ font-size:9px; color:var(--dim); font-weight:600; white-space:nowrap }
+#wbView.wbv2 .wbv2-subbar .wbv2-gnum small{ font-size:8.5px }
+#wbView.wbv2 .wbv2-poolic{ width:16px; height:16px; flex:none; background-color:var(--muted);
+  -webkit-mask:var(--im) center/contain no-repeat; mask:var(--im) center/contain no-repeat }
+#wbView.wbv2 .wbv2-meta{ font-family:var(--fm); font-size:8.5px; letter-spacing:.06em; color:var(--dim);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:34vw }
+#wbView.wbv2 .wbv2-pct{ font-family:var(--fm); font-size:9.5px; font-weight:700; color:var(--cyan);
+  font-variant-numeric:tabular-nums; flex:none }
+#wbView.wbv2 .wbv2-gate{ font-family:var(--fm); font-size:9px; font-weight:700; letter-spacing:.06em;
+  color:var(--muted); border:1px solid var(--line); padding:1px 5px; flex:none; white-space:nowrap }
+#wbView.wbv2 .wbv2-navs{ display:flex; gap:4px; flex:none }
+#wbView.wbv2 .wbv2-nav{ min-height:18px; padding:2px 8px; border:1px solid currentColor;
+  background-color:var(--panel); color:var(--muted); cursor:pointer; font-family:var(--fm);
+  font-size:9px; font-weight:700; letter-spacing:.08em; white-space:nowrap; clip-path:var(--chamf);
+  -webkit-appearance:none; appearance:none }
+#wbView.wbv2 .wbv2-nav:active{ transform:scale(.98) }
+
+/* ---------- STAGE (asimetris: kolom kiri + art kanan) ---------- */
+#wbView.wbv2 .wbv2-stage{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column;
+  padding:6px 8px; position:relative; z-index:1 }
+#wbView.wbv2 .wbv2-stage.wbv2-strike{ animation:wbv2Strike 220ms ease-out 1 }
+@keyframes wbv2Strike{ 0%{transform:translateY(0)} 35%{transform:translateY(-2px)} 100%{transform:translateY(0)} }
+#wbView.wbv2 .wbv2-stagebody{ flex:1 1 auto; min-height:0; display:flex; flex-direction:row;
+  gap:8px; align-items:stretch }
+#wbView.wbv2 .wbv2-col{ flex:0 0 clamp(48px,13vw,64px); min-width:0; position:relative;
+  padding-bottom:12px; display:flex; flex-direction:column; gap:4px; align-items:stretch }
+#wbView.wbv2 .wbv2-eyebrow{ flex:none; width:100%; padding:4px 2px; font-family:var(--fd);
+  font-size:8.5px; font-weight:800; line-height:1.15; letter-spacing:.06em; color:var(--muted);
+  text-align:center; text-transform:uppercase; background-color:var(--panel2);
+  background-image:var(--tex); border:1px solid rgba(53,224,255,.22); clip-path:var(--chamf) }
+/* tab boss: kelas state P1 = "on" polos (raid.js:436), target sentuh 44px */
+#wbView.wbv2 .wbv2-tabs{ display:flex; flex-direction:column; gap:3px; margin:0; flex:none;
+  width:100%; min-width:0 }
+#wbView.wbv2 .wbv2-tab{ flex:none; width:100%; min-height:44px; padding:4px 6px; text-align:center;
+  border:1px solid currentColor; background-color:var(--panel); color:var(--muted); cursor:pointer;
+  font-family:var(--fm); font-size:9.5px; font-weight:700; letter-spacing:.08em; white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis; clip-path:var(--chamf); -webkit-appearance:none; appearance:none }
+#wbView.wbv2 .wbv2-tab.on{ background-color:rgba(255,255,255,.12) }
+#wbView.wbv2 .wbv2-tab:active{ transform:scale(.98) }
+
+/* ---------- GAUGE HP VERTIKAL + node reward (node = PORTRAIT saja) ---------- */
+#wbView.wbv2 .wbv2-gauge{ position:relative; flex:1 1 auto; min-height:0; width:100%;
+  align-self:stretch; background-color:var(--steel); background-image:var(--tex);
+  border:1px solid rgba(53,224,255,.28); overflow:hidden; clip-path:var(--chamf) }
+#wbView.wbv2 .wbv2-gfill{ position:absolute; left:0; right:0; bottom:0; height:38%; opacity:.9;
+  background:linear-gradient(0deg,rgba(53,224,255,.30) 0%,rgba(53,224,255,.30) 60%,var(--cyan) 60%,var(--cyan) 100%) }
+#wbView.wbv2 .wbv2-gtick{ position:absolute; left:0; right:0; height:1px;
+  background:rgba(53,224,255,.30); z-index:2 }
+#wbView.wbv2 .wbv2-gtick-minor{ background:rgba(53,224,255,.14) }
+#wbView.wbv2 .wbv2-gmark{ position:absolute; left:-2px; right:-2px; height:2px;
+  background-color:var(--ink); opacity:.95; z-index:4 }
+#wbView.wbv2 .wbv2-gph{ position:absolute; left:50%; transform:translateX(-50%); bottom:calc(38% + 4px);
+  font-family:var(--fm); font-size:8px; font-weight:700; color:var(--ink); z-index:5; line-height:1;
+  text-shadow:0 1px 2px rgba(0,0,0,.9) }
+#wbView.wbv2 .wbv2-gnode{ position:absolute; right:1px; bottom:0; transform:translateY(50%);
+  width:18px; height:18px; background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,0) 44%),var(--steel);
+  border:2px solid var(--ring,var(--line)); display:grid; place-items:center; z-index:3; clip-path:var(--chamf) }
+#wbView.wbv2 .wbv2-gi{ width:12px; height:12px; background-color:var(--ic);
+  -webkit-mask:var(--im) center/contain no-repeat; mask:var(--im) center/contain no-repeat }
+#wbView.wbv2 .wbv2-gnode.wbv2-broken{ border-color:rgba(255,255,255,.22); background-color:#0c1119 }
+#wbView.wbv2 .wbv2-gnode.wbv2-broken .wbv2-gi{ opacity:.45 }
+#wbView.wbv2 .wbv2-gnode.wbv2-broken::after{ content:""; position:absolute; left:50%; top:50%;
+  width:18px; height:2px; background-color:var(--green); opacity:.55;
+  transform:translate(-50%,-50%) rotate(-32deg) }
+
+/* ---------- ART (contain UTUH, CROP 0, band 0; --ar di-set JS dari natural size) ---------- */
+#wbView.wbv2 .wbv2-artwrap{ flex:1 1 auto; min-width:0; min-height:0; position:relative;
+  display:flex; flex-direction:column }
+#wbView.wbv2 .wbv2-bossart{ flex:1 1 auto; min-width:0; min-height:0; position:relative; overflow:hidden;
+  background-color:var(--panel);
+  background-image:var(--tex),radial-gradient(120% 95% at 62% 30%,rgba(30,44,70,.9),rgba(30,44,70,0) 72%);
+  border:1px solid rgba(53,224,255,.28); clip-path:var(--chamf);
+  box-shadow:0 10px 22px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.06), inset 0 -2px 0 rgba(255,255,255,.12) }
+#wbView.wbv2 .wbv2-bossart > img{ position:absolute; inset:0; margin:auto; max-width:100%; max-height:100%;
+  width:auto; height:auto; left:auto; right:0; object-fit:contain; display:block }
+#wbView.wbv2 .wbv2-bossart::after{ content:""; position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(130% 100% at 50% 22%,rgba(0,0,0,0) 45%,rgba(0,0,0,.5) 100%) }
+#wbView.wbv2 .wbv2-bossart.wbv2-glitch{ animation:wbv2Glitch 120ms steps(2,end) }
+@keyframes wbv2Glitch{ 0%{transform:translate(0,0)} 20%{transform:translate(-2px,1px)} 40%{transform:translate(2px,-1px)}
+  60%{transform:translate(-1px,2px)} 80%{transform:translate(1px,-2px)} 100%{transform:translate(0,0)} }
+#wbView.wbv2 .wbv2-brk{ position:absolute; width:15px; height:15px; z-index:3; pointer-events:none;
+  border:2px solid rgba(255,255,255,.30) }
+#wbView.wbv2 .wbv2-brk1{ top:7px; left:7px; border-right:0; border-bottom:0 }
+#wbView.wbv2 .wbv2-brk2{ top:7px; right:7px; border-left:0; border-bottom:0 }
+#wbView.wbv2 .wbv2-brk3{ bottom:7px; left:7px; border-right:0; border-top:0 }
+#wbView.wbv2 .wbv2-brk4{ bottom:7px; right:7px; border-left:0; border-top:0 }
+#wbView.wbv2 .wbv2-mock-corner{ position:absolute; left:10px; bottom:42px; z-index:3; font-family:var(--fm);
+  font-size:7px; letter-spacing:.08em; color:var(--gold); opacity:.5; pointer-events:none;
+  background-color:rgba(6,10,18,.6); padding:1px 4px }
+#wbView.wbv2 .wbv2-bossname-wrap{ position:absolute; left:0; right:0; bottom:0; z-index:4; max-width:100%;
+  padding:7px 9px 8px; background-color:var(--panel); border-top:1px solid rgba(255,255,255,.10);
+  box-shadow:0 -6px 14px rgba(0,0,0,.45) }
+#wbView.wbv2 .wbv2-bossname{ font-family:var(--fd); font-size:clamp(11px,3.2vw,15px); font-weight:800;
+  line-height:1.06; text-transform:uppercase; text-wrap:balance; color:#fff; letter-spacing:0;
+  text-shadow:0 1px 0 #000,0 2px 2px rgba(0,0,0,.9),0 4px 10px rgba(0,0,0,.85),0 0 3px rgba(0,0,0,.9) }
+/* right:58px =sisa ruang utk .wbv2-lb 44px di pojok; wrap (bukan ellipsis/potong)
+   supaya chip modifier & cuaca tetap terbaca penuh di pane 248px (320 & landscape). */
+#wbView.wbv2 .wbv2-skillbar{ position:absolute; left:8px; top:8px; right:58px; z-index:4; display:flex;
+  flex-direction:row; flex-wrap:wrap; align-items:flex-start; align-content:flex-start; gap:4px }
+#wbView.wbv2 .wbv2-chip{ flex:none; width:auto; border:1px solid rgba(53,224,255,.28);
+  background-color:var(--panel2); opacity:.95; clip-path:var(--chamf); padding:3px 7px;
+  font-family:var(--fm); font-size:8.5px; color:var(--ink); white-space:nowrap; overflow:hidden;
+  text-overflow:ellipsis; display:inline-flex; align-items:center }
+#wbView.wbv2 .wbv2-chip.wbv2-mod{ border-color:var(--gold); color:var(--gold) }
+/* chip attempt ("x/3") — P1 menulis class="wbv2-chip wbv2-att" (raid.js:464) */
+#wbView.wbv2 .wbv2-chip.wbv2-att{ font-variant-numeric:tabular-nums }
+#wbView.wbv2 .wbv2-chip .wbv2-ci,#wbView.wbv2 .wbv2-si{ width:12px; height:12px; flex:none;
+  display:inline-block; vertical-align:-2px; margin-right:5px; background-color:var(--ic);
+  -webkit-mask:var(--im) center/contain no-repeat; mask:var(--im) center/contain no-repeat }
+#wbView.wbv2 .wbv2-lb{ position:absolute; right:8px; top:8px; z-index:4; width:44px; height:44px; flex:none;
+  border:1px solid rgba(53,224,255,.3); background-color:var(--panel); display:grid; place-items:center;
+  cursor:pointer; clip-path:var(--chamf); -webkit-appearance:none; appearance:none }
+#wbView.wbv2 .wbv2-lb:active{ transform:scale(.96) }
+#wbView.wbv2 .wbv2-lbi{ width:22px; height:22px; background-color:var(--gold);
+  -webkit-mask:var(--im) center/contain no-repeat; mask:var(--im) center/contain no-repeat }
+#wbView.wbv2 .wbv2-pcode{ position:absolute; z-index:6; font-family:var(--fm); font-size:7px; font-weight:700;
+  letter-spacing:.1em; color:var(--cyan); opacity:.85; pointer-events:none; text-transform:uppercase;
+  line-height:1; max-width:calc(100% - 4px); overflow:hidden }
+#wbView.wbv2 .wbv2-pc-col{ bottom:2px; left:2px; right:2px; top:auto; white-space:nowrap }
+#wbView.wbv2 .wbv2-pc-rail{ top:2px; right:2px; bottom:auto; left:auto }
+
+/* ---------- RAIL REWARD: LANDSCAPE saja (portrait = node gauge yang tampil) ---------- */
+#wbView.wbv2 .wbv2-rail{ display:none; flex:1 1 auto; min-width:0; position:relative;
+  flex-direction:column; justify-content:space-evenly; gap:2px; background-color:var(--panel);
+  background-image:var(--tex); border:1px solid rgba(53,224,255,.22); padding:8px 9px; overflow:hidden;
+  clip-path:var(--chamf) }
+#wbView.wbv2 .wbv2-rh{ font-family:var(--fm); font-size:10px; letter-spacing:.14em; color:var(--muted);
+  text-transform:uppercase; margin-bottom:2px }
+/* wrap: rail landscape cuma ~118px (sisa 794 - dock 236 - stage). Tanpa wrap,
+   .wbv2-rst terdorong ke luar rail dan ter-clip di bawah .wbv2-dock (bukan font
+   yang dikecilkan — kolomnya yang dirapikan). */
+#wbView.wbv2 .wbv2-rrow{ display:flex; flex-wrap:wrap; align-items:center; gap:4px; row-gap:3px; padding:9px 0;
+  border-bottom:1px solid rgba(53,224,255,.18) }
+#wbView.wbv2 .wbv2-rrow:last-child{ border-bottom:0 }
+#wbView.wbv2 .wbv2-ric{ width:28px; height:28px; flex:none; background-color:var(--ic);
+  -webkit-mask:var(--im) center/contain no-repeat; mask:var(--im) center/contain no-repeat }
+#wbView.wbv2 .wbv2-rlb{ font-family:var(--fd); font-size:13px; font-weight:700; color:var(--ink);
+  letter-spacing:.02em; white-space:nowrap }
+#wbView.wbv2 .wbv2-rph{ font-family:var(--fm); font-size:9px; color:var(--dim); margin-left:auto }
+#wbView.wbv2 .wbv2-rst{ font-family:var(--fm); font-size:9px; font-weight:700; letter-spacing:.04em;
+  padding:1px 5px; border:1px solid var(--line); white-space:nowrap; flex:none; clip-path:var(--chamf) }
+/* status per fase — P1 menulis wbv2-rrow-done / -cur / -lock (raid.js:205) */
+#wbView.wbv2 .wbv2-rrow-done .wbv2-rst{ color:var(--green); border-color:rgba(46,213,115,.5) }
+#wbView.wbv2 .wbv2-rrow-done .wbv2-ric{ opacity:.5 }
+#wbView.wbv2 .wbv2-rrow-cur .wbv2-rst{ color:var(--cyan); border-color:var(--cyan) }
+#wbView.wbv2 .wbv2-rrow-lock .wbv2-rst{ color:var(--dim) }
+/* penanda baris mock (nominal belum dari server): garis emas 2px, tanpa teks, tanpa glow */
+#wbView.wbv2 .wbv2-rrow.wbv2-mock{ border-right:2px solid rgba(224,188,110,.45); padding-right:6px }
+
+/* ---------- DOCK ---------- */
+#wbView.wbv2 .wbv2-dock{ flex:none; position:relative; z-index:1; background-color:var(--panel);
+  background-image:var(--tex); border-top:1px solid rgba(53,224,255,.22); padding:8px 10px 12px;
+  clip-path:var(--chamf) }
+#wbView.wbv2 .wbv2-deckline{ display:flex; gap:8px; align-items:center }
+#wbView.wbv2 .wbv2-deck{ display:flex; gap:6px; flex:1; min-width:0 }
+#wbView.wbv2 .wbv2-cell{ flex:1; min-width:0; min-height:64px; height:64px; overflow:hidden;
+  position:relative; border:2px solid var(--line); background-color:var(--steel); clip-path:var(--chamf) }
+#wbView.wbv2 .wbv2-cell.wbv2-lead{ border-color:var(--cyan) }
+#wbView.wbv2 .wbv2-cell.wbv2-mid{ border-color:var(--gold) }
+#wbView.wbv2 .wbv2-cell.wbv2-sup{ border-color:var(--violet) }
+#wbView.wbv2 .wbv2-cell.wbv2-res{ border-color:var(--muted) }
+#wbView.wbv2 .wbv2-cell > img{ width:100%; height:100%; object-fit:cover; display:block }
+#wbView.wbv2 .wbv2-cellr{ position:absolute; left:0; right:0; bottom:0; background-color:rgba(10,15,24,.9);
+  font-family:var(--fm); font-size:7px; line-height:1.12; text-align:center; padding:2px; color:var(--ink);
+  white-space:normal; overflow:hidden; text-overflow:clip; word-break:break-word }
+/* Dock: label HAMBAT melebar saat state panjang ("ATTEMPT HABIS"), sehingga baris
+   action TIDAK muat satu lajur di 320px maupun di dock landscape 216px. flex:none
+   + wrap membuat tombol pindah baris; tanpa itu attn/dstats yang menyusut dan
+   kristal serta angkanya tertutup ikon/tombol di sebelahnya. */
+#wbView.wbv2 .wbv2-actrow{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; row-gap:6px; margin-top:7px }
+#wbView.wbv2 .wbv2-attn{ display:flex; gap:7px; align-items:center; flex:none; min-width:0 }
+#wbView.wbv2 .wbv2-crystals{ display:inline-flex; gap:7px; align-items:center; flex:none }
+#wbView.wbv2 .wbv2-cr{ width:16px; height:16px; flex:none; transform:rotate(45deg); border:2px solid var(--line);
+  background-color:transparent; clip-path:var(--chamf) }
+#wbView.wbv2 .wbv2-cr.on{ border-color:var(--cyan); background:linear-gradient(135deg,#8ff6ff,var(--cyan)) }
+#wbView.wbv2 .wbv2-cr.off{ border:1px dashed var(--dim); background-color:transparent }
+#wbView.wbv2 .wbv2-dstats{ display:flex; gap:8px; align-items:center; flex:none; font-family:var(--fm);
+  font-size:10px; color:var(--muted); min-width:0 }
+#wbView.wbv2 .wbv2-dstats span{ display:inline-flex; align-items:center; min-width:0 }
+/* angka boleh memendek dgn ellipsis kalau satu lajur penuh dgn tombol — yang tidak
+   boleh terpotong adalah label, bukan digit yang memang tak terbatas panjangnya */
+#wbView.wbv2 .wbv2-dstats b{ color:var(--ink); font-weight:700; font-variant-numeric:tabular-nums;
+  min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+#wbView.wbv2 .wbv2-hico{ width:16px; height:16px; display:inline-block; vertical-align:-3px;
+  margin-right:7px; background-color:#160008;
+  -webkit-mask:var(--im) center/contain no-repeat; mask:var(--im) center/contain no-repeat }
+#wbView.wbv2 .wbv2-hammer{ flex:0 0 auto; min-width:128px; min-height:44px; margin-left:auto;
+  text-align:center; border:0; padding:12px 16px; font-family:var(--fd); font-size:15px; font-weight:800;
+  letter-spacing:.08em; color:#160008; background:linear-gradient(180deg,#ff6b86,var(--crimson));
+  cursor:pointer; position:relative; overflow:hidden; clip-path:var(--chamf);
+  -webkit-appearance:none; appearance:none }
+#wbView.wbv2 .wbv2-hammer::before{ content:""; position:absolute; top:0; left:0; width:35%; height:100%;
+  pointer-events:none; background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);
+  transform:translateX(-150%) skewX(-18deg); animation:wbv2Hsw 3.4s ease-in-out infinite }
+@keyframes wbv2Hsw{ 0%{transform:translateX(-150%) skewX(-18deg)} 55%,100%{transform:translateX(360%) skewX(-18deg)} }
+#wbView.wbv2 .wbv2-hammer:active{ transform:scale(.98) }
+#wbView.wbv2 .wbv2-hammer.off{ background-color:var(--steel); color:var(--dim); border:1px solid var(--line) }
+#wbView.wbv2 .wbv2-hammer.off::before{ animation:none; opacity:0 }
+/* KEDUA sisi di-inset 10%+6px, bukan cuma kanan: chamfer .wbv2-dock memotong 10%x10%
+   di DUA sudut berseberangan (kiri-atas & kanan-bawah), dan teks rata-kanan di 320px
+   membuat ujung KIRI-nya yang ikut termakan setelah inset kanan dipasang. white-space
+   dibiarkan normal (bukan nowrap) supaya label panjang turun baris, bukan meluber keluar. */
+#wbView.wbv2 .wbv2-hammer-meta{ position:absolute; left:calc(10% + 6px); right:calc(10% + 6px); bottom:2px; margin:0;
+  font-family:var(--fm); font-size:7.5px; letter-spacing:.1em; color:var(--dim);
+  text-transform:uppercase; text-align:right; line-height:1; white-space:normal }
+
+/* ---------- MODAL PAPAN PERINGKIT (pola layar penuh 4: header flex:none, body flex:1 scroll) ---------- */
+#wbView.wbv2 .wbv2-lb-modal{ position:fixed; inset:0; width:100vw; height:100dvh; min-height:0;
+  background-color:var(--steel); display:flex; flex-direction:column; z-index:60; opacity:0;
+  visibility:hidden; transition:opacity .3s ease, visibility 0s linear .3s }
+#wbView.wbv2 .wbv2-lb-modal.show{ opacity:1; visibility:visible; transition:opacity .3s ease, visibility 0s }
+#wbView.wbv2 .wbv2-lb-head{ flex:none; display:flex; flex-wrap:wrap; align-items:center; gap:6px;
+  padding:10px; background-color:var(--panel); border-bottom:1px solid var(--line) }
+#wbView.wbv2 .wbv2-lb-title{ font-family:var(--fd); font-size:13px; font-weight:800; letter-spacing:.08em;
+  color:var(--ink); text-transform:uppercase; flex:1 1 auto; min-width:0; white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis }
+#wbView.wbv2 .wbv2-lb-x{ width:44px; height:44px; flex:none; border:1px solid rgba(53,224,255,.3);
+  background-color:var(--panel2); color:var(--muted); display:grid; place-items:center; cursor:pointer;
+  clip-path:var(--chamf); -webkit-appearance:none; appearance:none }
+#wbView.wbv2 .wbv2-lb-body{ flex:1 1 auto; min-height:0; overflow-y:auto; scrollbar-width:none;
+  padding:10px 12px; display:flex; flex-direction:column; gap:8px; background-color:var(--panel) }
+#wbView.wbv2 .wbv2-lb-body::-webkit-scrollbar{ display:none }
+#wbView.wbv2 .wbv2-lb-boards{ display:flex; gap:4px; margin-left:auto }
+#wbView.wbv2 .wbv2-lbb{ border:1px solid var(--line); background-color:var(--panel2); color:var(--muted);
+  min-height:26px; padding:4px 8px; font-family:var(--fm); font-size:9px; font-weight:700;
+  letter-spacing:.06em; cursor:pointer; white-space:nowrap; clip-path:var(--chamf);
+  -webkit-appearance:none; appearance:none }
+#wbView.wbv2 .wbv2-lbb.on{ color:var(--ink); border-color:currentColor; background-color:rgba(255,255,255,.12) }
+#wbView.wbv2 .wbv2-lb-reward{ flex:none; display:flex; align-items:center; gap:8px; min-height:44px;
+  background-color:var(--panel); border:1px solid rgba(53,224,255,.22); padding:8px 10px; clip-path:var(--chamf) }
+#wbView.wbv2 .wbv2-rwi{ width:18px; height:18px; background-color:var(--ic); flex:none;
+  -webkit-mask:var(--im) center/contain no-repeat; mask:var(--im) center/contain no-repeat }
+#wbView.wbv2 .wbv2-rwt{ font-family:var(--fm); font-size:10px; letter-spacing:.1em; color:var(--muted);
+  text-transform:uppercase; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+#wbView.wbv2 .wbv2-lb-reward b{ font-family:var(--fm); font-size:13px; font-weight:800; color:var(--ink);
+  margin-left:auto; white-space:nowrap }
+#wbView.wbv2 .wbv2-claim{ flex:none; min-height:32px; padding:6px 12px; border:1px solid var(--cyan);
+  background-color:var(--panel2); color:var(--cyan); cursor:pointer; font-family:var(--fm); font-size:10px;
+  font-weight:800; letter-spacing:.08em; clip-path:var(--chamf); -webkit-appearance:none; appearance:none }
+#wbView.wbv2 .wbv2-claim:active{ transform:scale(.98) }
+#wbView.wbv2 .wbv2-lb-you{ flex:none; display:flex; align-items:center; gap:10px; min-height:44px;
+  background-color:var(--panel2); border:1px solid var(--cyan); padding:8px 10px; clip-path:var(--chamf) }
+#wbView.wbv2 .wbv2-yrk{ font-family:var(--fm); font-size:10px; font-weight:800; letter-spacing:.1em;
+  color:var(--cyan); flex:none }
+#wbView.wbv2 .wbv2-ypos{ font-size:11px; color:var(--muted); min-width:0; overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap }
+#wbView.wbv2 .wbv2-ypos b{ color:var(--ink); font-family:var(--fm) }
+#wbView.wbv2 .wbv2-yd{ margin-left:auto; font-family:var(--fm); font-size:11px; color:var(--muted);
+  font-variant-numeric:tabular-nums; flex:none }
+/* PODIUM top-3 — dirender P1 di wbLbPaint (raid.js), nilai salinan prototipe .pod* */
+#wbView.wbv2 .wbv2-podium{ flex:none; display:flex; justify-content:center; align-items:flex-end;
+  gap:10px; padding:8px 0 4px }
+#wbView.wbv2 .wbv2-pod{ position:relative; display:flex; flex-direction:column; align-items:center;
+  width:96px; clip-path:var(--chamf) }
+#wbView.wbv2 .wbv2-pod-top{ position:relative; width:96px; height:96px; display:flex;
+  align-items:center; justify-content:center }
+#wbView.wbv2 .wbv2-pod1 .wbv2-pod-top{ height:112px }
+#wbView.wbv2 .wbv2-pod-av{ width:54px; height:54px; overflow:hidden; border:2px solid var(--line);
+  position:relative; z-index:1; background-color:var(--panel); display:grid; place-items:center }
+#wbView.wbv2 .wbv2-pod1 .wbv2-pod-av{ width:70px; height:70px }
+#wbView.wbv2 .wbv2-pod-av img{ width:100%; height:100%; object-fit:cover; display:block }
+#wbView.wbv2 .wbv2-pod-av > span{ font-family:var(--fd); font-size:18px; font-weight:800; color:var(--muted) }
+#wbView.wbv2 .wbv2-pod-rk{ position:absolute; bottom:5px; left:50%; transform:translateX(-50%);
+  font-family:var(--fd); font-size:13px; font-weight:800; color:var(--gold); z-index:2 }
+#wbView.wbv2 .wbv2-pod-plate{ position:relative; z-index:2; margin-top:2px; background-color:var(--panel);
+  border:1px solid rgba(53,224,255,.22); padding:3px 8px; display:flex; flex-direction:column;
+  align-items:center; gap:1px; width:96px; clip-path:var(--chamf) }
+#wbView.wbv2 .wbv2-pod-nm{ font-size:10px; color:var(--ink); max-width:90px; white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis }
+#wbView.wbv2 .wbv2-pod-val{ font-family:var(--fm); font-size:11px; font-weight:700; color:var(--mag) }
+#wbView.wbv2 .wbv2-lb-list{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column }
+#wbView.wbv2 .wbv2-frow{ display:flex; align-items:center; gap:8px; min-height:44px; padding:9px 0;
+  border-bottom:1px solid var(--line); position:relative }
+#wbView.wbv2 .wbv2-frow > *:not(.wbv2-dmbar){ position:relative; z-index:1 }
+#wbView.wbv2 .wbv2-rk{ font-family:var(--fm); font-size:11px; color:var(--dim); width:20px;
+  text-align:right; flex:none }
+#wbView.wbv2 .wbv2-av{ width:24px; height:24px; background-color:var(--panel); border:1px solid var(--line);
+  overflow:hidden; flex:none; display:grid; place-items:center }
+#wbView.wbv2 .wbv2-av img{ width:100%; height:100%; object-fit:cover; display:block }
+#wbView.wbv2 .wbv2-av > span{ font-size:11px; font-weight:700; color:var(--muted) }
+#wbView.wbv2 .wbv2-nm{ flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  color:var(--ink); font-weight:600 }
+#wbView.wbv2 .wbv2-dm{ font-family:var(--fm); font-variant-numeric:tabular-nums; font-weight:700;
+  color:var(--mag); margin-left:auto; flex:none }
+#wbView.wbv2 .wbv2-dmbar{ position:absolute; left:0; top:0; bottom:0; z-index:0; pointer-events:none;
+  background:linear-gradient(90deg,rgba(255,61,174,.18),rgba(255,61,174,.02)) }
+#wbView.wbv2 .wbv2-frow.wbv2-lb-kamu{ border:0; border-left:3px solid var(--cyan);
+  background-color:rgba(79,227,255,.07); padding-left:8px; padding-right:8px }
+#wbView.wbv2 .wbv2-empty{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:6px; text-align:center; color:var(--muted);
+  padding:8px 10px; position:relative; overflow:hidden }
+#wbView.wbv2 .wbv2-wm{ width:40px; height:40px; opacity:.5; background-color:var(--muted);
+  -webkit-mask:url('../assets/icons/crossed-swords.svg') center/contain no-repeat;
+  mask:url('../assets/icons/crossed-swords.svg') center/contain no-repeat }
+#wbView.wbv2 .wbv2-big{ font-family:var(--fd); font-size:13px; font-weight:700; letter-spacing:.04em;
+  color:var(--ink); text-transform:uppercase }
+#wbView.wbv2 .wbv2-sm{ font-size:10.5px }
+
+/* ---------- LANDSCAPE PENDEK: pita full-width + 3 pane berisi + rail reward ---------- */
+@media (orientation:landscape){
+  #wbView.wbv2{ flex-direction:row }
+  #wbView.wbv2 .wbv2-subbar{ position:absolute; top:0; left:0; right:0; z-index:6; order:0;
+    padding:3px 10px; font-size:8px; letter-spacing:0; border-bottom:1px solid var(--line) }
+  #wbView.wbv2 .wbv2-subbar .wbv2-reset{ font-size:8px; letter-spacing:0 }
+  #wbView.wbv2 .wbv2-meta{ max-width:22vw }
+  #wbView.wbv2 .wbv2-stage{ flex:1 1 auto; min-width:0; min-height:0; padding:26px 6px 6px }
+  #wbView.wbv2 .wbv2-dock{ flex:none; width:236px; border-top:0; border-left:1px solid var(--line);
+    display:flex; flex-direction:column; justify-content:space-evenly; padding-top:26px;
+    padding-bottom:18px }  /* band 18px = tempat .wbv2-hammer-meta turun baris di dock 236px
+                              (box 176,8px < label terpanjang 183,8px) tanpa menyentuh HAMBAT */
+  #wbView.wbv2 .wbv2-col{ flex:0 0 150px; min-width:0; gap:6px; align-items:stretch }
+  #wbView.wbv2 .wbv2-eyebrow{ font-size:9px }
+  #wbView.wbv2 .wbv2-tabs{ flex-direction:row; gap:4px }
+  #wbView.wbv2 .wbv2-tab{ flex:1; min-height:44px; font-size:9px }
+  #wbView.wbv2 .wbv2-gauge{ margin:0 }
+  /* 1 info 1 tempat PER orientasi: node reward mati di landscape, rail yang hidup */
+  #wbView.wbv2 .wbv2-gauge .wbv2-gnode{ display:none }
+  #wbView.wbv2 .wbv2-artwrap{ flex:0 0 auto; width:auto; height:100%; min-height:0;
+    aspect-ratio:var(--ar,0.732) }
+  #wbView.wbv2 .wbv2-bossart{ flex:0 0 auto; width:auto; height:100%; aspect-ratio:var(--ar,0.732) }
+  #wbView.wbv2 .wbv2-bossart > img{ width:100%; height:100%; left:0; right:auto }
+  #wbView.wbv2 .wbv2-bossname{ font-size:11.5px }
+  #wbView.wbv2 .wbv2-rail{ display:flex }
+  #wbView.wbv2 .wbv2-chip{ font-size:7px; padding:2px 4px }
+  #wbView.wbv2 .wbv2-deckline{ flex-direction:column; align-items:stretch; gap:6px }
+  #wbView.wbv2 .wbv2-deck{ display:grid; grid-template-columns:repeat(2,1fr); gap:5px; width:100% }
+  #wbView.wbv2 .wbv2-cell{ width:auto; height:132px }
+  #wbView.wbv2 .wbv2-actrow{ margin-top:0 }
+  #wbView.wbv2 .wbv2-hammer-meta{ text-align:left }
+}
+@media (max-width:399px){
+  #wbView.wbv2 .wbv2-skillbar{ left:6px; top:6px }
+  #wbView.wbv2 .wbv2-chip{ font-size:7.5px; padding:2px 4px }
+  /* kolom 48px di 320px: kode sistem pendek saja (kontrak 3 "maks 3 token"); sisanya
+     dipotong sengaja supaya tidak keluar pane (gerbang ANAK_DI_LUAR_PANE=0) */
+  #wbView.wbv2 .wbv2-pc-col{ font-size:7px; letter-spacing:.04em }
+}
+/* Pita atas di 320px tidak muat memuat 7 item markup P1 (reset, pool, %, fase, meta,
+   2 tombol nav). Yang dibuang = yang DUPLOKAT oleh gauge (fase F2 + garis penanda fase
+   + angka pool sudah ada di kolom kiri); nav LOBBY/ARMORY dipertahankan karena aksi.
+   Ini keputusan ui-css atas nama P1 — mandor boleh veto, cukup balik 3 baris ini. */
+@media (max-width:420px){
+  #wbView.wbv2 .wbv2-subbar{ font-size:8px; gap:4px; padding:3px 8px }
+  #wbView.wbv2 .wbv2-meta,#wbView.wbv2 .wbv2-pct,#wbView.wbv2 .wbv2-gate{ display:none }
+  #wbView.wbv2 .wbv2-nav{ font-size:8px; padding:2px 6px; letter-spacing:.06em }
+  /* kolom 48px: nama tab pendek harus muat tanpa ellipsis (prototipe 8,5px di 22px tinggi) */
+  #wbView.wbv2 .wbv2-tab{ font-size:8px; padding:4px 3px; letter-spacing:.04em }
+  #wbView.wbv2 .wbv2-subbar .wbv2-gnum b{ font-size:10px }
+}
+/* aturan 4: header modal dikosongkan 112px di kanan supaya tidak ketutup tombol dev
+   #crFab — hanya kalau lebarnya cukup (di 320px ruang itu bikin judul menimpa chip papan) */
+@media (min-width:560px){
+  #wbView.wbv2 .wbv2-lb-head{ padding-right:112px }
+}
