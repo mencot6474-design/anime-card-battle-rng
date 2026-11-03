@@ -40589,6 +40589,7 @@ body.battle-full .fighter.phantom-enter {
 
 
 .backpack-panel .bp-tile.in-deck[class*="mut-"]:not(#_bv2),.backpack-panel .bp-tile.in-deck.shiny:not(#_bv2){box-shadow:none!important}
+.backpack-panel .bp-tile[class*="mut-"]:not(#_bv2),.backpack-panel .bp-tile.shiny:not(#_bv2){box-shadow:none!important;outline:none!important;}
 
 
 

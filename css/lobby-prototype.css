@@ -4352,11 +4352,9 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   outline: none !important;
   animation: none !important;
   background: #0e1626 !important;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45) !important;
 }
 
 .backpack-panel .bp-tile.in-deck {
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45) !important;
 }
 
 .backpack-panel .bp-tile img {
