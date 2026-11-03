@@ -2992,6 +2992,15 @@ function executeRebirthFromModal(){
       sfx.win();
     }
 
+    // Panggil toast langsung di atas animasi cutscene
+    if (typeof toast === 'function') {
+      toast(
+        isEn ? 'ASCENSION SUCCESS!' : 'REBIRTH BERHASIL!',
+        isEn ? ('Luck multiplier increased permanently to ×' + nextMult) : ('Luck multiplier naik permanen ke ×' + nextMult),
+        '#c084fc'
+      );
+    }
+
     setTimeout(() => {
       if (cutin) cutin.classList.remove('show');
       if (sigilWrap) sigilWrap.classList.remove('is-charging');
@@ -3000,14 +3009,6 @@ function executeRebirthFromModal(){
       if (typeof renderRebirthModal === 'function') renderRebirthModal();
       if (typeof updateRebirthUI === 'function') updateRebirthUI();
       if (typeof renderShell === 'function') renderShell();
-
-      if (typeof toast === 'function') {
-        toast(
-          isEn ? 'ASCENSION SUCCESS!' : 'REBIRTH BERHASIL!',
-          isEn ? ('Luck multiplier increased permanently to ×' + nextMult) : ('Luck multiplier naik permanen ke ×' + nextMult),
-          '#c084fc'
-        );
-      }
     }, 2200);
 
   }, 500);

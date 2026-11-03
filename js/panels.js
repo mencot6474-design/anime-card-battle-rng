@@ -429,6 +429,7 @@ function toast(main,sub,color){
   const t=document.getElementById("weatherToast");if(!t)return;
   const col=color||"#38bdf8";
   t.style.setProperty("--wdc",col);
+  t.style.zIndex = "200000";
 
   try {
     if(typeof sfx!=="undefined"&&sfx&&typeof sfx.pop==="function") sfx.pop();

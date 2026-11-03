@@ -2488,6 +2488,16 @@ html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-xpbar {
   z-index: 2 !important;
 }
 
+/* ===== NOTIFICATION & TOAST HIGHEST LAYER ELEVATION (Z-INDEX: 200000) ===== */
+#weatherToast,
+.weather-toast,
+.weather-toast.show,
+#traitNotify,
+#traitNotify.show {
+  z-index: 200000 !important;
+  pointer-events: none !important;
+}
+
 /* ===== REBIRTH ASCENSION PROTOCOL CINEMATIC (Z-INDEX: 100005) ===== */
 #rebirthAscensionCutin {
   position: fixed !important;

@@ -2045,12 +2045,21 @@ body.on-lobby .buff-dock.show{display:flex;}
 /* ==========================================================================
    CYBERPUNK AAA WEATHER TOAST NOTIFICATION (#weatherToast / .weather-toast)
    ========================================================================== */
+/* Sematkan z-index tertinggi untuk SEMUA notifikasi & toast */
+#weatherToast,
+.weather-toast,
+.weather-toast.show,
+#traitNotify,
+#traitNotify.show {
+  z-index: 200000 !important;
+}
+
 .weather-toast{
   position:fixed;
   left:50%;
   top:14%;
   transform:translate(-50%,-24px) scale(0.96);
-  z-index:210;
+  z-index:200000 !important;
   padding:12px 28px 14px;
   min-width:240px;
   max-width:min(92vw, 420px);
@@ -2073,7 +2082,7 @@ body.on-lobby .buff-dock.show{display:flex;}
   text-align:center;
   text-transform:uppercase;
   text-shadow:0 0 12px var(--wdc, rgba(0, 240, 255, 0.65)), 0 2px 4px rgba(0, 0, 0, 0.85);
-  box-shadow:0 0 25px rgba(0, 240, 255, 0.35), inset 0 0 15px rgba(0, 240, 255, 0.12), 0 10px 40px rgba(0, 0, 0, 0.65);
+  box-shadow:0 10px 30px rgba(0,0,0,0.85), 0 0 25px rgba(0, 240, 255, 0.35), inset 0 0 15px rgba(0, 240, 255, 0.12) !important;
   opacity:0;
   pointer-events:none;
   transition:opacity 0.38s cubic-bezier(0.16, 1, 0.3, 1), transform 0.38s cubic-bezier(0.16, 1, 0.3, 1);
@@ -17152,7 +17161,7 @@ body.battle-full .vs-col .bspeed-btn{font-size:clamp(12px,1.4vw,15px);padding:4p
   top:20px;
   left:50%;
   transform:translateX(-50%);
-  z-index:220;
+  z-index:200000 !important;
   pointer-events:none;
   display:flex;
   justify-content:center;
@@ -17177,7 +17186,7 @@ body.battle-full .vs-col .bspeed-btn{font-size:clamp(12px,1.4vw,15px);padding:4p
     linear-gradient(135deg, rgba(8, 14, 24, 0.97) 0%, rgba(4, 8, 14, 0.99) 100%);
   background-size:100% 3px, 16px 16px, 16px 16px, 100% 100%, 100% 100%;
   text-align:left;
-  box-shadow:0 0 25px currentColor, inset 0 0 15px rgba(255, 255, 255, 0.06), 0 10px 40px rgba(0, 0, 0, 0.7);
+  box-shadow:0 10px 30px rgba(0,0,0,0.85), 0 0 25px currentColor, inset 0 0 15px rgba(255, 255, 255, 0.06) !important;
   --muted:#9AA6B2;
   --muted2:#6B7A8A;
   --text:#F4F7FA;
