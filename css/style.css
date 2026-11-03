@@ -7337,25 +7337,6 @@ body.battle-full .vs-col .bspeed-btn{font-size:clamp(12px,1.4vw,15px);padding:4p
   cursor: not-allowed;
 }
 
-.st-reward{
-
-  display:flex;
-
-  align-items:center;
-
-  justify-content:space-between;
-
-  background:linear-gradient(120deg,rgba(16,24,38,.85),rgba(8,12,20,.95));
-
-  border:1.5px solid rgba(125,249,255,.24);
-
-  border-radius:10px;
-
-  padding:11px 16px;
-
-  margin-bottom:16px;
-
-}
 
 
 
@@ -11444,21 +11425,6 @@ body.on-lobby #app{min-height:0}
 
 /* Flapping holographic wings on left and right */
 
-.cft-wing {
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  position: relative;
-
-  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.7));
-
-  transform-origin: center center;
-
-}
 
 
 
@@ -16118,13 +16084,6 @@ body.battle-full .fighter.foe.ko {
   text-shadow: 0 0 18px rgba(255, 215, 0, 0.4);
   text-transform: uppercase;
 }
-.topup-balance {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.55);
-  margin-top: 3px;
-  letter-spacing: 0.05em;
-}
 
 /* Grid paket */
 .topup-grid {
@@ -16178,13 +16137,6 @@ body.battle-full .fighter.foe.ko {
 /* Alias lama (tanpa tanda hubung) — tetap disimpan agar class versi lama tidak rusak. */
 
 /* Konten kartu */
-.topup-card-gems {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 24px;
-  font-weight: 800;
-  color: #ffd700;
-  letter-spacing: 0.04em;
-}
 
 /* Tombol beli */
 .topup-buy-btn {
@@ -18629,13 +18581,6 @@ html.fps-locked .bp-fchip{
 .gbcast-corner.tr { top: 6px; right: 6px; border-width: 2px 2px 0 0; }
 .gbcast-corner.bl { bottom: 6px; left: 6px; border-width: 0 0 2px 2px; }
 .gbcast-corner.br { bottom: 6px; right: 6px; border-width: 0 2px 2px 0; }
-.gbcast-buyer {
-  font-family: "Rajdhani", sans-serif;
-  font-size: clamp(13px, 1.8vw, 16px);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: #cbd5e1;
-}
 .gbcast-effect {
   margin-top: 2px;
   padding-top: 7px;
@@ -21190,13 +21135,6 @@ body:has(#rebirthModal.show) #rebirthAscensionCutin .rb-cutin-card {
 /* 5. Title & Typography */
 
 /* 6. Cycle Number Giant */
-.rb-cutin-cycle {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  margin-bottom: 16px;
-}
 
 /* 7. Multiplier Benefit Banner */
 .rb-cutin-mult {
@@ -21388,14 +21326,6 @@ main#app:has(.sett-wrap) {
   border-radius: 50%;
   background: #66fcf1;
   box-shadow: 0 0 8px #66fcf1;
-}
-.sett-title {
-  margin: 2px 0 0;
-  font-size: 22px;
-  font-weight: 900;
-  font-family: var(--font-display, "Orbitron", "Rajdhani", "Barlow Condensed", sans-serif);
-  letter-spacing: 0.08em;
-  color: #fff;
 }
 .sett-subtitle {
   font-size: 10px;
