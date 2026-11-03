@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v333-wbPort';
+const CACHE_NAME = 'anime-card-battle-v334-wbPickHide';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

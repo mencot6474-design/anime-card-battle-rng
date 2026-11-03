@@ -2164,6 +2164,9 @@ body.on-raid #topbar,
 body.on-raid #pwaInstallBtn,
 body.on-raid #weatherToast,
 body.on-raid #activePlayersBadge{ display:none!important }
+/* Picker World Boss kepotong nav shell (tabbar/rail). Hide nav saat picker aktif. */
+body.on-raid:has(.rd-pick) .m-tabbar,
+body.on-raid:has(.rd-pick) .m-rail{ display:none!important }
 /* Nav shell produksi = sibling #app di body (js/mobile-shell.js:187 appendChild ke body),
    z-index 6000. #app sendiri position:fixed z-index:100 => STACKING CONTEXT, jadi
    #wbView dan modalnya TERPEROSOK di level 100: z-index berapa pun di dalam sini
