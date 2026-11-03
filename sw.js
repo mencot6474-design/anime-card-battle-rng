@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v361-premShopRedesign';
+const CACHE_NAME = 'anime-card-battle-v362-railFlow';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
