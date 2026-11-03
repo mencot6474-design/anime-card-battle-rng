@@ -2224,8 +2224,11 @@ html.m-portrait  #wbView .wbv2-lb-modal{ bottom: calc(var(--nav-h, 60px) + var(-
 @keyframes wbv2Strike{ 0%{transform:translateY(0)} 35%{transform:translateY(-2px)} 100%{transform:translateY(0)} }
 #wbView.wbv2 .wbv2-stagebody{ flex:1 1 auto; min-height:0; display:flex; flex-direction:row;
   gap:8px; align-items:stretch }
-#wbView.wbv2 .wbv2-col{ flex:0 0 clamp(48px,13vw,64px); min-width:0; position:relative;
-  padding-bottom:12px; display:flex; flex-direction:column; gap:6px; align-items:stretch }
+#wbView.wbv2 .wbv2-col{ flex:0 0 auto; min-width:0; position:relative;
+  padding:0 6px 0 0; display:flex; flex-direction:column; gap:6px; align-items:stretch; width:56px }
+#wbView.wbv2 .wbv2-eyebrow{ display:none }
+#wbView.wbv2 .wbv2-gauge{ display:none }
+#wbView.wbv2 .wbv2-pcode{ display:none }
 #wbView.wbv2 .wbv2-eyebrow{ flex:none; width:100%; padding:5px 4px; font-family:var(--fd);
   font-size:8px; font-weight:800; line-height:1.2; letter-spacing:.05em; color:var(--dim);
   text-align:center; text-transform:uppercase; background:rgba(15,20,32,.6);

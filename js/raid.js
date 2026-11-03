@@ -520,7 +520,6 @@ function renderRaidHub(){
     </section>
 
     <section class="wbv2-dock">
-      <aside class="wbv2-rail" id="wbv2Rail">${wbRailHtml()}</aside>
       <div class="wbv2-actrow">
         <span class="wbv2-attn"><i class="wbv2-si" style="--im:url('${wbIconU("assets/icons/cut-diamond.svg")}');--ic:var(--cyan)"></i><span class="wbv2-crystals" id="wbv2Crystals">${wbCrystalsHtml()}</span></span>
         <span class="wbv2-dstats"><span><i class="wbv2-si" style="--im:url('${wbIconU("assets/icons/trophy-cup.svg")}');--ic:var(--gold)"></i><b id="wbv2Pb">${d&&d.best_dmg?fmtBig(d.best_dmg):"—"}</b></span><span><i class="wbv2-si" style="--im:url('${wbIconU("assets/icons/coins.svg")}');--ic:var(--gold)"></i><b id="wbv2Tok">${fmt(tok)}</b></span></span>
