@@ -15952,6 +15952,12 @@ body.battle-full .fighter.foe.ko {
   backdrop-filter:blur(8px);
 }
 @keyframes glcf-fade{from{opacity:0}to{opacity:1}}
+.glcf-item-art{
+  width:72px;height:72px;object-fit:contain;
+  margin:0 auto 12px;display:block;border-radius:12px;
+  box-shadow:0 4px 16px rgba(0,0,0,.5);
+}
+.glcf-item-art + .glcf-title{margin-top:0}
 @keyframes glcf-pop{from{opacity:0;transform:translateY(22px) scale(.965)}to{opacity:1;transform:none}}
 .glcf-box{
   box-sizing:border-box;

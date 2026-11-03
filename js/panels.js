@@ -3075,29 +3075,27 @@ function premConfirmBody(pack, qty) {
   var labelEfek = 'EFEK';
   var rows = '';
   if (pack.type === 'pack') {
+    /* chip ×1/×5/×10/×25 + total harga di tombol sudah memuat info jumlah —
+       row JUMLAH/TARIKAN lama membeberkan hal yang sama, dihapus */
     var totalPull = Number(pack.amount || 0) * qty;
-    rows += '<div class="glcf-row"><span class="glcf-label">JUMLAH</span><span class="glcf-val"><b>' + qty + '×</b> paket ' + pack.name + '</span></div>' +
-      '<div class="glcf-row"><span class="glcf-label">TARIKAN</span><span class="glcf-val"><b>' + totalPull.toLocaleString('id-ID') + '</b> tarikan kartu instan</span></div>';
-    efek = 'Menambah <b>' + totalPull.toLocaleString('id-ID') + '</b> tarikan kartu instan ke dalam Backpack.';
+    efek = '<b>' + totalPull.toLocaleString('id-ID') + '</b> tarikan instan ke Backpack.';
   } else if (pack.type === 'art') {
-    efek = 'Artefak permanen masuk Backpack. ' + (pack.desc || '');
+    efek = 'Artefak permanen masuk Backpack.';
   } else if (pack.type === 'pet') {
-    efek = 'Pet sakti masuk Backpack. ' + (pack.desc || '');
+    efek = 'Pet permanen masuk Backpack.';
   } else if (pack.type === 'weather') {
     var wName = (WEATHER[pack.targetWeather] && WEATHER[pack.targetWeather].name) || pack.name;
     labelEfek = 'CUACA SERVER';
-    efek = 'Cuaca <b>' + wName + '</b> langsung aktif untuk <b>SEMUA PEMAIN DI SERVER</b> selama <b>30 MENIT</b>. ' + (pack.desc || '');
+    efek = '<b>' + wName + '</b> aktif untuk SEMUA pemain, 30 MENIT.';
   }
   var totalPrice = Number(pack.price || 0) * qty;
   return '<div class="glcf-row"><span class="glcf-label">ITEM</span><span class="glcf-val"><b>' + pack.name + '</b>' +
       (pack.badge ? '<span class="glcf-badge">' + pack.badge + '</span>' : '') + '</span></div>' +
     rows +
     '<div class="glcf-row"><span class="glcf-label">' + labelEfek + '</span><span class="glcf-val">' + efek + '</span></div>' +
-    '<div class="glcf-row"><span class="glcf-label">HARGA</span><span class="glcf-val">' + gemIcon + ' ' + totalPrice + ' Gems' +
-      (qty > 1 ? ' <span style="opacity:.7">(' + pack.price + ' × ' + qty + ')</span>' : '') + '</span></div>' +
+    '<div class="glcf-row"><span class="glcf-label">HARGA</span><span class="glcf-val">' + gemIcon + ' ' + totalPrice + ' Gems</span></div>' +
     '<div class="glcf-row"><span class="glcf-label">SALDO</span><span class="glcf-val">' + gemIcon + ' ' + fmt(state.premiumGems || 0) + ' Gems</span></div>' +
-    '<div class="glcf-warn">Gems langsung dipotong dan <b>tidak bisa dikembalikan</b>.' +
-      (pack.type === 'weather' ? ' Cuaca langsung aktif untuk semua pemain di server selama 30 menit.' : '') + '</div>';
+    '<div class="glcf-warn">Potong langsung, <b>tidak bisa dikembalikan</b>.</div>';
 }
 
 function premSetTab(tabKey){
@@ -3339,6 +3337,7 @@ async function buyPremiumPack(packId, ev, qty){
     });
     var pickedQty = await showConfirmDialog({
       title: 'KONFIRMASI PEMBELIAN',
+      img: pack.img || 'assets/images/premium-currency.webp',
       body: premConfirmBody(pack, 1),
       okText: 'BELI · ' + pack.price + ' GEMS',
       options: qtyOptions,
@@ -3353,6 +3352,7 @@ async function buyPremiumPack(packId, ev, qty){
   } else {
     var confirmed = await showConfirmDialog({
       title: 'KONFIRMASI PEMBELIAN',
+      img: pack.img || 'assets/images/premium-currency.webp',
       body: premConfirmBody(pack, 1),
       okText: 'BELI · ' + pack.price + ' GEMS'
     });
@@ -4143,9 +4143,13 @@ function showConfirmDialog(opts) {
         }).join('') + '</div>'
       : '';
 
+    var artHTML = opts.img
+      ? '<img class="glcf-item-art" src="' + opts.img + '" alt="" width="72" height="72" loading="lazy" decoding="async" onerror="this.remove()">'
+      : '';
     host.innerHTML =
       '<div class="glcf-backdrop">' +
         '<div class="glcf-box">' +
+          artHTML +
           '<div class="glcf-title">' + (opts.title || 'KONFIRMASI') + '</div>' +
           (optHTML ? '<div class="glcf-opts-wrap">' +
             (opts.optsLabel ? '<div class="glcf-opts-label">' + opts.optsLabel + '</div>' : '') + optHTML + '</div>' : '') +
@@ -4207,7 +4211,6 @@ async function buyGlobalLuck() {
     /* --- Popup konfirmasi sebelum membeli --- */
     const gemIcon = '<img class="glcf-gem-icon" src="assets/images/premium-currency.webp" alt="" width="16" height="16">';
     const confirmBody =
-      '<div class="glcf-row"><span class="glcf-label">AKUN</span><span class="glcf-val">' + username + '</span></div>' +
       '<div class="glcf-row"><span class="glcf-label">EFEK</span><span class="glcf-val">' +
         (isStack
           ? 'Tumpukan ke <b>' + newMult + '× LUCK</b> (dari ' + prevMult + '×)'
@@ -4218,8 +4221,10 @@ async function buyGlobalLuck() {
       '<div class="glcf-row"><span class="glcf-label">SALDO</span><span class="glcf-val">' + gemIcon + ' ' + (state.premiumGems || 0) + ' Gems</span></div>' +
       '<div class="glcf-warn">Gems langsung dipotong dan <b>tidak bisa dikembalikan</b>. Aktivasi berlaku untuk seluruh server.</div>';
 
+    const glPack = (typeof PREMIUM_PACKS !== 'undefined') ? PREMIUM_PACKS.find(function(x){ return x.id === 'global_luck'; }) : null;
     const ok = await showConfirmDialog({
       title: isStack ? 'TUMPUK GLOBAL LUCK' : 'AKTIVASI GLOBAL LUCK',
+      img: (glPack && glPack.img) || 'assets/images/premium-currency.webp',
       body: confirmBody,
       okText: isStack ? 'TUMPUK' : 'AKTIFKAN'
     });
