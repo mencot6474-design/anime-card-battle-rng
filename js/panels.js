@@ -1744,8 +1744,8 @@ function bpTileInner(s){
 
   const chanceSpan=`<span class="hc-chance bpt-chance${mut==='rainbow'?' hc-chance-rainbow':''}" style="color:${mut?MUT_COLOR[mut]:((tier&&TIER_COLOR[tier])||"#9AA6B2")}">${mut==='rainbow'?mutText(mut,chanceText):chanceText}</span>`;
 
-  const badgesHtml=(mut||trait||s.shiny)
-    ?`<div class="hc-badges bpt-top">${s.shiny?'<span class="shiny-badge shiny-pill bpt-shiny">SHINY</span>':''}${mut?mutChip(mut,mutPill(mut,'bpt-mut')):''}${trait?traitChip(trait,`<span class="hc-trait hc-gem bpt-gem" style="color:${TRAIT_COLOR[trait]};border-color:${TRAIT_COLOR[trait]}">${traitGem(12,trait)}</span>`):''}</div>`
+  const badgesHtml=trait
+    ?`<div class="hc-badges bpt-top">${traitChip(trait,`<span class="hc-trait hc-gem bpt-gem" style="color:${TRAIT_COLOR[trait]};border-color:${TRAIT_COLOR[trait]}">${traitGem(12,trait)}</span>`)}</div>`
     :'';
 
   return `<div class="hub-center bp-card-hub${cData.fullArt?' fa':''}${mut?' mut-'+mut:''}${shinyCls(s)}" data-tier="${tier}" style="--tcol:${mut?MUT_COLOR[mut]:((tier&&TIER_COLOR[tier])||'#7DF9FF')}${mut&&!s.shiny?`;border-color:${MUT_COLOR[mut]}`:''};width:100%;height:100%;aspect-ratio:inherit;border-radius:12px;overflow:hidden;position:relative;">
@@ -1758,7 +1758,7 @@ function bpTileInner(s){
         ${bpIsNew(s)?'<span class="bpt-ndot" aria-hidden="true"></span>':''}
       </div>
       <div class="hc-info">
-        <div class="hc-stats bpt-stats" style="display:flex;justify-content:center;align-items:center;gap:8px;">
+        <div class="hc-stats bpt-stats">
           <div class="hp"><i>HP</i> <b>${fmtStat(st.hp)}</b></div>
           <div class="atk"><i>ATK</i> <b>${fmtStat(st.atk)}</b></div>
         </div>

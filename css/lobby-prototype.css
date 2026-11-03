@@ -4405,7 +4405,15 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 .backpack-panel .bp-tile .bpt-name-txt,
 .backpack-panel .bp-tile .hc-name-top,
 .backpack-panel .bp-tile .hc-name,
-.backpack-panel .bpt-tier-bar {
+.backpack-panel .bpt-tier-bar,
+.backpack-panel .bp-tile .bpt-shiny,
+.backpack-panel .bp-tile .shiny-badge,
+.backpack-panel .bp-tile .shiny-pill,
+.backpack-panel .bp-tile .bpt-mut,
+.backpack-panel .bp-tile .mut-badge,
+.backpack-panel .bp-tile .mut-chip,
+.backpack-panel .bp-tile .mut-pill,
+.backpack-panel .bp-tile .mut-hover {
   display: none !important;
 }
 
@@ -4414,6 +4422,138 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   width: 60% !important;
   margin: 0 auto !important;
   border-radius: 2px !important;
+}
+
+/* Trait Gem di pojok kanan atas */
+.backpack-panel .bp-tile .bpt-top,
+.backpack-panel .bp-tile .hc-badges {
+  position: absolute !important;
+  top: 4px !important;
+  right: 4px !important;
+  left: auto !important;
+  bottom: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  z-index: 5 !important;
+  pointer-events: none !important;
+}
+
+.backpack-panel .bp-tile .bpt-top .trait-hover {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.backpack-panel .bp-tile .bpt-top .trait-chip,
+.backpack-panel .bp-tile .bpt-top .bpt-gem,
+.backpack-panel .bp-tile .bpt-top .hc-trait,
+.backpack-panel .bp-tile .bpt-top .hc-gem {
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px !important;
+  min-height: 14px !important;
+  padding: 0 !important;
+  border-radius: 3px !important;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.8) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+}
+
+.backpack-panel .bp-tile .bpt-top .bpt-gem svg,
+.backpack-panel .bp-tile .bpt-top .trait-hover svg {
+  width: 9px !important;
+  height: 9px !important;
+  display: block !important;
+}
+
+/* Stats HP & ATK di footer: SATU BARIS CENTER PRESISI */
+.backpack-panel .bp-tile .hc-info {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: none !important;
+  z-index: 6 !important;
+  pointer-events: none !important;
+}
+
+.backpack-panel .bp-tile .hc-stats,
+.backpack-panel .bp-tile .bpt-stats {
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  height: 20px !important;
+  max-height: 20px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  justify-content: center !important;
+  align-items: baseline !important;
+  gap: 7px !important;
+  margin: 0 auto !important;
+  padding: 4px 2px 3px !important;
+  background: linear-gradient(to top, rgba(5,8,15,0.92) 0%, rgba(5,8,15,0.68) 70%, transparent 100%) !important;
+  z-index: 6 !important;
+  pointer-events: none !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+.backpack-panel .bp-tile .hc-stats .hp,
+.backpack-panel .bp-tile .bpt-stats .hp,
+.backpack-panel .bp-tile .hc-stats .atk,
+.backpack-panel .bp-tile .bpt-stats .atk {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: baseline !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  font-family: "Barlow Condensed", "Rajdhani", sans-serif !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.backpack-panel .bp-tile .hc-stats .hp,
+.backpack-panel .bp-tile .bpt-stats .hp {
+  color: #5CF0A8 !important;
+}
+
+.backpack-panel .bp-tile .hc-stats .atk,
+.backpack-panel .bp-tile .bpt-stats .atk {
+  color: #FFD27A !important;
+}
+
+.backpack-panel .bp-tile .hc-stats .hp i,
+.backpack-panel .bp-tile .bpt-stats .hp i,
+.backpack-panel .bp-tile .hc-stats .atk i,
+.backpack-panel .bp-tile .bpt-stats .atk i {
+  font-size: 8px !important;
+  font-style: normal !important;
+  font-weight: 700 !important;
+  letter-spacing: .02em !important;
+  opacity: 0.82 !important;
+  margin-right: 2px !important;
+  line-height: 1 !important;
+}
+
+.backpack-panel .bp-tile .hc-stats .hp b,
+.backpack-panel .bp-tile .bpt-stats .hp b,
+.backpack-panel .bp-tile .hc-stats .atk b,
+.backpack-panel .bp-tile .bpt-stats .atk b {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: .02em !important;
+  line-height: 1 !important;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.95) !important;
 }
 
 /* 9. Item Grid AAA Enhancement */
@@ -4499,16 +4639,17 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   display: inline-block !important;
   box-shadow: 0 2px 5px rgba(0,0,0,0.8) !important;
 }
-.backpack-panel .bp-tile .bpt-fav { position:absolute; right:5px; bottom:6px; z-index:6; width:13px; height:13px; border:0; background:none; border-radius:0; padding:0; color:var(--bp-am); filter:drop-shadow(0 1px 3px rgba(0,0,0,.95)); display:block; pointer-events:none; }
-.backpack-panel .bpt-mut { position:absolute; right:5px; top:21px; z-index:2; display:flex; align-items:center; gap:2px; height:13px; padding:0; border:0; background:none; color:var(--mcol,#7DF9FF); pointer-events:none; }
-.backpack-panel .bpt-w { position:absolute; left:5px; bottom:6px; z-index:2; width:13px; height:13px; color:var(--wcol,transparent); filter:drop-shadow(0 1px 3px rgba(0,0,0,.95)); pointer-events:none; }
-.backpack-panel .bpt-w svg { width:100%; height:100%; display:block; }
+.backpack-panel .bp-tile .bpt-fav { position:absolute !important; right:4px !important; bottom: 21px !important; z-index:6 !important; width:12px !important; height:12px !important; border:0 !important; background:none !important; border-radius:0 !important; padding:0 !important; color:var(--bp-am) !important; filter:drop-shadow(0 1px 3px rgba(0,0,0,.95)) !important; display:block !important; pointer-events:none !important; }
+.backpack-panel .bp-tile.in-deck .bpt-fav { right:15px !important; }
+.backpack-panel .bpt-mut { display:none !important; }
+.backpack-panel .bpt-w { position:absolute !important; left:4px !important; bottom: 21px !important; z-index:6 !important; width:12px !important; height:12px !important; color:var(--wcol,transparent) !important; filter:drop-shadow(0 1px 3px rgba(0,0,0,.95)) !important; pointer-events:none !important; }
+.backpack-panel .bpt-w svg { width:100% !important; height:100% !important; display:block !important; }
 .backpack-panel .bpt-ndot { position:absolute; left:6px; top:24px; z-index:2; width:6px; height:6px; border-radius:50%; background:#eafeff; pointer-events:none; }
 .backpack-panel .bpt-ndot::after { content:""; position:absolute; inset:-3px; border-radius:50%; pointer-events:none; background:radial-gradient(circle,rgba(125,249,255,.62),transparent 68%); animation:bpNdPulse 1.9s ease-in-out infinite; will-change:transform,opacity; }
 @keyframes bpNdPulse { 0%,100%{transform:scale(.62);opacity:.3} 50%{transform:scale(1.55);opacity:.95} }
-.backpack-panel .bpt-pw { position:absolute; left:5px; right:5px; bottom:2px; z-index:2; height:3px; border-radius:2px; background:rgba(8,14,24,.66); pointer-events:none; }
-.backpack-panel .bpt-pw::after { content:""; position:absolute; left:0; top:0; bottom:0; min-width:3px; max-width:100%; border-radius:2px; width:calc(var(--pw,.035) * 100%); background:linear-gradient(90deg,#0aa6d6,#19e2ff); }
-.backpack-panel .bpt-eqdot { position:absolute; right:5px; bottom:6px; z-index:2; width:8px; height:8px; border-radius:50%; background:var(--bp-cy); box-shadow:0 0 8px var(--bp-cy); pointer-events:none; }
+.backpack-panel .bpt-pw { position:absolute !important; left:0 !important; right:0 !important; bottom:0 !important; z-index:7 !important; height:2px !important; border-radius:0 0 11px 11px !important; background:rgba(8,14,24,.75) !important; pointer-events:none !important; }
+.backpack-panel .bpt-pw::after { content:"" !important; position:absolute !important; left:0 !important; top:0 !important; bottom:0 !important; border-radius:0 0 0 11px !important; width:calc(var(--pw,.035) * 100%) !important; background:linear-gradient(90deg,#0aa6d6,#19e2ff) !important; }
+.backpack-panel .bpt-eqdot { position:absolute !important; right:4px !important; bottom: 21px !important; z-index:6 !important; width:7px !important; height:7px !important; border-radius:50% !important; background:var(--bp-cy) !important; box-shadow:0 0 6px var(--bp-cy) !important; pointer-events:none !important; }
 /* --- rack: nomor slot halus; kosong = frame tipis + plus --- */
 .backpack-panel .bps-num { position:absolute; left:6px; bottom:5px; z-index:3; font-family:var(--font-mono,monospace); font-size:9px; font-weight:800; letter-spacing:.12em; color:rgba(232,246,255,.85); text-shadow:0 1px 4px rgba(0,0,0,.9); pointer-events:none; }
 /* --- modal kartu #bp-cardmodal (ditempel di document.body oleh panels.js) --- */
@@ -4863,7 +5004,7 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   .backpack-panel .bpt-mut { top:19px; height:11px; }
   .backpack-panel .bpt-mut .bp-glyph { width:10px; height:10px; }
   .backpack-panel .bpt-mut .bp-glyph.g-shiny { width:9px; height:9px; }
-  .backpack-panel .bpt-w { left:4px; bottom:5px; width:10px; height:10px; }
+  .backpack-panel .bpt-w { left:4px; bottom: 21px !important; width:10px; height:10px; }
   .backpack-panel .bpt-ndot { left:5px; top:22px; width:5px; height:5px; }
   .backpack-panel .bpt-pw { left:4px; right:4px; bottom:1.5px; height:2px; }
   .backpack-panel .bpt-tier { left:4px; top:4px; font-size:7.5px; padding:1px 5px; }
@@ -4883,7 +5024,7 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   #backpackPanel .bp-mutpop { max-height:calc(100dvh - 210px) !important; }
   .backpack-panel .bpt-mut { top:19px; height:11px; }
   .backpack-panel .bpt-mut .bp-glyph { width:10px; height:10px; }
-  .backpack-panel .bpt-w { bottom:5px; width:10px; height:10px; }
+  .backpack-panel .bpt-w { bottom: 21px !important; width:10px; height:10px; }
   .backpack-panel .bpt-ndot { top:22px; width:5px; height:5px; }
   .backpack-panel .bpt-pw { bottom:1.5px; height:2px; }
   .backpack-panel .bpt-tier { left:4px; top:4px; font-size:7.5px; padding:1px 5px; } /* BPD-GEO: tile 62px landscape — chip tier turun satu step, tidak menabrak bpt-mut */

@@ -45046,7 +45046,6 @@ body.battle-full .fighter .f-badges{top:12px !important;left:12px !important;rig
 /* Badge di DEK dan picker BOSS RAID: keluarkan dari atas kartu (baris horizontal di tepi atas) biar artwork bersih. */
 .backpack-panel .bp-tile,
 .rd-pick .bp-tile{ content-visibility:visible !important; }
-.backpack-panel .bp-tile .bpt-top,
 .rd-pick .bp-tile .bpt-top{
   top:auto !important; left:0 !important; right:auto !important;
   bottom:calc(100% + 6px) !important;
@@ -45072,7 +45071,6 @@ body.on-raid #app{ scrollbar-width:none !important; -ms-overflow-style:none !imp
 body.on-raid #app::-webkit-scrollbar{ width:0 !important; height:0 !important; display:none !important; }
 
 /* Ratakan badge di strip atas: tinggi tiap elemen seragam 20px + strip di-tengah di atas kartu biar rapi. */
-.backpack-panel .bp-tile .bpt-top,
 .rd-pick .bp-tile .bpt-top{ left:0 !important; right:0 !important; justify-content:center !important; align-items:center !important; }
 .backpack-panel .bp-tile .bpt-top > *,
 .rd-pick .bp-tile .bpt-top > *{ height:20px !important; display:inline-flex !important; align-items:center !important; box-sizing:border-box !important; }
@@ -55284,17 +55282,25 @@ html.m-landscape #backpackPanel .bp-tiles {
   border: none !important;
 }
 
-/* 3. Nama Kartu di-hide total pada .bp-tile */
+/* 3. Nama Kartu, SHINY pill, dan MUTASI badge di-hide total pada .bp-tile */
 .backpack-panel .bp-tile .bpt-hud-foot,
 .backpack-panel .bp-tile .bpt-name,
 .backpack-panel .bp-tile .bpt-name-txt,
 .backpack-panel .bp-tile .hc-name-top,
 .backpack-panel .bp-tile .hc-name,
-.backpack-panel .bp-tile .bpt-tier-bar {
+.backpack-panel .bp-tile .bpt-tier-bar,
+.backpack-panel .bp-tile .bpt-shiny,
+.backpack-panel .bp-tile .shiny-badge,
+.backpack-panel .bp-tile .shiny-pill,
+.backpack-panel .bp-tile .bpt-mut,
+.backpack-panel .bp-tile .mut-badge,
+.backpack-panel .bp-tile .mut-chip,
+.backpack-panel .bp-tile .mut-pill,
+.backpack-panel .bp-tile .mut-hover {
   display: none !important;
 }
 
-/* 4. Badge 1 in X (Chance / Rarity) di POJOK KIRI ATAS */
+/* 4. Badge 1 in X (Chance / Rarity): SATU-SATUNYA badge di POJOK KIRI ATAS */
 .backpack-panel .bp-tile .hc-chance,
 .backpack-panel .bp-tile .bpt-chance,
 .backpack-panel .bp-tile .bpt-tier {
@@ -55322,7 +55328,7 @@ html.m-landscape #backpackPanel .bp-tiles {
   box-shadow: 0 2px 5px rgba(0,0,0,0.8) !important;
 }
 
-/* 5. Badge Stack di POJOK KANAN ATAS (Vertikal: SHINY (1), Mutasi (2), Trait Gem (3)) */
+/* 5. TRAIT Gem: SATU-SATUNYA badge di POJOK KANAN ATAS */
 .backpack-panel .bp-tile .bpt-top,
 .backpack-panel .bp-tile .hc-badges {
   position: absolute !important;
@@ -55331,70 +55337,22 @@ html.m-landscape #backpackPanel .bp-tiles {
   left: auto !important;
   bottom: auto !important;
   display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-end !important;
-  gap: 3px !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
   z-index: 5 !important;
   pointer-events: none !important;
 }
 
-/* SHINY Pill (order 1) */
-.backpack-panel .bp-tile .bpt-top .bpt-shiny,
-.backpack-panel .bp-tile .bpt-top .shiny-badge,
-.backpack-panel .bp-tile .bpt-top .shiny-pill {
-  order: 1 !important;
-  height: 13px !important;
-  line-height: 13px !important;
-  padding: 0 4px !important;
-  font-family: "Barlow Condensed", sans-serif !important;
-  font-weight: 800 !important;
-  font-size: 8px !important;
-  letter-spacing: .05em !important;
-  border-radius: 3px !important;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.8) !important;
-  transform: none !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  box-sizing: border-box !important;
-}
-
-/* MUTASI Badge (order 2) */
-.backpack-panel .bp-tile .bpt-top .mut-hover {
-  order: 2 !important;
-  display: inline-flex !important;
-  line-height: 1 !important;
-}
-.backpack-panel .bp-tile .bpt-top .bpt-mut,
-.backpack-panel .bp-tile .bpt-top .mut-chip,
-.backpack-panel .bp-tile .bpt-top .mut-badge,
-.backpack-panel .bp-tile .bpt-top .mut-pill {
-  order: 2 !important;
-  height: 13px !important;
-  line-height: 13px !important;
-  padding: 0 4px !important;
-  font-family: "Barlow Condensed", sans-serif !important;
-  font-weight: 800 !important;
-  font-size: 8px !important;
-  letter-spacing: .05em !important;
-  border-radius: 3px !important;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.8) !important;
-  transform: none !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  box-sizing: border-box !important;
-}
-
-/* TRAIT Gem (order 3) */
 .backpack-panel .bp-tile .bpt-top .trait-hover {
-  order: 3 !important;
   display: inline-flex !important;
-  line-height: 1 !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
+
 .backpack-panel .bp-tile .bpt-top .trait-chip,
 .backpack-panel .bp-tile .bpt-top .bpt-gem,
 .backpack-panel .bp-tile .bpt-top .hc-trait,
 .backpack-panel .bp-tile .bpt-top .hc-gem {
-  order: 3 !important;
   width: 14px !important;
   height: 14px !important;
   min-width: 14px !important;
@@ -55415,7 +55373,7 @@ html.m-landscape #backpackPanel .bp-tiles {
   display: block !important;
 }
 
-/* 6. Stats HP & ATK: CENTER PRESISI di tengah bawah kartu dengan gradient halus */
+/* 6. Stats HP & ATK: SATU BARIS CENTER PRESISI di footer, tinggi seragam, font ~10px */
 .backpack-panel .bp-tile .hc-info {
   position: absolute !important;
   left: 0 !important;
@@ -55436,105 +55394,115 @@ html.m-landscape #backpackPanel .bp-tiles {
   left: 0 !important;
   right: 0 !important;
   width: 100% !important;
+  height: 20px !important;
+  max-height: 20px !important;
   display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
   justify-content: center !important;
-  align-items: center !important;
-  gap: 10px !important;
+  align-items: baseline !important;
+  gap: 7px !important;
   margin: 0 auto !important;
-  padding: 10px 4px 4px !important;
-  background: linear-gradient(to top, rgba(5,8,15,0.95) 0%, rgba(5,8,15,0.7) 60%, transparent 100%) !important;
+  padding: 4px 2px 3px !important;
+  background: linear-gradient(to top, rgba(5,8,15,0.92) 0%, rgba(5,8,15,0.68) 70%, transparent 100%) !important;
   z-index: 6 !important;
   pointer-events: none !important;
   box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+.backpack-panel .bp-tile .hc-stats .hp,
+.backpack-panel .bp-tile .bpt-stats .hp,
+.backpack-panel .bp-tile .hc-stats .atk,
+.backpack-panel .bp-tile .bpt-stats .atk {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: baseline !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  font-family: "Barlow Condensed", "Rajdhani", sans-serif !important;
+  font-variant-numeric: tabular-nums !important;
 }
 
 .backpack-panel .bp-tile .hc-stats .hp,
 .backpack-panel .bp-tile .bpt-stats .hp {
-  color: #5CF0A8 !important;
-  font-family: "Barlow Condensed", "Rajdhani", sans-serif !important;
-  font-weight: 800 !important;
-  font-size: 10.5px !important;
-  font-variant-numeric: tabular-nums !important;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.95) !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 2px !important;
-  margin: 0 !important;
-}
-
-.backpack-panel .bp-tile .hc-stats .hp i,
-.backpack-panel .bp-tile .bpt-stats .hp i {
-  font-size: 8.5px !important;
-  font-style: normal !important;
-  opacity: 0.8 !important;
-  color: #5CF0A8 !important;
-}
-
-.backpack-panel .bp-tile .hc-stats .hp b,
-.backpack-panel .bp-tile .bpt-stats .hp b {
-  font-size: 10.5px !important;
-  font-weight: 800 !important;
   color: #5CF0A8 !important;
 }
 
 .backpack-panel .bp-tile .hc-stats .atk,
 .backpack-panel .bp-tile .bpt-stats .atk {
   color: #FFD27A !important;
-  font-family: "Barlow Condensed", "Rajdhani", sans-serif !important;
-  font-weight: 800 !important;
-  font-size: 10.5px !important;
-  font-variant-numeric: tabular-nums !important;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.95) !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 2px !important;
-  margin: 0 !important;
 }
 
+.backpack-panel .bp-tile .hc-stats .hp i,
+.backpack-panel .bp-tile .bpt-stats .hp i,
 .backpack-panel .bp-tile .hc-stats .atk i,
 .backpack-panel .bp-tile .bpt-stats .atk i {
-  font-size: 8.5px !important;
+  font-size: 8px !important;
   font-style: normal !important;
-  opacity: 0.8 !important;
-  color: #FFD27A !important;
+  font-weight: 700 !important;
+  letter-spacing: .02em !important;
+  opacity: 0.82 !important;
+  margin-right: 2px !important;
+  line-height: 1 !important;
 }
 
+.backpack-panel .bp-tile .hc-stats .hp b,
+.backpack-panel .bp-tile .bpt-stats .hp b,
 .backpack-panel .bp-tile .hc-stats .atk b,
 .backpack-panel .bp-tile .bpt-stats .atk b {
-  font-size: 10.5px !important;
+  font-size: 10px !important;
   font-weight: 800 !important;
-  color: #FFD27A !important;
+  letter-spacing: .02em !important;
+  line-height: 1 !important;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.95) !important;
 }
 
-/* Bintang Favorit di pojok kanan bawah */
+/* 7. Penanda tile (Bintang Favorit, Cuaca, Dot) dipindahkan NAIK agar tidak menabrak baris stats */
 .backpack-panel .bp-tile .bpt-fav {
   position: absolute !important;
-  bottom: 6px !important;
-  right: 5px !important;
+  bottom: 21px !important;
+  right: 4px !important;
   top: auto !important;
   left: auto !important;
   z-index: 6 !important;
-  width: 13px !important;
-  height: 13px !important;
+  width: 12px !important;
+  height: 12px !important;
   color: #fcd34d !important;
   filter: drop-shadow(0 1px 3px rgba(0,0,0,0.95)) !important;
   pointer-events: none !important;
 }
 
 .backpack-panel .bp-tile.in-deck .bpt-fav {
-  right: 17px !important;
+  right: 15px !important;
 }
 
-/* Cuaca penanda di pojok kiri bawah */
+.backpack-panel .bp-tile .bpt-eqdot {
+  position: absolute !important;
+  bottom: 21px !important;
+  right: 4px !important;
+  top: auto !important;
+  left: auto !important;
+  z-index: 6 !important;
+  width: 7px !important;
+  height: 7px !important;
+  border-radius: 50% !important;
+  background: var(--bp-cy, #00d9ff) !important;
+  box-shadow: 0 0 6px var(--bp-cy, #00d9ff) !important;
+  pointer-events: none !important;
+}
+
 .backpack-panel .bp-tile .bpt-w {
   position: absolute !important;
-  bottom: 6px !important;
-  left: 5px !important;
+  bottom: 21px !important;
+  left: 4px !important;
   top: auto !important;
   right: auto !important;
   z-index: 6 !important;
-  width: 13px !important;
-  height: 13px !important;
+  width: 12px !important;
+  height: 12px !important;
   filter: drop-shadow(0 1px 3px rgba(0,0,0,0.95)) !important;
   pointer-events: none !important;
 }
@@ -55545,8 +55513,8 @@ html.m-landscape #backpackPanel .bp-tiles {
   left: 0 !important;
   right: 0 !important;
   bottom: 0 !important;
-  z-index: 5 !important;
-  height: 3px !important;
+  z-index: 7 !important;
+  height: 2px !important;
   border-radius: 0 0 11px 11px !important;
   background: rgba(8,14,24,.75) !important;
   pointer-events: none !important;
