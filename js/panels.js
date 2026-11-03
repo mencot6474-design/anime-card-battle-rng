@@ -1734,27 +1734,45 @@ function bpTileInner(s){
   if(!s||!s.char||!CARDS[s.char]) return '';
   const cData=CARDS[s.char];
   const tier=cData.tier||'COMMON';
+  const st=cardStats(s.char,s.mut,s.trait,s.shiny);
   const mut=(s.mut&&s.mut!=='none')?s.mut:null;
   const trait=(s.trait&&s.trait!=='none')?s.trait:null;
   const cName=cardName(s.char);
   const w=bpWeatherOf(s);
-  const shny=s.shiny?'<span class="bpt-shiny shiny-pill">SHINY</span>':'';
-  const stack=(shny||mut||trait)?`<div class="bpt-top">${shny}${mut?mutChip(mut,mutPill(mut,'bpt-mut')):''}${trait?traitChip(trait,`<span class="bpt-gem" style="color:${TRAIT_COLOR[trait]};border-color:${TRAIT_COLOR[trait]}">${traitGem(12,trait)}</span>`):''}</div>`:'';
+  const chanceText=rarityText(tier,luckChance(s.char,s.mut,s.shiny));
   const fav=s.fav?`<svg class="bpt-fav" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${BP_STAR_PATH}"/></svg>`:'';
-  const nameHtml=mut&&!s.shiny
-    ?`<span class="bpt-name-txt${mut==='rainbow'?' hc-chance-rainbow':''}" style="${mut?`color:${MUT_COLOR[mut]}`:''}">${mut==='rainbow'?mutText(mut,cName):cName}</span>`
-    :s.shiny
-    ?`<span class="bpt-name-txt hc-name-shine${mut?' hc-name-shine-'+mut:''}">${cName}</span>`
-    :`<span class="bpt-name-txt">${cName}</span>`;
 
-  return `<img src="${cardThumb(s.char)}" alt="${cName}" width="360" height="536" loading="lazy" decoding="async"${cData.pos?` style="object-position:${cData.pos}"`:''}>`
-    + stack
-    + fav
-    + (w?`<span class="bpt-w" style="color:${w.color}">${weatherSvg(w.id,13)}</span>`:'')
-    + (bpIsNew(s)?'<span class="bpt-ndot" aria-hidden="true"></span>':'')
-    + '<span class="bpt-pw" aria-hidden="true"></span>'
-    + (bpInDeck(s)?'<span class="bpt-eqdot" aria-hidden="true"></span>':'')
-    + `<div class="bpt-hud-foot">${nameHtml}</div>`;
+  const nameTop=mut&&!s.shiny
+    ?`<span class="hc-name-top bpt-name-txt hc-mut-name" data-text="${String(cName).replace(/"/g,'&quot;')}">${mut==='rainbow'?mutText(mut,cName):cName}</span>`
+    :s.shiny
+    ?`<span class="hc-name-top bpt-name-txt hc-name-shine${mut?' hc-name-shine-'+mut:''}" data-text="${String(cName).replace(/"/g,'&quot;')}" style="${mut==='gold'?'--sh-base:#E0BC6E;--sh-edge:rgba(224,188,110,.95);--sh-glow:rgba(224,188,110,.55)':mut==='rainbow'?'--sh-base:#B58CFF;--sh-edge:rgba(90,200,250,.95);--sh-glow:rgba(181,140,255,.55)':mut==='secret'?'--sh-base:#A855F7;--sh-edge:rgba(168,85,247,.95);--sh-glow:rgba(168,85,247,.55)':mut==='ultima'?'--sh-base:#FF0055;--sh-edge:rgba(255,51,102,.95);--sh-glow:rgba(255,0,85,.6)':'--sh-base:#22d3ee;--sh-edge:rgba(34,211,238,.95);--sh-glow:rgba(34,211,238,.55)'}">${cName}</span>`
+    :shinyName('span','hc-name-top bpt-name-txt','hc-name-shine',mut,s.shiny,cName);
+
+  const chanceSpan=`<span class="hc-chance bpt-chance${mut==='rainbow'?' hc-chance-rainbow':''}" style="color:${mut?MUT_COLOR[mut]:((tier&&TIER_COLOR[tier])||"#9AA6B2")}">${mut==='rainbow'?mutText(mut,chanceText):chanceText}</span>`;
+
+  const badgesHtml=(mut||trait||s.shiny)
+    ?`<div class="hc-badges bpt-top">${s.shiny?'<span class="shiny-badge shiny-pill bpt-shiny">SHINY</span>':''}${mut?mutChip(mut,mutPill(mut,'bpt-mut')):''}${trait?traitChip(trait,`<span class="hc-trait hc-gem bpt-gem" style="color:${TRAIT_COLOR[trait]};border-color:${TRAIT_COLOR[trait]}">${traitGem(12,trait)}</span>`):''}</div>`
+    :'';
+
+  return `<div class="hub-center bp-card-hub${cData.fullArt?' fa':''}${mut?' mut-'+mut:''}${shinyCls(s)}" data-tier="${tier}" style="--tcol:${mut?MUT_COLOR[mut]:((tier&&TIER_COLOR[tier])||'#7DF9FF')}${mut&&!s.shiny?`;border-color:${MUT_COLOR[mut]}`:''};width:100%;height:100%;aspect-ratio:inherit;border-radius:12px;overflow:hidden;position:relative;">
+      <div class="hc-img" style="position:relative;width:100%;height:100%;overflow:hidden;border-radius:inherit;">
+        <img src="${cardThumb(s.char)}" alt="${cName}" width="360" height="536" loading="lazy" decoding="async"${cData.pos?` style="object-position:${cData.pos}"`:''}>
+        ${nameTop}
+        ${chanceSpan}
+        ${badgesHtml}
+        ${fav}
+        ${w?`<span class="bpt-w" style="color:${w.color}">${weatherSvg(w.id,13)}</span>`:''}
+        ${bpIsNew(s)?'<span class="bpt-ndot" aria-hidden="true"></span>':''}
+      </div>
+      <div class="hc-info">
+        <div class="hc-stats bpt-stats">
+          <div class="hp"><i>HP</i> <b>${fmtStat(st.hp)}</b></div>
+          <div class="atk"><i>ATK</i> <b>${fmtStat(st.atk)}</b></div>
+        </div>
+      </div>
+      <span class="bpt-pw" aria-hidden="true"></span>
+      ${bpInDeck(s)?'<span class="bpt-eqdot" aria-hidden="true"></span>':''}
+    </div>`;
 }
 function bpLazyMountTiles(){
   lazyMountGrid(document.querySelector('.bp-scroll'),_bpTileHtml);
@@ -1847,7 +1865,7 @@ function renderBackpackPanel(){
     const nm=cardName(s.char);
     const mounted=i<INITIAL;
     const mcol=mut?(MUT_COLOR[mut]||'#7DF9FF'):'#7DF9FF'; /* shiny-only juga #7DF9FF, sama seperti bpCardBorderColor */
-    return `<div class="bp-tile${bpInDeck(s)?' in-deck':''}${cData&&cData.fullArt?' fa':''}${mounted?'':' lz-ph'}${bpCardBorderKind(s)?' bp-mut-'+bpCardBorderKind(s):''}" data-lz="${s.id}" data-sid="${s.id}" data-name="${nm.toLowerCase()}" aria-label="${nm}" role="button" onclick="bpCardModalOpen('${s.id}')" style="--pw:${pw.toFixed(3)};--tcol:${(cData&&TIER_COLOR[tier])||'#94a3b8'};--mcol:${mcol};--wcol:${w?w.color:'transparent'}">${mounted?_bpTileHtml[s.id]:''}</div>`;
+    return `<div class="bp-tile${bpInDeck(s)?' in-deck':''}${cData&&cData.fullArt?' fa':''}${mounted?'':' lz-ph'}" data-lz="${s.id}" data-sid="${s.id}" data-name="${nm.toLowerCase()}" aria-label="${nm}" role="button" onclick="bpCardModalOpen('${s.id}')" style="border:none !important;box-shadow:none !important;background:transparent !important;padding:0 !important;outline:none !important;--pw:${pw.toFixed(3)};--tcol:${(cData&&TIER_COLOR[tier])||'#94a3b8'};--mcol:${mcol};--wcol:${w?w.color:'transparent'}">${mounted?_bpTileHtml[s.id]:''}</div>`;
   }).join('');
   /* COLLECTION BAR prototipe (v3 .coll-bar): KOLEKSI n + FAV + MUT(popover: baris mutasi + URUTKAN) + search.
      URUTKAN sengaja DI DALAM popover (prototipe v3) — 4 tombol di bar memecah bar jadi 2-5 baris
