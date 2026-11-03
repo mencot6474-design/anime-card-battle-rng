@@ -1731,9 +1731,6 @@ function lazyMountGrid(rootEl,htmlMap,opts){
    mark cuaca + dot BARU + meter power + dot equipped. Nilai lewat CSS custom property di
    container (--pw/--tcol/--mcol/--wcol, lihat builder deck) supaya ui-css cukup membaca. */
 function bpTileInner(s){
-  const cData=CARDS[s.char];
-  const tier=(cData&&cData.tier)||'COMMON';
-  const tCol=(cData&&TIER_COLOR[tier])||'#94a3b8';
   const mut=(s.mut&&s.mut!=='none')?s.mut:null;
   const w=bpWeatherOf(s);
   /* bentuk glif mutasi = clip-path ui-css (.bp-glyph.g-<mut>), warna dari --mcol; SHINY = bintang SVG inline */
@@ -1742,7 +1739,6 @@ function bpTileInner(s){
   if(s.shiny)glyphs+=`<svg class="bp-glyph g-shiny" width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${BP_STAR_PATH}"/></svg>`;
   const fav=s.fav?`<svg class="bpt-fav" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${BP_STAR_PATH}"/></svg>`:'';
   return `<img src="${cardThumb(s.char)}" alt="" width="360" height="536" loading="lazy" decoding="async">`
-    +`<span class="bpt-tier" style="color:${tCol}">${tier}</span>`
     +fav
     +(glyphs?`<span class="bpt-mut">${glyphs}</span>`:'')
     +(w?`<span class="bpt-w" style="color:${w.color}">${weatherSvg(w.id,13)}</span>`:'')
