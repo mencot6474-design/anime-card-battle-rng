@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v334-wbPickHide';
+const CACHE_NAME = 'anime-card-battle-v335-bpHoverCards';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

@@ -32647,15 +32647,13 @@ body.battle-full .fighter.me,body.battle-full .fighter.foe{
 
 
 
-/* RADICAL FIX: Removed conflicting rules for bp-slot */
-/* .backpack-panel .bp-slot.filled:not([class*="bp-mut-"]){border:0!important;box-shadow:none!important;} */
-/* .backpack-panel .bp-slot.filled:not([class*="bp-mut-"]):hover{border:0!important;box-shadow:none!important;} */
+.backpack-panel .bp-slot.filled:not([class*="bp-mut-"]){border:0!important;box-shadow:none!important;}
+.backpack-panel .bp-slot.filled:not([class*="bp-mut-"]):hover{border:0!important;box-shadow:none!important;}
 
 
 
-/* RADICAL FIX: Removed conflicting rules - nuklear override at end of file handles all borders */
-/* .backpack-panel .bp-tile:not([class*="bp-mut-"]){border:0!important;outline:none!important;box-shadow:none!important;} */
-/* .backpack-panel .bp-tile:not([class*="bp-mut-"]):hover{border:0!important;outline:none!important;box-shadow:none!important;} */
+.backpack-panel .bp-tile:not([class*="bp-mut-"]){border:0!important;outline:none!important;box-shadow:none!important;}
+.backpack-panel .bp-tile:not([class*="bp-mut-"]):hover{border:0!important;outline:none!important;box-shadow:none!important;}
 
 
 
@@ -40590,6 +40588,8 @@ body.battle-full .fighter.phantom-enter {
 
 
 
+.backpack-panel .bp-tile.in-deck[class*="mut-"]:not(#_bv2),.backpack-panel .bp-tile.in-deck.shiny:not(#_bv2){box-shadow:none!important}
+.backpack-panel .bp-tile[class*="mut-"]:not(#_bv2),.backpack-panel .bp-tile.shiny:not(#_bv2){box-shadow:none!important;outline:none!important;}
 
 
 
@@ -55200,66 +55200,248 @@ html.m-landscape body.on-settings .sett-wrap {
   .sett-wrap *::after { animation:none !important; transition:none !important; }
 }
 
-/* ===== RADICAL FIX: NUKLEAR RESET + REBUILD ===== */
-/* Step 1: Hapus SEMUA border/outline/box-shadow dari bp-tile dan bp-slot */
-.backpack-panel .bp-tile,
-.backpack-panel .bp-tile::before,
-.backpack-panel .bp-tile::after,
-.backpack-panel .bp-slot,
-.backpack-panel .bp-slot.filled,
-.backpack-panel .bp-slot::before,
-.backpack-panel .bp-slot::after {
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
+/* ==========================================================================
+   BACKPACK FULL HOVER CARD SYSTEM (Squadron Deck & Koleksi Cards)
+   Menampilkan kartu di Deck Aktif dan Koleksi sama persis seperti Hover Card:
+   - Nama kartu di kiri atas (.hc-name-top)
+   - Badge Rarity / Chance di bawah nama (.hc-chance)
+   - Badge SHINY / Mutasi / Trait di pojok kanan atas (.hc-badges)
+   - Footer HP & ATK di bawah (.hc-info > .hc-stats)
+   ========================================================================== */
+
+/* Grid koleksi: beri ruang nyaman agar badge & teks kartu terbaca presisi */
+.backpack-panel .bp-tiles {
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)) !important;
+  gap: 10px !important;
+}
+html.m-portrait #backpackPanel .bp-tiles {
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)) !important;
+  gap: 8px !important;
+}
+html.m-landscape #backpackPanel .bp-tiles {
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)) !important;
+  gap: 10px !important;
 }
 
-/* Step 2: Rebuild dengan HANYA 1 border sederhana */
+/* Container kartu di Backpack (.bp-tile dan .bp-slot.filled) */
 .backpack-panel .bp-tile {
-  border: 2px solid var(--line2, rgba(125,249,255,.28)) !important;
-  border-radius: 14px !important;
+  overflow: visible !important;
 }
 
 .backpack-panel .bp-slot.filled {
-  border: 2px solid var(--tcol, rgba(125,249,255,.28)) !important;
-  border-radius: 12px !important;
+  overflow: visible !important;
 }
 
-/* Mutation cards: border warna sesuai mutation */
-.backpack-panel .bp-tile[class*="bp-mut-"],
-.backpack-panel .bp-tile.shiny,
-.backpack-panel .bp-slot.filled[class*="bp-mut-"],
-.backpack-panel .bp-slot.filled.shiny {
-  border-color: var(--mcol, #7DF9FF) !important;
+/* Base Hub Card di dalam backpack */
+.backpack-panel .bp-card-hub.hub-center {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 11px !important;
+  margin: 0 !important;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.45) !important;
 }
 
-/* HOVER SEMUA: semua card tampil seperti hover state permanently */
-.backpack-panel .bp-tile:not([class*="bp-mut-"]):not(.shiny),
-.backpack-panel .bp-slot.filled:not([class*="bp-mut-"]):not(.shiny) {
-  border-color: #7DF9FF !important;
-  transform: translateY(-3px) !important;
-  box-shadow: 0 12px 28px rgba(0,0,0,.7) !important;
+.backpack-panel .bp-card-hub .hc-img {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: inherit !important;
+  overflow: visible !important;
 }
 
-/* Mutation cards: hover effect juga */
-.backpack-panel .bp-tile[class*="bp-mut-"],
-.backpack-panel .bp-tile.shiny,
-.backpack-panel .bp-slot.filled[class*="bp-mut-"],
-.backpack-panel .bp-slot.filled.shiny {
-  border-color: var(--mcol, #7DF9FF) !important;
-  transform: translateY(-3px) !important;
-  box-shadow: 0 12px 28px rgba(0,0,0,.7) !important;
+.backpack-panel .bp-card-hub .hc-img img {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: top !important;
+  border-radius: inherit !important;
 }
 
-/* Hover state: JANGAN tambah box-shadow, cukup brighten border */
-.backpack-panel .bp-tile:hover,
-.backpack-panel .bp-slot.filled:hover {
-  border-color: #7DF9FF !important;
-  box-shadow: none !important;
+/* 1. Nama Kartu (.hc-name-top): kiri atas melayang elegan */
+.backpack-panel .bp-card-hub .hc-name-top {
+  top: -8px !important;
+  left: -4px !important;
+  max-width: 90% !important;
+  font-family: "Barlow Condensed", "Rajdhani", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 11px !important;
+  line-height: 1 !important;
+  letter-spacing: .02em !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  transform: skewX(-4deg) !important;
+  z-index: 6 !important;
+  text-shadow: 1px 1px 0 #0b0e14, 2px 2px 0 #0b0e14, 0 0 8px rgba(0,0,0,.9) !important;
 }
 
-/* Full art cards: tetap no border */
-.backpack-panel .bp-tile.fa,
-.backpack-panel .bp-slot.fa {
-  border: none !important;
+/* 2. Badge Chance / Rarity (.hc-chance) di bawah nama */
+.backpack-panel .bp-card-hub .hc-chance {
+  top: 10px !important;
+  left: -2px !important;
+  font-family: "Barlow Condensed", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 8px !important;
+  letter-spacing: .08em !important;
+  text-transform: uppercase !important;
+  padding: 1px 4px !important;
+  border-radius: 4px !important;
+  background: rgba(6,9,14,.92) !important;
+  border: 1px solid currentColor !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,.6) !important;
+  transform: skewX(-4deg) !important;
+  white-space: nowrap !important;
+  z-index: 6 !important;
 }
+
+/* 3. Badges (.hc-badges): SHINY / Mutasi / Trait di pojok kanan atas */
+.backpack-panel .bp-card-hub .hc-badges {
+  top: -7px !important;
+  right: -5px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 2px !important;
+  z-index: 7 !important;
+}
+
+.backpack-panel .bp-card-hub .hc-badges .shiny-badge,
+.backpack-panel .bp-card-hub .hc-badges .mut-badge {
+  height: 14px !important;
+  padding: 0 4px !important;
+  font-size: 7.5px !important;
+  border-radius: 4px !important;
+  line-height: 14px !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,.7) !important;
+}
+
+.backpack-panel .bp-card-hub .hc-badges .hc-trait.hc-gem {
+  width: 14px !important;
+  height: 14px !important;
+  padding: 0 !important;
+  border-radius: 3px !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,.7) !important;
+}
+
+.backpack-panel .bp-card-hub .hc-badges .hc-trait.hc-gem svg {
+  width: 10px !important;
+  height: 10px !important;
+}
+
+/* 4. Footer Stats HP & ATK (.hc-info > .hc-stats) */
+.backpack-panel .bp-card-hub .hc-info {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 6 !important;
+  padding: 14px 4px 4px !important;
+  background: linear-gradient(to top, rgba(6,8,12,.95) 55%, rgba(6,8,12,.65) 80%, transparent) !important;
+  border-radius: 0 0 11px 11px !important;
+  pointer-events: none !important;
+}
+
+.backpack-panel .bp-card-hub .hc-stats {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 4px !important;
+  font-family: "Barlow Condensed", sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 10px !important;
+  letter-spacing: .02em !important;
+  line-height: 1 !important;
+}
+
+.backpack-panel .bp-card-hub .hc-stats .hp {
+  color: #5CF0A8 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 2px !important;
+}
+
+.backpack-panel .bp-card-hub .hc-stats .hp i {
+  font-style: normal !important;
+  opacity: .8 !important;
+  font-size: 8px !important;
+}
+
+.backpack-panel .bp-card-hub .hc-stats .atk {
+  color: #FFD27A !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 2px !important;
+}
+
+.backpack-panel .bp-card-hub .hc-stats .atk i {
+  font-style: normal !important;
+  opacity: .8 !important;
+  font-size: 8px !important;
+}
+
+/* Penyesuaian Bintang Favorit di Card Hub Backpack */
+.backpack-panel .bp-card-hub .bpt-fav {
+  position: absolute !important;
+  bottom: 22px !important;
+  right: 5px !important;
+  top: auto !important;
+  z-index: 6 !important;
+  width: 14px !important;
+  height: 14px !important;
+  color: #FFC93C !important;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,.9)) !important;
+}
+
+/* Cuaca penanda pojok kiri bawah di atas footer */
+.backpack-panel .bp-card-hub .bpt-w {
+  position: absolute !important;
+  bottom: 22px !important;
+  left: 5px !important;
+  z-index: 6 !important;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,.9)) !important;
+}
+
+/* Status dot baru dan power meter */
+.backpack-panel .bp-card-hub .bpt-ndot {
+  position: absolute !important;
+  top: 5px !important;
+  right: 5px !important;
+  z-index: 8 !important;
+}
+
+/* Slot Deck: Tombol Lepas (.bps-x) & Nomor (.bps-num) */
+.backpack-panel .bp-slot .bps-num {
+  z-index: 8 !important;
+  bottom: 2px !important;
+  left: 4px !important;
+  font-size: 8px !important;
+  opacity: .85 !important;
+}
+
+.backpack-panel .bp-slot .bps-x {
+  z-index: 10 !important;
+  top: -4px !important;
+  right: -4px !important;
+  width: 20px !important;
+  height: 20px !important;
+  background: rgba(14, 20, 32, 0.95) !important;
+  border: 1px solid rgba(255, 75, 75, 0.6) !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.6) !important;
+}
+
+.backpack-panel .bp-slot .bps-x:hover {
+  background: #ff3344 !important;
+  color: #fff !important;
+  border-color: #ff3344 !important;
+  transform: scale(1.1) !important;
+}
+

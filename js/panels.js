@@ -1731,20 +1731,49 @@ function lazyMountGrid(rootEl,htmlMap,opts){
    mark cuaca + dot BARU + meter power + dot equipped. Nilai lewat CSS custom property di
    container (--pw/--tcol/--mcol/--wcol, lihat builder deck) supaya ui-css cukup membaca. */
 function bpTileInner(s){
+  if(!s||!s.char||!CARDS[s.char]) return '';
+  const cData=CARDS[s.char];
+  const tier=cData.tier||'COMMON';
+  const st=cardStats(s.char,s.mut,s.trait,s.shiny);
   const mut=(s.mut&&s.mut!=='none')?s.mut:null;
+  const trait=(s.trait&&s.trait!=='none')?s.trait:null;
+  const chanceText=rarityText(tier,luckChance(s.char,s.mut,s.shiny));
   const w=bpWeatherOf(s);
-  /* bentuk glif mutasi = clip-path ui-css (.bp-glyph.g-<mut>), warna dari --mcol; SHINY = bintang SVG inline */
-  let glyphs='';
-  if(mut)glyphs+=`<i class="bp-glyph g-${mut}"></i>`;
-  if(s.shiny)glyphs+=`<svg class="bp-glyph g-shiny" width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${BP_STAR_PATH}"/></svg>`;
+  const cName=cardName(s.char);
+
+  const nameTop=mut&&!s.shiny
+    ?`<span class="hc-name-top hc-mut-name" data-text="${String(cName).replace(/"/g,'&quot;')}">${mut==='rainbow'?mutText(mut,cName):cName}</span>`
+    :s.shiny
+    ?`<span class="hc-name-top hc-name-shine${mut?' hc-name-shine-'+mut:''}" data-text="${String(cName).replace(/"/g,'&quot;')}" style="${mut==='gold'?'--sh-base:#E0BC6E;--sh-edge:rgba(224,188,110,.95);--sh-glow:rgba(224,188,110,.55)':mut==='rainbow'?'--sh-base:#B58CFF;--sh-edge:rgba(90,200,250,.95);--sh-glow:rgba(181,140,255,.55)':mut==='secret'?'--sh-base:#A855F7;--sh-edge:rgba(168,85,247,.95);--sh-glow:rgba(168,85,247,.55)':mut==='ultima'?'--sh-base:#FF0055;--sh-edge:rgba(255,51,102,.95);--sh-glow:rgba(255,0,85,.6)':'--sh-base:#22d3ee;--sh-edge:rgba(34,211,238,.95);--sh-glow:rgba(34,211,238,.55)'}">${cName}</span>`
+    :shinyName('span','hc-name-top','hc-name-shine',mut,s.shiny,cName);
+
+  const chanceSpan=`<span class="hc-chance${mut==='rainbow'?' hc-chance-rainbow':''}" style="color:${mut?MUT_COLOR[mut]:"#9AA6B2"}">${mut==='rainbow'?mutText(mut,chanceText):chanceText}</span>`;
+
+  const badgesHtml=(mut||trait||s.shiny)
+    ?`<div class="hc-badges">${s.shiny?'<span class="shiny-badge shiny-pill">SHINY</span>':''}${mut?mutChip(mut,mutPill(mut)):''}${trait?traitChip(trait,`<span class="hc-trait hc-gem" style="color:${TRAIT_COLOR[trait]};border-color:${TRAIT_COLOR[trait]}">${traitGem(14,trait)}</span>`):''}</div>`
+    :'';
+
   const fav=s.fav?`<svg class="bpt-fav" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${BP_STAR_PATH}"/></svg>`:'';
-  return `<img src="${cardThumb(s.char)}" alt="" width="360" height="536" loading="lazy" decoding="async">`
-    +fav
-    +(glyphs?`<span class="bpt-mut">${glyphs}</span>`:'')
-    +(w?`<span class="bpt-w" style="color:${w.color}">${weatherSvg(w.id,13)}</span>`:'')
-    +(bpIsNew(s)?'<span class="bpt-ndot" aria-hidden="true"></span>':'')
-    +'<span class="bpt-pw" aria-hidden="true"></span>'
-    +(bpInDeck(s)?'<span class="bpt-eqdot" aria-hidden="true"></span>':'');
+
+  return `<div class="hub-center bp-card-hub${cData.fullArt?' fa':''}${mut?' mut-'+mut:''}${shinyCls(s)}" data-tier="${tier}" style="--tcol:${mut?MUT_COLOR[mut]:((tier&&TIER_COLOR[tier])||'#7DF9FF')}${mut&&!s.shiny?`;border-color:${MUT_COLOR[mut]}`:''}">
+      <div class="hc-img">
+        <img src="${cardThumb(s.char)}" alt="${cName}" width="360" height="536" loading="lazy" decoding="async"${cData.pos?` style="object-position:${cData.pos}"`:''}>
+        ${nameTop}
+        ${chanceSpan}
+        ${badgesHtml}
+        ${fav}
+        ${w?`<span class="bpt-w" style="color:${w.color}">${weatherSvg(w.id,13)}</span>`:''}
+        ${bpIsNew(s)?'<span class="bpt-ndot" aria-hidden="true"></span>':''}
+      </div>
+      <div class="hc-info">
+        <div class="hc-stats">
+          <div class="hp"><i>HP</i> <b>${fmtStat(st.hp)}</b></div>
+          <div class="atk"><i>ATK</i> <b>${fmtStat(st.atk)}</b></div>
+        </div>
+      </div>
+      <span class="bpt-pw" aria-hidden="true"></span>
+      ${bpInDeck(s)?'<span class="bpt-eqdot" aria-hidden="true"></span>':''}
+    </div>`;
 }
 function bpLazyMountTiles(){
   lazyMountGrid(document.querySelector('.bp-scroll'),_bpTileHtml);
@@ -1811,10 +1840,41 @@ function renderBackpackPanel(){
     const mutCls=(s.mut&&s.mut!=='none')?' mut-'+s.mut:'';
     const shinyClsStr=s.shiny?' shiny':'';
     const fullMutClass=variantClass+mutCls+shinyClsStr;
+    const cData=CARDS[s.char];
+    const tier=(cData&&cData.tier)||'COMMON';
+    const st=cardStats(s.char,s.mut,s.trait,s.shiny);
+    const mut=(s.mut&&s.mut!=='none')?s.mut:null;
+    const trait=(s.trait&&s.trait!=='none')?s.trait:null;
+    const chanceText=rarityText(tier,luckChance(s.char,s.mut,s.shiny));
+    const cName=cardName(s.char);
+
+    const nameTop=mut&&!s.shiny
+      ?`<span class="hc-name-top hc-mut-name" data-text="${String(cName).replace(/"/g,'&quot;')}">${mut==='rainbow'?mutText(mut,cName):cName}</span>`
+      :s.shiny
+      ?`<span class="hc-name-top hc-name-shine${mut?' hc-name-shine-'+mut:''}" data-text="${String(cName).replace(/"/g,'&quot;')}" style="${mut==='gold'?'--sh-base:#E0BC6E;--sh-edge:rgba(224,188,110,.95);--sh-glow:rgba(224,188,110,.55)':mut==='rainbow'?'--sh-base:#B58CFF;--sh-edge:rgba(90,200,250,.95);--sh-glow:rgba(181,140,255,.55)':mut==='secret'?'--sh-base:#A855F7;--sh-edge:rgba(168,85,247,.95);--sh-glow:rgba(168,85,247,.55)':mut==='ultima'?'--sh-base:#FF0055;--sh-edge:rgba(255,51,102,.95);--sh-glow:rgba(255,0,85,.6)':'--sh-base:#22d3ee;--sh-edge:rgba(34,211,238,.95);--sh-glow:rgba(34,211,238,.55)'}">${cName}</span>`
+      :shinyName('span','hc-name-top','hc-name-shine',mut,s.shiny,cName);
+
+    const chanceSpan=`<span class="hc-chance${mut==='rainbow'?' hc-chance-rainbow':''}" style="color:${mut?MUT_COLOR[mut]:"#9AA6B2"}">${mut==='rainbow'?mutText(mut,chanceText):chanceText}</span>`;
+
+    const badgesHtml=(mut||trait||s.shiny)
+      ?`<div class="hc-badges">${s.shiny?'<span class="shiny-badge shiny-pill">SHINY</span>':''}${mut?mutChip(mut,mutPill(mut)):''}${trait?traitChip(trait,`<span class="hc-trait hc-gem" style="color:${TRAIT_COLOR[trait]};border-color:${TRAIT_COLOR[trait]}">${traitGem(14,trait)}</span>`):''}</div>`
+      :'';
+
     return `
-      <div class="bp-slot filled${bpTarget===i?' sel':''}${fullMutClass}${CARDS[s.char]&&CARDS[s.char].fullArt?' fa':''}" data-sid="${s.id}" onclick="bpPickSlot(${i})" aria-label="Slot ${i+1}: ${cardName(s.char)}" style="--tcol:${edge}${edgeStyle}">
-        <div class="bps-art-wrap">
-          <img src="${cardThumb(s.char)}" alt="" loading="lazy" decoding="async">
+      <div class="bp-slot filled${bpTarget===i?' sel':''}${fullMutClass}${cData&&cData.fullArt?' fa':''}" data-sid="${s.id}" onclick="bpPickSlot(${i})" aria-label="Slot ${i+1}: ${cName}" style="--tcol:${edge}${edgeStyle}">
+        <div class="hub-center bp-card-hub${cData&&cData.fullArt?' fa':''}${mut?' mut-'+mut:''}${shinyCls(s)}" data-tier="${tier}" style="--tcol:${mut?MUT_COLOR[mut]:((tier&&TIER_COLOR[tier])||'#7DF9FF')}${mut&&!s.shiny?`;border-color:${MUT_COLOR[mut]}`:''}">
+          <div class="hc-img">
+            <img src="${cardThumb(s.char)}" alt="${cName}" loading="lazy" decoding="async"${cData&&cData.pos?` style="object-position:${cData.pos}"`:''}>
+            ${nameTop}
+            ${chanceSpan}
+            ${badgesHtml}
+          </div>
+          <div class="hc-info">
+            <div class="hc-stats">
+              <div class="hp"><i>HP</i> <b>${fmtStat(st.hp)}</b></div>
+              <div class="atk"><i>ATK</i> <b>${fmtStat(st.atk)}</b></div>
+            </div>
+          </div>
         </div>
         <span class="bps-num" aria-hidden="true">0${i+1}</span>
         <button class="bps-x" onclick="event.stopPropagation();bpClearSlot(${i})" title="Lepas Kartu" aria-label="Lepas kartu dari slot ${i+1}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
