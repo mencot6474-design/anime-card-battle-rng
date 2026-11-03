@@ -372,6 +372,7 @@ const bfSync=()=>{
   const grid = app.querySelector(".battle-grid");
   const hasBattle = !!grid;
   document.body.classList.toggle("battle-full", hasBattle);
+  document.body.classList.toggle("on-battle", hasBattle);
   if(hasBattle && window.syncBattleBackground) window.syncBattleBackground();
   // Tinggi topbar asli → --tbh cuma pas battle (v34 revert). Lobby sengaja pakai default 64px
   // biar geometri main calc(100dvh - 64) balik persis ke state v31 yang center-nya pas;

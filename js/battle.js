@@ -253,6 +253,7 @@ function benchHtml(){
   return benchRailHtml(list,"DECK STANDBY");
 }
 function renderBattle(){
+  document.body.classList.add("battle-full", "on-battle");
   const lv=state.battle.level,en=enemyOf(lv),es=enemyStats(lv);
   const eq=equipped();
   app.innerHTML=`

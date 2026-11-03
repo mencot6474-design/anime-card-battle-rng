@@ -1762,7 +1762,8 @@ function bpTileInner(s){
     ?`<div class="hc-badges bpt-top">${traitChip(trait,`<span class="hc-trait hc-gem bpt-gem" style="color:${TRAIT_COLOR[trait]};border-color:${TRAIT_COLOR[trait]}">${traitGem(12,trait)}</span>`)}</div>`
     :'';
 
-  return `<div class="hub-center bp-card-hub${cData.fullArt?' fa':''}${mut?' mut-'+mut:''}${shinyCls(s)}" data-tier="${tier}" style="--tcol:${mut?MUT_COLOR[mut]:((tier&&TIER_COLOR[tier])||'#7DF9FF')}${mut&&!s.shiny?`;border-color:${MUT_COLOR[mut]}`:''};width:100%;height:100%;aspect-ratio:inherit;border-radius:12px;overflow:hidden;position:relative;">
+  const bcol = mut ? MUT_COLOR[mut] : ((tier && TIER_COLOR[tier]) || '#7DF9FF');
+  return `<div class="hub-center bp-card-hub${cData.fullArt?' fa':''}${mut?' mut-'+mut:''}${shinyCls(s)}" data-tier="${tier}" style="--tcol:${bcol};border:3px solid ${bcol};border-radius:1px;box-sizing:border-box;width:100%;height:100%;aspect-ratio:inherit;overflow:hidden;position:relative;">
       <div class="hc-img" style="position:relative;width:100%;height:100%;overflow:hidden;border-radius:inherit;">
         <img src="${cardThumb(s.char)}" alt="${cName}" width="360" height="536" loading="lazy" decoding="async"${cData.pos?` style="object-position:${cData.pos}"`:''}>
         ${chanceSpan}

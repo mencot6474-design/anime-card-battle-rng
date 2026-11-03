@@ -55211,13 +55211,14 @@ html.m-landscape #backpackPanel .bp-tiles {
 }
 
 /* 2. Tile Koleksi: Card container presisi, SATU OUTLINE TUNGGAL (BERSIH) */
-.backpack-panel .bp-tile {
+.backpack-panel .bp-tile,
+#backpackPanel .bp-tiles .bp-tile {
   position: relative !important;
   aspect-ratio: 5/7 !important;
-  border-radius: 12px !important;
+  border-radius: 1px !important;
   overflow: hidden !important;
   background: #0e1626 !important;
-  border: 1px solid var(--tcol, rgba(125,249,255,.22)) !important;
+  border: 3px solid var(--tcol, rgba(125,249,255,.35)) !important;
   outline: none !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease !important;
@@ -55248,15 +55249,26 @@ html.m-landscape #backpackPanel .bp-tiles {
   box-shadow: none !important;
 }
 
-/* Border tunggal bersih untuk kartu mutasi / shiny (warna spesifik sesuai mutasi) */
+/* Border tunggal bersih untuk kartu mutasi / shiny (ketebalan 3px, radius 1px) */
 .backpack-panel .bp-tile[class*="bp-mut-"],
 .backpack-panel .bp-tile[class*="mut-"],
 .backpack-panel .bp-tile.shiny,
-#backpackPanel .bp-tiles .bp-tile[class*="bp-mut-"] {
-  border-width: 1.5px !important;
+#backpackPanel .bp-tiles .bp-tile[class*="bp-mut-"],
+#backpackPanel .bp-tiles .bp-tile[class*="mut-"],
+#backpackPanel .bp-tiles .bp-tile.shiny {
+  border-width: 3px !important;
   border-style: solid !important;
   border-color: var(--mcol, #7DF9FF) !important;
+  border-radius: 1px !important;
   outline: none !important;
+}
+
+.backpack-panel .bp-tile .bp-card-hub,
+.backpack-panel .bp-tile .hub-center,
+.backpack-panel .bp-tile .hc-img,
+.backpack-panel .bp-tile img,
+#backpackPanel .bp-tiles .bp-tile img {
+  border-radius: 1px !important;
 }
 
 .backpack-panel .bp-tile:hover {
@@ -55543,14 +55555,41 @@ html.m-landscape #backpackPanel .bp-tiles {
   background: linear-gradient(90deg, #0aa6d6, #19e2ff) !important;
 }
 
-/* 5. DECK AKTIF: POLOSAN ART SAJA (SATU OUTLINE TUNGGAL BERSIH) */
+/* BATTLE HEADER HIDE: Sembunyikan header shell saat dalam mode battle */
+html body.battle-full header#topbar,
+html body.battle-full #topbar,
+html body.on-battle header#topbar,
+html body.on-battle #topbar,
+body.battle-full header#topbar,
+body.battle-full #topbar,
+body.on-battle header#topbar,
+body.on-battle #topbar {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  pointer-events: none !important;
+}
+
+/* 5. DECK AKTIF: POLOSAN ART SAJA (SATU OUTLINE TUNGGAL BERSIH, Border 3px, Radius 1px) */
+.backpack-panel .bp-slot,
+.backpack-panel .bp-slot.filled,
+#backpackPanel .bp-slots .bp-slot,
+#backpackPanel .bp-slots .bp-slot.filled {
+  border-radius: 1px !important;
+}
+
 .backpack-panel .bp-slot.filled,
 #backpackPanel .bp-slots .bp-slot.filled {
   position: relative !important;
   aspect-ratio: 1/1 !important;
-  border-radius: 12px !important;
+  border-radius: 1px !important;
   overflow: hidden !important;
-  border: 1.5px solid var(--tcol, rgba(125,249,255,.35)) !important;
+  border: 3px solid var(--tcol, rgba(125,249,255,.35)) !important;
   outline: none !important;
   background: #0d131f !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
@@ -55562,8 +55601,16 @@ html.m-landscape #backpackPanel .bp-tiles {
 #backpackPanel .bp-slots .bp-slot.filled[class*="bp-mut-"],
 #backpackPanel .bp-slots .bp-slot.filled[class*="mut-"],
 #backpackPanel .bp-slots .bp-slot.filled.shiny {
-  border: 1.5px solid var(--tcol, #7DF9FF) !important;
+  border: 3px solid var(--tcol, #7DF9FF) !important;
+  border-radius: 1px !important;
   outline: none !important;
+}
+
+.backpack-panel .bp-slot .bps-art-wrap,
+.backpack-panel .bp-slot .bps-art-wrap img,
+#backpackPanel .bp-slots .bp-slot .bps-art-wrap,
+#backpackPanel .bp-slots .bp-slot .bps-art-wrap img {
+  border-radius: 1px !important;
 }
 
 .backpack-panel .bp-slot.filled:hover,

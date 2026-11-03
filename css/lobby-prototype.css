@@ -1258,8 +1258,8 @@ html body.on-lobby #crFab,
 }
 
 /* 2. Topbar HUD (Zero-Shift Zoom-Resilient AAA Glass HUD) */
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) header#topbar,
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) #topbar {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) header#topbar,
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) #topbar {
   position: fixed !important;
   top: 0 !important;
   left: 0 !important;
@@ -1286,7 +1286,7 @@ html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)
   pointer-events: auto !important;
 }
 
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-profile {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-profile {
   display: flex !important;
   align-items: center !important;
   flex-direction: row !important;
@@ -1298,7 +1298,7 @@ html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)
   min-width: 0 !important;
 }
 
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-av-wrapper {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-av-wrapper {
   position: relative !important;
   width: 46px !important;
   height: 46px !important;
@@ -1316,7 +1316,7 @@ html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)
   border-radius: 0 !important;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-av-wrapper::after {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-av-wrapper::after {
   content: "" !important;
   position: absolute !important;
   inset: 1.5px !important;
@@ -1324,11 +1324,11 @@ html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)
   clip-path: polygon(9px 0%, 100% 0%, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0% 100%, 0% 9px) !important;
   z-index: -1 !important;
 }
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-av-wrapper:hover {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-av-wrapper:hover {
   transform: translateY(-2px) scale(1.06) !important;
   filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.6)) !important;
 }
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-av-wrapper .tb-av {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-av-wrapper .tb-av {
   width: 100% !important;
   height: 100% !important;
   border-radius: 0 !important;
@@ -1336,17 +1336,17 @@ html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)
   box-shadow: none !important;
   background: transparent !important;
 }
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-av-wrapper .tb-av img {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-av-wrapper .tb-av img {
   width: 100% !important;
   height: 100% !important;
   object-fit: cover !important;
   clip-path: polygon(9px 0%, 100% 0%, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0% 100%, 0% 9px) !important;
 }
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-av-change {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-av-change {
   display: none !important;
 }
 
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-id {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-id {
   display: flex !important;
   align-items: center !important;
   flex-direction: row !important;
@@ -1355,7 +1355,7 @@ html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)
   flex-shrink: 0 !important;
   white-space: nowrap !important;
 }
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-top {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-top {
   display: flex !important;
   align-items: center !important;
   flex-direction: row !important;
@@ -1363,7 +1363,7 @@ html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)
   gap: clamp(8px, 1vw, 12px) !important;
   white-space: nowrap !important;
 }
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-name {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-name {
   font-family: var(--font-tac, 'Rajdhani', sans-serif) !important;
   font-size: 18px !important;
   font-weight: 800 !important;
@@ -1378,13 +1378,13 @@ html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)
 }
 
 /* Spacer */
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) #topbar .spacer {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) #topbar .spacer {
   flex: 1 1 auto !important;
   min-width: 12px !important;
 }
 
 /* Right Actions Cluster */
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-actions {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-actions {
   display: flex !important;
   align-items: center !important;
   flex-direction: row !important;
@@ -1396,8 +1396,8 @@ html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)
 }
 
 /* Chamfered Currency Pills */
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) #topbar .pill.coins,
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) #topbar .pill.gems {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) #topbar .pill.coins,
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) #topbar .pill.gems {
   position: relative !important;
   height: 38px !important;
   padding: 0 clamp(10px, 1.2vw, 16px) 0 clamp(8px, 1vw, 12px) !important;
@@ -1421,28 +1421,28 @@ html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)
   flex-shrink: 0 !important;
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) #topbar .pill.coins {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) #topbar .pill.coins {
   border-left-color: #facc15 !important;
 }
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) #topbar .pill.coins #coinVal {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) #topbar .pill.coins #coinVal {
   color: #facc15 !important;
   filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.45)) !important;
   font-weight: 800 !important;
 }
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) #topbar .pill.gems #gemVal {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) #topbar .pill.gems #gemVal {
   color: #38bdf8 !important;
   filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.45)) !important;
   font-weight: 800 !important;
 }
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) #topbar .pill.coins:hover,
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) #topbar .pill.gems:hover {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) #topbar .pill.coins:hover,
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) #topbar .pill.gems:hover {
   background: rgba(20, 28, 52, 0.85) !important;
   transform: translateY(-2px) !important;
   box-shadow: 0 0 15px rgba(56, 189, 248, 0.35) !important;
 }
 
 /* Nav Switchers */
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) #topbar .nav-btn {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) #topbar .nav-btn {
   position: relative !important;
   width: clamp(34px, 3.2vw, 40px) !important;
   height: clamp(34px, 3.2vw, 40px) !important;
@@ -1462,7 +1462,7 @@ html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)
   flex-shrink: 0 !important;
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) #topbar .nav-btn:hover {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) #topbar .nav-btn:hover {
   color: #ffffff !important;
   transform: translateY(-2px) !important;
   filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.5)) !important;
@@ -1470,67 +1470,67 @@ html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)
 
 /* Responsive Zoom & Narrow Screen Resilience */
 @media (max-width: 900px) {
-  html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) header#topbar,
-  html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) #topbar {
+  html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) header#topbar,
+  html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) #topbar {
     padding: 0 14px !important;
     gap: 8px !important;
   }
-  html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-name {
+  html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-name {
     max-width: 90px !important;
   }
-  html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-pw {
+  html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-pw {
     padding: 0 10px 0 8px !important;
     font-size: 12px !important;
     height: 26px !important;
   }
-  html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-lvl {
+  html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-lvl {
     padding: 0 8px !important;
     font-size: 10px !important;
     height: 26px !important;
   }
-  html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) #topbar .pill.coins,
-  html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) #topbar .pill.gems {
+  html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) #topbar .pill.coins,
+  html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) #topbar .pill.gems {
     height: 34px !important;
     padding: 0 10px 0 8px !important;
     gap: 6px !important;
   }
-  html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) #topbar .nav-btn {
+  html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) #topbar .nav-btn {
     width: 34px !important;
     height: 34px !important;
   }
 }
 
 @media (max-width: 740px) {
-  html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) header#topbar,
-  html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) #topbar {
+  html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) header#topbar,
+  html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) #topbar {
     padding: 0 10px !important;
     gap: 6px !important;
   }
-  html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-profile {
+  html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-profile {
     gap: 8px !important;
   }
-  html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-av-wrapper {
+  html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-av-wrapper {
     width: 40px !important;
     height: 40px !important;
   }
-  html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-name {
+  html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-name {
     max-width: 75px !important;
     font-size: 15px !important;
   }
   /* Collapse theme switcher shortcuts on tight zoom so currencies & primary buttons never wrap */
-  html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) #topbar .tb-switcher {
+  html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) #topbar .tb-switcher {
     display: none !important;
   }
-  html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-actions {
+  html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-actions {
     gap: 5px !important;
   }
 }
 
 @media (max-width: 520px) {
-  html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-pw::before {
+  html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-pw::before {
     display: none !important;
   }
-  html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-name {
+  html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-name {
     display: none !important;
   }
 }
@@ -2247,17 +2247,17 @@ html body.on-lobby .hero-tactical-badge { display: none !important; }
 html body.on-lobby .stage-hint-pill, html body.on-lobby #stageHint { display: none !important; }
 
 /* ================= AAA COMBAT POWER & LEVEL BADGE ENGINE ================= */
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-id {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-id {
   display: flex !important;
   flex-direction: column !important;
   gap: 4px !important;
 }
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-top {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-top {
   display: flex !important;
   align-items: center !important;
   gap: 12px !important;
 }
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-name {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-name {
   font-family: var(--font-display, 'Orbitron', sans-serif) !important;
   /* Cap 90px (blok max-width:900px) bikin nama 8 karakter kepotong ellipsis di HP landscape;
      satu-satunya jalur tanpa menggeser chip/pill adalah mengecilkan tipe sampai muat 90px.
@@ -2268,14 +2268,14 @@ html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)
   color: #ffffff !important;
   text-shadow: 0 0 12px rgba(255, 255, 255, 0.35) !important;
 }
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-chips {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-chips {
   display: flex !important;
   align-items: center !important;
   gap: 8px !important;
 }
 
 /* AAA Combat Power Tactical Crest */
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-pw {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-pw {
   position: relative !important;
   display: inline-flex !important;
   align-items: center !important;
@@ -2299,12 +2299,12 @@ html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)
   cursor: default !important;
   transition: all 0.25s var(--ease-spring) !important;
 }
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-pw:hover {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-pw:hover {
   border-color: #fbbf24 !important;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.8), 0 0 22px rgba(251, 191, 36, 0.5) !important;
   transform: translateY(-1px) !important;
 }
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-pw::before {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-pw::before {
   content: "CP" !important;
   display: inline-flex !important;
   align-items: center !important;
@@ -2323,7 +2323,7 @@ html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)
 }
 
 /* AAA Level Sci-Fi Rank Pod */
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-lvl {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-lvl {
   position: relative !important;
   display: inline-flex !important;
   align-items: center !important;
@@ -2344,12 +2344,12 @@ html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)
   cursor: default !important;
   transition: all 0.25s var(--ease-spring) !important;
 }
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-lvl:hover {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-lvl:hover {
   border-color: #38bdf8 !important;
   box-shadow: 0 6px 22px rgba(0, 0, 0, 0.8), 0 0 20px rgba(56, 189, 248, 0.5) !important;
   transform: translateY(-1px) !important;
 }
-html :is(body.on-lobby, body.battle-full, body.on-settings, body:has(.sett-wrap)) .tb-xpbar {
+html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-xpbar {
   display: none !important;
 }
 
@@ -2676,9 +2676,9 @@ body.on-lobby .battle-arena {
 
 
 /* ================= SETTINGS SCREEN AAA TOPBAR & ATMOSPHERE ================= */
-html :is(body.battle-full, body.on-settings, body:has(.sett-wrap)) #topbar #tbEnv,
-html :is(body.battle-full, body.on-settings, body:has(.sett-wrap)) #topbar #tbFrame,
-html :is(body.battle-full, body.on-settings, body:has(.sett-wrap)) #topbar .tb-switcher {
+html :is(body.on-settings, body:has(.sett-wrap)) #topbar #tbEnv,
+html :is(body.on-settings, body:has(.sett-wrap)) #topbar #tbFrame,
+html :is(body.on-settings, body:has(.sett-wrap)) #topbar .tb-switcher {
   display: none !important;
 }
 
@@ -3848,7 +3848,7 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
      harus warna permukaan panel yang sama, tidak boleh tembus ke bawahnya. */
   background: #0d1421 !important;
   border: 0 !important;
-  border-radius: 12px !important;
+  border-radius: 1px !important;
   cursor: pointer !important;
   transition: transform 0.2s ease !important;
   overflow: hidden !important;
@@ -3864,7 +3864,8 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
    (border:0 di blok di atas). */
 #backpackPanel .bp-slots .bp-slot.filled,
 .backpack-panel .bp-slot.filled {
-  border: 1.5px solid var(--tcol, rgba(125,249,255,.35)) !important;
+  border: 3px solid var(--tcol, rgba(125,249,255,.35)) !important;
+  border-radius: 1px !important;
   outline: none !important;
   animation: none !important;
   background: #0d1421 !important;
@@ -3877,7 +3878,8 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 .backpack-panel .bp-slot.filled[class*="mut-"],
 #backpackPanel .bp-slots .bp-slot.filled.shiny,
 .backpack-panel .bp-slot.filled.shiny {
-  border: 1.5px solid var(--tcol, #7DF9FF) !important;
+  border: 3px solid var(--tcol, #7DF9FF) !important;
+  border-radius: 1px !important;
   outline: none !important;
   animation: none !important;
   background: #0d1421 !important;
@@ -4337,30 +4339,41 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   padding: 4px 2px !important;
 }
 
-.backpack-panel .bp-tile {
+.backpack-panel .bp-tile,
+#backpackPanel .bp-tiles .bp-tile {
   position: relative !important;
   aspect-ratio: 5/7 !important;
-  border-radius: 11px !important;
+  border-radius: 1px !important;
   overflow: hidden !important;
   background: #0e1626 !important;
+  border: 3px solid var(--tcol, rgba(125,249,255,.35)) !important;
+  outline: none !important;
   cursor: pointer !important;
   transition: transform 0.18s ease !important;
   content-visibility: auto !important;
 }
 
-/* S-MUT (item 3): persis seperti rak — HANYA tile yang bermutasi / shiny yang dapat ring
-   tipis 2px (--mcol = MUT_COLOR, #7DF9FF utk shiny tanpa mutasi; di-emit renderBackpackPanel
-   + kelas .bp-mut-<varian> sekarang ikut di-emit ke tile). Sisa tile (~74) tetap borderless
-   total. Ring diam: animation none + bayangan dikembalikan ke drop gelap standar, jadi
-   tidak ada halo gradient ornate dari blok .bp-tile[class*=mut-] lama di style.css. */
 #backpackPanel .bp-tiles .bp-tile[class*="bp-mut-"],
-.backpack-panel .bp-tile[class*="bp-mut-"] {
-  border-width: 1.5px !important;
+.backpack-panel .bp-tile[class*="bp-mut-"],
+#backpackPanel .bp-tiles .bp-tile[class*="mut-"],
+.backpack-panel .bp-tile[class*="mut-"],
+#backpackPanel .bp-tiles .bp-tile.shiny,
+.backpack-panel .bp-tile.shiny {
+  border-width: 3px !important;
   border-style: solid !important;
   border-color: var(--mcol, #7DF9FF) !important;
+  border-radius: 1px !important;
   outline: none !important;
   animation: none !important;
   background: #0e1626 !important;
+}
+
+.backpack-panel .bp-tile .bp-card-hub,
+.backpack-panel .bp-tile .hub-center,
+.backpack-panel .bp-tile .hc-img,
+.backpack-panel .bp-tile img,
+#backpackPanel .bp-tiles .bp-tile img {
+  border-radius: 1px !important;
 }
 
 /* SATU OUTLINE TUNGGAL: Matikan ::before dan ::after foil mask ganda */
@@ -4639,6 +4652,26 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 .backpack-panel .bp-glyph.g-secret::after,
 .backpack-panel .bp-glyph.g-ultima::after { content:""; position:absolute; inset:-45%; background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.9) 50%,transparent 62%); transform:translateX(-150%); opacity:.85; animation:bpShim 2.8s ease-in-out infinite; will-change:transform,opacity; }
 @keyframes bpShim { 0%,8%{transform:translateX(-150%)} 52%,100%{transform:translateX(150%)} }
+
+/* BATTLE HEADER HIDE: Sembunyikan header shell saat dalam mode battle */
+html body.battle-full header#topbar,
+html body.battle-full #topbar,
+html body.on-battle header#topbar,
+html body.on-battle #topbar,
+body.battle-full header#topbar,
+body.battle-full #topbar,
+body.on-battle header#topbar,
+body.on-battle #topbar {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  pointer-events: none !important;
+}
 /* --- penanda tile: TANPA border/glow; geometri = prototipe (sudut terbagi, no-overlap) --- */
 .backpack-panel .bpt-tier,
 .backpack-panel .bp-tile .hc-chance,

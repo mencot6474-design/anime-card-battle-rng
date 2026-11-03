@@ -1309,7 +1309,24 @@ html body.battle-full .battle-grid .fighter.hit-shake {
    tepat di tengah viewport secara horizontal & vertikal.
    ========================================================================== */
 html body.battle-full { --tbh: 0px !important; }
-html body.battle-full #topbar { display: none !important; }
+html body.battle-full header#topbar,
+html body.battle-full #topbar,
+html body.on-battle header#topbar,
+html body.on-battle #topbar,
+body.battle-full header#topbar,
+body.battle-full #topbar,
+body.on-battle header#topbar,
+body.on-battle #topbar {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  pointer-events: none !important;
+}
 html body.battle-full main#app {
   min-height: 100dvh !important;
   display: flex !important;

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v342-bpChanceTextOnly';
+const CACHE_NAME = 'anime-card-battle-v343-bpSharpCardHideBattleHdr';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
