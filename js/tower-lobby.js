@@ -2906,8 +2906,14 @@ function openRebirthModal(){
 
 function closeRebirthModal(){
   const modal = document.getElementById('rebirthModal');
-  if (modal) modal.classList.remove('show');
+  if (modal) {
+    modal.classList.remove('show');
+    modal.classList.remove('is-ascending');
+    modal.style.zIndex = '';
+  }
   document.body.classList.remove('hide-docks-modal');
+  const cutin = document.getElementById('rebirthAscensionCutin');
+  if (cutin) cutin.classList.remove('show');
 }
 
 function executeRebirthFromModal(){
@@ -2930,6 +2936,13 @@ function executeRebirthFromModal(){
   const nextMult = oldMult + 1;
   const nextCnt = oldCnt + 1;
 
+  // 1. Pastikan modal Rebirth berada di layer depan (z-index 100010) dan aktifkan state is-ascending
+  const modalEl = document.getElementById('rebirthModal');
+  if (modalEl) {
+    modalEl.classList.add('is-ascending');
+    modalEl.style.zIndex = '100010';
+  }
+
   const execBtn = document.getElementById('rbExecBtn');
   if (execBtn) {
     execBtn.classList.add('is-ascending');
@@ -2947,9 +2960,22 @@ function executeRebirthFromModal(){
     playSubBass(50, 0.4, 0.3);
   }
 
+  // 2. Fase burst (+500ms): jalankan doRebirth, update modal segera, taruh animasi cutscene di belakang modal
   setTimeout(() => {
     if (typeof doRebirth === 'function') doRebirth();
 
+    // Re-render modal SEGERA saat burst agar pemain melihat nilai baru R{nextCnt} dan ×{nextMult} langsung menyala
+    if (typeof renderRebirthModal === 'function') renderRebirthModal();
+
+    // Pertahankan z-index dan class is-ascending pada modal & sigil yang baru dirender
+    if (modalEl) {
+      modalEl.classList.add('is-ascending');
+      modalEl.style.zIndex = '100010';
+    }
+    const newSigil = document.querySelector('.rb-sigil-wrap');
+    if (newSigil) newSigil.classList.add('is-charging');
+
+    // Overlay cutin di layer BELAKANG modal Rebirth (z-index 100002)
     let cutin = document.getElementById('rebirthAscensionCutin');
     if (!cutin) {
       cutin = document.createElement('div');
@@ -2957,6 +2983,8 @@ function executeRebirthFromModal(){
       cutin.className = 'rb-cutin-backdrop';
       document.body.appendChild(cutin);
     }
+    cutin.style.zIndex = '100002';
+    cutin.style.pointerEvents = 'none';
 
     cutin.innerHTML = `
       <div class="rb-cutin-card">
@@ -2982,8 +3010,11 @@ function executeRebirthFromModal(){
 
     cutin.classList.add('show');
 
+    // VFX canvas partikel di layer belakang modal (z-index 100005)
     if (typeof window.playRebirthAscensionVfx === 'function') {
       window.playRebirthAscensionVfx(window.innerWidth / 2, window.innerHeight / 2);
+      const cv = document.getElementById('pgrBattleFxCanvas');
+      if (cv) cv.style.zIndex = '100005';
     }
 
     if (window.CyberSfx && typeof window.CyberSfx.rebirthAscendBoom === 'function') {
@@ -2992,7 +3023,7 @@ function executeRebirthFromModal(){
       sfx.win();
     }
 
-    // Panggil toast langsung di atas animasi cutscene
+    // Tampilkan notifikasi toast di layer terdepan (z-index 200000)
     if (typeof toast === 'function') {
       toast(
         isEn ? 'ASCENSION SUCCESS!' : 'REBIRTH BERHASIL!',
@@ -3001,12 +3032,19 @@ function executeRebirthFromModal(){
       );
     }
 
+    // 3. Fase resolusi (+2200ms)
     setTimeout(() => {
       if (cutin) cutin.classList.remove('show');
-      if (sigilWrap) sigilWrap.classList.remove('is-charging');
-      if (execBtn) execBtn.classList.remove('is-ascending');
+      if (modalEl) {
+        modalEl.classList.remove('is-ascending');
+        modalEl.style.zIndex = '';
+      }
+      const cv = document.getElementById('pgrBattleFxCanvas');
+      if (cv) cv.style.zIndex = '';
 
-      if (typeof renderRebirthModal === 'function') renderRebirthModal();
+      const sigilWrapEnd = document.querySelector('.rb-sigil-wrap');
+      if (sigilWrapEnd) sigilWrapEnd.classList.remove('is-charging');
+
       if (typeof updateRebirthUI === 'function') updateRebirthUI();
       if (typeof renderShell === 'function') renderShell();
     }, 2200);

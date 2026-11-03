@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v347-notifFrontLayerFix';
+const CACHE_NAME = 'anime-card-battle-v348-rebirthModalFrontAnimationBehind';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

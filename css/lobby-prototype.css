@@ -2443,7 +2443,6 @@ html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-xpbar {
 #indexModal,
 #premiumModal,
 #weatherMachineModal,
-#rebirthModal,
 #missionModal,
 #rankModal,
 #rkProfModal,
@@ -2498,11 +2497,29 @@ html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-xpbar {
   pointer-events: none !important;
 }
 
-/* ===== REBIRTH ASCENSION PROTOCOL CINEMATIC (Z-INDEX: 100005) ===== */
+/* ===== REBIRTH ASCENSION MODAL (Z-INDEX ELEVATION: 100010) ===== */
+#rebirthModal,
+#rebirthModal.show,
+.rb-modal-backdrop,
+.rb-modal-backdrop.show {
+  z-index: 100010 !important;
+}
+
+#rebirthModal.is-ascending .rb-modal-container {
+  border-color: #ffd700 !important;
+  box-shadow: 0 0 50px rgba(192, 132, 252, 0.7), 0 0 100px rgba(255, 215, 0, 0.45), 0 20px 60px rgba(0, 0, 0, 0.9) !important;
+  animation: rbModalAscendPulse 0.8s ease-in-out infinite alternate !important;
+}
+
+body:has(#rebirthModal.show) #rebirthAscensionCutin .rb-cutin-card {
+  display: none !important;
+}
+
+/* ===== REBIRTH ASCENSION PROTOCOL CINEMATIC (Z-INDEX: 100002 — DI BELAKANG MODAL REBIRTH) ===== */
 #rebirthAscensionCutin {
   position: fixed !important;
   inset: 0 !important;
-  z-index: 100005 !important;
+  z-index: 100002 !important;
   display: none !important;
   place-items: center !important;
   pointer-events: auto !important;

@@ -49034,9 +49034,18 @@ html.fps-locked .bp-fchip{
 /* ==========================================================================
    REBIRTH ASCENSION MODAL (HORIZONTAL CYBERPUNK LAYOUT)
    ========================================================================== */
+/* ===== REBIRTH ASCENSION MODAL (Z-INDEX ELEVATION: 100010) ===== */
+#rebirthModal,
+#rebirthModal.show,
+.rb-modal-backdrop,
+.rb-modal-backdrop.show {
+  z-index: 100010 !important;
+}
+
 .rb-modal-backdrop {
   position: fixed;
   inset: 0;
+  z-index: 100010 !important;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   display: none;
@@ -49510,7 +49519,7 @@ html.fps-locked .bp-fchip{
 #rebirthAscensionCutin {
   position: fixed !important;
   inset: 0 !important;
-  z-index: 100005 !important;
+  z-index: 100002 !important;
   display: none !important;
   place-items: center !important;
   pointer-events: auto !important;
@@ -49541,6 +49550,23 @@ html.fps-locked .bp-fchip{
   pointer-events: none;
   z-index: 10;
   animation: rbScreenFlash 0.6s ease-out forwards;
+}
+
+/* Ketika modal Rebirth aktif, sembunyikan card cutin agar background vortex memancar di belakang modal */
+body:has(#rebirthModal.show) #rebirthAscensionCutin .rb-cutin-card {
+  display: none !important;
+}
+
+/* Efek visual Ascension pada modal Rebirth saat aktif */
+#rebirthModal.is-ascending .rb-modal-container {
+  border-color: #ffd700 !important;
+  box-shadow: 0 0 50px rgba(192, 132, 252, 0.7), 0 0 100px rgba(255, 215, 0, 0.45), 0 20px 60px rgba(0, 0, 0, 0.9) !important;
+  animation: rbModalAscendPulse 0.8s ease-in-out infinite alternate !important;
+}
+
+@keyframes rbModalAscendPulse {
+  0% { transform: scale(1); filter: brightness(1); }
+  100% { transform: scale(1.015); filter: brightness(1.2); }
 }
 
 /* 2. Main Cut-in Card */
