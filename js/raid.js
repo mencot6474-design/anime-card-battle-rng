@@ -525,6 +525,7 @@ function renderRaidHub(){
       <div class="wbv2-actrow">
         <span class="wbv2-attn"><i class="wbv2-si" style="--im:url('${wbIconU("assets/icons/cut-diamond.svg")}');--ic:var(--cyan)"></i><span class="wbv2-crystals" id="wbv2Crystals">${wbCrystalsHtml()}</span></span>
         <span class="wbv2-dstats"><span><i class="wbv2-si" style="--im:url('${wbIconU("assets/icons/trophy-cup.svg")}');--ic:var(--gold)"></i><b id="wbv2Pb">${d&&d.best_dmg?fmtBig(d.best_dmg):"—"}</b></span><span><i class="wbv2-si" style="--im:url('${wbIconU("assets/icons/coins.svg")}');--ic:var(--gold)"></i><b id="wbv2Tok">${fmt(tok)}</b></span></span>
+        <button class="wbv2-shopbtn" id="wbv2ShopBtn" type="button"><i class="wbv2-si" style="--im:url('${wbIconU("assets/icons/backpack.svg")}');--ic:var(--cyan)"></i>TOKO</button>
         <button class="wbv2-hammer${dead||locked?" off":""}" id="wbv2Hammer" type="button"><span class="wbv2-hico" style="--im:url('${wbIconU("assets/icons/sword-spin.svg")}')"></span>${locked?"TERKUNCI":dead?(attLeft!=null&&attLeft<=0?"ATTEMPT HABIS":"BOSS TUMBANG"):"HAMBAT"}</button>
       </div>
       <small class="wbv2-hammer-meta" id="wbv2HammerMeta">${locked?"BOSS TERKUNCI":dead?(attLeft!=null&&attLeft<=0?"TIDAK BISA DEPLOY · RESET "+wbResetText():"TARGET DEFEATED · RESET "+wbResetText()):`AUTHORIZE COMBAT // ${RAID_TURNS} TURNS`}</small>
@@ -564,6 +565,7 @@ function renderRaidHub(){
     wbrDeployPulse(()=>{sfx.hit();raidView="pick";renderRaid();});
   };
   document.getElementById("wbv2LbBtn").onclick=()=>{try{sfx.hit();}catch(e){}wbLbOpen(wbBoss().board);};
+  {const sb=document.getElementById("wbv2ShopBtn");if(sb)sb.onclick=()=>{try{sfx.hit();}catch(e){}raidView="shop";renderRaid();};}
   {const x=document.getElementById("wbv2LbClose");if(x)x.onclick=wbLbClose;}
   {const m=document.getElementById("wbv2LbModal");
    if(m)m.addEventListener("click",e=>{if(e.target===m)wbLbClose();});
