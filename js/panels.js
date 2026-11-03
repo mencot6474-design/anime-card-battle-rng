@@ -3341,7 +3341,6 @@ async function buyPremiumPack(packId, ev, qty){
       body: premConfirmBody(pack, 1),
       okText: 'BELI · ' + pack.price + ' GEMS',
       options: qtyOptions,
-      optsLabel: 'JUMLAH PAKET',
       selected: QTY_LIST.indexOf(qty) >= 0 ? String(qty) : '1'
     });
     if (!pickedQty) {

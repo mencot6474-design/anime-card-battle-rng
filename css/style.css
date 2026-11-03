@@ -15968,8 +15968,6 @@ body.battle-full .fighter.foe.ko {
   padding:32px 28px 28px;
   max-width:min(580px,94vw);
   width:100%;overflow-x:hidden;
-  max-height:min(85vh,90vh);
-  overflow-y:auto;
   box-shadow:
     0 0 0 1px rgba(255,215,0,.08),
     0 0 40px rgba(255,215,0,.12),
@@ -15978,7 +15976,7 @@ body.battle-full .fighter.foe.ko {
 }
 .glcf-body{
   font-size:14px;color:#f1f5f9;line-height:1.65;
-  max-height:54vh;overflow-y:auto;padding-right:4px;
+  padding-right:4px;
 }
 .glcf-row{
   display:flex;gap:14px;padding:11px 0;align-items:center;
@@ -16120,10 +16118,8 @@ body.battle-full .fighter.foe.ko {
 @media(min-width:501px) and (max-width:850px) and (orientation:landscape){
   .glcf-backdrop{padding:16px}
   .glcf-box{
-    max-height:min(88vh,85vh);
     padding:26px 24px 22px;
   }
-  .glcf-body{max-height:60vh}
   .glcf-title{font-size:22px;margin-bottom:18px}
 }
 
