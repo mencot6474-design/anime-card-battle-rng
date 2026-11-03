@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v360-premShopGlcfFix';
+const CACHE_NAME = 'anime-card-battle-v361-premShopRedesign';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

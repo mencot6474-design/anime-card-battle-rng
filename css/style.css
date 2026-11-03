@@ -15945,93 +15945,93 @@ body.battle-full .fighter.foe.ko {
 /* ============ POPUP KONFIRMASI GLOBAL LUCK ============ */
 .glcf-backdrop{
   position:fixed;inset:0;z-index:9500;
-  background:rgba(0,0,0,.95)!important;
-  background-color:rgba(0,0,0,.95)!important;
-  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  background:rgba(8,10,14,.88)!important;
+  background-color:rgba(8,10,14,.88)!important;
   display:flex;align-items:center;justify-content:center;
-  padding:16px;animation:glcf-fade .18s ease-out both;
+  padding:20px;animation:glcf-fade .22s ease-out both;
 }
 @keyframes glcf-fade{from{opacity:0}to{opacity:1}}
-@keyframes glcf-pop{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
-.glcf-body{font-size:13px;color:rgba(255,255,255,.8);line-height:1.55;max-height:46vh;overflow-y:auto}
-.glcf-row{display:flex;gap:10px;padding:5px 0;align-items:flex-start}
-.glcf-val{flex:1;color:#e2e8f0;word-break:break-word}
-.glcf-val b{color:#7dd3fc}
-.glcf-warn{
-  margin-top:12px;padding:9px 11px;border-radius:9px;
-  background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.32);
-  color:#fecaca;font-size:12px;line-height:1.5;
-}
-.glcf-warn b{color:#fca5a5}
-.glcf-actions{display:flex;gap:10px;margin-top:16px}
-.glcf-btn{
-  flex:1;cursor:pointer;
-  font-family:"Barlow Condensed",sans-serif;font-size:13px;font-weight:800;letter-spacing:.1em;
-  padding:10px 12px;border-radius:9px;text-transform:uppercase;
-  transition:transform .12s,box-shadow .15s,background .15s;
-}
-.glcf-btn:active{transform:translateY(1px)}
-.glcf-btn--cancel{
-  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);color:rgba(255,255,255,.75);
-}
-.glcf-btn--cancel:hover{background:rgba(255,255,255,.12);color:#fff}
-.glcf-btn--ok{
-  background:linear-gradient(135deg,#0369a1,#075985);
-  border:1px solid rgba(56,189,248,.55);color:#e0f2fe;
-  box-shadow:0 0 16px rgba(56,189,248,.25);
-}
-.glcf-btn--ok:hover{box-shadow:0 0 24px rgba(56,189,248,.45)}
-
-.glcf-opts-wrap{margin-bottom:12px}
-.glcf-opts{display:flex;flex-wrap:wrap;gap:6px}
-.glcf-opt{
-  cursor:pointer;
-  font-family:"Barlow Condensed",sans-serif;font-size:12px;font-weight:800;letter-spacing:.08em;
-  padding:6px 12px;border-radius:8px;
-  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.16);color:rgba(255,255,255,.72);
-  transition:background .15s,border-color .15s,color .15s,box-shadow .15s;
-}
-.glcf-opt:hover{background:rgba(255,255,255,.11);color:#fff}
-.glcf-opt.on{
-  background:linear-gradient(135deg,rgba(255,215,0,.22),rgba(255,215,0,.08));
-  border-color:rgba(255,215,0,.65);color:#ffd700;
-  box-shadow:0 0 14px rgba(255,215,0,.28);
-}
-
-/* ---- Konfirmasi beli premium shop: elemen kunci glcf-* (cyberpunk, konsisten dengan glcf-* existing) ---- */
+@keyframes glcf-pop{from{opacity:0;transform:translateY(22px) scale(.965)}to{opacity:1;transform:none}}
 .glcf-box{
   position:relative;
-  background:linear-gradient(165deg,rgba(26,23,18,0.97),rgba(13,11,8,0.99));
-  border:1.5px solid rgba(56,189,248,0.35);
-  border-radius:16px;
-  padding:22px 20px 18px;
-  max-width:min(520px,92vw);
-  max-height:min(70vh,90vh);
+  background:linear-gradient(165deg,rgba(26,23,18,0.98),rgba(13,11,8,0.99));
+  border:1px solid rgba(255,255,255,0.14);
+  border-radius:18px;
+  padding:28px 26px 24px;
+  max-width:min(560px,94vw);
+  max-height:min(82vh,90vh);
   overflow-y:auto;
-  box-shadow:0 20px 50px rgba(0,0,0,0.8);
+  box-shadow:inset 0 0 24px rgba(0,0,0,0.45), 0 28px 70px rgba(0,0,0,0.75);
+  animation:glcf-pop .26s cubic-bezier(0.2,0.8,0.2,1) both;
 }
-
+.glcf-body{
+  font-size:13.5px;color:#f1f5f9;line-height:1.62;
+  max-height:54vh;overflow-y:auto;padding-right:4px;
+}
+.glcf-row{
+  display:flex;gap:12px;padding:9px 0;align-items:flex-start;
+}
+.glcf-label{
+  flex-shrink:0;width:104px;
+  color:#94a3b8;font-weight:600;letter-spacing:0.06em;
+  text-transform:uppercase;font-size:11px;
+}
+.glcf-val{flex:1;color:#e2e8f0;word-break:break-word}
+.glcf-val b{color:#ffd700}
+.glcf-warn{
+  margin-top:18px;padding:13px 15px;border-radius:12px;
+  background:rgba(255,140,0,.09);border:1px solid rgba(255,140,0,.24);
+  color:#ffb86b;font-size:12px;line-height:1.55;
+}
+.glcf-warn b{color:#ffd700}
+.glcf-actions{
+  display:flex;gap:12px;margin-top:26px;
+}
+.glcf-btn{
+  flex:1;cursor:pointer;
+  font-family:"Barlow Condensed",sans-serif;font-size:14px;font-weight:800;letter-spacing:0.1em;
+  padding:13px 14px;border-radius:10px;text-transform:uppercase;
+  border:none;transition:transform .12s,box-shadow .15s,background .15s;
+}
+.glcf-btn:active{transform:translateY(1px) scale(.985)}
+.glcf-btn--cancel{
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);color:#e2e8f0;
+}
+.glcf-btn--cancel:hover{background:rgba(255,255,255,.14);color:#fff}
+.glcf-btn--ok{
+  background:linear-gradient(135deg,#ffd700,#e6b800);
+  border:1px solid rgba(255,215,0,.55);color:#120e04;
+  box-shadow:0 0 20px rgba(255,215,0,.38);
+}
+.glcf-btn--ok:hover{
+  filter:brightness(1.12);
+  box-shadow:0 0 30px rgba(255,215,0,.55);
+}
+.glcf-opts-wrap{margin-bottom:16px}
+.glcf-opts{display:flex;flex-wrap:wrap;gap:9px}
+.glcf-opt{
+  cursor:pointer;
+  font-family:"Barlow Condensed",sans-serif;font-size:12px;font-weight:800;letter-spacing:0.08em;
+  padding:8px 14px;border-radius:9px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);color:rgba(255,255,255,.78);
+  transition:background .15s,border-color .15s,color .15s,box-shadow .15s;
+}
+.glcf-opt:hover{background:rgba(255,255,255,.12);color:#fff}
+.glcf-opt.on{
+  background:linear-gradient(135deg,rgba(255,215,0,.18),rgba(255,215,0,.06));
+  border-color:rgba(255,215,0,.55);color:#ffd700;
+  box-shadow:0 0 14px rgba(255,215,0,.25);
+}
 .glcf-title{
-  margin:0 0 16px 0;
+  margin:0 0 20px 0;
   font-family:"Barlow Condensed",sans-serif;
-  font-size:20px;
+  font-size:22px;
   font-weight:800;
-  letter-spacing:0.1em;
+  letter-spacing:0.12em;
   color:#ffd700;
   text-transform:uppercase;
-  text-shadow:0 0 14px rgba(255,215,0,0.45);
+  text-shadow:0 0 16px rgba(255,215,0,0.5);
 }
-
-.glcf-label{
-  flex-shrink:0;
-  width:92px;
-  color:#9aa3b2;
-  font-weight:600;
-  letter-spacing:0.05em;
-  text-transform:uppercase;
-  font-size:11px;
-}
-
 .glcf-badge{
   display:inline-block;
   margin-left:8px;
@@ -16045,13 +16045,22 @@ body.battle-full .fighter.foe.ko {
   letter-spacing:0.08em;
   font-family:"Rajdhani",sans-serif;
 }
-
 .glcf-gem-icon{
-  width:16px;
-  height:16px;
-  display:inline-block;
-  vertical-align:middle;
-  margin-right:4px;
+  width:16px;height:16px;display:inline-block;vertical-align:middle;margin-right:4px;
+}
+
+@media(max-width:500px){
+  .glcf-backdrop{padding:12px}
+  .glcf-box{
+    padding:20px 18px 16px;border-radius:16px;
+    max-width:min(96vw,470px);
+  }
+  .glcf-title{font-size:20px;margin-bottom:16px}
+  .glcf-body{font-size:13px}
+  .glcf-row{gap:10px;padding:8px 0}
+  .glcf-label{width:90px;font-size:10.5px}
+  .glcf-actions{flex-direction:column}
+  .glcf-btn{padding:12px}
 }
 
 /* ====== TOP-UP GEMS MODAL ====== */
