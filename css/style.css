@@ -7571,7 +7571,7 @@ h1{font-size:clamp(26px,8vw,34px)}
 
 /* ---------- AUTH + LOADING SCREENS ---------- */
 
-#authScreen,#loadingScreen{position:fixed;inset:0;align-items:center;justify-content:center;padding-left:0}
+#authScreen,#loadingScreen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding-left:0}
 
 #authScreen.hidden,#loadingScreen.hidden{display:none!important}
 
