@@ -7325,33 +7325,26 @@ body.battle-full .vs-col .bspeed-btn{font-size:clamp(12px,1.4vw,15px);padding:4p
 
 .rp-box::before{content:"";position:absolute;inset:-40% -10% auto -10%;height:70%;background:radial-gradient(60% 100% at 50% 0,currentColor,transparent 70%);opacity:.28;pointer-events:none}
 
-.rp-rays{position:absolute;top:-30%;left:50%;width:160%;aspect-ratio:1;transform:translateX(-50%);background:conic-gradient(from 0deg,transparent 0 8deg,rgba(255,255,255,.06) 8deg 12deg,transparent 12deg 20deg);-webkit-mask:radial-gradient(closest-side,#000 55%,transparent);mask:radial-gradient(closest-side,#000 55%,transparent);animation:rpSpin 12s linear infinite;pointer-events:none;opacity:.5}
 
 .rp-gem{width:78px;height:78px;margin:6px auto 2px;filter:drop-shadow(0 0 18px currentColor);animation:rpFloat 2.4s ease-in-out infinite}
 
-.rp-kicker{font-size:11px;letter-spacing:.28em;color:var(--muted);font-weight:700;text-transform:uppercase}
 
 .rp-name{font-family:"Barlow Condensed";font-weight:700;font-size:40px;letter-spacing:.04em;line-height:1;margin-top:2px}
 
-.rp-rar{font-size:12px;letter-spacing:.2em;font-weight:700;margin-top:4px}
 
 .rp-power{display:inline-block;margin-top:12px;font-family:"Barlow Condensed";font-weight:700;font-size:17px;letter-spacing:.05em;padding:4px 14px;border-radius:9px;border:1px solid currentColor}
 
-.rp-fx{margin-top:12px;font-size:13px;color:rgba(244,247,250,.82);line-height:1.5}
 
-.rp-btns{display:flex;gap:10px;margin-top:22px}
 
 .rp-btn{flex:1;border:none;border-radius:12px;padding:14px 10px;font-family:"Barlow Condensed";font-weight:700;font-size:15px;letter-spacing:.1em;cursor:pointer;transition:transform .08s,filter .15s}
 
 .rp-btn:active{transform:scale(.96)}
 
-.rp-save{background:linear-gradient(120deg,#7DF9FF,#B58CFF);color:#0b0e13}
 
 .rp-roll{background:linear-gradient(135deg,#E8556A,#ff7d5e 55%,#ffb347);color:#fff;box-shadow:0 8px 22px rgba(232,85,106,.35)}
 
 .rp-roll:disabled{opacity:.45;cursor:not-allowed}
 
-.rp-note{margin-top:12px;font-size:10px;letter-spacing:.05em;color:var(--muted)}
 
 /* ==========================================================================
    CYBERPUNK AAA TRAIT NOTIFICATION (#traitNotify / .tn-card)
@@ -19283,7 +19276,6 @@ html.fps-locked .bp-fchip{
   padding:20px 20px 12px;
 }
 #rkProfModal .ix-x:hover{color:#7DF9FF;border-color:rgba(125,249,255,.55)}
-.rp-body{overflow-y:auto;min-height:0;padding:8px 2px 12px!important}
 
 @media(max-width:860px){.rp-cardwrap{grid-column:1/-1}}
 .rp-face{
