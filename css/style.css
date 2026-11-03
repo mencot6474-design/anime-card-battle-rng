@@ -15165,7 +15165,7 @@ body.battle-full .fighter.foe.ko {
   position: fixed;
   inset: 0;
   z-index: 95000 !important;
-  background: radial-gradient(110% 90% at 50% 45%, rgba(125,249,255,0.06), rgba(5,7,11,0.92) 65%);
+  background: radial-gradient(110% 90% at 50% 45%, rgba(125,249,255,0.03), rgba(0,0,0,0.97) 50%) !important;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   display: grid;
@@ -15189,6 +15189,7 @@ body.battle-full .fighter.foe.ko {
   overflow: hidden;
   max-height:85vh!important;
   overflow-y:auto!important;
+  overflow:scroll!important;
 }
 
 
@@ -15945,6 +15946,7 @@ body.battle-full .fighter.foe.ko {
 .glcf-backdrop{
   position:fixed;inset:0;z-index:9500;
   background:rgba(0,0,0,.95)!important;
+  background-color:rgba(0,0,0,.95)!important;
   backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
   display:flex;align-items:center;justify-content:center;
   padding:16px;animation:glcf-fade .18s ease-out both;
@@ -17026,7 +17028,7 @@ body.battle-full .fighter .f-body{
   -webkit-backdrop-filter:none !important;
   backdrop-filter:none !important;
 }
-.glcf-backdrop{background:rgba(0,0,0,.95)!important}
+.glcf-backdrop{background:rgba(0,0,0,.95)!important;background-color:rgba(0,0,0,.95)!important}
 
 body:has(#indexModal.show, #skillPop.show, #premiumModal.show, #traitModal.show,
         #weatherMachineModal.show, #missionModal.show, #startModal.show, #dailyModal.show,
