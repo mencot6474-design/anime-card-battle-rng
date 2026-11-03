@@ -1343,42 +1343,41 @@ addEventListener("pagehide",()=>{if(state){save();flushCloudSave();}});
 })();
 
 function handleTabWakeup(){
-  try{ document.body.classList.remove("perf-paused"); }catch(e){}
-  /* NUCLEAR: force-close every possible click-blocker */
+  /* Sweep ALL body-level fixed overlays that can block clicks */
   try{
     const ov = document.getElementById("rollOverlay");
-    if(ov){ ov.style.display="none"; ov.classList.remove("mini"); }
+    if(ov){ ov.classList.remove("visible","mini"); ov.style.display="none"; }
   }catch(e){}
-  try{ document.querySelectorAll(".bpholo-backdrop").forEach(el=>el.remove()); }catch(e){}
   try{
+    const o2 = document.getElementById("overlay");
+    if(o2) o2.classList.remove("show");
+  }catch(e){}
+  try{ document.querySelectorAll(".bpholo-backdrop,#itemPop").forEach(el=>el.remove()); }catch(e){}
+  try{
+    document.querySelectorAll("body>[id$='Modal'].show,body>[id$='modal'].show").forEach(el=>el.classList.remove("show"));
     const m = document.getElementById("modal");
     if(m) m.classList.remove("show");
   }catch(e){}
   try{
-    document.body.classList.remove("drawer-open","bp-open");
+    document.body.classList.remove("drawer-open","bp-open","hide-docks-modal","battle-full");
     const bd = document.getElementById("drawerBackdrop");
     if(bd) bd.style.display="none";
     const drw = document.getElementById("commandDrawer");
     if(drw) drw.classList.remove("open");
-    const bp = document.querySelector(".backpack-panel");
-    if(bp) bp.classList.remove("open");
   }catch(e){}
   try{
     const ls = document.getElementById("loadingScreen");
     if(ls && !ls.classList.contains("hidden")) ls.classList.add("hidden");
   }catch(e){}
   try{ document.body.style.pointerEvents=""; document.documentElement.style.pointerEvents=""; }catch(e){}
-  /* FULL DOM REBUILD — same as reload but no network. Clears any stuck state
-     that individual overlay cleanup misses (CSS !important, orphaned nodes,
-     mid-animation frozen elements, etc). */
-  setTimeout(()=>{
-    try{ if(typeof render==="function"&&!document.hidden) render(); }catch(e){}
-    try{
-      if(typeof rollState!=="undefined"&&rollState&&rollState.active&&typeof window.forceResumeRoll==="function"){
-        window.forceResumeRoll();
-      }
-    }catch(e){}
-  },150);
+  /* Rebuild app DOM from state (same as reload, no network) */
+  try{ if(typeof render==="function") render(); }catch(e){}
+  /* Resume auto-roll AFTER render rebuilds the UI */
+  try{
+    if(typeof rollState!=="undefined"&&rollState&&rollState.active&&typeof window.forceResumeRoll==="function"){
+      setTimeout(()=>{ try{window.forceResumeRoll();}catch(e){} },300);
+    }
+  }catch(e){}
 }
 
 document.addEventListener("visibilitychange",()=>{
@@ -1386,7 +1385,6 @@ document.addEventListener("visibilitychange",()=>{
     handleTabWakeup();
   } else {
     if(state){save();flushCloudSave();}
-    try{document.body.classList.add("perf-paused");}catch(e){}
   }
 });
 window.addEventListener("focus", handleTabWakeup);
