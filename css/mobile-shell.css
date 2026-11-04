@@ -2612,3 +2612,125 @@ body.on-settings .sett-wrap .ubox .out {
 body.on-settings .sett-wrap .ubox .out:hover {
   background: rgba(251, 113, 133, 0.12) !important;
 }
+
+/* =====================================================================
+   WoB: REBIRTH MODAL (#rebirthModal) — 2026-11-05
+   Hitam #050505/#0a0a0a, teks #f5f5f5, aksen kuning #f3e600.
+   Warna semantik rebirth (ungu #c084fc untuk meter/sigil, #f3e600 untuk ready)
+   DIPERTAHANKAN — tidak diubah.
+   ===================================================================== */
+#rebirthModal .rb-modal-backdrop,
+#rebirthModal {
+  background: rgba(0, 0, 0, 0.85) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+#rebirthModal .rb-modal-container {
+  background: #050505 !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.9) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+#rebirthModal .rb-modal-head {
+  background: linear-gradient(180deg, #0a0a0a 0%, #050505 100%) !important;
+  border-bottom: 3px solid #f3e600 !important;
+  padding: 14px 22px 12px !important;
+}
+
+#rebirthModal .rb-cyber-pill { color: #f3e600 !important; }
+#rebirthModal .rb-cyber-dot { background: #f3e600 !important; box-shadow: 0 0 8px #f3e600 !important; }
+#rebirthModal .rb-modal-title { color: #fff !important; text-shadow: none !important; }
+
+#rebirthModal .rb-close-btn {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #e0e0e0 !important;
+}
+#rebirthModal .rb-close-btn:hover {
+  background: #f5f5f5 !important;
+  border-color: #f3e600 !important;
+  color: #050500 !important;
+  box-shadow: 0 0 14px rgba(243, 230, 0, 0.45) !important;
+}
+
+#rebirthModal .rb-modal-body { background: transparent !important; }
+
+/* =====================================================================
+   WoB: 7-DAY REWARD MODAL (#dailyModal) — 2026-11-05
+   Hitam #050505/#0a0a0a, teks #f5f5f5, aksen kuning #f3e600.
+   Warna semantik status (ready=cyan/teal, claimed=emerald, locked=abu,
+   finale tag kuning) DIPERTAHANKAN — tidak diubah.
+   ===================================================================== */
+#dailyModal .dl-box {
+  background: #050505 !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.9) !important;
+}
+
+#dailyModal .dl-glow-top {
+  background: linear-gradient(90deg, transparent, #f3e600, #f5f5f5, #f3e600, transparent) !important;
+  box-shadow: 0 0 20px 2px rgba(243, 230, 0, 0.4) !important;
+}
+
+#dailyModal .dl-head {
+  background: linear-gradient(180deg, #0a0a0a 0%, #050505 100%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25) !important;
+  padding: 16px 24px 14px !important;
+}
+
+#dailyModal .dl-eyebrow { color: #f3e600 !important; text-shadow: none !important; }
+#dailyModal .dl-title { color: #fff !important; text-shadow: none !important; }
+
+#dailyModal .ix-x {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #e0e0e0 !important;
+}
+#dailyModal .ix-x:hover {
+  background: #f5f5f5 !important;
+  border-color: #f3e600 !important;
+  color: #050500 !important;
+}
+
+#dailyModal .dl-count { color: #f5f5f5 !important; text-shadow: none !important; }
+#dailyModal .dl-count b { color: #f3e600 !important; }
+
+#dailyModal .dl-tile {
+  background: #0a0a0a !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: none !important;
+}
+
+#dailyModal .dl-tile:hover {
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.12) !important;
+  transform: none !important;
+}
+
+#dailyModal .dlt-top .d { color: #f5f5f5 !important; text-shadow: none !important; }
+
+#dailyModal .dlt-pack-img { filter: none !important; }
+
+#dailyModal .dlt-pack-name { color: #f3e600 !important; text-shadow: none !important; }
+#dailyModal .dlt-pulls-sub { color: #c9c9c9 !important; text-shadow: none !important; }
+#dailyModal .dlt-bonus-row { color: #9a9a9a !important; text-shadow: none !important; }
+#dailyModal .dlt-b-coin { color: #f3e600 !important; }
+#dailyModal .dlt-b-gem { color: #34d399 !important; }
+
+/* Status badges keep semantic colors but neutralize bg */
+#dailyModal .dlt-status { text-shadow: none !important; }
+#dailyModal .dlt-status.locked { background: #050505 !important; border: 1px solid rgba(255, 255, 255, 0.14) !important; color: #9a9a9a !important; }
+#dailyModal .dlt-status.claimed { background: #0a0a0a !important; border: 1px solid rgba(34, 197, 94, 0.35) !important; color: #4ade80 !important; }
+#dailyModal .dlt-status.ready { background: #050505 !important; border: 1.5px solid #00cec9 !important; color: #00cec9 !important; }
+
+#dailyModal .dl-tile.ready {
+  border: 1.5px solid #00cec9 !important;
+  background: radial-gradient(circle at 50% 20%, rgba(0, 206, 201, 0.1), #050505 75%) !important;
+  box-shadow: 0 0 24px rgba(0, 206, 201, 0.2) !important;
+}
+
+#dailyModal .dl-foot { border-top: 1px solid rgba(255, 255, 255, 0.14) !important; background: transparent !important; }

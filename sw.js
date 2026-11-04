@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v430-settingsHeaderFix';
+const CACHE_NAME = 'anime-card-battle-v432-rebirthDailyWob';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
