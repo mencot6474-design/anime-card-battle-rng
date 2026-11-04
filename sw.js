@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v428-commandDrawerWob';
+const CACHE_NAME = 'anime-card-battle-v429-settingsWob';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

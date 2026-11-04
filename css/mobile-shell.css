@@ -2363,3 +2363,235 @@ html.m-portrait .m-tabbar button:hover { color: #ffffff !important; }
   background: #f3e600 !important;
   box-shadow: 0 0 6px #f3e600 !important;
 }
+
+/* =====================================================================
+   WoB: SETTINGS SCREEN (#/settings, .sett-wrap) — 2026-11-05
+   Hitam #050505/#0a0a0a, teks #f5f5f5, aksen kuning #f3e600.
+   Warna semantik per-section (--sc: dynamics=cyan, interface=purple,
+   telemetry=emerald; badge --bc per artikel) DIPERTAHANKAN — tidak diubah.
+   Hanya struktur (bg, ring, text dasar) yang di-WoB-kan.
+   Selain itu: sembunyikan dock + tab bar saat Settings aktif.
+   ===================================================================== */
+
+/* Sembunyikan dock + tab bar saat Settings aktif */
+body.on-settings .buff-dock,
+body.on-settings .foot-menu,
+body.on-settings .m-tabbar,
+body.on-settings .m-rail { display: none !important; }
+
+/* Sett wrap background */
+body.on-settings .sett-wrap {
+  background-color: #050505 !important;
+  color: #f5f5f5 !important;
+}
+
+/* Tabir layar di belakang sett-wrap: hitam murni (gradien cyan/magenta di-WoB) */
+html body.on-settings:has(.sett-wrap)::before,
+html body.on-settings::before {
+  background-image:
+    linear-gradient(180deg, #050505 0%, #0a0a0a 100%) !important;
+}
+
+/* Header */
+body.on-settings .sett-wrap .sett-head {
+  background: #0a0a0a !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+}
+body.on-settings .sett-wrap .sett-head::after {
+  background: linear-gradient(90deg, transparent, #f3e600, transparent) !important;
+}
+body.on-settings .sett-wrap .sett-head .eyebrow {
+  color: #f3e600 !important;
+  text-shadow: none !important;
+}
+body.on-settings .sett-wrap .sett-head .eyebrow i.d {
+  background: #f3e600 !important;
+  box-shadow: 0 0 8px #f3e600 !important;
+}
+body.on-settings .sett-wrap .sett-head h1 {
+  color: #fff !important;
+  text-shadow: none !important;
+}
+body.on-settings .sett-wrap .sett-head h1 em {
+  background: linear-gradient(90deg, #f3e600, #f3e600) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+body.on-settings .sett-wrap .sett-head .sub {
+  color: #9a9a9a !important;
+  text-shadow: none !important;
+}
+body.on-settings .sett-wrap .upill {
+  background: #0a0a0a !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  color: #e8e8e8 !important;
+}
+body.on-settings .sett-wrap .upill i.d {
+  background: #f3e600 !important;
+  box-shadow: 0 0 8px #f3e600 !important;
+}
+body.on-settings .sett-wrap .upill b { color: #f5f5f5 !important; }
+body.on-settings .sett-wrap .back {
+  background: #0a0a0a !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #e0e0e0 !important;
+}
+body.on-settings .sett-wrap .back:hover {
+  background: #f5f5f5 !important;
+  border-color: #f3e600 !important;
+  color: #050500 !important;
+  box-shadow: 0 0 14px rgba(243, 230, 0, 0.45) !important;
+}
+
+/* Fold section (akordion) */
+body.on-settings .sett-wrap .sett-fold {
+  background: #0a0a0a !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: none !important;
+}
+
+/* Fold header button */
+body.on-settings .sett-wrap .sett-fh .fic {
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  box-shadow: none !important;
+}
+body.on-settings .sett-wrap .sett-fh .fic .ic { color: #f5f5f5 !important; }
+body.on-settings .sett-wrap .sett-fh .ftag {
+  color: #f3e600 !important;
+  text-shadow: none !important;
+}
+body.on-settings .sett-wrap .sett-fh .fnm {
+  color: #fff !important;
+  text-shadow: none !important;
+}
+body.on-settings .sett-wrap .sett-fh .fstat { color: #9a9a9a !important; }
+body.on-settings .sett-wrap .sett-fh .fstat b { color: #f3e600 !important; }
+body.on-settings .sett-wrap .sett-fh .ch { color: #f5f5f5 !important; }
+
+/* Fold body divider */
+body.on-settings .sett-wrap .sett-fb {
+  border-top: 1px solid rgba(255, 255, 255, 0.14) !important;
+}
+
+/* Card artikel */
+body.on-settings .sett-wrap .card {
+  background: #0a0a0a !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: none !important;
+}
+body.on-settings .sett-wrap .badge {
+  background: #050505 !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  box-shadow: none !important;
+}
+body.on-settings .sett-wrap .ctitle { color: #fff !important; }
+body.on-settings .sett-wrap .desc { color: #9a9a9a !important; text-shadow: none !important; }
+body.on-settings .sett-wrap .desc b { color: #f5f5f5 !important; }
+body.on-settings .sett-wrap .hl-user { color: #f3e600 !important; }
+body.on-settings .sett-wrap .note { color: #9a9a9a !important; text-shadow: none !important; }
+body.on-settings .sett-wrap .note.on { color: #f3e600 !important; }
+body.on-settings .sett-wrap .tel { color: #9a9a9a !important; text-shadow: none !important; }
+
+/* Battle speed pills */
+body.on-settings .sett-wrap .bs {
+  background: #050505 !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  color: #e8e8e8 !important;
+}
+body.on-settings .sett-wrap .bs.on {
+  background: #f3e600 !important;
+  border-color: #f3e600 !important;
+  color: #0a0a00 !important;
+}
+body.on-settings .sett-wrap .bs.on small { color: #101000 !important; }
+body.on-settings .sett-wrap .bs small { color: #9a9a9a !important; }
+body.on-settings .sett-wrap .bs .ic { color: #9a9a9a !important; }
+body.on-settings .sett-wrap .bs[disabled] { opacity: 0.5 !important; }
+
+/* Tombol aksi */
+body.on-settings .sett-wrap .btn {
+  background: #0a0a0a !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  color: #e8e8e8 !important;
+  box-shadow: none !important;
+}
+body.on-settings .sett-wrap .btn:hover {
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+body.on-settings .sett-wrap .btn.amber {
+  border-color: rgba(243, 230, 0, 0.5) !important;
+  color: #f3e600 !important;
+  background: transparent !important;
+}
+body.on-settings .sett-wrap .btn.emerald {
+  border-color: rgba(52, 211, 153, 0.5) !important;
+  color: #34d399 !important;
+  background: transparent !important;
+}
+body.on-settings .sett-wrap .btn.red {
+  border-color: rgba(251, 113, 133, 0.5) !important;
+  color: #fb7185 !important;
+  background: transparent !important;
+}
+
+/* Chip bahasa ID/EN */
+body.on-settings .sett-wrap .lc {
+  background: #0a0a0a !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  color: #f5f5f5 !important;
+}
+body.on-settings .sett-wrap .lc.on {
+  border-color: rgba(192, 132, 252, 0.6) !important;
+  background: #050505 !important;
+}
+body.on-settings .sett-wrap .lc .code {
+  background: #050505 !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #fff !important;
+}
+body.on-settings .sett-wrap .lc .li b { color: #fff !important; }
+body.on-settings .sett-wrap .lc .li span { color: #9a9a9a !important; }
+body.on-settings .sett-wrap .lc .ck { color: #c084fc !important; }
+
+/* Switch (auto tower) */
+body.on-settings .sett-wrap .sw {
+  background: #0a0a0a !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+body.on-settings .sett-wrap .sw .t { color: #e8e8e8 !important; text-shadow: none !important; }
+body.on-settings .sett-wrap .sw .k {
+  background: #050505 !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+}
+body.on-settings .sett-wrap .sw .k::after { background: #9a9a9a !important; }
+body.on-settings .sett-wrap .sw:has(.setsw:checked) .k {
+  border-color: rgba(0, 240, 255, 0.5) !important;
+}
+body.on-settings .sett-wrap .sw:has(.setsw:checked) .k::after { background: #00f0ff !important; }
+
+/* Input field (link account) */
+body.on-settings .sett-wrap .in {
+  background: #050505 !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  color: #f5f5f5 !important;
+}
+body.on-settings .sett-wrap .in::placeholder { color: #9a9a9a !important; }
+
+/* User box */
+body.on-settings .sett-wrap .ubox {
+  background: #0a0a0a !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+body.on-settings .sett-wrap .ubox .ui small { color: #9a9a9a !important; }
+body.on-settings .sett-wrap .ubox .ui b { color: #f5f5f5 !important; }
+body.on-settings .sett-wrap .ubox .out {
+  background: transparent !important;
+  border: 1px solid rgba(251, 113, 133, 0.4) !important;
+  color: #fb7185 !important;
+}
+body.on-settings .sett-wrap .ubox .out:hover {
+  background: rgba(251, 113, 133, 0.12) !important;
+}
