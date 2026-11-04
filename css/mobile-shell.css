@@ -1366,3 +1366,25 @@ html.m-portrait body.bp-open .backpack-panel {
 .backpack-panel .bp-slot.filled .bps-art-wrap {
   background: #050505 !important;
 }
+
+/* ---- WoB: panel background & kerangka (rule id di lobby-prototype:2652
+   menang dari override class; balik dengan id) ---- */
+#backpackPanel.backpack-panel,
+#backpackPanel,
+.backpack-panel {
+  background: radial-gradient(120% 80% at 50% 0%, rgba(255, 255, 255, 0.05) 0%, rgba(8, 8, 8, 0.95) 50%, #050505 100%) !important;
+  background-color: #050505 !important;
+}
+/* kerangka floating modal landscape/desktop (border+glow cyan di :7145) */
+html.m-landscape #backpackPanel,
+html.m-landscape .backpack-panel,
+html:not(.m-portrait) #backpackPanel,
+html:not(.m-portrait) .backpack-panel {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.9) !important;
+}
+html.m-portrait #backpackPanel,
+html.m-portrait .backpack-panel {
+  border-color: rgba(255, 255, 255, 0.28) !important;
+  box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.85) !important;
+}
