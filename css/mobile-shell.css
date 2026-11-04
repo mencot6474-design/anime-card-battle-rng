@@ -1559,6 +1559,292 @@ html.m-portrait .m-tabbar button:hover { color: #ffffff !important; }
 .foot-menu .fm-item.danger svg { color: #fb7185 !important; }
 .foot-menu .fm-item.danger:hover { background: rgba(251, 113, 133, 0.12) !important; }
 
+/* =====================================================================
+   WoB: TRAIT MODAL (#traitModal) — 2026-11-05
+   Hitam #050505/#0a0a0a, teks #f5f5f5, aksen kuning #f3e600.
+   Warna semantik (rarity border --tcol, trait pill --tcol, ACTIVE flag)
+   TIDAK diubah.
+   ===================================================================== */
+#traitModal .tr-box {
+  background: #050505 !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.9) !important;
+  color: #f5f5f5 !important;
+}
+#traitModal .tr-box::before { display: none !important; }
+#traitModal .tr-cyber-head {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25) !important;
+  background: linear-gradient(180deg, #0a0a0a 0%, #050505 100%) !important;
+}
+#traitModal .tr-cyber-head::after {
+  background: linear-gradient(90deg, transparent, #f3e600, transparent) !important;
+  box-shadow: none !important;
+}
+#traitModal .ix-x {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #e0e0e0 !important;
+}
+#traitModal .ix-x:hover {
+  border-color: rgba(255, 255, 255, 0.6) !important;
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Subject Matrix card */
+#traitModal .tr-cur {
+  background: #0a0a0a !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6) !important;
+}
+#traitModal .tr-cur::before {
+  background: var(--tcol, #f5f5f5) !important;
+  box-shadow: 0 0 10px var(--tcol, #f5f5f5) !important;
+}
+#traitModal .tr-cur-thumb-wrap {
+  border: 1.5px solid rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5) !important;
+}
+#traitModal .tc-lbl { color: #f5f5f5 !important; }
+#traitModal .tc-code { color: rgba(255, 255, 255, 0.35) !important; }
+#traitModal .tc-name { color: #fff !important; }
+#traitModal .tc-trait-pill {
+  border: 1px solid var(--tcol, #f5f5f5) !important;
+  background: linear-gradient(90deg, rgba(255,255,255,.05), rgba(255,255,255,.08)) !important;
+  box-shadow: 0 0 10px rgba(255,255,255,.15) !important;
+}
+#traitModal .tc-trait-none { color: #9a9a9a !important; }
+#traitModal .tc-none-dot { background: rgba(255, 255, 255, 0.3) !important; }
+#traitModal .tc-badge-stat {
+  background: #050505 !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+#traitModal .tcb-tag { color: rgba(255, 255, 255, 0.5) !important; }
+#traitModal .tcb-val { color: #f3e600 !important; }
+#traitModal .tc-stat-empty { color: rgba(255, 255, 255, 0.35) !important; border-style: dashed; }
+#traitModal .tr-change-ic {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #f5f5f5 !important;
+}
+#traitModal .tr-change-ic:hover, #traitModal .tr-cur:hover .tr-change-ic {
+  background: #f5f5f5 !important;
+  color: #050505 !important;
+  box-shadow: 0 0 10px #f5f5f5 !important;
+}
+
+/* Roll button */
+#traitModal .tr-btn {
+  background: linear-gradient(180deg, #ffffff, #d9d9d9) !important;
+  color: #050505 !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+#traitModal .tr-btn:hover:not([disabled]) {
+  border-color: rgba(255, 255, 255, 0.55) !important;
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.45) !important;
+}
+#traitModal .tr-btn[disabled] { opacity: 0.5 !important; }
+#traitModal .tr-btn.tr-auto-btn {
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #e0e0e0 !important;
+}
+#traitModal .tr-btn.tr-auto-btn:hover:not([disabled]) {
+  border-color: rgba(255, 255, 255, 0.55) !important;
+  color: #fff !important;
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.45) !important;
+}
+#traitModal .tr-cost-badge {
+  border: 1px solid rgba(243, 230, 0, 0.5) !important;
+  color: #f3e600 !important;
+  background: transparent !important;
+}
+#traitModal .tr-btn-content { color: #050505 !important; }
+
+/* Auto panel */
+#traitModal .tr-auto-panel {
+  background: #0a0a0a !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: none !important;
+}
+#traitModal .tr-auto-panel.on {
+  border-color: #f3e600 !important;
+  background: #050505 !important;
+  box-shadow: 0 0 18px rgba(243, 230, 0, 0.15) !important;
+}
+#traitModal .tr-auto-panel.on .tr-auto-btn {
+  background: #f3e600 !important;
+  color: #0a0a00 !important;
+  border-color: #f3e600 !important;
+  box-shadow: 0 4px 16px rgba(243, 230, 0, 0.4) !important;
+}
+#traitModal .tr-pulse-indicator {
+  background: #050505 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+#traitModal .tr-pi-dot { background: #8a97a6 !important; }
+#traitModal .tr-pi-txt { color: rgba(255, 255, 255, 0.6) !important; }
+#traitModal .tr-pulse-indicator.pulse-run { border-color: rgba(243, 230, 0, 0.4) !important; }
+#traitModal .tr-pulse-indicator.pulse-run .tr-pi-dot {
+  background: #f3e600 !important;
+  box-shadow: 0 0 8px #f3e600 !important;
+}
+#traitModal .tr-pulse-indicator.pulse-run .tr-pi-txt { color: #f3e600 !important; }
+#traitModal .tr-auto-meta { border-top: 1px dashed rgba(255, 255, 255, 0.08) !important; }
+#traitModal .tram-k { color: rgba(255, 255, 255, 0.45) !important; }
+#traitModal .tram-v { color: #f3e600 !important; }
+#traitModal .tram-n { color: #f5f5f5 !important; }
+
+/* Footer telemetry */
+#traitModal .tr-coin-pill {
+  border: 1px solid rgba(243, 230, 0, 0.35) !important;
+  background: transparent !important;
+  color: #f3e600 !important;
+}
+#traitModal .tr-coin { color: #fff !important; }
+#traitModal .tr-tip-txt { color: rgba(255, 255, 255, 0.45) !important; }
+
+/* Drop rates panel */
+#traitModal .tr-rates {
+  background: #0a0a0a !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.6) !important;
+}
+#traitModal .trr-h { border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important; }
+#traitModal .trr-h-title { color: #f5f5f5 !important; }
+#traitModal .trr-h-sub { color: rgba(255, 255, 255, 0.4) !important; }
+#traitModal .trr-item {
+  background: #050505 !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+#traitModal .trr-item:hover {
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+#traitModal .trr-item.own {
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.15) !important;
+}
+#traitModal .trr-item.is-target {
+  border-color: #f3e600 !important;
+  box-shadow: inset 0 0 0 1px #f3e600, 0 0 10px rgba(243, 230, 0, 0.2) !important;
+}
+#traitModal .trr-row { color: #E6EEF5 !important; }
+#traitModal .trr-name { color: #fff !important; }
+#traitModal .trr-flag { color: #060a10 !important; }
+#traitModal .trr-rar {
+  border: 1px solid var(--tcol, #f5f5f5) !important;
+  color: var(--tcol, #f5f5f5) !important;
+}
+#traitModal .trr-pct { color: var(--tcol, #f5f5f5) !important; }
+#traitModal .trr-tgt-box {
+  background: rgba(0, 0, 0, 0.4) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
+}
+#traitModal .trr-tgt input:checked + .trr-tgt-box {
+  background: #f3e600 !important;
+  border-color: #f3e600 !important;
+  box-shadow: 0 0 8px #f3e600 !important;
+}
+#traitModal .trr-tgt input:checked + .trr-tgt-box .trr-tgt-check { color: #050505 !important; }
+#traitModal .trr-bar { background: rgba(255, 255, 255, 0.08) !important; }
+#traitModal .trr-bar i { box-shadow: 0 0 6px currentColor !important; }
+#traitModal .tr-empty-state { color: rgba(200, 212, 222, 0.75) !important; }
+
+/* =====================================================================
+   WoB: WEATHER MACHINE MODAL (#weatherMachineModal) — 2026-11-05
+   Hitam #050505/#0a0a0a, teks #f5f5f5, aksen kuning #f3e600.
+   Warna semantik (cuaca --tcol, rarity, ACTIVE flag) TIDAK diubah.
+   ===================================================================== */
+#weatherMachineModal .wm-box {
+  background: #050505 !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.9) !important;
+  color: #f5f5f5 !important;
+}
+#weatherMachineModal .wm-cyber-head {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25) !important;
+  background: linear-gradient(180deg, #0a0a0a 0%, #050505 100%) !important;
+}
+#weatherMachineModal .ix-x {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #e0e0e0 !important;
+}
+#weatherMachineModal .ix-x:hover {
+  border-color: rgba(255, 255, 255, 0.6) !important;
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Header badges */
+#weatherMachineModal .wm-head-pill {
+  background: #0a0a0a !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  color: #f5f5f5 !important;
+}
+
+/* Current weather panel */
+#weatherMachineModal .wm-cur-panel {
+  background: #0a0a0a !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), inset 0 0 12px color-mix(in srgb, var(--tcol, #f5f5f5) 10%, transparent) !important;
+}
+#weatherMachineModal .wm-cur-panel::before {
+  background: var(--tcol, #f5f5f5) !important;
+  box-shadow: 0 0 8px var(--tcol, #f5f5f5) !important;
+}
+#weatherMachineModal .wm-thumb-wrap {
+  background: radial-gradient(circle, color-mix(in srgb, var(--tcol, #f5f5f5) 25%, transparent) 0%, rgba(0, 0, 0, 0.6) 80%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Pity block */
+#weatherMachineModal .wm-pity-block {
+  background: #0a0a0a !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Roll button */
+#weatherMachineModal .wm-roll-btn {
+  background: linear-gradient(180deg, #ffffff, #d9d9d9) !important;
+  color: #050505 !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 0 14px rgba(0, 0, 0, 0.6) !important;
+}
+#weatherMachineModal .wm-roll-btn:hover:not(:disabled) {
+  background: #f3e600 !important;
+  color: #0a0a00 !important;
+  box-shadow: 0 0 20px rgba(243, 230, 0, 0.55) !important;
+}
+#weatherMachineModal .wm-roll-btn .tr-cost-badge {
+  border: 1px solid rgba(243, 230, 0, 0.5) !important;
+  color: #f3e600 !important;
+  background: transparent !important;
+}
+
+/* Auto panel */
+#weatherMachineModal .tr-auto-panel {
+  background: #0a0a0a !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+}
+#weatherMachineModal .tr-auto-panel.on {
+  border-color: #f3e600 !important;
+  background: #050505 !important;
+  box-shadow: 0 0 18px rgba(243, 230, 0, 0.15) !important;
+}
+#weatherMachineModal .tr-auto-panel.on .tr-auto-btn {
+  background: #f3e600 !important;
+  color: #0a0a00 !important;
+  border-color: #f3e600 !important;
+}
+
+/* Rates panel */
+#weatherMachineModal .wm-rates {
+  background: #0a0a0a !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+
 /* ---- Backpack: hapus strip gradient di atas baris ATK/HP tile (2026-11-05)
    .hc-stats bawa gradient gelap yang ujungnya terlihat seperti garis.
    Selector disamakan dengan rule sumber (0,3,0) supaya menang. ---- */
@@ -1607,4 +1893,343 @@ html.m-portrait .m-tabbar button:hover { color: #ffffff !important; }
   background-position: 0 0, 0% 0% !important;
   animation: hubComboCardBorderFlow 3s linear infinite alternate !important;
   box-shadow: 0 0 14px rgba(181,140,255,.35), 0 6px 16px rgba(0,0,0,.55) !important;
+}
+
+/* =====================================================================
+   WoB: DECK PICKER MODAL (#deckPickModal) — 2026-11-05
+   Digunakan oleh Trait Synthesis (pilih subject kartu). Hitam #050505/#0a0a0a,
+   teks #f5f5f5, aksen kuning #f3e600. Warna semantik (badge tier/mut/shiny,
+   border selected) TIDAK diubah.
+   ===================================================================== */
+
+/* Backdrop */
+#deckPickModal {
+  background: rgba(0, 0, 0, 0.85) !important;
+}
+
+/* Sheet panel */
+#deckPickModal .dp-box {
+  background: #050505 !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.9) !important;
+  color: #f5f5f5 !important;
+}
+#deckPickModal .dp-box::before,
+#deckPickModal .dp-box::after { display: none !important; }
+
+/* Header */
+#deckPickModal .ix-head {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25) !important;
+  background: linear-gradient(180deg, #0a0a0a 0%, #050505 100%) !important;
+}
+#deckPickModal .ix-head .eyebrow { color: #f5f5f5 !important; }
+#deckPickModal .ix-head .ix-title { color: #fff !important; text-shadow: none !important; }
+
+/* Close button */
+#deckPickModal .ix-x {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #e0e0e0 !important;
+}
+#deckPickModal .ix-x:hover {
+  border-color: rgba(255, 255, 255, 0.6) !important;
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Search input */
+#deckPickModal .card-search-wrap svg { color: #f5f5f5 !important; }
+#deckPickModal .card-search {
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  color: #e8e8e8 !important;
+}
+#deckPickModal .card-search::placeholder { color: rgba(255, 255, 255, 0.35) !important; }
+#deckPickModal .card-search:focus {
+  border-color: rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1) !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Card tiles — 1:1 square, no radius, 3px border */
+#deckPickModal .dp-card {
+  background: #0a0a0a !important;
+  border: 3px solid rgba(255, 255, 255, 0.22) !important;
+  border-radius: 0 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+  color: #f5f5f5 !important;
+  transform: none !important;
+  aspect-ratio: 1 / 1 !important;
+  width: 100% !important;
+}
+#deckPickModal .dp-card img {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 0 !important;
+  object-fit: cover !important;
+}
+#deckPickModal .dp-card:hover {
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.12), 0 8px 22px rgba(0, 0, 0, 0.6) !important;
+  transform: none !important;
+}
+#deckPickModal .dp-card::after { display: none !important; }
+
+/* Selected card — 3px yellow border */
+#deckPickModal .dp-card.sel {
+  border-color: #f3e600 !important;
+  border-width: 3px !important;
+  box-shadow: 0 0 0 1px #f3e600, 0 0 18px rgba(243, 230, 0, 0.5) !important;
+  background: #050505 !important;
+  border-radius: 0 !important;
+}
+
+/* Card name */
+#deckPickModal .dp-name {
+  color: #fff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9) !important;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8)) !important;
+}
+
+/* Badges (shiny/mut/trait) — warna semantik dipertahankan, hanya bg/border di-WoB */
+#deckPickModal .dp-badges .mut-badge,
+#deckPickModal .dp-badges .trait-badge,
+#deckPickModal .dp-badges .dp-mut,
+#deckPickModal .dp-badges .dp-gem {
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  background: #050505 !important;
+  color: #f5f5f5 !important;
+}
+#deckPickModal .dp-badges .shiny-badge { color: #f3e600 !important; }
+#deckPickModal .dp-badges { top: 6px !important; right: 6px !important; gap: 6px !important; }
+
+/* =====================================================================
+   WoB: DECK PICKER HORIZONTAL LAYOUT — 2026-11-05
+   Trait picker jadi modal horizontal rapih: lebar penuh di mobile,
+   sentral lebar di desktop, kartu dalam baris horizontal rapi.
+   ===================================================================== */
+
+/* Desktop: modal sentral lebar, tidak full-screen penuh */
+@media (min-width: 721px) {
+  html:not(.m-portrait) #deckPickModal {
+    align-items: flex-start !important;
+    justify-content: center !important;
+    padding-top: 60px !important;
+  }
+  html:not(.m-portrait) #deckPickModal .dp-box {
+    width: min(900px, 92vw) !important;
+    max-height: 88vh !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+  html:not(.m-portrait) #deckPickModal .ix-head {
+    flex: 0 0 auto !important;
+    padding: 14px 20px 10px !important;
+  }
+  html:not(.m-portrait) #deckPickModal #dpBody {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 12px 20px 16px !important;
+  }
+  /* Kartu dalam baris horizontal, 6 kolom di desktop */
+  html:not(.m-portrait) #deckPickModal .dp-grid {
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+  html:not(.m-portrait) #deckPickModal .dp-card {
+    aspect-ratio: 1 / 1 !important;
+    width: 100% !important;
+  }
+  html:not(.m-portrait) #deckPickModal .dp-card img {
+    width: 100% !important;
+    height: 100% !important;
+  }
+}
+
+/* Mobile portrait: bottom sheet horizontal, kartu 3 kolom */
+@media (max-width: 720px) and (orientation: portrait) {
+  html.m-portrait #deckPickModal {
+    align-items: flex-end !important;
+    justify-content: flex-end !important;
+    padding: 0 !important;
+  }
+  html.m-portrait #deckPickModal .dp-box {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: calc(90dvh - var(--nav-h) - var(--safe-bottom)) !important;
+    max-height: none !important;
+    margin: 0 !important;
+    border-radius: 16px 16px 0 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    transform: none !important;
+  }
+  html.m-portrait #deckPickModal .ix-head {
+    flex: 0 0 auto !important;
+    padding: 10px 16px 8px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+  }
+  html.m-portrait #deckPickModal #dpBody {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 10px 14px 14px !important;
+  }
+  /* Kartu 3 kolom horizontal di portrait */
+  html.m-portrait #deckPickModal .dp-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+  html.m-portrait #deckPickModal .dp-card {
+    aspect-ratio: 1 / 1 !important;
+    width: 100% !important;
+  }
+  html.m-portrait #deckPickModal .dp-card img {
+    width: 100% !important;
+    height: 100% !important;
+  }
+}
+
+/* Mobile landscape: sheet dari bawah, kartu 4 kolom */
+@media (max-width: 720px) and (orientation: landscape) {
+  html.m-landscape #deckPickModal {
+    align-items: flex-end !important;
+    justify-content: flex-end !important;
+    padding: 0 !important;
+  }
+  html.m-landscape #deckPickModal .dp-box {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: calc(90dvh - var(--safe-top) - var(--safe-bottom)) !important;
+    max-height: none !important;
+    margin: 0 !important;
+    border-radius: 16px 16px 0 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    transform: none !important;
+  }
+  html.m-landscape #deckPickModal .ix-head {
+    flex: 0 0 auto !important;
+    padding: 8px 14px 6px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+  }
+  html.m-landscape #deckPickModal #dpBody {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 8px 12px 12px !important;
+  }
+  /* Kartu 4 kolom horizontal di landscape */
+  html.m-landscape #deckPickModal .dp-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+  html.m-landscape #deckPickModal .dp-card {
+    aspect-ratio: 1 / 1 !important;
+    width: 100% !important;
+  }
+  html.m-landscape #deckPickModal .dp-card img {
+    width: 100% !important;
+    height: 100% !important;
+  }
+}
+
+/* Grid gap tokens already set by mobile-shell css:28486-28488; keep */
+
+/* =====================================================================
+   WoB: DECK PICKER HEADER — 2026-11-05
+   Header cyber rapih di tema WoB: bg hitam gradient, teks putih,
+   aksen kuning hazard #f3e600 di bawah, tombol X ring putih.
+   ===================================================================== */
+#deckPickModal .ix-head {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  background: linear-gradient(180deg, #0a0a0a 0%, #050505 100%) !important;
+  border-bottom: 3px solid #f3e600 !important;
+  padding: 12px 18px 10px !important;
+  position: relative !important;
+  z-index: 10 !important;
+}
+#deckPickModal .ix-head > div {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+}
+#deckPickModal .ix-head .eyebrow {
+  font-size: 10px !important;
+  letter-spacing: 0.2em !important;
+  text-transform: uppercase !important;
+  color: #f3e600 !important;
+  font-weight: 800 !important;
+  text-shadow: 0 0 10px rgba(243, 230, 0, 0.35) !important;
+}
+#deckPickModal .ix-head .ix-title {
+  font-size: 20px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.04em !important;
+  color: #fff !important;
+  text-shadow: 0 0 14px rgba(255, 255, 255, 0.3) !important;
+  line-height: 1.1 !important;
+}
+#deckPickModal .ix-x {
+  width: 34px !important;
+  height: 34px !important;
+  flex: 0 0 auto !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-radius: 8px !important;
+  color: #e0e0e0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+}
+#deckPickModal .ix-x:hover {
+  background: #f5f5f5 !important;
+  border-color: #f3e600 !important;
+  color: #050500 !important;
+  box-shadow: 0 0 14px rgba(243, 230, 0, 0.45) !important;
+}
+
+/* Pastikan dpBody tidak tertutup header */
+#deckPickModal #dpBody {
+  padding-top: 0 !important;
+}
+
+/* Responsive: header lebih compact di mobile */
+@media (max-width: 720px) and (orientation: portrait) {
+  html.m-portrait #deckPickModal .ix-head {
+    padding: 10px 14px 8px !important;
+  }
+  html.m-portrait #deckPickModal .ix-head .ix-title {
+    font-size: 17px !important;
+  }
+  html.m-portrait #deckPickModal .ix-head .eyebrow {
+    font-size: 9px !important;
+  }
+}
+
+@media (max-width: 720px) and (orientation: landscape) {
+  html.m-landscape #deckPickModal .ix-head {
+    padding: 8px 14px 6px !important;
+  }
+  html.m-landscape #deckPickModal .ix-head .ix-title {
+    font-size: 16px !important;
+  }
+  html.m-landscape #deckPickModal .ix-head .eyebrow {
+    font-size: 9px !important;
+  }
 }

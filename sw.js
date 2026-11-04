@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v422-bpRing';
+const CACHE_NAME = 'anime-card-battle-v427-deckPickHeader';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
