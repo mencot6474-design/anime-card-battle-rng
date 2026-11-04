@@ -996,6 +996,14 @@
     'OPERASI TEMPUR UTAMA': 'PRIMARY COMBAT OPS',
     'AKTIVITAS HARIAN & BOOSTER': 'DAILY ACTIVITY & BOOSTERS',
     'AKTIVITAS HARIAN &amp; BOOSTER': 'DAILY ACTIVITY & BOOSTERS',
+    'ESC / X = TUTUP': 'ESC / X = CLOSE',
+    'DAYA TEMPUR': 'COMBAT POWER',
+    'HADIAH SELESAI': 'REWARDS CLAIMED',
+    'PROGRES BAB:': 'CHAPTER PROGRESS:',
+    'TOKO': 'SHOP',
+    '+ PAKAI': '+ USE',
+    'HABIS': 'OUT OF STOCK',
+    'TUTUP': 'CLOSE',
     'UNTUK BUKA MODE INI': 'TO UNLOCK THIS MODE',
     'STORY · BAB N': 'STORY · CHAPTER N',
     'CERITA ·': 'STORY ·',
@@ -1345,7 +1353,28 @@
     [/(\d+\s*\/\s*\d+)\s*SELESAI\b/g, '$1 CLEARED'],
     [/(\d+)\s*KLAIM\b/g, '$1 CLAIM'],
     [/Klik buka Deck/g, 'Open Deck'],
-    [/Klik buka Supply Shop/g, 'Open Supply Shop']
+    [/Klik buka Supply Shop/g, 'Open Supply Shop'],
+    // premium / weather / ranking / story / raid / pot-tray leaks
+    [/(\d+)\s*ITEM TERSEDIA/g, '$1 ITEMS AVAILABLE'],
+    [/DURASI\s+(\d+)\s*MENIT/g, '$1-MIN DURATION'],
+    [/untuk SEMUA pemain di server selama\s+(\d+)\s*JAM! Username kamu akan tampil sebagai aktivator\./g, 'for ALL players on the server for $1 HOUR! Your username will be shown as the activator.'],
+    [/✓ SUDAH DIMILIKI DI BACKPACK/g, '✓ ALREADY OWNED IN BACKPACK'],
+    [/STOK BACKPACK:\s*(\d+)\s*PACK/g, 'BACKPACK STOCK: $1 PACKS'],
+    [/ANOMALI CUACA SERVER/g, 'SERVER WEATHER ANOMALY'],
+    [/(\d+)\s*SINTESIS/g, '$1 SYNTHESIS'],
+    [/(\d+)\s*PEMAIN/g, '$1 PLAYERS'],
+    [/(\d+)\s*KLAIM\b/g, '$1 CLAIM'],
+    [/(\d+\s*\/\s*\d+)\s*SELESAI\b/g, '$1 CLEARED'],
+    [/REWARD HARIAN/g, 'DAILY REWARD'],
+    [/\(PILIH LEVEL\)/g, '(PICK LEVEL)'],
+    [/ESC \/ X = TUTUP/g, 'ESC / X = CLOSE'],
+    [/PILIH LEVEL/g, 'PICK LEVEL'],
+    [/Klik untuk pakai Potion/g, 'Click to use Potion'],
+    [/Beli\/ tumpuk Global Luck/g, 'Buy/ stack Global Luck'],
+    [/Gems kurang — butuh/g, 'Not enough gems — need'],
+    // teks node terpecah oleh <b>ESC</b>/<b>X</b> — node " = TUTUP" polos
+    [/=\s*TUTUP\b/gi, '= CLOSE'],
+    [/Tutup \(ESC \/ Swipe Kanan\)/g, 'Close (ESC / Swipe Right)']
   ];
 
   function translateTextString(str) {
