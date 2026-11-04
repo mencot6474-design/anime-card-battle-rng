@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v427-deckPickHeader';
+const CACHE_NAME = 'anime-card-battle-v428-commandDrawerWob';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

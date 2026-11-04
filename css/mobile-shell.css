@@ -2233,3 +2233,133 @@ html.m-portrait .m-tabbar button:hover { color: #ffffff !important; }
     font-size: 9px !important;
   }
 }
+
+/* =====================================================================
+   WoB: COMMAND DRAWER (#commandDrawer / #drawerBackdrop) — 2026-11-05
+   Hitam #050505/#0a0a0a, teks #f5f5f5, aksen kuning #f3e600.
+   Warna semantik per-section (--sc: combat=cyan, raid=crimson, tower=purple,
+   lb=gold, daily=emerald, special=gold) DIPERTAHANKAN — tidak diubah.
+   Hanya struktur (bg, border, ring, text dasar) yang di-WoB-kan.
+   ===================================================================== */
+
+/* Backdrop overlay */
+#drawerBackdrop {
+  background: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Drawer shell: hitam murni + ring kuning hazard di tepi kiri */
+#commandDrawer {
+  background: linear-gradient(180deg, #050505 0%, #0a0a0a 100%) !important;
+  border-left: 2px solid #f3e600 !important;
+  box-shadow: -25px 0 80px rgba(0, 0, 0, 0.95), inset 1px 0 0 rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Header */
+#commandDrawer .drw-head {
+  background: linear-gradient(180deg, #0a0a0a 0%, #050505 100%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25) !important;
+}
+#commandDrawer .drw-eyebrow { color: #f3e600 !important; }
+#commandDrawer .drw-eyebrow .live-dot {
+  background: #f3e600 !important;
+  box-shadow: 0 0 8px #f3e600 !important;
+  animation: pulseGreen 2s infinite !important;
+}
+#commandDrawer .drw-title { color: #fff !important; text-shadow: none !important; }
+
+/* Close btn */
+#commandDrawer .drw-close-btn {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #e0e0e0 !important;
+}
+#commandDrawer .drw-close-btn:hover {
+  background: #f5f5f5 !important;
+  border-color: #f3e600 !important;
+  color: #050500 !important;
+  box-shadow: 0 0 14px rgba(243, 230, 0, 0.45) !important;
+  transform: scale(1.06) !important;
+}
+
+/* Scrollbar */
+#commandDrawer .drw-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* Fold section */
+#commandDrawer .fold {
+  background: #0a0a0a !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+
+/* Fold header (accordion) */
+#commandDrawer .fh .fic {
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  box-shadow: none !important;
+}
+#commandDrawer .fh .fic .ic { color: #f5f5f5 !important; }
+#commandDrawer .fh .ftag { color: #f3e600 !important; text-shadow: none !important; }
+#commandDrawer .fh .fnm { color: #fff !important; text-shadow: none !important; }
+#commandDrawer .fh .fstat { color: #9a9a9a !important; }
+#commandDrawer .fh .fstat b { color: #f3e600 !important; }
+#commandDrawer .fh .ch { color: #f5f5f5 !important; }
+
+/* Fold body divider */
+#commandDrawer .fb {
+  border-top: 1px solid rgba(255, 255, 255, 0.14) !important;
+}
+
+/* Row entry (menu card) */
+#commandDrawer .row {
+  background: #0a0a0a !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: none !important;
+}
+#commandDrawer .row:hover {
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+#commandDrawer .row:active { transform: scale(0.98) !important; }
+
+/* Row icon pod */
+#commandDrawer .row .pod {
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  box-shadow: none !important;
+}
+#commandDrawer .row .pod .ic { color: #f5f5f5 !important; }
+
+/* Row text */
+#commandDrawer .row .rn { color: #fff !important; text-shadow: none !important; }
+#commandDrawer .row .rs { color: #9a9a9a !important; text-shadow: none !important; }
+#commandDrawer .row .vl { color: #f5f5f5 !important; text-shadow: none !important; }
+
+/* Progress bar track + fill (fill keeps --rc semantic per-row) */
+#commandDrawer .row .pb { background: rgba(255, 255, 255, 0.08) !important; }
+#commandDrawer .row .pb > span {
+  background: linear-gradient(90deg, var(--rc, #f3e600), rgba(255,255,255,.45)) !important;
+}
+
+/* Live dot */
+#commandDrawer .row .live {
+  background: #fb7185 !important;
+  box-shadow: 0 0 6px #fb7185 !important;
+}
+
+/* Footer */
+#commandDrawer .drw-foot {
+  background: #0a0a0a !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: #9a9a9a !important;
+  text-shadow: none !important;
+}
+#commandDrawer .drw-foot b { color: #f3e600 !important; }
+#commandDrawer .drw-foot-k .live-dot {
+  background: #f3e600 !important;
+  box-shadow: 0 0 6px #f3e600 !important;
+}
