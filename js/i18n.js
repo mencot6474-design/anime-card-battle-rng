@@ -1102,6 +1102,8 @@
     'Beli di toko untuk membuka slot': 'Buy in the shop to unlock slots',
     'BELUM ADA PET': 'NO PETS YET',
     'Dapatkan pet dari raid / tower': 'Get pets from raid / tower',
+    // infinite tower + toko INF
+    'ROLL TOWER DITARIK': 'TOWER ROLLS WITHDRAWN',
     // lore bab 1-5 (paragraf yang belum ada)
     'Di lembah antara dua gunung, sebuah desa ninja mempertahankan gerbang batu peninggalan leluhur. Enam petarung menjaga jalan masuk, masing-masing membawa satu jurus warisan yang tidak pernah diajarkan keluar desa.': 'In the valley between two mountains, a ninja village defends an ancient stone gate left by its ancestors. Six fighters guard the entrance, each carrying one inherited technique that has never been taught outside the village.',
     'Gerbang batu desa itu ternyata bukan cuma jalan keluar. Setelah enam penjaganya tumbang, coretan di permukaannya menyala dan membuka satu jalur teleportasi ke planet hijau yang terapung di luar orbit — arena tempat para petarung antariksa mengadu tenaga sejak lama.': 'The village stone gate turned out to be more than an exit. After its six guardians fell, the markings on its surface lit up and opened a teleportation route to a green planet floating far off-orbit — an arena where space fighters have tested their strength for ages.',
@@ -1566,7 +1568,12 @@
     [/AKTIF SEBAGAI MAHKOTA KARTU/g, 'ACTIVE AS CARD CROWN'],
     [/(\d+)\s*\/\s*(\d+)\s*KARTU\b/g, '$1 / $2 CARDS'],
     [/KLAIM ·/g, 'CLAIM ·'],
-    [/TOKEN WORLD BOSS/g, 'WORLD BOSS TOKEN']
+    [/TOKEN WORLD BOSS/g, 'WORLD BOSS TOKEN'],
+    // infinite tower + toko INF
+    [/REKOR INF TOWER/g, 'INF TOWER RECORD'],
+    [/REKOR/g, 'RECORD'],
+    [/\+\s*([\d.,]+)\s*KARTU\b/g, '+$1 CARDS'],
+    [/HASIL INTAN ROLL/g, 'GEM ROLL RESULT']
   ];
 
   function translateTextString(str) {
