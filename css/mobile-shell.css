@@ -1585,16 +1585,6 @@ html.m-portrait .m-tabbar button:hover { color: #ffffff !important; }
   background: transparent !important;
 }
 
-/* Garis strip = tepi ring mutasi (.hub-center::before, gradient animasi)
-   yang melintasi area ATK/HP tile. Dihilangkan KHUSUS di dalam backpack
-   (lobby/battle tetap berframe mutasi). Warna mutasi tetap terbaca dari
-   label tier & modal detail. */
-.backpack-panel .bp-tile .hub-center:not(#_bv2)::before,
-.backpack-panel .bp-slot .hub-center:not(#_bv2)::before,
-.backpack-panel .bp-tile .hub-center:not(#_bv2)::after {
-  content: none !important;
-}
-
 /* Strip cyan di bawah tile = meteran power (.bpt-pw::after, gradient cyan
    selebar --pw). User minta dihapus -> sembunyikan track + fill sekaligus. */
 .backpack-panel .bpt-pw {
