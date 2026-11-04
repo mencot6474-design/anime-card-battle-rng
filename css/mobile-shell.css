@@ -728,3 +728,103 @@ body.on-tower #activePlayersBadge { display: none !important; }
 #backpackPanel .bp-slots .bp-slot:hover .hub-center {
   box-shadow: 0 0 0 1px rgba(125, 249, 255, 0.35), 0 0 14px rgba(125, 249, 255, 0.18), 0 10px 24px rgba(0, 0, 0, 0.55) !important;
 }
+
+/* ---- Backpack cyberpunk pass (2026-11-05) ----
+   Referensi: Cyberpunk 2077 UI palette (hitam pekat, cyan #55ead4, magenta/red
+   #c5003c, kuning #f3e600) + palet neon umum (indigo gelap, cyan+magenta).
+   Prinsip produksi: clean dark + subtle neon, TANPA chamfer/scanline.
+   Garis "rail" flat 1px diganti energy conduit: gradasi cyan -> teal -> magenta
+   yang padam, panel diberi bloom ganda + hairline inset. */
+
+.backpack-panel .bp-deckcol {
+  background:
+    radial-gradient(120% 55% at 18% 0%, rgba(0, 240, 255, 0.10), transparent 58%),
+    radial-gradient(130% 55% at 88% 100%, rgba(255, 46, 136, 0.08), transparent 60%),
+    linear-gradient(180deg, #0e1322 0%, #090d18 100%) !important;
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(0, 240, 255, 0.10),
+    inset 0 1px 0 rgba(140, 220, 255, 0.10) !important;
+}
+
+.backpack-panel .bp-collect {
+  background:
+    radial-gradient(110% 50% at 85% 0%, rgba(0, 240, 255, 0.08), transparent 55%),
+    radial-gradient(130% 55% at 8% 100%, rgba(94, 234, 212, 0.05), transparent 60%),
+    linear-gradient(180deg, #0d1322 0%, #090d18 100%) !important;
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(0, 240, 255, 0.09),
+    inset 0 1px 0 rgba(140, 220, 255, 0.08) !important;
+}
+
+.backpack-panel .bp-filter {
+  background: linear-gradient(180deg, #0c1120 0%, #0a0e1a 100%) !important;
+  box-shadow: inset 0 0 0 1px rgba(0, 240, 255, 0.08) !important;
+}
+
+/* rail atas: header & tab bar */
+.backpack-panel .backpack-header {
+  border-bottom: 1px solid transparent !important;
+  border-image: linear-gradient(90deg,
+    rgba(0, 240, 255, 0.85) 0%,
+    rgba(94, 234, 212, 0.35) 45%,
+    rgba(56, 189, 248, 0.12) 70%,
+    rgba(255, 46, 136, 0.45) 100%) 1 !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.7) !important;
+}
+
+.backpack-panel .bp-tabs {
+  border-bottom: 1px solid transparent !important;
+  border-image: linear-gradient(90deg,
+    rgba(255, 46, 136, 0.4) 0%,
+    rgba(56, 189, 248, 0.14) 30%,
+    rgba(94, 234, 212, 0.3) 60%,
+    rgba(0, 240, 255, 0.8) 100%) 1 !important;
+}
+
+/* rail dalam: pemisah kolom & seksi */
+.backpack-panel .bp-col-head {
+  border-bottom: 1px solid transparent !important;
+  border-image: linear-gradient(90deg,
+    rgba(0, 240, 255, 0.5),
+    rgba(94, 234, 212, 0.18) 55%,
+    transparent 90%) 1 !important;
+}
+
+.backpack-panel .bp-colhead-top {
+  border-bottom: 1px solid transparent !important;
+  border-image: linear-gradient(90deg,
+    rgba(0, 240, 255, 0.5),
+    rgba(94, 234, 212, 0.18) 55%,
+    transparent 90%) 1 !important;
+}
+
+.backpack-panel .bp-deckmeta {
+  border-top: 1px solid transparent !important;
+  border-image: linear-gradient(180deg,
+    transparent 0%,
+    rgba(255, 210, 122, 0.05) 30%,
+    rgba(251, 191, 36, 0.45) 100%) 1 !important;
+}
+
+.backpack-panel .bp-body .btitle::after,
+.backpack-panel .bp-body.tree .btitle::after {
+  background: linear-gradient(90deg,
+    rgba(0, 240, 255, 0.5),
+    rgba(94, 234, 212, 0.2) 45%,
+    transparent 90%) !important;
+}
+
+/* tab: dasar lebih gelap kontras, aksen hairline atas halus */
+.backpack-panel .bp-tab {
+  background: linear-gradient(180deg, rgba(13, 18, 33, 0.92) 0%, rgba(8, 12, 24, 0.92) 100%) !important;
+  border-color: rgba(90, 130, 190, 0.22) !important;
+  box-shadow: inset 0 1px 0 rgba(140, 220, 255, 0.07) !important;
+}
+
+.backpack-panel .bp-tab:hover {
+  background: linear-gradient(180deg, rgba(0, 240, 255, 0.14) 0%, rgba(0, 240, 255, 0.05) 100%) !important;
+  border-color: rgba(0, 240, 255, 0.45) !important;
+  box-shadow: inset 0 1px 0 rgba(140, 220, 255, 0.12), 0 0 14px rgba(0, 240, 255, 0.12) !important;
+}
