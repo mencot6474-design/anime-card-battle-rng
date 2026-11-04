@@ -2895,49 +2895,80 @@ body.on-settings .sett-wrap .ubox .out:hover {
   border-color: rgba(255, 255, 255, 0.12) !important;
 }
 
-/* Fix: badge OWNED ONLY menutupi badge SHINY — paksa .ix-tog dan .ix-sort-wrap
-   ke tepi kanan .ix-bar via absolute positioning. SHINY (anak terakhir di
-   .ix-chips) selalu terlihat penuh, tidak tertutup toggle. */
-#indexModal .ix-bar {
+/* Fix: header index — kanan (OWNED + SORT) fixed width & selalu terlihat,
+   kiri (chip mutasi) boleh scroll tapi rapi, tidak ada overlap. */
+html.m-portrait #indexModal .ix-bar,
+html.m-landscape #indexModal .ix-bar,
+html:not(.m-portrait) #indexModal .ix-bar {
   position: relative !important;
   display: flex !important;
   align-items: center !important;
   flex-wrap: nowrap !important;
   padding-right: 170px !important;
 }
-#indexModal .ix-chips {
-  flex: 0 0 auto !important;
-  max-width: 60% !important;
-  overflow-x: auto !important;
-}
-#indexModal .ix-sp {
+html.m-portrait #indexModal .ix-chips,
+html.m-landscape #indexModal .ix-chips,
+html:not(.m-portrait) #indexModal .ix-chips {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
   flex: 1 1 auto !important;
-  min-width: 40px !important;
+  min-width: 0 !important;
+  overflow-x: auto !important;
+  scrollbar-width: thin !important;
 }
-#indexModal .ix-tog {
+html.m-portrait #indexModal .ix-chips::-webkit-scrollbar,
+html.m-landscape #indexModal .ix-chips::-webkit-scrollbar,
+html:not(.m-portrait) #indexModal .ix-chips::-webkit-scrollbar { height: 6px !important; }
+html.m-portrait #indexModal .ix-chips::-webkit-scrollbar-thumb,
+html.m-landscape #indexModal .ix-chips::-webkit-scrollbar-thumb,
+html:not(.m-portrait) #indexModal .ix-chips::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-radius: 3px !important;
+}
+html.m-portrait #indexModal .ix-sp,
+html.m-landscape #indexModal .ix-sp,
+html:not(.m-portrait) #indexModal .ix-sp { display: none !important; }
+html.m-portrait #indexModal .ix-tog,
+html.m-landscape #indexModal .ix-tog,
+html:not(.m-portrait) #indexModal .ix-tog {
   position: absolute !important;
-  right: 85px !important;
+  right: 95px !important;
   margin: 0 !important;
-  padding-left: 16px !important;
-  padding-right: 16px !important;
+  padding-left: 14px !important;
+  padding-right: 14px !important;
   border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
   background: #0a0a0a !important;
   color: #e8e8e8 !important;
 }
-#indexModal .ix-tog.on {
+html.m-portrait #indexModal .ix-tog.on,
+html.m-landscape #indexModal .ix-tog.on,
+html:not(.m-portrait) #indexModal .ix-tog.on {
   background: #f3e600 !important;
   border-color: #f3e600 !important;
   color: #0a0a00 !important;
   box-shadow: 0 0 14px rgba(243, 230, 0, 0.45) !important;
 }
-#indexModal .ix-tog:hover:not(.on) {
+html.m-portrait #indexModal .ix-tog:hover:not(.on),
+html.m-landscape #indexModal .ix-tog:hover:not(.on),
+html:not(.m-portrait) #indexModal .ix-tog:hover:not(.on) {
   border-color: rgba(255, 255, 255, 0.5) !important;
   background: rgba(255, 255, 255, 0.06) !important;
   color: #fff !important;
 }
-#indexModal .ix-sort-wrap {
+html.m-portrait #indexModal .ix-sort-wrap,
+html.m-landscape #indexModal .ix-sort-wrap,
+html:not(.m-portrait) #indexModal .ix-sort-wrap {
   position: absolute !important;
   right: 12px !important;
   margin: 0 !important;
+}
+html.m-portrait #indexModal .ix-sort,
+html.m-landscape #indexModal .ix-sort,
+html:not(.m-portrait) #indexModal .ix-sort {
+  background: #0a0a0a !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
+  color: #e8e8e8 !important;
+  padding: 4px 10px !important;
 }
