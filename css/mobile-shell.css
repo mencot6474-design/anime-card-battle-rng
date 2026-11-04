@@ -1195,3 +1195,67 @@ html.m-portrait body.bp-open .backpack-panel {
   background: #f5f5f5 !important;
   box-shadow: none !important;
 }
+
+/* ---- WoB: popup item (#itemPop / bpholo) — tinggal panel bermode --holo-tone ---- */
+.bpholo-backdrop {
+  background: rgba(0, 0, 0, 0.9) !important;
+}
+.bpholo-panel {
+  background: linear-gradient(165deg, #0c0c0c, #060606) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85) !important;
+}
+.bpholo-glow { background: none !important; }
+.bpholo-pedestal {
+  background: radial-gradient(ellipse, rgba(255, 255, 255, 0.14), transparent 70%) !important;
+}
+.bpholo-img { filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 8px rgba(255, 255, 255, 0.12)) !important; }
+.bpholo-inventory-pill {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+.bpholo-inv-val { color: #f5f5f5 !important; }
+.bpholo-btn-use {
+  background: #f5f5f5 !important;
+  color: #050505 !important;
+  border: none !important;
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.2) !important;
+}
+.bpholo-btn-use:hover:not(.disabled) {
+  filter: brightness(1.08);
+  background: #ffffff !important;
+  color: #050505 !important;
+}
+.bpholo-btn-use.disabled {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #6a6a6a !important;
+  box-shadow: none !important;
+}
+.bpholo-btn-all {
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  color: #e0e0e0 !important;
+}
+.bpholo-btn-all:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.55) !important;
+  color: #ffffff !important;
+}
+.bpholo-btn-dismiss { color: #9a9a9a !important; }
+.bpholo-btn-dismiss:hover { color: #ffffff !important; }
+.bpholo-panel .wo-multi button.on,
+.bpholo-panel .wo-multi.bp-pack-toggle button.on {
+  background: #f5f5f5 !important;
+  border-color: #f5f5f5 !important;
+  color: #050505 !important;
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.2) !important;
+  transform: none !important;
+}
+.bpholo-panel .wo-multi button.btn-all,
+.bpholo-panel .wo-multi.bp-pack-toggle button.btn-all,
+.bpholo-panel .wo-multi button[data-pn="all"],
+.bpholo-panel .wo-multi.bp-pack-toggle button[data-pn="all"] {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: #f3e600 !important;
+}
