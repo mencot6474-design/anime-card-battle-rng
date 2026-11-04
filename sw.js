@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v443-indexGrid2Row';
+const CACHE_NAME = 'anime-card-battle-v444-indexHeadOverflow';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

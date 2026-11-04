@@ -2807,6 +2807,7 @@ body.on-settings .sett-wrap .ubox .out:hover {
   background: linear-gradient(180deg, #0a0a0a 0%, #050505 100%) !important;
   border-bottom: 3px solid #f3e600 !important;
   padding: 16px 22px 14px !important;
+  overflow: hidden !important;
 }
 #indexModal .ix-eyebrow { color: #f3e600 !important; text-shadow: none !important; }
 #indexModal .ix-eyebrow i { color: #f3e600 !important; }
