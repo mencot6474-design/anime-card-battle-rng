@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v370-twDialog';
+const CACHE_NAME = 'anime-card-battle-v371-ixCell2';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

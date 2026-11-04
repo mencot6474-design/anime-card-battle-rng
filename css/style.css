@@ -22461,6 +22461,37 @@ main#app:has(.sett-wrap) {
   pointer-events: none !important;
 }
 
+/* ===== Card Index: tata ulang overlay — nama full width, 0 overlap, 0 terpotong =====
+   Dulu ixc-stack max-width 60% + nowrap -> hampir semua nama jadi "..." dan
+   menabrak badge SHINY di kanan-atas. Sekarang: badge strip di atas (mut badge
+   masuk baris yang sama dengan shiny), nama+chance selalu mulai di bawah strip
+   dan dapat lebar penuh kartu, nama boleh wrap max 2 baris. */
+#indexModal .ix-cell .mut-badge{
+  position:static !important;
+  inset:auto !important;
+}
+#indexModal .ixc-stack{
+  top:36px !important;
+  left:8px !important;
+  right:8px !important;
+  bottom:auto !important;
+  max-width:none !important;
+}
+#indexModal .ixc-name{
+  font-size:12px !important;
+  letter-spacing:.01em !important;
+  white-space:normal !important;
+  display:-webkit-box !important;
+  -webkit-box-orient:vertical !important;
+  -webkit-line-clamp:2 !important;
+  overflow:hidden !important;
+  line-height:1.1 !important;
+  text-align:left !important;
+}
+/* sweep shine nama mutasi butuh nowrap-overlay; dengan nama 2 baris akan nyasar,
+   jadi di index dimatikan (warna mutasi + badge tetap ada) */
+#indexModal .ixc-name.ixc-mut-name::after{content:none !important;}
+
 /* 5. Hover Card (.bps-hover): Tetap di LUAR (floating outside card) */
 .bps-hover .hub-center .hc-name-top {
   top: -10px !important;
