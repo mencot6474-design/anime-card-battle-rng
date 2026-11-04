@@ -20834,6 +20834,178 @@ html.fps-locked .bp-fchip{
 .rb-modal-title {
   font-size: 20px;
 }
+/* Dihapus keliru oleh prune 3c30e0e — semua masih dipakai modal rebirth. */
+.rb-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.rb-modal-body::-webkit-scrollbar {
+  display: none;
+}
+.rb-h-layout {
+  display: grid;
+  grid-template-columns: 210px 1fr 270px;
+  gap: 16px;
+  padding: 20px 22px;
+  align-items: stretch;
+}
+.rb-col-sigil {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+/* === Blok rebirth yang terhapus keliru oleh prune 3c30e0e (batch 4) === */
+.rb-bar-wrap {
+  position: relative;
+  width: 100%;
+  height: 12px;
+  border-radius: 6px;
+  background: #090611;
+  border: 1px solid rgba(192, 132, 252, 0.25);
+  overflow: hidden;
+}
+.rb-bar-fill {
+  position: relative;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #7e22ce 0%, #a855f7 50%, #c084fc 100%);
+  box-shadow: 0 0 12px rgba(192, 132, 252, 0.7);
+  transition: width 0.35s ease;
+}
+.rb-bar-glow {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 10px;
+  background: #fff;
+  filter: blur(2px);
+  opacity: 0.75;
+}
+.rb-cyber-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-display, "Orbitron", "Rajdhani", sans-serif);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: #c084fc;
+  text-transform: uppercase;
+}
+.rb-cyber-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #c084fc;
+  box-shadow: 0 0 8px #c084fc;
+}
+.rb-cycle-tag {
+  font-family: var(--font-display, "Orbitron", "Rajdhani", sans-serif);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #c084fc;
+}
+.rb-cycle-sub {
+  font-size: 9px;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.06em;
+}
+.rb-col-info {
+  gap: 14px;
+  justify-content: space-between;
+}
+.rb-compare-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c084fc;
+  filter: drop-shadow(0 0 6px #c084fc);
+}
+.rb-glow-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #a855f7;
+  box-shadow: 0 0 6px #a855f7;
+}
+.rb-foot-pct {
+  color: #c084fc;
+  font-family: var(--font-display, "Orbitron", "Rajdhani", sans-serif);
+}
+.rb-col-action {
+  justify-content: space-between;
+  gap: 12px;
+}
+.rb-action-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.rb-ah-title {
+  font-family: var(--font-display, "Orbitron", "Rajdhani", sans-serif);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #f1f5f9;
+}
+.rb-cutin-sigil-wrap {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin: 8px 0 20px;
+  display: grid;
+  place-items: center;
+}
+.rb-cutin-core-icon {
+  position: relative;
+  z-index: 2;
+  width: 64px;
+  height: 64px;
+  filter: drop-shadow(0 0 16px #c084fc) drop-shadow(0 0 28px #ffd700);
+  animation: rbSigilChargePulse 1.2s ease-in-out infinite alternate;
+}
+.rb-cutin-title {
+  margin: 0 0 12px;
+  font-family: var(--font-display, 'Orbitron', 'Rajdhani', sans-serif);
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #fff099 0%, #ffd700 50%, #c084fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 18px rgba(255, 215, 0, 0.65));
+}
+.rb-cutin-cycle-lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+.rb-cutin-cycle-num {
+  font-family: var(--font-display, 'Orbitron', 'Rajdhani', sans-serif);
+  font-size: 42px;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: 0.08em;
+  color: #ffd700;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(192, 132, 252, 0.5), 0 2px 4px rgba(0, 0, 0, 0.9);
+}
+.rb-cutin-mult-badge {
+  font-family: 'JetBrains Mono', 'Orbitron', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: #4ade80;
+  text-shadow: 0 0 8px rgba(74, 222, 128, 0.7);
+  text-transform: uppercase;
+}
 .rb-col {
   border: 1px solid rgba(192, 132, 252, 0.18);
   border-radius: 16px;
