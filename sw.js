@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v444-indexHeadOverflow';
+const CACHE_NAME = 'anime-card-battle-v445-ixXHoverRemoved';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
