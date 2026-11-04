@@ -1047,6 +1047,26 @@ document.addEventListener("keydown",e=>{
 /* ========== UPDATE LOG MODAL ========== */
 const GAME_CHANGELOGS = [
   {
+    version: "v1.4.7",
+    date: "05 Nov 2026",
+    title: "Tema Elegan White-on-Black & Polish Backpack/Lobby",
+    titleEn: "Elegant White-on-Black Theme & Backpack/Lobby Polish",
+    items: [
+      "Tema UI baru WHITE-on-BLACK diterapkan di seluruh Backpack: panel, kerangka layar, tab, modal dialog, popup item, dan rails kini hitam pekat dengan aksen putih elegan.",
+      "Lobby ikut berpindah ke tema White-on-Black: header, rails animasi, tab bar sisi, frame kartu hero, dan tombol ROLL menyatu dengan tema baru.",
+      "Warna semantik tetap dipertahankan (koin emas, gem cyan, badge tier, warna mutasi) agar informasi gameplay tidak hilang.",
+      "Perbaikan border kartu mutasi Rainbow di Deck Aktif: kembali beranimasi pelangi berputar, tidak lagi membeku satu warna ungu.",
+      "Pembersihan visual kartu di backpack: strip meteran power cyan dihilangkan, ring mutasi dipulihkan, dan ukuran badge FAV/MUT dengan search bar disamakan (44px)."
+    ],
+    itemsEn: [
+      "New WHITE-on-BLACK UI theme applied across the entire Backpack: panel, screen frame, tabs, modal dialogs, item popups, and rails now use deep black with elegant white accents.",
+      "The Lobby also moved to the White-on-Black theme: header, animated rails, side tab bar, hero card frame, and ROLL button now match the new look.",
+      "Semantic colors are preserved (gold coins, cyan gems, tier badges, mutation colors) so gameplay information stays readable.",
+      "Fixed Rainbow mutation card border in the Active Deck: the animated rainbow flow is back instead of freezing on a single purple color.",
+      "Backpack card visual cleanup: removed the cyan power meter strip, restored mutation rings, and equalized FAV/MUT badge and search bar sizing (44px)."
+    ]
+  },
+  {
     version: "v1.4.6",
     date: "27 Okt 2026",
     title: "World Boss Hub & Toko Armory Full-Bleed & Anti-Flicker",

@@ -11,10 +11,12 @@ Baca file ini dulu; jangan baca `style.css` (49.3k baris) atau `index.html` utuh
 
 | Layar | Prototipe sumber (`_tmp/`) | Status produksi |
 |---|---|---|
-| **Lobby** | `proto_lobby_v12.html` — DIKUNCI | ⏳ port jalan (renderLobby + CSS + tab bar) |
+| **Lobby** | `proto_lobby_v12.html` — DIKUNCI | ⏳ port jalan + **WoB chrome SELESAI** (`69f8733`,`5bcdf20`) |
 | **Settings / tab More** | `proto_more_v2.html` (accordion) — DIKUNCI | ✅ port + push: `ac0d262`→`8091725`→`9da9d28` |
 | **Command drawer / swipe menu** | `proto_drawer_v2.html` (accordion) — DIKUNCI | ⏳ antre setelah lobby |
 | **Tab bar** (4 tab, Summon dihapus) | — | ⏳ ikut unit lobby |
+
+**Tema UI terpilih (2026-11-05): WHITE-on-BLACK (WoB)** — hitam `#050505`/`#0a0a0a` + teks/garis putih `#f5f5f5` + satu aksen kuning hazard `#f3e600`. Prototipe lab: `_tmp/bp_color_lab.html` varian C (user kunci). Aturan: **warna semantik JANGAN diputihkan** (koin emas, gem cyan, badge tier, warna mutasi, danger, weather). Implementasi di `mobile-shell.css` blok WoB v399–v423 (append, satu blok per layar) — cascade lawan `#backpackPanel` id-rule `lobby-prototype.css:2652` perlu spesifisitas id. Progres: **backpack penuh** (panel/tab/modal/popup/rails) + **lobby chrome** ✅; battle/story/tower/WB ⏳.
 
 **P0 mobile** (bukti terukur, antre — lihat §4/ledger): K-GRID koleksi di 320 · `#pwaInstallBtn` nutupin dock · tab active-state · story-title/daily-close 44px.
 **Mandor aktif** = sesi ini; pekerja = sesi divisi terpisah (**MODE PARALEL**, §2c — 5 divisi boleh jalan bareng asalkan tiketnya disjoint per file). Sumber kebenaran giliran & keputusan = `_tmp/mandor_ledger.md` (ditimpa tiap unit).
