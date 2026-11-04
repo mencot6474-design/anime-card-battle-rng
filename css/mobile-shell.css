@@ -837,3 +837,219 @@ body.on-tower #activePlayersBadge { display: none !important; }
   height: 44px !important;
   border-radius: 10px !important;
 }
+
+/* ---- Backpack WHITE-on-BLACK HUD (2026-11-05, varian C pilihan user) ----
+   Hitam pekat #050505, garis & teks PUTIH, kuning hazard #f3e600 satu-satunya
+   aksen. Panel kartu (deck slot/tile) & warna mutasi TIDAK disentuh.
+   Blok ini menimpa pass cyberpunk sebelumnya (conduit cyan->magenta). */
+
+.backpack-panel {
+  --bp-cy: #f5f5f5;
+  --bp-am: #f3e600;
+  --bp-tx: #f5f5f5;
+  --bp-txd: #9a9a9a;
+  background-color: #050505 !important;
+  background-image:
+    radial-gradient(120% 80% at 50% 0%, rgba(255, 255, 255, 0.045) 0%, rgba(8, 8, 8, 0.9) 50%, #050505 100%),
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px) !important;
+}
+
+/* header */
+.backpack-panel .backpack-header {
+  background: linear-gradient(180deg, #0a0a0a 0%, #060606 100%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border-image: none !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.8) !important;
+}
+.backpack-panel .bp-wordmark {
+  background: #f5f5f5 !important;
+  -webkit-text-fill-color: #f5f5f5 !important;
+  text-shadow: 0 0 22px rgba(255, 255, 255, 0.14) !important;
+}
+.backpack-panel .bp-wordmark small {
+  color: #8d8d8d !important;
+  -webkit-text-fill-color: #8d8d8d !important;
+}
+.backpack-panel .bp-hdr-line {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent) !important;
+}
+
+/* tab bar: rail putih, tab = ring putih transparan, aktif = putih solid + laser kuning */
+.backpack-panel .bp-tabs {
+  background: #050505 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-image: none !important;
+}
+.backpack-panel .bp-tab {
+  background: transparent !important;
+  border-color: rgba(255, 255, 255, 0.24) !important;
+  border-radius: 6px !important;
+  color: #9a9a9a !important;
+  box-shadow: none !important;
+}
+.backpack-panel .bp-tab:hover {
+  background: rgba(255, 255, 255, 0.07) !important;
+  border-color: rgba(255, 255, 255, 0.55) !important;
+  color: #f5f5f5 !important;
+  box-shadow: none !important;
+}
+.backpack-panel .bp-tab.on {
+  background: #f5f5f5 !important;
+  border-color: #f5f5f5 !important;
+  color: #050505 !important;
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.25) !important;
+}
+.backpack-panel .bp-tab-num { color: rgba(255, 255, 255, 0.4) !important; }
+.backpack-panel .bp-tab.on .bp-tab-num {
+  color: #050505 !important;
+  text-shadow: none !important;
+}
+.backpack-panel .bp-tab.on .bp-tab-laser {
+  background: #f3e600 !important;
+  box-shadow: 0 0 10px #f3e600 !important;
+}
+
+/* panel kolom: hitam + ring putih tipis */
+.backpack-panel .bp-deckcol {
+  background: #0a0a0a !important;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.18) !important;
+}
+.backpack-panel .bp-collect {
+  background: #080808 !important;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.14) !important;
+}
+.backpack-panel .bp-filter {
+  background: transparent !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14) !important;
+}
+
+/* rails: putih, padam ke transparent */
+.backpack-panel .bp-col-head {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.28) !important;
+  border-image: none !important;
+}
+.backpack-panel .bp-colhead-top {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.28) !important;
+  border-image: none !important;
+}
+.backpack-panel .bp-deckmeta {
+  border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-image: none !important;
+}
+.backpack-panel .bp-body .btitle::after,
+.backpack-panel .bp-body.tree .btitle::after {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.18) 45%, transparent 90%) !important;
+}
+
+/* power box: kuning hazard solid, teks hitam */
+.backpack-panel .bdm-core {
+  background: #f3e600 !important;
+  box-shadow: 0 0 18px rgba(243, 230, 0, 0.35) !important;
+  border-radius: 8px !important;
+  text-align: center;
+}
+.backpack-panel .bdm-v {
+  color: #0a0a00 !important;
+  text-shadow: none !important;
+}
+
+/* teks sekunder & chip */
+.backpack-panel .bp-deck-count { color: #f5f5f5 !important; }
+.backpack-panel .bp-kol, .backpack-panel .bp-total-tag { color: #f5f5f5 !important; }
+.backpack-panel .bp-favtog,
+.backpack-panel .bp-mutbtn {
+  background: transparent !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.26) !important;
+}
+.backpack-panel .bp-favtog.on {
+  color: #050505 !important;
+  background: #f5f5f5 !important;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.25) !important;
+}
+.backpack-panel .bp-mutbtn.on {
+  background: #101010 !important;
+  box-shadow: inset 0 0 0 1px var(--mc, rgba(255, 255, 255, 0.5)) !important;
+}
+
+/* search: transparan + ring putih, ikon svg putih (data-uri diganti stroke putih) */
+.backpack-panel .bp-search,
+#backpackPanel .bp-search {
+  height: 44px !important;
+  border-radius: 6px !important;
+  background: transparent url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>') no-repeat 11px center !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  color: #e8e8e8 !important;
+}
+.backpack-panel .bp-search:focus {
+  border-color: rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1) !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* hover cue kartu & slot: cyan diganti putih */
+.backpack-panel .bp-tile:not([class*="bp-mut-"]):hover,
+.backpack-panel .bp-tile.in-deck:hover {
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.12), 0 8px 20px rgba(0, 0, 0, 0.6) !important;
+}
+.backpack-panel .bp-tile:hover .hub-center,
+.backpack-panel .bp-slot:hover .hub-center,
+#backpackPanel .bp-slots .bp-slot:hover .hub-center {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.4), 0 0 14px rgba(255, 255, 255, 0.14), 0 10px 24px rgba(0, 0, 0, 0.55) !important;
+}
+.backpack-panel .bp-slot:hover,
+.backpack-panel .bp-slot.filled:hover,
+#backpackPanel .bp-slots .bp-slot.filled:hover,
+#backpackPanel .bp-slots .bp-slot.filled[class*="mut-"]:hover,
+.backpack-panel .bp-slot.filled[class*="mut-"]:hover,
+.backpack-panel .bp-slot.filled.shiny:hover {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5), 0 6px 16px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* WoB fix lanjutan: wordmark putih (gradient-clip konflik) + angka power header */
+.backpack-panel .bp-wordmark {
+  background: linear-gradient(180deg, #ffffff 20%, #cfcfcf 65%, #9e9e9e 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+}
+.backpack-panel .bp-hstat-v.am { color: #f3e600 !important; }
+.backpack-panel .bp-hstat-k { color: #8d8d8d !important; }
+.backpack-panel .bp-opchip {
+  color: #d9d9d9 !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+}
+
+/* WoB: tile item/equipped/relic di tab ITEMS-ARTEFACT-PETS ikut hitam-putih.
+   Ring accent equipped (.eqslot.on var(--ec)) & warna rarity TIDAK disentuh. */
+.backpack-panel .bp-itemcard {
+  background: linear-gradient(165deg, #101010 0%, #0a0a0a 58%, #060606 100%) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14), 0 8px 18px rgba(0, 0, 0, 0.5) !important;
+}
+.backpack-panel .bp-itemcard:hover {
+  transform: none !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45), 0 8px 18px rgba(0, 0, 0, 0.5) !important;
+}
+.backpack-panel .eqslot {
+  background: linear-gradient(160deg, #0e0e0e 0%, #070707 100%) !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.18) !important;
+}
+.backpack-panel .eqslot.empty {
+  background: #0a0a0a !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16) !important;
+}
+.backpack-panel .eqslot > .bp-eqplus { color: rgba(255, 255, 255, 0.55) !important; }
+.backpack-panel .eqslot .eqart { background: #050505 !important; }
+.backpack-panel .relictile {
+  background: #0b0b0b !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16) !important;
+}
+
+/* WoB: ring accent equipped slot kembali (tertimpa override dasar .eqslot) */
+.backpack-panel .eqslot.on {
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5),
+    inset 0 0 26px color-mix(in srgb, var(--ec, #f5f5f5) 14%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--ec, #f5f5f5) 55%, transparent) !important;
+}
