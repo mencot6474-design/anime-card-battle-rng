@@ -1558,3 +1558,13 @@ html.m-portrait .m-tabbar button:hover { color: #ffffff !important; }
 .foot-menu .fm-item:hover { background: rgba(255, 255, 255, 0.08) !important; }
 .foot-menu .fm-item.danger svg { color: #fb7185 !important; }
 .foot-menu .fm-item.danger:hover { background: rgba(251, 113, 133, 0.12) !important; }
+
+/* ---- Backpack: hapus strip gradient di atas baris ATK/HP tile (2026-11-05)
+   .hc-stats bawa gradient gelap yang ujungnya terlihat seperti garis.
+   Selector disamakan dengan rule sumber (0,3,0) supaya menang. ---- */
+.backpack-panel .bp-tile .hc-stats,
+.backpack-panel .bp-tile .bpt-stats,
+.backpack-panel .bp-slot .hc-stats {
+  background: none !important;
+  box-shadow: none !important;
+}
