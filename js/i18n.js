@@ -989,6 +989,13 @@
     'Akan dicoba lagi': 'Will retry',
     '✓ SELESAI': '✓ DONE',
     '▾ BUKA LEVEL': '▾ OPEN LEVEL',
+    // tower-lobby.js — L5 lobby shell & hub tiles
+    'RIWAYAT ROLL': 'ROLL HISTORY',
+    '(MAX 10 TERBARU)': '(LAST 10)',
+    'PAKAI ▾': 'USE ▾',
+    'OPERASI TEMPUR UTAMA': 'PRIMARY COMBAT OPS',
+    'AKTIVITAS HARIAN & BOOSTER': 'DAILY ACTIVITY & BOOSTERS',
+    'AKTIVITAS HARIAN &amp; BOOSTER': 'DAILY ACTIVITY & BOOSTERS',
     'UNTUK BUKA MODE INI': 'TO UNLOCK THIS MODE',
     'STORY · BAB N': 'STORY · CHAPTER N',
     'CERITA ·': 'STORY ·',
@@ -1328,7 +1335,17 @@
     [/PAKAI ×(\d+)/g, 'USE ×$1'],
     [/Aktif:/g, 'Active:'],
     [/SLOT (\d+) KOSONG/g, 'SLOT $1 EMPTY'],
-    [/dimiliki/g, 'owned']
+    [/dimiliki/g, 'owned'],
+    // tower-lobby.js — L5 lobby shell & hub tiles
+    [/RIWAYAT ROLL/g, 'ROLL HISTORY'],
+    [/\(MAX 10 TERBARU\)/g, '(LAST 10)'],
+    [/PAKAI ▾/g, 'USE ▾'],
+    [/OPERASI TEMPUR UTAMA/g, 'PRIMARY COMBAT OPS'],
+    [/AKTIVITAS HARIAN (&amp;|&) BOOSTER/g, 'DAILY ACTIVITY & BOOSTERS'],
+    [/(\d+\s*\/\s*\d+)\s*SELESAI\b/g, '$1 CLEARED'],
+    [/(\d+)\s*KLAIM\b/g, '$1 CLAIM'],
+    [/Klik buka Deck/g, 'Open Deck'],
+    [/Klik buka Supply Shop/g, 'Open Supply Shop']
   ];
 
   function translateTextString(str) {
