@@ -1568,3 +1568,39 @@ html.m-portrait .m-tabbar button:hover { color: #ffffff !important; }
   background: none !important;
   box-shadow: none !important;
 }
+
+/* Revisi: gradient .hc-stats DIPULIHKAN (itu bayangan baca teks, bukan garis).
+   Garis strip yang dimaksud user dicari via elementsFromPoint. */
+.backpack-panel .bp-tile .hc-stats,
+.backpack-panel .bp-tile .bpt-stats,
+.backpack-panel .bp-slot .hc-stats {
+  background: linear-gradient(to top, rgba(5,8,15,0.92) 0%, rgba(5,8,15,0.68) 70%, transparent 100%) !important;
+  box-shadow: none !important;
+}
+
+/* Garis strip terang di bawah tile = .hc-img bg PUTIH sisa tema lama
+   (art tidak menutup wrapper penuh, sliver putih kelihatan). Nol-kan. */
+.backpack-panel .hc-img,
+.backpack-panel .bp-slot .hc-img {
+  background: transparent !important;
+}
+
+/* Garis strip = tepi ring mutasi (.hub-center::before, gradient animasi)
+   yang melintasi area ATK/HP tile. Dihilangkan KHUSUS di dalam backpack
+   (lobby/battle tetap berframe mutasi). Warna mutasi tetap terbaca dari
+   label tier & modal detail. */
+.backpack-panel .bp-tile .hub-center:not(#_bv2)::before,
+.backpack-panel .bp-slot .hub-center:not(#_bv2)::before,
+.backpack-panel .bp-tile .hub-center:not(#_bv2)::after {
+  content: none !important;
+}
+
+/* Strip cyan di bawah tile = meteran power (.bpt-pw::after, gradient cyan
+   selebar --pw). User minta dihapus -> sembunyikan track + fill sekaligus. */
+.backpack-panel .bpt-pw {
+  display: none !important;
+}
+.backpack-panel .bpt-pw::after {
+  content: none !important;
+  display: none !important;
+}
