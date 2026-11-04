@@ -2895,10 +2895,16 @@ body.on-settings .sett-wrap .ubox .out:hover {
   border-color: rgba(255, 255, 255, 0.12) !important;
 }
 
-/* Fix: badge OWNED ONLY di header ketimpa badge SHINY — beri pemisah visual
-   yang jelas antara ik-chip SHINY dan ik-tog OWNED ONLY di .ix-bar. */
+/* Fix: badge OWNED ONLY di header index ketimpa badge SHINY — .ix-bar pakai
+   flex-wrap:wrap jadi .ix-sp (flex:1) dapat lebar 0 saat chip rame. Paksa
+   .ix-sp lebar minimum dan .ix-tog ke tepi kanan via margin-left:auto. */
 #indexModal .ix-bar {
+  flex-wrap: nowrap !important;
   gap: 12px 16px !important;
+}
+#indexModal .ix-sp {
+  flex: 1 1 auto !important;
+  min-width: 80px !important;
 }
 #indexModal .ix-chip.shiny {
   margin-right: 10px !important;
