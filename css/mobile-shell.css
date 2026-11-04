@@ -2895,91 +2895,49 @@ body.on-settings .sett-wrap .ubox .out:hover {
   border-color: rgba(255, 255, 255, 0.12) !important;
 }
 
-/* Fix: badge OWNED ONLY di header index ketimpa badge SHINY — .ix-bar pakai
-   space-between agar chip kiri & toggle kanan terpisah, .ix-sp isi sisa ruang.
-   Spesifisitas ditingkatkan ke (0,2,1) untuk menang atas style.css:28681. */
-html.m-portrait #indexModal .ix-bar,
-html.m-landscape #indexModal .ix-bar {
+/* Fix: badge OWNED ONLY menutupi badge SHINY — paksa .ix-tog dan .ix-sort-wrap
+   ke tepi kanan .ix-bar via absolute positioning. SHINY (anak terakhir di
+   .ix-chips) selalu terlihat penuh, tidak tertutup toggle. */
+#indexModal .ix-bar {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
   flex-wrap: nowrap !important;
-  justify-content: space-between !important;
-  gap: 12px 16px !important;
+  padding-right: 170px !important;
 }
-html:not(.m-portrait) #indexModal .ix-bar {
-  flex-wrap: nowrap !important;
-  justify-content: space-between !important;
-  gap: 12px 16px !important;
+#indexModal .ix-chips {
+  flex: 0 0 auto !important;
+  max-width: 60% !important;
+  overflow-x: auto !important;
 }
-html.m-portrait #indexModal .ix-sp,
-html.m-landscape #indexModal .ix-sp {
+#indexModal .ix-sp {
   flex: 1 1 auto !important;
-  min-width: 80px !important;
+  min-width: 40px !important;
 }
-html:not(.m-portrait) #indexModal .ix-sp {
-  flex: 1 1 auto !important;
-  min-width: 80px !important;
-}
-html.m-portrait #indexModal .ix-chips,
-html.m-landscape #indexModal .ix-chips {
-  flex: none !important;
-  min-width: 0 !important;
-  max-width: 65% !important;
-}
-html:not(.m-portrait) #indexModal .ix-chips {
-  flex: none !important;
-  min-width: 0 !important;
-  max-width: 65% !important;
-}
-html.m-portrait #indexModal .ix-chip.shiny,
-html.m-landscape #indexModal .ix-chip.shiny {
-  margin-right: 14px !important;
-  border: 1.5px solid rgba(243, 230, 0, 0.45) !important;
-}
-html:not(.m-portrait) #indexModal .ix-chip.shiny {
-  margin-right: 14px !important;
-  border: 1.5px solid rgba(243, 230, 0, 0.45) !important;
-}
-html.m-portrait #indexModal .ix-tog,
-html.m-landscape #indexModal .ix-tog {
-  margin-left: auto !important;
-  margin-right: 10px !important;
-  padding-left: 18px !important;
-  padding-right: 18px !important;
+#indexModal .ix-tog {
+  position: absolute !important;
+  right: 85px !important;
+  margin: 0 !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
   border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
   background: #0a0a0a !important;
   color: #e8e8e8 !important;
 }
-html:not(.m-portrait) #indexModal .ix-tog {
-  margin-left: auto !important;
-  margin-right: 10px !important;
-  padding-left: 18px !important;
-  padding-right: 18px !important;
-  border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
-  background: #0a0a0a !important;
-  color: #e8e8e8 !important;
-}
-html.m-portrait #indexModal .ix-tog.on,
-html.m-landscape #indexModal .ix-tog.on {
+#indexModal .ix-tog.on {
   background: #f3e600 !important;
   border-color: #f3e600 !important;
   color: #0a0a00 !important;
   box-shadow: 0 0 14px rgba(243, 230, 0, 0.45) !important;
 }
-html:not(.m-portrait) #indexModal .ix-tog.on {
-  background: #f3e600 !important;
-  border-color: #f3e600 !important;
-  color: #0a0a00 !important;
-  box-shadow: 0 0 14px rgba(243, 230, 0, 0.45) !important;
-}
-html.m-portrait #indexModal .ix-tog:hover:not(.on),
-html.m-landscape #indexModal .ix-tog:hover:not(.on) {
+#indexModal .ix-tog:hover:not(.on) {
   border-color: rgba(255, 255, 255, 0.5) !important;
   background: rgba(255, 255, 255, 0.06) !important;
   color: #fff !important;
 }
-html:not(.m-portrait) #indexModal .ix-tog:hover:not(.on) {
-  border-color: rgba(255, 255, 255, 0.5) !important;
-  background: rgba(255, 255, 255, 0.06) !important;
-  color: #fff !important;
+#indexModal .ix-sort-wrap {
+  position: absolute !important;
+  right: 12px !important;
+  margin: 0 !important;
 }
