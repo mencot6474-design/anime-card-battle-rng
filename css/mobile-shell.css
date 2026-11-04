@@ -601,3 +601,26 @@ html.m-landscape .m-tabbar { display: none !important; }
   html.m-portrait body.on-raid .wb-stage-arena { height: auto !important; min-height: 380px !important; }
   html.m-portrait body.on-raid .wb-console-rail { height: auto !important; overflow: visible !important; }
 }
+
+/* ---- Infinite Tower hub portrait (2026-11-04) ----
+   Keluhan user: portrait "langsung berantakan". Audit CDP 390x844:
+   (a) urutan grid terbalik -> daftar sektor di ATAS, judul+stats+wave+CTA di
+       bawah (START harus scroll jauh). Dossier dinaikkan ke urutan pertama.
+       (hanya di grid 1 kolom ≤600px; 601-800 masih 2 kolom 220px — jangan diubah)
+   (b) pill HUD "ACTIVE PLAYER ON" (top-right 72px) menutupi tile sektor
+       teratas & judul TOWER MARKET di shop. Sembunyikan khusus halaman tower
+       di mobile (desktop bottom-left tetap tampil). */
+@media (max-width:600px) {
+  /* main#app flex-row me-stretch .tw-page ke 100dvh -> baris auto grid hub
+     dibagi rata (844-gap)/2 = 411px sehingga dossier (konten 1362px) ke-clamp
+     dan menimpa panel sektor. Paksa baris ikut konten; main yang scroll. */
+  body.on-tower main#app { align-items: flex-start !important; }
+  .tactical-tower-hub {
+    grid-auto-rows: max-content !important;
+    align-content: start !important;
+  }
+  .tactical-tower-hub .tactical-dossier-panel { order: -1 !important; }
+}
+html.m-portrait body.on-tower #activePlayersBadge,
+html.m-landscape body.on-tower #activePlayersBadge,
+body.on-tower #activePlayersBadge { display: none !important; }

@@ -26729,10 +26729,26 @@ body:has(.tactical-tower-shop-page) main#app {
   .tactical-tower-shop-page .tsh-h-grid {
     grid-template-columns: 1fr !important;
     max-height: none !important;
+    /* portrait: container tetap tinggi-definite (flex 1) -> 8 baris auto dibagi rata
+       (455-84)/8 = 46px, kartu ke-clamp overflow:hidden. Paksa baris ikut konten. */
+    grid-auto-rows: max-content !important;
+    align-content: start !important;
   }
   .tactical-tower-shop-page .tsh-h-card {
     grid-template-columns: auto minmax(0, 1fr) !important;
     gap: 10px !important;
+  }
+  .tactical-tower-shop-page .tsh-h-subhdr {
+    flex-wrap: wrap !important;
+    row-gap: 6px !important;
+  }
+  .tactical-tower-shop-page .ths-left {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+  .tactical-tower-shop-page .ths-count-tag {
+    flex: none !important;
+    white-space: nowrap !important;
   }
   .tactical-tower-shop-page .thc-right {
     grid-column: 1 / -1;
