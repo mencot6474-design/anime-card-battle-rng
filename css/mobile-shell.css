@@ -1053,3 +1053,53 @@ body.on-tower #activePlayersBadge { display: none !important; }
     inset 0 0 26px color-mix(in srgb, var(--ec, #f5f5f5) 14%, transparent),
     inset 0 0 0 1px color-mix(in srgb, var(--ec, #f5f5f5) 55%, transparent) !important;
 }
+
+/* ---- WoB menyeluruh (2026-11-05): sisa panel navy di tab SKILL/ITEMS/PET + popover MUT ---- */
+.backpack-panel .spbox {
+  background: #0a0a0a !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22) !important;
+}
+.backpack-panel .spbox .k { color: #f3e600 !important; }
+.backpack-panel .spbox .sp { color: #f3e600 !important; text-shadow: 0 0 20px rgba(243, 230, 0, 0.4) !important; }
+.backpack-panel .spbox .sp-goal { color: #e8e8e8 !important; }
+.backpack-panel .spbox .sp-hint { color: #9a9a9a !important; }
+
+.backpack-panel .buffstrip {
+  background: transparent !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16) !important;
+}
+
+.backpack-panel .pethero {
+  background: linear-gradient(150deg, #0e0e0e 0%, #080808 100%) !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(255, 255, 255, 0.16) !important;
+}
+.backpack-panel .pethero.on {
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55), inset 0 0 0 1px color-mix(in srgb, var(--ec, #5eead4) 45%, transparent) !important;
+}
+.backpack-panel .pethero.none {
+  background: #0a0a0a !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16) !important;
+}
+
+.backpack-panel .bp-mutpop {
+  background: linear-gradient(170deg, #0d0d0d 0%, #080808 100%) !important;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.75), inset 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+}
+.backpack-panel .bp-mrow {
+  background: transparent !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18) !important;
+}
+.backpack-panel .bp-mrow.on {
+  background: #f5f5f5 !important;
+  box-shadow: none !important;
+}
+.backpack-panel .bp-mrow.on .bp-mrow-lb, .backpack-panel .bp-mrow.on .bp-mrow-cn { color: #050505 !important; }
+.backpack-panel .bp-sbtn {
+  background: transparent !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22) !important;
+}
+.backpack-panel .bp-sbtn.on {
+  color: #050505 !important;
+  background: #f5f5f5 !important;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.25) !important;
+}
