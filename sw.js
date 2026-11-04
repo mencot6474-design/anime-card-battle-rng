@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v434-indexModalCenter';
+const CACHE_NAME = 'anime-card-battle-v435-indexBadgeFix';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
