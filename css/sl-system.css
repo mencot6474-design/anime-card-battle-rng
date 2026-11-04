@@ -195,11 +195,15 @@
   transition:border-color var(--sl-ease),box-shadow var(--sl-ease),transform var(--sl-ease) !important;
 }
 #deckPickModal .dp-card:hover,
-.bp-tile:hover,
 .ix-cell:hover{
   border-color:var(--sl-cyan) !important;
   box-shadow:0 0 14px rgba(0,217,255,.35),0 8px 22px rgba(0,0,0,.55) !important;
   transform:translateY(-2px) !important;
+}
+/* tile koleksi backpack: highlight tanpa angkat (user 2026-11-05 — lift dianggap jelek) */
+.bp-tile:hover{
+  border-color:var(--sl-cyan) !important;
+  box-shadow:0 0 14px rgba(0,217,255,.28),0 8px 22px rgba(0,0,0,.55) !important;
 }
 /* sweep garis cyan bawah ala system window saat hover */
 #deckPickModal .dp-card::after,

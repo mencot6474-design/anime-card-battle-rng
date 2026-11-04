@@ -4052,8 +4052,16 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 }
 
 #backpackPanel .bp-slots .bp-slot:hover,
-.backpack-panel .bp-slot:hover {
-  transform: translateY(-1px) !important;
+.backpack-panel .bp-slot:hover,
+#backpackPanel .bp-slots .bp-slot.filled:hover,
+.backpack-panel .bp-slot.filled:hover,
+#backpackPanel .bp-slots .bp-slot.filled[class*="bp-mut-"]:hover,
+.backpack-panel .bp-slot.filled[class*="bp-mut-"]:hover,
+#backpackPanel .bp-slots .bp-slot.filled[class*="mut-"]:hover,
+.backpack-panel .bp-slot.filled[class*="mut-"]:hover,
+#backpackPanel .bp-slots .bp-slot.filled.shiny:hover,
+.backpack-panel .bp-slot.filled.shiny:hover {
+  box-shadow: 0 0 0 1px rgba(125, 249, 255, 0.45), 0 6px 16px rgba(0, 0, 0, 0.55) !important;
 }
 
 #backpackPanel .bp-slots .bp-slot.sel,
@@ -4580,8 +4588,8 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 }
 
 .backpack-panel .bp-tile:hover {
-  transform: translateY(-4px) scale(1.02) !important;
-  box-shadow: 0 14px 26px rgba(0, 0, 0, 0.55) !important;
+  border-color: rgba(125, 249, 255, 0.55) !important;
+  box-shadow: 0 0 12px rgba(125, 249, 255, 0.18), 0 10px 22px rgba(0, 0, 0, 0.55) !important;
   z-index: 10 !important;
 }
 

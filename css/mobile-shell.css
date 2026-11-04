@@ -676,3 +676,55 @@ body.on-tower #activePlayersBadge { display: none !important; }
     flex: 0 0 auto !important;
   }
 }
+
+/* ---- Backpack hover: highlight tanpa lift (2026-11-05) ----
+   User: slot dek & tile koleksi "naik ke atas saat hover itu jelek". Rule lift
+   tersebar di 3 file (lobby-prototype, sl-system, style) dengan varian
+   mut-/shiny/filled — daripada tambal satu-satu, matikan transform-nya di sini
+   (file terakhir yang di-load). Highlight = border+glow yang sudah ada. */
+.backpack-panel .bp-slot:hover,
+#backpackPanel .bp-slots .bp-slot:hover,
+.backpack-panel .bp-slot.filled:hover,
+.backpack-panel .bp-slot.filled[class*="mut-"]:hover,
+.backpack-panel .bp-slot.filled[class*="bp-mut-"]:hover,
+.backpack-panel .bp-slot.filled.shiny:hover,
+.backpack-panel .bp-tile:hover,
+#backpackPanel .bp-tiles .bp-tile:hover,
+.backpack-panel .bp-tile[class*="mut-"]:hover,
+.backpack-panel .bp-tile[class*="bp-mut-"]:hover,
+.backpack-panel .bp-tile.shiny:hover {
+  transform: none !important;
+}
+
+/* feedback hover tetap ada (tile polos sebelumnya shadow:none oleh rule lain):
+   glow cyan halus + border terang, tanpa lift. */
+.backpack-panel .bp-tile:not([class*="bp-mut-"]):hover,
+.backpack-panel .bp-tile.in-deck:hover {
+  box-shadow: 0 0 10px rgba(125, 249, 255, 0.15), 0 8px 20px rgba(0, 0, 0, 0.55) !important;
+}
+.backpack-panel .bp-tile:hover,
+.backpack-panel .bp-slot:hover,
+.backpack-panel .bp-slot.filled:hover {
+  border-color: rgba(125, 249, 255, 0.5) !important;
+}
+
+/* frame kartu ada di anak .hub-center (style.css:5401 angkat -2px) —
+   matikan lift-nya. Kartu bermutasi sudah glow permanen (blok :not(#_bv2)
+   di style.css pakai spesifisitas ID — cue hover tambahan pasti kalah dan
+   justru bakal matiin warna border mutasi), jadi cukup freeze transform. */
+.backpack-panel .bp-tile:hover .hub-center,
+.backpack-panel .bp-slot:hover .hub-center,
+#backpackPanel .bp-slots .bp-slot:hover .hub-center {
+  transform: none !important;
+}
+
+/* cue hover kartu polos: ring cyan halus di frame anak. Parent tile/slot
+   punya inline border/box-shadow:none!important dari JS, jadi cue wajib
+   di anak .hub-center. Kartu shiny/mutasi kebal — rule :not(#_bv2)
+   (spesifisitas ID, !important) menang dari selector ini, ring animasi
+   mereka tidak tersentuh. */
+.backpack-panel .bp-tile:hover .hub-center,
+.backpack-panel .bp-slot:hover .hub-center,
+#backpackPanel .bp-slots .bp-slot:hover .hub-center {
+  box-shadow: 0 0 0 1px rgba(125, 249, 255, 0.35), 0 0 14px rgba(125, 249, 255, 0.18), 0 10px 24px rgba(0, 0, 0, 0.55) !important;
+}
