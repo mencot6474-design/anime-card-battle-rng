@@ -1388,3 +1388,127 @@ html.m-portrait .backpack-panel {
   border-color: rgba(255, 255, 255, 0.28) !important;
   box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.85) !important;
 }
+
+/* =====================================================================
+   LOBBY WHITE-on-BLACK (2026-11-05) — port tema WoB dari backpack.
+   Chrome UI (topbar, rail kanan, dock, history, widget) -> hitam+putih
+   +kuning hazard. SEMANTIK TETAP: coin emas, gem cyan, tier badge,
+   hijau global-luck aktif, danger pink, warna potion (luck=amber,
+   speed=cyan), weather icon, frame mutasi kartu, background scene.
+   ===================================================================== */
+
+/* ---- topbar ---- */
+#topbar .pill, #coinPill, #gemPill, #tbChangelog, #tbEnv, #tbFrame, #topbar .nav-btn.tb-settings {
+  background: rgba(0, 0, 0, 0.72) !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+}
+#tbLvl { border-color: rgba(255, 255, 255, 0.45) !important; color: #f5f5f5 !important; }
+#tbPw { border-color: rgba(243, 230, 0, 0.5) !important; color: #f3e600 !important; }
+#topbar .xpbar.tb-xpbar { background: rgba(255, 255, 255, 0.08) !important; border-color: rgba(255, 255, 255, 0.25) !important; }
+#tbXpFill { box-shadow: none !important; }
+#topbar .tb-av-wrapper { color: #f5f5f5 !important; }
+#topbar LABEL.tb-av-change { background: #0a0a0a !important; border-color: rgba(255, 255, 255, 0.5) !important; }
+#topbar #tbChangelog, #topbar #tbEnv, #topbar .nav-btn.tb-settings { color: #b9b9b9 !important; }
+
+/* ---- rail kanan: panel & roll bar ---- */
+.lobby-hub .panel, .lobby-hub .rollbar {
+  background: #0a0a0a !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+}
+.lobby-hub .rh-head, .lobby-hub .rh-title, .lobby-hub BUTTON.hrow { color: #e8e8e8 !important; }
+.lobby-hub .rh-dot { background: #f5f5f5 !important; }
+.lobby-hub .rh-slot.filled { background: rgba(0, 0, 0, 0.8) !important; }
+.lobby-hub .rh-slot.filled .rh-ch { background: rgba(0, 0, 0, 0.88) !important; }
+.lobby-hub .rh-bdg { color: #f3e600 !important; }
+
+/* kartu dek & level pod */
+.lobby-hub .l12-lvl-pod { background: rgba(0, 0, 0, 0.85) !important; border-color: rgba(255, 255, 255, 0.3) !important; }
+.lobby-hub .lv-badge { border-color: rgba(255, 255, 255, 0.45) !important; }
+.lobby-hub .lv-title, .lobby-hub .cmb, .lobby-hub .puse-tag {
+  color: #f3e600 !important;
+  border-color: rgba(243, 230, 0, 0.45) !important;
+  background: rgba(243, 230, 0, 0.08) !important;
+}
+.lobby-hub .plab, .lobby-hub .luck, .lobby-hub SMALL { color: #9a9a9a !important; }
+.lobby-hub .luckbar, .lobby-hub .tr, .lobby-hub SPAN.bar { background: #0d0d0d !important; border-color: rgba(255, 255, 255, 0.18) !important; }
+
+/* potion rows: kotak hitam ring putih (nilai warna potion tetap) */
+.lobby-hub #l12PotLuck, .lobby-hub #l12PotSpeed,
+.lobby-hub BUTTON.top-act-btn {
+  background: #0a0a0a !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+}
+.lobby-hub #l12PotLuckStock, .lobby-hub #l12PotSpeedStock {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  color: #e8e8e8 !important;
+}
+.lobby-hub #l12PotLuckTm, .lobby-hub #l12PotSpeedTm, .lobby-hub #l12TopXpPct { color: #9a9a9a !important; }
+.lobby-hub #l12PotLuck, .lobby-hub #l12PotSpeed { color: #e8e8e8 !important; }
+.lobby-hub #l12PotLuckBar, .lobby-hub #l12PotSpeedBar { color: #e8e8e8 !important; }
+
+/* weather tile: kotak hitam ring putih (ikon warna cuaca tetap) */
+.lobby-hub #l12Wx, .lobby-hub .wx-card-slot.wc-slot {
+  background: #0a0a0a !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+}
+.lobby-hub #l12WxBtn { border-color: rgba(255, 255, 255, 0.45) !important; }
+.lobby-hub #l12WxTm { color: #9a9a9a !important; }
+
+/* ikon story/tower/raid -> putih */
+.lobby-hub .ic.i-story, .lobby-hub .ic.i-tower, .lobby-hub .ic.i-raid {
+  background: none !important;
+  color: #f5f5f5 !important;
+}
+
+/* dock kiri: ikon putih (danger tetap pink) */
+.foot-menu svg, .foot-menu .circle, .foot-menu .line, .foot-menu .path,
+.foot-menu .polyline, .foot-menu .rect { color: #e8e8e8 !important; }
+.foot-menu .fm-item.danger svg, .foot-menu .fm-item.danger SPAN { color: #fda4af !important; }
+
+/* ---- CTA SUMMON/ROLL & AUTO ---- */
+#rollBtn {
+  background: linear-gradient(180deg, #ffffff, #d9d9d9) !important;
+  color: #050505 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 24px rgba(255, 255, 255, 0.18) !important;
+}
+#rollAutoBtn {
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #e0e0e0 !important;
+}
+#rollCloseBtn {
+  background: rgba(0, 0, 0, 0.85) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: #e8e8e8 !important;
+}
+#rollShowcase { box-shadow: 0 18px 38px rgba(0, 0, 0, 0.6) !important; }
+
+/* ---- Lobby WoB pass 2: wrap container + frame pod tombol nav ----
+   .hrow pakai frame-pod-hex.svg (fin #38bdf8). Varian putih = salinan
+   SVG yang sama dengan fin #f5f5f5, scoped ke lobby (aset asli tidak
+   disentuh karena dipakai layar lain). */
+.lobby-hub #l12RollHistWrap,
+.lobby-hub .rhist {
+  background: linear-gradient(rgba(10, 10, 10, 0.92), rgba(6, 6, 6, 0.95)) !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+}
+.lobby-hub #l12PotTray,
+.lobby-hub .pot-tray {
+  background: #0a0a0a !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+.lobby-hub .hrow {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 84' preserveAspectRatio='none' fill='none'%3E%3Cpath d='M16 2 L268 2 L278 12 L278 72 L264 82 L12 82 L2 72 L2 16 Z' stroke='rgba(255,255,255,0.16)' stroke-width='1.5' fill='none'/%3E%3Cpolygon points='2,16 16,2 30,2 30,6 8,28 2,28' fill='%23f5f5f5' opacity='0.85'/%3E%3Cpolygon points='278,68 264,82 250,82 250,78 272,56 278,56' fill='%23f5f5f5' opacity='0.85'/%3E%3Crect x='276' y='34' width='3' height='16' fill='%23f5f5f5' opacity='0.75'/%3E%3C/svg%3E") center/100% 100% no-repeat !important;
+  color: #e8e8e8 !important;
+}
+
+/* ---- Lobby WoB pass 3: frame slot dek & avatar (varian putih dari SVG
+   frame-slot.svg / frame-avatar.svg milik project; aset asli utuh) ---- */
+.lobby-hub .l12 .pslot,
+.l12 button.pslot {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none'%3E%3Cpath d='M10 2 L54 2 L62 10 L62 54 L54 62 L10 62 L2 54 L2 10 Z' stroke='rgba(255,255,255,0.55)' stroke-width='1.8' fill='none'/%3E%3Cpolygon points='2,10 10,2 16,2 2,16' fill='%23f5f5f5' opacity='0.9'/%3E%3Cpolygon points='62,54 54,62 48,62 62,48' fill='%23f5f5f5' opacity='0.9'/%3E%3Cline x1='2' y1='30' x2='2' y2='34' stroke='%23ffffff' stroke-width='2'/%3E%3Cline x1='62' y1='30' x2='62' y2='34' stroke='%23ffffff' stroke-width='2'/%3E%3C/svg%3E") center/100% 100% no-repeat !important;
+}
+.lobby-hub .avatar {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 54 54' fill='none'%3E%3Cpolygon points='12,2 42,2 52,14 52,40 42,52 12,52 2,40 2,14' stroke='rgba(255,255,255,0.7)' stroke-width='2'/%3E%3Cpolygon points='14,6 40,6 48,16 48,38 40,48 14,48 6,38 6,16' stroke='rgba(255,255,255,0.2)' stroke-width='1'/%3E%3Crect x='25' y='0' width='4' height='4' fill='%23f5f5f5'/%3E%3Crect x='25' y='50' width='4' height='4' fill='%23f5f5f5'/%3E%3C/svg%3E") center/100% 100% no-repeat !important;
+}
