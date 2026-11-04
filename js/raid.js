@@ -952,28 +952,28 @@ function renderRaidResult(){
 }
 function stackHas(char,mut){mut=mut||"none";return state.stacks.some(s=>s.char===char&&(s.mut||"none")===mut);}
 const WB_SHOP=[
-  {id:"gem",name:"Token → Gem // 100:20",cost:100,gem:20,desc:"Tukar 100 TOKEN WORLD BOSS menjadi 20 GEM premium. Bisa ditukar berulang tanpa batas — keran GEM dari World Boss.",apply:()=>""},
-  {id:"coins",name:"2.000 Coin",cost:12,coinBuy:true,desc:"Koin untuk roll trait & kebutuhan lain.",apply:()=>""},
-  {id:"card_edragon",name:"Eternal Dragon",cost:4000,desc:"Kartu BOSS eksklusif — beli SEKALI, roll terbuka PERMANEN di semua gacha. Chance dasar 1 in 25 jt · ICE BLAST 50% (3×75% ATK) · immune semua status effect.",card:{char:"CH_ETERNAL_DRAGON",mut:"none"},
+  {id:"gem",name:"Token → Gem // 100:20",cost:100,gem:20,desc:"Trade 100 Tokens for 20 Gems. Unlimited.",apply:()=>""},
+  {id:"coins",name:"2.000 Coin",cost:12,coinBuy:true,desc:"2,000 Coins for rolls & upgrades.",apply:()=>""},
+  {id:"card_edragon",name:"Eternal Dragon",cost:4000,desc:"Exclusive boss card. Buy once — its roll opens permanently in every gacha. Base 1 in 25M.",card:{char:"CH_ETERNAL_DRAGON",mut:"none"},
     apply:()=>{state.raidShopOwned=state.raidShopOwned||{};state.raidShopOwned.CH_ETERNAL_DRAGON=true;return gmGrantCard("CH_ETERNAL_DRAGON");}},
-  {id:"card_shadowking",name:"Shadow King",cost:8000,desc:"Kartu BOSS eksklusif — beli SEKALI, LANGSUNG didapat + roll terbuka PERMANEN di semua gacha. Chance dasar 1 in 100 jt · NECROMANCER 'ETERNAL LEGION' (Shadow Army).",card:{char:"CH_SHADOW_KING",mut:"none"},
+  {id:"card_shadowking",name:"Shadow King",cost:8000,desc:"Exclusive boss card. Buy once — granted instantly + its roll opens permanently. Base 1 in 100M.",card:{char:"CH_SHADOW_KING",mut:"none"},
     apply:()=>{state.raidShopOwned=state.raidShopOwned||{};state.raidShopOwned.CH_SHADOW_KING=true;return gmGrantCard("CH_SHADOW_KING");}},
-  {id:"helm-abyss",name:"HELM ABYSS",cost:12000,desc:"Artefak CRAYON V2 — +80 flat & +120% LUCK permanen. Beli SEKALI, langsung masuk Backpack (slot artefak, equip 2 slot).",effect:"+80 FLAT & +120% LUCK",owned:()=>(state.artOwned||[]).includes("helm-abyss"),
+  {id:"helm-abyss",name:"HELM ABYSS",cost:12000,desc:"Permanent artefact. Delivered to your Backpack.",effect:"+80 FLAT & +120% LUCK",owned:()=>(state.artOwned||[]).includes("helm-abyss"),
     apply:()=>{state.artOwned=state.artOwned||[];if(!state.artOwned.includes("helm-abyss"))state.artOwned.push("helm-abyss");return "HELM ABYSS · +80 FLAT & +120% LUCK";}},
-  {id:"nebula-wisp",name:"NEBULA WISP",cost:30000,desc:"Pet CRAYON V2 — +150 flat & +220% LUCK permanen. Beli SEKALI, langsung masuk Backpack (slot pet, equip 1).",effect:"+150 FLAT & +220% LUCK",owned:()=>(state.petOwned||[]).includes("nebula-wisp"),
+  {id:"nebula-wisp",name:"NEBULA WISP",cost:30000,desc:"Permanent pet. Delivered to your Backpack.",effect:"+150 FLAT & +220% LUCK",owned:()=>(state.petOwned||[]).includes("nebula-wisp"),
     apply:()=>{state.petOwned=state.petOwned||[];if(!state.petOwned.includes("nebula-wisp"))state.petOwned.push("nebula-wisp");return "NEBULA WISP · +150 FLAT & +220% LUCK";}},
   /* LUCK & SPEED POTION L1-L3 — consumable, harga token sama dgn Toko Inf. */
-  {id:"luck1",name:"Luck Potion L1",cost:25,desc:"+3 flat luck selama 5 menit. Stackable — efek dijumlah, durasi nambah +5 menit tiap pot.",effect:"+3 FLAT LUCK · 5 MENIT",
+  {id:"luck1",name:"Luck Potion L1",cost:25,desc:"+3 Flat Luck for 5 min. Stacks.",effect:"+3 FLAT LUCK · 5 MIN",
     apply:()=>{state.luckPots=state.luckPots||[0,0,0];state.luckPots[0]++;return "LUCK POTION L1";}},
-  {id:"luck2",name:"Luck Potion L2",cost:125,desc:"+5 flat luck & +10% luck selama 5 menit. Stackable — efek dijumlah, durasi nambah +5 menit tiap pot.",effect:"+5 FLAT & +10% LUCK · 5 MENIT",
+  {id:"luck2",name:"Luck Potion L2",cost:125,desc:"+5 Flat & +10% Luck for 5 min. Stacks.",effect:"+5 FLAT & +10% LUCK · 5 MIN",
     apply:()=>{state.luckPots=state.luckPots||[0,0,0];state.luckPots[1]++;return "LUCK POTION L2";}},
-  {id:"luck3",name:"Luck Potion L3",cost:600,desc:"+10 flat luck & +20% luck selama 5 menit. Stackable — efek dijumlah, durasi nambah +5 menit tiap pot.",effect:"+10 FLAT & +20% LUCK · 5 MENIT",
+  {id:"luck3",name:"Luck Potion L3",cost:600,desc:"+10 Flat & +20% Luck for 5 min. Stacks.",effect:"+10 FLAT & +20% LUCK · 5 MIN",
     apply:()=>{state.luckPots=state.luckPots||[0,0,0];state.luckPots[2]++;return "LUCK POTION L3";}},
-  {id:"speed1",name:"Speed Potion L1",cost:25,desc:"Roll speed +0.2× (≈1.2×) selama 5 menit. Stackable — efek dijumlah, durasi nambah +5 menit tiap pot.",effect:"SPEED +0.2× · 5 MENIT",
+  {id:"speed1",name:"Speed Potion L1",cost:25,desc:"+0.2× Roll Speed for 5 min. Stacks.",effect:"SPEED +0.2× · 5 MIN",
     apply:()=>{state.speedPots=state.speedPots||[0,0,0];state.speedPots[0]++;return "SPEED POTION L1";}},
-  {id:"speed2",name:"Speed Potion L2",cost:125,desc:"Roll speed +0.5× (≈1.5×) selama 5 menit. Stackable — efek dijumlah, durasi nambah +5 menit tiap pot.",effect:"SPEED +0.5× · 5 MENIT",
+  {id:"speed2",name:"Speed Potion L2",cost:125,desc:"+0.5× Roll Speed for 5 min. Stacks.",effect:"SPEED +0.5× · 5 MIN",
     apply:()=>{state.speedPots=state.speedPots||[0,0,0];state.speedPots[1]++;return "SPEED POTION L2";}},
-  {id:"speed3",name:"Speed Potion L3",cost:600,desc:"Roll speed +1.0× (2×) selama 5 menit. Stackable — efek dijumlah, durasi nambah +5 menit tiap pot.",effect:"SPEED +1.0× · 5 MENIT",
+  {id:"speed3",name:"Speed Potion L3",cost:600,desc:"+1.0× Roll Speed for 5 min. Stacks.",effect:"SPEED +1.0× · 5 MIN",
     apply:()=>{state.speedPots=state.speedPots||[0,0,0];state.speedPots[2]++;return "SPEED POTION L3";}}
 ];
 /* =============== TOKO RAID — layout master-detail ala TOKO INF (.tw-hub) ===============
@@ -1219,17 +1219,13 @@ function renderRaidShop(){
                   ${cardObj ? `
                     <div class="a3c-passive-box">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                      <span>${cardObj.passive ? cardObj.passive.name + ': ' + cardObj.passive.desc : 'PASSIVE: ' + it.it.desc}</span>
+                      <span>${cardObj.passive ? cardObj.passive.name : 'PASSIVE: ' + it.it.desc}</span>
                     </div>
                   ` : it.it.effect ? `
                     <div class="a3c-passive-box param">
-                      <span>PARAM: ${it.it.effect}</span>
+                      <span>${it.it.effect}</span>
                     </div>
-                  ` : `
-                    <div class="a3c-passive-box param">
-                      <span>PARAM: INSTANT SUPPLY DELIVERY</span>
-                    </div>
-                  `}
+                  ` : ``}
                 </div>
 
                 <!-- Footer: Price & Action -->
