@@ -158,7 +158,7 @@ html.m-landscape .m-tabbar { display: none !important; }
    middle that scrolls on its own — so close / first tile / claim footer are
    always in the initial un-scrolled view.
    ========================================================================= */
-@media all {
+@media (pointer:coarse), (max-width:720px) {
   html.m-portrait #dailyModal,
   html.m-landscape #dailyModal {
     padding: 0 !important;
@@ -229,13 +229,13 @@ html.m-landscape .m-tabbar { display: none !important; }
 
 /* Landscape is short (~390px): shrink tiles further so one row + pinned footer
    clear the claim button without the grid pushing the footer off-screen. */
-@media (orientation:landscape) {
+@media (orientation:landscape) and (pointer:coarse), (orientation:landscape) and (max-width:720px) {
   #dailyModal .dl-box > .dl-grid { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)) !important; }
   #dailyModal .dl-tile { min-height: 132px !important; }
   #dailyModal .dlt-bonus-row { display: none !important; }
 }
 /* Portrait has the vertical room; keep tiles readable. */
-@media (orientation:portrait) {
+@media (orientation:portrait) and (pointer:coarse), (orientation:portrait) and (max-width:720px) {
   #dailyModal .dl-tile { min-height: 168px !important; }
 }
 

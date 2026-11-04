@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v368-rbModalFix2';
+const CACHE_NAME = 'anime-card-battle-v369-dailyModal';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
