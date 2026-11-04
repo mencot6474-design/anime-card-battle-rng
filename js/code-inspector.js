@@ -347,16 +347,25 @@
       }
     });
 
-    window.addEventListener('keyup', (e) => {
-      if (e.key === 'Alt') {
-        isAltPressed = false;
-        if (!isInspectorActive) {
-          badge.classList.remove('active');
-          badgeLabel.textContent = 'CODE INSPECT: OFF';
-          hideHUD();
-        }
+    function releaseAlt() {
+      if (!isAltPressed) return;
+      isAltPressed = false;
+      if (!isInspectorActive) {
+        badge.classList.remove('active');
+        badgeLabel.textContent = 'CODE INSPECT: OFF';
+        hideHUD();
       }
+    }
+
+    window.addEventListener('keyup', (e) => {
+      if (e.key === 'Alt') releaseAlt();
     });
+
+    /* Alt+Tab / Alt+F4: keydown Alt sampai ke page, keyup-nya tidak pernah
+       (fokus pindah window). Tanpa reset di sini isAltPressed nyangkut true dan
+       interceptor click capture-phase menelan SEMUA klik game sampai reload. */
+    window.addEventListener('blur', releaseAlt);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) releaseAlt(); });
 
     function getMeaningfulTarget(el) {
       if (!el || el === document.body || el === document.documentElement) return null;
@@ -371,7 +380,7 @@
 
     // Mouse Move Inspector
     window.addEventListener('mousemove', (e) => {
-      if (!isInspectorActive && !isAltPressed) {
+      if (!isInspectorActive && !(isAltPressed && e.altKey)) {
         hideHUD();
         return;
       }
@@ -452,7 +461,9 @@
 
     // Intercept Click to Jump to Code!
     window.addEventListener('click', async (e) => {
-      if (!isInspectorActive && !isAltPressed) return;
+      /* isAltPressed bisa nyangkut true (Alt+Tab: keydown masuk, keyup tidak pernah),
+         jadi selalu konfirmasi ke e.altKey sebelum menelan klik game. */
+      if (!isInspectorActive && !(isAltPressed && e.altKey)) return;
 
       const target = getMeaningfulTarget(e.target);
       if (!target) return;

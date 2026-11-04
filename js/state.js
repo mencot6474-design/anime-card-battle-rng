@@ -1342,26 +1342,20 @@ addEventListener("pagehide",()=>{if(state){save();flushCloudSave();}});
   };
 })();
 
-let _wakeupDebounce=0;
 function handleTabWakeup(){
-  const now=Date.now();
-  if(now-_wakeupDebounce<600)return;
-  _wakeupDebounce=now;
   try{ document.body.classList.remove("perf-paused"); }catch(e){}
-  /* Kill rollOverlay: remove .mini because CSS has display:block!important on
-     body.on-lobby .roll-overlay.mini which beats inline style.display="none".
-     Also add .force-hidden with its own !important rule (see style.css). */
+  /* Pastikan invisible overlay tersembunyi tidak memblokir klik */
   try{
     const ov = document.getElementById("rollOverlay");
-    if(ov){
-      ov.classList.remove("visible","mini");
-      ov.classList.add("force-hidden");
-      /* Remove force-hidden after a tick so normal roll flow can resume */
-      setTimeout(()=>{try{ov.classList.remove("force-hidden");}catch(e){}},100);
+    if(ov && ov.style.display !== "none" && typeof rollState !== "undefined" && rollState && rollState.hideOverlay){
+      ov.style.display = "none";
     }
   }catch(e){}
+  /* Bangunkan kembali auto roll jika tertidur/stuck di background */
   try{
-    document.querySelectorAll(".modal-backdrop.show").forEach(el=>el.classList.remove("show"));
+    if(typeof rollState !== "undefined" && rollState && rollState.active){
+      if(typeof window.forceResumeRoll === "function") window.forceResumeRoll();
+    }
   }catch(e){}
 }
 
@@ -1370,8 +1364,10 @@ document.addEventListener("visibilitychange",()=>{
     handleTabWakeup();
   } else {
     if(state){save();flushCloudSave();}
+    try{document.body.classList.add("perf-paused");}catch(e){}
   }
 });
+window.addEventListener("focus", handleTabWakeup);
 
 /* =============== HOME (Story) — kini nyatu di layar Lobby ===============
    Daftar bab dibangun jadi helper (chapListHTML/bindChapList) supaya bisa

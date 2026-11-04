@@ -1057,7 +1057,6 @@ body.on-lobby .buff-dock.show{display:flex;}
 .roll-overlay{position:fixed;inset:0;background:rgba(18,28,38,.94);z-index:150;display:none;align-items:center;justify-content:center;flex-direction:column;}
 
 .roll-overlay.visible{display:flex;}
-.roll-overlay.force-hidden{display:none!important;pointer-events:none!important;}
 
 .roll-card-showcase{position:relative;width:300px;aspect-ratio:3/4;border-radius:18px;border:3px solid var(--cyan);background:#12151a;box-shadow:0 20px 80px rgba(18,28,38,.6);animation:card-reveal .5s ease-out;}
 
@@ -17166,6 +17165,8 @@ body.battle-full .bench-rail .bench-sq:not(.empty):hover{box-shadow:0 0 0 2px #7
 }
 /* Grid kartu panjang: browser boleh skip render tile di luar viewport. */
 .ix-cell,.bp-tile,.bp-shop{content-visibility:auto;contain-intrinsic-size:170px 260px;}
+/* Animasi dekoratif berhenti saat tab di background (JS men-toggle body.perf-paused). */
+body.perf-paused *,body.perf-paused *::before,body.perf-paused *::after{animation-play-state:paused !important;}
 
 /* ===== PERF 2026-10-23 TAHAP 2 — lapisan solid + bebas blur full-screen =====
    1) Permukaan lobby jadi opaque: tidak ada lagi komposit alpha di atas background

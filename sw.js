@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v365-compositorSafe';
+const CACHE_NAME = 'anime-card-battle-v366-altStuckFix';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
