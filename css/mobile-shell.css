@@ -2444,6 +2444,23 @@ body.on-settings .sett-wrap .back:hover {
   box-shadow: 0 0 14px rgba(243, 230, 0, 0.45) !important;
 }
 
+/* Fix header terpotong: tambah padding atas, pastikan overflow visible,
+   dan lepaskan clip-path dari area konten teks. */
+body.on-settings .sett-wrap .sett-head {
+  padding: 14px 16px 12px 16px !important;
+  overflow: visible !important;
+  clip-path: none !important;
+  border-radius: 12px !important;
+}
+body.on-settings .sett-wrap .sett-head::after {
+  height: 3px !important;
+  bottom: 8px !important;
+}
+
+/* Pastikan konten header tidak ke-clamp oleh sett-wrap */
+body.on-settings .sett-wrap { overflow: visible !important; }
+body.on-settings main#app { overflow: visible !important; }
+
 /* Fold section (akordion) */
 body.on-settings .sett-wrap .sett-fold {
   background: #0a0a0a !important;
