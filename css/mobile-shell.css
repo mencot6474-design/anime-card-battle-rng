@@ -2896,26 +2896,28 @@ body.on-settings .sett-wrap .ubox .out:hover {
   border-color: rgba(255, 255, 255, 0.12) !important;
 }
 
-/* Fix: header index — kanan (OWNED + SORT) fixed width & selalu terlihat,
-   kiri (chip mutasi) boleh scroll tapi rapi, tidak ada overlap. */
+/* Fix: header index — 2 baris grid, tidak ada overlap, tidak ada absolute:
+   Baris 1 = chip mutasi (wrap rapi, lebar penuh), Baris 2 = OWNED kiri + SORT kanan. */
 html.m-portrait #indexModal .ix-bar,
 html.m-landscape #indexModal .ix-bar,
 html:not(.m-portrait) #indexModal .ix-bar {
   position: relative !important;
-  display: flex !important;
-  align-items: center !important;
-  flex-wrap: nowrap !important;
-  padding-right: 170px !important;
+  display: grid !important;
+  grid-template-rows: auto auto !important;
+  grid-template-columns: 1fr auto !important;
+  gap: 8px 10px !important;
+  padding: 8px 14px 8px 14px !important;
 }
 html.m-portrait #indexModal .ix-chips,
 html.m-landscape #indexModal .ix-chips,
 html:not(.m-portrait) #indexModal .ix-chips {
+  grid-row: 1 !important;
+  grid-column: 1 / -1 !important;
   display: flex !important;
   flex-wrap: wrap !important;
   gap: 6px 10px !important;
-  flex: 1 1 auto !important;
+  flex: 0 0 auto !important;
   min-width: 0 !important;
-  max-width: 62% !important;
   overflow-x: hidden !important;
   overflow-y: hidden !important;
   scrollbar-width: none !important;
@@ -2933,8 +2935,10 @@ html:not(.m-portrait) #indexModal .ix-sp { display: none !important; }
 html.m-portrait #indexModal .ix-tog,
 html.m-landscape #indexModal .ix-tog,
 html:not(.m-portrait) #indexModal .ix-tog {
-  position: absolute !important;
-  right: 95px !important;
+  grid-row: 2 !important;
+  grid-column: 1 !important;
+  position: static !important;
+  right: auto !important;
   margin: 0 !important;
   padding-left: 14px !important;
   padding-right: 14px !important;
@@ -2961,9 +2965,14 @@ html:not(.m-portrait) #indexModal .ix-tog:hover:not(.on) {
 html.m-portrait #indexModal .ix-sort-wrap,
 html.m-landscape #indexModal .ix-sort-wrap,
 html:not(.m-portrait) #indexModal .ix-sort-wrap {
-  position: absolute !important;
-  right: 12px !important;
+  grid-row: 2 !important;
+  grid-column: 2 !important;
+  position: static !important;
+  right: auto !important;
   margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
 }
 html.m-portrait #indexModal .ix-sort,
 html.m-landscape #indexModal .ix-sort,
