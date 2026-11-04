@@ -828,3 +828,12 @@ body.on-tower #activePlayersBadge { display: none !important; }
   border-color: rgba(0, 240, 255, 0.45) !important;
   box-shadow: inset 0 1px 0 rgba(140, 220, 255, 0.12), 0 0 14px rgba(0, 240, 255, 0.12) !important;
 }
+
+/* ---- Backpack filter row: samakan ukuran badge & search (2026-11-05) ----
+   Terukur: FAV/MUT 44px radius 10, search cuma 32px radius 7 (style.css:28423).
+   Samakan: 44px + radius 10 supaya satu baris filter rata. */
+.backpack-panel .bp-search,
+#backpackPanel .bp-search {
+  height: 44px !important;
+  border-radius: 10px !important;
+}
