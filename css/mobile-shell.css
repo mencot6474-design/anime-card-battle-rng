@@ -1594,3 +1594,17 @@ html.m-portrait .m-tabbar button:hover { color: #ffffff !important; }
   content: none !important;
   display: none !important;
 }
+
+/* Rainbow deck-slot: border animasi pelangi kembali. style.css:15556 sudah benar
+   (gradient border-box + hubComboCardBorderFlow) tapi kalah dari
+   lobby-prototype.css:4040 (bg #0d1421 + animation:none, muat lebih akhir).
+   .mut-rainbow ada di slot pure MAUPUN shiny-rainbow -> satu selector cukup. */
+#backpackPanel .bp-slots .bp-slot.filled.mut-rainbow,
+.backpack-panel .bp-slot.filled.mut-rainbow {
+  border-color: transparent !important;
+  background: linear-gradient(180deg,#1b1418,#0c0a0c) padding-box, linear-gradient(90deg,#ff5a78,#ffb347,#ffe66d,#6be08a,#5ac8fa,#7a8cff,#b58cff,#ff6bd6,#ff5a78) border-box !important;
+  background-size: 100% 100%, 300% 100% !important;
+  background-position: 0 0, 0% 0% !important;
+  animation: hubComboCardBorderFlow 3s linear infinite alternate !important;
+  box-shadow: 0 0 14px rgba(181,140,255,.35), 0 6px 16px rgba(0,0,0,.55) !important;
+}
