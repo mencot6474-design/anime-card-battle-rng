@@ -2871,6 +2871,7 @@ body.on-settings .sett-wrap .ubox .out:hover {
   background: #0a0a0a !important;
   border: 1px solid rgba(255, 255, 255, 0.22) !important;
   color: #e8e8e8 !important;
+  flex: 0 0 auto !important;
 }
 #indexModal .ix-chip:hover {
   border-color: rgba(255, 255, 255, 0.5) !important;
@@ -2910,21 +2911,21 @@ html.m-portrait #indexModal .ix-chips,
 html.m-landscape #indexModal .ix-chips,
 html:not(.m-portrait) #indexModal .ix-chips {
   display: flex !important;
-  flex-wrap: nowrap !important;
-  gap: 8px !important;
+  flex-wrap: wrap !important;
+  gap: 6px 10px !important;
   flex: 1 1 auto !important;
   min-width: 0 !important;
-  overflow-x: auto !important;
-  scrollbar-width: thin !important;
+  max-width: 62% !important;
+  overflow-x: hidden !important;
+  overflow-y: hidden !important;
+  scrollbar-width: none !important;
 }
 html.m-portrait #indexModal .ix-chips::-webkit-scrollbar,
 html.m-landscape #indexModal .ix-chips::-webkit-scrollbar,
-html:not(.m-portrait) #indexModal .ix-chips::-webkit-scrollbar { height: 6px !important; }
-html.m-portrait #indexModal .ix-chips::-webkit-scrollbar-thumb,
-html.m-landscape #indexModal .ix-chips::-webkit-scrollbar-thumb,
-html:not(.m-portrait) #indexModal .ix-chips::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2) !important;
-  border-radius: 3px !important;
+html:not(.m-portrait) #indexModal .ix-chips::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 html.m-portrait #indexModal .ix-sp,
 html.m-landscape #indexModal .ix-sp,
