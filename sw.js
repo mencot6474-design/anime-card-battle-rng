@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v371-ixCell2';
+const CACHE_NAME = 'anime-card-battle-v373-pruneRestore';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
