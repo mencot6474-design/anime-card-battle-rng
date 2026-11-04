@@ -2164,7 +2164,7 @@ function bpItemPop(kind){
     else { bpPackN=1; window.bpPackIsAll=false; }
     window.bpPackN=bpPackN;
   }
-  const packMulti=isPack?`<div class="bpholo-multi-wrap"><div class="bpholo-multi-label">JUMLAH PAKET:</div><div class="wo-multi bp-pack-toggle">${PACK_MULTI_LIST.map(val => {
+  const packMulti=isPack?`<div class="bpholo-multi-wrap"><div class="wo-multi bp-pack-toggle">${PACK_MULTI_LIST.map(val => {
     const isAll = (val === 'ALL');
     const isDisabled = isAll ? (d.cnt < 1) : (d.cnt < val);
     const isSelected = isAll ? (window.bpPackIsAll || (d.cnt > 0 && d.cnt < 10 && bpPackN === d.cnt)) : (!window.bpPackIsAll && bpPackN === val);
