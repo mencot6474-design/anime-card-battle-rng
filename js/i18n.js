@@ -1024,6 +1024,37 @@
     'CERITA ·': 'STORY ·',
     'gagal membuka cerita': 'failed to open story',
     'TERKUNCI — SELESAIKAN STAGE 0': 'LOCKED — COMPLETE STAGE 0',
+    // story screen (story-carousel.js + index.html storyModal)
+    'DESA LEMBAH NINJA': 'NINJA VALLEY VILLAGE',
+    'ORBIT PLANET HIJAU': 'GREEN PLANET ORBIT',
+    'KORIDOR STASIUN SHIBUYA': 'SHIBUYA STATION CORRIDOR',
+    'ISTANA INFINITE TSUDZUMI': 'INFINITE TSUDZUMI PALACE',
+    'Deskripsi jurus lawan.': 'Description of the enemy skill.',
+    'TARGET BINTANG': 'STAR OBJECTIVES',
+    'Tumbangkan penjaga arena': 'Defeat the arena guardian',
+    'Menang dalam < 15 giliran': 'Win in under 15 turns',
+    'Pertahankan sisa HP > 50%': 'Keep remaining HP above 50%',
+    'BIAYA ENERGI': 'ENERGY COST',
+    'MASUK PERTEMPURAN': 'ENTER BATTLE',
+    'Musuh bos utama bab dengan pertahanan dan serangan luar biasa.': 'Chapter main boss with extraordinary defense and attacks.',
+    'Unit pertahanan garda depan.': 'Frontline defensive unit.',
+    'Intel jurus musuh belum terbuka. Kalahkan stage sebelumnya untuk membongkar taktik lawan.': 'Enemy skill intel is still locked. Defeat the previous stage to reveal the enemy tactics.',
+    'Arsip catatan bab ini telah terenkripsi dalam memori sistem.': 'This chapter archive is encrypted in system memory.',
+    'Replay stage ini masih menunggu waktu jeda!': 'Replay of this stage is still on cooldown!',
+    // lore bab 1-5 (paragraf yang belum ada)
+    'Di lembah antara dua gunung, sebuah desa ninja mempertahankan gerbang batu peninggalan leluhur. Enam petarung menjaga jalan masuk, masing-masing membawa satu jurus warisan yang tidak pernah diajarkan keluar desa.': 'In the valley between two mountains, a ninja village defends an ancient stone gate left by its ancestors. Six fighters guard the entrance, each carrying one inherited technique that has never been taught outside the village.',
+    'Gerbang batu desa itu ternyata bukan cuma jalan keluar. Setelah enam penjaganya tumbang, coretan di permukaannya menyala dan membuka satu jalur teleportasi ke planet hijau yang terapung di luar orbit — arena tempat para petarung antariksa mengadu tenaga sejak lama.': 'The village stone gate turned out to be more than an exit. After its six guardians fell, the markings on its surface lit up and opened a teleportation route to a green planet floating far off-orbit — an arena where space fighters have tested their strength for ages.',
+    'Enam jagoan Green Planet tidak menjaga apa pun. Mereka hanya menunggu lawan yang layak, dan masing-masing membawa satu jurus yang sudah mereka asah bertahun-tahun di gravitasi yang jauh lebih berat dari dunia asalmu.': 'The six champions of Green Planet guard nothing. They are simply waiting for a worthy opponent, and each carries one technique they have honed for years under gravity far heavier than your home world.',
+    'Papan rekor di gerbang planet mencatat tenaga tempur tertinggi 686. Selama rekornya belum dilewati, planet ini akan terus menahan jalanmu — jadi setiap kartu yang kamu kalahkan di sini akan tercatat permanen di indeks kartumu.': 'The record board at the planet gate lists a peak combat power of 686. As long as that record stands, this planet will keep blocking your path — every card you defeat here will be permanently recorded in your card index.',
+    'Setelah planet hijau takluk, jalur teleportasi terbuka lagi dan membawamu ke sebuah stasiun bawah tanah yang seharusnya sudah tutup: Shibuya Station. Lampu darurat berkedip, peron kosong, dan kutukan merayap di balik tiang-tiang beton.': 'After the green planet fell, the teleportation route opened again and carried you to an underground station that should have closed long ago: Shibuya Station. Emergency lights flicker, the platform is empty, and a curse crawls behind every concrete pillar.',
+    'Enam kutukan menempati stasiun ini, masing-masing memegang satu teknik terlarang. Papan tujuan di peron menunjukkan angka tenaga tempur puncak 1.274 — angka yang harus kamu lewati kalau ingin melangkah keluar dari stasiun.': 'Six curses occupy this station, each holding one forbidden technique. The destination board on the platform shows a peak combat power of 1,274 — a number you must surpass if you want to walk out of this station.',
+    'Suara langkah menggema dari dalam terowongan. Setiap kutukan yang kamu kalahkan akan mencatat tekniknya ke dalam kartumu, jadi meski kalah kamu tetap pulang membawa sebagian dari kutukan mereka.': 'Footsteps echo from deep inside the tunnel. Every curse you defeat records its technique into your cards — so even in defeat you still carry a piece of their curse home.',
+    'Teleportasi terakhir mengantarmu ke kota kecil yang nyaris tidak tercatat di peta: Mushima Town. Di sini waktu berjalan seperti air di sungai tenang—tenang sampai kau merasakan hawa dingin di leher sendiri. Tiga entitas purba tidur di bawah tanah, masing-masing mengawetkan satu ritual darah yang sudah dilupakan dunia manusia.': 'The final teleportation drops you in a small town barely marked on any map: Mushima Town. Here time flows like a calm river — calm until you feel the cold breath on your own neck. Three ancient entities sleep beneath the ground, each preserving a blood ritual the human world has long forgotten.',
+    "Kota ini penuh dengan penduduk yang 'terlalu sempurna'. Mereka tidak bicara, hanya menunggu pembedahan dari tiga ahli waris yang bangkit kembali untuk menyelesaikan ritual nenek moyang mereka.": "This town is filled with 'too perfect' residents. They do not speak; they only wait for the dissection by the three risen heirs completing their ancestors' ritual.",
+    'Tiap entitas yang kamu taklukkan akan meninggalkan jejak darah di tanganmu. Jejak itu bukan kutukan—tapi tanda bahwa kamu berhak melanjutkan perjalanan ke tempat di mana segalanya bermula.': 'Every entity you conquer leaves a blood mark on your hands. That mark is not a curse — it is proof that you have earned the right to continue your journey to the place where everything began.',
+    'Pintu kayu tua muncul tiba-tiba di ujung jalan, tanpa sambungan ke bangunan apa pun. Kamu masuk dan menemukan istana tanpa batas—ruang ruang yang saling bertumpang tindih tanpa logika arsitektur. Tangga putar menghubungkan lantai yang sama, jendela memperlihatkan langit yang berputar lambat.': 'An old wooden door appears out of nowhere at the end of the street, connected to no building at all. You step through and find a limitless palace — rooms overlapping each other with no architectural logic. Spiral staircases connect the same floor, and the windows reveal a slowly rotating sky.',
+    'Tujuh pemburu iblis berdiri di sudut berbeda istana, masing-masing menguasai satu ruangan yang mustahil. Mereka telah menunggu ribuan tahun untuk pengujian terakhir: siapa yang layak melanjutkan tradisi keluarga Tsuzumi hingga penghujung siklus.': 'Seven demon hunters stand in different corners of the palace, each mastering one impossible room. They have waited thousands of years for the final test: who is worthy to carry the Tsuzumi family tradition to the end of the cycle.',
+    'Kau tidak bisa mundur. Setiap ruangan yang kau taklukkan mengunci pintu keluar sebelumnya. Tapi tiap kemenangan mengembalikan satu memori hilang dari masa lalumu—dan pada akhirnya, itu adalah imbalan terbesar.': 'There is no way back. Every room you conquer locks the previous exit. But each victory restores one lost memory from your past — and in the end, that is the greatest reward of all.',
     // supabase-sync.js
     'ITEM TANPA BAYAR · COIN DI-RESET 0': 'UNPAID ITEM · COINS RESET TO 0',
     'COIN TIDAK SAH · SALDO DI-RESET 0': 'INVALID COINS · BALANCE RESET TO 0',
@@ -1407,7 +1438,17 @@
     [/TONTON ADS UNTUK/g, 'WATCH ADS FOR'],
     [/LUCK AKTIF/g, 'LUCK ACTIVE'],
     [/CUACA:/g, 'WEATHER:'],
-    [/PROGRESS (\d+\s*\/\s*\d+)\s*BAB/g, 'PROGRESS $1 CHAPTERS']
+    [/PROGRESS (\d+\s*\/\s*\d+)\s*BAB/g, 'PROGRESS $1 CHAPTERS'],
+    // story screen
+    [/DOSSIER ARSIP:/g, 'DOSSIER ARCHIVE:'],
+    [/DESA LEMBAH NINJA/g, 'NINJA VALLEY VILLAGE'],
+    [/ORBIT PLANET HIJAU/g, 'GREEN PLANET ORBIT'],
+    [/KORIDOR STASIUN SHIBUYA/g, 'SHIBUYA STATION CORRIDOR'],
+    [/ISTANA INFINITE TSUDZUMI/g, 'INFINITE TSUDZUMI PALACE'],
+    [/Tunggu (\S+) sebelum replay stage ini/g, 'Wait $1 before replaying this stage'],
+    [/UNGGUL/g, 'ADVANTAGE'],
+    [/BAHAYA/g, 'DANGER'],
+    [/\bKAMU\b/g, 'YOU']
   ];
 
   function translateTextString(str) {
