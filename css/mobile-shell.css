@@ -1259,3 +1259,110 @@ html.m-portrait body.bp-open .backpack-panel {
   background: rgba(255, 255, 255, 0.04) !important;
   color: #f3e600 !important;
 }
+
+/* ---- WoB FINAL SWEEP (2026-11-05): hasil audit computed-style seluruh state
+   backpack (5 tab + mutpop + cardmodal + gearmodal + itempop). Semua warna
+   struktural dinetralkan; warna semantik (tier kartu, mutasi, weather hex,
+   rarity, badge COIN/DROP/ACTIVE, stat ATK/HP) TIDAK disentuh. ---- */
+
+/* tombol tutup backpack: navy+cyan -> hitam+ring putih */
+.backpack-panel .backpack-close,
+.backpack-close {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #e0e0e0 !important;
+}
+.backpack-close:hover { border-color: rgba(255, 255, 255, 0.6) !important; color: #fff !important; }
+
+/* tab bar border sisa */
+.backpack-panel .bp-tabs { border-color: rgba(255, 255, 255, 0.14) !important; }
+
+/* slot dek & bingkai art: navy -> hitam */
+.backpack-panel .bp-slot.filled,
+.backpack-panel .bp-slot.filled[class*="mut-"],
+.backpack-panel .bp-slot.filled.shiny {
+  background: #0a0a0a !important;
+}
+.backpack-panel .bps-art-wrap { background: #050505 !important; }
+.backpack-panel .bp-mutbtn { color: #b9b9b9 !important; }
+
+/* badge qty item: navy+amber -> hitam+kuning hazard */
+.backpack-panel .bi-qty {
+  background: #0a0a0a !important;
+  color: #f3e600 !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22) !important;
+}
+
+/* label buffstrip, equipped count, bar power tile */
+.backpack-panel .buffstrip .bk { color: #c9c9c9 !important; }
+.backpack-panel .eql.num { color: #f5f5f5 !important; }
+.backpack-panel .bpt-pw { background: rgba(0, 0, 0, 0.75) !important; }
+.backpack-panel .wlabel { color: #d9d9d9 !important; }
+
+/* modal kartu & gear: label/value/status */
+.bp-cardmodal .bp-cm-k { color: #9a9a9a !important; }
+.bp-cardmodal .bp-cm-v { color: #d9d9d9 !important; }
+.bp-cardmodal .bp-cm-chip { color: #c9c9c9 !important; }
+.bp-cardmodal .bp-cm-own { color: #9a9a9a !important; }
+.bp-cardmodal .bp-cm-own.on { color: #f5f5f5 !important; }
+
+/* popup item: box odds cuaca masih panel PUTIH tema lobby -> hitam */
+.bpholo-panel .wo-wrap {
+  background: #0a0a0a !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 10px !important;
+  padding: 8px 10px !important;
+}
+.bpholo-panel .wo-h, .bpholo-panel .wo-nm { color: #f5f5f5 !important; }
+.bpholo-panel .wo-row { border-bottom: 1px dashed rgba(255, 255, 255, 0.1) !important; }
+.bpholo-panel .wo-pct, .bpholo-panel .wo-pity-top { color: #9a9a9a !important; }
+.bpholo-panel .wo-inv { color: #f5f5f5 !important; }
+.bpholo-panel .wo-bar { background: rgba(255, 255, 255, 0.12) !important; }
+.bpholo-panel .wo-sec-h {
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+.bpholo-panel .wo-sec-h.common { color: #9a9a9a !important; }
+.bpholo-panel .wo-multi button { color: #b9b9b9 !important; }
+.bpholo-panel .wo-multi button.on { color: #050505 !important; }
+.bpholo-panel .bpholo-multi-label, .bpholo-panel .bpholo-active-eff { color: #9a9a9a !important; }
+.bpholo-panel .wo-h strong, .bpholo-panel strong { color: #f5f5f5 !important; }
+.bpholo-panel .wo-ic { filter: none !important; }
+
+/* WoB: sisa struktural yang butuh spesifisitas id (rule dasar id-scoped di
+   lobby-prototype menang dari selector class) */
+#backpackPanel .bp-slots .bp-slot.filled,
+.backpack-panel .bp-slot.filled {
+  background: #0a0a0a !important;
+}
+#backpackPanel .bp-slots .bps-art-wrap,
+.backpack-panel .bps-art-wrap {
+  background: #050505 !important;
+}
+#backpackPanel .bpt-pw,
+.backpack-panel .bpt-pw {
+  background: rgba(0, 0, 0, 0.75) !important;
+}
+#backpackPanel .bp-mrow-sw,
+.backpack-panel .bp-mrow-sw {
+  color: #9a9a9a !important;
+}
+.bpholo-panel .wo-multi button,
+.bpholo-panel .wo-multi.bp-pack-toggle button {
+  background: #0a0a0a !important;
+}
+.bpholo-x { color: #c9c9c9 !important; }
+
+/* WoB: varian bp-mut-/shiny untuk bg slot (rule base (1,4,0) di lobby-prototype) */
+#backpackPanel .bp-slots .bp-slot.filled[class*="bp-mut-"],
+.backpack-panel .bp-slot.filled[class*="bp-mut-"],
+#backpackPanel .bp-slots .bp-slot.filled[class*="mut-"],
+.backpack-panel .bp-slot.filled[class*="mut-"],
+#backpackPanel .bp-slots .bp-slot.filled.shiny,
+.backpack-panel .bp-slot.filled.shiny {
+  background: #0a0a0a !important;
+}
+#backpackPanel .bp-slots .bp-slot.filled .bps-art-wrap,
+.backpack-panel .bp-slot.filled .bps-art-wrap {
+  background: #050505 !important;
+}
