@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v388-wbCopy2';
+const CACHE_NAME = 'anime-card-battle-v389-wbArt';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

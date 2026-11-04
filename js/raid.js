@@ -27,7 +27,7 @@ function wbModText(){
    Server (migration 0009) menyimpan state per boss; client ambil keduanya paralel. */
 const WB_BOSSES=[
   {key:"a",id:"RAID_ETERNAL_DRAGON",board:"world_boss",name:"ETERNAL DRAGON",tab:"DRAGON",tag:"EX · WORLD BOSS",
-   skill:"Galaxy Roar",mod:"GRAVITY SURGE",art:"assets/raid/eternal-dragon-hd.webp",alt:false,
+   skill:"Galaxy Roar",mod:"GRAVITY SURGE",art:"assets/cards/art/eternal-dragon.webp",alt:false,
    holo:"#35F0FF",mag:"#FF3DAE",locked:false},
   {key:"b",id:"RAID_SHADOW_KING",board:"world_boss_b",name:"SHADOW KING",tab:"SHADOW",tag:"EX · WORLD BOSS",
    skill:"Umbra Eclipse",mod:"SHADOW TIDE",art:"assets/cards/art/shadow-king.webp",alt:true,
@@ -580,7 +580,7 @@ var _rdTileHtml={},_ixHtml={},_dpHtml={};
 function renderRaidPick(){
   const stacks=state.stacks.slice().sort((a,b)=>(b.fav?1:0)-(a.fav?1:0));
   const b=wbBossOf();
-  const bossArt = b.img || b.art || (b.name && b.name.toLowerCase().includes("shadow") ? "assets/cards/art/shadow-king.webp" : "assets/raid/eternal-dragon-hd.webp");
+  const bossArt = b.img || b.art || (b.name && b.name.toLowerCase().includes("shadow") ? "assets/cards/art/shadow-king.webp" : "assets/cards/art/eternal-dragon.webp");
   app.innerHTML=`
   <div class="rd-page rd-pick">
     <div class="rd-pick-head">
@@ -1082,9 +1082,9 @@ function renderRaidShop(){
     if(it.id==="gem"){
       cat="currency"; catLabel="EXCHANGE"; tier="GEM"; accent="#ffd700"; art="assets/images/premium-currency.webp";
     } else if(it.id==="coins"){
-      cat="currency"; catLabel="CREDITS"; tier="COINS"; accent="#ffd27a"; art="assets/images/coins.webp";
+      cat="currency"; catLabel="CREDITS"; tier="COINS"; accent="#ffd27a"; art="assets/icons/coins-gold.svg";
     } else if(it.id==="card_edragon"){
-      cat="ex-core"; catLabel="EX CORE"; tier="EX-CH"; accent="#00f0ff"; art="assets/raid/eternal-dragon-hd.webp";
+      cat="ex-core"; catLabel="EX CORE"; tier="EX-CH"; accent="#00f0ff"; art="assets/cards/art/eternal-dragon.webp";
     } else if(it.id==="card_shadowking"){
       cat="ex-core"; catLabel="EX CORE"; tier="EX-CH"; accent="#a855f7"; art="assets/cards/art/shadow-king.webp";
     } else if(it.id.startsWith("helm")){
