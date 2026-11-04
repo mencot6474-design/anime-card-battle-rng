@@ -1922,22 +1922,13 @@ function renderBackpackPanel(){
   panel.innerHTML=header+`<div class="bp-body deck"><div class="bp-cols">
     <div class="bp-deckcol">
       <div class="bp-col-head">
-        <span class="bp-h">SQUADRON DECK</span>
         <span class="bp-deck-count">[ ${state.deck.filter(Boolean).length} / 4 ]</span>
       </div>
       <div class="bp-slots">${slots}</div>
       <div class="bp-deckmeta">
         <div class="bdm-core">
-          <div class="bdm-label"><span class="bdm-dot"></span><span>SQUADRON COMBAT POWER</span></div>
-          <div class="bdm-val-row">
-            <b class="bdm-v">${fmt(deckTotalPower())}</b>
-            <span class="bdm-tag">DEPLOYABLE</span>
-          </div>
+          <b class="bdm-v">${fmt(deckTotalPower())}</b>
         </div>
-        <button class="bp-save" onclick="if(typeof sfx!=='undefined'&&sfx.confirm)sfx.confirm();toast('DECK TERSIMPAN','SQUADRON SIAP TEMPUR','#7DF9FF')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          <span>SIMPAN KONFIGURASI</span>
-        </button>
       </div>
     </div>
     <div class="bp-collect">

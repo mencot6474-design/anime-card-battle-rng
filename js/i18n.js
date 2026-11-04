@@ -451,7 +451,6 @@
     'Hanya kartu favorit': 'Favorite cards only',
     'Kunci kartu': 'Lock card',
     'Buka kunci kartu': 'Unlock card',
-    'SIMPAN KONFIGURASI': 'SAVE CONFIGURATION',
     '🔍 Cari kartu…': '🔍 Search cards…',
     'Cari kartu…': 'Search cards…',
     'Kartu tidak ditemukan.': 'No cards found.',
