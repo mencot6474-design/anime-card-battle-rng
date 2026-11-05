@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v450-csShelfScrollFix';
+const CACHE_NAME = 'anime-card-battle-v451-shopWoBBackground';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

@@ -9573,11 +9573,19 @@ body.on-tower{
    Catatan: kalau :has() tidak didukung WebView lawas, `.cs-hub` opaque
    tetap menutup seluruh area hub -> degradasi aman, bukan regresi.
    ==================================================================== */
+/* Toko (`.cs-shop`) ikut disapu: permukaannya opaque, tapi `body` masih
+   membawa foto lobby `lobby-wuwa-genshin.webp` dari blok TAHAP 3
+   (style.css:25274 `body, body.on-lobby`), sehingga di desktop/tablet
+   foto itu menembus gutter kiri-kanan kolom toko. Hub sudah bersih,
+   toko belum — makanya "masih nyampur". */
 body.on-tower:has(.cs-hub),
-html.on-tower-root:has(.cs-hub){
+body.on-tower:has(.cs-shop),
+html.on-tower-root:has(.cs-hub),
+html.on-tower-root:has(.cs-shop){
   background:#050505 !important;
 }
-body.on-tower:has(.cs-hub)::before{
+body.on-tower:has(.cs-hub)::before,
+body.on-tower:has(.cs-shop)::before{
   content:none !important;   /* veil rgba(10,14,22,.45-.92) + grid biru 28x28 */
 }
 body.on-tower:has(.cs-hub)::after{
