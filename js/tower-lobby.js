@@ -497,17 +497,19 @@ function renderTowerHub(){
 function renderTowerShop(){
   if(!state.tower)state.tower={best:0};
   const tok=state.infTokens||0;
-  /* Cyberpunk Vector Hologram Icons ala Sci-Fi AAA */
-  const ICONS={
-    weather:`<img src="assets/images/weather-potion.webp?v=1" alt="Weather Potion" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🧪'">`,
-    mythic:`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="rgba(192,132,252,0.25)" stroke="#c084fc"/><circle cx="12" cy="12" r="3" stroke="#fff"/></svg>`,
-    luck1:`<img src="${thumbSrc('assets/images/pot-luck-1.webp')}" alt="Luck Potion L1" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🍀'">`,
-    luck2:`<img src="${thumbSrc('assets/images/pot-luck-2.webp')}" alt="Luck Potion L2" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🍀'">`,
-    luck3:`<img src="${thumbSrc('assets/images/pot-luck-3.webp')}" alt="Luck Potion L3" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='🍀'">`,
-    speed1:`<img src="${thumbSrc('assets/images/pot-speed-1.webp')}" alt="Speed Potion L1" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
-    speed2:`<img src="${thumbSrc('assets/images/pot-speed-2.webp')}" alt="Speed Potion L2" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
-    speed3:`<img src="${thumbSrc('assets/images/pot-speed-3.webp')}" alt="Speed Potion L3" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='⚡'">`,
-    gem:`<img src="assets/images/premium-currency.webp" alt="Gems" class="shop-pot-img" onerror="this.onerror=null;this.parentNode.textContent='💎'">`
+  /* Potret item: SEMUA ikon lewat `thumbSrc` (242x360, -84% byte) supaya kotak
+     42px tidak menarik art penuh. Terukur 8/8 punya `assets/images/thumb/*.webp`.
+     Prototipe terkunci (`_tmp/proto_tower_v1.html` S1 HOLO SHELF) memakai satu
+     file per item; di produksi yang setara adalah thumb ini. */
+  const ART={
+    gem:thumbSrc("assets/images/premium-currency.webp"),
+    weather:thumbSrc("assets/images/weather-potion.webp"),
+    luck1:thumbSrc("assets/images/pot-luck-1.webp"),
+    luck2:thumbSrc("assets/images/pot-luck-2.webp"),
+    luck3:thumbSrc("assets/images/pot-luck-3.webp"),
+    speed1:thumbSrc("assets/images/pot-speed-1.webp"),
+    speed2:thumbSrc("assets/images/pot-speed-2.webp"),
+    speed3:thumbSrc("assets/images/pot-speed-3.webp")
   };
 
   /* Data item Cyberpunk Supply - FULL ENGLISH */
@@ -525,101 +527,100 @@ function renderTowerShop(){
   const stkOf=k=>k==="weather"?(state.potions||0):k.startsWith("luck")?(state.luckPots&&state.luckPots[+k.slice(-1)-1])||0:k.startsWith("speed")?(state.speedPots&&state.speedPots[+k.slice(-1)-1])||0:(state.mythicPotions||0);
   const cardOwned=it=>!!(it.unlock&&state.towerShopOwned&&state.towerShopOwned[it.unlock]);
 
-  const cardsHtml=ITEMS.map(it=>{
+  /* ------------------------- S1 HOLO SHELF : RAILS ------------------------
+     Cermin prototipe terkunci: `RAILS` (lab:1367) + item difilter per `cat`.
+     Jumlah = 1 + 1 + 3 + 3 = 8 item, sama persis dengan `ITEMS`. Kalau suatu
+     saat isi ITEMS berubah kategori, rail tetap terbentuk dari data — tidak ada
+     item yang hilang diam-diam. */
+  const RAILS=[
+    {key:"EXCHANGE", note:"TOKEN BURN"},
+    {key:"WEATHER",  note:"CLIMATE"},
+    {key:"AUGMENT",  note:"LUCK"},
+    {key:"OVERCLOCK",note:"SPEED"}
+  ];
+
+  const shopItemHtml=it=>{
     const isOwned=cardOwned(it);
     const canAfford=tok>=it.cost;
+    /* `cnt` = sisa/cadangan yang ditampilkan di baris IN STOCK. `unlock` (kartu
+       boss permanen) tidak dipakai ITEMS sekarang, tapi rumusnya dipertahankan
+       supaya kalau item `unlock` masuk lagi ia tetap benar. */
     const cnt=it.unlock?state.stacks.filter(s=>s.char===it.unlock).reduce((n,s)=>n+(s.count||1),0):(it.gem?0:stkOf(it.k));
     const dis=isOwned || !canAfford || (it.req && stkOf(it.req)<=0);
-    const btnLabel=isOwned ? '✔ UNLOCKED' : (!canAfford ? `DEFICIT ${fmt(it.cost-tok)}` : (it.gem ? `EXCHANGE (+10 GEMS)` : `ACQUIRE SUPPLY`));
-
+    const btnLabel=isOwned ? "✔ UNLOCKED" : (!canAfford ? `DEFICIT ${fmt(it.cost-tok)}` : (it.gem ? "EXCHANGE (+10 GEMS)" : "ACQUIRE SUPPLY"));
+    const stock=it.unlock ? (cnt?"×"+cnt:"0") : (it.gem?"∞ UNLIMITED":"×"+cnt);
+    const art=ART[it.k]||"";
+    /* Struktur = cermin lab `shelfItemHtml` (lab:1385). `data-kind` + kelas
+       `fn-buy`/`:disabled` adalah kontrak produksi (binding infBuy di bawah). */
     return `
-    <div class="tsh-h-card ${!canAfford&&!isOwned?'insufficient':''} ${isOwned?'owned':''}" style="--item-c:${it.ac}">
-      <div class="thc-left">
-        <div class="thc-art-box ${it.unlock?'boss-art':''}">
-          <div class="thc-art-halo"></div>
-          ${ICONS[it.k]||"🎁"}
-          <div class="thc-art-sweep"></div>
-        </div>
-        <div class="thc-badges">
-          <span class="thc-cat">${it.cat}</span>
-          <span class="thc-tier">${it.tier}</span>
-        </div>
-      </div>
+      <div class="cs-it${dis?" dis":""}" style="--ic:${it.ac}" data-cat="${it.cat}">
+        <span class="cs-it-art">
+          <i class="cs-it-glow"></i>
+          ${art?`<img src="${art}" alt="${it.label}" decoding="async" loading="lazy">`:""}
+        </span>
+        <span class="cs-it-mid">
+          <span class="cs-it-cat"><b class="c1">${it.cat}</b><b class="c2">${it.tier}</b></span>
+          <span class="cs-it-nm" title="${it.label}">${it.label}</span>
+          <span class="cs-it-ds">${it.sub}</span>
+          <span class="cs-it-stock">IN STOCK <b>${stock}</b></span>
+        </span>
+        <span class="cs-it-right">
+          <span class="cs-it-price"><b>${fmt(it.cost)}<i>TOK</i></b></span>
+          <button class="fn-buy" type="button" data-kind="${it.k}" ${dis?"disabled":""} title="${it.label}">${btnLabel}</button>
+        </span>
+      </div>`;
+  };
 
-      <div class="thc-mid">
-        <div class="thc-title-row">
-          <div class="thc-name" title="${it.label}">${it.label}</div>
-        </div>
-        <div class="thc-desc">${it.sub}</div>
-        <div class="thc-meta-row">
-          <span class="thc-stock-pill">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-            <span>IN STOCK: <b>${it.unlock ? (cnt ? '×'+cnt : '0') : (it.gem ? '∞ UNLIMITED' : '×'+cnt)}</b></span>
-          </span>
-          ${it.gem ? '<span class="thc-perk-pill">✦ YIELD: +10 GEMS</span>' : ''}
-        </div>
-      </div>
-
-      <div class="thc-right">
-        <div class="thc-price-box">
-          <span class="thc-price-lbl">EXCHANGE COST</span>
-          <div class="thc-price-val"><b>${fmt(it.cost)}</b> <small>TOKENS</small></div>
-        </div>
-        <button class="thc-buy-btn ${dis?'disabled':''}" type="button" data-kind="${it.k}" ${dis?'disabled':''} title="${it.label}">
-          <span class="thc-btn-scan"></span>
-          <span class="thc-btn-txt">${btnLabel}</span>
-          <span class="thc-btn-chev">&rsaquo;</span>
-        </button>
-      </div>
-    </div>`;
+  const railsHtml=RAILS.map(r=>{
+    const items=ITEMS.filter(i=>i.cat===r.key);
+    if(!items.length)return "";
+    return `
+      <div class="cs-rail">
+        <div class="cs-rail-h"><b>${r.key}</b><i></i><span>${items.length} · ${r.note}</span></div>
+        <div class="cs-rail-shelf">${items.map(shopItemHtml).join("")}</div>
+      </div>`;
   }).join("");
 
+  /* ============================== SHOP MARKUP =============================
+     Port S1 "HOLO SHELF" dari lab terkunci (`_tmp/proto_tower_v1.html`, lab:916
+     `#v-shop1`). Mengganti `.tactical-tower-shop-page` + `.tsh-*`/`.thc-*` legacy.
+     Struktur: .tw-page > .cs-shop > .cs-shop-top / .cs-shop-body(.cs-stage >
+     .cs-inner > .cs-rail*) / .cs-shop-foot.
+     Kontrak yang WAJIB tetap: root `.tw-page` (deteksi `body.on-tower` boot.js:341),
+     `#towerShopBack` -> `towerView="hub"`, `.fn-buy[data-kind]` -> `infBuy`.
+     Nama `.cs-shop`/`.cs-rail`/`.cs-it`/`.fn-buy` diverifikasi 0 aturan lama
+     (`grep` 2026-11-05) jadi tidak ada tabrakan cascade. `.tw-hub` SENGAJA tidak
+     dipakai: 131 aturan lama + dipakai `js/raid.js`. */
   app.innerHTML=`
-  <div class="tw-page tactical-tower-page tactical-tower-shop-page">
-    <div class="tactical-shop-hub horizontal-layout">
+  <div class="tw-page tactical-tower-page">
+    <div class="cs-shop">
 
-      <!-- TOP MARKET HEADER -->
-      <header class="tsh-header">
-        <div class="tsh-header-left">
-          <button class="tsh-back-btn" id="towerShopBack" type="button" title="Return to Spire">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-            <span>RETURN TO SPIRE</span>
-          </button>
-          <div class="tsh-titles">
-            <div class="tsh-kicker"><span class="tsh-kicker-dot"></span>NEURAL PROCUREMENT MATRIX // SPIRE DEPOT</div>
-            <div class="tsh-title">TOWER <span class="tsh-cyan">MARKET</span></div>
-            <div class="tsh-sub">TACTICAL SUPPLY CATALOG &bull; UNLIMITED SPIRE TOKEN EXCHANGE MATRIX</div>
-          </div>
+      <!-- ============================ TOP BAR ============================ -->
+      <div class="cs-shop-top">
+        <button class="cs-back" id="towerShopBack" type="button" title="Return to Spire" aria-label="Return to Spire">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <div class="cs-ttl">
+          <div class="cs-kick"><i></i>SPIRE DEPOT · PROCUREMENT</div>
+          <div class="cs-name">SPIRE <em>ARMORY</em></div>
         </div>
-        <div class="tsh-header-right">
-          <div class="tsh-chip tsh-token-chip">
-            <div class="tc-icon-wrap token-ic">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8M8 14h6"/></svg>
-            </div>
-            <div class="tc-col"><small>TOWER TOKENS</small><b class="tsh-cyan">${fmt(tok)}</b></div>
-          </div>
-          <div class="tsh-chip tsh-gem-chip">
-            <div class="tc-icon-wrap gem-ic">
-              <img src="assets/images/premium-currency.webp" alt="Gems" width="16" height="16">
-            </div>
-            <div class="tc-col"><small>GEMS BALANCE</small><b class="tsh-gold">${fmt(state.premiumGems||0)}</b></div>
-          </div>
+        <div class="cs-meter">
+          <div class="cs-m"><small>TOKEN</small><b class="c">${fmt(tok)}</b></div>
+          <div class="cs-m"><small>GEM</small><b class="g">${fmt(state.premiumGems||0)}</b></div>
         </div>
-      </header>
+      </div>
 
-      <!-- HORIZONTAL SUPPLY CATALOG GRID -->
-      <main class="tsh-h-container">
-        <div class="tsh-h-subhdr">
-          <div class="ths-left">
-            <span class="tsh-bracket">[</span>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            <span class="ths-txt">TACTICAL HORIZONTAL SUPPLY CATALOG</span>
-            <span class="tsh-bracket">]</span>
-          </div>
-          <span class="ths-count-tag">${ITEMS.length} SUPPLIES AVAILABLE</span>
+      <!-- ======================== BODY : HOLO SHELF ====================== -->
+      <div class="cs-shop-body">
+        <div class="cs-stage">
+          <div class="cs-inner">${railsHtml}</div>
         </div>
-        <div class="tsh-h-grid">${cardsHtml}</div>
-      </main>
+      </div>
+
+      <!-- ============================= FOOT ============================= -->
+      <div class="cs-shop-foot">
+        <span>${ITEMS.length} SUPPLIES</span><i></i><span>1 TOKEN = 1 RUN</span>
+      </div>
 
     </div>
   </div>`;
@@ -627,7 +628,7 @@ function renderTowerShop(){
   const rb=document.getElementById("towerShopBack");
   if(rb)rb.onclick=()=>{try{sfx.hit();}catch(e){}towerView="hub";render();};
 
-  app.querySelectorAll(".thc-buy-btn").forEach(btn=>{
+  app.querySelectorAll(".fn-buy[data-kind]").forEach(btn=>{
     btn.onclick=()=>{
       if(btn.disabled)return;
       const k=btn.dataset.kind;

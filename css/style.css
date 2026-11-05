@@ -9563,8 +9563,8 @@ body.on-tower{
 
 /* ===== CORE SPIRE HUB: permukaan WoB OPAQUE ==========================
    `tower.jpg` + veil biru + grid biru di atas ini adalah identitas tema
-   tower LAMA dan MASIH DIPAKAI Tower Shop (`.tactical-tower-shop-page`)
-   serta battle tower (`.battle-grid.tower-stage`), jadi TIDAK dihapus.
+   tower LAMA dan sekarang HANYA dipakai battle tower
+   (`.battle-grid.tower-stage`), jadi TIDAK dihapus.
    Yang dikerjakan hanya mengeluarkannya untuk hub lewat :has(.cs-hub).
    Tanpa ini hub terlihat "kaca": tiga lapis tema lama menembusnya
    (foto tower.jpg di body, veil .on-tower::before, foto tower.jpg lagi
@@ -23986,537 +23986,293 @@ main#app:has(.sett-wrap) {
 
 
 /* =====================================================================
-   CYBERPUNK AAA INFINITE TOWER SHOP REDESIGN (HORIZONTAL LAYOUT)
+   TOWER — BACKGROUND TEMA LAMA (fallback)
+   Foto `tower.jpg` + veil biru adalah identitas tema tower LAMA.
+   Yang TERUKUR (CDP 2026-11-05, 500x844):
+     - hub  (`body.on-tower` + `.cs-hub`)   : main#app bg = none, body bg = none
+     - toko (`body.on-tower` + `.cs-shop`)  : main#app bg = none
+     - battle tower (`body.battle-full.battle-tower`, TANPA `on-tower`)
+       latarnya dari `.battle-arena` (`body.battle-full.battle-tower .battle-arena`
+       + syncBattleBackground), jadi `tower.jpg` di body/main memang tidak aktif
+       di jalur itu — sudah begitu SEBELUM port toko.
+   Jadi aturan ini tinggal sebagai jaring untuk halaman tower lama yang masih
+   memakai `.tw-page` tanpa `.cs-hub`/`.cs-shop`; hub & toko dikecualikan lewat
+   :not(:has(...)) supaya permukaan WoB-nya tidak dicampuri foto tema lama.
+   `background-attachment:fixed` hanya boleh di layar tanpa scroll (§2b#7).
    ===================================================================== */
-/* Foto `tower.jpg` dipertahankan untuk Tower Shop + battle tower. Hub CORE SPIRE
-   dikeluarkan lewat :not(:has(.cs-hub)) supaya permukaan WoB-nya tidak dicampuri
-   foto tema lama. `background-attachment:fixed` juga cuma tersisa di layar yang
-   memang tanpa scroll (syarat AGENTS §2b#7). */
-body.on-tower:not(:has(.cs-hub)),
-html.on-tower-root:not(:has(.cs-hub)),
-body.on-tower:not(:has(.cs-hub)) main#app,
-body:has(.tactical-tower-page):not(:has(.cs-hub)) main#app,
-body:has(.tactical-tower-shop-page) main#app {
+body.on-tower:not(:has(.cs-hub)):not(:has(.cs-shop)),
+html.on-tower-root:not(:has(.cs-hub)):not(:has(.cs-shop)),
+body.on-tower:not(:has(.cs-hub)):not(:has(.cs-shop)) main#app,
+body:has(.tactical-tower-page):not(:has(.cs-hub)):not(:has(.cs-shop)) main#app {
   background: #080c13 url("../assets/bg/tower.jpg") center center / cover no-repeat fixed !important;
   background-color: #07090e !important;
   color: #ffffff !important;
 }
 
-.tactical-tower-shop-page {
-  width: 100%;
-  height: 100%;
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  background: radial-gradient(ellipse 70% 60% at 85% 15%, rgba(0, 217, 255, 0.08) 0%, transparent 70%),
-              radial-gradient(ellipse 60% 50% at 15% 85%, rgba(245, 158, 11, 0.06) 0%, transparent 70%),
-              linear-gradient(180deg, rgba(8, 12, 19, 0.94) 0%, rgba(4, 6, 10, 0.98) 100%) !important;
-  color: #ffffff !important;
-  box-sizing: border-box;
+/* =====================================================================
+   CORE SPIRE — TOWER SHOP  ·  "HOLO SHELF" (varian S1, desain DIKUNCI)
+   Port produksi dari `_tmp/proto_tower_v1.html` `#v-shop1` (lab:916 markup,
+   lab:396-475 CSS). Menggantikan total blok lama
+   "CYBERPUNK AAA INFINITE TOWER SHOP REDESIGN" (.tactical-tower-shop-page /
+   .tsh-* / .thc-*) yang dihapus dari slot yang SAMA — bukan ditumpuk di akhir
+   file (AGENTS aturan 4).
+
+   Struktur : .cs-shop > .cs-shop-top / .cs-shop-body(.cs-stage > .cs-inner >
+              .cs-rail > .cs-rail-h + .cs-rail-shelf > .cs-it) / .cs-shop-foot
+   Tema     : WHITE-on-BLACK hazard — sama dengan hub `.cs-hub` (hitam #050505 /
+              #0d0d0d, teks/garis #f5f5f5, aksen kuning hazard #f3e600).
+              Warna SEMANTIK tidak diputihkan: token=cyan, gem=emas, hazard=merah.
+   Perf (§2b): animasi hanya transform/opacity; TANPA backdrop-filter, TANPA
+              animasi box-shadow/background-position, TANPA foto latar.
+   Kenapa `.cs-` : `.tw-hub` (131 aturan lama + dipakai js/raid.js) & `.holo-rail`
+              (komen world-boss.css) sengaja dihindari. `.cs-shop`/`.cs-rail`/
+              `.cs-it`/`.fn-buy` diverifikasi 0 aturan lama 2026-11-05.
+   Permukaan OPAQUE wajib: pengganti `tower.jpg` dari tema lama. Kalau :has()
+   tidak didukung WebView lawas, `.cs-shop` sendiri sudah menutup seluruh area.
+   ===================================================================== */
+.cs-shop{
+  /* palet lokal: TIDAK menimpa variabel global supaya layar lain tidak ikut */
+  --cs-bg:#050505; --cs-bg2:#0d0d0d;
+  --cs-line:#f5f5f5; --cs-txt:#f5f5f5;
+  --cs-acc:#f3e600;
+  --cs-dim:rgba(245,245,245,.55); --cs-faint:rgba(245,245,245,.17);
+  --cs-tok:#22d3ee; --cs-gem:#ffd700; --cs-haz:#ff3b30;
+  --cs-head:'Orbitron',monospace;
+  --cs-ui:'Rajdhani',sans-serif;
+  --cs-mono:'JetBrains Mono',monospace;
+  position:relative;
+  display:flex; flex:1 1 auto; flex-direction:column; min-height:0;
+  width:100%; height:100%; max-height:100%;
+  background:var(--cs-bg);
+  color:var(--cs-txt);
+  font-family:var(--cs-ui); font-weight:700;
+  font-variant-numeric:tabular-nums;
+  box-sizing:border-box;
 }
 
-.tactical-tower-shop-page .tactical-shop-hub.horizontal-layout {
-  display: flex !important;
-  flex-direction: column !important;
-  width: 100% !important;
-  max-width: 1440px !important;
-  margin: 0 auto !important;
-  padding: 16px 20px !important;
-  height: 100% !important;
-  max-height: 100% !important;
-  min-height: 0 !important;
-  box-sizing: border-box !important;
-  gap: 14px !important;
-  overflow: hidden !important;
+/* ------------------------------- TOP BAR ------------------------------- */
+.cs-shop-top{
+  flex:0 0 auto; display:flex; align-items:center; gap:8px;
+  padding:7px 9px; border-bottom:1px solid var(--cs-faint); background:var(--cs-bg);
+}
+/* 44x44: target sentuh minimum, sama dengan `.cs-back` hub */
+.cs-shop .cs-back{
+  flex:0 0 auto; min-height:44px; min-width:44px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  background:transparent; border:1px solid var(--cs-faint); border-radius:2px;
+  color:var(--cs-txt); padding:0;
+}
+.cs-shop .cs-back:active{ border-color:var(--cs-acc); color:var(--cs-acc); }
+.cs-shop .cs-ttl{ display:flex; flex-direction:column; gap:1px; flex:1 1 auto; min-width:0; }
+.cs-shop .cs-kick{
+  display:flex; align-items:center; gap:5px;
+  font-family:var(--cs-mono); font-size:6.5px; letter-spacing:.2em; color:var(--cs-dim);
+  white-space:nowrap; overflow:hidden;
+}
+.cs-shop .cs-kick i{ width:4px; height:4px; background:var(--cs-acc); border-radius:50%; flex:0 0 auto; }
+.cs-shop .cs-name{
+  font-family:var(--cs-head); font-weight:900; font-size:14.5px; letter-spacing:.04em;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.cs-shop .cs-name em{ font-style:normal; color:var(--cs-acc); }
+.cs-shop .cs-meter{ display:flex; gap:4px; flex:0 0 auto; }
+.cs-shop .cs-m{
+  display:flex; flex-direction:column; align-items:flex-end; gap:0;
+  padding:3px 6px; border:1px solid var(--cs-faint); border-radius:2px; min-width:48px;
+}
+.cs-shop .cs-m small{ font-family:var(--cs-mono); font-size:6px; letter-spacing:.14em; color:var(--cs-dim); }
+.cs-shop .cs-m b{ font-family:var(--cs-head); font-size:11.5px; }
+/* token = cyan, gem = emas (semantik, jangan diputihkan) */
+.cs-shop .cs-m b.c{ color:var(--cs-tok); }
+.cs-shop .cs-m b.g{ color:var(--cs-gem); }
+
+/* --------------------------- BODY : SHELF ------------------------------ */
+.cs-shop-body{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column; }
+/* Toko = STATIS (keputusan user 2026-11-05: 3D hanya di hub menara). Dulu
+   `.holo-inner` di-rotateX(10deg) di dalam perspective:1100px; sekarang rata
+   supaya teks, harga, dan tombol tidak terproyeksi miring. */
+.cs-stage{
+  flex:1 1 auto; min-height:0;
+  overflow-y:auto; overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  padding:12px 9px 18px;
+}
+.cs-stage::-webkit-scrollbar{ display:none; }
+.cs-inner{ transform:none; }
+
+.cs-rail{ margin-bottom:14px; }
+.cs-rail:last-child{ margin-bottom:0; }
+.cs-rail-h{
+  display:flex; align-items:center; gap:6px; margin-bottom:5px;
+  font-family:var(--cs-mono); font-size:6.5px; letter-spacing:.18em; color:var(--cs-dim);
+}
+.cs-rail-h b{ color:var(--cs-txt); }
+.cs-rail-h i{ flex:1 1 auto; height:1px; background:var(--cs-faint); }
+.cs-rail-h span{ border:1px solid var(--cs-faint); padding:1px 4px; border-radius:2px; font-size:6px; }
+.cs-rail-shelf{ display:grid; grid-template-columns:1fr; gap:5px; }
+
+/* ------------------------------- ITEM ROW ------------------------------ */
+.cs-it{
+  position:relative; display:flex; align-items:center; gap:8px;
+  padding:7px 8px; border:1px solid var(--cs-faint); border-radius:2px;
+  background:linear-gradient(96deg, var(--cs-bg2), rgba(0,0,0,.5));
+  box-sizing:border-box;
+}
+/* Kotak art 42px. 320px: 36px (breakpoint di bawah). `--ic` = warna aksen item,
+   dipasang dari data (bukan hardcode) supaya AUGMENT hijau / OVERCLOCK amber
+   tetap semantik. */
+.cs-it-art{
+  position:relative; flex:0 0 auto; display:flex; align-items:center; justify-content:center;
+  width:42px; height:42px; border:1px solid var(--cs-faint); border-radius:2px; overflow:hidden;
+  background:radial-gradient(circle at 50% 42%, rgba(255,255,255,.10), transparent 68%), #000;
+}
+.cs-it-art img{ position:relative; z-index:2; width:76%; height:76%; object-fit:contain; display:block; }
+.cs-it-glow{
+  position:absolute; inset:0; z-index:1; opacity:.16;
+  background:radial-gradient(circle at 50% 50%, var(--ic,#fff) 0%, transparent 68%);
+}
+.cs-it-mid{ flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:2px; }
+.cs-it-cat{
+  display:flex; gap:4px; align-items:center;
+  font-family:var(--cs-mono); font-size:6px; letter-spacing:.12em;
+}
+.cs-it-cat .c1{ color:var(--ic, var(--cs-acc)); }
+.cs-it-cat .c2{ color:var(--cs-dim); border:1px solid var(--cs-faint); padding:0 3px; border-radius:2px; }
+.cs-it-nm{
+  font-size:11.5px; font-weight:800; letter-spacing:.03em;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+/* Deskripsi = 2 baris. Di layar pendek / 320px jadi 1 baris supaya tombol
+   tetap di dalam kotak (prototipe: `-webkit-line-clamp:1`). */
+.cs-it-ds{
+  font-size:9px; font-weight:700; line-height:1.25; color:var(--cs-dim);
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  max-height:23px;
+}
+.cs-it-stock{
+  display:flex; gap:4px; align-items:center; margin-top:1px;
+  font-family:var(--cs-mono); font-size:6.5px; letter-spacing:.06em; color:var(--cs-dim);
+  white-space:nowrap;
+}
+.cs-it-stock b{ color:var(--cs-txt); }
+.cs-it-right{ flex:0 0 auto; display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
+.cs-it-price{
+  display:flex; flex-direction:column; align-items:flex-end;
+  font-family:var(--cs-mono); font-size:6px; letter-spacing:.08em; color:var(--cs-dim);
+}
+.cs-it-price b{ font-family:var(--cs-head); font-size:15px; color:var(--cs-tok); line-height:1; }
+.cs-it-price b i{ font-family:var(--cs-mono); font-style:normal; font-size:6px; color:var(--cs-dim); margin-left:3px; }
+
+/* Tombol beli. Label = CERMIN produksi (`renderTowerShop`):
+   '✔ UNLOCKED' / 'DEFICIT n' / 'EXCHANGE (+10 GEMS)' / 'ACQUIRE SUPPLY'.
+   Di 320px label ini panjang, jadi lebar tetap + 2 baris. min-height 44px =
+   target sentuh terukur (toko statis, tanpa proyeksi rotateX). */
+.fn-buy{
+  min-height:44px; width:88px; padding:3px 5px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; text-align:center;
+  border:1px solid var(--cs-acc); border-radius:2px;
+  background:var(--cs-acc); color:#000;
+  font-family:var(--cs-mono); font-size:7px; font-weight:700;
+  letter-spacing:.02em; line-height:1.15; white-space:normal;
+  box-sizing:border-box;
+}
+.fn-buy:active{ opacity:.86; }
+/* DEFICIT / status non-aktif = STATUS, bukan tombol rusak.
+   Kotak dashed besar terbaca seperti placeholder kosong (terbukti di screenshot
+   lab: 8 kotak putus-putus mendominasi layar toko). Jadi: tanpa border sama
+   sekali, hanya teks redup + garis pemisah tipis di kiri. Ini juga yang
+   memperbaiki defect #6 (tombol mati terlihat seperti tombol rusak). */
+.fn-buy:disabled{
+  background:transparent; border:0; border-left:1px solid var(--cs-faint);
+  border-radius:0; color:var(--cs-dim); cursor:not-allowed;
+  min-height:0; height:auto; width:auto; min-width:60px; padding:4px 6px;
+  font-size:6.5px; letter-spacing:.03em; line-height:1.25;
 }
 
-/* TOP MARKET HEADER */
-.tactical-tower-shop-page .tsh-header {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 16px !important;
-  padding: 12px 18px !important;
-  border-radius: 16px !important;
-  background: linear-gradient(180deg, rgba(14, 21, 35, 0.88) 0%, rgba(8, 12, 20, 0.96) 100%) !important;
-  border: 1px solid rgba(0, 217, 255, 0.22) !important;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
-  backdrop-filter: blur(12px) !important;
-  flex: none !important;
+/* -------------------------------- FOOT -------------------------------- */
+.cs-shop-foot{
+  flex:0 0 auto; display:flex; align-items:center; gap:6px;
+  padding:6px 9px calc(6px + env(safe-area-inset-bottom,0px));
+  border-top:1px solid var(--cs-faint); background:var(--cs-bg);
+  font-family:var(--cs-mono); font-size:6px; letter-spacing:.16em; color:var(--cs-dim);
+}
+.cs-shop-foot i{ flex:1 1 auto; height:1px; background:var(--cs-faint); }
+
+/* --------------------------- LAYOUT : HEIGHT --------------------------
+   Cermin hub `.cs-hub` (jangan menimpa `height` #app sendiri; rantai tinggi
+   sudah diatur `body.on-tower main` di blok lama). Yang ditambah hanya
+   flex-column + overflow:hidden supaya HANYA `.cs-stage` yang menggulir —
+   kalau tidak, `#app` (overflow-y:auto untuk on-tower) yang scroll dan top bar
+   ikut hilang. Permukaan opaque menggantikan `tower.jpg` tema lama. */
+body.on-tower:has(.cs-shop) main#app{
+  padding:0 !important;
+  display:flex; flex-direction:column; align-items:stretch !important;
+  overflow:hidden !important;
+  background:var(--cs-bg,#050505) !important;
+}
+html.m-landscape body.on-tower:has(.cs-shop) main#app{
+  padding:0 0 0 calc(var(--nav-w) + var(--safe-left)) !important;
+}
+html.m-portrait body.on-tower:has(.cs-shop) main#app{
+  padding:0 0 calc(var(--nav-h) + var(--safe-bottom)) 0 !important;
+}
+body.on-tower:has(.cs-shop) main#app > .tw-page{
+  flex:1 1 auto; min-height:0; display:flex; flex-direction:column;
+  height:100%;
+}
+body.on-tower:has(.cs-shop)::before{ content:none !important; }
+html.on-tower-root:has(.cs-shop){ background:#050505 !important; }
+
+/* `.tactical-tower-page` masih membawa gradient cyan/violet tema tower LAMA
+   (dipakai bersama dengan battle). Toko memakai permukaan WoB, jadi gradient
+   itu diganti di sini. Specificity (0,2,0) > (0,1,0) sehingga menang TANPA
+   menumpuk blok override baru di akhir file (AGENTS aturan 4). */
+.tactical-tower-page:has(.cs-shop){
+  background:
+    radial-gradient(ellipse 74% 58% at 50% 8%, rgba(245,245,245,.045) 0%, transparent 64%),
+    radial-gradient(ellipse 90% 52% at 50% 100%, rgba(0,0,0,.9) 0%, transparent 72%),
+    linear-gradient(180deg,#0a0a0a 0%,#050505 62%,#000 100%) !important;
 }
 
-.tactical-tower-shop-page .tsh-header-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+/* ---------------------------- BREAKPOINTS ----------------------------- */
+/* HP landscape pendek (≈850x390): rapatkan supaya 8 item + top/foot muat.
+   Target sentuh TETAP >=44px — yang dikurangi hanya desc ke 1 baris. */
+@media (max-height:470px){
+  .cs-stage{ padding:8px 8px 12px; }
+  .cs-shop-top{ padding:4px 7px; }
+  .cs-it{ padding:5px 7px; gap:7px; }
+  .cs-it-ds{ -webkit-line-clamp:1; max-height:12px; }
+  .cs-rail{ margin-bottom:9px; }
+  .cs-it-art{ width:38px; height:38px; }
+}
+/* HP portrait sempit (320): kecilkan tipografi, target sentuh TETAP 44px. */
+@media (max-width:400px){
+  .cs-shop .cs-kick{ font-size:6px; letter-spacing:.14em; }
+  .cs-shop .cs-name{ font-size:13px; }
+  .cs-shop .cs-m{ min-width:44px; padding:2px 5px; }
+  .cs-shop .cs-m b{ font-size:11px; }
+}
+@media (max-width:360px){
+  .cs-it-art{ width:36px; height:36px; }
+  .cs-it-nm{ font-size:10.5px; }
+  .cs-it-ds{ -webkit-line-clamp:1; max-height:12px; }
+  .fn-buy{ width:78px; font-size:6.5px; }
+  .fn-buy:disabled{ width:auto; min-width:54px; }
+  .cs-it-price b{ font-size:13px; }
+}
+/* Desktop lebar: pusatkan kolom 560px, jangan melar penuh (sama dengan hub). */
+@media (min-width:860px){
+  .cs-shop{
+    width:min(100%,560px); margin:0 auto;
+    border-left:1px solid var(--cs-faint); border-right:1px solid var(--cs-faint);
+  }
+}
+/* Aksesibilitas: minta kurangi gerak -> tidak ada animasi dekoratif. */
+@media (prefers-reduced-motion:reduce){
+  .cs-inner{ transform:none !important; }
 }
 
-.tactical-tower-shop-page .tsh-back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(0, 217, 255, 0.35);
-  padding: 8px 16px;
-  border-radius: 9px;
-  color: #e2e8f0;
-  font-family: "Rajdhani", sans-serif;
-  font-weight: 800;
-  font-size: 13px;
-  letter-spacing: 0.1em;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex: none;
-}
-
-.tactical-tower-shop-page .tsh-back-btn:hover {
-  background: rgba(0, 217, 255, 0.18);
-  border-color: #00d9ff;
-  color: #ffffff;
-  transform: translateY(-1px);
-  box-shadow: 0 0 14px rgba(0, 217, 255, 0.3);
-}
-
-.tactical-tower-shop-page .tsh-titles {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.tactical-tower-shop-page .tsh-kicker {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  color: #00d9ff;
-  text-transform: uppercase;
-}
-
-.tactical-tower-shop-page .tsh-kicker-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #00d9ff;
-  box-shadow: 0 0 8px #00d9ff;
-  animation: nextPulse 1.6s infinite ease-in-out;
-}
-
-.tactical-tower-shop-page .tsh-title {
-  font-family: "Rajdhani", sans-serif !important;
-  font-size: clamp(22px, 2.2vw, 28px) !important;
-  font-weight: 900 !important;
-  line-height: 1.05 !important;
-  letter-spacing: 0.05em !important;
-  color: #ffffff !important;
-}
-
-.tactical-tower-shop-page .tsh-cyan {
-  color: #00d9ff;
-  text-shadow: 0 0 14px rgba(0, 217, 255, 0.5);
-}
-
-.tactical-tower-shop-page .tsh-sub {
-  font-family: "Rajdhani", sans-serif;
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: #94a3b8;
-}
-
-/* HEADER BALANCES */
-.tactical-tower-shop-page .tsh-header-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.tactical-tower-shop-page .tsh-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background: linear-gradient(135deg, rgba(16, 24, 38, 0.75), rgba(9, 13, 22, 0.9));
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 6px 14px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
-}
-
-.tactical-tower-shop-page .tsh-token-chip {
-  border-color: rgba(0, 217, 255, 0.25);
-}
-
-.tactical-tower-shop-page .tsh-gem-chip {
-  border-color: rgba(245, 158, 11, 0.25);
-}
-
-.tactical-tower-shop-page .tc-icon-wrap {
-  width: 28px;
-  height: 28px;
-  border-radius: 7px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-}
-
-.tactical-tower-shop-page .tc-icon-wrap.token-ic {
-  background: rgba(0, 217, 255, 0.1);
-  color: #00d9ff;
-}
-
-.tactical-tower-shop-page .tc-icon-wrap.gem-ic {
-  background: rgba(245, 158, 11, 0.12);
-}
-
-.tactical-tower-shop-page .tc-col {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.tactical-tower-shop-page .tc-col small {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 9.5px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  color: #94a3b8;
-  text-transform: uppercase;
-}
-
-.tactical-tower-shop-page .tc-col b {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 19px;
-  font-weight: 900;
-  line-height: 1;
-}
-
-.tactical-tower-shop-page .tsh-gold {
-  color: #fbbf24;
-}
-
-/* HORIZONTAL CONTAINER */
-.tactical-tower-shop-page .tsh-h-container {
-  display: flex !important;
-  flex-direction: column !important;
-  background: linear-gradient(180deg, rgba(13, 20, 32, 0.8) 0%, rgba(7, 11, 18, 0.94) 100%) !important;
-  border: 1px solid rgba(0, 217, 255, 0.18) !important;
-  border-radius: 16px !important;
-  padding: 16px 18px !important;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
-  backdrop-filter: blur(12px) !important;
-  min-height: 0 !important;
-  flex: 1 1 auto !important;
-  overflow: hidden !important;
-  gap: 12px !important;
-}
-
-.tactical-tower-shop-page .tsh-h-subhdr {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  flex: none;
-}
-
-.tactical-tower-shop-page .ths-left {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #e2e8f0;
-  font-family: "Rajdhani", sans-serif;
-  font-weight: 800;
-  font-size: 13.5px;
-  letter-spacing: 0.06em;
-}
-
-.tactical-tower-shop-page .tsh-bracket {
-  color: #00d9ff;
-  font-weight: 800;
-}
-
-.tactical-tower-shop-page .ths-count-tag {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  color: #94a3b8;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 2px 8px;
-  border-radius: 4px;
-}
-
-/* HORIZONTAL GRID (2 COLUMNS) */
-.tactical-tower-shop-page .tsh-h-grid {
-  display: grid !important;
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  gap: 12px !important;
-  overflow-y: auto !important;
-  padding-right: 6px !important;
-  min-height: 0 !important;
-  flex: 1 1 auto !important;
-}
-
-.tactical-tower-shop-page .tsh-h-grid::-webkit-scrollbar {
-  width: 4px;
-}
-.tactical-tower-shop-page .tsh-h-grid::-webkit-scrollbar-thumb {
-  background: rgba(0, 217, 255, 0.25);
-  border-radius: 4px;
-}
-
-/* HORIZONTAL CARD */
-.tactical-tower-shop-page .tsh-h-card {
-  position: relative !important;
-  display: grid !important;
-  grid-template-columns: auto minmax(0, 1fr) auto !important;
-  align-items: center !important;
-  gap: 14px !important;
-  padding: 12px 16px !important;
-  border-radius: 12px !important;
-  background: linear-gradient(135deg, rgba(16, 24, 38, 0.85) 0%, rgba(9, 13, 22, 0.96) 100%) !important;
-  border: 1.2px solid rgba(255, 255, 255, 0.08) !important;
-  border-left: 3.5px solid var(--item-c, #00d9ff) !important;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4) !important;
-  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
-  overflow: hidden !important;
-}
-
-.tactical-tower-shop-page .tsh-h-card:hover {
-  transform: translateY(-2px) !important;
-  border-color: rgba(0, 217, 255, 0.35) !important;
-  border-left-color: var(--item-c, #00d9ff) !important;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.6), 0 0 16px color-mix(in srgb, var(--item-c, #00d9ff) 25%, transparent) !important;
-}
-
-.tactical-tower-shop-page .tsh-h-card.insufficient {
-  opacity: 0.85;
-}
-
-.tactical-tower-shop-page .tsh-h-card.owned {
-  border-left-color: #00ffaa !important;
-}
-
-/* LEFT COLUMN: ART + BADGES */
-.tactical-tower-shop-page .thc-left {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  flex: none;
-}
-
-.tactical-tower-shop-page .thc-art-box {
-  width: 56px;
-  height: 56px;
-  border-radius: 10px;
-  background: rgba(5, 8, 14, 0.8);
-  border: 1.2px solid var(--item-c, #00d9ff);
-  box-shadow: 0 0 14px color-mix(in srgb, var(--item-c, #00d9ff) 30%, transparent);
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.tactical-tower-shop-page .thc-art-box .shop-pot-img {
-  width: 78%;
-  height: 78%;
-  object-fit: contain;
-  transition: transform 0.25s ease;
-  z-index: 2;
-}
-
-.tactical-tower-shop-page .tsh-h-card:hover .thc-art-box .shop-pot-img {
-  transform: scale(1.1);
-}
-
-.tactical-tower-shop-page .thc-art-halo {
-  position: absolute;
-  width: 80%;
-  height: 80%;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--item-c, #00d9ff) 25%, transparent);
-  filter: blur(8px);
-  z-index: 1;
-}
-
-.tactical-tower-shop-page .thc-art-sweep {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 45%);
-  pointer-events: none;
-  z-index: 3;
-}
-
-.tactical-tower-shop-page .thc-badges {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.tactical-tower-shop-page .thc-cat {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 8.5px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  color: var(--item-c, #00d9ff);
-  text-transform: uppercase;
-}
-
-.tactical-tower-shop-page .thc-tier {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 8px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  color: #cbd5e1;
-  background: rgba(255, 255, 255, 0.08);
-  padding: 1px 4px;
-  border-radius: 3px;
-}
-
-/* MID COLUMN: TITLE + DESC + STOCK */
-.tactical-tower-shop-page .thc-mid {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-
-.tactical-tower-shop-page .thc-title-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.tactical-tower-shop-page .thc-name {
-  font-family: "Rajdhani", sans-serif;
-  font-size: 15.5px;
-  font-weight: 900;
-  color: #ffffff;
-  letter-spacing: 0.04em;
-  line-height: 1.15;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.tactical-tower-shop-page .thc-desc {
-  font-size: 11.5px;
-  line-height: 1.35;
-  color: #94a3b8;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.tactical-tower-shop-page .thc-meta-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 2px;
-}
-
-.tactical-tower-shop-page .thc-stock-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  color: #00ffaa;
-  background: rgba(0, 255, 170, 0.08);
-  border: 1px solid rgba(0, 255, 170, 0.22);
-  padding: 1px 6px;
-  border-radius: 4px;
-}
-
-.tactical-tower-shop-page .thc-stock-pill svg {
-  color: #00ffaa;
-  flex: none;
-}
-
-.tactical-tower-shop-page .thc-perk-pill {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  color: #fbbf24;
-  background: rgba(245, 158, 11, 0.08);
-  border: 1px solid rgba(245, 158, 11, 0.25);
-  padding: 1px 6px;
-  border-radius: 4px;
-}
-
-/* RIGHT COLUMN: PRICE + BUY BUTTON */
-.tactical-tower-shop-page .thc-right {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  flex: none;
-  min-width: 125px;
-}
-
-.tactical-tower-shop-page .thc-price-box {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 1px;
-}
-
-.tactical-tower-shop-page .thc-price-lbl {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  color: #64748b;
-  text-transform: uppercase;
-}
-
-.tactical-tower-shop-page .thc-price-val {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 17px;
-  font-weight: 900;
-  color: #fbbf24;
-  line-height: 1;
-}
-
-.tactical-tower-shop-page .thc-price-val small {
-  font-size: 10px;
-  color: #94a3b8;
-  font-weight: 800;
-}
-
-.tactical-tower-shop-page .thc-buy-btn {
-  position: relative !important;
-  overflow: hidden !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 6px !important;
-  padding: 7px 14px !important;
-  border-radius: 8px !important;
-  font-family: "Rajdhani", sans-serif !important;
-  font-size: 13px !important;
-  font-weight: 900 !important;
-  letter-spacing: 0.06em !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-  background: linear-gradient(135deg, #00d9ff, #0284c7) !important;
-  border: 1px solid #7df9ff !important;
-  color: #040812 !important;
-  box-shadow: 0 4px 14px rgba(0, 217, 255, 0.35) !important;
-  white-space: nowrap !important;
-}
 /* =====================================================================
    CORE SPIRE — INFINITE TOWER HUB  (port dari _tmp/proto_tower_skel.html,
    desain DIKUNCI user 2026-11-05)
@@ -25127,104 +24883,6 @@ html.m-portrait body.on-tower:has(.cs-hub) main#app{
   padding:0 0 calc(var(--nav-h) + var(--safe-bottom)) 0 !important;
 }
 
-.tactical-tower-shop-page .thc-buy-btn:hover {
-  transform: translateY(-1px) !important;
-  box-shadow: 0 6px 20px rgba(0, 217, 255, 0.55), 0 0 14px rgba(125, 249, 255, 0.5) !important;
-}
-
-.tactical-tower-shop-page .thc-buy-btn:active {
-  transform: translateY(1px) !important;
-}
-
-.tactical-tower-shop-page .thc-buy-btn.disabled {
-  background: rgba(15, 23, 42, 0.7) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-  color: #64748b !important;
-  box-shadow: none !important;
-  cursor: not-allowed !important;
-  transform: none !important;
-}
-
-.tactical-tower-shop-page .thc-btn-txt {
-  position: relative;
-  z-index: 2;
-}
-
-.tactical-tower-shop-page .thc-btn-chev {
-  font-size: 16px;
-  font-weight: 900;
-  line-height: 1;
-  position: relative;
-  z-index: 2;
-}
-
-/* RESPONSIVE HORIZONTAL BREAKPOINTS */
-@media (max-width: 1024px) {
-  .tactical-tower-shop-page .tsh-h-grid {
-    grid-template-columns: 1fr !important;
-  }
-}
-
-@media (max-width: 768px) {
-  .tactical-tower-shop-page {
-    height: auto !important;
-    min-height: 100dvh !important;
-    overflow-y: auto !important;
-  }
-  .tactical-tower-shop-page .tactical-shop-hub.horizontal-layout {
-    height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
-    padding: 10px 10px 24px !important;
-  }
-  .tactical-tower-shop-page .tsh-header {
-    flex-direction: column !important;
-    align-items: stretch !important;
-  }
-  .tactical-tower-shop-page .tsh-header-right {
-    justify-content: flex-start !important;
-    flex-wrap: wrap !important;
-  }
-  .tactical-tower-shop-page .tsh-h-container {
-    height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
-    padding: 12px !important;
-  }
-  .tactical-tower-shop-page .tsh-h-grid {
-    grid-template-columns: 1fr !important;
-    max-height: none !important;
-    /* portrait: container tetap tinggi-definite (flex 1) -> 8 baris auto dibagi rata
-       (455-84)/8 = 46px, kartu ke-clamp overflow:hidden. Paksa baris ikut konten. */
-    grid-auto-rows: max-content !important;
-    align-content: start !important;
-  }
-  .tactical-tower-shop-page .tsh-h-card {
-    grid-template-columns: auto minmax(0, 1fr) !important;
-    gap: 10px !important;
-  }
-  .tactical-tower-shop-page .tsh-h-subhdr {
-    flex-wrap: wrap !important;
-    row-gap: 6px !important;
-  }
-  .tactical-tower-shop-page .ths-left {
-    flex: 1 1 auto !important;
-    min-width: 0 !important;
-  }
-  .tactical-tower-shop-page .ths-count-tag {
-    flex: none !important;
-    white-space: nowrap !important;
-  }
-  .tactical-tower-shop-page .thc-right {
-    grid-column: 1 / -1;
-    flex-direction: row !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    width: 100% !important;
-    padding-top: 8px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-  }
-}
 
 .ftue-bubble {
   position: absolute !important;

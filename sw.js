@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v448-csHubBgArt';
+const CACHE_NAME = 'anime-card-battle-v449-csShopHoloShelf';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
