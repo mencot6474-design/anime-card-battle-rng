@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v446-ixXHoverStatic';
+const CACHE_NAME = 'anime-card-battle-v447-coreSpireHub';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
