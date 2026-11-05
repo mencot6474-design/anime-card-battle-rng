@@ -584,8 +584,11 @@ function renderTowerShop(){
   /* ============================== SHOP MARKUP =============================
      Port S1 "HOLO SHELF" dari lab terkunci (`_tmp/proto_tower_v1.html`, lab:916
      `#v-shop1`). Mengganti `.tactical-tower-shop-page` + `.tsh-*`/`.thc-*` legacy.
-     Struktur: .tw-page > .cs-shop > .cs-shop-top / .cs-shop-body(.cs-stage >
+     Struktur: .tw-page > .cs-shop > .cs-shop-top / .cs-shop-body(.cs-shelf >
      .cs-inner > .cs-rail*) / .cs-shop-foot.
+     PENTING: container scroll toko = `.cs-shelf`, JANGAN `.cs-stage` — nama
+     itu dipakai hub CORE SPIRE (`overflow:hidden` + perspective) dan menang
+     cascade, sehingga toko tidak bisa digulir sama sekali.
      Kontrak yang WAJIB tetap: root `.tw-page` (deteksi `body.on-tower` boot.js:341),
      `#towerShopBack` -> `towerView="hub"`, `.fn-buy[data-kind]` -> `infBuy`.
      Nama `.cs-shop`/`.cs-rail`/`.cs-it`/`.fn-buy` diverifikasi 0 aturan lama
@@ -612,7 +615,7 @@ function renderTowerShop(){
 
       <!-- ======================== BODY : HOLO SHELF ====================== -->
       <div class="cs-shop-body">
-        <div class="cs-stage">
+        <div class="cs-shelf">
           <div class="cs-inner">${railsHtml}</div>
         </div>
       </div>

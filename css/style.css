@@ -24017,7 +24017,7 @@ body:has(.tactical-tower-page):not(:has(.cs-hub)):not(:has(.cs-shop)) main#app {
    .tsh-* / .thc-*) yang dihapus dari slot yang SAMA — bukan ditumpuk di akhir
    file (AGENTS aturan 4).
 
-   Struktur : .cs-shop > .cs-shop-top / .cs-shop-body(.cs-stage > .cs-inner >
+   Struktur : .cs-shop > .cs-shop-top / .cs-shop-body(.cs-shelf > .cs-inner >
               .cs-rail > .cs-rail-h + .cs-rail-shelf > .cs-it) / .cs-shop-foot
    Tema     : WHITE-on-BLACK hazard — sama dengan hub `.cs-hub` (hitam #050505 /
               #0d0d0d, teks/garis #f5f5f5, aksen kuning hazard #f3e600).
@@ -24090,15 +24090,24 @@ body:has(.tactical-tower-page):not(:has(.cs-hub)):not(:has(.cs-shop)) main#app {
 .cs-shop-body{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column; }
 /* Toko = STATIS (keputusan user 2026-11-05: 3D hanya di hub menara). Dulu
    `.holo-inner` di-rotateX(10deg) di dalam perspective:1100px; sekarang rata
-   supaya teks, harga, dan tombol tidak terproyeksi miring. */
-.cs-stage{
+   supaya teks, harga, dan tombol tidak terproyeksi miring.
+   NAMA KELAS WAJIB `.cs-shelf`, BUKAN `.cs-stage`. Tabrakan yang pernah
+   terjadi (fixed 2026-11-05): hub CORE SPIRE di bawah memakai `.cs-stage`
+   dengan `overflow:hidden` + `perspective`, dan karena specificity-nya sama
+   (0,1,0) tapi ditulis SESUDAH, hub menang di toko -> seluruh isi toko
+   terpotong dan TIDAK BISA DIGULIR (roda mouse & swipe mati). Scroll
+   programatik tetap jalan di `overflow:hidden`, jadi probe yang cuma set
+   `scrollTop` melaporkan "scrollable" padahal rusak. Jangan kembalikan
+   nama ini ke `.cs-stage`. */
+.cs-shelf{
   flex:1 1 auto; min-height:0;
   overflow-y:auto; overflow-x:hidden;
   -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
   scrollbar-width:none;
   padding:12px 9px 18px;
 }
-.cs-stage::-webkit-scrollbar{ display:none; }
+.cs-shelf::-webkit-scrollbar{ display:none; }
 .cs-inner{ transform:none; }
 
 .cs-rail{ margin-bottom:14px; }
@@ -24202,7 +24211,7 @@ body:has(.tactical-tower-page):not(:has(.cs-hub)):not(:has(.cs-shop)) main#app {
 /* --------------------------- LAYOUT : HEIGHT --------------------------
    Cermin hub `.cs-hub` (jangan menimpa `height` #app sendiri; rantai tinggi
    sudah diatur `body.on-tower main` di blok lama). Yang ditambah hanya
-   flex-column + overflow:hidden supaya HANYA `.cs-stage` yang menggulir —
+   flex-column + overflow:hidden supaya HANYA `.cs-shelf` yang menggulir —
    kalau tidak, `#app` (overflow-y:auto untuk on-tower) yang scroll dan top bar
    ikut hilang. Permukaan opaque menggantikan `tower.jpg` tema lama. */
 body.on-tower:has(.cs-shop) main#app{
@@ -24239,7 +24248,7 @@ html.on-tower-root:has(.cs-shop){ background:#050505 !important; }
 /* HP landscape pendek (≈850x390): rapatkan supaya 8 item + top/foot muat.
    Target sentuh TETAP >=44px — yang dikurangi hanya desc ke 1 baris. */
 @media (max-height:470px){
-  .cs-stage{ padding:8px 8px 12px; }
+  .cs-shelf{ padding:8px 8px 12px; }
   .cs-shop-top{ padding:4px 7px; }
   .cs-it{ padding:5px 7px; gap:7px; }
   .cs-it-ds{ -webkit-line-clamp:1; max-height:12px; }
@@ -24376,6 +24385,23 @@ html.on-tower-root:has(.cs-shop){ background:#050505 !important; }
   perspective:900px;
   perspective-origin:50% -18%;   /* titik hilang DI ATAS -> menara konvergen ke atas */
   overflow:hidden;
+  /* Padding ditulis EKSPLISIT di sini. Sebelum fix 2026-11-05 nilai ini
+     "dipinjam" dari blok TOKO (selector `.cs-stage` yang sama, 3.800 baris di
+     atas) — jadi selama tabrakan nama itu ada, hub kebetulan mendapat
+     `12px 9px 18px`. Begitu toko pindah ke `.cs-shelf`, pinjaman itu hilang
+     dan menara bergeser. Nilai di bawah = nilai efektif hub SEBELUM fix,
+     bukan angka baru. Media `max-height:470px` di blok toko juga menimpanya
+     (8px 8px 12px) dan itu dipulihkan di @media yang sama. */
+  padding:12px 9px 18px;
+}
+/* Pemulihan override media: dulu blok TOKO punya
+   `@media (max-height:470px){ .cs-stage{ padding:8px 8px 12px } }` dan aturan
+   itu ikut mengenai hub. Setelah toko pindah ke `.cs-shelf`, aturan tersebut
+   tidak lagi menyentuh hub — jadi ditulis ulang di sini dengan selector hub
+   yang benar supaya HP landscape (850x390) tetap SAMA PERSIS seperti sebelum
+   fix. Scope `.cs-hub` membuatnya tidak mungkin bocor ke layar lain. */
+@media (max-height:470px){
+  .cs-hub .cs-stage{ padding:8px 8px 12px; }
 }
 .cs-stage::before{
   content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
