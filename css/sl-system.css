@@ -31,7 +31,6 @@
 #indexModal .ix-box,
 #missionModal .ix-box,
 #rarePromptModal .rp-box,
-#towerDropModal .tw-drop-modal,
 .modal-profile .prof-modal-inner,
 .modal-titles .titles-modal-inner{
   position:relative;
@@ -90,34 +89,15 @@
 #storyModal.show .sm-box,
 #startModal.show .st-box,
 #indexModal.show .ix-box,
-#missionModal.show .ix-box,
-#towerDropModal.show .tw-drop-modal{
+#missionModal.show .ix-box{
   animation:slwIn var(--sl-ease) both;
 }
 @media(prefers-reduced-motion:reduce){
   #deckPickModal.show .dp-box,#traitModal.show .tr-box,#dailyModal.show .dl-box,
   #storyModal.show .sm-box,#startModal.show .st-box,#indexModal.show .ix-box,
-  #missionModal.show .ix-box,#towerDropModal.show .tw-drop-modal{animation:none !important}
+  #missionModal.show .ix-box{animation:none !important}
 }
 
-/* #towerDropModal .tw-drop-modal: ::before sudah dipakai garis atas -> corners via ::after */
-#towerDropModal .tw-drop-modal{
-  border-radius:12px !important;
-  border:1.5px solid var(--sl-edge) !important;
-  background:
-    repeating-linear-gradient(0deg,rgba(0,217,255,.028) 0px,rgba(0,217,255,.028) 1px,transparent 1px,transparent 3px),
-    var(--sl-panel) !important;
-  box-shadow:var(--sl-glow) !important;
-}
-#towerDropModal .tw-drop-modal::after{
-  content:"";position:absolute;inset:6px;pointer-events:none;z-index:4;border-radius:8px;
-  background:
-    linear-gradient(var(--sl-cyan),var(--sl-cyan)) right top/14px 2px no-repeat,
-    linear-gradient(var(--sl-cyan),var(--sl-cyan)) right top/2px 14px no-repeat,
-    linear-gradient(var(--sl-cyan),var(--sl-cyan)) left bottom/14px 2px no-repeat,
-    linear-gradient(var(--sl-cyan),var(--sl-cyan)) left bottom/2px 14px no-repeat;
-  opacity:.7;
-}
 
 /* ==========================================================================
    2. HEADER — .ix-head diseragamkan di semua modal
@@ -128,8 +108,7 @@
 #storyModal .ix-head,
 #startModal .ix-head,
 #indexModal .ix-head,
-#missionModal .ix-head,
-#towerDropModal .ix-head{
+#missionModal .ix-head{
   border-bottom:1px solid rgba(0,217,255,.30) !important;
   padding-bottom:12px !important;
   margin-bottom:14px !important;
@@ -147,8 +126,7 @@
 #storyModal .ix-head .ix-title,
 #startModal .ix-head .ix-title,
 #indexModal .ix-head .ix-title,
-#missionModal .ix-head .ix-title,
-#towerDropModal .ix-head .ix-title{
+#missionModal .ix-head .ix-title{
   color:#fff !important;
   text-shadow:0 0 14px rgba(0,217,255,.55),0 2px 4px rgba(0,0,0,.9) !important;
   letter-spacing:.06em !important;
@@ -163,8 +141,7 @@
 #storyModal .ix-x,
 #startModal .ix-x,
 #indexModal .ix-x,
-#missionModal .ix-x,
-#towerDropModal .ix-x{
+#missionModal .ix-x{
   width:30px !important;height:30px !important;flex:none !important;
   border:1px solid rgba(0,217,255,.45) !important;
   border-radius:8px !important;
@@ -177,8 +154,7 @@
 #storyModal .ix-x:hover,
 #startModal .ix-x:hover,
 #indexModal .ix-x:hover,
-#missionModal .ix-x:hover,
-#towerDropModal .ix-x:hover{
+#missionModal .ix-x:hover{
   background:var(--sl-cyan) !important;color:#040914 !important;
   box-shadow:0 0 14px rgba(0,217,255,.6) !important;
 }

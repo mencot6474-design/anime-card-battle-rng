@@ -1516,145 +1516,6 @@
   box-shadow: 0 0 20px rgba(147, 51, 234, 0.25), inset 0 0 12px rgba(0, 240, 255, 0.08);
 }
 
-/* 3-Column Horizontal Grid Deck */
-.tw-drop-h-deck {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-  align-items: stretch;
-  flex: 1;
-  min-height: 0;
-}
-
-.tw-col-head {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.tw-col-title {
-  margin: 0;
-  font-family: "Rajdhani", sans-serif;
-  font-size: 13.5px;
-  font-weight: 900;
-  letter-spacing: 0.06em;
-  color: #f1f5f9;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.tw-col-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  flex: 1;
-}
-
-.tw-item-txt {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.tw-item-name {
-  font-family: "Rajdhani", sans-serif;
-  font-size: 12px;
-  font-weight: 800;
-  color: #f8fafc;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.tw-item-sub {
-  font-size: 9.5px;
-  color: #64748b;
-  line-height: 1.25;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Col 3: Trophy Showcase Cards */
-.tw-col-trophy-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  flex: 1;
-  justify-content: center;
-}
-
-.tw-tc-info {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.tw-tc-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-}
-
-.tw-tc-type {
-  font-family: "Rajdhani", sans-serif;
-  font-size: 8px;
-  font-weight: 800;
-  color: #f43f5e;
-  letter-spacing: 0.12em;
-}
-
-.tw-tc-name {
-  font-family: "Rajdhani", sans-serif;
-  font-size: 14px;
-  font-weight: 900;
-  color: #fff;
-  letter-spacing: 0.06em;
-  text-shadow: 0 0 10px rgba(255, 51, 102, 0.35);
-}
-
-.tw-tc-perks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 1px;
-}
-
-.tw-tc-desc {
-  font-size: 9px;
-  color: #94a3b8;
-  line-height: 1.25;
-  margin-top: 1px;
-}
-
-/* Footer Ticker Bar */
-.tw-drop-footer-bar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-top: 4px;
-}
-
-.tw-df-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(0, 217, 255, 0.05);
-  border: 1px solid rgba(0, 217, 255, 0.18);
-  padding: 5px 14px;
-  border-radius: 999px;
-  font-size: 10.5px;
-  color: #94a3b8;
-}
 
 .ftue-badge {
   font-size: 10px !important;
@@ -10417,724 +10278,6 @@ body.on-raid:has(.shop-hub) main {
 
 #raidToast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* ==========================================================================
-
-   TACTICAL CYBER SPIRE HUB (Honkai: Star Rail & PGR Inspired)
-
-   ========================================================================== */
-
-/* ==========================================================================
-
-   TACTICAL CYBER SPIRE HUB (COMPACT ZERO-SCROLL 1-SCREEN LAYOUT)
-
-   ========================================================================== */
-
-body.on-tower main {
-
-  width: 100%;
-
-  max-width: none;
-
-  height: calc(100vh - 64px);
-
-  margin: 0 !important;
-
-  padding: 28px clamp(14px, 2.5vw, 40px) 24px !important;
-
-  display: flex;
-
-  flex-direction: column;
-
-  justify-content: stretch;
-
-  box-sizing: border-box;
-
-}
-
-.tactical-tower-page {
-
-  position: relative;
-
-  min-height: 0;
-
-}
-
-.tactical-tower-hub {
-
-  align-items: stretch;
-
-}
-
-/* --- SISI KIRI: SPIRE NODE STREAM --- */
-
-.spire-stream-panel {
-
-  overflow: hidden;
-
-  position: relative;
-
-}
-
-.ssh-title {
-
-  line-height: 1.1;
-
-}
-
-.spire-node-list {
-
-  overscroll-behavior: contain;
-
-}
-
-.spire-node-list::-webkit-scrollbar {
-
-  width: 4px;
-
-}
-
-.spire-node-list::-webkit-scrollbar-thumb {
-
-  background: rgba(125, 249, 255, 0.25);
-
-  border-radius: 4px;
-
-}
-
-.spire-node .sn-left {
-
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 1px;
-
-}
-
-.spire-node .sn-tag {
-
-  font-family: "Barlow Condensed", sans-serif;
-
-  font-weight: 800;
-
-  font-size: 8px;
-
-  letter-spacing: 0.16em;
-
-  color: #94a3b8;
-
-}
-
-.spire-node .sn-num {
-
-  font-family: "Rajdhani", sans-serif;
-
-  font-weight: 900;
-
-  font-size: 17px;
-
-  line-height: 1;
-
-  color: #fff;
-
-}
-
-.spire-node .sn-mid {
-
-  flex: 1;
-
-  min-width: 0;
-
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 1px;
-
-}
-
-.spire-node .sn-label {
-
-  font-family: "Rajdhani", sans-serif;
-
-  font-weight: 700;
-
-  font-size: 12px;
-
-  letter-spacing: 0.04em;
-
-  color: #e2e8f0;
-
-  white-space: nowrap;
-
-  overflow: hidden;
-
-  text-overflow: ellipsis;
-
-}
-
-.spire-node .sn-status {
-
-  font-family: "Barlow Condensed", sans-serif;
-
-  font-weight: 700;
-
-  font-size: 9px;
-
-  letter-spacing: 0.12em;
-
-  color: #64748b;
-
-}
-
-.spire-node .sn-badge {
-
-  display: flex;
-
-  align-items: center;
-
-  gap: 4px;
-
-  flex: none;
-
-}
-
-
-
-
-.spire-node.node-cleared {
-
-  border-color: rgba(125, 249, 255, 0.22);
-
-  background: rgba(12, 18, 28, 0.6);
-
-}
-
-.spire-node.node-cleared .sn-num {
-
-  color: #94a3b8;
-
-}
-
-.spire-node.node-cleared .sn-status {
-
-  color: #5cf0a8;
-
-}
-
-.spire-node.node-locked {
-
-  opacity: 0.45;
-
-}
-
-.spire-node.node-boss.node-active {
-
-  border-color: #ff4757;
-
-  background: linear-gradient(90deg, rgba(255, 71, 87, 0.22), rgba(28, 12, 18, 0.85));
-
-  box-shadow: 0 0 16px rgba(255, 71, 87, 0.4);
-
-}
-
-/* --- SISI KANAN: TACTICAL MISSION DOSSIER --- */
-
-.tactical-dossier-panel {
-
-  min-width: 0;
-
-  overflow-y: auto;
-
-  overflow-x: hidden;
-
-  scrollbar-width: none;
-
-}
-
-.tactical-dossier-panel::-webkit-scrollbar {
-
-  display: none;
-
-}
-
-.dh-kicker {
-
-  text-shadow: 0 0 8px rgba(125, 249, 255, 0.4);
-
-}
-
-.dh-cyan {
-
-  background: linear-gradient(90deg, #7df9ff, #c084fc);
-
-  -webkit-background-clip: text;
-
-  -webkit-text-fill-color: transparent;
-
-  filter: drop-shadow(0 0 10px rgba(125, 249, 255, 0.5));
-
-}
-
-.dh-lobby-btn {
-
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
-
-}
-
-.dh-lobby-btn:hover {
-
-  background: #7df9ff;
-
-  color: #060a12;
-
-  box-shadow: 0 0 12px rgba(125, 249, 255, 0.5);
-
-  transform: translateY(-1px);
-
-}
-
-.dm-card::before {
-
-  content: "";
-
-  position: absolute;
-
-  left: 0; top: 0; bottom: 0; width: 3px;
-
-}
-
-.dm-best::before { background: #ffd27a; box-shadow: 0 0 8px #ffd27a; }
-
-.dm-tokens::before { background: #c084fc; box-shadow: 0 0 8px #c084fc; }
-
-.dm-start::before { background: #7df9ff; box-shadow: 0 0 8px #7df9ff; }
-
-.dm-ic {
-
-  width: 32px; height: 32px; border-radius: 7px;
-
-  background: rgba(8, 12, 20, 0.8);
-
-  border: 1px solid rgba(255, 255, 255, 0.1);
-
-  display: grid; place-items: center;
-
-  flex: none;
-
-}
-
-.dm-best .dm-ic { color: #ffd27a; border-color: rgba(255, 210, 122, 0.35); }
-
-.dm-tokens .dm-ic { color: #c084fc; border-color: rgba(192, 132, 252, 0.35); }
-
-.dm-start .dm-ic { color: #7df9ff; border-color: rgba(125, 249, 255, 0.35); }
-
-/* SECTION DOSSIER (ENEMY & REWARDS) */
-
-.dossier-sec {
-
-  flex: none;
-
-}
-
-.dossier-sec-hdr {
-
-  font-family: "Barlow Condensed", sans-serif;
-
-  font-weight: 800;
-
-  font-size: 10.5px;
-
-  letter-spacing: 0.12em;
-
-  color: #7df9ff;
-
-  text-transform: uppercase;
-
-}
-
-/* Enemy Cards dalam Tactical Dossier */
-
-.tactical-dossier-panel .tw-foes {
-
-  align-items: center;
-
-  scrollbar-width: none;
-
-  padding: 2px 0;
-
-}
-
-.tactical-dossier-panel .tw-foes::-webkit-scrollbar {
-
-  display: none;
-
-}
-
-.tactical-dossier-panel .tw-fcard {
-
-  cursor: default;
-
-}
-
-.tactical-dossier-panel .tw-fcard:hover {
-
-  transform: translateY(-2px) scale(1.02);
-
-  border-color: var(--fc, #7df9ff);
-
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.6), 0 0 14px color-mix(in srgb, var(--fc, #7df9ff) 40%, transparent);
-
-}
-
-.tactical-dossier-panel .tw-fcard::after {
-
-  content: "";
-
-  position: absolute;
-
-  left: 0; right: 0; bottom: 0;
-
-  height: 54%;
-
-  background: linear-gradient(to top, rgba(6, 10, 18, 0.95), rgba(6, 10, 18, 0.5) 60%, transparent);
-
-}
-
-.tactical-dossier-panel .tw-fcard .fn {
-
-  top: 5px; left: 6px; right: 6px;
-
-  z-index: 2;
-
-  text-transform: uppercase;
-
-}
-
-.tactical-dossier-panel .tw-fcard .fb {
-
-  position: absolute;
-
-  top: 5px; right: 5px;
-
-  z-index: 3;
-
-  padding: 1px 5px;
-
-  border-radius: 3px;
-
-  font-family: "Barlow Condensed", sans-serif;
-
-  font-weight: 900;
-
-  font-size: 8.5px;
-
-  letter-spacing: 0.08em;
-
-  background: rgba(10, 14, 22, 0.92);
-
-  border: 1px solid var(--fc, #ff4757);
-
-  color: var(--fc, #ff4757);
-
-  box-shadow: 0 0 6px rgba(255, 71, 87, 0.4);
-
-}
-
-.tactical-dossier-panel .tw-fcard .fs {
-
-  left: 5px; right: 5px; bottom: 5px;
-
-  z-index: 2;
-
-  justify-content: space-between;
-
-  align-items: center;
-
-  font-family: "Rajdhani", sans-serif;
-
-  font-weight: 800;
-
-  letter-spacing: 0.02em;
-
-  background: rgba(6, 10, 18, 0.88);
-
-  border-radius: 4px;
-
-  border: 1px solid rgba(255, 255, 255, 0.1);
-
-}
-
-.tactical-dossier-panel .tw-fcard .fs .hp b {  text-shadow: 0 0 6px rgba(46, 213, 115, 0.4); }
-
-.tactical-dossier-panel .tw-fcard .fs .atk b {  text-shadow: 0 0 6px rgba(255, 165, 2, 0.4); }
-
-/* REWARDS SUMMARY BAR & INFO DROP PILL */
-
-.r-info-pill-btn {
-
-  margin-left: auto;
-
-}
-
-.r-info-pill-btn:hover {
-
-  background: #7df9ff;
-
-  color: #06101e;
-
-  box-shadow: 0 0 8px rgba(125, 249, 255, 0.5);
-
-}
-
-.rewards-summary-bar {
-
-  align-items: center;
-
-  flex-wrap: wrap;
-
-  padding: 6px 12px;
-
-  border-radius: 8px;
-
-  background: linear-gradient(135deg, rgba(14, 22, 36, 0.7), rgba(8, 12, 20, 0.85));
-
-  border: 1px solid rgba(125, 249, 255, 0.18);
-
-}
-
-.r-chip {
-
-  letter-spacing: 0.03em;
-
-}
-
-/* DUAL TACTICAL CTA ACTION BUTTONS */
-
-.dossier-actions {
-
-  padding-top: 0;
-
-}
-
-.tactical-btn .tb-ic {
-
-  width: 32px; height: 32px; border-radius: 7px;
-
-  display: grid; place-items: center;
-
-  flex: none;
-
-  background: rgba(6, 10, 18, 0.8);
-
-  border: 1px solid rgba(255, 255, 255, 0.1);
-
-  transition: all 0.2s ease;
-
-}
-
-.tactical-btn .tb-content {
-
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 0px;
-
-  text-align: left;
-
-}
-
-.tactical-btn .tb-content small {
-
-  font-family: "Barlow Condensed", sans-serif;
-
-  font-weight: 800;
-
-  font-size: 8.5px;
-
-  letter-spacing: 0.12em;
-
-  color: #94a3b8;
-
-  text-transform: uppercase;
-
-}
-
-.tactical-btn .tb-content b {
-
-  font-family: "Rajdhani", sans-serif;
-
-  font-weight: 900;
-
-  font-size: 15px;
-
-  letter-spacing: 0.04em;
-
-  line-height: 1.1;
-
-}
-
-.tactical-btn.shop-cta .tb-ic {
-
-  color: #c084fc;
-
-  border-color: rgba(192, 132, 252, 0.35);
-
-}
-
-.tactical-btn.shop-cta:hover {
-
-  transform: translateY(-1px);
-
-  border-color: #c084fc;
-
-  box-shadow: 0 0 14px rgba(192, 132, 252, 0.45), 0 5px 16px rgba(0, 0, 0, 0.6);
-
-}
-
-.tactical-btn.shop-cta:hover .tb-ic {
-
-  background: #c084fc;
-
-  color: #060a12;
-
-  box-shadow: 0 0 10px #c084fc;
-
-  transform: scale(1.05);
-
-}
-
-.tactical-btn.deploy-cta .tb-ic {
-
-  color: #2ed573;
-
-  border-color: rgba(46, 213, 115, 0.45);
-
-}
-
-.tactical-btn.deploy-cta:hover {
-
-  transform: translateY(-2px);
-
-  box-shadow: 0 0 22px rgba(46, 213, 115, 0.5), 0 8px 24px rgba(0, 0, 0, 0.7);
-
-}
-
-.tactical-btn.deploy-cta:hover .tb-ic {
-
-  background: #2ed573;
-
-  color: #060a12;
-
-  box-shadow: 0 0 14px #2ed573;
-
-  transform: scale(1.05);
-
-}
-
-/* Responsive adjustments */
-
-@media(max-width: 600px) {
-
-  body.on-tower main {
-
-    height: auto;
-
-    overflow: visible;
-
-  }
-
-  .tactical-tower-page {
-
-    height: auto;
-
-    overflow: visible;
-
-  }
-
-  .tactical-tower-hub {
-
-    grid-template-columns: 1fr;
-
-    height: auto;
-
-    overflow: visible;
-
-  }
-
-  .spire-stream-panel {
-
-    max-height: 240px;
-
-  }
-
-  .tactical-dossier-panel {
-
-    height: auto;
-
-    overflow: visible;
-
-  }
-
-  .dossier-actions {
-
-    grid-template-columns: 1fr;
-
-  }
-
-}
-
-/* ==========================================================================
-
-   CYBERPUNK HIGH-END DROP RATE MATRIX MODAL
-
-   ========================================================================== */
-
-.tw-drop-modal-backdrop{
-
-  backdrop-filter:blur(12px);
-
-  -webkit-backdrop-filter:blur(12px);
-
-}
-
-.tw-drop-modal-backdrop.show{
-
-  display:flex;opacity:1;
-
-}
-
-.tw-drop-modal{
-
-  animation:popIn .25s cubic-bezier(.2,.8,.2,1) both;
-
-}
-
-.tw-drop-modal::before {
-
-  content: "";
-
-  position: absolute;
-
-  top: 0; left: 15%; right: 15%; height: 2px;
-
-  background: linear-gradient(90deg, transparent, #7df9ff, #c084fc, transparent);
-
-  pointer-events: none;
-
-}
-
-.tw-drop-modal-body{
-
-  overscroll-behavior:contain;
-
-}
-
-.tw-drop-modal-body::-webkit-scrollbar{width:5px}
-
-.tw-drop-modal-body::-webkit-scrollbar-thumb{background:rgba(125,249,255,.3);border-radius:4px}
 
 /* ===== PICKER RAID — layar loadout gelap-violet (tema tower) ===== */
 
@@ -18376,10 +17519,6 @@ body.battle-full .fighter.foe.ko {
 .topup-redeem-btn:active { transform: translateY(0); }
 .topup-redeem-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 
-@media (max-width:520px){
-  .tw-drop-modal{ max-width:100%;border-radius:14px; }
-  .tw-drop-modal-body{ padding:12px 12px 16px;gap:12px; }
-}
 
 .twr-rate.guar{ color:#5cf0a8;background:rgba(92,240,168,.12);border-color:rgba(92,240,168,.35); }
 .twr-rate.ultra{ color:#ff6b81;background:rgba(255,107,129,.12);border-color:rgba(255,107,129,.35); }
@@ -18828,55 +17967,6 @@ html.m-landscape body.on-tower:has(.tactical-tower-page) main#app{
   height:100%!important;max-height:100%!important;overflow:hidden!important;
   display:flex!important;flex-direction:column!important;
 }
-.spire-stream-ftr{padding-bottom:44px!important;}
-.spire-node-list{max-height:none!important;flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important;}
-.tactical-dossier-panel .tw-foes{
-  flex-wrap:nowrap!important;overflow:visible!important;
-}
-.tactical-dossier-panel .tw-fcard{flex:none!important;}
-.tactical-dossier-panel .tw-fcard .fs{font-size:clamp(10.5px,1vw,13px)!important;padding:3px 7px!important;}
-
-@media(max-width:1000px){
-  .tactical-tower-hub{grid-template-columns:240px minmax(0,1fr)!important;}
-}
-@media(min-width:601px) and (max-width:800px){
-  .tactical-tower-hub{grid-template-columns:220px minmax(0,1fr)!important;}
-  .tactical-dossier-panel .tw-foes{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
-  .tactical-dossier-panel .tw-fcard{height:clamp(140px,22vh,220px)!important;}
-}
-
-@media(max-width:600px){
-  body.on-tower:has(.tactical-tower-hub) main#app{
-    height:100dvh!important;max-height:100dvh!important;
-    overflow-y:auto!important;
-  }
-  .tactical-tower-page:has(.tactical-tower-hub){
-    height:auto!important;max-height:none!important;overflow:visible!important;
-  }
-  .tactical-tower-page:has(.tactical-tower-hub) .tactical-tower-hub{
-    grid-template-columns:1fr!important;height:auto!important;max-height:none!important;
-    overflow:visible!important;gap:12px!important;padding:0 12px 14px!important;
-  }
-  .tactical-tower-page:has(.tactical-tower-hub) .spire-stream-panel{
-    border:1px solid rgba(125,249,255,.22)!important;border-radius:12px!important;
-    height:auto!important;max-height:none!important;
-  }
-  .tactical-tower-page:has(.tactical-tower-hub) .spire-node-list{
-    max-height:min(34vh,280px)!important;overflow-y:auto!important;flex:none!important;
-  }
-  .tactical-tower-page:has(.tactical-tower-hub) .spire-stream-ftr{padding-bottom:8px!important;}
-  .tactical-tower-page:has(.tactical-tower-hub) .tactical-dossier-panel{
-    height:auto!important;max-height:none!important;overflow:visible!important;
-    padding:14px 12px 18px!important;gap:14px!important;
-  }
-  .tactical-tower-page:has(.tactical-tower-hub) .tactical-dossier-panel .dossier-actions{margin-top:0!important;}
-  .tactical-tower-page:has(.tactical-tower-hub) .tactical-dossier-panel .tw-foes{
-    grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;
-  }
-  .tactical-tower-page:has(.tactical-tower-hub) .tactical-dossier-panel .tw-fcard{
-    height:auto!important;aspect-ratio:3/4;
-  }
-}
 
 /* --- RAID BOSS --- */
 body.on-raid:has(.hunter-raid-hub) main#app{padding:0!important;width:100%!important;max-width:none!important;margin:0!important;}
@@ -18909,13 +17999,6 @@ body.on-raid:has(.hunter-raid-hub) main#app{padding:0!important;width:100%!impor
 }
 
 /* Tower: di layar lebar, baris kartu target mengisi sisa tinggi (tanpa ruang kosong) */
-@media(min-width:801px) and (min-height:620px){
-  .tactical-dossier-panel .dossier-sec:has(.tw-foes){
-    flex:1 1 auto!important;min-height:0;display:flex!important;flex-direction:column;
-  }
-  .tactical-dossier-panel .dossier-sec:has(.tw-foes) .tw-foes{flex:1 1 auto!important;min-height:0;}
-  .tactical-dossier-panel .tw-fcard{height:100%!important;}
-}
 
 /* Topbar ikut ditutup di layar Tower, Raid, Settings -> benar-benar full layar */
 body.on-tower:has(.tactical-tower-page) #topbar,
@@ -24877,1261 +23960,7 @@ main#app:has(.sett-wrap) {
   display: block !important;
 }
 
-/* ==========================================================================
-   HORIZONTAL TOWER DROP RATE MODAL (CYBERPUNK 3-SECTOR MATRIX)
-   ========================================================================== */
-#towerDropModal.tw-drop-modal-backdrop {
-  position: fixed !important;
-  inset: 0 !important;
-  z-index: 90000 !important;
-  background: rgba(4, 7, 14, 0.88) !important;
-  backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.22s ease-out;
-}
-#towerDropModal.tw-drop-modal-backdrop.show {
-  display: flex !important;
-  opacity: 1 !important;
-}
-#towerDropModal .tw-drop-modal {
-  width: min(1040px, calc(100vw - 28px)) !important;
-  max-width: 1040px !important;
-  max-height: min(620px, calc(100dvh - 32px)) !important;
-  display: flex !important;
-  flex-direction: column !important;
-  overflow: hidden !important;
-  position: relative !important;
-  transform: scale(0.97) translateY(6px);
-  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
-}
-#towerDropModal.show .tw-drop-modal {
-  transform: scale(1) translateY(0);
-}
-#towerDropModal .ix-head,
-#towerDropModal .tw-drop-head {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  padding: 12px 20px !important;
-  margin: 0 !important;
-  box-sizing: border-box !important;
-  min-height: 58px !important;
-  flex: none !important;
-}
-#towerDropModal .ix-header-titles,
-#towerDropModal .tw-head-left {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 2px !important;
-  min-width: 0 !important;
-  flex: 1 !important;
-}
-#towerDropModal .ix-eyebrow,
-#towerDropModal .tw-cyber-eyebrow {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  font-family: var(--font-display, "Orbitron", "Rajdhani", sans-serif) !important;
-  font-size: 9px !important;
-  font-weight: 800 !important;
-  letter-spacing: 0.12em !important;
-  color: #00ffaa !important;
-  text-transform: uppercase !important;
-  text-shadow: 0 0 8px rgba(0, 255, 170, 0.5) !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  max-width: 100% !important;
-}
-#towerDropModal .ix-dot,
-#towerDropModal .tw-cyber-dot {
-  width: 6px !important;
-  height: 6px !important;
-  border-radius: 50% !important;
-  background: #00ffaa !important;
-  box-shadow: 0 0 8px #00ffaa !important;
-  flex: none !important;
-}
-#towerDropModal .ix-title,
-#towerDropModal .tw-head-title {
-  margin: 0 !important;
-  font-family: var(--font-display, "Orbitron", "Rajdhani", sans-serif) !important;
-  font-size: clamp(15px, 1.6vw, 20px) !important;
-  font-weight: 900 !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  line-height: 1.15 !important;
-}
-#towerDropModal .ix-x,
-#towerDropModal .tw-drop-close {
-  margin-left: 14px !important;
-  display: grid !important;
-  place-items: center !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-}
-#towerDropModal .ix-x:hover,
-#towerDropModal .tw-drop-close:hover {
-  background: #00e5ff !important;
-  color: #040914 !important;
-  box-shadow: 0 0 16px rgba(0, 229, 255, 0.7) !important;
-  transform: scale(1.05) !important;
-}
-#towerDropModal .tw-drop-modal-body {
-  padding: 14px 18px 16px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 12px !important;
-  overflow-y: auto !important;
-  flex: 1 !important;
-  min-height: 0 !important;
-}
 
-/* 3-Column Horizontal Grid Deck */
-.tw-col {
-  background: #090e1a;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  padding: 12px 12px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 8px 24px rgba(0, 0, 0, 0.4);
-}
-.tw-col::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-}
-.tw-col-guar::before {
-  background: linear-gradient(90deg, transparent, #00ffaa, transparent);
-}
-.tw-col-pack::before {
-  background: linear-gradient(90deg, transparent, #ffd700, transparent);
-}
-.tw-col-rare::before {
-  background: linear-gradient(90deg, transparent, #ff3366, transparent);
-}
-
-.tw-col-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-family: "Rajdhani", sans-serif;
-  font-size: 8.5px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
-.tw-col-pill .tw-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  display: inline-block;
-}
-.tw-col-pill.guar { color: #00ffaa; }
-.tw-col-pill.guar .tw-dot { background: #00ffaa; box-shadow: 0 0 6px #00ffaa; }
-.tw-col-pill.pack { color: #ffd700; }
-.tw-col-pill.pack .tw-dot { background: #ffd700; box-shadow: 0 0 6px #ffd700; }
-.tw-col-pill.rare { color: #ff3366; }
-.tw-col-pill.rare .tw-dot { background: #ff3366; box-shadow: 0 0 6px #ff3366; }
-
-
-.tw-item-row {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 7px 9px;
-  border-radius: 9px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.18s ease;
-}
-.tw-item-row:hover {
-  background: rgba(0, 217, 255, 0.05);
-  border-color: rgba(0, 217, 255, 0.22);
-  transform: translateX(2px);
-}
-.tw-item-ic {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: rgba(4, 7, 14, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  display: grid;
-  place-items: center;
-  flex: none;
-  overflow: hidden;
-}
-.tw-item-ic img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-.tw-item-rate {
-  flex: none;
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 11.5px;
-  font-weight: 800;
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #cbd5e1;
-}
-.tw-item-rate.guar {
-  color: #00ffaa;
-  background: rgba(0, 255, 170, 0.12);
-  border-color: rgba(0, 255, 170, 0.35);
-}
-.tw-item-rate.pack {
-  color: #ffd700;
-  background: rgba(255, 215, 0, 0.12);
-  border-color: rgba(255, 215, 0, 0.35);
-}
-
-.tw-col-foot-note {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 8px;
-  border-radius: 8px;
-  background: rgba(255, 215, 0, 0.05);
-  border: 1px dashed rgba(255, 215, 0, 0.22);
-  font-size: 9.5px;
-  color: #fbbf24;
-  margin-top: auto;
-}
-.tw-col-foot-note svg {
-  flex: none;
-  color: #ffd700;
-}
-
-/* Col 3: Trophy Showcase Cards */
-.tw-trophy-card {
-  display: flex;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, rgba(20, 10, 24, 0.95), rgba(10, 6, 16, 0.98));
-  border: 1px solid rgba(255, 51, 102, 0.28);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  transition: all 0.2s ease;
-  position: relative;
-  overflow: hidden;
-}
-.tw-trophy-card:hover {
-  border-color: rgba(255, 51, 102, 0.6);
-  box-shadow: 0 8px 24px rgba(255, 51, 102, 0.25), 0 0 16px rgba(255, 51, 102, 0.2);
-  transform: translateY(-2px);
-}
-.tw-tc-art {
-  width: 52px;
-  height: 52px;
-  border-radius: 10px;
-  background: radial-gradient(circle at center, rgba(255, 51, 102, 0.25) 0%, rgba(10, 5, 15, 0.9) 70%);
-  border: 1px solid rgba(255, 51, 102, 0.35);
-  display: grid;
-  place-items: center;
-  flex: none;
-  position: relative;
-}
-.tw-tc-art img {
-  width: 44px;
-  height: 44px;
-  object-fit: contain;
-  filter: drop-shadow(0 0 8px rgba(255, 51, 102, 0.55));
-}
-.tw-tc-rate.ultra {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 11.5px;
-  font-weight: 900;
-  padding: 1px 7px;
-  border-radius: 999px;
-  color: #ff3366;
-  background: rgba(255, 51, 102, 0.16);
-  border: 1px solid rgba(255, 51, 102, 0.45);
-  text-shadow: 0 0 6px rgba(255, 51, 102, 0.6);
-}
-.tw-perk-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-family: "Rajdhani", sans-serif;
-  font-size: 9.5px;
-  font-weight: 800;
-  background: rgba(255, 51, 102, 0.12);
-  border: 1px solid rgba(255, 51, 102, 0.3);
-  padding: 1px 6px;
-  border-radius: 5px;
-  color: #fecdd3;
-}
-.tw-perk-badge small {
-  color: #fda4af;
-  font-size: 8px;
-}
-
-/* Footer Ticker Bar */
-.tw-df-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(0, 217, 255, 0.05);
-  border: 1px solid rgba(0, 217, 255, 0.18);
-  padding: 5px 14px;
-  border-radius: 999px;
-  font-size: 10.5px;
-  color: #94a3b8;
-}
-.tw-df-pill svg {
-  color: #00ffaa;
-  flex: none;
-}
-.tw-df-pill b {
-  color: #e2e8f0;
-}
-
-@media (max-width: 860px) {
-  .tw-drop-h-deck {
-    grid-template-columns: 1fr !important;
-    gap: 12px !important;
-  }
-  #towerDropModal .tw-drop-modal {
-    max-height: 85dvh !important;
-  }
-}
-
-/* =====================================================================
-   CYBERPUNK AAA INFINITE TOWER REDESIGN
-   ===================================================================== */
-.tactical-tower-page {
-  width: 100%;
-  background: radial-gradient(ellipse 70% 60% at 85% 15%, rgba(0, 217, 255, 0.08) 0%, transparent 70%),
-              radial-gradient(ellipse 60% 50% at 15% 85%, rgba(168, 85, 247, 0.08) 0%, transparent 70%),
-              linear-gradient(180deg, #07090e 0%, #040609 100%) !important;
-  box-sizing: border-box;
-}
-
-.tactical-tower-page .tactical-tower-hub {
-  display: grid !important;
-  grid-template-columns: 290px minmax(0, 1fr) !important;
-  gap: 16px !important;
-  width: 100% !important;
-  max-width: 1440px !important;
-  margin: 0 auto !important;
-  padding: 16px 20px !important;
-  height: 100% !important;
-  max-height: 100% !important;
-  min-height: 0 !important;
-  overflow: hidden !important;
-  box-sizing: border-box !important;
-}
-
-/* SISI KIRI: SPIRE STREAM PANEL */
-.tactical-tower-page .spire-stream-panel {
-  display: flex !important;
-  flex-direction: column !important;
-  background: linear-gradient(180deg, rgba(13, 20, 32, 0.85) 0%, rgba(7, 11, 18, 0.95) 100%) !important;
-  border: 1px solid rgba(0, 217, 255, 0.22) !important;
-  border-radius: 16px !important;
-  padding: 14px !important;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
-  backdrop-filter: blur(12px) !important;
-  min-height: 0 !important;
-  height: 100% !important;
-  box-sizing: border-box !important;
-}
-
-.tactical-tower-page .spire-stream-hdr {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid rgba(0, 217, 255, 0.16);
-  margin-bottom: 10px;
-  flex: none;
-}
-
-.tactical-tower-page .ssh-tag {
-  font-family: "Barlow Condensed", sans-serif;
-  font-weight: 800;
-  font-size: 10.5px;
-  letter-spacing: 0.18em;
-  color: #00d9ff;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.tactical-tower-page .ssh-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #00d9ff;
-  box-shadow: 0 0 8px #00d9ff;
-  animation: nextPulse 1.6s infinite ease-in-out;
-}
-
-.tactical-tower-page .ssh-title {
-  font-family: "Rajdhani", sans-serif;
-  font-weight: 800;
-  font-size: 19px;
-  letter-spacing: 0.08em;
-  color: #ffffff;
-  text-shadow: 0 0 12px rgba(0, 217, 255, 0.3);
-}
-
-.tactical-tower-page .spire-node-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-right: 4px;
-}
-
-.tactical-tower-page .spire-node-list::-webkit-scrollbar {
-  width: 4px;
-}
-.tactical-tower-page .spire-node-list::-webkit-scrollbar-thumb {
-  background: rgba(0, 217, 255, 0.25);
-  border-radius: 4px;
-}
-
-.tactical-tower-page .spire-node {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 8px 12px;
-  border-radius: 10px;
-  background: rgba(10, 16, 26, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  transition: all 0.18s ease;
-  flex: none;
-}
-
-.tactical-tower-page .spire-node.node-active {
-  background: linear-gradient(90deg, rgba(0, 217, 255, 0.22), rgba(10, 20, 34, 0.85)) !important;
-  border: 1.5px solid #00d9ff !important;
-  box-shadow: 0 0 16px rgba(0, 217, 255, 0.32), inset 0 0 10px rgba(0, 217, 255, 0.12) !important;
-}
-
-.tactical-tower-page .spire-node.node-active .sn-num {
-  color: #00d9ff !important;
-  text-shadow: 0 0 8px rgba(0, 217, 255, 0.6) !important;
-}
-
-.tactical-tower-page .spire-node.node-active .sn-status {
-  color: #00d9ff !important;
-}
-
-.tactical-tower-page .spire-node.node-cleared {
-  background: rgba(10, 18, 28, 0.55);
-  border-color: rgba(0, 255, 170, 0.2);
-}
-
-.tactical-tower-page .spire-node.node-cleared .sn-num {
-  color: #00ffaa;
-}
-
-.tactical-tower-page .spire-node.node-cleared .sn-status {
-  color: rgba(0, 255, 170, 0.8);
-}
-
-.tactical-tower-page .spire-node.node-boss {
-  border-color: rgba(244, 63, 94, 0.4);
-}
-
-.tactical-tower-page .spire-node.node-boss.node-active {
-  border-color: #f43f5e !important;
-  background: linear-gradient(90deg, rgba(244, 63, 94, 0.25), rgba(20, 10, 20, 0.85)) !important;
-  box-shadow: 0 0 16px rgba(244, 63, 94, 0.4) !important;
-}
-
-.tactical-tower-page .spire-node.node-boss.node-active .sn-num {
-  color: #ff3366 !important;
-  text-shadow: 0 0 10px rgba(244, 63, 94, 0.6) !important;
-}
-
-.tactical-tower-page .spire-node.node-boss.node-active .sn-status {
-  color: #ff3366 !important;
-}
-
-.tactical-tower-page .spire-stream-ftr {
-  margin-top: 10px;
-  padding-top: 9px;
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-family: "Barlow Condensed", sans-serif;
-  font-weight: 700;
-  font-size: 10.5px;
-  letter-spacing: 0.1em;
-  color: #64748b;
-  flex: none;
-}
-
-/* SISI KANAN: TACTICAL DOSSIER PANEL */
-.tactical-tower-page .tactical-dossier-panel {
-  display: flex !important;
-  flex-direction: column !important;
-  background: #160c0f !important;
-  border: 1px solid rgba(0, 217, 255, 0.18) !important;
-  border-radius: 16px !important;
-  padding: 16px 20px !important;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
-  min-height: 0 !important;
-  height: 100% !important;
-  overflow-y: auto !important;
-  gap: 14px !important;
-  box-sizing: border-box !important;
-}
-
-/* DOSSIER HEADER */
-.tactical-tower-page .dossier-header {
-  display: flex !important;
-  align-items: flex-start !important;
-  justify-content: space-between !important;
-  gap: 16px !important;
-  flex: none !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  padding-bottom: 12px;
-}
-
-.tactical-tower-page .dh-titles {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.tactical-tower-page .dh-kicker {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  color: #00d9ff;
-  text-transform: uppercase;
-}
-
-.tactical-tower-page .dh-kicker-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #00d9ff;
-  box-shadow: 0 0 6px #00d9ff;
-}
-
-.tactical-tower-page .dh-title {
-  font-family: "Rajdhani", sans-serif !important;
-  font-size: clamp(24px, 2.5vw, 32px) !important;
-  font-weight: 900 !important;
-  line-height: 1.05 !important;
-  letter-spacing: 0.05em !important;
-  color: #ffffff !important;
-}
-
-.tactical-tower-page .dh-cyan {
-  color: #00d9ff;
-  text-shadow: 0 0 14px rgba(0, 217, 255, 0.5);
-}
-
-.tactical-tower-page .dh-sub {
-  font-family: "Rajdhani", sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: #94a3b8;
-  margin-top: 1px;
-}
-
-.tactical-tower-page .dh-lobby-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: rgba(15, 23, 42, 0.65);
-  border: 1px solid rgba(0, 217, 255, 0.3);
-  padding: 8px 16px;
-  border-radius: 8px;
-  color: #e2e8f0;
-  font-family: "Rajdhani", sans-serif;
-  font-weight: 800;
-  font-size: 13px;
-  letter-spacing: 0.1em;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex: none;
-}
-
-.tactical-tower-page .dh-lobby-btn:hover {
-  background: rgba(0, 217, 255, 0.15);
-  border-color: #00d9ff;
-  color: #ffffff;
-  transform: translateY(-1px);
-  box-shadow: 0 0 14px rgba(0, 217, 255, 0.25);
-}
-
-/* TELEMETRY METRICS */
-.tactical-tower-page .dossier-metrics {
-  display: grid !important;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  gap: 12px !important;
-  flex: none !important;
-}
-
-.tactical-tower-page .dm-card {
-  display: flex !important;
-  align-items: center !important;
-  gap: 12px !important;
-  background: linear-gradient(135deg, rgba(16, 24, 40, 0.7), rgba(9, 13, 22, 0.85)) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  border-radius: 12px !important;
-  padding: 10px 14px !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
-  position: relative;
-  overflow: hidden;
-}
-
-.tactical-tower-page .dm-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  opacity: 0.7;
-}
-
-.tactical-tower-page .dm-best::before {
-  background: linear-gradient(90deg, #00ffaa, transparent);
-}
-.tactical-tower-page .dm-tokens::before {
-  background: linear-gradient(90deg, #a855f7, transparent);
-}
-.tactical-tower-page .dm-start::before {
-  background: linear-gradient(90deg, #00d9ff, transparent);
-}
-
-.tactical-tower-page .dm-ic-wrap {
-  width: 38px;
-  height: 38px;
-  border-radius: 9px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.tactical-tower-page .dm-best .dm-ic-wrap {
-  color: #00ffaa;
-  background: rgba(0, 255, 170, 0.08);
-  border-color: rgba(0, 255, 170, 0.25);
-  box-shadow: 0 0 10px rgba(0, 255, 170, 0.15);
-}
-
-.tactical-tower-page .dm-tokens .dm-ic-wrap {
-  color: #c084fc;
-  background: rgba(168, 85, 247, 0.08);
-  border-color: rgba(168, 85, 247, 0.25);
-  box-shadow: 0 0 10px rgba(168, 85, 247, 0.15);
-}
-
-.tactical-tower-page .dm-start .dm-ic-wrap {
-  color: #00d9ff;
-  background: rgba(0, 217, 255, 0.08);
-  border-color: rgba(0, 217, 255, 0.25);
-  box-shadow: 0 0 10px rgba(0, 217, 255, 0.15);
-}
-
-.tactical-tower-page .dm-data {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  gap: 1px;
-}
-
-.tactical-tower-page .dm-label {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  color: #94a3b8;
-}
-
-.tactical-tower-page .dm-val {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 24px;
-  font-weight: 900;
-  line-height: 1;
-  color: #ffffff;
-}
-
-.tactical-tower-page .dm-sub-tag {
-  font-family: "Rajdhani", sans-serif;
-  font-size: 9.5px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: #64748b;
-  margin-top: 1px;
-}
-
-/* SECTION HEADERS */
-.tactical-tower-page .dossier-sec {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 10px !important;
-}
-
-.tactical-tower-page .dossier-sec.target-sec {
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
-}
-
-.tactical-tower-page .dossier-sec-hdr {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 8px !important;
-  flex: none !important;
-}
-
-.tactical-tower-page .dsh-left {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.tactical-tower-page .dsh-bracket {
-  color: #00d9ff;
-  font-family: "Rajdhani", sans-serif;
-  font-weight: 800;
-  font-size: 13px;
-}
-
-.tactical-tower-page .dsh-txt {
-  font-family: "Rajdhani", sans-serif;
-  font-weight: 800;
-  font-size: 13px;
-  letter-spacing: 0.08em;
-  color: #e2e8f0;
-}
-
-.tactical-tower-page .dsh-status-tag {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  color: #94a3b8;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 2px 8px;
-  border-radius: 4px;
-}
-
-/* TARGET PROTOCOL CARDS (TW-FOES & TW-FCARD) */
-.tactical-tower-page .tw-foes {
-  display: grid !important;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-  gap: 12px !important;
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
-  margin: 0 !important;
-}
-
-.tactical-tower-page .tw-fcard {
-  position: relative !important;
-  width: 100% !important;
-  height: 100% !important;
-  min-height: 170px !important;
-  max-height: 250px !important;
-  border-radius: 12px !important;
-  overflow: hidden !important;
-  background: linear-gradient(180deg, #131a28 0%, #080c14 100%) !important;
-  border: 1px solid rgba(0, 217, 255, 0.2) !important;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5) !important;
-  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.22s ease !important;
-  animation: none !important;
-}
-
-.tactical-tower-page .tw-fcard:hover {
-  transform: translateY(-3px) scale(1.01) !important;
-  border-color: rgba(0, 217, 255, 0.5) !important;
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.65), 0 0 16px rgba(0, 217, 255, 0.2) !important;
-}
-
-.tactical-tower-page .tw-fcard.bossx {
-  border-color: rgba(244, 63, 94, 0.45) !important;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.6), 0 0 14px rgba(244, 63, 94, 0.2) !important;
-}
-
-.tactical-tower-page .tw-fcard.bossx:hover {
-  border-color: #f43f5e !important;
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(244, 63, 94, 0.35) !important;
-}
-
-.tactical-tower-page .tw-fcard-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.tactical-tower-page .tw-fcard-top {
-  position: absolute;
-  top: 7px;
-  left: 7px;
-  right: 7px;
-  z-index: 4;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px;
-}
-
-.tactical-tower-page .tw-fcard-wave {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  color: #00d9ff;
-  background: rgba(8, 14, 24, 0.82);
-  border: 1px solid rgba(0, 217, 255, 0.35);
-  padding: 1px 6px;
-  border-radius: 4px;
-  backdrop-filter: blur(4px);
-}
-
-.tactical-tower-page .tw-fcard-role {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  color: #94a3b8;
-  background: rgba(15, 23, 42, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 1px 6px;
-  border-radius: 4px;
-  backdrop-filter: blur(4px);
-}
-
-.tactical-tower-page .tw-fcard .fb.bossx {
-  font-family: "Barlow Condensed", sans-serif !important;
-  font-size: 9.5px !important;
-  font-weight: 900 !important;
-  letter-spacing: 0.1em !important;
-  color: #ff3366 !important;
-  background: rgba(244, 63, 94, 0.18) !important;
-  border: 1px solid rgba(244, 63, 94, 0.5) !important;
-  padding: 1px 7px !important;
-  border-radius: 4px !important;
-  backdrop-filter: blur(4px) !important;
-  text-shadow: 0 0 8px rgba(244, 63, 94, 0.6) !important;
-}
-
-.tactical-tower-page .tw-fcard-img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  z-index: 1;
-}
-
-.tactical-tower-page .tw-fcard-img img {
-  position: absolute !important;
-  inset: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover !important;
-  object-position: top !important;
-  transition: transform 0.35s ease !important;
-}
-
-.tactical-tower-page .tw-fcard:hover .tw-fcard-img img {
-  transform: scale(1.05);
-}
-
-.tactical-tower-page .tw-fcard-sweep {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, transparent 40%);
-  pointer-events: none;
-  z-index: 2;
-}
-
-.tactical-tower-page .tw-fcard-meta {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 3;
-  padding: 24px 8px 8px;
-  background: linear-gradient(to top, rgba(5, 8, 14, 0.98) 0%, rgba(5, 8, 14, 0.82) 55%, transparent 100%);
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.tactical-tower-page .tw-fcard-type {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 8.5px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  color: #7dd3fc;
-  text-transform: uppercase;
-}
-
-.tactical-tower-page .tw-fcard .fn {
-  position: static !important;
-  font-family: "Rajdhani", sans-serif !important;
-  font-size: 13.5px !important;
-  font-weight: 800 !important;
-  letter-spacing: 0.03em !important;
-  color: #ffffff !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
-  line-height: 1.1 !important;
-}
-
-.tactical-tower-page .tw-fcard .fs {
-  position: static !important;
-  display: flex !important;
-  gap: 5px !important;
-  margin-top: 4px !important;
-  width: 100% !important;
-}
-
-.tactical-tower-page .tw-fcard .fs .hp,
-.tactical-tower-page .tw-fcard .fs .atk {
-  flex: 1 !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 3px !important;
-  padding: 2px 5px !important;
-  border-radius: 5px !important;
-  font-size: 10px !important;
-  font-family: "Barlow Condensed", sans-serif !important;
-  background: rgba(0, 0, 0, 0.65) !important;
-  backdrop-filter: blur(4px) !important;
-}
-
-.tactical-tower-page .tw-fcard .fs .hp {
-  border: 1px solid rgba(0, 255, 170, 0.25) !important;
-}
-.tactical-tower-page .tw-fcard .fs .hp i {
-  font-style: normal !important;
-  color: #00ffaa !important;
-  font-weight: 800 !important;
-  font-size: 9px !important;
-}
-.tactical-tower-page .tw-fcard .fs .hp b {
-  color: #ffffff !important;
-  font-weight: 900 !important;
-  font-size: 11px !important;
-}
-
-.tactical-tower-page .tw-fcard .fs .atk {
-  border: 1px solid rgba(251, 146, 60, 0.25) !important;
-}
-.tactical-tower-page .tw-fcard .fs .atk i {
-  font-style: normal !important;
-  color: #fb923c !important;
-  font-weight: 800 !important;
-  font-size: 9px !important;
-}
-.tactical-tower-page .tw-fcard .fs .atk b {
-  color: #ffffff !important;
-  font-weight: 900 !important;
-  font-size: 11px !important;
-}
-
-/* CLEARANCE SUPPLY MATRIX */
-.tactical-tower-page .r-info-pill-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(0, 217, 255, 0.08);
-  border: 1px solid rgba(0, 217, 255, 0.35);
-  padding: 3px 10px;
-  border-radius: 999px;
-  color: #00d9ff;
-  font-family: "Rajdhani", sans-serif;
-  font-weight: 800;
-  font-size: 11.5px;
-  letter-spacing: 0.08em;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.tactical-tower-page .r-info-pill-btn:hover {
-  background: rgba(0, 217, 255, 0.2);
-  border-color: #00d9ff;
-  color: #ffffff;
-  box-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
-}
-
-.tactical-tower-page .rewards-summary-bar {
-  display: grid !important;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-  gap: 10px !important;
-  flex: none !important;
-}
-
-.tactical-tower-page .r-chip {
-  display: flex !important;
-  align-items: center !important;
-  gap: 10px !important;
-  background: rgba(12, 18, 28, 0.65) !important;
-  border: 1px solid rgba(255, 255, 255, 0.07) !important;
-  border-radius: 9px !important;
-  padding: 8px 10px !important;
-  font-family: "Rajdhani", sans-serif !important;
-  font-size: 12px !important;
-  color: #e2e8f0 !important;
-}
-
-.tactical-tower-page .rc-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex: none;
-}
-
-.tactical-tower-page .rc-dot.c {
-  background: #00d9ff;
-  box-shadow: 0 0 8px #00d9ff;
-}
-.tactical-tower-page .rc-dot.v {
-  background: #a855f7;
-  box-shadow: 0 0 8px #a855f7;
-}
-.tactical-tower-page .rc-dot.g {
-  background: #00ffaa;
-  box-shadow: 0 0 8px #00ffaa;
-}
-.tactical-tower-page .rc-dot.r {
-  background: #f43f5e;
-  box-shadow: 0 0 8px #f43f5e;
-}
-
-.tactical-tower-page .rc-info {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.tactical-tower-page .rc-label {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 9.5px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  color: #64748b;
-  text-transform: uppercase;
-}
-
-.tactical-tower-page .rc-info b {
-  font-size: 12px;
-  font-weight: 800;
-  color: #ffffff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* ACTIONS (SHOP & START RUN) */
-.tactical-tower-page .dossier-actions {
-  display: grid !important;
-  grid-template-columns: 220px 1fr !important;
-  gap: 12px !important;
-  flex: none !important;
-  margin-top: 2px !important;
-}
-
-.tactical-tower-page .tactical-btn {
-  position: relative !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 12px !important;
-  padding: 12px 18px !important;
-  border-radius: 12px !important;
-  cursor: pointer !important;
-  transition: all 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
-  overflow: hidden !important;
-}
-
-.tactical-tower-page .tactical-btn .tb-txt {
-  display: flex;
-  flex-direction: column;
-  text-align: left;
-}
-
-.tactical-tower-page .tactical-btn .tb-txt small {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-}
-
-.tactical-tower-page .tactical-btn .tb-txt b {
-  font-family: "Rajdhani", sans-serif;
-  font-size: 18px;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  line-height: 1.1;
-}
-
-/* SHOP CTA */
-.tactical-tower-page .shop-cta {
-  background: linear-gradient(135deg, rgba(20, 26, 38, 0.85) 0%, rgba(12, 16, 24, 0.95) 100%) !important;
-  border: 1px solid rgba(245, 158, 11, 0.4) !important;
-  color: #f1f5f9 !important;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4) !important;
-}
-
-.tactical-tower-page .shop-cta svg {
-  color: #fbbf24;
-  flex: none;
-}
-
-.tactical-tower-page .shop-cta .tb-txt small {
-  color: #f59e0b;
-}
-
-.tactical-tower-page .shop-cta:hover {
-  background: linear-gradient(135deg, rgba(30, 38, 54, 0.9) 0%, rgba(16, 22, 34, 0.98) 100%) !important;
-  border-color: #fbbf24 !important;
-  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.25) !important;
-  transform: translateY(-2px) !important;
-}
-
-/* DEPLOY CTA */
-.tactical-tower-page .deploy-cta {
-  background: linear-gradient(135deg, #00d9ff 0%, #0284c7 60%, #0369a1 100%) !important;
-  border: 1.5px solid #7df9ff !important;
-  color: #040812 !important;
-  box-shadow: 0 8px 28px rgba(0, 217, 255, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
-  justify-content: space-between !important;
-}
-
-.tactical-tower-page .deploy-cta svg {
-  color: #040812;
-  flex: none;
-}
-
-.tactical-tower-page .deploy-cta .tb-txt small {
-  color: #082f49;
-}
-
-.tactical-tower-page .deploy-cta .tb-txt b {
-  color: #040812;
-}
-
-.tactical-tower-page .tb-chevrons {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 26px;
-  font-weight: 900;
-  display: flex;
-  gap: 1px;
-  color: rgba(4, 8, 18, 0.65);
-  margin-left: auto;
-  line-height: 1;
-}
-
-.tactical-tower-page .tb-chevrons span:nth-child(1) { animation: chevronPulse 1.2s infinite 0.1s; }
-.tactical-tower-page .tb-chevrons span:nth-child(2) { animation: chevronPulse 1.2s infinite 0.3s; }
-.tactical-tower-page .tb-chevrons span:nth-child(3) { animation: chevronPulse 1.2s infinite 0.5s; }
-
-@keyframes chevronPulse {
-  0%, 100% { opacity: 0.3; transform: translateX(0); }
-  50% { opacity: 1; transform: translateX(2px); }
-}
-
-.tactical-tower-page .deploy-cta:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 12px 36px rgba(0, 217, 255, 0.65), 0 0 24px rgba(125, 249, 255, 0.6) !important;
-}
-
-.tactical-tower-page .deploy-cta:active {
-  transform: translateY(1px) !important;
-}
-
-/* RESPONSIVE BREAKPOINTS */
-@media (max-width: 1024px) {
-  .tactical-tower-page .tactical-tower-hub {
-    grid-template-columns: 240px minmax(0, 1fr) !important;
-    padding: 12px 14px !important;
-  }
-  .tactical-tower-page .rewards-summary-bar {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
-}
-
-@media (max-width: 768px) {
-  .tactical-tower-page {
-    height: auto !important;
-    min-height: 100dvh !important;
-    overflow-y: auto !important;
-  }
-  .tactical-tower-page .tactical-tower-hub {
-    grid-template-columns: 1fr !important;
-    height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
-    padding: 10px 10px 24px !important;
-  }
-  .tactical-tower-page .spire-stream-panel {
-    height: auto !important;
-    max-height: none !important;
-  }
-  .tactical-tower-page .spire-node-list {
-    max-height: 220px !important;
-  }
-  .tactical-tower-page .tactical-dossier-panel {
-    height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
-    padding: 14px !important;
-  }
-  .tactical-tower-page .dossier-metrics {
-    grid-template-columns: 1fr !important;
-  }
-  .tactical-tower-page .tw-foes {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
-  .tactical-tower-page .tw-fcard {
-    min-height: 190px !important;
-  }
-  .tactical-tower-page .rewards-summary-bar {
-    grid-template-columns: 1fr !important;
-  }
-  .tactical-tower-page .dossier-actions {
-    grid-template-columns: 1fr !important;
-  }
-}
 
 /* =====================================================================
    CYBERPUNK AAA INFINITE TOWER SHOP REDESIGN (HORIZONTAL LAYOUT)
@@ -26660,6 +24489,598 @@ body:has(.tactical-tower-shop-page) main#app {
   color: #040812 !important;
   box-shadow: 0 4px 14px rgba(0, 217, 255, 0.35) !important;
   white-space: nowrap !important;
+}
+/* =====================================================================
+   CORE SPIRE — INFINITE TOWER HUB  (port dari _tmp/proto_tower_skel.html,
+   desain DIKUNCI user 2026-11-05)
+   Menggantikan blok "CYBERPUNK AAA INFINITE TOWER REDESIGN" yang lama.
+   Struktur : .cs-hub > .cs-top / .cs-body(.cs-stage + .cs-side) (+ .cs-foot)
+   Tema     : WHITE-on-BLACK hazard — hitam #050505/#0d0d0d, teks/garis #f5f5f5,
+              satu aksen kuning hazard #f3e600. Warna SEMANTIK tidak diputihkan:
+              token=cyan, gem=emas, boss/hazard=merah.
+   Perf (AGENTS §2b): hanya transform/opacity yang dianimasikan, TANPA
+              backdrop-filter, TANPA animasi box-shadow/background-position.
+   Nama kelas `tw-hub`/`tw-stage` milik lab sengaja TIDAK dipakai: dua nama itu
+   sudah terpakai tema tower/raid lama (131 aturan) sehingga bentrok cascade.
+   ===================================================================== */
+.tactical-tower-page{
+  width:100%;
+  background: radial-gradient(ellipse 70% 60% at 85% 15%, rgba(0,217,255,.08) 0%, transparent 70%),
+              radial-gradient(ellipse 60% 50% at 15% 85%, rgba(168,85,247,.08) 0%, transparent 70%),
+              linear-gradient(180deg,#07090e 0%,#040609 100%) !important;
+  box-sizing:border-box;
+}
+
+.cs-hub{
+  /* palet lokal: TIDAK menimpa variabel global supaya layar lain tidak ikut */
+  --cs-bg:#050505; --cs-bg2:#0d0d0d;
+  --cs-line:#f5f5f5; --cs-txt:#f5f5f5;
+  --cs-acc:#f3e600;
+  --cs-dim:rgba(245,245,245,.55); --cs-faint:rgba(245,245,245,.17);
+  --cs-tok:#22d3ee; --cs-gem:#ffd700; --cs-haz:#ff3b30;
+  --cs-head:'Orbitron',monospace;
+  --cs-ui:'Rajdhani',sans-serif;
+  --cs-mono:'JetBrains Mono',monospace;
+  position:relative;
+  display:flex; flex:1 1 auto; flex-direction:column; min-height:0;
+  width:100%; height:100%; max-height:100%;
+  color:var(--cs-txt);
+  font-family:var(--cs-ui); font-weight:700;
+  font-variant-numeric:tabular-nums;
+  box-sizing:border-box;
+}
+
+/* ------------------------------- TOP BAR ------------------------------- */
+.cs-top{
+  flex:0 0 auto; display:flex; align-items:center; gap:8px;
+  padding:7px 9px; border-bottom:1px solid var(--cs-faint); background:var(--cs-bg);
+}
+.cs-back{
+  flex:0 0 auto; min-height:44px; min-width:44px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  background:transparent; border:1px solid var(--cs-faint); border-radius:2px; color:var(--cs-txt);
+}
+.cs-back:active{ border-color:var(--cs-acc); color:var(--cs-acc); }
+.cs-ttl{ display:flex; flex-direction:column; gap:1px; flex:1 1 auto; min-width:0; }
+.cs-kick{
+  display:flex; align-items:center; gap:5px;
+  font-family:var(--cs-mono); font-size:6.5px; letter-spacing:.2em; color:var(--cs-dim);
+  white-space:nowrap; overflow:hidden;
+}
+.cs-kick i{ width:4px; height:4px; background:var(--cs-acc); border-radius:50%; flex:0 0 auto; }
+.cs-name{
+  font-family:var(--cs-head); font-weight:900; font-size:14.5px; letter-spacing:.04em;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.cs-name em{ font-style:normal; color:var(--cs-acc); }
+.cs-meter{ display:flex; gap:4px; flex:0 0 auto; }
+.cs-m{
+  display:flex; flex-direction:column; align-items:flex-end; gap:0;
+  padding:3px 6px; border:1px solid var(--cs-faint); border-radius:2px; min-width:48px;
+}
+.cs-m small{ font-family:var(--cs-mono); font-size:6px; letter-spacing:.14em; color:var(--cs-dim); }
+.cs-m b{ font-family:var(--cs-head); font-size:11.5px; }
+.cs-m b.c{ color:var(--cs-tok); }
+/* Trigger drop-rate: 44x44. Tinggi bar sudah >=44px dari .cs-back, jadi
+   ukuran ini tidak menambah tinggi topbar. */
+.cs-info{
+  flex:0 0 auto; min-height:44px; min-width:44px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  background:transparent; border:1px solid var(--cs-faint); border-radius:2px;
+  color:var(--cs-acc);
+}
+.cs-info:active{ background:rgba(243,230,0,.12); }
+
+/* ----------------------------- STAGE 3D -------------------------------- */
+.cs-body{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column; }
+.cs-side{ flex:0 0 auto; display:flex; flex-direction:column; }
+
+.cs-stage{
+  position:relative; flex:1 1 auto; min-height:0;
+  perspective:900px;
+  perspective-origin:50% -18%;   /* titik hilang DI ATAS -> menara konvergen ke atas */
+  overflow:hidden;
+}
+.cs-stage::before{
+  content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(120% 74% at 50% 6%, rgba(255,255,255,.055), transparent 62%),
+    radial-gradient(90% 58% at 50% 100%, rgba(0,0,0,.86), transparent 72%);
+}
+.cs-stage::after{
+  content:""; position:absolute; left:0; right:0; bottom:0; height:14%; z-index:1;
+  pointer-events:none; background:linear-gradient(to top, var(--cs-bg) 22%, transparent);
+}
+
+.cs-spire{
+  position:absolute; left:50%; bottom:1%; width:min(86%,400px); height:100%;
+  z-index:2;                       /* WAJIB di atas .cs-stage::after (fog) */
+  transform-style:preserve-3d; transform:translateX(-50%);
+  animation:csSway 26s ease-in-out infinite alternate;
+  /* WAJIB: dengan preserve-3d, hit-test mengembalikan container ini alih-alih
+     slab anaknya (terukur: slab aktif tak bisa diklik). Container dibuat
+     tembus; slab yang menangkap pointer. */
+  pointer-events:none;
+}
+@keyframes csSway{
+  from{ transform:translateX(-50%) rotateY(-5deg); }
+  to  { transform:translateX(-50%) rotateY(5deg); }
+}
+
+/* DUA rel tepi (bukan satu di tengah): satu garis di tengah menembus teks slab
+   (terbukti di screenshot 320 — garis melintang di "SECURITY NODE"). */
+.cs-beam{
+  position:absolute; left:6%; bottom:0; width:1px; height:100%; z-index:1;
+  transform:translateZ(-150px);
+  background:linear-gradient(to top, transparent, var(--cs-line) 16%, var(--cs-line) 70%, transparent);
+  opacity:.22;
+}
+.cs-beam.b2{ left:auto; right:6%; }
+
+.cs-reactor{
+  position:absolute; left:50%; bottom:-4%; width:120px; height:120px; z-index:0;
+  transform:translateX(-50%) translateZ(-160px) rotateX(62deg); opacity:.26;
+}
+.cs-ring{ position:absolute; inset:0; border-radius:50%; border:1px solid var(--cs-acc); opacity:.4; }
+.cs-ring:nth-child(1){ animation:csSpin 24s linear infinite; border-style:dashed; }
+.cs-ring:nth-child(2){ inset:16%; animation:csSpin 16s linear infinite reverse; opacity:.28; }
+.cs-ring:nth-child(3){ inset:33%; animation:csSpin 9s linear infinite; opacity:.2; border-width:2px; }
+@keyframes csSpin{ from{ transform:rotate(0) } to{ transform:rotate(360deg) } }
+
+/* ------------------------------ SLAB -----------------------------------
+   --h : indeks lantai (0 = paling dekat kamera)
+   --y : jarak VERTIKAL (px) dari dasar, DIHITUNG JS per lantai
+   Jarak sengaja TIDAK seragam: celah di atas lantai DEPLOY harus lebih besar
+   dari tinggi slab DEPLOY (kalau tidak lantai berikutnya tertutup total),
+   sedangkan rak locked/cleared boleh lebih rapat karena latarnya transparan. */
+.cs-slab{
+  position:absolute; left:50%; bottom:3%; width:100%;
+  pointer-events:auto;
+  transform:translate3d(-50%, calc(var(--y,0px) * -1), calc(var(--z,0px) * -1));
+  transform-origin:50% 100%;
+  z-index:calc(40 - var(--h));
+}
+.cs-sl{
+  position:relative; display:flex; align-items:center; gap:9px;
+  padding:7px 10px; border:1px solid var(--cs-faint); border-radius:2px;
+  background:linear-gradient(100deg, var(--cs-bg2), rgba(0,0,0,.55));
+  transition:border-color .18s ease, opacity .18s ease;
+}
+.cs-sl-no{ font-family:var(--cs-head); font-weight:900; font-size:13px; letter-spacing:.04em; min-width:26px; }
+.cs-sl-mid{ flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:1px; }
+.cs-sl-k{ font-family:var(--cs-mono); font-size:6.5px; letter-spacing:.18em; color:var(--cs-dim); }
+.cs-sl-n{ font-size:12px; font-weight:800; letter-spacing:.05em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cs-sl-st{ font-family:var(--cs-mono); font-size:6.5px; letter-spacing:.12em; color:var(--cs-dim); white-space:nowrap; }
+.cs-sl-badge{
+  font-family:var(--cs-mono); font-size:6.5px; font-weight:700; letter-spacing:.1em;
+  padding:2px 5px; border:1px solid currentColor; border-radius:2px; white-space:nowrap; flex:0 0 auto;
+}
+.cs-sl-badge.haz{ color:var(--cs-haz); }
+.cs-sl-badge.rec{ color:var(--cs-acc); }
+
+/* LOCKED / CLEARED = RAK LANTAI, bukan kotak.
+   Bukan kotak penuh karena step < tinggi slab membuat border tiap lantai
+   saling menempel dan menyatu jadi satu wireframe (terbukti di screenshot 320:
+   5 lantai terbaca sebagai 1 bingkai kosong). Bentuk rak tipis + garis dasar
+   membuatnya terbaca sebagai lantai menara. */
+.cs-slab[data-state="locked"] .cs-sl,
+.cs-slab[data-state="cleared"] .cs-sl{
+  border:0; border-bottom:1px solid var(--cs-faint); border-radius:0;
+  background:transparent; padding:5px 2px; min-height:0;
+}
+.cs-slab[data-state="locked"] .cs-sl{ opacity:.62; }
+.cs-slab[data-state="cleared"] .cs-sl{ opacity:.78; }
+.cs-slab[data-state="cleared"] .cs-sl-no{ color:var(--cs-dim); }
+/* lantai boss tetap ditandai walau berbentuk rak */
+.cs-slab[data-boss="1"][data-state="locked"] .cs-sl,
+.cs-slab[data-boss="1"][data-state="cleared"] .cs-sl{ border-bottom-color:var(--cs-haz); }
+
+.cs-slab[data-state="active"]{ cursor:pointer; }
+.cs-slab[data-state="active"] .cs-sl{
+  min-height:56px; padding:9px 11px; border:1px solid var(--cs-acc);
+  background:linear-gradient(100deg, var(--cs-bg2), rgba(243,230,0,.13));
+}
+.cs-slab[data-state="active"] .cs-sl-no{ color:var(--cs-acc); font-size:17px; min-width:30px; }
+.cs-slab[data-state="active"] .cs-sl-n{ font-size:14px; }
+.cs-slab[data-state="active"] .cs-sl-k{ color:var(--cs-acc); }
+
+/* NEXT = frontier best+1: penanda sasaran, lebih tenang dari DEPLOY */
+.cs-slab[data-state="next"]{ cursor:pointer; }
+.cs-slab[data-state="next"] .cs-sl{
+  min-height:50px; padding:8px 10px; border:1px solid var(--cs-line); opacity:.95;
+  background:linear-gradient(100deg, var(--cs-bg2), rgba(255,255,255,.07));
+}
+.cs-slab[data-state="next"] .cs-sl-n{ font-weight:800; }
+
+.cs-slab[data-boss="1"] .cs-sl{ border-left:2px solid var(--cs-haz); }
+
+/* ---------------------------- DOSSIER WAVE ----------------------------- */
+.cs-dossier{
+  flex:0 0 auto; padding:6px 8px 8px;
+  border-top:1px solid var(--cs-faint); background:var(--cs-bg2);
+}
+.cs-dh{
+  display:flex; align-items:center; gap:6px; margin-bottom:5px;
+  font-family:var(--cs-mono); font-size:6.5px; letter-spacing:.16em; color:var(--cs-dim);
+}
+.cs-dh b{ color:var(--cs-txt); }
+.cs-dh .hb{
+  margin-left:auto; color:var(--cs-haz); border:1px solid currentColor;
+  padding:1px 5px; border-radius:2px; font-weight:700;
+}
+.cs-dh .rec{ color:var(--cs-acc); }
+
+.cs-waves{ display:flex; gap:5px; --cs-art:48px; }
+@media (min-width:420px){ .cs-waves{ --cs-art:56px; } }
+
+.cs-wv{
+  flex:1 1 0; min-width:0; display:flex; flex-direction:column;
+  border:1px solid var(--cs-faint); border-radius:2px; overflow:hidden; background:#000;
+}
+/* ART 1:1 KECIL, GAMBAR UTUH. Kunci matematisnya:
+   aspect-ratio:1/1 + width:100% + max-width:var(--cs-art) -> sisi selalu
+   min(lebar kartu, --cs-art) = persegi sempurna, di tengah kartu.
+   object-fit:contain -> sisi terpanjang gambar pas dengan kotak, TIDAK PERNAH
+   dipotong / di-zoom (pengganti object-fit:cover lama yang memotong art). */
+.cs-wv-art{
+  position:relative; overflow:hidden; background:#000;
+  aspect-ratio:1/1; width:100%;
+  max-width:var(--cs-art,48px); max-height:var(--cs-art,48px);
+  margin:0 auto;
+}
+.cs-wv-art img{ display:block; width:100%; height:100%; object-fit:contain; object-position:center; }
+.cs-wv-art::after{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(to top, rgba(0,0,0,.92), transparent 42%);
+}
+.cs-wv-tag{
+  position:absolute; top:2px; left:2px; z-index:2;
+  font-family:var(--cs-mono); font-size:5.5px; font-weight:700; letter-spacing:.08em;
+  padding:1px 4px; border-radius:2px; background:rgba(0,0,0,.74); color:var(--cs-txt);
+}
+.cs-wv-tag.boss{ background:var(--cs-haz); color:#fff; }
+.cs-wv-tag.lead{ background:var(--cs-acc); color:#000; }
+.cs-wv-bot{ padding:3px 4px 4px; display:flex; flex-direction:column; gap:0; min-width:0; }
+.cs-wv-n{
+  font-size:8px; font-weight:800; letter-spacing:.01em;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.cs-wv-s{
+  font-family:var(--cs-mono); font-size:5.5px; letter-spacing:.04em; color:var(--cs-dim);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.cs-wv-s b{ color:var(--cs-txt); }
+
+/* -------------------------------- DOCK -------------------------------- */
+.cs-dock{
+  flex:0 0 auto; display:flex; gap:6px;
+  padding:7px 8px calc(7px + env(safe-area-inset-bottom,0px));
+  border-top:1px solid var(--cs-faint); background:var(--cs-bg);
+}
+.cs-cta{
+  flex:1 1 0; min-width:0; min-height:52px; cursor:pointer; overflow:hidden;
+  display:flex; align-items:center; gap:7px; padding:0 10px;
+  border:1px solid var(--cs-faint); border-radius:2px;
+  background:transparent; color:var(--cs-txt); text-align:left;
+  font-family:var(--cs-ui);
+}
+.cs-cta .ci{ display:flex; flex:0 0 auto; opacity:.9; }
+.cs-cta .cc{ display:flex; flex-direction:column; gap:1px; min-width:0; }
+.cs-cta .cc small{
+  font-family:var(--cs-mono); font-size:6px; letter-spacing:.14em; color:var(--cs-dim);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.cs-cta .cc b{
+  font-family:var(--cs-head); font-size:11px; letter-spacing:.03em;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.cs-cta.primary{ flex:1.5 1 0; border-color:var(--cs-acc); background:var(--cs-acc); color:#000; }
+.cs-cta.primary .ci{ opacity:1; }
+.cs-cta.primary .cc small{ color:rgba(0,0,0,.6); }
+.cs-cta.primary .cc b{ color:#000; }
+.cs-cta:active{ opacity:.86; }
+.cs-chev{ display:flex; gap:1px; margin-left:auto; flex:0 0 auto; }
+.cs-chev span{ font-size:12px; line-height:1; opacity:.35; animation:csChev 1.4s ease-in-out infinite; }
+.cs-chev span:nth-child(2){ animation-delay:.16s; }
+.cs-chev span:nth-child(3){ animation-delay:.32s; }
+@keyframes csChev{ 0%,100%{opacity:.25} 50%{opacity:1} }
+
+/* ------------------------------ RESPONSIVE -----------------------------
+   Portrait: menara di atas, dossier + dock di bawah.
+   Landscape HP (850x390): DUA KOLOM — kiri menara, kanan dossier+dock.
+   Tanpa ini stage hanya dapat ~146px dan menara cuma muat 3 lantai
+   (terukur: topGap -8px, lantai teratas terpotong). */
+@media (min-aspect-ratio: 3/2) and (max-height:520px){
+  .cs-body{ flex-direction:row; gap:0; }
+  .cs-stage{ flex:1 1 auto; }
+  .cs-side{
+    flex:0 0 300px; width:300px;
+    border-left:1px solid var(--cs-faint);
+    display:flex; flex-direction:column; min-height:0;
+  }
+  .cs-side .cs-dossier{ flex:1 1 auto; min-height:0; overflow-y:auto; }
+  .cs-side .cs-waves{ flex-direction:column; gap:4px; }
+  /* WAJIB flex:0 0 auto + tinggi tetap: `.cs-wv` dasar punya `flex:1 1 0`, dan
+     di container ber-arah kolom flex-basis 0 berarti TINGGI 0 -> kartu wave
+     hilang total (terbukti di screenshot 850x390: panel kanan kosong). */
+  .cs-side .cs-wv{ flex:0 0 auto; height:38px; flex-direction:row; align-items:center; }
+  .cs-side .cs-wv-art{ width:34px; height:34px; flex:0 0 auto; }
+  .cs-side .cs-wv-bot{ flex:1 1 auto; min-width:0; padding:0 5px; }
+  .cs-side .cs-dock{
+    flex:0 0 auto; flex-direction:column; padding:6px 7px;
+    padding-bottom:calc(6px + env(safe-area-inset-bottom,0px));
+  }
+  .cs-side .cs-cta{ min-height:44px; }
+  .cs-spire{ width:min(88%,560px); }
+}
+
+/* Mode PADAT untuk stage pendek (320x568: stage hanya ~243px).
+   Tanpa ini rak locked/cleared butuh ~40px per lantai sehingga hanya 3 lantai
+   yang muat dan menyisakan 85px ruang mati di atas menara. Dengan 2 baris,
+   6 lantai muat. */
+body.tw-compact .cs-slab[data-state="locked"],
+body.tw-compact .cs-slab[data-state="cleared"],
+body.tw-compact .cs-slab[data-state="next"]{ height:auto; }
+body.tw-compact .cs-slab[data-state="locked"] .cs-sl,
+body.tw-compact .cs-slab[data-state="cleared"] .cs-sl{ padding:3px 2px; }
+body.tw-compact .cs-slab[data-state="locked"] .cs-sl-k,
+body.tw-compact .cs-slab[data-state="cleared"] .cs-sl-k{ display:none; }
+/* lantai DEPLOY tetap menampilkan hadiah walau mode padat: itu info terpenting
+   di layar (jumlah wave + coin per lantai). */
+body.tw-compact .cs-slab[data-state="active"] .cs-sl-st{ display:block; }
+body.tw-compact .cs-slab[data-state="locked"] .cs-sl-n,
+body.tw-compact .cs-slab[data-state="cleared"] .cs-sl-n{ font-size:11px; }
+/* Lantai yang BISA DITEKAN tetap target sentuh >=44px walau mode padat
+   (terukur 320x568: min-height:0 membuat slab frontier 39px). Rak locked/
+   cleared boleh tipis karena bukan target; yang bisa ditekan tidak. Jumlah
+   lantai menyesuaikan sendiri lewat algoritma ukur (csRenderSlabs). */
+body.tw-compact .cs-slab[data-state="next"] .cs-sl{ min-height:44px; padding:5px 9px; }
+body.tw-compact .cs-slab[data-state="active"] .cs-sl{ min-height:44px; }
+body.tw-compact .cs-slab[data-state="next"] .cs-sl-st{ display:none; }
+
+/* HP landscape pendek: rapatkan vertikal supaya CTA tidak terpotong */
+@media (max-height:470px){
+  .cs-dossier{ padding:4px 7px 6px; }
+  .cs-waves{ --cs-art:36px; }
+  .cs-top{ padding:4px 7px; }
+  .cs-cta{ min-height:46px; }
+  .cs-slab{ bottom:9%; }
+}
+
+/* HP portrait sempit (320): kecilkan tipografi, target sentuh TETAP >=44px */
+@media (max-width:400px){
+  /* dock: buang kicker + chevron supaya label produksi utuh 2 baris */
+  .cs-cta .cc small{ display:none; }
+  .cs-cta .cs-chev{ display:none; }
+  .cs-cta .cc b{
+    font-size:10px; letter-spacing:0; white-space:normal; line-height:1.1;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .cs-cta{ padding:0 7px; gap:6px; }
+}
+@media (max-width:360px){
+  .cs-name{ font-size:12.5px; }
+  .cs-m{ min-width:42px; padding:2px 5px; }
+  .cs-m b{ font-size:10.5px; }
+  .cs-sl-no{ font-size:11px; }
+  .cs-sl-st{ display:none; }
+  .cs-slab[data-state="active"] .cs-sl{ min-height:52px; padding:8px 9px; }
+  .cs-slab[data-state="active"] .cs-sl-no{ font-size:12px; }
+  .cs-wv-n{ font-size:7px; }
+  .cs-waves{ --cs-art:44px; }
+  .cs-cta .cc b{ font-size:8.5px; }
+  .cs-cta .ci svg{ width:15px; height:15px; }
+}
+/* Desktop lebar: pusatkan kolom 560px, jangan melar penuh */
+@media (min-width:860px){
+  .cs-hub{
+    width:min(100%,560px); margin:0 auto;
+    border-left:1px solid var(--cs-faint); border-right:1px solid var(--cs-faint);
+  }
+}
+/* Aksesibilitas: minta kurangi gerak -> 3D & animasi mati */
+@media (prefers-reduced-motion:reduce){
+  .cs-spire,.cs-ring,.cs-chev span{ animation:none !important; }
+  .cs-slab{ transform:translate3d(-50%, calc(var(--y,0px) * -1), 0) !important; }
+}
+/* Modal terbuka: hentikan animasi dekoratif menara (AGENTS §2b#9) */
+body:has(#towerDropModal.show) .cs-spire,
+body:has(#towerDropModal.show) .cs-ring{ animation:none !important; }
+
+/* =====================================================================
+   MODAL DROP RATE TOWER — 3 kolom (port dari lab, desain terkunci)
+   Perf (AGENTS §2b): TANPA backdrop-filter, TANPA animasi box-shadow;
+   masuk/keluar hanya opacity + transform (composited). Warna semantik
+   dipertahankan: token=cyan, gem=emas, hazard=merah.
+   Catatan: semua selector diawali body #towerDropModal supaya tidak bocor ke
+   modal lain, dan ditempatkan di blok ini (bukan override baru di EOF).
+   ===================================================================== */
+body #towerDropModal.tw-drop-modal-backdrop{
+  position:fixed !important; inset:0 !important; z-index:90000 !important;
+  display:flex; align-items:center; justify-content:center;
+  padding:8px !important; overflow:hidden !important; box-sizing:border-box !important;
+  background:rgba(0,0,0,.82) !important;
+  opacity:0; visibility:hidden; pointer-events:none;
+  backdrop-filter:none !important; -webkit-backdrop-filter:none !important;
+  transition:opacity .16s linear, visibility 0s linear .16s;
+}
+body #towerDropModal.tw-drop-modal-backdrop.show{
+  display:flex !important; opacity:1 !important;
+  visibility:visible; pointer-events:auto;
+  transition:opacity .16s linear, visibility 0s linear 0s;
+}
+body #towerDropModal .tw-drop-modal{
+  width:100%; max-width:1040px; max-height:88dvh; min-height:0;
+  display:flex; flex-direction:column; overflow:hidden;
+  background:#0d0d0d !important;
+  border:1px solid rgba(245,245,245,.17) !important; border-radius:3px !important;
+  box-shadow:none !important;
+  transform:translate3d(0,6px,0); transition:transform .16s linear;
+  backdrop-filter:none !important; -webkit-backdrop-filter:none !important;
+}
+body #towerDropModal.show .tw-drop-modal{ transform:translate3d(0,0,0); animation:none !important; }
+
+body #towerDropModal .tw-drop-head{
+  flex:0 0 auto; display:flex; align-items:center; gap:8px;
+  padding:7px 8px; border-bottom:1px solid rgba(245,245,245,.17) !important;
+  background:#050505 !important;
+}
+body #towerDropModal .tw-drop-hd-txt{ flex:1 1 auto; min-width:0; display:flex; flex-direction:column; }
+body #towerDropModal .tw-drop-eyebrow{
+  font-family:'JetBrains Mono',monospace; font-size:6px; letter-spacing:.2em;
+  color:rgba(245,245,245,.55);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+body #towerDropModal .tw-drop-title{
+  font-family:'Orbitron',monospace; font-weight:900; font-size:13px; letter-spacing:.05em;
+  color:#f5f5f5 !important; text-shadow:none !important;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+body #towerDropModal .tw-drop-close{
+  flex:0 0 auto; min-width:44px; min-height:44px; cursor:pointer;
+  display:flex !important; align-items:center; justify-content:center;
+  background:transparent !important; border:1px solid rgba(245,245,245,.17) !important;
+  border-radius:2px !important; color:#f5f5f5 !important;
+  position:relative !important; z-index:100 !important; pointer-events:auto !important;
+}
+body #towerDropModal .tw-drop-close:active,
+body #towerDropModal .tw-drop-close:hover{
+  border-color:#f3e600 !important; color:#f3e600 !important;
+  background:transparent !important; box-shadow:none !important; transform:none !important;
+}
+
+/* body = SATU-SATUNYA area scroll (pola full-screen produksi) */
+body #towerDropModal .tw-drop-modal-body{
+  flex:1 1 auto; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  display:grid; grid-template-columns:1fr; gap:7px; padding:8px;
+  scrollbar-width:thin;
+}
+body #towerDropModal .tw-drop-modal-body::-webkit-scrollbar{ width:5px; }
+body #towerDropModal .tw-drop-modal-body::-webkit-scrollbar-thumb{ background:rgba(245,245,245,.17); }
+@media (min-width:701px){
+  body #towerDropModal .tw-drop-modal-body{ grid-template-columns:1fr 1fr 1fr; }
+}
+
+body #towerDropModal .tw-drop-foot{
+  flex:0 0 auto; display:flex; gap:6px; align-items:center;
+  padding:5px 8px; border-top:1px solid rgba(245,245,245,.17) !important;
+  background:#000 !important;
+}
+body #towerDropModal .tw-drop-tick{
+  font-family:'JetBrains Mono',monospace; font-size:5.5px; letter-spacing:.04em;
+  color:rgba(245,245,245,.55); line-height:1.35;
+}
+body #towerDropModal .tw-drop-tick b{ color:#f5f5f5; font-weight:700; }
+
+body #towerDropModal .dpr-col{ min-width:0; display:flex; flex-direction:column; gap:4px; }
+body #towerDropModal .dpr-ch{
+  display:flex; align-items:center; gap:5px;
+  font-family:'JetBrains Mono',monospace; font-size:6.5px; font-weight:700; letter-spacing:.14em;
+  color:rgba(245,245,245,.55); margin-bottom:1px;
+}
+body #towerDropModal .dpr-ch span{
+  margin-left:auto; font-size:6px; padding:1px 4px; border-radius:2px;
+  border:1px solid rgba(245,245,245,.17); color:#f5f5f5;
+}
+body #towerDropModal .dpr{
+  display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:6px;
+  padding:5px 6px; border:1px solid rgba(245,245,245,.17); border-radius:2px;
+  background:#000; min-width:0;
+}
+body #towerDropModal .dpr.guar{ border-color:rgba(34,211,238,.38); }
+body #towerDropModal .dpr-ico{
+  width:26px; height:26px; flex:0 0 auto; display:flex; align-items:center; justify-content:center;
+  border-radius:2px; background:rgba(245,245,245,.06); overflow:hidden;
+}
+body #towerDropModal .dpr-ico img{ width:100%; height:100%; object-fit:contain; }
+body #towerDropModal .dpr-txt{ min-width:0; display:flex; flex-direction:column; }
+body #towerDropModal .dpr-nm{
+  font-family:'Orbitron',monospace; font-size:8.5px; font-weight:800; letter-spacing:.02em;
+  color:#f5f5f5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+body #towerDropModal .dpr-sub{
+  font-family:'JetBrains Mono',monospace; font-size:5.5px; letter-spacing:.02em;
+  color:rgba(245,245,245,.55); line-height:1.25;
+}
+body #towerDropModal .dpr-rate{
+  flex:0 0 auto; font-family:'Orbitron',monospace; font-size:8px; font-weight:900;
+  letter-spacing:.02em; color:#f3e600; white-space:nowrap;
+}
+body #towerDropModal .dpr.guar .dpr-rate{ color:#22d3ee; }
+body #towerDropModal .dpr-note{
+  font-family:'JetBrains Mono',monospace; font-size:5.5px; letter-spacing:.02em;
+  color:rgba(245,245,245,.55); line-height:1.3; padding:1px 2px 0;
+}
+/* 320-420px: rate "100x GUARANTEED" lebih lebar dari sisa kolom sehingga
+   menimpa subteks (terbukti di screenshot 320x568). Di sempit, rate pindah
+   ke barisnya sendiri, rata kanan — tidak ada tabrakan. */
+@media (max-width:420px){
+  body #towerDropModal .dpr{ grid-template-columns:auto 1fr; row-gap:2px; }
+  body #towerDropModal .dpr-rate{ grid-column:1 / -1; justify-self:end; }
+}
+
+body #towerDropModal .dpr-rare{
+  display:flex; flex-direction:column; gap:5px; min-width:0;
+  padding:6px; border:1px solid #ff3b30; border-radius:2px;
+  background:linear-gradient(180deg, rgba(255,59,48,.10), #000 62%);
+}
+body #towerDropModal .dpr-rare-top{ display:grid; grid-template-columns:auto 1fr; gap:6px; align-items:center; min-width:0; }
+body #towerDropModal .dpr-rare-img{
+  width:38px; height:38px; flex:0 0 auto; overflow:hidden; border-radius:2px;
+  background:rgba(255,59,48,.10); border:1px solid rgba(255,59,48,.30);
+}
+body #towerDropModal .dpr-rare-img img{ width:100%; height:100%; object-fit:contain; }
+body #towerDropModal .dpr-rare-hd{ min-width:0; display:flex; flex-direction:column; }
+body #towerDropModal .dpr-rare-type{
+  font-family:'JetBrains Mono',monospace; font-size:5.5px; letter-spacing:.14em; color:#ff3b30;
+}
+body #towerDropModal .dpr-rare-name{
+  font-family:'Orbitron',monospace; font-size:10px; font-weight:900; letter-spacing:.03em;
+  color:#f5f5f5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+body #towerDropModal .dpr-rare-rate{
+  font-family:'JetBrains Mono',monospace; font-size:5.5px; letter-spacing:.06em; color:#ffd700;
+}
+body #towerDropModal .dpr-rare-perks{ display:flex; gap:4px; flex-wrap:wrap; }
+body #towerDropModal .dpr-perk{
+  display:flex; align-items:center; gap:3px; padding:1px 4px; border-radius:2px;
+  border:1px solid rgba(245,245,245,.17);
+  font-family:'JetBrains Mono',monospace; font-size:5.5px;
+}
+body #towerDropModal .dpr-perk i{ font-style:normal; color:rgba(245,245,245,.55); }
+body #towerDropModal .dpr-perk b{ font-size:6.5px; color:#f5f5f5; }
+body #towerDropModal .dpr-perk.mult{ border-color:rgba(255,215,0,.42); }
+body #towerDropModal .dpr-perk.mult b{ color:#ffd700; }
+body #towerDropModal .dpr-rare-desc{
+  font-family:'JetBrains Mono',monospace; font-size:5.5px; letter-spacing:.02em;
+  color:rgba(245,245,245,.55); line-height:1.3;
+}
+
+/* landscape pendek: rapatkan supaya 11 baris tetap terbaca */
+@media (max-height:470px){
+  body #towerDropModal.tw-drop-modal-backdrop{ padding:4px; }
+  body #towerDropModal .tw-drop-modal{ max-height:calc(100dvh - 8px); }
+  body #towerDropModal .tw-drop-modal-body{ padding:5px; gap:5px; }
+  body #towerDropModal .dpr{ padding:3px 5px; }
+  body #towerDropModal .dpr-ico{ width:22px; height:22px; }
+  body #towerDropModal .dpr-rare-img{ width:30px; height:30px; }
+}
+
+/* glue: hub baru memakai .tactical-tower-page (kontrak boot) + .cs-hub.
+   Main#app warisan tema lama masih memaksa align-items:flex-start di mobile
+   (css/mobile-shell.css:617) sehingga hub bisa menyusut; di-scope hanya untuk
+   hub baru supaya layar tower lain (shop/battle) tidak tersentuh. */
+body.on-tower:has(.cs-hub) main#app{
+  padding:0 !important;
+  display:flex; flex-direction:column;
+  align-items:stretch !important;
+}
+html.m-landscape body.on-tower:has(.cs-hub) main#app{
+  padding:0 0 0 calc(var(--nav-w) + var(--safe-left)) !important;
+}
+html.m-portrait body.on-tower:has(.cs-hub) main#app{
+  padding:0 0 calc(var(--nav-h) + var(--safe-bottom)) 0 !important;
 }
 
 .tactical-tower-shop-page .thc-buy-btn:hover {
