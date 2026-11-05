@@ -1067,246 +1067,156 @@ function raidShopBuy(id){
     renderRaidShop();
   })();
 }
-/* =============== TOKO RAID: 300PX HORIZONTAL SHELF (ANTI-LUBER) =============== */
-window.raidShopFilter = window.raidShopFilter || "all";
+/* =============== TOKO RAID — "SHADOW ARMORY" ===============
+   Port desain terkunci `_tmp/proto_wb_shop_v1.html` (user ACC 2026-11-05):
+   cermin toko Tower Inf "SPIRE ARMORY" — satu top bar, PANGGUNG kartu boss
+   terpisah di atas, lalu rak supply ber-rail (satu item = satu baris).
+   Prefix kelas `wbs-` supaya tidak bentrok dengan `.cs-*` milik toko Tower
+   (style.css) maupun `.tw-*`/`.holo-*` milik lab prototipe.
+   Data & perilaku beli TIDAK berubah: WB_SHOP + raidShopBuy(). */
+
+/* Kategori visual per item — cermin blok kategori prototipe. */
+function wbsMeta(it){
+  if(it.id==="gem")            return { cat:"EXCHANGE",   tier:"GEM",    ac:"#ffd700", art:"assets/images/premium-currency.webp" };
+  if(it.id==="coins")          return { cat:"CREDITS",    tier:"COINS",  ac:"#ffd27a", art:"assets/icons/coins-gold.svg" };
+  if(it.id==="card_edragon")   return { cat:"EX CORE",    tier:"EX-CH",  ac:"#00e5ff", art:"assets/cards/art/eternal-dragon.webp" };
+  if(it.id==="card_shadowking")return { cat:"EX CORE",    tier:"EX-CH",  ac:"#a855f7", art:"assets/cards/art/shadow-king.webp" };
+  if(it.id==="helm-abyss")     return { cat:"RELIC GEAR", tier:"MYTHIC", ac:"#ffb703", art:"assets/artifacts/abyss-helm.webp" };
+  if(it.id==="nebula-wisp")    return { cat:"RELIC GEAR", tier:"COSMIC", ac:"#7df9ff", art:"assets/pets/nebula-wisp.webp" };
+  if(it.id.indexOf("luck")===0)  return { cat:"AUGMENT",   tier:"MK-"+it.id.replace("luck",""),  ac:"#4ade80", art:"assets/images/pot-luck-"+it.id.replace("luck","")+".webp" };
+  if(it.id.indexOf("speed")===0) return { cat:"OVERCLOCK", tier:"MK-"+it.id.replace("speed",""), ac:"#fbbf24", art:"assets/images/pot-speed-"+it.id.replace("speed","")+".webp" };
+  return { cat:"SUPPLY", tier:"SPEC", ac:"#f5f5f5", art:"assets/icons/coins-gold.svg" };
+}
+/* Rail rak (urutan = prototipe). EX CORE tidak di sini: kartunya dipajang
+   di panggung `.wbs-stage-panel` di atas rak. */
+const WBS_RAILS=[
+  { key:"EXCHANGE",   note:"TOKEN BURN" },
+  { key:"CREDITS",    note:"COIN MINT" },
+  { key:"RELIC GEAR", note:"PERMANENT" },
+  { key:"AUGMENT",    note:"LUCK" },
+  { key:"OVERCLOCK",  note:"SPEED" },
+];
+function wbsIsOwned(it){
+  if(it.card) return stackHas(it.card.char,it.card.mut) || !!(state.raidShopOwned && state.raidShopOwned[it.card.char]);
+  if(it.owned) return !!it.owned();
+  return false;
+}
+function wbsStock(it,owned){
+  if(owned) return "OWNED";
+  if(it.id==="gem"||it.id==="coins") return "∞ UNLIMITED";
+  if(it.id.indexOf("luck")===0){ const n=(state.luckPots||[])[+it.id.slice(-1)-1]||0; return "×"+n; }
+  if(it.id.indexOf("speed")===0){ const n=(state.speedPots||[])[+it.id.slice(-1)-1]||0; return "×"+n; }
+  if(it.card) return "ROLL LOCKED";
+  return "PERMANENT";
+}
+/* Label tombol = prototipe: UNLOCKED / DEFICIT n / EXCHANGE (+N) / ACQUIRE. */
+function wbsLabel(it,owned){
+  const tok=state.wbTokens||0;
+  if(owned) return "✔ UNLOCKED";
+  if(tok<it.cost) return "DEFICIT "+fmt(it.cost-tok);
+  if(it.gem) return "EXCHANGE (+"+it.gem+" GEMS)";
+  if(it.coinBuy) return "EXCHANGE (+2,000 COINS)";
+  return "ACQUIRE SUPPLY";
+}
+function wbsRowHtml(it){
+  const m=wbsMeta(it), owned=wbsIsOwned(it);
+  const dis=owned||(state.wbTokens||0)<it.cost;
+  return `<div class="wbs-it" style="--ic:${m.ac}">
+    <span class="wbs-it-art"><i class="wbs-it-glow"></i><img src="${m.art}" alt="" decoding="async" loading="lazy"></span>
+    <span class="wbs-it-mid">
+      <span class="wbs-it-cat"><b class="c1">${m.cat}</b><b class="c2">${m.tier}</b></span>
+      <span class="wbs-it-nm" title="${it.name}">${it.name}</span>
+      <span class="wbs-it-ds">${it.desc}</span>
+      <span class="wbs-it-stock">IN STOCK <b>${wbsStock(it,owned)}</b></span>
+    </span>
+    <span class="wbs-it-right">
+      <span class="wbs-it-price"><b>${fmt(it.cost)}<i>TOK</i></b></span>
+      <button class="wbs-buy" type="button" data-id="${it.id}" ${dis?"disabled":""}>${wbsLabel(it,owned)}</button>
+    </span>
+  </div>`;
+}
+function wbsBossHtml(it){
+  const m=wbsMeta(it), owned=wbsIsOwned(it);
+  const dis=owned||(state.wbTokens||0)<it.cost;
+  return `<div class="wbs-boss${owned?" owned":""}" style="--ic:${m.ac}">
+    <span class="wbs-boss-art">
+      <i class="wbs-it-glow"></i>
+      <img src="${m.art}" alt="${it.name}" decoding="async" loading="lazy">
+      <span class="wbs-boss-seal${owned?" on":""}">${owned?"✔ OWNED":"ROLL LOCKED"}</span>
+    </span>
+    <span class="wbs-boss-mid">
+      <span class="wbs-it-cat"><b class="c1">${m.cat}</b><b class="c2">${m.tier}</b></span>
+      <span class="wbs-boss-nm" title="${it.name}">${it.name}</span>
+      <span class="wbs-boss-ds">${it.desc}</span>
+    </span>
+    <span class="wbs-boss-foot">
+      <span class="wbs-boss-price"><b>${fmt(it.cost)}<i>TOK</i></b></span>
+      <button class="wbs-buy" type="button" data-id="${it.id}" ${dis?"disabled":""}>${wbsLabel(it,owned)}</button>
+    </span>
+  </div>`;
+}
 
 function renderRaidShop(){
   const tok=state.wbTokens||0;
+  const META=WB_SHOP.map(it=>({ it, m:wbsMeta(it) }));
+  const bossItems=META.filter(x=>x.m.cat==="EX CORE").map(x=>x.it);
+  const bossTotal=bossItems.length;
+  const bossCount=bossItems.filter(x=>bossRollUnlocked(x.card.char)).length;
 
-  const cardItems=WB_SHOP.filter(x=>x.card);
-  const bossTotal=cardItems.length,bossCount=cardItems.filter(x=>bossRollUnlocked(x.card.char)).length;
-
-  const ITEMS=WB_SHOP.map(it=>{
-    let cat="potion", catLabel="POTION", tier="SPEC", accent="#00f0ff", art="assets/images/pot-luck-1.webp";
-
-    if(it.id==="gem"){
-      cat="currency"; catLabel="EXCHANGE"; tier="GEM"; accent="#ffd700"; art="assets/images/premium-currency.webp";
-    } else if(it.id==="coins"){
-      cat="currency"; catLabel="CREDITS"; tier="COINS"; accent="#ffd27a"; art="assets/icons/coins-gold.svg";
-    } else if(it.id==="card_edragon"){
-      cat="ex-core"; catLabel="EX CORE"; tier="EX-CH"; accent="#00f0ff"; art="assets/cards/art/eternal-dragon.webp";
-    } else if(it.id==="card_shadowking"){
-      cat="ex-core"; catLabel="EX CORE"; tier="EX-CH"; accent="#a855f7"; art="assets/cards/art/shadow-king.webp";
-    } else if(it.id.startsWith("helm")){
-      cat="relic"; catLabel="RELIC GEAR"; tier="MYTHIC"; accent="#ffb703"; art="assets/artifacts/abyss-helm.webp";
-    } else if(it.id.includes("wisp")){
-      cat="relic"; catLabel="FAMILIAR"; tier="COSMIC"; accent="#7df9ff"; art="assets/pets/nebula-wisp.webp";
-    } else if(it.id.includes("luck")){
-      cat="potion"; catLabel="AUGMENT"; tier="MK-"+it.id.replace("luck",""); accent="#4ade80"; art="assets/images/pot-luck-"+it.id.replace("luck","")+".webp";
-    } else if(it.id.includes("speed")){
-      cat="potion"; catLabel="OVERCLOCK"; tier="MK-"+it.id.replace("speed",""); accent="#fbbf24"; art="assets/images/pot-speed-"+it.id.replace("speed","")+".webp";
-    }
-
-    return {
-      id: it.id,
-      name: it.name.toUpperCase(),
-      desc: it.desc,
-      cost: it.cost,
-      cat,
-      catLabel,
-      tier,
-      accent,
-      art,
-      it
-    };
-  });
-
-  const filter = window.raidShopFilter;
-  const filtered = ITEMS.filter(it => filter === "all" || it.cat === filter);
+  const railsHtml=WBS_RAILS.map(r=>{
+    const rows=META.filter(x=>x.m.cat===r.key).map(x=>x.it);
+    if(!rows.length) return "";
+    return `<div class="wbs-rail">
+      <div class="wbs-rail-h"><b>${r.key}</b><i></i><span>${rows.length} · ${r.note}</span></div>
+      <div class="wbs-rail-shelf">${rows.map(wbsRowHtml).join("")}</div>
+    </div>`;
+  }).join("");
 
   app.innerHTML=`
-  <!-- Atmospheric Cyber Abyss Layers -->
-  <div class="cyber-abyss-bg"></div>
-  <div class="cyber-grid"></div>
-  <div class="cyber-scanlines"></div>
-
-  <div class="app-viewport rd-page">
-    
-    <!-- Top System Telemetry Bar -->
-    <header class="proto-top-nav">
-      <div class="system-title-tag">
-        <div class="system-icon-pulse"></div>
-        <div class="system-label-text">
-          SYSTEM: <b>HUNTER RAID MATRIX</b> // <span class="monarch-tag">SHADOW HUNTER ARMORY</span>
+  <div class="wbs-page rd-page">
+    <div class="wbs-shop">
+      <div class="wbs-top">
+        <button class="wbs-back" id="raidShopBack" type="button" title="Kembali ke World Boss" aria-label="Kembali ke World Boss">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <div class="wbs-ttl">
+          <div class="wbs-kick"><i></i>WORLD BOSS · PROCUREMENT</div>
+          <div class="wbs-name">SHADOW <em>ARMORY</em></div>
+        </div>
+        <div class="wbs-meter">
+          <div class="wbs-m"><small>TOKEN</small><b class="c">${fmt(tok)}</b></div>
+          <div class="wbs-m"><small>CORES</small><b class="k">${bossCount} / ${bossTotal}</b></div>
         </div>
       </div>
 
-      <!-- Navigation Pills -->
-      <div class="proto-tab-pills">
-        <button class="proto-tab-btn" id="raidShopBack" type="button" title="Kembali ke World Boss">
-          ◀ WORLD BOSS
-        </button>
-        <button class="proto-tab-btn" id="tabHub" type="button">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
-          WORLD BOSS COMMAND
-        </button>
-        <button class="proto-tab-btn active" id="tabShop" type="button">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-          SHADOW HUNTER ARMORY
-        </button>
-      </div>
-
-      <!-- Live Token & Cores Telemetry -->
-      <div class="live-currencies">
-        <div class="currency-pill">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8M8 14h6"/></svg>
-          <div class="label">WB TOKEN:</div>
-          <div class="value" id="dispToken">${fmt(tok)}</div>
-        </div>
-        <div class="currency-pill">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          <div class="label">CORES:</div>
-          <div class="value" style="color:var(--monarch-purple);" id="dispCores">${bossCount} / ${bossTotal}</div>
-        </div>
-      </div>
-    </header>
-
-    <!-- Main Shop View Container (Zero Luber / Isolated) -->
-    <div class="view-stage active" id="viewShop">
-      <div class="shop-view-container">
-        
-        <!-- Controls Bar & Category Filter Pills -->
-        <div class="shop-controls-bar">
-          <div class="shop-cat-tabs" id="shopCatBar">
-            <button class="shop-cat-btn ${filter==='all'?'active':''}" data-cat="all">ALL SUPPLIES (${ITEMS.length})</button>
-            <button class="shop-cat-btn ${filter==='ex-core'?'active':''}" data-cat="ex-core">EX CORES (BOSS)</button>
-            <button class="shop-cat-btn ${filter==='relic'?'active':''}" data-cat="relic">RELIC GEAR & PET</button>
-            <button class="shop-cat-btn ${filter==='potion'?'active':''}" data-cat="potion">AUGMENT & SPEED</button>
-            <button class="shop-cat-btn ${filter==='currency'?'active':''}" data-cat="currency">CREDITS & GEMS</button>
-          </div>
-
-          <div class="shop-matrix-tag">
-            TRANSACTION MATRIX // INSTANT DELIVERY TO INVENTORY
+      <div class="wbs-body">
+        <div class="wbs-shelf">
+          <div class="wbs-inner">
+            <section class="wbs-stage-panel" aria-label="Ex Core — kartu boss">
+              <div class="wbs-stage-h"><b>EX CORE</b><i></i><span>${bossTotal} · BOSS UNLOCK</span></div>
+              <div class="wbs-stage-track">${bossItems.map(wbsBossHtml).join("")}</div>
+            </section>
+            ${railsHtml}
           </div>
         </div>
-
-        <!-- Horizontal Shelf Outer with Floating Nav Arrows -->
-        <div class="shop-shelf-outer">
-          <button class="shelf-arrow-btn left" id="shopScrollLeft" type="button" title="Scroll Kiri">◀</button>
-          
-          <div class="shop-inventory-scroll" id="shopTrack">
-            ${filtered.map(it=>{
-              const isOwned = !!((it.it.card && (stackHas(it.it.card.char, it.it.card.mut) || (state.raidShopOwned && state.raidShopOwned[it.it.card.char]))) || (it.it.owned && it.it.owned()));
-              const canAfford = tok >= it.cost;
-              const isBossCard = it.cat === "ex-core";
-              const cardObj = it.it.card ? CARDS[it.it.card.char] : null;
-
-              return `
-              <div class="armory-300-card ${isOwned ? 'purchased' : ''}" style="--card-accent: ${it.accent}">
-                <!-- Top Row Badges -->
-                <div class="a3c-top-row">
-                  <span class="a3c-cat-badge">${it.catLabel}</span>
-                  <span class="a3c-tier-pill">${it.tier}</span>
-                </div>
-
-                <!-- AAA Holographic Chamber -->
-                <div class="a3c-chamber ${isBossCard ? 'boss-card-frame' : ''}">
-                  <div class="a3c-holo-foil"></div>
-                  <div class="a3c-scanlines"></div>
-                  <div class="a3c-rarity-crest">
-                    <span>★</span>
-                    <span>${it.tier}</span>
-                  </div>
-                  <img src="${it.art}" alt="${it.name}" onerror="this.onerror=null;this.src='assets/cards/art/eternal-dragon.webp'">
-                  ${isOwned ? '<div class="a3c-owned-ribbon">✔ OWNED</div>' : ''}
-                  <div class="a3c-card-barcode">${isBossCard ? 'SYS//MONARCH' : 'SYS//DEPOT'}</div>
-                </div>
-
-                <!-- Body: Title & Unclipped Multi-Line Details -->
-                <div class="a3c-body">
-                  <h3 class="a3c-title">${it.name}</h3>
-                  <p class="a3c-desc">${it.desc}</p>
-                  ${cardObj ? `
-                    <div class="a3c-passive-box">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                      <span>${cardObj.passive ? cardObj.passive.name : 'PASSIVE: ' + it.it.desc}</span>
-                    </div>
-                  ` : it.it.effect ? `
-                    <div class="a3c-passive-box param">
-                      <span>${it.it.effect}</span>
-                    </div>
-                  ` : ``}
-                </div>
-
-                <!-- Footer: Price & Action -->
-                <div class="a3c-footer">
-                  <div class="a3c-price-box">
-                    <span class="lbl">EXCHANGE PRICE</span>
-                    <div class="val"><b>${fmt(it.cost)}</b> <small>TOKEN</small></div>
-                  </div>
-                  <button class="a3c-buy-btn ${isOwned ? 'purchased' : ''}" 
-                          type="button" 
-                          data-id="${it.id}"
-                          ${isOwned || !canAfford ? 'disabled' : ''}>
-                    ${isOwned ? '✔ TERBELI' : (!canAfford ? 'TOKEN DEFISIT' : 'ACQUIRE // TUKAR ▶')}
-                  </button>
-                </div>
-              </div>
-              `;
-            }).join("")}
-          </div>
-
-          <button class="shelf-arrow-btn right" id="shopScrollRight" type="button" title="Scroll Kanan">▶</button>
-        </div>
-
       </div>
+
+      <div class="wbs-foot"><span>${WB_SHOP.length} SUPPLIES</span><i></i><span>INSTANT DELIVERY · 1 TOKEN = 1 RUN</span></div>
     </div>
   </div>`;
 
-  // Bind Navigation
   const rb=document.getElementById("raidShopBack");
   if(rb)rb.onclick=()=>{try{sfx.hit();}catch(e){}raidView="hub";renderRaid();};
-  const th=document.getElementById("tabHub");
-  if(th)th.onclick=()=>{try{sfx.hit();}catch(e){}raidView="hub";renderRaid();};
 
-  // Bind Category Filters
-  const bar=document.getElementById("shopCatBar");
-  if(bar){
-    bar.querySelectorAll(".shop-cat-btn").forEach(btn=>{
-      btn.onclick=()=>{
-        const cat=btn.getAttribute("data-cat");
-        if(cat && cat !== window.raidShopFilter){
-          try{sfx.hit();}catch(e){}
-          window.raidShopFilter=cat;
-          renderRaidShop();
-        }
-      };
-    });
-  }
-
-  // Bind Buy Buttons
-  const track=document.getElementById("shopTrack");
-  if(track){
-    track.querySelectorAll(".a3c-buy-btn:not([disabled])").forEach(btn=>{
-      btn.onclick=()=>{
-        const id=btn.getAttribute("data-id");
-        if(id) raidShopBuy(id);
-      };
-    });
-
-    // Horizontal Mouse Wheel Scroll
-    track.addEventListener("wheel", (e)=>{
-      if(e.deltaY !== 0){
-        e.preventDefault();
-        track.scrollLeft += e.deltaY;
-      }
-    }, { passive: false });
-  }
-
-  // Bind Shelf Arrow Buttons
-  const leftBtn=document.getElementById("shopScrollLeft");
-  const rightBtn=document.getElementById("shopScrollRight");
-  if(leftBtn && track){
-    leftBtn.onclick=()=>{
-      track.scrollBy({ left: -320, behavior: "smooth" });
+  app.querySelectorAll(".wbs-buy[data-id]").forEach(btn=>{
+    btn.onclick=()=>{
+      if(btn.disabled)return;
+      const id=btn.getAttribute("data-id");
+      if(id)raidShopBuy(id);
     };
-  }
-  if(rightBtn && track){
-    rightBtn.onclick=()=>{
-      track.scrollBy({ left: 320, behavior: "smooth" });
-    };
-  }
+  });
 }
+
 
 /* =============== INDEX CARD (popup) =============== */
 const IX_MUTS=["none","gold","rainbow","secret","ultima"];

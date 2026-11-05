@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v451-shopWoBBackground';
+const CACHE_NAME = 'anime-card-battle-v452-wbShadowArmory';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

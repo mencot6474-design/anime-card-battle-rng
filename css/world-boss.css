@@ -1040,413 +1040,308 @@ body.on-raid {
 }
 
 /* ==========================================================================
-   VIEW 2: HUNTER ARMORY // WORLD BOSS EXCHANGE SHOP (HORIZONTAL TACTICAL)
+   WORLD BOSS — "SHADOW ARMORY" (toko WB)
+   Port desain terkunci `_tmp/proto_wb_shop_v1.html` (user ACC 2026-11-05),
+   cermin toko Tower Inf "SPIRE ARMORY / HOLO SHELF".
+
+   Struktur : .wbs-shop > .wbs-top / .wbs-body(.wbs-shelf > .wbs-inner >
+              .wbs-stage-panel + .wbs-rail) / .wbs-foot
+   Tema     : WHITE-on-BLACK hazard (hitam #050505/#0d0d0d, teks #f5f5f5,
+              aksen kuning #f3e600). Warna SEMANTIK tidak diputihkan:
+              token=cyan, gem=emas, core=ungu.
+   Perf (§2b): hanya transform/opacity dianimasikan; TANPA backdrop-filter,
+              TANPA animasi box-shadow/background-position, TANPA foto latar.
+
+   Menggantikan blok lama "VIEW 2: HUNTER ARMORY // HORIZONTAL TACTICAL"
+   (.shop-view-container / .shop-cat-btn / .armory-300-card / .a3c-* /
+   .shop-shelf-outer / .shelf-arrow-btn) di slot yang SAMA — bukan ditumpuk
+   di akhir file (AGENTS aturan 4). Kelas lama sudah tidak dipakai JS.
    ========================================================================== */
-.shop-view-container {
-  width: 100% !important;
-  max-width: 100% !important;
-  height: 100% !important;
-  display: flex;
-  flex-direction: column;
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  border-radius: 12px;
-  padding: 20px 24px;
-  backdrop-filter: blur(16px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
-  min-height: 0;
+.wbs-page{
+  width:100%; height:100%; max-height:100%;
+  display:flex; flex-direction:column; min-height:0;
+  overflow:hidden;
+}
+.wbs-shop{
+  --wbs-bg:#050505; --wbs-bg2:#0d0d0d;
+  --wbs-line:#f5f5f5; --wbs-txt:#f5f5f5;
+  --wbs-acc:#f3e600;
+  --wbs-dim:rgba(245,245,245,.55); --wbs-faint:rgba(245,245,245,.17);
+  --wbs-tok:#22d3ee; --wbs-gem:#ffd700; --wbs-core:#a855f7;
+  --wbs-head:'Orbitron',monospace;
+  --wbs-ui:'Rajdhani',sans-serif;
+  --wbs-mono:'JetBrains Mono',monospace;
+  position:relative;
+  display:flex; flex:1 1 auto; flex-direction:column; min-height:0;
+  width:100%; height:100%; max-height:100%;
+  background:var(--wbs-bg); color:var(--wbs-txt);
+  font-family:var(--wbs-ui); font-weight:700;
+  font-variant-numeric:tabular-nums;
+  box-sizing:border-box;
 }
 
-/* Shop Subheader & Category Filter Pills */
-.shop-controls-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-  gap: 16px;
+/* ------------------------------- TOP BAR ------------------------------- */
+.wbs-top{
+  flex:0 0 auto; display:flex; align-items:center; gap:8px;
+  padding:7px 9px; border-bottom:1px solid var(--wbs-faint); background:var(--wbs-bg);
 }
-.shop-cat-tabs {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+.wbs-back{
+  flex:0 0 auto; min-height:44px; min-width:44px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  background:transparent; border:1px solid var(--wbs-faint); border-radius:2px;
+  color:var(--wbs-txt); padding:0;
 }
-.shop-cat-btn {
-  padding: 8px 16px;
-  background: rgba(10, 16, 32, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  color: var(--text-muted);
-  font-family: var(--font-cond);
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.wbs-back:active{ border-color:var(--wbs-acc); color:var(--wbs-acc); }
+.wbs-ttl{ display:flex; flex-direction:column; gap:1px; flex:1 1 auto; min-width:0; }
+.wbs-kick{
+  display:flex; align-items:center; gap:5px;
+  font-family:var(--wbs-mono); font-size:6.5px; letter-spacing:.2em; color:var(--wbs-dim);
+  white-space:nowrap; overflow:hidden;
 }
-.shop-cat-btn:hover {
-  border-color: var(--cyber-cyan);
-  color: var(--text-main);
+.wbs-kick i{ width:4px; height:4px; background:var(--wbs-acc); border-radius:50%; flex:0 0 auto; }
+.wbs-name{
+  font-family:var(--wbs-head); font-weight:900; font-size:14.5px; letter-spacing:.04em;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
-.shop-cat-btn.active {
-  background: rgba(0, 240, 255, 0.16);
-  border-color: var(--cyber-cyan);
-  color: #fff;
-  box-shadow: 0 0 14px rgba(0, 240, 255, 0.3);
+.wbs-name em{ font-style:normal; color:var(--wbs-acc); }
+.wbs-meter{ display:flex; gap:4px; flex:0 0 auto; }
+.wbs-m{
+  display:flex; flex-direction:column; align-items:flex-end; gap:0;
+  padding:3px 6px; border:1px solid var(--wbs-faint); border-radius:2px; min-width:48px;
+}
+.wbs-m small{ font-family:var(--wbs-mono); font-size:6px; letter-spacing:.14em; color:var(--wbs-dim); }
+.wbs-m b{ font-family:var(--wbs-head); font-size:11.5px; }
+.wbs-m b.c{ color:var(--wbs-tok); }
+.wbs-m b.k{ color:var(--wbs-core); }
+
+/* --------------------------- BODY : SHELF ------------------------------ */
+.wbs-body{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column; }
+.wbs-shelf{
+  flex:1 1 auto; min-height:0;
+  overflow-y:auto; overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  scrollbar-width:none;
+  padding:12px 9px 18px;
+}
+.wbs-shelf::-webkit-scrollbar{ display:none; }
+
+/* ==================== PANGGUNG KARTU BOSS (panel khusus) ================
+   Kartu boss TIDAK jadi baris rak: dipajang besar di panel sendiri di atas
+   rak supply. Panel ini anak pertama shelf (ikut tergulir) supaya layar
+   pendek tidak kehilangan tinggi gulir, tapi visualnya terpisah. */
+.wbs-stage-panel{
+  position:relative;
+  margin:0 0 14px; padding:0 0 10px;
+  border:1px solid var(--wbs-faint); border-radius:2px;
+  background:
+    radial-gradient(ellipse 90% 130% at 50% -25%, rgba(168,85,247,.15) 0%, transparent 70%),
+    linear-gradient(180deg, #0b0b0b 0%, #050505 100%);
+}
+.wbs-stage-h{
+  display:flex; align-items:center; gap:6px; padding:7px 8px;
+  font-family:var(--wbs-mono); font-size:6.5px; letter-spacing:.18em; color:var(--wbs-dim);
+  border-bottom:1px solid var(--wbs-faint);
+}
+.wbs-stage-h b{ color:var(--wbs-txt); }
+.wbs-stage-h i{ flex:1 1 auto; height:1px; background:var(--wbs-faint); }
+.wbs-stage-h span{ border:1px solid var(--wbs-faint); padding:1px 4px; border-radius:2px; font-size:6px; }
+.wbs-stage-track{
+  display:flex; gap:8px; padding:8px;
+  overflow-x:auto; overflow-y:hidden;
+  scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.wbs-stage-track::-webkit-scrollbar{ display:none; }
+@media (min-width:520px){
+  .wbs-stage-track{ justify-content:center; }
 }
 
-.shop-inventory-scroll {
-  flex: 1;
-  min-height: 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 10px 4px 18px 4px;
-  display: flex;
-  flex-direction: row;
-  gap: 16px;
-  align-items: stretch;
+/* KARTU BESAR: art 2:3 (rasio art kartu asli) di atas, info di bawah. */
+.wbs-boss{
+  flex:0 0 clamp(138px, 41vw, 190px); scroll-snap-align:start;
+  display:flex; flex-direction:column;
+  border:1px solid var(--wbs-faint); border-radius:2px; overflow:hidden;
+  background:linear-gradient(180deg, var(--wbs-bg2) 0%, #050505 100%);
 }
-/* Custom Scrollbar for horizontal shelf */
-.shop-inventory-scroll::-webkit-scrollbar {
-  height: 7px;
+.wbs-boss.owned{ border-color:rgba(245,245,245,.32); }
+.wbs-boss-art{
+  position:relative; flex:0 0 auto; width:100%; aspect-ratio:310/460;
+  overflow:hidden; background:#000;
 }
-.shop-inventory-scroll::-webkit-scrollbar-track {
-  background: rgba(5, 8, 16, 0.7);
-  border-radius: 4px;
+.wbs-boss-art img{
+  position:relative; z-index:2; width:100%; height:100%; object-fit:cover; display:block;
 }
-.shop-inventory-scroll::-webkit-scrollbar-thumb {
-  background: rgba(0, 240, 255, 0.4);
-  border-radius: 4px;
-  box-shadow: 0 0 8px rgba(0, 240, 255, 0.35);
+.wbs-boss-art .wbs-it-glow{ opacity:.30; }
+.wbs-boss-seal{
+  position:absolute; z-index:3; left:0; right:0; bottom:0;
+  padding:3px 4px; text-align:center;
+  font-family:var(--wbs-mono); font-size:6px; letter-spacing:.1em;
+  background:rgba(0,0,0,.82); color:var(--wbs-dim);
 }
-.shop-inventory-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--cyber-cyan);
+.wbs-boss-seal.on{ background:var(--wbs-acc); color:#000; }
+.wbs-boss-mid{
+  display:flex; flex-direction:column; gap:2px;
+  padding:6px 6px 0; flex:1 1 auto; min-width:0;
+}
+.wbs-boss-nm{
+  font-family:var(--wbs-head); font-weight:900; font-size:12px; letter-spacing:.02em;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.wbs-boss-ds{
+  font-size:8.5px; font-weight:700; line-height:1.3; color:var(--wbs-dim);
+  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+}
+.wbs-boss-foot{
+  display:flex; flex-direction:column; gap:4px;
+  padding:6px; margin-top:auto;
+  /* tinggi seragam: dua kartu tetap sejajar walau satu tombol DEFICIT */
+  min-height:72px;
+}
+.wbs-boss-price{
+  display:flex; align-items:baseline; gap:4px;
+  font-family:var(--wbs-mono); font-size:5.5px; letter-spacing:.12em; color:var(--wbs-dim);
+}
+.wbs-boss-price b{ font-family:var(--wbs-head); font-size:16px; color:var(--wbs-tok); letter-spacing:0; line-height:1; }
+.wbs-boss-price b i{ font-family:var(--wbs-mono); font-style:normal; font-size:6px; color:var(--wbs-dim); margin-left:3px; }
+.wbs-stage-track .wbs-buy{ width:100%; }
+
+/* ------------------------------ RAIL ITEM ------------------------------ */
+.wbs-rail{ margin-bottom:14px; }
+.wbs-rail:last-child{ margin-bottom:0; }
+.wbs-rail-h{
+  display:flex; align-items:center; gap:6px; margin-bottom:5px;
+  font-family:var(--wbs-mono); font-size:6.5px; letter-spacing:.18em; color:var(--wbs-dim);
+}
+.wbs-rail-h b{ color:var(--wbs-txt); }
+.wbs-rail-h i{ flex:1 1 auto; height:1px; background:var(--wbs-faint); }
+.wbs-rail-h span{ border:1px solid var(--wbs-faint); padding:1px 4px; border-radius:2px; font-size:6px; }
+.wbs-rail-shelf{ display:grid; grid-template-columns:1fr; gap:5px; }
+
+.wbs-it{
+  position:relative; display:flex; align-items:center; gap:8px;
+  padding:7px 8px; border:1px solid var(--wbs-faint); border-radius:2px;
+  background:linear-gradient(96deg, var(--wbs-bg2), rgba(0,0,0,.5));
+  box-sizing:border-box;
+}
+.wbs-it-art{
+  position:relative; flex:0 0 auto; display:flex; align-items:center; justify-content:center;
+  width:42px; height:42px; border:1px solid var(--wbs-faint); border-radius:2px; overflow:hidden;
+  background:radial-gradient(circle at 50% 42%, rgba(255,255,255,.10), transparent 68%), #000;
+}
+.wbs-it-art img{ position:relative; z-index:2; width:76%; height:76%; object-fit:contain; display:block; }
+.wbs-it-glow{
+  position:absolute; inset:0; z-index:1; opacity:.16;
+  background:radial-gradient(circle at 50% 50%, var(--ic,#fff) 0%, transparent 68%);
+}
+.wbs-it-mid{ flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:2px; }
+.wbs-it-cat{
+  display:flex; gap:4px; align-items:center;
+  font-family:var(--wbs-mono); font-size:6px; letter-spacing:.12em;
+}
+.wbs-it-cat .c1{ color:var(--ic, var(--wbs-acc)); }
+.wbs-it-cat .c2{ color:var(--wbs-dim); border:1px solid var(--wbs-faint); padding:0 3px; border-radius:2px; }
+.wbs-it-nm{
+  font-size:11.5px; font-weight:800; letter-spacing:.03em;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.wbs-it-ds{
+  font-size:9px; font-weight:700; line-height:1.25; color:var(--wbs-dim);
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  max-height:23px;
+}
+.wbs-it-stock{
+  display:flex; gap:4px; align-items:center; margin-top:1px;
+  font-family:var(--wbs-mono); font-size:6.5px; letter-spacing:.06em; color:var(--wbs-dim);
+  white-space:nowrap;
+}
+.wbs-it-stock b{ color:var(--wbs-txt); }
+.wbs-it-right{ flex:0 0 auto; display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
+.wbs-it-price{
+  display:flex; flex-direction:column; align-items:flex-end;
+  font-family:var(--wbs-mono); font-size:6px; letter-spacing:.08em; color:var(--wbs-dim);
+}
+.wbs-it-price b{ font-family:var(--wbs-head); font-size:15px; color:var(--wbs-tok); line-height:1; }
+.wbs-it-price b i{ font-family:var(--wbs-mono); font-style:normal; font-size:6px; color:var(--wbs-dim); margin-left:3px; }
+
+/* Tombol beli. Non-aktif = STATUS (teks redup + garis kiri), bukan kotak
+   putus-putus: keputusan desain toko Tower, terbukti di screenshot. */
+.wbs-buy{
+  min-height:44px; width:88px; padding:3px 5px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; text-align:center;
+  border:1px solid var(--wbs-acc); border-radius:2px;
+  background:var(--wbs-acc); color:#000;
+  font-family:var(--wbs-mono); font-size:7px; font-weight:700;
+  letter-spacing:.02em; line-height:1.15; white-space:normal;
+  box-sizing:border-box;
+}
+.wbs-buy:active{ opacity:.86; }
+.wbs-buy:disabled{
+  background:transparent; border:0; border-left:1px solid var(--wbs-faint);
+  border-radius:0; color:var(--wbs-dim); cursor:not-allowed;
+  min-height:0; height:auto; width:auto; min-width:60px; padding:4px 6px;
+  font-size:6.5px; letter-spacing:.03em; line-height:1.25;
 }
 
-/* 300px HORIZONTAL SEJAJAR CARD */
-.armory-300-card {
-  width: 300px;
-  min-width: 300px;
-  max-width: 300px;
-  flex: 0 0 300px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background: linear-gradient(180deg, rgba(14, 22, 42, 0.94) 0%, rgba(7, 11, 24, 0.98) 100%);
-  border: 1.2px solid rgba(0, 240, 255, 0.2);
-  border-top: 3.5px solid var(--card-accent, var(--cyber-cyan));
-  border-radius: 10px;
-  padding: 14px;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-  box-sizing: border-box;
+/* -------------------------------- FOOT -------------------------------- */
+.wbs-foot{
+  flex:0 0 auto; display:flex; align-items:center; gap:6px;
+  padding:6px 9px calc(6px + env(safe-area-inset-bottom,0px));
+  border-top:1px solid var(--wbs-faint); background:var(--wbs-bg);
+  font-family:var(--wbs-mono); font-size:6px; letter-spacing:.16em; color:var(--wbs-dim);
 }
-.armory-300-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(0, 240, 255, 0.45);
-  border-top-color: var(--card-accent, var(--cyber-cyan));
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7), 0 0 16px color-mix(in srgb, var(--card-accent, var(--cyber-cyan)) 30%, transparent);
-}
-.armory-300-card.purchased {
-  border-top-color: #22c55e;
-}
+.wbs-foot i{ flex:1 1 auto; height:1px; background:var(--wbs-faint); }
 
-/* Top Badge Row */
-.a3c-top-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
+/* --------------------------- RESPONSIVE -------------------------------- */
+/* 320px: dua kartu masih muat, teks dirapatkan. */
+@media (max-width:359px){
+  .wbs-shelf{ padding:8px 7px 12px; }
+  .wbs-top{ padding:5px 7px; gap:6px; }
+  .wbs-name{ font-size:13px; }
+  .wbs-kick{ font-size:6px; letter-spacing:.14em; }
+  .wbs-m{ min-width:44px; padding:2px 5px; }
+  .wbs-m b{ font-size:11px; }
+  .wbs-it{ gap:6px; padding:6px; }
+  .wbs-it-art{ width:36px; height:36px; }
+  .wbs-it-nm{ font-size:10.5px; }
+  .wbs-it-ds{ font-size:8.5px; -webkit-line-clamp:1; max-height:12px; }
+  .wbs-buy{ width:78px; font-size:6.5px; }
+  .wbs-buy:disabled{ width:auto; min-width:54px; }
+  .wbs-stage-track{ gap:6px; padding:6px; }
+  .wbs-boss{ flex:0 0 calc(50% - 3px); }
+  .wbs-boss-nm{ font-size:10.5px; }
+  .wbs-boss-ds{ font-size:8px; -webkit-line-clamp:2; }
+  .wbs-boss-price b{ font-size:14px; }
+  .wbs-stage-track .wbs-buy{ font-size:6.5px; }
 }
-.a3c-cat-badge {
-  font-family: var(--font-cond);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  padding: 2px 7px;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--card-accent, var(--cyber-cyan));
-  text-transform: uppercase;
+/* Landscape HP / layar pendek: kartu boss jadi HORIZONTAL (art kiri) supaya
+   panggung tidak menghabiskan tinggi layar; rak tetap dapat ruang gulir. */
+@media (max-height:470px){
+  .wbs-shelf{ padding:8px 9px 12px; }
+  .wbs-rail{ margin-bottom:9px; }
+  .wbs-it{ padding:5px 7px; gap:7px; }
+  .wbs-it-art{ width:36px; height:36px; }
+  .wbs-it-ds{ -webkit-line-clamp:1; max-height:12px; }
+  .wbs-stage-panel{ margin-bottom:9px; padding-bottom:6px; }
+  .wbs-stage-track{
+    display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:6px;
+    overflow:visible;
+  }
+  .wbs-boss{ flex:none; flex-direction:row; align-items:stretch; }
+  .wbs-boss-art{ width:66px; height:99px; aspect-ratio:auto; flex:0 0 auto; }
+  .wbs-boss-mid{ padding:5px 6px 0; gap:1px; }
+  .wbs-boss-nm{ font-size:10.5px; }
+  .wbs-boss-ds{ font-size:8px; -webkit-line-clamp:2; }
+  .wbs-boss-foot{ padding:4px 6px 5px; gap:3px; min-height:0; }
+  .wbs-boss-price b{ font-size:14px; }
+  .wbs-stage-track .wbs-buy{ font-size:6.5px; }
 }
-.a3c-tier-pill {
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 3px;
-  background: rgba(0, 0, 0, 0.85);
-  border: 1px solid var(--card-accent, var(--cyber-cyan));
-  color: var(--card-accent, var(--cyber-cyan));
-  text-transform: uppercase;
-}
-
-/* ==========================================================================
-   AAA HOLOGRAPHIC BOSS CARD CHAMBER (CYBERPUNK × SOLO LEVELING)
-   Reference: Solo Leveling: Arise (Shadow Monarch Gate) & Honkai Star Rail (Light Cones)
-   ========================================================================== */
-.a3c-chamber {
-  position: relative;
-  width: 100%;
-  height: 145px;
-  background: 
-    radial-gradient(circle at 50% 20%, rgba(168, 85, 247, 0.3) 0%, rgba(10, 16, 32, 0.95) 75%),
-    linear-gradient(180deg, #0f172a 0%, #030509 100%);
-  border: 1.5px solid rgba(0, 240, 255, 0.3);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  margin-bottom: 10px;
-  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.9), 0 4px 16px rgba(0, 0, 0, 0.6);
-  perspective: 600px;
-}
-
-/* Corner Cybernetic Clamps */
-.a3c-chamber::before {
-  content: "";
-  position: absolute;
-  inset: 3px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
-  pointer-events: none;
-  z-index: 4;
-}
-
-/* Boss Card Artwork Full Depth */
-.a3c-chamber img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 20%;
-  filter: contrast(1.15) brightness(1.05) drop-shadow(0 0 15px var(--card-accent, var(--cyber-cyan)));
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease;
-  z-index: 1;
-}
-.armory-300-card:hover .a3c-chamber img {
-  transform: scale(1.08) translateY(-2px);
-  filter: contrast(1.2) brightness(1.15) drop-shadow(0 0 25px var(--card-accent, var(--cyber-cyan)));
-}
-
-/* For Non-Card consumable items, keep them contained inside dark chamber */
-.armory-300-card[data-type="potion"] .a3c-chamber img,
-.armory-300-card[data-type="relic"] .a3c-chamber img,
-.armory-300-card[data-type="gem"] .a3c-chamber img {
-  width: 70%;
-  height: 70%;
-  object-fit: contain;
-}
-
-/* Dynamic Holographic Foil Shimmer */
-.a3c-holo-foil {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    115deg,
-    transparent 0%,
-    rgba(0, 240, 255, 0) 30%,
-    rgba(0, 240, 255, 0.35) 45%,
-    rgba(168, 85, 247, 0.5) 55%,
-    rgba(255, 42, 95, 0.35) 65%,
-    transparent 80%
-  );
-  background-size: 250% 250%;
-  mix-blend-mode: color-dodge;
-  opacity: 0.35;
-  pointer-events: none;
-  z-index: 3;
-  transition: opacity 0.3s ease;
-  animation: foilShine 8s linear infinite;
-}
-.armory-300-card:hover .a3c-holo-foil {
-  opacity: 0.85;
-  animation: foilShine 3s linear infinite;
-}
-@keyframes foilShine {
-  0% { background-position: 200% 0%; }
-  100% { background-position: -200% 0%; }
-}
-
-/* Monarch Scanlines & Reticle */
-.a3c-scanlines {
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.25) 0px, rgba(0, 0, 0, 0.25) 1px, transparent 1px, transparent 3px);
-  pointer-events: none;
-  z-index: 2;
-  opacity: 0.6;
-}
-
-/* Gilded Rarity Crest Top Left */
-.a3c-rarity-crest {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  z-index: 5;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
-  border: 1px solid var(--card-accent, var(--cyber-cyan));
-  color: var(--card-accent, var(--cyber-cyan));
-  font-family: var(--font-mono);
-  font-size: 9px;
-  font-weight: 800;
-  padding: 2px 6px;
-  border-radius: 4px;
-  letter-spacing: 0.05em;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
-}
-
-/* System Barcode Bottom Right */
-.a3c-card-barcode {
-  position: absolute;
-  bottom: 5px;
-  right: 6px;
-  z-index: 5;
-  font-family: var(--font-mono);
-  font-size: 8px;
-  letter-spacing: 0.15em;
-  color: rgba(255, 255, 255, 0.6);
-  background: rgba(0, 0, 0, 0.7);
-  padding: 1px 5px;
-  border-radius: 2px;
-  text-transform: uppercase;
-}
-
-/* Status Ribbon */
-.a3c-owned-ribbon {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  z-index: 5;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  font-weight: 800;
-  color: #4ade80;
-  background: rgba(5, 46, 22, 0.9);
-  border: 1px solid rgba(74, 222, 128, 0.5);
-  padding: 2px 7px;
-  border-radius: 4px;
-  box-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
-}
-/* Card Body */
-.a3c-body {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  flex: 1;
-}
-.a3c-title {
-  font-family: var(--font-display);
-  font-size: 16px;
-  color: #fff;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.a3c-desc {
-  font-size: 12px;
-  color: var(--text-muted);
-  line-height: 1.45;
-  display: block;
-  overflow: visible;
-  word-break: break-word;
-}
-.a3c-passive-box {
-  background: rgba(168, 85, 247, 0.14);
-  border: 1px solid rgba(168, 85, 247, 0.35);
-  border-radius: 6px;
-  padding: 6px 9px;
-  font-size: 11px;
-  line-height: 1.42;
-  color: #e9d5ff;
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
-  white-space: normal;
-  word-break: break-word;
-  margin-top: 4px;
-  box-shadow: inset 0 0 12px rgba(168, 85, 247, 0.12);
-}
-.a3c-passive-box svg {
-  flex: none;
-  margin-top: 2px;
-}
-.a3c-passive-box.param {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.12);
-  color: #94a3b8;
-}
-/* Card Footer: Price & Buy */
-.a3c-footer {
-  margin-top: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-top: 8px;
-}
-.a3c-price-box {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.a3c-price-box .lbl {
-  font-family: var(--font-cond);
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--text-muted);
-  letter-spacing: 0.08em;
-}
-.a3c-price-box .val b {
-  font-family: var(--font-mono);
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--cyber-cyan);
-}
-.a3c-price-box .val small {
-  font-family: var(--font-cond);
-  font-size: 10px;
-  color: var(--text-muted);
-}
-.a3c-buy-btn {
-  width: 100%;
-  padding: 8px;
-  background: linear-gradient(135deg, rgba(0, 240, 255, 0.22) 0%, rgba(0, 240, 255, 0.08) 100%);
-  border: 1.2px solid var(--cyber-cyan);
-  border-radius: 6px;
-  color: #fff;
-  font-family: var(--font-display);
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-}
-.a3c-buy-btn:hover:not(:disabled) {
-  background: var(--cyber-cyan);
-  color: #030509;
-  box-shadow: 0 0 14px rgba(0, 240, 255, 0.45);
-}
-.a3c-buy-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-  border-color: rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-muted);
-}
-.a3c-buy-btn.purchased {
-  background: rgba(34, 197, 94, 0.16);
-  border-color: #22c55e;
-  color: #86efac;
-  opacity: 1;
+/* Desktop lebar: pusatkan kolom 560px (cermin toko Tower produksi). */
+@media (min-width:860px){
+  .wbs-shop{
+    width:min(100%,560px); margin:0 auto;
+    border-left:1px solid var(--wbs-faint); border-right:1px solid var(--wbs-faint);
+  }
 }
 
 .proto-toast.show {
@@ -1726,45 +1621,6 @@ body.on-raid {
   text-overflow: ellipsis;
 }
 
-/* Shelf Outer Container with Floating Arrow Buttons */
-.shop-shelf-outer {
-  position: relative;
-  flex: 1 1 0%;
-  min-height: 0;
-  height: 100%;
-  display: flex;
-  align-items: stretch;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-.shelf-arrow-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 20;
-  width: 24px;
-  height: 48px;
-  background: rgba(7, 13, 26, 0.88);
-  border: 1px solid rgba(0, 240, 255, 0.4);
-  border-radius: 4px;
-  color: var(--cyber-cyan);
-  font-size: 11px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7);
-  transition: all 0.2s;
-}
-.shelf-arrow-btn:hover {
-  background: rgba(0, 240, 255, 0.25);
-  color: #fff;
-  box-shadow: 0 0 16px rgba(0, 240, 255, 0.6);
-}
-.shelf-arrow-btn.left { left: 2px; }
-.shelf-arrow-btn.right { right: 2px; }
 
 /* ==========================================================================
    WORLD BOSS TACTICAL STRIKER PICKER (.rd-pick)
