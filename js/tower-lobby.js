@@ -120,229 +120,373 @@ function towerStartRun(){
 }
 function renderTower(){
   if(towerView==="battle"&&towerRun){renderTowerBattle();return;}
-  if(towerView==="shop"){renderTowerShop();return;}
+  if(towerView==="shop"){csClearCompact();renderTowerShop();return;}
   renderTowerHub();
 }
-function towerPreviewCard(w,isBoss,role,idx){
-  const id=w.eid, c=CARDS[id]; if(!c) return "";
-  const tier=c.tier,bossBadge=isBoss&&idx===0;
-  const waveNum=idx+1;
-  return `<div class="tw-fcard${bossBadge?" bossx":""}" data-tier="${tier}">
-    <div class="tw-fcard-inner">
-      <div class="tw-fcard-top">
-        <span class="tw-fcard-wave">WAVE 0${waveNum}</span>
-        ${bossBadge?'<span class="fb bossx">⚠️ BOSS</span>':`<span class="tw-fcard-role">${role==="main"?"VANGUARD":"RESERVE"}</span>`}
-      </div>
-      <div class="tw-fcard-img">
-        <img src="${c.sprite_asset}" alt="${c.name}"${c.pos?` style="object-position:${c.pos}"`:''}>
-        <div class="tw-fcard-sweep"></div>
-      </div>
-      <div class="tw-fcard-meta">
-        <span class="tw-fcard-type">${c.type || "COMBATANT"}</span>
-        <span class="fn" title="${c.name}">${c.name}</span>
-        <div class="fs"><span class="hp"><i>HP</i> <b>${fmtStat(w.es.hp)}</b></span><span class="atk"><i>ATK</i> <b>${fmtStat(w.es.atk)}</b></span></div>
-      </div>
+/* body.tw-compact hanya bermakna selama hub CORE SPIRE tampil. Tanpa ini
+   kelasnya tertinggal di layar lain (terukur: masih `true` saat lobby, karena
+   csRenderSlabs yang menyalakannya tidak punya pasangan pembersih). */
+function csClearCompact(){ document.body.classList.remove("tw-compact"); }
+/* ==================== CORE SPIRE — HUB TOWER INFINITE ====================
+   Port dari lab `_tmp/proto_tower_skel.html` (desain DIKUNCI user 2026-11-05).
+   Struktur: .cs-hub > .cs-top / .cs-body(.cs-stage + .cs-side) / .cs-foot?
+   Kontrak boot yang WAJIB dijaga (js/boot.js:341,384 -> body.on-tower):
+     root  class="tw-page tactical-tower-page"
+     id    towerGo / towerShop / towerLobby / twDropRateBtn
+   Algoritma lantai menara (hasil ukur, JANGAN diubah tanpa ukur ulang):
+     1. .cs-stage berperspektif -> tinggi lantai yang TAMPAK bukan tinggi CSS
+        (terukur 80px DEPLOY di 500x844, 59px di 320x568) dan berbeda per posisi.
+     2. Jarak antar-lantai lebih kecil dari tinggi lantai terdekat = lantai
+        berikutnya tertutup (terukur -3..-13px).
+     3. Umpan balik "jarak terus dinaikkan" DIVERGEN: menaikkan jarak mendorong
+        lantai ke atas mendekati perspective-origin sehingga lantai justru
+        membesar (terukur meledak 113/200/287/374px). Karena itu yang berubah
+        hanya JUMLAH lantai; jarak dihitung ulang dari jumlah itu.
+     4. Stage pendek (320x568 -> ~243px) hanya muat 3 lantai rak 3-baris dan
+        menyisakan ruang mati -> mode PADAT (body.tw-compact, 2 baris).
+   Cara kerja: coba n dari TERBESAR ke terkecil, UKUR hasil nyata, terima n
+   pertama yang tidak bertumpuk dan tidak keluar dari stage. */
+const CS_SLAB_MAX = 9, CS_SLAB_MIN = 3;
+
+function csPad2(n){ return String(n).padStart(2, "0"); }
+function csStageEl(){ return document.querySelector(".cs-hub .cs-stage"); }
+
+/* tinggi stage yang terpasang (dipakai memilih jumlah lantai) */
+function csStageH(){
+  const st = csStageEl();
+  return (st && st.clientHeight) || 300;
+}
+
+/* Jendela lantai: frontier (best+1) SELALU ikut tampil supaya pemain tahu
+   sasaran berikutnya, sisanya lantai di bawahnya. Biaya DOM tetap <= 9. */
+function csWindowFloors(n, best){
+  const lo = Math.max(1, (best + 1) - (n - 1));
+  const out = [];
+  for(let f = lo; f < lo + n; f++) out.push(f);
+  return out;
+}
+
+/* active  = titik mulai run (produksi selalu mulai lantai 1)
+   next    = frontier best+1, sasaran berikutnya
+   cleared = sudah ditembus
+   locked  = belum terjangkau */
+function csFloorStateOf(f, best){
+  if(f === 1) return "active";
+  if(f === best + 1) return "next";
+  if(f <= best) return "cleared";
+  return "locked";
+}
+
+function csSlabHtml(f, idx, y, best){
+  const st = csFloorStateOf(f, best);
+  const boss = towerIsBossFloor(f);
+  const isAct = st === "active";
+  const isRec = f === best && best > 0;
+  const kind = boss ? "CRITICAL ANOMALY" : "SECURITY NODE";
+  const coin = fmt(towerReward(f).coins);
+
+  let status, sub;
+  if(isAct){
+    status = "DEPLOY READY";
+    sub = boss ? "BOSS GATE" : "4 WAVES &middot; +" + coin + " COIN";
+  } else if(st === "next"){
+    status = "NEXT TARGET";
+    sub = boss ? "HAZARD AHEAD" : "+1 TOKEN &middot; +" + coin + " COIN";
+  } else if(st === "cleared"){
+    status = "ANALYSIS COMPLETE";
+    sub = "CLEARED &middot; +" + coin + " COIN";
+  } else {
+    status = "ENCRYPTED";
+    sub = boss ? "HAZARD SECTOR" : "LOCKED SECTOR";
+  }
+
+  const badge = (isRec ? '<span class="cs-sl-badge rec">REKOR</span>' : "")
+              + (boss ? '<span class="cs-sl-badge haz">HAZARD</span>' : "");
+  const clickable = isAct || st === "next";
+  return `<div class="cs-slab" data-state="${st}" data-boss="${boss ? 1 : 0}" data-floor="${f}"`
+    + ` style="--h:${idx};--y:${Math.round(y)}px"`
+    + (clickable ? ' role="button" tabindex="0" aria-label="Mulai run dari lantai ' + f + '"' : '')
+    + `>
+    <div class="cs-sl">
+      <span class="cs-sl-no">${csPad2(f)}</span>
+      <span class="cs-sl-mid">
+        <span class="cs-sl-k">${kind}</span>
+        <span class="cs-sl-n">${status}</span>
+        <span class="cs-sl-st">${sub}</span>
+      </span>
+      ${badge}
     </div>
   </div>`;
 }
+
+/* Render menara (jendela lantai). Mengembalikan {n, floors} untuk dipakai
+   kalau perlu; tidak ada state global yang diubah selain body.tw-compact. */
+function csRenderSlabs(best){
+  const host = document.getElementById("csSlabs");
+  if(!host) return null;
+  const H = csStageH();
+  const compact = H < 310;
+  document.body.classList.toggle("tw-compact", compact);
+
+  let gap1 = 66, rackStep = compact ? 30 : 42;
+
+  const draw = (n) => {
+    const floors = csWindowFloors(n, best);
+    const ys = [];
+    let y = 0;
+    for(let i=0;i<n;i++){ ys.push(Math.round(y)); y += (i === 0) ? gap1 : rackStep; }
+    host.innerHTML = floors.map((f, i) => csSlabHtml(f, i, ys[i], best)).join("");
+    return { n, floors };
+  };
+
+  /* ukur tinggi slab NYATA: perspektif mengubah tinggi tampak per posisi */
+  draw(CS_SLAB_MIN + 1);
+  const kids = [...host.children];
+  if(kids.length >= 2){
+    gap1 = Math.ceil(kids[0].getBoundingClientRect().height) + 4;
+    rackStep = Math.max(rackStep, Math.ceil(kids[1].getBoundingClientRect().height) + 2);
+  }
+
+  const measureOk = () => {
+    const rows = [...host.children];                    /* urut: bawah -> atas */
+    if(rows.length < 2) return true;
+    const rects = rows.map(e => e.getBoundingClientRect());
+    const stageEl = host.closest(".cs-stage");
+    if(!stageEl) return true;
+    const stage = stageEl.getBoundingClientRect();
+    /* rows[0] = lantai TERBAWAH; lantai lebih tinggi digambar LEBIH ATAS,
+       jadi tumpang-tindih = bottom lantai atas melewati top lantai di bawahnya.
+       Membandingkan terbalik membuat SEMUA susunan dianggap tumpang. */
+    for(let i=1;i<rects.length;i++){
+      if(rects[i-1].top - rects[i].bottom < -1) return false;
+    }
+    return rects[rects.length-1].top >= stage.top - 1;
+  };
+
+  let bestN = CS_SLAB_MIN, geo = draw(CS_SLAB_MIN);
+  for(let n = CS_SLAB_MAX; n >= CS_SLAB_MIN; n--){
+    geo = draw(n);
+    if(measureOk()){ bestN = n; break; }
+  }
+  if(geo.n !== bestN) geo = draw(bestN);
+
+  /* sebar sisa ruang supaya menara mengisi stage, lalu periksa ulang;
+     kalau gagal, kembali ke jarak aman */
+  if(bestN > 2){
+    const spread = (H - 8 - gap1) / (bestN - 1);
+    const tryStep = Math.min(rackStep * 1.5, Math.max(rackStep, spread));
+    if(tryStep > rackStep + 1){
+      const keep = rackStep;
+      rackStep = tryStep;
+      geo = draw(bestN);
+      if(!measureOk()){ rackStep = keep; geo = draw(bestN); }
+    }
+  }
+  return geo;
+}
+
+/* Dossier: 4 kartu wave. PARITAS PRODUKSI — towerWaves() (tower-lobby.js:43-57)
+   selalu mengembalikan 4 wave (normal: 4 pick; boss: main + tag + pick(2) +
+   pick(3)), dan dulu lab memotong .slice(0,3) sehingga kartu ke-4 hilang.
+   Jangan dipotong. */
+function csRenderDossier(waves, best){
+  const host = document.getElementById("csWaves");
+  if(!host) return;
+  const boss = towerIsBossFloor(1);
+  const fEl = document.getElementById("csDosFloor");
+  const bEl = document.getElementById("csDosBoss");
+  const rEl = document.getElementById("csDosRec");
+  if(fEl) fEl.textContent = "F1";
+  if(bEl) bEl.style.display = boss ? "" : "none";
+  if(rEl) rEl.style.display = best > 0 ? "" : "none";
+
+  host.innerHTML = (waves || []).map((w, i) => {
+    if(!w || !w.en) return "";
+    const lead = i === 0;
+    const isBoss = !!w.en.boss;
+    const tagCls = lead ? "lead" : (isBoss ? "boss" : "");
+    const tagTxt = "W" + (i + 1) + (lead ? " LEAD" : (isBoss ? " BOSS" : ""));
+    return `<div class="cs-wv">
+      <div class="cs-wv-art">
+        <img src="${w.en.img}" alt="${w.en.name}" decoding="async" loading="lazy">
+        <span class="cs-wv-tag ${tagCls}">${tagTxt}</span>
+      </div>
+      <div class="cs-wv-bot">
+        <span class="cs-wv-n" title="${w.en.name}">${w.en.name}</span>
+        <span class="cs-wv-s"><b>${fmtStat(w.es.hp)}</b> HP &middot; <b>${fmtStat(w.es.atk)}</b> ATK</span>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+/* Gambar ulang menara + dossier pada ukuran viewport sekarang.
+   Dipakai render pertama (setelah layout terpasang) dan tiap resize/rotasi.
+   Aman dipanggil kapan pun: kalau hub tidak ada di DOM, langsung keluar. */
+function csRepaintHub(){
+  if(!document.querySelector(".cs-hub")) return;
+  const best = (state.tower && state.tower.best) || 0;
+  /* Dossier DULU: kartu wave mengisi `.cs-side` dan itu yang menentukan tinggi
+     akhir `.cs-stage` (flex). Mengukur menara sebelum dossier terisi = mengukur
+     stage yang masih terlalu tinggi. */
+  csRenderDossier(towerWaves(1), best);
+  csRenderSlabs(best);
+  csWatchStage();
+}
+
+/* Tinggi stage BUKAN konstanta setelah satu rAF: dossier + 4 kartu wave +
+   gambar lazy mengisi ruang SETELAH-nya, sehingga stage menyusut (terukur
+   320x568: 283px final vs ~350px saat rAF pertama; 500x844: 546 final).
+   Akibatnya jumlah lantai + body.tw-compact dihitung dari tinggi basi —
+   terukur `slabTopGap` -64px (320) dan -72px (500): lantai teratas keluar
+   dari atas stage. ResizeObserver menangkap perubahan tinggi stage dan
+   menggambar ulang. Dipasang SEKALI per elemen stage (hub di-render ulang
+   tiap navigasi, jadi elemennya diganti dan observer lama dilepas).
+   Ambang 3px mencegah loop: slab berposisi absolute, jadi repaint tidak
+   mengubah tinggi stage — kalau tidak ada perubahan nyata, tidak ada kerja. */
+let _csRO = null, _csROEl = null, _csLastStageH = 0;
+function csWatchStage(){
+  const st = csStageEl();
+  if(!st || typeof ResizeObserver !== "function") return;
+  if(_csROEl === st && _csRO) return;
+  if(_csRO){ try{ _csRO.disconnect(); }catch(e){} _csRO = null; }
+  _csROEl = st;
+  _csLastStageH = st.clientHeight;
+  _csRO = new ResizeObserver(() => {
+    if(!st.isConnected) return;
+    const h = st.clientHeight;
+    if(Math.abs(h - _csLastStageH) < 3) return;
+    _csLastStageH = h;
+    if(!document.querySelector(".cs-hub")) return;
+    const best = (state.tower && state.tower.best) || 0;
+    csRenderSlabs(best);
+  });
+  try{ _csRO.observe(st); }catch(e){}
+}
+
+/* Resize/rotasi: ukuran lantai menara bergantung tinggi stage, jadi WAJIB
+   dihitung ulang. Debounce lewat rAF supaya drag-resize tidak memicu puluhan
+   pengukuran per frame (setiap ukur memaksa reflow). Listener dipasang sekali. */
+if(!window.__csHubResizeWired){
+  window.__csHubResizeWired = true;
+  let raf = 0;
+  const onResize = () => {
+    if(raf) return;
+    raf = requestAnimationFrame(() => { raf = 0; csRepaintHub(); });
+  };
+  window.addEventListener("resize", onResize, { passive: true });
+  window.addEventListener("orientationchange", onResize, { passive: true });
+}
+
+/* ============================== HUB MARKUP ==============================
+   Struktur & urutan kelas = cermin lab (dikunci user). Menara (#csSlabs) dan
+   kartu wave (#csWaves) sengaja DIKOSONGKAN di sini lalu diisi
+   csRenderSlabs/csRenderDossier setelah layout terpasang, karena jumlah lantai
+   bergantung tinggi stage yang baru diketahui setelah reflow. */
 function renderTowerHub(){
   if(!state.tower)state.tower={best:0};
   const best=state.tower.best||0;
-  const start=1;                       /* selalu mulai Lantai 1 */
+  const start=1;                       /* run selalu dimulai dari lantai 1 */
   const boss=towerIsBossFloor(start);
-  const waves=towerWaves(start);
-
-  /* Tactical Spire Node List (Ala PGR / Honkai Star Rail Spire)
-     Dinamis sampai rekor tertinggi pemain + sektor tantangan berikutnya */
-  const maxFloor = Math.max(15, Math.ceil((best + 5) / 5) * 5);
-  let fl="";
-  for(let f=maxFloor; f>=1; f--){
-    const isB = towerIsBossFloor(f);
-    const isCurrent = f === start;
-    const isCleared = f <= best;
-    const isRecord = f === best && best > 0;
-    const cls = (isCurrent ? "node-active" : (isCleared ? "node-cleared" : "node-locked")) + (isB ? " node-boss" : "");
-
-    fl += `<div class="spire-node ${cls}">
-      <div class="sn-left">
-        <span class="sn-tag">${isB ? 'BOSS SECTOR' : 'SECTOR'}</span>
-        <span class="sn-num">${String(f).padStart(2, "0")}</span>
-      </div>
-      <div class="sn-mid">
-        <span class="sn-label">${isB ? 'CRITICAL ANOMALY' : 'SECURITY NODE'}</span>
-        <span class="sn-status">${isCurrent ? 'DEPLOY READY' : (isCleared ? 'ANALYSIS COMPLETE' : 'ENCRYPTED')}</span>
-      </div>
-      <div class="sn-badge">
-        ${isRecord ? '<span class="sn-rekor"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> REKOR</span>' : ''}
-        ${isB ? '<span class="sn-boss-badge">HAZARD</span>' : (isCurrent ? '<span class="sn-curr-pulse"></span>' : '')}
-      </div>
-    </div>`;
-  }
 
   app.innerHTML=`<div class="tw-page tactical-tower-page">
-  <div class="tactical-tower-hub">
-    
-    <!-- SISI KIRI: SPIRE NODE STREAM (PGR / Star Rail Style) -->
-    <aside class="spire-stream-panel">
-      <div class="spire-stream-hdr">
-        <div class="ssh-tag"><span class="ssh-dot"></span> SECTOR MATRIX</div>
-        <div class="ssh-title">ASCENT STREAM</div>
-      </div>
-      <div class="spire-node-list">${fl}</div>
-      <div class="spire-stream-ftr">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-        <span>CONTINUOUS RUN &middot; UNTIL DEFEAT</span>
-      </div>
-    </aside>
+  <div class="cs-hub">
 
-    <!-- SISI KANAN: TACTICAL MISSION DOSSIER -->
-    <main class="tactical-dossier-panel">
-      
-      <!-- HEADER DOSSIER -->
-      <div class="dossier-header">
-        <div class="dh-titles">
-          <div class="dh-kicker"><span class="dh-kicker-dot"></span>NEURAL SPIRE // INFINITE ASCENT PROTOCOL</div>
-          <div class="dh-title">INFINITE <span class="dh-cyan">TOWER</span></div>
-          <div class="dh-sub">ENDLESS VIRTUAL SPIRE PENETRATION FROM FLOOR 01 TO OVERLOAD</div>
+    <!-- ============================ TOP BAR ============================ -->
+    <div class="cs-top">
+      <button class="cs-back" id="towerLobby" type="button" aria-label="Return to Lobby" title="Lobby">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <div class="cs-ttl">
+        <span class="cs-kick"><i></i> INFINITE TOWER &middot; NO RUN</span>
+        <span class="cs-name">CORE <em>SPIRE</em></span>
+      </div>
+      <div class="cs-meter">
+        <div class="cs-m"><small>BEST</small><b>${fmt(best)}</b></div>
+        <div class="cs-m"><small>TOKEN</small><b class="c">${fmt(state.infTokens||0)}</b></div>
+      </div>
+      <button class="cs-info" type="button" id="twDropRateBtn" aria-label="Drop rates" title="Drop rates">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 5L5 19"/><circle cx="7" cy="7" r="2.6"/><circle cx="17" cy="17" r="2.6"/></svg>
+      </button>
+    </div>
+
+    <!-- ======================= MENARA + DOSSIER ======================== -->
+    <div class="cs-body">
+      <div class="cs-stage">
+        <div class="cs-spire">
+          <div class="cs-beam"></div>
+          <div class="cs-beam b2"></div>
+          <div class="cs-reactor">
+            <span class="cs-ring"></span><span class="cs-ring"></span><span class="cs-ring"></span>
+          </div>
+          <div id="csSlabs"></div>
         </div>
-        <div class="dh-actions">
-          <button class="dh-lobby-btn" id="towerLobby" type="button" title="Return to Lobby">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-            <span>LOBBY</span>
+      </div>
+
+      <div class="cs-side">
+        <div class="cs-dossier">
+          <div class="cs-dh">
+            <span>NEXT CONTACT</span><b id="csDosFloor">F${start}</b>
+            <span class="hb" id="csDosBoss" style="display:none">HAZARD</span>
+            <span class="rec" id="csDosRec" style="display:none">REKOR</span>
+          </div>
+          <div class="cs-waves" id="csWaves"></div>
+        </div>
+
+        <div class="cs-dock">
+          <button class="cs-cta" id="towerShop" type="button">
+            <span class="ci">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            </span>
+            <span class="cc"><small>EXCHANGE MARKET</small><b>TOWER SHOP</b></span>
+          </button>
+          <button class="cs-cta primary" id="towerGo" type="button">
+            <span class="ci">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor" stroke="none"/></svg>
+            </span>
+            <span class="cc">
+              <small>INITIALIZE RUN &middot; FLOOR ${start}</small>
+              <b>${boss?"ENGAGE BOSS":"INITIATE PENETRATION"}</b>
+            </span>
+            <span class="cs-chev"><span>&rsaquo;</span><span>&rsaquo;</span><span>&rsaquo;</span></span>
           </button>
         </div>
       </div>
-
-      <!-- HUD TELEMETRY METRICS -->
-      <div class="dossier-metrics">
-        <div class="dm-card dm-best">
-          <div class="dm-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
-          <div class="dm-data">
-            <span class="dm-label">RECORD HIGHEST</span>
-            <b class="dm-val">FL.${String(best).padStart(2, "0")}</b>
-            <span class="dm-sub-tag">${best>=50?'✦ APEX CLIMBER':(best>=25?'⚡ HIGH REACH':'STANDBY')}</span>
-          </div>
-        </div>
-        <div class="dm-card dm-tokens">
-          <div class="dm-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8M8 14h6"/></svg></div>
-          <div class="dm-data">
-            <span class="dm-label">TOWER TOKENS</span>
-            <b class="dm-val">${fmt(state.infTokens||0)}</b>
-            <span class="dm-sub-tag">AVAILABLE DEPOSIT</span>
-          </div>
-        </div>
-        <div class="dm-card dm-start">
-          <div class="dm-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg></div>
-          <div class="dm-data">
-            <span class="dm-label">START SECTOR</span>
-            <b class="dm-val">FL.${String(start).padStart(2, "0")}</b>
-            <span class="dm-sub-tag">READY TO ENGAGE</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ENCOUNTER TARGET DOSSIER (ENEMY LIST) -->
-      <div class="dossier-sec">
-        <div class="dossier-sec-hdr">
-          <div class="dsh-left">
-            <span class="dsh-bracket">[</span>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>
-            <span class="dsh-txt">TARGET PROTOCOL &middot; FLOOR ${start}</span>
-            <span class="dsh-bracket">]</span>
-          </div>
-          <span class="dsh-status-tag">${boss?'⚠️ HAZARD: BOSS ENCOUNTER':'STANDARD WAVE QUEUE'}</span>
-        </div>
-        <div class="tw-foes">${waves.map((w,i)=>towerPreviewCard(w,boss,i===0?"main":"tag",i)).join("")}</div>
-      </div>
-
-      <!-- TACTICAL CLEAR REWARDS CHIPS -->
-      <div class="dossier-sec">
-        <div class="dossier-sec-hdr">
-          <div class="dsh-left">
-            <span class="dsh-bracket">[</span>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-            <span class="dsh-txt">CLEARANCE SUPPLY MATRIX</span>
-            <span class="dsh-bracket">]</span>
-          </div>
-          <button class="r-info-pill-btn" id="twDropRateBtn" type="button" title="View Drop Rate Probabilities">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-            <span>DROP PROBABILITY</span>
-          </button>
-        </div>
-        <div class="rewards-summary-bar">
-          <div class="r-chip r-chip-rolls">
-            <span class="rc-dot c"></span>
-            <div class="rc-info">
-              <span class="rc-label">CARD ROLLS</span>
-              <b>+100 Rolls / Floor</b>
-            </div>
-          </div>
-          <div class="r-chip r-chip-tokens">
-            <span class="rc-dot v"></span>
-            <div class="rc-info">
-              <span class="rc-label">TOWER TOKENS</span>
-              <b>+1 Token (Boss +5)</b>
-            </div>
-          </div>
-          <div class="r-chip r-chip-pots">
-            <span class="rc-dot g"></span>
-            <div class="rc-info">
-              <span class="rc-label">POTION SUPPLY</span>
-              <b>Drop 5% &ndash; 10%</b>
-            </div>
-          </div>
-          <div class="r-chip r-chip-rare">
-            <span class="rc-dot r"></span>
-            <div class="rc-info">
-              <span class="rc-label">ULTRA RARE</span>
-              <b>Flame Sword &bull; Kyubi</b>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ACTION BUTTONS: DUAL TACTICAL CTA -->
-      <div class="dossier-actions">
-        <button class="tactical-btn shop-cta" id="towerShop" type="button">
-          <div class="tb-glow"></div>
-          <div class="tb-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
-          <div class="tb-content">
-            <small>EXCHANGE MARKET</small>
-            <b>TOWER SHOP</b>
-          </div>
-        </button>
-
-        <button class="tactical-btn deploy-cta" id="towerGo" type="button">
-          <div class="tb-glow"></div>
-          <div class="tb-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
-          <div class="tb-content">
-            <small>INITIALIZE RUN &middot; FLOOR ${start}</small>
-            <b>INITIATE PENETRATION</b>
-          </div>
-          <div class="tb-chevrons"><span>&rsaquo;</span><span>&rsaquo;</span><span>&rsaquo;</span></div>
-        </button>
-      </div>
-
-    </main>
+    </div>
   </div></div>`;
 
+  /* ---- binding: id + efek klik SAMA seperti versi lama ---- */
   const g=document.getElementById("towerGo");if(g)g.onclick=()=>{sfx.hit();towerStartRun();};
   const s=document.getElementById("towerShop");if(s)s.onclick=()=>{sfx.hit();towerView="shop";render();};
   const lb=document.getElementById("towerLobby");if(lb)lb.onclick=()=>{try{sfx.hit();}catch(e){}location.hash="#/";};
   const dr=document.getElementById("twDropRateBtn");if(dr)dr.onclick=()=>{try{sfx.hit();}catch(e){}openTowerDropModal();};
 
+  /* Lantai DEPLOY & frontier juga bisa ditekan -> jalankan run yang sama
+     (run selalu mulai lantai 1, sama seperti CTA). Delegasi supaya tetap hidup
+     walau csRenderSlabs menggambar ulang isi menara. */
+  const slabHost=document.getElementById("csSlabs");
+  if(slabHost){
+    const fire=(e)=>{
+      const t=e.target;
+      const sl=t&&t.closest?t.closest('.cs-slab[role="button"]'):null;
+      if(!sl)return;
+      try{sfx.hit();}catch(err){}
+      towerStartRun();
+    };
+    slabHost.onclick=fire;
+    slabHost.onkeydown=(e)=>{
+      if(e.key!=="Enter"&&e.key!==" "&&e.key!=="Spacebar")return;
+      if(!e.target.closest||!e.target.closest('.cs-slab[role="button"]'))return;
+      e.preventDefault();
+      fire(e);
+    };
+  }
+
+  /* Render menara & wave SETELAH layout terpasang (butuh tinggi stage nyata).
+     window.scrollTo(0,0) = pengaman lama: dokumen selalu mulai dari paling atas
+     (jangan pakai scrollIntoView — itu ikut men-scroll halaman di HP/APK). */
   requestAnimationFrame(()=>{
-    /* Fix: jangan pakai scrollIntoView — ikut men-scroll halaman/dokumen
-       (akibatnya layar "ketarik ke atas" pas hub dibuka, khususnya di HP/APK).
-       Scroll hanya di dalam .spire-node-list, pakai rumus manual. */
-    const act=app.querySelector(".spire-node.node-active");
-    const list=act?act.closest(".spire-node-list"):null;
-    if(list&&act){
-      const lr=list.getBoundingClientRect(),ar=act.getBoundingClientRect();
-      const target=list.scrollTop+(ar.top-lr.top)-(list.clientHeight-ar.height)/2;
-      list.scrollTop=Math.max(0,target);
-    }
-    window.scrollTo(0,0); /* pengaman: pastikan dokumen mulai dari posisi paling atas */
+    csRepaintHub();
+    window.scrollTo(0,0);
   });
 }
 function renderTowerShop(){
@@ -2609,151 +2753,136 @@ function toggleBackpack() {
   }
 }
 
-/* ========== MODAL BREAKDOWN DROP RATE INFINITE TOWER ==========
-   Redesign minimalis: 3 blok ringkas (PASTI / INSTAN PACK / ARTEFAK & PET).
-   Semua ikon pakai file ASLI yang sudah ada (backpack/premium shop), bukan emoji. */
+/* ========== MODAL BREAKDOWN DROP RATE INFINITE TOWER (3 kolom) ==========
+   Port dari lab (desain terkunci 2026-11-05): 11 baris = 5 guaranteed/potion
+   + 4 pack (dari TOWER_PACK_DROPS, tidak diduplikasi) + 2 trophy.
+   Perf (AGENTS 2b): tanpa backdrop-filter, tanpa animasi box-shadow; masuk/keluar
+   hanya opacity + transform (composited). Warna semantik dipertahankan:
+   token = cyan, gem = emas, hazard = merah. */
 const TWR_CARD_ICON="assets/images/icon-index-card.webp";
-const TWR_TOKEN_ICON="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237df9ff' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 6v12M8 10h8M8 14h6'/%3E%3C/svg%3E";
+const TWR_TOKEN_ICON="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2322d3ee' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 6v12M8 10h8M8 14h6'/%3E%3C/svg%3E";
+
+const TWR_DROP_GUAR=[
+  {nm:"INSTANT CARD ROLLS", rate:"100&times; GUARANTEED", sub:"100 card rolls banked per floor &middot; rolled upon defeat", icon:TWR_CARD_ICON, cls:"guar"},
+  {nm:"TOWER TOKENS",       rate:"GUARANTEED",           sub:"+1 regular floor &middot; +5 boss floor (every 5 floors)",  icon:TWR_TOKEN_ICON, cls:"guar"},
+  {nm:"WEATHER POTION",     rate:"5%",                   sub:"Randomizes active weather (5 minute duration)",            icon:"assets/images/weather-potion.webp?v=1", cls:""},
+  {nm:"LUCK POTION L1",     rate:"10%",                  sub:"+3 Flat Luck for 5 minutes (stackable)",                   icon:"assets/images/pot-luck-1.webp", cls:""},
+  {nm:"SPEED POTION L1",    rate:"10%",                  sub:"+0.2&times; Roll Speed for 5 minutes (stackable)",         icon:"assets/images/pot-speed-1.webp", cls:""}
+];
+
+const TWR_DROP_RARE=[
+  {type:"PERMANENT ARTIFACT", rate:"0.1% &middot; 1 in 1k", name:"FLAME SWORD",
+   img:"assets/artifacts/pedang-api.webp",
+   perks:[["FLAT","+120 LUCK"],["MULT","+100% (&times;2)"]],
+   desc:"Permanent relic (max 1). Luck bonus active forever."},
+  {type:"MYTHIC PET", rate:"0.01% &middot; 1 in 10k", name:"KYUBI FOX",
+   img:"assets/pets/kyubi.webp",
+   perks:[["FLAT","+200 LUCK"],["MULT","+300% (&times;4)"]],
+   desc:"Mystical companion (max 1). Highest luck multiplier."}
+];
+
+function twrGuarRow(r){
+  return `<div class="dpr${r.cls?" "+r.cls:""}">
+    <div class="dpr-ico"><img src="${r.icon}" alt="" decoding="async" loading="lazy"></div>
+    <div class="dpr-txt">
+      <span class="dpr-nm">${r.nm}</span>
+      <span class="dpr-sub">${r.sub}</span>
+    </div>
+    <span class="dpr-rate">${r.rate}</span>
+  </div>`;
+}
+function twrPackRow(d){
+  return `<div class="dpr">
+    <div class="dpr-ico"><img src="${d.icon}" alt="" decoding="async" loading="lazy"></div>
+    <div class="dpr-txt">
+      <span class="dpr-nm">${d.name}</span>
+      <span class="dpr-sub">Instant roll pack &middot; ready to use anytime</span>
+    </div>
+    <span class="dpr-rate">${d.label}</span>
+  </div>`;
+}
+function twrRareCard(r){
+  return `<div class="dpr-rare">
+    <div class="dpr-rare-top">
+      <div class="dpr-rare-img"><img src="${r.img}" alt="${r.name}" decoding="async" loading="lazy"></div>
+      <div class="dpr-rare-hd">
+        <span class="dpr-rare-type">${r.type}</span>
+        <span class="dpr-rare-name">${r.name}</span>
+        <span class="dpr-rare-rate">${r.rate}</span>
+      </div>
+    </div>
+    <div class="dpr-rare-perks">
+      ${r.perks.map(p=>`<span class="dpr-perk ${p[0]==="MULT"?"mult":"flat"}"><i>${p[0]}</i><b>${p[1]}</b></span>`).join("")}
+    </div>
+    <span class="dpr-rare-desc">${r.desc}</span>
+  </div>`;
+}
+
+function twrRenderBody(body){
+  body.innerHTML=`
+    <section class="dpr-col" data-col="guar">
+      <h3 class="dpr-ch">GUARANTEED &amp; POTIONS <span>${TWR_DROP_GUAR.length}</span></h3>
+      ${TWR_DROP_GUAR.map(twrGuarRow).join("")}
+    </section>
+    <section class="dpr-col" data-col="pack">
+      <h3 class="dpr-ch">RANDOM PACK DROPS <span>${TOWER_PACK_DROPS.length}</span></h3>
+      ${TOWER_PACK_DROPS.map(twrPackRow).join("")}
+      <p class="dpr-note">Ready to use anytime in your Backpack.</p>
+    </section>
+    <section class="dpr-col" data-col="rare">
+      <h3 class="dpr-ch">ULTRA RARE / TROPHY <span>${TWR_DROP_RARE.length}</span></h3>
+      ${TWR_DROP_RARE.map(twrRareCard).join("")}
+    </section>`;
+}
+
+/* Simpan elemen pemilik fokus sebelum modal dibuka supaya bisa dikembalikan
+   (aksesibilitas keyboard: tutup modal = fokus balik ke tombol pemicu). */
+let _twrFocusReturn=null;
+
 function openTowerDropModal(){
-  const m = document.getElementById("towerDropModal");
-  const body = document.getElementById("towerDropModalBody");
-  if(!m || !body) return;
+  const m=document.getElementById("towerDropModal");
+  const body=document.getElementById("towerDropModalBody");
+  if(!m||!body)return;
 
-  const guarItems = [
-    {name:"INSTANT CARD ROLLS", rate:"100× GUARANTEED", sub:"100 card rolls banked per floor · rolled upon defeat", icon:TWR_CARD_ICON, cls:"guar"},
-    {name:"TOWER TOKENS", rate:"GUARANTEED", sub:"+1 regular floor · +5 boss floor (every 5 floors)", icon:TWR_TOKEN_ICON, cls:"guar"},
-    {name:"WEATHER POTION", rate:"5%", sub:"Randomizes active weather (5 minute duration)", icon:"assets/images/weather-potion.webp?v=1", cls:""},
-    {name:"LUCK POTION L1", rate:"10%", sub:"+3 Flat Luck for 5 minutes (stackable)", icon:"assets/images/pot-luck-1.webp", cls:""},
-    {name:"SPEED POTION L1", rate:"10%", sub:"+0.2× Roll Speed for 5 minutes (stackable)", icon:"assets/images/pot-speed-1.webp", cls:""}
-  ];
-
-  const packItems = TOWER_PACK_DROPS.map(p=>({
-    name: p.name,
-    rate: p.label,
-    sub: "Automatically stored in Backpack ITEMS tab",
-    icon: p.icon,
-    cls: "pack"
-  }));
-
-  body.innerHTML = `
-    <div class="tw-drop-h-deck">
-      <!-- COL 1: GUARANTEED & POTIONS -->
-      <div class="tw-col tw-col-guar">
-        <div class="tw-col-head">
-          <span class="tw-col-pill guar"><span class="tw-dot"></span>GUARANTEED & POTIONS</span>
-          <h3 class="tw-col-title">EVERY FLOOR REWARDS</h3>
-        </div>
-        <div class="tw-col-list">
-          ${guarItems.map(it=>`
-            <div class="tw-item-row">
-              <span class="tw-item-ic"><img src="${it.icon}" alt="${it.name}" onerror="this.parentNode.textContent='✦'"></span>
-              <span class="tw-item-txt">
-                <span class="tw-item-name">${it.name}</span>
-                <span class="tw-item-sub">${it.sub}</span>
-              </span>
-              <span class="tw-item-rate ${it.cls}">${it.rate}</span>
-            </div>
-          `).join("")}
-        </div>
-      </div>
-
-      <!-- COL 2: RANDOM PACK DROPS -->
-      <div class="tw-col tw-col-pack">
-        <div class="tw-col-head">
-          <span class="tw-col-pill pack"><span class="tw-dot"></span>RANDOM PACK DROPS</span>
-          <h3 class="tw-col-title">INSTANT ROLL PACKS</h3>
-        </div>
-        <div class="tw-col-list">
-          ${packItems.map(it=>`
-            <div class="tw-item-row">
-              <span class="tw-item-ic"><img src="${it.icon}" alt="${it.name}" onerror="this.parentNode.textContent='📦'"></span>
-              <span class="tw-item-txt">
-                <span class="tw-item-name">${it.name}</span>
-                <span class="tw-item-sub">${it.sub}</span>
-              </span>
-              <span class="tw-item-rate ${it.cls}">${it.rate}</span>
-            </div>
-          `).join("")}
-        </div>
-        <div class="tw-col-foot-note">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg>
-          <span>Ready to use anytime in your Backpack</span>
-        </div>
-      </div>
-
-      <!-- COL 3: ULTRA RARE / TROPHY -->
-      <div class="tw-col tw-col-rare">
-        <div class="tw-col-head">
-          <span class="tw-col-pill rare"><span class="tw-dot"></span>ULTRA RARE / TROPHY</span>
-          <h3 class="tw-col-title">MYTHIC ARTIFACTS & PETS</h3>
-        </div>
-        <div class="tw-col-trophy-list">
-          <!-- Pedang Api -->
-          <div class="tw-trophy-card art">
-            <div class="tw-tc-art">
-              <img src="assets/artifacts/pedang-api.webp" alt="Flame Sword" onerror="this.parentNode.textContent='⚔️'">
-            </div>
-            <div class="tw-tc-info">
-              <div class="tw-tc-top">
-                <span class="tw-tc-type">PERMANENT ARTIFACT</span>
-                <span class="tw-tc-rate ultra">0.1% · 1 in 1k</span>
-              </div>
-              <div class="tw-tc-name">FLAME SWORD</div>
-              <div class="tw-tc-perks">
-                <span class="tw-perk-badge"><small>FLAT</small> <b>+120 LUCK</b></span>
-                <span class="tw-perk-badge"><small>MULT</small> <b>+100% (×2)</b></span>
-              </div>
-              <div class="tw-tc-desc">Permanent relic (max 1). Luck bonus active forever.</div>
-            </div>
-          </div>
-
-          <!-- Kyubi Fox -->
-          <div class="tw-trophy-card pet">
-            <div class="tw-tc-art">
-              <img src="assets/pets/kyubi.webp" alt="Kyubi Fox" onerror="this.parentNode.textContent='🦊'">
-            </div>
-            <div class="tw-tc-info">
-              <div class="tw-tc-top">
-                <span class="tw-tc-type">MYTHIC PET</span>
-                <span class="tw-tc-rate ultra">0.01% · 1 in 10k</span>
-              </div>
-              <div class="tw-tc-name">KYUBI FOX</div>
-              <div class="tw-tc-perks">
-                <span class="tw-perk-badge"><small>FLAT</small> <b>+200 LUCK</b></span>
-                <span class="tw-perk-badge"><small>MULT</small> <b>+300% (×4)</b></span>
-              </div>
-              <div class="tw-tc-desc">Mystical companion (max 1). Highest luck multiplier.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Ticker Footer Bar -->
-    <div class="tw-drop-footer-bar">
-      <div class="tw-df-pill">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
-        <span>All drops calculated <b>per cleared floor</b>. Instant Pack, Artifact & Pet odds are <b>Pure Base Rates</b> (not affected by player Luck).</span>
-      </div>
-    </div>
-  `;
+  _twrFocusReturn=document.activeElement;
+  twrRenderBody(body);
 
   m.classList.add("show");
-  beep(480, 0.08, "triangle", 0.06);
+  m.setAttribute("aria-hidden","false");
+  beep(480,0.08,"triangle",0.06);
 
-  const closeBtn = document.getElementById("twDropModalClose");
-  if(closeBtn) closeBtn.onclick = closeTowerDropModal;
-  m.onclick = (e)=>{ if(e.target === m) closeTowerDropModal(); };
+  const closeBtn=document.getElementById("twDropModalClose");
+  if(closeBtn)closeBtn.onclick=closeTowerDropModal;
+  m.onclick=(e)=>{ if(e.target===m) closeTowerDropModal(); };
+  if(closeBtn)closeBtn.focus({preventScroll:true});
 }
 
 function closeTowerDropModal(){
-  const m = document.getElementById("towerDropModal");
-  if(!m) return;
+  const m=document.getElementById("towerDropModal");
+  if(!m)return;
+  if(!m.classList.contains("show"))return;
   m.classList.remove("show");
-  beep(360, 0.07, "triangle", 0.05);
+  m.setAttribute("aria-hidden","true");
+  beep(360,0.07,"triangle",0.05);
+  const back=_twrFocusReturn;
+  _twrFocusReturn=null;
+  /* Kalau pemicunya bukan elemen fokusable (mis. dibuka lewat console/otomatis,
+     activeElement = body), fokus dikembalikan ke tombol pemicu di dock. */
+  const target=(back&&back!==document.body&&back.focus)?back:document.getElementById("twDropRateBtn");
+  if(target&&target.focus){ try{target.focus({preventScroll:true});}catch(e){} }
 }
 
-
+/* ESC untuk modal drop rate: boot.js:1034 hanya menangani profil/changelog/
+   rebirth/backpack, jadi modal ini butuh listener sendiri. Dipasang SEKALI dan
+   hanya bereaksi kalau modal benar-benar terbuka. */
+if(!window.__twrEscWired){
+  window.__twrEscWired=true;
+  document.addEventListener("keydown",(e)=>{
+    if(e.key!=="Escape")return;
+    const m=document.getElementById("towerDropModal");
+    if(m&&m.classList.contains("show")){ e.preventDefault(); closeTowerDropModal(); }
+  });
+}
 /* ========== HORIZONTAL REBIRTH MODAL ========== */
 function renderRebirthModal(){
   const body = document.getElementById("rebirthBody");
