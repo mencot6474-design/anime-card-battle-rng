@@ -9561,6 +9561,29 @@ body.on-tower{
 
 }
 
+/* ===== CORE SPIRE HUB: permukaan WoB OPAQUE ==========================
+   `tower.jpg` + veil biru + grid biru di atas ini adalah identitas tema
+   tower LAMA dan MASIH DIPAKAI Tower Shop (`.tactical-tower-shop-page`)
+   serta battle tower (`.battle-grid.tower-stage`), jadi TIDAK dihapus.
+   Yang dikerjakan hanya mengeluarkannya untuk hub lewat :has(.cs-hub).
+   Tanpa ini hub terlihat "kaca": tiga lapis tema lama menembusnya
+   (foto tower.jpg di body, veil .on-tower::before, foto tower.jpg lagi
+   di main#app). Perbaikan inti ada di `.cs-hub{background:var(--cs-bg)}`,
+   blok ini menyapu sisa lapis yang tetap terlihat di area rail/padding.
+   Catatan: kalau :has() tidak didukung WebView lawas, `.cs-hub` opaque
+   tetap menutup seluruh area hub -> degradasi aman, bukan regresi.
+   ==================================================================== */
+body.on-tower:has(.cs-hub),
+html.on-tower-root:has(.cs-hub){
+  background:#050505 !important;
+}
+body.on-tower:has(.cs-hub)::before{
+  content:none !important;   /* veil rgba(10,14,22,.45-.92) + grid biru 28x28 */
+}
+body.on-tower:has(.cs-hub)::after{
+  content:none !important;
+}
+
 body.on-tower::before{
 
   content:"";position:fixed;inset:0;
@@ -23965,10 +23988,14 @@ main#app:has(.sett-wrap) {
 /* =====================================================================
    CYBERPUNK AAA INFINITE TOWER SHOP REDESIGN (HORIZONTAL LAYOUT)
    ===================================================================== */
-body.on-tower,
-html.on-tower-root,
-body.on-tower main#app,
-body:has(.tactical-tower-page) main#app,
+/* Foto `tower.jpg` dipertahankan untuk Tower Shop + battle tower. Hub CORE SPIRE
+   dikeluarkan lewat :not(:has(.cs-hub)) supaya permukaan WoB-nya tidak dicampuri
+   foto tema lama. `background-attachment:fixed` juga cuma tersisa di layar yang
+   memang tanpa scroll (syarat AGENTS §2b#7). */
+body.on-tower:not(:has(.cs-hub)),
+html.on-tower-root:not(:has(.cs-hub)),
+body.on-tower:not(:has(.cs-hub)) main#app,
+body:has(.tactical-tower-page):not(:has(.cs-hub)) main#app,
 body:has(.tactical-tower-shop-page) main#app {
   background: #080c13 url("../assets/bg/tower.jpg") center center / cover no-repeat fixed !important;
   background-color: #07090e !important;
@@ -24510,6 +24537,15 @@ body:has(.tactical-tower-shop-page) main#app {
               linear-gradient(180deg,#07090e 0%,#040609 100%) !important;
   box-sizing:border-box;
 }
+/* Hub CORE SPIRE memakai permukaan WoB, BUKAN gradient cyan/violet di atas.
+   Gradient itu tetap dipakai Tower Shop (`:has(.cs-hub)` hanya menyentuh hub).
+   Specificity (0,3,0) > (0,1,0) jadi menang TANPA menumpuk blok override baru. */
+.tactical-tower-page:has(.cs-hub){
+  background:
+    radial-gradient(ellipse 74% 58% at 50% 8%, rgba(245,245,245,.045) 0%, transparent 64%),
+    radial-gradient(ellipse 90% 52% at 50% 100%, rgba(0,0,0,.9) 0%, transparent 72%),
+    linear-gradient(180deg,#0a0a0a 0%,#050505 62%,#000 100%) !important;
+}
 
 .cs-hub{
   /* palet lokal: TIDAK menimpa variabel global supaya layar lain tidak ikut */
@@ -24524,6 +24560,10 @@ body:has(.tactical-tower-shop-page) main#app {
   position:relative;
   display:flex; flex:1 1 auto; flex-direction:column; min-height:0;
   width:100%; height:100%; max-height:100%;
+  /* WAJIB OPAQUE: hub dulu transparan sehingga `tower.jpg` + veil biru
+     tema tower lama menembus stage dan membuat latar terlihat "campuran".
+     Permukaan WoB = satu warna dasar, tanpa foto dan tanpa blur. */
+  background:var(--cs-bg);
   color:var(--cs-txt);
   font-family:var(--cs-ui); font-weight:700;
   font-variant-numeric:tabular-nums;
@@ -24710,25 +24750,30 @@ body:has(.tactical-tower-shop-page) main#app {
 }
 .cs-dh .rec{ color:var(--cs-acc); }
 
-.cs-waves{ display:flex; gap:5px; --cs-art:48px; }
-@media (min-width:420px){ .cs-waves{ --cs-art:56px; } }
+.cs-waves{ display:flex; gap:5px; }
 
 .cs-wv{
   flex:1 1 0; min-width:0; display:flex; flex-direction:column;
   border:1px solid var(--cs-faint); border-radius:2px; overflow:hidden; background:#000;
 }
-/* ART 1:1 KECIL, GAMBAR UTUH. Kunci matematisnya:
-   aspect-ratio:1/1 + width:100% + max-width:var(--cs-art) -> sisi selalu
-   min(lebar kartu, --cs-art) = persegi sempurna, di tengah kartu.
-   object-fit:contain -> sisi terpanjang gambar pas dengan kotak, TIDAK PERNAH
-   dipotong / di-zoom (pengganti object-fit:cover lama yang memotong art). */
+/* ART 1:1 PENUH, ACUAN = KOTAK ACTIVE-DECK DI BACKPACK.
+   Pola resmi repo (`css/style.css:3255` + `:3263`):
+     .bp-slot      { aspect-ratio:1/1; max-width:112px; max-height:112px }
+     .bp-slot img  { object-fit:cover; object-position:top }
+   Sebelumnya di sini `object-fit:contain` + cap `--cs-art` 48-56px. Art kartu
+   berukuran 600x894 (aspek 0,671), jadi `contain` di kotak persegi cuma
+   memakai 67% lebar -> bar hitam ~33% kiri-kanan, dan cap 56px membuat kotaknya
+   jauh lebih kecil dari kartunya (terukur 500x844: kartu ~117px, art 56px).
+   Sekarang: kotak selebar kartu (cap 112px), `cover` mengisi penuh, `top`
+   menjaga kepala karakter. Sumber gambar diganti ke thumb 242x360 (-84% byte)
+   di `csRenderDossier` -> 4 slot 595KB jadi 96KB. */
 .cs-wv-art{
   position:relative; overflow:hidden; background:#000;
   aspect-ratio:1/1; width:100%;
-  max-width:var(--cs-art,48px); max-height:var(--cs-art,48px);
+  max-width:112px; max-height:112px;
   margin:0 auto;
 }
-.cs-wv-art img{ display:block; width:100%; height:100%; object-fit:contain; object-position:center; }
+.cs-wv-art img{ display:block; width:100%; height:100%; object-fit:cover; object-position:top; }
 .cs-wv-art::after{
   content:""; position:absolute; inset:0; pointer-events:none;
   background:linear-gradient(to top, rgba(0,0,0,.92), transparent 42%);
@@ -24804,7 +24849,7 @@ body:has(.tactical-tower-shop-page) main#app {
      di container ber-arah kolom flex-basis 0 berarti TINGGI 0 -> kartu wave
      hilang total (terbukti di screenshot 850x390: panel kanan kosong). */
   .cs-side .cs-wv{ flex:0 0 auto; height:38px; flex-direction:row; align-items:center; }
-  .cs-side .cs-wv-art{ width:34px; height:34px; flex:0 0 auto; }
+  .cs-side .cs-wv-art{ width:34px; height:34px; flex:0 0 auto; max-width:none; max-height:none; }
   .cs-side .cs-wv-bot{ flex:1 1 auto; min-width:0; padding:0 5px; }
   .cs-side .cs-dock{
     flex:0 0 auto; flex-direction:column; padding:6px 7px;
@@ -24841,7 +24886,7 @@ body.tw-compact .cs-slab[data-state="next"] .cs-sl-st{ display:none; }
 /* HP landscape pendek: rapatkan vertikal supaya CTA tidak terpotong */
 @media (max-height:470px){
   .cs-dossier{ padding:4px 7px 6px; }
-  .cs-waves{ --cs-art:36px; }
+  .cs-wv-art{ max-width:64px; max-height:64px; }
   .cs-top{ padding:4px 7px; }
   .cs-cta{ min-height:46px; }
   .cs-slab{ bottom:9%; }
@@ -24867,7 +24912,6 @@ body.tw-compact .cs-slab[data-state="next"] .cs-sl-st{ display:none; }
   .cs-slab[data-state="active"] .cs-sl{ min-height:52px; padding:8px 9px; }
   .cs-slab[data-state="active"] .cs-sl-no{ font-size:12px; }
   .cs-wv-n{ font-size:7px; }
-  .cs-waves{ --cs-art:44px; }
   .cs-cta .cc b{ font-size:8.5px; }
   .cs-cta .ci svg{ width:15px; height:15px; }
 }

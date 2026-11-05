@@ -306,9 +306,14 @@ function csRenderDossier(waves, best){
     const isBoss = !!w.en.boss;
     const tagCls = lead ? "lead" : (isBoss ? "boss" : "");
     const tagTxt = "W" + (i + 1) + (lead ? " LEAD" : (isBoss ? " BOSS" : ""));
+    /* Thumb (242x360, -84% byte) cukup untuk kotak 1:1 kecil ini; art penuh
+       (600x894) tetap dipakai battle/popup detail. `thumbSrc` ada di cards-fx.js
+       dan dimuat sebelum file ini, tapi tetap dijaga: kalau helper tidak ada
+       (urutan load berubah), pakai src asli daripada gambar kosong. */
+    const art = typeof thumbSrc === "function" ? thumbSrc(w.en.img) : w.en.img;
     return `<div class="cs-wv">
       <div class="cs-wv-art">
-        <img src="${w.en.img}" alt="${w.en.name}" decoding="async" loading="lazy">
+        <img src="${art}" alt="${w.en.name}" decoding="async" loading="lazy">
         <span class="cs-wv-tag ${tagCls}">${tagTxt}</span>
       </div>
       <div class="cs-wv-bot">
