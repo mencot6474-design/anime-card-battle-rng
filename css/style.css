@@ -19320,26 +19320,349 @@ html.fps-locked .bp-fchip{
 @media (prefers-reduced-motion:reduce){#authScreen *{animation:none!important}}
 
 /* ============================================================
-   AUTH CYBER — Unit B: layar "memuat game" + popup auth.
-   Class .ld-* hanya ada di #loadingScreen; .as-* hanya ada di
-   #authSpin/#authDone/#welcomeModal (dipastikan via grep), jadi
-   aman ditimpa lewat source-order tanpa menghapus ID yang dipakai
-   JS (ldFill, ldStatus, asTxt, adTitle, adMsg, adOk, wlMsg, wlOk).
-   Perilaku tetap: runLoading auto-advance, TANPA tap-to-enter.
+   LOADING SCREEN — HAZARD BANNER (WHITE-on-BLACK)
+   Port dari _tmp/proto_loading_v1.html (dikunci user 2026-11-06), teks English.
+   Blok ini MENGGANTIKAN tema cyan lama (ld-inner/ld-holo/ld-emblem/ld-glass)
+   DI TEMPATNYA — bukan override baru di akhir file.
+   ID JS yang wajib tetap hidup: ldFill, ldPct, ldStatus, ldName, ldAva,
+   ldLead, ldTip, ldC1..ldC5, ldBrandImg, ldBuild, ldgEnter, ldgName, ldgLv,
+   ldgPower, ldgCards, ldgSession, ldgSerial.
+   Aturan performa §2b: animasi hanya transform/opacity, tanpa backdrop-filter,
+   tanpa background-attachment:fixed, tanpa animasi box-shadow/width/height.
    ============================================================ */
-#loadingScreen{--sys:#7DF9FF;--vio:#B58CFF;--txt:#EAF6FF;--mut:#9fb6c9;--ln:rgba(125,249,255,.30);--glow:0 0 16px rgba(125,249,255,.45);
-  background:radial-gradient(120% 80% at 50% 0%,rgba(125,249,255,.10),transparent 55%),radial-gradient(120% 120% at 82% 122%,rgba(181,140,255,.10),transparent 60%),linear-gradient(180deg,#070b14 0%,#05070d 60%,#03040a 100%)}
-#loadingScreen .ld-inner{position:relative;text-align:center;width:min(360px,82vw);padding:32px 30px 26px;border:1px solid var(--ln);border-radius:10px;background:rgba(14,20,32,.72);box-shadow:0 20px 50px rgba(0,0,0,.55),var(--glow),inset 0 0 22px rgba(125,249,255,.05)}
-#loadingScreen .ld-inner::before,#loadingScreen .ld-inner::after{content:"";position:absolute;width:15px;height:15px;border:2px solid var(--sys);pointer-events:none}
-#loadingScreen .ld-inner::before{top:-1px;left:-1px;border-right:0;border-bottom:0}
-#loadingScreen .ld-inner::after{bottom:-1px;right:-1px;border-left:0;border-top:0}
-#loadingScreen .ld-logo{border:1px solid var(--ln);}
-#loadingScreen .ld-logo svg path{stroke:var(--sys);filter:drop-shadow(0 0 5px rgba(125,249,255,.7))}
-#loadingScreen .ld-title{font-size:22px;font-weight:700;letter-spacing:.06em;color:var(--txt);margin-bottom:20px;text-shadow:0 0 12px rgba(125,249,255,.22)}
-#loadingScreen .ld-accent{background:linear-gradient(120deg,var(--sys),var(--vio));-webkit-background-clip:text;background-clip:text;color:transparent}
-#loadingScreen .ld-bar{height:8px;border-radius:99px;background:rgba(125,249,255,.09);border:1px solid rgba(125,249,255,.18);overflow:hidden;box-shadow:inset 0 0 8px rgba(0,0,0,.5)}
-#loadingScreen .ld-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--sys),var(--vio));border-radius:99px;box-shadow:0 0 12px rgba(125,249,255,.65);transition:width .12s linear}
-#loadingScreen .ld-status{margin-top:14px;font-family:"Rajdhani",sans-serif;font-size:12px;letter-spacing:.16em;color:var(--sys);text-transform:uppercase}
+#loadingScreen,#ldCurtain,#ldGrant{
+  --ink:#f5f5f5;--ink2:rgba(245,245,245,.64);--ink3:rgba(245,245,245,.34);
+  --haz:#f3e600;
+  --line:rgba(245,245,245,.17);--line2:rgba(245,245,245,.08);
+  --disp:'Orbitron','Rajdhani',system-ui,sans-serif;
+  --body:'Rajdhani','Segoe UI',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+}
+/* BUGFIX oklusi (dipertahankan): #authScreen fixed z 999999 muncul setelah
+   loader di DOM, jadi loader wajib di atasnya — tetap di bawah modal welcome
+   yang 1000001. */
+#loadingScreen{position:fixed;inset:0;display:grid;grid-template-columns:minmax(0,1fr);
+  grid-template-rows:auto minmax(0,1fr) auto;padding:0;overflow:hidden;
+  align-items:stretch;justify-content:normal;
+  background:#050505;color:var(--ink);font-family:var(--body);z-index:1000000}
+/* hazard tape atas */
+#loadingScreen::before{content:'';position:absolute;left:0;right:0;top:0;height:5px;z-index:30;pointer-events:none;
+  background:repeating-linear-gradient(-45deg,var(--haz) 0 8px,#050505 8px 18px);opacity:.92}
+
+.ld-bg,.ld-beam,.ld-gridbg,.ld-grain,.ld-scan{position:absolute;inset:0;pointer-events:none}
+.ld-bg{z-index:0;background:
+  radial-gradient(58% 46% at 50% 34%,rgba(243,230,0,.15),transparent 68%),
+  radial-gradient(42% 34% at 50% 40%,rgba(255,84,112,.10),transparent 72%),
+  radial-gradient(90% 70% at 50% 120%,rgba(243,230,0,.05),transparent 70%),#050505}
+.ld-beam{z-index:1;opacity:.55;background:conic-gradient(from 180deg at 50% 6%,transparent 0deg,rgba(243,230,0,.10) 14deg,transparent 30deg,transparent 150deg,rgba(243,230,0,.10) 166deg,transparent 182deg)}
+.ld-gridbg{z-index:1;opacity:.5;background-image:
+  repeating-linear-gradient(0deg,rgba(245,245,245,.032) 0 1px,transparent 1px 46px),
+  repeating-linear-gradient(90deg,rgba(245,245,245,.032) 0 1px,transparent 1px 46px);
+  -webkit-mask-image:radial-gradient(80% 66% at 50% 42%,#000 0%,transparent 82%);
+  mask-image:radial-gradient(80% 66% at 50% 42%,#000 0%,transparent 82%)}
+.ld-grain{z-index:2;opacity:.35;background-image:repeating-linear-gradient(0deg,rgba(245,245,245,.05) 0 1px,transparent 1px 3px)}
+.ld-scan{z-index:3;height:26%;top:-30%;background:linear-gradient(180deg,transparent,rgba(243,230,0,.055),transparent);
+  animation:ldScan 7s linear infinite}
+@keyframes ldScan{0%{transform:translateY(0)}100%{transform:translateY(520%)}}
+
+/* ---------------- shell ---------------- */
+#loadingScreen .ld-shell{position:relative;z-index:10;grid-row:2;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:10px 18px 0;min-height:0;min-width:0}
+#loadingScreen .ld-left{display:flex;flex-direction:column;align-items:center;min-width:0;
+  width:100%;max-width:min(660px,100%);flex:0 0 auto}
+#loadingScreen .ld-col{width:100%;max-width:min(660px,92vw);flex:0 0 auto;
+  display:flex;flex-direction:column;align-items:stretch;min-width:0}
+
+/* ---------------- fan kartu ---------------- */
+#loadingScreen .ld-fan{position:relative;width:100%;max-width:min(660px,92vw);
+  height:min(300px,38vh);flex:0 0 auto;--cw:clamp(64px,10vw,112px)}
+#loadingScreen .ld-fan::after{content:'';position:absolute;left:50%;top:52%;width:min(560px,88vw);height:170px;
+  transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
+  background:radial-gradient(50% 50% at 50% 50%,rgba(243,230,0,.20),rgba(243,230,0,.05) 46%,transparent 72%)}
+#loadingScreen .ld-card{position:absolute;left:50%;top:50%;width:var(--cw);aspect-ratio:3/4;
+  border-radius:11px;overflow:hidden;background:#0a0a0a;border:1px solid rgba(243,230,0,.16);
+  box-shadow:0 18px 34px rgba(0,0,0,.72);will-change:transform}
+#loadingScreen .ld-card img{width:100%;height:100%;object-fit:cover;object-position:center 18%;
+  filter:saturate(.72) contrast(1.08) brightness(.56);display:block}
+#loadingScreen .ld-card::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(5,5,5,.14) 0%,rgba(5,5,5,.34) 46%,rgba(5,5,5,.92) 100%)}
+#loadingScreen .ld-c1{transform:translate(calc(-50% - var(--cw)*1.60),calc(-50% + var(--cw)*0.50)) rotate(-28deg);opacity:.80}
+#loadingScreen .ld-c2{transform:translate(calc(-50% - var(--cw)*0.90),calc(-50% + var(--cw)*0.18)) rotate(-13deg);opacity:.94}
+#loadingScreen .ld-c3{transform:translate(-50%,calc(-50% - var(--cw)*0.16));width:calc(var(--cw)*1.30);z-index:4;
+  border-color:rgba(245,245,245,.86);
+  box-shadow:0 26px 60px rgba(0,0,0,.85),0 0 0 1px rgba(245,245,245,.22),0 0 44px rgba(243,230,0,.24)}
+#loadingScreen .ld-c3 img{filter:saturate(.95) contrast(1.1) brightness(.94)}
+#loadingScreen .ld-c4{transform:translate(calc(-50% + var(--cw)*0.90),calc(-50% + var(--cw)*0.18)) rotate(13deg);opacity:.94}
+#loadingScreen .ld-c5{transform:translate(calc(-50% + var(--cw)*1.60),calc(-50% + var(--cw)*0.50)) rotate(28deg);opacity:.80}
+#loadingScreen .ld-ring{position:absolute;left:50%;top:50%;width:calc(var(--cw)*1.34);height:calc(var(--cw)*1.34);
+  transform:translate(-50%,-50%);border-radius:14px;border:1px solid rgba(243,230,0,.5);
+  z-index:3;pointer-events:none;animation:ldRing 2.6s ease-out infinite}
+@keyframes ldRing{0%{opacity:.7;transform:translate(-50%,-50%) scale(.98)}
+  70%,100%{opacity:0;transform:translate(-50%,-50%) scale(1.12)}}
+
+/* caption deck lead */
+#loadingScreen .ld-lead{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:center;
+  margin:-4px 0 12px;font-family:var(--mono);font-size:7.5px;letter-spacing:.22em;
+  color:var(--ink3);text-transform:uppercase;max-width:92vw}
+#loadingScreen .ld-lead b{color:#fff;font-weight:700;letter-spacing:.16em}
+#loadingScreen .ld-lead::before,#loadingScreen .ld-lead::after{content:'';width:18px;height:1px;
+  background:rgba(245,245,245,.22);flex:none}
+
+/* identitas */
+#loadingScreen .ld-id{display:flex;align-items:center;gap:11px;margin:0 0 14px;flex:0 0 auto}
+#loadingScreen .ld-ava{width:46px;height:46px;border-radius:50%;overflow:hidden;flex:none;position:relative;
+  border:2px solid var(--haz);box-shadow:0 0 0 3px rgba(243,230,0,.10);background:#0a0a0a}
+#loadingScreen .ld-ava img{width:100%;height:100%;object-fit:cover;object-position:center 20%;display:block}
+#loadingScreen .ld-idtext{min-width:0}
+#loadingScreen .ld-kick{font-family:var(--mono);font-size:8px;letter-spacing:.24em;color:var(--ink3);
+  text-transform:uppercase;white-space:nowrap}
+#loadingScreen .ld-name{font-family:var(--disp);font-weight:800;font-size:17px;letter-spacing:.10em;line-height:1.2;
+  color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:56vw}
+
+/* progress */
+#loadingScreen .ld-prog{width:100%;flex:0 0 auto}
+#loadingScreen .ld-phead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+#loadingScreen .ld-syn{display:flex;align-items:center;gap:9px;min-width:0;overflow:hidden}
+#loadingScreen .ld-spin{width:15px;height:15px;flex:none;border-radius:50%;
+  border:2px solid rgba(243,230,0,.22);border-top-color:var(--haz);animation:ldSpin .85s linear infinite}
+@keyframes ldSpin{to{transform:rotate(360deg)}}
+#loadingScreen .ld-syn-t{font-family:var(--disp);font-weight:800;font-size:clamp(12px,3.4vw,17px);
+  letter-spacing:.13em;text-transform:uppercase;color:#fff;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;min-width:0}
+#loadingScreen .ld-syn-t b{color:var(--haz);font-weight:900}
+#loadingScreen .ld-pctwrap{display:flex;align-items:baseline;gap:2px;flex:none;line-height:1}
+#loadingScreen .ld-pctwrap b{font-family:var(--disp);font-weight:900;font-size:clamp(26px,7.4vw,42px);
+  letter-spacing:.02em;color:#fff;font-variant-numeric:tabular-nums}
+#loadingScreen .ld-pctwrap span{font-family:var(--disp);font-weight:700;font-size:clamp(11px,3vw,16px);color:var(--ink3)}
+#loadingScreen .ld-sub{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;color:var(--ink3);
+  text-transform:uppercase;margin:5px 0 9px;height:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#loadingScreen .ld-bar{position:relative;height:9px;border-radius:99px;background:rgba(245,245,245,.07);
+  border:1px solid rgba(245,245,245,.14);overflow:hidden}
+#loadingScreen .ld-bar i{position:absolute;inset:0;transform-origin:left center;transform:scaleX(0);
+  background:linear-gradient(90deg,rgba(243,230,0,.55),var(--haz));box-shadow:0 0 16px rgba(243,230,0,.55);
+  transition:transform .18s linear}
+#loadingScreen .ld-bar::after{content:'';position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:repeating-linear-gradient(90deg,transparent 0 calc(100%/8 - 3px),#050505 calc(100%/8 - 3px) calc(100%/8))}
+#loadingScreen .ld-stages{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:10px}
+#loadingScreen .ld-stages span{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);
+  font-size:8px;letter-spacing:.2em;color:var(--ink3);text-transform:uppercase;transition:color .25s}
+#loadingScreen .ld-stages span i{width:7px;height:7px;border-radius:50%;background:rgba(245,245,245,.18);
+  transition:background .25s,box-shadow .25s}
+#loadingScreen .ld-stages span.done{color:var(--ink2)}
+#loadingScreen .ld-stages span.done i{background:rgba(245,245,245,.55)}
+#loadingScreen .ld-stages span.on{color:var(--haz)}
+#loadingScreen .ld-stages span.on i{background:var(--haz);box-shadow:0 0 10px rgba(243,230,0,.85)}
+
+/* tip */
+#loadingScreen .ld-tip{margin-top:14px;display:flex;align-items:center;gap:10px;max-width:100%;
+  padding:8px 16px 8px 9px;border:1px solid rgba(245,245,245,.14);border-radius:99px;
+  background:rgba(255,255,255,.035);flex:0 0 auto;align-self:center}
+#loadingScreen .ld-tip-ic{width:26px;height:26px;flex:none;border-radius:50%;display:grid;place-items:center;
+  background:var(--haz);color:#080800}
+#loadingScreen .ld-tip-ic svg{width:14px;height:14px}
+#loadingScreen .ld-tip-k{font-family:var(--mono);font-size:8px;letter-spacing:.22em;color:var(--haz);flex:none}
+#loadingScreen .ld-tip-t{font-family:var(--body);font-size:11.5px;font-weight:600;color:var(--ink2);
+  min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* footer */
+#loadingScreen .ld-foot{grid-row:3;position:relative;z-index:12;display:flex;align-items:flex-end;
+  justify-content:space-between;gap:10px;padding:10px 18px 16px;min-width:0}
+#loadingScreen .ld-build{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--ink3);
+  flex:none;white-space:nowrap}
+#loadingScreen .ld-brand{display:flex;align-items:center;gap:10px;text-align:right;min-width:0;flex:0 1 auto}
+#loadingScreen .ld-brand-txt{display:flex;flex-direction:column;align-items:flex-end;gap:1px;min-width:0}
+#loadingScreen .ld-brand-nm{font-family:var(--disp);font-weight:900;font-size:11px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--haz);white-space:nowrap}
+#loadingScreen .ld-brand-sub{font-family:var(--mono);font-size:7px;letter-spacing:.16em;color:var(--ink3);
+  text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+#loadingScreen .ld-brand-ic{width:34px;height:34px;border-radius:7px;overflow:hidden;flex:none;
+  border:1px solid rgba(243,230,0,.35);background:#0a0a0a}
+#loadingScreen .ld-brand-ic img{width:100%;height:100%;object-fit:cover;display:block}
+#loadingScreen .ld-foot-dash{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);
+  width:74px;height:2px;background:linear-gradient(90deg,transparent,var(--haz),transparent);opacity:.75}
+
+/* ============ HAZARD CURTAIN (transisi masuk) ============ */
+#ldCurtain{position:fixed;inset:0;z-index:1000005;pointer-events:none;visibility:hidden}
+#ldCurtain.on{visibility:visible}
+#ldCurtain .ldc-half{position:absolute;left:0;right:0;height:50.5%;background:#050505;overflow:hidden;
+  transition:transform .62s cubic-bezier(.74,0,.22,1)}
+#ldCurtain .ldc-top{top:0;transform:translateY(-101%)}
+#ldCurtain .ldc-bot{bottom:0;transform:translateY(101%)}
+#ldCurtain.closed .ldc-top{transform:translateY(0)}
+#ldCurtain.closed .ldc-bot{transform:translateY(0)}
+#ldCurtain.revealed .ldc-top{transform:translateY(-101%)}
+#ldCurtain.revealed .ldc-bot{transform:translateY(101%)}
+#ldCurtain .ldc-edge{position:absolute;left:0;right:0;height:5px;
+  background:repeating-linear-gradient(-45deg,var(--haz) 0 8px,#050505 8px 18px)}
+#ldCurtain .ldc-top .ldc-edge{bottom:0}
+#ldCurtain .ldc-bot .ldc-edge{top:0}
+#ldCurtain .ldc-mark{position:absolute;font-family:var(--mono);font-size:8px;letter-spacing:.26em;
+  color:var(--ink3);text-transform:uppercase}
+#ldCurtain .ldc-top .ldc-mark{top:22px;left:20px}
+#ldCurtain .ldc-bot .ldc-mark{bottom:22px;right:20px}
+#ldCurtain .ldc-mark b{color:var(--haz);font-weight:700}
+#ldCurtain .ldc-tape{position:absolute;left:-6%;right:-6%;height:26px;z-index:4;opacity:.95;
+  background:repeating-linear-gradient(-45deg,var(--haz) 0 10px,#050505 10px 22px)}
+/* Tape hidup DI DALAM masing-masing half (lihat markup index.html). Dulu tape
+   adalah anak #ldCurtain, jadi saat half membuka tape TERTINGGAL di tengah
+   layar ("banner nyangkut"). Posisi sekarang relatif ke half dan angkanya
+   dipilih supaya tampil di titik yang sama seperti sebelumnya:
+   - tape A dulu `50% - 92px` dari atas curtain  → `100% - 92px` di half atas
+   - tape B dulu `50% + 62px`                     → `62px` di half bawah
+   Half punya overflow:hidden, jadi sapuan tape otomatis terpotong rapi. */
+#ldCurtain .ldc-tape-a{top:calc(100% - 92px);transform:translateX(-108%)}
+#ldCurtain .ldc-tape-b{top:62px;transform:translateX(108%)}
+#ldCurtain.sweep .ldc-tape-a{animation:ldcTapeA .82s cubic-bezier(.4,0,.2,1) both}
+#ldCurtain.sweep .ldc-tape-b{animation:ldcTapeB .82s .08s cubic-bezier(.4,0,.2,1) both}
+@keyframes ldcTapeA{0%{transform:translateX(-108%)}55%,100%{transform:translateX(0)}}
+@keyframes ldcTapeB{0%{transform:translateX(108%)}55%,100%{transform:translateX(0)}}
+#ldCurtain .ldc-flash{position:absolute;inset:0;z-index:5;background:var(--haz);opacity:0}
+#ldCurtain.sweep .ldc-flash{animation:ldcFlash .42s ease-out both}
+@keyframes ldcFlash{0%{opacity:.32}100%{opacity:0}}
+
+/* ============ PLATE ACCESS GRANTED ============ */
+#ldGrant{position:fixed;inset:0;z-index:1000006;display:grid;place-items:center;padding:20px;
+  background:rgba(5,5,5,.80)}
+#ldGrant.hidden{display:none!important}
+#ldGrant .ldg-plate{position:relative;width:min(500px,94vw);padding:0 0 18px;
+  border:1px solid rgba(243,230,0,.42);background:#070707;
+  box-shadow:0 30px 70px rgba(0,0,0,.85),0 0 0 1px rgba(5,5,5,.9);
+  transform:translateY(14px) scale(.985);opacity:0;
+  transition:transform .34s cubic-bezier(.2,.9,.3,1),opacity .34s}
+#ldGrant.show .ldg-plate{transform:none;opacity:1}
+#ldGrant .ldg-plate::before,#ldGrant .ldg-plate::after{content:'';position:absolute;left:0;right:0;height:6px;
+  background:repeating-linear-gradient(-45deg,var(--haz) 0 8px,#050505 8px 18px)}
+#ldGrant .ldg-plate::before{top:0}
+#ldGrant .ldg-plate::after{bottom:0}
+#ldGrant .ldg-corner{position:absolute;width:12px;height:12px;border:2px solid var(--haz);z-index:3}
+#ldGrant .ldg-corner.tl{top:-1px;left:-1px;border-right:0;border-bottom:0}
+#ldGrant .ldg-corner.tr{top:-1px;right:-1px;border-left:0;border-bottom:0}
+#ldGrant .ldg-corner.bl{bottom:-1px;left:-1px;border-right:0;border-top:0}
+#ldGrant .ldg-corner.br{bottom:-1px;right:-1px;border-left:0;border-top:0}
+#ldGrant .ldg-water{position:absolute;right:12px;top:14px;font-family:var(--disp);font-weight:900;
+  font-size:44px;letter-spacing:.06em;color:rgba(245,245,245,.05);pointer-events:none;line-height:1}
+#ldGrant .ldg-in{position:relative;z-index:2;padding:26px 22px 6px}
+#ldGrant .ldg-krow{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+#ldGrant .ldg-dot{width:7px;height:7px;border-radius:50%;background:#6be08a;flex:none;
+  box-shadow:0 0 10px rgba(107,224,138,.9);animation:ldgBlink 1.6s ease-in-out infinite}
+@keyframes ldgBlink{0%,100%{opacity:1}50%{opacity:.35}}
+#ldGrant .ldg-kick{font-family:var(--mono);font-size:8px;letter-spacing:.24em;color:var(--ink3);
+  text-transform:uppercase;flex:1 1 auto}
+#ldGrant .ldg-kick b{color:var(--haz);font-weight:700}
+#ldGrant .ldg-serial{font-family:var(--mono);font-size:8px;letter-spacing:.16em;color:var(--ink3);flex:none}
+#ldGrant .ldg-serial b{color:var(--ink2)}
+#ldGrant .ldg-title{font-family:var(--disp);font-weight:900;font-size:clamp(24px,7vw,34px);letter-spacing:.06em;
+  line-height:1.05;color:#fff;text-transform:uppercase}
+#ldGrant .ldg-title b{color:var(--haz);font-weight:900}
+#ldGrant .ldg-sub{font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--ink3);
+  text-transform:uppercase;margin-top:8px}
+#ldGrant .ldg-who{display:flex;align-items:center;gap:11px;margin:18px 0 14px;padding:11px 12px;
+  border:1px solid var(--line2);background:rgba(255,255,255,.028)}
+#ldGrant .ldg-ava{width:42px;height:42px;border-radius:50%;overflow:hidden;flex:none;
+  border:2px solid var(--haz);background:#0a0a0a}
+#ldGrant .ldg-ava img{width:100%;height:100%;object-fit:cover;object-position:center 20%;display:block}
+#ldGrant .ldg-who-t{min-width:0}
+#ldGrant .ldg-who-n{font-family:var(--disp);font-weight:800;font-size:15px;letter-spacing:.08em;color:#fff;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ldGrant .ldg-who-r{font-family:var(--mono);font-size:8px;letter-spacing:.2em;color:var(--haz);margin-top:2px}
+#ldGrant .ldg-chips{display:flex;gap:8px;margin-bottom:16px}
+#ldGrant .ldg-chip{flex:1 1 0;min-width:0;padding:8px 10px;border:1px solid var(--line2);
+  background:rgba(255,255,255,.03)}
+#ldGrant .ldg-chip .k{display:block;font-family:var(--mono);font-size:7px;letter-spacing:.22em;
+  color:var(--ink3);text-transform:uppercase}
+#ldGrant .ldg-chip .v{display:block;font-family:var(--disp);font-weight:800;font-size:14px;
+  letter-spacing:.06em;color:#fff;margin-top:3px}
+#ldGrant .ldg-go{width:100%;min-height:46px;display:flex;align-items:center;justify-content:center;gap:9px;
+  background:var(--haz);color:#080800;font-family:var(--disp);font-weight:900;font-size:12px;
+  letter-spacing:.18em;text-transform:uppercase;border:0;cursor:pointer;transition:transform .12s,filter .15s}
+#ldGrant .ldg-go:active{transform:scale(.985)}
+#ldGrant .ldg-go:hover{filter:brightness(1.08)}
+#ldGrant .ldg-go .arw{width:8px;height:8px;border-right:2px solid currentColor;border-top:2px solid currentColor;
+  transform:rotate(45deg)}
+#ldGrant .ldg-bar{height:3px;margin-top:14px;background:rgba(245,245,245,.10);overflow:hidden}
+#ldGrant .ldg-bar i{display:block;height:100%;width:100%;transform-origin:left;background:var(--haz);
+  transform:scaleX(0)}
+#ldGrant.show .ldg-bar i{animation:ldgLoad 2.4s linear both}
+@keyframes ldgLoad{0%{transform:scaleX(0)}100%{transform:scaleX(1)}}
+
+/* ============ NOTIF MASUK GAME (ld-entry) ============
+   Lobby penuh di semua orientasi (wallet kanan-atas, judul hero, HUD power,
+   dock, tabbar), jadi tidak ada band kosong untuk banner permanen. Notif ini
+   memakai KONVENSI toast bawaan game (#weatherToast: melayang di 14% atas,
+   hilang sendiri) supaya konsisten, dengan label sendiri — bukan WEATHER
+   RADAR. Animasi transform/opacity saja (§2b). */
+.ld-entry{position:fixed;left:50%;top:14%;z-index:200000;
+  transform:translate(-50%,-22px) scale(.97);opacity:0;visibility:hidden;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  min-width:min(300px,86vw);max-width:min(92vw,400px);padding:9px 20px 11px;
+  border:1.5px solid rgba(243,230,0,.55);background:rgba(7,7,7,.97);
+  box-shadow:0 16px 38px rgba(0,0,0,.82);
+  transition:opacity .3s cubic-bezier(.16,1,.3,1),transform .3s cubic-bezier(.16,1,.3,1),visibility 0s .3s;
+  pointer-events:none;text-align:center}
+.ld-entry::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;
+  background:repeating-linear-gradient(-45deg,var(--haz,#f3e600) 0 8px,#050505 8px 18px)}
+.ld-entry.on{transform:translate(-50%,0) scale(1);opacity:1;visibility:visible;
+  transition:opacity .3s cubic-bezier(.16,1,.3,1),transform .3s cubic-bezier(.16,1,.3,1),visibility 0s 0s}
+.ld-entry .lde-k{font-family:'JetBrains Mono','Orbitron',monospace;font-size:7.5px;font-weight:700;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--haz,#f3e600)}
+.ld-entry .lde-t{font-family:var(--disp,'Orbitron');font-weight:900;font-size:13px;letter-spacing:.1em;
+  text-transform:uppercase;color:#fff;line-height:1.15}
+.ld-entry .lde-s{font-family:'Rajdhani','Segoe UI',sans-serif;font-size:10.5px;font-weight:600;
+  letter-spacing:.03em;color:rgba(245,245,245,.6)}
+@media (orientation:landscape) and (max-height:520px){
+  .ld-entry{padding:6px 16px 8px;min-width:0}
+  .ld-entry .lde-t{font-size:11px}
+  .ld-entry .lde-s{display:none}
+}
+
+/* ============ responsif loading ============ */
+@media (max-height:640px){
+  #loadingScreen .ld-fan{height:min(232px,32vh);--cw:clamp(56px,8.4vw,88px)}
+  #loadingScreen .ld-lead{margin:-2px 0 8px;font-size:6.8px}
+  #loadingScreen .ld-id{margin-bottom:10px}
+  #loadingScreen .ld-ava{width:38px;height:38px}
+  #loadingScreen .ld-name{font-size:14px}
+  #loadingScreen .ld-tip{margin-top:10px;padding:6px 13px 6px 7px}
+  #loadingScreen .ld-tip-ic{width:22px;height:22px}
+  #loadingScreen .ld-foot{padding:6px 14px 10px}
+}
+@media (max-width:520px){
+  #loadingScreen .ld-stages span{font-size:6.6px;letter-spacing:.14em;gap:4px}
+  #loadingScreen .ld-stages span i{width:6px;height:6px}
+  #loadingScreen .ld-sub{font-size:7.4px;letter-spacing:.16em}
+  #loadingScreen .ld-tip-t{font-size:10.5px}
+  #loadingScreen .ld-lead{font-size:6.4px;letter-spacing:.16em;gap:5px}
+  #loadingScreen .ld-lead::before,#loadingScreen .ld-lead::after{width:11px}
+}
+@media (orientation:landscape) and (max-height:520px){
+  #loadingScreen .ld-shell{flex-direction:row;align-items:center;justify-content:center;gap:24px;padding:0 20px}
+  #loadingScreen .ld-left{flex:0 1 auto}
+  #loadingScreen .ld-fan{height:min(214px,68vh);width:min(400px,46vw);--cw:clamp(46px,6.4vw,70px)}
+  #loadingScreen .ld-fan::after{width:min(360px,48vw);height:120px}
+  #loadingScreen .ld-lead{display:none}
+  #loadingScreen .ld-id{margin:10px 0 0}
+  #loadingScreen .ld-ava{width:32px;height:32px}
+  #loadingScreen .ld-kick{font-size:6.6px;letter-spacing:.18em}
+  #loadingScreen .ld-name{font-size:12px}
+  #loadingScreen .ld-col{width:min(430px,46vw)}
+  #loadingScreen .ld-phead{gap:10px}
+  #loadingScreen .ld-syn-t{font-size:clamp(11px,1.9vw,15px);letter-spacing:.1em}
+  #loadingScreen .ld-pctwrap b{font-size:clamp(22px,3.4vw,34px)}
+  #loadingScreen .ld-sub{margin:3px 0 6px}
+  #loadingScreen .ld-stages{margin-top:7px}
+  #loadingScreen .ld-tip{margin-top:9px;padding:5px 12px 5px 6px}
+  #loadingScreen .ld-tip-ic{width:20px;height:20px}
+  #loadingScreen .ld-tip-ic svg{width:11px;height:11px}
+  #loadingScreen .ld-tip-t{font-size:10px}
+  #loadingScreen .ld-foot{padding:6px 14px 10px}
+  #loadingScreen .ld-brand-nm{font-size:10px}
+  #loadingScreen .ld-foot-dash{bottom:14px}
+}
+@media (prefers-reduced-motion:reduce){
+  #loadingScreen .ld-scan,#loadingScreen .ld-spin,#loadingScreen .ld-ring,
+  #ldGrant .ldg-dot{animation:none!important}
+  #ldCurtain .ldc-half,#ldGrant .ldg-plate,.ld-entry{transition:none!important}
+}
 
 /* popup auth: spinner "Memproses", sukses daftar, sukses login */
 #authSpin,#authDone,#welcomeModal{--sys:#7DF9FF;--vio:#B58CFF;--txt:#EAF6FF;--mut:#9fb6c9;--ln:rgba(125,249,255,.32);--glow:0 0 20px rgba(125,249,255,.45);
@@ -19375,44 +19698,13 @@ html.fps-locked .bp-fchip{
 @keyframes acGl2{0%,90%,100%{transform:translateX(0)}93%{transform:translateX(2px)}96%{transform:translateX(-2px)}}
 
 /* ============================================================
-   AUTH CYBER — Unit D: layar memuat = HOLOGRAM KARTU (sama seperti
-   kartu aktif di card lobby). Emblem spiral jadi fallback kalau belum
-   ada kartu; saat runLoading render hubCardHtml(equipped()) ke #ldCard,
-   .ld-holo.has-card menyembunyikan emblem & menampilkan kartu 3:4 yang
-   melayang (ldFloat) dengan sheen foil (ld-tint) + garis scan menyapu
-   (ld-hscan) + persen (ldPct). Tetap AUTO-advance, ID JS utuh.
+   (Blok "AUTH CYBER — Unit D: HOLOGRAM KARTU" DIHAPUS di sini.)
+   Markup .ld-holo/.ld-emblem/.ld-cardwrap/.ld-glass sudah tidak ada sejak
+   port LOADING HAZARD BANNER (2026-11-06); aturan penggantinya hidup di blok
+   "LOADING SCREEN — HAZARD BANNER" di atas. Yang dipertahankan hanya z-index
+   loader (lihat #loadingScreen di blok baru) karena #authScreen fixed masih
+   ada di DOM.
    ============================================================ */
-/* BUGFIX oklusi: #authScreen (inline z 999999) belakangan di DOM & z sama,
-   jadi nempel DI ATAS loader selama 3 detik -> orang lihat login doang,
-   "nggak ada animasi memuat". Naikkan loader di atas login (tetap di bawah
-   modal welcome/authDone yang 1000001). */
-#loadingScreen{z-index:1000000}
-#loadingScreen .ld-holo{position:relative;width:min(210px,58vw);aspect-ratio:3/4;margin:0 auto 18px;border-radius:18px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:radial-gradient(120% 90% at 50% -12%,rgba(125,249,255,.18),transparent 60%),linear-gradient(160deg,rgba(20,30,48,.92),rgba(8,12,22,.96));border:1px solid var(--ln);box-shadow:0 22px 50px rgba(0,0,0,.6),var(--glow);animation:ldFloat 5s ease-in-out infinite}
-@keyframes ldFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-@keyframes ldHscan{0%{top:-48%}100%{top:118%}}
-@keyframes ldSpinSlow{to{transform:rotate(360deg)}}
-@keyframes ldStatusGlow{0%,100%{opacity:.75}50%{opacity:1}}
-/* fallback emblem (dipakai saat belum ada kartu) */
-#loadingScreen .ld-emblem{position:absolute;inset:0;place-items:center;z-index:1}
-#loadingScreen .ld-holo.has-card .ld-emblem{display:none}
-#loadingScreen .ld-emblem .ld-scan{position:absolute;left:0;right:0;height:40%;top:-45%;background:linear-gradient(180deg,transparent,rgba(125,249,255,.42),transparent);animation:ldHscan 2.6s ease-in-out infinite;pointer-events:none}
-#loadingScreen .ld-holo .ld-logo{margin:0;animation:none;width:88px;height:88px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 40% 32%,rgba(125,249,255,.24),rgba(8,14,24,.6) 70%);box-shadow:0 0 22px rgba(125,249,255,.4),inset 0 0 14px rgba(125,249,255,.15)}
-#loadingScreen .ld-holo .ld-logo svg{width:52px;height:52px;animation:ldSpinSlow 9s linear infinite}
-/* kartu hasil render hubCardHtml mengisi panggung */
-#loadingScreen .ld-cardwrap{position:relative;z-index:2;width:100%;height:100%;align-items:center;justify-content:center}
-#loadingScreen .ld-holo.has-card .ld-cardwrap{display:flex}
-#loadingScreen .ld-cardwrap .hub-center{width:100%;height:100%;cursor:default;pointer-events:none}
-#loadingScreen .ld-cardwrap .hub-center:hover{transform:none}
-#loadingScreen .ld-cardwrap .hc-img img,#loadingScreen .ld-cardwrap .hc-img video{object-position:center}
-/* sheen hologram di atas kartu/emblem */
-#loadingScreen .ld-glass{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;border-radius:18px}
-#loadingScreen .ld-tint{position:absolute;inset:0;background:linear-gradient(115deg,transparent 28%,rgba(125,249,255,.12) 46%,rgba(181,140,255,.16) 54%,transparent 72%);mix-blend-mode:screen}
-#loadingScreen .ld-hscan{position:absolute;left:0;right:0;height:42%;top:-48%;background:linear-gradient(180deg,transparent,rgba(125,249,255,.30),transparent);animation:ldHscan 2.8s ease-in-out infinite}
-#loadingScreen .ld-meta{display:flex;justify-content:space-between;align-items:center;margin:0 0 8px;padding:0 2px}
-#loadingScreen .ld-brand{font-family:"Rajdhani",sans-serif;font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:#6d849a}
-#loadingScreen .ld-pct{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:15px;letter-spacing:.1em;color:var(--sys);text-shadow:0 0 10px rgba(125,249,255,.5)}
-#loadingScreen .ld-status{animation:ldStatusGlow 1.8s ease-in-out infinite}
-@media (prefers-reduced-motion:reduce){#loadingScreen .ld-holo,#loadingScreen .ld-scan,#loadingScreen .ld-hscan,#loadingScreen .ld-holo .ld-logo svg,#loadingScreen .ld-status{animation:none!important}}
 
 /* ============================================================
    AUTH CYBER — Unit F: popup "berhasil masuk" = JENDELA SISTEM

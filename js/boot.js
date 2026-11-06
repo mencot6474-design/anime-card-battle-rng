@@ -690,8 +690,19 @@ function _withTimeout(p, ms, label){
 async function loginAsGuest(){
   const btn=document.getElementById("auGuestBtn");
   if(btn){btn.disabled=true;btn.textContent="CONNECTING...";}
-  document.getElementById("authSpin").classList.remove("hidden");
-  document.getElementById("asTxt").textContent="Entering Game as Guest...";
+  /* Spinner auth lama (#authSpin, z 1000001) TIDAK boleh muncul di atas layar
+     loading baru (z 1000000): dulu hasilnya dua layar memuat bertumpuk, yang
+     terlihat justru spinner cyan lama. Kalau loader baru sedang tampil, pakai
+     baris statusnya; spinner lama hanya untuk jalur tautkan-akun di Settings. */
+  const _ldScr=document.getElementById("loadingScreen");
+  const _ldActive=!!(_ldScr && !_ldScr.classList.contains("hidden"));
+  if(!_ldActive){
+    document.getElementById("authSpin").classList.remove("hidden");
+    document.getElementById("asTxt").textContent="Entering Game as Guest...";
+  } else {
+    const _st=document.getElementById("ldStatus");
+    if(_st) _st.textContent="Connecting as guest\u2026";
+  }
 
   /* Non-CrazyGames: kalau ada akun bernama yang sudah tertaut di device ini,
      lanjutkan akun itu (bukan guest acak) — jadi pemain yang sudah "tautkan
@@ -936,9 +947,10 @@ async function enterGame(name,welcome){
       document.getElementById("loadingScreen").classList.add("hidden");
       location.hash="#/lobby";
       render();
-      if(welcome){
-        showWelcomeWindow(name);
-      }
+      /* Popup "ACCESS GRANTED" lama (showWelcomeWindow) TIDAK dipanggil lagi:
+         plate #ldGrant di layar loading sudah jadi gerbang masuk yang sama
+         (identitas + Lv + power + tombol Enter Arena), jadi memanggilnya di
+         sini = dua gerbang berurutan. Fungsi tetap ada untuk kompatibilitas. */
     } catch(e) {
       console.error('Post-login render FAILED:', e.message, e.stack);
       document.getElementById("loadingScreen").classList.add("hidden");
@@ -946,51 +958,244 @@ async function enterGame(name,welcome){
     }
   });
 }
-function runLoading(done){
-  const scr=document.getElementById("loadingScreen");
-  document.getElementById("authSpin").classList.add("hidden");
-  const fill=document.getElementById("ldFill");
-  const status=document.getElementById("ldStatus");
-  const pctEl=document.getElementById("ldPct");
-  scr.classList.remove("hidden");
-  /* Hologram kartu aktif = sama seperti card lobby (pakai hubCardHtml yang
-     sama). Fallback ke emblem spiral kalau belum ada kartu / render gagal. */
-  const holo=scr.querySelector(".ld-holo");
-  const cardBox=document.getElementById("ldCard");
-  if(cardBox){
-    cardBox.innerHTML="";
-    try{
-      const eq=(typeof equipped==="function")?equipped():null;
-      if(eq&&eq.char&&typeof hubCardHtml==="function"){
-        cardBox.innerHTML=hubCardHtml(eq);
-        if(holo) holo.classList.add("has-card");
-      } else if(holo){ holo.classList.remove("has-card"); }
-    }catch(e){ if(holo) holo.classList.remove("has-card"); }
+/* ==========================================================================
+   LOADING SCREEN — HAZARD BANNER (port _tmp/proto_loading_v1.html)
+   Alur: progress 0-100 -> tape sweep -> half-curtain menutup ->
+   plate ACCESS GRANTED -> done() (lobby di-render di belakang curtain) ->
+   curtain reveal -> banner notif "ENTERED THE ARENA".
+   Teks FULL ENGLISH (CrazyGames). Tidak ada tap-to-enter wajib:
+   plate auto-advance 2,6 dtk, klik ENTER ARENA hanya mempercepat.
+   ========================================================================== */
+const LD_SUBS=[
+  [0,  'Oiling the wheel\u2026'],
+  [12, 'Verifying asset manifest\u2026'],
+  [28, 'Restoring hunter profile\u2026'],
+  [44, 'Assembling deck matrix\u2026'],
+  [56, 'Calibrating hazard grid\u2026'],
+  [72, 'Streaming sector 01\u2026'],
+  [86, 'Finalizing loadout\u2026'],
+  [96, 'Almost there\u2026']
+];
+const LD_TIPS=[
+  'Clear world boss borders to unlock the next one.',
+  'Duplicate cards feed Rebirth essence \u2014 never sell them.',
+  'Hold ROLL to auto-stop on a rare pull.',
+  'Story stages pay gems on first clear, once per difficulty.'
+];
+function _ldEl(id){ return document.getElementById(id); }
+function _ldArt(char,fallback){
+  try{
+    if(char && typeof CARDS!=="undefined" && CARDS[char] && typeof cardImg==="function"){
+      return cardImg(char);
+    }
+  }catch(e){}
+  return fallback||"";
+}
+/* Hiasan fan: kalau pemain baru cuma punya 1-2 kartu, sisa slot diisi art
+   kartu lain yang memang ada di CARDS (bukan URL luar, bukan file baru).
+   Hanya dekorasi layar muat — tidak menyentuh state/kepemilikan. */
+const LD_FAN_FALLBACK=["CH_SHADOW_KING","CH_ETERNAL_DRAGON","CH_SUN_GOD","CH_ABSOLUTE_ZERO","CH_OMNI_SOVEREIGN","CH_FROSTBANE"];
+function _ldFillFan(){
+  const eq=(typeof equipped==="function")?equipped():null;
+  const center=_ldEl("ldC3");
+  const main=_ldArt(eq&&eq.char,null);
+  if(center&&main) center.src=main;
+  /* kartu samping: varian lain dari koleksi dulu, lalu fallback dekoratif */
+  const used={}; if(eq&&eq.char) used[eq.char]=1;
+  const pool=[];
+  try{
+    (state.stacks||[]).forEach(function(s){
+      if(!s||!s.char||used[s.char]) return;
+      used[s.char]=1; pool.push(s.char);
+    });
+  }catch(e){}
+  LD_FAN_FALLBACK.forEach(function(id){
+    if(pool.length>=4) return;
+    if(used[id]) return;
+    used[id]=1; pool.push(id);
+  });
+  ["ldC1","ldC2","ldC4","ldC5"].forEach(function(id,i){
+    const img=_ldEl(id);
+    if(!img) return;
+    const src=_ldArt(pool[i],main);
+    if(src) img.src=src;
+  });
+  const ava=_ldEl("ldAva"), gAva=_ldEl("ldgAva"), brand=_ldEl("ldBrandImg");
+  if(ava&&main) ava.src=main;
+  if(gAva&&main) gAva.src=main;
+  if(brand) brand.src=_ldArt((eq&&eq.char)||null,main)||main||"";
+  const lead=_ldEl("ldLead");
+  if(lead){
+    let nm="\u2014";
+    try{ if(eq&&eq.char&&typeof cardName==="function") nm=String(cardName(eq.char)).toUpperCase(); }catch(e){}
+    lead.innerHTML='DECK LEAD &mdash; <b>'+nm+'</b>';
   }
-  const isEn = (typeof window.GameLang !== "undefined" && typeof window.GameLang.get === "function") ? window.GameLang.get() === "en" : true;
-  const steps = isEn
-    ? ["Syncing telemetry…", "Assembling deck matrix…", "Calibrating arena…", "Loading sector…", "Ready!"]
-    : ["Menyinkronkan data…", "Membangun deck…", "Menyiapkan arena…", "Memuat dunia…", "Siap!"];
-  const dur=3000,t0=Date.now();
-  fill.style.width="0%";
-  if(pctEl) pctEl.textContent="0%";
+}
+function _ldStageUpdate(pct,stagesEl){
+  if(!stagesEl) return;
+  const kids=stagesEl.children;
+  for(let i=0;i<kids.length;i++){
+    const at=parseFloat(kids[i].getAttribute("data-at"))||0;
+    const next=(i+1<kids.length)?(parseFloat(kids[i+1].getAttribute("data-at"))||0):101;
+    kids[i].classList.toggle("on", pct>=at && pct<next);
+    kids[i].classList.toggle("done", pct>=next);
+  }
+}
+function runLoading(done){
+  const scr=_ldEl("loadingScreen");
+  const curtain=_ldEl("ldCurtain");
+  const grant=_ldEl("ldGrant");
+  const spin=_ldEl("authSpin");
+  if(spin) spin.classList.add("hidden");
+  const fill=_ldEl("ldFill");
+  const status=_ldEl("ldStatus");
+  const pctEl=_ldEl("ldPct");
+  const stagesEl=_ldEl("ldStages");
+  const tipEl=_ldEl("ldTip");
+
+  /* reset semua layer transisi supaya aman dipanggil ulang (login ulang) */
+  if(curtain) curtain.className="";
+  if(grant){ grant.classList.add("hidden"); grant.classList.remove("show"); }
+  if(scr) scr.classList.remove("hidden");
+
+  /* identitas nyata */
+  const nmEl=_ldEl("ldName");
+  if(nmEl) nmEl.textContent="@"+String(currentUser||"hunter");
+  _ldFillFan();
+
+  const nameTxt="@"+String(currentUser||"hunter");
+  const gName=_ldEl("ldgName");
+  if(gName) gName.textContent=nameTxt;
+  const gLv=_ldEl("ldgLv");
+  if(gLv) gLv.textContent="HUNTER ONLINE \u00b7 LV "+((state&&state.playerLv)?state.playerLv:1);
+  const gPw=_ldEl("ldgPower");
+  if(gPw){ try{ gPw.textContent=(typeof totalPower==="function")?fmtStat(totalPower()):"0"; }catch(e){ gPw.textContent="0"; } }
+  const gCards=_ldEl("ldgCards");
+  if(gCards){ try{ gCards.textContent=String((state&&state.stacks)?state.stacks.length:0); }catch(e){ gCards.textContent="0"; } }
+  const gSess=_ldEl("ldgSession");
+  if(gSess){
+    let sid="0000";
+    try{
+      /* CURRENT_DEVICE_SESSION adalah STRING id (supabase-sync.js:943), bukan
+         objek — `.id` selalu undefined dan dulu menampilkan #0000. */
+      const raw=window.CURRENT_DEVICE_SESSION;
+      const s=String((raw&&typeof raw==="object")?(raw.id||""):(raw||""));
+      const h=s.replace(/[^a-zA-Z0-9]/g,"").slice(0,4).toUpperCase();
+      if(h) sid=h;
+    }catch(e){}
+    gSess.textContent="#"+sid;
+  }
+  const gSerial=_ldEl("ldgSerial");
+  if(gSerial) gSerial.textContent=("0000"+Math.floor(Math.random()*65536).toString(16).toUpperCase()).slice(-4);
+
+  /* label build: versi rilis terbaru dari GAME_CHANGELOGS (bukan angka karangan) */
+  const buildEl=_ldEl("ldBuild");
+  if(buildEl){
+    let label="BUILD";
+    try{
+      if(typeof GAME_CHANGELOGS!=="undefined" && GAME_CHANGELOGS.length){
+        const latest=GAME_CHANGELOGS[0];
+        const v=(latest&&(latest.version||latest.v||latest.build))||"";
+        const d=(latest&&(latest.date||latest.tanggal))||"";
+        label="BUILD "+(v?String(v).replace(/^v/i,""):"")+(d?" \u00b7 "+d:"");
+      }
+    }catch(e){}
+    buildEl.textContent=label;
+  }
+
+  if(fill) fill.style.transform="scaleX(0)";
+  if(pctEl) pctEl.textContent="0";
+  if(status) status.textContent=LD_SUBS[0][1];
+  _ldStageUpdate(0,stagesEl);
+
+  /* tips bergilir selama memuat */
+  let tipIdx=0;
+  const tipTimer=setInterval(function(){
+    if(!tipEl) return;
+    tipIdx=(tipIdx+1)%LD_TIPS.length;
+    tipEl.textContent=LD_TIPS[tipIdx];
+  },3400);
+
+  const dur=4200, t0=Date.now();
   let completed=false;
-  const iv=setInterval(()=>{
-    const p=Math.min(1,(Date.now()-t0)/dur);
-    fill.style.width=(p*100).toFixed(1)+"%";
-    if(pctEl) pctEl.textContent=Math.round(p*100)+"%";
-    status.textContent=steps[Math.min(steps.length-1,Math.floor(p*steps.length))];
-    if(p>=1&&!completed){completed=true;clearInterval(iv);if(window.cgLoadingStop) window.cgLoadingStop();setTimeout(done,250);}
-  },60);
-  // Timeout guard - force through after 8 seconds
-  setTimeout(()=>{
+  let raf=null;
+
+  function paint(p){
+    const v=Math.max(0,Math.min(1,p));
+    if(fill) fill.style.transform="scaleX("+v.toFixed(4)+")";
+    const pc=Math.round(v*100);
+    if(pctEl) pctEl.textContent=String(pc);
+    if(status){
+      let label=LD_SUBS[0][1];
+      for(let i=0;i<LD_SUBS.length;i++){ if(pc>=LD_SUBS[i][0]) label=LD_SUBS[i][1]; }
+      status.textContent=label;
+    }
+    _ldStageUpdate(pc,stagesEl);
+  }
+  function tick(){
+    if(completed) return;
+    const t=Math.min(1,(Date.now()-t0)/dur);
+    paint(1-Math.pow(1-t,2.15)); /* ease-out: terasa seperti kerja nyata */
+    if(t<1){ raf=requestAnimationFrame(tick); }
+    else { completed=true; clearInterval(tipTimer); if(window.cgLoadingStop) window.cgLoadingStop(); finish(); }
+  }
+
+  let advanced=false;
+  function advance(){
+    if(advanced) return;
+    advanced=true;
+    if(grant){ grant.classList.remove("show"); grant.classList.add("hidden"); }
+    /* done() merender lobby SELAGI curtain masih menutup -> tidak ada kedipan */
+    try{ done(); }catch(e){ console.error("Post-login render FAILED:", e&&e.message); }
+    setTimeout(function(){
+      if(curtain){ curtain.classList.remove("closed"); curtain.classList.add("revealed"); }
+      setTimeout(function(){
+        if(curtain) curtain.className="";
+        /* Notif masuk game pakai elemen sendiri (#ldEntry) yang posisinya
+           meniru toast game yang sudah dituning per orientasi. Tidak memakai
+           toast() karena ::before-nya berlabel "WEATHER RADAR". */
+        const entry=_ldEl("ldEntry");
+        if(entry){
+          entry.classList.add("on");
+          setTimeout(function(){ if(entry) entry.classList.remove("on"); },3200);
+        }
+        const after=window.__ldAfterReveal;
+        window.__ldAfterReveal=null;
+        if(typeof after==="function"){ try{ after(); }catch(e){ console.warn("afterReveal err:", e&&e.message); } }
+      },700);
+    },220);
+  }
+  function finish(){
+    paint(1);
+    if(curtain){ curtain.classList.add("on","sweep"); }
+    setTimeout(function(){ if(curtain) curtain.classList.add("closed"); },380);
+    setTimeout(function(){
+      if(grant){
+        grant.classList.remove("hidden");
+        void grant.offsetWidth;
+        grant.classList.add("show");
+      }
+      /* auto-advance: tidak ada jalan buntu kalau tombol tidak terjangkau */
+      setTimeout(advance,2600);
+    },900);
+  }
+
+  const enterBtn=_ldEl("ldgEnter");
+  if(enterBtn) enterBtn.onclick=advance;
+
+  /* gambar dulu sebelum progress berjalan (hindari 1 frame kosong) */
+  paint(0);
+  raf=requestAnimationFrame(tick);
+
+  /* Timeout guard — jangan pernah menggantung di HP lambat */
+  setTimeout(function(){
     if(!completed){
       completed=true;
-      console.warn('Loading timeout, forcing through...');
-      clearInterval(iv);
-      setTimeout(done,250);
+      try{ clearInterval(tipTimer); }catch(e){}
+      console.warn("Loading timeout, forcing through...");
+      finish();
     }
-  },8000);
+  },9000);
 }
 async function logout(){
   try {

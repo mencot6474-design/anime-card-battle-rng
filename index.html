@@ -3,6 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=1900, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<script>
+  /* Viewport device-width dipasang SEDINI MUNGKIN, sebelum body digambar.
+     js/mobile-shell.js sudah memaksa nilai yang sama, tapi file itu dimuat di
+     akhir daftar script — tanpa baris ini layar loading (dan seluruh shell)
+     sempat dilukis pada kanvas 1900px lalu di-zoom-out browser, sehingga di HP
+     tampak kecil/nyangkut di tengah sesaat sebelum layout benar. */
+  (function(){
+    var m=document.querySelector('meta[name="viewport"]');
+    if(m) m.setAttribute("content","width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no");
+  })();
+</script>
 
 <title>Anime Card Battle</title>
 <link rel="manifest" href="manifest.json">
@@ -16,7 +27,7 @@
 <!-- CrazyGames SDK v3 (Official HTML5 SDK) -->
 <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
 <script src="js/crazygames.js?v=v2-sdkReadyGate"></script>
-<link rel="stylesheet" href="css/style.css?v=v388-shopWoBBackground">
+<link rel="stylesheet" href="css/style.css?v=v391-loadingFirstPaint">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Rajdhani:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/world-boss.css?v=v277-wbShadowArmory">
 <link rel="stylesheet" href="css/sl-system.css?v=v391-coreSpireHub">
@@ -29,7 +40,7 @@
   window.TRAKTEER_SHOP_URL = "";
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=v466-deckPanelHidden').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=v476-loadingFirstPaint').catch(() => {});
     });
   }
 </script>
@@ -51,17 +62,118 @@
 </svg>
 <div id="liveVeil" aria-hidden="true"></div>
 <div id="loadingScreen">
-  <div class="ld-inner">
-    <div class="ld-holo">
-      <div class="ld-emblem"><div class="ld-scan"></div><div class="ld-logo"><svg viewBox="0 0 24 24" fill="none" aria-label="Clan Uzumaki"><path d="M12 12a2 2 0 0 1 4 0 4 4 0 0 1-8 0 6 6 0 0 1 12 0 8 8 0 0 1-16 0" stroke="#fff" stroke-width="2.1" stroke-linecap="round"/></svg></div></div>
-      <div class="ld-cardwrap" id="ldCard"></div>
-      <div class="ld-glass"><span class="ld-tint"></span><span class="ld-hscan"></span></div>
+  <div class="ld-bg"></div>
+  <div class="ld-beam"></div>
+  <div class="ld-gridbg"></div>
+  <div class="ld-grain"></div>
+  <div class="ld-scan"></div>
+  <div class="ld-shell">
+    <div class="ld-left">
+      <div class="ld-fan">
+        <div class="ld-card ld-c1"><img id="ldC1" src="assets/cards/art/shadow-king.webp" alt=""></div>
+        <div class="ld-card ld-c2"><img id="ldC2" src="assets/cards/art/eternal-dragon.webp" alt=""></div>
+        <div class="ld-ring"></div>
+        <div class="ld-card ld-c3"><img id="ldC3" src="assets/cards/art/shadow-king.webp" alt=""></div>
+        <div class="ld-card ld-c4"><img id="ldC4" src="assets/cards/art/sun-god.webp" alt=""></div>
+        <div class="ld-card ld-c5"><img id="ldC5" src="assets/cards/art/omni-sovereign.webp" alt=""></div>
+      </div>
+      <div class="ld-lead" id="ldLead">DECK LEAD &mdash; <b>&mdash;</b></div>
     </div>
-    <div class="ld-title disp">Anime <span class="ld-accent">Card Battle</span></div>
-    <div class="ld-meta"><span class="ld-brand">System // Boot</span><span class="ld-pct" id="ldPct">0%</span></div>
-    <div class="ld-bar"><i id="ldFill"></i></div>
-    <div class="ld-status" id="ldStatus">Loadingâ€¦</div>
+    <div class="ld-col">
+      <div class="ld-id">
+        <div class="ld-ava"><img id="ldAva" src="assets/cards/art/shadow-king.webp" alt=""></div>
+        <div class="ld-idtext">
+          <div class="ld-kick">WELCOME BACK</div>
+          <div class="ld-name" id="ldName">@hunter</div>
+        </div>
+      </div>
+      <div class="ld-prog">
+        <div class="ld-phead">
+          <div class="ld-syn"><span class="ld-spin"></span><span class="ld-syn-t">SYNCHRONIZING <b>WORLD</b></span></div>
+          <div class="ld-pctwrap"><b id="ldPct">0</b><span>%</span></div>
+        </div>
+        <div class="ld-sub" id="ldStatus">Oiling the wheel&hellip;</div>
+        <div class="ld-bar"><i id="ldFill"></i></div>
+        <div class="ld-stages" id="ldStages">
+          <span data-at="0"><i></i>ASSETS</span>
+          <span data-at="28"><i></i>PROFILE</span>
+          <span data-at="56"><i></i>WORLD</span>
+          <span data-at="86"><i></i>READY</span>
+        </div>
+      </div>
+      <div class="ld-tip">
+        <span class="ld-tip-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19L12 3z"/><path d="M12 9v5"/><path d="M12 17.4h.01"/></svg></span>
+        <span class="ld-tip-k">TIP</span>
+        <span class="ld-tip-t" id="ldTip">Clear world boss borders to unlock the next one.</span>
+      </div>
+    </div>
   </div>
+  <div class="ld-foot">
+    <span class="ld-build" id="ldBuild">BUILD</span>
+    <div class="ld-brand">
+      <div class="ld-brand-txt">
+        <span class="ld-brand-nm">Anime Card Battle</span>
+        <span class="ld-brand-sub">A Hazard Protocol Production</span>
+      </div>
+      <div class="ld-brand-ic"><img id="ldBrandImg" src="assets/cards/thumb/shadow-king.webp" alt=""></div>
+    </div>
+    <span class="ld-foot-dash"></span>
+  </div>
+</div>
+
+<!-- Transisi masuk game: hazard tape sweep + dua half-curtain + plate ACCESS GRANTED -->
+<div id="ldCurtain" aria-hidden="true">
+  <div class="ldc-half ldc-top">
+    <span class="ldc-edge"></span>
+    <span class="ldc-mark">SECTOR <b>01</b> / 05</span>
+    <div class="ldc-tape ldc-tape-a"></div>
+  </div>
+  <div class="ldc-half ldc-bot">
+    <span class="ldc-edge"></span>
+    <span class="ldc-mark">HZ-PROTOCOL <b>871</b></span>
+    <div class="ldc-tape ldc-tape-b"></div>
+  </div>
+  <div class="ldc-flash"></div>
+</div>
+
+<div id="ldGrant" class="hidden" role="dialog" aria-modal="true" aria-label="Access granted">
+  <div class="ldg-plate">
+    <span class="ldg-corner tl"></span><span class="ldg-corner tr"></span>
+    <span class="ldg-corner bl"></span><span class="ldg-corner br"></span>
+    <span class="ldg-water">871</span>
+    <div class="ldg-in">
+      <div class="ldg-krow">
+        <span class="ldg-dot"></span>
+        <span class="ldg-kick">// AUTHORIZED <b>INSERTION</b></span>
+        <span class="ldg-serial">SERIAL 0x<b id="ldgSerial">1A7F</b></span>
+      </div>
+      <div class="ldg-title">ACCESS <b>GRANTED</b></div>
+      <div class="ldg-sub">Hazard Protocol &mdash; Sector 01</div>
+      <div class="ldg-who">
+        <div class="ldg-ava"><img id="ldgAva" src="assets/cards/art/shadow-king.webp" alt=""></div>
+        <div class="ldg-who-t">
+          <div class="ldg-who-n" id="ldgName">@hunter</div>
+          <div class="ldg-who-r" id="ldgLv">HUNTER ONLINE &middot; LV 1</div>
+        </div>
+      </div>
+      <div class="ldg-chips">
+        <div class="ldg-chip"><span class="k">Deck Power</span><span class="v" id="ldgPower">0</span></div>
+        <div class="ldg-chip"><span class="k">Cards</span><span class="v" id="ldgCards">0</span></div>
+        <div class="ldg-chip"><span class="k">Session</span><span class="v" id="ldgSession">#0000</span></div>
+      </div>
+      <button class="ldg-go" id="ldgEnter" type="button">Enter Arena <span class="arw"></span></button>
+      <div class="ldg-bar"><i></i></div>
+    </div>
+  </div>
+</div>
+
+<!-- Notif masuk game. Memakai posisi toast game (#weatherToast) yang sudah
+     dituning per orientasi, tapi labelnya sendiri ("SESSION SYNCHRONIZED")
+     supaya tidak menyamar sebagai WEATHER RADAR. -->
+<div id="ldEntry" class="ld-entry" role="status" aria-live="polite">
+  <span class="lde-k">SESSION SYNCHRONIZED</span>
+  <span class="lde-t">Entered the Arena</span>
+  <span class="lde-s">All systems nominal. Welcome back, hunter.</span>
 </div>
 <div id="authSpin" class="hidden">
   <div class="as-box">
@@ -1025,7 +1137,7 @@
 <script src="js/raid.js?v=v390-wbShadowArmory"></script>
 <script src="js/ranking.js?v=v9-storyEnemyTierOnly"></script>
 <script src="js/i18n.js?v=v396-bpDeck"></script>
-<script src="js/boot.js?v=v147-changelog"></script>
+<script src="js/boot.js?v=v150-loadingFirstPaint"></script>
 <script src="js/pwa.js?v=v156-install"></script>
 
 <!-- ========== CORET MODE (dev-only overlay anotasi) ==========
