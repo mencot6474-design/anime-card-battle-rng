@@ -1728,11 +1728,72 @@ function _l12SlotThumb(s) {
   return `<img src="${thumb}" alt="">`;
 }
 
+/* ---- SHOWCASE POSTER (4 lingkaran party di kanan-bawah panggung) ----
+   Klik salah satu .pav -> poster hero, judul, dan chip meta berganti ke kartu
+   slot itu. Murni tampilan: state.deck/save TIDAK diubah (deck leader tetap
+   slot 0), jadi tidak menambah payload cloud dan tidak menyentuh roll/battle. */
+let _l12ShowIdx = 0;
+let _l12ShowParty = [];
+try {
+  const _sv = parseInt(localStorage.getItem("aab-lobby-showcase"), 10);
+  if (isFinite(_sv) && _sv >= 0 && _sv <= 3) _l12ShowIdx = _sv;
+} catch (e) {}
+
+function _l12HeroMetaHtml(card, lv, combo) {
+  const c = (card && typeof CARDS !== "undefined") ? CARDS[card.char] : null;
+  const mut = (card && card.mut && card.mut !== "none") ? String(card.mut).toUpperCase() : "";
+  const mutCol = (card && typeof MUT_COLOR !== "undefined" && MUT_COLOR[card.mut]) ? MUT_COLOR[card.mut] : "rgba(245,245,245,.5)";
+  const tier = (c && c.tier) ? c.tier : "SSR";
+  return (mut ? '<span class="mchip" style="--mc:' + mutCol + '">' + mut + '</span>' : "")
+    + '<span class="mchip" style="--mc:rgba(245,245,245,.5)">' + tier + '</span>'
+    + '<span class="mchip" style="--mc:rgba(245,245,245,.5)">LV ' + lv + '</span>'
+    + '<span class="mchip" style="--mc:rgba(245,245,245,.5)">' + combo + '/4 DECK</span>';
+}
+
+/* Tukar poster TANPA renderLobby(): render ulang seluruh #app me-restart ambient
+   canvas & memicu flicker, padahal yang berubah cuma satu gambar + 4 chip. */
+window.l12Showcase = function (i) {
+  i = parseInt(i, 10);
+  if (window.sfx && sfx.hit) sfx.hit();
+  const party = _l12ShowParty || [];
+  /* Slot kosong: jangan buang klik — arahkan ke Backpack (perilaku lama hidup di
+     tombol tas, tapi user tetap butuh jalan mengisi slot yang belum terisi). */
+  if (!(i >= 0 && i < party.length) || !party[i]) {
+    if (typeof toggleBackpack === "function") toggleBackpack();
+    return;
+  }
+  if (i === _l12ShowIdx) return;
+  const card = party[i];
+  const c = (typeof CARDS !== "undefined") ? CARDS[card.char] : null;
+  if (!c) return;
+  _l12ShowIdx = i;
+  try { localStorage.setItem("aab-lobby-showcase", String(i)); } catch (e) {}
+  const root = document.querySelector(".lobby-hub.l12.c12");
+  if (!root) return;
+  const img = root.querySelector(".c12main .stage .hero .artbox img.art");
+  if (img) {
+    const src = (typeof cardImg === "function") ? cardImg(card.char) : "";
+    if (src) img.setAttribute("src", src);
+    /* CSS .art memakai object-position !important, jadi inline pun harus important. */
+    img.style.setProperty("object-position", c.pos || "center 12%", "important");
+  }
+  const ttl = root.querySelector(".c12title");
+  if (ttl) ttl.innerHTML = String((typeof cardName === "function") ? cardName(card.char) : (c.name || card.char)).replace(" ", "<br>");
+  const meta = root.querySelector(".c12meta");
+  if (meta) meta.innerHTML = _l12HeroMetaHtml(card, (state && state.playerLv) || 1, party.filter(Boolean).length);
+  root.querySelectorAll(".c12party .pav").forEach(function (b, k) {
+    b.classList.toggle("on", k === i);
+    b.setAttribute("aria-pressed", k === i ? "true" : "false");
+  });
+};
+
 function renderLobby(){
   if(state.battle){
     if(typeof cleanupCommandDrawer==='function') cleanupCommandDrawer();
     return renderBattle();
   }
+  /* Tray potion tidak hidup lagi setelah #app ditimpa render lain. */
+  _l12PotTrayClass(false);
   const _oldDrw = document.getElementById('commandDrawer');
   if(_oldDrw && _oldDrw.parentElement === document.body) _oldDrw.remove();
   const _oldBd = document.getElementById('drawerBackdrop');
@@ -1779,6 +1840,15 @@ function renderLobby(){
   (state.stacks || []).forEach(s => { if (s && s.id) _byId[s.id] = s; });
   const _party = _deck.slice(0, 4).map(id => (id && _byId[id]) ? _byId[id] : null);
   const _combo = _party.filter(Boolean).length;
+  /* Slot terpilih untuk poster panggung (klik lingkaran party). Kalau slot yang
+     tersimpan kosong, jatuh ke slot terisi pertama supaya poster tak hilang. */
+  const _showIdx = (_l12ShowIdx >= 0 && _l12ShowIdx < 4 && _party[_l12ShowIdx])
+    ? _l12ShowIdx
+    : (function () { const f = _party.findIndex(Boolean); return f >= 0 ? f : 0; })();
+  /* Data untuk handler klik .pav (l12Showcase). _l12ShowIdx sengaja TIDAK
+     ditimpa dengan fallback: kalau slot pilihan sedang kosong, pilihan pemain
+     tetap disimpan supaya poster balik lagi saat slot itu diisi. */
+  _l12ShowParty = _party;
 
   /* POTION (sumber sama dengan #buffDock milik panels.js) */
   const _now = Date.now();
@@ -1827,23 +1897,20 @@ function renderLobby(){
   const _potWin = (typeof WEATHER_MS !== "undefined") ? WEATHER_MS : 300000;  /* panels.js:16 — window potion 5 menit */
   const _luckTxt = [_luckFlat ? "+" + _luckFlat : "", _luckPct ? "+" + Math.round(_luckPct * 100) + "%" : ""].filter(Boolean).join(" · ");
   const _frameCfg = (typeof getLobbyActiveFrame === "function") ? getLobbyActiveFrame() : { src: "" };
-  const _hasEq = !!(eq && eq.char && CARDS[eq.char]);
-  const _c = _hasEq ? CARDS[eq.char] : null;
-  const _art = _hasEq ? ((typeof cardImg === "function") ? cardImg(eq.char) : "assets/cards/art/shadow-king.webp") : "assets/cards/art/shadow-king.webp";
-  const _heroName = _hasEq ? ((typeof cardName === "function") ? cardName(eq.char) : _c.name) : "NO FIGHTER";
-  const _heroTier = _hasEq ? (_c.tier || "SSR") : "—";
+  /* Kartu yang dipamerkan di poster = slot party terpilih (fallback deck leader). */
+  const _show = _party[_showIdx] || eq;
+  const _hasEq = !!(_show && _show.char && CARDS[_show.char]);
+  const _c = _hasEq ? CARDS[_show.char] : null;
+  const _art = _hasEq ? ((typeof cardImg === "function") ? cardImg(_show.char) : "assets/cards/art/shadow-king.webp") : "assets/cards/art/shadow-king.webp";
+  const _heroName = _hasEq ? ((typeof cardName === "function") ? cardName(_show.char) : _c.name) : "NO FIGHTER";
   const _heroPower = (typeof totalPower === "function") ? _fmt(totalPower()) : "0";
   const _pos = (_c && _c.pos) ? ("object-position:" + _c.pos + ";") : "";
-  const _passive = _hasEq && (typeof passiveName === "function") ? passiveName(eq.char) : "";
-  const _mut = (eq && eq.mut && eq.mut !== "none") ? eq.mut.toUpperCase() : "";
-  const _trait = (eq && eq.trait && eq.trait !== "none") ? eq.trait.toUpperCase() : "";
 
   /* ---- turunan layout C HAZARD (semua dari state asli, tanpa angka palsu) ---- */
   const _cWbAtt = (function () {
     try { if (typeof wbAttOf === "function") { const n = wbAttOf(); return (n == null) ? "\u2014" : (n + " / 3"); } } catch (e) {}
     return "3 / 3";
   })();
-  const _cMutCol = (eq && eq.mut && typeof MUT_COLOR !== "undefined" && MUT_COLOR[eq.mut]) ? MUT_COLOR[eq.mut] : "rgba(245,245,245,.5)";
   const _cAvatar = _l12SlotThumb(_party[0] || (state.stacks && state.stacks[state.stacks.length - 1]) || null);
   /* luck bisa membesar (rebirth x14 + weather); diringkas supaya tidak meluber */
   const _cLuck = (function () {
@@ -1871,12 +1938,7 @@ function renderLobby(){
 
           <h1 class="c12title">${String(_heroName).replace(" ", "<br>")}</h1>
 
-          <div class="c12meta">
-            ${_mut ? `<span class="mchip" style="--mc:${_cMutCol}">${_mut}</span>` : ""}
-            <span class="mchip" style="--mc:rgba(245,245,245,.5)">${_heroTier}</span>
-            <span class="mchip" style="--mc:rgba(245,245,245,.5)">LV ${_lv}</span>
-            <span class="mchip" style="--mc:rgba(245,245,245,.5)">${_combo}/4 DECK</span>
-          </div>
+          <div class="c12meta">${_l12HeroMetaHtml(_show, _lv, _combo)}</div>
 
           <div class="c12pow">
             <b id="l12TopPwr">${_heroPower}</b><span>COMBAT POWER</span>
@@ -1932,10 +1994,11 @@ function renderLobby(){
           </div>
 
           <div class="c12party">${(_party || []).slice(0, 4).map(function (s, i) {
-            if (!s) return '<button class="pav empty" type="button" title="Slot kosong" onclick="if(typeof toggleBackpack===\'function\')toggleBackpack();">+</button>';
+            if (!s) return '<button class="pav empty" type="button" title="Slot kosong — klik untuk buka Backpack" onclick="if(typeof toggleBackpack===\'function\')toggleBackpack();">+</button>';
             var _pn = (typeof cardName === 'function') ? cardName(s.char) : s.char;
             var _pc = (typeof MUT_COLOR !== 'undefined' && MUT_COLOR[s.mut]) ? MUT_COLOR[s.mut] : 'rgba(245,245,245,.26)';
-            return '<button class="pav' + (i === 0 ? ' on' : '') + '" type="button" title="' + _pn + '" style="--mc:' + _pc + '" onclick="if(window.sfx&&sfx.hit)sfx.hit();if(typeof toggleBackpack===\'function\')toggleBackpack();">' + _l12SlotThumb(s) + '</button>';
+            /* Klik lingkaran = tukar poster showcase (bukan buka Backpack; tombol tas ada di dock). */
+            return '<button class="pav' + (i === _showIdx ? ' on' : '') + '" type="button" aria-pressed="' + (i === _showIdx ? 'true' : 'false') + '" title="Tampilkan ' + _pn + ' di panggung" style="--mc:' + _pc + '" onclick="if(typeof l12Showcase===\'function\')l12Showcase(' + i + ');">' + _l12SlotThumb(s) + '</button>';
           }).join("")}</div>
         </div>
 
@@ -2565,6 +2628,13 @@ function _l12RenderWxCards(activeWeatherId) {
 }
 
 /* ---- QUICK-USE POTION POPOVER TRAY ---- */
+/* Tray dibuka ke atas dari baris potion dan menutupi 4 lingkaran party
+   (terukur 44x44 per slot di 320/500/850/1400). Kelas body ini menyembunyikan
+   lingkaran selama tray terbuka; CSS juga punya varian :has() sebagai cadangan. */
+function _l12PotTrayClass(on) {
+  try { document.body.classList.toggle("pot-tray-open", !!on); } catch (e) {}
+}
+
 window.l12TogglePotionTray = function(type) {
   const tray = document.getElementById("l12PotTray");
   if (!tray) return;
@@ -2576,6 +2646,7 @@ window.l12TogglePotionTray = function(type) {
   tray.setAttribute("data-active-type", type);
   tray.classList.add("open");
   tray.style.display = "flex";
+  _l12PotTrayClass(true);
   _l12RefreshPotionTray(type);
 };
 
@@ -2586,6 +2657,7 @@ window.l12ClosePotionTray = function() {
     tray.style.display = "none";
     tray.removeAttribute("data-active-type");
   }
+  _l12PotTrayClass(false);
 };
 
 function _l12RefreshPotionTray(type) {

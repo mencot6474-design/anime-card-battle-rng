@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v466-deckPanelHidden';
+const CACHE_NAME = 'anime-card-battle-v469-potTrayHideParty';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

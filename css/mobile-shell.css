@@ -3269,6 +3269,22 @@ html:not(.m-portrait) #indexModal .ix-sort {
 .lobby-hub.l12.c12 .pot-tray {
   left:10px; right:10px; top:auto; bottom:calc(100% + 4px); margin-top:0;
   background:rgba(6,6,6,.98); border:1px solid rgba(255,255,255,.3); clip-path:none;
+  /* tray dibuka ke ATAS dari baris potion, jadi menutupi 4 lingkaran party di
+     kanan-bawah panggung. z-index 30 sudah menang atas .c12party (9) karena
+     .c12foot z-index 7 menumpuk .c12main; angka ini menjaga kalau urutan
+     tumpukan berubah. */
+  z-index:30;
+}
+/* Tray potion terbuka = pilihan level menempati area yang sama dengan 4
+   lingkaran party (terukur: tumpang-tindih 44x44 per slot di 320/500/850/1400).
+   Lingkaran disembunyikan selama tray terbuka supaya tidak nabrak/tertimpa;
+   pilihan showcase tetap tersimpan dan kembali begitu tray ditutup.
+   opacity + visibility = composited, tidak memicu layout (§2b#5).
+   Kelas body dipasang JS (l12TogglePotionTray); :has() jadi cadangan kalau
+   kelas itu hilang karena render lain. */
+body.pot-tray-open .lobby-hub.l12.c12 .c12party,
+.lobby-hub.l12.c12:has(.pot-tray.open) .c12party {
+  opacity:0; visibility:hidden; pointer-events:none;
 }
 .lobby-hub.l12.c12 .pot-tray-head { color:#f5f5f5; }
 .lobby-hub.l12.c12 .pot-lv-btn {
