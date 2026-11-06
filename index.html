@@ -20,12 +20,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Rajdhani:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/world-boss.css?v=v277-wbShadowArmory">
 <link rel="stylesheet" href="css/sl-system.css?v=v391-coreSpireHub">
-<link rel="stylesheet" href="css/story-carousel.css?v=v349-t13UiCssFix">
+<link rel="stylesheet" href="css/story-carousel.css?v=v353-storyRewardGap">
 <link rel="stylesheet" href="css/lobby-prototype.css?v=v391-bpEquipBest">
 <link rel="stylesheet" href="css/mobile-shell.css?v=v462-potTrayHideParty">
 <link rel="stylesheet" href="css/battle-fresh.css?v=v3-battleNoHeader">
 <script>
-  /* Link toko Trakteer (fallback — utama ada di js/config.js). */
+  /* Link toko Trakteer (fallback â€” utama ada di js/config.js). */
   window.TRAKTEER_SHOP_URL = "";
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -60,18 +60,18 @@
     <div class="ld-title disp">Anime <span class="ld-accent">Card Battle</span></div>
     <div class="ld-meta"><span class="ld-brand">System // Boot</span><span class="ld-pct" id="ldPct">0%</span></div>
     <div class="ld-bar"><i id="ldFill"></i></div>
-    <div class="ld-status" id="ldStatus">Loading…</div>
+    <div class="ld-status" id="ldStatus">Loadingâ€¦</div>
   </div>
 </div>
 <div id="authSpin" class="hidden">
   <div class="as-box">
     <div class="as-ring"></div>
-    <div class="as-txt" id="asTxt">Processing…</div>
+    <div class="as-txt" id="asTxt">Processingâ€¦</div>
   </div>
 </div>
 <div id="authDone" class="hidden">
   <div class="as-box">
-    <div class="as-check">✓</div>
+    <div class="as-check">âœ“</div>
     <div class="as-title" id="adTitle">Account successfully created</div>
     <div class="as-txt" id="adMsg">Please log in with your new account.</div>
     <button class="as-btn" id="adOk">TO LOGIN</button>
@@ -126,7 +126,7 @@
     </span>
     <span id="coinVal"></span>
   </div>
-  <div class="pill gems" id="gemPill" title="Gems — didapat dari grinding (Tower / World Boss / Story)">
+  <div class="pill gems" id="gemPill" title="Gems â€” didapat dari grinding (Tower / World Boss / Story)">
     <span class="coin-icon-wrap gem-icon-wrap">
       <img src="assets/images/premium-currency.webp" alt="Gem" width="22" height="22" style="border-radius:50%;object-fit:cover;filter:drop-shadow(0 0 4px rgba(255,215,0,0.6));">
     </span>
@@ -156,11 +156,11 @@
         <div class="prof-name" id="pfName">GUEST</div>
         <div class="prof-lvline">
           <span class="prof-lv-pill">LV <b id="pfLv">1</b></span>
-          <span class="prof-deck" id="pfDeck">MAIN DECK · —</span>
+          <span class="prof-deck" id="pfDeck">MAIN DECK Â· â€”</span>
         </div>
         <div class="xpbar prof-xp"><i id="pfXpFill" style="width:0%"></i><span id="pfXpText">0 / 1000</span></div>
         <div class="prof-hero-foot">
-          <span class="prof-hero-lab">NEURAL NET · SECTOR 07</span>
+          <span class="prof-hero-lab">NEURAL NET Â· SECTOR 07</span>
         </div>
       </div>
     </aside>
@@ -169,7 +169,7 @@
     <section class="prof-main">
       <div class="prof-main-head">
         <div class="prof-main-titles">
-          <div class="prof-eyebrow">NEURAL MATRIX · AGENT TELEMETRY</div>
+          <div class="prof-eyebrow">NEURAL MATRIX Â· AGENT TELEMETRY</div>
           <div class="prof-h1" id="pfPaneTitle">OPERATOR STATS</div>
         </div>
         <div class="prof-power">
@@ -351,12 +351,12 @@
     <!-- Action Buttons -->
     <div class="ov-actions">
       <button class="ov-btn-retry" id="ov-again" type="button">
-        <span class="ov-btn-icon">↺</span>
+        <span class="ov-btn-icon">â†º</span>
         <span>MAIN LAGI</span>
       </button>
       <button class="ov-btn-primary" id="ov-next" type="button">
         <span>SELESAI</span>
-        <span class="ov-btn-icon">❯</span>
+        <span class="ov-btn-icon">â¯</span>
       </button>
     </div>
   </div>
@@ -379,7 +379,7 @@
     <div class="sl-footer">
       <button class="sl-claim-btn" id="rrClose">
         <span class="sl-claim-glow"></span>
-        <span class="sl-claim-text"><i class="sl-claim-icon">❖</i> ACCEPT REWARD</span>
+        <span class="sl-claim-text"><i class="sl-claim-icon">â–</i> ACCEPT REWARD</span>
       </button>
     </div>
   </div>
@@ -390,7 +390,7 @@
 <div id="indexModal"><div class="ix-box">
   <div class="ix-head">
     <div class="ix-header-titles">
-      <div class="ix-eyebrow"><span class="ix-dot"></span>NEURAL MATRIX · ARCHIVE REGISTRY</div>
+      <div class="ix-eyebrow"><span class="ix-dot"></span>NEURAL MATRIX Â· ARCHIVE REGISTRY</div>
       <div class="ix-title">CARD INDEX</div>
     </div>
     <div class="ix-h-tools">
@@ -423,7 +423,7 @@
           <strong id="premBalVal">0</strong>
         </div>
         <button class="prem-free-gems-btn" type="button" onclick="triggerWatchAd('gems')" title="Tonton iklan singkat untuk +25 Gems Gratis">
-          <span class="prem-fg-ic">🎬</span>
+          <span class="prem-fg-ic">ðŸŽ¬</span>
           <span class="prem-fg-txt">+25 GEMS</span>
         </button>
         <button class="ix-x" id="premClose" type="button" title="Tutup">
@@ -433,8 +433,8 @@
     </div>
     
     <div class="prem-subbanner">
-      <span class="prem-sub-ic">✦</span>
-      <span class="prem-sub-txt">Bursa Resmi Syndicate — Aktifkan Global Luck 10× se-server, tarik hingga 100.000 kartu instan, miliki artefak & pet kasta tertinggi, atau panggil anomali cuaca legendaris!</span>
+      <span class="prem-sub-ic">âœ¦</span>
+      <span class="prem-sub-txt">Bursa Resmi Syndicate â€” Aktifkan Global Luck 10Ã— se-server, tarik hingga 100.000 kartu instan, miliki artefak & pet kasta tertinggi, atau panggil anomali cuaca legendaris!</span>
       <span class="prem-sub-stat" id="premSubStat">14 ITEM TERSEDIA</span>
     </div>
 
@@ -505,7 +505,7 @@
 <div id="missionModal"><div class="ix-box mx-box">
   <div class="ix-head">
     <div class="ix-header-titles">
-      <div class="ix-eyebrow"><span class="ix-dot"></span>TACTICAL DIRECTIVES · CLEARANCE OPS</div>
+      <div class="ix-eyebrow"><span class="ix-dot"></span>TACTICAL DIRECTIVES Â· CLEARANCE OPS</div>
       <div class="ix-title mx-title">STORY</div>
     </div>
     <div class="ix-h-tools">
@@ -523,7 +523,7 @@
 <div id="rankModal"><div class="ix-box rk-box">
   <div class="ix-head">
     <div class="ix-header-titles">
-      <div class="ix-eyebrow"><span class="ix-dot"></span>GLOBAL PULSE · DAILY STANDING</div>
+      <div class="ix-eyebrow"><span class="ix-dot"></span>GLOBAL PULSE Â· DAILY STANDING</div>
       <div class="ix-title">LEADERBOARD</div>
     </div>
     <div class="ix-h-tools">
@@ -547,7 +547,7 @@
 <div id="rkProfModal"><div class="ix-box rp-box">
   <div class="ix-head">
     <div class="ix-header-titles">
-      <div class="ix-eyebrow"><span class="ix-dot"></span>PLAYER DOSSIER · PUBLIK</div>
+      <div class="ix-eyebrow"><span class="ix-dot"></span>PLAYER DOSSIER Â· PUBLIK</div>
       <div class="ix-title">PROFIL PLAYER</div>
     </div>
     <div class="ix-h-tools">
@@ -564,19 +564,19 @@
     <img id="spImg" src="" alt="Card Art">
   </div>
   <div class="sp-info-panel">
-    <button class="sp-x-btn" id="spClose" title="Tutup">✕</button>
+    <button class="sp-x-btn" id="spClose" title="Tutup">âœ•</button>
     <div class="sp-card-name" id="spCardName"></div>
     <div class="sp-card-rarity" id="spCardRarity"></div>
     <div class="sp-stats-row">
       <div class="sp-stat-card hp">
-        <span class="sp-stat-ic">❤️</span>
+        <span class="sp-stat-ic">â¤ï¸</span>
         <div class="sp-stat-data">
           <small>HEALTH</small>
           <b id="spHp">0</b>
         </div>
       </div>
       <div class="sp-stat-card atk">
-        <span class="sp-stat-ic">⚔️</span>
+        <span class="sp-stat-ic">âš”ï¸</span>
         <div class="sp-stat-data">
           <small>ATTACK</small>
           <b id="spAtk">0</b>
@@ -594,8 +594,8 @@
 <div id="dailyModal"><div class="dl-box">
   <div class="dl-glow-top"></div>
   <div class="ix-head dl-head">
-    <div><div class="eyebrow dl-eyebrow">7-DAY ATTENDANCE PROTOCOL · BACKPACK REWARDS</div><div class="ix-title dl-title">7 HARI LOGIN REWARD</div></div>
-    <button class="ix-x" id="dlClose" title="Tutup">✕</button>
+    <div><div class="eyebrow dl-eyebrow">7-DAY ATTENDANCE PROTOCOL Â· BACKPACK REWARDS</div><div class="ix-title dl-title">7 HARI LOGIN REWARD</div></div>
+    <button class="ix-x" id="dlClose" title="Tutup">âœ•</button>
   </div>
   <div class="dl-count">RESET DALAM <b id="dlCount">00:00:00</b></div>
   <div class="dl-grid" id="dlGrid"></div>
@@ -603,210 +603,227 @@
 </div></div>
 
 <div id="storyModal" class="story-viewport">
-  <canvas id="storyAmbientCanvas" class="story-ambient-canvas"></canvas>
-  <div class="cyber-grid"></div>
-
-  <!-- COMPACT HEADER -->
-  <header class="story-header">
-    <div class="hdr-left">
-      <button class="btn-back" id="scBtnBack" type="button">
-        <span class="ic ic-sm i-swords"></span> LOBBY
-      </button>
-      
-      <!-- Chapter Selector -->
-      <div class="chap-selector-pill">
-        <button class="chap-nav-btn" id="scPrevChap" type="button">‹</button>
-        <div class="chap-text-info" id="scChapInfo">
-          <span class="chap-badge-no" id="chapBadgeNo">BAB 01</span>
-          <span class="chap-title-name" id="chapTitleName">DESA LEMBAH NINJA</span>
-        </div>
-        <button class="chap-nav-btn" id="scNextChap" type="button">›</button>
-      </div>
-    </div>
-
-    <div class="hdr-right">
-      <!-- Difficulty Bar -->
-      <div class="diff-toggle-bar" id="scDiffGroup"></div>
-
-      <button class="drawer-close-btn" id="smClose" type="button" aria-label="Close">
-        <span class="ic ic-sm i-cancel"></span>
-      </button>
-    </div>
-  </header>
-
-  <!-- SUB-HEADER: DEDICATED PROGRESSION STRIP -->
-  <div class="story-sub-bar">
-    <div class="sub-bar-progress">
-      <span class="sub-prog-label">
-        <span>PROGRES BAB:</span>
-        <b id="subProgText">0 / 6 SELESAI (0%)</b>
-      </span>
-      <div class="sub-prog-track">
-        <div class="sub-prog-fill" id="subProgFill" style="width: 0%;"></div>
-      </div>
-    </div>
-
-    <div class="sub-bar-actions">
-      <button class="btn-sub-chest" id="btnLoreSub" style="background:rgba(56,189,248,0.1); border-color:rgba(56,189,248,0.3); color:var(--neon-cyan)" type="button">
-        <span class="ic ic-xs i-scroll"></span> LORE
-      </button>
-    </div>
+  <!-- Latar taktis: art musuh terkuat bab + grid. Dekoratif (pointer-events none). -->
+  <div class="hz-scene" aria-hidden="true">
+    <img class="hz-scene-art" id="storySceneArt" src="assets/cards/art/nine-tail-prodigy.webp" alt="">
+    <div class="hz-scene-veil"></div>
+    <div class="cyber-grid"></div>
   </div>
 
-  <!-- MAIN STAGE AREA -->
-  <main class="story-main">
-    <div class="stage-canvas-area" id="stageCanvasArea">
-      <!-- TACTICAL NODE MAP -->
-      <div class="tactical-node-map" id="tacticalMapContainer">
-        <div class="map-inner-canvas" id="mapCanvas">
-          <svg class="map-svg-connections" id="mapSvg" viewBox="0 0 1000 1000" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="cyanGlowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#38bdf8" />
-                <stop offset="100%" stop-color="#818cf8" />
-              </linearGradient>
-            </defs>
-          </svg>
-          <div id="mapNodesContainer"></div>
-        </div>
-      </div>
+  <!-- ================================ HEADER ================================ -->
+  <header class="story-header">
+    <button class="btn-back" id="scBtnBack" type="button" aria-label="Back to lobby">
+      <span class="chev">&#8249;</span><span class="lbl">LOBBY</span>
+    </button>
+
+    <div class="sector">
+      <span class="sector-k">SECTOR</span>
+      <span class="sector-no"><b id="chapBadgeNo">01</b><small id="chapTotal">/05</small></span>
+      <span class="sector-name" id="chapTitleName" role="button" tabindex="0">NINJA VALLEY VILLAGE</span>
+      <span class="sector-nav">
+        <button id="scPrevChap" type="button" aria-label="Previous chapter">&#8249;</button>
+        <button id="scNextChap" type="button" aria-label="Next chapter">&#8250;</button>
+      </span>
     </div>
 
-    <!-- RIGHT BRIEFING DRAWER -->
-    <aside class="stage-briefing-drawer" id="stageBriefingDrawer">
-      <div class="drawer-header">
-        <div class="drawer-title-group">
-          <span class="drawer-stage-badge" id="dwStageCode">STAGE 01 // SECTOR COMBAT</span>
-          <h2 class="drawer-stage-name" id="dwStageName">STAGE TARGET</h2>
+    <div class="diffs" id="scDiffGroup"></div>
+
+    <button class="btn-x" id="smClose" type="button" aria-label="Close">
+      <span class="ic ic-sm i-cancel"></span>
+    </button>
+  </header>
+
+  <!-- ================================= MAIN ================================= -->
+  <div class="story-main">
+    <nav class="chapter-rail">
+      <div class="rail-h"><b>CHAPTER LOG</b><span id="railTotal">05 SECTORS</span></div>
+      <div class="rail-list" id="chapterRailList"></div>
+      <div class="rail-f">HZ-PROTOCOL <b>v1</b><br>RESONANCE ROUTE ACTIVE</div>
+    </nav>
+
+    <section class="stage" id="stageCanvasArea" data-no="01">
+      <div class="stage-head">
+        <div class="eyebrow" id="stageEyebrow">// RESONANCE ROUTE &middot; SECTOR 01</div>
+        <div class="title-row">
+          <h1 class="title" id="storyHeroTitle">NINJA VALLEY <em>VILLAGE</em></h1>
+          <div class="title-x">
+            <span class="chip" id="heroRegion">VALLEY OF THE TWIN PEAKS</span>
+            <span class="chip" id="heroStages"><b>6</b> STAGES</span>
+            <span class="chip hz" id="heroDiff">NORMAL</span>
+          </div>
         </div>
-        <button class="drawer-close-btn" id="scDrawerClose" type="button">
-          <span class="ic ic-sm i-cancel"></span>
-        </button>
+        <p class="lore" id="storyHeroLore"></p>
+        <div class="prog-row">
+          <span class="prog-lbl"><span>CHAPTER PROGRESS</span> <b id="subProgText">0 / 6 (0%)</b></span>
+          <span class="prog-track"><i id="subProgFill"></i></span>
+          <button class="btn-lore" id="btnLoreSub" type="button">
+            <span class="ic ic-xs i-scroll"></span> LORE
+          </button>
+        </div>
       </div>
 
-      <div class="drawer-body">
-        <!-- Target Card -->
-        <div class="target-profile-card">
-          <div class="target-art-frame">
-            <img class="target-art-img" id="dwEnemyImg" src="assets/cards/art/green-beast.webp" alt="Target" onerror="this.src='assets/cards/art/solar-brawler.webp'">
+      <div class="tactical-node-map" id="tacticalMapContainer">
+        <div class="map-inner-canvas" id="mapCanvas">
+          <svg class="map-svg-connections" id="mapSvg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+          <div id="mapNodesContainer"></div>
+        </div>
+        <span class="map-tag">TACTICAL ROUTE // RESONANCE</span>
+        <span class="map-cap" id="mapCap">NODE 06 // BOSS</span>
+      </div>
+    </section>
+
+    <aside class="stage-briefing-drawer" id="stageBriefingDrawer">
+      <button class="drawer-handle" id="scDrawerClose" type="button" aria-label="Toggle target briefing">
+        <span class="h-code" id="dwStageCodeShort">TARGET // STAGE 01</span>
+        <b class="h-name" id="dwEnemyNameShort">TARGET</b>
+        <span class="h-chev">&#9650;</span>
+      </button>
+
+      <div class="drawer-scroll">
+        <div class="target-art">
+          <img class="target-art-img" id="dwEnemyImg" src="assets/cards/art/green-beast.webp" alt="Target"
+               onerror="this.src='assets/cards/art/solar-brawler.webp'">
+          <div class="target-art-top">
+            <span class="drawer-stage-badge" id="dwStageCode">STAGE 01-01 // SECTOR COMBAT</span>
+            <span class="target-state" id="dwStatePill">IN ROUTE</span>
           </div>
-          <div class="target-details">
+          <div class="target-art-bot">
             <div class="target-tags-row">
               <span class="strip-tier" id="dwTierBadge">R</span>
-              <span class="strip-status-pill" id="dwTypeBadge">
-                <span class="ic ic-xs i-swords"></span> OFFENSIVE
-              </span>
+              <span class="strip-status-pill" id="dwTypeBadge">OFFENSIVE</span>
             </div>
-            <h3 class="target-name" id="dwEnemyName">GREEN BEAST</h3>
-            <div class="target-stat-pills">
-              <span class="target-stat-item">HP: <b id="dwEnemyHp">0</b></span>
-              <span class="target-stat-item">ATK: <b id="dwEnemyAtk">0</b></span>
-            </div>
+            <h2 class="target-name" id="dwEnemyName">GREEN BEAST</h2>
           </div>
         </div>
 
-        <!-- Target Ability -->
-        <div class="target-ability-box">
-          <div class="ability-title-row">
-            <span class="ic ic-xs i-bolt"></span>
-            <span id="dwAbilityTitle">SIGNATURE SKILL</span>
+        <div class="drawer-body">
+          <div class="target-stat-pills">
+            <span class="target-stat-item">HP <b id="dwEnemyHp">0</b></span>
+            <span class="target-stat-item">ATK <b id="dwEnemyAtk">0</b></span>
           </div>
-          <p class="ability-desc" id="dwAbilityDesc">
-            Deskripsi jurus lawan.
-          </p>
-        </div>
 
-        <!-- Readiness Gauge -->
-        <div class="readiness-box">
-          <div class="readiness-header">
-            <span class="readiness-lbl">DAYA TEMPUR</span>
-            <span class="readiness-status-badge" id="dwPowerDiffBadge">SIAP TEMPUR</span>
-          </div>
-          <div class="readiness-meter">
-            <div class="rd-bar-track">
-              <div class="rd-bar-fill" id="dwPowerBar" style="width: 100%;"></div>
+          <div class="target-ability-box">
+            <div class="ability-title-row">
+              <span class="ic ic-xs i-bolt"></span>
+              <span>SIGNATURE SKILL</span>
             </div>
-            <div class="rd-numbers">
-              REQ <b id="dwReqPower">0</b> / KAMU <b id="dwPlayerPower">0</b>
-            </div>
+            <div class="ability-skill-name" id="dwAbilityTitle">SIGNATURE SKILL</div>
+            <p class="ability-desc" id="dwAbilityDesc">Enemy skill intel is encrypted.</p>
           </div>
-        </div>
 
-        <!-- 3-Star Objectives -->
-        <div class="star-objectives-box">
-          <span class="sec-sub-title">TARGET BINTANG</span>
-          <div class="objective-row">
-            <span class="ic ic-xs i-sparkle" style="color:var(--neon-gold)"></span>
-            <span>Tumbangkan penjaga arena</span>
+          <div class="readiness-box" id="scPowerBox">
+            <div class="readiness-header">
+              <span>COMBAT POWER</span>
+              <span class="readiness-status-badge ready" id="dwPowerDiffBadge">READY</span>
+              <span class="readiness-tail" id="scPowerTail">+0%</span>
+            </div>
+            <div class="readiness-meter">
+              <div class="rd-bar-track"><i class="rd-bar-fill" id="dwPowerBar"></i></div>
+              <div class="rd-numbers">
+                <span>REQ <b id="dwReqPower">0</b></span>
+                <span>YOU <b id="dwPlayerPower">0</b></span>
+              </div>
+            </div>
           </div>
-          <div class="objective-row">
-            <span class="ic ic-xs i-sparkle" style="color:var(--neon-gold)"></span>
-            <span>Menang dalam &lt; 15 giliran</span>
-          </div>
-          <div class="objective-row">
-            <span class="ic ic-xs i-sparkle" style="color:var(--neon-gold)"></span>
-            <span>Pertahankan sisa HP &gt; 50%</span>
-          </div>
-        </div>
 
-        <!-- Rewards -->
-        <div class="rewards-box">
-          <span class="sec-sub-title">HADIAH SELESAI</span>
-          <div class="reward-chips-row">
-            <div class="reward-chip gem" id="dwGemBox">
-              <span class="ic ic-xs i-gem"></span>
-              <span id="dwRewardGem">+0 GEMS</span>
+          <div class="rewards-box">
+            <span class="sec-sub-title">CLEAR REWARDS</span>
+            <div class="reward-chips-row">
+              <span class="reward-chip coin"><span class="ic ic-xs i-coins"></span><span id="dwRewardCoin">+0 COINS</span></span>
+              <span class="reward-chip gem" id="dwGemBox"><span class="ic ic-xs i-gem"></span><span id="dwRewardGem">+0 GEMS</span></span>
             </div>
-            <div class="reward-chip coin">
-              <span class="ic ic-xs i-coins"></span>
-              <span id="dwRewardCoin">+0 COINS</span>
+            <span class="sec-sub-title rw-lbl" id="dwRwLbl">FIRST CLEAR REWARD</span>
+            <div class="rw-cd" id="dwCdBadge" style="display:none"></div>
+          </div>
+
+          <div class="resonance-box">
+            <span class="sec-sub-title">RESONANCE READOUT</span>
+            <div class="resonance-row">
+              <span class="k">SECTOR CLEAR</span><span class="t"><i id="scRoSector"></i></span><b class="v" id="scRoSectorV">0/6</b>
+            </div>
+            <div class="resonance-row">
+              <span class="k">THREAT INDEX</span><span class="t"><i id="scRoThreat"></i></span><b class="v" id="scRoThreatV">0</b>
+            </div>
+            <div class="resonance-row">
+              <span class="k">GEM YIELD</span><span class="t"><i id="scRoReward"></i></span><b class="v" id="scRoRewardV">0</b>
             </div>
           </div>
-          <span class="sec-sub-title" id="dwRwLbl" style="font-size:8px;margin-top:2px;color:var(--text-faint)">FIRST CLEAR REWARD</span>
-          <div id="dwCdBadge" style="display:none;font-family:var(--font-mono);font-size:9px;color:var(--neon-gold);font-weight:700;"></div>
         </div>
       </div>
 
-      <!-- Drawer Action Footer -->
       <div class="drawer-footer">
-        <div class="stamina-cost-row">
-          <span>BIAYA ENERGI</span>
-          <span><span class="ic ic-xs i-bolt" style="color:var(--neon-gold)"></span> 10 STAMINA</span>
-        </div>
         <button class="btn-launch-battle" id="btnDeploy" type="button">
-          <span class="ic ic-sm i-swords"></span> MASUK PERTEMPURAN
+          <span class="ic ic-sm i-swords"></span> PLAY
         </button>
       </div>
     </aside>
+  </div>
 
-    <!-- MOBILE PORTRAIT FLOATING QUICK BAR -->
-    <div class="mobile-quick-dock" id="mobileQuickDock">
-      <div class="mq-left">
-        <div class="mq-avatar-frame">
-          <img id="mqEnemyImg" src="assets/cards/art/green-beast.webp" alt="Target" onerror="this.src='assets/cards/art/solar-brawler.webp'">
+  <!-- ================================= DOCK ================================= -->
+  <div class="mobile-quick-dock">
+    <div class="dk-party" id="dockParty"></div>
+
+    <div class="dk-meta" id="mobileQuickDock" role="button" tabindex="0" aria-label="Open target briefing">
+      <span class="mq-avatar-frame">
+        <img id="mqEnemyImg" src="assets/cards/thumb/green-beast.webp" alt=""
+             onerror="this.src='assets/cards/thumb/solar-brawler.webp'">
+      </span>
+      <div class="dk-meta-txt">
+        <div class="mq-stage-code" id="mqStageCode">STAGE 01-01</div>
+        <div class="mq-name" id="mqEnemyName">GREEN BEAST</div>
+        <div class="mq-sub">
+          <span>REQ <b id="mqReq">0</b></span>
+          <span id="mqDiff">NORMAL</span>
         </div>
-        <div class="mq-meta">
-          <span class="mq-stage-code" id="mqStageCode">STAGE 01</span>
-          <span class="mq-name" id="mqEnemyName">TARGET</span>
-        </div>
-      </div>
-      <div class="mq-right">
-        <button class="btn-mq-deploy" id="btnMqDeploy" type="button">
-          <span class="ic ic-xs i-swords"></span> BATTLE
-        </button>
-        <button class="btn-mq-expand" id="btnMqExpand" type="button" aria-label="Open Details">▲</button>
       </div>
     </div>
-  </main>
 
-  <!-- CHAPTER LORE MODAL -->
+    <button class="btn-mq-expand" id="btnMqExpand" type="button">TARGET</button>
+
+    <button class="btn-mq-deploy" id="btnMqDeploy" type="button" aria-label="Enter battle">
+      <span class="ic ic-sm i-swords"></span> ENTER BATTLE
+    </button>
+  </div>
+
+  <!-- =============================== LORE SHEET ============================= -->
   <div class="lore-modal-backdrop" id="loreModal">
     <div class="lore-modal-card">
       <h2 class="lore-title" id="loreModalTitle">
-        <span class="ic ic-md i-scroll"></span> DOSSIER ARSIP: BAB 01
+        <span class="ic ic-md i-scroll"></span> CHAPTER 01
       </h2>
       <div class="lore-body" id="loreModalBody"></div>
-      <button class="btn-lore-close" id="btnLoreClose" type="button">TUTUP</button>
+      <button class="btn-lore-close" id="btnLoreClose" type="button">CLOSE</button>
+    </div>
+  </div>
+</div>
+<div class="hz-curtain" id="storyCurtain" aria-hidden="true">
+  <div class="hz-half hz-top">
+    <span class="hz-edge"></span>
+    <span class="hz-mark">SECTOR <b id="scHzSector">01</b> / 05</span>
+  </div>
+  <div class="hz-half hz-bot">
+    <span class="hz-edge"></span>
+    <span class="hz-mark">HZ-PROTOCOL <b>871</b></span>
+  </div>
+  <div class="hz-tape hz-tape-a"></div>
+  <div class="hz-tape hz-tape-b"></div>
+  <div class="hz-flash"></div>
+  <div class="hz-plate">
+    <span class="hz-corner tl"></span>
+    <span class="hz-corner tr"></span>
+    <span class="hz-corner bl"></span>
+    <span class="hz-corner br"></span>
+    <span class="hz-water" id="scHzWater">STORY</span>
+    <div class="hz-in">
+      <div class="hz-krow">
+        <span class="hz-dot"></span>
+        <span class="hz-kick" id="scHzKick">// AUTHORIZED <b>INSERTION</b></span>
+        <span class="hz-serial">SERIAL 0x<b id="scHzSerial">1A7F</b></span>
+      </div>
+      <div class="hz-title"><span id="scHzTitle">SECTOR 01</span></div>
+      <div class="hz-sub" id="scHzSub">CHAPTER 01 &mdash; NINJA VALLEY VILLAGE</div>
+      <div class="hz-bar"><i></i></div>
+      <div class="hz-foot"><span>HZ-PROTOCOL</span><span id="scHzFoot">ENTER SECTOR</span></div>
     </div>
   </div>
 </div>
@@ -814,7 +831,7 @@
 <div id="startModal"><div class="st-box">
   <div class="ix-head">
     <div class="ix-header-titles">
-      <div class="ix-eyebrow"><span class="ix-dot"></span>COMBAT ENGAGEMENT · BRIEFING PROTOCOL</div>
+      <div class="ix-eyebrow"><span class="ix-dot"></span>COMBAT ENGAGEMENT Â· BRIEFING PROTOCOL</div>
       <div class="ix-title st-title">MISSION BRIEF</div>
     </div>
     <div class="ix-h-tools">
@@ -842,7 +859,7 @@
 <div id="deckPickModal"><div class="dp-box">
   <div class="ix-head">
     <div><div class="eyebrow">DECK</div><div class="ix-title">Pilih Kartu</div></div>
-    <button class="ix-x" id="dpClose" title="Tutup">✕</button>
+    <button class="ix-x" id="dpClose" title="Tutup">âœ•</button>
   </div>
   <div id="dpBody"></div>
 </div></div>
@@ -928,7 +945,7 @@
      lobby + weather aktif (class .show). DI LUAR #app biar tetap hidup. ====== -->
 <div id="weatherPanel" class="weather-panel"></div>
 
-<!-- ====== BUFF DOCK (pojok kanan bawah): luck & speed potion AKTIF — icon + efek + timer.
+<!-- ====== BUFF DOCK (pojok kanan bawah): luck & speed potion AKTIF â€” icon + efek + timer.
      Nongol otomatis selama buff hidup (.show dari renderBuffDock). DI LUAR #app biar tetap hidup. ====== -->
 <div id="buffDock" class="buff-dock"></div>
 
@@ -1004,7 +1021,7 @@
 <script src="js/tower-lobby.js?v=v363-potTrayHideParty"></script>
 <script src="js/shadow-king-fx.js?v=v4-skfx4"></script>
 <script src="js/foe-passives.js?v=v62-foe-passives"></script>
-<script src="js/story-carousel.js?v=v319-diamondBossMapSync"></script>
+<script src="js/story-carousel.js?v=v322-storyCleanLabels"></script>
 <script src="js/raid.js?v=v390-wbShadowArmory"></script>
 <script src="js/ranking.js?v=v9-storyEnemyTierOnly"></script>
 <script src="js/i18n.js?v=v396-bpDeck"></script>
@@ -1013,12 +1030,12 @@
 
 <!-- ========== CORET MODE (dev-only overlay anotasi) ==========
      Alat buat user LINGKARIN bagian layout yang mau diubah. Cuma aktif di file:// / 127.0.0.1 / localhost.
-     Klik ✏ CORET (kanan-atas) → gambar freehand → agen baca window.coretReport() buat tahu korekan
+     Klik âœ CORET (kanan-atas) â†’ gambar freehand â†’ agen baca window.coretReport() buat tahu korekan
      nyangkut di elemen DOM mana. Bukan bagian dari game; aman dihapus. -->
 <script src="js/coret.js"></script>
 
 <!-- ========== IN-GAME CLICK-TO-SOURCE CODE INSPECTOR ==========
-     Tahan [ALT] atau klik badge [🎯 CODE INSPECT] di kiri bawah -> Klik elemen apapun di game
+     Tahan [ALT] atau klik badge [ðŸŽ¯ CODE INSPECT] di kiri bawah -> Klik elemen apapun di game
      -> Kursor editor (Antigravity/Cursor/VSCode) langsung loncat ke baris kodenya!
      -> Link markdown otomatis disalin ke clipboard untuk chat. -->
 <script src="js/code-inspector.js?v=v2-altStuckFix"></script>
@@ -1028,3 +1045,9 @@
 
 </body>
 </html>
+
+
+
+
+
+

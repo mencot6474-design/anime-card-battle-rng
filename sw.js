@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v469-potTrayHideParty';
+const CACHE_NAME = 'anime-card-battle-v473-storyRewardGap';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
