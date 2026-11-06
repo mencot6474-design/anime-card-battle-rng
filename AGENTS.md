@@ -1,17 +1,18 @@
 # PETA STRUKTUR GAME — Anime Card Battle RNG
 
 Vanilla JS SPA. Tanpa build step untuk web. Semua state global, semua render via string HTML.
-Baca file ini dulu; jangan baca `style.css` (27,9k baris) atau `index.html` (1.054 baris) utuh kecuali terpaksa — pakai anchor di bawah + grep.
-Angka baris di dokumen ini **terukur 2026-11-06** (HEAD `e629f6f`); kalau file berubah, ukur ulang dengan `Select-String`/`grep -n`, jangan percaya ingatan.
+Baca file ini dulu; jangan baca `style.css` (28,3k baris) atau `index.html` (1.181 baris) utuh kecuali terpaksa — pakai anchor di bawah + grep.
+Angka baris di dokumen ini **terukur 2026-11-06** (HEAD `6c49ad2`); kalau file berubah, ukur ulang dengan `Select-String`/`grep -n`, jangan percaya ingatan.
 
 ## 0. STATUS PROYEK (baca ini dulu — snapshot, timpa tiap milestone)
 
 **Tujuan**: game rapih & bisa dimainkan di **HP portrait + landscape** → publish ke **CrazyGames**. Yang rusak cuma UI/UX; mekanik & data udah ~70% jadi (lihat §5).
 **Alur kerja**: desain prototipe di `_tmp/` → user **kunci** → **port ke produksi** serial per divisi → **QC mandor** (fungsi **+ fidelitas visual vs prototipe**, bukan cuma angka) → commit per unit + bump `?v=`/`CACHE_NAME` (§2c.4) → push kalau diminta.
-**Fase sekarang**: PORT produksi **selesai untuk 9 layar** di tabel di bawah (semua bertema WoB); sisa = **battle**, lalu sweep P0 dan gate rilis (gerbang cache-bust 3 langkah §2c.4).
+**Fase sekarang**: PORT produksi **selesai untuk 10 layar** di tabel di bawah (semua bertema WoB); sisa = **battle**, lalu sweep P0 dan gate rilis (gerbang cache-bust 3 langkah §2c.4).
 
 | Layar | Prototipe sumber (`_tmp/`) | Status produksi |
 |---|---|---|
+| **Loading screen + transisi masuk** | `proto_loading_v1.html` (banner hazard) + `proto_logo_v1.html` varian **HAZARD** (judul chrome 3D) — DIKUNCI | ✅ `0d9f2e1` (port penuh: fan kartu, progress tersegmentasi, plate ACCESS GRANTED, curtain tape, notif masuk) → `6c49ad2` (judul 3D menimpa kartu, `.ld-lockup`) |
 | **Lobby** | `proto_lobby_v1.html` (varian **C "HAZARD POSTER"**) — DIKUNCI | ✅ `c718bdb` (poster full-bleed + dock) → `1229cbb` (ROLL=STOP + AUTO berputar, label "1 IN" & panel DECK kiri dihapus) → `21e1080` (klik 4 lingkaran party ganti poster showcase; tray potion menyembunyikan party) |
 | **Story — "HAZARD PROTOCOL"** | `proto_story_v1.html` — DIKUNCI | ✅ `e629f6f` (port 100%, full English, banner hazard masuk/keluar/deploy) |
 | **Settings / tab More** | `proto_more_v2.html` (accordion) — DIKUNCI | ✅ `ac0d262`→`8091725`→`9da9d28`; tema WoB `01d6fdc` + fix header `ef4788b` |
@@ -23,7 +24,7 @@ Angka baris di dokumen ini **terukur 2026-11-06** (HEAD `e629f6f`); kalau file b
 | **Tower (hub + toko INF + drop modal)** | `proto_tower_v1.html` | ✅ `e8ca9c8`→`5b78085`→`823a395`→`c263c91`→`fa3f344`→`ce0fcf4` (CORE SPIRE, HOLO SHELF `token`, body opaque WoB) |
 | **World Boss (hub + Shadow Armory)** | `proto_wb_v1.html` / `proto_wb_shop_v1.html` | ✅ `247df3e` (panggung kartu boss + rak rail) |
 
-**Tema UI terpilih (2026-11-05): WHITE-on-BLACK (WoB)** — hitam `#050505`/`#0a0a0a` + teks/garis putih `#f5f5f5` + satu aksen kuning hazard `#f3e600`. Prototipe lab: `_tmp/bp_color_lab.html` varian C (user kunci). Aturan: **warna semantik JANGAN diputihkan** (koin emas, gem cyan, badge tier, warna mutasi, danger, weather). Implementasi = blok per layar di `css/mobile-shell.css`: chrome lobby `1352`, trait `1522`, weather `1714`, deck picker `1858`+`1966`+`2110`, command drawer `2197`, settings `2327`, rebirth `2576`, daily `2621`, index `2698`; lobby HAZARD POSTER `2977`–`3760` (poster full-bleed `3367`, landscape pendek `3450`, buff strip `3536`, desktop `3616`, ROLL/STOP `3667`, chip buff `3695`, AUTO `3733`). Cascade lawan `#backpackPanel` id-rule (`css/lobby-prototype.css:2653`) perlu spesifisitas id. Progres: **lobby + backpack + settings + drawer + trait/weather/deck + rebirth/daily + index + tower + WB + story = ✅**; sisa **battle** ⏳.
+**Tema UI terpilih (2026-11-05): WHITE-on-BLACK (WoB)** — hitam `#050505`/`#0a0a0a` + teks/garis putih `#f5f5f5` + satu aksen kuning hazard `#f3e600`. Prototipe lab: `_tmp/bp_color_lab.html` varian C (user kunci). Aturan: **warna semantik JANGAN diputihkan** (koin emas, gem cyan, badge tier, warna mutasi, danger, weather). Implementasi = blok per layar di `css/mobile-shell.css`: chrome lobby `1352`, trait `1522`, weather `1714`, deck picker `1858`+`1966`+`2110`, command drawer `2197`, settings `2327`, rebirth `2576`, daily `2621`, index `2698`; lobby HAZARD POSTER `2977`–`3760` (poster full-bleed `3367`, landscape pendek `3450`, buff strip `3536`, desktop `3616`, ROLL/STOP `3667`, chip buff `3695`, AUTO `3733`). Cascade lawan `#backpackPanel` id-rule (`css/lobby-prototype.css:2653`) perlu spesifisitas id. Progres: **lobby + backpack + settings + drawer + trait/weather/deck + rebirth/daily + index + tower + WB + story + loading = ✅**; sisa **battle** ⏳.
 
 **P0 mobile** (bukti terukur, antre — lihat §4/ledger): K-GRID koleksi di 320 · `#pwaInstallBtn` nutupin dock · tab active-state · daily-close 44px. (Story sudah beres: semua kontrol ≥44px, diverifikasi `_tmp/story_prod_shot.cjs`.)
 **Mandor aktif** = sesi ini; pekerja = sesi divisi terpisah (**MODE PARALEL**, §2c — 5 divisi boleh jalan bareng asalkan tiketnya disjoint per file). Sumber kebenaran giliran & keputusan = `_tmp/mandor_ledger.md` (ditimpa tiap unit).
@@ -34,7 +35,7 @@ Angka baris di dokumen ini **terukur 2026-11-06** (HEAD `e629f6f`); kalau file b
 
 1. **Jangan refactor besar / hapus kode** tanpa diminta eksplisit. User sensitif ke perubahan tak diminta.
 2. **ART JANGAN DISENTUH.** Jangan ganti / timpa / pindah file gambar apa pun (kartu, pet, artefak, item, thumbnail, `assets/**`) kecuali user minta tersurat "ganti art". "Optimasi" tidak pernah berarti menyentuh gambar.
-3. **Cache-busting:** setiap edit file JS/CSS → naikkan `?v=` di `index.html` (script JS di baris 1009–1041, CSS di baris 19–26). Kalau tidak, user lihat versi lama.
+3. **Cache-busting:** setiap edit file JS/CSS → naikkan `?v=` di `index.html` (script JS di baris 1137–1169, CSS di baris 30–37). Kalau tidak, user lihat versi lama.
 4. **CSS: tidak lagi append-only.** Aturan lama (tumpuk override di akhir `css/style.css`) adalah penyebab 60k baris dan SUDAH DIGANTI: ubah deklarasi pemenang di tempatnya, per layar, jangan tambah strata override baru. Karena satu selector bisa ditimpa di 4 stylesheet (`style.css` → `world-boss/sl-system/story-carousel` → `lobby-prototype.css` → `mobile-shell.css`, urutan muat `index.html:19-26`), sebelum membuang/mengubah apa pun cek siapa pemenang cascade sungguhan lewat harness `_tmp/dominated.js` (bukti 58 kondisi) + `_tmp/ab_swap.js` (A/B computed-style, gerbang `BEDA=0`). Gaya yang cuma hidup di state runtime (kelas `body.*`, `html.m-*`) tidak boleh dinilai dari `index.html` saja.
 5. **Commit** pakai identitas inline (tidak ada global config):
    `git -c user.name="Qoder" -c user.email="qoder@local" commit -m "..."`
@@ -53,15 +54,17 @@ Angka baris di dokumen ini **terukur 2026-11-06** (HEAD `e629f6f`); kalau file b
 ## 2. PETA FILE
 
 ```
-index.html            1.054 baris (961 nonblank), shell + semua modal/screen markup,
-                      CSS di baris 19–26, urutan script di baris 1009–1041
-css/style.css         27.946 baris total / 19.632 nonblank — gaya utama (edit pemenang
+index.html            1.181 baris, shell + semua modal/screen markup,
+                      CSS di baris 19–37, urutan script di baris 1137–1169
+css/style.css         28.280 baris total / 19.952 nonblank — gaya utama (edit pemenang
                       di tempat, bukan append). Pemangkasan blank code user 2026-11-06.
                       Jangkar: main rule 3353, battle arena 3583, PERF/LAYOUT 18183–18334,
                       FULL-ART CARDS 18374, FULL-ART + MUTASI 18437, SHADOW ARMY 18480,
                       FX PASSIVE SHADOW KING 18485, LEADERBOARD 18706–19013,
                       SHEET PROFIL PLAYER PUBLIK 19014, WORLD BOSS klaim reward 19106,
-                      WATCH ADS MODAL 20954, REBIRTH ASCENSION 21816,
+                      **LOADING SCREEN HAZARD 19323** (lockup `19380`, fan `19384`,
+                      judul 3D `19411`, curtain `19523`, plate `19562`, notif `19627`,
+                      responsif `19657`), WATCH ADS MODAL 20954, REBIRTH ASCENSION 21816,
                       UPDATE LOG MODAL 23194, Card Index tata ulang 23473,
                       CORE SPIRE hub 9564, TOKO INF 9881, PREMIUM SHOP 15988,
                       TOP-UP 17235, full-screen screens 17788, profil 17578,
@@ -188,10 +191,16 @@ js/ranking.js         leaderboard 5 papan (world_boss, world_boss_b, inf_tower,
                       tab pil di bawah, foto profil asli (rkFillAvatars 189) + sheet profil player
                       (openRkProfile 723, rpHtml 595); RK_BOARDS 12, lbState 434,
                       RK_REFRESH_DAY_MS 776, RK_AV_KEY 102, RK_DATA_IMG 105, RK_MUTS 540
-js/boot.js            router (`render` 329), `enterGame` 898, settings (`renderSettings` 2), foot menu,
+js/boot.js            router (`render` 329), `enterGame` 909, settings (`renderSettings` 2), foot menu,
                       indikator pemain online 1302 (menggantikan label BUILD),
-                      update log modal (GAME_CHANGELOGS 1048 / openChangelogModal 1186 /
-                      renderChangelogModal 1199), cropper avatar 1265, ESC key listeners modal
+                      **LOADING SCREEN HAZARD**: `runLoading` 1044 (progress ease-out → tape sweep →
+                      curtain → plate → lobby di belakang curtain → reveal → notif masuk; auto-advance
+                      2,6 dtk, `#ldgEnter` cuma mempercepat), `LD_SUBS` 969 / `LD_TIPS` 979 /
+                      `LD_FAN_FALLBACK` 997 / `_ldEl` 985 / `_ldArt` 986 / `_ldFillFan` 998 /
+                      `_ldStageUpdate` 1034; `loginAsGuest` 690 (TIDAK menumpuk `#authSpin` di atas
+                      loader baru — cek `_ldActive`, kirim status ke `#ldStatus`),
+                      update log modal (GAME_CHANGELOGS 1253 / openChangelogModal 1391 /
+                      renderChangelogModal 1404), cropper avatar 1265, ESC key listeners modal
 js/devtools-guard.js  (DIHAPUS/NONAKTIF per 0037) — tidak lagi dimuat `index.html`; stub aman no-op
 js/rpc-guard.js       (DIHAPUS/NONAKTIF per 0037) — tidak lagi dimuat `index.html`; stub aman no-op
 js/pwa.js             install prompt/service worker (pill `#pwaInstallBtn` di-append ke body, 27–34)
@@ -270,7 +279,7 @@ lubang/mirror ekonomi di dalam rollback; arg = username), `grant_intan_test.cjs`
 Supabase — **jangan pernah** di-commit atau disalin keluar.
 ```
 
-Urutan load (penting — fungsi global saling pakai; `index.html` baris 1009–1041):
+Urutan load (penting — fungsi global saling pakai; `index.html` baris 1137–1169):
 `fps-lock → data → config → supabase-sync → panels → topup → cards-fx → anime-archetype-attacks → state → sheetfx → battle → tower-lobby → shadow-king-fx → foe-passives → story-carousel → raid → ranking → i18n → boot → pwa → coret → code-inspector`
 (`devtools-guard.js` / `rpc-guard.js` sudah dicabut dari `index.html` sejak 0037 — jangan ditulis ulang di peta ini.)
 CrazyGames SDK v3 dimuat di `<head>`: `https://sdk.crazygames.com/crazygames-sdk-v3.js` (dengan handler rewarded ads di `js/panels.js`).
@@ -325,7 +334,7 @@ Aturan keras: **pekerja hanya menyentuh file miliknya.** Kalau perbaikan yang di
    **PRASYARAT peluruhan blok ke `#animeAtkCanvas` (terukur mandor 2026-10-30, jangan dilewati):** (a) `registerFrame` itu privat di dalam IIFE — satu-satunya export file itu `window.playAnimeArchetypeAttack` (`js/anime-archetype-attacks.js:1348`), jadi perpindahan blok WAJIB dulu 1 baris export dari vfx; (b) kanvas bersama di `z-index:78` (`js/anime-archetype-attacks.js:99`) sedangkan blok battle.js z68–69 dan `#dmgLayer` z70 (`css/style.css:3861`) — pindah = FX naik menutupi angka damage, itu **perubahan tampang** yang butuh ACC user, bukan keputusan teknis. (`#skfxLayer` dibuat dinamis di `js/shadow-king-fx.js:21`; aturan z-nya tidak lagi ada di `style.css`.) Kalau user belum setuju, blok tetap di canvas sendiri.
 2. **Template `renderXxx()` tinggal di file milik core.** Markup yang jadi tanggung jawab ui-ux hidup di dalam `js/panels.js`, `js/battle.js`, `js/tower-lobby.js`, `js/raid.js`. Jadi kepemilikan bersifat **per-blok, bukan per-file**: ui-ux memegang urutan/struktur DOM di blok `renderXxx()` itu; core memegang nilai yang dimasukkan ke dalamnya. Mandor wajib **mengurutkan (serialize)**: tidak ada dua pekerja menyentuh satu file di batch yang sama, urutannya core → ui-ux → ui-css.
 3. **Persyaratan layout bukan pemilik file CSS.** Ergonomi (target sentuh ≥44px, panel solid, anti-keptong, full-bleed modal) adalah hak ui-ux untuk **menuntut**, tapi wujud perbaikannya deklarasi CSS di file ui-css. Jalur yang benar: ui-ux menulis daftar (`_tmp/fix_queue_uiux.md`: selector + ukuran yang diminta + alasan + bukti ukur), **ui-css yang mengeksekusi**. ui-ux tidak pernah mengedit `css/*`.
-4. **`sw.js` wajib ikut gerbang cache-bust.** AGENTS.md aturan 3 cuma menyebut `index.html`, tapi `sw.js:1` (`anime-card-battle-v469-potTrayHideParty`) melayani precache — HP kentang bisa dapat CSS basi walau `?v=` sudah naik, dan itu sudah pernah kejadian (dicatat di §5 soal `roll_ledger`). Gerbang rilis mandor = **3 langkah, semua wajib**: (a) bump `?v=` di `index.html` (31 token terukur 2026-11-06), (b) bump `CACHE_NAME` di `sw.js`, (c) `grep -c <token baru>` membuktikan keduanya sebelum commit.
+4. **`sw.js` wajib ikut gerbang cache-bust.** AGENTS.md aturan 3 cuma menyebut `index.html`, tapi `sw.js:1` (`anime-card-battle-v478-loadingLogoGap`) melayani precache — HP kentang bisa dapat CSS basi walau `?v=` sudah naik, dan itu sudah pernah kejadian (dicatat di §5 soal `roll_ledger`). Gerbang rilis mandor = **3 langkah, semua wajib**: (a) bump `?v=` di `index.html` (31 token terukur 2026-11-06), (b) bump `CACHE_NAME` di `sw.js`, (c) `grep -c <token baru>` membuktikan keduanya sebelum commit.
 
 ### Yang TIDAK ada pemiliknya — status "khusus izin"
 
@@ -335,7 +344,7 @@ File prototipe (`prototipe.html`, `*-prototype.html`, `demo-*.html`, `js/anim-pr
 
 ### Harness `_tmp/` dimiliki pembuatnya
 
-Glob `_tmp/*.cjs` **bukan** milik db-sync. Pembagian nyata: ui-ux = `_tmp/layout*`, `_tmp/audit*`, `_tmp/ui_*`, `_tmp/proto_story_*` (rig prototipe story: `proto_story_shot.html`/`.cjs`), `_tmp/story_prod_shot.cjs` + `_tmp/story_flow_check.cjs` + `_tmp/story_ui_probe.cjs` + `_tmp/story_probe_live.cjs` (QC produksi layar story: 4 viewport × open/sheet/banner/chap, alur 12 langkah, probe label/pill); gate rilis/CSS = `_tmp/ab_swap*.js`, `_tmp/dominated.js`, `_tmp/mobile-harness.cjs`, `_tmp/cdp_run.cjs`; db-sync = yang di tabel. Jangan menjalankan atau mengedit harness divisi lain; tanya pemiliknya.
+Glob `_tmp/*.cjs` **bukan** milik db-sync. Pembagian nyata: ui-ux = `_tmp/layout*`, `_tmp/audit*`, `_tmp/ui_*`, `_tmp/proto_story_*` (rig prototipe story: `proto_story_shot.html`/`.cjs`), `_tmp/story_prod_shot.cjs` + `_tmp/story_flow_check.cjs` + `_tmp/story_ui_probe.cjs` + `_tmp/story_probe_live.cjs` (QC produksi layar story: 4 viewport × open/sheet/banner/chap, alur 12 langkah, probe label/pill), `_tmp/proto_loading_shot.cjs` + `_tmp/proto_loading_measure.cjs` + `_tmp/proto_loading_flow.cjs` + `_tmp/proto_logo_shot.cjs` (prototipe loading/logo) dan `_tmp/ld_prod_shot.cjs` + `_tmp/ld_reveal.cjs` + `_tmp/ld_seq.cjs` + `_tmp/ld_notif_gap.cjs` + `_tmp/ld_boot2.cjs` + `_tmp/ld_tl.cjs` (QC produksi layar loading; Supabase diblokir via `Network.setBlockedURLs` supaya tidak menulis DB); gate rilis/CSS = `_tmp/ab_swap*.js`, `_tmp/dominated.js`, `_tmp/mobile-harness.cjs`, `_tmp/cdp_run.cjs`; db-sync = yang di tabel. Jangan menjalankan atau mengedit harness divisi lain; tanya pemiliknya.
 
 **Kecuali** lima harness gerbang CSS yang diwariskan ke **ui-css** sebagai alat kerjanya (pembuatnya, sesi rilis Tahap B `59200e2e`, sudah selesai): `_tmp/dominated.js`, `_tmp/ab_swap.js`, `_tmp/ab_swap2.js`, `_tmp/mobile-harness.cjs`, `_tmp/cdp_run.cjs`. ui-css boleh menjalankan dan memperbaruinya; hasil ukurnya tetap harus bisa direproduksi, dan gerbangnya `BEDA=0` untuk kondisi yang tidak disentuh + `errs=0` + `lain=0`.
 
@@ -389,7 +398,7 @@ Glob `_tmp/*.cjs` **bukan** milik db-sync. Pembagian nyata: ui-ux = `_tmp/layout
   (c) Rate terukur 2026-10-25, kalau semua stage di satu bab dirotasi tiap 5 menit: NORMAL 14/16/18/24/31 gem per bab 1-5 (dulu 8/12/14/18/24), HARD 18..47. First clear per bab tetap ± basis lama (31+10=41 utk bab 1).
 - `const app=document.getElementById("app")` — `js/state.js:1045`; semua view di-render ke sini.
 - Routing: `render()` `js/boot.js:329` → `#/` home, `#/raid`, `#/tower`, `#/settings`, default lobby.
-- `enterGame()` `js/boot.js:898`.
+- `enterGame()` `js/boot.js:909`.
 
 Rantai data kartu:
 `STORY_BIBLE` (`js/data.js:100`, chapters → levels → unit/reward/boss)
@@ -407,32 +416,33 @@ Luck: `luckChance, totalLuck, fmtChance` (data.js).
 
 | Layar | Modal / root | Buka | Render | CSS anchor |
 |---|---|---|---|---|
+| **Loading + transisi masuk** | `#loadingScreen` (index.html:64) + `#ldCurtain` 141 + `#ldGrant` 155 + `#ldEntry` 189 | otomatis di `boot()` (boot.js:1430) → `loginAsGuest` → `enterGame` → `runLoading` | `runLoading` (boot.js:1044); `_ldFillFan` 998 isi fan dari state | `style.css` **19323–19656** (lockup 19380, fan 19384, judul 3D 19411, curtain 19523, plate 19562, notif 19627, responsif 19657) |
 | Home | `#app` | `render()` | `renderHome` (state.js:1429) → `renderLobby` (tower-lobby.js:1790) | **lobby HAZARD POSTER C** (`proto_lobby_v1.html`, DIKUNCI): root WAJIB tetap `.lobby-hub` (deteksi `on-lobby` boot.js), poster full-bleed; `lobby-prototype.css` `.lobby-hub` 823 + `mobile-shell.css` 2977–3760 |
-| Story | `#storyModal` (index.html:605) + `#storyCurtain` (index.html:799, di LUAR modal) | `openStory` (state.js:1430 → `window.openStoryCarousel`) | IIFE `story-carousel.js` (`openStory` 327, ekspor 1095–1107) | `story-carousel.css` (`#storyModal` 42, `.hz-curtain` 24) |
-| Index kartu | `#indexModal` (index.html:390) | `openIndex` (raid.js:1224) | `ixRender` (raid.js:1270) | `mobile-shell.css` 2698, `style.css` 6102 + tata ulang 23473 |
-| Trait / skill tree | `#traitModal` (index.html:829) | `openTrait` (raid.js:1492) | `renderTrait` (raid.js:1496) | `mobile-shell.css` 1522 |
-| Weather machine | `#weatherMachineModal` (index.html:474) | `openWeatherMachine` (panels.js:3532) | `renderWeatherMachine` (panels.js:3760) | `mobile-shell.css` 1714 |
-| Premium shop | `#premiumModal` (index.html:412) | `openPremiumShop` (panels.js:3143) | `renderPremiumShop` (panels.js:3196) | `style.css` 15988 |
-| Profil | `#profModal` (index.html:143) | `openProfileModal` (panels.js:1271) | `renderProfile` (panels.js:1420) | `style.css` 17578 |
-| Backpack | `#backpackPanel` (index.html:989, `display:none` → diisi render) | `toggleBackpack` (tower-lobby.js:2849) | `renderBackpackPanel` (panels.js:1851) | **`lobby-prototype.css:2653`** (id-rule pemenang) + `style.css` 10377 |
+| Story | `#storyModal` (index.html:733) + `#storyCurtain` (index.html:927, di LUAR modal) | `openStory` (state.js:1430 → `window.openStoryCarousel`) | IIFE `story-carousel.js` (`openStory` 327, ekspor 1095–1107) | `story-carousel.css` (`#storyModal` 42, `.hz-curtain` 24) |
+| Index kartu | `#indexModal` (index.html:518) | `openIndex` (raid.js:1224) | `ixRender` (raid.js:1270) | `mobile-shell.css` 2698, `style.css` 6102 + tata ulang 23473 |
+| Trait / skill tree | `#traitModal` (index.html:974) | `openTrait` (raid.js:1492) | `renderTrait` (raid.js:1496) | `mobile-shell.css` 1522 |
+| Weather machine | `#weatherMachineModal` (index.html:602) | `openWeatherMachine` (panels.js:3532) | `renderWeatherMachine` (panels.js:3760) | `mobile-shell.css` 1714 |
+| Premium shop | `#premiumModal` (index.html:540) | `openPremiumShop` (panels.js:3143) | `renderPremiumShop` (panels.js:3196) | `style.css` 15988 |
+| Profil | `#profModal` (index.html:271) | `openProfileModal` (panels.js:1271) | `renderProfile` (panels.js:1420) | `style.css` 17578 |
+| Backpack | `#backpackPanel` (index.html:1134, `display:none` → diisi render) | `toggleBackpack` (tower-lobby.js:2849) | `renderBackpackPanel` (panels.js:1851) | **`lobby-prototype.css:2653`** (id-rule pemenang) + `style.css` 10377 |
 | Backpack tab item | — | — | `renderBpItems` 2174 / tree 2658 / arts 2834 / pets 2858 | — |
-| Mission | `#missionModal` (index.html:505) | `openMission` (state.js:1404) | — | — |
-| Start battle | `#startModal` (index.html:814) | `openStart` (state.js:1479) | — | — |
-| Deck pick | `#deckPickModal` (index.html:842) | `openDeckPick` (raid.js:1609) | `renderDeckPick` (raid.js:1611) | `mobile-shell.css` 1858 + 1966 + 2110 |
+| Mission | `#missionModal` (index.html:633) | `openMission` (state.js:1404) | — | — |
+| Start battle | `#startModal` (index.html:959) | `openStart` (state.js:1479) | — | — |
+| Deck pick | `#deckPickModal` (index.html:987) | `openDeckPick` (raid.js:1609) | `renderDeckPick` (raid.js:1611) | `mobile-shell.css` 1858 + 1966 + 2110 |
 | Battle | `#app` view | `startBattle` (battle.js:1748) | `renderBattle` (battle.js:255) | **`battle-fresh.css`** (1.352 baris) + `style.css` arena 3583 |
 | Tower | `#app` view | `startTowerBattle` (tower-lobby.js:733) | `renderTower` (121) / `renderTowerBattle` (710) | `style.css` 9546–9880 (CORE SPIRE 9564, toko INF 9881) |
 | Raid / World Boss | `#app` view | `startRaid` (raid.js:687) | `renderRaid` (380; hub 398, shop 1159) | `world-boss.css` 249 / 1042 / 1129 / 1980 |
-| Topup | `#topupModal` (index.html:1027) | `openTopup` (panels.js:4503) | `renderTopupModal` (panels.js:4381) | `style.css` 17235 |
-| Titles | `#titlesModal` (index.html:259) | `openTitlesModal` (panels.js:1350) | `renderTitlesModal` (panels.js:1371) | — |
-| 7-Day Login | `#dailyModal` (index.html:594) | `openDaily` (state.js:1280) | `renderDaily` (state.js:1151) | `mobile-shell.css` 2621 + `style.css` 21454 |
-| Rebirth (Ascension) | `#rebirthModal` (index.html:490) | `openRebirthModal` (tower-lobby.js:3148) | `renderRebirthModal` (3010) | `mobile-shell.css` 2576 + `style.css` 21816 |
-| Update Log | `#changelogModal` (index.html:281) | `openChangelogModal` (boot.js:1186) | `renderChangelogModal` (boot.js:1199) | `style.css` 23194 |
+| Topup | `#topupModal` (index.html:1172) | `openTopup` (panels.js:4503) | `renderTopupModal` (panels.js:4381) | `style.css` 17235 |
+| Titles | `#titlesModal` (index.html:387) | `openTitlesModal` (panels.js:1350) | `renderTitlesModal` (panels.js:1371) | — |
+| 7-Day Login | `#dailyModal` (index.html:722) | `openDaily` (state.js:1280) | `renderDaily` (state.js:1151) | `mobile-shell.css` 2621 + `style.css` 21454 |
+| Rebirth (Ascension) | `#rebirthModal` (index.html:618) | `openRebirthModal` (tower-lobby.js:3148) | `renderRebirthModal` (3010) | `mobile-shell.css` 2576 + `style.css` 21816 |
+| Update Log | `#changelogModal` (index.html:409) | `openChangelogModal` (boot.js:1391) | `renderChangelogModal` (boot.js:1404) | `style.css` 23194 |
 | Settings | `#app` view | `#/settings` (boot.js:338) | `renderSettings` (boot.js:2) | `mobile-shell.css` 2327 — **desain V2 accordion** (`proto_more_v2.html`, DIKUNCI): 3 sektor `.sett-fold` (`.sett-fold` style.css 26875), header `.sett-fh`, satu-buka portrait, ikon mask `i-*`, chamfer |
-| Ranking | `#rankModal` (index.html:523) | `openRanking` (ranking.js:25) | `rkRender` (325) | `style.css` 18706–19013 |
+| Ranking | `#rankModal` (index.html:651) | `openRanking` (ranking.js:25) | `rkRender` (325) | `style.css` 18706–19013 |
 | Watch Ads | `#watchAdsModal` (dibuat dinamis, panels.js:4661) | `openWatchAdsModal` (panels.js:4674) | `renderWatchAdsModal` | `style.css` 20954 |
 
 Markup modal ada di `index.html` (baris kunci):
-welcomeModal 80, topbar 106, profModal 143, titlesModal 259, changelogModal 281, app 295, rollResultPop 365, `#modal` 388, indexModal 390, premiumModal 412, weatherMachineModal 474, rebirthModal 490, missionModal 505, rankModal 523, rkProfModal 547, dailyModal 594, storyModal 605, `#storyCurtain` 799, startModal 831, traitModal 846, deckPickModal 859, rarePromptModal 869, towerDropModal 874, footMenu 985, backpackPanel 1006, blok `<script>` 1009–1041 (`coret.js` 1035), `topupModal` 1044.
+`#loadingScreen` 64, `#ldCurtain` 141, `#ldGrant` 155, `#ldEntry` 189, `#authSpin` 194, welcomeModal 208, topbar 234, profModal 271, titlesModal 387, changelogModal 409, rollResultPop 493, `#modal` 516, indexModal 518, premiumModal 540, weatherMachineModal 602, rebirthModal 618, missionModal 633, rankModal 651, rkProfModal 675, dailyModal 722, storyModal 733, `#storyCurtain` 927, startModal 959, traitModal 974, deckPickModal 987, rarePromptModal 997, towerDropModal 1002, footMenu 1113, backpackPanel 1134, blok `<script>` 1137–1169 (`coret.js` 1163), `#weatherToast` 1126, `topupModal` 1172.
 
 ### Pola layar full-screen (index/premium/trait/weather/story/backpack/profil)
 `position:fixed; inset:0; width:100vw; height:100dvh; border-radius:0; min-height:0!important`
@@ -442,6 +452,7 @@ Backpack bukan `display:fixed` bawaan — `toggleBackpack` set inline transform;
 ### Layout HP = shell mobile yang default (sejak 2026-10-29, bukan "PC dikecilkan" lagi)
 - `css/mobile-shell.css` dimuat PALAH AKHIR dan jadi layout default di SEMUA device: gate `(pointer:coarse)` / lebar sudah DICABUT, bloknya tanpa kondisi atau dipisah orientasi lewat kelas `html.m-portrait` / `html.m-landscape` yang selalu di-set `js/mobile-shell.js:35`. Kalau style bentrok, shell ini yang menang.
 - `<meta name="viewport" content="width=1900, ...">` (index.html:5) masih dipakai untuk layout dasar desktop; shell mobile menimpa lewat `!important`-nya sendiri, bukan lewat viewport.
+- **Skrip inline di `index.html:6–16` memaksa `device-width` sebelum paint pertama** (sejak `0d9f2e1`). Tanpa itu layar loading sempat dilukis pada kanvas 1900px lalu di-zoom-out browser — di HP terlihat kecil/nyangkut di tengah. Jangan dihapus walau `js/mobile-shell.js:21` melakukan hal yang sama; file itu dimuat paling akhir.
 - Gate lama "putar HP" masih ada di `@media (orientation:portrait) and (pointer:coarse)` (style.css:1635) — mobile-shell.css sengaja dimuat setelahnya supaya menelan `#rotateHint`.
 - `html,body{text-size-adjust:100%}` (style.css:18340) mematikan font boosting Chrome/WebView HP (penyebab teks melimpah & "nabrak").
 - Jaring pengaman `@media(max-width:700px)` (style.css:18347 & 18367) memaksa arena battle tetap 3 kolom untuk WebView yang memaksa `device-width`.
@@ -482,6 +493,9 @@ Backpack bukan `display:fixed` bawaan — `toggleBackpack` set inline transform;
   **Masih terbuka setelah 0042:** kartu yang lahir lewat jalur client-only SETELAH 0042 (tower `instantRoll`, reward iklan `instantRollFast`) tidak menambah owned server — itu konsekuensi sengaja sampai 0043/0044 memindahkan jalur itu ke RPC. Kalau pemain jujur mengeluh "progress index telat", itu gejalanya; solusinya menutup sumber, bukan menambah snapshot amnesty lagi.
 - **7-Day Daily Login & Rewarded Ads** — 7-Day Login horizontal row (Day 1–7: 1, 2, 3, 4, 5, 6, 10 Instant 100K Roll Packs; dibayar SERVER ke `player_packs` sejak 0040, client cuma mirroring `state.rollPacks.r100k`). Tombol melayang di samping Global Luck widget di Lobby. Tombol Watch Ads: integrasi CrazyGames SDK v3 (`CrazyGames.SDK.ad.requestAd('rewarded')`) dengan fallback simulasi timer 15 detik jika dijalankan di luar portal/localhost (`runWatchAdSimulation`, panels.js:4873). **Reward iklan `pack100k` MASIH murni client** (panels.js:4918 `completeWatchAdReward`, cabang `pack100k` di 4930: cooldown `AD_PACK_COOLDOWN_MS` (4556) di localStorage + `instantRollFast(100000)` tanpa RPC, dan cabang `gems` (4942) menambah `state.premiumGems += 25` lokal) — meskipun pemakaian pack dari backpack sudah server sejak 0041, jalur iklan ini masih bisa mencetak 100K kartu + cooldown yang bisa direset F12; 0043 (`claim_ad_pack` + tabel cooldown server) yang menutupnya.
 
+- **Loading screen + transisi masuk (HAZARD BANNER)** — port `_tmp/proto_loading_v1.html` + judul 3D `_tmp/proto_logo_v1.html` varian HAZARD (dikunci 2026-11-06). Markup di `index.html`: `#loadingScreen` 64 (`.ld-lockup` 72 = `.ld-fan` 5 kartu + `.ld-logo` judul chrome 4 lapis `ld-out`/`ld-ring2`/`ld-back`/`ld-front`), `#ldCurtain` 141 (tape sweep + dua half-curtain), `#ldGrant` 155 (plate ACCESS GRANTED), `#ldEntry` 189 (notif masuk). CSS `style.css` 19323–19656. Logika `runLoading` (boot.js:1044): progress ease-out 4,2 dtk (`LD_SUBS` 969, `LD_TIPS` 979) → tape sweep → half-curtain menutup → plate muncul → **auto-advance 2,6 dtk** (`#ldgEnter` cuma mempercepat) → `done()` merender lobby **selagi curtain masih menutup** → curtain reveal → notif `SESSION SYNCHRONIZED`. Teks FULL ENGLISH (syarat CrazyGames).
+  **Gotcha yang sudah dibayar mahal:** (1) **Tape WAJIB anak dari masing-masing half** (`.ldc-top > .ldc-tape-a`, `.ldc-bot > .ldc-tape-b`). Dulu tape adalah anak `#ldCurtain`, jadi saat half membuka tape **tertinggal nyangkut di tengah layar**. Posisinya relatif half: `top:calc(100% - 92px)` untuk tape atas, `top:62px` untuk tape bawah. (2) **`#authSpin` (z 1000001) tidak boleh muncul di atas loader baru (z 1000000)** — `loginAsGuest` (boot.js:690) mengecek `_ldActive` dan mengirim status ke `#ldStatus`, bukan menampilkan spinner lama. Kalau spinner cyan lama muncul lagi di awal boot, itu jalur ini. (3) **`<meta viewport>` dipaksa `device-width` di `index.html:6–16` sebelum paint pertama**; tanpa itu loader dilukis di kanvas 1900px lalu di-zoom-out (tampak kecil/nyangkut). (4) `showWelcomeWindow` **tidak lagi dipanggil** setelah `runLoading` — plate `#ldGrant` sudah jadi gerbang masuk yang sama (identitas + Lv + deck power + jumlah kartu + session); memanggil keduanya = dua gerbang berurutan. (5) Fan memakai kartu pemilik; kalau koleksi < 4 kartu, sisa slot diisi `LD_FAN_FALLBACK` (boot.js:997) — hanya dekorasi, tidak menyentuh state. (6) `img` di markup punya `src` default supaya frame pertama tidak kosong sebelum `_ldFillFan` jalan.
+  **QC harness:** `_tmp/ld_prod_shot.cjs` (4 viewport × 3 tahap, Supabase diblokir via `Network.setBlockedURLs` supaya tes tidak menulis DB), `_tmp/ld_reveal.cjs` (cek tape tidak nyangkut + authSpin tidak muncul), `_tmp/ld_seq.cjs` (tangkap frame curtain), `_tmp/proto_loading_shot.cjs` / `_tmp/proto_loading_measure.cjs` / `_tmp/proto_loading_flow.cjs` (prototipe), `_tmp/proto_logo_shot.cjs` (3 varian × 4 viewport).
 - **BGM & Audio Lobby** — `assets/audio/bgm-lobby.mp3` diputar looping di Lobby (`bgmAudio` state.js:993, `playBgm` 1000, `syncBgmState` 1016). Dilengkapi unlocker gesture otomatis pada klik/tap pertama serta sinkronisasi dengan status mute (`state.muted`).
 - **Lokalisasi (i18n)** — `js/i18n.js` menyediakan translasi EN & ID (`GameLang.t()`, `GameLang.set()`, `GameLang.get()`). Default bahasa diset ke English (`en`) untuk memenuhi syarat kurasi CrazyGames, dengan opsi ganti ke Indonesia (`id`) di Settings. MutationObserver ringan anti-looping (`characterData: false` di `document.body`, dan observer di-disconnect selama siklus translasi teks agar tidak memicu re-render / auto-scroll reset).
 - **Battle** — engine + render di `battle.js` (`renderBattle` 255, `startBattle` 1748); damage/FX/attack archetype di `anime-archetype-attacks.js` + `sheetfx.js` + `shadow-king-fx.js`; passive lawan `foe-passives.js`. Markup kartu musuh dipakai bersama lewat `foeFighterInnerHtml` (normal + raid/WB; opsi `hpFmt` untuk angka ringkas). `shakeScreen` = no-op, `hitStop` tak mem-pause apa pun, `speedLines` hanya dipakai 1 serangan.
@@ -503,7 +517,7 @@ Backpack bukan `display:fixed` bawaan — `toggleBackpack` set inline transform;
 - **Backpack** — render di panels.js (`renderBackpackPanel` 1851, item 2174, tree 2658, artefak 2834, pet 2858); toggle + header close di tower-lobby.js:2849.
 - **Premium shop** — panels.js 3143/3196, CSS 15988.
 - **Profil** — panels.js 1271/1420, CSS 17578. Loadout slot operator interaktif: klik slot Pet/Artefak/Kartu langsung routing ke Backpack tab terkait (`toggleBackpack(tab)`), dilengkapi hover card preview pada layar desktop (`hoverPlace`). Pembaruan 1 detik berkala menggunakan dataset caching (`pfParty`) untuk menghindari re-render total yang merusak interaksi & mereset scroll.
-- **Update Log** — Modal `#changelogModal` & backdrop `#changelogBackdrop` (`index.html:281`), dibuka dari tombol `#hdrChangelog` di header navigasi samping pengaturan. Data riwayat rilis dikelola terpusat di array `GAME_CHANGELOGS` (`js/boot.js:1048`), mendukung tampilan bilingual (ID & EN) otomatis via `renderChangelogModal()`, serta penutupan cepat dengan tombol ESC.
+- **Update Log** — Modal `#changelogModal` & backdrop `#changelogBackdrop` (`index.html:408`), dibuka dari tombol `#hdrChangelog` di header navigasi samping pengaturan. Data riwayat rilis dikelola terpusat di array `GAME_CHANGELOGS` (`js/boot.js:1253`), mendukung tampilan bilingual (ID & EN) otomatis via `renderChangelogModal()`, serta penutupan cepat dengan tombol ESC.
 - **Settings** — Layar konfigurasi sistem (`#/settings`, `renderSettings` boot.js:2) dengan layout **Horizontal Cyberpunk 3-Sector Deck** (`.sett-wrap`, style.css):
   - *Sektor 1 (Combat & Sound)*: selector kecepatan tempur 1×–4× dengan unlock level + instrumen diagnostik audio (toggle suara, tes sine 440Hz, tes SFX raid, telemetry status).
   - *Sektor 2 (Locale & Automation)*: pemilih bahasa interaktif 🇮🇩 Indonesia / 🇬🇧 English + saklar otomatisasi Infinite Tower (auto-restart lantai 1) + tombol kalibrasi UI refresh HUD.
@@ -548,10 +562,11 @@ Backpack bukan `display:fixed` bawaan — `toggleBackpack` set inline transform;
 - **Tambah/ubah kartu** → `STORY_BIBLE` (data.js:100) untuk unit cerita; `MASTER_CARD_INDEX` (panels.js:3075) untuk index; art di `assets/cards/art/<slug>.png` (deck/list pakai `assets/cards/thumb/`). Jangan cascade tier/skill kalau hanya diminta ganti art — dan jangan sentuh art tanpa permintaan tersurat.
 - **Ubah skill/trait** → `cards-fx.js` (`skillText`, `fxOf`), trait tree `renderTrait` (raid.js:1496), passive musuh `foe-passives.js` + `shadow-king-fx.js`.
 - **Ubah FX serangan** → `anime-archetype-attacks.js` (definisi) + `sheetfx.js` (render efek) + `assets/vfx`. Semua murni canvas (tanpa background video); wajib lewat `registerFrame` + `FXQ`, jangan bikin canvas baru.
+- **Ubah loading screen / judul game** → markup `#loadingScreen` (index.html:64, `.ld-lockup` 72), CSS `style.css` 19323–19656, logika `runLoading` (boot.js:1044). Judul chrome 3D = 4 span berlapis (`.ld-out` outline+ekstrusi, `.ld-ring2` ring putih, `.ld-back` ekstrusi, `.ld-front` gradient chrome + highlight `::after`); teksnya WAJIB ditulis 2× (atribut `data-t` + isi span) atau highlight-nya hilang. `--cw` (lebar kartu) mengendalikan seluruh skala lockup; judul menimpa kartu lewat `margin-top:calc(var(--cw) * -0.92)`. Kalau mengubah fan, jangan sentuh `assets/` — art kartu diambil dari `state.stacks` lewat `_ldFillFan`.
 - **Ubah tampilan layar** → cari id modal di `index.html` (lihat daftar baris di §4), render function di tabel §4, lalu ubah aturan yang MEMANG menang di layar itu (cek pemenang cascade lewat harness, lihat aturan 4 di atas). Jangan tambah blok override baru di akhir file.
 - **Ubah gacha/rate** → panels.js area roll (1065+), `sl-system.css`, konstanta `DIFFS`/mutasi di cards-fx.js (128–160). Prototipe ritme roll ada di `_tmp/`/`proto/` (tidak dilacak git).
 - **Ubah ekonomi/harga** → konstanta di panels.js (premium/topup), `TRAIT_COST` (cards-fx.js:213) + `WB_SHOP` (raid.js:954), shop tower di tower-lobby.js:516. Harga yang dibayar server ada di tabel: `token_shop_price` (0026), `coin_story_stage` (0025), `item_def` (0028: harga coin/gem pet & artefak + `src`), `pack_def` (0029: harga gem + `tower_rate` pack instan) — ubah client + regenerate tabelnya, jangan hanya salah satu. `pack_def` TIDAK lagi buta jumlah tarikan: sejak 0040 ada kolom `pulls` (5K/10K/25K/50K/100K, default 0 NOT NULL) sebagai sumber server — kalau `PACK_ROLL_AMOUNT` (panels.js:1819) berubah, update `pack_def.pulls` DAN baris `roll_config('intan_pulls')` (0039: 100.000 tarikan per intan) juga, kalau tidak server memotong pack/intan untuk jumlah yang salah. Tabel cermin 0027 (`card_stat`, `tree_node`, `pet_def`, `art_def`) regenerate dengan `node _tmp/gen_0027.cjs`; `item_def` dengan `node _tmp/gen_0028.cjs`; tabel Unit 4 (`roll_pool_def`, `roll_mut_rates`, `luck_def`, `trait_def` + seed `roll_config` di 0034/0035, dan `stacks_legacy` di 0036) dengan `node _tmp/gen_0034.cjs` lalu `node _tmp/gen_0036.cjs` — **0036 menyusun ulang `merge_player_state` dari 0037 dan `roll_pull` dari 0034, jadi jalankan `gen_0034.cjs` dulu**. Tabel cermin Unit 4 adalah SATU-SATUNYA cara generator menulis SQL-nya; jangan sunting `0034/0035/0036` manual, kalau pool kartu / chance mutasi / TRAIT_TIERS / `MASTER_CARD_INDEX` berubah di client = regenerate + apply ulang, kalau tidak server membayar angka lama (kartu baru tidak bisa di-pull, tier salah, item/pack baru tidak bisa dibeli).
-- **Ubah save/state** → `freshState` state.js:12 + migrasi di `enterGame` boot.js:898 + `supabase-sync.js`. Kalau menambah field besar (mis. inventori baru), pikirkan dulu dampaknya ke payload push (§3) — `stacks` sudah 74 KB.
+- **Ubah save/state** → `freshState` state.js:12 + migrasi di `enterGame` boot.js:909 + `supabase-sync.js`. Kalau menambah field besar (mis. inventori baru), pikirkan dulu dampaknya ke payload push (§3) — `stacks` sudah 74 KB.
 - **Ubah RPC / kena limit Supabase** → migration baru di `supabase/migrations/00NN_*.sql`, apply lewat Management API (`_tmp/apply_sql.cjs`, token dibaca dari `_tmp/sbpat.txt`) — jangan `supabase db push`. Ganti signature = **overload baru**, bukan replace: `drop function` semua sig lama (termasuk yang dulu dibikin `create or replace`). RPC tulis baru: `revoke execute ... from anon` **eksplisit** (grant default Supabase untuk `public` membuka anon), lalu buktikan anon 401 + signature lama 404, dan E2E pakai sesi Auth (pola `_tmp/probe_0024.cjs`), bukan anon.
 - **Tambah layar** → markup di index.html, render fn, route di `render()` boot.js:329 atau tombol di lobby tower-lobby.js:2526–2540.
 - **Kejar performa** → cek §2b dulu (canvas bersama, FXDPR, FXQ, animasi composited, backdrop-filter); blok PERF/LAYOUT 18183–18334, override terbaru sampai akhir file (27.9k).
@@ -561,7 +576,10 @@ Backpack bukan `display:fixed` bawaan — `toggleBackpack` set inline transform;
 ## 7. GOTCHA
 
 - Cache-bust `?v=` wajib naik setiap edit; user pakai browser cache agresif. "Masih bug" sering = cache (hard refresh dulu).
-- CSS 27.9k baris (19.6k nonblank): anchor section di atas hanya perkiraan; pakai `grep -n "\.nama-kelas"`. Semua override baru taruh paling bawah supaya menang specificity/order.
+- CSS 28.3k baris (19.9k nonblank): anchor section di atas hanya perkiraan; pakai `grep -n "\.nama-kelas"`. Semua override baru taruh paling bawah supaya menang specificity/order.
+- **Layar loading: dua bug yang sudah pernah kejadian dan mudah terulang.** (a) `#authSpin` (z 1000001) menumpuk di atas loader baru (z 1000000) saat boot — gejalanya "masih ada loading lama"; `loginAsGuest` wajib cek `_ldActive` dan menulis ke `#ldStatus`, bukan menampilkan spinner. (b) Hazard tape harus anak masing-masing half-curtain; kalau ditaruh langsung di `#ldCurtain`, tape tertinggal "nyangkut" di tengah layar waktu half membuka.
+- **`<meta viewport>` dipaksa `device-width` di `index.html:6–16`, sebelum paint pertama.** Tanpa itu layar loading (dan seluruh shell) dilukis pada kanvas 1900px lalu di-zoom-out — di HP tampak kecil/nyangkut di tengah sesaat. `js/mobile-shell.js` melakukan hal yang sama tapi dimuat paling akhir, jadi jangan hapus skrip inline itu.
+- **Judul chrome 3D butuh teks ditulis 2×** (atribut `data-t` + isi span). Kalau `data-t` hilang, highlight atas di `.ld-front::after` kosong dan judul tampak doff.
 - Banyak modal punya `.show` class; buka = `classList.add("show")`, tutup = hapus setelah animasi (delay ~300ms).
 - Jangan baca `index.html` penuh — grep id/markup yang dibutuhkan.
 - Headless Edge di Windows punya lebar minimum ~500px; viewport 390 dilaporkan ~492. Pakai 500×844 untuk uji HP.
