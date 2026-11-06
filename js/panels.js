@@ -1077,9 +1077,23 @@ function startRollAnimation(luck, speedMultiplier = 1) {
   rollState.hideOverlay = false;
 
   const rollBtn = document.getElementById('rollBtn');
-  if (rollBtn) rollBtn.classList.add('active');
+  if (rollBtn) {
+    rollBtn.classList.add('active');
+    /* Label tombol ROLL = STOP selama roll berjalan (perintah user 2026-11-06).
+       Ditulis di sini, bukan hanya lewat CSS, supaya teks yang dibaca screen
+       reader / i18n ikut berubah. Nilai idle dikembalikan di
+       stopRollAnimation(). */
+    const rt = rollBtn.querySelector('.roll-txt');
+    if (rt) rt.textContent = 'STOP';
+  }
   const ra = document.getElementById('rollAutoBtn');
-  if (ra) ra.classList.add('on');
+  if (ra) {
+    ra.classList.add('on');
+    /* aria-pressed = sumber benar status AUTO. tower-lobby.js paintAuto()
+       membaca atribut ini tiap render; tanpa itu ia menghapus kelas .on yang
+       baru dipasang (spin indikator jadi tidak pernah tampil). */
+    ra.setAttribute('aria-pressed', 'true');
+  }
   if (rollState.hideTimer) { clearTimeout(rollState.hideTimer); rollState.hideTimer = null; }
 
   // Set initial delay based on speed multiplier
@@ -1165,9 +1179,16 @@ function stopRollAnimation() {
   /* Roll berhenti → push sisa perubahan ke Supabase sekali (throttle-nya ada di state.js save()). */
   if (typeof flushCloudSave === "function") flushCloudSave();
   const rollBtn = document.getElementById('rollBtn');
-  if (rollBtn) rollBtn.classList.remove('active');
+  if (rollBtn) {
+    rollBtn.classList.remove('active');
+    const rt = rollBtn.querySelector('.roll-txt');
+    if (rt) rt.textContent = 'SUMMON';
+  }
   const ra = document.getElementById('rollAutoBtn');
-  if (ra) ra.classList.remove('on');
+  if (ra) {
+    ra.classList.remove('on');
+    ra.setAttribute('aria-pressed', 'false');
+  }
 }
 
 function rvFx(card, overlay, tcol) {

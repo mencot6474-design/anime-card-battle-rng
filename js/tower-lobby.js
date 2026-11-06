@@ -1901,20 +1901,9 @@ function renderLobby(){
             <div class="c12br hot"><span class="c12bk">WB ATTEMPTS</span><span class="c12bv">${_cWbAtt}</span></div>
           </div>
 
-          <!-- DECK // 4 : baris baca-saja, sama seperti prototipe -->
-          <div class="c12roster">
-            <div class="rh"><span class="rl">DECK // ${(_party || []).length}</span><span class="rr"></span></div>
-            ${(_party || []).map(function (s, i) {
-              if (!s) return '<div class="rw empty"><span class="ri">0' + (i + 1) + '</span><span class="ra empty"><span class="plus">+</span></span><span class="rn">EMPTY SLOT</span><span class="rg">--</span></div>';
-              var _nm = (typeof cardName === "function") ? cardName(s.char) : s.char;
-              var _mc = (typeof MUT_COLOR !== "undefined" && MUT_COLOR[s.mut]) ? MUT_COLOR[s.mut] : "rgba(245,245,245,.26)";
-              return '<div class="rw' + (i === 0 ? ' lead' : '') + '" title="' + _nm + '">' +
-                '<span class="ri">0' + (i + 1) + '</span>' +
-                '<span class="ra" style="--mc:' + _mc + '">' + _l12SlotThumb(s) + '</span>' +
-                '<span class="rn">' + _nm + '</span>' +
-                '<span class="rg">LV' + (s.lv || 1) + '</span></div>';
-            }).join('')}
-          </div>
+          <!-- DECK // 4 dihapus (perintah user 2026-11-06): panel kiri
+               dibiarkan kosong bersih. Info deck masih ada di chip meta dan
+               avatar party di kanan-bawah panggung. -->
 
           <div class="c12gap" aria-hidden="true"></div>
 
@@ -2150,24 +2139,10 @@ function renderLobby(){
   _l12Place("slotRoll", "rollBtn", "cta");
   _l12Place("slotAuto", "rollAutoBtn", "tgl");
 
-  /* Label kecil di tombol ROLL: "1 IN <kartu paling langka di pool aktif>".
-     Angkanya diambil dari pool gacha sungguhan (bukan angka karangan), memakai
-     fmtChance() supaya tetap ringkas (25M, 1.5K, dst). */
-  (function () {
-    const sub = document.getElementById("rollSub");
-    if (!sub) return;
-    let best = 0;
-    try {
-      const pool = (typeof gachaPool === "function") ? gachaPool() : [];
-      for (let i = 0; i < pool.length; i++) {
-        const ch = pool[i].chance || ((typeof chanceOf === "function") ? chanceOf(pool[i].tier) : 0);
-        if (ch > best) best = ch;
-      }
-    } catch (e) { best = 0; }
-    sub.textContent = best
-      ? ("1 IN " + ((typeof fmtChance === "function") ? fmtChance(best) : best))
-      : "1 IN \u2014";
-  })();
+  /* Label "1 IN <chance>" di tombol ROLL DIHAPUS (perintah user 2026-11-06).
+     Tombol kini hanya punya .roll-txt: "SUMMON" saat idle, "STOP" saat roll
+     berjalan (dipasang dari kelas .active di css/mobile-shell.css), jadi tidak
+     ada angka yang perlu diisi ulang di sini. */
   /* #footAv burger removed from header per user request */
 
 /* ---- LIVE WEATHER DOCK ENGINE (LOBBY V12) ----
@@ -2360,7 +2335,17 @@ window.l12UpdateWeatherDock = l12UpdateWeatherDock;
       nambah satu listener (bukti CDP: click 6 -> 9 sesudah 3 render). */
   const _auto = document.getElementById("rollAutoBtn");
   if (_auto) {
-    const paintAuto = () => _auto.classList.toggle("on", !!(_auto.getAttribute("aria-pressed") === "true" || _auto.classList.contains("active") || (typeof state !== "undefined" && state.autoRoll)));
+    /* Sumber kebenaran = rollState.active (dinyalakan/dimatikan js/panels.js).
+       Sebelum ini cek hanya melihat aria-pressed/class "active"/state.autoRoll,
+       yang TIDAK pernah diisi jalur roll — akibatnya paintAuto(0 ms) mencabut
+       kelas "on" yang baru dipasang startRollAnimation → indikator tidak pernah
+       berputar. rollState dicek lebih dulu supaya kelas .on bertahan. */
+    const paintAuto = () => _auto.classList.toggle("on", !!(
+      (typeof rollState !== "undefined" && rollState && rollState.active) ||
+      _auto.getAttribute("aria-pressed") === "true" ||
+      _auto.classList.contains("active") ||
+      (typeof state !== "undefined" && state.autoRoll)
+    ));
     paintAuto();
     if (!_auto.__l12Paint) {
       _auto.__l12Paint = true;

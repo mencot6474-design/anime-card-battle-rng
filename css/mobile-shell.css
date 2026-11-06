@@ -3113,37 +3113,6 @@ html:not(.m-portrait) #indexModal .ix-sort {
 .lobby-hub.l12.c12 .c12bv { min-width:0; font-family:var(--disp); font-size:10px; letter-spacing:.04em; color:#f5f5f5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .lobby-hub.l12.c12 .c12br.hot .c12bv { color:#f3e600; }
 
-/* ==========================================================================
-   ROSTER = baris baca-saja (prototipe C): nomor, avatar 22px, nama, LV.
-   Bukan tombol — tidak ada target sentuh 44px yang perlu dipaksakan di sini.
-   ========================================================================== */
-.lobby-hub.l12.c12 .c12roster { display:flex; flex-direction:column; flex:none; margin-top:6px; }
-.lobby-hub.l12.c12 .c12roster .rh { display:flex; align-items:center; gap:7px; margin-bottom:3px; }
-.lobby-hub.l12.c12 .c12roster .rh .rl { font-family:var(--mono); font-size:6px; letter-spacing:.2em; color:rgba(255,255,255,.5); }
-.lobby-hub.l12.c12 .c12roster .rh .rr { flex:1 1 auto; height:1px; background:rgba(255,255,255,.12); }
-.lobby-hub.l12.c12 .c12roster .rw {
-  display:flex; align-items:center; gap:7px; min-height:26px;
-  border-bottom:1px solid rgba(255,255,255,.06);
-}
-.lobby-hub.l12.c12 .c12roster .rw:last-child { border-bottom:0; }
-.lobby-hub.l12.c12 .c12roster .ri { flex:none; width:12px; font-family:var(--mono); font-size:6.5px; color:rgba(255,255,255,.45); }
-.lobby-hub.l12.c12 .c12roster .ra {
-  flex:none; width:22px; height:22px; border-radius:50%; overflow:hidden; background:#080808;
-  box-shadow:inset 0 0 0 1px var(--mc, rgba(255,255,255,.26));
-}
-.lobby-hub.l12.c12 .c12roster .ra img { width:100%; height:100%; object-fit:cover; object-position:center 14%; display:block; }
-.lobby-hub.l12.c12 .c12roster .ra.empty {
-  display:grid; place-items:center; color:rgba(255,255,255,.5); font-size:11px;
-  border:1px dashed rgba(255,255,255,.22);
-}
-.lobby-hub.l12.c12 .c12roster .rn {
-  flex:1 1 auto; min-width:0; font-family:var(--disp); font-size:8px; letter-spacing:.09em;
-  color:#f5f5f5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-}
-.lobby-hub.l12.c12 .c12roster .rg { flex:none; font-family:var(--mono); font-size:6.5px; letter-spacing:.1em; color:rgba(255,255,255,.55); }
-.lobby-hub.l12.c12 .c12roster .rw.lead .rn { color:#f3e600; }
-.lobby-hub.l12.c12 .c12roster .rw.empty .rn { color:rgba(255,255,255,.35); }
-
 .lobby-hub.l12.c12 .c12gap { flex:1 1 auto; min-height:0; }
 
 /* riwayat roll (7 sel terlihat; JS tetap menggambar 10) */
@@ -3345,10 +3314,18 @@ html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollAutoBtn.tgl {
   height:48px !important; min-height:48px !important;
   margin:0 !important; padding:0 !important;
   display:grid !important; place-items:center;
-  border:0 !important; border-radius:50% !important; clip-path:none;
+  border:0 !important; border-radius:50% !important;
+  /* !important wajib: lobby-prototype.css:1666 memaksa
+     clip-path polygon(8px 0 …) !important pada .roll-auto-btn, dan clip itu
+     memotong cincin hazard jadi dua busur (kotak gelap terlihat persegi). */
+  clip-path:none !important;
   background:rgba(5,5,5,.62) !important;
   box-shadow:inset 0 0 0 1px rgba(245,245,245,.26) !important;
   color:#f5f5f5;
+  /* legacy .roll-auto-btn.on menyalakan cyber-pulse-auto (menganimasikan
+     box-shadow, bukan properti composited) — dilarang §2b#5. Status aktif
+     dibawa warna hazard + ikon berputar, jadi denyut itu dimatikan. */
+  animation:none !important;
 }
 html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollAutoBtn.tgl .ra-txt { display:none !important; }
 html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollAutoBtn.tgl .ra-indicator {
@@ -3361,7 +3338,15 @@ html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollAutoBtn.tgl .ra-indicator {
   -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.2 12a7.8 7.8 0 0 1 13.3-5.5l2 2'/%3E%3Cpath d='M19.8 4.4v4.2h-4.2'/%3E%3Cpath d='M19.8 12a7.8 7.8 0 0 1-13.3 5.5l-2-2'/%3E%3Cpath d='M4.2 19.6v-4.2h4.2'/%3E%3C/svg%3E") center/19px 19px no-repeat;
   mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.2 12a7.8 7.8 0 0 1 13.3-5.5l2 2'/%3E%3Cpath d='M19.8 4.4v4.2h-4.2'/%3E%3Cpath d='M19.8 12a7.8 7.8 0 0 1-13.3 5.5l-2-2'/%3E%3Cpath d='M4.2 19.6v-4.2h4.2'/%3E%3C/svg%3E") center/19px 19px no-repeat;
 }
-html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollAutoBtn.tgl.on { color:#f3e600; }
+/* Aktif = ikon hazard + cincin hazard statis. `!important` wajib:
+   lobby-prototype.css punya `#rollAutoBtn { color:#e0e0e0 !important }` yang
+   mengalahkan aturan tanpa !important di sini, sehingga mask currentColor
+   tetap putih walau .on. Cincin sengaja statis (bukan animasi box-shadow) —
+   §2b#5 melarang menganimasikan box-shadow; gerak sudah dibawa rotasi ikon. */
+html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollAutoBtn.tgl.on { color:#f3e600 !important; }
+html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollAutoBtn.tgl.on {
+  box-shadow:inset 0 0 0 2px rgba(243,230,0,.85) !important;
+}
 
 /* ==========================================================================
    HERO = POSTER FULL-BLEED (permintaan user 2026-11-06)
@@ -3421,8 +3406,29 @@ html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollAutoBtn.tgl.on { color:#f3e6
 .lobby-hub.l12.c12 .c12party .pav img { width:100%; height:100%; object-fit:cover; object-position:center 14%; display:block; }
 .lobby-hub.l12.c12 .c12party .pav.on { box-shadow:inset 0 0 0 2px var(--mc), 0 0 0 2px rgba(243,230,0,.82); }
 .lobby-hub.l12.c12 .c12party .pav.empty {
-  display:grid; place-items:center; color:rgba(245,245,245,.6); font-size:15px;
+  display:grid; place-items:center; color:rgba(245,245,245,.6);
   border:1px dashed rgba(245,245,245,.24);
+}
+/* Tanda "+" slot kosong digambar dengan ::before bermask, bukan glyph teks.
+   Alasannya terukur (CDP 500/320/850): line box 19px-nya sudah center (dy=0)
+   tetapi ink "+" di Plus Jakarta Sans punya ascent 8px / descent 0px, jadi
+   tintanya duduk ~2.5px di bawah titik tengah — inilah "+ kelihatan turun"
+   yang dilaporkan user. Teks aslinya tetap ada (font-size:0, masih terbaca
+   screen reader) dan title="Slot kosong" tetap jadi label tombolnya.
+
+   Mask SVG (bukan dua gradient ditumpuk): dua batang alpha 0.6 yang saling
+   menimpa memunculkan kotak lebih terang di titik potong; mask menormalkan
+   alpha jadi 1 sehingga seluruh tanda "+" rata satu warna.
+
+   Posisi pakai inset:0 (isi padding box) + mask center, BUKAN
+   top/left:50%+translate: persentase itu dihitung dari padding box, jadi
+   elemen ber-border 1px selalu meleset setengah border. */
+.lobby-hub.l12.c12 .c12party .pav.empty { font-size:0; }
+.lobby-hub.l12.c12 .c12party .pav.empty::before {
+  content:""; position:absolute; inset:0;
+  background:currentColor;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 1.1v9.8M1.1 6h9.8' stroke='%23000' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/12px 12px no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 1.1v9.8M1.1 6h9.8' stroke='%23000' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/12px 12px no-repeat;
 }
 
 /* ==========================================================================
@@ -3448,7 +3454,6 @@ html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollAutoBtn.tgl.on { color:#f3e6
   html.m-landscape .lobby-hub.l12.c12 .c12lvl .lv-meta { font-size:8px; }
   html.m-landscape .lobby-hub.l12.c12 .c12rule { display:none; }
   html.m-landscape .lobby-hub.l12.c12 .c12brief { display:none; }
-  html.m-landscape .lobby-hub.l12.c12 .c12roster { display:none; }
   html.m-landscape .lobby-hub.l12.c12 .c12gap { display:none; }
   html.m-landscape .lobby-hub.l12.c12 .c12hist { display:none; }
   html.m-landscape .lobby-hub.l12.c12 .c12modes { margin-top:auto; }
@@ -3494,9 +3499,9 @@ html body.on-lobby:has(.lobby-hub.l12.c12) #pwaInstallBtn {
 }
 /* ---- layar sangat sempit (<430px) ----
    Di bawah 430px panel kiri hanya ~166px: 4 chip party tidak bisa mencapai
-   44px. Roster disembunyikan (data deck tetap ada di Backpack/tombol DECK) dan
-   riwayat roll cukup 2 sel supaya tetap >=44px. Target produksi yang dikunci
-   tetap 500x844 & 850x390; ini hanya pagar agar HP kecil tidak pecah. */
+   44px. Riwayat roll disembunyikan supaya sisa panel tidak pecah. Target
+   produksi yang dikunci tetap 500x844 & 850x390; ini hanya pagar agar HP
+   kecil tidak meluber. */
 @media (max-width:430px) {
   .lobby-hub.l12.c12 .c12hist { display:none; }
 }
@@ -3611,13 +3616,6 @@ html body.on-lobby:has(.lobby-hub.l12.c12) #pwaInstallBtn {
   .lobby-hub.l12.c12 .c12br { padding:5px 0; }
   .lobby-hub.l12.c12 .c12bk { font-size:7.5px; }
   .lobby-hub.l12.c12 .c12bv { font-size:12.5px; }
-  .lobby-hub.l12.c12 .c12roster { margin-top:10px; }
-  .lobby-hub.l12.c12 .c12roster .rh .rl { font-size:7.5px; }
-  .lobby-hub.l12.c12 .c12roster .rw { min-height:32px; gap:9px; }
-  .lobby-hub.l12.c12 .c12roster .ra { width:26px; height:26px; }
-  .lobby-hub.l12.c12 .c12roster .rn { font-size:11.5px; }
-  .lobby-hub.l12.c12 .c12roster .rg,
-  .lobby-hub.l12.c12 .c12roster .ri { font-size:8.5px; }
   .lobby-hub.l12.c12 .c12hist { padding:2px 0 6px; }
   .lobby-hub.l12.c12 .c12hl { font-size:7.5px; margin-bottom:6px; }
   .lobby-hub.l12.c12 .c12strip { grid-template-columns:repeat(7, minmax(0,1fr)); gap:5px; }
@@ -3651,15 +3649,18 @@ html body.on-lobby:has(.lobby-hub.l12.c12) #pwaInstallBtn {
   display:flex; flex-direction:row; gap:7px;
 }
 /* ==========================================================================
-   ROLL = prototipe C: dua baris di dalam tombol hazard —
-     SUMMON            (Orbitron 15px, tracking .24em)
-     1 IN <chance>     (mono 6px, agak transparan)
-   Markup produksi: <span class="roll-txt">SUMMON</span> +
-   <span class="roll-sub" id="rollSub"> yang nilainya diisi renderLobby()
-   dari pool gacha aktif (bukan angka karangan).
+   ROLL = prototipe C dengan SATU label (perintah user 2026-11-06):
+     SUMMON  → saat roll berhenti
+     STOP    → saat roll/auto-roll sedang jalan (klik = berhenti)
+   Label "1 IN <chance>" DIHAPUS dari tombol (markup index.html + pengisi
+   #rollSub di renderLobby ikut dibuang).
    ========================================================================== */
 html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollBtn.cta {
-  flex-direction:column; gap:1px; letter-spacing:.24em !important; padding:0 12px;
+  flex-direction:row; gap:0; letter-spacing:.24em !important; padding:0 12px;
+  /* legacy .roll-btn.active menjalankan cyber-pulse-roll (animasi box-shadow)
+     yang bukan bahasa visual hazard C dan memakan frame. Status aktif sudah
+     dibawa label STOP, jadi animasi legacy itu dimatikan khusus dock C. */
+  animation:none !important;
 }
 html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollBtn.cta .roll-txt {
   display:block !important; text-align:center; line-height:1.1;
@@ -3668,10 +3669,12 @@ html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollBtn.cta .roll-txt {
      memasang letter-spacing sendiri pada #rollBtn.cta */
   letter-spacing:.24em !important; color:inherit;
 }
-html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollBtn.cta .roll-sub {
-  display:block; text-align:center; line-height:1;
-  font-family:var(--mono); font-size:6px; font-weight:400;
-  letter-spacing:.16em; color:rgba(8,8,0,.66);
+/* ROLL aktif = label berganti jadi STOP. Teksnya ditukar di js/panels.js
+   (startRollAnimation/stopRollAnimation) supaya nilai yang dibaca screen
+   reader ikut benar; di sini hanya rapatkan tracking karena "STOP" lebih
+   pendek dari "SUMMON". */
+html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollBtn.cta.active .roll-txt {
+  letter-spacing:.2em !important;
 }
 /* ==========================================================================
    CHIP BUFF — muat 4 kolom di 500px tanpa teks berdempet.
@@ -3740,7 +3743,7 @@ html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollAutoBtn.tgl.active .ra-indic
 }
 /* layar <430px: 4 chip meta tidak muat sebaris (panel ~166px) sehingga
    barisnya membungkus dan panel meluber 17px. Chip DECK disembunyikan
-   (info deck ada di roster + Backpack) dan baris meta dipaksa satu baris. */
+   (info deck ada di Backpack) dan baris meta dipaksa satu baris. */
 @media (max-width:430px) {
   .lobby-hub.l12.c12 .c12meta { flex-wrap:nowrap; overflow:hidden; }
   .lobby-hub.l12.c12 .c12meta .mchip:nth-child(4) { display:none; }

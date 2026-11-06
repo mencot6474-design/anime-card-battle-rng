@@ -22,14 +22,14 @@
 <link rel="stylesheet" href="css/sl-system.css?v=v391-coreSpireHub">
 <link rel="stylesheet" href="css/story-carousel.css?v=v349-t13UiCssFix">
 <link rel="stylesheet" href="css/lobby-prototype.css?v=v391-bpEquipBest">
-<link rel="stylesheet" href="css/mobile-shell.css?v=v456-rollFrameSpinShop">
+<link rel="stylesheet" href="css/mobile-shell.css?v=v461-deckPanelHidden">
 <link rel="stylesheet" href="css/battle-fresh.css?v=v3-battleNoHeader">
 <script>
   /* Link toko Trakteer (fallback — utama ada di js/config.js). */
   window.TRAKTEER_SHOP_URL = "";
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=v348-rebirthModalFrontAnimationBehind').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=v466-deckPanelHidden').catch(() => {});
     });
   }
 </script>
@@ -958,7 +958,7 @@
           <circle cx="8" cy="16" r="1.5" fill="currentColor"/>
           <circle cx="16" cy="16" r="1.5" fill="currentColor"/>
         </svg>
-        <span class="roll-txt">SUMMON</span><span class="roll-sub" id="rollSub">1 IN 0</span>
+        <span class="roll-txt">SUMMON</span>
       </button>
       <button class="roll-auto-btn" id="rollAutoBtn" type="button" title="Auto Roll (nyala/mati)">
         <span class="ra-indicator"></span>
@@ -994,14 +994,14 @@
 <script src="js/config.js?v=v156-trakteer"></script>
 <script src="js/mobile-shell.js?v=v285-lobbyClean"></script>
 <script src="js/supabase-sync.js?v=v332-battleNoHeader"></script>
-<script src="js/panels.js?v=v397-bpEquipBest"></script>
+<script src="js/panels.js?v=v398-rollStopLabel"></script>
 <script src="js/topup.js?v=v158-paywallOff"></script>
 <script src="js/cards-fx.js?v=v84-fmtStatCompact"></script>
 <script src="js/anime-archetype-attacks.js?v=v117-blurHygiene"></script>
 <script src="js/state.js?v=v348-rebirthModalFrontAnimationBehind"></script>
 <script src="js/sheetfx.js?v=v348-rebirthModalFrontAnimationBehind"></script>
 <script src="js/battle.js?v=v243-battleFreshProto"></script>
-<script src="js/tower-lobby.js?v=v358-rollFrameSpinShop"></script>
+<script src="js/tower-lobby.js?v=v360-removeDeckPanel"></script>
 <script src="js/shadow-king-fx.js?v=v4-skfx4"></script>
 <script src="js/foe-passives.js?v=v62-foe-passives"></script>
 <script src="js/story-carousel.js?v=v319-diamondBossMapSync"></script>
