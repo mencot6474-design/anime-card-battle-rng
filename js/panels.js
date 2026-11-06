@@ -1747,6 +1747,23 @@ function bpAssign(stackId){
   renderBackpackPanel();
   if(!battleLive()&&typeof render==="function")render();
 }
+/* EQUIP BEST: isi 4 slot dek dengan varian PALING LANGKA di koleksi.
+   Rarity = luckChance() (penyebut "1 in X" — makin besar makin langka) dan sudah
+   termasuk pengali mutasi × shiny; seri dipecah power varian (HP+ATK) lalu id. */
+function bpEquipBest(){
+  const list=(state.stacks||[]).filter(s=>s&&s.char&&CARDS[s.char]);
+  if(!list.length)return;
+  list.sort((a,b)=>luckChance(b.char,b.mut,b.shiny)-luckChance(a.char,a.mut,a.shiny)||bpPowerOf(b)-bpPowerOf(a)||String(a.id).localeCompare(String(b.id)));
+  const next=[null,null,null,null];
+  list.slice(0,4).forEach((s,i)=>{next[i]=s.id;});
+  state.deck=next;
+  state.equippedId=next[0]||null;
+  state.equippedId2=next[1]||null;
+  bpTarget=null;
+  save();
+  renderBackpackPanel();
+  if(!battleLive()&&typeof render==="function")render();
+}
 function bpFav(stackId){const s=state.stacks.find(x=>x.id===stackId);if(!s)return;s.fav=!s.fav;save();renderBackpackPanel();}
 function bpLock(stackId){const s=state.stacks.find(x=>x.id===stackId);if(!s)return;s.lock=!s.lock;save();renderBackpackPanel();}
 /* ---- LAZY-MOUNT grid kartu: kartu di luar layar tidak dibangun DOM-nya (mount-on-scroll) ----
@@ -1915,7 +1932,10 @@ function renderBackpackPanel(){
   const filterRow=`<div class="bp-filter">
       <span class="bp-kol">KOLEKSI <b class="bp-kol-n">${visible.length}</b></span>
       <button class="bp-favtog${bpFavOnly?' on':''}" onclick="bpSetFavOnly()" aria-pressed="${bpFavOnly}" title="Hanya kartu favorit"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${BP_STAR_PATH}"/></svg><span>FAV</span></button>
-      <button class="bp-mutbtn${bpMutFilter!=='all'?' on':''}" id="bp-mutbtn" onclick="event.stopPropagation();bpMutPopToggle()" aria-expanded="${_bpMutPopOpen}" aria-haspopup="true" aria-controls="bpMutPop" style="--mc:${BP_MUT_COLORS[bpMutFilter]}"><span class="bp-mb-glyph">${BP_MUT_SWATCH(bpMutFilter)}</span><span>MUT</span><svg class="bp-mb-caret" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+      <span class="bp-mutgrp">
+        <button class="bp-mutbtn${bpMutFilter!=='all'?' on':''}" id="bp-mutbtn" onclick="event.stopPropagation();bpMutPopToggle()" aria-expanded="${_bpMutPopOpen}" aria-haspopup="true" aria-controls="bpMutPop" style="--mc:${BP_MUT_COLORS[bpMutFilter]}"><span class="bp-mb-glyph">${BP_MUT_SWATCH(bpMutFilter)}</span><span>MUT</span><svg class="bp-mb-caret" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+        <button class="bp-bestbtn" onclick="if(typeof sfx!=='undefined'&&sfx.hit)sfx.hit();bpEquipBest()" title="Pasang 4 kartu paling langka ke dek" aria-label="Equip best: pasang kartu paling langka ke dek"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg><span class="bp-best-full">EQUIP BEST</span><span class="bp-best-mini" aria-hidden="true">BEST</span></button>
+      </span>
       ${searchInput}
       ${pop}
     </div>`;

@@ -1838,157 +1838,195 @@ function renderLobby(){
   const _mut = (eq && eq.mut && eq.mut !== "none") ? eq.mut.toUpperCase() : "";
   const _trait = (eq && eq.trait && eq.trait !== "none") ? eq.trait.toUpperCase() : "";
 
-  app.innerHTML = `
-  <div class="lobby-hub stage-root l12" id="stage">
-    <div class="colw">
+  /* ---- turunan layout C HAZARD (semua dari state asli, tanpa angka palsu) ---- */
+  const _cWbAtt = (function () {
+    try { if (typeof wbAttOf === "function") { const n = wbAttOf(); return (n == null) ? "\u2014" : (n + " / 3"); } } catch (e) {}
+    return "3 / 3";
+  })();
+  const _cMutCol = (eq && eq.mut && typeof MUT_COLOR !== "undefined" && MUT_COLOR[eq.mut]) ? MUT_COLOR[eq.mut] : "rgba(245,245,245,.5)";
+  const _cAvatar = _l12SlotThumb(_party[0] || (state.stacks && state.stacks[state.stacks.length - 1]) || null);
+  /* luck bisa membesar (rebirth x14 + weather); diringkas supaya tidak meluber */
+  const _cLuck = (function () {
+    var v = (typeof totalLuck === "function") ? totalLuck() : 1;
+    if (!isFinite(v) || v <= 0) v = 1;
+    var t = v >= 1e6 ? (v / 1e6).toFixed(1) + "M" : (v >= 1000 ? (v / 1000).toFixed(1) + "K" : v.toFixed(2));
+    return "x" + t;
+  })();
 
-      <!-- L1 TOPBAR: Cyberpunk Tactical Command Header -->
-      <header class="top">
-        <span class="rail rail-top" aria-hidden="true"></span>
-        <div class="top-l">
-          <div class="l12-lvl-pod" onclick="if(typeof openProfileModal==='function')openProfileModal();" role="button" tabindex="0">
+  app.innerHTML = `
+  <div class="lobby-hub stage-root l12 c12" id="stage">
+    <div class="colw c12wrap">
+
+      <div class="c12main">
+
+        <!-- ============ KIRI: PANEL HAZARD ============ -->
+        <div class="c12panel">
+          <span class="rail rail-panel" aria-hidden="true"></span>
+
+          <div class="c12kick">
+            <span class="c12dot" aria-hidden="true"></span>
+            <span class="c12kickt">SHADOW OPERATOR // ${(currentUser || "GUEST").toUpperCase()}</span>
+            <span class="c12live"><i></i>ONLINE</span>
+          </div>
+
+          <h1 class="c12title">${String(_heroName).replace(" ", "<br>")}</h1>
+
+          <div class="c12meta">
+            ${_mut ? `<span class="mchip" style="--mc:${_cMutCol}">${_mut}</span>` : ""}
+            <span class="mchip" style="--mc:rgba(245,245,245,.5)">${_heroTier}</span>
+            <span class="mchip" style="--mc:rgba(245,245,245,.5)">LV ${_lv}</span>
+            <span class="mchip" style="--mc:rgba(245,245,245,.5)">${_combo}/4 DECK</span>
+          </div>
+
+          <div class="c12pow">
+            <b id="l12TopPwr">${_heroPower}</b><span>COMBAT POWER</span>
+          </div>
+
+          <div class="l12-lvl-pod c12lvl" title="XP Hunter">
             <span class="lv-badge">LV <b id="l12TopLv">${_lv}</b></span>
-            <div class="lv-info">
+            <span class="lv-info">
               <span class="lv-meta">
-                <span class="lv-title" onclick="event.stopPropagation();if(typeof openTitlesModal==='function')openTitlesModal();" title="Klik untuk ganti Title">[${(state.playerTitle || "ROOKIE").toUpperCase()}]</span>
+                <span class="lv-title" onclick="event.stopPropagation();if(typeof openTitlesModal==='function')openTitlesModal();" title="Ganti Title">[${String(state.playerTitle || "ROOKIE").toUpperCase()}]</span>
                 <span class="lv-pct" id="l12TopXpPct">${_xpPct}%</span>
               </span>
               <span class="bar"><span id="l12TopXpBar" style="width:${_xpPct}%"></span></span>
-            </div>
+            </span>
           </div>
-          <button class="top-chip pwr-chip" type="button" onclick="if(typeof toggleBackpack==='function')toggleBackpack();" title="Total Combat Power ? Klik buka Deck"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="color:var(--gold);flex:none;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><b id="l12TopPwr">${_heroPower}</b></button>
-        </div>
-        <div class="top-r">
-          <div class="res">
-            <button class="pill coin-pill" type="button" onclick="if(typeof openPremiumShop==='function')openPremiumShop();" title="Gold Coins"><span class="p-ic">${typeof coinIcon === 'function' ? coinIcon(15) : '<i class="ic i-coin"></i>'}</span><b id="l12TopCoins">${_coins}</b></button>
-            <button class="pill gem-pill" type="button" onclick="if(typeof openPremiumShop==='function')openPremiumShop();" title="Premium Gems ? Klik buka Supply Shop"><img class="p-gem-img" src="assets/images/premium-currency.webp" alt=""><b id="l12TopGems">${_gems}</b><span class="p-plus">+</span></button>
-          </div>
-          <div class="top-acts">
-            <button class="top-act-btn" type="button" onclick="if(typeof cycleLobbyBackground==='function')cycleLobbyBackground();" title="Ganti Background Panggung"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></button>
-            <button class="top-act-btn" type="button" onclick="if(typeof cycleCardFrame==='function')cycleCardFrame();" title="Ganti Bingkai Kartu Hero"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></button>
-            <button class="top-act-btn" type="button" onclick="location.hash='#/settings'" title="Pengaturan"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
-          </div>
-        </div>
-      </header>
 
-      <div class="mid">
-        <!-- L2 STAGE: foto lobby + partikel produksi DIPERTAHANKAN, ditambah
-             lantai arena v12; kartu hero rasio terkunci 310/460. -->
-        <div class="stage">
+          <div class="c12rule" aria-hidden="true"></div>
+
+          <div class="c12brief">
+            <div class="c12br"><span class="c12bk">CLEARED</span><span class="c12bv">${_storyBadge}</span></div>
+            <div class="c12br"><span class="c12bk">BEST FLOOR</span><span class="c12bv">${_towerBadge}</span></div>
+            <div class="c12br hot"><span class="c12bk">WB ATTEMPTS</span><span class="c12bv">${_cWbAtt}</span></div>
+          </div>
+
+          <!-- DECK // 4 : baris baca-saja, sama seperti prototipe -->
+          <div class="c12roster">
+            <div class="rh"><span class="rl">DECK // ${(_party || []).length}</span><span class="rr"></span></div>
+            ${(_party || []).map(function (s, i) {
+              if (!s) return '<div class="rw empty"><span class="ri">0' + (i + 1) + '</span><span class="ra empty"><span class="plus">+</span></span><span class="rn">EMPTY SLOT</span><span class="rg">--</span></div>';
+              var _nm = (typeof cardName === "function") ? cardName(s.char) : s.char;
+              var _mc = (typeof MUT_COLOR !== "undefined" && MUT_COLOR[s.mut]) ? MUT_COLOR[s.mut] : "rgba(245,245,245,.26)";
+              return '<div class="rw' + (i === 0 ? ' lead' : '') + '" title="' + _nm + '">' +
+                '<span class="ri">0' + (i + 1) + '</span>' +
+                '<span class="ra" style="--mc:' + _mc + '">' + _l12SlotThumb(s) + '</span>' +
+                '<span class="rn">' + _nm + '</span>' +
+                '<span class="rg">LV' + (s.lv || 1) + '</span></div>';
+            }).join('')}
+          </div>
+
+          <div class="c12gap" aria-hidden="true"></div>
+
+          <!-- RIWAYAT ROLL: JS menggambar 10 sel, 7 terlihat -->
+          <div class="c12hist" id="l12RollHistWrap">
+            <span class="c12hl" id="l12RollTotal">TOTAL: ${_fmt(state.totalRolls || 0)}</span>
+            <div class="rh-strip c12strip" id="l12RollHist"></div>
+          </div>
+
+          <!-- MODE HUB -->
+          <div class="hlist c12modes">
+            <button class="hrow" type="button" data-hub="story"><span class="mn">01</span><i class="ic i-story"></i><span class="mt">STORY</span><b class="bd">${_storyBadge}</b><i class="chv"></i></button>
+            <button class="hrow" type="button" data-hub="tower"><span class="mn">02</span><i class="ic i-tower"></i><span class="mt">TOWER</span><b class="bd">${_towerBadge}</b><i class="chv"></i></button>
+            <button class="hrow" type="button" data-hub="raid"><span class="mn">03</span><i class="ic i-raid"></i><span class="mt">RAID</span><b class="bd">${_raidBadge}</b><i class="chv"></i></button>
+          </div>
+        </div>
+
+        <!-- ============ KANAN: POSTER HERO (full-bleed, tanpa bingkai) ============ -->
+        <div class="stage" id="c12Stage">
           <div class="stage-bg-layer" id="stageBgLayer" style="background-image: url('${activeBg}');"></div>
           <canvas id="ambientCanvas"></canvas>
-          <div class="horizon"></div><div class="floor-grid"></div><div class="ground"></div><div class="ped"></div>
-          <span class="rail rail-horizon" aria-hidden="true"></span>
+
           <div class="hero" id="heroStandeeWrap" title="Klik Hunter untuk Kelola Party &amp; Deck" onclick="if(window.sfx&&sfx.hit)sfx.hit();if(typeof toggleBackpack==='function')toggleBackpack();">
             <div class="artbox"><img class="art" src="${_art}" alt="" style="${_pos}"></div>
             <span class="cast" aria-hidden="true"></span>
-            <div class="sheen" aria-hidden="true"></div>
-            <span class="glow" aria-hidden="true"></span>
-            <img class="frm" id="heroFrameSvg" src="${_frameCfg.src || ''}" alt="" style="${_frameCfg.src ? 'display:block;' : 'display:none;'}">
-            <span class="nm">${_heroName}</span><span class="rr">${_heroTier}</span>
-            <span class="pwr"><b>${_heroPower}</b><i>POWER</i></span>
-            <span class="traits">${_passive ? `<i>${_passive}</i>` : ""}${_mut ? `<i>${_mut}</i>` : ""}${_trait ? `<i>${_trait}</i>` : ""}</span>
           </div>
+
+          <div class="c12party">${(_party || []).slice(0, 4).map(function (s, i) {
+            if (!s) return '<button class="pav empty" type="button" title="Slot kosong" onclick="if(typeof toggleBackpack===\'function\')toggleBackpack();">+</button>';
+            var _pn = (typeof cardName === 'function') ? cardName(s.char) : s.char;
+            var _pc = (typeof MUT_COLOR !== 'undefined' && MUT_COLOR[s.mut]) ? MUT_COLOR[s.mut] : 'rgba(245,245,245,.26)';
+            return '<button class="pav' + (i === 0 ? ' on' : '') + '" type="button" title="' + _pn + '" style="--mc:' + _pc + '" onclick="if(window.sfx&&sfx.hit)sfx.hit();if(typeof toggleBackpack===\'function\')toggleBackpack();">' + _l12SlotThumb(s) + '</button>';
+          }).join("")}</div>
         </div>
 
-        <!-- L3 PANEL -->
-        <div class="panel">
-          <span class="rail rail-panel" aria-hidden="true"></span>
-          <div class="idwrap">
-            <div class="op">
-              <button class="avatar" type="button" onclick="openProfileModal()">${_l12SlotThumb(_party[0] || (state.stacks && state.stacks[state.stacks.length - 1]) || null)}</button>
-              <div class="t">
-                <b>${(currentUser || "OPERATOR").toUpperCase()}</b>
-                <span class="luck"><i class="ic i-clover"></i>×${_luckMult.toFixed(2)}<b>${_luckTxt}</b></span>
-                <span class="luckbar"><span style="width:${_luckPctW}%"></span></span>
-              </div>
+        <!-- resource kanan-atas -->
+        <div class="c12res">
+          <button class="pill coin-pill" type="button" onclick="if(typeof openPremiumShop==='function')openPremiumShop();" title="Gold Coins">
+            <span class="p-ic">${typeof coinIcon === 'function' ? coinIcon(15) : '<i class="ic i-coin"></i>'}</span><b id="l12TopCoins">${_coins}</b>
+          </button>
+          <button class="pill gem-pill" type="button" onclick="if(typeof openPremiumShop==='function')openPremiumShop();" title="Premium Gems">
+            <img class="p-gem" src="assets/images/premium-currency.webp" alt=""><b id="l12TopGems">${_gems}</b><span class="p-plus">+</span>
+          </button>
+        </div>
+
+
+      </div>
+
+      <!-- ============ BAWAH: BUFF (3 chip) + DOCK ============ -->
+      <div class="c12foot">
+        <div class="hud c12buffs">
+
+          <div class="pots">
+            <div class="pot-row" data-block="pot-luck" id="l12PotLuck" role="button" tabindex="0" title="Klik untuk pakai Potion Luck" onclick="window.l12TogglePotionTray('luck')">
+              <img class="pimg" src="assets/images/pot-luck-${_potLuck ? _potLuck.lv : 1}.webp" alt="">
+              <span class="plab">LUCK POT</span><b id="l12PotLuckVal">${_potLuck ? "+" + (_potLuck.flat || 0) + " L" + _potLuck.lv : (_adLuckMs > 0 ? "ADS x2" : "OFF")}</b>
+              <span class="tr"><span id="l12PotLuckBar" style="width:${_potLuck ? Math.max(4, Math.min(100, Math.round((_potLuck.endsAt - _now) / _potWin * 100))) : 0}%"></span></span>
+              <span class="tm" id="l12PotLuckTm">${_potLuck ? _cd(_potLuck.endsAt - _now) : (_adLuckMs > 0 ? _cd(_adLuckMs) : "--:--")}</span>
+              <span class="pstock" id="l12PotLuckStock">${_lkStock}</span>
             </div>
-            <div class="plist" id="l12Party">
-              ${_party.map(s => s
-                ? `<button class="pslot r-${String(s.tier || "s").toLowerCase()}" data-slot="1" type="button" onclick="if(window.sfx&&sfx.hit)sfx.hit();if(typeof toggleBackpack==='function')toggleBackpack();">${_l12SlotThumb(s)}</button>`
-                : `<button class="pslot empty" data-slot="0" type="button" onclick="if(window.sfx&&sfx.hit)sfx.hit();if(typeof toggleBackpack==='function')toggleBackpack();"><span class="plus">+</span></button>`).join("")}
-              <span class="cmb">${_combo}/4<small>COMBO</small></span>
+            <div class="pot-row" data-block="pot-speed" id="l12PotSpeed" role="button" tabindex="0" title="Klik untuk pakai Potion Speed" onclick="window.l12TogglePotionTray('speed')">
+              <img class="pimg" src="assets/images/pot-speed-${_potSpeed ? _potSpeed.lv : 1}.webp" alt="">
+              <span class="plab">SPEED POT</span><b id="l12PotSpeedVal">${_potSpeed ? "+" + (_potSpeed.add || 0).toFixed(1) + "x L" + _potSpeed.lv : "OFF"}</b>
+              <span class="tr"><span id="l12PotSpeedBar" style="width:${_potSpeed ? Math.max(4, Math.min(100, Math.round((_potSpeed.endsAt - _now) / _potWin * 100))) : 0}%"></span></span>
+              <span class="tm" id="l12PotSpeedTm">${_potSpeed ? _cd(_potSpeed.endsAt - _now) : "--:--"}</span>
+              <span class="pstock" id="l12PotSpeedStock">${_spStock}</span>
             </div>
+            <div class="pot-tray" id="l12PotTray" style="display:none;"></div>
           </div>
 
-          <!-- L5b RIWAYAT ROLL: 10 SLOT TERBARU (ANTI-LAG) -->
-          <div class="rhist" id="l12RollHistWrap">
-            <div class="rh-head">
-              <span class="rh-title"><i class="rh-dot"></i>RIWAYAT ROLL <small>(MAX 10 TERBARU)</small></span>
-              <span class="rh-total" id="l12RollTotal">TOTAL: ${_fmt(state.totalRolls || 0)}</span>
-            </div>
-            <div class="rh-strip" id="l12RollHist">
-              <!-- 10 static slots rendered by _l12PaintRollHist() -->
-            </div>
+          <div class="glw" data-block="global-luck" role="status" id="l12Glw">
+            <span class="gicon"><i class="ic i-clover"></i></span>
+            <span class="ginfo">
+              <span class="ghead"><span class="gtitle">GLOBAL LUCK</span><span class="gpill"><span class="gdot"></span><span id="l12GlStack">${_glStacks}/10</span></span></span>
+              <span class="grow"><span class="gmult" id="l12GlMult">${_glMult ? _glMult + "x LUCK" : "OFF"}</span><span class="gtm" id="l12GlTm">${_glActive ? _cd(_glLeft) : "--:--"}</span></span>
+            </span>
+            <button class="gbtn${_glActive && !_glMaxed ? " stack" : ""}${_glMaxed ? " maxed" : ""}${_glCan ? "" : " unaff"}" type="button" id="l12GlBuy"${_glMaxed ? " disabled" : ""}${_glCan ? "" : ' aria-disabled="true"'} title="${_glCan ? "Beli / tumpuk Global Luck" : "Gems kurang - butuh " + _glCost}"><span id="l12GlBuyLab">${_glLabel}</span><span class="gprice"><img src="assets/images/premium-currency.webp" alt=""><span id="l12GlBuyCost">${_glCost}</span></span></button>
           </div>
 
-          <!-- L4/L5/L6 HUD: potion + global luck + weather -->
-          <div class="hud">
-            <div class="pots">
-              <div class="pot-row" data-block="pot-luck" id="l12PotLuck" role="button" tabindex="0" title="Klik untuk pakai Potion" onclick="window.l12TogglePotionTray('luck')">
-                <img class="pimg" src="assets/images/pot-luck-${_potLuck ? _potLuck.lv : 1}.webp" alt="">
-                <span class="plab">LUCK POT</span><b id="l12PotLuckVal">${_potLuck ? "+" + (_potLuck.flat||0) + " L" + _potLuck.lv : (_adLuckMs>0?"ADS ×2":"OFF")}</b>
-                <span class="tr"><span id="l12PotLuckBar" style="width:${_potLuck ? Math.max(4, Math.min(100, Math.round((_potLuck.endsAt - _now) / _potWin * 100))) : 0}%"></span></span>
-                <span class="tm" id="l12PotLuckTm">${_potLuck ? _cd(_potLuck.endsAt - _now) : (_adLuckMs > 0 ? _cd(_adLuckMs) : "--:--")}</span>
-                <span class="pstock" id="l12PotLuckStock">🧪${_lkStock}</span><span class="puse-tag">PAKAI ▾</span>
-              </div>
-              <div class="pot-row" data-block="pot-speed" id="l12PotSpeed" role="button" tabindex="0" title="Klik untuk pakai Potion" onclick="window.l12TogglePotionTray('speed')">
-                <img class="pimg" src="assets/images/pot-speed-${_potSpeed ? _potSpeed.lv : 1}.webp" alt="">
-                <span class="plab">SPEED POT</span><b id="l12PotSpeedVal">${_potSpeed ? "+" + (_potSpeed.add||0).toFixed(1) + "× L" + _potSpeed.lv : "OFF"}</b>
-                <span class="tr"><span id="l12PotSpeedBar" style="width:${_potSpeed ? Math.max(4, Math.min(100, Math.round((_potSpeed.endsAt - _now) / _potWin * 100))) : 0}%"></span></span>
-                <span class="tm" id="l12PotSpeedTm">${_potSpeed ? _cd(_potSpeed.endsAt - _now) : "--:--"}</span>
-                <span class="pstock" id="l12PotSpeedStock">🧪${_spStock}</span><span class="puse-tag">PAKAI ▾</span>
-              </div>
-              <div class="pot-tray" id="l12PotTray" style="display:none;"></div>
-            </div>
-            <div class="glw" data-block="global-luck" role="status" id="l12Glw">
-              <span class="gicon"><i class="ic i-clover"></i></span>
-              <span class="ginfo">
-                <span class="ghead"><span class="gtitle">GLOBAL LUCK</span><span class="gpill"><span class="gdot"></span><span id="l12GlStack">${_glStacks}/10 STACK</span></span></span>
-                <span class="grow"><span class="gmult" id="l12GlMult">${_glMult ? _glMult + "× LUCK" : "OFF"}</span><span class="gtm" id="l12GlTm">${_glActive ? _cd(_glLeft) : "--:--"}</span></span>
+          <!-- node cuaca tetap ada (JS menulis ke sini) tapi tampil sebagai baris tipis di dock -->
+          <div class="wx c12wx" data-block="weather" role="status" id="l12Wx">
+            <div class="wx-head">
+              <span class="winfo">
+                <span class="rdot" style="background:${_w ? _w.color : "var(--cyan)"};"></span>
+                <span class="wic" id="l12WxIcon" style="display:inline-flex;align-items:center;justify-content:center;color:${_w ? _w.color : "var(--gold)"};">${_w ? ((typeof weatherSvg === "function") ? weatherSvg(_w.id, 17) : "") : ((typeof weatherSvg === "function") ? weatherSvg("sunny", 17) : '<i class="ic i-sun"></i>')}</span>
+                <span class="wname" id="l12WxName">${_w ? String(_w.name || _wId).toUpperCase() : "CLEAR SKY"}</span>
+                <span class="wrr" id="l12WxRr">${_wRr || "IDLE"}</span>
               </span>
-              <button class="gbtn${_glActive && !_glMaxed ? " stack" : ""}${_glMaxed ? " maxed" : ""}${_glCan ? "" : " unaff"}" type="button" id="l12GlBuy"${_glMaxed ? " disabled" : ""}${_glCan ? "" : ' aria-disabled="true"'} title="${_glCan ? 'Beli/ tumpuk Global Luck' : 'Gems kurang — butuh ' + _glCost}"><span id="l12GlBuyLab">${_glLabel}</span><span class="gprice"><img src="assets/images/premium-currency.webp" alt=""><span id="l12GlBuyCost">${_glCost}</span></span></button>
+              <span class="wtm-wrap">
+                <span class="wtm" id="l12WxTm">${_wLeft ? _cd(_wLeft) : "--:--"}</span>
+              </span>
             </div>
-            <div class="wx" data-block="weather" role="status" id="l12Wx">
-              <div class="wx-head">
-                <span class="winfo">
-                  <span class="rdot" style="background:${_w ? _w.color : 'var(--cyan)'};"></span>
-                  <span class="wic" id="l12WxIcon" style="display:inline-flex;align-items:center;justify-content:center;color:${_w ? _w.color : 'var(--gold)'};">${_w ? ((typeof weatherSvg==='function')?weatherSvg(_w.id,17):'') : ((typeof weatherSvg==='function')?weatherSvg('sunny',17):'<i class="ic i-sun"></i>')}</span>
-                  <span class="wname" id="l12WxName">${_w ? String(_w.name || _wId).toUpperCase() : "CLEAR SKY · NO ANOMALY"}</span>
-                  <span class="wrr" id="l12WxRr" style="${_w ? `border-color:${_w.color};color:${_w.color};background:color-mix(in srgb,${_w.color} 15%,transparent);` : ''}">${_wRr || "IDLE"}</span>
-                  <span class="wbuff-chip">${_w ? _w.luckBonus + "× LUCK · " + _w.speedBonus + "× SPD" : "TARGET WEATHER CARDS"}</span>
-                </span>
-                <div class="wtm-wrap">
-                  <span class="wtm" id="l12WxTm">${_wLeft ? _cd(_wLeft) : "--:--"}</span>
-                  <button class="wx-act-btn" id="l12WxBtn" type="button" onclick="if(typeof openWeatherMachine==='function')openWeatherMachine();" title="Buka Weather Synthesis & Machine">
-                    <img class="wimg" src="assets/images/weather-potion.webp" alt="">
-                    <span>SYNTH (${(state.potions||0) + (state.mythicPotions||0)})</span>
-                  </button>
-                </div>
-              </div>
-              <div class="wx-cards" id="l12WxCards"></div>
-            </div>
-          </div>
-
-          <!-- L6 MODE HUB — BUTTON, bukan <a href>. href="#/" untuk STORY itu no-op
-               (hash sudah #/lobby) dan href polos ke #/tower / #/raid MELEWATI setup
-               yang dilakukan handler drawer (stopTower / raidView). Handler diikat ke
-               fungsi ASLI yang sudah terbukti jalan: openMission / stopTower+hash / raidView. -->
-          <div class="hlist">
-            <button class="hrow" type="button" data-hub="story"><i class="ic i-story"></i><span>STORY</span><b class="bd">${_storyBadge}</b></button>
-            <button class="hrow" type="button" data-hub="tower"><i class="ic i-tower"></i><span>TOWER</span><b class="bd">${_towerBadge}</b></button>
-            <button class="hrow" type="button" data-hub="raid"><i class="ic i-raid"></i><span>RAID</span><b class="bd">${_raidBadge}</b></button>
+            <div class="wx-cards" id="l12WxCards"></div>
           </div>
         </div>
-      </div>
 
-      <!-- L7 ROLLBAR — node ROLL/AUTO asli didudukkan di sini (teknik A).
-           QUICK sengaja TIDAK dibuat: fiturnya belum ada di produksi. -->
-      <div class="rollbar">
-        <span class="rail rail-roll" aria-hidden="true"></span>
-        <span class="l12-slot" id="slotRoll"></span>
-        <span class="l12-slot" id="slotAuto"></span>
+        <div class="rollbar c12dock">
+          <span class="rail rail-roll" aria-hidden="true"></span>
+          <span class="l12-slot" id="slotRoll"></span>
+          <span class="l12-slot" id="slotAuto"></span>
+          <button class="sq c12sq" type="button" onclick="if(typeof toggleBackpack==='function')toggleBackpack();" title="Backpack / Deck">
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7.4" width="16" height="13" rx="2"/><path d="M9 7.4V5.6a3 3 0 0 1 6 0v1.8"/></svg>
+          </button>
+          <button class="sq c12sq" type="button" onclick="if(typeof openPremiumShop==='function')openPremiumShop();" title="Toko Premium">
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h2l2.2 10.2a2 2 0 0 0 2 1.6h7.2a2 2 0 0 0 2-1.6L21 9H7"/><circle cx="10" cy="20" r="1.2"/><circle cx="18" cy="20" r="1.2"/></svg>
+          </button>
+          <button class="sq c12sq" type="button" onclick="location.hash='#/settings'" title="Pengaturan">
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
+        </div>
       </div>
+    </div>
     </div>
 
     <!-- 5. Backdrop Overlay for Command Drawer -->
@@ -2111,6 +2149,25 @@ function renderLobby(){
   };
   _l12Place("slotRoll", "rollBtn", "cta");
   _l12Place("slotAuto", "rollAutoBtn", "tgl");
+
+  /* Label kecil di tombol ROLL: "1 IN <kartu paling langka di pool aktif>".
+     Angkanya diambil dari pool gacha sungguhan (bukan angka karangan), memakai
+     fmtChance() supaya tetap ringkas (25M, 1.5K, dst). */
+  (function () {
+    const sub = document.getElementById("rollSub");
+    if (!sub) return;
+    let best = 0;
+    try {
+      const pool = (typeof gachaPool === "function") ? gachaPool() : [];
+      for (let i = 0; i < pool.length; i++) {
+        const ch = pool[i].chance || ((typeof chanceOf === "function") ? chanceOf(pool[i].tier) : 0);
+        if (ch > best) best = ch;
+      }
+    } catch (e) { best = 0; }
+    sub.textContent = best
+      ? ("1 IN " + ((typeof fmtChance === "function") ? fmtChance(best) : best))
+      : "1 IN \u2014";
+  })();
   /* #footAv burger removed from header per user request */
 
 /* ---- LIVE WEATHER DOCK ENGINE (LOBBY V12) ----

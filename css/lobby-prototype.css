@@ -4781,13 +4781,27 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
 .backpack-panel .bp-kol { flex:none; font-family:var(--font-tac,'Rajdhani',sans-serif); font-size:9.5px; font-weight:800; letter-spacing:.18em; color:var(--bp-txd); white-space:nowrap; }
 .backpack-panel .bp-kol-n { font-family:var(--font-mono,monospace); font-variant-numeric:tabular-nums; font-weight:800; color:var(--bp-cy); margin-left:2px; }
 .backpack-panel .bp-favtog,
-.backpack-panel .bp-mutbtn { flex:none; min-height:44px; min-width:44px; display:inline-flex; align-items:center; justify-content:center; gap:5px; padding:0 10px; border:0; border-radius:10px; background:#0e1626; box-shadow:inset 0 0 0 1px rgba(140,180,220,.18); font-family:var(--font-tac,'Rajdhani',sans-serif); font-size:9.5px; font-weight:800; letter-spacing:.14em; color:var(--bp-txd); cursor:pointer; transition:transform .15s ease; }
+.backpack-panel .bp-mutbtn,
+.backpack-panel .bp-bestbtn { flex:none; min-height:44px; min-width:44px; display:inline-flex; align-items:center; justify-content:center; gap:5px; padding:0 10px; border:0; border-radius:10px; background:#0e1626; box-shadow:inset 0 0 0 1px rgba(140,180,220,.18); font-family:var(--font-tac,'Rajdhani',sans-serif); font-size:9.5px; font-weight:800; letter-spacing:.14em; color:var(--bp-txd); cursor:pointer; transition:transform .15s ease; }
 .backpack-panel .bp-favtog:hover,
-.backpack-panel .bp-mutbtn:hover { transform:translateY(-1px); }
+.backpack-panel .bp-mutbtn:hover,
+.backpack-panel .bp-bestbtn:hover { transform:translateY(-1px); }
 .backpack-panel .bp-favtog svg { width:13px; height:13px; }
 .backpack-panel .bp-favtog.on { color:var(--bp-am); background:#151321; box-shadow:inset 0 0 0 1px rgba(255,210,122,.5); }
 .backpack-panel .bp-mutbtn { color:var(--mc,var(--bp-txd)); gap:4px; padding:0 8px; }
 .backpack-panel .bp-mutbtn.on { background:#131b2c; box-shadow:inset 0 0 0 1px var(--mc,rgba(140,180,220,.18)); }
+/* EQUIP BEST: sejajar dengan MUT di bar filter, warna aksen hazard (bukan semantik kartu) */
+.backpack-panel .bp-mutgrp { display:inline-flex; align-items:center; gap:5px; flex:none; }
+.backpack-panel .bp-bestbtn { gap:4px; padding:0 8px; color:var(--bp-am,#f3e600); white-space:nowrap; }
+.backpack-panel .bp-bestbtn svg { width:13px; height:13px; display:block; flex:none; }
+.backpack-panel .bp-bestbtn:hover { box-shadow:inset 0 0 0 1px rgba(243,230,0,.55); }
+.backpack-panel .bp-best-mini { display:none; }
+@media (max-width:430px) {
+  /* 320-430px: label panjang memecah bar jadi 3 baris -> pakai label pendek, grup tetap sejajar MUT */
+  .backpack-panel .bp-mutgrp { gap:4px; }
+  .backpack-panel .bp-best-full { display:none; }
+  .backpack-panel .bp-best-mini { display:inline; }
+}
 .backpack-panel .bp-mb-glyph { display:flex; align-items:center; justify-content:center; width:14px; height:14px; color:inherit; }
 .backpack-panel .bp-mb-glyph svg { width:14px; height:14px; display:block; }
 .backpack-panel .bp-mb-glyph .bp-glyph { width:14px; height:14px; }
@@ -5239,6 +5253,8 @@ body.on-battle #topbar {
   .backpack-panel .bp-favtog { padding:0 7px; gap:3px; font-size:8.5px; }
   .backpack-panel .bp-favtog svg { width:11px; height:11px; }
   .backpack-panel .bp-mutbtn { padding:0 6px; gap:3px; font-size:8.5px; }
+  .backpack-panel .bp-bestbtn { padding:0 6px; gap:3px; font-size:8.5px; }
+  .backpack-panel .bp-bestbtn svg { width:11px; height:11px; }
   .backpack-panel .bp-mutbtn .bp-mb-glyph, .backpack-panel .bp-mutbtn .bp-mb-glyph svg, .backpack-panel .bp-mutbtn .bp-glyph { width:11px; height:11px; }
   .backpack-panel .bp-mb-caret { width:7px; height:7px; }
   .backpack-panel .bp-seg { flex-wrap:wrap; justify-content:flex-end; flex:1 1 100%; max-width:100%; min-width:0; }
@@ -5286,6 +5302,8 @@ body.on-battle #topbar {
   .backpack-panel .bp-kol { font-size:8px; letter-spacing:.08em; }
   .backpack-panel .bp-favtog { padding:0 7px; gap:3px; font-size:8.5px; }
   .backpack-panel .bp-mutbtn { padding:0 6px; gap:3px; font-size:8.5px; }
+  .backpack-panel .bp-bestbtn { padding:0 6px; gap:3px; font-size:8.5px; }
+  .backpack-panel .bp-bestbtn svg { width:11px; height:11px; }
   .backpack-panel .bp-filter { gap:4px !important; padding:4px !important; }
   /* BPD-GEO (ui-css #2, tiket geometri mandor): ruang horizontal reclaimed + lantai tile turun
      (3 kolom @390, 2 kolom @320), bar dua baris (search baris sendiri), popover MUT dibatasi

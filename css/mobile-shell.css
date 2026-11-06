@@ -915,7 +915,8 @@ html.m-landscape body.on-raid .wbs-shop{ height:100% !important; }
 .backpack-panel .bp-deck-count { color: #f5f5f5 !important; }
 .backpack-panel .bp-kol, .backpack-panel .bp-total-tag { color: #f5f5f5 !important; }
 .backpack-panel .bp-favtog,
-.backpack-panel .bp-mutbtn {
+.backpack-panel .bp-mutbtn,
+.backpack-panel .bp-bestbtn {
   background: transparent !important;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.26) !important;
 }
@@ -1242,6 +1243,8 @@ html.m-portrait body.bp-open .backpack-panel {
 }
 .backpack-panel .bps-art-wrap { background: #050505 !important; }
 .backpack-panel .bp-mutbtn { color: #b9b9b9 !important; }
+.backpack-panel .bp-bestbtn { color: #f3e600 !important; }
+.backpack-panel .bp-bestbtn:hover { box-shadow: inset 0 0 0 1px rgba(243, 230, 0, 0.55) !important; }
 
 /* badge qty item: navy+amber -> hitam+kuning hazard */
 .backpack-panel .bi-qty {
@@ -2940,4 +2943,806 @@ html:not(.m-portrait) #indexModal .ix-sort {
   border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
   color: #e8e8e8 !important;
   padding: 4px 10px !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ==========================================================================
+   LOBBY "HAZARD POSTER" (C) — 2026-11-06
+   Port dari _tmp/proto_lobby_v1.html (desain dikunci user). Pengganti layout
+   lobby v12 lama untuk dua ukuran produksi: 500x844 (portrait) dan 850x390
+   (landscape). Aturan lobby khusus 320 dan >=1000px DIHAPUS atas permintaan
+   user.
+
+   Struktur (js/tower-lobby.js renderLobby):
+     .c12wrap
+       .c12main  -> .c12panel (kiri) + .stage (kanan, milik v12)
+                    + .c12res (resource) + .c12acts (aksi utilitas)
+       .c12foot  -> .c12buffs (potion/global/weather) + .c12dock (ROLL/AUTO)
+
+   Semua id + handler produksi dipertahankan (l12TopPwr, l12TopLv, l12TopCoins,
+   l12TopGems, l12Party, l12RollHist(Wrap/Total), l12Pot*, l12Gl*, l12Wx*,
+   heroStandeeWrap, slotRoll, slotAuto, hrow[data-hub]).
+
+   Performa: latar statis, tanpa backdrop-filter, animasi hanya transform /
+   opacity (milik .hero & .rail v12 yang sudah ada).
+   ========================================================================== */
+
+/* ---- kerangka ---- */
+/* .rail-panel dari lobby-prototype.css menggambar chip '01' melayang di atas
+   panel kiri; di layout C kolom itu sudah dipakai judul/nama, jadi dimatikan. */
+.lobby-hub.l12.c12 .rail-panel { display:none !important; }
+.lobby-hub.l12.c12 { display:flex; flex-direction:column; }
+.lobby-hub.l12.c12 .c12wrap {
+  flex:1 1 auto; min-height:0; height:100%;
+  display:flex; flex-direction:column;
+}
+.lobby-hub.l12.c12 .c12main {
+  position:relative; flex:1 1 auto; min-height:0; display:flex;
+}
+.lobby-hub.l12.c12 .c12main > .stage { flex:1 1 auto; min-width:0; }
+
+/* ---- panel kiri ---- */
+.lobby-hub.l12.c12 .c12panel {
+  position:relative; z-index:6; flex:0 0 46%; min-width:0;
+  display:flex; flex-direction:column;
+  padding:10px 11px 8px;
+  background:linear-gradient(172deg, rgba(6,6,6,.97) 0%, rgba(6,6,6,.93) 58%, rgba(6,6,6,.86) 100%);
+  box-shadow:1px 0 0 rgba(255,255,255,.16);
+  overflow:hidden;
+}
+/* grid halus, memudar di tepi atas/bawah */
+.lobby-hub.l12.c12 .c12panel::before {
+  content:''; position:absolute; inset:0; pointer-events:none; z-index:0;
+  background:
+    repeating-linear-gradient(90deg, rgba(245,245,245,.035) 0 1px, transparent 1px 27px),
+    repeating-linear-gradient(0deg,  rgba(245,245,245,.035) 0 1px, transparent 1px 27px);
+  -webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 22%,#000 62%,transparent 92%);
+  mask-image:linear-gradient(180deg,transparent 0%,#000 22%,#000 62%,transparent 92%);
+}
+.lobby-hub.l12.c12 .c12panel > * { position:relative; z-index:1; }
+/* pita hazard di tepi kanan */
+.lobby-hub.l12.c12 .c12panel::after {
+  content:''; position:absolute; right:0; top:0; bottom:0; width:5px; z-index:2;
+  background:repeating-linear-gradient(-45deg, rgba(243,230,0,.95) 0 5px, transparent 5px 12px);
+  opacity:.38; pointer-events:none;
+}
+
+/* baris kick + avatar */
+.lobby-hub.l12.c12 .c12kick { display:flex; align-items:center; gap:5px; min-height:18px; margin:0; flex:none; overflow:hidden; }
+.lobby-hub.l12.c12 .c12dot { width:5px; height:5px; border-radius:50%; background:#6be08a; flex:none; }
+.lobby-hub.l12.c12 .c12kickt {
+  min-width:0; flex:1 1 auto; font-family:var(--mono); font-size:7px; letter-spacing:.18em;
+  color:rgba(255,255,255,.58); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.lobby-hub.l12.c12 .c12av {
+  flex:none; width:44px; height:44px; min-width:44px; padding:0; margin-left:auto; box-shadow:none; border:0;
+  background:none; border:0; cursor:pointer; position:relative;
+}
+.lobby-hub.l12.c12 .c12av img { position:absolute; inset:3px; width:calc(100% - 6px); height:calc(100% - 6px); object-fit:cover; object-position:top; border-radius:50%; }
+
+/* judul hero */
+.lobby-hub.l12.c12 .c12title {
+  flex:none; margin-top:5px; font-family:var(--disp); font-weight:900;
+  font-size:27px; line-height:1.02; letter-spacing:.01em; color:#f5f5f5;
+  text-shadow:0 3px 20px rgba(0,0,0,.85);
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+
+/* chip meta */
+.lobby-hub.l12.c12 .c12meta { display:flex; align-items:center; gap:5px; flex-wrap:wrap; margin-top:6px; flex:none; }
+.lobby-hub.l12.c12 .mchip {
+  display:inline-flex; align-items:center; min-height:18px; padding:1px 6px;
+  font-family:var(--mono); font-size:7px; letter-spacing:.13em; white-space:nowrap;
+  color:var(--mc,#fff); box-shadow:inset 0 0 0 1px currentColor;
+}
+
+/* statistik: portrait menumpuk (power lalu level), landscape sebaris */
+.lobby-hub.l12.c12 .c12stats {
+  flex:none; display:flex; flex-direction:column; gap:4px; margin-top:1px; min-width:0;
+}
+.lobby-hub.l12.c12 .c12pow {
+  flex:none; width:100%; display:flex; align-items:center; justify-content:flex-start; gap:6px;
+  min-height:44px; margin:0; padding:0;
+  background:none !important; border:0 !important; clip-path:none !important;
+  cursor:pointer; text-align:left;
+}
+.lobby-hub.l12.c12 .c12pow b {
+  font-family:var(--disp); font-size:18px; font-weight:800; letter-spacing:.02em; color:#f3e600;
+}
+.lobby-hub.l12.c12 .c12pow span {
+  font-family:var(--mono); font-size:6px; letter-spacing:.16em; color:rgba(255,255,255,.5);
+}
+
+/* pod level + XP (dipakai juga oleh tick l12TopLv / l12TopXpBar) */
+.lobby-hub.l12.c12 .c12lvl {
+  flex:none; width:100%; min-height:44px; margin:0; padding:3px 7px; gap:6px;
+  background:rgba(0,0,0,.55) !important; border:1px solid rgba(255,255,255,.22) !important;
+  clip-path:none;
+}
+.lobby-hub.l12.c12 .c12lvl .lv-info { min-width:0; flex:1 1 auto; overflow:hidden; }
+.lobby-hub.l12.c12 .c12lvl .lv-meta { min-width:0; }
+.lobby-hub.l12.c12 .c12lvl .lv-title { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.lobby-hub.l12.c12 .c12lvl .lv-badge {
+  background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.38); color:#f5f5f5; font-size:10px;
+}
+.lobby-hub.l12.c12 .c12lvl .lv-title { color:#f3e600; }
+.lobby-hub.l12.c12 .c12lvl .lv-pct { color:rgba(255,255,255,.72); }
+.lobby-hub.l12.c12 .c12lvl .bar { background:rgba(255,255,255,.10) !important; border-color:rgba(255,255,255,.24) !important; }
+.lobby-hub.l12.c12 .c12lvl .bar > span { background:#f5f5f5 !important; }
+
+/* garis + blok data ringkas */
+.lobby-hub.l12.c12 .c12rule {
+  flex:none; height:1px; margin-top:7px;
+  background:linear-gradient(90deg, rgba(255,255,255,.44), rgba(255,255,255,.04));
+}
+.lobby-hub.l12.c12 .c12brief { display:flex; flex-direction:column; flex:none; margin-top:1px; }
+.lobby-hub.l12.c12 .c12br {
+  display:flex; align-items:baseline; justify-content:space-between; gap:6px; min-width:0;
+  padding:3px 0; border-bottom:1px solid rgba(255,255,255,.09);
+}
+.lobby-hub.l12.c12 .c12br:last-child { border-bottom:0; }
+.lobby-hub.l12.c12 .c12bk { font-family:var(--mono); font-size:6px; letter-spacing:.18em; color:rgba(255,255,255,.5); white-space:nowrap; }
+.lobby-hub.l12.c12 .c12bv { min-width:0; font-family:var(--disp); font-size:10px; letter-spacing:.04em; color:#f5f5f5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.lobby-hub.l12.c12 .c12br.hot .c12bv { color:#f3e600; }
+
+/* ==========================================================================
+   ROSTER = baris baca-saja (prototipe C): nomor, avatar 22px, nama, LV.
+   Bukan tombol — tidak ada target sentuh 44px yang perlu dipaksakan di sini.
+   ========================================================================== */
+.lobby-hub.l12.c12 .c12roster { display:flex; flex-direction:column; flex:none; margin-top:6px; }
+.lobby-hub.l12.c12 .c12roster .rh { display:flex; align-items:center; gap:7px; margin-bottom:3px; }
+.lobby-hub.l12.c12 .c12roster .rh .rl { font-family:var(--mono); font-size:6px; letter-spacing:.2em; color:rgba(255,255,255,.5); }
+.lobby-hub.l12.c12 .c12roster .rh .rr { flex:1 1 auto; height:1px; background:rgba(255,255,255,.12); }
+.lobby-hub.l12.c12 .c12roster .rw {
+  display:flex; align-items:center; gap:7px; min-height:26px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.lobby-hub.l12.c12 .c12roster .rw:last-child { border-bottom:0; }
+.lobby-hub.l12.c12 .c12roster .ri { flex:none; width:12px; font-family:var(--mono); font-size:6.5px; color:rgba(255,255,255,.45); }
+.lobby-hub.l12.c12 .c12roster .ra {
+  flex:none; width:22px; height:22px; border-radius:50%; overflow:hidden; background:#080808;
+  box-shadow:inset 0 0 0 1px var(--mc, rgba(255,255,255,.26));
+}
+.lobby-hub.l12.c12 .c12roster .ra img { width:100%; height:100%; object-fit:cover; object-position:center 14%; display:block; }
+.lobby-hub.l12.c12 .c12roster .ra.empty {
+  display:grid; place-items:center; color:rgba(255,255,255,.5); font-size:11px;
+  border:1px dashed rgba(255,255,255,.22);
+}
+.lobby-hub.l12.c12 .c12roster .rn {
+  flex:1 1 auto; min-width:0; font-family:var(--disp); font-size:8px; letter-spacing:.09em;
+  color:#f5f5f5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.lobby-hub.l12.c12 .c12roster .rg { flex:none; font-family:var(--mono); font-size:6.5px; letter-spacing:.1em; color:rgba(255,255,255,.55); }
+.lobby-hub.l12.c12 .c12roster .rw.lead .rn { color:#f3e600; }
+.lobby-hub.l12.c12 .c12roster .rw.empty .rn { color:rgba(255,255,255,.35); }
+
+.lobby-hub.l12.c12 .c12gap { flex:1 1 auto; min-height:0; }
+
+/* riwayat roll (7 sel terlihat; JS tetap menggambar 10) */
+/* Riwayat roll: hanya 4 sel terbaru yang tampil supaya tiap sel >=44px
+   (JS tetap menggambar 10; sisanya disembunyikan lewat nth-child). */
+.lobby-hub.l12.c12 .c12hist { flex:none; padding:0 0 2px; }
+.lobby-hub.l12.c12 .c12hl {
+  display:block; margin-bottom:3px;
+  font-family:var(--mono); font-size:6.5px; letter-spacing:.16em; color:rgba(255,255,255,.45);
+}
+.lobby-hub.l12.c12 .c12strip { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:5px; }
+.lobby-hub.l12.c12 .c12strip .rh-slot {
+  width:100%; aspect-ratio:1/1; min-height:0; max-height:none;
+  background:#080808; border:1px solid rgba(255,255,255,.16);
+}
+.lobby-hub.l12.c12 .c12strip .rh-slot:nth-child(n+5) { display:none; }
+.lobby-hub.l12.c12 .c12strip .rh-slot.empty { font-size:6px; }
+.lobby-hub.l12.c12 .c12strip .rh-slot .rh-ch { display:none; }
+
+/* tiga pintu mode */
+.lobby-hub.l12.c12 .c12modes {
+  display:flex; flex-direction:column; flex:none;
+  width:100%; max-width:none; margin:0; gap:0;
+}
+.lobby-hub.l12.c12 .c12modes .hrow {
+  width:100%; max-width:none; flex:0 0 auto; min-height:46px;
+  display:flex; align-items:center; justify-content:flex-start; gap:8px; padding:0 2px;
+  background:none !important;
+  border:0; border-bottom:1px solid rgba(255,255,255,.13);
+  color:#f5f5f5; font-family:var(--disp); font-size:11px; letter-spacing:.14em;
+  clip-path:none; text-align:left;
+}
+.lobby-hub.l12.c12 .c12modes .hrow:last-child { border-bottom:0; }
+.lobby-hub.l12.c12 .c12modes .hrow:hover { background:rgba(255,255,255,.06) !important; }
+.lobby-hub.l12.c12 .c12modes .hrow .mn { flex:none; font-family:var(--mono); font-size:8px; color:rgba(255,255,255,.45); }
+.lobby-hub.l12.c12 .c12modes .hrow .ic { flex:none; width:15px; height:15px; color:rgba(255,255,255,.62); }
+.lobby-hub.l12.c12 .c12modes .hrow:hover .ic { color:#f3e600; }
+.lobby-hub.l12.c12 .c12modes .hrow .mt { flex:1 1 auto; min-width:0; }
+.lobby-hub.l12.c12 .c12modes .hrow .bd {
+  flex:none; height:auto; padding:1px 5px; background:none; border:0;
+  color:#f3e600; font-family:var(--mono); font-size:8px;
+}
+.lobby-hub.l12.c12 .c12modes .hrow .chv {
+  flex:none; width:7px; height:7px;
+  border-right:1.5px solid rgba(255,255,255,.5); border-top:1.5px solid rgba(255,255,255,.5);
+  transform:rotate(45deg);
+}
+
+/* ---- overlay kanan atas: resource ---- */
+.lobby-hub.l12.c12 .c12res {
+  position:absolute; z-index:9; right:8px; top:8px;
+  display:flex; flex-direction:column; align-items:flex-end; gap:6px;
+}
+.lobby-hub.l12.c12 .c12res .pill {
+  min-height:44px; height:44px; padding:0 12px;
+  background:rgba(5,5,5,.86) !important; border:1px solid rgba(255,255,255,.24) !important;
+  color:#f5f5f5 !important; font-family:var(--mono); font-size:11px; clip-path:none;
+}
+.lobby-hub.l12.c12 .c12res .pill.coin-pill b { color:#ffd700; }
+.lobby-hub.l12.c12 .c12res .pill.gem-pill b { color:#22d3ee; }
+.lobby-hub.l12.c12 .c12res .pill .p-ic { display:inline-flex; color:#ffd700; }
+.lobby-hub.l12.c12 .c12res .pill .p-gem { width:14px; height:14px; object-fit:contain; }
+.lobby-hub.l12.c12 .c12res .pill .p-plus {
+  width:16px; height:16px; margin-left:2px;
+  background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.4); color:#f5f5f5; font-size:10px;
+}
+
+
+/* ---- kaki: buff + dock ---- */
+.lobby-hub.l12.c12 .c12foot {
+  position:relative; z-index:7; flex:none;
+  display:flex; flex-direction:column; gap:6px; padding-bottom:2px;
+}
+/* 4 sel: LUCK POT / SPEED POT / GLOBAL LUCK / WEATHER.
+   Aturan lobby lama menambatkan .glw ke kolom 2 dan .wx ke "1/-1", jadi
+   posisinya dinetralkan lalu grid C yang menentukan: portrait 2x2,
+   landscape 1x4 (lihat blok m-landscape di bawah). */
+.lobby-hub.l12.c12 .c12buffs {
+  position:relative; display:grid; grid-template-columns:repeat(4, minmax(0,1fr));
+  grid-auto-flow:row; grid-auto-rows:minmax(46px, auto); gap:6px; padding:0 10px;
+}
+.lobby-hub.l12.c12 .c12buffs .glw,
+.lobby-hub.l12.c12 .c12buffs .wx { grid-column:auto !important; grid-row:auto !important; }
+.lobby-hub.l12.c12 .c12buffs .pots { display:contents; }
+.lobby-hub.l12.c12 .c12buffs .pot-row {
+  min-height:46px; padding:0 8px; gap:6px;
+  background:rgba(5,5,5,.74) !important; border:1px solid rgba(255,255,255,.2) !important;
+  clip-path:none;
+}
+.lobby-hub.l12.c12 .c12buffs .pot-row .pimg { width:16px; height:16px; }
+.lobby-hub.l12.c12 .c12buffs .pot-row .plab { font-size:7px; letter-spacing:.1em; color:rgba(255,255,255,.5); }
+.lobby-hub.l12.c12 .c12buffs .pot-row b { font-size:9.5px; color:#f5f5f5; }
+.lobby-hub.l12.c12 .c12buffs .pot-row .tr { height:3px; background:rgba(255,255,255,.12) !important; }
+.lobby-hub.l12.c12 .c12buffs .pot-row .tr > span { background:#f5f5f5; }
+.lobby-hub.l12.c12 .c12buffs .pot-row .tm { font-size:8px; color:rgba(255,255,255,.6); }
+.lobby-hub.l12.c12 .c12buffs .pot-row .pstock {
+  font-size:8px; padding:0 4px;
+  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.25); color:#f5f5f5;
+}
+.lobby-hub.l12.c12 .c12buffs .pot-row .puse-tag { display:none; }
+
+.lobby-hub.l12.c12 .c12buffs .glw {
+  display:flex; align-items:center; gap:6px; min-height:46px; padding:0 8px;
+  grid-template-columns:none;
+  background:rgba(5,5,5,.74) !important; border:1px solid rgba(255,255,255,.2) !important;
+  clip-path:none;
+}
+.lobby-hub.l12.c12 .c12buffs .glw::before { display:none; }
+.lobby-hub.l12.c12 .c12buffs .glw .gicon {
+  width:22px; height:22px; border-radius:50%;
+  background:rgba(107,224,138,.12); border:1px solid rgba(107,224,138,.45); color:#6be08a;
+}
+.lobby-hub.l12.c12 .c12buffs .glw .gicon .ic { width:13px; height:13px; }
+.lobby-hub.l12.c12 .c12buffs .glw .gtitle { font-size:7px; letter-spacing:.1em; color:rgba(255,255,255,.55); }
+.lobby-hub.l12.c12 .c12buffs .glw .gmult { font-size:10px; color:#6be08a; }
+.lobby-hub.l12.c12 .c12buffs .glw .gpill { display:none; }
+.lobby-hub.l12.c12 .c12buffs .glw .gtm { font-size:7.5px; padding:0; background:none; border:0; color:rgba(255,255,255,.55); }
+.lobby-hub.l12.c12 .c12buffs .glw .gbtn {
+  flex:none; min-height:44px; min-width:44px; padding:2px 6px; border-radius:0;
+  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.3); color:#f5f5f5;
+  clip-path:none; font-size:8px; line-height:1.05;
+}
+.lobby-hub.l12.c12 .c12buffs .glw .gbtn .gprice { font-size:7px; }
+.lobby-hub.l12.c12 .c12buffs .glw .gbtn .gprice img { width:8px; height:8px; }
+
+.lobby-hub.l12.c12 .c12buffs .wx {
+  display:flex; flex-direction:row; align-items:center; gap:4px;
+  min-height:46px; padding:0 4px 0 7px;
+  background:rgba(5,5,5,.74) !important; border:1px solid rgba(255,255,255,.2) !important;
+  clip-path:none;
+}
+.lobby-hub.l12.c12 .c12buffs .wx .wx-head { flex:1 1 auto; min-width:0; gap:4px; }
+.lobby-hub.l12.c12 .c12buffs .wx .wrr,
+.lobby-hub.l12.c12 .c12buffs .wx .wtm-wrap { display:none; }
+.lobby-hub.l12.c12 .c12buffs .wx .wx-act-btn span { display:none; }
+.lobby-hub.l12.c12 .c12buffs .wx .wname { font-size:7.5px; }
+.lobby-hub.l12.c12 .c12buffs .wx .wrr { font-size:6.5px; padding:0 3px; }
+.lobby-hub.l12.c12 .c12buffs .wx .wic svg { width:14px; height:14px; }
+.lobby-hub.l12.c12 .c12buffs .wx .wtm { font-size:7.5px; color:rgba(255,255,255,.6); }
+.lobby-hub.l12.c12 .c12buffs .wx .wx-act-btn {
+  height:auto; min-height:44px; min-width:44px; padding:0; font-size:7px;
+  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.26); color:#f5f5f5;
+}
+.lobby-hub.l12.c12 .c12buffs .wx .wimg { width:16px; height:16px; }
+/* tombol buka mesin cuaca: ikon potion gelap menyatu dengan latar, jadi
+   dipakai glyph "+" yang selalu terbaca. */
+.lobby-hub.l12.c12 .c12buffs .wx .wx-act-btn .wimg { display:none; }
+.lobby-hub.l12.c12 .c12buffs .wx .wx-act-btn::after {
+  content:'+'; font-family:var(--disp); font-size:17px; line-height:1; color:#f5f5f5;
+}
+/* kartu cuaca cepat tidak muat di strip 46px; buka lewat tombol SYNTH (mesin cuaca) */
+.lobby-hub.l12.c12 .c12buffs .wx .wx-cards { display:none; }
+
+.lobby-hub.l12.c12 .pot-tray {
+  left:10px; right:10px; top:auto; bottom:calc(100% + 4px); margin-top:0;
+  background:rgba(6,6,6,.98); border:1px solid rgba(255,255,255,.3); clip-path:none;
+}
+.lobby-hub.l12.c12 .pot-tray-head { color:#f5f5f5; }
+.lobby-hub.l12.c12 .pot-lv-btn {
+  background:rgba(10,10,10,.95); border:1px solid rgba(255,255,255,.24); color:#f5f5f5;
+}
+
+/* dock — metrik prototipe C: padding 8px 10px, gap 7, ROLL 56px + 3 tombol bulat */
+.lobby-hub.l12.c12 .c12dock {
+  margin:0; border-top:0; background:none;
+  display:flex; align-items:center; gap:7px;
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px));
+}
+/* tombol bulat utilitas (prototipe .sq 48px) */
+.lobby-hub.l12.c12 .c12dock .c12sq {
+  flex:0 0 auto; width:48px; height:48px; min-width:48px; min-height:48px;
+  display:grid; place-items:center; padding:0; margin:0;
+  background:rgba(5,5,5,.62); color:#f5f5f5;
+  box-shadow:inset 0 0 0 1px rgba(245,245,245,.26);
+  border:0; border-radius:50%; clip-path:none; cursor:pointer;
+}
+.lobby-hub.l12.c12 .c12dock .c12sq:active { transform:scale(.96); }
+.lobby-hub.l12.c12 .c12dock .c12sq svg { width:19px; height:19px; }
+.lobby-hub.l12.c12 .c12dock .rail-roll { display:none; }
+html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollBtn.cta {
+  flex:1 1 0 !important; min-width:0 !important; min-height:56px !important;
+  background:#f3e600 !important; color:#080800 !important;
+  font-family:var(--disp); font-weight:900; font-size:15px; letter-spacing:.24em;
+  /* !important WAJIB: lobby-prototype.css:1632 memasang oktagon
+     (clip-path 16px di 8 sudut) dengan !important. Prototipe C memakai
+     parallelogram miring: sudut kiri-atas & kanan-bawah 14px. */
+  clip-path:polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%) !important;
+  border:0 !important; border-radius:0 !important;
+  box-shadow:none !important; text-shadow:none !important;
+}
+html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollBtn.cta .roll-ic { display:none; }
+html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollBtn.cta:active { transform:scale(.985); }
+/* AUTO = tombol bulat ikon saja, sama seperti prototipe (.sq + ikon auto).
+   Teks "AUTO" disembunyikan; ikon panah-putar dibuat lewat mask data-URI
+   supaya warnanya ikut currentColor (dan berubah hazard saat .on). */
+html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollAutoBtn.tgl {
+  flex:0 0 auto !important;
+  width:48px !important; min-width:48px !important;
+  height:48px !important; min-height:48px !important;
+  margin:0 !important; padding:0 !important;
+  display:grid !important; place-items:center;
+  border:0 !important; border-radius:50% !important; clip-path:none;
+  background:rgba(5,5,5,.62) !important;
+  box-shadow:inset 0 0 0 1px rgba(245,245,245,.26) !important;
+  color:#f5f5f5;
+}
+html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollAutoBtn.tgl .ra-txt { display:none !important; }
+html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollAutoBtn.tgl .ra-indicator {
+  display:block !important;           /* span inline -> width/height diabaikan */
+  /* !important wajib: lobby-prototype.css:1673 memaksa 6x6px !important */
+  width:19px !important; height:19px !important;
+  min-width:19px !important; min-height:19px !important;
+  border-radius:0 !important; box-shadow:none !important;
+  background:currentColor !important;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.2 12a7.8 7.8 0 0 1 13.3-5.5l2 2'/%3E%3Cpath d='M19.8 4.4v4.2h-4.2'/%3E%3Cpath d='M19.8 12a7.8 7.8 0 0 1-13.3 5.5l-2-2'/%3E%3Cpath d='M4.2 19.6v-4.2h4.2'/%3E%3C/svg%3E") center/19px 19px no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.2 12a7.8 7.8 0 0 1 13.3-5.5l2 2'/%3E%3Cpath d='M19.8 4.4v4.2h-4.2'/%3E%3Cpath d='M19.8 12a7.8 7.8 0 0 1-13.3 5.5l-2-2'/%3E%3Cpath d='M4.2 19.6v-4.2h4.2'/%3E%3C/svg%3E") center/19px 19px no-repeat;
+}
+html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollAutoBtn.tgl.on { color:#f3e600; }
+
+/* ==========================================================================
+   HERO = POSTER FULL-BLEED (permintaan user 2026-11-06)
+   Prototipe C BUKAN kartu: art menutup seluruh panggung, tanpa bingkai SVG,
+   tanpa clip-path kartu, tanpa cast/sheen/glow holo. Yang tersisa hanya art
+   + veil gradien kiri/bawah supaya panel & dock tetap terbaca.
+   ========================================================================== */
+.lobby-hub.l12.c12 .c12main .stage .hero {
+  position:absolute !important; inset:0 !important;
+  width:auto !important; height:auto !important;
+  max-width:none !important; max-height:none !important;
+  aspect-ratio:auto !important; border-radius:0 !important;
+  transform:none !important; animation:none !important;
+  overflow:hidden !important; background:transparent !important; box-shadow:none !important;
+}
+/* bingkai kartu v12 + lapisan holo dibuang total */
+.lobby-hub.l12.c12 .c12main .stage .hero::before,
+.lobby-hub.l12.c12 .c12main .stage .hero .frm,
+.lobby-hub.l12.c12 .c12main .stage .hero .sheen,
+.lobby-hub.l12.c12 .c12main .stage .hero .glow { display:none !important; }
+.lobby-hub.l12.c12 .c12main .stage .hero .artbox {
+  position:absolute !important; inset:0 !important;
+  clip-path:none !important; overflow:hidden !important; z-index:2 !important;
+}
+.lobby-hub.l12.c12 .c12main .stage .hero .art {
+  width:100% !important; height:100% !important; display:block !important;
+  object-fit:cover !important; object-position:center 12% !important;
+  filter:saturate(1.06) contrast(1.04) brightness(.98) !important;
+}
+/* veil poster (menggantikan .cast kartu) */
+.lobby-hub.l12.c12 .c12main .stage .hero .cast {
+  display:block !important; position:absolute !important; inset:0 !important;
+  clip-path:none !important; z-index:3 !important; pointer-events:none;
+  background:
+    linear-gradient(90deg, rgba(5,5,5,.92) 0%, rgba(5,5,5,.40) 9%, rgba(5,5,5,0) 28%),
+    linear-gradient(0deg, rgba(5,5,5,.96) 0%, rgba(5,5,5,.24) 26%, transparent 52%) !important;
+}
+/* dekor panggung v12 (horizon/floor/pedestal) tidak dipakai di poster */
+.lobby-hub.l12.c12 .c12main .stage .horizon,
+.lobby-hub.l12.c12 .c12main .stage .floor-grid,
+.lobby-hub.l12.c12 .c12main .stage .ground,
+.lobby-hub.l12.c12 .c12main .stage .ped,
+.lobby-hub.l12.c12 .c12main .stage .rail-horizon { display:none !important; }
+/* background lobby: satu gambar tetap, tanpa tombol ganti */
+.lobby-hub.l12.c12 .c12main .stage .stage-bg-layer { filter:brightness(.6) saturate(1.05) contrast(1.05) !important; }
+
+/* party di kanan-bawah panggung (prototipe C) */
+.lobby-hub.l12.c12 .c12party {
+  position:absolute; z-index:9; right:9px; bottom:9px;
+  display:flex; flex-direction:row; gap:7px;
+}
+.lobby-hub.l12.c12 .c12party .pav {
+  position:relative; width:44px; height:44px; padding:0; flex:none;
+  border-radius:50%; overflow:hidden; background:rgba(5,5,5,.58);
+  box-shadow:inset 0 0 0 2px var(--mc); border:0; cursor:pointer;
+}
+.lobby-hub.l12.c12 .c12party .pav img { width:100%; height:100%; object-fit:cover; object-position:center 14%; display:block; }
+.lobby-hub.l12.c12 .c12party .pav.on { box-shadow:inset 0 0 0 2px var(--mc), 0 0 0 2px rgba(243,230,0,.82); }
+.lobby-hub.l12.c12 .c12party .pav.empty {
+  display:grid; place-items:center; color:rgba(245,245,245,.6); font-size:15px;
+  border:1px dashed rgba(245,245,245,.24);
+}
+
+/* ==========================================================================
+   LANDSCAPE PENDEK (HP 850x390) — panel dipadatkan: meta, brief, roster, dan
+   riwayat disembunyikan supaya tinggi panel ~272px tidak meluber.
+
+   PENTING: blok ini dibungkus @media (max-height:520px). Sebelumnya hanya
+   memakai `html.m-landscape`, dan itu ikut aktif di DESKTOP lebar (1400x900,
+   yang juga m-landscape) sehingga panel kiri tampil kosong: semua isi
+   disembunyikan. Desktop tetap memakai tata letak penuh.
+   ========================================================================== */
+@media (max-height: 520px) {
+  html.m-landscape .lobby-hub.l12.c12 .c12panel { flex:0 0 42%; padding:2px 11px 2px; }
+  html.m-landscape .lobby-hub.l12.c12 .c12kick { min-height:18px; margin:0; }
+  html.m-landscape .lobby-hub.l12.c12 .c12title { font-size:21px; margin-top:2px; -webkit-line-clamp:2; }
+  html.m-landscape .lobby-hub.l12.c12 .c12meta { display:none; }
+  html.m-landscape .lobby-hub.l12.c12 .c12stats { flex-direction:row; align-items:center; gap:8px; }
+  html.m-landscape .lobby-hub.l12.c12 .c12pow { flex:0 1 auto; width:auto; min-height:18px; height:18px; margin:0; }
+  html.m-landscape .lobby-hub.l12.c12 .c12pow b { font-size:14px; }
+  html.m-landscape .lobby-hub.l12.c12 .c12lvl { flex:1 1 auto; width:auto; min-height:26px; height:26px; margin:0; padding:0 6px; }
+  html.m-landscape .lobby-hub.l12.c12 .c12lvl .lv-badge { font-size:9px; padding:1px 5px; }
+  html.m-landscape .lobby-hub.l12.c12 .c12lvl .lv-info { min-width:60px; }
+  html.m-landscape .lobby-hub.l12.c12 .c12lvl .lv-meta { font-size:8px; }
+  html.m-landscape .lobby-hub.l12.c12 .c12rule { display:none; }
+  html.m-landscape .lobby-hub.l12.c12 .c12brief { display:none; }
+  html.m-landscape .lobby-hub.l12.c12 .c12roster { display:none; }
+  html.m-landscape .lobby-hub.l12.c12 .c12gap { display:none; }
+  html.m-landscape .lobby-hub.l12.c12 .c12hist { display:none; }
+  html.m-landscape .lobby-hub.l12.c12 .c12modes { margin-top:auto; }
+  html.m-landscape .lobby-hub.l12.c12 .c12modes .hrow { min-height:44px; font-size:10px; }
+  html.m-landscape .lobby-hub.l12.c12 .c12buffs { grid-template-columns:repeat(4, minmax(0,1fr)); }
+  html.m-landscape .lobby-hub.l12.c12 .c12buffs .glw,
+  html.m-landscape .lobby-hub.l12.c12 .c12buffs .wx { grid-column:auto; }
+  html.m-landscape .lobby-hub.l12.c12 .c12foot { gap:4px; }
+  /* stage pendek: kartu hero dipusatkan penuh tinggi */
+  html.m-landscape .lobby-hub.l12.c12 .c12main .stage .hero {
+    left:0; right:0; top:0; bottom:0; width:auto; height:auto;
+    max-width:none; transform:none; aspect-ratio:auto;
+  }
+  html.m-landscape .lobby-hub.l12.c12 .c12res .pill { height:44px; min-height:44px; font-size:10px; padding:0 10px; }
+}
+
+/* ---- sisa chrome lobby lama yang jatuh di atas panel C ----
+   #activePlayersBadge dibuat js/boot.js:1305 lalu di-append ke document.body
+   (bukan ke dalam .lobby-hub), dipaku z-index 999999. Di layout C pill itu
+   mendarat di atas angka COMBAT POWER, jadi dimatikan selama lobby C tampil.
+   Padanan informasinya sudah ada: baris operator + titik status online. */
+html body.on-lobby #activePlayersBadge { display:none !important; }
+html body.on-lobby .entry-tag { display:none !important; }
+/* ---- .lobby-footer lama ----
+   #rollBtn/#rollAutoBtn sudah dipindah ke .c12dock oleh renderLobby, jadi bar
+   .lobby-footer tinggal cangkang kosong (12-14px) yang mengambang di atas nav
+   dan menutupi tepi bawah dock C. Di lobby C bar itu disembunyikan total;
+   #footMenu (menu pop-up) tetap hidup karena dipanggil dari tab "More". */
+html body.on-lobby:has(.lobby-hub.l12.c12) .lobby-footer { display:none !important; }
+/* #bfExit hanya untuk battle; sisa markup index.html membuatnya tampil di lobby. */
+html body.on-lobby:has(.lobby-hub.l12.c12) #bfExit { display:none !important; }
+/* ---- #pwaInstallBtn: jangan menimpa judul hero ----
+   css/lobby-prototype.css menambatkannya di kiri-atas (top:46px, left:4px) —
+   di layout C posisi itu persis di atas judul "SHADOW HER..." dan menangkap
+   klik di area judul. Dipindah ke kolom resource kanan-atas, di bawah pill
+   GEM, tetap 44x44 dan tetap satu-satunya jalur install. */
+html body.on-lobby:has(.lobby-hub.l12.c12) #pwaInstallBtn {
+  position: fixed !important;
+  top: calc(env(safe-area-inset-top, 0px) + 108px) !important;
+  right: 8px !important; left: auto !important; bottom: auto !important;
+  width: 44px !important; height: 44px !important; min-height: 44px !important;
+  padding: 0 !important; margin: 0 !important; z-index: 12 !important;
+}
+/* ---- layar sangat sempit (<430px) ----
+   Di bawah 430px panel kiri hanya ~166px: 4 chip party tidak bisa mencapai
+   44px. Roster disembunyikan (data deck tetap ada di Backpack/tombol DECK) dan
+   riwayat roll cukup 2 sel supaya tetap >=44px. Target produksi yang dikunci
+   tetap 500x844 & 850x390; ini hanya pagar agar HP kecil tidak pecah. */
+@media (max-width:430px) {
+  .lobby-hub.l12.c12 .c12hist { display:none; }
+}
+/* ---- cuaca pindah ke DOCK (prototipe C tidak punya chip cuaca di strip) ----
+   Node cuaca tetap ada (JS menulis l12WxName/Tm/Rr/Cards) tetapi disembunyikan;
+   tombolnya jadi ikon di dock, di kanan tombol AUTO. */
+.lobby-hub.l12.c12 .c12buffs .wx.c12wx[hidden] { display:none !important; }
+
+.lobby-hub.l12.c12 .c12dock .c12wxbtn {
+  flex:0 0 auto; width:44px; height:44px; min-width:44px; min-height:44px;
+  display:grid; place-items:center; padding:0; margin:0;
+  background:rgba(5,5,5,.74); border:1px solid rgba(255,255,255,.3);
+  color:var(--wx,#b58cff); clip-path:none;
+}
+.lobby-hub.l12.c12 .c12dock .c12wxbtn:active { transform:scale(.97); }
+/* ==========================================================================
+   BUFF STRIP — SATU BARIS 4 CHIP (prototipe C)
+   Struktur produksi (.pot-row / .glw / .wx) dipadatkan jadi chip setinggi 46px:
+   ikon + label kecil + nilai + hitung mundur. Bar progres, stok, badge RR, dan
+   kartu cuaca disembunyikan supaya tinggi & ritmenya sama dengan prototipe.
+   ========================================================================== */
+.lobby-hub.l12.c12 .c12buffs {
+  display:grid !important; grid-template-columns:repeat(4, minmax(0,1fr));
+  align-items:stretch; gap:6px; padding:0 10px;
+}
+.lobby-hub.l12.c12 .c12buffs .pots { display:contents; }
+.lobby-hub.l12.c12 .c12buffs .pot-row,
+.lobby-hub.l12.c12 .c12buffs .glw,
+.lobby-hub.l12.c12 .c12buffs .wx.c12wx {
+  flex:1 1 0; min-width:0; min-height:46px; height:46px;
+  display:flex; align-items:center; gap:6px; padding:0 7px;
+  background:rgba(5,5,5,.72) !important;
+  border:0 !important; border-radius:0 !important;
+  box-shadow:inset 0 0 0 1px rgba(245,245,245,.18) !important;
+  clip-path:none !important;
+}
+.lobby-hub.l12.c12 .c12buffs .glw { flex:1.35 1 0; }
+/* bagian yang tidak ada di prototipe */
+.lobby-hub.l12.c12 .c12buffs .pot-row .tr,
+.lobby-hub.l12.c12 .c12buffs .pot-row .pstock,
+.lobby-hub.l12.c12 .c12buffs .pot-row .puse-tag,
+.lobby-hub.l12.c12 .c12buffs .glw .gpill,
+.lobby-hub.l12.c12 .c12buffs .wx .wrr,
+.lobby-hub.l12.c12 .c12buffs .wx .wtm-wrap,
+.lobby-hub.l12.c12 .c12buffs .wx .wx-act-btn,
+.lobby-hub.l12.c12 .c12buffs .wx .wx-cards { display:none !important; }
+/* isi chip */
+.lobby-hub.l12.c12 .c12buffs .pot-row .pimg,
+.lobby-hub.l12.c12 .c12buffs .wx .wic svg { width:16px; height:16px; flex:none; }
+.lobby-hub.l12.c12 .c12buffs .pot-row .plab,
+.lobby-hub.l12.c12 .c12buffs .glw .gtitle,
+.lobby-hub.l12.c12 .c12buffs .wx .wname {
+  font-family:var(--mono); font-size:5.5px; letter-spacing:.1em;
+  color:rgba(245,245,245,.55); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.lobby-hub.l12.c12 .c12buffs .pot-row b,
+.lobby-hub.l12.c12 .c12buffs .glw .gmult,
+.lobby-hub.l12.c12 .c12buffs .wx .wname {
+  font-family:var(--disp); font-size:9.5px; font-weight:800; letter-spacing:.02em; color:#f5f5f5; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.lobby-hub.l12.c12 .c12buffs .pot-row .tm,
+.lobby-hub.l12.c12 .c12buffs .glw .gtm {
+  flex:none; margin-left:auto; padding:0; background:none; border:0;
+  font-family:var(--mono); font-size:8px; color:rgba(245,245,245,.6);
+}
+/* pot-row: ikon | (label di atas, nilai di bawah) | timer kanan */
+.lobby-hub.l12.c12 .c12buffs .pot-row {
+  display:grid !important;
+  grid-template-columns:16px minmax(0,1fr) auto;
+  grid-template-rows:auto auto;
+  column-gap:6px; row-gap:0; align-content:center;
+}
+.lobby-hub.l12.c12 .c12buffs .pot-row .pimg { grid-column:1; grid-row:1 / span 2; align-self:center; }
+.lobby-hub.l12.c12 .c12buffs .pot-row .plab { grid-column:2; grid-row:1; min-width:0; }
+.lobby-hub.l12.c12 .c12buffs .pot-row b { grid-column:2; grid-row:2; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.lobby-hub.l12.c12 .c12buffs .pot-row .tm { grid-column:3; grid-row:1 / span 2; align-self:center; margin:0; }
+/* global luck: ikon + teks + tombol aktivasi */
+.lobby-hub.l12.c12 .c12buffs .glw .gicon {
+  width:20px; height:20px; flex:none; border-radius:50%;
+  background:rgba(107,224,138,.12); border:1px solid rgba(107,224,138,.45); color:#6be08a;
+}
+.lobby-hub.l12.c12 .c12buffs .glw .gicon .ic { width:12px; height:12px; }
+.lobby-hub.l12.c12 .c12buffs .glw .ginfo { min-width:0; flex:1 1 auto; display:flex; flex-direction:column; }
+.lobby-hub.l12.c12 .c12buffs .glw .ghead { display:flex; align-items:center; }
+.lobby-hub.l12.c12 .c12buffs .glw .grow { display:flex; align-items:baseline; gap:4px; }
+.lobby-hub.l12.c12 .c12buffs .glw .gbtn {
+  flex:none; min-height:44px; height:44px; min-width:44px; padding:0 5px;
+  background:rgba(255,255,255,.08) !important; border:1px solid rgba(255,255,255,.3) !important;
+  color:#f5f5f5; clip-path:none; font-family:var(--mono); font-size:6.5px; line-height:1.05;
+}
+.lobby-hub.l12.c12 .c12buffs .glw .gbtn .gprice { display:none; }
+/* weather chip: ikon + nama + sisa waktu */
+.lobby-hub.l12.c12 .c12buffs .wx .wx-head { flex:1 1 auto; min-width:0; display:flex; align-items:center; gap:5px; }
+.lobby-hub.l12.c12 .c12buffs .wx .winfo { display:flex; align-items:center; gap:5px; min-width:0; }
+.lobby-hub.l12.c12 .c12buffs .wx .rdot { width:5px; height:5px; border-radius:50%; flex:none; }
+/* ==========================================================================
+   DESKTOP LEBAR (>=1000px) — panel kiri tidak boleh ikut memadat seperti HP,
+   dan lebarnya dibatasi seperti prototipe (38%, max 600px).
+   ========================================================================== */
+@media (min-width:1000px) and (min-height:521px) {
+  .lobby-hub.l12.c12 .c12panel { flex:0 0 38%; max-width:600px; padding:14px 18px 10px; }
+  .lobby-hub.l12.c12 .c12title { font-size:38px; margin-top:6px; }
+  .lobby-hub.l12.c12 .c12meta { margin-top:7px; gap:6px; }
+  .lobby-hub.l12.c12 .c12meta .mchip { min-height:24px; padding:2px 9px; font-size:9px; }
+  .lobby-hub.l12.c12 .c12pow { min-height:34px; margin-top:2px; }
+  .lobby-hub.l12.c12 .c12pow b { font-size:22px; }
+  .lobby-hub.l12.c12 .c12pow span { font-size:7px; }
+  .lobby-hub.l12.c12 .c12lvl { min-height:44px; margin-top:2px; padding:2px 9px; }
+  .lobby-hub.l12.c12 .c12lvl .lv-badge { font-size:12px; }
+  .lobby-hub.l12.c12 .c12rule { margin-top:10px; }
+  .lobby-hub.l12.c12 .c12brief { margin-top:8px; }
+  .lobby-hub.l12.c12 .c12br { padding:5px 0; }
+  .lobby-hub.l12.c12 .c12bk { font-size:7.5px; }
+  .lobby-hub.l12.c12 .c12bv { font-size:12.5px; }
+  .lobby-hub.l12.c12 .c12roster { margin-top:10px; }
+  .lobby-hub.l12.c12 .c12roster .rh .rl { font-size:7.5px; }
+  .lobby-hub.l12.c12 .c12roster .rw { min-height:32px; gap:9px; }
+  .lobby-hub.l12.c12 .c12roster .ra { width:26px; height:26px; }
+  .lobby-hub.l12.c12 .c12roster .rn { font-size:11.5px; }
+  .lobby-hub.l12.c12 .c12roster .rg,
+  .lobby-hub.l12.c12 .c12roster .ri { font-size:8.5px; }
+  .lobby-hub.l12.c12 .c12hist { padding:2px 0 6px; }
+  .lobby-hub.l12.c12 .c12hl { font-size:7.5px; margin-bottom:6px; }
+  .lobby-hub.l12.c12 .c12strip { grid-template-columns:repeat(7, minmax(0,1fr)); gap:5px; }
+  .lobby-hub.l12.c12 .c12strip .rh-slot:nth-child(n+8) { display:none; }
+  .lobby-hub.l12.c12 .c12modes .hrow { min-height:50px; font-size:12px; }
+  .lobby-hub.l12.c12 .c12modes .hrow .mn { font-size:9px; }
+  .lobby-hub.l12.c12 .c12modes .hrow .ic { width:17px; height:17px; }
+  .lobby-hub.l12.c12 .c12modes .hrow .bd { font-size:10px; }
+  .lobby-hub.l12.c12 .c12buffs { gap:8px; padding:0 14px; }
+  .lobby-hub.l12.c12 .c12buffs .pot-row,
+  .lobby-hub.l12.c12 .c12buffs .glw,
+  .lobby-hub.l12.c12 .c12buffs .wx.c12wx { min-height:54px; height:54px; padding:0 10px; }
+  .lobby-hub.l12.c12 .c12buffs .pot-row b,
+  .lobby-hub.l12.c12 .c12buffs .glw .gmult { font-size:11.5px; }
+  .lobby-hub.l12.c12 .c12buffs .pot-row .plab,
+  .lobby-hub.l12.c12 .c12buffs .glw .gtitle,
+  .lobby-hub.l12.c12 .c12buffs .wx .wname { font-size:6.5px; }
+  .lobby-hub.l12.c12 .c12dock { padding:0 14px calc(12px + env(safe-area-inset-bottom,0px)); }
+  html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollBtn.cta { min-height:66px !important; font-size:17px; }
+  html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollAutoBtn.tgl { min-width:66px !important; min-height:66px !important; }
+  .lobby-hub.l12.c12 .c12res { right:14px; top:14px; gap:6px; }
+  .lobby-hub.l12.c12 .c12res .pill { height:48px; min-height:48px; padding:0 13px; font-size:13px; }
+  .lobby-hub.l12.c12 .c12party { right:14px; bottom:14px; gap:9px; }
+  .lobby-hub.l12.c12 .c12party .pav { width:52px; height:52px; }
+}
+/* party: kanan-bawah panggung, di atas strip buff (prototipe C). Tombol
+   utilitas sekarang tinggal di dock, jadi tidak ada lagi yang menutupinya. */
+.lobby-hub.l12.c12 .c12party {
+  position:absolute; z-index:9;
+  right:9px; left:auto; bottom:10px; transform:none;
+  display:flex; flex-direction:row; gap:7px;
+}
+/* ==========================================================================
+   ROLL = prototipe C: dua baris di dalam tombol hazard —
+     SUMMON            (Orbitron 15px, tracking .24em)
+     1 IN <chance>     (mono 6px, agak transparan)
+   Markup produksi: <span class="roll-txt">SUMMON</span> +
+   <span class="roll-sub" id="rollSub"> yang nilainya diisi renderLobby()
+   dari pool gacha aktif (bukan angka karangan).
+   ========================================================================== */
+html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollBtn.cta {
+  flex-direction:column; gap:1px; letter-spacing:.24em !important; padding:0 12px;
+}
+html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollBtn.cta .roll-txt {
+  display:block !important; text-align:center; line-height:1.1;
+  font-family:var(--disp); font-size:14px !important; font-weight:900;
+  /* .24em sama dengan prototipe; !important karena lobby-prototype.css
+     memasang letter-spacing sendiri pada #rollBtn.cta */
+  letter-spacing:.24em !important; color:inherit;
+}
+html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollBtn.cta .roll-sub {
+  display:block; text-align:center; line-height:1;
+  font-family:var(--mono); font-size:6px; font-weight:400;
+  letter-spacing:.16em; color:rgba(8,8,0,.66);
+}
+/* ==========================================================================
+   CHIP BUFF — muat 4 kolom di 500px tanpa teks berdempet.
+   Lebar per chip ~115px; setelah ikon+gap sisa ~75px. Maka:
+     - GLOBAL LUCK: sembunyikan hitung mundur (multipler sudah cukup),
+     - WEATHER: nama lebih kecil + titik warna disembunyikan,
+     - semua label 5.5px, nilai 9.5px + ellipsis.
+   ========================================================================== */
+.lobby-hub.l12.c12 .c12buffs .glw .gtm { display:none !important; }
+.lobby-hub.l12.c12 .c12buffs .wx .rdot { display:none !important; }
+.lobby-hub.l12.c12 .c12buffs .wx .wname { font-size:8.5px !important; letter-spacing:.02em; }
+.lobby-hub.l12.c12 .c12buffs .wx .winfo { gap:4px; }
+.lobby-hub.l12.c12 .c12buffs .glw .gmult { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+/* tombol beli Global Luck di chip 116px: cukup glyph "+" (fungsinya sama,
+   label "+10x" bertabrakan dengan nilai 50x LUCK). Harga gem tetap ada di
+   title/aria, dan drawer punya entri Global Luck lengkap. */
+.lobby-hub.l12.c12 .c12buffs .glw .gbtn { display:grid !important; place-items:center; padding:0 !important; }
+.lobby-hub.l12.c12 .c12buffs .glw .gbtn #l12GlBuyLab { font-size:0; line-height:1; }
+.lobby-hub.l12.c12 .c12buffs .glw .gbtn #l12GlBuyLab::before {
+  content:'+'; font-family:var(--disp); font-size:18px; line-height:1; color:inherit;
+}
+/* ikon clover di chip GLOBAL LUCK: lobby-prototype.css:6327 menyembunyikannya
+   di portrait (`.l12 .glw .gicon{display:none}`), padahal prototipe C
+   menampilkan ikon di tiap chip. Dipulihkan di sini. */
+.lobby-hub.l12.c12 .c12buffs .glw .gicon {
+  display:flex !important; align-items:center; justify-content:center;
+  width:20px; height:20px; min-width:20px; flex:none;
+}
+/* nama cuaca di chip 116px: potong ke 1 baris tanpa titik warna */
+.lobby-hub.l12.c12 .c12buffs .wx .wname {
+  min-width:0; max-width:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+/* Tombol beli Global Luck TIDAK ada di prototipe C (chip hanya ikon+label+nilai).
+   Di chip 116px tombol 44px menyisakan ~60px untuk teks sehingga "GLOBAL LUCK"
+   dan "50x LUCK" terpotong. Tombolnya disembunyikan; pembelian tetap tersedia
+   lewat entri "Global Luck" di command drawer (#drwGlBtn) yang sudah ada. */
+.lobby-hub.l12.c12 .c12buffs .glw .gbtn { display:none !important; }
+.lobby-hub.l12.c12 .c12buffs .glw .ginfo { flex:1 1 auto; }
+.lobby-hub.l12.c12 .c12buffs .glw .gtitle { max-width:100%; }
+/* ==========================================================================
+   AUTO ROLL — berputar saat aktif.
+   Indikatornya memakai mask SVG panah-putar; rotasi = transform (composited,
+   aman untuk HP kentang). Hanya jalan saat .on / .active, dan dihentikan
+   untuk pengguna yang memilih reduced-motion.
+   ========================================================================== */
+@keyframes c12Spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollAutoBtn.tgl.on .ra-indicator,
+html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollAutoBtn.tgl.active .ra-indicator {
+  animation:c12Spin 1.6s linear infinite;
+  will-change:transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollAutoBtn.tgl.on .ra-indicator,
+  html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollAutoBtn.tgl.active .ra-indicator {
+    animation:none;
+  }
+}
+/* layar sempit (<430px): tombol bulat 44px & gap 6 supaya ROLL tetap lega */
+@media (max-width:430px) {
+  .lobby-hub.l12.c12 .c12dock { gap:6px; padding-left:8px; padding-right:8px; }
+  .lobby-hub.l12.c12 .c12dock .c12sq { width:44px; height:44px; min-width:44px; min-height:44px; }
+  html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollAutoBtn.tgl {
+    width:44px !important; min-width:44px !important; height:44px !important; min-height:44px !important;
+  }
+  html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollBtn.cta .roll-txt { font-size:13px; letter-spacing:.18em; }
+}
+/* layar <430px: 4 chip meta tidak muat sebaris (panel ~166px) sehingga
+   barisnya membungkus dan panel meluber 17px. Chip DECK disembunyikan
+   (info deck ada di roster + Backpack) dan baris meta dipaksa satu baris. */
+@media (max-width:430px) {
+  .lobby-hub.l12.c12 .c12meta { flex-wrap:nowrap; overflow:hidden; }
+  .lobby-hub.l12.c12 .c12meta .mchip:nth-child(4) { display:none; }
+  .lobby-hub.l12.c12 .c12title { font-size:22px; }
 }

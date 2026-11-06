@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v452-wbShadowArmory';
+const CACHE_NAME = 'anime-card-battle-v460-rollFrameSpinShop';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
