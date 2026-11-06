@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v476-loadingFirstPaint';
+const CACHE_NAME = 'anime-card-battle-v478-loadingLogoGap';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

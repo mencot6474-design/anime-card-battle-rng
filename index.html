@@ -27,7 +27,7 @@
 <!-- CrazyGames SDK v3 (Official HTML5 SDK) -->
 <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
 <script src="js/crazygames.js?v=v2-sdkReadyGate"></script>
-<link rel="stylesheet" href="css/style.css?v=v391-loadingFirstPaint">
+<link rel="stylesheet" href="css/style.css?v=v393-loadingLogoGap">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Rajdhani:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/world-boss.css?v=v277-wbShadowArmory">
 <link rel="stylesheet" href="css/sl-system.css?v=v391-coreSpireHub">
@@ -40,7 +40,7 @@
   window.TRAKTEER_SHOP_URL = "";
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=v476-loadingFirstPaint').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=v478-loadingLogoGap').catch(() => {});
     });
   }
 </script>
@@ -69,13 +69,29 @@
   <div class="ld-scan"></div>
   <div class="ld-shell">
     <div class="ld-left">
-      <div class="ld-fan">
-        <div class="ld-card ld-c1"><img id="ldC1" src="assets/cards/art/shadow-king.webp" alt=""></div>
-        <div class="ld-card ld-c2"><img id="ldC2" src="assets/cards/art/eternal-dragon.webp" alt=""></div>
-        <div class="ld-ring"></div>
-        <div class="ld-card ld-c3"><img id="ldC3" src="assets/cards/art/shadow-king.webp" alt=""></div>
-        <div class="ld-card ld-c4"><img id="ldC4" src="assets/cards/art/sun-god.webp" alt=""></div>
-        <div class="ld-card ld-c5"><img id="ldC5" src="assets/cards/art/omni-sovereign.webp" alt=""></div>
+      <div class="ld-lockup">
+        <div class="ld-fan">
+          <div class="ld-card ld-c1"><img id="ldC1" src="assets/cards/art/shadow-king.webp" alt=""></div>
+          <div class="ld-card ld-c2"><img id="ldC2" src="assets/cards/art/eternal-dragon.webp" alt=""></div>
+          <div class="ld-ring"></div>
+          <div class="ld-card ld-c3"><img id="ldC3" src="assets/cards/art/shadow-king.webp" alt=""></div>
+          <div class="ld-card ld-c4"><img id="ldC4" src="assets/cards/art/sun-god.webp" alt=""></div>
+          <div class="ld-card ld-c5"><img id="ldC5" src="assets/cards/art/omni-sovereign.webp" alt=""></div>
+        </div>
+        <div class="ld-logo" aria-label="Anime Card Battle">
+          <div class="ld-word ld-w1">
+            <span class="ld-out" aria-hidden="true">ANIME CARD</span>
+            <span class="ld-ring2" aria-hidden="true">ANIME CARD</span>
+            <span class="ld-back" aria-hidden="true">ANIME CARD</span>
+            <span class="ld-front" data-t="ANIME CARD">ANIME CARD</span>
+          </div>
+          <div class="ld-word ld-w2">
+            <span class="ld-out" aria-hidden="true">BATTLE</span>
+            <span class="ld-ring2" aria-hidden="true">BATTLE</span>
+            <span class="ld-back" aria-hidden="true">BATTLE</span>
+            <span class="ld-front" data-t="BATTLE">BATTLE</span>
+          </div>
+        </div>
       </div>
       <div class="ld-lead" id="ldLead">DECK LEAD &mdash; <b>&mdash;</b></div>
     </div>

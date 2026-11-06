@@ -19373,36 +19373,75 @@ html.fps-locked .bp-fchip{
 #loadingScreen .ld-col{width:100%;max-width:min(660px,92vw);flex:0 0 auto;
   display:flex;flex-direction:column;align-items:stretch;min-width:0}
 
+/* ---------------- lockup: fan kartu + judul menimpa ---------------- */
+/* Port dari _tmp/proto_logo_v1.html varian HAZARD (dikunci user 2026-11-06).
+   Judul menimpa bagian bawah kartu seperti referensi, bukan bertumpuk jauh
+   di bawahnya. Tinggi total dijaga supaya progress/tip tetap muat. */
+#loadingScreen .ld-lockup{position:relative;display:flex;flex-direction:column;align-items:center;
+  width:100%;max-width:min(760px,100%);flex:0 0 auto;--cw:clamp(58px,10.5vw,116px)}
+
 /* ---------------- fan kartu ---------------- */
-#loadingScreen .ld-fan{position:relative;width:100%;max-width:min(660px,92vw);
-  height:min(300px,38vh);flex:0 0 auto;--cw:clamp(64px,10vw,112px)}
-#loadingScreen .ld-fan::after{content:'';position:absolute;left:50%;top:52%;width:min(560px,88vw);height:170px;
-  transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
+#loadingScreen .ld-fan{position:relative;width:100%;max-width:min(760px,100vw);
+  height:calc(var(--cw) * 1.92);flex:0 0 auto}
+#loadingScreen .ld-fan::after{content:'';position:absolute;left:50%;top:58%;width:min(620px,92vw);
+  height:calc(var(--cw) * 2.2);transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
   background:radial-gradient(50% 50% at 50% 50%,rgba(243,230,0,.20),rgba(243,230,0,.05) 46%,transparent 72%)}
 #loadingScreen .ld-card{position:absolute;left:50%;top:50%;width:var(--cw);aspect-ratio:3/4;
-  border-radius:11px;overflow:hidden;background:#0a0a0a;border:1px solid rgba(243,230,0,.16);
+  border-radius:9px;overflow:hidden;background:#0a0a0a;border:1px solid rgba(245,245,245,.16);
   box-shadow:0 18px 34px rgba(0,0,0,.72);will-change:transform}
-#loadingScreen .ld-card img{width:100%;height:100%;object-fit:cover;object-position:center 18%;
-  filter:saturate(.72) contrast(1.08) brightness(.56);display:block}
+#loadingScreen .ld-card img{width:100%;height:100%;object-fit:cover;object-position:center 16%;
+  filter:saturate(.78) contrast(1.06) brightness(.62);display:block}
 #loadingScreen .ld-card::after{content:'';position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(180deg,rgba(5,5,5,.14) 0%,rgba(5,5,5,.34) 46%,rgba(5,5,5,.92) 100%)}
-#loadingScreen .ld-c1{transform:translate(calc(-50% - var(--cw)*1.60),calc(-50% + var(--cw)*0.50)) rotate(-28deg);opacity:.80}
-#loadingScreen .ld-c2{transform:translate(calc(-50% - var(--cw)*0.90),calc(-50% + var(--cw)*0.18)) rotate(-13deg);opacity:.94}
-#loadingScreen .ld-c3{transform:translate(-50%,calc(-50% - var(--cw)*0.16));width:calc(var(--cw)*1.30);z-index:4;
-  border-color:rgba(245,245,245,.86);
-  box-shadow:0 26px 60px rgba(0,0,0,.85),0 0 0 1px rgba(245,245,245,.22),0 0 44px rgba(243,230,0,.24)}
-#loadingScreen .ld-c3 img{filter:saturate(.95) contrast(1.1) brightness(.94)}
-#loadingScreen .ld-c4{transform:translate(calc(-50% + var(--cw)*0.90),calc(-50% + var(--cw)*0.18)) rotate(13deg);opacity:.94}
-#loadingScreen .ld-c5{transform:translate(calc(-50% + var(--cw)*1.60),calc(-50% + var(--cw)*0.50)) rotate(28deg);opacity:.80}
-#loadingScreen .ld-ring{position:absolute;left:50%;top:50%;width:calc(var(--cw)*1.34);height:calc(var(--cw)*1.34);
-  transform:translate(-50%,-50%);border-radius:14px;border:1px solid rgba(243,230,0,.5);
+  background:linear-gradient(180deg,rgba(5,5,5,.08) 0%,rgba(5,5,5,.20) 40%,rgba(5,5,5,.78) 100%)}
+#loadingScreen .ld-c1{transform:translate(calc(-50% - var(--cw)*1.95),calc(-50% + var(--cw)*0.58)) rotate(-34deg);opacity:.62}
+#loadingScreen .ld-c2{transform:translate(calc(-50% - var(--cw)*1.12),calc(-50% + var(--cw)*0.20)) rotate(-18deg);opacity:.82}
+#loadingScreen .ld-c3{transform:translate(-50%,calc(-50% - var(--cw)*0.02));width:calc(var(--cw)*1.06);z-index:4;
+  border-color:rgba(245,245,245,.72);
+  box-shadow:0 24px 54px rgba(0,0,0,.85),0 0 0 1px rgba(245,245,245,.16),0 0 38px rgba(243,230,0,.20)}
+#loadingScreen .ld-c3 img{filter:saturate(.92) contrast(1.08) brightness(.86)}
+#loadingScreen .ld-c4{transform:translate(calc(-50% + var(--cw)*1.12),calc(-50% + var(--cw)*0.20)) rotate(18deg);opacity:.82}
+#loadingScreen .ld-c5{transform:translate(calc(-50% + var(--cw)*1.95),calc(-50% + var(--cw)*0.58)) rotate(34deg);opacity:.62}
+#loadingScreen .ld-ring{position:absolute;left:50%;top:50%;width:calc(var(--cw)*1.16);height:calc(var(--cw)*1.16);
+  transform:translate(-50%,-50%);border-radius:11px;border:1px solid rgba(243,230,0,.42);
   z-index:3;pointer-events:none;animation:ldRing 2.6s ease-out infinite}
 @keyframes ldRing{0%{opacity:.7;transform:translate(-50%,-50%) scale(.98)}
-  70%,100%{opacity:0;transform:translate(-50%,-50%) scale(1.12)}}
+  70%,100%{opacity:0;transform:translate(-50%,-50%) scale(1.10)}}
+
+/* ---------------- judul 3D menimpa kartu ---------------- */
+#loadingScreen .ld-logo{position:relative;z-index:10;display:flex;flex-direction:column;align-items:center;
+  gap:0;width:100%;margin-top:calc(var(--cw) * -0.92);padding:0 10px}
+#loadingScreen .ld-word{position:relative;display:block;line-height:.86;white-space:nowrap;
+  text-align:center;font-family:var(--disp);font-weight:900;letter-spacing:-.015em;text-transform:uppercase}
+#loadingScreen .ld-word span{display:block}
+#loadingScreen .ld-word .ld-out,
+#loadingScreen .ld-word .ld-ring2,
+#loadingScreen .ld-word .ld-back{position:absolute;left:0;right:0;top:0}
+#loadingScreen .ld-word .ld-out{z-index:0;color:#050505;
+  -webkit-text-stroke:calc(.085em * 2.1) #050505;
+  text-shadow:0 .022em 0 #050505,0 .046em 0 #050505,
+    0 .070em 0 #0a0a0a,0 .094em 0 #0a0a0a,0 .118em 0 #0a0a0a,0 .142em 0 #0a0a0a,
+    0 .166em 0 #0a0a0a,0 .190em 0 #0a0a0a,0 .214em 0 #0a0a0a,0 .238em 0 #0a0a0a,
+    0 .262em 0 #0a0a0a,0 .286em .09em rgba(0,0,0,.6)}
+#loadingScreen .ld-word .ld-ring2{z-index:1;color:#fff;
+  -webkit-text-stroke:calc(.085em * 1.25) #fff}
+#loadingScreen .ld-word .ld-back{z-index:1;color:#0e0e0e;
+  -webkit-text-stroke:calc(.085em * .55) #0e0e0e}
+#loadingScreen .ld-word .ld-front{position:relative;z-index:2;
+  background:linear-gradient(180deg,#fff 0%,#f4f4f4 22%,#d2d2d2 42%,#8d8d8d 51%,
+    #dcdcdc 57%,#fff 70%,#e4e4e4 88%,#a4a4a4 100%);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent}
+#loadingScreen .ld-word .ld-front::after{content:attr(data-t);
+  position:absolute;left:0;right:0;top:0;z-index:3;
+  background:linear-gradient(180deg,rgba(255,255,255,.95) 0%,rgba(255,255,255,0) 44%);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;pointer-events:none}
+#loadingScreen .ld-w1{font-size:clamp(19px,4.9vw,46px)}
+#loadingScreen .ld-w2{font-size:clamp(34px,9.4vw,92px)}
 
 /* caption deck lead */
 #loadingScreen .ld-lead{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:center;
-  margin:-4px 0 12px;font-family:var(--mono);font-size:7.5px;letter-spacing:.22em;
+  margin:10px 0 12px;font-family:var(--mono);font-size:7.5px;letter-spacing:.22em;
   color:var(--ink3);text-transform:uppercase;max-width:92vw}
 #loadingScreen .ld-lead b{color:#fff;font-weight:700;letter-spacing:.16em}
 #loadingScreen .ld-lead::before,#loadingScreen .ld-lead::after{content:'';width:18px;height:1px;
@@ -19617,7 +19656,7 @@ html.fps-locked .bp-fchip{
 
 /* ============ responsif loading ============ */
 @media (max-height:640px){
-  #loadingScreen .ld-fan{height:min(232px,32vh);--cw:clamp(56px,8.4vw,88px)}
+  #loadingScreen .ld-lockup{--cw:clamp(50px,8.6vw,92px)}
   #loadingScreen .ld-lead{margin:-2px 0 8px;font-size:6.8px}
   #loadingScreen .ld-id{margin-bottom:10px}
   #loadingScreen .ld-ava{width:38px;height:38px}
@@ -19631,14 +19670,17 @@ html.fps-locked .bp-fchip{
   #loadingScreen .ld-stages span i{width:6px;height:6px}
   #loadingScreen .ld-sub{font-size:7.4px;letter-spacing:.16em}
   #loadingScreen .ld-tip-t{font-size:10.5px}
-  #loadingScreen .ld-lead{font-size:6.4px;letter-spacing:.16em;gap:5px}
+  #loadingScreen .ld-lead{font-size:6.4px;letter-spacing:.16em;gap:5px;margin:12px 0 10px}
   #loadingScreen .ld-lead::before,#loadingScreen .ld-lead::after{width:11px}
+  #loadingScreen .ld-lockup{--cw:clamp(52px,15vw,84px)}
 }
 @media (orientation:landscape) and (max-height:520px){
-  #loadingScreen .ld-shell{flex-direction:row;align-items:center;justify-content:center;gap:24px;padding:0 20px}
+  #loadingScreen .ld-shell{flex-direction:row;align-items:center;justify-content:center;gap:22px;padding:0 18px}
   #loadingScreen .ld-left{flex:0 1 auto}
-  #loadingScreen .ld-fan{height:min(214px,68vh);width:min(400px,46vw);--cw:clamp(46px,6.4vw,70px)}
-  #loadingScreen .ld-fan::after{width:min(360px,48vw);height:120px}
+  #loadingScreen .ld-lockup{--cw:clamp(44px,8vh,74px)}
+  #loadingScreen .ld-logo{margin-top:calc(var(--cw) * -0.92)}
+  #loadingScreen .ld-w1{font-size:clamp(14px,2.6vw,26px)}
+  #loadingScreen .ld-w2{font-size:clamp(26px,5.2vw,50px)}
   #loadingScreen .ld-lead{display:none}
   #loadingScreen .ld-id{margin:10px 0 0}
   #loadingScreen .ld-ava{width:32px;height:32px}
