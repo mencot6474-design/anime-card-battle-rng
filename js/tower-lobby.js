@@ -728,6 +728,8 @@ function renderTowerBattle(){
   if(meEl0){meEl0.classList.add("tag-enter");setTimeout(()=>{try{meEl0.classList.remove("tag-enter");}catch(e){}},650);enterFx(meEl0);}
   if(foeEl0)enterFx(foeEl0);
   /* Infinite Tower: tanpa cut-in intro (langsung masuk arena tiap lantai) */
+  if (typeof window.hzBattleDecorate === "function") { try { window.hzBattleDecorate(); } catch(e){ console.error("hz decorate", e); } }
+  if (typeof window.hzBattleDecorate === "function") { try { window.hzBattleDecorate(); } catch(e){ console.error("hz decorate", e); } }
   playFight(startTowerBattle,{skipIntro:true});
 }
 function startTowerBattle(){

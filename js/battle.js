@@ -274,7 +274,13 @@ function renderBattle(){
   </div>`;
   wireSpeedBtn();
   if (typeof window.syncBattleBackground === "function") window.syncBattleBackground();
-  playFight(startBattle);
+  /* HAZARD ARENA: layer visual (arena, HUD, party, pile) + banner masuk. */
+  if (typeof window.hzBattleDecorate === "function") { try { window.hzBattleDecorate(); } catch(e){ console.error("hz decorate", e); } }
+  if (typeof window.hzCurtainIn === "function") {
+    window.hzCurtainIn(function(){ playFight(startBattle, {skipIntro:true}); });
+  } else {
+    playFight(startBattle);
+  }
 }
 function floatText(sel,txt,cls,customLbl){
   const f=typeof sel==="string"?document.querySelector(sel):sel;if(!f)return;
@@ -2129,12 +2135,8 @@ function performAttack(o){
   const psy=!!o.psychic,bj=!!o.bajrang,hpAnim=!!o.hollowPurple,we=!!o.worldEnder,gr=!!o.gammaRay,hv=!!o.havoc;
   const hstep=psy?PSY_T.step:o.domainStrike?80:160;
   const hoff=(psy||bj||hpAnim||we||gr)?0:galaxy?0:md?40:(o.domainStrike||o.ariseMode)?60:500;
-  if(psy&&window.psyBarrageFx)psyBarrageFx({n:o.psychic.n,shotCount:shots.length,revived:o.psychic.revived,t0:180});
-  if(bj&&window.bajrangGunFx)bajrangGunFx({t0:180});
-  if(hpAnim&&window.hollowPurpleFx)hollowPurpleFx({t0:180});
-  if(we&&window.worldEnderFx)worldEnderFx({fromSel:A,toSel:D,phase:o.worldEnder.phase,revived:o.worldEnder.revived});
-  if(gr&&window.gammaRayFx)gammaRayFx({fromSel:A,toSel:D});
-  /* All cut-in removed */
+  /* FX lama (psyBarrage/bajrangGun/hollowPurple/worldEnder/gammaRay) dimatikan:
+     SEMUA kartu memakai satu animasi serangan PHANTOM COMBO. */
 
   /* Bar dicicil PROPORSIONAL terhadap total damage: damage yang melebihi HP target (one-hit kill)
      tetap tampil nguras dari penuh sampai 0, bukan nyangkut di 100% lalu langsung kosong. */
@@ -2144,7 +2146,8 @@ function performAttack(o){
   const hpAt=(cum)=>o.total>0?Math.max(endHp,Math.round(startHp-span*Math.min(1,cum/o.total))):endHp;
   const wind=!(ultBarrage||galaxy);
   attackLunge(A,wind);
-  if(!ultBarrage && !galaxy && !bj && !hpAnim && !psy && !we && !gr && !md && !hv && window.playAnimeArchetypeAttack){
+  /* ALL CARDS: satu animasi serangan (PHANTOM COMBO), tanpa pengecualian. */
+  if(window.playAnimeArchetypeAttack){
     try { window.playAnimeArchetypeAttack(id, A, D); } catch(e){ console.error("playAnimeArchetypeAttack err", e); }
   }
   setTimeout(()=>{
@@ -3151,6 +3154,8 @@ function endBattle(win){
     if(deadEl&&!deadEl.classList.contains("ko")){deadEl.classList.add("ko");koFx(deadEl);}
   }catch(e){console.error("endBattle fx error",e);}
   setTimeout(()=>{
+    /* Banner keluar hazard: menutup layar sebelum hasil/hub tampil. */
+    if (typeof window.hzCurtainOut === "function") { try { window.hzCurtainOut(); } catch(e){} }
     try{
       if(bt&&bt.tower){ towerEnd(win); }
       else if(bt){ finish(win); }
