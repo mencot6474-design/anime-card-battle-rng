@@ -49,8 +49,9 @@
       act: function () { location.hash = "#/"; } },
     { key: "deck",    label: "Deck",    icon: "i-deck",
       act: function () {
-        // Exact existing team-builder open (panels.js:1249): open backpack,
-        // then switch to the 'deck' tab. Only opens if currently closed.
+        /* Tab Deck = layar DECK sendiri (modal full-screen + banner hazard).
+           Fallback lama (Backpack tab 'deck') hanya kalau deck-modal.js belum termuat. */
+        if (typeof openDeckModal === "function") { openDeckModal(); return; }
         var p = document.getElementById("backpackPanel");
         var isOpen = p && (document.body.classList.contains("bp-open")
           || (p.style.display !== "none" && p.style.display !== ""));

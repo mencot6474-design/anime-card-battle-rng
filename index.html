@@ -33,7 +33,8 @@
 <link rel="stylesheet" href="css/sl-system.css?v=v391-coreSpireHub">
 <link rel="stylesheet" href="css/story-carousel.css?v=v353-storyRewardGap">
 <link rel="stylesheet" href="css/lobby-prototype.css?v=v391-bpEquipBest">
-<link rel="stylesheet" href="css/mobile-shell.css?v=v462-potTrayHideParty">
+<link rel="stylesheet" href="css/mobile-shell.css?v=v463-deckScreen">
+<link rel="stylesheet" href="css/deck-screen.css?v=v1-deckScreen">
 <link rel="stylesheet" href="css/battle-fresh.css?v=v3-battleNoHeader">
 <script>
   /* Link toko Trakteer (fallback â€” utama ada di js/config.js). */
@@ -1133,11 +1134,161 @@
 <div id="backpackBackdrop" onclick="toggleBackpack()" style="display:none;"></div>
 <div class="backpack-panel" id="backpackPanel" style="display:none;"></div>
 
+<!-- ===================== DECK SCREEN (modal sendiri, terpisah dari Backpack) ===================== -->
+<div id="deckModal" role="dialog" aria-modal="true" aria-label="Deck">
+  <header class="dk-top">
+    <div class="dk-mark">
+      <span class="dk-mark-t">DECK</span>
+      <span class="dk-mark-s">SQUADRON COMMAND</span>
+    </div>
+    <div class="dk-top-mid">
+      <div class="dk-crumb">
+        <i></i><span>LOADOUT</span><span class="sep">/</span>
+        <b>INFINITE</b><span class="sep">/</span><span>ACTIVE DECK</span>
+      </div>
+      <div class="dk-top-stat">
+        <div class="dk-ts"><span class="dk-ts-k">POWER</span><span class="dk-ts-v am" id="dkTsPower">—</span></div>
+        <div class="dk-ts"><span class="dk-ts-k">SLOT</span><span class="dk-ts-v" id="dkTsSlots">0 / 4</span></div>
+      </div>
+    </div>
+    <button class="dk-x" id="dkClose" aria-label="Close deck" title="Close [ESC]">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+    </button>
+  </header>
+
+  <div class="dk-body">
+    <section class="dk-left">
+      <div class="dk-sec-h"><b>DECK MATRIX</b><span class="rule"></span><span class="tag" id="dkDeckCount">[ 0 / 4 ]</span></div>
+      <div class="dk-slots" id="dkSlotWrap"></div>
+
+      <div class="dk-sec-h"><b>SUPPORT</b><span class="rule"></span><span class="tag">ARTEFAK · PET</span></div>
+      <div class="dk-supp" id="dkSuppWrap"></div>
+
+      <div class="dk-actions">
+        <button class="dk-act" id="dkActBest" title="Equip the 4 rarest cards">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg>
+          EQUIP BEST
+        </button>
+        <button class="dk-act" id="dkActClear" title="Clear all 4 deck slots">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+          CLEAR
+        </button>
+      </div>
+
+      <div class="dk-brief">
+        <div class="bh"><b>DECK BRIEF</b><span class="rule"></span><span>LIVE</span></div>
+        <div class="br"><span class="bk">SLOTS FILLED</span><span class="bv" id="dkBrSlot">—</span></div>
+        <div class="br"><span class="bk">TOTAL POWER</span><span class="bv" id="dkBrPower">—</span></div>
+        <div class="br"><span class="bk">SUPPORT</span><span class="bv" id="dkBrSupp">—</span></div>
+        <div class="br hot"><span class="bk">BEST CHANCE</span><span class="bv" id="dkBrChance">—</span></div>
+        <div class="br"><span class="bk">CARD ARCHIVE</span><span class="bv" id="dkBrArch">—</span></div>
+        <div class="bh" style="margin-top:12px"><b>LOADOUT</b><span class="rule"></span><span>4 SLOT</span></div>
+        <div class="dk-brow" id="dkBrRows"></div>
+      </div>
+
+      <div class="dk-meta">
+        <div class="dk-mcell hot"><k>POWER</k><v id="dkMPower">—</v></div>
+        <div class="dk-mcell"><k>LUCK</k><v id="dkMLuck">—</v></div>
+        <div class="dk-mcell"><k>CHANCE</k><v id="dkMChance">—</v></div>
+      </div>
+    </section>
+
+    <section class="dk-right-pane">
+      <div class="dk-rtabs" role="tablist" aria-label="Archive">
+        <button class="dk-rtab on" data-rt="cards" role="tab" aria-selected="true">CARDS</button>
+        <button class="dk-rtab" data-rt="support" role="tab" aria-selected="false">SUPPORT</button>
+        <span class="count">ARCHIVE <b id="dkArchCount">0</b></span>
+      </div>
+
+      <div class="dk-tools">
+        <label class="dk-search">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+          <input id="dkSearch" type="search" placeholder="Search card / mutation…" autocomplete="off">
+        </label>
+        <button class="dk-chip" id="dkChipSort">SORT <span class="cv">POWER</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <button class="dk-chip" id="dkChipFilter">FILTER <span class="cv">ALL</span></button>
+        <button class="dk-chip" id="dkChipDeck">IN DECK</button>
+      </div>
+
+      <div class="dk-scroll" id="dkScroll">
+        <div class="dk-grid" id="dkGrid"></div>
+        <div class="dk-nr" id="dkNr" style="display:none">NO MATCHING CARDS</div>
+      </div>
+
+      <div class="dk-foot">
+        <span><b>CLICK CARD</b> open dossier · equip / favorite</span>
+        <span><b>SHIFT+CLICK</b> remove from deck</span>
+        <span class="haz" id="dkFootSel">ACTIVE DECK</span>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- banner hazard masuk/keluar (di luar #deckModal, seperti #storyCurtain) -->
+<div id="deckCurtain" aria-hidden="true">
+  <div class="half top">
+    <span class="edge"></span>
+    <span class="mark">SQUAD <b>01</b> / 04</span>
+  </div>
+  <div class="half bot">
+    <span class="edge"></span>
+    <span class="mark">HZ-PROTOCOL <b>871</b></span>
+  </div>
+  <div class="tape tape-a"></div>
+  <div class="tape tape-b"></div>
+  <div class="flash"></div>
+  <div class="plate">
+    <span class="corner tl"></span><span class="corner tr"></span>
+    <span class="corner bl"></span><span class="corner br"></span>
+    <span class="water" id="dkHzWater">DECK</span>
+    <div class="in">
+      <div class="krow">
+        <span class="dot"></span>
+        <span class="kick" id="dkHzKick">// SQUADRON <b>UPLINK</b></span>
+        <span class="serial">SERIAL 0x<b id="dkHzSerial">4C2E</b></span>
+      </div>
+      <div class="title"><span id="dkHzTitle">DECK</span></div>
+      <div class="sub" id="dkHzSub">LOADOUT MATRIX — 4 SLOTS + SUPPORT</div>
+      <div class="bar"><i></i></div>
+      <div class="foot"><span>HZ-PROTOCOL</span><span id="dkHzFoot">SYNC LOADOUT</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- dossier kartu + popup pilih slot -->
+<div id="deckCardModal" role="dialog" aria-modal="true" aria-label="Card detail">
+  <div class="dk-mbox">
+    <div class="dk-mhead">
+      <span class="mh-k">// CARD <b>DOSSIER</b></span>
+      <button class="mh-x" id="dkCardModalX" aria-label="Close card detail" title="Close [ESC]">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+      </button>
+    </div>
+    <div class="dk-mbody" id="dkCardModalBody"></div>
+    <div class="dk-mfoot" id="dkCardModalFoot"></div>
+  </div>
+</div>
+
+<div id="deckSlotPop" role="dialog" aria-modal="true" aria-label="Choose slot">
+  <div class="dk-spbox">
+    <div class="dk-sph">
+      <b>EQUIP TO SLOT</b>
+      <span id="dkSlotPopSub">CHOOSE TARGET</span>
+      <button class="x" id="dkSlotPopX" aria-label="Cancel" title="Cancel [ESC]">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+      </button>
+    </div>
+    <div class="dk-spgrid" id="dkSlotGrid"></div>
+  </div>
+</div>
+
 
 <script src="js/fps-lock.js?v=v2-fps30css"></script>
 <script src="js/data.js?v=v126-storyEnemyTierOnly"></script>
 <script src="js/config.js?v=v156-trakteer"></script>
-<script src="js/mobile-shell.js?v=v285-lobbyClean"></script>
+<script src="js/mobile-shell.js?v=v286-deckScreen"></script>
 <script src="js/supabase-sync.js?v=v332-battleNoHeader"></script>
 <script src="js/panels.js?v=v398-rollStopLabel"></script>
 <script src="js/topup.js?v=v158-paywallOff"></script>
@@ -1146,11 +1297,12 @@
 <script src="js/state.js?v=v348-rebirthModalFrontAnimationBehind"></script>
 <script src="js/sheetfx.js?v=v348-rebirthModalFrontAnimationBehind"></script>
 <script src="js/battle.js?v=v243-battleFreshProto"></script>
-<script src="js/tower-lobby.js?v=v363-potTrayHideParty"></script>
+<script src="js/tower-lobby.js?v=v364-deckScreen"></script>
 <script src="js/shadow-king-fx.js?v=v4-skfx4"></script>
 <script src="js/foe-passives.js?v=v62-foe-passives"></script>
 <script src="js/story-carousel.js?v=v322-storyCleanLabels"></script>
-<script src="js/raid.js?v=v390-wbShadowArmory"></script>
+<script src="js/raid.js?v=v391-wbShadowArmory"></script>
+<script src="js/deck-modal.js?v=v1-deckScreen"></script>
 <script src="js/ranking.js?v=v9-storyEnemyTierOnly"></script>
 <script src="js/i18n.js?v=v396-bpDeck"></script>
 <script src="js/boot.js?v=v150-loadingFirstPaint"></script>

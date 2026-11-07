@@ -1,0 +1,796 @@
+/* ==========================================================================
+   DECK-SCREEN.CSS — "DECK / SQUADRON COMMAND" (WHITE-on-BLACK HAZARD)
+   Port dari _tmp/proto_deck_v1.html (desain dikunci user 2026-11-07).
+
+   Scope: #deckModal (layar penuh), #deckCurtain (banner masuk/keluar, di body),
+          #deckCardModal (modal detail kartu), #deckSlotPop (popup pilih slot).
+
+   Kontrak performa §2b: animasi hanya transform/opacity, TANPA backdrop-filter,
+   TANPA background-attachment:fixed, TANPA animasi box-shadow/width/height.
+   ========================================================================== */
+
+/* ================================ TOKENS ================================ */
+#deckModal,
+#deckCurtain,
+#deckCardModal,
+#deckSlotPop {
+  --dk-ink: #f5f5f5;
+  --dk-dim: rgba(245, 245, 245, .58);
+  --dk-faint: rgba(245, 245, 245, .14);
+  --dk-hair: rgba(245, 245, 245, .28);
+  --dk-haz: #f3e600;
+  --dk-gold: #ffd700;
+  --dk-head: 'Orbitron', 'Rajdhani', system-ui, sans-serif;
+  --dk-ui: 'Rajdhani', 'Segoe UI', system-ui, sans-serif;
+  --dk-mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+}
+
+/* ============================== SHELL ================================== */
+#deckModal {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  max-width: 100vw !important;
+  max-height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  z-index: 94500 !important;
+  display: none;
+  flex-direction: column;
+  background: #050505 !important;
+  color: var(--dk-ink) !important;
+  font-family: var(--dk-ui);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  isolation: isolate;
+}
+#deckModal.show { display: flex !important; }
+#deckModal *,
+#deckCurtain *,
+#deckCardModal *,
+#deckSlotPop * { box-sizing: border-box; }
+#deckModal button { font-family: inherit; color: inherit; cursor: pointer; border: 0; background: none; padding: 0; margin: 0; }
+#deckModal button:focus-visible,
+#deckCardModal button:focus-visible,
+#deckSlotPop button:focus-visible { outline: 2px solid var(--dk-haz); outline-offset: 2px; }
+#deckModal svg, #deckCardModal svg, #deckSlotPop svg { display: block; }
+
+/* tekstur statis (bukan animasi) */
+#deckModal::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(245, 245, 245, .028) 0 1px, transparent 1px 38px),
+    repeating-linear-gradient(90deg, rgba(245, 245, 245, .028) 0 1px, transparent 1px 38px),
+    radial-gradient(120% 80% at 78% -10%, rgba(243, 230, 0, .055), transparent 62%);
+}
+#deckModal > * { position: relative; z-index: 1; }
+
+/* ============================== TOP BAR ================================ */
+#deckModal .dk-top {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: stretch;
+  background: linear-gradient(180deg, #0a0a0a 0%, #050505 100%);
+  border-bottom: 1px solid var(--dk-hair);
+  min-height: 58px;
+}
+#deckModal .dk-top::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; z-index: 2;
+  background: repeating-linear-gradient(-45deg, var(--dk-haz) 0 8px, #0b0b0b 8px 16px);
+  opacity: .8; pointer-events: none;
+}
+#deckModal .dk-mark {
+  position: relative; flex: 0 0 auto;
+  display: flex; flex-direction: column; justify-content: center; gap: 1px;
+  padding: 9px 34px 9px 16px;
+  background: var(--dk-haz); color: #000;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 20px) 100%, 0 100%);
+}
+#deckModal .dk-mark-t { font-family: var(--dk-head); font-weight: 900; font-size: 23px; letter-spacing: .06em; line-height: 1; }
+#deckModal .dk-mark-s { font-family: var(--dk-mono); font-size: 6.5px; letter-spacing: .24em; color: rgba(0, 0, 0, .62); }
+#deckModal .dk-top-mid { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 10px; padding: 0 14px; overflow: hidden; }
+#deckModal .dk-crumb {
+  display: flex; align-items: center; gap: 7px; min-width: 0;
+  font-family: var(--dk-mono); font-size: 8px; letter-spacing: .2em;
+  color: var(--dk-dim); white-space: nowrap; overflow: hidden;
+}
+#deckModal .dk-crumb i { width: 5px; height: 5px; background: var(--dk-haz); transform: rotate(45deg); flex: none; }
+#deckModal .dk-crumb b { color: var(--dk-ink); font-weight: 700; }
+#deckModal .dk-crumb .sep { color: rgba(245, 245, 245, .28); }
+#deckModal .dk-top-stat { display: flex; gap: 14px; margin-left: auto; flex: none; }
+#deckModal .dk-ts { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
+#deckModal .dk-ts-k { font-family: var(--dk-mono); font-size: 6px; letter-spacing: .2em; color: var(--dk-dim); }
+#deckModal .dk-ts-v { font-family: var(--dk-head); font-size: 12px; letter-spacing: .03em; color: var(--dk-ink); }
+#deckModal .dk-ts-v.am { color: var(--dk-haz); }
+#deckModal .dk-x {
+  flex: 0 0 auto; width: 58px; min-height: 44px;
+  display: grid; place-items: center;
+  border-left: 1px solid var(--dk-hair); color: var(--dk-ink);
+  transition: background-color .16s ease, color .16s ease;
+}
+#deckModal .dk-x:hover { background: var(--dk-haz); color: #000; }
+#deckModal .dk-x svg { width: 21px; height: 21px; }
+
+/* ================================ BODY ================================= */
+#deckModal .dk-body { flex: 1 1 auto; min-height: 0; display: flex; overflow: hidden; }
+
+#deckModal .dk-left {
+  position: relative;
+  flex: 0 0 42%; min-width: 0;
+  display: flex; flex-direction: column;
+  padding: 10px 12px;
+  background: linear-gradient(168deg, rgba(10, 10, 10, .96) 0%, rgba(5, 5, 5, .99) 100%);
+  border-right: 1px solid var(--dk-hair);
+  overflow-y: auto; overflow-x: hidden;
+  scrollbar-width: none; -ms-overflow-style: none;
+}
+#deckModal .dk-left::-webkit-scrollbar { display: none; width: 0; height: 0; }
+#deckModal .dk-left::after {
+  content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 5px; z-index: 2;
+  background: repeating-linear-gradient(-45deg, var(--dk-haz) 0 7px, #0b0b0b 7px 14px);
+  opacity: .55; pointer-events: none;
+}
+
+#deckModal .dk-sec-h {
+  flex: none; display: flex; align-items: center; gap: 8px; margin: 0 0 7px;
+  font-family: var(--dk-mono); font-size: 7px; letter-spacing: .24em;
+  color: var(--dk-dim); white-space: nowrap;
+}
+#deckModal .dk-sec-h b { color: var(--dk-haz); font-weight: 700; }
+#deckModal .dk-sec-h .rule {
+  flex: 1 1 auto; height: 3px;
+  background: repeating-linear-gradient(-45deg, rgba(243, 230, 0, .62) 0 6px, rgba(245, 245, 245, .10) 6px 12px);
+}
+#deckModal .dk-sec-h .tag { color: rgba(245, 245, 245, .4); letter-spacing: .14em; }
+
+/* 4 slot dek (1:1) */
+#deckModal .dk-slots { flex: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; margin-bottom: 12px; }
+#deckModal .dk-slot {
+  position: relative; display: flex; flex-direction: column;
+  aspect-ratio: 1 / 1; min-width: 0; overflow: hidden;
+  background: #0a0a0a;
+  box-shadow: inset 0 0 0 1px rgba(245, 245, 245, .18);
+  transition: box-shadow .16s ease;
+}
+#deckModal .dk-slot:hover { box-shadow: inset 0 0 0 1px rgba(245, 245, 245, .5); }
+#deckModal .dk-slot.act { box-shadow: inset 0 0 0 2px var(--dk-haz); }
+#deckModal .dk-slot.filled { box-shadow: inset 0 0 0 2px var(--dk-mc); }
+#deckModal .dk-slot-art { position: absolute; inset: 0; overflow: hidden; }
+#deckModal .dk-slot-art img { width: 100%; height: 100%; object-fit: cover; object-position: center 16%; display: block; }
+#deckModal .dk-slot.empty {
+  display: grid; place-items: center;
+  background: repeating-linear-gradient(135deg, rgba(245, 245, 245, .045) 0 5px, transparent 5px 11px);
+  box-shadow: inset 0 0 0 1px rgba(245, 245, 245, .14);
+}
+#deckModal .dk-slot.empty .plus {
+  display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(245, 245, 245, .3); color: rgba(245, 245, 245, .55);
+}
+#deckModal .dk-slot-no {
+  position: absolute; left: 0; top: 0; z-index: 3;
+  min-width: 16px; height: 16px; display: grid; place-items: center;
+  background: rgba(5, 5, 5, .86); color: var(--dk-ink);
+  font-family: var(--dk-mono); font-size: 7px;
+  box-shadow: inset 0 0 0 1px rgba(245, 245, 245, .24);
+}
+#deckModal .dk-slot.filled .dk-slot-no { background: var(--dk-mc); color: #000; box-shadow: none; }
+#deckModal .dk-slot-tag {
+  position: absolute; right: 0; top: 0; z-index: 3; padding: 1px 4px;
+  background: rgba(5, 5, 5, .86); color: var(--dk-mc);
+  font-family: var(--dk-mono); font-size: 5.5px; letter-spacing: .14em;
+  box-shadow: inset 0 0 0 1px currentColor;
+}
+#deckModal .dk-slot-x {
+  position: absolute; right: 2px; bottom: 2px; z-index: 4;
+  width: 26px; height: 26px; display: grid; place-items: center;
+  background: rgba(5, 5, 5, .82); color: rgba(245, 245, 245, .72);
+  box-shadow: inset 0 0 0 1px rgba(245, 245, 245, .2);
+  transition: background-color .15s ease, color .15s ease;
+}
+#deckModal .dk-slot-x::after { content: ''; position: absolute; inset: -9px; }
+#deckModal .dk-slot-x:hover { background: #ff3b30; color: #fff; }
+#deckModal .dk-slot-foot {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 3;
+  padding: 9px 5px 4px;
+  background: linear-gradient(transparent, rgba(5, 5, 5, .94) 46%);
+}
+#deckModal .dk-slot-name {
+  font-family: var(--dk-head); font-size: 7.5px; letter-spacing: .05em; line-height: 1.2;
+  color: var(--dk-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#deckModal .dk-slot-sub {
+  margin-top: 2px; font-family: var(--dk-mono); font-size: 5.5px; letter-spacing: .1em;
+  color: var(--dk-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#deckModal .dk-slot-stat {
+  margin-top: 3px; display: flex; gap: 6px;
+  font-family: var(--dk-mono); font-size: 5.5px; color: rgba(245, 245, 245, .62);
+}
+#deckModal .dk-slot-stat b { color: var(--dk-ink); font-weight: 700; }
+
+/* SUPPORT 3 slot (1:1) */
+#deckModal .dk-supp { flex: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin-bottom: 12px; }
+#deckModal .dk-sp {
+  position: relative; display: flex; flex-direction: column; min-width: 0;
+  aspect-ratio: 1 / 1; overflow: hidden; background: #0a0a0a;
+  box-shadow: inset 0 0 0 1px rgba(245, 245, 245, .16);
+  transition: box-shadow .16s ease;
+}
+#deckModal .dk-sp:hover { box-shadow: inset 0 0 0 1px rgba(245, 245, 245, .46); }
+#deckModal .dk-sp.filled { box-shadow: inset 0 0 0 2px var(--dk-mc); }
+#deckModal .dk-sp img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
+#deckModal .dk-sp.empty {
+  display: grid; place-items: center;
+  background: repeating-linear-gradient(135deg, rgba(245, 245, 245, .04) 0 5px, transparent 5px 11px);
+}
+#deckModal .dk-sp.empty .mark { color: rgba(245, 245, 245, .34); }
+#deckModal .dk-sp-tag {
+  position: absolute; left: 0; top: 0; z-index: 3; padding: 1px 4px;
+  background: rgba(5, 5, 5, .86); color: var(--dk-mc);
+  font-family: var(--dk-mono); font-size: 5.5px; letter-spacing: .14em;
+  box-shadow: inset 0 0 0 1px currentColor;
+}
+#deckModal .dk-sp-name {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 3;
+  padding: 9px 4px 3px;
+  background: linear-gradient(transparent, rgba(5, 5, 5, .95) 55%);
+  font-family: var(--dk-head); font-size: 6.5px; letter-spacing: .05em;
+  color: var(--dk-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* aksi + brief + meta */
+#deckModal .dk-actions {
+  flex: none; display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+  background: var(--dk-faint); box-shadow: inset 0 0 0 1px var(--dk-faint); margin-top: 7px;
+}
+#deckModal .dk-act {
+  position: relative; min-height: 44px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  background: #080808; color: var(--dk-ink);
+  font-family: var(--dk-mono); font-size: 7px; letter-spacing: .16em;
+  transition: background-color .15s ease, color .15s ease;
+}
+#deckModal .dk-act:hover { background: var(--dk-haz); color: #000; }
+#deckModal .dk-act svg { width: 11px; height: 11px; }
+#deckModal .dk-meta {
+  flex: 0 0 auto; margin-top: auto;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px;
+  background: var(--dk-faint); box-shadow: inset 0 0 0 1px var(--dk-faint);
+}
+#deckModal .dk-mcell { background: #080808; padding: 6px 8px; min-width: 0; }
+#deckModal .dk-mcell k { display: block; font-family: var(--dk-mono); font-size: 5.5px; letter-spacing: .2em; color: var(--dk-dim); }
+#deckModal .dk-mcell v { display: block; margin-top: 2px; font-family: var(--dk-head); font-size: 12px; color: var(--dk-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#deckModal .dk-mcell.hot v { color: var(--dk-haz); }
+
+/* brief (desktop) */
+#deckModal .dk-brief { display: none; }
+
+/* ============================== RIGHT PANE ============================= */
+#deckModal .dk-right-pane { flex: 1 1 auto; min-width: 0; min-height: 0; display: flex; flex-direction: column; background: #060606; }
+#deckModal .dk-rtabs {
+  position: relative; flex: 0 0 auto;
+  display: flex; align-items: stretch; border-bottom: 1px solid var(--dk-faint); padding: 0 12px;
+}
+#deckModal .dk-rtabs::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; z-index: 2;
+  background: repeating-linear-gradient(-45deg, rgba(243, 230, 0, .45) 0 6px, transparent 6px 12px);
+  pointer-events: none;
+}
+#deckModal .dk-rtab {
+  position: relative; min-height: 44px; padding: 0 16px;
+  font-family: var(--dk-head); font-size: 9px; letter-spacing: .18em; color: var(--dk-dim);
+  border-bottom: 2px solid transparent;
+  transition: color .15s ease, border-color .15s ease;
+}
+#deckModal .dk-rtab:hover { color: var(--dk-ink); }
+#deckModal .dk-rtab.on { color: var(--dk-haz); border-bottom-color: var(--dk-haz); }
+#deckModal .dk-rtabs .count {
+  margin-left: auto; align-self: center;
+  font-family: var(--dk-mono); font-size: 7px; letter-spacing: .16em; color: var(--dk-dim);
+}
+#deckModal .dk-rtabs .count b { color: var(--dk-ink); }
+
+#deckModal .dk-tools { flex: 0 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 12px; border-bottom: 1px solid var(--dk-faint); }
+#deckModal .dk-search {
+  flex: 1 1 180px; min-width: 0;
+  display: flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 9px;
+  background: #0b0b0b; box-shadow: inset 0 0 0 1px rgba(245, 245, 245, .16);
+}
+#deckModal .dk-search svg { flex: none; color: rgba(245, 245, 245, .5); }
+#deckModal .dk-search input {
+  flex: 1 1 auto; min-width: 0; border: 0; background: transparent; color: var(--dk-ink);
+  font-family: var(--dk-ui); font-weight: 700; font-size: 12px; outline: none;
+}
+#deckModal .dk-search input::placeholder { color: rgba(245, 245, 245, .3); }
+#deckModal .dk-search:focus-within { box-shadow: inset 0 0 0 1px var(--dk-haz); }
+#deckModal .dk-chip {
+  position: relative; flex: none;
+  display: flex; align-items: center; gap: 5px; min-height: 36px; padding: 0 9px;
+  background: #0b0b0b; color: var(--dk-dim);
+  box-shadow: inset 0 0 0 1px rgba(245, 245, 245, .16);
+  font-family: var(--dk-mono); font-size: 7.5px; letter-spacing: .14em;
+  transition: color .15s ease, box-shadow .15s ease;
+}
+#deckModal .dk-chip::after { content: ''; position: absolute; inset: -4px -1px; }
+#deckModal .dk-chip:hover { color: var(--dk-ink); box-shadow: inset 0 0 0 1px rgba(245, 245, 245, .4); }
+#deckModal .dk-chip.on { color: #000; background: var(--dk-haz); box-shadow: none; }
+#deckModal .dk-chip .cv { color: rgba(245, 245, 245, .42); }
+#deckModal .dk-chip.on .cv { color: rgba(0, 0, 0, .55); }
+#deckModal .dk-chip svg { width: 9px; height: 9px; }
+
+#deckModal .dk-scroll {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden;
+  padding: 10px 12px 14px;
+  scrollbar-width: none; -ms-overflow-style: none;
+}
+#deckModal .dk-scroll::-webkit-scrollbar { display: none; width: 0; height: 0; }
+#deckModal .dk-grid { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
+
+/* arsip = kotak 1:1 */
+#deckModal .dk-card {
+  position: relative; display: flex; flex-direction: column; min-width: 0;
+  aspect-ratio: 1 / 1; overflow: hidden; background: #0a0a0a;
+  box-shadow: inset 0 0 0 2px rgba(245, 245, 245, .16);
+  transition: box-shadow .15s ease;
+  text-align: left;
+}
+#deckModal .dk-card:hover { box-shadow: inset 0 0 0 2px rgba(245, 245, 245, .52); }
+#deckModal .dk-card.mut { box-shadow: inset 0 0 0 2px var(--dk-mc); }
+#deckModal .dk-card.indeck::after {
+  content: ''; position: absolute; inset: 0; z-index: 5; pointer-events: none;
+  box-shadow: inset 0 0 0 2px var(--dk-haz);
+}
+#deckModal .dk-card img { width: 100%; height: 100%; object-fit: cover; object-position: center 18%; display: block; }
+#deckModal .dk-card-cnt {
+  position: absolute; right: 0; top: 0; z-index: 4; padding: 1px 4px;
+  background: rgba(5, 5, 5, .88); color: var(--dk-ink);
+  font-family: var(--dk-mono); font-size: 6px;
+  box-shadow: inset 0 0 0 1px rgba(245, 245, 245, .24);
+}
+#deckModal .dk-card-indeck {
+  position: absolute; left: 0; top: 0; z-index: 4; padding: 1px 4px;
+  background: var(--dk-haz); color: #000;
+  font-family: var(--dk-mono); font-size: 5.5px; letter-spacing: .12em;
+}
+#deckModal .dk-card-foot {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 4;
+  padding: 8px 4px 3px;
+  background: linear-gradient(transparent, rgba(5, 5, 5, .94) 58%);
+  font-family: var(--dk-mono); font-size: 5.5px;
+  color: rgba(245, 245, 245, .86); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#deckModal .dk-card.mut .dk-card-foot { color: var(--dk-mc); }
+#deckModal .dk-card-fav {
+  position: absolute; left: 0; bottom: 0; z-index: 5; padding: 1px 3px;
+  color: var(--dk-gold); background: rgba(5, 5, 5, .8);
+  display: flex; align-items: center;
+}
+#deckModal .dk-card-fav svg { width: 9px; height: 9px; }
+#deckModal .dk-nr { padding: 22px 0; text-align: center; font-family: var(--dk-mono); font-size: 9px; letter-spacing: .18em; color: var(--dk-dim); }
+
+#deckModal .dk-foot {
+  position: relative; flex: 0 0 auto;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  padding: 6px 12px; border-top: 1px solid var(--dk-faint); background: #070707;
+  font-family: var(--dk-mono); font-size: 6.5px; letter-spacing: .14em; color: rgba(245, 245, 245, .42);
+}
+#deckModal .dk-foot::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: 2px;
+  background: repeating-linear-gradient(-45deg, rgba(243, 230, 0, .5) 0 6px, transparent 6px 12px);
+  pointer-events: none;
+}
+#deckModal .dk-foot b { color: rgba(245, 245, 245, .72); font-weight: 700; }
+#deckModal .dk-foot .haz { color: var(--dk-haz); }
+
+/* ========================= HAZARD BANNER (curtain) ===================== */
+#deckCurtain {
+  position: fixed; inset: 0; z-index: 96000;
+  pointer-events: none; overflow: hidden; visibility: hidden; contain: strict;
+}
+#deckCurtain.on { visibility: visible; }
+#deckCurtain .half {
+  position: absolute; left: 0; right: 0; height: 50.5%;
+  background-color: #050505; transform: translateY(0);
+  will-change: transform; overflow: hidden;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(245, 245, 245, .045) 0 1px, transparent 1px 34px),
+    repeating-linear-gradient(90deg, rgba(245, 245, 245, .045) 0 1px, transparent 1px 34px),
+    radial-gradient(120% 90% at 50% 100%, rgba(243, 230, 0, .06), transparent 68%);
+}
+#deckCurtain .top { top: 0; }
+#deckCurtain .bot {
+  bottom: 0;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(245, 245, 245, .045) 0 1px, transparent 1px 34px),
+    repeating-linear-gradient(90deg, rgba(245, 245, 245, .045) 0 1px, transparent 1px 34px),
+    radial-gradient(120% 90% at 50% 0%, rgba(243, 230, 0, .06), transparent 68%);
+}
+#deckCurtain.smooth .half { transition: transform .62s cubic-bezier(.74, 0, .22, 1); }
+#deckCurtain.fast .half { transition: transform .46s cubic-bezier(.74, 0, .22, 1); }
+#deckCurtain.revealed .top { transform: translateY(-101%); }
+#deckCurtain.revealed .bot { transform: translateY(101%); }
+#deckCurtain .edge {
+  position: absolute; left: 0; right: 0; height: 16px;
+  background: repeating-linear-gradient(-45deg, var(--dk-haz) 0 12px, #080808 12px 24px);
+}
+#deckCurtain .top .edge { bottom: 0; }
+#deckCurtain .bot .edge { top: 0; }
+#deckCurtain .mark {
+  position: absolute; left: 16px; bottom: 26px;
+  font-family: var(--dk-mono); font-size: 7px; letter-spacing: .26em;
+  color: rgba(245, 245, 245, .4); white-space: nowrap;
+}
+#deckCurtain .mark b { color: var(--dk-haz); font-weight: 600; }
+#deckCurtain .bot .mark { top: 28px; bottom: auto; left: auto; right: 16px; }
+
+#deckCurtain .tape {
+  position: absolute; left: -60%; right: -60%; height: 52px; z-index: 2;
+  pointer-events: none; opacity: 0;
+  background: repeating-linear-gradient(-45deg, var(--dk-haz) 0 18px, #0b0b0b 18px 36px);
+  border-top: 2px solid #0b0b0b; border-bottom: 2px solid #0b0b0b;
+  transform: translateX(-120%) skewX(-13deg);
+  will-change: transform, opacity;
+}
+#deckCurtain .tape-a { top: calc(50% - 104px); }
+#deckCurtain .tape-b { top: calc(50% + 54px); }
+#deckCurtain.sweep .tape-a { animation: dkTapeSweep .86s cubic-bezier(.4, 0, .2, 1) both; }
+#deckCurtain.sweep .tape-b { animation: dkTapeSweep .86s .09s cubic-bezier(.4, 0, .2, 1) both; }
+@keyframes dkTapeSweep {
+  0% { transform: translateX(-120%) skewX(-13deg); opacity: 0; }
+  12% { opacity: 1; }
+  86% { opacity: 1; }
+  100% { transform: translateX(120%) skewX(-13deg); opacity: 0; }
+}
+#deckCurtain .flash { position: absolute; inset: 0; z-index: 3; background: var(--dk-haz); opacity: 0; }
+#deckCurtain.sweep .flash { animation: dkFlash .4s ease-out both; }
+@keyframes dkFlash { 0% { opacity: 0; } 14% { opacity: .16; } 100% { opacity: 0; } }
+
+#deckCurtain .plate {
+  position: absolute; left: 50%; top: 50%; z-index: 4;
+  width: min(88vw, 600px); transform: translate(-50%, -50%); opacity: 1;
+  background:
+    repeating-linear-gradient(-45deg, rgba(243, 230, 0, .045) 0 14px, transparent 14px 34px),
+    linear-gradient(168deg, rgba(14, 14, 14, .98) 0%, rgba(5, 5, 5, .99) 52%, rgba(10, 10, 10, .98) 100%);
+  border-top: 2px solid var(--dk-haz);
+  border-bottom: 2px solid var(--dk-haz);
+  box-shadow: 0 26px 60px rgba(0, 0, 0, .66), inset 0 0 0 1px rgba(255, 255, 255, .07);
+}
+#deckCurtain.smooth .plate,
+#deckCurtain.fast .plate { transition: opacity .22s ease, transform .52s cubic-bezier(.34, 1.22, .64, 1); }
+#deckCurtain.revealed .plate { opacity: 0; transform: translate(-50%, -50%) scale(1.04); }
+#deckCurtain .plate::before,
+#deckCurtain .plate::after {
+  content: ''; position: absolute; top: -2px; bottom: -2px; width: 18px;
+  background: repeating-linear-gradient(-45deg, var(--dk-haz) 0 10px, #050505 10px 20px);
+}
+#deckCurtain .plate::before { left: -18px; }
+#deckCurtain .plate::after { right: -18px; }
+#deckCurtain .water {
+  position: absolute; right: 10px; bottom: -22px; pointer-events: none;
+  font-family: var(--dk-head); font-weight: 900;
+  font-size: clamp(84px, 15vw, 158px); line-height: .8; letter-spacing: -.01em;
+  color: transparent; -webkit-text-stroke: 1px rgba(243, 230, 0, .13);
+  transform: rotate(-6deg); text-transform: uppercase;
+}
+#deckCurtain .corner { position: absolute; width: 13px; height: 13px; border: 2px solid rgba(245, 245, 245, .85); opacity: .85; pointer-events: none; }
+#deckCurtain .corner.tl { left: 7px; top: 7px; border-right: 0; border-bottom: 0; }
+#deckCurtain .corner.tr { right: 7px; top: 7px; border-left: 0; border-bottom: 0; }
+#deckCurtain .corner.bl { left: 7px; bottom: 7px; border-right: 0; border-top: 0; }
+#deckCurtain .corner.br { right: 7px; bottom: 7px; border-left: 0; border-top: 0; }
+#deckCurtain .in { position: relative; z-index: 2; padding: 16px 22px 13px; }
+#deckCurtain .krow { display: flex; align-items: center; gap: 8px; min-width: 0; }
+#deckCurtain .dot { flex: none; width: 7px; height: 7px; background: var(--dk-haz); transform: rotate(45deg); }
+#deckCurtain .kick {
+  font-family: var(--dk-mono); font-size: 8px; letter-spacing: .28em;
+  color: rgba(245, 245, 245, .72); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#deckCurtain .kick b { color: var(--dk-haz); font-weight: 600; }
+#deckCurtain .serial {
+  margin-left: auto; flex: none; font-family: var(--dk-mono); font-size: 7px;
+  letter-spacing: .2em; color: rgba(245, 245, 245, .42); white-space: nowrap;
+}
+#deckCurtain .title {
+  display: flex; align-items: center; gap: 13px; margin-top: 9px;
+  font-family: var(--dk-head); font-weight: 900;
+  font-size: clamp(28px, 6.2vw, 54px); line-height: .96; letter-spacing: .03em;
+  text-transform: uppercase; min-width: 0; color: var(--dk-ink);
+}
+#deckCurtain .title span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#deckCurtain .title::before { content: ''; flex: none; width: 13px; height: .92em; background: var(--dk-haz); transform: skewX(-18deg); }
+#deckCurtain .sub {
+  margin-top: 8px; font-family: var(--dk-mono); font-size: 9px; letter-spacing: .18em;
+  color: var(--dk-haz); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#deckCurtain .bar { height: 3px; margin-top: 14px; background: rgba(255, 255, 255, .14); overflow: hidden; }
+#deckCurtain .bar i { display: block; height: 100%; width: 100%; background: var(--dk-haz); transform: scaleX(0); transform-origin: left; }
+#deckCurtain.smooth:not(.revealed) .bar i,
+#deckCurtain.fast:not(.revealed) .bar i { transform: scaleX(1); transition: transform .66s .1s cubic-bezier(.2, .9, .2, 1); }
+#deckCurtain .foot {
+  display: flex; justify-content: space-between; gap: 10px; margin-top: 8px;
+  font-family: var(--dk-mono); font-size: 6.5px; letter-spacing: .2em; color: rgba(245, 245, 245, .42);
+}
+
+/* ============================ CARD DOSSIER ============================= */
+#deckCardModal {
+  position: fixed; inset: 0; z-index: 95500;
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+  background: rgba(0, 0, 0, .86);
+  opacity: 0; visibility: hidden;
+  transition: opacity .18s ease, visibility .18s ease;
+}
+#deckCardModal.on { opacity: 1; visibility: visible; }
+#deckCardModal .dk-mbox {
+  position: relative; width: min(560px, 100%); max-height: min(92vh, 720px);
+  display: flex; flex-direction: column; overflow: hidden;
+  background:
+    repeating-linear-gradient(-45deg, rgba(243, 230, 0, .035) 0 14px, transparent 14px 34px),
+    linear-gradient(168deg, #0e0e0e 0%, #050505 52%, #0a0a0a 100%);
+  border-top: 2px solid var(--dk-haz); border-bottom: 2px solid var(--dk-haz);
+  box-shadow: 0 26px 60px rgba(0, 0, 0, .7), inset 0 0 0 1px rgba(255, 255, 255, .07);
+  transform: translateY(10px) scale(.985);
+  transition: transform .22s cubic-bezier(.34, 1.22, .64, 1);
+}
+#deckCardModal.on .dk-mbox { transform: translateY(0) scale(1); }
+#deckCardModal .dk-mhead {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-bottom: 1px solid var(--dk-faint); background: rgba(5, 5, 5, .5);
+}
+#deckCardModal .mh-k { font-family: var(--dk-mono); font-size: 7px; letter-spacing: .24em; color: var(--dk-dim); }
+#deckCardModal .mh-k b { color: var(--dk-haz); }
+#deckCardModal .mh-x {
+  position: relative; margin-left: auto; flex: none;
+  width: 44px; height: 44px; display: grid; place-items: center;
+  color: var(--dk-ink); box-shadow: inset 0 0 0 1px rgba(245, 245, 245, .24);
+  transition: background-color .15s ease, color .15s ease;
+}
+#deckCardModal .mh-x:hover { background: var(--dk-haz); color: #000; }
+#deckCardModal .dk-mbody {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto;
+  display: flex; gap: 14px; padding: 14px;
+  scrollbar-width: none; -ms-overflow-style: none;
+}
+#deckCardModal .dk-mbody::-webkit-scrollbar { display: none; }
+#deckCardModal .dk-mart { flex: 0 0 42%; max-width: 210px; aspect-ratio: 1 / 1; overflow: hidden; box-shadow: inset 0 0 0 2px var(--dk-mc); background: #0a0a0a; }
+#deckCardModal .dk-mart img { width: 100%; height: 100%; object-fit: cover; object-position: center 16%; display: block; }
+#deckCardModal .dk-minfo { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+#deckCardModal .dk-mname { font-family: var(--dk-head); font-size: 17px; font-weight: 900; line-height: 1.15; color: var(--dk-ink); }
+#deckCardModal .dk-mtags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+#deckCardModal .dk-mtag {
+  font-family: var(--dk-mono); font-size: 6.5px; letter-spacing: .14em; padding: 2px 6px;
+  color: var(--dk-mc); box-shadow: inset 0 0 0 1px currentColor; white-space: nowrap;
+}
+#deckCardModal .dk-mstats { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; margin-top: 10px; background: var(--dk-faint); box-shadow: inset 0 0 0 1px var(--dk-faint); }
+#deckCardModal .dk-mstat { background: #080808; padding: 6px 8px; }
+#deckCardModal .dk-mstat k { display: block; font-family: var(--dk-mono); font-size: 5.5px; letter-spacing: .2em; color: var(--dk-dim); }
+#deckCardModal .dk-mstat v { display: block; margin-top: 2px; font-family: var(--dk-head); font-size: 13px; color: var(--dk-ink); }
+#deckCardModal .dk-mdesc { margin-top: 10px; font-family: var(--dk-ui); font-weight: 600; font-size: 12px; line-height: 1.5; color: rgba(245, 245, 245, .72); }
+#deckCardModal .dk-mfoot { flex: 0 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--dk-faint); box-shadow: inset 0 0 0 1px var(--dk-faint); }
+#deckCardModal .dk-mbtn {
+  position: relative; min-height: 46px;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  background: #080808; color: var(--dk-ink);
+  font-family: var(--dk-mono); font-size: 8px; letter-spacing: .18em;
+  transition: background-color .15s ease, color .15s ease;
+}
+#deckCardModal .dk-mbtn:hover { background: var(--dk-haz); color: #000; }
+#deckCardModal .dk-mbtn.primary { background: var(--dk-haz); color: #000; }
+#deckCardModal .dk-mbtn.primary:hover { background: #fff; }
+#deckCardModal .dk-mbtn.on { color: var(--dk-gold); }
+#deckCardModal .dk-mbtn.on:hover { background: var(--dk-gold); color: #000; }
+#deckCardModal .dk-mbtn svg { width: 13px; height: 13px; }
+
+/* ============================ SLOT PICKER ============================== */
+#deckSlotPop {
+  position: fixed; inset: 0; z-index: 95600;
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+  background: rgba(0, 0, 0, .88);
+  opacity: 0; visibility: hidden;
+  transition: opacity .16s ease, visibility .16s ease;
+}
+#deckSlotPop.on { opacity: 1; visibility: visible; }
+#deckSlotPop .dk-spbox {
+  position: relative; width: min(520px, 100%);
+  background: linear-gradient(168deg, #0e0e0e, #050505 60%, #0a0a0a);
+  border-top: 2px solid var(--dk-haz); border-bottom: 2px solid var(--dk-haz);
+  box-shadow: 0 26px 60px rgba(0, 0, 0, .7), inset 0 0 0 1px rgba(255, 255, 255, .07);
+  padding: 14px;
+  transform: translateY(10px) scale(.985);
+  transition: transform .2s cubic-bezier(.34, 1.22, .64, 1);
+}
+#deckSlotPop.on .dk-spbox { transform: none; }
+#deckSlotPop .dk-sph { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+#deckSlotPop .dk-sph b { font-family: var(--dk-head); font-size: 11px; letter-spacing: .16em; color: var(--dk-haz); }
+#deckSlotPop .dk-sph span {
+  font-family: var(--dk-mono); font-size: 6.5px; letter-spacing: .2em; color: var(--dk-dim);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#deckSlotPop .dk-sph .x {
+  position: relative; margin-left: auto; flex: none;
+  width: 44px; height: 44px; display: grid; place-items: center;
+  color: var(--dk-ink); box-shadow: inset 0 0 0 1px rgba(245, 245, 245, .22);
+}
+#deckSlotPop .dk-sph .x:hover { background: var(--dk-haz); color: #000; }
+#deckSlotPop .dk-spgrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
+#deckSlotPop .dk-spopt {
+  position: relative; display: flex; flex-direction: column;
+  aspect-ratio: 1 / 1; min-width: 0; overflow: hidden; background: #0a0a0a;
+  box-shadow: inset 0 0 0 1px rgba(245, 245, 245, .18);
+  transition: box-shadow .15s ease;
+}
+#deckSlotPop .dk-spopt:hover { box-shadow: inset 0 0 0 2px var(--dk-haz); }
+#deckSlotPop .dk-spopt img { width: 100%; height: 100%; object-fit: cover; object-position: center 16%; display: block; }
+#deckSlotPop .dk-spopt .no {
+  position: absolute; left: 0; top: 0; z-index: 3; padding: 1px 4px;
+  background: rgba(5, 5, 5, .88); color: var(--dk-ink);
+  font-family: var(--dk-mono); font-size: 6px;
+}
+#deckSlotPop .dk-spopt .nm {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; padding: 8px 3px 3px;
+  background: linear-gradient(transparent, rgba(5, 5, 5, .95) 55%);
+  font-family: var(--dk-head); font-size: 5.5px; color: var(--dk-ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#deckSlotPop .dk-spopt.empty {
+  display: grid; place-items: center;
+  background: repeating-linear-gradient(135deg, rgba(245, 245, 245, .045) 0 5px, transparent 5px 11px);
+  color: rgba(245, 245, 245, .5);
+}
+#deckSlotPop .dk-spopt.empty .no { background: transparent; }
+
+/* ============================== RESPONSIVE ============================= */
+@media (max-width: 1099px) {
+  #deckModal .dk-left { flex: 0 0 46%; }
+  #deckModal .dk-grid { grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); }
+}
+@media (min-width: 1100px) {
+  #deckModal .dk-sp { aspect-ratio: 1 / 1; max-height: 210px; }
+  #deckModal .dk-meta { margin-top: auto; }
+  #deckModal .dk-brief {
+    display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0;
+    margin-top: 10px; border-top: 1px solid var(--dk-faint); padding-top: 8px; overflow: hidden;
+  }
+  #deckModal .dk-brief .bh {
+    flex: none; display: flex; align-items: center; gap: 8px; margin-bottom: 5px;
+    font-family: var(--dk-mono); font-size: 6px; letter-spacing: .24em; color: var(--dk-dim);
+  }
+  #deckModal .dk-brief .bh b { color: var(--dk-haz); font-weight: 700; }
+  #deckModal .dk-brief .bh .rule { flex: 1 1 auto; height: 1px; background: var(--dk-faint); }
+  #deckModal .dk-brief .br {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+    padding: 6px 0; border-bottom: 1px solid rgba(245, 245, 245, .08);
+  }
+  #deckModal .dk-brief .br:last-child { border-bottom: 0; }
+  #deckModal .dk-brief .bk { font-family: var(--dk-mono); font-size: 6.5px; letter-spacing: .18em; color: var(--dk-dim); white-space: nowrap; }
+  #deckModal .dk-brief .bv {
+    font-family: var(--dk-head); font-size: 9.5px; color: var(--dk-ink);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  #deckModal .dk-brief .br.hot .bv { color: var(--dk-haz); }
+  #deckModal .dk-brow { flex: 1 1 auto; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+  #deckModal .dk-brow .lr {
+    display: flex; align-items: center; gap: 8px; min-height: 26px;
+    border-bottom: 1px solid rgba(245, 245, 245, .06);
+  }
+  #deckModal .dk-brow .lr:last-child { border-bottom: 0; }
+  #deckModal .dk-brow .lr i {
+    flex: none; width: 14px; font-family: var(--dk-mono); font-size: 6px;
+    font-style: normal; color: var(--dk-dim);
+  }
+  #deckModal .dk-brow .lr .av {
+    flex: none; width: 18px; height: 18px; overflow: hidden;
+    box-shadow: inset 0 0 0 1px var(--dk-mc); background: #0a0a0a;
+  }
+  #deckModal .dk-brow .lr .av img { width: 100%; height: 100%; object-fit: cover; object-position: center 12%; display: block; }
+  #deckModal .dk-brow .lr .nm {
+    flex: 1 1 auto; min-width: 0; font-family: var(--dk-head); font-size: 7.5px; letter-spacing: .05em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  #deckModal .dk-brow .lr .sc { flex: none; font-family: var(--dk-mono); font-size: 6px; color: var(--dk-dim); }
+  #deckModal .dk-brow .lr.empty .nm { color: rgba(245, 245, 245, .3); }
+}
+
+@media (max-width: 719px), (orientation: portrait) and (max-width: 900px) {
+  #deckModal .dk-top { min-height: 52px; }
+  #deckModal .dk-mark { padding: 7px 28px 7px 12px; }
+  #deckModal .dk-mark-t { font-size: 19px; }
+  #deckModal .dk-mark-s { font-size: 6px; letter-spacing: .2em; }
+  #deckModal .dk-top-stat { display: none; }
+  #deckModal .dk-x { width: 50px; }
+  #deckModal .dk-body { flex-direction: column; }
+  #deckModal .dk-left {
+    flex: 0 1 auto; min-height: 0;
+    border-right: 0; border-bottom: 1px solid var(--dk-hair);
+    padding: 8px 10px 9px; overflow-y: auto; overflow-x: hidden;
+  }
+  #deckModal .dk-left::after { right: 0; left: 0; top: auto; bottom: 0; width: auto; height: 4px; }
+  #deckModal .dk-right-pane { flex: 1 1 0; min-height: 0; }
+  #deckModal .dk-slots { margin-bottom: 9px; }
+  #deckModal .dk-supp { margin-bottom: 8px; }
+  #deckModal .dk-meta { margin-top: 6px; }
+  #deckModal .dk-mcell { padding: 5px 7px; }
+  #deckModal .dk-mcell v { font-size: 11px; }
+  #deckModal .dk-tools { padding: 7px 10px; }
+  #deckModal .dk-scroll { padding: 9px 10px 12px; }
+  #deckModal .dk-grid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 7px; }
+  #deckModal .dk-foot { font-size: 6px; padding: 5px 10px; }
+}
+
+@media (max-width: 380px) {
+  #deckModal .dk-left { padding: 6px 8px; max-height: 42%; }
+  #deckModal .dk-sec-h { margin-bottom: 4px; font-size: 6px; }
+  #deckModal .dk-slots { gap: 5px; margin-bottom: 7px; }
+  #deckModal .dk-slot-foot { padding: 2px 3px 3px; }
+  #deckModal .dk-slot-name { font-size: 6px; }
+  #deckModal .dk-slot-sub, #deckModal .dk-slot-stat { display: none; }
+  #deckModal .dk-slot-no { min-width: 13px; height: 13px; font-size: 6px; }
+  #deckModal .dk-slot-tag { font-size: 4.5px; padding: 0 3px; letter-spacing: .08em; }
+  #deckModal .dk-slot-x { width: 22px; height: 22px; right: 1px; bottom: 1px; }
+  #deckModal .dk-slot-x::after { inset: -11px; }
+  #deckModal .dk-supp { gap: 5px; margin-bottom: 6px; }
+  #deckModal .dk-sp { aspect-ratio: 1 / 1; height: auto; }
+  #deckModal .dk-sp-name { font-size: 5.5px; padding: 7px 3px 2px; }
+  #deckModal .dk-sp-tag { font-size: 4.5px; padding: 0 3px; }
+  #deckModal .dk-meta { margin-top: 2px; }
+  #deckModal .dk-mcell { padding: 3px 6px; }
+  #deckModal .dk-mcell k { font-size: 4.5px; letter-spacing: .14em; }
+  #deckModal .dk-mcell v { font-size: 9px; margin-top: 1px; }
+  #deckModal .dk-tools { flex-wrap: nowrap; padding: 6px 8px; gap: 5px; }
+  #deckModal .dk-search { flex: 1 1 auto; min-width: 0; min-height: 44px; padding: 0 7px; }
+  #deckModal .dk-search input { font-size: 11px; }
+  #deckModal .dk-chip { min-height: 44px; padding: 0 8px; font-size: 6.5px; letter-spacing: .08em; min-width: 44px; justify-content: center; }
+  #deckModal .dk-chip .cv { display: none; }
+  #deckModal .dk-rtabs { padding: 0 8px; }
+  #deckModal .dk-rtab { padding: 0 10px; min-height: 44px; }
+  #deckModal .dk-rtabs .count { font-size: 5.5px; letter-spacing: .08em; }
+  #deckModal .dk-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  #deckModal .dk-scroll { padding: 8px 8px 10px; }
+  #deckModal .dk-foot { font-size: 5px; padding: 4px 8px; gap: 6px; white-space: nowrap; overflow: hidden; }
+  #deckModal .dk-crumb { overflow: hidden; }
+  #deckModal .dk-crumb span:last-child, #deckModal .dk-crumb .sep:last-of-type { display: none; }
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  #deckModal .dk-top { min-height: 44px; }
+  #deckModal .dk-mark { padding: 5px 24px 5px 10px; }
+  #deckModal .dk-mark-t { font-size: 16px; }
+  #deckModal .dk-mark-s { display: none; }
+  #deckModal .dk-x { min-height: 44px; }
+  #deckModal .dk-rtab { min-height: 44px; padding: 0 12px; }
+  #deckModal .dk-left { padding: 6px 9px; }
+  #deckModal .dk-sec-h { margin-bottom: 5px; }
+  #deckModal .dk-meta { display: none; }
+  #deckModal .dk-foot { display: none; }
+  #deckModal .dk-actions { display: none; }
+  #deckModal .dk-slots { margin-bottom: 6px; }
+  #deckModal .dk-supp { margin-bottom: 0; }
+  #deckModal .dk-sp { aspect-ratio: 1 / 1; height: auto; max-height: 72px; }
+  #deckModal .dk-sp-name { padding: 7px 3px 2px; font-size: 5.5px; }
+  #deckModal .dk-slot-foot { padding: 7px 4px 3px; }
+  #deckModal .dk-slot-sub { display: none; }
+}
+
+@media (max-width: 520px) {
+  #deckCardModal .dk-mbody { flex-direction: column; gap: 10px; padding: 11px; }
+  #deckCardModal .dk-mart { flex: none; width: min(240px, 64vw); max-width: none; aspect-ratio: 1 / 1; margin: 0 auto; }
+  #deckCardModal .dk-mname { font-size: 14px; }
+  #deckCardModal .dk-mdesc { font-size: 11px; }
+  #deckSlotPop .dk-spgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-height: 460px) {
+  #deckCardModal .dk-mbody { flex-direction: row; padding: 9px; }
+  #deckCardModal .dk-mart { flex: 0 0 34%; max-width: 150px; }
+  #deckCardModal .dk-mdesc { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #deckCurtain .half, #deckCurtain .plate, #deckCurtain .bar i,
+  #deckModal .dk-card, #deckModal .dk-slot { transition: none !important; }
+  #deckCurtain .tape, #deckCurtain .flash { animation: none !important; opacity: 0 !important; }
+  #deckCardModal, #deckCardModal .dk-mbox, #deckSlotPop, #deckSlotPop .dk-spbox { transition: none !important; }
+}

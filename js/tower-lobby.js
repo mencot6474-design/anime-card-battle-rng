@@ -1399,7 +1399,7 @@ function hubLivingStandeeHtml(eq) {
     <div class="celestial-rune-ring" id="celestialRune">
       <div class="celestial-inner-hex"></div>
     </div>
-    <div class="hero-standee-wrap" id="heroStandeeWrap" onclick="if(window.sfx&&sfx.hit)sfx.hit();if(typeof toggleBackpack==='function')toggleBackpack();" title="Pilih Hunter di Deck">
+    <div class="hero-standee-wrap" id="heroStandeeWrap" onclick="if(window.sfx&&sfx.hit)sfx.hit();if(typeof openDeckModal==='function')openDeckModal();else if(typeof toggleBackpack==='function')toggleBackpack();" title="Kelola Deck">
       <div class="hero-standee-rimlight" id="heroRimlight"></div>
       <div class="hero-card-plate ${frameTheme}" id="heroCardPlate">
         <div class="hero-card-art">
@@ -1430,7 +1430,7 @@ function hubLivingStandeeHtml(eq) {
   </div>
 
   <!-- The Hunter Character Stage with Cyber Armor Frame Overlay -->
-  <div class="hero-standee-wrap" id="heroStandeeWrap" onclick="if(window.sfx&&sfx.hit)sfx.hit();if(typeof toggleBackpack==='function')toggleBackpack();" title="Klik Hunter untuk Kelola Party &amp; Deck">
+  <div class="hero-standee-wrap" id="heroStandeeWrap" onclick="if(window.sfx&&sfx.hit)sfx.hit();if(typeof openDeckModal==='function')openDeckModal();else if(typeof toggleBackpack==='function')toggleBackpack();" title="Kelola Deck">
     <!-- Ambient Rimlight Backglow -->
     <div class="hero-standee-rimlight" id="heroRimlight" style="--tier-col:${tierCol};"></div>
 
@@ -2355,7 +2355,9 @@ window.l12UpdateWeatherDock = l12UpdateWeatherDock;
   const _hero = document.getElementById("heroStandeeWrap");
   if (_hero) _hero.onclick = () => {
     if (typeof sfx !== "undefined" && sfx.hit) sfx.hit();
-    location.hash = "#/deck";
+    /* Layar DECK sekarang modal full-screen sendiri (port 2026-11-07). */
+    if (typeof openDeckModal === "function") openDeckModal();
+    else location.hash = "#/deck";
   };
   /* +10x GLOBAL LUCK -> fungsi beli asli panels.js, bukan duplikat logika.
      Tombol SENGAJA tidak di-disable saat gems kurang: buyGlobalLuck() sudah

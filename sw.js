@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v478-loadingLogoGap';
+const CACHE_NAME = 'anime-card-battle-v479-deckScreen';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
