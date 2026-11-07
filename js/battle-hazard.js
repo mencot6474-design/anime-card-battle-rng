@@ -293,56 +293,103 @@
     if (foe) foe.style.transform = 'scaleX(' + hpPctFoe() + ')';
     var meT = $('hzHpMeT'), foeT = $('hzHpFoeT');
     if (meT) meT.textContent = hpTxt(b.pHp, b.pMax);
-    decorateHpLabels();
+    syncPartyRail();
     if (foeT) foeT.textContent = hpTxt(b.eHp != null ? b.eHp : foeMaxHp(), foeMaxHp());
   }
 
-  /* ------------------------------------------------------------ PARTY RAIL */
-  function buildParty() {
-    drop('hzParty');
+  /* ------------------------------------------------- PARTY RAIL (1 rail) */
+  function cardThumbOf(charId) {
+    try { if (charId && typeof cardThumb === 'function') return cardThumb(charId); } catch (e) {}
+    try { if (charId && typeof cardImg === 'function') return cardImg(charId); } catch (e) {}
+    return '';
+  }
+
+  function buildPartyRail() {
     var b = (typeof bt !== 'undefined') ? bt : null;
     if (!b || !b.fighters || !b.fighters.length) return;
-
-    var row = '';
+    drop('hzPartyRail');
     var active = b.active || 0;
+    var row = '';
     for (var i = 0; i < b.fighters.length && i < 4; i++) {
       var f = b.fighters[i];
       if (!f) continue;
       var dead = (i === active) ? !(b.pHp > 0) : !!(b.revUsed && b.revUsed[i]);
-      var img = '';
-      try {
-        if (typeof cardThumb === 'function') img = cardThumb(f.char);
-        else if (typeof cardImg === 'function') img = cardImg(f.char);
-      } catch (e) { img = ''; }
-      row += '<div class="hz-pt' + (i === active ? ' active' : '') + (dead ? ' dead' : '') + '" data-i="' + i + '">' +
-        (img ? '<img src="' + esc(img) + '" alt="">' : '') +
-        '<span>' + (i + 1) + '</span><i><b></b></i></div>';
+      var pct = 1;
+      if (i === active && b.pMax) pct = Math.max(0, Math.min(1, b.pHp / b.pMax));
+      row += '<div class="pt' + (i === active ? ' active' : '') + (dead ? ' dead' : '') +
+        '" data-i="' + i + '">' +
+        '<img src="' + esc(cardThumbOf(f.char)) + '" alt="">' +
+        '<span>' + (i + 1) + '</span>' +
+        '<i><b style="transform:scaleX(' + (dead ? 0 : pct) + ')"></b></i>' +
+        '</div>';
     }
     if (!row) return;
-
-    var wrap = mk('div', 'hz-party');
-    wrap.id = 'hzParty';
-    wrap.innerHTML = '<div class="hz-party-h">YOUR PARTY</div>' +
-      '<div class="hz-party-row">' + row + '</div>';
+    var wrap = mk('div', 'party');
+    wrap.id = 'hzPartyRail';
+    wrap.innerHTML = '<div class="party-h">YOUR PARTY</div>' +
+      '<div class="party-row">' + row + '</div>';
     document.body.appendChild(wrap);
   }
 
-  /* --------------------------------------------------------------- PILES */
   function buildPiles() {
-    drop('hzPiles');
     var b = (typeof bt !== 'undefined') ? bt : null;
     if (!b) return;
+    drop('hzPileStrip');
     var total = (b.fighters || []).length;
     var active = b.active || 0;
     var left = Math.max(0, total - active - 1);
-
-    var wrap = mk('div', 'hz-piles');
-    wrap.id = 'hzPiles';
+    var wrap = mk('div', 'side-stack');
+    wrap.id = 'hzPileStrip';
     wrap.innerHTML =
-      '<div class="hz-pile"><b>DECK</b><span>&times;' + left + '</span><em>' + left + '</em></div>' +
-      '<div class="hz-pile grave"><b>DOWN</b><span>&times;' + active + '</span><em>' + active + '</em></div>';
+      '<div class="pile"><b>DECK</b><span>&times;' + left + '</span><em>' + left + '</em></div>' +
+      '<div class="pile grave"><b>GRAVE</b><span>&times;' + active + '</span><em>' + active + '</em></div>';
     document.body.appendChild(wrap);
   }
+
+  function syncPartyRail() {
+    var b = (typeof bt !== 'undefined') ? bt : null;
+    if (!b) return;
+    if (!$('hzPileStrip')) buildPiles();
+    var wrap = $('hzPartyRail');
+    if (!wrap) { buildPartyRail(); return; }
+    var active = b.active || 0;
+    var pts = wrap.querySelectorAll('.pt');
+    for (var i = 0; i < pts.length; i++) {
+      var idx = parseInt(pts[i].getAttribute('data-i'), 10);
+      var dead = (idx === active) ? !(b.pHp > 0) : !!(b.revUsed && b.revUsed[idx]);
+      pts[i].classList.toggle('active', idx === active);
+      pts[i].classList.toggle('dead', dead);
+      var bar = pts[i].querySelector('i b');
+      if (bar) {
+        var pct = 1;
+        if (idx === active && b.pMax) pct = Math.max(0, Math.min(1, b.pHp / b.pMax));
+        bar.style.transform = 'scaleX(' + (dead ? 0 : pct) + ')';
+      }
+    }
+    var pile = $('hzPileStrip');
+    if (pile) {
+      var total = (b.fighters || []).length;
+      var left = Math.max(0, total - active - 1);
+      var em = pile.querySelector('.pile em');
+      if (em && em.textContent !== String(left)) {
+        em.textContent = left;
+        var sp = pile.querySelector('.pile span');
+        if (sp) sp.innerHTML = '&times;' + left;
+      }
+      var gra = pile.querySelectorAll('.pile em')[1];
+      if (gra && gra.textContent !== String(active)) {
+        gra.textContent = active;
+        var gs = pile.querySelectorAll('.pile span')[1];
+        if (gs) gs.innerHTML = '&times;' + active;
+      }
+    }
+  }
+
+  /* ------------------------------------------------------------ PARTY RAIL */
+  
+
+  /* --------------------------------------------------------------- PILES */
+  
 
   /* ------------------------------------------------------------ CURTAIN */
   function buildCurtain() {
@@ -478,7 +525,7 @@
   /* --------------------------------------------------------------- SYNC */
   function sync() {
     if (!document.body.classList.contains('battle-full')) {
-      drop('hzArena'); drop('hzHud'); drop('hzParty'); drop('hzPiles');
+      drop('hzArena'); drop('hzHud'); drop('hzPartyRail'); drop('hzPileStrip');
       return;
     }
     var b = (typeof bt !== 'undefined') ? bt : null;
@@ -488,45 +535,15 @@
     if (!$('hzHud')) buildHud();
     else if (!$('hzHpMe')) buildHud();
     else syncHudHp();
-    decorateHpLabels();
 
-    /* party: cukup ubah kelas (anti-flicker) */
-    var pts = document.querySelectorAll('#hzParty .hz-pt');
-    var active = b.active || 0;
-    for (var i = 0; i < pts.length; i++) {
-      var idx = parseInt(pts[i].getAttribute('data-i'), 10);
-      var dead = (idx === active) ? !(b.pHp > 0) : !!(b.revUsed && b.revUsed[idx]);
-      pts[i].classList.toggle('active', idx === active);
-      pts[i].classList.toggle('dead', dead);
-      var bar = pts[i].querySelector('i b');
-      if (bar) {
-        var pct = 1;
-        if (idx === active && b.pMax) pct = Math.max(0, Math.min(1, b.pHp / b.pMax));
-        bar.style.transform = 'scaleX(' + (dead ? 0 : pct) + ')';
-      }
-    }
-
-    /* piles */
-    var pile = $('#hzPiles .hz-pile em');
-    if (pile) {
-      var total = (b.fighters || []).length;
-      var left = Math.max(0, total - active - 1);
-      if (pile.textContent !== String(left)) {
-        pile.textContent = left;
-        var span = pile.parentNode.querySelector('span');
-        if (span) span.innerHTML = '&times;' + left;
-      }
-    }
+    syncPartyRail();
   }
 
   function decorate() {
     buildArena();
     buildHud();
-    /* Rail party = .bench-rail milik mesin. Tidak ada rail/pile kedua di sini
-       (dulu menimbulkan party & deck dobel). */
-    drop('hzParty');
-    drop('hzPiles');
-    decorateHpLabels();
+    buildPartyRail();
+    buildPiles();
   }
 
   /* -------------------------------------------------------------- BOOT */

@@ -172,6 +172,20 @@ function hzCardInfoHtml(o){
   return '<div class="hz-card-info">'+out+'</div>';
 }
 
+/* Badge kartu (SHINY / mutasi / TRAIT) — urutan prototipe: shiny, mut, trait. */
+function hzBadgeHtml(mut,trait,shiny){
+  var out="";
+  if(shiny) out+='<span class="fc-b shiny">SHINY</span>';
+  var ml=(mut&&typeof MUT_LABEL!=="undefined")?MUT_LABEL[mut]:"";
+  if(ml) out+='<span class="fc-b mut">'+ml+'</span>';
+  var tn="";
+  try{
+    if(trait&&trait!=="none"&&typeof TRAIT!=="undefined"&&TRAIT[trait]) tn=TRAIT[trait].name||"";
+  }catch(e){}
+  if(tn) out+='<span class="fc-b trait">TRAIT &middot; '+tn+'</span>';
+  return out;
+}
+
 function foeFighterInnerHtml(en,es,opts){
   opts=opts||{};
   const hpId=opts.hpId||"hpFoe",hpTid=opts.hpTid||"hpFoeT";
@@ -179,16 +193,23 @@ function foeFighterInnerHtml(en,es,opts){
   const curHp=opts.curHp!=null?Math.max(0,Math.min(maxHp,opts.curHp)):maxHp;
   const hpPct=Math.max(0,Math.min(100,curHp/maxHp*100));
   const fmtHp=opts.hpFmt||fmtBattleK;
-  return `<div class="f-banner">
-    <img src="${en.img}" alt="${en.name}">
-    <div class="f-banner-vignette"></div>
-    ${hzCardInfoHtml({char:en.char||en.id,mut:opts.mut,name:en.name,tag:(en.boss?"BOSS":"TARGET"),side:"foe",skill:(en.skill||(en.passive&&en.passive.name)||"")})}
+  const chance=(en&&en.chance)?"1 IN "+fmt(en.chance):"";
+  return `<div class="fc-frame">
+    <img class="fc-art" src="${en.img}" alt="${en.name}">
+    <div class="fc-vig"></div>
+    <div class="fc-top">
+      <span class="fc-tag">${en.boss?"BOSS":"TARGET"}</span>
+      ${chance?`<span class="fc-chance">${chance}</span>`:""}
+    </div>
+    <div class="fc-badges">${hzBadgeHtml(opts.mut,null,false)}</div>
+    <div class="fc-name">${en.name}</div>
+    <div class="fc-skill">${(en.skill||(en.passive&&en.passive.name)||"")}</div>
   </div>
-  <div class="f-body">
-    <div class="hpbar"><div class="hp-trail" style="width:${hpPct}%"></div><i id="${hpId}" style="width:${hpPct}%"></i><span id="${hpId}BarT">${fmtHp(curHp)} / ${fmtHp(maxHp)}</span></div>
-    <div class="stat-row">
-      <div class="stat hp"><i>HP</i> <b id="${hpTid}">${fmtHp(curHp)}</b></div>
-      <div class="stat atk"><i>ATK</i> <b>${fmtBattleK(es.atk)}</b></div>
+  <div class="fc-foot">
+    <div class="fc-hp"><i id="${hpId}" style="width:${hpPct}%"></i><b id="${hpTid}">${fmtHp(curHp)} / ${fmtHp(maxHp)}</b></div>
+    <div class="fc-stats">
+      <span class="fc-st hp"><i>HP</i><b>${fmtHp(curHp)}</b></span>
+      <span class="fc-st atk"><i>ATK</i><b>${fmtBattleK(es.atk)}</b></span>
     </div>
   </div>`;
 }
@@ -200,34 +221,46 @@ function meFighterHtml(s,opts){
   const maxHp=opts.maxHp!=null?Math.max(1,opts.maxHp):Math.max(1,st.hp||1);
   const curHp=opts.curHp!=null?Math.max(0,Math.min(maxHp,opts.curHp)):maxHp;
   const hpPct=Math.max(0,Math.min(100,curHp/maxHp*100));
-  return `<div class="f-banner">
-    <img src="${cardImg(s.char)}" alt="${cardName(s.char)}"${CARDS[s.char]&&CARDS[s.char].pos?` style="object-position:${CARDS[s.char].pos}"`:''}>
-    <div class="f-banner-vignette"></div>
-    ${hzCardInfoHtml({char:s.char,mut:s.mut,trait:s.trait,shiny:s.shiny,name:cardName(s.char),tag:"OPERATOR",side:"me",skill:(CARDS[s.char]&&CARDS[s.char].passive&&CARDS[s.char].passive.name)||""})}
+  const cd=CARDS[s.char]||null;
+  const chance=(cd&&cd.chance)?"1 IN "+fmt(cd.chance):"";
+  const skill=(cd&&cd.passive&&cd.passive.name)||"";
+  const pos=(cd&&cd.pos)?` style="object-position:${cd.pos}"`:"";
+  return `<div class="fc-frame">
+    <img class="fc-art" src="${cardImg(s.char)}" alt="${cardName(s.char)}"${pos}>
+    <div class="fc-vig"></div>
+    <div class="fc-top">
+      <span class="fc-tag">OPERATOR</span>
+      ${chance?`<span class="fc-chance">${chance}</span>`:""}
+    </div>
+    <div class="fc-badges">${hzBadgeHtml(s.mut,s.trait,!!s.shiny)}</div>
+    <div class="fc-name">${cardName(s.char)}</div>
+    <div class="fc-skill">${skill}</div>
   </div>
-  <div class="f-body">
-    <div class="hpbar"><div class="hp-trail" style="width:${hpPct}%"></div><i id="hpMe" style="width:${hpPct}%"></i><span id="hpMeBarT">${fmtBattleK(curHp)} / ${fmtBattleK(maxHp)}</span></div>
-    <div class="stat-row">
-      <div class="stat hp"><i>HP</i> <b id="hpMeT">${fmtBattleK(curHp)}</b></div>
-      <div class="stat atk"><i>ATK</i> <b id="meAtkT">${fmtBattleK(st.atk)}</b></div>
+  <div class="fc-foot">
+    <div class="fc-hp"><i id="hpMe" style="width:${hpPct}%"></i><b id="hpMeT">${fmtBattleK(curHp)} / ${fmtBattleK(maxHp)}</b></div>
+    <div class="fc-stats">
+      <span class="fc-st hp"><i>HP</i><b>${fmtBattleK(curHp)}</b></span>
+      <span class="fc-st atk"><i>ATK</i><b id="meAtkT">${fmtBattleK(st.atk)}</b></span>
     </div>
   </div>`;
 }
 function meShadowHtml(sh){
-  return `<div class="f-banner">
-    <img src="${sh.img}" alt="${sh.name}" style="filter:grayscale(.35) brightness(.72) hue-rotate(215deg) saturate(1.5)">
-    <div class="f-banner-vignette"></div>
-    ${hzCardInfoHtml({char:sh.char,name:sh.name,tag:"SHADOW",side:"me"})}
+  return `<div class="fc-frame">
+    <img class="fc-art" src="${sh.img}" alt="${sh.name}" style="filter:grayscale(.35) brightness(.72) hue-rotate(215deg) saturate(1.5)">
+    <div class="fc-vig"></div>
+    <div class="fc-top"><span class="fc-tag">SHADOW</span></div>
+    <div class="fc-badges"></div>
+    <div class="fc-name">${sh.name}</div>
+    <div class="fc-skill">SHADOW EXCHANGE</div>
   </div>
-  <div class="f-body">
-    <div class="hpbar"><div class="hp-trail" style="width:100%"></div><i id="hpMe" style="width:100%"></i><span id="hpMeBarT">${fmtBattleK(sh.maxHp)} / ${fmtBattleK(sh.maxHp)}</span></div>
-    <div class="stat-row">
-      <div class="stat hp"><i>HP</i> <b id="hpMeT">${fmtBattleK(sh.maxHp)}</b></div>
-      <div class="stat atk"><i>ATK</i> <b id="meAtkT">${fmtBattleK(sh.atk)}</b></div>
+  <div class="fc-foot">
+    <div class="fc-hp"><i id="hpMe" style="width:100%"></i><b id="hpMeT">${fmtBattleK(sh.maxHp)} / ${fmtBattleK(sh.maxHp)}</b></div>
+    <div class="fc-stats">
+      <span class="fc-st hp"><i>HP</i><b>${fmtBattleK(sh.maxHp)}</b></span>
+      <span class="fc-st atk"><i>ATK</i><b id="meAtkT">${fmtBattleK(sh.atk)}</b></span>
     </div>
   </div>`;
 }
-/* Bayangan jatuh / giliran habis → Monarch kembali ke slot dengan HP aslinya (tak tersentuh selama possess). */
 function endPossession(){
   if(!bt||!bt.shadow)return;
   const s=bt.shadow;bt.shadow=null;
@@ -2138,10 +2171,9 @@ function setBar(id,tid,cur,max){
   b.style.width=pct;
   const tr=b.parentElement?b.parentElement.querySelector(".hp-trail"):null;
   if(tr)tr.style.width=pct;
+  /* label di dalam bar: "cur / max" (prototipe) */
   const t=tid?document.getElementById(tid):null;
-  if(t)t.textContent=fmtBattleK(Math.max(0,cur));
-  const tb=document.getElementById(id+"BarT");
-  if(tb)tb.textContent=fmtBattleK(Math.max(0,cur))+" / "+fmtBattleK(Math.max(0,max));
+  if(t)t.textContent=fmtBattleK(Math.max(0,cur))+" / "+fmtBattleK(Math.max(0,max));
 }
 function step(){ if(!bt||bt.over)return; schedPhase(0,playerPhase); }
 // Safe scheduler: guarantees the battle can never hang. If a phase throws,
