@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v481-noOverlap';
+const CACHE_NAME = 'anime-card-battle-v482-searchInput';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

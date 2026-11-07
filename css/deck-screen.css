@@ -329,6 +329,32 @@ body:has(#deckModal.show) .lobby-tactical-hud {
   flex: 1 1 auto; min-width: 0; border: 0; background: transparent; color: var(--dk-ink);
   font-family: var(--dk-ui); font-weight: 700; font-size: 12px; outline: none;
 }
+/* Tema cyan global di style.css:25550 memakai `input[type="search"]` dengan
+   `!important` (bg navy, border cyan, radius 8, inset shadow) — itu yang tampil
+   sebagai "badge biru" di dalam search bar. Semua deklarasi di sini WAJIB
+   `!important` juga, kalau tidak kalah walau selector lebih spesifik. */
+#deckModal .dk-search input[type="search"],
+#deckModal .dk-search input[type="search"]:focus,
+#deckModal .dk-search input[type="search"]:focus-visible {
+  background: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: var(--dk-ink) !important;
+  outline: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+/* tombol clear bawaan WebKit pada input[type=search] juga disembunyikan */
+#deckModal .dk-search input[type="search"]::-webkit-search-decoration,
+#deckModal .dk-search input[type="search"]::-webkit-search-cancel-button,
+#deckModal .dk-search input[type="search"]::-webkit-search-results-button,
+#deckModal .dk-search input[type="search"]::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
 #deckModal .dk-search input::placeholder { color: rgba(245, 245, 245, .3); }
 #deckModal .dk-search:focus-within { box-shadow: inset 0 0 0 1px var(--dk-haz); }
 #deckModal .dk-chip {
