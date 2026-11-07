@@ -266,7 +266,18 @@
     if (el('dkTsSlots')) el('dkTsSlots').textContent = filled + ' / 4';
     if (el('dkDeckCount')) el('dkDeckCount').textContent = '[ ' + filled + ' / 4 ]';
     if (el('dkMPower')) el('dkMPower').textContent = fmtStatSafe(pw);
-    if (el('dkMLuck')) el('dkMLuck').textContent = 'x' + (1 + filled * 0.25).toFixed(2);
+    if (el('dkMLuck')) {
+      /* LUCK = angka ASLI dari totalLuck() (data.js), bukan rumus prototipe
+         "1 + slot x 0.25" yang dulu dipakai lab. totalLuck() sudah menggabungkan
+         base + skill tree + artefak + pet + weather + global + rebirth + ad.
+         Nilai besar (artefak + pet + rebirth) bisa jutaan, jadi diringkas pakai
+         fmtStat supaya tidak meluber ke sel CHANCE di sebelahnya. */
+      var luck = safe(function () { return totalLuck(); }, 1);
+      luck = Number(luck) || 1;
+      el('dkMLuck').textContent = luck >= 1000
+        ? 'x' + fmtStatSafe(luck)
+        : 'x' + (Math.round(luck * 100) / 100).toFixed(2);
+    }
     if (el('dkMChance')) el('dkMChance').textContent = best ? chanceText(best).replace('1 in ', '1/') : '—';
 
     if (el('dkBrSlot')) {
