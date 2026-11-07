@@ -570,6 +570,34 @@
 #deckCardModal .dk-mstat k { display: block; font-family: var(--dk-mono); font-size: 5.5px; letter-spacing: .2em; color: var(--dk-dim); }
 #deckCardModal .dk-mstat v { display: block; margin-top: 2px; font-family: var(--dk-head); font-size: 13px; color: var(--dk-ink); }
 #deckCardModal .dk-mdesc { margin-top: 10px; font-family: var(--dk-ui); font-weight: 600; font-size: 12px; line-height: 1.5; color: rgba(245, 245, 245, .72); }
+
+/* blok skill/passive + trait di dossier (sumber: CARDS[char].passive & TRAIT) */
+#deckCardModal .dk-mskill {
+  margin-top: 10px;
+  padding: 8px 9px 9px;
+  background: rgba(8, 8, 8, .85);
+  box-shadow: inset 0 0 0 1px rgba(245, 245, 245, .1);
+  border-left: 2px solid var(--dk-haz);
+}
+#deckCardModal .dk-mskill.dk-mtrait { border-left-color: var(--dk-mc, var(--dk-haz)); }
+#deckCardModal .dk-mskill-h {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 4px;
+}
+#deckCardModal .dk-mskill-k {
+  font-family: var(--dk-mono); font-size: 5.5px; letter-spacing: .24em;
+  color: var(--dk-haz); white-space: nowrap;
+}
+#deckCardModal .dk-mskill.dk-mtrait .dk-mskill-k { color: rgba(245, 245, 245, .5); }
+#deckCardModal .dk-mskill-n {
+  font-family: var(--dk-head); font-size: 10.5px; font-weight: 800; letter-spacing: .04em;
+  line-height: 1.25; color: var(--dk-ink); text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+#deckCardModal .dk-mskill-d {
+  margin-top: 4px; font-family: var(--dk-ui); font-weight: 600;
+  font-size: 11.5px; line-height: 1.5; color: rgba(245, 245, 245, .74);
+  overflow-wrap: anywhere;
+}
 #deckCardModal .dk-mfoot { flex: 0 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--dk-faint); box-shadow: inset 0 0 0 1px var(--dk-faint); }
 #deckCardModal .dk-mbtn {
   position: relative; min-height: 46px;

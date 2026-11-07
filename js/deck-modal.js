@@ -388,10 +388,29 @@
   }
 
   /* ---------------------------- card dossier --------------------------- */
-  function descOf(s) {
-    return 'A ' + mutLabel(s).toLowerCase() + ' variant pulled at ' + chanceText(s) + '. '
-      + 'Slots into the active deck as a frontline fighter; its art, mutation tint and rarity frame '
-      + 'are all carried over into battle.';
+  /* Isi modal = SKILL/PASSIVE kartu (bukan teks generik). Sumber: CARDS[char].passive
+     = { name, desc } dari MASTER_CARD_INDEX (cermin STORY_BIBLE units: skill + desc). */
+  function passiveOf(s) {
+    var c = safe(function () { return CARDS[s.char]; }, null);
+    if (!c || !c.passive) return null;
+    var name = String(c.passive.name || '').trim();
+    var desc = String(c.passive.desc || '').trim();
+    if (!name && !desc) return null;
+    return { name: name, desc: desc };
+  }
+  function traitInfo(s) {
+    var k = s && s.trait;
+    if (!k || k === 'none') return null;
+    var t = safe(function () { return TRAIT[k]; }, null);
+    if (!t) return null;
+    return {
+      name: safe(function () { return traitLabel(k); }, String(k).toUpperCase()),
+      fx: safe(function () { return traitFxList(k); }, ''),
+      color: t.color || 'var(--dk-ink)'
+    };
+  }
+  function weatherOf(s) {
+    return safe(function () { return bpWeatherOf(s); }, null);
   }
 
   function openDossier(id) {
@@ -403,6 +422,28 @@
     var slotAt = deckArr().indexOf(id);
     var body = el('dkCardModalBody');
     if (!body) return;
+
+    var pas = passiveOf(s);
+    var tr = traitInfo(s);
+    var wx = weatherOf(s);
+
+    var skillHtml = '';
+    if (pas) {
+      skillHtml =
+        '<div class="dk-mskill">'
+        + '<div class="dk-mskill-h"><span class="dk-mskill-k">PASSIVE SKILL</span></div>'
+        + (pas.name ? '<div class="dk-mskill-n">' + esc(pas.name) + '</div>' : '')
+        + (pas.desc ? '<p class="dk-mskill-d">' + esc(pas.desc) + '</p>' : '')
+        + '</div>';
+    }
+    var traitHtml = tr
+      ? '<div class="dk-mskill dk-mtrait">'
+      + '<div class="dk-mskill-h"><span class="dk-mskill-k">TRAIT</span></div>'
+      + '<div class="dk-mskill-n" style="color:' + esc(tr.color) + '">' + esc(tr.name) + '</div>'
+      + (tr.fx ? '<p class="dk-mskill-d">' + esc(tr.fx) + '</p>' : '')
+      + '</div>'
+      : '';
+
     body.innerHTML =
       '<div class="dk-mart" style="--dk-mc:' + col + '"><img src="' + esc(thumbOf(s)) + '" alt="' + esc(nameOf(s)) + '"></div>'
       + '<div class="dk-minfo">'
@@ -410,13 +451,14 @@
       + '<div class="dk-mtags">'
       + '<span class="dk-mtag" style="--dk-mc:' + col + '">' + esc(mutLabel(s)) + '</span>'
       + '<span class="dk-mtag" style="--dk-mc:rgba(245,245,245,.55)">' + esc(chanceText(s)) + '</span>'
+      + (wx && wx.name ? '<span class="dk-mtag" style="--dk-mc:' + esc(wx.color || 'var(--dk-ink)') + '">' + esc(wx.name) + '</span>' : '')
       + (slotAt >= 0 ? '<span class="dk-mtag" style="--dk-mc:var(--dk-haz)">SLOT 0' + (slotAt + 1) + '</span>' : '')
       + '</div>'
       + '<div class="dk-mstats">'
       + '<div class="dk-mstat"><k>HP</k><v>' + fmtStatSafe(st.hp) + '</v></div>'
       + '<div class="dk-mstat"><k>ATK</k><v>' + fmtStatSafe(st.atk) + '</v></div>'
       + '</div>'
-      + '<div class="dk-mdesc">' + esc(descOf(s)) + '</div>'
+      + skillHtml + traitHtml
       + '</div>';
 
     var foot = el('dkCardModalFoot');

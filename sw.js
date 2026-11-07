@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v479-deckScreen';
+const CACHE_NAME = 'anime-card-battle-v480-cardSkill';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
