@@ -1139,3 +1139,17 @@ html body.battle-full #crFab{display:none !important}
 @media (orientation:landscape) and (max-height:520px){
   .hz-card-name{bottom:40px !important}
 }
+
+/* ---------------- 21. LANDSCAPE: beri ruang atas & speed rapat ---------- */
+@media (orientation:landscape) and (max-height:520px){
+  html body.battle-full .battle-grid{
+    padding-top:66px !important;
+    padding-bottom:56px !important}
+  html body.battle-full #pgrSpeedGroup,
+  html body.battle-full #bspeedBtn,
+  html body.battle-full .bspeed-btn{
+    top:auto !important;
+    bottom:calc(8px + env(safe-area-inset-bottom,0px)) !important}
+  .hz-hud{padding-top:calc(var(--tbh,0px) + 10px) !important;min-height:44px !important}
+  html body.battle-full .battle-grid .tcg-equip-rail{display:none !important}
+}
