@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v483-realLuck';
+const CACHE_NAME = 'anime-card-battle-v484-deckSortPower';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

@@ -314,10 +314,33 @@
     }
   }
 
+  /* EQUIP BEST (deck) = isi 4 slot dengan kartu POWER tertinggi.
+     Beda dari bpEquipBest() Backpack yang memilih varian paling LANGKA.
+     Tie-break: power -> chance -> nama, supaya hasil deterministik. */
+  function equipBestByPower() {
+    var list = stacks().filter(function (s) { return s && s.char; });
+    if (!list.length) return;
+    list.sort(function (a, b) {
+      return (powerOf(b) - powerOf(a))
+        || (chanceOf(b) - chanceOf(a))
+        || nameOf(a).localeCompare(nameOf(b));
+    });
+    var next = [null, null, null, null];
+    list.slice(0, 4).forEach(function (s, i) { next[i] = s.id; });
+    if (!hasState()) return;
+    state.deck = next;
+    state.equippedId = next[0] || null;
+    state.equippedId2 = next[1] || null;
+    afterWrite();
+  }
+
+  /* Urutan baku arsip deck: KARTU TERPASANG dulu (paling atas), lalu FAVORIT,
+     baru sort yang dipilih user (default POWER). Cermin bpCompareBaku() Backpack,
+     tapi tanpa tie-break rarity — di deck yang menentukan power, bukan chance. */
   function cardList() {
     var list = stacks().slice();
+    var d = deckArr();
     if (DKM.inDeckOnly) {
-      var d = deckArr();
       list = list.filter(function (s) { return d.indexOf(s.id) >= 0; });
     }
     if (DKM.mutFilter !== 'all') {
@@ -332,9 +355,17 @@
         return nameOf(s).toLowerCase().indexOf(q) >= 0 || mutLabel(s).toLowerCase().indexOf(q) >= 0;
       });
     }
-    if (DKM.sortMode === 'power') list.sort(function (a, b) { return powerOf(b) - powerOf(a); });
-    else if (DKM.sortMode === 'chance') list.sort(function (a, b) { return chanceOf(b) - chanceOf(a); });
-    else list.sort(function (a, b) { return nameOf(a).localeCompare(nameOf(b)); });
+    function deckRank(s) { return d.indexOf(s.id) >= 0 ? 1 : 0; }
+    function favRank(s) { return s.fav ? 1 : 0; }
+    list.sort(function (a, b) {
+      var r = deckRank(b) - deckRank(a);          /* terpasang di atas */
+      if (r) return r;
+      r = favRank(b) - favRank(a);                /* favorit menyusul */
+      if (r) return r;
+      if (DKM.sortMode === 'chance') return chanceOf(b) - chanceOf(a);
+      if (DKM.sortMode === 'name') return nameOf(a).localeCompare(nameOf(b));
+      return powerOf(b) - powerOf(a);             /* default: POWER */
+    });
     return list;
   }
 
@@ -706,8 +737,10 @@
 
     var best = el('dkActBest');
     if (best) best.addEventListener('click', function () {
-      /* EQUIP BEST memakai rumus Backpack (bpEquipBest) supaya hasil identik */
-      if (typeof bpEquipBest === 'function') { safe(bpEquipBest); afterWrite(); }
+      /* EQUIP BEST di layar DECK = 4 kartu POWER tertinggi (permintaan user
+         2026-11-07). SENGAJA tidak memanggil bpEquipBest() milik Backpack:
+         fungsi itu memilih varian PALING LANGKA (luckChance), bukan power. */
+      equipBestByPower();
     });
 
     var clr = el('dkActClear');
