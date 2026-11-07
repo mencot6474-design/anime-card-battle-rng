@@ -57,6 +57,38 @@
     var info = { mode: 'story', kick: 'STORY PROTOCOL', title: 'ENGAGEMENT', phase: 'PLAYER INITIATIVE' };
     var b = (typeof bt !== 'undefined') ? bt : null;
 
+    /* Banner masuk tampil SEBELUM startBattle() membuat bt, jadi saat itu
+       bt belum ada. Ambil konteks dari state/towerRun/raid. */
+    if (!b) {
+      var lvl = (typeof state !== 'undefined' && state && state.battle)
+        ? state.battle.level : null;
+      var tRun = (typeof towerRun !== 'undefined') ? towerRun : null;
+      var rBoss = (typeof raid !== 'undefined' && raid) ? raid.boss : null;
+      if (typeof tRun !== 'undefined' && tRun && tRun.waves) {
+        info.mode = 'tower';
+        info.kick = 'INFINITE TOWER &middot; <b>CORE SPIRE</b>';
+        info.title = 'FLOOR ' + (tRun.floor || 1);
+        info.phase = (typeof towerIsBossFloor === 'function' && towerIsBossFloor(tRun.floor))
+          ? 'BOSS ENCOUNTER'
+          : 'WAVE ' + ((tRun.idx || 0) + 1) + '/' + ((tRun.waves || []).length || 1);
+        return info;
+      }
+      if (rBoss) {
+        info.mode = 'raid';
+        info.kick = 'WORLD BOSS &middot; <b>RAID DEPLOYMENT</b>';
+        info.title = rBoss.name || 'WORLD BOSS';
+        info.phase = 'RAID PHASE II';
+        return info;
+      }
+      if (lvl != null) {
+        info.mode = 'story';
+        info.kick = 'STORY PROTOCOL &middot; <b>SECTOR ' + String(lvl).padStart(2, '0') + '</b>';
+        info.title = 'STAGE ' + lvl;
+        info.phase = 'PLAYER INITIATIVE';
+        return info;
+      }
+    }
+
     if (b && b.tower && typeof towerRun !== 'undefined' && towerRun) {
       info.mode = 'tower';
       info.kick = 'INFINITE TOWER &middot; <b>CORE SPIRE</b>';
@@ -183,13 +215,13 @@
 
     if (info.mode === 'tower') {
       mark = '07';
-      sub = 'CORE SPIRE \u2014 GUARD FLOOR';
+      sub = 'CORE SPIRE - GUARD FLOOR';
       kick = '// SPIRE <b>ASCENT</b>';
       water = 'TOWER';
       foot = 'ENTER FLOOR';
     } else if (info.mode === 'raid') {
       mark = 'WB';
-      sub = 'RAID \u2014 PHASE DEPLOYMENT';
+      sub = 'RAID - PHASE DEPLOYMENT';
       kick = '// RAID <b>DEPLOYMENT</b>';
       water = 'RAID';
       foot = 'ENGAGE TARGET';
@@ -198,7 +230,7 @@
       sub = 'SECTOR ' + String((function () {
         var b = (typeof bt !== 'undefined') ? bt : null;
         return (b && b.lv) || 1;
-      })()).padStart(2, '0') + ' \u2014 BATTLE GATE';
+      })()).padStart(2, '0') + ' - BATTLE GATE';
       kick = '// AUTHORIZED <b>INSERTION</b>';
       water = 'STORY';
       foot = 'ENGAGE TARGET';
