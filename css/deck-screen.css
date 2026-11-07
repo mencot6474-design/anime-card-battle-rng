@@ -9,6 +9,28 @@
    TANPA background-attachment:fixed, TANPA animasi box-shadow/width/height.
    ========================================================================== */
 
+/* Sembunyikan rail/tabbar/HUD + notif masuk game selama layar deck terbuka.
+   #ldEntry ("SESSION SYNCHRONIZED") hidup 3,2 dtk setelah loader dan dulu
+   menumpuk di atas toolbar/search bar deck. body.deck-open dipakai sebagai
+   jaring untuk WebView yang belum mendukung :has(). */
+body.deck-open #ldEntry,
+body:has(#deckModal.show) #ldEntry,
+body.deck-open nav.m-rail,
+body.deck-open nav.m-tabbar,
+body.deck-open #activePlayersBadge,
+body.deck-open #pwaInstallBtn,
+body.deck-open .buff-dock,
+body.deck-open .lobby-tactical-hud,
+body:has(#deckModal.show) nav.m-rail,
+body:has(#deckModal.show) nav.m-tabbar,
+body:has(#deckModal.show) #activePlayersBadge,
+body:has(#deckModal.show) #pwaInstallBtn,
+body:has(#deckModal.show) .buff-dock,
+body:has(#deckModal.show) .lobby-tactical-hud {
+  display: none !important;
+  pointer-events: none !important;
+}
+
 /* ================================ TOKENS ================================ */
 #deckModal,
 #deckCurtain,

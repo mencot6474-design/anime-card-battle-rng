@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v480-cardSkill';
+const CACHE_NAME = 'anime-card-battle-v481-noOverlap';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
