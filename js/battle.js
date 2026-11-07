@@ -133,6 +133,45 @@ function tcgFoeEquipRailHtml(){
 }
 window.tcgFoeEquipRailHtml=tcgFoeEquipRailHtml;
 
+/* ===== HAZARD CARD INFO: tag, chance, badge, nama, skill =====
+   Menumpuk DI ATAS art (di dalam .f-banner) supaya tampang kartu sama dengan
+   prototipe hazard. Semua nilai dari data kartu yang sudah ada. */
+function hzEsc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function hzCardInfoHtml(o){
+  o=o||{};
+  var cd=(o.char&&typeof CARDS!=="undefined")?CARDS[o.char]:null;
+  var out="";
+  var ch="";
+  if(cd&&cd.chance){
+    try{ ch="1 IN "+fmt(cd.chance); }catch(e){ ch="1 IN "+cd.chance; }
+  }
+  var tag=o.tag||"";
+  if(tag||ch){
+    out+='<div class="hz-card-top">'+
+      (tag?'<span class="hz-tag'+(o.side==="foe"?" foe":"")+'">'+hzEsc(tag)+'</span>':'')+
+      (ch?'<span class="hz-chance">'+hzEsc(ch)+'</span>':'')+
+      '</div>';
+  }
+  var badges="";
+  if(o.shiny) badges+='<span class="hz-b hz-b-shiny">SHINY</span>';
+  var ml=(o.mut&&typeof MUT_LABEL!=="undefined")?MUT_LABEL[o.mut]:"";
+  if(ml) badges+='<span class="hz-b hz-b-mut">'+hzEsc(ml)+'</span>';
+  var tn="";
+  try{
+    if(o.trait&&o.trait!=="none"&&typeof TRAIT!=="undefined"&&TRAIT[o.trait]){
+      tn=TRAIT[o.trait].name||"";
+    }
+  }catch(e){}
+  if(tn) badges+='<span class="hz-b hz-b-trait">TRAIT &middot; '+hzEsc(tn)+'</span>';
+  if(badges) out+='<div class="hz-card-badges">'+badges+'</div>';
+  if(o.name) out+='<div class="hz-card-name">'+hzEsc(o.name)+'</div>';
+  var sk=(o.skill&&String(o.skill).trim())?String(o.skill).trim():"";
+  if(sk) out+='<div class="hz-card-skill">'+hzEsc(sk)+'</div>';
+  if(!out) return "";
+  return '<div class="hz-card-info">'+out+'</div>';
+}
+
 function foeFighterInnerHtml(en,es,opts){
   opts=opts||{};
   const hpId=opts.hpId||"hpFoe",hpTid=opts.hpTid||"hpFoeT";
@@ -143,6 +182,7 @@ function foeFighterInnerHtml(en,es,opts){
   return `<div class="f-banner">
     <img src="${en.img}" alt="${en.name}">
     <div class="f-banner-vignette"></div>
+    ${hzCardInfoHtml({char:en.char||en.id,mut:opts.mut,name:en.name,tag:(en.boss?"BOSS":"TARGET"),side:"foe",skill:(en.skill||(en.passive&&en.passive.name)||"")})}
   </div>
   <div class="f-body">
     <div class="hpbar"><div class="hp-trail" style="width:${hpPct}%"></div><i id="${hpId}" style="width:${hpPct}%"></i></div>
@@ -163,6 +203,7 @@ function meFighterHtml(s,opts){
   return `<div class="f-banner">
     <img src="${cardImg(s.char)}" alt="${cardName(s.char)}"${CARDS[s.char]&&CARDS[s.char].pos?` style="object-position:${CARDS[s.char].pos}"`:''}>
     <div class="f-banner-vignette"></div>
+    ${hzCardInfoHtml({char:s.char,mut:s.mut,trait:s.trait,shiny:s.shiny,name:cardName(s.char),tag:"OPERATOR",side:"me",skill:(CARDS[s.char]&&CARDS[s.char].passive&&CARDS[s.char].passive.name)||""})}
   </div>
   <div class="f-body">
     <div class="hpbar"><div class="hp-trail" style="width:${hpPct}%"></div><i id="hpMe" style="width:${hpPct}%"></i></div>
@@ -176,6 +217,7 @@ function meShadowHtml(sh){
   return `<div class="f-banner">
     <img src="${sh.img}" alt="${sh.name}" style="filter:grayscale(.35) brightness(.72) hue-rotate(215deg) saturate(1.5)">
     <div class="f-banner-vignette"></div>
+    ${hzCardInfoHtml({char:sh.char,name:sh.name,tag:"SHADOW",side:"me"})}
   </div>
   <div class="f-body">
     <div class="hpbar"><div class="hp-trail" style="width:100%"></div><i id="hpMe" style="width:100%"></i></div>

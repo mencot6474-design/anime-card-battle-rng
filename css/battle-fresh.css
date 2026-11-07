@@ -1027,3 +1027,115 @@ html body.battle-full .hz-hud{
   min-height:52px !important}
 html body.battle-full .hz-hud-card{
   padding-top:5px !important}
+
+/* ========================== 17. OVERLAY INFO KARTU ======================= */
+.hz-card-info{position:absolute;inset:0;z-index:4;pointer-events:none;
+  display:flex;flex-direction:column}
+.hz-card-top{display:flex;align-items:flex-start;justify-content:space-between;
+  gap:4px;padding:5px 6px}
+.hz-tag{font-family:var(--hz-mono);font-size:6.5px;letter-spacing:.18em;
+  padding:2px 5px;background:rgba(5,5,5,.82);white-space:nowrap;
+  border:1px solid rgba(243,230,0,.45);color:var(--hz);line-height:1.4}
+.hz-tag.foe{border-color:rgba(255,84,112,.45);color:var(--hz-danger)}
+.hz-chance{font-family:var(--hz-mono);font-size:6.5px;letter-spacing:.08em;
+  color:var(--hz-ink2);background:rgba(5,5,5,.82);padding:2px 5px;
+  white-space:nowrap;line-height:1.4}
+.hz-card-badges{position:absolute;right:6px;top:28px;display:flex;
+  flex-direction:column;gap:3px;align-items:flex-end}
+.hz-b{font-family:var(--hz-mono);font-size:6px;letter-spacing:.12em;
+  padding:1px 4px;border:1px solid currentColor;background:rgba(5,5,5,.88);
+  line-height:1.5;white-space:nowrap}
+.hz-b-shiny{color:#ffd86b}
+.hz-b-mut{color:#b58cff}
+.hz-b-trait{color:#5fe6ff}
+.hz-card-name{position:absolute;left:0;right:0;bottom:26px;padding:0 7px;
+  font-family:var(--hz-disp);font-size:11px;font-weight:800;letter-spacing:.02em;
+  line-height:1.12;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.92);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden;word-break:break-word}
+.hz-card-skill{position:absolute;left:0;right:0;bottom:8px;padding:0 7px;
+  font-family:var(--hz-mono);font-size:6.5px;letter-spacing:.08em;
+  color:var(--hz);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+@media (max-width:700px){
+  .hz-card-name{font-size:9.5px;bottom:22px}
+  .hz-card-skill{display:none}
+  .hz-card-badges{top:24px;gap:2px}
+  .hz-b{font-size:5.5px;padding:1px 3px}
+}
+@media (orientation:landscape) and (max-height:520px){
+  .hz-card-skill{display:none}
+  .hz-card-name{font-size:9px;bottom:20px}
+  .hz-card-badges{display:none}
+}
+
+/* ======================= 18. HUD DUA SISI =============================== */
+.hz-hud{gap:8px !important;align-items:flex-start !important;
+  justify-content:space-between !important;padding-inline:10px !important}
+.hz-hud-side{display:flex;align-items:center;gap:7px;min-width:0;
+  max-width:34%;padding:5px 9px 5px 5px;
+  background:linear-gradient(180deg,rgba(11,11,11,.94),rgba(5,5,5,.86));
+  border:1px solid var(--hz-line);
+  clip-path:polygon(0 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%)}
+.hz-hud-side.me{border-left:2px solid var(--hz)}
+.hz-hud-side.foe{border-right:2px solid var(--hz-danger);
+  flex-direction:row-reverse;text-align:right;
+  clip-path:polygon(0 0,100% 0,100% 100%,9px 100%,0 calc(100% - 9px))}
+.hz-hud-ava{width:30px;height:30px;flex:none;overflow:hidden;background:#0a0a0a;
+  border:1px solid var(--hz-line)}
+.hz-hud-side.foe .hz-hud-ava{border-color:rgba(255,84,112,.5)}
+.hz-hud-ava img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+.hz-hud-info{min-width:0;flex:1 1 auto;display:flex;flex-direction:column;gap:4px}
+.hz-hud-name{font-family:var(--hz-disp);font-size:9px;font-weight:800;
+  letter-spacing:.05em;color:#fff;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;max-width:100%}
+.hz-hud-hp{height:5px;background:rgba(245,245,245,.12);overflow:hidden}
+.hz-hud-hp i{display:block;height:100%;width:100%;background:var(--hz);
+  transform-origin:left center;transform:scaleX(1);
+  transition:transform .45s cubic-bezier(.16,1,.3,1)}
+.hz-hud-side.foe .hz-hud-hp i{background:var(--hz-danger)}
+.hz-hud-num{font-family:var(--hz-mono);font-size:7.5px;letter-spacing:.02em;
+  color:var(--hz-ink2);white-space:nowrap;flex:none;line-height:1.2;text-align:center}
+.hz-hud-side.foe .hz-hud-num{color:#ff8fa3}
+
+/* kartu tengah mengecil agar dua sisi muat */
+.hz-hud-card{flex:0 1 auto;max-width:38% !important}
+
+@media (max-width:700px){
+  .hz-hud{gap:5px !important;padding-inline:6px !important}
+  .hz-hud-side{max-width:38%;padding:4px 7px 4px 4px;gap:5px}
+  .hz-hud-ava{width:24px;height:24px}
+  .hz-hud-name{font-size:8px}
+  .hz-hud-num{font-size:6.5px}
+  .hz-hud-card{max-width:34% !important}
+  .hz-title{font-size:10px}
+  .hz-kick{font-size:5.5px}
+  .hz-sub{font-size:5.5px}
+}
+@media (orientation:landscape) and (max-height:520px){
+  .hz-hud-side{padding:3px 6px 3px 3px;gap:4px}
+  .hz-hud-ava{width:22px;height:22px}
+  .hz-hud-name{font-size:7.5px}
+  .hz-hud-num{font-size:6px}
+}
+
+/* ---------------- 19. sembunyikan badge online saat battle ------------- */
+html body.battle-full #activePlayersBadge{display:none !important}
+html body.battle-full #pwaInstallBtn{display:none !important}
+html body.battle-full #crFab{display:none !important}
+
+/* ---------------- 20. sembunyikan overlay global saat battle ------------- */
+html body.battle-full #activePlayersBadge,
+html body.battle-full #pwaInstallBtn,
+html body.battle-full #crFab{display:none !important}
+
+/* nama & skill harus DI ATAS f-body (hpbar + stat), bukan menimpanya */
+.hz-card-name{bottom:48px !important}
+.hz-card-skill{bottom:32px !important}
+
+@media (max-width:700px){
+  .hz-card-name{bottom:44px !important}
+}
+@media (orientation:landscape) and (max-height:520px){
+  .hz-card-name{bottom:40px !important}
+}

@@ -110,19 +110,166 @@
     return info;
   }
 
+  /* ------------------------------------------------- INFO KARTU (untuk HUD) */
+  function fmtChance(n) {
+    if (!n) return '';
+    return '1 IN ' + String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+  function activeFighter() {
+    var b = (typeof bt !== 'undefined') ? bt : null;
+    if (!b || !b.fighters) return null;
+    return b.fighters[b.active || 0] || b.fighters[0] || null;
+  }
+  function overlayInfoMe() {
+    var b = (typeof bt !== 'undefined') ? bt : null;
+    var f = activeFighter();
+    if (!f && b && b.eq) f = b.eq;
+    if (!f || !f.char) return null;
+    var cd = null;
+    try { cd = (typeof CARDS !== 'undefined') ? CARDS[f.char] : null; } catch (e) {}
+    var nm = '';
+    try { nm = cardName(f.char); } catch (e) {}
+    return {
+      char: f.char, mut: f.mut, trait: f.trait, shiny: !!f.shiny,
+      name: nm, tag: 'OPERATOR', side: 'me',
+      chance: cd && cd.chance ? cd.chance : 0,
+      skill: cd && cd.passive && cd.passive.name ? cd.passive.name : ''
+    };
+  }
+  function overlayInfoFoe() {
+    var b = (typeof bt !== 'undefined') ? bt : null;
+    if (!b) return null;
+    var en = b.en || null;
+    var wave = null;
+    try {
+      if (typeof towerRun !== 'undefined' && towerRun && towerRun.waves) {
+        wave = towerRun.waves[towerRun.idx] || null;
+      }
+    } catch (e) {}
+    var wEn = wave && wave.en ? wave.en : null;
+    var name = (en && en.name) || (wEn && wEn.name) || '';
+    if (!name) return null;
+    var mut = null;
+    try { if (typeof diffOf === 'function') mut = diffOf().mut; } catch (e) {}
+    var cid = (en && (en.char || en.id)) || (wEn && (wEn.char || wEn.id)) || b.eid || null;
+    /* story: unit kartu musuh ada di STORY_BIBLE.levels[lv-1].unit */
+    if (!cid) {
+      try {
+        if (b.lv != null && typeof STORY_BIBLE !== 'undefined' && STORY_BIBLE.levels) {
+          var lvRec = STORY_BIBLE.levels[b.lv - 1];
+          if (lvRec && lvRec.unit) cid = lvRec.unit;
+        }
+      } catch (e) {}
+    }
+    var cd = null;
+    try { if (cid && typeof CARDS !== 'undefined') cd = CARDS[cid]; } catch (e) {}
+    if (!cd && typeof CARDS !== 'undefined') {
+      try {
+        for (var k in CARDS) {
+          if (CARDS[k] && CARDS[k].name === name) { cid = k; cd = CARDS[k]; break; }
+        }
+      } catch (e) {}
+    }
+    var isBoss = !!(en && en.boss) || !!(wave && wave.boss);
+    return {
+      char: cid, mut: mut, trait: null, shiny: false,
+      name: name, tag: isBoss ? 'BOSS' : 'TARGET', side: 'foe',
+      chance: cd && cd.chance ? cd.chance : 0,
+      skill: cd && cd.passive && cd.passive.name ? cd.passive.name : ''
+    };
+  }
+
+  function cardArt(charId) {
+    try {
+      if (charId && typeof cardImg === 'function') return cardImg(charId);
+    } catch (e) {}
+    return '';
+  }
+  function hpPctMe() {
+    var b = (typeof bt !== 'undefined') ? bt : null;
+    if (!b || !b.pMax) return 1;
+    return Math.max(0, Math.min(1, b.pHp / b.pMax));
+  }
+  function foeMaxHp() {
+    var b = (typeof bt !== 'undefined') ? bt : null;
+    if (!b) return 0;
+    if (b.es && b.es.hp) return b.es.hp;
+    if (b.en && b.en.hp) return b.en.hp;
+    return 0;
+  }
+  function hpPctFoe() {
+    var b = (typeof bt !== 'undefined') ? bt : null;
+    var mx = foeMaxHp();
+    if (!b || !mx) return 1;
+    return Math.max(0, Math.min(1, (b.eHp != null ? b.eHp : mx) / mx));
+  }
+  function hpTxt(v, max) {
+    function f(n) {
+      n = Math.max(0, Math.round(n || 0));
+      if (n >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+      if (n >= 1e3) return (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'K';
+      return String(n);
+    }
+    return f(v) + ' / ' + f(max);
+  }
+
   function buildHud() {
     drop('hzHud');
     var info = battleInfo();
+    var me = overlayInfoMe();
+    var foe = overlayInfoFoe();
+    var b = (typeof bt !== 'undefined') ? bt : null;
+
     var hud = mk('div', 'hz-hud');
     hud.id = 'hzHud';
+
+    var left = me
+      ? '<div class="hz-hud-side me">' +
+          '<div class="hz-hud-ava"><img src="' + esc(cardArt(me.char)) + '" alt=""></div>' +
+          '<div class="hz-hud-info">' +
+            '<div class="hz-hud-name">' + esc(me.name) + '</div>' +
+            '<div class="hz-hud-hp"><i id="hzHpMe"></i></div>' +
+          '</div>' +
+          '<div class="hz-hud-num" id="hzHpMeT">' +
+            hpTxt(b ? b.pHp : 0, b ? b.pMax : 0) + '</div>' +
+        '</div>'
+      : '';
+
+    var right = foe
+      ? '<div class="hz-hud-side foe">' +
+          '<div class="hz-hud-ava"><img src="' + esc(cardArt(foe.char)) + '" alt=""></div>' +
+          '<div class="hz-hud-info">' +
+            '<div class="hz-hud-name">' + esc(foe.name) + '</div>' +
+            '<div class="hz-hud-hp"><i id="hzHpFoe"></i></div>' +
+          '</div>' +
+          '<div class="hz-hud-num" id="hzHpFoeT">' +
+            hpTxt(b && b.eHp != null ? b.eHp : foeMaxHp(), foeMaxHp()) + '</div>' +
+        '</div>'
+      : '';
+
     hud.innerHTML =
+      left +
       '<div class="hz-hud-card">' +
         '<div class="hz-kick">' + info.kick + '</div>' +
         '<div class="hz-title">' + esc(info.title) + '</div>' +
         '<div class="hz-sub"><span class="hz-dot"></span>' +
           '<span class="hz-phase">' + esc(info.phase) + '</span></div>' +
-      '</div>';
+      '</div>' +
+      right;
+
     document.body.appendChild(hud);
+    syncHudHp();
+  }
+
+  function syncHudHp() {
+    var b = (typeof bt !== 'undefined') ? bt : null;
+    if (!b) return;
+    var me = $('hzHpMe'), foe = $('hzHpFoe');
+    if (me) me.style.transform = 'scaleX(' + hpPctMe() + ')';
+    if (foe) foe.style.transform = 'scaleX(' + hpPctFoe() + ')';
+    var meT = $('hzHpMeT'), foeT = $('hzHpFoeT');
+    if (meT) meT.textContent = hpTxt(b.pHp, b.pMax);
+    if (foeT) foeT.textContent = hpTxt(b.eHp != null ? b.eHp : foeMaxHp(), foeMaxHp());
   }
 
   /* ------------------------------------------------------------ PARTY RAIL */
@@ -314,6 +461,8 @@
 
     if (!$('hzArena')) buildArena();
     if (!$('hzHud')) buildHud();
+    else if (!$('hzHpMe')) buildHud();
+    else syncHudHp();
     if (!$('hzParty') || $('hzParty').childElementCount === 0) buildParty();
     if (!$('hzPiles')) buildPiles();
 
@@ -351,6 +500,7 @@
     buildHud();
     buildParty();
     buildPiles();
+    /* info kartu kini dari engine (battle.js), bukan layer dekorasi */
   }
 
   /* -------------------------------------------------------------- BOOT */
