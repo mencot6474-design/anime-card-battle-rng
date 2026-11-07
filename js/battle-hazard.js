@@ -179,6 +179,30 @@
     };
   }
 
+  /* ------------------------------------------------ ANGKA DI DALAM HP BAR */
+  /* Prototipe menampilkan "cur / max" DI DALAM bar. Markup mesin hanya punya
+     <i> + <div class="hp-trail">, jadi label ditambahkan sebagai span. */
+  function decorateHpLabels() {
+    var b = (typeof bt !== 'undefined') ? bt : null;
+    var meBar = document.querySelector('.fighter.me .hpbar');
+    var foeBar = document.querySelector('.fighter.foe .hpbar');
+    if (meBar && !meBar.querySelector('.hz-hp-txt')) {
+      var s1 = document.createElement('span');
+      s1.className = 'hz-hp-txt';
+      meBar.appendChild(s1);
+    }
+    if (foeBar && !foeBar.querySelector('.hz-hp-txt')) {
+      var s2 = document.createElement('span');
+      s2.className = 'hz-hp-txt';
+      foeBar.appendChild(s2);
+    }
+    if (!b) return;
+    var mt = meBar && meBar.querySelector('.hz-hp-txt');
+    var ft = foeBar && foeBar.querySelector('.hz-hp-txt');
+    if (mt) mt.textContent = hpTxt(b.pHp, b.pMax);
+    if (ft) ft.textContent = hpTxt(b.eHp != null ? b.eHp : foeMaxHp(), foeMaxHp());
+  }
+
   function cardArt(charId) {
     try {
       if (charId && typeof cardImg === 'function') return cardImg(charId);
@@ -269,6 +293,7 @@
     if (foe) foe.style.transform = 'scaleX(' + hpPctFoe() + ')';
     var meT = $('hzHpMeT'), foeT = $('hzHpFoeT');
     if (meT) meT.textContent = hpTxt(b.pHp, b.pMax);
+    decorateHpLabels();
     if (foeT) foeT.textContent = hpTxt(b.eHp != null ? b.eHp : foeMaxHp(), foeMaxHp());
   }
 
@@ -463,8 +488,7 @@
     if (!$('hzHud')) buildHud();
     else if (!$('hzHpMe')) buildHud();
     else syncHudHp();
-    if (!$('hzParty') || $('hzParty').childElementCount === 0) buildParty();
-    if (!$('hzPiles')) buildPiles();
+    decorateHpLabels();
 
     /* party: cukup ubah kelas (anti-flicker) */
     var pts = document.querySelectorAll('#hzParty .hz-pt');
@@ -498,9 +522,11 @@
   function decorate() {
     buildArena();
     buildHud();
-    buildParty();
-    buildPiles();
-    /* info kartu kini dari engine (battle.js), bukan layer dekorasi */
+    /* Rail party = .bench-rail milik mesin. Tidak ada rail/pile kedua di sini
+       (dulu menimbulkan party & deck dobel). */
+    drop('hzParty');
+    drop('hzPiles');
+    decorateHpLabels();
   }
 
   /* -------------------------------------------------------------- BOOT */

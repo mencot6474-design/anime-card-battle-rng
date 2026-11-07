@@ -185,10 +185,10 @@ function foeFighterInnerHtml(en,es,opts){
     ${hzCardInfoHtml({char:en.char||en.id,mut:opts.mut,name:en.name,tag:(en.boss?"BOSS":"TARGET"),side:"foe",skill:(en.skill||(en.passive&&en.passive.name)||"")})}
   </div>
   <div class="f-body">
-    <div class="hpbar"><div class="hp-trail" style="width:${hpPct}%"></div><i id="${hpId}" style="width:${hpPct}%"></i></div>
+    <div class="hpbar"><div class="hp-trail" style="width:${hpPct}%"></div><i id="${hpId}" style="width:${hpPct}%"></i><span id="${hpId}BarT">${fmtHp(curHp)} / ${fmtHp(maxHp)}</span></div>
     <div class="stat-row">
-      <div class="stat atk"><i>ATK</i> <b>${fmtBattleK(es.atk)}</b></div>
       <div class="stat hp"><i>HP</i> <b id="${hpTid}">${fmtHp(curHp)}</b></div>
+      <div class="stat atk"><i>ATK</i> <b>${fmtBattleK(es.atk)}</b></div>
     </div>
   </div>`;
 }
@@ -206,10 +206,10 @@ function meFighterHtml(s,opts){
     ${hzCardInfoHtml({char:s.char,mut:s.mut,trait:s.trait,shiny:s.shiny,name:cardName(s.char),tag:"OPERATOR",side:"me",skill:(CARDS[s.char]&&CARDS[s.char].passive&&CARDS[s.char].passive.name)||""})}
   </div>
   <div class="f-body">
-    <div class="hpbar"><div class="hp-trail" style="width:${hpPct}%"></div><i id="hpMe" style="width:${hpPct}%"></i></div>
+    <div class="hpbar"><div class="hp-trail" style="width:${hpPct}%"></div><i id="hpMe" style="width:${hpPct}%"></i><span id="hpMeBarT">${fmtBattleK(curHp)} / ${fmtBattleK(maxHp)}</span></div>
     <div class="stat-row">
-      <div class="stat atk"><i>ATK</i> <b id="meAtkT">${fmtBattleK(st.atk)}</b></div>
       <div class="stat hp"><i>HP</i> <b id="hpMeT">${fmtBattleK(curHp)}</b></div>
+      <div class="stat atk"><i>ATK</i> <b id="meAtkT">${fmtBattleK(st.atk)}</b></div>
     </div>
   </div>`;
 }
@@ -220,10 +220,10 @@ function meShadowHtml(sh){
     ${hzCardInfoHtml({char:sh.char,name:sh.name,tag:"SHADOW",side:"me"})}
   </div>
   <div class="f-body">
-    <div class="hpbar"><div class="hp-trail" style="width:100%"></div><i id="hpMe" style="width:100%"></i></div>
+    <div class="hpbar"><div class="hp-trail" style="width:100%"></div><i id="hpMe" style="width:100%"></i><span id="hpMeBarT">${fmtBattleK(sh.maxHp)} / ${fmtBattleK(sh.maxHp)}</span></div>
     <div class="stat-row">
-      <div class="stat atk"><i>ATK</i> <b id="meAtkT">${fmtBattleK(sh.atk)}</b></div>
       <div class="stat hp"><i>HP</i> <b id="hpMeT">${fmtBattleK(sh.maxHp)}</b></div>
+      <div class="stat atk"><i>ATK</i> <b id="meAtkT">${fmtBattleK(sh.atk)}</b></div>
     </div>
   </div>`;
 }
@@ -2140,6 +2140,8 @@ function setBar(id,tid,cur,max){
   if(tr)tr.style.width=pct;
   const t=tid?document.getElementById(tid):null;
   if(t)t.textContent=fmtBattleK(Math.max(0,cur));
+  const tb=document.getElementById(id+"BarT");
+  if(tb)tb.textContent=fmtBattleK(Math.max(0,cur))+" / "+fmtBattleK(Math.max(0,max));
 }
 function step(){ if(!bt||bt.over)return; schedPhase(0,playerPhase); }
 // Safe scheduler: guarantees the battle can never hang. If a phase throws,
