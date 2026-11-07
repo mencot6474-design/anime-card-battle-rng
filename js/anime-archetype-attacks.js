@@ -1,14 +1,9 @@
 /* ==========================================================================
-   HIGH-OCTANE ANIME CINEMATIC COMBAT ENGINE (6 CORE ARCHETYPES)
-   Efek serangan level AAA dengan Canvas 2D + Glow Compositing:
-   Impact Frame Invert (1 frame hitam-putih), Screen Shake, Flash,
-   Proyektil melesat cepat dan ledakan partikel pecah di kartu lawan!
-   1. BRAWLER (Taijutsu/Heavy Punch)
-   2. BLADE (Nichirin/Katana Sharp Wave)
-   3. LIGHTNING (Thunder Zigzag Warp)
-   4. FIRE (Katon/Inferno Blast)
-   5. ICE (Cryo Glacier Freeze)
-   6. ENERGY (Nen/Chakra/Magic Sphere)
+   ANIME CINEMATIC COMBAT ENGINE - BASIC ATTACK (PHANTOM COMBO)
+   Satu animasi serangan dasar untuk SEMUA kartu, digambar di satu canvas
+   bersama (#animeAtkCanvas) dengan glow compositing:
+   glint -> dash afterimage -> 4 sapuan pedang -> cross finisher + ring.
+   Animasi archetype lama (brawler/blade/lightning/fire/ice/energy) dihapus.
    ========================================================================== */
 
 (function(){
@@ -144,1202 +139,167 @@
   }
 
   // 1. 👊 BRAWLER ARCHETYPE (Gatling Mirage Barrage / Ora Ora Multi-Fist Impact Stream)
-  function fxBrawler(x1, y1, x2, y2, colMain, colGlow){
+  /* ==========================================================================
+     PHANTOM COMBO - BASIC ATTACK (satu animasi untuk SEMUA kartu)
+     Ritme: glint -> dash afterimage -> 4 sapuan -> cross finisher + ring.
+     Menggambar di #animeAtkCanvas bersama (registerFrame), resolusi 1x.
+     ========================================================================== */
+  function fxPhantomCombo(fr, tr, accent){
     var c = getCanvas();
-    var ctx = c.ctx, cv = c.cv, W = c.W, H = c.H, t0 = performance.now(), DUR = 560;
-    colMain = colMain || "#ff5722";
-    colGlow = colGlow || "#ff9800";
-    SFX.boom();
-
-    var dx = x2 - x1, dy = y2 - y1;
-    var distTotal = Math.hypot(dx, dy);
-    var baseAngle = Math.atan2(dy, dx);
-    var perpX = -Math.sin(baseAngle);
-    var perpY = Math.cos(baseAngle);
-
-    // 8 Kepalan tinju bayangan bertubi-tubi (Gatling Multi-Fists Stream)
-    var fists = [];
-    for(var i=0; i<8; i++){
-      fists.push({
-        delay: i * 0.04, // Jeda milidetik per tinju
-        sideOffset: (Math.random() - 0.5) * 45,
-        yJitter: (Math.random() - 0.5) * 20,
-        scale: 0.8 + Math.random() * 0.4
-      });
-    }
-
-    // Rentetan cincin benturan hantaman (Multi-Impact Rings) di kartu target
-    var hitImpacts = [];
-    for(var k=0; k<6; k++){
-      hitImpacts.push({
-        pAt: 0.28 + k * 0.08,
-        offsetX: (Math.random() - 0.5) * 45,
-        offsetY: (Math.random() - 0.5) * 45,
-        radius: 35 + Math.random() * 25
-      });
-    }
-
-    // Debris percikan hantaman tinju bertubi-tubi
-    var barrageSparks = [];
-    for(var s=0; s<30; s++){
-      var ang = Math.random() * Math.PI * 2;
-      var spd = 160 + Math.random() * 260;
-      barrageSparks.push({
-        vx: Math.cos(ang) * spd,
-        vy: Math.sin(ang) * spd,
-        size: 2 + Math.random() * 3,
-        color: Math.random() > 0.4 ? "#ffffff" : (Math.random() > 0.5 ? "#facc15" : colMain)
-      });
-    }
-
-    // Fungsi menggambar satu kepalan tinju energi melesat
-    function drawEnergyFist(cx, cy, scale){
-      var r = 18 * scale;
-      var fGrad = ctx.createRadialGradient(cx, cy, 2, cx, cy, r * 1.8);
-      fGrad.addColorStop(0, "#ffffff");
-      fGrad.addColorStop(0.35, colGlow);
-      fGrad.addColorStop(0.85, colMain);
-      fGrad.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = fGrad;
-      ctx.beginPath();
-      ctx.arc(cx, cy, r * 1.8, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Inti tinju putih padat
-      ctx.fillStyle = "#ffffff";
-      ctx.beginPath();
-      ctx.arc(cx, cy, r * 0.5, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    function frame(now){
-      var p = (now - t0) / DUR;
-      if(p >= 1){ return false; }
-      triggerImpactFrame(ctx, W, H, p);
-
-      ctx.save();
-      ctx.globalCompositeOperation = "lighter";
-
-      // FASE 1: RENTETAN 8 KEPALAN TINJU BAYANGAN MELUNCUR BERTUBI-TUBI (0.0 -> 0.52)
-      for(var i=0; i<fists.length; i++){
-        var fst = fists[i];
-        var fp = Math.max(0, p - fst.delay) / 0.35; // Waktu tempuh per tinju cepat (0.35s)
-        if(fp > 0 && fp <= 1){
-          var easeFp = fp < 0.5 ? 2 * fp * fp : -1 + (4 - 2 * fp) * fp;
-          var curFx = x1 + dx * easeFp + perpX * fst.sideOffset;
-          var curFy = y1 + dy * easeFp + perpY * fst.sideOffset + fst.yJitter;
-
-          // Ekor garis kecepatan tinju
-          var tLen = Math.min(distTotal * easeFp, 75);
-          var tX = curFx - (dx / distTotal) * tLen;
-          var tY = curFy - (dy / distTotal) * tLen;
-
-          // Halo murah (pass bentuk lebih besar + alpha rendah) — pengganti shadowBlur per tinju, §2b #4
-          ctx.strokeStyle = colMain;
-          ctx.globalAlpha = 0.22;
-          ctx.lineWidth = 17 * fst.scale;
-          ctx.beginPath();
-          ctx.moveTo(tX, tY);
-          ctx.lineTo(curFx, curFy);
-          ctx.stroke();
-          ctx.globalAlpha = 1;
-
-          ctx.strokeStyle = colGlow;
-          ctx.lineWidth = 5 * fst.scale;
-          ctx.beginPath();
-          ctx.moveTo(tX, tY);
-          ctx.lineTo(curFx, curFy);
-          ctx.stroke();
-
-          // Render tinju bayangan
-          drawEnergyFist(curFx, curFy, fst.scale);
-        }
-      }
-
-      // FASE 2: RENTETAN DENTUMAN HANTAMAN TINJU DI TARGET MUSUH (0.28 -> 1.0)
-      for(var h=0; h<hitImpacts.length; h++){
-        var hit = hitImpacts[h];
-        if(p > hit.pAt){
-          var hp = (p - hit.pAt) / (1 - hit.pAt);
-          var hFade = 1 - hp;
-          var hx = x2 + hit.offsetX;
-          var hy = y2 + hit.offsetY;
-
-          // Cincin hantaman tinju bertubi-tubi (halo pass, bukan shadowBlur — §2b #4)
-          ctx.globalAlpha = 0.18 * hFade;
-          ctx.strokeStyle = colGlow;
-          ctx.lineWidth = 28 * hFade;
-          ctx.beginPath();
-          ctx.arc(hx, hy, hp * hit.radius * 2, 0, Math.PI * 2);
-          ctx.stroke();
-
-          ctx.globalAlpha = 1;
-          ctx.strokeStyle = colMain;
-          ctx.lineWidth = 8 * hFade;
-          ctx.beginPath();
-          ctx.arc(hx, hy, hp * hit.radius * 2, 0, Math.PI * 2);
-          ctx.stroke();
-
-          ctx.strokeStyle = "#ffffff";
-          ctx.lineWidth = 2.5 * hFade;
-          ctx.beginPath();
-          ctx.arc(hx, hy, hp * hit.radius * 2.3, 0, Math.PI * 2);
-          ctx.stroke();
-
-          // Kilatan bintang flash di titik hantaman
-          var starR = 18 * Math.sin(hp * Math.PI);
-          if(starR > 0){
-            ctx.fillStyle = "#ffffff";
-            ctx.beginPath();
-            ctx.arc(hx, hy, starR, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        }
-      }
-
-      // Cincin shockwave gempa raksasa saat rentetan tinju tuntas
-      if(p > 0.45){
-        var bp = (p - 0.45) / 0.55;
-        var bFade = 1 - bp;
-
-        ctx.strokeStyle = colGlow;
-        ctx.lineWidth = 12 * bFade;
-        ctx.beginPath();
-        ctx.ellipse(x2, y2, bp * 165, bp * 115, baseAngle, 0, Math.PI * 2);
-        ctx.stroke();
-
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 3.5 * bFade;
-        ctx.beginPath();
-        ctx.ellipse(x2, y2, bp * 190, bp * 135, baseAngle, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // Debris semburan percikan
-        var timeSec = (p - 0.45) * (DUR / 1000);
-        for(var s=0; s<barrageSparks.length; s++){
-          var spk = barrageSparks[s];
-          var sx = x2 + spk.vx * timeSec;
-          var sy = y2 + spk.vy * timeSec;
-
-          ctx.fillStyle = spk.color;
-          ctx.beginPath();
-          ctx.arc(sx, sy, spk.size * bFade, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-
-      ctx.restore();
-    }
-    registerFrame(frame);
-  }
-
-    // 2. ⚔️ BLADE ARCHETYPE (Grand Crescent Moon / Moon Breathing Gigantic Cleave + Orbital Eclipse Burst)
-  function fxBlade(x1, y1, x2, y2, colMain, colGlow){
-    var c = getCanvas();
-    var ctx = c.ctx, cv = c.cv, W = c.W, H = c.H, t0 = performance.now(), DUR = 560;
-    colMain = colMain || "#00f5d4";
-    colGlow = colGlow || "#ffffff";
+    var ctx = c.ctx, t0 = performance.now(), DUR = 900;
+    var COL = accent || "243,230,0";
+    var meCx = fr.left + fr.width/2, meCy = fr.top + fr.height*0.46;
+    var foCx = tr.left + tr.width/2, foCy = tr.top + tr.height*0.46;
+    var meW = fr.width, meH = fr.height, foW = tr.width;
     SFX.slash();
 
-    var dx = x2 - x1, dy = y2 - y1;
-    var distTotal = Math.hypot(dx, dy);
-    var baseAngle = Math.atan2(dy, dx);
-    var perpX = -Math.sin(baseAngle);
-    var perpY = Math.cos(baseAngle);
+    function eOut(p){ return 1 - Math.pow(1 - p, 3); }
+    function cl(p){ return p < 0 ? 0 : p > 1 ? 1 : p; }
 
-    // Bintang-bintang sabit mikro / serpihan debu bulan (Moon Dust Embers)
-    var moonDust = [];
-    for(var i=0; i<FXQ(36); i++){
-      moonDust.push({
-        pAt: 0.05 + Math.random() * 0.42,
-        side: (Math.random() - 0.5) * 65,
-        driftX: (Math.random() - 0.5) * 45,
-        driftY: (Math.random() - 0.5) * 45,
-        size: 1.5 + Math.random() * 2.5,
-        color: Math.random() > 0.35 ? "#ffffff" : colMain
-      });
-    }
-
-    // Debris potongan sabit bulan mini yang memancar saat menabrak target
-    var crescentShards = [];
-    for(var k=0; k<16; k++){
-      var ang = Math.random() * Math.PI * 2;
-      var spd = 160 + Math.random() * 260;
-      crescentShards.push({
-        vx: Math.cos(ang) * spd,
-        vy: Math.sin(ang) * spd,
-        radius: 12 + Math.random() * 14,
-        rot: ang,
-        color: Math.random() > 0.4 ? "#ffffff" : colMain
-      });
-    }
-
-    // Fungsi menggambar BUSUR BULAN SABIT RAKSASA (Grand Crescent Moon)
-    function drawGrandCrescent(cx, cy, radius, thickness, angle){
+    /* afterimage kartu (bayangan gerak) */
+    function ghost(offX, offY, skew, alpha){
       ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(angle);
-
-      // Bentuk Bulan Sabit Raksasa Sempurna (Crescent arc tip to tip)
-      ctx.beginPath();
-      // Busur luar (cembung tajam ke arah depan lawan)
-      ctx.arc(0, 0, radius, -Math.PI * 0.42, Math.PI * 0.42, false);
-      // Busur dalam (cekung memotong dari belakang)
-      ctx.arc(-thickness * 0.6, 0, radius * 0.86, Math.PI * 0.42, -Math.PI * 0.42, true);
-      ctx.closePath();
-
-      // Gradien Cahaya Bulan Menyala Terang
-      var grad = ctx.createLinearGradient(-thickness, 0, radius, 0);
-      grad.addColorStop(0, "rgba(0, 245, 212, 0)");
-      grad.addColorStop(0.3, colMain);
-      grad.addColorStop(0.8, "#ffffff");
-      grad.addColorStop(1, "#ffffff");
-
-      ctx.fillStyle = grad;
-      ctx.shadowColor = colMain;
-      ctx.shadowBlur = 35;
-      ctx.fill();
-      // Blur cukup utk 1 fill badan sabit; garis punggung digambar bersih di atasnya
-      ctx.shadowBlur = 0;
-
-      // Tulang punggung sabit bulan putih super tajam
-      ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = 4.5;
-      ctx.beginPath();
-      ctx.arc(0, 0, radius, -Math.PI * 0.4, Math.PI * 0.4, false);
-      ctx.stroke();
-
-      // Garis sabit kedua yang lebih tipis di dalam (efek aura bulan berlapis)
-      ctx.strokeStyle = colMain;
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.arc(-thickness * 0.3, 0, radius * 0.92, -Math.PI * 0.36, Math.PI * 0.36, false);
-      ctx.stroke();
-
+      ctx.globalAlpha = alpha;
+      ctx.translate(meCx + offX, meCy + offY);
+      ctx.transform(1, 0, skew, 1, 0, 0);
+      var g = ctx.createLinearGradient(-meW/2, 0, meW/2, 0);
+      g.addColorStop(0, "rgba(" + COL + ",0)");
+      g.addColorStop(0.5, "rgba(" + COL + ",0.55)");
+      g.addColorStop(1, "rgba(" + COL + ",0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(-meW/2, -meH/2, meW, meH);
+      ctx.strokeStyle = "rgba(255,255,255,0.22)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(-meW/2, -meH/2, meW, meH);
       ctx.restore();
     }
 
-    function frame(now){
-      var p = (now - t0) / DUR;
-      if(p >= 1){ return false; }
-      triggerImpactFrame(ctx, W, H, p);
-
+    /* satu sapuan pedang */
+    function slashArc(x, y, ang, len, thick, alpha){
       ctx.save();
-      ctx.globalCompositeOperation = "lighter";
-
-      // FASE 1: BULAN SABIT RAKSASA MELUNCUR MENYEBERANG LAYAR (0.0 -> 0.42)
-      var flightP = Math.min(1, p / 0.42);
-      var easeFlight = flightP < 0.5 ? 2 * flightP * flightP : -1 + (4 - 2 * flightP) * flightP;
-      var curX = x1 + dx * easeFlight;
-      var curY = y1 + dy * easeFlight;
-
-      if(flightP < 1){
-        // Jejak cahaya bulan (moonlight trail) di belakang sabit besar
-        var tLen = Math.min(distTotal * easeFlight, 110);
-        var tX = curX - (dx / distTotal) * tLen;
-        var tY = curY - (dy / distTotal) * tLen;
-
-        ctx.strokeStyle = "rgba(0, 245, 212, 0.45)";
-        ctx.lineWidth = 8;
-        ctx.beginPath();
-        ctx.moveTo(tX, tY);
-        ctx.lineTo(curX, curY);
-        ctx.stroke();
-
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
-
-        // Render BUSUR BULAN SABIT BESAR (Radius 62px -> rentang total tinggi ~124px!)
-        drawGrandCrescent(curX, curY, 62, 28, baseAngle);
-      }
-
-      // Debu Partikel Cahaya Bulan (Moon Dust) di Jalur
-      for(var s=0; s<moonDust.length; s++){
-        var mst = moonDust[s];
-        if(p > mst.pAt){
-          var age = (p - mst.pAt) / (1 - mst.pAt);
-          var sx = x1 + dx * (mst.pAt / 0.42) + perpX * mst.side + mst.driftX * age;
-          var sy = y1 + dy * (mst.pAt / 0.42) + perpY * mst.side + mst.driftY * age;
-          ctx.fillStyle = mst.color;
-          ctx.beginPath();
-          ctx.arc(sx, sy, mst.size * (1 - age), 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-
-      // FASE 2: ORBITAL ECLIPSE BURST DI TARGET MUSUH (0.38 -> 1.0)
-      if(p > 0.38){
-        var bp = (p - 0.38) / 0.62;
-        var fade = 1 - bp;
-
-        // 1. Cincin Cahaya Gerhana Bulan (Orbital Eclipse Ring) Meledak
-        ctx.shadowColor = colMain;
-        ctx.shadowBlur = 32;
-
-        ctx.strokeStyle = colMain;
-        ctx.lineWidth = 14 * fade;
-        ctx.beginPath();
-        ctx.arc(x2, y2, bp * 155, 0, Math.PI * 2);
-        ctx.stroke();
-
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 4 * fade;
-        ctx.beginPath();
-        ctx.arc(x2, y2, bp * 180, 0, Math.PI * 2);
-        ctx.stroke();
-        // Blur HANYA utk 2 cincin; tebasan & serpihan pakai halo pass
-        ctx.shadowBlur = 0;
-
-        // 2. Belahan Tebasan Bulan Melengkung Ganda di Kartu Target
-        var cleaveLen = bp * 175;
-        ctx.beginPath();
-        ctx.moveTo(x2 + perpX * cleaveLen, y2 + perpY * cleaveLen);
-        ctx.quadraticCurveTo(x2 + (dx/distTotal)*35, y2 + (dy/distTotal)*35, x2 - perpX * cleaveLen, y2 - perpY * cleaveLen);
-        ctx.strokeStyle = colMain;
-        ctx.globalAlpha = 0.18;
-        ctx.lineWidth = 16 * fade;
-        ctx.stroke();
-        ctx.globalAlpha = 1;
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 5 * fade;
-        ctx.stroke();
-
-        // 3. Debris pecahan sabit bulan mini (Moon Shards) memancar ke segala arah
-        var timeSec = (p - 0.38) * (DUR / 1000);
-        for(var d=0; d<crescentShards.length; d++){
-          var csh = crescentShards[d];
-          var cx = x2 + csh.vx * timeSec;
-          var cy = y2 + csh.vy * timeSec;
-
-          ctx.save();
-          ctx.translate(cx, cy);
-          ctx.rotate(csh.rot + timeSec * 4);
-          ctx.beginPath();
-          ctx.arc(0, 0, csh.radius * fade, -Math.PI * 0.35, Math.PI * 0.35);
-          ctx.strokeStyle = colMain;
-          ctx.globalAlpha = 0.2;
-          ctx.lineWidth = 8 * fade;
-          ctx.stroke();
-          ctx.globalAlpha = 1;
-          ctx.strokeStyle = csh.color;
-          ctx.lineWidth = 2 * fade;
-          // Busur sabit mini
-          ctx.stroke();
-          ctx.restore();
-        }
-      }
-
-      ctx.restore();
-    }
-    registerFrame(frame);
-  }
-
-    // 3. ⚡ LIGHTNING ARCHETYPE (Thunder Flash / Godspeed Warp Lance + Forked Discharge + Plasma Cage)
-  function fxLightning(x1, y1, x2, y2, colMain, colGlow){
-    var c = getCanvas();
-    var ctx = c.ctx, cv = c.cv, W = c.W, H = c.H, t0 = performance.now(), DUR = 480;
-    colMain = colMain || "#facc15";
-    colGlow = colGlow || "#eab308";
-    SFX.thunder();
-
-    var dx = x2 - x1, dy = y2 - y1;
-    var distTotal = Math.hypot(dx, dy);
-    var baseAngle = Math.atan2(dy, dx);
-    var perpX = -Math.sin(baseAngle);
-    var perpY = Math.cos(baseAngle);
-
-    var numSegments = 9;
-    var boltOffsetsA = [];
-    var boltOffsetsB = [];
-    for(var i=1; i<numSegments; i++){
-      boltOffsetsA.push((Math.random() - 0.5) * 38);
-      boltOffsetsB.push((Math.random() - 0.5) * 28);
-    }
-
-    var sparkEmbers = [];
-    for(var s=0; s<24; s++){
-      sparkEmbers.push({
-        pAt: 0.05 + Math.random() * 0.35,
-        side: (Math.random() - 0.5) * 45,
-        driftX: (Math.random() - 0.5) * 40,
-        driftY: (Math.random() - 0.5) * 40,
-        size: 1.5 + Math.random() * 2.5,
-        color: Math.random() > 0.3 ? "#ffffff" : "#facc15"
-      });
-    }
-
-    var impactForks = [];
-    for(var k=0; k<8; k++){
-      var ang = (k / 8) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
-      var segCount = 4;
-      var points = [{ x: 0, y: 0 }];
-      var curR = 0;
-      for(var p=1; p<=segCount; p++){
-        curR += (120 / segCount) + (Math.random() - 0.5) * 15;
-        var pAng = ang + (Math.random() - 0.5) * 0.6;
-        points.push({
-          x: Math.cos(pAng) * curR,
-          y: Math.sin(pAng) * curR
-        });
-      }
-      impactForks.push(points);
-    }
-
-    function drawFork(points, originX, originY, width, alpha){
+      ctx.translate(x, y);
+      ctx.rotate(ang);
+      ctx.lineCap = "round";
+      var g = ctx.createLinearGradient(-len/2, 0, len/2, 0);
+      g.addColorStop(0, "rgba(" + COL + ",0)");
+      g.addColorStop(0.35, "rgba(" + COL + "," + (0.35*alpha) + ")");
+      g.addColorStop(0.78, "rgba(255,255,255," + (0.9*alpha) + ")");
+      g.addColorStop(1, "rgba(" + COL + ",0)");
+      ctx.strokeStyle = g;
+      ctx.lineWidth = thick;
       ctx.beginPath();
-      ctx.moveTo(originX + points[0].x, originY + points[0].y);
-      for(var i=1; i<points.length; i++){
-        var jx = (Math.random() - 0.5) * 6;
-        var jy = (Math.random() - 0.5) * 6;
-        ctx.lineTo(originX + points[i].x + jx, originY + points[i].y + jy);
-      }
-      // Halo lebar redup + inti putih (pengganti shadowBlur 16 per cabang, §2b #4)
-      ctx.lineWidth = width * 3.2;
-      ctx.globalAlpha = 0.18 * alpha;
-      ctx.strokeStyle = colMain;
+      ctx.moveTo(-len/2, 0);
+      ctx.quadraticCurveTo(0, -thick*1.6, len/2, 0);
       ctx.stroke();
-      ctx.globalAlpha = 1;
-      ctx.lineWidth = width;
-      ctx.strokeStyle = "#ffffff";
+      ctx.strokeStyle = "rgba(255,255,255," + (0.85*alpha) + ")";
+      ctx.lineWidth = Math.max(1, thick*0.2);
+      ctx.beginPath();
+      ctx.moveTo(-len/2, 0);
+      ctx.quadraticCurveTo(0, -thick*1.6, len/2, 0);
       ctx.stroke();
-    }
-
-    function frame(now){
-      var p = (now - t0) / DUR;
-      if(p >= 1){ return false; }
-      triggerImpactFrame(ctx, W, H, p);
-
-      ctx.save();
-      ctx.globalCompositeOperation = "lighter";
-
-      // FASE 1: KILATAN WARP PETIR SECEPAT CAHAYA (0.0 -> 0.35)
-      var warpP = Math.min(1, p / 0.28);
-      var curX = x1 + dx * warpP;
-      var curY = y1 + dy * warpP;
-
-      var boltAlpha = Math.max(0, 1 - p * 1.5);
-      if(boltAlpha > 0){
-        // Sambaran Petir Cabang 1 (Kuning Emas Tebal)
-        ctx.strokeStyle = colMain;
-        ctx.shadowColor = colGlow;
-        ctx.shadowBlur = 28;
-        ctx.lineWidth = 14 * boltAlpha;
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        var curSegCount = Math.ceil((numSegments - 1) * warpP);
-        for(var i=0; i<curSegCount; i++){
-          var sp = (i + 1) / numSegments;
-          var segX = x1 + dx * sp;
-          var segY = y1 + dy * sp;
-          var jitter = (Math.random() - 0.5) * 8;
-          var px = segX + perpX * (boltOffsetsA[i] + jitter);
-          var py = segY + perpY * (boltOffsetsA[i] + jitter);
-          ctx.lineTo(px, py);
-        }
-        ctx.lineTo(curX, curY);
-        ctx.stroke();
-
-        // Sambaran Petir Cabang 2 (Garpu Sekunder Halus)
-        ctx.strokeStyle = "#ffffff";
-        ctx.shadowBlur = 15;
-        ctx.lineWidth = 5 * boltAlpha;
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        for(var j=0; j<curSegCount; j++){
-          var sp2 = (j + 1) / numSegments;
-          var segX2 = x1 + dx * sp2;
-          var segY2 = y1 + dy * sp2;
-          var jitter2 = (Math.random() - 0.5) * 6;
-          var px2 = segX2 + perpX * (boltOffsetsB[j] + jitter2);
-          var py2 = segY2 + perpY * (boltOffsetsB[j] + jitter2);
-          ctx.lineTo(px2, py2);
-        }
-        ctx.lineTo(curX, curY);
-        ctx.stroke();
-
-        // Inti Kilat Putih Lurus di Tengah
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 3 * boltAlpha;
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(curX, curY);
-        ctx.stroke();
-        // Blur habis di 3 stroke kilat saja; spark pakai halo (dulu ikut ter-blur 15 x24/frame)
-        ctx.shadowBlur = 0;
-      }
-
-      // Spark Ion Listrik di Sekitar Lintasan
-      for(var s=0; s<sparkEmbers.length; s++){
-        var spk = sparkEmbers[s];
-        if(p > spk.pAt){
-          var age = (p - spk.pAt) / (1 - spk.pAt);
-          var sx = x1 + dx * (spk.pAt / 0.28) + perpX * spk.side + spk.driftX * age;
-          var sy = y1 + dy * (spk.pAt / 0.28) + perpY * spk.side + spk.driftY * age;
-          ctx.fillStyle = spk.color;
-          /* Halo murah: lingkaran besar + alpha rendah (pengganti shadowBlur per spark, §2b #4) */
-          ctx.globalAlpha = 0.2 * (1 - age);
-          ctx.beginPath();
-          ctx.arc(sx, sy, spk.size * (1 - age) * 2.6, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.globalAlpha = 1;
-          ctx.beginPath();
-          ctx.arc(sx, sy, spk.size * (1 - age), 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-
-      // FASE 2: ELECTRIC DISCHARGE & PLASMA CAGE DI TARGET (0.25 -> 1.0)
-      if(p > 0.25){
-        var ep = (p - 0.25) / 0.75;
-        var fade = 1 - ep;
-
-        // 1. Cincin Sengatan Listrik Mengembang Cepat
-        ctx.lineWidth = 10 * fade;
-        ctx.strokeStyle = colMain;
-        ctx.shadowColor = colGlow; ctx.shadowBlur = 30;
-        ctx.beginPath();
-        ctx.arc(x2, y2, ep * 145, 0, Math.PI * 2);
-        ctx.stroke();
-
-        ctx.lineWidth = 4 * fade;
-        ctx.strokeStyle = "#ffffff";
-        ctx.beginPath();
-        ctx.arc(x2, y2, ep * 170, 0, Math.PI * 2);
-        ctx.stroke();
-        // Blur cukup utk 2 cincin sengatan; bola plasma = gradien radial, tak butuh blur
-        ctx.shadowBlur = 0;
-
-        // 2. Kilatan Bola Plasma Listrik di Tengah
-        var plasmaR = 48 * Math.sin(ep * Math.PI);
-        if(plasmaR > 0){
-          var pGrad = ctx.createRadialGradient(x2, y2, 2, x2, y2, plasmaR);
-          pGrad.addColorStop(0, "#ffffff");
-          pGrad.addColorStop(0.4, colMain);
-          pGrad.addColorStop(1, "rgba(0,0,0,0)");
-          ctx.fillStyle = pGrad;
-          ctx.beginPath();
-          ctx.arc(x2, y2, plasmaR, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        // 3. Cabang Sambaran Petir Liar Menyetrum Target (halo pass di drawFork, tanpa blur)
-        for(var f=0; f<impactForks.length; f++){
-          drawFork(impactForks[f], x2, y2, 3 * fade, fade);
-        }
-      }
-
       ctx.restore();
     }
-    registerFrame(frame);
-  }
 
-    // 4. 🔥 FIRE ARCHETYPE (Flame Lance / Phoenix Streak + Eruption Vortex + Floating Embers)
-  function fxFire(x1, y1, x2, y2){
-    var c = getCanvas();
-    var ctx = c.ctx, cv = c.cv, W = c.W, H = c.H, t0 = performance.now(), DUR = 560;
-    SFX.boom();
-
-    var dx = x2 - x1, dy = y2 - y1;
-    var distTotal = Math.hypot(dx, dy);
-    var baseAngle = Math.atan2(dy, dx);
-    var perpX = -Math.sin(baseAngle);
-    var perpY = Math.cos(baseAngle);
-
-    // Partikel bara api (embers) yang tertinggal di jalur tembakan
-    var trailEmbers = [];
-    for(var i=0; i<FXQ(32); i++){
-      trailEmbers.push({
-        pAt: 0.05 + Math.random() * 0.4,
-        side: (Math.random() - 0.5) * 28,
-        driftX: (Math.random() - 0.5) * 60,
-        driftY: -30 - Math.random() * 70,
-        size: 2 + Math.random() * 3,
-        color: Math.random() > 0.35 ? "#fbbf24" : "#f97316"
-      });
-    }
-
-    // Partikel letupan letusan api saat menabrak musuh
-    var burstPillars = [];
-    for(var k=0; k<18; k++){
-      var ang = -Math.PI/2 + (Math.random() - 0.5) * 1.8;
-      var spd = 160 + Math.random() * 240;
-      burstPillars.push({
-        vx: Math.cos(ang) * spd,
-        vy: Math.sin(ang) * spd,
-        size: 3 + Math.random() * 4,
-        color: Math.random() > 0.4 ? "#fef08a" : (Math.random() > 0.5 ? "#f97316" : "#ef4444")
-      });
-    }
-
-    function frame(now){
-      var p = (now - t0) / DUR;
-      if(p >= 1){ return false; }
-      triggerImpactFrame(ctx, W, H, p);
-
-      ctx.save();
-      ctx.globalCompositeOperation = "lighter";
-
-      // FASE 1: FLAME LANCE / PHOENIX STREAK MELUNCUR (0.0 -> 0.42)
-      var flightP = Math.min(1, p / 0.42);
-      var easeFlight = flightP < 0.5 ? 2 * flightP * flightP : -1 + (4 - 2 * flightP) * flightP;
-      var curX = x1 + dx * easeFlight;
-      var curY = y1 + dy * easeFlight;
-
-      // Gambar lidah api lance (meruncing di kepala, mekar di ekor)
-      if(flightP < 1){
-        var trailLen = Math.min(distTotal * easeFlight, 130);
-        var tailX = curX - (dx / distTotal) * trailLen;
-        var tailY = curY - (dy / distTotal) * trailLen;
-
-        // Ekor api menyala tebal
-        var gradBody = ctx.createLinearGradient(tailX, tailY, curX, curY);
-        gradBody.addColorStop(0, "rgba(239, 68, 68, 0)");
-        gradBody.addColorStop(0.35, "rgba(249, 115, 22, 0.7)");
-        gradBody.addColorStop(0.8, "#fbbf24");
-        gradBody.addColorStop(1, "#ffffff");
-
-        // Badan api berbentuk lance tajam
-        ctx.fillStyle = gradBody;
-        ctx.beginPath();
-        var flicker1 = Math.sin((now - t0) * 0.05) * 6;
-        var flicker2 = Math.cos((now - t0) * 0.06) * 5;
-        ctx.moveTo(curX + (dx/distTotal)*18, curY + (dy/distTotal)*18);
-        ctx.lineTo(curX - (dx/distTotal)*20 + perpX * (14 + flicker1), curY - (dy/distTotal)*20 + perpY * (14 + flicker1));
-        ctx.lineTo(tailX + perpX * (22 + flicker2), tailY + perpY * (22 + flicker2));
-        ctx.lineTo(tailX - (dx/distTotal)*15, tailY - (dy/distTotal)*15);
-        ctx.lineTo(tailX - perpX * (22 - flicker2), tailY - perpY * (22 - flicker2));
-        ctx.lineTo(curX - (dx/distTotal)*20 - perpX * (14 - flicker1), curY - (dy/distTotal)*20 - perpY * (14 - flicker1));
-        ctx.closePath();
-        ctx.shadowColor = "#f97316"; ctx.shadowBlur = 28;
-        ctx.fill();
-        // Blur cukup utk 1 fill badan api; inti & orb pakai halo pass
-        ctx.shadowBlur = 0;
-
-        // Inti putih super panas (White-hot Core)
-        ctx.beginPath();
-        ctx.moveTo(curX - (dx/distTotal)*40, curY - (dy/distTotal)*40);
-        ctx.lineTo(curX + (dx/distTotal)*12, curY + (dy/distTotal)*12);
-        ctx.strokeStyle = "#fbbf24";
-        ctx.globalAlpha = 0.2;
-        ctx.lineWidth = 12;
-        ctx.stroke();
-        ctx.globalAlpha = 1;
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 4;
-        ctx.stroke();
-
-        // Kilatan orb kecil di ujung moncong
-        ctx.fillStyle = "#fbbf24";
-        ctx.globalAlpha = 0.25;
-        ctx.beginPath();
-        ctx.arc(curX, curY, 13, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = "#ffffff";
-        ctx.beginPath();
-        ctx.arc(curX, curY, 8, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // Bara Api (Ember Trail) melayang naik ke atas
-      for(var e=0; e<trailEmbers.length; e++){
-        var emb = trailEmbers[e];
-        if(p > emb.pAt){
-          var age = (p - emb.pAt) / (1 - emb.pAt);
-          var embBaseX = x1 + dx * (emb.pAt / 0.42);
-          var embBaseY = y1 + dy * (emb.pAt / 0.42);
-          var ex = embBaseX + perpX * emb.side + emb.driftX * age;
-          var ey = embBaseY + perpY * emb.side + emb.driftY * age;
-          ctx.fillStyle = emb.color;
-          /* Halo murah: lingkaran besar + alpha rendah (pengganti shadowBlur per bara, §2b #4) */
-          ctx.globalAlpha = 0.2 * (1 - age);
-          ctx.beginPath();
-          ctx.arc(ex, ey, emb.size * (1 - age) * 2.6, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.globalAlpha = 1;
-          ctx.beginPath();
-          ctx.arc(ex, ey, emb.size * (1 - age), 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-
-      // FASE 2: LETUSAN ERUPSI API DI TARGET MUSUH (0.4 -> 1.0)
-      if(p > 0.4){
-        var bp = (p - 0.4) / 0.6;
-        var fade = 1 - bp;
-
-        // 1. Kubah ledakan api mekar
-        var blastR = bp * 140;
-        var bGrad = ctx.createRadialGradient(x2, y2, 4, x2, y2, blastR);
-        bGrad.addColorStop(0, "rgba(255, 255, 255, " + fade + ")");
-        bGrad.addColorStop(0.35, "rgba(251, 191, 36, " + (0.85 * fade) + ")");
-        bGrad.addColorStop(0.7, "rgba(239, 68, 68, " + (0.5 * fade) + ")");
-        bGrad.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.fillStyle = bGrad;
-        ctx.shadowColor = "#f97316"; ctx.shadowBlur = 32;
-        ctx.beginPath();
-        ctx.arc(x2, y2, blastR, 0, Math.PI * 2);
-        ctx.fill();
-        // Blur cukup utk 1 kubah gradien; cincin & pilar bara pakai halo pass
-        ctx.shadowBlur = 0;
-
-        // 2. Cincin gelombang panas api (shockwave)
-        ctx.beginPath();
-        ctx.arc(x2, y2, bp * 165, 0, Math.PI * 2);
-        ctx.lineWidth = 22 * fade;
-        ctx.strokeStyle = "#f97316";
-        ctx.globalAlpha = 0.18;
-        ctx.stroke();
-        ctx.globalAlpha = 1;
-        ctx.lineWidth = 10 * fade;
-        ctx.strokeStyle = "#fbbf24";
-        ctx.stroke();
-
-        // 3. Lidah semburan bara ke atas & samping
-        var timeSec = (p - 0.4) * (DUR / 1000);
-        for(var b=0; b<burstPillars.length; b++){
-          var bpil = burstPillars[b];
-          var bx = x2 + bpil.vx * timeSec;
-          var by = y2 + bpil.vy * timeSec + 0.5 * (-120) * (timeSec * timeSec);
-          ctx.fillStyle = bpil.color;
-          /* Halo murah: lingkaran besar + alpha rendah (pengganti shadowBlur per pilar, §2b #4) */
-          ctx.globalAlpha = 0.2 * fade;
-          ctx.beginPath();
-          ctx.arc(bx, by, bpil.size * fade * 2.4, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.globalAlpha = fade;
-          ctx.beginPath();
-          ctx.arc(bx, by, bpil.size * fade, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-
-      ctx.restore();
-    }
-    registerFrame(frame);
-  }
-
-  // 5. ❄️ ICE ARCHETYPE (Frost Lance & Glacial Crystal Shatter + Sparkling Flakes)
-  function fxIce(x1, y1, x2, y2){
-    var c = getCanvas();
-    var ctx = c.ctx, cv = c.cv, W = c.W, H = c.H, t0 = performance.now(), DUR = 560;
-    SFX.ice();
-
-    var dx = x2 - x1, dy = y2 - y1;
-    var distTotal = Math.hypot(dx, dy);
-    var baseAngle = Math.atan2(dy, dx);
-    var perpX = -Math.sin(baseAngle);
-    var perpY = Math.cos(baseAngle);
-
-    // Kepingan salju berkilau (sparkling frost flakes) di jalur terbang
-    var trailFlakes = [];
-    for(var i=0; i<FXQ(28); i++){
-      trailFlakes.push({
-        pAt: 0.05 + Math.random() * 0.42,
-        side: (Math.random() - 0.5) * 32,
-        size: 2 + Math.random() * 2.5,
-        driftX: (Math.random() - 0.5) * 20,
-        driftY: (Math.random() - 0.5) * 25,
-        color: Math.random() > 0.3 ? "#e0f2fe" : "#7dd3fc"
-      });
-    }
-
-    // Bongkahan pecahan kristal es tajam saat menabrak target
-    var iceShards = [];
-    for(var k=0; k<26; k++){
-      var ang = Math.random() * Math.PI * 2;
-      var spd = 180 + Math.random() * 260;
-      iceShards.push({
-        vx: Math.cos(ang) * spd,
-        vy: Math.sin(ang) * spd,
-        rot: Math.random() * Math.PI * 2,
-        rotSpeed: (Math.random() - 0.5) * 12,
-        w: 5 + Math.random() * 7,
-        h: 12 + Math.random() * 16,
-        color: Math.random() > 0.4 ? "#ffffff" : (Math.random() > 0.5 ? "#bae6fd" : "#38bdf8")
-      });
-    }
-
-    // Tiga tombak es (1 utama di tengah, 2 pendamping di kiri/kanan)
-    var lances = [
-      { offsetPerp: 0, lag: 0, scale: 1.0 },
-      { offsetPerp: -18, lag: 0.04, scale: 0.75 },
-      { offsetPerp: 18, lag: 0.06, scale: 0.75 }
+    var arcs = [
+      { at: 190, ang: -0.62, len: 1.00 },
+      { at: 300, ang:  0.34, len: 1.06 },
+      { at: 400, ang: -0.22, len: 0.92 },
+      { at: 500, ang:  0.58, len: 1.02 }
     ];
-
-    function drawLance(lx, ly, len, scale){
-      var w = 9 * scale;
-      var halfLen = len * scale;
-      // Gambar bentuk prisma kristal berlian lancip
-      var tipX = lx + (dx / distTotal) * halfLen;
-      var tipY = ly + (dy / distTotal) * halfLen;
-      var backX = lx - (dx / distTotal) * halfLen;
-      var backY = ly - (dy / distTotal) * halfLen;
-      var midX = lx;
-      var midY = ly;
-
-      // Halo cyan lembut mengelilingi prisma (2 pass, pengganti shadowBlur)
-      ctx.beginPath();
-      ctx.moveTo(tipX, tipY);
-      ctx.lineTo(midX + perpX * w, midY + perpY * w);
-      ctx.lineTo(backX, backY);
-      ctx.lineTo(midX - perpX * w, midY - perpY * w);
-      ctx.closePath();
-      ctx.strokeStyle = "#38bdf8";
-      ctx.globalAlpha = 0.10;
-      ctx.lineWidth = 18 * scale;
-      ctx.stroke();
-      ctx.globalAlpha = 0.20;
-      ctx.lineWidth = 9 * scale;
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-
-      // Sisi kristal kiri (highlight terang)
-      ctx.fillStyle = "#ffffff";
-      ctx.beginPath();
-      ctx.moveTo(tipX, tipY);
-      ctx.lineTo(midX + perpX * w, midY + perpY * w);
-      ctx.lineTo(backX, backY);
-      ctx.closePath();
-      ctx.fill();
-
-      // Sisi kristal kanan (cyan es)
-      ctx.fillStyle = "#7dd3fc";
-      ctx.beginPath();
-      ctx.moveTo(tipX, tipY);
-      ctx.lineTo(midX - perpX * w, midY - perpY * w);
-      ctx.lineTo(backX, backY);
-      ctx.closePath();
-      ctx.fill();
-
-      // Garis tengah punggung kristal
-      ctx.strokeStyle = "#e0f2fe";
-      ctx.lineWidth = 2 * scale;
-      ctx.beginPath();
-      ctx.moveTo(backX, backY);
-      ctx.lineTo(tipX, tipY);
-      ctx.stroke();
-    }
-
-    function frame(now){
-      var p = (now - t0) / DUR;
-      if(p >= 1){ return false; }
-      triggerImpactFrame(ctx, W, H, p);
-
-      ctx.save();
-      ctx.globalCompositeOperation = "lighter";
-
-      // FASE 1: 3 TOMBAK KRISTAL ES MELUNCUR MENEMBUS UDARA (0.0 -> 0.42)
-      // Glow tombak = halo pass (kontrak §2b: tanpa shadowBlur per bentuk)
-
-      for(var l=0; l<lances.length; l++){
-        var lc = lances[l];
-        var lp = Math.max(0, p - lc.lag) / 0.42;
-        if(lp > 0 && lp < 1){
-          var easeLp = lp < 0.5 ? 2 * lp * lp : -1 + (4 - 2 * lp) * lp;
-          var curLx = x1 + dx * easeLp + perpX * lc.offsetPerp;
-          var curLy = y1 + dy * easeLp + perpY * lc.offsetPerp;
-
-          // Jejak kabut beku di belakang tombak
-          var trailLen = 65 * lc.scale;
-          var tX = curLx - (dx / distTotal) * trailLen;
-          var tY = curLy - (dy / distTotal) * trailLen;
-          var gradTrail = ctx.createLinearGradient(tX, tY, curLx, curLy);
-          gradTrail.addColorStop(0, "rgba(56, 189, 248, 0)");
-          gradTrail.addColorStop(0.5, "rgba(186, 230, 253, 0.4)");
-          gradTrail.addColorStop(1, "rgba(255, 255, 255, 0.85)");
-          // Halo jejak kabut beku (2 pass lebar tipis, pengganti blur)
-          ctx.beginPath();
-          ctx.moveTo(tX, tY);
-          ctx.lineTo(curLx, curLy);
-          ctx.strokeStyle = "#38bdf8";
-          ctx.globalAlpha = 0.10;
-          ctx.lineWidth = 16 * lc.scale;
-          ctx.stroke();
-          ctx.globalAlpha = 0.18;
-          ctx.lineWidth = 10 * lc.scale;
-          ctx.stroke();
-          ctx.globalAlpha = 1;
-          ctx.strokeStyle = gradTrail;
-          ctx.lineWidth = 5 * lc.scale;
-          ctx.stroke();
-
-          // Render tombak es kristal
-          drawLance(curLx, curLy, 32, lc.scale);
-        }
-      }
-
-      // Kepingan Salju & Partikel Es Melayang di Jalur
-      for(var f=0; f<trailFlakes.length; f++){
-        var flk = trailFlakes[f];
-        if(p > flk.pAt){
-          var age = (p - flk.pAt) / (1 - flk.pAt);
-          var fx = x1 + dx * (flk.pAt / 0.42) + perpX * flk.side + flk.driftX * age;
-          var fy = y1 + dy * (flk.pAt / 0.42) + perpY * flk.side + flk.driftY * age;
-          ctx.fillStyle = flk.color;
-          ctx.beginPath();
-          ctx.arc(fx, fy, flk.size * (1 - age), 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-
-      // FASE 2: GLACIAL CRYSTAL SHATTER DI TARGET MUSUH (0.4 -> 1.0)
-      if(p > 0.4){
-        var bp = (p - 0.4) / 0.6;
-        var fade = 1 - bp;
-
-        // 1. Cincin gelombang beku kristal heksagonal mekar
-        ctx.lineWidth = 12 * fade;
-        ctx.strokeStyle = "#38bdf8";
-        ctx.shadowColor = "#bae6fd"; ctx.shadowBlur = 28;
-        ctx.beginPath();
-        ctx.arc(x2, y2, bp * 145, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // Cincin kedua putih
-        ctx.lineWidth = 4 * fade;
-        ctx.strokeStyle = "#ffffff";
-        ctx.beginPath();
-        ctx.arc(x2, y2, bp * 175, 0, Math.PI * 2);
-        ctx.stroke();
-        // Blur HANYA utk 2 cincin (by-design §2b#4); sisanya halo pass
-        ctx.shadowBlur = 0;
-
-        // 2. Kilatan bintang es heksagonal di pusat benturan
-        var starR = 50 * Math.sin(bp * Math.PI);
-        if(starR > 0){
-          for(var s=0; s<6; s++){
-            var sa = (s / 6) * Math.PI * 2;
-            ctx.beginPath();
-            ctx.moveTo(x2, y2);
-            ctx.lineTo(x2 + Math.cos(sa) * starR, y2 + Math.sin(sa) * starR);
-            ctx.strokeStyle = "#38bdf8";
-            ctx.globalAlpha = 0.16;
-            ctx.lineWidth = 11 * fade;
-            ctx.stroke();
-            ctx.globalAlpha = 1;
-            ctx.strokeStyle = "#ffffff";
-            ctx.lineWidth = 3.5 * fade;
-            ctx.stroke();
-          }
-        }
-
-        // 3. Bongkahan pecahan kristal es tajam terlempar & berputar
-        var timeSec = (p - 0.4) * (DUR / 1000);
-        for(var s=0; s<iceShards.length; s++){
-          var shd = iceShards[s];
-          var sx = x2 + shd.vx * timeSec;
-          var sy = y2 + shd.vy * timeSec;
-          var curRot = shd.rot + shd.rotSpeed * timeSec;
-
-          ctx.save();
-          ctx.translate(sx, sy);
-          ctx.rotate(curRot);
-          ctx.fillStyle = shd.color;
-          ctx.globalAlpha = fade;
-          // Bentuk serpihan kristal tajam
-          ctx.beginPath();
-          ctx.moveTo(0, -shd.h / 2);
-          ctx.lineTo(shd.w / 2, 0);
-          ctx.lineTo(0, shd.h / 2);
-          ctx.lineTo(-shd.w / 2, 0);
-          ctx.closePath();
-          // Halo cyan lembut (pengganti blur 28 yang dulu merembet ke sini)
-          ctx.strokeStyle = "#38bdf8";
-          ctx.globalAlpha = 0.22 * fade;
-          ctx.lineWidth = 6;
-          ctx.stroke();
-          ctx.globalAlpha = fade;
-          ctx.fill();
-          ctx.restore();
-        }
-      }
-
-      ctx.restore();
-    }
-    registerFrame(frame);
-  }
-
-    // 5. 🌌 ENERGY ARCHETYPE (Balanced Anime Energy: Orbiting Plasma Orb + Double-Helix Trail + Radial Burst)
-  function fxEnergy(x1, y1, x2, y2, colMain, colGlow){
-    var c = getCanvas();
-    var ctx = c.ctx, cv = c.cv, W = c.W, H = c.H, t0 = performance.now(), DUR = 520;
-    colMain = colMain || "#c084fc";
-    colGlow = colGlow || "#9333ea";
-    SFX.boom();
-
-    // Partikel percikan orbit di sekitar orb
-    var sparkCount = FXQ(18);
     var sparks = [];
-    for(var i=0; i<sparkCount; i++){
+    for(var i=0; i<18; i++){
+      var a = Math.random()*Math.PI*2;
       sparks.push({
-        angle: (i / sparkCount) * Math.PI * 2,
-        speed: 0.12 + Math.random() * 0.15,
-        dist: 16 + Math.random() * 16,
-        size: 2 + Math.random() * 2.5
+        vx: Math.cos(a), vy: Math.sin(a)*0.85,
+        dist: 18 + Math.random()*78,
+        size: 1.6 + Math.random()*1.8,
+        born: 190 + Math.random()*340,
+        life: 280 + Math.random()*340
       });
     }
-
-    // Debris ledakan impact
-    var impactDebris = [];
-    for(var k=0; k<24; k++){
-      var ang = Math.random() * Math.PI * 2;
-      var spd = 200 + Math.random() * 280;
-      impactDebris.push({
-        vx: Math.cos(ang) * spd,
-        vy: Math.sin(ang) * spd,
-        size: 2.5 + Math.random() * 3,
-        color: Math.random() > 0.4 ? colMain : "#ffffff"
-      });
-    }
-
-    var dx = x2 - x1, dy = y2 - y1;
-    var distTotal = Math.hypot(dx, dy);
-    var baseAngle = Math.atan2(dy, dx);
-    var perpX = -Math.sin(baseAngle);
-    var perpY = Math.cos(baseAngle);
 
     function frame(now){
-      var p = (now - t0) / DUR;
-      if(p >= 1){ return false; }
-      triggerImpactFrame(ctx, W, H, p);
-
+      var t = now - t0;
+      if(t > DUR) return false;
+      var p = t / DUR;
       ctx.save();
       ctx.globalCompositeOperation = "lighter";
 
-      // FASE 1: PROYEKTIL ORB MELUNCUR DARI PENYERANG KE TARGET (0.0 -> 0.45)
-      var flightP = Math.min(1, p / 0.45);
-      var easeFlight = flightP < 0.5 ? 2 * flightP * flightP : -1 + (4 - 2 * flightP) * flightP;
-      var curX = x1 + dx * easeFlight;
-      var curY = y1 + dy * easeFlight;
+      /* glint tipis di target sebelum sabetan */
+      if(t < 190){
+        var gp = t/190;
+        ctx.strokeStyle = "rgba(255,255,255," + (0.55*gp) + ")";
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(foCx - foW*0.55, foCy);
+        ctx.lineTo(foCx - foW*0.55 + foW*1.1*gp, foCy);
+        ctx.stroke();
+      }
 
-      // Double-Helix Spiral Trail (jejak aura spiral di belakang orb)
-      var trailSteps = 28;
-      var curDist = distTotal * easeFlight;
-      if(curDist > 10){
-        ctx.lineWidth = 3;
-        for(var h = -1; h <= 1; h += 2){
+      /* dash afterimage */
+      if(t > 120 && t < 460){
+        var dp = cl((t-120)/220);
+        for(var g2=1; g2<=3; g2++){
+          var f = cl(dp - g2*0.14);
+          var gx = (foCx - meCx) * 0.42 * eOut(f);
+          ghost(gx - g2*16, -g2*4, -0.16, 0.30*(1 - g2/4)*(1 - dp*0.5));
+        }
+      }
+
+      /* 4 sapuan */
+      for(var k=0; k<arcs.length; k++){
+        var ar = arcs[k];
+        var ap = cl((t - ar.at)/210);
+        if(ap <= 0 || ap >= 1) continue;
+        var e = eOut(ap);
+        slashArc(foCx + (1-e)*foW*0.35, foCy, ar.ang,
+          foW*1.5*ar.len, 16*(1 - ap*0.6), 1 - ap);
+      }
+
+      /* cross finisher + ring */
+      if(t > 560 && t < 830){
+        var cp = (t-560)/270, ca = 1 - cp;
+        slashArc(foCx, foCy, -0.72, foW*2.5, 22*(1 - cp*0.7), ca);
+        slashArc(foCx, foCy,  0.72, foW*2.5, 22*(1 - cp*0.7), ca);
+        var rr = foW*(0.22 + cp*0.9);
+        ctx.strokeStyle = "rgba(255,255,255," + (0.6*ca) + ")";
+        ctx.lineWidth = 2.6*ca;
+        ctx.beginPath(); ctx.arc(foCx, foCy, rr, 0, Math.PI*2); ctx.stroke();
+        ctx.strokeStyle = "rgba(" + COL + "," + (0.45*ca) + ")";
+        ctx.lineWidth = 8*ca;
+        ctx.beginPath(); ctx.arc(foCx, foCy, rr*1.16, 0, Math.PI*2); ctx.stroke();
+      }
+
+      /* speed lines radial tipis */
+      var sa = 0.30 * (1 - Math.abs(p*2 - 1));
+      if(sa > 0.005){
+        var cxp = c.W/2, cyp = c.H*0.46;
+        var maxR = Math.sqrt(c.W*c.W + c.H*c.H) * 0.62;
+        ctx.strokeStyle = "rgba(" + COL + "," + sa + ")";
+        for(var sl=0; sl<26; sl++){
+          var ang = (sl/26)*Math.PI*2 + Math.sin(t/900 + sl)*0.05;
+          var r0 = maxR*(0.18 + 0.16*((sl*37 % 100)/100));
+          var r1 = maxR*(0.85 + 0.15*((sl*53 % 100)/100));
+          ctx.lineWidth = 1 + ((sl*17) % 3);
           ctx.beginPath();
-          ctx.strokeStyle = h === 1 ? colMain : "#ffffff";
-          ctx.shadowColor = colGlow; ctx.shadowBlur = 14;
-          for(var s = 0; s <= trailSteps; s++){
-            var sp = s / trailSteps;
-            var d = curDist * sp;
-            var stepX = x1 + (dx / distTotal) * d;
-            var stepY = y1 + (dy / distTotal) * d;
-            var wave = Math.sin(sp * Math.PI * 4 - (now - t0) * 0.02) * (14 * sp) * h;
-            var wx = stepX + perpX * wave;
-            var wy = stepY + perpY * wave;
-            if(s === 0) ctx.moveTo(wx, wy); else ctx.lineTo(wx, wy);
-          }
+          ctx.moveTo(cxp + Math.cos(ang)*r0, cyp + Math.sin(ang)*r0*0.72);
+          ctx.lineTo(cxp + Math.cos(ang)*r1, cyp + Math.sin(ang)*r1*0.72);
           ctx.stroke();
         }
-
-        // Inti beam lurus tipis di tengah
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(curX, curY);
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = colMain;
-        ctx.shadowColor = colGlow; ctx.shadowBlur = 18;
-        ctx.stroke();
-        // Blur habis di 2 helix + 1 beam; orb & spark berikutnya digambar bersih
-        ctx.shadowBlur = 0;
       }
 
-      // Bola Energi (Plasma Orb) di kepala proyektil
-      if(flightP < 1){
-        var orbRadius = 18;
-        var grad = ctx.createRadialGradient(curX, curY, 2, curX, curY, orbRadius * 2);
-        grad.addColorStop(0, "#ffffff");
-        grad.addColorStop(0.35, colMain);
-        grad.addColorStop(0.85, colGlow);
-        grad.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(curX, curY, orbRadius * 2, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = "#ffffff";
-        ctx.globalAlpha = 0.22;
-        ctx.beginPath();
-        ctx.arc(curX, curY, orbRadius * 1.1, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = "#ffffff";
-        ctx.beginPath();
-        ctx.arc(curX, curY, orbRadius * 0.55, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Partikel orbit di sekeliling bola energi
-        for(var s=0; s<sparks.length; s++){
-          var spk = sparks[s];
-          spk.angle += spk.speed;
-          var sx = curX + Math.cos(spk.angle) * spk.dist;
-          var sy = curY + Math.sin(spk.angle) * (spk.dist * 0.65);
-          ctx.fillStyle = "#ffffff";
-          ctx.beginPath();
-          ctx.arc(sx, sy, spk.size, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-
-      // FASE 2: IMPACT BURST SAAT MENABRAK KARTU TARGET (0.4 -> 1.0)
-      if(p > 0.4){
-        var bp = (p - 0.4) / 0.6;
-        var fade = 1 - bp;
-
-        // 1. Cincin gelombang kejut radial yang mengembang
-        ctx.lineWidth = 12 * fade;
-        ctx.strokeStyle = colMain;
-        ctx.shadowColor = colGlow; ctx.shadowBlur = 24;
-        ctx.beginPath();
-        ctx.arc(x2, y2, bp * 135, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // Cincin kedua
-        ctx.lineWidth = 4 * fade;
-        ctx.strokeStyle = "#ffffff";
-        ctx.beginPath();
-        ctx.arc(x2, y2, bp * 165, 0, Math.PI * 2);
-        ctx.stroke();
-        // Blur cukup utk 2 cincin; kubah gradien & debris pakai halo pass
-        ctx.shadowBlur = 0;
-
-        // 2. Kilatan kubah plasma di titik tabrakan
-        var burstRad = 55 * Math.sin(bp * Math.PI);
-        if(burstRad > 0){
-          var bGrad = ctx.createRadialGradient(x2, y2, 2, x2, y2, burstRad);
-          bGrad.addColorStop(0, "#ffffff");
-          bGrad.addColorStop(0.5, colMain);
-          bGrad.addColorStop(1, "rgba(0,0,0,0)");
-          ctx.fillStyle = bGrad;
-          ctx.beginPath();
-          ctx.arc(x2, y2, burstRad, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        // 3. Debris partikel energi melesat keluar
-        var timeSec = (p - 0.4) * (DUR / 1000);
-        for(var d=0; d<impactDebris.length; d++){
-          var deb = impactDebris[d];
-          var debX = x2 + deb.vx * timeSec;
-          var debY = y2 + deb.vy * timeSec;
-          ctx.fillStyle = deb.color;
-          /* Halo murah: lingkaran besar + alpha rendah (pengganti shadowBlur per debris, §2b #4) */
-          ctx.globalAlpha = 0.2 * fade;
-          ctx.beginPath();
-          ctx.arc(debX, debY, deb.size * fade * 2.4, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.globalAlpha = fade;
-          ctx.beginPath();
-          ctx.arc(debX, debY, deb.size * fade, 0, Math.PI * 2);
-          ctx.fill();
-        }
+      /* percikan */
+      for(var sp=0; sp<sparks.length; sp++){
+        var s2 = sparks[sp];
+        var age = (t - s2.born) / s2.life;
+        if(age < 0 || age > 1) continue;
+        var d = age * s2.dist;
+        ctx.fillStyle = "rgba(" + (age > 0.65 ? "255,255,255" : COL) + "," + (1-age) + ")";
+        ctx.fillRect(foCx + s2.vx*d - s2.size*0.5, foCy + s2.vy*d - s2.size*0.5, s2.size, s2.size);
       }
 
       ctx.restore();
+      return true;
     }
     registerFrame(frame);
   }
@@ -1349,89 +309,13 @@
     var fromEl = document.querySelector(fromSel);
     var toEl = document.querySelector(toSel);
     if(!fromEl || !toEl) return false;
-
     var fr = fromEl.getBoundingClientRect();
     var tr = toEl.getBoundingClientRect();
-    var x1 = fr.left + fr.width/2, y1 = fr.top + fr.height * 0.38;
-    var x2 = tr.left + tr.width/2, y2 = tr.top + tr.height * 0.38;
-
-    var cId = (charId || "").toUpperCase();
-    var cDef = (typeof CARDS !== "undefined" && CARDS) ? CARDS[charId] : null;
-    var skill = cDef ? (cDef.skill || "").toUpperCase() : "";
-    var cName = cDef ? (cDef.name || "").toUpperCase() : "";
-
-    // ==========================================
-    // 1. LIGHTNING ARCHETYPE (Godspeed / Petir)
-    // ==========================================
-    if(
-      cId.includes("ZENITSU") || cId.includes("LUCK") || cId.includes("KILLUA") || cId.includes("CHIDORI") || cId.includes("THUNDER") || cId.includes("LIGHTNING") ||
-      cName.includes("LIGHTNING") || cName.includes("THUNDER") ||
-      skill.includes("THUNDER") || skill.includes("LIGHTNING") || skill.includes("CHIDORI") || skill.includes("GODSPEED") || skill.includes("VOLT")
-    ){
-      fxLightning(x1, y1, x2, y2, "#facc15", "#eab308");
-      return true;
-    }
-
-    // ==========================================
-    // 2. FIRE ARCHETYPE (Flame Lance / Phoenix)
-    // ==========================================
-    if(
-      cId.includes("FIREBALL") || cId.includes("FIRE") || cId.includes("ACE") || cId.includes("RENGOKU") || cId.includes("KATON") || cId.includes("IGNITE") || cId.includes("CRIMSON_WARLORD") ||
-      cName.includes("FIRE") || cName.includes("FLAME") || cName.includes("INFERNO") ||
-      skill.includes("FIRE") || skill.includes("KATON") || skill.includes("FLAME") || skill.includes("BURN") || skill.includes("IGNITE") || skill.includes("INFERNO") || skill.includes("AMATERASU") || skill.includes("METEOR SHOWER")
-    ){
-      fxFire(x1, y1, x2, y2);
-      return true;
-    }
-
-    // ==========================================
-    // 3. ICE ARCHETYPE (Triple Frost Lance)
-    // Sea Sovereign (Poseidon) di sini sesuai arahan user
-    // ==========================================
-    if(
-      cId.includes("CAPTAIN") || cId.includes("ICE_REAPER") || cId.includes("FROST") || cId.includes("SEA_SOVEREIGN") || cId.includes("ABSOLUTE_ZERO") || cId.includes("ICE_QUEEN") || cId.includes("BLIZZARD") || cId.includes("ETERNAL_DRAGON") ||
-      cName.includes("ICE") || cName.includes("FROST") || cName.includes("SEA SOVEREIGN") ||
-      skill.includes("HYORINMARU") || skill.includes("HAKKA") || skill.includes("ICE") || skill.includes("FREEZE") || skill.includes("BLIZZARD") || skill.includes("GLACIER") || skill.includes("DIVINE TRIDENT")
-    ){
-      fxIce(x1, y1, x2, y2);
-      return true;
-    }
-
-    // ==========================================
-    // 4. BLADE ARCHETYPE (Grand Crescent Moon)
-    // Soul Reaper (Bleach) & Noble Companion (Yuta) di sini sesuai arahan user
-    // ==========================================
-    if(
-      cId.includes("TITAN_HUNTER") || cId.includes("TITAN_BLADE") || cName.includes("TITAN HUNTER") || cId.includes("SOUL_REAPER") || cId.includes("NOBLE_COMPANION") || cId.includes("RIKAS_BLESSING") || cId.includes("JINWOO") || cId.includes("SHADOW_KING") || cId.includes("SHADOW_MONARCH") ||
-      cId.includes("TANJIRO") || cId.includes("DRAGON_SIN") || cId.includes("COPYBLADE") || cId.includes("COPY_NINJA") || cId.includes("ZORO") || cId.includes("THREEBLADE") || cId.includes("STRUGGLER") || cId.includes("DARKIN") || cId.includes("NULLBLADE") || cId.includes("DEVIL_HUNTER") || cId.includes("RULER") || cId.includes("OMNI_SOVEREIGN") || cId.includes("WHITE_HAWK") || cId.includes("SANEMI") ||
-      cName.includes("SWORD") || cName.includes("BLADE") || cName.includes("RONIN") || cName.includes("SOUL REAPER") || cName.includes("NOBLE COMPANION") ||
-      skill.includes("WATER BREATHING") || skill.includes("FULL COUNTER") || skill.includes("BLADE") || skill.includes("SWORD") || skill.includes("SLASH") || skill.includes("CLEAVE") || skill.includes("KATANA") || skill.includes("WORLD ENDER") || skill.includes("BERSERKER") || skill.includes("VENUZDONOA") || skill.includes("SHUKATSU")
-    ){
-      fxBlade(x1, y1, x2, y2, "#00f5d4", "#ffffff");
-      return true;
-    }
-
-    // ==========================================
-    // 5. ENERGY ARCHETYPE (Orb + Double-Helix)
-    // Trickster Ace (Hisoka) di sini sesuai arahan user
-    // Solar Brawler / Goku DIKECUALIKAN dari Energy (akan masuk Brawler/Punch)
-    // ==========================================
-    var isSolar = cId.includes("SOLAR_BRAWLER") || cId.includes("ULTIMATE_WARRIOR") || cName.includes("SOLAR BRAWLER");
-    if(!isSolar && (
-      cId.includes("TRICKSTER") || cId.includes("PROMISED_CHILD") || cId.includes("WILDHEART") || cId.includes("INUIZO") || cId.includes("SAND") || cId.includes("PAPER") || cId.includes("IMMORTAL_VAMPIRE") || cId.includes("THE WORLD") || cId.includes("SORCERER") || cId.includes("LIMITLESS") || cId.includes("MONARCH") || cId.includes("SHADOW_SUMMONER") || cId.includes("SIXFOLD") || cId.includes("SIX_PATHS") || cId.includes("ALMIGHTY") || cId.includes("KING_OF_CURSES") || cId.includes("TYRANT") || cId.includes("DEMON_SLIME") || cId.includes("MOON_MOTHER") || cId.includes("SHINOBU") || cId.includes("OTHERWORLD") || cId.includes("UNDYING_ROGUE") || cId.includes("COLOSSUS") || cId.includes("PORCO") || cId.includes("GLITCHED") || cId.includes("GRIEFER") || cId.includes("HEIGHT_OF_PAINTING") || cId.includes("HEAVENS_DOOR") || cId.includes("PUPPET") || cId.includes("CURSED_DOLL") || cId.includes("LIGHTBORNE") || cId.includes("ASTRAL_DEVOURER") || cId.includes("NINE_TAIL") || cId.includes("BIJUU") ||
-      skill.includes("JAJANKEN") || skill.includes("BUNGEE") || skill.includes("SAND") || skill.includes("ZEPHYR") || skill.includes("TIME STOP") || skill.includes("CORRUPT") || skill.includes("ALMIGHTY PUSH") || skill.includes("ARISE") || skill.includes("HOLLOW PURPLE") || skill.includes("DEATH BEAM") || skill.includes("DRAIN") || skill.includes("SUPERNOVA")
-    )){
-      var col = skill.includes("JAJANKEN") ? "#f97316" : skill.includes("BUNGEE") ? "#ec4899" : skill.includes("SAND") ? "#d97706" : skill.includes("TIME STOP") ? "#facc15" : "#c084fc";
-      fxEnergy(x1, y1, x2, y2, col, "#ffffff");
-      return true;
-    }
-
-    // ==========================================
-    // 6. BRAWLER ARCHETYPE (Gatling Multi-Fists)
-    // Solar Brawler (Goku), Saitama, Lee, Luffy, Whitebeard, dll.
-    // ==========================================
-    fxBrawler(x1, y1, x2, y2, "#ff5722", "#ff9800");
+    if(!fr.width || !tr.width) return false;
+    /* BASIC ATTACK tunggal untuk semua kartu (archetype lama tidak dipakai lagi) */
+    fxPhantomCombo(fr, tr, "243,230,0");
     return true;
   };
+
 window.registerFrame = registerFrame;
 })();

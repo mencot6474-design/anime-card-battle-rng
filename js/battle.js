@@ -289,8 +289,8 @@ function floatText(sel,txt,cls,customLbl){
   if(!lbl){
     const m=raw.match(/^(.+?)\s+([+-][\d,]+(?:\s*\(.+\))?)$/);
     if(m){lbl=m[1];num=m[2];}
-    else if(raw.startsWith("-")){lbl=cStr.includes("burn")?"PLASMA IGNITION":cStr.includes("crit")?"CRITICAL SLASH":"PHANTOM SLASH";}
-    else if(raw.startsWith("+")){lbl="VITAL RECOVERY";}
+    else if(raw.startsWith("-")){lbl="";}
+    else if(raw.startsWith("+")){lbl="";}
     else if(raw==="DODGE"||raw==="MISS"){lbl="TIME FRACTURE";num=raw==="DODGE"?"MATRIX EVADE":"MISS";}
     else if(raw==="BEKU"){lbl="ABSOLUTE ZERO";num="CRYO STASIS";}
     else if(raw==="STUNNED"||raw==="STUN"){lbl="SYSTEM RESTRAINT";num="PARALYZED";}
@@ -298,13 +298,16 @@ function floatText(sel,txt,cls,customLbl){
     else if(raw.includes("TAG-IN")){lbl="SHADOW SWAP";num=raw;}
     else{lbl=cStr.includes("heal")?"SYSTEM BUFF":cStr.includes("burn")?"CORRUPTION":cStr.includes("miss")?"TACTICAL":"OVERDRIVE";}
   }
+  /* Label teks di atas ANGKA damage dihapus: cukup angkanya saja.
+     Teks status (DODGE/MISS/IMMUNE/...) tetap karena num-nya bukan angka. */
+  if(/^[+-][\d,]/.test(String(num).trim())) lbl="";
   d.className="dmg-float pgr-pop"+(cStr?" "+cStr:"");
   const isMini=cStr.includes("mini");
   const jx=(Math.random()-0.5)*(isMini?10:28);
   const jy=(Math.random()-0.5)*(isMini?8:22);
   d.style.left=(r.left+r.width/2+jx)+"px";
   d.style.top=(r.top+r.height*0.18+jy)+"px";
-  d.innerHTML=`<span class="lbl">${lbl}</span><span class="num">${num}</span>`;
+  d.innerHTML=(lbl?`<span class="lbl">${lbl}</span>`:"")+`<span class="num">${num}</span>`;
   l.appendChild(d);setTimeout(()=>d.remove(),980);
 }
 function anim(sel,cls,noPair){
