@@ -1020,3 +1020,10 @@ html.m-landscape body.battle-full .hz-party{
   bottom:calc(92px + env(safe-area-inset-bottom,0px)) !important}
 html.m-landscape body.battle-full .hz-piles{
   bottom:calc(156px + env(safe-area-inset-bottom,0px)) !important}
+
+/* ---------------- 16. HUD aman dari pita hazard atas -------------------- */
+html body.battle-full .hz-hud{
+  padding-top:calc(var(--tbh,0px) + 14px) !important;
+  min-height:52px !important}
+html body.battle-full .hz-hud-card{
+  padding-top:5px !important}
