@@ -3204,9 +3204,9 @@ body.on-lobby .roll-overlay.mini.collapsed .roll-card-showcase{display:none;}
 .wo-multi button:disabled:hover{color:var(--muted);border-color:var(--line2);}
 
 /* Ringkasan jumlah paket & total tarikan (Instan Pack) */
-.bpholo-packinfo{font-family:"Barlow Condensed";font-size:12px;letter-spacing:.06em;color:var(--muted);text-align:center;margin:2px 0 6px;}
+.bpholo-packinfo{font-family:"Barlow Condensed";font-size:12px;letter-spacing:.06em;color:#94a3b8;text-align:center;margin:2px 0 6px;}
 
-.bpholo-packinfo b{color:var(--text);font-weight:800;}
+.bpholo-packinfo b{color:#f1f5f9;font-weight:800;}
 
 /* Popup item: kontras nama/count/tombol di panel putih (tema lobby) */
 

@@ -1712,8 +1712,20 @@ function hideRollResult() {
 let bpTarget = null;
 let bpMutFilter = "all"; /* filter varian koleksi: all|none|gold|rainbow|secret|shiny */
 let bpSortMode = "baku"; /* urutan koleksi DECK (segmented URUTKAN): baku|baru|power|cuaca */
-let bpTab = "deck"; /* tab Backpack: deck | item | artefact | pet */
-function bpSetTab(t){bpTab=t;bpTarget=null;bpItemPopClose();renderBackpackPanel();}
+let bpTab = "item"; /* tab Backpack: item | artefact | pet (deck pindah ke #deckModal) */
+/* bpSetTab: DECK & SKILL TREE sudah keluar dari Backpack (2026-11-07).
+   DECK punya layar sendiri (#deckModal) jadi permintaan 'deck' dialihkan ke sana;
+   'tree' dan nilai tak dikenal jatuh ke tab ITEM sampai layar pohon skill dibuat. */
+function bpSetTab(t){
+  if(t==='deck'){
+    if(typeof openDeckModal==='function'){try{openDeckModal();}catch(e){}return;}
+    t='item';
+  }
+  if(t!=='item'&&t!=='artefact'&&t!=='pet')t='item';
+  bpTab=t;bpTarget=null;bpItemPopClose();
+  if(typeof window.bpxSetTab==='function'){try{window.bpxSetTab(t);}catch(e){}}
+  renderBackpackPanel();
+}
 /* nav.bp-tabs = satu baris + overflow-x:auto, jadi tab 04/05 bisa terlipat di luar layar.
    Pusatkan tab aktif HANYA kalau dia belum terlihat seluruhnya — kalau user sudah geser
    manual ke posisi yang masih memuat tab aktif, scrollLeft-nya jangan dilompat. */
@@ -1848,141 +1860,360 @@ function bpTileInner(s){
 function bpLazyMountTiles(){
   lazyMountGrid(document.querySelector('.bp-scroll'),_bpTileHtml);
 }
+/* ==========================================================================
+   BACKPACK HAZARD (port _tmp/proto_backpack_v4.html, dikunci user 2026-11-07)
+   Tab DECK & SKILL TREE keluar dari Backpack:
+     - DECK  -> layar sendiri (#deckModal, js/deck-modal.js)
+     - TREE  -> akan jadi layar sendiri
+   Tab CURRENCY / INTAN tidak ada (INTAN ROLL tidak ditampilkan di sini).
+   Tersisa 3 tab: 01 ITEMS · 02 ARTEFACTS · 03 COMPANION PETS.
+
+   Bentuk: rail kategori kiri + grid tile 1:1 + dossier kanan (overlay di HP).
+
+   PRESENTASI SAJA — angka & aksi tetap memakai helper core yang sudah ada:
+     bpItemDef · bpPackRollAmountOf · bpUseRollPack · bpUsePotion ·
+     bpUseLuckPotion · bpUseSpeedPotion · bpToggleArt · bpTogglePet ·
+     bpBuyArt · bpBuyPet · bpGearStatus · ART_DEFS · PET_DEFS ·
+     totalLuck · luckTxt · thumbSrc
+   Catatan: renderBpItems/renderBpArts/renderBpPets lama TIDAK dipakai lagi
+   oleh layar ini, tapi dibiarkan utuh (masih dipakai layar lain kalau ada).
+   ========================================================================== */
+let bpxCat='all', bpxSel=null, bpxStep=1, bpxSort='CATEGORY', bpxQuery='';
+const BPX_ITEM_KINDS=['luck1','luck2','luck3','speed1','speed2','speed3','r5k','r10k','r25k','r50k','r100k'];
+const BPX_TABS=[
+  {k:'item',num:'01',l:'POTION & ITEMS',s:'ITEMS',ic:'assets/icons/potion-ball.svg'},
+  {k:'artefact',num:'02',l:'ARTEFACTS',s:'RELICS',ic:'assets/icons/crown.svg'},
+  {k:'pet',num:'03',l:'COMPANION PETS',s:'PETS',ic:'assets/icons/spiked-dragon-head.svg'}
+];
+const BPX_CATS_ITEM=[{k:'all',l:'ALL'},{k:'potions',l:'POTIONS'},{k:'packs',l:'ROLL PACKS'}];
+function bpxCats(tab){
+  if(tab==='item')return BPX_CATS_ITEM;
+  return [{k:'all',l:'ALL'},{k:'owned',l:'OWNED'},{k:'equipped',l:tab==='pet'?'ACTIVE':'EQUIPPED'}];
+}
+function bpxItemCat(kind){
+  return (kind==='potion'||kind.indexOf('luck')===0||kind.indexOf('speed')===0)?'potions':'packs';
+}
+function bpxItems(){
+  const out=[];
+  BPX_ITEM_KINDS.forEach(k=>{const d=bpItemDef(k);if(d)out.push(d);});
+  return out;
+}
+function bpxGearIcon(d){
+  if(d.img)return thumbSrc(d.img)||d.img;
+  return 'assets/artefacts/'+d.id+'.webp';
+}
+function bpxKey(d){ return d.id || d.kind; }
+function bpxList(tab){
+  if(tab==='artefact')return ART_DEFS.slice();
+  if(tab==='pet')return PET_DEFS.slice();
+  return bpxItems();
+}
+function bpxOwned(tab,d){
+  if(tab==='artefact')return (state.artOwned||[]).indexOf(d.id)>=0;
+  if(tab==='pet')return (state.petOwned||[]).indexOf(d.id)>=0;
+  return (d.cnt||0)>0;
+}
+function bpxActive(tab,d){
+  if(tab==='artefact')return (state.artSlots||[]).indexOf(d.id)>=0;
+  if(tab==='pet')return state.petEquipped===d.id;
+  return false;
+}
+function bpxFilter(tab){
+  const q=bpxQuery, out=[];
+  bpxList(tab).forEach(d=>{
+    if(bpxCat!=='all'){
+      if(tab==='item'){ if(bpxItemCat(d.kind)!==bpxCat)return; }
+      else if(bpxCat==='owned'){ if(!bpxOwned(tab,d))return; }
+      else if(bpxCat==='equipped'){ if(!bpxActive(tab,d))return; }
+    }
+    if(q&&String(d.name).toLowerCase().indexOf(q)<0)return;
+    out.push(d);
+  });
+  out.sort((a,b)=>{
+    if(bpxSort==='NAME')return String(a.name).localeCompare(String(b.name));
+    return ((bpxActive(tab,b)?1:0)-(bpxActive(tab,a)?1:0))||((bpxOwned(tab,b)?1:0)-(bpxOwned(tab,a)?1:0));
+  });
+  return out;
+}
+function bpxCatCount(tab,k){
+  const list=bpxList(tab);
+  if(k==='owned')return list.filter(d=>bpxOwned(tab,d)).length;
+  if(k==='equipped')return tab==='artefact'?(state.artSlots||[]).filter(Boolean).length:(state.petEquipped?1:0);
+  if(tab==='item'&&k!=='all')return list.filter(d=>bpxItemCat(d.kind)===k).length;
+  return list.length;
+}
+function bpxTile(tab,d){
+  const owned=bpxOwned(tab,d), act=bpxActive(tab,d);
+  const key=bpxKey(d);
+  const on=bpxSel===tab+':'+key;
+  let badge='';
+  if(tab==='item'){ if(d.isPack)badge='<span class="bpn-tag">PACK</span>'; }
+  else if(act)badge='<span class="bpn-tag cy">'+(tab==='pet'?'ACTIVE':'EQUIPPED')+'</span>';
+  const corner=(tab==='item')
+    ?'<span class="bpn-qty'+(owned?'':' zero')+'">×'+fmt(d.cnt||0)+'</span>'
+    :'<span class="bpn-qty'+(owned?'':' zero')+'">'+(owned?'OWNED':'LOCKED')+'</span>';
+  const icon=(tab==='item')?(d.icon||'assets/sprites/_placeholder.svg'):bpxGearIcon(d);
+  const nmCol=(tab!=='item'&&owned&&d.color)?' style="color:'+d.color+'"':'';
+  return '<button type="button" class="bpn-tile'+(on?' on':'')+(owned?'':' off')+'" data-bpx-id="'+key+'" aria-label="'+d.name+'" onclick="bpxPick(\''+tab+'\',\''+key+'\')">'
+    +corner+badge
+    +'<span class="bpn-tile-art"><img src="'+icon+'" alt="" loading="lazy" decoding="async" onerror="this.style.visibility=\'hidden\'"></span>'
+    +'<span class="bpn-tile-nm"'+nmCol+'>'+d.name+'</span></button>';
+}
+function bpxFindSelected(){
+  if(!bpxSel)return null;
+  const p=bpxSel.split(':');
+  if(p[0]==='item'){let f=null;bpxItems().forEach(d=>{if(d.kind===p[1])f=d;});return f;}
+  return (p[0]==='pet'?PET_DEFS:ART_DEFS).find(x=>x.id===p[1])||null;
+}
+function bpxActionLabel(d){
+  if(d.isPack&&d.kind!=='intan'){
+    const amt=(typeof bpPackRollAmountOf==='function'?bpPackRollAmountOf(d.kind):0)||0;
+    return 'ROLL '+fmt(bpxStep*amt)+' CARDS';
+  }
+  return 'USE '+bpxStep+'×';
+}
+function bpxDossierEmpty(){
+  return '<div class="bpn-det-head"><span class="kick">// INVENTORY <b>DOSSIER</b></span></div>'
+    +'<div class="bpn-det-empty"><span class="de-ic">'
+    +'<svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>'
+    +'</span><span class="de-t">SELECT AN ENTRY<br>TO INSPECT</span></div>';
+}
+function bpxDossierItem(d){
+  const cap=Math.max(1,d.cnt||0);
+  if(bpxStep>cap)bpxStep=cap;
+  const has=(d.cnt||0)>0;
+  const cat=d.isPack?'SPECIAL ROLL PACK':(d.kind==='potion'?'WEATHER CATALYST':(d.kind.indexOf('luck')===0?'LUCK ENHANCER':'SPEED OVERCLOCK'));
+  return '<div class="bpn-det-head"><span class="kick">// ITEM <b>DOSSIER</b></span>'
+    +'<button type="button" class="bpn-det-x" onclick="bpxCloseDossier()" aria-label="Close dossier">'
+    +'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div>'
+    +'<div class="bpn-det-art"><span class="bpn-det-pedestal"></span><img src="'+(d.icon||'assets/sprites/_placeholder.svg')+'" alt="'+d.name+'"></div>'
+    +'<div class="bpn-det-body">'
+    +'<div class="bpn-det-name">'+d.name+'</div>'
+    +'<div class="bpn-det-chipwrap"><span class="bpn-det-chip">'+cat+'</span></div>'
+    +'<p class="bpn-det-desc">'+(d.desc||'')+'</p>'
+    +(d.active?'<p class="bpn-det-desc">'+d.active+'</p>':'')
+    +'<div class="bpn-det-stats">'
+    +'<div class="bpn-det-stat hot"><k>YOU OWN</k><v>'+fmt(d.cnt||0)+'×</v></div>'
+    +'<div class="bpn-det-stat"><k>AMOUNT</k><v>'+bpxStep+'</v></div>'
+    +'</div>'
+    +'<div class="bpn-stepper">'
+    +'<button type="button" class="bpn-step" onclick="bpxStepBy(-1)"'+(bpxStep<=1?' disabled':'')+' aria-label="Decrease amount">−</button>'
+    +'<span class="bpn-range"><input type="range" min="1" max="'+cap+'" value="'+bpxStep+'" oninput="bpxStepSet(this.value)" aria-label="Amount"></span>'
+    +'<span class="bpn-stepval">'+bpxStep+'</span>'
+    +'<button type="button" class="bpn-step" onclick="bpxStepBy(1)"'+(bpxStep>=cap?' disabled':'')+' aria-label="Increase amount">+</button>'
+    +'</div>'
+    +'<div class="bpn-actions">'
+    +'<button type="button" class="bpn-btn pri" onclick="bpxUseSelected()"'+(has?'':' disabled')+'>'
+    +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>'
+    +'<span>'+bpxActionLabel(d)+'</span></button>'
+    +(d.isPack&&d.kind!=='intan'?'<button type="button" class="bpn-btn" onclick="bpxOpenItemPop(\''+d.kind+'\')">AMOUNT OPTIONS / USE ALL</button>':'')
+    +'</div></div>'
+    +'<div class="bpn-det-foot">Every use is validated against your saved balance.</div>';
+}
+function bpxDossierGear(tab,d){
+  const isPet=tab==='pet';
+  const owned=bpxOwned(tab,d), act=bpxActive(tab,d);
+  const chip=act?(isPet?'ACTIVE PET':'EQUIPPED · SLOT '+((state.artSlots||[]).indexOf(d.id)+1)):(owned?'OWNED':'NOT OWNED');
+  let actions;
+  if(act)actions='<button type="button" class="bpn-btn warn" onclick="bpxGear(\''+tab+'\',\''+d.id+'\',\'off\')">RELEASE</button>';
+  else if(owned)actions='<button type="button" class="bpn-btn pri" onclick="bpxGear(\''+tab+'\',\''+d.id+'\',\'on\')">EQUIP</button>';
+  else{
+    const st=(typeof bpGearStatus==='function')?bpGearStatus(d,false,false):{t:'LOCKED'};
+    actions='<button type="button" class="bpn-btn" onclick="bpxGear(\''+tab+'\',\''+d.id+'\',\'buy\')">ACQUIRE · '+st.t+'</button>';
+  }
+  return '<div class="bpn-det-head"><span class="kick">// '+(isPet?'PET':'RELIC')+' <b>DOSSIER</b></span>'
+    +'<button type="button" class="bpn-det-x" onclick="bpxCloseDossier()" aria-label="Close dossier">'
+    +'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div>'
+    +'<div class="bpn-det-art"><span class="bpn-det-pedestal"></span><img src="'+bpxGearIcon(d)+'" alt="'+d.name+'"></div>'
+    +'<div class="bpn-det-body">'
+    +'<div class="bpn-det-name">'+d.name+'</div>'
+    +'<div class="bpn-det-chipwrap"><span class="bpn-det-chip"'+(d.color?' style="color:'+d.color+'"':'')+'>'+chip+'</span></div>'
+    +'<p class="bpn-det-desc">'+(isPet?'Companion pet — only one can be active at a time. Its luck bonus is always counted while equipped.':'Permanent relic — up to two can be equipped at once. Only slotted relics contribute their luck bonus.')+'</p>'
+    +'<div class="bpn-det-stats">'
+    +'<div class="bpn-det-stat hot"><k>LUCK FLAT</k><v>+'+(d.flat||0)+'</v></div>'
+    +'<div class="bpn-det-stat"><k>LUCK MULT</k><v>+'+(d.pct||0)+'%</v></div>'
+    +'</div>'
+    +'<div class="bpn-actions">'+actions+'</div></div>'
+    +'<div class="bpn-det-foot">'+luckTxt(d)+'</div>';
+}
+function bpxDossier(){
+  if(!bpxSel)return bpxDossierEmpty();
+  const d=bpxFindSelected();
+  if(!d)return bpxDossierEmpty();
+  return bpxSel.indexOf('item:')===0?bpxDossierItem(d):bpxDossierGear(bpxSel.split(':')[0],d);
+}
+function bpxPaintBody(){
+  const tab=bpTab;
+  const cats=bpxCats(tab);
+  let rail='<div class="bpn-rail-h"><b>CATEGORIES</b><span class="rule"></span></div>', chips='';
+  cats.forEach(c=>{
+    const n=bpxCatCount(tab,c.k);
+    rail+='<button type="button" class="bpn-cat'+(bpxCat===c.k?' on':'')+'" onclick="bpxSetCat(\''+c.k+'\')"><span>'+c.l+'</span><span class="cn">'+n+'</span></button>';
+    chips+='<button type="button" class="bpn-chip'+(bpxCat===c.k?' on':'')+'" onclick="bpxSetCat(\''+c.k+'\')">'+c.l+' <b>'+n+'</b></button>';
+  });
+  rail+='<div class="bpn-tip"><b>TIP</b>Click an entry to open its dossier. Owned entries are listed first.</div>';
+  const list=bpxFilter(tab);
+  const tiles=list.map(d=>bpxTile(tab,d)).join('');
+  const lbl=(BPX_TABS.find(t=>t.k===tab)||BPX_TABS[0]).l;
+  return '<div class="bpn-body">'
+    +'<aside class="bpn-rail">'+rail+'</aside>'
+    +'<div class="bpn-mid">'
+    +'<div class="bpn-chips">'+chips+'</div>'
+    +'<div class="bpn-tools">'
+    +'<label class="bpn-search">'
+    +'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>'
+    +'<input type="search" placeholder="Search inventory..." value="'+bpxQuery+'" oninput="bpxSetQuery(this.value)" autocomplete="off">'
+    +'</label>'
+    +'<button type="button" class="bpn-sort'+(bpxSort!=='CATEGORY'?' on':'')+'" onclick="bpxToggleSort()">SORT <span class="cv">'+bpxSort+'</span></button>'
+    +'</div>'
+    +'<div class="bpn-scroll"><div class="bpn-grid">'+tiles+'</div>'
+    +'<div class="bpn-nr"'+(list.length?' style="display:none"':'')+'>NO MATCHING ENTRY</div></div>'
+    +'</div>'
+    +'<aside class="bpn-detail'+(bpxSel?' on':'')+'" id="bpxDetail">'+bpxDossier()+'</aside>'
+    +'</div>'
+    +'<footer class="bpn-foot">'
+    +'<span><b>CLICK ITEM</b> open dossier</span>'
+    +'<span><b>STEPPER</b> pick amount</span>'
+    +'<span class="haz">TAB · '+lbl+'</span></footer>';
+}
+function bpxPaintTabs(){
+  return '<nav class="bpn-tabs" role="tablist" aria-label="Bagian Backpack">'
+    +BPX_TABS.map(t=>'<button type="button" class="bpn-tab'+(bpTab===t.k?' on':'')+'" role="tab" aria-selected="'+(bpTab===t.k)+'" onclick="bpxSetTab(\''+t.k+'\')">'
+      +'<span class="bpn-tab-num">'+t.num+'</span>'
+      +'<span class="bpn-tab-ic" style="--im:url(\''+t.ic+'\')"></span>'
+      +'<span class="bpn-tab-l">'+t.l+'</span>'
+      +'<span class="bpn-tab-s">'+t.s+'</span></button>').join('')
+    +'</nav>';
+}
+function bpxPaintHeader(){
+  const owned=bpxItems().filter(d=>(d.cnt||0)>0).length;
+  return '<header class="bpn-top">'
+    +'<div class="bpn-mark"><span class="bpn-mark-t">BACKPACK</span><span class="bpn-mark-s">FIELD INVENTORY</span></div>'
+    +'<div class="bpn-topmid">'
+    +'<div class="bpn-crumb"><i></i><span>VAULT</span><span class="sep">/</span><b>HZ-04</b><span class="sep">/</span><span>SUPPLY</span></div>'
+    +'<div class="bpn-topstat">'
+    +'<div class="bpn-ts"><span class="bpn-ts-k">OWNED</span><span class="bpn-ts-v am">'+fmt(owned)+'</span></div>'
+    +'<div class="bpn-ts"><span class="bpn-ts-k">LUCK</span><span class="bpn-ts-v">'+fmt(totalLuck())+'</span></div>'
+    +'</div></div>'
+    +'<button class="bpn-x" onclick="toggleBackpack()" aria-label="Close Backpack" title="Close [ESC]">'
+    +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button></header>';
+}
+function bpxRepaint(){
+  const p=document.getElementById('backpackPanel');if(!p)return;
+  p.innerHTML=bpxPaintHeader()+bpxPaintTabs()+bpxPaintBody();
+}
+function bpxRefreshGrid(){
+  const grid=document.querySelector('#backpackPanel .bpn-grid');if(!grid)return;
+  const list=bpxFilter(bpTab);
+  grid.innerHTML=list.map(d=>bpxTile(bpTab,d)).join('');
+  const nr=document.querySelector('#backpackPanel .bpn-nr');if(nr)nr.style.display=list.length?'none':'block';
+  bpxRefreshDossier();
+}
+function bpxRefreshDossier(){
+  const el=document.getElementById('bpxDetail');if(!el)return;
+  el.innerHTML=bpxDossier();
+  el.classList.toggle('on',!!bpxSel);
+}
+function bpxMarkSel(){
+  document.querySelectorAll('#backpackPanel .bpn-tile').forEach(t=>{
+    const id=t.getAttribute('data-bpx-id');
+    t.classList.toggle('on',!!id&&bpxSel===bpTab+':'+id);
+  });
+}
+function bpxSetTab(k){
+  if(k!=='item'&&k!=='artefact'&&k!=='pet')k='item';
+  bpTab=k;bpxCat='all';bpxQuery='';bpxSel=null;bpxStep=1;
+  bpxRepaint();
+}
+function bpxSetCat(k){bpxCat=k;bpxSel=null;bpxStep=1;bpxRepaint();}
+function bpxSetQuery(v){bpxQuery=String(v||'').trim().toLowerCase();bpxSel=null;bpxRefreshGrid();}
+function bpxToggleSort(){bpxSort=(bpxSort==='CATEGORY')?'NAME':'CATEGORY';bpxRepaint();}
+function bpxPick(tab,id){bpxSel=tab+':'+id;bpxStep=1;bpxMarkSel();bpxRefreshDossier();}
+function bpxCloseDossier(){bpxSel=null;bpxMarkSel();bpxRefreshDossier();}
+function bpxStepSet(v){bpxStep=Math.max(1,parseInt(v,10)||1);bpxRefreshDossier();}
+function bpxStepBy(dv){
+  const d=bpxFindSelected();if(!d||bpTab!=='item')return;
+  const cap=Math.max(1,d.cnt||0);
+  bpxStep=Math.min(cap,Math.max(1,bpxStep+dv));
+  bpxRefreshDossier();
+}
+function bpxUseSelected(){
+  const d=bpxFindSelected();if(!d||bpTab!=='item')return;
+  const n=Math.min(bpxStep,d.cnt||0);if(n<=0)return;
+  if(d.isPack&&d.kind!=='intan'){bpUseRollPack(d.kind,bpPackRollAmountOf(d.kind),n);return;}
+  if(d.kind==='potion'){bpMultiN=n;bpUsePotion();return;}
+  if(d.kind.indexOf('luck')===0){bpUseLuckPotion(+d.kind.charAt(4),n);return;}
+  if(d.kind.indexOf('speed')===0){bpUseSpeedPotion(+d.kind.charAt(5),n);}
+}
+function bpxOpenItemPop(kind){ try{ bpItemPop(kind); }catch(e){} }
+function bpxGear(tab,id,mode){
+  if(mode==='on'||mode==='off'){
+    if(tab==='pet')bpTogglePet(id); else bpToggleArt(id);
+    bpxSel=null;bpxRepaint();return;
+  }
+  if(mode==='buy'){ if(tab==='pet')bpBuyPet(id); else bpBuyArt(id); }
+}
+/* ESC berjenjang: dossier dulu, baru panel (boot.js mengurus sisanya). */
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Escape'||!bpxSel)return;
+  if(!document.body.classList.contains('bp-open'))return;
+  e.stopPropagation();e.preventDefault();bpxCloseDossier();
+},true);
+
+/* ---- banner hazard masuk/keluar (#backpackCurtain, pola #deckCurtain) ---- */
+let _bpxT=[];
+function bpxClearT(){for(const t of _bpxT)clearTimeout(t);_bpxT=[];}
+function bpxSetCopy(mode){
+  const kick=document.getElementById('bpHZKick'),title=document.getElementById('bpHZTitle'),
+        sub=document.getElementById('bpHZSub'),foot=document.getElementById('bpHZFoot'),
+        serial=document.getElementById('bpHZSerial'),water=document.getElementById('bpHZWater');
+  if(serial)serial.textContent=(0x1000+Math.floor(Math.random()*0xefff)).toString(16).toUpperCase();
+  if(mode==='open'){
+    if(kick)kick.innerHTML='// SUPPLY <b>UPLINK</b>';
+    if(title)title.textContent='BACKPACK';
+    if(water)water.textContent='BAG';
+    if(sub)sub.textContent='INVENTORY MATRIX · ITEMS · RELICS · PETS';
+    if(foot)foot.textContent='SYNC INVENTORY';
+  }else{
+    if(kick)kick.innerHTML='// LINK <b>STAND BY</b>';
+    if(title)title.textContent='HOLD';
+    if(water)water.textContent='OUT';
+    if(sub)sub.textContent='INVENTORY DISCONNECTING · DATA SAVED';
+    if(foot)foot.textContent='CLOSE SESSION';
+  }
+}
+function bpxBannerOpen(){
+  const c=document.getElementById('backpackCurtain');if(!c)return;
+  bpxClearT();bpxSetCopy('open');
+  c.className='';void c.offsetWidth;
+  c.classList.add('on','smooth','sweep');
+  _bpxT.push(setTimeout(()=>c.classList.add('revealed'),1080));
+  _bpxT.push(setTimeout(()=>c.classList.remove('on','smooth','sweep','revealed'),1800));
+}
+/* EXIT 3 fase: tirai MENUTUP -> konten disembunyikan -> tirai MEMBUKA.
+   Fase 3 wajib; tanpanya layar tertahan tertutup ("banner tidak kebuka"). */
+function bpxBannerClose(onCovered){
+  const c=document.getElementById('backpackCurtain');
+  if(!c){if(onCovered)onCovered();return;}
+  bpxClearT();bpxSetCopy('close');
+  c.className='';c.classList.add('on','smooth','revealed');void c.offsetWidth;
+  c.classList.remove('revealed');
+  _bpxT.push(setTimeout(()=>{if(onCovered)onCovered();},560));
+  _bpxT.push(setTimeout(()=>c.classList.add('revealed'),780));
+  _bpxT.push(setTimeout(()=>c.classList.remove('on','smooth','revealed'),1560));
+}
+window.bpxBannerOpen=bpxBannerOpen;
+window.bpxBannerClose=bpxBannerClose;
+
 function renderBackpackPanel(){
   const panel=document.getElementById('backpackPanel');if(!panel)return;
-  bpsHoverBind();bpsHoverHide();
-  /* guard anti-menggantung (kontrak): re-render ke tab lain / koleksi kosong = tutup popover+modal */
-  if(bpTab!=='deck'||!state.stacks.length){bpCardModalClose();_bpMutPopOpen=false;}
-  if(bpTab!=='tree'){bpTreeDetailClose();} /* pindah tab = detail skill tree ikut hilang */
-  const TABS=[
-    {k:'deck',num:'01',l:'DECK MATRIX',ic:`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`},
-    {k:'tree',num:'02',l:'SKILL TREE',ic:`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><circle cx="6" cy="19" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="17.07" x2="10.41" y2="7.93"/><line x1="15.41" y1="17.07" x2="13.59" y2="7.93"/></svg>`},
-    {k:'item',num:'03',l:'POTION & ITEMS',ic:`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>`},
-    {k:'artefact',num:'04',l:'ARTEFACTS',ic:`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`},
-    {k:'pet',num:'05',l:'COMPANION PETS',ic:`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6z"/><path d="M9.5 12l1.8 1.8L15 10"/></svg>`}
-  ];
-  const tabbar=`<nav class="bp-tabs" role="tablist">${TABS.map(t=>`<button class="bp-tab${bpTab===t.k?' on':''}" onclick="if(typeof sfx!=='undefined'&&sfx.click)sfx.click();bpSetTab('${t.k}')" role="tab" aria-selected="${bpTab===t.k}"><span class="bp-tab-num">${t.num}</span><span class="bp-tab-ic">${t.ic}</span><span class="bp-tab-l">${t.l}</span><span class="bp-tab-laser"></span></button>`).join('')}</nav>`;
-  queueMicrotask(bpCenterActiveTab);
-  /* HEADER prototipe v3 (locked, _tmp/proto_backpack_v3.html 20-27): wordmark + accent rule + 2 stat REAL.
-     KARTU = state.stacks.length (sumber sama seperti "KOLEKSI n" di bar DECK), POWER = deckTotalPower()
-     via fmt() (formatter angka besar backpack, tabular-nums + nowrap supaya tidak kepotong tengah digit).
-     Tombol tutup + identitas operator DIPERTAHANKAN (data hidup), ditaruh di kanan setelah stat.
-     Pill koin + luck DIHAPUS dari header (permintaan user) — kelas .bph-stats/.bph-stat-pill tidak
-     di-emit lagi; .bph-left/.bph-eyebrow/.bph-title/.bph-dot/.bph-sys/.bph-code juga tidak. */
-  const _bpPower=(typeof deckTotalPower==='function'?deckTotalPower():0);
-  const header=`<div class="backpack-header">
-    <div class="bp-wordmark">BACKPACK<small>SQUADRON COMMAND</small></div>
-    <div class="bp-hdr-line" aria-hidden="true"></div>
-    <div class="bp-hdr-stats">
-      <div class="bp-hstat"><div class="bp-hstat-k">KARTU</div><div class="bp-hstat-v">${fmt(state.stacks.length)}</div></div>
-      <div class="bp-hstat"><div class="bp-hstat-k">POWER</div><div class="bp-hstat-v am">${fmt(_bpPower)}</div></div>
-    </div>
-    <div class="bph-right">
-      <button class="backpack-close" onclick="toggleBackpack()" aria-label="Tutup Backpack" title="Tutup [ESC]">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-  </div>${tabbar}`;
-
-  if(bpTab==='tree'){panel.innerHTML=header+`<div class="bp-body tree">${renderBpTree()}</div>`;stMount();bpTreeDetailSync();return;}
-  if(bpTab==='item'){panel.innerHTML=header+`<div class="bp-body">${renderBpItems()}</div>`;return;}
-  if(bpTab==='artefact'){panel.innerHTML=header+`<div class="bp-body">${renderBpArts()}</div>`;return;}
-  if(bpTab==='pet'){panel.innerHTML=header+`<div class="bp-body">${renderBpPets()}</div>`;return;}
-
-  /* tab DECK (default) */
-  if(!state.stacks.length){panel.innerHTML=header+`<div class="bp-empty">Belum punya kartu. Tekan ROLL untuk mendapatkan kartu.</div>`;return;}
-
-  /* RACK prototipe (v3 .conduit .slot): 4 slot vertikal rata — TANPA role text, TANPA nama
-     kartu di slot terisi (keputusan user). Nama hanya lewat aria-label. Kosong = frame
-     minimal + "+" SVG. Kelas .bps-* dipertahankan supaya CSS lama tetap.anchor. */
-  const slots=[0,1,2,3].map(i=>{
-    const id=state.deck[i];const s=id?state.stacks.find(x=>x.id===id):null;
-    if(!s)return `
-      <div class="bp-slot empty${bpTarget===i?' sel':''}" onclick="bpPickSlot(${i})" title="Pilih Slot ${i+1}" aria-label="Slot ${i+1} kosong">
-        <div class="bps-empty-body">
-          <div class="bps-plus-circle"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg></div>
-        </div>
-        <span class="bps-num" aria-hidden="true">0${i+1}</span>
-        <span class="bps-corner tl"></span>
-        <span class="bps-corner br"></span>
-      </div>`;
-    const edge=bpCardBorderColor(s),variant=bpCardBorderKind(s),variantClass=variant?" bp-mut-"+variant:"",edgeStyle=variant?"":";border-color:"+edge;
-    const mutCls=(s.mut&&s.mut!=='none')?' mut-'+s.mut:'';
-    const shinyClsStr=s.shiny?' shiny':'';
-    const fullMutClass=variantClass+mutCls+shinyClsStr;
-    return `
-      <div class="bp-slot filled${bpTarget===i?' sel':''}${fullMutClass}${CARDS[s.char]&&CARDS[s.char].fullArt?' fa':''}" data-sid="${s.id}" onclick="bpPickSlot(${i})" aria-label="Slot ${i+1}: ${cardName(s.char)}" style="--tcol:${edge}${edgeStyle}">
-        <div class="bps-art-wrap">
-          <img src="${cardThumb(s.char)}" alt="" loading="lazy" decoding="async">
-        </div>
-        <span class="bps-num" aria-hidden="true">0${i+1}</span>
-        <button class="bps-x" onclick="event.stopPropagation();bpClearSlot(${i})" title="Lepas Kartu" aria-label="Lepas kartu dari slot ${i+1}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
-        <span class="bps-corner tl"></span>
-        <span class="bps-corner br"></span>
-      </div>`;
-  }).join('');
-
-  const _vis0=bpSortedStacks();
-  const visible=bpFavOnly?_vis0.filter(s=>s.fav):_vis0; /* FAV-only hanya berlaku di tab DECK (desain prototipe) */
-  const INITIAL=48;
-  _bpTileHtml={};
-  const tiles=visible.map((s,i)=>{
-    _bpTileHtml[s.id]=bpTileInner(s);
-    const cData=CARDS[s.char];
-    const tier=(cData&&cData.tier)||'COMMON';
-    const mut=(s.mut&&s.mut!=='none')?s.mut:null;
-    const w=bpWeatherOf(s);
-    const pw=Math.max(0.035,bpPowerNorm(s,visible)); /* floor 0.035 prototipe — meter tak pernah hilang total */
-    const nm=cardName(s.char);
-    const mounted=i<INITIAL;
-    const mcol=mut?(MUT_COLOR[mut]||'#7DF9FF'):'#7DF9FF'; /* shiny-only juga #7DF9FF, sama seperti bpCardBorderColor */
-    return `<div class="bp-tile${bpInDeck(s)?' in-deck':''}${cData&&cData.fullArt?' fa':''}${mounted?'':' lz-ph'}" data-lz="${s.id}" data-sid="${s.id}" data-name="${nm.toLowerCase()}" aria-label="${nm}" role="button" onclick="bpCardModalOpen('${s.id}')" style="border:none !important;box-shadow:none !important;background:transparent !important;padding:0 !important;outline:none !important;--pw:${pw.toFixed(3)};--tcol:${(cData&&TIER_COLOR[tier])||'#94a3b8'};--mcol:${mcol};--wcol:${w?w.color:'transparent'}">${mounted?_bpTileHtml[s.id]:''}</div>`;
-  }).join('');
-  /* COLLECTION BAR prototipe (v3 .coll-bar): KOLEKSI n + FAV + MUT(popover: baris mutasi + URUTKAN) + search.
-     URUTKAN sengaja DI DALAM popover (prototipe v3) — 4 tombol di bar memecah bar jadi 2-5 baris
-     di 320-390px dan meruntuhkan grid jadi ~1 kolom.
-     Bar = anak PERTAMA .bp-collect, di atas .bp-scroll: di HP bar mengambil ruang dari grid,
-     grid tetap scrollable (posisi baru; .bp-colhead "CARD ARCHIVE // VAULT" diganti KOLEKSI). */
-  const rows=BP_MUT_KEYS.map(k=>`<button class="bp-mrow${bpMutFilter===k?' on':''}" onclick="event.stopPropagation();bpMutPick('${k}')" aria-pressed="${bpMutFilter===k}" style="--mc:${BP_MUT_COLORS[k]}"><span class="bp-mrow-sw">${BP_MUT_SWATCH(k)}</span><span class="bp-mrow-lb">${BP_MUT_NAMES[k]}</span><b class="bp-mrow-cn">${bpMutCountOf(k)}</b></button>`).join('');
-  /* PROTOTIPE v3: URUTKAN ada DI DALAM popover MUT (bukan di bar) supaya bar satu baris di 320-390px.
-     onclick pakai event.stopPropagation() — sama seperti .bp-mrow: re-render melepas node lama,
-     tanpa itu listener klik-luar menutup popover tepat setelah memilih sort. */
-  const seg=BP_SORT_KEYS.map(k=>`<button class="bp-sbtn${bpSortMode===k?' on':''}" onclick="event.stopPropagation();bpSetSort('${k}')" aria-pressed="${bpSortMode===k}">${BP_SORT_NAMES[k]}</button>`).join('');
-  const pop=_bpMutPopOpen?`<div class="bp-mutpop" id="bpMutPop" role="group" aria-label="Penyaring mutasi koleksi"><div class="bp-pop-h">MUTASI</div><div class="bp-pop-list">${rows}</div><div class="bp-pop-h">URUTKAN</div><div class="bp-seg" role="group" aria-label="Urutkan koleksi">${seg}</div></div>`:'';
-  const searchInput=`<input id="bp-search" class="bp-search" type="search" placeholder="Cari kartu / mutasi..." value="${deckSearch}" oninput="deckSearch=this.value;runCardSearch(this,document.querySelector('.bp-tiles'),document.getElementById('bp-nores'))">`;
-  const filterRow=`<div class="bp-filter">
-      <span class="bp-kol">KOLEKSI <b class="bp-kol-n">${visible.length}</b></span>
-      <button class="bp-favtog${bpFavOnly?' on':''}" onclick="bpSetFavOnly()" aria-pressed="${bpFavOnly}" title="Hanya kartu favorit"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${BP_STAR_PATH}"/></svg><span>FAV</span></button>
-      <span class="bp-mutgrp">
-        <button class="bp-mutbtn${bpMutFilter!=='all'?' on':''}" id="bp-mutbtn" onclick="event.stopPropagation();bpMutPopToggle()" aria-expanded="${_bpMutPopOpen}" aria-haspopup="true" aria-controls="bpMutPop" style="--mc:${BP_MUT_COLORS[bpMutFilter]}"><span class="bp-mb-glyph">${BP_MUT_SWATCH(bpMutFilter)}</span><span>MUT</span><svg class="bp-mb-caret" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
-        <button class="bp-bestbtn" onclick="if(typeof sfx!=='undefined'&&sfx.hit)sfx.hit();bpEquipBest()" title="Pasang 4 kartu paling langka ke dek" aria-label="Equip best: pasang kartu paling langka ke dek"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg><span class="bp-best-full">EQUIP BEST</span><span class="bp-best-mini" aria-hidden="true">BEST</span></button>
-      </span>
-      ${searchInput}
-      ${pop}
-    </div>`;
-  panel.innerHTML=header+`<div class="bp-body deck"><div class="bp-cols">
-    <div class="bp-deckcol">
-      <div class="bp-col-head">
-        <span class="bp-deck-count">[ ${state.deck.filter(Boolean).length} / 4 ]</span>
-      </div>
-      <div class="bp-slots">${slots}</div>
-      <div class="bp-deckmeta">
-        <div class="bdm-core">
-          <b class="bdm-v">${fmt(deckTotalPower())}</b>
-        </div>
-      </div>
-    </div>
-    <div class="bp-collect">
-      ${filterRow}
-      ${visible.length?`<div class="bp-scroll"><div class="bp-tiles">${tiles}</div><div class="bp-empty" id="bp-nores" style="display:none;padding:18px 0">Kartu tidak ditemukan.</div></div>`:`<div class="bp-empty" style="padding:18px 0">Tidak ada kartu varian ini.</div>`}
-    </div>
-  </div></div>`;
-  /* terapkan ulang query search setelah re-render (misal toggle ★) — query disimpan di deckSearch */
-  const si=document.getElementById('bp-search');
-  if(si&&deckSearch)runCardSearch(si,document.querySelector('.bp-tiles'),document.getElementById('bp-nores'));
-  bpLazyMountTiles();
-  bpCardModalSync(); /* modal di luar panel: disinkron in-place tiap re-render, tidak pernah dobel */
+  /* DECK & SKILL TREE sudah keluar dari Backpack (2026-11-07). */
+  try{ bpCardModalClose(); }catch(e){}
+  bpxRepaint();
 }
+
+
+
 /* ===== DECK port step-2 (ui-ux): FAV-only + popover MUT + modal kartu (prototipe v3) =====
    Semua angka hanya lewat fungsi core step-1 (bpSortedStacks/bpMutCountOf/bpWeatherOf/
    bpIsNew/bpPowerNorm/bpPowerOf) — tidak ada perhitungan ulang di sini. */
@@ -2039,7 +2270,7 @@ function bpCardModalSync(){
   const mutLbl=(mut||s.shiny)?`<span class="bp-cm-mut" style="color:${mcol}">${s.shiny?'SHINY':''}${s.shiny&&mut?' · ':''}${mut?(MUT_LABEL[mut]||''):''}</span>`:'';
   el.innerHTML=`
     <div class="bp-cm-panel">
-      <button class="bp-cm-x" onclick="bpCardModalClose()" aria-label="Tutup" title="Tutup [ESC]"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+      <button class="bp-cm-x" onclick="bpCardModalClose()" aria-label="Close" title="Close [ESC]"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
       <div class="bp-cm-top">
         <div class="bp-cm-art"><img src="${cardThumb(s.char)}" alt="${cardName(s.char)}" decoding="async"></div>
         <div class="bp-cm-info">
@@ -2052,7 +2283,7 @@ function bpCardModalSync(){
             ${stat('PELUANG',rarityText(tier,luckChance(s.char,s.mut,s.shiny)),'color:#9fb4cc')}
             ${stat('POWER',fmtStat(st.hp+st.atk),'color:'+mcol)}
           </div>
-          <div class="bp-cm-own${slot>=0?' on':''}">${slot>=0?'DI DEK · SLOT '+(slot+1):'DIMILIKI'}</div>
+          <div class="bp-cm-own${slot>=0?' on':''}">${slot>=0?'IN DECK · SLOT '+(slot+1):'OWNED'}</div>
         </div>
       </div>
       <div class="bp-cm-pass"><span class="bp-cm-k">PASSIVE</span><div class="bp-cm-skill">${c&&c.passive?c.passive.name:''}</div><p class="bp-cm-desc">${c&&c.passive?c.passive.desc:''}</p></div>
@@ -2060,7 +2291,7 @@ function bpCardModalSync(){
         <button class="bp-cm-btn pri" onclick="bpAssign('${s.id}')">EQUIP</button>
         ${slot>=0?`<button class="bp-cm-btn warn" onclick="bpClearSlot(${slot})">UNEQUIP</button>`:''}
         <button class="bp-cm-btn gold${s.fav?' on':''}" onclick="bpFav('${s.id}')" aria-pressed="${!!s.fav}"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${BP_STAR_PATH}"/></svg><span>FAV</span></button>
-        <button class="bp-cm-btn lockbtn${s.lock?' on':''}" onclick="bpLock('${s.id}')" aria-pressed="${!!s.lock}" title="${s.lock?'Buka kunci kartu':'Kunci kartu'}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10.5" width="16" height="10" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg><span>LOCK</span></button>
+        <button class="bp-cm-btn lockbtn${s.lock?' on':''}" onclick="bpLock('${s.id}')" aria-pressed="${!!s.lock}" title="${s.lock?'Unlock card':'Lock card'}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10.5" width="16" height="10" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg><span>LOCK</span></button>
       </div>
     </div>`;
 }
@@ -2081,31 +2312,31 @@ document.addEventListener('click',function(e){
 /* Tab ITEM di backpack: tile icon ringkas; klik -> popup konfirmasi PAKAI. Item: Weather / Luck / Speed Potion. */
 function bpItemDef(kind){
   if(kind==='potion'){const aw=activeWeatherId();return{kind,name:'WEATHER POTION',icon:'assets/images/weather-potion.webp?v=1',emoji:'🧪',cnt:state.potions||0,
-    desc:'Gacha cuaca · chance asli + pity. Hasil sama/lebih bagus = pindah + timer reset 5 menit; lebih jelek = cuaca tetep.',
-    active:aw?`<br><strong style="color:${WEATHER[aw].color}">Aktif: <span style="display:inline-flex;align-items:center;gap:4px;vertical-align:middle">${weatherSvg(aw,13)}</span> ${WEATHER[aw].name}</strong>`:'',use:'bpUsePotion()'};}
+    desc:'Weather gacha with real odds and pity. A same-or-better result switches the active weather and resets the 5 minute timer; a worse result keeps it.',
+    active:aw?`<br><strong style="color:${WEATHER[aw].color}">Active: <span style="display:inline-flex;align-items:center;gap:4px;vertical-align:middle">${weatherSvg(aw,13)}</span> ${WEATHER[aw].name}</strong>`:'',use:'bpUsePotion()'};}
   if(kind.startsWith('luck')){const lv=+kind[4],d=LUCK_POTS[lv],b=activeLuckBuff(),bp=activeLuckBuffPct();return{kind,name:'LUCK POTION L'+lv,icon:thumbSrc(`assets/images/pot-luck-${lv}.webp`),emoji:'🍀',cnt:(state.luckPots&&state.luckPots[lv-1])||0,
-    desc:`+${d.flat} flat luck${d.pct?` & +${Math.round(d.pct*100)}% luck`:''} selama 5 menit per pot. Stackable — efek dijumlah, durasi nambah +5 menit tiap pot.`,
-    active:b||bp?`<br><strong style="color:#5eead4">Aktif: +${b} LUCK${bp?` · +${Math.round(bp*100)}%`:''}</strong>`:'',use:`bpUseLuckPotion(${lv},1)`,useAll:`bpUseLuckPotion(${lv},'all')`};}
+    desc:`+${d.flat} flat luck${d.pct?` & +${Math.round(d.pct*100)}% luck`:''} for 5 minutes per potion. Stackable — effects add up and each potion extends the timer by 5 minutes.`,
+    active:b||bp?`<br><strong style="color:#5eead4">Active: +${b} LUCK${bp?` · +${Math.round(bp*100)}%`:''}</strong>`:'',use:`bpUseLuckPotion(${lv},1)`,useAll:`bpUseLuckPotion(${lv},'all')`};}
   if(kind.startsWith('speed')){const lv=+kind.slice(-1),d=SPEED_POTS[lv],b=activeSpeedBuff();return{kind,name:'SPEED POTION L'+lv,icon:thumbSrc(`assets/images/pot-speed-${lv}.webp`),emoji:'⚡',cnt:(state.speedPots&&state.speedPots[lv-1])||0,
-    desc:`Roll speed +${d.add.toFixed(1)}× selama 5 menit per pot (cap total ×20). Stackable — efek dijumlah, durasi nambah +5 menit tiap pot.`,
-    active:b?`<br><strong style="color:#fcd34d">Aktif: +${b.toFixed(1)}× SPEED</strong>`:'',use:`bpUseSpeedPotion(${lv},1)`,useAll:`bpUseSpeedPotion(${lv},'all')`};}
-  if(kind==='r5k'){return{kind,name:'INSTAN ROLL 5K',icon:'assets/images/instanpack-5k.webp?v=trans1',emoji:'📦',cnt:(state&&state.rollPacks&&state.rollPacks.r5k)||0,
-    desc:'SPECIAL ROLL PACK - Berisi 5.000 tarikan kartu instan ke dalam koleksi.',
+    desc:`Roll speed +${d.add.toFixed(1)}× for 5 minutes per potion (total cap ×20). Stackable — effects add up and each potion extends the timer by 5 minutes.`,
+    active:b?`<br><strong style="color:#fcd34d">Active: +${b.toFixed(1)}× SPEED</strong>`:'',use:`bpUseSpeedPotion(${lv},1)`,useAll:`bpUseSpeedPotion(${lv},'all')`};}
+  if(kind==='r5k'){return{kind,name:'INSTANT ROLL 5K',icon:'assets/images/instanpack-5k.webp?v=trans1',emoji:'📦',cnt:(state&&state.rollPacks&&state.rollPacks.r5k)||0,
+    desc:'SPECIAL ROLL PACK - Contains 5,000 instant card rolls straight into your collection.',
     active:'',isPack:true,use:"bpUseRollPack('r5k', 5000, window.bpPackN)"};}
-  if(kind==='r10k'){return{kind,name:'INSTAN ROLL 10K',icon:'assets/images/instanpack-10k.webp?v=trans1',emoji:'📦',cnt:(state&&state.rollPacks&&state.rollPacks.r10k)||0,
-    desc:'SPECIAL ROLL PACK - Berisi 10.000 tarikan kartu instan ke dalam koleksi.',
+  if(kind==='r10k'){return{kind,name:'INSTANT ROLL 10K',icon:'assets/images/instanpack-10k.webp?v=trans1',emoji:'📦',cnt:(state&&state.rollPacks&&state.rollPacks.r10k)||0,
+    desc:'SPECIAL ROLL PACK - Contains 10,000 instant card rolls straight into your collection.',
     active:'',isPack:true,use:"bpUseRollPack('r10k', 10000, window.bpPackN)"};}
-  if(kind==='r25k'){return{kind,name:'INSTAN ROLL 25K',icon:'assets/images/instanpack-25k.webp?v=trans1',emoji:'📦',cnt:(state&&state.rollPacks&&state.rollPacks.r25k)||0,
-    desc:'SPECIAL ROLL PACK - Berisi 25.000 tarikan kartu instan ke dalam koleksi.',
+  if(kind==='r25k'){return{kind,name:'INSTANT ROLL 25K',icon:'assets/images/instanpack-25k.webp?v=trans1',emoji:'📦',cnt:(state&&state.rollPacks&&state.rollPacks.r25k)||0,
+    desc:'SPECIAL ROLL PACK - Contains 25,000 instant card rolls straight into your collection.',
     active:'',isPack:true,use:"bpUseRollPack('r25k', 25000, window.bpPackN)"};}
-  if(kind==='r50k'){return{kind,name:'INSTAN ROLL 50K',icon:'assets/images/instanpack-50k.webp?v=trans1',emoji:'📦',cnt:(state&&state.rollPacks&&state.rollPacks.r50k)||0,
-    desc:'SPECIAL ROLL PACK - Berisi 50.000 tarikan kartu instan ke dalam koleksi.',
+  if(kind==='r50k'){return{kind,name:'INSTANT ROLL 50K',icon:'assets/images/instanpack-50k.webp?v=trans1',emoji:'📦',cnt:(state&&state.rollPacks&&state.rollPacks.r50k)||0,
+    desc:'SPECIAL ROLL PACK - Contains 50,000 instant card rolls straight into your collection.',
     active:'',isPack:true,use:"bpUseRollPack('r50k', 50000, window.bpPackN)"};}
-  if(kind==='r100k'){return{kind,name:'INSTAN ROLL 100K',icon:'assets/images/instanpack-100k.webp?v=trans1',emoji:'📦',cnt:(state&&state.rollPacks&&state.rollPacks.r100k)||0,
-    desc:'SPECIAL ROLL PACK - Berisi 100.000 tarikan kartu instan ke dalam koleksi.',
+  if(kind==='r100k'){return{kind,name:'INSTANT ROLL 100K',icon:'assets/images/instanpack-100k.webp?v=trans1',emoji:'📦',cnt:(state&&state.rollPacks&&state.rollPacks.r100k)||0,
+    desc:'SPECIAL ROLL PACK - Contains 100,000 instant card rolls straight into your collection.',
     active:'',isPack:true,use:"bpUseRollPack('r100k', 100000, window.bpPackN)"};}
   if(kind==='intan'){return{kind,name:'INTAN ROLL 100K',icon:(state.intanRolls&&state.intanRolls>0?'assets/images/icon-index-card.webp':'assets/sprites/_placeholder.svg'),emoji:'💎',cnt:state.intanRolls||0,
-    desc:'ITEM INDEX REWARD — didapat otomatis tiap 5 varian kartu terkumpul di Card Index (semua mutasi + varian shiny dihitung). Pakai = langsung menarik 100.000 roll kartu ke koleksi.',
+    desc:'ITEM INDEX REWARD — granted automatically for every 5 card variants collected in the Card Index (all mutations and shiny variants count). Using one pulls 100,000 cards at once.',
     active:'',isPack:true,use:'bpUseIntanRoll(window.bpPackN)'};}
   return null;
 }
@@ -2131,7 +2362,7 @@ function bpItemCardHtml(kind){
   /* Kartu = DIV role=button (bukan <button>) supaya tombol aksi di dalamnya tetap HTML valid.
      Tombol aksi = BUTTON sungguhan (prototipe _tmp/proto_backpack_v3.html .potuse):
      klik tombol -> pakai 1 item (TIDAK buka modal); klik badan kartu -> bpItemPop(). */
-  return `<div class="bp-itemcard${has?'':' off'}" data-item="${kind}" role="button" tabindex="0" aria-disabled="${has?'false':'true'}" aria-label="${d.name} · dimiliki ×${fmt(d.cnt)}" onclick="bpItemPop('${kind}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();bpItemPop('${kind}');}"><span class="bi-qty${has?'':' zero'}">×${fmt(d.cnt)}</span><span class="bi-ic"><img src="${d.icon}" alt="${d.name}" loading="lazy" decoding="async"></span><span class="bi-name">${d.name}</span><button type="button" class="bi-act${d.isPack?' roll':''}" onclick="event.stopPropagation();bpItemUse('${kind}')" ${has?'':'disabled'}>${d.isPack?'GULUNG':'PAKAI'}</button></div>`;
+  return `<div class="bp-itemcard${has?'':' off'}" data-item="${kind}" role="button" tabindex="0" aria-disabled="${has?'false':'true'}" aria-label="${d.name} · owned ×${fmt(d.cnt)}" onclick="bpItemPop('${kind}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();bpItemPop('${kind}');}"><span class="bi-qty${has?'':' zero'}">×${fmt(d.cnt)}</span><span class="bi-ic"><img src="${d.icon}" alt="${d.name}" loading="lazy" decoding="async"></span><span class="bi-name">${d.name}</span><button type="button" class="bi-act${d.isPack?' roll':''}" onclick="event.stopPropagation();bpItemUse('${kind}')" ${has?'':'disabled'}>${d.isPack?'GULUNG':'PAKAI'}</button></div>`;
 }
 /* Pakai 1 item LANGSUNG dari kartu (tidak lewat modal) — memakai handler yang sudah ada,
    tidak ada mekanik baru: PAKAI potion = 1 pot (bukan 'all'), GULUNG pack = 1 paket.
@@ -2168,7 +2399,7 @@ function bpItemBuffTick(){
   const nums=strip.querySelectorAll('[data-bpcd]');if(!nums.length)return;
   let alive=0;
   nums.forEach(el=>{const rem=+el.getAttribute('data-bpcd')-Date.now();el.textContent=fmtCountdown(rem);if(rem>0)alive++;});
-  if(!alive)strip.innerHTML='<span class="bk">BUFF AKTIF</span><span class="bnone">TIDAK ADA BUFF BERJALAN</span>';
+  if(!alive)strip.innerHTML='<span class="bk">ACTIVE BUFFS</span><span class="bnone">NO ACTIVE BUFF</span>';
 }
 setInterval(bpItemBuffTick,1000);
 function renderBpItems(){
@@ -2186,7 +2417,7 @@ function bpItemPop(kind){
   const isGacha=(kind==='potion'||kind==='mythic');
   const isRollPack=kind.startsWith('r');
   const odds=isGacha?weatherOddsHTML():'';
-  const multi=isGacha?`<div class="bpholo-multi-wrap"><div class="bpholo-multi-label">JUMLAH ROLL:</div><div class="wo-multi">${[1,5,25,100].map(n=>`<button data-n="${n}" class="${bpMultiN===n?'on':''}" onclick="bpSetMulti(${n})">${n}×</button>`).join('')}</div></div>`:'';
+  const multi=isGacha?`<div class="bpholo-multi-wrap"><div class="bpholo-multi-label">ROLL AMOUNT:</div><div class="wo-multi">${[1,5,25,100].map(n=>`<button data-n="${n}" class="${bpMultiN===n?'on':''}" onclick="bpSetMulti(${n})">${n}×</button>`).join('')}</div></div>`:'';
   const isPack=!!d.isPack;
   if(isPack){
     /* Inisialisasi pack counter & default multiplier */
@@ -2226,7 +2457,7 @@ function bpItemPop(kind){
   el.innerHTML=`
     <div class="bpholo-panel" style="--holo-tone:${themeTone}">
       <div class="bpholo-glow"></div>
-      <button class="bpholo-x" onclick="bpItemPopClose()" type="button" title="Tutup">
+      <button class="bpholo-x" onclick="bpItemPopClose()" type="button" title="Close">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
 
@@ -2243,7 +2474,7 @@ function bpItemPop(kind){
       </div>
 
       <div class="bpholo-inventory-pill">
-        <span class="bpholo-inv-lbl">JUMLAH DIMILIKI:</span>
+        <span class="bpholo-inv-lbl">AMOUNT OWNED:</span>
         <span class="bpholo-inv-val">×${fmt(d.cnt)}</span>
       </div>
 
@@ -2257,10 +2488,10 @@ function bpItemPop(kind){
       <div class="bpholo-actions">
         <button class="bpholo-btn-use ${canUse?'':'disabled'}" ${canUse?'':'disabled'} type="button">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          <span>${isPack ? (window.bpPackIsAll ? ('PAKAI SEMUA (' + fmt(bpPackN) + '× paket)') : ('PAKAI SEKARANG' + (bpPackN > 1 ? ' (' + fmt(bpPackN) + '× paket)' : ''))) : ('PAKAI SEKARANG' + (isGacha && bpMultiN > 1 ? ' (' + bpMultiN + '×)' : ''))}</span>
+          <span>${isPack ? (window.bpPackIsAll ? ('USE ALL (' + fmt(bpPackN) + '× packs)') : ('USE NOW' + (bpPackN > 1 ? ' (' + fmt(bpPackN) + '× packs)' : ''))) : ('USE NOW' + (isGacha && bpMultiN > 1 ? ' (' + bpMultiN + '×)' : ''))}</span>
         </button>
-        ${d.useAll&&d.cnt>1?`<button class="bpholo-btn-all" onclick="${d.useAll}">GABUNG SEMUA (×${fmt(d.cnt)})</button>`:''}
-        <button class="bpholo-btn-dismiss" onclick="bpItemPopClose()" type="button">TUTUP</button>
+        ${d.useAll&&d.cnt>1?`<button class="bpholo-btn-all" onclick="${d.useAll}">MERGE ALL (×${fmt(d.cnt)})</button>`:''}
+        <button class="bpholo-btn-dismiss" onclick="bpItemPopClose()" type="button">CLOSE</button>
       </div>
     </div>`;
 
@@ -2287,13 +2518,13 @@ function bpPackInfoHTML(cnt){
   const n = bpPackN;
   const packs = Math.min(n, Math.max(0, cnt || 0));
   const pulls = bpPackRollAmount * packs;
-  return `<div class="bpholo-packinfo">PAKAI <b>${fmt(packs)}</b> PAKET · TOTAL <b>${fmt(pulls)}</b> TARIKAN</div>`;
+  return `<div class="bpholo-packinfo">USE <b>${fmt(packs)}</b> PACKS · TOTAL <b>${fmt(pulls)}</b> PULLS</div>`;
 }
 function bpSetPackN(n){
   const cnt = (typeof bpPackCnt === 'number') ? bpPackCnt : 0;
   if(n === 'ALL' || n === 'all'){
     if(cnt < 1){
-      toast("STOK HABIS", "TIDAK ADA PAKET", "#f87171");
+      toast("OUT OF STOCK", "NO PACKS AVAILABLE", "#f87171");
       return;
     }
     bpPackN = cnt;
@@ -2306,7 +2537,7 @@ function bpSetPackN(n){
     window.bpPackIsAll = false;
     const num = parseInt(n, 10);
     if(num > cnt){
-      toast("STOK TIDAK CUKUP", "PUNYA " + fmt(cnt) + " PAKET", "#f87171");
+      toast("NOT ENOUGH STOCK", "YOU HAVE " + fmt(cnt) + " PACKS", "#f87171");
       return;
     }
     bpPackN = num;
@@ -2324,9 +2555,9 @@ function bpSetPackN(n){
   const useSpan = document.querySelector('#itemPop .bpholo-btn-use span');
   if(useSpan){
     if(window.bpPackIsAll){
-      useSpan.textContent = `PAKAI SEMUA (${fmt(bpPackN)}× paket)`;
+      useSpan.textContent = `USE ALL (${fmt(bpPackN)}× packs)`;
     } else {
-      useSpan.textContent = `PAKAI SEKARANG${bpPackN > 1 ? ' (' + fmt(bpPackN) + '× paket)' : ''}`;
+      useSpan.textContent = `USE NOW${bpPackN > 1 ? ' (' + fmt(bpPackN) + '× packs)' : ''}`;
     }
   }
 }
@@ -2335,8 +2566,8 @@ function bpSetMulti(n){
   bpMultiN=n;
   document.querySelectorAll('#itemPop .wo-multi button[data-n]').forEach(b=>b.classList.toggle('on',+b.dataset.n===n));
   const use=document.querySelector('#itemPop .bpi-use');
-  if(use&&bpMultiN>1)use.textContent='PAKAI ×'+bpMultiN;
-  else if(use)use.textContent='PAKAI';
+  if(use&&bpMultiN>1)use.textContent='USE ×'+bpMultiN;
+  else if(use)use.textContent='USE';
 }
 function bpItemPopClose(){const e=document.getElementById('itemPop');if(e)e.remove();}
 /* ===== PANEL WEATHER ODDS (popup Weather / Mythic Potion):
@@ -2381,15 +2612,15 @@ function bpUsePotion(){
   }
   if(n>1){
     const w=best||last;
-    toast(`${w?`<span style="display:inline-flex;align-items:center;gap:6px">${weatherSvg(w.id,20)} ${w.name}</span>`:'GACHA ×'+done}`,`×${done} ROLL · ${switches} PINDAH · ${kept} SKIP`,w?w.color:'#5eead4');
+    toast(`${w?`<span style="display:inline-flex;align-items:center;gap:6px">${weatherSvg(w.id,20)} ${w.name}</span>`:'GACHA ×'+done}`,`×${done} ROLL · ${switches} SWITCHED · ${kept} SKIPPED`,w?w.color:'#5eead4');
     if(switches)beep(520,.16,"triangle",.1),setTimeout(()=>beep(780,.18,"triangle",.1),120);
     else beep(240,.18,"sine",.07);
   }else if(last&&best===null&&kept){
-    toast(`<span style="display:inline-flex;align-items:center;gap:6px">${weatherSvg(last.id,20)} ${last.name}</span>`,"ROLL LEBIH JELEK · CUACA TETEP",last.color);
+    toast(`<span style="display:inline-flex;align-items:center;gap:6px">${weatherSvg(last.id,20)} ${last.name}</span>`,"WORSE ROLL · WEATHER KEPT",last.color);
     beep(240,.18,"sine",.07);
   }else{
     beep(520,.16,"triangle",.1);setTimeout(()=>beep(780,.18,"triangle",.1),120);
-    toast(`<span style="display:inline-flex;align-items:center;gap:6px">${weatherSvg(best.id,20)} ${best.name}</span>`,"WEATHER AKTIF · 5 MENIT",best.color);
+    toast(`<span style="display:inline-flex;align-items:center;gap:6px">${weatherSvg(best.id,20)} ${best.name}</span>`,"ACTIVE WEATHER · 5 MIN",best.color);
   }
   renderShell();renderBackpackPanel();bpItemPop('potion');
 }
@@ -2808,8 +3039,8 @@ function bpGearArtHtml(d,cls){
    Lencana non-aktif hanya SINGKATAN kanal (TOKEN WB / DROP / GEM / COIN); kalimat kanal yang
    sebenarnya tetap milik bpBuyBtn() dan muncul utuh di modal — tidak ditulis ulang di sini. */
 function bpGearStatus(d,owned,active){
-  if(active)return{t:'AKTIF',cls:'act'};
-  if(owned)return{t:'MILIK',cls:'own'};
+  if(active)return{t:'ACTIVE',cls:'act'};
+  if(owned)return{t:'OWNED',cls:'own'};
   return{t:d.src==='raid'?'TOKEN WB':d.src==='tower'?'DROP':d.src==='premium'?'GEM':'COIN',cls:'lock '+(d.src||'coin')};
 }
 /* Baris angka global (luck + coin) — sama seperti sebelumnya, TANPA glif shamrock. */
@@ -2887,15 +3118,15 @@ function bpGearModalSync(){
   const owned=isPet?state.petOwned.includes(d.id):state.artOwned.includes(d.id);
   const active=isPet?state.petEquipped===d.id:state.artSlots.includes(d.id);
   const stat=(k,v)=>`<div class="bp-cm-st"><span class="bp-cm-k">${k}</span><span class="bp-cm-v">${v}</span></div>`;
-  const ownLine=active?(isPet?'PET AKTIF':'TERPASANG · SLOT '+(state.artSlots.indexOf(d.id)+1)):(owned?'DIMILIKI':'BELUM DIMILIKI');
+  const ownLine=active?(isPet?'ACTIVE PET':'EQUIPPED · SLOT '+(state.artSlots.indexOf(d.id)+1)):(owned?'OWNED':'NOT OWNED');
   const toggle="bpToggle"+(isPet?'Pet':'Art')+"('"+d.id+"')";
-  const acts=active?`<button class="bp-cm-btn warn" type="button" onclick="${toggle};bpGearModalClose()">LEPAS</button>`
-    :owned?`<button class="bp-cm-btn pri" type="button" onclick="${toggle};bpGearModalClose()">PASANG</button>`
+  const acts=active?`<button class="bp-cm-btn warn" type="button" onclick="${toggle};bpGearModalClose()">RELEASE</button>`
+    :owned?`<button class="bp-cm-btn pri" type="button" onclick="${toggle};bpGearModalClose()">EQUIP</button>`
     :`<div class="bp-cm-buy">${bpBuyBtn(d,isPet?'Pet':'Art')}</div>`;
   el.setAttribute('aria-label',d.name);
   el.style.setProperty('--ec',isPet?'#7DF9FF':d.color); /* sumber sama seperti grid: artefak d.color, pet #7DF9FF (renderBpArts/renderBpPets) */
   el.innerHTML=`<div class="bp-cm-panel">
-    <button class="bp-cm-x" type="button" onclick="bpGearModalClose()" aria-label="Tutup" title="Tutup [ESC]">${BP_X}</button>
+    <button class="bp-cm-x" type="button" onclick="bpGearModalClose()" aria-label="Close" title="Close [ESC]">${BP_X}</button>
     <div class="bp-cm-top">
       <div class="bp-cm-art gear">${d.img?`<img src="${d.img}" alt="${d.name}" decoding="async">`:artIconSvg(d.icon)}</div>
       <div class="bp-cm-info">

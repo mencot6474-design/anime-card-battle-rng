@@ -35,6 +35,8 @@
 <link rel="stylesheet" href="css/lobby-prototype.css?v=v391-bpEquipBest">
 <link rel="stylesheet" href="css/mobile-shell.css?v=v463-deckScreen">
 <link rel="stylesheet" href="css/deck-screen.css?v=v4-searchInput">
+<link rel="stylesheet" href="css/backpack-hazard.css?v=v2-bpEnglish">
+<link rel="stylesheet" href="css/drop-report.css?v=v2-dropReport">
 <link rel="stylesheet" href="css/battle-fresh.css?v=v3-battleNoHeader">
 <script>
   /* Link toko Trakteer (fallback â€” utama ada di js/config.js). */
@@ -493,24 +495,43 @@
 
 <div id="rollResultPop">
   <div class="rr-back"></div>
-  <div class="rr-card sl-theme">
-    <div class="sl-corner sl-tl"></div>
-    <div class="sl-corner sl-tr"></div>
-    <div class="sl-corner sl-bl"></div>
-    <div class="sl-corner sl-br"></div>
-    <div class="sl-system-header">
-      <div class="sl-sys-badge"><span class="sl-pulse-dot"></span>SYSTEM NOTIFICATION</div>
-      <div class="sl-sys-sub">[QUEST COMPLETE : ACQUIRED REWARDS]</div>
-    </div>
-    <div class="rr-title disp sl-title" id="rrTitle">KARTU RUN INI</div>
-    <div class="rr-total sl-total" id="rrTotal"></div>
-    <div class="rr-grid sl-grid" id="rrBody"></div>
-    <div class="sl-footer">
-      <button class="sl-claim-btn" id="rrClose">
-        <span class="sl-claim-glow"></span>
-        <span class="sl-claim-text"><i class="sl-claim-icon">â–</i> ACCEPT REWARD</span>
+  <div class="pr-card" id="rrCard">
+    <header class="pr-head">
+      <div class="pr-mark"><span class="pr-mark-t">DROP</span><span class="pr-mark-s">REPORT</span></div>
+      <div class="pr-headmid">
+        <div class="pr-kick"><i></i><span>INSTANT ROLL</span><span>/</span><b id="rrTitle">PACK</b></div>
+        <div class="pr-serial" id="rrSerial">SERIAL 0x4C2E · HZ-PROTOCOL 871</div>
+      </div>
+      <button class="pr-x" id="rrX" type="button" aria-label="Close results">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
       </button>
+    </header>
+
+    <div class="pr-sum">
+      <div class="pr-cell hot"><k>TOTAL PULLS</k><v id="rrTotal">—</v></div>
+      <div class="pr-cell"><k>UNIQUE VARIANTS</k><v id="rrUnique">—</v></div>
+      <div class="pr-cell rare"><k>RAREST</k><v id="rrRarest">—</v></div>
+      <div class="pr-cell"><k>EXTRAS</k><v id="rrExtras">—</v></div>
     </div>
+
+    <div class="pr-tools" id="rrTools">
+      <button class="pr-chip on" type="button" data-rrf="all">ALL <b id="rrCfAll">0</b></button>
+      <button class="pr-chip" type="button" data-rrf="rare">TOP RARE <b id="rrCfRare">0</b></button>
+      <button class="pr-chip" type="button" data-rrf="mut">MUTATED <b id="rrCfMut">0</b></button>
+      <button class="pr-chip" type="button" data-rrf="shiny">SHINY <b id="rrCfShiny">0</b></button>
+      <span class="pr-sp">SORT · RAREST FIRST</span>
+    </div>
+
+    <div class="pr-scroll" id="rrScroll"><div class="pr-grid" id="rrBody"></div></div>
+
+    <footer class="pr-foot">
+      <button class="pr-btn" id="rrClose" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        <span>ACCEPT REWARD</span>
+      </button>
+      <div class="pr-btnsub"><b id="rrAuto">5</b><span>AUTO-CLOSE</span></div>
+      <div class="pr-prog"><i id="rrProg"></i></div>
+    </footer>
   </div>
 </div>
 
@@ -1134,6 +1155,37 @@
 <div id="backpackBackdrop" onclick="toggleBackpack()" style="display:none;"></div>
 <div class="backpack-panel" id="backpackPanel" style="display:none;"></div>
 
+<!-- Banner hazard masuk/keluar Backpack (pola #deckCurtain, hidup di body) -->
+<div id="backpackCurtain" aria-hidden="true">
+  <div class="half top">
+    <span class="edge"></span>
+    <span class="mark">SUPPLY <b>04</b> / 04</span>
+  </div>
+  <div class="half bot">
+    <span class="edge"></span>
+    <span class="mark">HZ-PROTOCOL <b>871</b></span>
+  </div>
+  <div class="tape tape-a"></div>
+  <div class="tape tape-b"></div>
+  <div class="flash"></div>
+  <div class="plate">
+    <span class="corner tl"></span><span class="corner tr"></span>
+    <span class="corner bl"></span><span class="corner br"></span>
+    <span class="water" id="bpHZWater">BAG</span>
+    <div class="in">
+      <div class="krow">
+        <span class="dot"></span>
+        <span class="kick" id="bpHZKick">// SUPPLY <b>UPLINK</b></span>
+        <span class="serial">SERIAL 0x<b id="bpHZSerial">4C2E</b></span>
+      </div>
+      <div class="title"><span id="bpHZTitle">BACKPACK</span></div>
+      <div class="sub" id="bpHZSub">INVENTORY MATRIX — ITEMS · RELICS · PETS</div>
+      <div class="bar"><i></i></div>
+      <div class="foot"><span>HZ-PROTOCOL</span><span id="bpHZFoot">SYNC INVENTORY</span></div>
+    </div>
+  </div>
+</div>
+
 <!-- ===================== DECK SCREEN (modal sendiri, terpisah dari Backpack) ===================== -->
 <div id="deckModal" role="dialog" aria-modal="true" aria-label="Deck">
   <header class="dk-top">
@@ -1290,14 +1342,14 @@
 <script src="js/config.js?v=v156-trakteer"></script>
 <script src="js/mobile-shell.js?v=v286-deckScreen"></script>
 <script src="js/supabase-sync.js?v=v332-battleNoHeader"></script>
-<script src="js/panels.js?v=v398-rollStopLabel"></script>
+<script src="js/panels.js?v=v400-bpEnglish"></script>
 <script src="js/topup.js?v=v158-paywallOff"></script>
 <script src="js/cards-fx.js?v=v84-fmtStatCompact"></script>
 <script src="js/anime-archetype-attacks.js?v=v117-blurHygiene"></script>
 <script src="js/state.js?v=v348-rebirthModalFrontAnimationBehind"></script>
 <script src="js/sheetfx.js?v=v348-rebirthModalFrontAnimationBehind"></script>
 <script src="js/battle.js?v=v243-battleFreshProto"></script>
-<script src="js/tower-lobby.js?v=v364-deckScreen"></script>
+<script src="js/tower-lobby.js?v=v366-bpEnglish"></script>
 <script src="js/shadow-king-fx.js?v=v4-skfx4"></script>
 <script src="js/foe-passives.js?v=v62-foe-passives"></script>
 <script src="js/story-carousel.js?v=v322-storyCleanLabels"></script>

@@ -1030,58 +1030,166 @@ function towerEnd(win){
     },1200);
   }
 }
+/* ==========================================================================
+   HASIL DROP — "DROP REPORT" (port _tmp/proto_instantpack_v1.html,
+   dikunci user 2026-11-07). Markup hidup di index.html (#rollResultPop),
+   isi dirakit di sini. Dipakai bersama: instant pack, tower, intan roll,
+   reward iklan — angka tetap dari luckChance/fmtChance/TIER_COLOR/MUT_COLOR.
+
+   Yang berubah vs desain lama (cyan "Solo Leveling"):
+     + header hazard DROP REPORT + serial
+     + ringkasan 4 sel: TOTAL PULLS / UNIQUE / RAREST / EXTRAS
+     + chip filter ALL / TOP RARE / MUTATED / SHINY
+     + tile 1:1: border tier, border mutasi, badge SHINY+MUT, ×N, "1 IN …"
+     + extras (pack/potion/artefak/pet) tampil paling depan di filter ALL
+   ========================================================================== */
+const RR_POTION=[
+  {k:'weather',label:'WEATHER POTION',icon:'assets/images/weather-potion.webp?v=1'},
+  {k:'luck',label:'LUCK POTION',icon:'assets/images/pot-luck-1.webp'},
+  {k:'speed',label:'SPEED POTION',icon:'assets/images/pot-speed-1.webp'}
+];
+const RR_PACK_ICON={r5k:'assets/images/instanpack-5k.webp',r10k:'assets/images/instanpack-10k.webp',r25k:'assets/images/instanpack-25k.webp',r50k:'assets/images/instanpack-50k.webp',r100k:'assets/images/instanpack-100k.webp'};
+const RR_TIER_W={R:1,SR:2,SSR:3,UR:4,EX:5,BOSS:6};
+const RR_FILTERS=[
+  {k:'all',label:'ALL',id:'rrCfAll'},
+  {k:'rare',label:'TOP RARE',id:'rrCfRare'},
+  {k:'mut',label:'MUTATED',id:'rrCfMut'},
+  {k:'shiny',label:'SHINY',id:'rrCfShiny'}
+];
+let _rrD={list:[],drops:{},extra:{},total:0,filter:'all'};
+
+function rrGroups(results){
+  const groups={};
+  (results||[]).forEach(r=>{
+    const key=r.cardId+'|'+(r.mut||'none')+'|'+(r.shiny?1:0);
+    let g=groups[key];
+    if(!g)g=groups[key]={cardId:r.cardId,tier:r.tier,mut:(r.mut&&r.mut!=='none')?r.mut:'none',shiny:!!r.shiny,n:0};
+    g.n+=(typeof r.n==='number'?r.n:1);
+  });
+  return Object.values(groups).sort((a,b)=>luckChance(b.cardId,b.mut,b.shiny)-luckChance(a.cardId,a.mut,a.shiny)||b.n-a.n);
+}
+function rrIsRare(g){
+  const tier=g.tier||cardTier(g.cardId)||'';
+  return (RR_TIER_W[tier]||1)>=5||(g.mut&&g.mut!=='none');
+}
+function rrTile(g){
+  const name=cardName(g.cardId);
+  const isMut=g.mut&&g.mut!=='none', isShiny=!!g.shiny;
+  const tier=g.tier||cardTier(g.cardId)||'';
+  const cv=luckChance(g.cardId,g.mut,g.shiny);
+  const col=isMut?(MUT_COLOR[g.mut]||'#f5f5f5'):((tier&&TIER_COLOR[tier])||'#f5f5f5');
+  const badges=(isShiny||isMut)
+    ? '<span class="pr-badges">'
+      +(isShiny?'<span class="pr-badge sh">SHINY</span>':'')
+      +(isMut?'<span class="pr-badge mut" style="--mc:'+(MUT_COLOR[g.mut]||'#fff')+'">'+(MUT_LABEL[g.mut]||g.mut).toUpperCase()+'</span>':'')
+      +'</span>'
+    : '';
+  return '<div class="pr-tile'+(isMut?' mut-'+g.mut:'')+(isShiny?' shiny':'')+'" data-tier="'+tier+'" title="'+name+'">'
+    +(g.n>1?'<span class="pr-cnt">×'+fmt(g.n)+'</span>':'')
+    +badges
+    +'<img src="'+cardThumb(g.cardId)+'" alt="'+name+'" loading="lazy" decoding="async" onerror="this.style.visibility=\'hidden\'">'
+    +'<div class="pr-tfoot" style="color:'+col+'">1 IN '+fmtChance(cv)+'</div>'
+    +'</div>';
+}
+function rrExtra(kind,key,n){
+  const isPack=kind==='pack';
+  const pot=RR_POTION.find(p=>p.k===key);
+  const icon=isPack?(RR_PACK_ICON[key]||''):(pot?pot.icon:'');
+  const label=isPack?('INSTAN '+String(key).replace('r','').toUpperCase()):(pot?pot.label:String(key).toUpperCase());
+  return '<div class="pr-tile extra" title="'+label+'">'
+    +(n>1?'<span class="pr-cnt">×'+fmt(n)+'</span>':'')
+    +'<span class="pr-badge" style="background:#22d3ee;color:#000">'+(isPack?'PACK':'POTION')+'</span>'
+    +'<span class="pr-exart"><img src="'+icon+'" alt="'+label+'" loading="lazy" decoding="async"></span>'
+    +'<span class="pr-exnm">'+label+'</span></div>';
+}
+function rrRare(r){
+  let icon=r.icon||'';
+  try{
+    if(r.kind==='art'&&typeof ART_DEFS!=='undefined'){const d=ART_DEFS.find(x=>x.id===r.id);if(d&&d.img)icon=thumbSrc(d.img);}
+    else if(r.kind==='pet'&&typeof PET_DEFS!=='undefined'){const d=PET_DEFS.find(x=>x.id===r.id);if(d&&d.img)icon=thumbSrc(d.img);}
+  }catch(e){}
+  if(!icon)icon='assets/images/icon-index-card.webp';
+  return '<div class="pr-tile extra" title="'+r.name+'">'
+    +'<span class="pr-badge" style="background:#b58cff;color:#000">'+(r.kind==='pet'?'PET':'RELIC')+'</span>'
+    +'<span class="pr-exart"><img src="'+icon+'" alt="'+r.name+'" loading="lazy" decoding="async"></span>'
+    +'<span class="pr-exnm">'+r.name+'</span></div>';
+}
+function rrPaint(){
+  const st=_rrD, all=st.list;
+  const rare=all.filter(rrIsRare);
+  const mut=all.filter(g=>g.mut&&g.mut!=='none');
+  const shiny=all.filter(g=>g.shiny);
+  const counts={all:all.length,rare:rare.length,mut:mut.length,shiny:shiny.length};
+  const put=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+
+  put('rrTotal',fmt(st.total));
+  put('rrUnique',fmt(all.length));
+  let best=null,bestC=-1;
+  all.forEach(g=>{const c=luckChance(g.cardId,g.mut,g.shiny);if(c>bestC){bestC=c;best=g;}});
+  put('rrRarest',best?('1 IN '+fmtChance(bestC)):'—');
+  const d=st.drops||{}, ex=st.extra||{};
+  let extras=0;
+  Object.keys(ex.packDrops||{}).forEach(k=>extras+=(ex.packDrops[k]||0));
+  RR_POTION.forEach(p=>extras+=(d[p.k]||0));
+  extras+=(ex.rareDrops||[]).length;
+  put('rrExtras',extras?('+'+fmt(extras)):'—');
+  RR_FILTERS.forEach(f=>put(f.id,counts[f.k]));
+
+  document.querySelectorAll('#rrTools [data-rrf]').forEach(b=>{
+    b.classList.toggle('on',b.getAttribute('data-rrf')===st.filter);
+  });
+
+  let html='';
+  if(st.filter==='all'){
+    Object.keys(ex.packDrops||{}).forEach(k=>{const n=ex.packDrops[k]||0;if(n>0)html+=rrExtra('pack',k,n);});
+    RR_POTION.forEach(p=>{const n=d[p.k]||0;if(n>0)html+=rrExtra('potion',p.k,n);});
+    (ex.rareDrops||[]).forEach(r=>{html+=rrRare(r);});
+  }
+  const shown=(st.filter==='all')?all:(st.filter==='rare'?rare:(st.filter==='mut'?mut:shiny));
+  html+=shown.map(rrTile).join('');
+  if(!html)html='<div class="pr-empty">NO ENTRY MATCHES THIS FILTER</div>';
+  const body=document.getElementById('rrBody');if(body)body.innerHTML=html;
+  const sc=document.getElementById('rrScroll');if(sc)sc.scrollTop=0;
+}
 function showTowerLoot(results,drops,title,extra){
-  const pop=document.getElementById("rollResultPop");if(!pop)return;
+  const pop=document.getElementById('rollResultPop');if(!pop)return;
   results=results||[];
   const d=drops||{weather:0,luck:0,speed:0};
   const ex=extra||{};
-  const POTION=[{k:'weather',name:'WEATHER',icon:'assets/images/weather-potion.webp?v=1',emoji:'🧪'},{k:'luck',name:'LUCK',icon:'assets/images/pot-luck-1.webp',emoji:'🍀'},{k:'speed',name:'SPEED',icon:'assets/images/pot-speed-1.webp',emoji:'⚡'}];
-  const totalPot=POTION.reduce((s,p)=>s+(d[p.k]||0),0);
-  /* Chips Instan Pack + artefak/pet dari drop Tower (icon ASLI dari backpack). */
-  const packChips=TOWER_PACK_DROPS.filter(p=>(ex.packDrops&&ex.packDrops[p.k])>0).map(p=>{const n=ex.packDrops[p.k]||0;return `<div class="twr-loot-chip" title="${p.name}"><span class="twr-loot-ic"><img src="${p.icon}" alt="${p.name}" onerror="this.onerror=null;this.parentNode.textContent='📦'"></span><span class="twr-loot-name">${p.name}</span>${n>1?`<span class="twr-loot-cnt">×${n}</span>`:''}</div>`;}).join("");
-  /* Icon artefak/pet: ambil dari definisi BACKPACK (ART_DEFS/PET_DEFS) supaya identik dgn tile backpack. */
-  const rareChips=(ex.rareDrops||[]).map(r=>{
-    let icon=r.icon||"";
-    try{
-      if(r.kind==='art'&&typeof ART_DEFS!=="undefined"){const d=ART_DEFS.find(x=>x.id===r.id);if(d&&d.img)icon=d.img;}
-      else if(r.kind==='pet'&&typeof PET_DEFS!=="undefined"){const d=PET_DEFS.find(x=>x.id===r.id);if(d&&d.img)icon=d.img;}
-    }catch(e){}
-    if(!icon)icon='assets/images/icon-index-card.webp';
-    const fb=r.kind==='pet'?'🐾':(r.kind==='art'?'◈':'✦');
-    return `<div class="twr-loot-chip rare" title="${r.name}"><span class="twr-loot-ic"><img src="${icon}" alt="${r.name}" onerror="this.onerror=null;this.parentNode.textContent='${fb}'"></span><span class="twr-loot-name">${r.name}</span></div>`;
-  }).join("");
-  const lootChips=(packChips||rareChips)?`<div class="twr-loot-wrap">${packChips}${rareChips}</div>`:"";
-  const totalPack=TOWER_PACK_DROPS.reduce((s,p)=>s+((ex.packDrops&&ex.packDrops[p.k])||0),0);
-  if(!results.length&&!totalPot&&!totalPack&&!rareChips)return;
-  const potChips=POTION.filter(p=>(d[p.k]||0)>0).map(p=>{const n=d[p.k]||0;return `<div class="rrc rrc-potion" title="${p.name} POTION"><i class="rrc-sizer"></i><span class="rrc-pot-ic"><img src="${p.icon}" alt="${p.name}" onerror="this.parentNode.textContent='${p.emoji}'"></span>${n>1?`<span class="rrc-cnt">×${n}</span>`:''}<span class="rrc-name">${p.name}</span></div>`;}).join("");
-  const groups={};
-  results.forEach(r=>{const key=r.cardId+"|"+(r.mut||"none")+"|"+(r.shiny||"none");{const g=(groups[key]||(groups[key]={cardId:r.cardId,tier:r.tier,mut:r.mut||"none",shiny:!!(r.shiny&&r.shiny!=="none"),n:0}));g.n+=(typeof r.n==="number"?r.n:1);}});
-  const list=Object.values(groups).sort((a,b)=>luckChance(b.cardId,b.mut,b.shiny)-luckChance(a.cardId,a.mut,a.shiny)||b.n-a.n);
-  const totalCards=(typeof results.totalPulls==="number")?results.totalPulls:results.length;
-  document.getElementById("rrTotal").textContent=fmt(totalCards)+" cards"+(list.length?" · "+list.length+" unique":"")+(totalPot?" · "+fmt(totalPot)+" potions":"")+(totalPack?" · "+fmt(totalPack)+" packs":"");
-  document.getElementById("rrBody").innerHTML=lootChips+potChips+list.map(g=>{
-    const name=cardName(g.cardId),img=cardThumb(g.cardId);
-    const isShiny=g.shiny&&g.shiny!=="none", isMut=g.mut&&g.mut!=="none";
-    const mut=isMut?g.mut:null;
-    let rc="rrc";if(isMut)rc+=" mut-"+g.mut;if(isShiny)rc+=" shiny";
-    const chanceVal=luckChance(g.cardId,g.mut,g.shiny);
-    const chanceText="1 in "+fmtChance(chanceVal);
-    const tier=g.tier||cardTier(g.cardId)||"";
-    const chanceColor=mut?MUT_COLOR[mut]:((tier&&TIER_COLOR[tier])||"var(--sl-cyan,#00d9ff)");
-    return `<div class="${rc} sl-item" data-tier="${tier}">
-      <i class="rrc-sizer"></i>
-      <div class="rrc-glow"></div>
-      <img src="${img}" alt="${name}" title="${name}" onerror="this.style.display='none'">
-      ${g.n>1?`<span class="rrc-cnt">×${g.n}</span>`:''}
-      <div class="rrc-footer">
-        <span class="rrc-chance-text" style="color:${chanceColor}">${chanceText}</span>
-      </div>
-    </div>`;
-  }).join("");
-  {const rt=document.getElementById("rrTitle");if(rt)rt.textContent=title||"TOWER RUN SPOILS";}
-  pop.classList.add("show");
+  const totalPot=RR_POTION.reduce((s,p)=>s+(d[p.k]||0),0);
+  const totalPack=(typeof TOWER_PACK_DROPS!=='undefined')
+    ? TOWER_PACK_DROPS.reduce((s,p)=>s+((ex.packDrops&&ex.packDrops[p.k])||0),0) : 0;
+  if(!results.length&&!totalPot&&!totalPack&&!(ex.rareDrops||[]).length)return;
+
+  _rrD={
+    list:rrGroups(results),
+    drops:d, extra:ex, filter:'all',
+    total:(typeof results.totalPulls==='number')?results.totalPulls:results.length
+  };
+  const t=document.getElementById('rrTitle');
+  if(t)t.textContent=String(title||'RUN SPOILS')
+    .replace(/^HASIL INSTAN ROLL\s*·\s*/i,'')
+    .replace(/^HASIL\s*/i,'')
+    .replace(/^REWARD WATCH ADS\s*·\s*/i,'');
+  const sr=document.getElementById('rrSerial');
+  if(sr)sr.textContent='SERIAL 0x'+(0x1000+Math.floor(Math.random()*0xefff)).toString(16).toUpperCase()+' · HZ-PROTOCOL 871';
+
+  rrPaint();
+  pop.classList.add('show');
   try{armRollPopAutoClose(5000);}catch(e){} /* auto-claim 5 detik: gak nahan AFK / auto-run tower */
 }
+/* chip filter + tombol X: satu listener, dipasang sekali */
+(function rrBind(){
+  const pop=document.getElementById('rollResultPop');
+  if(!pop||pop.__rrBound)return;
+  pop.__rrBound=true;
+  pop.addEventListener('click',e=>{
+    const f=e.target.closest&&e.target.closest('[data-rrf]');
+    if(f){_rrD.filter=f.getAttribute('data-rrf');rrPaint();return;}
+    if(e.target.closest&&e.target.closest('#rrX')){try{closeRollPop();}catch(err){}}
+  });
+})();
+
 
 /* =============== DECK =============== */
 let filter="ALL", deckSearch="", raidSearch="", dpSearch="";
@@ -2864,7 +2972,11 @@ function toggleBackpack() {
     bpItemPopClose();
     panel.style.removeProperty('opacity');
     panel.style.removeProperty('transform');
-    setTimeout(() => { panel.style.display = 'none'; render(); }, 250);
+    /* Banner hazard keluar (3 fase): tirai tutup -> konten hilang -> tirai buka.
+       Tanpa fase 3 layar tertahan tertutup. */
+    const hide = () => { panel.style.display = 'none'; render(); };
+    if (typeof window.bpxBannerClose === 'function') { try { window.bpxBannerClose(hide); } catch (e) { hide(); } }
+    else setTimeout(hide, 250);
   } else {
     /* Open */
     document.body.classList.add('bp-open');
@@ -2874,6 +2986,7 @@ function toggleBackpack() {
     panel.style.display = 'flex';
     panel.style.removeProperty('opacity');
     panel.style.removeProperty('transform');
+    if (typeof window.bpxBannerOpen === 'function') { try { window.bpxBannerOpen(); } catch (e) {} }
     beep(520, 0.1, 'triangle', 0.07);
   }
 }
