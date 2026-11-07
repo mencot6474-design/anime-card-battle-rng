@@ -2266,6 +2266,7 @@ function renderLobby(){
           </button>
           <div class="fb" id="fb3">
             <div class="row menu-card" id="drwTraitBtn" style="--rc:var(--cyan)" role="button" tabindex="0"><span class="pod"><i class="ic i-trait"></i></span><span class="ri"><span class="rn">Trait Overclock</span><span class="rs" id="drwTraitSub">OPTIMASI STAT PASIF</span></span><span class="rt"><span class="vl">+18%</span></span></div>
+            <div class="row menu-card" id="drwSkillBtn" style="--rc:var(--emerald)" role="button" tabindex="0"><span class="pod"><i class="ic i-skill"></i></span><span class="ri"><span class="rn">Skill Tree</span><span class="rs" id="drwSkillSub">SPEND SKILL POINTS ON LUCK &amp; SPEED</span></span><span class="rt"><span class="vl" id="drwSkillSp">0 SP</span></span></div>
             <div class="row menu-card" id="drwIndexBtn" style="--rc:var(--emerald)" role="button" tabindex="0"><span class="pod"><i class="ic i-index"></i></span><span class="ri"><span class="rn">Neural Archive</span><span class="rs" id="drwIndexSub">KATALOG KARTU</span></span><span class="rt"><span class="vl">148/312</span></span></div>
             <div class="row menu-card" id="drwSettingsBtn" style="--rc:var(--ice)" role="button" tabindex="0"><span class="pod"><i class="ic i-set"></i></span><span class="ri"><span class="rn">SETTINGS</span><span class="rs">SUARA · TEMPUR · BAHASA · CLOUD</span></span><span class="rt"><span class="vl">1×</span></span></div>
             <div class="row menu-card" id="drwChangelogBtn" style="--rc:var(--gold)" role="button" tabindex="0"><span class="pod"><i class="ic i-log"></i></span><span class="ri"><span class="rn">CHANGELOG</span><span class="rs">RIWAYAT PEMBARUAN</span></span><span class="rt"><span class="vl">v1.4.2</span></span></div>
@@ -2609,6 +2610,22 @@ window.l12UpdateWeatherDock = l12UpdateWeatherDock;
     }
   } catch(e) {}
 
+  // 5b. Skill Tree status (SP tersisa + jumlah node terbuka)
+  try {
+    const skSub = document.getElementById('drwSkillSub');
+    const skSp = document.getElementById('drwSkillSp');
+    if (typeof state !== 'undefined' && state && state.player) {
+      const sp = state.player.sp || 0;
+      const tree = state.player.tree || {};
+      const done = Object.keys(tree).filter(k => tree[k]).length;
+      const total = (typeof TREE_NODES !== 'undefined' && TREE_NODES.length) ? TREE_NODES.length : 16;
+      if (skSp) skSp.textContent = sp + ' SP';
+      if (skSub) skSub.textContent = sp > 0
+        ? 'SPEND ' + sp + ' SKILL POINT' + (sp === 1 ? '' : 'S') + ' · ' + done + '/' + total + ' LEARNED'
+        : 'EARN SKILL POINTS BY LEVELING UP · ' + done + '/' + total + ' LEARNED';
+    }
+  } catch(e) {}
+
   // 6. Rebirth Protocol status
   try {
     const rbSub = document.getElementById('drwRebirthSub');
@@ -2642,6 +2659,7 @@ window.l12UpdateWeatherDock = l12UpdateWeatherDock;
   bindClick('drwGlBtn', () => { if (typeof buyGlobalLuck === 'function') buyGlobalLuck(); });
   bindClick('drwWeatherBtn', () => { if (typeof openWeatherMachine === 'function') openWeatherMachine(); });
   bindClick('drwTraitBtn', () => { if (typeof openTrait === 'function') openTrait(); });
+  bindClick('drwSkillBtn', () => { if (typeof openSkillTree === 'function') openSkillTree(); });
   bindClick('drwIndexBtn', () => { if (typeof openIndex === 'function') openIndex(); });
   bindClick('drwPremiumBtn', () => { if (typeof openPremiumShop === 'function') openPremiumShop(); });
   bindClick('drwRebirthBtn', () => { if (typeof onRebirthClick === 'function') onRebirthClick(); });

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v486-bpEnglish';
+const CACHE_NAME = 'anime-card-battle-v487-skillTree';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

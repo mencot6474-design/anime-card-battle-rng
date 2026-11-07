@@ -32,9 +32,10 @@
 <link rel="stylesheet" href="css/world-boss.css?v=v277-wbShadowArmory">
 <link rel="stylesheet" href="css/sl-system.css?v=v391-coreSpireHub">
 <link rel="stylesheet" href="css/story-carousel.css?v=v353-storyRewardGap">
-<link rel="stylesheet" href="css/lobby-prototype.css?v=v391-bpEquipBest">
+<link rel="stylesheet" href="css/lobby-prototype.css?v=v392-skillTreeIcon">
 <link rel="stylesheet" href="css/mobile-shell.css?v=v463-deckScreen">
 <link rel="stylesheet" href="css/deck-screen.css?v=v4-searchInput">
+<link rel="stylesheet" href="css/skill-tree.css?v=v22-skillTree">
 <link rel="stylesheet" href="css/backpack-hazard.css?v=v2-bpEnglish">
 <link rel="stylesheet" href="css/drop-report.css?v=v2-dropReport">
 <link rel="stylesheet" href="css/battle-fresh.css?v=v3-battleNoHeader">
@@ -1337,6 +1338,131 @@
 </div>
 
 
+<!-- ===================== SKILL TREE SCREEN (modal sendiri) ===================== -->
+<div id="skillModal" class="sk-screen" role="dialog" aria-modal="true" aria-label="Skill tree">
+  <header class="sk-top">
+    <div class="sk-mark">
+      <span class="sk-mark-t">SKILL TREE</span>
+      <span class="sk-mark-s">SYNAPSE COMMAND</span>
+    </div>
+    <div class="sk-top-mid">
+      <div class="sk-crumb">
+        <i></i><span>PICK A PATH, THEN A TALENT TO INSPECT IT</span>
+      </div>
+      <div class="sk-sp">
+        <div class="sk-sp-dia"><b id="skSpVal">0</b></div>
+        <div class="sk-sp-txt">
+          <span class="sk-sp-k">SKILL POINTS</span>
+          <span class="sk-sp-n">1 POINT PER LEVEL</span>
+        </div>
+      </div>
+    </div>
+    <div class="sk-acts">
+      <button class="sk-act" id="skBtnLearnAll" title="Learn every affordable talent" aria-label="Learn all affordable talents">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        <span>LEARN ALL</span>
+      </button>
+      <button class="sk-act ghost" id="skBtnReset" title="Skill points are permanent" aria-label="Skill points are permanent">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+        <span>RESET SKILLS</span>
+      </button>
+    </div>
+    <button class="sk-x" id="skClose" aria-label="Close skill tree" title="Close [ESC]">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+    </button>
+  </header>
+
+  <div class="sk-body">
+    <aside class="sk-left">
+      <div class="sk-sec-h"><b>PATHS</b><span class="rule"></span><span class="tag" id="skPathTag">3 / 3</span></div>
+      <div class="sk-paths" id="skPaths"></div>
+      <div class="sk-left-foot">
+        <button class="sk-lbtn" id="skBtnWeb">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="6" r="2.2"/><circle cx="18" cy="6" r="2.2"/><circle cx="12" cy="18" r="2.2"/><path d="M7.6 7.6 11 16M16.4 7.6 13 16M8.2 6h7.6"/></svg>
+          <span id="skWebLbl">WEB VIEW: ON [V]</span>
+        </button>
+        <div class="sk-lstatus" id="skStatus">SELECT A PATH OR TALENT</div>
+        <button class="sk-lbtn" id="skBtnCenter">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+          <span>CENTER PATH [C]</span>
+        </button>
+      </div>
+    </aside>
+
+    <section class="sk-stage-wrap" id="skStageWrap">
+      <div class="sk-stage" id="skStage">
+        <svg class="sk-edges" id="skEdges" viewBox="0 0 640 860" width="640" height="860" aria-hidden="true"></svg>
+        <div id="skNodes"></div>
+        <div class="sk-core">
+          <span class="sk-core-ic" id="skCoreIc"></span>
+          <span class="sk-core-t">
+            <b>SYNAPSE CORE</b>
+            <span id="skCoreSub">LEARNED 0 / 16</span>
+          </span>
+        </div>
+      </div>
+      <div class="sk-panhint" id="skPanHint">
+        <span class="ph-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 11V6.5a1.5 1.5 0 0 1 3 0V11"/><path d="M11 10.5V5.5a1.5 1.5 0 0 1 3 0V11"/><path d="M14 10.5V7a1.5 1.5 0 0 1 3 0v6.5A6.5 6.5 0 0 1 10.5 20h-1A6.5 6.5 0 0 1 3 13.5V11a1.5 1.5 0 0 1 3 0v2"/></svg>
+        </span>
+        <span>DRAG TO EXPLORE</span>
+      </div>
+    </section>
+
+    <aside class="sk-detail" id="skDetail"></aside>
+  </div>
+
+  <footer class="sk-foot">
+    <div class="hints">
+      <span><span class="k">ESC</span>CLOSE</span>
+      <span><span class="k">Q/E</span>PATHS</span>
+      <span><span class="k">F</span>NEXT READY</span>
+      <span><span class="k">V</span>WEB VIEW</span>
+    </div>
+    <button class="sk-footchip" id="skFootWeb">WEB</button>
+    <button class="sk-footchip" id="skFootAll">VIEW ALL</button>
+    <div class="sk-zoom">
+      <button class="sk-zbtn" id="skZoomOut" aria-label="Zoom out" title="Zoom out">&minus;</button>
+      <input class="sk-range" id="skZoom" type="range" min="60" max="180" value="100" aria-label="Zoom">
+      <button class="sk-zbtn" id="skZoomIn" aria-label="Zoom in" title="Zoom in">+</button>
+      <span class="sk-zval" id="skZVal">100%</span>
+    </div>
+  </footer>
+</div>
+
+<!-- banner hazard masuk/keluar skill tree (di luar #skillModal, seperti #deckCurtain) -->
+<div id="skillCurtain" aria-hidden="true">
+  <div class="half top">
+    <span class="edge"></span>
+    <span class="mark">SYNAPSE <b>01</b> / 03</span>
+  </div>
+  <div class="half bot">
+    <span class="edge"></span>
+    <span class="mark">HZ-PROTOCOL <b>912</b></span>
+  </div>
+  <div class="tape tape-a"></div>
+  <div class="tape tape-b"></div>
+  <div class="flash"></div>
+  <div class="plate">
+    <span class="corner tl"></span><span class="corner tr"></span>
+    <span class="corner bl"></span><span class="corner br"></span>
+    <span class="water" id="skHzWater">SYNAPSE</span>
+    <div class="in">
+      <div class="krow">
+        <span class="dot"></span>
+        <span class="kick" id="skHzKick">// NEURAL <b>UPLINK</b></span>
+        <span class="serial">SERIAL 0x<b id="skHzSerial">7B14</b></span>
+      </div>
+      <div class="title"><span id="skHzTitle">SKILL TREE</span></div>
+      <div class="sub" id="skHzSub">TALENT MATRIX — 3 PATHS / 16 NODES</div>
+      <div class="bar"><i></i></div>
+      <div class="foot"><span>HZ-PROTOCOL</span><span id="skHzFoot">SYNC SYNAPSE</span></div>
+    </div>
+  </div>
+</div>
+
+<div id="skillToast" role="status" aria-live="polite"></div>
+
 <script src="js/fps-lock.js?v=v2-fps30css"></script>
 <script src="js/data.js?v=v126-storyEnemyTierOnly"></script>
 <script src="js/config.js?v=v156-trakteer"></script>
@@ -1349,12 +1475,13 @@
 <script src="js/state.js?v=v348-rebirthModalFrontAnimationBehind"></script>
 <script src="js/sheetfx.js?v=v348-rebirthModalFrontAnimationBehind"></script>
 <script src="js/battle.js?v=v243-battleFreshProto"></script>
-<script src="js/tower-lobby.js?v=v366-bpEnglish"></script>
+<script src="js/tower-lobby.js?v=v368-skillTreeSp"></script>
 <script src="js/shadow-king-fx.js?v=v4-skfx4"></script>
 <script src="js/foe-passives.js?v=v62-foe-passives"></script>
 <script src="js/story-carousel.js?v=v322-storyCleanLabels"></script>
 <script src="js/raid.js?v=v391-wbShadowArmory"></script>
 <script src="js/deck-modal.js?v=v6-deckSortPower"></script>
+<script src="js/skill-tree.js?v=v12-skillTree"></script>
 <script src="js/ranking.js?v=v9-storyEnemyTierOnly"></script>
 <script src="js/i18n.js?v=v396-bpDeck"></script>
 <script src="js/boot.js?v=v150-loadingFirstPaint"></script>

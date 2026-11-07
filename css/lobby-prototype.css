@@ -2217,6 +2217,7 @@ body.drawer-open .lobby-footer {
 #commandDrawer .i-gl { --m: url(../assets/icons/clover.svg); }
 #commandDrawer .i-wx { --m: url(../assets/icons/sun-cloud.svg); }
 #commandDrawer .i-trait { --m: url(../assets/icons/dna2.svg); }
+#commandDrawer .i-skill { --m: url(../assets/icons/portal.svg); }
 #commandDrawer .i-index { --m: url(../assets/icons/spell-book.svg); }
 #commandDrawer .i-set { --m: url(../assets/icons/gears.svg); }
 #commandDrawer .i-log { --m: url(../assets/icons/sparkles.svg); }
