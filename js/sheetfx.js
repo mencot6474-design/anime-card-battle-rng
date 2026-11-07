@@ -507,7 +507,7 @@ window.playPassiveCutIn=function(opts){
     if(imgEl&&artSrc)imgEl.src=artSrc;
     if(tagEl)tagEl.textContent=opts.tag||("SYSTEM OVERDRIVE // "+cName);
     if(ttlEl)ttlEl.textContent=opts.title||opts.passiveName||"PASSIVE OVERDRIVE";
-    if(dscEl)dscEl.textContent=opts.desc||opts.quote||"Kekuatan pasif kartu bangkit menembus batas pertahanan.";
+    if(dscEl)dscEl.textContent=opts.desc||opts.quote||"The card passives awaken and break through the defense limit.";
     CyberSfx.cutInActivate();
     ov.classList.add("active");
     var dur=typeof window.bsMs==="function"?window.bsMs(1150):1150;

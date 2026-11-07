@@ -232,7 +232,7 @@ function rkPodHtml(r, board) {
   const bd = rkPodFrameHtml(rank);
   const unit = rkUnitChip(board);
   const u = rkEsc(r.username);
-  return `<div class="rk-pod rk-pod${rank}" data-u="${u}" title="Lihat profil player">
+  return `<div class="rk-pod rk-pod${rank}" data-u="${u}" title="View player profile">
     <div class="rk-ava">${bd}<span class="rk-ava-core" data-rkav="${u}" data-rkfb="${rkEsc(rkLobbyCardSrc(r))}">${rkFaceHtml(r, rank === 1 ? 104 : 78)}</span></div>
     <div class="rk-pod-name">${u}</div>
     <div class="rk-pod-val">${rkValFmt(board, r.value)}</div>
@@ -243,7 +243,7 @@ function rkPodHtml(r, board) {
 function rkPodEmptyHtml(rank, board) {
   const bd = rkPodFrameHtml(rank);
   const unit = rkUnitChip(board);
-  return `<div class="rk-pod rk-pod${rank} rk-pod-empty" title="Belum ada player di peringkat #${rank}">
+  return `<div class="rk-pod rk-pod${rank} rk-pod-empty" title="No player yet at rank #${rank}">
     <div class="rk-ava">${bd}<span class="rk-ava-core"><span class="rk-init rk-init-empty">?</span></span></div>
     <div class="rk-pod-name rk-pod-name-empty">MENUNGGU PEMAIN</div>
     <div class="rk-pod-val rk-pod-val-empty">—</div>
@@ -308,7 +308,7 @@ function rkRowsHtml(rows, board, delta) {
   return rows.map(r => {
     const mine = String(r.username).toLowerCase() === myName;
     const u = rkEsc(r.username);
-    return `<div class="rk-row${mine ? " me" : ""}" data-u="${u}" title="Lihat profil player">
+    return `<div class="rk-row${mine ? " me" : ""}" data-u="${u}" title="View player profile">
       <span class="rk-rank rk-top${r.rank <= 3 ? r.rank : ""}">${r.rank}</span>
       <span class="rk-av-sm" data-rkav="${u}" data-rkfb="${rkEsc(rkLobbyCardSrc(r))}">${rkFaceHtml(r, 34)}</span>
       <span class="rk-name">${u}${rkSub(r, board)}</span>

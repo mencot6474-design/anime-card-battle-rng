@@ -35,7 +35,7 @@ function wireSpeedBtn(){
     grp.innerHTML=tiers.map(t=>{
       const locked=t.v>m;
       const act=sp===t.v;
-      return `<button type="button" class="pgr-spd-btn${act?' active':''}" data-spd="${t.v}" ${locked?'disabled':''} title="${locked?'Terbuka di LV '+t.lv:'Kecepatan Battle '+t.v+'×'}">${t.v}×</button>`;
+      return `<button type="button" class="pgr-spd-btn${act?' active':''}" data-spd="${t.v}" ${locked?'disabled':''} title="${locked?'Unlocks at LV '+t.lv:'Battle Speed '+t.v+'×'}">${t.v}×</button>`;
     }).join("");
     grp.querySelectorAll(".pgr-spd-btn").forEach(btn=>{
       btn.onclick=()=>{
@@ -117,18 +117,18 @@ function tcgPlayerEquipRailHtml(){
   const a1=slots[0]?ART_DEFS.find(x=>x.id===slots[0]):null;
   const a2=slots[1]?ART_DEFS.find(x=>x.id===slots[1]):null;
   const pet=state&&state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;
-  const s1=a1?`<div class="tcg-item-socket" title="${a1.name} (${luckTxt(a1)})"><img src="${a1.img}" alt="${a1.name}"><span class="sock-tier-dot"></span></div>`:`<div class="tcg-item-socket empty" title="Slot Artefak 1 (Kosong)"><span class="sock-empty-dot"></span></div>`;
-  const s2=a2?`<div class="tcg-item-socket" title="${a2.name} (${luckTxt(a2)})"><img src="${a2.img}" alt="${a2.name}"><span class="sock-tier-dot"></span></div>`:`<div class="tcg-item-socket empty" title="Slot Artefak 2 (Kosong)"><span class="sock-empty-dot"></span></div>`;
-  const sp=pet?`<div class="tcg-item-socket pet-socket" title="${pet.name} (${luckTxt(pet)})"><img src="${pet.img}" alt="${pet.name}"><span class="sock-tier-dot"></span></div>`:`<div class="tcg-item-socket pet-socket empty" title="Slot Pet (Kosong)"><span class="sock-empty-dot"></span></div>`;
+  const s1=a1?`<div class="tcg-item-socket" title="${a1.name} (${luckTxt(a1)})"><img src="${a1.img}" alt="${a1.name}"><span class="sock-tier-dot"></span></div>`:`<div class="tcg-item-socket empty" title="Artifact Slot 1 (Empty)"><span class="sock-empty-dot"></span></div>`;
+  const s2=a2?`<div class="tcg-item-socket" title="${a2.name} (${luckTxt(a2)})"><img src="${a2.img}" alt="${a2.name}"><span class="sock-tier-dot"></span></div>`:`<div class="tcg-item-socket empty" title="Artifact Slot 2 (Empty)"><span class="sock-empty-dot"></span></div>`;
+  const sp=pet?`<div class="tcg-item-socket pet-socket" title="${pet.name} (${luckTxt(pet)})"><img src="${pet.img}" alt="${pet.name}"><span class="sock-tier-dot"></span></div>`:`<div class="tcg-item-socket pet-socket empty" title="Pet Slot (Empty)"><span class="sock-empty-dot"></span></div>`;
   return `<div class="tcg-equip-rail me-equip-rail">${s1}${s2}${sp}</div>`;
 }
 window.tcgPlayerEquipRailHtml=tcgPlayerEquipRailHtml;
 
 function tcgFoeEquipRailHtml(){
   return `<div class="tcg-equip-rail foe-equip-rail">
-    <div class="tcg-item-socket empty" title="Enemy Relic I (Kosong)"><span class="sock-empty-dot"></span></div>
-    <div class="tcg-item-socket empty" title="Enemy Relic II (Kosong)"><span class="sock-empty-dot"></span></div>
-    <div class="tcg-item-socket pet-socket empty" title="Enemy Familiar (Kosong)"><span class="sock-empty-dot"></span></div>
+    <div class="tcg-item-socket empty" title="Enemy Relic I (Empty)"><span class="sock-empty-dot"></span></div>
+    <div class="tcg-item-socket empty" title="Enemy Relic II (Empty)"><span class="sock-empty-dot"></span></div>
+    <div class="tcg-item-socket pet-socket empty" title="Enemy Familiar (Empty)"><span class="sock-empty-dot"></span></div>
   </div>`;
 }
 window.tcgFoeEquipRailHtml=tcgFoeEquipRailHtml;
@@ -292,7 +292,7 @@ function floatText(sel,txt,cls,customLbl){
     else if(raw.startsWith("-")){lbl="";}
     else if(raw.startsWith("+")){lbl="";}
     else if(raw==="DODGE"||raw==="MISS"){lbl="TIME FRACTURE";num=raw==="DODGE"?"MATRIX EVADE":"MISS";}
-    else if(raw==="BEKU"){lbl="ABSOLUTE ZERO";num="CRYO STASIS";}
+    else if(raw==="FROZEN"){lbl="ABSOLUTE ZERO";num="CRYO STASIS";}
     else if(raw==="STUNNED"||raw==="STUN"){lbl="SYSTEM RESTRAINT";num="PARALYZED";}
     else if(raw==="BURN"){lbl="PLASMA IGNITION";num="PLASMA BURN";}
     else if(raw.includes("TAG-IN")){lbl="SHADOW SWAP";num=raw;}
@@ -1773,7 +1773,7 @@ function startBattle(){
   armShotFx(fx0,0);partyDmgApply(fx0);
   if(fx0.psychicBarrier)bt.psychic={left:fx0.psychicBarrier.turns,dr:fx0.psychicBarrier.dr,healPct:fx0.psychicBarrier.healPct};
   if(fx0.sleepStrike){bt.sleepLeft[0]=fx0.sleepStrike.turns;bt.sleepArmed[0]=true;}
-   if(fx0.entryFreeze&&!foeStatusImmune()){bt.eStun=fx0.entryFreeze.turns;bt.freezeLeft=fx0.entryFreeze.turns;setTimeout(()=>floatText(".fighter.foe","BEKU","crit"),bsMs(300));}
+   if(fx0.entryFreeze&&!foeStatusImmune()){bt.eStun=fx0.entryFreeze.turns;bt.freezeLeft=fx0.entryFreeze.turns;setTimeout(()=>floatText(".fighter.foe","FROZEN","crit"),bsMs(300));}
    if(fx0.heavyRain)bt.rain={left:fx0.heavyRain.turns,healPct:fx0.heavyRain.healPct};
    if(fx0.timeStop&&!foeStatusImmune()){bt.eStun=fx0.timeStop.turns;setTimeout(()=>floatText(".fighter.foe","THE WORLD","crit"),bsMs(300));}
   if(fx0.dimensionShift){bt.eAbilityOff=fx0.dimensionShift.turns;setTimeout(()=>floatText(".fighter.foe","AMENOMINAKA","crit"),bsMs(300));}
@@ -1821,7 +1821,7 @@ function applyFoeEntryPassives(){
       setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","IMMUNE · FREEZE","heal");},bsMs(300));
     }else{
       bt.pStun=Math.max(bt.pStun||0,efx.entryFreeze.turns);bt.pFreeze=efx.entryFreeze.turns;
-      setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","BEKU","crit");},bsMs(300));
+      setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","FROZEN","crit");},bsMs(300));
     }
   }
   if(efx.dimensionShift){
@@ -1881,7 +1881,7 @@ function tagIn(){
   armShotFx(nfx,next);
   if(nfx.psychicBarrier)bt.psychic={left:nfx.psychicBarrier.turns,dr:nfx.psychicBarrier.dr,healPct:nfx.psychicBarrier.healPct};
   if(nfx.sleepStrike){bt.sleepLeft[next]=nfx.sleepStrike.turns;bt.sleepArmed[next]=true;}
-   if(nfx.entryFreeze&&!foeStatusImmune()){bt.eStun=nfx.entryFreeze.turns;bt.freezeLeft=nfx.entryFreeze.turns;setTimeout(()=>floatText(".fighter.foe","BEKU","crit"),bsMs(300));}
+   if(nfx.entryFreeze&&!foeStatusImmune()){bt.eStun=nfx.entryFreeze.turns;bt.freezeLeft=nfx.entryFreeze.turns;setTimeout(()=>floatText(".fighter.foe","FROZEN","crit"),bsMs(300));}
    if(nfx.heavyRain)bt.rain={left:nfx.heavyRain.turns,healPct:nfx.heavyRain.healPct};
    if(nfx.timeStop&&!foeStatusImmune()){bt.eStun=nfx.timeStop.turns;setTimeout(()=>floatText(".fighter.foe","THE WORLD","crit"),bsMs(300));}
 bt.pGuardDr=(nfx&&nfx.puppetBody)?nfx.puppetBody.dr:((nfx&&nfx.autoBlock)?nfx.autoBlock.pct:0);
@@ -1979,7 +1979,7 @@ function trySave(){
     armShotFx(fx,a);
     if(fx.psychicBarrier)bt.psychic={left:fx.psychicBarrier.turns,dr:fx.psychicBarrier.dr,healPct:fx.psychicBarrier.healPct};
     if(fx.sleepStrike){bt.sleepLeft[a]=fx.sleepStrike.turns;bt.sleepArmed[a]=true;}
-     if(fx.entryFreeze&&!foeStatusImmune()){bt.eStun=fx.entryFreeze.turns;bt.freezeLeft=fx.entryFreeze.turns;setTimeout(()=>floatText(".fighter.foe","BEKU","crit"),bsMs(300));}
+     if(fx.entryFreeze&&!foeStatusImmune()){bt.eStun=fx.entryFreeze.turns;bt.freezeLeft=fx.entryFreeze.turns;setTimeout(()=>floatText(".fighter.foe","FROZEN","crit"),bsMs(300));}
      if(fx.heavyRain)bt.rain={left:fx.heavyRain.turns,healPct:fx.heavyRain.healPct};
      if(fx.timeStop&&!foeStatusImmune()){bt.eStun=fx.timeStop.turns;setTimeout(()=>floatText(".fighter.foe","THE WORLD","crit"),bsMs(300));}
 bt.pGuardDr=(fx&&fx.puppetBody)?fx.puppetBody.dr:((fx&&fx.autoBlock)?fx.autoBlock.pct:0);
@@ -1996,7 +1996,7 @@ if(fx.worldCorrupt){bt.wc={c:0,atk:Math.round(cardStats(bt.eq.char,bt.eq.mut,bt.
   }
   /* SPLIT DEATH (BIOKINESIS): mati TAPI charge terbelah masih ada -> badan baru pct% stat (kumulatif),
      HP penuh di max baru, ATK menyusut via bt.splitMult. Flag sekali-per-battle di-refresh kayak regression,
-     TAPI efek "saat masuk" TIDAK re-arm (biar entry damage gak triple-dip tiap split). */
+     TAPI efek "on entry" TIDAK re-arm (biar entry damage gak triple-dip tiap split). */
   if(fx.splitDeath&&(bt.splitLeft[a]||0)>0){
     bt.splitLeft[a]--;
     bt.splitMult[a]=(bt.splitMult[a]||1)*fx.splitDeath.pct/100;
@@ -2059,7 +2059,7 @@ if(fx.worldCorrupt){bt.wc={c:0,atk:Math.round(cardStats(bt.eq.char,bt.eq.mut,bt.
   if(fx.rumbling){bt.rumbling=fx.rumbling.turns;bt.rumblingPct=fx.rumbling.pct;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","THE RUMBLING","burn");},bsMs(600));}
   /* DEATH HEX (ICE REAPER): beneran tumbang -> freeze turns + ePoison atkCut */
   if(fx.deathHex){
-    if(!foeStatusImmune()){bt.eStun=Math.max(bt.eStun||0,fx.deathHex.turns);bt.freezeLeft=Math.max(bt.freezeLeft||0,fx.deathHex.turns);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","HAKKA NO TOGAME · BEKU","crit");},bsMs(520));}
+    if(!foeStatusImmune()){bt.eStun=Math.max(bt.eStun||0,fx.deathHex.turns);bt.freezeLeft=Math.max(bt.freezeLeft||0,fx.deathHex.turns);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","HAKKA NO TOGAME · FROZEN","crit");},bsMs(520));}
     bt.ePoison=Math.min(90,(bt.ePoison||0)+fx.deathHex.atkCut);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","-"+fx.deathHex.atkCut+"% ATK PERMANEN","burn");},bsMs(640));
   }
   /* DEATH REAR (THE GRIEFER): mati PERTAMA kali -> remove dari rotasi sekarang, nunggu balik di belakang party */
@@ -2223,7 +2223,7 @@ function playerPhase(){
     else{bt.eStun+=fx.unlimitedVoid.turns;setTimeout(()=>floatText(".fighter.foe","UNLIMITED VOID","crit"),bsMs(460));}
   }
   document.getElementById("turnLabel").innerHTML=(bt.tower&&towerRun)?("LANTAI <b>"+towerRun.floor+"</b> · GELOMBANG <b>"+(towerRun.idx+1)+"/"+towerRun.waves.length+"</b>"):("TURN<br>"+t);
-  setTurnPill("you","GILIRANMU");
+  setTurnPill("you","YOUR TURN");
   /* EVOLUTION TURRET (YORDLE INVENTOR): tiap `every` giliran -> +1 turret */
   if(fx.turret&&bt.turn%fx.turret.every===0){bt.turret++;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","TURRET +1 ("+bt.turret+")","heal");},bsMs(320));}
   /* RUMBLING: DoT sisa dari kartu yang udah mati — jalan tiap giliran walau kartu udah ganti */
@@ -2249,7 +2249,7 @@ function playerPhase(){
   /* REGEN (BLOODMOON DEMON): pulih pct% max HP tiap giliran, jalan walau kena stun; berhenti di bawah stopBelow% max HP */
   if(fx.regen&&bt.pHp>0&&!(fx.regen.stopBelow!=null&&bt.pHp<bt.pMax*fx.regen.stopBelow/100)){const rh2=Math.max(1,Math.round(bt.pMax*fx.regen.pct/100));bt.pHp=Math.min(bt.pMax,bt.pHp+rh2);setBar("hpMe","hpMeT",bt.pHp,bt.pMax);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","REGEN +"+fmt(rh2),"heal");},bsMs(260));}
   /* METEOR PERIODIC (CRIMSON WARLORD): tiap `every` giliran sejak masuk -> aoe pct% max HP musuh (boss kebal) */
-  if(fx.meteorShower&&bt.pHp>0&&bt.eHp>0){bt.msLast=bt.msLast||new Array(bt.fighters.length).fill(-99);if(bt.msLast[bt.active]==null||bt.msLast[bt.active]<-90)bt.msLast[bt.active]=bt.turn;if(bt.turn-bt.msLast[bt.active]>=fx.meteorShower.every){aoeMaxHpFire(fx.meteorShower.pct,"METEOR BERIKUTNYA",true);bt.msLast[bt.active]=bt.turn;}}
+  if(fx.meteorShower&&bt.pHp>0&&bt.eHp>0){bt.msLast=bt.msLast||new Array(bt.fighters.length).fill(-99);if(bt.msLast[bt.active]==null||bt.msLast[bt.active]<-90)bt.msLast[bt.active]=bt.turn;if(bt.turn-bt.msLast[bt.active]>=fx.meteorShower.every){aoeMaxHpFire(fx.meteorShower.pct,"NEXT METEOR",true);bt.msLast[bt.active]=bt.turn;}}
   /* TURN MAX HP (BIOKINESIS): tiap giliran kartu ini aktif & hidup, kartu aktif musuh rugi pct% MAX HP (flat).
      Ditaruh SEBELUM cek stun biar aura tetap nyala walau kartu kena stun. Boss NPC kebal. */
   if(fx.turnMaxHp&&!bt.en.boss&&!foeStatusImmune()&&bt.eHp>0){
@@ -2278,8 +2278,8 @@ function playerPhase(){
      begitu hitung tidur habis, serangan berikutnya di-arm ×mult (lihat blok dmgMult) */
   if(fx.sleepStrike&&(bt.sleepLeft[a]||0)>0){
     bt.sleepLeft[a]--;
-    if(bt.sleepLeft[a]===0){bt.sleepArmed[a]=true;setTimeout(()=>floatText(".fighter.me","BANGUN!","heal"),bsMs(200));}
-    else setTimeout(()=>floatText(".fighter.me","TERTIDUR","miss"),bsMs(200));
+    if(bt.sleepLeft[a]===0){bt.sleepArmed[a]=true;setTimeout(()=>floatText(".fighter.me","AWAKE!","heal"),bsMs(200));}
+    else setTimeout(()=>floatText(".fighter.me","ASLEEP","miss"),bsMs(200));
     schedPhase(600,enemyPhase);
     return;
   }
@@ -2294,14 +2294,14 @@ function playerPhase(){
   if(fx.desperateStrike&&bt.dsState[a]===0&&bt.pHp>0&&bt.pHp<bt.pMax*fx.desperateStrike.below/100)bt.dsState[a]=1;
   /* DODGE EVERY: setiap N giliran sejak masuk, pasti hindari serangan musuh giliran ini */
   if(fx.dodgeEvery){bt.dodgeCount[a]=(bt.dodgeCount[a]||0)+1;if(bt.dodgeCount[a]%fx.dodgeEvery.turns===0)bt.dodgeArmed[a]=true;}
-  /* EXECUTE ON ENTRY (SUPERNOVA): saat masuk, kalau HP musuh < pct% HP kartu ini, hancurkan instan */
+  /* EXECUTE ON ENTRY (SUPERNOVA): on entry, kalau HP musuh < pct% HP kartu ini, hancurkan instan */
   /* ERASE (OMNI SOVEREIGN): entry -> total stat musuh < milik kartu ini -> hapus (pola executeOnEntry) */
   if(fx.eraseOnEntry&&bt.eraseGuard&&bt.eraseGuard[a]){
     bt.eraseGuard[a]=false;
     const ownS=cardStats(id,bt.eq.mut,bt.eq.trait,bt.eq.shiny);
     if(bt.eHp>0&&(bt.es.hp+bt.es.atk)<(ownS.hp+ownS.atk)){
       bt.eHp=0;setBar("hpFoe","hpFoeT",0,bt.es.hp);
-      setTimeout(()=>{anim(".fighter.foe","ko");floatText(".fighter.foe","HAPUS EKSISTENSI","crit");},bsMs(200));
+      setTimeout(()=>{anim(".fighter.foe","ko");floatText(".fighter.foe","ERASE EXISTENCE","crit");},bsMs(200));
       setTimeout(()=>{if(bt&&!bt.over)foeDown();},bsMs(700));
       return;
     }
@@ -2316,7 +2316,7 @@ function playerPhase(){
       return;
     }
   }
-    /* METEORIC BURST (METEOR CONQUEROR): saat masuk, ledakan meteror -> damage FLAT pct% MAX HP kartu ini ke musuh aktif (bypass evasion/void), sekali per masuk */
+    /* METEORIC BURST (METEOR CONQUEROR): on entry, ledakan meteror -> damage FLAT pct% MAX HP kartu ini ke musuh aktif (bypass evasion/void), sekali per masuk */
   if(fx.meteorWave&&bt.meteorGuard[a]){
     bt.meteorGuard[a]=false;
     if(bt.eHp>0){
@@ -2326,7 +2326,7 @@ function playerPhase(){
       if(bt.eHp<=0){setTimeout(()=>{if(bt&&!bt.over)foeDown();},bsMs(700));return;}
     }
   }
-  /* ENTRY SHATTER (ALMIGHTY PUSH): saat masuk, ledakan memecah -> damage flat sebesar pct% dari total HP musuh saat ini (bypass evasion/void, spt wallTitans) */
+  /* ENTRY SHATTER (ALMIGHTY PUSH): on entry, ledakan memecah -> damage flat sebesar pct% dari total HP musuh saat ini (bypass evasion/void, spt wallTitans) */
   if(fx.entryShatter&&bt.shatterGuard[a]){
     bt.shatterGuard[a]=false;
     if(bt.eHp>0){
@@ -2336,7 +2336,7 @@ function playerPhase(){
       if(bt.eHp<=0){setTimeout(()=>{if(bt&&!bt.over)foeDown();},bsMs(700));return;}
     }
   }
-  /* PAPER STORM (PAPER PAL): saat masuk, serpihan kertas memberikan damage FLAT sebesar pct% dari ATK kartu ini ke kartu aktif musuh (bypass evasion/void spt entryShatter). Sekali per masuk. */
+  /* PAPER STORM (PAPER PAL): on entry, serpihan kertas memberikan damage FLAT sebesar pct% dari ATK kartu ini ke kartu aktif musuh (bypass evasion/void spt entryShatter). Sekali per masuk. */
   if(fx.entryAtkPct&&bt.atkEntryGuard[a]){
     bt.atkEntryGuard[a]=false;
     if(bt.eHp>0){
@@ -2347,7 +2347,7 @@ function playerPhase(){
       if(bt.eHp<=0){setTimeout(()=>{if(bt&&!bt.over)foeDown();},bsMs(700));return;}
     }
   }
-  /* ENTRY MAX HP (BIOKINESIS): saat masuk, kartu aktif musuh rugi pct% MAX HP sebagai damage flat (bypass evasion/void).
+  /* ENTRY MAX HP (BIOKINESIS): on entry, kartu aktif musuh rugi pct% MAX HP sebagai damage flat (bypass evasion/void).
      Boss NPC kebal. Guard sekali-per-masuk persis pola entryShatter. */
   if(fx.entryMaxHp&&bt.bioGuard[a]){
     bt.bioGuard[a]=false;
@@ -2400,7 +2400,7 @@ function playerPhase(){
       setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","BERSERKER TURNS "+bt.berserkLeft,"crit");},bsMs(240));
       if(bt.berserkLeft<=0){
         bt.berserkOn=false;
-        setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.me","ko");floatText(".fighter.me","ARMOR HABIS","crit");}},bsMs(220));
+        setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.me","ko");floatText(".fighter.me","ARMOR BROKEN","crit");}},bsMs(220));
         setTimeout(()=>{if(bt&&!bt.over)endBattle(false);},bsMs(900));
         return;
       }
@@ -2425,7 +2425,7 @@ function playerPhase(){
      if(bt.valhallaLeft<=0){
        const vh=Math.max(1,Math.round(bt.pMax*vl.healPct/100));
        bt.pHp=Math.min(bt.pMax,bt.pHp+vh);setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
-       setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","TWILIGHT HABIS +"+fmt(vh),"heal");},bsMs(460));
+       setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","TWILIGHT ENDS +"+fmt(vh),"heal");},bsMs(460));
      }
    }
   let atk=bt.eq.sk?bt.eq.skAtk:cardStats(id,bt.eq.mut,bt.eq.trait,bt.eq.shiny).atk;
@@ -2686,7 +2686,7 @@ if(fx.inkCorrupt&&total>0){bt.eInk=Math.min(fx.inkCorrupt.max,(bt.eInk||0)+1);bt
       bt.eHp=Math.min(bt.es.hp,bt.eHp+bh);setBar("hpFoe","hpFoeT",bt.eHp,bt.es.hp);
       setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","PSYCHIC BARRIER +"+fmt(bh),"heal");},bsMs(360));
       bt.ePsychic.left--;
-      if(bt.ePsychic.left<=0)setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","BARRIER HABIS","miss");},bsMs(520));
+      if(bt.ePsychic.left<=0)setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","BARRIER DOWN","miss");},bsMs(520));
     }
     if(efxM.counterHit&&Math.random()*100<efxM.counterHit.chance){
       const cb=(efxM.counterHit.base==="foeMaxHp")?bt.pMax:bt.es.atk;
@@ -2722,7 +2722,7 @@ if(fx.inkCorrupt&&total>0){bt.eInk=Math.min(fx.inkCorrupt.max,(bt.eInk||0)+1);bt
 
   /* WALL TITANS: tiap `every` giliran, berbaris ngasih bonus pct% ATK ke musuh (di luar serangan normal) */
   if(fx.wallTitans){bt.wtCount[a]=(bt.wtCount[a]||0)+1;if(bt.wtCount[a]%fx.wallTitans.every===0&&bt.eHp>0){const wt=Math.round(atk*fx.wallTitans.pct/100);bt.eHp-=wt;setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","WALL TITANS -"+fmt(wt),"crit");}},bsMs(520));}}
-  /* SHOCKWAVE (OCEAN'S GUARDIAN): setiap serangan ke-`every`, kartu aktif musuh kena flat pct% ATK di luar serangan normal (gaya wallTitans; arena 1 musuh aktif = "semua musuh" jatuh ke kartu aktif) */
+  /* SHOCKWAVE (OCEAN'S GUARDIAN): setiap serangan ke-`every`, kartu aktif musuh kena flat pct% ATK di luar serangan normal (gaya wallTitans; arena 1 musuh aktif = "all enemies" jatuh ke kartu aktif) */
   if(fx.shockwave){bt.shockCount[a]=(bt.shockCount[a]||0)+1;if(bt.shockCount[a]%fx.shockwave.every===0&&bt.eHp>0){const sw=Math.round(atk*fx.shockwave.pct/100);bt.eHp-=sw;lineupAoeHit(sw);setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","SHOCKWAVE -"+fmt(sw),"crit");}},bsMs(560));}}
   if(fx.lifesteal&&total>0){
     const ls=Math.round(total*fx.lifesteal/100);bt.pHp=Math.min(bt.pMax,bt.pHp+ls);
@@ -2758,7 +2758,7 @@ if(fx.inkCorrupt&&total>0){bt.eInk=Math.min(fx.inkCorrupt.max,(bt.eInk||0)+1);bt
     if(bt.eHp>bt.es.hp)bt.eHp=bt.es.hp;
     setTimeout(()=>{if(bt&&!bt.over){floatText(".fighter.foe","MAX HP CORRUPT","burn");setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);}},bsMs(340));
   }
-  if(fx.hitFreeze&&total>0&&bt.eHp>0&&Math.random()*100<fx.hitFreeze.chance){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else{bt.eStun=fx.hitFreeze.turns;bt.freezeLeft=fx.hitFreeze.turns;setTimeout(()=>floatText(".fighter.foe","BEKU","crit"),bsMs(360));}}
+  if(fx.hitFreeze&&total>0&&bt.eHp>0&&Math.random()*100<fx.hitFreeze.chance){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else{bt.eStun=fx.hitFreeze.turns;bt.freezeLeft=fx.hitFreeze.turns;setTimeout(()=>floatText(".fighter.foe","FROZEN","crit"),bsMs(360));}}
   /* PERFECT SUSANOO (low HP): di bawah ambang, serangan membakar musuh selama N giliran */
   if(fx.lowHpAura&&total>0&&bt.pHp<bt.pMax*fx.lowHpAura.below/100&&bt.eHp>0){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else{if(fx.lowHpAura.burn)bt.eBurn=fx.lowHpAura.burn.turns;setTimeout(()=>floatText(".fighter.foe","PERFECT SUSANOO","burn"),bsMs(360));}}
   /* STUN PUNCH (LUCK VOLTIA): counter tiap serangan kena; serangan ke-every -> roll stun + atkBuff permanen */
@@ -2774,18 +2774,18 @@ if(fx.inkCorrupt&&total>0){bt.eInk=Math.min(fx.inkCorrupt.max,(bt.eInk||0)+1);bt
   /* EIGHT GATES (GREEN BEAST): gerbang tiap kena -> atkBuff; gerbang penuh -> rugi selfPct% max HP (mati via gateKill) */
   if(fx.eightGates&&total>0&&bt.eHp>0&&bt.pHp>0){
     bt.gateCount=bt.gateCount||new Array(bt.fighters.length).fill(0);
-    if(bt.gateCount[a]<fx.eightGates.max){bt.gateCount[a]++;bt.atkBuff[a]+=fx.eightGates.atkPct;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","GERBANG "+bt.gateCount[a]+"/"+fx.eightGates.max+" +"+fx.eightGates.atkPct+"%","crit");},bsMs(380));}
+    if(bt.gateCount[a]<fx.eightGates.max){bt.gateCount[a]++;bt.atkBuff[a]+=fx.eightGates.atkPct;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","GATE "+bt.gateCount[a]+"/"+fx.eightGates.max+" +"+fx.eightGates.atkPct+"%","crit");},bsMs(380));}
     if(bt.gateCount[a]>=fx.eightGates.max){
       const gd=Math.max(1,Math.round(bt.pMax*fx.eightGates.selfPct/100));bt.pHp=Math.max(0,bt.pHp-gd);
-      setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.me","hit");floatText(".fighter.me","HARGA GERBANG -"+fmt(gd),"burn");setBar("hpMe","hpMeT",bt.pHp,bt.pMax);}},bsMs(440));
+      setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.me","hit");floatText(".fighter.me","GATE PRICE -"+fmt(gd),"burn");setBar("hpMe","hpMeT",bt.pHp,bt.pMax);}},bsMs(440));
       if(bt.pHp<=0)bt.gateKill=true;
     }
   }
   /* SHOCK ALL (TREMOR EMPEROR): shockwave flat pct% ATK ke seluruh lineup musuh / aktif (story) */
   if(fx.shockAll&&total>0&&bt.eHp>0){
     const sd=Math.max(1,Math.round(atk*fx.shockAll.pct/100));
-    if(bt.tower&&towerRun){lineupAoeHit(sd);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","GEMPA -"+fmt(sd),"crit");},bsMs(460));}
-    else{bt.eHp-=sd;setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","GEMPA -"+fmt(sd),"crit");setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);}},bsMs(460));}
+    if(bt.tower&&towerRun){lineupAoeHit(sd);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","QUAKE -"+fmt(sd),"crit");},bsMs(460));}
+    else{bt.eHp-=sd;setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","QUAKE -"+fmt(sd),"crit");setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);}},bsMs(460));}
   }
   /* SPLASH (LIGHTBORNE ADMIRAL): tembusan flat pct% ATK ke lineup BERIKUTNYA / aktif lagi (story) */
   if(fx.splash&&total>0&&bt.eHp>0){
@@ -2840,7 +2840,7 @@ function enemyPhase(){
   /* EIGHT GATES harga: kartu tumbang di akhir giliran dia (pola dsState) */
   if(bt.gateKill){
     bt.gateKill=false;bt.pHp=0;
-    setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.me","ko");floatText(".fighter.me","GERBANG PENUH...","crit");}},bsMs(150));
+    setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.me","ko");floatText(".fighter.me","GATES FULL...","crit");}},bsMs(150));
     setTimeout(()=>{
       if(!bt||bt.over)return;bt.turn++;
       if(!trySave()){endBattle(false);return;}
@@ -2848,8 +2848,8 @@ function enemyPhase(){
     },bsMs(900));
     return;
   }
-  setTurnPill("foe","GILIRAN MUSUH");
-  if(bt.dizzyLeft>0){bt.dizzyLeft--;if(bt.dizzyLeft<=0){bt.dizzyStack=0;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","DIZZY HABIS","miss");},bsMs(300));}}
+  setTurnPill("foe","ENEMY TURN");
+  if(bt.dizzyLeft>0){bt.dizzyLeft--;if(bt.dizzyLeft<=0){bt.dizzyStack=0;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","DIZZY ENDS","miss");},bsMs(300));}}
   const id=bt.eq.char,t=bt.turn;let fx=resolveFx(bt.eq,bt.efx);
   if(bt.shadow)fx={};
   if(bt.eq.sk)fx={};
@@ -2905,7 +2905,7 @@ function enemyPhase(){
     if(efx.maxCorrupt){bt.pMax=Math.max(1,Math.round(bt.pMax*(100-efx.maxCorrupt.pct)/100));if(bt.pHp>bt.pMax)bt.pHp=bt.pMax;setTimeout(()=>{if(bt&&!bt.over){floatText(".fighter.me","MAX HP CORRUPT","burn");setBar("hpMe","hpMeT",bt.pHp,bt.pMax);}},bsMs(340));}
     if(efx.burn&&Math.random()*100<efx.burn.chance){if(fx.statusImmune){setTimeout(()=>floatText(".fighter.me","IMMUNE","heal"),bsMs(360));}else{bt.pBurn=(bt.pBurn||0)+efx.burn.turns;setTimeout(()=>floatText(".fighter.me","BURN","burn"),bsMs(360));}}
     if(efx.lowHpAura&&efx.lowHpAura.burn&&bt.eHp<bt.es.hp*efx.lowHpAura.below/100){if(fx.statusImmune){setTimeout(()=>floatText(".fighter.me","IMMUNE","heal"),bsMs(360));}else{bt.pBurn=(bt.pBurn||0)+efx.lowHpAura.burn.turns;setTimeout(()=>floatText(".fighter.me","PERFECT SUSANOO","burn"),bsMs(360));}}
-    if(efx.hitFreeze&&Math.random()*100<efx.hitFreeze.chance){if(fx.statusImmune){setTimeout(()=>floatText(".fighter.me","IMMUNE","heal"),bsMs(360));}else{bt.pStun=Math.max(bt.pStun||0,efx.hitFreeze.turns);bt.pFreeze=efx.hitFreeze.turns;setTimeout(()=>floatText(".fighter.me","BEKU","crit"),bsMs(360));}}
+    if(efx.hitFreeze&&Math.random()*100<efx.hitFreeze.chance){if(fx.statusImmune){setTimeout(()=>floatText(".fighter.me","IMMUNE","heal"),bsMs(360));}else{bt.pStun=Math.max(bt.pStun||0,efx.hitFreeze.turns);bt.pFreeze=efx.hitFreeze.turns;setTimeout(()=>floatText(".fighter.me","FROZEN","crit"),bsMs(360));}}
     if(efx.stunPunch){bt.ePunchN=(bt.ePunchN||0)+1;if(bt.ePunchN%efx.stunPunch.every===0&&Math.random()*100<efx.stunPunch.chance&&!fx.statusImmune){bt.pStun=Math.max(bt.pStun||0,efx.stunPunch.turns);setTimeout(()=>floatText(".fighter.me","STUN!","crit"),bsMs(360));}}
     if(efx.timeStop){bt.eTsN=(bt.eTsN||0)+1;if(bt.eTsN%efx.timeStop.every===0&&!fx.statusImmune){bt.pStun=Math.max(bt.pStun||0,efx.timeStop.turns);setTimeout(()=>floatText(".fighter.me","THE WORLD","crit"),bsMs(360));}}
     if(bt.pHp<=0){bt.turn++;setTimeout(()=>{if(bt&&!bt.over){if(!trySave())endBattle(false);}},bsMs(800));return;}
@@ -3012,7 +3012,7 @@ if(bt.ePoison>0)eAtk=Math.max(1,Math.round(eAtk*(1-Math.min(90,bt.ePoison)/100))
       bt.pHp=Math.min(bt.pMax,bt.pHp+bh);setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
       setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","PSYCHIC BARRIER +"+fmt(bh),"heal");},bsMs(360));
       bt.psychic.left--;
-      if(bt.psychic.left<=0)setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","BARRIER HABIS","miss");},bsMs(520));
+      if(bt.psychic.left<=0)setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","BARRIER DOWN","miss");},bsMs(520));
     }
     /* ICE SHELL (10TH CAPTAIN): selama kartu ini AKTIF di arena, damage masuk dipangkas `iceShell`% permanen (tanpa timer; hilang pas tag-out) */
     if(!ePierce&&fx.iceShell&&etotal>0){eShots.forEach(s=>s.d=Math.round(s.d*(1-fx.iceShell/100)));etotal=eShots.reduce((x,s)=>x+s.d,0);}
@@ -3041,7 +3041,7 @@ if(bt.ePoison>0)eAtk=Math.max(1,Math.round(eAtk*(1-Math.min(90,bt.ePoison)/100))
     /* EVOLUTION TURRET (YORDLE INVENTOR): kena serangan -> chance% turret nahan semua damage, 1 turret hancur */
     if(!ePierce&&fx.turret&&bt.turret>0&&etotal>0&&Math.random()*100<fx.turret.blockPct){
       etotal=0;eShots.forEach(s=>s.d=0);bt.turret--;
-      setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","TURRET BLOCK! sisa "+bt.turret,"crit");},bsMs(320));
+      setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","TURRET BLOCK! left "+bt.turret,"crit");},bsMs(320));
     }    /* GUM-GUM BALLOON (DUMB STRETCHY GUY): reflect % dari hit musuh berikutnya (sekali pakai) */
     if(!ePierce&&bt.balloon>0&&etotal>0){
       const rd=Math.max(1,Math.round(etotal*bt.balloon/100));
@@ -3049,7 +3049,7 @@ if(bt.ePoison>0)eAtk=Math.max(1,Math.round(eAtk*(1-Math.min(90,bt.ePoison)/100))
       setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","BALLOON -"+fmt(rd),"crit");setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);}},bsMs(380));
       if(bt.eHp<=0){setTimeout(()=>{if(bt&&!bt.over)foeDown();},bsMs(900));}
     }
-    if(bt.pDrTurns>0&&bt.pDr>0){bt.pDrTurns--;setTimeout(()=>floatText(".fighter.me","DR aktif","heal"),bsMs(340));}
+    if(bt.pDrTurns>0&&bt.pDr>0){bt.pDrTurns--;setTimeout(()=>floatText(".fighter.me","DR ACTIVE","heal"),bsMs(340));}
     /* BUNGEE GUM: tiap kali musuh KENA menempel ke Trickster (serangan masuk), tempel/renew gum 2 giliran */
     if(fx.bungeeGum&&etotal>0){bt.gumTurns=fx.bungeeGum.turns;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","BUNGEE GUM","crit");},bsMs(300));}
     /* GODHAND CAUSALITY (WHITE HAWK): diserang & kena -> ability musuh dimatikan permanen */
@@ -3206,14 +3206,14 @@ function finish(win){
   if(win){
     if(first){const g=claimStageGem(lv,state.diff);if(g){gemGain=g;gemLabel="STAGE "+lv;}}
     else{const g=claimStoryRepeatGem(lv,state.diff);if(g){gemGain=g;gemLabel="REPLAY STAGE "+lv;}}
-    if(chDone){const b=claimStoryMilestone(ch.no,state.diff);if(b){gemGain+=b;gemLabel+=(gemLabel?" + ":"")+"BAB "+ch.no;}}
+    if(chDone){const b=claimStoryMilestone(ch.no,state.diff);if(b){gemGain+=b;gemLabel+=(gemLabel?" + ":"")+"CHAPTER "+ch.no;}}
   }
   const ovCard=document.getElementById("ovCard");
   if(ovCard){
     ovCard.classList.toggle("is-win",!!win);
     ovCard.classList.toggle("is-lose",!win);
   }
-  const eyeText=chDone?"BAB "+ch.no+" SELESAI ("+diffOf().l+")":win?(first?"FIRST CLEAR":"MISSION CLEARED"):"MISSION FAILED";
+  const eyeText=chDone?"CHAPTER "+ch.no+" SELESAI ("+diffOf().l+")":win?(first?"FIRST CLEAR":"MISSION CLEARED"):"MISSION FAILED";
   document.getElementById("ov-eyebrow").textContent=eyeText;
   const sysMeta=document.getElementById("ovSysMeta");
   if(sysMeta)sysMeta.textContent=win?"[QUEST COMPLETE : REWARD GRANTED]":"[TACTICAL RETREAT : UNIT DEFEATED]";
@@ -3251,16 +3251,16 @@ function finish(win){
     cStat.className="ov-tel-val"+(win?" win":" lose");
   }
 
-  document.getElementById("ov-note").textContent=win?(first?"First clear bonus":"Replay clear")+" · "+bt.turn+" turn":"Kekuatan belum cukup · Upgrade kartu";
+  document.getElementById("ov-note").textContent=win?(first?"First clear bonus":"Replay clear")+" · "+bt.turn+" turn":"Not enough power · Upgrade your card";
   const nx=document.getElementById("ov-next");nx.style.display="";
   if(win&&lv<ch.to){
     nx.innerHTML='<span>STAGE '+(lv+1)+'</span> <span class="ov-btn-icon">❯</span>';
     nx.onclick=()=>{ov.classList.remove("show");startStoryBattle(lv+1);};
   }else if(win&&nxtCh){
-    nx.innerHTML='<span>KEMBALI</span> <span class="ov-btn-icon">❯</span>';
+    nx.innerHTML='<span>RETURN</span> <span class="ov-btn-icon">❯</span>';
     nx.onclick=()=>{ov.classList.remove("show");state.battle=null;render();};
   }else{
-    nx.innerHTML='<span>SELESAI</span> <span class="ov-btn-icon">❯</span>';
+    nx.innerHTML='<span>COMPLETE</span> <span class="ov-btn-icon">❯</span>';
     nx.onclick=()=>{ov.classList.remove("show");state.battle=null;render();};
   }
   document.getElementById("ov-again").onclick=()=>{ov.classList.remove("show");startStoryBattle(lv);};

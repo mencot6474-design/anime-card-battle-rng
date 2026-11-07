@@ -322,14 +322,14 @@ const chapDone=(c)=>chapClearedMode(c,state?state.diff:"normal");
 /* GEMBOK BERTANGGA PER-BAB: sel (bab C, mode M) terbuka jika bab C-1 mode M tamat; Bab 1 mode M butuh mode sebelumnya di Bab 1 tamat. */
 function cellUnlocked(ch,mode){const ci=DIFFS.findIndex(d=>d.k===mode),idx=ch.no-1;if(idx<0)return false;if(idx===0)return ci<=0||chapClearedMode(ch,DIFFS[ci-1].k);return chapClearedMode(CHAPTERS[idx-1],mode);}
 function highestChapDiff(ch){if(typeof ch==="number")ch=CHAPTERS.find(c=>c.no===ch)||CHAPTERS[0];let k="normal";DIFFS.forEach(d=>{if(cellUnlocked(ch,d.k))k=d.k;});return k;}
-function cellReqText(ch,mode){const ci=DIFFS.findIndex(d=>d.k===mode),idx=ch.no-1;if(idx<0)return"";if(idx===0)return"SELESAIKAN SEMUA LEVEL BAB 1 DI MODE "+DIFFS[ci-1].l+" UNTUK BUKA MODE INI";return"SELESAIKAN SEMUA LEVEL BAB "+(ch.no-1)+" DI MODE "+DIFFS[ci].l+" UNTUK BUKA BAB INI DI MODE "+DIFFS[ci].l;}
+function cellReqText(ch,mode){const ci=DIFFS.findIndex(d=>d.k===mode),idx=ch.no-1;if(idx<0)return"";if(idx===0)return"COMPLETE ALL CHAPTER 1 LEVELS IN MODE "+DIFFS[ci-1].l+" TO UNLOCK THIS MODE";return"SELESAIKAN SEMUA LEVEL BAB "+(ch.no-1)+" DI MODE "+DIFFS[ci].l+" UNTUK BUKA BAB INI DI MODE "+DIFFS[ci].l;}
 function mutBox(mut,cls){return mutPill(mut,cls);}
 const mutGlow=m=>m&&m!=="none"?` mut-${m}`:"";
 const mutEdge=m=>m&&m!=="none"?` style="border-color:${MUT_COLOR[m]}"`:"";
 function enemyOf(level){const f=FOES[level];if(!f)return{id:null,name:"Gate Watcher L-"+level,epithet:chapOf(level).zone,img:chapOf(level).art,boss:false,tier:"R"};return{id:f.id,name:f.name,epithet:f.ep,img:f.img,boss:!!f.boss,tier:f.tier};}
 function enemyStats(level){const l=STORY_BIBLE.levels[level-1];if(!l)return{hp:120,atk:40};const c=CARDS[l.unit];if(!c)return{hp:120,atk:40};const k=MUT_MULT[diffOf().mut]||1;return{hp:Math.round(c.base_hp*(0.55+0.15*level)*k),atk:Math.round(c.base_atk*(0.35+0.13*level)*k)};}
 function firstClearReward(level){const l=STORY_BIBLE.levels[level-1];return (l?l.reward:300)*(diffOf().rw||1);}
-/* ===== STORY GEM: DIBAYAR PER STAGE + BONUS "BAB SELESAI" =====
+/* ===== STORY GEM: DIBAYAR PER STAGE + BONUS "CHAPTER COMPLETE" =====
    Basis per BAB (mode NORMAL) di-skala ke ekonomi Gem (pet 10.000).
    75% basis pecah ke 6 stage MENGIKUT bobot reward coin stage (bos paling besar),
    25% sisanya jadi bonus saat bab tamat. Jadi setiap kemenangan story keluar
@@ -367,8 +367,8 @@ function _gemDone(res,okTitle,okMsg,onFail){
   }else{
     if(onFail)try{onFail();}catch(e){}
     try{save();}catch(e){}
-    const why=(res&&res.msg)==="UNREACHABLE"?"PROGRES BELUM TERBUKA":((res&&res.msg)||"Coba lagi nanti");
-    try{toast("GEM GAGAL",why,"#f87171");}catch(e){}
+    const why=(res&&res.msg)==="UNREACHABLE"?"PROGRESS NOT UNLOCKED":((res&&res.msg)||"Try again later");
+    try{toast("GEM FAILED",why,"#f87171");}catch(e){}
   }
 }
 function _gemUser(){
@@ -418,7 +418,7 @@ function claimStoryMilestone(chapNo,diffKey){
     }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
     if(res&&res.msg==="ALREADY"){try{save();}catch(e){}return;}
     const paid=(res&&typeof res.gems==="number")?res.gems:gems;
-    _gemDone(res,"BAB "+chapNo+" SELESAI · "+String(diffKey).toUpperCase(),"+"+paid+" GEM",()=>{ms[key]=false;});
+    _gemDone(res,"CHAPTER "+chapNo+" COMPLETE · "+String(diffKey).toUpperCase(),"+"+paid+" GEM",()=>{ms[key]=false;});
   })();
   return gems;
 }
@@ -487,7 +487,7 @@ function claimStoryRepeatGem(lv,diffKey){
       else{state.premiumGems=(state.premiumGems||0)+gems;res={ok:true,gems};}
     }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
     if(res&&res.msg==="COOLDOWN"){
-      try{toast("REPLAY COOLDOWN","Stage ini baru saja dibayar — tunggu 5 menit","#fbbf24");}catch(e){}
+      try{toast("REPLAY COOLDOWN","This stage was just paid — wait 5 minutes","#fbbf24");}catch(e){}
       return;
     }
     const paid=(res&&typeof res.gems==="number")?res.gems:gems;
@@ -1162,7 +1162,7 @@ function renderDaily(){
       countEl.outerHTML=`<div class="dl-subbar">
         <div class="dl-sub-pill prog"><span class="dl-pulse"></span>SIKLUS LOGIN: <b id="dlProgTxt">HARI ${idx+1} / 7</b></div>
         <div class="dl-sub-pill bag" onclick="openBackpackFromDaily()" title="Lihat di Backpack">📦 STOK PACK 100K DI BACKPACK: <b id="dlBagCnt">×${fmt(curBag)}</b></div>
-        <div class="dl-sub-pill timer">⏳ RESET HARIAN: <b id="dlCount">00:00:00</b></div>
+        <div class="dl-sub-pill timer">⏳ DAILY RESET: <b id="dlCount">00:00:00</b></div>
       </div>`;
     }else{
       const pt=document.getElementById("dlProgTxt");if(pt)pt.textContent=`HARI ${idx+1} / 7`;
@@ -1179,8 +1179,8 @@ function renderDaily(){
     const totalPulls=packCnt*100000;
     const pullsLabel=totalPulls>=1000000?(totalPulls/1000000).toFixed(1).replace(/\.0$/,'')+'M ROLL':(totalPulls/1000)+'K ROLL';
     let statusBadge='<span class="dlt-status locked">🔒 TERKUNCI</span>';
-    if(cls==="claimed"||cls==="today-done")statusBadge='<span class="dlt-status claimed">✓ DIKLAIM</span>';
-    else if(cls==="ready")statusBadge='<span class="dlt-status ready">★ SIAP KLAIM</span>';
+    if(cls==="claimed"||cls==="today-done")statusBadge='<span class="dlt-status claimed">✓ CLAIMED</span>';
+    else if(cls==="ready")statusBadge='<span class="dlt-status ready">★ READY TO CLAIM</span>';
 
     return `<div class="dl-tile ${cls}${isFinale?' is-finale':''}" ${cls==='ready'?'onclick="claimDaily()"':''}>
       <div class="dlt-top">
@@ -1208,9 +1208,9 @@ function renderDaily(){
   const foot=document.getElementById("dlFoot");
   foot.innerHTML=`<div class="dl-foot-row">
     ${ready
-      ?`<button class="dl-claim" id="dlClaim">🎁 KLAIM DAY ${idx+1} · +${todayPack}× INSTAN ROLL PACK 100K (SIMPAN KE BACKPACK)</button>`
-      :`<button class="dl-claim" disabled>✓ SUDAH DIKLAIM HARI INI · KEMBALI BESOK</button>`}
-    <button type="button" class="dl-bag-btn" onclick="openBackpackFromDaily()">📦 BUKA BACKPACK</button>
+      ?`<button class="dl-claim" id="dlClaim">🎁 CLAIM DAY ${idx+1} · +${todayPack}× INSTANT ROLL PACK 100K (SENT TO BACKPACK)</button>`
+      :`<button class="dl-claim" disabled>✓ ALREADY CLAIMED TODAY · COME BACK TOMORROW</button>`}
+    <button type="button" class="dl-bag-btn" onclick="openBackpackFromDaily()">📦 OPEN BACKPACK</button>
   </div>
   <div class="dl-total">Total 7 Hari: <b>${DAILY_PACKS_TOTAL}× Instan Roll Pack 100K (${fmt(DAILY_PACKS_TOTAL*100000)} Roll)</b> otomatis masuk ke <b>Backpack → Tab Item</b> · +<b>${fmt(DAILY_TOTAL)}</b> Coin · +<b>${DAILY_GEM_TOTAL}</b> Gem</div>`;
   if(ready)document.getElementById("dlClaim").onclick=claimDaily;
@@ -1272,9 +1272,9 @@ async function flushPendingDailyGems(quiet){
     try{save();}catch(e){}
     try{renderShell();}catch(e){}
     try{if(typeof renderBackpackPanel==="function")renderBackpackPanel();}catch(e){}
-    if(res.ok)try{toast("LOGIN HARIAN","+"+(res.gems||gems)+" GEM · +"+fmt(res.coins||0)+" COIN"+((res.packs||0)>0?" · +"+res.packs+"× PACK 100K":""),"#ffd700");}catch(e){}
+    if(res.ok)try{toast("DAILY LOGIN","+"+(res.gems||gems)+" GEM · +"+fmt(res.coins||0)+" COIN"+((res.packs||0)>0?" · +"+res.packs+"× PACK 100K":""),"#ffd700");}catch(e){}
   }else if(!quiet){
-    try{toast("GEM LOGIN TERTUNDA",(res&&res.msg)||"Akan dicoba lagi","#fbbf24");}catch(e){}
+    try{toast("GEM LOGIN TERTUNDA",(res&&res.msg)||"Will retry","#fbbf24");}catch(e){}
   }
 }
 function openDaily(){renderDaily();document.getElementById("dailyModal").classList.add("show");}
@@ -1379,10 +1379,10 @@ function chapListHTML(){
     const total=c.levels.length,pct=total?Math.round(done/total*100):0,full=open&&done>=total;
     let nextLv=c.to;for(let i=c.from;i<=c.to;i++){if(!cd[i]){nextLv=i;break;}}
     const tgt=gateOf(nextLv),act=open&&c.no===(state?state.chap:1);
-    const chip=full?"✓ SELESAI":(open?"▾ BUKA LEVEL":"🔒 TERKUNCI");
+    const chip=full?"✓ COMPLETE":(open?"▾ OPEN LEVEL":"🔒 LOCKED");
     return `<button class="story-banner${open?"":" lock"}${full?" full":""}${act?" active":""}" data-c="${c.no}">
       <span class="sb-no">${String(c.no).padStart(2,"0")}</span>
-      ${act?'<span class="sb-tag">AKTIF</span>':""}
+      ${act?'<span class="sb-tag">ACTIVE</span>':""}
       <span class="sb-chip">${chip}</span>
       <div class="sb-content">
         <div class="gb-kicker">${c.tag} · <b style="color:${dcol}">${df.l}</b></div>
@@ -1417,7 +1417,7 @@ function openMission(){
   const note=document.getElementById("mxNote");note.textContent="";
   document.querySelectorAll("#mxDiff .diff-btn").forEach(b=>b.onclick=()=>{
     const k=b.dataset.d;
-    if(!diffUnlocked(k)){note.textContent="SELESAIKAN SEMUA LEVEL BAB 1 DI MODE "+DIFFS[DIFFS.findIndex(d=>d.k===k)-1].l+" UNTUK BUKA MODE INI";sfx.lose&&sfx.lose();return;}
+    if(!diffUnlocked(k)){note.textContent="COMPLETE ALL CHAPTER 1 LEVELS IN MODE "+DIFFS[DIFFS.findIndex(d=>d.k===k)-1].l+" TO UNLOCK THIS MODE";sfx.lose&&sfx.lose();return;}
     if(state.diff===k)return;
     state.diff=k;sfx.hit();save();openMission();
   });
@@ -1447,7 +1447,7 @@ function openStory(targetChapNo){
   const shEl = document.getElementById("smHero");
   if(shEl) shEl.innerHTML=
     `<span class="smh-chip" style="border-color:${dcol};color:${dcol}">${df.l}</span>`+
-    `<div class="smh-line">GATE ${fmt(gnx)} · POWER ${fmt(pw)} <b class="${okN?"ok":"bad"}">${okN?"SIAP":"KURANG"}</b> · PROGRES ${doneN}/${ch.levels.length}</div>`;
+    `<div class="smh-line">GATE ${fmt(gnx)} · POWER ${fmt(pw)} <b class="${okN?"ok":"bad"}">${okN?"READY":"LOW"}</b> · PROGRES ${doneN}/${ch.levels.length}</div>`;
   const sdEl = document.getElementById("smDiff");
   if(sdEl) sdEl.innerHTML=DIFFS.map(d=>{const unl=cellUnlocked(ch,d.k),on=d.k===state.diff,col=d.mut==="none"?"var(--pink)":MUT_COLOR[d.mut];return `<button class="diff-btn${on?" on":""}${unl?"":" locked"}" data-d="${d.k}"${on?` style="border-color:${col};color:${col}"`:""}>${unl?d.l:"&#128274; "+d.l}</button>`;}).join("");
   const snEl = document.getElementById("smDiffNote"); if(snEl) snEl.textContent="";
@@ -1499,15 +1499,15 @@ function openStart(lv){
     <div class="st-gate ${ok?"ok":"bad"}">
       <div class="sg-row"><span>POWER KAMU</span><b>${fmt(pw)}</b></div>
       <div class="sg-bar"><i style="width:${bar}%"></i></div>
-      <div class="sg-row"><span>GATE MUSUH</span><b>${fmt(g)}</b></div>
+      <div class="sg-row"><span>ENEMY GATE</span><b>${fmt(g)}</b></div>
     </div>
     ${pss?`<div class="st-trait"><b>PASSIVE · ${pss.name}</b> ${pss.desc}</div>`:""}
     <div class="st-reward"><span class="st-rw-label">${first?"FIRST CLEAR":"REPLAY (20%)"} · ${diffOf().l} ×${diffOf().rw||1}</span><span class="st-rw-gold">◎ ${fmt(reward)} gold</span></div>
-    ${gem?`<div class="st-reward st-reward-gem"><span class="st-rw-label">${first?"GEM FIRST CLEAR":"GEM REPLAY"} ${first?"":"· SIAP LAGI "+storyCdText(cdLeft)}</span><span class="st-rw-gem"><img src="assets/images/premium-currency.webp" alt="" width="16" height="16">+${fmt(gem)} GEM</span></div>`:""}
+    ${gem?`<div class="st-reward st-reward-gem"><span class="st-rw-label">${first?"GEM FIRST CLEAR":"GEM REPLAY"} ${first?"":"· READY AGAIN "+storyCdText(cdLeft)}</span><span class="st-rw-gem"><img src="assets/images/premium-currency.webp" alt="" width="16" height="16">+${fmt(gem)} GEM</span></div>`:""}
     <div class="st-cd" id="stCd" style="display:${cdLeft>0?"block":"none"}">${cdLeft>0?"REPLAY TERKUNCI · COOLDOWN "+storyCdText(cdLeft):""}</div>
     <div class="st-btns">
       <button class="st-cancel" id="stCancel">BATAL</button>
-      <button class="st-go${ok?"":" weak"}" id="stGo" data-cd-repeat="${cdLeft>0?1:0}"${cdLeft>0?" disabled":""}>${cdLeft>0?"⏱ COOLDOWN "+storyCdText(cdLeft):(ok?"⚔ &nbsp;MULAI BATTLE":"⚠ &nbsp;POWER KURANG — MASUK")}</button>
+      <button class="st-go${ok?"":" weak"}" id="stGo" data-cd-repeat="${cdLeft>0?1:0}"${cdLeft>0?" disabled":""}>${cdLeft>0?"⏱ COOLDOWN "+storyCdText(cdLeft):(ok?"⚔ &nbsp;MULAI BATTLE":"⚠ &nbsp;NOT ENOUGH POWER — ENTER")}</button>
     </div>`;
   document.getElementById("startModal").classList.add("show");
   document.getElementById("stCancel").onclick=closeStart;

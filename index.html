@@ -238,14 +238,14 @@
 <header id="topbar">
   <div class="tb-profile">
     <div class="tb-av-wrapper">
-      <div class="tb-av" id="profAv" title="Buka profil"></div>
-      <label class="tb-av-change" for="avFileInput" title="Ganti Avatar dari Galeri">
+      <div class="tb-av" id="profAv" title="Open profile"></div>
+      <label class="tb-av-change" for="avFileInput" title="Change Avatar from Gallery">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
       </label>
       <input type="file" id="avFileInput" accept="image/*" style="display:none">
     </div>
     <div class="tb-id">
-      <div class="tb-top"><span class="tb-name" id="tbName">GUEST</span><span class="tb-chips"><span class="tb-pw" id="tbPw" title="Total HP + ATK kartu utama + TAG">&#9889; 0</span><span class="tb-lvl" id="tbLvl">LVL 1</span></span></div>
+      <div class="tb-top"><span class="tb-name" id="tbName">GUEST</span><span class="tb-chips"><span class="tb-pw" id="tbPw" title="Total HP + ATK of the main card + TAG">&#9889; 0</span><span class="tb-lvl" id="tbLvl">LVL 1</span></span></div>
       <div class="xpbar tb-xpbar"><i id="tbXpFill" style="width:0%"></i><span id="tbXpText">0 / 1000</span></div>
     </div>
   </div>
@@ -258,22 +258,22 @@
     </span>
     <span id="coinVal"></span>
   </div>
-  <div class="pill gems" id="gemPill" title="Gems â€” didapat dari grinding (Tower / World Boss / Story)">
+  <div class="pill gems" id="gemPill" title="Gems — earned from grinding (Tower / World Boss / Story)">
     <span class="coin-icon-wrap gem-icon-wrap">
       <img src="assets/images/premium-currency.webp" alt="Gem" width="22" height="22" style="border-radius:50%;object-fit:cover;filter:drop-shadow(0 0 4px rgba(255,215,0,0.6));">
     </span>
     <span id="gemVal">0</span>
   </div>
-   <button class="nav-btn tb-switcher" id="tbEnv" type="button" title="Ganti Background Lobby" onclick="cycleLobbyBackground()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></button>
-   <button class="nav-btn tb-switcher" id="tbFrame" type="button" title="Ganti Bingkai Hero" onclick="cycleCardFrame()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></button>
-   <button class="nav-btn tb-settings" data-route="#/settings" title="Pengaturan"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.14.5.55.9 1.1 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+   <button class="nav-btn tb-switcher" id="tbEnv" type="button" title="Change Lobby Background" onclick="cycleLobbyBackground()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></button>
+   <button class="nav-btn tb-switcher" id="tbFrame" type="button" title="Change Hero Frame" onclick="cycleCardFrame()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></button>
+   <button class="nav-btn tb-settings" data-route="#/settings" title="Settings"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.14.5.55.9 1.1 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
    <button class="nav-btn tb-changelog" id="tbChangelog" type="button" title="Update Log" onclick="openChangelogModal()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></button>
   </div>
 </header>
 <!-- Profil modal -->
 <div class="modal-backdrop" id="profBackdrop" style="position:fixed;inset:0;z-index:75;"></div>
 <div class="modal-profile" id="profModal">
-  <button class="prof-x" id="profClose" type="button" aria-label="Tutup profil">
+  <button class="prof-x" id="profClose" type="button" aria-label="Close profile">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
   </button>
   <div class="prof-modal-inner">
@@ -395,7 +395,7 @@
         <span class="tm-tag">SYSTEM TITLES &middot; NEURAL CODEX</span>
         <h2 class="tm-title">TITLE SELECTOR</h2>
       </div>
-      <button class="prof-x" id="titlesClose" type="button" aria-label="Tutup Title">
+      <button class="prof-x" id="titlesClose" type="button" aria-label="Close Title">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
@@ -417,7 +417,7 @@
         <span class="tm-tag" style="background:rgba(102,252,241,0.15);color:#66fcf1;border:1px solid rgba(102,252,241,0.3)">SYSTEM PATCH NOTES &middot; UPDATE LOG</span>
         <h2 class="tm-title" style="color:#fff;font-size:22px;letter-spacing:1px">UPDATE LOG</h2>
       </div>
-      <button class="prof-x" id="changelogClose" type="button" aria-label="Tutup Update Log" onclick="closeChangelogModal()">
+      <button class="prof-x" id="changelogClose" type="button" aria-label="Close Update Log" onclick="closeChangelogModal()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
@@ -549,7 +549,7 @@
         <svg class="ix-search-ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
         <input class="ix-search" id="ixSearch" type="text" placeholder="QUERY DATABASE..." autocomplete="off">
       </div>
-      <button class="ix-x" id="ixClose" title="Tutup">
+      <button class="ix-x" id="ixClose" title="Close">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
@@ -568,16 +568,16 @@
         <h2 class="prem-title">PREMIUM SHOP</h2>
       </div>
       <div class="prem-head-right">
-        <div class="prem-balance-pill" title="Saldo Premium Gems">
+        <div class="prem-balance-pill" title="Premium Gems balance">
           <img src="assets/images/premium-currency.webp" alt="Gem" width="22" height="22">
           <span class="prem-bal-txt">SALDO:</span>
           <strong id="premBalVal">0</strong>
         </div>
-        <button class="prem-free-gems-btn" type="button" onclick="triggerWatchAd('gems')" title="Tonton iklan singkat untuk +25 Gems Gratis">
+        <button class="prem-free-gems-btn" type="button" onclick="triggerWatchAd('gems')" title="Watch a short ad for +25 free Gems">
           <span class="prem-fg-ic">ðŸŽ¬</span>
           <span class="prem-fg-txt">+25 GEMS</span>
         </button>
-        <button class="ix-x" id="premClose" type="button" title="Tutup">
+        <button class="ix-x" id="premClose" type="button" title="Close">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
@@ -585,8 +585,8 @@
     
     <div class="prem-subbanner">
       <span class="prem-sub-ic">âœ¦</span>
-      <span class="prem-sub-txt">Bursa Resmi Syndicate â€” Aktifkan Global Luck 10Ã— se-server, tarik hingga 100.000 kartu instan, miliki artefak & pet kasta tertinggi, atau panggil anomali cuaca legendaris!</span>
-      <span class="prem-sub-stat" id="premSubStat">14 ITEM TERSEDIA</span>
+      <span class="prem-sub-txt">Official Syndicate Exchange — Activate 10x Global Luck server-wide, pull up to 100,000 instant cards, own the highest-tier artifacts & pets, or summon legendary weather anomalies!</span>
+      <span class="prem-sub-stat" id="premSubStat">14 ITEMS AVAILABLE</span>
     </div>
 
     <!-- Category Tabs -->
@@ -631,7 +631,7 @@
     <div class="wm-head-badges" id="wmHeadWeather">
       <!-- Live current weather badge & Potion Supply -->
     </div>
-    <button class="ix-x" id="wmClose" type="button" title="Tutup">
+    <button class="ix-x" id="wmClose" type="button" title="Close">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
     </button>
   </div>
@@ -645,7 +645,7 @@
         <div class="rb-cyber-pill"><span class="rb-cyber-dot"></span>CYCLE // ASCENSION MATRIX</div>
         <div class="rb-modal-title">REBIRTH SYSTEM</div>
       </div>
-      <button class="ix-x rb-close-btn" id="rebirthClose" type="button" title="Tutup">
+      <button class="ix-x rb-close-btn" id="rebirthClose" type="button" title="Close">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
       </button>
     </div>
@@ -660,7 +660,7 @@
       <div class="ix-title mx-title">STORY</div>
     </div>
     <div class="ix-h-tools">
-      <button class="ix-x" id="mxClose" title="Tutup">
+      <button class="ix-x" id="mxClose" title="Close">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
@@ -678,14 +678,14 @@
       <div class="ix-title">LEADERBOARD</div>
     </div>
     <div class="ix-h-tools">
-      <button class="ix-x" id="rkClose" title="Tutup" onclick="closeRanking()">
+      <button class="ix-x" id="rkClose" title="Close" onclick="closeRanking()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
   </div>
   <div class="rk-meta" id="rkMeta"></div>
   <div class="ix-body rk-body" id="rkBody"></div>
-  <div class="rk-tabs" id="rkTabs" role="tablist" aria-label="Papan peringkat">
+  <div class="rk-tabs" id="rkTabs" role="tablist" aria-label="Leaderboard">
     <button class="rk-tab on" type="button" role="tab" data-rk="world_boss" onclick="rkSwitch('world_boss')">ETERNAL DRAGON</button>
     <button class="rk-tab" type="button" role="tab" data-rk="world_boss_b" onclick="rkSwitch('world_boss_b')">SHADOW KING</button>
     <button class="rk-tab" type="button" role="tab" data-rk="inf_tower" onclick="rkSwitch('inf_tower')">INFINITE TOWER</button>
@@ -702,7 +702,7 @@
       <div class="ix-title">PROFIL PLAYER</div>
     </div>
     <div class="ix-h-tools">
-      <button class="ix-x" id="rpClose" title="Tutup" onclick="closeRkProfile()">
+      <button class="ix-x" id="rpClose" title="Close" onclick="closeRkProfile()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
@@ -715,7 +715,7 @@
     <img id="spImg" src="" alt="Card Art">
   </div>
   <div class="sp-info-panel">
-    <button class="sp-x-btn" id="spClose" title="Tutup">âœ•</button>
+    <button class="sp-x-btn" id="spClose" title="Close">âœ•</button>
     <div class="sp-card-name" id="spCardName"></div>
     <div class="sp-card-rarity" id="spCardRarity"></div>
     <div class="sp-stats-row">
@@ -746,7 +746,7 @@
   <div class="dl-glow-top"></div>
   <div class="ix-head dl-head">
     <div><div class="eyebrow dl-eyebrow">7-DAY ATTENDANCE PROTOCOL Â· BACKPACK REWARDS</div><div class="ix-title dl-title">7 HARI LOGIN REWARD</div></div>
-    <button class="ix-x" id="dlClose" title="Tutup">âœ•</button>
+    <button class="ix-x" id="dlClose" title="Close">âœ•</button>
   </div>
   <div class="dl-count">RESET DALAM <b id="dlCount">00:00:00</b></div>
   <div class="dl-grid" id="dlGrid"></div>
@@ -986,7 +986,7 @@
       <div class="ix-title st-title">MISSION BRIEF</div>
     </div>
     <div class="ix-h-tools">
-      <button class="ix-x" id="stClose" title="Tutup">
+      <button class="ix-x" id="stClose" title="Close">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
@@ -1000,7 +1000,7 @@
       <div class="tr-cyber-pill"><span class="tr-cyber-dot"></span>NEURAL MATRIX MOD</div>
       <div class="ix-title tr-cyber-title">TRAIT SYNTHESIS</div>
     </div>
-    <button class="ix-x" id="trClose" title="Tutup">
+    <button class="ix-x" id="trClose" title="Close">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
     </button>
   </div>
@@ -1010,7 +1010,7 @@
 <div id="deckPickModal"><div class="dp-box">
   <div class="ix-head">
     <div><div class="eyebrow">DECK</div><div class="ix-title">Pilih Kartu</div></div>
-    <button class="ix-x" id="dpClose" title="Tutup">âœ•</button>
+    <button class="ix-x" id="dpClose" title="Close">âœ•</button>
   </div>
   <div id="dpBody"></div>
 </div></div>
@@ -1030,7 +1030,7 @@
         <div class="tw-drop-eyebrow">INFINITE TOWER // LOOT MATRIX</div>
         <div class="tw-drop-title" id="twDropModalTitle">TOWER DROP RATES</div>
       </div>
-      <button class="tw-drop-close" id="twDropModalClose" type="button" title="Tutup" aria-label="Tutup">
+      <button class="tw-drop-close" id="twDropModalClose" type="button" title="Close" aria-label="Close">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
@@ -1468,36 +1468,36 @@
 <script src="js/config.js?v=v156-trakteer"></script>
 <script src="js/mobile-shell.js?v=v286-deckScreen"></script>
 <script src="js/supabase-sync.js?v=v332-battleNoHeader"></script>
-<script src="js/panels.js?v=v400-bpEnglish"></script>
+<script src="js/panels.js?v=v401-englishAttrs"></script>
 <script src="js/topup.js?v=v158-paywallOff"></script>
 <script src="js/cards-fx.js?v=v84-fmtStatCompact"></script>
 <script src="js/anime-archetype-attacks.js?v=v118-phantomCombo"></script>
-<script src="js/state.js?v=v348-rebirthModalFrontAnimationBehind"></script>
-<script src="js/sheetfx.js?v=v348-rebirthModalFrontAnimationBehind"></script>
-<script src="js/battle.js?v=v244-basicComboNoLabel"></script>
-<script src="js/tower-lobby.js?v=v368-skillTreeSp"></script>
+<script src="js/state.js?v=v349-english"></script>
+<script src="js/sheetfx.js?v=v349-english"></script>
+<script src="js/battle.js?v=v245-battleEnglish"></script>
+<script src="js/tower-lobby.js?v=v369-english"></script>
 <script src="js/shadow-king-fx.js?v=v4-skfx4"></script>
-<script src="js/foe-passives.js?v=v62-foe-passives"></script>
+<script src="js/foe-passives.js?v=v63-english"></script>
 <script src="js/story-carousel.js?v=v322-storyCleanLabels"></script>
-<script src="js/raid.js?v=v391-wbShadowArmory"></script>
+<script src="js/raid.js?v=v392-english"></script>
 <script src="js/deck-modal.js?v=v6-deckSortPower"></script>
 <script src="js/skill-tree.js?v=v12-skillTree"></script>
-<script src="js/ranking.js?v=v9-storyEnemyTierOnly"></script>
+<script src="js/ranking.js?v=v10-english"></script>
 <script src="js/i18n.js?v=v396-bpDeck"></script>
-<script src="js/boot.js?v=v150-loadingFirstPaint"></script>
+<script src="js/boot.js?v=v151-english"></script>
 <script src="js/pwa.js?v=v156-install"></script>
 
 <!-- ========== CORET MODE (dev-only overlay anotasi) ==========
      Alat buat user LINGKARIN bagian layout yang mau diubah. Cuma aktif di file:// / 127.0.0.1 / localhost.
      Klik âœ CORET (kanan-atas) â†’ gambar freehand â†’ agen baca window.coretReport() buat tahu korekan
      nyangkut di elemen DOM mana. Bukan bagian dari game; aman dihapus. -->
-<script src="js/coret.js"></script>
+<script src="js/coret.js?v=v2-english"></script>
 
 <!-- ========== IN-GAME CLICK-TO-SOURCE CODE INSPECTOR ==========
      Tahan [ALT] atau klik badge [ðŸŽ¯ CODE INSPECT] di kiri bawah -> Klik elemen apapun di game
      -> Kursor editor (Antigravity/Cursor/VSCode) langsung loncat ke baris kodenya!
      -> Link markdown otomatis disalin ke clipboard untuk chat. -->
-<script src="js/code-inspector.js?v=v2-altStuckFix"></script>
+<script src="js/code-inspector.js?v=v3-english"></script>
 
 <!-- ====== TOP-UP GEMS MODAL ====== -->
 <div id="topupModal" class="topup-backdrop"></div>

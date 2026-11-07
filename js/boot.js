@@ -1316,7 +1316,7 @@ const GAME_CHANGELOGS = [
   {
     version: "v1.4.4",
     date: "27 Okt 2026",
-    title: "Eksklusivitas Tier Musuh Cerita & UI Polish",
+    title: "Story Enemy Tier Exclusivity & UI Polish",
     titleEn: "Story Enemy Tier Exclusivity & UI Polish",
     items: [
       "Tier R s/d EX kini eksklusif untuk musuh di Story Mode; badge tier pada kartu pemain (hasil Instant Roll, bench battle, profil VS) telah dihapus.",
@@ -1359,10 +1359,10 @@ const GAME_CHANGELOGS = [
     title: "Performance & Cloud Sync Update",
     items: [
       "Fitur Manual Cloud Save di menu Pengaturan (simpan seluruh kartu & backpack langsung ke Supabase).",
-      "Pembersihan partikel pertempuran (0 FX particles) untuk meningkatkan performa di HP kentang.",
+      "Battle particle cleanup (0 FX particles) to improve performance on low-end phones.",
       "Perbaikan navigasi scroll pada halaman Pengaturan.",
-      "Tombol Refresh Game UI untuk memuat ulang elemen tampilan tanpa refresh halaman.",
-      "Tombol Update Log baru di header navigasi."
+      "New Refresh Game UI button to reload display elements without a page refresh.",
+      "New Update Log button in the navigation header."
     ]
   },
   {

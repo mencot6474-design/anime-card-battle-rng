@@ -40,7 +40,7 @@ function foeEntryPassives(){
   }
   if(efx.meteorShower&&!st.msEntry){
     st.msEntry=true;
-    foeHitPlayer(bt.pMax*efx.meteorShower.pct/100,"KEDATANGAN BINTANG",480);
+    foeHitPlayer(bt.pMax*efx.meteorShower.pct/100,"STARFALL",480);
   }
   if(efx.quake&&!st.qkEntry){
     st.qkEntry=true;
@@ -107,7 +107,7 @@ function foeTurnPassives(){
     if(bt.eValhallaLeft<=0){
       const vh=Math.max(1,Math.round(bt.es.hp*vl.healPct/100));
       bt.eHp=Math.min(bt.es.hp,bt.eHp+vh);setBar("hpFoe","hpFoeT",bt.eHp,bt.es.hp);
-      foeFloat("TWILIGHT HABIS +"+fmt(vh),"heal",460);
+      foeFloat("TWILIGHT ENDS +"+fmt(vh),"heal",460);
     }
   }
   /* TURRET tambah tiap every giliran */
@@ -117,10 +117,10 @@ function foeTurnPassives(){
   }
   if(efx.dodgeEvery&&st.turns%efx.dodgeEvery.turns===0)st.dodgeArmed=true;
   if(efx.turnMaxHp&&!foePlayerImmune())foeHitPlayer(bt.pMax*efx.turnMaxHp.pct/100,"BIOKINESIS",300);
-  if(efx.shockAll)foeHitPlayer(bt.es.atk*efx.shockAll.pct/100,"GEMPA",460);
+  if(efx.shockAll)foeHitPlayer(bt.es.atk*efx.shockAll.pct/100,"QUAKE",460);
   if(efx.splash)foeHitPlayer(bt.es.atk*efx.splash.pct/100,"YASAKANI",500);
   if(efx.meteorShower&&st.turns>1&&st.turns%efx.meteorShower.every===0){
-    foeHitPlayer(bt.pMax*efx.meteorShower.pct/100,"METEOR BERIKUTNYA",520);
+    foeHitPlayer(bt.pMax*efx.meteorShower.pct/100,"NEXT METEOR",520);
   }
   /* LIFETIME: self-destruct setelah turns giliran */
   if(efx.lifetime&&st.turns>=efx.lifetime.turns){
@@ -144,7 +144,7 @@ function foeTurnPassives(){
       foeFloat("BERSERKER TURNS "+st.berserkLeft,"crit",240);
       if(st.berserkLeft<=0){
         st.berserkOn=false;bt.eHp=0;setBar("hpFoe","hpFoeT",0,bt.es.hp);
-        foeFloat("ARMOR HABIS","crit",220);
+        foeFloat("ARMOR BROKEN","crit",220);
         setTimeout(()=>{if(bt&&!bt.over)foeDown();},bsMs(700));
         return true;
       }
@@ -162,8 +162,8 @@ function foeTurnPassives(){
   /* SLEEP STRIKE (THUNDER PRODIGY): tidur N giliran */
   if(efx.sleepStrike&&(st.sleepLeft||0)>0){
     st.sleepLeft--;
-    if(st.sleepLeft===0){st.sleepArmed=true;foeFloat("BANGUN!","heal",200);}
-    else foeFloat("TERTIDUR","miss",200);
+    if(st.sleepLeft===0){st.sleepArmed=true;foeFloat("AWAKE!","heal",200);}
+    else foeFloat("ASLEEP","miss",200);
     bt.turn++;schedPhase(700,playerPhase);
     return true;
   }
@@ -242,7 +242,7 @@ function foeAttackMods(eHits){
   if(efx.eightGates&&(st.gates||0)<efx.eightGates.max){
     st.gates=(st.gates||0)+1;
     bt.es.atk=Math.round(bt.es.atk*(1+efx.eightGates.atkPct/100));
-    foeFloat("GERBANG "+st.gates+"/"+efx.eightGates.max+" +"+efx.eightGates.atkPct+"%","crit",360);
+    foeFloat("GATE "+st.gates+"/"+efx.eightGates.max+" +"+efx.eightGates.atkPct+"%","crit",360);
     if(st.gates>=efx.eightGates.max){
       const gd=Math.max(1,Math.round(bt.es.hp*efx.eightGates.selfPct/100));
       bt.eHp=Math.max(1,bt.eHp-gd);setBar("hpFoe","hpFoeT",bt.eHp,bt.es.hp);
@@ -289,7 +289,7 @@ function foeDefenseVs(pen,tsLock){
     }
     if(efx.turret&&(st.turret||0)>0&&Math.random()*100<efx.turret.blockPct){
       st.turret--;
-      foeFloat("TURRET BLOCK! sisa "+st.turret,"crit",320);
+      foeFloat("TURRET BLOCK! left "+st.turret,"crit",320);
       return {evade:true,dr:dr};
     }
   }
@@ -339,7 +339,7 @@ function foeTrySave(){
       st.dhex=true;
       if(!foePlayerImmune()){
         bt.pStun=Math.max(bt.pStun||0,efx.deathHex.turns);bt.pFreeze=efx.deathHex.turns;
-        setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","HAKKA NO TOGAME · BEKU","crit");},bsMs(520));
+        setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","HAKKA NO TOGAME · FROZEN","crit");},bsMs(520));
       }
       bt.pPoisonCut=Math.min(90,(bt.pPoisonCut||0)+efx.deathHex.atkCut);
     }

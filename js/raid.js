@@ -112,10 +112,10 @@ function wbPoolHtml(){
   const pct=pool>0?left/pool*100:0;
   const off=!wbOnline();
   const sync=!off&&!d;
-  const meta=b.locked?"POOL UTUH · BUKA SETELAH UPDATE":
-    off?"LOGIN UNTUK IKUT HITUNGAN POOL":sync?
-    (wbErr?"SERVER BELUM SIAP — MAIN LOKAL TETAP BISA":"MENGHUBUNGI SERVER…"):
-    `${d.total_players||0} HUNTER · DAMAGE HARI INI ${fmtBig(pool-left)}`;
+  const meta=b.locked?"POOL INTACT · OPENS AFTER UPDATE":
+    off?"LOG IN TO JOIN THE POOL COUNT":sync?
+    (wbErr?"SERVER NOT READY — OFFLINE PLAY STILL WORKS":"MENGHUBUNGI SERVER…"):
+    `${d.total_players||0} HUNTER · TODAY'S DAMAGE ${fmtBig(pool-left)}`;
   return `<div class="wbr-pool${off||sync||b.locked?" dim":""}">
     <div class="wbr-pool-head">
       <span class="wbr-pool-k"><i class="cp-pulse-dot"></i>WORLD HP POOL</span>
@@ -179,7 +179,7 @@ const WBV2_BRACKETS=[
   {tag:"Sisanya",gems:100,tokens:1000,packs:1}
 ];
 function wbRewardPanelHtml(){
-  return '<div class="wbv2-sp-title">REWARD HARIAN</div>'+WBV2_BRACKETS.map(b=>
+  return '<div class="wbv2-sp-title">DAILY REWARD</div>'+WBV2_BRACKETS.map(b=>
     `<div class="wbv2-rw-row"><span class="wbv2-rw-icon">${b.tag==="Top 1"?"&#9819;":"&#9679;"}</span><span class="wbv2-rw-label">${b.tag}</span><span class="wbv2-rw-val">+${fmt(b.gems)} Gem · +${fmt(b.tokens)} Tkn · ${b.packs}× Pack${b.title?" · "+b.title:""}</span></div>`
   ).join("");
 }
@@ -199,18 +199,18 @@ function wbv2HammerState(){
   const el=document.getElementById("wbv2Hammer");
   if(el){
     el.classList.toggle("off",dead||!!b.locked);
-    el.textContent=b.locked?"TERKUNCI":dead?(att!=null&&att<=0?"ATTEMPT HABIS":"BOSS TUMBANG"):"HAMBAT";
+    el.textContent=b.locked?"TERKUNCI":dead?(att!=null&&att<=0?"ATTEMPTS USED":"BOSS DEFEATED"):"HAMBAT";
   }
   const hm=document.getElementById("wbv2HammerMeta");
-  if(hm)hm.textContent=b.locked?"BOSS TERKUNCI":dead?(att!=null&&att<=0?"TIDAK BISA DEPLOY · RESET "+wbResetText():"TARGET DEFEATED · RESET "+wbResetText()):`AUTHORIZE COMBAT // ${RAID_TURNS} TURNS`;
+  if(hm)hm.textContent=b.locked?"BOSS TERKUNCI":dead?(att!=null&&att<=0?"CANNOT DEPLOY · RESET "+wbResetText():"TARGET DEFEATED · RESET "+wbResetText()):`AUTHORIZE COMBAT // ${RAID_TURNS} TURNS`;
 }
 /* Panel TOP DAMAGE (kanan panggung) — data dari wbLbS (jalur get_leaderboard). */
 function wbLbPanelHtml(){
-  if(!wbOnline())return '<div class="wbv2-lb-row"><span class="wbv2-lb-name">LOGIN UNTUK PAPAN GLOBAL</span></div>';
+  if(!wbOnline())return '<div class="wbv2-lb-row"><span class="wbv2-lb-name">LOG IN FOR GLOBAL BOARD</span></div>';
   if(wbLbS.busy&&!(wbLbS.rows||[]).length)return '<div class="wbv2-lb-row"><span class="wbv2-lb-name">MEMUAT…</span></div>';
-  if(wbLbS.err)return '<div class="wbv2-lb-row"><span class="wbv2-lb-name">SERVER TIDAK MERESPONS</span></div>';
+  if(wbLbS.err)return '<div class="wbv2-lb-row"><span class="wbv2-lb-name">SERVER NOT RESPONDING</span></div>';
   const rows=(wbLbS.rows||[]).slice(0,5);
-  if(!rows.length)return '<div class="wbv2-lb-row"><span class="wbv2-lb-name">BELUM ADA PEMBURU</span></div>';
+  if(!rows.length)return '<div class="wbv2-lb-row"><span class="wbv2-lb-name">NO HUNTERS YET</span></div>';
   return rows.map(r=>`<div class="wbv2-lb-row"><span class="wbv2-lb-rank${(Number(r.rank)||99)<=3?" wbv2-top":""}">${r.rank}</span><span class="wbv2-lb-name">${wbEsc(r.username)}</span><b class="wbv2-lb-dmg">${fmtBig(r.value)}</b></div>`).join("");
 }
 
@@ -253,8 +253,8 @@ function wbLbPaint(){
   const d=wbData();
   const y=d&&d.yesterday;
   if(y&&y.claimed)rewardHtml=`<div class="wbv2-lb-reward"><span class="wbv2-rwi" style="--im:url('${wbIconU("assets/icons/check-mark.svg")}');--ic:var(--green)"></span><span class="wbv2-rwt">REWARD KEMARIN</span><b>TERKLAIM</b></div>`;
-  else if(y&&y.claimable)rewardHtml=`<div class="wbv2-lb-reward"><span class="wbv2-rwi" style="--im:url('${wbIconU("assets/icons/gems.svg")}');--ic:var(--cyan)"></span><span class="wbv2-rwt">REWARD SIAP DIKLAIM</span><b>${fmt(y.gems||0)} GEM · ${fmt(y.tokens||0)} TOK</b><button class="wbv2-claim" id="wbv2LbClaim" type="button">KLAIM</button></div>`;
-  else rewardHtml=`<div class="wbv2-lb-reward"><span class="wbv2-rwi" style="--im:url('${wbIconU("assets/icons/gems.svg")}');--ic:var(--muted)"></span><span class="wbv2-rwt">REWARD HARIAN</span><b>${wbOnline()?"—":"LOGIN UNTUK HITUNGAN"}</b></div>`;
+  else if(y&&y.claimable)rewardHtml=`<div class="wbv2-lb-reward"><span class="wbv2-rwi" style="--im:url('${wbIconU("assets/icons/gems.svg")}');--ic:var(--cyan)"></span><span class="wbv2-rwt">REWARD READY TO CLAIM</span><b>${fmt(y.gems||0)} GEM · ${fmt(y.tokens||0)} TOK</b><button class="wbv2-claim" id="wbv2LbClaim" type="button">CLAIM</button></div>`;
+  else rewardHtml=`<div class="wbv2-lb-reward"><span class="wbv2-rwi" style="--im:url('${wbIconU("assets/icons/gems.svg")}');--ic:var(--muted)"></span><span class="wbv2-rwt">DAILY REWARD</span><b>${wbOnline()?"—":"LOG IN FOR COUNTS"}</b></div>`;
   const myRank=wbLbS.me&&wbLbS.me.rank?wbLbS.me.rank:(d&&d.rank?d.rank:null);
   const myVal=wbLbS.me&&wbLbS.me.value?wbLbS.me.value:(d&&d.best_dmg?d.best_dmg:null);
   const youHtml=`<div class="wbv2-lb-you"><span class="wbv2-yrk">KAMU</span><span class="wbv2-ypos">posisi <b>${myRank?"#"+myRank:"—"}</b></span><span class="wbv2-yd">${myVal?fmtBig(myVal):"—"}</span></div>`;
@@ -265,10 +265,10 @@ function wbLbPaint(){
     return `<div class="wbv2-pod wbv2-pod${rk}"><div class="wbv2-pod-top"><span class="wbv2-pod-av">${avR?`<img src="${avR}" alt="" loading="lazy" onerror="this.remove()">`:""}</span><span class="wbv2-pod-rk">${rk}</span></div><div class="wbv2-pod-plate"><span class="wbv2-pod-nm">${wbEsc(r&&r.username||"?")}</span><span class="wbv2-pod-val">${fmtBig(r?Number(r.value)||0:0)}</span></div></div>`;
   }).join("")}</div>`:"";
   let listHtml;
-  if(!wbOnline())listHtml=`<div class="wbv2-empty"><span class="wbv2-wm"></span><div class="wbv2-big">OFFLINE</div><div class="wbv2-sm">Login untuk papan global</div></div>`;
+  if(!wbOnline())listHtml=`<div class="wbv2-empty"><span class="wbv2-wm"></span><div class="wbv2-big">OFFLINE</div><div class="wbv2-sm">Log in for the global board</div></div>`;
   else if(wbLbS.busy&&!wbLbS.rows)listHtml=`<div class="wbv2-empty"><div class="wbv2-big">MEMUAT…</div></div>`;
-  else if(wbLbS.err)listHtml=`<div class="wbv2-empty"><div class="wbv2-big">SERVER TIDAK MERESPONS</div></div>`;
-  else if(!wbLbS.rows||!wbLbS.rows.length)listHtml=`<div class="wbv2-empty"><span class="wbv2-wm"></span><div class="wbv2-big">BELUM ADA PEMBURU</div><div class="wbv2-sm">JADI YANG PERTAMA DI PAPAN ${wbEsc(cur.name)}</div></div>`;
+  else if(wbLbS.err)listHtml=`<div class="wbv2-empty"><div class="wbv2-big">SERVER NOT RESPONDING</div></div>`;
+  else if(!wbLbS.rows||!wbLbS.rows.length)listHtml=`<div class="wbv2-empty"><span class="wbv2-wm"></span><div class="wbv2-big">NO HUNTERS YET</div><div class="wbv2-sm">JADI YANG PERTAMA DI PAPAN ${wbEsc(cur.name)}</div></div>`;
   else listHtml=wbLbS.rows.slice(0,50).map((r,i)=>wbLbRowHtml(r,i,meName&&String(r.username||"").toLowerCase()===meName)).join("");
   body.innerHTML=`${rewardHtml}${podHtml}${youHtml}<div class="wbv2-lb-list">${listHtml}</div>`;
   {const c=document.getElementById("wbv2LbClaim");if(c)c.onclick=()=>{wbLbClose();wbClaim();};}
@@ -303,7 +303,7 @@ async function wbClaim(){
   }
   if(!res||res.ok===false){
     if(res&&res.msg==="ALREADY_CLAIMED"&&d&&d.yesterday){d.yesterday.claimed=true;wbAt=Date.now();}
-    raidToast(res&&res.msg==="ALREADY_CLAIMED"?"Reward kemarin sudah diklaim":"Gagal klaim reward — coba lagi");
+    raidToast(res&&res.msg==="ALREADY_CLAIMED"?"Yesterday's reward already claimed":"Failed to claim reward — try again");
     if(raidView==="hub")renderRaidHub();
     return;
   }
@@ -440,7 +440,7 @@ function renderRaidHub(){
           <div class="wbv2-hpbar"><i class="wbv2-hp-fill" id="wbv2HpFill" style="width:${locked?0:pct.toFixed(1)}%"></i></div>
           <div class="wbv2-hp-nums"><b id="wbv2HpNumLeft">${hpTxt}</b><span id="wbv2HpNumPool">${locked?"—":"/ "+poolTxt}</span></div>
         </div>
-        <button class="wbv2-lb" id="wbv2LbBtn" type="button" aria-label="Papan peringkat ${wbEsc(b.name)}" title="Papan peringkat"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4z"/><path d="M7 6H4a2 2 0 0 0 2 4h1M17 6h3a2 2 0 0 1-2 4h-1"/></svg></button>
+        <button class="wbv2-lb" id="wbv2LbBtn" type="button" aria-label="Leaderboard ${wbEsc(b.name)}" title="Leaderboard"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4z"/><path d="M7 6H4a2 2 0 0 0 2 4h1M17 6h3a2 2 0 0 1-2 4h-1"/></svg></button>
       </div>
     </section>
 
@@ -453,9 +453,9 @@ function renderRaidHub(){
           <span class="wbv2-pill"><i class="wbv2-si" style="--im:url('${wbIconU("assets/icons/coins.svg")}');--ic:var(--cyan)"></i><b id="wbv2Tok">${fmt(state.wbTokens||0)}</b><small class="wbv2-unit">TKN</small></span>
         </span>
         <button class="wbv2-shopbtn" id="wbv2ShopBtn" type="button">TOKO</button>
-        <button class="wbv2-hammer${wbv2Dead()?" off":""}" id="wbv2Hammer" type="button">${locked?"TERKUNCI":wbv2Dead()?(wbAttOf(wbBossIdx)!=null&&wbAttOf(wbBossIdx)<=0?"ATTEMPT HABIS":"BOSS TUMBANG"):"HAMBAT"}</button>
+        <button class="wbv2-hammer${wbv2Dead()?" off":""}" id="wbv2Hammer" type="button">${locked?"TERKUNCI":wbv2Dead()?(wbAttOf(wbBossIdx)!=null&&wbAttOf(wbBossIdx)<=0?"ATTEMPTS USED":"BOSS DEFEATED"):"HAMBAT"}</button>
       </div>
-      <small class="wbv2-hammer-meta" id="wbv2HammerMeta">${locked?"BOSS TERKUNCI":wbv2Dead()?(wbAttOf(wbBossIdx)!=null&&wbAttOf(wbBossIdx)<=0?"TIDAK BISA DEPLOY · RESET "+wbResetText():"TARGET DEFEATED · RESET "+wbResetText()):`AUTHORIZE COMBAT // ${RAID_TURNS} TURNS`}</small>
+      <small class="wbv2-hammer-meta" id="wbv2HammerMeta">${locked?"BOSS TERKUNCI":wbv2Dead()?(wbAttOf(wbBossIdx)!=null&&wbAttOf(wbBossIdx)<=0?"CANNOT DEPLOY · RESET "+wbResetText():"TARGET DEFEATED · RESET "+wbResetText()):`AUTHORIZE COMBAT // ${RAID_TURNS} TURNS`}</small>
     </section>
 
     <div class="wbv2-lb-modal" id="wbv2LbModal" aria-hidden="true">
@@ -484,11 +484,11 @@ function renderRaidHub(){
   document.getElementById("wbv2Hammer").onclick=()=>{
     /* baca state LIVE (bukan closure render) — hub bisa tetap tampil setelah syncBossDOM ganti boss */
     const cb=wbBoss();
-    if(cb.locked){raidToast("BOSS INI BELUM TERSEDIA");return;}
+    if(cb.locked){raidToast("THIS BOSS IS NOT AVAILABLE YET");return;}
     const cp=wbPoolVals();
-    if(cp.left<=0){raidToast("WORLD BOSS SUDAH TUMBANG · RESET "+wbResetText());return;}
+    if(cp.left<=0){raidToast("WORLD BOSS ALREADY DOWN · RESET "+wbResetText());return;}
     const cd=wbData();
-    if(wbOnline()&&cd&&(cd.attempts_left||0)<=0){raidToast("ATTEMPT HARI INI HABIS · RESET "+wbResetText());return;}
+    if(wbOnline()&&cd&&(cd.attempts_left||0)<=0){raidToast("ATTEMPTS USED TODAY · RESET "+wbResetText());return;}
     wbrDeployPulse(()=>{sfx.hit();raidView="pick";renderRaid();});
   };
   document.getElementById("wbv2LbBtn").onclick=()=>{try{sfx.hit();}catch(e){}wbLbOpen(wbBoss().board);};
@@ -539,7 +539,7 @@ function syncBossDOM(){
   set("wbv2Reset",locked?"⟳ RESET —":"⟳ RESET "+wbResetText());
   const crys=document.getElementById("wbv2Crystals");if(crys)crys.innerHTML=wbCrystalsHtml();
   set("wbv2Pb",d&&d.best_dmg?fmtBig(d.best_dmg):"—");
-  const lk=document.getElementById("wbv2LbBtn");if(lk)lk.setAttribute("aria-label","Papan peringkat "+b.name);
+  const lk=document.getElementById("wbv2LbBtn");if(lk)lk.setAttribute("aria-label","Leaderboard "+b.name);
   const rp=document.getElementById("wbv2LbPanelRows");if(rp)rp.innerHTML=wbLbPanelHtml();
   wbv2HammerState();
   /* papan per-boss: panel + modal ikut papan boss baru lewat jalur nyata. */
@@ -584,8 +584,8 @@ function renderRaidPick(){
   app.innerHTML=`
   <div class="rd-page rd-pick">
     <div class="rd-pick-head">
-      <button class="rd-pick-back" id="raidPickBack" title="Kembali ke hub raid" aria-label="Kembali">&#8592;</button>
-      <div class="rd-pick-ttl"><span class="eyebrow">TACTICAL STRIKER SELECTION</span><b>PILIH KARTU vs ${b.name.toUpperCase()}</b></div>
+      <button class="rd-pick-back" id="raidPickBack" title="Back to raid hub" aria-label="Kembali">&#8592;</button>
+      <div class="rd-pick-ttl"><span class="eyebrow">TACTICAL STRIKER SELECTION</span><b>SELECT CARD vs ${b.name.toUpperCase()}</b></div>
       <div class="rd-pick-boss">
         <img src="${bossArt}" alt="${b.name}">
         <div class="rpb-i">
@@ -598,9 +598,9 @@ function renderRaidPick(){
     <div class="rd-pick-filter-bar">
       <label class="card-search-wrap">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
-        <input class="card-search" id="raidSearch" type="text" placeholder="Cari kartu striker..." autocomplete="off">
+        <input class="card-search" id="raidSearch" type="text" placeholder="Search striker card..." autocomplete="off">
       </label>
-      <div class="rd-pick-counter"><span class="rpc-val">${stacks.length}</span> KARTU TERSEDIA</div>
+      <div class="rd-pick-counter"><span class="rpc-val">${stacks.length}</span> CARDS AVAILABLE</div>
     </div>
     <div class="rd-pick-scroll-wrap">
       <div class="raid-pick-grid bp-grid" id="raidPickGrid">${(()=>{const _rd={};const inner=s=>{const c=CARDS[s.char];
@@ -614,7 +614,7 @@ function renderRaidPick(){
         return stacks.map((s,i)=>{_rd[s.id]=inner(s);const c=CARDS[s.char];const mounted=i<48;
         return `<div class="bp-tile${c.fullArt?' fa':''}${mounted?'':' lz-ph'}" data-lz="${s.id}" data-sid="${s.id}" data-pick="${s.id}" data-name="${c.name.toLowerCase()}" style="--tcol:${(s.tier&&TIER_COLOR[s.tier])||'var(--line2)'}">${mounted?_rd[s.id]:''}</div>`;
       }).join("");})()}</div>
-      <div class="no-result" id="raidSearch-nr">Tidak ada kartu yang cocok dengan pencarian.</div>
+      <div class="no-result" id="raidSearch-nr">No matching cards dengan pencarian.</div>
     </div>
   </div>`;
   bpsHoverBind();bpsHoverHide(); /* hover tile -> reveal kartu penuh (stat/passive) kayak tab DECK */
@@ -628,7 +628,7 @@ function renderRaidPick(){
     if(!wbOnline()){wbRunId=null;wbRunBoss=null;raidView="battle";renderRaid();return;}
     /* Attempt dipotong di sini (server) — run yang ditinggal tetap terhitung. */
     wbStarting=true;
-    raidToast("MENGUNCI ATTEMPT…");
+    raidToast("LOCKING ATTEMPT…");
     const sb=wbBoss(), sd=wbData();
     window.CloudDB.wbStart(currentUser,sb.id).then(res=>{
       wbStarting=false;
@@ -645,17 +645,17 @@ function renderRaidPick(){
       }else if(res&&res.ok===false){
         wbRunId=null;wbRunBoss=null;
         if(res.msg==="NO_ATTEMPTS_LEFT"&&sd){sd.attempts_used=3;sd.attempts_left=0;}
-        raidToast(res.msg==="NO_ATTEMPTS_LEFT"?"ATTEMPT HARI INI HABIS · RESET "+wbResetText():"GAGAL MULAI RUN · COBA LAGI");
+        raidToast(res.msg==="NO_ATTEMPTS_LEFT"?"ATTEMPTS USED TODAY · RESET "+wbResetText():"FAILED TO START RUN · TRY AGAIN");
         raidView="hub";renderRaid();
       }else{
         /* server tak terjangkau: boleh main lokal, skor tidak dikirim */
-        wbRunId=null;raidToast("OFFLINE · MAIN LOKAL TANPA SKOR");raidView="battle";renderRaid();
+        wbRunId=null;raidToast("OFFLINE · LOCAL PLAY WITHOUT SCORE");raidView="battle";renderRaid();
       }
     }).catch(()=>{
       /* Promise reject (bukan respons ok:false) — tanpa ini wbStarting nyangkut true
          dan semua tap kartu diblokir selamanya. */
       wbStarting=false;wbRunId=null;wbRunBoss=null;
-      raidToast("OFFLINE · MAIN LOKAL TANPA SKOR");raidView="battle";renderRaid();
+      raidToast("OFFLINE · LOCAL PLAY WITHOUT SCORE");raidView="battle";renderRaid();
     });
   });
   lazyMountGrid(app,_rdTileHtml);
@@ -933,13 +933,13 @@ function renderRaidResult(){
   if(wbOnline()&&raid){
     if(raid.wbPending)wbLine=`<div class="rr-wb">MENGIRIM DAMAGE KE WORLD BOSS…</div>`;
     else if(raid.wbRes&&raid.wbRes.ok)wbLine=`<div class="rr-wb on">DAMAGE TERCATAT · BEST ${fmtBig(raid.wbRes.best_dmg)} · RANK #${raid.wbRes.rank||"—"}${raid.wbRes.total_players?"/"+raid.wbRes.total_players:""} · SISA ${raid.wbRes.attempts_left} ATTEMPT${typeof raid.wbRes.pool_dmg==="number"?" · POOL −"+fmtBig(raid.wbRes.pool_dmg):""}</div>`;
-    else if(raid.wbRes)wbLine=`<div class="rr-wb bad">DAMAGE GAGAL DIKIRIM (${raid.wbRes.msg||"ERROR"}) · ATTEMPT TETAP TERPAKAI</div>`;
-    else wbLine=`<div class="rr-wb">MAIN LOKAL · DAMAGE TIDAK DIKIRIM</div>`;
+    else if(raid.wbRes)wbLine=`<div class="rr-wb bad">DAMAGE SUBMIT FAILED (${raid.wbRes.msg||"ERROR"}) · ATTEMPT STILL CONSUMED</div>`;
+    else wbLine=`<div class="rr-wb">LOCAL PLAY · DAMAGE NOT SUBMITTED</div>`;
   }
   app.innerHTML=`
   <div class="tw-page rd-page"><div class="raid-result">
     <div class="eyebrow">HASIL WORLD BOSS</div>
-    <div class="rr-title disp${pct>=100?"":" lose"}">${pct>=100?"BOSS TUMBANG":"RUN SELESAI"}</div>
+    <div class="rr-title disp${pct>=100?"":" lose"}">${pct>=100?"BOSS DEFEATED":"RUN COMPLETE"}</div>
     <div class="rr-pct">Damage run ini <b>${fmtBig(dmg)}</b></div>
     <div class="rr-token">${pct.toFixed(2)}% <span>DARI POOL 10B</span></div>
     ${wbLine}
@@ -982,7 +982,7 @@ const WB_SHOP=[
 function raidShopBuy(id){
   const it=WB_SHOP.find(x=>x.id===id);if(!it)return;
   const tok=state.wbTokens||0;
-  if(tok<it.cost){raidToast("TOKEN KURANG — butuh "+it.cost+" token");return;}
+  if(tok<it.cost){raidToast("NOT ENOUGH TOKENS — need "+it.cost+" token");return;}
   if(it.coinBuy){
     /* 0025: coin milik server — token dipotong + coin dibayar satu RPC atomik,
        dibatasi 100 pembelian/hari (token masih tersimpan di save_data). */
@@ -1002,8 +1002,8 @@ function raidShopBuy(id){
         save();sfx.crit();renderShell();
         raidToast("TUKAR BERHASIL · −"+it.cost+" token · +"+fmt(res.coins||2000)+" COIN");
       }else{
-        const why=(res&&res.msg)==="TOKEN_KURANG"?"TOKEN KURANG":((res&&res.msg)==="DAILY_CAP"?"BATAS HARIAN":((res&&res.msg)||"coba lagi"));
-        raidToast("TUKAR GAGAL — "+why);
+        const why=(res&&res.msg)==="TOKEN_KURANG"?"NOT ENOUGH TOKENS":((res&&res.msg)==="DAILY_CAP"?"DAILY LIMIT":((res&&res.msg)||"try again"));
+        raidToast("EXCHANGE FAILED — "+why);
       }
       try{renderShell();}catch(e){}
       if(raidView==="shop")renderRaidShop();
@@ -1031,16 +1031,16 @@ function raidShopBuy(id){
         raidToast("TUKAR BERHASIL · −"+it.cost+" token · +"+(res.gems||GEM_AMT)+" GEM");
       }else{
         try{save();}catch(e){}
-        const why=(res&&res.msg)==="TOKEN_KURANG"?"TOKEN KURANG":((res&&res.msg)||"coba lagi");
-        raidToast("TUKAR GAGAL — "+why);
+        const why=(res&&res.msg)==="TOKEN_KURANG"?"NOT ENOUGH TOKENS":((res&&res.msg)||"try again");
+        raidToast("EXCHANGE FAILED — "+why);
       }
       try{renderShell();}catch(e){}
       if(raidView==="shop")renderRaidShop();
     })();
     return;
   }
-  if(it.card&&stackHas(it.card.char,it.card.mut)){raidToast("Kartu itu sudah ada di Deck kamu");return;}
-  if(it.owned&&it.owned()){raidToast("Sudah dibeli — permanen di Backpack");return;}
+  if(it.card&&stackHas(it.card.char,it.card.mut)){raidToast("That card is already in your Deck");return;}
+  if(it.owned&&it.owned()){raidToast("Already owned — permanent in Backpack");return;}
   /* 0026: saldo token milik server. Potong dulu lewat RPC (harga diambil dari
      token_shop_price, bukan angka client); item baru diberikan kalau server setuju. */
   (async()=>{
@@ -1060,8 +1060,8 @@ function raidShopBuy(id){
       raidToast(msg+" · −"+it.cost+" token");
     }else{
       try{save();}catch(e){}
-      const why=(res&&res.msg)==="TOKEN_KURANG"?"TOKEN KURANG":((res&&res.msg)==="DAILY_CAP"?"BATAS HARIAN":((res&&res.msg)||"coba lagi"));
-      raidToast("BELI GAGAL — "+why);
+      const why=(res&&res.msg)==="TOKEN_KURANG"?"NOT ENOUGH TOKENS":((res&&res.msg)==="DAILY_CAP"?"DAILY LIMIT":((res&&res.msg)||"try again"));
+      raidToast("PURCHASE FAILED — "+why);
     }
     try{renderShell();}catch(e){}
     renderRaidShop();
@@ -1176,7 +1176,7 @@ function renderRaidShop(){
   <div class="wbs-page rd-page">
     <div class="wbs-shop">
       <div class="wbs-top">
-        <button class="wbs-back" id="raidShopBack" type="button" title="Kembali ke World Boss" aria-label="Kembali ke World Boss">
+        <button class="wbs-back" id="raidShopBack" type="button" title="Back to World Boss" aria-label="Back to World Boss">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
         <div class="wbs-ttl">
@@ -1192,7 +1192,7 @@ function renderRaidShop(){
       <div class="wbs-body">
         <div class="wbs-shelf">
           <div class="wbs-inner">
-            <section class="wbs-stage-panel" aria-label="Ex Core — kartu boss">
+            <section class="wbs-stage-panel" aria-label="Ex Core — boss card">
               <div class="wbs-stage-h"><b>EX CORE</b><i></i><span>${bossTotal} · BOSS UNLOCK</span></div>
               <div class="wbs-stage-track">${bossItems.map(wbsBossHtml).join("")}</div>
             </section>
@@ -1373,7 +1373,7 @@ function ixRender(){
       <span class="ixc-own${isSpecificVariantOwned ? ' on' : ''}">${any}/10</span>`;
     _ixHtml[c.char_id]=inner;
     const mounted=i<48;
-    return `<button class="${cls}${mounted?'':' lz-ph'}" type="button" data-lz="${c.char_id}" data-c="${c.char_id}" data-mut="${hasMut ? fm : 'none'}" data-shiny="${shFx ? '1' : '0'}"${lockBoss ? ' title="BELUM DIBELI - beli di '+lockShop+' untuk buka roll"' : ''} style="--tc:#9AA6B2;--bc:${bc}">${mounted?inner:''}</button>`;
+    return `<button class="${cls}${mounted?'':' lz-ph'}" type="button" data-lz="${c.char_id}" data-c="${c.char_id}" data-mut="${hasMut ? fm : 'none'}" data-shiny="${shFx ? '1' : '0'}"${lockBoss ? ' title="NOT OWNED YET - buy it in '+lockShop+' untuk buka roll"' : ''} style="--tc:#9AA6B2;--bc:${bc}">${mounted?inner:''}</button>`;
   }).join("");
   /* --- footer: strip progres SEGMENT per mutasi + milestone INTAN ROLL --- */
   const validCards=MASTER_CARD_INDEX.filter(c=>!c.isStoryEnemy);
@@ -1396,17 +1396,17 @@ function ixRender(){
       </div>
       <div class="ixp-rw-text">
         <div class="ixp-rw-title">MILESTONE REWARD</div>
-        <div class="ixp-rw-sub">${complete ? "SEMUA VARIAN LENGKAP" : `${next} varian lagi menuju +1 Pack 5K`}</div>
+        <div class="ixp-rw-sub">${complete ? "ALL VARIANTS COMPLETE" : `${next} more variants to +1 Pack 5K`}</div>
       </div>
       <div class="ixp-rw-btn-wrap">
         <button class="ix-claim-btn ${claimable > 0 ? 'ready' : 'locked'}" type="button" onclick="claimIndexReward()" ${claimable > 0 ? '' : 'disabled'}>
-          ${claimable > 0 ? `KLAIM REWARD (+${claimable})` : 'BELUM BISA KLAIM'}
+          ${claimable > 0 ? `CLAIM REWARD (+${claimable})` : 'NOT CLAIMABLE YET'}
         </button>
       </div>
     </div>
   </div>`;
   document.getElementById("ixToolbar").innerHTML=toolbar;
-  document.getElementById("ixBody").innerHTML=(list.length?"":`<div class="ix-empty">Tidak ada kartu yang cocok</div>`)+`<div class="ix-grid">${cells}</div>`;
+  document.getElementById("ixBody").innerHTML=(list.length?"":`<div class="ix-empty">No matching cards</div>`)+`<div class="ix-grid">${cells}</div>`;
   lazyMountGrid(document.getElementById("ixBody"),_ixHtml);
   ixLiveShimmer();
   document.getElementById("ixFoot").innerHTML=strip;
@@ -1501,7 +1501,7 @@ function renderTrait(){
   const tt=hasT?TRAIT[tgt.trait]:null;
   const curColor=tt?tt.color:"var(--cyan)";
   const cur=tt?traitChip(tt.k,`<span class="tc-trait-pill" style="--tcol:${tt.color}"><span class="tc-gem-wrap">${traitGem(16,tt.k)}</span> <span class="tc-name-glow">${traitLabel(tt.k)}</span></span>`):`<span class="tc-trait-none"><span class="tc-none-dot"></span>TANPA TRAIT</span>`;
-  const curStat=tt?`<div class="tc-badge-stat"><span class="tcb-tag">ATK</span> <b class="tcb-val">+${Math.round((tt.atk-1)*100)}%</b></div><div class="tc-badge-stat"><span class="tcb-tag">HP</span> <b class="tcb-val">+${Math.round((tt.hp-1)*100)}%</b></div>`:`<div class="tc-badge-stat tc-stat-empty">ROLL UNTUK MENGAKTIFKAN MODIFIER</div>`;
+  const curStat=tt?`<div class="tc-badge-stat"><span class="tcb-tag">ATK</span> <b class="tcb-val">+${Math.round((tt.atk-1)*100)}%</b></div><div class="tc-badge-stat"><span class="tcb-tag">HP</span> <b class="tcb-val">+${Math.round((tt.hp-1)*100)}%</b></div>`:`<div class="tc-badge-stat tc-stat-empty">ROLL TO ACTIVATE MODIFIER</div>`;
   const rates=TRAIT_TIERS.filter(t=>t.chance>0).map(t=>{
     const own=tgt.trait===t.k;
     const isTarget=autoTargets.has(t.k);
@@ -1526,7 +1526,7 @@ function renderTrait(){
   b.innerHTML=`
     <div class="tr-grid">
       <div class="tr-main">
-        <div class="tr-cur tr-cur-btn" id="trPickCard" role="button" title="Ganti target kartu" style="--tcol:${curColor}">
+        <div class="tr-cur tr-cur-btn" id="trPickCard" role="button" title="Change card target" style="--tcol:${curColor}">
           <div class="tr-cur-thumb-wrap">
             <img src="${cardThumb(tgt.char)}" alt="" loading="lazy" decoding="async">
             <span class="tr-cur-scanline"></span>
@@ -1540,7 +1540,7 @@ function renderTrait(){
             <div class="tc-tline">${cur}</div>
             <div class="tc-tstat-wrap">${curStat}</div>
           </div>
-          <button class="tr-change-ic" type="button" title="Ganti Target Kartu">
+          <button class="tr-change-ic" type="button" title="Change Card Target">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 17v-2a4 4 0 0 0-4-4H4"/><path d="m14 7 4 4-4 4"/><path d="M4 7v2a4 4 0 0 0 4 4h12"/><path d="m10 17-4-4 4-4"/></svg>
           </button>
         </div>
@@ -1610,15 +1610,15 @@ function openDeckPick(cfg){dpSearch="";cardPickCfg=(cfg&&cfg.getSel&&cfg.onPick)
 function closeDeckPick(){document.getElementById("deckPickModal").classList.remove("show");hideTraitTip();cardPickCfg=null;}
 function renderDeckPick(){
   const b=document.getElementById("dpBody");
-  if(!state.stacks.length){b.innerHTML=`<p class="sub">Deck kosong.</p>`;return;}
+  if(!state.stacks.length){b.innerHTML=`<p class="sub">Deck empty.</p>`;return;}
   const selId=cardPickCfg?cardPickCfg.getSel():traitTargetStack().id;
   _dpHtml={};
-  b.innerHTML=`<label class="card-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input class="card-search" id="dpSearch" type="text" placeholder="Cari kartu…" autocomplete="off"></label><div class="dp-grid" id="dpGrid">${state.stacks.map((s,i)=>{
+  b.innerHTML=`<label class="card-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input class="card-search" id="dpSearch" type="text" placeholder="Search card..." autocomplete="off"></label><div class="dp-grid" id="dpGrid">${state.stacks.map((s,i)=>{
     const inner=`<img src="${cardThumb(s.char)}" alt="" loading="lazy" decoding="async">
       ${s.shiny||(s.mut&&s.mut!=="none")||(s.trait&&s.trait!=="none")?`<span class="dp-badges">${s.shiny?'<span class="shiny-badge shiny-pill">SHINY</span>':""}${s.mut&&s.mut!=="none"?mutChip(s.mut,mutPill(s.mut,'mut-badge dp-mut')):""}${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="trait-badge dp-gem" style="border-color:${TRAIT_COLOR[s.trait]}">${traitGem(13,s.trait)}</span>`):""}</span>`:""}
       <span class="dp-name">${cardName(s.char)}</span>`;
     _dpHtml[s.id]=inner;const mounted=i<48;
-    return `<button class="dp-card${isFullArt(s.char)?" fa":""}${s.id===selId?" sel":""}${s.mut&&s.mut!=="none"?(s.shiny?" dp-mut-shiny-"+s.mut:" dp-mut-"+s.mut):""}${s.shiny?" shiny":""}${mounted?"":" lz-ph"}" data-lz="${s.id}" data-tid="${s.id}" data-name="${cardName(s.char).toLowerCase()}">${mounted?inner:""}</button>`;}).join("")}</div><div class="no-result" id="dpSearch-nr">Tidak ada kartu yang cocok.</div>`;
+    return `<button class="dp-card${isFullArt(s.char)?" fa":""}${s.id===selId?" sel":""}${s.mut&&s.mut!=="none"?(s.shiny?" dp-mut-shiny-"+s.mut:" dp-mut-"+s.mut):""}${s.shiny?" shiny":""}${mounted?"":" lz-ph"}" data-lz="${s.id}" data-tid="${s.id}" data-name="${cardName(s.char).toLowerCase()}">${mounted?inner:""}</button>`;}).join("")}</div><div class="no-result" id="dpSearch-nr">No matching cards.</div>`;
   {const dps=document.getElementById("dpSearch");if(dps){dps.value=dpSearch;dps.oninput=()=>{dpSearch=dps.value;runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));};if(dpSearch)runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));}}
   b.querySelectorAll(".dp-card").forEach(el=>el.onclick=()=>{const tid=el.getAttribute("data-tid");sfx.hit();if(cardPickCfg){cardPickCfg.onPick(tid);}else{traitTarget=tid;closeDeckPick();renderTrait();}});
   lazyMountGrid(b.closest(".dp-box")||b,_dpHtml);
@@ -1632,15 +1632,15 @@ function confirmRareReplace(k,auto){
   if(traitRareBusy)return Promise.resolve(false);
   traitRareBusy=true;
   const tgt=traitTargetStack();
-  const nm=tgt?cardName(tgt.char):"kartu target";
+  const nm=tgt?cardName(tgt.char):"target card";
   const body=
     '<div class="glcf-row"><span class="glcf-label">TRAIT</span><span class="glcf-val" style="color:'+t.color+'"><b>'+t.name+'</b> · '+t.rar+'</span></div>'+
     '<div class="glcf-row"><span class="glcf-label">POWER</span><span class="glcf-val">ATK +'+Math.round((t.atk-1)*100)+'% · HP +'+Math.round((t.hp-1)*100)+'%</span></div>'+
     '<div class="glcf-row"><span class="glcf-label">KARTU</span><span class="glcf-val">'+nm+'</span></div>'+
     '<div class="glcf-warn">'+(auto
-      ? 'Auto roll akan mulai mengganti trait ini. Trait hanya aman kalau sudah dicentang sebagai target (auto berhenti saat kena). Sisa coin: '+fmt(state.coins)+'.'
-      : 'Trait ini akan <b>hilang tertimpa</b> kalau kamu roll lagi. Sisa coin: '+fmt(state.coins)+'.')+'</div>';
-  return showConfirmDialog({title:"TRAIT LANGKA TERPASANG",body:body,okText:auto?"LANJUT AUTO":"ROLL JUGA"}).then(v=>{traitRareBusy=false;return v;});
+      ? 'Auto roll will start replacing this trait. A trait is only safe when checked as a target (auto stops when hit). Coins left: '+fmt(state.coins)+'.'
+      : 'This trait will be <b>overwritten</b> if you roll again. Coins left: '+fmt(state.coins)+'.')+'</div>';
+  return showConfirmDialog({title:"TRAIT LANGKA TERPASANG",body:body,okText:auto?"CONTINUE AUTO":"ROLL AGAIN"}).then(v=>{traitRareBusy=false;return v;});
 }
 async function rollTrait(){
   if(autoRoll)return; // tombol manual diblokir selama auto roll jalan
@@ -1665,16 +1665,16 @@ function showRarePrompt(k,auto){
   b.innerHTML=`
     <div class="rp-rays"></div>
     ${traitGem(78,k,"rp-gem")}
-    <div class="rp-kicker">${auto?"TRAIT LANGKA · AUTO ROLL BERHENTI":"TRAIT LANGKA"}</div>
+    <div class="rp-kicker">${auto?"RARE TRAIT · AUTO ROLL STOPPED":"TRAIT LANGKA"}</div>
     <div class="rp-name" style="color:${t.color}">${t.name}</div>
     <div class="rp-rar" style="color:${t.color}">RARITY ${t.rar}</div>
     <div class="rp-power" style="color:${t.color}">ATK +${Math.round((t.atk-1)*100)}% · HP +${Math.round((t.hp-1)*100)}%</div>
     <div class="rp-fx">${traitFxList(k)}</div>
     <div class="rp-btns">
-      <button class="rp-btn rp-save" id="rpSave">${auto?"STOP · SIMPAN INI":"SIMPAN"}</button>
-      <button class="rp-btn rp-roll" id="rpRoll" ${canRoll?"":"disabled"}>${auto?`ROLL LAGI · LANJUT AUTO · ${fmt(TRAIT_COST)} COIN`:`ROLL LAGI · ${fmt(TRAIT_COST)} COIN`}</button>
+      <button class="rp-btn rp-save" id="rpSave">${auto?"STOP · KEEP THIS":"SIMPAN"}</button>
+      <button class="rp-btn rp-roll" id="rpRoll" ${canRoll?"":"disabled"}>${auto?`ROLL LAGI · CONTINUE AUTO · ${fmt(TRAIT_COST)} COIN`:`ROLL AGAIN · ${fmt(TRAIT_COST)} COINS`}</button>
     </div>
-    <div class="rp-note">${auto?"STOP mengunci trait ini ke kartu target &amp; menghentikan auto roll. ROLL LAGI membuang hasil ini dan melanjutkan auto roll (bayar coin lagi).":"SIMPAN memasang trait ini ke kartu target. ROLL LAGI membuang hasil ini dan mencoba lagi (bayar coin lagi)."}</div>`;
+    <div class="rp-note">${auto?"STOP locks this trait to the target card &amp; halts auto roll. ROLL AGAIN discards this result and continues auto roll (coins charged again).":"KEEP applies this trait to the target card. ROLL AGAIN discards this result and retries (coins charged again)."}</div>`;
   const box=document.getElementById("rpBox");box.style.color=t.color;box.style.borderColor=t.color;
   document.getElementById("rarePromptModal").classList.add("show");
   document.getElementById("rpSave").onclick=saveRare;
@@ -1689,7 +1689,7 @@ function autoStop(){autoRoll=false;clearTimeout(autoRollTimer);autoRollTimer=nul
 function toggleAuto(){autoRoll?stopAutoRoll():startAutoRoll();}
 async function startAutoRoll(){
   if(autoRoll)return;
-  if(state.coins<TRAIT_COST){autoToast(`BUTUH ${fmt(TRAIT_COST)} COIN UNTUK AUTO ROLL`);return;}
+  if(state.coins<TRAIT_COST){autoToast(`NEED ${fmt(TRAIT_COST)} COINS FOR AUTO ROLL`);return;}
   const tgt=traitTargetStack();
   if(tgt&&isRareTrait(tgt.trait)){
     if(!(await confirmRareReplace(tgt.trait,true)))return;
@@ -1715,7 +1715,7 @@ function traitUiRefresh(){
   if(tsw){
     tsw.innerHTML=tt
       ? `<div class="tc-badge-stat"><span class="tcb-tag">ATK</span> <b class="tcb-val">+${Math.round((tt.atk-1)*100)}%</b></div><div class="tc-badge-stat"><span class="tcb-tag">HP</span> <b class="tcb-val">+${Math.round((tt.hp-1)*100)}%</b></div>`
-      : `<div class="tc-badge-stat tc-stat-empty">ROLL UNTUK MENGAKTIFKAN MODIFIER</div>`;
+      : `<div class="tc-badge-stat tc-stat-empty">ROLL TO ACTIVATE MODIFIER</div>`;
   }
   const curCard=document.getElementById("trPickCard");
   if(curCard)curCard.style.setProperty("--tcol",tt?tt.color:"var(--cyan)");
@@ -1759,7 +1759,7 @@ function traitFxTick(k){
 }
 function autoTick(){
   if(!autoRoll)return;
-  if(state.coins<TRAIT_COST){stopAutoRoll();save();renderShell();autoToast("AUTO ROLL STOP · COIN HABIS");return;}
+  if(state.coins<TRAIT_COST){stopAutoRoll();save();renderShell();autoToast("AUTO ROLL STOP · OUT OF COINS");return;}
   const tgt=traitTargetStack();if(!tgt){stopAutoRoll();return;}
   coinSpend(TRAIT_COST);autoRollN++;
   const k=rollTraitPick();

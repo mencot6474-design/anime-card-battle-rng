@@ -42,7 +42,7 @@
     </div>
 
     <!-- Bottom-Left Floating Toggle Badge -->
-    <button type="button" id="codeInspectorBadge" class="ci-badge" title="Klik untuk mengaktifkan Code Inspector (atau tahan Alt)">
+    <button type="button" id="codeInspectorBadge" class="ci-badge" title="Click to enable Code Inspector (or hold Alt)">
       <span class="ci-badge-icon">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="10"></circle>

@@ -9,10 +9,10 @@ function towerIsBossFloor(f){return f%5===0;}
 /* ===== DROP INSTAN PACK PER LANTAI (Inf Tower) =====
    BASE rate, TIDAK dipengaruhi luck player. 50K tidak ada drop Tower. */
 const TOWER_PACK_DROPS=[
-  {k:'r5k',  p:0.05,  name:'INSTAN ROLL 5.000',  icon:'assets/images/instanpack-5k.webp?v=trans1',  label:'5%'},
-  {k:'r10k', p:0.02,  name:'INSTAN ROLL 10.000', icon:'assets/images/instanpack-10k.webp?v=trans1', label:'2%'},
-  {k:'r25k', p:0.01,  name:'INSTAN ROLL 25.000', icon:'assets/images/instanpack-25k.webp?v=trans1', label:'1%'},
-  {k:'r100k',p:0.005, name:'INSTAN ROLL 100.000',icon:'assets/images/instanpack-100k.webp?v=trans1',label:'0,5%'}
+  {k:'r5k',  p:0.05,  name:'INSTANT ROLL 5.000',  icon:'assets/images/instanpack-5k.webp?v=trans1',  label:'5%'},
+  {k:'r10k', p:0.02,  name:'INSTANT ROLL 10.000', icon:'assets/images/instanpack-10k.webp?v=trans1', label:'2%'},
+  {k:'r25k', p:0.01,  name:'INSTANT ROLL 25.000', icon:'assets/images/instanpack-25k.webp?v=trans1', label:'1%'},
+  {k:'r100k',p:0.005, name:'INSTANT ROLL 100.000',icon:'assets/images/instanpack-100k.webp?v=trans1',label:'0,5%'}
 ];
 function towerBossIndex(f){return ((f/5)-1)%TOWER_BOSS_ROSTER.length;}
 function towerHash(n){return (((n*2654435761)>>>0)%100000)||0;}
@@ -64,7 +64,7 @@ function stopTower(){
   if(towerRun&&(towerRun.pendingRolls||0)>0){
     const n=towerRun.pendingRolls; const loot=instantRoll(n); towerRun.pendingRolls=0;
     /* Popup hasil roll tetap BIKIN pack + artefak/pet ikut tampil (icon sama dgn backpack). */
-    if(loot&&loot.length)showTowerLoot(loot,towerRun.drops,null,{packDrops:towerRun.packDrops||{},rareDrops:towerRun.rareDrops||[]}); else toast("ROLL TOWER DITARIK","+"+n+" KARTU","#7df9ff");
+    if(loot&&loot.length)showTowerLoot(loot,towerRun.drops,null,{packDrops:towerRun.packDrops||{},rareDrops:towerRun.rareDrops||[]}); else toast("TOWER ROLLS WITHDRAWN","+"+n+" KARTU","#7df9ff");
   }
   towerView="hub"; towerRun=null;
 }
@@ -205,7 +205,7 @@ function csSlabHtml(f, idx, y, best){
   const clickable = isAct || st === "next";
   return `<div class="cs-slab" data-state="${st}" data-boss="${boss ? 1 : 0}" data-floor="${f}"`
     + ` style="--h:${idx};--y:${Math.round(y)}px"`
-    + (clickable ? ' role="button" tabindex="0" aria-label="Mulai run dari lantai ' + f + '"' : '')
+    + (clickable ? ' role="button" tabindex="0" aria-label="Start run from floor ' + f + '"' : '')
     + `>
     <div class="cs-sl">
       <span class="cs-sl-no">${csPad2(f)}</span>
@@ -751,7 +751,7 @@ function startTowerBattle(){
   armShotFx(tfx,0);partyDmgApply(tfx);
   if(tfx&&tfx.psychicBarrier)bt.psychic={left:tfx.psychicBarrier.turns,dr:tfx.psychicBarrier.dr,healPct:tfx.psychicBarrier.healPct};
   if(tfx&&tfx.sleepStrike){bt.sleepLeft[0]=tfx.sleepStrike.turns;bt.sleepArmed[0]=true;}
-   if(tfx&&tfx.entryFreeze&&!foeStatusImmune()){bt.eStun=tfx.entryFreeze.turns;bt.freezeLeft=tfx.entryFreeze.turns;setTimeout(()=>floatText(".fighter.foe","BEKU","crit"),bsMs(300));}
+   if(tfx&&tfx.entryFreeze&&!foeStatusImmune()){bt.eStun=tfx.entryFreeze.turns;bt.freezeLeft=tfx.entryFreeze.turns;setTimeout(()=>floatText(".fighter.foe","FROZEN","crit"),bsMs(300));}
    if(tfx&&tfx.heavyRain)bt.rain={left:tfx.heavyRain.turns,healPct:tfx.heavyRain.healPct};
    if(tfx&&tfx.timeStop&&!foeStatusImmune()){bt.eStun=tfx.timeStop.turns;setTimeout(()=>floatText(".fighter.foe","THE WORLD","crit"),bsMs(300));}
   if(tfx&&tfx.dimensionShift){bt.eAbilityOff=tfx.dimensionShift.turns;setTimeout(()=>floatText(".fighter.foe","AMENOMINAKA","crit"),bsMs(300));}
@@ -788,7 +788,7 @@ function foeDown(){
     }
     /* REGRESSION (Regressor): tiap kill nyimpen 1 'charge' buat bangkit nanti (dipakai di trySave) */
     if(sfx.regression){bt.regressCharges[a]=(bt.regressCharges[a]||0)+1;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","REGRESSION READY","heal");},bsMs(300));}
-    if(sfx.killHeal&&bt.pHp>0){const kh=Math.max(1,Math.round(bt.pMax*sfx.killHeal.pct/100));bt.pHp=Math.min(bt.pMax,bt.pHp+kh);setBar("hpMe","hpMeT",bt.pHp,bt.pMax);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","HISAP DARAH +"+fmt(kh),"heal");},bsMs(340));}
+    if(sfx.killHeal&&bt.pHp>0){const kh=Math.max(1,Math.round(bt.pMax*sfx.killHeal.pct/100));bt.pHp=Math.min(bt.pMax,bt.pHp+kh);setBar("hpMe","hpMeT",bt.pHp,bt.pMax);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","LIFESTEAL +"+fmt(kh),"heal");},bsMs(340));}
     /* FREEZE TRANSFER (ABSOLUTE ZERO): musuh tumbang dalam keadaan BEKU -> freeze pindah ke kartu musuh berikutnya */
     if(sfx.freezeTransfer&&(bt.freezeLeft||0)>0){bt.freezeNext=true;}
     if(sfx.getExcited){bt.excited=true;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","GET EXCITED!","crit");},bsMs(300));}
@@ -896,9 +896,9 @@ function advanceTowerFoe(){
     {const cfx=resolveFx(bt.eq,bt.efx);if(cfx.copy&&cfx.copy.turns)bt.copyLeft=cfx.copy.turns;}
   {const nfx=resolveFx(bt.eq,bt.efx);
    /* FOE ENTRY FREEZE (ICE QUEEN): musuh baru masuk -> bekukan turns giliran (pola entryFreeze, guard statusImmune) */
-   if(nfx.foeEntryFreeze&&!foeStatusImmune()){bt.eStun=nfx.foeEntryFreeze.turns;bt.freezeLeft=nfx.foeEntryFreeze.turns;setTimeout(()=>floatText(".fighter.foe","BEKU","crit"),bsMs(300));}
+   if(nfx.foeEntryFreeze&&!foeStatusImmune()){bt.eStun=nfx.foeEntryFreeze.turns;bt.freezeLeft=nfx.foeEntryFreeze.turns;setTimeout(()=>floatText(".fighter.foe","FROZEN","crit"),bsMs(300));}
    /* FREEZE TRANSFER (ABSOLUTE ZERO): musuh ini mewarisi freeze dari target beku yang dibunuh sebelumnya */
-   if(bt.freezeNext){bt.freezeNext=false;if(!foeStatusImmune()){bt.eStun=Math.max(bt.eStun,1);bt.freezeLeft=Math.max(bt.freezeLeft,1);setTimeout(()=>floatText(".fighter.foe","BEKU","crit"),bsMs(360));}}
+   if(bt.freezeNext){bt.freezeNext=false;if(!foeStatusImmune()){bt.eStun=Math.max(bt.eStun,1);bt.freezeLeft=Math.max(bt.freezeLeft,1);setTimeout(()=>floatText(".fighter.foe","FROZEN","crit"),bsMs(360));}}
   }
 bt.ePoison=0;bt.dizzyStack=0;bt.dizzyLeft=0;bt.rbBounce=0;bt.pbKey="";bt.pbStreak=0;
 bt.pBurn=0;bt.pFreeze=0;bt.pPoisonCut=0;bt.pInk=0;bt.pInkPct=0;
@@ -1168,7 +1168,7 @@ function showTowerLoot(results,drops,title,extra){
   };
   const t=document.getElementById('rrTitle');
   if(t)t.textContent=String(title||'RUN SPOILS')
-    .replace(/^HASIL INSTAN ROLL\s*·\s*/i,'')
+    .replace(/^HASIL INSTANT ROLL\s*·\s*/i,'')
     .replace(/^HASIL\s*/i,'')
     .replace(/^REWARD WATCH ADS\s*·\s*/i,'');
   const sr=document.getElementById('rrSerial');
@@ -1214,7 +1214,7 @@ function openModal(id){
       <div class="cr-stats"><span class="hp"><i>HP</i> <b>${fmtStat(st.hp)}</b></span><span class="atk"><i>ATK</i> <b>${fmtStat(st.atk)}</b></span></div>
       <div class="cr-skill" style="margin-bottom:4px"><span class="ds-skill-badge">✦ ${c.passive.name}<span class="sk-txt">${skillText(s.char)}</span></span></div>
       <div class="md-actions">
-        <button class="md-btn primary" id="md-use">${(function(){const di=state.deck.indexOf(s.id);return di>=0?("DI DEK · SLOT "+(di+1)):"PASANG KE DEK";})()}</button>
+        <button class="md-btn primary" id="md-use">${(function(){const di=state.deck.indexOf(s.id);return di>=0?("DI DEK · SLOT "+(di+1)):"EQUIP TO DECK";})()}</button>
         <button class="md-btn${s.fav?" on":""}" id="md-fav">${s.fav?"★ FAVORIT":"FAVORIT"}</button>
         <button class="md-btn${s.lock?" on":""}" id="md-lock">${s.lock?"🔒 LOCKED":"LOCK"}</button>
         <button class="md-btn md-close" id="md-close">TUTUP</button>
@@ -1284,7 +1284,7 @@ function renderTitleCrownHtml(titleName, variantCls){
 window.renderTitleCrownHtml = renderTitleCrownHtml;
 
 function hubCardHtml(eq,idAttr,showHideBtn){
-  if(!eq||!eq.char||!CARDS[eq.char]) return `<div class="hub-center"${idAttr||''}><div class="hc-info"><div class="hc-name">Belum ada kartu</div></div></div>`;
+  if(!eq||!eq.char||!CARDS[eq.char]) return `<div class="hub-center"${idAttr||''}><div class="hc-info"><div class="hc-name">No cards yet</div></div></div>`;
   const tier=CARDS[eq.char].tier;
   const st=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
   const mut=(eq.mut&&eq.mut!=='none')?eq.mut:null;
@@ -1331,12 +1331,12 @@ function hubLoadoutHtml(){
   };
 
   const pet=lobbyPetHtml()
-    ? `<div class="loadout-slot pet-slot filled" data-bp="pet" role="button" tabindex="0" title="Pet aktif — kelola di Backpack" style="--ac:#8fd3ff">
+    ? `<div class="loadout-slot pet-slot filled" data-bp="pet" role="button" tabindex="0" title="Active pet — manage in Backpack" style="--ac:#8fd3ff">
         <span class="tile-frame" aria-hidden="true"></span>
         <span class="ls-tag">PET</span>
         ${lobbyPetHtml()}
       </div>`
-    : `<div class="loadout-slot pet-slot empty" data-bp="pet" role="button" tabindex="0" title="Slot pet — kosong">
+    : `<div class="loadout-slot pet-slot empty" data-bp="pet" role="button" tabindex="0" title="Pet slot — empty">
         <span class="tile-frame" aria-hidden="true"></span>
         <span class="ls-tag">PET</span>
         <span class="ls-mark">${petSvg}</span>
@@ -1356,7 +1356,7 @@ function hubRebirthTileHtml(){
   const ready=es>=th;
   const pct=Math.max(0,Math.min(100,Math.round(es/th*100)));
   return `
-    <div class="hub-box h-rebirth hub-link hub-link-rebirth${ready?' ready':''}" id="hubRebirth" role="button" title="Rebirth: tukar essence duplikat jadi luck permanen">
+    <div class="hub-box h-rebirth hub-link hub-link-rebirth${ready?' ready':''}" id="hubRebirth" role="button" title="Rebirth: convert duplicate essence into permanent luck">
       <span class="tile-frame" aria-hidden="true"></span>
       <span class="tile-index"><span class="tile-number" style="color:#c084fc">R${cnt}</span><span class="tile-category" style="color:#a855f7">CYCLE / ASCENSION</span></span>
       <span class="tile-art" aria-hidden="true">
@@ -1492,7 +1492,7 @@ window.cycleCardFrame = function() {
       frameEl.removeAttribute('src');
     }
   }
-  if (typeof toast === 'function') toast('BINGKAI KARTU HERO', cfg.name, '#fbbf24');
+  if (typeof toast === 'function') toast('HERO CARD FRAME', cfg.name, '#fbbf24');
   else if (typeof showToast === 'function') showToast('FRAME: ' + cfg.name);
 };
 
@@ -2056,7 +2056,7 @@ function renderLobby(){
             <span class="lv-badge">LV <b id="l12TopLv">${_lv}</b></span>
             <span class="lv-info">
               <span class="lv-meta">
-                <span class="lv-title" onclick="event.stopPropagation();if(typeof openTitlesModal==='function')openTitlesModal();" title="Ganti Title">[${String(state.playerTitle || "ROOKIE").toUpperCase()}]</span>
+                <span class="lv-title" onclick="event.stopPropagation();if(typeof openTitlesModal==='function')openTitlesModal();" title="Change Title">[${String(state.playerTitle || "ROOKIE").toUpperCase()}]</span>
                 <span class="lv-pct" id="l12TopXpPct">${_xpPct}%</span>
               </span>
               <span class="bar"><span id="l12TopXpBar" style="width:${_xpPct}%"></span></span>
@@ -2096,13 +2096,13 @@ function renderLobby(){
           <div class="stage-bg-layer" id="stageBgLayer" style="background-image: url('${activeBg}');"></div>
           <canvas id="ambientCanvas"></canvas>
 
-          <div class="hero" id="heroStandeeWrap" title="Klik Hunter untuk Kelola Party &amp; Deck" onclick="if(window.sfx&&sfx.hit)sfx.hit();if(typeof toggleBackpack==='function')toggleBackpack();">
+          <div class="hero" id="heroStandeeWrap" title="Click Hunter to manage Party &amp; Deck" onclick="if(window.sfx&&sfx.hit)sfx.hit();if(typeof toggleBackpack==='function')toggleBackpack();">
             <div class="artbox"><img class="art" src="${_art}" alt="" style="${_pos}"></div>
             <span class="cast" aria-hidden="true"></span>
           </div>
 
           <div class="c12party">${(_party || []).slice(0, 4).map(function (s, i) {
-            if (!s) return '<button class="pav empty" type="button" title="Slot kosong — klik untuk buka Backpack" onclick="if(typeof toggleBackpack===\'function\')toggleBackpack();">+</button>';
+            if (!s) return '<button class="pav empty" type="button" title="Empty slot — click to open Backpack" onclick="if(typeof toggleBackpack===\'function\')toggleBackpack();">+</button>';
             var _pn = (typeof cardName === 'function') ? cardName(s.char) : s.char;
             var _pc = (typeof MUT_COLOR !== 'undefined' && MUT_COLOR[s.mut]) ? MUT_COLOR[s.mut] : 'rgba(245,245,245,.26)';
             /* Klik lingkaran = tukar poster showcase (bukan buka Backpack; tombol tas ada di dock). */
@@ -2128,14 +2128,14 @@ function renderLobby(){
         <div class="hud c12buffs">
 
           <div class="pots">
-            <div class="pot-row" data-block="pot-luck" id="l12PotLuck" role="button" tabindex="0" title="Klik untuk pakai Potion Luck" onclick="window.l12TogglePotionTray('luck')">
+            <div class="pot-row" data-block="pot-luck" id="l12PotLuck" role="button" tabindex="0" title="Click to use a Luck Potion" onclick="window.l12TogglePotionTray('luck')">
               <img class="pimg" src="assets/images/pot-luck-${_potLuck ? _potLuck.lv : 1}.webp" alt="">
               <span class="plab">LUCK POT</span><b id="l12PotLuckVal">${_potLuck ? "+" + (_potLuck.flat || 0) + " L" + _potLuck.lv : (_adLuckMs > 0 ? "ADS x2" : "OFF")}</b>
               <span class="tr"><span id="l12PotLuckBar" style="width:${_potLuck ? Math.max(4, Math.min(100, Math.round((_potLuck.endsAt - _now) / _potWin * 100))) : 0}%"></span></span>
               <span class="tm" id="l12PotLuckTm">${_potLuck ? _cd(_potLuck.endsAt - _now) : (_adLuckMs > 0 ? _cd(_adLuckMs) : "--:--")}</span>
               <span class="pstock" id="l12PotLuckStock">${_lkStock}</span>
             </div>
-            <div class="pot-row" data-block="pot-speed" id="l12PotSpeed" role="button" tabindex="0" title="Klik untuk pakai Potion Speed" onclick="window.l12TogglePotionTray('speed')">
+            <div class="pot-row" data-block="pot-speed" id="l12PotSpeed" role="button" tabindex="0" title="Click to use a Speed Potion" onclick="window.l12TogglePotionTray('speed')">
               <img class="pimg" src="assets/images/pot-speed-${_potSpeed ? _potSpeed.lv : 1}.webp" alt="">
               <span class="plab">SPEED POT</span><b id="l12PotSpeedVal">${_potSpeed ? "+" + (_potSpeed.add || 0).toFixed(1) + "x L" + _potSpeed.lv : "OFF"}</b>
               <span class="tr"><span id="l12PotSpeedBar" style="width:${_potSpeed ? Math.max(4, Math.min(100, Math.round((_potSpeed.endsAt - _now) / _potWin * 100))) : 0}%"></span></span>
@@ -2151,7 +2151,7 @@ function renderLobby(){
               <span class="ghead"><span class="gtitle">GLOBAL LUCK</span><span class="gpill"><span class="gdot"></span><span id="l12GlStack">${_glStacks}/10</span></span></span>
               <span class="grow"><span class="gmult" id="l12GlMult">${_glMult ? _glMult + "x LUCK" : "OFF"}</span><span class="gtm" id="l12GlTm">${_glActive ? _cd(_glLeft) : "--:--"}</span></span>
             </span>
-            <button class="gbtn${_glActive && !_glMaxed ? " stack" : ""}${_glMaxed ? " maxed" : ""}${_glCan ? "" : " unaff"}" type="button" id="l12GlBuy"${_glMaxed ? " disabled" : ""}${_glCan ? "" : ' aria-disabled="true"'} title="${_glCan ? "Beli / tumpuk Global Luck" : "Gems kurang - butuh " + _glCost}"><span id="l12GlBuyLab">${_glLabel}</span><span class="gprice"><img src="assets/images/premium-currency.webp" alt=""><span id="l12GlBuyCost">${_glCost}</span></span></button>
+            <button class="gbtn${_glActive && !_glMaxed ? " stack" : ""}${_glMaxed ? " maxed" : ""}${_glCan ? "" : " unaff"}" type="button" id="l12GlBuy"${_glMaxed ? " disabled" : ""}${_glCan ? "" : ' aria-disabled="true"'} title="${_glCan ? "Buy / stack Global Luck" : "Not enough Gems - need " + _glCost}"><span id="l12GlBuyLab">${_glLabel}</span><span class="gprice"><img src="assets/images/premium-currency.webp" alt=""><span id="l12GlBuyCost">${_glCost}</span></span></button>
           </div>
 
           <!-- node cuaca tetap ada (JS menulis ke sini) tapi tampil sebagai baris tipis di dock -->
@@ -2181,7 +2181,7 @@ function renderLobby(){
           <button class="sq c12sq" type="button" onclick="if(typeof openPremiumShop==='function')openPremiumShop();" title="Toko Premium">
             <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h2l2.2 10.2a2 2 0 0 0 2 1.6h7.2a2 2 0 0 0 2-1.6L21 9H7"/><circle cx="10" cy="20" r="1.2"/><circle cx="18" cy="20" r="1.2"/></svg>
           </button>
-          <button class="sq c12sq" type="button" onclick="location.hash='#/settings'" title="Pengaturan">
+          <button class="sq c12sq" type="button" onclick="location.hash='#/settings'" title="Settings">
             <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           </button>
         </div>
@@ -2200,7 +2200,7 @@ function renderLobby(){
           <div class="drw-eyebrow"><span class="live-dot"></span><span>TACTICAL HUD // ARCHON COMMAND ONLINE</span></div>
           <div class="drw-title">ARCHON COMMAND TERMINAL</div>
         </div>
-        <button class="drw-close-btn" id="drwCloseBtn" onclick="closeCommandDrawer()" title="Tutup (ESC / Swipe Kanan)">
+        <button class="drw-close-btn" id="drwCloseBtn" onclick="closeCommandDrawer()" title="Close (ESC / Swipe Right)">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -2249,8 +2249,8 @@ function renderLobby(){
             <span class="fstat"><b>1 KLAIM</b><span class="s2"> · LUCK ${Math.round(_luckMult)}×</span><span class="ch" aria-hidden="true"></span></span>
           </button>
           <div class="fb" id="fb2">
-            <div class="row menu-card" id="drwDailyBtn" style="--rc:var(--emerald)" role="button" tabindex="0"><span class="pod"><i class="ic i-daily"></i></span><span class="ri"><span class="rn">7-Day Login</span><span class="rs" id="drwDailySub">KLAIM REWARD HARIAN</span></span><span class="rt"><span class="vl">HARI 3/7</span></span></div>
-            <div class="row menu-card" id="drwAdsBtn" style="--rc:var(--gold)" role="button" tabindex="0"><span class="pod"><i class="ic i-ads"></i></span><span class="ri"><span class="rn">Free 2x Luck</span><span class="rs" id="drwAdsSub">FREE 2X LUCK &amp; PACK</span></span><span class="rt"><span class="vl">3 TERSISA</span></span></div>
+            <div class="row menu-card" id="drwDailyBtn" style="--rc:var(--emerald)" role="button" tabindex="0"><span class="pod"><i class="ic i-daily"></i></span><span class="ri"><span class="rn">7-Day Login</span><span class="rs" id="drwDailySub">CLAIM DAILY REWARD</span></span><span class="rt"><span class="vl">DAY 3/7</span></span></div>
+            <div class="row menu-card" id="drwAdsBtn" style="--rc:var(--gold)" role="button" tabindex="0"><span class="pod"><i class="ic i-ads"></i></span><span class="ri"><span class="rn">Free 2x Luck</span><span class="rs" id="drwAdsSub">FREE 2X LUCK &amp; PACK</span></span><span class="rt"><span class="vl">3 LEFT</span></span></div>
             <div class="row menu-card" id="drwGlBtn" style="--rc:var(--cyan)" role="button" tabindex="0"><span class="pod"><i class="ic i-gl"></i></span><span class="ri"><span class="rn">Global Luck</span><span class="rs" id="drwGlSub">PENGALI LUCK KOMUNITAS</span></span><span class="rt"><span class="vl">${Math.round(_luckMult)}× · 12:40</span></span></div>
             <div class="row menu-card" id="drwWeatherBtn" style="--rc:var(--purple)" role="button" tabindex="0"><span class="pod"><i class="ic i-wx"></i></span><span class="ri"><span class="rn">Weather Synth</span><span class="rs" id="drwWeatherSub">ATMOSPHERIC BUFF</span></span><span class="rt"><span class="vl">CLEAR SKY</span></span></div>
           </div>
@@ -2267,8 +2267,8 @@ function renderLobby(){
           <div class="fb" id="fb3">
             <div class="row menu-card" id="drwTraitBtn" style="--rc:var(--cyan)" role="button" tabindex="0"><span class="pod"><i class="ic i-trait"></i></span><span class="ri"><span class="rn">Trait Overclock</span><span class="rs" id="drwTraitSub">OPTIMASI STAT PASIF</span></span><span class="rt"><span class="vl">+18%</span></span></div>
             <div class="row menu-card" id="drwSkillBtn" style="--rc:var(--emerald)" role="button" tabindex="0"><span class="pod"><i class="ic i-skill"></i></span><span class="ri"><span class="rn">Skill Tree</span><span class="rs" id="drwSkillSub">SPEND SKILL POINTS ON LUCK &amp; SPEED</span></span><span class="rt"><span class="vl" id="drwSkillSp">0 SP</span></span></div>
-            <div class="row menu-card" id="drwIndexBtn" style="--rc:var(--emerald)" role="button" tabindex="0"><span class="pod"><i class="ic i-index"></i></span><span class="ri"><span class="rn">Neural Archive</span><span class="rs" id="drwIndexSub">KATALOG KARTU</span></span><span class="rt"><span class="vl">148/312</span></span></div>
-            <div class="row menu-card" id="drwSettingsBtn" style="--rc:var(--ice)" role="button" tabindex="0"><span class="pod"><i class="ic i-set"></i></span><span class="ri"><span class="rn">SETTINGS</span><span class="rs">SUARA · TEMPUR · BAHASA · CLOUD</span></span><span class="rt"><span class="vl">1×</span></span></div>
+            <div class="row menu-card" id="drwIndexBtn" style="--rc:var(--emerald)" role="button" tabindex="0"><span class="pod"><i class="ic i-index"></i></span><span class="ri"><span class="rn">Neural Archive</span><span class="rs" id="drwIndexSub">CARD CATALOG</span></span><span class="rt"><span class="vl">148/312</span></span></div>
+            <div class="row menu-card" id="drwSettingsBtn" style="--rc:var(--ice)" role="button" tabindex="0"><span class="pod"><i class="ic i-set"></i></span><span class="ri"><span class="rn">SETTINGS</span><span class="rs">AUDIO · COMBAT · LANGUAGE · CLOUD</span></span><span class="rt"><span class="vl">1×</span></span></div>
             <div class="row menu-card" id="drwChangelogBtn" style="--rc:var(--gold)" role="button" tabindex="0"><span class="pod"><i class="ic i-log"></i></span><span class="ri"><span class="rn">CHANGELOG</span><span class="rs">RIWAYAT PEMBARUAN</span></span><span class="rt"><span class="vl">v1.4.2</span></span></div>
           </div>
         </section>
@@ -2450,7 +2450,7 @@ window.l12UpdateWeatherDock = l12UpdateWeatherDock;
       gb.classList.toggle("stack", glOn && !glMaxed);
       gb.disabled = glMaxed;
       if (glCan) gb.removeAttribute("aria-disabled"); else gb.setAttribute("aria-disabled", "true");
-      gb.title = glCan ? (glMaxed ? "Global Luck sudah MAX" : "Beli / tumpuk Global Luck") : ("Gems kurang — butuh " + glCost);
+      gb.title = glCan ? (glMaxed ? "Global Luck already MAX" : "Buy / stack Global Luck") : ("Not enough Gems — need " + glCost);
     }
   }, 1000);
 
@@ -2470,7 +2470,7 @@ window.l12UpdateWeatherDock = l12UpdateWeatherDock;
   };
   /* +10x GLOBAL LUCK -> fungsi beli asli panels.js, bukan duplikat logika.
      Tombol SENGAJA tidak di-disable saat gems kurang: buyGlobalLuck() sudah
-     memberi toast 'GEMS TIDAK CUKUP · Butuh N Gems' (panels.js:3524). Kalau
+     memberi toast 'NOT ENOUGH GEMS · Butuh N Gems' (panels.js:3524). Kalau
      disabled, klik tidak sampai ke sana dan tombol cuma diam -> dikira rusak.
      Yang MAXED memang disabled (tidak ada yang bisa dibeli lagi).
      buyGlobalLuck() async: renderLobby() dipanggil SESUDAH janji selesai, tidak
@@ -2568,7 +2568,7 @@ window.l12UpdateWeatherDock = l12UpdateWeatherDock;
     const dailySub = document.getElementById('drwDailySub');
     if (dailySub) {
       const isReady = (typeof state !== 'undefined' && state && typeof todayStr === 'function') ? (state.lastClaim !== todayStr()) : false;
-      dailySub.textContent = isReady ? 'SIAP DIKLAIM!' : 'SUDAH DIKLAIM HARI INI';
+      dailySub.textContent = isReady ? 'READY TO CLAIM!' : 'ALREADY CLAIMED TODAY';
       dailySub.style.color = isReady ? '#34d399' : '#64748b';
     }
   } catch(e) {}
@@ -2582,7 +2582,7 @@ window.l12UpdateWeatherDock = l12UpdateWeatherDock;
         adsSub.textContent = '2x LUCK AKTIF (' + Math.ceil(luckMs / 60000) + 'm)';
         adsSub.style.color = '#fbbf24';
       } else {
-        adsSub.textContent = 'TONTON ADS UNTUK 2x LUCK';
+        adsSub.textContent = 'WATCH ADS FOR 2x LUCK';
       }
     }
   } catch(e) {}
@@ -2742,7 +2742,7 @@ function _l12RenderWxCards(activeWeatherId) {
            style="--wc:${wCol}"
            data-wc="${cid}"
            onclick="if(typeof openWeatherMachine==='function')openWeatherMachine();"
-           title="${c.name} [${wName}] ? ${tier} ? 1 in ${chanceStr} (${isOwned ? 'OWNED' : 'BELUM MILIKI'})">
+           title="${c.name} [${wName}] ? ${tier} ? 1 in ${chanceStr} (${isOwned ? 'OWNED' : 'NOT OWNED'})">
         <img src="${thumb}" alt="${c.name}" loading="lazy">
         <span class="wx-c-tag">${tag}</span>
         <span class="wx-c-ch">1:${chanceStr}</span>
@@ -2796,7 +2796,7 @@ function _l12RefreshPotionTray(type) {
     ? (Array.isArray(state && state.luckPots) ? state.luckPots : [0,0,0])
     : (Array.isArray(state && state.speedPots) ? state.speedPots : [0,0,0]);
   const isLuck = t === "luck";
-  const title = isLuck ? "?? LUCK POTION (PILIH LEVEL)" : "? SPEED POTION (PILIH LEVEL)";
+  const title = isLuck ? "?? LUCK POTION (SELECT LEVEL)" : "? SPEED POTION (SELECT LEVEL)";
   const effs = isLuck
     ? ["+3 LUCK", "+5 & +10%", "+10 & +20%"]
     : ["+0.2? SPD", "+0.5? SPD", "+1.0? SPD"];
@@ -2804,7 +2804,7 @@ function _l12RefreshPotionTray(type) {
   tray.innerHTML = `
     <div class="pot-tray-head">
       <span>${title}</span>
-      <button class="pot-tray-close" type="button" onclick="window.l12ClosePotionTray()" title="Tutup" style="background:none;border:0;color:var(--ice);cursor:pointer;font-size:11px;padding:0 4px;">?</button>
+      <button class="pot-tray-close" type="button" onclick="window.l12ClosePotionTray()" title="Close" style="background:none;border:0;color:var(--ice);cursor:pointer;font-size:11px;padding:0 4px;">?</button>
     </div>
     <div class="pot-tray-grid">
       ${[1, 2, 3].map(lv => {
@@ -2813,14 +2813,14 @@ function _l12RefreshPotionTray(type) {
         return `
           <button class="pot-lv-btn ${canUse ? 'ready' : 'empty'}" type="button"
                   onclick="window.l12InvokePotion('${t}', ${lv})"
-                  title="${canUse ? 'Pakai 1 botol Level ' + lv + ' (+5 menit)' : 'Stok habis ? dapatkan di Shop / Tower'}">
+                  title="${canUse ? 'Use 1 bottle Level ' + lv + ' (+5 min)' : 'Out of stock ? get more in Shop / Tower'}">
             <div style="display:flex;align-items:center;justify-content:space-between;width:100%;font-size:8.5px;">
               <b style="color:var(--gold)">LV.${lv}</b>
               <span style="font-family:var(--mono);color:${canUse ? '#6ee7b7' : '#94a3b8'}">x${stk}</span>
             </div>
             <img src="assets/images/pot-${t}-${lv}.webp" alt="L${lv}" style="width:22px;height:22px;object-fit:contain;">
             <span style="font-size:8px;color:var(--ice);white-space:nowrap;">${effs[lv - 1]}</span>
-            <span style="font-size:7.5px;font-weight:800;padding:1px 5px;background:${canUse ? 'rgba(16,185,129,0.22)' : 'rgba(148,163,184,0.12)'};border:1px solid ${canUse ? 'rgba(52,211,153,0.55)' : 'rgba(148,163,184,0.25)'};color:${canUse ? '#6ee7b7' : '#94a3b8'}">${canUse ? '+ PAKAI' : 'HABIS'}</span>
+            <span style="font-size:7.5px;font-weight:800;padding:1px 5px;background:${canUse ? 'rgba(16,185,129,0.22)' : 'rgba(148,163,184,0.12)'};border:1px solid ${canUse ? 'rgba(52,211,153,0.55)' : 'rgba(148,163,184,0.25)'};color:${canUse ? '#6ee7b7' : '#94a3b8'}">${canUse ? '+ PAKAI' : 'EMPTY'}</span>
           </button>
         `;
       }).join("")}
@@ -3183,13 +3183,13 @@ function renderRebirthModal(){
             </svg>
           </div>
           <div class="rb-rank-badge">
-            <span class="rb-rank-lbl">${isEn ? 'CURRENT CYCLE' : 'SIKLUS SAAT INI'}</span>
+            <span class="rb-rank-lbl">${isEn ? 'CURRENT CYCLE' : 'CURRENT CYCLE'}</span>
             <span class="rb-rank-val">R${cnt}</span>
           </div>
         </div>
         <div class="rb-sigil-meta">
           <span class="rb-cycle-tag">HUNTER ASCENSION</span>
-          <span class="rb-cycle-sub">${isEn ? 'CYCLE RANK' : 'PANGKAT SIKLUS'} ${cnt} · LEVEL ${typeof state !== 'undefined' && state?.playerLv ? state.playerLv : 1}</span>
+          <span class="rb-cycle-sub">${isEn ? 'CYCLE RANK' : 'CYCLE RANK'} ${cnt} · LEVEL ${typeof state !== 'undefined' && state?.playerLv ? state.playerLv : 1}</span>
         </div>
       </div>
 
@@ -3198,7 +3198,7 @@ function renderRebirthModal(){
         <!-- Stat Transition Cards: CURRENT -> NEXT -->
         <div class="rb-mult-compare">
           <div class="rb-compare-box prev">
-            <span class="rcb-tag">${isEn ? 'CURRENT PERK' : 'BONUS SAAT INI'}</span>
+            <span class="rcb-tag">${isEn ? 'CURRENT PERK' : 'CURRENT BONUS'}</span>
             <span class="rcb-val">×${mult}</span>
             <span class="rcb-desc">${isEn ? 'LUCK MULTIPLIER' : 'PENGALI LUCK'}</span>
           </div>
@@ -3206,16 +3206,16 @@ function renderRebirthModal(){
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
           </div>
           <div class="rb-compare-box next">
-            <span class="rcb-tag">${isEn ? 'NEXT ASCENSION' : 'KENAIKAN BERIKUTNYA'}</span>
+            <span class="rcb-tag">${isEn ? 'NEXT ASCENSION' : 'NEXT ASCENSION'}</span>
             <span class="rcb-val">×${nextMult}</span>
-            <span class="rcb-desc">${isEn ? '+100% PERMANENT BOOST' : '+100% BONUS PERMANEN'}</span>
+            <span class="rcb-desc">${isEn ? '+100% PERMANENT BOOST' : '+100% PERMANENT BONUS'}</span>
           </div>
         </div>
 
         <!-- Progress & Fuel Bar -->
         <div class="rb-progress-card">
           <div class="rb-pc-head">
-            <span class="rb-pc-lbl"><span class="rb-glow-dot"></span>${isEn ? 'ESSENCE POOL CHARGE' : 'PENGISIAN POOL ESSENCE'}</span>
+            <span class="rb-pc-lbl"><span class="rb-glow-dot"></span>${isEn ? 'ESSENCE POOL CHARGE' : 'ESSENCE POOL CHARGE'}</span>
             <span class="rb-pc-nums"><b>${fmtEs}</b> / ${fmtTh}</span>
           </div>
           <div class="rb-bar-wrap">
@@ -3225,7 +3225,7 @@ function renderRebirthModal(){
           </div>
           <div class="rb-pc-foot">
             <span class="rb-foot-pct">${pct}% ${isEn ? 'CHARGED' : 'TERISI'}</span>
-            <span class="rb-foot-need ${ready ? 'ready' : ''}">${ready ? (isEn ? '✓ THRESHOLD REACHED · READY TO ASCEND' : '✓ AMBANG TERCAPAI · SIAP REBIRTH') : (isEn ? `NEED ${fmtNeed} MORE ESSENCE` : `BUTUH ${fmtNeed} ESSENCE LAGI`)}</span>
+            <span class="rb-foot-need ${ready ? 'ready' : ''}">${ready ? (isEn ? '✓ THRESHOLD REACHED · READY TO ASCEND' : '✓ THRESHOLD REACHED · READY TO REBIRTH') : (isEn ? `NEED ${fmtNeed} MORE ESSENCE` : `BUTUH ${fmtNeed} MORE ESSENCE`)}</span>
           </div>
         </div>
 
@@ -3245,7 +3245,7 @@ function renderRebirthModal(){
         <div class="rb-action-head">
           <span class="rb-ah-status ${ready ? 'ready' : 'charging'}">
             <span class="rb-status-dot"></span>
-            ${ready ? (isEn ? 'READY TO ASCEND' : 'SIAP REBIRTH') : (isEn ? 'CHARGING ESSENCE' : 'MENGISI ESSENCE')}
+            ${ready ? (isEn ? 'READY TO ASCEND' : 'READY TO REBIRTH') : (isEn ? 'CHARGING ESSENCE' : 'MENGISI ESSENCE')}
           </span>
           <span class="rb-ah-title">ASCENSION PROTOCOL</span>
         </div>
@@ -3253,7 +3253,7 @@ function renderRebirthModal(){
         <div class="rb-perks-list">
           <div class="rb-perk-item">
             <span class="rpi-check">✓</span>
-            <span>${isEn ? '<b>Permanent:</b> Luck multiplier rises to ' : '<b>Permanen:</b> Luck multiplier naik ke '}<b>×${nextMult}</b></span>
+            <span>${isEn ? '<b>Permanent:</b> Luck multiplier rises to ' : '<b>Permanent:</b> Luck multiplier rises to '}<b>×${nextMult}</b></span>
           </div>
           <div class="rb-perk-item">
             <span class="rpi-check">✓</span>
@@ -3261,7 +3261,7 @@ function renderRebirthModal(){
           </div>
           <div class="rb-perk-item">
             <span class="rpi-check">✓</span>
-            <span>${isEn ? '<b>Prestige:</b> Rebirth rank showcased on Hunter Profile' : '<b>Pangkat:</b> Rank Rebirth tampil di Profil Hunter'}</span>
+            <span>${isEn ? '<b>Prestige:</b> Rebirth rank showcased on Hunter Profile' : '<b>Rank:</b> Rebirth Rank shown on Hunter Profile'}</span>
           </div>
         </div>
 
@@ -3269,9 +3269,9 @@ function renderRebirthModal(){
           <span class="reb-btn-glow"></span>
           <span class="reb-btn-content">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 2v20m-7-7 7-7 7 7"/></svg>
-            <span>${ready ? (isEn ? 'ACTIVATE REBIRTH' : 'AKTIFKAN REBIRTH') : (isEn ? 'INSUFFICIENT ESSENCE' : 'ESSENCE KURANG')}</span>
+            <span>${ready ? (isEn ? 'ACTIVATE REBIRTH' : 'AKTIFKAN REBIRTH') : (isEn ? 'INSUFFICIENT ESSENCE' : 'NOT ENOUGH ESSENCE')}</span>
           </span>
-          <span class="reb-btn-sub">${ready ? (isEn ? `ASCEND TO ×${nextMult} LUCK` : `NAIK KE ×${nextMult} LUCK`) : `${pct}% ${isEn ? 'CHARGED' : 'TERISI'}`}</span>
+          <span class="reb-btn-sub">${ready ? (isEn ? `ASCEND TO ×${nextMult} LUCK` : `RISE TO ×${nextMult} LUCK`) : `${pct}% ${isEn ? 'CHARGED' : 'TERISI'}`}</span>
         </button>
       </div>
     </div>
@@ -3308,7 +3308,7 @@ function executeRebirthFromModal(){
     const fmtNeed = (typeof fmt === 'function' ? fmt(need) : need);
     if (typeof toast === 'function') {
       toast(
-        isEn ? 'INSUFFICIENT ESSENCE' : 'ESSENCE KURANG',
+        isEn ? 'INSUFFICIENT ESSENCE' : 'NOT ENOUGH ESSENCE',
         isEn ? ('Need ' + fmtNeed + ' more essence') : ('Butuh ' + fmtNeed + ' lagi'),
         '#a855f7'
       );
@@ -3384,7 +3384,7 @@ function executeRebirthFromModal(){
         </div>
         <div class="rb-cutin-title">REBIRTH ASCENSION</div>
         <div class="rb-cutin-cycle">CYCLE R${nextCnt}</div>
-        <div class="rb-cutin-cycle-sub">${isEn ? 'CONSCIOUSNESS ELEVATED' : 'KESADARAN TINGKAT TINGGI TERCAPAI'}</div>
+        <div class="rb-cutin-cycle-sub">${isEn ? 'CONSCIOUSNESS ELEVATED' : 'HIGHER CONSCIOUSNESS ACHIEVED'}</div>
         <div class="rb-cutin-mult">
           <span class="rcm-lbl">LUCK MULTIPLIER:</span>
           <span class="rcm-val">×${oldMult} <i class="rcm-arr">➔</i> <b>×${nextMult}</b></span>
@@ -3412,7 +3412,7 @@ function executeRebirthFromModal(){
     if (typeof toast === 'function') {
       toast(
         isEn ? 'ASCENSION SUCCESS!' : 'REBIRTH BERHASIL!',
-        isEn ? ('Luck multiplier increased permanently to ×' + nextMult) : ('Luck multiplier naik permanen ke ×' + nextMult),
+        isEn ? ('Luck multiplier increased permanently to ×' + nextMult) : ('Luck multiplier permanently rises to ×' + nextMult),
         '#c084fc'
       );
     }
