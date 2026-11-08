@@ -3305,80 +3305,198 @@ function activeChap(){
 const LEVEL_COUNT=STORY_BIBLE.levels.length;
 const MASTER_CARD_INDEX=STORY_BIBLE.units.map(u=>({char_id:u.id,name:u.name,tier:(u.noGacha&&!u.chance)?u.tier:null,chance:u.chance||null,type:u.type,base_hp:u.hp,base_atk:u.atk,sprite_asset:u.art,art_image:u.art,pos:u.pos||null,fullArt:!!u.fullArt,passive:{name:u.skill,desc:u.desc},noGacha:!!u.noGacha,weatherOnly:u.weatherOnly||null,raidBoss:!!u.raidBoss,towerBoss:!!u.towerBoss,isStoryEnemy:!!(u.noGacha&&!u.chance)}));
 
-/* =============== PREMIUM SHOP SYSTEM =============== */
+/* =============== PREMIUM EXCHANGE (port _tmp/proto_premium_shop_v1.html) ===============
+   Markup: #premiumModal.psx-modal (index.html) — dua panel katalog + detail.
+   CSS: css/premium-exchange.css. Banner masuk/keluar = #premiumCurtain (pola
+   Backpack, hanya nama banner yang diganti). Semua teks English. */
 var premCurTab = 'all';
+var pxSelId = 'global_luck';
+var pxQty = 1;
 
 var PREMIUM_PACKS = [
-  { id: 'global_luck', cat: 'all', type: 'global_luck', name: 'GLOBAL LUCK', price: 1200, img: 'assets/images/weather-potion.webp?v=1', badge: 'SERVER EVENT', color: '#34d399', stats: ['10× SERVER LUCK', 'DURATION 60 MIN', 'MAX 100×'], desc: 'Activate 10x LUCK for ALL players on the server for 1 HOUR! Your username will be shown as the activator.' },
-  // PET & ARTEFAK
-  { id: 'tome-infinity', cat: 'equip', type: 'art', name: 'TOME OF INFINITY', price: 3000, img: 'assets/artifacts/tome-infinity.webp?v=1', badge: 'MYTHIC ARTIFACT', color: '#38bdf8', stats: ['+150 FLAT LUCK', '+200% LUCK', 'PERMANENT'], desc: 'Unlimited mystic tome! Grants +150 Flat Luck & +200% Luck permanently.' },
-  { id: 'cyber-kitsune', cat: 'equip', type: 'pet', name: 'CYBER KITSUNE', price: 10000, img: 'assets/pets/cyber-kitsune.webp?v=1', badge: 'SUPREME PET', color: '#f43f5e', stats: ['+250 FLAT LUCK', '+300% LUCK', 'SUPREME TIER'], desc: 'Rubah legendaris masa depan! Memberikan +250 Flat Luck & +300% Luck saat dipasang.' },
+  { id: 'global_luck', cat: 'event', type: 'global_luck', name: 'GLOBAL LUCK x10', price: 1200, img: 'assets/images/weather-potion.webp?v=1', badge: 'SERVER EVENT', tier: 'WORLD BUFF', color: '#34d399', stats: ['10x SERVER LUCK', '60 MINUTES', 'MAX 100x'], desc: 'Activate 10x LUCK for every player on the server for 1 HOUR. Your username is shown as the activator.' },
+  // LOADOUT
+  { id: 'tome-infinity', cat: 'equip', type: 'art', name: 'TOME OF INFINITY', price: 3000, img: 'assets/artifacts/tome-infinity.webp?v=1', badge: 'MYTHIC ARTIFACT', tier: 'ARTIFACT', color: '#38bdf8', stats: ['+150 FLAT LUCK', '+200% LUCK', 'PERMANENT'], desc: 'Unlimited mystic tome. Grants +150 Flat Luck and +200% Luck permanently once equipped.' },
+  { id: 'cyber-kitsune', cat: 'equip', type: 'pet', name: 'CYBER KITSUNE', price: 10000, img: 'assets/pets/cyber-kitsune.webp?v=1', badge: 'SUPREME PET', tier: 'PET', color: '#f43f5e', stats: ['+250 FLAT LUCK', '+300% LUCK', 'SUPREME TIER'], desc: 'Legendary future fox. Grants +250 Flat Luck and +300% Luck while equipped as your companion.' },
 
-  // INSTAN ROLL PACKS
-  { id: 'r5k', cat: 'pack', type: 'pack', name: 'INSTANT ROLL 5.000', amount: 5000, price: 25, img: 'assets/images/instanpack-5k.webp?v=trans1', badge: 'STARTER PACK', color: '#38bdf8', stats: ['5.000 PULLS', 'INSTANT LOOT', 'MULTI-BUY'], desc: '5.000 instant card pulls into your Backpack inventory.' },
-  { id: 'r10k', cat: 'pack', type: 'pack', name: 'INSTANT ROLL 10.000', amount: 10000, price: 50, img: 'assets/images/instanpack-10k.webp?v=trans1', badge: 'POPULAR PACK', color: '#2dd4bf', stats: ['10.000 PULLS', 'INSTANT LOOT', 'MULTI-BUY'], desc: '10.000 instant card pulls into your Backpack inventory.' },
-  { id: 'r25k', cat: 'pack', type: 'pack', name: 'INSTANT ROLL 25.000', amount: 25000, price: 100, img: 'assets/images/instanpack-25k.webp?v=trans1', badge: 'VALUE PACK', color: '#a855f7', stats: ['25.000 PULLS', 'BEST VALUE', 'MULTI-BUY'], desc: '25.000 instant card pulls into your Backpack inventory.' },
-  { id: 'r50k', cat: 'pack', type: 'pack', name: 'INSTANT ROLL 50.000', amount: 50000, price: 150, img: 'assets/images/instanpack-50k.webp?v=trans1', badge: 'EPIC PACK', color: '#f59e0b', stats: ['50.000 PULLS', 'HIGH YIELD', 'MULTI-BUY'], desc: '50.000 instant card pulls into your Backpack inventory.' },
-  { id: 'r100k', cat: 'pack', type: 'pack', name: 'INSTANT ROLL 100.000', amount: 100000, price: 250, img: 'assets/images/instanpack-100k.webp?v=trans1', badge: 'ULTIMATE PACK', color: '#ec4899', stats: ['100.000 PULLS', 'MAX OVERDRIVE', 'MULTI-BUY'], desc: '100.000 instant card pulls into your Backpack inventory.' },
+  // INSTANT ROLL PACKS
+  { id: 'r5k', cat: 'pack', type: 'pack', name: 'INSTANT ROLL 5,000', amount: 5000, price: 25, img: 'assets/images/instanpack-5k.webp?v=trans1', badge: 'STARTER PACK', tier: 'PACK', color: '#38bdf8', stats: ['5,000 PULLS', 'INSTANT LOOT', 'MULTI-BUY'], desc: '5,000 instant card pulls delivered straight into your Backpack inventory.' },
+  { id: 'r10k', cat: 'pack', type: 'pack', name: 'INSTANT ROLL 10,000', amount: 10000, price: 50, img: 'assets/images/instanpack-10k.webp?v=trans1', badge: 'POPULAR PACK', tier: 'PACK', color: '#2dd4bf', stats: ['10,000 PULLS', 'INSTANT LOOT', 'MULTI-BUY'], desc: '10,000 instant card pulls delivered straight into your Backpack inventory.' },
+  { id: 'r25k', cat: 'pack', type: 'pack', name: 'INSTANT ROLL 25,000', amount: 25000, price: 100, img: 'assets/images/instanpack-25k.webp?v=trans1', badge: 'VALUE PACK', tier: 'PACK', color: '#a855f7', stats: ['25,000 PULLS', 'BEST VALUE', 'MULTI-BUY'], desc: '25,000 instant card pulls delivered straight into your Backpack inventory.' },
+  { id: 'r50k', cat: 'pack', type: 'pack', name: 'INSTANT ROLL 50,000', amount: 50000, price: 150, img: 'assets/images/instanpack-50k.webp?v=trans1', badge: 'EPIC PACK', tier: 'PACK', color: '#f59e0b', stats: ['50,000 PULLS', 'HIGH YIELD', 'MULTI-BUY'], desc: '50,000 instant card pulls delivered straight into your Backpack inventory.' },
+  { id: 'r100k', cat: 'pack', type: 'pack', name: 'INSTANT ROLL 100,000', amount: 100000, price: 250, img: 'assets/images/instanpack-100k.webp?v=trans1', badge: 'ULTIMATE PACK', tier: 'PACK', color: '#ec4899', stats: ['100,000 PULLS', 'MAX OVERDRIVE', 'MULTI-BUY'], desc: '100,000 instant card pulls delivered straight into your Backpack inventory.' },
 
-  // WEATHER INSTAN (Hanya Rare sampai Awakened)
-  { id: 'w_eclipse', cat: 'weather', type: 'weather', targetWeather: 'eclipse', name: 'INSTAN ECLIPSE', price: 150, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', stats: ['+300% LUCK', '+200% SPEED', '30 MENIT'], desc: 'Activate ECLIPSE weather instantly for 30 minutes! +300% Luck & +200% Roll Speed.' },
-  { id: 'w_doodle', cat: 'weather', type: 'weather', targetWeather: 'doodle', name: 'INSTAN DOODLE', price: 200, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', stats: ['+400% LUCK', '+250% SPEED', '30 MENIT'], desc: 'Activate DOODLE weather instantly for 30 minutes! +400% Luck & +250% Roll Speed.' },
-  { id: 'w_glitch', cat: 'weather', type: 'weather', targetWeather: 'glitch', name: 'INSTAN GLITCH', price: 300, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', stats: ['+500% LUCK', '+300% SPEED', '30 MENIT'], desc: 'Activate GLITCH weather instantly for 30 minutes! +500% Luck & +300% Roll Speed.' },
-  { id: 'w_goofy', cat: 'weather', type: 'weather', targetWeather: 'goofy', name: 'INSTAN GOOFY', price: 450, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', stats: ['+600% LUCK', '+350% SPEED', '30 MENIT'], desc: 'Activate GOOFY weather instantly for 30 minutes! +600% Luck & +350% Roll Speed.' },
-  { id: 'w_arcane', cat: 'weather', type: 'weather', targetWeather: 'arcane', name: 'INSTAN ARCANE', price: 750, img: 'assets/images/weather-potion.webp?v=1', badge: 'ARCANE WEATHER', stats: ['+900% LUCK', '+500% SPEED', '30 MENIT'], desc: 'Activate the ARCANE magic anomaly instantly for 30 minutes! +900% Luck & +500% Roll Speed.' },
-  { id: 'w_awakened', cat: 'weather', type: 'weather', targetWeather: 'awakened', name: 'INSTAN AWAKENED', price: 1500, img: 'assets/images/weather-potion.webp?v=1', badge: 'SUPREME AWAKENED', stats: ['+1400% LUCK', '+700% SPEED', '30 MENIT'], desc: 'The universe\'s highest power AWAKENED instantly for 30 minutes! +1400% Luck & +700% Roll Speed.' }
+  // WEATHER ANOMALY (rare .. awakened only)
+  { id: 'w_eclipse', cat: 'weather', type: 'weather', targetWeather: 'eclipse', name: 'INSTANT ECLIPSE', price: 150, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', tier: 'ECLIPSE', stats: ['+300% LUCK', '+200% SPEED', '30 MINUTES'], desc: 'Summon the ECLIPSE anomaly server-wide for 30 minutes. +300% Luck, +200% roll speed.' },
+  { id: 'w_doodle', cat: 'weather', type: 'weather', targetWeather: 'doodle', name: 'INSTANT DOODLE', price: 200, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', tier: 'DOODLE', stats: ['+400% LUCK', '+250% SPEED', '30 MINUTES'], desc: 'Summon the DOODLE anomaly server-wide for 30 minutes. +400% Luck, +250% roll speed.' },
+  { id: 'w_glitch', cat: 'weather', type: 'weather', targetWeather: 'glitch', name: 'INSTANT GLITCH', price: 300, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', tier: 'GLITCH', stats: ['+500% LUCK', '+300% SPEED', '30 MINUTES'], desc: 'Summon the GLITCH anomaly server-wide for 30 minutes. +500% Luck, +300% roll speed.' },
+  { id: 'w_goofy', cat: 'weather', type: 'weather', targetWeather: 'goofy', name: 'INSTANT GOOFY', price: 450, img: 'assets/images/weather-potion.webp?v=1', badge: 'RARE WEATHER', tier: 'GOOFY', stats: ['+600% LUCK', '+350% SPEED', '30 MINUTES'], desc: 'Summon the GOOFY anomaly server-wide for 30 minutes. +600% Luck, +350% roll speed.' },
+  { id: 'w_arcane', cat: 'weather', type: 'weather', targetWeather: 'arcane', name: 'INSTANT ARCANE', price: 750, img: 'assets/images/weather-potion.webp?v=1', badge: 'ARCANE WEATHER', tier: 'ARCANE', stats: ['+900% LUCK', '+500% SPEED', '30 MINUTES'], desc: 'Summon the ARCANE magic anomaly server-wide for 30 minutes. +900% Luck, +500% roll speed.' },
+  { id: 'w_awakened', cat: 'weather', type: 'weather', targetWeather: 'awakened', name: 'INSTANT AWAKENED', price: 1500, img: 'assets/images/weather-potion.webp?v=1', badge: 'SUPREME AWAKENED', tier: 'AWAKENED', stats: ['+1400% LUCK', '+700% SPEED', '30 MINUTES'], desc: 'Unleash the highest power on the server for 30 minutes. +1400% Luck, +700% roll speed.' }
 ];
 
-/* ---- Isi popup konfirmasi pembelian item toko premium ---- */
+var PX_GROUPS = [
+  { key: 'event',   label: 'SERVER EVENT',    note: 'WORLD BUFF' },
+  { key: 'pack',    label: 'INSTANT ROLL',    note: 'BACKPACK' },
+  { key: 'equip',   label: 'LOADOUT',         note: 'PERMANENT' },
+  { key: 'weather', label: 'WEATHER ANOMALY', note: '30 MIN' }
+];
+var PX_QTY_LIST = [1, 5, 10, 25];
+
+function pxEsc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]); }); }
+function pxNum(n){ return (n == null ? '0' : Number(n).toLocaleString('en-US')); }
+function pxItems(){ return (typeof PREMIUM_PACKS !== 'undefined') ? PREMIUM_PACKS : []; }
+function pxFiltered(){
+  var items = pxItems();
+  if (premCurTab === 'all') return items.slice();
+  return items.filter(function(i){ return i.cat === premCurTab; });
+}
+function pxSelItem(){
+  var items = pxItems();
+  return items.find(function(i){ return i.id === pxSelId; }) || pxFiltered()[0] || items[0];
+}
+function pxPullsPerGem(it){ return (it.type === 'pack' && it.price) ? Math.round(it.amount / it.price) : 0; }
+function pxGlobalLuckState(){
+  var gl = (typeof _globalLuckCache !== 'undefined' && _globalLuckCache) ? _globalLuckCache : null;
+  var active = !!(gl && gl.ends_at && Date.now() < new Date(gl.ends_at).getTime());
+  var maxed = active && (gl.multiplier || 10) >= (typeof GLOBAL_LUCK_MAX_MULT !== 'undefined' ? GLOBAL_LUCK_MAX_MULT : 100);
+  return { gl: gl, active: active, maxed: maxed };
+}
+function pxOwnedInfo(it){
+  if (it.type === 'global_luck') {
+    var s = pxGlobalLuckState();
+    return { owned: s.maxed, active: s.active, gl: s.gl };
+  }
+  if (it.type === 'art') return { owned: (state.artOwned || []).includes(it.id) };
+  if (it.type === 'pet') return { owned: (state.petOwned || []).includes(it.id) };
+  if (it.type === 'weather') {
+    var cur = (typeof activeWeatherId === 'function') ? activeWeatherId() : null;
+    return { owned: false, active: cur === it.targetWeather };
+  }
+  return { owned: false, stock: (state.rollPacks && state.rollPacks[it.id]) || 0 };
+}
+
+/* ---- Purchase confirmation popup body (English) ---- */
 function premConfirmBody(pack, qty) {
   qty = Math.max(1, parseInt(qty, 10) || 1);
   var gemIcon = '<img class="glcf-gem-icon" src="assets/images/premium-currency.webp" alt="" width="16" height="16">';
-  var efek = pack.desc || '';
-  var labelEfek = 'EFEK';
-  var rows = '';
+  var effect = pack.desc || '';
+  var effectLabel = 'EFFECT';
   if (pack.type === 'pack') {
-    /* chip ×1/×5/×10/×25 + total harga di tombol sudah memuat info jumlah —
-       row JUMLAH/TARIKAN lama membeberkan hal yang sama, dihapus */
     var totalPull = Number(pack.amount || 0) * qty;
-    efek = '<b>' + totalPull.toLocaleString('id-ID') + '</b> tarikan instan ke Backpack.';
+    effect = '<b>' + totalPull.toLocaleString('en-US') + '</b> instant card pulls into your Backpack.';
   } else if (pack.type === 'art') {
-    efek = 'Permanent artifact added to Backpack.';
+    effect = 'Permanent artifact added to your Backpack.';
   } else if (pack.type === 'pet') {
-    efek = 'Permanent pet added to Backpack.';
+    effect = 'Permanent pet added to your Backpack.';
   } else if (pack.type === 'weather') {
     var wName = (WEATHER[pack.targetWeather] && WEATHER[pack.targetWeather].name) || pack.name;
-    labelEfek = 'CUACA SERVER';
-    efek = '<b>' + wName + '</b> aktif untuk SEMUA pemain, 30 MENIT.';
+    effectLabel = 'SERVER WEATHER';
+    effect = '<b>' + wName + '</b> active for ALL players for 30 minutes.';
   }
   var totalPrice = Number(pack.price || 0) * qty;
   return '<div class="glcf-row"><span class="glcf-label">ITEM</span><span class="glcf-val"><b>' + pack.name + '</b>' +
       (pack.badge ? '<span class="glcf-badge">' + pack.badge + '</span>' : '') + '</span></div>' +
-    rows +
-    '<div class="glcf-row"><span class="glcf-label">' + labelEfek + '</span><span class="glcf-val">' + efek + '</span></div>' +
-    '<div class="glcf-row"><span class="glcf-label">HARGA</span><span class="glcf-val">' + gemIcon + ' ' + totalPrice + ' Gems</span></div>' +
-    '<div class="glcf-row"><span class="glcf-label">SALDO</span><span class="glcf-val">' + gemIcon + ' ' + fmt(state.premiumGems || 0) + ' Gems</span></div>' +
+    '<div class="glcf-row"><span class="glcf-label">' + effectLabel + '</span><span class="glcf-val">' + effect + '</span></div>' +
+    '<div class="glcf-row"><span class="glcf-label">PRICE</span><span class="glcf-val">' + gemIcon + ' ' + totalPrice.toLocaleString('en-US') + ' Gems</span></div>' +
+    '<div class="glcf-row"><span class="glcf-label">BALANCE</span><span class="glcf-val">' + gemIcon + ' ' + fmt(state.premiumGems || 0) + ' Gems</span></div>' +
     '<div class="glcf-warn">Charged immediately, <b>cannot be refunded</b>.</div>';
 }
 
-function premSetTab(tabKey){
-  premCurTab = tabKey || 'all';
-  var tabs = document.querySelectorAll('.prem-tab-btn');
-  tabs.forEach(function(b){
-    if(b.getAttribute('data-cat') === premCurTab) b.classList.add('on');
-    else b.classList.remove('on');
-  });
+/* ---- Banner hazard masuk/keluar (#premiumCurtain, pola Backpack) ---- */
+var _pxT = [];
+function pxClearT(){ for (var i = 0; i < _pxT.length; i++) clearTimeout(_pxT[i]); _pxT = []; }
+function pxSetCopy(mode){
+  var kick = document.getElementById('pxHZKick'), title = document.getElementById('pxHZTitle'),
+      sub = document.getElementById('pxHZSub'), foot = document.getElementById('pxHZFoot'),
+      serial = document.getElementById('pxHZSerial'), water = document.getElementById('pxHZWater');
+  if (serial) serial.textContent = (0x1000 + Math.floor(Math.random() * 0xefff)).toString(16).toUpperCase();
+  if (mode === 'open') {
+    if (kick) kick.innerHTML = '// MARKET <b>UPLINK</b>';
+    if (title) title.textContent = 'PREMIUM';
+    if (water) water.textContent = 'SHOP';
+    if (sub) sub.textContent = 'BLACK-MARKET EXCHANGE · GEMS · PACKS · RELICS';
+    if (foot) foot.textContent = 'SYNC MARKET';
+  } else {
+    if (kick) kick.innerHTML = '// LINK <b>STAND BY</b>';
+    if (title) title.textContent = 'CLOSING';
+    if (water) water.textContent = 'EXIT';
+    if (sub) sub.textContent = 'EXCHANGE DISCONNECTING · BALANCE SAVED';
+    if (foot) foot.textContent = 'CLOSE SESSION';
+  }
+}
+function pxBannerOpen(){
+  var c = document.getElementById('premiumCurtain');
+  if (!c) return;
+  pxClearT(); pxSetCopy('open');
+  c.className = ''; void c.offsetWidth;
+  c.classList.add('on', 'smooth', 'sweep');
+  _pxT.push(setTimeout(function(){ c.classList.add('revealed'); }, 1080));
+  _pxT.push(setTimeout(function(){ c.classList.remove('on', 'smooth', 'sweep', 'revealed'); }, 1800));
+}
+/* EXIT 3 fase: tirai MENUTUP -> konten disembunyikan -> tirai MEMBUKA.
+   Fase 3 wajib; tanpanya layar tertahan tertutup ("banner tidak kebuka"). */
+function pxBannerClose(onCovered){
+  var c = document.getElementById('premiumCurtain');
+  if (!c) { if (onCovered) onCovered(); return; }
+  pxClearT(); pxSetCopy('close');
+  c.className = ''; c.classList.add('on', 'smooth', 'revealed'); void c.offsetWidth;
+  c.classList.remove('revealed');
+  _pxT.push(setTimeout(function(){ if (onCovered) onCovered(); }, 560));
+  _pxT.push(setTimeout(function(){ c.classList.add('revealed'); }, 780));
+  _pxT.push(setTimeout(function(){ c.classList.remove('on', 'smooth', 'revealed'); }, 1560));
+}
+window.pxBannerOpen = pxBannerOpen;
+window.pxBannerClose = pxBannerClose;
+
+/* ---- Selectors ---- */
+function pxList() { return document.getElementById('psxList'); }
+function pxChoose(id) {
+  pxSelId = id;
+  var it = pxSelItem();
+  if (!it || it.type !== 'pack') pxQty = 1;
+  renderPremiumShop();
+  var shell = document.getElementById('psxShell');
+  if (shell) shell.classList.add('detail-open');
+}
+function pxChooseQty(q) {
+  pxQty = Math.max(1, parseInt(q, 10) || 1);
   renderPremiumShop();
 }
+function pxBack() {
+  var shell = document.getElementById('psxShell');
+  if (shell) shell.classList.remove('detail-open');
+}
+function premSetTab(tabKey){
+  premCurTab = tabKey || 'all';
+  var tabs = document.querySelectorAll('#psxTabs .psx-tab');
+  tabs.forEach(function(b){
+    if (b.getAttribute('data-cat') === premCurTab) b.classList.add('on');
+    else b.classList.remove('on');
+  });
+  var items = pxFiltered();
+  if (!items.some(function(i){ return i.id === pxSelId; }) && items.length) {
+    pxSelId = items[0].id;
+    pxQty = 1;
+  }
+  renderPremiumShop();
+  pxBack();
+}
 
+/* ---- Open / close ---- */
 function openPremiumShop(){
+  pxBack();
   renderPremiumShop();
   var modal = document.getElementById('premiumModal');
-  if(modal) modal.classList.add('show');
+  if (modal) modal.classList.add('show');
   document.body.classList.add('hide-docks-modal');
   var closeBtn = document.getElementById('premClose');
-  if(closeBtn) closeBtn.onclick = closePremiumShop;
-  if(modal) modal.onclick = function(e){ if(e.target.id === 'premiumModal') closePremiumShop(); };
+  if (closeBtn) closeBtn.onclick = closePremiumShop;
+  if (modal) modal.onclick = function(e){ if (e.target.id === 'premiumModal') closePremiumShop(); };
+  var backBtn = document.getElementById('psxBack');
+  if (backBtn) backBtn.onclick = pxBack;
+  bindPsxEvents();
+  pxBannerOpen();
   /* Sinkronkan saldo & inventori premium dari cloud saat membuka toko (tanpa menurunkan saldo/inventori lokal) */
   if (typeof currentUser !== 'undefined' && currentUser && window.CloudDB && typeof window.CloudDB.getUser === 'function') {
     window.CloudDB.getUser(currentUser).then(function(u){
@@ -3419,213 +3537,303 @@ function openPremiumShop(){
 }
 
 function closePremiumShop(){
-  var modal = document.getElementById('premiumModal');
-  if(modal) modal.classList.remove('show');
-  document.body.classList.remove('hide-docks-modal');
+  var doHide = function(){
+    var modal = document.getElementById('premiumModal');
+    if (modal) modal.classList.remove('show');
+    document.body.classList.remove('hide-docks-modal');
+    var shell = document.getElementById('psxShell');
+    if (shell) shell.classList.remove('detail-open');
+  };
+  if (typeof window.pxBannerClose === 'function') { try { window.pxBannerClose(doHide); } catch (e) { doHide(); } }
+  else doHide();
+}
+
+/* ---- Catalog row ---- */
+function pxRowHtml(it){
+  var on = it.id === pxSelId;
+  var owned = pxOwnedInfo(it).owned;
+  var hot = /STARTER|POPULAR|BEST|ULTIMATE/.test(it.badge || '');
+  var isCard = (it.type === 'pack' || it.type === 'art' || it.type === 'pet');
+  return '<button class="psx-row' + (on ? ' on' : '') + (owned ? ' dim' : '') + '" type="button" data-id="' + it.id + '" style="--ic:' + (it.color || '#f3e600') + '">' +
+    '<span class="psx-row-art' + (isCard ? ' card' : '') + '">' +
+      '<i class="halo"></i>' +
+      '<img src="' + it.img + '" alt="" decoding="async" loading="lazy">' +
+    '</span>' +
+    '<span class="psx-row-mid">' +
+      '<span class="psx-row-cat">' + pxEsc(String(it.cat).toUpperCase()) + ' · ' + pxEsc(it.tier || it.type.toUpperCase()) + '</span>' +
+      '<span class="psx-row-nm" title="' + pxEsc(it.name) + '">' + pxEsc(it.name) + '</span>' +
+      '<span class="psx-row-tag' + (hot ? ' hot' : '') + '">' + (owned ? 'OWNED' : pxEsc(it.badge || '')) + '</span>' +
+    '</span>' +
+    '<span class="psx-row-price"><b>' + pxNum(it.price) + '<i>G</i></b><span>GEMS</span></span>' +
+  '</button>';
+}
+
+function pxRenderCatalog(){
+  var list = pxList();
+  if (!list) return;
+  var items = pxFiltered();
+  var groups = PX_GROUPS.map(function(g){
+    return { g: g, rows: items.filter(function(i){ return i.cat === g.key; }) };
+  }).filter(function(x){ return x.rows.length; });
+
+  list.innerHTML = groups.map(function(x){
+    return '<div class="psx-grp">' +
+      '<div class="psx-grp-h"><b>' + pxEsc(x.g.label) + '</b><i></i><span>' + x.rows.length + ' · ' + pxEsc(x.g.note) + '</span></div>' +
+      x.rows.map(pxRowHtml).join('') +
+    '</div>';
+  }).join('') || '<div class="psx-grp-h" style="margin:12px 6px">NO ITEMS IN THIS CATEGORY</div>';
+
+  var catCount = document.getElementById('psxCatCount');
+  if (catCount) catCount.textContent = items.length + ' ITEMS';
+  var footCount = document.getElementById('psxFootCount');
+  if (footCount) footCount.textContent = pxItems().length + ' ITEMS';
+
+  var all = pxItems();
+  var counts = { all: all.length, pack: 0, weather: 0, equip: 0, event: 0 };
+  all.forEach(function(i){ if (counts[i.cat] !== undefined) counts[i.cat]++; });
+  var map = { psxCntAll: counts.all, psxCntPack: counts.pack, psxCntWeather: counts.weather, psxCntEquip: counts.equip, psxCntEvent: counts.event };
+  Object.keys(map).forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.textContent = map[id];
+  });
+}
+
+/* ---- Detail: qty option ---- */
+function pxOptHtml(it, q){
+  var isOn = pxQty === q;
+  var total = it.price * q;
+  var tag = q === 25 ? 'BEST DEAL' : (q === 10 ? 'VALUE' : (q === 5 ? 'POPULAR' : 'STARTER'));
+  return '<button class="psx-opt' + (isOn ? ' on' : '') + '" type="button" data-q="' + q + '">' +
+    '<span class="tag' + (isOn || q === 25 ? ' hot' : '') + '">' + (isOn ? 'SELECTED' : tag) + '</span>' +
+    '<span class="psx-opt-art"><img src="' + it.img + '" alt="" decoding="async"></span>' +
+    '<span class="psx-opt-q">x' + q + '</span>' +
+    '<span class="psx-opt-lbl">' + pxNum(it.amount * q) + ' PULLS</span>' +
+    '<span class="psx-opt-price"><img src="assets/images/premium-currency.webp" alt="Gem" width="10" height="10">' + pxNum(total) + '</span>' +
+  '</button>';
+}
+
+function pxRenderDetail(){
+  var body = document.getElementById('psxDetailBody');
+  if (!body) return;
+  var it = pxSelItem();
+  if (!it) { body.innerHTML = ''; return; }
+
+  var info = pxOwnedInfo(it);
+  var owned = !!info.owned;
+  var isPack = it.type === 'pack';
+  var qty = isPack ? pxQty : 1;
+  var total = it.price * qty;
+  var gemsNow = (state && state.premiumGems) || 0;
+
+  var chips = [
+    owned ? '<span class="psx-chip owned">OWNED</span>' : '<span class="psx-chip solid">' + pxEsc(it.badge || '') + '</span>',
+    it.type === 'weather' ? '<span class="psx-chip">SERVER-WIDE</span>' : '<span class="psx-chip">DELIVERED INSTANTLY</span>',
+    isPack ? '<span class="psx-chip">x' + qty + ' PURCHASE</span>'
+      : (it.type === 'global_luck' ? '<span class="psx-chip">60 MINUTES</span>' : '<span class="psx-chip">PERMANENT</span>')
+  ].join('');
+
+  var statLabels = ['PRIMARY', 'SECONDARY', 'DURATION'];
+  var stats = (it.stats || []).map(function(s, i){
+    return '<div class="psx-stat"><k>' + (statLabels[i] || 'DETAIL') + '</k><v>' + pxEsc(s) + '</v></div>';
+  }).join('');
+
+  var picker;
+  if (isPack) {
+    picker =
+      '<div class="psx-sec-h"><b>PICK A PACK</b><i></i><span>' + pxNum(it.amount) + ' PULLS EACH</span></div>' +
+      '<div class="psx-qty" id="psxQtyWrap">' + PX_QTY_LIST.map(function(q){ return pxOptHtml(it, q); }).join('') + '</div>' +
+      '<div class="psx-value">' +
+        '<div class="psx-value-h">VALUE · <b>' + pxNum(pxPullsPerGem(it)) + ' PULLS / GEM</b><i></i><span>PACK EFFICIENCY</span></div>' +
+        '<div class="psx-value-track"><div class="psx-value-fill" style="width:' + Math.min(100, Math.round(pxPullsPerGem(it) / 400 * 100)) + '%"></div></div>' +
+      '</div>' +
+      '<div class="psx-order">' +
+        '<div class="psx-order-h"><b>ORDER SUMMARY</b><i></i><span>SERVER VERIFIED</span></div>' +
+        '<div class="psx-order-row"><span>UNIT PRICE</span><b>' + pxNum(it.price) + ' G</b></div>' +
+        '<div class="psx-order-row"><span>QUANTITY</span><b>x' + qty + '</b></div>' +
+        '<div class="psx-order-row"><span>TOTAL PULLS</span><b>' + pxNum(it.amount * qty) + '</b></div>' +
+        '<div class="psx-order-row tot"><span>TOTAL COST</span><b>' + pxNum(total) + ' G</b></div>' +
+        '<div class="psx-order-row after"><span>BALANCE AFTER</span><b>' + pxNum(Math.max(0, gemsNow - total)) + ' G</b></div>' +
+      '</div>';
+  } else {
+    var singleTitle = it.type === 'weather' ? 'Delivered to the live server'
+      : (it.type === 'global_luck' ? 'Activates instantly for everyone' : 'Added to your Backpack');
+    var singleSub = it.type === 'weather' ? 'ALL PLAYERS · 30 MINUTES'
+      : (it.type === 'global_luck' ? 'SERVER-WIDE · 60 MINUTES' : 'PERMANENT · ACCOUNT BOUND');
+    picker =
+      '<div class="psx-sec-h"><b>SINGLE PURCHASE</b><i></i><span>1 ITEM</span></div>' +
+      '<div class="psx-single">' +
+        '<span class="psx-single-ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>' +
+        '<span class="psx-single-tx"><b>' + singleTitle + '</b><span>' + singleSub + '</span></span>' +
+      '</div>' +
+      '<div class="psx-order">' +
+        '<div class="psx-order-h"><b>ORDER SUMMARY</b><i></i><span>SERVER VERIFIED</span></div>' +
+        '<div class="psx-order-row"><span>UNIT PRICE</span><b>' + pxNum(it.price) + ' G</b></div>' +
+        '<div class="psx-order-row"><span>QUANTITY</span><b>x1</b></div>' +
+        '<div class="psx-order-row"><span>DELIVERY</span><b>INSTANT</b></div>' +
+        '<div class="psx-order-row tot"><span>TOTAL COST</span><b>' + pxNum(total) + ' G</b></div>' +
+        '<div class="psx-order-row after"><span>BALANCE AFTER</span><b>' + pxNum(Math.max(0, gemsNow - total)) + ' G</b></div>' +
+      '</div>';
+  }
+
+  var isCard = (isPack || it.type === 'art' || it.type === 'pet');
+  body.innerHTML =
+    '<div class="psx-d-body">' +
+      '<div class="psx-d-left">' +
+        '<div class="psx-hero">' +
+          '<div class="psx-hero-art' + (isCard ? ' card' : '') + '" style="--ic:' + (it.color || '#f3e600') + '">' +
+            '<i class="halo"></i>' +
+            '<img src="' + it.img + '" alt="' + pxEsc(it.name) + '" decoding="async">' +
+          '</div>' +
+          '<div class="psx-hero-mid">' +
+            '<div class="psx-hero-nm">' + pxEsc(it.name) + '</div>' +
+            '<div class="psx-chips">' + chips + '</div>' +
+            '<div class="psx-hero-ds">' + pxEsc(it.desc) + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="psx-stats">' + stats + '</div>' +
+      '</div>' +
+      '<div class="psx-d-right">' + picker + '</div>' +
+    '</div>';
+
+  var wrap = document.getElementById('psxQtyWrap');
+  if (wrap) {
+    wrap.querySelectorAll('.psx-opt').forEach(function(b){
+      b.onclick = function(){ pxChooseQty(b.dataset.q); };
+    });
+  }
+
+  var totalK = document.getElementById('psxTotalK');
+  if (totalK) totalK.textContent = isPack ? ('TOTAL · x' + qty) : 'TOTAL';
+  var totalVal = document.getElementById('psxTotalVal');
+  if (totalVal) totalVal.textContent = pxNum(total);
+
+  var btn = document.getElementById('psxBuyBtn');
+  var txt = document.getElementById('psxBuyTxt');
+  if (btn && txt) {
+    var afford = gemsNow >= total;
+    var glState = pxGlobalLuckState();
+    if (owned) {
+      btn.className = 'psx-buy is-own';
+      txt.textContent = it.type === 'global_luck' ? 'MAX STACK REACHED' : 'ALREADY OWNED';
+      btn.disabled = true;
+    } else if (!afford) {
+      btn.className = 'psx-buy is-off';
+      txt.textContent = 'NEED ' + pxNum(total - gemsNow) + ' MORE';
+      btn.disabled = true;
+    } else {
+      btn.className = 'psx-buy';
+      txt.textContent = (it.type === 'global_luck')
+        ? ((glState.active ? 'STACK +10x · ' : 'ACTIVATE · ') + pxNum(total) + ' GEMS')
+        : ('BUY · ' + pxNum(total) + ' GEMS');
+      btn.disabled = false;
+    }
+  }
+
+  var balEl = document.getElementById('premBalVal');
+  if (balEl) balEl.textContent = pxNum(gemsNow);
 }
 
 function renderPremiumShop(){
-  var balEl = document.getElementById('premBalVal');
-  if(balEl) balEl.textContent = fmt(state.premiumGems || 0);
+  if (!document.getElementById('psxList')) return;
+  if (typeof state === 'undefined' || !state) return;
+  pxRenderCatalog();
+  pxRenderDetail();
+}
 
-  var grid = document.getElementById('premGrid');
-  if(!grid) return;
-
-  var filteredPacks = PREMIUM_PACKS.filter(function(p){
-    if(premCurTab === 'all') return true;
-    if(premCurTab === 'equip') return p.cat === 'equip';
-    if(premCurTab === 'pack') return p.cat === 'pack';
-    if(premCurTab === 'weather') return p.cat === 'weather';
-    return true;
-  });
-
-  var statEl = document.getElementById('premSubStat');
-  if(statEl) statEl.textContent = filteredPacks.length + ' ITEM TERSEDIA';
-
-  var glNow = (typeof _globalLuckCache !== 'undefined' && _globalLuckCache) ? _globalLuckCache : null;
-  var glActive = glNow && glNow.ends_at && (Date.now() < new Date(glNow.ends_at).getTime());
-  var glMult = glActive ? (glNow.multiplier || 10) : 0;
-  var glMaxed = glMult >= (typeof GLOBAL_LUCK_MAX_MULT !== 'undefined' ? GLOBAL_LUCK_MAX_MULT : 100);
-
-  grid.innerHTML = filteredPacks.map(function(p){
-    var isAlreadyOwned = false;
-    var ownedTxt = '';
-    var statusIcon = '';
-    var activeWeatherNow = activeWeatherId();
-
-    var cardCol = p.color || '#ffd700';
-    if(p.type === 'weather'){
-      cardCol = (WEATHER[p.targetWeather] && WEATHER[p.targetWeather].color) || '#38bdf8';
-    }
-
-    if (p.type === 'global_luck') {
-      isAlreadyOwned = glMaxed;
-      if (glActive) {
-        var glRem = fmtCountdown(Math.max(0, new Date(glNow.ends_at).getTime() - Date.now()));
-        var glBy = glNow.activated_by ? (' · BY ' + String(glNow.activated_by).toUpperCase()) : '';
-        ownedTxt = '<span class="prem-st-live" style="--scol:#34d399"><span class="prem-st-dot"></span>AKTIF: <b>' + glMult + '× LUCK</b> (⏱ ' + glRem + glBy + ')</span>';
-      } else {
-        ownedTxt = '<span class="prem-st-idle">READY TO ACTIVATE · 10x SERVER-WIDE BUFF</span>';
-      }
-    } else if (p.type === 'art') {
-      isAlreadyOwned = (state.artOwned || []).includes(p.id);
-      ownedTxt = isAlreadyOwned
-        ? '<span class="prem-st-owned">✓ SUALREADY OWNED IN BACKPACK</span>'
-        : '<span class="prem-st-idle">PERMANENT ARTIFACT · NOT OWNED</span>';
-    } else if (p.type === 'pet') {
-      isAlreadyOwned = (state.petOwned || []).includes(p.id);
-      ownedTxt = isAlreadyOwned
-        ? '<span class="prem-st-owned">✓ SUALREADY OWNED IN BACKPACK</span>'
-        : '<span class="prem-st-idle">COMPANION SAKTI · NOT OWNED</span>';
-    } else if (p.type === 'weather') {
-      var isCurActive = (activeWeatherNow === p.targetWeather);
-      var wDef = WEATHER[p.targetWeather];
-      var rem = (isCurActive && state.weather && state.weather.endsAt > Date.now()) ? fmtCountdown(state.weather.endsAt - Date.now()) : '';
-      var byWho = (isCurActive && state.weather && state.weather.activated_by) ? (' · OLEH ' + String(state.weather.activated_by).toUpperCase()) : '';
-      ownedTxt = isCurActive
-        ? '<span class="prem-st-live" style="--scol:' + cardCol + '"><span class="prem-st-dot"></span>AKTIF DI SERVER (⏱ ' + rem + byWho + ')</span>'
-        : '<span class="prem-st-idle">ANOMALI CUACA SERVER · DURASI 30 MENIT</span>';
-    } else {
-      var owned = (state.rollPacks && state.rollPacks[p.id]) || 0;
-      ownedTxt = '<span class="prem-st-pack">STOK BACKPACK: <b>' + owned.toLocaleString('id-ID') + ' PACK</b></span>';
-    }
-
-    var canAfford = (state.premiumGems || 0) >= p.price;
-    var btnCls = (canAfford && !isAlreadyOwned) ? 'prem-buy-btn' : 'prem-buy-btn disabled';
-    var btnLabel = isAlreadyOwned
-      ? (p.type === 'global_luck' ? 'MAX STACK (100×)' : 'SUDAH DIMILIKI')
-      : (p.type === 'global_luck' && glActive
-          ? ('TUMPUK +10× · ' + p.price.toLocaleString('id-ID') + ' GEMS')
-          : (p.type === 'pack'
-              ? ('BELI / MULTI · ' + p.price.toLocaleString('id-ID') + ' GEMS')
-              : ('BELI · ' + p.price.toLocaleString('id-ID') + ' GEMS')));
-
-    var statsHtml = '';
-    if (Array.isArray(p.stats) && p.stats.length) {
-      statsHtml = '<div class="prem-card-chips">' + p.stats.map(function(s, idx){
-        return '<span class="prem-chip' + (idx === 0 ? ' pri' : '') + '">' + s + '</span>';
-      }).join('') + '</div>';
-    }
-
-    var stageContent = '';
-    if (p.type === 'weather') {
-      stageContent =
-        '<div class="prem-wx-stage">' +
-          '<div class="prem-wx-halo"></div>' +
-          '<img src="' + p.img + '" alt="' + p.name + '" class="prem-card-img prem-wx-bottle">' +
-          '<div class="prem-wx-crest">' + weatherSvg(p.targetWeather, 28) + '</div>' +
-        '</div>';
-    } else if (p.type === 'global_luck') {
-      stageContent =
-        '<div class="prem-gl-stage">' +
-          '<div class="prem-wx-halo"></div>' +
-          '<div class="prem-gl-emblem">' + (typeof globalLuckFountainSvg === 'function' ? globalLuckFountainSvg(92) : '<img src="' + p.img + '" class="prem-card-img">') + '</div>' +
-          '<span class="prem-gl-mult-tag">+10× LUCK</span>' +
-        '</div>';
-    } else {
-      var imgExtraCls = p.type === 'pack' ? ' prem-pack-img' : (p.type === 'art' || p.type === 'pet' ? ' prem-equip-img' : '');
-      stageContent =
-        '<div class="prem-std-stage">' +
-          '<div class="prem-wx-halo"></div>' +
-          '<img src="' + p.img + '" alt="' + p.name + '" class="prem-card-img' + imgExtraCls + '">' +
-          (p.type === 'pack' ? '<span class="prem-pack-qty-tag">×1 / ×5 / ×10 / ×25</span>' : '') +
-        '</div>';
-    }
-
-    var pricePill = '<div class="prem-card-price-tag">' +
-      '<img src="assets/images/premium-currency.webp?v=trans1" alt="Gem" width="14" height="14">' +
-      '<b>' + p.price.toLocaleString('id-ID') + '</b>' +
-    '</div>';
-
-    return '<div class="prem-card prem-type-' + p.type + (isAlreadyOwned ? ' prem-card-owned-full' : '') + '" style="--pcol:' + cardCol + '">' +
-      '<div class="prem-card-top">' +
-        '<div class="prem-card-badge">' + p.badge + '</div>' +
-        pricePill +
-      '</div>' +
-      '<div class="prem-card-img-wrap">' +
-        stageContent +
-      '</div>' +
-      '<div class="prem-card-info">' +
-        '<div class="prem-card-name">' + p.name + '</div>' +
-        statsHtml +
-        '<div class="prem-card-desc">' + p.desc + '</div>' +
-        '<div class="prem-card-owned">' + ownedTxt + '</div>' +
-      '</div>' +
-      '<div class="prem-card-footer">' +
-        '<button class="' + btnCls + '" type="button" ' + (isAlreadyOwned ? 'disabled' : '') + ' onclick="buyPremiumPack(\'' + p.id + '\', event)">' +
-          '<img src="assets/images/premium-currency.webp?v=trans1" alt="Gem" width="18" height="18">' +
-          '<span>' + btnLabel + '</span>' +
-        '</button>' +
-      '</div>' +
-    '</div>';
-  }).join('');
+/* ---- Event binding (idempotent: pakai onclick agar tak menumpuk) ---- */
+function bindPsxEvents(){
+  var list = pxList();
+  if (list) {
+    list.onclick = function(e){
+      var row = e.target.closest ? e.target.closest('.psx-row') : null;
+      if (!row) return;
+      pxChoose(row.getAttribute('data-id'));
+    };
+  }
+  var tabs = document.getElementById('psxTabs');
+  if (tabs) {
+    tabs.onclick = function(e){
+      var b = e.target.closest ? e.target.closest('.psx-tab') : null;
+      if (!b) return;
+      premSetTab(b.getAttribute('data-cat'));
+    };
+  }
+  var backBtn = document.getElementById('psxBack');
+  if (backBtn) backBtn.onclick = pxBack;
+  var buyBtn = document.getElementById('psxBuyBtn');
+  if (buyBtn) {
+    buyBtn.onclick = function(e){
+      var it = pxSelItem();
+      if (!it) return;
+      if (pxOwnedInfo(it).owned) return;
+      buyPremiumPack(it.id, e, it.type === 'pack' ? pxQty : 1);
+    };
+  }
 }
 
 async function buyPremiumPack(packId, ev, qty){
   var pack = PREMIUM_PACKS.find(function(x){ return x.id === packId; });
   if(!pack) return;
 
-  // Cek jika sudah memiliki artefak/pet unik
+  // Check unique artifact/pet ownership
   if(pack.type === 'art' && (state.artOwned || []).includes(pack.id)){
-    toast('SUDAH PUNYA', 'Artefak ' + pack.name + ' sudah ada di Backpack!', '#fcd34d');
+    toast('ALREADY OWNED', 'Artifact ' + pack.name + ' is already in your Backpack!', '#fcd34d');
     return;
   }
   if(pack.type === 'pet' && (state.petOwned || []).includes(pack.id)){
-    toast('SUDAH PUNYA', 'Pet ' + pack.name + ' sudah ada di Backpack!', '#fcd34d');
+    toast('ALREADY OWNED', 'Pet ' + pack.name + ' is already in your Backpack!', '#fcd34d');
     return;
   }
 
   var btn = (ev && ev.currentTarget) || (window.event && window.event.currentTarget);
-  console.log('[BUY PREMIUM] Starting purchase:', packId, 'type:', pack.type, 'price:', pack.price);
+  var buyTxt = document.getElementById('psxBuyTxt');
 
-  // Handle global_luck type — delegasi ke buyGlobalLuck() (popup konfirmasi di dalamnya)
+  // global_luck — delegate to buyGlobalLuck() (its own confirmation popup)
   if (pack.type === 'global_luck') {
     await buyGlobalLuck();
     if(btn) btn.disabled = false;
     return;
   }
 
-  /* --- Popup konfirmasi pembelian --- */
+  /* --- Purchase confirmation (hazard dialog, qty switchable for packs) --- */
   qty = Math.max(1, parseInt(qty, 10) || 1);
+  var cfOpts = pack.type === 'pack'
+    ? PX_QTY_LIST.map(function (q) {
+        return {
+          label: 'x' + q,
+          value: String(q),
+          body: premConfirmBody(pack, q),
+          okText: 'BUY · ' + (Number(pack.price) * q).toLocaleString('en-US') + ' GEMS',
+          total: (Number(pack.price) * q).toLocaleString('en-US'),
+          totalLabel: 'TOTAL · x' + q
+        };
+      })
+    : [];
+  var cfBase = Number(pack.price) * qty;
+  var confirmed = await showConfirmDialog({
+    variant: 'hazard',
+    title: pack.type === 'pack' ? 'QUANTITY SELECT' : 'PURCHASE CONFIRMATION',
+    img: pack.img || 'assets/images/premium-currency.webp',
+    body: premConfirmBody(pack, qty),
+    okText: 'BUY · ' + cfBase.toLocaleString('en-US') + ' GEMS',
+    totalLabel: 'TOTAL · x' + qty,
+    totalValue: cfBase.toLocaleString('en-US'),
+    options: cfOpts,
+    selected: cfOpts.length ? String(PX_QTY_LIST.indexOf(qty) >= 0 ? qty : 1) : undefined
+  });
+  if (!confirmed) {
+    toast('CANCELLED', 'Purchase cancelled', '#94a3b8');
+    return;
+  }
   if (pack.type === 'pack') {
-    // Paket Instan Pack: popup berisi toggle jumlah beli (×1 / ×5 / ×10 / ×25)
-    var QTY_LIST = [1, 5, 10, 25];
-    var qtyOptions = QTY_LIST.map(function (q) {
-      return {
-        label: '×' + q,
-        value: String(q),
-        body: premConfirmBody(pack, q),
-        okText: 'BELI · ' + (Number(pack.price) * q) + ' GEMS'
-      };
-    });
-    var pickedQty = await showConfirmDialog({
-      title: 'KONFIRMASI PEMBELIAN',
-      img: pack.img || 'assets/images/premium-currency.webp',
-      body: premConfirmBody(pack, 1),
-      okText: 'BELI · ' + pack.price + ' GEMS',
-      options: qtyOptions,
-      selected: QTY_LIST.indexOf(qty) >= 0 ? String(qty) : '1'
-    });
-    if (!pickedQty) {
-      toast('DIBATALKAN', 'Pembelian dibatalkan', '#94a3b8');
-      return;
-    }
-    qty = parseInt(pickedQty, 10) || 1;
-  } else {
-    var confirmed = await showConfirmDialog({
-      title: 'KONFIRMASI PEMBELIAN',
-      img: pack.img || 'assets/images/premium-currency.webp',
-      body: premConfirmBody(pack, 1),
-      okText: 'BELI · ' + pack.price + ' GEMS'
-    });
-    if (!confirmed) {
-      toast('DIBATALKAN', 'Pembelian dibatalkan', '#94a3b8');
-      return;
-    }
+    var pickedQty = parseInt(confirmed, 10);
+    if (pickedQty > 0) qty = pickedQty;
+    pxQty = qty;
   }
 
   var totalCost = Number(pack.price || 0) * qty;
-  if(btn) { btn.disabled = true; btn.textContent = 'MEMPROSES...'; }
+  if(btn) btn.disabled = true;
+  if(buyTxt) buyTxt.textContent = 'PROCESSING...';
 
   try {
     var prevWeather = state.weather ? Object.assign({}, state.weather) : null;
@@ -3707,7 +3915,7 @@ async function buyPremiumPack(packId, ev, qty){
 
     var rewardMsg = '';
     if(pack.type === 'art' || pack.type === 'pet'){
-      rewardMsg = '+' + pack.name + ' berhasil dibuka & masuk Backpack!';
+      rewardMsg = '+' + pack.name + ' unlocked and added to your Backpack!';
     } else if(pack.type === 'weather'){
       const wDef = WEATHER[pack.targetWeather] || {};
       rewardMsg = 'Cuaca ' + (wDef.name || pack.name) + ' AKTIF untuk SEMUA SERVER selama 30 menit!';
@@ -3724,10 +3932,10 @@ async function buyPremiumPack(packId, ev, qty){
         iconHtml: weatherSvg(pack.targetWeather, 42)
       });
     } else {
-      rewardMsg = '+' + qty + ' ' + pack.name + ' masuk ke Backpack! (' + (Number(pack.amount || 0) * qty).toLocaleString('id-ID') + ' tarikan)!';
+      rewardMsg = '+' + qty + ' x ' + pack.name + ' added to your Backpack (' + (Number(pack.amount || 0) * qty).toLocaleString('en-US') + ' pulls)!';
     }
 
-    toast('PEMBELIAN BERHASIL!', rewardMsg, pack.type === 'weather' ? (WEATHER[pack.targetWeather]?.color || '#FFD700') : '#FFD700');
+    toast('PURCHASE SUCCESSFUL!', rewardMsg, pack.type === 'weather' ? (WEATHER[pack.targetWeather]?.color || '#FFD700') : '#FFD700');
     save();
     renderPremiumShop();
     renderShell();
@@ -3739,7 +3947,7 @@ async function buyPremiumPack(packId, ev, qty){
     console.log('[BUY PREMIUM] Success! state.premiumGems:', state.premiumGems);
   } catch(err){
     console.error('Buy pack error:', err);
-    toast('ERROR', 'Terjadi kesalahan saat transaksi', '#f87171');
+    toast('ERROR', 'Something went wrong during the transaction', '#f87171');
   } finally {
     if(btn) btn.disabled = false;
   }
@@ -4374,7 +4582,111 @@ function renderGlobalLuckBanner() {
 /* ---- Popup konfirmasi generik (promise-based) ----
  * opts: { title, body, okText, options:[{label,value,body,okText}], selected }
  * resolve: true (tanpa options) atau nilai option yang dipilih (dengan options). */
+/* ---- Hazard confirm dialog (Premium Exchange) — pengganti popup lama ---- */
+function pxConfirmDialog(opts) {
+  opts = opts || {};
+  return new Promise(function (resolve) {
+    var host = document.getElementById('pxConfirmHost');
+    if (!host) {
+      host = document.createElement('div');
+      host.id = 'pxConfirmHost';
+      document.body.appendChild(host);
+    }
+    var options = opts.options || [];
+    var selected = opts.selected !== undefined ? opts.selected : (options.length ? options[0].value : null);
+
+    function pick() {
+      for (var i = 0; i < options.length; i++) if (options[i].value === selected) return options[i];
+      return null;
+    }
+    function bodyHTML() {
+      if (!options.length) return opts.body || '';
+      var cur = pick();
+      return (cur && cur.body) || opts.body || '';
+    }
+    function okText() {
+      if (!options.length) return opts.okText || 'CONFIRM';
+      var cur = pick();
+      return (cur && cur.okText) || opts.okText || 'CONFIRM';
+    }
+    function totalHTML() {
+      if (!opts.totalLabel) return '';
+      return '<div class="pxcf-total"><k>' + opts.totalLabel + '</k>' +
+        '<v><img src="assets/images/premium-currency.webp" alt="Gem" width="14" height="14"><b>' + opts.totalValue + '</b><small>GEMS</small></v></div>';
+    }
+    function chipsHTML() {
+      if (!options.length) return '';
+      return '<div class="pxcf-sec"><div class="pxcf-sec-h"><b>QUANTITY</b><i></i><span>SELECT ONE</span></div>' +
+        '<div class="pxcf-chips">' + options.map(function (o) {
+          return '<button type="button" class="pxcf-chip' + (o.value === selected ? ' on' : '') + '" data-val="' + o.value + '">' + o.label + '</button>';
+        }).join('') + '</div></div>';
+    }
+    function artHTML() {
+      return opts.img
+        ? '<div class="pxcf-art"><i class="halo"></i><img src="' + opts.img + '" alt="" width="72" height="72" loading="lazy" decoding="async" onerror="this.remove()"></div>'
+        : '';
+    }
+
+    host.innerHTML =
+      '<div class="pxcf-backdrop">' +
+        '<div class="pxcf-box" role="dialog" aria-modal="true" aria-label="' + (opts.title || 'Purchase confirmation') + '">' +
+          '<span class="pxcf-corner tl"></span><span class="pxcf-corner tr"></span>' +
+          '<span class="pxcf-corner bl"></span><span class="pxcf-corner br"></span>' +
+          '<div class="pxcf-head">' +
+            '<div class="pxcf-krow"><span class="pxcf-dot"></span>' +
+              '<span class="pxcf-kick">// ORDER <b>VERIFICATION</b></span>' +
+              '<span class="pxcf-serial">SECURE 0x' + (0x1000 + Math.floor(Math.random() * 0xefff)).toString(16).toUpperCase() + '</span>' +
+            '</div>' +
+            '<div class="pxcf-title">' + (opts.title || 'PURCHASE CONFIRMATION') + '</div>' +
+          '</div>' +
+          '<div class="pxcf-body">' +
+            '<div class="pxcf-top">' + artHTML() +
+              '<div class="pxcf-main">' + bodyHTML() + '</div>' +
+            '</div>' +
+            chipsHTML() +
+          '</div>' +
+          totalHTML() +
+          '<div class="pxcf-actions">' +
+            '<button class="pxcf-btn pxcf-btn--cancel" type="button">CANCEL</button>' +
+            '<button class="pxcf-btn pxcf-btn--ok" type="button">' + okText() + '</button>' +
+          '</div>' +
+          '<div class="pxcf-foot"><span>HZ-PROTOCOL</span><i></i><span>INSTANT DELIVERY · NO REFUNDS</span></div>' +
+        '</div>' +
+      '</div>';
+
+    function close(val) {
+      host.innerHTML = '';
+      document.removeEventListener('keydown', onKey);
+      resolve(val);
+    }
+    function onKey(e) { if (e.key === 'Escape') close(null); }
+    document.addEventListener('keydown', onKey);
+    host.querySelector('.pxcf-btn--cancel').onclick = function () { close(null); };
+    host.querySelector('.pxcf-btn--ok').onclick = function () { close(options.length ? selected : true); };
+    host.querySelector('.pxcf-backdrop').onclick = function (e) { if (e.target === this) close(null); };
+
+    var chips = host.querySelector('.pxcf-chips');
+    if (chips) {
+      chips.onclick = function (e) {
+        var b = e.target.closest ? e.target.closest('.pxcf-chip') : null;
+        if (!b) return;
+        selected = b.getAttribute('data-val');
+        chips.querySelectorAll('.pxcf-chip').forEach(function (x) { x.classList.toggle('on', x === b); });
+        host.querySelector('.pxcf-main').innerHTML = bodyHTML();
+        host.querySelector('.pxcf-btn--ok').textContent = okText();
+        var cur = pick();
+        var tv = host.querySelector('.pxcf-total b');
+        if (tv && cur && cur.total !== undefined) tv.textContent = cur.total;
+        var tk = host.querySelector('.pxcf-total k');
+        if (tk && cur && cur.totalLabel) tk.textContent = cur.totalLabel;
+      };
+    }
+  });
+}
+window.pxConfirmDialog = pxConfirmDialog;
+
 function showConfirmDialog(opts) {
+  if (opts && opts.variant === 'hazard') return pxConfirmDialog(opts);
   opts = opts || {};
   return new Promise(function (resolve) {
     var host = document.getElementById('glConfirmHost');
@@ -4470,28 +4782,31 @@ async function buyGlobalLuck() {
     const prevMult = existing ? (existing.multiplier || 0) : 0;
     let newMult = Math.min(prevMult + GLOBAL_LUCK_STEP_MULT, GLOBAL_LUCK_MAX_MULT);
 
-    /* --- Popup konfirmasi sebelum membeli --- */
+    /* --- Hazard confirmation popup before purchasing --- */
     const gemIcon = '<img class="glcf-gem-icon" src="assets/images/premium-currency.webp" alt="" width="16" height="16">';
     const confirmBody =
-      '<div class="glcf-row"><span class="glcf-label">EFEK</span><span class="glcf-val">' +
+      '<div class="glcf-row"><span class="glcf-label">EFFECT</span><span class="glcf-val">' +
         (isStack
-          ? 'Tumpukan ke <b>' + newMult + '× LUCK</b> (dari ' + prevMult + '×)'
-          : 'Aktifkan <b>' + newMult + '× LUCK</b> untuk semua pemain') +
+          ? 'Stacks to <b>' + newMult + 'x LUCK</b> (from ' + prevMult + 'x)'
+          : 'Activates <b>' + newMult + 'x LUCK</b> for every player') +
       '</span></div>' +
-      '<div class="glcf-row"><span class="glcf-label">DURASI</span><span class="glcf-val">+1 JAM per aktivasi (maks. 10 jam)</span></div>' +
-      '<div class="glcf-row"><span class="glcf-label">HARGA</span><span class="glcf-val">' + gemIcon + ' ' + GLOBAL_LUCK_COST + ' Gems</span></div>' +
-      '<div class="glcf-row"><span class="glcf-label">SALDO</span><span class="glcf-val">' + gemIcon + ' ' + (state.premiumGems || 0) + ' Gems</span></div>' +
-      '<div class="glcf-warn">Gems langsung dipotong dan <b>tidak bisa dikembalikan</b>. Aktivasi berlaku untuk seluruh server.</div>';
+      '<div class="glcf-row"><span class="glcf-label">DURATION</span><span class="glcf-val">+1 HOUR per activation (max 10 hours)</span></div>' +
+      '<div class="glcf-row"><span class="glcf-label">PRICE</span><span class="glcf-val">' + gemIcon + ' ' + GLOBAL_LUCK_COST.toLocaleString('en-US') + ' Gems</span></div>' +
+      '<div class="glcf-row"><span class="glcf-label">BALANCE</span><span class="glcf-val">' + gemIcon + ' ' + (state.premiumGems || 0).toLocaleString('en-US') + ' Gems</span></div>' +
+      '<div class="glcf-warn">Gems are charged immediately and <b>cannot be refunded</b>. The activation applies to the entire server.</div>';
 
     const glPack = (typeof PREMIUM_PACKS !== 'undefined') ? PREMIUM_PACKS.find(function(x){ return x.id === 'global_luck'; }) : null;
     const ok = await showConfirmDialog({
-      title: isStack ? 'TUMPUK GLOBAL LUCK' : 'AKTIVASI GLOBAL LUCK',
+      variant: 'hazard',
+      title: isStack ? 'STACK GLOBAL LUCK' : 'ACTIVATE GLOBAL LUCK',
       img: (glPack && glPack.img) || 'assets/images/premium-currency.webp',
       body: confirmBody,
-      okText: isStack ? 'TUMPUK' : 'AKTIFKAN'
+      okText: (isStack ? 'STACK' : 'ACTIVATE') + ' · ' + GLOBAL_LUCK_COST.toLocaleString('en-US') + ' GEMS',
+      totalLabel: 'TOTAL',
+      totalValue: GLOBAL_LUCK_COST.toLocaleString('en-US')
     });
     if (!ok) {
-      toast('DIBATALKAN', 'Pembelian Global Luck dibatalkan', '#94a3b8');
+      toast('CANCELLED', 'Global Luck purchase cancelled', '#94a3b8');
       return;
     }
 
