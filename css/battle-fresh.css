@@ -122,7 +122,7 @@ html body.battle-full .battle-grid .fighter{
 /* frame art */
 html body.battle-full .battle-grid .fighter .fc-frame{
   position:relative !important;aspect-ratio:235/325 !important;
-  overflow:hidden !important;border-radius:3px !important;
+  overflow:hidden !important;border-radius:0 !important;
   border:1.5px solid rgba(245,245,245,.32) !important;background:#080808 !important;
   box-shadow:0 16px 34px rgba(0,0,0,.72) !important;
   display:block !important;width:100% !important;height:auto !important;
@@ -137,6 +137,7 @@ html body.battle-full .battle-grid .fighter .fc-art{
   width:100% !important;height:100% !important;
   object-fit:cover !important;object-position:top center !important;
   transform:scale(1.01) !important;display:block !important;
+  border-radius:0 !important;
   transition:transform .34s ease,filter .3s ease !important}
 
 html body.battle-full .battle-grid .fighter .fc-vig{
@@ -1198,10 +1199,29 @@ html body.battle-full #app .battle-grid .fighter.shiny.mut-ultima{
   border:0 !important;
   border-width:0 !important;
   border-color:transparent !important;
+  border-radius:0 !important;
   outline:none !important;
   background:transparent !important;
   background-image:none !important;
   box-shadow:none !important;
+  animation:none !important}
+
+/* Cincin mutasi/shiny digambar oleh pseudo-element ::before di style.css
+   (gradien + mask, `border-radius:inherit`). Kartu battle sekarang tanpa
+   cincin, jadi ::before-nya dimatikan total — ini yang membuat border
+   mutasi masih tampak "radius" di Infinite Tower. */
+html body.battle-full #app .battle-grid .fighter[class*="mut-"]::before,
+html body.battle-full #app .battle-grid .fighter.shiny::before,
+html body.battle-full #app .battle-grid .fighter[class*="mut-"]::after,
+html body.battle-full #app .battle-grid .fighter.shiny::after{
+  content:none !important;
+  display:none !important;
+  background:none !important;
+  background-image:none !important;
+  border:0 !important;
+  box-shadow:none !important;
+  -webkit-mask:none !important;
+  mask:none !important;
   animation:none !important}
 
 /* ============ 22. SLOT PARTY MUSUH (ENEMY LINE-UP) ==================== */
