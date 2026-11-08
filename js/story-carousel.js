@@ -211,17 +211,6 @@
     setText("scHzSerial", randomSerial());
     setText("scHzSector", no);
 
-    if (kind === "deploy") {
-      var lv = ch.from + currentStageIdx;
-      var en = enemyOf(lv);
-      var stage = no + "-" + String(currentStageIdx + 1).padStart(2, "0");
-      if (kick) kick.innerHTML = "// COMBAT <b>DEPLOYMENT</b>";
-      if (title) title.textContent = "BATTLE";
-      if (water) water.textContent = stage;
-      if (sub) sub.textContent = "STAGE " + stage + " \u2014 " + en.name;
-      if (foot) foot.textContent = "ENGAGE TARGET";
-      return;
-    }
     if (kind === "out") {
       if (kick) kick.innerHTML = "// EXTRACTION <b>PROTOCOL</b>";
       if (title) title.textContent = "EXIT";
@@ -251,6 +240,9 @@
     c.classList.add(fast ? "fast" : "smooth", "revealed", "sweep");
     bannerTimers.push(setTimeout(function(){ c.classList.remove("sweep"); }, fast ? 1150 : 1650));
     bannerTimers.push(setTimeout(function(){ c.classList.remove("smooth", "fast"); }, fast ? 560 : 780));
+    /* Setelah tirai terbuka penuh, lepas `on` supaya elemen benar-benar
+       tersembunyi (visibility:hidden) dan tidak menutupi layer lain. */
+    bannerTimers.push(setTimeout(function(){ c.classList.remove("on"); }, fast ? 640 : 840));
   }
 
   function bannerEnter() {
@@ -278,29 +270,10 @@
     bannerTimers.push(setTimeout(function(){ bannerBusy = false; }, 1150));
   }
 
-  /* Banner deploy: menutup layar, story disembunyikan, battle dimulai.
-     `deploying` mencegah closeStory() milik startStoryBattle memutar banner
-     kedua kalinya di atas arena. */
-  function bannerDeploy() {
-    if (bannerBusy) return;
-    bannerBusy = true;
-    deploying = true;
-    clearBannerTimers();
-    setBannerCopy("deploy");
-    var c = curtainEl();
-    if (c) {
-      c.classList.remove("smooth", "fast", "revealed", "sweep");
-      c.classList.add("on");
-    }
-    bannerTimers.push(setTimeout(function(){ hideStoryModal(); }, 420));
-    bannerTimers.push(setTimeout(function(){ curtainReveal(true); }, 460));
-    bannerTimers.push(setTimeout(function(){
-      bannerBusy = false;
-      deploying = false;
-      var lv = activeChap().from + currentStageIdx;
-      if (typeof startStoryBattle === "function") startStoryBattle(lv);
-    }, 560));
-  }
+  /* Banner deploy story DIHAPUS (permintaan user): battle sudah punya banner
+     masuknya sendiri (#hzCurtain di battle-hazard.js), jadi dua banner
+     bertumpuk saling nabrak. Story ditutup langsung, lalu battle merender
+     banner-nya sendiri. */
 
   /* ======================================================================
      LIFECYCLE
@@ -900,7 +873,9 @@
     }
 
     sfxHit();
-    bannerDeploy();
+    /* Tanpa banner deploy story: banner masuk milik battle yang tampil. */
+    hideStoryModal();
+    if (typeof startStoryBattle === "function") startStoryBattle(lv);
   }
 
   /* ======================================================================

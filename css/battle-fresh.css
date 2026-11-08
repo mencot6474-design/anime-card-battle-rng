@@ -736,9 +736,9 @@ html body.battle-full #fightFx .ff-word{
   opacity:.55 !important;pointer-events:none !important}
 
 /* ---------------- 11. BANNER MASUK / KELUAR ---------------------------- */
-.hz-curtain{position:fixed;inset:0;z-index:72;pointer-events:none;overflow:hidden;
+#hzCurtain{position:fixed;inset:0;z-index:72;pointer-events:none;overflow:hidden;
   visibility:hidden;contain:strict}
-.hz-curtain.on{visibility:visible}
+#hzCurtain.on{visibility:visible}
 .hz-ct-half{position:absolute;left:0;right:0;height:50.5%;background-color:#050505;
   transform:translateY(0);will-change:transform;overflow:hidden;
   background-image:
@@ -750,9 +750,9 @@ html body.battle-full #fightFx .ff-word{
     repeating-linear-gradient(0deg,rgba(245,245,245,.045) 0 1px,transparent 1px 34px),
     repeating-linear-gradient(90deg,rgba(245,245,245,.045) 0 1px,transparent 1px 34px),
     radial-gradient(120% 90% at 50% 0%,rgba(243,230,0,.06),transparent 68%)}
-.hz-curtain.smooth .hz-ct-half{transition:transform .62s cubic-bezier(.74,0,.22,1)}
-.hz-curtain.revealed .hz-ct-top{transform:translateY(-101%)}
-.hz-curtain.revealed .hz-ct-bot{transform:translateY(101%)}
+#hzCurtain.smooth .hz-ct-half{transition:transform .62s cubic-bezier(.74,0,.22,1)}
+#hzCurtain.revealed .hz-ct-top{transform:translateY(-101%)}
+#hzCurtain.revealed .hz-ct-bot{transform:translateY(101%)}
 .hz-ct-edge{position:absolute;left:0;right:0;height:16px;
   background:repeating-linear-gradient(-45deg,var(--hz) 0 12px,#080808 12px 24px)}
 .hz-ct-top .hz-ct-edge{bottom:0}
@@ -768,14 +768,14 @@ html body.battle-full #fightFx .ff-word{
   transform:translateX(-120%) skewX(-13deg);will-change:transform,opacity}
 .hz-ct-tape--a{top:calc(50% - 104px)}
 .hz-ct-tape--b{top:calc(50% + 58px)}
-.hz-curtain.sweep .hz-ct-tape--a{animation:hzTapeA .84s cubic-bezier(.4,0,.2,1) both}
-.hz-curtain.sweep .hz-ct-tape--b{animation:hzTapeB .84s .09s cubic-bezier(.4,0,.2,1) both}
+#hzCurtain.sweep .hz-ct-tape--a{animation:hzTapeA .84s cubic-bezier(.4,0,.2,1) both}
+#hzCurtain.sweep .hz-ct-tape--b{animation:hzTapeB .84s .09s cubic-bezier(.4,0,.2,1) both}
 @keyframes hzTapeA{0%{transform:translateX(-120%) skewX(-13deg);opacity:0}
   12%{opacity:1}86%{opacity:1}100%{transform:translateX(120%) skewX(-13deg);opacity:0}}
 @keyframes hzTapeB{0%{transform:translateX(-120%) skewX(-13deg);opacity:0}
   12%{opacity:1}86%{opacity:1}100%{transform:translateX(120%) skewX(-13deg);opacity:0}}
 .hz-ct-flash{position:absolute;inset:0;z-index:3;background:var(--hz);opacity:0}
-.hz-curtain.sweep .hz-ct-flash{animation:hzCtFlash .4s ease-out both}
+#hzCurtain.sweep .hz-ct-flash{animation:hzCtFlash .4s ease-out both}
 @keyframes hzCtFlash{0%{opacity:0}14%{opacity:.14}100%{opacity:0}}
 .hz-ct-plate{position:absolute;left:50%;top:50%;z-index:4;width:min(88%,600px);
   transform:translate(-50%,-50%);opacity:1;
@@ -785,9 +785,9 @@ html body.battle-full #fightFx .ff-word{
   border-top:2px solid var(--hz);border-bottom:2px solid var(--hz);
   box-shadow:0 26px 60px rgba(0,0,0,.66),
     inset 0 0 0 1px rgba(255,255,255,.07)}
-.hz-curtain.smooth .hz-ct-plate{
+#hzCurtain.smooth .hz-ct-plate{
   transition:opacity .22s ease,transform .52s cubic-bezier(.34,1.22,.64,1)}
-.hz-curtain.revealed .hz-ct-plate{opacity:0;transform:translate(-50%,-50%) scale(1.04)}
+#hzCurtain.revealed .hz-ct-plate{opacity:0;transform:translate(-50%,-50%) scale(1.04)}
 .hz-ct-plate::before,.hz-ct-plate::after{
   content:'';position:absolute;top:-2px;bottom:-2px;width:18px;
   background:repeating-linear-gradient(-45deg,var(--hz) 0 10px,#050505 10px 20px)}
@@ -823,7 +823,7 @@ html body.battle-full #fightFx .ff-word{
 .hz-ct-bar{height:3px;margin-top:14px;background:rgba(255,255,255,.14);overflow:hidden}
 .hz-ct-bar i{display:block;height:100%;width:100%;background:var(--hz);
   transform:scaleX(0);transform-origin:left}
-.hz-curtain.smooth:not(.revealed) .hz-ct-bar i{
+#hzCurtain.smooth:not(.revealed) .hz-ct-bar i{
   transform:scaleX(1);transition:transform .66s .10s cubic-bezier(.2,.9,.2,1)}
 .hz-ct-foot{display:flex;justify-content:space-between;gap:10px;margin-top:8px;
   font-family:var(--hz-mono);font-size:6px;letter-spacing:.18em;color:var(--hz-ink3)}
@@ -903,7 +903,7 @@ html body.battle-full #crFab{display:none !important}
   html body.battle-full *,
   html body.battle-full *::before,
   html body.battle-full *::after,
-  .hz-curtain, .hz-curtain *{
+  #hzCurtain, #hzCurtain *{
     animation-duration:.01ms !important;animation-iteration-count:1 !important;
     transition-duration:.01ms !important}
 }
