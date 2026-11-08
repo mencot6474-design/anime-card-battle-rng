@@ -1,0 +1,32 @@
+Solar Icon Set (bold-duotone)
+=============================
+
+Set   : Solar Icon Set — Bold Duotone (24x24 grid)
+Author: 480 Design
+Source: https://github.com/480-Design/Solar-Icon-Set
+        https://www.figma.com/community/file/1166831539721848736
+License: MIT — https://github.com/480-Design/Solar-Icon-Set/blob/main/LICENSE
+
+Files in this folder were exported from the repo SVG sources, then converted to
+two-tone (single-file) form:
+  - paths with opacity 1        -> fill="currentColor"
+  - paths with lower opacity    -> fill="currentColor" fill-opacity=".45"
+No geometry was changed. Renamed to the slot names used by the drawer prototype:
+
+  summon.svg   Magic Stick 3
+  deck.svg     Layers (Minimalistic)
+  archive.svg  Box Minimalistic (isometric cube)
+  daily.svg    Calendar Date
+  luck.svg     Cup Star            (trophy + star)
+  quests.svg   Clipboard List
+  supply.svg   Cart Large
+  rebirth.svg  Refresh Square / circular refresh
+  skills.svg   CPU Bolt
+  settings.svg Tuning
+  changelog.svg History
+  home.svg     Home 2
+  more.svg     2x2 menu grid
+  ads.svg      Bolt Circle
+
+Usage note: SVG is inlined directly into the prototype markup, so there is no
+runtime CDN request and no extra network cost on low-end phones.
