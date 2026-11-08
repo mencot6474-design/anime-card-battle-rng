@@ -435,6 +435,8 @@ if(app){
 }
 document.getElementById("bfExit").onclick=()=>{
   sfx.hit();
+  /* Same exit path as the result popup: hazard exit banner, then lobby. */
+  if(typeof leaveBattleToLobby==="function"){ leaveBattleToLobby(); return; }
   stopBattleLoop();stopRaid();stopTower();state.battle=null;closeStory();
   document.getElementById("overlay").classList.remove("show");
   if(route()==="#/lobby")render();else location.hash="#/lobby";

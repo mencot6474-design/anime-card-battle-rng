@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v515-scopedCurtain';
+const CACHE_NAME = 'anime-card-battle-v516-exitCurtain';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

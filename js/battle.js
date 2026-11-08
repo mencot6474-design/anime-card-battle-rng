@@ -3236,8 +3236,11 @@ function endBattle(win){
     if(deadEl&&!deadEl.classList.contains("ko")){deadEl.classList.add("ko");koFx(deadEl);}
   }catch(e){console.error("endBattle fx error",e);}
   setTimeout(()=>{
-    /* Banner keluar hazard: menutup layar sebelum hasil/hub tampil. */
-    if (typeof window.hzCurtainOut === "function") { try { window.hzCurtainOut(); } catch(e){} }
+    /* Banner keluar hazard TIDAK dipakai untuk hasil battle (revisi user):
+       popup VICTORY/DEFEAT (atau DROP REPORT tower) tampil dulu; banner exit
+       hanya dipakai saat pemain benar-benar keluar dari popup ke lobby lewat
+       leaveBattleToLobby()/hzEnd. Ini menghentikan banner exit yang dulu muncul
+       tiap selesai battle dan tiap naik lantai di Tower Infinite. */
     try{
       if(bt&&bt.tower){ towerEnd(win); }
       else if(bt){ finish(win); }
@@ -3400,19 +3403,38 @@ function finish(win){
     nx.onclick=()=>{ov.classList.remove("show");startStoryBattle(lv+1);};
   }else if(win&&nxtCh){
     nx.innerHTML='<span>RETURN</span> <span class="ov-btn-icon">❯</span>';
-    nx.onclick=()=>{ov.classList.remove("show");state.battle=null;render();};
+    nx.onclick=()=>leaveBattleToLobby();
   }else{
     nx.innerHTML='<span>COMPLETE</span> <span class="ov-btn-icon">❯</span>';
-    nx.onclick=()=>{ov.classList.remove("show");state.battle=null;render();};
+    nx.onclick=()=>leaveBattleToLobby();
   }
   document.getElementById("ov-again").onclick=()=>{ov.classList.remove("show");startStoryBattle(lv);};
   ov.classList.add("show");
 }
+/* Keluar dari popup hasil ke lobby. Banner exit hazard baru dipakai DI SINI:
+   popup VICTORY/DEFEAT tampil dulu, lalu curtain menutup layar saat benar-benar
+   berpindah ke lobby. Lanjut stage berikutnya / replay / naik lantai tower TIDAK
+   lewat sini, jadi tidak ada banner exit di tengah alur battle. */
+function leaveBattleToLobby(){
+  const ov=document.getElementById("overlay");
+  if(ov)ov.classList.remove("show");
+  const done=()=>{
+    try{ stopBattleLoop(); }catch(e){}
+    try{ stopRaid(); }catch(e){}
+    try{ stopTower(); }catch(e){}
+    state.battle=null; bt=null;
+    try{ closeStory(); }catch(e){}
+    try{ render(); }catch(e){ console.error("leaveBattleToLobby render",e); }
+  };
+  if(typeof window.hzCurtainOut==="function"){
+    try{ window.hzCurtainOut(done); return; }catch(e){}
+  }
+  done();
+}
 document.getElementById("overlay").addEventListener("click",e=>{
   if(e.target.id!=="overlay")return;
-  document.getElementById("overlay").classList.remove("show");
-  if(bt&&bt.tower){stopBattleLoop();towerView="hub";render();return;}
-  if(state.battle){state.battle=null;bt=null;render();}
+  if(bt&&bt.tower){document.getElementById("overlay").classList.remove("show");stopBattleLoop();towerView="hub";render();return;}
+  leaveBattleToLobby();
 });
 let towerLossAutoPending=false; /* auto-restart tower: nunggu popup roll ditutup (reset di stopTower/towerStartRun) */
 let rollPopTimer=null; /* auto-claim popup hasil roll: 5 detik tutup sendiri biar AFK/auto-run gak macet */

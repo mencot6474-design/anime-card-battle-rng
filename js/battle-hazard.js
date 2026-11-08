@@ -329,6 +329,9 @@
     };
     var en = $('hzEnd');
     if (en) en.onclick = function () {
+      /* Keluar battle lewat banner exit yang sama dengan tombol popup hasil,
+         supaya alurnya konsisten (popup dulu, curtain saat benar-benar pindah). */
+      if (typeof window.leaveBattleToLobby === 'function') { window.leaveBattleToLobby(); return; }
       var btn = document.getElementById('bfExit');
       if (btn) btn.click();
       else if (typeof window.hzCurtainOut === 'function') {

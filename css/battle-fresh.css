@@ -736,7 +736,10 @@ html body.battle-full #fightFx .ff-word{
   opacity:.55 !important;pointer-events:none !important}
 
 /* ---------------- 11. BANNER MASUK / KELUAR ---------------------------- */
-#hzCurtain{position:fixed;inset:0;z-index:72;pointer-events:none;overflow:hidden;
+/* z-index tinggi (di atas topbar lobby z100 / popup hasil z70) karena banner
+   exit sekarang menyala SETELAH popup hasil ditutup, tepat saat view berganti
+   ke lobby — kalau tetap 72, chrome lobby sempat nongol di atas curtain. */
+#hzCurtain{position:fixed;inset:0;z-index:100001;pointer-events:none;overflow:hidden;
   visibility:hidden;contain:strict}
 #hzCurtain.on{visibility:visible}
 .hz-ct-half{position:absolute;left:0;right:0;height:50.5%;background-color:#050505;
