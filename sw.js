@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v519-premiumConfirm';
+const CACHE_NAME = 'anime-card-battle-v520-drawerV5';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

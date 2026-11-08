@@ -39,15 +39,15 @@
 
   /* ---------------------------------------------------------------------
      5) Nav component — built into document.body (not #app).
-        Each act reuses the exact existing open call from the dock/drawer.
-        4 tab (bukan 5): "Summon" dibuang karena tombol ROLL di bar lobby
-        sudah memanggil handler #rollBtn yang sama persis — satu aksi, satu
-        kontrol. Roll tetap bisa diakses dari lobby.
+        PORT v5 (_tmp/proto_drawer_v5.html): 5 slot
+        HOME / DECK / SUMMON (hexagon aksen di tengah) / ARCHIVE / MORE.
+        Setiap aksi memakai pemanggil yang SUDAH ADA — tidak ada jalur baru.
+        SUMMON = klik #rollBtn milik js/boot.js (handler roll yang sama).
      --------------------------------------------------------------------- */
   var TABS = [
-    { key: "home",    label: "Home",    icon: "i-home",
+    { key: "home",    label: "Home",    icon: "home",
       act: function () { location.hash = "#/"; } },
-    { key: "deck",    label: "Deck",    icon: "i-deck",
+    { key: "deck",    label: "Deck",    icon: "deck",
       act: function () {
         /* Tab Deck = layar DECK sendiri (modal full-screen + banner hazard).
            Fallback lama (Backpack tab 'deck') hanya kalau deck-modal.js belum termuat. */
@@ -59,7 +59,16 @@
         else if (window.openCommandDrawer) { window.openCommandDrawer(); return; }
         if (typeof bpSetTab === "function") bpSetTab("deck");
       } },
-    { key: "koleksi", label: "Koleksi", icon: "i-book",
+    { key: "summon",  label: "Summon",  icon: "summon", mid: true,
+      act: function () {
+        /* Roll = tombol #rollBtn milik boot.js/panels.js. Kalau node hidupnya
+           sedang diparkir di #l12Park (render lobby), panggil handler-nya
+           langsung supaya tidak butuh node terlihat. */
+        var b = document.getElementById("rollBtn");
+        if (b) { b.click(); return; }
+        if (typeof startRollAnimation === "function") startRollAnimation();
+      } },
+    { key: "koleksi", label: "Archive", icon: "archive",
       act: function () {
         if (typeof renderBackpackPanel === "function") renderBackpackPanel();
         var p = document.getElementById("backpackPanel");
@@ -68,26 +77,25 @@
         if (!isOpen && typeof toggleBackpack === "function") toggleBackpack();
         else if (typeof bpSetTab === "function") bpSetTab("item");
       } },
-    { key: "more",    label: "More",    icon: "i-menu",
+    { key: "more",    label: "More",    icon: "more",
       act: function () {
         if (typeof openCommandDrawer === "function") openCommandDrawer();
       } }
   ];
 
-  /* Ikon = file SVG asli project yang di-tint lewat mask (currentColor),
-     bukan inline-SVG karangan: warna ikut state aktif, dan rupa = lobby v12. */
+  /* Ikon = inline SVG Solar bold-duotone (js/cyber-icons.js) — nol request
+     runtime, warna ikut currentColor. Fallback ke file SVG lama bila modul
+     belum termuat (urutan script dijaga, tapi jangan pernah crash). */
   var ICON_URL = {
-    "i-home":   "assets/icons/portal.svg",
-    "i-deck":   "assets/icons/card-play.svg",
-    "i-book":   "assets/icons/backpack.svg",
-    /* "More" = pembuka command DRAWER, bukan Settings. Gerigi (gears.svg) dulu
-       dipakai di sini padahal secara universal berarti Settings (dan Settings di
-       produksi memang berikon gerigi di dalam drawer) -> menipu. Scroll = daftar
-       perintah. Aksi & label tidak berubah. */
-    "i-menu":   "assets/icons/scroll-unfurled.svg"
+    home:    "assets/icons/portal.svg",
+    deck:    "assets/icons/card-play.svg",
+    archive: "assets/icons/backpack.svg",
+    more:    "assets/icons/scroll-unfurled.svg",
+    summon:  "assets/icons/scroll-unfurled.svg"
   };
   function iconHtml(name) {
-    return '<i class="ic ' + name + '" aria-hidden="true" style="-webkit-mask:url(' +
+    if (typeof window.cyberIcon === "function") return window.cyberIcon(name, "ic-svg");
+    return '<i class="ic" aria-hidden="true" style="-webkit-mask:url(' +
       ICON_URL[name] + ') center/contain no-repeat;mask:url(' + ICON_URL[name] +
       ') center/contain no-repeat"></i>';
   }
@@ -120,6 +128,8 @@
   }
   function isActive(key) {
     var h = currentHash();
+    /* SUMMON bukan rute/panel — dia aksi sesaat, jadi tidak pernah "aktif". */
+    if (key === "summon") return false;
     /* Prioritas dari lapisan yang paling di atas: drawer (More) > panel Backpack
        (deck/koleksi) > rute. Tanpa ini "More" tidak pernah bisa aktif selama
        panel masih terbuka di belakangnya. */
@@ -138,11 +148,16 @@
       var b = document.createElement("button");
       b.type = "button";
       b.setAttribute("data-mtab", t.key);
+      if (t.mid) b.className = "m-dock-mid";
       b.setAttribute("role", "tab");
       b.setAttribute("aria-label", t.label);
       if (isActive(t.key)) b.setAttribute("aria-current", "page");
       var icon = iconHtml(t.icon);
-      if (isPortrait) {
+      if (t.mid) {
+        /* SUMMON = heksagon aksen di tengah dock (prototipe v5). */
+        b.innerHTML = '<span class="m-dk-hex">' + icon + '</span>' +
+          '<span class="m-tab-label">' + t.label + "</span>";
+      } else if (isPortrait) {
         b.innerHTML = icon + '<span class="m-tab-label">' + t.label + "</span>";
       } else {
         b.innerHTML = icon;
@@ -180,14 +195,18 @@
     if (wrong) wrong.parentNode.removeChild(wrong);
 
     var nav = document.querySelector("." + wantClass);
+    /* v5: strip aktif digambar per-slot (::after/::before), bukan satu .ind
+       geser. Nav lama yang masih punya .ind dibersihkan supaya tidak dobel. */
     if (!nav) {
       nav = document.createElement("nav");
       nav.className = wantClass;
       nav.setAttribute("role", "tablist");
       nav.setAttribute("aria-label", isPortrait ? "Main navigation" : "Main navigation rail");
       document.body.appendChild(nav);
-      nav.innerHTML = isPortrait ? '<span class="ind" aria-hidden="true"></span>' : "";
       makeButtons(isPortrait).forEach(function (b) { nav.appendChild(b); });
+    } else {
+      var oldInd = nav.querySelector(".ind");
+      if (oldInd) oldInd.parentNode.removeChild(oldInd);
     }
   }
 

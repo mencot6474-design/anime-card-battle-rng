@@ -2029,6 +2029,30 @@ function renderLobby(){
     return "x" + t;
   })();
 
+  /* ---- COMMAND DRAWER v5 markup helpers (ikon inline Solar bold-duotone) ----
+     Grup kanan = JUMLAH TILE (prototipe v5 `.gh-n`: "04"/"02"/"05"), bukan
+     statistik hidup. Statistik hidup tetap di sub-label tile (missionSub,
+     drwDailySub, dst) supaya handler lama tidak perlu diubah. */
+  const _drwGrp = function (icon, label, count, statId, tiles) {
+    const rows = tiles.map(function (t, i) {
+      const badge = t.badge ? '<span class="hx-b"' + (t.badgeId ? ' id="' + t.badgeId + '"' : "") + ">" + t.badge + "</span>" : "";
+      const s2 = t.s2 ? '<span class="hx-s2"' + (t.s2Id ? ' id="' + t.s2Id + '"' : "") + ">" + t.s2 + "</span>" : "";
+      const pb = t.pbId ? '<span class="hx-pb" aria-hidden="true"><span id="' + t.pbId + '" style="width:' + (t.pbW || 0) + '%"></span></span>' : "";
+      const icon2 = (typeof cyberIcon === "function") ? cyberIcon(t.ic, "hx-svg") : "";
+      return '<button class="hx" type="button" id="' + t.id + '" style="--i:' + i + ";--hc:" + t.hc + '" role="button" tabindex="0">'
+        + '<span class="hx-f"><i class="hx-corner tl" aria-hidden="true"></i><i class="hx-corner br" aria-hidden="true"></i>'
+        + icon2 + "</span>"
+        + '<span class="hx-nm">' + t.nm + "</span>"
+        + '<span class="hx-s"' + (t.sId ? ' id="' + t.sId + '"' : "") + ">" + (t.s || "") + "</span>"
+        + s2 + badge + pb + "</button>";
+    }).join("");
+    const gIcon = (typeof cyberIcon === "function") ? cyberIcon(icon, "ic-svg") : "";
+    return '<section class="grp"><div class="grp-h"><span class="gh-i">' + gIcon
+      + '</span><span class="gh-t">' + label + '</span><span class="gh-l" aria-hidden="true"></span>'
+      + '<span class="gh-n"' + (statId ? ' id="' + statId + '"' : "") + ">" + count + '</span>'
+      + '</div><div class="hex-grid">' + rows + "</div></section>";
+  };
+
   app.innerHTML = `
   <div class="lobby-hub stage-root l12 c12" id="stage">
     <div class="colw c12wrap">
@@ -2193,106 +2217,54 @@ function renderLobby(){
     <!-- 5. Backdrop Overlay for Command Drawer -->
     <div id="drawerBackdrop" onclick="closeCommandDrawer()"></div>
 
-    <!-- 6. Archon Command Drawer V2 — Accordion Hub -->
-    <aside id="commandDrawer">
-      <span class="rail rail-l" aria-hidden="true"></span>
-      <div class="drw-head">
-        <div style="min-width:0">
-          <div class="drw-eyebrow"><span class="live-dot"></span><span>TACTICAL HUD // ARCHON COMMAND ONLINE</span></div>
-          <div class="drw-title">ARCHON COMMAND TERMINAL</div>
+    <!-- 6. Command Anchor Drawer v5 — hex tile hub (desain dikunci _tmp/proto_drawer_v5) -->
+    <aside id="commandDrawer" aria-label="Command drawer">
+      <div class="drw-tape" aria-hidden="true"></div>
+      <div class="drw-scan" aria-hidden="true"></div>
+
+      <header class="drw-head">
+        <div class="drw-head-l">
+          <div class="drw-kick"><i aria-hidden="true"></i>TACTICAL HUD // ARCHON COMMAND ONLINE</div>
+          <div class="drw-ttl">QUICK <em>ACTIONS</em></div>
         </div>
-        <button class="drw-close-btn" id="drwCloseBtn" onclick="closeCommandDrawer()" title="Close (ESC / Swipe Right)">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <button class="drw-close-btn" id="drwCloseBtn" type="button" onclick="closeCommandDrawer()" title="Close (ESC / Swipe Right)" aria-label="Close command drawer">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
         </button>
-      </div>
+      </header>
 
       <div class="drw-body" id="drwBody">
-
-        <!-- FOLD 1: OPERASI TEMPUR UTAMA -->
-        <section class="fold open" data-fold="combat" style="--sc:var(--cyan)">
-          <button class="fh" type="button" aria-expanded="true" aria-controls="fb1">
-            <span class="fbar" aria-hidden="true"></span>
-            <span class="fic"><i class="ic i-raid"></i></span>
-            <span class="ft"><span class="ftag">COMBAT DEPLOYMENT</span><span class="fnm">OPERASI TEMPUR UTAMA</span></span>
-            <span class="fstat"><b id="foldCombatStat">${_storyBadge}</b><span class="s2"> · RAID LIVE</span><span class="ch" aria-hidden="true"></span></span>
-          </button>
-          <div class="fb" id="fb1">
-            <div class="row menu-card" id="drwStoryBtn" style="--rc:var(--cyan)" role="button" tabindex="0">
-              <span class="pod"><i class="ic i-story"></i></span><span class="ri"><span class="rn">STORY CAMPAIGN</span><span class="rs" id="missionSub">PROGRESS 12/24 BAB · CLEARANCE REWARDS</span></span>
-              <span class="rt"><span class="vl" id="drwStoryPercent">ACTIVE</span></span>
-              <span class="pb"><span style="width:50%" id="missionFill"></span></span>
-            </div>
-            <div class="row menu-card" id="drwRaidBtn" style="--rc:var(--crimson)" role="button" tabindex="0">
-              <span class="pod"><i class="ic i-raid"></i></span><span class="ri"><span class="rn">WORLD BOSS RAID <span class="live" aria-hidden="true"></span></span><span class="rs">SHADOW DRAGON · TOP 10% LOOT</span></span>
-              <span class="rt"><span class="vl">SHARED HP 68%</span></span>
-              <span class="pb"><span style="width:68%"></span></span>
-            </div>
-            <div class="row menu-card" id="drwTowerBtn" style="--rc:var(--purple)" role="button" tabindex="0">
-              <span class="pod"><i class="ic i-tower"></i></span><span class="ri"><span class="rn">INFINITE TOWER</span><span class="rs" id="drwTowerSub">NEURAL SPIRE · CLIMB NEURAL FLOORS</span></span>
-              <span class="rt"><span class="vl">${_towerBadge}</span></span>
-            </div>
-            <div class="row menu-card" id="drwRankBtn" style="--rc:var(--gold)" role="button" tabindex="0">
-              <span class="pod"><i class="ic i-rank"></i></span><span class="ri"><span class="rn">LEADERBOARD</span><span class="rs" id="drwRankSub">GLOBAL RANK · TOP HUNTERS CLASSIFIED</span></span>
-              <span class="rt"><span class="vl">${_raidBadge}</span></span>
-            </div>
-          </div>
-        </section>
-
-        <!-- FOLD 2: AKTIVITAS HARIAN & BOOSTER -->
-        <section class="fold" data-fold="daily" style="--sc:var(--emerald)">
-          <button class="fh" type="button" aria-expanded="false" aria-controls="fb2">
-            <span class="fbar" aria-hidden="true"></span>
-            <span class="fic"><i class="ic i-daily"></i></span>
-            <span class="ft"><span class="ftag">DAILY OPERATIONS</span><span class="fnm">AKTIVITAS HARIAN &amp; BOOSTER</span></span>
-            <span class="fstat"><b>1 KLAIM</b><span class="s2"> · LUCK ${Math.round(_luckMult)}×</span><span class="ch" aria-hidden="true"></span></span>
-          </button>
-          <div class="fb" id="fb2">
-            <div class="row menu-card" id="drwDailyBtn" style="--rc:var(--emerald)" role="button" tabindex="0"><span class="pod"><i class="ic i-daily"></i></span><span class="ri"><span class="rn">7-Day Login</span><span class="rs" id="drwDailySub">CLAIM DAILY REWARD</span></span><span class="rt"><span class="vl">DAY 3/7</span></span></div>
-            <div class="row menu-card" id="drwAdsBtn" style="--rc:var(--gold)" role="button" tabindex="0"><span class="pod"><i class="ic i-ads"></i></span><span class="ri"><span class="rn">Free 2x Luck</span><span class="rs" id="drwAdsSub">FREE 2X LUCK &amp; PACK</span></span><span class="rt"><span class="vl">3 LEFT</span></span></div>
-            <div class="row menu-card" id="drwGlBtn" style="--rc:var(--cyan)" role="button" tabindex="0"><span class="pod"><i class="ic i-gl"></i></span><span class="ri"><span class="rn">Global Luck</span><span class="rs" id="drwGlSub">PENGALI LUCK KOMUNITAS</span></span><span class="rt"><span class="vl">${Math.round(_luckMult)}× · 12:40</span></span></div>
-            <div class="row menu-card" id="drwWeatherBtn" style="--rc:var(--purple)" role="button" tabindex="0"><span class="pod"><i class="ic i-wx"></i></span><span class="ri"><span class="rn">Weather Synth</span><span class="rs" id="drwWeatherSub">ATMOSPHERIC BUFF</span></span><span class="rt"><span class="vl">CLEAR SKY</span></span></div>
-          </div>
-        </section>
-
-        <!-- FOLD 3: SISTEM & ARSIP -->
-        <section class="fold" data-fold="system" style="--sc:var(--purple)">
-          <button class="fh" type="button" aria-expanded="false" aria-controls="fb3">
-            <span class="fbar" aria-hidden="true"></span>
-            <span class="fic"><i class="ic i-trait"></i></span>
-            <span class="ft"><span class="ftag">SYSTEM &amp; GEAR</span><span class="fnm">SISTEM &amp; ARSIP</span></span>
-            <span class="fstat"><b>ID</b><span class="s2"> · v1.4.2</span><span class="ch" aria-hidden="true"></span></span>
-          </button>
-          <div class="fb" id="fb3">
-            <div class="row menu-card" id="drwTraitBtn" style="--rc:var(--cyan)" role="button" tabindex="0"><span class="pod"><i class="ic i-trait"></i></span><span class="ri"><span class="rn">Trait Overclock</span><span class="rs" id="drwTraitSub">OPTIMASI STAT PASIF</span></span><span class="rt"><span class="vl">+18%</span></span></div>
-            <div class="row menu-card" id="drwSkillBtn" style="--rc:var(--emerald)" role="button" tabindex="0"><span class="pod"><i class="ic i-skill"></i></span><span class="ri"><span class="rn">Skill Tree</span><span class="rs" id="drwSkillSub">SPEND SKILL POINTS ON LUCK &amp; SPEED</span></span><span class="rt"><span class="vl" id="drwSkillSp">0 SP</span></span></div>
-            <div class="row menu-card" id="drwIndexBtn" style="--rc:var(--emerald)" role="button" tabindex="0"><span class="pod"><i class="ic i-index"></i></span><span class="ri"><span class="rn">Neural Archive</span><span class="rs" id="drwIndexSub">CARD CATALOG</span></span><span class="rt"><span class="vl">148/312</span></span></div>
-            <div class="row menu-card" id="drwSettingsBtn" style="--rc:var(--ice)" role="button" tabindex="0"><span class="pod"><i class="ic i-set"></i></span><span class="ri"><span class="rn">SETTINGS</span><span class="rs">AUDIO · COMBAT · LANGUAGE · CLOUD</span></span><span class="rt"><span class="vl">1×</span></span></div>
-            <div class="row menu-card" id="drwChangelogBtn" style="--rc:var(--gold)" role="button" tabindex="0"><span class="pod"><i class="ic i-log"></i></span><span class="ri"><span class="rn">CHANGELOG</span><span class="rs">RIWAYAT PEMBARUAN</span></span><span class="rt"><span class="vl">v1.4.2</span></span></div>
-          </div>
-        </section>
-
-        <!-- FOLD 4: FASILITAS & ASCENSION -->
-        <section class="fold" data-fold="special" style="--sc:var(--gold)">
-          <button class="fh" type="button" aria-expanded="false" aria-controls="fb4">
-            <span class="fbar" aria-hidden="true"></span>
-            <span class="fic"><i class="ic i-shop"></i></span>
-            <span class="ft"><span class="ftag">SPECIAL PROTOCOLS</span><span class="fnm">FASILITAS &amp; ASCENSION</span></span>
-            <span class="fstat"><b>${_gems}</b><span class="s2"> · READY</span><span class="ch" aria-hidden="true"></span></span>
-          </button>
-          <div class="fb" id="fb4">
-            <div class="row menu-card" id="drwPremiumBtn" style="--rc:var(--gold)" role="button" tabindex="0"><span class="pod"><i class="ic i-shop"></i></span><span class="ri"><span class="rn">Supply Shop</span><span class="rs" id="drwPremiumSub">INSTANT ROLL PACKS</span></span><span class="rt"><span class="vl">${_gems} GEM</span></span></div>
-            <div class="row menu-card" id="drwRebirthBtn" style="--rc:var(--mg)" role="button" tabindex="0"><span class="pod"><i class="ic i-rebirth"></i></span><span class="ri"><span class="rn">Rebirth Protocol</span><span class="rs" id="drwRebirthSub">PENGALI SINGULARITAS</span></span><span class="rt"><span class="vl">LV ${_lv}</span></span></div>
-          </div>
-        </section>
+        ${_drwGrp('more', 'UNITS', '04', 'foldCombatStat', [
+          { id: 'drwStoryBtn', ic: 'quests', nm: 'Story', hc: '#f3e600', s: 'CAMPAIGN PROGRESS', sId: 'missionSub', s2: '0% COMPLETE', s2Id: 'drwStoryPercent', pbId: 'missionFill', pbW: 0 },
+          { id: 'drwRaidBtn', ic: 'skills', nm: 'World Boss', hc: '#f87171', s: 'SHARED HP RAID' },
+          { id: 'drwTowerBtn', ic: 'home', nm: 'Tower', hc: '#b58cff', s: 'INFINITE SPIRE', sId: 'drwTowerSub' },
+          { id: 'drwRankBtn', ic: 'luck', nm: 'Ranking', hc: '#ffd700', s: 'GLOBAL RANK', sId: 'drwRankSub' }
+        ])}
+        ${_drwGrp('daily', 'REWARDS', '04', '', [
+          { id: 'drwDailyBtn', ic: 'daily', nm: 'Daily', hc: '#4ade80', s: 'CLAIM DAILY REWARD', sId: 'drwDailySub' },
+          { id: 'drwAdsBtn', ic: 'ads', nm: 'Free Luck', hc: '#ffd700', s: 'WATCH ADS FOR BOOST', sId: 'drwAdsSub' },
+          { id: 'drwGlBtn', ic: 'luck', nm: 'Global Luck', hc: '#22d3ee', s: 'COMMUNITY MULTIPLIER', sId: 'drwGlSub' },
+          { id: 'drwWeatherBtn', ic: 'rebirth', nm: 'Weather', hc: '#b58cff', s: 'ATMOSPHERIC BUFF', sId: 'drwWeatherSub' }
+        ])}
+        ${_drwGrp('supply', 'SHOP', '02', '', [
+          { id: 'drwPremiumBtn', ic: 'supply', nm: 'Supply Shop', hc: '#ffd700', s: 'INSTANT ROLL PACKS', sId: 'drwPremiumSub' },
+          { id: 'drwRebirthBtn', ic: 'rebirth', nm: 'Rebirth', hc: '#b58cff', s: 'ASCENSION PROTOCOL', sId: 'drwRebirthSub' }
+        ])}
+        ${_drwGrp('settings', 'SYSTEM', '05', '', [
+          { id: 'drwTraitBtn', ic: 'more', nm: 'Trait', hc: '#22d3ee', s: 'PASSIVE OPTIMIZER', sId: 'drwTraitSub' },
+          { id: 'drwSkillBtn', ic: 'skills', nm: 'Skill Tree', hc: '#4ade80', s: 'SPEND SKILL POINTS', sId: 'drwSkillSub', badge: '0 SP', badgeId: 'drwSkillSp' },
+          { id: 'drwIndexBtn', ic: 'archive', nm: 'Archive', hc: '#22d3ee', s: 'CARD CATALOG', sId: 'drwIndexSub' },
+          { id: 'drwSettingsBtn', ic: 'settings', nm: 'Settings', hc: '#f5f5f5', s: 'AUDIO · COMBAT · LANGUAGE' },
+          { id: 'drwChangelogBtn', ic: 'changelog', nm: 'Changelog', hc: '#f87171', s: 'RELEASE NOTES' }
+        ])}
       </div>
 
-      <div class="drw-foot">
-        <span class="drw-foot-k"><i class="live-dot"></i>${(currentUser || "OPERATOR").toUpperCase()} · LV <b>${_lv}</b></span>
-        <span class="drw-foot-r"><b>ESC</b> / <b>X</b> = TUTUP</span>
-      </div>
+      <footer class="drw-foot">
+        <span class="drw-foot-k"><i class="live-dot" aria-hidden="true"></i>${(currentUser || 'OPERATOR').toUpperCase()} · LV <b>${_lv}</b></span>
+        <span class="drw-tel" aria-hidden="true"><i class="tel-bar" style="--n:1"></i><i class="tel-bar" style="--n:2"></i><i class="tel-bar" style="--n:3"></i><i class="tel-bar" style="--n:4"></i><b>LINK</b>&nbsp;STABLE</span>
+      </footer>
     </aside>
   </div>`;
 
@@ -2558,7 +2530,7 @@ window.l12UpdateWeatherDock = l12UpdateWeatherDock;
       const done = CHAPTERS.reduce((a, c) => a + (typeof chapProgMode === 'function' ? chapProgMode(c, state.diff) : 0), 0);
       const tot = CHAPTERS.reduce((a, c) => a + c.levels.length, 0);
       const ratio = tot ? Math.min(100, Math.round(done / tot * 100)) : 0;
-      if (ms) ms.textContent = done + ' / ' + tot + ' SELESAI';
+      if (ms) ms.textContent = done + ' / ' + tot + ' STAGES';
       if (fill) fill.style.width = ratio + '%';
       if (percentEl) percentEl.textContent = ratio + '% COMPLETE';
     }
@@ -2580,8 +2552,8 @@ window.l12UpdateWeatherDock = l12UpdateWeatherDock;
     if (adsSub) {
       const luckMs = typeof adLuckLeftMs === 'function' ? adLuckLeftMs() : 0;
       if (luckMs > 0) {
-        adsSub.textContent = '2x LUCK AKTIF (' + Math.ceil(luckMs / 60000) + 'm)';
-        adsSub.style.color = '#fbbf24';
+        adsSub.textContent = '2x LUCK ACTIVE (' + Math.ceil(luckMs / 60000) + 'm)';
+        adsSub.style.color = '#ffd700';
       } else {
         adsSub.textContent = 'WATCH ADS FOR 2x LUCK';
       }
@@ -2595,10 +2567,10 @@ window.l12UpdateWeatherDock = l12UpdateWeatherDock;
       const gl = typeof _globalLuckCache !== 'undefined' ? _globalLuckCache : null;
       const glActive = gl && Date.now() < new Date(gl.ends_at).getTime();
       if (glActive) {
-        glSub.textContent = (gl.multiplier || 2) + 'x LUCK AKTIF';
-        glSub.style.color = '#38bdf8';
+        glSub.textContent = (gl.multiplier || 2) + 'x LUCK ACTIVE';
+        glSub.style.color = '#22d3ee';
       } else {
-        glSub.textContent = 'PENGALI LUCK SERVER';
+        glSub.textContent = 'SERVER LUCK MULTIPLIER';
       }
     }
   } catch(e) {}
@@ -2607,7 +2579,7 @@ window.l12UpdateWeatherDock = l12UpdateWeatherDock;
   try {
     const wSub = document.getElementById('drwWeatherSub');
     if (wSub && typeof state !== 'undefined' && state && state.weather) {
-      wSub.textContent = 'CUACA: ' + (state.weather.name || state.weather.type || 'CLEAR').toUpperCase();
+      wSub.textContent = 'WEATHER: ' + (state.weather.name || state.weather.type || 'CLEAR').toUpperCase();
     }
   } catch(e) {}
 
@@ -2667,27 +2639,9 @@ window.l12UpdateWeatherDock = l12UpdateWeatherDock;
   bindClick('drwSettingsBtn', () => { location.hash = '#/settings'; });
   bindClick('drwChangelogBtn', () => { if (typeof openChangelogModal === 'function') openChangelogModal(); });
 
-  /* ---- V2 ACCORDION TOGGLE ----
-     Portrait (<700px): buka satu fold → tutup fold lain (sama seperti Settings V2).
-     Desktop (≥700px): bebas, bisa buka banyak fold sekaligus. */
-  const _narrow = () => innerWidth < 700;
-  document.querySelectorAll('#commandDrawer .fh').forEach(h => {
-    h.addEventListener('click', () => {
-      const f = h.parentElement;
-      const willOpen = !f.classList.contains('open');
-      if (willOpen && _narrow()) {
-        document.querySelectorAll('#commandDrawer .fold.open').forEach(x => {
-          if (x !== f) {
-            x.classList.remove('open');
-            const xh = x.querySelector('.fh');
-            if (xh) xh.setAttribute('aria-expanded', 'false');
-          }
-        });
-      }
-      f.classList.toggle('open', willOpen);
-      h.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
-    });
-  });
+  /* Accordion v2 (.fh/.fold) DIHAPUS: drawer v5 adalah grid heksagon yang
+     selalu terbuka, tidak ada header yang bisa dilipat. Handler lama akan
+     query elemen yang tidak ada lagi, jadi bloknya dibuang bersama markupnya. */
 
   // Initialize interactive engines
   initAmbientCanvas();

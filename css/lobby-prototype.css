@@ -294,18 +294,9 @@
       50% { transform: scale(1.15); filter: drop-shadow(0 0 14px rgba(56, 189, 248, 0.85)); }
     }
 
-    /* Command Drawer styles defined in Root Section below */
-
-    #commandDrawer.open .stagger-in {
-      animation: cascadeSlide 0.45s var(--ease-spring) both;
-      animation-delay: calc(var(--stagger) * 0.04s + 0.05s);
-    }
-    @keyframes cascadeSlide {
-      0% { opacity: 0; transform: translateX(36px) scale(0.97); }
-      100% { opacity: 1; transform: translateX(0) scale(1); }
-    }
-
-
+    /* Command Drawer v5: gaya penuh ada di blok COMMAND ANCHOR DRAWER
+       (root section file ini). Sisa animasi v2 `.stagger-in` sudah tidak
+       dipakai markup baru. */
 
     .drw-body::-webkit-scrollbar { width: 4px; }
     .drw-body::-webkit-scrollbar-thumb {
@@ -605,7 +596,8 @@
     @media (max-width: 768px) {
       .topbar { padding: 0 16px; }
       .op-split-grid, .modular-grid { grid-template-columns: 1fr; }
-      #commandDrawer { width: 90vw; }
+      /* #commandDrawer width dikelola blok COMMAND ANCHOR DRAWER v5
+         (min(400px,92%) / desktop min(420px,62%)) — jangan ditimpa di sini. */
     }
 
     .screen-overlay.show {
@@ -1821,17 +1813,21 @@ html body.on-lobby .stage-loadout .loadout-slot .ls-mark svg {
 
 
 
-/* ================= ARCHON COMMAND DRAWER (SWIPE MENU) OVERLAY ================= */
+/* ================= COMMAND ANCHOR DRAWER v5 (SWIPE MENU) OVERLAY =================
+   Desain dikunci di `_tmp/proto_drawer_v5.html` (laporan LULUS 4 viewport).
+   Panel kanan + grid heksagon 4 grup. Animasi HANYA transform/opacity (§2b):
+   tanpa backdrop-filter, tanpa animasi box-shadow/background-position,
+   tanpa gambar/video latar. */
 #drawerBackdrop {
   position: fixed !important;
   inset: 0 !important;
   z-index: 99990 !important;
-  background: rgba(3, 6, 14, 0.5) !important;
-  backdrop-filter: blur(6px) !important;
-  -webkit-backdrop-filter: blur(6px) !important;
+  background: rgba(0, 0, 0, 0.72) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   opacity: 0 !important;
   pointer-events: none !important;
-  transition: opacity 0.35s ease !important;
+  transition: opacity 0.32s ease !important;
 }
 #drawerBackdrop.open {
   opacity: 1 !important;
@@ -1839,37 +1835,457 @@ html body.on-lobby .stage-loadout .loadout-slot .ls-mark svg {
 }
 
 #commandDrawer {
+  --acc: #f3e600;
+  --paper: #f5f5f5;
+  --dim: rgba(245, 245, 245, 0.58);
+  --faint: rgba(245, 245, 245, 0.16);
+  --hair: rgba(245, 245, 245, 0.3);
+  --hex: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  --chamfer: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
   position: fixed !important;
   top: 0 !important;
   right: 0 !important;
   bottom: 0 !important;
-  width: min(580px, 92vw) !important;
+  width: min(400px, 92%) !important;
   z-index: 100000 !important;
-  background: linear-gradient(180deg, rgba(8, 12, 24, 0.98) 0%, rgba(4, 7, 15, 0.98) 100%) !important;
-  backdrop-filter: blur(40px) saturate(220%) !important;
-  -webkit-backdrop-filter: blur(40px) saturate(220%) !important;
-  border-left: 2px solid rgba(56, 189, 248, 0.5) !important;
-  box-shadow: -25px 0 80px rgba(0, 0, 0, 0.95), inset 1px 0 0 rgba(255, 255, 255, 0.08) !important;
-  transform: translateX(105%) !important;
-  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1) !important;
   display: flex !important;
   flex-direction: column !important;
   overflow: hidden !important;
   pointer-events: auto !important;
+  background: linear-gradient(180deg, #070707 0%, #050505 100%) !important;
+  border: 0 !important;
+  border-left: 2px solid var(--acc) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transform: translate3d(104%, 0, 0) !important;
+  transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: transform;
 }
-#commandDrawer.open {
-  transform: translateX(0%) !important;
+#commandDrawer.open { transform: translate3d(0, 0, 0) !important; }
+
+/* hazard tape strip di kepala drawer (statis) */
+#commandDrawer .drw-tape {
+  flex: 0 0 auto;
+  height: 8px;
+  background: repeating-linear-gradient(115deg, var(--acc) 0 12px, #050505 12px 24px);
+}
+/* scan sweep sekali jalan saat drawer terbuka */
+#commandDrawer .drw-scan {
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 110px;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(243, 230, 0, 0.16) 46%, rgba(255, 255, 255, 0.10) 50%, transparent 100%);
+}
+#commandDrawer.open .drw-scan {
+  animation: drwScan 0.9s cubic-bezier(0.22, 0.7, 0.3, 1) 0.04s 1 both;
+}
+@keyframes drwScan {
+  0%   { opacity: 0; transform: translate3d(0, -120%, 0); }
+  12%  { opacity: 1; }
+  82%  { opacity: 0.85; }
+  100% { opacity: 0; transform: translate3d(0, 860%, 0); }
 }
 
-/* Cinematic Stage Depth-of-Field Blur when drawer is open - Separates menu from lobby */
-body.drawer-open #stage {
-  filter: blur(12px) brightness(0.35) saturate(0.85) !important;
-  transform: scale(0.97) !important;
-  transition: filter 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  pointer-events: none !important;
+/* ------------------------------- HEAD ---------------------------------- */
+#commandDrawer .drw-head {
+  flex: 0 0 auto !important;
+  position: relative !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  justify-content: initial !important;
+  gap: 10px !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 12px 12px 13px 16px !important;
+  background: linear-gradient(180deg, #0b0b0b 0%, #060606 100%) !important;
+  border-bottom: 1px solid var(--hair) !important;
+}
+#commandDrawer .drw-head::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: var(--acc);
+}
+#commandDrawer .drw-head-l { min-width: 0; }
+#commandDrawer .drw-kick {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 6.5px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--acc);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#commandDrawer .drw-kick i {
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--acc);
+  display: block;
+  flex: none;
+  animation: drwBlip 2.2s ease-in-out infinite;
+}
+@keyframes drwBlip { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+#commandDrawer .drw-ttl {
+  margin-top: 4px;
+  font-family: 'Orbitron', 'Rajdhani', sans-serif;
+  font-weight: 900;
+  font-size: 17px;
+  letter-spacing: 0.03em;
+  line-height: 1.05;
+  color: #fff;
+  text-shadow: none !important;
+}
+#commandDrawer .drw-ttl em { font-style: normal; color: var(--acc); }
+#commandDrawer .drw-ttl::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 3px;
+  margin-top: 6px;
+  background: repeating-linear-gradient(115deg, rgba(243, 230, 0, 0.85) 0 8px, transparent 8px 16px);
+  opacity: 0.55;
+}
+#commandDrawer .drw-close-btn {
+  position: relative;
+  z-index: 100002;
+  flex: none;
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px;
+  min-height: 44px;
+  display: grid !important;
+  place-items: center;
+  padding: 0 !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.32) !important;
+  border-radius: 0 !important;
+  color: #e6e6e6 !important;
+  clip-path: var(--chamfer);
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+#commandDrawer .drw-close-btn svg { width: 18px; height: 18px; }
+#commandDrawer .drw-close-btn:hover {
+  background: var(--acc) !important;
+  border-color: var(--acc) !important;
+  color: #050505 !important;
+  transform: scale(1.05);
+  box-shadow: none !important;
+  filter: none !important;
+}
+#commandDrawer .drw-close-btn:active { transform: scale(0.96); }
+
+/* ------------------------------- BODY ---------------------------------- */
+#commandDrawer .drw-body {
+  flex: 1 1 auto !important;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px 12px 18px !important;
+  display: flex !important;
+  flex-direction: column;
+  gap: 16px !important;
+  scrollbar-width: none;
+  background-color: #050505;
+  background-image:
+    linear-gradient(90deg, rgba(243, 230, 0, 0.045) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(243, 230, 0, 0.045) 1px, transparent 1px);
+  background-size: 22px 22px;
+  background-position: -1px -1px;
+}
+#commandDrawer .drw-body::-webkit-scrollbar { display: none; }
+#commandDrawer .drw-body > * { flex: none; }
+
+/* ------------------------------ GROUPS --------------------------------- */
+#commandDrawer .grp { display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+#commandDrawer .grp-h { display: flex; align-items: center; gap: 7px; min-width: 0; }
+#commandDrawer .gh-i {
+  width: 18px; height: 18px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  color: var(--acc);
+}
+#commandDrawer .gh-i .ic-svg { width: 15px; height: 15px; }
+#commandDrawer .gh-t {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--paper);
+  white-space: nowrap;
+}
+#commandDrawer .gh-l { flex: 1 1 auto; height: 1px; background: var(--faint); }
+#commandDrawer .gh-n {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 7.5px;
+  letter-spacing: 0.1em;
+  color: var(--dim);
+  white-space: nowrap;
 }
 
-/* Stacking Context & Topbar Neutralization when drawer is open */
+#commandDrawer .hex-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 14px 6px;
+  padding: 2px 0;
+}
+
+/* ---------------------------- HEX TILE --------------------------------- */
+#commandDrawer .hx {
+  position: relative;
+  flex: 0 0 calc(33.333% - 6px);
+  max-width: 104px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  opacity: 1;
+}
+#commandDrawer.open .hx {
+  animation: hxIn 0.44s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 34ms + 90ms);
+}
+@keyframes hxIn {
+  from { opacity: 0; transform: translate3d(0, 16px, 0) scale(0.94); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+#commandDrawer .hx-f {
+  position: relative;
+  width: 74px;
+  height: 82px;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--hc, #f5f5f5) 78%, transparent);
+  clip-path: var(--hex);
+  transition: background 0.2s ease;
+  overflow: hidden;
+}
+#commandDrawer .hx-f::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: linear-gradient(180deg, #0d0d0d 0%, #070707 100%);
+  clip-path: var(--hex);
+}
+#commandDrawer .hx-f::after {
+  content: '';
+  position: absolute;
+  left: -30%; top: 0;
+  width: 60%; height: 100%;
+  background: linear-gradient(104deg, transparent 42%, rgba(255, 255, 255, 0.20) 50%, transparent 58%);
+  transform: translate3d(-40%, 0, 0);
+  pointer-events: none;
+}
+#commandDrawer .hx-corner {
+  position: absolute;
+  z-index: 2;
+  width: 10px; height: 10px;
+  pointer-events: none;
+  border: 0 solid currentColor;
+  opacity: 0.55;
+  color: color-mix(in srgb, var(--hc, #f5f5f5) 80%, transparent);
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
+#commandDrawer .hx-corner.tl { left: 9px; top: 9px; border-left-width: 1.5px; border-top-width: 1.5px; }
+#commandDrawer .hx-corner.br { right: 9px; bottom: 9px; border-right-width: 1.5px; border-bottom-width: 1.5px; }
+#commandDrawer .hx:hover .hx-corner { opacity: 0.9; }
+#commandDrawer.open .hx-f::after {
+  animation: hxSheen 0.78s cubic-bezier(0.3, 0.6, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 34ms + 190ms);
+}
+@keyframes hxSheen {
+  0%   { transform: translate3d(-140%, 0, 0); opacity: 0; }
+  15%  { opacity: 1; }
+  100% { transform: translate3d(260%, 0, 0); opacity: 0; }
+}
+#commandDrawer .hx-svg {
+  position: relative;
+  z-index: 1;
+  width: 34px;
+  height: 34px;
+  color: var(--hc, var(--paper));
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#commandDrawer .hx-nm {
+  font-family: 'Rajdhani', 'Barlow Condensed', sans-serif;
+  font-weight: 800;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  color: var(--paper);
+  text-transform: uppercase;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s ease;
+}
+#commandDrawer .hx-s {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 6.5px;
+  letter-spacing: 0.08em;
+  color: var(--dim);
+  white-space: nowrap;
+  margin-top: -5px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#commandDrawer .hx-s2 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 6.5px;
+  letter-spacing: 0.08em;
+  color: var(--dim);
+  white-space: nowrap;
+  margin-top: -5px;
+}
+#commandDrawer .hx-b {
+  position: absolute;
+  z-index: 2;
+  top: -3px; right: 6px;
+  min-width: 16px;
+  height: 15px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  background: var(--acc);
+  color: #050505;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px);
+}
+#commandDrawer .hx-pb {
+  width: 44px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  display: block;
+  overflow: hidden;
+}
+#commandDrawer .hx-pb > span {
+  display: block;
+  height: 100%;
+  background: var(--hc, var(--acc));
+}
+#commandDrawer .hx:hover .hx-f { background: color-mix(in srgb, var(--hc, #f5f5f5) 100%, transparent); }
+#commandDrawer .hx:hover .hx-nm { color: var(--hc, #fff); }
+#commandDrawer .hx:active { transform: scale(0.97); }
+/* ------------------------------- FOOT ---------------------------------- */
+#commandDrawer .drw-foot {
+  flex: 0 0 auto !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 12px calc(9px + env(safe-area-inset-bottom, 0px)) !important;
+  background: #080808 !important;
+  border-top: 1px solid var(--faint) !important;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 7px;
+  letter-spacing: 0.1em;
+  color: var(--dim);
+  text-shadow: none !important;
+}
+#commandDrawer .drw-foot b { color: var(--acc) !important; font-weight: 700; }
+#commandDrawer .drw-foot-k {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#commandDrawer .drw-foot-k .live-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: #4ade80;
+  flex: none;
+  animation: drwBlip 2.6s ease-in-out infinite;
+  box-shadow: none !important;
+}
+#commandDrawer .drw-tel { display: inline-flex; align-items: center; gap: 3px; flex: none; white-space: nowrap; }
+#commandDrawer .tel-bar {
+  width: 2px; height: 6px;
+  background: #4ade80;
+  display: block;
+  opacity: calc(0.35 + var(--n) * 0.16);
+}
+#commandDrawer .tel-bar:nth-child(4) { height: 8px; }
+#commandDrawer .drw-tel b { margin-left: 3px; }
+
+/* ikon inline dasar (dua nada: currentColor + fill-opacity .45) */
+#commandDrawer .ic-svg {
+  display: block;
+  width: 18px; height: 18px;
+  flex: none;
+  color: inherit;
+  overflow: visible;
+}
+
+/* ============================== RESPONSIVE ============================= */
+@media (min-width: 700px) {
+  #commandDrawer { width: min(420px, 62%) !important; }
+  #commandDrawer .hex-grid { gap: 16px 10px; }
+  #commandDrawer .hx-f { width: 82px; height: 91px; }
+  #commandDrawer .hx-svg { width: 38px; height: 38px; }
+  #commandDrawer .drw-ttl { font-size: 19px; }
+}
+@media (max-height: 430px) {
+  #commandDrawer { width: min(420px, 54%) !important; }
+  #commandDrawer .drw-head { padding: 8px 10px 9px 14px !important; }
+  #commandDrawer .drw-ttl { font-size: 15px; }
+  #commandDrawer .drw-body { gap: 12px !important; padding: 10px 10px 14px !important; }
+  #commandDrawer .hex-grid { gap: 10px 6px; }
+  #commandDrawer .hx-f { width: 62px; height: 69px; }
+  #commandDrawer .hx-svg { width: 27px; height: 27px; }
+  #commandDrawer .hx { gap: 6px; }
+  #commandDrawer .hx-nm { font-size: 8.5px; }
+  #commandDrawer .hx-s, #commandDrawer .hx-s2 { display: none; }
+}
+@media (max-width: 360px) {
+  #commandDrawer .drw-body { padding: 10px 9px 16px !important; }
+  #commandDrawer .hex-grid { gap: 12px 4px; }
+  #commandDrawer .hx-f { width: 66px; height: 73px; }
+  #commandDrawer .hx-svg { width: 29px; height: 29px; }
+  #commandDrawer .hx-nm { font-size: 8.5px; letter-spacing: 0.06em; }
+  #commandDrawer .hx-s, #commandDrawer .hx-s2 { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #commandDrawer, #drawerBackdrop { transition: none !important; }
+  #commandDrawer.open .hx,
+  #commandDrawer.open .hx-f::after,
+  #commandDrawer.open .drw-scan,
+  #commandDrawer .drw-kick i { animation: none !important; }
+}
+
+/* State hook `body.drawer-open` (dipasang openCommandDrawer/closeCommandDrawer).
+   Dulu #stage di-blur 12px — dihapus: filter besar di subtree lobby = biaya
+   paint per frame (§2b#6). Pemisahan visual sekarang dari overlay alpha
+   di atas, dan topbar/dock cukup diredupkan (opacity = composited). */
+html body.drawer-open #drawerBackdrop { background: rgba(0, 0, 0, 0.78) !important; }
 html body.drawer-open header#topbar,
 html body.drawer-open #topbar,
 html body.drawer-open #topbar *,
@@ -1879,350 +2295,6 @@ body.drawer-open .lobby-footer {
   transition: opacity 0.25s ease !important;
 }
 
-.drw-close-btn {
-  position: relative !important;
-  z-index: 100002 !important;
-  pointer-events: auto !important;
-  cursor: pointer !important;
-  width: 44px !important;
-  height: 44px !important;
-  background: rgba(255, 255, 255, 0.08) !important;
-  color: #94a3b8 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px) !important;
-  border: none !important;
-  border-bottom: 2px solid #38bdf8 !important;
-  transition: all 0.22s var(--ease-spring) !important;
-}
-.drw-close-btn:hover {
-  background: rgba(255, 255, 255, 0.22) !important;
-  color: #ffffff !important;
-  transform: scale(1.08) !important;
-  filter: drop-shadow(0 0 12px #38bdf8) !important;
-}
-
-.drw-body {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  scrollbar-width: none;
-}
-.drw-body::-webkit-scrollbar { display: none; }
-#commandDrawer .drw-body > * { flex: none; }
-
-/* ================= DRAWER V2 — ACCORDION HUB =================
-   4 section fold (pola Settings V2): header jadi kontrol accordion,
-   strip status live di header, tubuh display:none saat tertutup.
-   Class: .fold .fh .fb .row .fic .ft .fstat .ch .pod .ri .rn .rs .rt .vl .pb .live */
-#commandDrawer {
-  --cyan: #00f0ff; --ice: #a8f4ff; --gold: #fbbf24; --purple: #c084fc; --crimson: #fb7185;
-  --emerald: #34d399; --white: #f8fafc; --silver: #93a5b8; --dim: #5c7285;
-  --panel: #0a0f18; --panel2: #0d1420;
-  --hair: rgba(0, 240, 255, 0.14); --cy: #00f0ff; --mg: #ff2bd6;
-}
-#commandDrawer .fold {
-  --sc: var(--accent-cyan, #38bdf8);
-  flex: none;
-  position: relative;
-  background: rgba(10, 15, 28, 0.85);
-  border: 1px solid rgba(56, 189, 248, 0.14);
-  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
-}
-#commandDrawer .fh {
-  position: relative;
-  flex: none;
-  display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  min-height: 56px;
-  padding: 8px 10px 8px 6px;
-  background: none;
-  border: 0;
-  cursor: pointer;
-  text-align: left;
-  color: inherit;
-  font: inherit;
-  -webkit-tap-highlight-color: transparent;
-}
-#commandDrawer .fh .fbar {
-  position: absolute;
-  left: 0; right: 0; top: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--sc), transparent);
-  transform: scaleX(0);
-  transform-origin: 0 50%;
-  transition: transform .3s cubic-bezier(.16, 1, .3, 1);
-}
-#commandDrawer .fold.open .fh .fbar { transform: scaleX(1); }
-#commandDrawer .fh .fic {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px; height: 34px;
-  color: var(--sc);
-  background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.07), transparent 70%);
-  border: 1px solid var(--sc);
-  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
-}
-#commandDrawer .fh .fic .ic { width: 18px; height: 18px; }
-#commandDrawer .fh .ft {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-#commandDrawer .fh .ftag {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
-  font-size: 7.5px;
-  letter-spacing: .12em;
-  color: var(--sc);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-#commandDrawer .fh .fnm {
-  font-family: var(--font-tac, 'Rajdhani', sans-serif);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: .06em;
-  color: #ffffff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-#commandDrawer .fh .fstat {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  flex: none;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
-  font-size: 8px;
-  letter-spacing: .02em;
-  color: var(--text-silver, #93a5b8);
-  white-space: nowrap;
-  max-width: 44%;
-}
-#commandDrawer .fh .fstat b {
-  color: var(--sc);
-  font-weight: 600;
-}
-#commandDrawer .fh .ch {
-  position: relative;
-  flex: none;
-  width: 16px; height: 16px;
-  color: var(--sc);
-}
-#commandDrawer .fh .ch::before {
-  content: '';
-  position: absolute;
-  left: 50%; top: 42%;
-  width: 8px; height: 8px;
-  border-right: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  transform: translate(-50%, -50%) rotate(45deg);
-  transition: transform .24s cubic-bezier(.16, 1, .3, 1);
-}
-#commandDrawer .fold.open .fh .ch::before {
-  transform: translate(-50%, -50%) rotate(-135deg);
-}
-#commandDrawer .fb {
-  display: none;
-  padding: 0 8px 8px;
-  border-top: 1px solid rgba(56, 189, 248, 0.14);
-}
-#commandDrawer .fold.open {
-  display: flex;
-  flex-direction: column;
-}
-#commandDrawer .fold.open .fb {
-  flex: 1;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 6px;
-  grid-auto-rows: minmax(54px, 64px);
-  align-content: start;
-  animation: drwPanelIn .22s ease-out;
-}
-@keyframes drwPanelIn {
-  0% { opacity: 0; transform: translateY(-8px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
-/* V2 row entry */
-#commandDrawer .row {
-  position: relative;
-  display: grid;
-  grid-template-columns: 32px minmax(0, 1fr) max-content;
-  align-items: center;
-  gap: 8px;
-  min-height: 54px;
-  padding: 7px 8px;
-  background: rgba(13, 20, 32, 0.9);
-  border: 1px solid rgba(56, 189, 248, 0.14);
-  cursor: pointer;
-  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
-  transition: border-color .2s ease, background .2s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-#commandDrawer .row:hover {
-  border-color: rgba(56, 189, 248, 0.35);
-  background: rgba(16, 28, 48, 0.95);
-}
-#commandDrawer .row:active { transform: scale(0.98); }
-#commandDrawer .row .pod {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px; height: 32px;
-  color: var(--rc, var(--sc, #38bdf8));
-  background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.08), transparent 72%);
-  border: 1px solid var(--rc, var(--sc, #38bdf8));
-  clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
-}
-#commandDrawer .row .pod .ic { width: 17px; height: 17px; }
-#commandDrawer .row .ri {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-#commandDrawer .row .rn {
-  font-family: var(--font-tac, 'Rajdhani', sans-serif);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: .05em;
-  color: #ffffff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-#commandDrawer .row .rs {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
-  font-size: 8px;
-  letter-spacing: .04em;
-  color: var(--text-silver, #93a5b8);
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  overflow: hidden;
-}
-#commandDrawer .row .rt {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: center;
-  min-width: 0;
-}
-#commandDrawer .row .vl {
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
-  font-size: 11px;
-  color: var(--rc, var(--sc, #38bdf8));
-  white-space: nowrap;
-}
-#commandDrawer .row .pb {
-  position: absolute;
-  left: 8px; right: 8px; bottom: 5px;
-  height: 3px;
-  background: rgba(12, 21, 38, 0.8);
-  overflow: hidden;
-}
-#commandDrawer .row .pb > span {
-  display: block;
-  height: 100%;
-  background: linear-gradient(90deg, var(--rc, var(--sc, #38bdf8)), rgba(255,255,255,.55));
-}
-#commandDrawer .row .live {
-  display: inline-block;
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  color: #fb7185;
-  background: currentColor;
-  margin-left: 5px;
-  vertical-align: middle;
-  animation: drwDotBreath 2.4s ease-in-out infinite;
-}
-@keyframes drwDotBreath {
-  0%, 100% { opacity: .35; }
-  50% { opacity: 1; }
-}
-
-/* Drawer V2 footer */
-.drw-foot {
-  flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 7px 12px;
-  background: rgba(10, 15, 28, 0.95);
-  border-top: 1px solid rgba(56, 189, 248, 0.14);
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
-  font-size: 8px;
-  letter-spacing: .08em;
-  color: var(--text-dim, #5c7285);
-}
-.drw-foot b { color: var(--accent-ice, #a8f4ff); font-weight: 600; }
-.drw-foot-k {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.drw-foot-k .live-dot {
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: #34d399;
-  animation: drwDotBreath 3s ease-in-out infinite;
-}
-.drw-foot-r {
-  flex: none;
-  white-space: nowrap;
-}
-
-/* Responsive: portrait satu-kolom, desktop dua-kolom */
-@media (max-width: 420px) {
-  #commandDrawer .fh .fstat .s2 { display: none; }
-  #commandDrawer .fh .fstat { max-width: 26%; }
-}
-@media (min-width: 700px) {
-  #commandDrawer .fold.open .fb {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  }
-}
-
-/* Icon classes for drawer V2 (drawer is lifted to body, outside .l12 namespace) */
-#commandDrawer .ic {
-  display: inline-block; width: 18px; height: 18px; flex: none; background: currentColor;
-  -webkit-mask: var(--m) center/contain no-repeat; mask: var(--m) center/contain no-repeat;
-}
-#commandDrawer .i-story { --m: url(../assets/icons/scroll-unfurled.svg); }
-#commandDrawer .i-raid { --m: url(../assets/icons/spiked-dragon-head.svg); }
-#commandDrawer .i-tower { --m: url(../assets/icons/tower-fall.svg); }
-#commandDrawer .i-rank { --m: url(../assets/icons/trophy-cup.svg); }
-#commandDrawer .i-daily { --m: url(../assets/icons/star-swirl.svg); }
-#commandDrawer .i-ads { --m: url(../assets/icons/lightning-trio.svg); }
-#commandDrawer .i-gl { --m: url(../assets/icons/clover.svg); }
-#commandDrawer .i-wx { --m: url(../assets/icons/sun-cloud.svg); }
-#commandDrawer .i-trait { --m: url(../assets/icons/dna2.svg); }
-#commandDrawer .i-skill { --m: url(../assets/icons/portal.svg); }
-#commandDrawer .i-index { --m: url(../assets/icons/spell-book.svg); }
-#commandDrawer .i-set { --m: url(../assets/icons/gears.svg); }
-#commandDrawer .i-log { --m: url(../assets/icons/sparkles.svg); }
-#commandDrawer .i-shop { --m: url(../assets/icons/cut-diamond.svg); }
-#commandDrawer .i-rebirth { --m: url(../assets/icons/ouroboros.svg); }
 
 /* Color Tags & Glows */
 .glow-emerald { color: #34d399 !important; filter: drop-shadow(0 0 8px rgba(52, 211, 153, 0.45)) !important; }
@@ -5666,32 +5738,12 @@ body.on-battle #topbar {
     html.m-portrait body.on-lobby .telemetry-feed{ display:none !important; }
   }
 
-  /* PORTRAIT DRAWER FIX — the #commandDrawer is width:min(580px,92vw), so on a
-     phone its hero-banner cards (.banner-content flex row: banner-left icon+info
-     + banner-cta) are ~150px narrower than desktop. The fixed .banner-progress-wrap
-     (220px) + 28px content padding + 58px icon + 20px gap made banner-info refuse
-     to shrink, pushing the "MASUK ->" .banner-cta past the panel right edge (the
-     global sweep caught the CTA span + arrow svg clipped at the drawer border).
-     Scope is (pointer:coarse)+html.m-portrait only; desktop keeps the original
-     220px/28px layout. */
-  html.m-portrait body.on-lobby #commandDrawer .banner-content{ padding:0 12px !important; }
-  html.m-portrait body.on-lobby #commandDrawer .banner-left{ gap:10px !important; min-width:0 !important; flex:1 1 auto !important; }
-  html.m-portrait body.on-lobby #commandDrawer .banner-info{ min-width:0 !important; flex:1 1 auto !important; }
-  html.m-portrait body.on-lobby #commandDrawer .banner-icon-pod{ width:44px !important; height:44px !important; }
-  html.m-portrait body.on-lobby #commandDrawer .banner-progress-wrap{ width:100% !important; max-width:150px !important; }
-  html.m-portrait body.on-lobby #commandDrawer .banner-metric-row{ gap:8px !important; font-size:10px !important; min-width:0 !important; }
-  html.m-portrait body.on-lobby #commandDrawer .banner-title{ font-size:15px !important; }
-  html.m-portrait body.on-lobby #commandDrawer .banner-badge-row{ gap:6px !important; }
-  html.m-portrait body.on-lobby #commandDrawer .banner-cta{ flex:0 0 auto !important; font-size:12px !important; gap:4px !important; }
-  html.m-portrait body.on-lobby #commandDrawer .hero-banner-card{ overflow:hidden !important; }
-  /* Head spill: the fixed 68px .drw-head vertically-centers .drw-title-wrap; on
-     the narrower 320px drawer the eyebrow+title wrap exceeds 68px and pokes ~3px
-     above the viewport top. Let the head size to its content (top-anchored) and
-     trim the title/eyebrow so the header text always fits the phone drawer. */
-  html.m-portrait body.on-lobby #commandDrawer .drw-head{ height:auto !important; min-height:56px !important; align-items:flex-start !important; padding:8px 14px !important; }
-  html.m-portrait body.on-lobby #commandDrawer .drw-title-wrap{ min-width:0 !important; }
-  html.m-portrait body.on-lobby #commandDrawer .drw-title{ font-size:14px !important; line-height:1.15 !important; }
-  html.m-portrait body.on-lobby #commandDrawer .drw-eyebrow{ font-size:9px !important; }
+  /* COMMAND DRAWER v5 di portrait: panel kanan 92% lebar, jadi header harus
+     memadat (kicker mono 6.5px + judul 17px bisa meluber di 320px). Desain
+     dasar v5 sudah responsif; di sini hanya dirapatkan agar tidak ada spil. */
+  html.m-portrait body.on-lobby #commandDrawer .drw-head{ padding:10px 10px 11px 14px !important; }
+  html.m-portrait body.on-lobby #commandDrawer .drw-ttl{ font-size:15px !important; }
+  html.m-portrait body.on-lobby #commandDrawer .drw-kick{ font-size:6px !important; letter-spacing:.14em !important; }
 
 
   /* ---------------- LANDSCAPE ---------------- */
@@ -6489,27 +6541,17 @@ body.on-battle #topbar {
 
 /* ==========================================================================
    NAV BAWAH / RAIL — js/mobile-shell.js (.m-tabbar portrait / .m-rail landscape)
-   Root-nya sendiri unik, jadi aman disetel langsung: ini tabbar yang sama yang
-   di prototipe jadi .tabbar. Warna dasar tetap punya mobile-shell.css; yang di
-   sini cuma ukuran ikon mask + indikator geser .ind + chamfer, meniru v12.
+   Port dock v5 (`_tmp/proto_drawer_v5.html` .dock): hitam #050505, hazard tape
+   di tepi atas, strip hazard pendek di atas slot aktif, SUMMON heksagon aksen.
+   Struktur dasar ada di css/mobile-shell.css (dimuat sesudah file ini); di sini
+   hanya penyelarasan warna WoB supaya tema cyan lama tidak bocor.
    ========================================================================== */
-html.m-portrait .m-tabbar { border-top:1px solid rgba(0,240,255,.14); background:#0a0f18; }
-html.m-portrait .m-tabbar .ind {
-  position:absolute; top:0; left:0; width:25%; height:2px;
-  background:linear-gradient(90deg,#00f0ff,#ff2bd6);
-  transform:translateX(calc(var(--i,0) * 100%));
-  transition:transform .25s cubic-bezier(.16,1,.3,1);
-  pointer-events:none;
-}
-html.m-portrait .m-tabbar .ic,
-html.m-landscape .m-rail .ic {
-  width:20px; height:20px; display:inline-block; flex:none; background:currentColor;
-}
-html.m-portrait .m-tabbar button { color:#93a5b8; font-family:'Rajdhani','Barlow Condensed',sans-serif; letter-spacing:.06em; }
-html.m-portrait .m-tabbar button[aria-current="page"] { color:#a8f4ff; }
-html.m-landscape .m-rail { background:#0a0f18; border-right:1px solid rgba(0,240,255,.14); }
-html.m-landscape .m-rail button { color:#93a5b8; }
-html.m-landscape .m-rail button[aria-current="page"] { color:#a8f4ff; }
+html.m-portrait .m-tabbar { border-top:1px solid rgba(245,245,245,.3); background:linear-gradient(180deg,#0b0b0b 0%,#050505 100%); }
+html.m-portrait .m-tabbar button { color:rgba(245,245,245,.55); font-family:'JetBrains Mono',monospace; letter-spacing:.14em; }
+html.m-portrait .m-tabbar button[aria-current="page"] { color:#f5f5f5; }
+html.m-landscape .m-rail { background:linear-gradient(90deg,#0b0b0b 0%,#050505 100%); border-right:1px solid rgba(245,245,245,.3); }
+html.m-landscape .m-rail button { color:rgba(245,245,245,.55); }
+html.m-landscape .m-rail button[aria-current="page"] { color:#f5f5f5; }
 
 /* ==========================================================================
    TAHAP 2 — jembatan node hidup ke layout v12.

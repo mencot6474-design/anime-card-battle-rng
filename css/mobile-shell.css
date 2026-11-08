@@ -77,33 +77,81 @@ html.m-landscape #topbar {
   padding-top: calc(12px + var(--safe-top));
 }
 
-/* ---- Nav component (portrait bottom tabbar) ---- */
+/* ---- Nav component (portrait bottom tabbar) ----
+   PORT v5 (`_tmp/proto_drawer_v5.html` .dock): 5 slot grid, hazard tape di
+   tepi atas, strip hazard pendek di atas slot aktif (scaleX), SUMMON heksagon
+   aksen di tengah yang menonjol ke atas. Animasi HANYA transform/opacity. */
 html.m-portrait .m-tabbar {
   position: fixed;
   left: 0; right: 0; bottom: 0;
   z-index: 6000;
   height: calc(var(--nav-h) + var(--safe-bottom));
   padding-bottom: var(--safe-bottom);
-  display: flex;
-  background: #0d1117;
-  border-top: 1px solid #222;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  align-items: stretch;
+  background: linear-gradient(180deg, #0b0b0b 0%, #050505 100%);
+  border-top: 1px solid rgba(245, 245, 245, 0.3);
+}
+html.m-portrait .m-tabbar::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: -1px; height: 2px;
+  background: repeating-linear-gradient(115deg, #f3e600 0 10px, #050505 10px 20px);
+  opacity: 0.55;
+  pointer-events: none;
 }
 html.m-portrait .m-tabbar button {
-  flex: 1;
+  position: relative;
+  flex: initial;
   min-height: 44px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  font: 600 11px/1.1 "Barlow Condensed", sans-serif;
-  color: #9aa6b2;
+  gap: 3px;
+  padding: 0;
+  font: 700 7px/1 var(--fm, 'JetBrains Mono', monospace);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(245, 245, 245, 0.55);
   background: none;
   border: 0;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  transition: color 0.18s ease;
 }
-html.m-portrait .m-tabbar button[aria-current="page"] { color: #fff; }
+html.m-portrait .m-tabbar button .ic-svg { width: 20px; height: 20px; }
+html.m-portrait .m-tabbar button::after {
+  content: '';
+  position: absolute;
+  left: 50%; top: 0;
+  width: 26px; height: 2px;
+  background: #f3e600;
+  transform: translateX(-50%) scaleX(0);
+  transform-origin: 50% 50%;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+html.m-portrait .m-tabbar button[aria-current="page"] { color: #f5f5f5; }
+html.m-portrait .m-tabbar button[aria-current="page"]::after { transform: translateX(-50%) scaleX(1); }
+html.m-portrait .m-tabbar button[aria-current="page"] .ic-svg { color: #f3e600; }
+html.m-portrait .m-tabbar button:active { transform: scale(0.96); }
+
+/* SUMMON (tengah): heksagon penuh warna hazard, menjorok ke atas bar. */
+html.m-portrait .m-tabbar .m-dock-mid { justify-content: flex-start; padding-top: 5px; }
+html.m-portrait .m-tabbar .m-dock-mid::after { display: none; }
+html.m-portrait .m-tabbar .m-dk-hex {
+  width: 44px; height: 46px;
+  margin-top: -17px;
+  display: grid;
+  place-items: center;
+  background: #f3e600;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+html.m-portrait .m-tabbar .m-dk-hex .ic-svg { width: 22px; height: 22px; color: #050505; }
+html.m-portrait .m-tabbar .m-dock-mid:active .m-dk-hex { transform: scale(0.94); }
+html.m-portrait .m-tabbar .m-dock-mid .m-tab-label { margin-top: 1px; }
 
 /* ---- Nav component (landscape left rail) ---- */
 html.m-landscape .m-rail {
@@ -117,26 +165,50 @@ html.m-landscape .m-rail {
   justify-content: center;
   gap: 2px;
   padding: var(--safe-top) 0 var(--safe-bottom);
-  background: #0d1117;
-  border-right: 1px solid #222;
+  background: linear-gradient(90deg, #0b0b0b 0%, #050505 100%);
+  border-right: 1px solid rgba(245, 245, 245, 0.3);
 }
 html.m-landscape .m-rail button {
   /* Was flex:1, which stretched each tab into a 78-160px cell and spread the
      icons across the whole rail height. Fixed 52px keeps a >=44px tap target
-     and groups the five tabs in the middle of the band. */
+     and groups the tabs in the middle of the band. */
+  position: relative;
   flex: 0 0 52px;
   display: flex;
   align-items: center;
   justify-content: center;
   min-width: 44px;
   min-height: 44px;
-  color: #9aa6b2;
+  color: rgba(245, 245, 245, 0.55);
   background: none;
   border: 0;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  transition: color 0.18s ease;
 }
-html.m-landscape .m-rail button[aria-current="page"] { color: #fff; }
+html.m-landscape .m-rail button .ic-svg { width: 20px; height: 20px; }
+html.m-landscape .m-rail button::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%;
+  width: 2px; height: 22px;
+  background: #f3e600;
+  transform: translateY(-50%) scaleY(0);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+html.m-landscape .m-rail button[aria-current="page"] { color: #f5f5f5; }
+html.m-landscape .m-rail button[aria-current="page"]::before { transform: translateY(-50%) scaleY(1); }
+html.m-landscape .m-rail button[aria-current="page"] .ic-svg { color: #f3e600; }
+html.m-landscape .m-rail .m-dock-mid { flex: 0 0 58px; }
+html.m-landscape .m-rail .m-dk-hex {
+  width: 40px; height: 42px;
+  display: grid;
+  place-items: center;
+  background: #f3e600;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+html.m-landscape .m-rail .m-dk-hex .ic-svg { width: 20px; height: 20px; color: #050505; }
+html.m-landscape .m-rail .m-tab-label { display: none; }
 
 /* Belt-and-braces: never show the other orientation's nav variant. */
 html.m-portrait .m-rail { display: none !important; }
@@ -2195,134 +2267,58 @@ html.m-portrait .m-tabbar button:hover { color: #ffffff !important; }
 }
 
 /* =====================================================================
-   WoB: COMMAND DRAWER (#commandDrawer / #drawerBackdrop) — 2026-11-05
-   Hitam #050505/#0a0a0a, teks #f5f5f5, aksen kuning #f3e600.
-   Warna semantik per-section (--sc: combat=cyan, raid=crimson, tower=purple,
-   lb=gold, daily=emerald, special=gold) DIPERTAHANKAN — tidak diubah.
-   Hanya struktur (bg, border, ring, text dasar) yang di-WoB-kan.
+   WoB: COMMAND DRAWER v5 (#commandDrawer / #drawerBackdrop) — 2026-11-08
+   Hitam #050505/#0a0a0a, teks #f5f5f5, aksen hazard #f3e600. Struktur & warna
+   mengikuti css/lobby-prototype.css (blok COMMAND ANCHOR DRAWER v5); di sini
+   hanya penegasan WoB supaya tema cyan global tidak bocor ke panel ini.
+   Tanpa backdrop-filter (§2b#6) dan tanpa animasi non-composited.
    ===================================================================== */
 
-/* Backdrop overlay */
 #drawerBackdrop {
-  background: rgba(0, 0, 0, 0.8) !important;
+  background: rgba(0, 0, 0, 0.72) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
-/* Drawer shell: hitam murni + ring kuning hazard di tepi kiri */
 #commandDrawer {
-  background: linear-gradient(180deg, #050505 0%, #0a0a0a 100%) !important;
+  background: linear-gradient(180deg, #070707 0%, #050505 100%) !important;
   border-left: 2px solid #f3e600 !important;
-  box-shadow: -25px 0 80px rgba(0, 0, 0, 0.95), inset 1px 0 0 rgba(255, 255, 255, 0.08) !important;
+  box-shadow: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
-/* Header */
 #commandDrawer .drw-head {
-  background: linear-gradient(180deg, #0a0a0a 0%, #050505 100%) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.25) !important;
+  background: linear-gradient(180deg, #0b0b0b 0%, #060606 100%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.30) !important;
 }
-#commandDrawer .drw-eyebrow { color: #f3e600 !important; }
-#commandDrawer .drw-eyebrow .live-dot {
-  background: #f3e600 !important;
-  box-shadow: 0 0 8px #f3e600 !important;
-  animation: pulseGreen 2s infinite !important;
-}
-#commandDrawer .drw-title { color: #fff !important; text-shadow: none !important; }
+#commandDrawer .drw-kick { color: #f3e600 !important; }
+#commandDrawer .drw-kick i { background: #f3e600 !important; }
+#commandDrawer .drw-ttl { color: #fff !important; text-shadow: none !important; }
+#commandDrawer .drw-ttl em { color: #f3e600 !important; }
 
-/* Close btn */
 #commandDrawer .drw-close-btn {
   background: rgba(255, 255, 255, 0.06) !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  color: #e0e0e0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.32) !important;
+  color: #e6e6e6 !important;
+  box-shadow: none !important;
 }
 #commandDrawer .drw-close-btn:hover {
-  background: #f5f5f5 !important;
-  border-color: #f3e600 !important;
-  color: #050500 !important;
-  box-shadow: 0 0 14px rgba(243, 230, 0, 0.45) !important;
-  transform: scale(1.06) !important;
-}
-
-/* Scrollbar */
-#commandDrawer .drw-body::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.25) !important;
-}
-
-/* Fold section */
-#commandDrawer .fold {
-  background: #0a0a0a !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
-}
-
-/* Fold header (accordion) */
-#commandDrawer .fh .fic {
-  background: transparent !important;
-  border: 1px solid rgba(255, 255, 255, 0.35) !important;
-  box-shadow: none !important;
-}
-#commandDrawer .fh .fic .ic { color: #f5f5f5 !important; }
-#commandDrawer .fh .ftag { color: #f3e600 !important; text-shadow: none !important; }
-#commandDrawer .fh .fnm { color: #fff !important; text-shadow: none !important; }
-#commandDrawer .fh .fstat { color: #9a9a9a !important; }
-#commandDrawer .fh .fstat b { color: #f3e600 !important; }
-#commandDrawer .fh .ch { color: #f5f5f5 !important; }
-
-/* Fold body divider */
-#commandDrawer .fb {
-  border-top: 1px solid rgba(255, 255, 255, 0.14) !important;
-}
-
-/* Row entry (menu card) */
-#commandDrawer .row {
-  background: #0a0a0a !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
-  box-shadow: none !important;
-}
-#commandDrawer .row:hover {
-  border-color: rgba(255, 255, 255, 0.4) !important;
-  background: rgba(255, 255, 255, 0.04) !important;
-}
-#commandDrawer .row:active { transform: scale(0.98) !important; }
-
-/* Row icon pod */
-#commandDrawer .row .pod {
-  background: transparent !important;
-  border: 1px solid rgba(255, 255, 255, 0.35) !important;
-  box-shadow: none !important;
-}
-#commandDrawer .row .pod .ic { color: #f5f5f5 !important; }
-
-/* Row text */
-#commandDrawer .row .rn { color: #fff !important; text-shadow: none !important; }
-#commandDrawer .row .rs { color: #9a9a9a !important; text-shadow: none !important; }
-#commandDrawer .row .vl { color: #f5f5f5 !important; text-shadow: none !important; }
-
-/* Progress bar track + fill (fill keeps --rc semantic per-row) */
-#commandDrawer .row .pb { background: rgba(255, 255, 255, 0.08) !important; }
-#commandDrawer .row .pb > span {
-  background: linear-gradient(90deg, var(--rc, #f3e600), rgba(255,255,255,.45)) !important;
-}
-
-/* Live dot */
-#commandDrawer .row .live {
-  background: #fb7185 !important;
-  box-shadow: 0 0 6px #fb7185 !important;
-}
-
-/* Footer */
-#commandDrawer .drw-foot {
-  background: #0a0a0a !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.14) !important;
-  color: #9a9a9a !important;
-  text-shadow: none !important;
-}
-#commandDrawer .drw-foot b { color: #f3e600 !important; }
-#commandDrawer .drw-foot-k .live-dot {
   background: #f3e600 !important;
-  box-shadow: 0 0 6px #f3e600 !important;
+  border-color: #f3e600 !important;
+  color: #050505 !important;
+  box-shadow: none !important;
 }
+
+#commandDrawer .grp-h .gh-t { color: #f5f5f5 !important; }
+#commandDrawer .grp-h .gh-b { color: rgba(245, 245, 245, 0.58) !important; }
+#commandDrawer .hx-nm { color: #f5f5f5 !important; text-shadow: none !important; }
+#commandDrawer .hx-s,
+#commandDrawer .hx-s2 { color: rgba(245, 245, 245, 0.58) !important; text-shadow: none !important; }
+
+#commandDrawer .drw-foot { color: #9a9a9a !important; }
+#commandDrawer .drw-foot b { color: #f3e600 !important; }
+#commandDrawer .drw-foot-k .live-dot { background: #f3e600 !important; box-shadow: none !important; }
 
 /* =====================================================================
    WoB: SETTINGS SCREEN (#/settings, .sett-wrap) — 2026-11-05
