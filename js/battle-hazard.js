@@ -298,45 +298,43 @@
   }
 
   /* ------------------------------------------------- ACTION RAIL (kanan) */
-  /* Prototipe: rail vertikal SPEED / BATTLE LOG / AUTO / END BATTLE di kanan
-     bawah. Tombol-tombolnya memanggil fungsi mesin yang sudah ada. */
+  /* Hanya dua aksi yang benar-benar berfungsi: SPEED (siklus kecepatan yang
+     sudah terbuka per level) dan END BATTLE (keluar lewat tombol mesin
+     #bfExit). BATTLE LOG + AUTO dihapus sesuai revisi user. */
   function buildActRail() {
     if ($('hzActRail')) return;
     var wrap = mk('div', 'act-rail');
     wrap.id = 'hzActRail';
     wrap.innerHTML =
-      '<button id="hzSpeed"><span>SPEED 1&times;</span><span class="k">S</span></button>' +
-      '<button id="hzLog"><span>BATTLE LOG</span><span class="k">L</span></button>' +
-      '<button id="hzAuto"><span>AUTO: OFF</span><span class="k">A</span></button>' +
-      '<button id="hzEnd" class="hz"><span>END BATTLE</span><span class="k">&times;</span></button>';
+      '<button id="hzSpeed" type="button"><span>SPEED 1&times;</span></button>' +
+      '<button id="hzEnd" class="hz" type="button"><span>END BATTLE</span></button>';
     document.body.appendChild(wrap);
 
     var sp = $('hzSpeed');
     if (sp) sp.onclick = function () {
-      var btn = document.getElementById('bspeedBtn') ||
-        document.querySelector('#pgrSpeedGroup .pgr-spd-btn');
-      if (btn) { btn.click(); }
-      var b = (typeof bt !== 'undefined') && bt ? (bt.speed || 1) : 1;
-      sp.firstChild.textContent = 'SPEED ' + b + '\u00d7';
-    };
-    var lg = $('hzLog');
-    if (lg) lg.onclick = function () {
-      var b = (typeof bt !== 'undefined') && bt ? bt : null;
-      var t = b && b.turn != null ? b.turn : 0;
-      toast ? toast('BATTLE LOG \u00b7 TURN ' + t) : 0;
-    };
-    var au = $('hzAuto');
-    if (au) au.onclick = function () {
-      var on = au.classList.toggle('on');
-      au.firstChild.textContent = 'AUTO: ' + (on ? 'ON' : 'OFF');
+      var cur = battleSpeedEff();
+      var max = battleSpeedMax();
+      if (max <= 1) {
+        /* Mesin memang mengunci kecepatan per level; beri tahu pemain
+           alih-alih tombol terasa mati. */
+        try { toast('SPEED LOCKED', 'Unlocks at LV 10', '#f3e600'); } catch (e) {}
+        return;
+      }
+      var next = cur >= max ? 1 : cur + 1;
+      state.battleSpeed = next;
+      try { save(); } catch (e) {}
+      if (typeof bt !== 'undefined' && bt) bt.speed = battleSpeedEff();
+      try { if (window.CyberSfx && window.CyberSfx.katanaSlash) window.CyberSfx.katanaSlash(1.3); } catch (e) {}
+      syncActRail();
     };
     var en = $('hzEnd');
     if (en) en.onclick = function () {
-      var btn = document.getElementById('bfExit') || document.getElementById('bspeedBtn');
-      if (typeof window.hzCurtainOut === 'function') {
+      var btn = document.getElementById('bfExit');
+      if (btn) btn.click();
+      else if (typeof window.hzCurtainOut === 'function') {
         window.hzCurtainOut(function () {
-          try { if (typeof leaveBattle === 'function') leaveBattle(); } catch (e) {}
-          try { if (typeof window.backToLobby === 'function') window.backToLobby(); } catch (e) {}
+          try { stopBattleLoop(); stopRaid(); stopTower(); state.battle = null; } catch (e) {}
+          try { render(); } catch (e) {}
         });
       }
     };
@@ -345,11 +343,11 @@
   function syncActRail() {
     var b = (typeof bt !== 'undefined') && bt ? bt : null;
     var sp = $('hzSpeed');
-    if (sp && b) {
-      var spd = b.speed || 1;
-      var txt = 'SPEED ' + spd + '\u00d7';
-      if (sp.firstChild && sp.firstChild.textContent !== txt) sp.firstChild.textContent = txt;
-    }
+    if (!sp) return;
+    var spd = b ? (b.speed || 1) : battleSpeedEff();
+    var txt = 'SPEED ' + spd + '\u00d7';
+    var label = sp.firstChild;
+    if (label && label.textContent !== txt) label.textContent = txt;
   }
 
   /* ------------------------------------------------- PARTY RAIL (1 rail) */
@@ -390,37 +388,126 @@
     var b = (typeof bt !== 'undefined') ? bt : null;
     if (!b) return;
     drop('hzPileStrip');
-    var total = (b.fighters || []).length;
-    var active = b.active || 0;
-    var left = Math.max(0, total - active - 1);
     var wrap = mk('div', 'side-stack');
     wrap.id = 'hzPileStrip';
-    wrap.innerHTML =
-      '<div class="pile"><b>DECK</b><span>&times;' + left + '</span><em>' + left + '</em></div>' +
-      '<div class="pile grave"><b>GRAVE</b><span>&times;' + active + '</span><em>' + active + '</em></div>' +
-      supportHtml();
+    wrap.innerHTML = equipStripHtml();
+    try {
+      var a = (state && Array.isArray(state.artSlots)) ? state.artSlots : [];
+      wrap.setAttribute('data-sig', (a[0] || '') + '|' + (a[1] || '') + '|' + ((state && state.petEquipped) || ''));
+    } catch (e) {}
     document.body.appendChild(wrap);
   }
 
-  /* SUPPORT (prototipe .support): artefak/pet yang dipasang, satu art saja. */
-  function supportHtml() {
-    var img = '';
+  /* Slot perlengkapan pemain: ART 1, ART 2, PET (revisi user 2026-11-08).
+     Menggantikan strip DECK/GRAVE/SUPPORT; slot kosong tampil sebagai
+     placeholder garis putus-putus supaya posisinya tetap terbaca. */
+  function defById(list, id) {
+    if (!id) return null;
     try {
-      var slots = (typeof state !== 'undefined' && state && Array.isArray(state.artSlots))
-        ? state.artSlots : [null, null];
-      var id = slots[0] || slots[1] || (state && state.petEquipped) || null;
-      if (id && typeof ART_DEFS !== 'undefined') {
-        var a = null;
-        for (var i = 0; i < ART_DEFS.length; i++) if (ART_DEFS[i] && ART_DEFS[i].id === id) { a = ART_DEFS[i]; break; }
-        if (a) img = a.img || '';
-      }
-      if (!img && id && typeof PET_DEFS !== 'undefined') {
-        for (var j = 0; j < PET_DEFS.length; j++) if (PET_DEFS[j] && PET_DEFS[j].id === id) { img = PET_DEFS[j].img || ''; break; }
+      for (var i = 0; i < list.length; i++) if (list[i] && list[i].id === id) return list[i];
+    } catch (e) {}
+    return null;
+  }
+  function equipStripHtml() {
+    var slots = [];
+    try {
+      if (typeof state !== 'undefined' && state) {
+        var arr = Array.isArray(state.artSlots) ? state.artSlots : [];
+        slots.push(arr[0] || null);
+        slots.push(arr[1] || null);
+        slots.push(state.petEquipped || null);
       }
     } catch (e) {}
-    if (!img) return '';
-    return '<div class="support"><div class="sup-art"><img src="' + esc(img) + '" alt=""></div>' +
-      '<div class="sup-lbl">SUPPORT</div></div>';
+    while (slots.length < 3) slots.push(null);
+    var arts = (typeof ART_DEFS !== 'undefined') ? ART_DEFS : [];
+    var pets = (typeof PET_DEFS !== 'undefined') ? PET_DEFS : [];
+    var labels = ['ART 1', 'ART 2', 'PET'];
+    var html = '';
+    for (var i = 0; i < 3; i++) {
+      var id = slots[i];
+      var def = i < 2 ? defById(arts, id) : defById(pets, id);
+      var img = def ? (def.img || '') : '';
+      html += '<div class="eq-slot' + (img ? '' : ' empty') + '">' +
+        (img ? '<img src="' + esc(img) + '" alt="">' : '<span class="eq-dot"></span>') +
+        '<b>' + labels[i] + '</b></div>';
+    }
+    return html;
+  }
+
+  /* --------------------------------------------------- ENEMY LINE-UP */
+  /* Revisi user 2026-11-08: slot party musuh di bawah HUD kanan (prototipe
+     .foe-lineup). Sumber: antrean wave tower; story/raid = target tunggal. */
+  function foeLineupData() {
+    var out = [];
+    try {
+      if (typeof towerRun !== 'undefined' && towerRun && towerRun.waves && towerRun.waves.length) {
+        for (var i = (towerRun.idx || 0); i < towerRun.waves.length && out.length < 4; i++) {
+          var w = towerRun.waves[i];
+          if (!w || !w.en) continue;
+          if (w.dead) continue;
+          var maxHp = (w.es && w.es.hp) || 1;
+          var hp = (w.hp != null) ? w.hp : maxHp;
+          out.push({
+            img: w.en.img || '', name: w.en.name || '', num: i + 1,
+            pct: Math.max(0, Math.min(1, hp / maxHp))
+          });
+        }
+        if (out.length) return out;
+      }
+    } catch (e) {}
+    var foe = overlayInfoFoe();
+    var b = (typeof bt !== 'undefined') ? bt : null;
+    if (foe) {
+      out.push({
+        img: cardArt(foe.char), name: foe.name, num: 1,
+        pct: b ? hpPctFoe() : 1
+      });
+    }
+    return out;
+  }
+
+  function buildFoeLineup() {
+    drop('hzFoeLineup');
+    var list = foeLineupData();
+    if (!list.length) return;
+    /* Tower = antrean wave (slot party musuh). Story/raid cuma satu target,
+       jadi HUD kanan sudah mewakilinya — tidak perlu tile duplikat. */
+    var isQueue = false;
+    try { isQueue = !!(typeof towerRun !== 'undefined' && towerRun && towerRun.waves); } catch (e) {}
+    if (!isQueue) return;
+    var count = 4;
+    var row = '';
+    for (var i = 0; i < count; i++) {
+      var t = list[i];
+      if (t) {
+        row += '<div class="tile"><img src="' + esc(t.img) + '" alt="">' +
+          '<span>' + t.num + '</span>' +
+          '<i style="transform:scaleX(' + t.pct + ')"></i></div>';
+      } else {
+        row += '<div class="tile empty"><span>' + (i + 1) + '</span></div>';
+      }
+    }
+    var wrap = mk('div', 'hz-foe-lineup');
+    wrap.id = 'hzFoeLineup';
+    wrap.setAttribute('data-sig', list.map(function (t) { return t.num; }).join(','));
+    wrap.innerHTML = '<div class="row">' + row + '</div>' +
+      '<div class="cap">ENEMY LINE-UP</div>';
+    document.body.appendChild(wrap);
+  }
+
+  function syncFoeLineup() {
+    var el = $('hzFoeLineup');
+    var list = foeLineupData();
+    if (!el) { if (list.length) buildFoeLineup(); return; }
+    if (!list.length) { drop('hzFoeLineup'); return; }
+    /* Signature: nomor + jumlah tile. Perubahan HP cukup update bar, tidak
+       rebuild DOM (anti-flicker). */
+    var sig = list.map(function (t) { return t.num; }).join(',');
+    if (el.getAttribute('data-sig') !== sig) { buildFoeLineup(); return; }
+    var bars = el.querySelectorAll('.tile i');
+    for (var i = 0; i < bars.length && i < list.length; i++) {
+      bars[i].style.transform = 'scaleX(' + list[i].pct + ')';
+    }
   }
 
   function syncPartyRail() {
@@ -445,19 +532,18 @@
     }
     var pile = $('hzPileStrip');
     if (pile) {
-      var total = (b.fighters || []).length;
-      var left = Math.max(0, total - active - 1);
-      var em = pile.querySelector('.pile em');
-      if (em && em.textContent !== String(left)) {
-        em.textContent = left;
-        var sp = pile.querySelector('.pile span');
-        if (sp) sp.innerHTML = '&times;' + left;
-      }
-      var gra = pile.querySelectorAll('.pile em')[1];
-      if (gra && gra.textContent !== String(active)) {
-        gra.textContent = active;
-        var gs = pile.querySelectorAll('.pile span')[1];
-        if (gs) gs.innerHTML = '&times;' + active;
+      /* Strip perlengkapan statis per battle; hanya rebuild kalau isi slot
+         berubah (pemain ganti artefak/pet di tengah run). */
+      var sig = '';
+      try {
+        var a = (state && Array.isArray(state.artSlots)) ? state.artSlots : [];
+        sig = (a[0] || '') + '|' + (a[1] || '') + '|' + ((state && state.petEquipped) || '');
+      } catch (e) {}
+      if (pile.getAttribute('data-sig') !== sig) {
+        drop('hzPileStrip');
+        buildPiles();
+        var np = $('hzPileStrip');
+        if (np) np.setAttribute('data-sig', sig);
       }
     }
   }
@@ -602,7 +688,8 @@
   /* --------------------------------------------------------------- SYNC */
   function sync() {
     if (!document.body.classList.contains('battle-full')) {
-      drop('hzArena'); drop('hzHud'); drop('hzPartyRail'); drop('hzPileStrip'); drop('hzActRail');
+      drop('hzArena'); drop('hzHud'); drop('hzPartyRail'); drop('hzPileStrip');
+      drop('hzActRail'); drop('hzFoeLineup');
       return;
     }
     var b = (typeof bt !== 'undefined') ? bt : null;
@@ -614,6 +701,7 @@
     else syncHudHp();
 
     syncPartyRail();
+    syncFoeLineup();
     syncActRail();
   }
 
@@ -623,6 +711,7 @@
     buildPartyRail();
     buildPiles();
     buildActRail();
+    buildFoeLineup();
   }
 
   /* -------------------------------------------------------------- BOOT */

@@ -957,40 +957,32 @@ html body.battle-full .side-stack{
   bottom:calc(152px + env(safe-area-inset-bottom,0px)) !important;
   z-index:22 !important;display:flex !important;align-items:flex-end !important;
   gap:8px !important;pointer-events:none !important}
-html body.battle-full .pile{
+
+/* Slot perlengkapan pemain: ART 1 / ART 2 / PET (revisi 2026-11-08).
+   Menggantikan strip DECK/GRAVE/SUPPORT. */
+html body.battle-full .side-stack .eq-slot{
   position:relative !important;width:38px !important;height:52px !important;
   border:1px solid var(--hz-line) !important;background:rgba(8,8,8,.9) !important;
   display:flex !important;flex-direction:column !important;align-items:center !important;
-  justify-content:flex-end !important;padding-bottom:3px !important;
+  justify-content:flex-end !important;overflow:hidden !important;
   clip-path:polygon(0 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%) !important}
-html body.battle-full .pile b{
-  font-family:var(--hz-mono) !important;font-size:7px !important;
-  letter-spacing:.12em !important;color:var(--hz-ink2) !important}
-html body.battle-full .pile span{
+html body.battle-full .side-stack .eq-slot img{
+  position:absolute !important;inset:0 !important;width:100% !important;height:100% !important;
+  object-fit:cover !important;object-position:top center !important;display:block !important}
+html body.battle-full .side-stack .eq-slot.empty{
+  border-style:dashed !important;border-color:rgba(245,245,245,.22) !important}
+html body.battle-full .side-stack .eq-slot .eq-dot{
+  position:absolute !important;left:50% !important;top:14px !important;
+  width:12px !important;height:12px !important;margin-left:-6px !important;
+  border:1px solid rgba(245,245,245,.25) !important;
+  transform:rotate(45deg) !important}
+html body.battle-full .side-stack .eq-slot b{
+  position:relative !important;z-index:2 !important;width:100% !important;
+  padding:2px 0 3px !important;text-align:center !important;
+  background:linear-gradient(180deg,rgba(5,5,5,0),rgba(5,5,5,.92) 42%) !important;
   font-family:var(--hz-mono) !important;font-size:6px !important;
-  letter-spacing:.14em !important;color:var(--hz-ink3) !important}
-html body.battle-full .pile em{
-  position:absolute !important;right:-4px !important;top:-6px !important;
-  width:14px !important;height:14px !important;display:grid !important;
-  place-items:center !important;background:var(--hz) !important;color:#0a0a00 !important;
-  font-family:var(--hz-mono) !important;font-size:7px !important;
-  font-style:normal !important;font-weight:700 !important;border-radius:50% !important}
-html body.battle-full .pile.grave{border-color:rgba(255,84,112,.34) !important}
-html body.battle-full .pile.grave em{background:var(--hz-danger) !important;color:#fff !important}
-
-/* SUPPORT (prototipe .support di side-stack) */
-html body.battle-full .support{
-  display:flex !important;flex-direction:column !important;
-  align-items:center !important;gap:3px !important}
-html body.battle-full .support .sup-art{
-  width:38px !important;height:50px !important;overflow:hidden !important;
-  background:#080808 !important;border:1px solid rgba(95,230,255,.4) !important}
-html body.battle-full .support .sup-art img{
-  width:100% !important;height:100% !important;object-fit:cover !important;
-  object-position:top center !important;filter:grayscale(.25) !important;display:block !important}
-html body.battle-full .support .sup-lbl{
-  font-family:var(--hz-mono) !important;font-size:5.5px !important;
-  letter-spacing:.16em !important;color:var(--hz-ink3) !important}
+  font-weight:400 !important;letter-spacing:.1em !important;
+  color:var(--hz-ink2) !important;white-space:nowrap !important}
 
 @media (max-width:700px){
   html body.battle-full .party{left:8px !important;max-width:52% !important;
@@ -998,7 +990,7 @@ html body.battle-full .support .sup-lbl{
   html body.battle-full .party .pt{width:clamp(30px,8.6vw,38px) !important}
   html body.battle-full .side-stack{left:8px !important;
     bottom:calc(146px + env(safe-area-inset-bottom,0px)) !important;gap:5px !important}
-  html body.battle-full .pile{width:30px !important;height:42px !important}
+  html body.battle-full .side-stack .eq-slot{width:30px !important;height:42px !important}
 }
 @media (orientation:landscape) and (max-height:520px){
   html body.battle-full .party{left:10px !important;bottom:calc(64px + env(safe-area-inset-bottom,0px)) !important}
@@ -1096,7 +1088,11 @@ html body.battle-full .party{
   html body.battle-full .act-rail button{min-height:40px !important;font-size:6px !important}
   html body.battle-full .party{
     left:8px !important;bottom:calc(56px + env(safe-area-inset-bottom,0px)) !important}
-  html body.battle-full .side-stack{display:none !important}
+  /* Strip ART/PET tetap tampil: dipindah ke atas rail party, ukuran lebih kecil. */
+  html body.battle-full .side-stack{
+    display:flex !important;left:8px !important;
+    bottom:calc(114px + env(safe-area-inset-bottom,0px)) !important;gap:4px !important}
+  html body.battle-full .side-stack .eq-slot{width:26px !important;height:34px !important}
   html body.battle-full #turnLabel{display:none !important}
 }
 
@@ -1179,3 +1175,72 @@ html body.battle-full .pile span{font-size:6.5px !important;letter-spacing:.1em 
 /* Rule di atas memakai display:!important, jadi inline none kalah — hide
    harus !important juga dan ditulis paling akhir supaya menang cascade. */
 html body.battle-full #overlay .hide{display:none !important}
+
+/* ============ 21. HAPUS BORDER MUTASI/SHINY DI BATTLE ================= */
+/* Revisi user 2026-11-08: kartu battle tidak memakai bingkai gradasi mutasi
+   atau shiny. Kerangka kartu tetap dari .fc-frame (border tipis sendiri).
+   Aturan global di style.css memakai `:not(#_bv2)` (menambah 1 ID), jadi
+   override ini WAJIB memakai #app juga supaya spesifisitasnya menang. */
+html body.battle-full #app .battle-grid .fighter,
+html body.battle-full #app .battle-grid .fighter.me,
+html body.battle-full #app .battle-grid .fighter.foe,
+html body.battle-full #app .battle-grid .fighter.shiny,
+html body.battle-full #app .battle-grid .fighter.mut-gold,
+html body.battle-full #app .battle-grid .fighter.mut-rainbow,
+html body.battle-full #app .battle-grid .fighter.mut-secret,
+html body.battle-full #app .battle-grid .fighter.mut-ultima,
+html body.battle-full #app .battle-grid .fighter[data-tier],
+html body.battle-full #app .battle-grid .fighter[class*="mut-"],
+html body.battle-full #app .battle-grid .fighter.shiny.mut-gold,
+html body.battle-full #app .battle-grid .fighter.shiny.mut-rainbow,
+html body.battle-full #app .battle-grid .fighter.shiny.mut-secret,
+html body.battle-full #app .battle-grid .fighter.shiny.mut-ultima{
+  border:0 !important;
+  border-width:0 !important;
+  border-color:transparent !important;
+  outline:none !important;
+  background:transparent !important;
+  background-image:none !important;
+  box-shadow:none !important;
+  animation:none !important}
+
+/* ============ 22. SLOT PARTY MUSUH (ENEMY LINE-UP) ==================== */
+/* Revisi user 2026-11-08: blok slot musuh di bawah HUD kanan, mengikuti
+   prototipe .foe-lineup. Tower = antrean wave; story/raid = target aktif. */
+html body.battle-full .hz-foe-lineup{
+  position:fixed !important;right:12px !important;
+  top:calc(var(--tbh,0px) + 56px) !important;
+  z-index:22 !important;display:flex !important;flex-direction:column !important;
+  align-items:flex-end !important;gap:4px !important;
+  max-width:44% !important;pointer-events:none !important}
+html body.battle-full .hz-foe-lineup .row{display:flex !important;gap:4px !important}
+html body.battle-full .hz-foe-lineup .tile{
+  position:relative !important;width:34px !important;height:34px !important;
+  border:1px solid rgba(255,84,112,.42) !important;overflow:hidden !important;
+  background:#0a0a0a !important}
+html body.battle-full .hz-foe-lineup .tile.empty{
+  border-style:dashed !important;background:rgba(8,8,8,.55) !important}
+html body.battle-full .hz-foe-lineup .tile img{
+  width:100% !important;height:100% !important;object-fit:cover !important;
+  object-position:top center !important;display:block !important}
+html body.battle-full .hz-foe-lineup .tile span{
+  position:absolute !important;left:0 !important;top:0 !important;
+  padding:0 3px !important;background:rgba(5,5,5,.8) !important;
+  font-family:var(--hz-mono) !important;font-size:7px !important;
+  color:var(--hz-ink2) !important}
+html body.battle-full .hz-foe-lineup .tile i{
+  position:absolute !important;left:0 !important;right:0 !important;bottom:0 !important;
+  height:2px !important;background:var(--hz-danger) !important;
+  transform-origin:left !important;display:block !important}
+html body.battle-full .hz-foe-lineup .cap{
+  font-family:var(--hz-mono) !important;font-size:6.5px !important;
+  letter-spacing:.2em !important;color:var(--hz-ink3) !important}
+@media (max-width:700px){
+  html body.battle-full .hz-foe-lineup{right:8px !important;top:calc(var(--tbh,0px) + 54px) !important}
+  html body.battle-full .hz-foe-lineup .tile{width:28px !important;height:28px !important}
+}
+@media (orientation:landscape) and (max-height:520px){
+  html body.battle-full .hz-foe-lineup{top:calc(var(--tbh,0px) + 50px) !important;right:8px !important}
+  html body.battle-full .hz-foe-lineup .tile{width:26px !important;height:26px !important}
+  html body.battle-full .hz-foe-lineup .cap{display:none !important}
+}
