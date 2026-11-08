@@ -1,0 +1,187 @@
+/* ==========================================================================
+   WEATHER-SCREEN.CSS — "WEATHER / ATMOSPHERIC MATRIX" (WHITE-on-BLACK HAZARD)
+   Port desain layar TRAITS (css/trait-screen.css) ke Weather Machine.
+   Shell memakai class .ts-* yang sama; file ini hanya:
+     1. mereset #weatherMachineModal jadi full-bleed (mengalahkan style.css),
+     2. menata bagian khas cuaca (kartu potion, pity mini, rail target),
+     3. menyembunyikan rail/tabbar/HUD saat layar terbuka.
+
+   Kontrak performa §2b: animasi hanya transform/opacity, TANPA backdrop-filter,
+   TANPA background-attachment:fixed, TANPA animasi box-shadow/width/height.
+   ========================================================================== */
+
+/* Sembunyikan chrome lobby selama layar weather terbuka.
+   body.weather-open = jaring untuk WebView yang belum mendukung :has(). */
+body.weather-open #ldEntry,
+body:has(#weatherMachineModal.show) #ldEntry,
+body.weather-open nav.m-rail,
+body.weather-open nav.m-tabbar,
+body.weather-open #activePlayersBadge,
+body.weather-open #pwaInstallBtn,
+body.weather-open .buff-dock,
+body.weather-open .weather-panel,
+body.weather-open .lobby-tactical-hud,
+body:has(#weatherMachineModal.show) nav.m-rail,
+body:has(#weatherMachineModal.show) nav.m-tabbar,
+body:has(#weatherMachineModal.show) #activePlayersBadge,
+body:has(#weatherMachineModal.show) #pwaInstallBtn,
+body:has(#weatherMachineModal.show) .buff-dock,
+body:has(#weatherMachineModal.show) .weather-panel,
+body:has(#weatherMachineModal.show) .lobby-tactical-hud {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+/* ============================== SHELL ================================== */
+/* style.css:16736 masih memakai grid center + backdrop-filter blur(16px).
+   Layar baru full-bleed opaque, jadi semuanya dinetralkan di sini. */
+#weatherMachineModal {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  max-width: 100vw !important;
+  max-height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: none !important;
+  place-items: stretch !important;
+  overflow: hidden !important;
+  background: #000 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  animation: none !important;
+  z-index: 94500 !important;
+}
+#weatherMachineModal.show { display: block !important; }
+#weatherMachineModal .wm-box {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+  animation: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  /* style.css:25360 masih memasang blur(28px) di .tr-box lewat !important. */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+#weatherMachineModal .wm-box::before,
+#weatherMachineModal .wm-box::after { display: none !important; content: none !important; }
+#weatherMachineModal .wm-cyber-head { display: none !important; }
+#weatherMachineModal #wmBody {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+/* ========================= WEATHER-SPECIFIC ============================ */
+/* Kartu potion: art potion bukan 1:1 penuh, jadi pakai contain + latar gelap. */
+.ts-weather-card img {
+  object-fit: contain !important;
+  padding: 14%;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(243, 230, 0, .10), transparent 62%),
+    #0b0b0b;
+}
+.ts-weather-card { cursor: default; }
+.ts-weather-card:active { transform: none; }
+
+/* Pity mini: dua baris tipis di bawah plate trait. */
+.wm-pity-mini {
+  width: 100%;
+  max-width: 340px;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid var(--ts-faint);
+  background: linear-gradient(180deg, #0d0d0d, #070707);
+  padding: 9px 11px 10px;
+}
+.wm-pity-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 74px auto;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--ts-mono);
+  font-size: 6.5px;
+  letter-spacing: .14em;
+  color: rgba(245, 245, 245, .5);
+}
+.wm-pity-row > span:first-child {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.wm-pity-row b {
+  font-family: var(--ts-head);
+  font-size: 9px;
+  letter-spacing: .02em;
+  color: var(--ts-haz);
+  white-space: nowrap;
+}
+.wm-pity-track {
+  height: 3px;
+  background: rgba(255, 255, 255, .12);
+  overflow: hidden;
+}
+.wm-pity-track i {
+  display: block;
+  height: 100%;
+  background: var(--ts-haz);
+}
+
+/* Dua tombol aksi (auto + synthesize) memakai grid 2 kolom. */
+.wm-actions { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+
+/* Rail cuaca: ikon SVG ikut warna tier (--tcol). */
+#wmRailList .tsr-gem svg { width: 22px; height: 22px; }
+#wmRailList .tsr-row { cursor: pointer; }
+
+/* ============================ RESPONSIVE =============================== */
+@media (max-width: 719px) {
+  .wm-pity-mini { max-width: 320px; }
+}
+@media (max-width: 420px) {
+  /* Layar 320: kartu + plate + pity + 2 tombol harus muat tanpa scroll,
+     jadi kartu dikecilkan sedikit (trait tidak punya blok pity). */
+  .ts-weather-card { max-width: 150px; }
+  .ts-subject { margin-top: 9px; }
+  .ts-traitplate { margin-top: 8px; padding: 8px 10px 9px; }
+  .ts-tp-name { font-size: 13px; }
+  .ts-tp-stats { margin-top: 6px; }
+  /* 320: catatan plate + catatan saldo dibuang supaya tombol & saldo tidak
+     tertutup footer (trait tidak punya blok pity, jadi ini khusus weather). */
+  .ts-tp-note { display: none; }
+  .ts-bal-note { display: none; }
+  .wm-pity-mini { max-width: 100%; margin-top: 8px; padding: 7px 9px 8px; gap: 5px; }
+  .wm-pity-row { grid-template-columns: minmax(0, 1fr) 56px auto; font-size: 6px; }
+  .wm-pity-row b { font-size: 8px; }
+  .wm-actions { margin-top: 11px; }
+  .ts-balance { margin-top: 8px; padding-top: 8px; }
+  .ts-status { margin-top: 6px; }
+}
+@media (orientation: landscape) and (max-height: 520px) {
+  .wm-pity-mini { margin-top: 5px; padding: 5px 8px 6px; gap: 3px; }
+  .wm-pity-row { font-size: 5.5px; }
+  .wm-pity-row b { font-size: 7.5px; }
+  .wm-actions { margin-top: 6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wm-pity-track i { transition: none !important; }
+}

@@ -33,11 +33,12 @@
 <link rel="stylesheet" href="css/sl-system.css?v=v391-coreSpireHub">
 <link rel="stylesheet" href="css/story-carousel.css?v=v354-storyCurtainZ">
 <link rel="stylesheet" href="css/lobby-prototype.css?v=v393-drawerV5">
-<link rel="stylesheet" href="css/mobile-shell.css?v=v464-drawerDock">
+<link rel="stylesheet" href="css/mobile-shell.css?v=v465-weatherHazard">
 <link rel="stylesheet" href="css/deck-screen.css?v=v4-searchInput">
 <link rel="stylesheet" href="css/skill-tree.css?v=v22-skillTree">
 <link rel="stylesheet" href="css/backpack-hazard.css?v=v2-bpEnglish">
-<link rel="stylesheet" href="css/trait-screen.css?v=v4-hazardTraits">
+<link rel="stylesheet" href="css/trait-screen.css?v=v5-weatherAlias">
+<link rel="stylesheet" href="css/weather-screen.css?v=v1-hazardWeather">
 <link rel="stylesheet" href="css/premium-exchange.css?v=v6-premiumConfirm">
 <link rel="stylesheet" href="css/drop-report.css?v=v2-dropReport">
 <link rel="stylesheet" href="css/battle-fresh.css?v=v28-exitCurtainTop">
@@ -1100,6 +1101,37 @@
   </div>
 </div>
 
+<!-- Banner hazard masuk/keluar Weather Machine (pola #traitCurtain, hidup di body) -->
+<div id="weatherCurtain" aria-hidden="true">
+  <div class="half top">
+    <span class="edge"></span>
+    <span class="mark">SUPPLY <b>08</b> / 08</span>
+  </div>
+  <div class="half bot">
+    <span class="edge"></span>
+    <span class="mark">HZ-PROTOCOL <b>912</b></span>
+  </div>
+  <div class="tape tape-a"></div>
+  <div class="tape tape-b"></div>
+  <div class="flash"></div>
+  <div class="plate">
+    <span class="corner tl"></span><span class="corner tr"></span>
+    <span class="corner bl"></span><span class="corner br"></span>
+    <span class="water" id="wmHzWater">SKY</span>
+    <div class="in">
+      <div class="krow">
+        <span class="dot"></span>
+        <span class="kick" id="wmHzKick">// CLIMATE <b>SYNC</b></span>
+        <span class="serial">SERIAL 0x<b id="wmHzSerial">7A31</b></span>
+      </div>
+      <div class="title"><span id="wmHzTitle">WEATHER</span></div>
+      <div class="sub" id="wmHzSub">ATMOSPHERIC MATRIX · POTIONS · TARGETS</div>
+      <div class="bar"><i></i></div>
+      <div class="foot"><span>HZ-PROTOCOL</span><span id="wmHzFoot">ENTER SYNTHESIS</span></div>
+    </div>
+  </div>
+</div>
+
 <div id="deckPickModal"><div class="dp-box">
   <div class="ix-head">
     <div><div class="eyebrow">DECK</div><div class="ix-title">Pilih Kartu</div></div>
@@ -1562,7 +1594,7 @@
 <script src="js/cyber-icons.js?v=v1-drawerV5"></script>
 <script src="js/mobile-shell.js?v=v287-drawerV5Dock"></script>
 <script src="js/supabase-sync.js?v=v332-battleNoHeader"></script>
-<script src="js/panels.js?v=v404-premiumConfirm"></script>
+<script src="js/panels.js?v=v405-hazardWeather"></script>
 <script src="js/topup.js?v=v158-paywallOff"></script>
 <script src="js/cards-fx.js?v=v84-fmtStatCompact"></script>
 <script src="js/anime-archetype-attacks.js?v=v118-phantomCombo"></script>

@@ -3960,7 +3960,10 @@ window.premSetTab = premSetTab;
 
 
 
-/* =============== WEATHER MACHINE SYSTEM (TRAIT-STYLE CYBER MATRIX) =============== */
+/* =============== WEATHER MACHINE (HAZARD) — port desain layar TRAITS ===============
+   Shell memakai class .ts-* dari css/trait-screen.css (top bar, subject stage,
+   chances rail, footer). File ini hanya menambah bagian khas cuaca: kartu
+   potion, pity mini, dan rail target tunggal. Semua teks English. */
 let wmMultiN = 1;
 let wmAutoTarget = null;
 let wmAutoRunning = false;
@@ -3968,37 +3971,92 @@ let wmAutoTimer = null;
 let wmAutoCount = 0;
 let wmRenderTimer = null;
 
+function wmRemaining(){
+  return (state && state.weather && state.weather.endsAt && state.weather.endsAt > Date.now())
+    ? fmtCountdown(state.weather.endsAt - Date.now())
+    : '00:00';
+}
+function wmCurDef(){
+  const aw = activeWeatherId();
+  if(aw && WEATHER[aw]) return WEATHER[aw];
+  return {id:null, name:'NO CLIMATE', rar:'IDLE', color:'#9A8A8B', luckBonus:1, speedBonus:1};
+}
+function wmPityLeft(){
+  const p = (state && state.wpity) || {r:0, m:0};
+  return {
+    r: Math.max(0, PITY_RARE - (p.r || 0)),
+    m: Math.max(0, PITY_MYTHIC - (p.m || 0))
+  };
+}
+function wmPct(w){
+  const p = w.dropWeight / 100;
+  return (p < 1 ? p.toFixed(2) : p.toFixed(1)) + '%';
+}
+function wmOddsLabel(w){
+  return '1 IN ' + fmt(Math.round(10000 / w.dropWeight));
+}
+function wmStatsHtml(w){
+  const l = w.luckBonus > 1 ? '<span class="ts-stat"><i>LUCK</i><b>+' + Math.round((w.luckBonus - 1) * 100) + '%</b></span>' : '';
+  const s = w.speedBonus > 1 ? '<span class="ts-stat"><i>SPEED</i><b>+' + Math.round((w.speedBonus - 1) * 100) + '%</b></span>' : '';
+  const d = '<span class="ts-stat"><i>DURATION</i><b>' + wmRemaining() + '</b></span>';
+  return (l + s + d) || '<span class="ts-stat empty"><b>NO MODIFIER</b></span>';
+}
+function wmNoteText(){
+  return activeWeatherId()
+    ? 'Live atmospheric modifier bound to this run. Synthesizing again overwrites it.'
+    : 'No climate installed. Synthesize one with a Weather Potion.';
+}
+function wmRailRow(w){
+  const aw = activeWeatherId();
+  const own = aw === w.id;
+  const on = wmAutoTarget === w.id;
+  const bar = Math.min(100, Math.max(2, (w.dropWeight / 3511) * 100));
+  return '<div class="tsr-row' + (on ? ' on' : '') + (own ? ' active' : '') + '" data-wid="' + w.id + '" style="--tcol:' + w.color + '" role="button" tabindex="0" aria-pressed="' + on + '">' +
+    '<span class="tsr-gem">' + weatherSvg(w.id, 22) + '</span>' +
+    '<span class="tsr-name">' + w.name + '<span class="tsr-rar">' + w.rar + '</span>' + (own ? '<span class="tsr-cur">ACTIVE</span>' : '') + '</span>' +
+    '<span class="tsr-chance">' + wmPct(w) + '<small>' + wmOddsLabel(w) + '</small></span>' +
+    '<span class="tsr-stats">LUCK <b>×' + w.luckBonus + '</b> · SPEED <b>×' + w.speedBonus + '</b></span>' +
+    '<span class="tsr-bar"><i style="width:' + bar + '%"></i></span>' +
+    '<span class="tsr-tgt"><span class="tsr-tgt-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></span>' +
+  '</div>';
+}
+
 function openWeatherMachine(){
   wmAutoRunning = false;
   if(wmAutoTimer) clearTimeout(wmAutoTimer);
+  wmAutoTimer = null;
+  wmAutoCount = 0;
   renderWeatherMachine();
-  // saat auto jalan, wmAutoPaint sudah update; full render cuma bikin animasi per-tick ke-reset
-  wmRenderTimer = setInterval(() => { if(!wmAutoRunning) renderWeatherMachine(); }, 1000);
+  if(wmRenderTimer) clearInterval(wmRenderTimer);
+  wmRenderTimer = setInterval(function(){ if(!wmAutoRunning) wmPaintState(); }, 1000);
   const modal = document.getElementById('weatherMachineModal');
-  if(modal) modal.classList.add('show');
-  document.body.classList.add('hide-docks-modal');
-  const closeBtn = document.getElementById('wmClose');
-  if(closeBtn) closeBtn.onclick = closeWeatherMachine;
-  if(modal) modal.onclick = function(e){ if(e.target.id === 'weatherMachineModal') closeWeatherMachine(); };
+  if(modal){
+    modal.classList.add('show');
+    /* klik area kosong (di luar shell) = tutup, sama seperti versi lama */
+    modal.onclick = function(e){ if(e.target === modal) closeWeatherMachine(); };
+  }
+  document.body.classList.add('hide-docks-modal', 'weather-open');
+  wmBannerOpen();
 }
 
 function closeWeatherMachine(){
-  if(wmRenderTimer){clearInterval(wmRenderTimer);wmRenderTimer=null;}
-  wmStopAuto();
+  if(wmRenderTimer){ clearInterval(wmRenderTimer); wmRenderTimer = null; }
+  wmStopAuto(true);
   const modal = document.getElementById('weatherMachineModal');
-  if(modal) modal.classList.remove('show');
-  document.body.classList.remove('hide-docks-modal');
+  wmBannerClose(function(){
+    if(modal) modal.classList.remove('show');
+    document.body.classList.remove('hide-docks-modal', 'weather-open');
+  });
 }
 
 function setWmMulti(n){
   wmMultiN = n;
-  renderWeatherMachine();
+  wmPaintState();
 }
 
 function wmSynthesizeRoll(multi){
   const n = multi || wmMultiN || 1;
   let done = 0, switches = 0, kept = 0, best = null, last = null;
-  
   for(let i = 0; i < n; i++){
     const r = useWeatherPotion();
     if(!r.ok) break;
@@ -4010,347 +4068,336 @@ function wmSynthesizeRoll(multi){
       if(!best || r.weather.dropWeight < best.dropWeight) best = r.weather;
     }
   }
-
   if(!done){
-    toast("POTION HABIS", "Tidak ada Weather Potion tersisa!", "#f87171");
+    toast('NO POTIONS', 'No Weather Potion left in supply.', '#f87171');
     beep(240, 0.12, 'square', 0.08);
     wmStopAuto();
-    renderWeatherMachine();
     return false;
   }
-
   if(n > 1){
     const w = best || last;
-    toast(done + "× SINTESIS CUACA", switches ? ("Anomali aktif: " + w.name + " (" + switches + "× pergeseran)") : ("Cuaca stabil (" + kept + "× hasil sama/rendah)"), w.color);
+    toast(done + '× SYNTHESIS', switches ? ('Climate shifted: ' + w.name + ' (' + switches + '× shift)') : ('Climate stable (' + kept + '× same or lower)'), w.color);
   } else {
-    toast(last.name, last.desc, last.color);
+    toast(last.name, last.rar + ' WEATHER', last.color);
   }
-
-  beep(520, 0.1, "triangle", 0.08);
-  setTimeout(() => beep(780, 0.15, "triangle", 0.09), 80);
-
+  beep(520, 0.1, 'triangle', 0.08);
+  setTimeout(function(){ beep(780, 0.15, 'triangle', 0.09); }, 80);
   save();
-  renderWeatherMachine();
+  wmPaintState();
   renderShell();
-  if(!battleLive() && typeof render === "function") render();
+  if(!battleLive() && typeof render === 'function') render();
   return true;
 }
 
 function wmToggleAuto(){
-  if(wmAutoRunning){
-    wmStopAuto();
-  } else {
-    if(!wmAutoTarget){
-      toast("PILIH TARGET", "Centang target cuaca pada daftar di sebelah kanan terlebih dahulu!", "#fcd34d");
-      beep(240, 0.12, 'square', 0.08);
-      return;
-    }
-    if((state.potions || 0) < 1){
-      toast("POTION HABIS", "Dibutuhkan Weather Potion untuk memulai auto-synthesis!", "#f87171");
-      return;
-    }
-    wmAutoRunning = true;
-    wmAutoCount = 0;
-    renderWeatherMachine();
-    wmAutoLoop();
+  if(wmAutoRunning){ wmStopAuto(); return; }
+  if(!wmAutoTarget){
+    toast('SELECT TARGET', 'Check one climate in the odds rail first.', '#fcd34d');
+    beep(240, 0.12, 'square', 0.08);
+    return;
   }
+  if((state.potions || 0) < 1){
+    toast('NO POTIONS', 'A Weather Potion is required to start auto synthesis.', '#f87171');
+    return;
+  }
+  wmAutoRunning = true;
+  wmAutoCount = 0;
+  wmPaintState();
+  wmAutoLoop();
 }
 
-function wmStopAuto(){
+function wmStopAuto(quiet){
   wmAutoRunning = false;
   if(wmAutoTimer) clearTimeout(wmAutoTimer);
-  renderWeatherMachine();
-  /* Loop auto cuma paint header mesin, JAMA rebuild #weatherPanel. Tanpa ini dock
-     tetap nampilin cuaca LAMA saat balik ke lobby. Samakan dock dgn state terkini. */
+  wmAutoTimer = null;
+  if(!quiet) renderWeatherMachine();
+  /* Auto loop cuma paint layar mesin; dock lobby tetap harus ikut cuaca terakhir. */
   try{ renderWeatherDock(); renderBuffDock(); }catch(e){}
 }
 
-/* wmAutoPaint: update ringan saat auto-loop — tidak re-render seluruh shell/app */
-function wmAutoPaint(){
+function wmPaintRail(){
   const aw = activeWeatherId();
-  const curDef = (aw && WEATHER[aw]) || WM_NO_WEATHER;
-  const pPotCnt = (state && state.potions) || 0;
-  const remainingTime = (state && state.weather && state.weather.endsAt && state.weather.endsAt > Date.now())
-    ? fmtCountdown(state.weather.endsAt - Date.now())
-    : '00:00';
-
-  // update header: cuaca aktif + timer + stok potion
-  const headEl = document.getElementById('wmHeadWeather');
-  if(headEl){
-    headEl.innerHTML = '' +
-      '<div class="wm-head-pill wm-cur-badge" style="border-color:' + curDef.color + ';box-shadow:0 0 10px ' + curDef.color + '33">' +
-        '<span class="wm-cur-ic" style="color:' + curDef.color + '">' + weatherSvg(aw, 14) + '</span>' +
-        '<strong style="color:' + curDef.color + '">' + curDef.name + '</strong>' +
-        '<span class="wm-cur-timer">⏱ ' + remainingTime + '</span>' +
-      '</div>' +
-      '<div class="wm-head-pill wm-supply-badge" title="Stok Weather Potion">' +
-        '<img src="assets/images/weather-potion.webp?v=1" alt="Potion" class="wm-head-pot-img">' +
-        '<span class="wm-pot-sep">:</span>' +
-        '<b class="wm-pot-val">' + fmt(pPotCnt) + '</b>' +
-      '</div>';
-  }
-
-  // update iterasi counter
-  const iterEl = document.querySelector('.tram-n');
-  if(iterEl) iterEl.textContent = '#' + wmAutoCount;
-
-  // update cuaca aktif di rates list (ACTIVE flag)
-  document.querySelectorAll('.wm-rates-list .trr-item').forEach(it => {
-    const wid = it.querySelector('input[name="wmAutoTgt"]')?.value;
-    const own = !!wid && wid === aw;
-    it.classList.toggle('own', own);
-    const row = it.querySelector('.trr-row');
-    if(!row) return;
-    const old = row.querySelector('.trr-flag');
+  document.querySelectorAll('#wmRailList .tsr-row').forEach(function(row){
+    const wid = row.getAttribute('data-wid');
+    const on = wmAutoTarget === wid;
+    const own = aw === wid;
+    row.classList.toggle('on', on);
+    row.classList.toggle('active', own);
+    row.setAttribute('aria-pressed', on ? 'true' : 'false');
+    const nameBox = row.querySelector('.tsr-name');
+    if(!nameBox) return;
+    const old = nameBox.querySelector('.tsr-cur');
     if(old) old.remove();
     if(own){
       const flag = document.createElement('span');
-      flag.className = 'trr-flag';
+      flag.className = 'tsr-cur';
       flag.textContent = 'ACTIVE';
-      const rar = row.querySelector('.trr-rar');
-      if(rar) row.insertBefore(flag, rar); else row.appendChild(flag);
+      nameBox.appendChild(flag);
     }
   });
+  const set = function(id, v){ const e = document.getElementById(id); if(e) e.textContent = v; };
+  set('wmRailN', '(' + (wmAutoTarget ? 1 : 0) + ' ARMED)');
+  const cur = wmCurDef();
+  set('wmFootSel', 'ACTIVE · ' + cur.name);
+}
 
-  // update pity bars
-  const p = (state && state.wpity) || { r: 0, m: 0 };
-  const rLeft = Math.max(0, PITY_RARE - (p.r || 0));
-  const mLeft = Math.max(0, PITY_MYTHIC - (p.m || 0));
-  const pityBlocks = document.querySelectorAll('.wo-pity');
-  if(pityBlocks[0]){
-    const top = pityBlocks[0].querySelector('.wo-pity-top b');
-    if(top) top.textContent = fmt(rLeft) + ' SINTESIS';
-    const bar = pityBlocks[0].querySelector('.wo-bar i');
-    if(bar) bar.style.width = Math.min(100, (PITY_RARE - rLeft) / PITY_RARE * 100).toFixed(1) + '%';
+function wmPaintState(){
+  const aw = activeWeatherId();
+  const cur = wmCurDef();
+  const pot = (state && state.potions) || 0;
+  const pl = wmPityLeft();
+  const set = function(id, v){ const e = document.getElementById(id); if(e) e.textContent = v; };
+  set('wmPotCount', String(pot));
+  set('wmPotVal', fmt(pot));
+  set('wmActiveTime', wmRemaining());
+  set('wmName', cur.name);
+  set('wmRar', cur.rar);
+  set('wmCardName', cur.name);
+  set('wmCardCode', 'WEATHER · ' + cur.rar);
+  set('wmKickCode', 'CORE // ' + cur.rar);
+  set('wmNote', wmNoteText());
+  const plate = document.getElementById('wmPlate');
+  if(plate) plate.style.setProperty('--tcol', cur.color);
+  const gem = document.getElementById('wmGem');
+  if(gem) gem.innerHTML = weatherSvg(aw || 'windy', 30);
+  const stats = document.getElementById('wmStats');
+  if(stats) stats.innerHTML = wmStatsHtml(cur);
+  set('wmPityR', fmt(pl.r) + ' SYNTHESIS');
+  set('wmPityM', fmt(pl.m) + ' SYNTHESIS');
+  const br = document.getElementById('wmPityRBar');
+  if(br) br.style.width = Math.min(100, (PITY_RARE - pl.r) / PITY_RARE * 100).toFixed(1) + '%';
+  const bm = document.getElementById('wmPityMBar');
+  if(bm) bm.style.width = Math.min(100, (PITY_MYTHIC - pl.m) / PITY_MYTHIC * 100).toFixed(1) + '%';
+  const st = document.getElementById('wmStatus');
+  if(st) st.classList.toggle('run', wmAutoRunning);
+  set('wmStatusTxt', wmAutoRunning ? 'OVERCLOCK · CYCLE 140MS' : 'IDLE · CYCLE 140MS');
+  set('wmIter', 'ITER #' + wmAutoCount);
+  const ab = document.getElementById('wmAutoBtn');
+  if(ab){
+    ab.classList.toggle('live', wmAutoRunning);
+    ab.disabled = !wmAutoRunning && pot < 1;
+    const lbl = document.getElementById('wmAutoLabel');
+    if(lbl) lbl.textContent = wmAutoRunning ? 'ABORT AUTO' : 'AUTO SYNTHESIS';
+    const sub = document.getElementById('wmAutoSub');
+    if(sub) sub.textContent = wmAutoRunning ? 'overclock running' : 'until target hit';
   }
-  if(pityBlocks[1]){
-    const top = pityBlocks[1].querySelector('.wo-pity-top b');
-    if(top) top.textContent = fmt(mLeft) + ' SINTESIS';
-    const bar = pityBlocks[1].querySelector('.wo-bar i');
-    if(bar) bar.style.width = Math.min(100, (PITY_MYTHIC - mLeft) / PITY_MYTHIC * 100).toFixed(1) + '%';
-  }
+  const rb = document.getElementById('wmRollBtn');
+  if(rb) rb.disabled = pot < 1 || wmAutoRunning;
+  const cv = document.getElementById('coinVal');
+  if(cv) cv.textContent = fmt(state.coins);
+  wmPaintRail();
+}
 
-  // update cuaca panel kiri (nama, warna, timer, stat)
-  const curPanel = document.querySelector('.wm-cur-panel');
-  if(curPanel){
-    curPanel.style.setProperty('--tcol', curDef.color);
-    const tcName = curPanel.querySelector('.tc-name');
-    if(tcName){ tcName.style.color = curDef.color; tcName.textContent = curDef.name; }
-    const durBadge = curPanel.querySelectorAll('.tc-badge-stat .tcb-val')[2];
-    if(durBadge) durBadge.textContent = remainingTime;
-    // ikon + deskripsi pill ikut cuaca yang sedang aktif (sebelumnya beku)
-    const pill = curPanel.querySelector('.tc-trait-pill');
-    if(pill){
-      pill.style.setProperty('--tcol', curDef.color);
-      const gw = pill.querySelector('.tc-gem-wrap');
-      if(gw) gw.innerHTML = weatherSvg(aw || 'windy', 18);
-      const nm = pill.querySelector('.tc-name-glow');
-      if(nm) nm.textContent = curDef.desc || (curDef.rar + ' WEATHER');
-    }
-  }
-
-  // FX per tick: sweep panel + highlight baris cuaca yang aktif + counter
-  document.querySelectorAll('.wm-rates-list .trr-item.trr-hit').forEach(el => el.classList.remove('trr-hit'));
-  const hitItem = document.querySelector('.wm-rates-list .trr-item.own');
-  if(curPanel){ curPanel.classList.remove('wm-tick'); void curPanel.offsetWidth; curPanel.classList.add('wm-tick'); }
-  if(hitItem){ void hitItem.offsetWidth; hitItem.classList.add('trr-hit'); }
-  const iterPop = document.querySelector('.wm-main .tram-n');
-  if(iterPop){ iterPop.classList.remove('tr-n-pop'); void iterPop.offsetWidth; iterPop.classList.add('tr-n-pop'); }
-
-  // update coin di shell tanpa re-render
-  const cv = document.getElementById('coinVal'); if(cv) cv.textContent = fmt(state.coins);
-  const c = document.getElementById('trCoinVal'); if(c) c.textContent = fmt(state.coins);
+function wmFxTick(){
+  const plate = document.getElementById('wmPlate');
+  if(plate){ plate.classList.remove('tr-tick'); void plate.offsetWidth; plate.classList.add('tr-tick'); }
+  const iter = document.getElementById('wmIter');
+  if(iter){ iter.classList.remove('tr-n-pop'); void iter.offsetWidth; iter.classList.add('tr-n-pop'); }
+  document.querySelectorAll('#wmRailList .tsr-row.trr-hit').forEach(function(el){ el.classList.remove('trr-hit'); });
+  const own = document.querySelector('#wmRailList .tsr-row.active');
+  if(own){ void own.offsetWidth; own.classList.add('trr-hit'); }
 }
 
 function wmAutoLoop(){
   if(!wmAutoRunning) return;
   if((state.potions || 0) < 1){
-    toast("AUTO SELESAI", "Weather Potion habis!", "#f87171");
+    toast('AUTO COMPLETE', 'Weather Potion supply is empty.', '#f87171');
     wmStopAuto();
     return;
   }
-
   wmAutoCount++;
   const r = useWeatherPotion();
-  if(!r.ok){
-    wmStopAuto();
-    return;
-  }
-
+  if(!r.ok){ wmStopAuto(); return; }
   save();
-  wmAutoPaint(); // ← update surgical, tanpa renderShell/render
-
-  // Cek apakah mencapai target cuaca
+  wmPaintState();
+  wmFxTick();
   const cur = activeWeatherId();
   if(cur && cur === wmAutoTarget){
-    beep(720, 0.2, "triangle", 0.1);
-    setTimeout(() => beep(960, 0.25, "triangle", 0.12), 120);
-    toast("TARGET TERCAPAI!", "Cuaca " + WEATHER[cur].name + " berhasil diaktifkan pada iterasi #" + wmAutoCount, WEATHER[cur].color);
+    beep(720, 0.2, 'triangle', 0.1);
+    setTimeout(function(){ beep(960, 0.25, 'triangle', 0.12); }, 120);
+    toast('TARGET HIT', WEATHER[cur].name + ' activated on iteration #' + wmAutoCount, WEATHER[cur].color);
     wmStopAuto();
-    renderWeatherMachine(); // full render sekali saat selesai
-    if(!battleLive() && typeof render === "function") render();
+    if(!battleLive() && typeof render === 'function') render();
     renderShell();
     return;
   }
-
   wmAutoTimer = setTimeout(wmAutoLoop, 140);
-}
-
-function renderWeatherMachine(){
-  const bodyEl = document.getElementById('wmBody');
-  const headEl = document.getElementById('wmHeadWeather');
-  if(!bodyEl) return;
-
-  const aw = activeWeatherId();
-  const curDef = (aw && WEATHER[aw]) || WM_NO_WEATHER;
-  const remainingTime = (state && state.weather && state.weather.endsAt && state.weather.endsAt > Date.now())
-    ? fmtCountdown(state.weather.endsAt - Date.now())
-    : '00:00';
-  const pPotCnt = (state && state.potions) || 0;
-
-  if(headEl){
-    headEl.innerHTML = '' +
-      '<div class="wm-head-pill wm-cur-badge" style="border-color:' + curDef.color + ';box-shadow:0 0 10px ' + curDef.color + '33">' +
-        '<span class="wm-cur-ic" style="color:' + curDef.color + '">' + weatherSvg(aw, 14) + '</span>' +
-        '<strong style="color:' + curDef.color + '">' + curDef.name + '</strong>' +
-        '<span class="wm-cur-timer">⏱ ' + remainingTime + '</span>' +
-      '</div>' +
-      '<div class="wm-head-pill wm-supply-badge" title="Stok Weather Potion">' +
-        '<img src="assets/images/weather-potion.webp?v=1" alt="Potion" class="wm-head-pot-img">' +
-        '<span class="wm-pot-sep">:</span>' +
-        '<b class="wm-pot-val">' + fmt(pPotCnt) + '</b>' +
-      '</div>';
-  }
-
-  const p = (state && state.wpity) || { r: 0, m: 0 };
-  const rLeft = Math.max(0, PITY_RARE - (p.r || 0));
-  const mLeft = Math.max(0, PITY_MYTHIC - (p.m || 0));
-
-  // Daftar probabilitas cuaca (seperti tr-rates)
-  const ratesHtml = WEATHERS.map(w => {
-    const own = aw === w.id;
-    const isTarget = wmAutoTarget === w.id;
-    const pct = w.dropWeight / 100;
-    const pctS = pct < 1 ? pct.toFixed(2) : pct.toFixed(1);
-    const inv = Math.round(10000 / w.dropWeight);
-    return '<div class="trr-item' + (own ? ' own' : '') + (isTarget ? ' is-target' : '') + '" style="--tcol:' + w.color + '" title="' + w.name + ' • ' + w.desc + '">' +
-      '<div class="trr-row">' +
-        '<span class="trr-gem" style="color:' + w.color + '">' + weatherSvg(w.id, 13) + '</span>' +
-        '<span class="trr-name" style="color:' + w.color + '">' + w.name + '</span>' +
-        (own ? '<span class="trr-flag">ACTIVE</span>' : '') +
-        '<span class="trr-rar ' + w.rar.toLowerCase() + '">' + w.rar + '</span>' +
-        '<span class="trr-pct">' + pctS + '%</span>' +
-        '<label class="trr-tgt" title="Target Auto Synthesis">' +
-          '<input type="radio" name="wmAutoTgt" value="' + w.id + '" ' + (isTarget ? 'checked' : '') + ' onchange="wmSelectTarget(\'' + w.id + '\')">' +
-          '<span class="trr-tgt-box">' +
-            '<svg class="trr-tgt-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>' +
-          '</span>' +
-        '</label>' +
-      '</div>' +
-      '<div class="trr-bar"><i style="width:' + Math.min(100, Math.max(2, (w.dropWeight / 4500) * 100)) + '%;background:linear-gradient(90deg,' + w.color + ',#7DF9FF)"></i></div>' +
-    '</div>';
-  }).join('');
-
-  /* Render tiap detik nge-replace innerHTML -> .wm-rates-list dibuat ulang ->
-     scrollTop balik 0 (kelihatan "scroll langsung ke atas"). Simpan dulu, restore lagi. */
-  const _rlPrev = bodyEl.querySelector('.wm-rates-list');
-  const _rlScroll = _rlPrev ? _rlPrev.scrollTop : 0;
-
-  bodyEl.innerHTML = '' +
-    '<div class="tr-grid wm-grid">' +
-      '<!-- SISI KIRI: CONTROLS & SYNTHESIZER (SEPERTI TR-MAIN) -->' +
-      '<div class="tr-main wm-main">' +
-        '<!-- KARTU AKTIF CUACA (MIRIP TR-CUR) -->' +
-        '<div class="tr-cur wm-cur-panel" style="--tcol:' + curDef.color + '">' +
-          '<div class="tr-cur-thumb-wrap wm-thumb-wrap">' +
-            '<img src="assets/images/weather-potion.webp?v=1" alt="Weather Potion">' +
-            '<span class="tr-cur-scanline"></span>' +
-          '</div>' +
-          '<div class="tr-cur-info wm-cur-info">' +
-            '<div class="tc-lbl-row">' +
-              '<span class="tc-lbl">ATMOSPHERIC NODE</span>' +
-              '<span class="tc-code">CORE // ' + curDef.rar + '</span>' +
-            '</div>' +
-            '<div class="tc-name" style="color:' + curDef.color + '">' + curDef.name + '</div>' +
-            '<div class="tc-tline">' +
-              '<span class="tc-trait-pill" style="--tcol:' + curDef.color + '">' +
-                '<span class="tc-gem-wrap">' + weatherSvg(aw||'windy', 18) + '</span>' +
-                '<span class="tc-name-glow">' + (curDef.desc || (curDef.rar + ' WEATHER')) + '</span>' +
-              '</span>' +
-            '</div>' +
-            '<div class="tc-tstat-wrap wm-stat-row">' +
-              '<div class="tc-badge-stat"><span class="tcb-tag">LUCK</span> <b class="tcb-val">' + (curDef.luckBonus > 1 ? '+' + Math.round((curDef.luckBonus - 1) * 100) + '%' : '1.0×') + '</b></div>' +
-              '<div class="tc-badge-stat"><span class="tcb-tag">SPEED</span> <b class="tcb-val">' + (curDef.speedBonus > 1 ? '+' + Math.round((curDef.speedBonus - 1) * 100) + '%' : '1.0×') + '</b></div>' +
-              '<div class="tc-badge-stat"><span class="tcb-tag">DURATION</span> <b class="tcb-val">' + remainingTime + '</b></div>' +
-            '</div>' +
-          '</div>' +
-        '</div>' +
-
-        '<!-- PITY BARS -->' +
-        '<div class="wm-pity-block">' +
-          '<div class="wo-pity">' +
-            '<div class="wo-pity-top"><span>RARE GUARANTEED IN</span><b>' + fmt(rLeft) + ' SINTESIS</b></div>' +
-            '<div class="wo-bar wo-r"><i style="width:' + Math.min(100, (PITY_RARE - rLeft) / PITY_RARE * 100).toFixed(1) + '%"></i></div>' +
-          '</div>' +
-          '<div class="wo-pity">' +
-            '<div class="wo-pity-top"><span>AWAKENED GUARANTEED IN</span><b>' + fmt(mLeft) + ' SINTESIS</b></div>' +
-            '<div class="wo-bar wo-m"><i style="width:' + Math.min(100, (PITY_MYTHIC - mLeft) / PITY_MYTHIC * 100).toFixed(1) + '%"></i></div>' +
-          '</div>' +
-        '</div>' +
-
-        '<!-- TOMBOL KONTROL SYNTHESIS (SEPERTI TR-CONTROLS) -->' +
-        '<div class="tr-controls wm-controls">' +
-          '<button class="tr-btn tr-roll wm-roll-btn" type="button" ' + (pPotCnt < 1 || wmAutoRunning ? 'disabled' : '') + ' onclick="wmSynthesizeRoll()">' +
-            '<span class="tr-btn-glow"></span>' +
-            '<span class="tr-btn-content">' +
-              '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>' +
-              '<span>' + (wmAutoRunning ? 'SYNTHESIS RUNNING...' : 'SINTESIS CUACA') + '</span>' +
-              '<span class="tr-cost-badge">1× POTION</span>' +
-            '</span>' +
-          '</button>' +
-        '</div>' +
-
-        '<!-- AUTO SYNTHESIS PANEL (SEPERTI TR-AUTO-PANEL) -->' +
-        '<div class="tr-auto-panel' + (wmAutoRunning ? ' on' : '') + '">' +
-          '<div class="tr-auto-top">' +
-            '<button class="tr-btn tr-auto-btn wm-auto-btn" type="button" ' + (pPotCnt < 1 && !wmAutoRunning ? 'disabled' : '') + ' onclick="wmToggleAuto()">' +
-              (wmAutoRunning
-                ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg> ABORT AUTO SYNTHESIS'
-                : '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg> INITIATE AUTO SYNTHESIS') +
-            '</button>' +
-            '<div class="tr-pulse-indicator' + (wmAutoRunning ? ' pulse-run' : '') + '">' +
-              '<span class="tr-pi-dot"></span>' +
-              '<span class="tr-pi-txt">' + (wmAutoRunning ? 'CYCLING 140ms' : 'STANDBY') + '</span>' +
-            '</div>' +
-          '</div>' +
-          '<div class="tr-auto-meta">' +
-            '<div class="tram-row"><span class="tram-k">LOCKED TARGET:</span> <b class="tram-v">' + (wmAutoTarget ? WEATHER[wmAutoTarget].name : 'PILIH DARI DAFTAR') + '</b></div>' +
-            '<div class="tram-row"><span class="tram-k">ITERATION:</span> <b class="tram-n">#' + wmAutoCount + '</b></div>' +
-          '</div>' +
-        '</div>' +
-      '</div>' +
-
-      '<!-- SISI KANAN: RATES & TARGET SELECTOR (SEPERTI TR-RATES) -->' +
-      '<div class="tr-rates wm-rates">' +
-        '<div class="trr-h">' +
-          '<div class="trr-h-title">' +
-            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>' +
-            'ATMOSPHERIC PROBABILITY MATRIX' +
-          '</div>' +
-          '<span class="trr-h-sub">PILIH TARGET AUTO</span>' +
-        '</div>' +
-        '<div class="trr-list wm-rates-list">' + ratesHtml + '</div>' +
-      '</div>' +
-    '</div>';
-  /* Restore posisi scroll daftar probabilitas setelah innerHTML di-rebuild. */
-  const _rlNew = bodyEl.querySelector('.wm-rates-list');
-  if(_rlNew && _rlScroll) _rlNew.scrollTop = _rlScroll;
 }
 
 function wmSelectTarget(wId){
   wmAutoTarget = (wmAutoTarget === wId) ? null : wId;
-  renderWeatherMachine();
+  wmPaintState();
 }
+
+function renderWeatherMachine(){
+  const bodyEl = document.getElementById('wmBody');
+  if(!bodyEl) return;
+  const aw = activeWeatherId();
+  const cur = wmCurDef();
+  const pot = (state && state.potions) || 0;
+  const pl = wmPityLeft();
+  const rows = WEATHERS.map(wmRailRow).join('');
+  const rPct = Math.min(100, (PITY_RARE - pl.r) / PITY_RARE * 100).toFixed(1);
+  const mPct = Math.min(100, (PITY_MYTHIC - pl.m) / PITY_MYTHIC * 100).toFixed(1);
+
+  bodyEl.innerHTML =
+    '<div class="ts-shell">' +
+      '<header class="ts-top">' +
+        '<div class="ts-mark">' +
+          '<span class="ts-mark-t">WEATHER</span>' +
+          '<span class="ts-mark-s">ATMOSPHERIC MATRIX</span>' +
+        '</div>' +
+        '<div class="ts-topmid">' +
+          '<div class="ts-crumb"><i></i><span>LAB</span><span class="sep">/</span><b>SYNTHESIS</b><span class="sep">/</span><span>CLIMATE</span></div>' +
+          '<div class="ts-topstat">' +
+            '<div class="ts-ts"><span class="ts-ts-k">POTIONS</span><span class="ts-ts-v hz" id="wmPotCount">' + pot + '</span></div>' +
+            '<div class="ts-ts"><span class="ts-ts-k">ACTIVE</span><span class="ts-ts-v" id="wmActiveTime">' + wmRemaining() + '</span></div>' +
+          '</div>' +
+        '</div>' +
+        '<button class="ts-x" id="wmShellClose" aria-label="Close weather machine" title="Close [ESC]">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>' +
+        '</button>' +
+      '</header>' +
+
+      '<div class="ts-body">' +
+        '<section class="ts-left" aria-label="Atmospheric node">' +
+          '<div class="ts-kicker"><i></i><b>ATMOSPHERIC NODE</b><span>·</span><span id="wmKickCode">CORE // ' + cur.rar + '</span></div>' +
+          '<div class="ts-subject">' +
+            '<div class="ts-card ts-weather-card" id="wmCard" title="Weather Potion supply">' +
+              '<span class="ts-corner tl"></span><span class="ts-corner tr"></span>' +
+              '<span class="ts-corner bl"></span><span class="ts-corner br"></span>' +
+              '<span class="ts-card-hint">LIVE CLIMATE</span>' +
+              '<span class="ts-card-scan"></span>' +
+              '<img id="wmCardImg" src="assets/images/weather-potion.webp?v=1" alt="Weather Potion" loading="lazy" decoding="async">' +
+              '<div class="ts-card-meta"><div>' +
+                '<div class="ts-card-name" id="wmCardName">' + cur.name + '</div>' +
+                '<div class="ts-card-code" id="wmCardCode">WEATHER · ' + cur.rar + '</div>' +
+              '</div></div>' +
+            '</div>' +
+
+            '<div class="ts-traitplate" id="wmPlate" style="--tcol:' + cur.color + '">' +
+              '<div class="ts-tp-top">' +
+                '<span class="ts-tp-gem" id="wmGem">' + weatherSvg(aw || 'windy', 30) + '</span>' +
+                '<span class="ts-tp-name" id="wmName">' + cur.name + '</span>' +
+                '<span class="ts-tp-rar" id="wmRar">' + cur.rar + '</span>' +
+              '</div>' +
+              '<div class="ts-tp-stats" id="wmStats">' + wmStatsHtml(cur) + '</div>' +
+              '<div class="ts-tp-note" id="wmNote">' + wmNoteText() + '</div>' +
+            '</div>' +
+
+            '<div class="wm-pity-mini">' +
+              '<div class="wm-pity-row"><span>RARE GUARANTEED IN</span><span class="wm-pity-track"><i id="wmPityRBar" style="width:' + rPct + '%"></i></span><b id="wmPityR">' + fmt(pl.r) + ' SYNTHESIS</b></div>' +
+              '<div class="wm-pity-row"><span>AWAKENED GUARANTEED IN</span><span class="wm-pity-track"><i id="wmPityMBar" style="width:' + mPct + '%"></i></span><b id="wmPityM">' + fmt(pl.m) + ' SYNTHESIS</b></div>' +
+            '</div>' +
+
+            '<div class="ts-actions wm-actions">' +
+              '<button class="ts-btn' + (wmAutoRunning ? ' live' : '') + '" id="wmAutoBtn"' + (!wmAutoRunning && pot < 1 ? ' disabled' : '') + '>' +
+                '<span id="wmAutoLabel">' + (wmAutoRunning ? 'ABORT AUTO' : 'AUTO SYNTHESIS') + '</span>' +
+                '<small id="wmAutoSub">' + (wmAutoRunning ? 'overclock running' : 'until target hit') + '</small>' +
+              '</button>' +
+              '<button class="ts-btn primary" id="wmRollBtn"' + (pot < 1 || wmAutoRunning ? ' disabled' : '') + '>' +
+                '<span>SYNTHESIZE</span>' +
+                '<small>1× POTION</small>' +
+              '</button>' +
+            '</div>' +
+
+            '<div class="ts-balance">' +
+              '<div class="ts-coin">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h10l4 6-9 12L3 9z"/><path d="M3 9h18"/></svg>' +
+                '<span>POTIONS</span><b id="wmPotVal">' + fmt(pot) + '</b>' +
+              '</div>' +
+              '<div class="ts-bal-note"><b>1 POTION</b> PER SYNTHESIS · AUTO CHARGES EACH ITERATION</div>' +
+            '</div>' +
+
+            '<div class="ts-status' + (wmAutoRunning ? ' run' : '') + '" id="wmStatus">' +
+              '<span class="dot"></span>' +
+              '<span id="wmStatusTxt">' + (wmAutoRunning ? 'OVERCLOCK · CYCLE 140MS' : 'IDLE · CYCLE 140MS') + '</span>' +
+              '<span class="iter" id="wmIter">ITER #' + wmAutoCount + '</span>' +
+            '</div>' +
+          '</div>' +
+        '</section>' +
+
+        '<aside class="ts-rail" aria-label="Climate odds">' +
+          '<div class="tsr-head">' +
+            '<div class="tsr-title">CLIMATE <b id="wmRailN">(' + (wmAutoTarget ? 1 : 0) + ' ARMED)</b></div>' +
+            '<div class="tsr-sub">CHECK = AUTO TARGET</div>' +
+          '</div>' +
+          '<div class="tsr-list" id="wmRailList">' + rows + '</div>' +
+          '<div class="tsr-foot">Probabilities are the live weather weights and total <b>100%</b>.<br>Checked climate halts AUTO SYNTHESIS the moment it lands.</div>' +
+        '</aside>' +
+      '</div>' +
+
+      '<footer class="ts-foot">' +
+        '<span><b>CHECK ROW</b> auto target</span>' +
+        '<span><b>PITY</b> rare 100 · awakened 250</span>' +
+        '<span class="haz" id="wmFootSel">ACTIVE · ' + cur.name + '</span>' +
+      '</footer>' +
+    '</div>';
+
+  const x = document.getElementById('wmShellClose');
+  if(x) x.onclick = closeWeatherMachine;
+  const rb = document.getElementById('wmRollBtn');
+  if(rb) rb.onclick = function(){ wmSynthesizeRoll(); };
+  const ab = document.getElementById('wmAutoBtn');
+  if(ab) ab.onclick = wmToggleAuto;
+  const list = document.getElementById('wmRailList');
+  if(list) list.querySelectorAll('.tsr-row').forEach(function(row){
+    const wid = row.getAttribute('data-wid');
+    const act = function(){ wmSelectTarget(wid); };
+    row.onclick = act;
+    row.onkeydown = function(e){ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); act(); } };
+  });
+  wmPaintState();
+}
+
+/* ===== hazard banner masuk/keluar (pola #traitCurtain) ===== */
+let wmHzTimers = [];
+function wmHzClear(){ for(let i = 0; i < wmHzTimers.length; i++) clearTimeout(wmHzTimers[i]); wmHzTimers = []; }
+function wmHzSetCopy(mode){
+  const kick = document.getElementById('wmHzKick'), title = document.getElementById('wmHzTitle'),
+        sub = document.getElementById('wmHzSub'), foot = document.getElementById('wmHzFoot'),
+        serial = document.getElementById('wmHzSerial'), water = document.getElementById('wmHzWater');
+  if(serial) serial.textContent = (0x1000 + Math.floor(Math.random() * 0xefff)).toString(16).toUpperCase();
+  if(mode === 'open'){
+    if(kick) kick.innerHTML = '// CLIMATE <b>SYNC</b>';
+    if(title) title.textContent = 'WEATHER';
+    if(water) water.textContent = 'SKY';
+    if(sub) sub.textContent = 'ATMOSPHERIC MATRIX · POTIONS · TARGETS';
+    if(foot) foot.textContent = 'ENTER SYNTHESIS';
+  } else {
+    if(kick) kick.innerHTML = '// LINK <b>STAND BY</b>';
+    if(title) title.textContent = 'HOLD';
+    if(water) water.textContent = 'OUT';
+    if(sub) sub.textContent = 'MATRIX DISCONNECTING · DATA SAVED';
+    if(foot) foot.textContent = 'CLOSE SESSION';
+  }
+}
+function wmBannerOpen(){
+  const c = document.getElementById('weatherCurtain');
+  if(!c) return;
+  wmHzClear(); wmHzSetCopy('open');
+  c.className = ''; void c.offsetWidth;
+  c.classList.add('on', 'smooth', 'sweep');
+  wmHzTimers.push(setTimeout(function(){ c.classList.add('revealed'); }, 1080));
+  wmHzTimers.push(setTimeout(function(){ c.classList.remove('on', 'smooth', 'sweep', 'revealed'); }, 1800));
+}
+function wmBannerClose(onCovered){
+  const c = document.getElementById('weatherCurtain');
+  if(!c){ if(onCovered) onCovered(); return; }
+  wmHzClear(); wmHzSetCopy('close');
+  c.className = ''; c.classList.add('on', 'smooth', 'revealed'); void c.offsetWidth;
+  c.classList.remove('revealed');
+  wmHzTimers.push(setTimeout(function(){ if(onCovered) onCovered(); }, 560));
+  wmHzTimers.push(setTimeout(function(){ c.classList.add('revealed'); }, 780));
+  wmHzTimers.push(setTimeout(function(){ c.classList.remove('on', 'smooth', 'revealed'); }, 1560));
+}
+
+document.addEventListener('keydown', function(e){
+  if(e.key !== 'Escape') return;
+  const m = document.getElementById('weatherMachineModal');
+  if(!m || !m.classList.contains('show')) return;
+  closeWeatherMachine();
+});
 
 window.openWeatherMachine = openWeatherMachine;
 window.closeWeatherMachine = closeWeatherMachine;
