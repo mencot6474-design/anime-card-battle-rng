@@ -38,7 +38,7 @@
 <link rel="stylesheet" href="css/skill-tree.css?v=v22-skillTree">
 <link rel="stylesheet" href="css/backpack-hazard.css?v=v2-bpEnglish">
 <link rel="stylesheet" href="css/drop-report.css?v=v2-dropReport">
-<link rel="stylesheet" href="css/battle-fresh.css?v=v19-protoRail">
+<link rel="stylesheet" href="css/battle-fresh.css?v=v24-defeatClean">
 <script>
   /* Link toko Trakteer (fallback â€” utama ada di js/config.js). */
   window.TRAKTEER_SHOP_URL = "";
@@ -446,12 +446,17 @@
         <span id="ov-eyebrow">SYSTEM NOTIFICATION</span>
       </div>
       <div class="ov-sys-meta" id="ovSysMeta">[OPERATION OUTCOME]</div>
+      <div class="ov-sys-serial" id="ovSysSerial">0x1A7F</div>
     </div>
 
     <!-- Main Title: VICTORY or DEFEAT -->
     <div class="ov-title-wrap">
       <div class="ov-title-bg" id="ovTitleBg">VICTORY</div>
       <div class="ov-title disp" id="ov-title">VICTORY</div>
+    </div>
+
+    <div class="ov-stars" id="ovStars">
+      <span class="ov-star">&#9733;</span><span class="ov-star">&#9733;</span><span class="ov-star">&#9733;</span>
     </div>
 
     <div class="ov-divider"></div>
@@ -462,20 +467,36 @@
         <div class="ov-reward-lbl">COMBAT REWARDS ACQUIRED</div>
         <div class="ov-reward-val-row">
           <div class="ov-reward" id="ov-reward"></div>
+          <div class="ov-gem-ms" id="ovGemMilestone"></div>
+          <div class="ov-token-ms" id="ovTokenGain"></div>
         </div>
-        <div class="ov-gem-ms" id="ovGemMilestone"></div>
+      </div>
+
+      <div class="ov-mvp" id="ovMvp">
+        <img id="ovMvpImg" src="assets/cards/thumb/shadow-monarch.webp" alt="">
+        <div class="ov-mvp-info">
+          <span class="ov-mvp-tag">MVP &middot; HIGHEST DAMAGE</span>
+          <span class="ov-mvp-name" id="ovMvpName">OPERATOR</span>
+          <span class="ov-mvp-sub" id="ovMvpSub">DECK OPERATOR</span>
+        </div>
+        <div class="ov-mvp-dmg" id="ovMvpDmg">0<br>DMG</div>
       </div>
 
       <div class="ov-telemetry-row">
         <div class="ov-tel-box">
-          <span class="ov-tel-lbl">COMBAT STATUS</span>
-          <span class="ov-tel-val" id="ovCombatStatus">SUCCESS</span>
+          <span class="ov-tel-lbl">TURNS</span>
+          <span class="ov-tel-val" id="ovTurns">0</span>
         </div>
         <div class="ov-tel-box">
-          <span class="ov-tel-lbl">ENGAGEMENT LOG</span>
-          <span class="ov-tel-val" id="ov-note">COMPLETED IN 3 TURNS</span>
+          <span class="ov-tel-lbl">TIME</span>
+          <span class="ov-tel-val" id="ovTime">00:00</span>
+        </div>
+        <div class="ov-tel-box">
+          <span class="ov-tel-lbl">STATUS</span>
+          <span class="ov-tel-val" id="ovCombatStatus">SECURED</span>
         </div>
       </div>
+      <div class="ov-note-line" id="ov-note">COMPLETED IN 3 TURNS</div>
     </div>
 
     <div class="ov-hint">CLICK OUTSIDE TO EXIT</div>
@@ -1474,9 +1495,9 @@
 <script src="js/anime-archetype-attacks.js?v=v118-phantomCombo"></script>
 <script src="js/state.js?v=v349-english"></script>
 <script src="js/sheetfx.js?v=v349-english"></script>
-<script src="js/battle.js?v=v253-proto"></script>
-<script src="js/battle-hazard.js?v=v13-dedupe"></script>
-<script src="js/tower-lobby.js?v=v369-english"></script>
+<script src="js/battle.js?v=v255-defeatClean"></script>
+<script src="js/battle-hazard.js?v=v16-support"></script>
+<script src="js/tower-lobby.js?v=v370-decorOnce"></script>
 <script src="js/shadow-king-fx.js?v=v4-skfx4"></script>
 <script src="js/foe-passives.js?v=v63-english"></script>
 <script src="js/story-carousel.js?v=v322-storyCleanLabels"></script>

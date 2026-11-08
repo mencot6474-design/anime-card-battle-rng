@@ -1839,7 +1839,7 @@ function startBattle(){
   let efx=eid?(PASSIVE_FX[eid]||{}):{};
   /* SHARINGAN COPY sbg lawan (Kakashi): sekali di awal battle, salin seluruh passive kartu pemain */
   if(efx.copy){const own={...efx};delete own.copy;efx=Object.assign({},fxOf(eq)||{},own);delete efx.copy;}
-  bt={speed:battleSpeedEff(),fgen:++FGEN,lv,en,es,eq,fighters,eid,efx,active:0,cutInShown:false,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,ePoison:0,pGuardDr:0,eAbilityOff:0,voidUsed:false,pCopyFx:null,spCd:[],spTurn:[],spArmed:[],spWave:[],meteorGuard:[],phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),execGuard:new Array(fighters.length).fill(false),shatterGuard:new Array(fighters.length).fill(false),wtCount:new Array(fighters.length).fill(0),snatchAtk:new Array(fighters.length).fill(0),snatchHp:new Array(fighters.length).fill(0),regressCharges:new Array(fighters.length).fill(0),bioGuard:new Array(fighters.length).fill(false),splitLeft:new Array(fighters.length).fill(0),splitMult:new Array(fighters.length).fill(1),rumbling:0,rumblingPct:0,defyUsed:new Array(fighters.length).fill(false),defyHold:false,openGuard:true,dsState:new Array(fighters.length).fill(0),aftermath:false,gumTurns:0,trickNext:false,royalNow:false,gunsNow:false,psychic:null,atkEntryGuard:new Array(fighters.length).fill(false),sleepLeft:new Array(fighters.length).fill(0),sleepArmed:new Array(fighters.length).fill(false),overflow:0,rain:null,freezeLeft:0,shockCount:new Array(fighters.length).fill(0),shadow:null,freezeNext:false,valhallaLeft:0,paintHits:[],eInk:0,eInkPct:0,wc:null,rearIdx:-1,rearWaiting:false,rearUsed:[],senzu:{},senzuFin:false,balloon:0,stretchShot:0,turret:0,hvCount:new Array(fighters.length).fill(0),hvUses:new Array(fighters.length).fill(0),hvEntryGuard:new Array(fighters.length).fill(false),eHvUses:0,excited:false,weCount:new Array(fighters.length).fill(0),weRevived:false,pbRocks:0,pbKey:"",pbStreak:0,rubber:false,rbBounce:0,dizzyStack:0,dizzyLeft:0,bajrangUsed:new Array(fighters.length).fill(false)};
+  bt={t0:Date.now(),dmgDone:0,speed:battleSpeedEff(),fgen:++FGEN,lv,en,es,eq,fighters,eid,efx,active:0,cutInShown:false,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,ePoison:0,pGuardDr:0,eAbilityOff:0,voidUsed:false,pCopyFx:null,spCd:[],spTurn:[],spArmed:[],spWave:[],meteorGuard:[],phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),execGuard:new Array(fighters.length).fill(false),shatterGuard:new Array(fighters.length).fill(false),wtCount:new Array(fighters.length).fill(0),snatchAtk:new Array(fighters.length).fill(0),snatchHp:new Array(fighters.length).fill(0),regressCharges:new Array(fighters.length).fill(0),bioGuard:new Array(fighters.length).fill(false),splitLeft:new Array(fighters.length).fill(0),splitMult:new Array(fighters.length).fill(1),rumbling:0,rumblingPct:0,defyUsed:new Array(fighters.length).fill(false),defyHold:false,openGuard:true,dsState:new Array(fighters.length).fill(0),aftermath:false,gumTurns:0,trickNext:false,royalNow:false,gunsNow:false,psychic:null,atkEntryGuard:new Array(fighters.length).fill(false),sleepLeft:new Array(fighters.length).fill(0),sleepArmed:new Array(fighters.length).fill(false),overflow:0,rain:null,freezeLeft:0,shockCount:new Array(fighters.length).fill(0),shadow:null,freezeNext:false,valhallaLeft:0,paintHits:[],eInk:0,eInkPct:0,wc:null,rearIdx:-1,rearWaiting:false,rearUsed:[],senzu:{},senzuFin:false,balloon:0,stretchShot:0,turret:0,hvCount:new Array(fighters.length).fill(0),hvUses:new Array(fighters.length).fill(0),hvEntryGuard:new Array(fighters.length).fill(false),eHvUses:0,excited:false,weCount:new Array(fighters.length).fill(0),weRevived:false,pbRocks:0,pbKey:"",pbStreak:0,rubber:false,rbBounce:0,dizzyStack:0,dizzyLeft:0,bajrangUsed:new Array(fighters.length).fill(false)};
   // BURST: kartu pertama masuk arena langsung dapat boost HP kalau punya fx.burst
   const fx0=resolveFx(eq,efx);
   if(fx0.burst){bt.pMax=Math.round(base.hp*fx0.burst.mult);bt.pHp=bt.pMax;}
@@ -2167,6 +2167,12 @@ if(fx.worldCorrupt){bt.wc={c:0,atk:Math.round(cardStats(bt.eq.char,bt.eq.mut,bt.
 }
 function setBar(id,tid,cur,max){
   const b=document.getElementById(id);if(!b)return;
+  /* Akumulasi damage pemain untuk MVP di popup hasil (prototipe). */
+  if(id==="hpFoe"&&bt&&!bt.over){
+    const prev=typeof bt._lastFoeHp==="number"?bt._lastFoeHp:max;
+    if(prev>cur)bt.dmgDone=(bt.dmgDone||0)+(prev-cur);
+    bt._lastFoeHp=cur;
+  }
   const pct=Math.max(0,Math.min(100,cur/max*100))+"%";
   b.style.width=pct;
   const tr=b.parentElement?b.parentElement.querySelector(".hp-trail"):null;
@@ -2301,7 +2307,7 @@ function playerPhase(){
     if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE Â· VOID","heal"),bsMs(460));}
     else{bt.eStun+=fx.unlimitedVoid.turns;setTimeout(()=>floatText(".fighter.foe","UNLIMITED VOID","crit"),bsMs(460));}
   }
-  document.getElementById("turnLabel").innerHTML=(bt.tower&&towerRun)?("LANTAI <b>"+towerRun.floor+"</b> · GELOMBANG <b>"+(towerRun.idx+1)+"/"+towerRun.waves.length+"</b>"):("TURN<br>"+t);
+  document.getElementById("turnLabel").innerHTML=(bt.tower&&towerRun)?("FLOOR <b>"+towerRun.floor+"</b> &middot; WAVE <b>"+(towerRun.idx+1)+"/"+towerRun.waves.length+"</b>"):("TURN <b>"+t+"</b>");
   setTurnPill("you","YOUR TURN");
   /* EVOLUTION TURRET (YORDLE INVENTOR): tiap `every` giliran -> +1 turret */
   if(fx.turret&&bt.turn%fx.turret.every===0){bt.turret++;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","TURRET +1 ("+bt.turret+")","heal");},bsMs(320));}
@@ -3294,28 +3300,44 @@ function finish(win){
     ovCard.classList.toggle("is-win",!!win);
     ovCard.classList.toggle("is-lose",!win);
   }
-  const eyeText=chDone?"CHAPTER "+ch.no+" SELESAI ("+diffOf().l+")":win?(first?"FIRST CLEAR":"MISSION CLEARED"):"MISSION FAILED";
+  const eyeText=chDone?"CHAPTER "+ch.no+" CLEARED ("+diffOf().l+")":win?(first?"FIRST CLEAR":"MISSION CLEARED"):"MISSION FAILED";
   document.getElementById("ov-eyebrow").textContent=eyeText;
   const sysMeta=document.getElementById("ovSysMeta");
   if(sysMeta)sysMeta.textContent=win?"[QUEST COMPLETE : REWARD GRANTED]":"[TACTICAL RETREAT : UNIT DEFEATED]";
+  const serial=document.getElementById("ovSysSerial");
+  if(serial)serial.textContent="0x"+(0x1000+Math.floor(Math.random()*0xefff)).toString(16).toUpperCase();
   const ti=document.getElementById("ov-title");
   ti.textContent=win?"VICTORY":"DEFEAT";
   ti.className="ov-title disp"+(win?"":" lose");
   const tiBg=document.getElementById("ovTitleBg");
   if(tiBg)tiBg.textContent=win?"VICTORY":"DEFEAT";
 
+  /* Bintang: prototipe 3 bintang, makin cepat makin penuh. Kalah = 0. */
+  const starsEl=document.getElementById("ovStars");
+  if(starsEl){
+    const got=win?(bt.turn<=6?3:bt.turn<=10?2:1):0;
+    const list=starsEl.querySelectorAll(".ov-star");
+    for(let i=0;i<list.length;i++)list[i].classList.toggle("off",i>=got);
+    starsEl.style.display="flex";
+  }
+
   const rwCard=document.getElementById("ovRewardCard");
-  if(rwCard)rwCard.style.display=win?"flex":"none";
+  if(rwCard){rwCard.style.display=win?"flex":"none";rwCard.classList.toggle("hide",!win);}
   const rw=document.getElementById("ov-reward");
   if(rw){
     rw.style.display=win?"inline-flex":"none";
-    rw.innerHTML=''+coinIcon(18)+'  +'+reward+' <small>COINS</small>';
+    rw.classList.toggle("hide",!win);
+    rw.innerHTML='<span class="ov-rw-ic">'+coinIcon(16)+'</span>'
+      +'<span class="ov-rw-info"><span class="ov-rw-v">+'+fmt(reward)+'</span>'
+      +'<span class="ov-rw-l">COINS</span></span>';
   }
   const ms=document.getElementById("ovGemMilestone");
   if(ms){
-    if(win&&gemGain>0){
+    const showGem=!!(win&&gemGain>0);
+    ms.classList.toggle("hide",!showGem);
+    if(showGem){
       ms.style.display="flex";
-      ms.innerHTML='<img class="ov-gem-ms-ic" src="assets/images/premium-currency.webp" alt="" width="34" height="34">'
+      ms.innerHTML='<img class="ov-gem-ms-ic" src="assets/images/premium-currency.webp" alt="" width="30" height="30">'
         +'<div class="ov-gem-ms-txt">'
           +'<span class="ov-gem-ms-k">STORY GEM &bull; '+gemLabel.toUpperCase()+' &bull; '+diffOf().l+'</span>'
           +'<span class="ov-gem-ms-v">+'+gemGain+' <small>GEM</small></span>'
@@ -3325,11 +3347,50 @@ function finish(win){
       ms.innerHTML="";
     }
   }
+  const tokEl=document.getElementById("ovTokenGain");
+  if(tokEl){tokEl.style.display="none";tokEl.classList.add("hide");tokEl.innerHTML="";}
+
+  /* MVP: kartu operator yang menang + total damage yang dicatat setBar. */
+  const mvp=document.getElementById("ovMvp");
+  if(mvp){
+    const showMvp=!!(win&&bt.eq);
+    mvp.classList.toggle("hide",!showMvp);
+    if(showMvp){
+      const ch2=bt.eq.char;
+      const img=document.getElementById("ovMvpImg");
+      if(img){
+        try{img.src=(typeof cardThumb==="function")?cardThumb(ch2):(typeof cardImg==="function"?cardImg(ch2):"");}catch(e){}
+        img.alt="";
+      }
+      const nEl=document.getElementById("ovMvpName");
+      if(nEl){try{nEl.textContent=cardName(ch2);}catch(e){nEl.textContent=bt.en.name;}}
+      const sEl=document.getElementById("ovMvpSub");
+      if(sEl){
+        const bits=[];
+        if(bt.eq.shiny)bits.push("SHINY");
+        try{if(bt.eq.mut&&bt.eq.mut!=="none"&&typeof MUT_LABEL!=="undefined"&&MUT_LABEL[bt.eq.mut])bits.push(MUT_LABEL[bt.eq.mut]);}catch(e){}
+        try{if(bt.eq.trait&&bt.eq.trait!=="none"&&typeof traitLabel==="function"){const tl=traitLabel(bt.eq.trait);if(tl)bits.push("TRAIT "+tl);}}catch(e){}
+        sEl.textContent=bits.length?bits.join(" · "):"DECK OPERATOR";
+      }
+      const dEl=document.getElementById("ovMvpDmg");
+      if(dEl)dEl.innerHTML=fmt(Math.round(bt.dmgDone||0))+"<br>DMG";
+      mvp.style.display="flex";
+    }else{
+      mvp.style.display="none";
+    }
+  }
 
   const cStat=document.getElementById("ovCombatStatus");
   if(cStat){
-    cStat.textContent=win?"STAGE SECURED":"TARGET LOST";
+    cStat.textContent=win?"SECURED":"LOST";
     cStat.className="ov-tel-val"+(win?" win":" lose");
+  }
+  const turnsEl=document.getElementById("ovTurns");
+  if(turnsEl)turnsEl.textContent=String(bt.turn||0).padStart(2,"0");
+  const timeEl=document.getElementById("ovTime");
+  if(timeEl){
+    const secs=Math.max(0,Math.round((Date.now()-(bt.t0||Date.now()))/1000));
+    timeEl.textContent=String(Math.floor(secs/60)).padStart(2,"0")+":"+String(secs%60).padStart(2,"0");
   }
 
   document.getElementById("ov-note").textContent=win?(first?"First clear bonus":"Replay clear")+" · "+bt.turn+" turn":"Not enough power · Upgrade your card";

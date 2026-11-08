@@ -254,8 +254,8 @@
             '<div class="hz-hud-name">' + esc(me.name) + '</div>' +
             '<div class="hz-hud-hp"><i id="hzHpMe"></i></div>' +
           '</div>' +
-          '<div class="hz-hud-num" id="hzHpMeT">' +
-            hpTxt(b ? b.pHp : 0, b ? b.pMax : 0) + '</div>' +
+          '<div class="hz-hud-num"><b id="hzHpMeT">' +
+            hpTxt(b ? b.pHp : 0, b ? b.pMax : 0) + '</b><em>HP</em></div>' +
         '</div>'
       : '';
 
@@ -266,8 +266,8 @@
             '<div class="hz-hud-name">' + esc(foe.name) + '</div>' +
             '<div class="hz-hud-hp"><i id="hzHpFoe"></i></div>' +
           '</div>' +
-          '<div class="hz-hud-num" id="hzHpFoeT">' +
-            hpTxt(b && b.eHp != null ? b.eHp : foeMaxHp(), foeMaxHp()) + '</div>' +
+          '<div class="hz-hud-num"><b id="hzHpFoeT">' +
+            hpTxt(b && b.eHp != null ? b.eHp : foeMaxHp(), foeMaxHp()) + '</b><em>HP</em></div>' +
         '</div>'
       : '';
 
@@ -295,6 +295,61 @@
     if (meT) meT.textContent = hpTxt(b.pHp, b.pMax);
     syncPartyRail();
     if (foeT) foeT.textContent = hpTxt(b.eHp != null ? b.eHp : foeMaxHp(), foeMaxHp());
+  }
+
+  /* ------------------------------------------------- ACTION RAIL (kanan) */
+  /* Prototipe: rail vertikal SPEED / BATTLE LOG / AUTO / END BATTLE di kanan
+     bawah. Tombol-tombolnya memanggil fungsi mesin yang sudah ada. */
+  function buildActRail() {
+    if ($('hzActRail')) return;
+    var wrap = mk('div', 'act-rail');
+    wrap.id = 'hzActRail';
+    wrap.innerHTML =
+      '<button id="hzSpeed"><span>SPEED 1&times;</span><span class="k">S</span></button>' +
+      '<button id="hzLog"><span>BATTLE LOG</span><span class="k">L</span></button>' +
+      '<button id="hzAuto"><span>AUTO: OFF</span><span class="k">A</span></button>' +
+      '<button id="hzEnd" class="hz"><span>END BATTLE</span><span class="k">&times;</span></button>';
+    document.body.appendChild(wrap);
+
+    var sp = $('hzSpeed');
+    if (sp) sp.onclick = function () {
+      var btn = document.getElementById('bspeedBtn') ||
+        document.querySelector('#pgrSpeedGroup .pgr-spd-btn');
+      if (btn) { btn.click(); }
+      var b = (typeof bt !== 'undefined') && bt ? (bt.speed || 1) : 1;
+      sp.firstChild.textContent = 'SPEED ' + b + '\u00d7';
+    };
+    var lg = $('hzLog');
+    if (lg) lg.onclick = function () {
+      var b = (typeof bt !== 'undefined') && bt ? bt : null;
+      var t = b && b.turn != null ? b.turn : 0;
+      toast ? toast('BATTLE LOG \u00b7 TURN ' + t) : 0;
+    };
+    var au = $('hzAuto');
+    if (au) au.onclick = function () {
+      var on = au.classList.toggle('on');
+      au.firstChild.textContent = 'AUTO: ' + (on ? 'ON' : 'OFF');
+    };
+    var en = $('hzEnd');
+    if (en) en.onclick = function () {
+      var btn = document.getElementById('bfExit') || document.getElementById('bspeedBtn');
+      if (typeof window.hzCurtainOut === 'function') {
+        window.hzCurtainOut(function () {
+          try { if (typeof leaveBattle === 'function') leaveBattle(); } catch (e) {}
+          try { if (typeof window.backToLobby === 'function') window.backToLobby(); } catch (e) {}
+        });
+      }
+    };
+  }
+
+  function syncActRail() {
+    var b = (typeof bt !== 'undefined') && bt ? bt : null;
+    var sp = $('hzSpeed');
+    if (sp && b) {
+      var spd = b.speed || 1;
+      var txt = 'SPEED ' + spd + '\u00d7';
+      if (sp.firstChild && sp.firstChild.textContent !== txt) sp.firstChild.textContent = txt;
+    }
   }
 
   /* ------------------------------------------------- PARTY RAIL (1 rail) */
@@ -342,8 +397,30 @@
     wrap.id = 'hzPileStrip';
     wrap.innerHTML =
       '<div class="pile"><b>DECK</b><span>&times;' + left + '</span><em>' + left + '</em></div>' +
-      '<div class="pile grave"><b>GRAVE</b><span>&times;' + active + '</span><em>' + active + '</em></div>';
+      '<div class="pile grave"><b>GRAVE</b><span>&times;' + active + '</span><em>' + active + '</em></div>' +
+      supportHtml();
     document.body.appendChild(wrap);
+  }
+
+  /* SUPPORT (prototipe .support): artefak/pet yang dipasang, satu art saja. */
+  function supportHtml() {
+    var img = '';
+    try {
+      var slots = (typeof state !== 'undefined' && state && Array.isArray(state.artSlots))
+        ? state.artSlots : [null, null];
+      var id = slots[0] || slots[1] || (state && state.petEquipped) || null;
+      if (id && typeof ART_DEFS !== 'undefined') {
+        var a = null;
+        for (var i = 0; i < ART_DEFS.length; i++) if (ART_DEFS[i] && ART_DEFS[i].id === id) { a = ART_DEFS[i]; break; }
+        if (a) img = a.img || '';
+      }
+      if (!img && id && typeof PET_DEFS !== 'undefined') {
+        for (var j = 0; j < PET_DEFS.length; j++) if (PET_DEFS[j] && PET_DEFS[j].id === id) { img = PET_DEFS[j].img || ''; break; }
+      }
+    } catch (e) {}
+    if (!img) return '';
+    return '<div class="support"><div class="sup-art"><img src="' + esc(img) + '" alt=""></div>' +
+      '<div class="sup-lbl">SUPPORT</div></div>';
   }
 
   function syncPartyRail() {
@@ -525,7 +602,7 @@
   /* --------------------------------------------------------------- SYNC */
   function sync() {
     if (!document.body.classList.contains('battle-full')) {
-      drop('hzArena'); drop('hzHud'); drop('hzPartyRail'); drop('hzPileStrip');
+      drop('hzArena'); drop('hzHud'); drop('hzPartyRail'); drop('hzPileStrip'); drop('hzActRail');
       return;
     }
     var b = (typeof bt !== 'undefined') ? bt : null;
@@ -537,6 +614,7 @@
     else syncHudHp();
 
     syncPartyRail();
+    syncActRail();
   }
 
   function decorate() {
@@ -544,6 +622,7 @@
     buildHud();
     buildPartyRail();
     buildPiles();
+    buildActRail();
   }
 
   /* -------------------------------------------------------------- BOOT */

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v507-dedupe';
+const CACHE_NAME = 'anime-card-battle-v512-defeatClean';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
