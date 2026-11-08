@@ -1489,121 +1489,453 @@ let pendingRareAuto=false;
 let autoTargets=new Set();
 const AUTO_TICK=100; // ms antar roll (kecepatan auto roll)
 function traitTargetStack(){let s=state.stacks.find(x=>x.id===traitTarget);if(!s){s=equipped();traitTarget=s?s.id:null;}return s;}
-function openTrait(){
-  traitTarget=null;pendingRare=null;pendingRareAuto=false;renderTrait();document.getElementById("traitModal").classList.add("show");
+/* ===== TRAIT SCREEN (hazard) — render + picker + filters ===== */
+function trOddsLabel(t){
+  const n=Math.round(100/t.chance);
+  if(t.chance<1)return "1 IN "+fmt(n);
+  if(n>=5)return "1 IN "+fmt(n);
+  return "WEIGHT "+t.chance+"%";
 }
-function closeTrait(){autoStop();document.getElementById("traitModal").classList.remove("show");hideTraitTip();}
+function trHitChance(){
+  let sum=0;
+  autoTargets.forEach(k=>{if(TRAIT[k])sum+=TRAIT[k].chance;});
+  return sum;
+}
+function trHitText(){
+  const hc=trHitChance();
+  return hc>=1?(hc.toFixed(2)+"%"):(hc.toFixed(3)+"%");
+}
+function trTargetStackSafe(){
+  const s=traitTargetStack();
+  return s||null;
+}
+/* label kecil di bawah nama kartu subjek: pakai chance asli (tier hanya ada di musuh story) */
+function trCardCode(charId){
+  const c=CARDS[charId];
+  if(!c)return "MATRIX · CARD";
+  if(c.chance)return "MATRIX · 1 IN "+(typeof fmtChance==="function"?fmtChance(c.chance):c.chance);
+  if(c.tier)return "MATRIX · "+c.tier;
+  return "MATRIX · CARD";
+}
+let trForceRender=false;
+function openTrait(){
+  traitTarget=null;pendingRare=null;pendingRareAuto=false;
+  trForceRender=true;
+  renderTrait();
+  trForceRender=false;
+  document.getElementById("traitModal").classList.add("show");
+  document.body.classList.add("trait-open");
+  trBannerOpen();
+}
+function closeTrait(){
+  autoStop();
+  trClosePick();
+  trCloseFilter();
+  const m=document.getElementById("traitModal");
+  if(!m)return;
+  trBannerClose(function(){
+    m.classList.remove("show");
+    document.body.classList.remove("trait-open");
+  });
+  hideTraitTip();
+}
+/* shell minimal untuk state kosong: tetap punya top bar + tombol tutup */
+function trEmptyShell(line1,line2){
+  return `<div class="ts-shell">
+    <header class="ts-top">
+      <div class="ts-mark">
+        <span class="ts-mark-t">TRAITS</span>
+        <span class="ts-mark-s">NEURAL MATRIX MOD</span>
+      </div>
+      <div class="ts-topmid">
+        <div class="ts-crumb"><i></i><span>LAB</span><span class="sep">/</span><b>SYNTHESIS</b><span class="sep">/</span><span>SUBJECT</span></div>
+      </div>
+      <button class="ts-x" id="trShellClose" aria-label="Close traits" title="Close [ESC]">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+      </button>
+    </header>
+    <div class="ts-left" style="flex:1 1 auto;justify-content:center;align-items:center;text-align:center;gap:10px">
+      <div class="ts-kicker"><i></i><b>SUBJECT MATRIX</b></div>
+      <div class="ts-tp-note" style="font-size:9px;letter-spacing:.16em;max-width:34ch;line-height:1.8">${line1}<br>${line2}</div>
+    </div>
+  </div>`;
+}
+function trBindEmptyShell(){
+  const x=document.getElementById("trShellClose");
+  if(x)x.onclick=closeTrait;
+}
 function renderTrait(){
   const b=document.getElementById("trBody");
-  if(!state.stacks.length){b.innerHTML=`<div class="tr-empty-state"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><p class="sub">DECK SYNAPSE KOSONG. Buka kartu terlebih dahulu via Gacha Summon.</p></div>`;return;}
-  const tgt=traitTargetStack();
+  if(!b)return;
+  /* renderTrait juga dipanggil dari jalur cloud-sync; jangan bangun ulang DOM
+     (dan menutup picker/filter) saat layar trait sedang tidak terbuka. */
+  const _m=document.getElementById("traitModal");
+  if(_m&&!_m.classList.contains("show")&&!trForceRender)return;
+  if(!state.stacks.length){
+    b.innerHTML=trEmptyShell("NO CARDS IN THE MATRIX.","ROLL A CARD FIRST FROM THE SUMMON TERMINAL.");
+    trBindEmptyShell();
+    return;
+  }
+  const tgt=trTargetStackSafe();
+  if(!tgt){
+    b.innerHTML=trEmptyShell("NO SUBJECT SELECTED.","PICK A CARD TO SYNTHESIZE A TRAIT.");
+    trBindEmptyShell();
+    return;
+  }
   const hasT=!!(tgt.trait&&tgt.trait!=="none");
   const tt=hasT?TRAIT[tgt.trait]:null;
-  const curColor=tt?tt.color:"var(--cyan)";
-  const cur=tt?traitChip(tt.k,`<span class="tc-trait-pill" style="--tcol:${tt.color}"><span class="tc-gem-wrap">${traitGem(16,tt.k)}</span> <span class="tc-name-glow">${traitLabel(tt.k)}</span></span>`):`<span class="tc-trait-none"><span class="tc-none-dot"></span>TANPA TRAIT</span>`;
-  const curStat=tt?`<div class="tc-badge-stat"><span class="tcb-tag">ATK</span> <b class="tcb-val">+${Math.round((tt.atk-1)*100)}%</b></div><div class="tc-badge-stat"><span class="tcb-tag">HP</span> <b class="tcb-val">+${Math.round((tt.hp-1)*100)}%</b></div>`:`<div class="tc-badge-stat tc-stat-empty">ROLL TO ACTIVATE MODIFIER</div>`;
-  const rates=TRAIT_TIERS.filter(t=>t.chance>0).map(t=>{
-    const own=tgt.trait===t.k;
-    const isTarget=autoTargets.has(t.k);
-    const aPct=Math.round((t.atk-1)*100),hPct=Math.round((t.hp-1)*100);
-    const bar=Math.max(2,Math.round((t.chance/55)*1000)/10);
-    return `<div class="trr-item${own?" own":""}${isTarget?" is-target":""}" data-tk="${t.k}" style="--tcol:${t.color}" title="${t.name} • RARITY ${t.rar} • ATK +${aPct}% • HP +${hPct}%">
-      <div class="trr-row">
-        <span class="trr-gem" style="color:${t.color}">${traitGem(16,t.k)}</span>
-        <span class="trr-name">${t.name}</span>
-        ${own?`<span class="trr-flag">ACTIVE</span>`:""}
-        <span class="trr-rar">${t.rar}</span>
-        <span class="trr-pct">${t.chance}%</span>
-        <label class="trr-tgt" title="Target Auto Roll">
-          <input type="checkbox" data-atgt="${t.k}"${isTarget?" checked":""}>
-          <span class="trr-tgt-box">
-            <svg class="trr-tgt-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-          </span>
-        </label>
-      </div>
-      <div class="trr-bar"><i style="width:${bar}%;background:linear-gradient(90deg,${t.color},#7DF9FF)"></i></div>
-    </div>`;}).join("");
-  b.innerHTML=`
-    <div class="tr-grid">
-      <div class="tr-main">
-        <div class="tr-cur tr-cur-btn" id="trPickCard" role="button" title="Change card target" style="--tcol:${curColor}">
-          <div class="tr-cur-thumb-wrap">
-            <img src="${cardThumb(tgt.char)}" alt="" loading="lazy" decoding="async">
-            <span class="tr-cur-scanline"></span>
-          </div>
-          <div class="tr-cur-info">
-            <div class="tc-lbl-row">
-              <span class="tc-lbl">SUBJECT MATRIX</span>
-              <span class="tc-code">NODE #${tgt.id ? tgt.id.slice(0,5).toUpperCase() : '001'}</span>
-            </div>
-            <div class="tc-name">${cardName(tgt.char)}</div>
-            <div class="tc-tline">${cur}</div>
-            <div class="tc-tstat-wrap">${curStat}</div>
-          </div>
-          <button class="tr-change-ic" type="button" title="Change Card Target">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 17v-2a4 4 0 0 0-4-4H4"/><path d="m14 7 4 4-4 4"/><path d="M4 7v2a4 4 0 0 0 4 4h12"/><path d="m10 17-4-4 4-4"/></svg>
-          </button>
-        </div>
-
-        <div class="tr-controls">
-          <button class="tr-btn tr-roll" id="trRoll" ${state.coins<TRAIT_COST||autoRoll?"disabled":""}>
-            <span class="tr-btn-glow"></span>
-            <span class="tr-btn-content">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-              <span>${autoRoll?"SYNTHESIS RUNNING...":"ROLL TRAIT"}</span>
-              <span class="tr-cost-badge">${coinIcon(15)} ${fmt(TRAIT_COST)}</span>
-            </span>
-          </button>
-        </div>
-
-        <div class="tr-auto-panel${autoRoll?" on":""}">
-          <div class="tr-auto-top">
-            <button class="tr-btn tr-auto-btn" id="trAuto"${!autoRoll&&state.coins<TRAIT_COST?" disabled":""}>
-              ${autoRoll?`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg> ABORT AUTO`:`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg> INITIATE AUTO ROLL`}
-            </button>
-            <div class="tr-pulse-indicator${autoRoll?' pulse-run':''}">
-              <span class="tr-pi-dot"></span>
-              <span class="tr-pi-txt">${autoRoll?'OVERCLOCK 100ms':'IDLE'}</span>
-            </div>
-          </div>
-          <div class="tr-auto-meta">
-            <div class="tram-row"><span class="tram-k">LOCKED TARGET:</span> <b class="tram-v">${targetLabel()}</b></div>
-            <div class="tram-row"><span class="tram-k">ITERATION:</span> <b class="tram-n" id="trAutoN">#${autoRollN}</b></div>
-          </div>
-        </div>
-
-        <div class="tr-footer-status">
-          <div class="tr-coin-pill">
-            ${coinIcon(16)}
-            <span>CREDITS:</span>
-            <b class="tr-coin" id="trCoinVal">${fmt(state.coins)}</b>
-          </div>
-          <div class="tr-tip-txt">Roll menyuntikkan trait mod ke target & berhenti otomatis jika target matrix cocok.</div>
-        </div>
-      </div>
-
-      <div class="tr-rates">
-        <div class="trr-h">
-          <div class="trr-h-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            TRAIT PROBABILITY
-          </div>
-          <span class="trr-h-sub">CENTANG TARGET AUTO</span>
-        </div>
-        <div class="trr-list">${rates}</div>
-      </div>
+  const tcol=tt?tt.color:"#9A8A8B";
+  const aPct=tt?Math.round((tt.atk-1)*100):0;
+  const hPct=tt?Math.round((tt.hp-1)*100):0;
+  const statHtml=(aPct>0||hPct>0)
+    ? (aPct>0?`<span class="ts-stat"><i>ATK</i><b>+${aPct}%</b></span>`:"")+(hPct>0?`<span class="ts-stat"><i>HP</i><b>+${hPct}%</b></span>`:"")
+    : `<span class="ts-stat empty"><b>NO STAT MODIFIER</b></span>`;
+  const note=tt
+    ? (tt.atk>=1.5?"Rare artefact-class modifier. Rolling again will overwrite it.":"Modifier is bound to this subject. Rolling again overwrites it.")
+    : "No modifier installed. Roll to synthesize one.";
+  const rows=TRAIT_TIERS.filter(t=>t.chance>0).map(t=>{
+    const on=autoTargets.has(t.k);
+    const active=hasT&&tgt.trait===t.k;
+    const w=Math.max(1.5,Math.min(100,(t.chance/55)*100));
+    const a=Math.round((t.atk-1)*100),h=Math.round((t.hp-1)*100);
+    return `<div class="tsr-row${on?" on":""}${active?" active":""}" data-tk="${t.k}" style="--tcol:${t.color}" role="button" tabindex="0" aria-pressed="${on}">
+      <span class="tsr-gem">${traitGem(26,t.k)}</span>
+      <span class="tsr-name">${t.name}<span class="tsr-rar">${t.rar}</span>${active?'<span class="tsr-cur">CURRENT</span>':""}</span>
+      <span class="tsr-chance">${t.chance}%<small>${trOddsLabel(t)}</small></span>
+      <span class="tsr-stats">ATK <b>+${a}%</b> · HP <b>+${h}%</b></span>
+      <span class="tsr-bar"><i style="width:${w}%"></i></span>
+      <span class="tsr-tgt"><span class="tsr-tgt-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></span>
     </div>`;
+  }).join("");
+  const nT=autoTargets.size;
+  b.innerHTML=`
+  <div class="ts-shell">
+    <header class="ts-top">
+      <div class="ts-mark">
+        <span class="ts-mark-t">TRAITS</span>
+        <span class="ts-mark-s">NEURAL MATRIX MOD</span>
+      </div>
+      <div class="ts-topmid">
+        <div class="ts-crumb">
+          <i></i><span>LAB</span><span class="sep">/</span>
+          <b>SYNTHESIS</b><span class="sep">/</span><span>SUBJECT</span>
+        </div>
+        <div class="ts-topstat">
+          <div class="ts-ts"><span class="ts-ts-k">TARGETS</span><span class="ts-ts-v hz" id="tsTgtCount">${nT}</span></div>
+          <div class="ts-ts"><span class="ts-ts-k">CHANCE HIT</span><span class="ts-ts-v" id="tsHitChance">${trHitText()}</span></div>
+        </div>
+      </div>
+      <button class="ts-x" id="trShellClose" aria-label="Close traits" title="Close [ESC]">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+      </button>
+    </header>
+
+    <div class="ts-body">
+      <section class="ts-left" aria-label="Trait subject">
+        <div class="ts-kicker"><i></i><b>SUBJECT MATRIX</b><span>·</span><span id="tsKickCode">NODE #${tgt.id?String(tgt.id).slice(0,5).toUpperCase():"001"}</span></div>
+
+        <div class="ts-subject">
+          <button class="ts-card" id="trPickCard" type="button" title="Change subject card">
+            <span class="ts-corner tl"></span><span class="ts-corner tr"></span>
+            <span class="ts-corner bl"></span><span class="ts-corner br"></span>
+            <span class="ts-card-hint">CLICK TO SWITCH</span>
+            <span class="ts-card-scan"></span>
+            <img id="tsCardImg" src="${cardThumb(tgt.char)}" alt="" loading="lazy" decoding="async">
+            <div class="ts-card-meta">
+              <div>
+                <div class="ts-card-name" id="tsCardName">${cardName(tgt.char)}</div>
+                <div class="ts-card-code" id="tsCardCode">${trCardCode(tgt.char)}</div>
+              </div>
+            </div>
+          </button>
+
+          <div class="ts-traitplate" id="tsPlate" style="--tcol:${tcol}">
+            <div class="ts-tp-top">
+              <span class="ts-tp-gem" id="tsGem">${tt?traitGem(30,tt.k):traitGem(30,"none")}</span>
+              <span class="ts-tp-name" id="tsTraitName">${tt?tt.name:"NO TRAIT"}</span>
+              <span class="ts-tp-rar" id="tsTraitRar">${tt?tt.rar:"—"}</span>
+            </div>
+            <div class="ts-tp-stats" id="tsStats">${statHtml}</div>
+            <div class="ts-tp-note" id="tsTraitNote">${note}</div>
+          </div>
+
+          <div class="ts-actions">
+            <button class="ts-btn${autoRoll?" live":""}" id="trAuto"${!autoRoll&&state.coins<TRAIT_COST?" disabled":""}>
+              <span id="tsAutoLabel">${autoRoll?"ABORT AUTO":"AUTO ROLL"}</span>
+              <small id="tsAutoSub">${autoRoll?"overclock running":"until target hit"}</small>
+            </button>
+            <button class="ts-btn primary" id="trRoll"${state.coins<TRAIT_COST||autoRoll?" disabled":""}>
+              <span>ROLL TRAIT</span>
+              <small id="tsRollCost">${fmt(TRAIT_COST)} CR</small>
+            </button>
+            <button class="ts-btn" id="tsFilterBtn" type="button">
+              <span>FILTERS</span>
+              <small id="tsFilterSub">${nT} checked</small>
+            </button>
+          </div>
+
+          <div class="ts-balance">
+            <div class="ts-coin">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v9M9.4 10h5.2M9.4 14h5.2"/></svg>
+              <span>CREDITS</span><b id="trCoinVal">${fmt(state.coins)}</b>
+            </div>
+            <div class="ts-bal-note"><b>${fmt(TRAIT_COST)} CR</b> PER ROLL · AUTO CHARGES EACH ITERATION</div>
+          </div>
+
+          <div class="ts-status${autoRoll?" run":""}" id="tsStatus">
+            <span class="dot"></span>
+            <span id="tsStatusTxt">${autoRoll?"OVERCLOCK · 100MS":"IDLE · OVERCLOCK 100MS"}</span>
+            <span class="iter" id="trAutoN">ITER #${autoRollN}</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="ts-rail" aria-label="Trait chances">
+        <div class="tsr-head">
+          <div class="tsr-title">CHANCES <b id="tsrHeadN">(${nT} ARMED)</b></div>
+          <div class="tsr-sub">CHECKBOX = AUTO STOP</div>
+        </div>
+        <div class="tsr-list" id="tsrList">${rows}</div>
+        <div class="tsr-foot">
+          Probabilities are the live tier weights and total <b>100%</b>.<br>
+          Checked traits halt AUTO ROLL the moment one of them hits.
+        </div>
+      </aside>
+    </div>
+
+    <footer class="ts-foot">
+      <span><b>CLICK CARD</b> switch subject</span>
+      <span><b>CHECK ROW</b> auto stop</span>
+      <span class="haz" id="tsFootSel">SUBJECT · ${cardName(tgt.char)}</span>
+    </footer>
+
+    <div id="trFilter" aria-hidden="true">
+      <div class="flt-box" role="dialog" aria-modal="true" aria-label="Trait filters">
+        <div class="flt-head">
+          <div class="flt-headl">
+            <div class="flt-kick"><i></i><span>// AUTO PROTOCOL <b>MANIFEST</b></span></div>
+            <div class="flt-title">FILTERS</div>
+            <div class="flt-note">Pick the traits AUTO ROLL should stop at. Unchecked tiers are skipped and the loop keeps spending credits.</div>
+          </div>
+          <button class="flt-x" id="fltX" aria-label="Close filters" title="Close [ESC]">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+          </button>
+        </div>
+        <div class="flt-scroll"><div class="flt-grid" id="fltGrid"></div></div>
+        <div class="flt-foot">
+          <div class="flt-count"><b id="fltCount">${nT}</b> / ${TRAIT_TIERS.filter(t=>t.chance>0).length} TIERS ARMED · <span id="fltPct">${trHitText()}</span> HIT CHANCE</div>
+          <div class="flt-actions">
+            <button class="flt-btn" id="fltClear" type="button">CLEAR</button>
+            <button class="flt-btn primary" id="fltDone" type="button">DONE</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="trPick" aria-hidden="true">
+      <div class="pck-box" role="dialog" aria-modal="true" aria-label="Choose subject card">
+        <div class="pck-head">
+          <div class="pck-headl">
+            <div class="pck-kick"><i></i><span>// SUBJECT <b>SELECT</b></span></div>
+            <div class="pck-title">CHOOSE CARD</div>
+            <div class="pck-note">The selected card receives the synthesized trait. Only one subject can be bound at a time.</div>
+          </div>
+          <button class="pck-x" id="pckX" aria-label="Close card picker" title="Close [ESC]">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+          </button>
+        </div>
+        <div class="pck-tools">
+          <label class="pck-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+            <input id="pckSearch" type="text" placeholder="Search card..." autocomplete="off">
+          </label>
+          <div class="pck-count"><b id="pckCount">0</b> CARDS</div>
+        </div>
+        <div class="pck-scroll"><div class="pck-grid" id="pckGrid"></div></div>
+      </div>
+    </div>
+  </div>`;
+
+  const x2=document.getElementById("trShellClose");if(x2)x2.onclick=closeTrait;
   const r=document.getElementById("trRoll");if(r)r.onclick=rollTrait;
   const ab=document.getElementById("trAuto");if(ab)ab.onclick=toggleAuto;
-  b.querySelectorAll("input[data-atgt]").forEach(cb=>{cb.onchange=()=>{
-    const key=cb.getAttribute("data-atgt");
-    if(cb.checked)autoTargets.add(key);else autoTargets.delete(key);
-    const m=b.querySelector(".tram-v");
-    if(m)m.textContent=targetLabel();
-    const item=cb.closest('.trr-item');
-    if(item)item.classList.toggle('is-target',cb.checked);
-  };});
-  const pc=document.getElementById("trPickCard");if(pc)pc.onclick=()=>openDeckPick();
+  const pc=document.getElementById("trPickCard");if(pc)pc.onclick=trOpenPick;
+  const fb=document.getElementById("tsFilterBtn");if(fb)fb.onclick=trOpenFilter;
+  const fx=document.getElementById("fltX");if(fx)fx.onclick=trCloseFilter;
+  const fd=document.getElementById("fltDone");if(fd)fd.onclick=trCloseFilter;
+  const fc=document.getElementById("fltClear");if(fc)fc.onclick=()=>{autoTargets.clear();trSyncTargets();};
+  const px=document.getElementById("pckX");if(px)px.onclick=trClosePick;
+  const ps=document.getElementById("pckSearch");if(ps)ps.oninput=()=>trRenderPick(ps.value);
+  const flt=document.getElementById("trFilter");
+  if(flt)flt.onclick=e=>{if(e.target===flt)trCloseFilter();};
+  const pk=document.getElementById("trPick");
+  if(pk)pk.onclick=e=>{if(e.target===pk)trClosePick();};
+  const list=document.getElementById("tsrList");
+  if(list)list.querySelectorAll(".tsr-row").forEach(row=>{
+    const k=row.getAttribute("data-tk");
+    const act=()=>{if(autoTargets.has(k))autoTargets.delete(k);else autoTargets.add(k);trSyncTargets();};
+    row.onclick=act;
+    row.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();act();}};
+  });
+  trRenderFilter();
+  trRenderPick("");
+}
+/* sinkronkan semua penanda target setelah autoTargets berubah */
+function trSyncTargets(){
+  const n=autoTargets.size;
+  const list=document.getElementById("tsrList");
+  if(list)list.querySelectorAll(".tsr-row").forEach(row=>{
+    const on=autoTargets.has(row.getAttribute("data-tk"));
+    row.classList.toggle("on",on);
+    row.setAttribute("aria-pressed",on?"true":"false");
+  });
+  const hc=trHitText();
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  set("tsrHeadN","("+n+" ARMED)");
+  set("tsTgtCount",String(n));
+  set("tsHitChance",hc);
+  set("tsFilterSub",n+" checked");
+  set("fltCount",String(n));
+  set("fltPct",hc);
+  const grid=document.getElementById("fltGrid");
+  if(grid)grid.querySelectorAll(".flt-tile").forEach(tile=>{
+    const on=autoTargets.has(tile.getAttribute("data-tk"));
+    tile.classList.toggle("on",on);
+    tile.setAttribute("aria-pressed",on?"true":"false");
+  });
+  const m=document.querySelector("#traitModal .tram-v");
+  if(m)m.textContent=targetLabel();
+}
+function trRenderFilter(){
+  const host=document.getElementById("fltGrid");
+  if(!host)return;
+  host.innerHTML=TRAIT_TIERS.filter(t=>t.chance>0).map(t=>{
+    const on=autoTargets.has(t.k);
+    return `<button class="flt-tile${on?" on":""}" type="button" data-tk="${t.k}" style="--tcol:${t.color}" aria-pressed="${on}">
+      <span class="flt-rar">${t.rar}</span>
+      <span class="flt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      <span class="flt-gem">${traitGem(38,t.k)}</span>
+      <span class="flt-name">${t.name}</span>
+      <span class="flt-chance">${t.chance}%<small>${trOddsLabel(t)}</small></span>
+    </button>`;
+  }).join("");
+  host.querySelectorAll(".flt-tile").forEach(tile=>{
+    const k=tile.getAttribute("data-tk");
+    tile.onclick=()=>{if(autoTargets.has(k))autoTargets.delete(k);else autoTargets.add(k);trSyncTargets();};
+  });
+}
+function trOpenFilter(){
+  const f=document.getElementById("trFilter");
+  if(!f)return;
+  trRenderFilter();
+  f.classList.add("on");
+  f.setAttribute("aria-hidden","false");
+}
+function trCloseFilter(){
+  const f=document.getElementById("trFilter");
+  if(!f)return;
+  f.classList.remove("on");
+  f.setAttribute("aria-hidden","true");
+}
+function trFilterOpen(){const f=document.getElementById("trFilter");return !!(f&&f.classList.contains("on"));}
+function trRenderPick(q){
+  const host=document.getElementById("pckGrid");
+  if(!host)return;
+  const sel=traitTargetStack();
+  const selId=sel?sel.id:null;
+  const needle=String(q||"").trim().toLowerCase();
+  const list=state.stacks.filter(s=>!needle||cardName(s.char).toLowerCase().indexOf(needle)>=0);
+  const cnt=document.getElementById("pckCount");
+  if(cnt)cnt.textContent=String(list.length);
+  if(!list.length){
+    host.innerHTML=`<div class="pck-empty">NO MATCHING CARDS</div>`;
+    return;
+  }
+  host.innerHTML=list.map(s=>{
+    const badges=(s.shiny||(s.mut&&s.mut!=="none")||(s.trait&&s.trait!=="none"))
+      ? `<span class="pck-badges">${s.shiny?'<span class="shiny-badge shiny-pill">SHINY</span>':""}${s.mut&&s.mut!=="none"?mutChip(s.mut,mutPill(s.mut,"mut-badge")):""}${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="trait-badge" style="border-color:${TRAIT_COLOR[s.trait]}">${traitGem(13,s.trait)}</span>`):""}</span>`
+      : "";
+    return `<button class="pck-card${s.id===selId?" sel":""}" type="button" data-tid="${s.id}" title="${cardName(s.char)}">
+      <img src="${cardThumb(s.char)}" alt="" loading="lazy" decoding="async">
+      ${badges}
+      <span class="pck-name">${cardName(s.char)}</span>
+    </button>`;
+  }).join("");
+  host.querySelectorAll(".pck-card").forEach(el=>{
+    el.onclick=()=>{
+      const tid=el.getAttribute("data-tid");
+      if(typeof sfx!=="undefined"&&sfx.hit)sfx.hit();
+      traitTarget=tid;
+      trClosePick();
+      renderTrait();
+    };
+  });
+}
+function trOpenPick(){
+  const p=document.getElementById("trPick");
+  if(!p)return;
+  const s=document.getElementById("pckSearch");
+  if(s)s.value="";
+  trRenderPick("");
+  p.classList.add("on");
+  p.setAttribute("aria-hidden","false");
+}
+function trClosePick(){
+  const p=document.getElementById("trPick");
+  if(!p)return;
+  p.classList.remove("on");
+  p.setAttribute("aria-hidden","true");
+}
+function trPickOpen(){const p=document.getElementById("trPick");return !!(p&&p.classList.contains("on"));}
+/* ESC: tutup lapisan teratas dulu */
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Escape")return;
+  const m=document.getElementById("traitModal");
+  if(!m||!m.classList.contains("show"))return;
+  if(trPickOpen()){trClosePick();return;}
+  if(trFilterOpen()){trCloseFilter();return;}
+  closeTrait();
+});
+/* ===== hazard banner (pola #deckCurtain) ===== */
+let trHzTimers=[];
+function trHzClear(){for(let i=0;i<trHzTimers.length;i++)clearTimeout(trHzTimers[i]);trHzTimers=[];}
+function trHzSetCopy(mode){
+  const kick=document.getElementById("trHzKick"),title=document.getElementById("trHzTitle"),
+        sub=document.getElementById("trHzSub"),foot=document.getElementById("trHzFoot"),
+        serial=document.getElementById("trHzSerial"),water=document.getElementById("trHzWater");
+  if(serial)serial.textContent=(0x1000+Math.floor(Math.random()*0xefff)).toString(16).toUpperCase();
+  if(mode==="open"){
+    if(kick)kick.innerHTML="// NEURAL <b>SYNC</b>";
+    if(title)title.textContent="TRAITS";
+    if(water)water.textContent="MOD";
+    if(sub)sub.textContent="TRAIT MATRIX · MODIFIERS · TARGETS";
+    if(foot)foot.textContent="ENTER SYNTHESIS";
+  }else{
+    if(kick)kick.innerHTML="// LINK <b>STAND BY</b>";
+    if(title)title.textContent="HOLD";
+    if(water)water.textContent="OUT";
+    if(sub)sub.textContent="MATRIX DISCONNECTING · DATA SAVED";
+    if(foot)foot.textContent="CLOSE SESSION";
+  }
+}
+function trBannerOpen(){
+  const c=document.getElementById("traitCurtain");
+  if(!c)return;
+  trHzClear();trHzSetCopy("open");
+  c.className="";void c.offsetWidth;
+  c.classList.add("on","smooth","sweep");
+  trHzTimers.push(setTimeout(()=>c.classList.add("revealed"),1080));
+  trHzTimers.push(setTimeout(()=>c.classList.remove("on","smooth","sweep","revealed"),1800));
+}
+function trBannerClose(onCovered){
+  const c=document.getElementById("traitCurtain");
+  if(!c){if(onCovered)onCovered();return;}
+  trHzClear();trHzSetCopy("close");
+  c.className="";c.classList.add("on","smooth","revealed");void c.offsetWidth;
+  c.classList.remove("revealed");
+  trHzTimers.push(setTimeout(()=>{if(onCovered)onCovered();},560));
+  trHzTimers.push(setTimeout(()=>c.classList.add("revealed"),780));
+  trHzTimers.push(setTimeout(()=>c.classList.remove("on","smooth","revealed"),1560));
 }
 let cardPickCfg=null;
 function openDeckPick(cfg){dpSearch="";cardPickCfg=(cfg&&cfg.getSel&&cfg.onPick)?cfg:null;document.getElementById("deckPickModal").classList.toggle("dp-dark",!cardPickCfg);renderDeckPick();document.getElementById("deckPickModal").classList.add("show");}
@@ -1636,11 +1968,11 @@ function confirmRareReplace(k,auto){
   const body=
     '<div class="glcf-row"><span class="glcf-label">TRAIT</span><span class="glcf-val" style="color:'+t.color+'"><b>'+t.name+'</b> · '+t.rar+'</span></div>'+
     '<div class="glcf-row"><span class="glcf-label">POWER</span><span class="glcf-val">ATK +'+Math.round((t.atk-1)*100)+'% · HP +'+Math.round((t.hp-1)*100)+'%</span></div>'+
-    '<div class="glcf-row"><span class="glcf-label">KARTU</span><span class="glcf-val">'+nm+'</span></div>'+
+    '<div class="glcf-row"><span class="glcf-label">CARD</span><span class="glcf-val">'+nm+'</span></div>'+
     '<div class="glcf-warn">'+(auto
       ? 'Auto roll will start replacing this trait. A trait is only safe when checked as a target (auto stops when hit). Coins left: '+fmt(state.coins)+'.'
       : 'This trait will be <b>overwritten</b> if you roll again. Coins left: '+fmt(state.coins)+'.')+'</div>';
-  return showConfirmDialog({title:"TRAIT LANGKA TERPASANG",body:body,okText:auto?"CONTINUE AUTO":"ROLL AGAIN"}).then(v=>{traitRareBusy=false;return v;});
+  return showConfirmDialog({title:"RARE TRAIT INSTALLED",body:body,okText:auto?"CONTINUE AUTO":"ROLL AGAIN"}).then(v=>{traitRareBusy=false;return v;});
 }
 async function rollTrait(){
   if(autoRoll)return; // tombol manual diblokir selama auto roll jalan
@@ -1660,19 +1992,19 @@ function showRarePrompt(k,auto){
   const t=TRAIT[k];if(!t)return;
   pendingRare=k;
   pendingRareAuto=!!auto;
-  const b=document.getElementById("rpBody");
+  const b=document.getElementById("trRareBody");
   const canRoll=state.coins>=TRAIT_COST;
   b.innerHTML=`
     <div class="rp-rays"></div>
     ${traitGem(78,k,"rp-gem")}
-    <div class="rp-kicker">${auto?"RARE TRAIT · AUTO ROLL STOPPED":"TRAIT LANGKA"}</div>
+    <div class="rp-kicker">${auto?"RARE TRAIT · AUTO ROLL STOPPED":"RARE TRAIT"}</div>
     <div class="rp-name" style="color:${t.color}">${t.name}</div>
     <div class="rp-rar" style="color:${t.color}">RARITY ${t.rar}</div>
     <div class="rp-power" style="color:${t.color}">ATK +${Math.round((t.atk-1)*100)}% · HP +${Math.round((t.hp-1)*100)}%</div>
     <div class="rp-fx">${traitFxList(k)}</div>
     <div class="rp-btns">
-      <button class="rp-btn rp-save" id="rpSave">${auto?"STOP · KEEP THIS":"SIMPAN"}</button>
-      <button class="rp-btn rp-roll" id="rpRoll" ${canRoll?"":"disabled"}>${auto?`ROLL LAGI · CONTINUE AUTO · ${fmt(TRAIT_COST)} COIN`:`ROLL AGAIN · ${fmt(TRAIT_COST)} COINS`}</button>
+      <button class="rp-btn rp-save" id="rpSave">${auto?"STOP · KEEP THIS":"KEEP"}</button>
+      <button class="rp-btn rp-roll" id="rpRoll" ${canRoll?"":"disabled"}>${auto?`ROLL AGAIN · CONTINUE AUTO · ${fmt(TRAIT_COST)} COIN`:`ROLL AGAIN · ${fmt(TRAIT_COST)} COINS`}</button>
     </div>
     <div class="rp-note">${auto?"STOP locks this trait to the target card &amp; halts auto roll. ROLL AGAIN discards this result and continues auto roll (coins charged again).":"KEEP applies this trait to the target card. ROLL AGAIN discards this result and retries (coins charged again)."}</div>`;
   const box=document.getElementById("rpBox");box.style.color=t.color;box.style.borderColor=t.color;
@@ -1684,7 +2016,7 @@ function closeRarePrompt(){document.getElementById("rarePromptModal").classList.
 function saveRare(){const k=pendingRare;autoStop();pendingRareAuto=false;const tgt=traitTargetStack();if(tgt&&k)tgt.trait=k;pendingRare=null;closeRarePrompt();save();if(!battleLive()&&typeof render==="function")render();renderTrait();if(k)traitNotify(k);}
 function rerollRare(){pendingRare=null;pendingRareAuto=false;closeRarePrompt();rollTrait();}
 /* ===== AUTO ROLL (loop 100ms) ===== */
-function targetLabel(){return autoTargets.size?[...autoTargets].map(k=>TRAIT[k]?TRAIT[k].name:"").filter(Boolean).join(" · "):"centang di DROP RATE";}
+function targetLabel(){return autoTargets.size?[...autoTargets].map(k=>TRAIT[k]?TRAIT[k].name:"").filter(Boolean).join(" · "):"check a row in CHANCES";}
 function autoStop(){autoRoll=false;clearTimeout(autoRollTimer);autoRollTimer=null;}
 function toggleAuto(){autoRoll?stopAutoRoll():startAutoRoll();}
 async function startAutoRoll(){
@@ -1704,57 +2036,68 @@ function traitUiRefresh(){
   if(!root||!tgt)return;
   const hasT=!!(tgt.trait&&tgt.trait!=="none");
   const tt=hasT?TRAIT[tgt.trait]:null;
-  /* --- SUBJECT MATRIX: pill trait + stat badge (SCOPED ke modal trait!) --- */
-  const tl=root.querySelector(".tc-tline");
-  if(tl){
-    tl.innerHTML=tt
-      ? traitChip(tt.k,`<span class="tc-trait-pill" style="--tcol:${tt.color}"><span class="tc-gem-wrap">${traitGem(16,tt.k)}</span> <span class="tc-name-glow">${traitLabel(tt.k)}</span></span>`)
-      : `<span class="tc-trait-none"><span class="tc-none-dot"></span>TANPA TRAIT</span>`;
-  }
-  const tsw=root.querySelector(".tc-tstat-wrap");
-  if(tsw){
-    tsw.innerHTML=tt
-      ? `<div class="tc-badge-stat"><span class="tcb-tag">ATK</span> <b class="tcb-val">+${Math.round((tt.atk-1)*100)}%</b></div><div class="tc-badge-stat"><span class="tcb-tag">HP</span> <b class="tcb-val">+${Math.round((tt.hp-1)*100)}%</b></div>`
-      : `<div class="tc-badge-stat tc-stat-empty">ROLL TO ACTIVATE MODIFIER</div>`;
-  }
-  const curCard=document.getElementById("trPickCard");
-  if(curCard)curCard.style.setProperty("--tcol",tt?tt.color:"var(--cyan)");
-  /* --- DROP RATE list: pindahkan flag ACTIVE ke tier yang sedang aktif --- */
-  root.querySelectorAll(".trr-item").forEach(it=>{
-    const k=it.getAttribute("data-tk");
+  const tcol=tt?tt.color:"#9A8A8B";
+  /* --- subject card label + node code --- */
+  const cn=document.getElementById("tsCardName");
+  if(cn)cn.textContent=cardName(tgt.char);
+  const cc=document.getElementById("tsCardCode");
+  if(cc)cc.textContent=trCardCode(tgt.char);
+  const fs=document.getElementById("tsFootSel");
+  if(fs)fs.textContent="SUBJECT · "+cardName(tgt.char);
+  /* --- trait plate --- */
+  const plate=document.getElementById("tsPlate");
+  if(plate)plate.style.setProperty("--tcol",tcol);
+  const gem=document.getElementById("tsGem");
+  if(gem)gem.innerHTML=tt?traitGem(30,tt.k):traitGem(30,"none");
+  const nm=document.getElementById("tsTraitName");
+  if(nm)nm.textContent=tt?tt.name:"NO TRAIT";
+  const rar=document.getElementById("tsTraitRar");
+  if(rar)rar.textContent=tt?tt.rar:"—";
+  const aPct=tt?Math.round((tt.atk-1)*100):0;
+  const hPct=tt?Math.round((tt.hp-1)*100):0;
+  const stats=document.getElementById("tsStats");
+  if(stats)stats.innerHTML=(aPct>0||hPct>0)
+    ? (aPct>0?`<span class="ts-stat"><i>ATK</i><b>+${aPct}%</b></span>`:"")+(hPct>0?`<span class="ts-stat"><i>HP</i><b>+${hPct}%</b></span>`:"")
+    : `<span class="ts-stat empty"><b>NO STAT MODIFIER</b></span>`;
+  const note=document.getElementById("tsTraitNote");
+  if(note)note.textContent=tt
+    ? (tt.atk>=1.5?"Rare artefact-class modifier. Rolling again will overwrite it.":"Modifier is bound to this subject. Rolling again overwrites it.")
+    : "No modifier installed. Roll to synthesize one.";
+  /* --- rail: pindahkan penanda CURRENT + warna ikon --- */
+  root.querySelectorAll(".tsr-row").forEach(row=>{
+    const k=row.getAttribute("data-tk");
     const own=(!!tt&&k===tt.k);
-    it.classList.toggle("own",own);
-    const nameRow=it.querySelector(".trr-row");
-    if(!nameRow)return;
-    const old=nameRow.querySelector(".trr-flag");
+    row.classList.toggle("active",own);
+    const nameBox=row.querySelector(".tsr-name");
+    if(!nameBox)return;
+    const old=nameBox.querySelector(".tsr-cur");
     if(old)old.remove();
     if(own){
       const flag=document.createElement("span");
-      flag.className="trr-flag";
-      flag.textContent="ACTIVE";
-      const rar=nameRow.querySelector(".trr-rar");
-      if(rar)nameRow.insertBefore(flag,rar);else nameRow.appendChild(flag);
+      flag.className="tsr-cur";
+      flag.textContent="CURRENT";
+      nameBox.appendChild(flag);
     }
   });
 }
 function autoPaint(){
   const cv=document.getElementById("coinVal");if(cv)cv.textContent=fmt(state.coins);
   const c=document.getElementById("trCoinVal");if(c)c.textContent=fmt(state.coins);
-  const n=document.getElementById("trAutoN");if(n)n.textContent="#"+autoRollN;
+  const n=document.getElementById("trAutoN");if(n)n.textContent="ITER #"+autoRollN;
 }
 /* FX per tick auto roll: retrigger class supaya animasi CSS jalan tiap roll */
 function traitFxTick(k){
   const root=document.getElementById("traitModal");if(!root)return;
   const t=TRAIT[k];
-  const card=document.getElementById("trPickCard");
-  if(card){
-    if(t)card.style.setProperty("--tcol",t.color);
-    card.classList.remove("tr-tick");void card.offsetWidth;card.classList.add("tr-tick");
+  const plate=document.getElementById("tsPlate");
+  if(plate){
+    if(t)plate.style.setProperty("--tcol",t.color);
+    plate.classList.remove("tr-tick");void plate.offsetWidth;plate.classList.add("tr-tick");
   }
   const n=document.getElementById("trAutoN");
   if(n){n.classList.remove("tr-n-pop");void n.offsetWidth;n.classList.add("tr-n-pop");}
-  root.querySelectorAll(".trr-item.trr-hit").forEach(el=>el.classList.remove("trr-hit"));
-  const own=root.querySelector(".trr-item.own");
+  root.querySelectorAll(".tsr-row.trr-hit").forEach(el=>el.classList.remove("trr-hit"));
+  const own=root.querySelector(".tsr-row.active");
   if(own){void own.offsetWidth;own.classList.add("trr-hit");}
 }
 function autoTick(){
