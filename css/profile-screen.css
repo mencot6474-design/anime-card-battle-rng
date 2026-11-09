@@ -1,0 +1,1062 @@
+/* ==========================================================================
+   PROFILE-SCREEN.CSS — "OPERATOR DOSSIER" (WHITE-on-BLACK HAZARD)
+   Referensi layout: Screenshot (151).png (Roblox-style dossier) yang diport
+   ke tema WoB hazard game, full English.
+
+   Scope: #profModal (layar penuh) + #profileCurtain (banner masuk/keluar).
+   Kontrak performa AGENTS §2b: animasi hanya transform/opacity, tanpa
+   backdrop-filter di permukaan besar, tanpa animasi box-shadow/width/height.
+   ========================================================================== */
+
+/* Sembunyikan chrome lobby selama layar profil terbuka. */
+body.profile-open #ldEntry,
+body:has(#profModal.show) #ldEntry,
+body.profile-open nav.m-rail,
+body.profile-open nav.m-tabbar,
+body.profile-open #activePlayersBadge,
+body.profile-open #pwaInstallBtn,
+body.profile-open .buff-dock,
+body.profile-open .weather-panel,
+body.profile-open .lobby-tactical-hud,
+body:has(#profModal.show) nav.m-rail,
+body:has(#profModal.show) nav.m-tabbar,
+body:has(#profModal.show) #activePlayersBadge,
+body:has(#profModal.show) #pwaInstallBtn,
+body:has(#profModal.show) .buff-dock,
+body:has(#profModal.show) .weather-panel,
+body:has(#profModal.show) .lobby-tactical-hud {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+/* ================================ TOKENS ================================ */
+#profModal {
+  --pfx-ink: #050505;
+  --pfx-ink2: #0b0b0b;
+  --pfx-ink3: #141414;
+  --pfx-paper: #f5f5f5;
+  --pfx-dim: rgba(245, 245, 245, .6);
+  --pfx-faint: rgba(245, 245, 245, .14);
+  --pfx-hair: rgba(245, 245, 245, .26);
+  --pfx-haz: #f3e600;
+  --pfx-head: 'Orbitron', 'Rajdhani', system-ui, sans-serif;
+  --pfx-ui: 'Rajdhani', 'Segoe UI', system-ui, sans-serif;
+  --pfx-mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+}
+
+/* ================================ SHELL ================================= */
+/* Netralkan shell lama (lobby-prototype.css:2970 backdrop blur 20px,
+   style.css:17579 animasi scale) — layar baru opaque full-bleed. */
+#profModal.modal-profile {
+  position: fixed !important;
+  inset: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-width: none !important;
+  max-height: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: var(--pfx-ink) !important;
+  overflow: hidden !important;
+  display: none !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  z-index: 95000 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  animation: none !important;
+}
+#profModal.modal-profile.show { display: flex !important; }
+
+/* Player dossier sheet + title selector opened from the dossier must sit ABOVE
+   the profile screen (all share the 90000 modal layer). */
+body:has(#profModal.show) #rkProfModal.show,
+body:has(#profModal.show) #titlesModal.show { z-index: 95500 !important; }
+body:has(#profModal.show) #titlesBackdrop.show { z-index: 95400 !important; }
+
+#profModal .prof-x {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  flex: none !important;
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 0 !important;
+  border: 1px solid var(--pfx-haz) !important;
+  background: var(--pfx-haz) !important;
+  color: #050505 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+  transform: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  clip-path: polygon(0 0, 100% 0, 100% 62%, 78% 100%, 0 100%);
+  transition: background .15s ease, color .15s ease !important;
+}
+#profModal .prof-x:hover {
+  background: #fff !important;
+  border-color: #fff !important;
+  color: #050505 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ================================ HEADER ================================ */
+#profModal .pfx-top {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px 12px;
+  background: var(--pfx-haz);
+  color: #050505;
+  position: relative;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+}
+#profModal .pfx-top::after {
+  content: '';
+  position: absolute;
+  right: 96px;
+  top: 0;
+  bottom: 0;
+  width: 64px;
+  background: repeating-linear-gradient(112deg, rgba(5, 5, 5, .14) 0 6px, transparent 6px 16px);
+  pointer-events: none;
+}
+#profModal .pfx-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+#profModal .pfx-kicker {
+  font-family: var(--pfx-mono);
+  font-size: 8px;
+  letter-spacing: .24em;
+  color: rgba(5, 5, 5, .62);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+#profModal .pfx-title {
+  margin: 0;
+  font-family: var(--pfx-head);
+  font-weight: 900;
+  font-size: clamp(22px, 4.4vw, 34px);
+  line-height: 1;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  color: #050505;
+}
+#profModal .pfx-slash {
+  width: 34px;
+  height: 22px;
+  background:
+    linear-gradient(112deg, #050505 0 4px, transparent 4px 10px),
+    linear-gradient(112deg, #050505 0 4px, transparent 4px 10px) 12px 0,
+    linear-gradient(112deg, #050505 0 4px, transparent 4px 10px) 24px 0;
+  opacity: .55;
+  flex: none;
+}
+#profModal .pfx-search {
+  margin-left: auto;
+  flex: 1 1 auto;
+  max-width: 420px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  height: 40px;
+  background: rgba(5, 5, 5, .82);
+  clip-path: polygon(0 0, 100% 0, 100% 62%, 94% 100%, 0 100%);
+}
+#profModal .pfx-search svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  color: var(--pfx-haz);
+}
+#profModal .pfx-search input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  background: none !important;
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  font-family: var(--pfx-ui);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: var(--pfx-paper) !important;
+}
+#profModal .pfx-search input::placeholder { color: rgba(245, 245, 245, .4); }
+#profModal .pfx-search input:focus,
+#profModal .pfx-search input:focus-visible {
+  background: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+#profModal .pfx-search input::-webkit-search-cancel-button { filter: invert(1); }
+
+/* ================================ TABS ================================= */
+#profModal .pfx-tabs {
+  flex: none;
+  display: flex;
+  gap: 4px;
+  padding: 0 16px;
+  background: #0b0b0b;
+  border-bottom: 1px solid var(--pfx-faint);
+}
+#profModal .pfx-tab {
+  flex: 1 1 0;
+  appearance: none;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  padding: 13px 10px 11px;
+  font-family: var(--pfx-head);
+  font-weight: 800;
+  font-size: clamp(12px, 2.4vw, 16px);
+  letter-spacing: .12em;
+  color: rgba(245, 245, 245, .42);
+  text-transform: uppercase;
+  border-bottom: 3px solid transparent;
+  transition: color .15s ease, border-color .15s ease;
+}
+#profModal .pfx-tab:hover { color: rgba(245, 245, 245, .78); }
+#profModal .pfx-tab.active {
+  color: var(--pfx-paper);
+  border-bottom-color: var(--pfx-haz);
+}
+
+/* ================================ BODY ================================= */
+#profModal .pfx-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px;
+  background:
+    repeating-linear-gradient(0deg, rgba(245, 245, 245, .022) 0 1px, transparent 1px 36px),
+    repeating-linear-gradient(90deg, rgba(245, 245, 245, .022) 0 1px, transparent 1px 36px),
+    var(--pfx-ink);
+}
+#profModal .pfx-page { display: none; }
+#profModal .pfx-page.active { display: block; }
+
+/* ====================== OVERVIEW: 2 KOLOM ============================== */
+#profModal .pfx-page[data-page="overview"].active {
+  display: grid;
+  grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+/* ---------- LEFT COLUMN ---------- */
+#profModal .pfx-left {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  background: var(--pfx-ink2);
+  border: 1px solid var(--pfx-faint);
+}
+#profModal .pfx-idrow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+#profModal .pfx-idtxt { min-width: 0; flex: 1 1 auto; }
+#profModal .pfx-name {
+  font-family: var(--pfx-head);
+  font-weight: 900;
+  font-size: clamp(17px, 3vw, 22px);
+  line-height: 1.05;
+  letter-spacing: .01em;
+  color: var(--pfx-paper);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#profModal .pfx-handle {
+  margin-top: 3px;
+  font-family: var(--pfx-mono);
+  font-size: 10px;
+  letter-spacing: .1em;
+  color: var(--pfx-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#profModal .pfx-avatar {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border: 1px solid var(--pfx-haz);
+  background: #101010;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-family: var(--pfx-head);
+  font-weight: 900;
+  font-size: 18px;
+  color: rgba(245, 245, 245, .35);
+}
+#profModal .pfx-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* hero card = kartu lobby apa adanya (hubCardHtml), dipaksa 1:1-ish stage */
+#profModal .pfx-cardstage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  max-height: 44vh;
+  background: radial-gradient(80% 60% at 50% 30%, rgba(243, 230, 0, .07), transparent 70%), #080808;
+  border: 1px solid var(--pfx-faint);
+  overflow: hidden;
+  cursor: pointer;
+}
+#profModal .pfx-cardstage .hub-center {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  aspect-ratio: auto !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+#profModal .pfx-levelbar {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 10px;
+  background: #0f0f0f;
+  border: 1px solid var(--pfx-faint);
+  border-left: 3px solid var(--pfx-haz);
+}
+#profModal .pfx-title-tag {
+  align-self: flex-start;
+  max-width: 100%;
+  font-size: 9.5px !important;
+  padding: 3px 10px 3px 8px !important;
+  color: var(--pfx-paper) !important;
+  background: rgba(243, 230, 0, .1) !important;
+  border: 1px solid rgba(243, 230, 0, .45) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  order: 0 !important;
+}
+#profModal .pfx-title-tag .ptt-crown { color: var(--pfx-haz) !important; filter: none !important; }
+#profModal .pfx-lvrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+#profModal .pfx-lvpill {
+  font-family: var(--pfx-head);
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: .1em;
+  color: #050505;
+  background: var(--pfx-haz);
+  padding: 3px 9px;
+}
+#profModal .pfx-lvpill b { font-size: 13px; }
+#profModal .pfx-power {
+  font-family: var(--pfx-mono);
+  font-size: 10px;
+  letter-spacing: .1em;
+  color: var(--pfx-dim);
+  white-space: nowrap;
+}
+#profModal .pfx-power i { font-style: normal; color: rgba(245, 245, 245, .42); }
+#profModal .pfx-power b {
+  font-family: var(--pfx-head);
+  font-size: 14px;
+  color: var(--pfx-haz);
+  letter-spacing: .04em;
+  margin-left: 4px;
+}
+#profModal .pfx-maincard {
+  font-family: var(--pfx-ui);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: .06em;
+  color: var(--pfx-dim);
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#profModal .pfx-xp {
+  height: 20px !important;
+  max-width: 100% !important;
+  background: #050505 !important;
+  border: 1px solid var(--pfx-faint) !important;
+  border-radius: 0 !important;
+  display: block;
+  position: relative;
+  overflow: hidden;
+}
+#profModal .pfx-xp i {
+  display: block;
+  height: 100%;
+  min-width: 0;
+  background: var(--pfx-haz) !important;
+  box-shadow: none !important;
+  transition: width .25s ease;
+}
+#profModal .pfx-xp span {
+  position: absolute;
+  inset: 0;
+  left: 0;
+  top: 0;
+  transform: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--pfx-mono);
+  font-size: 9px;
+  line-height: 1;
+  letter-spacing: .06em;
+  font-weight: 700;
+  color: rgba(245, 245, 245, .88);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .95);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+#profModal .pfx-sec-h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+  font-family: var(--pfx-head);
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: .2em;
+  color: rgba(245, 245, 245, .55);
+  text-transform: uppercase;
+}
+#profModal .pfx-sec-h::after {
+  content: '';
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--pfx-faint);
+}
+#profModal .pfx-showcase {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+#profModal .pfx-show {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #0d0d0d;
+  border: 1px solid var(--pfx-faint);
+  border-top: 2px solid var(--pfx-ac, var(--pfx-faint));
+}
+#profModal .pfx-show-img {
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: #060606;
+}
+#profModal .pfx-show-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+#profModal .pfx-show-foot {
+  padding: 5px 6px;
+  font-family: var(--pfx-ui);
+  font-weight: 800;
+  font-size: 9px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--pfx-paper);
+  text-align: center;
+  border-top: 1px solid var(--pfx-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#profModal .pfx-show-sub {
+  padding: 0 6px 5px;
+  font-family: var(--pfx-mono);
+  font-size: 8px;
+  letter-spacing: .1em;
+  color: var(--pfx-haz);
+  text-align: center;
+}
+
+/* ---------- RIGHT COLUMN ---------- */
+#profModal .pfx-main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+#profModal .pfx-panel {
+  min-width: 0;
+  background: var(--pfx-ink2);
+  border: 1px solid var(--pfx-faint);
+  border-top: 2px solid var(--pfx-haz);
+  padding: 12px;
+}
+#profModal .pfx-panel-h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-family: var(--pfx-head);
+  font-weight: 900;
+  font-size: 13px;
+  letter-spacing: .18em;
+  color: var(--pfx-haz);
+  text-transform: uppercase;
+}
+#profModal .pfx-more {
+  margin-left: auto;
+  appearance: none;
+  cursor: pointer;
+  padding: 6px 10px;
+  font-family: var(--pfx-ui);
+  font-weight: 800;
+  font-size: 9.5px;
+  letter-spacing: .12em;
+  color: var(--pfx-haz);
+  background: rgba(243, 230, 0, .1);
+  border: 1px solid rgba(243, 230, 0, .4);
+  border-radius: 0;
+  transition: background .15s ease, color .15s ease;
+}
+#profModal .pfx-more:hover { background: var(--pfx-haz); color: #050505; }
+
+#profModal .pfx-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px 18px;
+}
+#profModal .pfx-stat {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(245, 245, 245, .07);
+  min-width: 0;
+}
+#profModal .pfx-stat-k {
+  font-family: var(--pfx-ui);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: .03em;
+  color: var(--pfx-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#profModal .pfx-stat-v {
+  font-family: var(--pfx-mono);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: .02em;
+  color: var(--pfx-paper);
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- TEAM ---------- */
+#profModal .pfx-team {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 8px 10px;
+  align-items: stretch;
+}
+#profModal .pfx-team-rail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0f0f0f;
+  border: 1px solid var(--pfx-faint);
+}
+#profModal .pfx-team-rail span {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-family: var(--pfx-mono);
+  font-size: 8.5px;
+  letter-spacing: .24em;
+  color: rgba(245, 245, 245, .5);
+  text-transform: uppercase;
+}
+#profModal .pfx-team-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  min-width: 0;
+}
+#profModal .pfx-slot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #0d0d0d;
+  border: 1px solid var(--pfx-faint);
+  border-top: 2px solid var(--pfx-ac, rgba(245, 245, 245, .35));
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease;
+}
+#profModal .pfx-slot:hover,
+#profModal .pfx-slot:focus-visible {
+  border-color: var(--pfx-haz);
+  background: #131313;
+  outline: none;
+}
+#profModal .pfx-slot.empty { border-top-color: rgba(245, 245, 245, .22); }
+#profModal .pfx-slot.locked { opacity: .45; cursor: default; }
+#profModal .pfx-slot-img {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #060606;
+  color: rgba(245, 245, 245, .28);
+}
+#profModal .pfx-slot-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+#profModal .pfx-slot-img svg { width: 24px; height: 24px; }
+#profModal .pfx-slot-name {
+  padding: 5px 5px 4px;
+  font-family: var(--pfx-ui);
+  font-weight: 800;
+  font-size: 9.5px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--pfx-paper);
+  text-align: center;
+  border-top: 1px solid var(--pfx-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#profModal .pfx-slot-sub {
+  padding: 0 5px 5px;
+  font-family: var(--pfx-mono);
+  font-size: 8px;
+  letter-spacing: .08em;
+  color: var(--pfx-dim);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ============================ EXTRA PAGE =============================== */
+#profModal .pfx-page[data-page="extra"].active {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+#profModal .pfx-panel-extra { width: 100%; }
+#profModal .pfx-kbar {
+  position: relative;
+  height: 22px;
+  margin-bottom: 10px;
+  background: #060606;
+  border: 1px solid var(--pfx-faint);
+  overflow: hidden;
+}
+#profModal .pfx-kbar i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: rgba(243, 230, 0, .28);
+  border-right: 2px solid var(--pfx-haz);
+}
+#profModal .pfx-kbar span {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--pfx-mono);
+  font-size: 9px;
+  letter-spacing: .16em;
+  color: var(--pfx-paper);
+}
+#profModal .pfx-sec { margin-bottom: 12px; }
+#profModal .pfx-sec-t {
+  margin-bottom: 8px;
+  font-family: var(--pfx-head);
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: .2em;
+  color: rgba(245, 245, 245, .5);
+  text-transform: uppercase;
+}
+#profModal .pfx-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+#profModal .pfx-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  padding: 9px 10px;
+  background: #0d0d0d;
+  border: 1px solid var(--pfx-faint);
+  border-left: 2px solid rgba(245, 245, 245, .2);
+  transition: border-color .15s ease, background .15s ease;
+}
+#profModal .pfx-tile[role="button"] { cursor: pointer; }
+#profModal .pfx-tile[role="button"]:hover {
+  border-color: var(--pfx-haz);
+  background: #131313;
+}
+#profModal .pfx-tile.accent { border-left-color: var(--pfx-haz); }
+#profModal .pfx-tile.wide { grid-column: 1 / -1; }
+#profModal .pfx-tile-l {
+  font-family: var(--pfx-mono);
+  font-size: 8.5px;
+  letter-spacing: .16em;
+  color: rgba(245, 245, 245, .5);
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#profModal .pfx-tile-v {
+  font-family: var(--pfx-head);
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: .02em;
+  color: var(--pfx-paper);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#profModal .pfx-tile-v.pfx-ok { color: #4ade80; }
+#profModal .pfx-tile-s {
+  font-family: var(--pfx-ui);
+  font-size: 10px;
+  letter-spacing: .04em;
+  color: var(--pfx-dim);
+  line-height: 1.3;
+}
+#profModal .pfx-wtag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+#profModal .pfx-wtag svg { width: 15px; height: 15px; flex: none; }
+
+/* ============================ RESPONSIVE =============================== */
+@media (max-width: 900px) {
+  #profModal .pfx-page[data-page="overview"].active {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  #profModal .pfx-cardstage { max-height: 34vh; aspect-ratio: 16 / 11; }
+  #profModal .pfx-stats { grid-template-columns: minmax(0, 1fr); }
+  #profModal .pfx-team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  #profModal .pfx-top { gap: 10px; padding: 11px 12px 10px; flex-wrap: wrap; }
+  #profModal .pfx-kicker { display: none; }
+  #profModal .pfx-search { order: 3; flex-basis: 100%; max-width: none; height: 42px; }
+  #profModal .pfx-title { font-size: 24px; }
+  #profModal .pfx-slash { display: none; }
+  #profModal .pfx-body { padding: 8px; }
+  #profModal .pfx-grid { grid-template-columns: repeat(auto-fill, minmax(122px, 1fr)); }
+  #profModal .pfx-showcase { gap: 6px; }
+  #profModal .pfx-stat-k { font-size: 11px; }
+  #profModal .pfx-stat-v { font-size: 11px; }
+}
+@media (max-height: 520px) and (orientation: landscape) {
+  #profModal .pfx-top { padding: 8px 12px 7px; }
+  #profModal .pfx-title { font-size: 20px; }
+  #profModal .pfx-search { height: 40px; }
+  #profModal .pfx-tab { padding: 8px 8px 7px; min-height: 40px; }
+  /* tetap dua kolom seperti referensi: dossier kiri, stats/team kanan */
+  #profModal .pfx-page[data-page="overview"].active {
+    grid-template-columns: minmax(200px, 264px) minmax(0, 1fr);
+    gap: 8px;
+  }
+  #profModal .pfx-body { padding: 8px; }
+  #profModal .pfx-left { padding: 8px; gap: 7px; }
+  #profModal .pfx-cardstage { max-height: 210px; aspect-ratio: 4 / 3; }
+  #profModal .pfx-showcase { gap: 5px; }
+  #profModal .pfx-show-foot { font-size: 8px; padding: 4px 3px; }
+  #profModal .pfx-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 14px; }
+  #profModal .pfx-stat { padding: 4px 0; }
+  #profModal .pfx-team-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  #profModal .pfx-panel { padding: 9px; }
+  #profModal .pfx-panel-h { margin-bottom: 7px; font-size: 11px; }
+}
+@media (max-width: 899px) and (max-height: 520px) {
+  #profModal .pfx-team-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* ====================== BANNER #profileCurtain ========================= */
+#profileCurtain {
+  position: fixed;
+  inset: 0;
+  z-index: 96000;
+  pointer-events: none;
+  overflow: hidden;
+  visibility: hidden;
+  contain: strict;
+}
+#profileCurtain.on { visibility: visible; }
+#profileCurtain .half {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 50.5%;
+  background-color: #050505;
+  transform: translateY(0);
+  will-change: transform;
+  overflow: hidden;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(245, 245, 245, .045) 0 1px, transparent 1px 34px),
+    repeating-linear-gradient(90deg, rgba(245, 245, 245, .045) 0 1px, transparent 1px 34px),
+    radial-gradient(120% 90% at 50% 100%, rgba(243, 230, 0, .06), transparent 68%);
+}
+#profileCurtain .top { top: 0; }
+#profileCurtain .bot {
+  bottom: 0;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(245, 245, 245, .045) 0 1px, transparent 1px 34px),
+    repeating-linear-gradient(90deg, rgba(245, 245, 245, .045) 0 1px, transparent 1px 34px),
+    radial-gradient(120% 90% at 50% 0%, rgba(243, 230, 0, .06), transparent 68%);
+}
+#profileCurtain.smooth .half { transition: transform .62s cubic-bezier(.74, 0, .22, 1); }
+#profileCurtain.revealed .top { transform: translateY(-101%); }
+#profileCurtain.revealed .bot { transform: translateY(101%); }
+#profileCurtain .edge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 16px;
+  background: repeating-linear-gradient(-45deg, #f3e600 0 12px, #080808 12px 24px);
+}
+#profileCurtain .top .edge { bottom: 0; }
+#profileCurtain .bot .edge { top: 0; }
+#profileCurtain .mark {
+  position: absolute;
+  left: 16px;
+  bottom: 26px;
+  font-family: var(--pfx-mono, 'JetBrains Mono', monospace);
+  font-size: 7px;
+  letter-spacing: .26em;
+  color: rgba(245, 245, 245, .4);
+  white-space: nowrap;
+}
+#profileCurtain .mark b { color: #f3e600; font-weight: 600; }
+#profileCurtain .bot .mark { top: 28px; bottom: auto; left: auto; right: 16px; }
+#profileCurtain .tape {
+  position: absolute;
+  left: -60%;
+  right: -60%;
+  height: 52px;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  background: repeating-linear-gradient(-45deg, #f3e600 0 18px, #0b0b0b 18px 36px);
+  border-top: 2px solid #0b0b0b;
+  border-bottom: 2px solid #0b0b0b;
+  transform: translateX(-120%) skewX(-13deg);
+  will-change: transform, opacity;
+}
+#profileCurtain .tape-a { top: calc(50% - 104px); }
+#profileCurtain .tape-b { top: calc(50% + 54px); }
+#profileCurtain.sweep .tape-a { animation: prfTapeSweep .86s cubic-bezier(.4, 0, .2, 1) both; }
+#profileCurtain.sweep .tape-b { animation: prfTapeSweep .86s .09s cubic-bezier(.4, 0, .2, 1) both; }
+@keyframes prfTapeSweep {
+  0% { transform: translateX(-120%) skewX(-13deg); opacity: 0; }
+  12% { opacity: 1; }
+  86% { opacity: 1; }
+  100% { transform: translateX(120%) skewX(-13deg); opacity: 0; }
+}
+#profileCurtain .flash { position: absolute; inset: 0; z-index: 3; background: #f3e600; opacity: 0; }
+#profileCurtain.sweep .flash { animation: prfFlash .4s ease-out both; }
+@keyframes prfFlash { 0% { opacity: 0; } 14% { opacity: .16; } 100% { opacity: 0; } }
+#profileCurtain .plate {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 4;
+  width: min(88vw, 600px);
+  transform: translate(-50%, -50%);
+  opacity: 1;
+  background:
+    repeating-linear-gradient(-45deg, rgba(243, 230, 0, .045) 0 14px, transparent 14px 34px),
+    linear-gradient(168deg, rgba(14, 14, 14, .98) 0%, rgba(5, 5, 5, .99) 52%, rgba(10, 10, 10, .98) 100%);
+  border-top: 2px solid #f3e600;
+  border-bottom: 2px solid #f3e600;
+  box-shadow: 0 26px 60px rgba(0, 0, 0, .66), inset 0 0 0 1px rgba(255, 255, 255, .07);
+}
+#profileCurtain.smooth .plate {
+  transition: opacity .22s ease, transform .52s cubic-bezier(.34, 1.22, .64, 1);
+}
+#profileCurtain.revealed .plate { opacity: 0; transform: translate(-50%, -50%) scale(1.04); }
+#profileCurtain .plate::before,
+#profileCurtain .plate::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 18px;
+  background: repeating-linear-gradient(-45deg, #f3e600 0 10px, #050505 10px 20px);
+}
+#profileCurtain .plate::before { left: -18px; }
+#profileCurtain .plate::after { right: -18px; }
+#profileCurtain .water {
+  position: absolute;
+  right: 10px;
+  bottom: -22px;
+  pointer-events: none;
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  font-size: clamp(84px, 15vw, 158px);
+  line-height: .8;
+  letter-spacing: -.01em;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(243, 230, 0, .13);
+  transform: rotate(-6deg);
+  text-transform: uppercase;
+}
+#profileCurtain .corner {
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(245, 245, 245, .85);
+  opacity: .85;
+  pointer-events: none;
+}
+#profileCurtain .corner.tl { left: 7px; top: 7px; border-right: 0; border-bottom: 0; }
+#profileCurtain .corner.tr { right: 7px; top: 7px; border-left: 0; border-bottom: 0; }
+#profileCurtain .corner.bl { left: 7px; bottom: 7px; border-right: 0; border-top: 0; }
+#profileCurtain .corner.br { right: 7px; bottom: 7px; border-left: 0; border-top: 0; }
+#profileCurtain .in { position: relative; z-index: 2; padding: 16px 22px 13px; }
+#profileCurtain .krow { display: flex; align-items: center; gap: 8px; min-width: 0; }
+#profileCurtain .dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  background: #f3e600;
+  transform: rotate(45deg);
+}
+#profileCurtain .kick {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  letter-spacing: .28em;
+  color: rgba(245, 245, 245, .72);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#profileCurtain .kick b { color: #f3e600; font-weight: 600; }
+#profileCurtain .serial {
+  margin-left: auto;
+  flex: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 7px;
+  letter-spacing: .2em;
+  color: rgba(245, 245, 245, .42);
+  white-space: nowrap;
+}
+#profileCurtain .title {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-top: 9px;
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  font-size: clamp(28px, 6.2vw, 54px);
+  line-height: .96;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  min-width: 0;
+  color: #f5f5f5;
+}
+#profileCurtain .title span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#profileCurtain .title::before {
+  content: '';
+  flex: none;
+  width: 13px;
+  height: .92em;
+  background: #f3e600;
+  transform: skewX(-18deg);
+}
+#profileCurtain .sub {
+  margin-top: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .18em;
+  color: #f3e600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#profileCurtain .bar { height: 3px; margin-top: 14px; background: rgba(255, 255, 255, .14); overflow: hidden; }
+#profileCurtain .bar i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: #f3e600;
+  transform: scaleX(0);
+  transform-origin: left;
+}
+#profileCurtain.smooth:not(.revealed) .bar i {
+  transform: scaleX(1);
+  transition: transform .66s .1s cubic-bezier(.2, .9, .2, 1);
+}
+#profileCurtain .foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 6.5px;
+  letter-spacing: .2em;
+  color: rgba(245, 245, 245, .42);
+}
+
+@media (max-width: 420px) {
+  #profileCurtain .in { padding: 13px 14px 11px; }
+  #profileCurtain .sub { font-size: 7.5px; letter-spacing: .12em; }
+  #profileCurtain .kick { font-size: 7px; letter-spacing: .2em; }
+  #profileCurtain .serial { display: none; }
+  #profileCurtain .foot { font-size: 6px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #profModal .pfx-xp i { transition: none; }
+  #profileCurtain .half,
+  #profileCurtain .plate,
+  #profileCurtain .bar i { transition: none !important; }
+  #profileCurtain .tape,
+  #profileCurtain .flash { animation: none !important; }
+}

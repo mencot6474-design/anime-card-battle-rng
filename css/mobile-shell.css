@@ -2704,12 +2704,34 @@ body.on-settings .sett-wrap .ubox .out:hover {
   font-family:var(--mono); font-size:6px; letter-spacing:.16em; color:rgba(255,255,255,.5);
 }
 
-/* pod level + XP (dipakai juga oleh tick l12TopLv / l12TopXpBar) */
+/* pod level + XP (dipakai juga oleh tick l12TopLv / l12TopXpBar)
+   Sejak 2026-11-09 seluruh pod = tombol masuk layar PROFILE: ada chevron
+   .lv-open di kanan, hover/focus memberi tanda jelas, tap target tetap 44px. */
 .lobby-hub.l12.c12 .c12lvl {
   flex:none; width:100%; min-height:44px; margin:0; padding:3px 7px; gap:6px;
   background:rgba(0,0,0,.55) !important; border:1px solid rgba(255,255,255,.22) !important;
-  clip-path:none;
+  clip-path:none; cursor:pointer; text-align:left;
+  transition:border-color .15s ease, background .15s ease;
 }
+.lobby-hub.l12.c12 .c12lvl:hover,
+.lobby-hub.l12.c12 .c12lvl:focus-visible {
+  border-color:rgba(243,230,0,.85) !important;
+  background:rgba(243,230,0,.06) !important;
+  outline:none;
+}
+.lobby-hub.l12.c12 .c12lvl:active { transform:scale(.995); }
+.lobby-hub.l12.c12 .c12lvl .lv-open {
+  flex:none; display:inline-flex; align-items:center; gap:4px;
+  font-family:var(--mono); font-size:6px; letter-spacing:.16em;
+  color:rgba(255,255,255,.55); white-space:nowrap;
+  transition:color .15s ease;
+}
+.lobby-hub.l12.c12 .c12lvl .lv-open i {
+  width:6px; height:6px;
+  border-right:1.5px solid currentColor; border-top:1.5px solid currentColor;
+  transform:rotate(45deg);
+}
+.lobby-hub.l12.c12 .c12lvl:hover .lv-open { color:#f3e600; }
 .lobby-hub.l12.c12 .c12lvl .lv-info { min-width:0; flex:1 1 auto; overflow:hidden; }
 .lobby-hub.l12.c12 .c12lvl .lv-meta { min-width:0; }
 .lobby-hub.l12.c12 .c12lvl .lv-title { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -2737,6 +2759,28 @@ body.on-settings .sett-wrap .ubox .out:hover {
 .lobby-hub.l12.c12 .c12br.hot .c12bv { color:#f3e600; }
 
 .lobby-hub.l12.c12 .c12gap { flex:1 1 auto; min-height:0; }
+
+/* QUICK STATS — 2x2 grid data asli, mengisi ruang kosong panel kiri. */
+.lobby-hub.l12.c12 .c12qs {
+  flex:none; display:grid; grid-template-columns:repeat(2, minmax(0,1fr));
+  gap:1px; margin-top:8px;
+  background:rgba(245,245,245,.09);
+  border:1px solid rgba(245,245,245,.09);
+}
+.lobby-hub.l12.c12 .c12q {
+  display:flex; flex-direction:column; gap:1px; min-width:0;
+  padding:5px 7px; background:#080808;
+}
+.lobby-hub.l12.c12 .c12qk {
+  font-family:var(--mono); font-size:6px; letter-spacing:.17em;
+  color:rgba(255,255,255,.45); white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis;
+}
+.lobby-hub.l12.c12 .c12qv {
+  font-family:var(--disp); font-size:11px; letter-spacing:.03em; color:#f5f5f5;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.lobby-hub.l12.c12 .c12q:nth-child(2) .c12qv { color:#f3e600; }
 
 /* riwayat roll (7 sel terlihat; JS tetap menggambar 10) */
 /* Riwayat roll: hanya 4 sel terbaru yang tampil supaya tiap sel >=44px
@@ -2773,9 +2817,9 @@ body.on-settings .sett-wrap .ubox .out:hover {
 .lobby-hub.l12.c12 .c12modes .hrow .mn { flex:none; font-family:var(--mono); font-size:8px; color:rgba(255,255,255,.45); }
 .lobby-hub.l12.c12 .c12modes .hrow .ic { flex:none; width:15px; height:15px; color:rgba(255,255,255,.62); }
 .lobby-hub.l12.c12 .c12modes .hrow:hover .ic { color:#f3e600; }
-.lobby-hub.l12.c12 .c12modes .hrow .mt { flex:1 1 auto; min-width:0; }
+.lobby-hub.l12.c12 .c12modes .hrow .mt { flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .lobby-hub.l12.c12 .c12modes .hrow .bd {
-  flex:none; height:auto; padding:1px 5px; background:none; border:0;
+  flex:none; height:auto; margin-left:auto; padding:1px 5px; background:none; border:0;
   color:#f3e600; font-family:var(--mono); font-size:8px;
 }
 .lobby-hub.l12.c12 .c12modes .hrow .chv {
@@ -3081,16 +3125,18 @@ html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollAutoBtn.tgl.on {
    ========================================================================== */
 @media (max-height: 520px) {
   html.m-landscape .lobby-hub.l12.c12 .c12panel { flex:0 0 42%; padding:2px 11px 2px; }
-  html.m-landscape .lobby-hub.l12.c12 .c12kick { min-height:18px; margin:0; }
-  html.m-landscape .lobby-hub.l12.c12 .c12title { font-size:21px; margin-top:2px; -webkit-line-clamp:2; }
+  html.m-landscape .lobby-hub.l12.c12 .c12kick { min-height:16px; margin:0; }
+  html.m-landscape .lobby-hub.l12.c12 .c12title { font-size:15px; line-height:1.05; margin-top:1px; -webkit-line-clamp:2; }
   html.m-landscape .lobby-hub.l12.c12 .c12meta { display:none; }
   html.m-landscape .lobby-hub.l12.c12 .c12stats { flex-direction:row; align-items:center; gap:8px; }
   html.m-landscape .lobby-hub.l12.c12 .c12pow { flex:0 1 auto; width:auto; min-height:18px; height:18px; margin:0; }
   html.m-landscape .lobby-hub.l12.c12 .c12pow b { font-size:14px; }
-  html.m-landscape .lobby-hub.l12.c12 .c12lvl { flex:1 1 auto; width:auto; min-height:26px; height:26px; margin:0; padding:0 6px; }
+  /* pod = tombol PROFILE, target sentuh wajib 44px walau panel dipadatkan */
+  html.m-landscape .lobby-hub.l12.c12 .c12lvl { flex:1 1 auto; width:auto; min-height:44px; height:44px; max-height:44px; margin:0; padding:0 6px; overflow:hidden; }
   html.m-landscape .lobby-hub.l12.c12 .c12lvl .lv-badge { font-size:9px; padding:1px 5px; }
   html.m-landscape .lobby-hub.l12.c12 .c12lvl .lv-info { min-width:60px; }
   html.m-landscape .lobby-hub.l12.c12 .c12lvl .lv-meta { font-size:8px; }
+  html.m-landscape .lobby-hub.l12.c12 .c12qs { display:none; }
   html.m-landscape .lobby-hub.l12.c12 .c12rule { display:none; }
   html.m-landscape .lobby-hub.l12.c12 .c12brief { display:none; }
   html.m-landscape .lobby-hub.l12.c12 .c12gap { display:none; }
@@ -3143,6 +3189,20 @@ html body.on-lobby:has(.lobby-hub.l12.c12) #pwaInstallBtn {
    kecil tidak meluber. */
 @media (max-width:430px) {
   .lobby-hub.l12.c12 .c12hist { display:none; }
+  /* Panel ~147px: quick stats, brief, dan nomor mode dilepas supaya panel
+     tidak meluber. Informasi yang sama tetap ada di badge baris mode
+     (STORY %, TOWER F#, RAID #) dan di layar PROFILE. */
+  .lobby-hub.l12.c12 .c12qs { display:none; }
+  .lobby-hub.l12.c12 .c12brief { display:none; }
+  .lobby-hub.l12.c12 .c12rule { display:none; }
+  .lobby-hub.l12.c12 .c12title { font-size:23px; -webkit-line-clamp:2; }
+  .lobby-hub.l12.c12 .c12modes .hrow { min-height:44px; }
+  .lobby-hub.l12.c12 .c12lvl .lv-title { display:none; }
+  .lobby-hub.l12.c12 .c12lvl .lv-open { font-size:5.5px; letter-spacing:.1em; }
+  .lobby-hub.l12.c12 .c12lvl .lv-open i { width:5px; height:5px; }
+  .lobby-hub.l12.c12 .c12modes .hrow .mn { display:none; }
+  .lobby-hub.l12.c12 .c12modes .hrow { gap:6px; font-size:10px; letter-spacing:.08em; }
+  .lobby-hub.l12.c12 .c12modes .hrow .bd { font-size:7px; padding:0 2px; }
 }
 /* ---- cuaca pindah ke DOCK (prototipe C tidak punya chip cuaca di strip) ----
    Node cuaca tetap ada (JS menulis l12WxName/Tm/Rr/Cards) tetapi disembunyikan;

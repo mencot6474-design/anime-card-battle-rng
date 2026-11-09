@@ -33,13 +33,14 @@
 <link rel="stylesheet" href="css/sl-system.css?v=v391-coreSpireHub">
 <link rel="stylesheet" href="css/story-carousel.css?v=v354-storyCurtainZ">
 <link rel="stylesheet" href="css/lobby-prototype.css?v=v393-drawerV5">
-<link rel="stylesheet" href="css/mobile-shell.css?v=v466-indexHazard">
+<link rel="stylesheet" href="css/mobile-shell.css?v=v468-lobbyProfileEntry">
 <link rel="stylesheet" href="css/deck-screen.css?v=v4-searchInput">
 <link rel="stylesheet" href="css/skill-tree.css?v=v22-skillTree">
 <link rel="stylesheet" href="css/backpack-hazard.css?v=v2-bpEnglish">
 <link rel="stylesheet" href="css/trait-screen.css?v=v6-indexCurtain">
 <link rel="stylesheet" href="css/weather-screen.css?v=v1-hazardWeather">
 <link rel="stylesheet" href="css/index-screen.css?v=v5-indexSheetFoot">
+<link rel="stylesheet" href="css/profile-screen.css?v=v11-profileScreen">
 <link rel="stylesheet" href="css/premium-exchange.css?v=v6-premiumConfirm">
 <link rel="stylesheet" href="css/drop-report.css?v=v2-dropReport">
 <link rel="stylesheet" href="css/battle-fresh.css?v=v28-exitCurtainTop">
@@ -48,7 +49,7 @@
   window.TRAKTEER_SHOP_URL = "";
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=v478-loadingLogoGap').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=v532-lobbyProfileEntry').catch(() => {});
     });
   }
 </script>
@@ -275,119 +276,126 @@
   </div>
 </header>
 <!-- Profil modal -->
-<div class="modal-backdrop" id="profBackdrop" style="position:fixed;inset:0;z-index:75;"></div>
-<div class="modal-profile" id="profModal">
-  <button class="prof-x" id="profClose" type="button" aria-label="Close profile">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-  </button>
-  <div class="prof-modal-inner">
-    <!-- HERO: kartu utama tampil sebagai CARD (sama seperti kartu lobby) dengan parallax 3D -->
-    <aside class="prof-hero" id="profHero">
-      <div class="prof-hero-bg" id="pfBg" aria-hidden="true"></div>
-      <div class="prof-hero-stage" id="profHeroStage">
-        <div class="prof-hero-card" id="pfAv"></div>
-      </div>
-      <div class="prof-hero-info">
-        <div class="prof-title-tag" id="pfTitleTag">[UNRANKED]</div>
-        <div class="prof-name" id="pfName">GUEST</div>
-        <div class="prof-lvline">
-          <span class="prof-lv-pill">LV <b id="pfLv">1</b></span>
-          <span class="prof-deck" id="pfDeck">MAIN DECK Â· â€”</span>
-        </div>
-        <div class="xpbar prof-xp"><i id="pfXpFill" style="width:0%"></i><span id="pfXpText">0 / 1000</span></div>
-        <div class="prof-hero-foot">
-          <span class="prof-hero-lab">NEURAL NET Â· SECTOR 07</span>
-        </div>
-      </div>
-    </aside>
+<div class="modal-profile pfx-screen" id="profModal">
+  <header class="pfx-top">
+    <div class="pfx-brand">
+      <span class="pfx-kicker">// OPERATOR DOSSIER</span>
+      <h1 class="pfx-title">PROFILE</h1>
+      <span class="pfx-slash" aria-hidden="true"></span>
+    </div>
+    <form class="pfx-search" id="pfSearchForm" autocomplete="off" role="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
+      <input id="pfSearch" type="search" placeholder="Search username..." aria-label="Search username">
+    </form>
+    <button class="prof-x pfx-x" id="profClose" type="button" aria-label="Close profile">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </header>
 
-    <!-- MAIN: header + rail tab + isi halaman -->
-    <section class="prof-main">
-      <div class="prof-main-head">
-        <div class="prof-main-titles">
-          <div class="prof-eyebrow">NEURAL MATRIX Â· AGENT TELEMETRY</div>
-          <div class="prof-h1" id="pfPaneTitle">OPERATOR STATS</div>
-        </div>
-        <div class="prof-power">
-          <span class="prof-power-lab">BATTLE POWER</span>
-          <span class="prof-power-v" id="pfPower">0</span>
-        </div>
-      </div>
-      <div class="prof-main-body">
-        <nav class="prof-rail" id="profRail" role="tablist">
-          <button class="prof-tab active" type="button" data-tab="overview" onclick="profTabGo('overview')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>RINGKASAN</span></button>
-          <button class="prof-tab" type="button" data-tab="stats" onclick="profTabGo('stats')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>STATISTIK</span></button>
-          <button class="prof-tab" type="button" data-tab="achievements" onclick="profTabGo('achievements')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg><span>PENCAPAIAN</span></button>
-          <button class="prof-tab" type="button" data-tab="koleksi" onclick="profTabGo('koleksi')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="13" height="16" rx="2"/><path d="M8 4h9a2 2 0 0 1 2 2v12"/><path d="M7 9h5M7 13h5"/></svg><span>KOLEKSI</span></button>
-          <button class="prof-tab" type="button" data-tab="progres" onclick="profTabGo('progres')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 3 5-7 4 4"/><path d="M3 21h18"/></svg><span>PROGRES</span></button>
-          <button class="prof-tab" type="button" data-tab="ekuipmen" onclick="profTabGo('ekuipmen')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6z"/><path d="M9.5 12l1.8 1.8L15 10"/></svg><span>EKUIPMEN</span></button>
-          <button class="prof-tab" type="button" data-tab="item" onclick="profTabGo('item')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg><span>ITEM &amp; BUFF</span></button>
-          <button class="prof-tab" type="button" data-tab="titles" onclick="profTabGo('titles')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg><span>TITLES</span></button>
-        </nav>
-        <div class="prof-pane" id="profPane">
-          <div class="prof-page active" data-page="overview">
-            <section class="prof-sec">
-              <h3 class="prof-sec-t">EQUIPPED PARTY GEAR</h3>
-              <div class="prof-party-row" id="pfParty"></div>
-            </section>
-            <section class="prof-sec">
-              <h3 class="prof-sec-t">STATISTIK</h3>
-              <div class="prof-stats" id="pfStats"></div>
-            </section>
-            <section class="prof-sec">
-              <h3 class="prof-sec-t">PENCAPAIAN</h3>
-              <div class="prof-grid" id="pfAchieve"></div>
-            </section>
+  <nav class="pfx-tabs" role="tablist">
+    <button class="pfx-tab active" type="button" data-tab="overview" role="tab" onclick="profTabGo('overview')">OVERVIEW</button>
+    <button class="pfx-tab" type="button" data-tab="extra" role="tab" onclick="profTabGo('extra')">EXTRA</button>
+  </nav>
+
+  <div class="pfx-body" id="profPages">
+    <!-- ================= OVERVIEW ================= -->
+    <div class="pfx-page active" data-page="overview">
+      <aside class="pfx-left">
+        <div class="pfx-idrow">
+          <div class="pfx-idtxt">
+            <div class="pfx-name" id="pfName">GUEST</div>
+            <div class="pfx-handle" id="pfHandle">@GUEST</div>
           </div>
-          <div class="prof-page" data-page="stats">
+          <div class="pfx-avatar" id="pfAvatar"><span>?</span></div>
+        </div>
 
-            <section class="prof-sec">
+        <div class="pfx-cardstage" id="pfAv"></div>
 
-              <h3 class="prof-sec-t">TELEMETRI STATISTIK LENGKAP</h3>
-
-              <div class="prof-stats" id="pfPageStatsGrid"></div>
-
-            </section>
-
-            <section class="prof-sec">
-
-              <h3 class="prof-sec-t">ANALISIS COMBAT MATRIX</h3>
-
-              <div class="prof-stats-breakdown" id="pfStatsBreakdown"></div>
-
-            </section>
-
+        <div class="pfx-levelbar">
+          <div class="prof-title-tag pfx-title-tag" id="pfTitleTag">[ROOKIE]</div>
+          <div class="pfx-lvrow">
+            <span class="pfx-lvpill">LV <b id="pfLv">1</b></span>
+            <span class="pfx-power"><i>POWER</i> <b id="pfPower">0</b></span>
           </div>
+          <div class="pfx-maincard" id="pfDeck">MAIN CARD · —</div>
+          <div class="xpbar prof-xp pfx-xp"><i id="pfXpFill" style="width:0%"></i><span id="pfXpText">0 / 1000</span></div>
+        </div>
 
-          <div class="prof-page" data-page="achievements">
+        <div class="pfx-sec-h">SHOWCASE</div>
+        <div class="pfx-showcase" id="pfShowcase"></div>
+      </aside>
 
-            <section class="prof-sec">
-
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-
-                <h3 class="prof-sec-t" style="margin:0;">PENCAPAIAN &amp; TITLE TROPHY</h3>
-
-                <button class="prof-more-btn" type="button" onclick="openTitlesModal()" style="margin:0;">BUKA TITLE SELECTOR</button>
-
-              </div>
-
-              <div class="prof-grid" id="pfPageAchieveGrid"></div>
-
-            </section>
-
-          </div>
-
-          <div class="prof-page" data-page="koleksi"><div id="pfPageKoleksi"></div></div>
-          <div class="prof-page" data-page="progres"><div id="pfPageProgres"></div></div>
-          <div class="prof-page" data-page="ekuipmen"><div id="pfPageEkuipmen"></div></div>
-          <div class="prof-page" data-page="item"><div id="pfPageItem"></div></div>
-          <div class="prof-page" data-page="titles">
-            <div id="pfPageTitles"></div>
-            <button class="prof-more-btn" type="button" onclick="openTitlesModal()">BUKA TITLE SELECTOR</button>
+      <section class="pfx-main">
+        <div class="pfx-panel">
+          <div class="pfx-panel-h">STATS</div>
+          <div class="pfx-stats" id="pfStats"></div>
+        </div>
+        <div class="pfx-panel">
+          <div class="pfx-panel-h">TEAM</div>
+          <div class="pfx-team">
+            <div class="pfx-team-rail"><span>CARDS</span></div>
+            <div class="pfx-team-grid" id="pfTeamCards"></div>
+            <div class="pfx-team-rail"><span>SUPPORTS</span></div>
+            <div class="pfx-team-grid" id="pfTeamSupp"></div>
           </div>
         </div>
+      </section>
+    </div>
+
+    <!-- ================= EXTRA ================= -->
+    <div class="pfx-page" data-page="extra">
+      <section class="pfx-panel pfx-panel-extra">
+        <div class="pfx-panel-h">COLLECTION</div>
+        <div id="pfPageKoleksi"></div>
+      </section>
+      <section class="pfx-panel pfx-panel-extra">
+        <div class="pfx-panel-h">PROGRESS</div>
+        <div id="pfPageProgres"></div>
+      </section>
+      <section class="pfx-panel pfx-panel-extra">
+        <div class="pfx-panel-h">EQUIPMENT</div>
+        <div id="pfPageEkuipmen"></div>
+      </section>
+      <section class="pfx-panel pfx-panel-extra">
+        <div class="pfx-panel-h">ITEMS &amp; BUFFS</div>
+        <div id="pfPageItem"></div>
+      </section>
+      <section class="pfx-panel pfx-panel-extra">
+        <div class="pfx-panel-h">TITLES <button class="pfx-more" id="pfTitlesBtn" type="button" onclick="openTitlesModal()">MANAGE TITLES</button></div>
+        <div id="pfPageTitles"></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- Banner hazard masuk/keluar Profile (pola #backpackCurtain, hidup di body) -->
+<div id="profileCurtain" aria-hidden="true">
+  <div class="half top">
+    <span class="edge"></span>
+    <span class="mark">SUPPLY <b>07</b> / 08</span>
+  </div>
+  <div class="half bot">
+    <span class="edge"></span>
+    <span class="mark">HZ-PROTOCOL <b>617</b></span>
+  </div>
+  <div class="tape tape-a"></div>
+  <div class="tape tape-b"></div>
+  <div class="flash"></div>
+  <div class="plate">
+    <span class="corner tl"></span><span class="corner tr"></span>
+    <span class="corner bl"></span><span class="corner br"></span>
+    <span class="water" id="prfHzWater">ID</span>
+    <div class="in">
+      <div class="krow">
+        <span class="dot"></span>
+        <span class="kick" id="prfHzKick">// OPERATOR <b>UPLINK</b></span>
+        <span class="serial">SERIAL 0x<b id="prfHzSerial">9F41</b></span>
       </div>
-    </section>
+      <div class="title"><span id="prfHzTitle">PROFILE</span></div>
+      <div class="sub" id="prfHzSub">OPERATOR DOSSIER · TELEMETRY · TEAM</div>
+      <div class="bar"><i></i></div>
+      <div class="foot"><span>HZ-PROTOCOL</span><span id="prfHzFoot">SYNC DOSSIER</span></div>
+    </div>
   </div>
 </div>
 <!-- Modal Titles Cyberpunk -->
@@ -1671,7 +1679,7 @@
 <script src="js/cyber-icons.js?v=v1-drawerV5"></script>
 <script src="js/mobile-shell.js?v=v287-drawerV5Dock"></script>
 <script src="js/supabase-sync.js?v=v332-battleNoHeader"></script>
-<script src="js/panels.js?v=v405-hazardWeather"></script>
+ <script src="js/panels.js?v=v408-profileScreen"></script>
 <script src="js/topup.js?v=v158-paywallOff"></script>
 <script src="js/cards-fx.js?v=v84-fmtStatCompact"></script>
 <script src="js/anime-archetype-attacks.js?v=v118-phantomCombo"></script>
@@ -1679,7 +1687,7 @@
 <script src="js/sheetfx.js?v=v349-english"></script>
 <script src="js/battle.js?v=v256-exitCurtainAfterPopup"></script>
 <script src="js/battle-hazard.js?v=v18-exitCurtainAfterPopup"></script>
-<script src="js/tower-lobby.js?v=v371-drawerV5"></script>
+<script src="js/tower-lobby.js?v=v372-lobbyProfileEntry"></script>
 <script src="js/shadow-king-fx.js?v=v4-skfx4"></script>
 <script src="js/foe-passives.js?v=v63-english"></script>
 <script src="js/story-carousel.js?v=v323-noDeployBanner"></script>

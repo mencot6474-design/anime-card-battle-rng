@@ -2028,6 +2028,16 @@ function renderLobby(){
     var t = v >= 1e6 ? (v / 1e6).toFixed(1) + "M" : (v >= 1000 ? (v / 1000).toFixed(1) + "K" : v.toFixed(2));
     return "x" + t;
   })();
+  /* Shiny chance = angka produksi yang sama dengan layar PROFILE (1 in N). */
+  const _cShiny = (function () {
+    try {
+      if (typeof SHINY_CHANCE_MULT !== "undefined" && typeof fmtChance === "function")
+        return "1 in " + fmtChance(100 * SHINY_CHANCE_MULT);
+    } catch (e) {}
+    return "\u2014";
+  })();
+  /* Vestige rank R0/R1/... dari rebirthCount() (bukan angka karangan). */
+  const _cVest = "R" + ((typeof rebirthCount === "function") ? rebirthCount() : 0);
 
   /* ---- COMMAND DRAWER v5 markup helpers (ikon inline Solar bold-duotone) ----
      Grup kanan = JUMLAH TILE (prototipe v5 `.gh-n`: "04"/"02"/"05"), bukan
@@ -2077,7 +2087,12 @@ function renderLobby(){
             <b id="l12TopPwr">${_heroPower}</b><span>COMBAT POWER</span>
           </div>
 
-          <div class="l12-lvl-pod c12lvl" title="XP Hunter">
+          <!-- POD LEVEL / XP = pintu masuk layar PROFILE (perintah user 2026-11-09).
+               Seluruh blok bisa diklik; judul di dalamnya tetap membuka TITLES. -->
+          <div class="l12-lvl-pod c12lvl" id="l12LvlPod" role="button" tabindex="0" data-pfopen
+               title="Open Operator Profile" aria-label="Open Operator Profile"
+               onclick="if(typeof openProfileModal==='function')openProfileModal();"
+               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();if(typeof openProfileModal==='function')openProfileModal();}">
             <span class="lv-badge">LV <b id="l12TopLv">${_lv}</b></span>
             <span class="lv-info">
               <span class="lv-meta">
@@ -2086,6 +2101,7 @@ function renderLobby(){
               </span>
               <span class="bar"><span id="l12TopXpBar" style="width:${_xpPct}%"></span></span>
             </span>
+            <span class="lv-open" aria-hidden="true">PROFILE<i></i></span>
           </div>
 
           <div class="c12rule" aria-hidden="true"></div>
@@ -2096,15 +2112,24 @@ function renderLobby(){
             <div class="c12br hot"><span class="c12bk">WB ATTEMPTS</span><span class="c12bv">${_cWbAtt}</span></div>
           </div>
 
+          <!-- QUICK STATS: mengisi ruang kosong panel kiri dengan data asli
+               (totalRolls, totalLuck, shiny chance, vestige/rebirth). -->
+          <div class="c12qs">
+            <div class="c12q"><span class="c12qk">TOTAL ROLLS</span><b class="c12qv" id="l12QsRolls">${_fmt(state.totalRolls || 0)}</b></div>
+            <div class="c12q"><span class="c12qk">LUCK</span><b class="c12qv" id="l12QsLuck">${_cLuck}</b></div>
+            <div class="c12q"><span class="c12qk">SHINY</span><b class="c12qv" id="l12QsShiny">${_cShiny}</b></div>
+            <div class="c12q"><span class="c12qk">VESTIGE</span><b class="c12qv" id="l12QsVest">${_cVest}</b></div>
+          </div>
+
           <!-- DECK // 4 dihapus (perintah user 2026-11-06): panel kiri
                dibiarkan kosong bersih. Info deck masih ada di chip meta dan
                avatar party di kanan-bawah panggung. -->
 
           <div class="c12gap" aria-hidden="true"></div>
 
-          <!-- RIWAYAT ROLL: JS menggambar 10 sel, 7 terlihat -->
+          <!-- RIWAYAT ROLL: JS menggambar 10 sel, 4 terlihat -->
           <div class="c12hist" id="l12RollHistWrap">
-            <span class="c12hl" id="l12RollTotal">TOTAL: ${_fmt(state.totalRolls || 0)}</span>
+            <span class="c12hl" id="l12RollTotal">TOTAL ROLLS · ${_fmt(state.totalRolls || 0)}</span>
             <div class="rh-strip c12strip" id="l12RollHist"></div>
           </div>
 
@@ -2368,7 +2393,7 @@ window.l12UpdateWeatherDock = l12UpdateWeatherDock;
       put("l12TopCoins", (typeof fmt === "function") ? fmt(state.coins || 0) : String(state.coins || 0));
       put("l12TopGems", (typeof fmt === "function") ? fmt(state.premiumGems || 0) : String(state.premiumGems || 0));
       put("l12TopPwr", (typeof totalPower === "function") ? ((typeof fmt === "function") ? fmt(totalPower()) : String(totalPower())) : "0");
-      put("l12RollTotal", "TOTAL: " + ((typeof fmt === "function") ? fmt(state.totalRolls || 0) : (state.totalRolls || 0)));
+      put("l12RollTotal", "TOTAL ROLLS \u00b7 " + ((typeof fmt === "function") ? fmt(state.totalRolls || 0) : (state.totalRolls || 0)));
 
       // Live Potion Stock update
       const curLkP = Array.isArray(state.luckPots) ? state.luckPots : [0,0,0];

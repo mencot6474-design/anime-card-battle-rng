@@ -1268,13 +1268,69 @@ function showRollResult(result, fromHistoryPreview) {
 }
 
 // Modal profil: open/close + update data
-function openProfileModal(){
-  const b=document.getElementById("profBackdrop");const m=document.getElementById("profModal");if(b){b.classList.add("show");b.style.display="block";}if(m){m.classList.add("show");m.style.display="flex";renderProfile();profTabGo("overview");profHoverBind();}
+/* ===== banner hazard masuk/keluar (#profileCurtain, pola #backpackCurtain) ===== */
+let _prfT=[];
+function prfHzClear(){for(const t of _prfT)clearTimeout(t);_prfT=[];}
+function prfHzSetCopy(mode){
+  const kick=document.getElementById("prfHzKick"),title=document.getElementById("prfHzTitle"),
+        sub=document.getElementById("prfHzSub"),foot=document.getElementById("prfHzFoot"),
+        serial=document.getElementById("prfHzSerial"),water=document.getElementById("prfHzWater");
+  if(serial)serial.textContent=(0x1000+Math.floor(Math.random()*0xefff)).toString(16).toUpperCase();
+  if(mode==="open"){
+    if(kick)kick.innerHTML="// OPERATOR <b>UPLINK</b>";
+    if(title)title.textContent="PROFILE";
+    if(water)water.textContent="ID";
+    if(sub)sub.textContent="OPERATOR DOSSIER · TELEMETRY · TEAM";
+    if(foot)foot.textContent="SYNC DOSSIER";
+  }else{
+    if(kick)kick.innerHTML="// LINK <b>STAND BY</b>";
+    if(title)title.textContent="HOLD";
+    if(water)water.textContent="OUT";
+    if(sub)sub.textContent="DOSSIER DISCONNECTING · DATA SAVED";
+    if(foot)foot.textContent="CLOSE SESSION";
+  }
 }
-function closeProfileModal(){hoverHide();const b=document.getElementById("profBackdrop");const m=document.getElementById("profModal");if(b){b.classList.remove("show");b.style.display="none";}if(m){m.classList.remove("show");m.style.display="none";}}
+function prfBannerOpen(){
+  const c=document.getElementById("profileCurtain");if(!c)return;
+  prfHzClear();prfHzSetCopy("open");
+  c.className="";void c.offsetWidth;
+  c.classList.add("on","smooth","sweep");
+  _prfT.push(setTimeout(()=>c.classList.add("revealed"),1080));
+  _prfT.push(setTimeout(()=>c.classList.remove("on","smooth","sweep","revealed"),1800));
+}
+function prfBannerClose(onCovered){
+  const c=document.getElementById("profileCurtain");
+  if(!c){if(onCovered)onCovered();return;}
+  prfHzClear();prfHzSetCopy("close");
+  c.className="";c.classList.add("on","smooth","revealed");void c.offsetWidth;
+  c.classList.remove("revealed");
+  _prfT.push(setTimeout(()=>{if(onCovered)onCovered();},560));
+  _prfT.push(setTimeout(()=>c.classList.add("revealed"),780));
+  _prfT.push(setTimeout(()=>c.classList.remove("on","smooth","revealed"),1560));
+}
 
-/* Tab menu profil (gaya menu karakter): rail kiri + halaman kanan */
-const PROF_TABS={overview:"RINGKASAN OPERATOR",stats:"STATISTIK & TELEMETRI",achievements:"PENCAPAIAN & TITLE",koleksi:"KOLEKSI KARTU",progres:"PROGRES PETUALANGAN",ekuipmen:"EKUIPMEN & ARTEFAK",item:"ITEM & BUFF",titles:"TITLES & GELAR"};
+function openProfileModal(){
+  const m=document.getElementById("profModal");
+  if(!m)return;
+  m.classList.add("show");
+  document.body.classList.add("profile-open");
+  renderProfile();
+  profTabGo("overview");
+  profHoverBind();
+  try{ prfBannerOpen(); }catch(e){}
+}
+function closeProfileModal(){
+  hoverHide();
+  const m=document.getElementById("profModal");
+  if(!m){document.body.classList.remove("profile-open");return;}
+  const hide=()=>{m.classList.remove("show");document.body.classList.remove("profile-open");};
+  try{ prfBannerClose(hide); }catch(e){ hide(); }
+}
+
+/* Tab menu profil: OVERVIEW (ringkasan) + EXTRA (koleksi/progres/gear/item/title) */
+const PROF_TABS={overview:"OVERVIEW",extra:"EXTRA"};
+/* Alias lama: tombol dalam kartu masih memanggil tab lama, semuanya jatuh ke EXTRA. */
+const PROF_TAB_ALIAS={stats:"extra",achievements:"extra",koleksi:"extra",progres:"extra",ekuipmen:"extra",item:"extra",titles:"extra"};
 
 
 
@@ -1287,63 +1343,17 @@ window.onStatCardClick = function(key, encodedInfo) {
   }
 };
 
-function updateProfileLiveNumbers(){
-  if(!state)return;
-  const pm=document.getElementById("profModal");
-  if(!pm || pm.style.display==="none" || pm.style.display==="")return;
-  const p=state.player||{};
-  const lv=p.lv||state.playerLv||1;
-  const xpNeed=lv*1000, curExp=p.exp||0;
-  const xpPct=Math.max(0,Math.min(100,Math.round(curExp/xpNeed*100)));
-  const spm=playerSpeedMult(), swm=weatherSpeedMult();
-  const eff=Math.min(spm*swm,RNG_ROLL_MAX_MULT);
-  const playSec=Math.floor(state.playSec||0);
-  const fmtPlay=()=>{const h=Math.floor(playSec/3600),m=Math.floor(playSec%3600/60);return h>0?`${h}j ${m}m`:m>0?`${m}m ${playSec%60}s`:`${playSec}s`;};
-
-  const _Kc=rollCommonScale();
-  let rarest=null, rarestCh=-Infinity;
-  for(const s of (state.stacks||[])){
-    const c=CARDS[s.char]; if(!c)continue;
-    const den=(c.chance||chanceOf(c.tier))*(s.shiny?SHINY_CHANCE_MULT:1)*(MUT_CHANCE_MULT[s.mut||"none"]||1);
-    const ch=den>=ROLL_RARE_DEN?den:den/_Kc;
-    if(ch>rarestCh){rarestCh=ch;rarest=s;}
-  }
-
-  const setText=(id,val)=>{
-    const el=document.getElementById(id);
-    if(el&&el.textContent!==String(val))el.textContent=val;
-  };
-  setText("pfLv",lv);
-  setText("pfPower",fmt(totalPower()));
-  setText("pfXpText",`${fmt(curExp)} / ${fmt(xpNeed)} · ${xpPct}%`);
-  const xf=document.getElementById("pfXpFill");
-  if(xf&&xf.style.width!==(xpPct+"%"))xf.style.width=xpPct+"%";
-
-  const updateCardVal=(key,val,sub)=>{
-    const vals=document.querySelectorAll(`[data-psc-val="${key}"]`);
-    vals.forEach(el=>{if(el.textContent!==String(val))el.textContent=val;});
-    if(sub!=null){
-      const subs=document.querySelectorAll(`[data-psc-sub="${key}"]`);
-      subs.forEach(el=>{if(el.textContent!==String(sub))el.textContent=sub;});
-    }
-  };
-  updateCardVal("power",fmt(totalPower()));
-  updateCardVal("luck",totalLuck().toFixed(1)+"×");
-  updateCardVal("speed",eff.toFixed(1)+"×");
-  updateCardVal("time",fmtPlay());
-  updateCardVal("rolls",fmt(state.totalRolls||0));
-  updateCardVal("rarest",rarest?cardName(rarest.char):"—",rarest?`1 IN ${fmtChance(rarestCh)}`:"NO DATA");
-}
-window.updateProfileLiveNumbers=updateProfileLiveNumbers;
 window.profTab="overview";
 function profTabGo(k){
+  if(!PROF_TABS[k])k=PROF_TAB_ALIAS[k]||"overview";
   if(!PROF_TABS[k])return;
   window.profTab=k;
-  const rail=document.getElementById("profRail");
-  if(rail)rail.querySelectorAll(".prof-tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===k));
-  const pane=document.getElementById("profPane");
-  if(pane){pane.querySelectorAll(".prof-page").forEach(p=>p.classList.toggle("active",p.dataset.page===k));pane.scrollTop=0;}
-  const t=document.getElementById("pfPaneTitle");if(t)t.textContent=PROF_TABS[k];
+  const tabs=document.querySelectorAll("#profModal .pfx-tab");
+  for(let i=0;i<tabs.length;i++)tabs[i].classList.toggle("active",tabs[i].dataset.tab===k);
+  const pages=document.querySelectorAll("#profModal .pfx-page");
+  for(let i=0;i<pages.length;i++)pages[i].classList.toggle("active",pages[i].dataset.page===k);
+  const body=document.getElementById("profPages");
+  if(body)body.scrollTop=0;
 }
 
 // Modal Titles Cyberpunk
@@ -1417,71 +1427,8 @@ function renderTitlesModal(){
     }).join("");
   }
 }
-function renderProfile(){
-  if(!state)return;
-  const p=state.player||{};
-  const lv=p.lv||state.playerLv||1;
-  const xpNeed=lv*1000, curExp=p.exp||0;
-  const xpPct=Math.max(0,Math.min(100,Math.round(curExp/xpNeed*100)));
-  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  /* ---- hero kiri: title tag + avatar kartu utama + nama/level/XP ---- */
-  const eq=equipped(); const cid=eq&&eq.char;
-  /* Hero = kartu utama tampil sebagai CARD, pakai markup yang sama dengan kartu lobby. */
-  const av=document.getElementById("pfAv");
-  const heroKey=eq?[eq.id,eq.char,eq.mut||"",eq.trait||"",eq.shiny?1:0].join("|"):"none";
-  if(av){
-    av.style.cursor="pointer";
-    av.title="Click to manage your Deck in the Backpack";
-    av.onclick=()=>{if(typeof sfx!=="undefined"&&sfx.hit)sfx.hit();closeProfileModal();if(typeof toggleBackpack==="function"){toggleBackpack();if(typeof bpSetTab==="function")bpSetTab("deck");}};
-    if(av.dataset.heroKey!==heroKey){
-      av.dataset.heroKey=heroKey;
-      av.innerHTML=(eq&&typeof hubCardHtml==="function")
-        ?hubCardHtml(eq,'',false)
-        :'<div class="hub-center"><div class="hc-info"><div class="hc-name">No cards yet</div></div></div>';
-    }
-  }
-  const bg=document.getElementById("pfBg");
-  const bgSrc=(state&&state.customAvatar)?state.customAvatar:(cid&&CARDS[cid]?cardImg(cid):"");
-  if(bg&&bg.dataset.bgSrc!==bgSrc){
-    bg.dataset.bgSrc=bgSrc||"";
-    bg.innerHTML=bgSrc?`<img src="${bgSrc}" alt=""${state.customAvatar?"":(CARDS[cid]&&CARDS[cid].pos?` style="object-position:${CARDS[cid].pos}"`:"")}>`:"";
-  }
-  set("pfName",currentUser||"GUEST");
-  set("pfDeck",cid?("MAIN CARD · "+cardName(cid)):"MAIN CARD · —");
-  set("pfLv",lv);
-  set("pfPower",fmt(totalPower()));
-  const xf=document.getElementById("pfXpFill");if(xf)xf.style.width=xpPct+"%";
-  set("pfXpText",`${fmt(curExp)} / ${fmt(xpNeed)} · ${xpPct}%`);
-  const curT = state.playerTitle || "ROOKIE";
-  const pt=document.getElementById("pfTitleTag");
-  if(pt){
-    pt.className="prof-title-tag title-"+curT.toLowerCase().replace(/\s+/g,"_");
-    pt.innerHTML=`<span class="ptt-crown"><svg width="15" height="12" viewBox="0 0 24 18" fill="none"><path d="M2 15L4 4L9 9L12 2L15 9L20 4L22 15H2Z" fill="currentColor" stroke="rgba(255,255,255,.55)" stroke-width="1.1" stroke-linejoin="round"/></svg></span><span class="ptt-txt">${curT}</span>`;
-  }
-  const tb=document.getElementById("pfTitlesBtn");
-  if(tb)tb.onclick=()=>{ openTitlesModal(); };
-  const statCard = (key, lab, val, iconSvg, color, sub, infoText) => `
-    <div class="prof-stat-card psc-${key}" onclick="onStatCardClick('${key}', '${encodeURIComponent(infoText || lab)}')" title="Click for details ${lab}">
-      <div class="psc-bar" style="background:${color};box-shadow:0 0 12px ${color}"></div>
-      <div class="psc-head">
-        <span class="psc-icon" style="color:${color}">${iconSvg}</span>
-        <span class="psc-label">${lab}</span>
-      </div>
-      <div class="psc-body">
-        <span class="psc-val" data-psc-val="${key}" style="color:${color}">${val}</span>
-        ${sub ? `<span class="psc-sub" data-psc-sub="${key}">${sub}</span>` : ''}
-      </div>
-      <div class="psc-interactive-hint">INFO ↗</div>
-      <span class="psc-corner tl"></span>
-      <span class="psc-corner br"></span>
-    </div>`;
-
-  const spm=playerSpeedMult(), swm=weatherSpeedMult();
-  const eff=Math.min(spm*swm,RNG_ROLL_MAX_MULT);
-  const pfStats=document.getElementById("pfStats");
-  const playSec=Math.floor(state.playSec||0);
-  const fmtPlay=()=>{const h=Math.floor(playSec/3600),m=Math.floor(playSec%3600/60);return h>0?`${h}j ${m}m`:m>0?`${m}m ${playSec%60}s`:`${playSec}s`;};
-  /* RAREST POOL: kartu paling langka = "1 in N" TERBESAR di antara yang DIMILIKI pemain. */
+/* ============ PROFILE SCREEN (hazard WoB) — render ============ */
+function pfStatRows(){
   const _Kc=rollCommonScale();
   let rarest=null, rarestCh=-Infinity;
   for(const s of (state.stacks||[])){
@@ -1490,102 +1437,220 @@ function renderProfile(){
     const ch=den>=ROLL_RARE_DEN?den:den/_Kc;
     if(ch>rarestCh){rarestCh=ch;rarest=s;}
   }
-
-  const icPower = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`;
-  const icLuck = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>`;
-  const icSpeed = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 19 2 12 11 5 11 19"/><polygon points="22 19 13 12 22 5 22 19"/></svg>`;
-  const icTime = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
-  const icRolls = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
-  const icRarest = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>`;
-
-  const statsHtml = 
-    statCard("power", "BATTLE POWER", fmt(totalPower()), icPower, "#fbbf24", "OPERATOR RATING", `BATTLE POWER: ${fmt(totalPower())} — Total combat power of active card + deck + artifacts.`)
-    +statCard("luck", "CURRENT LUCK", totalLuck().toFixed(1)+"×", icLuck, "#38bdf8", "ROLL PROBABILITY", `CURRENT LUCK: ${totalLuck().toFixed(1)}× — Chance multiplier for getting rare cards.`)
-    +statCard("speed", "ROLL SPEED", eff.toFixed(1)+"×", icSpeed, "#34d399", "CYCLE TEMPO", `ROLL SPEED: ${eff.toFixed(1)}× — Auto-roll and summon rotation speed.`)
-    +statCard("time", "PLAY TIME", fmtPlay(), icTime, "#c084fc", "SESSION ARCHIVE", `WAKTU BERMAIN: ${fmtPlay()} — Total account operating time.`)
-    +statCard("rolls", "TOTAL ROLL", fmt(state.totalRolls||0), icRolls, "#f472b6", "LIFETIME SUMMON", `TOTAL ROLL: ${fmt(state.totalRolls||0)} — Total card pulls of all time.`)
-    +statCard("rarest", "RAREST POOL", rarest ? cardName(rarest.char) : "—", icRarest, "#fb923c", rarest ? `1 IN ${fmtChance(rarestCh)}` : "NO DATA", rarest ? `RAREST CARD: ${cardName(rarest.char)} (1 IN ${fmtChance(rarestCh)})` : "No rare cards owned yet.");
-
-  if(pfStats && !pfStats.querySelector('.psc-power')) {
-    pfStats.innerHTML = statsHtml;
-  }
-  const pfPageStatsGrid = document.getElementById("pfPageStatsGrid");
-  if(pfPageStatsGrid && !pfPageStatsGrid.querySelector('.psc-power')) {
-    pfPageStatsGrid.innerHTML = statsHtml;
-  }
-  updateProfileLiveNumbers();
-
-  const pfStatsBreakdown = document.getElementById("pfStatsBreakdown");
-  if(pfStatsBreakdown && !pfStatsBreakdown.dataset.rendered) {
-    pfStatsBreakdown.dataset.rendered = "1";
-    pfStatsBreakdown.innerHTML = `
-      <div class="prof-breakdown-card">
-        <div class="pbc-title">FORMULA BATTLE POWER</div>
-        <div class="pbc-desc">Dihitung dari kombinasi Base ATK + HP kartu utama yang dipasang di dek, bonus mutasi (Gold/Rainbow/Secret/Ultima), serta boost persentase artefak &amp; pet.</div>
-      </div>
-      <div class="prof-breakdown-card">
-        <div class="pbc-title">ALGORITMA LUCK &amp; GACHA PROBABILITY</div>
-        <div class="pbc-desc">Total Luck = Base (1.0) × Pet Multiplier × Weather Machine × Buff Potion. Setiap kelipatan 1.0× meningkatkan frekuensi kemunculan kartu tier Legendary &amp; Mythic.</div>
-      </div>
-    `;
-  }
-
-  /* ===== PARTY: pet + 2 artefak + kartu utama (portrait + pill) ===== */
-  const pslot=(img,label,pill,name,slotKind,clickAction,hoverKind)=>`<div class="prof-slot${img?"":" empty"}" data-slot="${slotKind||""}" ${hoverKind?`data-hover="${hoverKind}"`:""} title="${name}" ${clickAction?`onclick="${clickAction}" style="cursor:pointer"`:""} role="button" tabindex="0">${img?`<img src="${thumbSrc(img)}" alt="" loading="lazy" decoding="async">`:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/></svg>'}<span class="ps-lab">${label}</span><span class="ps-pill">${pill}</span></div>`;
-  const pd=state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;
-  const slots=[];
-  slots.push(pslot(
-    pd?(pd.img||`assets/pets/${pd.id}.png`):"",
-    "PET",
-    pd?`+${pd.flat||0}${pd.pct?" / +"+Math.round(pd.pct)+"%":""}`:"KOSONG",
-    pd?pd.name:"Empty pet — click to equip",
-    "pet",
-    "if(typeof sfx!==\"undefined\"&&sfx.hit)sfx.hit();closeProfileModal();if(typeof toggleBackpack===\"function\"){toggleBackpack();if(typeof bpSetTab===\"function\")bpSetTab(\"pet\");}"
-  ));
-  [0,1].forEach(i=>{
-    const aid=state.artSlots&&state.artSlots[i];
-    const ad=aid?ART_DEFS.find(x=>x.id===aid):null;
-    slots.push(pslot(
-      ad?(ad.img||""):"",
-      "ARTEFAK "+(i+1),
-      ad?`+${ad.flat||0}${ad.pct?" / +"+ad.pct+"%":""}`:"KOSONG",
-      ad?ad.name:"Empty artifact — click to equip",
-      "artefact",
-      "if(typeof sfx!==\"undefined\"&&sfx.hit)sfx.hit();closeProfileModal();if(typeof toggleBackpack===\"function\"){toggleBackpack();if(typeof bpSetTab===\"function\")bpSetTab(\"artefact\");}"
-    ));
+  const spm=playerSpeedMult(), swm=weatherSpeedMult();
+  const eff=Math.min(spm*swm,RNG_ROLL_MAX_MULT);
+  const artTotal=typeof ART_DEFS!=="undefined"?ART_DEFS.length:0;
+  const petTotal=typeof PET_DEFS!=="undefined"?PET_DEFS.length:0;
+  const supOwned=((state.artOwned||[]).length+(state.petOwned||[]).length);
+  const rows=[
+    ["rolls","Rolls",fmt(state.totalRolls||0)],
+    ["luck","Luck",totalLuck().toFixed(1)+"×"],
+    ["speed","Roll speed",eff.toFixed(1)+"×"],
+    ["shiny","Shiny chance","1 in "+fmtChance(100*SHINY_CHANCE_MULT)],
+    ["rarest","Rarest card",rarest?cardName(rarest.char):"—"],
+    ["floor","Highest floor",String((state.tower&&state.tower.best)||0)],
+    ["playtime","Playtime",pfPlayTime()],
+    ["power","Total power",fmt(totalPower())],
+    ["supports","Supports found",(supOwned+"/"+(artTotal+petTotal))],
+    ["vestige","Vestige","R"+(typeof rebirthCount==="function"?rebirthCount():0)]
+  ];
+  return {rows,rarest,rarestCh};
+}
+function pfPlayTime(){
+  const playSec=Math.floor((state&&state.playSec)||0);
+  const h=Math.floor(playSec/3600), m=Math.floor((playSec%3600)/60), s=playSec%60;
+  if(h>0)return `${h}h ${m}m`;
+  if(m>0)return `${m}m ${s}s`;
+  return `${s}s`;
+}
+function pfCardAccent(s){
+  if(!s)return "#f3e600";
+  if(s.mut&&s.mut!=="none"&&MUT_COLOR[s.mut])return MUT_COLOR[s.mut];
+  const t=CARDS[s.char]&&CARDS[s.char].tier;
+  return (t&&typeof TIER_COLOR!=="undefined"&&TIER_COLOR[t])||"#f5f5f5";
+}
+function pfSlotHtml(opts){
+  const o=opts||{};
+  const sty=o.accent?` style="--pfx-ac:${o.accent}"`:"";
+  const act=o.action?` role="button" tabindex="0" onclick="${o.action}"`:' aria-disabled="true"';
+  return `<div class="pfx-slot${o.cls?" "+o.cls:""}"${o.slot?` data-slot="${o.slot}"`:""}${sty}${act}>
+    <div class="pfx-slot-img">${o.img?`<img src="${thumbSrc(o.img)}" alt="" loading="lazy" decoding="async">`:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/></svg>'}</div>
+    <div class="pfx-slot-name">${o.label||""}</div>
+    ${o.sub?`<div class="pfx-slot-sub">${o.sub}</div>`:""}
+  </div>`;
+}
+window.pfOpenDeck=function(){
+  closeProfileModal();
+  if(typeof window.openDeckModal==="function"){ window.openDeckModal(); return; }
+  if(typeof toggleBackpack==="function"){ toggleBackpack(); if(typeof bpSetTab==="function")bpSetTab("deck"); }
+};
+window.pfOpenBackpack=function(tab){
+  closeProfileModal();
+  if(typeof toggleBackpack==="function"){ toggleBackpack(); if(typeof bpSetTab==="function")bpSetTab(tab||"artefact"); }
+};
+function pfDeckSlot(slotId,idx){
+  const s=slotId?(state.stacks||[]).find(x=>x.id===slotId):null;
+  if(!s||!CARDS[s.char])return pfSlotHtml({label:"EMPTY",sub:"SLOT "+(idx+1),cls:"empty",slot:"card",action:"pfOpenDeck()"});
+  return pfSlotHtml({
+    img:cardImg(s.char),
+    label:cardName(s.char),
+    sub:s.shiny?"SHINY":(s.mut&&s.mut!=="none"?(MUT_LABEL[s.mut]||"CARD"):"CARD"),
+    cls:"filled",accent:pfCardAccent(s),slot:"card",action:"pfOpenDeck()"
   });
-  slots.push(pslot(
-    cid?cardImg(cid):"",
-    "KARTU",
-    cid?`1 IN ${fmtChance(effChance(cid,eq.mut||"none",!!eq.shiny))}`:"KOSONG",
-    cid?cardName(cid):"No card — click to change",
-    "card",
-    "if(typeof sfx!==\"undefined\"&&sfx.hit)sfx.hit();closeProfileModal();if(typeof toggleBackpack===\"function\"){toggleBackpack();if(typeof bpSetTab===\"function\")bpSetTab(\"deck\");}",
-    "card"
-  ));
-  const partyKey=[
-    state.petEquipped||'none',
-    (state.artSlots&&state.artSlots[0])||'none',
-    (state.artSlots&&state.artSlots[1])||'none',
-    cid||'none',
-    eq?(eq.mut||'none'):'',
-    eq?(eq.trait||'none'):'',
-    eq&&eq.shiny?'1':'0'
-  ].join('|');
-  const pfParty=document.getElementById("pfParty");
-  if(pfParty&&pfParty.dataset.partyKey!==partyKey){
-    pfParty.dataset.partyKey=partyKey;
-    pfParty.innerHTML=slots.join("");
+}
+function pfShowcaseHtml(rarest){
+  const st=Array.isArray(state.stacks)?state.stacks:[];
+  const fav=st.find(s=>s.fav&&CARDS[s.char]);
+  const rb=typeof rebirthCount==="function"?rebirthCount():0;
+  const one=(o)=>`<div class="pfx-show${o.cls?" "+o.cls:""}"${o.accent?` style="--pfx-ac:${o.accent}"`:""}>
+    <div class="pfx-show-img">${o.img?`<img src="${thumbSrc(o.img)}" alt="" loading="lazy" decoding="async">`:""}</div>
+    <div class="pfx-show-foot">${o.label}</div>
+    ${o.sub?`<div class="pfx-show-sub">${o.sub}</div>`:""}
+  </div>`;
+  return one({label:"FAVORITE",img:fav?cardImg(fav.char):"",accent:fav?pfCardAccent(fav):"#f5f5f5"})
+    +one({label:"RAREST",img:rarest?cardImg(rarest.char):"",accent:rarest?pfCardAccent(rarest):"#f5f5f5"})
+    +one({label:"VESTIGE",sub:"R"+rb,accent:"#f3e600"});
+}
+function pfSupportHtml(){
+  const out=[];
+  for(let i=0;i<2;i++){
+    const id=state.artSlots&&state.artSlots[i];
+    const d=id&&typeof ART_DEFS!=="undefined"?ART_DEFS.find(x=>x.id===id):null;
+    out.push(d
+      ?pfSlotHtml({img:d.img||("assets/artifacts/"+d.id+".png"),label:d.name,sub:"ART "+(i+1),cls:"filled",accent:d.color||"#f3e600",slot:"support",action:"pfOpenBackpack('artefact')"})
+      :pfSlotHtml({label:"ART "+(i+1),sub:"EMPTY",cls:"empty",slot:"support",action:"pfOpenBackpack('artefact')"}));
   }
-  profHoverBind();
-  /* ===== PANEL SAMPING: koleksi, progres, gear, item ===== */
-  const tile=(lab,val,sub,tcls,vcls,oc)=>`<div class="prof-tile${tcls?" "+tcls:""}"${oc?` onclick="${oc}" style="cursor:pointer"`:""}><span class="prof-tl">${lab}</span><span class="prof-tv${vcls?" "+vcls:""}">${val}</span>${sub?`<span class="prof-ts">${sub}</span>`:""}</div>`;
+  const pd=state.petEquipped&&typeof PET_DEFS!=="undefined"?PET_DEFS.find(x=>x.id===state.petEquipped):null;
+  out.push(pd
+    ?pfSlotHtml({img:pd.img||("assets/pets/"+pd.id+".png"),label:pd.name,sub:"PET",cls:"filled",accent:pd.color||"#f3e600",slot:"support",action:"pfOpenBackpack('pet')"})
+    :pfSlotHtml({label:"PET",sub:"EMPTY",cls:"empty",slot:"support",action:"pfOpenBackpack('pet')"}));
+  out.push(pfSlotHtml({label:"SLOT 4",sub:"LOCKED",cls:"empty locked",slot:"locked"}));
+  return out.join("");
+}
+function pfIdentity(eq){
+  const name=currentUser||"GUEST";
+  const nm=document.getElementById("pfName");if(nm)nm.textContent=name;
+  const hd=document.getElementById("pfHandle");if(hd)hd.textContent="@"+name;
+  const av=document.getElementById("pfAvatar");
+  const avSrc=(state.customAvatar)||(eq&&eq.char&&CARDS[eq.char]?cardImg(eq.char):"");
+  if(av&&av.dataset.src!==(avSrc||"")){
+    av.dataset.src=avSrc||"";
+    av.innerHTML=avSrc?`<img src="${thumbSrc(avSrc)}" alt="" loading="lazy" decoding="async">`:"<span>?</span>";
+  }
+}
+function pfHeroCardHtml(eq){
+  const holder=document.getElementById("pfAv");
+  if(!holder)return;
+  const key=eq?[eq.id,eq.char,eq.mut||"",eq.trait||"",eq.shiny?1:0].join("|"):"none";
+  holder.style.cursor="pointer";
+  holder.title="Click to manage your deck in the Backpack";
+  holder.onclick=()=>{ if(typeof sfx!=="undefined"&&sfx.hit)sfx.hit(); pfOpenDeck(); };
+  if(holder.dataset.heroKey!==key){
+    holder.dataset.heroKey=key;
+    holder.innerHTML=(eq&&typeof hubCardHtml==="function")
+      ?hubCardHtml(eq,"",false)
+      :'<div class="hub-center"><div class="hc-info"><div class="hc-name">No cards yet</div></div></div>';
+  }
+}
+function pfBindSearch(){
+  const f=document.getElementById("pfSearchForm");
+  if(!f||f.dataset.bound)return;
+  f.dataset.bound="1";
+  f.addEventListener("submit",e=>{
+    e.preventDefault();
+    const inp=document.getElementById("pfSearch");
+    const u=((inp&&inp.value)||"").trim();
+    if(!u)return;
+    if(typeof window.openRkProfile==="function")window.openRkProfile(u);
+    else if(typeof showToast==="function")showToast("PLAYER SEARCH UNAVAILABLE OFFLINE");
+  });
+}
+
+function updateProfileLiveNumbers(){
+  if(!state)return;
+  const m=document.getElementById("profModal");
+  if(!m||!m.classList.contains("show"))return;
+  const p=state.player||{};
+  const lv=p.lv||state.playerLv||1;
+  const xpNeed=lv*1000, curExp=p.exp||0;
+  const xpPct=Math.max(0,Math.min(100,Math.round(curExp/xpNeed*100)));
+  const setText=(id,val)=>{const el=document.getElementById(id);if(el&&el.textContent!==String(val))el.textContent=val;};
+  setText("pfLv",lv);
+  setText("pfPower",fmt(totalPower()));
+  setText("pfXpText",`${fmt(curExp)} / ${fmt(xpNeed)} · ${xpPct}%`);
+  const xf=document.getElementById("pfXpFill");
+  if(xf&&xf.style.width!==(xpPct+"%"))xf.style.width=xpPct+"%";
+  const stats=pfStatRows();
+  for(const r of stats.rows){
+    const el=m.querySelector(`[data-pfstat="${r[0]}"] .pfx-stat-v`);
+    if(el&&el.textContent!==String(r[2]))el.textContent=r[2];
+  }
+}
+window.updateProfileLiveNumbers=updateProfileLiveNumbers;
+
+function renderProfile(){
+  if(!state)return;
+  const p=state.player||{};
+  const lv=p.lv||state.playerLv||1;
+  const xpNeed=lv*1000, curExp=p.exp||0;
+  const xpPct=Math.max(0,Math.min(100,Math.round(curExp/xpNeed*100)));
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  const fill=(id,html,key)=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    if(key!=null&&el.dataset.renderedKey===key)return;
+    if(key!=null)el.dataset.renderedKey=key;
+    el.innerHTML=html;
+  };
+
+  /* ---- identity + hero card ---- */
+  const eq=equipped();
+  pfIdentity(eq);
+  pfHeroCardHtml(eq);
+  pfBindSearch();
+
+  set("pfName",currentUser||"GUEST");
+  set("pfHandle","@"+(currentUser||"GUEST"));
+  set("pfDeck",eq&&eq.char?("MAIN CARD · "+cardName(eq.char)):"MAIN CARD · —");
+  set("pfLv",lv);
+  set("pfPower",fmt(totalPower()));
+  const xf=document.getElementById("pfXpFill");if(xf)xf.style.width=xpPct+"%";
+  set("pfXpText",`${fmt(curExp)} / ${fmt(xpNeed)} · ${xpPct}%`);
+  const tb=document.getElementById("pfTitlesBtn");
+  if(tb)tb.onclick=()=>{ openTitlesModal(); };
+  const curT=state.playerTitle||"ROOKIE";
+  const pt=document.getElementById("pfTitleTag");
+  if(pt){
+    pt.className="prof-title-tag pfx-title-tag title-"+curT.toLowerCase().replace(/\s+/g,"_");
+    pt.innerHTML=`<span class="ptt-crown"><svg width="14" height="11" viewBox="0 0 24 18" fill="none"><path d="M2 15L4 4L9 9L12 2L15 9L20 4L22 15H2Z" fill="currentColor" stroke="rgba(255,255,255,.55)" stroke-width="1.1" stroke-linejoin="round"/></svg></span><span class="ptt-txt">${curT}</span>`;
+  }
+
+  /* ---- STATS panel ---- */
+  const stats=pfStatRows();
+  fill("pfStats",stats.rows.map(r=>`<div class="pfx-stat" data-pfstat="${r[0]}"><span class="pfx-stat-k">${r[1]}</span><span class="pfx-stat-v">${r[2]}</span></div>`).join(""),
+       stats.rows.map(r=>r[2]).join("|"));
+
+  /* ---- TEAM (4 deck cards + supports) ---- */
+  const deckKey=[(state.deck||[]).join(","),state.petEquipped||"",(state.artSlots||[]).join(",")].join("~");
+  fill("pfTeamCards",[0,1,2,3].map(i=>pfDeckSlot((state.deck||[])[i],i)).join(""),deckKey);
+  fill("pfTeamSupp",pfSupportHtml(),deckKey);
+
+  /* ---- SHOWCASE ---- */
+  const favKey=(()=>{const s=(state.stacks||[]).find(x=>x.fav&&CARDS[x.char]);return [s?s.id:"none",stats.rarest?stats.rarest.id:"none",typeof rebirthCount==="function"?rebirthCount():0].join("|");})();
+  fill("pfShowcase",pfShowcaseHtml(stats.rarest),favKey);
+
+  /* ---- EXTRA: collection ---- */
   const st=Array.isArray(state.stacks)?state.stacks:[];
   let copies=0, shiny=0, gold=0, rainbow=0, secret=0, ultima=0; const uni=new Set();
-  for(const s of st){const c=s.count||1;copies+=c;uni.add(s.char);
+  for(const s of st){
+    const c=s.count||1;copies+=c;uni.add(s.char);
     if(s.shiny)shiny+=c;const m=s.mut||"none";
-    if(m==="gold")gold+=c;else if(m==="rainbow")rainbow+=c;else if(m==="secret")secret+=c;else if(m==="ultima")ultima+=c;}
+    if(m==="gold")gold+=c;else if(m==="rainbow")rainbow+=c;else if(m==="secret")secret+=c;else if(m==="ultima")ultima+=c;
+  }
   const totalCards=MASTER_CARD_INDEX.filter(c=>!c.isStoryEnemy).length;
+  const kolPct=Math.round(uni.size/Math.max(1,totalCards)*100);
+  const tile=(lab,val,sub,tcls,vcls,oc)=>`<div class="pfx-tile${tcls?" "+tcls:""}"${oc?` onclick="${oc}" role="button" tabindex="0"`:""}><span class="pfx-tile-l">${lab}</span><span class="pfx-tile-v${vcls?" "+vcls:""}">${val}</span>${sub?`<span class="pfx-tile-s">${sub}</span>`:""}</div>`;
+  const sec=(t,grid)=>`<div class="pfx-sec"><div class="pfx-sec-t">${t}</div><div class="pfx-grid">${grid}</div></div>`;
   const koleksi=
     tile("UNIQUE CARDS",`${uni.size} / ${totalCards}`,"")
     +tile("TOTAL COPY",fmt(copies),"")
@@ -1594,90 +1659,85 @@ function renderProfile(){
     +tile("RAINBOW",fmt(rainbow),"")
     +tile("SECRET",fmt(secret),"")
     +tile("ULTIMA",fmt(ultima),"");
+  const gacha=tile("BATTLE SPEED",battleSpeedEff()+"×","")+tile("TOTAL SUMMON",fmt(state.summons||0),"");
+  const kolKey=[uni.size,totalCards,copies,shiny,gold,rainbow,secret,ultima].join("|");
+  fill("pfPageKoleksi",
+    `<div class="pfx-kbar"><i style="width:${kolPct}%"></i><span>${uni.size} / ${totalCards} CARDS · ${kolPct}%</span></div>`
+    +sec("CARD COLLECTION",koleksi)
+    +sec("GACHA",gacha), kolKey);
+
+  /* ---- EXTRA: progress ---- */
   const cd=(state.clearedDiff&&typeof state.clearedDiff==="object")?state.clearedDiff:{};
-  const storyTiles=DIFFS.map(d=>{const n=Object.keys(cd[d.k]||{}).length;
-    return tile("STORY "+d.l,`${n}/${LEVEL_COUNT}`,"");}).join("");
+  const storyTiles=DIFFS.map(d=>tile("STORY "+d.l,`${Object.keys(cd[d.k]||{}).length}/${LEVEL_COUNT}`,"")).join("");
   const raidDone=(state.raidCleared&&Object.values(state.raidCleared).some(Boolean))?1:0;
-  /* Pool & attempt per boss (2 pool terpisah) — tile dibuat ringkas, TANPA "wide". */
-  const wbVals=i=>(typeof wbPoolVals==="function")?wbPoolVals(i):{pool:1e12,left:1e12};
+  const wbVals=i=>(typeof wbPoolVals==="function")?wbPoolVals(i):{pool:1e10,left:1e10};
   const wbAttN=i=>(typeof wbAttOf==="function")?(wbAttOf(i)==null?0:wbAttOf(i)):3;
   const wbHP=i=>(typeof fmtBig==="function"?fmtBig(wbVals(i).left):"—")+" HP";
   const di=state.dailyIndex||0;
   const progres=
-    tile("INFINITE TOWER",`Lantai ${(state.tower&&state.tower.best)||0}`,"")
+    tile("INFINITE TOWER",`Floor ${(state.tower&&state.tower.best)||0}`,"")
     +tile("SKILL POINT",`${p.sp||0}`,"")
-    +tile("DAILY REWARD",`HARI ${di+1} / 7`, (typeof DAILY_PACKS_100K!=="undefined"&&DAILY_PACKS_100K[di]!=null)?`KLAIM · +${DAILY_PACKS_100K[di]}× PACK 100K · +${DAILY_GEMS[di]||0} GEM`:"", "", "", "openDaily()")
+    +tile("DAILY REWARD",`DAY ${di+1} / 7`,(typeof DAILY_PACKS_100K!=="undefined"&&DAILY_PACKS_100K[di]!=null)?`CLAIM · +${DAILY_PACKS_100K[di]}× 100K PACK · +${DAILY_GEMS[di]||0} GEM`:"","","","openDaily()")
     +storyTiles
     +tile("DRAGON",wbHP(0),`WORLD BOSS · ${wbAttN(0)}/3 ATTEMPT`)
     +tile("SHADOW KING",wbHP(1),`WORLD BOSS · ${wbAttN(1)}/3 ATTEMPT`);
-  const gacha=
-    tile("BATTLE SPEED",battleSpeedEff()+"×","")
-    +tile("TOTAL SUMMON",fmt(state.summons||0),"");
-  const artTile=i=>{const id=state.artSlots&&state.artSlots[i];
-    const d=id?ART_DEFS.find(x=>x.id===id):null;
-    return tile("ARTEFAK "+(i+1),d?d.name:"KOSONG","");};
+  const progKey=[(state.tower&&state.tower.best)||0,p.sp||0,di,Object.keys(cd).length].join("|");
+  fill("pfPageProgres",`<div class="pfx-grid">${progres}</div>`,progKey);
+
+  /* ---- EXTRA: equipment ---- */
+  const pd=state.petEquipped&&typeof PET_DEFS!=="undefined"?PET_DEFS.find(x=>x.id===state.petEquipped):null;
+  const artTile=i=>{
+    const id=state.artSlots&&state.artSlots[i];
+    const d=id&&typeof ART_DEFS!=="undefined"?ART_DEFS.find(x=>x.id===id):null;
+    return tile("ARTIFACT "+(i+1),d?d.name:"EMPTY","");
+  };
   const gearStats=d=>`+${d.flat||0}${d.pct?" / +"+d.pct+"%":""}`;
-  const ownedArt=ART_DEFS.filter(d=>(state.artOwned||[]).includes(d.id))
-    .map(d=>{const on=(state.artSlots||[]).includes(d.id);return tile(d.name,on?"TERPASANG":"DIMILIKI",gearStats(d),on?"accent":"");}).join("");
-  const ownedPet=PET_DEFS.filter(d=>(state.petOwned||[]).includes(d.id))
-    .map(d=>{const on=state.petEquipped===d.id;return tile(d.name,on?"TERPASANG":"DIMILIKI",gearStats(d),on?"accent":"");}).join("");
+  const ownedArt=(typeof ART_DEFS!=="undefined"?ART_DEFS:[]).filter(d=>(state.artOwned||[]).includes(d.id))
+    .map(d=>{const on=(state.artSlots||[]).includes(d.id);return tile(d.name,on?"EQUIPPED":"OWNED",gearStats(d),on?"accent":"");}).join("");
+  const ownedPet=(typeof PET_DEFS!=="undefined"?PET_DEFS:[]).filter(d=>(state.petOwned||[]).includes(d.id))
+    .map(d=>{const on=state.petEquipped===d.id;return tile(d.name,on?"EQUIPPED":"OWNED",gearStats(d),on?"accent":"");}).join("");
   const equipCounts=
-    tile("ARTEFAK DIMILIKI",`${(state.artOwned||[]).length} / ${ART_DEFS.length}`,"")
-    +tile("PET DIMILIKI",`${(state.petOwned||[]).length} / ${PET_DEFS.length}`,"");
+    tile("ARTIFACTS OWNED",`${(state.artOwned||[]).length} / ${(typeof ART_DEFS!=="undefined"?ART_DEFS.length:0)}`,"")
+    +tile("PETS OWNED",`${(state.petOwned||[]).length} / ${(typeof PET_DEFS!=="undefined"?PET_DEFS.length:0)}`,"");
+  const eqKey=[deckKey,(state.artOwned||[]).length,(state.petOwned||[]).length].join("|");
+  fill("pfPageEkuipmen",
+    sec("EQUIPPED",artTile(0)+artTile(1)+tile("PET",pd?pd.name:"NONE","")+equipCounts)
+    +sec("ARTIFACT INVENTORY",ownedArt||tile("NO ARTIFACTS YET","·","Buy in the shop to unlock the slot","wide"))
+    +sec("PET INVENTORY",ownedPet||tile("NO PETS YET","·","Get pets from raid / tower","wide")), eqKey);
+
+  /* ---- EXTRA: items & buffs ---- */
   const wAct=(state.weather&&Date.now()<state.weather.endsAt)?WEATHER[state.weather.id]:null;
   const luckPotN=(state.luckPots||[]).reduce((a,b)=>a+(b||0),0);
   const speedPotN=(state.speedPots||[]).reduce((a,b)=>a+(b||0),0);
   const item=
     tile("COIN",fmt(state.coins||0),"")
-    +tile("TOKEN WORLD BOSS",fmt(state.wbTokens||0),"")
-    +tile("TOKEN INF",fmt(state.infTokens||0),"")
+    +tile("WORLD BOSS TOKEN",fmt(state.wbTokens||0),"")
+    +tile("INF TOKEN",fmt(state.infTokens||0),"")
     +tile("WEATHER POTION",`×${state.potions||0}`,"")
     +tile("MYTHIC POTION",`×${state.mythicPotions||0}`,"")
     +tile("LUCK POTION",`×${fmt(luckPotN)}`,"")
     +tile("SPEED POTION",`×${fmt(speedPotN)}`,"")
-    +tile("CUACA AKTIF",wAct?`<span style="display:inline-flex;align-items:center;gap:6px;color:${wAct.color}">${weatherSvg(wAct.id,16)} ${wAct.name}</span>`:"INACTIVE","","wide")
-    +tile("BUFF AKTIF",(activeLuckBuff()>0||activeSpeedBuff()>0)?"AKTIF":"INACTIVE","","wide");
-  const titles=[
-    {n:"ROOKIE ROLLER",d:"Roll kartu pertama",ok:(state.summons||0)>=1},
-    {n:"COLLECTOR",d:"Kumpulkan 10 kartu unik",ok:uni.size>=10},
-    {n:"SHINY HUNTER",d:"Dapatkan 1 kartu shiny",ok:shiny>=1},
-    {n:"TOWER CLIMBER",d:"Capai lantai 10 Infinite Tower",ok:((state.tower&&state.tower.best)||0)>=10},
-    {n:"RAID SLAYER",d:"Kalahkan 1 boss raid",ok:raidDone>=1},
-    {n:"ELITE",d:"Capai level 25",ok:lv>=25}
-  ];
-  const titlesGrid=titles.map(t=>tile(t.n,t.ok?"✓ DIRAIH":"· belum",t.d,t.ok?"accent":"",t.ok?"prof-ok":"","openTitlesModal()")).join("");
-  const earned=titles.filter(t=>t.ok);
-  const sec=(t,grid)=>`<section class="prof-sec"><h3 class="prof-sec-t">${t}</h3><div class="prof-grid">${grid}</div></section>`;
-  const kolPct=Math.round(uni.size/Math.max(1,totalCards)*100);
-  const fill=(id,html,key)=>{
-    const el=document.getElementById(id);
-    if(!el)return;
-    if(key!=null && el.dataset.renderedKey===key)return;
-    if(key!=null) el.dataset.renderedKey=key;
-    el.innerHTML=html;
-  };
-  const achieveKey = [earned.length, titles.length, ...earned.map(t=>t.n)].join('|');
-  fill("pfAchieve",earned.length
-    ?tile("TITLE DIRAIH",`${earned.length} / ${titles.length}`,"Click to manage titles","accent","","profTabGo('achievements')")+earned.map(t=>tile(t.n,"✓ DIRAIH",t.d,"accent","prof-ok","openTitlesModal()")).join("")
-    :tile("NO TITLE YET","·","Complete early missions to unlock achievements","wide","","openTitlesModal()"), achieveKey);
-  fill("pfPageAchieveGrid", titlesGrid, achieveKey);
-  const kolKey = [uni.size, totalCards, copies, shiny, gold, rainbow, secret, ultima].join('|');
-  fill("pfPageKoleksi",
-    `<div class="prof-kbar"><i style="width:${kolPct}%"></i><span>${uni.size} / ${totalCards} KARTU · ${kolPct}%</span></div>`
-    +sec("KOLEKSI KARTU",koleksi)
-    +sec("GACHA",gacha), kolKey);
-  const progKey = [(state.tower&&state.tower.best)||0, p.sp||0, di, Object.keys(cd).length].join('|');
-  fill("pfPageProgres",`<div class="prof-grid">${progres}</div>`, progKey);
-  const eqKey = [partyKey, (state.artOwned||[]).length, (state.petOwned||[]).length].join('|');
-  fill("pfPageEkuipmen",
-    sec("TERPASANG",artTile(0)+artTile(1)+tile("PET",pd?pd.name:"TIDAK ADA","")+equipCounts)
-    +sec("INVENTORY ARTEFAK",ownedArt||tile("NO ARTIFACTS YET","·","Buy in the shop to unlock the slot","wide"))
-    +sec("INVENTORY PET",ownedPet||tile("NO PETS YET","·","Get pets from raid / tower","wide")), eqKey);
-  const itemKey = [state.coins||0, state.wbTokens||0, state.infTokens||0, state.potions||0, state.mythicPotions||0, luckPotN, speedPotN, wAct?wAct.id:'none', activeLuckBuff(), activeSpeedBuff()].join('|');
-  fill("pfPageItem",`<div class="prof-grid">${item}</div>`, itemKey);
-  fill("pfPageTitles",`<div class="prof-grid">${titlesGrid}</div>`, achieveKey);
-}
+    +tile("ACTIVE WEATHER",wAct?`<span class="pfx-wtag" style="color:${wAct.color}">${weatherSvg(wAct.id,15)} ${wAct.name}</span>`:"INACTIVE","","wide")
+    +tile("ACTIVE BUFF",(activeLuckBuff()>0||activeSpeedBuff()>0)?"ACTIVE":"INACTIVE","","wide");
+  const itemKey=[state.coins||0,state.wbTokens||0,state.infTokens||0,state.potions||0,state.mythicPotions||0,luckPotN,speedPotN,wAct?wAct.id:"none",activeLuckBuff(),activeSpeedBuff()].join("|");
+  fill("pfPageItem",`<div class="pfx-grid">${item}</div>`,itemKey);
 
+  /* ---- EXTRA: titles ---- */
+  const titles=[
+    {n:"ROOKIE ROLLER",d:"Roll your first card",ok:(state.summons||0)>=1},
+    {n:"COLLECTOR",d:"Collect 10 unique cards",ok:uni.size>=10},
+    {n:"SHINY HUNTER",d:"Obtain 1 shiny card",ok:shiny>=1},
+    {n:"TOWER CLIMBER",d:"Reach floor 10 of Infinite Tower",ok:((state.tower&&state.tower.best)||0)>=10},
+    {n:"RAID SLAYER",d:"Defeat 1 raid boss",ok:raidDone>=1},
+    {n:"ELITE",d:"Reach operator level 25",ok:lv>=25}
+  ];
+  const titlesGrid=titles.map(t=>tile(t.n,t.ok?"✓ EARNED":"· locked",t.d,t.ok?"accent":"",t.ok?"pfx-ok":"","openTitlesModal()")).join("");
+  const earned=titles.filter(t=>t.ok);
+  const achieveKey=[earned.length,titles.length].join("|")+"|"+titles.map(t=>t.ok?1:0).join("");
+  fill("pfPageTitles",`<div class="pfx-grid">${titlesGrid}</div>`,achieveKey);
+
+  updateProfileLiveNumbers();
+}
 
 
 function hideRollResult() {
