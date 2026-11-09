@@ -11,36 +11,41 @@ const rkBoardCache = {};
 
 const RK_BOARDS = {
   world_boss:  { label: "ETERNAL DRAGON", col: "DAMAGE", daily: true,
-                 note: "World Boss · 3 attempt/hari · skor = damage terbaik 1 run · reset 00:00 WIB · reward diklaim di hub WORLD BOSS." },
+                 note: "World Boss · 3 attempts/day · score = best damage in 1 run · resets 00:00 WIB · rewards claimed in the WORLD BOSS hub." },
   world_boss_b:{ label: "SHADOW KING",    col: "DAMAGE", daily: true,
-                 note: "Shadow King · 3 attempt/hari · skor = damage terbaik 1 run · reset 00:00 WIB · reward diklaim di hub WORLD BOSS." },
-  inf_tower:   { label: "INFINITE TOWER", col: "LANTAI", daily: false,
-                 note: "Infinite Tower · skor = lantai tertinggi · reset mingguan (Senin)." },
+                 note: "Shadow King · 3 attempts/day · score = best damage in 1 run · resets 00:00 WIB · rewards claimed in the WORLD BOSS hub." },
+  inf_tower:   { label: "INFINITE TOWER", col: "FLOOR", daily: false,
+                 note: "Infinite Tower · score = highest floor reached · weekly reset (Monday)." },
   deck_power:  { label: "DECK POWER",     col: "POWER",  daily: false,
-                 note: "Deck Power · total power deck terbaik · reset mingguan (Senin)." },
+                 note: "Deck Power · total power of your best deck · weekly reset (Monday)." },
   rarest_pull: { label: "RAREST PULL",    col: "RARITY", daily: false,
-                 note: "Rarest Pull · kartu paling langka yang pernah di-roll · reset mingguan (Senin)." }
+                 note: "Rarest Pull · rarest card ever rolled · weekly reset (Monday)." }
 };
 
 function openRanking(board) {
   const m = document.getElementById("rankModal");
   if (!m) return;
   rkBoard = RK_BOARDS[board] ? board : "world_boss";
-  m.classList.add("show");
   rkSyncTabs();
   if (typeof lbTrackSweep === "function") lbTrackSweep();
+  if (m.classList.contains("show")) { rkRender(); return; }
   rkRender();
+  m.classList.add("show");
+  document.body.classList.add("rk-open");
+  rkBannerOpen();
 }
 
 function closeRanking() {
   const m = document.getElementById("rankModal");
-  if (!m) return;
-  m.classList.remove("show");
+  if (!m || !m.classList.contains("show")) return;
   closeRkProfile();
   /* Video border #1 jangan tetap muter di belakang modal (kuota + CPU player). */
   m.querySelectorAll("video").forEach(v => { try { v.pause(); } catch (e) {} });
+  rkBannerClose(() => {
+    m.classList.remove("show");
+    document.body.classList.remove("rk-open");
+  });
 }
-
 function rkSwitch(board) {
   if (!RK_BOARDS[board] || board === rkBoard) return;
   rkBoard = board;
@@ -61,7 +66,7 @@ function rkFmtBig(v) {
 }
 
 function rkValFmt(board, v) {
-  if (board === "inf_tower") return "F " + Math.round(Number(v) || 0);
+  if (board === "inf_tower") return "FLOOR " + Math.round(Number(v) || 0);
   if (board === "rarest_pull") return "1 in " + fmtChance(v);
   return rkFmtBig(v);
 }
@@ -78,12 +83,12 @@ function rkSub(r, board) {
    hasil keying dari asset user (background putih dibuang di canvas). */
 const RK_BD1 = "assets/ui/lb-top1.mp4";
 const RK_BD23 = "assets/ui/lb-ring.png";
-const RK_UNIT = { world_boss: "DMG", world_boss_b: "DMG", inf_tower: "LANTAI", deck_power: "POWER", rarest_pull: "1 IN" };
+const RK_UNIT = { world_boss: "DMG", world_boss_b: "DMG", inf_tower: "FLOOR", deck_power: "POWER", rarest_pull: "1 IN" };
 
 /* inf_tower ("F 187") dan rarest_pull ("1 in 2.4M") sudah membawa satuannya
    sendiri di rkValFmt, jadi chip satuan tidak perlu diulang. */
 function rkUnitChip(board) {
-  return (board === "inf_tower" || board === "rarest_pull") ? "" : (RK_UNIT[board] || "SKOR");
+  return (board === "inf_tower" || board === "rarest_pull") ? "" : (RK_UNIT[board] || "SCORE");
 }
 
 /* Avatar bawaan papan = art kartu lead deck (dikirim lewat meta saat submit).
@@ -245,7 +250,7 @@ function rkPodEmptyHtml(rank, board) {
   const unit = rkUnitChip(board);
   return `<div class="rk-pod rk-pod${rank} rk-pod-empty" title="No player yet at rank #${rank}">
     <div class="rk-ava">${bd}<span class="rk-ava-core"><span class="rk-init rk-init-empty">?</span></span></div>
-    <div class="rk-pod-name rk-pod-name-empty">MENUNGGU PEMAIN</div>
+    <div class="rk-pod-name rk-pod-name-empty">AWAITING HUNTER</div>
     <div class="rk-pod-val rk-pod-val-empty">—</div>
     ${unit ? `<div class="rk-pod-medal">${rkEsc(unit)}</div>` : ""}
   </div>`;
@@ -276,7 +281,7 @@ function rkDeltaHtml(board, rows) {
   for (const r of rows) {
     const k = String(r.username).toLowerCase();
     next[k] = r.rank;
-    if (prev[k] == null) { out[k] = `<span class="rk-delta rk-new">BARU</span>`; continue; }
+    if (prev[k] == null) { out[k] = `<span class="rk-delta rk-new">NEW</span>`; continue; }
     const d = prev[k] - r.rank;
     out[k] = d > 0 ? `<span class="rk-delta up">▲${d}</span>`
       : d < 0 ? `<span class="rk-delta down">▼${-d}</span>`
@@ -291,12 +296,12 @@ function rkRowsHtml(rows, board, delta) {
   if (!rows || !rows.length) {
     const info = RK_BOARDS[board] || RK_BOARDS.world_boss;
     let emptyRows = "";
-    // Buat placeholder baris 4 sampai 10 agar tabel tetap terlihat berisi dan rapi
+    // Placeholder rows 4–10 keep the table looking populated before anyone shows up
     for (let i = 4; i <= 10; i++) {
       emptyRows += `<div class="rk-row rk-row-empty">
         <span class="rk-rank">${i}</span>
         <span class="rk-av-sm"><span class="rk-init" style="font-size:12px;opacity:0.4;">—</span></span>
-        <span class="rk-name" style="opacity:0.4;font-style:italic;">Slot Terbuka</span>
+        <span class="rk-name" style="opacity:0.4;font-style:italic;">OPEN SLOT</span>
         <span class="rk-val" style="opacity:0.4;">—</span>
         <span class="rk-delta-cell"><span class="rk-delta" style="opacity:0.3;">–</span></span>
       </div>`;
@@ -333,14 +338,14 @@ async function rkRender(silent) {
 
   if (!canFetch) {
     if (silent) return;
-    meta.innerHTML = `<span class="rk-chip">${info.label}</span><span class="rk-chip rk-dim">OFFLINE</span><span class="rk-chip rk-bad">MODUL TIDAK TERSEDIA</span>`;
+    meta.innerHTML = `<span class="rk-chip">${info.label}</span><span class="rk-chip rk-dim">OFFLINE</span><span class="rk-chip rk-bad">MODULE UNAVAILABLE</span>`;
     const emptyDelta = {};
     body.innerHTML =
       rkPodiumHtml([], board) +
       `<div class="rk-table-wrap">
-        <div class="rk-head-row"><span>RANK</span><span class="rk-h-av"></span><span>PEMAIN (TOP 50)</span><span>${info.col}</span><span title="Perubahan posisi vs. tampilan sebelumnya">Δ<span class="rk-h-long"> POSISI</span></span></div>
+        <div class="rk-head-row"><span>RANK</span><span class="rk-h-av"></span><span>PLAYER (TOP 50)</span><span>${info.col}</span><span title="Rank change vs. previous view">Δ<span class="rk-h-long"> POSITION</span></span></div>
         <div class="rk-list-scroll">${rkRowsHtml([], board, emptyDelta)}</div>
-        <div class="rk-note">Mode Offline · Sambungkan koneksi internet untuk sinkronisasi ranking dunia.</div>
+        <div class="rk-note">Offline mode · Connect to the internet to sync the global ranking.</div>
       </div>`;
     return;
   }
@@ -348,8 +353,8 @@ async function rkRender(silent) {
   if (rkBusy) return;
   rkBusy = true;
   if (!silent) {
-    meta.innerHTML = `<span class="rk-chip">${info.label}</span><span class="rk-chip rk-dim">MEMUAT…</span>`;
-    body.innerHTML = `<div class="rk-loading">MEMUAT RANKING…</div>`;
+    meta.innerHTML = `<span class="rk-chip">${info.label}</span><span class="rk-chip rk-dim">LOADING…</span>`;
+    body.innerHTML = `<div class="rk-loading">LOADING RANKING…</div>`;
   }
 
   let res = null;
@@ -362,14 +367,14 @@ async function rkRender(silent) {
 
   if (!res || !res.ok) {
     if (silent) return; /* refresh berkala gagal: tampilan lama dibiarkan */
-    meta.innerHTML = `<span class="rk-chip">${info.label}</span><span class="rk-chip rk-bad">SERVER TIDAK MERESPONS</span>`;
+    meta.innerHTML = `<span class="rk-chip">${info.label}</span><span class="rk-chip rk-bad">SERVER NOT RESPONDING</span>`;
     const emptyDelta = {};
     body.innerHTML =
       rkPodiumHtml([], board) +
       `<div class="rk-table-wrap">
-        <div class="rk-head-row"><span>RANK</span><span class="rk-h-av"></span><span>PEMAIN (TOP 50)</span><span>${info.col}</span><span title="Perubahan posisi vs. tampilan sebelumnya">Δ<span class="rk-h-long"> POSISI</span></span></div>
+        <div class="rk-head-row"><span>RANK</span><span class="rk-h-av"></span><span>PLAYER (TOP 50)</span><span>${info.col}</span><span title="Rank change vs. previous view">Δ<span class="rk-h-long"> POSITION</span></span></div>
         <div class="rk-list-scroll">${rkRowsHtml([], board, emptyDelta)}</div>
-        <div class="rk-note">Server belum merespons · Coba tekan tombol sinkronisasi lagi sebentar lagi.</div>
+        <div class="rk-note">Server did not respond · Try syncing again in a moment.</div>
       </div>`;
     return;
   }
@@ -378,12 +383,12 @@ async function rkRender(silent) {
   meta.innerHTML =
     `<span class="rk-chip">${info.label}</span>` +
     `<span class="rk-chip">${rkEsc(res.period)}</span>` +
-    `<span class="rk-chip rk-dim">${res.total_players || 0} PEMAIN</span>` +
+    `<span class="rk-chip rk-dim">${res.total_players || 0} PLAYERS</span>` +
     (currentUser
       ? (me
-          ? `<span class="rk-chip rk-own">POSISI KAMU #${me.rank} · ${rkValFmt(board, me.value)}</span>`
-          : `<span class="rk-chip rk-dim">KAMU BELUM PUNYA SKOR</span>`)
-      : `<span class="rk-chip rk-dim">LOGIN UNTUK MENCATAT SKOR</span>`);
+          ? `<span class="rk-chip rk-own">YOUR POSITION #${me.rank} · ${rkValFmt(board, me.value)}</span>`
+          : `<span class="rk-chip rk-dim">NO SCORE YET</span>`)
+      : `<span class="rk-chip rk-dim">SIGN IN TO RECORD SCORE</span>`);
 
   const keepScroll = silent ? body.scrollTop : 0;
   const oldVid = body.querySelector("video.rk-bd1");
@@ -396,7 +401,7 @@ async function rkRender(silent) {
   body.innerHTML =
     rkPodiumHtml(topRows, board) +
     `<div class="rk-table-wrap">
-      <div class="rk-head-row"><span>RANK</span><span class="rk-h-av"></span><span>PEMAIN (TOP 50)</span><span>${info.col}</span><span title="Perubahan posisi vs. tampilan sebelumnya">Δ<span class="rk-h-long"> POSISI</span></span></div>
+      <div class="rk-head-row"><span>RANK</span><span class="rk-h-av"></span><span>PLAYER (TOP 50)</span><span>${info.col}</span><span title="Rank change vs. previous view">Δ<span class="rk-h-long"> POSITION</span></span></div>
       <div class="rk-list-scroll">${rkRowsHtml(listRows, board, delta)}</div>
       <div class="rk-note">${info.note}</div>
     </div>`;
@@ -408,8 +413,17 @@ async function rkRender(silent) {
   body.scrollTop = keepScroll;
   rkRows = res.rows || [];
   rkBoardCache[board] = rkRows;
+  rkTopStat(res.period, res.total_players || 0);
   rkAvPaint(body);
   rkFillAvatars(board, rkRows);
+}
+
+/* Top bar telemetry: period + hunter count (mirrors the meta chips). */
+function rkTopStat(period, players) {
+  const p = document.getElementById("rkTsPeriod");
+  const n = document.getElementById("rkTsPlayers");
+  if (p) p.textContent = period ? String(period) : "—";
+  if (n) n.textContent = String(players || 0);
 }
 
 /* ===== SUBMIT SKOR 3 PAPAN MINGGUAN =====
@@ -769,6 +783,55 @@ const RK_REFRESH_DAY_MS = 60000;
 const RK_REFRESH_WEEK_MS = 3600000;
 let rkLastFetchAt = 0;
 
+/* ===== banner hazard masuk/keluar (#rankCurtain, pola #indexCurtain) ===== */
+let rkHzTimers = [];
+/* Guards the async close: re-opening mid-animation must not be cancelled by the
+   pending "remove .show" of the previous close. */
+let rkSeq = 0;
+function rkHzClear() { for (let i = 0; i < rkHzTimers.length; i++) clearTimeout(rkHzTimers[i]); rkHzTimers = []; }
+function rkHzSetCopy(mode) {
+  const kick = document.getElementById("rkHzKick"), title = document.getElementById("rkHzTitle"),
+        sub = document.getElementById("rkHzSub"), foot = document.getElementById("rkHzFoot"),
+        serial = document.getElementById("rkHzSerial"), water = document.getElementById("rkHzWater");
+  if (serial) serial.textContent = (0x1000 + Math.floor(Math.random() * 0xefff)).toString(16).toUpperCase();
+  if (mode === "open") {
+    if (kick) kick.innerHTML = "// GLOBAL <b>SYNC</b>";
+    if (title) title.textContent = "LEADERBOARD";
+    if (water) water.textContent = "RANK";
+    if (sub) sub.textContent = "GLOBAL PULSE · DAILY STANDING";
+    if (foot) foot.textContent = "SYNC STANDING";
+  } else {
+    if (kick) kick.innerHTML = "// LINK <b>STAND BY</b>";
+    if (title) title.textContent = "HOLD";
+    if (water) water.textContent = "OUT";
+    if (sub) sub.textContent = "STANDING DISCONNECTING · DATA SAVED";
+    if (foot) foot.textContent = "CLOSE SESSION";
+  }
+}
+function rkBannerOpen() {
+  const c = document.getElementById("rankCurtain");
+  if (!c) return;
+  rkSeq++;
+  rkHzClear(); rkHzSetCopy("open");
+  c.className = ""; void c.offsetWidth;
+  c.classList.add("on", "smooth", "sweep");
+  rkHzTimers.push(setTimeout(() => c.classList.add("revealed"), 1080));
+  rkHzTimers.push(setTimeout(() => c.classList.remove("on", "smooth", "sweep", "revealed"), 1800));
+}
+/* EXIT 3 fase: tirai MENUTUP -> konten disembunyikan -> tirai MEMBUKA.
+   Fase 3 wajib; tanpanya layar tertahan tertutup ("banner tidak kebuka"). */
+function rkBannerClose(onCovered) {
+  const c = document.getElementById("rankCurtain");
+  if (!c) { if (onCovered) onCovered(); return; }
+  const seq = ++rkSeq;
+  rkHzClear(); rkHzSetCopy("close");
+  c.className = ""; c.classList.add("on", "smooth", "revealed"); void c.offsetWidth;
+  c.classList.remove("revealed");
+  rkHzTimers.push(setTimeout(() => { if (seq === rkSeq && onCovered) onCovered(); }, 560));
+  rkHzTimers.push(setTimeout(() => { if (seq !== rkSeq) return; c.classList.add("revealed"); }, 780));
+  rkHzTimers.push(setTimeout(() => { if (seq !== rkSeq) return; c.classList.remove("on", "smooth", "revealed"); }, 1560));
+}
+
 function rkTick() {
   const m = document.getElementById("rankModal");
   if (!m || !m.classList.contains("show")) return;
@@ -783,3 +846,5 @@ window.closeRanking = closeRanking;
 window.rkSwitch = rkSwitch;
 window.openRkProfile = openRkProfile;
 window.closeRkProfile = closeRkProfile;
+window.rkBannerOpen = rkBannerOpen;
+window.rkBannerClose = rkBannerClose;

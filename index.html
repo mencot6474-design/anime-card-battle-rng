@@ -42,6 +42,7 @@
 <link rel="stylesheet" href="css/index-screen.css?v=v5-indexSheetFoot">
 <link rel="stylesheet" href="css/profile-screen.css?v=v13-profileFitEnglish">
 <link rel="stylesheet" href="css/public-profile.css?v=v3-rkpOpen">
+<link rel="stylesheet" href="css/ranking-hazard.css?v=v1-rankHazard">
 <link rel="stylesheet" href="css/premium-exchange.css?v=v6-premiumConfirm">
 <link rel="stylesheet" href="css/drop-report.css?v=v2-dropReport">
 <link rel="stylesheet" href="css/battle-fresh.css?v=v28-exitCurtainTop">
@@ -50,7 +51,7 @@
   window.TRAKTEER_SHOP_URL = "";
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=v532-lobbyProfileEntry').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=v535-rankHazard').catch(() => {});
     });
   }
 </script>
@@ -789,20 +790,25 @@
   <div class="ix-body" id="missionBody"></div>
 </div></div>
 
-<div id="rankModal"><div class="ix-box rk-box">
-  <div class="ix-head">
-    <div class="ix-header-titles">
-      <div class="ix-eyebrow"><span class="ix-dot"></span>GLOBAL PULSE Â· DAILY STANDING</div>
-      <div class="ix-title">LEADERBOARD</div>
+<div id="rankModal"><div class="ix-box rk-box"><div class="rk-screen">
+  <header class="rk-hdr">
+    <div class="rk-mark">
+      <span class="rk-mark-t">RANK</span>
+      <span class="rk-mark-s">GLOBAL STANDING</span>
     </div>
-    <div class="ix-h-tools">
-      <button class="ix-x" id="rkClose" title="Close" onclick="closeRanking()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
+    <div class="rk-topmid">
+      <div class="rk-crumb"><i></i><span>NETWORK</span><span class="sep">/</span><b>GLOBAL PULSE</b><span class="sep">/</span><span>STANDING</span></div>
+      <div class="rk-topstat">
+        <div class="rk-ts"><span class="rk-ts-k">PERIOD</span><span class="rk-ts-v hz" id="rkTsPeriod">&mdash;</span></div>
+        <div class="rk-ts"><span class="rk-ts-k">HUNTERS</span><span class="rk-ts-v" id="rkTsPlayers">0</span></div>
+      </div>
     </div>
-  </div>
+    <button class="rk-x" id="rkClose" type="button" aria-label="Close leaderboard" title="Close [ESC]" onclick="closeRanking()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+    </button>
+  </header>
   <div class="rk-meta" id="rkMeta"></div>
-  <div class="ix-body rk-body" id="rkBody"></div>
+  <div class="rk-body" id="rkBody"></div>
   <div class="rk-tabs" id="rkTabs" role="tablist" aria-label="Leaderboard">
     <button class="rk-tab on" type="button" role="tab" data-rk="world_boss" onclick="rkSwitch('world_boss')">ETERNAL DRAGON</button>
     <button class="rk-tab" type="button" role="tab" data-rk="world_boss_b" onclick="rkSwitch('world_boss_b')">SHADOW KING</button>
@@ -810,7 +816,38 @@
     <button class="rk-tab" type="button" role="tab" data-rk="deck_power" onclick="rkSwitch('deck_power')">DECK POWER</button>
     <button class="rk-tab" type="button" role="tab" data-rk="rarest_pull" onclick="rkSwitch('rarest_pull')">RAREST PULL</button>
   </div>
-</div></div>
+</div></div></div>
+
+<!-- Banner hazard masuk/keluar Leaderboard (pola #indexCurtain, hidup di body) -->
+<div id="rankCurtain" aria-hidden="true">
+  <div class="half top">
+    <span class="edge"></span>
+    <span class="mark">NODE <b>05</b> / 05</span>
+  </div>
+  <div class="half bot">
+    <span class="edge"></span>
+    <span class="mark">HZ-PROTOCOL <b>512</b></span>
+  </div>
+  <div class="tape tape-a"></div>
+  <div class="tape tape-b"></div>
+  <div class="flash"></div>
+  <div class="plate">
+    <span class="corner tl"></span><span class="corner tr"></span>
+    <span class="corner bl"></span><span class="corner br"></span>
+    <span class="water" id="rkHzWater">RANK</span>
+    <div class="in">
+      <div class="krow">
+        <span class="dot"></span>
+        <span class="kick" id="rkHzKick">// GLOBAL <b>SYNC</b></span>
+        <span class="serial">SERIAL 0x<b id="rkHzSerial">5120</b></span>
+      </div>
+      <div class="title"><span id="rkHzTitle">LEADERBOARD</span></div>
+      <div class="sub" id="rkHzSub">GLOBAL PULSE &middot; DAILY STANDING</div>
+      <div class="bar"><i></i></div>
+      <div class="foot"><span>HZ-PROTOCOL</span><span id="rkHzFoot">SYNC STANDING</span></div>
+    </div>
+  </div>
+</div>
 
 <!-- Sheet profil player publik: diklik dari baris/podium leaderboard -->
 <div id="rkProfModal">
@@ -1695,7 +1732,7 @@
 <script src="js/raid.js?v=v398-indexSheetFoot"></script>
 <script src="js/deck-modal.js?v=v6-deckSortPower"></script>
 <script src="js/skill-tree.js?v=v12-skillTree"></script>
-<script src="js/ranking.js?v=v12-rkpOpen"></script>
+<script src="js/ranking.js?v=v13-rankHazard"></script>
 <script src="js/i18n.js?v=v396-bpDeck"></script>
 <script src="js/boot.js?v=v153-indexClose"></script>
 <script src="js/pwa.js?v=v156-install"></script>

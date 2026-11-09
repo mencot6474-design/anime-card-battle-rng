@@ -1,0 +1,1120 @@
+/* ==========================================================================
+   RANKING-HAZARD.CSS — "LEADERBOARD / GLOBAL STANDING" (WHITE-on-BLACK HAZARD)
+
+   Scope: #rankModal (full-bleed screen) + #rankCurtain (enter/exit banner,
+   lives in body — same mechanic as #indexCurtain / #backpackCurtain).
+
+   Shell uses .rk-screen (NOT .ix-box) so the legacy cyberpunk block
+   #rankModal .ix-box / .rk-pod* in css/style.css (cyan/purple neon, blur,
+   rounded corners) cannot win. Every rule here is scoped to #rankModal.
+
+   Perf contract §2b: transform/opacity animations only, no backdrop-filter,
+   no background-attachment:fixed, no animated box-shadow/width/height.
+   ========================================================================== */
+
+/* Hide lobby chrome while the screen is open.
+   body.rk-open = safety net for WebViews without :has(). */
+body.rk-open #ldEntry,
+body.rk-open nav.m-rail,
+body.rk-open nav.m-tabbar,
+body.rk-open #activePlayersBadge,
+body.rk-open #pwaInstallBtn,
+body.rk-open .buff-dock,
+body.rk-open .weather-panel,
+body.rk-open .lobby-tactical-hud,
+body.rk-open header#topbar,
+body.rk-open #topbar,
+body:has(#rankModal.show) #ldEntry,
+body:has(#rankModal.show) nav.m-rail,
+body:has(#rankModal.show) nav.m-tabbar,
+body:has(#rankModal.show) #activePlayersBadge,
+body:has(#rankModal.show) #pwaInstallBtn,
+body:has(#rankModal.show) .buff-dock,
+body:has(#rankModal.show) .weather-panel,
+body:has(#rankModal.show) .lobby-tactical-hud,
+body:has(#rankModal.show) header#topbar,
+body:has(#rankModal.show) #topbar {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+/* ================================ TOKENS ================================ */
+#rankModal {
+  --rk-ink: #050505;
+  --rk-paper: #f5f5f5;
+  --rk-dim: rgba(245, 245, 245, .58);
+  --rk-faint: rgba(245, 245, 245, .14);
+  --rk-hair: rgba(245, 245, 245, .28);
+  --rk-haz: #f3e600;
+  --rk-head: 'Orbitron', 'Rajdhani', system-ui, sans-serif;
+  --rk-ui: 'Rajdhani', 'Segoe UI', system-ui, sans-serif;
+  --rk-mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+}
+
+/* ================================ SHELL ================================= */
+#rankModal {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  max-width: 100vw !important;
+  max-height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: none !important;
+  place-items: stretch !important;
+  overflow: hidden !important;
+  background: #000 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  animation: none !important;
+  z-index: 94500 !important;
+}
+#rankModal.show { display: block !important; }
+
+/* Neutralise the legacy .ix-box card (centered, padded, blurred, animated). */
+#rankModal .rk-box,
+#rankModal .ix-box {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  overflow: hidden !important;
+  animation: none !important;
+  display: block !important;
+}
+#rankModal .rk-box::before,
+#rankModal .rk-box::after,
+#rankModal .ix-box::before,
+#rankModal .ix-box::after { content: none !important; display: none !important; }
+
+#rankModal .rk-screen {
+  position: absolute !important;
+  inset: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  background: var(--rk-ink) !important;
+  color: var(--rk-paper) !important;
+  font-family: var(--rk-ui) !important;
+  font-weight: 700 !important;
+  font-variant-numeric: tabular-nums;
+  isolation: isolate;
+  overflow: hidden !important;
+}
+#rankModal .rk-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(245, 245, 245, .028) 0 1px, transparent 1px 38px),
+    repeating-linear-gradient(90deg, rgba(245, 245, 245, .028) 0 1px, transparent 1px 38px),
+    radial-gradient(120% 80% at 78% -10%, rgba(243, 230, 0, .055), transparent 62%);
+}
+#rankModal .rk-screen > * { position: relative; z-index: 1; }
+
+/* ============================== TOP BAR ================================= */
+#rankModal .rk-hdr {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: stretch;
+  background: linear-gradient(180deg, #0a0a0a 0%, #050505 100%);
+  border-bottom: 1px solid var(--rk-hair);
+  min-height: 58px;
+  padding: 0 !important;
+}
+#rankModal .rk-hdr::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 3px;
+  z-index: 2;
+  background: repeating-linear-gradient(-45deg, var(--rk-haz) 0 8px, #0b0b0b 8px 16px);
+  opacity: .8;
+  pointer-events: none;
+}
+#rankModal .rk-mark {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  padding: 9px 34px 9px 16px;
+  background: var(--rk-haz);
+  color: #000;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 20px) 100%, 0 100%);
+}
+#rankModal .rk-mark-t {
+  font-family: var(--rk-head);
+  font-weight: 900;
+  font-size: 21px;
+  letter-spacing: .05em;
+  line-height: 1;
+  white-space: nowrap;
+}
+#rankModal .rk-mark-s {
+  font-family: var(--rk-mono);
+  font-size: 6.5px;
+  letter-spacing: .22em;
+  color: rgba(0, 0, 0, .62);
+  white-space: nowrap;
+}
+#rankModal .rk-topmid {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  overflow: hidden;
+}
+#rankModal .rk-crumb {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  font-family: var(--rk-mono);
+  font-size: 8px;
+  letter-spacing: .2em;
+  color: var(--rk-dim);
+  white-space: nowrap;
+}
+#rankModal .rk-crumb i {
+  width: 5px; height: 5px;
+  background: var(--rk-haz);
+  transform: rotate(45deg);
+  flex: none;
+}
+#rankModal .rk-crumb b { color: var(--rk-paper); font-weight: 700; }
+#rankModal .rk-crumb .sep { color: rgba(245, 245, 245, .28); }
+#rankModal .rk-topstat { display: flex; gap: 16px; margin-left: auto; flex: none; }
+#rankModal .rk-ts { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
+#rankModal .rk-ts-k {
+  font-family: var(--rk-mono);
+  font-size: 6px;
+  letter-spacing: .2em;
+  color: var(--rk-dim);
+}
+#rankModal .rk-ts-v {
+  font-family: var(--rk-head);
+  font-size: 12px;
+  letter-spacing: .03em;
+  color: var(--rk-paper);
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#rankModal .rk-ts-v.hz { color: var(--rk-haz); }
+
+#rankModal .rk-x {
+  flex: 0 0 auto !important;
+  width: 58px !important;
+  height: auto !important;
+  display: grid !important;
+  place-items: center !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-left: 1px solid var(--rk-faint) !important;
+  border-radius: 0 !important;
+  color: var(--rk-paper) !important;
+  min-height: 46px !important;
+  transform: none !important;
+  box-shadow: none !important;
+  cursor: pointer;
+}
+#rankModal .rk-x svg { width: 20px; height: 20px; }
+#rankModal .rk-x:hover,
+#rankModal .rk-x:focus-visible {
+  background: rgba(243, 230, 0, .12) !important;
+  color: var(--rk-haz) !important;
+  border-left-color: var(--rk-faint) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ================================ META ================================== */
+#rankModal .rk-meta {
+  flex: 0 0 auto !important;
+  display: flex !important;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px !important;
+  padding: 8px 14px !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--rk-faint) !important;
+  border-radius: 0 !important;
+  background: linear-gradient(180deg, #070707, #050505) !important;
+}
+#rankModal .rk-chip {
+  font-family: var(--rk-mono) !important;
+  font-weight: 700 !important;
+  font-size: 8px !important;
+  letter-spacing: .16em !important;
+  padding: 4px 8px !important;
+  border-radius: 0 !important;
+  line-height: 1 !important;
+  color: var(--rk-paper) !important;
+  border: 1px solid var(--rk-faint) !important;
+  background: #0b0b0b !important;
+  white-space: nowrap;
+}
+#rankModal .rk-chip.rk-dim { color: var(--rk-dim) !important; border-color: rgba(245, 245, 245, .1) !important; background: #080808 !important; }
+#rankModal .rk-chip.rk-own {
+  color: #050505 !important;
+  border-color: var(--rk-haz) !important;
+  background: var(--rk-haz) !important;
+}
+#rankModal .rk-chip.rk-bad { color: #ff6b8a !important; border-color: rgba(255, 107, 138, .42) !important; background: rgba(255, 107, 138, .08) !important; }
+
+/* ================================ BODY ================================== */
+#rankModal .rk-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  overflow: hidden !important;
+  padding: 12px 14px 10px !important;
+  background: transparent !important;
+  color: var(--rk-paper) !important;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+#rankModal .rk-body::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
+/* =============================== PODIUM ================================= */
+#rankModal .rk-podium {
+  flex: 0 0 auto !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  padding: 8px 10px 12px !important;
+  background:
+    repeating-linear-gradient(-45deg, rgba(243, 230, 0, .03) 0 14px, transparent 14px 34px),
+    linear-gradient(180deg, #0a0a0a, #050505) !important;
+  border: 1px solid var(--rk-faint) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+#rankModal .rk-pod {
+  position: relative;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 5px !important;
+  min-width: 0;
+  padding: 8px 10px 9px !important;
+  background: #0b0b0b !important;
+  border: 1px solid var(--rk-faint) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  transition: border-color .16s ease, transform .16s ease;
+}
+#rankModal .rk-pod:hover { border-color: var(--rk-haz) !important; transform: translateY(-2px) !important; }
+#rankModal .rk-pod1 {
+  width: min(238px, 34%) !important;
+  order: 2 !important;
+  margin: 0 !important;
+  background: linear-gradient(180deg, rgba(243, 230, 0, .1) 0%, #0b0b0b 78%) !important;
+  border-color: rgba(243, 230, 0, .6) !important;
+  z-index: 5;
+}
+#rankModal .rk-pod2 { width: min(204px, 30%) !important; order: 1 !important; margin: 0 !important; z-index: 4; }
+#rankModal .rk-pod3 { width: min(204px, 30%) !important; order: 3 !important; margin: 0 !important; z-index: 4; }
+
+#rankModal .rk-ava {
+  position: relative !important;
+  flex: none !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  display: grid !important;
+  place-items: center !important;
+}
+#rankModal .rk-pod1 .rk-ava { width: 84px !important; height: 106px !important; margin-bottom: 8px !important; }
+#rankModal .rk-pod2 .rk-ava,
+#rankModal .rk-pod3 .rk-ava { width: 68px !important; height: 86px !important; margin-bottom: 6px !important; }
+
+#rankModal .rk-ava-core {
+  position: absolute !important;
+  inset: 3px !important;
+  z-index: 2 !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+  background: radial-gradient(120% 120% at 50% 0%, #161616, #070707 75%) !important;
+  box-shadow: none !important;
+}
+#rankModal .rk-ava-core .rk-face,
+#rankModal .rk-av-sm .rk-face {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: 50% 18% !important;
+  filter: saturate(.95) contrast(1.04);
+  transition: transform .28s ease !important;
+}
+#rankModal .rk-pod:hover .rk-ava-core .rk-face { transform: scale(1.06) !important; }
+/* scanline sweep removed: hazard uses a static bottom gradient instead */
+#rankModal .rk-ava-core::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background: linear-gradient(180deg, transparent 52%, rgba(5, 5, 5, .82) 100%) !important;
+  animation: none !important;
+  pointer-events: none !important;
+  z-index: 3 !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+/* Cyber frame (kept in markup) reduced to hazard brackets + rank plate. */
+#rankModal .rk-cyber-frame {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  border-radius: 0;
+}
+#rankModal .rk-cf-aura,
+#rankModal .rk-cf-inner { display: none !important; }
+#rankModal .rk-cf-outer {
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
+  border: 1px solid var(--rk-hair);
+  box-shadow: none;
+}
+#rankModal .rk-cf-1 .rk-cf-outer { border-color: rgba(243, 230, 0, .72); }
+#rankModal .rk-cf-corner {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-color: var(--rk-paper);
+  border-style: solid;
+  filter: none;
+  opacity: .9;
+}
+#rankModal .rk-cf-1 .rk-cf-corner { border-color: var(--rk-haz); }
+#rankModal .rk-cf-corner.tl { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+#rankModal .rk-cf-corner.tr { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
+#rankModal .rk-cf-corner.bl { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
+#rankModal .rk-cf-corner.br { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+#rankModal .rk-cf-crown {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--rk-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  line-height: 1;
+  padding: 3px 7px;
+  border-radius: 0;
+  color: var(--rk-paper);
+  background: #0b0b0b;
+  border: 1px solid var(--rk-hair);
+  box-shadow: none;
+  white-space: nowrap;
+}
+#rankModal .rk-cf-1 .rk-cf-crown {
+  font-size: 10px;
+  padding: 3px 8px;
+  color: #050505;
+  background: var(--rk-haz);
+  border-color: var(--rk-haz);
+}
+
+#rankModal .rk-init {
+  font-family: var(--rk-head);
+  font-weight: 900;
+  font-size: 24px;
+  line-height: 1;
+  color: rgba(245, 245, 245, .72);
+  letter-spacing: .02em;
+}
+#rankModal .rk-pod1 .rk-init { font-size: 30px; }
+#rankModal .rk-init-empty { color: rgba(245, 245, 245, .3) !important; }
+
+#rankModal .rk-pod-name,
+#rankModal .rk-pod-val,
+#rankModal .rk-pod-medal { position: relative; z-index: 4; }
+#rankModal .rk-pod-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--rk-head);
+  font-weight: 900;
+  font-size: 11px !important;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--rk-paper);
+}
+#rankModal .rk-pod1 .rk-pod-name { font-size: 13px !important; color: #fff !important; text-shadow: none !important; }
+#rankModal .rk-pod-name-empty { font-size: 9px !important; letter-spacing: .14em !important; color: rgba(245, 245, 245, .38) !important; }
+#rankModal .rk-pod-val {
+  font-family: var(--rk-mono);
+  font-weight: 700;
+  font-size: 11px !important;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--rk-haz);
+}
+#rankModal .rk-pod1 .rk-pod-val { font-size: 14px !important; color: var(--rk-haz) !important; }
+/* Legacy cyberpunk block (style.css ~19951) paints pod2/pod3 values cyan/purple
+   with !important at (1,2,0); these need the same specificity to stay hazard. */
+#rankModal .rk-pod2 .rk-pod-val,
+#rankModal .rk-pod3 .rk-pod-val { color: var(--rk-haz) !important; }
+#rankModal .rk-pod2 .rk-pod-name,
+#rankModal .rk-pod3 .rk-pod-name { color: var(--rk-paper) !important; }
+#rankModal .rk-pod2 .rk-pod-medal,
+#rankModal .rk-pod3 .rk-pod-medal { color: var(--rk-dim) !important; }
+#rankModal .rk-pod-val-empty { color: rgba(245, 245, 245, .3) !important; }
+#rankModal .rk-pod-medal {
+  font-family: var(--rk-mono);
+  font-weight: 700;
+  font-size: 7px;
+  letter-spacing: .18em;
+  padding: 2px 6px;
+  border-radius: 0;
+  line-height: 1;
+  color: var(--rk-dim);
+  border: 1px solid var(--rk-faint);
+  background: #0b0b0b;
+}
+#rankModal .rk-pod1 .rk-pod-medal { color: var(--rk-haz); border-color: rgba(243, 230, 0, .5); background: rgba(243, 230, 0, .08); }
+#rankModal .rk-pod-empty { opacity: .8; }
+
+/* =============================== TABLE ================================== */
+#rankModal .rk-table-wrap {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: #070707 !important;
+  border: 1px solid var(--rk-faint) !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+#rankModal .rk-head-row,
+#rankModal .rk-row {
+  display: grid !important;
+  align-items: center !important;
+  grid-template-columns: 46px 40px minmax(0, 1fr) 132px 66px !important;
+  gap: 10px !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+#rankModal .rk-head-row {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  flex: none !important;
+  padding: 8px 12px !important;
+  background: #0b0b0b !important;
+  border-bottom: 1px solid var(--rk-hair) !important;
+  color: var(--rk-haz) !important;
+  font-family: var(--rk-mono) !important;
+  font-size: 8px !important;
+  font-weight: 700 !important;
+  letter-spacing: .18em !important;
+}
+/* Value + delta headers align with their right-aligned cells. */
+#rankModal .rk-head-row > span:nth-child(4),
+#rankModal .rk-head-row > span:nth-child(5) { text-align: right !important; white-space: nowrap; }
+@media (max-width: 1120px) {
+  #rankModal .rk-head-row .rk-h-long { display: none !important; }
+}
+#rankModal .rk-list-scroll {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(245, 245, 245, .22) transparent;
+}
+#rankModal .rk-list-scroll::-webkit-scrollbar { width: 6px; }
+#rankModal .rk-list-scroll::-webkit-scrollbar-track { background: #050505; }
+#rankModal .rk-list-scroll::-webkit-scrollbar-thumb { background: rgba(245, 245, 245, .22); border-radius: 0; }
+#rankModal .rk-list-scroll::-webkit-scrollbar-thumb:hover { background: var(--rk-haz); }
+
+#rankModal .rk-row {
+  flex: none !important;
+  padding: 7px 12px !important;
+  border-bottom: 1px solid rgba(245, 245, 245, .06) !important;
+  background: transparent !important;
+  color: var(--rk-paper) !important;
+  font-family: var(--rk-ui) !important;
+  font-weight: 700 !important;
+  cursor: pointer;
+  transition: background .14s ease;
+}
+#rankModal .rk-row:hover { background: rgba(243, 230, 0, .06) !important; }
+#rankModal .rk-row.me {
+  background: linear-gradient(90deg, rgba(243, 230, 0, .14) 0%, rgba(243, 230, 0, .02) 100%) !important;
+  box-shadow: inset 2px 0 0 var(--rk-haz) !important;
+  border-left: 0 !important;
+}
+#rankModal .rk-row-empty { opacity: .55; }
+
+#rankModal .rk-rank {
+  font-family: var(--rk-mono) !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+  letter-spacing: .06em !important;
+  color: var(--rk-dim) !important;
+}
+#rankModal .rk-rank.rk-top1 { color: var(--rk-haz) !important; }
+#rankModal .rk-rank.rk-top2 { color: var(--rk-paper) !important; }
+#rankModal .rk-rank.rk-top3 { color: #d8d8d8 !important; }
+#rankModal .rk-av-sm {
+  position: relative !important;
+  width: 30px !important;
+  height: 38px !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+  display: grid !important;
+  place-items: center !important;
+  background: radial-gradient(120% 120% at 50% 0%, #191919, #0a0a0a 70%) !important;
+  border: 1px solid var(--rk-faint) !important;
+  box-shadow: none !important;
+}
+#rankModal .rk-av-sm .rk-init { font-size: 12px !important; }
+#rankModal .rk-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--rk-head) !important;
+  font-weight: 900 !important;
+  font-size: 11px !important;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--rk-paper) !important;
+}
+#rankModal .rk-row.me .rk-name { color: var(--rk-haz) !important; }
+#rankModal .rk-sub {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--rk-mono) !important;
+  font-size: 7.5px !important;
+  font-weight: 400 !important;
+  letter-spacing: .08em;
+  color: var(--rk-dim) !important;
+  text-transform: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#rankModal .rk-val {
+  display: flex !important;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 5px;
+  text-align: right;
+  font-family: var(--rk-mono) !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+  font-variant-numeric: tabular-nums;
+  color: var(--rk-haz) !important;
+}
+#rankModal .rk-unit {
+  font-family: var(--rk-mono) !important;
+  font-style: normal !important;
+  font-weight: 700 !important;
+  font-size: 6.5px !important;
+  letter-spacing: .14em;
+  color: var(--rk-dim) !important;
+}
+#rankModal .rk-delta-cell { display: flex !important; justify-content: flex-end; }
+#rankModal .rk-delta {
+  font-family: var(--rk-mono) !important;
+  font-weight: 700 !important;
+  font-size: 8px !important;
+  letter-spacing: .08em;
+  padding: 3px 6px;
+  border-radius: 0;
+  line-height: 1;
+  color: var(--rk-dim);
+  border: 1px solid var(--rk-faint);
+  background: #0b0b0b;
+}
+#rankModal .rk-delta.up { color: #5CF0A8; border-color: rgba(92, 240, 168, .34); background: rgba(92, 240, 168, .08); }
+#rankModal .rk-delta.down { color: #FF6B8A; border-color: rgba(255, 107, 138, .32); background: rgba(255, 107, 138, .07); }
+#rankModal .rk-delta.rk-new { color: var(--rk-haz); border-color: rgba(243, 230, 0, .4); background: rgba(243, 230, 0, .08); }
+
+#rankModal .rk-note {
+  flex: none !important;
+  padding: 8px 12px !important;
+  margin: 0 !important;
+  border-top: 1px solid var(--rk-faint) !important;
+  background: #050505 !important;
+  font-family: var(--rk-mono) !important;
+  font-weight: 400 !important;
+  font-size: 7.5px !important;
+  letter-spacing: .1em;
+  line-height: 1.7;
+  color: var(--rk-dim) !important;
+  text-transform: uppercase;
+}
+#rankModal .rk-loading,
+#rankModal .rk-empty {
+  padding: 40px 12px !important;
+  text-align: center !important;
+  font-family: var(--rk-mono) !important;
+  font-size: 9px !important;
+  letter-spacing: .22em !important;
+  color: var(--rk-dim) !important;
+}
+
+/* ================================ TABS ================================== */
+#rankModal .rk-tabs {
+  flex: 0 0 auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: nowrap !important;
+  gap: 6px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  padding: 8px 14px 10px !important;
+  margin: 0 !important;
+  border-top: 1px solid var(--rk-hair) !important;
+  background: linear-gradient(180deg, #070707, #050505) !important;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+#rankModal .rk-tabs::-webkit-scrollbar { display: none; width: 0; height: 0; }
+#rankModal .rk-tab {
+  flex: none !important;
+  display: flex !important;
+  align-items: center !important;
+  min-height: 44px !important;
+  padding: 0 11px !important;
+  background: #0b0b0b !important;
+  border: 1px solid var(--rk-faint) !important;
+  border-radius: 0 !important;
+  color: var(--rk-dim) !important;
+  font-family: var(--rk-mono) !important;
+  font-weight: 700 !important;
+  font-size: 8px !important;
+  letter-spacing: .14em !important;
+  text-transform: uppercase;
+  box-shadow: none !important;
+  transform: none !important;
+  cursor: pointer;
+  transition: color .16s ease, border-color .16s ease, background .16s ease;
+}
+#rankModal .rk-tab:hover {
+  color: var(--rk-paper) !important;
+  border-color: var(--rk-hair) !important;
+  background: #0b0b0b !important;
+}
+#rankModal .rk-tab.on {
+  color: #050505 !important;
+  background: var(--rk-haz) !important;
+  border-color: var(--rk-haz) !important;
+  font-weight: 700 !important;
+  box-shadow: none !important;
+}
+
+/* ============================= RESPONSIVE =============================== */
+@media (max-width: 860px) {
+  #rankModal .rk-topstat { display: none; }
+  #rankModal .rk-head-row,
+  #rankModal .rk-row {
+    grid-template-columns: 34px 30px minmax(0, 1fr) 92px 52px !important;
+    gap: 7px !important;
+    padding: 7px 10px !important;
+  }
+  #rankModal .rk-pod1 { width: min(200px, 34%) !important; }
+  #rankModal .rk-pod2, #rankModal .rk-pod3 { width: min(160px, 30%) !important; }
+  #rankModal .rk-pod1 .rk-ava { width: 70px !important; height: 88px !important; }
+  #rankModal .rk-pod2 .rk-ava, #rankModal .rk-pod3 .rk-ava { width: 58px !important; height: 74px !important; }
+  #rankModal .rk-pod1 .rk-pod-name { font-size: 11.5px; }
+  #rankModal .rk-pod1 .rk-pod-val { font-size: 12.5px; }
+}
+@media (max-width: 520px) {
+  #rankModal .rk-mark { padding: 7px 26px 7px 12px; }
+  #rankModal .rk-mark-t { font-size: 18px; }
+  #rankModal .rk-mark-s { display: none; }
+  #rankModal .rk-crumb { display: none; }
+  #rankModal .rk-x { width: 50px !important; }
+  #rankModal .rk-meta { padding: 6px 10px !important; gap: 4px !important; }
+  #rankModal .rk-chip { font-size: 7px !important; padding: 3px 6px !important; }
+  #rankModal .rk-body { padding: 8px 10px 8px !important; gap: 8px !important; }
+  #rankModal .rk-podium { gap: 4px !important; padding: 6px 4px 8px !important; }
+  #rankModal .rk-pod { padding: 5px 3px 6px !important; }
+  #rankModal .rk-pod1 { width: 40% !important; }
+  #rankModal .rk-pod2, #rankModal .rk-pod3 { width: 29% !important; }
+  #rankModal .rk-pod1 .rk-ava { width: 50px !important; height: 62px !important; }
+  #rankModal .rk-pod2 .rk-ava, #rankModal .rk-pod3 .rk-ava { width: 42px !important; height: 52px !important; }
+  #rankModal .rk-pod-name { font-size: 7.5px !important; letter-spacing: 0 !important; }
+  #rankModal .rk-pod1 .rk-pod-name { font-size: 8.5px !important; }
+  #rankModal .rk-pod-val { font-size: 8.5px !important; }
+  #rankModal .rk-pod1 .rk-pod-val { font-size: 9.5px !important; }
+  #rankModal .rk-pod-medal { display: none; }
+  #rankModal .rk-cf-crown { font-size: 7.5px; padding: 2px 4px; }
+  #rankModal .rk-head-row,
+  #rankModal .rk-row {
+    grid-template-columns: 28px minmax(0, 1fr) 74px 40px !important;
+    gap: 6px !important;
+    padding: 6px 8px !important;
+  }
+  #rankModal .rk-head-row .rk-h-av,
+  #rankModal .rk-row .rk-av-sm { display: none !important; }
+  #rankModal .rk-head-row .rk-h-long { display: none !important; }
+  #rankModal .rk-head-row { font-size: 7px !important; }
+  #rankModal .rk-name { font-size: 9.5px !important; }
+  #rankModal .rk-val { font-size: 9.5px !important; }
+  /* 320px cannot fit five boards in one row: wrap to two rows so all are reachable
+     without a hidden horizontal scroll, keeping the 44px touch target. */
+  #rankModal .rk-tabs {
+    padding: 6px 8px !important;
+    gap: 4px !important;
+    flex-wrap: wrap !important;
+    overflow: hidden !important;
+    justify-content: flex-start !important;
+  }
+  #rankModal .rk-tab {
+    flex: 1 1 auto !important;
+    min-height: 44px !important;
+    font-size: 7px !important;
+    padding: 0 6px !important;
+    justify-content: center !important;
+  }
+}
+@media (max-width: 380px) {
+  /* Tiny phones: the rule text costs two table rows, drop it. */
+  #rankModal .rk-note { display: none !important; }
+  #rankModal .rk-body { padding: 6px 8px !important; gap: 6px !important; }
+  #rankModal .rk-podium { padding: 5px 4px 6px !important; }
+}
+@media (max-height: 470px) {
+  #rankModal .rk-mark { padding: 5px 22px 5px 10px; }
+  #rankModal .rk-mark-t { font-size: 15px; }
+  #rankModal .rk-mark-s, #rankModal .rk-crumb { display: none; }
+  #rankModal .rk-hdr { min-height: 44px; }
+  #rankModal .rk-body { padding: 6px 10px 6px !important; gap: 6px !important; }
+  /* Compact podium strip: rank plate + name + value in one line so the table
+     keeps rows. Avatars and brackets are dropped — they only fit vertically. */
+  #rankModal .rk-podium { padding: 4px 8px 5px !important; gap: 8px !important; }
+  #rankModal .rk-pod1 { width: min(300px, 32%) !important; }
+  #rankModal .rk-pod2, #rankModal .rk-pod3 { width: min(260px, 27%) !important; }
+  #rankModal .rk-pod {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+    padding: 5px 10px !important;
+  }
+  /* The cyber frame (rank plate) lives INSIDE .rk-ava, so hide the portrait
+     itself and let the wrapper collapse to the inline plate.
+     (1,3,0) is required: style.css sets `#rankModal .rk-pod .rk-ava{display:grid!important}`. */
+  #rankModal .rk-pod .rk-ava { display: contents !important; }
+  #rankModal .rk-ava-core { display: none !important; }
+  /* display:contents lets the rank plate sit inline in the flex row. */
+  #rankModal .rk-cyber-frame { display: contents !important; }
+  #rankModal .rk-cf-outer,
+  #rankModal .rk-cf-corner { display: none !important; }
+  #rankModal .rk-cf-crown {
+    position: static !important;
+    transform: none !important;
+    bottom: auto !important;
+    left: auto !important;
+    flex: none;
+    font-size: 8px !important;
+    padding: 2px 5px !important;
+  }
+  #rankModal .rk-pod-name { font-size: 9px !important; }
+  #rankModal .rk-pod1 .rk-pod-name { font-size: 10px !important; }
+  #rankModal .rk-pod-val { font-size: 9px !important; }
+  #rankModal .rk-pod1 .rk-pod-val { font-size: 10px !important; }
+  #rankModal .rk-pod-medal { display: none !important; }
+  #rankModal .rk-body { gap: 6px !important; }
+  #rankModal .rk-head-row,
+  #rankModal .rk-row {
+    padding: 4px 10px !important;
+  }
+  #rankModal .rk-av-sm { width: 24px !important; height: 30px !important; }
+  #rankModal .rk-tabs { padding: 4px 10px 4px !important; }
+  #rankModal .rk-tab { min-height: 44px !important; }
+  #rankModal .rk-note { display: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #rankModal .rk-pod,
+  #rankModal .rk-row,
+  #rankModal .rk-tab,
+  #rankModal .rk-ava-core .rk-face { transition: none !important; }
+}
+
+/* ==========================================================================
+   HAZARD CURTAIN (#rankCurtain) — enter/exit banner
+   Same three-phase mechanic as #indexCurtain / #backpackCurtain.
+   ========================================================================== */
+#rankCurtain {
+  position: fixed;
+  inset: 0;
+  z-index: 96000;
+  pointer-events: none;
+  overflow: hidden;
+  visibility: hidden;
+  contain: strict;
+}
+#rankCurtain.on { visibility: visible; }
+#rankCurtain .half {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 50.5%;
+  background-color: #050505;
+  transform: translateY(0);
+  will-change: transform;
+  overflow: hidden;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(245, 245, 245, .045) 0 1px, transparent 1px 34px),
+    repeating-linear-gradient(90deg, rgba(245, 245, 245, .045) 0 1px, transparent 1px 34px),
+    radial-gradient(120% 90% at 50% 100%, rgba(243, 230, 0, .06), transparent 68%);
+}
+#rankCurtain .top { top: 0; }
+#rankCurtain .bot {
+  bottom: 0;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(245, 245, 245, .045) 0 1px, transparent 1px 34px),
+    repeating-linear-gradient(90deg, rgba(245, 245, 245, .045) 0 1px, transparent 1px 34px),
+    radial-gradient(120% 90% at 50% 0%, rgba(243, 230, 0, .06), transparent 68%);
+}
+#rankCurtain.smooth .half { transition: transform .62s cubic-bezier(.74, 0, .22, 1); }
+#rankCurtain.revealed .top { transform: translateY(-101%); }
+#rankCurtain.revealed .bot { transform: translateY(101%); }
+#rankCurtain .edge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 16px;
+  background: repeating-linear-gradient(-45deg, #f3e600 0 12px, #080808 12px 24px);
+}
+#rankCurtain .top .edge { bottom: 0; }
+#rankCurtain .bot .edge { top: 0; }
+#rankCurtain .mark {
+  position: absolute;
+  left: 16px;
+  bottom: 26px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 7px;
+  letter-spacing: .26em;
+  color: rgba(245, 245, 245, .4);
+  white-space: nowrap;
+}
+#rankCurtain .mark b { color: #f3e600; font-weight: 600; }
+#rankCurtain .bot .mark { top: 28px; bottom: auto; left: auto; right: 16px; }
+#rankCurtain .tape {
+  position: absolute;
+  left: -60%;
+  right: -60%;
+  height: 52px;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  background: repeating-linear-gradient(-45deg, #f3e600 0 18px, #0b0b0b 18px 36px);
+  border-top: 2px solid #0b0b0b;
+  border-bottom: 2px solid #0b0b0b;
+  transform: translateX(-120%) skewX(-13deg);
+  will-change: transform, opacity;
+}
+#rankCurtain .tape-a { top: calc(50% - 104px); }
+#rankCurtain .tape-b { top: calc(50% + 54px); }
+#rankCurtain.sweep .tape-a { animation: rkTapeSweep .86s cubic-bezier(.4, 0, .2, 1) both; }
+#rankCurtain.sweep .tape-b { animation: rkTapeSweep .86s .09s cubic-bezier(.4, 0, .2, 1) both; }
+@keyframes rkTapeSweep {
+  0% { transform: translateX(-120%) skewX(-13deg); opacity: 0; }
+  12% { opacity: 1; }
+  86% { opacity: 1; }
+  100% { transform: translateX(120%) skewX(-13deg); opacity: 0; }
+}
+#rankCurtain .flash { position: absolute; inset: 0; z-index: 3; background: #f3e600; opacity: 0; }
+#rankCurtain.sweep .flash { animation: rkFlash .4s ease-out both; }
+@keyframes rkFlash { 0% { opacity: 0; } 14% { opacity: .16; } 100% { opacity: 0; } }
+#rankCurtain .plate {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 4;
+  width: min(88vw, 600px);
+  transform: translate(-50%, -50%);
+  opacity: 1;
+  background:
+    repeating-linear-gradient(-45deg, rgba(243, 230, 0, .045) 0 14px, transparent 14px 34px),
+    linear-gradient(168deg, rgba(14, 14, 14, .98) 0%, rgba(5, 5, 5, .99) 52%, rgba(10, 10, 10, .98) 100%);
+  border-top: 2px solid #f3e600;
+  border-bottom: 2px solid #f3e600;
+}
+#rankCurtain.smooth .plate { transition: opacity .22s ease, transform .52s cubic-bezier(.34, 1.22, .64, 1); }
+#rankCurtain.revealed .plate { opacity: 0; transform: translate(-50%, -50%) scale(1.04); }
+#rankCurtain .plate::before,
+#rankCurtain .plate::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 18px;
+  background: repeating-linear-gradient(-45deg, #f3e600 0 10px, #050505 10px 20px);
+}
+#rankCurtain .plate::before { left: -18px; }
+#rankCurtain .plate::after { right: -18px; }
+#rankCurtain .water {
+  position: absolute;
+  right: 10px;
+  bottom: -22px;
+  pointer-events: none;
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  font-size: clamp(84px, 15vw, 158px);
+  line-height: .8;
+  letter-spacing: -.01em;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(243, 230, 0, .13);
+  transform: rotate(-6deg);
+  text-transform: uppercase;
+}
+#rankCurtain .corner {
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(245, 245, 245, .85);
+  opacity: .85;
+  pointer-events: none;
+}
+#rankCurtain .corner.tl { left: 7px; top: 7px; border-right: 0; border-bottom: 0; }
+#rankCurtain .corner.tr { right: 7px; top: 7px; border-left: 0; border-bottom: 0; }
+#rankCurtain .corner.bl { left: 7px; bottom: 7px; border-right: 0; border-top: 0; }
+#rankCurtain .corner.br { right: 7px; bottom: 7px; border-left: 0; border-top: 0; }
+#rankCurtain .in { position: relative; z-index: 2; padding: 16px 22px 13px; }
+@media (max-width: 420px) {
+  #rankCurtain .in { padding: 13px 14px 11px; }
+  #rankCurtain .title { gap: 8px; letter-spacing: .02em; font-size: clamp(17px, 6.9vw, 26px); }
+  #rankCurtain .title span { text-overflow: clip; }
+  #rankCurtain .title::before { width: 9px; }
+  #rankCurtain .sub { font-size: 7.5px; letter-spacing: .14em; }
+  #rankCurtain .plate::before { left: -12px; width: 12px; }
+  #rankCurtain .plate::after { right: -12px; width: 12px; }
+  #rankCurtain .kick, #rankCurtain .serial { font-size: 6.5px; letter-spacing: .18em; }
+  #rankCurtain .foot { font-size: 6px; letter-spacing: .14em; }
+  #rankCurtain .water { font-size: clamp(60px, 15vw, 96px); }
+}
+#rankCurtain .krow { display: flex; align-items: center; gap: 8px; min-width: 0; }
+#rankCurtain .dot { flex: none; width: 7px; height: 7px; background: #f3e600; transform: rotate(45deg); }
+#rankCurtain .kick {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  letter-spacing: .28em;
+  color: rgba(245, 245, 245, .72);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#rankCurtain .kick b { color: #f3e600; font-weight: 600; }
+#rankCurtain .serial {
+  margin-left: auto;
+  flex: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 7px;
+  letter-spacing: .2em;
+  color: rgba(245, 245, 245, .42);
+  white-space: nowrap;
+}
+#rankCurtain .title {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-top: 9px;
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  font-size: clamp(19px, 6.2vw, 54px);
+  line-height: .96;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  min-width: 0;
+  color: #f5f5f5;
+}
+#rankCurtain .title span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#rankCurtain .title::before {
+  content: '';
+  flex: none;
+  width: 13px;
+  height: .92em;
+  background: #f3e600;
+  transform: skewX(-18deg);
+}
+#rankCurtain .sub {
+  margin-top: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .18em;
+  color: #f3e600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#rankCurtain .bar { height: 3px; margin-top: 14px; background: rgba(255, 255, 255, .14); overflow: hidden; }
+#rankCurtain .bar i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: #f3e600;
+  transform: scaleX(0);
+  transform-origin: left;
+}
+#rankCurtain.smooth:not(.revealed) .bar i {
+  transform: scaleX(1);
+  transition: transform .66s .1s cubic-bezier(.2, .9, .2, 1);
+}
+#rankCurtain .foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 6.5px;
+  letter-spacing: .2em;
+  color: rgba(245, 245, 245, .42);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #rankCurtain .half,
+  #rankCurtain .plate,
+  #rankCurtain .bar i { transition: none !important; }
+  #rankCurtain .tape,
+  #rankCurtain .flash { animation: none !important; }
+}
