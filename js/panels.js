@@ -1524,7 +1524,6 @@ function pfSupportHtml(){
   out.push(pd
     ?pfSlotHtml({img:pd.img||("assets/pets/"+pd.id+".png"),label:pd.name,sub:"PET",cls:"filled",accent:pd.color||"#f3e600",slot:"support",action:"pfOpenBackpack('pet')"})
     :pfSlotHtml({label:"PET",sub:"EMPTY",cls:"empty",slot:"support",action:"pfOpenBackpack('pet')"}));
-  out.push(pfSlotHtml({label:"SLOT 4",sub:"LOCKED",cls:"empty locked",slot:"locked"}));
   return out.join("");
 }
 function pfIdentity(eq){

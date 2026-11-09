@@ -547,18 +547,18 @@ function rpNum(n) {
 function rpPlay(sec) {
   const s = Math.max(0, Math.floor(Number(sec) || 0));
   const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60);
-  return h > 0 ? h + "j " + m + "m" : m > 0 ? m + "m " + (s % 60) + "s" : s + "s";
+  return h > 0 ? h + "h " + m + "m" : m > 0 ? m + "m " + (s % 60) + "s" : s + "s";
 }
 
 function rpAgo(iso) {
   const t = Date.parse(iso || "");
   if (!Number.isFinite(t)) return "—";
   const mi = Math.floor(Math.max(0, Date.now() - t) / 60000);
-  if (mi < 1) return "BARU SAJA";
-  if (mi < 60) return mi + " MENIT LALU";
+  if (mi < 1) return "JUST NOW";
+  if (mi < 60) return mi + " MIN AGO";
   const h = Math.floor(mi / 60);
-  if (h < 24) return h + " JAM LALU";
-  return Math.floor(h / 24) + " HARI LALU";
+  if (h < 24) return h + " HOURS AGO";
+  return Math.floor(h / 24) + " DAYS AGO";
 }
 
 function rpRow(lab, val) {
@@ -579,15 +579,11 @@ function rpBoardRows(user, srvRanks) {
       const r = list ? list.find(x => String(x.username).toLowerCase() === u) : null;
       if (r) { rankNum = r.rank; valNum = r.value; }
     }
-    const rCls = rankNum === 1 ? "rp-rk-1" : rankNum === 2 ? "rp-rk-2" : rankNum === 3 ? "rp-rk-3" : (rankNum ? "rp-rk-on" : "rp-rk-off");
-    const badge = rankNum ? `<span class="rp-rk-pill ${rCls}">#${rankNum}</span>` : `<span class="rp-rk-pill rp-rk-off">UNRANKED</span>`;
-    const scoreTxt = rankNum ? `<b class="rp-rk-val">${rkValFmt(b, valNum)}</b>` : `<span class="rp-rk-none">Belum ada skor</span>`;
-    return `<div class="rp-board-item ${rankNum ? "has-rk" : ""}">
-      <div class="rp-bi-left">
-        <span class="rp-bi-dot"></span>
-        <span class="rp-bi-name">${RK_BOARDS[b].label}</span>
-      </div>
-      <div class="rp-bi-right">${badge}${scoreTxt}</div>
+    const badge = rankNum ? `<span class="rdz-rk on">#${rankNum}</span>` : `<span class="rdz-rk off">UNRANKED</span>`;
+    const scoreTxt = rankNum ? `<b class="rdz-board-val">${rkValFmt(b, valNum)}</b>` : `<span class="rdz-board-none">NO SCORE</span>`;
+    return `<div class="rdz-board ${rankNum ? "has-rk" : ""}">
+      <span class="rdz-board-name">${RK_BOARDS[b].label}</span>
+      <span class="rdz-board-right">${badge}${scoreTxt}</span>
     </div>`;
   }).join("");
 }
@@ -629,90 +625,84 @@ function rpHtml(p) {
       : `<span>${rkEsc((name[0] || "?"))}</span>`;
 
   const cardTierTxt = known && CARDS[cid] && CARDS[cid].tier ? rkEsc(CARDS[cid].tier) : "";
-  const mutTag = eq && eq.mut && eq.mut !== "none" ? `<span class="rp-tag rp-tag-mut">${rkEsc(eq.mut.toUpperCase())}</span>` : "";
-  const shinyTag = eq && eq.shiny ? `<span class="rp-tag rp-tag-shiny">✦ SHINY</span>` : "";
-  const traitTag = eq && eq.trait && eq.trait !== "none" ? `<span class="rp-tag rp-tag-trait">${rkEsc(eq.trait.toUpperCase())}</span>` : "";
+  const mutTag = eq && eq.mut && eq.mut !== "none" ? `<span class="rdz-tag">${rkEsc(eq.mut.toUpperCase())}</span>` : "";
+  const shinyTag = eq && eq.shiny ? `<span class="rdz-tag rdz-tag-shiny">&#10022; SHINY</span>` : "";
+  const traitTag = eq && eq.trait && eq.trait !== "none" ? `<span class="rdz-tag">${rkEsc(eq.trait.toUpperCase())}</span>` : "";
 
-  return `<div class="rp-cyber-dossier">
-    <!-- KOLOM KIRI: KARTU IDENTITAS HUNTER -->
-    <div class="rp-hero-card">
-      <div class="rp-hc-frame">
-        <div class="rp-hc-aura"></div>
-        <div class="rp-face">
+  return `<div class="rdz-dossier">
+    <!-- LEFT: hunter identity card -->
+    <div class="rdz-ident">
+      <div class="rdz-hero">
+        <div class="rdz-face">
           ${face}
-          ${cardTierTxt ? `<span class="rp-hc-tier">${cardTierTxt}</span>` : ""}
-          <span class="rp-hc-lv">LV.${lv}</span>
+          ${cardTierTxt ? `<span class="rdz-tier">${cardTierTxt}</span>` : ""}
+          <span class="rdz-lv">LV.${lv}</span>
         </div>
-        <span class="rp-hc-cnr tl"></span><span class="rp-hc-cnr tr"></span>
-        <span class="rp-hc-cnr bl"></span><span class="rp-hc-cnr br"></span>
+        <span class="rdz-cnr tl"></span><span class="rdz-cnr tr"></span>
+        <span class="rdz-cnr bl"></span><span class="rdz-cnr br"></span>
       </div>
 
-      <div class="rp-ident">
-        <div class="prof-title-tag rp-title-badge">
-          <span class="ptt-crown"><svg width="14" height="11" viewBox="0 0 24 18" fill="none"><path d="M2 15L4 4L9 9L12 2L15 9L20 4L22 15H2Z" fill="currentColor" stroke="rgba(255,255,255,.55)" stroke-width="1.1" stroke-linejoin="round"/></svg></span>
-          <span class="ptt-txt">${title}</span>
-        </div>
-        <div class="rp-name">${name}</div>
-        <div class="rp-status-line">
-          <span class="rp-online-dot"></span>
-          <span>SYNC: ${rpAgo(p.updated_at)}</span>
-        </div>
+      <div class="prof-title-tag rdz-title-tag">
+        <span class="ptt-crown"><svg width="13" height="10" viewBox="0 0 24 18" fill="none"><path d="M2 15L4 4L9 9L12 2L15 9L20 4L22 15H2Z" fill="currentColor" stroke="rgba(255,255,255,.55)" stroke-width="1.1" stroke-linejoin="round"/></svg></span>
+        <span class="ptt-txt">${title}</span>
+      </div>
+      <div class="rdz-name">${name}</div>
+      <div class="rdz-sync"><span class="rdz-dot"></span><span>SYNC: ${rpAgo(p.updated_at)}</span></div>
+
+      <div class="rdz-xpbox">
+        <div class="rdz-xp-top"><span>HUNTER EXP</span><b>${rpNum(xp)} / ${rpNum(xpNeed)} &middot; ${xpPct}%</b></div>
+        <div class="rdz-xpbar"><i style="width:${xpPct}%"></i></div>
       </div>
 
-      <div class="rp-xp-block">
-        <div class="rp-xp-top"><span>HUNTER EXP</span><b>${rpNum(xp)} / ${rpNum(xpNeed)} (${xpPct}%)</b></div>
-        <div class="xpbar prof-xp rp-xp"><i style="width:${xpPct}%"></i></div>
-      </div>
-
-      <div class="rp-power-banner">
-        <div class="rp-pb-lbl">⚡ TOTAL BATTLE POWER</div>
-        <div class="rp-pb-val">${rpNum(powerVal)}</div>
+      <div class="rdz-power">
+        <span>TOTAL BATTLE POWER</span>
+        <b>${rpNum(powerVal)}</b>
       </div>
     </div>
 
-    <!-- KOLOM TENGAH: STATISTIK & PERINGKAT 5 PAPAN -->
-    <div class="rp-intel-col">
-      <div class="rp-sec-box">
-        <div class="rp-sec-hdr"><span class="rp-sh-dot"></span>COMBAT &amp; RNG TELEMETRY</div>
-        <div class="rp-stat-grid">
-          <div class="rp-stat-tile">
-            <span class="rp-st-lbl">WAKTU BERMAIN</span>
-            <b class="rp-st-val cyan">${rpPlay(p.play)}</b>
+    <!-- CENTER: telemetry + leaderboard standings -->
+    <div class="rdz-intel">
+      <div class="rdz-box">
+        <div class="rdz-h">COMBAT &amp; RNG TELEMETRY</div>
+        <div class="rdz-stats">
+          <div class="rdz-stat">
+            <span class="rdz-stat-l">PLAY TIME</span>
+            <b class="rdz-stat-v">${rpPlay(p.play)}</b>
           </div>
-          <div class="rp-stat-tile">
-            <span class="rp-st-lbl">TOTAL ROLL</span>
-            <b class="rp-st-val gold">${rpNum(rollsVal)}</b>
+          <div class="rdz-stat">
+            <span class="rdz-stat-l">TOTAL ROLLS</span>
+            <b class="rdz-stat-v">${rpNum(rollsVal)}</b>
           </div>
-          <div class="rp-stat-tile">
-            <span class="rp-st-lbl">REKOR INF TOWER</span>
-            <b class="rp-st-val purple">${towerBest > 0 ? "FLOOR " + towerBest : "F 0"}</b>
+          <div class="rdz-stat">
+            <span class="rdz-stat-l">INF TOWER RECORD</span>
+            <b class="rdz-stat-v">${towerBest > 0 ? "FLOOR " + towerBest : "FLOOR 0"}</b>
           </div>
-          <div class="rp-stat-tile">
-            <span class="rp-st-lbl">REBIRTH AWAKEN</span>
-            <b class="rp-st-val green">${rebirthCnt}&times; REBIRTH</b>
+          <div class="rdz-stat">
+            <span class="rdz-stat-l">REBIRTH AWAKEN</span>
+            <b class="rdz-stat-v">${rebirthCnt}&times; REBIRTH</b>
           </div>
-          <div class="rp-stat-tile rp-st-wide">
-            <span class="rp-st-lbl">KARTU PALING LANGKA (RAREST PULL)</span>
-            <b class="rp-st-val">${rareTxt}</b>
+          <div class="rdz-stat wide">
+            <span class="rdz-stat-l">RAREST PULL</span>
+            <b class="rdz-stat-v">${rareTxt}</b>
           </div>
         </div>
       </div>
 
-      <div class="rp-sec-box">
-        <div class="rp-sec-hdr"><span class="rp-sh-dot"></span>GLOBAL LEADERBOARD STANDINGS</div>
-        <div class="rp-boards-list">${rpBoardRows(p.username, p.ranks)}</div>
+      <div class="rdz-box">
+        <div class="rdz-h">GLOBAL LEADERBOARD STANDINGS</div>
+        <div class="rdz-boards">${rpBoardRows(p.username, p.ranks)}</div>
       </div>
     </div>
 
-    <!-- KOLOM KANAN: SHOWCASE KARTU LOBBY -->
-    <div class="rp-showcase-col">
-      <div class="rp-sec-hdr"><span class="rp-sh-dot"></span>EQUIPPED LOBBY UNIT</div>
-      <div class="rp-cardwrap">${eq && typeof hubCardHtml === "function"
+    <!-- RIGHT: equipped lobby unit -->
+    <div class="rdz-unit">
+      <div class="rdz-h">EQUIPPED LOBBY UNIT</div>
+      <div class="rdz-cardwrap">${eq && typeof hubCardHtml === "function"
         ? hubCardHtml(eq, "", false)
-        : '<div class="hub-center"><div class="hc-info"><div class="hc-name">Belum ada kartu utama</div></div></div>'}</div>
-      <div class="rp-unit-meta">
-        <div class="rp-um-name">${known ? rkEsc(cardName(cid)) : "UNKNOWN UNIT"}</div>
-        <div class="rp-um-tags">${mutTag}${shinyTag}${traitTag}</div>
+        : '<div class="hub-center"><div class="hc-info"><div class="hc-name">No main card</div></div></div>'}</div>
+      <div class="rdz-unit-meta">
+        <div class="rdz-um-name">${known ? rkEsc(cardName(cid)) : "UNKNOWN UNIT"}</div>
+        <div class="rdz-tags">${mutTag}${shinyTag}${traitTag}</div>
       </div>
     </div>
   </div>`;
@@ -727,22 +717,23 @@ function openRkProfile(username) {
   const user = String(username || "").trim().slice(0, 64);
   if (!user) return;
   m.classList.add("show");
+  document.body.classList.add("rkp-open");
   if (!window.CloudDB || typeof window.CloudDB.profile !== "function") {
-    body.innerHTML = `<div class="rk-empty">SERVER TIDAK TERHUBUNG<br><span>Profil player hanya tersedia saat online.</span></div>`;
+    body.innerHTML = `<div class="rdz-empty">SERVER OFFLINE<br><span>Player profiles are only available while online.</span></div>`;
     return;
   }
   const ticket = ++rpBusy;
-  body.innerHTML = `<div class="rk-loading">MEMUAT PROFIL…</div>`;
+  body.innerHTML = `<div class="rdz-loading">LOADING PROFILE&hellip;</div>`;
   window.CloudDB.profile(user).then(res => {
     if (ticket !== rpBusy) return; /* request berikutnya sudah dimulai */
     if (!res || !res.ok) {
-      body.innerHTML = `<div class="rk-empty">PROFIL TIDAK DITEMUKAN<br><span>${rkEsc(res && res.msg ? res.msg : user)} belum pernah tersimpan di server.</span></div>`;
+      body.innerHTML = `<div class="rdz-empty">PROFILE NOT FOUND<br><span>${rkEsc(res && res.msg ? res.msg : user)} has never been saved on the server.</span></div>`;
       return;
     }
     body.innerHTML = rpHtml(res);
   }).catch(() => {
     if (ticket !== rpBusy) return;
-    body.innerHTML = `<div class="rk-empty">GAGAL MEMUAT<br><span>Coba buka lagi sebentar lagi.</span></div>`;
+    body.innerHTML = `<div class="rdz-empty">FAILED TO LOAD<br><span>Please try opening it again in a moment.</span></div>`;
   });
 }
 
@@ -750,6 +741,7 @@ function closeRkProfile() {
   const m = document.getElementById("rkProfModal");
   if (!m) return;
   m.classList.remove("show");
+  document.body.classList.remove("rkp-open");
   rpBusy++;
 }
 
