@@ -1218,24 +1218,162 @@ function renderRaidShop(){
 }
 
 
-/* =============== INDEX CARD (popup) =============== */
+/* =============== INDEX CARD (layar penuh) =============== */
 const IX_MUTS=["none","gold","rainbow","secret","ultima"];
+const IX_RB_LETTERS=["#FF6B81","#FFB347","#FFE66D","#6BE08A","#B9C2CC","#B98CFF","#FF6BD6"];
 let ixState={q:"",mut:"all",shiny:false,owned:false,sort:"name"};
+/* RAINBOW harus terbaca pelangi, bukan ungu tunggal (= warna SECRET).
+   Per-letter colour untuk label, gradient text untuk "1 IN X", swatch strip
+   untuk segmen footer. */
+function ixMutTag(mut){
+  if(mut==="rainbow"){
+    const txt=MUT_LABEL[mut].split("").map((ch,i)=>`<i style="color:${IX_RB_LETTERS[i%IX_RB_LETTERS.length]}">${ch}</i>`).join("");
+    return `<span class="ix-mtag rb">${txt}</span>`;
+  }
+  return `<span class="ix-mtag" style="--tc:${MUT_COLOR[mut]}">${MUT_LABEL[mut]}</span>`;
+}
+function ixMutSwatch(mut){return mut==="rainbow"?"var(--rb)":MUT_COLOR[mut];}
 function openIndex(){
-  /* Katalog SEMUA kartu — layout meniru referensi "INDEX!": search di header, toolbar
-     chip mutasi + toggle SHINY + OWNED ONLY + sort, grid full-art (nama, centang owned
-     x/10, pips mut×shiny, nama+deskripsi skill di atas art), footer strip progres varian
-     (segmen per mutasi) -> milestone INTAN ROLL 100K. Klik kartu = detail passive
-     lengkap di #skillPop. Filter/sort state disimpan di ixState biar gak reset. */
+  /* Katalog SEMUA kartu — layar penuh "HZ / NEURAL ARCHIVE" (port
+     _tmp/proto_index_hazard_v1.html): top bar + progress + CLAIM, toolbar tab
+     mutasi + SHINY + OWNED ONLY + sort, grid tile 1:1 (badge ×N + 1 IN X),
+     footer strip varian, dan detail sheet hazard (§08 prototipe). */
   idxRewardSync(true);
   ixRender();
   document.getElementById("indexModal").classList.add("show");
+  document.body.classList.add("index-open");
+  ixBannerOpen();
   const sx=document.getElementById("ixSearch");
   sx.value=ixState.q;
   sx.oninput=()=>{ixState.q=sx.value.trim().toLowerCase();clearTimeout(sx._t);sx._t=setTimeout(ixRender,180);};
-  document.getElementById("spClose").onclick=()=>document.getElementById("skillPop").classList.remove("show");
-  document.getElementById("skillPop").onclick=(e)=>{if(e.target.id==="skillPop")document.getElementById("skillPop").classList.remove("show");};
+  const shx=document.getElementById("ixShX");
+  if(shx)shx.onclick=()=>ixSheetClose();
+  const sheet=document.getElementById("ixSheet");
+  if(sheet&&!sheet.__ixBound){
+    sheet.__ixBound=true;
+    sheet.addEventListener("click",e=>{if(e.target===sheet||e.target.classList.contains("ix-sh-body"))ixSheetClose();});
+  }
 }
+function closeIndex(){
+  const m=document.getElementById("indexModal");
+  if(!m||!m.classList.contains("show"))return;
+  ixSheetClose();
+  ixBannerClose(()=>{
+    m.classList.remove("show");
+    document.body.classList.remove("index-open");
+  });
+}
+/* ===== DETAIL SHEET (port _tmp/proto_index_hazard_v1.html §08) =====
+   Panel detail di dalam layar index: thumbnail, kode matriks, nama berwarna
+   mutasi, DROP RATE, jumlah varian, HP/ATK, pips mutasi (+★ shiny) dan
+   SIGNATURE SKILL. Menggantikan pemakaian #skillPop (tampilan layar lain). */
+function ixSheetOpen(charId,mut,isShiny){
+  const c=CARDS[charId];
+  if(!c)return;
+  const sheet=document.getElementById("ixSheet");
+  if(!sheet)return;
+  const P=idxProgress();
+  const own=(m,sh)=>P.owned.has(`${c.char_id}|${m}|${sh?1:0}`);
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  const m0=mut&&mut!=="none"?mut:"none";
+  const img=document.getElementById("ixShImg");
+  if(img){img.src=thumbSrc(c.sprite_asset)||"";img.alt=c.name||"";}
+  /* Kode baris mengikuti konteks tile. Kartu pemain tidak punya tier
+     (tier hanya untuk musuh story), jadi yang ditampilkan mutasi aktif. */
+  set("ixShCode",`MATRIX · ${MUT_LABEL[m0]||"PURE"}${isShiny?" · SHINY":""}`);
+  const nameEl=document.getElementById("ixShName");
+  if(nameEl)nameEl.textContent=c.name||"—";
+  set("ixShChance","1 IN "+fmtChance(effChance(c.char_id,m0,!!isShiny)));
+  let cnt=0,shCnt=0;
+  for(const m of IX_MUTS){if(own(m,false))cnt++;if(own(m,true))shCnt++;}
+  set("ixShOwn",`${cnt}${shCnt?" +"+shCnt+"★":""} / 10 VARIANTS`);
+  const pv=c.passive||{};
+  set("ixShSkill",pv.name||"—");
+  set("ixShDesc",pv.desc||"—");
+  const muts=document.getElementById("ixShMuts");
+  if(muts){
+    muts.innerHTML=IX_MUTS.map(m=>{
+      const got=own(m,false)||own(m,true);
+      const star=own(m,true)?' ★':'';
+      if(m==="rainbow"){
+        const txt=MUT_LABEL[m].split("").map((ch,i)=>`<i style="color:${IX_RB_LETTERS[i%IX_RB_LETTERS.length]}">${ch}</i>`).join("");
+        return `<span class="ix-sh-mut rb${got?' own':''}">${txt}${star}</span>`;
+      }
+      return `<span class="ix-sh-mut${got?' own':''}" style="--mc:${MUT_COLOR[m]}">${MUT_LABEL[m]}${star}</span>`;
+    }).join("");
+  }
+  sheet.classList.add("on");
+  sheet.setAttribute("aria-hidden","false");
+  const body=sheet.querySelector(".ix-sh-body");
+  if(body)body.scrollTop=0;
+  document.querySelectorAll("#ixBody .ix-cell.sel").forEach(x=>x.classList.remove("sel"));
+  const cell=document.querySelector(`#ixBody .ix-cell[data-c="${charId}"]`);
+  if(cell)cell.classList.add("sel");
+}
+
+function ixSheetClose(){
+  const sheet=document.getElementById("ixSheet");
+  if(!sheet||!sheet.classList.contains("on"))return false;
+  sheet.classList.remove("on");
+  sheet.setAttribute("aria-hidden","true");
+  document.querySelectorAll("#ixBody .ix-cell.sel").forEach(x=>x.classList.remove("sel"));
+  return true;
+}
+/* ESC: sheet detail dulu, baru layar index. */
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Escape")return;
+  const m=document.getElementById("indexModal");
+  if(!m||!m.classList.contains("show"))return;
+  if(ixSheetClose()){e.stopPropagation();return;}
+  e.stopPropagation();closeIndex();
+},true);
+/* ===== banner hazard masuk/keluar (#indexCurtain, pola #traitCurtain) ===== */
+let ixHzTimers=[];
+function ixHzClear(){for(let i=0;i<ixHzTimers.length;i++)clearTimeout(ixHzTimers[i]);ixHzTimers=[];}
+function ixHzSetCopy(mode){
+  const kick=document.getElementById("ixHzKick"),title=document.getElementById("ixHzTitle"),
+        sub=document.getElementById("ixHzSub"),foot=document.getElementById("ixHzFoot"),
+        serial=document.getElementById("ixHzSerial"),water=document.getElementById("ixHzWater");
+  if(serial)serial.textContent=(0x1000+Math.floor(Math.random()*0xefff)).toString(16).toUpperCase();
+  if(mode==="open"){
+    if(kick)kick.innerHTML="// ARCHIVE <b>SYNC</b>";
+    if(title)title.textContent="CARD INDEX";
+    if(water)water.textContent="IDX";
+    if(sub)sub.textContent="VARIANT VAULT · MUTATIONS · SHINY";
+    if(foot)foot.textContent="ENTER ARCHIVE";
+  }else{
+    if(kick)kick.innerHTML="// LINK <b>STAND BY</b>";
+    if(title)title.textContent="HOLD";
+    if(water)water.textContent="OUT";
+    if(sub)sub.textContent="ARCHIVE DISCONNECTING · DATA SAVED";
+    if(foot)foot.textContent="CLOSE SESSION";
+  }
+}
+function ixBannerOpen(){
+  const c=document.getElementById("indexCurtain");
+  if(!c)return;
+  ixHzClear();ixHzSetCopy("open");
+  c.className="";void c.offsetWidth;
+  c.classList.add("on","smooth","sweep");
+  ixHzTimers.push(setTimeout(()=>c.classList.add("revealed"),1080));
+  ixHzTimers.push(setTimeout(()=>c.classList.remove("on","smooth","sweep","revealed"),1800));
+}
+/* EXIT 3 fase: tirai MENUTUP -> konten disembunyikan -> tirai MEMBUKA.
+   Fase 3 wajib; tanpanya layar tertahan tertutup ("banner tidak kebuka"). */
+function ixBannerClose(onCovered){
+  const c=document.getElementById("indexCurtain");
+  if(!c){if(onCovered)onCovered();return;}
+  ixHzClear();ixHzSetCopy("close");
+  c.className="";c.classList.add("on","smooth","revealed");void c.offsetWidth;
+  c.classList.remove("revealed");
+  ixHzTimers.push(setTimeout(()=>{if(onCovered)onCovered();},560));
+  ixHzTimers.push(setTimeout(()=>c.classList.add("revealed"),780));
+  ixHzTimers.push(setTimeout(()=>c.classList.remove("on","smooth","revealed"),1560));
+}
+window.openIndex=openIndex;
+window.closeIndex=closeIndex;
+window.ixBannerOpen=ixBannerOpen;
+window.ixBannerClose=ixBannerClose;
 function ixLiveShimmer(){
   /* Index = 75 tile shiny semua animasi holoSheen -> ~2000 repaint/detik -> fps drop 6.
      Batasi concurrency: hanya ~12 tile yang PALING TENGAH viewport yang ditandai .ix-live,
@@ -1271,39 +1409,46 @@ function ixRender(){
   const P=idxProgress();
   const ownCnt=(c,mut,sh)=>P.owned.has(`${c.char_id}|${mut}|${sh?1:0}`);
   const ownedN=(c,sh)=>IX_MUTS.reduce((n,m)=>n+(ownCnt(c,m,sh)?1:0),0);
-  /* --- toolbar: chip mutasi + shiny + owned-only + sort --- */
-  /* parse filter sekali: chip "s-*" = mutasi versi SHINY; fmSel = mutasi murni (null = semua) */
-  const shChip=ixState.mut.startsWith("s-");
-  const fmSel=ixState.mut==="all"?null:ixState.mut.slice(shChip?2:0);
-  const fShiny=shChip||ixState.shiny;
-  const chip=(k,l,cls)=>`<button class="ix-chip ${cls||""}${ixState.mut===k?' on':''}" type="button" data-mut="${k}">${l}</button>`;
-  const toolbar=`<div class="ix-bar">
-    <div class="ix-chips">${chip("all","ALL MATRIX","all")}${IX_MUTS.map(m=>chip(m,m==="none"?"PURE":MUT_LABEL[m],"m-"+m)).join("")}
-      ${chip("s-gold","GOLD + SHINY","m-gold shp")}${chip("s-rainbow","RAINBOW + SHINY","m-rainbow shp")}${chip("s-secret","SECRET + SHINY","m-secret shp")}${chip("s-ultima","ULTIMA + SHINY","m-ultima shp")}
-      <button class="ix-chip shiny${ixState.shiny?' on':''}" type="button" data-shiny="1">★ SHINY</button></div>
+  /* --- filter state: tab mutasi murni + toggle SHINY terpisah --- */
+  const fmSel=ixState.mut==="all"?null:ixState.mut;
+  const fShiny=!!ixState.shiny;
+  const validCards=MASTER_CARD_INDEX.filter(c=>!c.isStoryEnemy);
+  /* Hitungan tab mengikuti prototipe: setiap tab mutasi = (kartu × 2) varian
+     normal + shiny. Tab ALL memakai P.count/P.total dari idxProgress (angka
+     server) supaya sinkron dengan bar progres dan tombol CLAIM. */
+  const tabTotal=validCards.length*2;
+  const tabCount=(m)=>{
+    if(m==="all")return `<b>${fmt(P.count)}/${fmt(P.total)}</b>`;
+    let own=0;
+    for(const c of validCards)own+=(ownCnt(c,m,false)?1:0)+(ownCnt(c,m,true)?1:0);
+    return `<b>${fmt(own)}/${fmt(tabTotal)}</b>`;
+  };
+  const chip=(k,l,cls)=>`<button class="ix-tab ${cls||""}${ixState.mut===k?' on':''}" type="button" data-mut="${k}">${l}${tabCount(k)}</button>`;
+  const toolbar=`<div class="ix-tabs">
+      ${chip("all","ALL")}${IX_MUTS.map(m=>chip(m,m==="none"?"PURE":MUT_LABEL[m],"m-"+m)).join("")}
+      <button class="ix-tab shiny-t${ixState.shiny?' on':''}" type="button" data-shiny="1">★ SHINY</button>
+    </div>
     <span class="ix-sp"></span>
     <button class="ix-tog${ixState.owned?' on':''}" type="button" data-owned="1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> OWNED ONLY</button>
     <div class="ix-sort-wrap">
-      <select class="ix-sort" id="ixSort" title="Urutkan">
-        <option value="name">SORT: NAME</option><option value="chance">SORT: CHANCE</option><option value="own">SORT: VARIANTS</option>
+      <select class="ix-sort" id="ixSort" title="Sort">
+        <option value="name">SORT: NAME</option><option value="chance">SORT: RARITY</option><option value="own">SORT: VARIANTS</option>
       </select>
-    </div></div>`;
+    </div>`;
   /* --- filter + sort --- */
   const TIER_RANK={R:0,SR:1,SSR:2,UR:3,EX:4,BOSS:5};
   let list=MASTER_CARD_INDEX.filter(c=>{
     if(c.isStoryEnemy||(c.noGacha&&!c.chance))return false;
     if(ixState.q&&!c.name.toLowerCase().includes(ixState.q))return false;
-    /* Jika toggle OWNED ONLY aktif: hanya tampilkan yang sudah didapat */
     if(ixState.owned){
       if(fmSel){
-        if(!ownCnt(c,fmSel,fShiny))return false;
+        if(!(ownCnt(c,fmSel,false)||ownCnt(c,fmSel,true)))return false;
       } else if(fShiny){
         if(!ownedN(c,true))return false;
       } else {
         if(!(ownedN(c,false)+ownedN(c,true)))return false;
       }
     }
-    /* Default: Tampilkan semua kartu (termasuk yang belum dapat) di setiap tab mutasi */
     return true;
   });
   const T={name:(a,b)=>a.name.localeCompare(b.name),
@@ -1311,53 +1456,34 @@ function ixRender(){
     own:(a,b)=>(ownedN(b,false)+ownedN(b,true))-(ownedN(a,false)+ownedN(a,true))||a.name.localeCompare(b.name),
     chance:(a,b)=>(a.chance==null?1e9:a.chance)-(b.chance==null?1e9:b.chance)||a.name.localeCompare(b.name)};
   list.sort(T[ixState.sort]||T.name);
-  /* --- kartu full-art --- */
+  /* --- tile 1:1 --- */
   _ixHtml={};
   const cells=list.map((c,i)=>{
     const any=ownedN(c,false)+ownedN(c,true);
     const anySh=ownedN(c,true)>0;
-
-    /* Cek kepemilikan varian spesifik sesuai filter aktif:
-       - fmSel ada & fShiny aktif: wajib punya varian (fmSel, SHINY)
-       - fmSel ada & fShiny nonaktif: punya varian (fmSel, non-shiny) atau (fmSel, shiny)
-       - fmSel null (tab ALL): cek fShiny ? anySh : any > 0 */
     const isSpecificVariantOwned = fmSel
       ? (fShiny ? ownCnt(c, fmSel, true) : (ownCnt(c, fmSel, false) || ownCnt(c, fmSel, true)))
       : (fShiny ? anySh : any > 0);
-
-    /* Cek apakah kartu ini sedang berstatus SHINY dalam konteks tab saat ini:
-       1) Tab SHINY aktif (fShiny == true) -> kartu tampil shiny (jika owned, atau preview shiny jika filter shiny)
-       2) Tab ALL -> kartu tampil shiny jika pemain memiliki varian shiny kartu ini (anySh) */
     const isShinyActive = fShiny || (ixState.mut === "all" && anySh);
-
     const bestMut=ownCnt(c,"ultima",false)||ownCnt(c,"ultima",true)?"ultima":
       (ownCnt(c,"secret",false)||ownCnt(c,"secret",true)?"secret":
       ownCnt(c,"rainbow",false)||ownCnt(c,"rainbow",true)?"rainbow":
       (ownCnt(c,"gold",false)||ownCnt(c,"gold",true))?"gold":null);
-
     const fm = ixState.mut === "all" ? bestMut : fmSel;
     const hasMut = !!(fm && fm !== "none");
-    const bc = hasMut ? MUT_COLOR[fm] : (isSpecificVariantOwned ? "#9AA6B2" : "#3A3F47");
     const chanceColor = hasMut ? MUT_COLOR[fm] : "#9AA6B2";
     const chanceText = `1 IN ${fmtChance(effChance(c.char_id, fmSel || "none", fShiny))}`;
     const chanceHtml = hasMut && (fm === 'rainbow' || fm === 'ultima') ? mutText(fm, chanceText) : chanceText;
     const lockBoss = !!((c.raidBoss||c.towerBoss) && !bossRollUnlocked(c.char_id));
     const lockShop = c.towerBoss?"TOKO INF":"TOKO WORLD BOSS";
-
     const shFx = isShinyActive;
-    const comboFx = !!(shFx && hasMut);
-    const cls = `ix-cell${isSpecificVariantOwned ? '' : ' no-own'}${lockBoss ? ' boss-locked' : ''}${shFx ? ' shiny' : ''}${hasMut ? ' m-' + fm : ''}${comboFx ? ' combo-mut' : ''}${c.fullArt ? ' fa' : ''}`;
-
+    const cls = `ix-cell${isSpecificVariantOwned ? '' : ' no-own'}${lockBoss ? ' boss-locked' : ''}${shFx ? ' shiny' : ''}${hasMut ? ' m-' + fm : ''}${c.fullArt ? ' fa' : ''}`;
     const safeName = String(c.name).replace(/"/g, '&quot;');
     const shinyStyle = hasMut && fm === 'gold' ? '--sh-base:#E0BC6E;--sh-edge:rgba(224,188,110,.95);--sh-glow:rgba(224,188,110,.55)'
       : hasMut && fm === 'rainbow' ? '--sh-base:#B58CFF;--sh-edge:rgba(90,200,250,.95);--sh-glow:rgba(181,140,255,.55)'
       : hasMut && fm === 'secret' ? '--sh-base:#A855F7;--sh-edge:rgba(168,85,247,.95);--sh-glow:rgba(168,85,247,.55)'
       : hasMut && fm === 'ultima' ? '--sh-base:#FF0055;--sh-edge:rgba(255,51,102,.95);--sh-glow:rgba(255,0,85,.6)'
       : '--sh-base:#22d3ee;--sh-edge:rgba(34,211,238,.95);--sh-glow:rgba(34,211,238,.55)';
-
-    /* Tampilan Nama Kartu:
-       - Jika SHINY: WAJIB gunakan kelas .hc-name-shine + .hc-name-shine-{mutasi} agar gradien animasinya aktif dan BUKAN mutText
-       - Jika BUKAN SHINY: gunakan .hc-mut-name (animasi sweep mutasi biasa) */
     let nameHtml = '';
     if (shFx) {
       nameHtml = `<span class="ixc-name hc-name-top hc-name-shine${hasMut ? ' hc-name-shine-' + fm : ''}" data-text="${safeName}" style="${shinyStyle}">${c.name}</span>`;
@@ -1366,119 +1492,66 @@ function ixRender(){
     } else {
       nameHtml = `<span class="ixc-name hc-name-top">${c.name}</span>`;
     }
-
+    const tags=[];
+    if(hasMut)tags.push(ixMutTag(fm));
+    if(shFx)tags.push('<span class="ix-mtag sh">SHINY</span>');
     const inner=`<img src="${thumbSrc(c.sprite_asset)}" alt="${c.name}" width="360" height="536" loading="lazy" decoding="async">
-      ${(hasMut||shFx)?`<span class="ix-badges hc-badges">${shFx?'<span class="shiny-badge shiny-pill">SHINY</span>':''}${hasMut?mutChip(fm,mutPill(fm)):''}</span>`:''}
-      <span class="ixc-stack">${nameHtml}<span class="ixc-chance${hasMut && (fm === 'rainbow' || fm === 'ultima') ? ' ixc-chance-rainbow' : ''}" style="color:${chanceColor}"><span class="ixc-chance-text">${chanceHtml}</span></span></span>
-      <span class="ixc-own${isSpecificVariantOwned ? ' on' : ''}">${any}/10</span>`;
+      ${hasMut && fm==="rainbow" ? '<span class="ix-mring"></span>' : ''}
+      ${shFx ? '<span class="ix-sheen"></span>' : ''}
+      <span class="ix-count${any?'':' zero'}">×${any}</span>
+      ${tags.length?`<span class="ix-tags">${tags.join("")}</span>`:''}
+      <span class="ixc-stack">${nameHtml}<span class="ixc-chance${hasMut && (fm === 'rainbow' || fm === 'ultima') ? ' ixc-chance-rainbow' : ''}" style="--tc:${chanceColor}"><span class="ixc-chance-text">${chanceHtml}</span></span></span>`;
     _ixHtml[c.char_id]=inner;
     const mounted=i<48;
-    return `<button class="${cls}${mounted?'':' lz-ph'}" type="button" data-lz="${c.char_id}" data-c="${c.char_id}" data-mut="${hasMut ? fm : 'none'}" data-shiny="${shFx ? '1' : '0'}"${lockBoss ? ' title="NOT OWNED YET - buy it in '+lockShop+' untuk buka roll"' : ''} style="--tc:#9AA6B2;--bc:${bc}">${mounted?inner:''}</button>`;
+    return `<button class="${cls}${mounted?'':' lz-ph'}" type="button" data-lz="${c.char_id}" data-c="${c.char_id}" data-mut="${hasMut ? fm : 'none'}" data-shiny="${shFx ? '1' : '0'}"${lockBoss ? ' title="NOT OWNED YET - buy it in '+lockShop+' to unlock roll"' : ''}>${mounted?inner:''}</button>`;
   }).join("");
-  /* --- footer: strip progres SEGMENT per mutasi + milestone INTAN ROLL --- */
-  const validCards=MASTER_CARD_INDEX.filter(c=>!c.isStoryEnemy);
-  const t=validCards.length;
-  const segs=IX_MUTS.map(m=>{let n=0;for(const c of validCards)if(ownCnt(c,m,false))n++;
-    return `<i title="${MUT_LABEL[m]||'MURNI'} ${n}/${t}" style="--p:${t?Math.round(n/t*100):0}%;--c:${m==='none'?'#9AA6B2':MUT_COLOR[m]}"></i>`;}).join("");
+  /* --- progress + claim --- */
   const pct=P.total?Math.min(100,Math.round(P.count/P.total*100)):0;
   const complete=P.total>0&&P.count>=P.total;
   const next=Math.max(0,IDX_MILESTONE-(P.count%IDX_MILESTONE));
-  const claimable = P.blocks - P.claimed;
-  const strip=`<div class="ix-prog">
-    <div class="ixp-col">
-      <div class="ixp-lbl">VARIAN TERKUMPUL</div>
-      <div class="ixp-val">${fmt(P.count)}<em> / ${fmt(P.total)}</em></div>
-    </div>
-    <div class="ixp-track ix-seg" title="${pct}%">${segs}</div>
-    <div class="ixp-rw-box">
-      <div class="ixp-rw-icon">
-        <img src="assets/images/instanpack-5k.webp?v=trans1" alt="5K Pack" width="38" height="38">
+  const claimable=Math.max(0,P.blocks-P.claimed);
+  const setTxt=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  setTxt("ixLevel",(state&&state.playerLv)||1);
+  setTxt("ixTsIndexed",fmt(P.count));
+  setTxt("ixTsTotal",fmt(P.total));
+  setTxt("ixPct",pct+"%");
+  setTxt("ixNext",String(next));
+  setTxt("ixPtext",`${fmt(P.count)} / ${fmt(P.total)} CARDS INDEXED`);
+  const pf=document.getElementById("ixPfill");if(pf)pf.style.width=pct+"%";
+  const cb=document.getElementById("ixClaim");
+  if(cb){
+    cb.classList.toggle("locked",claimable<=0);
+    cb.disabled=claimable<=0;
+    const n=document.getElementById("ixClaimN");if(n)n.textContent="(+"+claimable+")";
+  }
+  /* --- footer: strip progres SEGMENT per mutasi + milestone --- */
+  const t=validCards.length;
+  const segs=IX_MUTS.map(m=>{let n=0;for(const c of validCards)if(ownCnt(c,m,false))n++;
+    return `<i title="${MUT_LABEL[m]||'PURE'} ${n}/${t}" style="--p:${t?Math.round(n/t*100):0}%;--c:${ixMutSwatch(m)}"></i>`;}).join("");
+  const strip=`<span class="ix-f-lbl">VARIANT MATRIX</span>
+    <div class="ix-seg" title="${pct}%">${segs}</div>
+    <div class="ix-f-rw">
+      <img src="assets/images/instanpack-5k.webp?v=trans1" alt="5K Pack" width="24" height="24">
+      <div class="ix-f-rw-t">
+        <span class="ix-f-rw-k">MILESTONE REWARD</span>
+        <span class="ix-f-rw-v">${complete ? "ALL VARIANTS COMPLETE" : `${next} MORE VARIANTS → +1 PACK`}</span>
       </div>
-      <div class="ixp-rw-text">
-        <div class="ixp-rw-title">MILESTONE REWARD</div>
-        <div class="ixp-rw-sub">${complete ? "ALL VARIANTS COMPLETE" : `${next} more variants to +1 Pack 5K`}</div>
-      </div>
-      <div class="ixp-rw-btn-wrap">
-        <button class="ix-claim-btn ${claimable > 0 ? 'ready' : 'locked'}" type="button" onclick="claimIndexReward()" ${claimable > 0 ? '' : 'disabled'}>
-          ${claimable > 0 ? `CLAIM REWARD (+${claimable})` : 'NOT CLAIMABLE YET'}
-        </button>
-      </div>
-    </div>
-  </div>`;
+    </div>`;
   document.getElementById("ixToolbar").innerHTML=toolbar;
-  document.getElementById("ixBody").innerHTML=(list.length?"":`<div class="ix-empty">No matching cards</div>`)+`<div class="ix-grid">${cells}</div>`;
+  document.getElementById("ixBody").innerHTML=(list.length?"":`<div class="ix-empty">NO MATCHING RECORDS</div>`)+`<div class="ix-grid">${cells}</div>`;
   lazyMountGrid(document.getElementById("ixBody"),_ixHtml);
   ixLiveShimmer();
   document.getElementById("ixFoot").innerHTML=strip;
   const sel=document.getElementById("ixSort");sel.value=ixState.sort;
   sel.onchange=()=>{ixState.sort=sel.value;ixRender();};
-  document.querySelectorAll("#ixToolbar .ix-chip[data-mut]").forEach(b=>b.onclick=()=>{ixState.mut=b.dataset.mut;ixRender();});
+  document.querySelectorAll("#ixToolbar .ix-tab[data-mut]").forEach(b=>b.onclick=()=>{ixState.mut=b.dataset.mut;ixRender();});
   const shb=document.querySelector("#ixToolbar [data-shiny]");if(shb)shb.onclick=()=>{ixState.shiny=!ixState.shiny;ixRender();};
   const owb=document.querySelector("#ixToolbar [data-owned]");if(owb)owb.onclick=()=>{ixState.owned=!ixState.owned;ixRender();};
   document.querySelectorAll("#ixBody .ix-cell").forEach(cell=>{
-    cell.onclick=()=>{
-      const c=CARDS[cell.dataset.c];
-      if(!c)return;
-      const mut=cell.dataset.mut||"none";
-      const isShiny=cell.dataset.shiny==="1";
-      const hasMut=mut&&mut!=="none";
-      const spArtCard=document.getElementById("spArtCard");
-      if(spArtCard){
-        spArtCard.classList.toggle("shiny", isShiny);
-        ["m-gold","m-rainbow","m-secret","m-ultima"].forEach(k=>spArtCard.classList.remove(k));
-        if(hasMut)spArtCard.classList.add("m-"+mut);
-        spArtCard.style.borderColor="";
-        spArtCard.style.boxShadow="";
-      }
-      const spImg=document.getElementById("spImg");
-      if(spImg){
-        spImg.src=c.sprite_asset||"";
-        if(c.pos)spImg.style.objectPosition=c.pos;
-        else spImg.style.objectPosition="center";
-      }
-      const spCardName=document.getElementById("spCardName");
-      if(spCardName){
-        let displayName=c.name||"";
-        if(hasMut&&mut==="ultima"){
-          spCardName.innerHTML=`<span style="color:#FF0033;text-shadow:0 0 10px rgba(255,0,51,.85), 0 0 20px rgba(255,0,51,.5);font-weight:900">${displayName}</span>`+(isShiny?' <span style="color:#7DF9FF;font-size:.7em">★ SHINY</span>':'');
-        } else if(hasMut&&mut==="rainbow"){
-          spCardName.innerHTML=mutText(mut,displayName)+(isShiny?' <span style="color:#7DF9FF;font-size:.7em">★ SHINY</span>':'');
-        } else if(hasMut){
-          spCardName.innerHTML=`<span style="color:${MUT_COLOR[mut]}">${displayName}</span>`+(isShiny?' <span style="color:#7DF9FF;font-size:.7em">★ SHINY</span>':'');
-        } else if(isShiny){
-          spCardName.innerHTML=`<span style="color:#7DF9FF">${displayName}</span> <span style="font-size:.7em">★ SHINY</span>`;
-        } else {
-          spCardName.textContent=displayName;
-        }
-      }
-      const chVal=effChance(c.char_id, mut, isShiny);
-      const spCardRarity=document.getElementById("spCardRarity");
-      if(spCardRarity){
-        const chanceStr="1 in "+fmtChance(chVal);
-        if(hasMut&&(mut==="rainbow"||mut==="ultima")){
-          spCardRarity.innerHTML=mutText(mut, chanceStr);
-        } else if(hasMut){
-          spCardRarity.innerHTML=`<span style="color:${MUT_COLOR[mut]}">${chanceStr}</span>`;
-        } else if(isShiny){
-          spCardRarity.innerHTML=`<span style="color:#7DF9FF">${chanceStr}</span>`;
-        } else {
-          spCardRarity.textContent=chanceStr;
-        }
-      }
-      const st=cardStats(c.char_id, mut, "none", isShiny);
-      const spHp=document.getElementById("spHp");
-      if(spHp)spHp.textContent=fmtC(st.hp||c.base_hp||0);
-      const spAtk=document.getElementById("spAtk");
-      if(spAtk)spAtk.textContent=fmtC(st.atk||c.base_atk||0);
-      const spName=document.getElementById("spName");
-      if(spName)spName.textContent=c.passive?c.passive.name:"-";
-      const spDesc=document.getElementById("spDesc");
-      if(spDesc)spDesc.textContent=c.passive?c.passive.desc:"-";
-      document.getElementById("skillPop").classList.add("show");
-    };
+    cell.onclick=()=>ixSheetOpen(cell.dataset.c,cell.dataset.mut||"none",cell.dataset.shiny==="1");
   });
 }
-window.openIndex = openIndex;
+
 
 /* =============== TRAIT ROLL (popup) =============== */
 let traitTarget=null;
@@ -1937,6 +2010,7 @@ function trBannerClose(onCovered){
   trHzTimers.push(setTimeout(()=>c.classList.add("revealed"),780));
   trHzTimers.push(setTimeout(()=>c.classList.remove("on","smooth","revealed"),1560));
 }
+
 let cardPickCfg=null;
 function openDeckPick(cfg){dpSearch="";cardPickCfg=(cfg&&cfg.getSel&&cfg.onPick)?cfg:null;document.getElementById("deckPickModal").classList.toggle("dp-dark",!cardPickCfg);renderDeckPick();document.getElementById("deckPickModal").classList.add("show");}
 function closeDeckPick(){document.getElementById("deckPickModal").classList.remove("show");hideTraitTip();cardPickCfg=null;}

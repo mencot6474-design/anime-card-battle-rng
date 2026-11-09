@@ -505,7 +505,7 @@ document.querySelectorAll(".nav-btn[data-route]").forEach(b=>b.onclick=()=>{
     if(e.target===rov||e.target.closest("#rollCloseBtn")||e.target.closest(".roll-hide-btn")){hideRollResult();beep(330,0.12,"square",0.08);}
   });
 })();
-document.getElementById("ixClose").onclick=()=>document.getElementById("indexModal").classList.remove("show");document.getElementById("indexModal").addEventListener("click",e=>{if(e.target.id==="indexModal")e.target.classList.remove("show");});
+document.getElementById("ixClose").onclick=()=>{if(typeof closeIndex==="function")closeIndex();else document.getElementById("indexModal").classList.remove("show");};document.getElementById("indexModal").addEventListener("click",e=>{if(e.target.id==="indexModal"){if(typeof closeIndex==="function")closeIndex();else e.target.classList.remove("show");}});
 document.getElementById("trClose").onclick=closeTrait;document.getElementById("traitModal").addEventListener("click",e=>{if(e.target.id==="traitModal")closeTrait();});
 document.getElementById("dpClose").onclick=closeDeckPick;document.getElementById("deckPickModal").addEventListener("click",e=>{if(e.target.id==="deckPickModal")closeDeckPick();});
 document.getElementById("dlClose").onclick=closeDaily;

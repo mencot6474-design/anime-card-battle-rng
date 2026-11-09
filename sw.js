@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v525-hazardWeatherCss';
+const CACHE_NAME = 'anime-card-battle-v529-indexSheetFoot';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

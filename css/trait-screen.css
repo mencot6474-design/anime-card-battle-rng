@@ -38,7 +38,7 @@ body:has(#traitModal.show) .lobby-tactical-hud {
    primary & mark kuning hilang). */
 #traitModal,
 #weatherMachineModal,
-:is(#traitCurtain,#weatherCurtain) {
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) {
   --ts-ink: #050505;
   --ts-ink2: #0b0b0b;
   --ts-ink3: #141414;
@@ -1282,7 +1282,7 @@ body:has(#traitModal.show) .lobby-tactical-hud {
 #rarePromptModal .rp-rays { opacity: .35 !important; }
 
 /* ============================ HAZARD BANNER ============================ */
-:is(#traitCurtain,#weatherCurtain) {
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) {
   position: fixed;
   inset: 0;
   z-index: 96000;
@@ -1291,8 +1291,8 @@ body:has(#traitModal.show) .lobby-tactical-hud {
   visibility: hidden;
   contain: strict;
 }
-:is(#traitCurtain,#weatherCurtain).on { visibility: visible; }
-:is(#traitCurtain,#weatherCurtain) .half {
+:is(#traitCurtain,#weatherCurtain,#indexCurtain).on { visibility: visible; }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .half {
   position: absolute;
   left: 0;
   right: 0;
@@ -1306,27 +1306,27 @@ body:has(#traitModal.show) .lobby-tactical-hud {
     repeating-linear-gradient(90deg, rgba(245, 245, 245, .045) 0 1px, transparent 1px 34px),
     radial-gradient(120% 90% at 50% 100%, rgba(243, 230, 0, .06), transparent 68%);
 }
-:is(#traitCurtain,#weatherCurtain) .top { top: 0; }
-:is(#traitCurtain,#weatherCurtain) .bot {
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .top { top: 0; }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .bot {
   bottom: 0;
   background-image:
     repeating-linear-gradient(0deg, rgba(245, 245, 245, .045) 0 1px, transparent 1px 34px),
     repeating-linear-gradient(90deg, rgba(245, 245, 245, .045) 0 1px, transparent 1px 34px),
     radial-gradient(120% 90% at 50% 0%, rgba(243, 230, 0, .06), transparent 68%);
 }
-:is(#traitCurtain,#weatherCurtain).smooth .half { transition: transform .62s cubic-bezier(.74, 0, .22, 1); }
-:is(#traitCurtain,#weatherCurtain).revealed .top { transform: translateY(-101%); }
-:is(#traitCurtain,#weatherCurtain).revealed .bot { transform: translateY(101%); }
-:is(#traitCurtain,#weatherCurtain) .edge {
+:is(#traitCurtain,#weatherCurtain,#indexCurtain).smooth .half { transition: transform .62s cubic-bezier(.74, 0, .22, 1); }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain).revealed .top { transform: translateY(-101%); }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain).revealed .bot { transform: translateY(101%); }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .edge {
   position: absolute;
   left: 0;
   right: 0;
   height: 16px;
   background: repeating-linear-gradient(-45deg, #f3e600 0 12px, #080808 12px 24px);
 }
-:is(#traitCurtain,#weatherCurtain) .top .edge { bottom: 0; }
-:is(#traitCurtain,#weatherCurtain) .bot .edge { top: 0; }
-:is(#traitCurtain,#weatherCurtain) .mark {
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .top .edge { bottom: 0; }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .bot .edge { top: 0; }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .mark {
   position: absolute;
   left: 16px;
   bottom: 26px;
@@ -1336,9 +1336,9 @@ body:has(#traitModal.show) .lobby-tactical-hud {
   color: rgba(245, 245, 245, .4);
   white-space: nowrap;
 }
-:is(#traitCurtain,#weatherCurtain) .mark b { color: #f3e600; font-weight: 600; }
-:is(#traitCurtain,#weatherCurtain) .bot .mark { top: 28px; bottom: auto; left: auto; right: 16px; }
-:is(#traitCurtain,#weatherCurtain) .tape {
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .mark b { color: #f3e600; font-weight: 600; }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .bot .mark { top: 28px; bottom: auto; left: auto; right: 16px; }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .tape {
   position: absolute;
   left: -60%;
   right: -60%;
@@ -1352,20 +1352,20 @@ body:has(#traitModal.show) .lobby-tactical-hud {
   transform: translateX(-120%) skewX(-13deg);
   will-change: transform, opacity;
 }
-:is(#traitCurtain,#weatherCurtain) .tape-a { top: calc(50% - 104px); }
-:is(#traitCurtain,#weatherCurtain) .tape-b { top: calc(50% + 54px); }
-:is(#traitCurtain,#weatherCurtain).sweep .tape-a { animation: tsTapeSweep .86s cubic-bezier(.4, 0, .2, 1) both; }
-:is(#traitCurtain,#weatherCurtain).sweep .tape-b { animation: tsTapeSweep .86s .09s cubic-bezier(.4, 0, .2, 1) both; }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .tape-a { top: calc(50% - 104px); }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .tape-b { top: calc(50% + 54px); }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain).sweep .tape-a { animation: tsTapeSweep .86s cubic-bezier(.4, 0, .2, 1) both; }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain).sweep .tape-b { animation: tsTapeSweep .86s .09s cubic-bezier(.4, 0, .2, 1) both; }
 @keyframes tsTapeSweep {
   0% { transform: translateX(-120%) skewX(-13deg); opacity: 0; }
   12% { opacity: 1; }
   86% { opacity: 1; }
   100% { transform: translateX(120%) skewX(-13deg); opacity: 0; }
 }
-:is(#traitCurtain,#weatherCurtain) .flash { position: absolute; inset: 0; z-index: 3; background: #f3e600; opacity: 0; }
-:is(#traitCurtain,#weatherCurtain).sweep .flash { animation: tsFlash .4s ease-out both; }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .flash { position: absolute; inset: 0; z-index: 3; background: #f3e600; opacity: 0; }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain).sweep .flash { animation: tsFlash .4s ease-out both; }
 @keyframes tsFlash { 0% { opacity: 0; } 14% { opacity: .16; } 100% { opacity: 0; } }
-:is(#traitCurtain,#weatherCurtain) .plate {
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .plate {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -1379,10 +1379,10 @@ body:has(#traitModal.show) .lobby-tactical-hud {
   border-top: 2px solid #f3e600;
   border-bottom: 2px solid #f3e600;
 }
-:is(#traitCurtain,#weatherCurtain).smooth .plate { transition: opacity .22s ease, transform .52s cubic-bezier(.34, 1.22, .64, 1); }
-:is(#traitCurtain,#weatherCurtain).revealed .plate { opacity: 0; transform: translate(-50%, -50%) scale(1.04); }
-:is(#traitCurtain,#weatherCurtain) .plate::before,
-:is(#traitCurtain,#weatherCurtain) .plate::after {
+:is(#traitCurtain,#weatherCurtain,#indexCurtain).smooth .plate { transition: opacity .22s ease, transform .52s cubic-bezier(.34, 1.22, .64, 1); }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain).revealed .plate { opacity: 0; transform: translate(-50%, -50%) scale(1.04); }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .plate::before,
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .plate::after {
   content: '';
   position: absolute;
   top: -2px;
@@ -1390,9 +1390,9 @@ body:has(#traitModal.show) .lobby-tactical-hud {
   width: 18px;
   background: repeating-linear-gradient(-45deg, #f3e600 0 10px, #050505 10px 20px);
 }
-:is(#traitCurtain,#weatherCurtain) .plate::before { left: -18px; }
-:is(#traitCurtain,#weatherCurtain) .plate::after { right: -18px; }
-:is(#traitCurtain,#weatherCurtain) .water {
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .plate::before { left: -18px; }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .plate::after { right: -18px; }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .water {
   position: absolute;
   right: 10px;
   bottom: -22px;
@@ -1407,7 +1407,7 @@ body:has(#traitModal.show) .lobby-tactical-hud {
   transform: rotate(-6deg);
   text-transform: uppercase;
 }
-:is(#traitCurtain,#weatherCurtain) .corner {
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .corner {
   position: absolute;
   width: 13px;
   height: 13px;
@@ -1415,14 +1415,14 @@ body:has(#traitModal.show) .lobby-tactical-hud {
   opacity: .85;
   pointer-events: none;
 }
-:is(#traitCurtain,#weatherCurtain) .corner.tl { left: 7px; top: 7px; border-right: 0; border-bottom: 0; }
-:is(#traitCurtain,#weatherCurtain) .corner.tr { right: 7px; top: 7px; border-left: 0; border-bottom: 0; }
-:is(#traitCurtain,#weatherCurtain) .corner.bl { left: 7px; bottom: 7px; border-right: 0; border-top: 0; }
-:is(#traitCurtain,#weatherCurtain) .corner.br { right: 7px; bottom: 7px; border-left: 0; border-top: 0; }
-:is(#traitCurtain,#weatherCurtain) .in { position: relative; z-index: 2; padding: 16px 22px 13px; }
-:is(#traitCurtain,#weatherCurtain) .krow { display: flex; align-items: center; gap: 8px; min-width: 0; }
-:is(#traitCurtain,#weatherCurtain) .dot { flex: none; width: 7px; height: 7px; background: #f3e600; transform: rotate(45deg); }
-:is(#traitCurtain,#weatherCurtain) .kick {
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .corner.tl { left: 7px; top: 7px; border-right: 0; border-bottom: 0; }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .corner.tr { right: 7px; top: 7px; border-left: 0; border-bottom: 0; }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .corner.bl { left: 7px; bottom: 7px; border-right: 0; border-top: 0; }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .corner.br { right: 7px; bottom: 7px; border-left: 0; border-top: 0; }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .in { position: relative; z-index: 2; padding: 16px 22px 13px; }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .krow { display: flex; align-items: center; gap: 8px; min-width: 0; }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .dot { flex: none; width: 7px; height: 7px; background: #f3e600; transform: rotate(45deg); }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .kick {
   font-family: 'JetBrains Mono', monospace;
   font-size: 8px;
   letter-spacing: .28em;
@@ -1431,8 +1431,8 @@ body:has(#traitModal.show) .lobby-tactical-hud {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-:is(#traitCurtain,#weatherCurtain) .kick b { color: #f3e600; font-weight: 600; }
-:is(#traitCurtain,#weatherCurtain) .serial {
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .kick b { color: #f3e600; font-weight: 600; }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .serial {
   margin-left: auto;
   flex: none;
   font-family: 'JetBrains Mono', monospace;
@@ -1441,7 +1441,7 @@ body:has(#traitModal.show) .lobby-tactical-hud {
   color: rgba(245, 245, 245, .42);
   white-space: nowrap;
 }
-:is(#traitCurtain,#weatherCurtain) .title {
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .title {
   display: flex;
   align-items: center;
   gap: 13px;
@@ -1455,8 +1455,8 @@ body:has(#traitModal.show) .lobby-tactical-hud {
   min-width: 0;
   color: #f5f5f5;
 }
-:is(#traitCurtain,#weatherCurtain) .title span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-:is(#traitCurtain,#weatherCurtain) .title::before {
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .title span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .title::before {
   content: '';
   flex: none;
   width: 13px;
@@ -1464,7 +1464,7 @@ body:has(#traitModal.show) .lobby-tactical-hud {
   background: #f3e600;
   transform: skewX(-18deg);
 }
-:is(#traitCurtain,#weatherCurtain) .sub {
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .sub {
   margin-top: 8px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
@@ -1474,8 +1474,8 @@ body:has(#traitModal.show) .lobby-tactical-hud {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-:is(#traitCurtain,#weatherCurtain) .bar { height: 3px; margin-top: 14px; background: rgba(255, 255, 255, .14); overflow: hidden; }
-:is(#traitCurtain,#weatherCurtain) .bar i {
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .bar { height: 3px; margin-top: 14px; background: rgba(255, 255, 255, .14); overflow: hidden; }
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .bar i {
   display: block;
   height: 100%;
   width: 100%;
@@ -1483,11 +1483,11 @@ body:has(#traitModal.show) .lobby-tactical-hud {
   transform: scaleX(0);
   transform-origin: left;
 }
-:is(#traitCurtain,#weatherCurtain).smooth:not(.revealed) .bar i {
+:is(#traitCurtain,#weatherCurtain,#indexCurtain).smooth:not(.revealed) .bar i {
   transform: scaleX(1);
   transition: transform .66s .1s cubic-bezier(.2, .9, .2, 1);
 }
-:is(#traitCurtain,#weatherCurtain) .foot {
+:is(#traitCurtain,#weatherCurtain,#indexCurtain) .foot {
   display: flex;
   justify-content: space-between;
   gap: 10px;
@@ -1589,15 +1589,15 @@ body:has(#traitModal.show) .lobby-tactical-hud {
   .pck-note { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  :is(#traitCurtain,#weatherCurtain) .half,
-  :is(#traitCurtain,#weatherCurtain) .plate,
-  :is(#traitCurtain,#weatherCurtain) .bar i,
+  :is(#traitCurtain,#weatherCurtain,#indexCurtain) .half,
+  :is(#traitCurtain,#weatherCurtain,#indexCurtain) .plate,
+  :is(#traitCurtain,#weatherCurtain,#indexCurtain) .bar i,
   .ts-card,
   .flt-tile,
   .pck-card,
   .ts-btn { transition: none !important; }
-  :is(#traitCurtain,#weatherCurtain) .tape,
-  :is(#traitCurtain,#weatherCurtain) .flash,
+  :is(#traitCurtain,#weatherCurtain,#indexCurtain) .tape,
+  :is(#traitCurtain,#weatherCurtain,#indexCurtain) .flash,
   .ts-card-scan,
   .ts-btn.live::after,
   .ts-status.run .dot { animation: none !important; }
