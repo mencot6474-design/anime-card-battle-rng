@@ -1356,19 +1356,25 @@ function profTabGo(k){
   if(body)body.scrollTop=0;
 }
 
-// Modal Titles Cyberpunk
+// Titles screen — hazard WoB (full-bleed, pola #rankModal)
 function openTitlesModal(){
-  const b=document.getElementById("titlesBackdrop"), m=document.getElementById("titlesModal");
-  if(b){b.classList.add("show");b.style.display="block";}
-  if(m){m.classList.add("show");m.style.display="flex";renderTitlesModal();}
+  const m=document.getElementById("titlesModal");
+  if(!m)return;
+  if(m.classList.contains("show")){renderTitlesModal();return;}
+  renderTitlesModal();
+  m.classList.add("show");
+  document.body.classList.add("titles-open");
+  ttBannerOpen();
   const closeBtn=document.getElementById("titlesClose");
   if(closeBtn)closeBtn.onclick=closeTitlesModal;
-  if(b)b.onclick=closeTitlesModal;
 }
 function closeTitlesModal(){
-  const b=document.getElementById("titlesBackdrop"), m=document.getElementById("titlesModal");
-  if(b){b.classList.remove("show");b.style.display="none";}
-  if(m){m.classList.remove("show");m.style.display="none";}
+  const m=document.getElementById("titlesModal");
+  if(!m||!m.classList.contains("show"))return;
+  ttBannerClose(()=>{
+    m.classList.remove("show");
+    document.body.classList.remove("titles-open");
+  });
 }
 function equipTitle(titleKey){
   state.playerTitle = titleKey;
@@ -1376,7 +1382,7 @@ function equipTitle(titleKey){
   renderTitlesModal();
   renderProfile();
   if(location.hash==="#/lobby"&&typeof render==="function")render();
-  toast("TITLE EQUIPPED", `[${titleKey}] AKTIF SEBAGAI MAHKOTA KARTU`, "#7df9ff");
+  toast("TITLE EQUIPPED", `[${titleKey}] ACTIVE AS CARD CROWN`, "#f3e600");
 }
 function renderTitlesModal(){
   if(!state)return;
@@ -1388,18 +1394,27 @@ function renderTitlesModal(){
   const raidDone=Object.values(state.raidCleared||{}).filter(Boolean).length;
 
   const TITLE_DEFS=[
-    {id:"ROOKIE",name:"ROOKIE",cls:"title-rookie",desc:"Gelar permulaan petualang",unlocked:true},
+    {id:"ROOKIE",name:"ROOKIE",cls:"title-rookie",desc:"Starting title for every hunter",unlocked:true},
     {id:"COLLECTOR",name:"COLLECTOR",cls:"title-collector",desc:"Collect 10 unique cards",unlocked:uni.size>=10},
     {id:"SHINY HUNTER",name:"SHINY HUNTER",cls:"title-shiny_hunter",desc:"Obtain at least 1 Shiny card",unlocked:shiny>=1},
-    {id:"TOWER CLIMBER",name:"TOWER CLIMBER",cls:"title-tower_climber",desc:"Capai lantai 10 Infinite Tower",unlocked:((state.tower&&state.tower.best)||0)>=10},
-    {id:"RAID SLAYER",name:"RAID SLAYER",cls:"title-raid_slayer",desc:"Kalahkan minimal 1 Boss Raid",unlocked:raidDone>=1},
-    {id:"ELITE",name:"ELITE",cls:"title-elite",desc:"Capai Level Operator 25",unlocked:lv>=25}
+    {id:"TOWER CLIMBER",name:"TOWER CLIMBER",cls:"title-tower_climber",desc:"Reach floor 10 of the Infinite Tower",unlocked:((state.tower&&state.tower.best)||0)>=10},
+    {id:"RAID SLAYER",name:"RAID SLAYER",cls:"title-raid_slayer",desc:"Defeat at least 1 Raid Boss",unlocked:raidDone>=1},
+    {id:"ELITE",name:"ELITE",cls:"title-elite",desc:"Reach Operator Level 25",unlocked:lv>=25}
   ];
+
+  // Header telemetry + list count
+  const activeDef=TITLE_DEFS.find(x=>x.id===curT)||TITLE_DEFS[0];
+  const unlockedCount=TITLE_DEFS.filter(t=>t.unlocked).length;
+  const tsU=document.getElementById("ttTsUnlocked");
+  if(tsU)tsU.textContent=unlockedCount+"/"+TITLE_DEFS.length;
+  const tsE=document.getElementById("ttTsEquipped");
+  if(tsE)tsE.textContent=activeDef.name;
+  const lc=document.getElementById("ttListCount");
+  if(lc)lc.textContent=TITLE_DEFS.length+" TITLES";
 
   // Update Preview Box
   const pBox=document.getElementById("tmPreviewBox");
   if(pBox){
-    const activeDef=TITLE_DEFS.find(x=>x.id===curT)||TITLE_DEFS[0];
     pBox.innerHTML=renderTitleCrownHtml(activeDef.name, activeDef.cls);
   }
 
@@ -1427,6 +1442,56 @@ function renderTitlesModal(){
     }).join("");
   }
 }
+
+/* ===== banner hazard masuk/keluar (#titlesCurtain, pola #rankCurtain) ===== */
+let ttHzTimers = [];
+/* Guards the async close: re-opening mid-animation must not be cancelled by the
+   pending "remove .show" of the previous close. */
+let ttSeq = 0;
+function ttHzClear(){ for(let i=0;i<ttHzTimers.length;i++)clearTimeout(ttHzTimers[i]); ttHzTimers=[]; }
+function ttHzSetCopy(mode){
+  const kick=document.getElementById("ttHzKick"), title=document.getElementById("ttHzTitle"),
+        sub=document.getElementById("ttHzSub"), foot=document.getElementById("ttHzFoot"),
+        serial=document.getElementById("ttHzSerial"), water=document.getElementById("ttHzWater");
+  if(serial)serial.textContent=(0x1000+Math.floor(Math.random()*0xefff)).toString(16).toUpperCase();
+  if(mode==="open"){
+    if(kick)kick.innerHTML="// CODEX <b>SYNC</b>";
+    if(title)title.textContent="TITLES";
+    if(water)water.textContent="TITLE";
+    if(sub)sub.textContent="OPERATOR CODEX · CROWN REGISTRY";
+    if(foot)foot.textContent="SYNC TITLES";
+  }else{
+    if(kick)kick.innerHTML="// LINK <b>STAND BY</b>";
+    if(title)title.textContent="HOLD";
+    if(water)water.textContent="OUT";
+    if(sub)sub.textContent="CODEX DISCONNECTING · DATA SAVED";
+    if(foot)foot.textContent="CLOSE SESSION";
+  }
+}
+function ttBannerOpen(){
+  const c=document.getElementById("titlesCurtain");
+  if(!c)return;
+  ttSeq++;
+  ttHzClear(); ttHzSetCopy("open");
+  c.className=""; void c.offsetWidth;
+  c.classList.add("on","smooth","sweep");
+  ttHzTimers.push(setTimeout(()=>c.classList.add("revealed"),1080));
+  ttHzTimers.push(setTimeout(()=>c.classList.remove("on","smooth","sweep","revealed"),1800));
+}
+/* EXIT 3 fase: tirai MENUTUP -> konten disembunyikan -> tirai MEMBUKA.
+   Fase 3 wajib; tanpanya layar tertahan tertutup ("banner tidak kebuka"). */
+function ttBannerClose(onCovered){
+  const c=document.getElementById("titlesCurtain");
+  if(!c){ if(onCovered)onCovered(); return; }
+  const seq=++ttSeq;
+  ttHzClear(); ttHzSetCopy("close");
+  c.className=""; c.classList.add("on","smooth","revealed"); void c.offsetWidth;
+  c.classList.remove("revealed");
+  ttHzTimers.push(setTimeout(()=>{ if(seq===ttSeq&&onCovered)onCovered(); },560));
+  ttHzTimers.push(setTimeout(()=>{ if(seq!==ttSeq)return; c.classList.add("revealed"); },780));
+  ttHzTimers.push(setTimeout(()=>{ if(seq!==ttSeq)return; c.classList.remove("on","smooth","revealed"); },1560));
+}
+
 /* ============ PROFILE SCREEN (hazard WoB) — render ============ */
 function pfStatRows(){
   const _Kc=rollCommonScale();
