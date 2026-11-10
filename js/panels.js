@@ -264,7 +264,7 @@ window.l12UsePotionQuick = function(type, lv){
   if(r && r.ok){
     if(typeof beep === "function") beep(560, 0.12, "triangle", 0.09);
     const pName = isLuck ? "LUCK POTION L" + lv : "SPEED POTION L" + lv;
-    const pDetail = isLuck ? ("+" + (r.flat||0) + " FLAT" + (r.pct ? " & +" + Math.round(r.pct*100) + "%" : "") + " (+5 MENIT)") : ("+" + (r.add||0).toFixed(1) + "x SPEED (+5 MENIT)");
+    const pDetail = isLuck ? ("+" + (r.flat||0) + " FLAT" + (r.pct ? " & +" + Math.round(r.pct*100) + "%" : "") + " (+5 MIN)") : ("+" + (r.add||0).toFixed(1) + "x SPEED (+5 MIN)");
     if(typeof toast === "function") toast(pName +  " ACTIVATED", pDetail, "#38bdf8");
     if(typeof renderBuffDock === "function") renderBuffDock();
     if(typeof renderShell === "function") renderShell();
@@ -407,20 +407,20 @@ function renderBuffDock(){
   if(adMs>0){
     html+=chip("luck","assets/images/pot-luck-3.webp","🎬",
       "ADS 2× LUCK BOOST",
-      `2× TOTAL LUCK · sisa ${fmtCountdown(adMs)}`,adMs);
+      `2× TOTAL LUCK · ${fmtCountdown(adMs)} left`,adMs);
   }
   ls.forEach(b=>{
     const lTxt=b.lv>0?"L"+b.lv+" ":"";
     const p=b.pct||0;
     html+=chip("luck","assets/images/pot-luck-"+b.lv+".webp","🍀",
       `LUCK ${lTxt}POTION`.trim(),
-      `+${b.flat||0} FLAT${p>0?` · +${Math.round(p*100)}%`:""} LUCK · sisa ${fmtCountdown(b.endsAt-now)}`,b.endsAt-now);
+      `+${b.flat||0} FLAT${p>0?` · +${Math.round(p*100)}%`:""} LUCK · ${fmtCountdown(b.endsAt-now)} left`,b.endsAt-now);
   });
   ss.forEach(b=>{
     const lTxt=b.lv>0?"L"+b.lv+" ":"";
     html+=chip("speed","assets/images/pot-speed-"+b.lv+".webp","⚡",
       `SPEED ${lTxt}POTION`.trim(),
-      `+${(b.add||0).toFixed(1)}× SPEED · sisa ${fmtCountdown(b.endsAt-now)}`,b.endsAt-now);
+      `+${(b.add||0).toFixed(1)}× SPEED · ${fmtCountdown(b.endsAt-now)} left`,b.endsAt-now);
   });
   el.innerHTML=html;
   el.classList.add("show");
@@ -4982,7 +4982,7 @@ async function buyGlobalLuck() {
   if (btn) btn.disabled = true;
   try {
     if ((state.premiumGems || 0) < GLOBAL_LUCK_COST) {
-      toast('GEMS TIDAK CUKUP', 'Need ' + GLOBAL_LUCK_COST + ' Gems', '#f87171');
+      toast('NOT ENOUGH GEMS', 'Need ' + GLOBAL_LUCK_COST.toLocaleString('en-US') + ' Gems', '#f87171');
       return;
     }
 

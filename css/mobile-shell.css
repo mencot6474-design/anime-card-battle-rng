@@ -1464,28 +1464,14 @@ html.m-portrait .backpack-panel {
 .lobby-hub .plab, .lobby-hub .luck, .lobby-hub SMALL { color: #9a9a9a !important; }
 .lobby-hub .luckbar, .lobby-hub .tr, .lobby-hub SPAN.bar { background: #0d0d0d !important; border-color: rgba(255, 255, 255, 0.18) !important; }
 
-/* potion rows: kotak hitam ring putih (nilai warna potion tetap) */
-.lobby-hub #l12PotLuck, .lobby-hub #l12PotSpeed,
-.lobby-hub BUTTON.top-act-btn {
+/* tombol aksi topbar + slot kartu cuaca legacy */
+.lobby-hub BUTTON.top-act-btn,
+.lobby-hub .wx-card-slot.wc-slot {
   background: #0a0a0a !important;
   border-color: rgba(255, 255, 255, 0.22) !important;
 }
-.lobby-hub #l12PotLuckStock, .lobby-hub #l12PotSpeedStock {
-  background: rgba(255, 255, 255, 0.06) !important;
-  border-color: rgba(255, 255, 255, 0.25) !important;
-  color: #e8e8e8 !important;
-}
-.lobby-hub #l12PotLuckTm, .lobby-hub #l12PotSpeedTm, .lobby-hub #l12TopXpPct { color: #9a9a9a !important; }
-.lobby-hub #l12PotLuck, .lobby-hub #l12PotSpeed { color: #e8e8e8 !important; }
-.lobby-hub #l12PotLuckBar, .lobby-hub #l12PotSpeedBar { color: #e8e8e8 !important; }
-
-/* weather tile: kotak hitam ring putih (ikon warna cuaca tetap) */
-.lobby-hub #l12Wx, .lobby-hub .wx-card-slot.wc-slot {
-  background: #0a0a0a !important;
-  border-color: rgba(255, 255, 255, 0.22) !important;
-}
+.lobby-hub #l12TopXpPct { color: #9a9a9a !important; }
 .lobby-hub #l12WxBtn { border-color: rgba(255, 255, 255, 0.45) !important; }
-.lobby-hub #l12WxTm { color: #9a9a9a !important; }
 
 /* ikon story/tower/raid -> putih */
 .lobby-hub .ic.i-story, .lobby-hub .ic.i-tower, .lobby-hub .ic.i-raid {
@@ -1525,11 +1511,7 @@ html.m-portrait .backpack-panel {
   background: linear-gradient(rgba(10, 10, 10, 0.92), rgba(6, 6, 6, 0.95)) !important;
   border-color: rgba(255, 255, 255, 0.22) !important;
 }
-.lobby-hub #l12PotTray,
-.lobby-hub .pot-tray {
-  background: #0a0a0a !important;
-  border-color: rgba(255, 255, 255, 0.3) !important;
-}
+/* #l12PotTray.hz-dock-pop styling owned by Hazard Poster C block below */
 .lobby-hub .hrow {
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 84' preserveAspectRatio='none' fill='none'%3E%3Cpath d='M16 2 L268 2 L278 12 L278 72 L264 82 L12 82 L2 72 L2 16 Z' stroke='rgba(255,255,255,0.16)' stroke-width='1.5' fill='none'/%3E%3Cpolygon points='2,16 16,2 30,2 30,6 8,28 2,28' fill='%23f5f5f5' opacity='0.85'/%3E%3Cpolygon points='278,68 264,82 250,82 250,78 272,56 278,56' fill='%23f5f5f5' opacity='0.85'/%3E%3Crect x='276' y='34' width='3' height='16' fill='%23f5f5f5' opacity='0.75'/%3E%3C/svg%3E") center/100% 100% no-repeat !important;
   color: #e8e8e8 !important;
@@ -2848,115 +2830,467 @@ body.on-settings .sett-wrap .ubox .out:hover {
 }
 
 
-/* ---- kaki: buff + dock ---- */
+/* ---- kaki: buff (4 chip interaktif + Hazard popover) + dock ---- */
 .lobby-hub.l12.c12 .c12foot {
-  position:relative; z-index:7; flex:none;
+  --ink:#050505;
+  --ink2:#0a0a0b;
+  --ink3:#121214;
+  --paper:#f5f5f5;
+  --dim:rgba(245,245,245,.58);
+  --dim2:rgba(245,245,245,.38);
+  --faint:rgba(245,245,245,.14);
+  --hair:rgba(245,245,245,.26);
+  --haz:#f3e600;
+  --luck:#6be08a;
+  --spd:#5ac8fa;
+  position:relative; z-index:20; flex:none;
   display:flex; flex-direction:column; gap:6px; padding-bottom:2px;
 }
-/* 4 sel: LUCK POT / SPEED POT / GLOBAL LUCK / WEATHER.
-   Aturan lobby lama menambatkan .glw ke kolom 2 dan .wx ke "1/-1", jadi
-   posisinya dinetralkan lalu grid C yang menentukan: portrait 2x2,
-   landscape 1x4 (lihat blok m-landscape di bawah). */
+
+/* 4 chip: LUCK POT / SPEED POT / GLOBAL LUCK / WEATHER */
 .lobby-hub.l12.c12 .c12buffs {
   position:relative; display:grid; grid-template-columns:repeat(4, minmax(0,1fr));
-  grid-auto-flow:row; grid-auto-rows:minmax(46px, auto); gap:6px; padding:0 10px;
+  gap:6px; padding:0 10px; margin:0; background:none; border:0; box-shadow:none;
 }
-.lobby-hub.l12.c12 .c12buffs .glw,
-.lobby-hub.l12.c12 .c12buffs .wx { grid-column:auto !important; grid-row:auto !important; }
-.lobby-hub.l12.c12 .c12buffs .pots { display:contents; }
-.lobby-hub.l12.c12 .c12buffs .pot-row {
-  min-height:46px; padding:0 8px; gap:6px;
-  background:rgba(5,5,5,.74) !important; border:1px solid rgba(255,255,255,.2) !important;
-  clip-path:none;
+.lobby-hub.l12.c12 .l12-bchip {
+  position:relative; min-width:0; min-height:48px; height:48px; margin:0;
+  display:flex; align-items:center; gap:7px; padding:0 9px;
+  background:rgba(7,7,8,.92); border:0; border-radius:0; clip-path:none;
+  box-shadow:inset 0 0 0 1px rgba(245,245,245,.2);
+  color:var(--paper); font-family:var(--ui); font-weight:700; text-align:left;
+  overflow:hidden; cursor:pointer;
+  transition:transform .12s ease, background-color .15s ease, box-shadow .15s ease;
 }
-.lobby-hub.l12.c12 .c12buffs .pot-row .pimg { width:16px; height:16px; }
-.lobby-hub.l12.c12 .c12buffs .pot-row .plab { font-size:7px; letter-spacing:.1em; color:rgba(255,255,255,.5); }
-.lobby-hub.l12.c12 .c12buffs .pot-row b { font-size:9.5px; color:#f5f5f5; }
-.lobby-hub.l12.c12 .c12buffs .pot-row .tr { height:3px; background:rgba(255,255,255,.12) !important; }
-.lobby-hub.l12.c12 .c12buffs .pot-row .tr > span { background:#f5f5f5; }
-.lobby-hub.l12.c12 .c12buffs .pot-row .tm { font-size:8px; color:rgba(255,255,255,.6); }
-.lobby-hub.l12.c12 .c12buffs .pot-row .pstock {
-  font-size:8px; padding:0 4px;
-  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.25); color:#f5f5f5;
+.lobby-hub.l12.c12 .l12-bchip::before {
+  content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+  background:var(--bc,var(--dim2)); opacity:.45;
 }
-.lobby-hub.l12.c12 .c12buffs .pot-row .puse-tag { display:none; }
+.lobby-hub.l12.c12 .l12-bchip.is-on::before { opacity:1; }
+.lobby-hub.l12.c12 .l12-bchip::after {
+  content:''; position:absolute; right:4px; top:4px; width:5px; height:5px;
+  border-top:1.5px solid rgba(245,245,245,.45);
+  border-right:1.5px solid rgba(245,245,245,.45);
+}
+.lobby-hub.l12.c12 .l12-bchip:hover {
+  background:rgba(16,16,18,.98);
+  box-shadow:inset 0 0 0 1px rgba(245,245,245,.45);
+}
+.lobby-hub.l12.c12 .l12-bchip:active { transform:scale(.985); }
+.lobby-hub.l12.c12 .l12-bchip:focus-visible { outline:2px solid var(--haz); outline-offset:-2px; }
+.lobby-hub.l12.c12 .l12-bchip.open {
+  background:#0f0f10;
+  box-shadow:inset 0 0 0 1.5px var(--haz);
+}
+.lobby-hub.l12.c12 .l12-bchip.open::before { background:var(--haz); opacity:1; }
+.lobby-hub.l12.c12 .l12-bchip.open::after { border-color:var(--haz); }
 
-.lobby-hub.l12.c12 .c12buffs .glw {
-  display:flex; align-items:center; gap:6px; min-height:46px; padding:0 8px;
-  grid-template-columns:none;
-  background:rgba(5,5,5,.74) !important; border:1px solid rgba(255,255,255,.2) !important;
-  clip-path:none;
+.lobby-hub.l12.c12 .l12-bchip-ic {
+  flex:none; width:24px; height:24px; display:grid; place-items:center;
+  background:rgba(255,255,255,.04); border:1px solid rgba(245,245,245,.16);
+  color:var(--bc,var(--paper));
 }
-.lobby-hub.l12.c12 .c12buffs .glw::before { display:none; }
-.lobby-hub.l12.c12 .c12buffs .glw .gicon {
-  width:22px; height:22px; border-radius:50%;
-  background:rgba(107,224,138,.12); border:1px solid rgba(107,224,138,.45); color:#6be08a;
+.lobby-hub.l12.c12 .l12-bchip.is-on .l12-bchip-ic {
+  border-color:color-mix(in srgb,var(--bc,var(--haz)) 55%,transparent);
 }
-.lobby-hub.l12.c12 .c12buffs .glw .gicon .ic { width:13px; height:13px; }
-.lobby-hub.l12.c12 .c12buffs .glw .gtitle { font-size:7px; letter-spacing:.1em; color:rgba(255,255,255,.55); }
-.lobby-hub.l12.c12 .c12buffs .glw .gmult { font-size:10px; color:#6be08a; }
-.lobby-hub.l12.c12 .c12buffs .glw .gpill { display:none; }
-.lobby-hub.l12.c12 .c12buffs .glw .gtm { font-size:7.5px; padding:0; background:none; border:0; color:rgba(255,255,255,.55); }
-.lobby-hub.l12.c12 .c12buffs .glw .gbtn {
-  flex:none; min-height:44px; min-width:44px; padding:2px 6px; border-radius:0;
-  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.3); color:#f5f5f5;
-  clip-path:none; font-size:8px; line-height:1.05;
+.lobby-hub.l12.c12 .l12-bchip-ic img { width:17px; height:17px; object-fit:contain; }
+.lobby-hub.l12.c12 .l12-bchip-ic svg { width:15px; height:15px; display:block; }
+.lobby-hub.l12.c12 .l12-bchip-txt { flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:1px; }
+.lobby-hub.l12.c12 .l12-bchip-k {
+  display:flex; align-items:center; gap:4px;
+  font-family:var(--mono); font-size:6px; letter-spacing:.12em;
+  color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
-.lobby-hub.l12.c12 .c12buffs .glw .gbtn .gprice { font-size:7px; }
-.lobby-hub.l12.c12 .c12buffs .glw .gbtn .gprice img { width:8px; height:8px; }
+.lobby-hub.l12.c12 .l12-bchip-k .tag {
+  padding:0 3px; background:rgba(245,245,245,.1); color:var(--paper);
+  font-size:5.5px; letter-spacing:.08em; flex:none;
+}
+.lobby-hub.l12.c12 .l12-bchip.is-on .l12-bchip-k .tag {
+  background:color-mix(in srgb,var(--bc,var(--haz)) 22%,transparent);
+  color:var(--bc,var(--haz));
+}
+.lobby-hub.l12.c12 .l12-bchip-v {
+  font-family:var(--disp); font-size:10px; font-weight:800; letter-spacing:.02em;
+  color:var(--paper); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.lobby-hub.l12.c12 .l12-bchip.is-on .l12-bchip-v { color:var(--bc,var(--paper)); }
+.lobby-hub.l12.c12 .l12-bchip-cd {
+  flex:none; display:flex; flex-direction:column; align-items:flex-end; gap:2px;
+  font-family:var(--mono); font-size:8px; color:var(--dim); white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+.lobby-hub.l12.c12 .l12-bchip-cd .stk { font-size:6px; color:var(--dim2); letter-spacing:.06em; }
+.lobby-hub.l12.c12 .l12-bchip.is-on .l12-bchip-cd { color:var(--paper); }
 
-.lobby-hub.l12.c12 .c12buffs .wx {
-  display:flex; flex-direction:row; align-items:center; gap:4px;
-  min-height:46px; padding:0 4px 0 7px;
-  background:rgba(5,5,5,.74) !important; border:1px solid rgba(255,255,255,.2) !important;
-  clip-path:none;
+/* ==========================================================================
+   EXPANDABLE LOBBY BUFF PANELS (#l12PotTray.hz-dock-pop)
+   Hazard WoB theme · nol backdrop-filter · animasi hanya transform/opacity
+   ========================================================================== */
+@keyframes c12PopRise {
+  from { opacity:0; transform:translateY(10px) scale(.985); }
+  to { opacity:1; transform:none; }
 }
-.lobby-hub.l12.c12 .c12buffs .wx .wx-head { flex:1 1 auto; min-width:0; gap:4px; }
-.lobby-hub.l12.c12 .c12buffs .wx .wrr,
-.lobby-hub.l12.c12 .c12buffs .wx .wtm-wrap { display:none; }
-.lobby-hub.l12.c12 .c12buffs .wx .wx-act-btn span { display:none; }
-.lobby-hub.l12.c12 .c12buffs .wx .wname { font-size:7.5px; }
-.lobby-hub.l12.c12 .c12buffs .wx .wrr { font-size:6.5px; padding:0 3px; }
-.lobby-hub.l12.c12 .c12buffs .wx .wic svg { width:14px; height:14px; }
-.lobby-hub.l12.c12 .c12buffs .wx .wtm { font-size:7.5px; color:rgba(255,255,255,.6); }
-.lobby-hub.l12.c12 .c12buffs .wx .wx-act-btn {
-  height:auto; min-height:44px; min-width:44px; padding:0; font-size:7px;
-  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.26); color:#f5f5f5;
+.lobby-hub.l12.c12 #l12PotTray.hz-dock-pop {
+  position:absolute; left:10px; right:10px; top:auto; bottom:calc(100% + 6px);
+  z-index:45; margin:0; padding:0; width:auto; max-width:none; border-radius:0; clip-path:none;
+  display:none; flex-direction:column;
+  max-height:min(520px, calc(100dvh - 180px));
+  background:
+    repeating-linear-gradient(0deg, rgba(245,245,245,.025) 0 1px, transparent 1px 28px),
+    repeating-linear-gradient(90deg, rgba(245,245,245,.025) 0 1px, transparent 1px 28px),
+    linear-gradient(176deg, #0d0d0f 0%, #050506 60%, #0a0a0c 100%);
+  border:1px solid var(--hair);
+  border-top:2px solid var(--pac,var(--haz));
+  border-bottom:2px solid var(--pac,var(--haz));
+  box-shadow:0 22px 54px rgba(0,0,0,.92);
+  color:var(--paper); font-family:var(--ui); font-variant-numeric:tabular-nums;
+  overflow:hidden;
+  animation:c12PopRise .18s cubic-bezier(.2,.9,.25,1) both;
 }
-.lobby-hub.l12.c12 .c12buffs .wx .wimg { width:16px; height:16px; }
-/* tombol buka mesin cuaca: ikon potion gelap menyatu dengan latar, jadi
-   dipakai glyph "+" yang selalu terbaca. */
-.lobby-hub.l12.c12 .c12buffs .wx .wx-act-btn .wimg { display:none; }
-.lobby-hub.l12.c12 .c12buffs .wx .wx-act-btn::after {
-  content:'+'; font-family:var(--disp); font-size:17px; line-height:1; color:#f5f5f5;
+.lobby-hub.l12.c12 #l12PotTray.hz-dock-pop.open { display:flex; }
+@media (prefers-reduced-motion:reduce) {
+  .lobby-hub.l12.c12 #l12PotTray.hz-dock-pop { animation:none !important; }
 }
-/* kartu cuaca cepat tidak muat di strip 46px; buka lewat tombol SYNTH (mesin cuaca) */
-.lobby-hub.l12.c12 .c12buffs .wx .wx-cards { display:none; }
 
-.lobby-hub.l12.c12 .pot-tray {
-  left:10px; right:10px; top:auto; bottom:calc(100% + 4px); margin-top:0;
-  background:rgba(6,6,6,.98); border:1px solid rgba(255,255,255,.3); clip-path:none;
-  /* tray dibuka ke ATAS dari baris potion, jadi menutupi 4 lingkaran party di
-     kanan-bawah panggung. z-index 30 sudah menang atas .c12party (9) karena
-     .c12foot z-index 7 menumpuk .c12main; angka ini menjaga kalau urutan
-     tumpukan berubah. */
-  z-index:30;
-}
-/* Tray potion terbuka = pilihan level menempati area yang sama dengan 4
-   lingkaran party (terukur: tumpang-tindih 44x44 per slot di 320/500/850/1400).
-   Lingkaran disembunyikan selama tray terbuka supaya tidak nabrak/tertimpa;
-   pilihan showcase tetap tersimpan dan kembali begitu tray ditutup.
-   opacity + visibility = composited, tidak memicu layout (§2b#5).
-   Kelas body dipasang JS (l12TogglePotionTray); :has() jadi cadangan kalau
-   kelas itu hilang karena render lain. */
+/* Sembunyikan lingkaran party & #pwaInstallBtn fixed saat panel buff terbuka */
 body.pot-tray-open .lobby-hub.l12.c12 .c12party,
 .lobby-hub.l12.c12:has(.pot-tray.open) .c12party {
   opacity:0; visibility:hidden; pointer-events:none;
 }
-.lobby-hub.l12.c12 .pot-tray-head { color:#f5f5f5; }
-.lobby-hub.l12.c12 .pot-lv-btn {
-  background:rgba(10,10,10,.95); border:1px solid rgba(255,255,255,.24); color:#f5f5f5;
+html body.pot-tray-open #pwaInstallBtn,
+html body.on-lobby:has(.pot-tray.open) #pwaInstallBtn {
+  opacity:0 !important; visibility:hidden !important; pointer-events:none !important;
 }
+
+#l12PotTray .hz-crn {
+  position:absolute; width:10px; height:10px;
+  border:2px solid rgba(245,245,245,.75); pointer-events:none; z-index:4;
+}
+#l12PotTray .hz-crn.tl { left:5px; top:5px; border-right:0; border-bottom:0; }
+#l12PotTray .hz-crn.tr { right:5px; top:5px; border-left:0; border-bottom:0; }
+#l12PotTray .hz-crn.bl { left:5px; bottom:5px; border-right:0; border-top:0; }
+#l12PotTray .hz-crn.br { right:5px; bottom:5px; border-left:0; border-top:0; }
+
+/* header */
+#l12PotTray .hzp-head {
+  position:relative; flex:none; display:flex; align-items:center; gap:10px;
+  padding:8px 14px 8px 18px;
+  background:linear-gradient(180deg, rgba(255,255,255,.04), transparent);
+  border-bottom:1px solid var(--faint);
+}
+#l12PotTray .hzp-head::after {
+  content:''; position:absolute; left:0; right:0; bottom:0; height:2px;
+  background:repeating-linear-gradient(-45deg, var(--pac,var(--haz)) 0 7px, #080808 7px 14px);
+  opacity:.72; pointer-events:none;
+}
+#l12PotTray .hzp-hleft { min-width:0; flex:1 1 auto; display:flex; flex-direction:column; gap:2px; }
+#l12PotTray .hzp-krow { display:flex; align-items:center; gap:6px; min-width:0; }
+#l12PotTray .hzp-dot { width:6px; height:6px; background:var(--pac,var(--haz)); transform:rotate(45deg); flex:none; }
+#l12PotTray .hzp-kick {
+  font-family:var(--mono); font-size:7px; letter-spacing:.2em; color:var(--dim);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+#l12PotTray .hzp-kick b { color:var(--pac,var(--haz)); font-weight:700; }
+#l12PotTray .hzp-trow { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+#l12PotTray .hzp-title {
+  font-family:var(--disp); font-weight:900; font-size:15px; letter-spacing:.05em;
+  color:#fff; text-transform:uppercase; line-height:1.1;
+}
+#l12PotTray .hzp-badge {
+  display:inline-flex; align-items:center; gap:4px; padding:2px 7px;
+  font-family:var(--mono); font-size:7px; letter-spacing:.12em;
+  border:1px solid color-mix(in srgb,var(--pac,var(--haz)) 55%,transparent);
+  background:color-mix(in srgb,var(--pac,var(--haz)) 12%,transparent);
+  color:var(--pac,var(--haz)); white-space:nowrap;
+}
+#l12PotTray .hzp-badge.idle { border-color:var(--faint); background:rgba(255,255,255,.04); color:var(--dim); }
+#l12PotTray .hzp-badge .live-dot { width:5px; height:5px; border-radius:50%; background:currentColor; }
+
+#l12PotTray .hzp-tabs { display:flex; gap:4px; flex:none; }
+#l12PotTray .hzp-tab {
+  min-height:44px; padding:0 12px; display:inline-flex; align-items:center; gap:6px;
+  border:1px solid var(--faint); border-radius:0; background:#09090a; cursor:pointer;
+  font-family:var(--mono); font-size:8px; font-weight:700; letter-spacing:.12em; color:var(--dim);
+}
+#l12PotTray .hzp-tab:hover { border-color:var(--hair); color:var(--paper); }
+#l12PotTray .hzp-tab.on { background:var(--pac,var(--haz)); border-color:var(--pac,var(--haz)); color:#050505; }
+#l12PotTray .hzp-tab .cnt { padding:1px 4px; font-size:7px; background:rgba(0,0,0,.22); border:1px solid currentColor; }
+#l12PotTray .hzp-close {
+  flex:none; width:44px; height:44px; display:grid; place-items:center; margin:0; padding:0;
+  background:#0a0a0b; border:1px solid var(--hair); border-radius:0; color:var(--paper); cursor:pointer;
+}
+#l12PotTray .hzp-close:hover { background:var(--haz); border-color:var(--haz); color:#050505; }
+#l12PotTray .hzp-close svg { width:16px; height:16px; display:block; }
+
+/* scrollable body */
+#l12PotTray .hzp-body {
+  flex:1 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden;
+  overscroll-behavior:contain; padding:10px 14px 12px;
+  display:flex; flex-direction:column; gap:10px;
+}
+#l12PotTray .hzp-body::-webkit-scrollbar { width:5px; }
+#l12PotTray .hzp-body::-webkit-scrollbar-thumb { background:rgba(245,245,245,.22); }
+
+#l12PotTray .hzp-sec {
+  display:flex; align-items:center; gap:7px;
+  font-family:var(--mono); font-size:7px; letter-spacing:.18em; color:var(--dim);
+}
+#l12PotTray .hzp-sec b { color:var(--paper); font-weight:700; }
+#l12PotTray .hzp-sec i { flex:1 1 auto; height:1px; background:var(--faint); }
+#l12PotTray .hzp-sec span { color:var(--pac,var(--haz)); }
+
+#l12PotTray .hzp-desc {
+  display:flex; flex-direction:column; gap:6px; padding:9px 11px;
+  background:#080809; border:1px solid var(--faint); border-left:3px solid var(--pac,var(--haz));
+}
+#l12PotTray .hzp-desc p {
+  margin:0; font-family:var(--ui); font-weight:600; font-size:12.5px; line-height:1.4;
+  color:rgba(245,245,245,.82);
+}
+#l12PotTray .hzp-desc b { color:var(--paper); font-weight:800; }
+#l12PotTray .hzp-desc em { font-style:normal; color:var(--pac,var(--haz)); font-weight:800; }
+#l12PotTray .hzp-rules {
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr));
+  gap:6px; padding-top:4px; border-top:1px dashed var(--faint);
+}
+#l12PotTray .hzp-rule {
+  display:flex; flex-direction:column; gap:1px;
+  font-family:var(--mono); font-size:6.5px; letter-spacing:.1em; color:var(--dim);
+}
+#l12PotTray .hzp-rule b { font-family:var(--disp); font-size:10px; color:var(--paper); letter-spacing:.03em; }
+
+/* footer */
+#l12PotTray .hzp-foot {
+  flex:none; display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  padding:8px 18px; border-top:1px solid var(--faint); background:#070708;
+}
+#l12PotTray .hzp-foot-meta {
+  flex:1 1 auto; min-width:160px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  font-family:var(--mono); font-size:8px; letter-spacing:.1em; color:var(--dim);
+}
+#l12PotTray .hzp-foot-meta .kv { display:inline-flex; align-items:center; gap:5px; }
+#l12PotTray .hzp-foot-meta b { font-family:var(--disp); font-size:11px; color:var(--paper); }
+#l12PotTray .hzp-foot-meta img { width:13px; height:13px; object-fit:contain; }
+#l12PotTray .hzp-cta {
+  min-height:44px; padding:0 16px; display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  background:var(--pac,var(--haz)); color:#050505; border:1px solid var(--pac,var(--haz));
+  border-radius:0; font-family:var(--disp); font-weight:900; font-size:10.5px; letter-spacing:.1em;
+  clip-path:polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%); cursor:pointer;
+}
+#l12PotTray .hzp-cta:hover { filter:brightness(1.08); }
+#l12PotTray .hzp-cta:active { transform:scale(.985); }
+#l12PotTray .hzp-cta.sec {
+  background:#0e0e10; color:var(--paper); border:1px solid var(--hair);
+  clip-path:none; font-family:var(--mono); font-size:8.5px; letter-spacing:.12em;
+}
+#l12PotTray .hzp-cta.sec:hover { border-color:var(--haz); color:var(--haz); }
+#l12PotTray .hzp-cta:disabled,
+#l12PotTray .hzp-cta.off { opacity:.42; cursor:not-allowed; filter:grayscale(.5); }
+
+/* 1) Potion Matrix specifics */
+#l12PotTray .pot-summary {
+  display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  padding:8px 10px; background:#09090b; border:1px solid var(--faint);
+}
+#l12PotTray .pot-sum-l { display:flex; flex-direction:column; gap:2px; }
+#l12PotTray .pot-sum-l small { font-family:var(--mono); font-size:6.5px; letter-spacing:.16em; color:var(--dim); }
+#l12PotTray .pot-sum-l strong { font-family:var(--disp); font-size:13px; letter-spacing:.03em; color:var(--pac); }
+#l12PotTray .pot-active-chips { display:flex; flex-wrap:wrap; gap:5px; }
+#l12PotTray .pot-achip {
+  display:inline-flex; align-items:center; gap:5px; padding:3px 7px;
+  background:rgba(255,255,255,.04); border:1px solid color-mix(in srgb,var(--pac) 48%,transparent);
+  font-family:var(--mono); font-size:7.5px; color:var(--paper);
+}
+#l12PotTray .pot-achip b { color:var(--pac); }
+#l12PotTray .pot-achip.ad { border-color:rgba(243,230,0,.6); color:var(--haz); }
+#l12PotTray .pot-achip.ad b { color:var(--haz); }
+#l12PotTray .pot-none { font-family:var(--mono); font-size:7.5px; letter-spacing:.1em; color:var(--dim2); }
+
+#l12PotTray .pot-grid { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; }
+#l12PotTray .pot-card {
+  position:relative; display:flex; flex-direction:column; gap:7px; padding:9px 10px;
+  background:linear-gradient(180deg, #0c0c0e, #070708); border:1px solid var(--faint);
+}
+#l12PotTray .pot-card.active {
+  border-color:var(--pac);
+  background:linear-gradient(180deg, color-mix(in srgb,var(--pac) 10%,#0c0c0e), #070708);
+}
+#l12PotTray .pot-card.empty { opacity:.66; border-style:dashed; }
+#l12PotTray .pot-c-top { display:flex; align-items:center; justify-content:space-between; gap:4px; }
+#l12PotTray .pot-c-lv { font-family:var(--disp); font-weight:900; font-size:11px; color:var(--haz); }
+#l12PotTray .pot-c-stk {
+  font-family:var(--mono); font-size:8px; padding:1px 5px;
+  background:rgba(255,255,255,.06); border:1px solid var(--faint); color:var(--paper);
+}
+#l12PotTray .pot-card.empty .pot-c-stk { color:var(--dim2); }
+#l12PotTray .pot-c-mid { display:flex; align-items:center; gap:9px; }
+#l12PotTray .pot-c-art {
+  position:relative; flex:none; width:46px; height:46px; display:grid; place-items:center;
+  background:#040405; border:1px solid var(--faint);
+}
+#l12PotTray .pot-c-art img { width:32px; height:32px; object-fit:contain; }
+#l12PotTray .pot-c-info { min-width:0; flex:1 1 auto; display:flex; flex-direction:column; gap:2px; }
+#l12PotTray .pot-c-name { font-family:var(--disp); font-size:10px; letter-spacing:.03em; color:var(--paper); }
+#l12PotTray .pot-c-eff { font-family:var(--mono); font-size:8px; font-weight:700; color:var(--pac); }
+#l12PotTray .pot-c-dur { font-family:var(--mono); font-size:7px; color:var(--dim); }
+#l12PotTray .pot-c-mobmeta {
+  display:none; align-items:center; gap:6px; margin-top:2px;
+  font-family:var(--mono); font-size:7px; color:var(--dim);
+}
+#l12PotTray .pot-c-mobmeta b { color:var(--haz); }
+#l12PotTray .pot-c-mobmeta .st { color:var(--pac); font-weight:700; }
+#l12PotTray .pot-c-timer {
+  display:flex; align-items:center; justify-content:space-between; gap:6px;
+  padding:4px 6px; background:#040405; border:1px solid var(--faint);
+  font-family:var(--mono); font-size:7.5px;
+}
+#l12PotTray .pot-c-timer .st { color:var(--dim2); letter-spacing:.1em; }
+#l12PotTray .pot-card.active .pot-c-timer .st { color:var(--pac); font-weight:700; }
+#l12PotTray .pot-c-timer b { color:var(--paper); font-size:8.5px; }
+#l12PotTray .pot-c-btn {
+  width:100%; min-height:44px; display:flex; align-items:center; justify-content:center; gap:5px;
+  background:var(--pac); color:#050505; border:1px solid var(--pac); border-radius:0;
+  font-family:var(--disp); font-weight:900; font-size:9.5px; letter-spacing:.08em; cursor:pointer;
+}
+#l12PotTray .pot-card.active .pot-c-btn { background:#0b0b0c; color:var(--pac); border-color:var(--pac); }
+#l12PotTray .pot-card.active .pot-c-btn:hover { background:var(--pac); color:#050505; }
+#l12PotTray .pot-c-btn:disabled {
+  background:rgba(255,255,255,.04); border-color:var(--faint); color:var(--dim2); cursor:not-allowed;
+}
+
+/* 2) Global Luck Shrine specifics */
+#l12PotTray .gl-hero {
+  display:grid; grid-template-columns:68px minmax(0,1fr) auto;
+  align-items:center; gap:12px; padding:10px 12px;
+  background:linear-gradient(135deg, rgba(107,224,138,.09), #080809 58%, rgba(243,230,0,.06));
+  border:1px solid color-mix(in srgb,var(--pac) 40%,transparent);
+}
+#l12PotTray .gl-emb {
+  position:relative; width:62px; height:62px; display:grid; place-items:center;
+  background:#050506; border:1px solid color-mix(in srgb,var(--pac) 55%,transparent);
+}
+#l12PotTray .gl-emb svg { width:44px; height:44px; display:block; }
+#l12PotTray .gl-main { min-width:0; display:flex; flex-direction:column; gap:4px; }
+#l12PotTray .gl-mult-row { display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
+#l12PotTray .gl-mult { font-family:var(--disp); font-weight:900; font-size:24px; line-height:1; color:var(--pac); }
+#l12PotTray .gl-mult.off { color:var(--dim); font-size:18px; }
+#l12PotTray .gl-timer-pill {
+  padding:2px 7px; background:#040405; border:1px solid var(--faint);
+  font-family:var(--mono); font-size:9px; color:var(--paper);
+}
+#l12PotTray .gl-buyer {
+  display:inline-flex; align-items:center; gap:6px; align-self:flex-start;
+  padding:2px 8px; background:rgba(243,230,0,.08); border:1px solid rgba(243,230,0,.35);
+  font-family:var(--mono); font-size:7.5px; letter-spacing:.1em; color:var(--haz);
+}
+#l12PotTray .gl-buyer.idle { border-color:var(--faint); background:transparent; color:var(--dim2); }
+#l12PotTray .gl-right { display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
+#l12PotTray .gl-stack-num { font-family:var(--disp); font-weight:900; font-size:14px; color:var(--paper); }
+#l12PotTray .gl-stack-lbl { font-family:var(--mono); font-size:6.5px; letter-spacing:.14em; color:var(--dim); }
+#l12PotTray .gl-segs { display:grid; grid-template-columns:repeat(10, minmax(0,1fr)); gap:4px; }
+#l12PotTray .gl-seg {
+  height:14px; background:#08080a; border:1px solid var(--faint);
+  display:grid; place-items:center; font-family:var(--mono); font-size:6px; color:var(--dim2);
+}
+#l12PotTray .gl-seg.on { background:var(--pac); border-color:var(--pac); color:#050505; font-weight:800; }
+#l12PotTray .gl-specs {
+  display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:1px;
+  background:var(--faint); border:1px solid var(--faint);
+}
+#l12PotTray .gl-spec { background:#080809; padding:7px 9px; }
+#l12PotTray .gl-spec k { display:block; font-family:var(--mono); font-size:6px; letter-spacing:.16em; color:var(--dim); }
+#l12PotTray .gl-spec b { display:block; margin-top:2px; font-family:var(--disp); font-size:11px; color:var(--paper); }
+#l12PotTray .gl-spec.hot b { color:var(--haz); }
+
+/* 3) Weather Dock specifics */
+#l12PotTray .wx-hero {
+  display:flex; align-items:center; gap:12px; padding:10px 12px; flex-wrap:wrap;
+  background:linear-gradient(135deg, color-mix(in srgb,var(--pac) 12%,#08080a), #060607 68%);
+  border:1px solid color-mix(in srgb,var(--pac) 48%,transparent);
+}
+#l12PotTray .wx-emb {
+  flex:none; width:54px; height:54px; display:grid; place-items:center;
+  background:#040405; border:1px solid color-mix(in srgb,var(--pac) 60%,transparent); color:var(--pac);
+}
+#l12PotTray .wx-emb svg { width:30px; height:30px; display:block; }
+#l12PotTray .wx-hinfo { flex:1 1 160px; min-width:0; display:flex; flex-direction:column; gap:3px; }
+#l12PotTray .wx-hname { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+#l12PotTray .wx-hname b { font-family:var(--disp); font-weight:900; font-size:17px; letter-spacing:.04em; color:#fff; }
+#l12PotTray .wx-rar {
+  padding:2px 6px; font-family:var(--mono); font-size:7px; letter-spacing:.12em; font-weight:700;
+  color:var(--pac); border:1px solid var(--pac);
+  background:color-mix(in srgb,var(--pac) 14%,transparent);
+}
+#l12PotTray .wx-hsub { font-family:var(--mono); font-size:7.5px; letter-spacing:.1em; color:var(--dim); }
+#l12PotTray .wx-stats { display:flex; gap:6px; flex:none; flex-wrap:wrap; }
+#l12PotTray .wx-stat {
+  padding:5px 9px; background:#050506; border:1px solid var(--faint);
+  display:flex; flex-direction:column; gap:1px; min-width:74px;
+}
+#l12PotTray .wx-stat k { font-family:var(--mono); font-size:6px; letter-spacing:.14em; color:var(--dim); }
+#l12PotTray .wx-stat b { font-family:var(--disp); font-size:12px; color:var(--pac); }
+#l12PotTray .wx-stat.tm b { color:var(--paper); }
+
+#l12PotTray .wx-cards-grid {
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(215px,1fr)); gap:7px;
+}
+#l12PotTray .wx-c {
+  display:flex; align-items:center; gap:8px; padding:6px 8px; margin:0;
+  background:#08080a; border:1px solid color-mix(in srgb,var(--pac) 36%,var(--faint));
+  border-radius:0; color:var(--paper); font-family:var(--ui); text-align:left; cursor:pointer;
+}
+#l12PotTray .wx-c:hover { border-color:var(--pac); background:#101014; }
+#l12PotTray .wx-c-img {
+  position:relative; flex:none; width:44px; height:56px; overflow:hidden;
+  background:#030304; border:1px solid var(--pac);
+}
+#l12PotTray .wx-c-img img { width:100%; height:100%; object-fit:cover; object-position:center 15%; }
+#l12PotTray .wx-c.unowned .wx-c-img img { filter:grayscale(.45) brightness(.82); }
+#l12PotTray .wx-c-info { min-width:0; flex:1 1 auto; display:flex; flex-direction:column; gap:2px; }
+#l12PotTray .wx-c-nm {
+  font-family:var(--disp); font-size:9.5px; letter-spacing:.02em; color:var(--paper);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+#l12PotTray .wx-c-ch { font-family:var(--mono); font-size:8px; color:var(--haz); font-weight:700; }
+#l12PotTray .wx-c-own {
+  align-self:flex-start; padding:1px 5px; font-family:var(--mono); font-size:6.5px; letter-spacing:.1em;
+  border:1px solid var(--faint); color:var(--dim);
+}
+#l12PotTray .wx-c.owned .wx-c-own {
+  border-color:rgba(107,224,138,.55); color:var(--luck); background:rgba(107,224,138,.1);
+}
+
+#l12PotTray .wx-pity { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+#l12PotTray .wx-pbox {
+  padding:6px 9px; background:#080809; border:1px solid var(--faint);
+  display:flex; flex-direction:column; gap:4px;
+}
+#l12PotTray .wx-prow { display:flex; justify-content:space-between; font-family:var(--mono); font-size:7px; color:var(--dim); }
+#l12PotTray .wx-prow b { color:var(--haz); }
+#l12PotTray .wx-ptrack { height:3px; background:rgba(255,255,255,.1); }
+#l12PotTray .wx-ptrack i { display:block; height:100%; background:var(--haz); }
+
+/* Mobile Portrait (500x844 & 320x568) */
+html.m-portrait .lobby-hub.l12.c12 .c12buffs { grid-template-columns:repeat(2, minmax(0,1fr)); gap:5px; }
+html.m-portrait .lobby-hub.l12.c12 #l12PotTray.hz-dock-pop {
+  left:8px; right:8px; max-height:calc(100dvh - 256px);
+}
+html.m-portrait #l12PotTray .hzp-foot { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:6px; }
+html.m-portrait #l12PotTray .hzp-foot-meta { grid-column:1 / -1; min-width:0; }
+html.m-portrait #l12PotTray .hzp-foot .hzp-cta {
+  width:100%; padding:0 8px; font-size:9px; letter-spacing:.06em; white-space:nowrap;
+}
+html.m-portrait #l12PotTray .hzp-foot .hzp-cta:only-of-type { grid-column:1 / -1; }
+html.m-portrait #l12PotTray .pot-grid { grid-template-columns:1fr; }
+html.m-portrait #l12PotTray .pot-card {
+  display:grid; grid-template-columns:44px minmax(0,1fr) auto; align-items:center; gap:8px; padding:7px 8px;
+}
+html.m-portrait #l12PotTray .pot-c-top { display:none; }
+html.m-portrait #l12PotTray .pot-c-mid { display:contents; }
+html.m-portrait #l12PotTray .pot-c-art { width:42px; height:42px; }
+html.m-portrait #l12PotTray .pot-c-art img { width:28px; height:28px; }
+html.m-portrait #l12PotTray .pot-c-timer { display:none; }
+html.m-portrait #l12PotTray .pot-c-btn { width:auto; min-width:86px; padding:0 10px; font-size:8.5px; }
+html.m-portrait #l12PotTray .pot-c-mobmeta { display:flex; }
 
 /* dock — metrik prototipe C: padding 8px 10px, gap 7, ROLL 56px + 3 tombol bulat */
 .lobby-hub.l12.c12 .c12dock {
@@ -3144,9 +3478,14 @@ html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollAutoBtn.tgl.on {
   html.m-landscape .lobby-hub.l12.c12 .c12modes { margin-top:auto; }
   html.m-landscape .lobby-hub.l12.c12 .c12modes .hrow { min-height:44px; font-size:10px; }
   html.m-landscape .lobby-hub.l12.c12 .c12buffs { grid-template-columns:repeat(4, minmax(0,1fr)); }
-  html.m-landscape .lobby-hub.l12.c12 .c12buffs .glw,
-  html.m-landscape .lobby-hub.l12.c12 .c12buffs .wx { grid-column:auto; }
+  html.m-landscape .lobby-hub.l12.c12 .l12-bchip { min-height:44px; height:44px; padding:0 7px; gap:5px; }
+  html.m-landscape .lobby-hub.l12.c12 .l12-bchip-ic { width:21px; height:21px; }
   html.m-landscape .lobby-hub.l12.c12 .c12foot { gap:4px; }
+  html.m-landscape .lobby-hub.l12.c12 #l12PotTray.hz-dock-pop { left:8px; right:8px; bottom:calc(100% + 4px); max-height:calc(100dvh - 134px); }
+  html.m-landscape #l12PotTray .hzp-head { padding:5px 12px 5px 16px; }
+  html.m-landscape #l12PotTray .hzp-title { font-size:13px; }
+  html.m-landscape #l12PotTray .hzp-body { padding:8px 14px; gap:7px; }
+  html.m-landscape #l12PotTray .hzp-foot { padding:6px 16px; }
   /* stage pendek: kartu hero dipusatkan penuh tinggi */
   html.m-landscape .lobby-hub.l12.c12 .c12main .stage .hero {
     left:0; right:0; top:0; bottom:0; width:auto; height:auto;
@@ -3204,98 +3543,35 @@ html body.on-lobby:has(.lobby-hub.l12.c12) #pwaInstallBtn {
   .lobby-hub.l12.c12 .c12modes .hrow { gap:6px; font-size:10px; letter-spacing:.08em; }
   .lobby-hub.l12.c12 .c12modes .hrow .bd { font-size:7px; padding:0 2px; }
 }
-/* ---- cuaca pindah ke DOCK (prototipe C tidak punya chip cuaca di strip) ----
-   Node cuaca tetap ada (JS menulis l12WxName/Tm/Rr/Cards) tetapi disembunyikan;
-   tombolnya jadi ikon di dock, di kanan tombol AUTO. */
-.lobby-hub.l12.c12 .c12buffs .wx.c12wx[hidden] { display:none !important; }
-
-.lobby-hub.l12.c12 .c12dock .c12wxbtn {
-  flex:0 0 auto; width:44px; height:44px; min-width:44px; min-height:44px;
-  display:grid; place-items:center; padding:0; margin:0;
-  background:rgba(5,5,5,.74); border:1px solid rgba(255,255,255,.3);
-  color:var(--wx,#b58cff); clip-path:none;
+/* ---- layar sangat sempit (<=430px, mis. 320x568) ---- */
+@media (max-width:430px) {
+  .lobby-hub.l12.c12 .c12panel { padding:8px 9px 6px; } .lobby-hub.l12.c12 .c12foot { gap:4px; padding-bottom:0; } .lobby-hub.l12.c12 .c12buffs { padding:0 8px; gap:4px; } .lobby-hub.l12.c12 .c12dock { padding-top:5px; padding-bottom:calc(6px + env(safe-area-inset-bottom,0px)); }
+  .lobby-hub.l12.c12 .l12-bchip { min-height:44px; height:44px; padding:0 6px; gap:5px; }
+  .lobby-hub.l12.c12 .l12-bchip-ic { width:20px; height:20px; }
+  .lobby-hub.l12.c12 .l12-bchip-ic img { width:14px; height:14px; }
+  .lobby-hub.l12.c12 .l12-bchip-ic svg { width:13px; height:13px; }
+  .lobby-hub.l12.c12 .l12-bchip-k { font-size:5.5px; letter-spacing:.06em; }
+  .lobby-hub.l12.c12 .l12-bchip-k .tag { display:none; }
+  .lobby-hub.l12.c12 .l12-bchip-v { font-size:9px; }
+  .lobby-hub.l12.c12 .l12-bchip-cd { font-size:7px; }
+  html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollBtn.cta { min-height:48px !important; }
+  .lobby-hub.l12.c12 #l12PotTray.hz-dock-pop { max-height:calc(100dvh - 230px); }
+  .lobby-hub.l12.c12 #l12PotTray .hzp-head { padding:6px 10px 6px 14px; }
+  .lobby-hub.l12.c12 #l12PotTray .hzp-body { padding:8px 10px 10px; gap:8px; }
+  .lobby-hub.l12.c12 #l12PotTray .pot-c-name { font-size:9px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .lobby-hub.l12.c12 #l12PotTray .pot-c-btn { min-width:76px; padding:0 8px; font-size:8px; }
+  .lobby-hub.l12.c12 #l12PotTray .hzp-title { font-size:13px; }
+  .lobby-hub.l12.c12 #l12PotTray .hzp-tab { padding:0 8px; font-size:7px; }
+  .lobby-hub.l12.c12 #l12PotTray .hzp-foot { padding:6px 12px; gap:5px; grid-template-columns:1fr 1fr; }
+  .lobby-hub.l12.c12 #l12PotTray .hzp-foot .hzp-cta:nth-of-type(2) { grid-column:1 / -1; order:-1; }
+  .lobby-hub.l12.c12 #l12PotTray .gl-hero { grid-template-columns:48px minmax(0,1fr); gap:8px; }
+  .lobby-hub.l12.c12 #l12PotTray .gl-emb { width:46px; height:46px; }
+  .lobby-hub.l12.c12 #l12PotTray .gl-emb svg { width:32px; height:32px; }
+  .lobby-hub.l12.c12 #l12PotTray .gl-right { grid-column:1 / -1; flex-direction:row; align-items:center; justify-content:space-between; }
+  .lobby-hub.l12.c12 #l12PotTray .gl-specs { grid-template-columns:1fr; }
+  .lobby-hub.l12.c12 #l12PotTray .wx-pity { grid-template-columns:1fr; }
+  .lobby-hub.l12.c12 #l12PotTray .wx-cards-grid { grid-template-columns:1fr; }
 }
-.lobby-hub.l12.c12 .c12dock .c12wxbtn:active { transform:scale(.97); }
-/* ==========================================================================
-   BUFF STRIP — SATU BARIS 4 CHIP (prototipe C)
-   Struktur produksi (.pot-row / .glw / .wx) dipadatkan jadi chip setinggi 46px:
-   ikon + label kecil + nilai + hitung mundur. Bar progres, stok, badge RR, dan
-   kartu cuaca disembunyikan supaya tinggi & ritmenya sama dengan prototipe.
-   ========================================================================== */
-.lobby-hub.l12.c12 .c12buffs {
-  display:grid !important; grid-template-columns:repeat(4, minmax(0,1fr));
-  align-items:stretch; gap:6px; padding:0 10px;
-}
-.lobby-hub.l12.c12 .c12buffs .pots { display:contents; }
-.lobby-hub.l12.c12 .c12buffs .pot-row,
-.lobby-hub.l12.c12 .c12buffs .glw,
-.lobby-hub.l12.c12 .c12buffs .wx.c12wx {
-  flex:1 1 0; min-width:0; min-height:46px; height:46px;
-  display:flex; align-items:center; gap:6px; padding:0 7px;
-  background:rgba(5,5,5,.72) !important;
-  border:0 !important; border-radius:0 !important;
-  box-shadow:inset 0 0 0 1px rgba(245,245,245,.18) !important;
-  clip-path:none !important;
-}
-.lobby-hub.l12.c12 .c12buffs .glw { flex:1.35 1 0; }
-/* bagian yang tidak ada di prototipe */
-.lobby-hub.l12.c12 .c12buffs .pot-row .tr,
-.lobby-hub.l12.c12 .c12buffs .pot-row .pstock,
-.lobby-hub.l12.c12 .c12buffs .pot-row .puse-tag,
-.lobby-hub.l12.c12 .c12buffs .glw .gpill,
-.lobby-hub.l12.c12 .c12buffs .wx .wrr,
-.lobby-hub.l12.c12 .c12buffs .wx .wtm-wrap,
-.lobby-hub.l12.c12 .c12buffs .wx .wx-act-btn,
-.lobby-hub.l12.c12 .c12buffs .wx .wx-cards { display:none !important; }
-/* isi chip */
-.lobby-hub.l12.c12 .c12buffs .pot-row .pimg,
-.lobby-hub.l12.c12 .c12buffs .wx .wic svg { width:16px; height:16px; flex:none; }
-.lobby-hub.l12.c12 .c12buffs .pot-row .plab,
-.lobby-hub.l12.c12 .c12buffs .glw .gtitle,
-.lobby-hub.l12.c12 .c12buffs .wx .wname {
-  font-family:var(--mono); font-size:5.5px; letter-spacing:.1em;
-  color:rgba(245,245,245,.55); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-}
-.lobby-hub.l12.c12 .c12buffs .pot-row b,
-.lobby-hub.l12.c12 .c12buffs .glw .gmult,
-.lobby-hub.l12.c12 .c12buffs .wx .wname {
-  font-family:var(--disp); font-size:9.5px; font-weight:800; letter-spacing:.02em; color:#f5f5f5; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-}
-.lobby-hub.l12.c12 .c12buffs .pot-row .tm,
-.lobby-hub.l12.c12 .c12buffs .glw .gtm {
-  flex:none; margin-left:auto; padding:0; background:none; border:0;
-  font-family:var(--mono); font-size:8px; color:rgba(245,245,245,.6);
-}
-/* pot-row: ikon | (label di atas, nilai di bawah) | timer kanan */
-.lobby-hub.l12.c12 .c12buffs .pot-row {
-  display:grid !important;
-  grid-template-columns:16px minmax(0,1fr) auto;
-  grid-template-rows:auto auto;
-  column-gap:6px; row-gap:0; align-content:center;
-}
-.lobby-hub.l12.c12 .c12buffs .pot-row .pimg { grid-column:1; grid-row:1 / span 2; align-self:center; }
-.lobby-hub.l12.c12 .c12buffs .pot-row .plab { grid-column:2; grid-row:1; min-width:0; }
-.lobby-hub.l12.c12 .c12buffs .pot-row b { grid-column:2; grid-row:2; min-width:0; overflow:hidden; text-overflow:ellipsis; }
-.lobby-hub.l12.c12 .c12buffs .pot-row .tm { grid-column:3; grid-row:1 / span 2; align-self:center; margin:0; }
-/* global luck: ikon + teks + tombol aktivasi */
-.lobby-hub.l12.c12 .c12buffs .glw .gicon {
-  width:20px; height:20px; flex:none; border-radius:50%;
-  background:rgba(107,224,138,.12); border:1px solid rgba(107,224,138,.45); color:#6be08a;
-}
-.lobby-hub.l12.c12 .c12buffs .glw .gicon .ic { width:12px; height:12px; }
-.lobby-hub.l12.c12 .c12buffs .glw .ginfo { min-width:0; flex:1 1 auto; display:flex; flex-direction:column; }
-.lobby-hub.l12.c12 .c12buffs .glw .ghead { display:flex; align-items:center; }
-.lobby-hub.l12.c12 .c12buffs .glw .grow { display:flex; align-items:baseline; gap:4px; }
-.lobby-hub.l12.c12 .c12buffs .glw .gbtn {
-  flex:none; min-height:44px; height:44px; min-width:44px; padding:0 5px;
-  background:rgba(255,255,255,.08) !important; border:1px solid rgba(255,255,255,.3) !important;
-  color:#f5f5f5; clip-path:none; font-family:var(--mono); font-size:6.5px; line-height:1.05;
-}
-.lobby-hub.l12.c12 .c12buffs .glw .gbtn .gprice { display:none; }
-/* weather chip: ikon + nama + sisa waktu */
-.lobby-hub.l12.c12 .c12buffs .wx .wx-head { flex:1 1 auto; min-width:0; display:flex; align-items:center; gap:5px; }
-.lobby-hub.l12.c12 .c12buffs .wx .winfo { display:flex; align-items:center; gap:5px; min-width:0; }
-.lobby-hub.l12.c12 .c12buffs .wx .rdot { width:5px; height:5px; border-radius:50%; flex:none; }
 /* ==========================================================================
    DESKTOP LEBAR (>=1000px) — panel kiri tidak boleh ikut memadat seperti HP,
    dan lebarnya dibatasi seperti prototipe (38%, max 600px).
@@ -3324,14 +3600,10 @@ html body.on-lobby:has(.lobby-hub.l12.c12) #pwaInstallBtn {
   .lobby-hub.l12.c12 .c12modes .hrow .ic { width:17px; height:17px; }
   .lobby-hub.l12.c12 .c12modes .hrow .bd { font-size:10px; }
   .lobby-hub.l12.c12 .c12buffs { gap:8px; padding:0 14px; }
-  .lobby-hub.l12.c12 .c12buffs .pot-row,
-  .lobby-hub.l12.c12 .c12buffs .glw,
-  .lobby-hub.l12.c12 .c12buffs .wx.c12wx { min-height:54px; height:54px; padding:0 10px; }
-  .lobby-hub.l12.c12 .c12buffs .pot-row b,
-  .lobby-hub.l12.c12 .c12buffs .glw .gmult { font-size:11.5px; }
-  .lobby-hub.l12.c12 .c12buffs .pot-row .plab,
-  .lobby-hub.l12.c12 .c12buffs .glw .gtitle,
-  .lobby-hub.l12.c12 .c12buffs .wx .wname { font-size:6.5px; }
+  .lobby-hub.l12.c12 .l12-bchip { min-height:54px; height:54px; padding:0 11px; gap:8px; }
+  .lobby-hub.l12.c12 .l12-bchip-v { font-size:11.5px; }
+  .lobby-hub.l12.c12 .l12-bchip-k { font-size:6.5px; }
+  .lobby-hub.l12.c12 #l12PotTray.hz-dock-pop { left:14px; right:14px; max-height:min(540px, calc(100dvh - 180px)); }
   .lobby-hub.l12.c12 .c12dock { padding:0 14px calc(12px + env(safe-area-inset-bottom,0px)); }
   html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollBtn.cta { min-height:66px !important; font-size:17px; }
   html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollAutoBtn.tgl { min-width:66px !important; min-height:66px !important; }
@@ -3375,44 +3647,7 @@ html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollBtn.cta .roll-txt {
 html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollBtn.cta.active .roll-txt {
   letter-spacing:.2em !important;
 }
-/* ==========================================================================
-   CHIP BUFF — muat 4 kolom di 500px tanpa teks berdempet.
-   Lebar per chip ~115px; setelah ikon+gap sisa ~75px. Maka:
-     - GLOBAL LUCK: sembunyikan hitung mundur (multipler sudah cukup),
-     - WEATHER: nama lebih kecil + titik warna disembunyikan,
-     - semua label 5.5px, nilai 9.5px + ellipsis.
-   ========================================================================== */
-.lobby-hub.l12.c12 .c12buffs .glw .gtm { display:none !important; }
-.lobby-hub.l12.c12 .c12buffs .wx .rdot { display:none !important; }
-.lobby-hub.l12.c12 .c12buffs .wx .wname { font-size:8.5px !important; letter-spacing:.02em; }
-.lobby-hub.l12.c12 .c12buffs .wx .winfo { gap:4px; }
-.lobby-hub.l12.c12 .c12buffs .glw .gmult { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-/* tombol beli Global Luck di chip 116px: cukup glyph "+" (fungsinya sama,
-   label "+10x" bertabrakan dengan nilai 50x LUCK). Harga gem tetap ada di
-   title/aria, dan drawer punya entri Global Luck lengkap. */
-.lobby-hub.l12.c12 .c12buffs .glw .gbtn { display:grid !important; place-items:center; padding:0 !important; }
-.lobby-hub.l12.c12 .c12buffs .glw .gbtn #l12GlBuyLab { font-size:0; line-height:1; }
-.lobby-hub.l12.c12 .c12buffs .glw .gbtn #l12GlBuyLab::before {
-  content:'+'; font-family:var(--disp); font-size:18px; line-height:1; color:inherit;
-}
-/* ikon clover di chip GLOBAL LUCK: lobby-prototype.css:6327 menyembunyikannya
-   di portrait (`.l12 .glw .gicon{display:none}`), padahal prototipe C
-   menampilkan ikon di tiap chip. Dipulihkan di sini. */
-.lobby-hub.l12.c12 .c12buffs .glw .gicon {
-  display:flex !important; align-items:center; justify-content:center;
-  width:20px; height:20px; min-width:20px; flex:none;
-}
-/* nama cuaca di chip 116px: potong ke 1 baris tanpa titik warna */
-.lobby-hub.l12.c12 .c12buffs .wx .wname {
-  min-width:0; max-width:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-}
-/* Tombol beli Global Luck TIDAK ada di prototipe C (chip hanya ikon+label+nilai).
-   Di chip 116px tombol 44px menyisakan ~60px untuk teks sehingga "GLOBAL LUCK"
-   dan "50x LUCK" terpotong. Tombolnya disembunyikan; pembelian tetap tersedia
-   lewat entri "Global Luck" di command drawer (#drwGlBtn) yang sudah ada. */
-.lobby-hub.l12.c12 .c12buffs .glw .gbtn { display:none !important; }
-.lobby-hub.l12.c12 .c12buffs .glw .ginfo { flex:1 1 auto; }
-.lobby-hub.l12.c12 .c12buffs .glw .gtitle { max-width:100%; }
+/* (chip buff v12 legacy rules removed — superseded by .l12-bchip + #l12PotTray.hz-dock-pop above) */
 /* ==========================================================================
    AUTO ROLL — berputar saat aktif.
    Indikatornya memakai mask SVG panah-putar; rotasi = transform (composited,

@@ -1823,6 +1823,28 @@ function initCommandDrawerGestures() {
 /* ================= MAIN RENDER LOBBY ================= */
 let _l12HudTick = null;   /* timer HUD v12 (potion / global luck / weather) */
 let _lastWxId = undefined;
+let _l12DockPanel = null; /* active lobby buff panel: null | 'luck' | 'speed' | 'global' | 'weather' */
+let _l12PopKey = "";      /* fingerprint to refresh open panel only on state change */
+
+function _l12Esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+    return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c];
+  });
+}
+function _l12CloverSvg() {
+  return '<svg viewBox="0 0 36 36" fill="none" aria-hidden="true">'
+    + '<polygon points="18,3 31,10.5 31,25.5 18,33 5,25.5 5,10.5" stroke="#f3e600" stroke-width="1.3" stroke-opacity=".65" fill="rgba(16,185,129,.12)"/>'
+    + '<path d="M18 16.5 C15 11.5 10.5 8.5 13 6 C15 4 17.5 6 18 8.5 C18.5 6 21 4 23 6 C25.5 8.5 21 11.5 18 16.5 Z" fill="#6be08a" stroke="#f3e600" stroke-width=".9"/>'
+    + '<path d="M18 19.5 C15 24.5 10.5 27.5 13 30 C15 32 17.5 30 18 27.5 C18.5 30 21 32 23 30 C25.5 27.5 21 24.5 18 19.5 Z" fill="#6be08a" stroke="#f3e600" stroke-width=".9"/>'
+    + '<path d="M16.5 18 C11.5 15 8.5 10.5 6 13 C4 15 6 17.5 8.5 18 C6 18.5 4 21 6 23 C8.5 25.5 11.5 21 16.5 18 Z" fill="#6be08a" stroke="#f3e600" stroke-width=".9"/>'
+    + '<path d="M19.5 18 C24.5 15 27.5 10.5 30 13 C32 15 30 17.5 27.5 18 C30 18.5 32 21 30 23 C27.5 25.5 24.5 21 19.5 18 Z" fill="#6be08a" stroke="#f3e600" stroke-width=".9"/>'
+    + '<circle cx="18" cy="18" r="2.2" fill="#f3e600"/>'
+    + '</svg>';
+}
+function _l12CloseSvg() {
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">'
+    + '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+}
 
 /* ---- SIMPAN REFERENSI NODE HIDUP YANG DIRELOKASI ----
    #rollBtn/#rollAutoBtn/#footAv aslinya anak .lobby-footer (luar #app, index.html:795).
@@ -1908,6 +1930,8 @@ function renderLobby(){
     return renderBattle();
   }
   /* Tray potion tidak hidup lagi setelah #app ditimpa render lain. */
+  _l12DockPanel = null;
+  _l12PopKey = "";
   _l12PotTrayClass(false);
   const _oldDrw = document.getElementById('commandDrawer');
   if(_oldDrw && _oldDrw.parentElement === document.body) _oldDrw.remove();
@@ -1990,7 +2014,7 @@ function renderLobby(){
   const _glMaxed = _glMult >= _glMaxMult;
   /* Label ikut widget asli panels.js:3317 (AKTIFKAN / +10× / MAX 100×) + HARGA
      selalu tampil: user mengira tombolnya rusak karena harganya tak pernah kelihatan. */
-  const _glLabel = _glActive ? (_glMaxed ? "MAX " + _glMaxMult + "×" : "+10×") : "AKTIFKAN";
+  const _glLabel = _glActive ? (_glMaxed ? "MAX " + _glMaxMult + "×" : "+10×") : "ACTIVATE";
 
   /* WEATHER */
   const _wId = (typeof activeWeatherId === "function") ? activeWeatherId() : null;
@@ -2162,7 +2186,7 @@ function renderLobby(){
             var _pn = (typeof cardName === 'function') ? cardName(s.char) : s.char;
             var _pc = (typeof MUT_COLOR !== 'undefined' && MUT_COLOR[s.mut]) ? MUT_COLOR[s.mut] : 'rgba(245,245,245,.26)';
             /* Klik lingkaran = tukar poster showcase (bukan buka Backpack; tombol tas ada di dock). */
-            return '<button class="pav' + (i === _showIdx ? ' on' : '') + '" type="button" aria-pressed="' + (i === _showIdx ? 'true' : 'false') + '" title="Tampilkan ' + _pn + ' di panggung" style="--mc:' + _pc + '" onclick="if(typeof l12Showcase===\'function\')l12Showcase(' + i + ');">' + _l12SlotThumb(s) + '</button>';
+            return '<button class="pav' + (i === _showIdx ? ' on' : '') + '" type="button" aria-pressed="' + (i === _showIdx ? 'true' : 'false') + '" title="Showcase ' + _pn + ' on stage" style="--mc:' + _pc + '" onclick="if(typeof l12Showcase===\'function\')l12Showcase(' + i + ');">' + _l12SlotThumb(s) + '</button>';
           }).join("")}</div>
         </div>
 
@@ -2179,52 +2203,54 @@ function renderLobby(){
 
       </div>
 
-      <!-- ============ BAWAH: BUFF (3 chip) + DOCK ============ -->
+      <!-- ============ BAWAH: BUFF (4 chip + Hazard popovers) + DOCK ============ -->
       <div class="c12foot">
+        <section class="pot-tray hz-dock-pop" id="l12PotTray" style="display:none;" aria-live="polite"></section>
+
         <div class="hud c12buffs">
-
-          <div class="pots">
-            <div class="pot-row" data-block="pot-luck" id="l12PotLuck" role="button" tabindex="0" title="Click to use a Luck Potion" onclick="window.l12TogglePotionTray('luck')">
-              <img class="pimg" src="assets/images/pot-luck-${_potLuck ? _potLuck.lv : 1}.webp" alt="">
-              <span class="plab">LUCK POT</span><b id="l12PotLuckVal">${_potLuck ? "+" + (_potLuck.flat || 0) + " L" + _potLuck.lv : (_adLuckMs > 0 ? "ADS x2" : "OFF")}</b>
-              <span class="tr"><span id="l12PotLuckBar" style="width:${_potLuck ? Math.max(4, Math.min(100, Math.round((_potLuck.endsAt - _now) / _potWin * 100))) : 0}%"></span></span>
-              <span class="tm" id="l12PotLuckTm">${_potLuck ? _cd(_potLuck.endsAt - _now) : (_adLuckMs > 0 ? _cd(_adLuckMs) : "--:--")}</span>
-              <span class="pstock" id="l12PotLuckStock">${_lkStock}</span>
-            </div>
-            <div class="pot-row" data-block="pot-speed" id="l12PotSpeed" role="button" tabindex="0" title="Click to use a Speed Potion" onclick="window.l12TogglePotionTray('speed')">
-              <img class="pimg" src="assets/images/pot-speed-${_potSpeed ? _potSpeed.lv : 1}.webp" alt="">
-              <span class="plab">SPEED POT</span><b id="l12PotSpeedVal">${_potSpeed ? "+" + (_potSpeed.add || 0).toFixed(1) + "x L" + _potSpeed.lv : "OFF"}</b>
-              <span class="tr"><span id="l12PotSpeedBar" style="width:${_potSpeed ? Math.max(4, Math.min(100, Math.round((_potSpeed.endsAt - _now) / _potWin * 100))) : 0}%"></span></span>
-              <span class="tm" id="l12PotSpeedTm">${_potSpeed ? _cd(_potSpeed.endsAt - _now) : "--:--"}</span>
-              <span class="pstock" id="l12PotSpeedStock">${_spStock}</span>
-            </div>
-            <div class="pot-tray" id="l12PotTray" style="display:none;"></div>
-          </div>
-
-          <div class="glw" data-block="global-luck" role="status" id="l12Glw">
-            <span class="gicon"><i class="ic i-clover"></i></span>
-            <span class="ginfo">
-              <span class="ghead"><span class="gtitle">GLOBAL LUCK</span><span class="gpill"><span class="gdot"></span><span id="l12GlStack">${_glStacks}/10</span></span></span>
-              <span class="grow"><span class="gmult" id="l12GlMult">${_glMult ? _glMult + "x LUCK" : "OFF"}</span><span class="gtm" id="l12GlTm">${_glActive ? _cd(_glLeft) : "--:--"}</span></span>
+          <button type="button" class="l12-bchip${(_potLuck || _adLuckMs > 0) ? " is-on" : ""}" id="l12PotLuck"
+                  data-block="pot-luck" style="--bc:var(--luck)" title="Luck Potions &amp; Buffs"
+                  onclick="window.l12ToggleDockPanel('luck')">
+            <span class="l12-bchip-ic"><img id="l12PotLuckImg" src="assets/images/pot-luck-${_potLuck ? _potLuck.lv : 1}.webp" alt=""></span>
+            <span class="l12-bchip-txt">
+              <span class="l12-bchip-k">LUCK POT <span class="tag" id="l12PotLuckStock">&times;${_lkStock}</span></span>
+              <span class="l12-bchip-v" id="l12PotLuckVal">${_potLuck ? ("+" + (_potLuck.flat || 0) + " L" + _potLuck.lv + (_luckBuffs.length > 1 ? " (+" + (_luckBuffs.length - 1) + ")" : "")) : (_adLuckMs > 0 ? "ADS 2&times;" : "OFF")}</span>
             </span>
-            <button class="gbtn${_glActive && !_glMaxed ? " stack" : ""}${_glMaxed ? " maxed" : ""}${_glCan ? "" : " unaff"}" type="button" id="l12GlBuy"${_glMaxed ? " disabled" : ""}${_glCan ? "" : ' aria-disabled="true"'} title="${_glCan ? "Buy / stack Global Luck" : "Not enough Gems - need " + _glCost}"><span id="l12GlBuyLab">${_glLabel}</span><span class="gprice"><img src="assets/images/premium-currency.webp" alt=""><span id="l12GlBuyCost">${_glCost}</span></span></button>
-          </div>
+            <span class="l12-bchip-cd"><span id="l12PotLuckTm">${_potLuck ? _cd(_potLuck.endsAt - _now) : (_adLuckMs > 0 ? _cd(_adLuckMs) : "--:--")}</span></span>
+          </button>
 
-          <!-- node cuaca tetap ada (JS menulis ke sini) tapi tampil sebagai baris tipis di dock -->
-          <div class="wx c12wx" data-block="weather" role="status" id="l12Wx">
-            <div class="wx-head">
-              <span class="winfo">
-                <span class="rdot" style="background:${_w ? _w.color : "var(--cyan)"};"></span>
-                <span class="wic" id="l12WxIcon" style="display:inline-flex;align-items:center;justify-content:center;color:${_w ? _w.color : "var(--gold)"};">${_w ? ((typeof weatherSvg === "function") ? weatherSvg(_w.id, 17) : "") : ((typeof weatherSvg === "function") ? weatherSvg("sunny", 17) : '<i class="ic i-sun"></i>')}</span>
-                <span class="wname" id="l12WxName">${_w ? String(_w.name || _wId).toUpperCase() : "CLEAR SKY"}</span>
-                <span class="wrr" id="l12WxRr">${_wRr || "IDLE"}</span>
-              </span>
-              <span class="wtm-wrap">
-                <span class="wtm" id="l12WxTm">${_wLeft ? _cd(_wLeft) : "--:--"}</span>
-              </span>
-            </div>
-            <div class="wx-cards" id="l12WxCards"></div>
-          </div>
+          <button type="button" class="l12-bchip${_potSpeed ? " is-on" : ""}" id="l12PotSpeed"
+                  data-block="pot-speed" style="--bc:var(--spd)" title="Speed Potions &amp; Buffs"
+                  onclick="window.l12ToggleDockPanel('speed')">
+            <span class="l12-bchip-ic"><img id="l12PotSpeedImg" src="assets/images/pot-speed-${_potSpeed ? _potSpeed.lv : 1}.webp" alt=""></span>
+            <span class="l12-bchip-txt">
+              <span class="l12-bchip-k">SPEED POT <span class="tag" id="l12PotSpeedStock">&times;${_spStock}</span></span>
+              <span class="l12-bchip-v" id="l12PotSpeedVal">${_potSpeed ? ("+" + (_potSpeed.add || 0).toFixed(1) + "&times; L" + _potSpeed.lv + (_speedBuffs.length > 1 ? " (+" + (_speedBuffs.length - 1) + ")" : "")) : "OFF"}</span>
+            </span>
+            <span class="l12-bchip-cd"><span id="l12PotSpeedTm">${_potSpeed ? _cd(_potSpeed.endsAt - _now) : "--:--"}</span></span>
+          </button>
+
+          <button type="button" class="l12-bchip${_glActive ? " is-on" : ""}" id="l12Glw"
+                  data-block="global-luck" style="--bc:var(--haz)" title="Global Luck Shrine"
+                  onclick="window.l12ToggleDockPanel('global')">
+            <span class="l12-bchip-ic">${_l12CloverSvg()}</span>
+            <span class="l12-bchip-txt">
+              <span class="l12-bchip-k">GLOBAL LUCK <span class="tag" id="l12GlStack">${_glStacks}/10</span></span>
+              <span class="l12-bchip-v" id="l12GlMult">${_glActive ? (_glMult + "&times; LUCK") : "OFFLINE"}</span>
+            </span>
+            <span class="l12-bchip-cd"><span id="l12GlTm">${_glActive ? _cd(_glLeft) : "--:--"}</span></span>
+          </button>
+
+          <button type="button" class="l12-bchip${_w ? " is-on" : ""}" id="l12Wx"
+                  data-block="weather" style="--bc:${_w ? _w.color : "#9ca3af"}" title="Weather Dock &amp; Exclusive Cards"
+                  onclick="window.l12ToggleDockPanel('weather')">
+            <span class="l12-bchip-ic" id="l12WxIcon">${_w ? ((typeof weatherSvg === "function") ? weatherSvg(_w.id, 15) : "") : ((typeof weatherSvg === "function") ? weatherSvg("sunny", 15) : '<i class="ic i-sun"></i>')}</span>
+            <span class="l12-bchip-txt">
+              <span class="l12-bchip-k">WEATHER <span class="tag" id="l12WxRr">${_wRr || "IDLE"}</span></span>
+              <span class="l12-bchip-v" id="l12WxName">${_w ? String(_w.name || _wId).toUpperCase() : "CLEAR SKY"}</span>
+            </span>
+            <span class="l12-bchip-cd"><span id="l12WxTm">${_wLeft ? _cd(_wLeft) : "--:--"}</span><span class="stk" id="l12WxLkSub">${_w ? (_w.luckBonus + "&times; LK") : "IDLE"}</span></span>
+          </button>
         </div>
 
         <div class="rollbar c12dock">
@@ -2234,7 +2260,7 @@ function renderLobby(){
           <button class="sq c12sq" type="button" onclick="if(typeof toggleBackpack==='function')toggleBackpack();" title="Backpack / Deck">
             <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7.4" width="16" height="13" rx="2"/><path d="M9 7.4V5.6a3 3 0 0 1 6 0v1.8"/></svg>
           </button>
-          <button class="sq c12sq" type="button" onclick="if(typeof openPremiumShop==='function')openPremiumShop();" title="Toko Premium">
+          <button class="sq c12sq" type="button" onclick="if(typeof openPremiumShop==='function')openPremiumShop();" title="Premium Shop">
             <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h2l2.2 10.2a2 2 0 0 0 2 1.6h7.2a2 2 0 0 0 2-1.6L21 9H7"/><circle cx="10" cy="20" r="1.2"/><circle cx="18" cy="20" r="1.2"/></svg>
           </button>
           <button class="sq c12sq" type="button" onclick="location.hash='#/settings'" title="Settings">
@@ -2322,65 +2348,52 @@ function renderLobby(){
   /* #footAv burger removed from header per user request */
 
 /* ---- LIVE WEATHER DOCK ENGINE (LOBBY V12) ----
-   Menyinkronkan icon vektor SVG, warna, nama, rarity badge, buff chip, dan kartu eksklusif
+   Menyinkronkan icon vektor SVG, warna, nama, rarity badge, dan weather dock
    secara instan setiap ada rotasi cuaca / weather potion tanpa menunggu tick. */
 function l12UpdateWeatherDock(force){
   const wxEl = document.getElementById("l12Wx");
   if (!wxEl) return;
   const now = Date.now();
   const curWxId = (typeof activeWeatherId === "function") ? activeWeatherId() : null;
+  const curWxBy = (state && state.weather && state.weather.activated_by) ? String(state.weather.activated_by) : "";
+  const curWxKey = (curWxId || "") + "|" + curWxBy;
   const wLeft = (state && state.weather && state.weather.endsAt) ? Math.max(0, state.weather.endsAt - now) : 0;
   const tmEl = document.getElementById("l12WxTm");
   if (tmEl) tmEl.textContent = wLeft ? ((typeof fmtCountdown === "function") ? fmtCountdown(wLeft) : "") : "--:--";
 
-  if (!force && curWxId === _lastWxId) return;
-  _lastWxId = curWxId;
+  if (!force && curWxKey === _lastWxId) return;
+  _lastWxId = curWxKey;
 
   const curW = (curWxId && typeof WEATHER !== "undefined" && WEATHER[curWxId]) ? WEATHER[curWxId] : null;
-  const wColor = curW ? curW.color : "var(--cyan)";
-  const wName = curW ? String(curW.name || curWxId).toUpperCase() : "CLEAR SKY · NO ANOMALY";
+  const wColor = curW ? curW.color : "#9ca3af";
+  const wName = curW ? String(curW.name || curWxId).toUpperCase() : "CLEAR SKY";
   const wRar = curW ? String(curW.rar || curW.rarity || "COMMON").toUpperCase() : "IDLE";
-  const wBuff = curW ? (curW.luckBonus + "× LUCK · " + curW.speedBonus + "× SPD") : "TARGET WEATHER CARDS";
+
+  wxEl.style.setProperty("--bc", wColor);
+  wxEl.classList.toggle("is-on", !!curW);
 
   const nameEl = document.getElementById("l12WxName");
   if (nameEl) nameEl.textContent = wName;
 
   const rrEl = document.getElementById("l12WxRr");
-  if (rrEl) {
-    rrEl.textContent = wRar;
-    rrEl.style.borderColor = curW ? curW.color : "rgba(251,113,133,.5)";
-    rrEl.style.color = curW ? curW.color : "var(--crimson)";
-    rrEl.style.background = curW ? `color-mix(in srgb, ${curW.color} 15%, transparent)` : "rgba(251,113,133,.12)";
-  }
+  if (rrEl) rrEl.textContent = wRar;
 
-  const iconEl = document.getElementById("l12WxIcon") || wxEl.querySelector(".wic");
+  const lkSub = document.getElementById("l12WxLkSub");
+  if (lkSub) lkSub.textContent = curW ? (curW.luckBonus + "× LK") : "IDLE";
+
+  const iconEl = document.getElementById("l12WxIcon");
   if (iconEl) {
-    iconEl.id = "l12WxIcon";
-    iconEl.style.color = curW ? curW.color : "var(--gold)";
-    iconEl.innerHTML = (typeof weatherSvg === "function") ? weatherSvg(curWxId || "sunny", 17) : '<i class="ic i-sun"></i>';
+    iconEl.innerHTML = (typeof weatherSvg === "function") ? weatherSvg(curWxId || "sunny", 15) : '<i class="ic i-sun"></i>';
   }
 
-  const rdot = wxEl.querySelector(".rdot");
-  if (rdot) rdot.style.background = wColor;
-
-  const wchip = wxEl.querySelector(".wbuff-chip");
-  if (wchip) wchip.textContent = wBuff;
-
-  const btnSpan = wxEl.querySelector("#l12WxBtn span");
-  if (btnSpan && state) {
-    btnSpan.textContent = `SYNTH (${(state.potions || 0) + (state.mythicPotions || 0)})`;
-  }
-
-  if (typeof _l12RenderWxCards === "function") {
-    _l12RenderWxCards(curWxId);
+  if (_l12DockPanel === "weather" && typeof _l12RenderDockPanel === "function") {
+    _l12RenderDockPanel();
   }
 }
 window.l12UpdateWeatherDock = l12UpdateWeatherDock;
 
   /* ---- TIMER HUD (potion / global luck / weather) ----
-     panels.js cuma me-repaint #buffDock/#weatherPanel/#glLobbyWidget miliknya,
-     jadi baris v12 ini disegar sendiri dari SUMBER YANG SAMA (luckBuffs(),
-     speedBuffs(), _globalLuckCache, state.weather) — bukan angka palsu.
+     Menyegar 4 chip & countdown di popover aktif dari sumber data produksi.
      Interval dibersihkan sendiri begitu lobby tidak ada (pola _telemetryTimer). */
   if (_l12HudTick) clearInterval(_l12HudTick);
   _l12HudTick = setInterval(() => {
@@ -2389,7 +2402,6 @@ window.l12UpdateWeatherDock = l12UpdateWeatherDock;
     const put = (id, txt) => { const e = document.getElementById(id); if (e && e.textContent !== txt) e.textContent = txt; };
     const wid = (id, pct) => { const e = document.getElementById(id); if (e) e.style.width = pct + "%"; };
 
-    // 1. Live Header Telemetry & Live Stats
     if (typeof state !== "undefined" && state) {
       put("l12TopLv", String(state.playerLv || 1));
       const xpNeed = Math.max(1, (state.playerLv || 1) * 1000);
@@ -2400,62 +2412,11 @@ window.l12UpdateWeatherDock = l12UpdateWeatherDock;
       put("l12TopGems", (typeof fmt === "function") ? fmt(state.premiumGems || 0) : String(state.premiumGems || 0));
       put("l12TopPwr", (typeof totalPower === "function") ? ((typeof fmt === "function") ? fmt(totalPower()) : String(totalPower())) : "0");
       put("l12RollTotal", "TOTAL ROLLS \u00b7 " + ((typeof fmt === "function") ? fmt(state.totalRolls || 0) : (state.totalRolls || 0)));
-
-      // Live Potion Stock update
-      const curLkP = Array.isArray(state.luckPots) ? state.luckPots : [0,0,0];
-      const curSpP = Array.isArray(state.speedPots) ? state.speedPots : [0,0,0];
-      put("l12PotLuckStock", "🧪" + ((curLkP[0]||0) + (curLkP[1]||0) + (curLkP[2]||0)));
-      put("l12PotSpeedStock", "🧪" + ((curSpP[0]||0) + (curSpP[1]||0) + (curSpP[2]||0)));
     }
 
-    // 2. Potion Buffs
-    const lb = (typeof luckBuffs === "function") ? luckBuffs().slice().sort((a, b) => a.lv - b.lv).pop() : null;
-    const sb = (typeof speedBuffs === "function") ? speedBuffs().slice().sort((a, b) => a.lv - b.lv).pop() : null;
-    const adMs = (typeof adLuckLeftMs === "function") ? adLuckLeftMs() : 0;
-    const win = (typeof WEATHER_MS !== "undefined") ? WEATHER_MS : 300000;
-    if (lb) {
-      put("l12PotLuckVal", "+" + (lb.flat || 0) + " L" + lb.lv);
-      put("l12PotLuckTm", (typeof fmtCountdown === "function") ? fmtCountdown(lb.endsAt - now) : "");
-      wid("l12PotLuckBar", Math.max(2, Math.min(100, Math.round((lb.endsAt - now) / win * 100))));
-    } else {
-      put("l12PotLuckVal", adMs > 0 ? "ADS ×2" : "OFF");
-      put("l12PotLuckTm", adMs > 0 ? ((typeof fmtCountdown === "function") ? fmtCountdown(adMs) : "") : "--:--");
-      wid("l12PotLuckBar", 0);
-    }
-    if (sb) {
-      put("l12PotSpeedVal", "+" + (sb.add || 0).toFixed(1) + "× L" + sb.lv);
-      put("l12PotSpeedTm", (typeof fmtCountdown === "function") ? fmtCountdown(sb.endsAt - now) : "");
-      wid("l12PotSpeedBar", Math.max(2, Math.min(100, Math.round((sb.endsAt - now) / win * 100))));
-    } else {
-      put("l12PotSpeedVal", "OFF"); put("l12PotSpeedTm", "--:--"); wid("l12PotSpeedBar", 0);
-    }
-
-    // 3. Global Luck
-    const gl = (typeof _globalLuckCache !== "undefined") ? _globalLuckCache : null;
-    const glOn = !!(gl && now < new Date(gl.ends_at).getTime());
-    put("l12GlMult", glOn ? ((gl.multiplier || 0) + "× LUCK") : "OFF");
-    put("l12GlTm", glOn ? ((typeof fmtCountdown === "function") ? fmtCountdown(new Date(gl.ends_at).getTime() - now) : "") : "--:--");
-    put("l12GlStack", Math.min(10, glOn ? Math.max(1, Math.round((gl.multiplier || 0) / 10)) : 0) + "/10 STACK");
-
-    // 4. Weather live check & auto-refresh cards if weather changes
+    if (typeof _l12SyncBuffChips === "function") _l12SyncBuffChips(now);
     l12UpdateWeatherDock();
-
-    /* +10x: label, harga, dan status mampu/tidak ikut saldo gem */
-    const glCost = (typeof GLOBAL_LUCK_COST !== "undefined") ? GLOBAL_LUCK_COST : 0;
-    const glMax = (typeof GLOBAL_LUCK_MAX_MULT !== "undefined") ? GLOBAL_LUCK_MAX_MULT : 100;
-    const glCan = (state && state.premiumGems || 0) >= glCost;
-    const glMaxed = glOn && ((gl.multiplier || 0) >= glMax);
-    put("l12GlBuyLab", glOn ? (glMaxed ? "MAX " + glMax + "×" : "+10×") : "AKTIFKAN");
-    put("l12GlBuyCost", String(glCost));
-    const gb = document.getElementById("l12GlBuy");
-    if (gb) {
-      gb.classList.toggle("unaff", !glCan);
-      gb.classList.toggle("maxed", glMaxed);
-      gb.classList.toggle("stack", glOn && !glMaxed);
-      gb.disabled = glMaxed;
-      if (glCan) gb.removeAttribute("aria-disabled"); else gb.setAttribute("aria-disabled", "true");
-      gb.title = glCan ? (glMaxed ? "Global Luck already MAX" : "Buy / stack Global Luck") : ("Not enough Gems — need " + glCost);
-    }
+    if (typeof _l12TickDockPanel === "function") _l12TickDockPanel(now);
   }, 1000);
 
   /* ---- BINDING TOMBOL LOBBY (v12) ---- */
@@ -2479,15 +2440,7 @@ window.l12UpdateWeatherDock = l12UpdateWeatherDock;
      Yang MAXED memang disabled (tidak ada yang bisa dibeli lagi).
      buyGlobalLuck() async: renderLobby() dipanggil SESUDAH janji selesai, tidak
      lagi sinkron seperti sebelumnya (waktu itu buff belum terpasang -> angka basi). */
-  const _glBuy = document.getElementById("l12GlBuy");
-  if (_glBuy) _glBuy.onclick = () => {
-    if (typeof sfx !== "undefined" && sfx.hit) sfx.hit();
-    if (typeof buyGlobalLuck !== "function") return;
-    const r = buyGlobalLuck();
-    if (r && typeof r.then === "function") {
-      r.then(() => { if (document.querySelector(".lobby-hub.l12")) renderLobby(); }).catch(() => {});
-    }
-  };
+  /* Global Luck buy button lives inside #l12PotTray Global Luck Shrine panel (l12BuyGlobalLuckFromDock). */
   /* MODE HUB: handler ASLI yang sama dengan command drawer (lihat bindClick
      'drwStoryBtn'/'drwTowerBtn'/'drwRaidBtn' di bawah). .onclick (bukan
      addEventListener) supaya idempoten lintas render — nol kebocoran listener. */
@@ -2692,138 +2645,498 @@ window.l12UpdateWeatherDock = l12UpdateWeatherDock;
    L12 HELPER ENGINES: WEATHER CARDS, POTION TRAY, AND ROLL HISTORY STRIP
    ========================================================================== */
 
-/* ---- WEATHER CARDS ENGINE ---- */
-function _l12RenderWxCards(activeWeatherId) {
-  const container = document.getElementById("l12WxCards");
-  if (!container) return;
-  let cards = [];
-  if (typeof window.l12GetWeatherCards === "function") {
-    cards = window.l12GetWeatherCards(activeWeatherId);
-  } else if (typeof MASTER_CARD_INDEX !== "undefined") {
-    cards = activeWeatherId
-      ? MASTER_CARD_INDEX.filter(c => c && c.weatherOnly === activeWeatherId)
-      : MASTER_CARD_INDEX.filter(c => c && !!c.weatherOnly).slice(0, 8);
-  }
-  if (!cards || !cards.length) {
-    container.innerHTML = '<span class="wx-cards-empty">NO EXCLUSIVE CARDS</span>';
-    return;
-  }
-  const displayCards = activeWeatherId ? cards : cards.slice(0, 8);
-  const stacks = (typeof state !== "undefined" && state && Array.isArray(state.stacks)) ? state.stacks : [];
-  const ownedSet = new Set(stacks.map(s => s && s.char));
+/* ---- WEATHER CARDS ENGINE (legacy stub; Weather Dock renders exclusive cards) ---- */
+function _l12RenderWxCards() {}
 
-  container.innerHTML = displayCards.map(c => {
-    const cid = c.char_id || c.id;
-    const isOwned = typeof c.owned === "boolean" ? c.owned : ownedSet.has(cid);
-    const thumb = c.thumb || ((typeof cardThumb === "function") ? cardThumb(cid) : "");
-    const tier = c.tier || "UR";
-    const wId = c.weatherId || c.weatherOnly || "";
-    const wCol = c.weatherColor || ((typeof WEATHER !== "undefined" && WEATHER[wId] && WEATHER[wId].color) ? WEATHER[wId].color : "#38bdf8");
-    const tag = (!activeWeatherId && wId) ? String(wId).slice(0, 4).toUpperCase() : tier;
-    const rawCh = c.chance || ((typeof luckChance === "function") ? luckChance(cid) : 0);
-    const chanceStr = (typeof fmtChance === "function") ? fmtChance(rawCh) : rawCh;
-    const wName = c.weatherName || wId.toUpperCase();
-    return `
-      <div class="wx-card-slot wc-slot ${isOwned ? 'owned' : 'unowned'}"
-           style="--wc:${wCol}"
-           data-wc="${cid}"
-           onclick="if(typeof openWeatherMachine==='function')openWeatherMachine();"
-           title="${c.name} [${wName}] ? ${tier} ? 1 in ${chanceStr} (${isOwned ? 'OWNED' : 'NOT OWNED'})">
-        <img src="${thumb}" alt="${c.name}" loading="lazy">
-        <span class="wx-c-tag">${tag}</span>
-        <span class="wx-c-ch">1:${chanceStr}</span>
-      </div>
-    `;
-  }).join("");
-
-  if (typeof wcHoverBind === "function") {
-    try { wcHoverBind(); } catch(e) {}
-  }
-}
-
-/* ---- QUICK-USE POTION POPOVER TRAY ---- */
-/* Tray dibuka ke atas dari baris potion dan menutupi 4 lingkaran party
-   (terukur 44x44 per slot di 320/500/850/1400). Kelas body ini menyembunyikan
-   lingkaran selama tray terbuka; CSS juga punya varian :has() sebagai cadangan. */
+/* ---- UNIFIED LOBBY BUFF DOCK PANELS (POTION MATRIX · GLOBAL LUCK · WEATHER DOCK) ---- */
 function _l12PotTrayClass(on) {
   try { document.body.classList.toggle("pot-tray-open", !!on); } catch (e) {}
 }
 
-window.l12TogglePotionTray = function(type) {
-  const tray = document.getElementById("l12PotTray");
-  if (!tray) return;
-  const isOpen = tray.classList.contains("open") && tray.getAttribute("data-active-type") === type;
-  if (isOpen) {
-    window.l12ClosePotionTray();
-    return;
+function _l12SyncBuffChips(now) {
+  now = now || Date.now();
+  const put = (id, txt) => { const e = document.getElementById(id); if (e && e.textContent !== txt) e.textContent = txt; };
+  const cd = (typeof fmtCountdown === "function") ? fmtCountdown : (ms => Math.max(0, Math.ceil(ms / 1000)) + "s");
+
+  const lbList = (typeof luckBuffs === "function") ? luckBuffs().slice().sort((a, b) => a.lv - b.lv) : [];
+  const sbList = (typeof speedBuffs === "function") ? speedBuffs().slice().sort((a, b) => a.lv - b.lv) : [];
+  const lb = lbList[lbList.length - 1] || null;
+  const sb = sbList[sbList.length - 1] || null;
+  const adMs = (typeof adLuckLeftMs === "function") ? adLuckLeftMs() : 0;
+
+  if (typeof state !== "undefined" && state) {
+    const curLkP = Array.isArray(state.luckPots) ? state.luckPots : [0, 0, 0];
+    const curSpP = Array.isArray(state.speedPots) ? state.speedPots : [0, 0, 0];
+    put("l12PotLuckStock", "×" + ((curLkP[0] || 0) + (curLkP[1] || 0) + (curLkP[2] || 0)));
+    put("l12PotSpeedStock", "×" + ((curSpP[0] || 0) + (curSpP[1] || 0) + (curSpP[2] || 0)));
   }
-  tray.setAttribute("data-active-type", type);
-  tray.classList.add("open");
-  tray.style.display = "flex";
-  _l12PotTrayClass(true);
-  _l12RefreshPotionTray(type);
-};
 
-window.l12ClosePotionTray = function() {
-  const tray = document.getElementById("l12PotTray");
-  if (tray) {
-    tray.classList.remove("open");
-    tray.style.display = "none";
-    tray.removeAttribute("data-active-type");
+  const lkChip = document.getElementById("l12PotLuck");
+  if (lkChip) {
+    lkChip.classList.toggle("is-on", !!(lb || adMs > 0));
+    lkChip.classList.toggle("open", _l12DockPanel === "luck");
   }
-  _l12PotTrayClass(false);
-};
+  const lkImg = document.getElementById("l12PotLuckImg");
+  if (lkImg) {
+    const want = "assets/images/pot-luck-" + (lb ? lb.lv : 1) + ".webp";
+    if (lkImg.getAttribute("src") !== want) lkImg.setAttribute("src", want);
+  }
+  if (lb) {
+    put("l12PotLuckVal", "+" + (lb.flat || 0) + " L" + lb.lv + (lbList.length > 1 ? " (+" + (lbList.length - 1) + ")" : ""));
+    put("l12PotLuckTm", cd(lb.endsAt - now));
+  } else {
+    put("l12PotLuckVal", adMs > 0 ? "ADS 2×" : "OFF");
+    put("l12PotLuckTm", adMs > 0 ? cd(adMs) : "--:--");
+  }
 
-function _l12RefreshPotionTray(type) {
-  const tray = document.getElementById("l12PotTray");
-  if (!tray) return;
-  const t = type || tray.getAttribute("data-active-type") || "luck";
-  const pots = t === "luck"
-    ? (Array.isArray(state && state.luckPots) ? state.luckPots : [0,0,0])
-    : (Array.isArray(state && state.speedPots) ? state.speedPots : [0,0,0]);
-  const isLuck = t === "luck";
-  const title = isLuck ? "?? LUCK POTION (SELECT LEVEL)" : "? SPEED POTION (SELECT LEVEL)";
-  const effs = isLuck
-    ? ["+3 LUCK", "+5 & +10%", "+10 & +20%"]
-    : ["+0.2? SPD", "+0.5? SPD", "+1.0? SPD"];
+  const spChip = document.getElementById("l12PotSpeed");
+  if (spChip) {
+    spChip.classList.toggle("is-on", !!sb);
+    spChip.classList.toggle("open", _l12DockPanel === "speed");
+  }
+  const spImg = document.getElementById("l12PotSpeedImg");
+  if (spImg) {
+    const want = "assets/images/pot-speed-" + (sb ? sb.lv : 1) + ".webp";
+    if (spImg.getAttribute("src") !== want) spImg.setAttribute("src", want);
+  }
+  if (sb) {
+    put("l12PotSpeedVal", "+" + (sb.add || 0).toFixed(1) + "× L" + sb.lv + (sbList.length > 1 ? " (+" + (sbList.length - 1) + ")" : ""));
+    put("l12PotSpeedTm", cd(sb.endsAt - now));
+  } else {
+    put("l12PotSpeedVal", "OFF");
+    put("l12PotSpeedTm", "--:--");
+  }
 
-  tray.innerHTML = `
-    <div class="pot-tray-head">
-      <span>${title}</span>
-      <button class="pot-tray-close" type="button" onclick="window.l12ClosePotionTray()" title="Close" style="background:none;border:0;color:var(--ice);cursor:pointer;font-size:11px;padding:0 4px;">?</button>
-    </div>
-    <div class="pot-tray-grid">
-      ${[1, 2, 3].map(lv => {
-        const stk = pots[lv - 1] || 0;
-        const canUse = stk > 0;
-        return `
-          <button class="pot-lv-btn ${canUse ? 'ready' : 'empty'}" type="button"
-                  onclick="window.l12InvokePotion('${t}', ${lv})"
-                  title="${canUse ? 'Use 1 bottle Level ' + lv + ' (+5 min)' : 'Out of stock ? get more in Shop / Tower'}">
-            <div style="display:flex;align-items:center;justify-content:space-between;width:100%;font-size:8.5px;">
-              <b style="color:var(--gold)">LV.${lv}</b>
-              <span style="font-family:var(--mono);color:${canUse ? '#6ee7b7' : '#94a3b8'}">x${stk}</span>
-            </div>
-            <img src="assets/images/pot-${t}-${lv}.webp" alt="L${lv}" style="width:22px;height:22px;object-fit:contain;">
-            <span style="font-size:8px;color:var(--ice);white-space:nowrap;">${effs[lv - 1]}</span>
-            <span style="font-size:7.5px;font-weight:800;padding:1px 5px;background:${canUse ? 'rgba(16,185,129,0.22)' : 'rgba(148,163,184,0.12)'};border:1px solid ${canUse ? 'rgba(52,211,153,0.55)' : 'rgba(148,163,184,0.25)'};color:${canUse ? '#6ee7b7' : '#94a3b8'}">${canUse ? '+ PAKAI' : 'EMPTY'}</span>
-          </button>
-        `;
-      }).join("")}
-    </div>
-  `;
+  const gl = (typeof _globalLuckCache !== "undefined") ? _globalLuckCache : null;
+  const glOn = !!(gl && now < new Date(gl.ends_at).getTime());
+  const glStacks = glOn ? Math.min(10, Math.max(1, Math.round((gl.multiplier || 0) / 10))) : 0;
+  const glChip = document.getElementById("l12Glw");
+  if (glChip) {
+    glChip.classList.toggle("is-on", glOn);
+    glChip.classList.toggle("open", _l12DockPanel === "global");
+  }
+  put("l12GlMult", glOn ? ((gl.multiplier || 0) + "× LUCK") : "OFFLINE");
+  put("l12GlTm", glOn ? cd(new Date(gl.ends_at).getTime() - now) : "--:--");
+  put("l12GlStack", glStacks + "/10");
 
-  const curLkP = Array.isArray(state && state.luckPots) ? state.luckPots : [0,0,0];
-  const curSpP = Array.isArray(state && state.speedPots) ? state.speedPots : [0,0,0];
-  const lkStock = (curLkP[0]||0) + (curLkP[1]||0) + (curLkP[2]||0);
-  const spStock = (curSpP[0]||0) + (curSpP[1]||0) + (curSpP[2]||0);
-  const lkEl = document.getElementById("l12PotLuckStock");
-  if (lkEl) lkEl.textContent = "??" + lkStock;
-  const spEl = document.getElementById("l12PotSpeedStock");
-  if (spEl) spEl.textContent = "??" + spStock;
+  const wxChip = document.getElementById("l12Wx");
+  if (wxChip) wxChip.classList.toggle("open", _l12DockPanel === "weather");
 }
 
-window.l12InvokePotion = function(type, lv) {
+function _l12RenderPotionMatrix(type, now) {
+  const isLuck = type === "luck";
+  const pac = isLuck ? "#6be08a" : "#5ac8fa";
+  const cd = (typeof fmtCountdown === "function") ? fmtCountdown : (ms => Math.max(0, Math.ceil(ms / 1000)) + "s");
+  const lkArr = Array.isArray(state && state.luckPots) ? state.luckPots : [0, 0, 0];
+  const spArr = Array.isArray(state && state.speedPots) ? state.speedPots : [0, 0, 0];
+  const pots = isLuck ? lkArr : spArr;
+  const lkTotal = (lkArr[0] || 0) + (lkArr[1] || 0) + (lkArr[2] || 0);
+  const spTotal = (spArr[0] || 0) + (spArr[1] || 0) + (spArr[2] || 0);
+  const totalStock = isLuck ? lkTotal : spTotal;
+
+  const lbList = (typeof luckBuffs === "function") ? luckBuffs().slice().sort((a, b) => a.lv - b.lv) : [];
+  const sbList = (typeof speedBuffs === "function") ? speedBuffs().slice().sort((a, b) => a.lv - b.lv) : [];
+  const buffs = isLuck ? lbList : sbList;
+  const adMs = (typeof adLuckLeftMs === "function") ? adLuckLeftMs() : 0;
+  const lpDefs = (typeof LUCK_POTS !== "undefined") ? LUCK_POTS : [null, { flat: 3, pct: 0 }, { flat: 5, pct: 0.1 }, { flat: 10, pct: 0.2 }];
+  const spDefs = (typeof SPEED_POTS !== "undefined") ? SPEED_POTS : [null, { add: 0.2 }, { add: 0.5 }, { add: 1.0 }];
+
+  let sumTitle = "NO ACTIVE POTION";
+  if (isLuck) {
+    const f = lbList.reduce((s, b) => s + (b.flat || 0), 0);
+    const p = lbList.reduce((s, b) => s + (b.pct || 0), 0);
+    const parts = [];
+    if (f) parts.push("+" + f + " FLAT");
+    if (p) parts.push("+" + Math.round(p * 100) + "% LUCK");
+    if (adMs > 0) parts.push("ADS ×2");
+    if (parts.length) sumTitle = parts.join(" · ");
+  } else {
+    const a = sbList.reduce((s, b) => s + (b.add || 0), 0);
+    if (a > 0) sumTitle = "+" + a.toFixed(1) + "× ROLL SPEED";
+  }
+
+  const chipHtml = [
+    ...(isLuck && adMs > 0 ? ['<span class="pot-achip ad">ADS 2× <b data-pot-cd="' + (now + adMs) + '">' + cd(adMs) + '</b></span>'] : []),
+    ...buffs.map(b => '<span class="pot-achip">LV.' + b.lv + ' <b data-pot-cd="' + b.endsAt + '">' + cd(b.endsAt - now) + '</b></span>')
+  ].join("");
+
+  const cards = [1, 2, 3].map(lv => {
+    const stk = pots[lv - 1] || 0;
+    const active = buffs.find(b => b.lv === lv);
+    const eff = isLuck
+      ? ("+" + lpDefs[lv].flat + " FLAT" + (lpDefs[lv].pct ? " · +" + Math.round(lpDefs[lv].pct * 100) + "%" : ""))
+      : ("+" + spDefs[lv].add.toFixed(1) + "× SPEED");
+    const nm = (isLuck ? "LUCK" : "SPEED") + " POTION L" + lv;
+    const tmStr = active ? cd(active.endsAt - now) : "--:--";
+    return '<div class="pot-card' + (active ? " active" : "") + (stk <= 0 ? " empty" : "") + '">'
+      + '<div class="pot-c-top"><span class="pot-c-lv">LV.' + lv + '</span><span class="pot-c-stk">×' + stk + '</span></div>'
+      + '<div class="pot-c-mid">'
+        + '<div class="pot-c-art"><img src="assets/images/pot-' + type + '-' + lv + '.webp" alt="L' + lv + '"></div>'
+        + '<div class="pot-c-info">'
+          + '<div class="pot-c-name">' + nm + '</div>'
+          + '<div class="pot-c-eff">' + eff + '</div>'
+          + '<div class="pot-c-dur">+5:00 PER BOTTLE</div>'
+          + '<div class="pot-c-mobmeta"><span>STOCK <b>×' + stk + '</b></span>'
+            + '<span class="st">' + (active ? ('ON · <span data-pot-cd="' + active.endsAt + '">' + tmStr + '</span>') : "IDLE") + '</span></div>'
+        + '</div>'
+      + '</div>'
+      + '<div class="pot-c-timer"><span class="st">' + (active ? "ACTIVE" : "IDLE") + '</span>'
+        + '<b' + (active ? ' data-pot-cd="' + active.endsAt + '"' : '') + '>' + tmStr + '</b></div>'
+      + '<button class="pot-c-btn" type="button"' + (stk <= 0 ? " disabled" : "")
+        + ' onclick="window.l12InvokePotion(\'' + type + '\',' + lv + ')"'
+        + ' title="' + (stk > 0 ? ("Use 1 Level " + lv + " potion (+5:00)") : "Out of stock — obtain from Tower or Shops") + '">'
+        + (stk <= 0 ? "EMPTY" : (active ? "EXTEND +5M" : "USE +5:00"))
+      + '</button>'
+    + '</div>';
+  }).join("");
+
+  return {
+    pac: pac,
+    key: type + "|" + totalStock + "|" + buffs.map(b => b.lv).join(",") + "|" + (adMs > 0 ? 1 : 0),
+    html: '<span class="hz-crn tl"></span><span class="hz-crn tr"></span>'
+      + '<span class="hz-crn bl"></span><span class="hz-crn br"></span>'
+      + '<header class="hzp-head">'
+        + '<div class="hzp-hleft">'
+          + '<div class="hzp-krow"><span class="hzp-dot"></span><span class="hzp-kick">// CONSUMABLE <b>BOOSTERS</b></span></div>'
+          + '<div class="hzp-trow">'
+            + '<div class="hzp-title">POTION MATRIX</div>'
+            + '<div class="hzp-tabs">'
+              + '<button class="hzp-tab' + (isLuck ? " on" : "") + '" type="button" onclick="window.l12ToggleDockPanel(\'luck\',true)">LUCK <span class="cnt">' + lkTotal + '</span></button>'
+              + '<button class="hzp-tab' + (!isLuck ? " on" : "") + '" type="button" onclick="window.l12ToggleDockPanel(\'speed\',true)">SPEED <span class="cnt">' + spTotal + '</span></button>'
+            + '</div>'
+          + '</div>'
+        + '</div>'
+        + '<button class="hzp-close" type="button" onclick="window.l12CloseDockPanel()" title="Close" aria-label="Close Potion Matrix">' + _l12CloseSvg() + '</button>'
+      + '</header>'
+      + '<div class="hzp-body">'
+        + '<div class="pot-summary">'
+          + '<div class="pot-sum-l"><small>COMBINED ACTIVE ' + (isLuck ? "LUCK" : "SPEED") + ' BONUS</small><strong>' + sumTitle + '</strong></div>'
+          + '<div class="pot-active-chips">' + (chipHtml || '<span class="pot-none">NO ACTIVE BUFF TIMERS</span>') + '</div>'
+        + '</div>'
+        + '<div class="hzp-sec"><b>SELECT TIER</b><i></i><span>' + totalStock + ' IN INVENTORY</span></div>'
+        + '<div class="pot-grid">' + cards + '</div>'
+        + '<div class="hzp-sec"><b>MECHANICS &amp; SOURCES</b><i></i><span>FULL BRIEFING</span></div>'
+        + '<div class="hzp-desc">'
+          + '<p>' + (isLuck
+            ? '<em>Luck Potions</em> boost your Flat &amp; Percentage Luck before Weather, Global Luck, and Rebirth multipliers are applied. <b>Different levels (L1 + L2 + L3) stack simultaneously</b> for combined power!'
+            : '<em>Speed Potions</em> accelerate your card summoning speed. <b>Different levels (L1 + L2 + L3) stack simultaneously</b> alongside Skill Tree speed nodes and Weather.')
+          + '</p>'
+          + '<div class="hzp-rules">'
+            + '<div class="hzp-rule"><span>SAME-LEVEL STACK</span><b>EXTENDS +5:00 TIMER</b></div>'
+            + '<div class="hzp-rule"><span>' + (isLuck ? "ADS OVERDRIVE" : "SPEED CAP") + '</span><b>' + (isLuck ? "2× TOTAL LUCK (WATCH ADS)" : "MAX 20.0× ROLL SPEED") + '</b></div>'
+            + '<div class="hzp-rule"><span>WHERE TO OBTAIN</span><b>TOWER · INF SHOP · RAID SHOP</b></div>'
+          + '</div>'
+        + '</div>'
+      + '</div>'
+  };
+}
+
+function _l12RenderGlobalLuckPanel(now) {
+  const pac = "#f3e600";
+  const cd = (typeof fmtCountdown === "function") ? fmtCountdown : (ms => Math.max(0, Math.ceil(ms / 1000)) + "s");
+  const gl = (typeof _globalLuckCache !== "undefined") ? _globalLuckCache : null;
+  const endsMs = gl && gl.ends_at ? new Date(gl.ends_at).getTime() : 0;
+  const active = !!(gl && now < endsMs);
+  const mult = active ? (gl.multiplier || 0) : 0;
+  const stacks = active ? Math.min(10, Math.max(1, Math.round(mult / 10))) : 0;
+  const maxMult = (typeof GLOBAL_LUCK_MAX_MULT !== "undefined") ? GLOBAL_LUCK_MAX_MULT : 100;
+  const maxed = active && mult >= maxMult;
+  const cost = (typeof GLOBAL_LUCK_COST !== "undefined") ? GLOBAL_LUCK_COST : 1200;
+  const gems = (typeof state !== "undefined" && state && state.premiumGems) || 0;
+  const canBuy = gems >= cost;
+  const buyerSafe = _l12Esc((gl && gl.activated_by) ? gl.activated_by : "HUNTER").toUpperCase();
+
+  const segs = Array.from({ length: 10 }, function (_, i) {
+    return '<div class="gl-seg' + (i < stacks ? " on" : "") + '">' + ((i + 1) * 10) + '×</div>';
+  }).join("");
+
+  const ctaLabel = maxed
+    ? ("MAX " + maxMult + "× REACHED")
+    : (active
+      ? ("STACK +10× · " + cost.toLocaleString("en-US") + " GEMS")
+      : (canBuy ? ("ACTIVATE 10× · " + cost.toLocaleString("en-US") + " GEMS") : ("NEED " + cost.toLocaleString("en-US") + " GEMS")));
+
+  return {
+    pac: pac,
+    key: "global|" + mult + "|" + (active ? endsMs : 0) + "|" + gems + "|" + buyerSafe,
+    html: '<span class="hz-crn tl"></span><span class="hz-crn tr"></span>'
+      + '<span class="hz-crn bl"></span><span class="hz-crn br"></span>'
+      + '<header class="hzp-head">'
+        + '<div class="hzp-hleft">'
+          + '<div class="hzp-krow"><span class="hzp-dot"></span><span class="hzp-kick">// SERVER-WIDE <b>MULTIPLIER</b></span></div>'
+          + '<div class="hzp-trow">'
+            + '<div class="hzp-title">GLOBAL LUCK SHRINE</div>'
+            + '<span class="hzp-badge' + (active ? "" : " idle") + '"><span class="live-dot"></span>' + (active ? (stacks + "/10 STACKS ACTIVE") : "OFFLINE") + '</span>'
+          + '</div>'
+        + '</div>'
+        + '<button class="hzp-close" type="button" onclick="window.l12CloseDockPanel()" title="Close" aria-label="Close Global Luck Shrine">' + _l12CloseSvg() + '</button>'
+      + '</header>'
+      + '<div class="hzp-body">'
+        + '<div class="gl-hero">'
+          + '<div class="gl-emb">' + _l12CloverSvg() + '</div>'
+          + '<div class="gl-main">'
+            + '<div class="gl-mult-row">'
+              + '<span class="gl-mult' + (active ? "" : " off") + '">' + (active ? (mult + "× LUCK") : "INACTIVE · 1× BASE") + '</span>'
+              + '<span class="gl-timer-pill" id="l12PopGlTimer">' + (active ? ("⏱ " + cd(endsMs - now)) : "NO ACTIVE TIMER") + '</span>'
+            + '</div>'
+            + '<div class="gl-buyer' + (active ? "" : " idle") + '">'
+              + (active ? ("ACTIVATED BY: " + buyerSafe) : "WAITING FOR AN OPERATOR TO IGNITE")
+            + '</div>'
+          + '</div>'
+          + '<div class="gl-right">'
+            + '<span class="gl-stack-num">' + stacks + ' / 10</span>'
+            + '<span class="gl-stack-lbl">SERVER STACKS</span>'
+          + '</div>'
+        + '</div>'
+        + '<div class="gl-segs">' + segs + '</div>'
+        + '<div class="gl-specs">'
+          + '<div class="gl-spec hot"><k>PER ACTIVATION</k><b>+10× LUCK · +1H</b></div>'
+          + '<div class="gl-spec"><k>MAXIMUM CAP</k><b>' + maxMult + '× LUCK · 10H</b></div>'
+          + '<div class="gl-spec"><k>COVERAGE</k><b>ALL SERVER PLAYERS</b></div>'
+        + '</div>'
+        + '<div class="hzp-desc">'
+          + '<p>Igniting the <em>Global Luck Shrine</em> applies a server-wide Luck Multiplier for <b>every player online</b> and broadcasts your name across the network. Multiplies directly with Personal Luck, Potions, Weather, and Rebirth.</p>'
+          + '<div class="hzp-rules">'
+            + '<div class="hzp-rule"><span>STACKING</span><b>ADDS +10× &amp; +60 MIN</b></div>'
+            + '<div class="hzp-rule"><span>FORMULA</span><b>TOTAL LUCK × GLOBAL</b></div>'
+            + '<div class="hzp-rule"><span>BILLING</span><b>NON-REFUNDABLE · INSTANT</b></div>'
+          + '</div>'
+        + '</div>'
+      + '</div>'
+      + '<footer class="hzp-foot">'
+        + '<div class="hzp-foot-meta">'
+          + '<span class="kv"><span>COST</span><img src="assets/images/premium-currency.webp" alt=""><b>' + cost.toLocaleString("en-US") + ' GEMS</b></span>'
+          + '<span class="kv"><span>BALANCE</span><b>' + gems.toLocaleString("en-US") + '</b></span>'
+        + '</div>'
+        + '<button class="hzp-cta' + (maxed ? " off" : "") + '" type="button"' + (maxed ? " disabled" : "")
+          + ' onclick="window.l12BuyGlobalLuckFromDock()">' + ctaLabel + '</button>'
+      + '</footer>'
+  };
+}
+
+function _l12RenderWeatherDockPanel(now) {
+  const cd = (typeof fmtCountdown === "function") ? fmtCountdown : (ms => Math.max(0, Math.ceil(ms / 1000)) + "s");
+  const fmtN = (typeof fmt === "function") ? fmt : (n => String(n));
+  const fmtCh = (typeof fmtChance === "function") ? fmtChance : (n => String(n));
+  const curWxId = (typeof activeWeatherId === "function") ? activeWeatherId() : null;
+  const curW = (curWxId && typeof WEATHER !== "undefined" && WEATHER[curWxId]) ? WEATHER[curWxId] : null;
+  const pac = curW ? curW.color : "#9ca3af";
+  const wLeft = (state && state.weather && state.weather.endsAt) ? Math.max(0, state.weather.endsAt - now) : 0;
+  const wName = curW ? String(curW.name || curWxId).toUpperCase() : "CLEAR SKY";
+  const wRar = curW ? String(curW.rar || curW.rarity || "COMMON").toUpperCase() : "IDLE";
+  const wLuck = curW ? curW.luckBonus : 1;
+  const wSpd = curW ? curW.speedBonus : 1;
+
+  const byUser = (state && state.weather && state.weather.activated_by) ? _l12Esc(state.weather.activated_by).toUpperCase() : "";
+  const potWin = (typeof WEATHER_MS !== "undefined") ? WEATHER_MS : 300000;
+  let wxSource = "NO ACTIVE CLIMATE";
+  if (curW) {
+    if (byUser) wxSource = "ACTIVATED BY: " + byUser;
+    else if (wLeft > 0 && wLeft <= potWin + 10000) wxSource = "PERSONAL POTION · 5M";
+    else wxSource = "SERVER ROTATION · 30M CYCLE";
+  }
+
+  let rawCards = (typeof window.l12GetWeatherCards === "function") ? window.l12GetWeatherCards(curWxId) : [];
+  if (!curWxId) rawCards = rawCards.slice(0, 4);
+  const cardsHtml = rawCards.length
+    ? rawCards.map(c => {
+        const cid = c.char_id || c.id;
+        const thumb = c.thumb || ((typeof cardThumb === "function") ? cardThumb(cid) : "");
+        const chStr = fmtCh(c.chance || ((typeof luckChance === "function") ? luckChance(cid) : 0));
+        const tag = !curWxId && c.weatherName ? (String(c.weatherName).toUpperCase() + " ONLY") : (c.owned ? "OWNED" : "UNOWNED");
+        return '<button type="button" class="wx-c ' + (c.owned ? "owned" : "unowned") + '"'
+          + ' onclick="window.l12OpenWeatherMachine()" title="' + _l12Esc(c.name) + ' · 1 in ' + chStr + '">'
+          + '<div class="wx-c-img"><img src="' + thumb + '" alt="" loading="lazy"></div>'
+          + '<div class="wx-c-info">'
+            + '<div class="wx-c-nm">' + _l12Esc(c.name) + '</div>'
+            + '<div class="wx-c-ch">1 in ' + chStr + '</div>'
+            + '<span class="wx-c-own">' + tag + '</span>'
+          + '</div>'
+        + '</button>';
+      }).join("")
+    : '<div class="pot-none">NO EXCLUSIVE WEATHER CARDS</div>';
+
+  const wp = (state && state.wpity) || { r: 0, m: 0 };
+  const pRareMax = (typeof PITY_RARE !== "undefined") ? PITY_RARE : 100;
+  const pMythMax = (typeof PITY_MYTHIC !== "undefined") ? PITY_MYTHIC : 250;
+  const pR = Math.min(pRareMax, wp.r || 0);
+  const pM = Math.min(pMythMax, wp.m || 0);
+  const rPct = Math.min(100, (pR / pRareMax) * 100).toFixed(1);
+  const mPct = Math.min(100, (pM / pMythMax) * 100).toFixed(1);
+  const pots = (state && state.potions) || 0;
+  const mythicPots = (state && state.mythicPotions) || 0;
+
+  return {
+    pac: pac,
+    key: "weather|" + (curWxId || "idle") + "|" + byUser + "|" + pots + "|" + mythicPots + "|" + pR + "|" + pM,
+    html: '<span class="hz-crn tl"></span><span class="hz-crn tr"></span>'
+      + '<span class="hz-crn bl"></span><span class="hz-crn br"></span>'
+      + '<header class="hzp-head">'
+        + '<div class="hzp-hleft">'
+          + '<div class="hzp-krow"><span class="hzp-dot"></span><span class="hzp-kick">// ATMOSPHERIC <b>MATRIX</b></span></div>'
+          + '<div class="hzp-trow">'
+            + '<div class="hzp-title">WEATHER DOCK</div>'
+            + '<span class="hzp-badge' + (curW ? "" : " idle") + '"><span class="live-dot"></span>' + wxSource + '</span>'
+          + '</div>'
+        + '</div>'
+        + '<button class="hzp-close" type="button" onclick="window.l12CloseDockPanel()" title="Close" aria-label="Close Weather Dock">' + _l12CloseSvg() + '</button>'
+      + '</header>'
+      + '<div class="hzp-body">'
+        + '<div class="wx-hero">'
+          + '<div class="wx-emb">' + ((typeof weatherSvg === "function") ? weatherSvg(curWxId || "sunny", 30) : "") + '</div>'
+          + '<div class="wx-hinfo">'
+            + '<div class="wx-hname"><b>' + wName + '</b><span class="wx-rar">' + wRar + '</span></div>'
+            + '<div class="wx-hsub">' + (curW ? "ACTIVE ATMOSPHERIC ANOMALY IN SUMMON POOL" : "NATURAL ROTATION PENDING · OPEN WEATHER MACHINE") + '</div>'
+          + '</div>'
+          + '<div class="wx-stats">'
+            + '<div class="wx-stat"><k>LUCK</k><b>' + wLuck + '×</b></div>'
+            + '<div class="wx-stat"><k>SPEED</k><b>' + wSpd + '×</b></div>'
+            + '<div class="wx-stat tm"><k>TIMER</k><b id="l12PopWxTimer">' + (wLeft ? cd(wLeft) : "--:--") + '</b></div>'
+          + '</div>'
+        + '</div>'
+        + '<div class="hzp-sec"><b>' + (curW ? "EXCLUSIVE POOL UNLOCKS" : "SAMPLE WEATHER EXCLUSIVES") + '</b><i></i><span>' + rawCards.length + ' CARDS</span></div>'
+        + '<div class="wx-cards-grid">' + cardsHtml + '</div>'
+        + '<div class="wx-pity">'
+          + '<div class="wx-pbox"><div class="wx-prow"><span>RARE CLIMATE PITY</span><b>' + pR + ' / ' + pRareMax + '</b></div><div class="wx-ptrack"><i style="width:' + rPct + '%"></i></div></div>'
+          + '<div class="wx-pbox"><div class="wx-prow"><span>AWAKENED PITY</span><b>' + pM + ' / ' + pMythMax + '</b></div><div class="wx-ptrack"><i style="width:' + mPct + '%"></i></div></div>'
+        + '</div>'
+        + '<div class="hzp-desc">'
+          + '<p>Server weather rotates naturally every <b>30 minutes</b> across 15 climates. While active, it multiplies your <em>Total Luck</em> &amp; <em>Roll Speed</em> and unlocks <b>Weather-Exclusive cards</b> inside the Summon pool.</p>'
+          + '<div class="hzp-rules">'
+            + '<div class="hzp-rule"><span>WEATHER POTION</span><b>EQUAL/RARER SWITCHES (5M)</b></div>'
+            + '<div class="hzp-rule"><span>WEAKER ROLL</span><b>KEEPS STRONGER CLIMATE</b></div>'
+            + '<div class="hzp-rule"><span>INSTANT WEATHER</span><b>30M SERVER-WIDE IN SHOP</b></div>'
+          + '</div>'
+        + '</div>'
+      + '</div>'
+      + '<footer class="hzp-foot">'
+        + '<div class="hzp-foot-meta">'
+          + '<span class="kv"><span>POTIONS</span><b>×' + fmtN(pots) + '</b></span>'
+          + (mythicPots > 0 ? '<span class="kv"><span>MYTHIC</span><b style="color:#c084fc">×' + fmtN(mythicPots) + '</b></span>' : '')
+        + '</div>'
+        + '<button class="hzp-cta sec" type="button" onclick="window.l12OpenInstantWeather()">INSTANT WEATHER</button>'
+        + '<button class="hzp-cta" type="button" onclick="window.l12QuickRollWeather()">QUICK ROLL (×1)</button>'
+        + '<button class="hzp-cta sec" type="button" onclick="window.l12OpenWeatherMachine()">OPEN MACHINE</button>'
+      + '</footer>'
+  };
+}
+
+function _l12RenderDockPanel() {
+  const tray = document.getElementById("l12PotTray");
+  if (!tray) return;
+  if (!_l12DockPanel) {
+    tray.classList.remove("open");
+    tray.style.display = "none";
+    tray.innerHTML = "";
+    _l12PopKey = "";
+    _l12PotTrayClass(false);
+    _l12SyncBuffChips(Date.now());
+    return;
+  }
+  const now = Date.now();
+  let spec = null;
+  if (_l12DockPanel === "luck" || _l12DockPanel === "speed") spec = _l12RenderPotionMatrix(_l12DockPanel, now);
+  else if (_l12DockPanel === "global") spec = _l12RenderGlobalLuckPanel(now);
+  else if (_l12DockPanel === "weather") spec = _l12RenderWeatherDockPanel(now);
+  if (!spec) return;
+
+  _l12PopKey = spec.key;
+  tray.setAttribute("data-active-type", _l12DockPanel);
+  tray.style.setProperty("--pac", spec.pac);
+  tray.innerHTML = spec.html;
+  tray.style.display = "flex";
+  tray.classList.add("open");
+  _l12PotTrayClass(true);
+  _l12SyncBuffChips(now);
+}
+
+function _l12TickDockPanel(now) {
+  if (!_l12DockPanel) return;
+  const tray = document.getElementById("l12PotTray");
+  if (!tray || !tray.classList.contains("open")) return;
+  const cd = (typeof fmtCountdown === "function") ? fmtCountdown : (ms => Math.max(0, Math.ceil(ms / 1000)) + "s");
+
+  if (_l12DockPanel === "luck" || _l12DockPanel === "speed") {
+    const isLk = _l12DockPanel === "luck";
+    const pArr = isLk
+      ? (Array.isArray(state && state.luckPots) ? state.luckPots : [0, 0, 0])
+      : (Array.isArray(state && state.speedPots) ? state.speedPots : [0, 0, 0]);
+    const totalStk = (pArr[0] || 0) + (pArr[1] || 0) + (pArr[2] || 0);
+    const bfs = isLk
+      ? ((typeof luckBuffs === "function") ? luckBuffs().slice().sort((a, b) => a.lv - b.lv) : [])
+      : ((typeof speedBuffs === "function") ? speedBuffs().slice().sort((a, b) => a.lv - b.lv) : []);
+    const adMs = (typeof adLuckLeftMs === "function") ? adLuckLeftMs() : 0;
+    const wantKey = _l12DockPanel + "|" + totalStk + "|" + bfs.map(b => b.lv).join(",") + "|" + (adMs > 0 ? 1 : 0);
+    if (wantKey !== _l12PopKey) { _l12RenderDockPanel(); return; }
+    let expired = false;
+    tray.querySelectorAll("[data-pot-cd]").forEach(function (el) {
+      const ends = Number(el.getAttribute("data-pot-cd")) || 0;
+      const rem = ends - now;
+      if (rem <= 0) { expired = true; return; }
+      const txt = cd(rem);
+      if (el.textContent !== txt) el.textContent = txt;
+    });
+    if (expired) _l12RenderDockPanel();
+    return;
+  }
+
+  if (_l12DockPanel === "global") {
+    const gl = (typeof _globalLuckCache !== "undefined") ? _globalLuckCache : null;
+    const endsMs = gl && gl.ends_at ? new Date(gl.ends_at).getTime() : 0;
+    const active = !!(gl && now < endsMs);
+    const mult = active ? (gl.multiplier || 0) : 0;
+    const gems = (typeof state !== "undefined" && state && state.premiumGems) || 0;
+    const buyer = _l12Esc((gl && gl.activated_by) ? gl.activated_by : "HUNTER").toUpperCase();
+    const wantKey = "global|" + mult + "|" + (active ? endsMs : 0) + "|" + gems + "|" + buyer;
+    if (wantKey !== _l12PopKey) { _l12RenderDockPanel(); return; }
+    const tm = document.getElementById("l12PopGlTimer");
+    if (tm && active) {
+      const txt = "⏱ " + cd(endsMs - now);
+      if (tm.textContent !== txt) tm.textContent = txt;
+    }
+    return;
+  }
+
+  if (_l12DockPanel === "weather") {
+    const curWxId = (typeof activeWeatherId === "function") ? activeWeatherId() : null;
+    const byUser = (state && state.weather && state.weather.activated_by) ? _l12Esc(state.weather.activated_by).toUpperCase() : "";
+    const pots = (state && state.potions) || 0;
+    const mythicPots = (state && state.mythicPotions) || 0;
+    const wp = (state && state.wpity) || { r: 0, m: 0 };
+    const pR = Math.min((typeof PITY_RARE !== "undefined") ? PITY_RARE : 100, wp.r || 0);
+    const pM = Math.min((typeof PITY_MYTHIC !== "undefined") ? PITY_MYTHIC : 250, wp.m || 0);
+    const wantKey = "weather|" + (curWxId || "idle") + "|" + byUser + "|" + pots + "|" + mythicPots + "|" + pR + "|" + pM;
+    if (wantKey !== _l12PopKey) { _l12RenderDockPanel(); return; }
+    const wLeft = (state && state.weather && state.weather.endsAt) ? Math.max(0, state.weather.endsAt - now) : 0;
+    const tm = document.getElementById("l12PopWxTimer");
+    if (tm) {
+      const txt = wLeft ? cd(wLeft) : "--:--";
+      if (tm.textContent !== txt) tm.textContent = txt;
+    }
+  }
+}
+
+window.l12ToggleDockPanel = function (type, forceOpen) {
+  if (window.sfx && sfx.hit) try { sfx.hit(); } catch (e) {}
+  if (!type || type === "none" || (!forceOpen && _l12DockPanel === type)) {
+    _l12DockPanel = null;
+  } else {
+    _l12DockPanel = type;
+  }
+  _l12RenderDockPanel();
+};
+window.l12CloseDockPanel = function () {
+  _l12DockPanel = null;
+  _l12RenderDockPanel();
+};
+window.l12TogglePotionTray = function (type) {
+  window.l12ToggleDockPanel(type || "luck");
+};
+window.l12ClosePotionTray = function () {
+  window.l12CloseDockPanel();
+};
+
+window.l12InvokePotion = function (type, lv) {
   let res = null;
   if (typeof window.l12UsePotionQuick === "function") {
     res = window.l12UsePotionQuick(type, lv);
@@ -2832,23 +3145,70 @@ window.l12InvokePotion = function(type, lv) {
   } else if (type === "speed" && typeof useSpeedPotion === "function") {
     res = useSpeedPotion(lv, 1);
   }
-  _l12RefreshPotionTray(type);
-  const now = Date.now();
-  const win = (typeof WEATHER_MS !== "undefined") ? WEATHER_MS : 300000;
-  const lb = (typeof luckBuffs === "function") ? luckBuffs().slice().sort((a, b) => a.lv - b.lv).pop() : null;
-  const sb = (typeof speedBuffs === "function") ? speedBuffs().slice().sort((a, b) => a.lv - b.lv).pop() : null;
-  if (lb) {
-    const v = document.getElementById("l12PotLuckVal"); if (v) v.textContent = "+" + (lb.flat || 0) + " L" + lb.lv;
-    const t = document.getElementById("l12PotLuckTm"); if (t && typeof fmtCountdown === "function") t.textContent = fmtCountdown(lb.endsAt - now);
-    const b = document.getElementById("l12PotLuckBar"); if (b) b.style.width = Math.max(4, Math.min(100, Math.round((lb.endsAt - now) / win * 100))) + "%";
-  }
-  if (sb) {
-    const v = document.getElementById("l12PotSpeedVal"); if (v) v.textContent = "+" + (sb.add || 0).toFixed(1) + "? L" + sb.lv;
-    const t = document.getElementById("l12PotSpeedTm"); if (t && typeof fmtCountdown === "function") t.textContent = fmtCountdown(sb.endsAt - now);
-    const b = document.getElementById("l12PotSpeedBar"); if (b) b.style.width = Math.max(4, Math.min(100, Math.round((sb.endsAt - now) / win * 100))) + "%";
-  }
+  _l12SyncBuffChips(Date.now());
+  _l12RenderDockPanel();
   return res;
 };
+
+window.l12BuyGlobalLuckFromDock = function () {
+  if (window.sfx && sfx.hit) try { sfx.hit(); } catch (e) {}
+  if (typeof buyGlobalLuck !== "function") return;
+  const r = buyGlobalLuck();
+  if (r && typeof r.then === "function") {
+    r.then(function () {
+      if (document.querySelector(".lobby-hub.l12")) renderLobby();
+    }).catch(function () {});
+  }
+};
+
+window.l12QuickRollWeather = function () {
+  if (!state || (state.potions || 0) < 1) {
+    if (typeof beep === "function") beep(240, 0.12, "square", 0.08);
+    if (typeof toast === "function") toast("NO WEATHER POTIONS", "Obtain Weather Potions from Infinite Tower, Tower Shop, or Raid Shop.", "#f87171");
+    return;
+  }
+  if (typeof useWeatherPotion !== "function") return;
+  const r = useWeatherPotion();
+  if (r && r.ok && r.weather) {
+    if (typeof beep === "function") {
+      beep(520, 0.1, "triangle", 0.08);
+      setTimeout(function () { beep(780, 0.15, "triangle", 0.09); }, 80);
+    }
+    if (typeof toast === "function") {
+      if (r.kept) {
+        toast("CLIMATE PRESERVED", "Rolled " + r.weather.name + " (" + r.weather.rar + ") — kept stronger active climate.", r.weather.color);
+      } else {
+        toast(r.weather.name, r.weather.rar + " WEATHER ACTIVATED · 5 MIN", r.weather.color);
+      }
+    }
+    if (typeof renderShell === "function") renderShell();
+    _l12SyncBuffChips(Date.now());
+    _l12RenderDockPanel();
+  }
+};
+
+window.l12OpenInstantWeather = function () {
+  if (window.sfx && sfx.hit) try { sfx.hit(); } catch (e) {}
+  window.l12CloseDockPanel();
+  if (typeof openPremiumShop === "function") openPremiumShop();
+  if (typeof premSetTab === "function") premSetTab("weather");
+};
+
+window.l12OpenWeatherMachine = function () {
+  if (window.sfx && sfx.hit) try { sfx.hit(); } catch (e) {}
+  window.l12CloseDockPanel();
+  if (typeof openWeatherMachine === "function") openWeatherMachine();
+};
+
+if (!window._l12DockEscBound) {
+  window._l12DockEscBound = true;
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape" || !_l12DockPanel) return;
+    if (document.querySelector("#pxConfirmHost .pxcf-backdrop, #weatherMachineModal.show, #premiumModal.show, #backpackPanel.open, #commandDrawer.open")) return;
+    e.stopPropagation();
+    window.l12CloseDockPanel();
+  });
+}
 
 /* ---- ROLL HISTORY 10-SLOT STRIP ENGINE (ANTI-LAG) ---- */
 let _rhLastPaint = 0;
