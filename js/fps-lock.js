@@ -12,6 +12,8 @@
   var TARGET=30, MIN=1000/TARGET, enabled=true;
   var _raf=window.requestAnimationFrame.bind(window);
   var _caf=window.cancelAnimationFrame.bind(window);
+  window.__rawRaf=_raf;
+  window.__rawCaf=_caf;
   var waiting=new Map(), uid=0, running=false, last=0;
   function loop(now){
     if(!enabled || now-last>=MIN || now<last){

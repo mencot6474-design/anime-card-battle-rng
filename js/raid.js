@@ -764,18 +764,19 @@ function raidStep(){
   const setRaidBar=hp=>{const v=Math.max(0,hp);const p=Math.max(0,Math.min(100,v/raid.max*100))+"%";const b=document.getElementById("hpRaid");if(b){b.style.width=p;const tr=b.parentElement?b.parentElement.querySelector(".hp-trail"):null;if(tr)tr.style.width=p;}const tt=document.getElementById("hpRaidT");if(tt)tt.textContent=(typeof fmtBattleK==="function"?fmtBattleK(v):fmtBig(v));const ih=document.getElementById("foeInlineHp");if(ih)ih.textContent=(typeof fmtBattleK==="function"?fmtBattleK(v):fmtBig(v));if(typeof window.hzBattleSync==="function"){try{window.hzBattleSync();}catch(e){}}};
   const rHstep=(psychicActive&&typeof PSY_T!=="undefined")?PSY_T.step:(domainActive?80:160);
   const rMd=md;
-  const rChainEnd=(rMd?MADARA_T.slash+Math.max(0,hits.length-1)*MADARA_T.step+40:180+95+Math.max(0,hits.length-1)*rHstep)+420;
-  setTimeout(()=>{
-    if(domainActive&&raid&&!raid.over){setTimeout(()=>floatText(".fighter.me","DOMAIN EXPANSION","crit"),220);}
-    if(ariseMode&&raid&&!raid.over){floatText(".fighter.foe","ARMY OF SHADOWS","crit");}
-    const susStart=(md&&raid&&!raid.over)?MADARA_T.slash:0;
+  const rHitDelay=273;
+  const rChainEnd=(rMd?MADARA_T.slash+Math.max(0,hits.length-1)*MADARA_T.step+40:rHitDelay+Math.max(0,hits.length-1)*rHstep)+420;
+  {
+    if(domainActive&&raid&&!raid.over){setTimeout(()=>floatText(".fighter.me","DOMAIN EXPANSION","crit"),rHitDelay+40);}
+    if(ariseMode&&raid&&!raid.over){setTimeout(()=>floatText(".fighter.foe","ARMY OF SHADOWS","crit"),rHitDelay);}
+    const susStart=(md&&raid&&!raid.over)?MADARA_T.slash:rHitDelay;
     {
       const hstep=rHstep;
       const susDelay=susStart;
-      const dlyAt=i=> galaxyMode ? 95 : md ? (susDelay+i*MADARA_T.step) : (i*hstep+susDelay);
+      const dlyAt=i=> galaxyMode ? rHitDelay : md ? (susDelay+i*MADARA_T.step) : (susDelay+i*hstep);
       let rShown=raid.hp+total,rBarEnd=0;const rEndHp=raid.hp;
       hits.forEach((m,i)=>{
-        const dl=dlyAt(i),ft=dl+(md?40:95);
+        const dl=dlyAt(i),ft=dl;
         if(i>0){
           setTimeout(()=>{
             if(raid&&!raid.over&&typeof window.playAnimeArchetypeAttack==="function"){
@@ -790,11 +791,11 @@ function raidStep(){
       });
       setTimeout(()=>setRaidBar(rEndHp),rBarEnd+420);
       if(barrageN>1)setTimeout(()=>floatText(".fighter.foe",(iceBlastN?"ICE BLAST ×":domainActive?"UNLIMITED VOID ×":ariseMode?"ARISE ×":md?"TENSA ×":psychicActive?"PSYCHIC BARRAGE ×":"CLEAVE ×")+barrageN,"crit"),md?MADARA_T.slash:psychicActive?260:280);
-      else if(hits.length>1&&!ranton)setTimeout(()=>floatText(".fighter.foe","DOUBLE!","crit"),240);
-      if(bajrangActive)setTimeout(()=>floatText(".fighter.me","BAJRANG GUN!","crit"),220);
-      if(hpPurple)setTimeout(()=>floatText(".fighter.foe","HOLLOW PURPLE","crit"),220);
+      else if(hits.length>1&&!ranton)setTimeout(()=>floatText(".fighter.foe","DOUBLE!","crit"),rHitDelay+60);
+      if(bajrangActive)setTimeout(()=>floatText(".fighter.me","BAJRANG GUN!","crit"),rHitDelay+40);
+      if(hpPurple)setTimeout(()=>floatText(".fighter.foe","HOLLOW PURPLE","crit"),rHitDelay+40);
     }
-  },180);
+  }
   raid.hp-=total;raid.dealt+=total;
   {const rdEl=document.getElementById("wbrRunDmg");if(rdEl)rdEl.textContent=fmtBig(raid.dealt);}
   /* SUPER MEGA DEATH ROCKET (HAVOC WREACKER di Raid): langsung aktif saat masuk/turn 1, maks 3x per battle */

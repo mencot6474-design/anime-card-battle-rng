@@ -649,13 +649,15 @@
         ], { duration: inDur, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'forwards' });
         animIn.finished.then(function () {
           try { ghostIn.remove(); } catch (e) {}
-          activeUnitEl.style.opacity = '1';
+          var liveEl = document.querySelector(isMe ? '.fighter.me' : '.fighter.foe');
+          if (liveEl) { liveEl.classList.remove('ko'); liveEl.style.opacity = '1'; }
           if (typeof window.fxDeployBurst === 'function') {
             try { window.fxDeployBurst(cardR, isMe); } catch (e) {}
           }
         }).catch(function () {
           try { ghostIn.remove(); } catch (e) {}
-          activeUnitEl.style.opacity = '1';
+          var liveEl = document.querySelector(isMe ? '.fighter.me' : '.fighter.foe');
+          if (liveEl) { liveEl.classList.remove('ko'); liveEl.style.opacity = '1'; }
           if (typeof window.fxDeployBurst === 'function') {
             try { window.fxDeployBurst(cardR, isMe); } catch (e) {}
           }
@@ -663,7 +665,8 @@
       } else {
         setTimeout(function () {
           try { ghostIn.remove(); } catch (e) {}
-          activeUnitEl.style.opacity = '1';
+          var liveEl = document.querySelector(isMe ? '.fighter.me' : '.fighter.foe');
+          if (liveEl) { liveEl.classList.remove('ko'); liveEl.style.opacity = '1'; }
           if (typeof window.fxDeployBurst === 'function') {
             try { window.fxDeployBurst(cardR, isMe); } catch (e) {}
           }

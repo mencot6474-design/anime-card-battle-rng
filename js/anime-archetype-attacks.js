@@ -67,9 +67,11 @@
     return { cv: sharedCv, ctx: sharedCtx, W: W, H: H };
   }
 
+  var _fastRaf = (typeof window.__rawRaf === "function") ? window.__rawRaf : window.requestAnimationFrame.bind(window);
+
   function registerFrame(fn){
     sharedFns.push(fn);
-    if(!sharedRaf) sharedRaf = requestAnimationFrame(sharedTick);
+    if(!sharedRaf) sharedRaf = _fastRaf(sharedTick);
   }
 
   function sharedTick(now){
@@ -84,7 +86,7 @@
       ctx.restore();
       if(keep === false) sharedFns.splice(i, 1);
     }
-    if(sharedFns.length) sharedRaf = requestAnimationFrame(sharedTick);
+    if(sharedFns.length) sharedRaf = _fastRaf(sharedTick);
     else sharedRaf = 0;
   }
 
@@ -131,22 +133,22 @@
     var fromCy = fromRect.cy != null ? fromRect.cy : (fromRect.top + fromRect.height / 2);
     var toCx   = toRect.cx != null ? toRect.cx : (toRect.left + toRect.width / 2);
     var toCy   = toRect.cy != null ? toRect.cy : (toRect.top + toRect.height / 2);
-    var toW    = toRect.w != null ? toRect.w : toRect.width;
+    var toW    = Math.max(10, toRect.w != null ? toRect.w : (toRect.width || 160));
     var baseAng = Math.atan2(toCy - fromCy, toCx - fromCx);
     SFX.slash();
 
     registerFrame(function(now){
-      var elapsed = now - t0;
+      var elapsed = Math.max(0, (typeof now === "number" ? now : performance.now()) - t0);
       if(elapsed > dur) return false;
-      var p = elapsed / dur;
+      var p = clamp01(elapsed / dur);
       var e = easeOutCubic(p);
-      var fade = 1 - p;
+      var fade = Math.max(0, 1 - p);
 
       cx.save();
       cx.globalCompositeOperation = "lighter";
 
       if(p < 0.48){
-        var mp = p / 0.48;
+        var mp = clamp01(p / 0.48);
         var sx = fromCx + (toCx - fromCx) * 0.25;
         var sy = fromCy + (toCy - fromCy) * 0.25;
         var lg = cx.createLinearGradient(sx, sy, toCx, toCy);
@@ -154,7 +156,7 @@
         lg.addColorStop(0.7, "rgba(" + RGB + "," + (0.45 * (1 - mp)) + ")");
         lg.addColorStop(1, "rgba(255,255,255," + (0.75 * (1 - mp)) + ")");
         cx.strokeStyle = lg;
-        cx.lineWidth = 10 * (1 - mp);
+        cx.lineWidth = Math.max(0.5, 10 * (1 - mp));
         cx.beginPath();
         cx.moveTo(sx, sy);
         cx.lineTo(toCx, toCy);
@@ -167,7 +169,7 @@
           cx, toCx, toCy,
           baseAng - 0.55,
           toW * (1.35 + 0.35 * easeOutCubic(s1)),
-          18 * (1 - s1 * 0.65),
+          Math.max(1, 18 * (1 - s1 * 0.65)),
           1 - s1,
           RGB
         );
@@ -179,23 +181,23 @@
           cx, toCx, toCy,
           baseAng + 0.62,
           toW * (1.28 + 0.35 * easeOutCubic(s2)),
-          15 * (1 - s2 * 0.65),
+          Math.max(1, 15 * (1 - s2 * 0.65)),
           1 - s2,
           RGB
         );
       }
 
-      var rRad = toW * (0.18 + 0.78 * e);
+      var rRad = Math.max(1, toW * (0.18 + 0.78 * e));
       cx.strokeStyle = "rgba(" + RGB + "," + (0.38 * fade) + ")";
-      cx.lineWidth = 9 * fade;
+      cx.lineWidth = Math.max(0.5, 9 * fade);
       cx.beginPath();
       cx.arc(toCx, toCy, rRad, 0, Math.PI * 2);
       cx.stroke();
 
       cx.strokeStyle = "rgba(255,255,255," + (0.75 * fade) + ")";
-      cx.lineWidth = 2 * fade;
+      cx.lineWidth = Math.max(0.5, 2 * fade);
       cx.beginPath();
-      cx.arc(toCx, toCy, rRad * 0.92, 0, Math.PI * 2);
+      cx.arc(toCx, toCy, Math.max(1, rRad * 0.92), 0, Math.PI * 2);
       cx.stroke();
 
       cx.restore();
@@ -212,18 +214,18 @@
     var RGB = isPlayer ? "243,230,0" : "255,84,112";
     var rCx = rect.cx != null ? rect.cx : (rect.left + rect.width / 2);
     var rCy = rect.cy != null ? rect.cy : (rect.top + rect.height / 2);
-    var rW  = rect.w != null ? rect.w : rect.width;
+    var rW  = Math.max(10, rect.w != null ? rect.w : (rect.width || 160));
 
     registerFrame(function(now){
-      var elapsed = now - t0;
+      var elapsed = Math.max(0, (typeof now === "number" ? now : performance.now()) - t0);
       if(elapsed > dur) return false;
-      var p = elapsed / dur;
-      var fade = 1 - p;
-      var r = rW * (0.3 + 0.75 * easeOutCubic(p));
+      var p = clamp01(elapsed / dur);
+      var fade = Math.max(0, 1 - p);
+      var r = Math.max(1, rW * (0.3 + 0.75 * easeOutCubic(p)));
       cx.save();
       cx.globalCompositeOperation = "lighter";
       cx.strokeStyle = "rgba(" + RGB + "," + (0.55 * fade) + ")";
-      cx.lineWidth = 6 * fade;
+      cx.lineWidth = Math.max(0.5, 6 * fade);
       cx.beginPath();
       cx.arc(rCx, rCy, r, 0, Math.PI * 2);
       cx.stroke();

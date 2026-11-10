@@ -667,7 +667,20 @@ html body.battle-full #app .battle-grid .fighter.shiny.mut-ultima{
   box-shadow:none !important;
   overflow:visible !important;
   transform:none;
+  rotate:none !important;
+  scale:none !important;
+  translate:none !important;
+  transition:none !important;
+  animation:none !important;
   will-change:transform,opacity;
+}
+html body.battle-full #app .battle-grid .fighter.ko,
+html body.battle-full #app .battle-grid .fighter.me.ko,
+html body.battle-full #app .battle-grid .fighter.foe.ko{
+  transform:none;
+  opacity:.32 !important;
+  filter:grayscale(1) brightness(.55) !important;
+  pointer-events:none !important;
 }
 html body.battle-full #app .battle-grid .fighter[class*="mut-"]::before,
 html body.battle-full #app .battle-grid .fighter.shiny::before,
@@ -2123,6 +2136,7 @@ html body.battle-full #overlay .hide{display:none !important}
   60%{transform:translate3d(-5px,-3px,0)}
   80%{transform:translate3d(4px,3px,0)}
 }
+html body.battle-full #hzArena.shake,
 html body.battle-full #app .battle-grid.shake{
   animation:hzShake .32s cubic-bezier(.36,.07,.19,.97) !important;
 }

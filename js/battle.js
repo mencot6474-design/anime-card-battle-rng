@@ -437,8 +437,8 @@ function floatText(sel,txt,cls,customLbl){
 }
 function anim(sel,cls,noPair){
   const el=document.querySelector(sel);if(!el)return;
-  const pulse=(e)=>{e.classList.remove(cls);void e.offsetWidth;e.classList.add(cls);setTimeout(()=>e.classList.remove(cls),520);};
-  pulse(el);
+  if(cls==="ko"){el.classList.add("ko");}
+
 }
 /* ---------- GALAXY ROAR (Eternal Dragon): charge bola beku -> sembur laser es -> ledakan percikan beku ----------
    Semua timing dibaca dari GALAXY supaya mesin battle (schedPhase / raid.timer / dlyAt) dan
@@ -637,7 +637,7 @@ if(nfx.worldCorrupt){bt.wc={c:0,atk:Math.round(cardStats(bt.eq.char,bt.eq.mut,bt
     if(me3){me3.classList.add("tag-enter");enterFx(me3);setTimeout(()=>me3.classList.remove("tag-enter"),650);}
     floatText(".fighter.me","TAG-IN!","tagin");
     if(typeof window.hzBattleSync==="function"){try{window.hzBattleSync();}catch(e){}}
-  },bsMs(2000));
+  },bsMs(960));
   return true;
 }
 function trySave(){
@@ -854,8 +854,9 @@ function schedPhase(ms,fn){
   },bsMs(ms));
 }
 /* ===== Renderer serangan SATU untuk semua kartu: user & musuh tinggal tukar sisi (A=penyerang, D=target) ===== */
+let _hzAtkAnimMe=null,_hzAtkAnimFoe=null,_hzRecAnimMe=null,_hzRecAnimFoe=null,_hzHitTimer=null;
 function triggerStageShake(){
-  const g=document.querySelector(".battle-grid");
+  const g=document.getElementById("hzArena")||document.querySelector(".battle-grid");
   if(!g)return;
   g.classList.remove("shake");
   void g.offsetWidth;
@@ -868,6 +869,20 @@ function attackLunge(sel,wind){
   const isMe=atkEl.classList.contains("me");
   const defEl=document.querySelector(isMe?".fighter.foe":".fighter.me");
   if(!defEl)return;
+  const atkCol=atkEl.closest(".me-col")||atkEl.parentElement;
+  const defCol=defEl.closest(".me-col")||defEl.parentElement;
+
+  /* Cancel any in-flight WAAPI animations so getBoundingClientRect() measures true resting positions */
+  try{
+    if(_hzAtkAnimMe){_hzAtkAnimMe.cancel();_hzAtkAnimMe=null;}
+    if(_hzAtkAnimFoe){_hzAtkAnimFoe.cancel();_hzAtkAnimFoe=null;}
+    if(_hzRecAnimMe){_hzRecAnimMe.cancel();_hzRecAnimMe=null;}
+    if(_hzRecAnimFoe){_hzRecAnimFoe.cancel();_hzRecAnimFoe=null;}
+    if(typeof atkEl.getAnimations==="function")atkEl.getAnimations().forEach(a=>a.cancel());
+    if(typeof defEl.getAnimations==="function")defEl.getAnimations().forEach(a=>a.cancel());
+  }catch(e){}
+  if(_hzHitTimer){clearTimeout(_hzHitTimer);_hzHitTimer=null;}
+
   const atkCard=atkEl.querySelector(".card-shell")||atkEl;
   const defCard=defEl.querySelector(".card-shell")||defEl;
   const fromR=atkCard.getBoundingClientRect();
@@ -880,41 +895,60 @@ function attackLunge(sel,wind){
   const windX=-dx*0.16, windY=-dy*0.16;
   const tiltWind=isMe?-5:5;
   const tiltStrike=isMe?9:-9;
-  const totalMs=Math.max(240,Math.round(bsMs(620)));
+  const totalMs=Math.max(260,Math.round(bsMs(620)));
   const hitMs=Math.round(totalMs*0.44);
+
+  if(atkCol)atkCol.style.zIndex="28";
+  if(defCol)defCol.style.zIndex="15";
   atkEl.style.zIndex="28";
   defEl.style.zIndex="15";
+
+  const resetZ=()=>{
+    if(atkCol)atkCol.style.zIndex="";
+    if(defCol)defCol.style.zIndex="";
+    atkEl.style.zIndex="";
+    defEl.style.zIndex="";
+  };
+
   if(typeof atkEl.animate==="function"){
     const animRef=atkEl.animate([
       {transform:"translate3d(0,0,0) scale(1) rotate(0deg)",offset:0,easing:"cubic-bezier(0.32, 0, 0.67, 0)"},
       {transform:`translate3d(${windX.toFixed(1)}px,${windY.toFixed(1)}px,0) scale(0.95) rotate(${tiltWind}deg)`,offset:0.22,easing:"cubic-bezier(0.16, 1, 0.3, 1)"},
       {transform:`translate3d(${dx.toFixed(1)}px,${dy.toFixed(1)}px,0) scale(1.08) rotate(${tiltStrike}deg)`,offset:0.44,easing:"cubic-bezier(0.22, 1, 0.36, 1)"},
-      {transform:`translate3d(${(dx*0.86).toFixed(1)}px,${(dy*0.86).toFixed(1)}px,0) scale(1.04) rotate(${(tiltStrike*0.5).toFixed(1)}deg)`,offset:0.54,easing:"cubic-bezier(0.34, 1.56, 0.64, 1)"},
       {transform:"translate3d(0,0,0) scale(1) rotate(0deg)",offset:1}
     ],{duration:totalMs,fill:"none"});
+    if(isMe)_hzAtkAnimMe=animRef;else _hzAtkAnimFoe=animRef;
     if(animRef&&animRef.finished){
-      animRef.finished.then(()=>{atkEl.style.zIndex="";defEl.style.zIndex="";}).catch(()=>{atkEl.style.zIndex="";defEl.style.zIndex="";});
+      animRef.finished.then(resetZ).catch(resetZ);
     }else{
-      setTimeout(()=>{atkEl.style.zIndex="";defEl.style.zIndex="";},totalMs+40);
+      setTimeout(resetZ,totalMs+40);
     }
   }else{
-    setTimeout(()=>{atkEl.style.zIndex="";defEl.style.zIndex="";},totalMs+40);
+    setTimeout(resetZ,totalMs+40);
   }
-  setTimeout(()=>{
+
+  _hzHitTimer=setTimeout(()=>{
+    _hzHitTimer=null;
+    const curAtkEl=document.querySelector(isMe?".fighter.me":".fighter.foe");
+    const curDefEl=document.querySelector(isMe?".fighter.foe":".fighter.me");
+    const curDefCard=curDefEl?(curDefEl.querySelector(".card-shell")||curDefEl):null;
+    const liveToR=curDefCard?curDefCard.getBoundingClientRect():toR;
     if(typeof window.fxImpactSlash==="function"){
-      try{window.fxImpactSlash(fromR,toR,isMe);}catch(e){}
+      try{window.fxImpactSlash(fromR,liveToR.width?liveToR:toR,isMe);}catch(e){}
     }
     triggerStageShake();
     const recoilX=(toCx-fromCx)>0?18:-18;
     const recoilY=(toCy-fromCy)>0?-12:12;
     const recoilRot=isMe?5:-5;
-    if(typeof defEl.animate==="function"){
-      defEl.animate([
+    if(curDefEl&&typeof curDefEl.animate==="function"){
+      try{curDefEl.getAnimations().forEach(a=>a.cancel());}catch(e){}
+      const recRef=curDefEl.animate([
         {transform:"translate3d(0,0,0) scale(1) rotate(0deg)",offset:0},
         {transform:`translate3d(${recoilX}px,${recoilY}px,0) scale(0.94) rotate(${recoilRot}deg)`,offset:0.26},
         {transform:`translate3d(${(-recoilX*0.35).toFixed(1)}px,${(-recoilY*0.35).toFixed(1)}px,0) scale(1.02) rotate(${(-recoilRot*0.3).toFixed(1)}deg)`,offset:0.62},
         {transform:"translate3d(0,0,0) scale(1) rotate(0deg)",offset:1}
-      ],{duration:Math.max(140,Math.round(bsMs(380))),easing:"cubic-bezier(0.22, 1, 0.36, 1)"});
+      ],{duration:Math.max(160,Math.round(bsMs(380))),easing:"cubic-bezier(0.22, 1, 0.36, 1)",fill:"none"});
+      if(isMe)_hzRecAnimFoe=recRef;else _hzRecAnimMe=recRef;
     }
   },hitMs);
 }
@@ -933,52 +967,51 @@ function performAttack(o){
   const A=o.A,D=o.D,id=o.id,shots=o.shots;
   const md=o.ranton&&id==="CH_EX_MADARA";
   const galaxy=!!o.galaxy;
-  const ultBarrage=(o.domainStrike||o.ariseMode||md);
   const psy=!!o.psychic;
   const hstep=psy?PSY_T.step:o.domainStrike?80:160;
-  /* Damage number & HP bar drop right at the prototype hitMs (~273ms total = 180 + 95) */
-  const hoff=95;
+  /* Exact hit moment of attackLunge (620ms * 0.44 = 273ms) */
+  const hitDelay=273;
 
   const startHp=Math.max(0,Math.min(o.defMax,o.defHpStart));
   const endHp=Math.max(0,o.defHpEnd);
   const span=Math.max(0,startHp-endHp);
   const hpAt=(cum)=>o.total>0?Math.max(endHp,Math.round(startHp-span*Math.min(1,cum/o.total))):endHp;
   attackLunge(A,true);
+  if(!bt)return;
+  const self=(o.domainStrike?o.fx.domain:o.ariseMode?o.fx.barrage:null);
+  if(self&&self.selfStun&&o.recharge)setTimeout(()=>{if(bt&&o.recharge)o.recharge(self);},bsMs(180));
+  const susStart=(o.ranton&&id==="CH_EX_MADARA"&&!bt.over)?MADARA_T.slash:hitDelay;
+  const dlyAt=i=> galaxy ? hitDelay : md ? (susStart+i*MADARA_T.step) : (susStart+i*hstep);
+  let cum=0,barEnd=hitDelay;
+  shots.forEach((s,i)=>{
+    if(s.evade||s.miss){setTimeout(()=>floatText(D,s.evade?"DODGE":"MISS","miss"),bsMs(hitDelay));return;}
+    if(s.void){setTimeout(()=>floatText(D,"VOID","miss"),bsMs(hitDelay));return;}
+    const ft=dlyAt(i);
+    if(i>0){
+      setTimeout(()=>{
+        if(bt&&!bt.over&&typeof window.playAnimeArchetypeAttack==="function"){
+          try{window.playAnimeArchetypeAttack(id,A,D);}catch(e){}
+        }
+      },bsMs(ft));
+    }
+    cum+=s.d;barEnd=Math.max(barEnd,ft);const stepHp=hpAt(cum);
+    setTimeout(()=>floatText(D,"-"+fmt(s.d),(o.crit&&i===shots.length-1)?"crit":""),bsMs(ft));
+    setTimeout(()=>setBar(o.barId,o.barTid,stepHp,o.defMax),bsMs(ft));
+    if(s.pierce)setTimeout(()=>floatText(D,"PIERCE","crit"),bsMs(ft+60));
+  });
+  /* Wait until the attacker card finishes returning to rest (620ms) before triggering death / next step */
+  const finishWait=Math.max(660,barEnd+380);
   setTimeout(()=>{
-    if(!bt)return;
-    const self=(o.domainStrike?o.fx.domain:o.ariseMode?o.fx.barrage:null);
-    if(self&&self.selfStun&&o.recharge)o.recharge(self);
-    const susStart=(o.ranton&&id==="CH_EX_MADARA"&&!bt.over)?MADARA_T.slash:0;
-    const dlyAt=i=> galaxy ? 95 : md ? (susStart+i*MADARA_T.step) : (i*hstep+susStart);
-    let cum=0,barEnd=0;
-    shots.forEach((s,i)=>{
-      if(s.evade||s.miss){floatText(D,s.evade?"DODGE":"MISS","miss");return;}
-      if(s.void){floatText(D,"VOID","miss");return;}
-      const dl=dlyAt(i),ft=dl+(md?40:hoff);
-      if(i>0){
-        setTimeout(()=>{
-          if(bt&&!bt.over&&typeof window.playAnimeArchetypeAttack==="function"){
-            try{window.playAnimeArchetypeAttack(id,A,D);}catch(e){}
-          }
-        },bsMs(dl));
-      }
-      cum+=s.d;barEnd=Math.max(barEnd,ft);const stepHp=hpAt(cum);
-      setTimeout(()=>floatText(D,"-"+fmt(s.d),(o.crit&&i===shots.length-1)?"crit":""),bsMs(ft));
-      setTimeout(()=>setBar(o.barId,o.barTid,stepHp,o.defMax),bsMs(ft));
-      if(s.pierce)setTimeout(()=>floatText(D,"PIERCE","crit"),bsMs(180));
-    });
-    setTimeout(()=>{
-      try{
-        if(bt&&!bt.over)setBar(o.barId,o.barTid,endHp,o.defMax);
-        if(bt&&o.onAnimEnd)o.onAnimEnd();
-      }catch(err){
-        console.error("onAnimEnd error",err);
-        if(bt&&!bt.over){ try{ bt.timer=null; endBattle(bt.eHp<=0); }catch(e2){ console.error("force endBattle error",e2); } }
-      }
-    },bsMs(barEnd+420));
-    if(o.barrageN>1)setTimeout(()=>floatText(D,(o.iceBlast?"ICE BLAST ×":o.domainStrike?"UNLIMITED VOID ×":o.ariseMode?"ARISE ×":md?"TENSA ×":"CLEAVE ×")+o.barrageN,"crit"),bsMs(md?MADARA_T.slash:260));
-    else if(shots.length>1&&!o.ranton)setTimeout(()=>floatText(D,"DOUBLE!","crit"),bsMs(240));
-  },bsMs(180));
+    try{
+      if(bt&&!bt.over)setBar(o.barId,o.barTid,endHp,o.defMax);
+      if(bt&&o.onAnimEnd)o.onAnimEnd();
+    }catch(err){
+      console.error("onAnimEnd error",err);
+      if(bt&&!bt.over){ try{ bt.timer=null; endBattle(bt.eHp<=0); }catch(e2){ console.error("force endBattle error",e2); } }
+    }
+  },bsMs(finishWait));
+  if(o.barrageN>1)setTimeout(()=>floatText(D,(o.iceBlast?"ICE BLAST ×":o.domainStrike?"UNLIMITED VOID ×":o.ariseMode?"ARISE ×":md?"TENSA ×":"CLEAVE ×")+o.barrageN,"crit"),bsMs(md?MADARA_T.slash:hitDelay+60));
+  else if(shots.length>1&&!o.ranton)setTimeout(()=>floatText(D,"DOUBLE!","crit"),bsMs(hitDelay+60));
 }
 function setTurnPill(side,label){
   const col=document.querySelector(".vs-col");if(!col)return;
@@ -1175,7 +1208,7 @@ function playerPhase(){
   if(fx.lifetime&&(t-(bt.burstStart[a]||1))>=fx.lifetime.turns){
     bt.pHp=0;setBar("hpMe","hpMeT",0,bt.pMax);
     setTimeout(()=>{anim(".fighter.me","ko");floatText(".fighter.me","LIFETIME UP","crit");},bsMs(200));
-    setTimeout(()=>{if(!bt||bt.over)return;if(!trySave()){endBattle(false);return;}schedPhase(bt.justTagged?2700:700,playerPhase);},bsMs(900));
+    setTimeout(()=>{if(!bt||bt.over)return;if(!trySave()){endBattle(false);return;}schedPhase(bt.justTagged?1350:700,playerPhase);},bsMs(900));
     return;
   }
   /* BURST: revert HP ke normal kalau masa burst sudah lewat (tanpa lifetime) */
@@ -1188,7 +1221,7 @@ function playerPhase(){
     const oh=Math.max(1,Math.round(bt.pMax*fx.overheat.pct/100));
     bt.pHp=Math.max(0,bt.pHp-oh);setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
     setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.me","hit");floatText(".fighter.me","OVERHEAT -"+fmt(oh),"burn");}},bsMs(200));
-    if(bt.pHp<=0){setTimeout(()=>{if(!bt||bt.over)return;if(!trySave()){endBattle(false);return;}schedPhase(bt.justTagged?2700:700,playerPhase);},bsMs(900));return;}
+    if(bt.pHp<=0){setTimeout(()=>{if(!bt||bt.over)return;if(!trySave()){endBattle(false);return;}schedPhase(bt.justTagged?1350:700,playerPhase);},bsMs(900));return;}
   }
   /* BERSERKER ARMOR (THE STRUGGLER): tiap giliran rugi selfDmgPct% max HP + atkGainPct% ATK stack; HP < lowPct% -> undying undyingTurns giliran + xatkMult; habis -> tewas */
   if(fx.berserker){
@@ -1211,7 +1244,7 @@ function playerPhase(){
       setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","BERSERKER ARMOR!","crit");},bsMs(420));
     }
     if(bt.pHp<=0&&!bt.berserkOn){
-      setTimeout(()=>{if(!bt||bt.over)return;if(!trySave()){endBattle(false);return;}schedPhase(bt.justTagged?2700:700,playerPhase);},bsMs(900));
+      setTimeout(()=>{if(!bt||bt.over)return;if(!trySave()){endBattle(false);return;}schedPhase(bt.justTagged?1350:700,playerPhase);},bsMs(900));
       return;
     }
   }
@@ -1619,7 +1652,7 @@ function enemyPhase(){
       if(!bt||bt.over)return;
       bt.turn++;
       if(!trySave()){endBattle(false);return;}
-      schedPhase(bt.justTagged?2700:700,playerPhase);
+      schedPhase(bt.justTagged?1350:700,playerPhase);
     },bsMs(900));
     return;
   }
@@ -1631,7 +1664,7 @@ function enemyPhase(){
       if(!bt||bt.over)return;
       bt.turn++;
       if(!trySave()){endBattle(false);return;}
-      schedPhase(bt.justTagged?2700:700,playerPhase);
+      schedPhase(bt.justTagged?1350:700,playerPhase);
     },bsMs(900));
     return;
   }
@@ -1642,7 +1675,7 @@ function enemyPhase(){
     setTimeout(()=>{
       if(!bt||bt.over)return;bt.turn++;
       if(!trySave()){endBattle(false);return;}
-      schedPhase(bt.justTagged?2700:700,playerPhase);
+      schedPhase(bt.justTagged?1350:700,playerPhase);
     },bsMs(900));
     return;
   }
@@ -1878,7 +1911,7 @@ if(bt.ePoison>0)eAtk=Math.max(1,Math.round(eAtk*(1-Math.min(90,bt.ePoison)/100))
         return;
       }
       if(!trySave()){endBattle(false);return;}
-      schedPhase(bt.justTagged?2700:700,playerPhase);
+      schedPhase(bt.justTagged?1350:700,playerPhase);
     };
     performAttack({
       A:".fighter.foe",D:".fighter.me",id:bt.eid,fx:efx,
@@ -1937,7 +1970,7 @@ if(bt.ePoison>0)eAtk=Math.max(1,Math.round(eAtk*(1-Math.min(90,bt.ePoison)/100))
   }
   if(domainOn){bt.domainNow=false;}
   bt.turn++;
-  schedPhase(bt.justTagged?2700:(eBajrang?BJ_T.first+1300:eGammaRay?1500:eWorldEnder?1350:ePsychicActive?Math.max(1000,PSY_T.first+(ePsychicActive.n-1)*PSY_T.step+640):eGalaxy?GALAXY.total+160:eArise?2200:eDomain?1700:eranton?MADARA_T.total+160:1000),playerPhase);
+  schedPhase(bt.justTagged?1350:(eBajrang?BJ_T.first+1300:eGammaRay?1500:eWorldEnder?1350:ePsychicActive?Math.max(1000,PSY_T.first+(ePsychicActive.n-1)*PSY_T.step+640):eGalaxy?GALAXY.total+160:eArise?2200:eDomain?1700:eranton?MADARA_T.total+160:1000),playerPhase);
 }
 function endBattle(win){
   if(!bt||bt.over)return;
