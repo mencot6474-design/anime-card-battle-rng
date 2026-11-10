@@ -5417,24 +5417,104 @@ window.renderLobbyFloatingIcons = renderLobbyFloatingIcons;
 
 var _watchAdsModalTimer = null;
 var _watchingAdBusy = false;
+var _watchAdsSimKind = null;
+var _watchAdsSimSecLeft = 0;
+var _watchAdsDoneKind = null;
+var _watchAdsSimTimer = null;
+var _watchAdsDoneTimer = null;
+var _watchAdsClaims = 0;
+var _waCurtainT = [];
+
+function waClearT() {
+  for (var i = 0; i < _waCurtainT.length; i++) clearTimeout(_waCurtainT[i]);
+  _waCurtainT = [];
+}
+function waSetCopy(mode) {
+  var kick = document.getElementById('waHZKick');
+  var title = document.getElementById('waHZTitle');
+  var sub = document.getElementById('waHZSub');
+  var foot = document.getElementById('waHZFoot');
+  var serial = document.getElementById('waHZSerial');
+  var water = document.getElementById('waHZWater');
+  if (serial) serial.textContent = (0x1000 + Math.floor(Math.random() * 0xefff)).toString(16).toUpperCase();
+  if (mode === 'open') {
+    if (kick) kick.innerHTML = '// SPONSORED <b>UPLINK</b>';
+    if (title) title.textContent = 'WATCH ADS';
+    if (water) water.textContent = 'ADS';
+    if (sub) sub.textContent = 'SPONSORED TERMINAL — 2× LUCK · 100K PACK';
+    if (foot) foot.textContent = 'ESTABLISH UPLINK';
+  } else {
+    if (kick) kick.innerHTML = '// LINK <b>STAND BY</b>';
+    if (title) title.textContent = 'HOLD';
+    if (water) water.textContent = 'OUT';
+    if (sub) sub.textContent = 'TERMINAL DISCONNECTING — TIMERS SYNCED';
+    if (foot) foot.textContent = 'CLOSE SESSION';
+  }
+}
+function waBannerOpen() {
+  var c = document.getElementById('watchAdsCurtain');
+  if (!c) return;
+  waClearT();
+  waSetCopy('open');
+  c.className = '';
+  void c.offsetWidth;
+  c.classList.add('on', 'smooth', 'sweep');
+  _waCurtainT.push(setTimeout(function() { c.classList.add('revealed'); }, 1080));
+  _waCurtainT.push(setTimeout(function() { c.classList.remove('on', 'smooth', 'sweep', 'revealed'); }, 1800));
+}
+function waBannerClose(onCovered) {
+  var c = document.getElementById('watchAdsCurtain');
+  if (!c) { if (onCovered) onCovered(); return; }
+  waClearT();
+  waSetCopy('close');
+  c.className = '';
+  c.classList.add('on', 'smooth', 'revealed');
+  void c.offsetWidth;
+  c.classList.remove('revealed');
+  _waCurtainT.push(setTimeout(function() { if (onCovered) onCovered(); }, 560));
+  _waCurtainT.push(setTimeout(function() { c.classList.add('revealed'); }, 780));
+  _waCurtainT.push(setTimeout(function() { c.classList.remove('on', 'smooth', 'revealed'); }, 1560));
+}
+window.waBannerOpen = waBannerOpen;
+window.waBannerClose = waBannerClose;
 
 function ensureWatchAdsModal() {
   var m = document.getElementById('watchAdsModal');
-  if (m) return m;
-  m = document.createElement('div');
-  m.id = 'watchAdsModal';
-  m.className = 'wad-backdrop';
-  m.addEventListener('click', function(e) {
-    if (e.target === m && !_watchingAdBusy) closeWatchAdsModal();
-  });
-  document.body.appendChild(m);
+  if (!m) {
+    m = document.createElement('div');
+    m.id = 'watchAdsModal';
+    m.className = 'wad-backdrop';
+    m.setAttribute('role', 'dialog');
+    m.setAttribute('aria-modal', 'true');
+    m.setAttribute('aria-label', 'Watch Ads Reward Terminal');
+    document.body.appendChild(m);
+  }
+  if (!m.__waBound) {
+    m.__waBound = true;
+    m.addEventListener('click', function(e) {
+      if (e.target === m) closeWatchAdsModal();
+    });
+  }
   return m;
 }
 
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Escape') return;
+  var m = document.getElementById('watchAdsModal');
+  if (!m || !m.classList.contains('show')) return;
+  e.stopPropagation();
+  e.preventDefault();
+  closeWatchAdsModal();
+}, true);
+
 function openWatchAdsModal() {
   var m = ensureWatchAdsModal();
+  if (_watchAdsDoneTimer) { clearTimeout(_watchAdsDoneTimer); _watchAdsDoneTimer = null; }
+  _watchAdsDoneKind = null;
   renderWatchAdsModal();
   m.classList.add('show');
+  document.body.classList.add('wa-open', 'hide-docks-modal');
+  waBannerOpen();
   if (_watchAdsModalTimer) clearInterval(_watchAdsModalTimer);
   _watchAdsModalTimer = setInterval(function() {
     if (!m.classList.contains('show')) {
@@ -5446,18 +5526,103 @@ function openWatchAdsModal() {
   }, 1000);
 }
 
-function closeWatchAdsModal() {
-  if (_watchingAdBusy) return;
-  var m = document.getElementById('watchAdsModal');
-  if (m) m.classList.remove('show');
+function closeWatchAdsModal(onHidden) {
+  if (_watchingAdBusy) {
+    try { toast('BROADCAST ACTIVE', 'Wait for the sponsored broadcast to finish before closing.', '#ffb020'); } catch (e) {}
+    return;
+  }
   if (_watchAdsModalTimer) {
     clearInterval(_watchAdsModalTimer);
     _watchAdsModalTimer = null;
+  }
+  if (_watchAdsDoneTimer) {
+    clearTimeout(_watchAdsDoneTimer);
+    _watchAdsDoneTimer = null;
+  }
+  _watchAdsDoneKind = null;
+  var doHide = function() {
+    var m = document.getElementById('watchAdsModal');
+    if (m) m.classList.remove('show');
+    document.body.classList.remove('wa-open');
+    var prem = document.getElementById('premiumModal');
+    var wm = document.getElementById('weatherMachineModal');
+    var keepHideDocks = (prem && prem.classList.contains('show')) || (wm && wm.classList.contains('show'));
+    if (!keepHideDocks) document.body.classList.remove('hide-docks-modal');
+    if (typeof onHidden === 'function') onHidden();
+  };
+  try {
+    waBannerClose(doHide);
+  } catch (e) {
+    doHide();
   }
 }
 
 window.openWatchAdsModal  = openWatchAdsModal;
 window.closeWatchAdsModal = closeWatchAdsModal;
+
+function waMonitorHtml() {
+  if (_watchingAdBusy && _watchAdsSimKind) {
+    var isLuck = _watchAdsSimKind === 'luck';
+    var pct = Math.max(0, Math.min(1, (AD_WATCH_SIM_SEC - _watchAdsSimSecLeft) / AD_WATCH_SIM_SEC));
+    var pctTxt = Math.round(pct * 100) + '%';
+    var img = isLuck ? 'assets/images/pot-luck-3.webp' : 'assets/images/instanpack-100k.webp?v=trans1';
+    var head = isLuck ? 'PREPARING 2× LUCK OVERDRIVE (5 MIN)…' : 'PREPARING INSTANT ROLL PACK 100K…';
+    return '<div class="wa-monitor is-live">'
+      + '<div class="wa-mon-top">'
+        + '<span class="wa-mon-tag"><i></i>LIVE BROADCAST</span>'
+        + '<span class="wa-mon-timer">REWARD IN ' + _watchAdsSimSecLeft + 'S · ' + pctTxt + '</span>'
+      + '</div>'
+      + '<div class="wa-mon-mid">'
+        + '<div class="wa-mon-ic"><img src="' + img + '" alt="" onerror="this.style.display=\'none\'"></div>'
+        + '<div class="wa-mon-txt">'
+          + '<div class="wa-mon-head">' + head + '</div>'
+          + '<div class="wa-mon-sub">SFX auto-muted during transmission · Terminal locked until completion.</div>'
+        + '</div>'
+      + '</div>'
+      + '<div class="wa-mon-bar"><i style="transform:scaleX(' + pct.toFixed(3) + ')"></i></div>'
+      + '<div class="wa-mon-chips">'
+        + '<span class="wa-mon-chip hot">STREAM ACTIVE</span>'
+        + '<span class="wa-mon-chip">AUDIO MUTED</span>'
+        + '<span class="wa-mon-chip">CLOSE LOCKED</span>'
+      + '</div>'
+    + '</div>';
+  }
+  if (_watchAdsDoneKind) {
+    var wasLuck = _watchAdsDoneKind === 'luck';
+    return '<div class="wa-monitor is-done">'
+      + '<div class="wa-mon-top">'
+        + '<span class="wa-mon-tag"><i></i>UPLINK VERIFIED</span>'
+        + '<span class="wa-mon-timer">DELIVERED</span>'
+      + '</div>'
+      + '<div class="wa-mon-mid">'
+        + '<div class="wa-mon-ic"><svg viewBox="0 0 24 24" fill="none" stroke="#6be08a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>'
+        + '<div class="wa-mon-txt">'
+          + '<div class="wa-mon-head">' + (wasLuck ? '2× LUCK OVERDRIVE ACTIVE' : '100,000 CARD PULLS OPENED') + '</div>'
+          + '<div class="wa-mon-sub">' + (wasLuck ? 'Timer synced to Lobby Buff Dock for 05:00.' : 'Drops added to collection · 30:00 cooldown started.') + '</div>'
+        + '</div>'
+      + '</div>'
+      + '<div class="wa-mon-bar"><i style="transform:scaleX(1)"></i></div>'
+    + '</div>';
+  }
+  return '<div class="wa-monitor">'
+    + '<div class="wa-mon-top">'
+      + '<span class="wa-mon-tag"><i></i>SIGNAL STANDBY</span>'
+      + '<span class="wa-mon-timer">IDLE</span>'
+    + '</div>'
+    + '<div class="wa-mon-mid">'
+      + '<div class="wa-mon-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><polygon points="10 9 15 12 10 15 10 9" fill="currentColor"/></svg></div>'
+      + '<div class="wa-mon-txt">'
+        + '<div class="wa-mon-head">AWAITING TRANSMISSION</div>'
+        + '<div class="wa-mon-sub">Select a reward module on the left to start a rewarded broadcast.</div>'
+      + '</div>'
+    + '</div>'
+    + '<div class="wa-mon-bar"><i style="transform:scaleX(0)"></i></div>'
+    + '<div class="wa-mon-chips">'
+      + '<span class="wa-mon-chip">CRAZYGAMES SDK v3</span>'
+      + '<span class="wa-mon-chip">5S FALLBACK SIM</span>'
+    + '</div>'
+  + '</div>';
+}
 
 function renderWatchAdsModal() {
   var m = ensureWatchAdsModal();
@@ -5465,89 +5630,187 @@ function renderWatchAdsModal() {
   var packMs = adPackCdLeftMs();
   var luckActive = luckMs > 0;
   var packOnCd   = packMs > 0;
+  var availCount = (luckActive ? 0 : 1) + (packOnCd ? 0 : 1);
+
+  var luckRatio = luckActive ? Math.max(0.02, Math.min(1, luckMs / AD_LUCK_DURATION_MS)) : 1;
+  var packRatio = packOnCd ? Math.max(0.02, Math.min(1, 1 - (packMs / AD_PACK_COOLDOWN_MS))) : 1;
 
   var luckStatusHtml = luckActive
-    ? '<div class="wad-status-pill active"><span class="wad-live-dot"></span>AKTIF DI MODAL · SISA <b id="wadLuckTimer">' + fmtCountdown(luckMs) + '</b></div>'
-    : '<div class="wad-status-pill ready">SIAP DITONTON · DURASI 5 MENIT</div>';
+    ? '<div class="wa-pill active"><span class="dot"></span>ACTIVE · <span id="waLuckTimer">' + fmtCountdown(luckMs) + '</span> REMAINING</div>'
+    : '<div class="wa-pill ready"><span class="dot"></span>READY TO WATCH · 5-MIN BUFF</div>';
 
   var packStatusHtml = packOnCd
-    ? '<div class="wad-status-pill cd">COOLDOWN · SIAP DALAM <b id="wadPackTimer">' + fmtCountdown(packMs) + '</b></div>'
-    : '<div class="wad-status-pill ready">SIAP DITONTON · REFRESH TIAP 30 MENIT</div>';
+    ? '<div class="wa-pill cd"><span class="dot"></span>COOLDOWN · READY IN <span id="waPackTimer">' + fmtCountdown(packMs) + '</span></div>'
+    : '<div class="wa-pill ready"><span class="dot"></span>READY TO WATCH · 30-MIN CYCLE</div>';
+
+  var luckBtnTxt = _watchingAdBusy
+    ? (_watchAdsSimKind === 'luck' ? ('BROADCASTING (' + _watchAdsSimSecLeft + 'S)…') : 'BROADCAST IN PROGRESS…')
+    : (luckActive ? ('ACTIVE · ' + fmtCountdown(luckMs)) : 'WATCH AD · ACTIVATE 2× LUCK');
+
+  var packBtnTxt = _watchingAdBusy
+    ? (_watchAdsSimKind === 'pack100k' ? ('BROADCASTING (' + _watchAdsSimSecLeft + 'S)…') : 'BROADCAST IN PROGRESS…')
+    : (packOnCd ? ('WAIT · ' + fmtCountdown(packMs)) : 'WATCH AD · CLAIM 100K PACK');
+
+  var playSvg = '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>';
+  var lockSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+
+  var monHtml = waMonitorHtml();
+  var showMob = !!(_watchingAdBusy || _watchAdsDoneKind);
 
   m.innerHTML = ''
-    + '<div class="wad-box">'
-      + '<div class="wad-glow-top"></div>'
-      + '<div class="wad-head">'
-        + '<div class="wad-head-left">'
-          + '<div class="wad-eyebrow"><span class="wad-pulse"></span>SPONSORED TERMINAL · FREE REWARDS</div>'
-          + '<h2 class="wad-title">WATCH ADS REWARD</h2>'
+    + '<div class="wa-screen">'
+      + '<header class="wa-top">'
+        + '<div class="wa-mark">'
+          + '<span class="wa-mark-t">WATCH ADS</span>'
+          + '<span class="wa-mark-s">SPONSORED TERMINAL</span>'
         + '</div>'
-        + '<button type="button" class="ix-x" onclick="closeWatchAdsModal()" title="Tutup">✕</button>'
-      + '</div>'
-      + '<div class="wad-subbanner">'
-        + 'Tonton iklan singkat untuk mengaktifkan <b>2× Total Luck</b> selama 5 menit atau klaim <b>Instan Roll Pack 100K</b> gratis!'
-      + '</div>'
-      + '<div id="wadPlayerSlot" class="wad-player-slot" style="display:none"></div>'
-      + '<div class="wad-grid">'
-        /* CARD 1: 2x LUCK 5 MINUTES */
-        + '<div class="wad-card luck' + (luckActive ? ' is-active' : '') + '" id="wadCardLuck">'
-          + '<div class="wad-card-ribbon">REFRESH 5 MENIT</div>'
-          + '<div class="wad-card-main">'
-            + '<div class="wad-ic-box luck">'
-              + '<img src="assets/images/pot-luck-3.webp" alt="2x Luck" onerror="this.style.display=\'none\'">'
-              + '<span class="wad-ic-badge">2×</span>'
-            + '</div>'
-            + '<div class="wad-info">'
-              + '<div class="wad-card-title">2× LUCK OVERDRIVE</div>'
-              + '<div class="wad-card-desc">Menggandakan (<b>×2</b>) total keberuntunganmu selama <b>5 menit</b> penuh. Bisa ditonton lagi segera setelah durasi buff 5 menit habis!</div>'
-              + '<div id="wadLuckStatusWrap">' + luckStatusHtml + '</div>'
-            + '</div>'
+        + '<div class="wa-top-mid">'
+          + '<div class="wa-crumb">'
+            + '<i></i><span>TERMINAL</span><span class="sep">/</span>'
+            + '<b>HZ-07</b><span class="sep">/</span><span>FREE REWARDS</span>'
           + '</div>'
-          + '<button type="button" class="wad-btn luck' + (luckActive ? ' disabled' : '') + '" id="wadBtnLuck" onclick="triggerWatchAd(\'luck\')"' + (luckActive ? ' disabled' : '') + '>'
-            + (luckActive
-              ? ('<span>⏳ AKTIF (' + fmtCountdown(luckMs) + ')</span>')
-              : '<span>🎬 TONTON IKLAN · AKTIFKAN 2× LUCK</span>')
-          + '</button>'
+          + '<div class="wa-top-stat">'
+            + '<div class="wa-ts"><span class="wa-ts-k">AVAILABLE</span><span class="wa-ts-v ' + (availCount > 0 ? 'am' : '') + '" id="waTsAvail">' + availCount + ' / 2</span></div>'
+            + '<div class="wa-ts"><span class="wa-ts-k">AD LUCK</span><span class="wa-ts-v ' + (luckActive ? 'lk' : '') + '" id="waTsLuck">' + (luckActive ? ('2× · ' + fmtCountdown(luckMs)) : '1× BASE') + '</span></div>'
+          + '</div>'
+        + '</div>'
+        + '<button type="button" class="wa-x" id="waCloseBtn" onclick="closeWatchAdsModal()" aria-label="Close Watch Ads" title="Close [ESC]"' + (_watchingAdBusy ? ' disabled' : '') + '>'
+          + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>'
+        + '</button>'
+      + '</header>'
+
+      + '<div class="wa-body">'
+        + '<div class="wa-main">'
+          + '<div class="wa-mob-slot' + (showMob ? ' on' : '') + '" id="waMobSlot">' + (showMob ? monHtml : '') + '</div>'
+
+          + '<div class="wa-sec-h"><b>// SPONSORED REWARD MODULES</b><span class="rule"></span><span class="tag">2 CHANNELS</span></div>'
+
+          + '<div class="wa-banner">'
+            + '<span class="wa-banner-ic">'
+              + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+                + '<rect x="2" y="5" width="20" height="14" rx="2"/><polygon points="10 9 15 12 10 15 10 9" fill="currentColor"/>'
+              + '</svg>'
+            + '</span>'
+            + '<div>Watch a short sponsored ad to activate <em>2× Total Luck</em> for <b>5 minutes</b> or claim a free <em>100K Instant Roll Pack</em>.</div>'
+          + '</div>'
+
+          + '<div class="wa-grid">'
+            /* CARD 1: 2x LUCK OVERDRIVE */
+            + '<section class="wa-card luck' + (luckActive ? ' is-active' : '') + '" id="waCardLuck">'
+              + '<span class="wa-card-crn br"></span>'
+              + '<div class="wa-c-top">'
+                + '<span class="wa-c-mod">MOD // <b>01</b></span>'
+                + '<span class="wa-c-rib">5-MIN REFRESH</span>'
+              + '</div>'
+              + '<div class="wa-c-hero">'
+                + '<div class="wa-art">'
+                  + '<img src="assets/images/pot-luck-3.webp" alt="2x Luck Overdrive" onerror="this.style.display=\'none\'">'
+                  + '<span class="wa-art-tag">2×</span>'
+                + '</div>'
+                + '<div class="wa-c-info">'
+                  + '<div class="wa-c-cat">LUCK MULTIPLIER</div>'
+                  + '<h2 class="wa-c-title">2× LUCK OVERDRIVE</h2>'
+                  + '<p class="wa-c-desc">Doubles (<b>×2</b>) your total luck for <b>5 full minutes</b>. Watch again immediately after the buff expires.</p>'
+                  + '<div class="wa-c-mini"><b>×2 TOTAL LUCK</b> · 5:00 BUFF · REWATCH ON EXPIRY</div>'
+                + '</div>'
+              + '</div>'
+              + '<div class="wa-specs">'
+                + '<div class="wa-spec hi"><k>MULTIPLIER</k><b>×2 TOTAL</b></div>'
+                + '<div class="wa-spec"><k>DURATION</k><b>05:00</b></div>'
+                + '<div class="wa-spec"><k>REWATCH</k><b>ON EXPIRY</b></div>'
+              + '</div>'
+              + '<div class="wa-stat-wrap">'
+                + '<div id="waLuckStatusWrap">' + luckStatusHtml + '</div>'
+                + '<div class="wa-pbar"><i id="waLuckPbar" style="transform:scaleX(' + luckRatio.toFixed(3) + ')"></i></div>'
+              + '</div>'
+              + '<button type="button" class="wa-cta' + (luckActive ? ' is-active' : '') + '" id="waBtnLuck" onclick="triggerWatchAd(\'luck\')"' + ((luckActive || _watchingAdBusy) ? ' disabled' : '') + '>'
+                + ((luckActive || _watchingAdBusy) ? lockSvg : playSvg) + '<span id="waBtnLuckTxt">' + luckBtnTxt + '</span>'
+              + '</button>'
+            + '</section>'
+
+            /* CARD 2: INSTANT ROLL PACK 100K */
+            + '<section class="wa-card pack' + (packOnCd ? ' is-cd' : '') + '" id="waCardPack">'
+              + '<span class="wa-card-crn br"></span>'
+              + '<div class="wa-c-top">'
+                + '<span class="wa-c-mod">MOD // <b>02</b></span>'
+                + '<span class="wa-c-rib">30-MIN COOLDOWN</span>'
+              + '</div>'
+              + '<div class="wa-c-hero">'
+                + '<div class="wa-art">'
+                  + '<img src="assets/images/instanpack-100k.webp?v=trans1" alt="Instant Roll Pack 100K" onerror="this.style.display=\'none\'">'
+                  + '<span class="wa-art-tag">100K</span>'
+                + '</div>'
+                + '<div class="wa-c-info">'
+                  + '<div class="wa-c-cat">INSTANT DROP</div>'
+                  + '<h2 class="wa-c-title">INSTANT ROLL PACK 100K</h2>'
+                  + '<p class="wa-c-desc">Instantly grants and opens <b>100,000 card pulls</b> at once! Refreshes every <b>30 minutes</b>.</p>'
+                  + '<div class="wa-c-mini"><b>100,000 PULLS</b> · INSTANT OPEN · 30:00 COOLDOWN</div>'
+                + '</div>'
+              + '</div>'
+              + '<div class="wa-specs">'
+                + '<div class="wa-spec hi"><k>PULL VOLUME</k><b>100,000</b></div>'
+                + '<div class="wa-spec"><k>DELIVERY</k><b>INSTANT</b></div>'
+                + '<div class="wa-spec"><k>COOLDOWN</k><b>30:00</b></div>'
+              + '</div>'
+              + '<div class="wa-stat-wrap">'
+                + '<div id="waPackStatusWrap">' + packStatusHtml + '</div>'
+                + '<div class="wa-pbar"><i id="waPackPbar" style="transform:scaleX(' + packRatio.toFixed(3) + ')"></i></div>'
+              + '</div>'
+              + '<button type="button" class="wa-cta' + (packOnCd ? ' is-cd' : '') + '" id="waBtnPack" onclick="triggerWatchAd(\'pack100k\')"' + ((packOnCd || _watchingAdBusy) ? ' disabled' : '') + '>'
+                + ((packOnCd || _watchingAdBusy) ? lockSvg : playSvg) + '<span id="waBtnPackTxt">' + packBtnTxt + '</span>'
+              + '</button>'
+            + '</section>'
+          + '</div>'
+
+          + '<div class="wa-notes">'
+            + '<div class="wa-note"><k>MULTIPLIER STACK</k><b>TOTAL LUCK × 2 (ALL SOURCES)</b></div>'
+            + '<div class="wa-note"><k>PORTAL AD ENGINE</k><b>CRAZYGAMES SDK v3 · FALLBACK SIM</b></div>'
+            + '<div class="wa-note"><k>STREAM AUDIO LOCK</k><b>AUTO-MUTES SFX DURING AD</b></div>'
+          + '</div>'
         + '</div>'
 
-        /* CARD 2: INSTAN PACK 100K (30 MIN COOLDOWN) */
-        + '<div class="wad-card pack' + (packOnCd ? ' is-cd' : '') + '" id="wadCardPack">'
-          + '<div class="wad-card-ribbon gold">COOLDOWN 30 MENIT</div>'
-          + '<div class="wad-card-main">'
-            + '<div class="wad-ic-box pack">'
-              + '<img src="assets/images/instanpack-100k.webp?v=trans1" alt="Instan Pack 100K" onerror="this.style.display=\'none\'">'
-              + '<span class="wad-ic-badge gold">100K</span>'
-            + '</div>'
-            + '<div class="wad-info">'
-              + '<div class="wad-card-title">INSTAN ROLL PACK 100K</div>'
-              + '<div class="wad-card-desc">Instantly get & open <b>100,000 instant card pulls</b> at once! Can be watched again every <b>30 minutes</b>.</div>'
-              + '<div id="wadPackStatusWrap">' + packStatusHtml + '</div>'
-            + '</div>'
+        + '<aside class="wa-side">'
+          + '<div class="wa-sec-h"><b>// BROADCAST MONITOR</b><span class="rule"></span><span class="tag">CH-07</span></div>'
+          + '<div id="waDeskSlot">' + monHtml + '</div>'
+
+          + '<div class="wa-telem">'
+            + '<div class="wa-tel-h"><span>// LIVE TELEMETRY</span><b id="waTelAvail">' + availCount + ' / 2 READY</b></div>'
+            + '<div class="wa-tel-row"><span>AD LUCK MULTIPLIER</span><b id="waTelLuck" class="' + (luckActive ? 'lk' : '') + '">' + (luckActive ? ('2× ACTIVE (' + fmtCountdown(luckMs) + ')') : '1× STANDBY') + '</b></div>'
+            + '<div class="wa-tel-row"><span>100K PACK STATUS</span><b id="waTelPack" class="' + (packOnCd ? 'wr' : 'gd') + '">' + (packOnCd ? ('CD · ' + fmtCountdown(packMs)) : 'READY TO CLAIM') + '</b></div>'
+            + '<div class="wa-tel-row"><span>SESSION CLAIMS</span><b id="waTelClaims">' + _watchAdsClaims + ' CLAIMED</b></div>'
           + '</div>'
-          + '<button type="button" class="wad-btn pack' + (packOnCd ? ' disabled' : '') + '" id="wadBtnPack" onclick="triggerWatchAd(\'pack100k\')"' + (packOnCd ? ' disabled' : '') + '>'
-            + (packOnCd
-              ? ('<span>⏳ TUNGGU ' + fmtCountdown(packMs) + '</span>')
-              : '<span>🎬 TONTON IKLAN · KLAIM PACK 100K</span>')
-          + '</button>'
-        + '</div>'
+
+          + '<div class="wa-rules">'
+            + '<div class="wa-rules-h">// PROTOCOL BRIEFING</div>'
+            + '<p><b>2× Luck Overdrive</b> multiplies your combined Luck across potions, weather, global shrine, and rebirth for <b>5:00</b>. Rewatch immediately once it expires.</p>'
+            + '<p><b>Instant Roll Pack 100K</b> opens 100,000 pulls directly into your collection with a <b>30:00</b> cooldown between claims.</p>'
+          + '</div>'
+        + '</aside>'
       + '</div>'
+
+      + '<footer class="wa-foot">'
+        + '<span><b>WATCH AD</b> 5s sponsored feed</span>'
+        + '<span><b>2× LUCK</b> stacks with potions &amp; weather</span>'
+        + '<span class="haz">HZ-PROTOCOL // ADS</span>'
+      + '</footer>'
     + '</div>';
-
-  if (window.GameLang && typeof window.GameLang.refresh === 'function') {
-    window.GameLang.refresh();
-  }
 }
 
 function tickWatchAdsModal() {
   var luckMs = adLuckLeftMs();
   var packMs = adPackCdLeftMs();
 
-  var lt = document.getElementById('wadLuckTimer');
-  var pt = document.getElementById('wadPackTimer');
-  var bl = document.getElementById('wadBtnLuck');
-  var bp = document.getElementById('wadBtnPack');
+  var lt = document.getElementById('waLuckTimer');
+  var pt = document.getElementById('waPackTimer');
+  var blTxt = document.getElementById('waBtnLuckTxt');
+  var bpTxt = document.getElementById('waBtnPackTxt');
+  var tsLuck = document.getElementById('waTsLuck');
+  var telLuck = document.getElementById('waTelLuck');
+  var telPack = document.getElementById('waTelPack');
+  var lBar = document.getElementById('waLuckPbar');
+  var pBar = document.getElementById('waPackPbar');
 
-  // Jika state berubah dari aktif -> habis, re-render penuh modal
+  /* Re-render full modal only when active/cooldown state flips */
   if ((lt && luckMs <= 0) || (!lt && luckMs > 0) || (pt && packMs <= 0) || (!pt && packMs > 0)) {
     renderWatchAdsModal();
     if (typeof renderShell === 'function') renderShell();
@@ -5555,14 +5818,18 @@ function tickWatchAdsModal() {
   }
 
   if (lt && luckMs > 0) lt.textContent = fmtCountdown(luckMs);
-  if (bl && luckMs > 0) {
-    var isEn = (window.GameLang && window.GameLang.get() === 'en');
-    bl.innerHTML = '<span>⏳ ' + (isEn ? 'ACTIVE' : 'AKTIF') + ' (' + fmtCountdown(luckMs) + ')</span>';
+  if (blTxt && luckMs > 0) blTxt.textContent = 'ACTIVE · ' + fmtCountdown(luckMs);
+  if (tsLuck && luckMs > 0) tsLuck.textContent = '2× · ' + fmtCountdown(luckMs);
+  if (telLuck && luckMs > 0) telLuck.textContent = '2× ACTIVE (' + fmtCountdown(luckMs) + ')';
+  if (lBar && luckMs > 0) {
+    lBar.style.transform = 'scaleX(' + Math.max(0.02, Math.min(1, luckMs / AD_LUCK_DURATION_MS)).toFixed(3) + ')';
   }
+
   if (pt && packMs > 0) pt.textContent = fmtCountdown(packMs);
-  if (bp && packMs > 0) {
-    var isEn2 = (window.GameLang && window.GameLang.get() === 'en');
-    bp.innerHTML = '<span>⏳ ' + (isEn2 ? 'WAIT ' : 'TUNGGU ') + fmtCountdown(packMs) + '</span>';
+  if (bpTxt && packMs > 0) bpTxt.textContent = 'WAIT · ' + fmtCountdown(packMs);
+  if (telPack && packMs > 0) telPack.textContent = 'CD · ' + fmtCountdown(packMs);
+  if (pBar && packMs > 0) {
+    pBar.style.transform = 'scaleX(' + Math.max(0.02, Math.min(1, 1 - (packMs / AD_PACK_COOLDOWN_MS))).toFixed(3) + ')';
   }
 }
 
@@ -5596,25 +5863,25 @@ function triggerWatchAd(kind) {
     return;
   }
 
-  // 1. Prioritas Utama: Jika CrazyGames SDK aktif di portal CrazyGames
+  // 1. Primary: CrazyGames SDK v3 rewarded ad when running inside portal
   if (window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.ad) {
     try {
       _watchingAdBusy = true;
       var wasMuted = (typeof state !== 'undefined' && state && state.muted);
       var callbacks = {
-        adStarted: () => {
+        adStarted: function() {
           if (typeof state !== 'undefined' && state) state.muted = true;
         },
-        adFinished: () => {
+        adFinished: function() {
           if (typeof state !== 'undefined' && state) state.muted = wasMuted;
           _watchingAdBusy = false;
           completeWatchAdReward(kind);
         },
-        adError: (error) => {
+        adError: function(error) {
           if (typeof state !== 'undefined' && state) state.muted = wasMuted;
           _watchingAdBusy = false;
           console.warn("[CrazyGames Ad Error]", error);
-          // Fallback ke simulasi timer jika iklan belum terisi di portal
+          // Fallback to local timer simulation when portal ad fill is unavailable
           runWatchAdSimulation(kind);
         }
       };
@@ -5625,80 +5892,77 @@ function triggerWatchAd(kind) {
     }
   }
 
-  // 2. Fallback: Simulasi timer (untuk pengujian di localhost / dev)
+  // 2. Fallback: Local 5-second broadcast simulation (localhost / dev)
   runWatchAdSimulation(kind);
 }
 window.triggerWatchAd = triggerWatchAd;
 
 function runWatchAdSimulation(kind) {
-  _watchingAdBusy = true;
-  var slot = document.getElementById('wadPlayerSlot');
-  var bLuck = document.getElementById('wadBtnLuck');
-  var bPack = document.getElementById('wadBtnPack');
-  if (bLuck) bLuck.disabled = true;
-  if (bPack) bPack.disabled = true;
+  if (_watchAdsSimTimer) { clearInterval(_watchAdsSimTimer); _watchAdsSimTimer = null; }
+  if (_watchAdsDoneTimer) { clearTimeout(_watchAdsDoneTimer); _watchAdsDoneTimer = null; }
+  _watchAdsDoneKind = null;
 
-  var secLeft = AD_WATCH_SIM_SEC;
-  if (slot) {
-    slot.style.display = 'block';
-    var renderPlayer = function() {
-      var pct = Math.round(((AD_WATCH_SIM_SEC - secLeft) / AD_WATCH_SIM_SEC) * 100);
-      slot.innerHTML = ''
-        + '<div class="wad-sim-screen">'
-          + '<div class="wad-sim-top">'
-            + '<span class="wad-sim-tag">🎬 SPONSORED BROADCAST</span>'
-            + '<span class="wad-sim-timer">REWARD DALAM ' + secLeft + 's</span>'
-          + '</div>'
-          + '<div class="wad-sim-Headline">'
-            + (kind === 'luck' ? '🍀 MENYIAPKAN 2× LUCK OVERDRIVE (5 MENIT)…' : '📦 MENYIAPKAN INSTAN ROLL PACK 100K…')
-          + '</div>'
-          + '<div class="wad-sim-bar"><i style="width:' + pct + '%"></i></div>'
-        + '</div>';
-      if (window.GameLang && typeof window.GameLang.refresh === 'function') window.GameLang.refresh();
-    };
-    renderPlayer();
-
-    var iv = setInterval(function() {
-      secLeft--;
-      if (secLeft > 0) {
-        renderPlayer();
-      } else {
-        clearInterval(iv);
-        _watchingAdBusy = false;
-        if (slot) { slot.style.display = 'none'; slot.innerHTML = ''; }
-        completeWatchAdReward(kind);
-      }
-    }, 1000);
-  } else {
+  var m = document.getElementById('watchAdsModal');
+  var modalOpen = !!(m && m.classList.contains('show'));
+  if (!modalOpen || kind === 'gems') {
     _watchingAdBusy = false;
     completeWatchAdReward(kind);
+    return;
   }
+
+  _watchingAdBusy = true;
+  _watchAdsSimKind = kind;
+  _watchAdsSimSecLeft = AD_WATCH_SIM_SEC;
+  renderWatchAdsModal();
+
+  _watchAdsSimTimer = setInterval(function() {
+    _watchAdsSimSecLeft--;
+    if (_watchAdsSimSecLeft > 0) {
+      renderWatchAdsModal();
+    } else {
+      clearInterval(_watchAdsSimTimer);
+      _watchAdsSimTimer = null;
+      _watchingAdBusy = false;
+      _watchAdsSimKind = null;
+      completeWatchAdReward(kind);
+    }
+  }, 1000);
 }
 
 function completeWatchAdReward(kind) {
   var now = Date.now();
+  _watchAdsClaims++;
   if (kind === 'luck') {
     _saveAdState(now + AD_LUCK_DURATION_MS, null);
+    _watchAdsDoneKind = 'luck';
     try { if (typeof sfx !== 'undefined' && sfx.win) sfx.win(); } catch (e) {}
-    toast('2× LUCK ACTIVE (5 MIN)!', 'Your total luck is doubled (×2) for 5 minutes!', '#4ade80');
+    toast('2× LUCK ACTIVE (5 MIN)!', 'Your total luck is doubled (×2) for 5 minutes!', '#6be08a');
     renderWatchAdsModal();
     if (typeof renderShell === 'function') renderShell();
     if (typeof renderLobby === 'function' && typeof route === 'function' && route() === '#/lobby' && !battleLive()) {
       var lbl = document.getElementById('hfdAdsLbl');
       if (lbl) lbl.textContent = '2× ON';
     }
+    if (_watchAdsDoneTimer) clearTimeout(_watchAdsDoneTimer);
+    _watchAdsDoneTimer = setTimeout(function() {
+      _watchAdsDoneKind = null;
+      var m = document.getElementById('watchAdsModal');
+      if (m && m.classList.contains('show') && !_watchingAdBusy) renderWatchAdsModal();
+    }, 2400);
   } else if (kind === 'pack100k') {
     _saveAdState(null, now + AD_PACK_COOLDOWN_MS);
+    _watchAdsDoneKind = null;
     try { if (typeof sfx !== 'undefined' && sfx.win) sfx.win(); } catch (e) {}
     renderWatchAdsModal();
-    closeWatchAdsModal();
     var pulls = 100000;
     var loot = (typeof instantRollFast === 'function') ? instantRollFast(pulls, true) : [];
-    if (typeof showTowerLoot === 'function') {
-      showTowerLoot(loot, { weather: 0, luck: 0, speed: 0 }, 'REWARD WATCH ADS · 100,000 ROLL');
-    }
     toast('INSTANT PACK 100K RECEIVED!', '100,000 instant card pulls opened!', '#ffd700');
     if (typeof renderShell === 'function') renderShell();
+    closeWatchAdsModal(function() {
+      if (typeof showTowerLoot === 'function') {
+        showTowerLoot(loot, { weather: 0, luck: 0, speed: 0 }, 'REWARD WATCH ADS · 100,000 ROLL');
+      }
+    });
   } else if (kind === 'gems') {
     if (typeof state !== 'undefined' && state) {
       state.premiumGems = (state.premiumGems || 0) + 25;

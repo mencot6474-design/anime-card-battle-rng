@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v542-lobbyDocks';
+const CACHE_NAME = 'anime-card-battle-v545-watchAdsHazard';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

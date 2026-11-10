@@ -49,12 +49,13 @@
 <link rel="stylesheet" href="css/drop-report.css?v=v2-dropReport">
 <link rel="stylesheet" href="css/battle-fresh.css?v=v35-smoothBasicAtk">
 <link rel="stylesheet" href="css/notify-hazard.css?v=v2-notifyHazard">
+<link rel="stylesheet" href="css/watch-ads-hazard.css?v=v3-watchAdsHazard">
 <script>
-  /* Link toko Trakteer (fallback â€” utama ada di js/config.js). */
+  /* Link toko Trakteer (fallback — utama ada di js/config.js). */
   window.TRAKTEER_SHOP_URL = "";
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=v542-lobbyDocks').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=v545-watchAdsHazard').catch(() => {});
     });
   }
 </script>
@@ -776,6 +777,38 @@
       <div class="sub" id="pxHZSub">BLACK-MARKET EXCHANGE · GEMS · PACKS · RELICS</div>
       <div class="bar"><i></i></div>
       <div class="foot"><span>HZ-PROTOCOL</span><span id="pxHZFoot">SYNC MARKET</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- WATCH ADS TERMINAL + HAZARD CURTAIN (port _tmp/proto_watch_ads_v1.html) -->
+<div id="watchAdsModal" class="wad-backdrop" role="dialog" aria-modal="true" aria-label="Watch Ads Reward Terminal"></div>
+<div id="watchAdsCurtain" aria-hidden="true">
+  <div class="half top">
+    <span class="edge"></span>
+    <span class="mark">SPONSORED <b>07</b> / 07</span>
+  </div>
+  <div class="half bot">
+    <span class="edge"></span>
+    <span class="mark">HZ-PROTOCOL <b>871</b></span>
+  </div>
+  <div class="tape tape-a"></div>
+  <div class="tape tape-b"></div>
+  <div class="flash"></div>
+  <div class="plate">
+    <span class="corner tl"></span><span class="corner tr"></span>
+    <span class="corner bl"></span><span class="corner br"></span>
+    <span class="water" id="waHZWater">ADS</span>
+    <div class="in">
+      <div class="krow">
+        <span class="dot"></span>
+        <span class="kick" id="waHZKick">// SPONSORED <b>UPLINK</b></span>
+        <span class="serial">SERIAL 0x<b id="waHZSerial">7A4E</b></span>
+      </div>
+      <div class="title"><span id="waHZTitle">WATCH ADS</span></div>
+      <div class="sub" id="waHZSub">SPONSORED TERMINAL — 2× LUCK · 100K PACK</div>
+      <div class="bar"><i></i></div>
+      <div class="foot"><span>HZ-PROTOCOL</span><span id="waHZFoot">ESTABLISH UPLINK</span></div>
     </div>
   </div>
 </div>
@@ -1764,7 +1797,7 @@
 <script src="js/mobile-shell.js?v=v287-drawerV5Dock"></script>
 <script src="js/supabase-sync.js?v=v332-battleNoHeader"></script>
 <script src="js/notify-hazard.js?v=v1-notifyHazard"></script>
- <script src="js/panels.js?v=v413-lobbyDocks"></script>
+ <script src="js/panels.js?v=v415-watchAdsHazard"></script>
 <script src="js/topup.js?v=v158-paywallOff"></script>
 <script src="js/cards-fx.js?v=v84-fmtStatCompact"></script>
 <script src="js/anime-archetype-attacks.js?v=v121-smoothBasicAtk"></script>
