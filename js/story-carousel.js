@@ -770,7 +770,7 @@
       var art = (typeof cardThumb === "function") ? cardThumb(stack.char) : "";
       var name = (typeof cardName === "function") ? cardName(stack.char) : "";
       return '<span class="dk-slot' + (i === 0 ? " lead" : "") + '" title="' + name + '">' +
-        (art ? '<img src="' + art + '" alt="" loading="lazy" onerror="this.remove()">' : "") +
+        (art ? '<img src="' + art + '" alt="" width="48" height="48" decoding="async" onerror="this.remove()">' : "") +
         '<em>' + label + '</em></span>';
     }).join("");
   }

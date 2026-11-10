@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v554-wxDockPotIcons';
+const CACHE_NAME = 'anime-card-battle-v556-eagerImgFix2';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

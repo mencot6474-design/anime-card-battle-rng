@@ -1363,7 +1363,7 @@ function rrTile(g){
   return '<div class="pr-tile'+(isMut?' mut-'+g.mut:'')+(isShiny?' shiny':'')+'" data-tier="'+tier+'" title="'+name+'">'
     +(g.n>1?'<span class="pr-cnt">×'+fmt(g.n)+'</span>':'')
     +badges
-    +'<img src="'+cardThumb(g.cardId)+'" alt="'+name+'" loading="lazy" decoding="async" onerror="this.style.visibility=\'hidden\'">'
+    +'<img src="'+cardThumb(g.cardId)+'" alt="'+name+'" width="96" height="96" decoding="async" onerror="this.onerror=null;this.src=\'assets/images/icon-index-card.webp\'">'
     +'<div class="pr-tfoot" style="color:'+col+'">1 IN '+fmtChance(cv)+'</div>'
     +'</div>';
 }
@@ -1375,7 +1375,7 @@ function rrExtra(kind,key,n){
   return '<div class="pr-tile extra" title="'+label+'">'
     +(n>1?'<span class="pr-cnt">×'+fmt(n)+'</span>':'')
     +'<span class="pr-badge" style="background:#22d3ee;color:#000">'+(isPack?'PACK':'POTION')+'</span>'
-    +'<span class="pr-exart"><img src="'+icon+'" alt="'+label+'" loading="lazy" decoding="async"></span>'
+    +'<span class="pr-exart"><img src="'+icon+'" alt="'+label+'" width="64" height="64" decoding="async" onerror="this.onerror=null;this.src=\'assets/images/icon-index-card.webp\'"></span>'
     +'<span class="pr-exnm">'+label+'</span></div>';
 }
 function rrRare(r){
@@ -1387,7 +1387,7 @@ function rrRare(r){
   if(!icon)icon='assets/images/icon-index-card.webp';
   return '<div class="pr-tile extra" title="'+r.name+'">'
     +'<span class="pr-badge" style="background:#b58cff;color:#000">'+(r.kind==='pet'?'PET':'RELIC')+'</span>'
-    +'<span class="pr-exart"><img src="'+icon+'" alt="'+r.name+'" loading="lazy" decoding="async"></span>'
+    +'<span class="pr-exart"><img src="'+icon+'" alt="'+r.name+'" width="64" height="64" decoding="async" onerror="this.onerror=null;this.src=\'assets/images/icon-index-card.webp\'"></span>'
     +'<span class="pr-exnm">'+r.name+'</span></div>';
 }
 function rrPaint(){
@@ -1474,6 +1474,7 @@ function runCardSearch(inp, grid, nr){
   const q=(inp.value||"").trim().toLowerCase();
   let vis=0;
   grid.querySelectorAll("[data-name]").forEach(el=>{const hit=!q||(el.getAttribute("data-name")||"").indexOf(q)>=0;el.style.display=hit?"":"none";if(hit)vis++;});
+  for(let p=grid.parentElement;p;p=p.parentElement){if(typeof p.__lzFlush==="function"){p.__lzFlush();break;}}
   if(nr)nr.style.display=vis?"none":"block";
 }
 function openModal(id){
@@ -3222,7 +3223,7 @@ function _l12RenderWeatherDockPanel(now) {
         const tag = !curWxId && c.weatherName ? (String(c.weatherName).toUpperCase() + " ONLY") : (c.owned ? "OWNED" : "UNOWNED");
         return '<button type="button" class="wx-c ' + (c.owned ? "owned" : "unowned") + '"'
           + ' onclick="window.l12OpenWeatherMachine()" title="' + _l12Esc(c.name) + ' · 1 in ' + chStr + '">'
-          + '<div class="wx-c-img"><img src="' + thumb + '" alt="" loading="lazy"></div>'
+          + '<div class="wx-c-img"><img src="' + thumb + '" alt="" decoding="async"></div>'
           + '<div class="wx-c-info">'
             + '<div class="wx-c-nm">' + _l12Esc(c.name) + '</div>'
             + '<div class="wx-c-ch">1 in ' + chStr + '</div>'
@@ -3546,7 +3547,7 @@ function l12PaintRollHist() {
              role="button" tabindex="0"
              onclick="window.l12ClickHistCard('${item.char}', '${item.mut || "none"}', ${isShiny}, ${chVal})"
              title="#${i + 1} ${name} (${c ? c.tier : ''}${item.mut && item.mut !== 'none' ? ' ? ' + item.mut.toUpperCase() : ''}${isShiny ? ' ? SHINY' : ''}) ? ${chanceStr}">
-          <img src="${thumb}" alt="${name}" loading="lazy">
+          <img src="${thumb}" alt="${name}" decoding="async">
           <span class="rh-bdg">${bdgTxt}</span>
           <span class="rh-ch">${chanceStr}</span>
         </div>
@@ -3661,7 +3662,7 @@ const TWR_DROP_RARE=[
 
 function twrGuarRow(r){
   return `<div class="dpr${r.cls?" "+r.cls:""}">
-    <div class="dpr-ico"><img src="${r.icon}" alt="" decoding="async" loading="lazy"></div>
+    <div class="dpr-ico"><img src="${r.icon}" alt="" decoding="async"></div>
     <div class="dpr-txt">
       <span class="dpr-nm">${r.nm}</span>
       <span class="dpr-sub">${r.sub}</span>
@@ -3671,7 +3672,7 @@ function twrGuarRow(r){
 }
 function twrPackRow(d){
   return `<div class="dpr">
-    <div class="dpr-ico"><img src="${d.icon}" alt="" decoding="async" loading="lazy"></div>
+    <div class="dpr-ico"><img src="${d.icon}" alt="" decoding="async"></div>
     <div class="dpr-txt">
       <span class="dpr-nm">${d.name}</span>
       <span class="dpr-sub">Instant roll pack &middot; ready to use anytime</span>
@@ -3682,7 +3683,7 @@ function twrPackRow(d){
 function twrRareCard(r){
   return `<div class="dpr-rare">
     <div class="dpr-rare-top">
-      <div class="dpr-rare-img"><img src="${r.img}" alt="${r.name}" decoding="async" loading="lazy"></div>
+      <div class="dpr-rare-img"><img src="${r.img}" alt="${r.name}" decoding="async"></div>
       <div class="dpr-rare-hd">
         <span class="dpr-rare-type">${r.type}</span>
         <span class="dpr-rare-name">${r.name}</span>

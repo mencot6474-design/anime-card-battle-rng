@@ -368,7 +368,7 @@ function renderWeatherDock(){
     </div>`:"")
     +(cards.length?`<div class="wp-cards">`+cards.map(c=>
         `<div class="wc-slot active" data-wc="${c.char_id}" style="--wc:${w.color}">
-          <span class="idx-art"><img src="${thumbSrc(c.sprite_asset)}" alt="" loading="lazy" decoding="async"></span>
+          <span class="idx-art"><img src="${thumbSrc(c.sprite_asset)}" alt="" decoding="async"></span>
           <span class="idx-body"><span class="wc-chance">${rarityText(c.tier,luckChance(c.char_id))}</span></span>
         </div>`).join("")+`</div>`:"")
     +`<div class="wp-buff">
@@ -1597,7 +1597,7 @@ function pfSlotHtml(opts){
   const sty=o.accent?` style="--pfx-ac:${o.accent}"`:"";
   const act=o.action?` role="button" tabindex="0" onclick="${o.action}"`:' aria-disabled="true"';
   return `<div class="pfx-slot${o.cls?" "+o.cls:""}"${o.slot?` data-slot="${o.slot}"`:""}${sty}${act}>
-    <div class="pfx-slot-img">${o.img?`<img src="${thumbSrc(o.img)}" alt="" loading="lazy" decoding="async">`:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/></svg>'}</div>
+    <div class="pfx-slot-img">${o.img?`<img src="${thumbSrc(o.img)}" alt="" decoding="async">`:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/></svg>'}</div>
     <div class="pfx-slot-name">${o.label||""}</div>
     ${o.sub?`<div class="pfx-slot-sub">${o.sub}</div>`:""}
   </div>`;
@@ -1626,7 +1626,7 @@ function pfShowcaseHtml(rarest){
   const fav=st.find(s=>s.fav&&CARDS[s.char]);
   const rb=typeof rebirthCount==="function"?rebirthCount():0;
   const one=(o)=>`<div class="pfx-show${o.cls?" "+o.cls:""}"${o.accent?` style="--pfx-ac:${o.accent}"`:""}>
-    <div class="pfx-show-img">${o.img?`<img src="${thumbSrc(o.img)}" alt="" loading="lazy" decoding="async">`:""}</div>
+    <div class="pfx-show-img">${o.img?`<img src="${thumbSrc(o.img)}" alt="" decoding="async">`:""}</div>
     <div class="pfx-show-foot">${o.label}</div>
     ${o.sub?`<div class="pfx-show-sub">${o.sub}</div>`:""}
   </div>`;
@@ -1657,7 +1657,7 @@ function pfIdentity(eq){
   const avSrc=(state.customAvatar)||(eq&&eq.char&&CARDS[eq.char]?cardImg(eq.char):"");
   if(av&&av.dataset.src!==(avSrc||"")){
     av.dataset.src=avSrc||"";
-    av.innerHTML=avSrc?`<img src="${thumbSrc(avSrc)}" alt="" loading="lazy" decoding="async">`:"<span>?</span>";
+    av.innerHTML=avSrc?`<img src="${thumbSrc(avSrc)}" alt="" decoding="async">`:"<span>?</span>";
   }
 }
 function pfHeroCardHtml(eq){
@@ -1990,15 +1990,40 @@ function lazyMountGrid(rootEl,htmlMap,opts){
   if(!rootEl)return;
   opts=opts||{};
   if(rootEl.__lzIO){try{rootEl.__lzIO.disconnect();}catch(e){}rootEl.__lzIO=null;}
+  if(rootEl.__lzSc){try{rootEl.removeEventListener('scroll',rootEl.__lzSc);}catch(e){}rootEl.__lzSc=null;}
   const phs=[].slice.call(rootEl.querySelectorAll('.lz-ph'));
-  if(!phs.length)return;
+  if(!phs.length){rootEl.__lzFlush=null;return;}
+  const buf=opts.prefetch||300;
   const fill=el=>{if(!el.classList.contains('lz-ph'))return;const k=el.getAttribute('data-lz');el.innerHTML=(htmlMap[k]!=null?htmlMap[k]:'');el.classList.remove('lz-ph');};
+  const flush=()=>{
+    const r=rootEl.getBoundingClientRect();
+    const useWin=!r.height;
+    const top=(useWin?0:r.top)-buf,bot=(useWin?window.innerHeight:r.bottom)+buf;
+    let rem=0;
+    for(let i=0;i<phs.length;i++){
+      const el=phs[i];
+      if(!el.classList.contains('lz-ph'))continue;
+      if(el.style.display==='none'){rem++;continue;}
+      const er=el.getBoundingClientRect();
+      if(er.width&&er.height&&er.bottom>=top&&er.top<=bot)fill(el);
+      else rem++;
+    }
+    if(!rem){
+      if(rootEl.__lzIO){try{rootEl.__lzIO.disconnect();}catch(e){}rootEl.__lzIO=null;}
+      if(rootEl.__lzSc){try{rootEl.removeEventListener('scroll',rootEl.__lzSc);}catch(e){}rootEl.__lzSc=null;}
+    }
+  };
+  rootEl.__lzFlush=flush;
   if(!('IntersectionObserver'in window)){phs.forEach(fill);return;}
+  const canRoot=rootEl.clientHeight>0&&/(auto|scroll)/.test(getComputedStyle(rootEl).overflowY);
   const io=new IntersectionObserver(entries=>{
     entries.forEach(en=>{if(en.isIntersecting){fill(en.target);io.unobserve(en.target);}});
-  },{root:rootEl,rootMargin:(opts.prefetch||300)+'px 0px'});
+  },{root:canRoot?rootEl:null,rootMargin:buf+'px 0px'});
   rootEl.__lzIO=io;
   phs.forEach(el=>io.observe(el));
+  rootEl.__lzSc=()=>requestAnimationFrame(flush);
+  rootEl.addEventListener('scroll',rootEl.__lzSc,{passive:true});
+  requestAnimationFrame(flush);
 }
 /* TILE prototipe (v3 .tile): TANPA TEKS — art + chip tier + bintang fav + glif mut/shiny +
    mark cuaca + dot BARU + meter power + dot equipped. Nilai lewat CSS custom property di
@@ -2024,7 +2049,7 @@ function bpTileInner(s){
   const bcol = mut ? MUT_COLOR[mut] : ((tier && TIER_COLOR[tier]) || '#7DF9FF');
   return `<div class="hub-center bp-card-hub${cData.fullArt?' fa':''}${mut?' mut-'+mut:''}${shinyCls(s)}" data-tier="${tier}" style="--tcol:${bcol};border:3px solid ${bcol};border-radius:1px;box-sizing:border-box;width:100%;height:100%;aspect-ratio:inherit;overflow:hidden;position:relative;">
       <div class="hc-img" style="position:relative;width:100%;height:100%;overflow:hidden;border-radius:inherit;">
-        <img src="${cardThumb(s.char)}" alt="${cName}" width="360" height="536" loading="lazy" decoding="async"${cData.pos?` style="object-position:${cData.pos}"`:''}>
+        <img src="${cardThumb(s.char)}" alt="${cName}" width="360" height="536" decoding="async"${cData.pos?` style="object-position:${cData.pos}"`:''}>
         ${chanceSpan}
         ${badgesHtml}
         ${fav}
@@ -2140,7 +2165,7 @@ function bpxTile(tab,d){
   const nmCol=(tab!=='item'&&owned&&d.color)?' style="color:'+d.color+'"':'';
   return '<button type="button" class="bpn-tile'+(on?' on':'')+(owned?'':' off')+'" data-bpx-id="'+key+'" aria-label="'+d.name+'" onclick="bpxPick(\''+tab+'\',\''+key+'\')">'
     +corner+badge
-    +'<span class="bpn-tile-art"><img src="'+icon+'" alt="" loading="lazy" decoding="async" onerror="this.style.visibility=\'hidden\'"></span>'
+    +'<span class="bpn-tile-art"><img src="'+icon+'" alt="" width="72" height="72" decoding="async" onerror="this.onerror=null;this.src=\'assets/images/icon-index-card.webp\'"></span>'
     +'<span class="bpn-tile-nm"'+nmCol+'>'+d.name+'</span></button>';
 }
 function bpxFindSelected(){
@@ -2260,11 +2285,12 @@ function bpxPaintBody(){
     +'<span><b>STEPPER</b> pick amount</span>'
     +'<span class="haz">TAB · '+lbl+'</span></footer>';
 }
+function _bpxUrl(p){try{return new URL(p,document.baseURI||location.href).href;}catch(e){return p;}}
 function bpxPaintTabs(){
   return '<nav class="bpn-tabs" role="tablist" aria-label="Bagian Backpack">'
     +BPX_TABS.map(t=>'<button type="button" class="bpn-tab'+(bpTab===t.k?' on':'')+'" role="tab" aria-selected="'+(bpTab===t.k)+'" onclick="bpxSetTab(\''+t.k+'\')">'
       +'<span class="bpn-tab-num">'+t.num+'</span>'
-      +'<span class="bpn-tab-ic" style="--im:url(\''+t.ic+'\')"></span>'
+      +'<span class="bpn-tab-ic" style="--im:url(\''+_bpxUrl(t.ic)+'\')"></span>'
       +'<span class="bpn-tab-l">'+t.l+'</span>'
       +'<span class="bpn-tab-s">'+t.s+'</span></button>').join('')
     +'</nav>';
@@ -2546,7 +2572,7 @@ function bpItemCardHtml(kind){
   /* Kartu = DIV role=button (bukan <button>) supaya tombol aksi di dalamnya tetap HTML valid.
      Tombol aksi = BUTTON sungguhan (prototipe _tmp/proto_backpack_v3.html .potuse):
      klik tombol -> pakai 1 item (TIDAK buka modal); klik badan kartu -> bpItemPop(). */
-  return `<div class="bp-itemcard${has?'':' off'}" data-item="${kind}" role="button" tabindex="0" aria-disabled="${has?'false':'true'}" aria-label="${d.name} · owned ×${fmt(d.cnt)}" onclick="bpItemPop('${kind}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();bpItemPop('${kind}');}"><span class="bi-qty${has?'':' zero'}">×${fmt(d.cnt)}</span><span class="bi-ic"><img src="${d.icon}" alt="${d.name}" loading="lazy" decoding="async"></span><span class="bi-name">${d.name}</span><button type="button" class="bi-act${d.isPack?' roll':''}" onclick="event.stopPropagation();bpItemUse('${kind}')" ${has?'':'disabled'}>${d.isPack?'GULUNG':'PAKAI'}</button></div>`;
+  return `<div class="bp-itemcard${has?'':' off'}" data-item="${kind}" role="button" tabindex="0" aria-disabled="${has?'false':'true'}" aria-label="${d.name} · owned ×${fmt(d.cnt)}" onclick="bpItemPop('${kind}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();bpItemPop('${kind}');}"><span class="bi-qty${has?'':' zero'}">×${fmt(d.cnt)}</span><span class="bi-ic"><img src="${d.icon}" alt="${d.name}" decoding="async"></span><span class="bi-name">${d.name}</span><button type="button" class="bi-act${d.isPack?' roll':''}" onclick="event.stopPropagation();bpItemUse('${kind}')" ${has?'':'disabled'}>${d.isPack?'GULUNG':'PAKAI'}</button></div>`;
 }
 /* Pakai 1 item LANGSUNG dari kartu (tidak lewat modal) — memakai handler yang sudah ada,
    tidak ada mekanik baru: PAKAI potion = 1 pot (bukan 'all'), GULUNG pack = 1 paket.
@@ -3190,7 +3216,7 @@ function artIconSvg(k){
 /* Ikon artefak CRAYON: PNG saja — tanpa SVG di belakang (berlian default gak nongol). */
 function artIconHtml(d){
   if(!d.img)return artIconSvg(d.icon);
-  return `<span class="icov"><img src="${thumbSrc(d.img)}" alt="" loading="lazy" decoding="async" onerror="this.remove()"></span>`;
+  return `<span class="icov"><img src="${thumbSrc(d.img)}" alt="" decoding="async" onerror="this.remove()"></span>`;
 }
 /* Tombol beli Backpack per kanal: raid/tower TIDAK dijual pakai coin — tombol jadi petunjuk sumber. */
 function bpBuyBtn(d,kind){
@@ -3210,14 +3236,14 @@ function bpBuyBtn(d,kind){
    renderGlobalLuckWidget() tetap paling atas. Nol emoji: glif luck = assets/icons/clover.svg,
    slot kosong = SVG plus, span fallback emoji (glif pet) dibuang — <img alt> sudah cukup.
    Warna lewat custom property --ec (pola sama seperti port TREE/ITEM), bukan inline color. */
-const BP_CLOVER='<img class="bp-luckglyph" src="assets/icons/clover.svg" alt="" width="13" height="13" loading="lazy" decoding="async">';
+const BP_CLOVER='<img class="bp-luckglyph" src="assets/icons/clover.svg" alt="" width="13" height="13" decoding="async">';
 const BP_PLUS='<svg class="bp-eqplus" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg>';
-const BP_LOCK='<img class="bp-tlock" src="assets/icons/padlock.svg" alt="" loading="lazy" decoding="async">';
+const BP_LOCK='<img class="bp-tlock" src="assets/icons/padlock.svg" alt="" decoding="async">';
 const BP_X='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg>';
 /* Art tile: webp asli (thumbSrc) atau SVG fallback artIconSvg — file gambar tidak disentuh. */
 function bpGearArtHtml(d,cls){
   if(!d.img)return artIconSvg(d.icon);
-  return `<img${cls?' class="'+cls+'"':''} src="${thumbSrc(d.img)}" alt="${d.name}" loading="lazy" decoding="async">`;
+  return `<img${cls?' class="'+cls+'"':''} src="${thumbSrc(d.img)}" alt="${d.name}" decoding="async">`;
 }
 /* Badge status kartu — dari state + ART_DEFS/PET_DEFS yang ada (d.src), bukan aturan baru.
    Lencana non-aktif hanya SINGKATAN kanal (TOKEN WB / DROP / GEM / COIN); kalimat kanal yang
@@ -3398,7 +3424,7 @@ function bpTogglePet(id){
 function lobbyPetHtml(){
   const d=state&&state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;
   if(!d)return"";
-  return `<div class="lobby-pet"><img src="${thumbSrc(d.img)}" alt="${d.name}" loading="lazy" decoding="async" onerror="this.parentNode.classList.add('noimg')"><span class="lp-eb">${d.emoji}</span><span class="lp-tip"><b style="color:${d.color}">${d.name}</b><small>${luckTxt(d)}</small></span></div>`;
+  return `<div class="lobby-pet"><img src="${thumbSrc(d.img)}" alt="${d.name}" decoding="async" onerror="this.parentNode.classList.add('noimg')"><span class="lp-eb">${d.emoji}</span><span class="lp-tip"><b style="color:${d.color}">${d.name}</b><small>${luckTxt(d)}</small></span></div>`;
 }
 /* ====== Hover reveal kartu (isi = hubCardHtml, sama persis kartu lobby). Dipakai dek + weather corner. ====== */
 let __bpsHoverEl=null;
@@ -3741,7 +3767,7 @@ function pxRowHtml(it){
   return '<button class="psx-row' + (on ? ' on' : '') + (owned ? ' dim' : '') + '" type="button" data-id="' + it.id + '" style="--ic:' + (it.color || '#f3e600') + '">' +
     '<span class="psx-row-art' + (isCard ? ' card' : '') + '">' +
       '<i class="halo"></i>' +
-      '<img src="' + it.img + '" alt="" decoding="async" loading="lazy">' +
+      '<img src="' + it.img + '" alt="" decoding="async">' +
     '</span>' +
     '<span class="psx-row-mid">' +
       '<span class="psx-row-cat">' + pxEsc(String(it.cat).toUpperCase()) + ' · ' + pxEsc(it.tier || it.type.toUpperCase()) + '</span>' +
@@ -4868,7 +4894,7 @@ function pxConfirmDialog(opts) {
     }
     function artHTML() {
       return opts.img
-        ? '<div class="pxcf-art"><i class="halo"></i><img src="' + opts.img + '" alt="" width="72" height="72" loading="lazy" decoding="async" onerror="this.remove()"></div>'
+        ? '<div class="pxcf-art"><i class="halo"></i><img src="' + opts.img + '" alt="" width="72" height="72" decoding="async" onerror="this.remove()"></div>'
         : '';
     }
 
@@ -4963,7 +4989,7 @@ function showConfirmDialog(opts) {
       : '';
 
     var artHTML = opts.img
-      ? '<img class="glcf-item-art" src="' + opts.img + '" alt="" width="72" height="72" loading="lazy" decoding="async" onerror="this.remove()">'
+      ? '<img class="glcf-item-art" src="' + opts.img + '" alt="" width="72" height="72" decoding="async" onerror="this.remove()">'
       : '';
     host.innerHTML =
       '<div class="glcf-backdrop">' +

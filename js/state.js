@@ -1596,7 +1596,7 @@ function openStory(targetChapNo){
   if(lvEl) lvEl.innerHTML=Array.from({length:ch.levels.length},(_,i)=>{
     const cellOpen=cellUnlocked(ch,state.diff);const cd=diffProg()[state.diff];const lv=ch.from+i,en=enemyOf(lv),cl=cd[lv],unlocked=cellOpen&&(i===0||cd[lv-1]),g=gateOf(lv),ok=pw>=g;
     return `<button class="lvl-btn${unlocked?"":" locked"}${en.boss?" boss":""}${unlocked&&!ok?" weak":""}" data-lv="${lv}" title="${en.name} · GATE ${fmt(g)}" ${unlocked?"":"disabled"}>
-      <img class="lvl-art" src="${en.img}" alt="" loading="lazy" onerror="this.remove()">
+      <img class="lvl-art" src="${en.img}" alt="" decoding="async" onerror="this.remove()">
       ${cl?'<span class="chk">✓</span>':""}
       ${unlocked?`<span class="lvl-num">${i+1}</span>${en.boss?'<span class="lvl-bos">BOS</span>':""}<span class="lvl-name">${en.name}</span>`:'<span class="lvl-lock">🔒</span>'}
     </button>`;}).join("");

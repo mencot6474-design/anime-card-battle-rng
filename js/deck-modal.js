@@ -184,7 +184,7 @@
       out += '<div class="dk-slot filled" data-slot="' + i + '" role="button" tabindex="0" style="--dk-mc:' + col + '" aria-label="Slot ' + (i + 1) + ': ' + esc(nameOf(s)) + '">'
         + '<span class="dk-slot-no">0' + (i + 1) + '</span>'
         + '<span class="dk-slot-tag">' + esc(mutLabel(s)) + '</span>'
-        + '<div class="dk-slot-art"><img src="' + esc(thumbOf(s)) + '" alt="' + esc(nameOf(s)) + '" loading="lazy" decoding="async"></div>'
+        + '<div class="dk-slot-art"><img src="' + esc(thumbOf(s)) + '" alt="' + esc(nameOf(s)) + '" width="96" height="96" decoding="async" onerror="this.onerror=null;this.src=\'assets/images/icon-index-card.webp\'"></div>'
         + '<button class="dk-slot-x" data-clear="' + i + '" aria-label="Remove card from slot ' + (i + 1) + '">' + ICON_X + '</button>'
         + '<div class="dk-slot-foot">'
         + '<div class="dk-slot-name">' + esc(nameOf(s)) + '</div>'
@@ -228,7 +228,7 @@
       }
       out += '<button class="dk-sp filled" data-supp="' + i + '" style="--dk-mc:' + (it.def.color || '#8fd3ff') + '" aria-label="' + esc(it.def.name) + '">'
         + '<span class="dk-sp-tag">' + tag + '</span>'
-        + '<img src="' + esc(supportImg(it.def)) + '" alt="' + esc(it.def.name) + '" loading="lazy" decoding="async">'
+        + '<img src="' + esc(supportImg(it.def)) + '" alt="' + esc(it.def.name) + '" width="96" height="96" decoding="async" onerror="this.onerror=null;this.src=\'assets/images/icon-index-card.webp\'">'
         + '<span class="dk-sp-name">' + esc(it.def.name) + '</span>'
         + '</button>';
     }
@@ -296,7 +296,7 @@
         }
         rows += '<div class="lr" style="--dk-mc:' + mutColor(sk) + '">'
           + '<i>0' + (k + 1) + '</i>'
-          + '<span class="av"><img src="' + esc(thumbOf(sk)) + '" alt="" loading="lazy" decoding="async"></span>'
+          + '<span class="av"><img src="' + esc(thumbOf(sk)) + '" alt="" width="40" height="40" decoding="async"></span>'
           + '<span class="nm">' + esc(nameOf(sk)) + '</span>'
           + '<span class="sc">' + fmtStatSafe(powerOf(sk)) + '</span>'
           + '</div>';
@@ -385,7 +385,7 @@
           + (s.count > 1 ? '<span class="dk-card-cnt">x' + s.count + '</span>' : '')
           + (indeck ? '<span class="dk-card-indeck">EQUIPPED</span>' : '')
           + (s.fav ? '<span class="dk-card-fav">' + ICON_STAR + '</span>' : '')
-          + '<img src="' + esc(thumbOf(s)) + '" alt="' + esc(nameOf(s)) + '" loading="lazy" decoding="async">'
+          + '<img src="' + esc(thumbOf(s)) + '" alt="' + esc(nameOf(s)) + '" width="96" height="96" decoding="async" onerror="this.onerror=null;this.src=\'assets/images/icon-index-card.webp\'">'
           + '<span class="dk-card-foot">' + esc(chanceText(s)) + '</span>'
           + '</button>';
       }
@@ -398,7 +398,7 @@
         var on = isSupportEquipped(it);
         out += '<button class="dk-card' + (on ? ' indeck' : '') + '" data-supitem="' + esc(it.kind + ':' + it.def.id) + '" style="--dk-mc:' + (it.def.color || '#8fd3ff') + '" aria-label="' + esc(it.def.name) + '">'
           + (on ? '<span class="dk-card-indeck">SLOT</span>' : '')
-          + '<img src="' + esc(supportImg(it.def)) + '" alt="' + esc(it.def.name) + '" loading="lazy" decoding="async">'
+          + '<img src="' + esc(supportImg(it.def)) + '" alt="' + esc(it.def.name) + '" width="96" height="96" decoding="async" onerror="this.onerror=null;this.src=\'assets/images/icon-index-card.webp\'">'
           + '<span class="dk-card-foot">' + esc(luckText(it.def)) + '</span>'
           + '</button>';
       }
@@ -545,7 +545,7 @@
       }
       out += '<button class="dk-spopt" data-slot="' + i + '" style="--dk-mc:' + mutColor(cur) + '" aria-label="Replace slot ' + (i + 1) + ': ' + esc(nameOf(cur)) + '">'
         + '<span class="no">0' + (i + 1) + '</span>'
-        + '<img src="' + esc(thumbOf(cur)) + '" alt="' + esc(nameOf(cur)) + '" loading="lazy" decoding="async">'
+        + '<img src="' + esc(thumbOf(cur)) + '" alt="' + esc(nameOf(cur)) + '" width="64" height="64" decoding="async" onerror="this.onerror=null;this.src=\'assets/images/icon-index-card.webp\'">'
         + '<span class="nm">' + esc(nameOf(cur)) + '</span>'
         + '</button>';
     }

@@ -356,7 +356,7 @@ function updateMeCard(){if(!bt)return;const f=document.querySelector(".fighter.m
 function benchTile(s){
   const tier=s.tier||cardTier(s.char)||"";
   const col=(tier&&TIER_COLOR[tier])||"var(--line2)";
-  return `<div class="bench-sq${s.sk?" shadow-sq":""}" data-tier="${tier}" style="border-color:${col}" title="${s.sk?"SHADOW · ":""}${cardName(s.char)}"><img src="${cardThumb(s.char)}" alt="${cardName(s.char)}" loading="lazy" decoding="async"><span class="bhp"><i style="width:100%"></i></span></div>`;
+  return `<div class="bench-sq${s.sk?" shadow-sq":""}" data-tier="${tier}" style="border-color:${col}" title="${s.sk?"SHADOW · ":""}${cardName(s.char)}"><img src="${cardThumb(s.char)}" alt="${cardName(s.char)}" width="48" height="48" decoding="async"><span class="bhp"><i style="width:100%"></i></span></div>`;
 }
 /* Rail cadangan = 3 kotak gambar sejajar (sisa dek setelah fighter aktif), ditambal placeholder biar tetap 3. */
 function benchRailHtml(remaining,caption){

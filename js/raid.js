@@ -237,7 +237,7 @@ function wbLbRowHtml(r,i,you){
   const v=Number(r.value)||0,max=wbLbS.rows.length?(Number(wbLbS.rows[0].value)||1):1;
   const name=wbEsc(r.username||"?");
   const avMeta=r.meta&&typeof r.meta.av==="string"&&WBV2_AV_PATH.test(r.meta.av)?r.meta.av:"";
-  const avImg=avMeta?`<img src="${avMeta}" alt="" loading="lazy" decoding="async" onerror="this.remove()">`:`<span>${wbEsc(String(r.username||"?").slice(0,1).toUpperCase())}</span>`;
+  const avImg=avMeta?`<img src="${avMeta}" alt="" decoding="async" onerror="this.remove()">`:`<span>${wbEsc(String(r.username||"?").slice(0,1).toUpperCase())}</span>`;
   return `<div class="wbv2-frow${you?" wbv2-lb-kamu":""}"><span class="wbv2-dmbar" style="width:${Math.max(4,Math.min(100,v/max*100)).toFixed(1)}%"></span><span class="wbv2-rk">${r.rank||i+1}</span><span class="wbv2-av">${avImg}</span><span class="wbv2-nm">${name}</span><b class="wbv2-dm">${fmtBig(v)}</b></div>`;
 }
 /* Panggilan SATU-satunya yang menulis daftar papan — dipakai buka modal, pindah
@@ -262,7 +262,7 @@ function wbLbPaint(){
   const podHtml=top3.length>=3?`<div class="wbv2-podium">${[1,2,3].map(rk=>{
     const r=top3[rk-1];
     const avR=r&&r.meta&&typeof r.meta.av==="string"&&WBV2_AV_PATH.test(r.meta.av)?r.meta.av:"";
-    return `<div class="wbv2-pod wbv2-pod${rk}"><div class="wbv2-pod-top"><span class="wbv2-pod-av">${avR?`<img src="${avR}" alt="" loading="lazy" onerror="this.remove()">`:""}</span><span class="wbv2-pod-rk">${rk}</span></div><div class="wbv2-pod-plate"><span class="wbv2-pod-nm">${wbEsc(r&&r.username||"?")}</span><span class="wbv2-pod-val">${fmtBig(r?Number(r.value)||0:0)}</span></div></div>`;
+    return `<div class="wbv2-pod wbv2-pod${rk}"><div class="wbv2-pod-top"><span class="wbv2-pod-av">${avR?`<img src="${avR}" alt="" onerror="this.remove()">`:""}</span><span class="wbv2-pod-rk">${rk}</span></div><div class="wbv2-pod-plate"><span class="wbv2-pod-nm">${wbEsc(r&&r.username||"?")}</span><span class="wbv2-pod-val">${fmtBig(r?Number(r.value)||0:0)}</span></div></div>`;
   }).join("")}</div>`:"";
   let listHtml;
   if(!wbOnline())listHtml=`<div class="wbv2-empty"><span class="wbv2-wm"></span><div class="wbv2-big">OFFLINE</div><div class="wbv2-sm">Log in for the global board</div></div>`;
@@ -609,9 +609,9 @@ function renderRaidPick(){
         const trait=(s.trait&&s.trait!=='none')?s.trait:null;
         const cnt=(s.count||1)>1?`<span class="bpt-cnt">&times;${fmt(s.count)}</span>`:'';
         const stack=(shny||mut||trait)?`<div class="bpt-top">${shny}${mut?mutChip(mut,mutPill(mut,'bpt-mut')):''}${trait?traitChip(trait,`<span class="bpt-gem" style="color:${TRAIT_COLOR[trait]};border-color:${TRAIT_COLOR[trait]}">${traitGem(12,trait)}</span>`):''}</div>`:'';
-        return `<img src="${cardThumb(s.char)}" alt="" width="360" height="536" loading="lazy" decoding="async">${stack}${cnt}<div class="bpt-ctl"><button class="bpt-fav${s.fav?' on':''}" onclick="event.stopPropagation();bpFav('${s.id}');renderRaidPick()" title="Favorit">${s.fav?'★':'☆'}</button><button class="bpt-lock${s.lock?' on':''}" onclick="event.stopPropagation();bpLock('${s.id}');renderRaidPick()" title="Lock">${s.lock?'🔒':'🔓'}</button></div><div class="bpt-name">${c.name}</div>`;};
+        return `<img src="${cardThumb(s.char)}" alt="" width="360" height="536" decoding="async">${stack}${cnt}<div class="bpt-ctl"><button class="bpt-fav${s.fav?' on':''}" onclick="event.stopPropagation();bpFav('${s.id}');renderRaidPick()" title="Favorit">${s.fav?'★':'☆'}</button><button class="bpt-lock${s.lock?' on':''}" onclick="event.stopPropagation();bpLock('${s.id}');renderRaidPick()" title="Lock">${s.lock?'🔒':'🔓'}</button></div><div class="bpt-name">${c.name}</div>`;};
         _rdTileHtml=_rd;
-        return stacks.map((s,i)=>{_rd[s.id]=inner(s);const c=CARDS[s.char];const mounted=i<48;
+        return stacks.map((s,i)=>{_rd[s.id]=inner(s);const c=CARDS[s.char];const mounted=true;
         return `<div class="bp-tile${c.fullArt?' fa':''}${mounted?'':' lz-ph'}" data-lz="${s.id}" data-sid="${s.id}" data-pick="${s.id}" data-name="${c.name.toLowerCase()}" style="--tcol:${(s.tier&&TIER_COLOR[s.tier])||'var(--line2)'}">${mounted?_rd[s.id]:''}</div>`;
       }).join("");})()}</div>
       <div class="no-result" id="raidSearch-nr">No matching cards dengan pencarian.</div>
@@ -658,7 +658,7 @@ function renderRaidPick(){
       raidToast("OFFLINE · LOCAL PLAY WITHOUT SCORE");raidView="battle";renderRaid();
     });
   });
-  lazyMountGrid(app,_rdTileHtml);
+  lazyMountGrid(app.querySelector(".rd-pick-scroll-wrap")||app,_rdTileHtml);
 }
 function renderRaidBattle(){
   if(window.cgGameplayStart) window.cgGameplayStart();
@@ -1078,7 +1078,7 @@ function wbsRowHtml(it){
   const m=wbsMeta(it), owned=wbsIsOwned(it);
   const dis=owned||(state.wbTokens||0)<it.cost;
   return `<div class="wbs-it" style="--ic:${m.ac}">
-    <span class="wbs-it-art"><i class="wbs-it-glow"></i><img src="${m.art}" alt="" decoding="async" loading="lazy"></span>
+    <span class="wbs-it-art"><i class="wbs-it-glow"></i><img src="${m.art}" alt="" decoding="async"></span>
     <span class="wbs-it-mid">
       <span class="wbs-it-cat"><b class="c1">${m.cat}</b><b class="c2">${m.tier}</b></span>
       <span class="wbs-it-nm" title="${it.name}">${it.name}</span>
@@ -1097,7 +1097,7 @@ function wbsBossHtml(it){
   return `<div class="wbs-boss${owned?" owned":""}" style="--ic:${m.ac}">
     <span class="wbs-boss-art">
       <i class="wbs-it-glow"></i>
-      <img src="${m.art}" alt="${it.name}" decoding="async" loading="lazy">
+      <img src="${m.art}" alt="${it.name}" decoding="async">
       <span class="wbs-boss-seal${owned?" on":""}">${owned?"✔ OWNED":"ROLL LOCKED"}</span>
     </span>
     <span class="wbs-boss-mid">
@@ -1451,14 +1451,14 @@ function ixRender(){
     const tags=[];
     if(hasMut)tags.push(ixMutTag(fm));
     if(shFx)tags.push('<span class="ix-mtag sh">SHINY</span>');
-    const inner=`<img src="${thumbSrc(c.sprite_asset)}" alt="${c.name}" width="360" height="536" loading="lazy" decoding="async">
+    const inner=`<img src="${thumbSrc(c.sprite_asset)}" alt="${c.name}" width="360" height="536" decoding="async">
       ${hasMut && fm==="rainbow" ? '<span class="ix-mring"></span>' : ''}
       ${shFx ? '<span class="ix-sheen"></span>' : ''}
       <span class="ix-count${any?'':' zero'}">×${any}</span>
       ${tags.length?`<span class="ix-tags">${tags.join("")}</span>`:''}
       <span class="ixc-stack">${nameHtml}<span class="ixc-chance${hasMut && (fm === 'rainbow' || fm === 'ultima') ? ' ixc-chance-rainbow' : ''}" style="--tc:${chanceColor}"><span class="ixc-chance-text">${chanceHtml}</span></span></span>`;
     _ixHtml[c.char_id]=inner;
-    const mounted=i<48;
+    const mounted=true;
     return `<button class="${cls}${mounted?'':' lz-ph'}" type="button" data-lz="${c.char_id}" data-c="${c.char_id}" data-mut="${hasMut ? fm : 'none'}" data-shiny="${shFx ? '1' : '0'}"${lockBoss ? ' title="NOT OWNED YET - buy it in '+lockShop+' to unlock roll"' : ''}>${mounted?inner:''}</button>`;
   }).join("");
   /* --- progress + claim --- */
@@ -1669,7 +1669,7 @@ function renderTrait(){
             <span class="ts-corner bl"></span><span class="ts-corner br"></span>
             <span class="ts-card-hint">CLICK TO SWITCH</span>
             <span class="ts-card-scan"></span>
-            <img id="tsCardImg" src="${cardThumb(tgt.char)}" alt="" loading="lazy" decoding="async">
+            <img id="tsCardImg" src="${cardThumb(tgt.char)}" alt="" decoding="async">
             <div class="ts-card-meta">
               <div>
                 <div class="ts-card-name" id="tsCardName">${cardName(tgt.char)}</div>
@@ -1885,7 +1885,7 @@ function trRenderPick(q){
       ? `<span class="pck-badges">${s.shiny?'<span class="shiny-badge shiny-pill">SHINY</span>':""}${s.mut&&s.mut!=="none"?mutChip(s.mut,mutPill(s.mut,"mut-badge")):""}${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="trait-badge" style="border-color:${TRAIT_COLOR[s.trait]}">${traitGem(13,s.trait)}</span>`):""}</span>`
       : "";
     return `<button class="pck-card${s.id===selId?" sel":""}" type="button" data-tid="${s.id}" title="${cardName(s.char)}">
-      <img src="${cardThumb(s.char)}" alt="" loading="lazy" decoding="async">
+      <img src="${cardThumb(s.char)}" alt="" decoding="async">
       ${badges}
       <span class="pck-name">${cardName(s.char)}</span>
     </button>`;
@@ -1968,7 +1968,7 @@ function trBannerClose(onCovered){
 }
 
 let cardPickCfg=null;
-function openDeckPick(cfg){dpSearch="";cardPickCfg=(cfg&&cfg.getSel&&cfg.onPick)?cfg:null;document.getElementById("deckPickModal").classList.toggle("dp-dark",!cardPickCfg);renderDeckPick();document.getElementById("deckPickModal").classList.add("show");}
+function openDeckPick(cfg){dpSearch="";cardPickCfg=(cfg&&cfg.getSel&&cfg.onPick)?cfg:null;const m=document.getElementById("deckPickModal");m.classList.toggle("dp-dark",!cardPickCfg);m.classList.add("show");renderDeckPick();}
 function closeDeckPick(){document.getElementById("deckPickModal").classList.remove("show");hideTraitTip();cardPickCfg=null;}
 function renderDeckPick(){
   const b=document.getElementById("dpBody");
@@ -1976,14 +1976,14 @@ function renderDeckPick(){
   const selId=cardPickCfg?cardPickCfg.getSel():traitTargetStack().id;
   _dpHtml={};
   b.innerHTML=`<label class="card-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input class="card-search" id="dpSearch" type="text" placeholder="Search card..." autocomplete="off"></label><div class="dp-grid" id="dpGrid">${state.stacks.map((s,i)=>{
-    const inner=`<img src="${cardThumb(s.char)}" alt="" loading="lazy" decoding="async">
+    const inner=`<img src="${cardThumb(s.char)}" alt="" width="96" height="96" decoding="async">
       ${s.shiny||(s.mut&&s.mut!=="none")||(s.trait&&s.trait!=="none")?`<span class="dp-badges">${s.shiny?'<span class="shiny-badge shiny-pill">SHINY</span>':""}${s.mut&&s.mut!=="none"?mutChip(s.mut,mutPill(s.mut,'mut-badge dp-mut')):""}${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="trait-badge dp-gem" style="border-color:${TRAIT_COLOR[s.trait]}">${traitGem(13,s.trait)}</span>`):""}</span>`:""}
       <span class="dp-name">${cardName(s.char)}</span>`;
-    _dpHtml[s.id]=inner;const mounted=i<48;
+    _dpHtml[s.id]=inner;const mounted=true;
     return `<button class="dp-card${isFullArt(s.char)?" fa":""}${s.id===selId?" sel":""}${s.mut&&s.mut!=="none"?(s.shiny?" dp-mut-shiny-"+s.mut:" dp-mut-"+s.mut):""}${s.shiny?" shiny":""}${mounted?"":" lz-ph"}" data-lz="${s.id}" data-tid="${s.id}" data-name="${cardName(s.char).toLowerCase()}">${mounted?inner:""}</button>`;}).join("")}</div><div class="no-result" id="dpSearch-nr">No matching cards.</div>`;
   {const dps=document.getElementById("dpSearch");if(dps){dps.value=dpSearch;dps.oninput=()=>{dpSearch=dps.value;runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));};if(dpSearch)runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));}}
   b.querySelectorAll(".dp-card").forEach(el=>el.onclick=()=>{const tid=el.getAttribute("data-tid");sfx.hit();if(cardPickCfg){cardPickCfg.onPick(tid);}else{traitTarget=tid;closeDeckPick();renderTrait();}});
-  lazyMountGrid(b.closest(".dp-box")||b,_dpHtml);
+  lazyMountGrid(b,_dpHtml);
 }
 /* Trait transiden ke atas = langka; jangan ditimpa tanpa konfirmasi */
 const RARE_TRAIT_GUARD=["transiden","demigod","cosmic","bigbang"];

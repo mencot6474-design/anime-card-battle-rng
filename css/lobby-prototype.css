@@ -4611,7 +4611,6 @@ html.m-portrait #backpackPanel .bp-deckcol .bp-col-head {
   outline: none !important;
   cursor: pointer !important;
   transition: transform 0.18s ease !important;
-  content-visibility: auto !important;
 }
 
 #backpackPanel .bp-tiles .bp-tile[class*="bp-mut-"],

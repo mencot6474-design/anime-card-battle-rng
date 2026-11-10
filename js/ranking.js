@@ -158,11 +158,11 @@ function rkFaceHtml(r, size) {
   // Prioritas utama: kartu lobby yang sedang dipakai player
   const cardSrc = rkLobbyCardSrc(r);
   if (cardSrc) {
-    const img = `<img class="rk-face rk-face-card" src="${rkEsc(cardSrc)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">`;
+    const img = `<img class="rk-face rk-face-card" src="${rkEsc(cardSrc)}" alt="" decoding="async" onerror="this.remove()">`;
     return ini + img;
   }
   const src = rkPhoto(nm);
-  const img = src ? `<img class="rk-face" src="${rkEsc(src)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : "";
+  const img = src ? `<img class="rk-face" src="${rkEsc(src)}" alt="" decoding="async" onerror="this.remove()">` : "";
   return ini + img;
 }
 
