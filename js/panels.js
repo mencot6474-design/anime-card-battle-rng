@@ -711,7 +711,7 @@ function rngRoll(luckMultiplier=1,speedMultiplier=1){
 }
 
 /* ========== BACKPACK + ROLL SYSTEM ========== */
-let rollState = { active: false, interval: null, currentCard: null, luck: 1, speedMultiplier: 1, hideTimer: null, fadeTimer: null, hideOverlay: false };
+let rollState = { active: false, interval: null, currentCard: null, luck: 1, speedMultiplier: 1, hideTimer: null, fadeTimer: null, hideOverlay: false, showcase: null };
 let __batchRoll = false;
 
 /* ===== DEDUP POLICY (v203-instaExp) =====
@@ -1113,7 +1113,7 @@ function rollSpeedNow(){
   return Math.max(1,Math.min(base*playerSpeedMult()*weatherSpeedMult(),RNG_ROLL_MAX_MULT));
 }
 function srScheduleNext(){
-  if(!rollState.active)return;
+  if(!rollState.active||rollState.showcase)return;
   const d=Math.max(RNG_ROLL_MIN,RNG_ROLL_SPEED/rollState.speedMultiplier);
   if(rollState.interval){clearTimeout(rollState.interval);rollState.interval=null;}
   rollState.interval=setTimeout(rollTick,d);
@@ -1127,7 +1127,7 @@ window.forceResumeRoll=function(){
   rollTick();
 };
 async function rollTick(){
-  if(!rollState.active)return;
+  if(!rollState.active||rollState.showcase)return;
   rollState.luck=rollState.luckPinned||rollLuckNow();
   rollState.speedMultiplier=rollSpeedNow();
   let result=null, fromServer=false;
@@ -1162,7 +1162,7 @@ async function rollTick(){
   }
   showRollResult(result);
   renderShell(); // Update XP bar & level check
-  srScheduleNext();
+  if(!rollState.showcase)srScheduleNext();
 }
 
 function stopRollAnimation() {
@@ -1191,33 +1191,81 @@ function stopRollAnimation() {
   }
 }
 
-function rvFx(card, overlay, tcol) {
+/* ===== REVEAL + ANOMALY SHOWCASE (port _tmp/proto_reveal_v1.html — TANPA partikel) =====
+   Badge = chip deck; border = bahasa Card Index; skill = passive.name + skillText (i18n-aware).
+   Showcase trigger effChance >= 1e15 (1 in 1q): auto-roll DI-PAUSE sampai CLAIM. */
+const RV_SHOWCASE_DEN = 1e15;
+const RV_SFX = {
+  whoosh: 'assets/audio/reveal/whoosh-magic.mp3',
+  slam: 'assets/audio/reveal/impact-deep.mp3',
+  sparkle: 'assets/audio/reveal/glitter-shot.mp3',
+  epic: 'assets/audio/reveal/epic-trailer.mp3',
+  claim: 'assets/audio/reveal/success-fantasy.mp3'
+};
+const _rvPool = {};
+function rvSnd(key, vol) {
+  if (typeof state !== 'undefined' && state && state.muted) return;
   try {
-    if (!tcol) tcol = '#7DF9FF';
-    const r = card.getBoundingClientRect();
-    for (let i = 0; i < 14; i++) {
-      const p = document.createElement('i'); p.className = 'rv-part';
-      const cx = r.left + (i % 2 ? r.width : 0), cy = r.top + Math.random() * r.height;
-      p.style.left = cx + 'px'; p.style.top = cy + 'px';
-      const ang = Math.atan2(cy - (r.top + r.height / 2), cx - (r.left + r.width / 2)) + (Math.random() - .5);
-      const dist = 90 + Math.random() * 140;
-      p.style.setProperty('--ox', Math.cos(ang) * dist + 'px');
-      p.style.setProperty('--oy', Math.sin(ang) * dist + 'px');
-      p.style.background = tcol; p.style.filter = 'drop-shadow(0 0 6px ' + tcol + ')';
-      p.style.animationDelay = (i * 0.04) + 's';
-      overlay.appendChild(p); setTimeout(() => p.remove(), 2600);
-    }
-    for (let i = 0; i < 20; i++) {
-      const d = document.createElement('i'); d.className = 'rv-dust';
-      d.style.left = (r.left + Math.random() * r.width) + 'px';
-      d.style.top = (r.top + r.height * (0.4 + Math.random() * 0.55)) + 'px';
-      const s = 3 + Math.random() * 6; d.style.width = d.style.height = s + 'px';
-      d.style.setProperty('--dx', ((Math.random() - .5) * 160) + 'px');
-      d.style.setProperty('--dy', (-(120 + Math.random() * 160)) + 'px');
-      d.style.animationDelay = (i * 0.06) + 's';
-      overlay.appendChild(d); setTimeout(() => d.remove(), 3200);
-    }
+    const src = RV_SFX[key]; if (!src) return;
+    let a = _rvPool[key];
+    if (!a) { a = _rvPool[key] = new Audio(src); a.preload = 'auto'; }
+    a.volume = Math.min(1, Math.max(0, vol == null ? .6 : vol));
+    a.currentTime = 0;
+    const p = a.play(); if (p && p.catch) p.catch(() => {});
   } catch (e) {}
+}
+function rvEsc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function rvBandOf(eff) {
+  if (eff >= RV_SHOWCASE_DEN) return { label: 'ANOMALY // PROBABILITY BREACH', color: '#f3e600' };
+  if (eff >= 1e12) return { label: 'ULTRA RARE SIGNAL', color: '#FF0055' };
+  if (eff >= 1e9) return { label: 'EPIC SIGNAL', color: '#A855F7' };
+  if (eff >= 1e6) return { label: 'RARE SIGNAL', color: '#E0BC6E' };
+  return { label: 'SIGNAL ACQUIRED', color: '#f5f5f5' };
+}
+function rvBadgesHTML(mut, shiny) {
+  let h = '';
+  if (shiny) h += '<span class="bchip" style="--c:#7DF9FF">SHINY</span>';
+  if (mut !== 'none') h += `<span class="bchip" style="--c:${MUT_COLOR[mut]}">${mutText(mut, MUT_LABEL[mut])}</span>`;
+  return h || '<span class="bchip" style="--c:rgba(245,245,245,.4)">BASE VARIANT</span>';
+}
+function rvCardHTML(c, mut, shiny, eff) {
+  const mc = mut !== 'none' ? 'm-' + mut : '';
+  const name = (shiny && (mut === 'none' || mut === 'gold'))
+    ? `<span class="cn silver">${rvEsc(c.name)}</span>`
+    : `<span class="cn">${mutText(mut, c.name)}</span>`;
+  return `<div class="cbadges">${rvBadgesHTML(mut, shiny)}</div>
+  <div class="cframe ${mc}${shiny ? ' shiny' : ''}">
+    ${mut === 'rainbow' ? '<span class="mring"></span>' : ''}
+    <img src="${rvEsc(c.art_image || c.sprite_asset)}" alt="${rvEsc(c.name)}" decoding="async">
+    <div class="cplate">
+      <div class="ct">${rvEsc(c.type)}${shiny ? ' · SHINY' : ''}</div>
+      ${name}
+      <div class="cc">1 IN ${fmtChance(eff)}</div>
+    </div>
+  </div>`;
+}
+function rvSkillHTML(c) {
+  const pas = c.passive || {};
+  return `<div class="skillblock">
+    <div class="sk">PASSIVE SKILL</div>
+    <div class="sn">${rvEsc(pas.name || '')}</div>
+    <p class="sd">${rvEsc(skillText(c.char_id))}</p>
+  </div>`;
+}
+function rvStatsHTML(c, mut, shiny) {
+  const st = cardStats(c.char_id, mut, 'none', shiny);
+  return `<div class="rv-stats">
+    <div class="rv-stat"><i>HP</i><b>${fmtStat(st.hp)}</b></div>
+    <div class="rv-stat"><i>ATK</i><b>${fmtStat(st.atk)}</b></div>
+  </div>`;
+}
+function rvMetaHTML(c, mut, shiny, eff) {
+  const band = rvBandOf(eff);
+  return `<div class="rv-kicker" style="--bandc:${band.color}">${band.label}</div>
+  <div class="rv-chance" style="--bandc:${band.color}">1 IN <b>${fmtChance(eff)}</b></div>
+  <div class="rv-full">1 IN ${Math.round(eff).toLocaleString('en-US')} · ${rvEsc(c.type).toUpperCase()} CLASS</div>
+  ${rvStatsHTML(c, mut, shiny)}
+  ${rvSkillHTML(c)}`;
 }
 
 function showRollResult(result, fromHistoryPreview) {
@@ -1227,43 +1275,99 @@ function showRollResult(result, fromHistoryPreview) {
   const overlay = document.getElementById('rollOverlay');
   if (!overlay) return;
   if (rollState.hideOverlay && !fromHistoryPreview) return;
-  const showcase = overlay.querySelector('.roll-card-showcase');
-  if (!showcase) return;
+  const reveal = document.getElementById('rollReveal');
+  const showcase = document.getElementById('rollShowcase');
+  const meta = document.getElementById('rollMeta');
+  if (!reveal || !showcase || !meta) return;
   /* fix race: batalkan fade-out pending - timeout lama jangan nutup reveal baru */
   if (rollState.fadeTimer) { clearTimeout(rollState.fadeTimer); rollState.fadeTimer = null; }
-  showcase.style.opacity=''; showcase.style.transform=''; showcase.style.transition='';
+  reveal.style.opacity = ''; reveal.style.transform = ''; reveal.style.transition = '';
   const cardData = getCardData(result.cardId);
   if (!cardData) return;
   rollState.currentCard = result;
-
-  // Kartu hasil roll = SALINAN persis kartu lobby (hubCardHtml) supaya posisinya identik.
-  const eq = {char:result.cardId, mut:result.mut||"none", shiny:!!result.shiny, trait:"none"};
-  showcase.innerHTML = hubCardHtml(eq, null, true);
-  const mut = eq.mut!=="none" ? eq.mut : null;
-  showcase.style.borderColor = mut ? MUT_COLOR[mut] : ((CARDS[eq.char].tier && TIER_COLOR[CARDS[eq.char].tier]) || "var(--cyan)");
-  showcase.style.setProperty('--tcol', mut ? (MUT_COLOR[mut] || '#7DF9FF') : ((CARDS[eq.char].tier && TIER_COLOR[CARDS[eq.char].tier]) || '#7DF9FF'));
+  const mut = result.mut || 'none', shiny = !!result.shiny;
+  const eff = effChance(result.cardId, mut, shiny);
+  showcase.innerHTML = rvCardHTML(cardData, mut, shiny, eff);
+  meta.innerHTML = rvMetaHTML(cardData, mut, shiny, eff);
 
   // Buka overlay. Animasi masuk HANYA sekali (saat pertama tampil) supaya tidak flicker muncul-hilang tiap tick.
   const wasVisible = overlay.style.display === 'flex';
   overlay.style.display = 'flex';
-  // Cinematic reveal (port dari _tmp/reveal-proto): slam + flash + particles - hanya saat baru buka
+  reveal.classList.add('on');
   if (!wasVisible) {
-    showcase.style.transition = 'none';
-    showcase.classList.remove('rv-slam'); void showcase.offsetWidth; showcase.classList.add('rv-slam');
-    const tcol = mut ? (MUT_COLOR[mut] || '#7DF9FF') : ((CARDS[eq.char].tier && TIER_COLOR[CARDS[eq.char].tier]) || '#7DF9FF');
-    setTimeout(() => rvFx(showcase, overlay, tcol), 560);
+    reveal.classList.remove('settled', 'slam'); void reveal.offsetWidth; reveal.classList.add('slam');
+    rvSnd('whoosh', .5);
+    setTimeout(() => rvSnd('slam', .6), 180);
+    if (mut !== 'none' || shiny) setTimeout(() => rvSnd('sparkle', .45), 420);
   } else {
-    showcase.classList.remove('rv-slam');
-    showcase.style.transition = '';
-    showcase.style.opacity = '1';
-    showcase.style.transform = 'scale(1)';
+    reveal.classList.remove('slam'); reveal.classList.add('settled');
   }
 
-  // Tutup lewat klik di mana saja diikat di wireRollDock (overlay), bukan tombol lagi.
-  // Update chance display: pakai base MENTAH (result.chance = base × statMult), bukan yang dibagi luck.
-  if(result.chance!==undefined){
-    const ec=document.querySelector('.roll-card-showcase .hc-chance');
-    if(ec)ec.textContent="1 in "+fmtChance(result.chance);
+  if (!fromHistoryPreview && eff >= RV_SHOWCASE_DEN && getComputedStyle(overlay).display !== 'none') {
+    rvOpenShowcase(result, eff);
+  }
+}
+
+/* ===== ANOMALY SHOWCASE — varian A BREACH (shutter tape + stamp, tanpa partikel) ===== */
+function rvOpenShowcase(result, eff) {
+  const sc = document.getElementById('rvShowcase');
+  if (!sc) return;
+  rollState.showcase = result;
+  if (rollState.interval) { clearTimeout(rollState.interval); rollState.interval = null; }
+  const c = getCardData(result.cardId);
+  const mut = result.mut || 'none', shiny = !!result.shiny;
+  const entry = String((state && state.totalRolls) || 0).padStart(4, '0');
+  const full = Math.round(eff).toLocaleString('en-US');
+  const alarm = `<div class="sc-alarm"><div class="tick">${('<span>ANOMALOUS SIGNAL</span><span>PROBABILITY BREACH</span><span>1 IN ' + full + '</span><span>REGISTERING VARIANT</span><span>HAZARD PROTOCOL 871</span>').repeat(3)}</div></div>`;
+  const close = '<button class="sc-close" type="button" id="rvScClose" aria-label="Close showcase"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>';
+  const tags = `${shiny ? '<span class="bchip" style="--c:#7DF9FF">SHINY</span>' : ''}
+    ${mut !== 'none' ? `<span class="bchip" style="--c:${MUT_COLOR[mut]}">${mutText(mut, MUT_LABEL[mut])}</span>` : ''}
+    <span class="bchip" style="--c:rgba(245,245,245,.55)">${rvEsc(c.type).toUpperCase()}</span>`;
+  sc.className = 'rv-showcase on sc-A';
+  sc.innerHTML = alarm + close + `<div class="sc-body">
+    <div class="sc-cardcol">
+      <div class="sc-chance"><div class="big">1 IN <b>${fmtChance(eff)}</b></div><div class="full">1 IN ${full} // PROBABILITY BREACH CONFIRMED</div></div>
+      ${rvCardHTML(c, mut, shiny, eff)}
+    </div>
+    <div class="sc-dossier">
+      <div class="sc-entry">ARCHIVE ENTRY <b>#${entry}</b> // NEW VARIANT REGISTERED</div>
+      <div class="sc-name">${mutText(mut, c.name)}</div>
+      <div class="sc-tags">${tags}</div>
+      ${rvStatsHTML(c, mut, shiny)}
+      ${rvSkillHTML(c)}
+      <div class="sc-paused">${rollState.active ? 'AUTO PAUSED — ANOMALY REVIEW' : ''}</div>
+      <div class="sc-actions">
+        <button class="rv-btn primary" type="button" id="rvScClaim">CLAIM CARD</button>
+        <button class="rv-btn" type="button" id="rvScNext">CLAIM + ROLL</button>
+      </div>
+    </div>
+    <div class="sc-stamp">BREACH</div>
+    <div class="sc-shutter top"></div><div class="sc-shutter bot"></div>
+  </div>`;
+  document.getElementById('rvScClose').addEventListener('click', () => rvClaimShowcase(false));
+  document.getElementById('rvScClaim').addEventListener('click', () => rvClaimShowcase(false));
+  document.getElementById('rvScNext').addEventListener('click', () => rvClaimShowcase(true));
+  document.addEventListener('keydown', rvEscHandler);
+  requestAnimationFrame(() => requestAnimationFrame(() => sc.classList.add('open')));
+  rvSnd('epic', .6);
+}
+function rvEscHandler(e) { if (e.key === 'Escape') rvClaimShowcase(false); }
+function rvClaimShowcase(again) {
+  const r = rollState.showcase;
+  if (!r) return;
+  rollState.showcase = null;
+  document.removeEventListener('keydown', rvEscHandler);
+  if (rollState.hideTimer) { clearTimeout(rollState.hideTimer); rollState.hideTimer = null; }
+  const sc = document.getElementById('rvShowcase');
+  if (sc) { sc.className = 'rv-showcase'; sc.innerHTML = ''; }
+  rvSnd('claim', .55);
+  if (rollState.active) { srScheduleNext(); return; }
+  if (again) {
+    hideRollResult();
+    const rb = document.getElementById('rollBtn');
+    if (rb) rb.click();
+  } else {
+    hideRollResult();
   }
 }
 
@@ -1805,26 +1909,28 @@ function renderProfile(){
 
 
 function hideRollResult() {
-  rollState.hideOverlay = true;
+  if (rollState.showcase) return; /* showcase terbuka: klaim dulu, jangan hilangkan reveal di belakangnya */
+  /* hide saat auto jalan = sembunyi permanen sampai auto start lagi; hide manual = tutup saja,
+     roll manual berikutnya tetap reveal (perilaku prototipe). Layar lain dijaga CSS !important. */
+  rollState.hideOverlay = !!rollState.active;
   const overlay = document.getElementById('rollOverlay');
   if (!overlay) return;
 
-  const showcase = overlay.querySelector('.roll-card-showcase');
-  if (showcase) {
-    showcase.classList.remove('rv-slam');
-    showcase.style.transition = 'all 0.3s ease-out';
-    showcase.style.opacity = '0';
-    showcase.style.transform = 'scale(0.8)';
+  const reveal = document.getElementById('rollReveal');
+  if (reveal) {
+    reveal.style.transition = 'all 0.3s ease-out';
+    reveal.style.opacity = '0';
+    reveal.style.transform = 'scale(0.94)';
   }
 
   rollState.fadeTimer = setTimeout(() => {
     rollState.fadeTimer = null;
     overlay.style.display = 'none';
-    if (showcase) {
-      showcase.style.opacity = '';
-      showcase.style.transform = '';
-      showcase.style.transition = '';
-      showcase.style.bottom = '';
+    if (reveal) {
+      reveal.style.opacity = '';
+      reveal.style.transform = '';
+      reveal.style.transition = '';
+      reveal.classList.remove('on', 'slam', 'settled');
     }
   }, 300);
 }

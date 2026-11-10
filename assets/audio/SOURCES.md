@@ -14,3 +14,15 @@ The clips below are included as CC0/public-domain audio. Sample filenames are pr
 | Electric zap | `stun-zap.ogg` | Kenney, Digital Audio (`zap1.ogg`) — https://kenney.nl/assets/digital-audio | CC0; included source `digital-audio-LICENSE.txt` |
 
 The OGA Ice spells listing says the author assembled the effects from a source sound by Stephan at pdsounds.org and identifies the files as CC0; retain this note if redistributing the sound files.
+
+## Reveal / anomaly showcase (`assets/audio/reveal/`)
+
+Mixkit Free License (free commercial use, no attribution required) — https://mixkit.co/free-sound-effects/
+
+| Event | Included file | Mixkit source ID |
+|---|---|---|
+| Roll overlay open | `reveal/whoosh-magic.mp3` | 2350 |
+| Card slam | `reveal/impact-deep.mp3` | 1143 |
+| Rare / mutation / shiny layer | `reveal/glitter-shot.mp3` | 2353 |
+| Anomaly showcase open | `reveal/epic-trailer.mp3` | 2908 |
+| Showcase claim | `reveal/success-fantasy.mp3` | 270 |

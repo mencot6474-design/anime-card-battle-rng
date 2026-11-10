@@ -16,6 +16,7 @@
 </script>
 
 <title>Anime Card Battle</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23050505'/%3E%3Cpath d='M6 26 16 6h6L12 26z' fill='%23f3e600'/%3E%3C/svg%3E">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1f2833">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,7 +28,7 @@
 <!-- CrazyGames SDK v3 (Official HTML5 SDK) -->
 <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
 <script src="js/crazygames.js?v=v2-sdkReadyGate"></script>
-<link rel="stylesheet" href="css/style.css?v=v394-drawerV5">
+<link rel="stylesheet" href="css/style.css?v=v395-revealHazard">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Rajdhani:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/world-boss.css?v=v277-wbShadowArmory">
 <link rel="stylesheet" href="css/sl-system.css?v=v391-coreSpireHub">
@@ -1436,11 +1437,15 @@
 </div>
 <div id="weatherToast" class="weather-toast"></div>
 <div class="roll-overlay" id="rollOverlay">
-  <div class="roll-card-showcase" id="rollShowcase"></div>
+  <div class="rv-reveal" id="rollReveal">
+    <div class="rv-cardcol"><div class="roll-card-showcase" id="rollShowcase"></div></div>
+    <div class="rv-meta" id="rollMeta"></div>
+  </div>
   <div class="roll-actions">
-    <button class="roll-close-out" id="rollCloseBtn" type="button">Sembunyikan</button>
+    <button class="roll-close-out" id="rollCloseBtn" type="button">HIDE</button>
   </div>
 </div>
+<div class="rv-showcase" id="rvShowcase" role="dialog" aria-modal="true" aria-label="Anomaly showcase"></div>
 <div id="backpackBackdrop" onclick="toggleBackpack()" style="display:none;"></div>
 <div class="backpack-panel" id="backpackPanel" style="display:none;"></div>
 
@@ -1757,7 +1762,7 @@
 <script src="js/cyber-icons.js?v=v1-drawerV5"></script>
 <script src="js/mobile-shell.js?v=v287-drawerV5Dock"></script>
 <script src="js/supabase-sync.js?v=v332-battleNoHeader"></script>
- <script src="js/panels.js?v=v410-titlesHazard"></script>
+ <script src="js/panels.js?v=v411-revealHazard"></script>
 <script src="js/topup.js?v=v158-paywallOff"></script>
 <script src="js/cards-fx.js?v=v84-fmtStatCompact"></script>
 <script src="js/anime-archetype-attacks.js?v=v118-phantomCombo"></script>
