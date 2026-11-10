@@ -209,8 +209,52 @@ function closeTowerHub(){
 }
 window.closeTowerHub=closeTowerHub;
 
+let _tw2ShopCat="ALL", _tw2ShopScroll=0, _tw2ShopClosing=false, _infBuyingKind=null;
+
+function closeTowerShop(){
+  if(_tw2ShopClosing)return;
+  _tw2ShopClosing=true;
+  try{sfx.hit();}catch(e){}
+  const sh=document.getElementById("tw2ShopShell");
+  const finish=()=>{
+    _tw2ShopClosing=false;
+    _tw2ShopScroll=0;
+    towerView="hub";
+    render();
+  };
+  if(sh){
+    sh.classList.add("is-leaving");
+    setTimeout(finish,140);
+  }else{
+    finish();
+  }
+}
+window.closeTowerShop=closeTowerShop;
+
+function _tw2EnsureEsc(){
+  if(window.__tw2EscWired)return;
+  window.__tw2EscWired=true;
+  document.addEventListener("keydown",(e)=>{
+    if(e.key!=="Escape")return;
+    if(typeof route==="function"&&route()!=="#/tower")return;
+    if(typeof bt!=="undefined"&&bt&&bt.tower)return;
+    if(document.querySelector("#deckModal.show,#rollResultPop.show,#towerDropModal.show,#commandDrawer.open,#backpackPanel.open,#profModal.show"))return;
+    if(towerView==="shop"){
+      e.preventDefault();
+      closeTowerShop();
+      return;
+    }
+    if(towerView!=="hub")return;
+    e.preventDefault();
+    if(typeof window._tw2IsSubOpen==="function"&&window._tw2IsSubOpen()){window._tw2CloseSub();return;}
+    if(typeof window._tw2IsTipPinned==="function"&&window._tw2IsTipPinned()){window._tw2HideTip();return;}
+    closeTowerHub();
+  });
+}
+
 function renderTower(){
   const curRoute=typeof route==="function"?route():(location.hash||"#/tower");
+  _tw2ShopClosing=false;
   if(towerView==="battle"&&towerRun){
     _twPrevRoute=curRoute;
     _twPrevView="battle";
@@ -219,12 +263,17 @@ function renderTower(){
   }
   if(towerView==="shop"){
     csClearCompact();
+    const alreadyShop=(_twPrevRoute==="#/tower"&&_twPrevView==="shop"&&!!(typeof app!=="undefined"&&app&&app.querySelector(".tw2-shop-mode")));
+    if(!alreadyShop){
+      _tw2ShopCat="ALL";
+      _tw2ShopScroll=0;
+    }
     _twPrevRoute=curRoute;
     _twPrevView="shop";
-    renderTowerShop();
+    renderTowerShop({animate:!alreadyShop});
     return;
   }
-  const alreadyHub=!!(typeof app!=="undefined"&&app&&app.querySelector(".tw2-hub"));
+  const alreadyHub=!!(typeof app!=="undefined"&&app&&app.querySelector(".tw2-hub:not(.tw2-shop-mode)"));
   const skipCurtain=(_twPrevRoute==="#/tower"&&(alreadyHub||_twPrevView==="shop"||_twPrevView==="battle"));
   _twPrevRoute=curRoute;
   _twPrevView="hub";
@@ -615,19 +664,7 @@ function renderTowerHub(opts){
     });
   });
 
-  if(!window.__tw2EscWired){
-    window.__tw2EscWired=true;
-    document.addEventListener("keydown",(e)=>{
-      if(e.key!=="Escape")return;
-      if(typeof route==="function"&&route()!=="#/tower")return;
-      if(towerView!=="hub"||(typeof bt!=="undefined"&&bt&&bt.tower))return;
-      if(document.querySelector("#deckModal.show,#rollResultPop.show,#towerDropModal.show,#commandDrawer.open,#backpackPanel.open,#profModal.show"))return;
-      e.preventDefault();
-      if(typeof window._tw2IsSubOpen==="function"&&window._tw2IsSubOpen()){window._tw2CloseSub();return;}
-      if(typeof window._tw2IsTipPinned==="function"&&window._tw2IsTipPinned()){window._tw2HideTip();return;}
-      closeTowerHub();
-    });
-  }
+  _tw2EnsureEsc();
 
   window.scrollTo(0,0);
   if(playCurtain){
@@ -637,13 +674,13 @@ function renderTowerHub(opts){
     if(sh)sh.classList.add("is-entered");
   }
 }
-function renderTowerShop(){
-  if(!state.tower)state.tower={best:0};
+function renderTowerShop(opts){
+  if(!state.tower)state.tower={best:0,runs:0,auto:false};
   const tok=state.infTokens||0;
-  /* Potret item: SEMUA ikon lewat `thumbSrc` (242x360, -84% byte) supaya kotak
-     42px tidak menarik art penuh. Terukur 8/8 punya `assets/images/thumb/*.webp`.
-     Prototipe terkunci (`_tmp/proto_tower_v1.html` S1 HOLO SHELF) memakai satu
-     file per item; di produksi yang setara adalah thumb ini. */
+  const gems=state.premiumGems||0;
+  const doAnim=!(opts&&opts.animate===false);
+  _tw2EnsureEsc();
+
   const ART={
     gem:thumbSrc("assets/images/premium-currency.webp"),
     weather:thumbSrc("assets/images/weather-potion.webp"),
@@ -655,142 +692,229 @@ function renderTowerShop(){
     speed3:thumbSrc("assets/images/pot-speed-3.webp")
   };
 
-  /* Data item Cyberpunk Supply - FULL ENGLISH */
+  /* Data item Tower Shop (Infinite Tower) — FULL ENGLISH */
   const ITEMS=[
-    {k:"gem",cat:"EXCHANGE",tier:"GEM",label:"TOKEN → GEM // 100:10",sub:"Exchange 100 TOWER TOKENS for 10 Premium GEMS. Repeatable without limits.",cost:100,gem:10,req:null,ac:"#ffd700"},
-    {k:"weather",cat:"WEATHER",tier:"SPEC-A",label:"ATMOSPHERIC OVERRIDE",sub:"Force climate shift with native probability (5 minute duration).",cost:10,req:null,ac:"#00d9ff"},
-    {k:"luck1",cat:"AUGMENT",tier:"MK-I",label:"NEURAL LUCK MK-I",sub:"+3 flat luck for 5 minutes. Stackable — duration increases +5 minutes per use.",cost:10,req:null,ac:"#00ffaa"},
-    {k:"luck2",cat:"AUGMENT",tier:"MK-II",label:"NEURAL LUCK MK-II",sub:"+5 flat luck & +10% luck multiplier for 5 minutes. Stackable.",cost:50,req:null,ac:"#00ffaa"},
-    {k:"luck3",cat:"AUGMENT",tier:"MK-III",label:"NEURAL LUCK MK-III",sub:"+10 flat luck & +20% luck multiplier for 5 minutes. Peak augmentation matrix.",cost:250,req:null,ac:"#00ffaa"},
-    {k:"speed1",cat:"OVERCLOCK",tier:"MK-I",label:"CHRONO BOOSTER MK-I",sub:"Roll speed +0.2× (≈1.2×) for 5 minutes. Accelerates spire RNG cycle.",cost:10,req:null,ac:"#fbbf24"},
-    {k:"speed2",cat:"OVERCLOCK",tier:"MK-II",label:"CHRONO BOOSTER MK-II",sub:"Roll speed +0.5× (≈1.5×) for 5 minutes. Accelerator synchronization overclock.",cost:50,req:null,ac:"#fbbf24"},
-    {k:"speed3",cat:"OVERCLOCK",tier:"MK-III",label:"CHRONO BOOSTER MK-III",sub:"Roll speed +1.0× (2.0× instant) for 5 minutes. Maximum overdrive velocity.",cost:250,req:null,ac:"#fbbf24"}
+    {k:"gem",cat:"EXCHANGE",tier:"GEM",label:"TOKEN \u2192 GEM // 100:10",sub:"Exchange 100 Tower Tokens for 10 Premium Gems. Repeatable without limits.",cost:100,gem:10,req:null,ac:"#ffd700"},
+    {k:"weather",cat:"WEATHER",tier:"SPEC-A",label:"ATMOSPHERIC OVERRIDE",sub:"Triggers a random server climate shift using native weather probabilities (5 min duration).",cost:10,req:null,ac:"#22d3ee"},
+    {k:"luck1",cat:"AUGMENT",tier:"MK-I",label:"NEURAL LUCK MK-I",sub:"+3 flat luck for 5 minutes. Stackable \u2014 duration extends +5 min per use.",cost:10,req:null,ac:"#6be08a"},
+    {k:"luck2",cat:"AUGMENT",tier:"MK-II",label:"NEURAL LUCK MK-II",sub:"+5 flat luck & +10% luck multiplier for 5 minutes. Stackable.",cost:50,req:null,ac:"#6be08a"},
+    {k:"luck3",cat:"AUGMENT",tier:"MK-III",label:"NEURAL LUCK MK-III",sub:"+10 flat luck & +20% luck multiplier for 5 minutes. Peak augmentation matrix.",cost:250,req:null,ac:"#6be08a"},
+    {k:"speed1",cat:"OVERCLOCK",tier:"MK-I",label:"CHRONO BOOSTER MK-I",sub:"Roll speed +0.2\u00d7 (~1.2\u00d7) for 5 minutes. Accelerates spire RNG cycle.",cost:10,req:null,ac:"#fbbf24"},
+    {k:"speed2",cat:"OVERCLOCK",tier:"MK-II",label:"CHRONO BOOSTER MK-II",sub:"Roll speed +0.5\u00d7 (~1.5\u00d7) for 5 minutes. Sync accelerator overclock.",cost:50,req:null,ac:"#fbbf24"},
+    {k:"speed3",cat:"OVERCLOCK",tier:"MK-III",label:"CHRONO BOOSTER MK-III",sub:"Roll speed +1.0\u00d7 (2.0\u00d7 instant) for 5 minutes. Maximum overdrive velocity.",cost:250,req:null,ac:"#fbbf24"}
   ];
 
   const stkOf=k=>k==="weather"?(state.potions||0):k.startsWith("luck")?(state.luckPots&&state.luckPots[+k.slice(-1)-1])||0:k.startsWith("speed")?(state.speedPots&&state.speedPots[+k.slice(-1)-1])||0:(state.mythicPotions||0);
   const cardOwned=it=>!!(it.unlock&&state.towerShopOwned&&state.towerShopOwned[it.unlock]);
 
-  /* ------------------------- S1 HOLO SHELF : RAILS ------------------------
-     Cermin prototipe terkunci: `RAILS` (lab:1367) + item difilter per `cat`.
-     Jumlah = 1 + 1 + 3 + 3 = 8 item, sama persis dengan `ITEMS`. Kalau suatu
-     saat isi ITEMS berubah kategori, rail tetap terbentuk dari data — tidak ada
-     item yang hilang diam-diam. */
-  const RAILS=[
-    {key:"EXCHANGE", note:"TOKEN BURN"},
-    {key:"WEATHER",  note:"CLIMATE"},
-    {key:"AUGMENT",  note:"LUCK"},
-    {key:"OVERCLOCK",note:"SPEED"}
+  const TABS=[
+    {k:"ALL",label:"ALL",cnt:ITEMS.length},
+    {k:"EXCHANGE",label:"EXCHANGE",cnt:1},
+    {k:"WEATHER",label:"WEATHER",cnt:1},
+    {k:"AUGMENT",label:"LUCK",cnt:3},
+    {k:"OVERCLOCK",label:"SPEED",cnt:3}
   ];
 
-  const shopItemHtml=it=>{
+  const cardHtml=it=>{
     const isOwned=cardOwned(it);
     const canAfford=tok>=it.cost;
-    /* `cnt` = sisa/cadangan yang ditampilkan di baris IN STOCK. `unlock` (kartu
-       boss permanen) tidak dipakai ITEMS sekarang, tapi rumusnya dipertahankan
-       supaya kalau item `unlock` masuk lagi ia tetap benar. */
     const cnt=it.unlock?state.stacks.filter(s=>s.char===it.unlock).reduce((n,s)=>n+(s.count||1),0):(it.gem?0:stkOf(it.k));
-    const dis=isOwned || !canAfford || (it.req && stkOf(it.req)<=0);
-    const btnLabel=isOwned ? "✔ UNLOCKED" : (!canAfford ? `DEFICIT ${fmt(it.cost-tok)}` : (it.gem ? "EXCHANGE (+10 GEMS)" : "ACQUIRE SUPPLY"));
-    const stock=it.unlock ? (cnt?"×"+cnt:"0") : (it.gem?"∞ UNLIMITED":"×"+cnt);
+    const dis=isOwned||!canAfford||(it.req&&stkOf(it.req)<=0)||_infBuyingKind===it.k;
+    const btnLabel=_infBuyingKind===it.k?"PROCESSING..."
+      :(isOwned?"UNLOCKED"
+      :(!canAfford?`NEED ${fmt(it.cost-tok)} TOK`
+      :(it.gem?"EXCHANGE +10 GEMS":"ACQUIRE")));
+    const stockTxt=it.unlock?(cnt?"IN STOCK \u00d7"+cnt:"LOCKED"):(it.gem?"UNLIMITED":"IN STOCK \u00d7"+cnt);
     const art=ART[it.k]||"";
-    /* Struktur = cermin lab `shelfItemHtml` (lab:1385). `data-kind` + kelas
-       `fn-buy`/`:disabled` adalah kontrak produksi (binding infBuy di bawah). */
-    return `
-      <div class="cs-it${dis?" dis":""}" style="--ic:${it.ac}" data-cat="${it.cat}">
-        <span class="cs-it-art">
-          <i class="cs-it-glow"></i>
-          ${art?`<img src="${art}" alt="${it.label}" decoding="async" loading="lazy">`:""}
-        </span>
-        <span class="cs-it-mid">
-          <span class="cs-it-cat"><b class="c1">${it.cat}</b><b class="c2">${it.tier}</b></span>
-          <span class="cs-it-nm" title="${it.label}">${it.label}</span>
-          <span class="cs-it-ds">${it.sub}</span>
-          <span class="cs-it-stock">IN STOCK <b>${stock}</b></span>
-        </span>
-        <span class="cs-it-right">
-          <span class="cs-it-price"><b>${fmt(it.cost)}<i>TOK</i></b></span>
-          <button class="fn-buy" type="button" data-kind="${it.k}" ${dis?"disabled":""} title="${it.label}">${btnLabel}</button>
-        </span>
-      </div>`;
+    return `<article class="tw2-sh-card${dis?" is-dis":""}" style="--ic:${it.ac}" data-cat="${it.cat}">
+      <div class="tw2-shc-top">
+        <div class="tw2-shc-tags">
+          <span class="tw2-shc-cat">${it.cat}</span>
+          <span class="tw2-shc-tier">${it.tier}</span>
+        </div>
+        <span class="tw2-shc-stock${it.gem?" unlim":""}"><b>${stockTxt}</b></span>
+      </div>
+      <div class="tw2-shc-mid">
+        <div class="tw2-shc-art">${art?`<img src="${art}" alt="${it.label}" decoding="async">`:""}</div>
+        <div class="tw2-shc-info">
+          <div class="tw2-shc-nm" title="${it.label}">${it.label}</div>
+          <div class="tw2-shc-ds">${it.sub}</div>
+        </div>
+      </div>
+      <div class="tw2-shc-foot">
+        <div class="tw2-shc-price">${TW2_TOK_SVG}<b>${fmt(it.cost)}</b><i>TOK</i></div>
+        <button type="button" class="tw2-sh-buy${isOwned?" is-owned":""}" data-kind="${it.k}" ${dis?"disabled":""} aria-label="${it.label} — ${btnLabel}">${btnLabel}</button>
+      </div>
+    </article>`;
   };
 
-  const railsHtml=RAILS.map(r=>{
-    const items=ITEMS.filter(i=>i.cat===r.key);
-    if(!items.length)return "";
+  const buildSectionsHtml=(cat)=>{
+    if(cat==="ALL"){
+      const exItems=ITEMS.filter(i=>i.cat==="EXCHANGE"||i.cat==="WEATHER");
+      const augItems=ITEMS.filter(i=>i.cat==="AUGMENT");
+      const spdItems=ITEMS.filter(i=>i.cat==="OVERCLOCK");
+      return `
+        <section class="tw2-sh-sec">
+          <div class="tw2-rw-head"><b>EXCHANGE &amp; CLIMATE</b><span class="rule"></span><span class="hint">${exItems.length} SUPPLIES</span></div>
+          <div class="tw2-sh-grid cols-2">${exItems.map(cardHtml).join("")}</div>
+        </section>
+        <section class="tw2-sh-sec">
+          <div class="tw2-rw-head"><b>AUGMENT // LUCK MATRIX</b><span class="rule"></span><span class="hint">${augItems.length} TIERS</span></div>
+          <div class="tw2-sh-grid">${augItems.map(cardHtml).join("")}</div>
+        </section>
+        <section class="tw2-sh-sec">
+          <div class="tw2-rw-head"><b>OVERCLOCK // ROLL SPEED</b><span class="rule"></span><span class="hint">${spdItems.length} TIERS</span></div>
+          <div class="tw2-sh-grid">${spdItems.map(cardHtml).join("")}</div>
+        </section>`;
+    }
+    const list=ITEMS.filter(i=>i.cat===cat);
+    const meta={
+      EXCHANGE:{title:"TOKEN EXCHANGE",note:"GEM CONVERSION"},
+      WEATHER:{title:"CLIMATE OVERRIDE",note:"ATMOSPHERE SHIFT"},
+      AUGMENT:{title:"AUGMENT // LUCK MATRIX",note:"STACKABLE BUFF"},
+      OVERCLOCK:{title:"OVERCLOCK // ROLL SPEED",note:"RNG ACCELERATION"}
+    }[cat]||{title:cat,note:"SUPPLIES"};
+    const gridCls=list.length===1?" cols-1":(list.length===2?" cols-2":"");
     return `
-      <div class="cs-rail">
-        <div class="cs-rail-h"><b>${r.key}</b><i></i><span>${items.length} · ${r.note}</span></div>
-        <div class="cs-rail-shelf">${items.map(shopItemHtml).join("")}</div>
-      </div>`;
-  }).join("");
+      <section class="tw2-sh-sec">
+        <div class="tw2-rw-head"><b>${meta.title}</b><span class="rule"></span><span class="hint">${list.length} &middot; ${meta.note}</span></div>
+        <div class="tw2-sh-grid${gridCls}">${list.map(cardHtml).join("")}</div>
+      </section>`;
+  };
 
-  /* ============================== SHOP MARKUP =============================
-     Port S1 "HOLO SHELF" dari lab terkunci (`_tmp/proto_tower_v1.html`, lab:916
-     `#v-shop1`). Mengganti `.tactical-tower-shop-page` + `.tsh-*`/`.thc-*` legacy.
-     Struktur: .tw-page > .cs-shop > .cs-shop-top / .cs-shop-body(.cs-shelf >
-     .cs-inner > .cs-rail*) / .cs-shop-foot.
-     PENTING: container scroll toko = `.cs-shelf`, JANGAN `.cs-stage` — nama
-     itu dipakai hub CORE SPIRE (`overflow:hidden` + perspective) dan menang
-     cascade, sehingga toko tidak bisa digulir sama sekali.
-     Kontrak yang WAJIB tetap: root `.tw-page` (deteksi `body.on-tower` boot.js:341),
-     `#towerShopBack` -> `towerView="hub"`, `.fn-buy[data-kind]` -> `infBuy`.
-     Nama `.cs-shop`/`.cs-rail`/`.cs-it`/`.fn-buy` diverifikasi 0 aturan lama
-     (`grep` 2026-11-05) jadi tidak ada tabrakan cascade. `.tw-hub` SENGAJA tidak
-     dipakai: 131 aturan lama + dipakai `js/raid.js`. */
-  app.innerHTML=`
-  <div class="tw-page tactical-tower-page">
-    <div class="cs-shop">
+  if(!TABS.some(t=>t.k===_tw2ShopCat))_tw2ShopCat="ALL";
 
-      <!-- ============================ TOP BAR ============================ -->
-      <div class="cs-shop-top">
-        <button class="cs-back" id="towerShopBack" type="button" title="Return to Spire" aria-label="Return to Spire">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-        </button>
-        <div class="cs-ttl">
-          <div class="cs-kick"><i></i>SPIRE DEPOT · PROCUREMENT</div>
-          <div class="cs-name">SPIRE <em>ARMORY</em></div>
+  app.innerHTML=`<div class="tw-page tactical-tower-page">
+  <div class="tw2-hub tw2-shop-mode">
+    <div class="tw2-shell${doAnim?"":" is-entered"}" id="tw2ShopShell" role="dialog" aria-modal="true" aria-label="Infinite Tower Shop">
+      <header class="tw2-banner-bar">
+        <div class="tw2-banner-ribbon">
+          <div class="tw2-banner-cap">
+            <div class="tw2-banner-cap-in">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+              <span>ARMORY</span>
+            </div>
+          </div>
+          <div class="tw2-banner-mid">
+            <div class="tw2-banner-titles">
+              <h1 class="tw2-title">TOWER <em>SHOP</em></h1>
+              <span class="tw2-eyebrow">// SPIRE ARMORY &middot; TOKEN EXCHANGE &amp; SUPPLIES</span>
+            </div>
+            <div class="tw2-banner-tags">
+              <span class="tw2-banner-tag" id="tw2ShopHdrTok">TOKENS: ${fmt(tok)}</span>
+              <span class="tw2-banner-tag gold" id="tw2ShopHdrGem">GEMS: ${fmt(gems)}</span>
+              <span class="tw2-banner-tag hz">HZ-ARMORY</span>
+            </div>
+          </div>
         </div>
-        <div class="cs-meter">
-          <div class="cs-m"><small>TOKEN</small><b class="c">${fmt(tok)}</b></div>
-          <div class="cs-m"><small>GEM</small><b class="g">${fmt(state.premiumGems||0)}</b></div>
+        <div class="tw2-banner-right">
+          <button type="button" class="tw2-x tw2-back-btn" id="towerShopBack" title="Return to Infinite Tower Hub [ESC]" aria-label="Return to Infinite Tower Hub">
+            <span class="tw2-back-btn-in">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              <span class="tw2-back-lbl">HUB</span>
+            </span>
+          </button>
+          <div class="tw2-slashes" aria-hidden="true"><i></i><i></i><i></i></div>
         </div>
-      </div>
+      </header>
 
-      <!-- ======================== BODY : HOLO SHELF ====================== -->
-      <div class="cs-shop-body">
-        <div class="cs-shelf">
-          <div class="cs-inner">${railsHtml}</div>
+      <section class="tw2-panel">
+        <div class="tw2-tape-line" aria-hidden="true"></div>
+        <div class="tw2-sh-bar">
+          <div class="tw2-sh-wallet">
+            <div class="tw2-sh-wal tok">
+              ${TW2_TOK_SVG}
+              <div class="tw2-sh-wal-txt">
+                <span>TOWER TOKENS</span>
+                <b id="tw2ShopTokVal">${fmt(tok)}</b>
+              </div>
+            </div>
+            <div class="tw2-sh-wal gem">
+              <img src="${ART.gem}" alt="Gems" decoding="async">
+              <div class="tw2-sh-wal-txt">
+                <span>PREMIUM GEMS</span>
+                <b id="tw2ShopGemVal">${fmt(gems)}</b>
+              </div>
+            </div>
+          </div>
+          <div class="tw2-sh-tabs" id="tw2ShopTabs" role="tablist" aria-label="Shop categories">
+            ${TABS.map(t=>`<button type="button" role="tab" aria-selected="${_tw2ShopCat===t.k?"true":"false"}" class="tw2-sh-tab${_tw2ShopCat===t.k?" on":""}" data-cat="${t.k}">${t.label}<small>${t.cnt}</small></button>`).join("")}
+          </div>
         </div>
-      </div>
 
-      <!-- ============================= FOOT ============================= -->
-      <div class="cs-shop-foot">
-        <span>${ITEMS.length} SUPPLIES</span><i></i><span>1 TOKEN = 1 RUN</span>
-      </div>
+        <div class="tw2-sh-body" id="tw2ShopScroll">
+          ${buildSectionsHtml(_tw2ShopCat)}
+        </div>
 
+        <div class="tw2-sh-foot">
+          <span><b>${ITEMS.length}</b> SUPPLIES AVAILABLE</span>
+          <i></i>
+          <span class="tw2-sh-foot-tip">+1 TOK / FLOOR &middot; +5 TOK / BOSS GATE</span>
+        </div>
+      </section>
     </div>
-  </div>`;
+  </div></div>`;
+
+  const bindBuyButtons=()=>{
+    const bodyEl=document.getElementById("tw2ShopScroll");
+    app.querySelectorAll(".tw2-sh-buy[data-kind]").forEach(btn=>{
+      btn.onclick=()=>{
+        if(btn.disabled)return;
+        const k=btn.dataset.kind;
+        if(k){
+          if(bodyEl)_tw2ShopScroll=bodyEl.scrollTop;
+          try{sfx.hit();}catch(e){}
+          infBuy(k);
+        }
+      };
+    });
+  };
 
   const rb=document.getElementById("towerShopBack");
-  if(rb)rb.onclick=()=>{try{sfx.hit();}catch(e){}towerView="hub";render();};
+  if(rb)rb.onclick=closeTowerShop;
 
-  app.querySelectorAll(".fn-buy[data-kind]").forEach(btn=>{
-    btn.onclick=()=>{
-      if(btn.disabled)return;
-      const k=btn.dataset.kind;
-      if(k){
+  const tabsEl=document.getElementById("tw2ShopTabs");
+  const scrollEl=document.getElementById("tw2ShopScroll");
+  if(tabsEl&&scrollEl){
+    tabsEl.querySelectorAll(".tw2-sh-tab[data-cat]").forEach(tb=>{
+      tb.onclick=()=>{
+        const c=tb.getAttribute("data-cat")||"ALL";
+        if(c===_tw2ShopCat)return;
         try{sfx.hit();}catch(e){}
-        infBuy(k);
-      }
-    };
-  });
+        _tw2ShopCat=c;
+        _tw2ShopScroll=0;
+        tabsEl.querySelectorAll(".tw2-sh-tab").forEach(x=>{
+          const on=x.getAttribute("data-cat")===c;
+          x.classList.toggle("on",on);
+          x.setAttribute("aria-selected",on?"true":"false");
+        });
+        scrollEl.innerHTML=buildSectionsHtml(c);
+        scrollEl.scrollTop=0;
+        bindBuyButtons();
+      };
+    });
+  }
+
+  bindBuyButtons();
+  if(scrollEl&&_tw2ShopScroll>0)scrollEl.scrollTop=_tw2ShopScroll;
+
+  if(doAnim){
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      const sh=document.getElementById("tw2ShopShell");
+      if(sh)sh.classList.add("is-entered");
+    }));
+  }
 }
 function infBuy(kind){
   const cost={gem:100,weather:10,luck1:10,luck2:50,luck3:250,speed1:10,speed2:50,speed3:250,mythic:50}[kind]; if(cost==null)return;
+  if(_infBuyingKind)return;
   /* Kartu unlock permanen */
   const CARD_UNLOCK={} [kind];
   if(CARD_UNLOCK&&state.towerShopOwned&&state.towerShopOwned[CARD_UNLOCK]){toast("ALREADY UNLOCKED","Card roll is already permanently unlocked","#a78bfa");return;}
   if((state.infTokens||0)<cost){toast("INSUFFICIENT TOKENS","NOT ENOUGH TOWER TOKENS","#f87171");return;}
+  _infBuyingKind=kind;
+  const activeBtn=document.querySelector(`.tw2-sh-buy[data-kind="${kind}"]`);
+  if(activeBtn){activeBtn.disabled=true;activeBtn.textContent="PROCESSING...";}
   if(kind==='gem'){
     const GEM_AMT=10;
     (async()=>{
@@ -806,10 +930,11 @@ function infBuy(kind){
           res={ok:true,gems:GEM_AMT,tokens:state.infTokens};
         }
       }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
+      finally{_infBuyingKind=null;}
       if(res&&res.ok){
         if(typeof res.tokens==='number')state.infTokens=res.tokens;
         save(); try{beep(880,.12,"sine",.07);}catch(e){}
-        toast("EXCHANGE SUCCESSFUL","-"+cost+" TOKENS · +"+(res.gems||GEM_AMT)+" GEMS","#ffd700");
+        toast("EXCHANGE SUCCESSFUL","-"+cost+" TOKENS \u00b7 +"+(res.gems||GEM_AMT)+" GEMS","#ffd700");
       }else{
         try{save();}catch(e){}
         const why=(res&&res.msg)==="TOKEN_KURANG"?"INSUFFICIENT TOKENS":((res&&res.msg)||"Please try again later");
@@ -832,6 +957,7 @@ function infBuy(kind){
         res={ok:true,tokens:state.infTokens};
       }
     }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
+    finally{_infBuyingKind=null;}
     if(!res||!res.ok){
       const why=(res&&res.msg)==="TOKEN_KURANG"?"INSUFFICIENT TOKENS":((res&&res.msg)==="DAILY_CAP"?"DAILY CAP REACHED":((res&&res.msg)||"Please try again later"));
       toast("PURCHASE FAILED",why,"#f87171");
@@ -846,7 +972,7 @@ function infBuy(kind){
     else if(kind.startsWith('speed')){state.speedPots=state.speedPots||[0,0,0];state.speedPots[+kind.slice(-1)-1]++;}
     save(); beep(660,.1,"sine",.07);
     const label=CARD_UNLOCK?cardName(CARD_UNLOCK):({weather:'WEATHER POTION',mythic:'MYTHIC POTION'}[kind]||(kind.startsWith('luck')?'LUCK POTION L'+kind.slice(-1):'SPEED POTION L'+kind.slice(-1)));
-    toast(label,CARD_UNLOCK?"-"+cost+" TOKENS · ROLL UNLOCKED":"-"+cost+" TOKENS","#c4b5fd");
+    toast(label,CARD_UNLOCK?"-"+cost+" TOKENS \u00b7 ROLL UNLOCKED":"-"+cost+" TOKENS","#c4b5fd");
     renderShell(); if(towerView==="shop")render();
   })();
 }
