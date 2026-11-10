@@ -38,7 +38,7 @@
 <link rel="stylesheet" href="css/deck-screen.css?v=v4-searchInput">
 <link rel="stylesheet" href="css/skill-tree.css?v=v24-skIconsDim">
 <link rel="stylesheet" href="css/backpack-hazard.css?v=v3-eagerImgFix">
-<link rel="stylesheet" href="css/trait-screen.css?v=v6-indexCurtain">
+<link rel="stylesheet" href="css/trait-screen.css?v=v7-traitV2Vault">
 <link rel="stylesheet" href="css/weather-screen.css?v=v2-wmPotIcons">
 <link rel="stylesheet" href="css/index-screen.css?v=v7-fixCiiSearchIc">
 <link rel="stylesheet" href="css/profile-screen.css?v=v13-profileFitEnglish">
@@ -58,7 +58,7 @@
   window.TRAKTEER_SHOP_URL = "";
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=v569-cardIndexV2Clean').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=v573-traitRates').catch(() => {});
     });
   }
 </script>
@@ -1568,6 +1568,33 @@
     </button>
   </div>
   <div id="trBody"></div>
+  <dialog class="tr2-dialog" id="trGuideDlg" closedby="any" aria-labelledby="trGuideTitle">
+    <div class="tr2-dlg-head">
+      <h2 id="trGuideTitle">TRAIT SYNTHESIS GUIDE</h2>
+      <button type="button" class="tr2-dlg-close" id="trGuideClose" aria-label="Close guide">&times;</button>
+    </div>
+    <div class="tr2-dlg-body">
+      <div class="tr2-dlg-box">
+        <b>How Rolling Works:</b> Each Trait Roll costs <b class="hz">500 Credits</b> and rolls across all 8 tiers (Common 55% down to BigBang 0.01%). Traits bind directly to your <b>Base Card</b> and automatically apply to <b>all owned variants</b> (Normal, Shiny, and Mutations).
+      </div>
+      <div class="tr2-dlg-box">
+        <b>Attunement &amp; Live Odds:</b> Tick target tiers in the Attunement grid (or click <b class="hz">TICK JACKPOTS</b> for UR+ tiers). Expected rolls show <b>1 / P</b>, and <b>YOUR ODDS</b> computes cumulative probability across your credits: <b>1 - (1 - P)^N</b>.
+      </div>
+      <div class="tr2-dlg-box">
+        <b>The Vault &amp; Swap [X]:</b> Rolled a strong trait like <b>SUPERIOR</b> or <b>TRANSIDEN</b> but want to keep chasing <b>BIGBANG</b>? Click <b class="hz">SWAP [X]</b> to park your base card's active trait in <b>THE VAULT</b> while keeping an open slot to roll on. Stored traits do not apply in battle until swapped back.
+      </div>
+      <div class="tr2-dlg-box">
+        <b>Keyboard Controls:</b> <b>[R]</b> / <b>[I]</b> Instant Roll · <b>[X]</b> Swap Vault · <b>[N]</b> Next Empty Card · <b>[↑/↓]</b> Cycle Base Cards · <b>[F]</b> Search · <b>[1/2]</b> Switch Tabs · <b>[ESC]</b> Close.
+      </div>
+    </div>
+  </dialog>
+  <dialog class="tr2-dialog" id="trRareDlg" closedby="any" aria-labelledby="trRareTitle">
+    <div class="tr2-dlg-head">
+      <h2 id="trRareTitle">RARE TRAIT PROTECTION</h2>
+      <button type="button" class="tr2-dlg-close" id="trRareClose" aria-label="Close confirmation">&times;</button>
+    </div>
+    <div class="tr2-dlg-body" id="trRareDlgBody"></div>
+  </dialog>
 </div></div>
 
 <!-- Banner hazard masuk/keluar Trait (pola #deckCurtain, hidup di body) -->
@@ -1594,7 +1621,7 @@
         <span class="serial">SERIAL 0x<b id="trHzSerial">7A31</b></span>
       </div>
       <div class="title"><span id="trHzTitle">TRAITS</span></div>
-      <div class="sub" id="trHzSub">TRAIT MATRIX · MODIFIERS · TARGETS</div>
+      <div class="sub" id="trHzSub">NEURAL MATRIX · ATTUNEMENT · VAULT</div>
       <div class="bar"><i></i></div>
       <div class="foot"><span>HZ-PROTOCOL</span><span id="trHzFoot">ENTER SYNTHESIS</span></div>
     </div>
@@ -2128,13 +2155,13 @@
 <script src="js/config.js?v=v156-trakteer"></script>
 <script src="js/cyber-icons.js?v=v1-drawerV5"></script>
 <script src="js/mobile-shell.js?v=v288-dockWebpIcons"></script>
-<script src="js/supabase-sync.js?v=v333-wbMilestones"></script>
+<script src="js/supabase-sync.js?v=v334-baseCardTraits"></script>
 <script src="js/notify-hazard.js?v=v1-notifyHazard"></script>
- <script src="js/panels.js?v=v421-indexTotal10"></script>
+ <script src="js/panels.js?v=v422-baseCardTraits"></script>
 <script src="js/topup.js?v=v158-paywallOff"></script>
-<script src="js/cards-fx.js?v=v86-indexPureIcon"></script>
+<script src="js/cards-fx.js?v=v89-traitRates"></script>
 <script src="js/anime-archetype-attacks.js?v=v121-smoothBasicAtk"></script>
-<script src="js/state.js?v=v355-wbHubV2"></script>
+<script src="js/state.js?v=v358-baseCardTraitsMig"></script>
 <script src="js/sheetfx.js?v=v350-protoSlashOnly"></script>
 <script src="js/battle.js?v=v262-hazardCardAssets"></script>
 <script src="js/battle-hazard.js?v=v21-smoothBasicAtk"></script>
@@ -2142,7 +2169,7 @@
 <script src="js/shadow-king-fx.js?v=v4-skfx4"></script>
 <script src="js/foe-passives.js?v=v63-english"></script>
 <script src="js/story-carousel.js?v=v324-eagerImgFix"></script>
-<script src="js/raid.js?v=v411-cardIndexV2Clean"></script>
+<script src="js/raid.js?v=v413-baseCardTraits"></script>
 <script src="js/deck-modal.js?v=v9-hazardCardAssets"></script>
 <script src="js/skill-tree.js?v=v13-skIcons"></script>
 <script src="js/ranking.js?v=v14-eagerImgFix"></script>

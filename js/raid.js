@@ -2708,57 +2708,189 @@ window.ixBannerOpen=ixBannerOpen;
 window.ixBannerClose=ixBannerClose;
 
 
-/* =============== TRAIT ROLL (popup) =============== */
+/* =============== TRAIT SYNTHESIS V2 (HAZARD NEURAL MATRIX) =============== */
 let traitTarget=null;
 let pendingRare=null;
-/* ===== AUTO ROLL TRAIT ===== — target dicentang di list DROP RATE; state session-only (tidak disave) */
 let autoRoll=false,autoRollTimer=null,autoRollN=0;
 let pendingRareAuto=false;
-let autoTargets=new Set();
-const AUTO_TICK=100; // ms antar roll (kecepatan auto roll)
-function traitTargetStack(){let s=state.stacks.find(x=>x.id===traitTarget);if(!s){s=equipped();traitTarget=s?s.id:null;}return s;}
-/* ===== TRAIT SCREEN (hazard) — render + picker + filters ===== */
-function trOddsLabel(t){
-  const n=Math.round(100/t.chance);
-  if(t.chance<1)return "1 IN "+fmt(n);
-  if(n>=5)return "1 IN "+fmt(n);
-  return "WEIGHT "+t.chance+"%";
+let autoTargets=new Set(["transiden","demigod","cosmic","bigbang"]);
+const AUTO_TICK=95; // ms per auto-roll iteration
+
+const TR2_SORTS=["rarest","az","traited","power"];
+const TR2_SORT_LABELS={rarest:"RAREST",az:"A-Z",traited:"TRAITED",power:"POWER"};
+const tr2State={
+  tab:"reroll",
+  filter:"all",
+  sortIdx:0,
+  search:"",
+  sessionRolls:0,
+  sessionSpent:0,
+  lastRolls:[],
+  discovered:new Set()
+};
+
+function _trCharOf(id){
+  if(!id)return null;
+  if(CARDS[id])return id;
+  if(state&&Array.isArray(state.stacks)){
+    const st=state.stacks.find(x=>x&&x.id===id);
+    if(st&&CARDS[st.char])return st.char;
+  }
+  return null;
+}
+function trOwnedBaseEntries(){
+  if(!state||!Array.isArray(state.stacks))return [];
+  const map=new Map();
+  for(const s of state.stacks){
+    if(!s||!CARDS[s.char])continue;
+    let ent=map.get(s.char);
+    const ch=(typeof effChance==="function")?effChance(s.char,s.mut||"none",!!s.shiny):((CARDS[s.char]&&CARDS[s.char].chance)||100);
+    if(!ent){
+      ent={char:s.char,variants:[s],variantCount:1,repStack:s,repChance:ch,trait:charTraitOf(s.char),vault:trVaultOf(s.char)};
+      map.set(s.char,ent);
+    }else{
+      ent.variants.push(s);
+      ent.variantCount=ent.variants.length;
+      if(ch>ent.repChance){ent.repStack=s;ent.repChance=ch;}
+    }
+  }
+  return [...map.values()];
+}
+function traitTargetBase(){
+  const list=trOwnedBaseEntries();
+  if(!list.length){traitTarget=null;return null;}
+  const cid=_trCharOf(traitTarget);
+  let ent=cid?list.find(b=>b.char===cid):null;
+  if(!ent){
+    const eq=(typeof equipped==="function"?equipped():null);
+    ent=(eq&&list.find(b=>b.char===eq.char))||list[0];
+  }
+  traitTarget=ent?ent.char:null;
+  return ent||null;
+}
+function traitTargetStack(){
+  const b=traitTargetBase();
+  return b?b.repStack:null;
+}
+function trVaultOf(charOrStackId){
+  const cid=_trCharOf(charOrStackId);
+  if(!state||!state.traitVault||!cid)return null;
+  const k=state.traitVault[cid];
+  return (k&&k!=="none"&&TRAIT[k])?k:null;
+}
+function trSetVault(charOrStackId,k){
+  const cid=_trCharOf(charOrStackId);
+  if(!state||!cid)return;
+  if(!state.traitVault||typeof state.traitVault!=="object"||Array.isArray(state.traitVault))state.traitVault={};
+  if(!k||k==="none"||!TRAIT[k])delete state.traitVault[cid];
+  else state.traitVault[cid]=k;
 }
 function trHitChance(){
   let sum=0;
-  autoTargets.forEach(k=>{if(TRAIT[k])sum+=TRAIT[k].chance;});
+  autoTargets.forEach(k=>{if(TRAIT[k]&&TRAIT[k].chance>0)sum+=TRAIT[k].chance;});
   return sum;
 }
 function trHitText(){
   const hc=trHitChance();
   return hc>=1?(hc.toFixed(2)+"%"):(hc.toFixed(3)+"%");
 }
-function trTargetStackSafe(){
-  const s=traitTargetStack();
-  return s||null;
+function trCardRarityOdds(bOrChar){
+  const cid=typeof bOrChar==="string"?bOrChar:(bOrChar&&bOrChar.char);
+  if(!cid)return 100;
+  if(typeof effChance==="function")return effChance(cid,"none",false);
+  const c=CARDS[cid];
+  return (c&&c.chance)||100;
 }
-/* label kecil di bawah nama kartu subjek: pakai chance asli (tier hanya ada di musuh story) */
-function trCardCode(charId){
-  const c=CARDS[charId];
-  if(!c)return "MATRIX · CARD";
-  if(c.chance)return "MATRIX · 1 IN "+(typeof fmtChance==="function"?fmtChance(c.chance):c.chance);
-  if(c.tier)return "MATRIX · "+c.tier;
-  return "MATRIX · CARD";
+function trVariantListText(b){
+  if(!b||!Array.isArray(b.variants))return "Normal";
+  return b.variants.map(s=>{
+    const p=[];
+    if(s.shiny)p.push("Shiny");
+    if(s.mut&&s.mut!=="none")p.push(String(s.mut).toUpperCase());
+    return p.length?p.join(" "):"Normal";
+  }).join(", ");
+}
+function trVariantLabel(b){
+  if(!b)return "";
+  const n=b.variantCount||1;
+  return `BASE · ${n} VARIANT${n>1?"S":""}`;
+}
+function trSeedDiscovered(){
+  if(state&&state.charTraits&&typeof state.charTraits==="object"){
+    Object.values(state.charTraits).forEach(k=>{if(k&&k!=="none"&&TRAIT[k])tr2State.discovered.add(k);});
+  }
+  if(state&&state.traitVault&&typeof state.traitVault==="object"){
+    Object.values(state.traitVault).forEach(k=>{if(k&&k!=="none"&&TRAIT[k])tr2State.discovered.add(k);});
+  }
+  if(!state||!Array.isArray(state.stacks))return;
+  state.stacks.forEach(s=>{
+    if(s&&s.trait&&s.trait!=="none"&&TRAIT[s.trait])tr2State.discovered.add(s.trait);
+  });
+}
+function trGetVisibleUnits(){
+  const entries=trOwnedBaseEntries();
+  if(!entries.length)return [];
+  const q=tr2State.search.trim().toLowerCase();
+  const sortMode=TR2_SORTS[tr2State.sortIdx]||"rarest";
+  const rank=k=>{
+    if(!k||k==="none")return -1;
+    return TRAIT_TIERS.findIndex(t=>t.k===k);
+  };
+  return entries.filter(b=>{
+    if(!b||!CARDS[b.char])return false;
+    const hasT=!!(b.trait&&b.trait!=="none"&&TRAIT[b.trait]);
+    if(q){
+      const nm=cardName(b.char).toLowerCase();
+      const tnm=hasT?TRAIT[b.trait].name.toLowerCase():"";
+      const vnm=b.vault?TRAIT[b.vault].name.toLowerCase():"";
+      if(nm.indexOf(q)<0&&tnm.indexOf(q)<0&&vnm.indexOf(q)<0)return false;
+    }
+    if(tr2State.filter==="traited")return hasT;
+    if(tr2State.filter==="empty")return !hasT;
+    if(tr2State.filter==="jackpot")return hasT&&TRAIT[b.trait].atk>=1.5;
+    return true;
+  }).sort((a,b)=>{
+    if(sortMode==="az")return cardName(a.char).localeCompare(cardName(b.char));
+    if(sortMode==="traited")return rank(b.trait)-rank(a.trait)||trCardRarityOdds(b.char)-trCardRarityOdds(a.char);
+    if(sortMode==="power"){
+      const sa=cardStats(a.char,"none",a.trait,false),sb=cardStats(b.char,"none",b.trait,false);
+      return (sb.hp+sb.atk)-(sa.hp+sa.atk);
+    }
+    return trCardRarityOdds(b.char)-trCardRarityOdds(a.char);
+  });
+}
+function trShowToast(msg){
+  const el=document.getElementById("tr2Toast");
+  if(!el)return;
+  el.textContent=msg;
+  el.classList.add("show");
+  clearTimeout(el._tm);
+  el._tm=setTimeout(()=>el.classList.remove("show"),2400);
+}
+function trDialogOpen(){
+  const g=document.getElementById("trGuideDlg");
+  const r=document.getElementById("trRareDlg");
+  return !!((g&&g.open)||(r&&r.open));
 }
 let trForceRender=false;
 function openTrait(){
-  traitTarget=null;pendingRare=null;pendingRareAuto=false;
+  autoStop();
+  if(typeof syncBaseTraits==="function")syncBaseTraits();
+  pendingRare=null;pendingRareAuto=false;
+  trSeedDiscovered();
+  traitTargetBase();
   trForceRender=true;
   renderTrait();
   trForceRender=false;
-  document.getElementById("traitModal").classList.add("show");
+  const m=document.getElementById("traitModal");
+  if(m){m.classList.add("show");}
   document.body.classList.add("trait-open");
   trBannerOpen();
 }
 function closeTrait(){
   autoStop();
-  trClosePick();
-  trCloseFilter();
+  const g=document.getElementById("trGuideDlg");if(g&&g.open)g.close();
+  const r=document.getElementById("trRareDlg");if(r&&r.open)r.close();
   const m=document.getElementById("traitModal");
   if(!m)return;
   trBannerClose(function(){
@@ -2767,369 +2899,551 @@ function closeTrait(){
   });
   hideTraitTip();
 }
-/* shell minimal untuk state kosong: tetap punya top bar + tombol tutup */
-function trEmptyShell(line1,line2){
-  return `<div class="ts-shell">
-    <header class="ts-top">
-      <div class="ts-mark">
-        <span class="ts-mark-t">TRAITS</span>
-        <span class="ts-mark-s">NEURAL MATRIX MOD</span>
-      </div>
-      <div class="ts-topmid">
-        <div class="ts-crumb"><i></i><span>LAB</span><span class="sep">/</span><b>SYNTHESIS</b><span class="sep">/</span><span>SUBJECT</span></div>
-      </div>
-      <button class="ts-x" id="trShellClose" aria-label="Close traits" title="Close [ESC]">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
-      </button>
-    </header>
-    <div class="ts-left" style="flex:1 1 auto;justify-content:center;align-items:center;text-align:center;gap:10px">
-      <div class="ts-kicker"><i></i><b>SUBJECT MATRIX</b></div>
-      <div class="ts-tp-note" style="font-size:9px;letter-spacing:.16em;max-width:34ch;line-height:1.8">${line1}<br>${line2}</div>
-    </div>
-  </div>`;
-}
-function trBindEmptyShell(){
-  const x=document.getElementById("trShellClose");
-  if(x)x.onclick=closeTrait;
-}
-function renderTrait(){
+
+function trBuildShell(){
   const b=document.getElementById("trBody");
   if(!b)return;
-  /* renderTrait juga dipanggil dari jalur cloud-sync; jangan bangun ulang DOM
-     (dan menutup picker/filter) saat layar trait sedang tidak terbuka. */
-  const _m=document.getElementById("traitModal");
-  if(_m&&!_m.classList.contains("show")&&!trForceRender)return;
-  if(!state.stacks.length){
-    b.innerHTML=trEmptyShell("NO CARDS IN THE MATRIX.","ROLL A CARD FIRST FROM THE SUMMON TERMINAL.");
-    trBindEmptyShell();
-    return;
-  }
-  const tgt=trTargetStackSafe();
-  if(!tgt){
-    b.innerHTML=trEmptyShell("NO SUBJECT SELECTED.","PICK A CARD TO SYNTHESIZE A TRAIT.");
-    trBindEmptyShell();
-    return;
-  }
-  const hasT=!!(tgt.trait&&tgt.trait!=="none");
-  const tt=hasT?TRAIT[tgt.trait]:null;
-  const tcol=tt?tt.color:"#9A8A8B";
-  const aPct=tt?Math.round((tt.atk-1)*100):0;
-  const hPct=tt?Math.round((tt.hp-1)*100):0;
-  const statHtml=(aPct>0||hPct>0)
-    ? (aPct>0?`<span class="ts-stat"><i>ATK</i><b>+${aPct}%</b></span>`:"")+(hPct>0?`<span class="ts-stat"><i>HP</i><b>+${hPct}%</b></span>`:"")
-    : `<span class="ts-stat empty"><b>NO STAT MODIFIER</b></span>`;
-  const note=tt
-    ? (tt.atk>=1.5?"Rare artefact-class modifier. Rolling again will overwrite it.":"Modifier is bound to this subject. Rolling again overwrites it.")
-    : "No modifier installed. Roll to synthesize one.";
-  const rows=TRAIT_TIERS.filter(t=>t.chance>0).map(t=>{
-    const on=autoTargets.has(t.k);
-    const active=hasT&&tgt.trait===t.k;
-    const w=Math.max(1.5,Math.min(100,(t.chance/55)*100));
-    const a=Math.round((t.atk-1)*100),h=Math.round((t.hp-1)*100);
-    return `<div class="tsr-row${on?" on":""}${active?" active":""}" data-tk="${t.k}" style="--tcol:${t.color}" role="button" tabindex="0" aria-pressed="${on}">
-      <span class="tsr-gem">${traitGem(26,t.k)}</span>
-      <span class="tsr-name">${t.name}<span class="tsr-rar">${t.rar}</span>${active?'<span class="tsr-cur">CURRENT</span>':""}</span>
-      <span class="tsr-chance">${t.chance}%<small>${trOddsLabel(t)}</small></span>
-      <span class="tsr-stats">ATK <b>+${a}%</b> · HP <b>+${h}%</b></span>
-      <span class="tsr-bar"><i style="width:${w}%"></i></span>
-      <span class="tsr-tgt"><span class="tsr-tgt-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></span>
-    </div>`;
-  }).join("");
-  const nT=autoTargets.size;
-  b.innerHTML=`
-  <div class="ts-shell">
-    <header class="ts-top">
-      <div class="ts-mark">
-        <span class="ts-mark-t">TRAITS</span>
-        <span class="ts-mark-s">NEURAL MATRIX MOD</span>
-      </div>
-      <div class="ts-topmid">
-        <div class="ts-crumb">
-          <i></i><span>LAB</span><span class="sep">/</span>
-          <b>SYNTHESIS</b><span class="sep">/</span><span>SUBJECT</span>
+  b.innerHTML=`<div class="tr2-stage" id="tr2Stage">
+    <div class="tr2-shell">
+      <header class="tr2-banner-bar">
+        <div class="tr2-banner-ribbon">
+          <div class="tr2-banner-cap">
+            <div class="tr2-banner-cap-in">
+              <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M24 2 30 18 46 24 30 30 24 46 18 30 2 24 18 18Z"/></svg>
+              <span>MATRIX</span>
+            </div>
+          </div>
+          <div class="tr2-banner-mid">
+            <div class="tr2-banner-titles">
+              <h1 class="tr2-title">TRAITS</h1>
+              <span class="tr2-eyebrow">// BASE CARD SYNTHESIS · SHARED VARIANT MODIFIERS · ATTUNEMENT</span>
+            </div>
+            <div class="tr2-ribbon-slashes" aria-hidden="true"><i></i><i></i><i></i></div>
+            <div class="tr2-banner-tags">
+              <span class="tr2-banner-tag" id="tr2HdrTraited">TRAITED: 0/0</span>
+              <span class="tr2-banner-tag hz">${fmt(TRAIT_COST)} CR / ROLL</span>
+            </div>
+          </div>
         </div>
-        <div class="ts-topstat">
-          <div class="ts-ts"><span class="ts-ts-k">TARGETS</span><span class="ts-ts-v hz" id="tsTgtCount">${nT}</span></div>
-          <div class="ts-ts"><span class="ts-ts-k">CHANCE HIT</span><span class="ts-ts-v" id="tsHitChance">${trHitText()}</span></div>
+        <div class="tr2-banner-right">
+          <button type="button" class="tr2-hdr-btn info" id="tr2GuideBtn" aria-label="Trait synthesis guide" title="How Traits Work [?]"><span>!</span></button>
+          <button type="button" class="tr2-hdr-btn close" id="tr2ExitBtn" aria-label="Close traits terminal" title="Close [ESC]">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+          </button>
+          <div class="tr2-slashes" aria-hidden="true"><i></i><i></i><i></i></div>
         </div>
-      </div>
-      <button class="ts-x" id="trShellClose" aria-label="Close traits" title="Close [ESC]">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
-      </button>
-    </header>
-
-    <div class="ts-body">
-      <section class="ts-left" aria-label="Trait subject">
-        <div class="ts-kicker"><i></i><b>SUBJECT MATRIX</b><span>·</span><span id="tsKickCode">NODE #${tgt.id?String(tgt.id).slice(0,5).toUpperCase():"001"}</span></div>
-
-        <div class="ts-subject">
-          <button class="ts-card" id="trPickCard" type="button" title="Change subject card">
-            <span class="ts-corner tl"></span><span class="ts-corner tr"></span>
-            <span class="ts-corner bl"></span><span class="ts-corner br"></span>
-            <span class="ts-card-hint">CLICK TO SWITCH</span>
-            <span class="ts-card-scan"></span>
-            <img id="tsCardImg" src="${cardThumb(tgt.char)}" alt="" decoding="async">
-            <div class="ts-card-meta">
-              <div>
-                <div class="ts-card-name" id="tsCardName">${cardName(tgt.char)}</div>
-                <div class="ts-card-code" id="tsCardCode">${trCardCode(tgt.char)}</div>
+      </header>
+      <main class="tr2-panel">
+        <div class="tr2-tape-line" aria-hidden="true"></div>
+        <div class="tr2-toolbar" id="tr2Toolbar">
+          <div class="tr2-tablist" role="tablist" aria-label="Trait workspace tabs">
+            <button type="button" class="tr2-tab" id="tr2TabReroll" role="tab" aria-selected="true" tabindex="0" data-tab="reroll"><span>REROLL</span><span class="tb-k">[1]</span></button>
+            <button type="button" class="tr2-tab" id="tr2TabIndex" role="tab" aria-selected="false" tabindex="-1" data-tab="index"><span>INDEX</span><span class="tb-k">[2]</span></button>
+          </div>
+          <div class="tr2-search-wrap">
+            <svg class="tr2-search-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input type="search" class="tr2-search" id="tr2UnitSearch" placeholder="Search base cards... [F]" aria-label="Search base cards" autocomplete="off">
+            <button type="button" class="tr2-search-clear" id="tr2SearchClear" aria-label="Clear search">&times;</button>
+          </div>
+          <div class="tr2-filters" role="group" aria-label="Unit trait filter">
+            <button type="button" class="tr2-fchip" data-filter="all" aria-pressed="true">ALL</button>
+            <button type="button" class="tr2-fchip" data-filter="traited" aria-pressed="false">TRAITED</button>
+            <button type="button" class="tr2-fchip" data-filter="empty" aria-pressed="false">EMPTY</button>
+            <button type="button" class="tr2-fchip jackpot" data-filter="jackpot" aria-pressed="false">JACKPOT</button>
+          </div>
+          <div class="tr2-cred-pill" title="Available Credits">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5h5M9.5 14.5h5"/></svg>
+            <span>CREDITS</span><b id="tr2TopCredits">0</b>
+          </div>
+        </div>
+        <section class="tr2-tabpanel" id="tr2PanelReroll" role="tabpanel" aria-labelledby="tr2TabReroll" tabindex="0">
+          <div class="tr2-grid">
+            <div class="tr2-left">
+              <div class="tr2-spotlight" id="tr2Spotlight">
+                <div class="tr2-unit-focus">
+                  <div class="tr2-focus-art" id="tr2FocusArt"></div>
+                  <div class="tr2-focus-meta">
+                    <div class="tr2-focus-nm" id="tr2FocusName">—</div>
+                    <div class="tr2-focus-rar" id="tr2FocusRarity">—</div>
+                    <div class="tr2-focus-owned" id="tr2FocusOwned">—</div>
+                  </div>
+                </div>
+                <div class="tr2-active-col" id="tr2ActiveCol">
+                  <div class="tr2-sec-kicker">ACTIVE TRAIT</div>
+                  <div class="tr2-medallion is-empty" id="tr2Medallion"><span class="tr2-medallion-q">?</span></div>
+                  <div class="tr2-active-name-row">
+                    <span class="tr2-active-name" id="tr2ActiveName">NO TRAIT</span>
+                    <span class="tr2-active-rar empty" id="tr2ActiveRar">NONE</span>
+                  </div>
+                  <div class="tr2-active-mods" id="tr2ActiveMods"></div>
+                  <div class="tr2-active-desc" id="tr2ActiveDesc">No trait bound to this base card yet. Roll to apply across all variants!</div>
+                </div>
+                <div class="tr2-swap-wrap">
+                  <button type="button" class="tr2-swap-btn" id="tr2SwapBtn" aria-label="Swap active trait with The Vault" title="Swap active trait with Vault [X]">SWAP</button>
+                  <span class="tr2-swap-key">[X]</span>
+                </div>
+                <div class="tr2-vault-box" id="tr2VaultBox">
+                  <div class="tr2-sec-kicker">THE VAULT</div>
+                  <div class="tr2-vault-ring" id="tr2VaultRing"><span class="q">?</span></div>
+                  <div class="tr2-vault-name" id="tr2VaultName">Empty</div>
+                  <div class="tr2-vault-sub" id="tr2VaultSub">Swap to park your active trait here.</div>
+                  <div class="tr2-vault-warn">Stored traits don't work in battle.</div>
+                </div>
+              </div>
+              <div class="tr2-roster-box">
+                <div class="tr2-roster-head">
+                  <div class="tr2-roster-title-wrap">
+                    <span class="tr2-roster-title">BASE CARDS</span>
+                    <span class="tr2-roster-count" id="tr2RosterCount">0 / 0 TRAITED</span>
+                  </div>
+                  <div class="tr2-roster-tools">
+                    <button type="button" class="tr2-mini-btn" id="tr2NextEmptyBtn" title="Jump to next untraited base card [N]">NEXT EMPTY [N]</button>
+                    <button type="button" class="tr2-mini-btn accent" id="tr2SortBtn" title="Cycle roster sort order">SORT: RAREST</button>
+                  </div>
+                </div>
+                <div class="tr2-unit-scroll" id="tr2UnitScroll"><div class="tr2-unit-grid" id="tr2UnitGrid"></div></div>
               </div>
             </div>
-          </button>
-
-          <div class="ts-traitplate" id="tsPlate" style="--tcol:${tcol}">
-            <div class="ts-tp-top">
-              <span class="ts-tp-gem" id="tsGem">${tt?traitGem(30,tt.k):traitGem(30,"none")}</span>
-              <span class="ts-tp-name" id="tsTraitName">${tt?tt.name:"NO TRAIT"}</span>
-              <span class="ts-tp-rar" id="tsTraitRar">${tt?tt.rar:"—"}</span>
+            <aside class="tr2-right" aria-label="Attunement and rolling controls">
+              <div class="tr2-attune-head">
+                <div class="tr2-attune-titles">
+                  <div class="tr2-attune-title"><i></i><span>ATTUNEMENT</span></div>
+                  <div class="tr2-attune-summary" id="tr2AttuneSummary">—</div>
+                </div>
+                <div class="tr2-attune-btns">
+                  <button type="button" class="tr2-at-action jack" id="tr2TickJackpots">TICK JACKPOTS</button>
+                  <button type="button" class="tr2-at-action clr" id="tr2ClearTicks">CLEAR TICKS</button>
+                </div>
+              </div>
+              <div class="tr2-attune-grid" id="tr2AttuneGrid" role="group" aria-label="Attunement target traits"></div>
+              <div class="tr2-telemetry-row">
+                <div class="tr2-tel-card" style="--tc:var(--warn)"><span class="tr2-tel-k">EXPECTED ROLLS</span><b class="tr2-tel-v" id="tr2TelExp">—</b><span class="tr2-tel-s" id="tr2TelExpSub">0 ticked</span></div>
+                <div class="tr2-tel-card" style="--tc:var(--ok)" id="tr2TelOddsCard"><span class="tr2-tel-k">YOUR ODDS</span><b class="tr2-tel-v" id="tr2TelOdds">0.0%</b><span class="tr2-tel-s" id="tr2TelOddsSub">tick targets above</span></div>
+                <div class="tr2-tel-card" style="--tc:var(--gold)"><span class="tr2-tel-k">CREDITS</span><b class="tr2-tel-v" id="tr2TelCredits">0</b><span class="tr2-tel-s" id="tr2TelRolls">0 rolls available</span></div>
+              </div>
+              <div class="tr2-history-box">
+                <div class="tr2-hist-head"><b>LAST ROLLS</b><span id="tr2SessionStats">session: 0 rolls · 0 CR</span></div>
+                <div class="tr2-roll-slots" id="tr2RollSlots"></div>
+                <div class="tr2-hotkeys">[R] roll · [I] instant · [X] swap · [N] next empty · [↑/↓] units · [F] search · [1/2] tabs</div>
+              </div>
+              <div class="tr2-cta-deck">
+                <div class="tr2-cta-bal" id="tr2CtaBal">YOU HAVE <b>0 CREDITS</b> (${fmt(TRAIT_COST)} CR / ROLL)</div>
+                <div class="tr2-cta-btns">
+                  <button type="button" class="tr2-cta-btn instant" id="trRoll"><span>INSTANT ROLL</span><span class="cost-tag">${fmt(TRAIT_COST)} CR</span></button>
+                  <button type="button" class="tr2-cta-btn auto" id="trAuto"><span id="tr2AutoTxt">AUTO ROLL — COSTS ${fmt(TRAIT_COST)} CR</span><span class="cost-tag" id="tr2AutoTag">STOP AT TARGET</span></button>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </section>
+        <section class="tr2-tabpanel" id="tr2PanelIndex" role="tabpanel" aria-labelledby="tr2TabIndex" hidden>
+          <div class="tr2-index-view">
+            <div class="tr2-idx-callout">
+              <span><b>TRAIT CODEX // 8 MATRIX TIERS</b> — Live base-stat preview reflects selected card (<b id="tr2IdxPreviewUnit">—</b>). Total pool probability equals <b>100.000%</b>.</span>
+              <span id="tr2IdxSessionCount">DISCOVERED: <b>0 / 8</b></span>
             </div>
-            <div class="ts-tp-stats" id="tsStats">${statHtml}</div>
-            <div class="ts-tp-note" id="tsTraitNote">${note}</div>
+            <div class="tr2-idx-scroll"><div class="tr2-idx-grid" id="tr2IndexGrid"></div></div>
           </div>
-
-          <div class="ts-actions">
-            <button class="ts-btn${autoRoll?" live":""}" id="trAuto"${!autoRoll&&state.coins<TRAIT_COST?" disabled":""}>
-              <span id="tsAutoLabel">${autoRoll?"ABORT AUTO":"AUTO ROLL"}</span>
-              <small id="tsAutoSub">${autoRoll?"overclock running":"until target hit"}</small>
-            </button>
-            <button class="ts-btn primary" id="trRoll"${state.coins<TRAIT_COST||autoRoll?" disabled":""}>
-              <span>ROLL TRAIT</span>
-              <small id="tsRollCost">${fmt(TRAIT_COST)} CR</small>
-            </button>
-            <button class="ts-btn" id="tsFilterBtn" type="button">
-              <span>FILTERS</span>
-              <small id="tsFilterSub">${nT} checked</small>
-            </button>
-          </div>
-
-          <div class="ts-balance">
-            <div class="ts-coin">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v9M9.4 10h5.2M9.4 14h5.2"/></svg>
-              <span>CREDITS</span><b id="trCoinVal">${fmt(state.coins)}</b>
-            </div>
-            <div class="ts-bal-note"><b>${fmt(TRAIT_COST)} CR</b> PER ROLL · AUTO CHARGES EACH ITERATION</div>
-          </div>
-
-          <div class="ts-status${autoRoll?" run":""}" id="tsStatus">
-            <span class="dot"></span>
-            <span id="tsStatusTxt">${autoRoll?"OVERCLOCK · 100MS":"IDLE · OVERCLOCK 100MS"}</span>
-            <span class="iter" id="trAutoN">ITER #${autoRollN}</span>
-          </div>
-        </div>
-      </section>
-
-      <aside class="ts-rail" aria-label="Trait chances">
-        <div class="tsr-head">
-          <div class="tsr-title">CHANCES <b id="tsrHeadN">(${nT} ARMED)</b></div>
-          <div class="tsr-sub">CHECKBOX = AUTO STOP</div>
-        </div>
-        <div class="tsr-list" id="tsrList">${rows}</div>
-        <div class="tsr-foot">
-          Probabilities are the live tier weights and total <b>100%</b>.<br>
-          Checked traits halt AUTO ROLL the moment one of them hits.
-        </div>
-      </aside>
+        </section>
+      </main>
     </div>
-
-    <footer class="ts-foot">
-      <span><b>CLICK CARD</b> switch subject</span>
-      <span><b>CHECK ROW</b> auto stop</span>
-      <span class="haz" id="tsFootSel">SUBJECT · ${cardName(tgt.char)}</span>
-    </footer>
-
-    <div id="trFilter" aria-hidden="true">
-      <div class="flt-box" role="dialog" aria-modal="true" aria-label="Trait filters">
-        <div class="flt-head">
-          <div class="flt-headl">
-            <div class="flt-kick"><i></i><span>// AUTO PROTOCOL <b>MANIFEST</b></span></div>
-            <div class="flt-title">FILTERS</div>
-            <div class="flt-note">Pick the traits AUTO ROLL should stop at. Unchecked tiers are skipped and the loop keeps spending credits.</div>
-          </div>
-          <button class="flt-x" id="fltX" aria-label="Close filters" title="Close [ESC]">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
-          </button>
-        </div>
-        <div class="flt-scroll"><div class="flt-grid" id="fltGrid"></div></div>
-        <div class="flt-foot">
-          <div class="flt-count"><b id="fltCount">${nT}</b> / ${TRAIT_TIERS.filter(t=>t.chance>0).length} TIERS ARMED · <span id="fltPct">${trHitText()}</span> HIT CHANCE</div>
-          <div class="flt-actions">
-            <button class="flt-btn" id="fltClear" type="button">CLEAR</button>
-            <button class="flt-btn primary" id="fltDone" type="button">DONE</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="trPick" aria-hidden="true">
-      <div class="pck-box" role="dialog" aria-modal="true" aria-label="Choose subject card">
-        <div class="pck-head">
-          <div class="pck-headl">
-            <div class="pck-kick"><i></i><span>// SUBJECT <b>SELECT</b></span></div>
-            <div class="pck-title">CHOOSE CARD</div>
-            <div class="pck-note">The selected card receives the synthesized trait. Only one subject can be bound at a time.</div>
-          </div>
-          <button class="pck-x" id="pckX" aria-label="Close card picker" title="Close [ESC]">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
-          </button>
-        </div>
-        <div class="pck-tools">
-          <label class="pck-search">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
-            <input id="pckSearch" type="text" placeholder="Search card..." autocomplete="off">
-          </label>
-          <div class="pck-count"><b id="pckCount">0</b> CARDS</div>
-        </div>
-        <div class="pck-scroll"><div class="pck-grid" id="pckGrid"></div></div>
-      </div>
-    </div>
+    <div class="tr2-toast" id="tr2Toast" role="status" aria-live="polite"></div>
   </div>`;
 
-  const x2=document.getElementById("trShellClose");if(x2)x2.onclick=closeTrait;
-  const r=document.getElementById("trRoll");if(r)r.onclick=rollTrait;
+  /* Bind static shell controls once */
+  const stg=document.getElementById("tr2Stage");
+  if(stg)stg.onclick=e=>{if(e.target===stg)closeTrait();};
+  const ex=document.getElementById("tr2ExitBtn");if(ex)ex.onclick=closeTrait;
+  const gb=document.getElementById("tr2GuideBtn");if(gb)gb.onclick=()=>{const d=document.getElementById("trGuideDlg");if(d)d.showModal();};
+  const gc=document.getElementById("trGuideClose");if(gc)gc.onclick=()=>{const d=document.getElementById("trGuideDlg");if(d)d.close();};
+  const rc=document.getElementById("trRareClose");if(rc)rc.onclick=()=>{const d=document.getElementById("trRareDlg");if(d)d.close();};
+  if(!("closedBy" in HTMLDialogElement.prototype)){
+    const outside=(e,dlg)=>{const r=dlg.getBoundingClientRect();return e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom;};
+    ["trGuideDlg","trRareDlg"].forEach(id=>{
+      const dlg=document.getElementById(id);if(!dlg||dlg._ldBound)return;dlg._ldBound=true;
+      let downOut=false;
+      dlg.addEventListener("pointerdown",e=>{downOut=outside(e,dlg);});
+      dlg.addEventListener("pointerup",e=>{if(downOut&&outside(e,dlg))dlg.close();});
+    });
+  }
+  const tR=document.getElementById("tr2TabReroll"),tI=document.getElementById("tr2TabIndex");
+  if(tR)tR.onclick=()=>trSetTab("reroll");
+  if(tI)tI.onclick=()=>trSetTab("index");
+  [tR,tI].forEach((tab,idx,arr)=>{
+    if(!tab)return;
+    tab.onkeydown=e=>{
+      if(e.key==="ArrowRight"||e.key==="ArrowLeft"){
+        e.preventDefault();
+        const next=arr[(idx+(e.key==="ArrowRight"?1:-1)+arr.length)%arr.length];
+        if(next){next.focus();trSetTab(next.getAttribute("data-tab"));}
+      }
+    };
+  });
+  const si=document.getElementById("tr2UnitSearch"),sc=document.getElementById("tr2SearchClear");
+  if(si)si.oninput=()=>{
+    tr2State.search=si.value;
+    if(sc)sc.classList.toggle("show",!!tr2State.search);
+    trPaintRoster();
+  };
+  if(sc)sc.onclick=()=>{
+    tr2State.search="";if(si)si.value="";
+    sc.classList.remove("show");
+    trPaintRoster();
+  };
+  b.querySelectorAll(".tr2-fchip").forEach(btn=>{
+    btn.onclick=()=>{
+      tr2State.filter=btn.getAttribute("data-filter")||"all";
+      b.querySelectorAll(".tr2-fchip").forEach(x=>x.setAttribute("aria-pressed",String(x===btn)));
+      trPaintRoster();
+    };
+  });
+  const sb=document.getElementById("tr2SortBtn");
+  if(sb)sb.onclick=()=>{
+    tr2State.sortIdx=(tr2State.sortIdx+1)%TR2_SORTS.length;
+    sb.textContent="SORT: "+TR2_SORT_LABELS[TR2_SORTS[tr2State.sortIdx]];
+    trPaintRoster();
+  };
+  const ne=document.getElementById("tr2NextEmptyBtn");if(ne)ne.onclick=trNextEmptyUnit;
+  const sw=document.getElementById("tr2SwapBtn");if(sw)sw.onclick=trSwapVault;
+  const tj=document.getElementById("tr2TickJackpots");
+  if(tj)tj.onclick=()=>{["transiden","demigod","cosmic","bigbang"].forEach(k=>autoTargets.add(k));trPaintAttunement();trPaintButtons();if(tr2State.tab==="index")trPaintIndexTab();};
+  const ct=document.getElementById("tr2ClearTicks");
+  if(ct)ct.onclick=()=>{autoTargets.clear();trPaintAttunement();trPaintButtons();if(tr2State.tab==="index")trPaintIndexTab();};
+  const rb=document.getElementById("trRoll");if(rb)rb.onclick=()=>rollTrait(false);
   const ab=document.getElementById("trAuto");if(ab)ab.onclick=toggleAuto;
-  const pc=document.getElementById("trPickCard");if(pc)pc.onclick=trOpenPick;
-  const fb=document.getElementById("tsFilterBtn");if(fb)fb.onclick=trOpenFilter;
-  const fx=document.getElementById("fltX");if(fx)fx.onclick=trCloseFilter;
-  const fd=document.getElementById("fltDone");if(fd)fd.onclick=trCloseFilter;
-  const fc=document.getElementById("fltClear");if(fc)fc.onclick=()=>{autoTargets.clear();trSyncTargets();};
-  const px=document.getElementById("pckX");if(px)px.onclick=trClosePick;
-  const ps=document.getElementById("pckSearch");if(ps)ps.oninput=()=>trRenderPick(ps.value);
-  const flt=document.getElementById("trFilter");
-  if(flt)flt.onclick=e=>{if(e.target===flt)trCloseFilter();};
-  const pk=document.getElementById("trPick");
-  if(pk)pk.onclick=e=>{if(e.target===pk)trClosePick();};
-  const list=document.getElementById("tsrList");
-  if(list)list.querySelectorAll(".tsr-row").forEach(row=>{
-    const k=row.getAttribute("data-tk");
-    const act=()=>{if(autoTargets.has(k))autoTargets.delete(k);else autoTargets.add(k);trSyncTargets();};
-    row.onclick=act;
-    row.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();act();}};
-  });
-  trRenderFilter();
-  trRenderPick("");
 }
-/* sinkronkan semua penanda target setelah autoTargets berubah */
-function trSyncTargets(){
-  const n=autoTargets.size;
-  const list=document.getElementById("tsrList");
-  if(list)list.querySelectorAll(".tsr-row").forEach(row=>{
-    const on=autoTargets.has(row.getAttribute("data-tk"));
-    row.classList.toggle("on",on);
-    row.setAttribute("aria-pressed",on?"true":"false");
-  });
-  const hc=trHitText();
-  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
-  set("tsrHeadN","("+n+" ARMED)");
-  set("tsTgtCount",String(n));
-  set("tsHitChance",hc);
-  set("tsFilterSub",n+" checked");
-  set("fltCount",String(n));
-  set("fltPct",hc);
-  const grid=document.getElementById("fltGrid");
-  if(grid)grid.querySelectorAll(".flt-tile").forEach(tile=>{
-    const on=autoTargets.has(tile.getAttribute("data-tk"));
-    tile.classList.toggle("on",on);
-    tile.setAttribute("aria-pressed",on?"true":"false");
-  });
-  const m=document.querySelector("#traitModal .tram-v");
-  if(m)m.textContent=targetLabel();
+
+function trSetTab(name){
+  tr2State.tab=name==="index"?"index":"reroll";
+  const isR=tr2State.tab==="reroll";
+  const tb=document.getElementById("tr2Toolbar");if(tb)tb.classList.toggle("is-index",!isR);
+  const tR=document.getElementById("tr2TabReroll"),tI=document.getElementById("tr2TabIndex");
+  if(tR){tR.setAttribute("aria-selected",String(isR));tR.tabIndex=isR?0:-1;}
+  if(tI){tI.setAttribute("aria-selected",String(!isR));tI.tabIndex=!isR?0:-1;}
+  const pR=document.getElementById("tr2PanelReroll"),pI=document.getElementById("tr2PanelIndex");
+  if(pR)pR.hidden=!isR;
+  if(pI)pI.hidden=isR;
+  if(!isR)trPaintIndexTab();
 }
-function trRenderFilter(){
-  const host=document.getElementById("fltGrid");
-  if(!host)return;
-  host.innerHTML=TRAIT_TIERS.filter(t=>t.chance>0).map(t=>{
-    const on=autoTargets.has(t.k);
-    return `<button class="flt-tile${on?" on":""}" type="button" data-tk="${t.k}" style="--tcol:${t.color}" aria-pressed="${on}">
-      <span class="flt-rar">${t.rar}</span>
-      <span class="flt-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
-      <span class="flt-gem">${traitGem(38,t.k)}</span>
-      <span class="flt-name">${t.name}</span>
-      <span class="flt-chance">${t.chance}%<small>${trOddsLabel(t)}</small></span>
-    </button>`;
-  }).join("");
-  host.querySelectorAll(".flt-tile").forEach(tile=>{
-    const k=tile.getAttribute("data-tk");
-    tile.onclick=()=>{if(autoTargets.has(k))autoTargets.delete(k);else autoTargets.add(k);trSyncTargets();};
-  });
+function trPaintCredits(){
+  const coins=(state&&typeof state.coins==="number")?state.coins:0;
+  const txt=fmt(coins);
+  const e1=document.getElementById("tr2TopCredits"),e2=document.getElementById("tr2TelCredits"),
+        e3=document.getElementById("tr2TelRolls"),e4=document.getElementById("tr2CtaBal"),
+        cv=document.getElementById("coinVal");
+  if(e1)e1.textContent=txt;
+  if(e2)e2.textContent=txt;
+  if(cv)cv.textContent=txt;
+  const av=Math.floor(coins/TRAIT_COST);
+  if(e3)e3.textContent=fmt(av)+(av===1?" roll available":" rolls available");
+  if(e4)e4.innerHTML=`YOU HAVE <b>${txt} CREDITS</b> (${fmt(TRAIT_COST)} CR / ROLL)`;
+  const bases=trOwnedBaseEntries();
+  const trN=bases.filter(b=>b&&b.trait&&b.trait!=="none"&&TRAIT[b.trait]).length;
+  const ht=document.getElementById("tr2HdrTraited"),rc=document.getElementById("tr2RosterCount");
+  if(ht)ht.textContent=`TRAITED: ${trN}/${bases.length}`;
+  if(rc)rc.textContent=`${trN} / ${bases.length} BASE TRAITED`;
 }
-function trOpenFilter(){
-  const f=document.getElementById("trFilter");
-  if(!f)return;
-  trRenderFilter();
-  f.classList.add("on");
-  f.setAttribute("aria-hidden","false");
+function trPaintSpotlight(popAnim){
+  const tgt=traitTargetBase();
+  if(!tgt)return;
+  const activeTrait=charTraitOf(tgt.char);
+  const stats=cardStats(tgt.char,"none",activeTrait,false);
+  const hasT=!!(activeTrait&&activeTrait!=="none"&&TRAIT[activeTrait]);
+  const tt=hasT?TRAIT[activeTrait]:null;
+  const vk=trVaultOf(tgt.char);
+  const vt=vk?TRAIT[vk]:null;
+
+  const art=document.getElementById("tr2FocusArt");
+  if(art){
+    art.className="tr2-focus-art";
+    art.innerHTML=`<img src="${cardThumb(tgt.char)}" alt="${cardName(tgt.char)}"><div class="tr2-focus-stats-pill"><span class="hp">HP ${fmtStat(stats.hp)}</span><span class="atk">ATK ${fmtStat(stats.atk)}</span></div>`;
+  }
+  const fn=document.getElementById("tr2FocusName"),fr=document.getElementById("tr2FocusRarity"),fo=document.getElementById("tr2FocusOwned");
+  if(fn)fn.textContent=cardName(tgt.char);
+  if(fr)fr.textContent="1 IN "+fmtChance(trCardRarityOdds(tgt.char));
+  if(fo){fo.textContent=trVariantLabel(tgt);fo.title="Applies to owned variants: "+trVariantListText(tgt);}
+  const ip=document.getElementById("tr2IdxPreviewUnit");if(ip)ip.textContent=cardName(tgt.char);
+
+  const col=tt?tt.color:"#9A8A8B";
+  const ac=document.getElementById("tr2ActiveCol");if(ac)ac.style.setProperty("--tcol",col);
+  const med=document.getElementById("tr2Medallion");
+  if(med){
+    med.classList.toggle("is-empty",!tt);
+    med.innerHTML=tt?traitGem(42,tt.k):`<span class="tr2-medallion-q">?</span>`;
+    if(popAnim){med.classList.remove("pop");void med.offsetWidth;med.classList.add("pop");}
+  }
+  const an=document.getElementById("tr2ActiveName"),ar=document.getElementById("tr2ActiveRar"),
+        am=document.getElementById("tr2ActiveMods"),ad=document.getElementById("tr2ActiveDesc");
+  if(an)an.textContent=tt?tt.name:"NO TRAIT";
+  if(ar){ar.textContent=tt?tt.rar:"NONE";ar.classList.toggle("empty",!tt);}
+  if(am){
+    if(tt){
+      am.innerHTML=`<span class="tr2-mod-chip">ATK <b>+${Math.round((tt.atk-1)*100)}%</b></span><span class="tr2-mod-chip">HP <b>+${Math.round((tt.hp-1)*100)}%</b></span>`;
+    }else{
+      am.innerHTML=`<span class="tr2-mod-chip">BASE STATS <b>1.00x</b></span>`;
+    }
+  }
+  const vScope=tgt.variantCount>1?`all ${tgt.variantCount} variants`:"all variants";
+  if(ad){
+    ad.textContent=tt
+      ? (isRareTrait(tt.k)?`Rare artefact-class modifier active on ${cardName(tgt.char)} & ${vScope}. Swap to Vault [X] before rolling to protect it.`:`Bound to ${cardName(tgt.char)} & ${vScope}. Rolling again overwrites unless parked in Vault.`)
+      : `No trait bound to ${cardName(tgt.char)} yet. Roll to apply across ${vScope}!`;
+  }
+
+  const vb=document.getElementById("tr2VaultBox"),vr=document.getElementById("tr2VaultRing"),
+        vn=document.getElementById("tr2VaultName"),vs=document.getElementById("tr2VaultSub");
+  if(vb){
+    vb.classList.toggle("has-trait",!!vt);
+    vb.style.setProperty("--vcol",vt?vt.color:"rgba(245,245,245,.28)");
+  }
+  if(vr)vr.innerHTML=vt?traitGem(26,vt.k):`<span class="q">?</span>`;
+  if(vn)vn.textContent=vt?vt.name:"Empty";
+  if(vs)vs.textContent=vt?`ATK +${Math.round((vt.atk-1)*100)}% · HP +${Math.round((vt.hp-1)*100)}% (${vt.rar})`:"Swap to park your active trait here.";
 }
-function trCloseFilter(){
-  const f=document.getElementById("trFilter");
-  if(!f)return;
-  f.classList.remove("on");
-  f.setAttribute("aria-hidden","true");
-}
-function trFilterOpen(){const f=document.getElementById("trFilter");return !!(f&&f.classList.contains("on"));}
-function trRenderPick(q){
-  const host=document.getElementById("pckGrid");
-  if(!host)return;
-  const sel=traitTargetStack();
-  const selId=sel?sel.id:null;
-  const needle=String(q||"").trim().toLowerCase();
-  const list=state.stacks.filter(s=>!needle||cardName(s.char).toLowerCase().indexOf(needle)>=0);
-  const cnt=document.getElementById("pckCount");
-  if(cnt)cnt.textContent=String(list.length);
+function trPaintRoster(){
+  const grid=document.getElementById("tr2UnitGrid");if(!grid)return;
+  const scroller=document.getElementById("tr2UnitScroll");
+  const prevTop=scroller?scroller.scrollTop:0;
+  const tgt=traitTargetBase();const selChar=tgt?tgt.char:null;
+  const list=trGetVisibleUnits();
   if(!list.length){
-    host.innerHTML=`<div class="pck-empty">NO MATCHING CARDS</div>`;
+    grid.innerHTML=`<div class="tr2-unit-empty">NO MATCHING BASE CARDS — TRY CLEARING SEARCH OR FILTER</div>`;
     return;
   }
-  host.innerHTML=list.map(s=>{
-    const m=(s.mut&&s.mut!=="none")?s.mut:"";
-    const hasT=s.trait&&s.trait!=="none";
-    const shBadge=s.shiny?(typeof shinyStampHtml==="function"?shinyStampHtml(true):'<span class="shiny-badge shiny-pill">SHINY</span>'):"";
-    const mBadge=m?mutChip(m,typeof mutStampHtml==="function"?mutStampHtml(m,true):mutPill(m,"mut-badge")):"";
-    const tBadge=hasT?traitChip(s.trait,typeof traitStampHtml==="function"?traitStampHtml(s.trait,true):`<span class="trait-badge" style="border-color:${TRAIT_COLOR[s.trait]}">${traitGem(13,s.trait)}</span>`):"";
-    const badges=(shBadge||mBadge||tBadge)?`<span class="pck-badges">${shBadge}${mBadge}${tBadge}</span>`:"";
-    const hzCls=(typeof hzBorderCls==="function")?hzBorderCls(m||"none",!!s.shiny,{tile:true,dense:true}):"";
-    const hzLayers=(typeof hzBorderLayerHtml==="function")?hzBorderLayerHtml():"";
-    return `<button class="pck-card${s.id===selId?" sel":""}${hzCls}" type="button" data-tid="${s.id}" title="${cardName(s.char)}">
-      ${hzLayers}
-      <img src="${cardThumb(s.char)}" alt="" decoding="async">
-      ${badges}
-      <span class="pck-name">${cardName(s.char)}</span>
+  grid.innerHTML=list.map(b=>{
+    const tk=charTraitOf(b.char);
+    const hasT=!!(tk&&tk!=="none"&&TRAIT[tk]);
+    const tt=hasT?TRAIT[tk]:null;
+    const tLine=tt?`${traitGem(13,tt.k)}<span>${tt.name}</span>`:`<span class="qdot">?</span><span>No trait</span>`;
+    const vk=trVaultOf(b.char);
+    const vSuffix=b.variantCount>1?` · ${b.variantCount} VAR`:"";
+    return `<button type="button" class="tr2-unit-card${b.char===selChar?" sel":""}" data-uid="${b.char}" title="${cardName(b.char)} (${trVariantListText(b)})">
+      <span class="tr2-uc-thumb"><img src="${cardThumb(b.char)}" alt=""></span>
+      <span class="tr2-uc-body">
+        <span class="tr2-uc-nm">${cardName(b.char)}</span>
+        <span class="tr2-uc-meta">1 IN ${fmtChance(trCardRarityOdds(b.char))}${vSuffix}</span>
+        <span class="tr2-uc-trait" style="--tcol:${tt?tt.color:"rgba(245,245,245,.42)"}">${tLine}</span>
+      </span>
+      ${vk?`<span class="tr2-uc-vault-pip" title="Vaulted: ${TRAIT[vk].name}">VAULT</span>`:""}
     </button>`;
   }).join("");
-  host.querySelectorAll(".pck-card").forEach(el=>{
-    el.onclick=()=>{
-      const tid=el.getAttribute("data-tid");
+  grid.querySelectorAll(".tr2-unit-card").forEach(btn=>{
+    btn.onclick=()=>{
+      if(autoRoll)stopAutoRoll();
+      const cid=btn.getAttribute("data-uid");
       if(typeof sfx!=="undefined"&&sfx.hit)sfx.hit();
-      traitTarget=tid;
-      trClosePick();
-      renderTrait();
+      traitTarget=cid;
+      trPaintSpotlight(true);
+      trPaintRoster();
+      trPaintAttunement();
+      if(tr2State.tab==="index")trPaintIndexTab();
+    };
+  });
+  if(scroller)scroller.scrollTop=prevTop;
+}
+function trPaintTelemetry(){
+  const sumPct=trHitChance(),p=sumPct/100;
+  const coins=(state&&typeof state.coins==="number")?state.coins:0;
+  const av=Math.floor(coins/TRAIT_COST);
+  const nT=autoTargets.size;
+  const sumEl=document.getElementById("tr2AttuneSummary"),expEl=document.getElementById("tr2TelExp"),
+        expSub=document.getElementById("tr2TelExpSub"),oddEl=document.getElementById("tr2TelOdds"),
+        oddSub=document.getElementById("tr2TelOddsSub"),oddCard=document.getElementById("tr2TelOddsCard");
+  if(nT===0||p<=0){
+    if(sumEl)sumEl.innerHTML=`0 ticked · Tick any trait tiles below to compute expected rolls &amp; odds`;
+    if(expEl)expEl.textContent="—";
+    if(expSub)expSub.textContent="0 ticked";
+    if(oddEl)oddEl.textContent="0.0%";
+    if(oddSub)oddSub.textContent="tick targets above";
+    if(oddCard)oddCard.style.setProperty("--tc","var(--dim2)");
+  }else{
+    const exp=Math.max(1,Math.round(1/p));
+    const cost=exp*TRAIT_COST;
+    const odds=(1-Math.pow(1-p,av))*100;
+    const oStr=odds>=99.95?"99.9%+":(odds>=10?odds.toFixed(1)+"%":odds.toFixed(2)+"%");
+    const oCol=odds>=50?"var(--ok)":(odds>=15?"var(--warn)":"var(--atk)");
+    if(sumEl)sumEl.innerHTML=`<b>${nT} ticked</b> · <b>~${fmt(exp)} rolls</b> expected (${fmtStat(cost)} CR) · <span class="em">${oStr} chance</span> with your credits`;
+    if(expEl)expEl.textContent="~"+fmt(exp);
+    if(expSub)expSub.textContent=`${fmtStat(cost)} CR · ${nT} ticked`;
+    if(oddEl)oddEl.textContent=oStr;
+    if(oddSub)oddSub.textContent=`in ${fmt(av)} available rolls`;
+    if(oddCard)oddCard.style.setProperty("--tc",oCol);
+  }
+}
+function trPaintAttunement(){
+  const grid=document.getElementById("tr2AttuneGrid");if(!grid)return;
+  const tgt=traitTargetBase();
+  const cur=tgt&&tgt.trait&&tgt.trait!=="none"?tgt.trait:null;
+  grid.innerHTML=TRAIT_TIERS.filter(t=>t.chance>0).map(t=>{
+    const on=autoTargets.has(t.k);
+    const isCur=cur===t.k;
+    return `<button type="button" class="tr2-at-tile" data-tk="${t.k}" aria-pressed="${on}" style="--tcol:${t.color}">
+      <span class="tr2-at-rar">${t.rar}</span>
+      <span class="tr2-at-chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      ${isCur?`<span class="tr2-at-cur">ACTIVE</span>`:""}
+      <span class="tr2-at-emblem">${traitGem(20,t.k)}</span>
+      <span class="tr2-at-nm">${t.name}</span>
+      <span class="tr2-at-pct">${t.chance}%</span>
+    </button>`;
+  }).join("");
+  grid.querySelectorAll(".tr2-at-tile").forEach(btn=>{
+    btn.onclick=()=>{
+      const k=btn.getAttribute("data-tk");
+      if(autoTargets.has(k))autoTargets.delete(k);else autoTargets.add(k);
+      trPaintAttunement();
+      trPaintButtons();
+      if(tr2State.tab==="index")trPaintIndexTab();
+    };
+  });
+  trPaintTelemetry();
+}
+function trPaintHistory(){
+  const ss=document.getElementById("tr2SessionStats"),rs=document.getElementById("tr2RollSlots");
+  if(ss)ss.textContent=`session: ${fmt(tr2State.sessionRolls)} rolls · ${fmt(tr2State.sessionSpent)} CR`;
+  if(!rs)return;
+  const slots=[];
+  for(let i=0;i<10;i++){
+    const k=tr2State.lastRolls[i];
+    if(k&&TRAIT[k]){
+      const t=TRAIT[k];
+      slots.push(`<div class="tr2-roll-node hit${i===0?" newest":""}" style="--tcol:${t.color}" title="${t.name} (${t.rar}) · ATK +${Math.round((t.atk-1)*100)}%">${traitGem(17,t.k)}</div>`);
+    }else{
+      slots.push(`<div class="tr2-roll-node" title="Empty roll slot">?</div>`);
+    }
+  }
+  rs.innerHTML=slots.join("");
+}
+function trPaintButtons(){
+  const coins=(state&&typeof state.coins==="number")?state.coins:0;
+  const canAfford=coins>=TRAIT_COST;
+  const rBtn=document.getElementById("trRoll"),aBtn=document.getElementById("trAuto"),
+        aTxt=document.getElementById("tr2AutoTxt"),aTag=document.getElementById("tr2AutoTag");
+  if(rBtn)rBtn.disabled=autoRoll||!canAfford;
+  if(aBtn){aBtn.disabled=!autoRoll&&!canAfford;aBtn.classList.toggle("running",autoRoll);}
+  if(aTxt)aTxt.textContent=autoRoll?`ABORT AUTO (${fmt(autoRollN)} ROLLED)`:`AUTO ROLL — COSTS ${fmt(TRAIT_COST)} CR`;
+  if(aTag)aTag.textContent=autoRoll?"CLICK TO STOP":(autoTargets.size?`${autoTargets.size} ARMED`:"TICK TARGETS");
+}
+function trPaintIndexTab(){
+  const tgt=traitTargetBase();if(!tgt)return;
+  const host=document.getElementById("tr2IndexGrid"),sc=document.getElementById("tr2IdxSessionCount");
+  const rollables=TRAIT_TIERS.filter(t=>t.chance>0);
+  if(sc)sc.innerHTML=`DISCOVERED: <b>${tr2State.discovered.size} / ${rollables.length}</b>`;
+  if(!host)return;
+  const bases=trOwnedBaseEntries();
+  host.innerHTML=rollables.map(t=>{
+    const aPct=Math.round((t.atk-1)*100),hPct=Math.round((t.hp-1)*100);
+    const pv=cardStats(tgt.char,"none",t.k,false);
+    const odds=t.chance>=5?`${t.chance}% weight`:`1 in ${fmt(Math.round(100/t.chance))}`;
+    const holders=bases.filter(b=>b.trait===t.k).map(b=>cardName(b.char));
+    const armed=autoTargets.has(t.k);
+    return `<div class="tr2-idx-card" style="--tcol:${t.color}">
+      <div class="tr2-idx-top">
+        <div class="tr2-idx-emblem">${traitGem(26,t.k)}</div>
+        <div class="tr2-idx-titles"><div class="tr2-idx-nm">${t.name}</div><div class="tr2-idx-odds">${t.chance}% · ${odds}</div></div>
+        <span class="tr2-idx-rar">${t.rar}</span>
+      </div>
+      <div class="tr2-idx-stats"><span>ATK <b>+${aPct}%</b></span><span>HP <b>+${hPct}%</b></span></div>
+      <div class="tr2-idx-preview">On <b>${cardName(tgt.char)}</b> (base):<br>ATK <b>${fmtStat(pv.atk)}</b> · HP <b>${fmtStat(pv.hp)}</b></div>
+      <div class="tr2-idx-holders">${holders.length?`Equipped on: ${holders.slice(0,2).join(", ")}${holders.length>2?` +${holders.length-2}`:""}`:"Not currently equipped"}</div>
+      <button type="button" class="tr2-idx-btn${armed?" armed":""}" data-tk="${t.k}">${armed?"✓ ARMED IN ATTUNEMENT":"+ ARM AUTO TARGET"}</button>
+    </div>`;
+  }).join("");
+  host.querySelectorAll(".tr2-idx-btn").forEach(btn=>{
+    btn.onclick=()=>{
+      const k=btn.getAttribute("data-tk");
+      if(autoTargets.has(k))autoTargets.delete(k);else autoTargets.add(k);
+      trPaintIndexTab();
+      trPaintAttunement();
+      trPaintButtons();
     };
   });
 }
-function trOpenPick(){
-  const p=document.getElementById("trPick");
-  if(!p)return;
-  const s=document.getElementById("pckSearch");
-  if(s)s.value="";
-  trRenderPick("");
-  p.classList.add("on");
-  p.setAttribute("aria-hidden","false");
+function trPaintAll(popAnim){
+  trPaintCredits();
+  trPaintSpotlight(popAnim);
+  trPaintRoster();
+  trPaintAttunement();
+  trPaintHistory();
+  trPaintButtons();
+  if(tr2State.tab==="index")trPaintIndexTab();
 }
-function trClosePick(){
-  const p=document.getElementById("trPick");
-  if(!p)return;
-  p.classList.remove("on");
-  p.setAttribute("aria-hidden","true");
+function trSwapVault(){
+  if(autoRoll)stopAutoRoll();
+  const tgt=traitTargetBase();if(!tgt)return;
+  const curKey=charTraitOf(tgt.char);
+  const cur=(curKey&&curKey!=="none"&&TRAIT[curKey])?curKey:null;
+  const vk=trVaultOf(tgt.char);
+  if(!cur&&!vk){trShowToast("Both Active Trait and The Vault are empty.");return;}
+  const nextActive=vk||"none";
+  setCharTrait(tgt.char,nextActive);
+  trSetVault(tgt.char,cur);
+  if(typeof sfx!=="undefined"&&sfx.hit)sfx.hit();
+  save();
+  if(!battleLive()&&typeof render==="function")render();
+  trPaintAll(true);
+  trShowToast(nextActive!=="none"?`Swapped! ${TRAIT[nextActive].name} active on ${cardName(tgt.char)} & variants.`:`Parked ${TRAIT[cur].name} for ${cardName(tgt.char)} in The Vault.`);
 }
-function trPickOpen(){const p=document.getElementById("trPick");return !!(p&&p.classList.contains("on"));}
-/* ESC: tutup lapisan teratas dulu */
+function trNextEmptyUnit(){
+  const bases=trOwnedBaseEntries();
+  if(!bases.length)return;
+  const tgt=traitTargetBase();
+  const idx=tgt?bases.findIndex(b=>b.char===tgt.char):-1;
+  for(let i=1;i<=bases.length;i++){
+    const cand=bases[(idx+i)%bases.length];
+    if(cand&&(!cand.trait||cand.trait==="none")){
+      traitTarget=cand.char;
+      trPaintAll(true);
+      return;
+    }
+  }
+  trShowToast("All base cards already have traits!");
+}
+
+function renderTrait(popAnim){
+  const b=document.getElementById("trBody");
+  if(!b)return;
+  const _m=document.getElementById("traitModal");
+  if(_m&&!_m.classList.contains("show")&&!trForceRender)return;
+  trSeedDiscovered();
+  if(!state||!Array.isArray(state.stacks)||!state.stacks.length){
+    b.innerHTML=`<div class="tr2-stage"><div class="tr2-shell"><div class="tr2-panel"><div class="tr2-empty-wrap"><h3>NO UNITS IN MATRIX</h3><p>Roll at least one card from the Summon terminal before synthesizing traits.</p><button type="button" class="tr2-mini-btn accent" id="trEmptyClose">CLOSE</button></div></div></div></div>`;
+    const ec=document.getElementById("trEmptyClose");if(ec)ec.onclick=closeTrait;
+    return;
+  }
+  if(!b.querySelector(".tr2-shell"))trBuildShell();
+  trSetTab(tr2State.tab);
+  trPaintAll(!!popAnim);
+}
+
+/* Keyboard shortcuts scoped to #traitModal */
 document.addEventListener("keydown",e=>{
-  if(e.key!=="Escape")return;
   const m=document.getElementById("traitModal");
   if(!m||!m.classList.contains("show"))return;
-  if(trPickOpen()){trClosePick();return;}
-  if(trFilterOpen()){trCloseFilter();return;}
-  closeTrait();
+  if(trDialogOpen())return;
+  const tag=((document.activeElement&&document.activeElement.tagName)||"").toUpperCase();
+  if(tag==="INPUT"||tag==="TEXTAREA"){
+    if(e.key==="Escape"){document.activeElement.blur();}
+    return;
+  }
+  const k=e.key.toLowerCase();
+  if(k==="r"||k==="i"){e.preventDefault();rollTrait(false);}
+  else if(k==="x"){e.preventDefault();trSwapVault();}
+  else if(k==="n"){e.preventDefault();trNextEmptyUnit();}
+  else if(k==="f"){e.preventDefault();const si=document.getElementById("tr2UnitSearch");if(si)si.focus();}
+  else if(k==="1"){trSetTab("reroll");}
+  else if(k==="2"){trSetTab("index");}
+  else if(e.key==="ArrowDown"||e.key==="ArrowUp"){
+    e.preventDefault();
+    const list=trGetVisibleUnits();if(!list.length)return;
+    const cur=traitTargetBase();
+    const idx=cur?list.findIndex(b=>b.char===cur.char):0;
+    const next=list[(idx+(e.key==="ArrowDown"?1:-1)+list.length)%list.length];
+    if(next){traitTarget=next.char;trPaintAll(true);}
+  }else if(e.key==="Escape"){
+    e.preventDefault();closeTrait();
+  }
 });
+
 /* ===== hazard banner (pola #deckCurtain) ===== */
 let trHzTimers=[];
 function trHzClear(){for(let i=0;i<trHzTimers.length;i++)clearTimeout(trHzTimers[i]);trHzTimers=[];}
@@ -3142,7 +3456,7 @@ function trHzSetCopy(mode){
     if(kick)kick.innerHTML="// NEURAL <b>SYNC</b>";
     if(title)title.textContent="TRAITS";
     if(water)water.textContent="MOD";
-    if(sub)sub.textContent="TRAIT MATRIX · MODIFIERS · TARGETS";
+    if(sub)sub.textContent="NEURAL MATRIX · ATTUNEMENT · VAULT";
     if(foot)foot.textContent="ENTER SYNTHESIS";
   }else{
     if(kick)kick.innerHTML="// LINK <b>STAND BY</b>";
@@ -3178,7 +3492,8 @@ function closeDeckPick(){document.getElementById("deckPickModal").classList.remo
 function renderDeckPick(){
   const b=document.getElementById("dpBody");
   if(!state.stacks.length){b.innerHTML=`<p class="sub">Deck empty.</p>`;return;}
-  const selId=cardPickCfg?cardPickCfg.getSel():traitTargetStack().id;
+  const _tb=traitTargetBase();
+  const selId=cardPickCfg?cardPickCfg.getSel():(_tb&&_tb.repStack?_tb.repStack.id:null);
   _dpHtml={};
   b.innerHTML=`<label class="card-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input class="card-search" id="dpSearch" type="text" placeholder="Search card..." autocomplete="off"></label><div class="dp-grid" id="dpGrid">${state.stacks.map((s,i)=>{
     const m=(s.mut&&s.mut!=="none")?s.mut:"";
@@ -3194,7 +3509,7 @@ function renderDeckPick(){
     _dpHtml[s.id]=inner;const mounted=true;
     return `<button class="dp-card${isFullArt(s.char)?" fa":""}${s.id===selId?" sel":""}${m?(s.shiny?" dp-mut-shiny-"+m:" dp-mut-"+m):""}${s.shiny?" shiny":""}${hzCls}${mounted?"":" lz-ph"}" data-lz="${s.id}" data-tid="${s.id}" data-name="${cardName(s.char).toLowerCase()}">${mounted?inner:""}</button>`;}).join("")}</div><div class="no-result" id="dpSearch-nr">No matching cards.</div>`;
   {const dps=document.getElementById("dpSearch");if(dps){dps.value=dpSearch;dps.oninput=()=>{dpSearch=dps.value;runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));};if(dpSearch)runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));}}
-  b.querySelectorAll(".dp-card").forEach(el=>el.onclick=()=>{const tid=el.getAttribute("data-tid");sfx.hit();if(cardPickCfg){cardPickCfg.onPick(tid);}else{traitTarget=tid;closeDeckPick();renderTrait();}});
+  b.querySelectorAll(".dp-card").forEach(el=>el.onclick=()=>{const tid=el.getAttribute("data-tid");sfx.hit();if(cardPickCfg){cardPickCfg.onPick(tid);}else{const st=state.stacks.find(x=>x&&x.id===tid);traitTarget=st?st.char:tid;closeDeckPick();renderTrait();}});
   lazyMountGrid(b,_dpHtml);
 }
 /* Trait transiden ke atas = langka; jangan ditimpa tanpa konfirmasi */
@@ -3204,181 +3519,166 @@ function isRareTrait(k){return RARE_TRAIT_GUARD.indexOf(k)>=0;}
 function confirmRareReplace(k,auto){
   const t=TRAIT[k];if(!t)return Promise.resolve(true);
   if(traitRareBusy)return Promise.resolve(false);
+  const dlg=document.getElementById("trRareDlg"),body=document.getElementById("trRareDlgBody"),ttl=document.getElementById("trRareTitle");
+  const tgt=traitTargetBase();
+  if(!dlg||!body||!tgt)return Promise.resolve(true);
   traitRareBusy=true;
-  const tgt=traitTargetStack();
-  const nm=tgt?cardName(tgt.char):"target card";
-  const body=
-    '<div class="glcf-row"><span class="glcf-label">TRAIT</span><span class="glcf-val" style="color:'+t.color+'"><b>'+t.name+'</b> · '+t.rar+'</span></div>'+
-    '<div class="glcf-row"><span class="glcf-label">POWER</span><span class="glcf-val">ATK +'+Math.round((t.atk-1)*100)+'% · HP +'+Math.round((t.hp-1)*100)+'%</span></div>'+
-    '<div class="glcf-row"><span class="glcf-label">CARD</span><span class="glcf-val">'+nm+'</span></div>'+
-    '<div class="glcf-warn">'+(auto
-      ? 'Auto roll will start replacing this trait. A trait is only safe when checked as a target (auto stops when hit). Coins left: '+fmt(state.coins)+'.'
-      : 'This trait will be <b>overwritten</b> if you roll again. Coins left: '+fmt(state.coins)+'.')+'</div>';
-  return showConfirmDialog({title:"RARE TRAIT INSTALLED",body:body,okText:auto?"CONTINUE AUTO":"ROLL AGAIN"}).then(v=>{traitRareBusy=false;return v;});
+  const vaultEmpty=!trVaultOf(tgt.char);
+  const vScope=tgt.variantCount>1?` &amp; all ${tgt.variantCount} variants`:"";
+  if(ttl)ttl.textContent="RARE TRAIT PROTECTION";
+  body.innerHTML=`
+    <div class="tr2-rare-hero" style="--tcol:${t.color}">
+      ${traitGem(48,t.k)}
+      <div class="tr2-rare-hero-nm">${t.name} (${t.rar})</div>
+      <div class="tr2-rare-hero-sub">Currently bound to <b>${cardName(tgt.char)}</b>${vScope} · ATK +${Math.round((t.atk-1)*100)}% · HP +${Math.round((t.hp-1)*100)}%</div>
+    </div>
+    <div class="tr2-dlg-box">
+      <b>Warning:</b> ${auto
+        ? `Auto roll will start replacing <b class="hz">${t.name}</b>. Only traits ticked in Attunement stop Auto Roll.`
+        : `Rolling now will <b class="hz">overwrite ${t.name}</b> across ${cardName(tgt.char)}${tgt.variantCount>1?` and all ${tgt.variantCount} variants`:""}. You can park it safely in <b>THE VAULT [X]</b> first so you do not lose it.`}
+      Credits left: <b>${fmt(state.coins)} CR</b>.
+    </div>
+    <div class="tr2-dlg-actions">
+      <button type="button" class="tr2-dlg-btn primary" id="trRareKeep" autofocus>KEEP CURRENT</button>
+      ${vaultEmpty?`<button type="button" class="tr2-dlg-btn" id="trRarePark">PARK IN VAULT</button>`:""}
+      <button type="button" class="tr2-dlg-btn danger" id="trRareGo">${auto?"CONTINUE AUTO":"OVERWRITE &amp; ROLL"}</button>
+    </div>`;
+  return new Promise(resolve=>{
+    let settled=false;
+    const finish=val=>{if(settled)return;settled=true;traitRareBusy=false;if(dlg.open)dlg.close();resolve(val);};
+    dlg.addEventListener("close",()=>{if(!settled){settled=true;traitRareBusy=false;resolve(false);}},{once:true});
+    dlg.showModal();
+    const keep=document.getElementById("trRareKeep");if(keep)keep.onclick=()=>finish(false);
+    const park=document.getElementById("trRarePark");
+    if(park)park.onclick=()=>{finish(false);trSwapVault();};
+    const go=document.getElementById("trRareGo");if(go)go.onclick=()=>finish(true);
+  });
 }
-async function rollTrait(){
-  if(autoRoll)return; // tombol manual diblokir selama auto roll jalan
-  if(state.coins<TRAIT_COST)return;
-  const tgt=traitTargetStack();if(!tgt)return;
-  if(isRareTrait(tgt.trait)){
-    if(!(await confirmRareReplace(tgt.trait)))return;
+async function rollTrait(skipGuard){
+  if(autoRoll)return;
+  if(state.coins<TRAIT_COST){trShowToast(`Need ${fmt(TRAIT_COST)} Credits to roll!`);return;}
+  const tgt=traitTargetBase();if(!tgt)return;
+  const curTrait=charTraitOf(tgt.char);
+  if(!skipGuard&&isRareTrait(curTrait)){
+    if(!(await confirmRareReplace(curTrait,false)))return;
     if(autoRoll||state.coins<TRAIT_COST)return;
   }
   coinSpend(TRAIT_COST);
+  tr2State.sessionRolls++;
+  tr2State.sessionSpent+=TRAIT_COST;
   const k=rollTraitPick();
-  sfx.crit();
-  if(TRAIT[k] && TRAIT[k].atk>=1.5){ save(); renderShell(); renderTrait(); showRarePrompt(k); }
-  else { tgt.trait=k; save(); if(!battleLive()&&typeof render==="function")render(); renderTrait(); traitNotify(k); }
+  setCharTrait(tgt.char,k);
+  tr2State.discovered.add(k);
+  tr2State.lastRolls.unshift(k);
+  if(tr2State.lastRolls.length>10)tr2State.lastRolls.length=10;
+  if(typeof sfx!=="undefined"&&sfx.crit)sfx.crit();
+  save();
+  renderShell();
+  if(!battleLive()&&typeof render==="function")render();
+  trPaintAll(true);
+  if(TRAIT[k]&&TRAIT[k].atk>=1.5){
+    if(isRareTrait(k))showRarePrompt(k,false);
+    else trShowToast(`NICE ROLL! ${cardName(tgt.char)} & variants unlocked ${TRAIT[k].name} (${TRAIT[k].rar})!`);
+  }
 }
 function showRarePrompt(k,auto){
   const t=TRAIT[k];if(!t)return;
   pendingRare=k;
   pendingRareAuto=!!auto;
-  const b=document.getElementById("trRareBody");
+  const dlg=document.getElementById("trRareDlg"),body=document.getElementById("trRareDlgBody"),ttl=document.getElementById("trRareTitle");
+  if(!dlg||!body)return;
+  const tgt=traitTargetBase();
   const canRoll=state.coins>=TRAIT_COST;
-  b.innerHTML=`
-    <div class="rp-rays"></div>
-    ${traitGem(78,k,"rp-gem")}
-    <div class="rp-kicker">${auto?"RARE TRAIT · AUTO ROLL STOPPED":"RARE TRAIT"}</div>
-    <div class="rp-name" style="color:${t.color}">${t.name}</div>
-    <div class="rp-rar" style="color:${t.color}">RARITY ${t.rar}</div>
-    <div class="rp-power" style="color:${t.color}">ATK +${Math.round((t.atk-1)*100)}% · HP +${Math.round((t.hp-1)*100)}%</div>
-    <div class="rp-fx">${traitFxList(k)}</div>
-    <div class="rp-btns">
-      <button class="rp-btn rp-save" id="rpSave">${auto?"STOP · KEEP THIS":"KEEP"}</button>
-      <button class="rp-btn rp-roll" id="rpRoll" ${canRoll?"":"disabled"}>${auto?`ROLL AGAIN · CONTINUE AUTO · ${fmt(TRAIT_COST)} COIN`:`ROLL AGAIN · ${fmt(TRAIT_COST)} COINS`}</button>
+  const vaultEmpty=tgt&&!trVaultOf(tgt.char);
+  if(ttl)ttl.textContent=auto?"RARE TRAIT · AUTO STOPPED":"JACKPOT TRAIT UNLOCKED";
+  body.innerHTML=`
+    <div class="tr2-rare-hero" style="--tcol:${t.color}">
+      ${traitGem(58,k)}
+      <div class="tr2-rare-hero-nm">${t.name} (${t.rar})</div>
+      <div class="tr2-rare-hero-sub">ATK +${Math.round((t.atk-1)*100)}% · HP +${Math.round((t.hp-1)*100)}% · ${traitFxList(k)}</div>
     </div>
-    <div class="rp-note">${auto?"STOP locks this trait to the target card &amp; halts auto roll. ROLL AGAIN discards this result and continues auto roll (coins charged again).":"KEEP applies this trait to the target card. ROLL AGAIN discards this result and retries (coins charged again)."}</div>`;
-  const box=document.getElementById("rpBox");box.style.color=t.color;box.style.borderColor=t.color;
-  document.getElementById("rarePromptModal").classList.add("show");
-  document.getElementById("rpSave").onclick=saveRare;
+    <div class="tr2-dlg-box">
+      <b>${t.name}</b> is now bound to <b>${tgt?cardName(tgt.char):"this base card"}</b>${tgt&&tgt.variantCount>1?` and all ${tgt.variantCount} owned variants`:""}. You can keep it active, park it in <b>THE VAULT</b>, or discard &amp; roll again.
+    </div>
+    <div class="tr2-dlg-actions">
+      <button type="button" class="tr2-dlg-btn primary" id="rpSave" autofocus>${auto?"STOP · KEEP THIS":"KEEP THIS TRAIT"}</button>
+      ${vaultEmpty?`<button type="button" class="tr2-dlg-btn" id="rpPark">PARK IN VAULT</button>`:""}
+      <button type="button" class="tr2-dlg-btn danger" id="rpRoll" ${canRoll?"":"disabled"}>ROLL AGAIN · ${fmt(TRAIT_COST)} CR</button>
+    </div>`;
+  dlg.showModal();
+  const sv=document.getElementById("rpSave");if(sv)sv.onclick=saveRare;
+  const pk=document.getElementById("rpPark");
+  if(pk)pk.onclick=()=>{pendingRare=null;pendingRareAuto=false;closeRarePrompt();trSwapVault();};
   const rr=document.getElementById("rpRoll");if(rr)rr.onclick=auto?resumeAutoRoll:rerollRare;
 }
-function closeRarePrompt(){document.getElementById("rarePromptModal").classList.remove("show");}
-function saveRare(){const k=pendingRare;autoStop();pendingRareAuto=false;const tgt=traitTargetStack();if(tgt&&k)tgt.trait=k;pendingRare=null;closeRarePrompt();save();if(!battleLive()&&typeof render==="function")render();renderTrait();if(k)traitNotify(k);}
-function rerollRare(){pendingRare=null;pendingRareAuto=false;closeRarePrompt();rollTrait();}
-/* ===== AUTO ROLL (loop 100ms) ===== */
-function targetLabel(){return autoTargets.size?[...autoTargets].map(k=>TRAIT[k]?TRAIT[k].name:"").filter(Boolean).join(" · "):"check a row in CHANCES";}
+function closeRarePrompt(){
+  const dlg=document.getElementById("trRareDlg");if(dlg&&dlg.open)dlg.close();
+  const old=document.getElementById("rarePromptModal");if(old)old.classList.remove("show");
+}
+function saveRare(){
+  const k=pendingRare;autoStop();pendingRareAuto=false;
+  const tgt=traitTargetBase();if(tgt&&k)setCharTrait(tgt.char,k);
+  pendingRare=null;closeRarePrompt();save();
+  if(!battleLive()&&typeof render==="function")render();
+  renderTrait();
+  if(k&&TRAIT[k])trShowToast(`LOCKED! ${TRAIT[k].name} (${TRAIT[k].rar}) bound to ${tgt?cardName(tgt.char):"base card"} & all variants.`);
+}
+function rerollRare(){pendingRare=null;pendingRareAuto=false;closeRarePrompt();rollTrait(true);}
+/* ===== AUTO ROLL (loop 95ms) ===== */
+function targetLabel(){return autoTargets.size?[...autoTargets].map(k=>TRAIT[k]?TRAIT[k].name:"").filter(Boolean).join(" · "):"tick traits in ATTUNEMENT";}
 function autoStop(){autoRoll=false;clearTimeout(autoRollTimer);autoRollTimer=null;}
 function toggleAuto(){autoRoll?stopAutoRoll():startAutoRoll();}
 async function startAutoRoll(){
   if(autoRoll)return;
-  if(state.coins<TRAIT_COST){autoToast(`NEED ${fmt(TRAIT_COST)} COINS FOR AUTO ROLL`);return;}
-  const tgt=traitTargetStack();
-  if(tgt&&isRareTrait(tgt.trait)){
-    if(!(await confirmRareReplace(tgt.trait,true)))return;
+  if(state.coins<TRAIT_COST){trShowToast(`Need ${fmt(TRAIT_COST)} Credits for Auto Roll!`);return;}
+  if(!autoTargets.size){trShowToast("Tick at least one trait in ATTUNEMENT first!");return;}
+  const tgt=traitTargetBase();
+  const curTrait=tgt?charTraitOf(tgt.char):"none";
+  if(tgt&&isRareTrait(curTrait)&&!autoTargets.has(curTrait)){
+    if(!(await confirmRareReplace(curTrait,true)))return;
     if(autoRoll||state.coins<TRAIT_COST)return;
   }
-  autoRoll=true;autoRollN=0;renderTrait();autoTick();
+  autoRoll=true;autoRollN=0;trPaintButtons();autoTick();
 }
-function stopAutoRoll(){autoStop();renderTrait();if(!battleLive()&&typeof render==="function")render();}
-function traitUiRefresh(){
-  const tgt=traitTargetStack();
-  const root=document.getElementById("traitModal");
-  if(!root||!tgt)return;
-  const hasT=!!(tgt.trait&&tgt.trait!=="none");
-  const tt=hasT?TRAIT[tgt.trait]:null;
-  const tcol=tt?tt.color:"#9A8A8B";
-  /* --- subject card label + node code --- */
-  const cn=document.getElementById("tsCardName");
-  if(cn)cn.textContent=cardName(tgt.char);
-  const cc=document.getElementById("tsCardCode");
-  if(cc)cc.textContent=trCardCode(tgt.char);
-  const fs=document.getElementById("tsFootSel");
-  if(fs)fs.textContent="SUBJECT · "+cardName(tgt.char);
-  /* --- trait plate --- */
-  const plate=document.getElementById("tsPlate");
-  if(plate)plate.style.setProperty("--tcol",tcol);
-  const gem=document.getElementById("tsGem");
-  if(gem)gem.innerHTML=tt?traitGem(30,tt.k):traitGem(30,"none");
-  const nm=document.getElementById("tsTraitName");
-  if(nm)nm.textContent=tt?tt.name:"NO TRAIT";
-  const rar=document.getElementById("tsTraitRar");
-  if(rar)rar.textContent=tt?tt.rar:"—";
-  const aPct=tt?Math.round((tt.atk-1)*100):0;
-  const hPct=tt?Math.round((tt.hp-1)*100):0;
-  const stats=document.getElementById("tsStats");
-  if(stats)stats.innerHTML=(aPct>0||hPct>0)
-    ? (aPct>0?`<span class="ts-stat"><i>ATK</i><b>+${aPct}%</b></span>`:"")+(hPct>0?`<span class="ts-stat"><i>HP</i><b>+${hPct}%</b></span>`:"")
-    : `<span class="ts-stat empty"><b>NO STAT MODIFIER</b></span>`;
-  const note=document.getElementById("tsTraitNote");
-  if(note)note.textContent=tt
-    ? (tt.atk>=1.5?"Rare artefact-class modifier. Rolling again will overwrite it.":"Modifier is bound to this subject. Rolling again overwrites it.")
-    : "No modifier installed. Roll to synthesize one.";
-  /* --- rail: pindahkan penanda CURRENT + warna ikon --- */
-  root.querySelectorAll(".tsr-row").forEach(row=>{
-    const k=row.getAttribute("data-tk");
-    const own=(!!tt&&k===tt.k);
-    row.classList.toggle("active",own);
-    const nameBox=row.querySelector(".tsr-name");
-    if(!nameBox)return;
-    const old=nameBox.querySelector(".tsr-cur");
-    if(old)old.remove();
-    if(own){
-      const flag=document.createElement("span");
-      flag.className="tsr-cur";
-      flag.textContent="CURRENT";
-      nameBox.appendChild(flag);
-    }
-  });
-}
-function autoPaint(){
-  const cv=document.getElementById("coinVal");if(cv)cv.textContent=fmt(state.coins);
-  const c=document.getElementById("trCoinVal");if(c)c.textContent=fmt(state.coins);
-  const n=document.getElementById("trAutoN");if(n)n.textContent="ITER #"+autoRollN;
-}
-/* FX per tick auto roll: retrigger class supaya animasi CSS jalan tiap roll */
-function traitFxTick(k){
-  const root=document.getElementById("traitModal");if(!root)return;
-  const t=TRAIT[k];
-  const plate=document.getElementById("tsPlate");
-  if(plate){
-    if(t)plate.style.setProperty("--tcol",t.color);
-    plate.classList.remove("tr-tick");void plate.offsetWidth;plate.classList.add("tr-tick");
-  }
-  const n=document.getElementById("trAutoN");
-  if(n){n.classList.remove("tr-n-pop");void n.offsetWidth;n.classList.add("tr-n-pop");}
-  root.querySelectorAll(".tsr-row.trr-hit").forEach(el=>el.classList.remove("trr-hit"));
-  const own=root.querySelector(".tsr-row.active");
-  if(own){void own.offsetWidth;own.classList.add("trr-hit");}
+function stopAutoRoll(){
+  autoStop();
+  save();
+  renderShell();
+  if(!battleLive()&&typeof render==="function")render();
+  trPaintAll(false);
 }
 function autoTick(){
   if(!autoRoll)return;
-  if(state.coins<TRAIT_COST){stopAutoRoll();save();renderShell();autoToast("AUTO ROLL STOP · OUT OF COINS");return;}
-  const tgt=traitTargetStack();if(!tgt){stopAutoRoll();return;}
+  if(state.coins<TRAIT_COST){stopAutoRoll();trShowToast("AUTO ROLL STOPPED · OUT OF CREDITS");return;}
+  const tgt=traitTargetBase();if(!tgt){stopAutoRoll();return;}
   coinSpend(TRAIT_COST);autoRollN++;
+  tr2State.sessionRolls++;
+  tr2State.sessionSpent+=TRAIT_COST;
   const k=rollTraitPick();
-  if(autoRollN%10===0)sfx.crit(); // sfx ditahan tiap 10 roll biar gak nembak terus di 100ms
-  if(autoTargets.has(k)){tgt.trait=k;autoStop();save();if(!battleLive()&&typeof render==="function")render();renderTrait();traitNotify(k);return;} // TARGET KENA → simpan + stop
-  tgt.trait=k;
+  setCharTrait(tgt.char,k);
+  tr2State.discovered.add(k);
+  tr2State.lastRolls.unshift(k);
+  if(tr2State.lastRolls.length>10)tr2State.lastRolls.length=10;
+  if(autoRollN%10===0&&typeof sfx!=="undefined"&&sfx.crit)sfx.crit();
+  if(autoTargets.has(k)){
+    autoStop();save();renderShell();
+    if(!battleLive()&&typeof render==="function")render();
+    trPaintAll(true);
+    if(typeof sfx!=="undefined"&&sfx.crit)sfx.crit();
+    trShowToast(`TARGET HIT! ${cardName(tgt.char)} & variants gained ${TRAIT[k].name} (${TRAIT[k].rar})!`);
+    return;
+  }
   if(autoRollN%10===0)save();
-  autoPaint();
-  traitUiRefresh();
-  traitFxTick(k);
+  trPaintCredits();
+  trPaintSpotlight(true);
+  trPaintHistory();
+  trPaintButtons();
+  if(autoRollN%5===0){trPaintRoster();trPaintAttunement();}
   autoRollTimer=setTimeout(autoTick,AUTO_TICK);
 }
 function resumeAutoRoll(){pendingRare=null;pendingRareAuto=false;closeRarePrompt();if(!autoRoll){renderTrait();return;}autoRollTimer=setTimeout(autoTick,AUTO_TICK);}
-function autoToast(msg){
-  const el=document.getElementById("traitNotify");if(!el)return;
-  el.innerHTML=`<div class="tn-card tn-toast"><div class="tn-body"><div class="tn-top" style="color:#FFCf6E">${msg}</div></div></div>`;
-  el.classList.add("show");
-  clearTimeout(el._t);el._t=setTimeout(()=>{el.classList.remove("show");},2200);
-}
-function traitNotify(k){
-  const t=TRAIT[k];if(!t)return;
-  const el=document.getElementById("traitNotify");if(!el)return;
-  const rare=t.atk>=1.5;
-  el.innerHTML=`<div class="tn-card${rare?" tn-rare":""}" style="border-color:${t.color};color:${t.color}">
-    ${traitGem(46,k,"tn-gem")}
-    <div class="tn-body">
-      <div class="tn-top" style="color:${t.color}">${t.name}</div>
-      <div class="tn-rar">RARITY ${t.rar}</div>
-      <div class="tn-power" style="color:${t.color}">ATK +${Math.round((t.atk-1)*100)}% · HP +${Math.round((t.hp-1)*100)}%</div>
-      <div class="tn-fx">${traitFxList(k)}</div>
-    </div></div>`;
-  el.classList.add("show");
-  clearTimeout(el._t);el._t=setTimeout(()=>{el.classList.remove("show");},2800);
-}
+function autoToast(msg){trShowToast(msg);}
+function traitNotify(k){const t=TRAIT[k];if(t)trShowToast(`${t.name} (${t.rar}) applied!`);}
 /* global trait/mut tooltip (fixed → tidak memicu scroll horizontal modal) */
 let __traitTipEl=null;
 function hideTraitTip(){if(__traitTipEl)__traitTipEl.classList.remove("show");}

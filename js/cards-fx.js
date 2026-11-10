@@ -198,10 +198,10 @@ const TRAIT_TIERS=[
   {k:"rare",name:"RARE",rar:"R",atk:1.10,hp:1.10,chance:30,fx:{},color:"#6EAC4C"},
   {k:"legendary",name:"LEGENDARY",rar:"SR",atk:1.25,hp:1,chance:12,fx:{},color:"#2F8FE2"},
   {k:"superior",name:"SUPERIOR",rar:"SSR",atk:1.50,hp:1.25,chance:2.5,fx:{},color:"#B58CFF"},
-  {k:"transiden",name:"TRANSIDEN",rar:"UR",atk:2.00,hp:1.50,chance:0.486,fx:{},color:"#F6DFA6"},
-  {k:"demigod",name:"DEMI-GOD",rar:"EX",atk:3.00,hp:1.50,chance:0.01,fx:{},color:"#FF4D5E"},
-  {k:"cosmic",name:"COSMIC",rar:"COS",atk:3.50,hp:3.50,chance:0.003,fx:{},color:"#E56BFF"},
-  {k:"bigbang",name:"BIGBANG",rar:"BB",atk:5.00,hp:4.00,chance:0.001,fx:{},color:"#7DF9FF"}
+  {k:"transiden",name:"TRANSIDEN",rar:"UR",atk:2.00,hp:1.50,chance:0.34,fx:{},color:"#F6DFA6"},
+  {k:"demigod",name:"DEMI-GOD",rar:"EX",atk:3.00,hp:1.50,chance:0.1,fx:{},color:"#FF4D5E"},
+  {k:"cosmic",name:"COSMIC",rar:"COS",atk:3.50,hp:3.50,chance:0.05,fx:{},color:"#E56BFF"},
+  {k:"bigbang",name:"BIGBANG",rar:"BB",atk:5.00,hp:4.00,chance:0.01,fx:{},color:"#7DF9FF"}
 ];
 
 const TRAIT=Object.fromEntries(TRAIT_TIERS.map(t=>[t.k,t]));
@@ -214,7 +214,7 @@ const TRAIT_COST=500;
 const TRAIT_TOTAL=TRAIT_TIERS.reduce((a,t)=>a+(t.chance||0),0);
 function rollTraitPick(){let r=Math.random()*TRAIT_TOTAL;for(const t of TRAIT_TIERS){if(!t.chance)continue;r-=t.chance;if(r<=0)return t.k;}return "common";}
 function traitLabel(k){const t=TRAIT[k];return t?t.name.toUpperCase():"";}
-function traitFxList(k){const t=TRAIT[k];if(!t)return"";const e=[];if(t.fx.pierce)e.push(`+${t.fx.pierce}% tembus defense`);if(t.fx.crit)e.push(`${t.fx.crit.chance}% peluang crit ×${t.fx.crit.mult}`);if(t.fx.lifesteal)e.push(`serap ${t.fx.lifesteal}% damage jadi HP`);if(t.fx.evasion)e.push(`${t.fx.evasion.chance}% peluang hindari serangan`);if(t.fx.double)e.push(`${t.fx.double}% peluang serang dua kali`);return e.length?e.join(" · "):"Tidak ada efek khusus — hanya menaikkan ATK & HP.";}
+function traitFxList(k){const t=TRAIT[k];if(!t)return"";const e=[];if(t.fx.pierce)e.push(`+${t.fx.pierce}% defense pierce`);if(t.fx.crit)e.push(`${t.fx.crit.chance}% crit chance ×${t.fx.crit.mult}`);if(t.fx.lifesteal)e.push(`lifesteal ${t.fx.lifesteal}% of damage as HP`);if(t.fx.evasion)e.push(`${t.fx.evasion.chance}% dodge chance`);if(t.fx.double)e.push(`${t.fx.double}% double-attack chance`);return e.length?e.join(" · "):"No special effect — only boosts ATK & HP.";}
 /* ===== Ikon & Badge Produksi — Locked Hazard Studio Preset =====
    Trait Set A (Common..Demi-God) + Set C (Cosmic/BigBang) di viewBox 0 0 48 48.
    Mutation & SHINY icons di viewBox 0 0 24 24. Semua card badge = SOLID STAMP ICON ONLY. */
@@ -284,7 +284,32 @@ function mutTipInner(mut){const label=MUT_LABEL[mut];if(!label)return"";const co
 function mutChip(mut,html){const label=MUT_LABEL[mut];if(!label)return html;return `<span class="mut-hover" data-mut="${mut}">${html}</span>`;}
 function mutPill(mut,cls="mut-badge"){const label=MUT_LABEL[mut];if(!label)return "";return `<span class="${cls} ix-chip m-${mut} on xbadge st-solid v-${mut}" style="--bc:${MUT_COLOR[mut]||"#f5f5f5"}">${mutIconSvg(mut,11)}<span class="xb-txt">${label}</span></span>`;}
 function mergeFx(a,b){if(!b||!Object.keys(b).length)return a;const o={...a};for(const k in b){const av=o[k],bv=b[k];if(av==null){o[k]=bv;continue;}if(typeof bv==="number"&&typeof av==="number"){o[k]=av+bv;continue;}if(bv&&typeof bv==="object"&&av&&typeof av==="object"){if(k==="crit")o[k]={chance:Math.min(95,av.chance+bv.chance),mult:Math.max(av.mult,bv.mult)};else if(k==="evasion")o[k]={chance:Math.min(90,av.chance+bv.chance),turns:Math.max(av.turns,bv.turns)};else if(k==="barrage")o[k]={chance:Math.min(95,av.chance+bv.chance),min:Math.max(av.min,bv.min),max:Math.max(av.max,bv.max)};else o[k]=bv;}else o[k]=bv;}return o;}
-function fxOf(stack){return mergeFx(PASSIVE_FX[stack.char]||{},TRAIT_FX[stack.trait]||{});}
+function charTraitOf(charId){
+  if(typeof state==="undefined"||!state||!charId)return "none";
+  const k=state.charTraits&&state.charTraits[charId];
+  return (k&&k!=="none"&&TRAIT[k])?k:"none";
+}
+function setCharTrait(charId,traitKey){
+  if(typeof state==="undefined"||!state||!charId)return "none";
+  const tk=(traitKey&&traitKey!=="none"&&TRAIT[traitKey])?traitKey:"none";
+  if(!state.charTraits||typeof state.charTraits!=="object"||Array.isArray(state.charTraits))state.charTraits={};
+  if(tk==="none")delete state.charTraits[charId];
+  else state.charTraits[charId]=tk;
+  if(Array.isArray(state.stacks)){
+    for(let i=0;i<state.stacks.length;i++){
+      const s=state.stacks[i];
+      if(s&&s.char===charId)s.trait=tk;
+    }
+  }
+  return tk;
+}
+function stackTraitOf(s){
+  if(!s)return "none";
+  const bt=charTraitOf(s.char);
+  if(bt&&bt!=="none")return bt;
+  return (s.trait&&s.trait!=="none"&&TRAIT[s.trait])?s.trait:"none";
+}
+function fxOf(stack){return mergeFx(PASSIVE_FX[stack.char]||{},TRAIT_FX[stackTraitOf(stack)]||{});}
 /* fx aktif pemain; kalau kartu punya {copy:1} (Copy Ninja), salin passive lawan + tetap warisi trait */
 function resolveFx(stack,enemyFx){
   let base=fxOf(stack);
@@ -293,7 +318,7 @@ function resolveFx(stack,enemyFx){
   if(!base.copy)return base;if(base.copy&&base.copy.turns&&!(bt&&bt.copyLeft>0))return base;
   const o=Object.assign({},enemyFx||{});
   delete o.copy;
-  return mergeFx(o,TRAIT_FX[stack.trait]||{});
+  return mergeFx(o,TRAIT_FX[stackTraitOf(stack)]||{});
 }
 
 /* STATUS IMMUNE (fx.statusImmune): tolak status negatif yang menyasar kartu pemegang.
@@ -342,7 +367,7 @@ function cardStats(charId,mut,trait,shiny){const c=CARDS[charId];if(!c)return{hp
    SAMA dengan jumlah fighter battle (startBattle → equippedList) & tampilan backpack,
    biar topbar/profile/cerita/backpack selalu satu angka. */
 function totalPower(){
-  return equippedList().reduce((a,c)=>{const st=cardStats(c.char,c.mut,c.trait,c.shiny);return a+st.hp+st.atk;},0);
+  return equippedList().reduce((a,c)=>{const st=cardStats(c.char,c.mut,stackTraitOf(c),c.shiny);return a+st.hp+st.atk;},0);
 }
 /* GATE = power musuh di level itu (HP + ATK), jadi keduanya dibandingkan apple-to-apple */
 function gateOf(level){const e=enemyStats(level);return e.hp+e.atk;}

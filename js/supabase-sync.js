@@ -696,7 +696,7 @@ const CloudDB = {
         if (!ns || !ns.char || have.has(key(ns))) continue;
         have.add(key(ns));
         ST.stacks.push({ id: ns.id, char: ns.char, tier: ns.tier || null, fav: false, lock: false,
-                         mut: ns.mut || "none", shiny: !!ns.shiny, trait: ns.trait || "none", count: 1 });
+                         mut: ns.mut || "none", shiny: !!ns.shiny, trait: (typeof charTraitOf === "function" && charTraitOf(ns.char) !== "none") ? charTraitOf(ns.char) : (ns.trait || "none"), count: 1 });
         const empty = ST.deck.indexOf(null);
         if (empty >= 0 && typeof setDeckSlot === "function") setDeckSlot(empty, ns.id);
       }
@@ -949,7 +949,10 @@ const CloudDB = {
         if (typeof res.coins === "number" && ST.coins !== res.coins) { ST.coins = res.coins; }
         if (Array.isArray(ST.stacks)) {
           const s = ST.stacks.find(x => x && x.id === stackId);
-          if (s) s.trait = res.trait || "common";
+          if (s) {
+            if (typeof setCharTrait === "function") setCharTrait(s.char, res.trait || "common");
+            else s.trait = res.trait || "common";
+          }
         }
         this._paint();
         try { if (typeof renderTrait === "function") renderTrait(); } catch(e){}

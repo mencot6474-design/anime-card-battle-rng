@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v569-cardIndexV2Clean';
+const CACHE_NAME = 'anime-card-battle-v573-traitRates';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

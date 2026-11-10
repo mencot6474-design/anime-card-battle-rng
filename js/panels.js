@@ -738,7 +738,8 @@ function grantRolledCard(charId, mut, shiny, dupToExp) {
     if(!__batchRoll){save();rollCountBadge();idxRewardSync();}
     return s;
   }
-  const ns = { id: Math.random().toString(36).slice(2, 9), char: charId, tier: card.tier, fav: false, lock: false, mut: m, shiny: sh, trait: "none", count: 1 };
+  const inheritedTrait = (typeof charTraitOf === "function") ? charTraitOf(charId) : "none";
+  const ns = { id: Math.random().toString(36).slice(2, 9), char: charId, tier: card.tier, fav: false, lock: false, mut: m, shiny: sh, trait: inheritedTrait, count: 1 };
   state.stacks.push(ns);
   if (!Array.isArray(state.deck)) state.deck = [null, null, null, null];
   state.deck.length = 4;

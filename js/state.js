@@ -24,7 +24,7 @@ function freshState(){
   const s0=_real(_want)?_want:(_units.find(c=>_real(c))||null);
   const start=s0?{id:Math.random().toString(36).slice(2,9),char:_idOf(s0),tier:(s0.tier==null?null:s0.tier),fav:false,lock:false,mut:"none",shiny:false,trait:"none",count:1}:null;
   const newState={coins:1000,wbTokens:0,wbStrikerId:null,wbAutoRepeat:false,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,totalRolls:0,playSec:0,muted:false,lang:"en",diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},raidShopOwned:{},towerShopOwned:{},storyGemMilestones:{},dailyGemPending:0,storyCd:{},rebirth:{count:0,essence:0},tower:{best:0,runs:0,auto:false},battleSpeed:1,
-    cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],history:[],rollHistory:[],battle:null,
+    cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],charTraits:{},traitVault:{},history:[],rollHistory:[],battle:null,
     player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1,sp:0,tree:{}},weather:null,weatherBest:null,potions:0,mythicPotions:0,luckPots:[0,0,0],speedPots:[0,0,0],luckBuffs:[],speedBuffs:[],infTokens:0,
     artOwned:[],artSlots:[null,null],petOwned:[],petEquipped:null,intanRolls:0,idxRewardsClaimed:0,premiumGems:50,rollPacks:{r5k:0,r10k:0,r25k:0,r50k:0,r100k:0}};
   console.log('[FRESH STATE] Initialized player:',newState.player);
@@ -69,6 +69,8 @@ function migrateNoGachaTemplates(force){
   for(const s of tmpl){
     const from=s.char, twin=twins[from];
     if(!twin){ unpaired.push(from); drop.add(s.id); continue; }
+    if(state.charTraits&&state.charTraits[from]&&!state.charTraits[twin]){state.charTraits[twin]=state.charTraits[from];delete state.charTraits[from];}
+    if(state.traitVault&&state.traitVault[from]&&!state.traitVault[twin]){state.traitVault[twin]=state.traitVault[from];delete state.traitVault[from];}
     s.char=twin; s.tier=(CARDS[twin].tier==null?null:CARDS[twin].tier);
     if(keeper[_vk(s)]){ drop.add(s.id); collided.push(from+"->"+twin); }
     else{ keeper[_vk(s)]=s; migrated.push(from+"->"+twin); }
@@ -270,6 +272,7 @@ function loadStateFor(name){
   }
   
   if(state.stacks)state.stacks.forEach(s=>{if(!s.mut)s.mut="none";if(s.mut==="silver"){s.shiny=true;s.mut="none";}if(typeof s.shiny!=="boolean")s.shiny=false;if(!s.trait||!TRAIT[s.trait])s.trait="none";s.tier=CARDS[s.char].tier;});
+  syncBaseTraits();
   if(!state.tower||typeof state.tower!=="object")state.tower={best:0,runs:0};
   if(typeof state.tower.best!=="number"||state.tower.best<0)state.tower.best=0;
   if(typeof state.tower.runs!=="number"||state.tower.runs<0)state.tower.runs=0;
@@ -312,6 +315,58 @@ function loadStateFor(name){
   if(state.weather){if(!WEATHER[state.weather.id]||typeof state.weather.endsAt!=="number")state.weather=null;}
   if(state.weather&&Date.now()>=state.weather.endsAt)state.weather=null;
   state.battle=null;
+}
+
+function _traitRank(k){
+  if(!k||k==="none"||typeof TRAIT_TIERS==="undefined")return -1;
+  return TRAIT_TIERS.findIndex(t=>t.k===k);
+}
+function syncBaseTraits(){
+  if(!state)return;
+  if(!state.charTraits||typeof state.charTraits!=="object"||Array.isArray(state.charTraits))state.charTraits={};
+  Object.keys(state.charTraits).forEach(cid=>{
+    const tk=state.charTraits[cid];
+    if(!CARDS[cid]||!tk||tk==="none"||!TRAIT[tk])delete state.charTraits[cid];
+  });
+  if(!state.traitVault||typeof state.traitVault!=="object"||Array.isArray(state.traitVault))state.traitVault={};
+  const stacks=Array.isArray(state.stacks)?state.stacks:[];
+  const byId=new Map();
+  const ownedChars=new Set();
+  stacks.forEach(s=>{
+    if(!s||!CARDS[s.char])return;
+    if(s.id)byId.set(s.id,s);
+    ownedChars.add(s.char);
+  });
+  /* Promote unmigrated variant traits -> base card (highest tier wins across variants) */
+  const migratedNow=new Set();
+  stacks.forEach(s=>{
+    if(!s||!CARDS[s.char])return;
+    if(s.trait&&s.trait!=="none"&&TRAIT[s.trait]){
+      const existing=state.charTraits[s.char];
+      if(!existing||!TRAIT[existing]){
+        state.charTraits[s.char]=s.trait;
+        migratedNow.add(s.char);
+      }else if(migratedNow.has(s.char)&&_traitRank(s.trait)>_traitRank(existing)){
+        state.charTraits[s.char]=s.trait;
+      }
+    }
+  });
+  /* Migrate legacy stackId-keyed traitVault -> charId-keyed traitVault */
+  const nextVault={};
+  Object.keys(state.traitVault).forEach(key=>{
+    const tk=state.traitVault[key];
+    if(!tk||tk==="none"||!TRAIT[tk])return;
+    let cid=CARDS[key]?key:null;
+    if(!cid){const st=byId.get(key);if(st&&CARDS[st.char])cid=st.char;}
+    if(!cid||!ownedChars.has(cid))return;
+    if(!nextVault[cid]||_traitRank(tk)>_traitRank(nextVault[cid]))nextVault[cid]=tk;
+  });
+  state.traitVault=nextVault;
+  /* Sync base trait onto EVERY variant stack of each base card */
+  stacks.forEach(s=>{
+    if(!s||!CARDS[s.char])return;
+    s.trait=(typeof charTraitOf==="function")?charTraitOf(s.char):(state.charTraits[s.char]||"none");
+  });
 }
 
 /* ========== DIFFICULTY PROGRESS HELPERS ========== */
