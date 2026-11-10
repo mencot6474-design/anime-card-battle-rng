@@ -808,6 +808,28 @@ const CloudDB = {
     return await this._authRpc(username, "claim_world_boss_reward", args);
   },
 
+  async wbClaimMilestone(username, boss, tier) {
+    if (!username) return null;
+    const args = {
+      p_boss: boss || "RAID_ETERNAL_DRAGON",
+      p_tier: Math.max(1, Math.min(7, Math.round(Number(tier) || 1))),
+    };
+    const res = await this._authRpc(username, "claim_world_boss_milestone", args);
+    if (res && res.ok) {
+      const ST = this._st();
+      if (ST) {
+        let dirty = false;
+        if (typeof res.wbTokens === "number" && ST.wbTokens !== res.wbTokens) { ST.wbTokens = res.wbTokens; dirty = true; }
+        if (typeof res.premiumGems === "number" && ST.premiumGems !== res.premiumGems) { ST.premiumGems = res.premiumGems; dirty = true; }
+        if (res.rollPacks && typeof res.rollPacks === "object") { ST.rollPacks = res.rollPacks; dirty = true; }
+        if (Array.isArray(res.luckPots)) { ST.luckPots = res.luckPots; dirty = true; }
+        if (Array.isArray(res.speedPots)) { ST.speedPots = res.speedPots; dirty = true; }
+        if (dirty) this._paint();
+      }
+    }
+    return res;
+  },
+
   /** Papan peringkat read-only (world_boss / inf_tower / deck_power / rarest_pull). */
   async leaderboard(board, period, limit, username) {
     return await this._rpc("get_leaderboard", {

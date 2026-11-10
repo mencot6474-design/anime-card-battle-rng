@@ -1,47 +1,72 @@
-/* =============== BOSS RAID (layar + engine) =============== */
+/* =============== BOSS RAID (World Boss Hub + Engine) =============== */
 let raid=null, raidView="hub", raidPicked=null;
-/* ===== WORLD BOSS (harian, skor & attempt di server) =====
-   Attempt dipotong server saat run DIMULAI, bukan saat submit — keluar di tengah
-   run tetap memakai 1 attempt. Guest/offline tetap bisa main lokal: tidak memakai
-   attempt dan tidak mengirim skor. */
+/* ===== WORLD BOSS (daily, server-authoritative score, attempts & milestones) =====
+   Attempt is deducted when run STARTS on server. Guest/offline plays locally
+   without touching server quotas or rankings. */
 let wb=null, wbAt=0, wbLoading=false, wbRunId=null, wbStarting=false, wbErr=false;
-/* Data World Boss per boss (pool/attempt/papan terpisah). `wb` selalu menunjuk
-   data boss yang SEDANG dipilih supaya kode lama (wb.xxx) tetap valid. */
 const wbByBoss={a:null,b:null};
-let wbRunBoss=null;   /* key boss untuk run yang sedang jalan */
-const WB_TTL=60000; /* data hub (pool/rank) cukup di-refresh 1x / menit — hemat bandwidth */
-const WB_RETRY=8000; /* belum dapat data sama sekali -> jangan fetch tiap render */
+let wbRunBoss=null;
+const WB_TTL=60000;
+const WB_RETRY=8000;
+
+let wbHubTab="milestones";
+let wbHubEnteredOnce=false;
+let wbStrikerSearch="";
+let wbAutoTimer=null;
+let wbMsBusy=false;
+let wbHubKeyHandler=null;
+let wbToastTimer=0;
+let wbHzTimers=[];
+const wbGuestByBoss={};
+
 function wbOnline(){return !!((typeof currentUser!=="undefined"&&currentUser)&&window.CloudDB&&typeof window.CloudDB.wbState==="function");}
 function wbBossName(id){const b=RAID_BOSSES.find(x=>x.id===id)||RAID_BOSSES[0];return b?b.name:"WORLD BOSS";}
+function wbJakartaDay(){
+  const j=new Date(Date.now()+7*3600e3);
+  return j.getUTCFullYear()+"-"+String(j.getUTCMonth()+1).padStart(2,"0")+"-"+String(j.getUTCDate()).padStart(2,"0");
+}
+function wbGuestState(i){
+  const b=WB_BOSSES[i==null?wbBossIdx:i]||WB_BOSSES[0];
+  const day=wbJakartaDay();
+  let g=wbGuestByBoss[b.key];
+  if(!g||g.day!==day){
+    g={day,pool:WB_POOL_HP,left:WB_POOL_HP,attempts_left:3,best_dmg:0,total_dmg:0,claimed:[],total_players:1,yclaimed:false};
+    wbGuestByBoss[b.key]=g;
+  }
+  return g;
+}
+
 function wbModText(){
   const d=wbData();
   const m=d&&d.modifier;
-  if(!m||!m.label)return "";
-  const p=[];
-  if(m.hp_pct)p.push("HP "+(m.hp_pct>0?"+":"")+m.hp_pct+"%");
-  if(m.atk_pct)p.push("ATK "+(m.atk_pct>0?"+":"")+m.atk_pct+"%");
-  return m.label+(p.length?" · "+p.join(" · "):"");
+  if(m&&m.label){
+    const p=[];
+    if(m.hp_pct)p.push("HP "+(m.hp_pct>0?"+":"")+m.hp_pct+"%");
+    if(m.atk_pct)p.push("ATK "+(m.atk_pct>0?"+":"")+m.atk_pct+"%");
+    return m.label+(p.length?" · "+p.join(" · "):"");
+  }
+  return wbBoss().mod||"STANDARD FIELD";
 }
-/* ===== 2 WORLD BOSS — pool, papan, dan attempt TERPISAH =====
-   Boss A (Eternal Dragon) -> board "world_boss", Boss B (Shadow King) -> "world_boss_b".
-   Server (migration 0009) menyimpan state per boss; client ambil keduanya paralel. */
+
+/* ===== 2 WORLD BOSSES — separate pools, leaderboards, attempts & milestones ===== */
 const WB_BOSSES=[
   {key:"a",id:"RAID_ETERNAL_DRAGON",board:"world_boss",name:"ETERNAL DRAGON",tab:"DRAGON",tag:"EX · WORLD BOSS",
-   skill:"Galaxy Roar",mod:"GRAVITY SURGE",art:"assets/cards/art/eternal-dragon.webp",alt:false,
-   holo:"#35F0FF",mag:"#FF3DAE",locked:false},
+   skill:"Galaxy Roar",mod:"GRAVITY SURGE",atk:15000,color:"#22d3ee",
+   passive:"Armored cosmic drake that unleashes Galaxy Roar across a 10-turn solo duel. Every hit contributes directly to the shared 10B pool.",
+   art:"assets/cards/art/eternal-dragon.webp",alt:false,holo:"#22d3ee",mag:"#FF3DAE",locked:false},
   {key:"b",id:"RAID_SHADOW_KING",board:"world_boss_b",name:"SHADOW KING",tab:"SHADOW",tag:"EX · WORLD BOSS",
-   skill:"Umbra Eclipse",mod:"SHADOW TIDE",art:"assets/cards/art/shadow-king.webp",alt:true,
-   holo:"#B98CFF",mag:"#FF3DAE",locked:false}
+   skill:"Umbra Eclipse",mod:"SHADOW TIDE",atk:16500,color:"#a855f7",
+   passive:"Sovereign of Abyssal Echoes wielding Umbra Eclipse. High attack pressure against unshielded strikers across 10 turns.",
+   art:"assets/cards/art/shadow-king.webp",alt:true,holo:"#a855f7",mag:"#FF3DAE",locked:false}
 ];
 let wbBossIdx=0;
 function wbBoss(){return WB_BOSSES[wbBossIdx]||WB_BOSSES[0];}
-/* Sinkronkan `wb` ke boss yang sedang dipilih. */
 function wbSyncCur(){const k=wbBoss().key;wb=wbByBoss[k]||null;}
-/* Data boss ke-i (default: boss aktif). Null = belum ada state dari server. */
 function wbData(i){const b=WB_BOSSES[i==null?wbBossIdx:i]||WB_BOSSES[0];return wbByBoss[b.key]||null;}
 function wbAttOf(i){
   const b=WB_BOSSES[i==null?wbBossIdx:i];
   if(!b)return null;
+  if(!wbOnline())return wbGuestState(i).attempts_left;
   const d=wbByBoss[b.key];
   if(d&&typeof d.attempts_left==="number")return d.attempts_left;
   if(d&&typeof d.attempts_used==="number")return Math.max(0,3-d.attempts_used);
@@ -51,13 +76,8 @@ function wbAttLabel(){
   return WB_BOSSES.map((b,i)=>{const n=wbAttOf(i);return b.key.toUpperCase()+" "+(n==null?"—":n+"/3");}).join(" · ");
 }
 function wbReduceMotion(){return !!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches);}
-/* Pool World Boss SELALU 10B — modifier harian tidak menggeser HP boss lagi,
-   karena damage run dihitung ABSOLUT terhadap pool (bukan persen). */
-function wbBossOf(diff){
-  return raidBossOf(diff);
-}
-/* Ambil state SEMUA boss paralel (pool/papan/attempt terpisah di server).
-   silent=true -> jangan re-render hub (dipakai polling 8s supaya tidak flicker). */
+function wbBossOf(diff){return raidBossOf(diff);}
+
 function wbRefresh(force,silent){
   if(!wbOnline())return Promise.resolve(null);
   if(wbLoading||(!force&&Date.now()-wbAt<(wbData()?WB_TTL:WB_RETRY)))return Promise.resolve(wb);
@@ -74,226 +94,183 @@ function wbRefresh(force,silent){
     wbErr=!okAny&&dead;
     wbAt=Date.now();
     wbSyncCur();
-    /* Re-render HANYA kalau ada data baru. Kalau semua RPC balik null (offline / RPC
-       belum deploy / player belum punya state), wbData() tetap null -> guard TTL di atas
-       tidak pernah kena, renderRaidHub() manggil wbRefresh() lagi, dan loop render+fetch
-       berjalan terus tiap round-trip (~100ms): layar flicker & semua klik ketelan. */
-    if(okAny&&!silent&&route()==="#/raid"&&raidView==="hub")renderRaidHub();
+    if(okAny&&!silent&&route()==="#/raid"&&raidView==="hub"){
+      if(document.getElementById("wbView"))wbPatchHubDOM();
+      else renderRaidHub();
+    }
     return wb;
   }).catch(()=>{wbLoading=false;wbErr=true;return wb;});
 }
+
 function fmtBig(n){
   n=Number(n)||0;
-  const u=[[1e12,"T"],[1e9,"B"],[1e6,"M"]];
+  const u=[[1e12,"T"],[1e9,"B"],[1e6,"M"],[1e3,"K"]];
   for(const [d,s] of u)if(n>=d){const v=Math.round(n/d*100)/100;return v.toLocaleString("en-US")+s;}
   return fmt(n);
 }
-/* Persembunyian chrome global (#topbar, #pwaInstallBtn) saat layar raid = TIKET P2:
-   satu aturan CSS `body.on-raid:has(#wbView) #topbar, ... #pwaInstallBtn{display:none!important}`
-   menang atas inline non-important tanpa observer body-wide (bayar di battle = salah
-   tempat di HP lemah). JS ini HANYA menjaga anchor: body.on-raid + #wbView. */
+
 function wbPoolVals(i){
+  if(!wbOnline()){const g=wbGuestState(i);return {pool:g.pool,left:g.left};}
   const d=wbData(i);
-  const pool=Number(d&&d.hp_pool)||1e10;
-  if(!d)return {pool,left:pool};      // belum ada state dari server -> pool utuh
+  const pool=Number(d&&d.hp_pool)||WB_POOL_HP;
+  if(!d)return {pool,left:pool};
   const raw=typeof d.hp_left==="number"?d.hp_left:pool;
   return {pool,left:Math.max(0,Math.min(pool,raw))};
 }
-/* Reset harian mengikuti lb_day() server: tengah malam Asia/Jakarta (UTC+7). */
+
+function wbBestRunDmg(i){
+  if(!wbOnline())return wbGuestState(i).best_dmg||0;
+  const d=wbData(i);
+  return Number(d&&d.best_dmg)||0;
+}
+
+function wbTotalDmg(i){
+  if(!wbOnline())return wbGuestState(i).total_dmg||0;
+  const d=wbData(i);
+  if(d&&typeof d.total_dmg==="number")return Math.max(0,d.total_dmg);
+  return Number(d&&d.best_dmg)||0;
+}
+
+function wbMilestonesClaimed(i){
+  if(!wbOnline())return wbGuestState(i).claimed||[];
+  const d=wbData(i);
+  return Array.isArray(d&&d.milestones_claimed)?d.milestones_claimed.map(Number):[];
+}
+
+/* Daily reset matches lb_day() server: midnight Asia/Jakarta (UTC+7). */
 function wbResetText(){
   const now=Date.now(), jkt=new Date(now+7*3600e3);
   const next=Date.UTC(jkt.getUTCFullYear(),jkt.getUTCMonth(),jkt.getUTCDate()+1)-7*3600e3;
   const ms=Math.max(0,next-now), h=Math.floor(ms/3600e3), m=Math.floor(ms%3600e3/60e3);
-  return h>0?h+"J "+m+"M":m+"M";
-}
-function wbPoolHtml(){
-  const b=wbBoss(), d=wbData();
-  const {pool,left}=wbPoolVals();
-  const pct=pool>0?left/pool*100:0;
-  const off=!wbOnline();
-  const sync=!off&&!d;
-  const meta=b.locked?"POOL INTACT · OPENS AFTER UPDATE":
-    off?"LOG IN TO JOIN THE POOL COUNT":sync?
-    (wbErr?"SERVER NOT READY — OFFLINE PLAY STILL WORKS":"MENGHUBUNGI SERVER…"):
-    `${d.total_players||0} HUNTER · TODAY'S DAMAGE ${fmtBig(pool-left)}`;
-  return `<div class="wbr-pool${off||sync||b.locked?" dim":""}">
-    <div class="wbr-pool-head">
-      <span class="wbr-pool-k"><i class="cp-pulse-dot"></i>WORLD HP POOL</span>
-      <span class="wbr-pool-reset" id="wbrReset">${b.locked?"BOS B":off?"OFFLINE":"RESET "+wbResetText()+" · 00:00 WIB"}</span>
-    </div>
-    <div class="wbr-pool-main">
-      <b class="wbr-pool-left" id="wbrLeft">${fmtBig(left)}</b>
-      <span class="wbr-pool-of">/ ${fmtBig(pool)}</span>
-      <span class="wbr-pool-pct" id="wbrPct">${pct.toFixed(1)}%</span>
-    </div>
-    <div class="wbr-pool-bar"><i id="wbrFill" style="width:${Math.max(0,Math.min(100,pct)).toFixed(2)}%"></i><span class="wbr-ticks"></span></div>
-    <div class="wbr-pool-foot"><span id="wbrPoolMeta">${meta}</span></div>
-  </div>`;
-}
-/* Patch ringan 60 detik ke markup wbv2 (proto_wb_3d) — writer kedua setelah
-   renderRaidHub/syncBossDOM pada id yang sama; tidak ada writer lain. */
-function wbrPatch(){
-  const d=wbData();
-  const locked=!!wbBoss().locked;
-  const {pool,left}=wbPoolVals();
-  const pct=pool>0?left/pool*100:0;
-  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  const f=document.getElementById("wbv2HpFill");
-  if(f)f.style.width=locked?"0%":Math.max(0,Math.min(100,pct)).toFixed(1)+"%";
-  set("wbv2HpLeft",locked?"—":fmtBig(left));set("wbv2HpPool",locked?"—":fmtBig(pool));
-  set("wbv2HpNumLeft",locked?"—":fmtBig(left));set("wbv2HpNumPool",locked?"—":"/ "+fmtBig(pool));
-  set("wbv2Reset","⟳ RESET "+wbResetText());
-  const crys=document.getElementById("wbv2Crystals");if(crys)crys.innerHTML=wbCrystalsHtml();
-  set("wbv2Pb",d&&d.best_dmg?fmtBig(d.best_dmg):"—");
-  set("wbv2Tok",fmt(state.wbTokens||0));
-  const rp=document.getElementById("wbv2LbPanelRows");if(rp)rp.innerHTML=wbLbPanelHtml();
-  wbv2HammerState();
-  const m=document.getElementById("wbv2LbModal");
-  if(m&&m.classList.contains("show"))wbLbPaint();
-}
-let wbrPoll=null;
-function wbrStopPoll(){if(wbrPoll){clearInterval(wbrPoll);wbrPoll=null;}}
-function wbrStartPoll(){
-  wbrStopPoll();
-  if(!wbOnline())return;
-  wbrPoll=setInterval(()=>{
-    if(raidView!=="hub"||route()!=="#/raid"){wbrStopPoll();return;}
-    /* Skip saat tab hidden — user gak ngeliat leaderboard, gak perlu makan bandwidth.
-       Leaderboard World Boss harian cukup 1x / menit. */
-    if(document.hidden)return;
-    wbRefresh(true,true).then(()=>wbrPatch()).catch(()=>{});
-  },60000);
-}
-/* ===== WB V2 — konstanta & helper markup prototipe _tmp/proto_wb_3d.html ===== */
-function wbEsc(s){const v=String(s==null?"":s);return v.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
-/* URL ikon untuk --im (CSS mask) — url() relatif dalam var() diselesaikan terhadap
-   basis stylesheet, jadi selalu absolut dari dokumen. */
-function wbIconU(p){try{return new URL(p,document.baseURI||location.href).href}catch(e){return p}}
-/* Bracket reward HARIAN = cermin world_boss_bracket() dari
-   supabase/migrations/0010_wb_reward_rebalance.sql — server satu-satunya otoritas
-   payout; angka ini hanya cermin tampilan. */
-const WBV2_BRACKETS=[
-  {tag:"Top 1",gems:1000,tokens:10000,packs:10,title:"APEX SLAYER"},
-  {tag:"Top 2",gems:500,tokens:5000,packs:5},
-  {tag:"Top 3",gems:250,tokens:2500,packs:3},
-  {tag:"Sisanya",gems:100,tokens:1000,packs:1}
-];
-function wbRewardPanelHtml(){
-  return '<div class="wbv2-sp-title">DAILY REWARD</div>'+WBV2_BRACKETS.map(b=>
-    `<div class="wbv2-rw-row"><span class="wbv2-rw-icon">${b.tag==="Top 1"?"&#9819;":"&#9679;"}</span><span class="wbv2-rw-label">${b.tag}</span><span class="wbv2-rw-val">+${fmt(b.gems)} Gem · +${fmt(b.tokens)} Tkn · ${b.packs}× Pack${b.title?" · "+b.title:""}</span></div>`
-  ).join("");
-}
-/* Kristal attempt = wbAttOf (dibatasi 3, sama dengan kuota server attempts_used). */
-function wbCrystalsHtml(){
-  const n=Math.min(3,wbAttOf(wbBossIdx)||0);
-  return [0,1,2].map(i=>`<span class="wbv2-cr${i<n?" wbv2-on":" wbv2-off"}"></span>`).join("");
-}
-function wbv2Dead(){
-  const b=wbBoss(),{left}=wbPoolVals();
-  const att=wbAttOf(wbBossIdx);
-  return !!b.locked||left<=0||(att!=null&&att<=0);
-}
-function wbv2HammerState(){
-  const b=wbBoss(),{left}=wbPoolVals();
-  const att=wbAttOf(wbBossIdx),dead=wbv2Dead();
-  const el=document.getElementById("wbv2Hammer");
-  if(el){
-    el.classList.toggle("off",dead||!!b.locked);
-    el.textContent=b.locked?"TERKUNCI":dead?(att!=null&&att<=0?"ATTEMPTS USED":"BOSS DEFEATED"):"HAMBAT";
-  }
-  const hm=document.getElementById("wbv2HammerMeta");
-  if(hm)hm.textContent=b.locked?"BOSS TERKUNCI":dead?(att!=null&&att<=0?"CANNOT DEPLOY · RESET "+wbResetText():"TARGET DEFEATED · RESET "+wbResetText()):`AUTHORIZE COMBAT // ${RAID_TURNS} TURNS`;
-}
-/* Panel TOP DAMAGE (kanan panggung) — data dari wbLbS (jalur get_leaderboard). */
-function wbLbPanelHtml(){
-  if(!wbOnline())return '<div class="wbv2-lb-row"><span class="wbv2-lb-name">LOG IN FOR GLOBAL BOARD</span></div>';
-  if(wbLbS.busy&&!(wbLbS.rows||[]).length)return '<div class="wbv2-lb-row"><span class="wbv2-lb-name">MEMUAT…</span></div>';
-  if(wbLbS.err)return '<div class="wbv2-lb-row"><span class="wbv2-lb-name">SERVER NOT RESPONDING</span></div>';
-  const rows=(wbLbS.rows||[]).slice(0,5);
-  if(!rows.length)return '<div class="wbv2-lb-row"><span class="wbv2-lb-name">NO HUNTERS YET</span></div>';
-  return rows.map(r=>`<div class="wbv2-lb-row"><span class="wbv2-lb-rank${(Number(r.rank)||99)<=3?" wbv2-top":""}">${r.rank}</span><span class="wbv2-lb-name">${wbEsc(r.username)}</span><b class="wbv2-lb-dmg">${fmtBig(r.value)}</b></div>`).join("");
+  return h>0?h+"h "+m+"m":m+"m";
 }
 
-/* ---------- modal papan peringkat: SATU-satunya tempat papan (kontrak §2) ----------
-   Data: jalur CloudDB.leaderboard (RPC get_leaderboard) yang sudah ada, per papan. */
+function wbEsc(s){const v=String(s==null?"":s);return v.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function wbIconU(p){try{return new URL(p,document.baseURI||location.href).href}catch(e){return p}}
+
+const WBV2_BRACKETS=[
+  {tag:"#1 MVP",gems:1000,tokens:10000,packs:10,title:"APEX SLAYER"},
+  {tag:"#2 RUNNER-UP",gems:500,tokens:5000,packs:5},
+  {tag:"#3 PODIUM",gems:250,tokens:2500,packs:3},
+  {tag:"Everyone",gems:100,tokens:1000,packs:1}
+];
+
+/* Calibrated to live DB world_boss_runs distribution & migration 0043_wb_milestones.sql */
+const WB_MILESTONES=[
+  {tier:1,req:25000,tokens:150,gems:0,pack:null,packQty:0,luck1:2,luck3:0,speed3:0,
+   rewards:[{svg:"wbTokSvg",qty:150,label:"WB Tokens"},{img:"assets/images/pot-luck-1.webp",qty:2,label:"Luck Potion L1"}]},
+  {tier:2,req:100000,tokens:300,gems:25,pack:null,packQty:0,luck1:0,luck3:0,speed3:0,
+   rewards:[{svg:"wbTokSvg",qty:300,label:"WB Tokens"},{img:"assets/images/premium-currency.webp",qty:25,label:"Premium Gems"}]},
+  {tier:3,req:500000,tokens:500,gems:0,pack:"r5k",packQty:2,luck1:0,luck3:0,speed3:0,
+   rewards:[{svg:"wbTokSvg",qty:500,label:"WB Tokens"},{img:"assets/images/instanpack-5k.webp",qty:2,label:"5K Instant Pack"}]},
+  {tier:4,req:2000000,tokens:850,gems:50,pack:null,packQty:0,luck1:0,luck3:0,speed3:1,
+   rewards:[{svg:"wbTokSvg",qty:850,label:"WB Tokens"},{img:"assets/images/premium-currency.webp",qty:50,label:"Premium Gems"},{img:"assets/images/pot-speed-3.webp",qty:1,label:"Speed Potion L3"}]},
+  {tier:5,req:5000000,tokens:1250,gems:0,pack:"r25k",packQty:1,luck1:0,luck3:0,speed3:0,
+   rewards:[{svg:"wbTokSvg",qty:1250,label:"WB Tokens"},{img:"assets/images/instanpack-25k.webp",qty:1,label:"25K Instant Pack"}]},
+  {tier:6,req:15000000,tokens:2000,gems:100,pack:null,packQty:0,luck1:0,luck3:2,speed3:0,
+   rewards:[{svg:"wbTokSvg",qty:2000,label:"WB Tokens"},{img:"assets/images/premium-currency.webp",qty:100,label:"Premium Gems"},{img:"assets/images/pot-luck-3.webp",qty:2,label:"Luck Potion L3"}]},
+  {tier:7,req:40000000,tokens:3500,gems:150,pack:"r100k",packQty:1,luck1:0,luck3:0,speed3:0,
+   rewards:[{svg:"wbTokSvg",qty:3500,label:"WB Tokens"},{img:"assets/images/instanpack-100k.webp",qty:1,label:"100K Instant Pack"},{img:"assets/images/premium-currency.webp",qty:150,label:"Premium Gems"}]}
+];
+
+/* Leaderboard state (live get_leaderboard RPC) */
 const wbLbS={board:null,rows:null,me:null,busy:false,err:false};
 function wbLbFetch(board){
-  wbLbS.board=board;
-  if(!(window.CloudDB&&typeof window.CloudDB.leaderboard==="function")){
-    wbLbS.rows=null;wbLbS.busy=false;wbLbS.err=false;wbLbPaint();return;
+  const bTarget=board||wbBoss().board;
+  wbLbS.board=bTarget;
+  if(!(window.CloudDB&&typeof window.CloudDB.leaderboard==="function")||!wbOnline()){
+    wbLbS.rows=null;wbLbS.me=null;wbLbS.busy=false;wbLbS.err=false;
+    wbRenderMvp();
+    wbRenderLeftMvp();
+    return;
   }
-  wbLbS.busy=true;wbLbS.err=false;wbLbPaint();
-  window.CloudDB.leaderboard(board,null,50,typeof currentUser!=="undefined"?currentUser:null)
+  wbLbS.busy=true;wbLbS.err=false;
+  wbRenderMvp();
+  window.CloudDB.leaderboard(bTarget,null,50,typeof currentUser!=="undefined"?currentUser:null)
     .then(res=>{
+      if(wbLbS.board!==bTarget)return;
       wbLbS.busy=false;
       if(res&&res.ok!==false){wbLbS.rows=res.rows||[];wbLbS.me=res.me||null;}
       else{wbLbS.rows=null;wbLbS.err=true;}
     })
-    .catch(()=>{wbLbS.busy=false;wbLbS.rows=null;wbLbS.err=true;})
-    .finally(()=>{const rp0=document.getElementById("wbv2LbPanelRows");if(rp0)rp0.innerHTML=wbLbPanelHtml();const m=document.getElementById("wbv2LbModal");if(m&&m.classList.contains("show"))wbLbPaint();});
+    .catch(()=>{if(wbLbS.board===bTarget){wbLbS.busy=false;wbLbS.rows=null;wbLbS.err=true;}})
+    .finally(()=>{
+      if(route()==="#/raid"&&raidView==="hub"){
+        wbRenderMvp();
+        wbRenderLeftMvp();
+      }
+    });
 }
 const WBV2_AV_PATH=/^assets\/[A-Za-z0-9._/-]+\.(webp|png|jpg|jpeg)$/;
-function wbLbRowHtml(r,i,you){
-  const v=Number(r.value)||0,max=wbLbS.rows.length?(Number(wbLbS.rows[0].value)||1):1;
-  const name=wbEsc(r.username||"?");
-  const avMeta=r.meta&&typeof r.meta.av==="string"&&WBV2_AV_PATH.test(r.meta.av)?r.meta.av:"";
-  const avImg=avMeta?`<img src="${avMeta}" alt="" decoding="async" onerror="this.remove()">`:`<span>${wbEsc(String(r.username||"?").slice(0,1).toUpperCase())}</span>`;
-  return `<div class="wbv2-frow${you?" wbv2-lb-kamu":""}"><span class="wbv2-dmbar" style="width:${Math.max(4,Math.min(100,v/max*100)).toFixed(1)}%"></span><span class="wbv2-rk">${r.rank||i+1}</span><span class="wbv2-av">${avImg}</span><span class="wbv2-nm">${name}</span><b class="wbv2-dm">${fmtBig(v)}</b></div>`;
+
+async function wbClaimMilestone(tier){
+  const m=WB_MILESTONES.find(x=>x.tier===tier);
+  if(!m||wbMsBusy)return;
+  const b=wbBoss();
+  const dmg=wbTotalDmg();
+  const claimed=wbMilestonesClaimed();
+  if(dmg<m.req){raidToast("Deal "+fmtBig(m.req)+" cumulative damage to unlock Milestone "+tier+".");return;}
+  if(claimed.includes(tier)){raidToast("Milestone "+tier+" already claimed today.");return;}
+
+  if(!wbOnline()){
+    const g=wbGuestState();
+    g.claimed.push(tier);
+    state.wbTokens=(state.wbTokens||0)+m.tokens;
+    if(m.gems)state.premiumGems=(state.premiumGems||0)+m.gems;
+    if(m.pack&&m.packQty){
+      state.rollPacks=state.rollPacks||{r5k:0,r10k:0,r25k:0,r50k:0,r100k:0};
+      state.rollPacks[m.pack]=(state.rollPacks[m.pack]||0)+m.packQty;
+    }
+    state.luckPots=state.luckPots||[0,0,0];
+    state.speedPots=state.speedPots||[0,0,0];
+    if(m.luck1)state.luckPots[0]=(state.luckPots[0]||0)+m.luck1;
+    if(m.luck3)state.luckPots[2]=(state.luckPots[2]||0)+m.luck3;
+    if(m.speed3)state.speedPots[2]=(state.speedPots[2]||0)+m.speed3;
+    try{save();renderShell();}catch(e){}
+    try{sfx.crit();}catch(e){}
+    wbPatchHubDOM();
+    raidToast("MILESTONE "+tier+" CLAIMED! Rewards delivered.");
+    return;
+  }
+
+  wbMsBusy=true;
+  let res=null;
+  try{
+    if(typeof pushCloudNow==="function")await pushCloudNow();
+    res=await window.CloudDB.wbClaimMilestone(currentUser,b.id,tier);
+  }catch(e){
+    res={ok:false,msg:"NETWORK"};
+  }finally{
+    wbMsBusy=false;
+  }
+  if(!res||res.ok===false){
+    const d=wbData();
+    if(res&&res.msg==="ALREADY_CLAIMED"&&d){
+      d.milestones_claimed=Array.from(new Set([...(d.milestones_claimed||[]),tier]));
+    }
+    const why=res&&res.msg==="ALREADY_CLAIMED"?"Milestone already claimed today":
+              res&&res.msg==="NOT_REACHED"?"Threshold not reached yet":
+              "Failed to claim milestone — try again";
+    raidToast(why);
+    wbPatchHubDOM();
+    return;
+  }
+  const d=wbData()||(wbByBoss[b.key]={});
+  d.milestones_claimed=Array.isArray(res.milestones_claimed)?res.milestones_claimed:Array.from(new Set([...(d.milestones_claimed||[]),tier]));
+  if(typeof res.total_dmg==="number")d.total_dmg=res.total_dmg;
+  wbAt=Date.now();
+  try{save();renderShell();}catch(e){}
+  try{sfx.crit();}catch(e){}
+  wbPatchHubDOM();
+  raidToast("MILESTONE "+tier+" CLAIMED! +"+fmt(res.tokens||m.tokens)+" WB Tokens"+(res.gems?" · +"+fmt(res.gems)+" Gems":""));
 }
-/* Panggilan SATU-satunya yang menulis daftar papan — dipakai buka modal, pindah
-   papan, patch 60s, dan fetch. Tidak ada writer kedua (cacat lama #wbrTop). */
-function wbLbPaint(){
-  const rp0=document.getElementById("wbv2LbPanelRows");if(rp0)rp0.innerHTML=wbLbPanelHtml();
-  const body=document.getElementById("wbv2LbBody");
-  if(!body)return;
-  const meName=(typeof currentUser!=="undefined"&&currentUser)?String(currentUser).toLowerCase():"";
-  const cur=wbBoss();
-  document.querySelectorAll("#wbv2LbBoards .wbv2-lbb").forEach(x=>x.classList.toggle("on",x.dataset.board===wbLbS.board));
-  let rewardHtml="";
-  const d=wbData();
-  const y=d&&d.yesterday;
-  if(y&&y.claimed)rewardHtml=`<div class="wbv2-lb-reward"><span class="wbv2-rwi" style="--im:url('${wbIconU("assets/icons/check-mark.svg")}');--ic:var(--green)"></span><span class="wbv2-rwt">REWARD KEMARIN</span><b>TERKLAIM</b></div>`;
-  else if(y&&y.claimable)rewardHtml=`<div class="wbv2-lb-reward"><span class="wbv2-rwi" style="--im:url('${wbIconU("assets/icons/gems.svg")}');--ic:var(--cyan)"></span><span class="wbv2-rwt">REWARD READY TO CLAIM</span><b>${fmt(y.gems||0)} GEM · ${fmt(y.tokens||0)} TOK</b><button class="wbv2-claim" id="wbv2LbClaim" type="button">CLAIM</button></div>`;
-  else rewardHtml=`<div class="wbv2-lb-reward"><span class="wbv2-rwi" style="--im:url('${wbIconU("assets/icons/gems.svg")}');--ic:var(--muted)"></span><span class="wbv2-rwt">DAILY REWARD</span><b>${wbOnline()?"—":"LOG IN FOR COUNTS"}</b></div>`;
-  const myRank=wbLbS.me&&wbLbS.me.rank?wbLbS.me.rank:(d&&d.rank?d.rank:null);
-  const myVal=wbLbS.me&&wbLbS.me.value?wbLbS.me.value:(d&&d.best_dmg?d.best_dmg:null);
-  const youHtml=`<div class="wbv2-lb-you"><span class="wbv2-yrk">KAMU</span><span class="wbv2-ypos">posisi <b>${myRank?"#"+myRank:"—"}</b></span><span class="wbv2-yd">${myVal?fmtBig(myVal):"—"}</span></div>`;
-  const top3=(wbLbS.rows||[]).slice(0,3);
-  const podHtml=top3.length>=3?`<div class="wbv2-podium">${[1,2,3].map(rk=>{
-    const r=top3[rk-1];
-    const avR=r&&r.meta&&typeof r.meta.av==="string"&&WBV2_AV_PATH.test(r.meta.av)?r.meta.av:"";
-    return `<div class="wbv2-pod wbv2-pod${rk}"><div class="wbv2-pod-top"><span class="wbv2-pod-av">${avR?`<img src="${avR}" alt="" onerror="this.remove()">`:""}</span><span class="wbv2-pod-rk">${rk}</span></div><div class="wbv2-pod-plate"><span class="wbv2-pod-nm">${wbEsc(r&&r.username||"?")}</span><span class="wbv2-pod-val">${fmtBig(r?Number(r.value)||0:0)}</span></div></div>`;
-  }).join("")}</div>`:"";
-  let listHtml;
-  if(!wbOnline())listHtml=`<div class="wbv2-empty"><span class="wbv2-wm"></span><div class="wbv2-big">OFFLINE</div><div class="wbv2-sm">Log in for the global board</div></div>`;
-  else if(wbLbS.busy&&!wbLbS.rows)listHtml=`<div class="wbv2-empty"><div class="wbv2-big">MEMUAT…</div></div>`;
-  else if(wbLbS.err)listHtml=`<div class="wbv2-empty"><div class="wbv2-big">SERVER NOT RESPONDING</div></div>`;
-  else if(!wbLbS.rows||!wbLbS.rows.length)listHtml=`<div class="wbv2-empty"><span class="wbv2-wm"></span><div class="wbv2-big">NO HUNTERS YET</div><div class="wbv2-sm">JADI YANG PERTAMA DI PAPAN ${wbEsc(cur.name)}</div></div>`;
-  else listHtml=wbLbS.rows.slice(0,50).map((r,i)=>wbLbRowHtml(r,i,meName&&String(r.username||"").toLowerCase()===meName)).join("");
-  body.innerHTML=`${rewardHtml}${podHtml}${youHtml}<div class="wbv2-lb-list">${listHtml}</div>`;
-  {const c=document.getElementById("wbv2LbClaim");if(c)c.onclick=()=>{wbLbClose();wbClaim();};}
-}
-function wbLbOpen(board){
-  const m=document.getElementById("wbv2LbModal");
-  if(!m)return;
-  m.classList.add("show");m.setAttribute("aria-hidden","false");
-  wbLbFetch(board||wbBoss().board);
-}
-function wbLbClose(){
-  const m=document.getElementById("wbv2LbModal");
-  if(!m)return;
-  m.classList.remove("show");m.setAttribute("aria-hidden","true");
-}
-function fmtPct(v){const n=Math.round((Number(v)||0)*10)/10;return (Number.isInteger(n)?n:n.toFixed(1))+"%";}
+
 async function wbClaim(){
   if(wbLoading||!wbOnline())return;
   const b=wbBoss(), d=wbData();
   wbLoading=true;
   let res=null;
   try{
-    /* Klaim baca save_data di server lalu mengembalikan saldo hasil penjumlahan.
-       Flush dulu save yang masih antre debounce, kalau tidak spend terakhir hilang
-       saat client menimpa state dengan angka dari server yang basi. */
     if(typeof pushCloudNow==="function")await pushCloudNow();
     res=await window.CloudDB.wbClaim(currentUser,b.id);
   }catch(e){
@@ -304,7 +281,7 @@ async function wbClaim(){
   if(!res||res.ok===false){
     if(res&&res.msg==="ALREADY_CLAIMED"&&d&&d.yesterday){d.yesterday.claimed=true;wbAt=Date.now();}
     raidToast(res&&res.msg==="ALREADY_CLAIMED"?"Yesterday's reward already claimed":"Failed to claim reward — try again");
-    if(raidView==="hub")renderRaidHub();
+    if(raidView==="hub")wbPatchHubDOM();
     return;
   }
   if(typeof res.premiumGems==="number")state.premiumGems=res.premiumGems;
@@ -320,44 +297,44 @@ async function wbClaim(){
   if(d&&d.yesterday){d.yesterday.claimed=true;wbAt=Date.now();}
   try{save();}catch(e){}
   try{renderShell();}catch(e){}
-  sfx.crit();
+  try{sfx.crit();}catch(e){}
   showWbRewardModal(res);
-  wbRefresh(true,true).then(()=>{if(raidView==="hub")renderRaidHub();});
+  wbRefresh(true,true).then(()=>{if(raidView==="hub")wbPatchHubDOM();});
 }
-/* Modal klaim reward World Boss — rank + gelar + rincian hadiah (gem / token WB / instan pack). */
+
 function showWbRewardModal(res){
   if(!res||res.ok===false)return;
   const old=document.getElementById("wbRewardModal");if(old)old.remove();
   const pack=res.packs||0;
   const rank=res.rank?`#${res.rank}`:"&mdash;";
-  const sub=res.total_players?`<span class="wrm-rank-sub">/ ${fmt(res.total_players)} hunter</span>`:"";
-  const title=res.title?`<div class="wrm-title">&#9733; ${res.title}</div>`:"";
+  const sub=res.total_players?`<span class="wrm-rank-sub">/ ${fmt(res.total_players)} hunters</span>`:"";
+  const title=res.title?`<div class="wrm-title">&#9733; ${wbEsc(res.title)}</div>`:"";
   const el=document.createElement("div");
   el.id="wbRewardModal";el.className="wrm-overlay";
   el.innerHTML=`
     <div class="wrm-card">
       <div class="wrm-sweep"></div>
-      <div class="wrm-kicker">WORLD BOSS &middot; REWARD DIKLAIM</div>
+      <div class="wrm-kicker">WORLD BOSS &middot; REWARD CLAIMED</div>
       <div class="wrm-rank">${rank}${sub}</div>
       ${title}
       <div class="wrm-rewards">
         <div class="wrm-rw" style="--d:.06s">
-          <div class="wrm-rw-ic"><img src="assets/images/premium-currency.webp" alt="GEM"></div>
+          <div class="wrm-rw-ic"><img src="assets/images/premium-currency.webp" alt="Gems"></div>
           <div class="wrm-rw-amt">+${fmt(res.gems||0)}</div>
-          <div class="wrm-rw-lbl">GEM</div>
+          <div class="wrm-rw-lbl">GEMS</div>
         </div>
         <div class="wrm-rw" style="--d:.16s">
           <div class="wrm-rw-ic wrm-tok"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 10h6M9 14h6"/></svg></div>
           <div class="wrm-rw-amt">+${fmt(res.tokens||0)}</div>
-          <div class="wrm-rw-lbl">TOKEN WB</div>
+          <div class="wrm-rw-lbl">WB TOKENS</div>
         </div>
         ${pack>0?`<div class="wrm-rw" style="--d:.26s">
-          <div class="wrm-rw-ic"><img src="assets/images/instanpack-100k.webp?v=trans1" alt="PACK"></div>
+          <div class="wrm-rw-ic"><img src="assets/images/instanpack-100k.webp" alt="Pack"></div>
           <div class="wrm-rw-amt">&times;${fmt(pack)}</div>
-          <div class="wrm-rw-lbl">INSTAN PACK 100K</div>
+          <div class="wrm-rw-lbl">100K INSTANT PACK</div>
         </div>`:""}
       </div>
-      <button class="wrm-close" type="button">TUTUP</button>
+      <button class="wrm-close" type="button">CLOSE</button>
     </div>`;
   document.body.appendChild(el);
   const close=()=>{el.classList.remove("in");el.classList.add("out");clearTimeout(el._t);el._t=setTimeout(()=>el.remove(),280);};
@@ -365,301 +342,961 @@ function showWbRewardModal(res){
   el.addEventListener("click",e=>{if(e.target===el)close();});
   requestAnimationFrame(()=>el.classList.add("in"));
 }
+
+function wbClearHz(){for(let i=0;i<wbHzTimers.length;i++)clearTimeout(wbHzTimers[i]);wbHzTimers=[];}
 function stopRaid(){
-  if(raid){ if(raid.timer)clearTimeout(raid.timer); raid=null; }
-  if(typeof fightTimer!=="undefined"&&fightTimer){ clearTimeout(fightTimer); fightTimer=null; }
-  wbRunId=null; wbRunBoss=null; wbStarting=false;
-  raidView="hub"; raidPicked=null;
+  clearTimeout(wbAutoTimer);wbAutoTimer=null;
+  wbClearHz();
+  if(raid){if(raid.timer)clearTimeout(raid.timer);raid=null;}
+  if(typeof fightTimer!=="undefined"&&fightTimer){clearTimeout(fightTimer);fightTimer=null;}
+  wbRunId=null;wbRunBoss=null;wbStarting=false;
+  ["wbInfoDlg","wbStrikerDlg"].forEach(id=>{
+    const d=document.getElementById(id);
+    if(d&&d.open)try{d.close();}catch(e){}
+  });
+  raidView="hub";
 }
+
 function raidToast(msg){
+  const hubToast=document.getElementById("wbToast");
+  if(hubToast){
+    hubToast.textContent=msg;
+    hubToast.classList.add("show");
+    clearTimeout(wbToastTimer);
+    wbToastTimer=setTimeout(()=>hubToast.classList.remove("show"),2400);
+    return;
+  }
   let el=document.getElementById("raidToast");
   if(!el){el=document.createElement("div");el.id="raidToast";document.body.appendChild(el);}
   el.textContent=msg;el.classList.add("show");
   clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove("show"),2200);
 }
+
 function renderRaid(){
-  hoverHide(); /* fix: popup hover picker jangan nyusul ke battle — mouseout gak fire saat DOM di-replace */
-  /* Anchor persembunyian chrome global (lihat catatan P2 di atas wbPoolVals):
-     aturan CSS body.on-raid:has(#wbView) yang bekerja, JS hanya menjaga kelas. */
+  hoverHide();
   document.body.classList.toggle("on-raid",route()==="#/raid");
-  if(raidView!=="hub")wbrStopPoll(); else if(window.cgGameplayStop) window.cgGameplayStop();
-  if(raidView==="pick")return renderRaidPick();
+  if(raidView!=="hub")wbrStopPoll();else if(window.cgGameplayStop)window.cgGameplayStop();
   if(raidView==="battle")return renderRaidBattle();
   if(raidView==="result")return renderRaidResult();
-  if(raidView==="shop")return renderRaidShop();
   renderRaidHub();
 }
 
-/* ===== WB V2 HUB — port prototipe terkunci docs/prototypes/proto_wb_v1.html =====
-   Kontrak: _tmp/wb_port_contract.md. Root tunggal #wbView.wbv2; semua kelas baru
-   diprefix wbv2- (aturan CSS P2 di css/world-boss.css). Data 100% dari sumber nyata
-   (WB_BOSSES, wbPoolVals/WB_POOL_HP, wbAttOf, RAID_TURNS, get_leaderboard, state.deck). */
-let wbHubKeyHandler=null;
+function wbSelectedStriker(){
+  const list=state&&Array.isArray(state.stacks)?state.stacks:[];
+  if(!list.length)return null;
+  if(raidPicked){
+    const hit=list.find(s=>s.id===raidPicked.id);
+    if(hit){raidPicked=hit;return hit;}
+  }
+  if(state.wbStrikerId){
+    const saved=list.find(s=>s.id===state.wbStrikerId);
+    if(saved){raidPicked=saved;return saved;}
+  }
+  const eq=(typeof equipped==="function"&&equipped())||list[0];
+  raidPicked=eq||list[0];
+  return raidPicked;
+}
+
+function wbEstRunDmg(s){
+  if(!s)return 0;
+  try{
+    const st=cardStats(s.char,s.mut,s.trait,s.shiny);
+    return Math.round((st.atk||0)*RAID_TURNS);
+  }catch(e){return 0;}
+}
+
+function wbBossMetaOf(b){
+  const rb=(typeof RAID_BOSSES!=="undefined"&&RAID_BOSSES.find(x=>x.id===b.id))||{};
+  return {
+    atk:rb.atk||b.atk||15000,
+    skill:rb.skill||b.skill||"Galaxy Roar",
+    art:b.art||rb.img||"assets/cards/art/eternal-dragon.webp"
+  };
+}
+
+function wbRenderLeftMvp(){
+  const el=document.getElementById("wbMvpNowTxt");
+  if(!el)return;
+  const rows=wbLbS.rows||[];
+  if(wbOnline()&&wbLbS.board===wbBoss().board&&rows.length){
+    const top=rows[0];
+    el.innerHTML="MVP NOW: <b>"+wbEsc(top.username)+"</b> ("+fmtBig(top.value)+")";
+  }else if(!wbOnline()){
+    const best=wbBestRunDmg();
+    el.innerHTML=best>0?"LOCAL PEAK: <b>YOU</b> ("+fmtBig(best)+")":"MVP NOW: <b>Log in for Global</b>";
+  }else{
+    el.innerHTML="MVP NOW: <b>Nobody yet</b>";
+  }
+}
+
+function wbRenderHeaderAndLeft(){
+  const b=wbBoss();
+  const meta=wbBossMetaOf(b);
+  const {pool,left:poolLeft}=wbPoolVals();
+  const pct=pool>0?Math.max(0,Math.min(100,poolLeft/pool*100)):0;
+  const dead=poolLeft<=0||!!b.locked;
+  const att=wbAttOf(wbBossIdx);
+  const totalDmg=wbTotalDmg();
+  const bestDmg=wbBestRunDmg();
+  const msDone=WB_MILESTONES.filter(m=>totalDmg>=m.req).length;
+  const resetStr=wbResetText();
+
+  const hTok=document.getElementById("wbHdrTokens");
+  if(hTok)hTok.textContent="TOKENS: "+fmt(state.wbTokens||0);
+  const hRst=document.getElementById("wbHdrReset");
+  if(hRst)hRst.textContent="RESET: "+resetStr.toUpperCase();
+
+  document.querySelectorAll("#wbView .wb-bsw-btn").forEach((btn,idx)=>{
+    btn.setAttribute("aria-pressed",idx===wbBossIdx?"true":"false");
+  });
+
+  const nm=document.getElementById("wbBossName");if(nm)nm.textContent=b.name;
+  const tg=document.getElementById("wbBossTag");if(tg)tg.textContent=b.tag;
+  const img=document.getElementById("wbBossArtImg");
+  if(img){
+    img.onerror=()=>{img.onerror=null;img.src="assets/cards/art/eternal-dragon.webp";};
+    if(img.getAttribute("src")!==meta.art)img.src=meta.art;
+    img.alt=b.name;
+  }
+
+  const pill=document.getElementById("wbBossStatusPill");
+  if(pill)pill.classList.toggle("is-dead",dead);
+  const stTxt=document.getElementById("wbBossStatusTxt");
+  if(stTxt){
+    stTxt.innerHTML=b.locked?"<b>LOCKED</b> — Boss opens after update":
+      (poolLeft<=0?"<b>DEFEATED</b> — Next spawn in "+resetStr:"<b>ACTIVE</b> — Daily Reset in "+resetStr);
+  }
+
+  const fill=document.getElementById("wbBossHpFill");
+  if(fill)fill.style.width=(b.locked?0:pct).toFixed(1)+"%";
+  const hpTxt=document.getElementById("wbBossHpTxt");
+  if(hpTxt)hpTxt.textContent=b.locked?"LOCKED":fmtBig(poolLeft)+" / "+fmtBig(pool)+" HP ("+pct.toFixed(1)+"%)";
+
+  const badge=document.getElementById("wbBossDmgBadge");
+  if(badge){
+    badge.innerHTML=bestDmg>0
+      ?"<small>YOUR PEAK RUN</small>"+fmtBig(bestDmg)+" DMG"
+      :"<small>BOSS ATK</small>"+fmt(meta.atk)+" ATK";
+  }
+
+  const pline=document.getElementById("wbPersonalStatsLine");
+  if(pline){
+    pline.innerHTML="Your damage: <b>"+fmtBig(totalDmg)+"</b> &middot; Milestones: <b>"+msDone+"/7</b>";
+  }
+
+  const crys=document.getElementById("wbAttemptCrystals");
+  if(crys){
+    const n=Math.min(3,Math.max(0,att==null?0:att));
+    crys.innerHTML=[0,1,2].map(i=>`<span class="wb-cr${i<n?"":" off"}"></span>`).join("");
+    crys.setAttribute("aria-label",n+" of 3 attempts remaining");
+  }
+
+  wbRenderLeftMvp();
+
+  const autoBtn=document.getElementById("wbBtnAutoRepeat");
+  if(autoBtn){
+    autoBtn.classList.toggle("on",!!state.wbAutoRepeat);
+    autoBtn.setAttribute("aria-pressed",state.wbAutoRepeat?"true":"false");
+  }
+  const autoTxt=document.getElementById("wbAutoRepeatTxt");
+  if(autoTxt)autoTxt.textContent="AUTO REPEAT: "+(state.wbAutoRepeat?"ON":"OFF");
+
+  const striker=wbSelectedStriker();
+  const sCard=(striker&&CARDS[striker.char])||null;
+  const sThumb=document.getElementById("wbStrikerThumb");
+  const sName=document.getElementById("wbStrikerName");
+  if(sThumb){
+    sThumb.src=striker?cardThumb(striker.char):"assets/cards/thumb/sun-god.webp";
+    sThumb.alt=sCard?sCard.name:"Striker";
+  }
+  if(sName)sName.textContent=sCard?sCard.name:"SELECT CARD";
+
+  const fBtn=document.getElementById("wbBtnFight");
+  if(fBtn){
+    if(b.locked){
+      fBtn.textContent="BOSS LOCKED";
+      fBtn.classList.add("disabled");
+    }else if(poolLeft<=0){
+      fBtn.textContent="BACK IN "+resetStr.toUpperCase();
+      fBtn.classList.add("disabled");
+    }else if(att!=null&&att<=0){
+      fBtn.textContent="NO ATTEMPTS · "+resetStr.toUpperCase();
+      fBtn.classList.add("disabled");
+    }else{
+      fBtn.textContent="FIGHT BOSS ("+(att==null?3:att)+"/3)";
+      fBtn.classList.remove("disabled");
+    }
+  }
+}
+
+function wbRenderMilestones(){
+  const el=document.getElementById("wbMsList");
+  const callout=document.getElementById("wbMsCallout");
+  if(!el)return;
+  const b=wbBoss();
+  const dmg=wbTotalDmg();
+  const claimedSet=new Set(wbMilestonesClaimed());
+  if(callout){
+    callout.textContent="YOUR cumulative damage on "+b.name+" today (every run adds up) — each milestone pays guaranteed rewards once per reset.";
+  }
+
+  let readyCount=0;
+  el.innerHTML=WB_MILESTONES.map(m=>{
+    const pct=Math.max(0,Math.min(100,Math.floor((dmg/m.req)*100)));
+    const reached=dmg>=m.req;
+    const claimed=claimedSet.has(m.tier);
+    const ready=reached&&!claimed;
+    if(ready)readyCount++;
+    const cls=claimed?" claimed":(ready?" ready":"");
+    const tag=claimed?"CLAIMED":(ready?"READY":"LOCKED");
+    const slots=m.rewards.map(rw=>{
+      const media=rw.svg
+        ?`<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#${rw.svg}"/></svg>`
+        :`<img src="${rw.img}" alt="${wbEsc(rw.label)}" decoding="async">`;
+      return `<span class="wb-rw-slot" title="${wbEsc(rw.label)} &times;${rw.qty}">${media}<b>&times;${rw.qty}</b></span>`;
+    }).join("");
+    return `<div class="wb-ms-card${cls}">
+      <div class="wb-ms-info">
+        <div class="wb-ms-title">Milestone ${m.tier} <span class="wb-ms-tag">${tag}</span></div>
+        <div class="wb-ms-req">Deal <b>${fmtBig(m.req)}</b> damage to ${wbEsc(b.name)}</div>
+      </div>
+      <div class="wb-ms-prog">
+        <span class="wb-ms-pct">${pct}%</span>
+        <span class="wb-ms-bar"><i style="width:${pct}%"></i></span>
+      </div>
+      <div class="wb-ms-rw-wrap">
+        <div class="wb-rw-slots">${slots}</div>
+        ${ready?`<button type="button" class="wb-ms-claim" data-claim-ms="${m.tier}">CLAIM</button>`:""}
+      </div>
+    </div>`;
+  }).join("");
+
+  const badge=document.getElementById("wbMsBadge");
+  if(badge){
+    badge.hidden=readyCount===0;
+    badge.textContent=String(readyCount);
+  }
+  el.querySelectorAll("[data-claim-ms]").forEach(btn=>{
+    btn.onclick=()=>wbClaimMilestone(Number(btn.dataset.claimMs));
+  });
+}
+
+function wbsMeta(it){
+  if(it.id==="gem")            return {cat:"EXCHANGE",   tier:"GEM",    ac:"#ffd700",art:"assets/images/premium-currency.webp"};
+  if(it.id==="coins")          return {cat:"CREDITS",    tier:"COINS",  ac:"#ffd27a",art:"assets/icons/coins-gold.svg"};
+  if(it.id==="card_edragon")   return {cat:"EX CORE",    tier:"1 IN 25M",ac:"#22d3ee",art:"assets/cards/art/eternal-dragon.webp"};
+  if(it.id==="card_shadowking")return {cat:"EX CORE",    tier:"1 IN 100M",ac:"#a855f7",art:"assets/cards/art/shadow-king.webp"};
+  if(it.id==="helm-abyss")     return {cat:"RELIC GEAR", tier:"MYTHIC", ac:"#ffb703",art:"assets/artifacts/abyss-helm.webp"};
+  if(it.id==="nebula-wisp")    return {cat:"RELIC GEAR", tier:"COSMIC", ac:"#7df9ff",art:"assets/pets/nebula-wisp.webp"};
+  if(it.id.indexOf("luck")===0)  return {cat:"AUGMENT",   tier:"MK-"+it.id.replace("luck",""),  ac:"#4ade80",art:"assets/images/pot-luck-"+it.id.replace("luck","")+".webp"};
+  if(it.id.indexOf("speed")===0) return {cat:"OVERCLOCK", tier:"MK-"+it.id.replace("speed",""), ac:"#fbbf24",art:"assets/images/pot-speed-"+it.id.replace("speed","")+".webp"};
+  return {cat:"SUPPLY",tier:"SPEC",ac:"#f5f5f5",art:"assets/icons/coins-gold.svg"};
+}
+function wbsIsOwned(it){
+  if(it.card)return stackHas(it.card.char,it.card.mut)||!!(state.raidShopOwned&&state.raidShopOwned[it.card.char]);
+  if(it.owned)return !!it.owned();
+  return false;
+}
+function wbsStock(it,owned){
+  if(owned)return "OWNED";
+  if(it.id==="gem"||it.id==="coins")return "∞ UNLIMITED";
+  if(it.id.indexOf("luck")===0){const n=(state.luckPots||[])[+it.id.slice(-1)-1]||0;return "OWNED ×"+n;}
+  if(it.id.indexOf("speed")===0){const n=(state.speedPots||[])[+it.id.slice(-1)-1]||0;return "OWNED ×"+n;}
+  if(it.card)return "ROLL LOCKED";
+  return "PERMANENT";
+}
+function wbRenderDrops(){
+  const el=document.getElementById("wbDropsList");
+  if(!el)return;
+  const tok=state.wbTokens||0;
+  const cores=WB_SHOP.filter(x=>!!x.card);
+  const gear=WB_SHOP.filter(x=>!x.card);
+
+  const coreHtml=`<div class="wb-sec-head"><b>EX CORE BOSS UNLOCKS</b><i></i><span>PERMANENT GACHA UNLOCK</span></div>
+    <div class="wb-core-grid">${cores.map(it=>{
+      const m=wbsMeta(it), owned=wbsIsOwned(it), canBuy=!owned&&tok>=it.cost;
+      const btnTxt=owned?"✔ OWNED":(canBuy?"UNLOCK":"NEED "+fmt(it.cost-tok));
+      return `<div class="wb-core-card" style="--ic:${m.ac}">
+        <div class="wb-core-art"><img src="${m.art}" alt="${wbEsc(it.name)}" decoding="async"></div>
+        <div class="wb-core-mid">
+          <div class="wb-core-cat">${m.cat} &middot; ${m.tier}</div>
+          <div class="wb-core-nm">${wbEsc(it.name.toUpperCase())}</div>
+          <div class="wb-core-ds">${wbEsc(it.desc)}</div>
+          <div class="wb-core-foot">
+            <span class="wb-price">${fmt(it.cost)}<small>TOK</small></span>
+            <button type="button" class="wb-buy-btn${owned?" owned":""}" data-buy="${it.id}" ${canBuy?"":"disabled"}>${btnTxt}</button>
+          </div>
+        </div>
+      </div>`;
+    }).join("")}</div>`;
+
+  const gearHtml=`<div class="wb-sec-head"><b>SHADOW ARMORY SUPPLIES</b><i></i><span>RELICS &middot; CURRENCY &middot; POTIONS</span></div>
+    <div class="wb-drop-list">${gear.map(it=>{
+      const m=wbsMeta(it), owned=wbsIsOwned(it), canBuy=!owned&&tok>=it.cost;
+      const stock=wbsStock(it,owned);
+      const btnTxt=owned?"✔ OWNED":(canBuy?fmt(it.cost)+" TOK":"NEED "+fmt(it.cost-tok));
+      return `<div class="wb-drop-item">
+        <div class="wb-drop-art"><img src="${m.art}" alt="${wbEsc(it.name)}" decoding="async"></div>
+        <div class="wb-drop-mid">
+          <div class="wb-drop-nm">${wbEsc(it.name.toUpperCase())}</div>
+          <div class="wb-drop-ds">${wbEsc(it.desc)} <span class="wb-drop-stock">${wbEsc(stock)}</span></div>
+        </div>
+        <button type="button" class="wb-buy-btn${owned?" owned":""}" data-buy="${it.id}" ${canBuy?"":"disabled"}>${btnTxt}</button>
+      </div>`;
+    }).join("")}</div>`;
+
+  el.innerHTML=coreHtml+gearHtml;
+  el.querySelectorAll("[data-buy]").forEach(btn=>{
+    btn.onclick=()=>{if(!btn.disabled)raidShopBuy(btn.dataset.buy);};
+  });
+}
+
+function wbRenderMvp(){
+  const el=document.getElementById("wbMvpList");
+  if(!el)return;
+  const b=wbBoss();
+  const bracketsHtml=`<div class="wb-sec-head"><b>DAILY MVP RANK BRACKETS</b><i></i><span>SINGLE-RUN PEAK DAMAGE</span></div>
+    <div class="wb-brackets">
+      <div class="wb-brk-card" style="--bc:#ffd700">
+        <div class="wb-brk-rank">#1 MVP</div>
+        <div class="wb-brk-rw"><b>+1,000</b> Gems &middot; <b>+10,000</b> Tokens &middot; <b>10&times;</b> 100K Pack</div>
+        <span class="wb-brk-title">TITLE: APEX SLAYER</span>
+      </div>
+      <div class="wb-brk-card" style="--bc:#e2e8f0">
+        <div class="wb-brk-rank">#2 RUNNER-UP</div>
+        <div class="wb-brk-rw"><b>+500</b> Gems &middot; <b>+5,000</b> Tokens &middot; <b>5&times;</b> 100K Pack</div>
+      </div>
+      <div class="wb-brk-card" style="--bc:#f59e0b">
+        <div class="wb-brk-rank">#3 PODIUM</div>
+        <div class="wb-brk-rw"><b>+250</b> Gems &middot; <b>+2,500</b> Tokens &middot; <b>3&times;</b> 100K Pack</div>
+      </div>
+    </div>`;
+
+  const meName=(typeof currentUser!=="undefined"&&currentUser)?String(currentUser).toLowerCase():"";
+  let rowsHtml="";
+  let countLabel="";
+  if(!wbOnline()){
+    const best=wbBestRunDmg();
+    countLabel=best>0?"1 LOCAL":"OFFLINE";
+    rowsHtml=best>0
+      ?`<div class="wb-lb-row you top1"><span class="wb-lb-bar" style="width:100%"></span><span class="wb-lb-rk">#1</span><span class="wb-lb-av"><span>Y</span></span><span class="wb-lb-nm">YOU (Offline)<span class="wb-lb-you-tag">LOCAL</span></span><b class="wb-lb-dmg">${fmtBig(best)}</b></div>`
+      :`<div class="intel-box">Log in with an account to compete on the global daily leaderboard for ${wbEsc(b.name)}.</div>`;
+  }else if(wbLbS.busy&&!(wbLbS.rows||[]).length){
+    countLabel="SYNCING";
+    rowsHtml=`<div class="intel-box">Synchronizing live leaderboard for ${wbEsc(b.name)}&hellip;</div>`;
+  }else if(wbLbS.err){
+    countLabel="RETRYING";
+    rowsHtml=`<div class="intel-box">Leaderboard server unavailable right now. Your run scores still submit safely.</div>`;
+  }else if(!wbLbS.rows||!wbLbS.rows.length){
+    countLabel="0 RANKED";
+    rowsHtml=`<div class="intel-box">No hunters have damaged ${wbEsc(b.name)} yet today. Be the first MVP!</div>`;
+  }else{
+    const rows=wbLbS.rows.slice(0,50);
+    const maxDmg=Number(rows[0].value)||1;
+    countLabel=rows.length+" RANKED";
+    rowsHtml=rows.map((r,i)=>{
+      const v=Number(r.value)||0;
+      const rk=Number(r.rank)||(i+1);
+      const isYou=!!(meName&&String(r.username||"").toLowerCase()===meName);
+      const w=Math.max(6,Math.min(100,(v/maxDmg)*100)).toFixed(1);
+      const cls=(rk<=3?" top"+rk:"")+(isYou?" you":"");
+      const avMeta=r.meta&&typeof r.meta.av==="string"&&WBV2_AV_PATH.test(r.meta.av)?r.meta.av:"";
+      const avHtml=avMeta?`<img src="${avMeta}" alt="" decoding="async" onerror="this.remove()">`:`<span>${wbEsc(String(r.username||"?").slice(0,1).toUpperCase())}</span>`;
+      return `<div class="wb-lb-row${cls}">
+        <span class="wb-lb-bar" style="width:${w}%"></span>
+        <span class="wb-lb-rk">#${rk}</span>
+        <span class="wb-lb-av">${avHtml}</span>
+        <span class="wb-lb-nm">${wbEsc(r.username||"?")}${isYou?'<span class="wb-lb-you-tag">YOU</span>':""}</span>
+        <b class="wb-lb-dmg">${fmtBig(v)}</b>
+      </div>`;
+    }).join("");
+  }
+
+  const boardHtml=`<div class="wb-sec-head"><b>LIVE TOP DAMAGE — ${wbEsc(b.name)}</b><i></i><span>${countLabel}</span></div>
+    <div class="wb-lb-table">${rowsHtml}</div>`;
+
+  el.innerHTML=bracketsHtml+boardHtml;
+}
+
+function wbRenderEveryone(){
+  const el=document.getElementById("wbEveryoneList");
+  if(!el)return;
+  const d=wbData();
+  const {pool,left:poolLeft}=wbPoolVals();
+  const dealt=Math.max(0,pool-poolLeft);
+  const totalDmg=wbTotalDmg();
+  const totalPlayers=wbOnline()?(Number(d&&d.total_players)||0):1;
+
+  const partHtml=`<div class="wb-ev-card">
+    <div class="wb-ev-head">
+      <span class="wb-ev-title">EVERYONE / PARTICIPATION BRACKET</span>
+      <span class="wb-ev-pill">${totalDmg>0?"✔ QUALIFIED TODAY":"DEAL ANY DMG TO QUALIFY"}</span>
+    </div>
+    <div class="wb-ev-rewards">
+      <span class="wb-ev-chip"><img src="assets/images/premium-currency.webp" alt="Gems"><b>+100</b> Gems</span>
+      <span class="wb-ev-chip"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#wbTokSvg"/></svg><b>+1,000</b> WB Tokens</span>
+      <span class="wb-ev-chip"><img src="assets/images/instanpack-100k.webp" alt="100K Pack"><b>1&times;</b> 100K Pack</span>
+    </div>
+  </div>`;
+
+  const statsHtml=`<div class="wb-ev-stats">
+    <div class="wb-stat-box"><span>ACTIVE HUNTERS</span><b>${fmt(totalPlayers)}</b></div>
+    <div class="wb-stat-box"><span>SERVER DMG TODAY</span><b>${fmtBig(dealt)}</b></div>
+    <div class="wb-stat-box"><span>DAILY RESET</span><b>00:00 UTC+7</b></div>
+  </div>`;
+
+  const y=d&&d.yesterday;
+  let yestCls="", yestTitle="DAILY PAYOUT STATUS", yestSub="Deal damage today to unlock tomorrow's claim after daily reset.", btnDis="disabled", btnTxt="NO PAYOUT";
+  if(!wbOnline()){
+    yestSub="Log in to record server damage and claim daily World Boss payouts.";
+    btnTxt="LOGIN REQUIRED";
+  }else if(y&&y.claimed){
+    yestCls=" claimed";
+    yestTitle="YESTERDAY'S RANK PAYOUT ("+(y.rank?"#"+y.rank:"PARTICIPANT")+")";
+    yestSub="Claimed! Today's rewards unlock after the 00:00 UTC+7 daily reset.";
+    btnTxt="✔ CLAIMED";
+  }else if(y&&y.claimable){
+    yestTitle="YESTERDAY'S RANK PAYOUT (#"+(y.rank||"?")+(y.bracket==="rank1"?" MVP":"")+")";
+    yestSub="+"+fmt(y.gems||0)+" Gems &middot; +"+fmt(y.tokens||0)+" WB Tokens"+(y.packs?" &middot; "+y.packs+"&times; 100K Pack":"")+(y.title?" &middot; Title: "+wbEsc(y.title):"");
+    btnDis="";
+    btnTxt="CLAIM REWARD";
+  }else if(!d){
+    yestSub="Synchronizing yesterday's payout status with server&hellip;";
+    btnTxt="SYNCING";
+  }
+
+  const yestHtml=`<div class="wb-yest-box${yestCls}">
+    <div class="wb-yest-txt"><b>${yestTitle}</b><small>${yestSub}</small></div>
+    <button type="button" class="wb-claim-btn" id="wbBtnClaimYest" ${btnDis}>${btnTxt}</button>
+  </div>`;
+
+  el.innerHTML=partHtml+statsHtml+yestHtml;
+  const yc=document.getElementById("wbBtnClaimYest");
+  if(yc&&!yc.disabled)yc.onclick=()=>wbClaim();
+}
+
+function wbPatchHubDOM(){
+  wbSyncCur();
+  wbRenderHeaderAndLeft();
+  wbRenderMilestones();
+  wbRenderDrops();
+  wbRenderMvp();
+  wbRenderEveryone();
+}
+
+function wbAfterShopBuy(){
+  try{renderShell();}catch(e){}
+  if(route()==="#/raid"&&raidView==="hub"){
+    wbRenderHeaderAndLeft();
+    wbRenderDrops();
+  }
+}
+
+function wbSelectTab(key,focusTab){
+  wbHubTab=key||"milestones";
+  const btns=document.querySelectorAll("#wbView [role='tab']");
+  btns.forEach(btn=>{
+    const on=btn.dataset.tab===wbHubTab;
+    btn.setAttribute("aria-selected",on?"true":"false");
+    btn.tabIndex=on?0:-1;
+    const panel=document.getElementById("wbPanel-"+btn.dataset.tab);
+    if(panel)panel.hidden=!on;
+    if(on&&focusTab)btn.focus();
+    if(on&&focusTab)btn.scrollIntoView({block:"nearest",inline:"nearest"});
+  });
+}
+
+function wbWireDialogLightDismiss(dlg){
+  if(!dlg||dlg._wbWired)return;
+  dlg._wbWired=true;
+  if(!("closedBy" in HTMLDialogElement.prototype)){
+    let pressedOut=false;
+    const outside=e=>{
+      const r=dlg.getBoundingClientRect();
+      return e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom;
+    };
+    dlg.addEventListener("pointerdown",e=>{pressedOut=outside(e);});
+    dlg.addEventListener("pointerup",e=>{if(pressedOut&&outside(e))dlg.close();});
+  }
+  dlg.querySelectorAll("[data-close]").forEach(btn=>{
+    btn.onclick=()=>dlg.close();
+  });
+}
+
+function wbOpenBossIntelDialog(){
+  const b=wbBoss(), meta=wbBossMetaOf(b), {pool}=wbPoolVals();
+  const dlg=document.getElementById("wbInfoDlg");
+  const ttl=document.getElementById("wbInfoTitle");
+  const body=document.getElementById("wbInfoBody");
+  if(!dlg||!ttl||!body)return;
+  ttl.textContent="BOSS INTEL — "+b.name;
+  body.innerHTML=`
+    <div class="intel-hero">
+      <img class="intel-art" src="${meta.art}" alt="${wbEsc(b.name)}">
+      <div class="intel-meta">
+        <div class="intel-chips">
+          <span class="intel-chip red">${wbEsc(b.tag)}</span>
+          <span class="intel-chip haz">${wbEsc(wbModText())}</span>
+        </div>
+        <div class="intel-name">${wbEsc(b.name)}</div>
+        <div class="intel-sub">HP POOL: ${fmtBig(pool)} &middot; ATK: ${fmt(meta.atk)} &middot; ${RAID_TURNS} TURNS</div>
+      </div>
+    </div>
+    <div class="intel-box"><b>SIGNATURE SKILL — ${wbEsc(meta.skill.toUpperCase())}</b><br>${wbEsc(b.passive)}</div>
+    <div class="intel-box"><b>COMBAT RULES</b><br>Deploy 1 solo Striker card for a ${RAID_TURNS}-turn duel. Every point of damage reduces the server-wide 10B HP pool, advances your 7 personal Milestones, and records your peak single-run score for daily MVP brackets.</div>`;
+  if(!dlg.open)dlg.showModal();
+}
+
+function wbOpenHowItWorksDialog(){
+  const dlg=document.getElementById("wbInfoDlg");
+  const ttl=document.getElementById("wbInfoTitle");
+  const body=document.getElementById("wbInfoBody");
+  if(!dlg||!ttl||!body)return;
+  ttl.textContent="HOW WORLD BOSS RAID WORKS";
+  body.innerHTML=`
+    <div class="intel-box"><b>1. SERVER-WIDE 10B HP POOL</b><br>All hunters attack the same shared daily boss pool (Eternal Dragon &amp; Shadow King each have separate 10B pools, leaderboards, and 3 daily attempts).</div>
+    <div class="intel-box"><b>2. GUARANTEED MILESTONES (1&ndash;7)</b><br>Your damage adds up across all runs today. Reaching each milestone unlocks guaranteed WB Tokens, Gems, Instant Packs, and Potions once per daily reset.</div>
+    <div class="intel-box"><b>3. MVP &amp; EVERYONE BRACKETS</b><br>Your highest single ${RAID_TURNS}-turn run determines your daily rank. #1 wins the <b>APEX SLAYER</b> title + 1,000 Gems + 10,000 WB Tokens. Dealing any damage qualifies for the <b>EVERYONE</b> participation reward!</div>
+    <div class="intel-box"><b>4. AUTO REPEAT</b><br>Enable <b>AUTO REPEAT</b> to automatically re-deploy your chosen Striker after every raid while daily attempts remain and the boss HP pool is active.</div>`;
+  if(!dlg.open)dlg.showModal();
+}
+
+function wbRenderStrikerPicker(){
+  const body=document.getElementById("wbStrikerBody");
+  if(!body)return;
+  const sel=wbSelectedStriker();
+  const q=wbStrikerSearch.trim().toLowerCase();
+  const raw=(state&&Array.isArray(state.stacks))?state.stacks.slice():[];
+  raw.sort((a,b)=>{
+    if(sel&&a.id===sel.id)return -1;
+    if(sel&&b.id===sel.id)return 1;
+    if(!!b.fav!==!!a.fav)return b.fav?1:-1;
+    return wbEstRunDmg(b)-wbEstRunDmg(a);
+  });
+  const list=raw.filter(s=>{
+    const c=CARDS[s.char];
+    return !q||(c&&c.name.toLowerCase().includes(q));
+  });
+
+  body.innerHTML=`
+    <input type="search" class="striker-search" id="wbStrikerSearch" placeholder="Search your striker cards..." value="${wbEsc(wbStrikerSearch)}" autocomplete="off" aria-label="Search striker cards">
+    <div class="striker-grid">${list.length?list.map(s=>{
+      const c=CARDS[s.char];
+      if(!c)return "";
+      const on=!!(sel&&sel.id===s.id);
+      const est=wbEstRunDmg(s);
+      const mut=(s.mut&&s.mut!=="none")?s.mut.toUpperCase():"";
+      const tr=(s.trait&&s.trait!=="none"&&TRAIT[s.trait])?TRAIT[s.trait].name.toUpperCase():"";
+      return `<button type="button" class="striker-card${on?" on":""}" data-pick-striker="${wbEsc(s.id)}">
+        <img class="striker-img" src="${cardThumb(s.char)}" alt="${wbEsc(c.name)}" decoding="async">
+        <div class="striker-nm">${wbEsc(c.name)}</div>
+        <div class="striker-st">EST ~${fmtBig(est)} / RUN</div>
+        <div class="striker-tags">
+          ${s.shiny?'<span class="striker-tag" style="color:var(--haz);border-color:var(--haz)">SHINY</span>':""}
+          ${mut?`<span class="striker-tag">${wbEsc(mut)}</span>`:""}
+          ${tr?`<span class="striker-tag">${wbEsc(tr)}</span>`:""}
+          ${(s.count||1)>1?`<span class="striker-tag">&times;${fmt(s.count)}</span>`:""}
+        </div>
+      </button>`;
+    }).join(""):`<div class="intel-box" style="grid-column:1/-1">No matching striker cards found.</div>`}</div>`;
+
+  const inp=document.getElementById("wbStrikerSearch");
+  if(inp){
+    inp.oninput=()=>{
+      const pos=inp.selectionStart;
+      wbStrikerSearch=inp.value;
+      wbRenderStrikerPicker();
+      const next=document.getElementById("wbStrikerSearch");
+      if(next){next.focus();try{next.setSelectionRange(pos,pos);}catch(e){}}
+    };
+  }
+  body.querySelectorAll("[data-pick-striker]").forEach(btn=>{
+    btn.onclick=()=>{
+      const picked=state.stacks.find(s=>s.id===btn.dataset.pickStriker);
+      if(!picked)return;
+      raidPicked=picked;
+      state.wbStrikerId=picked.id;
+      try{save();}catch(e){}
+      try{sfx.hit();}catch(e){}
+      const dlg=document.getElementById("wbStrikerDlg");
+      if(dlg&&dlg.open)dlg.close();
+      wbRenderHeaderAndLeft();
+      const c=CARDS[picked.char];
+      raidToast("STRIKER EQUIPPED: "+(c?c.name:"READY"));
+    };
+  });
+}
+
+function wbOpenStrikerDialog(){
+  const dlg=document.getElementById("wbStrikerDlg");
+  if(!dlg)return;
+  wbRenderStrikerPicker();
+  if(!dlg.open)dlg.showModal();
+}
+
+function wbPlayEnterCurtain(){
+  const hz=document.getElementById("wbHzCurtain");
+  const sh=document.getElementById("wbShell");
+  if(!hz||!sh)return;
+  if(wbHubEnteredOnce||wbReduceMotion()){
+    sh.classList.add("is-entered");
+    return;
+  }
+  wbHubEnteredOnce=true;
+  wbClearHz();
+  sh.classList.remove("is-entered","is-leaving");
+  hz.className="";void hz.offsetWidth;
+  hz.classList.add("on","smooth","sweep");
+  wbHzTimers.push(setTimeout(()=>{hz.classList.add("revealed");sh.classList.add("is-entered");},520));
+  wbHzTimers.push(setTimeout(()=>{hz.classList.remove("on","smooth","sweep","revealed");},1120));
+}
+
+function wbExitToLobby(){
+  clearTimeout(wbAutoTimer);wbAutoTimer=null;
+  const hz=document.getElementById("wbHzCurtain");
+  const sh=document.getElementById("wbShell");
+  if(!hz||!sh||wbReduceMotion()){
+    raidView="hub";
+    window.location.hash="#/";
+    return;
+  }
+  wbClearHz();
+  const k=document.getElementById("wbHzKick"), t=document.getElementById("wbHzTitle"), s=document.getElementById("wbHzSub"), f=document.getElementById("wbHzFoot");
+  if(k)k.innerHTML="// LINK <b>STAND BY</b>";
+  if(t)t.textContent="STANDBY";
+  if(s)s.textContent="WORLD BOSS SESSION SEALED — RANK SYNCED";
+  if(f)f.textContent="RETURNING TO LOBBY";
+  sh.classList.add("is-leaving");
+  hz.className="";hz.classList.add("on","smooth","revealed");
+  void hz.offsetWidth;
+  hz.classList.remove("revealed");
+  wbHzTimers.push(setTimeout(()=>{
+    raidView="hub";
+    window.location.hash="#/";
+  },420));
+}
+
+function wbLaunchRaid(){
+  if(wbStarting)return;
+  clearTimeout(wbAutoTimer);wbAutoTimer=null;
+  const cb=wbBoss();
+  if(cb.locked){raidToast("This World Boss is not available yet.");return;}
+  const cp=wbPoolVals();
+  if(cp.left<=0){raidToast("Boss defeated! Next spawn in "+wbResetText()+".");return;}
+  const att=wbAttOf(wbBossIdx);
+  if(att!=null&&att<=0){raidToast("No daily attempts left. Resets in "+wbResetText()+".");return;}
+  const striker=wbSelectedStriker();
+  if(!striker){raidToast("You have no striker cards available.");return;}
+  raidPicked=striker;
+  state.wbStrikerId=striker.id;
+  try{sfx.hit();}catch(e){}
+  if(typeof hideRollResult==="function")hideRollResult();
+
+  if(!wbOnline()){
+    wbRunId=null;wbRunBoss=cb.key;
+    raidView="battle";renderRaid();
+    return;
+  }
+  wbStarting=true;
+  raidToast("LOCKING ATTEMPT & DEPLOYING STRIKER...");
+  const sd=wbData();
+  window.CloudDB.wbStart(currentUser,cb.id).then(res=>{
+    wbStarting=false;
+    if(res&&res.ok){
+      wbRunId=res.run_id;
+      wbRunBoss=cb.key;
+      if(sd){
+        sd.attempts_used=(sd.attempts_used||0)+1;
+        sd.attempts_left=typeof res.attempts_left==="number"?res.attempts_left:Math.max(0,3-sd.attempts_used);
+        if(res.modifier)sd.modifier=res.modifier;
+        wbAt=Date.now();
+      }
+      raidView="battle";renderRaid();
+    }else if(res&&res.ok===false){
+      wbRunId=null;wbRunBoss=null;
+      if(res.msg==="NO_ATTEMPTS_LEFT"&&sd){sd.attempts_used=3;sd.attempts_left=0;}
+      raidToast(res.msg==="NO_ATTEMPTS_LEFT"?"No attempts left today · Reset "+wbResetText():"Failed to deploy · Try again");
+      raidView="hub";renderRaid();
+    }else{
+      wbRunId=null;wbRunBoss=null;
+      raidToast("Server offline · Playing local practice run");
+      raidView="battle";renderRaid();
+    }
+  }).catch(()=>{
+    wbStarting=false;wbRunId=null;wbRunBoss=null;
+    raidToast("Server unreachable · Playing local practice run");
+    raidView="battle";renderRaid();
+  });
+}
+
 function renderRaidHub(){
   wbrStopPoll();
   wbSyncCur();
   const b=wbBoss();
-  const locked=!!b.locked;
-  const d=wbData();
-  const {pool,left:poolLeft}=wbPoolVals();
-  const pct=pool>0?Math.max(0,Math.min(100,poolLeft/pool*100)):0;
-  const hpTxt=locked?"—":fmtBig(poolLeft);
-  const poolTxt=locked?"—":fmtBig(pool);
-  const off=!wbOnline();
-  const tabs=WB_BOSSES.map((x,i)=>`<button class="wbv2-tab${i===wbBossIdx?" on":""}" type="button" data-i="${i}">${wbEsc(x.tab||x.name)}</button>`).join("");
-  const boards=WB_BOSSES.map(x=>`<button class="wbv2-lbb${x.board===b.board?" on":""}" type="button" data-board="${x.board}">${wbEsc(x.tab||x.name)}</button>`).join("");
   app.innerHTML=`
   <div id="wbView" class="wbv2 rd-page">
-    <div class="wbv2-bgfx" aria-hidden="true"><div class="wbv2-sweep"></div></div>
-    <div class="wbv2-holorail left" aria-hidden="true"></div>
-    <div class="wbv2-holorail right" aria-hidden="true"></div>
+    <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+      <defs>
+        <g id="wbTokSvg">
+          <polygon points="12 2 21 7 21 17 12 22 3 17 3 7" fill="#071a22" stroke="#22d3ee" stroke-width="1.8"/>
+          <polygon points="12 5.5 17.5 8.8 17.5 15.2 12 18.5 6.5 15.2 6.5 8.8" fill="rgba(34,211,238,0.22)" stroke="#7df9ff" stroke-width="1.1"/>
+          <path d="M9 9.5L10.7 15 12 11 13.3 15 15 9.5" fill="none" stroke="#7df9ff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+      </defs>
+    </svg>
 
-    <div class="wbv2-topbar">
-      <div class="wbv2-tabs" id="wbv2Tabs">${tabs}</div>
-      <div class="wbv2-pool">
-        <span class="wbv2-pool-k">POOL</span><b id="wbv2HpLeft">${hpTxt}</b><span>/ <span id="wbv2HpPool">${poolTxt}</span></span>
-        <span class="wbv2-sep"></span>
-        <span class="wbv2-reset" id="wbv2Reset">${locked?"⟳ RESET —":"⟳ RESET "+wbResetText()}</span>
-      </div>
-    </div>
-
-    <section class="wbv2-stage wbv2-bossarea">
-      <div class="wbv2-ringwrap" aria-hidden="true"><i class="wbv2-ring wbv2-r1"></i><i class="wbv2-ring wbv2-r2"></i><i class="wbv2-ring wbv2-r3"></i></div>
-
-      <aside class="wbv2-reward-panel" id="wbv2RewardPanel">${wbRewardPanelHtml()}</aside>
-
-      <aside class="wbv2-lb-panel" id="wbv2LbPanel">
-        <div class="wbv2-sp-title">TOP DAMAGE</div>
-        <div id="wbv2LbPanelRows">${wbLbPanelHtml()}</div>
-      </aside>
-
-      <div class="wbv2-bossart" id="wbv2Art">
-        <div class="wbv2-bossframe"><img id="wbv2BossImg" src="${b.art}" alt="${wbEsc(b.name)}"></div>
-        <div class="wbv2-hp-overlay">
-          <div class="wbv2-hp-name" id="wbv2BossName">${wbEsc(b.name)}</div>
-          <div class="wbv2-hpbar"><i class="wbv2-hp-fill" id="wbv2HpFill" style="width:${locked?0:pct.toFixed(1)}%"></i></div>
-          <div class="wbv2-hp-nums"><b id="wbv2HpNumLeft">${hpTxt}</b><span id="wbv2HpNumPool">${locked?"—":"/ "+poolTxt}</span></div>
+    <div class="wb-shell" id="wbShell">
+      <div class="wb-banner-bar">
+        <div class="wb-banner-ribbon">
+          <div class="wb-banner-cap">
+            <div class="wb-banner-cap-in">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/>
+              </svg>
+              <span>RAID</span>
+            </div>
+          </div>
+          <div class="wb-banner-mid">
+            <div class="wb-banner-titles">
+              <h1 class="wb-title">WORLD BOSS <em>RAID</em></h1>
+              <span class="wb-eyebrow">// SERVER-WIDE 10B POOL &middot; ${RAID_TURNS}-TURN DEPLOY</span>
+            </div>
+            <div class="wb-banner-tags">
+              <span class="wb-banner-tag" id="wbHdrTokens">TOKENS: 0</span>
+              <span class="wb-banner-tag hz" id="wbHdrReset">RESET: --</span>
+            </div>
+          </div>
         </div>
-        <button class="wbv2-lb" id="wbv2LbBtn" type="button" aria-label="Leaderboard ${wbEsc(b.name)}" title="Leaderboard"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4z"/><path d="M7 6H4a2 2 0 0 0 2 4h1M17 6h3a2 2 0 0 1-2 4h-1"/></svg></button>
-      </div>
-    </section>
 
-    <section class="wbv2-dock">
-      <div class="wbv2-dock-rails" aria-hidden="true"><i class="wbv2-drail wbv2-drail-top"></i><i class="wbv2-drail wbv2-drail-bot"></i></div>
-      <div class="wbv2-actrow">
-        <span class="wbv2-crystals" id="wbv2Crystals">${wbCrystalsHtml()}</span>
-        <span class="wbv2-dstats">
-          <span class="wbv2-pill"><i class="wbv2-si" style="--im:url('${wbIconU("assets/icons/trophy-cup.svg")}');--ic:var(--gold)"></i><b id="wbv2Pb">${d&&d.best_dmg?fmtBig(d.best_dmg):"—"}</b><small class="wbv2-unit">DMG</small></span>
-          <span class="wbv2-pill"><i class="wbv2-si" style="--im:url('${wbIconU("assets/icons/coins.svg")}');--ic:var(--cyan)"></i><b id="wbv2Tok">${fmt(state.wbTokens||0)}</b><small class="wbv2-unit">TKN</small></span>
-        </span>
-        <button class="wbv2-shopbtn" id="wbv2ShopBtn" type="button">TOKO</button>
-        <button class="wbv2-hammer${wbv2Dead()?" off":""}" id="wbv2Hammer" type="button">${locked?"TERKUNCI":wbv2Dead()?(wbAttOf(wbBossIdx)!=null&&wbAttOf(wbBossIdx)<=0?"ATTEMPTS USED":"BOSS DEFEATED"):"HAMBAT"}</button>
+        <div class="wb-banner-right">
+          <button type="button" class="wb-x" id="wbClose" aria-label="Return to Lobby">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+          <div class="wb-slashes" aria-hidden="true"><i></i><i></i><i></i></div>
+        </div>
       </div>
-      <small class="wbv2-hammer-meta" id="wbv2HammerMeta">${locked?"BOSS TERKUNCI":wbv2Dead()?(wbAttOf(wbBossIdx)!=null&&wbAttOf(wbBossIdx)<=0?"CANNOT DEPLOY · RESET "+wbResetText():"TARGET DEFEATED · RESET "+wbResetText()):`AUTHORIZE COMBAT // ${RAID_TURNS} TURNS`}</small>
-    </section>
 
-    <div class="wbv2-lb-modal" id="wbv2LbModal" aria-hidden="true">
-      <div class="wbv2-lb-head">
-        <span class="wbv2-lb-title">PAPAN PERINGKIT</span>
-        <div class="wbv2-lb-boards" id="wbv2LbBoards">${boards}</div>
-        <button class="wbv2-lb-x" id="wbv2LbClose" type="button" aria-label="Tutup">&#10005;</button>
+      <div class="wb-panel">
+        <div class="wb-tape-line" aria-hidden="true"></div>
+        <div class="wb-body">
+          <aside class="wb-boss-col" aria-label="Boss Spotlight">
+            <div class="wb-boss-sw" role="group" aria-label="Select World Boss">
+              ${WB_BOSSES.map((x,i)=>`<button type="button" class="wb-bsw-btn" data-boss-idx="${i}" aria-pressed="${i===wbBossIdx?"true":"false"}" style="--bc:${x.color}">
+                <span class="wb-bsw-dot"></span>${wbEsc(x.tab)}
+              </button>`).join("")}
+            </div>
+
+            <div class="wb-boss-head">
+              <div class="wb-boss-name" id="wbBossName">${wbEsc(b.name)}</div>
+              <span class="wb-boss-tag" id="wbBossTag">${wbEsc(b.tag)}</span>
+            </div>
+
+            <div class="wb-status-pill" id="wbBossStatusPill">
+              <span class="wb-status-dot" aria-hidden="true"></span>
+              <span id="wbBossStatusTxt"><b>ACTIVE</b></span>
+            </div>
+
+            <div class="wb-hp-block">
+              <div class="wb-hp-bar">
+                <div class="wb-hp-fill" id="wbBossHpFill" style="width:100%"></div>
+                <div class="wb-hp-txt" id="wbBossHpTxt">10B / 10B HP</div>
+              </div>
+            </div>
+
+            <div class="wb-hover-prompt">THE WORLD BOSS (TAP FOR INTEL)</div>
+
+            <button type="button" class="wb-boss-art-btn" id="wbBtnBossIntel" aria-label="Inspect World Boss Intel">
+              <img id="wbBossArtImg" src="${b.art}" alt="${wbEsc(b.name)}">
+              <span class="wb-art-brk tl" aria-hidden="true"></span>
+              <span class="wb-art-brk tr" aria-hidden="true"></span>
+              <span class="wb-art-brk bl" aria-hidden="true"></span>
+              <span class="wb-art-brk br" aria-hidden="true"></span>
+              <span class="wb-art-intel">INTEL</span>
+              <div class="wb-art-dmg-badge" id="wbBossDmgBadge"><small>BOSS ATK</small>15,000 ATK</div>
+            </button>
+
+            <div class="wb-personal-box">
+              <div class="wb-personal-line" id="wbPersonalStatsLine">Your damage: <b>0</b> &middot; Milestones: <b>0/7</b></div>
+              <div class="wb-att-row">
+                <span>DAILY ATTEMPTS</span>
+                <span class="wb-crystals" id="wbAttemptCrystals"></span>
+              </div>
+              <div class="wb-mvp-bar">
+                <span class="wb-mvp-left" id="wbMvpNowTxt">MVP NOW: <b>Nobody yet</b></span>
+                <span class="wb-mvp-tok"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#wbTokSvg"/></svg>+10,000</span>
+              </div>
+            </div>
+          </aside>
+
+          <section class="wb-hub-col" aria-label="World Boss Hub Details">
+            <div class="wb-tablist" role="tablist" aria-label="World Boss Sections">
+              <button type="button" class="wb-tab" role="tab" id="wbTab-milestones" aria-selected="true" data-tab="milestones">
+                MILESTONES <span class="wb-tab-badge" id="wbMsBadge" hidden>0</span>
+              </button>
+              <button type="button" class="wb-tab" role="tab" id="wbTab-drops" aria-selected="false" data-tab="drops">DROPS</button>
+              <button type="button" class="wb-tab" role="tab" id="wbTab-mvp" aria-selected="false" data-tab="mvp">MVP</button>
+              <button type="button" class="wb-tab" role="tab" id="wbTab-everyone" aria-selected="false" data-tab="everyone">EVERYONE</button>
+            </div>
+
+            <div class="wb-tab-panel" role="tabpanel" id="wbPanel-milestones" aria-labelledby="wbTab-milestones" tabindex="0">
+              <div class="wb-callout" id="wbMsCallout"></div>
+              <div class="wb-scroll" id="wbMsList"></div>
+            </div>
+
+            <div class="wb-tab-panel" role="tabpanel" id="wbPanel-drops" aria-labelledby="wbTab-drops" hidden tabindex="0">
+              <div class="wb-callout">Spend World Boss Tokens on exclusive EX Core Boss Cards, permanent Luck Relics, Gems, Coins, and Potions.</div>
+              <div class="wb-scroll" id="wbDropsList"></div>
+            </div>
+
+            <div class="wb-tab-panel" role="tabpanel" id="wbPanel-mvp" aria-labelledby="wbTab-mvp" hidden tabindex="0">
+              <div class="wb-callout">Your highest single ${RAID_TURNS}-turn run locks your rank. #1 claims APEX SLAYER title &amp; top daily rewards.</div>
+              <div class="wb-scroll" id="wbMvpList"></div>
+            </div>
+
+            <div class="wb-tab-panel" role="tabpanel" id="wbPanel-everyone" aria-labelledby="wbTab-everyone" hidden tabindex="0">
+              <div class="wb-callout">Every hunter who deals damage today earns guaranteed Participation Rewards — no minimum damage required.</div>
+              <div class="wb-scroll" id="wbEveryoneList"></div>
+            </div>
+          </section>
+        </div>
+
+        <footer class="wb-foot">
+          <div class="wb-actions">
+            <button type="button" class="wb-act auto" id="wbBtnAutoRepeat" aria-pressed="false">
+              <span class="wb-auto-dot" aria-hidden="true"></span>
+              <span id="wbAutoRepeatTxt">AUTO REPEAT: OFF</span>
+            </button>
+            <button type="button" class="wb-act info" id="wbBtnHowItWorks">HOW IT WORKS</button>
+            <button type="button" class="wb-act deck" id="wbBtnSelectStriker">
+              <img class="wb-deck-thumb" id="wbStrikerThumb" src="assets/cards/thumb/sun-god.webp" alt="">
+              <span class="wb-deck-lbl"><small>STRIKER</small><span id="wbStrikerName">SELECT</span></span>
+              <span aria-hidden="true">&rsaquo;</span>
+            </button>
+            <button type="button" class="wb-act fight" id="wbBtnFight">FIGHT BOSS (3/3)</button>
+          </div>
+          <div class="wb-footnote">AUTO REPEAT deploys your selected Striker again after every fight while daily attempts remain and the boss pool is active.</div>
+        </footer>
       </div>
-      <div class="wbv2-lb-body" id="wbv2LbBody"></div>
+
+      <div class="wb-toast" id="wbToast" role="status" aria-live="polite"></div>
     </div>
+
+    <div id="wbHzCurtain" aria-hidden="true">
+      <div class="half top"></div>
+      <div class="half bot"></div>
+      <div class="tape tape-a"></div>
+      <div class="tape tape-b"></div>
+      <div class="flash"></div>
+      <div class="plate">
+        <div class="in">
+          <div class="krow">
+            <span class="dot"></span>
+            <span class="kick" id="wbHzKick">// SERVER-WIDE <b>RAID UPLINK</b></span>
+            <span class="serial">SERIAL 0x9E4A</span>
+          </div>
+          <div class="title"><span id="wbHzTitle">WORLD BOSS RAID</span></div>
+          <div class="sub" id="wbHzSub">10B SHARED HP POOL &middot; 3 DAILY ATTEMPTS PER BOSS</div>
+          <div class="bar"><i></i></div>
+          <div class="foot"><span>HZ-PROTOCOL</span><span id="wbHzFoot">SYNCHRONIZING TARGETS</span></div>
+        </div>
+      </div>
+    </div>
+
+    <dialog class="wb-dialog" id="wbInfoDlg" closedby="any" aria-labelledby="wbInfoTitle">
+      <div class="dlg-head">
+        <h2 id="wbInfoTitle">HOW WORLD BOSS RAID WORKS</h2>
+        <button type="button" class="dlg-close" data-close aria-label="Close modal">&times;</button>
+      </div>
+      <div class="dlg-body" id="wbInfoBody"></div>
+    </dialog>
+
+    <dialog class="wb-dialog" id="wbStrikerDlg" closedby="any" aria-labelledby="wbStrikerTitle">
+      <div class="dlg-head">
+        <h2 id="wbStrikerTitle">SELECT RAID STRIKER</h2>
+        <button type="button" class="dlg-close" data-close aria-label="Close striker selector">&times;</button>
+      </div>
+      <div class="dlg-body" id="wbStrikerBody"></div>
+    </dialog>
   </div>`;
 
-  /* aspect-ratio pane art DI-SET JS dari ukuran natural art boss (kontrak §3, CROP 0). */
-  const img=document.getElementById("wbv2BossImg");
-  const setAR=()=>{const el=document.getElementById("wbv2Art");if(el&&img&&img.naturalWidth)el.style.setProperty("--ar",Math.round(img.naturalWidth/img.naturalHeight*1000)/1000);};
-  img.onload=setAR;
-  img.onerror=()=>{img.onerror=null;img.src="assets/cards/art/eternal-dragon.webp";};
-  if(img.complete&&img.naturalWidth)setAR();
+  wbPatchHubDOM();
+  wbSelectTab(wbHubTab,false);
+  wbPlayEnterCurtain();
 
-  document.getElementById("wbv2Tabs").onclick=e=>{
-    const t=e.target.closest(".wbv2-tab");
-    if(!t)return;
-    const i=Number(t.dataset.i);
-    if(i!==wbBossIdx)goBoss(i-wbBossIdx);
+  document.querySelectorAll("#wbView .wb-bsw-btn").forEach(btn=>{
+    btn.onclick=()=>setBoss(Number(btn.dataset.bossIdx));
+  });
+
+  const tabBtns=Array.from(document.querySelectorAll("#wbView [role='tab']"));
+  tabBtns.forEach((btn,idx)=>{
+    btn.onclick=()=>{try{sfx.hit();}catch(e){}wbSelectTab(btn.dataset.tab,false);};
+    btn.addEventListener("keydown",e=>{
+      let next=-1;
+      if(e.key==="ArrowRight")next=(idx+1)%tabBtns.length;
+      else if(e.key==="ArrowLeft")next=(idx-1+tabBtns.length)%tabBtns.length;
+      else if(e.key==="Home")next=0;
+      else if(e.key==="End")next=tabBtns.length-1;
+      if(next>=0){e.preventDefault();wbSelectTab(tabBtns[next].dataset.tab,true);}
+    });
+  });
+
+  wbWireDialogLightDismiss(document.getElementById("wbInfoDlg"));
+  wbWireDialogLightDismiss(document.getElementById("wbStrikerDlg"));
+
+  document.getElementById("wbClose").onclick=wbExitToLobby;
+  document.getElementById("wbBtnBossIntel").onclick=()=>{try{sfx.hit();}catch(e){}wbOpenBossIntelDialog();};
+  document.getElementById("wbBtnHowItWorks").onclick=()=>{try{sfx.hit();}catch(e){}wbOpenHowItWorksDialog();};
+  document.getElementById("wbBtnSelectStriker").onclick=()=>{try{sfx.hit();}catch(e){}wbOpenStrikerDialog();};
+  document.getElementById("wbBtnAutoRepeat").onclick=()=>{
+    state.wbAutoRepeat=!state.wbAutoRepeat;
+    try{save();sfx.hit();}catch(e){}
+    wbRenderHeaderAndLeft();
+    raidToast("AUTO REPEAT "+(state.wbAutoRepeat?"ENABLED — auto-deploys after raids":"DISABLED"));
   };
-  document.getElementById("wbv2Hammer").onclick=()=>{
-    /* baca state LIVE (bukan closure render) — hub bisa tetap tampil setelah syncBossDOM ganti boss */
-    const cb=wbBoss();
-    if(cb.locked){raidToast("THIS BOSS IS NOT AVAILABLE YET");return;}
-    const cp=wbPoolVals();
-    if(cp.left<=0){raidToast("WORLD BOSS ALREADY DOWN · RESET "+wbResetText());return;}
-    const cd=wbData();
-    if(wbOnline()&&cd&&(cd.attempts_left||0)<=0){raidToast("ATTEMPTS USED TODAY · RESET "+wbResetText());return;}
-    wbrDeployPulse(()=>{sfx.hit();raidView="pick";renderRaid();});
-  };
-  document.getElementById("wbv2LbBtn").onclick=()=>{try{sfx.hit();}catch(e){}wbLbOpen(wbBoss().board);};
-  {const sb=document.getElementById("wbv2ShopBtn");if(sb)sb.onclick=()=>{try{sfx.hit();}catch(e){}raidView="shop";renderRaid();};}
-  {const x=document.getElementById("wbv2LbClose");if(x)x.onclick=wbLbClose;}
-  {const m=document.getElementById("wbv2LbModal");
-   if(m)m.addEventListener("click",e=>{if(e.target===m)wbLbClose();});
-   const bs=document.getElementById("wbv2LbBoards");
-   if(bs)bs.onclick=e=>{const btn=e.target.closest(".wbv2-lbb");if(!btn)return;try{sfx.hit();}catch(e){}wbLbFetch(btn.dataset.board);};}
+  document.getElementById("wbBtnFight").onclick=wbLaunchRaid;
+
   if(!wbHubKeyHandler){
-    wbHubKeyHandler=e=>{if(e.key==="Escape"){const m=document.getElementById("wbv2LbModal");if(m&&m.classList.contains("show"))wbLbClose();}};
+    wbHubKeyHandler=e=>{
+      if(e.key==="Escape"&&route()==="#/raid"&&raidView==="hub"){
+        const d1=document.getElementById("wbStrikerDlg");
+        const d2=document.getElementById("wbInfoDlg");
+        if((d1&&d1.open)||(d2&&d2.open))return;
+      }
+    };
     document.addEventListener("keydown",wbHubKeyHandler);
   }
 
   wbRefresh();
   wbrStartPoll();
-  /* panel TOP DAMAGE real-time: muat papan boss aktif lewat jalur nyata. */
   if(wbOnline())wbLbFetch(b.board);
 }
-/* ---------- sinkron in-place saat ganti boss (satu-satunya writer pane) ---------- */
+
+function wbrStopPoll(){if(wbrPoll){clearInterval(wbrPoll);wbrPoll=null;}}
+let wbrPoll=null;
+function wbrStartPoll(){
+  wbrStopPoll();
+  if(!wbOnline())return;
+  wbrPoll=setInterval(()=>{
+    if(raidView!=="hub"||route()!=="#/raid"){wbrStopPoll();return;}
+    if(document.hidden)return;
+    wbRefresh(true,true).then(()=>wbPatchHubDOM()).catch(()=>{});
+  },60000);
+}
+
 function syncBossDOM(){
-  const b=wbBoss();
-  const locked=!!b.locked;
-  const d=wbData();
-  const {pool,left:poolLeft}=wbPoolVals();
-  const pct=pool>0?Math.max(0,Math.min(100,poolLeft/pool*100)):0;
-  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-
-  document.querySelectorAll("#wbv2Tabs .wbv2-tab").forEach((t,i)=>t.classList.toggle("on",i===wbBossIdx));
-
-  const img=document.getElementById("wbv2BossImg");
-  if(img){
-    const setAR=()=>{const el=document.getElementById("wbv2Art");if(el&&img.naturalWidth)el.style.setProperty("--ar",Math.round(img.naturalWidth/img.naturalHeight*1000)/1000);};
-    img.onload=setAR;
-    img.onerror=()=>{img.onerror=null;img.src="assets/cards/art/eternal-dragon.webp";};
-    img.src=b.art;
-    img.alt=b.name;
-    if(img.complete&&img.naturalWidth)setAR();
-  }
-  set("wbv2BossName",b.name);
-  const f=document.getElementById("wbv2HpFill");
-  if(f&&!locked)f.style.width=pct.toFixed(1)+"%";
-  if(locked&&f)f.style.width="0%";
-  set("wbv2HpLeft",locked?"—":fmtBig(poolLeft));
-  set("wbv2HpPool",locked?"—":fmtBig(pool));
-  set("wbv2HpNumLeft",locked?"—":fmtBig(poolLeft));
-  set("wbv2HpNumPool",locked?"—":"/ "+fmtBig(pool));
-  set("wbv2Reset",locked?"⟳ RESET —":"⟳ RESET "+wbResetText());
-  const crys=document.getElementById("wbv2Crystals");if(crys)crys.innerHTML=wbCrystalsHtml();
-  set("wbv2Pb",d&&d.best_dmg?fmtBig(d.best_dmg):"—");
-  const lk=document.getElementById("wbv2LbBtn");if(lk)lk.setAttribute("aria-label","Leaderboard "+b.name);
-  const rp=document.getElementById("wbv2LbPanelRows");if(rp)rp.innerHTML=wbLbPanelHtml();
-  wbv2HammerState();
-  /* papan per-boss: panel + modal ikut papan boss baru lewat jalur nyata. */
-  if(wbOnline())wbLbFetch(b.board);
-  else{const m=document.getElementById("wbv2LbModal");if(m&&m.classList.contains("show"))wbLbPaint();}
+  wbPatchHubDOM();
+  if(wbOnline())wbLbFetch(wbBoss().board);
 }
-/* ---------- ganti boss: satu jalur aksi (tab & swipe memanggil setBoss) ---------- */
+
 function setBoss(i){
   const n=WB_BOSSES.length;
   if(!(i>=0&&i<n)||i===wbBossIdx)return;
   try{sfx.hit();}catch(e){}
   wbBossIdx=i;
   syncBossDOM();
-  const art=document.getElementById("wbv2Art");
-  if(art&&!wbReduceMotion()){
-    art.classList.add("wbv2-glitch");
-    setTimeout(()=>{const a=document.getElementById("wbv2Art");if(a)a.classList.remove("wbv2-glitch");},150);
-  }
 }
 function goBoss(dir){const n=WB_BOSSES.length;if(n<2)return;setBoss(((wbBossIdx+dir)%n+n)%n);}
-/* ---------- pulse deploy (flash pendek sebelum pindah view) ---------- */
-let wbrDeployT=0;
-function wbrDeployPulse(next){
-  const stage=document.querySelector(".wbv2-stage");
-  if(!stage||wbReduceMotion()){if(typeof next==="function")next();return;}
-  clearTimeout(wbrDeployT);
-  stage.classList.remove("wbv2-strike");
-  void stage.offsetWidth;
-  stage.classList.add("wbv2-strike");
-  wbrDeployT=setTimeout(()=>{
-    const s=document.querySelector(".wbv2-stage");
-    if(s)s.classList.remove("wbv2-strike");
-    if(typeof next==="function")next();
-  },180);
-}
 
-var _rdTileHtml={},_ixHtml={},_dpHtml={};
-function renderRaidPick(){
-  const stacks=state.stacks.slice().sort((a,b)=>(b.fav?1:0)-(a.fav?1:0));
-  const b=wbBossOf();
-  const bossArt = b.img || b.art || (b.name && b.name.toLowerCase().includes("shadow") ? "assets/cards/art/shadow-king.webp" : "assets/cards/art/eternal-dragon.webp");
-  app.innerHTML=`
-  <div class="rd-page rd-pick">
-    <div class="rd-pick-head">
-      <button class="rd-pick-back" id="raidPickBack" title="Back to raid hub" aria-label="Kembali">&#8592;</button>
-      <div class="rd-pick-ttl"><span class="eyebrow">TACTICAL STRIKER SELECTION</span><b>SELECT CARD vs ${b.name.toUpperCase()}</b></div>
-      <div class="rd-pick-boss">
-        <img src="${bossArt}" alt="${b.name}">
-        <div class="rpb-i">
-          <span class="rpb-k">TARGET BOSS &middot; ${b.diffLabel || "WORLD BOSS"}</span>
-          <span class="rpb-n">${b.name}</span>
-          <span class="rpb-hp">HP ${fmtBig(b.hp)} &middot; ${RAID_TURNS} TURN</span>
-        </div>
-      </div>
-    </div>
-    <div class="rd-pick-filter-bar">
-      <label class="card-search-wrap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
-        <input class="card-search" id="raidSearch" type="text" placeholder="Search striker card..." autocomplete="off">
-      </label>
-      <div class="rd-pick-counter"><span class="rpc-val">${stacks.length}</span> CARDS AVAILABLE</div>
-    </div>
-    <div class="rd-pick-scroll-wrap">
-      <div class="raid-pick-grid bp-grid" id="raidPickGrid">${(()=>{const _rd={};const inner=s=>{const c=CARDS[s.char];
-        const shny=s.shiny?'<span class="bpt-shiny shiny-pill">SHINY</span>':'';
-        const mut=(s.mut&&s.mut!=='none')?s.mut:null;
-        const trait=(s.trait&&s.trait!=='none')?s.trait:null;
-        const cnt=(s.count||1)>1?`<span class="bpt-cnt">&times;${fmt(s.count)}</span>`:'';
-        const stack=(shny||mut||trait)?`<div class="bpt-top">${shny}${mut?mutChip(mut,mutPill(mut,'bpt-mut')):''}${trait?traitChip(trait,`<span class="bpt-gem" style="color:${TRAIT_COLOR[trait]};border-color:${TRAIT_COLOR[trait]}">${traitGem(12,trait)}</span>`):''}</div>`:'';
-        return `<img src="${cardThumb(s.char)}" alt="" width="360" height="536" decoding="async">${stack}${cnt}<div class="bpt-ctl"><button class="bpt-fav${s.fav?' on':''}" onclick="event.stopPropagation();bpFav('${s.id}');renderRaidPick()" title="Favorit">${s.fav?'★':'☆'}</button><button class="bpt-lock${s.lock?' on':''}" onclick="event.stopPropagation();bpLock('${s.id}');renderRaidPick()" title="Lock">${s.lock?'🔒':'🔓'}</button></div><div class="bpt-name">${c.name}</div>`;};
-        _rdTileHtml=_rd;
-        return stacks.map((s,i)=>{_rd[s.id]=inner(s);const c=CARDS[s.char];const mounted=true;
-        return `<div class="bp-tile${c.fullArt?' fa':''}${mounted?'':' lz-ph'}" data-lz="${s.id}" data-sid="${s.id}" data-pick="${s.id}" data-name="${c.name.toLowerCase()}" style="--tcol:${(s.tier&&TIER_COLOR[s.tier])||'var(--line2)'}">${mounted?_rd[s.id]:''}</div>`;
-      }).join("");})()}</div>
-      <div class="no-result" id="raidSearch-nr">No matching cards dengan pencarian.</div>
-    </div>
-  </div>`;
-  bpsHoverBind();bpsHoverHide(); /* hover tile -> reveal kartu penuh (stat/passive) kayak tab DECK */
-  {const bk=document.getElementById("raidPickBack");if(bk)bk.onclick=()=>{sfx.hit();raidView="hub";renderRaid();};}
-  {const rs=document.getElementById("raidSearch");if(rs){rs.value=raidSearch;rs.oninput=()=>{raidSearch=rs.value;runCardSearch(rs,document.getElementById("raidPickGrid"),document.getElementById("raidSearch-nr"));};if(raidSearch)runCardSearch(rs,document.getElementById("raidPickGrid"),document.getElementById("raidSearch-nr"));}}
-  app.querySelectorAll("[data-pick]").forEach(btn=>btn.onclick=()=>{
-    if(wbStarting)return;
-    sfx.hit();
-    if(typeof hideRollResult==="function")hideRollResult();
-    raidPicked=state.stacks.find(s=>s.id===btn.dataset.pick)||state.stacks[0];
-    if(!wbOnline()){wbRunId=null;wbRunBoss=null;raidView="battle";renderRaid();return;}
-    /* Attempt dipotong di sini (server) — run yang ditinggal tetap terhitung. */
-    wbStarting=true;
-    raidToast("LOCKING ATTEMPT…");
-    const sb=wbBoss(), sd=wbData();
-    window.CloudDB.wbStart(currentUser,sb.id).then(res=>{
-      wbStarting=false;
-      if(res&&res.ok){
-        wbRunId=res.run_id;
-        wbRunBoss=sb.key;
-        if(sd){
-          sd.attempts_used=(sd.attempts_used||0)+1;
-          sd.attempts_left=typeof res.attempts_left==="number"?res.attempts_left:Math.max(0,3-sd.attempts_used);
-          if(res.modifier)sd.modifier=res.modifier;
-          wbAt=Date.now();
-        }
-        raidView="battle";renderRaid();
-      }else if(res&&res.ok===false){
-        wbRunId=null;wbRunBoss=null;
-        if(res.msg==="NO_ATTEMPTS_LEFT"&&sd){sd.attempts_used=3;sd.attempts_left=0;}
-        raidToast(res.msg==="NO_ATTEMPTS_LEFT"?"ATTEMPTS USED TODAY · RESET "+wbResetText():"FAILED TO START RUN · TRY AGAIN");
-        raidView="hub";renderRaid();
-      }else{
-        /* server tak terjangkau: boleh main lokal, skor tidak dikirim */
-        wbRunId=null;raidToast("OFFLINE · LOCAL PLAY WITHOUT SCORE");raidView="battle";renderRaid();
-      }
-    }).catch(()=>{
-      /* Promise reject (bukan respons ok:false) — tanpa ini wbStarting nyangkut true
-         dan semua tap kartu diblokir selamanya. */
-      wbStarting=false;wbRunId=null;wbRunBoss=null;
-      raidToast("OFFLINE · LOCAL PLAY WITHOUT SCORE");raidView="battle";renderRaid();
-    });
-  });
-  lazyMountGrid(app.querySelector(".rd-pick-scroll-wrap")||app,_rdTileHtml);
-}
 function renderRaidBattle(){
   if(window.cgGameplayStart) window.cgGameplayStart();
   const b=wbBossOf(), eq=raidPicked||equipped();
@@ -853,63 +1490,212 @@ function endRaid(){
   const pct=raid.max>0?(raid.max-Math.max(0,raid.hp))/raid.max*100:0;
   raid.pct=pct;raid.dmg=dmg;
   sfx.win();
-  /* Kirim DAMAGE ABSOLUT (damage kartu apa adanya) ke server; server potong pool
-     boss itu + simpan best_dmg, lalu membatasi ke _wb_dmg_cap(save). */
   const runId=wbRunId, runBossKey=wbRunBoss;
   wbRunId=null;wbRunBoss=null;
   if(runId&&window.CloudDB&&currentUser){
     const runBoss=WB_BOSSES.find(x=>x.key===runBossKey)||wbBoss();
     raid.wbPending=true;
     window.CloudDB.wbSubmit(currentUser,runId,dmg,runBoss.id).then(res=>{
+      if(!raid)return;
       raid.wbPending=false;
       raid.wbRes=res||{ok:false,msg:"OFFLINE"};
       if(res&&res.ok){
         const bd=wbByBoss[runBoss.key];
         if(bd){
           bd.best_dmg=Math.max(bd.best_dmg||0,res.best_dmg||dmg);
+          bd.total_dmg=typeof res.total_dmg==="number"?res.total_dmg:((bd.total_dmg||0)+(res.dmg||dmg));
           if(res.rank)bd.rank=res.rank;
           if(typeof res.attempts_left==="number"){bd.attempts_left=res.attempts_left;bd.attempts_used=3-res.attempts_left;}
           if(typeof res.hp_left==="number"){bd.hp_pool=res.hp_pool;bd.hp_left=res.hp_left;}
           wbAt=Date.now();
         }
       }
-      if(raidView==="result")renderRaidResult();
+      if(raidView==="result"){renderRaidResult();wbScheduleAutoRepeat();}
     }).catch(()=>{
-      /* Tanpa catch, layar hasil nyangkut di "MENGIRIM DAMAGE…" selamanya. */
       if(raid){raid.wbPending=false;raid.wbRes={ok:false,msg:"NETWORK"};}
-      if(raidView==="result")renderRaidResult();
+      if(raidView==="result"){renderRaidResult();wbScheduleAutoRepeat();}
     });
+  }else if(!wbOnline()){
+    const idx=WB_BOSSES.findIndex(x=>x.key===(runBossKey||wbBoss().key));
+    const g=wbGuestState(idx>=0?idx:wbBossIdx);
+    g.attempts_left=Math.max(0,g.attempts_left-1);
+    g.left=Math.max(0,g.left-dmg);
+    g.best_dmg=Math.max(g.best_dmg||0,dmg);
+    g.total_dmg=(g.total_dmg||0)+dmg;
   }
-  setTimeout(()=>{raidView="result";renderRaid();},2000);
+  setTimeout(()=>{raidView="result";renderRaid();wbScheduleAutoRepeat();},2000);
 }
+
+function wbCanAutoRepeat(){
+  if(!state||!state.wbAutoRepeat)return false;
+  if(wbOnline()&&raid&&raid.wbPending)return false;
+  const cb=wbBoss();
+  if(cb.locked)return false;
+  const {left}=wbPoolVals();
+  if(left<=0)return false;
+  const att=wbAttOf(wbBossIdx);
+  return att==null||att>0;
+}
+
+function wbScheduleAutoRepeat(){
+  clearTimeout(wbAutoTimer);wbAutoTimer=null;
+  if(route()!=="#/raid"||raidView!=="result")return;
+  if(!wbCanAutoRepeat())return;
+  wbAutoTimer=setTimeout(()=>{
+    if(route()==="#/raid"&&raidView==="result"&&wbCanAutoRepeat()){
+      wbLaunchRaid();
+    }
+  },1800);
+}
+
 function renderRaidResult(){
+  const b=wbBoss();
+  const meta=wbBossMetaOf(b);
   const dmg=raid?raid.dmg||0:0;
   const pct=raid?raid.pct||0:0;
-  let wbLine="";
+  const {pool,left:poolLeft}=wbPoolVals();
+  const poolPct=pool>0?Math.max(0,Math.min(100,poolLeft/pool*100)):0;
+  const totalDmg=wbTotalDmg();
+  const bestDmg=Math.max(wbBestRunDmg(),dmg);
+  const att=wbAttOf(wbBossIdx);
+  const claimedSet=new Set(wbMilestonesClaimed());
+  const msCleared=WB_MILESTONES.filter(m=>totalDmg>=m.req).length;
+  const msReady=WB_MILESTONES.filter(m=>totalDmg>=m.req&&!claimedSet.has(m.tier)).length;
+  const striker=wbSelectedStriker();
+  const strikerCard=(striker&&CARDS[striker.char])||null;
+
+  let statusCls="", statusTxt="";
   if(wbOnline()&&raid){
-    if(raid.wbPending)wbLine=`<div class="rr-wb">MENGIRIM DAMAGE KE WORLD BOSS…</div>`;
-    else if(raid.wbRes&&raid.wbRes.ok)wbLine=`<div class="rr-wb on">DAMAGE TERCATAT · BEST ${fmtBig(raid.wbRes.best_dmg)} · RANK #${raid.wbRes.rank||"—"}${raid.wbRes.total_players?"/"+raid.wbRes.total_players:""} · SISA ${raid.wbRes.attempts_left} ATTEMPT${typeof raid.wbRes.pool_dmg==="number"?" · POOL −"+fmtBig(raid.wbRes.pool_dmg):""}</div>`;
-    else if(raid.wbRes)wbLine=`<div class="rr-wb bad">DAMAGE SUBMIT FAILED (${raid.wbRes.msg||"ERROR"}) · ATTEMPT STILL CONSUMED</div>`;
-    else wbLine=`<div class="rr-wb">LOCAL PLAY · DAMAGE NOT SUBMITTED</div>`;
+    if(raid.wbPending){ statusTxt="SUBMITTING DAMAGE TO WORLD BOSS SERVER\u2026"; }
+    else if(raid.wbRes&&raid.wbRes.ok){
+      statusCls=" ok";
+      statusTxt="RECORDED \u00b7 PEAK "+fmtBig(raid.wbRes.best_dmg)+" \u00b7 RANK #"+(raid.wbRes.rank||"\u2014")+(raid.wbRes.total_players?"/"+raid.wbRes.total_players:"")+" \u00b7 "+raid.wbRes.attempts_left+" ATTEMPT(S) LEFT";
+    }else if(raid.wbRes){
+      statusCls=" bad";
+      statusTxt="SUBMIT FAILED ("+(raid.wbRes.msg||"ERROR")+") \u00b7 ATTEMPT CONSUMED";
+    }else{
+      statusTxt="LOCAL PRACTICE RUN \u00b7 SCORE NOT SUBMITTED";
+    }
+  }else{
+    statusCls=" ok";
+    statusTxt="LOCAL RUN SAVED \u00b7 CUMULATIVE "+fmtBig(totalDmg)+" DMG \u00b7 "+(att==null?0:att)+"/3 LEFT";
   }
+
+  const autoReady=wbCanAutoRepeat();
+  const autoHtml=autoReady?`<div class="rr-auto-box" id="rrAutoBox"><span>AUTO REPEAT ACTIVE \u2014 RE-DEPLOYING IN 2s\u2026</span><button type="button" class="rr-auto-stop" id="rrAutoStop">STOP AUTO</button></div>`:"";
+  const cryHtml=[0,1,2].map(i=>`<span class="wb-cr${i<(att==null?0:att)?"":" off"}"></span>`).join("");
+  const canFightAgain=!b.locked&&poolLeft>0&&(att==null||att>0);
+  const againTxt=b.locked?"BOSS LOCKED":(poolLeft<=0?"BOSS DEFEATED":((att!=null&&att<=0)?"NO ATTEMPTS LEFT":"RAID AGAIN ("+(att==null?3:att)+"/3)"));
+  const defeated=pct>=100||poolLeft<=0;
+
   app.innerHTML=`
-  <div class="tw-page rd-page"><div class="raid-result">
-    <div class="eyebrow">HASIL WORLD BOSS</div>
-    <div class="rr-title disp${pct>=100?"":" lose"}">${pct>=100?"BOSS DEFEATED":"RUN COMPLETE"}</div>
-    <div class="rr-pct">Damage run ini <b>${fmtBig(dmg)}</b></div>
-    <div class="rr-token">${pct.toFixed(2)}% <span>DARI POOL 10B</span></div>
-    ${wbLine}
-    <div class="rr-tier">Damage terbaik 1 run masuk papan peringkat harian. Reward rank diklaim besok di hub.</div>
-    <div class="rr-actions"><button class="btn-grad" id="rrAgain">RAID LAGI</button><button class="btn-ghost" id="rrHub">KEMBALI</button></div>
-  </div></div>`;
-  document.getElementById("rrAgain").onclick=()=>{sfx.hit();raidView="pick";renderRaid();};
-  document.getElementById("rrHub").onclick=()=>{raidView="hub";renderRaid();};
+  <div id="wbView" class="wbv2 wb-res-root rd-page">
+    <div class="wb-shell wb-res-shell is-entered">
+      <div class="wb-banner-bar">
+        <div class="wb-banner-ribbon">
+          <div class="wb-banner-cap">
+            <div class="wb-banner-cap-in">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/>
+              </svg>
+              <span>RESULT</span>
+            </div>
+          </div>
+          <div class="wb-banner-mid">
+            <div class="wb-banner-titles">
+              <h1 class="wb-title">WORLD BOSS <em>RESULT</em></h1>
+              <span class="wb-eyebrow">// ${wbEsc(b.name)} &middot; ${RAID_TURNS}-TURN DEBRIEF</span>
+            </div>
+            <div class="wb-banner-tags">
+              ${strikerCard?`<span class="wb-banner-tag">STRIKER: ${wbEsc(strikerCard.name.toUpperCase())}</span>`:""}
+              <span class="wb-banner-tag hz">RESET: ${wbResetText().toUpperCase()}</span>
+            </div>
+          </div>
+        </div>
+        <div class="wb-banner-right">
+          <button type="button" class="wb-x" id="wbResClose" aria-label="Return to World Boss Hub">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+          <div class="wb-slashes" aria-hidden="true"><i></i><i></i><i></i></div>
+        </div>
+      </div>
+
+      <div class="wb-panel wb-res-panel">
+        <div class="wb-tape-line" aria-hidden="true"></div>
+        <div class="wb-res-grid">
+          <aside class="wb-res-boss">
+            <div class="wb-res-bhead">
+              <b>${wbEsc(b.name)}</b>
+              <span class="wb-res-state${defeated?" dead":""}">${defeated?"BOSS DEFEATED":"RUN COMPLETE"}</span>
+            </div>
+            <div class="wb-res-art">
+              <img src="${meta.art}" alt="${wbEsc(b.name)}">
+              <span class="wb-art-brk tl" aria-hidden="true"></span>
+              <span class="wb-art-brk tr" aria-hidden="true"></span>
+              <span class="wb-art-brk bl" aria-hidden="true"></span>
+              <span class="wb-art-brk br" aria-hidden="true"></span>
+            </div>
+            <div class="wb-hp-block">
+              <div class="wb-hp-bar">
+                <div class="wb-hp-fill" style="width:${poolPct.toFixed(1)}%"></div>
+                <div class="wb-hp-txt">${fmtBig(poolLeft)} / ${fmtBig(pool)} HP</div>
+              </div>
+            </div>
+          </aside>
+
+          <section class="wb-res-main">
+            <div class="wb-res-hero">
+              <span class="wb-res-kicker">DAMAGE DEALT THIS RUN</span>
+              <div class="wb-res-dmg">${fmtBig(dmg)}</div>
+              <div class="wb-res-pct"><b>${pct.toFixed(2)}%</b> <span>OF 10B SERVER POOL</span></div>
+            </div>
+
+            <div class="wb-res-stats">
+              <div class="wb-res-stat"><small>PEAK SINGLE RUN</small><b>${fmtBig(bestDmg)}</b></div>
+              <div class="wb-res-stat"><small>TODAY CUMULATIVE</small><b>${fmtBig(totalDmg)}</b></div>
+              <div class="wb-res-stat">
+                <small>MILESTONES &middot; ATTEMPTS</small>
+                <b>${msCleared}/7${msReady>0?` <em class="wb-res-ready">${msReady} READY</em>`:""}</b>
+                <span class="wb-crystals">${cryHtml}</span>
+              </div>
+            </div>
+
+            <div class="wb-res-status${statusCls}">${wbEsc(statusTxt)}</div>
+            ${autoHtml}
+            <div class="wb-res-note">Your highest single-run score sets your daily MVP rank. Cumulative damage unlocks Milestones &amp; Everyone payouts in the Hub.</div>
+          </section>
+        </div>
+
+        <footer class="wb-res-foot">
+          <button type="button" class="wb-act fight${canFightAgain?"":" disabled"}" id="rrAgain">${againTxt}</button>
+          <button type="button" class="wb-act" id="rrHub">BACK TO HUB${msReady>0?` (${msReady} CLAIMABLE)`:""}</button>
+        </footer>
+      </div>
+    </div>
+  </div>`;
+
+  const goHub=()=>{clearTimeout(wbAutoTimer);wbAutoTimer=null;raidView="hub";renderRaid();};
+  document.getElementById("rrAgain").onclick=()=>{clearTimeout(wbAutoTimer);wbAutoTimer=null;wbLaunchRaid();};
+  document.getElementById("rrHub").onclick=goHub;
+  const rc=document.getElementById("wbResClose");
+  if(rc)rc.onclick=goHub;
+  const stopBtn=document.getElementById("rrAutoStop");
+  if(stopBtn){
+    stopBtn.onclick=()=>{
+      clearTimeout(wbAutoTimer);wbAutoTimer=null;
+      state.wbAutoRepeat=false;
+      try{save();}catch(e){}
+      renderRaidResult();
+      raidToast("AUTO REPEAT STOPPED");
+    };
+  }
   wbRefresh();
 }
+
 function stackHas(char,mut){mut=mut||"none";return state.stacks.some(s=>s.char===char&&(s.mut||"none")===mut);}
 const WB_SHOP=[
-  {id:"gem",name:"Token → Gem // 100:20",cost:100,gem:20,desc:"Trade 100 Tokens for 20 Gems. Unlimited.",apply:()=>""},
-  {id:"coins",name:"2.000 Coin",cost:12,coinBuy:true,desc:"2,000 Coins for rolls & upgrades.",apply:()=>""},
+  {id:"gem",name:"Token → Gem // 100:20",cost:100,gem:20,desc:"Trade 100 Tokens for 20 Gems.",apply:()=>""},
+  {id:"coins",name:"2,000 Coins",cost:12,coinBuy:true,desc:"Coin Mint · 2,000 Coins for rolls & upgrades.",apply:()=>""},
   {id:"card_edragon",name:"Eternal Dragon",cost:4000,desc:"Exclusive boss card. Buy once — its roll opens permanently in every gacha. Base 1 in 25M.",card:{char:"CH_ETERNAL_DRAGON",mut:"none"},
     apply:()=>{state.raidShopOwned=state.raidShopOwned||{};state.raidShopOwned.CH_ETERNAL_DRAGON=true;return gmGrantCard("CH_ETERNAL_DRAGON");}},
   {id:"card_shadowking",name:"Shadow King",cost:8000,desc:"Exclusive boss card. Buy once — granted instantly + its roll opens permanently. Base 1 in 100M.",card:{char:"CH_SHADOW_KING",mut:"none"},
@@ -938,10 +1724,8 @@ const WB_SHOP=[
 function raidShopBuy(id){
   const it=WB_SHOP.find(x=>x.id===id);if(!it)return;
   const tok=state.wbTokens||0;
-  if(tok<it.cost){raidToast("NOT ENOUGH TOKENS — need "+it.cost+" token");return;}
+  if(tok<it.cost){raidToast("NOT ENOUGH TOKENS — need "+fmt(it.cost)+" Tokens");return;}
   if(it.coinBuy){
-    /* 0025: coin milik server — token dipotong + coin dibayar satu RPC atomik,
-       dibatasi 100 pembelian/hari (token masih tersimpan di save_data). */
     (async()=>{
       let res;
       try{
@@ -955,14 +1739,13 @@ function raidShopBuy(id){
       }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
       if(res&&res.ok){
         if(typeof res.tokens==="number")state.wbTokens=res.tokens;
-        save();sfx.crit();renderShell();
-        raidToast("TUKAR BERHASIL · −"+it.cost+" token · +"+fmt(res.coins||2000)+" COIN");
+        save();try{sfx.crit();}catch(e){}renderShell();
+        raidToast("EXCHANGED · -"+fmt(it.cost)+" Tokens · +"+fmt(res.coins||2000)+" Coins");
       }else{
-        const why=(res&&res.msg)==="TOKEN_KURANG"?"NOT ENOUGH TOKENS":((res&&res.msg)==="DAILY_CAP"?"DAILY LIMIT":((res&&res.msg)||"try again"));
+        const why=(res&&res.msg)==="TOKEN_KURANG"?"Not enough tokens":((res&&res.msg)==="DAILY_CAP"?"Daily limit reached":((res&&res.msg)||"Try again"));
         raidToast("EXCHANGE FAILED — "+why);
       }
-      try{renderShell();}catch(e){}
-      if(raidView==="shop")renderRaidShop();
+      wbAfterShopBuy();
     })();
     return;
   }
@@ -973,7 +1756,6 @@ function raidShopBuy(id){
       try{
         const u=(typeof currentUser!=="undefined"&&currentUser)?String(currentUser):"";
         if(u&&window.CloudDB&&window.CloudDB.exchangeTokens){
-          /* 0023: server yang potong token + bayar gem (atomik). */
           res=await window.CloudDB.exchangeTokens(u,"wb");
         }else{
           state.wbTokens-=it.cost;
@@ -983,22 +1765,19 @@ function raidShopBuy(id){
       }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
       if(res&&res.ok){
         if(typeof res.tokens==="number")state.wbTokens=res.tokens;
-        save();sfx.crit();renderShell();
-        raidToast("TUKAR BERHASIL · −"+it.cost+" token · +"+(res.gems||GEM_AMT)+" GEM");
+        save();try{sfx.crit();}catch(e){}renderShell();
+        raidToast("EXCHANGED · -"+fmt(it.cost)+" Tokens · +"+(res.gems||GEM_AMT)+" Gems");
       }else{
         try{save();}catch(e){}
-        const why=(res&&res.msg)==="TOKEN_KURANG"?"NOT ENOUGH TOKENS":((res&&res.msg)||"try again");
+        const why=(res&&res.msg)==="TOKEN_KURANG"?"Not enough tokens":((res&&res.msg)||"Try again");
         raidToast("EXCHANGE FAILED — "+why);
       }
-      try{renderShell();}catch(e){}
-      if(raidView==="shop")renderRaidShop();
+      wbAfterShopBuy();
     })();
     return;
   }
-  if(it.card&&stackHas(it.card.char,it.card.mut)){raidToast("That card is already in your Deck");return;}
-  if(it.owned&&it.owned()){raidToast("Already owned — permanent in Backpack");return;}
-  /* 0026: saldo token milik server. Potong dulu lewat RPC (harga diambil dari
-     token_shop_price, bukan angka client); item baru diberikan kalau server setuju. */
+  if(it.card&&stackHas(it.card.char,it.card.mut)){raidToast("That card is already in your Deck.");return;}
+  if(it.owned&&it.owned()){raidToast("Already owned — permanent in Backpack.");return;}
   (async()=>{
     let res;
     try{
@@ -1012,167 +1791,16 @@ function raidShopBuy(id){
     }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
     if(res&&res.ok){
       if(typeof res.tokens==="number")state.wbTokens=res.tokens;
-      const msg=it.apply();save();sfx.crit();renderShell();
-      raidToast(msg+" · −"+it.cost+" token");
+      const msg=it.apply();save();try{sfx.crit();}catch(e){}renderShell();
+      raidToast("ACQUIRED "+msg+" · -"+fmt(it.cost)+" Tokens");
     }else{
       try{save();}catch(e){}
-      const why=(res&&res.msg)==="TOKEN_KURANG"?"NOT ENOUGH TOKENS":((res&&res.msg)==="DAILY_CAP"?"DAILY LIMIT":((res&&res.msg)||"try again"));
+      const why=(res&&res.msg)==="TOKEN_KURANG"?"Not enough tokens":((res&&res.msg)==="DAILY_CAP"?"Daily limit reached":((res&&res.msg)||"Try again"));
       raidToast("PURCHASE FAILED — "+why);
     }
-    try{renderShell();}catch(e){}
-    renderRaidShop();
+    wbAfterShopBuy();
   })();
 }
-/* =============== TOKO RAID — "SHADOW ARMORY" ===============
-   Port desain terkunci `_tmp/proto_wb_shop_v1.html` (user ACC 2026-11-05):
-   cermin toko Tower Inf "SPIRE ARMORY" — satu top bar, PANGGUNG kartu boss
-   terpisah di atas, lalu rak supply ber-rail (satu item = satu baris).
-   Prefix kelas `wbs-` supaya tidak bentrok dengan `.cs-*` milik toko Tower
-   (style.css) maupun `.tw-*`/`.holo-*` milik lab prototipe.
-   Data & perilaku beli TIDAK berubah: WB_SHOP + raidShopBuy(). */
-
-/* Kategori visual per item — cermin blok kategori prototipe. */
-function wbsMeta(it){
-  if(it.id==="gem")            return { cat:"EXCHANGE",   tier:"GEM",    ac:"#ffd700", art:"assets/images/premium-currency.webp" };
-  if(it.id==="coins")          return { cat:"CREDITS",    tier:"COINS",  ac:"#ffd27a", art:"assets/icons/coins-gold.svg" };
-  if(it.id==="card_edragon")   return { cat:"EX CORE",    tier:"EX-CH",  ac:"#00e5ff", art:"assets/cards/art/eternal-dragon.webp" };
-  if(it.id==="card_shadowking")return { cat:"EX CORE",    tier:"EX-CH",  ac:"#a855f7", art:"assets/cards/art/shadow-king.webp" };
-  if(it.id==="helm-abyss")     return { cat:"RELIC GEAR", tier:"MYTHIC", ac:"#ffb703", art:"assets/artifacts/abyss-helm.webp" };
-  if(it.id==="nebula-wisp")    return { cat:"RELIC GEAR", tier:"COSMIC", ac:"#7df9ff", art:"assets/pets/nebula-wisp.webp" };
-  if(it.id.indexOf("luck")===0)  return { cat:"AUGMENT",   tier:"MK-"+it.id.replace("luck",""),  ac:"#4ade80", art:"assets/images/pot-luck-"+it.id.replace("luck","")+".webp" };
-  if(it.id.indexOf("speed")===0) return { cat:"OVERCLOCK", tier:"MK-"+it.id.replace("speed",""), ac:"#fbbf24", art:"assets/images/pot-speed-"+it.id.replace("speed","")+".webp" };
-  return { cat:"SUPPLY", tier:"SPEC", ac:"#f5f5f5", art:"assets/icons/coins-gold.svg" };
-}
-/* Rail rak (urutan = prototipe). EX CORE tidak di sini: kartunya dipajang
-   di panggung `.wbs-stage-panel` di atas rak. */
-const WBS_RAILS=[
-  { key:"EXCHANGE",   note:"TOKEN BURN" },
-  { key:"CREDITS",    note:"COIN MINT" },
-  { key:"RELIC GEAR", note:"PERMANENT" },
-  { key:"AUGMENT",    note:"LUCK" },
-  { key:"OVERCLOCK",  note:"SPEED" },
-];
-function wbsIsOwned(it){
-  if(it.card) return stackHas(it.card.char,it.card.mut) || !!(state.raidShopOwned && state.raidShopOwned[it.card.char]);
-  if(it.owned) return !!it.owned();
-  return false;
-}
-function wbsStock(it,owned){
-  if(owned) return "OWNED";
-  if(it.id==="gem"||it.id==="coins") return "∞ UNLIMITED";
-  if(it.id.indexOf("luck")===0){ const n=(state.luckPots||[])[+it.id.slice(-1)-1]||0; return "×"+n; }
-  if(it.id.indexOf("speed")===0){ const n=(state.speedPots||[])[+it.id.slice(-1)-1]||0; return "×"+n; }
-  if(it.card) return "ROLL LOCKED";
-  return "PERMANENT";
-}
-/* Label tombol = prototipe: UNLOCKED / DEFICIT n / EXCHANGE (+N) / ACQUIRE. */
-function wbsLabel(it,owned){
-  const tok=state.wbTokens||0;
-  if(owned) return "✔ UNLOCKED";
-  if(tok<it.cost) return "DEFICIT "+fmt(it.cost-tok);
-  if(it.gem) return "EXCHANGE (+"+it.gem+" GEMS)";
-  if(it.coinBuy) return "EXCHANGE (+2,000 COINS)";
-  return "ACQUIRE SUPPLY";
-}
-function wbsRowHtml(it){
-  const m=wbsMeta(it), owned=wbsIsOwned(it);
-  const dis=owned||(state.wbTokens||0)<it.cost;
-  return `<div class="wbs-it" style="--ic:${m.ac}">
-    <span class="wbs-it-art"><i class="wbs-it-glow"></i><img src="${m.art}" alt="" decoding="async"></span>
-    <span class="wbs-it-mid">
-      <span class="wbs-it-cat"><b class="c1">${m.cat}</b><b class="c2">${m.tier}</b></span>
-      <span class="wbs-it-nm" title="${it.name}">${it.name}</span>
-      <span class="wbs-it-ds">${it.desc}</span>
-      <span class="wbs-it-stock">IN STOCK <b>${wbsStock(it,owned)}</b></span>
-    </span>
-    <span class="wbs-it-right">
-      <span class="wbs-it-price"><b>${fmt(it.cost)}<i>TOK</i></b></span>
-      <button class="wbs-buy" type="button" data-id="${it.id}" ${dis?"disabled":""}>${wbsLabel(it,owned)}</button>
-    </span>
-  </div>`;
-}
-function wbsBossHtml(it){
-  const m=wbsMeta(it), owned=wbsIsOwned(it);
-  const dis=owned||(state.wbTokens||0)<it.cost;
-  return `<div class="wbs-boss${owned?" owned":""}" style="--ic:${m.ac}">
-    <span class="wbs-boss-art">
-      <i class="wbs-it-glow"></i>
-      <img src="${m.art}" alt="${it.name}" decoding="async">
-      <span class="wbs-boss-seal${owned?" on":""}">${owned?"✔ OWNED":"ROLL LOCKED"}</span>
-    </span>
-    <span class="wbs-boss-mid">
-      <span class="wbs-it-cat"><b class="c1">${m.cat}</b><b class="c2">${m.tier}</b></span>
-      <span class="wbs-boss-nm" title="${it.name}">${it.name}</span>
-      <span class="wbs-boss-ds">${it.desc}</span>
-    </span>
-    <span class="wbs-boss-foot">
-      <span class="wbs-boss-price"><b>${fmt(it.cost)}<i>TOK</i></b></span>
-      <button class="wbs-buy" type="button" data-id="${it.id}" ${dis?"disabled":""}>${wbsLabel(it,owned)}</button>
-    </span>
-  </div>`;
-}
-
-function renderRaidShop(){
-  const tok=state.wbTokens||0;
-  const META=WB_SHOP.map(it=>({ it, m:wbsMeta(it) }));
-  const bossItems=META.filter(x=>x.m.cat==="EX CORE").map(x=>x.it);
-  const bossTotal=bossItems.length;
-  const bossCount=bossItems.filter(x=>bossRollUnlocked(x.card.char)).length;
-
-  const railsHtml=WBS_RAILS.map(r=>{
-    const rows=META.filter(x=>x.m.cat===r.key).map(x=>x.it);
-    if(!rows.length) return "";
-    return `<div class="wbs-rail">
-      <div class="wbs-rail-h"><b>${r.key}</b><i></i><span>${rows.length} · ${r.note}</span></div>
-      <div class="wbs-rail-shelf">${rows.map(wbsRowHtml).join("")}</div>
-    </div>`;
-  }).join("");
-
-  app.innerHTML=`
-  <div class="wbs-page rd-page">
-    <div class="wbs-shop">
-      <div class="wbs-top">
-        <button class="wbs-back" id="raidShopBack" type="button" title="Back to World Boss" aria-label="Back to World Boss">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-        </button>
-        <div class="wbs-ttl">
-          <div class="wbs-kick"><i></i>WORLD BOSS · PROCUREMENT</div>
-          <div class="wbs-name">SHADOW <em>ARMORY</em></div>
-        </div>
-        <div class="wbs-meter">
-          <div class="wbs-m"><small>TOKEN</small><b class="c">${fmt(tok)}</b></div>
-          <div class="wbs-m"><small>CORES</small><b class="k">${bossCount} / ${bossTotal}</b></div>
-        </div>
-      </div>
-
-      <div class="wbs-body">
-        <div class="wbs-shelf">
-          <div class="wbs-inner">
-            <section class="wbs-stage-panel" aria-label="Ex Core — boss card">
-              <div class="wbs-stage-h"><b>EX CORE</b><i></i><span>${bossTotal} · BOSS UNLOCK</span></div>
-              <div class="wbs-stage-track">${bossItems.map(wbsBossHtml).join("")}</div>
-            </section>
-            ${railsHtml}
-          </div>
-        </div>
-      </div>
-
-      <div class="wbs-foot"><span>${WB_SHOP.length} SUPPLIES</span><i></i><span>INSTANT DELIVERY · 1 TOKEN = 1 RUN</span></div>
-    </div>
-  </div>`;
-
-  const rb=document.getElementById("raidShopBack");
-  if(rb)rb.onclick=()=>{try{sfx.hit();}catch(e){}raidView="hub";renderRaid();};
-
-  app.querySelectorAll(".wbs-buy[data-id]").forEach(btn=>{
-    btn.onclick=()=>{
-      if(btn.disabled)return;
-      const id=btn.getAttribute("data-id");
-      if(id)raidShopBuy(id);
-    };
-  });
-}
-
 
 /* =============== INDEX CARD (layar penuh) =============== */
 const IX_MUTS=["none","gold","rainbow","secret","ultima"];

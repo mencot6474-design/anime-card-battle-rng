@@ -23,7 +23,7 @@ function freshState(){
   const _want=_units.find(c=>_idOf(c)==="CH_GREEN_BEAST");
   const s0=_real(_want)?_want:(_units.find(c=>_real(c))||null);
   const start=s0?{id:Math.random().toString(36).slice(2,9),char:_idOf(s0),tier:(s0.tier==null?null:s0.tier),fav:false,lock:false,mut:"none",shiny:false,trait:"none",count:1}:null;
-  const newState={coins:1000,wbTokens:0,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,totalRolls:0,playSec:0,muted:false,lang:"en",diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},raidShopOwned:{},towerShopOwned:{},storyGemMilestones:{},dailyGemPending:0,storyCd:{},rebirth:{count:0,essence:0},tower:{best:0,runs:0,auto:false},battleSpeed:1,
+  const newState={coins:1000,wbTokens:0,wbStrikerId:null,wbAutoRepeat:false,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,totalRolls:0,playSec:0,muted:false,lang:"en",diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},raidShopOwned:{},towerShopOwned:{},storyGemMilestones:{},dailyGemPending:0,storyCd:{},rebirth:{count:0,essence:0},tower:{best:0,runs:0,auto:false},battleSpeed:1,
     cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],history:[],rollHistory:[],battle:null,
     player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1,sp:0,tree:{}},weather:null,weatherBest:null,potions:0,mythicPotions:0,luckPots:[0,0,0],speedPots:[0,0,0],luckBuffs:[],speedBuffs:[],infTokens:0,
     artOwned:[],artSlots:[null,null],petOwned:[],petEquipped:null,intanRolls:0,idxRewardsClaimed:0,premiumGems:50,rollPacks:{r5k:0,r10k:0,r25k:0,r50k:0,r100k:0}};
@@ -194,6 +194,8 @@ function loadStateFor(name){
   /* TOKEN WORLD BOSS: sumber satu-satunya = klaim reward rank harian.
      Saldo lama (raidTokens) dihapus — tidak dikonversi. */
   if(typeof state.wbTokens!=="number"||state.wbTokens<0)state.wbTokens=0;
+  if(typeof state.wbAutoRepeat!=="boolean")state.wbAutoRepeat=false;
+  if(typeof state.wbStrikerId!=="string"||!state.wbStrikerId)state.wbStrikerId=null;
   delete state.raidTokens;
   /* Gelar dari reward World Boss (ditulis server) — jaga bentuk array di client. */
   if(!Array.isArray(state.titles))state.titles=[];

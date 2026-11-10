@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v558-skIconsDim';
+const CACHE_NAME = 'anime-card-battle-v562-wbResultMs';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
