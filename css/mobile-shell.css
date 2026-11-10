@@ -122,6 +122,16 @@ html.m-portrait .m-tabbar button {
   transition: color 0.18s ease;
 }
 html.m-portrait .m-tabbar button .ic-svg { width: 20px; height: 20px; }
+html.m-portrait .m-tabbar button .ic-webp {
+  width: 26px;
+  height: 26px;
+  display: block;
+  object-fit: contain;
+  opacity: 0.86;
+  pointer-events: none;
+  user-select: none;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.18s ease;
+}
 html.m-portrait .m-tabbar button::after {
   content: '';
   position: absolute;
@@ -135,12 +145,14 @@ html.m-portrait .m-tabbar button::after {
 html.m-portrait .m-tabbar button[aria-current="page"] { color: #f5f5f5; }
 html.m-portrait .m-tabbar button[aria-current="page"]::after { transform: translateX(-50%) scaleX(1); }
 html.m-portrait .m-tabbar button[aria-current="page"] .ic-svg { color: #f3e600; }
+html.m-portrait .m-tabbar button[aria-current="page"] .ic-webp { opacity: 1; transform: translateY(-1px) scale(1.06); }
 html.m-portrait .m-tabbar button:active { transform: scale(0.96); }
 
-/* SUMMON (tengah): heksagon penuh warna hazard, menjorok ke atas bar. */
+/* SUMMON (tengah): heksagon obsidian berbingkai hazard kuning, menjorok ke atas bar. */
 html.m-portrait .m-tabbar .m-dock-mid { justify-content: flex-start; padding-top: 5px; }
 html.m-portrait .m-tabbar .m-dock-mid::after { display: none; }
 html.m-portrait .m-tabbar .m-dk-hex {
+  position: relative;
   width: 44px; height: 46px;
   margin-top: -17px;
   display: grid;
@@ -149,7 +161,15 @@ html.m-portrait .m-tabbar .m-dk-hex {
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
   transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
-html.m-portrait .m-tabbar .m-dk-hex .ic-svg { width: 22px; height: 22px; color: #050505; }
+html.m-portrait .m-tabbar .m-dk-hex::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: #0a0a0a;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+html.m-portrait .m-tabbar .m-dk-hex .ic-svg { position: relative; z-index: 1; width: 22px; height: 22px; color: #f3e600; }
+html.m-portrait .m-tabbar .m-dk-hex .ic-webp { position: relative; z-index: 1; width: 30px; height: 30px; opacity: 1; }
 html.m-portrait .m-tabbar .m-dock-mid:active .m-dk-hex { transform: scale(0.94); }
 html.m-portrait .m-tabbar .m-dock-mid .m-tab-label { margin-top: 1px; }
 
@@ -187,6 +207,16 @@ html.m-landscape .m-rail button {
   transition: color 0.18s ease;
 }
 html.m-landscape .m-rail button .ic-svg { width: 20px; height: 20px; }
+html.m-landscape .m-rail button .ic-webp {
+  width: 26px;
+  height: 26px;
+  display: block;
+  object-fit: contain;
+  opacity: 0.86;
+  pointer-events: none;
+  user-select: none;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.18s ease;
+}
 html.m-landscape .m-rail button::before {
   content: '';
   position: absolute;
@@ -199,15 +229,25 @@ html.m-landscape .m-rail button::before {
 html.m-landscape .m-rail button[aria-current="page"] { color: #f5f5f5; }
 html.m-landscape .m-rail button[aria-current="page"]::before { transform: translateY(-50%) scaleY(1); }
 html.m-landscape .m-rail button[aria-current="page"] .ic-svg { color: #f3e600; }
+html.m-landscape .m-rail button[aria-current="page"] .ic-webp { opacity: 1; transform: scale(1.06); }
 html.m-landscape .m-rail .m-dock-mid { flex: 0 0 58px; }
 html.m-landscape .m-rail .m-dk-hex {
+  position: relative;
   width: 40px; height: 42px;
   display: grid;
   place-items: center;
   background: #f3e600;
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
 }
-html.m-landscape .m-rail .m-dk-hex .ic-svg { width: 20px; height: 20px; color: #050505; }
+html.m-landscape .m-rail .m-dk-hex::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: #0a0a0a;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+html.m-landscape .m-rail .m-dk-hex .ic-svg { position: relative; z-index: 1; width: 20px; height: 20px; color: #f3e600; }
+html.m-landscape .m-rail .m-dk-hex .ic-webp { position: relative; z-index: 1; width: 28px; height: 28px; opacity: 1; }
 html.m-landscape .m-rail .m-tab-label { display: none; }
 
 /* Belt-and-braces: never show the other orientation's nav variant. */

@@ -83,21 +83,19 @@
       } }
   ];
 
-  /* Ikon = inline SVG Solar bold-duotone (js/cyber-icons.js) — nol request
-     runtime, warna ikut currentColor. Fallback ke file SVG lama bila modul
-     belum termuat (urutan script dijaga, tapi jangan pernah crash). */
+  /* Ikon tab bar dock = raster WebP 2.5D anime cyber-hazard (assets/icons/dock/*.webp).
+     Fallback ke SVG lama bila atribut gagal dimuat tidak dipakai; semua 5 file
+     lokal di assets/icons/dock/ dipreload ringan lewat <img> decoding async. */
   var ICON_URL = {
-    home:    "assets/icons/portal.svg",
-    deck:    "assets/icons/card-play.svg",
-    archive: "assets/icons/backpack.svg",
-    more:    "assets/icons/scroll-unfurled.svg",
-    summon:  "assets/icons/scroll-unfurled.svg"
+    home:    "assets/icons/dock/home.webp?v=1",
+    deck:    "assets/icons/dock/deck.webp?v=1",
+    summon:  "assets/icons/dock/summon.webp?v=1",
+    archive: "assets/icons/dock/archive.webp?v=1",
+    more:    "assets/icons/dock/more.webp?v=1"
   };
   function iconHtml(name) {
-    if (typeof window.cyberIcon === "function") return window.cyberIcon(name, "ic-svg");
-    return '<i class="ic" aria-hidden="true" style="-webkit-mask:url(' +
-      ICON_URL[name] + ') center/contain no-repeat;mask:url(' + ICON_URL[name] +
-      ') center/contain no-repeat"></i>';
+    var src = ICON_URL[name] || ICON_URL.home;
+    return '<img class="ic-webp" src="' + src + '" alt="" aria-hidden="true" decoding="async" draggable="false">';
   }
 
   function currentHash() {
