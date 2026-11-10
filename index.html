@@ -50,12 +50,13 @@
 <link rel="stylesheet" href="css/battle-fresh.css?v=v35-smoothBasicAtk">
 <link rel="stylesheet" href="css/notify-hazard.css?v=v2-notifyHazard">
 <link rel="stylesheet" href="css/watch-ads-hazard.css?v=v3-watchAdsHazard">
+<link rel="stylesheet" href="css/daily-hazard.css?v=v1-dailyHazard">
 <script>
   /* Link toko Trakteer (fallback — utama ada di js/config.js). */
   window.TRAKTEER_SHOP_URL = "";
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=v545-watchAdsHazard').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=v546-dailyHazard').catch(() => {});
     });
   }
 </script>
@@ -972,16 +973,84 @@
   </div>
 </div></div>
 
-<div id="dailyModal"><div class="dl-box">
-  <div class="dl-glow-top"></div>
-  <div class="ix-head dl-head">
-    <div><div class="eyebrow dl-eyebrow">7-DAY ATTENDANCE PROTOCOL Â· BACKPACK REWARDS</div><div class="ix-title dl-title">7 HARI LOGIN REWARD</div></div>
-    <button class="ix-x" id="dlClose" title="Close">âœ•</button>
+<!-- DAILY REWARDS MODAL + HAZARD CURTAIN (port _tmp/proto_daily_v1.html) -->
+<div id="dailyModal" role="dialog" aria-modal="true" aria-label="Daily Rewards">
+  <div class="dlh-shell">
+    <header class="dlh-banner-bar">
+      <div class="dlh-banner-ribbon">
+        <div class="dlh-banner-cap">
+          <div class="dlh-banner-cap-in">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="12" rx="1.5"/><path d="M12 8v12M3 13h18M7.5 8C6 8 5 6.8 5 5.5S6 3 7.5 3C9.5 3 12 8 12 8s2.5-5 4.5-5C18 3 19 4.2 19 5.5S18 8 16.5 8"/></svg>
+            <span>7-DAY</span>
+          </div>
+        </div>
+        <div class="dlh-banner-mid">
+          <div class="dlh-banner-titles">
+            <h1 class="dlh-title">DAILY <em>REWARDS</em></h1>
+            <span class="dlh-eyebrow">// ATTENDANCE SUPPLY PROTOCOL &middot; BACKPACK CACHE</span>
+          </div>
+          <span class="dlh-banner-tag">HZ-07 CYCLE</span>
+        </div>
+      </div>
+
+      <div class="dlh-banner-right">
+        <button type="button" class="dlh-x" id="dlClose" aria-label="Close Daily Rewards" title="Close [ESC]">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+        </button>
+        <div class="dlh-slashes" aria-hidden="true"><i></i><i></i><i></i></div>
+      </div>
+    </header>
+
+    <section class="dlh-panel">
+      <div class="dlh-tape-line" aria-hidden="true"></div>
+
+      <div class="dlh-subbar">
+        <div class="dlh-sub-desc">Log in daily to claim <em>100K Packs</em>, <b>Coins</b> &amp; <b>Gems</b>.</div>
+        <div class="dlh-pills">
+          <div class="dlh-pill day"><span class="dlh-dot"></span><span>CYCLE: <b id="dlProgTxt">DAY 1 / 7</b></span></div>
+          <div class="dlh-pill bag"><span>BAG STOCK: <b id="dlBagCnt">&times;0</b></span></div>
+          <div class="dlh-pill timer"><span>RESET IN <b id="dlCount">00:00:00</b></span></div>
+        </div>
+      </div>
+
+      <div class="dlh-grid-wrap">
+        <div class="dlh-grid" id="dlGrid"></div>
+      </div>
+
+      <footer class="dlh-foot" id="dlFoot"></footer>
+    </section>
   </div>
-  <div class="dl-count">RESET DALAM <b id="dlCount">00:00:00</b></div>
-  <div class="dl-grid" id="dlGrid"></div>
-  <div class="dl-foot" id="dlFoot"></div>
-</div></div>
+</div>
+
+<div id="dailyCurtain" aria-hidden="true">
+  <div class="half top">
+    <span class="edge"></span>
+    <span class="mark">ATTENDANCE <b>07</b> / 07</span>
+  </div>
+  <div class="half bot">
+    <span class="edge"></span>
+    <span class="mark">HZ-PROTOCOL <b>SUPPLY</b></span>
+  </div>
+  <div class="tape tape-a"></div>
+  <div class="tape tape-b"></div>
+  <div class="flash"></div>
+  <div class="plate">
+    <span class="corner tl"></span><span class="corner tr"></span>
+    <span class="corner bl"></span><span class="corner br"></span>
+    <span class="water" id="dlHZWater">DAILY</span>
+    <div class="in">
+      <div class="krow">
+        <span class="dot"></span>
+        <span class="kick" id="dlHZKick">// ATTENDANCE <b>PROTOCOL</b></span>
+        <span class="serial">SERIAL 0x<b id="dlHZSerial">D7A4</b></span>
+      </div>
+      <div class="title"><span id="dlHZTitle">DAILY REWARDS</span></div>
+      <div class="sub" id="dlHZSub">7-DAY SUPPLY &mdash; 31&times; 100K PACKS &middot; +1M COINS &middot; +200 GEMS</div>
+      <div class="bar"><i></i></div>
+      <div class="foot"><span>HZ-PROTOCOL</span><span id="dlHZFoot">SYNCING LEDGER</span></div>
+    </div>
+  </div>
+</div>
 
 <div id="storyModal" class="story-viewport">
   <!-- Latar taktis: art musuh terkuat bab + grid. Dekoratif (pointer-events none). -->
@@ -1801,7 +1870,7 @@
 <script src="js/topup.js?v=v158-paywallOff"></script>
 <script src="js/cards-fx.js?v=v84-fmtStatCompact"></script>
 <script src="js/anime-archetype-attacks.js?v=v121-smoothBasicAtk"></script>
-<script src="js/state.js?v=v351-notifyHazard"></script>
+<script src="js/state.js?v=v352-dailyHazard"></script>
 <script src="js/sheetfx.js?v=v350-protoSlashOnly"></script>
 <script src="js/battle.js?v=v260-smoothBasicAtk"></script>
 <script src="js/battle-hazard.js?v=v21-smoothBasicAtk"></script>

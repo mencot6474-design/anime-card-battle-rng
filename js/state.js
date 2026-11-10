@@ -1110,23 +1110,77 @@ function renderShell(){
   try{if(typeof startGlobalLuckPoll==='function')startGlobalLuckPoll();}catch(e){}
 }
 
-/* =============== DAILY LOGIN 7 HARI (INSTAN ROLL PACK 100K) =============== */
+/* =============== DAILY LOGIN 7-DAY (INSTANT ROLL PACK 100K) =============== */
 const DAILY_PACKS_100K=[1,2,3,4,5,6,10];
 const DAILY_PACKS_TOTAL=DAILY_PACKS_100K.reduce((a,b)=>a+b,0);
 const DAILY_GEMS=[10,15,20,25,30,40,60];
 const DAILY_GEM_TOTAL=DAILY_GEMS.reduce((a,b)=>a+b,0);
-const GEM_ICON_SM='<img src="assets/images/premium-currency.webp" width="12" height="12" alt="" style="vertical-align:-2px;border-radius:50%">';
+const GEM_ICON_SM='<img src="assets/images/premium-currency.webp" width="12" height="12" alt="" style="border-radius:50%;object-fit:contain">';
 const DAILY_TOTAL=DAILY_REWARDS.reduce((a,b)=>a+b,0);
 
-/* 0040: sistem `dailyR100kBalance` (get/set/add/consume + kunci localStorage) DIHAPUS.
-   Pack harian lahir di ledger server lewat claim_daily_gem dan masuk ke
-   state.rollPacks.r100k dari respons RPC itu. */
+/* 0040: `dailyR100kBalance` localStorage mirror REMOVED.
+   Daily packs are granted server-side via claim_daily_gem and synced into state.rollPacks.r100k. */
+
+let _dlCurtainT=[];
+let _dlClosing=false;
+function _dlClearCurtain(){
+  for(let i=0;i<_dlCurtainT.length;i++)clearTimeout(_dlCurtainT[i]);
+  _dlCurtainT=[];
+}
+function _dlSetCurtainCopy(mode){
+  const kick=document.getElementById("dlHZKick");
+  const title=document.getElementById("dlHZTitle");
+  const sub=document.getElementById("dlHZSub");
+  const foot=document.getElementById("dlHZFoot");
+  const serial=document.getElementById("dlHZSerial");
+  const water=document.getElementById("dlHZWater");
+  if(serial)serial.textContent=(0x1000+Math.floor(Math.random()*0xefff)).toString(16).toUpperCase();
+  if(mode==="open"){
+    if(kick)kick.innerHTML="// ATTENDANCE <b>PROTOCOL</b>";
+    if(title)title.textContent="DAILY REWARDS";
+    if(water)water.textContent="DAILY";
+    if(sub)sub.textContent="7-DAY SUPPLY \u2014 31\u00d7 100K PACKS \u00b7 +1M COINS \u00b7 +200 GEMS";
+    if(foot)foot.textContent="SYNCING LEDGER";
+  }else{
+    if(kick)kick.innerHTML="// SUPPLY <b>STAND BY</b>";
+    if(title)title.textContent="STANDBY";
+    if(water)water.textContent="LOCK";
+    if(sub)sub.textContent="ATTENDANCE PROTOCOL SEALED \u2014 TIMERS SYNCED";
+    if(foot)foot.textContent="RETURN TO LOBBY";
+  }
+}
+function dlBannerOpen(){
+  const c=document.getElementById("dailyCurtain");
+  if(!c)return;
+  _dlClearCurtain();
+  _dlSetCurtainCopy("open");
+  c.className="";
+  void c.offsetWidth;
+  c.classList.add("on","smooth","sweep");
+  _dlCurtainT.push(setTimeout(()=>c.classList.add("revealed"),980));
+  _dlCurtainT.push(setTimeout(()=>c.classList.remove("on","smooth","sweep","revealed"),1700));
+}
+function dlBannerClose(onCovered){
+  const c=document.getElementById("dailyCurtain");
+  if(!c){if(onCovered)onCovered();return;}
+  _dlClearCurtain();
+  _dlSetCurtainCopy("close");
+  c.className="";
+  c.classList.add("on","smooth","revealed");
+  void c.offsetWidth;
+  c.classList.remove("revealed");
+  _dlCurtainT.push(setTimeout(()=>{if(onCovered)onCovered();},560));
+  _dlCurtainT.push(setTimeout(()=>c.classList.add("revealed"),780));
+  _dlCurtainT.push(setTimeout(()=>c.classList.remove("on","smooth","revealed"),1560));
+}
+window.dlBannerOpen=dlBannerOpen;
+window.dlBannerClose=dlBannerClose;
 
 function openBackpackFromDaily(){
-  closeDaily();
+  closeDaily({instant:true});
   try{
     if(typeof bpSetTab==="function")bpSetTab("item");
-    var p=document.getElementById("backpackPanel");
+    const p=document.getElementById("backpackPanel");
     if(p&&!p.classList.contains("open")&&typeof toggleBackpack==="function"){
       toggleBackpack();
     }else if(typeof renderBackpackPanel==="function"){
@@ -1139,72 +1193,129 @@ window.openBackpackFromDaily=openBackpackFromDaily;
 function renderDaily(){
   const ready=state.lastClaim!==todayStr();
   const idx=(typeof state.dailyIndex==="number"?state.dailyIndex:0)%7;
-  const packIcon='assets/images/instanpack-100k.webp?v=trans1';
+  const displayDayIdx=ready?idx:((idx+6)%7);
+  const packIcon="assets/images/instanpack-100k.webp?v=trans1";
   const curBag=(state&&state.rollPacks&&state.rollPacks.r100k)||0;
 
-  /* Update modal header badge if present */
-  const box=document.querySelector("#dailyModal .dl-box");
-  if(box){
-    const countEl=box.querySelector(".dl-count");
-    if(countEl && !box.querySelector(".dl-subbar")){
-      countEl.outerHTML=`<div class="dl-subbar">
-        <div class="dl-sub-pill prog"><span class="dl-pulse"></span>SIKLUS LOGIN: <b id="dlProgTxt">HARI ${idx+1} / 7</b></div>
-        <div class="dl-sub-pill bag" onclick="openBackpackFromDaily()" title="Lihat di Backpack">📦 STOK PACK 100K DI BACKPACK: <b id="dlBagCnt">×${fmt(curBag)}</b></div>
-        <div class="dl-sub-pill timer">⏳ DAILY RESET: <b id="dlCount">00:00:00</b></div>
-      </div>`;
-    }else{
-      const pt=document.getElementById("dlProgTxt");if(pt)pt.textContent=`HARI ${idx+1} / 7`;
-      const bc=document.getElementById("dlBagCnt");if(bc)bc.textContent=`×${fmt(curBag)}`;
-    }
-  }
+  const pt=document.getElementById("dlProgTxt");
+  if(pt)pt.textContent=`DAY ${displayDayIdx+1} / 7`;
+  const bc=document.getElementById("dlBagCnt");
+  if(bc)bc.textContent=`\u00d7${fmt(curBag)}`;
 
-  document.getElementById("dlGrid").innerHTML=DAILY_PACKS_100K.map((packCnt,i)=>{
-    let cls="locked";
-    if(i<idx)cls="claimed";
-    else if(i===idx&&ready)cls="ready";
-    else if(i===idx&&!ready)cls="today-done";
+  const lockSvg='<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+  const checkSvg='<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>';
+  const starSvg='<svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9 16.5 14 18.5 21 12 17 5.5 21 7.5 14 2 9 9 9"/></svg>';
+
+  const grid=document.getElementById("dlGrid");
+  if(grid)grid.innerHTML=DAILY_PACKS_100K.map((packCnt,i)=>{
+    let stateCls="is-locked";
+    if(ready){
+      if(i<idx)stateCls="is-claimed";
+      else if(i===idx)stateCls="is-ready";
+    }else{
+      if(i<=displayDayIdx)stateCls="is-claimed";
+    }
     const isFinale=(i===6);
     const totalPulls=packCnt*100000;
-    const pullsLabel=totalPulls>=1000000?(totalPulls/1000000).toFixed(1).replace(/\.0$/,'')+'M ROLL':(totalPulls/1000)+'K ROLL';
-    let statusBadge='<span class="dlt-status locked">🔒 TERKUNCI</span>';
-    if(cls==="claimed"||cls==="today-done")statusBadge='<span class="dlt-status claimed">✓ CLAIMED</span>';
-    else if(cls==="ready")statusBadge='<span class="dlt-status ready">★ READY TO CLAIM</span>';
+    const pullsTxt=totalPulls>=1000000
+      ?(totalPulls/1000000).toFixed(1).replace(/\.0$/,"")+"M INSTANT PULLS"
+      :(totalPulls/1000)+"K PULLS";
 
-    return `<div class="dl-tile ${cls}${isFinale?' is-finale':''}" ${cls==='ready'?'onclick="claimDaily()"':''}>
-      <div class="dlt-top">
-        <span class="d">DAY ${i+1}</span>
-        ${isFinale?'<span class="dlt-finale-tag">GRAND FINALE</span>':''}
-      </div>
-      <div class="dlt-visual">
-        <div class="dlt-aura"></div>
-        <img class="dlt-pack-img" src="${packIcon}" alt="Instan Pack 100K" onerror="this.style.display='none'">
-        <span class="dlt-qty-badge">${packCnt}×</span>
-      </div>
-      <div class="dlt-info">
-        <div class="dlt-pack-name">${packCnt}× PACK 100K</div>
-        <div class="dlt-pulls-sub">${pullsLabel} INSTAN</div>
-        <div class="dlt-bonus-row">
-          <span class="dlt-b-coin">${coinIcon(11)} +${fmt(DAILY_REWARDS[i]||0)}</span>
-          <span class="dlt-b-gem">${GEM_ICON_SM} +${DAILY_GEMS[i]||0}</span>
+    let badge=`<span class="dlh-st locked"><span>${lockSvg}LOCKED</span></span>`;
+    if(stateCls==="is-claimed")badge=`<span class="dlh-st claimed"><span>${checkSvg}CLAIMED</span></span>`;
+    else if(stateCls==="is-ready")badge=`<span class="dlh-st ready"><span>${starSvg}CLAIM!</span></span>`;
+
+    const clickableAttr=(stateCls==="is-ready")
+      ?` role="button" tabindex="0" onclick="claimDaily()" aria-label="Claim Day ${i+1} Reward"`
+      :"";
+
+    if(isFinale){
+      return `<div class="dlh-tile is-finale ${stateCls}"${clickableAttr}>
+        <span class="dlh-crn tl"></span><span class="dlh-crn br"></span>
+        <div class="dlh-t-top">
+          <div class="dlh-t-day">
+            <span class="dlh-t-num"><span>7</span></span>
+            <span class="dlh-t-lbl">DAY 7</span>
+          </div>
+          ${badge}
         </div>
+        <div class="dlh-t-mid">
+          <div class="dlh-name-wrap">
+            <div class="dlh-name">100K ROLL PACK</div>
+            <div class="dlh-pulls">GRAND FINALE CACHE</div>
+          </div>
+          <div class="dlh-qty">${packCnt}&times;</div>
+        </div>
+        <div class="dlh-showcase">
+          <span class="dlh-sc-tag">GRAND FINALE</span>
+          <div class="dlh-sc-art">
+            <div class="dlh-sc-halo"></div>
+            <div class="dlh-sc-ring"></div>
+            <img src="${packIcon}" alt="10x Instant 100K Pack" onerror="this.style.display='none'">
+            ${stateCls==="is-claimed"?'<span class="dlh-claimed-stamp">SECURED</span>':""}
+          </div>
+          <div class="dlh-sc-cap">
+            <b>10&times; INSTANT 100K CACHE</b>
+            <span>${fmt(totalPulls)} INSTANT PULLS</span>
+          </div>
+        </div>
+        <div class="dlh-bonus">
+          <span class="dlh-b coin">${coinIcon(11)} +${fmt(DAILY_REWARDS[i]||0)}</span>
+          <span class="dlh-b gem">${GEM_ICON_SM} +${DAILY_GEMS[i]||0}</span>
+        </div>
+        <div class="dlh-finale-note">+2 bonus rewards included &middot; Sent straight to Backpack</div>
+      </div>`;
+    }
+
+    return `<div class="dlh-tile ${stateCls}"${clickableAttr}>
+      <span class="dlh-crn tl"></span><span class="dlh-crn br"></span>
+      <div class="dlh-t-top">
+        <div class="dlh-t-day">
+          <span class="dlh-t-num"><span>${i+1}</span></span>
+          <span class="dlh-t-lbl">DAY ${i+1}</span>
+        </div>
+        ${badge}
       </div>
-      ${statusBadge}
+      <div class="dlh-t-mid">
+        <div class="dlh-name-wrap">
+          <div class="dlh-name">100K ROLL PACK</div>
+          <div class="dlh-pulls">${pullsTxt}</div>
+        </div>
+        <div class="dlh-qty">${packCnt}&times;</div>
+      </div>
+      <div class="dlh-art">
+        <div class="dlh-art-glow"></div>
+        <img src="${packIcon}" alt="${packCnt}x Instant 100K Pack" onerror="this.style.display='none'">
+        ${stateCls==="is-claimed"?'<span class="dlh-claimed-stamp">CLAIMED</span>':""}
+      </div>
+      <div class="dlh-bonus">
+        <span class="dlh-b coin">${coinIcon(10)} +${fmt(DAILY_REWARDS[i]||0)}</span>
+        <span class="dlh-b gem">${GEM_ICON_SM} +${DAILY_GEMS[i]||0}</span>
+      </div>
     </div>`;
   }).join("");
 
-  const todayPack=DAILY_PACKS_100K[idx]||1;
+  const giftSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="12" rx="1.5"/><path d="M12 8v12M3 13h18M7.5 8C6 8 5 6.8 5 5.5S6 3 7.5 3C9.5 3 12 8 12 8s2.5-5 4.5-5C18 3 19 4.2 19 5.5S18 8 16.5 8"/></svg>';
+  const checkBtnSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>';
+  const bagSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l1 13H5L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>';
+
   const foot=document.getElementById("dlFoot");
-  foot.innerHTML=`<div class="dl-foot-row">
+  if(foot)foot.innerHTML=`<div class="dlh-foot-row">
     ${ready
-      ?`<button class="dl-claim" id="dlClaim">🎁 CLAIM DAY ${idx+1} · +${todayPack}× INSTANT ROLL PACK 100K (SENT TO BACKPACK)</button>`
-      :`<button class="dl-claim" disabled>✓ ALREADY CLAIMED TODAY · COME BACK TOMORROW</button>`}
-    <button type="button" class="dl-bag-btn" onclick="openBackpackFromDaily()">📦 OPEN BACKPACK</button>
+      ?`<button type="button" class="dlh-claim" id="dlClaim" aria-label="Claim Day ${idx+1} Reward">${giftSvg}<span>CLAIM</span></button>`
+      :`<button type="button" class="dlh-claim" id="dlClaim" disabled aria-label="Day ${displayDayIdx+1} Claimed">${checkBtnSvg}<span>CLAIMED</span></button>`}
+    <button type="button" class="dlh-bag-btn" onclick="openBackpackFromDaily()">${bagSvg}<span>BACKPACK (&times;${fmt(curBag)})</span></button>
   </div>
-  <div class="dl-total">Total 7 Hari: <b>${DAILY_PACKS_TOTAL}× Instan Roll Pack 100K (${fmt(DAILY_PACKS_TOTAL*100000)} Roll)</b> otomatis masuk ke <b>Backpack → Tab Item</b> · +<b>${fmt(DAILY_TOTAL)}</b> Coin · +<b>${DAILY_GEM_TOTAL}</b> Gem</div>`;
-  if(ready)document.getElementById("dlClaim").onclick=claimDaily;
+  <div class="dlh-total">
+    <span>7-DAY CYCLE: <b>${DAILY_PACKS_TOTAL}&times; 100K PACKS</b> (${fmt(DAILY_PACKS_TOTAL*100000)} PULLS) &middot; <b>+${fmt(DAILY_TOTAL)} COINS</b> &middot; <b>+${DAILY_GEM_TOTAL} GEMS</b></span>
+    <span class="haz">DELIVERED TO BACKPACK &rarr; ITEMS</span>
+  </div>`;
+  if(ready){
+    const cb=document.getElementById("dlClaim");
+    if(cb)cb.onclick=claimDaily;
+  }
   if(state.dailyGemPending>0)flushPendingDailyGems(true);
   tickDaily();
-  if(window.GameLang&&typeof window.GameLang.refresh==="function")window.GameLang.refresh();
 }
 function claimDaily(){
   if(state.lastClaim===todayStr())return;
@@ -1222,7 +1333,7 @@ function claimDaily(){
   state.lastClaim=todayStr();
   state.dailyIndex=(idx+1)%7;
   sfx.win();save();
-  try{toast("DAY "+(idx+1)+" LOGIN REWARD!","+"+packQty+"× INSTAN ROLL PACK 100K disimpan ke Backpack!","#ffd700");}catch(e){}
+  try{toast("DAY "+(idx+1)+" REWARD SECURED!","+"+packQty+"\u00d7 100K Pack sent to Backpack \u00b7 +"+fmt(DAILY_REWARDS[idx]||0)+" Coins \u00b7 +"+gems+" Gems","#6be08a");}catch(e){}
   renderShell();renderDaily();
   if(typeof renderLobby==="function"&&typeof route==="function"&&route()==="#/lobby"&&!battleLive()){
     try{renderLobby();}catch(e){}
@@ -1260,16 +1371,51 @@ async function flushPendingDailyGems(quiet){
     try{save();}catch(e){}
     try{renderShell();}catch(e){}
     try{if(typeof renderBackpackPanel==="function")renderBackpackPanel();}catch(e){}
-    if(res.ok)try{toast("DAILY LOGIN","+"+(res.gems||gems)+" GEM · +"+fmt(res.coins||0)+" COIN"+((res.packs||0)>0?" · +"+res.packs+"× PACK 100K":""),"#ffd700");}catch(e){}
+    try{const dm=document.getElementById("dailyModal");if(dm&&dm.classList.contains("show"))renderDaily();}catch(e){}
+    if(res.ok)try{toast("DAILY LOGIN","+"+(res.gems||gems)+" GEMS \u00b7 +"+fmt(res.coins||0)+" COINS"+((res.packs||0)>0?" \u00b7 +"+res.packs+"\u00d7 100K PACK":""),"#ffd700");}catch(e){}
   }else if(!quiet){
-    try{toast("GEM LOGIN TERTUNDA",(res&&res.msg)||"Will retry","#fbbf24");}catch(e){}
+    try{toast("DAILY LOGIN SYNC DELAYED",(res&&res.msg)||"Will retry automatically","#fbbf24");}catch(e){}
   }
 }
-function openDaily(){renderDaily();document.getElementById("dailyModal").classList.add("show");}
-function closeDaily(){document.getElementById("dailyModal").classList.remove("show");if(route()==="#/lobby")render();}
+function openDaily(){
+  _dlClosing=false;
+  renderDaily();
+  const m=document.getElementById("dailyModal");
+  if(m)m.classList.add("show");
+  document.body.classList.add("dl-open","hide-docks-modal");
+  dlBannerOpen();
+}
+function closeDaily(opts){
+  const m=document.getElementById("dailyModal");
+  if(!m||!m.classList.contains("show"))return;
+  if(_dlClosing&&!(opts&&opts.instant))return;
+  _dlClosing=true;
+  const doHide=()=>{
+    _dlClosing=false;
+    m.classList.remove("show");
+    document.body.classList.remove("dl-open");
+    const keepIds=["premiumModal","weatherMachineModal","watchAdsModal","profModal","rankModal","indexModal","traitModal","deckModal","skillModal","titlesModal"];
+    const keepHide=keepIds.some(id=>{const el=document.getElementById(id);return el&&el.classList.contains("show");});
+    if(!keepHide)document.body.classList.remove("hide-docks-modal");
+    if(route()==="#/lobby"&&!battleLive())render();
+  };
+  if(opts&&opts.instant){_dlClearCurtain();const c=document.getElementById("dailyCurtain");if(c)c.className="";doHide();return;}
+  try{dlBannerClose(doHide);}catch(e){doHide();}
+}
+document.addEventListener("keydown",function(e){
+  if(e.key!=="Escape")return;
+  const m=document.getElementById("dailyModal");
+  if(!m||!m.classList.contains("show"))return;
+  e.stopPropagation();
+  e.preventDefault();
+  closeDaily();
+},true);
 function tickDaily(){
   const ms=nextResetMs();
-  const c=document.getElementById("dlCount");if(c)c.textContent=fmtCountdown(ms);
+  const s=Math.max(0,Math.floor(ms/1000));
+  const p=x=>String(x).padStart(2,"0");
+  const txt=p(Math.floor(s/3600))+":"+p(Math.floor(s%3600/60))+":"+p(s%60);
+  const c=document.getElementById("dlCount");if(c)c.textContent=txt;
 }
 let _dailyLast=null, _playLast=Date.now(), _playSaveAcc=0;
 setInterval(()=>{
