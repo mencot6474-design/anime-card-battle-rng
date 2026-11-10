@@ -2338,16 +2338,17 @@ function renderLobby(){
   /* Vestige rank R0/R1/... dari rebirthCount() (bukan angka karangan). */
   const _cVest = "R" + ((typeof rebirthCount === "function") ? rebirthCount() : 0);
 
-  /* ---- COMMAND DRAWER v5 markup helpers (ikon inline Solar bold-duotone) ----
-     Grup kanan = JUMLAH TILE (prototipe v5 `.gh-n`: "04"/"02"/"05"), bukan
-     statistik hidup. Statistik hidup tetap di sub-label tile (missionSub,
-     drwDailySub, dst) supaya handler lama tidak perlu diubah. */
+  /* ---- COMMAND DRAWER v5 markup helpers (tile icon = 2.5D WebP hazard set,
+     group header = inline Solar SVG 15px). Statistik hidup tetap di sub-label
+     tile (missionSub, drwDailySub, dst) supaya handler lama tetap utuh. */
   const _drwGrp = function (icon, label, count, statId, tiles) {
     const rows = tiles.map(function (t, i) {
       const badge = t.badge ? '<span class="hx-b"' + (t.badgeId ? ' id="' + t.badgeId + '"' : "") + ">" + t.badge + "</span>" : "";
       const s2 = t.s2 ? '<span class="hx-s2"' + (t.s2Id ? ' id="' + t.s2Id + '"' : "") + ">" + t.s2 + "</span>" : "";
       const pb = t.pbId ? '<span class="hx-pb" aria-hidden="true"><span id="' + t.pbId + '" style="width:' + (t.pbW || 0) + '%"></span></span>' : "";
-      const icon2 = (typeof cyberIcon === "function") ? cyberIcon(t.ic, "hx-svg") : "";
+      const icon2 = t.img
+        ? '<img class="hx-webp" src="assets/icons/drawer/' + t.img + '.webp?v=1" alt="" aria-hidden="true" decoding="async" draggable="false">'
+        : ((typeof cyberIcon === "function") ? cyberIcon(t.ic, "hx-svg") : "");
       return '<button class="hx" type="button" id="' + t.id + '" style="--i:' + i + ";--hc:" + t.hc + '" role="button" tabindex="0">'
         + '<span class="hx-f"><i class="hx-corner tl" aria-hidden="true"></i><i class="hx-corner br" aria-hidden="true"></i>'
         + icon2 + "</span>"
@@ -2562,28 +2563,28 @@ function renderLobby(){
       </header>
 
       <div class="drw-body" id="drwBody">
-        ${_drwGrp('more', 'UNITS', '04', 'foldCombatStat', [
-          { id: 'drwStoryBtn', ic: 'quests', nm: 'Story', hc: '#f3e600', s: 'CAMPAIGN PROGRESS', sId: 'missionSub', s2: '0% COMPLETE', s2Id: 'drwStoryPercent', pbId: 'missionFill', pbW: 0 },
-          { id: 'drwRaidBtn', ic: 'skills', nm: 'World Boss', hc: '#f87171', s: 'SHARED HP RAID' },
-          { id: 'drwTowerBtn', ic: 'home', nm: 'Tower', hc: '#b58cff', s: 'INFINITE SPIRE', sId: 'drwTowerSub' },
-          { id: 'drwRankBtn', ic: 'luck', nm: 'Ranking', hc: '#ffd700', s: 'GLOBAL RANK', sId: 'drwRankSub' }
+        ${_drwGrp('deck', 'UNITS', '04', 'foldCombatStat', [
+          { id: 'drwStoryBtn', img: 'story', ic: 'quests', nm: 'Story', hc: '#f3e600', s: 'CAMPAIGN PROGRESS', sId: 'missionSub', s2: '0% COMPLETE', s2Id: 'drwStoryPercent', pbId: 'missionFill', pbW: 0 },
+          { id: 'drwRaidBtn', img: 'world_boss', ic: 'skills', nm: 'World Boss', hc: '#f87171', s: 'SHARED HP RAID' },
+          { id: 'drwTowerBtn', img: 'tower', ic: 'home', nm: 'Tower', hc: '#b58cff', s: 'INFINITE SPIRE', sId: 'drwTowerSub' },
+          { id: 'drwRankBtn', img: 'ranking', ic: 'luck', nm: 'Ranking', hc: '#ffd700', s: 'GLOBAL RANK', sId: 'drwRankSub' }
         ])}
         ${_drwGrp('daily', 'REWARDS', '04', '', [
-          { id: 'drwDailyBtn', ic: 'daily', nm: 'Daily', hc: '#4ade80', s: 'CLAIM DAILY REWARD', sId: 'drwDailySub' },
-          { id: 'drwAdsBtn', ic: 'ads', nm: 'Free Luck', hc: '#ffd700', s: 'WATCH ADS FOR BOOST', sId: 'drwAdsSub' },
-          { id: 'drwGlBtn', ic: 'luck', nm: 'Global Luck', hc: '#22d3ee', s: 'COMMUNITY MULTIPLIER', sId: 'drwGlSub' },
-          { id: 'drwWeatherBtn', ic: 'rebirth', nm: 'Weather', hc: '#b58cff', s: 'ATMOSPHERIC BUFF', sId: 'drwWeatherSub' }
+          { id: 'drwDailyBtn', img: 'daily', ic: 'daily', nm: 'Daily', hc: '#4ade80', s: 'CLAIM DAILY REWARD', sId: 'drwDailySub' },
+          { id: 'drwAdsBtn', img: 'free_luck', ic: 'ads', nm: 'Free Luck', hc: '#ffd700', s: 'WATCH ADS FOR BOOST', sId: 'drwAdsSub' },
+          { id: 'drwGlBtn', img: 'global_luck', ic: 'luck', nm: 'Global Luck', hc: '#22d3ee', s: 'COMMUNITY MULTIPLIER', sId: 'drwGlSub' },
+          { id: 'drwWeatherBtn', img: 'weather', ic: 'rebirth', nm: 'Weather', hc: '#b58cff', s: 'ATMOSPHERIC BUFF', sId: 'drwWeatherSub' }
         ])}
         ${_drwGrp('supply', 'SHOP', '02', '', [
-          { id: 'drwPremiumBtn', ic: 'supply', nm: 'Supply Shop', hc: '#ffd700', s: 'INSTANT ROLL PACKS', sId: 'drwPremiumSub' },
-          { id: 'drwRebirthBtn', ic: 'rebirth', nm: 'Rebirth', hc: '#b58cff', s: 'ASCENSION PROTOCOL', sId: 'drwRebirthSub' }
+          { id: 'drwPremiumBtn', img: 'supply_shop', ic: 'supply', nm: 'Supply Shop', hc: '#ffd700', s: 'INSTANT ROLL PACKS', sId: 'drwPremiumSub' },
+          { id: 'drwRebirthBtn', img: 'rebirth', ic: 'rebirth', nm: 'Rebirth', hc: '#b58cff', s: 'ASCENSION PROTOCOL', sId: 'drwRebirthSub' }
         ])}
         ${_drwGrp('settings', 'SYSTEM', '05', '', [
-          { id: 'drwTraitBtn', ic: 'more', nm: 'Trait', hc: '#22d3ee', s: 'PASSIVE OPTIMIZER', sId: 'drwTraitSub' },
-          { id: 'drwSkillBtn', ic: 'skills', nm: 'Skill Tree', hc: '#4ade80', s: 'SPEND SKILL POINTS', sId: 'drwSkillSub', badge: '0 SP', badgeId: 'drwSkillSp' },
-          { id: 'drwIndexBtn', ic: 'archive', nm: 'Archive', hc: '#22d3ee', s: 'CARD CATALOG', sId: 'drwIndexSub' },
-          { id: 'drwSettingsBtn', ic: 'settings', nm: 'Settings', hc: '#f5f5f5', s: 'AUDIO · COMBAT · LANGUAGE' },
-          { id: 'drwChangelogBtn', ic: 'changelog', nm: 'Changelog', hc: '#f87171', s: 'RELEASE NOTES' }
+          { id: 'drwTraitBtn', img: 'trait', ic: 'more', nm: 'Trait', hc: '#22d3ee', s: 'PASSIVE OPTIMIZER', sId: 'drwTraitSub' },
+          { id: 'drwSkillBtn', img: 'skill_tree', ic: 'skills', nm: 'Skill Tree', hc: '#4ade80', s: 'SPEND SKILL POINTS', sId: 'drwSkillSub', badge: '0 SP', badgeId: 'drwSkillSp' },
+          { id: 'drwIndexBtn', img: 'archive', ic: 'archive', nm: 'Archive', hc: '#22d3ee', s: 'CARD CATALOG', sId: 'drwIndexSub' },
+          { id: 'drwSettingsBtn', img: 'settings', ic: 'settings', nm: 'Settings', hc: '#f5f5f5', s: 'AUDIO · COMBAT · LANGUAGE' },
+          { id: 'drwChangelogBtn', img: 'changelog', ic: 'changelog', nm: 'Changelog', hc: '#f87171', s: 'RELEASE NOTES' }
         ])}
       </div>
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v550-dockWebpIcons';
+const CACHE_NAME = 'anime-card-battle-v551-drawerWebpIcons';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
