@@ -1178,18 +1178,23 @@ function rvBandOf(eff) {
 }
 function rvBadgesHTML(mut, shiny) {
   let h = '';
-  if (shiny) h += '<span class="bchip" style="--c:#7DF9FF">SHINY</span>';
-  if (mut !== 'none') h += `<span class="bchip" style="--c:${MUT_COLOR[mut]}">${mutText(mut, MUT_LABEL[mut])}</span>`;
+  if (shiny) h += (typeof shinyStampHtml === 'function') ? shinyStampHtml(false, 'bchip') : '<span class="bchip" style="--c:#7DF9FF">SHINY</span>';
+  if (mut !== 'none') h += (typeof mutStampHtml === 'function') ? mutStampHtml(mut, false, 'bchip') : `<span class="bchip" style="--c:${MUT_COLOR[mut]}">${mutText(mut, MUT_LABEL[mut])}</span>`;
   return h || '<span class="bchip" style="--c:rgba(245,245,245,.4)">BASE VARIANT</span>';
 }
 function rvCardHTML(c, mut, shiny, eff) {
   const mc = mut !== 'none' ? 'm-' + mut : '';
+  const hzCls = (typeof hzBorderCls === 'function') ? hzBorderCls(mut, !!shiny) : '';
+  const hzLayers = (typeof hzBorderLayerHtml === 'function') ? hzBorderLayerHtml() : '';
+  const st = (shiny ? (typeof shinyStampHtml === 'function' ? shinyStampHtml(true) : '') : '')
+    + (mut !== 'none' ? (typeof mutStampHtml === 'function' ? mutStampHtml(mut, true) : '') : '');
   const name = (shiny && (mut === 'none' || mut === 'gold'))
     ? `<span class="cn silver">${rvEsc(c.name)}</span>`
     : `<span class="cn">${mutText(mut, c.name)}</span>`;
   return `<div class="cbadges">${rvBadgesHTML(mut, shiny)}</div>
-  <div class="cframe ${mc}${shiny ? ' shiny' : ''}">
-    ${mut === 'rainbow' ? '<span class="mring"></span>' : ''}
+  <div class="cframe ${mc}${shiny ? ' shiny' : ''}${hzCls}">
+    ${hzLayers}
+    ${st ? `<div class="cframe-stamps">${st}</div>` : ''}
     <img src="${rvEsc(c.art_image || c.sprite_asset)}" alt="${rvEsc(c.name)}" decoding="async">
     <div class="cplate">
       <div class="ct">${rvEsc(c.type)}${shiny ? ' · SHINY' : ''}</div>
@@ -1274,8 +1279,8 @@ function rvOpenShowcase(result, eff) {
   const full = Math.round(eff).toLocaleString('en-US');
   const alarm = `<div class="sc-alarm"><div class="tick">${('<span>ANOMALOUS SIGNAL</span><span>PROBABILITY BREACH</span><span>1 IN ' + full + '</span><span>REGISTERING VARIANT</span><span>HAZARD PROTOCOL 871</span>').repeat(3)}</div></div>`;
   const close = '<button class="sc-close" type="button" id="rvScClose" aria-label="Close showcase"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>';
-  const tags = `${shiny ? '<span class="bchip" style="--c:#7DF9FF">SHINY</span>' : ''}
-    ${mut !== 'none' ? `<span class="bchip" style="--c:${MUT_COLOR[mut]}">${mutText(mut, MUT_LABEL[mut])}</span>` : ''}
+  const tags = `${shiny ? (typeof shinyStampHtml === 'function' ? shinyStampHtml(false, 'bchip') : '<span class="bchip" style="--c:#7DF9FF">SHINY</span>') : ''}
+    ${mut !== 'none' ? (typeof mutStampHtml === 'function' ? mutStampHtml(mut, false, 'bchip') : `<span class="bchip" style="--c:${MUT_COLOR[mut]}">${mutText(mut, MUT_LABEL[mut])}</span>`) : ''}
     <span class="bchip" style="--c:rgba(245,245,245,.55)">${rvEsc(c.type).toUpperCase()}</span>`;
   sc.className = 'rv-showcase on sc-A';
   sc.innerHTML = alarm + close + `<div class="sc-body">
@@ -2042,12 +2047,18 @@ function bpTileInner(s){
 
   const chanceSpan=`<span class="hc-chance bpt-chance${mut==='rainbow'?' hc-chance-rainbow':''}" style="background:none !important;border:none !important;box-shadow:none !important;padding:0 !important;border-radius:0 !important;transform:none !important;text-shadow:0 1px 3px rgba(0,0,0,0.95), 0 0 2px #000 !important;color:${mut?MUT_COLOR[mut]:((tier&&TIER_COLOR[tier])||"#9AA6B2")}">${mut==='rainbow'?mutText(mut,chanceText):chanceText}</span>`;
 
-  const badgesHtml=trait
-    ?`<div class="hc-badges bpt-top">${traitChip(trait,`<span class="hc-trait hc-gem bpt-gem" style="color:${TRAIT_COLOR[trait]};border-color:${TRAIT_COLOR[trait]}">${traitGem(12,trait)}</span>`)}</div>`
-    :'';
+  const shStamp = s.shiny ? (typeof shinyStampHtml === 'function' ? shinyStampHtml(true) : '') : '';
+  const mStamp = mut ? (typeof mutStampHtml === 'function' ? mutChip(mut, mutStampHtml(mut, true)) : '') : '';
+  const tStamp = trait ? traitChip(trait, typeof traitStampHtml === 'function' ? traitStampHtml(trait, true) : `<span class="hc-trait hc-gem bpt-gem" style="color:${TRAIT_COLOR[trait]};border-color:${TRAIT_COLOR[trait]}">${traitGem(12,trait)}</span>`) : '';
+  const badgesHtml = (shStamp || mStamp || tStamp)
+    ? `<div class="hc-badges bpt-top">${shStamp}${mStamp}${tStamp}</div>`
+    : '';
 
   const bcol = mut ? MUT_COLOR[mut] : ((tier && TIER_COLOR[tier]) || '#7DF9FF');
-  return `<div class="hub-center bp-card-hub${cData.fullArt?' fa':''}${mut?' mut-'+mut:''}${shinyCls(s)}" data-tier="${tier}" style="--tcol:${bcol};border:3px solid ${bcol};border-radius:1px;box-sizing:border-box;width:100%;height:100%;aspect-ratio:inherit;overflow:hidden;position:relative;">
+  const hzCls = (typeof hzBorderCls === 'function') ? hzBorderCls(mut, !!s.shiny, { tile: true, dense: true }) : '';
+  const hzLayers = (typeof hzBorderLayerHtml === 'function') ? hzBorderLayerHtml() : '';
+  return `<div class="hub-center bp-card-hub${cData.fullArt?' fa':''}${mut?' mut-'+mut:''}${shinyCls(s)}${hzCls}" data-tier="${tier}" style="--tcol:${bcol};box-sizing:border-box;width:100%;height:100%;aspect-ratio:inherit;overflow:hidden;position:relative;">
+      ${hzLayers}
       <div class="hc-img" style="position:relative;width:100%;height:100%;overflow:hidden;border-radius:inherit;">
         <img src="${cardThumb(s.char)}" alt="${cName}" width="360" height="536" decoding="async"${cData.pos?` style="object-position:${cData.pos}"`:''}>
         ${chanceSpan}

@@ -1941,11 +1941,12 @@ function ixSheetOpen(charId,mut,isShiny){
     muts.innerHTML=IX_MUTS.map(m=>{
       const got=own(m,false)||own(m,true);
       const star=own(m,true)?' ★':'';
+      const ic=m!=="none"&&typeof mutIconSvg==="function"?mutIconSvg(m,11):"";
       if(m==="rainbow"){
         const txt=MUT_LABEL[m].split("").map((ch,i)=>`<i style="color:${IX_RB_LETTERS[i%IX_RB_LETTERS.length]}">${ch}</i>`).join("");
-        return `<span class="ix-sh-mut rb${got?' own':''}">${txt}${star}</span>`;
+        return `<span class="ix-sh-mut rb${got?' own':''}">${ic}${txt}${star}</span>`;
       }
-      return `<span class="ix-sh-mut${got?' own':''}" style="--mc:${MUT_COLOR[m]}">${MUT_LABEL[m]}${star}</span>`;
+      return `<span class="ix-sh-mut${got?' own':''}" style="--mc:${MUT_COLOR[m]||'rgba(245,245,245,.5)'}">${ic}${MUT_LABEL[m]||'PURE'}${star}</span>`;
     }).join("");
   }
   sheet.classList.add("on");
@@ -2123,7 +2124,9 @@ function ixRender(){
     const lockBoss = !!((c.raidBoss||c.towerBoss) && !bossRollUnlocked(c.char_id));
     const lockShop = c.towerBoss?"TOKO INF":"TOKO WORLD BOSS";
     const shFx = isShinyActive;
-    const cls = `ix-cell${isSpecificVariantOwned ? '' : ' no-own'}${lockBoss ? ' boss-locked' : ''}${shFx ? ' shiny' : ''}${hasMut ? ' m-' + fm : ''}${c.fullArt ? ' fa' : ''}`;
+    const hzCls = (typeof hzBorderCls === 'function') ? hzBorderCls(hasMut ? fm : 'none', shFx, { tile: true, dense: true }) : '';
+    const hzLayers = (typeof hzBorderLayerHtml === 'function') ? hzBorderLayerHtml() : '';
+    const cls = `ix-cell${isSpecificVariantOwned ? '' : ' no-own'}${lockBoss ? ' boss-locked' : ''}${shFx ? ' shiny' : ''}${hasMut ? ' m-' + fm : ''}${c.fullArt ? ' fa' : ''}${hzCls}`;
     const safeName = String(c.name).replace(/"/g, '&quot;');
     const shinyStyle = hasMut && fm === 'gold' ? '--sh-base:#E0BC6E;--sh-edge:rgba(224,188,110,.95);--sh-glow:rgba(224,188,110,.55)'
       : hasMut && fm === 'rainbow' ? '--sh-base:#B58CFF;--sh-edge:rgba(90,200,250,.95);--sh-glow:rgba(181,140,255,.55)'
@@ -2139,11 +2142,10 @@ function ixRender(){
       nameHtml = `<span class="ixc-name hc-name-top">${c.name}</span>`;
     }
     const tags=[];
-    if(hasMut)tags.push(ixMutTag(fm));
-    if(shFx)tags.push('<span class="ix-mtag sh">SHINY</span>');
+    if(shFx)tags.push((typeof shinyStampHtml==='function')?shinyStampHtml(true):'<span class="ix-mtag sh">SHINY</span>');
+    if(hasMut)tags.push((typeof mutStampHtml==='function')?mutStampHtml(fm,true):ixMutTag(fm));
     const inner=`<img src="${thumbSrc(c.sprite_asset)}" alt="${c.name}" width="360" height="536" decoding="async">
-      ${hasMut && fm==="rainbow" ? '<span class="ix-mring"></span>' : ''}
-      ${shFx ? '<span class="ix-sheen"></span>' : ''}
+      ${hzLayers}
       <span class="ix-count${any?'':' zero'}">×${any}</span>
       ${tags.length?`<span class="ix-tags">${tags.join("")}</span>`:''}
       <span class="ixc-stack">${nameHtml}<span class="ixc-chance${hasMut && (fm === 'rainbow' || fm === 'ultima') ? ' ixc-chance-rainbow' : ''}" style="--tc:${chanceColor}"><span class="ixc-chance-text">${chanceHtml}</span></span></span>`;
@@ -2571,10 +2573,16 @@ function trRenderPick(q){
     return;
   }
   host.innerHTML=list.map(s=>{
-    const badges=(s.shiny||(s.mut&&s.mut!=="none")||(s.trait&&s.trait!=="none"))
-      ? `<span class="pck-badges">${s.shiny?'<span class="shiny-badge shiny-pill">SHINY</span>':""}${s.mut&&s.mut!=="none"?mutChip(s.mut,mutPill(s.mut,"mut-badge")):""}${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="trait-badge" style="border-color:${TRAIT_COLOR[s.trait]}">${traitGem(13,s.trait)}</span>`):""}</span>`
-      : "";
-    return `<button class="pck-card${s.id===selId?" sel":""}" type="button" data-tid="${s.id}" title="${cardName(s.char)}">
+    const m=(s.mut&&s.mut!=="none")?s.mut:"";
+    const hasT=s.trait&&s.trait!=="none";
+    const shBadge=s.shiny?(typeof shinyStampHtml==="function"?shinyStampHtml(true):'<span class="shiny-badge shiny-pill">SHINY</span>'):"";
+    const mBadge=m?mutChip(m,typeof mutStampHtml==="function"?mutStampHtml(m,true):mutPill(m,"mut-badge")):"";
+    const tBadge=hasT?traitChip(s.trait,typeof traitStampHtml==="function"?traitStampHtml(s.trait,true):`<span class="trait-badge" style="border-color:${TRAIT_COLOR[s.trait]}">${traitGem(13,s.trait)}</span>`):"";
+    const badges=(shBadge||mBadge||tBadge)?`<span class="pck-badges">${shBadge}${mBadge}${tBadge}</span>`:"";
+    const hzCls=(typeof hzBorderCls==="function")?hzBorderCls(m||"none",!!s.shiny,{tile:true,dense:true}):"";
+    const hzLayers=(typeof hzBorderLayerHtml==="function")?hzBorderLayerHtml():"";
+    return `<button class="pck-card${s.id===selId?" sel":""}${hzCls}" type="button" data-tid="${s.id}" title="${cardName(s.char)}">
+      ${hzLayers}
       <img src="${cardThumb(s.char)}" alt="" decoding="async">
       ${badges}
       <span class="pck-name">${cardName(s.char)}</span>
@@ -2666,11 +2674,18 @@ function renderDeckPick(){
   const selId=cardPickCfg?cardPickCfg.getSel():traitTargetStack().id;
   _dpHtml={};
   b.innerHTML=`<label class="card-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input class="card-search" id="dpSearch" type="text" placeholder="Search card..." autocomplete="off"></label><div class="dp-grid" id="dpGrid">${state.stacks.map((s,i)=>{
-    const inner=`<img src="${cardThumb(s.char)}" alt="" width="96" height="96" decoding="async">
-      ${s.shiny||(s.mut&&s.mut!=="none")||(s.trait&&s.trait!=="none")?`<span class="dp-badges">${s.shiny?'<span class="shiny-badge shiny-pill">SHINY</span>':""}${s.mut&&s.mut!=="none"?mutChip(s.mut,mutPill(s.mut,'mut-badge dp-mut')):""}${s.trait&&s.trait!=="none"?traitChip(s.trait,`<span class="trait-badge dp-gem" style="border-color:${TRAIT_COLOR[s.trait]}">${traitGem(13,s.trait)}</span>`):""}</span>`:""}
+    const m=(s.mut&&s.mut!=="none")?s.mut:"";
+    const hasT=s.trait&&s.trait!=="none";
+    const shBadge=s.shiny?(typeof shinyStampHtml==="function"?shinyStampHtml(true):'<span class="shiny-badge shiny-pill">SHINY</span>'):"";
+    const mBadge=m?mutChip(m,typeof mutStampHtml==="function"?mutStampHtml(m,true):mutPill(m,'mut-badge dp-mut')):"";
+    const tBadge=hasT?traitChip(s.trait,typeof traitStampHtml==="function"?traitStampHtml(s.trait,true):`<span class="trait-badge dp-gem" style="border-color:${TRAIT_COLOR[s.trait]}">${traitGem(13,s.trait)}</span>`):"";
+    const hzCls=(typeof hzBorderCls==="function")?hzBorderCls(m||"none",!!s.shiny,{tile:true,dense:true}):"";
+    const hzLayers=(typeof hzBorderLayerHtml==="function")?hzBorderLayerHtml():"";
+    const inner=`${hzLayers}<img src="${cardThumb(s.char)}" alt="" width="96" height="96" decoding="async">
+      ${(shBadge||mBadge||tBadge)?`<span class="dp-badges">${shBadge}${mBadge}${tBadge}</span>`:""}
       <span class="dp-name">${cardName(s.char)}</span>`;
     _dpHtml[s.id]=inner;const mounted=true;
-    return `<button class="dp-card${isFullArt(s.char)?" fa":""}${s.id===selId?" sel":""}${s.mut&&s.mut!=="none"?(s.shiny?" dp-mut-shiny-"+s.mut:" dp-mut-"+s.mut):""}${s.shiny?" shiny":""}${mounted?"":" lz-ph"}" data-lz="${s.id}" data-tid="${s.id}" data-name="${cardName(s.char).toLowerCase()}">${mounted?inner:""}</button>`;}).join("")}</div><div class="no-result" id="dpSearch-nr">No matching cards.</div>`;
+    return `<button class="dp-card${isFullArt(s.char)?" fa":""}${s.id===selId?" sel":""}${m?(s.shiny?" dp-mut-shiny-"+m:" dp-mut-"+m):""}${s.shiny?" shiny":""}${hzCls}${mounted?"":" lz-ph"}" data-lz="${s.id}" data-tid="${s.id}" data-name="${cardName(s.char).toLowerCase()}">${mounted?inner:""}</button>`;}).join("")}</div><div class="no-result" id="dpSearch-nr">No matching cards.</div>`;
   {const dps=document.getElementById("dpSearch");if(dps){dps.value=dpSearch;dps.oninput=()=>{dpSearch=dps.value;runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));};if(dpSearch)runCardSearch(dps,document.getElementById("dpGrid"),document.getElementById("dpSearch-nr"));}}
   b.querySelectorAll(".dp-card").forEach(el=>el.onclick=()=>{const tid=el.getAttribute("data-tid");sfx.hit();if(cardPickCfg){cardPickCfg.onPick(tid);}else{traitTarget=tid;closeDeckPick();renderTrait();}});
   lazyMountGrid(b,_dpHtml);

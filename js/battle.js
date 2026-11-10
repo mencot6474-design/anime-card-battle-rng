@@ -172,22 +172,26 @@ function hzCardInfoHtml(o){
   return '<div class="hz-card-info">'+out+'</div>';
 }
 
-/* Badge kartu (SHINY / mutasi / TRAIT) — kanan atas tanpa titik SVG, trait asli. */
+/* Badge kartu (SHINY / mutasi / TRAIT SOLID STAMP ICON ONLY di kiri atas, ROLE di kanan atas). */
+function hzCardStampsHtml(mut,trait,shiny){
+  var out="";
+  if(shiny) out+=(typeof shinyStampHtml==="function")?shinyStampHtml(true):'<span class="c-badge b-shiny">SHINY</span>';
+  var m=(mut&&mut!=="none")?String(mut).toLowerCase():"";
+  if(m&&typeof MUT_ICONS!=="undefined"&&MUT_ICONS[m]){
+    var mb=(typeof mutStampHtml==="function")?mutStampHtml(m,true):"";
+    out+=(typeof mutChip==="function")?mutChip(m,mb):mb;
+  }
+  try{
+    if(trait&&trait!=="none"&&typeof TRAIT!=="undefined"&&TRAIT[trait]){
+      var tb=(typeof traitStampHtml==="function")?traitStampHtml(trait,true):`<span class="hc-trait hc-gem hz-trait-gem" style="color:${TRAIT_COLOR[trait]};border-color:${TRAIT_COLOR[trait]}">${traitGem(14,trait)}</span>`;
+      out+=(typeof traitChip==="function")?traitChip(trait,tb):tb;
+    }
+  }catch(e){}
+  return out;
+}
 function hzBadgeHtml(mut,trait,shiny,role){
   var out="";
   if(role) out+='<span class="c-badge b-role">'+role+'</span>';
-  if(shiny) out+='<span class="c-badge b-shiny">SHINY</span>';
-  var m=(mut&&mut!=="none")?String(mut).toLowerCase():"";
-  var ml=(m&&typeof MUT_LABEL!=="undefined"&&MUT_LABEL[m])?MUT_LABEL[m]:(m?m.toUpperCase():"");
-  if(ml) out+='<span class="c-badge b-mut-'+m+'">'+ml+'</span>';
-  try{
-    if(trait&&trait!=="none"&&typeof TRAIT!=="undefined"&&TRAIT[trait]){
-      var tc=(typeof TRAIT_COLOR!=="undefined"&&TRAIT_COLOR[trait])||TRAIT[trait].color||"#6be08a";
-      var gem=(typeof traitGem==="function")?traitGem(14,trait):"";
-      var pill='<span class="hc-trait hc-gem hz-trait-gem" style="color:'+tc+';border-color:'+tc+'">'+gem+'</span>';
-      out+=(typeof traitChip==="function")?traitChip(trait,pill):pill;
-    }
-  }catch(e){}
   return out;
 }
 
@@ -220,11 +224,15 @@ function foeFighterInnerHtml(en,es,opts){
   const cid=(en&&(en.id||en.char))||null;
   const role=opts.subtitle||(en&&en.boss?"FLOOR BOSS":"TARGET");
   const desc=hzSkillDescEn(cid, opts.skill||(en&&en.skill)||(en&&en.passive&&(en.passive.desc||en.passive.name))||"");
-  return `<div class="fc-frame card-shell mut-${mut}">
-    <span class="mut-ring"></span>
+  const hzCls=(typeof hzBorderCls==="function")?hzBorderCls(mut,false):"";
+  const hzLayers=(typeof hzBorderLayerHtml==="function")?hzBorderLayerHtml():"";
+  const stHtml=hzCardStampsHtml(mut,null,false);
+  return `<div class="fc-frame card-shell mut-${mut}${hzCls}">
+    ${hzLayers}
     <img class="fc-art card-art" src="${en.img}" alt="${en.name}">
     <div class="fc-vig card-shade"></div>
     <div class="fc-top card-top-bar">
+      ${stHtml?`<div class="hz-card-stamps">${stHtml}</div>`:""}
       <div class="fc-badges card-badges">${hzBadgeHtml(mut,null,false,role)}</div>
     </div>
     <div class="card-body">
@@ -256,11 +264,15 @@ function meFighterHtml(s,opts){
   const mut=(s.mut||"none").toLowerCase();
   const desc=hzSkillDescEn(s.char, (cd&&cd.passive&&(cd.passive.desc||cd.passive.name))||"");
   const pos=(cd&&cd.pos)?` style="object-position:${cd.pos}"`:"";
-  return `<div class="fc-frame card-shell mut-${mut}${s.shiny?" is-shiny":""}">
-    <span class="mut-ring"></span>
+  const hzCls=(typeof hzBorderCls==="function")?hzBorderCls(mut,!!s.shiny):"";
+  const hzLayers=(typeof hzBorderLayerHtml==="function")?hzBorderLayerHtml():"";
+  const stHtml=hzCardStampsHtml(mut,s.trait,!!s.shiny);
+  return `<div class="fc-frame card-shell mut-${mut}${s.shiny?" is-shiny":""}${hzCls}">
+    ${hzLayers}
     <img class="fc-art card-art" src="${cardImg(s.char)}" alt="${cardName(s.char)}"${pos}>
     <div class="fc-vig card-shade"></div>
     <div class="fc-top card-top-bar">
+      ${stHtml?`<div class="hz-card-stamps">${stHtml}</div>`:""}
       <div class="fc-badges card-badges">${hzBadgeHtml(mut,s.trait,!!s.shiny,"OPERATOR")}</div>
     </div>
     <div class="card-body">
@@ -281,11 +293,14 @@ function meFighterHtml(s,opts){
   </div>`;
 }
 function meShadowHtml(sh){
-  return `<div class="fc-frame card-shell mut-secret">
-    <span class="mut-ring"></span>
+  const hzCls=(typeof hzBorderCls==="function")?hzBorderCls("secret",false):"";
+  const hzLayers=(typeof hzBorderLayerHtml==="function")?hzBorderLayerHtml():"";
+  return `<div class="fc-frame card-shell mut-secret${hzCls}">
+    ${hzLayers}
     <img class="fc-art card-art" src="${sh.img}" alt="${sh.name}" style="filter:grayscale(.35) brightness(.72) hue-rotate(215deg) saturate(1.5)">
     <div class="fc-vig card-shade"></div>
     <div class="fc-top card-top-bar">
+      <div class="hz-card-stamps">${hzCardStampsHtml("secret",null,false)}</div>
       <div class="fc-badges card-badges"><span class="c-badge b-mut-secret">SHADOW</span></div>
     </div>
     <div class="card-body">

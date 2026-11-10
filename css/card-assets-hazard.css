@@ -1,0 +1,777 @@
+/* ==========================================================================
+   CARD-ASSETS-HAZARD.CSS — Locked Studio Preset (Produksi)
+   - Badge Chrome : SOLID STAMP (.xbadge.st-solid) — ICON ONLY di kartu
+   - Border Style : 01 · HAZARD BEVEL (1px perimeter + 45° CNC corner gussets +
+                    side spine clamps + top/bottom hatched hazard bezel)
+   - Shiny Effect : ORBITAL GLINT + composited sheen (AGENTS.md §2b compliant)
+   ========================================================================== */
+
+:root {
+  --hz-c-shiny: #7df9ff;
+  --hz-c-gold: #e0bc6e;
+  --hz-c-rainbow: #ff6bd6;
+  --hz-c-secret: #a855f7;
+  --hz-c-ultima: #ff0055;
+  --hz-rb-ring: repeating-linear-gradient(
+    45deg,
+    #FF6B81 0 10px,
+    #FFB347 10px 20px,
+    #FFE66D 20px 30px,
+    #6BE08A 30px 40px,
+    #22D3EE 40px 50px,
+    #B98CFF 50px 60px,
+    #FF6BD6 60px 70px
+  );
+  --hz-rb-grad: linear-gradient(90deg, #FF6B81, #FFB347, #FFE66D, #6BE08A, #22D3EE, #B98CFF, #FF6BD6);
+}
+
+/* ==================== 1. SOLID STAMP BADGES ==================== */
+.xbadge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: .12em;
+  line-height: 1;
+  white-space: nowrap;
+  text-transform: uppercase;
+  padding: 4px 7px;
+  border-radius: 0;
+  vertical-align: middle;
+  box-sizing: border-box;
+  flex: none;
+}
+.xbadge svg {
+  width: 11px;
+  height: 11px;
+  display: block;
+  flex: none;
+}
+.xbadge.is-micro {
+  width: 19px;
+  height: 19px;
+  min-width: 19px;
+  min-height: 19px;
+  padding: 0;
+  font-size: 0;
+  gap: 0;
+}
+.xbadge.is-micro .xb-txt { display: none; }
+.xbadge.is-micro svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Solid Stamp high-contrast chrome */
+.xbadge.st-solid {
+  background: var(--bc, #f5f5f5);
+  color: #050505;
+  border: 1px solid var(--bc, #f5f5f5);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .75);
+}
+.tgem .gem-body { fill: currentColor; }
+.tgem .gem-cut { fill: #050505; }
+.xbadge.st-solid .tgem .gem-cut {
+  fill: var(--bc, #f5f5f5);
+  fill-opacity: .96;
+}
+.xbadge.st-solid.v-shiny {
+  background: #7df9ff;
+  border-color: #ffffff;
+  color: #050505;
+}
+.xbadge.st-solid.v-gold {
+  background: #e0bc6e;
+  border-color: #fff1b8;
+  color: #050505;
+}
+.xbadge.st-solid.v-secret {
+  background: #581c87;
+  border-color: #c084fc;
+  color: #faf5ff;
+}
+.xbadge.st-solid.v-ultima {
+  background: linear-gradient(95deg, #cc0044 0%, #ff0055 60%, #ff7b00 100%);
+  border-color: #ffaa00;
+  color: #ffffff;
+}
+/* Dark obsidian enamel stamp inside full-spectrum rainbow rim so Prism Arcs colors pop cleanly */
+.xbadge.st-solid.v-rainbow {
+  background:
+    linear-gradient(#09090d, #09090d) padding-box,
+    var(--hz-rb-grad) border-box;
+  border: 1.5px solid transparent;
+  color: #f5f5f5;
+}
+.xbadge.st-solid.v-rainbow .xb-txt {
+  background: var(--hz-rb-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.xbadge.st-solid.is-card-trait.is-micro {
+  padding: 0;
+}
+
+/* Smaller icon stamp size inside tight 1:1 grid tiles */
+.hz-tile .xbadge.is-micro {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
+}
+.hz-tile .xbadge.is-micro svg {
+  width: 10px;
+  height: 10px;
+}
+
+/* Semantic pill overrides for modal text / showcase chips */
+.bchip.xbadge.st-solid {
+  padding: 4px 8px;
+  box-shadow: none;
+}
+.mut-badge.xbadge.st-solid,
+.ix-sh-mut .mb-ic {
+  vertical-align: middle;
+}
+.ix-sh-mut .mb-ic {
+  width: 11px;
+  height: 11px;
+  margin-right: 4px;
+  display: inline-block;
+  vertical-align: -1.5px;
+}
+
+/* ==================== 2. HAZARD BEVEL (1px) + ORBITAL GLINT ==================== */
+.hz-bdr {
+  --bw: 1px;
+  --mc: rgba(245, 245, 245, .28);
+}
+.hz-bdr.m-none { --mc: rgba(245, 245, 245, .28); }
+.hz-bdr.m-gold { --mc: #e0bc6e; }
+.hz-bdr.m-rainbow { --mc: #ff6bd6; }
+.hz-bdr.m-secret { --mc: #a855f7; }
+.hz-bdr.m-ultima { --mc: #ff0055; }
+.hz-bdr.is-shiny:not(.m-gold):not(.m-rainbow):not(.m-secret):not(.m-ultima) {
+  --mc: #7df9ff;
+}
+
+/* Holo foil glaze on SHINY (static light radial tint) */
+.xbdr-foil {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(65% 55% at 8% 8%, rgba(125, 249, 255, .18) 0%, transparent 65%),
+    radial-gradient(65% 55% at 92% 92%, rgba(196, 181, 253, .14) 0%, transparent 65%),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, .035) 0 1px, transparent 1px 10px);
+}
+.hz-bdr.is-shiny > .xbdr-foil { display: block; }
+
+/* Flush 1px perimeter ring */
+.xbdr-ring {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  padding: var(--bw, 1px);
+  background: var(--mc, rgba(245, 245, 245, .28));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  overflow: hidden;
+}
+.hz-bdr.m-gold > .xbdr-ring {
+  background: linear-gradient(135deg, #fff0b3 0%, #e0bc6e 30%, #9e7123 55%, #fff3c8 80%, #c99a45 100%);
+}
+.hz-bdr.m-rainbow > .xbdr-ring {
+  background: var(--hz-rb-ring);
+}
+.hz-bdr.m-secret > .xbdr-ring {
+  background: linear-gradient(145deg, #e9d5ff 0%, #a855f7 35%, #3b0764 60%, #c084fc 85%, #7e22ce 100%);
+}
+.hz-bdr.m-ultima > .xbdr-ring {
+  background: repeating-linear-gradient(45deg, #ff0055 0 14px, #ff3366 14px 20px, #14040a 20px 26px, #ffaa00 26px 32px, #14040a 32px 38px);
+}
+.hz-bdr.is-shiny.sh-orbital:not(.m-gold):not(.m-rainbow):not(.m-secret):not(.m-ultima) > .xbdr-ring {
+  padding: calc(var(--bw, 1px) + 1.5px);
+  background: linear-gradient(135deg, #0c222e 0%, #7df9ff 26%, #ffffff 50%, #7df9ff 74%, #0c222e 100%);
+}
+.hz-bdr.is-shiny > .xbdr-ring {
+  padding: calc(var(--bw, 1px) + 1.5px);
+}
+
+/* ORBITAL GLINT rotating specular beam inside border mask only */
+.xbdr-orbit {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 220%;
+  aspect-ratio: 1 / 1;
+  pointer-events: none;
+  transform: translate(-50%, -50%) rotate(25deg);
+  background: conic-gradient(
+    from 25deg,
+    transparent 0deg 10deg,
+    #7df9ff 28deg,
+    #ffffff 45deg,
+    #7df9ff 62deg,
+    transparent 86deg,
+    transparent 190deg,
+    #7df9ff 208deg,
+    #ffffff 225deg,
+    #7df9ff 242deg,
+    transparent 266deg
+  );
+}
+.hz-bdr.is-shiny.sh-orbital > .xbdr-ring > .xbdr-orbit {
+  display: block;
+}
+
+/* Inner contrast seam + specular lip (avoids touching card ::before/::after) */
+.xbdr-shiny-lip {
+  display: none;
+  position: absolute;
+  inset: var(--bw, 1px);
+  z-index: 4;
+  pointer-events: none;
+  border-top: 1px solid rgba(255, 255, 255, .62);
+  border-left: 1px solid rgba(255, 255, 255, .48);
+  border-right: 1px solid rgba(125, 249, 255, .3);
+  border-bottom: 1px solid rgba(125, 249, 255, .3);
+  outline: 1px solid rgba(5, 5, 5, .86);
+}
+.hz-bdr.is-shiny.sh-orbital > .xbdr-shiny-lip {
+  display: block;
+}
+
+/* Sheen sweep (composited transform only) */
+.xbdr-sheen {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(112deg, transparent 38%, rgba(125, 249, 255, .15) 46%, rgba(255, 255, 255, .32) 50%, rgba(125, 249, 255, .12) 54%, transparent 62%);
+  transform: translateX(-110%);
+}
+.hz-bdr.is-shiny.anim-on > .xbdr-sheen {
+  display: block;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body:not(.perf-paused) .hz-bdr.is-shiny.anim-on:not(.hz-dense).sh-orbital > .xbdr-ring > .xbdr-orbit,
+  body:not(.perf-paused) .hz-bdr.is-shiny.hz-dense.ix-live.sh-orbital > .xbdr-ring > .xbdr-orbit,
+  body:not(.perf-paused) .hz-bdr.is-shiny.hz-dense:is(:hover, :focus-visible).sh-orbital > .xbdr-ring > .xbdr-orbit {
+    animation: hzShinyOrbit 2.6s linear infinite;
+  }
+  body:not(.perf-paused) .hz-bdr.is-shiny.anim-on:not(.hz-dense) > .xbdr-sheen,
+  body:not(.perf-paused) .hz-bdr.is-shiny.hz-dense.ix-live > .xbdr-sheen,
+  body:not(.perf-paused) .hz-bdr.is-shiny.hz-dense:is(:hover, :focus-visible) > .xbdr-sheen {
+    animation: hzCardSheen 3.4s linear infinite;
+  }
+}
+@keyframes hzShinyOrbit {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+@keyframes hzCardSheen {
+  0% { transform: translateX(-110%); }
+  65%, 100% { transform: translateX(110%); }
+}
+
+/* ---- 01 · HAZARD BEVEL: 45° CNC Corner Armor + Hatched Hazard Bezel + Side Spine Clamps ---- */
+.hz-bdr.bdr-bracket > .xbdr-corners {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+.hz-bdr.bdr-bracket > .xbdr-corners > .xbdr-c {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: #050505;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 3px) 4.5px, 9px 4.5px, 4.5px 9px, 4.5px calc(100% - 3px), 0 100%);
+}
+.hz-bdr.bdr-bracket > .xbdr-corners > .xbdr-c::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--mc, #f5f5f5);
+  clip-path: polygon(0 0, calc(100% - 2px) 0, calc(100% - 4.5px) 2.5px, 7.2px 2.5px, 2.5px 7.2px, 2.5px calc(100% - 4.5px), 0 calc(100% - 2px));
+}
+.hz-bdr.bdr-bracket.m-none:not(.is-shiny) > .xbdr-corners > .xbdr-c::after {
+  background: #f5f5f5;
+}
+.hz-bdr.bdr-bracket > .xbdr-corners > .xbdr-c.tl { left: 0; top: 0; }
+.hz-bdr.bdr-bracket > .xbdr-corners > .xbdr-c.tr { right: 0; top: 0; transform: scaleX(-1); }
+.hz-bdr.bdr-bracket > .xbdr-corners > .xbdr-c.bl { left: 0; bottom: 0; transform: scaleY(-1); }
+.hz-bdr.bdr-bracket > .xbdr-corners > .xbdr-c.br { right: 0; bottom: 0; transform: scale(-1); }
+
+/* Compact tiles (1:1 index / deck / bp / drop-report / picker) */
+.hz-bdr.bdr-bracket.hz-tile > .xbdr-corners > .xbdr-c {
+  width: 14px;
+  height: 14px;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 2.5px) 3.5px, 7px 3.5px, 3.5px 7px, 3.5px calc(100% - 2.5px), 0 100%);
+}
+.hz-bdr.bdr-bracket.hz-tile > .xbdr-corners > .xbdr-c::after {
+  clip-path: polygon(0 0, calc(100% - 1.5px) 0, calc(100% - 3.5px) 2px, 5.5px 2px, 2px 5.5px, 2px calc(100% - 3.5px), 0 calc(100% - 1.5px));
+}
+
+.hz-bdr.bdr-bracket.m-rainbow > .xbdr-corners > .xbdr-c.tl::after { background: #FF6B81; }
+.hz-bdr.bdr-bracket.m-rainbow > .xbdr-corners > .xbdr-c.tr::after { background: #FFE66D; }
+.hz-bdr.bdr-bracket.m-rainbow > .xbdr-corners > .xbdr-c.bl::after { background: #22D3EE; }
+.hz-bdr.bdr-bracket.m-rainbow > .xbdr-corners > .xbdr-c.br::after { background: #B98CFF; }
+.hz-bdr.bdr-bracket.m-ultima > .xbdr-corners > .xbdr-c::after { background: linear-gradient(135deg, #ffaa00 0%, #ff0055 75%); }
+
+/* Top/Bottom caution-bevel bar */
+.hz-bdr.bdr-bracket > .xbdr-corners::before,
+.hz-bdr.bdr-bracket > .xbdr-corners::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 34%;
+  height: 4px;
+  background: repeating-linear-gradient(-45deg, var(--mc, #f5f5f5) 0 3px, #101218 3px 6px);
+  box-shadow: 0 0 0 1px #050505;
+}
+.hz-bdr.bdr-bracket.hz-tile > .xbdr-corners::before,
+.hz-bdr.bdr-bracket.hz-tile > .xbdr-corners::after {
+  width: 32%;
+  height: 3px;
+}
+.hz-bdr.bdr-bracket.m-none:not(.is-shiny) > .xbdr-corners::before,
+.hz-bdr.bdr-bracket.m-none:not(.is-shiny) > .xbdr-corners::after {
+  background: repeating-linear-gradient(-45deg, #f5f5f5 0 3px, #101218 3px 6px);
+}
+.hz-bdr.bdr-bracket > .xbdr-corners::before {
+  top: 0;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 4px) 100%, 4px 100%);
+}
+.hz-bdr.bdr-bracket > .xbdr-corners::after {
+  bottom: 0;
+  clip-path: polygon(4px 0, calc(100% - 4px) 0, 100% 100%, 0 100%);
+}
+.hz-bdr.bdr-bracket.m-rainbow > .xbdr-corners::before,
+.hz-bdr.bdr-bracket.m-rainbow > .xbdr-corners::after {
+  background: var(--hz-rb-grad);
+}
+.hz-bdr.bdr-bracket.m-ultima > .xbdr-corners::before,
+.hz-bdr.bdr-bracket.m-ultima > .xbdr-corners::after {
+  width: 42%;
+  background: repeating-linear-gradient(-45deg, #ff0055 0 4px, #050505 4px 7px, #ffaa00 7px 10px, #050505 10px 13px);
+}
+
+/* Side spine armor clamps */
+.hz-bdr.bdr-bracket > .xbdr-side-rails {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+.hz-bdr.bdr-bracket > .xbdr-side-rails::before,
+.hz-bdr.bdr-bracket > .xbdr-side-rails::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 24%;
+  background: var(--mc, #f5f5f5);
+  box-shadow: 0 0 0 1px #050505;
+}
+.hz-bdr.bdr-bracket.m-none:not(.is-shiny) > .xbdr-side-rails::before,
+.hz-bdr.bdr-bracket.m-none:not(.is-shiny) > .xbdr-side-rails::after {
+  background: #f5f5f5;
+}
+.hz-bdr.bdr-bracket > .xbdr-side-rails::before {
+  left: 0;
+  clip-path: polygon(0 0, 100% 4px, 100% calc(100% - 4px), 0 100%);
+}
+.hz-bdr.bdr-bracket > .xbdr-side-rails::after {
+  right: 0;
+  clip-path: polygon(0 4px, 100% 0, 100% 100%, 0 calc(100% - 4px));
+}
+.hz-bdr.bdr-bracket.m-ultima > .xbdr-side-rails::before,
+.hz-bdr.bdr-bracket.m-ultima > .xbdr-side-rails::after {
+  background: linear-gradient(180deg, #ffaa00, #ff0055, #ffaa00);
+}
+
+/* SHINY upgrades for HAZARD BEVEL */
+.hz-bdr.bdr-bracket.is-shiny > .xbdr-corners > .xbdr-c {
+  width: 24px;
+  height: 24px;
+}
+.hz-bdr.bdr-bracket.is-shiny.hz-tile > .xbdr-corners > .xbdr-c {
+  width: 16px;
+  height: 16px;
+}
+.hz-bdr.bdr-bracket.is-shiny > .xbdr-corners > .xbdr-c::after {
+  background: linear-gradient(135deg, #ffffff 0%, #e0fcff 45%, #7df9ff 100%);
+}
+.hz-bdr.bdr-bracket.is-shiny.m-gold > .xbdr-corners > .xbdr-c::after {
+  background: linear-gradient(135deg, #ffffff 0%, #fff1b8 45%, #e0bc6e 100%);
+}
+.hz-bdr.bdr-bracket.is-shiny.m-secret > .xbdr-corners > .xbdr-c::after {
+  background: linear-gradient(135deg, #ffffff 0%, #e9d5ff 45%, #a855f7 100%);
+}
+.hz-bdr.bdr-bracket.is-shiny.m-ultima > .xbdr-corners > .xbdr-c::after {
+  background: linear-gradient(135deg, #fff3b0 0%, #ffaa00 45%, #ff0055 100%);
+}
+.hz-bdr.bdr-bracket.is-shiny > .xbdr-corners::before,
+.hz-bdr.bdr-bracket.is-shiny > .xbdr-corners::after {
+  width: 42%;
+  height: 4px;
+  background: repeating-linear-gradient(-45deg, #ffffff 0 4px, #050505 4px 6.5px, #7df9ff 6.5px 10.5px, #050505 10.5px 13px);
+}
+.hz-bdr.bdr-bracket.is-shiny.hz-tile > .xbdr-corners::before,
+.hz-bdr.bdr-bracket.is-shiny.hz-tile > .xbdr-corners::after {
+  width: 38%;
+  height: 3.5px;
+}
+.hz-bdr.bdr-bracket.is-shiny.m-gold > .xbdr-corners::before,
+.hz-bdr.bdr-bracket.is-shiny.m-gold > .xbdr-corners::after {
+  background: repeating-linear-gradient(-45deg, #fff8dc 0 4px, #050505 4px 6.5px, #e0bc6e 6.5px 10.5px, #050505 10.5px 13px);
+}
+.hz-bdr.bdr-bracket.is-shiny.m-secret > .xbdr-corners::before,
+.hz-bdr.bdr-bracket.is-shiny.m-secret > .xbdr-corners::after {
+  background: repeating-linear-gradient(-45deg, #f5d0fe 0 4px, #050505 4px 6.5px, #a855f7 6.5px 10.5px, #050505 10.5px 13px);
+}
+.hz-bdr.bdr-bracket.is-shiny.m-rainbow > .xbdr-corners::before,
+.hz-bdr.bdr-bracket.is-shiny.m-rainbow > .xbdr-corners::after {
+  background: repeating-linear-gradient(-45deg, #FF6B81 0 4px, #FFE66D 4px 8px, #22D3EE 8px 12px, #ffffff 12px 15px);
+}
+.hz-bdr.bdr-bracket.is-shiny.m-ultima > .xbdr-corners::before,
+.hz-bdr.bdr-bracket.is-shiny.m-ultima > .xbdr-corners::after {
+  width: 50%;
+  background: repeating-linear-gradient(-45deg, #ff0055 0 4px, #050505 4px 6px, #fff3b0 6px 9px, #ffaa00 9px 12px, #050505 12px 14px);
+}
+.hz-bdr.bdr-bracket.is-shiny > .xbdr-side-rails::before,
+.hz-bdr.bdr-bracket.is-shiny > .xbdr-side-rails::after {
+  width: 3.5px;
+  height: 28%;
+  background: linear-gradient(180deg, #7df9ff 0%, #ffffff 50%, #7df9ff 100%);
+}
+.hz-bdr.bdr-bracket.is-shiny.m-gold > .xbdr-side-rails::before,
+.hz-bdr.bdr-bracket.is-shiny.m-gold > .xbdr-side-rails::after {
+  background: linear-gradient(180deg, #e0bc6e 0%, #fff8dc 50%, #e0bc6e 100%);
+}
+.hz-bdr.bdr-bracket.is-shiny.m-secret > .xbdr-side-rails::before,
+.hz-bdr.bdr-bracket.is-shiny.m-secret > .xbdr-side-rails::after {
+  background: linear-gradient(180deg, #a855f7 0%, #f5d0fe 50%, #a855f7 100%);
+}
+.hz-bdr.bdr-bracket.is-shiny.m-ultima > .xbdr-side-rails::before,
+.hz-bdr.bdr-bracket.is-shiny.m-ultima > .xbdr-side-rails::after {
+  background: linear-gradient(180deg, #ff0055 0%, #fff3b0 50%, #ffaa00 100%);
+}
+
+/* ==================== 3. PRODUCTION CARD CONTAINER ADAPTERS ==================== */
+
+/* A. .hub-center (Showcase / Profile / Public Profile / Backpack Tile) */
+.hub-center.hz-bdr {
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+.bps-hover .hub-center.hz-bdr {
+  box-shadow: 0 14px 40px rgba(0, 0, 0, .6) !important;
+}
+.hub-center.hz-bdr:not(#_bv2)::before,
+.hub-center.hz-bdr:not(#_bv2)::after {
+  content: none !important;
+  display: none !important;
+  animation: none !important;
+}
+.hub-center.hz-bdr .hc-badges {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap;
+  align-items: center !important;
+  gap: 3px !important;
+  z-index: 7 !important;
+}
+.backpack-panel .bp-tile .hub-center.hz-bdr .bpt-top {
+  top: 5px !important;
+  right: 5px !important;
+  left: auto !important;
+  z-index: 7 !important;
+  gap: 3px !important;
+}
+.backpack-panel .bp-tile .hub-center.hz-bdr .bpt-top .xbadge.is-micro {
+  width: 15px;
+  height: 15px;
+  min-width: 15px;
+  min-height: 15px;
+}
+.backpack-panel .bp-tile .hub-center.hz-bdr .bpt-top .xbadge.is-micro svg {
+  width: 9.5px;
+  height: 9.5px;
+}
+
+/* B. Battle Cards (.fc-frame.card-shell) */
+html body.battle-full #app .battle-grid .fighter .fc-frame.card-shell.hz-bdr {
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .9) !important;
+}
+html body.battle-full #app .battle-grid .fighter .fc-frame.card-shell.hz-bdr .mut-ring,
+html body.battle-full #app .battle-grid .fighter .fc-frame.card-shell.hz-bdr.is-shiny::after {
+  display: none !important;
+  content: none !important;
+}
+html body.battle-full #app .battle-grid .fighter .fc-top.card-top-bar {
+  left: 7px !important;
+  right: 7px !important;
+  top: 7px !important;
+  z-index: 7 !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+}
+html body.battle-full #app .battle-grid .fighter .hz-card-stamps {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-right: auto;
+  pointer-events: auto;
+}
+html body.battle-full #app .battle-grid .fighter .fc-badges.card-badges {
+  margin-left: auto !important;
+}
+
+/* C. Card Index (#indexModal .ix-cell) */
+#indexModal .ix-cell.hz-bdr:not(.no-own):not(#_bv2),
+#indexModal .ix-cell.hz-bdr.m-gold:not(#_bv2),
+#indexModal .ix-cell.hz-bdr.m-rainbow:not(#_bv2),
+#indexModal .ix-cell.hz-bdr.m-secret:not(#_bv2),
+#indexModal .ix-cell.hz-bdr.m-ultima:not(#_bv2),
+#indexModal .ix-cell.hz-bdr.is-shiny:not(#_bv2) {
+  border: 0 !important;
+}
+#indexModal .ix-cell.hz-bdr.no-own:not(.m-gold):not(.m-rainbow):not(.m-secret):not(.m-ultima):not(.is-shiny) {
+  border: 1px dashed var(--ix-faint) !important;
+}
+#indexModal .ix-cell.hz-bdr.no-own:not(.m-gold):not(.m-rainbow):not(.m-secret):not(.m-ultima):not(.is-shiny) > .xbdr-ring,
+#indexModal .ix-cell.hz-bdr.no-own:not(.m-gold):not(.m-rainbow):not(.m-secret):not(.m-ultima):not(.is-shiny) > .xbdr-corners,
+#indexModal .ix-cell.hz-bdr.no-own:not(.m-gold):not(.m-rainbow):not(.m-secret):not(.m-ultima):not(.is-shiny) > .xbdr-side-rails {
+  display: none !important;
+}
+#indexModal .ix-cell.hz-bdr.no-own > .xbdr-corners,
+#indexModal .ix-cell.hz-bdr.no-own > .xbdr-side-rails {
+  opacity: .42;
+}
+#indexModal .ix-cell.hz-bdr .ix-mring,
+#indexModal .ix-cell.hz-bdr .ix-sheen {
+  display: none !important;
+}
+#indexModal .ix-cell.hz-bdr .ix-tags {
+  left: 5px;
+  top: 5px;
+  z-index: 6;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+#indexModal .ix-cell.hz-bdr .ix-count,
+#indexModal .ix-cell.hz-bdr .ixc-stack {
+  z-index: 6;
+}
+#indexModal .ix-cell.hz-bdr .ix-count {
+  right: 5px;
+  top: 5px;
+}
+
+/* D. Deck Modal (#deckModal .dk-slot & .dk-card) */
+#deckModal .dk-slot.filled.hz-bdr,
+#deckModal .dk-card.hz-bdr,
+#deckModal .dk-card.hz-bdr.mut {
+  box-shadow: none !important;
+}
+#deckModal .dk-slot.filled.act.hz-bdr {
+  outline: 2px solid var(--dk-haz);
+  outline-offset: -2px;
+}
+#deckModal .dk-card.indeck.hz-bdr::after {
+  z-index: 6;
+}
+#deckModal .dk-slot.filled.hz-bdr .dk-slot-art {
+  z-index: 1;
+}
+#deckModal .dk-slot-stamps {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  pointer-events: none;
+}
+#deckModal .dk-card-stamps {
+  position: absolute;
+  right: 5px;
+  top: 19px;
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  pointer-events: none;
+}
+#deckModal .dk-slot.hz-bdr .dk-slot-no,
+#deckModal .dk-card.hz-bdr .dk-card-cnt,
+#deckModal .dk-card.hz-bdr .dk-card-indeck,
+#deckModal .dk-card.hz-bdr .dk-card-foot,
+#deckModal .dk-card.hz-bdr .dk-card-fav,
+#deckModal .dk-slot.hz-bdr .dk-slot-foot {
+  z-index: 6;
+}
+#deckModal .dk-slot.hz-bdr .dk-slot-x {
+  z-index: 8;
+}
+
+/* E. Roll Reveal Card (.cframe) */
+.cframe.hz-bdr {
+  border: 0 !important;
+}
+.cframe.hz-bdr .mring,
+.cframe.hz-bdr.shiny::after {
+  display: none !important;
+  content: none !important;
+}
+.cframe-stamps {
+  position: absolute;
+  left: 7px;
+  top: 7px;
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+}
+
+/* F. Drop Report (#rollResultPop .pr-tile) */
+#rollResultPop .pr-tile.hz-bdr,
+#rollResultPop .pr-tile.hz-bdr[data-tier],
+#rollResultPop .pr-tile.hz-bdr[class*="mut-"] {
+  box-shadow: none !important;
+}
+#rollResultPop .pr-tile.hz-bdr.shiny::before {
+  display: none !important;
+  content: none !important;
+}
+#rollResultPop .pr-tile.hz-bdr .pr-badges {
+  left: 5px;
+  top: 5px;
+  z-index: 7;
+  flex-direction: row;
+  gap: 3px;
+}
+#rollResultPop .pr-tile.hz-bdr .pr-cnt,
+#rollResultPop .pr-tile.hz-bdr .pr-tfoot {
+  z-index: 6;
+}
+
+/* G. Trait Picker (.pck-card) & Deck Picker (#deckPickModal .dp-card) */
+#trPick .pck-card.hz-bdr,
+#deckPickModal .dp-card.hz-bdr {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+#trPick .pck-card.hz-bdr .pck-badges,
+#deckPickModal .dp-card.hz-bdr .dp-badges {
+  right: 5px;
+  top: 5px;
+  z-index: 7;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 3px;
+}
+#trPick .pck-card.hz-bdr.sel::before {
+  z-index: 8;
+}
+#trPick .pck-card.hz-bdr .pck-name,
+#deckPickModal .dp-card.hz-bdr .dp-name {
+  z-index: 6;
+}
+
+/* H. Deck Card Dossier (.dk-mart), Slot Picker (.dk-spopt), & Equip Modal (.md-art) */
+#deckCardModal .dk-mart.hz-bdr {
+  position: relative;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+#deckCardModal .dk-mart-stamps {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+}
+#deckCardModal .dk-mskill.dk-mtrait .dk-mskill-n {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+#deckSlotPop .dk-spopt.hz-bdr {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+#deckSlotPop .dk-spopt.hz-bdr:hover {
+  outline: 2px solid var(--dk-haz);
+  outline-offset: -2px;
+}
+#deckSlotPop .dk-spopt.hz-bdr .no,
+#deckSlotPop .dk-spopt.hz-bdr .nm {
+  z-index: 6;
+}
+#deckSlotPop .dk-sp-stamps {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+}
+.md-card .md-art.hz-bdr {
+  border-radius: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.md-card .md-art-stamps {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+}
+#modal .md-info .eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: auto !important;
+  line-height: 1.3;
+  margin-bottom: 10px;
+}

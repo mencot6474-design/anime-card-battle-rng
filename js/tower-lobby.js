@@ -1356,11 +1356,14 @@ function rrTile(g){
   const col=isMut?(MUT_COLOR[g.mut]||'#f5f5f5'):((tier&&TIER_COLOR[tier])||'#f5f5f5');
   const badges=(isShiny||isMut)
     ? '<span class="pr-badges">'
-      +(isShiny?'<span class="pr-badge sh">SHINY</span>':'')
-      +(isMut?'<span class="pr-badge mut" style="--mc:'+(MUT_COLOR[g.mut]||'#fff')+'">'+(MUT_LABEL[g.mut]||g.mut).toUpperCase()+'</span>':'')
+      +(isShiny?(typeof shinyStampHtml==='function'?shinyStampHtml(true):'<span class="pr-badge sh">SHINY</span>'):'')
+      +(isMut?(typeof mutStampHtml==='function'?mutStampHtml(g.mut,true):'<span class="pr-badge mut" style="--mc:'+(MUT_COLOR[g.mut]||'#fff')+'">'+(MUT_LABEL[g.mut]||g.mut).toUpperCase()+'</span>'):'')
       +'</span>'
     : '';
-  return '<div class="pr-tile'+(isMut?' mut-'+g.mut:'')+(isShiny?' shiny':'')+'" data-tier="'+tier+'" title="'+name+'">'
+  const hzCls=(typeof hzBorderCls==='function')?hzBorderCls(isMut?g.mut:'none',isShiny,{tile:true,dense:true}):'';
+  const hzLayers=(typeof hzBorderLayerHtml==='function')?hzBorderLayerHtml():'';
+  return '<div class="pr-tile'+(isMut?' mut-'+g.mut:'')+(isShiny?' shiny':'')+hzCls+'" data-tier="'+tier+'" title="'+name+'">'
+    +hzLayers
     +(g.n>1?'<span class="pr-cnt">×'+fmt(g.n)+'</span>':'')
     +badges
     +'<img src="'+cardThumb(g.cardId)+'" alt="'+name+'" width="96" height="96" decoding="async" onerror="this.onerror=null;this.src=\'assets/images/icon-index-card.webp\'">'
@@ -1482,10 +1485,18 @@ function openModal(id){
   const c=CARDS[s.char],st=cardStats(s.char,s.mut,s.trait,s.shiny);
   const m=document.getElementById("modal");
   const mcEl=document.getElementById("md-card");mcEl.dataset.tier=s.tier||"";
+  const mdMut=(s.mut&&s.mut!=="none")?s.mut:"";
+  const mdTrait=(s.trait&&s.trait!=="none")?s.trait:"";
+  const mdCls=(typeof hzBorderCls==="function")?hzBorderCls(mdMut||"none",!!s.shiny):"";
+  const mdLayers=(typeof hzBorderLayerHtml==="function")?hzBorderLayerHtml():"";
+  let mdStamps="";
+  if(s.shiny&&typeof shinyStampHtml==="function") mdStamps+=shinyStampHtml(true);
+  if(mdMut&&typeof mutStampHtml==="function") mdStamps+=mutStampHtml(mdMut,true);
+  if(mdTrait&&typeof traitStampHtml==="function") mdStamps+=traitStampHtml(mdTrait,true);
   mcEl.innerHTML=`
-    <span class="md-art"><img src="${c.sprite_asset}" alt="${c.name}"></span>
+    <span class="md-art${mdCls}">${mdLayers}${mdStamps?`<span class="md-art-stamps">${mdStamps}</span>`:""}<img src="${c.sprite_asset}" alt="${c.name}"></span>
     <div class="md-info">
-      <div class="eyebrow" style="color:${(s.tier&&TIER_COLOR[s.tier])||'#7DF9FF'}">${rarityText(s.tier,luckChance(s.char,s.mut,s.shiny))}${s.mut&&s.mut!=="none"?` · ${mutChip(s.mut,mutPill(s.mut))}`:""}${s.shiny?' · <span class="shiny-badge shiny-pill">SHINY</span>':""}</div>
+      <div class="eyebrow" style="color:${(s.tier&&TIER_COLOR[s.tier])||'#7DF9FF'}"><span>${rarityText(s.tier,luckChance(s.char,s.mut,s.shiny))}</span>${mdMut&&typeof mutStampHtml==="function"?mutChip(mdMut,mutStampHtml(mdMut,false)):(mdMut?mutChip(mdMut,mutPill(mdMut)):"")}${s.shiny&&typeof shinyStampHtml==="function"?shinyStampHtml(false):""}${mdTrait&&typeof traitStampHtml==="function"?traitChip(mdTrait,traitStampHtml(mdTrait,false)):""}</div>
       <div class="md-name">${c.name}</div>
       <div class="cr-title" style="margin-bottom:8px">${c.type}</div>
       <div class="cr-stats"><span class="hp"><i>HP</i> <b>${fmtStat(st.hp)}</b></span><span class="atk"><i>ATK</i> <b>${fmtStat(st.atk)}</b></span></div>
@@ -1568,11 +1579,17 @@ function hubCardHtml(eq,idAttr,showHideBtn){
   const trait=(eq.trait&&eq.trait!=='none')?eq.trait:null;
   const chanceText=rarityText(tier,luckChance(eq.char,eq.mut,eq.shiny));
   const hideBtn=showHideBtn?`<button class="roll-hide-btn" type="button">Sembunyikan</button>`:'';
-  return `<div class="hub-center${CARDS[eq.char].fullArt?' fa':''}${mut?' mut-'+mut:''}${shinyCls(eq)}"${idAttr||''} data-tier="${tier}" style="--tcol:${mut?MUT_COLOR[mut]:((tier&&TIER_COLOR[tier])||'#7DF9FF')}${mut&&!eq.shiny?`;border-color:${MUT_COLOR[mut]}`:''}">
+  const hzCls=(typeof hzBorderCls==='function')?hzBorderCls(mut,!!eq.shiny):'';
+  const hzLayers=(typeof hzBorderLayerHtml==='function')?hzBorderLayerHtml():'';
+  const shBadge=eq.shiny?(typeof shinyStampHtml==='function'?shinyStampHtml(true):'<span class="shiny-badge shiny-pill">SHINY</span>'):'';
+  const mBadge=mut?mutChip(mut,typeof mutStampHtml==='function'?mutStampHtml(mut,true):mutPill(mut)):'';
+  const tBadge=trait?traitChip(trait,typeof traitStampHtml==='function'?traitStampHtml(trait,true):`<span class="hc-trait hc-gem" style="color:${TRAIT_COLOR[trait]};border-color:${TRAIT_COLOR[trait]}">${traitGem(14,trait)}</span>`):'';
+  return `<div class="hub-center${CARDS[eq.char].fullArt?' fa':''}${mut?' mut-'+mut:''}${shinyCls(eq)}${hzCls}"${idAttr||''} data-tier="${tier}" style="--tcol:${mut?MUT_COLOR[mut]:((tier&&TIER_COLOR[tier])||'#7DF9FF')}">
+      ${hzLayers}
       <div class="hc-img"><img src="${cardImg(eq.char)}" alt="${cardName(eq.char)}"${CARDS[eq.char].pos?` style="object-position:${CARDS[eq.char].pos}"`:''}>
           ${mut&&!eq.shiny?`<span class="hc-name-top hc-mut-name" data-text="${String(cardName(eq.char)).replace(/"/g,'&quot;')}">${mut==='rainbow'?mutText(mut,cardName(eq.char)):cardName(eq.char)}</span>`:eq.shiny?`<span class="hc-name-top hc-name-shine${mut?' hc-name-shine-'+mut:''}" data-text="${String(cardName(eq.char)).replace(/"/g,'&quot;')}" style="${mut==='gold'?'--sh-base:#E0BC6E;--sh-edge:rgba(224,188,110,.95);--sh-glow:rgba(224,188,110,.55)':mut==='rainbow'?'--sh-base:#B58CFF;--sh-edge:rgba(90,200,250,.95);--sh-glow:rgba(181,140,255,.55)':mut==='secret'?'--sh-base:#A855F7;--sh-edge:rgba(168,85,247,.95);--sh-glow:rgba(168,85,247,.55)':mut==='ultima'?'--sh-base:#FF0055;--sh-edge:rgba(255,51,102,.95);--sh-glow:rgba(255,0,85,.6)':'--sh-base:#22d3ee;--sh-edge:rgba(34,211,238,.95);--sh-glow:rgba(34,211,238,.55)'}">${cardName(eq.char)}</span>`:shinyName('span','hc-name-top','hc-name-shine',mut,eq.shiny,cardName(eq.char))}
           <span class="hc-chance${mut==='rainbow'?' hc-chance-rainbow':''}" style="color:${mut?MUT_COLOR[mut]:"#9AA6B2"}">${mut==='rainbow'?mutText(mut,chanceText):chanceText}</span>
-          ${(mut||trait||eq.shiny)?`<div class="hc-badges">${eq.shiny?'<span class="shiny-badge shiny-pill">SHINY</span>':''}${mut?mutChip(mut,mutPill(mut)):''}${trait?traitChip(trait,`<span class="hc-trait hc-gem" style="color:${TRAIT_COLOR[trait]};border-color:${TRAIT_COLOR[trait]}">${traitGem(14,trait)}</span>`):''}</div>`:''}
+          ${(mut||trait||eq.shiny)?`<div class="hc-badges">${shBadge}${mBadge}${tBadge}</div>`:''}
           <div class="skill-overlay"><b>${passiveName(eq.char)}</b><span class="sk-txt">${skillText(eq.char)}</span></div>
         </div>
         <div class="hc-info">

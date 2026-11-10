@@ -181,9 +181,17 @@
       }
       var st = statOf(s);
       var col = mutColor(s);
-      out += '<div class="dk-slot filled" data-slot="' + i + '" role="button" tabindex="0" style="--dk-mc:' + col + '" aria-label="Slot ' + (i + 1) + ': ' + esc(nameOf(s)) + '">'
+      var mk = mutKey(s);
+      var hzCls = (typeof hzBorderCls === 'function') ? hzBorderCls(mk || 'none', !!s.shiny, { tile: true }) : '';
+      var hzLayers = (typeof hzBorderLayerHtml === 'function') ? hzBorderLayerHtml() : '';
+      var slotStamps = '';
+      if (s.shiny && typeof shinyStampHtml === 'function') slotStamps += shinyStampHtml(true);
+      if (mk && typeof mutStampHtml === 'function') slotStamps += mutStampHtml(mk, true);
+      if (s.trait && s.trait !== 'none' && typeof traitStampHtml === 'function') slotStamps += traitStampHtml(s.trait, true);
+      out += '<div class="dk-slot filled' + hzCls + '" data-slot="' + i + '" role="button" tabindex="0" style="--dk-mc:' + col + '" aria-label="Slot ' + (i + 1) + ': ' + esc(nameOf(s)) + '">'
+        + hzLayers
         + '<span class="dk-slot-no">0' + (i + 1) + '</span>'
-        + '<span class="dk-slot-tag">' + esc(mutLabel(s)) + '</span>'
+        + (slotStamps ? '<span class="dk-slot-stamps">' + slotStamps + '</span>' : '')
         + '<div class="dk-slot-art"><img src="' + esc(thumbOf(s)) + '" alt="' + esc(nameOf(s)) + '" width="96" height="96" decoding="async" onerror="this.onerror=null;this.src=\'assets/images/icon-index-card.webp\'"></div>'
         + '<button class="dk-slot-x" data-clear="' + i + '" aria-label="Remove card from slot ' + (i + 1) + '">' + ICON_X + '</button>'
         + '<div class="dk-slot-foot">'
@@ -381,9 +389,18 @@
       for (var i = 0; i < list.length; i++) {
         var s = list[i];
         var indeck = d.indexOf(s.id) >= 0;
-        out += '<button class="dk-card' + (mutKey(s) ? ' mut' : '') + (indeck ? ' indeck' : '') + '" data-card="' + esc(s.id) + '" style="--dk-mc:' + mutColor(s) + '" aria-label="' + esc(nameOf(s)) + '">'
+        var mk = mutKey(s);
+        var hzCls = (typeof hzBorderCls === 'function') ? hzBorderCls(mk || 'none', !!s.shiny, { tile: true, dense: true }) : '';
+        var hzLayers = (typeof hzBorderLayerHtml === 'function') ? hzBorderLayerHtml() : '';
+        var stHtml = '';
+        if (s.shiny && typeof shinyStampHtml === 'function') stHtml += shinyStampHtml(true);
+        if (mk && typeof mutStampHtml === 'function') stHtml += mutStampHtml(mk, true);
+        if (s.trait && s.trait !== 'none' && typeof traitStampHtml === 'function') stHtml += traitStampHtml(s.trait, true);
+        out += '<button class="dk-card' + (mk ? ' mut' : '') + (indeck ? ' indeck' : '') + hzCls + '" data-card="' + esc(s.id) + '" style="--dk-mc:' + mutColor(s) + '" aria-label="' + esc(nameOf(s)) + '">'
+          + hzLayers
           + (s.count > 1 ? '<span class="dk-card-cnt">x' + s.count + '</span>' : '')
           + (indeck ? '<span class="dk-card-indeck">EQUIPPED</span>' : '')
+          + (stHtml ? '<span class="dk-card-stamps">' + stHtml + '</span>' : '')
           + (s.fav ? '<span class="dk-card-fav">' + ICON_STAR + '</span>' : '')
           + '<img src="' + esc(thumbOf(s)) + '" alt="' + esc(nameOf(s)) + '" width="96" height="96" decoding="async" onerror="this.onerror=null;this.src=\'assets/images/icon-index-card.webp\'">'
           + '<span class="dk-card-foot">' + esc(chanceText(s)) + '</span>'
@@ -468,6 +485,19 @@
     var pas = passiveOf(s);
     var tr = traitInfo(s);
     var wx = weatherOf(s);
+    var mk = mutKey(s);
+    var tk = (s.trait && s.trait !== 'none') ? s.trait : '';
+    var martCls = (typeof hzBorderCls === 'function') ? hzBorderCls(mk || 'none', !!s.shiny) : '';
+    var martLayers = (typeof hzBorderLayerHtml === 'function') ? hzBorderLayerHtml() : '';
+    var martStamps = '';
+    if (s.shiny && typeof shinyStampHtml === 'function') martStamps += shinyStampHtml(true);
+    if (mk && typeof mutStampHtml === 'function') martStamps += mutStampHtml(mk, true);
+    if (tk && typeof traitStampHtml === 'function') martStamps += traitStampHtml(tk, true);
+
+    var tagBadges = '';
+    if (s.shiny && typeof shinyStampHtml === 'function') tagBadges += shinyStampHtml(false);
+    if (mk && typeof mutStampHtml === 'function') tagBadges += mutStampHtml(mk, false);
+    if (!tagBadges) tagBadges = '<span class="dk-mtag" style="--dk-mc:' + col + '">' + esc(mutLabel(s)) + '</span>';
 
     var skillHtml = '';
     if (pas) {
@@ -478,20 +508,21 @@
         + (pas.desc ? '<p class="dk-mskill-d">' + esc(pas.desc) + '</p>' : '')
         + '</div>';
     }
+    var trGem = (tk && typeof traitGem === 'function') ? traitGem(15, tk) : '';
     var traitHtml = tr
-      ? '<div class="dk-mskill dk-mtrait">'
+      ? '<div class="dk-mskill dk-mtrait" style="--dk-mc:' + esc(tr.color) + '">'
       + '<div class="dk-mskill-h"><span class="dk-mskill-k">TRAIT</span></div>'
-      + '<div class="dk-mskill-n" style="color:' + esc(tr.color) + '">' + esc(tr.name) + '</div>'
+      + '<div class="dk-mskill-n" style="color:' + esc(tr.color) + '">' + trGem + '<span>' + esc(tr.name) + '</span></div>'
       + (tr.fx ? '<p class="dk-mskill-d">' + esc(tr.fx) + '</p>' : '')
       + '</div>'
       : '';
 
     body.innerHTML =
-      '<div class="dk-mart" style="--dk-mc:' + col + '"><img src="' + esc(thumbOf(s)) + '" alt="' + esc(nameOf(s)) + '"></div>'
+      '<div class="dk-mart' + martCls + '" style="--dk-mc:' + col + '">' + martLayers + (martStamps ? '<span class="dk-mart-stamps">' + martStamps + '</span>' : '') + '<img src="' + esc(thumbOf(s)) + '" alt="' + esc(nameOf(s)) + '"></div>'
       + '<div class="dk-minfo">'
-      + '<div class="dk-mname" style="color:' + (mutKey(s) ? col : 'var(--dk-ink)') + '">' + esc(nameOf(s)) + '</div>'
+      + '<div class="dk-mname" style="color:' + (mk ? col : 'var(--dk-ink)') + '">' + esc(nameOf(s)) + '</div>'
       + '<div class="dk-mtags">'
-      + '<span class="dk-mtag" style="--dk-mc:' + col + '">' + esc(mutLabel(s)) + '</span>'
+      + tagBadges
       + '<span class="dk-mtag" style="--dk-mc:rgba(245,245,245,.55)">' + esc(chanceText(s)) + '</span>'
       + (wx && wx.name ? '<span class="dk-mtag" style="--dk-mc:' + esc(wx.color || 'var(--dk-ink)') + '">' + esc(wx.name) + '</span>' : '')
       + (slotAt >= 0 ? '<span class="dk-mtag" style="--dk-mc:var(--dk-haz)">SLOT 0' + (slotAt + 1) + '</span>' : '')
@@ -543,8 +574,17 @@
           + '<span class="no">0' + (i + 1) + '</span>' + ICON_PLUS + '</button>';
         continue;
       }
-      out += '<button class="dk-spopt" data-slot="' + i + '" style="--dk-mc:' + mutColor(cur) + '" aria-label="Replace slot ' + (i + 1) + ': ' + esc(nameOf(cur)) + '">'
+      var cmk = mutKey(cur);
+      var spCls = (typeof hzBorderCls === 'function') ? hzBorderCls(cmk || 'none', !!cur.shiny, { tile: true }) : '';
+      var spLayers = (typeof hzBorderLayerHtml === 'function') ? hzBorderLayerHtml() : '';
+      var spStamps = '';
+      if (cur.shiny && typeof shinyStampHtml === 'function') spStamps += shinyStampHtml(true);
+      if (cmk && typeof mutStampHtml === 'function') spStamps += mutStampHtml(cmk, true);
+      if (cur.trait && cur.trait !== 'none' && typeof traitStampHtml === 'function') spStamps += traitStampHtml(cur.trait, true);
+      out += '<button class="dk-spopt' + spCls + '" data-slot="' + i + '" style="--dk-mc:' + mutColor(cur) + '" aria-label="Replace slot ' + (i + 1) + ': ' + esc(nameOf(cur)) + '">'
+        + spLayers
         + '<span class="no">0' + (i + 1) + '</span>'
+        + (spStamps ? '<span class="dk-sp-stamps">' + spStamps + '</span>' : '')
         + '<img src="' + esc(thumbOf(cur)) + '" alt="' + esc(nameOf(cur)) + '" width="64" height="64" decoding="async" onerror="this.onerror=null;this.src=\'assets/images/icon-index-card.webp\'">'
         + '<span class="nm">' + esc(nameOf(cur)) + '</span>'
         + '</button>';
