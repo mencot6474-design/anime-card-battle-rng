@@ -9,10 +9,10 @@ function towerIsBossFloor(f){return f%5===0;}
 /* ===== DROP INSTAN PACK PER LANTAI (Inf Tower) =====
    BASE rate, TIDAK dipengaruhi luck player. 50K tidak ada drop Tower. */
 const TOWER_PACK_DROPS=[
-  {k:'r5k',  p:0.05,  name:'INSTANT ROLL 5.000',  icon:'assets/images/instanpack-5k.webp?v=trans1',  label:'5%'},
-  {k:'r10k', p:0.02,  name:'INSTANT ROLL 10.000', icon:'assets/images/instanpack-10k.webp?v=trans1', label:'2%'},
-  {k:'r25k', p:0.01,  name:'INSTANT ROLL 25.000', icon:'assets/images/instanpack-25k.webp?v=trans1', label:'1%'},
-  {k:'r100k',p:0.005, name:'INSTANT ROLL 100.000',icon:'assets/images/instanpack-100k.webp?v=trans1',label:'0,5%'}
+  {k:'r5k',  p:0.05,  name:'INSTANT ROLL 5,000',  icon:'assets/images/instanpack-5k.webp?v=trans1',  label:'5%'},
+  {k:'r10k', p:0.02,  name:'INSTANT ROLL 10,000', icon:'assets/images/instanpack-10k.webp?v=trans1', label:'2%'},
+  {k:'r25k', p:0.01,  name:'INSTANT ROLL 25,000', icon:'assets/images/instanpack-25k.webp?v=trans1', label:'1%'},
+  {k:'r100k',p:0.005, name:'INSTANT ROLL 100,000',icon:'assets/images/instanpack-100k.webp?v=trans1',label:'0.5%'}
 ];
 function towerBossIndex(f){return ((f/5)-1)%TOWER_BOSS_ROSTER.length;}
 function towerHash(n){return (((n*2654435761)>>>0)%100000)||0;}
@@ -64,7 +64,7 @@ function stopTower(){
   if(towerRun&&(towerRun.pendingRolls||0)>0){
     const n=towerRun.pendingRolls; const loot=instantRoll(n); towerRun.pendingRolls=0;
     /* Popup hasil roll tetap BIKIN pack + artefak/pet ikut tampil (icon sama dgn backpack). */
-    if(loot&&loot.length)showTowerLoot(loot,towerRun.drops,null,{packDrops:towerRun.packDrops||{},rareDrops:towerRun.rareDrops||[]}); else toast("TOWER ROLLS WITHDRAWN","+"+n+" KARTU","#7df9ff");
+    if(loot&&loot.length)showTowerLoot(loot,towerRun.drops,null,{packDrops:towerRun.packDrops||{},rareDrops:towerRun.rareDrops||[]}); else toast("TOWER ROLLS WITHDRAWN","+"+n+" CARDS","#7df9ff");
   }
   towerView="hub"; towerRun=null;
 }
@@ -77,7 +77,7 @@ function towerFoeHtml(w){
     <div class="hpbar"><i id="hpFoe" style="width:${pct}%"></i><span id="hpFoeT">${fmt(curHp)} / ${fmt(es.hp)}</span></div>
     <div class="f-body">
       <div class="f-title">${en.epithet}</div>
-      <div class="f-skill">${en.id?passiveName(en.id):"Musuh"}</div>
+      <div class="f-skill">${en.id?passiveName(en.id):"Enemy"}</div>
       <div class="stat-row"><div class="stat hp"><i>HP</i> <b>${fmtStat(es.hp)}</b></div><div class="stat atk"><i>ATK</i> <b>${fmtStat(es.atk)}</b></div></div>
     </div>`}
   </div>`;
@@ -113,386 +113,529 @@ function towerEnter(f){
 function towerStartRun(){
   if(typeof hideRollResult==="function")hideRollResult();
   towerLossAutoPending=false;
-  if(!state.tower)state.tower={best:0};
+  if(!state.tower)state.tower={best:0,runs:0,auto:false};
+  state.tower.runs=(state.tower.runs||0)+1;
+  try{save();}catch(e){}
   towerRun={floor:1,waves:towerWaves(1),idx:0,cleared:0,cards:0,coins:0,drops:{weather:0,luck:0,speed:0},tokens:0,pendingRolls:0,packDrops:{},rareDrops:[]};
   towerView="battle";
   render();
 }
-function renderTower(){
-  if(towerView==="battle"&&towerRun){renderTowerBattle();return;}
-  if(towerView==="shop"){csClearCompact();renderTowerShop();return;}
-  renderTowerHub();
-}
-/* body.tw-compact hanya bermakna selama hub CORE SPIRE tampil. Tanpa ini
-   kelasnya tertinggal di layar lain (terukur: masih `true` saat lobby, karena
-   csRenderSlabs yang menyalakannya tidak punya pasangan pembersih). */
-function csClearCompact(){ document.body.classList.remove("tw-compact"); }
-/* ==================== CORE SPIRE — HUB TOWER INFINITE ====================
-   Port dari lab `_tmp/proto_tower_skel.html` (desain DIKUNCI user 2026-11-05).
-   Struktur: .cs-hub > .cs-top / .cs-body(.cs-stage + .cs-side) / .cs-foot?
-   Kontrak boot yang WAJIB dijaga (js/boot.js:341,384 -> body.on-tower):
-     root  class="tw-page tactical-tower-page"
-     id    towerGo / towerShop / towerLobby / twDropRateBtn
-   Algoritma lantai menara (hasil ukur, JANGAN diubah tanpa ukur ulang):
-     1. .cs-stage berperspektif -> tinggi lantai yang TAMPAK bukan tinggi CSS
-        (terukur 80px DEPLOY di 500x844, 59px di 320x568) dan berbeda per posisi.
-     2. Jarak antar-lantai lebih kecil dari tinggi lantai terdekat = lantai
-        berikutnya tertutup (terukur -3..-13px).
-     3. Umpan balik "jarak terus dinaikkan" DIVERGEN: menaikkan jarak mendorong
-        lantai ke atas mendekati perspective-origin sehingga lantai justru
-        membesar (terukur meledak 113/200/287/374px). Karena itu yang berubah
-        hanya JUMLAH lantai; jarak dihitung ulang dari jumlah itu.
-     4. Stage pendek (320x568 -> ~243px) hanya muat 3 lantai rak 3-baris dan
-        menyisakan ruang mati -> mode PADAT (body.tw-compact, 2 baris).
-   Cara kerja: coba n dari TERBESAR ke terkecil, UKUR hasil nyata, terima n
-   pertama yang tidak bertumpuk dan tidak keluar dari stage. */
-const CS_SLAB_MAX = 9, CS_SLAB_MIN = 3;
-
-function csPad2(n){ return String(n).padStart(2, "0"); }
-function csStageEl(){ return document.querySelector(".cs-hub .cs-stage"); }
-
-/* tinggi stage yang terpasang (dipakai memilih jumlah lantai) */
-function csStageH(){
-  const st = csStageEl();
-  return (st && st.clientHeight) || 300;
-}
-
-/* Jendela lantai: frontier (best+1) SELALU ikut tampil supaya pemain tahu
-   sasaran berikutnya, sisanya lantai di bawahnya. Biaya DOM tetap <= 9. */
-function csWindowFloors(n, best){
-  const lo = Math.max(1, (best + 1) - (n - 1));
-  const out = [];
-  for(let f = lo; f < lo + n; f++) out.push(f);
-  return out;
-}
-
-/* active  = titik mulai run (produksi selalu mulai lantai 1)
-   next    = frontier best+1, sasaran berikutnya
-   cleared = sudah ditembus
-   locked  = belum terjangkau */
-function csFloorStateOf(f, best){
-  if(f === 1) return "active";
-  if(f === best + 1) return "next";
-  if(f <= best) return "cleared";
-  return "locked";
-}
-
-function csSlabHtml(f, idx, y, best){
-  const st = csFloorStateOf(f, best);
-  const boss = towerIsBossFloor(f);
-  const isAct = st === "active";
-  const isRec = f === best && best > 0;
-  const kind = boss ? "CRITICAL ANOMALY" : "SECURITY NODE";
-  const coin = fmt(towerReward(f).coins);
-
-  let status, sub;
-  if(isAct){
-    status = "DEPLOY READY";
-    sub = boss ? "BOSS GATE" : "4 WAVES &middot; +" + coin + " COIN";
-  } else if(st === "next"){
-    status = "NEXT TARGET";
-    sub = boss ? "HAZARD AHEAD" : "+1 TOKEN &middot; +" + coin + " COIN";
-  } else if(st === "cleared"){
-    status = "ANALYSIS COMPLETE";
-    sub = "CLEARED &middot; +" + coin + " COIN";
-  } else {
-    status = "ENCRYPTED";
-    sub = boss ? "HAZARD SECTOR" : "LOCKED SECTOR";
+let _twPrevRoute="", _twPrevView="", _twClosing=false, _twCurtainT=[];
+function _twClearCurtain(){ while(_twCurtainT.length)clearTimeout(_twCurtainT.pop()); }
+function _twSetCurtainCopy(mode){
+  const kick=document.getElementById("twHZKick"), title=document.getElementById("twHZTitle"),
+        sub=document.getElementById("twHZSub"), foot=document.getElementById("twHZFoot"),
+        serial=document.getElementById("twHZSerial"), water=document.getElementById("twHZWater");
+  const hex=(0x1000+Math.floor(Math.random()*0xefff)).toString(16).toUpperCase();
+  if(serial)serial.textContent=hex;
+  if(mode==="open"){
+    if(kick)kick.innerHTML="// ENDLESS <b>GAUNTLET</b>";
+    if(title)title.textContent="INFINITE TOWER";
+    if(water)water.textContent="SPIRE";
+    if(sub)sub.textContent="4-WAVE CLIMB \u00b7 100 ROLLS/FLOOR \u00b7 BOSS EVERY 5F";
+    if(foot)foot.textContent="ESTABLISHING UPLINK";
+  }else{
+    if(kick)kick.innerHTML="// LINK <b>STAND BY</b>";
+    if(title)title.textContent="STANDBY";
+    if(water)water.textContent="OUT";
+    if(sub)sub.textContent="SPIRE SESSION SEALED \u2014 BEST RECORD SYNCED";
+    if(foot)foot.textContent="RETURN TO LOBBY";
   }
-
-  const badge = (isRec ? '<span class="cs-sl-badge rec">REKOR</span>' : "")
-              + (boss ? '<span class="cs-sl-badge haz">HAZARD</span>' : "");
-  const clickable = isAct || st === "next";
-  return `<div class="cs-slab" data-state="${st}" data-boss="${boss ? 1 : 0}" data-floor="${f}"`
-    + ` style="--h:${idx};--y:${Math.round(y)}px"`
-    + (clickable ? ' role="button" tabindex="0" aria-label="Start run from floor ' + f + '"' : '')
-    + `>
-    <div class="cs-sl">
-      <span class="cs-sl-no">${csPad2(f)}</span>
-      <span class="cs-sl-mid">
-        <span class="cs-sl-k">${kind}</span>
-        <span class="cs-sl-n">${status}</span>
-        <span class="cs-sl-st">${sub}</span>
-      </span>
-      ${badge}
-    </div>
-  </div>`;
 }
+function twBannerOpen(){
+  const c=document.getElementById("towerCurtain");
+  const sh=document.getElementById("tw2Shell");
+  _twClearCurtain();
+  if(!c){ if(sh)sh.classList.add("is-entered"); return; }
+  _twSetCurtainCopy("open");
+  if(sh)sh.classList.remove("is-entered","is-leaving");
+  c.className="";
+  void c.offsetWidth;
+  c.classList.add("on","smooth","sweep");
+  _twCurtainT.push(setTimeout(()=>{
+    c.classList.add("revealed");
+    const s=document.getElementById("tw2Shell");
+    if(s)s.classList.add("is-entered");
+  },940));
+  _twCurtainT.push(setTimeout(()=>{
+    c.classList.remove("on","smooth","sweep","revealed");
+  },1680));
+}
+function twBannerClose(onCovered){
+  const c=document.getElementById("towerCurtain");
+  const sh=document.getElementById("tw2Shell");
+  _twClearCurtain();
+  if(!c){ if(onCovered)onCovered(); return; }
+  _twSetCurtainCopy("close");
+  if(sh)sh.classList.add("is-leaving");
+  c.className="";
+  c.classList.add("on","smooth","revealed");
+  void c.offsetWidth;
+  c.classList.remove("revealed");
+  _twCurtainT.push(setTimeout(()=>{
+    if(onCovered)onCovered();
+    const s=document.getElementById("tw2Shell");
+    if(s)s.classList.remove("is-leaving","is-entered");
+  },560));
+  _twCurtainT.push(setTimeout(()=>c.classList.add("revealed"),780));
+  _twCurtainT.push(setTimeout(()=>c.classList.remove("on","smooth","revealed"),1560));
+}
+window.twBannerOpen=twBannerOpen;
+window.twBannerClose=twBannerClose;
 
-/* Render menara (jendela lantai). Mengembalikan {n, floors} untuk dipakai
-   kalau perlu; tidak ada state global yang diubah selain body.tw-compact. */
-function csRenderSlabs(best){
-  const host = document.getElementById("csSlabs");
-  if(!host) return null;
-  const H = csStageH();
-  const compact = H < 310;
-  document.body.classList.toggle("tw-compact", compact);
-
-  let gap1 = 66, rackStep = compact ? 30 : 42;
-
-  const draw = (n) => {
-    const floors = csWindowFloors(n, best);
-    const ys = [];
-    let y = 0;
-    for(let i=0;i<n;i++){ ys.push(Math.round(y)); y += (i === 0) ? gap1 : rackStep; }
-    host.innerHTML = floors.map((f, i) => csSlabHtml(f, i, ys[i], best)).join("");
-    return { n, floors };
-  };
-
-  /* ukur tinggi slab NYATA: perspektif mengubah tinggi tampak per posisi */
-  draw(CS_SLAB_MIN + 1);
-  const kids = [...host.children];
-  if(kids.length >= 2){
-    gap1 = Math.ceil(kids[0].getBoundingClientRect().height) + 4;
-    rackStep = Math.max(rackStep, Math.ceil(kids[1].getBoundingClientRect().height) + 2);
-  }
-
-  const measureOk = () => {
-    const rows = [...host.children];                    /* urut: bawah -> atas */
-    if(rows.length < 2) return true;
-    const rects = rows.map(e => e.getBoundingClientRect());
-    const stageEl = host.closest(".cs-stage");
-    if(!stageEl) return true;
-    const stage = stageEl.getBoundingClientRect();
-    /* rows[0] = lantai TERBAWAH; lantai lebih tinggi digambar LEBIH ATAS,
-       jadi tumpang-tindih = bottom lantai atas melewati top lantai di bawahnya.
-       Membandingkan terbalik membuat SEMUA susunan dianggap tumpang. */
-    for(let i=1;i<rects.length;i++){
-      if(rects[i-1].top - rects[i].bottom < -1) return false;
+if(!window.__tw2RouteTrack){
+  window.__tw2RouteTrack=true;
+  window.addEventListener("hashchange",()=>{
+    const r=typeof route==="function"?route():(location.hash||"#/");
+    if(r!=="#/tower"){
+      _twPrevRoute=r;
+      _twPrevView="";
+      _twClosing=false;
     }
-    return rects[rects.length-1].top >= stage.top - 1;
-  };
-
-  let bestN = CS_SLAB_MIN, geo = draw(CS_SLAB_MIN);
-  for(let n = CS_SLAB_MAX; n >= CS_SLAB_MIN; n--){
-    geo = draw(n);
-    if(measureOk()){ bestN = n; break; }
-  }
-  if(geo.n !== bestN) geo = draw(bestN);
-
-  /* sebar sisa ruang supaya menara mengisi stage, lalu periksa ulang;
-     kalau gagal, kembali ke jarak aman */
-  if(bestN > 2){
-    const spread = (H - 8 - gap1) / (bestN - 1);
-    const tryStep = Math.min(rackStep * 1.5, Math.max(rackStep, spread));
-    if(tryStep > rackStep + 1){
-      const keep = rackStep;
-      rackStep = tryStep;
-      geo = draw(bestN);
-      if(!measureOk()){ rackStep = keep; geo = draw(bestN); }
-    }
-  }
-  return geo;
-}
-
-/* Dossier: 4 kartu wave. PARITAS PRODUKSI — towerWaves() (tower-lobby.js:43-57)
-   selalu mengembalikan 4 wave (normal: 4 pick; boss: main + tag + pick(2) +
-   pick(3)), dan dulu lab memotong .slice(0,3) sehingga kartu ke-4 hilang.
-   Jangan dipotong. */
-function csRenderDossier(waves, best){
-  const host = document.getElementById("csWaves");
-  if(!host) return;
-  const boss = towerIsBossFloor(1);
-  const fEl = document.getElementById("csDosFloor");
-  const bEl = document.getElementById("csDosBoss");
-  const rEl = document.getElementById("csDosRec");
-  if(fEl) fEl.textContent = "F1";
-  if(bEl) bEl.style.display = boss ? "" : "none";
-  if(rEl) rEl.style.display = best > 0 ? "" : "none";
-
-  host.innerHTML = (waves || []).map((w, i) => {
-    if(!w || !w.en) return "";
-    const lead = i === 0;
-    const isBoss = !!w.en.boss;
-    const tagCls = lead ? "lead" : (isBoss ? "boss" : "");
-    const tagTxt = "W" + (i + 1) + (lead ? " LEAD" : (isBoss ? " BOSS" : ""));
-    /* Thumb (242x360, -84% byte) cukup untuk kotak 1:1 kecil ini; art penuh
-       (600x894) tetap dipakai battle/popup detail. `thumbSrc` ada di cards-fx.js
-       dan dimuat sebelum file ini, tapi tetap dijaga: kalau helper tidak ada
-       (urutan load berubah), pakai src asli daripada gambar kosong. */
-    const art = typeof thumbSrc === "function" ? thumbSrc(w.en.img) : w.en.img;
-    return `<div class="cs-wv">
-      <div class="cs-wv-art">
-        <img src="${art}" alt="${w.en.name}" decoding="async" loading="lazy">
-        <span class="cs-wv-tag ${tagCls}">${tagTxt}</span>
-      </div>
-      <div class="cs-wv-bot">
-        <span class="cs-wv-n" title="${w.en.name}">${w.en.name}</span>
-        <span class="cs-wv-s"><b>${fmtStat(w.es.hp)}</b> HP &middot; <b>${fmtStat(w.es.atk)}</b> ATK</span>
-      </div>
-    </div>`;
-  }).join("");
-}
-
-/* Gambar ulang menara + dossier pada ukuran viewport sekarang.
-   Dipakai render pertama (setelah layout terpasang) dan tiap resize/rotasi.
-   Aman dipanggil kapan pun: kalau hub tidak ada di DOM, langsung keluar. */
-function csRepaintHub(){
-  if(!document.querySelector(".cs-hub")) return;
-  const best = (state.tower && state.tower.best) || 0;
-  /* Dossier DULU: kartu wave mengisi `.cs-side` dan itu yang menentukan tinggi
-     akhir `.cs-stage` (flex). Mengukur menara sebelum dossier terisi = mengukur
-     stage yang masih terlalu tinggi. */
-  csRenderDossier(towerWaves(1), best);
-  csRenderSlabs(best);
-  csWatchStage();
-}
-
-/* Tinggi stage BUKAN konstanta setelah satu rAF: dossier + 4 kartu wave +
-   gambar lazy mengisi ruang SETELAH-nya, sehingga stage menyusut (terukur
-   320x568: 283px final vs ~350px saat rAF pertama; 500x844: 546 final).
-   Akibatnya jumlah lantai + body.tw-compact dihitung dari tinggi basi —
-   terukur `slabTopGap` -64px (320) dan -72px (500): lantai teratas keluar
-   dari atas stage. ResizeObserver menangkap perubahan tinggi stage dan
-   menggambar ulang. Dipasang SEKALI per elemen stage (hub di-render ulang
-   tiap navigasi, jadi elemennya diganti dan observer lama dilepas).
-   Ambang 3px mencegah loop: slab berposisi absolute, jadi repaint tidak
-   mengubah tinggi stage — kalau tidak ada perubahan nyata, tidak ada kerja. */
-let _csRO = null, _csROEl = null, _csLastStageH = 0;
-function csWatchStage(){
-  const st = csStageEl();
-  if(!st || typeof ResizeObserver !== "function") return;
-  if(_csROEl === st && _csRO) return;
-  if(_csRO){ try{ _csRO.disconnect(); }catch(e){} _csRO = null; }
-  _csROEl = st;
-  _csLastStageH = st.clientHeight;
-  _csRO = new ResizeObserver(() => {
-    if(!st.isConnected) return;
-    const h = st.clientHeight;
-    if(Math.abs(h - _csLastStageH) < 3) return;
-    _csLastStageH = h;
-    if(!document.querySelector(".cs-hub")) return;
-    const best = (state.tower && state.tower.best) || 0;
-    csRenderSlabs(best);
   });
-  try{ _csRO.observe(st); }catch(e){}
 }
 
-/* Resize/rotasi: ukuran lantai menara bergantung tinggi stage, jadi WAJIB
-   dihitung ulang. Debounce lewat rAF supaya drag-resize tidak memicu puluhan
-   pengukuran per frame (setiap ukur memaksa reflow). Listener dipasang sekali. */
-if(!window.__csHubResizeWired){
-  window.__csHubResizeWired = true;
-  let raf = 0;
-  const onResize = () => {
-    if(raf) return;
-    raf = requestAnimationFrame(() => { raf = 0; csRepaintHub(); });
-  };
-  window.addEventListener("resize", onResize, { passive: true });
-  window.addEventListener("orientationchange", onResize, { passive: true });
+function closeTowerHub(){
+  if(_twClosing)return;
+  _twClosing=true;
+  try{sfx.hit();}catch(e){}
+  twBannerClose(()=>{
+    _twClosing=false;
+    _twPrevRoute="#/lobby";
+    _twPrevView="";
+    towerView="hub";
+    location.hash="#/lobby";
+  });
+}
+window.closeTowerHub=closeTowerHub;
+
+function renderTower(){
+  const curRoute=typeof route==="function"?route():(location.hash||"#/tower");
+  if(towerView==="battle"&&towerRun){
+    _twPrevRoute=curRoute;
+    _twPrevView="battle";
+    renderTowerBattle();
+    return;
+  }
+  if(towerView==="shop"){
+    csClearCompact();
+    _twPrevRoute=curRoute;
+    _twPrevView="shop";
+    renderTowerShop();
+    return;
+  }
+  const alreadyHub=!!(typeof app!=="undefined"&&app&&app.querySelector(".tw2-hub"));
+  const skipCurtain=(_twPrevRoute==="#/tower"&&(alreadyHub||_twPrevView==="shop"||_twPrevView==="battle"));
+  _twPrevRoute=curRoute;
+  _twPrevView="hub";
+  renderTowerHub({playCurtain:!skipCurtain});
+}
+function csClearCompact(){ document.body.classList.remove("tw-compact"); }
+
+/* ==================== INFINITE TOWER HUB v2 (HAZARD PROTOCOL) ====================
+   Port of _tmp/proto_tower_v2.html — 100% English, WHITE-on-BLACK HAZARD theme,
+   real production state/drops/waves/settings, and #towerCurtain enter/exit flow. */
+const TW2_FAN_ART=[
+  {cls:"l3",src:"assets/cards/art/astral-devourer.webp"},
+  {cls:"l2",src:"assets/cards/art/ruler.webp"},
+  {cls:"l1",src:"assets/cards/art/shadow-monarch.webp"},
+  {cls:"r1",src:"assets/cards/art/almighty-tyrant.webp"},
+  {cls:"r2",src:"assets/cards/art/demon-slime.webp"},
+  {cls:"r3",src:"assets/cards/art/omni-sovereign.webp"}
+];
+const TW2_TOK_SVG='<svg viewBox="0 0 24 24"><use href="#tokSvgSymbol"/></svg>';
+const TW2_COIN_SVG='<svg viewBox="0 0 24 24"><use href="#coinSvgSymbol"/></svg>';
+const TW2_REWARDS=[
+  {id:"rolls",cls:"t-guar",tag:"Every Floor",name:"100 Card Rolls",odds:"100% GUARANTEED",src:"GUARANTEED PER FLOOR",cat:"BANKED SUMMONS",img:"assets/images/icon-index-card.webp",desc:"100 instant card rolls are banked for every floor you clear. All accumulated rolls open automatically when your run ends or when you withdraw."},
+  {id:"tokens",cls:"t-guar",tag:"Every Floor",name:"Tower Tokens",odds:"+1 / +5 BOSS",src:"GUARANTEED PER FLOOR",cat:"SPIRE CURRENCY",svg:TW2_TOK_SVG,desc:"Grants +1 Tower Token per standard floor and +5 Tower Tokens on every Boss Gate (every 5 floors). Spend Tokens in the Tower Shop."},
+  {id:"coins",cls:"t-guar",tag:"Every Floor",name:"Floor Coins",odds:"150 + 30\u00d7F",src:"GUARANTEED PER FLOOR",cat:"GOLD CURRENCY",svg:TW2_COIN_SVG,desc:"Awards 150 + 30\u00d7Floor Coins on standard floors, and 500 + 60\u00d7Floor Coins on every 5th-floor Boss Gate."},
+  {id:"r5k",cls:"t-pack",tag:"5% Base",name:"5,000x Instant Roll",odds:"5.0% CHANCE",src:"PURE BASE RATE (NO LUCK)",cat:"INSTANT PACK",img:"assets/images/instanpack-5k.webp",desc:"5% chance on every floor you clear. Adds an Instant Roll 5,000 Pack directly to your Backpack \u2014 open 5,000 cards anytime."},
+  {id:"r10k",cls:"t-pack",tag:"2% Base",name:"10,000x Instant Roll",odds:"2.0% CHANCE",src:"PURE BASE RATE (NO LUCK)",cat:"INSTANT PACK",img:"assets/images/instanpack-10k.webp",desc:"2% chance on every floor you clear. Adds an Instant Roll 10,000 Pack to your Backpack for massive burst summons."},
+  {id:"r25k",cls:"t-pack",tag:"1% Base",name:"25,000x Instant Roll",odds:"1.0% CHANCE",src:"PURE BASE RATE (NO LUCK)",cat:"INSTANT PACK",img:"assets/images/instanpack-25k.webp",desc:"1% chance on every floor you clear. Adds an Instant Roll 25,000 Pack to your Backpack \u2014 unaffected by player Luck."},
+  {id:"r100k",cls:"t-pack",tag:"0.5% Base",name:"100,000x Instant Roll",odds:"0.5% CHANCE",src:"PURE BASE RATE (NO LUCK)",cat:"INSTANT PACK",img:"assets/images/instanpack-100k.webp",desc:"0.5% chance on every floor you clear. Rolls 100,000 cards instantly when opened from your Backpack!"},
+  {id:"weather",cls:"t-pot",tag:"5% Base",name:"Weather Potion",odds:"5.0% CHANCE",src:"PURE BASE RATE (NO LUCK)",cat:"CONSUMABLE",img:"assets/images/weather-potion.webp",desc:"5% chance per cleared floor. Randomizes active server weather for 5 minutes with native climate odds."},
+  {id:"luck1",cls:"t-pot",tag:"10% Base",name:"Luck Potion L1",odds:"10.0% CHANCE",src:"PURE BASE RATE (NO LUCK)",cat:"CONSUMABLE",img:"assets/images/pot-luck-1.webp",desc:"10% chance per cleared floor. Grants +3 Flat Luck for 5 minutes (stackable duration)."},
+  {id:"speed1",cls:"t-pot",tag:"10% Base",name:"Speed Potion L1",odds:"10.0% CHANCE",src:"PURE BASE RATE (NO LUCK)",cat:"CONSUMABLE",img:"assets/images/pot-speed-1.webp",desc:"10% chance per cleared floor. Increases roll speed by +0.2\u00d7 (~1.2\u00d7) for 5 minutes (stackable)."},
+  {id:"art",cls:"t-art",tag:"0.1% Trophy",name:"Flame Sword",odds:"0.1% \u00b7 1 IN 1K",src:"PURE BASE RATE (MAX 1)",cat:"PERMANENT ARTIFACT",img:"assets/artifacts/pedang-api.webp",rawImg:true,desc:"0.1% (1 in 1,000) drop per floor! Permanent Artifact granting +120 Flat Luck & +100% (\u00d72) Luck Multiplier forever."},
+  {id:"pet",cls:"t-pet",tag:"0.01% Trophy",name:"Kyubi Fox",odds:"0.01% \u00b7 1 IN 10K",src:"PURE BASE RATE (MAX 1)",cat:"MYTHIC PET",img:"assets/pets/kyubi.webp",desc:"0.01% (1 in 10,000) drop per floor! Mythic Companion granting +200 Flat Luck & +300% (\u00d74) Luck Multiplier."}
+];
+
+let _tw2SubMode=null, _tw2TipPinned=false, _tw2TipId=null, _tw2IntelFloor=1;
+
+function _tw2ArtUrl(src, raw){
+  if(!src)return "";
+  if(raw)return src;
+  return typeof thumbSrc==="function"?thumbSrc(src):src;
 }
 
-/* ============================== HUB MARKUP ==============================
-   Struktur & urutan kelas = cermin lab (dikunci user). Menara (#csSlabs) dan
-   kartu wave (#csWaves) sengaja DIKOSONGKAN di sini lalu diisi
-   csRenderSlabs/csRenderDossier setelah layout terpasang, karena jumlah lantai
-   bergantung tinggi stage yang baru diketahui setelah reflow. */
-function renderTowerHub(){
-  if(!state.tower)state.tower={best:0};
+function renderTowerHub(opts){
+  if(!state.tower)state.tower={best:0,runs:0,auto:false};
+  if(typeof state.tower.best!=="number")state.tower.best=0;
+  if(typeof state.tower.runs!=="number")state.tower.runs=0;
+  _twClosing=false;
+  _tw2SubMode=null;
+  _tw2TipPinned=false;
+  _tw2TipId=null;
+
   const best=state.tower.best||0;
-  const start=1;                       /* run selalu dimulai dari lantai 1 */
-  const boss=towerIsBossFloor(start);
+  const runs=state.tower.runs||0;
+  const tokens=state.infTokens||0;
+  const nextBoss=Math.ceil(Math.max(1,best+1)/5)*5;
+  const deckCnt=(typeof equippedList==="function")?equippedList().length:(Array.isArray(state.deck)?state.deck.filter(Boolean).length:0);
+  const autoOn=!!state.tower.auto;
+  const playCurtain=!!(opts&&opts.playCurtain);
+
+  const fanHtml=TW2_FAN_ART.map(f=>`<div class="tw2-fcard ${f.cls}"><img src="${_tw2ArtUrl(f.src)}" alt="" decoding="async"></div>`).join("");
+  const rwHtml=TW2_REWARDS.map(r=>{
+    const media=r.img?`<img src="${_tw2ArtUrl(r.img,r.rawImg)}" alt="${r.name}" decoding="async">`:r.svg;
+    return `<button type="button" class="tw2-rtile ${r.cls}" data-rid="${r.id}" aria-label="${r.name} (${r.odds})">`
+      +`<span class="tw2-rt-tag">${r.tag}</span>`
+      +`<span class="tw2-rt-art">${media}</span>`
+      +`<span class="tw2-rt-nm">${r.name}</span>`
+      +`</button>`;
+  }).join("");
 
   app.innerHTML=`<div class="tw-page tactical-tower-page">
-  <div class="cs-hub">
-
-    <!-- ============================ TOP BAR ============================ -->
-    <div class="cs-top">
-      <button class="cs-back" id="towerLobby" type="button" aria-label="Return to Lobby" title="Lobby">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-      </button>
-      <div class="cs-ttl">
-        <span class="cs-kick"><i></i> INFINITE TOWER &middot; NO RUN</span>
-        <span class="cs-name">CORE <em>SPIRE</em></span>
-      </div>
-      <div class="cs-meter">
-        <div class="cs-m"><small>BEST</small><b>${fmt(best)}</b></div>
-        <div class="cs-m"><small>TOKEN</small><b class="c">${fmt(state.infTokens||0)}</b></div>
-      </div>
-      <button class="cs-info" type="button" id="twDropRateBtn" aria-label="Drop rates" title="Drop rates">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 5L5 19"/><circle cx="7" cy="7" r="2.6"/><circle cx="17" cy="17" r="2.6"/></svg>
-      </button>
-    </div>
-
-    <!-- ======================= MENARA + DOSSIER ======================== -->
-    <div class="cs-body">
-      <div class="cs-stage">
-        <div class="cs-spire">
-          <div class="cs-beam"></div>
-          <div class="cs-beam b2"></div>
-          <div class="cs-reactor">
-            <span class="cs-ring"></span><span class="cs-ring"></span><span class="cs-ring"></span>
+  <div class="tw2-hub">
+    <div class="tw2-shell${playCurtain?"":" is-entered"}" id="tw2Shell" role="dialog" aria-modal="true" aria-label="Infinite Tower Hub">
+      <header class="tw2-banner-bar">
+        <div class="tw2-banner-ribbon">
+          <div class="tw2-banner-cap">
+            <div class="tw2-banner-cap-in">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L8 7h8l-4-5z"/><path d="M9 7l-1.5 14h9L15 7"/><path d="M6 21h12"/><path d="M12 10v5"/></svg>
+              <span>SPIRE</span>
+            </div>
           </div>
-          <div id="csSlabs"></div>
-        </div>
-      </div>
-
-      <div class="cs-side">
-        <div class="cs-dossier">
-          <div class="cs-dh">
-            <span>NEXT CONTACT</span><b id="csDosFloor">F${start}</b>
-            <span class="hb" id="csDosBoss" style="display:none">HAZARD</span>
-            <span class="rec" id="csDosRec" style="display:none">REKOR</span>
+          <div class="tw2-banner-mid">
+            <div class="tw2-banner-titles">
+              <h1 class="tw2-title">INFINITE <em>TOWER</em></h1>
+              <span class="tw2-eyebrow">// ENDLESS 4-WAVE GAUNTLET &middot; CORE SPIRE</span>
+            </div>
+            <div class="tw2-banner-tags">
+              <span class="tw2-banner-tag" id="tw2HdrTok">TOKENS: ${fmt(tokens)}</span>
+              <span class="tw2-banner-tag hz">HZ-TOWER</span>
+            </div>
           </div>
-          <div class="cs-waves" id="csWaves"></div>
+        </div>
+        <div class="tw2-banner-right">
+          <button type="button" class="tw2-x" id="tw2Close" aria-label="Close Infinite Tower" title="Return to Lobby [ESC]">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+          </button>
+          <div class="tw2-slashes" aria-hidden="true"><i></i><i></i><i></i></div>
+        </div>
+      </header>
+
+      <section class="tw2-panel">
+        <div class="tw2-tape-line" aria-hidden="true"></div>
+        <div class="tw2-body">
+          <div class="tw2-col-main">
+            <div class="tw2-hero">
+              <img class="tw2-hero-bgimg" src="assets/bg/tower.jpg" alt="" decoding="async">
+              <div class="tw2-hero-bg" aria-hidden="true"></div>
+              <div class="tw2-hero-scan" aria-hidden="true"></div>
+              <span class="tw2-hero-crn tl"></span><span class="tw2-hero-crn tr"></span>
+              <span class="tw2-hero-crn bl"></span><span class="tw2-hero-crn br"></span>
+
+              <div class="tw2-hero-top">
+                <div class="tw2-hchip boss"><i></i><span>BOSS GATE: <b>FLOOR ${fmt(nextBoss)}</b></span></div>
+                <div class="tw2-hchip tok"><i></i><span>TOKENS: <b id="tw2HeroTok">${fmt(tokens)}</b></span></div>
+              </div>
+
+              <div class="tw2-hero-stage" aria-hidden="true">
+                <div class="tw2-fan">${fanHtml}</div>
+                <div class="tw2-spire-core">
+                  <svg viewBox="0 0 120 170" fill="none">
+                    <defs>
+                      <linearGradient id="tw2SpireGrad" x1="60" y1="8" x2="60" y2="162" gradientUnits="userSpaceOnUse">
+                        <stop offset="0" stop-color="#f3e600"/>
+                        <stop offset="0.35" stop-color="#f5f5f5"/>
+                        <stop offset="1" stop-color="#28282e"/>
+                      </linearGradient>
+                    </defs>
+                    <line x1="60" y1="2" x2="60" y2="164" stroke="#f3e600" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.65"/>
+                    <polygon points="60,8 67,38 74,48 72,82 84,96 81,132 95,152 25,152 39,132 36,96 48,82 46,48 53,38" fill="#0d0d10" stroke="url(#tw2SpireGrad)" stroke-width="2"/>
+                    <line x1="48" y1="52" x2="72" y2="52" stroke="#f3e600" stroke-width="1.4"/>
+                    <line x1="42" y1="96" x2="78" y2="96" stroke="#f5f5f5" stroke-width="1.2" opacity="0.7"/>
+                    <line x1="36" y1="128" x2="84" y2="128" stroke="#f3e600" stroke-width="1.2" opacity="0.8"/>
+                    <polygon points="60,58 69,71 60,84 51,71" fill="#f3e600" stroke="#050505" stroke-width="1.5"/>
+                    <polygon points="60,64 64,71 60,78 56,71" fill="#050505"/>
+                    <rect x="18" y="152" width="84" height="6" fill="#f3e600"/>
+                    <rect x="28" y="160" width="64" height="4" fill="#f5f5f5" opacity="0.35"/>
+                  </svg>
+                </div>
+              </div>
+
+              <div class="tw2-hero-stat">
+                <div class="tw2-hero-stat-in">
+                  <span>BEST FLOOR: <em>${fmt(best)}</em></span>
+                  <span class="sep">&mdash;</span>
+                  <span>RUNS: <b class="c">${fmt(runs)}</b></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="tw2-brief">
+              <p>The <b>Infinite Tower</b> is an endless 4-wave challenge where your deck is pushed to its limit. Enemy stats scale every floor (<b>Floor &times; 1,000 HP</b> &middot; <b>Floor &times; 500 ATK</b>) &mdash; how high can you climb?</p>
+              <p>Clearing every floor banks <em>+100 Card Rolls</em> (automatically rolled upon defeat or withdrawal) plus <b>Floor Coins</b> (<b>150 + 30&times;F</b> normal, <b>500 + 60&times;F</b> boss).</p>
+              <p>Every <span class="boss">5th Floor</span> is a <span class="boss">Boss Gate</span> led by <b>Shadow Monarch</b> or <b>Almighty Tyrant</b>, awarding <span class="tok">+5 Tower Tokens</span> (<span class="tok">+1</span> on standard floors) for the <b>Tower Shop</b>.</p>
+              <p>Potions, <b>Instant Roll Packs (5K&ndash;100K)</b>, and Ultra-Rare Trophies roll at <em>Pure Base Rates</em> on each cleared floor &mdash; unaffected by player Luck.</p>
+            </div>
+
+            <div class="tw2-actions">
+              <button type="button" class="tw2-act primary" id="towerGo">
+                <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+                <span>START</span>
+                <small>F1</small>
+              </button>
+              <button type="button" class="tw2-act" id="tw2DeckBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="12" height="16" rx="1"/><path d="M16 7h4v13H8"/></svg>
+                <span>DECK</span>
+                <small>${deckCnt}/4</small>
+              </button>
+              <button type="button" class="tw2-act" id="tw2IntelBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg>
+                <span>INTEL</span>
+                <small>4 WAVES</small>
+              </button>
+              <button type="button" class="tw2-act${autoOn?" auto-on":""}" id="tw2SettingsBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>
+                <span>SETTINGS</span>
+                <small id="tw2AutoBadge">${autoOn?"AUTO ON":"OFF"}</small>
+              </button>
+              <button type="button" class="tw2-act shop" id="towerShop">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                <span>SHOP</span>
+                <small>${fmt(tokens)} TOK</small>
+              </button>
+            </div>
+          </div>
+
+          <div class="tw2-col-rw">
+            <div class="tw2-rw-head">
+              <b>POTENTIAL REWARDS</b>
+              <span class="rule"></span>
+              <span class="hint">HOVER OR TAP ITEM FOR DROP ODDS</span>
+            </div>
+            <div class="tw2-rgrid" id="tw2RGrid">${rwHtml}</div>
+          </div>
         </div>
 
-        <div class="cs-dock">
-          <button class="cs-cta" id="towerShop" type="button">
-            <span class="ci">
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-            </span>
-            <span class="cc"><small>EXCHANGE MARKET</small><b>TOWER SHOP</b></span>
-          </button>
-          <button class="cs-cta primary" id="towerGo" type="button">
-            <span class="ci">
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor" stroke="none"/></svg>
-            </span>
-            <span class="cc">
-              <small>INITIALIZE RUN &middot; FLOOR ${start}</small>
-              <b>${boss?"ENGAGE BOSS":"INITIATE PENETRATION"}</b>
-            </span>
-            <span class="cs-chev"><span>&rsaquo;</span><span>&rsaquo;</span><span>&rsaquo;</span></span>
-          </button>
+        <div class="tw2-tip" id="tw2Tip" role="status" aria-live="polite">
+          <div class="tw2-tip-top">
+            <div class="tw2-tip-title" id="tw2TipTitle">&mdash;</div>
+            <span class="tw2-tip-odds" id="tw2TipOdds">&mdash;</span>
+            <button type="button" class="tw2-tip-close" id="tw2TipClose" aria-label="Dismiss reward details">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+            </button>
+          </div>
+          <div class="tw2-tip-desc" id="tw2TipDesc"></div>
+          <div class="tw2-tip-foot">
+            <span id="tw2TipSource">PURE BASE RATE</span>
+            <span id="tw2TipCategory">INFINITE TOWER</span>
+          </div>
         </div>
-      </div>
+
+        <div class="tw2-sub" id="tw2Sub" aria-hidden="true">
+          <div class="tw2-sub-box" role="dialog" aria-modal="true" aria-labelledby="tw2SubTitle">
+            <div class="tw2-sub-h">
+              <div class="tw2-sub-ht">
+                <span class="tw2-sub-kick" id="tw2SubKick">// MODULE</span>
+                <h2 class="tw2-sub-title" id="tw2SubTitle">MODULE</h2>
+              </div>
+              <button type="button" class="tw2-sub-x" id="tw2SubClose" aria-label="Close Drawer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+              </button>
+            </div>
+            <div class="tw2-sub-b" id="tw2SubBody"></div>
+          </div>
+        </div>
+      </section>
     </div>
   </div></div>`;
 
-  /* ---- binding: id + efek klik SAMA seperti versi lama ---- */
-  const g=document.getElementById("towerGo");if(g)g.onclick=()=>{sfx.hit();towerStartRun();};
-  const s=document.getElementById("towerShop");if(s)s.onclick=()=>{sfx.hit();towerView="shop";render();};
-  const lb=document.getElementById("towerLobby");if(lb)lb.onclick=()=>{try{sfx.hit();}catch(e){}location.hash="#/";};
-  const dr=document.getElementById("twDropRateBtn");if(dr)dr.onclick=()=>{try{sfx.hit();}catch(e){}openTowerDropModal();};
+  const showTip=(rid,pin)=>{
+    const idx=TW2_REWARDS.findIndex(x=>x.id===rid);
+    const r=idx>=0?TW2_REWARDS[idx]:null;
+    if(!r)return;
+    _tw2TipId=rid;
+    if(pin)_tw2TipPinned=true;
+    const tip=document.getElementById("tw2Tip");
+    const t=document.getElementById("tw2TipTitle"),o=document.getElementById("tw2TipOdds"),
+          d=document.getElementById("tw2TipDesc"),s=document.getElementById("tw2TipSource"),
+          c=document.getElementById("tw2TipCategory");
+    if(t)t.textContent=r.name;
+    if(o)o.textContent=r.odds;
+    if(d)d.textContent=r.desc;
+    if(s)s.textContent=r.src;
+    if(c)c.textContent=r.cat;
+    if(tip){
+      tip.classList.toggle("on-left",(idx%6)>=3);
+      tip.classList.add("on");
+    }
+    document.querySelectorAll("#tw2RGrid .tw2-rtile").forEach(b=>b.classList.toggle("is-sel",b.getAttribute("data-rid")===rid));
+  };
+  const hideTip=()=>{
+    _tw2TipPinned=false;
+    _tw2TipId=null;
+    const tip=document.getElementById("tw2Tip");
+    if(tip)tip.classList.remove("on","on-left");
+    document.querySelectorAll("#tw2RGrid .tw2-rtile").forEach(b=>b.classList.remove("is-sel"));
+  };
+  const closeSub=()=>{
+    _tw2SubMode=null;
+    const sub=document.getElementById("tw2Sub");
+    if(sub){sub.classList.remove("on");sub.setAttribute("aria-hidden","true");}
+  };
+  const paintSub=(kind)=>{
+    const body=document.getElementById("tw2SubBody");
+    const kick=document.getElementById("tw2SubKick");
+    const title=document.getElementById("tw2SubTitle");
+    if(!body||!kick||!title)return;
+    if(kind==="intel"){
+      const frontier=Math.max(1,best+1);
+      const fl=Math.max(1,_tw2IntelFloor||1);
+      const isBoss=towerIsBossFloor(fl);
+      const waves=towerWaves(fl);
+      const rw=towerReward(fl);
+      const tok=isBoss?5:1;
+      kick.textContent="// SPIRE TELEMETRY \u00b7 WAVE SCANNER";
+      title.textContent="FLOOR WAVE INTEL";
+      const presets=[1];
+      if(frontier>1&&!presets.includes(frontier))presets.push(frontier);
+      [5,10,25,50].forEach(p=>{if(!presets.includes(p))presets.push(p);});
+      body.innerHTML=`<div class="sub-sec"><span>TARGET FLOOR: <b>F${fl}${isBoss?" (BOSS GATE)":""}</b></span><span>REWARD: +${fmt(rw.coins)} COINS &middot; +${tok} TOK</span></div>`
+        +`<div class="sub-pills" style="margin-bottom:10px">`
+        +presets.map(p=>`<button type="button" class="sub-pill${fl===p?" on":""}" data-twfl="${p}">${towerIsBossFloor(p)?"BOSS F"+p:"FLOOR "+p}</button>`).join("")
+        +`</div>`
+        +`<div class="sub-grid-4">${waves.map((w,i)=>{
+          if(!w||!w.en)return "";
+          const role=i===0?(w.en.boss?"BOSS":"LEAD"):(w.en.boss?"TAG BOSS":"WAVE "+(i+1));
+          const art=typeof thumbSrc==="function"?thumbSrc(w.en.img):w.en.img;
+          return `<div class="sub-card">
+            <div class="sub-card-img"><img src="${art}" alt="${w.en.name}" decoding="async"><span class="sub-card-tag${w.en.boss?" boss":""}">${role}</span></div>
+            <div class="sub-card-nm" title="${w.en.name}">${w.en.name}</div>
+            <div class="sub-card-st">${fmtStat(w.es.hp)} HP &middot; ${fmtStat(w.es.atk)} ATK</div>
+          </div>`;
+        }).join("")}</div>`
+        +`<div class="sub-cta-bar">
+          <button type="button" class="sub-btn sec" id="tw2IntelDrop">FULL DROP RATES</button>
+          <button type="button" class="sub-btn" id="tw2IntelGo">START CLIMB (F1)</button>
+        </div>`;
+      body.querySelectorAll("[data-twfl]").forEach(b=>{
+        b.onclick=()=>{try{sfx.hit();}catch(e){}_tw2IntelFloor=parseInt(b.getAttribute("data-twfl"),10)||1;paintSub("intel");};
+      });
+      const db=document.getElementById("tw2IntelDrop");
+      if(db)db.onclick=()=>{closeSub();try{sfx.hit();}catch(e){}openTowerDropModal();};
+      const gb=document.getElementById("tw2IntelGo");
+      if(gb)gb.onclick=()=>{closeSub();try{sfx.hit();}catch(e){}towerStartRun();};
+    } else if(kind==="settings"){
+      const isAuto=!!(state.tower&&state.tower.auto);
+      const maxSp=(typeof battleSpeedMax==="function")?battleSpeedMax():1;
+      const curSp=(typeof battleSpeedEff==="function")?battleSpeedEff():(state.battleSpeed||1);
+      const reqLv={1:1,2:10,3:25,4:50};
+      kick.textContent="// SPIRE AUTOMATION & COMBAT";
+      title.textContent="TOWER SETTINGS";
+      body.innerHTML=`<div class="sub-row">
+          <div class="sub-row-txt"><b>Auto-Restart on Defeat</b><small>Automatically starts a new Floor 1 run after your squad falls.</small></div>
+          <button type="button" class="sub-toggle${isAuto?" on":""}" id="tw2AutoTog">${isAuto?"ON":"OFF"}</button>
+        </div>
+        <div class="sub-row">
+          <div class="sub-row-txt"><b>Battle Speed Multiplier</b><small>Player Lv ${state.playerLv||1} &middot; Active ${curSp}&times;${maxSp<4?" (Next unlocks at Lv "+reqLv[maxSp+1]+")":" (Max unlocked)"}</small></div>
+          <div class="sub-pills">${[1,2,3,4].map(sp=>{
+            const locked=sp>maxSp;
+            return `<button type="button" class="sub-pill${curSp===sp?" on":""}${locked?" locked":""}" data-twsp="${sp}" ${locked?`disabled title="Unlocks at Lv ${reqLv[sp]}"`:""}>${sp}&times;${locked?" (LV"+reqLv[sp]+")":""}</button>`;
+          }).join("")}</div>
+        </div>`;
+      const ab=document.getElementById("tw2AutoTog");
+      if(ab)ab.onclick=()=>{
+        try{sfx.hit();}catch(e){}
+        state.tower=state.tower||{best:0,runs:0};
+        state.tower.auto=!state.tower.auto;
+        try{save();}catch(e){}
+        const btn=document.getElementById("tw2SettingsBtn");
+        const bdg=document.getElementById("tw2AutoBadge");
+        if(btn)btn.classList.toggle("auto-on",!!state.tower.auto);
+        if(bdg)bdg.textContent=state.tower.auto?"AUTO ON":"OFF";
+        paintSub("settings");
+        try{toast(state.tower.auto?"AUTO-RESTART ENABLED":"AUTO-RESTART DISABLED",state.tower.auto?"Next run starts automatically upon defeat.":"Returns to Infinite Tower Hub upon defeat.",state.tower.auto?"#6be08a":"#f3e600");}catch(e){}
+      };
+      body.querySelectorAll("[data-twsp]").forEach(b=>{
+        b.onclick=()=>{
+          const v=parseInt(b.getAttribute("data-twsp"),10);
+          if(!v||v>maxSp)return;
+          try{sfx.hit();}catch(e){}
+          state.battleSpeed=v;
+          if(typeof bt!=="undefined"&&bt)bt.speed=battleSpeedEff();
+          try{save();}catch(e){}
+          paintSub("settings");
+        };
+      });
+    }
+  };
+  const openSub=(kind)=>{
+    _tw2SubMode=kind;
+    hideTip();
+    paintSub(kind);
+    const sub=document.getElementById("tw2Sub");
+    if(sub){sub.classList.add("on");sub.setAttribute("aria-hidden","false");}
+  };
 
-  /* Lantai DEPLOY & frontier juga bisa ditekan -> jalankan run yang sama
-     (run selalu mulai lantai 1, sama seperti CTA). Delegasi supaya tetap hidup
-     walau csRenderSlabs menggambar ulang isi menara. */
-  const slabHost=document.getElementById("csSlabs");
-  if(slabHost){
-    const fire=(e)=>{
-      const t=e.target;
-      const sl=t&&t.closest?t.closest('.cs-slab[role="button"]'):null;
-      if(!sl)return;
-      try{sfx.hit();}catch(err){}
-      towerStartRun();
-    };
-    slabHost.onclick=fire;
-    slabHost.onkeydown=(e)=>{
-      if(e.key!=="Enter"&&e.key!==" "&&e.key!=="Spacebar")return;
-      if(!e.target.closest||!e.target.closest('.cs-slab[role="button"]'))return;
+  window._tw2CloseSub=closeSub;
+  window._tw2HideTip=hideTip;
+  window._tw2IsTipPinned=()=>_tw2TipPinned;
+  window._tw2IsSubOpen=()=>!!_tw2SubMode;
+
+  const g=document.getElementById("towerGo");if(g)g.onclick=()=>{try{sfx.hit();}catch(e){}towerStartRun();};
+  const s=document.getElementById("towerShop");if(s)s.onclick=()=>{try{sfx.hit();}catch(e){}towerView="shop";render();};
+  const cBtn=document.getElementById("tw2Close");if(cBtn)cBtn.onclick=closeTowerHub;
+  const dkBtn=document.getElementById("tw2DeckBtn");
+  if(dkBtn)dkBtn.onclick=()=>{
+    try{sfx.hit();}catch(e){}
+    if(typeof openDeckModal==="function")openDeckModal();
+    else if(typeof toggleBackpack==="function")toggleBackpack();
+  };
+  const inBtn=document.getElementById("tw2IntelBtn");
+  if(inBtn)inBtn.onclick=()=>{try{sfx.hit();}catch(e){}_tw2IntelFloor=Math.max(1,best+1);openSub("intel");};
+  const stBtn=document.getElementById("tw2SettingsBtn");
+  if(stBtn)stBtn.onclick=()=>{try{sfx.hit();}catch(e){}openSub("settings");};
+
+  const subClose=document.getElementById("tw2SubClose");if(subClose)subClose.onclick=closeSub;
+  const subEl=document.getElementById("tw2Sub");
+  if(subEl)subEl.onclick=(e)=>{if(e.target===subEl)closeSub();};
+  const tipClose=document.getElementById("tw2TipClose");if(tipClose)tipClose.onclick=hideTip;
+
+  document.querySelectorAll("#tw2RGrid .tw2-rtile").forEach(btn=>{
+    const rid=btn.getAttribute("data-rid");
+    btn.addEventListener("mouseenter",()=>{if(!_tw2TipPinned)showTip(rid,false);});
+    btn.addEventListener("mouseleave",()=>{if(!_tw2TipPinned)hideTip();});
+    btn.addEventListener("click",()=>{
+      try{sfx.hit();}catch(e){}
+      if(_tw2TipPinned&&_tw2TipId===rid)hideTip();
+      else showTip(rid,true);
+    });
+  });
+
+  if(!window.__tw2EscWired){
+    window.__tw2EscWired=true;
+    document.addEventListener("keydown",(e)=>{
+      if(e.key!=="Escape")return;
+      if(typeof route==="function"&&route()!=="#/tower")return;
+      if(towerView!=="hub"||(typeof bt!=="undefined"&&bt&&bt.tower))return;
+      if(document.querySelector("#deckModal.show,#rollResultPop.show,#towerDropModal.show,#commandDrawer.open,#backpackPanel.open,#profModal.show"))return;
       e.preventDefault();
-      fire(e);
-    };
+      if(typeof window._tw2IsSubOpen==="function"&&window._tw2IsSubOpen()){window._tw2CloseSub();return;}
+      if(typeof window._tw2IsTipPinned==="function"&&window._tw2IsTipPinned()){window._tw2HideTip();return;}
+      closeTowerHub();
+    });
   }
 
-  /* Render menara & wave SETELAH layout terpasang (butuh tinggi stage nyata).
-     window.scrollTo(0,0) = pengaman lama: dokumen selalu mulai dari paling atas
-     (jangan pakai scrollIntoView — itu ikut men-scroll halaman di HP/APK). */
-  requestAnimationFrame(()=>{
-    csRepaintHub();
-    window.scrollTo(0,0);
-  });
+  window.scrollTo(0,0);
+  if(playCurtain){
+    twBannerOpen();
+  }else{
+    const sh=document.getElementById("tw2Shell");
+    if(sh)sh.classList.add("is-entered");
+  }
 }
 function renderTowerShop(){
   if(!state.tower)state.tower={best:0};
@@ -883,7 +1026,7 @@ function lineupAoeHit(dmg){
       if(bt&&!bt.over&&sq)floatText(sq,"-"+fmt(dmg),"burn mini","WAVE "+String(wNum).padStart(2,"0"));
     },bsMs(240+idx*85));
   });
-  if(killed)setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe",killed+" CADANGAN KO!","crit");},bsMs(900));
+  if(killed)setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe",killed+" RESERVE KO!","crit");},bsMs(900));
 }
 function advanceTowerFoe(){
   if(!bt||bt.over)return;
@@ -1102,7 +1245,7 @@ function rrExtra(kind,key,n){
   const isPack=kind==='pack';
   const pot=RR_POTION.find(p=>p.k===key);
   const icon=isPack?(RR_PACK_ICON[key]||''):(pot?pot.icon:'');
-  const label=isPack?('INSTAN '+String(key).replace('r','').toUpperCase()):(pot?pot.label:String(key).toUpperCase());
+  const label=isPack?('INSTANT '+String(key).replace('r','').toUpperCase()):(pot?pot.label:String(key).toUpperCase());
   return '<div class="pr-tile extra" title="'+label+'">'
     +(n>1?'<span class="pr-cnt">×'+fmt(n)+'</span>':'')
     +'<span class="pr-badge" style="background:#22d3ee;color:#000">'+(isPack?'PACK':'POTION')+'</span>'

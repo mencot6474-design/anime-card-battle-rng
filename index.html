@@ -51,12 +51,13 @@
 <link rel="stylesheet" href="css/notify-hazard.css?v=v2-notifyHazard">
 <link rel="stylesheet" href="css/watch-ads-hazard.css?v=v3-watchAdsHazard">
 <link rel="stylesheet" href="css/daily-hazard.css?v=v1-dailyHazard">
+<link rel="stylesheet" href="css/tower-hub.css?v=v2-towerHubV2">
 <script>
   /* Link toko Trakteer (fallback — utama ada di js/config.js). */
   window.TRAKTEER_SHOP_URL = "";
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=v546-dailyHazard').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=v548-towerHubV2').catch(() => {});
     });
   }
 </script>
@@ -73,6 +74,11 @@
       <circle cx="12" cy="12" r="10" fill="url(#coinGoldGrad)" stroke="#FFE57F" stroke-width="1.2"/>
       <circle cx="12" cy="12" r="7.5" fill="none" stroke="#FFE57F" stroke-width="0.8" stroke-dasharray="2 1.5"/>
       <path d="M12 7.5v9M9.5 9.5h5a1.5 1.5 0 0 1 0 3h-5a1.5 1.5 0 0 0 0 3h5.5" stroke="#FFF9C4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <g id="tokSvgSymbol">
+      <polygon points="12 2 21 7 21 17 12 22 3 17 3 7" fill="#071a22" stroke="#22d3ee" stroke-width="1.6"/>
+      <polygon points="12 5.5 17.5 8.8 17.5 15.2 12 18.5 6.5 15.2 6.5 8.8" fill="rgba(34,211,238,0.18)" stroke="#7df9ff" stroke-width="1"/>
+      <path d="M12 8v8M9.5 10.5h5" stroke="#7df9ff" stroke-width="1.8" stroke-linecap="round"/>
     </g>
   </defs>
 </svg>
@@ -1052,6 +1058,36 @@
   </div>
 </div>
 
+<div id="towerCurtain" aria-hidden="true">
+  <div class="half top">
+    <span class="edge"></span>
+    <span class="mark">SPIRE <b>01</b> / ENDLESS</span>
+  </div>
+  <div class="half bot">
+    <span class="edge"></span>
+    <span class="mark">HZ-PROTOCOL <b>TOWER</b></span>
+  </div>
+  <div class="tape tape-a"></div>
+  <div class="tape tape-b"></div>
+  <div class="flash"></div>
+  <div class="plate">
+    <span class="corner tl"></span><span class="corner tr"></span>
+    <span class="corner bl"></span><span class="corner br"></span>
+    <span class="water" id="twHZWater">SPIRE</span>
+    <div class="in">
+      <div class="krow">
+        <span class="dot"></span>
+        <span class="kick" id="twHZKick">// ENDLESS <b>GAUNTLET</b></span>
+        <span class="serial">SERIAL 0x<b id="twHZSerial">C7F1</b></span>
+      </div>
+      <div class="title"><span id="twHZTitle">INFINITE TOWER</span></div>
+      <div class="sub" id="twHZSub">4-WAVE CLIMB &middot; 100 ROLLS/FLOOR &middot; BOSS EVERY 5F</div>
+      <div class="bar"><i></i></div>
+      <div class="foot"><span>HZ-PROTOCOL</span><span id="twHZFoot">ESTABLISHING UPLINK</span></div>
+    </div>
+  </div>
+</div>
+
 <div id="storyModal" class="story-viewport">
   <!-- Latar taktis: art musuh terkuat bab + grid. Dekoratif (pointer-events none). -->
   <div class="hz-scene" aria-hidden="true">
@@ -1870,11 +1906,11 @@
 <script src="js/topup.js?v=v158-paywallOff"></script>
 <script src="js/cards-fx.js?v=v84-fmtStatCompact"></script>
 <script src="js/anime-archetype-attacks.js?v=v121-smoothBasicAtk"></script>
-<script src="js/state.js?v=v352-dailyHazard"></script>
+<script src="js/state.js?v=v353-towerHubV2"></script>
 <script src="js/sheetfx.js?v=v350-protoSlashOnly"></script>
 <script src="js/battle.js?v=v260-smoothBasicAtk"></script>
 <script src="js/battle-hazard.js?v=v21-smoothBasicAtk"></script>
-<script src="js/tower-lobby.js?v=v375-lobbyDocks"></script>
+<script src="js/tower-lobby.js?v=v376-towerHubV2"></script>
 <script src="js/shadow-king-fx.js?v=v4-skfx4"></script>
 <script src="js/foe-passives.js?v=v63-english"></script>
 <script src="js/story-carousel.js?v=v323-noDeployBanner"></script>
