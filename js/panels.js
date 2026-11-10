@@ -803,7 +803,7 @@ const IDX_MILESTONE=15;
 function idxVariantKey(s){return s.char+"|"+(s.mut||"none")+"|"+(s.shiny?1:0);}
 function idxProgress(){
   const owned=new Set((state&&state.stacks||[]).map(idxVariantKey));
-  const total=(typeof MASTER_CARD_INDEX!=="undefined"?MASTER_CARD_INDEX.filter(c=>!c.isStoryEnemy).length:0)*8;
+  const total=(typeof MASTER_CARD_INDEX!=="undefined"?MASTER_CARD_INDEX.filter(c=>!c.isStoryEnemy).length:0)*10;
   /* 0042: `idxServerOwned` diisi oleh RPC claim_index_reward — kalau ada, pakai
      angka server supaya tombol KLAIM tidak menampilkan "+N" palsu untuk pemain
      yang F12-nya nambahin stacks. Tanpa server (guest / sebelum klaim pertama),

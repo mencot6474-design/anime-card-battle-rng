@@ -79,6 +79,11 @@
   fill: var(--bc, #f5f5f5);
   fill-opacity: .96;
 }
+.xbadge.st-solid.v-none {
+  background: #20232b;
+  border-color: #9aa6b2;
+  color: #f5f5f5;
+}
 .xbadge.st-solid.v-shiny {
   background: #7df9ff;
   border-color: #ffffff;

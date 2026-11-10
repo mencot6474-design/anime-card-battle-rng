@@ -40,7 +40,7 @@
 <link rel="stylesheet" href="css/backpack-hazard.css?v=v3-eagerImgFix">
 <link rel="stylesheet" href="css/trait-screen.css?v=v6-indexCurtain">
 <link rel="stylesheet" href="css/weather-screen.css?v=v2-wmPotIcons">
-<link rel="stylesheet" href="css/index-screen.css?v=v5-indexSheetFoot">
+<link rel="stylesheet" href="css/index-screen.css?v=v7-fixCiiSearchIc">
 <link rel="stylesheet" href="css/profile-screen.css?v=v13-profileFitEnglish">
 <link rel="stylesheet" href="css/public-profile.css?v=v3-rkpOpen">
 <link rel="stylesheet" href="css/ranking-hazard.css?v=v1-rankHazard">
@@ -52,13 +52,13 @@
 <link rel="stylesheet" href="css/watch-ads-hazard.css?v=v3-watchAdsHazard">
 <link rel="stylesheet" href="css/daily-hazard.css?v=v1-dailyHazard">
 <link rel="stylesheet" href="css/tower-hub.css?v=v3-towerShopV2">
-<link rel="stylesheet" href="css/card-assets-hazard.css?v=v3-hazardCardAssets">
+<link rel="stylesheet" href="css/card-assets-hazard.css?v=v4-indexPureBadge">
 <script>
   /* Link toko Trakteer (fallback — utama ada di js/config.js). */
   window.TRAKTEER_SHOP_URL = "";
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=v567-hazardCardAssets3').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=v569-cardIndexV2Clean').catch(() => {});
     });
   }
 </script>
@@ -625,70 +625,297 @@
 <div id="modal"><div class="md-card" id="md-card"></div></div>
 
 <div id="indexModal"><div class="ix-box"><div class="ix-screen">
-  <header class="ix-top">
-    <div class="ix-mark">
-      <span class="ix-mark-t">INDEX</span>
-      <span class="ix-mark-s">NEURAL ARCHIVE</span>
-    </div>
-    <div class="ix-topmid">
-      <div class="ix-crumb"><i></i><span>ARCHIVE</span><span class="sep">/</span><b>VARIANT VAULT</b><span class="sep">/</span><span>INDEX</span></div>
-      <div class="ix-search-wrap">
-        <svg class="ix-search-ic" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <input class="ix-search" id="ixSearch" type="text" placeholder="QUERY ARCHIVE..." autocomplete="off">
+  <div class="ix-shell" id="ixShell" role="region" aria-label="Card Index">
+    <header class="ix-banner-bar">
+      <div class="ix-banner-ribbon">
+        <div class="ix-banner-cap">
+          <div class="ix-banner-cap-in">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>
+            </svg>
+            <span>ARCHIVE</span>
+          </div>
+        </div>
+        <div class="ix-banner-mid">
+          <div class="ix-banner-titles">
+            <h1 class="ix-title">CARD <em>INDEX</em></h1>
+            <span class="ix-eyebrow" id="hdrSubEyebrow">// NEURAL VAULT &middot; 75 UNITS &middot; 750 VARIANTS</span>
+          </div>
+          <div class="ix-banner-tags">
+            <span class="ix-banner-tag" id="hdrVarBadge">VARIANTS: 0/750</span>
+            <span class="ix-banner-tag hz" id="hdrPacksBadge">5K PACKS: 0</span>
+          </div>
+        </div>
       </div>
-      <div class="ix-topstat">
-        <div class="ix-ts"><span class="ix-ts-k">INDEXED</span><span class="ix-ts-v hz" id="ixTsIndexed">0</span></div>
-        <div class="ix-ts"><span class="ix-ts-k">TOTAL</span><span class="ix-ts-v" id="ixTsTotal">0</span></div>
-      </div>
-    </div>
-    <button class="ix-x" id="ixClose" aria-label="Close index" title="Close [ESC]">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
-    </button>
-  </header>
 
-  <div class="ix-progress">
-    <div class="ix-lvl"><span class="ix-lvl-k">LEVEL</span><b id="ixLevel">1</b></div>
-    <div class="ix-barwrap">
-      <div class="ix-pbar"><i class="ix-pfill" id="ixPfill"></i><span id="ixPtext">0 / 0 CARDS INDEXED</span></div>
-      <div class="ix-pmeta">
-        <span>VAULT <b id="ixPct">0%</b></span>
-        <span>·</span>
-        <span>NEXT BLOCK IN <b id="ixNext">15</b></span>
+      <div class="ix-banner-right">
+        <button type="button" class="ix-hdr-btn info" id="btnGuide" aria-label="Archive Guide" title="How Card Index Works"><span>!</span></button>
+        <button type="button" class="ix-hdr-btn close" id="ixClose" aria-label="Close Card Index" title="Close [ESC]">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+        <div class="ix-slashes" aria-hidden="true"><i></i><i></i><i></i></div>
       </div>
-    </div>
-    <button class="ix-claim locked" id="ixClaim" type="button" disabled>
-      <span>CLAIM</span><small id="ixClaimN">(+0)</small>
-    </button>
-  </div>
+    </header>
 
-  <div class="ix-toolbar" id="ixToolbar"></div>
-  <div class="ix-body" id="ixBody"></div>
-  <footer class="ix-foot" id="ixFoot"></footer>
+    <div class="ix-panel">
+      <div class="ix-filterbar">
+        <div class="ix-cattabs" id="catTabs" role="tablist" aria-label="Index Categories">
+          <button type="button" class="ix-cat on" data-cat="all" role="tab" aria-selected="true">ALL <small id="cnt-all">0/75</small></button>
+          <button type="button" class="ix-cat" data-cat="owned" role="tab" aria-selected="false">OWNED <small id="cnt-owned">0</small></button>
+          <button type="button" class="ix-cat" data-cat="missing" role="tab" aria-selected="false">MISSING <small id="cnt-missing">0</small></button>
+          <button type="button" class="ix-cat" data-cat="standard" role="tab" aria-selected="false">STANDARD <small id="cnt-standard">0/41</small></button>
+          <button type="button" class="ix-cat" data-cat="weather" role="tab" aria-selected="false">WEATHER <small id="cnt-weather">0/32</small></button>
+          <button type="button" class="ix-cat" data-cat="boss" role="tab" aria-selected="false">BOSS <small id="cnt-boss">0/2</small></button>
+          <button type="button" class="ix-cat" data-cat="relics" role="tab" aria-selected="false">RELICS <small id="cnt-relics">0/10</small></button>
+          <button type="button" class="ix-cat" data-cat="pets" role="tab" aria-selected="false">PETS <small id="cnt-pets">0/10</small></button>
+        </div>
 
-  <!-- Detail sheet kartu (port _tmp/proto_index_hazard_v1.html §08) -->
-  <div class="ix-sheet" id="ixSheet" role="dialog" aria-hidden="true">
-    <div class="ix-sh-head">
-      <div class="ix-sh-thumb"><img id="ixShImg" src="assets/images/instanpack-5k.webp" alt=""></div>
-      <div class="ix-sh-t">
-        <div class="ix-sh-k" id="ixShCode">MATRIX · EX</div>
-        <div class="ix-sh-n" id="ixShName">—</div>
+        <div class="ix-controls">
+          <select class="ix-sort-select" id="sortSelect" aria-label="Sort cards">
+            <option value="default">SORT: DEFAULT</option>
+            <option value="rarity-asc">SORT: RAREST</option>
+            <option value="rarity-desc">SORT: COMMON</option>
+            <option value="name">SORT: NAME</option>
+            <option value="variants">SORT: VARIANTS</option>
+            <option value="atk">SORT: ATK</option>
+            <option value="hp">SORT: HP</option>
+          </select>
+          <select class="ix-mob-mut" id="mobMutSelect" style="display:none" aria-label="Filter mutation">
+            <option value="all">MUT: ALL</option>
+            <option value="none">MUT: PURE</option>
+            <option value="gold">MUT: GOLD</option>
+            <option value="rainbow">MUT: RBW</option>
+            <option value="secret">MUT: SECRET</option>
+            <option value="ultima">MUT: ULTIMA</option>
+            <option value="shiny">SHINY</option>
+          </select>
+          <div class="ix-search-box">
+            <svg class="ix-search-ic" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" class="ix-search-inp" id="searchInp" placeholder="Search cards..." autocomplete="off" aria-label="Search cards">
+            <button type="button" class="ix-search-clr" id="searchClr" aria-label="Clear search">&times;</button>
+          </div>
+        </div>
       </div>
-      <button class="ix-sh-x" id="ixShX" type="button" aria-label="Close detail">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
-      </button>
-    </div>
-    <div class="ix-sh-body">
-      <div class="ix-sh-row"><span>DROP RATE</span><b class="hz" id="ixShChance">—</b></div>
-      <div class="ix-sh-row"><span>VARIANTS</span><b id="ixShOwn">—</b></div>
-      <div class="ix-sh-muts" id="ixShMuts"></div>
-      <div class="ix-sh-skill">
-        <div class="ix-sh-skill-k">SIGNATURE SKILL</div>
-        <div class="ix-sh-skill-n" id="ixShSkill">—</div>
-        <div class="ix-sh-skill-d" id="ixShDesc">—</div>
+
+      <div class="ix-varstrip" id="varStrip">
+        <span class="ix-var-lbl">MUTATION</span>
+        <div class="ix-vartabs" id="varTabs">
+          <button type="button" class="ix-vtab on" data-mut="all">ALL VARIANTS</button>
+          <button type="button" class="ix-vtab" data-mut="none"><span data-vtab-ic="none"></span>PURE</button>
+          <button type="button" class="ix-vtab v-gold" data-mut="gold"><span data-vtab-ic="gold"></span>GOLD</button>
+          <button type="button" class="ix-vtab v-rainbow" data-mut="rainbow"><span data-vtab-ic="rainbow"></span>RAINBOW</button>
+          <button type="button" class="ix-vtab v-secret" data-mut="secret"><span data-vtab-ic="secret"></span>SECRET</button>
+          <button type="button" class="ix-vtab v-ultima" data-mut="ultima"><span data-vtab-ic="ultima"></span>ULTIMA</button>
+          <button type="button" class="ix-vtab v-shiny" id="shinyToggle"><span data-vtab-ic="shiny"></span>SHINY</button>
+        </div>
       </div>
+
+      <div class="ix-mob-strip">
+        <div class="ix-mob-prog">
+          <div class="ix-mob-ptop"><span>COLLECTION</span><b id="mobProgTxt">0 / 75 (0%)</b></div>
+          <div class="ix-col-bar"><i id="mobProgBar"></i></div>
+        </div>
+        <select class="ix-mob-src" id="mobSourceSelect" aria-label="Filter by source pack"></select>
+        <button type="button" class="ix-mob-claim" id="mobClaimBtn">CLAIM (+0)</button>
+      </div>
+
+      <div class="ix-body">
+        <aside class="ix-side" aria-label="Collection Summary and Sources">
+          <div class="ix-col-box">
+            <div class="ix-col-top">
+              <span class="ix-col-k">COLLECTION</span>
+              <span class="ix-col-pct" id="sidePct">0%</span>
+            </div>
+            <div class="ix-col-num">
+              <b id="sideOwn">0</b>
+              <span>/ <em id="sideTot" style="font-style:normal">75</em></span>
+            </div>
+            <div class="ix-col-bar"><i id="sideBar"></i></div>
+            <div class="ix-col-sub">
+              <span>VARIANTS</span>
+              <b id="sideVarTxt">0 / 750</b>
+            </div>
+            <div class="ix-seg-mini" id="sideSegs" title="Variant completion by mutation tier"></div>
+          </div>
+
+          <div class="ix-src-box">
+            <div class="ix-src-head">PACKS &amp; SOURCES <span id="srcCountLbl">0 POOLS</span></div>
+            <div class="ix-src-list" id="srcList"></div>
+          </div>
+
+          <div class="ix-ms-box">
+            <div class="ix-ms-top">
+              <img class="ix-ms-ico" src="assets/images/instanpack-5k.webp?v=trans1" alt="5K Instant Pack">
+              <div class="ix-ms-txt">
+                <div class="ix-ms-k">MILESTONE REWARD</div>
+                <div class="ix-ms-v">+1 Instant Roll 5,000 Pack</div>
+                <div class="ix-ms-sub" id="msSubTxt">Collect 15 variants per pack</div>
+              </div>
+            </div>
+            <button type="button" class="ix-claim-btn" id="btnClaim">
+              <span>CLAIM</span>
+              <span class="ix-claim-badge" id="claimBadge" hidden>0</span>
+            </button>
+          </div>
+        </aside>
+
+        <section class="ix-main" aria-label="Card Grid">
+          <div class="ix-subbar">
+            <div class="ix-sub-stats">
+              <div class="ix-sub-line1" id="subLine1">SHOWING <b>0</b> OF <b>0</b> CARDS</div>
+              <div class="ix-sub-line2" id="subLine2"></div>
+            </div>
+            <div class="ix-sub-actions">
+              <button type="button" class="ix-act-btn next" id="btnNextMissing" title="Jump to next missing card [M]"><span class="ix-hm">NEXT </span>MISSING [M]</button>
+              <button type="button" class="ix-act-btn size" id="btnCardSize" title="Cycle card size [Z]">SIZE: M [Z]</button>
+              <button type="button" class="ix-act-btn rand" id="btnRandomCard" title="Open a random card [R]">RANDOM [R]</button>
+            </div>
+          </div>
+
+          <div class="ix-grid-scroll" id="gridScroll">
+            <div class="ix-grid sz-M" id="cardGrid"></div>
+          </div>
+        </section>
+      </div>
+
+      <footer class="ix-kbd-bar">
+        <b>1&ndash;8</b> TABS &nbsp;|&nbsp; <b>S</b> SORT &nbsp;|&nbsp; <b>Z</b> CARD SIZE &nbsp;|&nbsp; <b>M</b> NEXT MISSING &nbsp;|&nbsp; <b>R</b> RANDOM &nbsp;|&nbsp; <b>/</b> SEARCH &nbsp;|&nbsp; <b>HOME</b> TOP &nbsp;|&nbsp; <b>ESC</b> CLOSE
+      </footer>
     </div>
   </div>
 </div></div></div>
+
+<dialog class="ix-dlg" id="cardInfoDlg" closedby="any" aria-labelledby="ciTitle">
+  <div class="cii-wrap" id="ciWrap">
+    <div class="cii-stage" id="ciStage">
+      <div class="cii-3d-wrap" id="ci3dWrap">
+        <div class="cii-card3d hz-bdr bdr-bracket sh-orbital anim-on m-none" id="ciCard3d">
+          <img class="cii-card-art" id="ciArt" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="">
+          <div class="cii-card-scrim"></div>
+          <span class="xbdr-foil" aria-hidden="true"></span>
+          <span class="xbdr-sheen" aria-hidden="true"></span>
+          <span class="xbdr-ring" aria-hidden="true"><span class="xbdr-orbit"></span></span>
+          <span class="xbdr-shiny-lip" aria-hidden="true"></span>
+          <span class="xbdr-side-rails" aria-hidden="true"></span>
+          <span class="xbdr-corners" aria-hidden="true"><span class="xbdr-c tl"></span><span class="xbdr-c tr"></span><span class="xbdr-c bl"></span><span class="xbdr-c br"></span></span>
+          <div class="cii-card-stamps" id="ciCardStamps"></div>
+          <div class="cii-card-lock" id="ciLockSeal">UNDISCOVERED</div>
+
+          <div class="cii-card-overlay">
+            <div class="cii-ov-top">
+              <div class="cii-ov-tags">
+                <span class="cii-ov-tag" id="ciOvPack">STANDARD PACK</span>
+                <span class="cii-ov-tag type" id="ciOvType">NECROMANCER</span>
+              </div>
+              <div class="cii-ov-name" id="ciOvName">—</div>
+            </div>
+            <div class="cii-ov-bot">
+              <div class="cii-ov-skill" id="ciOvSkill">—</div>
+              <div class="cii-ov-desc" id="ciOvDesc">—</div>
+              <div class="cii-ov-stats">
+                <span class="cii-ov-hp" id="ciOvHp">HP: 0</span>
+                <span class="cii-ov-atk" id="ciOvAtk">DMG: 0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cii-stage-foot">
+        <span class="cii-legend">DRAG TO ROTATE &nbsp;/&nbsp; SCROLL TO ZOOM &nbsp;/&nbsp; RIGHT-CLICK TO CLOSE</span>
+        <div class="cii-zoom-ctrls">
+          <button type="button" class="cii-zbtn" id="ciZoomOut" aria-label="Zoom out">-</button>
+          <button type="button" class="cii-zbtn" id="ciZoomReset" title="Reset rotation and zoom">100%</button>
+          <button type="button" class="cii-zbtn" id="ciZoomIn" aria-label="Zoom in">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cii-info" id="ciInfoPanel">
+      <div class="cii-head">
+        <span class="cii-head-lbl" id="ciHeadLbl">CARD INFO</span>
+        <span class="cii-head-idx" id="ciHeadIdx">1 / 75</span>
+        <button type="button" class="cii-frame-btn" id="ciFrameBtn" title="Toggle 3D rotation">FRAME: MOVABLE</button>
+        <button type="button" class="cii-x-btn" id="ciCloseBtn" aria-label="Close card info">&times;</button>
+      </div>
+
+      <div class="cii-info-scroll" id="ciInfoScroll">
+        <h2 class="cii-title" id="ciTitle">—</h2>
+        <div class="cii-chips" id="ciChips"></div>
+
+        <div class="cii-box">
+          <div class="cii-box-top">
+            <span id="ciRarityK">RARITY</span>
+            <b id="ciBorderName">PURE</b>
+          </div>
+          <div class="cii-rarity-val" id="ciRarityV">—</div>
+        </div>
+
+        <div class="cii-stats2">
+          <div class="cii-box">
+            <div class="cii-box-top"><span id="ciStat1K">HEALTH</span></div>
+            <div class="cii-stat-v hp" id="ciStat1V">0</div>
+          </div>
+          <div class="cii-box">
+            <div class="cii-box-top"><span id="ciStat2K">DAMAGE</span></div>
+            <div class="cii-stat-v atk" id="ciStat2V">0</div>
+          </div>
+        </div>
+
+        <div class="cii-box">
+          <div class="cii-box-top">
+            <span id="ciOwnK">ARCHIVE OWNERSHIP</span>
+            <b id="ciOwnBadge">—</b>
+          </div>
+          <div class="cii-own-val" id="ciOwnVal">—</div>
+        </div>
+
+        <div class="cii-skill-box">
+          <div class="cii-skill-k" id="ciSkillK">SIGNATURE SKILL</div>
+          <div class="cii-skill-n" id="ciSkillN">—</div>
+          <div class="cii-skill-d" id="ciSkillD">—</div>
+        </div>
+
+        <div id="ciBordersWrap">
+          <div class="cii-bdr-head">
+            <span>BORDERS &amp; VARIANTS</span>
+            <span>TAP TO PREVIEW STATS</span>
+          </div>
+          <div class="cii-bdr-grid" id="ciBdrGrid"></div>
+        </div>
+      </div>
+
+      <div class="cii-foot">
+        <button type="button" class="cii-nav-btn" id="ciPrevBtn">&lsaquo; PREV</button>
+        <button type="button" class="cii-nav-btn hide-txt" id="ciHideTextBtn">HIDE TEXT</button>
+        <button type="button" class="cii-nav-btn" id="ciNextBtn">NEXT &rsaquo;</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="ix-dlg" id="guideDlg" closedby="any" aria-labelledby="gdTitle">
+  <div class="gd-box">
+    <div class="gd-head">
+      <h2 id="gdTitle">CARD INDEX &amp; VARIANT ARCHIVE</h2>
+      <button type="button" class="cii-x-btn" data-guide-close aria-label="Close guide">&times;</button>
+    </div>
+    <div class="gd-body">
+      <div class="gd-sec">
+        <b>1. 75 UNITS &times; 10 VARIANTS = 750 ARCHIVE ENTRIES</b>
+        Every collectible unit can drop in 5 mutations (<b>PURE</b> &times;1, <b>GOLD</b> &times;10 stats / &times;100 odds, <b>RAINBOW</b> &times;25 / &times;10K, <b>SECRET</b> &times;50 / &times;1M, <b>ULTIMA</b> &times;100 / &times;100M), each with a <b>SHINY</b> modifier (&times;5 stats / &times;50 odds).
+      </div>
+      <div class="gd-sec">
+        <b>2. MILESTONE REWARDS</b>
+        Every <b>15 newly indexed variants</b> grants <b>+1 Instant Roll 5,000 Pack</b> delivered straight to your Backpack inventory.
+      </div>
+      <div class="gd-sec">
+        <b>3. INTERACTIVE 3D CARD VIEWER</b>
+        Tap any card (or Relic / Pet) to open the <b>3D Card Info Inspector</b>. Drag to tilt in 3D, scroll or tap <b>&plus;/&minus;</b> to zoom, right-click or press <b>ESC</b> to close, click any Border tile to preview scaled stats &amp; odds, or click <b>HIDE TEXT</b> to admire the full art.
+      </div>
+    </div>
+  </div>
+</dialog>
 
 <!-- ================= PREMIUM EXCHANGE (two-panel store) ================= -->
 <div id="premiumModal" class="psx-modal">
@@ -1429,7 +1656,7 @@
         <span class="serial">SERIAL 0x<b id="ixHzSerial">9331</b></span>
       </div>
       <div class="title"><span id="ixHzTitle">CARD INDEX</span></div>
-      <div class="sub" id="ixHzSub">VARIANT VAULT · MUTATIONS · SHINY</div>
+      <div class="sub" id="ixHzSub">75 UNITS · 750 MUTATION VARIANTS · 3D INSPECTOR</div>
       <div class="bar"><i></i></div>
       <div class="foot"><span>HZ-PROTOCOL</span><span id="ixHzFoot">ENTER ARCHIVE</span></div>
     </div>
@@ -1903,9 +2130,9 @@
 <script src="js/mobile-shell.js?v=v288-dockWebpIcons"></script>
 <script src="js/supabase-sync.js?v=v333-wbMilestones"></script>
 <script src="js/notify-hazard.js?v=v1-notifyHazard"></script>
- <script src="js/panels.js?v=v420-hazardCardAssets"></script>
+ <script src="js/panels.js?v=v421-indexTotal10"></script>
 <script src="js/topup.js?v=v158-paywallOff"></script>
-<script src="js/cards-fx.js?v=v85-hazardCardAssets"></script>
+<script src="js/cards-fx.js?v=v86-indexPureIcon"></script>
 <script src="js/anime-archetype-attacks.js?v=v121-smoothBasicAtk"></script>
 <script src="js/state.js?v=v355-wbHubV2"></script>
 <script src="js/sheetfx.js?v=v350-protoSlashOnly"></script>
@@ -1915,7 +2142,7 @@
 <script src="js/shadow-king-fx.js?v=v4-skfx4"></script>
 <script src="js/foe-passives.js?v=v63-english"></script>
 <script src="js/story-carousel.js?v=v324-eagerImgFix"></script>
-<script src="js/raid.js?v=v409-hazardCardAssets"></script>
+<script src="js/raid.js?v=v411-cardIndexV2Clean"></script>
 <script src="js/deck-modal.js?v=v9-hazardCardAssets"></script>
 <script src="js/skill-tree.js?v=v13-skIcons"></script>
 <script src="js/ranking.js?v=v14-eagerImgFix"></script>

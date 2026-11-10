@@ -234,6 +234,7 @@ function traitGem(sz,k,cls){const e=k&&TRAIT_ICONS[k];const icon=e||`<path class
 
 const MUT_ICON_VB="0 0 24 24";
 const MUT_ICONS={
+  none:`<rect x="5" y="5" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4"/><rect x="9.5" y="9.5" width="5" height="5" fill="currentColor"/>`,
   shiny:`<path fill="currentColor" d="M12 1.5 14.7 9.3 22.5 12l-7.8 2.7L12 22.5 9.3 14.7 1.5 12l7.8-2.7Z"/><path fill="#050505" fill-opacity=".38" d="M12 7.2 13.4 10.6 16.8 12l-3.4 1.4L12 16.8l-1.4-3.4L7.2 12l3.4-1.4Z"/><circle cx="19" cy="5" r="1.4" fill="currentColor"/><circle cx="5" cy="19" r="1.1" fill="currentColor"/>`,
   gold:`<path fill="currentColor" d="M3 18h18v2.5H3V18Zm0-2L1.8 7.2l5.4 3.6L12 4l4.8 6.8 5.4-3.6L21 16H3Z"/><path fill="#050505" fill-opacity=".5" d="m12 9.6 2 2.9-2 2-2-2 2-2.9Z"/>`,
   rainbow:`<path fill="#FF6B81" d="M2 18A10 10 0 0 1 22 18h-2.5A7.5 7.5 0 0 0 4.5 18Z"/><path fill="#FFE66D" d="M5 18A7 7 0 0 1 19 18h-2.4A4.6 4.6 0 0 0 7.4 18Z"/><path fill="#6BE08A" d="M8 18A4 4 0 0 1 16 18h-2.2a1.8 1.8 0 0 0-3.6 0Z"/><polygon points="12,4 13.7,8.3 18,10 13.7,11.7 12,16 10.3,11.7 6,10 10.3,8.3" fill="#22D3EE"/><circle cx="12" cy="10" r="1.5" fill="#ffffff"/>`,
@@ -249,10 +250,10 @@ function shinyStampHtml(micro=true,extraCls=""){
   const lbl=micro?"":`<span class="xb-txt">SHINY</span>`;
   return `<span class="${cls}" style="--bc:#7df9ff" title="SHINY" aria-label="SHINY">${mutIconSvg("shiny",micro?12:11)}${lbl}</span>`;
 }
-function mutStampHtml(mut,micro=true,extraCls=""){
-  if(!mut||mut==="none"||!MUT_ICONS[mut])return "";
-  const label=MUT_LABEL[mut]||String(mut).toUpperCase();
-  const col=MUT_COLOR[mut]||"#f5f5f5";
+function mutStampHtml(mut,micro=true,extraCls="",includeNone=false){
+  if(!mut||(mut==="none"&&!includeNone)||!MUT_ICONS[mut])return "";
+  const label=MUT_LABEL[mut]||(mut==="none"?"PURE":String(mut).toUpperCase());
+  const col=MUT_COLOR[mut]||(mut==="none"?"#9AA6B2":"#f5f5f5");
   const cls=`xbadge st-solid v-${mut}${micro?" is-micro":""}${extraCls?" "+extraCls:""}`;
   const lbl=micro?"":`<span class="xb-txt">${label}</span>`;
   return `<span class="${cls}" style="--bc:${col}" title="${label}" aria-label="${label}">${mutIconSvg(mut,micro?12:11)}${lbl}</span>`;

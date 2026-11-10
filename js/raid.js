@@ -1864,129 +1864,814 @@ function raidShopBuy(id){
   })();
 }
 
-/* =============== INDEX CARD (layar penuh) =============== */
+/* =============== INDEX CARD v2 (WoB Hazard Archive + 3D Inspector) =============== */
 const IX_MUTS=["none","gold","rainbow","secret","ultima"];
-const IX_RB_LETTERS=["#FF6B81","#FFB347","#FFE66D","#6BE08A","#B9C2CC","#B98CFF","#FF6BD6"];
-let ixState={q:"",mut:"all",shiny:false,owned:false,sort:"name"};
-/* RAINBOW harus terbaca pelangi, bukan ungu tunggal (= warna SECRET).
-   Per-letter colour untuk label, gradient text untuk "1 IN X", swatch strip
-   untuk segmen footer. */
-function ixMutTag(mut){
-  if(mut==="rainbow"){
-    const txt=MUT_LABEL[mut].split("").map((ch,i)=>`<i style="color:${IX_RB_LETTERS[i%IX_RB_LETTERS.length]}">${ch}</i>`).join("");
-    return `<span class="ix-mtag rb">${txt}</span>`;
-  }
-  return `<span class="ix-mtag" style="--tc:${MUT_COLOR[mut]}">${MUT_LABEL[mut]}</span>`;
+const IX_CAT_ORDER=["all","owned","missing","standard","weather","boss","relics","pets"];
+const IX_SORT_ORDER=["default","rarity-asc","rarity-desc","name","variants","atk","hp"];
+const IX_SIZE_ORDER=["S","M","L"];
+let ixState={
+  cat:"all",mut:"all",shiny:false,source:"all",sort:"default",q:"",size:"M",
+  selectedId:null,dlgKind:"card",dlgList:[],dlgIdx:0,dlgBorder:"none",dlgShiny:false,
+  dlgMovable:true,dlgHideText:false,dlgPeekArt:false,rotX:0,rotY:0,zoom:1,dragging:false,lx:0,ly:0
+};
+let _ixBound=false,_ixLiveCells=[],_ixClaimBusy=false,_ixRenderRaf=0;
+function _ixEl(id){return document.getElementById(id);}
+function _ixEsc(s){
+  return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
-function ixMutSwatch(mut){return mut==="rainbow"?"var(--rb)":MUT_COLOR[mut];}
+function _ixValidCards(){
+  return (typeof MASTER_CARD_INDEX!=="undefined"?MASTER_CARD_INDEX:[]).filter(c=>c&&!c.isStoryEnemy&&!(c.noGacha&&!c.chance));
+}
+function _ixCardDescEn(c){
+  const raw=(c&&c.passive&&c.passive.desc)||"";
+  return (typeof GameLang!=="undefined"&&GameLang&&typeof GameLang.cardDescEn==="function")
+    ? GameLang.cardDescEn(c.char_id,raw) : raw;
+}
+function _ixGearNameEn(kind,g){
+  if(!g)return "";
+  if(kind==="relic")return (typeof GameLang!=="undefined"&&GameLang&&GameLang.artNameEn)?GameLang.artNameEn(g.id,g.name):g.name;
+  return (typeof GameLang!=="undefined"&&GameLang&&GameLang.petNameEn)?GameLang.petNameEn(g.id,g.name):g.name;
+}
+function _ixCardSourceLabel(c){
+  if(!c)return "STANDARD PACK";
+  if(c.towerBoss)return "INF TOWER SHOP";
+  if(c.raidBoss)return "WORLD BOSS SHOP";
+  if(c.weatherOnly){
+    const w=(typeof WEATHER!=="undefined"&&WEATHER)?WEATHER[c.weatherOnly]:null;
+    return ((w&&w.name)||String(c.weatherOnly).toUpperCase())+" WEATHER";
+  }
+  return "STANDARD PACK";
+}
+function _ixGearSourceLabel(g){
+  if(!g||!g.src||g.src==="coin")return "COIN SHOP";
+  if(g.src==="tower")return "INFINITE TOWER";
+  if(g.src==="raid")return "WORLD BOSS SHOP";
+  if(g.src==="premium")return "PREMIUM SHOP";
+  return String(g.src).toUpperCase();
+}
+function _ixBuildOwnMap(validCards){
+  const map={};
+  for(let i=0;i<validCards.length;i++){
+    const c=validCards[i];
+    map[c.char_id]={owned:false,variants:0,copies:0,anyShiny:false,best:"none",got:{},shiny:{}};
+  }
+  const st=(typeof state!=="undefined"&&state&&Array.isArray(state.stacks))?state.stacks:[];
+  for(let i=0;i<st.length;i++){
+    const s=st[i];if(!s)continue;
+    const ow=map[s.char];if(!ow)continue;
+    const m=(s.mut&&MUT_LABEL[s.mut])?s.mut:"none";
+    const sh=!!s.shiny;
+    ow.copies+=Math.max(1,Number(s.count)||1);
+    if(sh){ow.shiny[m]=true;ow.anyShiny=true;}
+    else ow.got[m]=true;
+  }
+  const prio=["ultima","secret","rainbow","gold","none"];
+  for(const cid in map){
+    const ow=map[cid];
+    let v=0;
+    for(const m of IX_MUTS){if(ow.got[m])v++;if(ow.shiny[m])v++;}
+    ow.variants=v;ow.owned=v>0;
+    for(const m of prio){if(ow.got[m]||ow.shiny[m]){ow.best=m;break;}}
+  }
+  return map;
+}
+function _ixSourcesList(validCards){
+  const list=[
+    {id:"all",name:"All Sources",color:"#f3e600",fn:()=>true},
+    {id:"standard",name:"Standard Pack",color:"#f5f5f5",fn:c=>!c.weatherOnly&&!c.raidBoss&&!c.towerBoss},
+    {id:"boss",name:"Boss Shop",color:"#ff4d5e",fn:c=>!!(c.raidBoss||c.towerBoss)}
+  ];
+  const wx=(typeof WEATHERS!=="undefined"&&Array.isArray(WEATHERS))?WEATHERS:[];
+  for(const w of wx){
+    if(validCards.some(c=>c.weatherOnly===w.id)){
+      const label=w.name.charAt(0)+w.name.slice(1).toLowerCase()+" Weather";
+      list.push({id:"w:"+w.id,name:label,color:w.color,fn:((wid)=>c=>c.weatherOnly===wid)(w.id)});
+    }
+  }
+  return list;
+}
+function _ixCardOwnedInFilter(ow){
+  if(!ow)return false;
+  if(ixState.mut==="all")return ixState.shiny?ow.anyShiny:ow.owned;
+  return ixState.shiny?!!ow.shiny[ixState.mut]:!!(ow.got[ixState.mut]||ow.shiny[ixState.mut]);
+}
+function _ixFilterCards(validCards,ownMap){
+  const q=ixState.q.trim().toLowerCase();
+  const srcObj=_ixSourcesList(validCards).find(s=>s.id===ixState.source);
+  const srcFn=srcObj?srcObj.fn:()=>true;
+  const list=validCards.filter(c=>{
+    const ow=ownMap[c.char_id];
+    const ownedF=_ixCardOwnedInFilter(ow);
+    if(ixState.cat==="owned"&&!ownedF)return false;
+    if(ixState.cat==="missing"&&ownedF)return false;
+    if(ixState.cat==="standard"&&(c.weatherOnly||c.raidBoss||c.towerBoss))return false;
+    if(ixState.cat==="weather"&&!c.weatherOnly)return false;
+    if(ixState.cat==="boss"&&!c.raidBoss&&!c.towerBoss)return false;
+    if(!srcFn(c))return false;
+    if(q){
+      const hay=(c.name+" "+(c.type||"")+" "+((c.passive&&c.passive.name)||"")+" "+(c.weatherOnly||"")+" "+_ixCardDescEn(c)).toLowerCase();
+      if(!hay.includes(q))return false;
+    }
+    if((ixState.mut!=="all"||ixState.shiny)&&ixState.cat!=="missing"&&!ownedF)return false;
+    return true;
+  });
+  const baseIdx=Object.fromEntries(validCards.map((c,i)=>[c.char_id,i]));
+  const cVal=c=>c.chance||chanceOf(c.tier)||1;
+  list.sort((a,b)=>{
+    if(ixState.sort==="rarity-asc")return cVal(b)-cVal(a)||(baseIdx[a.char_id]-baseIdx[b.char_id]);
+    if(ixState.sort==="rarity-desc")return cVal(a)-cVal(b)||(baseIdx[a.char_id]-baseIdx[b.char_id]);
+    if(ixState.sort==="name")return a.name.localeCompare(b.name);
+    if(ixState.sort==="variants")return ownMap[b.char_id].variants-ownMap[a.char_id].variants||cVal(b)-cVal(a);
+    if(ixState.sort==="atk")return (b.base_atk||0)-(a.base_atk||0)||(baseIdx[a.char_id]-baseIdx[b.char_id]);
+    if(ixState.sort==="hp")return (b.base_hp||0)-(a.base_hp||0)||(baseIdx[a.char_id]-baseIdx[b.char_id]);
+    return baseIdx[a.char_id]-baseIdx[b.char_id];
+  });
+  return list;
+}
+function _ixFilterGear(kind){
+  const q=ixState.q.trim().toLowerCase();
+  const defs=kind==="relics"?(typeof ART_DEFS!=="undefined"?ART_DEFS:[]):(typeof PET_DEFS!=="undefined"?PET_DEFS:[]);
+  const ownSet=new Set(kind==="relics"?((state&&state.artOwned)||[]):((state&&state.petOwned)||[]));
+  const srcRank={coin:0,tower:1,raid:2,premium:3};
+  const baseIdx=Object.fromEntries(defs.map((d,i)=>[d.id,i]));
+  const items=defs.filter(g=>{
+    if(!q)return true;
+    const nm=_ixGearNameEn(kind==="relics"?"relic":"pet",g);
+    return (nm+" "+(g.src||"coin")).toLowerCase().includes(q);
+  });
+  items.sort((a,b)=>{
+    const na=_ixGearNameEn(kind==="relics"?"relic":"pet",a),nb=_ixGearNameEn(kind==="relics"?"relic":"pet",b);
+    if(ixState.sort==="name")return na.localeCompare(nb);
+    if(ixState.sort==="variants")return (ownSet.has(b.id)?1:0)-(ownSet.has(a.id)?1:0)||(b.pct-a.pct);
+    if(ixState.sort==="atk"||ixState.sort==="hp"||ixState.sort==="rarity-asc")return ((b.pct*10+b.flat)-(a.pct*10+a.flat));
+    if(ixState.sort==="rarity-desc")return (a.pct*10+a.flat)-(b.pct*10+b.flat);
+    return (srcRank[a.src||"coin"]-srcRank[b.src||"coin"])||(baseIdx[a.id]-baseIdx[b.id]);
+  });
+  return items;
+}
+function _ixInitVarTabStamps(){
+  document.querySelectorAll("#varTabs [data-vtab-ic]").forEach(el=>{
+    const k=el.getAttribute("data-vtab-ic");
+    el.outerHTML=(k==="shiny")?shinyStampHtml(true):mutStampHtml(k,true,"",true);
+  });
+}
+function ixLiveShimmer(){
+  const sc=_ixEl("gridScroll");
+  if(!sc)return;
+  if(sc.__ixIO){try{sc.__ixIO.disconnect();}catch(e){}}
+  const cells=_ixLiveCells=[].slice.call(sc.querySelectorAll(".ix-tile.is-shiny"));
+  if(!cells.length)return;
+  const MAX=8;
+  const update=()=>{
+    const vr=sc.getBoundingClientRect();
+    const vc=(vr.top+vr.bottom)/2;
+    const vis=cells.filter(c=>{
+      const r=c.getBoundingClientRect();
+      return r.bottom>vr.top&&r.top<vr.bottom;
+    });
+    vis.sort((a,b)=>{
+      const ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect();
+      return Math.abs((ra.top+ra.bottom)/2-vc)-Math.abs((rb.top+rb.bottom)/2-vc);
+    });
+    cells.forEach(c=>c.classList.remove("ix-live"));
+    vis.slice(0,MAX).forEach(c=>c.classList.add("ix-live"));
+  };
+  if(typeof IntersectionObserver==="function"){
+    const io=new IntersectionObserver(update,{root:sc,rootMargin:"0px",threshold:[0,0.1]});
+    cells.forEach(c=>io.observe(c));
+    sc.__ixIO=io;
+  }
+  if(!sc.__ixScr){
+    sc.__ixScr=true;
+    sc.addEventListener("scroll",()=>{
+      if(_ixRenderRaf)return;
+      _ixRenderRaf=requestAnimationFrame(()=>{_ixRenderRaf=0;ixLiveUpdateNow();});
+    },{passive:true});
+  }
+  update();
+}
+function ixLiveUpdateNow(){
+  const sc=_ixEl("gridScroll");if(!sc||!_ixLiveCells.length)return;
+  const vr=sc.getBoundingClientRect();
+  const vc=(vr.top+vr.bottom)/2;
+  const vis=_ixLiveCells.filter(c=>{const r=c.getBoundingClientRect();return r.bottom>vr.top&&r.top<vr.bottom;});
+  vis.sort((a,b)=>{const ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect();return Math.abs((ra.top+ra.bottom)/2-vc)-Math.abs((rb.top+rb.bottom)/2-vc);});
+  _ixLiveCells.forEach(c=>c.classList.remove("ix-live"));
+  vis.slice(0,8).forEach(c=>c.classList.add("ix-live"));
+}
+function ixRender(){
+  if(!_ixEl("cardGrid"))return;
+  _ixBindEvents();
+  const validCards=_ixValidCards();
+  const ownMap=_ixBuildOwnMap(validCards);
+  const P=idxProgress();
+  const totalCards=validCards.length;
+  const artDefs=(typeof ART_DEFS!=="undefined"?ART_DEFS:[]);
+  const petDefs=(typeof PET_DEFS!=="undefined"?PET_DEFS:[]);
+  const artOwned=new Set((state&&state.artOwned)||[]);
+  const petOwned=new Set((state&&state.petOwned)||[]);
+
+  let ownUnique=0,stdN=0,stdOwn=0,wxN=0,wxOwn=0,bossN=0,bossOwn=0;
+  for(const c of validCards){
+    const ow=ownMap[c.char_id];
+    const has=ow.owned;
+    if(has)ownUnique++;
+    if(c.raidBoss||c.towerBoss){bossN++;if(has)bossOwn++;}
+    else if(c.weatherOnly){wxN++;if(has)wxOwn++;}
+    else{stdN++;if(has)stdOwn++;}
+  }
+  const setT=(id,v)=>{const e=_ixEl(id);if(e)e.textContent=v;};
+  setT("cnt-all",ownUnique+"/"+totalCards);
+  setT("cnt-owned",ownUnique);
+  setT("cnt-missing",Math.max(0,totalCards-ownUnique));
+  setT("cnt-standard",stdOwn+"/"+stdN);
+  setT("cnt-weather",wxOwn+"/"+wxN);
+  setT("cnt-boss",bossOwn+"/"+bossN);
+  setT("cnt-relics",artOwned.size+"/"+artDefs.length);
+  setT("cnt-pets",petOwned.size+"/"+petDefs.length);
+
+  document.querySelectorAll("#catTabs .ix-cat").forEach(b=>{
+    const on=b.dataset.cat===ixState.cat;
+    b.classList.toggle("on",on);
+    b.setAttribute("aria-selected",on?"true":"false");
+  });
+
+  const pct=totalCards?Math.round(ownUnique/totalCards*100):0;
+  setT("hdrSubEyebrow","// NEURAL VAULT · "+totalCards+" UNITS · "+fmt(P.total)+" VARIANTS");
+  setT("sidePct",pct+"%");
+  setT("sideOwn",ownUnique);
+  setT("sideTot",totalCards);
+  const sb=_ixEl("sideBar");if(sb)sb.style.width=pct+"%";
+  setT("sideVarTxt",fmt(P.count)+" / "+fmt(P.total));
+  setT("hdrVarBadge","VARIANTS: "+fmt(P.count)+"/"+fmt(P.total));
+  setT("hdrPacksBadge","5K PACKS: "+fmt((state&&state.rollPacks&&state.rollPacks.r5k)||0));
+  setT("mobProgTxt",ownUnique+" / "+totalCards+" ("+pct+"%)");
+  const mp=_ixEl("mobProgBar");if(mp)mp.style.width=pct+"%";
+
+  const segColors={none:"#9AA6B2",gold:"#E0BC6E",rainbow:"var(--rb)",secret:"#A855F7",ultima:"#FF0055"};
+  const segEl=_ixEl("sideSegs");
+  if(segEl){
+    segEl.innerHTML=IX_MUTS.map(m=>{
+      let cnt=0;
+      for(const c of validCards){if(ownMap[c.char_id].got[m]||ownMap[c.char_id].shiny[m])cnt++;}
+      const sp=totalCards?Math.round(cnt/totalCards*100):0;
+      return '<i style="--p:'+sp+'%;--c:'+segColors[m]+'" title="'+MUT_LABEL[m]+": "+cnt+"/"+totalCards+'"></i>';
+    }).join("");
+  }
+
+  const srcs=_ixSourcesList(validCards);
+  setT("srcCountLbl",srcs.length+" POOLS");
+  const srcList=_ixEl("srcList");
+  if(srcList){
+    srcList.innerHTML=srcs.map(s=>{
+      const pool=validCards.filter(s.fn);
+      const got=pool.filter(c=>ownMap[c.char_id].owned).length;
+      const on=ixState.source===s.id;
+      return '<button type="button" class="ix-src-btn'+(on?" on":"")+'" data-src="'+_ixEsc(s.id)+'" style="--sc:'+s.color+'">'
+        +'<span class="ix-src-nm"><i class="ix-src-dot"></i>'+_ixEsc(s.name)+'</span>'
+        +'<span class="ix-src-cnt">'+got+'/'+pool.length+'</span></button>';
+    }).join("");
+    srcList.querySelectorAll("[data-src]").forEach(btn=>{
+      btn.onclick=()=>{ixState.source=btn.dataset.src;ixRender();};
+    });
+  }
+  const mobSrc=_ixEl("mobSourceSelect");
+  if(mobSrc){
+    mobSrc.innerHTML=srcs.map(s=>{
+      const pool=validCards.filter(s.fn);
+      const got=pool.filter(c=>ownMap[c.char_id].owned).length;
+      return '<option value="'+_ixEsc(s.id)+'">'+_ixEsc(s.name.toUpperCase())+' ('+got+'/'+pool.length+')</option>';
+    }).join("");
+    mobSrc.value=ixState.source;
+  }
+
+  const claimable=Math.max(0,P.blocks-P.claimed);
+  const toNext=Math.max(0,IDX_MILESTONE-(P.count%IDX_MILESTONE));
+  const claimBtn=_ixEl("btnClaim"),claimBadge=_ixEl("claimBadge"),msSub=_ixEl("msSubTxt"),mobClaim=_ixEl("mobClaimBtn");
+  if(claimBtn)claimBtn.disabled=claimable<=0||_ixClaimBusy;
+  if(claimBadge){claimBadge.hidden=claimable<=0;claimBadge.textContent=String(claimable);}
+  if(msSub){
+    msSub.innerHTML=claimable>0
+      ?('<b>'+claimable+' reward'+(claimable>1?'s':'')+' ready to claim!</b>')
+      :('Next pack in <b>'+toNext+'</b> more variants');
+  }
+  if(mobClaim){mobClaim.disabled=claimable<=0||_ixClaimBusy;mobClaim.textContent="CLAIM (+"+claimable+")";}
+
+  document.querySelectorAll("#varTabs [data-mut]").forEach(b=>b.classList.toggle("on",b.dataset.mut===ixState.mut));
+  const shTog=_ixEl("shinyToggle");if(shTog)shTog.classList.toggle("on",ixState.shiny);
+  const mobMut=_ixEl("mobMutSelect");if(mobMut)mobMut.value=ixState.shiny?"shiny":ixState.mut;
+  const sortSel=_ixEl("sortSelect");if(sortSel)sortSel.value=ixState.sort;
+
+  const grid=_ixEl("cardGrid");
+  grid.className="ix-grid sz-"+ixState.size;
+  setT("btnCardSize","SIZE: "+ixState.size+" [Z]");
+  const clr=_ixEl("searchClr");if(clr)clr.classList.toggle("show",!!ixState.q);
+
+  const isGear=(ixState.cat==="relics"||ixState.cat==="pets");
+  const varStrip=_ixEl("varStrip");if(varStrip)varStrip.style.display=isGear?"none":"";
+
+  if(isGear){
+    const kind=ixState.cat==="relics"?"relic":"pet";
+    const items=_ixFilterGear(ixState.cat);
+    const ownSet=ixState.cat==="relics"?artOwned:petOwned;
+    let gOwnN=0;for(const g of items)if(ownSet.has(g.id))gOwnN++;
+    const lbl=ixState.cat==="relics"?"RELICS":"PETS";
+    _ixEl("subLine1").innerHTML='SHOWING <b>'+items.length+'</b> '+lbl+' · <span class="g">'+gOwnN+' OWNED</span> · <span class="m">'+(items.length-gOwnN)+' MISSING</span>';
+    _ixEl("subLine2").innerHTML='<span>Permanent Luck Gear · Equip inside Backpack</span>';
+    _ixEl("btnNextMissing").style.display="none";
+    if(!items.length){
+      grid.innerHTML='<div class="ix-empty">NO MATCHING '+lbl+' FOUND</div>';
+      _ixLiveCells=[];
+      return;
+    }
+    grid.innerHTML=items.map((g,idx)=>{
+      const own=ownSet.has(g.id);
+      const srcShort=g.src==="tower"?"TOWER":g.src==="raid"?"WB SHOP":g.src==="premium"?"GEMS":"COINS";
+      const gName=_ixGearNameEn(kind,g);
+      const gMut=(!g.src||g.src==="coin")?"none":"gold";
+      return '<button type="button" class="ix-tile gear'+(own?hzBorderCls(gMut,false,{tile:true,dense:true}):" no-own")+'" data-gear-idx="'+idx+'">'
+        +'<img src="'+_ixEsc(thumbSrc(g.img))+'" alt="'+_ixEsc(gName)+'" width="360" height="360" decoding="async">'
+        +(own?hzBorderLayerHtml():'<span class="ix-tile-q" aria-hidden="true">?</span>')
+        +'<span class="ix-tile-top">'
+          +'<span class="ix-tile-tags"><span class="ix-badge">'+srcShort+'</span></span>'
+          +'<span class="ix-tile-cnt'+(own?"":" zero")+'">'+(own?"OWNED":"LOCKED")+'</span>'
+        +'</span>'
+        +'<span class="ix-tile-foot">'
+          +'<span class="ix-tile-nm">'+_ixEsc(gName)+'</span>'
+          +'<span class="ix-tile-ch" style="color:var(--ok)">+'+g.flat+' FLAT · +'+g.pct+'% LUCK</span>'
+        +'</span>'
+      +'</button>';
+    }).join("");
+    _ixLiveCells=[];
+    grid.querySelectorAll("[data-gear-idx]").forEach(btn=>{
+      btn.onclick=()=>_ixOpenGearInfo(kind,items,Number(btn.dataset.gearIdx));
+    });
+    return;
+  }
+
+  _ixEl("btnNextMissing").style.display="";
+  const list=_ixFilterCards(validCards,ownMap);
+  const ownedInList=list.filter(c=>_ixCardOwnedInFilter(ownMap[c.char_id])).length;
+  _ixEl("subLine1").innerHTML='SHOWING <b>'+list.length+'</b> OF <b>'+totalCards+'</b> CARDS · <span class="g">'+ownedInList+' OWNED</span> · <span class="m">'+(list.length-ownedInList)+' MISSING</span>';
+
+  let rarestOwn=null,easiestMiss=null;
+  for(const c of validCards){
+    const ch=c.chance||chanceOf(c.tier)||1;
+    if(ownMap[c.char_id].owned){if(!rarestOwn||ch>(rarestOwn.chance||1))rarestOwn=c;}
+    else{if(!easiestMiss||ch<(easiestMiss.chance||1))easiestMiss=c;}
+  }
+  _ixEl("subLine2").innerHTML=
+    (rarestOwn?'<span>RAREST OWNED: <button type="button" class="ix-jump-link" id="jumpRarest">'+_ixEsc(rarestOwn.name)+' (1/'+fmtChance(rarestOwn.chance||chanceOf(rarestOwn.tier))+')</button></span>':'<span>RAREST OWNED: NONE YET</span>')
+    +(easiestMiss?'<span>EASIEST MISSING: <button type="button" class="ix-jump-link miss" id="jumpEasiest">'+_ixEsc(easiestMiss.name)+' (1/'+fmtChance(easiestMiss.chance||chanceOf(easiestMiss.tier))+')</button></span>':'<span>ALL 75 CARDS DISCOVERED!</span>');
+  if(_ixEl("jumpRarest"))_ixEl("jumpRarest").onclick=()=>_ixOpenById(rarestOwn.char_id);
+  if(_ixEl("jumpEasiest"))_ixEl("jumpEasiest").onclick=()=>_ixOpenById(easiestMiss.char_id);
+
+  if(!list.length){
+    grid.innerHTML='<div class="ix-empty">NO MATCHING CARDS FOUND — CLEAR FILTERS OR SEARCH</div>';
+    _ixLiveCells=[];
+    return;
+  }
+
+  grid.innerHTML=list.map((c,idx)=>{
+    const ow=ownMap[c.char_id];
+    const mut=ixState.mut==="all"?ow.best:ixState.mut;
+    const hasMut=!!(mut&&mut!=="none");
+    const shActive=ixState.shiny||(ixState.mut==="all"&&ow.anyShiny);
+    const ownedF=_ixCardOwnedInFilter(ow);
+    const lockBoss=!!((c.raidBoss||c.towerBoss)&&!bossRollUnlocked(c.char_id));
+
+    const chVal=effChance(c.char_id,ixState.mut==="all"?(hasMut?mut:"none"):ixState.mut,ixState.shiny);
+    const chTxt="1/"+fmtChance(chVal);
+    const chCol=hasMut?(MUT_COLOR[mut]||"rgba(245,245,245,.66)"):"rgba(245,245,245,.66)";
+
+    const cls=["ix-tile"];
+    if(!ownedF)cls.push("no-own");
+    if(lockBoss)cls.push("boss-locked");
+    if(ixState.selectedId===c.char_id)cls.push("sel");
+    const tileCls=cls.join(" ")+(ownedF?hzBorderCls(hasMut?mut:"none",shActive,{tile:true,dense:true}):"");
+
+    const tags=[];
+    if(ownedF&&shActive)tags.push(shinyStampHtml(true));
+    if(ownedF&&hasMut)tags.push(mutStampHtml(mut,true));
+    if(c.raidBoss||c.towerBoss)tags.push('<span class="ix-badge boss">'+(lockBoss?"LOCKED":"BOSS")+'</span>');
+    else if(c.weatherOnly){
+      const w=(typeof WEATHER!=="undefined"&&WEATHER)?WEATHER[c.weatherOnly]:null;
+      tags.push('<span class="ix-badge weather" style="--wc:'+(w?w.color:"#22d3ee")+'">'+_ixEsc(w?w.name:c.weatherOnly)+'</span>');
+    }
+
+    const bdrHtml=ownedF?hzBorderLayerHtml():"";
+    const qMark=ownedF?"":'<span class="ix-tile-q" aria-hidden="true">?</span>';
+
+    return '<button type="button" class="'+tileCls+'" data-card-idx="'+idx+'" data-cid="'+_ixEsc(c.char_id)+'">'
+      +'<img src="'+_ixEsc(thumbSrc(c.sprite_asset))+'" alt="'+_ixEsc(c.name)+'" width="360" height="536" decoding="async">'
+      +bdrHtml
+      +qMark
+      +'<span class="ix-tile-top">'
+        +'<span class="ix-tile-tags">'+tags.join("")+'</span>'
+        +'<span class="ix-tile-cnt'+(ow.variants?"":" zero")+'">'+(ow.variants?"×"+ow.variants:"0/10")+'</span>'
+      +'</span>'
+      +'<span class="ix-tile-foot">'
+        +'<span class="ix-tile-nm">'+_ixEsc(c.name)+'</span>'
+        +'<span class="ix-tile-ch'+(hasMut&&mut==="rainbow"&&ownedF?" rb":"")+'"'+(hasMut&&mut!=="rainbow"&&ownedF?' style="color:'+chCol+'"':"")+'>'+chTxt+'</span>'
+      +'</span>'
+    +'</button>';
+  }).join("");
+
+  grid.querySelectorAll("[data-card-idx]").forEach(btn=>{
+    btn.onclick=()=>_ixOpenCardInfo(list,Number(btn.dataset.cardIdx));
+  });
+  ixLiveShimmer();
+}
+
+function _ixOpenById(cid){
+  const validCards=_ixValidCards();
+  const ownMap=_ixBuildOwnMap(validCards);
+  let list=_ixFilterCards(validCards,ownMap);
+  let idx=list.findIndex(c=>c.char_id===cid);
+  if(idx<0){
+    ixState.cat="all";ixState.mut="all";ixState.shiny=false;ixState.source="all";ixState.q="";
+    if(_ixEl("searchInp"))_ixEl("searchInp").value="";
+    ixRender();
+    list=_ixFilterCards(validCards,ownMap);
+    idx=list.findIndex(c=>c.char_id===cid);
+  }
+  if(idx>=0)_ixOpenCardInfo(list,idx);
+}
+function _ixApply3DTransform(){
+  const card=_ixEl("ciCard3d");if(!card)return;
+  const rx=ixState.dlgMovable?ixState.rotX:0,ry=ixState.dlgMovable?ixState.rotY:0;
+  card.style.transform="scale("+ixState.zoom.toFixed(2)+") rotateX("+rx.toFixed(2)+"deg) rotateY("+ry.toFixed(2)+"deg)";
+  const zr=_ixEl("ciZoomReset");if(zr)zr.textContent=Math.round(ixState.zoom*100)+"%";
+}
+function _ixReset3D(){ixState.rotX=0;ixState.rotY=0;ixState.zoom=1;_ixApply3DTransform();}
+function _ixOpenCardInfo(list,idx){
+  if(!list||!list.length)return;
+  const c=list[idx];
+  const validCards=_ixValidCards();
+  const ownMap=_ixBuildOwnMap(validCards);
+  const ow=ownMap[c.char_id];
+  ixState.dlgKind="card";ixState.dlgList=list;ixState.dlgIdx=idx;ixState.selectedId=c.char_id;
+  ixState.dlgBorder=(ixState.mut!=="all")?ixState.mut:(ow?ow.best:"none");
+  ixState.dlgShiny=!!(ixState.shiny||(ixState.mut==="all"&&ow&&ow.anyShiny&&ow.shiny[ixState.dlgBorder]));
+  ixState.dlgPeekArt=false;
+  _ixReset3D();
+  _ixRenderCardInfoDialog();
+  const dlg=_ixEl("cardInfoDlg");
+  if(dlg&&!dlg.open)dlg.showModal();
+  const sc=_ixEl("ciInfoScroll");if(sc)sc.scrollTop=0;
+}
+function _ixOpenGearInfo(kind,list,idx){
+  if(!list||!list.length)return;
+  ixState.dlgKind=kind;ixState.dlgList=list;ixState.dlgIdx=idx;ixState.dlgPeekArt=true;
+  _ixReset3D();
+  _ixRenderCardInfoDialog();
+  const dlg=_ixEl("cardInfoDlg");
+  if(dlg&&!dlg.open)dlg.showModal();
+  const sc=_ixEl("ciInfoScroll");if(sc)sc.scrollTop=0;
+}
+function _ixRenderCardInfoDialog(){
+  const list=ixState.dlgList;if(!list||!list.length)return;
+  const item=list[ixState.dlgIdx];
+  _ixEl("ciHeadIdx").textContent=(ixState.dlgIdx+1)+" / "+list.length;
+  const fBtn=_ixEl("ciFrameBtn");
+  fBtn.textContent=ixState.dlgMovable?"FRAME: MOVABLE":"FRAME: LOCKED";
+  fBtn.classList.toggle("locked",!ixState.dlgMovable);
+  _ixEl("ci3dWrap").classList.toggle("locked",!ixState.dlgMovable);
+  _ixApply3DTransform();
+
+  const hideBtn=_ixEl("ciHideTextBtn");
+  hideBtn.textContent=ixState.dlgHideText?"SHOW TEXT":"HIDE TEXT";
+  hideBtn.classList.toggle("active",ixState.dlgHideText);
+
+  const card3d=_ixEl("ciCard3d");
+  if(ixState.dlgKind!=="card"){
+    const isRelic=ixState.dlgKind==="relic";
+    const ownSet=new Set(isRelic?((state&&state.artOwned)||[]):((state&&state.petOwned)||[]));
+    const own=ownSet.has(item.id);
+    const gName=_ixGearNameEn(ixState.dlgKind,item);
+    const gSrc=_ixGearSourceLabel(item);
+    card3d.className="cii-card3d gear"+hzBorderCls("gold",false)+(ixState.dlgHideText?" text-hidden":"")+(own?"":" is-missing peek");
+    _ixEl("ciCardStamps").innerHTML="";
+    _ixEl("ciArt").src=item.img;
+    _ixEl("ciArt").alt=gName;
+    _ixEl("ciOvPack").textContent=gSrc;
+    _ixEl("ciOvType").textContent=isRelic?"RELIC":"COMPANION PET";
+    _ixEl("ciOvName").textContent=gName;
+    _ixEl("ciOvSkill").textContent="PASSIVE LUCK BONUS";
+    _ixEl("ciOvDesc").textContent="Equip this permanent "+(isRelic?"Relic":"Pet")+" in your Backpack to boost all Gacha Rolls.";
+    _ixEl("ciOvHp").textContent="FLAT: +"+item.flat;
+    _ixEl("ciOvAtk").textContent="LUCK: +"+item.pct+"%";
+
+    _ixEl("ciHeadLbl").textContent=isRelic?"RELIC INFO":"PET INFO";
+    _ixEl("ciTitle").textContent=gName;
+    _ixEl("ciChips").innerHTML=
+      '<span class="cii-chip '+(own?"ok":"miss")+'">'+(own?"OWNED":"MISSING")+'</span>'
+      +'<span class="cii-chip src">'+_ixEsc(gSrc)+'</span>'
+      +'<span class="cii-chip tp">'+(isRelic?"RELIC SLOT":"PET SLOT")+'</span>';
+    _ixEl("ciRarityK").textContent="ACQUISITION COST";
+    _ixEl("ciBorderName").textContent=item.src==="raid"?"WB TOKENS":item.src==="premium"?"GEMS":item.src==="tower"?"TOWER DROP":"COINS";
+    const costVal=item.raidCost||item.gemPrice||item.price||0;
+    _ixEl("ciRarityV").textContent=costVal?fmt(costVal):"FLOOR DROP";
+    _ixEl("ciStat1K").textContent="FLAT LUCK";
+    _ixEl("ciStat1V").textContent="+"+item.flat;
+    _ixEl("ciStat2K").textContent="LUCK BONUS";
+    _ixEl("ciStat2V").textContent="+"+item.pct+"%";
+    _ixEl("ciOwnK").textContent="INVENTORY STATUS";
+    _ixEl("ciOwnBadge").textContent=own?"EQUIPPABLE":"LOCKED";
+    _ixEl("ciOwnVal").textContent=own?"Unlocked permanently in Backpack":"Obtain from "+gSrc;
+    _ixEl("ciSkillK").textContent="GEAR EFFECT";
+    _ixEl("ciSkillN").textContent="+"+item.flat+" FLAT LUCK · +"+item.pct+"% LUCK";
+    _ixEl("ciSkillD").textContent=isRelic
+      ?"Equip up to 2 Relics simultaneously in your Backpack for stacking luck multipliers."
+      :"Equip 1 Companion Pet alongside your Relics to amplify rare card drop odds.";
+    _ixEl("ciBordersWrap").style.display="none";
+    return;
+  }
+
+  _ixEl("ciBordersWrap").style.display="";
+  _ixEl("ciHeadLbl").textContent="CARD INFO";
+  const c=item;
+  const validCards=_ixValidCards();
+  const ow=_ixBuildOwnMap(validCards)[c.char_id]||{owned:false,variants:0,copies:0,anyShiny:false,best:"none",got:{},shiny:{}};
+  const mut=ixState.dlgBorder||"none";
+  const sh=!!ixState.dlgShiny;
+  const st=cardStats(c.char_id,mut,"none",sh);
+  const odds=effChance(c.char_id,mut,sh);
+  const lockBoss=!!((c.raidBoss||c.towerBoss)&&!bossRollUnlocked(c.char_id));
+  const desc=_ixCardDescEn(c);
+
+  card3d.className="cii-card3d"+hzBorderCls(mut,sh)+(ow.owned?"":" is-missing")+(ixState.dlgPeekArt?" peek":"")+(ixState.dlgHideText?" text-hidden":"");
+  _ixEl("ciCardStamps").innerHTML=[sh?shinyStampHtml(false):"",mut!=="none"?mutStampHtml(mut,false):""].join("");
+  _ixEl("ciArt").src=c.art_image||c.sprite_asset;
+  _ixEl("ciArt").alt=c.name;
+
+  _ixEl("ciOvPack").textContent=_ixCardSourceLabel(c);
+  _ixEl("ciOvType").textContent=(c.type||"UNIT").toUpperCase();
+  _ixEl("ciOvName").textContent=c.name;
+  _ixEl("ciOvSkill").textContent=(c.passive&&c.passive.name)||"—";
+  _ixEl("ciOvDesc").textContent=desc;
+  _ixEl("ciOvHp").textContent="HP: "+fmtStat(st.hp);
+  _ixEl("ciOvAtk").textContent="DMG: "+fmtStat(st.atk);
+
+  _ixEl("ciTitle").textContent=c.name;
+  let chipsHtml=
+    '<span class="cii-chip '+(ow.owned?"ok":"miss")+'">'+(ow.owned?"DISCOVERED":"UNDISCOVERED")+'</span>'
+    +'<span class="cii-chip src">'+_ixEsc(_ixCardSourceLabel(c))+'</span>'
+    +'<span class="cii-chip tp">'+_ixEsc((c.type||"UNIT").toUpperCase())+'</span>';
+  if(lockBoss)chipsHtml+='<span class="cii-chip miss">SHOP LOCKED</span>';
+  if(!ow.owned)chipsHtml+='<button type="button" class="cii-peek-btn" id="ciPeekBtn">'+(ixState.dlgPeekArt?"HIDE ART":"PEEK ART")+'</button>';
+  _ixEl("ciChips").innerHTML=chipsHtml;
+  if(_ixEl("ciPeekBtn")){
+    _ixEl("ciPeekBtn").onclick=()=>{ixState.dlgPeekArt=!ixState.dlgPeekArt;_ixRenderCardInfoDialog();};
+  }
+
+  _ixEl("ciRarityK").textContent="RARITY";
+  _ixEl("ciBorderName").innerHTML='<span class="cii-bdr-stamps">'+mutStampHtml(mut,false,"",true)+(sh?shinyStampHtml(false):"")+'</span>';
+  _ixEl("ciRarityV").textContent="1 / "+fmt(Math.round(odds));
+
+  _ixEl("ciStat1K").textContent="HEALTH";
+  _ixEl("ciStat1V").textContent=fmt(st.hp);
+  _ixEl("ciStat2K").textContent="DAMAGE";
+  _ixEl("ciStat2V").textContent=fmt(st.atk);
+
+  _ixEl("ciOwnK").textContent="ARCHIVE OWNERSHIP";
+  _ixEl("ciOwnBadge").textContent=ow.variants+" / 10 VARIANTS";
+  _ixEl("ciOwnVal").textContent=ow.owned
+    ?("Owned ×"+fmt(ow.copies)+" total pulls · Best: "+(MUT_LABEL[ow.best]||"PURE")+(ow.anyShiny?" ★":""))
+    :(lockBoss?("Buy in "+_ixCardSourceLabel(c)+" to unlock rolls"):("Not discovered yet — Drop source: "+_ixCardSourceLabel(c)));
+
+  _ixEl("ciSkillK").textContent="SIGNATURE SKILL";
+  _ixEl("ciSkillN").textContent=(c.passive&&c.passive.name)||"—";
+  _ixEl("ciSkillD").textContent=desc;
+
+  let bdrHtml=IX_MUTS.map(m=>{
+    const isOn=(ixState.dlgBorder===m);
+    const gotM=!!(ow.got[m]||ow.shiny[m]);
+    const mOdds="1/"+fmtChance(effChance(c.char_id,m,sh));
+    const col=MUT_COLOR[m]||"#9AA6B2";
+    return '<button type="button" class="cii-bdr-btn'+(isOn?" on":"")+'" data-bdr="'+m+'" style="--bc:'+col+'">'
+      +mutStampHtml(m,true,"",true)
+      +'<span class="cii-bdr-meta">'
+        +'<span class="cii-bdr-nm">'+(MUT_LABEL[m]||"PURE")+'</span>'
+        +'<span class="cii-bdr-ch">'+mOdds+'</span>'
+      +'</span>'
+      +(gotM?'<span class="cii-bdr-own" title="Variant owned">✓</span>':'')
+    +'</button>';
+  }).join("");
+
+  bdrHtml+='<button type="button" class="cii-bdr-btn'+(sh?" on":"")+'" id="ciShinyModBtn" style="--bc:#7DF9FF">'
+    +shinyStampHtml(true)
+    +'<span class="cii-bdr-meta">'
+      +'<span class="cii-bdr-nm" style="color:#7DF9FF">SHINY</span>'
+      +'<span class="cii-bdr-ch">'+(sh?"ACTIVE ×5 STATS":"×50 ODDS / ×5")+'</span>'
+    +'</span>'
+    +(ow.shiny[mut]?'<span class="cii-bdr-own" title="Shiny owned for this border">✓</span>':'')
+  +'</button>';
+
+  const bGrid=_ixEl("ciBdrGrid");
+  bGrid.innerHTML=bdrHtml;
+  bGrid.querySelectorAll("[data-bdr]").forEach(btn=>{
+    btn.onclick=()=>{ixState.dlgBorder=btn.dataset.bdr;_ixRenderCardInfoDialog();};
+  });
+  _ixEl("ciShinyModBtn").onclick=()=>{ixState.dlgShiny=!ixState.dlgShiny;_ixRenderCardInfoDialog();};
+}
+function _ixBindEvents(){
+  if(_ixBound)return;
+  _ixBound=true;
+  _ixInitVarTabStamps();
+
+  document.querySelectorAll("#catTabs [data-cat]").forEach(b=>{
+    b.onclick=()=>{ixState.cat=b.dataset.cat;ixRender();const gs=_ixEl("gridScroll");if(gs)gs.scrollTop=0;};
+  });
+  document.querySelectorAll("#varTabs [data-mut]").forEach(b=>{
+    b.onclick=()=>{ixState.mut=b.dataset.mut;ixRender();};
+  });
+  const sh=_ixEl("shinyToggle");if(sh)sh.onclick=()=>{ixState.shiny=!ixState.shiny;ixRender();};
+  const mm=_ixEl("mobMutSelect");if(mm)mm.onchange=e=>{
+    if(e.target.value==="shiny"){ixState.mut="all";ixState.shiny=true;}
+    else{ixState.mut=e.target.value;ixState.shiny=false;}
+    ixRender();
+  };
+  const ms=_ixEl("mobSourceSelect");if(ms)ms.onchange=e=>{ixState.source=e.target.value;ixRender();};
+  const ss=_ixEl("sortSelect");if(ss)ss.onchange=e=>{ixState.sort=e.target.value;ixRender();};
+
+  let sTimer=null;
+  const si=_ixEl("searchInp"),sc=_ixEl("searchClr");
+  if(si)si.oninput=()=>{
+    ixState.q=si.value;
+    clearTimeout(sTimer);
+    sTimer=setTimeout(ixRender,90);
+  };
+  if(sc)sc.onclick=()=>{ixState.q="";if(si){si.value="";si.focus();}ixRender();};
+
+  const doClaim=async()=>{
+    if(_ixClaimBusy||typeof claimIndexReward!=="function")return;
+    _ixClaimBusy=true;
+    ixRender();
+    try{await claimIndexReward();}
+    finally{_ixClaimBusy=false;ixRender();}
+  };
+  if(_ixEl("btnClaim"))_ixEl("btnClaim").onclick=doClaim;
+  if(_ixEl("mobClaimBtn"))_ixEl("mobClaimBtn").onclick=doClaim;
+
+  if(_ixEl("btnNextMissing"))_ixEl("btnNextMissing").onclick=()=>{
+    if(ixState.cat==="relics"||ixState.cat==="pets")ixState.cat="all";
+    const validCards=_ixValidCards();
+    const ownMap=_ixBuildOwnMap(validCards);
+    const list=_ixFilterCards(validCards,ownMap);
+    const miss=list.filter(c=>!_ixCardOwnedInFilter(ownMap[c.char_id]));
+    if(!miss.length){toast("ARCHIVE COMPLETE","Every card in current filter is already owned!","#6be08a");return;}
+    const cur=miss.findIndex(c=>c.char_id===ixState.selectedId);
+    const pick=miss[(cur+1)%miss.length];
+    ixState.selectedId=pick.char_id;
+    const escId=(typeof CSS!=="undefined"&&CSS.escape)?CSS.escape(pick.char_id):String(pick.char_id).replace(/["\\]/g,"");
+    const btn=document.querySelector('#cardGrid [data-cid="'+escId+'"]');
+    if(btn){
+      btn.scrollIntoView({behavior:"smooth",block:"center"});
+      btn.classList.remove("pulse");void btn.offsetWidth;btn.classList.add("pulse");
+    }
+    toast("NEXT MISSING",pick.name+" · 1/"+fmtChance(pick.chance||chanceOf(pick.tier)),"#22d3ee");
+  };
+  if(_ixEl("btnCardSize"))_ixEl("btnCardSize").onclick=()=>{
+    ixState.size=IX_SIZE_ORDER[(IX_SIZE_ORDER.indexOf(ixState.size)+1)%IX_SIZE_ORDER.length];
+    ixRender();
+  };
+  if(_ixEl("btnRandomCard"))_ixEl("btnRandomCard").onclick=()=>{
+    if(ixState.cat==="relics"||ixState.cat==="pets"){
+      const items=_ixFilterGear(ixState.cat);
+      if(items.length)_ixOpenGearInfo(ixState.cat==="relics"?"relic":"pet",items,Math.floor(Math.random()*items.length));
+      return;
+    }
+    const validCards=_ixValidCards();
+    const list=_ixFilterCards(validCards,_ixBuildOwnMap(validCards));
+    if(list.length)_ixOpenCardInfo(list,Math.floor(Math.random()*list.length));
+  };
+
+  const gDlg=_ixEl("guideDlg");
+  if(_ixEl("btnGuide"))_ixEl("btnGuide").onclick=()=>{if(gDlg&&!gDlg.open)gDlg.showModal();};
+  if(gDlg){
+    gDlg.querySelectorAll("[data-guide-close]").forEach(b=>b.onclick=()=>gDlg.close());
+    gDlg.addEventListener("click",e=>{if(e.target===gDlg)gDlg.close();});
+  }
+
+  const dlg=_ixEl("cardInfoDlg"),wrap=_ixEl("ci3dWrap");
+  let _ixJustDragged=false;
+  if(dlg){
+    if(_ixEl("ciCloseBtn"))_ixEl("ciCloseBtn").onclick=()=>dlg.close();
+    if(_ixEl("ciFrameBtn"))_ixEl("ciFrameBtn").onclick=()=>{ixState.dlgMovable=!ixState.dlgMovable;_ixRenderCardInfoDialog();};
+    if(_ixEl("ciHideTextBtn"))_ixEl("ciHideTextBtn").onclick=()=>{ixState.dlgHideText=!ixState.dlgHideText;_ixRenderCardInfoDialog();};
+    if(_ixEl("ciPrevBtn"))_ixEl("ciPrevBtn").onclick=()=>{
+      if(!ixState.dlgList.length)return;
+      ixState.dlgIdx=(ixState.dlgIdx-1+ixState.dlgList.length)%ixState.dlgList.length;
+      if(ixState.dlgKind==="card")ixState.selectedId=ixState.dlgList[ixState.dlgIdx].char_id;
+      _ixRenderCardInfoDialog();
+    };
+    if(_ixEl("ciNextBtn"))_ixEl("ciNextBtn").onclick=()=>{
+      if(!ixState.dlgList.length)return;
+      ixState.dlgIdx=(ixState.dlgIdx+1)%ixState.dlgList.length;
+      if(ixState.dlgKind==="card")ixState.selectedId=ixState.dlgList[ixState.dlgIdx].char_id;
+      _ixRenderCardInfoDialog();
+    };
+    if(_ixEl("ciZoomOut"))_ixEl("ciZoomOut").onclick=()=>{ixState.zoom=Math.max(0.75,ixState.zoom-0.12);_ixApply3DTransform();};
+    if(_ixEl("ciZoomIn"))_ixEl("ciZoomIn").onclick=()=>{ixState.zoom=Math.min(1.55,ixState.zoom+0.12);_ixApply3DTransform();};
+    if(_ixEl("ciZoomReset"))_ixEl("ciZoomReset").onclick=_ixReset3D;
+    dlg.addEventListener("contextmenu",e=>{e.preventDefault();dlg.close();});
+    dlg.addEventListener("click",e=>{if(!_ixJustDragged&&(e.target===dlg||e.target.id==="ciWrap"))dlg.close();});
+  }
+  if(wrap){
+    wrap.addEventListener("pointerdown",e=>{
+      if(e.button===2||!ixState.dlgMovable)return;
+      ixState.dragging=true;_ixJustDragged=false;ixState.lx=e.clientX;ixState.ly=e.clientY;
+      try{wrap.setPointerCapture(e.pointerId);}catch(_e){}
+    });
+    wrap.addEventListener("pointermove",e=>{
+      if(!ixState.dragging||!ixState.dlgMovable)return;
+      const dx=e.clientX-ixState.lx,dy=e.clientY-ixState.ly;
+      if(Math.abs(dx)+Math.abs(dy)>2)_ixJustDragged=true;
+      ixState.lx=e.clientX;ixState.ly=e.clientY;
+      ixState.rotY=Math.max(-34,Math.min(34,ixState.rotY+dx*0.35));
+      ixState.rotX=Math.max(-28,Math.min(28,ixState.rotX-dy*0.35));
+      _ixApply3DTransform();
+    });
+    const endDrag=()=>{ixState.dragging=false;setTimeout(()=>{_ixJustDragged=false;},60);};
+    wrap.addEventListener("pointerup",endDrag);
+    wrap.addEventListener("pointercancel",endDrag);
+    wrap.addEventListener("wheel",e=>{
+      e.preventDefault();
+      ixState.zoom=Math.max(0.75,Math.min(1.55,ixState.zoom+(e.deltaY<0?0.08:-0.08)));
+      _ixApply3DTransform();
+    },{passive:false});
+  }
+}
+
 function openIndex(){
-  /* Katalog SEMUA kartu — layar penuh "HZ / NEURAL ARCHIVE" (port
-     _tmp/proto_index_hazard_v1.html): top bar + progress + CLAIM, toolbar tab
-     mutasi + SHINY + OWNED ONLY + sort, grid tile 1:1 (badge ×N + 1 IN X),
-     footer strip varian, dan detail sheet hazard (§08 prototipe). */
   idxRewardSync(true);
+  _ixBindEvents();
+  const gs=_ixEl("gridScroll");if(gs)gs.scrollTop=0;
   ixRender();
-  document.getElementById("indexModal").classList.add("show");
+  _ixEl("indexModal").classList.add("show");
   document.body.classList.add("index-open");
   ixBannerOpen();
-  const sx=document.getElementById("ixSearch");
-  sx.value=ixState.q;
-  sx.oninput=()=>{ixState.q=sx.value.trim().toLowerCase();clearTimeout(sx._t);sx._t=setTimeout(ixRender,180);};
-  const shx=document.getElementById("ixShX");
-  if(shx)shx.onclick=()=>ixSheetClose();
-  const sheet=document.getElementById("ixSheet");
-  if(sheet&&!sheet.__ixBound){
-    sheet.__ixBound=true;
-    sheet.addEventListener("click",e=>{if(e.target===sheet||e.target.classList.contains("ix-sh-body"))ixSheetClose();});
-  }
 }
 function closeIndex(){
-  const m=document.getElementById("indexModal");
+  const cDlg=_ixEl("cardInfoDlg");if(cDlg&&cDlg.open)cDlg.close();
+  const gDlg=_ixEl("guideDlg");if(gDlg&&gDlg.open)gDlg.close();
+  const m=_ixEl("indexModal");
   if(!m||!m.classList.contains("show"))return;
-  ixSheetClose();
   ixBannerClose(()=>{
     m.classList.remove("show");
     document.body.classList.remove("index-open");
   });
 }
-/* ===== DETAIL SHEET (port _tmp/proto_index_hazard_v1.html §08) =====
-   Panel detail di dalam layar index: thumbnail, kode matriks, nama berwarna
-   mutasi, DROP RATE, jumlah varian, HP/ATK, pips mutasi (+★ shiny) dan
-   SIGNATURE SKILL. Menggantikan pemakaian #skillPop (tampilan layar lain). */
-function ixSheetOpen(charId,mut,isShiny){
-  const c=CARDS[charId];
-  if(!c)return;
-  const sheet=document.getElementById("ixSheet");
-  if(!sheet)return;
-  const P=idxProgress();
-  const own=(m,sh)=>P.owned.has(`${c.char_id}|${m}|${sh?1:0}`);
-  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
-  const m0=mut&&mut!=="none"?mut:"none";
-  const img=document.getElementById("ixShImg");
-  if(img){img.src=thumbSrc(c.sprite_asset)||"";img.alt=c.name||"";}
-  /* Kode baris mengikuti konteks tile. Kartu pemain tidak punya tier
-     (tier hanya untuk musuh story), jadi yang ditampilkan mutasi aktif. */
-  set("ixShCode",`MATRIX · ${MUT_LABEL[m0]||"PURE"}${isShiny?" · SHINY":""}`);
-  const nameEl=document.getElementById("ixShName");
-  if(nameEl)nameEl.textContent=c.name||"—";
-  set("ixShChance","1 IN "+fmtChance(effChance(c.char_id,m0,!!isShiny)));
-  let cnt=0,shCnt=0;
-  for(const m of IX_MUTS){if(own(m,false))cnt++;if(own(m,true))shCnt++;}
-  set("ixShOwn",`${cnt}${shCnt?" +"+shCnt+"★":""} / 10 VARIANTS`);
-  const pv=c.passive||{};
-  set("ixShSkill",pv.name||"—");
-  set("ixShDesc",pv.desc||"—");
-  const muts=document.getElementById("ixShMuts");
-  if(muts){
-    muts.innerHTML=IX_MUTS.map(m=>{
-      const got=own(m,false)||own(m,true);
-      const star=own(m,true)?' ★':'';
-      const ic=m!=="none"&&typeof mutIconSvg==="function"?mutIconSvg(m,11):"";
-      if(m==="rainbow"){
-        const txt=MUT_LABEL[m].split("").map((ch,i)=>`<i style="color:${IX_RB_LETTERS[i%IX_RB_LETTERS.length]}">${ch}</i>`).join("");
-        return `<span class="ix-sh-mut rb${got?' own':''}">${ic}${txt}${star}</span>`;
-      }
-      return `<span class="ix-sh-mut${got?' own':''}" style="--mc:${MUT_COLOR[m]||'rgba(245,245,245,.5)'}">${ic}${MUT_LABEL[m]||'PURE'}${star}</span>`;
-    }).join("");
-  }
-  sheet.classList.add("on");
-  sheet.setAttribute("aria-hidden","false");
-  const body=sheet.querySelector(".ix-sh-body");
-  if(body)body.scrollTop=0;
-  document.querySelectorAll("#ixBody .ix-cell.sel").forEach(x=>x.classList.remove("sel"));
-  const cell=document.querySelector(`#ixBody .ix-cell[data-c="${charId}"]`);
-  if(cell)cell.classList.add("sel");
-}
-
-function ixSheetClose(){
-  const sheet=document.getElementById("ixSheet");
-  if(!sheet||!sheet.classList.contains("on"))return false;
-  sheet.classList.remove("on");
-  sheet.setAttribute("aria-hidden","true");
-  document.querySelectorAll("#ixBody .ix-cell.sel").forEach(x=>x.classList.remove("sel"));
-  return true;
-}
-/* ESC: sheet detail dulu, baru layar index. */
+/* Keyboard: tutup dialog di Top Layer dulu sebelum layar index; shortcut grid [1-8/S/Z/M/R///Home]. */
 document.addEventListener("keydown",e=>{
-  if(e.key!=="Escape")return;
-  const m=document.getElementById("indexModal");
+  const m=_ixEl("indexModal");
   if(!m||!m.classList.contains("show"))return;
-  if(ixSheetClose()){e.stopPropagation();return;}
-  e.stopPropagation();closeIndex();
+  const cDlg=_ixEl("cardInfoDlg"),gDlg=_ixEl("guideDlg");
+  if(e.key==="Escape"){
+    e.stopPropagation();e.preventDefault();
+    if(cDlg&&cDlg.open){cDlg.close();return;}
+    if(gDlg&&gDlg.open){gDlg.close();return;}
+    closeIndex();return;
+  }
+  if(cDlg&&cDlg.open){
+    if(e.key==="ArrowLeft"){e.preventDefault();_ixEl("ciPrevBtn")&&_ixEl("ciPrevBtn").click();}
+    else if(e.key==="ArrowRight"){e.preventDefault();_ixEl("ciNextBtn")&&_ixEl("ciNextBtn").click();}
+    return;
+  }
+  if(gDlg&&gDlg.open)return;
+  const tag=(document.activeElement&&document.activeElement.tagName)||"";
+  if(tag==="INPUT"||tag==="SELECT"||tag==="TEXTAREA")return;
+  if(e.key==="/"){e.preventDefault();const si=_ixEl("searchInp");if(si)si.focus();}
+  else if(e.key>="1"&&e.key<="8"){
+    const cat=IX_CAT_ORDER[Number(e.key)-1];
+    if(cat){ixState.cat=cat;ixRender();const gs=_ixEl("gridScroll");if(gs)gs.scrollTop=0;}
+  }else if(e.key.toLowerCase()==="s"){
+    ixState.sort=IX_SORT_ORDER[(IX_SORT_ORDER.indexOf(ixState.sort)+1)%IX_SORT_ORDER.length];
+    ixRender();
+  }else if(e.key.toLowerCase()==="z"){
+    _ixEl("btnCardSize")&&_ixEl("btnCardSize").click();
+  }else if(e.key.toLowerCase()==="m"){
+    _ixEl("btnNextMissing")&&_ixEl("btnNextMissing").click();
+  }else if(e.key.toLowerCase()==="r"){
+    _ixEl("btnRandomCard")&&_ixEl("btnRandomCard").click();
+  }else if(e.key==="Home"){
+    const gs=_ixEl("gridScroll");if(gs)gs.scrollTo({top:0,behavior:"smooth"});
+  }
 },true);
 /* ===== banner hazard masuk/keluar (#indexCurtain, pola #traitCurtain) ===== */
 let ixHzTimers=[];
 function ixHzClear(){for(let i=0;i<ixHzTimers.length;i++)clearTimeout(ixHzTimers[i]);ixHzTimers=[];}
 function ixHzSetCopy(mode){
-  const kick=document.getElementById("ixHzKick"),title=document.getElementById("ixHzTitle"),
-        sub=document.getElementById("ixHzSub"),foot=document.getElementById("ixHzFoot"),
-        serial=document.getElementById("ixHzSerial"),water=document.getElementById("ixHzWater");
+  const kick=_ixEl("ixHzKick"),title=_ixEl("ixHzTitle"),
+        sub=_ixEl("ixHzSub"),foot=_ixEl("ixHzFoot"),
+        serial=_ixEl("ixHzSerial"),water=_ixEl("ixHzWater");
   if(serial)serial.textContent=(0x1000+Math.floor(Math.random()*0xefff)).toString(16).toUpperCase();
   if(mode==="open"){
     if(kick)kick.innerHTML="// ARCHIVE <b>SYNC</b>";
     if(title)title.textContent="CARD INDEX";
     if(water)water.textContent="IDX";
-    if(sub)sub.textContent="VARIANT VAULT · MUTATIONS · SHINY";
+    if(sub)sub.textContent="75 UNITS · 750 MUTATION VARIANTS · 3D INSPECTOR";
     if(foot)foot.textContent="ENTER ARCHIVE";
   }else{
     if(kick)kick.innerHTML="// LINK <b>STAND BY</b>";
@@ -1997,7 +2682,7 @@ function ixHzSetCopy(mode){
   }
 }
 function ixBannerOpen(){
-  const c=document.getElementById("indexCurtain");
+  const c=_ixEl("indexCurtain");
   if(!c)return;
   ixHzClear();ixHzSetCopy("open");
   c.className="";void c.offsetWidth;
@@ -2005,10 +2690,9 @@ function ixBannerOpen(){
   ixHzTimers.push(setTimeout(()=>c.classList.add("revealed"),1080));
   ixHzTimers.push(setTimeout(()=>c.classList.remove("on","smooth","sweep","revealed"),1800));
 }
-/* EXIT 3 fase: tirai MENUTUP -> konten disembunyikan -> tirai MEMBUKA.
-   Fase 3 wajib; tanpanya layar tertahan tertutup ("banner tidak kebuka"). */
+/* EXIT 3 fase: tirai MENUTUP -> konten disembunyikan -> tirai MEMBUKA. */
 function ixBannerClose(onCovered){
-  const c=document.getElementById("indexCurtain");
+  const c=_ixEl("indexCurtain");
   if(!c){if(onCovered)onCovered();return;}
   ixHzClear();ixHzSetCopy("close");
   c.className="";c.classList.add("on","smooth","revealed");void c.offsetWidth;
@@ -2019,186 +2703,9 @@ function ixBannerClose(onCovered){
 }
 window.openIndex=openIndex;
 window.closeIndex=closeIndex;
+window.ixRender=ixRender;
 window.ixBannerOpen=ixBannerOpen;
 window.ixBannerClose=ixBannerClose;
-function ixLiveShimmer(){
-  /* Index = 75 tile shiny semua animasi holoSheen -> ~2000 repaint/detik -> fps drop 6.
-     Batasi concurrency: hanya ~12 tile yang PALING TENGAH viewport yang ditandai .ix-live,
-     sisanya static. Scroll -> live set rotate. Kalau fps-lock lepas, gak ngaruh (rule CSS
-     khusus html.fps-locked). */
-  const body=document.getElementById("ixBody"); if(!body) return;
-  if(body.__ixShimmerIO){try{body.__ixShimmerIO.disconnect();}catch(e){}}
-  const cells=[].slice.call(body.querySelectorAll('.ix-cell.shiny'));
-  if(!cells.length) return;
-  const MAX=8;
-  const update=()=>{
-    const vr=body.getBoundingClientRect();
-    const vc=(vr.top+vr.bottom)/2;
-    const vis=cells.filter(c=>{
-      if(c.classList.contains('lz-ph'))return false;
-      const r=c.getBoundingClientRect();
-      return r.bottom>vr.top && r.top<vr.bottom;
-    });
-    vis.sort((a,b)=>{
-      const ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect();
-      return Math.abs((ra.top+ra.bottom)/2 - vc) - Math.abs((rb.top+rb.bottom)/2 - vc);
-    });
-    cells.forEach(c=>{c.classList.remove('ix-live');});
-    vis.slice(0,MAX).forEach(c=>{c.classList.add('ix-live');});
-  };
-  const io=new IntersectionObserver(update,{root:body,rootMargin:'0px',threshold:[0,0.1]});
-  cells.forEach(c=>io.observe(c));
-  body.addEventListener('scroll',update,{passive:true});
-  body.__ixShimmerIO=io;
-  update();
-}
-function ixRender(){
-  const P=idxProgress();
-  const ownCnt=(c,mut,sh)=>P.owned.has(`${c.char_id}|${mut}|${sh?1:0}`);
-  const ownedN=(c,sh)=>IX_MUTS.reduce((n,m)=>n+(ownCnt(c,m,sh)?1:0),0);
-  /* --- filter state: tab mutasi murni + toggle SHINY terpisah --- */
-  const fmSel=ixState.mut==="all"?null:ixState.mut;
-  const fShiny=!!ixState.shiny;
-  const validCards=MASTER_CARD_INDEX.filter(c=>!c.isStoryEnemy);
-  /* Hitungan tab mengikuti prototipe: setiap tab mutasi = (kartu × 2) varian
-     normal + shiny. Tab ALL memakai P.count/P.total dari idxProgress (angka
-     server) supaya sinkron dengan bar progres dan tombol CLAIM. */
-  const tabTotal=validCards.length*2;
-  const tabCount=(m)=>{
-    if(m==="all")return `<b>${fmt(P.count)}/${fmt(P.total)}</b>`;
-    let own=0;
-    for(const c of validCards)own+=(ownCnt(c,m,false)?1:0)+(ownCnt(c,m,true)?1:0);
-    return `<b>${fmt(own)}/${fmt(tabTotal)}</b>`;
-  };
-  const chip=(k,l,cls)=>`<button class="ix-tab ${cls||""}${ixState.mut===k?' on':''}" type="button" data-mut="${k}">${l}${tabCount(k)}</button>`;
-  const toolbar=`<div class="ix-tabs">
-      ${chip("all","ALL")}${IX_MUTS.map(m=>chip(m,m==="none"?"PURE":MUT_LABEL[m],"m-"+m)).join("")}
-      <button class="ix-tab shiny-t${ixState.shiny?' on':''}" type="button" data-shiny="1">★ SHINY</button>
-    </div>
-    <span class="ix-sp"></span>
-    <button class="ix-tog${ixState.owned?' on':''}" type="button" data-owned="1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> OWNED ONLY</button>
-    <div class="ix-sort-wrap">
-      <select class="ix-sort" id="ixSort" title="Sort">
-        <option value="name">SORT: NAME</option><option value="chance">SORT: RARITY</option><option value="own">SORT: VARIANTS</option>
-      </select>
-    </div>`;
-  /* --- filter + sort --- */
-  const TIER_RANK={R:0,SR:1,SSR:2,UR:3,EX:4,BOSS:5};
-  let list=MASTER_CARD_INDEX.filter(c=>{
-    if(c.isStoryEnemy||(c.noGacha&&!c.chance))return false;
-    if(ixState.q&&!c.name.toLowerCase().includes(ixState.q))return false;
-    if(ixState.owned){
-      if(fmSel){
-        if(!(ownCnt(c,fmSel,false)||ownCnt(c,fmSel,true)))return false;
-      } else if(fShiny){
-        if(!ownedN(c,true))return false;
-      } else {
-        if(!(ownedN(c,false)+ownedN(c,true)))return false;
-      }
-    }
-    return true;
-  });
-  const T={name:(a,b)=>a.name.localeCompare(b.name),
-    tier:(a,b)=>(TIER_RANK[a.tier]??9)-(TIER_RANK[b.tier]??9)||a.name.localeCompare(b.name),
-    own:(a,b)=>(ownedN(b,false)+ownedN(b,true))-(ownedN(a,false)+ownedN(a,true))||a.name.localeCompare(b.name),
-    chance:(a,b)=>(a.chance==null?1e9:a.chance)-(b.chance==null?1e9:b.chance)||a.name.localeCompare(b.name)};
-  list.sort(T[ixState.sort]||T.name);
-  /* --- tile 1:1 --- */
-  _ixHtml={};
-  const cells=list.map((c,i)=>{
-    const any=ownedN(c,false)+ownedN(c,true);
-    const anySh=ownedN(c,true)>0;
-    const isSpecificVariantOwned = fmSel
-      ? (fShiny ? ownCnt(c, fmSel, true) : (ownCnt(c, fmSel, false) || ownCnt(c, fmSel, true)))
-      : (fShiny ? anySh : any > 0);
-    const isShinyActive = fShiny || (ixState.mut === "all" && anySh);
-    const bestMut=ownCnt(c,"ultima",false)||ownCnt(c,"ultima",true)?"ultima":
-      (ownCnt(c,"secret",false)||ownCnt(c,"secret",true)?"secret":
-      ownCnt(c,"rainbow",false)||ownCnt(c,"rainbow",true)?"rainbow":
-      (ownCnt(c,"gold",false)||ownCnt(c,"gold",true))?"gold":null);
-    const fm = ixState.mut === "all" ? bestMut : fmSel;
-    const hasMut = !!(fm && fm !== "none");
-    const chanceColor = hasMut ? MUT_COLOR[fm] : "#9AA6B2";
-    const chanceText = `1 IN ${fmtChance(effChance(c.char_id, fmSel || "none", fShiny))}`;
-    const chanceHtml = hasMut && (fm === 'rainbow' || fm === 'ultima') ? mutText(fm, chanceText) : chanceText;
-    const lockBoss = !!((c.raidBoss||c.towerBoss) && !bossRollUnlocked(c.char_id));
-    const lockShop = c.towerBoss?"TOKO INF":"TOKO WORLD BOSS";
-    const shFx = isShinyActive;
-    const hzCls = (typeof hzBorderCls === 'function') ? hzBorderCls(hasMut ? fm : 'none', shFx, { tile: true, dense: true }) : '';
-    const hzLayers = (typeof hzBorderLayerHtml === 'function') ? hzBorderLayerHtml() : '';
-    const cls = `ix-cell${isSpecificVariantOwned ? '' : ' no-own'}${lockBoss ? ' boss-locked' : ''}${shFx ? ' shiny' : ''}${hasMut ? ' m-' + fm : ''}${c.fullArt ? ' fa' : ''}${hzCls}`;
-    const safeName = String(c.name).replace(/"/g, '&quot;');
-    const shinyStyle = hasMut && fm === 'gold' ? '--sh-base:#E0BC6E;--sh-edge:rgba(224,188,110,.95);--sh-glow:rgba(224,188,110,.55)'
-      : hasMut && fm === 'rainbow' ? '--sh-base:#B58CFF;--sh-edge:rgba(90,200,250,.95);--sh-glow:rgba(181,140,255,.55)'
-      : hasMut && fm === 'secret' ? '--sh-base:#A855F7;--sh-edge:rgba(168,85,247,.95);--sh-glow:rgba(168,85,247,.55)'
-      : hasMut && fm === 'ultima' ? '--sh-base:#FF0055;--sh-edge:rgba(255,51,102,.95);--sh-glow:rgba(255,0,85,.6)'
-      : '--sh-base:#22d3ee;--sh-edge:rgba(34,211,238,.95);--sh-glow:rgba(34,211,238,.55)';
-    let nameHtml = '';
-    if (shFx) {
-      nameHtml = `<span class="ixc-name hc-name-top hc-name-shine${hasMut ? ' hc-name-shine-' + fm : ''}" data-text="${safeName}" style="${shinyStyle}">${c.name}</span>`;
-    } else if (hasMut) {
-      nameHtml = `<span class="ixc-name hc-name-top hc-mut-name" data-text="${safeName}">${fm === 'rainbow' || fm === 'ultima' ? mutText(fm, c.name) : c.name}</span>`;
-    } else {
-      nameHtml = `<span class="ixc-name hc-name-top">${c.name}</span>`;
-    }
-    const tags=[];
-    if(shFx)tags.push((typeof shinyStampHtml==='function')?shinyStampHtml(true):'<span class="ix-mtag sh">SHINY</span>');
-    if(hasMut)tags.push((typeof mutStampHtml==='function')?mutStampHtml(fm,true):ixMutTag(fm));
-    const inner=`<img src="${thumbSrc(c.sprite_asset)}" alt="${c.name}" width="360" height="536" decoding="async">
-      ${hzLayers}
-      <span class="ix-count${any?'':' zero'}">×${any}</span>
-      ${tags.length?`<span class="ix-tags">${tags.join("")}</span>`:''}
-      <span class="ixc-stack">${nameHtml}<span class="ixc-chance${hasMut && (fm === 'rainbow' || fm === 'ultima') ? ' ixc-chance-rainbow' : ''}" style="--tc:${chanceColor}"><span class="ixc-chance-text">${chanceHtml}</span></span></span>`;
-    _ixHtml[c.char_id]=inner;
-    const mounted=true;
-    return `<button class="${cls}${mounted?'':' lz-ph'}" type="button" data-lz="${c.char_id}" data-c="${c.char_id}" data-mut="${hasMut ? fm : 'none'}" data-shiny="${shFx ? '1' : '0'}"${lockBoss ? ' title="NOT OWNED YET - buy it in '+lockShop+' to unlock roll"' : ''}>${mounted?inner:''}</button>`;
-  }).join("");
-  /* --- progress + claim --- */
-  const pct=P.total?Math.min(100,Math.round(P.count/P.total*100)):0;
-  const complete=P.total>0&&P.count>=P.total;
-  const next=Math.max(0,IDX_MILESTONE-(P.count%IDX_MILESTONE));
-  const claimable=Math.max(0,P.blocks-P.claimed);
-  const setTxt=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
-  setTxt("ixLevel",(state&&state.playerLv)||1);
-  setTxt("ixTsIndexed",fmt(P.count));
-  setTxt("ixTsTotal",fmt(P.total));
-  setTxt("ixPct",pct+"%");
-  setTxt("ixNext",String(next));
-  setTxt("ixPtext",`${fmt(P.count)} / ${fmt(P.total)} CARDS INDEXED`);
-  const pf=document.getElementById("ixPfill");if(pf)pf.style.width=pct+"%";
-  const cb=document.getElementById("ixClaim");
-  if(cb){
-    cb.classList.toggle("locked",claimable<=0);
-    cb.disabled=claimable<=0;
-    const n=document.getElementById("ixClaimN");if(n)n.textContent="(+"+claimable+")";
-  }
-  /* --- footer: strip progres SEGMENT per mutasi + milestone --- */
-  const t=validCards.length;
-  const segs=IX_MUTS.map(m=>{let n=0;for(const c of validCards)if(ownCnt(c,m,false))n++;
-    return `<i title="${MUT_LABEL[m]||'PURE'} ${n}/${t}" style="--p:${t?Math.round(n/t*100):0}%;--c:${ixMutSwatch(m)}"></i>`;}).join("");
-  const strip=`<span class="ix-f-lbl">VARIANT MATRIX</span>
-    <div class="ix-seg" title="${pct}%">${segs}</div>
-    <div class="ix-f-rw">
-      <img src="assets/images/instanpack-5k.webp?v=trans1" alt="5K Pack" width="24" height="24">
-      <div class="ix-f-rw-t">
-        <span class="ix-f-rw-k">MILESTONE REWARD</span>
-        <span class="ix-f-rw-v">${complete ? "ALL VARIANTS COMPLETE" : `${next} MORE VARIANTS → +1 PACK`}</span>
-      </div>
-    </div>`;
-  document.getElementById("ixToolbar").innerHTML=toolbar;
-  document.getElementById("ixBody").innerHTML=(list.length?"":`<div class="ix-empty">NO MATCHING RECORDS</div>`)+`<div class="ix-grid">${cells}</div>`;
-  lazyMountGrid(document.getElementById("ixBody"),_ixHtml);
-  ixLiveShimmer();
-  document.getElementById("ixFoot").innerHTML=strip;
-  const sel=document.getElementById("ixSort");sel.value=ixState.sort;
-  sel.onchange=()=>{ixState.sort=sel.value;ixRender();};
-  document.querySelectorAll("#ixToolbar .ix-tab[data-mut]").forEach(b=>b.onclick=()=>{ixState.mut=b.dataset.mut;ixRender();});
-  const shb=document.querySelector("#ixToolbar [data-shiny]");if(shb)shb.onclick=()=>{ixState.shiny=!ixState.shiny;ixRender();};
-  const owb=document.querySelector("#ixToolbar [data-owned]");if(owb)owb.onclick=()=>{ixState.owned=!ixState.owned;ixRender();};
-  document.querySelectorAll("#ixBody .ix-cell").forEach(cell=>{
-    cell.onclick=()=>ixSheetOpen(cell.dataset.c,cell.dataset.mut||"none",cell.dataset.shiny==="1");
-  });
-}
 
 
 /* =============== TRAIT ROLL (popup) =============== */
