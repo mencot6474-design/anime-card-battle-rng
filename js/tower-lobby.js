@@ -2514,7 +2514,7 @@ function renderLobby(){
           <button type="button" class="l12-bchip${_w ? " is-on" : ""}" id="l12Wx"
                   data-block="weather" style="--bc:${_w ? _w.color : "#9ca3af"}" title="Weather Dock &amp; Exclusive Cards"
                   onclick="window.l12ToggleDockPanel('weather')">
-            <span class="l12-bchip-ic" id="l12WxIcon">${_w ? ((typeof weatherSvg === "function") ? weatherSvg(_w.id, 15) : "") : ((typeof weatherSvg === "function") ? weatherSvg("sunny", 15) : '<i class="ic i-sun"></i>')}</span>
+            <span class="l12-bchip-ic" id="l12WxIcon"><img id="l12WxImg" src="${(typeof weatherPotionSrc === "function") ? weatherPotionSrc((_w && _w.id) || "clear", true) : "assets/images/thumb/weather-clear.webp?v=1"}" alt="" decoding="async"></span>
             <span class="l12-bchip-txt">
               <span class="l12-bchip-k">WEATHER <span class="tag" id="l12WxRr">${_wRr || "IDLE"}</span></span>
               <span class="l12-bchip-v" id="l12WxName">${_w ? String(_w.name || _wId).toUpperCase() : "CLEAR SKY"}</span>
@@ -2651,9 +2651,15 @@ function l12UpdateWeatherDock(force){
   const lkSub = document.getElementById("l12WxLkSub");
   if (lkSub) lkSub.textContent = curW ? (curW.luckBonus + "× LK") : "IDLE";
 
-  const iconEl = document.getElementById("l12WxIcon");
-  if (iconEl) {
-    iconEl.innerHTML = (typeof weatherSvg === "function") ? weatherSvg(curWxId || "sunny", 15) : '<i class="ic i-sun"></i>';
+  const wxImg = document.getElementById("l12WxImg");
+  const wantWxSrc = (typeof weatherPotionSrc === "function")
+    ? weatherPotionSrc(curWxId || "clear", true)
+    : "assets/images/thumb/weather-clear.webp?v=1";
+  if (wxImg) {
+    if (wxImg.getAttribute("src") !== wantWxSrc) wxImg.setAttribute("src", wantWxSrc);
+  } else {
+    const iconEl = document.getElementById("l12WxIcon");
+    if (iconEl) iconEl.innerHTML = '<img id="l12WxImg" src="' + wantWxSrc + '" alt="" decoding="async">';
   }
 
   if (_l12DockPanel === "weather" && typeof _l12RenderDockPanel === "function") {
@@ -3253,7 +3259,7 @@ function _l12RenderWeatherDockPanel(now) {
       + '</header>'
       + '<div class="hzp-body">'
         + '<div class="wx-hero">'
-          + '<div class="wx-emb">' + ((typeof weatherSvg === "function") ? weatherSvg(curWxId || "sunny", 30) : "") + '</div>'
+          + '<div class="wx-emb"><i class="wx-halo" aria-hidden="true"></i><img class="wx-emb-img" src="' + ((typeof weatherPotionSrc === "function") ? weatherPotionSrc(curWxId || "clear", true) : "assets/images/thumb/weather-clear.webp?v=1") + '" alt="" decoding="async"></div>'
           + '<div class="wx-hinfo">'
             + '<div class="wx-hname"><b>' + wName + '</b><span class="wx-rar">' + wRar + '</span></div>'
             + '<div class="wx-hsub">' + (curW ? "ACTIVE ATMOSPHERIC ANOMALY IN SUMMON POOL" : "NATURAL ROTATION PENDING · OPEN WEATHER MACHINE") + '</div>'

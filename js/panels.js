@@ -83,7 +83,7 @@ function weatherSvg(id, sz=18){
 const WEATHER_POTION_IDS = new Set([
   'awakened','arcane','goofy','glitch','doodle','eclipse',
   'iceage','galactic','aurora','monsoon','sandstorm',
-  'thunderstorm','snowfall','lightrain','windy'
+  'thunderstorm','snowfall','lightrain','windy','clear'
 ]);
 function weatherPotionSrc(id, thumb){
   const file = (id && WEATHER_POTION_IDS.has(id))
@@ -352,7 +352,7 @@ function renderWeatherDock(){
   <div class="wp-compact-head">
     <div class="wp-compact-info">
       <span class="wp-radar-dot" style="background:${w.color};box-shadow:0 0 8px ${w.color}"></span>
-      <span class="wp-ic" style="color:${w.color}">${weatherSvg(w.id, 16)}</span>
+      <span class="wp-ic" style="color:${w.color}"><img src="${weatherPotionSrc(w.id, true)}" alt="" width="18" height="18" decoding="async"></span>
       <span class="wp-name-txt">${w.name}</span>
       <span class="wp-rarity-badge" style="--rc:${w.color}">${w.rar}</span>
     </div>

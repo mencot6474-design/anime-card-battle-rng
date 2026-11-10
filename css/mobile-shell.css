@@ -3248,9 +3248,16 @@ html body.on-lobby:has(.pot-tray.open) #pwaInstallBtn {
   border:1px solid color-mix(in srgb,var(--pac) 48%,transparent);
 }
 #l12PotTray .wx-emb {
-  flex:none; width:54px; height:54px; display:grid; place-items:center;
+  position:relative; flex:none; width:54px; height:54px; display:grid; place-items:center;
   background:#040405; border:1px solid color-mix(in srgb,var(--pac) 60%,transparent); color:var(--pac);
+  overflow:hidden;
 }
+#l12PotTray .wx-emb .wx-halo {
+  position:absolute; inset:0;
+  background:radial-gradient(circle at 50% 48%, var(--pac,#f3e600) 0%, transparent 72%);
+  opacity:.24; pointer-events:none;
+}
+#l12PotTray .wx-emb img { position:relative; z-index:2; width:84%; height:84%; object-fit:contain; display:block; }
 #l12PotTray .wx-emb svg { width:30px; height:30px; display:block; }
 #l12PotTray .wx-hinfo { flex:1 1 160px; min-width:0; display:flex; flex-direction:column; gap:3px; }
 #l12PotTray .wx-hname { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
