@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v552-weatherPotIcons';
+const CACHE_NAME = 'anime-card-battle-v553-wmPotIcons';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

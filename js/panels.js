@@ -80,6 +80,22 @@ function weatherSvg(id, sz=18){
       return `<svg class="w-svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>`;
   }
 }
+const WEATHER_POTION_IDS = new Set([
+  'awakened','arcane','goofy','glitch','doodle','eclipse',
+  'iceage','galactic','aurora','monsoon','sandstorm',
+  'thunderstorm','snowfall','lightrain','windy'
+]);
+function weatherPotionSrc(id, thumb){
+  const file = (id && WEATHER_POTION_IDS.has(id))
+    ? 'assets/images/weather-' + id + '.webp'
+    : 'assets/images/weather-potion.webp';
+  if(thumb && typeof thumbSrc === 'function') return thumbSrc(file) + '?v=1';
+  return file + '?v=1';
+}
+function weatherMachineIconHtml(id){
+  return '<i class="wm-halo" aria-hidden="true"></i>' +
+    '<img class="wm-pot-img" src="' + weatherPotionSrc(id, true) + '" alt="" decoding="async">';
+}
 /* Rank 0..N berdasar dropWeight ASC (paling langka = rank 0 = paling BAGUS). Dipakai buat stat weatherBest (cuaca terbaik pernah) + banding hasil gacha potion (rank hasil <= rank aktif = pindah + reset timer; lebih = cuaca tetep). */
 function weatherRank(id){const s=[...WEATHERS].sort((a,b)=>a.dropWeight-b.dropWeight);return s.findIndex(w=>w.id===id);}
 function betterWeather(a,b){if(!a)return b;if(!b)return a;return weatherRank(a)<=weatherRank(b)?a:b;}
@@ -4180,7 +4196,7 @@ function wmRailRow(w){
   const on = wmAutoTarget === w.id;
   const bar = Math.min(100, Math.max(2, (w.dropWeight / 3511) * 100));
   return '<div class="tsr-row' + (on ? ' on' : '') + (own ? ' active' : '') + '" data-wid="' + w.id + '" style="--tcol:' + w.color + '" role="button" tabindex="0" aria-pressed="' + on + '">' +
-    '<span class="tsr-gem">' + weatherSvg(w.id, 22) + '</span>' +
+    '<span class="tsr-gem" aria-hidden="true">' + weatherMachineIconHtml(w.id) + '</span>' +
     '<span class="tsr-name">' + w.name + '<span class="tsr-rar">' + w.rar + '</span>' + (own ? '<span class="tsr-cur">ACTIVE</span>' : '') + '</span>' +
     '<span class="tsr-chance">' + wmPct(w) + '<small>' + wmOddsLabel(w) + '</small></span>' +
     '<span class="tsr-stats">LUCK <b>×' + w.luckBonus + '</b> · SPEED <b>×' + w.speedBonus + '</b></span>' +
@@ -4324,10 +4340,24 @@ function wmPaintState(){
   set('wmCardCode', 'WEATHER · ' + cur.rar);
   set('wmKickCode', 'CORE // ' + cur.rar);
   set('wmNote', wmNoteText());
+  const card = document.getElementById('wmCard');
+  if(card) card.style.setProperty('--tcol', cur.color);
+  const cardImg = document.getElementById('wmCardImg');
+  if(cardImg){
+    const nextSrc = weatherPotionSrc(aw, false);
+    if(cardImg.getAttribute('src') !== nextSrc) cardImg.setAttribute('src', nextSrc);
+    cardImg.alt = cur.name;
+  }
   const plate = document.getElementById('wmPlate');
   if(plate) plate.style.setProperty('--tcol', cur.color);
   const gem = document.getElementById('wmGem');
-  if(gem) gem.innerHTML = weatherSvg(aw || 'windy', 30);
+  if(gem){
+    const gemKey = aw || 'idle';
+    if(gem.dataset.wid !== gemKey){
+      gem.dataset.wid = gemKey;
+      gem.innerHTML = weatherMachineIconHtml(aw);
+    }
+  }
   const stats = document.getElementById('wmStats');
   if(stats) stats.innerHTML = wmStatsHtml(cur);
   set('wmPityR', fmt(pl.r) + ' SYNTHESIS');
@@ -4431,12 +4461,12 @@ function renderWeatherMachine(){
         '<section class="ts-left" aria-label="Atmospheric node">' +
           '<div class="ts-kicker"><i></i><b>ATMOSPHERIC NODE</b><span>·</span><span id="wmKickCode">CORE // ' + cur.rar + '</span></div>' +
           '<div class="ts-subject">' +
-            '<div class="ts-card ts-weather-card" id="wmCard" title="Weather Potion supply">' +
+            '<div class="ts-card ts-weather-card" id="wmCard" style="--tcol:' + cur.color + '" title="Weather Potion supply">' +
               '<span class="ts-corner tl"></span><span class="ts-corner tr"></span>' +
               '<span class="ts-corner bl"></span><span class="ts-corner br"></span>' +
               '<span class="ts-card-hint">LIVE CLIMATE</span>' +
               '<span class="ts-card-scan"></span>' +
-              '<img id="wmCardImg" src="assets/images/weather-potion.webp?v=1" alt="Weather Potion" loading="lazy" decoding="async">' +
+              '<img id="wmCardImg" src="' + weatherPotionSrc(aw, false) + '" alt="' + cur.name + '" decoding="async">' +
               '<div class="ts-card-meta"><div>' +
                 '<div class="ts-card-name" id="wmCardName">' + cur.name + '</div>' +
                 '<div class="ts-card-code" id="wmCardCode">WEATHER · ' + cur.rar + '</div>' +
@@ -4445,7 +4475,7 @@ function renderWeatherMachine(){
 
             '<div class="ts-traitplate" id="wmPlate" style="--tcol:' + cur.color + '">' +
               '<div class="ts-tp-top">' +
-                '<span class="ts-tp-gem" id="wmGem">' + weatherSvg(aw || 'windy', 30) + '</span>' +
+                '<span class="ts-tp-gem" id="wmGem" data-wid="' + (aw || 'idle') + '" aria-hidden="true">' + weatherMachineIconHtml(aw) + '</span>' +
                 '<span class="ts-tp-name" id="wmName">' + cur.name + '</span>' +
                 '<span class="ts-tp-rar" id="wmRar">' + cur.rar + '</span>' +
               '</div>' +
