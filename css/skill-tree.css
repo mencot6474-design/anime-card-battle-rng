@@ -80,18 +80,14 @@ body:has(#skillModal.show) .lobby-tactical-hud {
 #skillModal button:focus-visible { outline: 2px solid var(--haz); outline-offset: 2px; }
 #skillModal svg { display: block; }
 
-/* Ikon memakai aset proyek (assets/icons) lewat CSS mask: warnanya ikut
-   currentColor dan tidak ada <img> per node (nol request gambar baru). */
-#skillModal .sk-ico {
-  display: inline-block;
+/* Ikon 2.5D WebP (assets/icons/skill-tree/*.webp): penuh warna, ikut skala kotak induknya. */
+#skillModal .sk-ico-img {
+  display: block;
   flex: none;
-  background-color: currentColor;
-  -webkit-mask-position: center;
-  mask-position: center;
-  -webkit-mask-size: contain;
-  mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  transition: opacity .16s ease, filter .16s ease, transform .16s ease;
 }
 
 
@@ -246,11 +242,13 @@ body:has(#skillModal.show) .lobby-tactical-hud {
   clip-path:polygon(0 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
 }
 .sk-path-ic{
-  flex:none; width:28px; height:28px; display:grid; place-items:center;
-  color:var(--pc); background:rgba(255,255,255,.03);
+  flex:none; width:30px; height:30px; display:grid; place-items:center;
+  color:var(--pc); background:#090a0f;
   box-shadow:inset 0 0 0 1px currentColor;
 }
-.sk-path.on .sk-path-ic{ color:#000; background:rgba(0,0,0,.08); box-shadow:inset 0 0 0 1px rgba(0,0,0,.5); }
+.sk-path-ic .sk-ico-img{ width:82%; height:82%; }
+.sk-path:hover .sk-path-ic .sk-ico-img{ transform:scale(1.06); }
+.sk-path.on .sk-path-ic{ color:var(--pc); background:#090a0f; box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.86); }
 .sk-path-tx{ flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:3px; }
 .sk-path-n{
   font-family:var(--f-head); font-size:10px; letter-spacing:.1em;
@@ -331,38 +329,55 @@ body:has(#skillModal.show) .lobby-tactical-hud {
   position:absolute; width:60px; height:60px;
   transform:translate(-50%,-50%);
   border-radius:50%; display:grid; place-items:center;
-  background:#0a0a0a; color:rgba(245,245,245,.55);
+  background:#0a0a0d; color:rgba(245,245,245,.55);
   box-shadow:inset 0 0 0 1px rgba(245,245,245,.26);
   transition:box-shadow .16s ease, color .16s ease, background-color .16s ease, opacity .18s ease;
 }
+.sk-node .sk-ico-img{ position:relative; z-index:1; width:42px; height:42px; }
 .sk-node::after{ content:''; position:absolute; inset:-9px; border-radius:50%; }
-.sk-node.avail{ color:var(--nc); background:#0c0c0c; box-shadow:inset 0 0 0 2px var(--nc); }
-.sk-node.owned{
-  color:#000; background:var(--nc);
-  box-shadow:0 0 0 2px rgba(5,5,5,.92), 0 0 0 4px rgba(245,245,245,.16);
+.sk-node.avail{
+  color:var(--nc);
+  background:#0c0c10;
+  background:radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--nc) 18%, #0d0d12) 0%, #09090d 74%);
+  box-shadow:inset 0 0 0 2px var(--nc), 0 0 0 3px rgba(5,5,5,.86);
 }
+.sk-node.owned{
+  color:var(--nc);
+  background:#141418;
+  background:radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--nc) 42%, #181820) 0%, color-mix(in srgb, var(--nc) 16%, #08080c) 76%);
+  box-shadow:inset 0 0 0 2.5px var(--nc), 0 0 0 2px rgba(5,5,5,.94), 0 0 0 5px color-mix(in srgb, var(--nc) 52%, transparent);
+}
+.sk-node.owned .sk-ico-img{ filter:drop-shadow(0 2px 6px rgba(0,0,0,.65)); }
 .sk-node.locked{
   color:rgba(245,245,245,.28);
   background-color:#0a0a0a;
   background-image:repeating-linear-gradient(135deg, rgba(245,245,245,.05) 0 4px, transparent 4px 9px);
   box-shadow:inset 0 0 0 1px rgba(245,245,245,.14);
 }
-.sk-node.sel{ box-shadow:inset 0 0 0 2px var(--haz), 0 0 0 7px rgba(243,230,0,.16); color:var(--haz); background:#0d0d0d; }
+.sk-node.locked .sk-ico-img{ opacity:.56; filter:grayscale(.86) brightness(.58); }
+.sk-node.sel{ box-shadow:inset 0 0 0 2px var(--haz), 0 0 0 7px rgba(243,230,0,.18); color:var(--haz); background:#0d0d12; }
 .sk-node.owned.sel{
-  color:#000; background:var(--nc);
-  box-shadow:inset 0 0 0 2px rgba(5,5,5,.8), 0 0 0 3px var(--haz), 0 0 0 8px rgba(243,230,0,.18);
+  color:var(--nc);
+  background:#16161c;
+  background:radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--nc) 48%, #1c1c24) 0%, color-mix(in srgb, var(--nc) 18%, #08080c) 76%);
+  box-shadow:inset 0 0 0 2.5px var(--nc), 0 0 0 3px var(--haz), 0 0 0 8px rgba(243,230,0,.22);
 }
 /* node di luar path aktif: diredupkan lewat warna, BUKAN opacity — opacity
    membuat latarnya transparan sehingga garis path menembus lingkarannya. */
-.sk-node.dim{
+.sk-node.dim,
+.sk-node.owned.dim,
+.sk-node.avail.dim,
+.sk-node.locked.dim{
   color:rgba(245,245,245,.16);
-  background-color:#080808;
-  box-shadow:inset 0 0 0 1px rgba(245,245,245,.07);
+  background:#08080a;
+  background-image:none;
+  box-shadow:inset 0 0 0 1px rgba(245,245,245,.08);
 }
+.sk-node.dim .sk-ico-img{ opacity:.22; filter:grayscale(.92) brightness(.45); }
 .sk-node.dim .sk-node-t{ box-shadow:inset 0 0 0 1px rgba(245,245,245,.1); color:rgba(245,245,245,.2); background:#050505; }
 .sk-node.dim .sk-node-lb{ color:rgba(245,245,245,.16); }
 .sk-node-t{
-  position:absolute; right:-4px; top:-4px; width:18px; height:18px;
+  position:absolute; right:-4px; top:-4px; width:18px; height:18px; z-index:2;
   display:grid; place-items:center; transform:rotate(45deg);
   background:#050505; box-shadow:inset 0 0 0 1px var(--nc);
   font-family:var(--f-mono); font-size:7px; color:var(--nc);
@@ -389,7 +404,8 @@ body:has(#skillModal.show) .lobby-tactical-hud {
   content:''; position:absolute; inset:9px; border-radius:50%;
   border:1px dashed rgba(243,230,0,.34);
 }
-.sk-core-ic{ color:var(--haz); }
+.sk-core-ic{ position:relative; z-index:1; display:grid; place-items:center; color:var(--haz); }
+.sk-core-ic .sk-ico-img{ width:66px; height:66px; }
 .sk-core-t{
   position:absolute; left:50%; top:calc(100% + 12px); transform:translateX(-50%);
   display:flex; flex-direction:column; align-items:center; gap:2px;
@@ -420,8 +436,10 @@ body:has(#skillModal.show) .lobby-tactical-hud {
   position:relative; width:92px; height:92px; display:grid; place-items:center;
   border-radius:50%; color:var(--dc);
   background:radial-gradient(circle at 50% 40%, #171717 0%, #060606 70%);
+  background:radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--dc, #f3e600) 18%, #17171d) 0%, #060609 72%);
   box-shadow:inset 0 0 0 1px rgba(245,245,245,.22), 0 0 0 6px rgba(5,5,5,.9), 0 0 0 7px rgba(245,245,245,.14);
 }
+.sk-dicon .sk-ico-img{ position:relative; z-index:1; width:66%; height:66%; }
 .sk-dicon::before{
   content:''; position:absolute; inset:8px; border-radius:50%;
   border:1px dashed rgba(245,245,245,.22);
@@ -512,7 +530,8 @@ body:has(#skillModal.show) .lobby-tactical-hud {
   align-items:center; justify-content:center; gap:10px; text-align:center;
   color:rgba(245,245,245,.34);
 }
-.sk-dempty .ic{ color:rgba(245,245,245,.22); }
+.sk-dempty .ic{ display:grid; place-items:center; color:rgba(245,245,245,.22); }
+.sk-dempty .ic .sk-ico-img{ width:54px; height:54px; opacity:.75; }
 .sk-dempty b{ font-family:var(--f-head); font-size:11px; letter-spacing:.18em; color:rgba(245,245,245,.5); }
 .sk-dempty span{ font-family:var(--f-mono); font-size:6.5px; letter-spacing:.16em; }
 

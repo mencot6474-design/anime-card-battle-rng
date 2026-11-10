@@ -34,9 +34,9 @@
   };
 
   var PATHS = [
-    { id: 'luck',    name: 'LUCK',    tag: 'FORTUNE MATRIX',   color: 'var(--p-luck)',  icon: 'luck' },
-    { id: 'speed',   name: 'SPEED',   tag: 'TEMPO MATRIX',     color: 'var(--p-speed)', icon: 'speed' },
-    { id: 'booster', name: 'BOOSTER', tag: 'RESONANCE MATRIX', color: 'var(--p-boost)', icon: 'booster' }
+    { id: 'luck',    name: 'LUCK',    tag: 'FORTUNE MATRIX',   color: 'var(--p-luck)',  icon: 'path-luck' },
+    { id: 'speed',   name: 'SPEED',   tag: 'TEMPO MATRIX',     color: 'var(--p-speed)', icon: 'path-speed' },
+    { id: 'booster', name: 'BOOSTER', tag: 'RESONANCE MATRIX', color: 'var(--p-boost)', icon: 'path-booster' }
   ];
 
   /* nama English (produksi: FONDASI + nama node sudah English) */
@@ -62,20 +62,26 @@
     bst5:  'Peak of the booster branch. +100 flat luck, +50% multiplier.'
   };
 
-  /* Ikon = aset proyek, dipakai lewat CSS mask (warna ikut currentColor). */
+  /* Ikon 2.5D WebP (assets/icons/skill-tree/*.webp):
+     3 crest path + 15 ikon node unik bertingkat (tier 1..5) + synapse core. */
+  var SK_ICON_VER = 'v1-skIcons';
   var ICONS = {
-    luck:    'assets/icons/clover.svg',
-    speed:   'assets/icons/lightning-trio.svg',
-    booster: 'assets/icons/sparkles.svg',
-    core:    'assets/icons/portal.svg',
-    lock:    'assets/icons/padlock.svg'
+    'path-luck':    'path-luck.webp',
+    'path-speed':   'path-speed.webp',
+    'path-booster': 'path-booster.webp',
+    core:           'core.webp',
+    lk1:  'lk1.webp',  lk2:  'lk2.webp',  lk3:  'lk3.webp',  lk4:  'lk4.webp',  lk5:  'lk5.webp',
+    sp1:  'sp1.webp',  sp2:  'sp2.webp',  sp3:  'sp3.webp',  sp4:  'sp4.webp',  sp5:  'sp5.webp',
+    bst1: 'bst1.webp', bst2: 'bst2.webp', bst3: 'bst3.webp', bst4: 'bst4.webp', bst5: 'bst5.webp'
   };
-  function iconStyle(key) {
-    var u = 'url(' + ICONS[key] + ')';
-    return '-webkit-mask:' + u + ' center/contain no-repeat;mask:' + u + ' center/contain no-repeat;';
+  function nodeIconKey(n) {
+    if (n && ICONS[n.id]) return n.id;
+    return n ? (pathOf(n.branch).icon || 'core') : 'core';
   }
-  function icon(key, size) {
-    return '<span class="sk-ico" style="' + iconStyle(key) + 'width:' + (size || 18) + 'px;height:' + (size || 18) + 'px"></span>';
+  function icon(key, size, cls) {
+    var file = ICONS[key] || ICONS.core;
+    var s = size || 24;
+    return '<img class="sk-ico-img' + (cls ? ' ' + cls : '') + '" src="assets/icons/skill-tree/' + file + '?v=' + SK_ICON_VER + '" width="' + s + '" height="' + s + '" alt="" aria-hidden="true" decoding="async" draggable="false">';
   }
 
   /* ---------- geometri panggung (design px) ----------
@@ -175,7 +181,7 @@
       h += '<button type="button" class="sk-path' + (on ? ' on' : '') + '" data-path="' + p.id + '" '
         + 'style="--pc:' + p.color + '" aria-pressed="' + on + '" aria-label="' + p.name + ' path, '
         + got + ' of ' + tot + ' learned">'
-        + '<span class="sk-path-ic">' + icon(p.icon, 15) + '</span>'
+        + '<span class="sk-path-ic">' + icon(p.icon, 24) + '</span>'
         + '<span class="sk-path-tx">'
         +   '<span class="sk-path-n">' + p.name + '</span>'
         +   '<span class="sk-path-bar"><i style="transform:scaleX(' + (pct / 100) + ')"></i></span>'
@@ -270,7 +276,7 @@
       h += '<button type="button" class="' + cls + '" data-node="' + n.id + '" '
         + 'style="--nc:' + pth.color + ';left:' + p[0] + 'px;top:' + p[1] + 'px" '
         + 'aria-label="' + nameOf(n) + ' — ' + st + '">'
-        + icon(pth.icon, 22)
+        + icon(nodeIconKey(n), 42)
         + '<span class="sk-node-t"><b>' + (n.tier || 0) + '</b></span>'
         + '<span class="sk-node-lb">' + nameOf(n) + '</span>'
         + '</button>';
@@ -297,7 +303,7 @@
     if (n) { host.innerHTML = nodeDetailHtml(n); bindDetail(); return; }
     if (SK.sel === 'path' && SK.path) { host.innerHTML = pathDetailHtml(pathOf(SK.path)); bindDetail(); return; }
     host.innerHTML = '<div class="sk-dempty">'
-      + '<span class="ic">' + icon('core', 40) + '</span>'
+      + '<span class="ic">' + icon('core', 54) + '</span>'
       + '<b>SELECT A TALENT</b>'
       + '<span>CLICK ANY NODE IN THE MATRIX TO INSPECT IT</span>'
       + '</div>';
@@ -337,7 +343,7 @@
       + '</div>';
 
     return '<div class="sk-dhero" style="--dc:' + col + '">'
-      + '<div class="sk-dicon">' + icon(pth.icon, 38) + '</div>'
+      + '<div class="sk-dicon">' + icon(nodeIconKey(n), 60) + '</div>'
       + '<div class="sk-dhd">'
       +   '<div class="sk-dname">' + nameOf(n) + '</div>'
       +   '<div class="sk-dbadges"><span class="sk-db">' + pth.name + '</span>'
@@ -368,7 +374,7 @@
       : 'Unlocks once both branches reach tier 5. Raw luck amplification.';
 
     return '<div class="sk-dhero" style="--dc:' + p.color + '">'
-      + '<div class="sk-dicon">' + icon(p.icon, 38) + '</div>'
+      + '<div class="sk-dicon">' + icon(p.icon, 60) + '</div>'
       + '<div class="sk-dhd">'
       +   '<div class="sk-dname">' + p.name + '</div>'
       +   '<div class="sk-dbadges"><span class="sk-db">PATH</span>'
@@ -586,6 +592,8 @@
   /* ------------------------------ render all --------------------------- */
   function renderAll() {
     var spv = el('skSpVal'); if (spv) spv.textContent = spNow();
+    var coreIc = el('skCoreIc');
+    if (coreIc && !coreIc.firstChild) coreIc.innerHTML = icon('core', 66);
     var coreSub = el('skCoreSub');
     if (coreSub) coreSub.textContent = 'LEARNED ' + totalOwned() + ' / ' + allNodes().length;
 
