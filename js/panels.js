@@ -265,7 +265,7 @@ window.l12UsePotionQuick = function(type, lv){
     if(typeof beep === "function") beep(560, 0.12, "triangle", 0.09);
     const pName = isLuck ? "LUCK POTION L" + lv : "SPEED POTION L" + lv;
     const pDetail = isLuck ? ("+" + (r.flat||0) + " FLAT" + (r.pct ? " & +" + Math.round(r.pct*100) + "%" : "") + " (+5 MENIT)") : ("+" + (r.add||0).toFixed(1) + "x SPEED (+5 MENIT)");
-    if(typeof toast === "function") toast(pName + " DIAKTIFKAN", pDetail, "#38bdf8");
+    if(typeof toast === "function") toast(pName +  " ACTIVATED", pDetail, "#38bdf8");
     if(typeof renderBuffDock === "function") renderBuffDock();
     if(typeof renderShell === "function") renderShell();
     return r;
@@ -426,37 +426,24 @@ function renderBuffDock(){
   el.classList.add("show");
 }
 function toast(main,sub,color){
-  const t=document.getElementById("weatherToast");if(!t)return;
+  /* Hazard notification stack (js/notify-hazard.js). Legacy signature kept: toast(main, sub, color). */
   const col=color||"#38bdf8";
-  t.style.setProperty("--wdc",col);
-  t.style.zIndex = "200000";
-
   try {
     if(typeof sfx!=="undefined"&&sfx&&typeof sfx.pop==="function") sfx.pop();
     else if(typeof beep==="function") beep(620,.08,"sine",.04);
   } catch(e) {}
-
-  t.innerHTML=`
-    <div class="cp-toast-frame" style="position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;min-width:180px;">
-      <span class="cp-toast-corner tl" style="position:absolute;top:-2px;left:-2px;width:6px;height:6px;border-top:2px solid var(--wdc,${col});border-left:2px solid var(--wdc,${col});pointer-events:none;"></span>
-      <span class="cp-toast-corner tr" style="position:absolute;top:-2px;right:-2px;width:6px;height:6px;border-top:2px solid var(--wdc,${col});border-right:2px solid var(--wdc,${col});pointer-events:none;"></span>
-      <span class="cp-toast-corner bl" style="position:absolute;bottom:-2px;left:-2px;width:6px;height:6px;border-bottom:2px solid var(--wdc,${col});border-left:2px solid var(--wdc,${col});pointer-events:none;"></span>
-      <span class="cp-toast-corner br" style="position:absolute;bottom:-2px;right:-2px;width:6px;height:6px;border-bottom:2px solid var(--wdc,${col});border-right:2px solid var(--wdc,${col});pointer-events:none;"></span>
-      <div class="cp-toast-scanline" style="position:absolute;inset:0;background:linear-gradient(rgba(18,28,38,0) 50%, rgba(0,0,0,0.25) 50%), linear-gradient(90deg, rgba(255,0,0,0.03), rgba(0,255,0,0.01), rgba(0,0,255,0.03));background-size:100% 2px, 3px 100%;pointer-events:none;opacity:0.6;"></div>
-      <div class="cp-toast-tag" style="display:inline-flex;align-items:center;gap:5px;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:800;letter-spacing:0.12em;color:var(--wdc,${col});text-transform:uppercase;opacity:0.95;">
-        <span class="cp-toast-dot" style="display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--wdc,${col});box-shadow:0 0 6px var(--wdc,${col});"></span>
-        <span>SYSTEM // NOTIFICATION</span>
-      </div>
-      <div class="cp-toast-main" style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;letter-spacing:0.04em;color:#fff;line-height:1.2;text-transform:uppercase;">${main}</div>
-      ${sub ? `<div class="cp-toast-sub" style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.02em;color:#94a3b8;line-height:1.25;margin-top:2px;">${sub}</div>` : ''}
-    </div>
-  `;
-  t.classList.add("show","cp-toast");
-  if(toast._tm) clearTimeout(toast._tm);
-  const dur = (sub && String(sub).length > 30) ? 2800 : 2300;
-  toast._tm = setTimeout(() => {
-    t.classList.remove("show");
-  }, dur);
+  if(typeof window.hzNotify!=="function")return;
+  const html=/^\s*</.test(String(main));
+  const plain=html?String(main).replace(/<[^>]*>/g,"").trim():String(main);
+  window.hzNotify({
+    kind:window.hzKindOf?window.hzKindOf(col):"info",
+    color:col,
+    title:html?main:plain,
+    html:html,
+    msg:sub?String(sub).replace(/<[^>]*>/g,""):"",
+    key:"t:"+plain+"|"+(sub||""),
+    dur:(sub&&String(sub).length>30)?4200:3400
+  });
 }
 
 /* ====== ANIMASI BROADCAST GLOBAL (GLOBAL LUCK & WEATHER INSTAN) ======
@@ -482,70 +469,21 @@ function showGlobalEventBroadcast(opts) {
   const eventKey = opts.key || "";
   if (eventKey && _hasSeenGlobalBroadcast(eventKey)) return;
   if (eventKey) _markGlobalBroadcastSeen(eventKey);
-
-  const color = opts.color || "#38bdf8";
-  const badge = opts.badge || "SERVER EVENT · GLOBAL BROADCAST";
-  const title = opts.title || "GLOBAL BUFF ACTIVATED";
-  const buyer = String(opts.buyer || "HUNTER").toUpperCase();
-  const effect = opts.effect || "";
-  const iconHtml = opts.iconHtml || "";
-
-  let host = document.getElementById("globalBroadcastHost");
-  if (!host) {
-    host = document.createElement("div");
-    host.id = "globalBroadcastHost";
-    document.body.appendChild(host);
-  }
-  if (host._hideTm) clearTimeout(host._hideTm);
-  if (host._rmTm) clearTimeout(host._rmTm);
-
-  const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-
-  host.innerHTML = `
-    <div class="gbcast-overlay" style="--gbc:${color}">
-      <div class="gbcast-flash"></div>
-      <div class="gbcast-rays"></div>
-      <div class="gbcast-banner">
-        <div class="gbcast-scan"></div>
-        <div class="gbcast-corner tl"></div>
-        <div class="gbcast-corner tr"></div>
-        <div class="gbcast-corner bl"></div>
-        <div class="gbcast-corner br"></div>
-        <div class="gbcast-badge"><span class="gbcast-dot"></span>${esc(badge)}</div>
-        <div class="gbcast-main-row">
-          <div class="gbcast-ic">${iconHtml}</div>
-          <div class="gbcast-texts">
-            <div class="gbcast-title">${esc(title)}</div>
-            <div class="gbcast-buyer">DIBELI & DIAKTIFKAN OLEH <b class="gbcast-buyer-name">${esc(buyer)}</b></div>
-          </div>
-        </div>
-        ${effect ? `<div class="gbcast-effect">${effect}</div>` : ""}
-      </div>
-    </div>
-  `;
-
-  try {
-    beep(523.25, 0.14, "triangle", 0.11);
-    setTimeout(() => beep(659.25, 0.16, "triangle", 0.12), 110);
-    setTimeout(() => beep(783.99, 0.18, "triangle", 0.13), 220);
-    setTimeout(() => beep(1046.5, 0.28, "triangle", 0.14), 340);
-  } catch (e) {}
-
-  const ov = host.querySelector(".gbcast-overlay");
-  if (ov) {
-    ov.onclick = () => {
-      ov.classList.add("gbcast-out");
-      setTimeout(() => { host.innerHTML = ""; }, 350);
-    };
-  }
-
-  host._hideTm = setTimeout(() => {
-    const el = host.querySelector(".gbcast-overlay");
-    if (el) el.classList.add("gbcast-out");
-  }, 4400);
-  host._rmTm = setTimeout(() => {
-    host.innerHTML = "";
-  }, 4850);
+  if (typeof window.hzCinematic !== "function") return;
+  const isLuck = opts.kind === "luck";
+  const WX_PARTICLES = { monsoon:"rain", lightrain:"rain", thunderstorm:"storm", sandstorm:"sand", windy:"sand", snowfall:"snow", iceage:"snow", aurora:"aurora" };
+  window.hzCinematic({
+    kind: isLuck ? "luck" : (WX_PARTICLES[opts.weatherId] || "luck"),
+    color: opts.color || (isLuck ? "#f3e600" : "#38bdf8"),
+    kick: isLuck ? "// PREMIUM <b>GLOBAL LUCK</b> ACTIVATED" : "// PREMIUM <b>WEATHER POTION</b> ACTIVATED",
+    name: opts.name || opts.title || "GLOBAL BUFF",
+    mult: opts.mult || "",
+    sub: opts.sub || "",
+    buyer: opts.buyer || "HUNTER",
+    foot: isLuck ? "LUCK ONLINE" : "WEATHER SYNC",
+    iconHtml: opts.iconHtml || "",
+    chips: isLuck ? (opts.chips || "") : ""
+  });
 }
 window.showGlobalEventBroadcast = showGlobalEventBroadcast;
 let weatherTickStarted=false;
@@ -594,14 +532,14 @@ async function syncGlobalWeather(silent){
               key: wKey,
               color: wDef.color || "#38bdf8",
               badge: "SERVER EVENT · INSTANT WEATHER",
-              title: "CUACA " + wDef.name + " DIAKTIFKAN!",
+              kind: "weather", weatherId: wDef.id, name: wDef.name, mult: wDef.luckBonus + "\u00d7 LUCK \u00b7 " + wDef.speedBonus + "\u00d7 SPEED", sub: "SERVER-WIDE FOR 30 MINUTES", title: wDef.name + " ACTIVATED!",
               buyer: gw.activated_by,
               effect: `SERVER-WIDE BUFF: <b>${wDef.luckBonus}× LUCK</b> & <b>${wDef.speedBonus}× ROLL SPEED</b> FOR 30 MINUTES!`,
               iconHtml: weatherSvg(wDef.id, 42)
             });
           }
         }else if(!silent&&prevId!==gw.id){
-          toast(`<span style="display:inline-flex;align-items:center;gap:8px">${weatherSvg(wDef.id,22)} ${wDef.name}</span>`,"ROTASI CUACA SERVER · 30 MENIT",wDef.color);
+          toast(`<span style="display:inline-flex;align-items:center;gap:8px">${weatherSvg(wDef.id,22)} ${wDef.name}</span>`,"SERVER WEATHER ROTATION · 30 MIN",wDef.color);
           beep(520,.14,"sine",.06);setTimeout(()=>beep(700,.16,"sine",.06),130);
         }
         return wDef;
@@ -879,7 +817,7 @@ async function claimIndexReward(){
     }
     const gain=Math.max(1,Number(r.gain)||1);
     beep(640,.16,"triangle",.09);setTimeout(()=>beep(960,.22,"triangle",.08),120);
-    toast("INDEX REWARD DIKLAIM!","+"+gain+" INSTANT ROLL 5.000 PACK · CHECK BACKPACK","#FFD700");
+    toast("INDEX REWARD CLAIMED!","+"+gain+" INSTANT ROLL 5.000 PACK · CHECK BACKPACK","#FFD700");
     if(typeof ixRender==="function")ixRender();
     return;
   }
@@ -895,7 +833,7 @@ async function claimIndexReward(){
   state.rollPacks.r5k=(state.rollPacks.r5k||0)+gain;
   save();
   beep(640,.16,"triangle",.09);setTimeout(()=>beep(960,.22,"triangle",.08),120);
-  toast("INDEX REWARD DIKLAIM!","+"+gain+" INSTANT ROLL 5.000 PACK · CHECK BACKPACK","#FFD700");
+  toast("INDEX REWARD CLAIMED!","+"+gain+" INSTANT ROLL 5.000 PACK · CHECK BACKPACK","#FFD700");
   if(typeof ixRender==="function")ixRender();
 }
 window.claimIndexReward=claimIndexReward;
@@ -1004,7 +942,7 @@ function srWarn(){
   /* Jangan toast tiap tick — satu peringatan per beberapa detik cukup. */
   if (Date.now() - SRoll.warnAt < 6000) return;
   SRoll.warnAt = Date.now();
-  if (typeof toast === "function") toast("SERVER ROLL SIBUK", "Sambungan ke server terputus — roll dijeda sebentar.", "#f87171");
+  if (typeof toast === "function") toast("SERVER ROLL BUSY", "Sambungan ke server terputus — roll dijeda sebentar.", "#f87171");
 }
 /* Isi antrean sampai >= min. Fire-and-forget untuk tick yang lagi jalan; di-await
    untuk roll manual pertama. Return promise<boolean> = apakah hasil tersedia.
@@ -1443,7 +1381,7 @@ window.onStatCardClick = function(key, encodedInfo) {
   if (typeof showToast === 'function') {
     showToast(info);
   } else if (typeof toast === 'function') {
-    toast("TELEMETRI " + key.toUpperCase(), info, "#38bdf8");
+    toast("TELEMETRY " + key.toUpperCase(), info, "#38bdf8");
   }
 };
 
@@ -2837,7 +2775,7 @@ function bpUsePotion(){
     if(r.kept)kept++;else{switches++;if(!best||r.weather.dropWeight<best.dropWeight)best=r.weather;}
   }
   if(!done){
-    toast("Potion habis","GAK ADA POTION","#f87171");
+    toast("Out of potions","NO POTIONS LEFT","#f87171");
     return;
   }
   if(n>1){
@@ -2858,18 +2796,18 @@ function bpUseLuckPotion(lv,all){
   const cnt=(state.luckPots&&state.luckPots[lv-1])||0;
   const n=all==='all'?cnt:1;
   const r=useLuckPotion(lv,n);
-  if(!r.ok){toast("Potion habis","GAK ADA POTION","#f87171");return;}
+  if(!r.ok){toast("Out of potions","NO POTIONS LEFT","#f87171");return;}
   beep(560,.14,"triangle",.09);setTimeout(()=>beep(820,.14,"triangle",.08),110);
-  toast("LUCK POTION L"+lv+(n>1?" ×"+n:""),"+"+r.flat+" LUCK"+(r.pct?" · +"+Math.round(r.pct*100)+"%":"")+" · "+Math.round(r.ms/60000)+" MENIT","#5eead4");
+  toast("LUCK POTION L"+lv+(n>1?" ×"+n:""),"+"+r.flat+" LUCK"+(r.pct?" · +"+Math.round(r.pct*100)+"%":"")+" · "+Math.round(r.ms/60000)+" MIN","#5eead4");
   bpItemPopClose();renderShell();renderBackpackPanel();
 }
 function bpUseSpeedPotion(lv,all){
   const cnt=(state.speedPots&&state.speedPots[lv-1])||0;
   const n=all==='all'?cnt:1;
   const r=useSpeedPotion(lv,n);
-  if(!r.ok){toast("Potion habis","GAK ADA POTION","#f87171");return;}
+  if(!r.ok){toast("Out of potions","NO POTIONS LEFT","#f87171");return;}
   beep(720,.14,"square",.08);setTimeout(()=>beep(980,.14,"square",.07),110);
-  toast("SPEED POTION L"+lv+(n>1?" ×"+n:""),"SPEED +"+r.add.toFixed(1)+"× · "+Math.round(r.ms/60000)+" MENIT","#fcd34d");
+  toast("SPEED POTION L"+lv+(n>1?" ×"+n:""),"SPEED +"+r.add.toFixed(1)+"× · "+Math.round(r.ms/60000)+" MIN","#fcd34d");
   bpItemPopClose();renderShell();renderBackpackPanel();
 }
 /* Pakai INTAN ROLL 100K: tarik 100.000 roll sekaligus (×N paket), lalu tampilkan ringkasan loot.
@@ -2880,7 +2818,7 @@ function bpUseSpeedPotion(lv,all){
 async function bpUseIntanRoll(n){
   n=Math.max(1,parseInt(n,10)||1);
   const owned=state.intanRolls||0;
-  if(owned<1){toast("INTAN ROLL habis","GAK ADA ITEM","#f87171");return;}
+  if(owned<1){toast("INTAN ROLL EMPTY","NO ITEMS LEFT","#f87171");return;}
   const use=Math.min(n,owned);
   bpItemPopClose();
   let pulls=100000*use, spent=use;
@@ -2888,7 +2826,7 @@ async function bpUseIntanRoll(n){
     const r=await CloudDB.spendIntan(currentUser,use);
     if(!r||!r.ok){
       const msg=!r?"KONEKSI KE SERVER PUTUS":(r.msg==="NO_INTAN"?"KREDIT INTAN SUDAH HABIS":"DITOLAK SERVER");
-      toast("INTAN DITOLAK SERVER",msg+" · COBA LAGI","#f87171");
+      toast("INTAN REJECTED BY SERVER",msg+" · TRY AGAIN","#f87171");
       renderBackpackPanel();
       return;
     }
@@ -2910,7 +2848,7 @@ async function bpUseRollPack(packKey, rollAmount, n){
   /* 0040: tidak ada lagi `dailyR100kBalance` — jumlah pack yang terlihat di sini
      adalah cermin ledger `player_packs` (klaim client di-nol-kan merge kalau lebih). */
   const owned=state.rollPacks[packKey]||0;
-  if(owned<1){toast("PACK HABIS","TIDAK ADA ITEM","#f87171");return;}
+  if(owned<1){toast("OUT OF PACKS","NO ITEMS LEFT","#f87171");return;}
   const use=Math.min(n,owned);
   bpItemPopClose();
   beep(520,.18,"triangle",.1);setTimeout(()=>beep(940,.24,"triangle",.08),150);
@@ -2931,8 +2869,8 @@ async function bpUseRollPack(packKey, rollAmount, n){
       const r=await CloudDB.bulkRoll(currentUser,packKey,Math.min(left,10));
       if(!r||!r.ok){
         const msg=!r?"KONEKSI KE SERVER PUTUS":(r.msg==="PACK_EMPTY"?"LEDGER SERVER: PACK HABIS":"DITOLAK SERVER: "+(r.msg||""));
-        if(spent===0){ toast("PACK DITOLAK SERVER",msg+" · COBA LAGI","#f87171"); renderBackpackPanel(); return; }
-        toast("ROLL DIHENTIKAN SERVER",msg+" · "+fmt(spent)+"× SUDAH MASUK","#fcd34d");
+        if(spent===0){ toast("PACK REJECTED BY SERVER",msg+" · TRY AGAIN","#f87171"); renderBackpackPanel(); return; }
+        toast("ROLL STOPPED BY SERVER",msg+" · "+fmt(spent)+"× ALREADY ADDED","#fcd34d");
         break;
       }
       const used=Math.max(1,Number(r.used)||1);
@@ -3149,7 +3087,7 @@ function bpTreeBuy(id){
   const r=treeBuy(id);
   if(!r.ok){
     const msg=r.reason==='SP'?'SP kurang':r.reason==='PREQ'?'Buka node sebelumnya dulu':r.reason==='OWNED'?'Udah dibuka':'-';
-    beep(200,.08,'square',.06);toast(msg,'GAK BISA','#f87171');return;
+    beep(200,.08,'square',.06);toast(msg,'CANNOT DO THAT','#f87171');return;
   }
   beep(680,.12,'triangle',.09);setTimeout(()=>beep(900,.12,'triangle',.08),90);
   let g,col;
@@ -3240,7 +3178,7 @@ function artIconHtml(d){
 }
 /* Tombol beli Backpack per kanal: raid/tower TIDAK dijual pakai coin — tombol jadi petunjuk sumber. */
 function bpBuyBtn(d,kind){
-  if(d.src==="raid")return `<button class="bp-shop-b off" onclick="toast('TOKO WORLD BOSS','BELI PAKAI TOKEN WORLD BOSS · ${fmt(d.raidCost||0)} TOKEN','#B58CFF')">TOKO WORLD BOSS · ${fmt(d.raidCost||0)} TOKEN</button>`;
+  if(d.src==="raid")return `<button class="bp-shop-b off" onclick="toast('WORLD BOSS SHOP','BUY WITH WORLD BOSS TOKENS · ${fmt(d.raidCost||0)} TOKEN','#B58CFF')">WORLD BOSS SHOP · ${fmt(d.raidCost||0)} TOKEN</button>`;
   if(d.src==="tower")return `<button class="bp-shop-b off" onclick="toast('INF TOWER','DROP BASE CHANCE — TIDAK KENA LUCK PLAYER','#7DF9FF')">DROP · INF TOWER</button>`;
   if(d.src==="premium")return `<button class="bp-shop-b buy" style="background:linear-gradient(135deg,#e6b800,#b38600);color:#0a0800;border-color:#ffd700;" onclick="openPremiumShop()">TOKO PREMIUM · ${d.gemPrice} GEMS</button>`;
   return `<button class="bp-shop-b ${(state.coins||0)>=d.price?'buy':'poor'}" onclick="bpBuy${kind}('${d.id}')">BELI · ${coinIcon(15)} ${fmt(d.price)}</button>`;
@@ -3280,7 +3218,7 @@ function bpGearCoinRow(coins){
 /* Slot artefak terisi = pintu LEPAS via bpArtSlot(i) — perilaku lama persis. */
 function bpRelicSlotHtml(i){
   const id=state.artSlots[i],d=id?ART_DEFS.find(x=>x.id===id):null;
-  if(!d)return `<button type="button" class="eqslot empty" onclick="toast('SLOT KOSONG','BELI ARTEFAK DULU','#fcd34d')" aria-label="Slot ${i+1} kosong">${BP_PLUS}<span class="ek">SLOT ${i+1} KOSONG</span></button>`;
+  if(!d)return `<button type="button" class="eqslot empty" onclick="toast('EMPTY SLOT','BUY AN ARTIFACT FIRST','#fcd34d')" aria-label="Slot ${i+1} kosong">${BP_PLUS}<span class="ek">SLOT ${i+1} KOSONG</span></button>`;
   return `<button type="button" class="eqslot on" style="--ec:${d.color}" onclick="bpArtSlot(${i})" aria-label="Slot ${i+1}: ${d.name} — klik untuk lepas">
     <span class="eqk">SLOT ${i+1}</span>${bpGearArtHtml(d,'eqart')}
     <span class="eqmeta"><span class="eqn">${d.name}</span><span class="eql num">${luckTxt(d)}</span><span class="eqs">TERPASANG · KLIK UNTUK LEPAS</span></span></button>`;
@@ -3390,8 +3328,8 @@ function bpBuyErr(res){
 }
 async function bpBuyArt(id){
   const d=ART_DEFS.find(x=>x.id===id);if(!d||state.artOwned.includes(id))return;
-  if(d.src&&d.src!=="coin"){toast("NOT SOLD HERE",d.src==="raid"?"BELI DI TOKO WORLD BOSS PAKAI TOKEN":"DROP BASE DI INF TOWER","#fcd34d");return;}
-  if((state.coins||0)<d.price){beep(200,.09,"square",.06);toast("NOT ENOUGH COINS","BUTUH ${coinIcon(15)} "+fmt(d.price),"#f87171");return;}
+  if(d.src&&d.src!=="coin"){toast("NOT SOLD HERE",d.src==="raid"?"BUY IN THE WORLD BOSS SHOP WITH TOKENS":"BASE DROP IN INF TOWER","#fcd34d");return;}
+  if((state.coins||0)<d.price){beep(200,.09,"square",.06);toast("NOT ENOUGH COINS","NEED ${coinIcon(15)} "+fmt(d.price),"#f87171");return;}
   /* 0028: beli lewat server — harga & saldo diperiksa di RPC buy_item, jadi
      coin hasil edit F12 ditolak di sini (bukan lagi masuk lokal lalu dibuang). */
   const online=typeof currentUser!=="undefined"&&currentUser&&window.CloudDB&&window.CloudDB.buyItem;
@@ -3410,16 +3348,16 @@ async function bpBuyArt(id){
 function bpToggleArt(id){
   const d=ART_DEFS.find(x=>x.id===id);if(!d||!state.artOwned.includes(id))return;
   const i=state.artSlots.indexOf(id);
-  if(i>=0){state.artSlots[i]=null;beep(360,.08,"triangle",.06);toast("DILEPAS",d.name,"#9ca3af");}
-  else{let s=state.artSlots.indexOf(null);if(s<0)s=0;state.artSlots[s]=id;beep(680,.12,"triangle",.09);toast("TERPASANG",d.name+" → SLOT "+(s+1),d.color);}
+  if(i>=0){state.artSlots[i]=null;beep(360,.08,"triangle",.06);toast("UNEQUIPPED",d.name,"#9ca3af");}
+  else{let s=state.artSlots.indexOf(null);if(s<0)s=0;state.artSlots[s]=id;beep(680,.12,"triangle",.09);toast("EQUIPPED",d.name+" → SLOT "+(s+1),d.color);}
   save();renderShell();renderBackpackPanel();
   if(!battleLive()&&typeof render==="function")render();
 }
 function bpArtSlot(i){const id=state.artSlots[i];if(id)bpToggleArt(id);}
 async function bpBuyPet(id){
   const d=PET_DEFS.find(x=>x.id===id);if(!d||state.petOwned.includes(id))return;
-  if(d.src&&d.src!=="coin"){toast("NOT SOLD HERE",d.src==="raid"?"BELI DI TOKO WORLD BOSS PAKAI TOKEN":"DROP BASE DI INF TOWER","#fcd34d");return;}
-  if((state.coins||0)<d.price){beep(200,.09,"square",.06);toast("NOT ENOUGH COINS","BUTUH ${coinIcon(15)} "+fmt(d.price),"#f87171");return;}
+  if(d.src&&d.src!=="coin"){toast("NOT SOLD HERE",d.src==="raid"?"BUY IN THE WORLD BOSS SHOP WITH TOKENS":"BASE DROP IN INF TOWER","#fcd34d");return;}
+  if((state.coins||0)<d.price){beep(200,.09,"square",.06);toast("NOT ENOUGH COINS","NEED ${coinIcon(15)} "+fmt(d.price),"#f87171");return;}
   /* 0028: idem bpBuyArt — pembelian coin divalidasi server. */
   const online=typeof currentUser!=="undefined"&&currentUser&&window.CloudDB&&window.CloudDB.buyItem;
   if(online){
@@ -3436,8 +3374,8 @@ async function bpBuyPet(id){
 }
 function bpTogglePet(id){
   const d=PET_DEFS.find(x=>x.id===id);if(!d||!state.petOwned.includes(id))return;
-  if(state.petEquipped===id){state.petEquipped=null;beep(360,.08,"triangle",.06);toast("PET DILEPAS",d.name,"#9ca3af");}
-  else{state.petEquipped=id;beep(680,.12,"triangle",.09);toast("PET AKTIF",d.name+" · "+luckTxt(d),d.color);}
+  if(state.petEquipped===id){state.petEquipped=null;beep(360,.08,"triangle",.06);toast("PET UNEQUIPPED",d.name,"#9ca3af");}
+  else{state.petEquipped=id;beep(680,.12,"triangle",.09);toast("PET ACTIVE",d.name+" · "+luckTxt(d),d.color);}
   save();renderShell();renderBackpackPanel();
   if(!battleLive()&&typeof render==="function")render();
 }
@@ -4082,7 +4020,7 @@ async function buyPremiumPack(packId, ev, qty){
           state.weatherBest = prevWeatherBest;
         }
         beep(280,.2,'sawtooth',.12);
-        toast('TRANSAKSI GAGAL', res.msg || 'Saldo tidak mencukupi!', '#f87171');
+        toast('TRANSACTION FAILED', res.msg || 'Insufficient balance!', '#f87171');
         renderPremiumShop();
         renderShell();
         return;
@@ -4117,7 +4055,7 @@ async function buyPremiumPack(packId, ev, qty){
           state.weatherBest = prevWeatherBest;
         }
         beep(280,.2,'sawtooth',.12);
-        toast('GEMS KURANG', 'Butuh ' + totalCost + ' Gems untuk beli ini!', '#f87171');
+        toast('NOT ENOUGH GEMS', 'You need ' + totalCost + ' Gems to buy this!', '#f87171');
         return;
       }
       state.premiumGems -= totalCost;
@@ -4148,7 +4086,7 @@ async function buyPremiumPack(packId, ev, qty){
       rewardMsg = '+' + pack.name + ' unlocked and added to your Backpack!';
     } else if(pack.type === 'weather'){
       const wDef = WEATHER[pack.targetWeather] || {};
-      rewardMsg = 'Cuaca ' + (wDef.name || pack.name) + ' AKTIF untuk SEMUA SERVER selama 30 menit!';
+      rewardMsg = (wDef.name || pack.name) + ' is ACTIVE for ALL SERVERS for 30 minutes!';
       const wEnd = (state.weather && state.weather.endsAt) || (Date.now() + WEATHER_ROTATE_MS);
       const wBuyer = (state.weather && state.weather.activated_by) || currentUser || 'HUNTER';
       const wKey = 'gw:' + pack.targetWeather + ':' + wBuyer + ':' + Math.round(Number(wEnd) / 1000);
@@ -4156,7 +4094,7 @@ async function buyPremiumPack(packId, ev, qty){
         key: wKey,
         color: wDef.color || '#38bdf8',
         badge: 'SERVER EVENT · INSTANT WEATHER',
-        title: 'CUACA ' + (wDef.name || pack.name) + ' ACTIVATED!',
+        kind: 'weather', weatherId: pack.targetWeather, name: (wDef.name || pack.name), mult: (wDef.luckBonus || 1) + '\u00d7 LUCK \u00b7 ' + (wDef.speedBonus || 1) + '\u00d7 SPEED', sub: 'SERVER-WIDE FOR 30 MINUTES', title: (wDef.name || pack.name) + ' ACTIVATED!',
         buyer: wBuyer,
         effect: 'SERVER-WIDE BUFF: <b>' + (wDef.luckBonus || 1) + '× LUCK</b> & <b>' + (wDef.speedBonus || 1) + '× ROLL SPEED</b> FOR 30 MINUTES!',
         iconHtml: weatherSvg(pack.targetWeather, 42)
@@ -4836,9 +4774,9 @@ function startGlobalLuckPoll() {
       var stacks = Math.round((gl.multiplier || 10) / GLOBAL_LUCK_STEP_MULT);
       showGlobalEventBroadcast({
         key: 'gl:' + gl.multiplier + ':' + (gl.activated_by || '') + ':' + gl.ends_at,
-        color: '#34d399',
+        color: '#f3e600',
         badge: 'SERVER EVENT · GLOBAL LUCK SHRINE',
-        title: 'GLOBAL LUCK ' + gl.multiplier + '× ACTIVE!',
+        kind: 'luck', name: 'GLOBAL LUCK', mult: '\u00d7' + gl.multiplier + ' BOOST', sub: stacks + ' STACKS \u00b7 ACTIVE FOR ALL PLAYERS', chips: '\u00d7' + gl.multiplier, title: 'GLOBAL LUCK ' + gl.multiplier + '\u00d7 ACTIVE!',
         buyer: gl.activated_by || 'HUNTER',
         effect: 'SERVER-WIDE BOOST: <b>' + gl.multiplier + '× LUCK (' + stacks + ' STACKS)</b> FOR ALL PLAYERS!',
         iconHtml: globalLuckFountainSvg(44)
@@ -5044,13 +4982,13 @@ async function buyGlobalLuck() {
   if (btn) btn.disabled = true;
   try {
     if ((state.premiumGems || 0) < GLOBAL_LUCK_COST) {
-      toast('GEMS TIDAK CUKUP', 'Butuh ' + GLOBAL_LUCK_COST + ' Gems', '#f87171');
+      toast('GEMS TIDAK CUKUP', 'Need ' + GLOBAL_LUCK_COST + ' Gems', '#f87171');
       return;
     }
 
     const existing = await fetchGlobalLuck();
     if (existing && (existing.multiplier || 0) >= GLOBAL_LUCK_MAX_MULT) {
-      toast('SUDAH MAX STACK', 'Global Luck sudah 100× — tidak bisa ditambah lagi', '#fcd34d');
+      toast('MAX STACK REACHED', 'Global Luck is already at 100× — cannot stack further', '#fcd34d');
       return;
     }
 
@@ -5112,7 +5050,7 @@ async function buyGlobalLuck() {
           activated_by: username
         };
       } else {
-        toast('GAGAL', (res && res.msg) || 'Transaksi gagal', '#f87171');
+        toast('FAILED', (res && res.msg) || 'Transaction failed', '#f87171');
         return;
       }
     }
@@ -5134,12 +5072,11 @@ async function buyGlobalLuck() {
     setTimeout(function(){ beep(1200, 0.2, 'triangle', 0.12); }, 200);
 
     const stacks = Math.round(newMult / GLOBAL_LUCK_STEP_MULT);
-    toast('🍀 GLOBAL LUCK AKTIF!', newMult + '× luck (' + stacks + ' tumpuk) untuk semua server!', '#34d399');
     showGlobalEventBroadcast({
       key: 'gl:' + newMult + ':' + (res.activated_by || username) + ':' + res.ends_at,
-      color: '#34d399',
+      color: '#f3e600',
       badge: 'SERVER EVENT · GLOBAL LUCK SHRINE',
-      title: 'GLOBAL LUCK ' + newMult + '× ACTIVE!',
+      kind: 'luck', name: 'GLOBAL LUCK', mult: '\u00d7' + newMult + ' BOOST', sub: stacks + ' STACKS \u00b7 ACTIVE FOR ALL PLAYERS', chips: '\u00d7' + newMult, title: 'GLOBAL LUCK ' + newMult + '\u00d7 ACTIVE!',
       buyer: res.activated_by || username,
       effect: 'SERVER-WIDE BOOST: <b>' + newMult + '× LUCK (' + stacks + ' STACKS)</b> FOR ALL PLAYERS!',
       iconHtml: globalLuckFountainSvg(44)
@@ -5325,7 +5262,7 @@ window.TOPUP_ENABLED = false;
 
 function openTopup() {
   if (!window.TOPUP_ENABLED) {
-    try { toast('TOP-UP DINONAKTIFKAN', 'Gems didapat dari grinding: Tower, Boss Raid & Story.', '#ffd700'); } catch (e) {}
+    try { toast('TOP-UP DISABLED', 'Gems are earned by grinding: Tower, Raid Boss & Story.', '#ffd700'); } catch (e) {}
     return;
   }
   const modal = document.getElementById('topupModal');
@@ -5345,14 +5282,14 @@ function closeTopup() {
  * Fungsi ini kept sebagai alias biar panggilan lama tidak error. */
 async function buyTopup(gemsAmount) {
   if (!window.TOPUP_ENABLED) {
-    try { toast('TOP-UP DINONAKTIFKAN', 'Gems didapat dari grinding: Tower, Boss Raid & Story.', '#ffd700'); } catch (e) {}
+    try { toast('TOP-UP DISABLED', 'Gems are earned by grinding: Tower, Raid Boss & Story.', '#ffd700'); } catch (e) {}
     return;
   }
   if (window.Topup && typeof window.Topup.buy === 'function') {
     const pack = TOPUP_PACKS.find(function(p){ return p.gems === gemsAmount; });
     if (pack) return window.Topup.buy(pack.id);
   }
-  toast('ERROR', 'Modul top-up belum siap. Muat ulang halaman.', '#f87171');
+  toast('ERROR', 'Top-up module not ready. Reload the page.', '#f87171');
 }
 
 // Tutup modal kalau klik backdrop
@@ -5651,11 +5588,11 @@ if (document.readyState === "loading") {
 function triggerWatchAd(kind) {
   if (_watchingAdBusy) return;
   if (kind === 'luck' && adLuckLeftMs() > 0) {
-    toast('BUFF MASIH AKTIF', 'Tunggu durasi 5 menit selesai untuk menonton lagi.', '#fbbf24');
+    toast('BUFF STILL ACTIVE', 'Wait for the 5-minute duration to end before watching again.', '#fbbf24');
     return;
   }
   if (kind === 'pack100k' && adPackCdLeftMs() > 0) {
-    toast('MASIH COOLDOWN', 'Tunggu ' + fmtCountdown(adPackCdLeftMs()) + ' lagi untuk klaim Pack 100K.', '#fbbf24');
+    toast('STILL ON COOLDOWN', 'Wait ' + fmtCountdown(adPackCdLeftMs()) + ' more to claim the 100K Pack.', '#fbbf24');
     return;
   }
 
@@ -5743,7 +5680,7 @@ function completeWatchAdReward(kind) {
   if (kind === 'luck') {
     _saveAdState(now + AD_LUCK_DURATION_MS, null);
     try { if (typeof sfx !== 'undefined' && sfx.win) sfx.win(); } catch (e) {}
-    toast('2× LUCK AKTIF (5 MENIT)!', 'Total keberuntunganmu digandakan ×2 selama 5 menit!', '#4ade80');
+    toast('2× LUCK ACTIVE (5 MIN)!', 'Your total luck is doubled (×2) for 5 minutes!', '#4ade80');
     renderWatchAdsModal();
     if (typeof renderShell === 'function') renderShell();
     if (typeof renderLobby === 'function' && typeof route === 'function' && route() === '#/lobby' && !battleLive()) {
@@ -5760,7 +5697,7 @@ function completeWatchAdReward(kind) {
     if (typeof showTowerLoot === 'function') {
       showTowerLoot(loot, { weather: 0, luck: 0, speed: 0 }, 'REWARD WATCH ADS · 100,000 ROLL');
     }
-    toast('INSTAN PACK 100K DITERIMA!', '100,000 instant card pulls opened!', '#ffd700');
+    toast('INSTANT PACK 100K RECEIVED!', '100,000 instant card pulls opened!', '#ffd700');
     if (typeof renderShell === 'function') renderShell();
   } else if (kind === 'gems') {
     if (typeof state !== 'undefined' && state) {
@@ -5768,7 +5705,7 @@ function completeWatchAdReward(kind) {
       if (typeof save === 'function') save();
     }
     try { if (typeof sfx !== 'undefined' && sfx.win) sfx.win(); } catch (e) {}
-    toast('FREE REWARD CLAIMED!', '+25 GEMS DITERIMA DARI CRAZYGAMES REWARD!', '#7df9ff');
+    toast('FREE REWARD CLAIMED!', '+25 GEMS RECEIVED FROM CRAZYGAMES REWARD!', '#7df9ff');
     if (typeof renderPremiumShop === 'function') renderPremiumShop();
     if (typeof renderShell === 'function') renderShell();
   }

@@ -1459,7 +1459,7 @@ function openStory(targetChapNo){
   document.getElementById("storyModal").classList.add("show");
   }catch(err){
     console.error("openStory error",err);
-    try{toast("STORY ERROR",(err&&err.message)||"gagal membuka cerita","#ff5c5c");}catch(e){}
+    try{toast("STORY ERROR",(err&&err.message)||"failed to open story","#ff5c5c");}catch(e){}
   }
 }
 function closeStory(){document.getElementById("storyModal").classList.remove("show");}

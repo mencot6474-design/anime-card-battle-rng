@@ -48,12 +48,13 @@
 <link rel="stylesheet" href="css/premium-exchange.css?v=v6-premiumConfirm">
 <link rel="stylesheet" href="css/drop-report.css?v=v2-dropReport">
 <link rel="stylesheet" href="css/battle-fresh.css?v=v35-smoothBasicAtk">
+<link rel="stylesheet" href="css/notify-hazard.css?v=v2-notifyHazard">
 <script>
   /* Link toko Trakteer (fallback â€” utama ada di js/config.js). */
   window.TRAKTEER_SHOP_URL = "";
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=v539-smoothBasicAtk').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=v540-notifyHazard').catch(() => {});
     });
   }
 </script>
@@ -1762,11 +1763,12 @@
 <script src="js/cyber-icons.js?v=v1-drawerV5"></script>
 <script src="js/mobile-shell.js?v=v287-drawerV5Dock"></script>
 <script src="js/supabase-sync.js?v=v332-battleNoHeader"></script>
- <script src="js/panels.js?v=v411-revealHazard"></script>
+<script src="js/notify-hazard.js?v=v1-notifyHazard"></script>
+ <script src="js/panels.js?v=v412-notifyHazard"></script>
 <script src="js/topup.js?v=v158-paywallOff"></script>
 <script src="js/cards-fx.js?v=v84-fmtStatCompact"></script>
 <script src="js/anime-archetype-attacks.js?v=v121-smoothBasicAtk"></script>
-<script src="js/state.js?v=v350-protoSlashOnly"></script>
+<script src="js/state.js?v=v351-notifyHazard"></script>
 <script src="js/sheetfx.js?v=v350-protoSlashOnly"></script>
 <script src="js/battle.js?v=v260-smoothBasicAtk"></script>
 <script src="js/battle-hazard.js?v=v21-smoothBasicAtk"></script>
@@ -1779,7 +1781,7 @@
 <script src="js/skill-tree.js?v=v12-skillTree"></script>
 <script src="js/ranking.js?v=v13-rankHazard"></script>
 <script src="js/i18n.js?v=v397-battleHazardV22"></script>
-<script src="js/boot.js?v=v153-indexClose"></script>
+<script src="js/boot.js?v=v154-notifyHazard"></script>
 <script src="js/pwa.js?v=v156-install"></script>
 
 <!-- ========== CORET MODE (dev-only overlay anotasi) ==========

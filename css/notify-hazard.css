@@ -1,0 +1,150 @@
+/* ==========================================================================
+   HAZARD NOTIFICATIONS (WoB) — port of `_tmp/proto_notify_v1.html`
+   Toast stack `#hzToasts` + activation cinematic `#hzCine`.
+   Only transform/opacity are animated. No backdrop-filter, no animated shadows.
+   ========================================================================== */
+:root{--hzn-haz:#f3e600;--hzn-ink:#f5f5f5;--hzn-ink2:rgba(245,245,245,.66);--hzn-ink3:rgba(245,245,245,.38);
+  --hzn-line2:rgba(245,245,245,.14);--hzn-disp:'Orbitron','Rajdhani',system-ui,sans-serif;
+  --hzn-mono:'JetBrains Mono',ui-monospace,Consolas,monospace}
+
+/* ------------------------------ TOASTS ------------------------------ */
+#hzToasts{position:fixed;z-index:99990;top:64px;right:12px;width:min(340px,calc(100vw - 24px));
+  display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.hzt{--c:#7df9ff;position:relative;pointer-events:auto;display:flex;align-items:stretch;
+  background:linear-gradient(90deg,#0f0f10,#080808);border:1px solid var(--hzn-line2);border-left:0;
+  transform:translateX(0) skewX(-6deg);transform-origin:right center;box-shadow:0 10px 24px rgba(0,0,0,.8);
+  animation:hztIn .46s cubic-bezier(.16,1,.3,1) both;will-change:transform,opacity}
+.hzt.out{animation:hztOut .3s cubic-bezier(.5,0,.8,.3) both}
+@keyframes hztIn{0%{opacity:0;transform:translateX(120%) skewX(-6deg)}60%{opacity:1}100%{opacity:1;transform:translateX(0) skewX(-6deg)}}
+@keyframes hztOut{0%{opacity:1;transform:translateX(0) skewX(-6deg)}100%{opacity:0;transform:translateX(70%) skewX(-6deg)}}
+@keyframes hztBump{0%{transform:translateX(0) skewX(-6deg) scale(1)}40%{transform:translateX(-6px) skewX(-6deg) scale(1.03)}100%{transform:translateX(0) skewX(-6deg) scale(1)}}
+.hzt.bump{animation:hztBump .28s ease-out}
+.hzt-stripe{flex:none;width:7px;background:repeating-linear-gradient(-45deg,var(--c) 0 5px,#050505 5px 10px)}
+.hzt-ico{flex:none;width:44px;display:grid;place-items:center;border-right:1px solid var(--hzn-line2);
+  background:rgba(255,255,255,.025);transform:skewX(6deg)}
+.hzt-ico svg{width:20px;height:20px;stroke:var(--c);fill:none;stroke-width:2;stroke-linecap:square;stroke-linejoin:miter}
+.hzt-txt{flex:1 1 auto;min-width:0;padding:8px 10px 11px;transform:skewX(6deg)}
+.hzt-kick{display:flex;align-items:center;font:600 7.5px var(--hzn-mono);letter-spacing:.22em;color:var(--c)}
+.hzt-cnt{margin-left:8px;padding:0 4px;font:700 8px var(--hzn-mono);color:#050505;background:var(--c)}
+.hzt-ttl{font:900 13px var(--hzn-disp);letter-spacing:.06em;text-transform:uppercase;color:#fff;margin-top:2px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.15}
+.hzt-ttl svg{vertical-align:middle;margin-right:6px}
+.hzt-msg{font:600 11.5px/1.25 'Rajdhani',system-ui,sans-serif;color:var(--hzn-ink2);margin-top:2px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.hzt-x{flex:none;width:30px;display:grid;place-items:center;color:var(--hzn-ink3);font:700 11px var(--hzn-mono);
+  background:none;border:0;cursor:pointer;transform:skewX(6deg)}
+.hzt-x:hover{color:#fff}
+.hzt-tm{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.08);overflow:hidden}
+.hzt-tm i{display:block;height:100%;width:100%;background:var(--c);transform-origin:left;
+  animation:hztTimer var(--dur,3600ms) linear forwards}
+@keyframes hztTimer{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+.hzt:hover .hzt-tm i{animation-play-state:paused}
+.hzt-sheen{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.hzt-sheen::after{content:'';position:absolute;top:0;bottom:0;left:0;width:40%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.14),transparent);
+  transform:translateX(-120%);animation:hztSheen .9s .25s ease-out both}
+@keyframes hztSheen{to{transform:translateX(320%)}}
+
+/* ------------------------------ CINEMATIC ------------------------------ */
+#hzCine{--ac:#f3e600;--ac-a:rgba(243,230,0,.36);position:fixed;inset:0;z-index:99995;pointer-events:none;
+  overflow:hidden;visibility:hidden}
+#hzCine.on{visibility:visible;pointer-events:auto}
+#hzCine .hzc-dim{position:absolute;inset:0;background:#000;opacity:0;transition:opacity .35s ease}
+#hzCine.on .hzc-dim{opacity:.78}
+#hzCine.leave .hzc-dim{opacity:0;transition:opacity .5s ease}
+#hzCine .hzc-cv{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#hzCine .hzc-rays{position:absolute;left:50%;top:50%;width:170vmax;height:170vmax;margin:-85vmax 0 0 -85vmax;opacity:0;
+  background:repeating-conic-gradient(from 0deg,var(--ac-a) 0deg 3deg,transparent 3deg 15deg);
+  -webkit-mask:radial-gradient(circle,#000 0,transparent 46%);mask:radial-gradient(circle,#000 0,transparent 46%);
+  will-change:transform,opacity}
+#hzCine.on .hzc-rays{animation:hzcRays 5.2s cubic-bezier(.2,.7,.2,1) both}
+@keyframes hzcRays{0%{opacity:0;transform:rotate(0) scale(.2)}14%{opacity:.9}100%{opacity:0;transform:rotate(60deg) scale(1)}}
+#hzCine .hzc-tape{position:absolute;left:-60%;right:-60%;height:46px;opacity:0;
+  background:repeating-linear-gradient(-45deg,var(--ac) 0 18px,#0b0b0b 18px 36px);
+  border-top:2px solid #0b0b0b;border-bottom:2px solid #0b0b0b;transform:translateX(-120%) skewX(-13deg);will-change:transform,opacity}
+#hzCine .hzc-tape.a{top:calc(50% - 172px)}
+#hzCine .hzc-tape.b{top:calc(50% + 126px)}
+#hzCine.on .hzc-tape.a{animation:hzcTape 1s cubic-bezier(.4,0,.2,1) both}
+#hzCine.on .hzc-tape.b{animation:hzcTape 1s .1s cubic-bezier(.4,0,.2,1) both}
+@keyframes hzcTape{0%{transform:translateX(-120%) skewX(-13deg);opacity:0}10%{opacity:1}88%{opacity:1}100%{transform:translateX(120%) skewX(-13deg);opacity:0}}
+#hzCine .hzc-flash{position:absolute;inset:0;background:var(--ac);opacity:0}
+#hzCine.on .hzc-flash{animation:hzcFlash .6s .55s ease-out both}
+@keyframes hzcFlash{0%{opacity:0}12%{opacity:.34}100%{opacity:0}}
+#hzCine .hzc-card{position:absolute;left:50%;top:50%;width:min(92vw,620px);transform:translate(-50%,-50%) scale(.6);opacity:0;
+  background:repeating-linear-gradient(-45deg,rgba(255,255,255,.035) 0 14px,transparent 14px 34px),
+    linear-gradient(168deg,rgba(16,16,16,.98),rgba(5,5,5,.99) 55%,rgba(11,11,11,.98));
+  border-top:2px solid var(--ac);border-bottom:2px solid var(--ac);
+  box-shadow:0 30px 70px rgba(0,0,0,.8),inset 0 0 0 1px rgba(255,255,255,.07);will-change:transform,opacity}
+#hzCine.on .hzc-card{animation:hzcCardIn .7s .5s cubic-bezier(.34,1.3,.64,1) both}
+#hzCine.leave .hzc-card{animation:hzcCardOut .5s ease-in both}
+@keyframes hzcCardIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.55) rotate(-3deg)}100%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)}}
+@keyframes hzcCardOut{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-62%) scale(1.06)}}
+#hzCine .hzc-card::before,#hzCine .hzc-card::after{content:'';position:absolute;top:-2px;bottom:-2px;width:20px;
+  background:repeating-linear-gradient(-45deg,var(--ac) 0 10px,#050505 10px 20px)}
+#hzCine .hzc-card::before{left:-20px}#hzCine .hzc-card::after{right:-20px}
+#hzCine .hzc-crn{position:absolute;width:13px;height:13px;border:2px solid var(--hzn-ink);opacity:.85}
+#hzCine .hzc-crn.tl{left:8px;top:8px;border-right:0;border-bottom:0}
+#hzCine .hzc-crn.tr{right:8px;top:8px;border-left:0;border-bottom:0}
+#hzCine .hzc-crn.bl{left:8px;bottom:8px;border-right:0;border-top:0}
+#hzCine .hzc-crn.br{right:8px;bottom:8px;border-left:0;border-top:0}
+#hzCine .hzc-in{position:relative;z-index:2;padding:20px 26px 16px}
+#hzCine .hzc-krow{display:flex;align-items:center;gap:8px;font:600 8px var(--hzn-mono);letter-spacing:.24em;color:var(--hzn-ink2)}
+#hzCine .hzc-dot{width:6px;height:6px;background:var(--ac);transform:rotate(45deg);flex:none}
+#hzCine .hzc-krow b{color:var(--ac);font-weight:600}
+#hzCine .hzc-ser{margin-left:auto;color:var(--hzn-ink3);font-size:7px;white-space:nowrap}
+#hzCine .hzc-hero{display:flex;align-items:center;gap:16px;margin-top:12px}
+#hzCine .hzc-emb{flex:none;width:clamp(74px,18vw,104px);height:clamp(74px,18vw,104px);position:relative;display:grid;place-items:center}
+#hzCine .hzc-emb::before{content:'';position:absolute;inset:0;border:2px solid var(--ac);transform:rotate(45deg) scale(.7);opacity:0}
+#hzCine.on .hzc-emb::before{animation:hzcEmbRing 1.2s .9s cubic-bezier(.2,.8,.2,1) both}
+#hzCine .hzc-emb::after{content:'';position:absolute;inset:8%;border:1px solid var(--ac-a);transform:rotate(45deg)}
+@keyframes hzcEmbRing{0%{opacity:.9;transform:rotate(45deg) scale(.7)}100%{opacity:0;transform:rotate(45deg) scale(1.9)}}
+#hzCine .hzc-emb svg{position:relative;z-index:2;width:62%;height:62%;opacity:0;transform:scale(.3) rotate(-30deg)}
+#hzCine.on .hzc-emb svg{animation:hzcEmbPop .8s .85s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes hzcEmbPop{to{opacity:1;transform:scale(1) rotate(0)}}
+#hzCine .hzc-big{min-width:0;flex:1 1 auto}
+#hzCine .hzc-name{display:flex;align-items:center;gap:12px;min-width:0;
+  font:900 clamp(18px,4.8vw,36px)/1.05 var(--hzn-disp);letter-spacing:.04em;text-transform:uppercase;color:#fff}
+#hzCine .hzc-name::before{content:'';flex:none;width:8px;height:.9em;background:var(--ac);transform:skewX(-18deg)}
+#hzCine .hzc-nm{display:block;min-width:0;font-weight:900}
+#hzCine .hzc-name span{display:inline-block;opacity:0;transform:translateY(.5em) scale(.8)}
+#hzCine.on .hzc-name span{animation:hzcCh .45s cubic-bezier(.34,1.56,.64,1) both;animation-delay:calc(.95s + var(--i)*.035s)}
+@keyframes hzcCh{to{opacity:1;transform:none}}
+#hzCine .hzc-mult{display:inline-block;max-width:100%;margin-top:10px;padding:3px 12px;
+  font:900 clamp(13px,3.4vw,22px)/1.2 var(--hzn-disp);letter-spacing:.06em;color:#050505;background:var(--ac);
+  transform:skewX(-12deg) scale(2);transform-origin:left center;opacity:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hzCine.on .hzc-mult{animation:hzcMult .5s 1.35s cubic-bezier(.2,1.2,.4,1) both}
+@keyframes hzcMult{0%{opacity:0;transform:skewX(-12deg) scale(2)}60%{opacity:1;transform:skewX(-12deg) scale(.94)}100%{opacity:1;transform:skewX(-12deg) scale(1)}}
+#hzCine .hzc-sub{margin-top:14px;font:600 9px/1.5 var(--hzn-mono);letter-spacing:.12em;color:var(--ac);opacity:0}
+#hzCine.on .hzc-sub{animation:hzcUp .4s 1.6s ease-out both}
+#hzCine .hzc-by{margin-top:4px;font:600 8px var(--hzn-mono);letter-spacing:.16em;color:var(--hzn-ink3);opacity:0}
+#hzCine.on .hzc-by{animation:hzcUp .4s 1.75s ease-out both}
+@keyframes hzcUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+#hzCine .hzc-bar{height:3px;margin-top:14px;background:rgba(255,255,255,.14);overflow:hidden}
+#hzCine .hzc-bar i{display:block;height:100%;background:var(--ac);transform:scaleX(0);transform-origin:left}
+#hzCine.on .hzc-bar i{animation:hzcBar 1.4s 1.2s cubic-bezier(.2,.9,.2,1) both}
+@keyframes hzcBar{to{transform:scaleX(1)}}
+#hzCine .hzc-foot{display:flex;justify-content:space-between;margin-top:8px;font:600 6.5px var(--hzn-mono);letter-spacing:.18em;color:var(--hzn-ink3)}
+#hzCine .hzc-foot b{color:var(--ac);font-weight:600}
+#hzCine .hzc-chips{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+#hzCine .hzc-chip{position:absolute;bottom:-40px;font:900 18px var(--hzn-disp);color:var(--ac);opacity:0;will-change:transform,opacity}
+#hzCine.on .hzc-chip{animation:hzcChip var(--d) var(--dl) cubic-bezier(.2,.7,.3,1) both}
+@keyframes hzcChip{0%{opacity:0;transform:translateY(0) scale(.6)}15%{opacity:.9}100%{opacity:0;transform:translateY(-105vh) scale(1.2) rotate(var(--r))}}
+
+@media (max-width:620px){
+  #hzToasts{top:56px;right:8px;left:8px;width:auto}
+  #hzCine .hzc-in{padding:14px 16px 12px}
+  #hzCine .hzc-card::before,#hzCine .hzc-card::after{width:12px}
+  #hzCine .hzc-card::before{left:-12px}#hzCine .hzc-card::after{right:-12px}
+  #hzCine .hzc-tape.a{top:calc(50% - 150px)}#hzCine .hzc-tape.b{top:calc(50% + 104px)}
+}
+@media (orientation:landscape) and (max-height:520px){
+  #hzToasts{top:46px;width:260px;left:auto}
+  #hzCine .hzc-hero{margin-top:6px}
+  #hzCine .hzc-in{padding:10px 18px 9px}
+  #hzCine .hzc-tape.a{top:calc(50% - 118px)}#hzCine .hzc-tape.b{top:calc(50% + 74px)}
+  #hzCine .hzc-bar{margin-top:8px}
+  #hzCine .hzc-sub{margin-top:8px}
+}
+@media (prefers-reduced-motion:reduce){
+  #hzCine .hzc-rays,#hzCine .hzc-chip,.hzt-sheen::after{animation:none!important}
+}

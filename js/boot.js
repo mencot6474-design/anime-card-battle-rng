@@ -238,7 +238,7 @@ ${_linkCard}
         if(txt) txt.textContent = isEn ? "SAVE FAILED" : "GAGAL MENYIMPAN";
         if(note) note.innerHTML = `<span style="color:var(--crimson,#fb7185);font-weight:700">● ${err && err.message ? err.message : "Gagal terhubung ke Cloud"}</span>`;
         if(typeof toast === "function"){
-          toast("ERROR", isEn ? "Failed to save to cloud" : "Gagal menyimpan ke cloud", "#ff4757");
+          toast("ERROR", isEn ? "Failed to save to cloud" : "Failed to save to cloud", "#ff4757");
         }
       } finally {
         setTimeout(()=>{
