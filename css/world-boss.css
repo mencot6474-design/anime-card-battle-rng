@@ -1827,40 +1827,46 @@ dialog.wb-dialog .striker-tag{
 
 /* ============================= HAZARD CURTAIN =========================== */
 #wbHzCurtain{
-  position:absolute; inset:0; z-index:800;
-  display:none; overflow:hidden; pointer-events:auto;
+  --f-head:'Orbitron',system-ui,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+  --dim2:rgba(245,245,245,.42);
+  position:fixed; inset:0; z-index:250000;
+  visibility:hidden; overflow:hidden; pointer-events:none;
+  contain:strict;
 }
-#wbHzCurtain.on{ display:block; }
+#wbHzCurtain.on{ visibility:visible; }
 #wbHzCurtain .half{
   position:absolute; left:0; right:0; height:50.5%;
   background:
-    repeating-linear-gradient(90deg, rgba(245,245,245,.028) 0 1px, transparent 1px 42px),
+    repeating-linear-gradient(90deg, rgba(245,245,245,.035) 0 1px, transparent 1px 42px),
     #060606;
+  transform:translateY(0);
+  will-change:transform;
 }
 #wbHzCurtain .half.top{ top:0; border-bottom:3px solid #f3e600; }
 #wbHzCurtain .half.bot{ bottom:0; border-top:3px solid #f3e600; }
-#wbHzCurtain.smooth .half{ transition:transform .56s cubic-bezier(.77,0,.175,1); }
+#wbHzCurtain.smooth .half{ transition:transform .62s cubic-bezier(.74,0,.22,1); }
 #wbHzCurtain.revealed .half.top{ transform:translateY(-102%); }
 #wbHzCurtain.revealed .half.bot{ transform:translateY(102%); }
 #wbHzCurtain .tape{
   position:absolute; left:-18%; right:-18%; height:44px; z-index:2;
   background:repeating-linear-gradient(-45deg, #f3e600 0 18px, #0b0b0b 18px 36px);
   border-top:2px solid #0b0b0b; border-bottom:2px solid #0b0b0b;
-  transform:translateX(-120%) skewX(-13deg);
+  transform:translateX(-95%) skewX(-13deg);
   will-change:transform,opacity;
 }
 #wbHzCurtain .tape-a{ top:calc(50% - 104px); }
 #wbHzCurtain .tape-b{ top:calc(50% + 54px); }
-#wbHzCurtain.sweep .tape-a{ animation:wbHzTapeSweep .52s cubic-bezier(.4,0,.2,1) both; }
-#wbHzCurtain.sweep .tape-b{ animation:wbHzTapeSweep .52s .06s cubic-bezier(.4,0,.2,1) both; }
+#wbHzCurtain.sweep .tape-a{ animation:wbHzTapeSweep .82s cubic-bezier(.4,0,.2,1) both; }
+#wbHzCurtain.sweep .tape-b{ animation:wbHzTapeSweep .82s .08s cubic-bezier(.4,0,.2,1) both; }
 @keyframes wbHzTapeSweep{
-  0%{ transform:translateX(-120%) skewX(-13deg); opacity:0; }
-  14%{ opacity:1; }
+  0%{ transform:translateX(-95%) skewX(-13deg); opacity:0; }
+  12%{ opacity:1; }
   86%{ opacity:1; }
-  100%{ transform:translateX(120%) skewX(-13deg); opacity:0; }
+  100%{ transform:translateX(95%) skewX(-13deg); opacity:0; }
 }
 #wbHzCurtain .flash{ position:absolute; inset:0; z-index:3; background:#f3e600; opacity:0; }
-#wbHzCurtain.sweep .flash{ animation:wbHzFlash .34s ease-out both; }
+#wbHzCurtain.sweep .flash{ animation:wbHzFlash .4s ease-out both; }
 @keyframes wbHzFlash{ 0%{opacity:0;} 14%{opacity:.16;} 100%{opacity:0;} }
 #wbHzCurtain .plate{
   position:absolute; left:50%; top:50%; z-index:4;
@@ -1872,7 +1878,7 @@ dialog.wb-dialog .striker-tag{
   border-top:2px solid #f3e600; border-bottom:2px solid #f3e600;
   box-shadow:0 26px 60px rgba(0,0,0,.66), inset 0 0 0 1px rgba(255,255,255,.07);
 }
-#wbHzCurtain.smooth .plate{ transition:opacity .2s ease, transform .42s cubic-bezier(.34,1.22,.64,1); }
+#wbHzCurtain.smooth .plate{ transition:opacity .22s ease, transform .46s cubic-bezier(.34,1.22,.64,1); }
 #wbHzCurtain.revealed .plate{ opacity:0; transform:translate(-50%,-50%) scale(1.04); }
 #wbHzCurtain .in{ position:relative; z-index:2; padding:16px 22px 13px; }
 #wbHzCurtain .krow{ display:flex; align-items:center; gap:8px; }
@@ -1889,7 +1895,8 @@ dialog.wb-dialog .striker-tag{
 #wbHzCurtain .sub{ margin-top:8px; font-family:var(--f-mono); font-size:9px; letter-spacing:.18em; color:#f3e600; }
 #wbHzCurtain .bar{ height:3px; margin-top:14px; background:rgba(255,255,255,.14); overflow:hidden; }
 #wbHzCurtain .bar i{ display:block; height:100%; width:100%; background:#f3e600; transform:scaleX(0); transform-origin:left; }
-#wbHzCurtain.smooth:not(.revealed) .bar i{ transform:scaleX(1); transition:transform .46s .08s cubic-bezier(.2,.9,.2,1); }
+#wbHzCurtain.smooth:not(.revealed) .bar i{ animation:wbHzBarFill .72s .06s cubic-bezier(.2,.9,.2,1) both; }
+@keyframes wbHzBarFill{ from{ transform:scaleX(0); } to{ transform:scaleX(1); } }
 #wbHzCurtain .foot{ display:flex; justify-content:space-between; margin-top:8px; font-family:var(--f-mono); font-size:6.5px; letter-spacing:.2em; color:var(--dim2); }
 
 /* Result Screen (Hazard Protocol Debrief) */

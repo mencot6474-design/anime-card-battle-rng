@@ -10,7 +10,8 @@ const WB_TTL=60000;
 const WB_RETRY=8000;
 
 let wbHubTab="milestones";
-let wbHubEnteredOnce=false;
+let _wbPrevRoute="";
+let _wbClosing=false;
 let wbStrikerSearch="";
 let wbAutoTimer=null;
 let wbMsBusy=false;
@@ -18,6 +19,17 @@ let wbHubKeyHandler=null;
 let wbToastTimer=0;
 let wbHzTimers=[];
 const wbGuestByBoss={};
+
+if(!window.__wbRouteTrack){
+  window.__wbRouteTrack=true;
+  window.addEventListener("hashchange",()=>{
+    const r=(typeof route==="function")?route():(location.hash||"#/");
+    if(r!=="#/raid"){
+      _wbPrevRoute=r;
+      _wbClosing=false;
+    }
+  });
+}
 
 function wbOnline(){return !!((typeof currentUser!=="undefined"&&currentUser)&&window.CloudDB&&typeof window.CloudDB.wbState==="function");}
 function wbBossName(id){const b=RAID_BOSSES.find(x=>x.id===id)||RAID_BOSSES[0];return b?b.name:"WORLD BOSS";}
@@ -346,7 +358,6 @@ function showWbRewardModal(res){
 function wbClearHz(){for(let i=0;i<wbHzTimers.length;i++)clearTimeout(wbHzTimers[i]);wbHzTimers=[];}
 function stopRaid(){
   clearTimeout(wbAutoTimer);wbAutoTimer=null;
-  wbClearHz();
   if(raid){if(raid.timer)clearTimeout(raid.timer);raid=null;}
   if(typeof fightTimer!=="undefined"&&fightTimer){clearTimeout(fightTimer);fightTimer=null;}
   wbRunId=null;wbRunBoss=null;wbStarting=false;
@@ -355,6 +366,11 @@ function stopRaid(){
     if(d&&d.open)try{d.close();}catch(e){}
   });
   raidView="hub";
+  const r=(typeof route==="function")?route():(location.hash||"#/");
+  if(r!=="#/raid"){
+    _wbPrevRoute=r;
+    _wbClosing=false;
+  }
 }
 
 function raidToast(msg){
@@ -934,46 +950,111 @@ function wbOpenStrikerDialog(){
   if(!dlg.open)dlg.showModal();
 }
 
-function wbPlayEnterCurtain(){
-  const hz=document.getElementById("wbHzCurtain");
+function wbEnsureCurtain(){
+  let hz=document.getElementById("wbHzCurtain");
+  if(!hz){
+    hz=document.createElement("div");
+    hz.id="wbHzCurtain";
+    hz.setAttribute("aria-hidden","true");
+    hz.innerHTML=`
+      <div class="half top"></div>
+      <div class="half bot"></div>
+      <div class="tape tape-a"></div>
+      <div class="tape tape-b"></div>
+      <div class="flash"></div>
+      <div class="plate">
+        <div class="in">
+          <div class="krow">
+            <span class="dot"></span>
+            <span class="kick" id="wbHzKick">// SERVER-WIDE <b>RAID UPLINK</b></span>
+            <span class="serial" id="wbHzSerial">SERIAL 0x9E4A</span>
+          </div>
+          <div class="title"><span id="wbHzTitle">WORLD BOSS RAID</span></div>
+          <div class="sub" id="wbHzSub">10B SHARED HP POOL &middot; 3 DAILY ATTEMPTS PER BOSS</div>
+          <div class="bar"><i></i></div>
+          <div class="foot"><span>HZ-PROTOCOL</span><span id="wbHzFoot">SYNCHRONIZING TARGETS</span></div>
+        </div>
+      </div>`;
+    document.body.appendChild(hz);
+  }
+  return hz;
+}
+
+function wbSetCurtainCopy(mode){
+  const k=document.getElementById("wbHzKick"), t=document.getElementById("wbHzTitle"),
+        s=document.getElementById("wbHzSub"), f=document.getElementById("wbHzFoot"),
+        sr=document.getElementById("wbHzSerial");
+  const hex=(0x1000+Math.floor(Math.random()*0xefff)).toString(16).toUpperCase();
+  if(sr)sr.textContent="SERIAL 0x"+hex;
+  if(mode==="open"){
+    if(k)k.innerHTML="// SERVER-WIDE <b>RAID UPLINK</b>";
+    if(t)t.textContent="WORLD BOSS RAID";
+    if(s)s.textContent="10B SHARED HP POOL · 3 DAILY ATTEMPTS PER BOSS";
+    if(f)f.textContent="SYNCHRONIZING TARGETS";
+  }else{
+    if(k)k.innerHTML="// LINK <b>STAND BY</b>";
+    if(t)t.textContent="STANDBY";
+    if(s)s.textContent="WORLD BOSS SESSION SEALED — RANK SYNCED";
+    if(f)f.textContent="RETURNING TO LOBBY";
+  }
+}
+
+function wbPlayEnterCurtain(forceAnim){
+  const hz=wbEnsureCurtain();
   const sh=document.getElementById("wbShell");
-  if(!hz||!sh)return;
-  if(wbHubEnteredOnce||wbReduceMotion()){
-    sh.classList.add("is-entered");
+  wbClearHz();
+  if(!forceAnim||wbReduceMotion()){
+    hz.className="";
+    if(sh)sh.classList.add("is-entered");
     return;
   }
-  wbHubEnteredOnce=true;
-  wbClearHz();
-  sh.classList.remove("is-entered","is-leaving");
-  hz.className="";void hz.offsetWidth;
+  wbSetCurtainCopy("open");
+  if(sh)sh.classList.remove("is-entered","is-leaving");
+  hz.className="";
+  void hz.offsetWidth;
   hz.classList.add("on","smooth","sweep");
-  wbHzTimers.push(setTimeout(()=>{hz.classList.add("revealed");sh.classList.add("is-entered");},520));
-  wbHzTimers.push(setTimeout(()=>{hz.classList.remove("on","smooth","sweep","revealed");},1120));
+  wbHzTimers.push(setTimeout(()=>{
+    hz.classList.add("revealed");
+    const curSh=document.getElementById("wbShell");
+    if(curSh)curSh.classList.add("is-entered");
+  },880));
+  wbHzTimers.push(setTimeout(()=>{
+    hz.className="";
+  },1580));
 }
 
 function wbExitToLobby(){
+  if(_wbClosing)return;
+  _wbClosing=true;
   clearTimeout(wbAutoTimer);wbAutoTimer=null;
-  const hz=document.getElementById("wbHzCurtain");
+  const hz=wbEnsureCurtain();
   const sh=document.getElementById("wbShell");
-  if(!hz||!sh||wbReduceMotion()){
+  if(wbReduceMotion()){
+    _wbClosing=false;
+    _wbPrevRoute="#/lobby";
     raidView="hub";
-    window.location.hash="#/";
+    window.location.hash="#/lobby";
     return;
   }
   wbClearHz();
-  const k=document.getElementById("wbHzKick"), t=document.getElementById("wbHzTitle"), s=document.getElementById("wbHzSub"), f=document.getElementById("wbHzFoot");
-  if(k)k.innerHTML="// LINK <b>STAND BY</b>";
-  if(t)t.textContent="STANDBY";
-  if(s)s.textContent="WORLD BOSS SESSION SEALED — RANK SYNCED";
-  if(f)f.textContent="RETURNING TO LOBBY";
-  sh.classList.add("is-leaving");
-  hz.className="";hz.classList.add("on","smooth","revealed");
+  wbSetCurtainCopy("close");
+  if(sh)sh.classList.add("is-leaving");
+  hz.className="";
+  hz.classList.add("on","smooth","revealed");
   void hz.offsetWidth;
   hz.classList.remove("revealed");
   wbHzTimers.push(setTimeout(()=>{
+    _wbClosing=false;
+    _wbPrevRoute="#/lobby";
     raidView="hub";
-    window.location.hash="#/";
-  },420));
+    window.location.hash="#/lobby";
+  },540));
+  wbHzTimers.push(setTimeout(()=>{
+    hz.classList.add("revealed");
+  },760));
+  wbHzTimers.push(setTimeout(()=>{
+    hz.className="";
+  },1520));
 }
 
 function wbLaunchRaid(){
@@ -1181,27 +1262,6 @@ function renderRaidHub(){
       <div class="wb-toast" id="wbToast" role="status" aria-live="polite"></div>
     </div>
 
-    <div id="wbHzCurtain" aria-hidden="true">
-      <div class="half top"></div>
-      <div class="half bot"></div>
-      <div class="tape tape-a"></div>
-      <div class="tape tape-b"></div>
-      <div class="flash"></div>
-      <div class="plate">
-        <div class="in">
-          <div class="krow">
-            <span class="dot"></span>
-            <span class="kick" id="wbHzKick">// SERVER-WIDE <b>RAID UPLINK</b></span>
-            <span class="serial">SERIAL 0x9E4A</span>
-          </div>
-          <div class="title"><span id="wbHzTitle">WORLD BOSS RAID</span></div>
-          <div class="sub" id="wbHzSub">10B SHARED HP POOL &middot; 3 DAILY ATTEMPTS PER BOSS</div>
-          <div class="bar"><i></i></div>
-          <div class="foot"><span>HZ-PROTOCOL</span><span id="wbHzFoot">SYNCHRONIZING TARGETS</span></div>
-        </div>
-      </div>
-    </div>
-
     <dialog class="wb-dialog" id="wbInfoDlg" closedby="any" aria-labelledby="wbInfoTitle">
       <div class="dlg-head">
         <h2 id="wbInfoTitle">HOW WORLD BOSS RAID WORKS</h2>
@@ -1219,9 +1279,11 @@ function renderRaidHub(){
     </dialog>
   </div>`;
 
+  const shouldEnterAnim=(_wbPrevRoute!=="#/raid");
+  _wbPrevRoute="#/raid";
   wbPatchHubDOM();
   wbSelectTab(wbHubTab,false);
-  wbPlayEnterCurtain();
+  wbPlayEnterCurtain(shouldEnterAnim);
 
   document.querySelectorAll("#wbView .wb-bsw-btn").forEach(btn=>{
     btn.onclick=()=>setBoss(Number(btn.dataset.bossIdx));
