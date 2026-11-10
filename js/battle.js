@@ -172,18 +172,41 @@ function hzCardInfoHtml(o){
   return '<div class="hz-card-info">'+out+'</div>';
 }
 
-/* Badge kartu (SHINY / mutasi / TRAIT) — urutan prototipe: shiny, mut, trait. */
-function hzBadgeHtml(mut,trait,shiny){
+/* Badge kartu (SHINY / mutasi / TRAIT) — kanan atas tanpa titik SVG, trait asli. */
+function hzBadgeHtml(mut,trait,shiny,role){
   var out="";
-  if(shiny) out+='<span class="fc-b shiny">SHINY</span>';
-  var ml=(mut&&typeof MUT_LABEL!=="undefined")?MUT_LABEL[mut]:"";
-  if(ml) out+='<span class="fc-b mut">'+ml+'</span>';
-  var tn="";
+  if(role) out+='<span class="c-badge b-role">'+role+'</span>';
+  if(shiny) out+='<span class="c-badge b-shiny">SHINY</span>';
+  var m=(mut&&mut!=="none")?String(mut).toLowerCase():"";
+  var ml=(m&&typeof MUT_LABEL!=="undefined"&&MUT_LABEL[m])?MUT_LABEL[m]:(m?m.toUpperCase():"");
+  if(ml) out+='<span class="c-badge b-mut-'+m+'">'+ml+'</span>';
   try{
-    if(trait&&trait!=="none"&&typeof TRAIT!=="undefined"&&TRAIT[trait]) tn=TRAIT[trait].name||"";
+    if(trait&&trait!=="none"&&typeof TRAIT!=="undefined"&&TRAIT[trait]){
+      var tc=(typeof TRAIT_COLOR!=="undefined"&&TRAIT_COLOR[trait])||TRAIT[trait].color||"#6be08a";
+      var gem=(typeof traitGem==="function")?traitGem(14,trait):"";
+      var pill='<span class="hc-trait hc-gem hz-trait-gem" style="color:'+tc+';border-color:'+tc+'">'+gem+'</span>';
+      out+=(typeof traitChip==="function")?traitChip(trait,pill):pill;
+    }
   }catch(e){}
-  if(tn) out+='<span class="fc-b trait">TRAIT &middot; '+tn+'</span>';
   return out;
+}
+
+function hzSkillDescEn(charId, fallback){
+  var raw="";
+  try{
+    if(charId&&window.GameLang&&typeof window.GameLang.cardDescEn==="function"){
+      raw=window.GameLang.cardDescEn(charId);
+    }
+    if(!raw&&charId&&typeof CARDS!=="undefined"&&CARDS[charId]&&CARDS[charId].passive){
+      raw=CARDS[charId].passive.desc||CARDS[charId].passive.name||"";
+    }
+  }catch(e){}
+  if(!raw) raw=fallback||"";
+  if(window.tLang){ try{ raw=window.tLang(raw); }catch(e){} }
+  var safe=String(raw||"").replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});
+  safe=safe.replace(/([+-]?\d+(?:\.\d+)?%|×\d+(?:\.\d+)?|\b\d+(?:\.\d+)?x\b)/gi,"<b>$1</b>");
+  safe=safe.replace(/\b(STUN|FREEZE|FROZEN|BLEED|BURN|POISON|PIERCE|DODGE|IMMUNE|REVIVE|LIFESTEAL)\b/gi,"<em>$1</em>");
+  return safe;
 }
 
 function foeFighterInnerHtml(en,es,opts){
@@ -193,23 +216,31 @@ function foeFighterInnerHtml(en,es,opts){
   const curHp=opts.curHp!=null?Math.max(0,Math.min(maxHp,opts.curHp)):maxHp;
   const hpPct=Math.max(0,Math.min(100,curHp/maxHp*100));
   const fmtHp=opts.hpFmt||fmtBattleK;
-  const chance=(en&&en.chance)?"1 IN "+fmt(en.chance):"";
-  return `<div class="fc-frame">
-    <img class="fc-art" src="${en.img}" alt="${en.name}">
-    <div class="fc-vig"></div>
-    <div class="fc-top">
-      <span class="fc-tag">${en.boss?"BOSS":"TARGET"}</span>
-      ${chance?`<span class="fc-chance">${chance}</span>`:""}
+  const mut=(opts.mut||(en&&en.mut)||"none").toLowerCase();
+  const cid=(en&&(en.id||en.char))||null;
+  const role=opts.subtitle||(en&&en.boss?"FLOOR BOSS":"TARGET");
+  const desc=hzSkillDescEn(cid, opts.skill||(en&&en.skill)||(en&&en.passive&&(en.passive.desc||en.passive.name))||"");
+  return `<div class="fc-frame card-shell mut-${mut}">
+    <span class="mut-ring"></span>
+    <img class="fc-art card-art" src="${en.img}" alt="${en.name}">
+    <div class="fc-vig card-shade"></div>
+    <div class="fc-top card-top-bar">
+      <div class="fc-badges card-badges">${hzBadgeHtml(mut,null,false,role)}</div>
     </div>
-    <div class="fc-badges">${hzBadgeHtml(opts.mut,null,false)}</div>
-    <div class="fc-name">${en.name}</div>
-    <div class="fc-skill">${(en.skill||(en.passive&&en.passive.name)||"")}</div>
+    <div class="card-body">
+      <div class="fc-name card-title">${en.name}</div>
+      <div class="fc-skill card-desc">${desc}</div>
+      <div class="fc-stats card-inline-stats">
+        <span class="fc-st hp cis-hp">HP: <b id="foeInlineHp">${fmtHp(curHp)}</b></span>
+        <span class="fc-st atk cis-dmg">DMG: <b id="foeInlineDmg">${fmtBattleK(es.atk)}</b></span>
+      </div>
+    </div>
   </div>
   <div class="fc-foot">
-    <div class="fc-hp"><i id="${hpId}" style="width:${hpPct}%"></i><b id="${hpTid}">${fmtHp(curHp)} / ${fmtHp(maxHp)}</b></div>
-    <div class="fc-stats">
-      <span class="fc-st hp"><i>HP</i><b>${fmtHp(curHp)}</b></span>
-      <span class="fc-st atk"><i>ATK</i><b>${fmtBattleK(es.atk)}</b></span>
+    <div class="fc-hp unit-hp-pill">
+      <i id="${hpId}" class="unit-hp-fill" style="width:${hpPct}%"></i>
+      <span class="unit-hp-segs"></span>
+      <b id="${hpTid}" class="unit-hp-txt">${fmtHp(curHp)} / ${fmtHp(maxHp)}</b>
     </div>
   </div>`;
 }
@@ -222,42 +253,55 @@ function meFighterHtml(s,opts){
   const curHp=opts.curHp!=null?Math.max(0,Math.min(maxHp,opts.curHp)):maxHp;
   const hpPct=Math.max(0,Math.min(100,curHp/maxHp*100));
   const cd=CARDS[s.char]||null;
-  const chance=(cd&&cd.chance)?"1 IN "+fmt(cd.chance):"";
-  const skill=(cd&&cd.passive&&cd.passive.name)||"";
+  const mut=(s.mut||"none").toLowerCase();
+  const desc=hzSkillDescEn(s.char, (cd&&cd.passive&&(cd.passive.desc||cd.passive.name))||"");
   const pos=(cd&&cd.pos)?` style="object-position:${cd.pos}"`:"";
-  return `<div class="fc-frame">
-    <img class="fc-art" src="${cardImg(s.char)}" alt="${cardName(s.char)}"${pos}>
-    <div class="fc-vig"></div>
-    <div class="fc-top">
-      <span class="fc-tag">OPERATOR</span>
-      ${chance?`<span class="fc-chance">${chance}</span>`:""}
+  return `<div class="fc-frame card-shell mut-${mut}${s.shiny?" is-shiny":""}">
+    <span class="mut-ring"></span>
+    <img class="fc-art card-art" src="${cardImg(s.char)}" alt="${cardName(s.char)}"${pos}>
+    <div class="fc-vig card-shade"></div>
+    <div class="fc-top card-top-bar">
+      <div class="fc-badges card-badges">${hzBadgeHtml(mut,s.trait,!!s.shiny,"OPERATOR")}</div>
     </div>
-    <div class="fc-badges">${hzBadgeHtml(s.mut,s.trait,!!s.shiny)}</div>
-    <div class="fc-name">${cardName(s.char)}</div>
-    <div class="fc-skill">${skill}</div>
+    <div class="card-body">
+      <div class="fc-name card-title">${cardName(s.char)}</div>
+      <div class="fc-skill card-desc">${desc}</div>
+      <div class="fc-stats card-inline-stats">
+        <span class="fc-st hp cis-hp">HP: <b id="meInlineHp">${fmtBattleK(curHp)}</b></span>
+        <span class="fc-st atk cis-dmg">DMG: <b id="meAtkT">${fmtBattleK(st.atk)}</b></span>
+      </div>
+    </div>
   </div>
   <div class="fc-foot">
-    <div class="fc-hp"><i id="hpMe" style="width:${hpPct}%"></i><b id="hpMeT">${fmtBattleK(curHp)} / ${fmtBattleK(maxHp)}</b></div>
-    <div class="fc-stats">
-      <span class="fc-st hp"><i>HP</i><b>${fmtBattleK(curHp)}</b></span>
-      <span class="fc-st atk"><i>ATK</i><b id="meAtkT">${fmtBattleK(st.atk)}</b></span>
+    <div class="fc-hp unit-hp-pill">
+      <i id="hpMe" class="unit-hp-fill" style="width:${hpPct}%"></i>
+      <span class="unit-hp-segs"></span>
+      <b id="hpMeT" class="unit-hp-txt">${fmtBattleK(curHp)} / ${fmtBattleK(maxHp)}</b>
     </div>
   </div>`;
 }
 function meShadowHtml(sh){
-  return `<div class="fc-frame">
-    <img class="fc-art" src="${sh.img}" alt="${sh.name}" style="filter:grayscale(.35) brightness(.72) hue-rotate(215deg) saturate(1.5)">
-    <div class="fc-vig"></div>
-    <div class="fc-top"><span class="fc-tag">SHADOW</span></div>
-    <div class="fc-badges"></div>
-    <div class="fc-name">${sh.name}</div>
-    <div class="fc-skill">SHADOW EXCHANGE</div>
+  return `<div class="fc-frame card-shell mut-secret">
+    <span class="mut-ring"></span>
+    <img class="fc-art card-art" src="${sh.img}" alt="${sh.name}" style="filter:grayscale(.35) brightness(.72) hue-rotate(215deg) saturate(1.5)">
+    <div class="fc-vig card-shade"></div>
+    <div class="fc-top card-top-bar">
+      <div class="fc-badges card-badges"><span class="c-badge b-mut-secret">SHADOW</span></div>
+    </div>
+    <div class="card-body">
+      <div class="fc-name card-title">${sh.name}</div>
+      <div class="fc-skill card-desc"><b>SHADOW EXCHANGE</b> &middot; Fights in the Monarch's place until turns expire or HP reaches zero.</div>
+      <div class="fc-stats card-inline-stats">
+        <span class="fc-st hp cis-hp">HP: <b id="meInlineHp">${fmtBattleK(sh.maxHp)}</b></span>
+        <span class="fc-st atk cis-dmg">DMG: <b id="meAtkT">${fmtBattleK(sh.atk)}</b></span>
+      </div>
+    </div>
   </div>
   <div class="fc-foot">
-    <div class="fc-hp"><i id="hpMe" style="width:100%"></i><b id="hpMeT">${fmtBattleK(sh.maxHp)} / ${fmtBattleK(sh.maxHp)}</b></div>
-    <div class="fc-stats">
-      <span class="fc-st hp"><i>HP</i><b>${fmtBattleK(sh.maxHp)}</b></span>
-      <span class="fc-st atk"><i>ATK</i><b id="meAtkT">${fmtBattleK(sh.atk)}</b></span>
+    <div class="fc-hp unit-hp-pill">
+      <i id="hpMe" class="unit-hp-fill" style="width:100%"></i>
+      <span class="unit-hp-segs"></span>
+      <b id="hpMeT" class="unit-hp-txt">${fmtBattleK(sh.maxHp)} / ${fmtBattleK(sh.maxHp)}</b>
     </div>
   </div>`;
 }
@@ -400,1435 +444,34 @@ function anim(sel,cls,noPair){
    Semua timing dibaca dari GALAXY supaya mesin battle (schedPhase / raid.timer / dlyAt) dan
    animasinya tidak saling lepas: kerusakan & getar kartu jatuh tepat di menit GALAXY.hit. */
 const GALAXY={chg:520,hit:900,total:2100};
-/* ---------- PSYCHIC BARRAGE (Psychic Esper): canvas overlay — batu tajam levitasi → melesat + trail neon → ring shockwave.
-   PSY_T.first = ms (dari awal sambaran) hit pertama mendarat; step = jeda antar batu. Dipakai juga oleh performAttack
-   supaya angka damage / getar kartu jatuh persis saat batu menghantam. Waktu FX dikali skala speed battle (bsMs). */
 const PSY_T={first:560,step:110,fly:240};
-function psyBarrageFx(o){
-  const me=document.querySelector(".fighter.me"),foe=document.querySelector(".fighter.foe");
-  if(!me||!foe)return;
-  const rm=me.getBoundingClientRect(),rf=foe.getBoundingClientRect();
-  if(!rm.width||!rf.width)return;
-  const railEl=document.querySelector(".foe-rail");const rr=railEl?railEl.getBoundingClientRect():null;
-  const W=window.innerWidth,H=window.innerHeight,dpr=FXDPR();
-  const cv=document.createElement("canvas");cv.id="psyCanvas";cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
-  cv.style.cssText="position:fixed;left:0;top:0;width:'+W+'px;height:'+H+'px;pointer-events:none;z-index:69";
-  document.body.appendChild(cv);
-  const ctx=cv.getContext("2d");ctx.scale(dpr,dpr);
-  const sc=bsMs(1000)/1000||1;               // skala waktu speed battle
-  const n=Math.max(1,o.n|0),sCount=Math.min(n,Math.max(1,o.shotCount|0));
-  const first=o.t0+PSY_T.first,step=PSY_T.step,fly=PSY_T.fly;
-  const mcx=rm.left+rm.width/2,mcy=rm.top+rm.height*0.45;
-  const size=Math.max(14,Math.min(30,rm.width*0.16));
-  const rocks=[];
-  for(let k=0;k<n;k++){
-    const toBench=k>=sCount&&rr;
-    const tx=toBench?rr.left+rr.width/2+(Math.random()-.5)*rr.width*.5:rf.left+rf.width/2+(Math.random()-.5)*rf.width*.45;
-    const ty=toBench?rr.top+rr.height/2+(Math.random()-.5)*rr.height*.5:rf.top+rf.height*(0.3+Math.random()*0.35);
-    const ang=Math.random()*Math.PI*2,rad=rm.width*(0.35+Math.random()*0.45);
-    const pts=[],v=6+(Math.random()*3|0);
-    for(let j=0;j<v;j++){const a=j/v*Math.PI*2+(Math.random()-.5)*.6;const r=size*(0.55+Math.random()*0.65);pts.push([Math.cos(a)*r,Math.sin(a)*r*(0.8+Math.random()*0.3)]);}
-    const hit=first+k*step;
-    rocks.push({pts,hx:mcx+Math.cos(ang)*rad,hy:mcy-Math.abs(Math.sin(ang))*rm.height*0.5-8,tx,ty,
-      hit,launch:hit-fly,rise0:k*35,rot:Math.random()*6.28,spin:(Math.random()-.5)*0.02,wob:Math.random()*6.28,
-      cyan:Math.random()<.5,done:false,sx:mcx,sy:rm.bottom+30});
-  }
-  const rings=[],sparks=[];
-  const total=rocks[n-1].hit+420,t0=performance.now();
-  let raf=0;
-  const E=(x)=>1-Math.pow(1-x,3);                 // ease-out (levitasi)
-  const S=(x)=>x*x*x;                              // ease-in cepat (snap)
-  const posAt=(r,t)=>{
-    if(t<r.launch){
-      const p=Math.min(1,Math.max(0,(t-r.rise0)/Math.max(1,Math.min(380,r.launch-r.rise0))));
-      const e=E(p),w=Math.sin(t/110+r.wob)*3*e;
-      const ant=t>r.launch-70?Math.sin((t-r.launch+70)*0.9)*2:0;   // getar sebelum nembak (anticipation)
-      return [r.sx+(r.hx-r.sx)*e+w+ant,r.sy+(r.hy-r.sy)*e+Math.cos(t/130+r.wob)*3*e,e];
-    }
-    const p=Math.min(1,(t-r.launch)/fly),e=S(p);
-    return [r.hx+(r.tx-r.hx)*e,r.hy+(r.ty-r.hy)*e,1,p];
-  };
-  const drawRock=(r,x,y,a,glow)=>{
-    ctx.save();ctx.translate(x,y);ctx.rotate(a);
-    const c1=r.cyan?"#00f3ff":"#b026ff",c2=r.cyan?"#b026ff":"#00f3ff";
-    ctx.globalAlpha=0.35*glow;ctx.fillStyle=c1;ctx.beginPath();ctx.arc(0,0,size*1.5,0,6.283);ctx.fill();
-    ctx.globalAlpha=1;
-    const g=ctx.createLinearGradient(-size,-size,size,size);g.addColorStop(0,"#1b0b3d");g.addColorStop(.55,"#4a1fa8");g.addColorStop(1,c1);
-    ctx.fillStyle=g;ctx.strokeStyle=c2;ctx.lineWidth=2;ctx.lineJoin="miter";
-    ctx.beginPath();r.pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fill();ctx.stroke();
-    ctx.strokeStyle="rgba(255,255,255,.7)";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(r.pts[0][0],r.pts[0][1]);ctx.lineTo(r.pts[1][0]*.5,r.pts[1][1]*.5);ctx.stroke();
-    ctx.restore();
-  };
-  const finish=()=>{cancelAnimationFrame(raf);try{cv.remove();}catch(e){}};
-  const frame=(now)=>{
-    if(fxEngineOver()||!cv.isConnected){finish();return;}
-    const t=(now-t0)/sc;                          // waktu "logis" (ms) independen speed
-    if(t>total){finish();return;}
-    ctx.clearRect(0,0,W,H);
-    /* aura psikis di sekitar Esper selama levitasi */
-    const lastLaunch=rocks[n-1].launch;
-    if(t<lastLaunch+80){
-      const a=Math.min(1,t/260)*(0.55+0.15*Math.sin(t/70));
-      const g=ctx.createRadialGradient(mcx,mcy,4,mcx,mcy,rm.width*1.0);
-      g.addColorStop(0,"rgba(0,243,255,"+(a*.55)+")");g.addColorStop(.5,"rgba(176,38,255,"+(a*.35)+")");g.addColorStop(1,"rgba(176,38,255,0)");
-      ctx.fillStyle=g;ctx.fillRect(mcx-rm.width*1.1,mcy-rm.width*1.1,rm.width*2.2,rm.width*2.2);
-    }
-    ctx.globalCompositeOperation="lighter";
-    for(const r of rocks){
-      if(t<r.rise0)continue;
-      if(t>=r.hit){
-        if(!r.done){
-          r.done=true;
-          rings.push({x:r.tx,y:r.ty,t:t,c:r.cyan});
-          for(let s=0;s<8;s++){const a=Math.random()*6.283,sp=2+Math.random()*5;sparks.push({x:r.tx,y:r.ty,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,t:t,c:r.cyan,l:Math.random()*0.4+0.6});}
-        }
-        continue;
-      }
-      const P=posAt(r,t);
-      if(t>=r.launch){
-        /* trail neon: sample titik mundur di jalur lesatan */
-        const col=r.cyan?"0,243,255":"176,38,255";
-        for(let s=1;s<=6;s++){
-          const q=posAt(r,Math.max(r.launch,t-s*9));
-          const q2=posAt(r,Math.max(r.launch,t-(s-1)*9));
-          ctx.strokeStyle="rgba("+col+","+((1-s/7)*0.8)+")";ctx.lineWidth=Math.max(1,size*0.5*(1-s/7));ctx.lineCap="round";
-          ctx.beginPath();ctx.moveTo(q2[0],q2[1]);ctx.lineTo(q[0],q[1]);ctx.stroke();
-        }
-      }
-      drawRock(r,P[0],P[1],r.rot+t*r.spin,P[2]);
-    }
-    /* shockwave ring */
-    for(let i=rings.length-1;i>=0;i--){
-      const g=rings[i],p=(t-g.t)/360;if(p>=1){rings.splice(i,1);continue;}
-      ctx.strokeStyle=(g.c?"rgba(0,243,255,":"rgba(176,38,255,")+(1-p)+")";ctx.lineWidth=4*(1-p)+1;
-      ctx.beginPath();ctx.arc(g.x,g.y,size*(0.4+p*2.6),0,6.283);ctx.stroke();
-      ctx.strokeStyle="rgba(255,255,255,"+(0.7*(1-p))+")";ctx.lineWidth=2*(1-p);
-      ctx.beginPath();ctx.arc(g.x,g.y,size*(0.2+p*1.6),0,6.283);ctx.stroke();
-    }
-    /* serpihan */
-    for(let i=sparks.length-1;i>=0;i--){
-      const s=sparks[i],p=(t-s.t)/(500*s.l);if(p>=1){sparks.splice(i,1);continue;}
-      const d=p*10;ctx.fillStyle=(s.c?"rgba(0,243,255,":"rgba(200,120,255,")+(1-p)+")";
-      ctx.fillRect(s.x+s.vx*d-1.5,s.y+s.vy*d-1.5,3,3);
-    }
-    ctx.globalCompositeOperation="source-over";
-    /* IMPACT FRAME (mode ???% / bangkit): putih sekejap → hitam + garis magenta, sebelum barrage meluncur */
-    if(o.revived&&t<150){
-      if(t<60){ctx.fillStyle="rgba(255,255,255,.92)";ctx.fillRect(0,0,W,H);}
-      else{
-        ctx.fillStyle="rgba(8,0,18,.9)";ctx.fillRect(0,0,W,H);
-        ctx.strokeStyle="rgba(255,60,200,.85)";ctx.lineWidth=2;
-        for(let i=0;i<18;i++){const a=i/18*6.283+0.1,r1=rm.width*.3,r2=Math.max(W,H);ctx.beginPath();ctx.moveTo(mcx+Math.cos(a)*r1,mcy+Math.sin(a)*r1);ctx.lineTo(mcx+Math.cos(a)*r2,mcy+Math.sin(a)*r2);ctx.stroke();}
-      }
-    }
-    raf=requestAnimationFrame(frame);
-  };
-  if(o.revived)shakeScreen(true);
-  raf=requestAnimationFrame(frame);
-}
-window.psyBarrageFx=psyBarrageFx;
-/* ---------- RUBBER BOUNCE & TOON-FORCE (Sun God - Gear 5) ----------
-   Efek pantulan karet elastis: kartu membal lentur, gelombang lantai karet di canvas,
-   dan bintang dizzy kartun berputar di atas kepala musuh. */
-function showDizzyCrown(sel){
-  const el=document.querySelector(sel);if(!el)return;
-  let old=el.querySelector(".dizzy-crown");if(old)old.remove();
-  const c=document.createElement("div");c.className="dizzy-crown";
-  c.innerHTML='<span class="dizzy-star">★</span><span class="dizzy-star">✦</span><span class="dizzy-star">★</span>';
-  el.appendChild(c);
-  setTimeout(()=>{try{c.remove();}catch(e){}},3000);
-}
-window.showDizzyCrown=showDizzyCrown;
-
-function rubberBounceFx(){
-  const me=document.querySelector(".fighter.me"),foe=document.querySelector(".fighter.foe");
-  if(!me||!foe)return;
-  me.classList.remove("rubber-squash");void me.offsetWidth;me.classList.add("rubber-squash");
-  setTimeout(()=>me.classList.remove("rubber-squash"),550);
-  const rm=me.getBoundingClientRect(),rf=foe.getBoundingClientRect();
-  const W=window.innerWidth,H=window.innerHeight,dpr=FXDPR();
-  const cv=document.createElement("canvas");cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
-  cv.style.cssText="position:fixed;left:0;top:0;width:'+W+'px;height:'+H+'px;pointer-events:none;z-index:69";
-  document.body.appendChild(cv);
-  const ctx=cv.getContext("2d");ctx.scale(dpr,dpr);
-  const t0=performance.now(),dur=620;
-  let raf=0;
-  const frame=(now)=>{
-    if(!cv.isConnected){cancelAnimationFrame(raf);return;}
-    const p=(now-t0)/dur;
-    if(p>=1){cancelAnimationFrame(raf);try{cv.remove();}catch(e){}return;}
-    ctx.clearRect(0,0,W,H);
-    ctx.save();
-    // Gelombang tanah karet (wobbly ground)
-    const gy=Math.max(rm.bottom,rf.bottom)+10;
-    ctx.beginPath();ctx.moveTo(0,gy);
-    const waveAmp=(1-p)*18*Math.sin(p*14);
-    ctx.bezierCurveTo(rm.left,gy+waveAmp,rf.left,gy-waveAmp,W,gy);
-    ctx.strokeStyle="rgba(255,230,120,"+(0.75*(1-p))+")";
-    ctx.lineWidth=5*(1-p)+2;ctx.stroke();
-    // Petir kartun kuning/ungu Toon-force
-    if(p<0.55){
-      ctx.strokeStyle=p%0.1<0.05?"#fffa65":"#ffffff";
-      ctx.lineWidth=3;ctx.beginPath();
-      let sx=rm.left+rm.width*0.8,sy=rm.top+rm.height*0.5;
-      const ex=rf.left+rf.width*0.2,ey=rf.top+rf.height*0.5;
-      ctx.moveTo(sx,sy);
-      for(let i=1;i<=4;i++){
-        const tx=sx+(ex-sx)*(i/5)+(Math.random()-0.5)*25;
-        const ty=sy+(ey-sy)*(i/5)+(Math.random()-0.5)*25;
-        ctx.lineTo(tx,ty);
-      }
-      ctx.lineTo(ex,ey);ctx.stroke();
-    }
-    // Gumpalan awan kartun Toon di titik pantul
-    const cp=Math.min(1,p*2);
-    ctx.fillStyle="rgba(255,255,255,"+(0.8*(1-cp))+")";
-    const cx=rm.right,cy=rm.top+rm.height*0.5;
-    for(let a=0;a<6;a++){
-      const ang=a*1.04,dist=cp*32;
-      ctx.beginPath();ctx.arc(cx+Math.cos(ang)*dist,cy+Math.sin(ang)*dist,14*(1-cp*0.7),0,6.28);ctx.fill();
-    }
-    ctx.restore();
-    raf=requestAnimationFrame(frame);
-  };
-  raf=requestAnimationFrame(frame);
-}
-window.rubberBounceFx=rubberBounceFx;
-/* ---------- BAJRANG GUN (Sun God): langit gelap + petir Haki → kepalan raksasa jatuh → impact frame → gempa AOE ke rail cadangan.
-   BJ_T.first = ms (dari awal sambaran) tinju mendarat; performAttack pakai angka ini buat damage/getar. */
-const BJ_T={first:820,fall:340};
-function bajrangGunFx(o){
-  const foe=document.querySelector(".fighter.foe"),me=document.querySelector(".fighter.me");
-  if(!foe||!me)return;
-  const rf=foe.getBoundingClientRect(),rm=me.getBoundingClientRect();if(!rf.width)return;
-  const railEl=document.querySelector(".foe-rail");const rr=railEl?railEl.getBoundingClientRect():null;
-  const W=window.innerWidth,H=window.innerHeight,dpr=FXDPR();
-  const cv=document.createElement("canvas");cv.id="bjCanvas";cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
-  cv.style.cssText="position:fixed;left:0;top:0;width:'+W+'px;height:'+H+'px;pointer-events:none;z-index:68";
-  document.body.appendChild(cv);
-  const ctx=cv.getContext("2d");ctx.scale(dpr,dpr);
-  const sc=bsMs(1000)/1000||1;
-  const HIT=o.t0+BJ_T.first,FALL=BJ_T.fall,END=HIT+1000,t0=performance.now();
-  const ix=rf.left+rf.width/2,iy=rf.top+rf.height*0.55;           // titik benturan
-  const fs=Math.max(150,Math.min(W*0.8,rf.width*2.3));              // lebar kepalan
-  const cracks=[];for(let i=0;i<14;i++){const a=(i/14)*6.283+Math.random()*.3;let x=ix,y=iy;const pts=[[x,y]];const len=(0.5+Math.random()*0.9)*Math.max(W,H)*0.28;for(let s=0;s<7;s++){const d=len/7;x+=Math.cos(a+(Math.random()-.5)*.7)*d;y+=Math.sin(a+(Math.random()-.5)*.7)*d*0.55;pts.push([x,y]);}cracks.push(pts);}
-  const debris=[];for(let i=0;i<FXQ(26);i++){const a=-Math.random()*Math.PI;debris.push({a,v:4+Math.random()*9,s:3+Math.random()*6,c:Math.random()<.5?"#ffd23a":"#fff"});}
-  let raf=0;
-  const E3=x=>x*x*x;
-  const bolt=(x1,y1,x2,y2,col,w)=>{ctx.strokeStyle=col;ctx.lineWidth=w;ctx.lineJoin="miter";ctx.beginPath();ctx.moveTo(x1,y1);const n=7;for(let i=1;i<n;i++){const k=i/n;ctx.lineTo(x1+(x2-x1)*k+(Math.random()-.5)*46,y1+(y2-y1)*k+(Math.random()-.5)*20);}ctx.lineTo(x2,y2);ctx.stroke();};
-  const drawFist=(cx,by,w,alpha)=>{              // by = y dasar (buku jari)
-    const h=w*0.95,x=cx-w/2,y=by-h;
-    ctx.save();ctx.globalAlpha=alpha;
-    // aura api emas di belakang
-    const ag=ctx.createRadialGradient(cx,by-h*0.5,w*0.1,cx,by-h*0.5,w*0.85);ag.addColorStop(0,"rgba(255,230,120,.75)");ag.addColorStop(.6,"rgba(255,110,20,.4)");ag.addColorStop(1,"rgba(255,60,0,0)");
-    ctx.fillStyle=ag;ctx.fillRect(cx-w,by-h*1.5,w*2,h*1.8);
-    // badan telapak
-    const g=ctx.createLinearGradient(x,y,x+w,by);g.addColorStop(0,"#fff7c2");g.addColorStop(.45,"#ffc21a");g.addColorStop(1,"#ff6a00");
-    ctx.fillStyle=g;ctx.strokeStyle="#2b0b00";ctx.lineWidth=Math.max(5,w*0.03);ctx.lineJoin="round";
-    ctx.beginPath();ctx.moveTo(x+w*0.08,by-h*0.12);ctx.lineTo(x+w*0.04,y+h*0.25);ctx.quadraticCurveTo(x+w*0.1,y,x+w*0.5,y);ctx.quadraticCurveTo(x+w*0.9,y,x+w*0.96,y+h*0.25);ctx.lineTo(x+w*0.92,by-h*0.12);ctx.closePath();ctx.fill();ctx.stroke();
-    // 4 buku jari
-    for(let i=0;i<4;i++){const kx=x+w*(0.17+i*0.22),ky=by-h*0.14,kr=w*0.115;const kg=ctx.createRadialGradient(kx-kr*.3,ky-kr*.4,kr*.1,kx,ky,kr);kg.addColorStop(0,"#fffbe0");kg.addColorStop(.6,"#ffb810");kg.addColorStop(1,"#e85a00");ctx.fillStyle=kg;ctx.beginPath();ctx.arc(kx,ky,kr,0,6.283);ctx.fill();ctx.stroke();}
-    // jempol
-    ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(x+w*0.02,by-h*0.45,w*0.09,w*0.14,-0.5,0,6.283);ctx.fill();ctx.stroke();
-    // urat Haki merah-hitam
-    ctx.lineWidth=Math.max(3,w*0.014);
-    for(let i=0;i<5;i++){ctx.strokeStyle=i%2?"#c4001e":"#190008";ctx.beginPath();let px=x+w*(0.18+i*0.16),py=y+h*0.12;ctx.moveTo(px,py);for(let s=0;s<5;s++){px+=(Math.random()-.5)*w*0.07;py+=h*0.13;ctx.lineTo(px,py);}ctx.stroke();}
-    ctx.restore();
-  };
-  const finish=()=>{cancelAnimationFrame(raf);try{cv.remove();}catch(e){}};
-  const frame=(now)=>{
-    if(fxEngineOver()||!cv.isConnected){finish();return;}
-    const t=(now-t0)/sc;if(t>END){finish();return;}
-    ctx.clearRect(0,0,W,H);
-    const pre=Math.min(1,t/320),post=t>HIT?Math.max(0,1-(t-HIT)/700):1;
-    /* langit digelapin + vignette */
-    const dk=0.62*pre*post;
-    ctx.fillStyle="rgba(4,0,14,"+dk+")";ctx.fillRect(0,0,W,H);
-    const vg=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*.25,W/2,H/2,Math.max(W,H)*.75);vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(40,0,10,"+(0.55*pre*post)+")");ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
-    ctx.globalCompositeOperation="lighter";
-    /* petir Haki merah-hitam sebelum jatuh */
-    if(t<HIT&&t>60&&Math.random()<0.55){const bx=Math.random()*W;bolt(bx,0,bx+(Math.random()-.5)*160,H*(0.25+Math.random()*0.3),"rgba(255,40,70,.85)",3);bolt(bx,0,bx+(Math.random()-.5)*120,H*0.3,"rgba(255,255,255,.55)",1.2);}
-    ctx.globalCompositeOperation="source-over";
-    /* kepalan jatuh */
-    const fs0=HIT-FALL;
-    if(t>=fs0&&t<HIT+260){
-      const p=Math.min(1,(t-fs0)/FALL),e=E3(p);
-      const by0=-fs*0.2,by1=iy+fs*0.12;
-      const by=by0+(by1-by0)*e;
-      const sw=fs*(0.8+0.2*e);                                     // makin dekat makin gede
-      if(t<HIT){                                                   // speed lines vertikal
-        ctx.globalCompositeOperation="lighter";
-        for(let i=0;i<14;i++){const lx=ix+(Math.random()-.5)*sw*1.3,ly=by-sw*0.9-Math.random()*H*0.45;ctx.strokeStyle=Math.random()<.5?"rgba(255,220,100,.7)":"rgba(255,255,255,.7)";ctx.lineWidth=1+Math.random()*3;ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(lx,ly+H*0.3);ctx.stroke();}
-        ctx.globalCompositeOperation="source-over";
-      }
-      const fa=t<HIT+120?1:Math.max(0,1-(t-HIT-120)/140);
-      drawFist(ix,by,sw,fa);
-    }
-    /* impact */
-    if(t>=HIT){
-      const q=t-HIT;
-      ctx.globalCompositeOperation="lighter";
-      // retakan tanah
-      cracks.forEach(c=>{const prog=Math.min(1,q/260),a=Math.max(0,1-q/800),n=Math.max(2,Math.round(c.length*prog));ctx.strokeStyle="rgba(255,200,60,"+a+")";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(c[0][0],c[0][1]);for(let i=1;i<n;i++)ctx.lineTo(c[i][0],c[i][1]);ctx.stroke();});
-      // shockwave radial emas dari titik benturan
-      for(let k=0;k<3;k++){const pk=(q-k*90)/600;if(pk<=0||pk>=1)continue;ctx.strokeStyle="rgba(255,"+(200-k*40)+",70,"+(0.9*(1-pk))+")";ctx.lineWidth=10*(1-pk)+2;ctx.beginPath();ctx.ellipse(ix,iy+fs*0.1,fs*(0.2+pk*1.3),fs*(0.08+pk*0.5),0,0,6.283);ctx.stroke();}
-      // gelombang AOE ke rail cadangan
-      if(rr){const pr=Math.min(1,Math.max(0,(q-80)/420)),ar=Math.max(0,1-Math.max(0,q-500)/400);if(pr>0){const rx=ix+(rr.left+rr.width/2-ix)*pr,ry=iy+(rr.top+rr.height/2-iy)*pr;const gg=ctx.createRadialGradient(rx,ry,2,rx,ry,60);gg.addColorStop(0,"rgba(255,230,120,"+(0.85*ar)+")");gg.addColorStop(1,"rgba(255,120,0,0)");ctx.fillStyle=gg;ctx.fillRect(rx-60,ry-60,120,120);ctx.strokeStyle="rgba(255,210,80,"+(0.8*ar)+")";ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(rr.left+rr.width/2,rr.top+rr.height/2,rr.width*(0.2+pr*0.55),rr.height*(0.2+pr*0.55),0,0,6.283);ctx.stroke();}}
-      // debris
-      debris.forEach(d=>{const s=q/16,x=ix+Math.cos(d.a)*d.v*s,y=iy+Math.sin(d.a)*d.v*s+0.5*0.35*s*s;const al=Math.max(0,1-q/800);ctx.fillStyle=d.c;ctx.globalAlpha=al;ctx.fillRect(x,y,d.s,d.s);ctx.globalAlpha=1;});
-      ctx.globalCompositeOperation="source-over";
-      // impact frames monokrom 2 frame
-      if(q<60){ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H);}
-      else if(q<130){
-        ctx.fillStyle="#000";ctx.fillRect(0,0,W,H);ctx.strokeStyle="#fff";ctx.lineWidth=3;
-        for(let i=0;i<26;i++){const a=i/26*6.283+0.05,r1=fs*0.18,r2=Math.max(W,H);ctx.beginPath();ctx.moveTo(ix+Math.cos(a)*r1,iy+Math.sin(a)*r1);ctx.lineTo(ix+Math.cos(a)*r2,iy+Math.sin(a)*r2);ctx.stroke();}
-      }
-    }
-    raf=requestAnimationFrame(frame);
-  };
-  raf=requestAnimationFrame(frame);
-}
-window.bajrangGunFx=bajrangGunFx;
-
-/* ---------- HOLLOW PURPLE (Blessed Sorcerer / Gojo):
-   Fase 1: Space Inversion + Charge Cursed Technique Reversal RED (kiri) & Lapse BLUE (kanan).
-   Fase 2: Collision (Red & Blue tabrakan di tengah menghasilkan kilatan blinding flash).
-   Fase 3: Birth of Hollow Purple (bola singularitas hitam berinti ungu dengan aura petir).
-   Fase 4: Erasure Beam (Purple meluncur kencang melibas musuh, merobek realitas & screen shake). */
-const HP_T={first:1120};
-function hollowPurpleFx(o){
-  const foe=document.querySelector('.fighter.foe'),me=document.querySelector('.fighter.me');
-  if(!foe||!me)return;
-  const rf=foe.getBoundingClientRect(),rm=me.getBoundingClientRect();if(!rf.width)return;
-  const W=window.innerWidth,H=window.innerHeight,dpr=FXDPR();
-  const cv=document.createElement('canvas');cv.id='hpCanvas';cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
-  cv.style.cssText='position:fixed;left:0;top:0;width:"+W+"px;height:"+H+"px;pointer-events:none;z-index:68';
-  document.body.appendChild(cv);
-  const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
-  const sc=bsMs(1000)/1000||1;
-  const t0=performance.now(),TOTAL=1800;
-  const startX=rm.left+rm.width*0.7,startY=rm.top+rm.height*0.45;
-  const targetX=rf.left+rf.width*0.5,targetY=rf.top+rf.height*0.5;
-
-  const particles=[];
-  for(let i=0;i<FXQ(40);i++){
-    particles.push({
-      type:i%2===0?'red':'blue',
-      ang:Math.random()*6.283,
-      rad:15+Math.random()*35,
-      spd:(0.04+Math.random()*0.05)*(Math.random()<.5?1:-1),
-      sz:2+Math.random()*3
-    });
-  }
-
-  let raf=0;
-  const frame=(now)=>{
-    const el=(now-t0)/sc;
-    if(el>=TOTAL||!document.body.contains(cv)){
-      cancelAnimationFrame(raf);
-      if(cv.parentNode)cv.parentNode.removeChild(cv);
-      return;
-    }
-    ctx.clearRect(0,0,W,H);
-
-    // FASE 1: Inversion & Spawning Red (kiri-bawah) + Blue (kanan-atas) (0 - 500ms)
-    if(el<500){
-      const p=el/500;
-      ctx.fillStyle='rgba(8,3,18,'+(0.75*Math.min(1,p*2))+')';
-      ctx.fillRect(0,0,W,H);
-
-      const redX=startX-45*(1-p*0.5),redY=startY+25*(1-p*0.5);
-      const blueX=startX+45*(1-p*0.5),blueY=startY-25*(1-p*0.5);
-      const orbR=(14+p*12);
-
-      // RED ORB
-      const gradRed=ctx.createRadialGradient(redX,redY,2,redX,redY,orbR*2);
-      gradRed.addColorStop(0,'#fff');
-      gradRed.addColorStop(0.3,'#ff1a40');
-      gradRed.addColorStop(0.7,'#aa0022');
-      gradRed.addColorStop(1,'rgba(170,0,34,0)');
-      ctx.fillStyle=gradRed;
-      ctx.beginPath();ctx.arc(redX,redY,orbR*2,0,6.283);ctx.fill();
-
-      // BLUE ORB
-      const gradBlue=ctx.createRadialGradient(blueX,blueY,2,blueX,blueY,orbR*2);
-      gradBlue.addColorStop(0,'#fff');
-      gradBlue.addColorStop(0.3,'#00d4ff');
-      gradBlue.addColorStop(0.7,'#0044ff');
-      gradBlue.addColorStop(1,'rgba(0,68,255,0)');
-      ctx.fillStyle=gradBlue;
-      ctx.beginPath();ctx.arc(blueX,blueY,orbR*2,0,6.283);ctx.fill();
-
-      particles.forEach(pt=>{
-        pt.ang+=pt.spd;
-        const ox=pt.type==='red'?redX:blueX;
-        const oy=pt.type==='red'?redY:blueY;
-        const px=ox+Math.cos(pt.ang)*(pt.rad*(1-p*0.4));
-        const py=oy+Math.sin(pt.ang)*(pt.rad*(1-p*0.4));
-        ctx.fillStyle=pt.type==='red'?'#ff4d6d':'#48cae4';
-        ctx.beginPath();ctx.arc(px,py,pt.sz,0,6.283);ctx.fill();
-      });
-    }
-
-    // FASE 2: COLLISION / FUSION (500 - 800ms)
-    else if(el<800){
-      const p=(el-500)/300;
-      ctx.fillStyle='rgba(4,0,10,0.85)';
-      ctx.fillRect(0,0,W,H);
-
-      const dist=45*(1-p);
-      const redX=startX-dist,redY=startY+dist*0.5;
-      const blueX=startX+dist,blueY=startY-dist*0.5;
-      const orbR=26;
-
-      ctx.fillStyle='rgba(255,30,60,'+(1-p*0.5)+')';
-      ctx.beginPath();ctx.arc(redX,redY,orbR,0,6.283);ctx.fill();
-
-      ctx.fillStyle='rgba(0,180,255,'+(1-p*0.5)+')';
-      ctx.beginPath();ctx.arc(blueX,blueY,orbR,0,6.283);ctx.fill();
-
-      if(p>0.85){
-        const fA=(p-0.85)/0.15;
-        ctx.fillStyle='rgba(255,255,255,'+(0.9*fA)+')';
-        ctx.fillRect(0,0,W,H);
-      }
-    }
-
-    // FASE 3: PURPLE SINGULARITY FORMED (800 - 1000ms)
-    else if(el<1000){
-      const p=(el-800)/200;
-      ctx.fillStyle='rgba(6,2,14,'+(0.85*(1-p*0.3))+')';
-      ctx.fillRect(0,0,W,H);
-
-      const prbR=28+p*10;
-      const gPurple=ctx.createRadialGradient(startX,startY,4,startX,startY,prbR*2.8);
-      gPurple.addColorStop(0,'#ffffff');
-      gPurple.addColorStop(0.2,'#d946ef');
-      gPurple.addColorStop(0.5,'#9333ea');
-      gPurple.addColorStop(0.8,'#3b0764');
-      gPurple.addColorStop(1,'rgba(59,7,100,0)');
-      ctx.fillStyle=gPurple;
-      ctx.beginPath();ctx.arc(startX,startY,prbR*2.8,0,6.283);ctx.fill();
-
-      ctx.fillStyle='#05000a';
-      ctx.beginPath();ctx.arc(startX,startY,prbR*0.65,0,6.283);ctx.fill();
-
-      ctx.strokeStyle='#f0abfc';ctx.lineWidth=2.5;
-      for(let i=0;i<6;i++){
-        const a=i*1.04+p*5;
-        ctx.beginPath();
-        ctx.moveTo(startX+Math.cos(a)*prbR*0.7,startY+Math.sin(a)*prbR*0.7);
-        const midA=a+(Math.random()-.5)*0.8;
-        ctx.lineTo(startX+Math.cos(midA)*prbR*1.6,startY+Math.sin(midA)*prbR*1.6);
-        ctx.lineTo(startX+Math.cos(a+0.2)*prbR*2.2,startY+Math.sin(a+0.2)*prbR*2.2);
-        ctx.stroke();
-      }
-    }
-
-    // FASE 4: ERASURE BEAM / LAUNCH TO FOE (1000 - 1700ms)
-    else {
-      const p=Math.min(1,(el-1000)/320);
-      const curX=startX+(targetX-startX)*p;
-      const curY=startY+(targetY-startY)*p;
-      const postP=Math.max(0,(el-1320)/380);
-
-      ctx.save();
-      const gradBeam=ctx.createLinearGradient(startX,startY,curX,curY);
-      gradBeam.addColorStop(0,'rgba(147,51,234,0.1)');
-      gradBeam.addColorStop(0.7,'rgba(192,38,211,0.6)');
-      gradBeam.addColorStop(1,'rgba(240,171,252,0.95)');
-      ctx.strokeStyle=gradBeam;
-      ctx.lineWidth=Math.max(4,44*(1-postP*0.8));
-      ctx.lineCap='round';
-      ctx.beginPath();ctx.moveTo(startX,startY);ctx.lineTo(curX,curY);ctx.stroke();
-      ctx.restore();
-
-      if(p<1){
-        const prbR=36;
-        const gPurple=ctx.createRadialGradient(curX,curY,2,curX,curY,prbR*2.2);
-        gPurple.addColorStop(0,'#ffffff');
-        gPurple.addColorStop(0.25,'#c026d3');
-        gPurple.addColorStop(0.6,'#7e22ce');
-        gPurple.addColorStop(1,'rgba(126,34,206,0)');
-        ctx.fillStyle=gPurple;
-        ctx.beginPath();ctx.arc(curX,curY,prbR*2.2,0,6.283);ctx.fill();
-
-        ctx.fillStyle='#030006';
-        ctx.beginPath();ctx.arc(curX,curY,prbR*0.7,0,6.283);ctx.fill();
-      }
-
-      if(el>=1250){
-        const q=el-1250;
-        const impA=Math.max(0,1-q/450);
-        const impR=Math.min(W*0.6,180+(q*1.2));
-
-        ctx.strokeStyle='rgba(217,70,239,'+(0.9*impA)+')';
-        ctx.lineWidth=6;
-        ctx.beginPath();ctx.arc(targetX,targetY,impR*0.7,0,6.283);ctx.stroke();
-
-        ctx.strokeStyle='rgba(255,255,255,'+(0.85*impA)+')';
-        ctx.lineWidth=3;
-        ctx.beginPath();ctx.arc(targetX,targetY,impR*0.9,0,6.283);ctx.stroke();
-
-        const gBlast=ctx.createRadialGradient(targetX,targetY,10,targetX,targetY,impR);
-        gBlast.addColorStop(0,'rgba(255,255,255,'+(0.9*impA)+')');
-        gBlast.addColorStop(0.2,'rgba(217,70,239,'+(0.75*impA)+')');
-        gBlast.addColorStop(0.5,'rgba(88,28,135,'+(0.6*impA)+')');
-        gBlast.addColorStop(1,'rgba(0,0,0,0)');
-        ctx.fillStyle=gBlast;
-        ctx.beginPath();ctx.arc(targetX,targetY,impR,0,6.283);ctx.fill();
-
-        if(q<50){
-          ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
-        } else if(q<100){
-          ctx.fillStyle='#100018';ctx.fillRect(0,0,W,H);
-        }
-      }
-    }
-
-    raf=requestAnimationFrame(frame);
-  };
-  raf=requestAnimationFrame(frame);
-}
-window.hollowPurpleFx=hollowPurpleFx;
-
-/* ---------- SUPER MEGA DEATH ROCKET (Havoc Wrecker / Jinx):
-   Rework Epic:
-   1. Passive Cut-In Banner: "SUPER MEGA DEATH ROCKET // HAVOC WRECKER"
-   2. Crosshair penguncian neon grafiti merah & cyan di kartu target.
-   3. Peluncuran Parabola Raksasa (Roket melompat melengkung ke atas langit, berputar, membesar menjadi roket hiu kolosal/raksasa).
-   4. Menghujam turun ke kartu musuh dari atas dengan semburan api & asap neon pelangi, lalu BOOM meledak dahsyat (Nuclear Neon Fireball + Shockwave Rings + Flash Frame). ---------- */
-const HR_T={first:620};
-function havocRocketFx(o){
-  o=o||{};
-  const fromSel=o.fromSel||".fighter.me",toSel=o.toSel||".fighter.foe";
-  const fromEl=document.querySelector(fromSel),toEl=document.querySelector(toSel);
-  if(!fromEl||!toEl)return;
-  const rf=fromEl.getBoundingClientRect(),rt=toEl.getBoundingClientRect();
-  if(!rf.width||!rt.width)return;
-  const railEl=document.querySelector(toSel.includes("foe")?".foe-rail":".bench-rail");
-  const rr=railEl?railEl.getBoundingClientRect():null;
-  const W=window.innerWidth,H=window.innerHeight,dpr=FXDPR();
-  const cv=document.createElement("canvas");cv.id="hrCanvas";cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
-  cv.style.cssText="position:fixed;left:0;top:0;width:'+W+'px;height:'+H+'px;pointer-events:none;z-index:68";
-  document.body.appendChild(cv);
-  const ctx=cv.getContext("2d");ctx.scale(dpr,dpr);
-  const sc=bsMs(1000)/1000||1;
-  const t0=performance.now(),HIT=HR_T.first,TOTAL=1380;
-  const sx=rf.left+rf.width*0.5,sy=rf.top+rf.height*0.5;
-  const tx=rt.left+rt.width*0.5,ty=rt.top+rt.height*0.5;
-  const dir=tx>=sx?1:-1;
-
-  /* Entry battle cut-in removed — only ultimate/passive cut-ins show */
-
-  // Partikel percikan ledakan
-  const particles=[];
-  for(let i=0;i<FXQ(65);i++){
-    const ang=Math.random()*6.283,spd=4+Math.random()*13;
-    particles.push({
-      x:tx,y:ty,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd-2,
-      sz:4+Math.random()*8,
-      c:i%4===0?"#ffffff":i%3===0?"#ff0055":i%2===0?"#00ffff":"#ffe600",
-      life:1
-    });
-  }
-
-  // Gambar Roket Hiu Super Besar (Colossal Shark Rocket)
-  const drawSuperSharkRocket=(cx,cy,rot,scale,alpha)=>{
-    ctx.save();
-    ctx.translate(cx,cy);
-    ctx.rotate(rot);
-    ctx.scale(scale,scale);
-    ctx.globalAlpha=alpha;
-
-    // Api & asap semburan pendorong ekor roket
-    for(let k=1;k<=6;k++){
-      const trX=-k*24-Math.random()*12,trY=(Math.random()-0.5)*18;
-      const trR=10+k*6;
-      const gTr=ctx.createRadialGradient(trX,trY,3,trX,trY,trR);
-      gTr.addColorStop(0,"rgba(255,255,255,0.95)");
-      gTr.addColorStop(0.3,k%2===0?"rgba(255,0,85,0.85)":"rgba(0,255,255,0.85)");
-      gTr.addColorStop(0.7,"rgba(255,230,0,0.5)");
-      gTr.addColorStop(1,"rgba(0,0,0,0)");
-      ctx.fillStyle=gTr;
-      ctx.beginPath();ctx.arc(trX,trY,trR,0,6.283);ctx.fill();
-    }
-
-    const rw=115,rh=46;
-    // Sirip ekor roket
-    ctx.fillStyle="#090b10";
-    ctx.strokeStyle="#ff0055";ctx.lineWidth=3;
-    ctx.beginPath();
-    ctx.moveTo(-rw*0.45,-rh*0.85);ctx.lineTo(-rw*0.12,-rh*0.35);ctx.lineTo(-rw*0.45,0);
-    ctx.lineTo(-rw*0.12,rh*0.35);ctx.lineTo(-rw*0.45,rh*0.85);ctx.lineTo(-rw*0.38,0);
-    ctx.closePath();ctx.fill();ctx.stroke();
-
-    // Tabung metalik biru-cyan grafiti neon
-    const gBody=ctx.createLinearGradient(-rw*0.4,-rh*0.5,-rw*0.4,rh*0.5);
-    gBody.addColorStop(0,"#00ffff");
-    gBody.addColorStop(0.4,"#081224");
-    gBody.addColorStop(0.7,"#ff0077");
-    gBody.addColorStop(1,"#ffea00");
-    ctx.fillStyle=gBody;
-    ctx.strokeStyle="#ffffff";
-    ctx.lineWidth=2.5;
-    ctx.beginPath();
-    ctx.moveTo(-rw*0.42,-rh*0.45);
-    ctx.lineTo(rw*0.22,-rh*0.45);
-    ctx.quadraticCurveTo(rw*0.52,0,rw*0.22,rh*0.45);
-    ctx.lineTo(-rw*0.42,rh*0.45);
-    ctx.closePath();ctx.fill();ctx.stroke();
-
-    // Moncong gigi taring hiu grafiti
-    ctx.fillStyle="#ffffff";
-    ctx.beginPath();
-    ctx.moveTo(rw*0.12,-rh*0.32);ctx.lineTo(rw*0.28,-rh*0.16);ctx.lineTo(rw*0.14,0);
-    ctx.lineTo(rw*0.28,rh*0.16);ctx.lineTo(rw*0.12,rh*0.32);
-    ctx.lineTo(rw*0.4,0);ctx.closePath();ctx.fill();
-
-    // Mata hiu merah gila menyala
-    ctx.fillStyle="#ff0055";
-    ctx.beginPath();ctx.arc(rw*0.06,-rh*0.22,5,0,6.283);ctx.fill();
-    ctx.fillStyle="#ffffff";
-    ctx.beginPath();ctx.arc(rw*0.06,-rh*0.22,2,0,6.283);ctx.fill();
-
-    // Grafiti X neon di badan roket
-    ctx.strokeStyle="#00ffff";ctx.lineWidth=3;
-    ctx.beginPath();
-    ctx.moveTo(-rw*0.2,-rh*0.22);ctx.lineTo(-rw*0.05,rh*0.22);
-    ctx.moveTo(-rw*0.05,-rh*0.22);ctx.lineTo(-rw*0.2,rh*0.22);
-    ctx.stroke();
-
-    ctx.restore();
-  };
-
-  let raf=0;
-  const finish=()=>{cancelAnimationFrame(raf);try{cv.remove();}catch(e){}};
-  const frame=(now)=>{
-    if(fxEngineOver()||!cv.isConnected){finish();return;}
-    const el=(now-t0)/sc;
-    if(el>TOTAL){finish();return;}
-    ctx.clearRect(0,0,W,H);
-
-    // 1. Crosshair Penguncian Target Neon Grafiti (0 - HIT)
-    if(el<HIT+100){
-      const ca=el<120?el/120:el>HIT?Math.max(0,1-(el-HIT)/100):1;
-      const chR=rt.width*0.62;
-      ctx.save();
-      ctx.translate(tx,ty);
-      ctx.rotate(el*0.007);
-      ctx.strokeStyle=`rgba(255,0,85,${ca*0.95})`;
-      ctx.lineWidth=3.5;
-      ctx.beginPath();ctx.arc(0,0,chR,0,6.283);ctx.stroke();
-      ctx.strokeStyle=`rgba(0,255,255,${ca*0.85})`;
-      ctx.lineWidth=2.5;
-      ctx.beginPath();
-      ctx.moveTo(-rt.width*0.85,0);ctx.lineTo(rt.width*0.85,0);
-      ctx.moveTo(0,-rt.height*0.85);ctx.lineTo(0,rt.height*0.85);
-      ctx.stroke();
-      // Tag TARGET LOCKED
-      ctx.font="bold 13px 'Barlow Condensed', sans-serif";
-      ctx.fillStyle=`rgba(255,230,0,${ca*0.95})`;
-      ctx.textAlign="center";
-      ctx.fillText("⚠ TARGET LOCKED ⚠",0,-chR-8);
-      ctx.restore();
-    }
-
-    // 2. Lintasan Melompat & Membesar Parabola (Rocket Jump & Colossal Scale-Up) (0 -> HIT)
-    if(el<=HIT){
-      const p=Math.min(1,el/HIT);
-      // Kurva Bezier Kuadratik: SX -> Apex puncak layar -> TX
-      const apexY=Math.min(sy,ty)-180;
-      const apexX=(sx+tx)*0.5;
-      const curX=(1-p)*(1-p)*sx+2*(1-p)*p*apexX+p*p*tx;
-      const curY=(1-p)*(1-p)*sy+2*(1-p)*p*apexY+p*p*ty;
-
-      // Turunan pertama untuk rotasi roket mengikuti lengkungan parabola
-      const vx=2*(1-p)*(apexX-sx)+2*p*(tx-apexX);
-      const vy=2*(1-p)*(apexY-sy)+2*p*(ty-apexY);
-      const curAng=Math.atan2(vy,vx);
-
-      // Skala roket: Dari ukuran normal 0.75x melompat membesar hingga 2.2x roket raksasa kolosal!
-      const curScale=0.75+1.45*Math.pow(p,1.2);
-      drawSuperSharkRocket(curX,curY,curAng,curScale,Math.min(1,p*3));
-    }
-
-    // 3. Ledakan Nuklir Neon Dahsyat (BOOM!) (el >= HIT)
-    if(el>=HIT){
-      const q=el-HIT;
-      const expA=Math.max(0,1-q/680);
-      const rExp=Math.min(W*0.5,rt.width*3.4)*Math.sqrt(q/420);
-
-      ctx.save();
-      ctx.globalCompositeOperation="lighter";
-
-      // Kilatan cahaya impact awal (Nuclear Flash)
-      if(q<90){
-        ctx.fillStyle=q<45?"rgba(255,255,255,0.95)":"rgba(255,0,85,0.85)";
-        ctx.fillRect(0,0,W,H);
-      }
-
-      // Ring shockwave dahsyat berlapis
-      ctx.strokeStyle=`rgba(0,255,255,${expA*0.95})`;
-      ctx.lineWidth=8*(1-q/680)+2;
-      ctx.beginPath();ctx.arc(tx,ty,rExp*0.85,0,6.283);ctx.stroke();
-
-      ctx.strokeStyle=`rgba(255,0,85,${expA*0.95})`;
-      ctx.lineWidth=5*(1-q/680)+1;
-      ctx.beginPath();ctx.arc(tx,ty,rExp*1.18,0,6.283);ctx.stroke();
-
-      ctx.strokeStyle=`rgba(255,230,0,${expA*0.85})`;
-      ctx.lineWidth=4*(1-q/680)+1;
-      ctx.beginPath();ctx.arc(tx,ty,rExp*1.4,0,6.283);ctx.stroke();
-
-      // Ledakan Fireball Grafiti Neon Raksasa
-      const gExp=ctx.createRadialGradient(tx,ty,6,tx,ty,rExp);
-      gExp.addColorStop(0,`rgba(255,255,255,${expA*0.98})`);
-      gExp.addColorStop(0.2,`rgba(255,0,102,${expA*0.9})`);
-      gExp.addColorStop(0.55,`rgba(0,255,234,${expA*0.75})`);
-      gExp.addColorStop(0.85,`rgba(157,78,221,${expA*0.45})`);
-      gExp.addColorStop(1,"rgba(0,0,0,0)");
-      ctx.fillStyle=gExp;
-      ctx.beginPath();ctx.arc(tx,ty,rExp,0,6.283);ctx.fill();
-
-      // Sambaran shockwave ke barisan cadangan musuh
-      if(rr&&rr.width>0){
-        const rx=rr.left+rr.width*0.5,ry=rr.top+rr.height*0.5;
-        const pr=Math.min(1,q/240);
-        const bx=tx+(rx-tx)*pr,by=ty+(ry-ty)*pr;
-        ctx.strokeStyle=`rgba(255,0,85,${0.9*expA})`;
-        ctx.lineWidth=8*expA;
-        ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(bx,by);ctx.stroke();
-        if(pr>0.3){
-          ctx.strokeStyle=`rgba(0,255,255,${0.85*expA})`;
-          ctx.lineWidth=4*expA;
-          ctx.beginPath();
-          ctx.ellipse(rx,ry,rr.width*0.5*pr,rr.height*0.6*pr,0,0,6.283);
-          ctx.stroke();
-        }
-      }
-
-      // Partikel serpihan grafiti & bintang bertebaran
-      particles.forEach(pt=>{
-        pt.x+=pt.vx;pt.y+=pt.vy;
-        pt.vx*=0.94;pt.vy*=0.94;
-        ctx.fillStyle=pt.c;ctx.globalAlpha=expA;
-        ctx.fillRect(pt.x-pt.sz/2,pt.y-pt.sz/2,pt.sz,pt.sz);
-      });
-      ctx.globalAlpha=1;
-
-      ctx.restore();
-    }
-
-    raf=requestAnimationFrame(frame);
-  };
-  raf=requestAnimationFrame(frame);
-}
-window.havocRocketFx=havocRocketFx;
-
-/* ---------- THE WORLD ENDER (Darkin Lord / Aatrox):
-   Cycle 3 Tahap Serangan (ph 0, 1, 2) + Kebangkitan (Revive):
-   - Tahap 0 (First Q - Heavy Overhead Cleave): Tebasan vertikal pedang raksasa Darkin dari atas dengan retakan kawah merah-hitam.
-   - Tahap 1 (Second Q - Wide Crimson Crescent Sweep AOE): Ayunan sabit lebar merah darah yang menyapu target utama dan barisan cadangan.
-   - Tahap 2 (Third Q - Descending World Ender Slam Pierce): Sayap iblis Darkin membentang di tengah lalu menghujamkan pedang raksasa dari langit (Sweetspot True Pierce) + rantai darah lifesteal kembali ke penyerang.
-   - Revive (World Ender Awakening): Pilar darah raksasa meledak di kartu yang bangkit + bentangan sayap iblis merah-hitam & detak jantung Darkin. */
-const WE_T={first:520};
-function worldEnderFx(o){
-  o=o||{};
-  const fromSel=o.fromSel||".fighter.me",toSel=o.toSel||".fighter.foe";
-  const fromEl=document.querySelector(fromSel),toEl=document.querySelector(toSel);
-  if(!fromEl||!toEl)return;
-  const rf=fromEl.getBoundingClientRect(),rt=toEl.getBoundingClientRect();
-  if(!rf.width||!rt.width)return;
-  const ph=o.phase||0;
-  const revived=!!o.revived;
-  const railEl=document.querySelector(toSel.includes("foe")?".foe-rail":".bench-rail");
-  const rr=railEl?railEl.getBoundingClientRect():null;
-  const W=window.innerWidth,H=window.innerHeight,dpr=FXDPR();
-  const cv=document.createElement("canvas");cv.id="weCanvas";cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
-  cv.style.cssText="position:fixed;left:0;top:0;width:'+W+'px;height:'+H+'px;pointer-events:none;z-index:68";
-  document.body.appendChild(cv);
-  const ctx=cv.getContext("2d");ctx.scale(dpr,dpr);
-  const sc=bsMs(1000)/1000||1;
-  const t0=performance.now(),HIT=WE_T.first,TOTAL=1280;
-  const sx=rf.left+rf.width*0.5,sy=rf.top+rf.height*0.5;
-  const tx=rt.left+rt.width*0.5,ty=rt.top+rt.height*0.5;
-  const dir=tx>=sx?1:-1;
-
-  const slashes=[];
-  const sparks=[];
-  const bloodOrbs=[];
-  for(let i=0;i<FXQ(36);i++){
-    const a=Math.random()*6.283,spd=3+Math.random()*9;
-    sparks.push({
-      x:tx,y:ty,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd-1.5,
-      sz:3+Math.random()*5,c:i%3===0?"#ffffff":i%2===0?"#ff1e42":"#7a0016"
-    });
-  }
-  for(let i=0;i<FXQ(14);i++){
-    bloodOrbs.push({
-      delay:i*22,
-      offX:(Math.random()-0.5)*70,
-      offY:(Math.random()-0.5)*70,
-      r:4+Math.random()*5
-    });
-  }
-  const slashN=FXQ(10);
-  for(let i=0;i<slashN;i++){
-    const a=(i/slashN)*6.283+Math.random()*0.3;
-    slashes.push({a,len:rt.width*(0.65+Math.random()*0.65)});
-  }
-
-  const drawDarkinSword=(cx,cy,rot,scale,alpha)=>{
-    ctx.save();
-    ctx.translate(cx,cy);
-    ctx.rotate(rot);
-    ctx.scale(scale,scale);
-    ctx.globalAlpha=alpha;
-    // Aura bilah merah-hitam
-    ctx.shadowColor="#ff0033";
-    ctx.shadowBlur=24;
-    // Bilah bergerigi Darkin Greatsword
-    const gBlade=ctx.createLinearGradient(0,-150,0,50);
-    gBlade.addColorStop(0,"#ffffff");
-    gBlade.addColorStop(0.18,"#ff1e42");
-    gBlade.addColorStop(0.6,"#8a001a");
-    gBlade.addColorStop(1,"#160006");
-    ctx.fillStyle=gBlade;
-    ctx.strokeStyle="#ff4d6d";
-    ctx.lineWidth=2.5;
-    ctx.beginPath();
-    ctx.moveTo(0,-165); // ujung runcing
-    ctx.lineTo(24,-105);
-    ctx.lineTo(15,-85); // gerigi atas
-    ctx.lineTo(30,-30);
-    ctx.lineTo(18,15);
-    ctx.lineTo(-18,15);
-    ctx.lineTo(-30,-30);
-    ctx.lineTo(-15,-85);
-    ctx.lineTo(-24,-105);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-    // Inti urat darah berdenyut di tengah bilah
-    ctx.fillStyle="#ffccd5";
-    ctx.beginPath();
-    ctx.moveTo(0,-135);
-    ctx.lineTo(8,-45);
-    ctx.lineTo(0,5);
-    ctx.lineTo(-8,-45);
-    ctx.closePath();
-    ctx.fill();
-    // Guard sayap kelelawar / jantung Darkin
-    ctx.fillStyle="#1f040a";
-    ctx.strokeStyle="#ff1e42";
-    ctx.lineWidth=2;
-    ctx.beginPath();
-    ctx.moveTo(-46,8);
-    ctx.lineTo(-16,18);
-    ctx.lineTo(0,28);
-    ctx.lineTo(16,18);
-    ctx.lineTo(46,8);
-    ctx.lineTo(24,30);
-    ctx.lineTo(0,24);
-    ctx.lineTo(-24,30);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-    // Mata Jantung Darkin di tengah guard
-    ctx.fillStyle="#ff0033";
-    ctx.beginPath();
-    ctx.arc(0,19,6,0,6.283);
-    ctx.fill();
-    ctx.fillStyle="#ffffff";
-    ctx.beginPath();
-    ctx.arc(0,19,2.5,0,6.283);
-    ctx.fill();
-    ctx.restore();
-  };
-
-  const drawDemonWings=(cx,cy,span,alpha)=>{
-    ctx.save();
-    ctx.translate(cx,cy);
-    ctx.globalAlpha=alpha;
-    ctx.shadowColor="#ff0033";
-    ctx.shadowBlur=22;
-    for(let s of [-1,1]){
-      ctx.save();
-      ctx.scale(s,1);
-      const gWing=ctx.createLinearGradient(0,0,span,0);
-      gWing.addColorStop(0,"rgba(255,30,66,0.9)");
-      gWing.addColorStop(0.55,"rgba(120,0,24,0.75)");
-      gWing.addColorStop(1,"rgba(15,0,5,0.1)");
-      ctx.fillStyle=gWing;
-      ctx.strokeStyle="rgba(255,77,109,0.85)";
-      ctx.lineWidth=2;
-      ctx.beginPath();
-      ctx.moveTo(10,0);
-      ctx.quadraticCurveTo(span*0.45,-span*0.65,span,-span*0.42);
-      ctx.lineTo(span*0.78,-span*0.05);
-      ctx.lineTo(span*0.92,span*0.22);
-      ctx.lineTo(span*0.58,span*0.18);
-      ctx.lineTo(span*0.4,span*0.45);
-      ctx.quadraticCurveTo(span*0.18,span*0.25,10,16);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-    ctx.restore();
-  };
-
-  let raf=0;
-  const finish=()=>{cancelAnimationFrame(raf);try{cv.remove();}catch(e){}};
-  const frame=(now)=>{
-    if(fxEngineOver()||!cv.isConnected){finish();return;}
-    const el=(now-t0)/sc;
-    if(el>TOTAL){finish();return;}
-    ctx.clearRect(0,0,W,H);
-
-    // Atmosfer Abyssal Crimson Vignette
-    const envA=el<HIT?Math.min(1,el/220):Math.max(0,1-(el-HIT)/680);
-    ctx.fillStyle=`rgba(12,0,4,${(ph===2?0.58:0.38)*envA})`;
-    ctx.fillRect(0,0,W,H);
-
-    // Sayap Iblis di punggung penyerang (selalu muncul saat sudah Revive atau saat Tahap ke-3)
-    if((revived||ph===2)&&el<HIT+340){
-      const wA=Math.min(1,el/160)*Math.max(0,1-(el-HIT)/360);
-      drawDemonWings(sx,sy-rf.height*0.1,rf.width*(ph===2?1.35:1.05),wA*0.85);
-    }
-
-    // FASE ANTISIPASI & AYUNAN PEDANG (0 -> HIT)
-    if(el<=HIT+90){
-      const p=Math.min(1,el/HIT);
-      const ep=p*p*(3-2*p);
-      if(ph===0){
-        // Tahap 1: Overhead Vertical Edge Slam
-        const ZoneW=rt.width*0.58,ZoneH=rt.height*1.15;
-        ctx.save();
-        ctx.strokeStyle=`rgba(255,30,66,${0.75*Math.sin(p*3.1415)})`;
-        ctx.fillStyle=`rgba(180,0,30,${0.18*Math.sin(p*3.1415)})`;
-        ctx.lineWidth=2.5;
-        ctx.fillRect(tx-ZoneW/2,ty-ZoneH/2,ZoneW,ZoneH);
-        ctx.strokeRect(tx-ZoneW/2,ty-ZoneH/2,ZoneW,ZoneH);
-        // Sweetspot kotak ujung
-        ctx.strokeStyle="#ffffff";
-        ctx.strokeRect(tx-ZoneW*0.38,ty+ZoneH*0.12,ZoneW*0.76,ZoneH*0.3);
-        ctx.restore();
-        const syBlade=ty-240*(1-ep);
-        const rotBlade=dir*(-0.55+ep*0.55);
-        drawDarkinSword(tx,syBlade,rotBlade,1.15+0.25*ep,Math.min(1,p*1.8));
-      }else if(ph===1){
-        // Tahap 2: Wide Crimson Crescent Cleave (Menyapu arena & cadangan)
-        ctx.save();
-        ctx.translate(sx,sy);
-        const arcR=Math.hypot(tx-sx,ty-sy);
-        const baseAng=Math.atan2(ty-sy,tx-sx);
-        const sweepA=-0.95+ep*1.9;
-        ctx.strokeStyle=`rgba(255,20,55,${0.85*p})`;
-        ctx.lineWidth=34*Math.sin(p*3.1415)+6;
-        ctx.lineCap="round";
-        ctx.beginPath();
-        ctx.arc(0,0,arcR,baseAng-0.85,baseAng-0.85+ep*1.7);
-        ctx.stroke();
-        ctx.strokeStyle=`rgba(255,220,230,${0.9*p})`;
-        ctx.lineWidth=8;
-        ctx.beginPath();
-        ctx.arc(0,0,arcR*1.02,baseAng-0.85,baseAng-0.85+ep*1.7);
-        ctx.stroke();
-        ctx.restore();
-        const curAng=Math.atan2(ty-sy,tx-sx)+sweepA*0.55;
-        drawDarkinSword(sx+Math.cos(curAng)*arcR*0.75,sy+Math.sin(curAng)*arcR*0.75,curAng+1.57,1.25,Math.min(1,p*1.6));
-      }else{
-        // Tahap 3: World Ender Descending Dunk (Circular Sweetspot + Giant Greatsword Drop)
-        const cR=rt.width*0.72;
-        ctx.save();
-        ctx.translate(tx,ty);
-        ctx.rotate(el*0.006);
-        ctx.strokeStyle=`rgba(255,30,66,${0.9*p})`;
-        ctx.lineWidth=3.5;
-        ctx.beginPath();ctx.arc(0,0,cR*(1.25-0.25*ep),0,6.283);ctx.stroke();
-        ctx.fillStyle=`rgba(190,0,35,${0.24*p})`;
-        ctx.beginPath();ctx.arc(0,0,cR*0.48,0,6.283);ctx.fill();
-        ctx.strokeStyle="#ffffff";ctx.lineWidth=2;
-        ctx.beginPath();ctx.arc(0,0,cR*0.48,0,6.283);ctx.stroke();
-        ctx.restore();
-        const dropY=(ty-340)+(340)*ep;
-        drawDarkinSword(tx,dropY,3.1415,1.55+0.3*ep,Math.min(1,p*2));
-      }
-    }
-
-    // FASE BENTURAN / IMPACT & LIFESTEAL (el >= HIT)
-    if(el>=HIT){
-      const q=el-HIT;
-      const impA=Math.max(0,1-q/620);
-      ctx.save();
-      ctx.globalCompositeOperation="lighter";
-
-      // Impact Frame kilatan merah-putih pada Tahap 3
-      if(ph===2&&q<85){
-        ctx.fillStyle=q<40?"rgba(255,255,255,0.88)":"rgba(180,0,30,0.82)";
-        ctx.fillRect(0,0,W,H);
-      }
-
-      // Ledakan kawah darah & gelombang kejut
-      const maxR=rt.width*(ph===2?2.4:ph===1?2.0:1.6);
-      const curR=maxR*Math.min(1,Math.sqrt(q/420));
-      const gImpact=ctx.createRadialGradient(tx,ty,4,tx,ty,curR);
-      gImpact.addColorStop(0,`rgba(255,255,255,${0.95*impA})`);
-      gImpact.addColorStop(0.28,`rgba(255,25,60,${0.85*impA})`);
-      gImpact.addColorStop(0.65,`rgba(110,0,22,${0.55*impA})`);
-      gImpact.addColorStop(1,"rgba(0,0,0,0)");
-      ctx.fillStyle=gImpact;
-      ctx.beginPath();ctx.arc(tx,ty,curR,0,6.283);ctx.fill();
-
-      ctx.strokeStyle=`rgba(255,50,85,${0.95*impA})`;
-      ctx.lineWidth=(ph===2?8:5)*impA+1;
-      ctx.beginPath();ctx.arc(tx,ty,curR*0.88,0,6.283);ctx.stroke();
-
-      // Garis tebasan silang merah menyala di atas target
-      if(ph===0||ph===2){
-        ctx.strokeStyle=`rgba(255,230,235,${0.95*impA})`;
-        ctx.lineWidth=6*impA;
-        ctx.beginPath();
-        ctx.moveTo(tx-rt.width*0.75,ty-rt.height*0.65);
-        ctx.lineTo(tx+rt.width*0.75,ty+rt.height*0.65);
-        if(ph===2){
-          ctx.moveTo(tx+rt.width*0.75,ty-rt.height*0.65);
-          ctx.lineTo(tx-rt.width*0.75,ty+rt.height*0.65);
-        }
-        ctx.stroke();
-      }
-
-      // Gelombang sapuan AOE/Pierce ke barisan cadangan (Tahap 2 & 3)
-      if((ph===1||ph===2)&&rr){
-        const rx=rr.left+rr.width*0.5,ry=rr.top+rr.height*0.5;
-        const pr=Math.min(1,q/320);
-        const bx=tx+(rx-tx)*pr,by=ty+(ry-ty)*pr;
-        ctx.strokeStyle=`rgba(255,20,55,${0.88*impA})`;
-        ctx.lineWidth=ph===2?10*impA:6*impA;
-        ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(bx,by);ctx.stroke();
-        if(pr>0.4){
-          ctx.strokeStyle=`rgba(255,60,90,${0.8*impA})`;
-          ctx.lineWidth=4*impA;
-          ctx.beginPath();
-          ctx.ellipse(rx,ry,rr.width*0.55*pr,rr.height*0.65*pr,0,0,6.283);
-          ctx.stroke();
-        }
-      }
-
-      // Retakan crimson keluar dari target
-      slashes.forEach(s=>{
-        const d=s.len*Math.min(1,q/220);
-        ctx.strokeStyle=`rgba(255,40,75,${0.85*impA})`;
-        ctx.lineWidth=2.5*impA;
-        ctx.beginPath();
-        ctx.moveTo(tx,ty);
-        ctx.lineTo(tx+Math.cos(s.a)*d,ty+Math.sin(s.a)*d);
-        ctx.stroke();
-      });
-
-      // Partikel darah & percikan api hitam-merah
-      sparks.forEach(pt=>{
-        const step=q/16;
-        const px=pt.x+pt.vx*step;
-        const py=pt.y+pt.vy*step+0.18*step*step;
-        ctx.fillStyle=pt.c;
-        ctx.globalAlpha=impA;
-        ctx.fillRect(px-pt.sz/2,py-pt.sz/2,pt.sz,pt.sz);
-      });
-      ctx.globalAlpha=1;
-
-      // Aliran Darah Lifesteal (Blood Siphon Orbs mengalir dari Target kembali ke Darkin Lord)
-      bloodOrbs.forEach(b=>{
-        const bq=q-b.delay;
-        if(bq<=0||bq>560)return;
-        const bp=bq/560;
-        const ebp=bp*bp*(3-2*bp);
-        const cpx=(tx+sx)*0.5+b.offX,cpy=Math.min(ty,sy)-70+b.offY;
-        const ox=(1-ebp)*(1-ebp)*tx+2*(1-ebp)*ebp*cpx+ebp*ebp*sx;
-        const oy=(1-ebp)*(1-ebp)*ty+2*(1-ebp)*ebp*cpy+ebp*ebp*sy;
-        ctx.fillStyle="#ff1e42";
-        ctx.beginPath();ctx.arc(ox,oy,b.r*(1-bp*0.3),0,6.283);ctx.fill();
-        ctx.fillStyle="#ffffff";
-        ctx.beginPath();ctx.arc(ox,oy,b.r*0.4,0,6.283);ctx.fill();
-      });
-
-      ctx.restore();
-    }
-
-    raf=requestAnimationFrame(frame);
-  };
-  raf=requestAnimationFrame(frame);
-}
-window.worldEnderFx=worldEnderFx;
-
-function worldEnderReviveFx(sel){
-  const el=document.querySelector(sel||".fighter.me");
-  if(!el)return;
-  const r=el.getBoundingClientRect();
-  if(!r.width)return;
-  const W=window.innerWidth,H=window.innerHeight,dpr=FXDPR();
-  const cv=document.createElement("canvas");cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
-  cv.style.cssText="position:fixed;left:0;top:0;width:'+W+'px;height:'+H+'px;pointer-events:none;z-index:69";
-  document.body.appendChild(cv);
-  const ctx=cv.getContext("2d");ctx.scale(dpr,dpr);
-  const sc=bsMs(1000)/1000||1;
-  const cx=r.left+r.width*0.5,cy=r.top+r.height*0.5;
-  const t0=performance.now(),DUR=1100;
-  /* Entry battle cut-in removed — only ultimate/passive cut-ins show */
-  let raf=0;
-  const finish=()=>{cancelAnimationFrame(raf);try{cv.remove();}catch(e){}};
-  const frame=(now)=>{
-    if(!cv.isConnected){finish();return;}
-    const t=(now-t0)/sc;
-    if(t>=DUR){finish();return;}
-    const p=t/DUR,a=Math.max(0,1-p);
-    ctx.clearRect(0,0,W,H);
-    ctx.save();
-    ctx.globalCompositeOperation="lighter";
-    // Pilar darah raksasa
-    const pw=r.width*(0.65+0.55*Math.sin(p*3.1415));
-    const gPil=ctx.createLinearGradient(cx-pw,0,cx+pw,0);
-    gPil.addColorStop(0,"rgba(180,0,30,0)");
-    gPil.addColorStop(0.5,`rgba(255,25,60,${0.85*a})`);
-    gPil.addColorStop(1,"rgba(180,0,30,0)");
-    ctx.fillStyle=gPil;
-    ctx.fillRect(cx-pw,0,pw*2,H);
-    // Gelombang kejut cincin darah
-    for(let k=0;k<3;k++){
-      const pk=Math.min(1,Math.max(0,(t-k*110)/650));
-      if(pk<=0||pk>=1)continue;
-      ctx.strokeStyle=`rgba(255,40,75,${(1-pk)*0.9})`;
-      ctx.lineWidth=6*(1-pk)+1;
-      ctx.beginPath();ctx.arc(cx,cy,r.width*(0.4+pk*1.8),0,6.283);ctx.stroke();
-    }
-    ctx.restore();
-    raf=requestAnimationFrame(frame);
-  };
-  shakeScreen(true);
-  raf=requestAnimationFrame(frame);
-}
-window.worldEnderReviveFx=worldEnderReviveFx;
-
-/* ---------- ASTRAL DEVOURER (Cosmic Garou):
-   1. GAMMA RAY BURST (gammaRayFx): Lubang hitam kosmik (Accretion Disk + Gravitational Lensing) terbentuk di depan Astral Devourer,
-      menghisap cahaya bintang, lalu menembakkan semburan astrofisika Gamma Ray Burst (inti putih-cyan-ungu + heliks plasma kosmik)
-      yang menembus kartu lawan & menyapu seluruh barisan lineup musuh dengan ledakan supernova.
-   2. CAUSALITY REVERSAL (causalityFx): Saat menerima serangan fatal, jarum jam kosmik berputar mundur bersama rasi bintang &
-      partikel waktu yang tersedot kembali ke tubuh Astral Devourer (Zero Punch / Time Reversal). ---------- */
+const BJ_T={first:520};
+const HP_T={first:560};
+const HR_T={first:480};
+const WE_T={first:320};
 const GR_T={first:620};
-function gammaRayFx(o){
-  o=o||{};
-  const fromSel=o.fromSel||".fighter.me",toSel=o.toSel||".fighter.foe";
-  const fromEl=document.querySelector(fromSel),toEl=document.querySelector(toSel);
-  if(!fromEl||!toEl)return;
-  const rf=fromEl.getBoundingClientRect(),rt=toEl.getBoundingClientRect();
-  if(!rf.width||!rt.width)return;
-  const railEl=document.querySelector(toSel.includes("foe")?".foe-rail":".bench-rail");
-  const rr=railEl?railEl.getBoundingClientRect():null;
-  const W=window.innerWidth,H=window.innerHeight,dpr=FXDPR();
-  const cv=document.createElement("canvas");cv.id="grCanvas";cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
-  cv.style.cssText="position:fixed;left:0;top:0;width:'+W+'px;height:'+H+'px;pointer-events:none;z-index:68";
-  document.body.appendChild(cv);
-  const ctx=cv.getContext("2d");ctx.scale(dpr,dpr);
-  const sc=bsMs(1000)/1000||1;
-  const t0=performance.now(),HIT=GR_T.first,TOTAL=1460;
-  const sx=rf.left+rf.width*0.5,sy=rf.top+rf.height*0.45;
-  const tx=rt.left+rt.width*0.5,ty=rt.top+rt.height*0.5;
-  const dx=tx-sx,dy=ty-sy;
-  const beamAng=Math.atan2(dy,dx);
-  const beamLen=Math.hypot(W,H)*1.2;
-
-  const stars=[];
-  for(let i=0;i<FXQ(75);i++){
-    stars.push({
-      x:Math.random()*W,y:Math.random()*H,
-      r:1+Math.random()*2.5,
-      c:i%3===0?"#38bdf8":i%2===0?"#e879f9":"#ffffff",
-      tw:Math.random()*6.283
-    });
-  }
-  const inParticles=[];
-  const inN=FXQ(36);
-  for(let i=0;i<inN;i++){
-    const a=(i/inN)*6.283+Math.random()*0.2;
-    inParticles.push({a,dist:90+Math.random()*140,spd:0.8+Math.random()*0.6,sz:2+Math.random()*3.5});
-  }
-  const burstShards=[];
-  for(let i=0;i<FXQ(44);i++){
-    const a=Math.random()*6.283,spd=4+Math.random()*11;
-    burstShards.push({
-      vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,
-      sz:3+Math.random()*6,
-      c:i%3===0?"#ffffff":i%2===0?"#22d3ee":"#c084fc"
-    });
-  }
-
-  let raf=0;
-  const finish=()=>{cancelAnimationFrame(raf);try{cv.remove();}catch(e){}};
-  const frame=(now)=>{
-    if(fxEngineOver()||!cv.isConnected){finish();return;}
-    const el=(now-t0)/sc;
-    if(el>TOTAL){finish();return;}
-    ctx.clearRect(0,0,W,H);
-
-    // 1. Hamparan Kosmik Deep-Space Void (Bersih & Elegan, Tanpa Glow Pecah)
-    const spaceA=el<HIT?Math.min(1,el/240):Math.max(0,1-(el-HIT)/720);
-    ctx.fillStyle=`rgba(4,2,12,${0.82*spaceA})`;
-    ctx.fillRect(0,0,W,H);
-
-    // Bintang-bintang kosmik tajam (Crisp Stars)
-    ctx.save();
-    stars.forEach(st=>{
-      const twA=(0.5+0.5*Math.sin(el*0.012+st.tw))*spaceA;
-      ctx.fillStyle=st.c;
-      ctx.globalAlpha=twA;
-      ctx.beginPath();ctx.arc(st.x,st.y,st.r,0,6.283);ctx.fill();
-    });
-    ctx.restore();
-
-    // 2. Fase Charge Singularitas Lubang Hitam & Accretion Disk (0 -> HIT+260ms)
-    if(el<HIT+320){
-      const p=Math.min(1,el/HIT);
-      const fadeOut=el>HIT?Math.max(0,1-(el-HIT)/320):1;
-      const bhR=(26+24*Math.sin(p*3.1415*0.5))*fadeOut;
-
-      ctx.save();
-      ctx.translate(sx,sy);
-      ctx.globalCompositeOperation="lighter";
-
-      // Partikel kosmik tersedot ke dalam singularitas
-      if(el<HIT){
-        inParticles.forEach(pt=>{
-          const curD=pt.dist*(1-Math.pow(p,pt.spd));
-          const curA=pt.a+p*4.2;
-          const px=Math.cos(curA)*curD,py=Math.sin(curA)*curD;
-          ctx.fillStyle=curD<45?"#ffffff":"#38bdf8";
-          ctx.globalAlpha=p;
-          ctx.beginPath();ctx.arc(px,py,pt.sz,0,6.283);ctx.fill();
-        });
-      }
-
-      // Cincin Accretion Disk berputar miring
-      ctx.rotate(beamAng+el*0.004);
-      for(let k=0;k<2;k++){
-        ctx.strokeStyle=k===0?`rgba(56,189,248,${0.9*fadeOut})`:`rgba(232,121,249,${0.85*fadeOut})`;
-        ctx.lineWidth=(k===0?8:4)*fadeOut;
-        ctx.beginPath();
-        ctx.ellipse(0,0,bhR*(2.4+k*0.4),bhR*(0.68+k*0.18),k*0.6,0,6.283);
-        ctx.stroke();
-      }
-      ctx.restore();
-
-      // Inti Event Horizon Hitam Pekat dengan garis tepi foton solid (Tanpa Blur)
-      ctx.save();
-      ctx.translate(sx,sy);
-      ctx.fillStyle="#000000";
-      ctx.strokeStyle=`rgba(255,255,255,${0.95*fadeOut})`;
-      ctx.lineWidth=2.5*fadeOut;
-      ctx.beginPath();ctx.arc(0,0,bhR,0,6.283);ctx.fill();ctx.stroke();
-      ctx.restore();
-    }
-
-    // 3. Fase Tembakan GAMMA RAY BURST & Supernova Impact (el >= HIT - 60)
-    if(el>=HIT-60){
-      const bq=el-(HIT-60);
-      const bDur=720;
-      const bp=Math.min(1,bq/bDur);
-      const beamA=bp<0.15?(bp/0.15):Math.max(0,1-(bp-0.15)/0.85);
-      const coreW=(rt.width*0.58)*(0.65+0.35*Math.sin(bq*0.04))*beamA;
-      const outerW=coreW*2.45;
-
-      ctx.save();
-      ctx.globalCompositeOperation="lighter";
-
-      // Impact Frame Inversi Kosmik saat tepat menyentuh target
-      if(el>=HIT&&el<HIT+75){
-        ctx.fillStyle=el<HIT+35?"rgba(255,255,255,0.9)":"rgba(56,189,248,0.75)";
-        ctx.fillRect(0,0,W,H);
-      }
-
-      // Semburan Jet Relativistik Gamma Ray (menembus dari penyerang melewati target hingga ujung layar)
-      ctx.save();
-      ctx.translate(sx,sy);
-      ctx.rotate(beamAng);
-      const reach=Math.min(beamLen,beamLen*Math.min(1,bq/110));
-
-      // Selubung luar plasma ungu-magenta
-      const gOuter=ctx.createLinearGradient(0,-outerW,0,outerW);
-      gOuter.addColorStop(0,"rgba(168,85,247,0)");
-      gOuter.addColorStop(0.25,`rgba(192,132,252,${0.75*beamA})`);
-      gOuter.addColorStop(0.5,`rgba(56,189,248,${0.95*beamA})`);
-      gOuter.addColorStop(0.75,`rgba(192,132,252,${0.75*beamA})`);
-      gOuter.addColorStop(1,"rgba(168,85,247,0)");
-      ctx.fillStyle=gOuter;
-      ctx.fillRect(0,-outerW,reach,outerW*2);
-
-      // Inti Sinar Gamma Putih-Cyan sangat terang
-      const gCore=ctx.createLinearGradient(0,-coreW,0,coreW);
-      gCore.addColorStop(0,"rgba(56,189,248,0)");
-      gCore.addColorStop(0.3,`rgba(224,242,254,${0.98*beamA})`);
-      gCore.addColorStop(0.5,`rgba(255,255,255,${beamA})`);
-      gCore.addColorStop(0.7,`rgba(224,242,254,${0.98*beamA})`);
-      gCore.addColorStop(1,"rgba(56,189,248,0)");
-      ctx.fillStyle=gCore;
-      ctx.fillRect(0,-coreW,reach,coreW*2);
-
-      // Spiral Heliks Ganda mengelilingi sinar Gamma
-      ctx.strokeStyle=`rgba(255,255,255,${0.9*beamA})`;
-      ctx.lineWidth=3.5*beamA;
-      for(let s of [-1,1]){
-        ctx.beginPath();
-        for(let x=0;x<reach;x+=18){
-          const y=s*Math.sin(x*0.025-el*0.025)*coreW*1.15;
-          if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
-        }
-        ctx.stroke();
-      }
-      ctx.restore();
-
-      // Ledakan Supernova di titik Target Utama
-      if(el>=HIT){
-        const iq=el-HIT;
-        const impA=Math.max(0,1-iq/680);
-        const novaR=rt.width*2.5*Math.min(1,Math.sqrt(iq/440));
-
-        const gNova=ctx.createRadialGradient(tx,ty,4,tx,ty,novaR);
-        gNova.addColorStop(0,`rgba(255,255,255,${0.98*impA})`);
-        gNova.addColorStop(0.3,`rgba(56,189,248,${0.88*impA})`);
-        gNova.addColorStop(0.65,`rgba(168,85,247,${0.6*impA})`);
-        gNova.addColorStop(1,"rgba(0,0,0,0)");
-        ctx.fillStyle=gNova;
-        ctx.beginPath();ctx.arc(tx,ty,novaR,0,6.283);ctx.fill();
-
-        // Cincin Lensa Gravitasi Elips Ganda
-        ctx.strokeStyle=`rgba(224,242,254,${0.95*impA})`;
-        ctx.lineWidth=5*impA;
-        ctx.beginPath();ctx.ellipse(tx,ty,novaR*1.15,novaR*0.42,-0.35,0,6.283);ctx.stroke();
-        ctx.strokeStyle=`rgba(232,121,249,${0.9*impA})`;
-        ctx.lineWidth=4*impA;
-        ctx.beginPath();ctx.ellipse(tx,ty,novaR*1.15,novaR*0.42,0.85,0,6.283);ctx.stroke();
-
-        // Sambaran Tembusan AOE 20% ke Seluruh Kartu Lineup / Bench Musuh
-        if(rr&&rr.width>0){
-          const rx=rr.left+rr.width*0.5,ry=rr.top+rr.height*0.5;
-          const pr=Math.min(1,iq/280);
-          const curX=tx+(rx-tx)*pr,curY=ty+(ry-ty)*pr;
-          ctx.strokeStyle=`rgba(56,189,248,${0.92*impA})`;
-          ctx.lineWidth=10*impA;
-          ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(curX,curY);ctx.stroke();
-          if(pr>0.35){
-            const rwR=Math.max(rr.width,rr.height)*0.75*pr;
-            const gRail=ctx.createRadialGradient(rx,ry,2,rx,ry,rwR);
-            gRail.addColorStop(0,`rgba(255,255,255,${0.9*impA})`);
-            gRail.addColorStop(0.45,`rgba(56,189,248,${0.7*impA})`);
-            gRail.addColorStop(1,"rgba(168,85,247,0)");
-            ctx.fillStyle=gRail;
-            ctx.beginPath();ctx.arc(rx,ry,rwR,0,6.283);ctx.fill();
-          }
-        }
-
-        // Serpihan Bintang Supernova
-        burstShards.forEach(pt=>{
-          const stp=iq/15;
-          const px=tx+pt.vx*stp,py=ty+pt.vy*stp;
-          ctx.fillStyle=pt.c;
-          ctx.globalAlpha=impA;
-          ctx.beginPath();ctx.arc(px,py,pt.sz*impA,0,6.283);ctx.fill();
-        });
-        ctx.globalAlpha=1;
-      }
-
-      ctx.restore();
-    }
-
-    raf=requestAnimationFrame(frame);
-  };
-  raf=requestAnimationFrame(frame);
-}
-window.gammaRayFx=gammaRayFx;
-
-function causalityFx(sel){
-  const el=document.querySelector(sel||".fighter.me");
-  if(!el)return;
-  const r=el.getBoundingClientRect();
-  if(!r.width)return;
-  const W=window.innerWidth,H=window.innerHeight,dpr=FXDPR();
-  const cv=document.createElement("canvas");cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
-  cv.style.cssText="position:fixed;left:0;top:0;width:'+W+'px;height:'+H+'px;pointer-events:none;z-index:69";
-  document.body.appendChild(cv);
-  const ctx=cv.getContext("2d");ctx.scale(dpr,dpr);
-  const sc=bsMs(1000)/1000||1;
-  const cx=r.left+r.width*0.5,cy=r.top+r.height*0.5;
-  const t0=performance.now(),DUR=1150;
-  /* Entry battle cut-in removed — only ultimate/passive cut-ins show */
-  const rewindDots=[];
-  const rewindN=FXQ(32);
-  for(let i=0;i<rewindN;i++){
-    const a=(i/rewindN)*6.283;
-    rewindDots.push({a,dist:r.width*(0.9+Math.random()*0.9),sz:2.5+Math.random()*3.5});
-  }
-  let raf=0;
-  const finish=()=>{cancelAnimationFrame(raf);try{cv.remove();}catch(e){}};
-  const frame=(now)=>{
-    if(!cv.isConnected){finish();return;}
-    const t=(now-t0)/sc;
-    if(t>=DUR){finish();return;}
-    const p=t/DUR,a=Math.sin(p*3.1415);
-    ctx.clearRect(0,0,W,H);
-    ctx.save();
-    ctx.globalCompositeOperation="lighter";
-    ctx.translate(cx,cy);
-
-    // Cincin Jam Kosmik Pembalik Kausalitas
-    const cR=r.width*0.85*(0.85+0.15*a);
-    ctx.strokeStyle=`rgba(56,189,248,${0.9*a})`;
-    ctx.lineWidth=3.5;
-    ctx.beginPath();ctx.arc(0,0,cR,0,6.283);ctx.stroke();
-    ctx.strokeStyle=`rgba(232,121,249,${0.75*a})`;
-    ctx.lineWidth=2;
-    ctx.beginPath();ctx.arc(0,0,cR*0.75,0,6.283);ctx.stroke();
-
-    // Tanda derajat waktu 12 arah
-    for(let i=0;i<12;i++){
-      const ang=(i/12)*6.283-p*2.5;
-      ctx.beginPath();
-      ctx.moveTo(Math.cos(ang)*cR*0.82,Math.sin(ang)*cR*0.82);
-      ctx.lineTo(Math.cos(ang)*cR*0.98,Math.sin(ang)*cR*0.98);
-      ctx.stroke();
-    }
-
-    // Jarum Jam Berputar Mundur Cepat (Counter-Clockwise)
-    const h1=-p*6.283*3.5,h2=-p*6.283*1.2;
-    ctx.strokeStyle=`rgba(255,255,255,${0.95*a})`;
-    ctx.lineWidth=4;
-    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(h1)*cR*0.68,Math.sin(h1)*cR*0.68);ctx.stroke();
-    ctx.strokeStyle=`rgba(56,189,248,${0.95*a})`;
-    ctx.lineWidth=3;
-    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(h2)*cR*0.48,Math.sin(h2)*cR*0.48);ctx.stroke();
-
-    // Partikel Waktu Tersedot Mundur ke Inti Kartu
-    rewindDots.forEach(d=>{
-      const curD=d.dist*(1-p);
-      const curA=d.a-p*3.2;
-      ctx.fillStyle="#e0f2fe";
-      ctx.globalAlpha=a;
-      ctx.beginPath();ctx.arc(Math.cos(curA)*curD,Math.sin(curA)*curD,d.sz,0,6.283);ctx.fill();
-    });
-
-    ctx.restore();
-    raf=requestAnimationFrame(frame);
-  };
-  shakeScreen(false);
-  raf=requestAnimationFrame(frame);
-}
-window.causalityFx=causalityFx;
-
-
-/* Madara Tensa: video Susanoo full-screen di belakang kartu + HUJAN TEBASAN samurai (garis lurus satu layar penuh, kiri→kanan) */
 let MADARA_T={wind:280,slash:520,step:120,total:2760};
-/* satu tebasan lurus: garis SELEBAR layar penuh (menembus dua tepi), miring random tipis, lewat di sekitar kartu target */
+/* Legacy canvas attack FX removed — all attacks use prototype Hazard Basic Attack choreography */
+function psyBarrageFx(){}
+function rubberBounceFx(){}
+function showDizzyCrown(){}
+function bajrangGunFx(){}
+function hollowPurpleFx(){}
+function havocRocketFx(){}
+function worldEnderFx(){}
+function worldEnderReviveFx(){}
+function gammaRayFx(){}
+function causalityFx(){}
+window.psyBarrageFx=psyBarrageFx;
+window.rubberBounceFx=rubberBounceFx;
+window.showDizzyCrown=showDizzyCrown;
+window.bajrangGunFx=bajrangGunFx;
+window.hollowPurpleFx=hollowPurpleFx;
+window.havocRocketFx=havocRocketFx;
+window.worldEnderFx=worldEnderFx;
+window.worldEnderReviveFx=worldEnderReviveFx;
+window.gammaRayFx=gammaRayFx;
+window.causalityFx=causalityFx;
 function startBattle(){
   window.cutInShown=false;
   if(bt&&bt.timer){clearTimeout(bt.timer);bt.timer=null;}
@@ -1938,8 +581,10 @@ function applyFoeEntryPassives(){
   if(typeof foeEntryPassives==="function")foeEntryPassives();
 }
 function tagIn(){
+  const prevFighter=bt.fighters[bt.active]||bt.eq||null;
   const next=bt.active+1;
   if(next>=bt.fighters.length)return false;
+  const nextFighter=bt.fighters[next]||null;
   bt.active=next;bt.eq=bt.fighters[next];bt.justTagged=true;
   const base=bt.eq.sk?{hp:bt.eq.skHp,atk:bt.eq.skAtk}:cardStats(bt.eq.char,bt.eq.mut,bt.eq.trait,bt.eq.shiny);
   bt.pMax=base.hp+(bt.snatchHp[next]||0);bt.pHp=bt.pMax;
@@ -1977,17 +622,21 @@ if(nfx.worldCorrupt){bt.wc={c:0,atk:Math.round(cardStats(bt.eq.char,bt.eq.mut,bt
   const meEl=document.querySelector(".fighter.me");
   if(meEl){meEl.classList.remove("tag-enter");meEl.classList.add("ko");koFx(meEl);}
   floatText(".fighter.me","KO","crit");
+  if(typeof window.hzAnimateDeathAndSwap==="function"){
+    try{window.hzAnimateDeathAndSwap("me",prevFighter,nextFighter);}catch(e){}
+  }
   // fase 2: kartu dek berikutnya naik masuk arena; rail bench diperbarui ke sisa setelahnya
   setTimeout(()=>{
     if(!bt||bt.over)return;
     const me2=document.querySelector(".fighter.me");
-    if(me2)me2.classList.remove("ko");
+    if(me2){me2.classList.remove("ko");me2.style.opacity="1";}
     updateMeCard();
     setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
     const rail=document.querySelector(".bench-rail");if(rail)rail.outerHTML=benchRailHtml(bt.fighters.slice(bt.active+1));
     const me3=document.querySelector(".fighter.me");
     if(me3){me3.classList.add("tag-enter");enterFx(me3);setTimeout(()=>me3.classList.remove("tag-enter"),650);}
     floatText(".fighter.me","TAG-IN!","tagin");
+    if(typeof window.hzBattleSync==="function"){try{window.hzBattleSync();}catch(e){}}
   },bsMs(2000));
   return true;
 }
@@ -2177,9 +826,17 @@ function setBar(id,tid,cur,max){
   b.style.width=pct;
   const tr=b.parentElement?b.parentElement.querySelector(".hp-trail"):null;
   if(tr)tr.style.width=pct;
-  /* label di dalam bar: "cur / max" (prototipe) */
+  /* label di dalam bar: "cur / max" (prototipe) + inline HP di kartu */
   const t=tid?document.getElementById(tid):null;
   if(t)t.textContent=fmtBattleK(Math.max(0,cur))+" / "+fmtBattleK(Math.max(0,max));
+  if(id==="hpMe"){
+    const ih=document.getElementById("meInlineHp");
+    if(ih)ih.textContent=fmtBattleK(Math.max(0,cur));
+  }else if(id==="hpFoe"||id==="hpRaid"){
+    const ih=document.getElementById("foeInlineHp");
+    if(ih)ih.textContent=fmtBattleK(Math.max(0,cur));
+  }
+  if(typeof window.hzBattleSync==="function"){try{window.hzBattleSync();}catch(e){}}
 }
 function step(){ if(!bt||bt.over)return; schedPhase(0,playerPhase); }
 // Safe scheduler: guarantees the battle can never hang. If a phase throws,
@@ -2197,64 +854,120 @@ function schedPhase(ms,fn){
   },bsMs(ms));
 }
 /* ===== Renderer serangan SATU untuk semua kartu: user & musuh tinggal tukar sisi (A=penyerang, D=target) ===== */
-function attackLunge(sel,wind){/* Kartu diam stabil, tidak ada gerakan lunge mukul */}
-/* ===== JUICE serangan generik (prototipe attack-fx) — HANYA kartu normal, jalur ULT/galaxy gak disentuh ===== */
-function shakeScreen(big){/* Screen shake dinonaktifkan agar fokus di animasi efek serangan */}
-function hitStop(ms){const g=document.querySelector(".battle-grid");if(!g)return;g.classList.add("hitstop");setTimeout(()=>g.classList.remove("hitstop"),ms||90);}
-function speedLines(big){let l=document.getElementById("speedLayer");if(!l){l=document.createElement("div");l.id="speedLayer";document.body.appendChild(l);}l.className=big?"crit":"";const n=big?14:8;for(let i=0;i<n;i++){const s=document.createElement("span");s.className="spd-line";s.style.top=(Math.random()*100).toFixed(1)+"%";s.style.animationDelay=(Math.random()*.08).toFixed(2)+"s";l.appendChild(s);}setTimeout(()=>{l.innerHTML="";},520);}
-/* ===== MASUK / MATI kartu (prototipe card-enter-death) — di-inject, markup kartu gak diubah ===== */
-function enterFx(el){if(!el)return;const fx=document.createElement("div");fx.className="enter-fx";fx.innerHTML='<span class="ef-flash"></span><span class="ef-sheen"></span>';el.appendChild(fx);setTimeout(()=>{try{fx.remove();}catch(e){}},900);const r=el.getBoundingClientRect();const ring=document.createElement("div");ring.className="shock-ring";ring.style.left=(r.left+r.width/2)+"px";ring.style.top=(r.top+r.height*0.92)+"px";document.body.appendChild(ring);setTimeout(()=>{try{ring.remove();}catch(e){}},700);}
-function koFx(el){/* Animasi KO & stempel dihapus sesuai preferensi */}
+function triggerStageShake(){
+  const g=document.querySelector(".battle-grid");
+  if(!g)return;
+  g.classList.remove("shake");
+  void g.offsetWidth;
+  g.classList.add("shake");
+  setTimeout(()=>g.classList.remove("shake"),340);
+}
+function attackLunge(sel,wind){
+  const atkEl=typeof sel==="string"?document.querySelector(sel):sel;
+  if(!atkEl)return;
+  const isMe=atkEl.classList.contains("me");
+  const defEl=document.querySelector(isMe?".fighter.foe":".fighter.me");
+  if(!defEl)return;
+  const atkCard=atkEl.querySelector(".card-shell")||atkEl;
+  const defCard=defEl.querySelector(".card-shell")||defEl;
+  const fromR=atkCard.getBoundingClientRect();
+  const toR=defCard.getBoundingClientRect();
+  if(!fromR.width||!toR.width)return;
+  const fromCx=fromR.left+fromR.width/2, fromCy=fromR.top+fromR.height/2;
+  const toCx=toR.left+toR.width/2, toCy=toR.top+toR.height/2;
+  const dx=(toCx-fromCx)*0.58;
+  const dy=(toCy-fromCy)*0.58;
+  const windX=-dx*0.16, windY=-dy*0.16;
+  const tiltWind=isMe?-5:5;
+  const tiltStrike=isMe?9:-9;
+  const totalMs=Math.max(240,Math.round(bsMs(620)));
+  const hitMs=Math.round(totalMs*0.44);
+  atkEl.style.zIndex="28";
+  defEl.style.zIndex="15";
+  if(typeof atkEl.animate==="function"){
+    const animRef=atkEl.animate([
+      {transform:"translate3d(0,0,0) scale(1) rotate(0deg)",offset:0,easing:"cubic-bezier(0.32, 0, 0.67, 0)"},
+      {transform:`translate3d(${windX.toFixed(1)}px,${windY.toFixed(1)}px,0) scale(0.95) rotate(${tiltWind}deg)`,offset:0.22,easing:"cubic-bezier(0.16, 1, 0.3, 1)"},
+      {transform:`translate3d(${dx.toFixed(1)}px,${dy.toFixed(1)}px,0) scale(1.08) rotate(${tiltStrike}deg)`,offset:0.44,easing:"cubic-bezier(0.22, 1, 0.36, 1)"},
+      {transform:`translate3d(${(dx*0.86).toFixed(1)}px,${(dy*0.86).toFixed(1)}px,0) scale(1.04) rotate(${(tiltStrike*0.5).toFixed(1)}deg)`,offset:0.54,easing:"cubic-bezier(0.34, 1.56, 0.64, 1)"},
+      {transform:"translate3d(0,0,0) scale(1) rotate(0deg)",offset:1}
+    ],{duration:totalMs,fill:"none"});
+    if(animRef&&animRef.finished){
+      animRef.finished.then(()=>{atkEl.style.zIndex="";defEl.style.zIndex="";}).catch(()=>{atkEl.style.zIndex="";defEl.style.zIndex="";});
+    }else{
+      setTimeout(()=>{atkEl.style.zIndex="";defEl.style.zIndex="";},totalMs+40);
+    }
+  }else{
+    setTimeout(()=>{atkEl.style.zIndex="";defEl.style.zIndex="";},totalMs+40);
+  }
+  setTimeout(()=>{
+    if(typeof window.fxImpactSlash==="function"){
+      try{window.fxImpactSlash(fromR,toR,isMe);}catch(e){}
+    }
+    triggerStageShake();
+    const recoilX=(toCx-fromCx)>0?18:-18;
+    const recoilY=(toCy-fromCy)>0?-12:12;
+    const recoilRot=isMe?5:-5;
+    if(typeof defEl.animate==="function"){
+      defEl.animate([
+        {transform:"translate3d(0,0,0) scale(1) rotate(0deg)",offset:0},
+        {transform:`translate3d(${recoilX}px,${recoilY}px,0) scale(0.94) rotate(${recoilRot}deg)`,offset:0.26},
+        {transform:`translate3d(${(-recoilX*0.35).toFixed(1)}px,${(-recoilY*0.35).toFixed(1)}px,0) scale(1.02) rotate(${(-recoilRot*0.3).toFixed(1)}deg)`,offset:0.62},
+        {transform:"translate3d(0,0,0) scale(1) rotate(0deg)",offset:1}
+      ],{duration:Math.max(140,Math.round(bsMs(380))),easing:"cubic-bezier(0.22, 1, 0.36, 1)"});
+    }
+  },hitMs);
+}
+function shakeScreen(big){triggerStageShake();}
+function hitStop(ms){}
+function speedLines(big){}
+function enterFx(el){
+  if(!el)return;
+  const r=el.getBoundingClientRect();
+  if(r.width&&typeof window.fxDeployBurst==="function"){
+    try{window.fxDeployBurst(r,!el.classList.contains("foe"));}catch(e){}
+  }
+}
+function koFx(el){}
 function performAttack(o){
   const A=o.A,D=o.D,id=o.id,shots=o.shots;
   const md=o.ranton&&id==="CH_EX_MADARA";
-  /* Galaxy Roar = SATU sambaran (waktu damage dipindah ke menit FX); Madara Tensa = HUJAN 15 tebasan,
-     tiap sambaran dijadaki MADARA_T.step supaya angka + getar mendarat bareng garisnya. */
   const galaxy=!!o.galaxy;
   const ultBarrage=(o.domainStrike||o.ariseMode||md);
-  /* ARISE sengaja TIDAK ikut grid 80ms domain/shrine: 9 sambaran di 80ms cuma kebaca satu getar panjang.
-     Pakai ritme sambaran normal (160ms) → 9 hit = 1,28s, masih muat di jendela fase ARISE (2,2s). */
-  const psy=!!o.psychic,bj=!!o.bajrang,hpAnim=!!o.hollowPurple,we=!!o.worldEnder,gr=!!o.gammaRay,hv=!!o.havoc;
+  const psy=!!o.psychic;
   const hstep=psy?PSY_T.step:o.domainStrike?80:160;
-  const hoff=(psy||bj||hpAnim||we||gr)?0:galaxy?0:md?40:(o.domainStrike||o.ariseMode)?60:500;
-  /* FX lama (psyBarrage/bajrangGun/hollowPurple/worldEnder/gammaRay) dimatikan:
-     SEMUA kartu memakai satu animasi serangan PHANTOM COMBO. */
+  /* Damage number & HP bar drop right at the prototype hitMs (~273ms total = 180 + 95) */
+  const hoff=95;
 
-  /* Bar dicicil PROPORSIONAL terhadap total damage: damage yang melebihi HP target (one-hit kill)
-     tetap tampil nguras dari penuh sampai 0, bukan nyangkut di 100% lalu langsung kosong. */
   const startHp=Math.max(0,Math.min(o.defMax,o.defHpStart));
   const endHp=Math.max(0,o.defHpEnd);
   const span=Math.max(0,startHp-endHp);
   const hpAt=(cum)=>o.total>0?Math.max(endHp,Math.round(startHp-span*Math.min(1,cum/o.total))):endHp;
-  const wind=!(ultBarrage||galaxy);
-  attackLunge(A,wind);
-  /* ALL CARDS: satu animasi serangan (PHANTOM COMBO), tanpa pengecualian. */
-  if(window.playAnimeArchetypeAttack){
-    try { window.playAnimeArchetypeAttack(id, A, D); } catch(e){ console.error("playAnimeArchetypeAttack err", e); }
-  }
+  attackLunge(A,true);
   setTimeout(()=>{
     if(!bt)return;
     const self=(o.domainStrike?o.fx.domain:o.ariseMode?o.fx.barrage:null);
     if(self&&self.selfStun&&o.recharge)o.recharge(self);
-    /* jurus hujan tebasan MILIK Madara saja — kartu lain (termasuk UR) gak boleh nyomot animasi EX cuma karena punya flag ranton */
-    const susStart=psy?PSY_T.first:bj?BJ_T.first:hpAnim?HP_T.first:we?WE_T.first:gr?GR_T.first:(o.ranton&&id==="CH_EX_MADARA"&&!bt.over)?MADARA_T.slash:0;
-    const dlyAt=i=> galaxy ? GALAXY.hit : md ? (susStart+i*MADARA_T.step) : (i*hstep+susStart);
-    /* Jin-Woo: cakar ARISE digambar 170ms setelah menit sambaran, jadi getarnya ikut digeser supaya getar & visual mendarat bareng */
-    const jwLag=(id==="CH_EX_JINWOO"&&o.barrageN&&!o.domainStrike)?170:0;
+    const susStart=(o.ranton&&id==="CH_EX_MADARA"&&!bt.over)?MADARA_T.slash:0;
+    const dlyAt=i=> galaxy ? 95 : md ? (susStart+i*MADARA_T.step) : (i*hstep+susStart);
     let cum=0,barEnd=0;
     shots.forEach((s,i)=>{
-      if(s.evade||s.miss){if(window.playMatrixDodgeFx)window.playMatrixDodgeFx(D);floatText(D,s.evade?"DODGE":"MISS","miss");return;}
-      if(s.void){anim(D,"hit");setTimeout(()=>floatText(D,"VOID","miss"),bsMs(120));return;}
+      if(s.evade||s.miss){floatText(D,s.evade?"DODGE":"MISS","miss");return;}
+      if(s.void){floatText(D,"VOID","miss");return;}
       const dl=dlyAt(i),ft=dl+(md?40:hoff);
-      setTimeout(()=>{if(bt&&!bt.over){anim(D,"hit",ultBarrage);if(psy){shakeScreen(false);}else if(bj||hpAnim){shakeScreen(i===0);}else if(we){shakeScreen(o.worldEnder.phase===2||o.crit);hitStop(o.worldEnder.phase===2?140:90);}else if(gr){shakeScreen(true);hitStop(140);}else if(!ultBarrage&&!galaxy){const big=!!(o.crit&&i===shots.length-1);if(window.strikeFx)strikeFx(D,{big:big,fx:o.fx||{},flip:String(A).indexOf("foe")>-1});shakeScreen(big);hitStop(big?140:80);}else if(o.domainStrike||o.ariseMode){const big=(i===shots.length-1);if(window.strikeFx)strikeFx(D,{big:big,fx:o.fx||{},flip:String(A).indexOf("foe")>-1});}}},bsMs(dl+jwLag));
+      if(i>0){
+        setTimeout(()=>{
+          if(bt&&!bt.over&&typeof window.playAnimeArchetypeAttack==="function"){
+            try{window.playAnimeArchetypeAttack(id,A,D);}catch(e){}
+          }
+        },bsMs(dl));
+      }
       cum+=s.d;barEnd=Math.max(barEnd,ft);const stepHp=hpAt(cum);
       setTimeout(()=>floatText(D,"-"+fmt(s.d),(o.crit&&i===shots.length-1)?"crit":""),bsMs(ft));
       setTimeout(()=>setBar(o.barId,o.barTid,stepHp,o.defMax),bsMs(ft));
       if(s.pierce)setTimeout(()=>floatText(D,"PIERCE","crit"),bsMs(180));
     });
     setTimeout(()=>{
-      /* Safety net (pola sama dgn schedPhase): rantai kematian jalan di timeout mentah ini —
-         satu exception = battle STUCK tanpa UI/reward. Tangkap + paksa endBattle. */
       try{
         if(bt&&!bt.over)setBar(o.barId,o.barTid,endHp,o.defMax);
         if(bt&&o.onAnimEnd)o.onAnimEnd();
@@ -2262,9 +975,9 @@ function performAttack(o){
         console.error("onAnimEnd error",err);
         if(bt&&!bt.over){ try{ bt.timer=null; endBattle(bt.eHp<=0); }catch(e2){ console.error("force endBattle error",e2); } }
       }
-    },bsMs(barEnd+520));
-    if(o.barrageN>1)setTimeout(()=>floatText(D,(o.iceBlast?"ICE BLAST ×":o.domainStrike?"UNLIMITED VOID ×":o.ariseMode?"ARISE ×":md?"TENSA ×":"CLEAVE ×")+o.barrageN,"crit"),bsMs(md?MADARA_T.slash:320));
-    else if(shots.length>1&&!o.ranton)setTimeout(()=>floatText(D,"DOUBLE!","crit"),bsMs(260));
+    },bsMs(barEnd+420));
+    if(o.barrageN>1)setTimeout(()=>floatText(D,(o.iceBlast?"ICE BLAST ×":o.domainStrike?"UNLIMITED VOID ×":o.ariseMode?"ARISE ×":md?"TENSA ×":"CLEAVE ×")+o.barrageN,"crit"),bsMs(md?MADARA_T.slash:260));
+    else if(shots.length>1&&!o.ranton)setTimeout(()=>floatText(D,"DOUBLE!","crit"),bsMs(240));
   },bsMs(180));
 }
 function setTurnPill(side,label){
@@ -3234,6 +1947,9 @@ function endBattle(win){
   try{
     const deadEl=document.querySelector(win?".fighter.foe":".fighter.me");
     if(deadEl&&!deadEl.classList.contains("ko")){deadEl.classList.add("ko");koFx(deadEl);}
+    if(typeof window.hzAnimateDeathAndSwap==="function"){
+      window.hzAnimateDeathAndSwap(win?"foe":"me",win?(bt.en||null):(bt.eq||null),null);
+    }
   }catch(e){console.error("endBattle fx error",e);}
   setTimeout(()=>{
     /* Banner keluar hazard TIDAK dipakai untuk hasil battle (revisi user):

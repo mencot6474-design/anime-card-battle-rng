@@ -929,22 +929,10 @@ function noiseBurst(t,dur,freq,gain){
   s.connect(bp);bp.connect(g);g.connect(a.destination);s.start(t);
 }
 function impactBoom(){
-  if(state.muted)return;
-  if(window.CyberSfx){window.CyberSfx.cutInActivate();return;}
-  try{
-    const a=actxOf(),t0=a.currentTime+.4;
-    const s=a.createOscillator();s.type="sine";
-    s.frequency.setValueAtTime(130,t0);s.frequency.exponentialRampToValueAtTime(36,t0+.5);
-    const g=a.createGain();
-    g.gain.setValueAtTime(.0001,t0);
-    g.gain.exponentialRampToValueAtTime(.34,t0+.04);
-    g.gain.exponentialRampToValueAtTime(.0001,t0+.55);
-    s.connect(g);g.connect(a.destination);s.start(t0);s.stop(t0+.6);
-  }catch(e){}
+  /* Dentuman lama dihapus sesuai revisi user */
 }
-/* Dentuman crit: dialihkan ke CyberSfx supaya tidak menumpuk dengan SFX lama */
+/* Dentuman crit: dihapus sesuai revisi user */
 function critBoom(){
-  if(state.muted)return;
 }
 const fightAudio=null;
 const swordAudio=new Audio("assets/audio/swing-draw.mp3");

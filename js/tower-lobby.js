@@ -888,6 +888,8 @@ function lineupAoeHit(dmg){
 function advanceTowerFoe(){
   if(!bt||bt.over)return;
   bt.fgen=++FGEN;/* generasi musuh: cb basi dari kill sebelumnya bakal kebuang */
+  const prevWave=(towerRun&&towerRun.waves)?towerRun.waves[towerRun.idx]:null;
+  if(prevWave){prevWave.hp=0;prevWave.dead=true;}
   do{towerRun.idx++;}while(towerRun.idx<towerRun.waves.length&&towerRun.waves[towerRun.idx]&&towerRun.waves[towerRun.idx].dead);
   if(towerRun.idx>=towerRun.waves.length){endBattle(true);return;}
   const w=towerRun.waves[towerRun.idx];
@@ -912,6 +914,9 @@ bt.pBurn=0;bt.pFreeze=0;bt.pPoisonCut=0;bt.pInk=0;bt.pInkPct=0;
   const downEl=document.querySelector(".fighter.foe");
   if(downEl){downEl.classList.remove("foe-enter");downEl.classList.add("ko");koFx(downEl);}
   floatText(".fighter.foe","KO","crit");
+  if(typeof window.hzAnimateDeathAndSwap==="function"){
+    try{window.hzAnimateDeathAndSwap("foe",prevWave,w);}catch(e){}
+  }
   bt.turn++;
   setTimeout(()=>{
     if(!bt||bt.over)return;
@@ -922,10 +927,11 @@ bt.pBurn=0;bt.pFreeze=0;bt.pPoisonCut=0;bt.pInk=0;bt.pInkPct=0;
     setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);
     if(hadOverflow)setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","THUNDERCLAP","crit");}},bsMs(500));
     const foeEl=side?side.querySelector(".fighter.foe"):null;
-    if(foeEl){enterFx(foeEl);}
+    if(foeEl){foeEl.style.opacity="1";enterFx(foeEl);}
     if(typeof applyFoeEntryPassives==="function")applyFoeEntryPassives();
     const tl=document.getElementById("turnLabel");if(tl)tl.innerHTML="FLOOR <b>"+towerRun.floor+"</b> · WAVE <b>"+(towerRun.idx+1)+"/"+towerRun.waves.length+"</b>";
     floatText(".fighter.foe","TAG-IN!","tagin");
+    if(typeof window.hzBattleSync==="function"){try{window.hzBattleSync();}catch(e){}}
     /* Musuh baru masuk = giliran MUSUH yang jalan. GET EXCITED satu-satunya yang menyela (serangan ekstra pemain). */
     if(bt.excited){bt.excited=false;floatText(".fighter.foe","EXTRA ATTACK!","crit");schedPhase(1000,playerPhase);}else{schedPhase(1000,enemyPhase);}
   },bsMs(2000));

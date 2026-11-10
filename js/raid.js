@@ -683,6 +683,7 @@ function renderRaidBattle(){
   <div class="wbr-runline"><span>DAMAGE THIS RUN</span><b id="wbrRunDmg">0</b><small>POOL HP ${fmtBig(b.hp)}</small></div>`;
   if(typeof wireSpeedBtn==="function")wireSpeedBtn();
   startRaid();
+  if(typeof window.hzBattleDecorate==="function"){try{window.hzBattleDecorate();}catch(e){console.error("hz raid decorate",e);}}
 }
 function startRaid(){
   const b=wbBossOf(), eq=raidPicked||equipped(), base=cardStats(eq.char,eq.mut,eq.trait,eq.shiny);
@@ -757,62 +758,41 @@ function raidStep(){
   const md=ranton&&id==="CH_EX_MADARA";
   /* Basic attack: archetype FX (6 elemen) — sama seperti battle/tower. Ult & barrage pakai FX khusus. */
   let total=0;hits.forEach(m=>total+=Math.round(dmg*m));
-  /* ronde roket Havoc = ronde ult → basic archetype jangan ikut main (dulu dua-duanya keluar bareng) */
-  const havocWillFire=!!(fx.havocRocket&&raid.hp-total>0&&raid.havocGuard&&(raid.havocUses||0)<(fx.havocRocket.maxUses||3));
-  const basicHit=!domainActive&&!ariseMode&&!md&&!galaxyMode&&!psychicActive&&!bajrangActive&&!hpPurple&&wePhase<0&&!gammaRayHit&&!havocWillFire;
-  if(basicHit&&window.playAnimeArchetypeAttack){try{window.playAnimeArchetypeAttack(id,".fighter.me",".fighter.foe");}catch(e){console.error("raid archetype fx",e);}}
-  if(psychicActive&&window.psyBarrageFx)window.psyBarrageFx({n:raid.psyN||hits.length,shotCount:hits.length,t0:180});
-  if(bajrangActive&&window.bajrangGunFx)window.bajrangGunFx({t0:180});
-  if(hpPurple&&window.hollowPurpleFx)window.hollowPurpleFx({t0:180});
-  /* SFX ult: basic sudah bunyi dari synth archetype, ult/barrage perlu bunyi sendiri (dulu hening total) */
-  try{
-    if(psychicActive&&window.CyberSfx)window.CyberSfx.aoeCharge();
-    if(bajrangActive&&window.CyberSfx)window.CyberSfx.aoeCharge();
-    if(hpPurple&&window.CyberSfx)window.CyberSfx.plasmaBurn();
-  }catch(e){}
-  anim(".fighter.me","lunge-r");
-  if(wePhase>=0&&window.worldEnderFx)window.worldEnderFx({fromSel:".fighter.me",toSel:".fighter.foe",phase:wePhase,revived:false});
-  if(gammaRayHit&&window.gammaRayFx)window.gammaRayFx({fromSel:".fighter.me",toSel:".fighter.foe"});
+  /* All attacks in Raid use the exact Hazard Basic Attack lunge + slash choreography */
+  if(typeof attackLunge==="function"){try{attackLunge(".fighter.me",true);}catch(e){}}
   /* All cut-in removed */
-  const setRaidBar=hp=>{const v=Math.max(0,hp);const p=Math.max(0,Math.min(100,v/raid.max*100))+"%";const b=document.getElementById("hpRaid");if(b){b.style.width=p;const tr=b.parentElement?b.parentElement.querySelector(".hp-trail"):null;if(tr)tr.style.width=p;}const tt=document.getElementById("hpRaidT");if(tt)tt.textContent=(typeof fmtBattleK==="function"?fmtBattleK(v):fmtBig(v));};
-  /* panjang rantai animasi hit ronde ini, dihitung SINKRON (di depan setTimeout) supaya cabang kematian
-     bisa menunggu sambaran terakhir selesai — bukan memotong getar + angkanya lewat guard raid.over */
+  const setRaidBar=hp=>{const v=Math.max(0,hp);const p=Math.max(0,Math.min(100,v/raid.max*100))+"%";const b=document.getElementById("hpRaid");if(b){b.style.width=p;const tr=b.parentElement?b.parentElement.querySelector(".hp-trail"):null;if(tr)tr.style.width=p;}const tt=document.getElementById("hpRaidT");if(tt)tt.textContent=(typeof fmtBattleK==="function"?fmtBattleK(v):fmtBig(v));const ih=document.getElementById("foeInlineHp");if(ih)ih.textContent=(typeof fmtBattleK==="function"?fmtBattleK(v):fmtBig(v));if(typeof window.hzBattleSync==="function"){try{window.hzBattleSync();}catch(e){}}};
   const rHstep=(psychicActive&&typeof PSY_T!=="undefined")?PSY_T.step:(domainActive?80:160);
   const rMd=md;
-  const rWeWait=(psychicActive&&typeof PSY_T!=="undefined")?PSY_T.first:(bajrangActive&&typeof BJ_T!=="undefined")?BJ_T.first:(hpPurple&&typeof HP_T!=="undefined")?HP_T.first:(wePhase>=0&&typeof WE_T!=="undefined")?WE_T.first:(gammaRayHit&&typeof GR_T!=="undefined")?GR_T.first:0;
-  const rChainEnd=(rMd?MADARA_T.slash+Math.max(0,hits.length-1)*MADARA_T.step+40:180+rWeWait+Math.max(0,hits.length-1)*rHstep)+520;
+  const rChainEnd=(rMd?MADARA_T.slash+Math.max(0,hits.length-1)*MADARA_T.step+40:180+95+Math.max(0,hits.length-1)*rHstep)+420;
   setTimeout(()=>{
     if(domainActive&&raid&&!raid.over){setTimeout(()=>floatText(".fighter.me","DOMAIN EXPANSION","crit"),220);}
     if(ariseMode&&raid&&!raid.over){floatText(".fighter.foe","ARMY OF SHADOWS","crit");}
-    const susStart=(md&&raid&&!raid.over)?MADARA_T.slash:rWeWait;
+    const susStart=(md&&raid&&!raid.over)?MADARA_T.slash:0;
     {
       const hstep=rHstep;
       const susDelay=susStart;
-      const dlyAt=i=> galaxyMode ? GALAXY.hit : md ? (susDelay+i*MADARA_T.step) : (i*hstep+susDelay);
+      const dlyAt=i=> galaxyMode ? 95 : md ? (susDelay+i*MADARA_T.step) : (i*hstep+susDelay);
       let rShown=raid.hp+total,rBarEnd=0;const rEndHp=raid.hp;
-      const ultBarrage=(domainActive||ariseMode||md||psychicActive);
-      const jwLag=(id==="CH_EX_JINWOO"&&barrageN&&!domainActive)?170:0;
       hits.forEach((m,i)=>{
-        const dl=dlyAt(i),ft=dl+(md?40:0);
-        /* getar DIJARAKI per sambaran (dl), sama seperti story/tower: sebelumnya hit non-Madara digetarkan
-           sekaligus di menit yang sama jadi kartu cuma bergetar satu kali untuk 10× damage */
-        setTimeout(()=>{if(raid&&!raid.over){anim(".fighter.foe","hit",ultBarrage);if(window.strikeFx&&!md&&!galaxyMode&&!psychicActive&&!bajrangActive&&!hpPurple)window.strikeFx(".fighter.foe",{big:crit&&i===hits.length-1,fx:fx});}},dl+jwLag);
-        /* bunyi impact per sambaran — ritme sama seperti angka HP yang jatuh */
+        const dl=dlyAt(i),ft=dl+(md?40:95);
+        if(i>0){
+          setTimeout(()=>{
+            if(raid&&!raid.over&&typeof window.playAnimeArchetypeAttack==="function"){
+              try{window.playAnimeArchetypeAttack(id,".fighter.me",".fighter.foe");}catch(e){}
+            }
+          },dl);
+        }
         setTimeout(()=>{if(raid&&!raid.over){try{if(crit&&i===hits.length-1)sfx.crit();else playClip(punchAudio);}catch(e){}}},dl);
         const dd=Math.round(dmg*m);rShown-=dd;rBarEnd=Math.max(rBarEnd,ft);const stepHp=Math.max(0,rShown);
         setTimeout(()=>floatText(".fighter.foe","-"+fmt(dd),(crit&&i===hits.length-1)?"crit":""),ft);
         setTimeout(()=>setRaidBar(stepHp),ft);
       });
-      setTimeout(()=>setRaidBar(rEndHp),rBarEnd+520);
-      if(barrageN>1)setTimeout(()=>floatText(".fighter.foe",(iceBlastN?"ICE BLAST ×":domainActive?"UNLIMITED VOID ×":ariseMode?"ARISE ×":md?"TENSA ×":psychicActive?"PSYCHIC BARRAGE ×":"CLEAVE ×")+barrageN,"crit"),md?MADARA_T.slash:psychicActive?300:320);
-      else if(hits.length>1&&!ranton)setTimeout(()=>floatText(".fighter.foe","DOUBLE!","crit"),260+rWeWait);
-      if(bajrangActive)setTimeout(()=>floatText(".fighter.me","BAJRANG GUN!","crit"),BJ_T.first-80);
-      if(hpPurple)setTimeout(()=>floatText(".fighter.foe","HOLLOW PURPLE","crit"),HP_T.first-80);
-      /* dentuman khas ult saat impact, bukan cuma saat charge */
-      if((bajrangActive||hpPurple)&&window.CyberSfx){
-        const impDelay=(bajrangActive?BJ_T.first:HP_T.first)+80;
-        setTimeout(()=>{if(raid&&!raid.over)window.CyberSfx.aoeDetonate();},impDelay);
-      }
+      setTimeout(()=>setRaidBar(rEndHp),rBarEnd+420);
+      if(barrageN>1)setTimeout(()=>floatText(".fighter.foe",(iceBlastN?"ICE BLAST ×":domainActive?"UNLIMITED VOID ×":ariseMode?"ARISE ×":md?"TENSA ×":psychicActive?"PSYCHIC BARRAGE ×":"CLEAVE ×")+barrageN,"crit"),md?MADARA_T.slash:psychicActive?260:280);
+      else if(hits.length>1&&!ranton)setTimeout(()=>floatText(".fighter.foe","DOUBLE!","crit"),240);
+      if(bajrangActive)setTimeout(()=>floatText(".fighter.me","BAJRANG GUN!","crit"),220);
+      if(hpPurple)setTimeout(()=>floatText(".fighter.foe","HOLLOW PURPLE","crit"),220);
     }
   },180);
   raid.hp-=total;raid.dealt+=total;
@@ -825,27 +805,23 @@ function raidStep(){
     havocFired=true;
     const rk=Math.round(raid.atk*(fx.havocRocket.pct||50)/100);
     raid.hp-=rk;raid.dealt+=rk;
-    if(window.havocRocketFx)havocRocketFx({fromSel:".fighter.me",toSel:".fighter.foe"});
-    try{if(window.CyberSfx)window.CyberSfx.aoeCharge();}catch(e){}
     setTimeout(()=>{
       if(raid&&!raid.over){
-        anim(".fighter.foe","hit");
-        shakeScreen(true);if(window.CyberSfx)window.CyberSfx.aoeDetonate();
         floatText(".fighter.foe","SUPER MEGA DEATH ROCKET -"+fmt(rk)+" ("+raid.havocUses+"/"+(fx.havocRocket.maxUses||3)+")","crit");
         setRaidBar(raid.hp);
       }
-    },typeof HR_T!=="undefined"?HR_T.first:620);
+    },320);
   }
   setRaidBar(raid.hp+total);
   const tl=document.getElementById("raidTurnLabel");if(tl)tl.innerHTML="TURN<br>"+raid.turn+"/"+raid.cap;
   if(raid.hp<=0){
     const special=(domainActive||ariseMode||ranton||galaxyMode||havocFired||gammaRayHit||psychicActive||bajrangActive||hpPurple);
-    const killWait=Math.max(rChainEnd, special?(ranton?MADARA_T.total+160:galaxyMode?GALAXY.total:1700):0);
+    const killWait=Math.max(rChainEnd, special?1100:0);
     if(killWait>260){ setTimeout(()=>{if(raid&&!raid.over)endRaid();},killWait); }
     else endRaid();
     return;
   }
-  raid.timer=setTimeout(raidStep,ariseMode?2200:domainActive?1900:ranton?MADARA_T.total+260:galaxyMode?GALAXY.total+260:bajrangActive?BJ_T.first+1300:hpPurple?HP_T.first+1000:psychicActive?Math.max(1200,PSY_T.first+(hits.length-1)*PSY_T.step+700):gammaRayHit?1550:1100);
+  raid.timer=setTimeout(raidStep,ariseMode?1800:domainActive?1600:ranton?1600:1050);
 }
 function raidFinisher(done){
   if(!raid||raid.over){ if(done)done(); return; }
@@ -854,41 +830,20 @@ function raidFinisher(done){
   const meEl=document.querySelector(".fighter.me"), foeEl=document.querySelector(".fighter.foe");
   if(!grid||!meEl||!foeEl){ if(done)done(); return; }
   const skill=(raid.boss&&raid.boss.skill)||"GALAXY ROAR";
-  const mr=meEl.getBoundingClientRect(), fr=foeEl.getBoundingClientRect();
-  const sx=Math.round(fr.left+fr.width/2), sy=Math.round(fr.top+fr.height*0.42);
-  const tx=Math.round(mr.left+mr.width/2), ty=Math.round(mr.top+mr.height*0.42);
-  const dx=tx-sx, dy=ty-sy;
-  const fly=470, gap=620, N=3, HITS=10, DMG=999999;
-  // telegraph: boss membuka daya
-  anim(".fighter.foe","lunge-l");
+  const DMG=999999;
   floatText(".fighter.foe",skill,"crit");
   sfx.crit();
-  playClipDur(domainAudio,1100,350);
-  let impacts=0;
-  const fireImpact=()=>{
-    const fl=document.createElement("div");fl.className="eb-flash";
-    fl.style.setProperty("--fx",(tx/window.innerWidth*100).toFixed(1)+"%");
-    fl.style.setProperty("--fy",(ty/window.innerHeight*100).toFixed(1)+"%");
-    document.body.appendChild(fl);setTimeout(()=>fl.remove(),460);
-    floatText(".fighter.me","BARRAGE ×"+HITS,"crit");
-    /* getar per sambaran, sejalan dengan angka + suara (60+h*80) — sama seperti ritme barrage di story/tower */
-    for(let h=0;h<HITS;h++){ setTimeout(()=>{ const t=document.querySelector(".fighter.me"); if(t){anim(".fighter.me","hit");floatText(".fighter.me","-"+fmt(DMG),"crit");} },60+h*80); }
-    impactBoom();
-    for(let h=0;h<HITS;h++){ setTimeout(()=>playClip(punchAudio),60+h*80); }
+  if(typeof attackLunge==="function"){try{attackLunge(".fighter.foe",true);}catch(e){}}
+  setTimeout(()=>{
+    floatText(".fighter.me","-"+fmt(DMG),"crit");
+    try{playClip(punchAudio);}catch(e){}
     const bar=document.getElementById("hpMe");if(bar){bar.style.width="0%";const tr=bar.parentElement?bar.parentElement.querySelector(".hp-trail"):null;if(tr)tr.style.width="0%";}
     const t=document.getElementById("hpMeT");if(t)t.textContent="0";
+    const ih=document.getElementById("meInlineHp");if(ih)ih.textContent="0";
     meEl.classList.add("ko");
-    if(++impacts>=N) setTimeout(()=>{ if(done)done(); },760);
-  };
-  for(let i=0;i<N;i++){
-    setTimeout(()=>{
-      playClipDur(purpleAudio,470,120);
-      const o=document.createElement("div");o.className="ebfx";
-      o.innerHTML=`<span class="eb-ball${i===N-1?" big":""}" style="left:${sx}px;top:${sy}px;--dx:${dx}px;--dy:${dy}px;--fly:${fly}ms"></span>`;
-      document.body.appendChild(o);
-      setTimeout(()=>{ o.remove(); fireImpact(); },fly);
-    },i*gap);
-  }
+    if(typeof window.hzBattleSync==="function"){try{window.hzBattleSync();}catch(e){}}
+    setTimeout(()=>{ if(done)done(); },620);
+  },280);
 }
 function endRaid(){
   if(!raid||raid.over)return;

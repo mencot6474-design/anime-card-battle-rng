@@ -1714,6 +1714,18 @@
     get: getLang,
     set: setLang,
     syncData: syncDataObjectsLang,
+    cardDescEn: function (id, fallback) {
+      if (id && CARD_DESC_EN[id]) return CARD_DESC_EN[id];
+      return fallback ? translateTextString(fallback) : '';
+    },
+    artNameEn: function (id, fallback) {
+      if (id && ART_NAME_EN[id]) return ART_NAME_EN[id];
+      return fallback ? translateTextString(fallback) : '';
+    },
+    petNameEn: function (id, fallback) {
+      if (id && PET_NAME_EN[id]) return PET_NAME_EN[id];
+      return fallback ? translateTextString(fallback) : '';
+    },
     t: function (idText, enText) {
       return getLang() === 'en' ? (enText !== undefined ? enText : translateTextString(idText)) : idText;
     },
