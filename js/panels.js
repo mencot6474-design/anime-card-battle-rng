@@ -1975,10 +1975,15 @@ function renderProfile(){
         }
       }
 
+      // Safe image URL resolver without double "assets/artifacts/"
+      let resolvedAsset = asset;
+      if (!resolvedAsset.startsWith('assets/')) {
+        resolvedAsset = 'assets/artifacts/' + resolvedAsset;
+      }
       const isFire = !!fb.isFire;
 
       return (
-        '<div class="prf-card-chassis support-chassis' + (isFire ? ' fire-blaze' : '') + '" onclick="inspectSupport(\'' + name + '\', \'Passive: Synchronizes artifact resonance with equipped deck cards, amplifying combat metrics.\', \'' + asset + '\', \'' + relicType + '\')">' +
+        '<div class="prf-card-chassis support-chassis' + (isFire ? ' fire-blaze' : '') + '" onclick="inspectSupport(\'' + name + '\', \'Passive: Synchronizes artifact resonance with equipped deck cards, amplifying combat metrics.\', \'' + resolvedAsset + '\', \'' + relicType + '\')">' +
           '<div class="pcc-top-bar">' +
             '<span class="pcc-tier-badge ' + fb.chipCls + '">' + chip + '</span>' +
             '<span class="pcc-elem-badge ' + fb.elemCls + '">' + fb.elem + '</span>' +
@@ -1992,7 +1997,7 @@ function renderProfile(){
               '<polygon points="50,85 80,32 20,32" fill="none" stroke="currentColor" stroke-width="1.2"/>' +
             '</svg>' +
             '<div class="relic-pedestal"></div>' +
-            '<img src="assets/artifacts/' + asset + '" alt="' + name + '" class="relic-icon">' +
+            '<img src="' + resolvedAsset + '" alt="' + name + '" class="relic-icon">' +
             '<div class="pcc-vignette"></div>' +
           '</div>' +
           '<div class="pcc-plate' + (isFire ? ' fire-plate' : '') + '">' +
