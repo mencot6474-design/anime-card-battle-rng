@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="4x Luck Booster Pass">
+  <defs>
+    <radialGradient id="l4Glow" cx="50%" cy="46%" r="54%">
+      <stop offset="0%" stop-color="#facc15" stop-opacity="0.52"/>
+      <stop offset="52%" stop-color="#22c55e" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#050505" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="l4Frame" x1="12%" y1="4%" x2="88%" y2="96%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="35%" stop-color="#f3e600"/>
+      <stop offset="70%" stop-color="#22c55e"/>
+      <stop offset="100%" stop-color="#15803d"/>
+    </linearGradient>
+    <linearGradient id="l4Plate" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#13291b"/>
+      <stop offset="55%" stop-color="#08150c"/>
+      <stop offset="100%" stop-color="#040a06"/>
+    </linearGradient>
+    <linearGradient id="l4Leaf" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="45%" stop-color="#4ade80"/>
+      <stop offset="100%" stop-color="#16a34a"/>
+    </linearGradient>
+    <linearGradient id="l4Gold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="45%" stop-color="#fef08a"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="64" cy="64" r="60" fill="url(#l4Glow)"/>
+
+  <!-- Surging Booster Wings -->
+  <g stroke="#060908" stroke-width="3.4" stroke-linejoin="round">
+    <polygon points="31,42 5,25 14,49 7,58 21,67 14,77 35,80" fill="#102819"/>
+    <polygon points="97,42 123,25 114,49 121,58 107,67 114,77 93,80" fill="#102819"/>
+    <polygon points="33,48 14,36 22,54 16,62 35,66" fill="#4ade80"/>
+    <polygon points="95,48 114,36 106,54 112,62 93,66" fill="#4ade80"/>
+  </g>
+
+  <!-- Imperial Crown on top -->
+  <polygon points="46,20 51,7 59,15 64,5 69,15 77,7 82,20"
+           fill="url(#l4Gold)" stroke="#060908" stroke-width="3.2" stroke-linejoin="round"/>
+
+  <!-- Chamfered Booster Shield -->
+  <polygon points="44,18 84,18 103,36 103,89 64,116 25,89 25,36"
+           fill="url(#l4Frame)" stroke="#060908" stroke-width="4.2" stroke-linejoin="round"/>
+  <polygon points="47,24 81,24 96,39 96,85 64,108 32,85 32,39"
+           fill="url(#l4Plate)" stroke="#060908" stroke-width="3" stroke-linejoin="round"/>
+
+  <!-- Booster Up-Chevron Aura inside plate -->
+  <g opacity="0.28" fill="#fef08a">
+    <polygon points="64,26 88,43 82,43 64,31 46,43 40,43"/>
+    <polygon points="64,35 88,52 82,52 64,40 46,52 40,52"/>
+  </g>
+
+  <!-- Radiant Golden-Emerald Clover -->
+  <g stroke="#050807" stroke-width="3.2" stroke-linejoin="round" transform="translate(64,53)">
+    <path d="M0,-2 C-9,-10 -12,-24 0,-26 C12,-24 9,-10 0,-2 Z" fill="url(#l4Leaf)"/>
+    <path d="M0,2 C-8,10 -11,20 0,22 C11,20 8,10 0,2 Z" fill="url(#l4Leaf)"/>
+    <path d="M-2,0 C-10,-9 -24,-12 -26,0 C-24,12 -10,9 -2,0 Z" fill="url(#l4Leaf)"/>
+    <path d="M2,0 C10,-9 24,-12 26,0 C24,12 10,9 2,0 Z" fill="url(#l4Leaf)"/>
+    <path d="M0,-6 L0,-19 M0,6 L0,15 M-6,0 L-19,0 M6,0 L19,0" stroke="#fef9c3" stroke-width="1.9" stroke-linecap="round" opacity="0.8"/>
+    <polygon points="0,-7 7,0 0,7 -7,0" fill="#fef08a" stroke="#050807" stroke-width="2.4"/>
+  </g>
+
+  <!-- Bold "4x" Badge Plate -->
+  <g transform="translate(64,86)">
+    <polygon points="-30,-12 30,-12 35,-5 29,12 -29,12 -35,-5"
+             fill="#040806" stroke="url(#l4Frame)" stroke-width="2.7" stroke-linejoin="round"/>
+    <!-- Vector "4" -->
+    <path d="M-12,-11 L-5,-11 L-5,1 L-1.5,1 L-1.5,5.5 L-5,5.5 L-5,11.5 L-10.8,11.5 L-10.8,5.5 L-23,5.5 L-23,1.2 L-13.2,-11 Z M-10.8,-5 L-17.2,1 L-10.8,1 Z"
+          transform="translate(0,-1)"
+          fill="url(#l4Gold)" stroke="#050807" stroke-width="3.2" stroke-linejoin="round" style="paint-order:stroke fill"/>
+    <!-- Vector "×" -->
+    <path d="M5,-6 L10.5,-6 L14.5,-1.2 L18.5,-6 L24,-6 L17.8,2 L24.2,10 L18.7,10 L14.5,4.8 L10.3,10 L4.8,10 L11.2,2 Z"
+          transform="translate(0,-2)"
+          fill="#4ade80" stroke="#050807" stroke-width="3" stroke-linejoin="round" style="paint-order:stroke fill"/>
+  </g>
+
+  <!-- High-Energy Sparkles -->
+  <g stroke="#060908" stroke-width="2.2" stroke-linejoin="round">
+    <path d="M19,20 L21.4,26 L27.5,28.5 L21.4,31 L19,37 L16.6,31 L10.5,28.5 L16.6,26 Z" fill="#fef08a"/>
+    <path d="M109,18 L111.2,23.5 L117,25.8 L111.2,28 L109,33.5 L106.8,28 L101,25.8 L106.8,23.5 Z" fill="#4ade80"/>
+    <path d="M107,95 L109,99.5 L113.5,101.5 L109,103.5 L107,108 L105,103.5 L100.5,101.5 L105,99.5 Z" fill="#fef08a"/>
+    <path d="M21,95 L22.8,99.2 L27,101 L22.8,102.8 L21,107 L19.2,102.8 L15,101 L19.2,99.2 Z" fill="#4ade80"/>
+  </g>
+</svg>

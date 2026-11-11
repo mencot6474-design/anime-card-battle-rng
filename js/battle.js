@@ -6,7 +6,7 @@ let FGEN=0;
    Semua jeda dijadwalkan lewat schedPhase()/bsMs(ms) → dibagi bt.speed. bt.speed dibekukan per battle
    dari battleSpeedEff() (state.battleSpeed; terkunci level: LV10→2x, LV25→3x, LV50→4x).
    Skala linear → urutan antar-timeout di dalam satu fase tetap aman. ===== */
-function hasSpeed3xPass(){return !!(typeof state!=="undefined"&&state&&Array.isArray(state.passesOwned)&&state.passesOwned.includes("speed-3x"));}
+function hasSpeed3xPass(){return typeof hasPass==="function"?hasPass("speed-3x"):!!(typeof state!=="undefined"&&state&&Array.isArray(state.passesOwned)&&state.passesOwned.includes("speed-3x"));}
 function battleSpeedMax(){return hasSpeed3xPass()?3:2;}
 function battleSpeedEff(){let s=(state&&state.battleSpeed)||1;if(s<1)s=1;const m=battleSpeedMax();return Math.min(Math.floor(s),m);}
 function bsMs(ms){const m=(bt&&bt.speed)||1;return m<=1?ms:Math.max(0,Math.round(ms/m));}

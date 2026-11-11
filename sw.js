@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v583-speed3xPass';
+const CACHE_NAME = 'anime-card-battle-v584-luckShinyPasses';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

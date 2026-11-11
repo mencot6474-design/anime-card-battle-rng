@@ -138,7 +138,7 @@ function loadStateFor(name){
     }
   } catch(e) { console.warn("[SP RECONCILE ERR]", e); }
   if(!Array.isArray(state.passesOwned))state.passesOwned=[];
-  state.passesOwned=Array.from(new Set(state.passesOwned.filter(id=>id==="speed-3x")));
+  state.passesOwned=Array.from(new Set(state.passesOwned.filter(id=>typeof passDef==="function"?!!passDef(id):["speed-3x","luck-2x","luck-4x","shiny-2x","shiny-4x"].includes(id))));
   /* BATTLE SPEED: 1x & 2x gratis (player baru langsung bisa pakai), 3x via Pass Premium Shop, 4x dihapus */
   if(typeof state.battleSpeed!=="number"||state.battleSpeed<1||state.battleSpeed>3||Math.floor(state.battleSpeed)!==state.battleSpeed)state.battleSpeed=1;
   {const _max=state.passesOwned.includes("speed-3x")?3:2;if(state.battleSpeed>_max)state.battleSpeed=_max;}
@@ -1165,6 +1165,11 @@ function renderShell(){
   }
 
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.route===route()));
+  try{
+    const ql=document.getElementById("l12QsLuck");if(ql&&typeof fmtLobbyLuck==="function")ql.textContent=fmtLobbyLuck();
+    const qs=document.getElementById("l12QsShiny");if(qs&&typeof fmtLobbyShiny==="function")qs.textContent=fmtLobbyShiny();
+    const qr=document.getElementById("l12QsRolls");if(qr&&state)qr.textContent=fmt(state.totalRolls||0);
+  }catch(e){}
   try{if(typeof updateProfileLiveNumbers==="function")updateProfileLiveNumbers();}catch(e){}
   try{renderWeatherDock();renderBuffDock();startWeatherTick();if(typeof l12UpdateWeatherDock==='function')l12UpdateWeatherDock(true);}catch(e){}
   try{if(typeof startGlobalLuckPoll==='function')startGlobalLuckPoll();}catch(e){}

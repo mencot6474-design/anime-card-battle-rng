@@ -2340,21 +2340,9 @@ function renderLobby(){
     return "3 / 3";
   })();
   const _cAvatar = _l12SlotThumb(_party[0] || (state.stacks && state.stacks[state.stacks.length - 1]) || null);
-  /* luck bisa membesar (rebirth x14 + weather); diringkas supaya tidak meluber */
-  const _cLuck = (function () {
-    var v = (typeof totalLuck === "function") ? totalLuck() : 1;
-    if (!isFinite(v) || v <= 0) v = 1;
-    var t = v >= 1e6 ? (v / 1e6).toFixed(1) + "M" : (v >= 1000 ? (v / 1000).toFixed(1) + "K" : v.toFixed(2));
-    return "x" + t;
-  })();
-  /* Shiny chance = angka produksi yang sama dengan layar PROFILE (1 in N). */
-  const _cShiny = (function () {
-    try {
-      if (typeof SHINY_CHANCE_MULT !== "undefined" && typeof fmtChance === "function")
-        return "1 in " + fmtChance(100 * SHINY_CHANCE_MULT);
-    } catch (e) {}
-    return "\u2014";
-  })();
+  /* luck & shiny chance memakai formatter tunggal di data.js agar sinkron dengan renderShell() */
+  const _cLuck = (typeof fmtLobbyLuck === "function") ? fmtLobbyLuck() : ("x" + ((typeof totalLuck === "function" ? totalLuck() : 1).toFixed(2)));
+  const _cShiny = (typeof fmtLobbyShiny === "function") ? fmtLobbyShiny() : "\u2014";
   /* Vestige rank R0/R1/... dari rebirthCount() (bukan angka karangan). */
   const _cVest = "R" + ((typeof rebirthCount === "function") ? rebirthCount() : 0);
 

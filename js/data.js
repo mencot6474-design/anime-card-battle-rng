@@ -31,15 +31,17 @@ function rarityText(tier,chance){return "1 in "+fmtChance(chance||chanceOf(tier)
      peluang pool (total selalu 100%) — kartu umum memang dibuat gampang by design.
    K ≈ (1 − Σ peluang rare) / Σ peluang common, dihitung dari pool gacha yang lagi aktif. */
 const ROLL_RARE_DEN=50000;
-function rollCommonScale(){
+function rollCommonScale(shinyMult=1){
   if(typeof gachaPool!=="function"||typeof SHINY_CHANCE_MULT==="undefined")return 1;
   const MUTS=["none","gold","rainbow","secret","ultima"];
+  const sm=(typeof shinyMult==="number"&&shinyMult>0)?shinyMult:1;
   let rare=0,common=0;
   for(const c of gachaPool()){
     const base=c.chance||chanceOf(c.tier);
     for(const sh of [1,SHINY_CHANCE_MULT])for(const k of MUTS){
       const den=base*sh*(MUT_CHANCE_MULT[k]||1);
-      if(den>=ROLL_RARE_DEN)rare+=1/den;else common+=1/den;
+      const w=(sh>1?sm:1)/den;
+      if(den>=ROLL_RARE_DEN)rare+=w;else common+=w;
     }
   }
   rare=Math.min(0.5,rare); /* jaga-jaga: Σ rare harus jauh di bawah 1 */
@@ -85,12 +87,27 @@ const PET_DEFS=[
   {id:"next-bot",    name:"NEXT-BOT",       img:"assets/pets/next-bot.webp",   emoji:"🤖",src:"coin", price:5000000000,flat:120,pct:150},
   {id:"cyber-kitsune", name:"CYBER KITSUNE", img:"assets/pets/cyber-kitsune.webp?v=1", emoji:"🦊", src:"premium", gemPrice:10000, flat:250, pct:300}
 ];
+const PASS_DEFS=[
+  {id:"speed-3x", kind:"speed", name:"3× BATTLE SPEED PASS",  short:"3× SPEED", gemPrice:3000,  maxSpeed:3,   img:"assets/images/pass-speed-3x.svg?v=1", badge:"BATTLE PASS",   tier:"PASS", color:"#f3e600", stats:["3× BATTLE SPEED","STORY & TOWER","PERMANENT"],           desc:"Permanently unlocks 3× Battle Speed across Story and Infinite Tower battles (1× and 2× are free for all players).", effectHtml:"Permanently unlocks <b>3× Battle Speed</b> across Story &amp; Infinite Tower."},
+  {id:"luck-2x",  kind:"luck",  name:"2× LUCK PASS",          short:"2× LUCK",  gemPrice:5000,  luckMult:2,   img:"assets/images/pass-luck-2x.svg?v=1",  badge:"LUCK PASS",     tier:"PASS", color:"#34d399", stats:["2× TOTAL LUCK","STACKS ALL BUFFS","PERMANENT · NO CAP"],  desc:"Permanently doubles your Total Luck (×2). Stacks multiplicatively with 4× Luck Booster (8×) and all other luck buffs with no cap.", effectHtml:"Permanently multiplies Total Luck by <b>2×</b> (stacks with 4× Booster &amp; all buffs without cap)."},
+  {id:"luck-4x",  kind:"luck",  name:"4× LUCK BOOSTER PASS",  short:"4× LUCK",  gemPrice:10000, luckMult:4,   img:"assets/images/pass-luck-4x.svg?v=1",  badge:"LUCK BOOSTER",  tier:"PASS", color:"#22c55e", stats:["4× TOTAL LUCK","2× + 4× = 8×","PERMANENT · NO CAP"],       desc:"Permanently quadruples your Total Luck (×4). Stacks multiplicatively with 2× Luck Pass (8× total) and every buff without any cap.", effectHtml:"Permanently multiplies Total Luck by <b>4×</b> (stacks to <b>8×</b> with 2× Luck Pass, no cap)."},
+  {id:"shiny-2x", kind:"shiny", name:"2× SHINY CHANCE PASS",  short:"2× SHINY", gemPrice:4000,  shinyMult:2,  img:"assets/images/pass-shiny-2x.svg?v=1", badge:"SHINY PASS",    tier:"PASS", color:"#38bdf8", stats:["2× SHINY CHANCE","STACKS ALL BUFFS","PERMANENT · NO CAP"],desc:"Permanently doubles your Shiny card roll chance (×2). Stacks multiplicatively with 4× Shiny Booster (8×) with no cap.", effectHtml:"Permanently multiplies Shiny Chance by <b>2×</b> (stacks with 4× Shiny Booster without cap)."},
+  {id:"shiny-4x", kind:"shiny", name:"4× SHINY BOOSTER PASS", short:"4× SHINY", gemPrice:8000,  shinyMult:4,  img:"assets/images/pass-shiny-4x.svg?v=1", badge:"SHINY BOOSTER", tier:"PASS", color:"#e879f9", stats:["4× SHINY CHANCE","2× + 4× = 8×","PERMANENT · NO CAP"],    desc:"Permanently quadruples your Shiny card roll chance (×4). Stacks multiplicatively with 2× Shiny Pass (8× total -> 1 in 625 effective) with no cap.", effectHtml:"Permanently multiplies Shiny Chance by <b>4×</b> (stacks to <b>8×</b> with 2× Shiny Pass, no cap)."}
+];
+function passDef(id){return PASS_DEFS.find(p=>p.id===id)||null;}
+function hasPass(id){return !!(typeof state!=="undefined"&&state&&Array.isArray(state.passesOwned)&&state.passesOwned.includes(id));}
+function ownedPassDefs(){return PASS_DEFS.filter(p=>hasPass(p.id));}
+function passLuckMult(){return ownedPassDefs().reduce((m,p)=>m*(p.luckMult||1),1);}
+function passShinyMult(){return ownedPassDefs().reduce((m,p)=>m*(p.shinyMult||1),1);}
+function shinyChanceMult(){const b=(typeof SHINY_CHANCE_MULT!=="undefined"&&SHINY_CHANCE_MULT>0)?SHINY_CHANCE_MULT:50;return b/Math.max(1,passShinyMult());}
+function fmtLobbyLuck(v){let n=(typeof v==="number"&&isFinite(v)&&v>0)?v:(typeof totalLuck==="function"?totalLuck():1);if(!isFinite(n)||n<=0)n=1;return "x"+(n>=1e6?(n/1e6).toFixed(1)+"M":(n>=1000?(n/1000).toFixed(1)+"K":n.toFixed(2)));}
+function fmtLobbyShiny(){try{const sm=shinyChanceMult();if(sm>0&&typeof fmtChance==="function")return "1 in "+fmtChance(100*sm);}catch(e){}return "\u2014";}
 function luckTxt(d){const a=[];if(d.flat)a.push("+"+d.flat+" FLAT");if(d.pct)a.push("+"+d.pct+"%");return a.join(" & ")+" LUCK";}
 function artLuckFlat(){return state&&Array.isArray(state.artSlots)?state.artSlots.reduce((a,id)=>a+((ART_DEFS.find(x=>x.id===id)||{}).flat||0),0):0;}
 function artLuckPct(){return state&&Array.isArray(state.artSlots)?state.artSlots.reduce((a,id)=>a+((ART_DEFS.find(x=>x.id===id)||{}).pct||0),0):0;}
 function petLuckFlat(){const d=state&&state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;return d?(d.flat||0):0;}
 function petLuckPct(){const d=state&&state.petEquipped?PET_DEFS.find(x=>x.id===state.petEquipped):null;return d?(d.pct||0):0;}
-function totalLuck(){const p=state?.player||{};const base=p.luckBase??p.luck??1;const flat=(p.luckFlat||0)+treeLuckFlat()+activeLuckBuff()+artLuckFlat()+petLuckFlat();const pct=(p.luckPercent||0)+treeLuckPct()+activeLuckBuffPct()+artLuckPct()+petLuckPct();return (base+flat)*(1+pct)*weatherLuckMult()*(typeof globalLuckMult==='function'?globalLuckMult():1)*(typeof rebirthLuckMult==='function'?rebirthLuckMult():1)*(typeof adLuckMult==='function'?adLuckMult():1);}
+function totalLuck(){const p=state?.player||{};const base=p.luckBase??p.luck??1;const flat=(p.luckFlat||0)+treeLuckFlat()+activeLuckBuff()+artLuckFlat()+petLuckFlat();const pct=(p.luckPercent||0)+treeLuckPct()+activeLuckBuffPct()+artLuckPct()+petLuckPct();return (base+flat)*(1+pct)*weatherLuckMult()*(typeof globalLuckMult==='function'?globalLuckMult():1)*(typeof rebirthLuckMult==='function'?rebirthLuckMult():1)*(typeof adLuckMult==='function'?adLuckMult():1)*passLuckMult();}
 // Chance yang ditampilkan ke user = peluang ASLI ternormalisasi (Fix A): rare = label mentah,
 // common = 1/P asli lewat effChance(). Luck tetap jalan di bobot roll (khusus rare) + keliatan di Profil.
 function luckChance(charId,mut,shiny){return effChance(charId,mut,shiny);}

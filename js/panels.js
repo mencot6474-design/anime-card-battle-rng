@@ -632,6 +632,7 @@ const RNG_DROP_RATES=[
 // Mutasi/shiny relatif tetap presisi (gold 5× lebih langka dari varian none kartu sama) di luck berapa pun.
 function rngRoll(luckMultiplier=1,speedMultiplier=1){
   const L=(typeof luckMultiplier==="number"&&luckMultiplier>0)?luckMultiplier:1;
+  const S=(typeof passShinyMult==="function"&&passShinyMult()>0)?passShinyMult():1;
   const aw=activeWeatherId();
   const pool=gachaPool();
   if(!pool.length)return null;
@@ -647,9 +648,9 @@ function rngRoll(luckMultiplier=1,speedMultiplier=1){
       }
     }
   }
-  const K=rollCommonScale(); /* Fix A+B: common discale biar Σ peluang pool = 100% */
+  const K=rollCommonScale(S); /* Fix A+B: common discale biar Σ peluang pool = 100% */
   let total=0;
-  const weights=entries.map(e=>{const w=(e.ch>=ROLL_RARE_DEN?L:K)/e.ch;total+=w;return w;});
+  const weights=entries.map(e=>{const w=((e.ch>=ROLL_RARE_DEN?L:K)/e.ch)*(e.shiny?S:1);total+=w;return w;});
   let r=Math.random()*total, idx=entries.length-1;
   for(let i=0;i<entries.length;i++){r-=weights[i];if(r<=0){idx=i;break;}}
   const pick=entries[idx];
@@ -860,10 +861,11 @@ window.claimIndexReward=claimIndexReward;
 function instantRollFast(n, agg){
   if(!(n>0))return [];
   const L=(typeof totalLuck==="function"&&totalLuck()>0)?totalLuck():1;
+  const S=(typeof passShinyMult==="function"&&passShinyMult()>0)?passShinyMult():1;
   const aw=activeWeatherId();
   const pool=gachaPool();
   const MUTS=["none","gold","rainbow","secret","ultima"];
-  const K=rollCommonScale(); /* Fix A+B — bobot WAJIB sama persis dengan rngRoll */
+  const K=rollCommonScale(S); /* Fix A+B — bobot WAJIB sama persis dengan rngRoll */
   const entries=[];const cum=[];let total=0;
   for(const c of pool){
     const base=c.chance||chanceOf(c.tier);
@@ -871,7 +873,7 @@ function instantRollFast(n, agg){
       const statMult=(shiny?SHINY_MULT:1)*(MUT_MULT[mut]||1);
       const chanceMult=(shiny?SHINY_CHANCE_MULT:1)*(MUT_CHANCE_MULT[mut]||1);
       const ch=base*chanceMult;
-      total+=(ch>=ROLL_RARE_DEN?L:K)/ch; /* Fix A+B — sama dengan bobot rngRoll */
+      total+=((ch>=ROLL_RARE_DEN?L:K)/ch)*(shiny?S:1); /* Fix A+B — sama dengan bobot rngRoll */
       entries.push({card:c,mut:mut,shiny:shiny,ch:ch});
       cum.push(total);
     }
@@ -1575,7 +1577,7 @@ function pfStatRows(){
     ["rolls","Rolls",fmt(state.totalRolls||0)],
     ["luck","Luck",totalLuck().toFixed(1)+"×"],
     ["speed","Roll speed",eff.toFixed(1)+"×"],
-    ["shiny","Shiny chance","1 in "+fmtChance(100*SHINY_CHANCE_MULT)],
+    ["shiny","Shiny chance","1 in "+fmtChance(100*(typeof shinyChanceMult==="function"?shinyChanceMult():SHINY_CHANCE_MULT))],
     ["rarest","Rarest card",rarest?cardName(rarest.char):"—"],
     ["floor","Highest floor",String((state.tower&&state.tower.best)||0)],
     ["playtime","Playtime",pfPlayTime()],
@@ -3537,8 +3539,10 @@ var pxQty = 1;
 
 var PREMIUM_PACKS = [
   { id: 'global_luck', cat: 'event', type: 'global_luck', name: 'GLOBAL LUCK x10', price: 1200, img: 'assets/images/global-luck.webp?v=1', badge: 'SERVER EVENT', tier: 'WORLD BUFF', color: '#34d399', stats: ['10x SERVER LUCK', '60 MINUTES', 'MAX 100x'], desc: 'Activate 10x LUCK for every player on the server for 1 HOUR. Your username is shown as the activator.' },
-  // PASSES
-  { id: 'speed-3x', cat: 'pass', type: 'pass', name: '3× BATTLE SPEED PASS', price: 3000, img: 'assets/images/pass-speed-3x.svg?v=1', badge: 'BATTLE PASS', tier: 'PASS', color: '#f3e600', stats: ['3× BATTLE SPEED', 'STORY & TOWER', 'PERMANENT'], desc: 'Permanently unlocks 3× Battle Speed across Story and Infinite Tower battles (1× and 2× are free for all players).' },
+  // PASSES (sumber tunggal dari PASS_DEFS di data.js)
+  ...((typeof PASS_DEFS !== 'undefined' ? PASS_DEFS : []).map(function(p){
+    return { id: p.id, cat: 'pass', type: 'pass', name: p.name, price: p.gemPrice, img: p.img, badge: p.badge, tier: p.tier, color: p.color, stats: p.stats, desc: p.desc, effectHtml: p.effectHtml };
+  })),
   // LOADOUT
   { id: 'tome-infinity', cat: 'equip', type: 'art', name: 'TOME OF INFINITY', price: 3000, img: 'assets/artifacts/tome-infinity.webp?v=1', badge: 'MYTHIC ARTIFACT', tier: 'ARTIFACT', color: '#38bdf8', stats: ['+150 FLAT LUCK', '+200% LUCK', 'PERMANENT'], desc: 'Unlimited mystic tome. Grants +150 Flat Luck and +200% Luck permanently once equipped.' },
   { id: 'cyber-kitsune', cat: 'equip', type: 'pet', name: 'CYBER KITSUNE', price: 10000, img: 'assets/pets/cyber-kitsune.webp?v=1', badge: 'SUPREME PET', tier: 'PET', color: '#f43f5e', stats: ['+250 FLAT LUCK', '+300% LUCK', 'SUPREME TIER'], desc: 'Legendary future fox. Grants +250 Flat Luck and +300% Luck while equipped as your companion.' },
@@ -3561,7 +3565,7 @@ var PREMIUM_PACKS = [
 
 var PX_GROUPS = [
   { key: 'event',   label: 'SERVER EVENT',    note: 'WORLD BUFF' },
-  { key: 'pass',    label: 'BATTLE PASSES',   note: 'PERMANENT' },
+  { key: 'pass',    label: 'BATTLE PASSES',   note: 'PERMANENT · STACKS ALL' },
   { key: 'pack',    label: 'INSTANT ROLL',    note: 'BACKPACK' },
   { key: 'equip',   label: 'LOADOUT',         note: 'PERMANENT' },
   { key: 'weather', label: 'WEATHER ANOMALY', note: '30 MIN' }
@@ -3616,7 +3620,15 @@ function premConfirmBody(pack, qty) {
   } else if (pack.type === 'pet') {
     effect = 'Permanent pet added to your Backpack.';
   } else if (pack.type === 'pass') {
-    effect = 'Permanently unlocks <b>3× Battle Speed</b> across Story &amp; Infinite Tower.';
+    var pDef = typeof passDef === 'function' ? passDef(pack.id) : null;
+    effect = (pack.effectHtml || pxEsc(pack.desc || 'Unlocked permanently on your account.'));
+    if (pDef && pDef.kind === 'luck' && typeof passLuckMult === 'function') {
+      var curLk = passLuckMult(), nextLk = curLk * (pDef.luckMult || 1);
+      effect += ' <b>(Pass Luck: ' + curLk + '× → ' + nextLk + '×)</b>';
+    } else if (pDef && pDef.kind === 'shiny' && typeof passShinyMult === 'function') {
+      var curSh = passShinyMult(), nextSh = curSh * (pDef.shinyMult || 1);
+      effect += ' <b>(Pass Shiny: ' + curSh + '× → ' + nextSh + '×)</b>';
+    }
   } else if (pack.type === 'weather') {
     var wName = (WEATHER[pack.targetWeather] && WEATHER[pack.targetWeather].name) || pack.name;
     effectLabel = 'SERVER WEATHER';
@@ -3764,7 +3776,8 @@ function openPremiumShop(focusId){
       if (Array.isArray(sd.passesOwned)) {
         state.passesOwned = state.passesOwned || [];
         sd.passesOwned.forEach(function(id){
-          if (id === 'speed-3x' && !state.passesOwned.includes(id)) { state.passesOwned.push(id); changed = true; }
+          var okId = (typeof passDef === 'function') ? !!passDef(id) : (id === 'speed-3x');
+          if (okId && !state.passesOwned.includes(id)) { state.passesOwned.push(id); changed = true; }
         });
       }
       if (sd.rollPacks && typeof sd.rollPacks === 'object') {
@@ -3800,7 +3813,7 @@ function closePremiumShop(){
 function pxRowHtml(it){
   var on = it.id === pxSelId;
   var owned = pxOwnedInfo(it).owned;
-  var hot = /STARTER|POPULAR|BEST|ULTIMATE|BATTLE PASS/.test(it.badge || '');
+  var hot = /STARTER|POPULAR|BEST|ULTIMATE|BATTLE PASS|LUCK PASS|LUCK BOOSTER|SHINY PASS|SHINY BOOSTER/.test(it.badge || '');
   var isCard = (it.type === 'pack' || it.type === 'art' || it.type === 'pet');
   return '<button class="psx-row' + (on ? ' on' : '') + (owned ? ' dim' : '') + '" type="button" data-id="' + it.id + '" style="--ic:' + (it.color || '#f3e600') + '">' +
     '<span class="psx-row-art' + (isCard ? ' card' : '') + '">' +
@@ -3825,8 +3838,15 @@ function pxRenderCatalog(){
   }).filter(function(x){ return x.rows.length; });
 
   list.innerHTML = groups.map(function(x){
+    var gNote = x.g.note;
+    if (x.g.key === 'pass' && typeof passLuckMult === 'function' && typeof passShinyMult === 'function') {
+      var pl = passLuckMult(), ps = passShinyMult();
+      if (pl > 1 || ps > 1) {
+        gNote = 'STACK: ' + pl + '× LK · ' + ps + '× SHINY';
+      }
+    }
     return '<div class="psx-grp">' +
-      '<div class="psx-grp-h"><b>' + pxEsc(x.g.label) + '</b><i></i><span>' + x.rows.length + ' · ' + pxEsc(x.g.note) + '</span></div>' +
+      '<div class="psx-grp-h"><b>' + pxEsc(x.g.label) + '</b><i></i><span>' + x.rows.length + ' · ' + pxEsc(gNote) + '</span></div>' +
       x.rows.map(pxRowHtml).join('') +
     '</div>';
   }).join('') || '<div class="psx-grp-h" style="margin:12px 6px">NO ITEMS IN THIS CATEGORY</div>';
@@ -3903,11 +3923,15 @@ function pxRenderDetail(){
         '<div class="psx-order-row after"><span>BALANCE AFTER</span><b>' + pxNum(Math.max(0, gemsNow - total)) + ' G</b></div>' +
       '</div>';
   } else {
+    var pMeta = (it.type === 'pass' && typeof passDef === 'function') ? passDef(it.id) : null;
     var singleTitle = it.type === 'weather' ? 'Delivered to the live server'
       : (it.type === 'global_luck' ? 'Activates instantly for everyone'
-      : (it.type === 'pass' ? 'Unlocked permanently on account' : 'Added to your Backpack'));
+      : (it.type === 'pass' ? 'Unlocked permanently · Stackable' : 'Added to your Backpack'));
     var singleSub = it.type === 'weather' ? 'ALL PLAYERS · 30 MINUTES'
-      : (it.type === 'global_luck' ? 'SERVER-WIDE · 60 MINUTES' : 'PERMANENT · ACCOUNT BOUND');
+      : (it.type === 'global_luck' ? 'SERVER-WIDE · 60 MINUTES'
+      : (pMeta && pMeta.kind === 'luck' && typeof passLuckMult === 'function' ? ('ACTIVE PASS LUCK: ' + passLuckMult() + '× · NO CAP')
+      : (pMeta && pMeta.kind === 'shiny' && typeof passShinyMult === 'function' ? ('ACTIVE PASS SHINY: ' + passShinyMult() + '× · NO CAP')
+      : 'PERMANENT · ACCOUNT BOUND · STACKS ALL')));
     picker =
       '<div class="psx-sec-h"><b>SINGLE PURCHASE</b><i></i><span>1 ITEM</span></div>' +
       '<div class="psx-single">' +
@@ -4129,10 +4153,12 @@ async function buyPremiumPack(packId, ev, qty){
           state.passesOwned = state.passesOwned || [];
           if(!state.passesOwned.includes(pack.id)) state.passesOwned.push(pack.id);
         }
-        if(pack.id === 'speed-3x'){
-          state.battleSpeed = 3;
+        var pMetaSrv = typeof passDef === 'function' ? passDef(pack.id) : null;
+        if((pMetaSrv && pMetaSrv.maxSpeed) || pack.id === 'speed-3x'){
+          state.battleSpeed = (pMetaSrv && pMetaSrv.maxSpeed) || 3;
           if(typeof bt !== 'undefined' && bt) bt.speed = battleSpeedEff();
         }
+        if(typeof srReset === 'function') srReset();
       } else if(pack.type === 'weather'){
         const wId = pack.targetWeather;
         state.weatherBest = betterWeather(state.weatherBest, wId);
@@ -4163,10 +4189,12 @@ async function buyPremiumPack(packId, ev, qty){
       } else if(pack.type === 'pass'){
         state.passesOwned = state.passesOwned || [];
         if(!state.passesOwned.includes(pack.id)) state.passesOwned.push(pack.id);
-        if(pack.id === 'speed-3x'){
-          state.battleSpeed = 3;
+        var pMetaLoc = typeof passDef === 'function' ? passDef(pack.id) : null;
+        if((pMetaLoc && pMetaLoc.maxSpeed) || pack.id === 'speed-3x'){
+          state.battleSpeed = (pMetaLoc && pMetaLoc.maxSpeed) || 3;
           if(typeof bt !== 'undefined' && bt) bt.speed = battleSpeedEff();
         }
+        if(typeof srReset === 'function') srReset();
       } else if(pack.type === 'weather'){
         const wId = pack.targetWeather;
         state.weatherBest = betterWeather(state.weatherBest, wId);
@@ -4187,7 +4215,14 @@ async function buyPremiumPack(packId, ev, qty){
     if(pack.type === 'art' || pack.type === 'pet'){
       rewardMsg = '+' + pack.name + ' unlocked and added to your Backpack!';
     } else if(pack.type === 'pass'){
-      rewardMsg = '+' + pack.name + ' unlocked permanently (3× Battle Speed active)!';
+      var pMetaMsg = typeof passDef === 'function' ? passDef(pack.id) : null;
+      if (pMetaMsg && pMetaMsg.kind === 'luck' && typeof passLuckMult === 'function') {
+        rewardMsg = '+' + pack.name + ' unlocked permanently (Active Pass Luck: ' + passLuckMult() + '× · No Cap)!';
+      } else if (pMetaMsg && pMetaMsg.kind === 'shiny' && typeof passShinyMult === 'function' && typeof shinyChanceMult === 'function') {
+        rewardMsg = '+' + pack.name + ' unlocked permanently (Active Pass Shiny: ' + passShinyMult() + '× · 1 in ' + fmtChance(100 * shinyChanceMult()) + ')!';
+      } else {
+        rewardMsg = '+' + pack.name + ' unlocked permanently (3× Battle Speed active)!';
+      }
     } else if(pack.type === 'weather'){
       const wDef = WEATHER[pack.targetWeather] || {};
       rewardMsg = (wDef.name || pack.name) + ' is ACTIVE for ALL SERVERS for 30 minutes!';
@@ -4211,6 +4246,7 @@ async function buyPremiumPack(packId, ev, qty){
     save();
     renderPremiumShop();
     renderShell();
+    if(typeof updateProfileLiveNumbers === 'function') updateProfileLiveNumbers();
     if(typeof renderWeatherDock === 'function') renderWeatherDock();
     if(typeof renderBackpackPanel === 'function') renderBackpackPanel();
     if(typeof renderSettings === 'function' && document.body.classList.contains('on-settings')) renderSettings();

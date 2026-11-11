@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="4x Shiny Chance Booster Pass">
+  <defs>
+    <radialGradient id="s4Glow" cx="50%" cy="46%" r="54%">
+      <stop offset="0%" stop-color="#f0abfc" stop-opacity="0.54"/>
+      <stop offset="48%" stop-color="#7df9ff" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#050505" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="s4Frame" x1="10%" y1="5%" x2="90%" y2="95%">
+      <stop offset="0%" stop-color="#fae8ff"/>
+      <stop offset="32%" stop-color="#e879f9"/>
+      <stop offset="68%" stop-color="#7df9ff"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+    <linearGradient id="s4Plate" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#281642"/>
+      <stop offset="55%" stop-color="#110922"/>
+      <stop offset="100%" stop-color="#06040f"/>
+    </linearGradient>
+    <linearGradient id="s4Star" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="38%" stop-color="#f0abfc"/>
+      <stop offset="72%" stop-color="#7df9ff"/>
+      <stop offset="100%" stop-color="#fef08a"/>
+    </linearGradient>
+    <linearGradient id="s4Txt" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="45%" stop-color="#f5d0fe"/>
+      <stop offset="100%" stop-color="#e879f9"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="64" cy="64" r="60" fill="url(#s4Glow)"/>
+
+  <!-- Prismatic Astral Wings -->
+  <g stroke="#070510" stroke-width="3.4" stroke-linejoin="round">
+    <polygon points="31,42 5,25 14,49 7,58 21,67 14,77 35,80" fill="#22123c"/>
+    <polygon points="97,42 123,25 114,49 121,58 107,67 114,77 93,80" fill="#22123c"/>
+    <polygon points="33,48 14,36 22,54 16,62 35,66" fill="#e879f9"/>
+    <polygon points="95,48 114,36 106,54 112,62 93,66" fill="#7df9ff"/>
+  </g>
+
+  <!-- Astral Crown -->
+  <polygon points="46,20 51,7 59,15 64,5 69,15 77,7 82,20"
+           fill="url(#s4Frame)" stroke="#070510" stroke-width="3.2" stroke-linejoin="round"/>
+
+  <!-- Chamfered Prismatic Shield -->
+  <polygon points="44,18 84,18 103,36 103,89 64,116 25,89 25,36"
+           fill="url(#s4Frame)" stroke="#070510" stroke-width="4.2" stroke-linejoin="round"/>
+  <polygon points="47,24 81,24 96,39 96,85 64,108 32,85 32,39"
+           fill="url(#s4Plate)" stroke="#070510" stroke-width="3" stroke-linejoin="round"/>
+
+  <!-- Prismatic Lens Ring inside plate -->
+  <circle cx="64" cy="53" r="22" fill="none" stroke="#f0abfc" stroke-width="1.6" stroke-dasharray="5 3" opacity="0.5"/>
+  <circle cx="64" cy="53" r="15" fill="none" stroke="#7df9ff" stroke-width="1.4" opacity="0.45"/>
+
+  <!-- Radiant Super-Nova Shiny Star -->
+  <g transform="translate(64,53)">
+    <!-- Secondary diagonal blades -->
+    <polygon points="0,0 -17,-17 -4,-10" fill="#7df9ff" opacity="0.9"/>
+    <polygon points="0,0 17,-17 10,-4" fill="#fef08a" opacity="0.9"/>
+    <polygon points="0,0 17,17 4,10" fill="#7df9ff" opacity="0.9"/>
+    <polygon points="0,0 -17,17 -10,4" fill="#e879f9" opacity="0.9"/>
+    <!-- Primary 4-point nova -->
+    <path d="M0,-27 L7,-7 L27,0 L7,7 L0,27 L-7,7 L-27,0 L-7,-7 Z"
+          fill="url(#s4Star)" stroke="#070510" stroke-width="3.2" stroke-linejoin="round"/>
+    <path d="M0,-14 L4,-4 L14,0 L4,4 L0,14 L-4,4 L-14,0 L-4,-4 Z" fill="#ffffff" opacity="0.92"/>
+    <polygon points="0,-6 6,0 0,6 -6,0" fill="#f3e600" stroke="#070510" stroke-width="1.8"/>
+    <!-- Twin orbiting sparkles -->
+    <path d="M-21,-13 L-19.2,-8.6 L-14.8,-7 L-19.2,-5.4 L-21,-1 L-22.8,-5.4 L-27.2,-7 L-22.8,-8.6 Z"
+          fill="#fef08a" stroke="#070510" stroke-width="1.8"/>
+    <path d="M21,-13 L22.8,-8.6 L27.2,-7 L22.8,-5.4 L21,-1 L19.2,-5.4 L14.8,-7 L19.2,-8.6 Z"
+          fill="#7df9ff" stroke="#070510" stroke-width="1.8"/>
+  </g>
+
+  <!-- Bold "4x" Badge Plate -->
+  <g transform="translate(64,86)">
+    <polygon points="-30,-12 30,-12 35,-5 29,12 -29,12 -35,-5"
+             fill="#06040f" stroke="url(#s4Frame)" stroke-width="2.7" stroke-linejoin="round"/>
+    <path d="M-12,-11 L-5,-11 L-5,1 L-1.5,1 L-1.5,5.5 L-5,5.5 L-5,11.5 L-10.8,11.5 L-10.8,5.5 L-23,5.5 L-23,1.2 L-13.2,-11 Z M-10.8,-5 L-17.2,1 L-10.8,1 Z"
+          transform="translate(0,-1)"
+          fill="url(#s4Txt)" stroke="#070510" stroke-width="3.2" stroke-linejoin="round" style="paint-order:stroke fill"/>
+    <path d="M5,-6 L10.5,-6 L14.5,-1.2 L18.5,-6 L24,-6 L17.8,2 L24.2,10 L18.7,10 L14.5,4.8 L10.3,10 L4.8,10 L11.2,2 Z"
+          transform="translate(0,-2)"
+          fill="#7df9ff" stroke="#070510" stroke-width="3" stroke-linejoin="round" style="paint-order:stroke fill"/>
+  </g>
+
+  <!-- Prismatic Sparkles -->
+  <g stroke="#070510" stroke-width="2.2" stroke-linejoin="round">
+    <path d="M19,20 L21.4,26 L27.5,28.5 L21.4,31 L19,37 L16.6,31 L10.5,28.5 L16.6,26 Z" fill="#7df9ff"/>
+    <path d="M109,18 L111.2,23.5 L117,25.8 L111.2,28 L109,33.5 L106.8,28 L101,25.8 L106.8,23.5 Z" fill="#f0abfc"/>
+    <path d="M107,95 L109,99.5 L113.5,101.5 L109,103.5 L107,108 L105,103.5 L100.5,101.5 L105,99.5 Z" fill="#fef08a"/>
+    <path d="M21,95 L22.8,99.2 L27,101 L22.8,102.8 L21,107 L19.2,102.8 L15,101 L19.2,99.2 Z" fill="#f0abfc"/>
+  </g>
+</svg>
