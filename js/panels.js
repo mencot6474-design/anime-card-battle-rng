@@ -1988,6 +1988,7 @@ function renderProfile(){
           '</div>' +
           '<span class="sc-crn tl"></span><span class="sc-crn br"></span>' +
         '</div>' +
+        '<div class="sc-below-lbl lbl-rebirth">REBIRTH</div>' +
       '</div>';
 
     scRow.innerHTML = slot2Html + slot3Html;

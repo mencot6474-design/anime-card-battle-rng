@@ -661,6 +661,9 @@ body:has(#profModal.show) .lobby-tactical-hud {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.sc-below-lbl.lbl-rebirth {
+  color: var(--haz);
+}
 
 /* Trophy Slot Chassis */
 .prf-showcase-slot {
