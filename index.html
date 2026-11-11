@@ -41,10 +41,10 @@
 <link rel="stylesheet" href="css/trait-screen.css?v=v7-traitV2Vault">
 <link rel="stylesheet" href="css/weather-screen.css?v=v2-wmPotIcons">
 <link rel="stylesheet" href="css/index-screen.css?v=v7-fixCiiSearchIc">
-<link rel="stylesheet" href="css/profile-screen.css?v=v15-wobHazardFixedTokens">
+<link rel="stylesheet" href="css/profile-screen.css?v=v17-neatCardSkillsNoMockBadges">
 <link rel="stylesheet" href="css/public-profile.css?v=v3-rkpOpen">
 <link rel="stylesheet" href="css/ranking-hazard.css?v=v1-rankHazard">
-<link rel="stylesheet" href="css/titles-hazard.css?v=v9-cleanSelectorPreview">
+<link rel="stylesheet" href="css/titles-hazard.css?v=v10-highZIndexSingleModal">
 <link rel="stylesheet" href="css/premium-exchange.css?v=v6-premiumConfirm">
 <link rel="stylesheet" href="css/drop-report.css?v=v3-eagerImgFix">
 <link rel="stylesheet" href="css/battle-fresh.css?v=v42-smooth60fps">
@@ -314,7 +314,7 @@
         <div class="prf-banner-mid">
           <div class="prf-title-group">
             <h1 class="prf-title">PROFILE <em>// DOSSIER</em></h1>
-            <span class="prf-eyebrow">// TELEMETRY ARCHIVE · SERIAL 0x8A4F</span>
+            <span class="prf-eyebrow">// OPERATOR ARCHIVE</span>
           </div>
           <div class="prf-search-shell">
             <input type="text" id="profSearchInput" placeholder="> SEARCH OPERATOR..." onkeydown="if(event.key==='Enter'){event.preventDefault();onSearchUser(this.value);}">
@@ -354,7 +354,7 @@
           <div class="prf-id-meta">
             <div class="prf-id-name" id="profPlayerName">GUEST</div>
             <div class="prf-id-handle" id="profPlayerHandle">@GUEST</div>
-            <div class="prf-id-title-trigger" id="profEquippedTitle" onclick="openTitlesModal()" title="Click to Change Title">
+            <div class="prf-id-title-trigger" id="profEquippedTitle" onclick="pfOpenTitles()" title="Click to Change Title">
               <span id="profTitleLabel">ROOKIE</span>
               <span class="prf-id-title-pill">CHANGE ❯</span>
             </div>
@@ -367,11 +367,24 @@
         <!-- Hero Standee Chassis -->
         <div class="prf-standee-box">
           <!-- Floating Solo God Aura / Title Crown -->
-          <div class="prf-crown-anchor" id="profStandeeCrown" onclick="openTitlesModal()" title="Click to Open Title Selector"></div>
+          <div class="prf-crown-anchor" id="profStandeeCrown" onclick="pfOpenTitles()" title="Click to Open Title Selector"></div>
 
           <!-- Card Standee Artwork -->
           <div class="prf-standee-art" id="profStandeeArtWrap" onclick="if(typeof pfOpenDeck==='function')pfOpenDeck()" title="Click to manage deck">
             <img id="profStandeeArt" src="assets/cards/art/nine-tail-prodigy.webp" alt="Equipped Card">
+          </div>
+
+          <!-- Standee Hero Card Meta & Skill -->
+          <div class="prf-standee-meta" id="profStandeeMeta" onclick="if(typeof pfOpenDeck==='function')pfOpenDeck()" title="Click to manage deck">
+            <div class="psm-name-row">
+              <span class="psm-name" id="profHeroName">NINE-TAIL PRODIGY</span>
+              <span class="psm-stats" id="profHeroStats">⚔ 95k · ❤ 320k</span>
+            </div>
+            <div class="psm-skill-row" id="profHeroSkill" title="Passive Skill">
+              <span class="psm-sk-badge">SKILL</span>
+              <b class="psm-sk-name" id="profHeroSkName">Passive Skill</b>
+              <span class="psm-sk-desc" id="profHeroSkDesc">Skill description</span>
+            </div>
           </div>
 
           <!-- Level & EXP Module -->
@@ -411,7 +424,6 @@
           <div class="prf-team-header">
             <div class="prf-sec-label"><i></i> TACTICAL STRIKE TEAM (DECK)</div>
             <div class="prf-team-meta-row">
-              <span class="prf-team-synergy-pill" id="profSynergyPill">⚡ 2× SOLAR SYNERGY</span>
               <button class="prf-hide-team-btn" id="hideTeamBtn" onclick="toggleTeamDisplay()">[ HIDE TEAM ]</button>
             </div>
           </div>
@@ -2458,7 +2470,7 @@
 <script src="js/supabase-sync.js?v=v335-speed3xPass"></script>
 <script src="js/notify-hazard.js?v=v1-notifyHazard"></script>
 <script src="js/titles-hazard.js?v=v3-titlesCatalog"></script>
-<script src="js/panels.js?v=v432-wobHazardFixedRelics"></script>
+<script src="js/panels.js?v=v434-neatSkillsSingleTitle"></script>
 <script src="js/topup.js?v=v158-paywallOff"></script>
 <script src="js/cards-fx.js?v=v89-traitRates"></script>
 <script src="js/anime-archetype-attacks.js?v=v125-smooth60fps"></script>

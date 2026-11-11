@@ -1440,36 +1440,52 @@ function onSearchUser(q){
 }
 window.onSearchUser = onSearchUser;
 
-function inspectCard(artKey, name, atk, hp, tier, skill) {
+function inspectCard(stackOrChar, name, atk, hp, tier, customSkill) {
   const dlg = document.getElementById('cardInspectorDialog');
   if (!dlg) return;
+
+  let s = null;
+  let charId = stackOrChar;
+
+  if (typeof stackOrChar === 'object' && stackOrChar) {
+    s = stackOrChar;
+    charId = s.char;
+  } else if (typeof stackOrChar === 'string') {
+    s = (state && state.stacks) ? state.stacks.find(x => x.id === stackOrChar) : null;
+    if (!s) {
+      s = (state && state.stacks) ? state.stacks.find(x => x.char === stackOrChar) : null;
+      if (!s && typeof CARDS !== 'undefined' && CARDS[stackOrChar]) charId = stackOrChar;
+    } else {
+      charId = s.char;
+    }
+  }
+
+  const c = (typeof CARDS !== 'undefined' && charId) ? CARDS[charId] : null;
+  const realName = c ? (typeof cardName === 'function' ? cardName(charId) : c.name) : (name || 'CARD');
+  const realTier = c ? (c.chance ? ('1 IN ' + fmtChance(c.chance)) : (c.tier || 'STANDARD').toUpperCase()) : (tier || 'STANDARD');
+  const realImg = c ? (typeof cardImg === 'function' ? cardImg(charId) : ('assets/cards/art/' + charId + '.webp')) : '';
+  const stats = (c && s && typeof cardStats === 'function') 
+    ? cardStats(s.char, s.mut, s.trait, s.shiny) 
+    : (c && typeof cardStats === 'function' ? cardStats(charId, 'none', 'none', false) : { atk: atk || 0, hp: hp || 0 });
+  const realPName = (typeof passiveName === 'function' ? passiveName(charId) : (c && c.passive ? c.passive.name : '')) || 'Passive Skill';
+  const realDesc = (typeof skillText === 'function' ? skillText(charId) : (c && c.passive ? c.passive.desc : '')) || (customSkill || 'Standard combat unit.');
+  const fullSkill = '[' + realPName + '] ' + realDesc;
+
   const imgEl = document.getElementById('inspectImg');
-  if (imgEl) {
-    if (artKey.startsWith('assets/')) imgEl.src = artKey;
-    else if (artKey.includes('.')) imgEl.src = 'assets/cards/art/' + artKey;
-    else imgEl.src = 'assets/cards/art/' + artKey + '.webp';
-  }
+  if (imgEl && realImg) imgEl.src = realImg;
   const nameEl = document.getElementById('inspectName');
-  if (nameEl) nameEl.textContent = name;
+  if (nameEl) nameEl.textContent = realName;
   const atkEl = document.getElementById('inspectAtk');
-  if (atkEl) atkEl.textContent = atk || '120k';
+  if (atkEl) atkEl.textContent = typeof fmtStat === 'function' ? fmtStat(stats.atk) : (stats.atk || '—');
   const hpEl = document.getElementById('inspectHp');
-  if (hpEl) hpEl.textContent = hp || '450k';
+  if (hpEl) hpEl.textContent = typeof fmtStat === 'function' ? fmtStat(stats.hp) : (stats.hp || '—');
   const tierEl = document.getElementById('inspectTier');
-  if (tierEl) tierEl.textContent = tier || 'MYTHIC';
+  if (tierEl) tierEl.textContent = realTier;
   const statusEl = document.getElementById('inspectStatus');
-  if (statusEl) statusEl.textContent = 'EQUIPPED';
-  
-  let desc = skill || 'Passive: Deploys heavy resonance shockwaves upon attacking, boosting overall party damage and resonance.';
-  if (!skill) {
-    if (name.includes('GHOUL') || name.includes('HUNGER')) desc = 'Passive: Devours enemy lifeforce on hit, converting 18% damage dealt into protective barrier shields.';
-    else if (name.includes('MOON') || name.includes('WALKER')) desc = 'Passive: Summons lunar tides that slow enemy attack cadence by 22% and amplify party critical focus.';
-    else if (name.includes('UMBRA') || name.includes('WITCH')) desc = 'Passive: Ignites radiant Solar Blaze, burning targets for 340% AoE elemental damage over 6 seconds.';
-    else if (name.includes('SKY') || name.includes('STUDENT')) desc = 'Passive: Channels storm gale currents, granting +30% attack speed to all adjacent deck members.';
-  }
+  if (statusEl) statusEl.textContent = s ? (s.shiny ? 'SHINY' : (s.mut && s.mut !== 'none' ? s.mut.toUpperCase() : 'EQUIPPED')) : 'EQUIPPED';
   const skillEl = document.getElementById('inspectSkill');
-  if (skillEl) skillEl.textContent = desc;
-  
+  if (skillEl) skillEl.textContent = fullSkill;
+
   dlg.classList.add('show');
 }
 window.inspectCard = inspectCard;
@@ -1478,46 +1494,82 @@ function inspectRebirth() {
   const dlg = document.getElementById('cardInspectorDialog');
   if (!dlg) return;
   const rb = typeof rebirthCount === 'function' ? rebirthCount() : 0;
-  const mult = rb > 0 ? (rb * 2) : 1;
+  const mult = typeof rebirthLuckMult === 'function' ? rebirthLuckMult(rb) : (rb <= 0 ? 1 : rb * 5);
+  const cost = typeof rebirthThreshold === 'function' ? rebirthThreshold() : 0;
+  const ess = typeof rebirthEssence === 'function' ? rebirthEssence() : 0;
+
   const imgEl = document.getElementById('inspectImg');
   if (imgEl) imgEl.src = 'assets/icons/drawer/rebirth.webp';
   const nameEl = document.getElementById('inspectName');
-  if (nameEl) nameEl.textContent = 'REBIRTH // CYCLE R' + rb;
+  if (nameEl) nameEl.textContent = 'ASCENSION // REBIRTH R' + rb;
   const atkEl = document.getElementById('inspectAtk');
   if (atkEl) atkEl.textContent = '×' + mult + ' LUCK';
   const hpEl = document.getElementById('inspectHp');
-  if (hpEl) hpEl.textContent = 'PERMANENT';
+  if (hpEl) hpEl.textContent = typeof fmt === 'function' ? (fmt(ess) + ' / ' + fmt(cost)) : (ess + ' / ' + cost);
   const tierEl = document.getElementById('inspectTier');
-  if (tierEl) tierEl.textContent = 'ASCENDANT';
+  if (tierEl) tierEl.textContent = 'REBIRTH';
   const statusEl = document.getElementById('inspectStatus');
   if (statusEl) statusEl.textContent = 'ACTIVE';
   const skillEl = document.getElementById('inspectSkill');
-  if (skillEl) skillEl.textContent = 'Duplicate card pulls auto-transmute into Essence. Current Cycle R' + rb + ' grants permanent ×' + mult + ' Total Luck multiplier across all rolls without resetting cards, decks, levels, or relics.';
+  if (skillEl) skillEl.textContent = 'Permanent Ascension: Rebirth Cycle R' + rb + ' permanently amplifies Total Luck by ×' + mult + ' across all rolls. Current Essence: ' + (typeof fmt === 'function' ? fmt(ess) : ess) + ' / ' + (typeof fmt === 'function' ? fmt(cost) : cost) + ' needed for next cycle.';
+
   dlg.classList.add('show');
 }
 window.inspectRebirth = inspectRebirth;
 
-function inspectSupport(name, buffDesc, asset, relicType, themeColor) {
+function inspectSupport(type, id) {
   const dlg = document.getElementById('cardInspectorDialog');
   if (!dlg) return;
-  const imgEl = document.getElementById('inspectImg');
-  if (imgEl) {
-    if (asset.startsWith('assets/')) imgEl.src = asset;
-    else if (asset.includes('.')) imgEl.src = 'assets/artifacts/' + asset;
-    else imgEl.src = 'assets/artifacts/' + asset + '.webp';
+
+  let img = '';
+  let name = '';
+  let atk = '—';
+  let hp = '—';
+  let tier = 'SUPPORT';
+  let status = 'EQUIPPED';
+  let skill = '';
+
+  if (type === 'art') {
+    const d = typeof ART_DEFS !== 'undefined' ? ART_DEFS.find(x => x.id === id) : null;
+    if (d) {
+      name = d.name;
+      img = d.img || ('assets/artifacts/' + d.id + '.webp');
+      if (!img.startsWith('assets/')) img = 'assets/artifacts/' + img;
+      atk = '+' + (d.flat || 0) + ' PWR';
+      hp = d.pct ? ('+' + d.pct + '% LUCK') : '—';
+      tier = 'ARTIFACT';
+      skill = 'Passive Resonance: Grants +' + (d.flat || 0) + ' flat battle power and +' + (d.pct || 0) + '% total luck scaling across combat and roll actions.';
+    }
+  } else if (type === 'pet') {
+    const pd = typeof PET_DEFS !== 'undefined' ? PET_DEFS.find(x => x.id === id) : null;
+    if (pd) {
+      name = pd.name;
+      img = pd.img || ('assets/pets/' + pd.id + '.webp');
+      if (!img.startsWith('assets/')) img = 'assets/pets/' + img;
+      atk = '+' + (pd.flat || 0) + ' PWR';
+      hp = pd.pct ? ('+' + pd.pct + '% LUCK') : '—';
+      tier = 'PET COMPANION';
+      skill = 'Companion Aura: Accompanies operator in battle, granting +' + (pd.flat || 0) + ' flat battle power and +' + (pd.pct || 0) + '% luck multiplier.';
+    }
   }
+
+  if (!name) return;
+
+  const imgEl = document.getElementById('inspectImg');
+  if (imgEl) imgEl.src = img;
   const nameEl = document.getElementById('inspectName');
   if (nameEl) nameEl.textContent = name;
   const atkEl = document.getElementById('inspectAtk');
-  if (atkEl) atkEl.textContent = relicType || 'RELIC';
+  if (atkEl) atkEl.textContent = atk;
   const hpEl = document.getElementById('inspectHp');
-  if (hpEl) hpEl.textContent = '+10 MAX';
+  if (hpEl) hpEl.textContent = hp;
   const tierEl = document.getElementById('inspectTier');
-  if (tierEl) tierEl.textContent = 'ARTIFACT';
+  if (tierEl) tierEl.textContent = tier;
   const statusEl = document.getElementById('inspectStatus');
-  if (statusEl) statusEl.textContent = 'SYNCHRONIZED';
+  if (statusEl) statusEl.textContent = status;
   const skillEl = document.getElementById('inspectSkill');
-  if (skillEl) skillEl.textContent = buffDesc || 'Passive: Synchronizes artifact resonance with equipped deck cards, amplifying global combat metrics.';
+  if (skillEl) skillEl.textContent = skill;
+
   dlg.classList.add('show');
 }
 window.inspectSupport = inspectSupport;
@@ -1528,10 +1580,51 @@ function closeCardInspector() {
 }
 window.closeCardInspector = closeCardInspector;
 
+function pfOpenDeck() {
+  if (typeof closeProfileModal === 'function') closeProfileModal();
+  if (typeof openDeckModal === 'function') {
+    openDeckModal();
+  } else if (typeof openDeckPick === 'function') {
+    openDeckPick();
+  } else if (typeof toggleBackpack === 'function') {
+    if (typeof bpSetTab === 'function') bpSetTab('koleksi');
+    toggleBackpack();
+  }
+}
+window.pfOpenDeck = pfOpenDeck;
+
+function pfOpenBackpack(tab) {
+  if (typeof closeProfileModal === 'function') closeProfileModal();
+  if (typeof toggleBackpack === 'function') {
+    if (tab && typeof bpSetTab === 'function') bpSetTab(tab);
+    toggleBackpack();
+  }
+}
+window.pfOpenBackpack = pfOpenBackpack;
+
+let _profModalWasOpen = false;
+
+function pfOpenTitles() {
+  _profModalWasOpen = true;
+  const pm = document.getElementById("profModal");
+  if (pm) {
+    pm.classList.remove("show");
+    document.body.classList.remove("profile-open");
+  }
+  openTitlesModal();
+}
+window.pfOpenTitles = pfOpenTitles;
+
 // Titles screen — hazard WoB (full-bleed, pola #rankModal)
 function openTitlesModal(){
   const m=document.getElementById("titlesModal");
   if(!m)return;
+  const pm=document.getElementById("profModal");
+  if(pm && pm.classList.contains("show")){
+    _profModalWasOpen = true;
+    pm.classList.remove("show");
+    document.body.classList.remove("profile-open");
+  }
   const closeBtn=document.getElementById("titlesClose");
   if(closeBtn)closeBtn.onclick=closeTitlesModal;
   if(m.classList.contains("show")){renderTitlesModal();return;}
@@ -1547,6 +1640,12 @@ function closeTitlesModal(){
   document.body.classList.remove("titles-open");
   if(typeof ttBannerClose==="function"){
     try{ ttBannerClose(); }catch(e){}
+  }
+  if (_profModalWasOpen) {
+    _profModalWasOpen = false;
+    setTimeout(() => {
+      if (typeof openProfileModal === 'function') openProfileModal();
+    }, 320);
   }
 }
 window.closeTitlesModal = closeTitlesModal;
@@ -1706,18 +1805,19 @@ function pfStatRows(){
   const petTotal=typeof PET_DEFS!=="undefined"?PET_DEFS.length:0;
   const supOwned=((state.artOwned||[]).length+(state.petOwned||[]).length);
   const rb = typeof rebirthCount === "function" ? rebirthCount() : 0;
-  const mult = rb > 0 ? (rb * 2) : 1;
+  const mult = typeof rebirthLuckMult === "function" ? rebirthLuckMult(rb) : (rb <= 0 ? 1 : rb * 5);
+
   const rows=[
     ["rolls","Rolls",fmt(state.totalRolls||0),""],
-    ["luck","Luck",totalLuck().toFixed(1)+"x","hz"],
-    ["speed","Roll speed",eff.toFixed(2)+"s",""],
-    ["border","Border chance","1.2625%",""],
-    ["rarest","Rarest card",rarest?("1/"+fmtChance(rarestCh)):"1/10,000,000","cyan"],
+    ["luck","Luck",totalLuck().toFixed(1)+"×","hz"],
+    ["speed","Roll speed",eff.toFixed(1)+"×",""],
+    ["shiny","Shiny chance","1 in "+fmtChance(100*(typeof shinyChanceMult==="function"?shinyChanceMult():SHINY_CHANCE_MULT)),""],
+    ["rarest","Rarest card",rarest?cardName(rarest.char):"—","cyan"],
     ["floor","Highest floor",String((state.tower&&state.tower.best)||0),"gold"],
     ["playtime","Playtime",pfPlayTime(),""],
-    ["generated","Total generated",fmt(totalPower()),""],
+    ["power","Total power",fmt(totalPower()),""],
     ["supports","Supports found",(supOwned+"/"+(artTotal+petTotal)),""],
-    ["rebirth","Rebirth",'Cycle R' + rb + ' (×' + mult + ' Luck)',"hz"]
+    ["rebirth","Rebirth","Cycle R" + rb + (mult > 1 ? (" (×" + mult + " Luck)") : ""),"hz"]
   ];
   return {rows,rarest,rarestCh};
 }
@@ -1759,7 +1859,7 @@ function renderProfile(){
   
   // Avatar
   const avImg=document.getElementById("profAvatarImg");
-  const avSrc=(state.customAvatar)||(eq&&eq.char&&CARDS[eq.char]?cardImg(eq.char):"assets/cards/art/devil-hunter.webp");
+  const avSrc=(state.customAvatar)||(eq&&eq.char&&CARDS[eq.char]?cardImg(eq.char):"assets/cards/art/nine-tail-prodigy.webp");
   if(avImg&&avImg.src!==avSrc) avImg.src = avSrc;
 
   // Hero Standee
@@ -1767,10 +1867,29 @@ function renderProfile(){
   const standeeSrc=eq&&eq.char&&CARDS[eq.char]?cardImg(eq.char):"assets/cards/art/nine-tail-prodigy.webp";
   if(standeeImg&&standeeImg.src!==standeeSrc) standeeImg.src = standeeSrc;
 
+  // Standee Hero Card Meta & Skill
+  const heroCard = (eq && eq.char && CARDS[eq.char]) ? CARDS[eq.char] : null;
+  const heroNameEl = document.getElementById("profHeroName");
+  const heroStatsEl = document.getElementById("profHeroStats");
+  const heroSkNameEl = document.getElementById("profHeroSkName");
+  const heroSkDescEl = document.getElementById("profHeroSkDesc");
+  const heroSkillRow = document.getElementById("profHeroSkill");
+
+  if (heroCard && eq) {
+    const heroStats = cardStats(eq.char, eq.mut, eq.trait, eq.shiny);
+    const pName = (typeof passiveName === 'function' ? passiveName(eq.char) : (heroCard.passive && heroCard.passive.name)) || 'Passive Skill';
+    const sDesc = (typeof skillText === 'function' ? skillText(eq.char) : (heroCard.passive && heroCard.passive.desc)) || 'Standard combat unit.';
+    if (heroNameEl) heroNameEl.textContent = cardName(eq.char);
+    if (heroStatsEl) heroStatsEl.textContent = '⚔ ' + fmtStat(heroStats.atk) + ' · ❤ ' + fmtStat(heroStats.hp);
+    if (heroSkNameEl) heroSkNameEl.textContent = pName;
+    if (heroSkDescEl) heroSkDescEl.textContent = sDesc;
+    if (heroSkillRow) heroSkillRow.title = pName + ': ' + sDesc;
+  }
+
   // Title
-  const curT=state.playerTitle||"Beyond Infinity";
+  const curT=state.playerTitle||"ROOKIE";
   const defs = (typeof window.getTitlesList === "function") ? window.getTitlesList() : ((typeof TITLE_DEFS !== "undefined") ? TITLE_DEFS : (window.TITLE_DEFS || []));
-  const def=defs.find(x=>x.id===curT||x.name===curT)||defs[0]||{name:"Beyond Infinity",colors:["#00f0ff","#ffffff"]};
+  const def=defs.find(x=>x.id===curT||x.name===curT)||defs[0]||{name:curT,colors:["#00f0ff","#ffffff"]};
   const titleLbl=document.getElementById("profTitleLabel");
   if(titleLbl) titleLbl.textContent = def.name;
   const titleTrigger=document.getElementById("profEquippedTitle");
@@ -1794,9 +1913,9 @@ function renderProfile(){
   // Stats calculation
   const stats=pfStatRows();
   const rb = typeof rebirthCount === "function" ? rebirthCount() : 0;
-  const mult = rb > 0 ? (rb * 2) : 1;
+  const mult = typeof rebirthLuckMult === "function" ? rebirthLuckMult(rb) : (rb <= 0 ? 1 : rb * 5);
 
-  // 1. Telemetry Stats Grid
+  // 1. Telemetry Stats Grid (10 Real Game Stats)
   const statsGrid=document.getElementById("profStatsGrid");
   if(statsGrid){
     statsGrid.innerHTML = stats.rows.map(r => 
@@ -1807,60 +1926,100 @@ function renderProfile(){
     ).join('');
   }
 
-  // 2. Telemetry Showcase
+  // 2. Telemetry Showcase (Real Favorite, Real Rarest, Real Rebirth with Skills)
   const scRow=document.getElementById("profShowcaseRow");
   if(scRow){
     const st=Array.isArray(state.stacks)?state.stacks:[];
-    const fav=st.find(s=>s.fav&&CARDS[s.char]) || st[0];
-    const favChar = fav ? fav.char : 'shadow-king';
-    const favName = fav ? cardName(fav.char).toUpperCase() : 'SHADOW KING';
-    const favImg = fav ? cardImg(fav.char) : 'assets/cards/art/shadow-king.webp';
-    const favStats = fav ? cardStats(fav.char, fav.mut, fav.shiny) : { atk: 240000, hp: 890000 };
-    const favTier = (fav && CARDS[fav.char] && CARDS[fav.char].tier ? CARDS[fav.char].tier : 'ULTIMA').toUpperCase();
-
+    const fav=st.find(s=>s.fav&&CARDS[s.char]);
     const rarestStack = stats.rarest;
-    const rarestChar = rarestStack ? rarestStack.char : 'sun-god';
-    const rarestName = rarestStack ? cardName(rarestStack.char).toUpperCase() : 'SUN GODDESS';
-    const rarestImg = rarestStack ? cardImg(rarestStack.char) : 'assets/cards/art/sun-god.webp';
-    const rarestStats = rarestStack ? cardStats(rarestStack.char, rarestStack.mut, rarestStack.shiny) : { atk: 320000, hp: 1200000 };
-    const rarestDenom = stats.rarestCh > 0 ? fmtChance(stats.rarestCh) : '10M';
 
-    scRow.innerHTML = 
-      '<!-- Slot 1: Favorite Card -->' +
-      '<div class="prf-showcase-slot fav-slot" onclick="inspectCard(\'' + favChar + '\', \'' + favName + '\', \'' + fmtStat(favStats.atk) + '\', \'' + fmtStat(favStats.hp) + '\', \'' + favTier + '\')" title="Signature Favorite Card">' +
-        '<div class="sc-holo-sweep"></div>' +
-        '<div class="sc-top-bar">' +
-          '<span class="sc-pill pill-fav">★ FAVORITE</span>' +
-        '</div>' +
-        '<div class="sc-art-shell">' +
-          '<img src="' + favImg + '" alt="' + favName + '">' +
-          '<div class="sc-vignette"></div>' +
-        '</div>' +
-        '<div class="sc-plate">' +
-          '<div class="sc-name">' + favName + '</div>' +
-          '<div class="sc-sub sub-fav">SIGNATURE ★★★★★</div>' +
-        '</div>' +
-        '<span class="sc-crn tl"></span><span class="sc-crn br"></span>' +
-      '</div>' +
+    // Slot 1: Favorite Card
+    let slot1Html = '';
+    if (fav && CARDS[fav.char]) {
+      const favName = cardName(fav.char);
+      const favImg = cardImg(fav.char);
+      const favStats = cardStats(fav.char, fav.mut, fav.trait, fav.shiny);
+      const favPName = (typeof passiveName === 'function' ? passiveName(fav.char) : (CARDS[fav.char].passive && CARDS[fav.char].passive.name)) || 'Skill';
+      const favSDesc = (typeof skillText === 'function' ? skillText(fav.char) : (CARDS[fav.char].passive && CARDS[fav.char].passive.desc)) || '';
+      slot1Html = 
+        '<div class="prf-showcase-slot fav-slot" onclick="inspectCard(\'' + fav.id + '\')" title="Signature Favorite Card: ' + favName + ' | ' + favPName + ': ' + favSDesc + '">' +
+          '<div class="sc-holo-sweep"></div>' +
+          '<div class="sc-top-bar">' +
+            '<span class="sc-pill pill-fav">★ FAVORITE</span>' +
+          '</div>' +
+          '<div class="sc-art-shell">' +
+            '<img src="' + favImg + '" alt="' + favName + '">' +
+            '<div class="sc-vignette"></div>' +
+          '</div>' +
+          '<div class="sc-plate">' +
+            '<div class="sc-name">' + favName + '</div>' +
+            '<div class="sc-stats-row">⚔ ' + fmtStat(favStats.atk) + ' · ❤ ' + fmtStat(favStats.hp) + '</div>' +
+            '<div class="sc-skill-row" title="' + favPName + ': ' + favSDesc + '">' +
+              '<span class="sc-sk-badge">SKILL</span>' +
+              '<span class="sc-sk-name">' + favPName + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<span class="sc-crn tl"></span><span class="sc-crn br"></span>' +
+        '</div>';
+    } else {
+      slot1Html = 
+        '<div class="prf-showcase-slot fav-slot empty" onclick="pfOpenDeck()" title="No Favorite Card - Click to Manage Deck">' +
+          '<div class="sc-art-shell empty-art">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="sc-empty-icon">' +
+              '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>' +
+            '</svg>' +
+            '<div class="sc-empty-lbl">NO FAVORITE</div>' +
+            '<div class="sc-empty-sub">MARK IN DECK ★</div>' +
+          '</div>' +
+          '<span class="sc-crn tl"></span><span class="sc-crn br"></span>' +
+        '</div>';
+    }
 
-      '<!-- Slot 2: Rarest Card -->' +
-      '<div class="prf-showcase-slot rarest-slot" onclick="inspectCard(\'' + rarestChar + '\', \'' + rarestName + '\', \'' + fmtStat(rarestStats.atk) + '\', \'' + fmtStat(rarestStats.hp) + '\', \'1 IN ' + rarestDenom + '\')" title="Rarest Obtained: 1/' + rarestDenom + '">' +
-        '<div class="sc-holo-sweep"></div>' +
-        '<div class="sc-top-bar">' +
-          '<span class="sc-pill pill-rarest">✦ 1 IN ' + rarestDenom + '</span>' +
-        '</div>' +
-        '<div class="sc-art-shell">' +
-          '<img src="' + rarestImg + '" alt="' + rarestName + '">' +
-          '<div class="sc-vignette"></div>' +
-        '</div>' +
-        '<div class="sc-plate">' +
-          '<div class="sc-name">' + rarestName + '</div>' +
-          '<div class="sc-sub sub-rarest">RAREST 1/' + rarestDenom + ' ✦</div>' +
-        '</div>' +
-        '<span class="sc-crn tl"></span><span class="sc-crn br"></span>' +
-      '</div>' +
+    // Slot 2: Rarest Card
+    let slot2Html = '';
+    if (rarestStack && CARDS[rarestStack.char]) {
+      const rarestName = cardName(rarestStack.char);
+      const rarestImg = cardImg(rarestStack.char);
+      const rarestStats = cardStats(rarestStack.char, rarestStack.mut, rarestStack.trait, rarestStack.shiny);
+      const rarestPName = (typeof passiveName === 'function' ? passiveName(rarestStack.char) : (CARDS[rarestStack.char].passive && CARDS[rarestStack.char].passive.name)) || 'Skill';
+      const rarestSDesc = (typeof skillText === 'function' ? skillText(rarestStack.char) : (CARDS[rarestStack.char].passive && CARDS[rarestStack.char].passive.desc)) || '';
+      const rarestDenom = stats.rarestCh > 0 ? fmtChance(stats.rarestCh) : '1';
+      slot2Html = 
+        '<div class="prf-showcase-slot rarest-slot" onclick="inspectCard(\'' + rarestStack.id + '\')" title="Rarest Card: ' + rarestName + ' | ' + rarestPName + ': ' + rarestSDesc + '">' +
+          '<div class="sc-holo-sweep"></div>' +
+          '<div class="sc-top-bar">' +
+            '<span class="sc-pill pill-rarest">✦ 1 IN ' + rarestDenom + '</span>' +
+          '</div>' +
+          '<div class="sc-art-shell">' +
+            '<img src="' + rarestImg + '" alt="' + rarestName + '">' +
+            '<div class="sc-vignette"></div>' +
+          '</div>' +
+          '<div class="sc-plate">' +
+            '<div class="sc-name">' + rarestName + '</div>' +
+            '<div class="sc-stats-row">⚔ ' + fmtStat(rarestStats.atk) + ' · ❤ ' + fmtStat(rarestStats.hp) + '</div>' +
+            '<div class="sc-skill-row" title="' + rarestPName + ': ' + rarestSDesc + '">' +
+              '<span class="sc-sk-badge">SKILL</span>' +
+              '<span class="sc-sk-name">' + rarestPName + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<span class="sc-crn tl"></span><span class="sc-crn br"></span>' +
+        '</div>';
+    } else {
+      slot2Html = 
+        '<div class="prf-showcase-slot rarest-slot empty" title="No Rare Card Yet">' +
+          '<div class="sc-art-shell empty-art">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="sc-empty-icon">' +
+              '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>' +
+            '</svg>' +
+            '<div class="sc-empty-lbl">NO RARE CARD</div>' +
+            '<div class="sc-empty-sub">ROLL TO UNLOCK ✦</div>' +
+          '</div>' +
+          '<span class="sc-crn tl"></span><span class="sc-crn br"></span>' +
+        '</div>';
+    }
 
-      '<!-- Slot 3: Rebirth Crest Sanctuary -->' +
+    // Slot 3: Rebirth
+    const slot3Html = 
       '<div class="prf-showcase-slot rebirth-slot" onclick="inspectRebirth()" title="Cycle R' + rb + ' (×' + mult + ' Permanent Luck Multiplier)">' +
         '<div class="sc-holo-sweep"></div>' +
         '<div class="sc-top-bar">' +
@@ -1884,50 +2043,77 @@ function renderProfile(){
         '</div>' +
         '<span class="sc-crn tl"></span><span class="sc-crn br"></span>' +
       '</div>';
+
+    scRow.innerHTML = slot1Html + slot2Html + slot3Html;
   }
 
-  // 3. Team Row 1: Cards (4 collectible slots, Slot 3 fire-blaze)
+  // 3. Team Row 1: Cards (4 slots from state.deck with Real Skills & Real Badges)
   const teamCardsEl = document.getElementById("profTeamCards");
   if(teamCardsEl){
-    const fallbackCards = [
-      { char: 'devil-hunter', name: 'GHOUL HUNGER', tier: 'MYTHIC', type: 'VOID', elemIcon: '✦', atk: '125K', hp: '460K', tierCls: 'tier-mythic', elemCls: 'elem-void' },
-      { char: 'nine-tail-prodigy', name: 'MOON WALKER', tier: 'MYTHIC', type: 'LIGHT', elemIcon: '✦', atk: '140K', hp: '520K', tierCls: 'tier-mythic', elemCls: 'elem-void' },
-      { char: 'shadow-king', name: 'UMBRA WITCH', tier: 'ULTIMA', type: 'SOLAR', elemIcon: '🔥', atk: '280K', hp: '980K', tierCls: 'tier-ultima', elemCls: 'elem-fire' },
-      { char: 'sun-god', name: 'THE SKY-REACHING STUDENT', tier: 'MYTHIC', type: 'WIND', elemIcon: '✦', atk: '135K', hp: '490K', tierCls: 'tier-mythic', elemCls: 'elem-void' }
-    ];
-
+    const deckIds = state.deck || [];
     const cardsHtml = [0, 1, 2, 3].map(i => {
-      const slotId = (state.deck || [])[i];
+      const slotId = deckIds[i];
       const s = slotId ? (state.stacks || []).find(x => x.id === slotId) : null;
       const c = s ? CARDS[s.char] : null;
-      const fb = fallbackCards[i];
 
-      const charKey = c ? s.char : fb.char;
-      const cardTitle = c ? cardName(s.char).toUpperCase() : fb.name;
-      const tierName = c ? (c.tier || 'MYTHIC').toUpperCase() : fb.tier;
-      const elemName = c ? (c.type || 'VOID').toUpperCase() : fb.type;
-      const imgPath = c ? cardImg(s.char) : ('assets/cards/art/' + fb.char + '.webp');
-      const statsObj = (s && c) ? cardStats(s.char, s.mut, s.shiny) : null;
-      const atkText = statsObj ? fmtStat(statsObj.atk) : fb.atk;
-      const hpText = statsObj ? fmtStat(statsObj.hp) : fb.hp;
-      const isFire = (i === 2);
+      if (!s || !c) {
+        return (
+          '<div class="prf-card-chassis empty-chassis" onclick="pfOpenDeck()" title="Slot ' + (i + 1) + ' Empty - Click to Manage Deck">' +
+            '<div class="empty-art">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="pcc-empty-icon">' +
+                '<circle cx="12" cy="12" r="9"/>' +
+                '<path d="M12 8v8M8 12h8"/>' +
+              '</svg>' +
+              '<div class="pcc-empty-lbl">EMPTY SLOT ' + (i + 1) + '</div>' +
+              '<div class="pcc-empty-sub">CLICK TO EQUIP</div>' +
+            '</div>' +
+          '</div>'
+        );
+      }
+
+      const stats = cardStats(s.char, s.mut, s.trait, s.shiny);
+      const cardTitle = cardName(s.char);
+      const pName = (typeof passiveName === 'function' ? passiveName(s.char) : (c.passive && c.passive.name)) || 'Combat Skill';
+      const sDesc = (typeof skillText === 'function' ? skillText(s.char) : (c.passive && c.passive.desc)) || 'Standard combat unit.';
+      const imgPath = cardImg(s.char);
+
+      // Real badges only: Shiny, Mutation, Trait, or Rarity
+      const badges = [];
+      if (s.shiny) {
+        badges.push('<span class="pcc-badge pcc-shiny">★ SHINY</span>');
+      }
+      if (s.mut && s.mut !== 'none') {
+        const mCol = (typeof MUT_COLOR !== 'undefined' && MUT_COLOR[s.mut]) ? MUT_COLOR[s.mut] : '#f3e600';
+        badges.push('<span class="pcc-badge pcc-mut" style="color:' + mCol + ';border-color:' + mCol + ';">' + s.mut.toUpperCase() + '</span>');
+      }
+      if (s.trait && s.trait !== 'none') {
+        const tCol = (typeof TRAIT_COLOR !== 'undefined' && TRAIT_COLOR[s.trait]) ? TRAIT_COLOR[s.trait] : '#00f0ff';
+        badges.push('<span class="pcc-badge pcc-trait" style="color:' + tCol + ';border-color:' + tCol + ';">' + s.trait.toUpperCase() + '</span>');
+      }
+      if (badges.length === 0 && c.chance) {
+        badges.push('<span class="pcc-badge pcc-rarity">1 IN ' + fmtChance(c.chance) + '</span>');
+      } else if (badges.length === 0 && c.tier) {
+        badges.push('<span class="pcc-badge pcc-rarity">' + c.tier.toUpperCase() + '</span>');
+      }
+
+      const hzCls = (typeof hzBorderCls === 'function') ? hzBorderCls(s.mut || 'none', !!s.shiny, { tile: true, dense: true }) : '';
 
       return (
-        '<div class="prf-card-chassis' + (isFire ? ' fire-blaze' : '') + '" onclick="inspectCard(\'' + charKey + '\', \'' + cardTitle + '\', \'' + atkText + '\', \'' + hpText + '\', \'' + tierName + '\')">' +
-          '<div class="pcc-holo-sweep"></div>' +
-          '<div class="pcc-top-bar">' +
-            '<span class="pcc-tier-badge ' + (tierName === 'ULTIMA' ? 'tier-ultima' : 'tier-mythic') + '">' + tierName + '</span>' +
-            '<span class="pcc-elem-badge ' + (isFire ? 'elem-fire' : 'elem-void') + '">' + elemName + ' ' + (isFire ? '🔥' : '✦') + '</span>' +
-          '</div>' +
+        '<div class="prf-card-chassis' + (s.shiny ? ' shiny' : '') + (s.mut && s.mut !== 'none' ? ' mut-' + s.mut : '') + (hzCls ? ' ' + hzCls : '') + '" onclick="inspectCard(\'' + s.id + '\')" title="' + cardTitle + ' | ' + pName + ': ' + sDesc + '">' +
           '<div class="pcc-art-shell">' +
-            '<img src="' + imgPath + '" alt="' + cardTitle + '">' +
+            '<img src="' + imgPath + '" alt="' + cardTitle + '"' + (c.pos ? ' style="object-position:' + c.pos + '"' : '') + '>' +
             '<div class="pcc-vignette"></div>' +
           '</div>' +
-          '<div class="pcc-plate' + (isFire ? ' fire-plate' : '') + '">' +
-            '<div class="pcc-name">' + cardTitle + '</div>' +
-            '<div class="pcc-stats-row">' +
-              '<div class="pcc-stats">⚔ ' + atkText + ' · ❤ ' + hpText + '</div>' +
-              '<span class="pcc-tier-level-tag">' + (tierName === 'ULTIMA' ? 'APEX' : 'MAX') + '</span>' +
+          (badges.length > 0 ? ('<div class="pcc-top-bar">' + badges.join('') + '</div>') : '') +
+          '<div class="pcc-plate">' +
+            '<div class="pcc-plate-top">' +
+              '<div class="pcc-name">' + cardTitle + '</div>' +
+              '<div class="pcc-stats">⚔ ' + fmtStat(stats.atk) + ' · ❤ ' + fmtStat(stats.hp) + '</div>' +
+            '</div>' +
+            '<div class="pcc-skill-row" title="' + pName + ': ' + sDesc + '">' +
+              '<span class="pcc-sk-badge">SKILL</span>' +
+              '<span class="pcc-sk-name">' + pName + '</span>' +
+              '<span class="pcc-sk-desc">' + sDesc + '</span>' +
             '</div>' +
           '</div>' +
           '<span class="pcc-crn tl"></span><span class="pcc-crn br"></span>' +
@@ -1938,57 +2124,58 @@ function renderProfile(){
     teamCardsEl.innerHTML = cardsHtml;
   }
 
-  // 4. Team Row 2: Supports (4 relic slots, Slot 3 fire-blaze)
+  // 4. Team Row 2: Supports (Artifacts & Pets with Clean Data)
   const teamSuppEl = document.getElementById("profTeamSupp");
   if(teamSuppEl){
-    const fallbackSupports = [
-      { name: 'LIMIT BREAKER', chip: '+50% ATK', chipCls: 'buff-chip-blade', elem: 'BLADE ⚔', elemCls: '', artCls: 'art-sword', asset: 'pedang-api.webp', stats: '// DAMAGE AMP', tag: '+10 MAX', relicType: 'OFFENSIVE RELIC' },
-      { name: 'CRIMSON NOVA', chip: '+35% CRIT', chipCls: 'buff-chip-crit', elem: 'TOME 📜', elemCls: '', artCls: 'art-tome', asset: 'tome-infinity.webp', stats: '// CRIT BOOST', tag: '+10 MAX', relicType: 'CATALYST RELIC' },
-      { name: 'CHAKRA MASTERY', chip: '+50% BURST', chipCls: 'buff-chip-burst', elem: 'RING 🔥', elemCls: 'elem-fire', artCls: 'art-ring', asset: 'cincin.webp', stats: '// BURST MULT', tag: 'SOLAR ☼', relicType: 'SOLAR RING', isFire: true },
-      { name: 'ASHEN ARCANUM', chip: '+25% WARD', chipCls: 'buff-chip-ward', elem: 'HELM 🛡', elemCls: 'elem-void', artCls: 'art-helm', asset: 'abyss-helm.webp', stats: '// AEGIS WARD', tag: '+10 MAX', relicType: 'DEFENSIVE RELIC' }
+    const art0 = state.artSlots && state.artSlots[0];
+    const art1 = state.artSlots && state.artSlots[1];
+    const petId = state.petEquipped;
+
+    const d0 = art0 && typeof ART_DEFS !== 'undefined' ? ART_DEFS.find(x => x.id === art0) : null;
+    const d1 = art1 && typeof ART_DEFS !== 'undefined' ? ART_DEFS.find(x => x.id === art1) : null;
+    const pd = petId && typeof PET_DEFS !== 'undefined' ? PET_DEFS.find(x => x.id === petId) : null;
+
+    const suppSlots = [
+      { type: 'art', data: d0, label: 'ARTIFACT 1', openTab: 'artefact' },
+      { type: 'art', data: d1, label: 'ARTIFACT 2', openTab: 'artefact' },
+      { type: 'pet', data: pd, label: 'PET COMPANION', openTab: 'pet' },
+      { type: 'empty', data: null, label: 'SUPPORT 4', openTab: 'artefact' }
     ];
 
-    const suppHtml = [0, 1, 2, 3].map(i => {
-      const fb = fallbackSupports[i];
-      let name = fb.name;
-      let asset = fb.asset;
-      let chip = fb.chip;
-      let relicType = fb.relicType;
-      let tag = fb.tag;
-
-      if(i === 0 || i === 1){
-        const artId = state.artSlots && state.artSlots[i];
-        const artDef = artId && typeof ART_DEFS !== 'undefined' ? ART_DEFS.find(x => x.id === artId) : null;
-        if(artDef){
-          name = artDef.name.toUpperCase();
-          if(artDef.img) asset = artDef.img;
-          chip = '+' + (artDef.flat || 0) + ' PWR';
-        }
-      } else if(i === 3){
-        const petId = state.petEquipped;
-        const petDef = petId && typeof PET_DEFS !== 'undefined' ? PET_DEFS.find(x => x.id === petId) : null;
-        if(petDef){
-          name = petDef.name.toUpperCase();
-          if(petDef.img) asset = petDef.img;
-          chip = '+PET COMPANION';
-          relicType = 'BEAST COMPANION';
-        }
+    const suppHtml = suppSlots.map((slot, idx) => {
+      const item = slot.data;
+      if (!item) {
+        return (
+          '<div class="prf-card-chassis support-chassis empty-chassis" onclick="pfOpenBackpack(\'' + slot.openTab + '\')" title="' + slot.label + ' Empty - Click to Manage Backpack">' +
+            '<div class="empty-art">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="pcc-empty-icon">' +
+                '<circle cx="12" cy="12" r="9"/>' +
+                '<path d="M12 8v8M8 12h8"/>' +
+              '</svg>' +
+              '<div class="pcc-empty-lbl">' + slot.label + '</div>' +
+              '<div class="pcc-empty-sub">CLICK TO EQUIP</div>' +
+            '</div>' +
+          '</div>'
+        );
       }
 
-      // Safe image URL resolver without double "assets/artifacts/"
-      let resolvedAsset = asset;
-      if (!resolvedAsset.startsWith('assets/')) {
-        resolvedAsset = 'assets/artifacts/' + resolvedAsset;
+      const isPet = (slot.type === 'pet');
+      const name = item.name;
+      let img = item.img || (isPet ? ('assets/pets/' + item.id + '.webp') : ('assets/artifacts/' + item.id + '.webp'));
+      if (!img.startsWith('assets/')) {
+        img = (isPet ? 'assets/pets/' : 'assets/artifacts/') + img;
       }
-      const isFire = !!fb.isFire;
+      const powerText = item.flat ? ('+' + fmtStat(item.flat) + ' PWR') : (item.pct ? ('+' + item.pct + '% LUCK') : '// ACTIVE');
+      const tag = isPet ? 'PET' : ('ART ' + (idx + 1));
+      const effDesc = item.desc || (item.flat ? ('+' + fmtStat(item.flat) + ' Power') : (item.pct ? ('+' + item.pct + '% Luck') : 'Passive boost'));
 
       return (
-        '<div class="prf-card-chassis support-chassis' + (isFire ? ' fire-blaze' : '') + '" onclick="inspectSupport(\'' + name + '\', \'Passive: Synchronizes artifact resonance with equipped deck cards, amplifying combat metrics.\', \'' + resolvedAsset + '\', \'' + relicType + '\')">' +
+        '<div class="prf-card-chassis support-chassis" onclick="inspectSupport(\'' + slot.type + '\', \'' + item.id + '\')" title="' + name + ' | ' + effDesc + '">' +
           '<div class="pcc-top-bar">' +
-            '<span class="pcc-tier-badge ' + fb.chipCls + '">' + chip + '</span>' +
-            '<span class="pcc-elem-badge ' + fb.elemCls + '">' + fb.elem + '</span>' +
+            '<span class="pcc-badge pcc-support-chip">' + powerText + '</span>' +
+            '<span class="pcc-badge pcc-support-tag">' + tag + '</span>' +
           '</div>' +
-          '<div class="pcc-art-shell support-art ' + fb.artCls + '">' +
+          '<div class="pcc-art-shell support-art">' +
             '<div class="pcc-cyber-grid"></div>' +
             '<svg class="relic-bg-mandala" viewBox="0 0 100 100">' +
               '<circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="5 3"/>' +
@@ -1997,14 +2184,17 @@ function renderProfile(){
               '<polygon points="50,85 80,32 20,32" fill="none" stroke="currentColor" stroke-width="1.2"/>' +
             '</svg>' +
             '<div class="relic-pedestal"></div>' +
-            '<img src="' + resolvedAsset + '" alt="' + name + '" class="relic-icon">' +
+            '<img src="' + img + '" alt="' + name + '" class="relic-icon">' +
             '<div class="pcc-vignette"></div>' +
           '</div>' +
-          '<div class="pcc-plate' + (isFire ? ' fire-plate' : '') + '">' +
-            '<div class="pcc-name">' + name + '</div>' +
-            '<div class="pcc-stats-row">' +
-              '<div class="pcc-stats">' + fb.stats + '</div>' +
-              '<span class="pcc-tier-level-tag">' + tag + '</span>' +
+          '<div class="pcc-plate">' +
+            '<div class="pcc-plate-top">' +
+              '<div class="pcc-name">' + name + '</div>' +
+              '<div class="pcc-stats">' + (item.pct ? ('+' + item.pct + '% LUCK') : '// EQUIPPED') + '</div>' +
+            '</div>' +
+            '<div class="pcc-skill-row" title="' + effDesc + '">' +
+              '<span class="pcc-sk-badge">EFFECT</span>' +
+              '<span class="pcc-sk-desc">' + effDesc + '</span>' +
             '</div>' +
           '</div>' +
           '<span class="pcc-crn tl"></span><span class="pcc-crn br"></span>' +
@@ -2015,7 +2205,7 @@ function renderProfile(){
     teamSuppEl.innerHTML = suppHtml;
   }
 
-  // 5. Extra Page Telemetry
+  // 5. Extra Page Telemetry (100% Real Player Data)
   const extraKoleksi=document.getElementById("profExtraKoleksi");
   if(extraKoleksi){
     const st=Array.isArray(state.stacks)?state.stacks:[];

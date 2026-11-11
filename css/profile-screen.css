@@ -1248,110 +1248,84 @@ body:has(#profModal.show) .lobby-tactical-hud {
 /* ==========================================================================
    TOP TACTICAL BADGES (Header Bar)
    ========================================================================== */
+/* ==========================================================================
+   AUTHENTIC REAL GAME BADGES (TOP BAR)
+   ========================================================================== */
 .pcc-top-bar {
   position: absolute;
-  top: 5px;
-  left: 5px;
-  right: 5px;
+  top: 4px;
+  left: 4px;
+  right: 4px;
   z-index: 7;
   display: flex;
   justify-content: space-between;
   align-items: center;
   pointer-events: none;
+  gap: 3px;
 }
-.pcc-tier-badge {
+.pcc-badge {
   font-family: var(--f-mono);
   font-size: 7.5px;
   font-weight: 900;
-  letter-spacing: 0.06em;
-  padding: 1.5px 5px;
+  letter-spacing: 0.05em;
+  padding: 1px 4px;
   border-radius: 2px;
-  background: rgba(6, 6, 9, 0.9);
+  background: rgba(6, 6, 9, 0.92);
   border: 1px solid var(--hair);
   color: var(--paper);
   backdrop-filter: blur(4px);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.85);
+  line-height: 1.2;
 }
-.pcc-tier-badge.tier-mythic {
-  color: #c084fc;
-  border-color: #c084fc;
-  background: rgba(192, 132, 252, 0.16);
-  box-shadow: 0 0 6px rgba(192, 132, 252, 0.45);
+.pcc-badge.pcc-shiny {
+  color: #22d3ee;
+  border-color: #22d3ee;
+  background: rgba(34, 211, 238, 0.16);
+  box-shadow: 0 0 8px rgba(34, 211, 238, 0.5);
 }
-.pcc-tier-badge.tier-lunar {
-  color: var(--cyan);
-  border-color: var(--cyan);
-  background: var(--cyan-dim);
-  box-shadow: 0 0 6px rgba(0, 240, 255, 0.4);
+.pcc-badge.pcc-mut {
+  background: rgba(6, 6, 9, 0.92);
+  box-shadow: 0 0 6px currentColor;
 }
-.pcc-tier-badge.tier-ascendant {
+.pcc-badge.pcc-trait {
+  background: rgba(6, 6, 9, 0.92);
+  box-shadow: 0 0 6px currentColor;
+}
+.pcc-badge.pcc-rarity {
   color: var(--haz);
-  border-color: var(--haz);
-  background: var(--haz-dim);
-  box-shadow: 0 0 6px var(--haz-glow);
+  border-color: var(--haz-dim);
+  background: rgba(243, 230, 0, 0.08);
 }
-.pcc-tier-badge.tier-fire {
-  border-color: #ff5500;
-  color: #ffffff;
-  background: linear-gradient(135deg, #ff5500 0%, #ff0044 100%);
-  box-shadow: 0 0 8px rgba(255, 85, 0, 0.85);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-}
-
-.pcc-tier-badge.buff-chip-atk {
+.pcc-badge.pcc-support-chip {
   color: #ffaa00;
-  border-color: #ffaa00;
-  background: rgba(255, 170, 0, 0.16);
-  box-shadow: 0 0 5px rgba(255, 170, 0, 0.35);
+  border-color: rgba(255, 170, 0, 0.45);
+  background: rgba(255, 170, 0, 0.12);
 }
-.pcc-tier-badge.buff-chip-crit {
-  color: #ff3366;
-  border-color: #ff3366;
-  background: rgba(255, 51, 102, 0.16);
-  box-shadow: 0 0 5px rgba(255, 51, 102, 0.35);
+.pcc-badge.pcc-support-tag {
+  color: var(--cyan);
+  border-color: rgba(0, 240, 255, 0.35);
+  background: rgba(0, 240, 255, 0.1);
 }
-.pcc-tier-badge.buff-chip-burst {
-  color: #ff9900;
-  border-color: #ff9900;
-  background: rgba(255, 153, 0, 0.18);
-  box-shadow: 0 0 6px rgba(255, 153, 0, 0.5);
-}
-.pcc-tier-badge.buff-chip-ward {
-  color: #c084fc;
-  border-color: #c084fc;
-  background: rgba(192, 132, 252, 0.16);
-  box-shadow: 0 0 5px rgba(192, 132, 252, 0.35);
-}
-
-.pcc-elem-badge {
-  font-family: var(--f-mono);
-  font-size: 7px;
-  font-weight: 800;
-  color: var(--dim2);
-  letter-spacing: 0.05em;
-  background: rgba(6, 6, 9, 0.85);
-  border: 1px solid rgba(245, 245, 245, 0.1);
-  padding: 1px 4px;
-  border-radius: 2px;
-}
-.pcc-elem-badge.elem-fire { color: #ffaa00; border-color: rgba(255, 170, 0, 0.4); }
-.pcc-elem-badge.elem-void { color: #c084fc; border-color: rgba(192, 132, 252, 0.4); }
-.pcc-elem-badge.elem-lunar { color: var(--cyan); border-color: var(--cyan-dim); }
-.pcc-elem-badge.elem-aero { color: var(--haz); border-color: var(--haz-dim); }
 
 /* ==========================================================================
-   BOTTOM ENGRAVED METALLIC NAMEPLATE (COMPACT 2-LINE)
+   BOTTOM ENGRAVED METALLIC NAMEPLATE WITH SKILL ROW
    ========================================================================== */
 .pcc-plate {
   position: relative;
   z-index: 7;
-  padding: 4px 6px 4px;
-  background: linear-gradient(180deg, rgba(14, 14, 20, 0.92) 0%, rgba(5, 5, 8, 0.98) 100%);
+  padding: 3px 5px 3px;
+  background: linear-gradient(180deg, rgba(14, 14, 20, 0.96) 0%, rgba(5, 5, 8, 0.99) 100%);
   border-top: 1px solid rgba(245, 245, 245, 0.16);
   display: flex;
   flex-direction: column;
-  gap: 1.5px;
-  box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.6);
+  gap: 2px;
+  box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.7);
+}
+.pcc-plate-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
 }
 .pcc-name {
   font-family: var(--f-head);
@@ -1364,39 +1338,48 @@ body:has(#profModal.show) .lobby-tactical-hud {
   text-overflow: ellipsis;
   text-transform: uppercase;
 }
-.pcc-stats-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
 .pcc-stats {
   font-family: var(--f-mono);
-  font-size: 7px;
-  font-weight: 700;
-  color: var(--haz);
-  letter-spacing: 0.03em;
+  font-size: 7.5px;
+  font-weight: 800;
+  color: var(--cyan);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.pcc-skill-row {
   display: flex;
   align-items: center;
   gap: 3px;
-}
-.pcc-stats .atk-val { color: #ffaa00; font-weight: 800; }
-.pcc-stats .hp-val  { color: var(--cyan); font-weight: 800; }
-
-.pcc-stars {
-  font-size: 6.5px;
-  letter-spacing: 0.04em;
-  color: var(--gold);
-}
-.pcc-tier-level-tag {
   font-family: var(--f-mono);
-  font-size: 6.5px;
-  font-weight: 800;
-  color: var(--cyan);
-  letter-spacing: 0.06em;
-  background: rgba(0, 240, 255, 0.1);
-  border: 1px solid rgba(0, 240, 255, 0.3);
-  padding: 0 3px;
+  font-size: 7px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: rgba(0, 0, 0, 0.45);
+  padding: 1.5px 3.5px;
   border-radius: 2px;
+  border: 1px solid rgba(245, 245, 245, 0.08);
+}
+.pcc-sk-badge {
+  font-size: 6px;
+  font-weight: 900;
+  color: #050505;
+  background: var(--haz);
+  padding: 0 2.5px;
+  border-radius: 1px;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+.pcc-sk-name {
+  color: var(--haz);
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.pcc-sk-desc {
+  color: rgba(245, 245, 245, 0.72);
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Chamfered Tactical Corner Accents */
@@ -1412,63 +1395,125 @@ body:has(#profModal.show) .lobby-tactical-hud {
 .pcc-crn.br { right: 2px; bottom: 2px; border-left: 0; border-top: 0; }
 
 /* ==========================================================================
-   SLOT 3 SPECIAL: THE BLAZING SOLAR FIRE AURA BORDER
-   (UMBRA WITCH + CHAKRA MASTERY FROM REFERENCE SCREENSHOT)
+   STANDEE HERO CARD META & SKILL DISPLAY
    ========================================================================== */
-.prf-card-chassis.fire-blaze {
-  border: 2px solid #ff5500 !important;
-  box-shadow:
-    0 0 16px rgba(255, 85, 0, 0.8),
-    inset 0 0 14px rgba(255, 120, 0, 0.45),
-    0 6px 20px rgba(0, 0, 0, 0.95) !important;
-  animation: solarFireBlaze 2.2s infinite alternate ease-in-out !important;
+.prf-standee-meta {
+  position: relative;
+  z-index: 5;
+  margin: 0 10px 6px 10px;
+  background: rgba(10, 10, 14, 0.94);
+  border: 1px solid var(--hair);
+  border-left: 3px solid var(--cyan);
+  padding: 4px 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.85);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
-@keyframes solarFireBlaze {
-  0% {
-    border-color: #ff4500;
-    box-shadow:
-      0 0 14px rgba(255, 69, 0, 0.75),
-      inset 0 0 10px rgba(255, 100, 0, 0.4),
-      0 6px 18px rgba(0, 0, 0, 0.9);
-  }
-  50% {
-    border-color: #ffaa00;
-    box-shadow:
-      0 0 22px rgba(255, 170, 0, 0.9),
-      inset 0 0 16px rgba(255, 140, 0, 0.6),
-      0 8px 24px rgba(0, 0, 0, 0.95);
-  }
-  100% {
-    border-color: #ff2200;
-    box-shadow:
-      0 0 18px rgba(255, 34, 0, 0.85),
-      inset 0 0 12px rgba(255, 80, 0, 0.5),
-      0 6px 18px rgba(0, 0, 0, 0.9);
-  }
+.prf-standee-meta:hover {
+  border-left-color: var(--haz);
+  border-color: rgba(243, 230, 0, 0.35);
+  box-shadow: 0 4px 16px rgba(243, 230, 0, 0.15);
+}
+.psm-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.psm-name {
+  font-family: var(--f-head);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  color: var(--paper);
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.psm-stats {
+  font-family: var(--f-mono);
+  font-size: 8px;
+  font-weight: 800;
+  color: var(--cyan);
+  white-space: nowrap;
+}
+.psm-skill-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--f-mono);
+  font-size: 7.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.psm-sk-badge {
+  font-size: 6px;
+  font-weight: 900;
+  color: #050505;
+  background: var(--haz);
+  padding: 0 3px;
+  border-radius: 1.5px;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+.psm-sk-name {
+  color: var(--haz);
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.psm-sk-desc {
+  color: rgba(245, 245, 245, 0.72);
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.prf-card-chassis.fire-blaze .pcc-plate.fire-plate {
-  border-top-color: #ff5500;
-  background: linear-gradient(180deg, rgba(28, 14, 8, 0.95) 0%, rgba(6, 6, 8, 0.98) 100%);
+/* ==========================================================================
+   SHOWCASE SLOTS: STATS & SKILL ROWS
+   ========================================================================== */
+.sc-stats-row {
+  font-family: var(--f-mono);
+  font-size: 7px;
+  font-weight: 800;
+  color: var(--cyan);
+  white-space: nowrap;
 }
-.prf-card-chassis.fire-blaze .pcc-plate.fire-plate .pcc-name {
-  color: #ffffff;
-  text-shadow: 0 0 8px rgba(255, 85, 0, 0.9), 0 0 14px rgba(255, 40, 0, 0.6);
+.sc-skill-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--f-mono);
+  font-size: 6.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: rgba(0, 0, 0, 0.45);
+  padding: 1px 3px;
+  border-radius: 2px;
+  border: 1px solid rgba(245, 245, 245, 0.08);
+  margin-top: 1px;
 }
-.prf-card-chassis.fire-blaze .pcc-plate.fire-plate .pcc-stats {
-  color: #ffaa00;
-  text-shadow: 0 0 6px rgba(255, 170, 0, 0.7);
+.sc-sk-badge {
+  font-size: 5.5px;
+  font-weight: 900;
+  color: #050505;
+  background: var(--haz);
+  padding: 0 2px;
+  border-radius: 1px;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+  line-height: 1.2;
 }
-.prf-card-chassis.fire-blaze .pcc-tier-level-tag {
-  color: #ffaa00;
-  border-color: rgba(255, 170, 0, 0.5);
-  background: rgba(255, 170, 0, 0.15);
-}
-
-/* Fiery Corner Flairs */
-.prf-card-chassis.fire-blaze .pcc-crn {
-  border-color: #ffaa00;
-  box-shadow: 0 0 6px #ff5500;
+.sc-sk-name {
+  color: var(--haz);
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 
@@ -1624,6 +1669,9 @@ body:has(#profModal.show) .lobby-tactical-hud {
   .prf-standee-box {
     height: 220px !important;
   }
+  .prf-showcase-shell {
+    margin-bottom: 8px !important;
+  }
   .prf-stats-grid {
     grid-template-columns: 1fr !important;
     column-gap: 0 !important;
@@ -1645,13 +1693,27 @@ body:has(#profModal.show) .lobby-tactical-hud {
   .prf-body-grid {
     padding: 4px 8px !important;
     gap: 6px !important;
+    overflow-y: auto !important;
   }
   .prf-standee-box {
-    max-height: 130px !important;
-    min-height: 100px !important;
+    max-height: 140px !important;
+    min-height: 110px !important;
+  }
+  .prf-standee-meta {
+    margin: 0 4px 2px 4px !important;
+    padding: 2px 4px !important;
+  }
+  .psm-name {
+    font-size: 8px !important;
+  }
+  .psm-stats {
+    font-size: 7px !important;
+  }
+  .psm-skill-row {
+    font-size: 6.5px !important;
   }
   .prf-showcase-slot {
-    height: 48px !important;
+    height: 54px !important;
   }
   .prf-stats-grid {
     padding: 3px 6px !important;
@@ -1662,7 +1724,7 @@ body:has(#profModal.show) .lobby-tactical-hud {
   }
   .prf-card-chassis,
   .support-chassis {
-    height: 94px !important;
+    height: 98px !important;
   }
   .pcc-plate {
     padding: 2px 4px !important;
@@ -1921,4 +1983,124 @@ body:has(#profModal.show) .lobby-tactical-hud {
   #profileCurtain .bar i { transition: none !important; }
   #profileCurtain .tape,
   #profileCurtain .flash { animation: none !important; }
+}
+
+/* ==========================================================================
+   TACTICAL EMPTY SLOT CHASSIS (CARDS & SUPPORTS)
+   ========================================================================== */
+.prf-card-chassis.empty-chassis {
+  border: 1.5px dashed rgba(245, 245, 245, 0.22) !important;
+  background: rgba(10, 10, 15, 0.6) !important;
+  box-shadow: none !important;
+  cursor: pointer;
+}
+.prf-card-chassis.empty-chassis:hover {
+  border-color: var(--haz) !important;
+  background: rgba(243, 230, 0, 0.05) !important;
+  box-shadow: 0 0 16px rgba(243, 230, 0, 0.15) !important;
+  transform: translateY(-2px);
+}
+.prf-card-chassis.empty-chassis .empty-art {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  gap: 4px;
+  padding: 8px 4px;
+  box-sizing: border-box;
+}
+.prf-card-chassis.empty-chassis .pcc-empty-icon {
+  width: 24px;
+  height: 24px;
+  stroke: rgba(245, 245, 245, 0.35);
+  transition: stroke 0.2s, transform 0.2s;
+}
+.prf-card-chassis.empty-chassis:hover .pcc-empty-icon {
+  stroke: var(--haz);
+  transform: scale(1.1);
+}
+.prf-card-chassis.empty-chassis .pcc-empty-lbl {
+  font-family: var(--f-head);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: rgba(245, 245, 245, 0.65);
+}
+.prf-card-chassis.empty-chassis .pcc-empty-sub {
+  font-family: var(--f-mono);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  color: var(--haz);
+}
+
+/* Empty Showcase Slots */
+.prf-showcase-slot.empty {
+  border: 1.5px dashed rgba(245, 245, 245, 0.22) !important;
+  background: rgba(10, 10, 15, 0.6) !important;
+  box-shadow: none !important;
+}
+.prf-showcase-slot.empty:hover {
+  border-color: var(--haz) !important;
+  background: rgba(243, 230, 0, 0.05) !important;
+  box-shadow: 0 0 16px rgba(243, 230, 0, 0.15) !important;
+}
+.prf-showcase-slot.empty .sc-art-shell.empty-art {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  gap: 4px;
+}
+.prf-showcase-slot.empty .sc-empty-icon {
+  width: 22px;
+  height: 22px;
+  stroke: rgba(245, 245, 245, 0.35);
+  transition: stroke 0.2s, transform 0.2s;
+}
+.prf-showcase-slot.empty:hover .sc-empty-icon {
+  stroke: var(--haz);
+  transform: scale(1.1);
+}
+.prf-showcase-slot.empty .sc-empty-lbl {
+  font-family: var(--f-head);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: rgba(245, 245, 245, 0.6);
+}
+.prf-showcase-slot.empty .sc-empty-sub {
+  font-family: var(--f-mono);
+  font-size: 7.5px;
+  letter-spacing: 0.08em;
+  color: var(--haz);
+}
+
+/* Support Art & Icon Sizing */
+.pcc-art-shell.support-art {
+  position: relative;
+  flex: 1;
+  min-height: 58px;
+  background: radial-gradient(circle at 50% 45%, #161626 0%, #060609 85%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.pcc-art-shell.support-art .relic-icon,
+.pcc-art-shell.support-art img {
+  position: relative;
+  z-index: 3;
+  max-width: 54px;
+  max-height: 48px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.9));
+  transition: transform 0.25s ease;
+}
+.prf-card-chassis.support-chassis:hover .pcc-art-shell.support-art .relic-icon,
+.prf-card-chassis.support-chassis:hover .pcc-art-shell.support-art img {
+  transform: scale(1.1) translateY(-2px);
 }
