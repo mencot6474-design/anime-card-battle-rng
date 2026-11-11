@@ -40,10 +40,11 @@
     if(parts.length>220)parts.splice(0,parts.length-220);
     startLoop();
   }
+  const _fastRaf=(typeof window.__rawRaf==="function")?window.__rawRaf:window.requestAnimationFrame.bind(window);
   function startLoop(){
     if(raf)return;
     lastT=performance.now();
-    raf=requestAnimationFrame(loop);
+    raf=_fastRaf(loop);
   }
   function loop(now){
     const dt=Math.min(.05,(now-lastT)/1000);lastT=now;
@@ -83,7 +84,7 @@
       }
     }
     ctx.globalAlpha=1;ctx.globalCompositeOperation="source-over";
-    if(parts.length){raf=requestAnimationFrame(loop);}
+    if(parts.length){raf=_fastRaf(loop);}
     else{raf=0;ctx.clearRect(0,0,W,H);}
   }
   function drawArc(p,k){
@@ -188,11 +189,13 @@
     setTimeout(()=>{try{el.classList.remove("skfx-hit");el.style.animationDuration="";}catch(e){}},360*sc());
   }
   function playerRail(){
+    const hz=document.getElementById("hzPartyRail");
+    if(hz&&rect(hz).width>0)return hz;
     const me=document.querySelector(".fighter.me");
     const col=me?me.closest(".me-col"):document.querySelector(".me-col:not(.foe-side)");
     return col?col.querySelector(".bench-rail"):null;
   }
-  const tilesOf=rail=>rail?[...rail.querySelectorAll(".bench-sq:not(.empty)")]:[];
+  const tilesOf=rail=>rail?[...rail.querySelectorAll(".pt-slot:not(.empty),.bench-sq:not(.empty)")]:[];
 
   /* ---------- 1. ARISE (musuh tumbang -> Shadow baru di rail) ---------- */
   async function arise(o){
@@ -203,8 +206,9 @@
     const fr=rect(foe);
     if(!fr.width)return;
     const rail=playerRail();
-    const shadows=rail?[...rail.querySelectorAll(".bench-sq.shadow-sq")]:[];
-    const slot=shadows[shadows.length-1]||null;
+    const shadows=rail?[...rail.querySelectorAll(".pt-slot.shadow-sq,.bench-sq.shadow-sq")]:[];
+    let slot=shadows[shadows.length-1]||null;
+    if(!slot)slot=document.querySelector('#hzMatPiles [data-pile="me-deck"] .pile-card,#hzMatPiles [data-pile="me-deck"]');
     const art=artOf(o.art,o.thumb);
     let g=null;
     try{
@@ -339,7 +343,18 @@
     }
   }
 
+  function clearAll(){
+    token++;parts.length=0;
+    if(raf){try{cancelAnimationFrame(raf);}catch(e){}raf=0;}
+    if(ctx&&cv)ctx.clearRect(0,0,W,H);
+    if(layer){
+      fogOff();
+      layer.querySelectorAll(".skfx-ghost").forEach(function(g){try{g.remove();}catch(e){}});
+    }
+  }
+
   window.skfxArise=arise;
   window.skfxExchange=exchange;
   window.skfxAbsorb=absorb;
+  window.skfxClear=clearAll;
 })();

@@ -2166,11 +2166,11 @@ html body.battle-full #app .battle-grid .fighter .fc-frame.card-shell .fx-flash{
   z-index:7 !important;background:#fff !important;
 }
 html body.battle-full #app .battle-grid .fighter .fc-frame.card-shell .fx-flash.is-hit{
-  animation:fxHitCut .20s steps(2,end) forwards !important;
+  animation:fxHitCut .18s ease-out forwards !important;
 }
 html body.battle-full #app .battle-grid .fighter .fc-frame.card-shell .fx-flash.is-shock{
   background:linear-gradient(135deg,#fff 0%,#f3e600 50%,#7DF9FF 100%) !important;
-  animation:fxHitCut .22s steps(3,end) forwards !important;
+  animation:fxHitCut .22s ease-out forwards !important;
 }
 html body.battle-full #app .battle-grid .fighter .fc-frame.card-shell .fx-flash.is-burn{
   background:linear-gradient(0deg,#ff3b1f,#ffd166) !important;
@@ -2224,7 +2224,7 @@ html body.battle-full #app .battle-grid .fighter .fc-frame.card-shell.is-shocked
 }
 html body.battle-full #app .battle-grid .fighter .fc-frame.card-shell.is-shocked .fx-shock-layer{
   opacity:1 !important;
-  animation:shockArcStep .28s steps(2,end) infinite !important;
+  animation:shockArcStep .28s ease-in-out infinite alternate !important;
 }
 @keyframes shockArcStep{
   0%{opacity:1;transform:scale(1)}
@@ -2280,6 +2280,20 @@ html body.battle-full #app .battle-grid .me-col .dodge-ghost.is-show{
   40%{opacity:.48;transform:translate3d(var(--gx,0px),0,0) skewX(var(--gsk,0deg)) scale(1.02)}
   100%{opacity:0;transform:translate3d(var(--gx,0px),0,0) skewX(var(--gsk,0deg)) scale(1.04)}
 }
+
+/* ==========================================================================
+   RESTORED SIGNATURE CHARACTER SKILL FX SUPPORT (SUN GOD & SHADOW KING)
+   ========================================================================== */
+#skfxLayer{position:fixed !important;inset:0 !important;z-index:74 !important;pointer-events:none !important;overflow:hidden !important}
+html body.battle-full #hzPartyRail .pt-slot.shadow-sq{border-color:rgba(167,139,250,.85) !important;box-shadow:0 0 10px rgba(124,58,237,.45)}
+html body.battle-full #hzPartyRail .pt-slot.shadow-sq img{filter:grayscale(.35) brightness(.78) hue-rotate(215deg) saturate(1.45)}
+html body.battle-full #hzPartyRail .pt-slot.skfx-pending{opacity:0 !important}
+html body.battle-full #hzPartyRail .pt-slot.skfx-landed{animation:skfxPop .55s cubic-bezier(.2,.9,.25,1.15) !important}
+html body.battle-full #app .battle-grid .fighter.rubber-squash{animation:rubberSquash .52s cubic-bezier(.25,1.6,.45,1) both !important}
+html body.battle-full #app .battle-grid .fighter.skfx-hit{animation:skfxCardHit .34s ease-out !important}
+html body.battle-full #app .battle-grid .fighter.skfx-quake{animation:skfxQuake .42s linear infinite !important}
+html body.battle-full #app .battle-grid .fighter.skfx-dead{filter:grayscale(1) brightness(.32) contrast(1.1) !important}
+html body.battle-full #app .battle-grid .fighter .dizzy-crown{z-index:85 !important}
 
 #pgrBattleFxCanvas,
 #pgrMatrixOverlay,

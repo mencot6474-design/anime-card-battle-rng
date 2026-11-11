@@ -47,9 +47,15 @@
   (window.__aabAudioUnlockers = window.__aabAudioUnlockers || []).push(function () { SFX.unlock(); });
 
   var sharedCv = null, sharedCtx = null, sharedRaf = 0, sharedFns = [];
+  var _vpW = window.innerWidth || 1024, _vpH = window.innerHeight || 768;
+  window.addEventListener("resize", function () {
+    _vpW = window.innerWidth || _vpW;
+    _vpH = window.innerHeight || _vpH;
+    if (sharedCv) sharedCv._sized = false;
+  }, { passive: true });
 
   function ensureSharedCanvas() {
-    var W = window.innerWidth, H = window.innerHeight;
+    var W = _vpW, H = _vpH;
     var dpr = (typeof window.FXDPR === "function") ? window.FXDPR() : 1;
     if (!sharedCv || !document.body.contains(sharedCv)) {
       sharedCv = document.createElement("canvas");
@@ -57,13 +63,15 @@
       sharedCv.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:78;";
       document.body.appendChild(sharedCv);
       sharedCtx = sharedCv.getContext("2d");
+      sharedCv._sized = false;
     }
     var pw = Math.max(1, Math.round(W * dpr)), ph = Math.max(1, Math.round(H * dpr));
-    sharedCv.style.width = W + "px";
-    sharedCv.style.height = H + "px";
-    if (sharedCv.width !== pw || sharedCv.height !== ph) {
+    if (!sharedCv._sized || sharedCv.width !== pw || sharedCv.height !== ph) {
       sharedCv.width = pw;
       sharedCv.height = ph;
+      sharedCv.style.width = W + "px";
+      sharedCv.style.height = H + "px";
+      sharedCv._sized = true;
     }
     sharedCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
     return { cv: sharedCv, ctx: sharedCtx, W: W, H: H };
@@ -73,7 +81,8 @@
   var sharedMicro = false;
 
   function drawSharedFrame(now) {
-    var s = ensureSharedCanvas(), ctx = s.ctx;
+    var s = (sharedCv && sharedCtx && sharedCv._sized && sharedCv.isConnected) ? { cv: sharedCv, ctx: sharedCtx, W: _vpW, H: _vpH } : ensureSharedCanvas();
+    var ctx = s.ctx;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, s.cv.width, s.cv.height);
     var dpr = (typeof window.FXDPR === "function") ? window.FXDPR() : 1;
@@ -125,7 +134,7 @@
   function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
   function easeOutExpo(t) { return t >= 1 ? 1 : 1 - Math.pow(2, -10 * t); }
   function spdMs(ms) {
-    return (typeof window.bsMs === "function") ? Math.max(70, window.bsMs(ms)) : ms;
+    return (typeof window.bsMs === "function") ? Math.max(150, window.bsMs(ms)) : ms;
   }
 
   function normRect(r) {

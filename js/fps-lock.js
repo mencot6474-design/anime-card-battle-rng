@@ -15,8 +15,11 @@
   window.__rawRaf=_raf;
   window.__rawCaf=_caf;
   var waiting=new Map(), uid=0, running=false, last=0;
+  function inBattle(){
+    return !!(document.body && document.body.classList.contains('battle-full'));
+  }
   function loop(now){
-    if(!enabled || now-last>=MIN || now<last){
+    if(!enabled || inBattle() || now-last>=MIN || now<last){
       last=now;
       var list=[]; waiting.forEach(function(e){ list.push(e); });
       waiting.clear();
@@ -25,7 +28,7 @@
     if(waiting.size){ _raf(loop); } else { running=false; }
   }
   window.requestAnimationFrame=function(cb){
-    if(!enabled || typeof cb!=='function') return _raf(cb);
+    if(!enabled || inBattle() || typeof cb!=='function') return _raf(cb);
     var h=++uid; waiting.set(h,{cb:cb});
     if(!running){ running=true; _raf(loop); }
     return h;
@@ -35,8 +38,8 @@
     else _caf(h);
   };
   function applyClass(){
-    /* nyalakan throttle CSS (gradien/holo ~30fps) hanya kalau di-lock ke angka rendah */
-    var lockCss = enabled && TARGET<=35;
+    /* nyalakan throttle CSS (gradien/holo ~30fps) hanya kalau di-lock ke angka rendah dan BUKAN di battle */
+    var lockCss = enabled && !inBattle() && TARGET<=35;
     try{ document.documentElement.classList.toggle('fps-locked', !!lockCss); }catch(e){}
   }
   window.__fpsLock={
@@ -48,7 +51,8 @@
       applyClass();
       try{ localStorage.setItem('fpsTarget', String(enabled?TARGET:0)); }catch(e){}
     },
-    get target(){ return enabled?TARGET:0; }
+    refreshBattle:applyClass,
+    get target(){ return (enabled && !inBattle())?TARGET:0; }
   };
   /* hormati preferensi tersimpan (0 = lepas) */
   try{ var s=localStorage.getItem('fpsTarget'); if(s!=null){ window.__fpsLock.set(parseInt(s,10)||0); } }catch(e){}

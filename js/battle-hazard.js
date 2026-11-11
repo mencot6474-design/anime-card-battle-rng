@@ -716,7 +716,7 @@
           if (i === active && b.pMax) pct = Math.max(0, Math.min(1, b.pHp / b.pMax));
           else if (dead) pct = 0;
         }
-        var cls = 'pt-slot' + (i === active ? ' active' : '') + (dead ? ' dead' : '');
+        var cls = 'pt-slot' + (i === active ? ' active' : '') + (dead ? ' dead' : '') + (f.sk ? ' shadow-sq' : '');
         html +=
           '<div class="' + cls + '" data-slot="' + i + '" title="' + esc(cardNameOf(f.char)) + '">' +
             '<img src="' + esc(cardThumbOf(f.char)) + '" alt="">' +

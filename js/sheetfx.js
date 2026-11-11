@@ -92,9 +92,19 @@
         tone({ type: "sine", f1: 520, f2: 1180, dur: 0.11, gain: 0.07 });
       },
       cutInActivate: function () {},
-      aoeCharge: function () {},
-      aoeDetonate: function () {},
-      aoeChainTick: function () {},
+      aoeCharge: function () {
+        tone({ type: "sawtooth", f1: 110, f2: 720, dur: 0.38, gain: 0.14 });
+        tone({ type: "sine", f1: 220, f2: 1440, dur: 0.38, gain: 0.11 });
+      },
+      aoeDetonate: function () {
+        tone({ type: "sine", f1: 160, f2: 28, dur: 0.56, gain: 0.28 });
+        noiseBurst({ dur: 0.44, filterType: "lowpass", freq: 1600, endFreq: 180, q: 1.0, gain: 0.24 });
+      },
+      aoeChainTick: function (idx) {
+        var p = 1 + (idx || 0) * 0.15;
+        tone({ type: "triangle", f1: 920 * p, f2: 260, dur: 0.14, gain: 0.12 });
+        noiseBurst({ dur: 0.10, filterType: "bandpass", freq: 2800 * p, q: 2.5, gain: 0.14 });
+      },
       rebirthAscendCharge: function () {
         tone({ type: "sine", f1: 80, f2: 240, dur: 0.3, gain: 0.16 });
       },
@@ -122,14 +132,21 @@
     return (typeof selOrSide === "string") ? document.querySelector(selOrSide) : selOrSide;
   }
 
+  var _fastRaf = (typeof window.__rawRaf === "function") ? window.__rawRaf : window.requestAnimationFrame.bind(window);
+  var _fastCaf = (typeof window.__rawCaf === "function") ? window.__rawCaf : window.cancelAnimationFrame.bind(window);
+
   function flashCardFx(selOrSide, kind) {
     var fighter = resolveFighter(selOrSide);
     if (!fighter) return;
     var fl = fighter.querySelector(".fx-flash");
     if (!fl) return;
+    var cls = kind === "shock" ? "is-shock" : kind === "burn" ? "is-burn" : "is-hit";
     fl.classList.remove("is-hit", "is-burn", "is-shock");
-    void fl.offsetWidth;
-    fl.classList.add(kind === "shock" ? "is-shock" : kind === "burn" ? "is-burn" : "is-hit");
+    if (fl._fxRaf) _fastCaf(fl._fxRaf);
+    fl._fxRaf = _fastRaf(function () {
+      fl._fxRaf = 0;
+      if (fl.isConnected) fl.classList.add(cls);
+    });
   }
   window.hzFlashCard = flashCardFx;
 

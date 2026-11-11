@@ -367,29 +367,51 @@ function render(){
 }
 /* Semua view battle (story/tower/raid) punya .battle-grid -> pasang mode full-screen.
    Observer dipakai karena sebagian renderer battle dipanggil langsung tanpa lewat render(). */
-const bfSync=()=>{
+let _bfLastGrid=null,_bfLastHas=null,_bfLastTbh="";
+const _setBodyCls=(cls,on)=>{if(document.body.classList.contains(cls)!==on)document.body.classList.toggle(cls,on);};
+const _setRootCls=(cls,on)=>{if(document.documentElement.classList.contains(cls)!==on)document.documentElement.classList.toggle(cls,on);};
+const bfSync=(muts)=>{
   if(!app) return; // Guard: kalau app belum ready, skip
   const grid = app.querySelector(".battle-grid");
   const hasBattle = !!grid;
-  document.body.classList.toggle("battle-full", hasBattle);
-  document.body.classList.toggle("on-battle", hasBattle);
+  if(hasBattle && hasBattle===_bfLastHas && grid===_bfLastGrid && Array.isArray(muts)){
+    let elemChange=false;
+    for(let i=0;i<muts.length;i++){
+      const m=muts[i];
+      for(let j=0;j<m.addedNodes.length;j++){if(m.addedNodes[j].nodeType===1){elemChange=true;break;}}
+      if(elemChange)break;
+      for(let j=0;j<m.removedNodes.length;j++){if(m.removedNodes[j].nodeType===1){elemChange=true;break;}}
+      if(elemChange)break;
+    }
+    if(!elemChange)return;
+  }
+  _bfLastGrid=grid;_bfLastHas=hasBattle;
+  _setBodyCls("battle-full", hasBattle);
+  _setBodyCls("on-battle", hasBattle);
+  if(window.__fpsLock&&typeof window.__fpsLock.refreshBattle==="function")window.__fpsLock.refreshBattle();
   if(hasBattle && window.syncBattleBackground) window.syncBattleBackground();
   // Tinggi topbar asli → --tbh cuma pas battle (v34 revert). Lobby sengaja pakai default 64px
   // biar geometri main calc(100dvh - 64) balik persis ke state v31 yang center-nya pas;
   // sisa potensi ke-scroll sudah dikunci di CSS: html:has(body.on-lobby){overflow:hidden}.
-  const tb=document.getElementById("topbar"); if(hasBattle && tb) document.documentElement.style.setProperty("--tbh", Math.round(tb.getBoundingClientRect().height)+"px");
+  if(hasBattle){
+    const tb=document.getElementById("topbar");
+    if(tb){
+      const nextTbh=Math.round(tb.getBoundingClientRect().height)+"px";
+      if(nextTbh!==_bfLastTbh){_bfLastTbh=nextTbh;document.documentElement.style.setProperty("--tbh",nextTbh);}
+    }
+  }
   // Tombol END khusus Infinite Tower; story & raid boss auto-complete jadi nggak perlu tombol.
-  document.body.classList.toggle("battle-tower", !!(grid && grid.classList.contains("tower-stage")));
-  document.body.classList.toggle("battle-raid", !!(grid && grid.classList.contains("raid-stage")));
+  _setBodyCls("battle-tower", !!(grid && grid.classList.contains("tower-stage")));
+  _setBodyCls("battle-raid", !!(grid && grid.classList.contains("raid-stage")));
   const onTower = !hasBattle && !!(app.querySelector(".tw-page:not(.rd-page)") || app.querySelector(".tactical-tower-page"));
   const onRaid = !hasBattle && !!app.querySelector(".rd-page");
   const onSettings = !hasBattle && !!app.querySelector(".sett-wrap");
-  document.body.classList.toggle("on-lobby", !hasBattle && !!app.querySelector(".lobby-hub"));
-  document.body.classList.toggle("on-tower", onTower);
-  document.body.classList.toggle("on-raid", onRaid);
-  document.body.classList.toggle("on-settings", onSettings);
-  document.documentElement.classList.toggle("on-tower-root", onTower);
-  document.documentElement.classList.toggle("view-locked", hasBattle||!!app.querySelector(".lobby-hub")||onTower||onRaid);
+  _setBodyCls("on-lobby", !hasBattle && !!app.querySelector(".lobby-hub"));
+  _setBodyCls("on-tower", onTower);
+  _setBodyCls("on-raid", onRaid);
+  _setBodyCls("on-settings", onSettings);
+  _setRootCls("on-tower-root", onTower);
+  _setRootCls("view-locked", hasBattle||!!app.querySelector(".lobby-hub")||onTower||onRaid);
   /* Safety: dokumen selalu di posisi paling atas HANYA jika di view yang terkunci (battle/lobby/tower/raid).
      Jangan paksa scroll ke 0 saat pemain sedang berada di Settings agar halaman settings bisa di-scroll bebas. */
   if((hasBattle||!!app.querySelector(".lobby-hub")||onTower||onRaid) && (window.scrollX||window.scrollY)) window.scrollTo(0,0);
@@ -409,6 +431,8 @@ window.syncBattleBackground = function() {
     : ((window.state && window.state.lobbyBg && window.LOBBY_BGS && window.LOBBY_BGS[window.state.lobbyBg]) 
         ? window.LOBBY_BGS[window.state.lobbyBg].src 
         : 'assets/bg/lobby-wuwa-genshin.webp');
+  if(bgLayer.dataset.lastBg===activeBg)return;
+  bgLayer.dataset.lastBg=activeBg;
   bgLayer.style.backgroundImage = 'url("' + activeBg + '")';
 };
 

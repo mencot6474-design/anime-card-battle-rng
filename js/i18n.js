@@ -1673,19 +1673,44 @@
     }
   }
 
-  /* MutationObserver supaya setiap panel/modal/toast/hover popup baru otomatis diterjemahkan saat EN aktif */
+  /* MutationObserver ringan: terjemahkan HANYA node baru yang relevan, jangan scan ulang seluruh document.body saat battle */
   var _rafPending = false;
-  var _observer = new MutationObserver(function () {
+  var _pendingRoots = new Set();
+  var _fastLangRaf = (typeof window.__rawRaf === 'function') ? window.__rawRaf : window.requestAnimationFrame;
+  var _skipLangSel = '#dmgLayer,#skfxLayer,#hzBattleToast,#hcTimer,#hpMeT,#hpFoeT,#hpRaidT,#meInlineHp,#foeInlineHp,#hudMeHpNum,#hudFoeHpNum,#wbrRunDmg,.dmg-float,.unit-hp-txt,.hpbar';
+  function _collectLangNode(n) {
+    if (!n) return;
+    var el = n.nodeType === 1 ? n : n.parentElement;
+    if (!el || el === document.body || el.id === 'app') return;
+    if (el.matches && el.matches(_skipLangSel)) return;
+    if (el.closest && el.closest('#dmgLayer,#skfxLayer,#hzBattleToast')) return;
+    _pendingRoots.add(el);
+  }
+  var _observer = new MutationObserver(function (muts) {
     if (getLang() !== 'en') return;
-    if (_rafPending) return;
+    for (var i = 0; i < muts.length; i++) {
+      var m = muts[i];
+      if (m.addedNodes && m.addedNodes.length) {
+        for (var j = 0; j < m.addedNodes.length; j++) {
+          var an = m.addedNodes[j];
+          if (an.nodeType === 1) _collectLangNode(an);
+          else if (an.nodeType === 3) _collectLangNode(m.target);
+        }
+      }
+    }
+    if (!_pendingRoots.size || _rafPending) return;
     _rafPending = true;
-    requestAnimationFrame(function () {
-      if (getLang() !== 'en') { _rafPending = false; return; }
+    _fastLangRaf(function () {
+      _rafPending = false;
+      if (getLang() !== 'en') { _pendingRoots.clear(); return; }
+      var roots = Array.from(_pendingRoots);
+      _pendingRoots.clear();
       try {
         _observer.disconnect();
-        translateSubtree(document.body);
+        for (var k = 0; k < roots.length; k++) {
+          if (roots[k] && roots[k].isConnected) translateSubtree(roots[k]);
+        }
       } finally {
-        _rafPending = false;
         if (document.body && getLang() === 'en') {
           _observer.observe(document.body, { childList: true, subtree: true });
         }

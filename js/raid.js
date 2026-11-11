@@ -1459,11 +1459,13 @@ function raidStep(){
   let total=0;hits.forEach(m=>total+=Math.round(dmg*m));
   /* All attacks in Raid use the exact Hazard Basic Attack lunge + slash choreography */
   const setRaidBar=hp=>{const v=Math.max(0,hp);const p=Math.max(0,Math.min(100,v/raid.max*100))+"%";const b=document.getElementById("hpRaid");if(b){b.style.width=p;const tr=b.parentElement?b.parentElement.querySelector(".hp-trail"):null;if(tr)tr.style.width=p;}const tt=document.getElementById("hpRaidT");if(tt)tt.textContent=(typeof fmtBattleK==="function"?fmtBattleK(v):fmtBig(v));const ih=document.getElementById("foeInlineHp");if(ih)ih.textContent=(typeof fmtBattleK==="function"?fmtBattleK(v):fmtBig(v));if(typeof window.hzBattleSync==="function"){try{window.hzBattleSync();}catch(e){}}if(typeof window.sheetStatusSync==="function"){try{window.sheetStatusSync();}catch(e){}}};
-  const isRaidCombo=hits.length===1&&!domainActive&&!ariseMode&&!galaxyMode&&!psychicActive&&!bajrangActive&&!hpPurple&&!md;
+  const havocWillFire=!!(fx.havocRocket&&raid.hp>0&&raid.havocGuard&&(raid.havocUses||0)<(fx.havocRocket.maxUses||3));
+  const isRaidCombo=hits.length===1&&!domainActive&&!ariseMode&&!galaxyMode&&!psychicActive&&!bajrangActive&&!hpPurple&&!md&&wePhase<0&&!havocWillFire;
   const rHstep=(psychicActive&&typeof PSY_T!=="undefined")?PSY_T.step:(domainActive?80:160);
   const rMd=md;
-  const rHitDelay=273;
-  const rChainEnd=isRaidCombo?860:((rMd?MADARA_T.slash+Math.max(0,hits.length-1)*MADARA_T.step+40:rHitDelay+Math.max(0,hits.length-1)*rHstep)+420);
+  const rHitDelay=havocWillFire?(typeof HR_T!=="undefined"?HR_T.first:620):273;
+  const rSusStart=psychicActive?(typeof PSY_T!=="undefined"?PSY_T.first:560):bajrangActive?(typeof BJ_T!=="undefined"?BJ_T.first:820):(wePhase>=0)?(typeof WE_T!=="undefined"?WE_T.first:520):rMd?MADARA_T.slash:rHitDelay;
+  const rChainEnd=isRaidCombo?860:(rSusStart+Math.max(0,hits.length-1)*(rMd?MADARA_T.step:rHstep)+420);
   const rStartHp=raid.hp;
   const rEndHp=Math.max(0,raid.hp-total);
   if(isRaidCombo&&typeof attackLunge==="function"){
@@ -1487,64 +1489,109 @@ function raidStep(){
     }catch(e){}
     setTimeout(()=>{if(raid&&!raid.over)setRaidBar(rEndHp);},880);
   }else{
-    if(typeof attackLunge==="function"){try{attackLunge(".fighter.me",true);}catch(e){}}
+    const rSkillFx=!!(psychicActive||bajrangActive||wePhase>=0||havocWillFire);
+    if(psychicActive&&typeof window.psyBarrageFx==="function"){
+      try{window.psyBarrageFx({fromSel:".fighter.me",toSel:".fighter.foe",n:raid.psyN||hits.length,shotCount:hits.length,revived:false,t0:0});}catch(e){}
+      if(window.CyberSfx&&window.CyberSfx.aoeCharge)try{window.CyberSfx.aoeCharge();}catch(e){}
+    }
+    if(bajrangActive&&typeof window.bajrangGunFx==="function"){
+      try{window.bajrangGunFx({fromSel:".fighter.me",toSel:".fighter.foe",t0:0});}catch(e){}
+      if(window.CyberSfx&&window.CyberSfx.aoeCharge)try{window.CyberSfx.aoeCharge();}catch(e){}
+    }
+    if(wePhase>=0&&typeof window.worldEnderFx==="function"){
+      try{window.worldEnderFx({fromSel:".fighter.me",toSel:".fighter.foe",phase:wePhase,revived:false});}catch(e){}
+    }
+    if(!rSkillFx&&typeof attackLunge==="function"){try{attackLunge(".fighter.me",true);}catch(e){}}
     /* All cut-in removed */
     if(domainActive&&raid&&!raid.over){setTimeout(()=>floatText(".fighter.me","DOMAIN EXPANSION","crit"),rHitDelay+40);}
     if(ariseMode&&raid&&!raid.over){setTimeout(()=>floatText(".fighter.foe","ARMY OF SHADOWS","crit"),rHitDelay);}
-    const susStart=(md&&raid&&!raid.over)?MADARA_T.slash:rHitDelay;
+    const susStart=rSusStart;
     {
       const hstep=rHstep;
       const susDelay=susStart;
-      const dlyAt=i=> galaxyMode ? rHitDelay : md ? (susDelay+i*MADARA_T.step) : (susDelay+i*hstep);
-      let rShown=raid.hp+total,rBarEnd=0;
+      const dlyAt=i=> galaxyMode ? rHitDelay : rMd ? (susDelay+i*MADARA_T.step) : (susDelay+i*hstep);
+      let rShown=rStartHp,rBarEnd=susStart;
       hits.forEach((m,i)=>{
         const dl=dlyAt(i),ft=dl;
-        if(i>0){
+        if(rSkillFx){
+          setTimeout(()=>{
+            if(!raid||raid.over)return;
+            if(!havocWillFire){
+              const foeEl=document.querySelector(".fighter.foe");
+              if(foeEl&&typeof window.hzFlashCard==="function"){try{window.hzFlashCard(foeEl,"hit");}catch(e){}}
+              if(typeof triggerStageShake==="function"){try{triggerStageShake(!!(bajrangActive||wePhase===2||(crit&&i===hits.length-1)));}catch(e){}}
+              if(foeEl&&typeof foeEl.animate==="function"){
+                foeEl.animate([
+                  {transform:"translate3d(0,0,0) scale(1) rotate(0deg)",offset:0},
+                  {transform:"translate3d(16px,-10px,0) scale(0.94) rotate(5deg)",offset:0.26},
+                  {transform:"translate3d(0,0,0) scale(1) rotate(0deg)",offset:1}
+                ],{duration:320,easing:"cubic-bezier(0.22, 1, 0.36, 1)",fill:"none"});
+              }
+              if(psychicActive&&window.CyberSfx&&window.CyberSfx.aoeChainTick)try{window.CyberSfx.aoeChainTick(i);}catch(e){}
+              else if((bajrangActive||wePhase===2)&&window.CyberSfx&&window.CyberSfx.aoeDetonate)try{window.CyberSfx.aoeDetonate();}catch(e){}
+              else if(wePhase>=0&&window.CyberSfx&&window.CyberSfx.katanaFinisher)try{window.CyberSfx.katanaFinisher();}catch(e){}
+            }
+          },dl);
+        }else if(i>0){
           setTimeout(()=>{
             if(raid&&!raid.over&&typeof window.playAnimeArchetypeAttack==="function"){
               try{window.playAnimeArchetypeAttack(id,".fighter.me",".fighter.foe");}catch(e){}
             }
           },dl);
         }
-        setTimeout(()=>{if(raid&&!raid.over){try{if(crit&&i===hits.length-1)sfx.crit();else playClip(punchAudio);}catch(e){}}},dl);
+        if(!rSkillFx)setTimeout(()=>{if(raid&&!raid.over){try{if(crit&&i===hits.length-1)sfx.crit();else playClip(punchAudio);}catch(e){}}},dl);
         const dd=Math.round(dmg*m);rShown-=dd;rBarEnd=Math.max(rBarEnd,ft);const stepHp=Math.max(0,rShown);
-        setTimeout(()=>floatText(".fighter.foe","-"+fmt(dd),(crit&&i===hits.length-1)?"crit":""),ft);
-        setTimeout(()=>setRaidBar(stepHp),ft);
+        setTimeout(()=>{if(raid&&!raid.over)floatText(".fighter.foe","-"+fmt(dd),(crit&&i===hits.length-1)?"crit":"");},ft);
+        setTimeout(()=>{if(raid&&!raid.over)setRaidBar(stepHp);},ft);
       });
-      setTimeout(()=>setRaidBar(rEndHp),rBarEnd+420);
-      if(barrageN>1)setTimeout(()=>floatText(".fighter.foe",(iceBlastN?"ICE BLAST ×":domainActive?"UNLIMITED VOID ×":ariseMode?"ARISE ×":md?"TENSA ×":psychicActive?"PSYCHIC BARRAGE ×":"CLEAVE ×")+barrageN,"crit"),md?MADARA_T.slash:psychicActive?260:280);
-      else if(hits.length>1&&!ranton)setTimeout(()=>floatText(".fighter.foe","DOUBLE!","crit"),rHitDelay+60);
-      if(bajrangActive)setTimeout(()=>floatText(".fighter.me","BAJRANG GUN!","crit"),rHitDelay+40);
-      if(hpPurple)setTimeout(()=>floatText(".fighter.foe","HOLLOW PURPLE","crit"),rHitDelay+40);
+      setTimeout(()=>{if(raid&&!raid.over)setRaidBar(rEndHp);},rBarEnd+420);
+      if(barrageN>1)setTimeout(()=>{if(raid&&!raid.over)floatText(".fighter.foe",(iceBlastN?"ICE BLAST ×":domainActive?"UNLIMITED VOID ×":ariseMode?"ARISE ×":md?"TENSA ×":psychicActive?"PSYCHIC BARRAGE ×":"CLEAVE ×")+barrageN,"crit");},md?MADARA_T.slash:psychicActive?260:280);
+      else if(hits.length>1&&!ranton)setTimeout(()=>{if(raid&&!raid.over)floatText(".fighter.foe","DOUBLE!","crit");},rHitDelay+60);
+      if(bajrangActive)setTimeout(()=>{if(raid&&!raid.over)floatText(".fighter.me","BAJRANG GUN!","crit");},Math.max(40,(typeof BJ_T!=="undefined"?BJ_T.first:820)-80));
+      if(hpPurple)setTimeout(()=>{if(raid&&!raid.over)floatText(".fighter.foe","HOLLOW PURPLE","crit");},rHitDelay+40);
     }
   }
   raid.hp-=total;raid.dealt+=total;
   {const rdEl=document.getElementById("wbrRunDmg");if(rdEl)rdEl.textContent=fmtBig(raid.dealt);}
   /* SUPER MEGA DEATH ROCKET (HAVOC WREACKER di Raid): langsung aktif saat masuk/turn 1, maks 3x per battle */
   let havocFired=false;
-  if(fx.havocRocket&&raid.hp>0&&raid.havocGuard&&(raid.havocUses||0)<(fx.havocRocket.maxUses||3)){
+  if(havocWillFire){
     raid.havocGuard=false;
     raid.havocUses=(raid.havocUses||0)+1;
     havocFired=true;
     const rk=Math.round(raid.atk*(fx.havocRocket.pct||50)/100);
     raid.hp-=rk;raid.dealt+=rk;
+    if(typeof window.havocRocketFx==="function"){try{window.havocRocketFx({fromSel:".fighter.me",toSel:".fighter.foe"});}catch(e){}}
+    const hvHit=(typeof HR_T!=="undefined"?HR_T.first:620);
     setTimeout(()=>{
       if(raid&&!raid.over){
+        const foeEl=document.querySelector(".fighter.foe");
+        if(foeEl&&typeof window.hzFlashCard==="function"){try{window.hzFlashCard(foeEl,"hit");}catch(e){}}
+        if(typeof triggerStageShake==="function"){try{triggerStageShake(true);}catch(e){}}
+        if(foeEl&&typeof foeEl.animate==="function"){
+          try{foeEl.getAnimations().forEach(a=>a.cancel());}catch(e){}
+          foeEl.animate([
+            {transform:"translate3d(0,0,0) scale(1) rotate(0deg)",offset:0},
+            {transform:"translate3d(18px,-12px,0) scale(0.93) rotate(6deg)",offset:0.26},
+            {transform:"translate3d(0,0,0) scale(1) rotate(0deg)",offset:1}
+          ],{duration:340,easing:"cubic-bezier(0.22, 1, 0.36, 1)",fill:"none"});
+        }
+        if(window.CyberSfx&&window.CyberSfx.aoeDetonate)try{window.CyberSfx.aoeDetonate();}catch(e){}
         floatText(".fighter.foe","SUPER MEGA DEATH ROCKET -"+fmt(rk)+" ("+raid.havocUses+"/"+(fx.havocRocket.maxUses||3)+")","crit");
         setRaidBar(raid.hp);
       }
-    },320);
+    },hvHit);
   }
-  setRaidBar(raid.hp+total);
+  setRaidBar(rStartHp);
   const tl=document.getElementById("raidTurnLabel");if(tl)tl.innerHTML="TURN<br>"+raid.turn+"/"+raid.cap;
   if(raid.hp<=0){
-    const special=(domainActive||ariseMode||ranton||galaxyMode||havocFired||gammaRayHit||psychicActive||bajrangActive||hpPurple);
+    const special=(domainActive||ariseMode||ranton||galaxyMode||havocFired||gammaRayHit||psychicActive||bajrangActive||hpPurple||wePhase>=0);
     const killWait=Math.max(rChainEnd, special?1100:0);
     if(killWait>260){ setTimeout(()=>{if(raid&&!raid.over)endRaid();},killWait); }
     else endRaid();
     return;
   }
-  raid.timer=setTimeout(raidStep,ariseMode?1800:domainActive?1600:ranton?1600:isRaidCombo?1200:1050);
+  raid.timer=setTimeout(raidStep,bajrangActive?(typeof BJ_T!=="undefined"?BJ_T.first+1300:2120):wePhase>=0?1350:psychicActive?Math.max(1000,(typeof PSY_T!=="undefined"?PSY_T.first:560)+(Math.max(1,raid.psyN||1)-1)*rHstep+640):ariseMode?1800:domainActive?1600:ranton?1600:isRaidCombo?1200:1050);
 }
 function raidFinisher(done){
   if(!raid||raid.over){ if(done)done(); return; }
