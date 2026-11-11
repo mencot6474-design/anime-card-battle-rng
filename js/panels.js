@@ -2077,7 +2077,7 @@ function renderProfile(){
     teamCardsEl.innerHTML = cardsHtml;
   }
 
-  // 4. Team Row 2: Supports (Artifacts 1 & 2, Pet, and Slot 4 Placeholder)
+  // 4. Team Row 2: Supports (Artifacts 1 & 2, and Pet — 3 equal slots)
   const teamSuppEl = document.getElementById("profTeamSupp");
   if(teamSuppEl){
     const art0 = state.artSlots && state.artSlots[0];
@@ -2089,27 +2089,12 @@ function renderProfile(){
     const pd = petId && typeof PET_DEFS !== 'undefined' ? PET_DEFS.find(x => x.id === petId) : null;
 
     const suppSlots = [
-      { type: 'art', data: d0, label: 'ART 1', openTab: 'artefact', isPlaceHolder: false },
-      { type: 'art', data: d1, label: 'ART 2', openTab: 'artefact', isPlaceHolder: false },
-      { type: 'pet', data: pd, label: 'PET', openTab: 'pet', isPlaceHolder: false },
-      { type: 'empty', data: null, label: 'SLOT 4', openTab: '', isPlaceHolder: true }
+      { type: 'art', data: d0, label: 'ART 1', openTab: 'artefact' },
+      { type: 'art', data: d1, label: 'ART 2', openTab: 'artefact' },
+      { type: 'pet', data: pd, label: 'PET', openTab: 'pet' }
     ];
 
     const suppHtml = suppSlots.map((slot, idx) => {
-      // Slot 4: Non-existent in game logic, pure placeholder with icon only
-      if (slot.isPlaceHolder) {
-        return (
-          '<div class="prf-card-chassis support-chassis placeholder-chassis" title="Support Slot 4 (Locked / Inactive)">' +
-            '<div class="empty-art">' +
-              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="pcc-empty-icon">' +
-                '<circle cx="12" cy="12" r="8"/>' +
-                '<line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>' +
-              '</svg>' +
-            '</div>' +
-          '</div>'
-        );
-      }
-
       const item = slot.data;
       if (!item) {
         return (

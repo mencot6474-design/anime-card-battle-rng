@@ -867,9 +867,9 @@ body:has(#profModal.show) .lobby-tactical-hud {
 .prf-right-col {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   height: 100%;
-  gap: 6px;
+  gap: 8px;
   min-width: 0;
   min-height: 0;
 }
@@ -924,6 +924,8 @@ body:has(#profModal.show) .lobby-tactical-hud {
 
 /* 2. TEAM Module - ULTRA HIGH-FIDELITY COLLECTIBLE ANIME SLOTS (COMPACT & BALANCED) */
 .prf-team-shell {
+  flex: 1 1 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1001,11 +1003,17 @@ body:has(#profModal.show) .lobby-tactical-hud {
 }
 
 .prf-team-body {
+  flex: 1 1 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
   transition: all 0.25s ease;
   position: relative;
+}
+.prf-team-body > .prf-team-row:first-child {
+  flex: 1 1 0;
+  min-height: 0;
 }
 .prf-team-body.collapsed {
   opacity: 0;
@@ -1050,20 +1058,27 @@ body:has(#profModal.show) .lobby-tactical-hud {
   border-color: var(--cyan-dim);
 }
 
-/* 4-Column Grid for Cards & Supports */
-.prf-card-slots,
-.prf-support-slots {
+/* 4-Column Grid for Cards & 3-Column Equal Grid for Supports */
+.prf-card-slots {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  height: 100%;
+  align-items: stretch;
+}
+.prf-support-slots {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
 }
 
 /* ==========================================================================
-   AUTHENTIC COLLECTIBLE ANIME CARD CHASSIS (PERFECT 142PX HEIGHT)
+   AUTHENTIC COLLECTIBLE ANIME CARD CHASSIS
    ========================================================================== */
 .prf-card-chassis {
   position: relative;
-  height: 122px;
+  height: 100%;
+  min-height: 185px;
   background: radial-gradient(circle at 50% 30%, #161622 0%, #07070a 100%);
   border: 1.5px solid rgba(245, 245, 245, 0.16);
   border-radius: 5px;
@@ -1074,6 +1089,10 @@ body:has(#profModal.show) .lobby-tactical-hud {
   cursor: pointer;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.18s, box-shadow 0.2s;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.9), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+.prf-card-chassis.support-chassis {
+  height: 108px;
+  min-height: 108px;
 }
 .prf-card-chassis:hover {
   transform: translateY(-4px) scale(1.02);
@@ -1699,9 +1718,11 @@ body:has(#profModal.show) .lobby-tactical-hud {
     grid-template-columns: 1fr !important;
     column-gap: 0 !important;
   }
-  .prf-card-slots,
-  .prf-support-slots {
+  .prf-card-slots {
     grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .prf-support-slots {
+    grid-template-columns: repeat(3, 1fr) !important;
   }
 }
 
@@ -2149,8 +2170,7 @@ body:has(#profModal.show) .lobby-tactical-hud {
 .prf-hero-stack .prf-id-name { font-size: 14px; }
 .prf-hero-stack .prf-id-handle { font-size: 9px; }
 .prf-hero-stack .prf-avatar-chassis { width: 36px; height: 36px; }
-.prf-hero-stack .prf-crown-anchor { height: 56px; margin-top: 0; padding-top: 10px; box-sizing: border-box; }
 .prf-hero-stack .prf-standee-box { min-height: 80px; }
 .prf-hero-stack .prf-standee-meta, .prf-hero-stack .prf-level-module { flex: 0 0 auto; }
-.prf-hero-stack .prf-crown-anchor { height: 48px; padding-top: 0; align-items: flex-start; }
-.prf-hero-stack .prf-crown-anchor .solo-god-lockup { transform: scale(0.6) !important; transform-origin: center top !important; }
+.prf-hero-stack .prf-crown-anchor { height: 54px; margin-top: 4px; padding-top: 16px; box-sizing: border-box; align-items: center; overflow: visible; }
+.prf-hero-stack .prf-crown-anchor .solo-god-lockup { transform: scale(0.56) !important; transform-origin: center center !important; }
