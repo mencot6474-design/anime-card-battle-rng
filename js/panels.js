@@ -1867,23 +1867,15 @@ function renderProfile(){
   const standeeSrc=eq&&eq.char&&CARDS[eq.char]?cardImg(eq.char):"assets/cards/art/nine-tail-prodigy.webp";
   if(standeeImg&&standeeImg.src!==standeeSrc) standeeImg.src = standeeSrc;
 
-  // Standee Hero Card Meta & Skill
+  // Standee Hero Card Meta
   const heroCard = (eq && eq.char && CARDS[eq.char]) ? CARDS[eq.char] : null;
   const heroNameEl = document.getElementById("profHeroName");
   const heroStatsEl = document.getElementById("profHeroStats");
-  const heroSkNameEl = document.getElementById("profHeroSkName");
-  const heroSkDescEl = document.getElementById("profHeroSkDesc");
-  const heroSkillRow = document.getElementById("profHeroSkill");
 
   if (heroCard && eq) {
     const heroStats = cardStats(eq.char, eq.mut, eq.trait, eq.shiny);
-    const pName = (typeof passiveName === 'function' ? passiveName(eq.char) : (heroCard.passive && heroCard.passive.name)) || 'Passive Skill';
-    const sDesc = (typeof skillText === 'function' ? skillText(eq.char) : (heroCard.passive && heroCard.passive.desc)) || 'Standard combat unit.';
     if (heroNameEl) heroNameEl.textContent = cardName(eq.char);
     if (heroStatsEl) heroStatsEl.textContent = '⚔ ' + fmtStat(heroStats.atk) + ' · ❤ ' + fmtStat(heroStats.hp);
-    if (heroSkNameEl) heroSkNameEl.textContent = pName;
-    if (heroSkDescEl) heroSkDescEl.textContent = sDesc;
-    if (heroSkillRow) heroSkillRow.title = pName + ': ' + sDesc;
   }
 
   // Title
@@ -1939,10 +1931,8 @@ function renderProfile(){
       const favName = cardName(fav.char);
       const favImg = cardImg(fav.char);
       const favStats = cardStats(fav.char, fav.mut, fav.trait, fav.shiny);
-      const favPName = (typeof passiveName === 'function' ? passiveName(fav.char) : (CARDS[fav.char].passive && CARDS[fav.char].passive.name)) || 'Skill';
-      const favSDesc = (typeof skillText === 'function' ? skillText(fav.char) : (CARDS[fav.char].passive && CARDS[fav.char].passive.desc)) || '';
       slot1Html = 
-        '<div class="prf-showcase-slot fav-slot" onclick="inspectCard(\'' + fav.id + '\')" title="Signature Favorite Card: ' + favName + ' | ' + favPName + ': ' + favSDesc + '">' +
+        '<div class="prf-showcase-slot fav-slot" onclick="inspectCard(\'' + fav.id + '\')" title="Signature Favorite Card: ' + favName + '">' +
           '<div class="sc-holo-sweep"></div>' +
           '<div class="sc-top-bar">' +
             '<span class="sc-pill pill-fav">★ FAVORITE</span>' +
@@ -1954,10 +1944,6 @@ function renderProfile(){
           '<div class="sc-plate">' +
             '<div class="sc-name">' + favName + '</div>' +
             '<div class="sc-stats-row">⚔ ' + fmtStat(favStats.atk) + ' · ❤ ' + fmtStat(favStats.hp) + '</div>' +
-            '<div class="sc-skill-row" title="' + favPName + ': ' + favSDesc + '">' +
-              '<span class="sc-sk-badge">SKILL</span>' +
-              '<span class="sc-sk-name">' + favPName + '</span>' +
-            '</div>' +
           '</div>' +
           '<span class="sc-crn tl"></span><span class="sc-crn br"></span>' +
         '</div>';
@@ -1981,11 +1967,9 @@ function renderProfile(){
       const rarestName = cardName(rarestStack.char);
       const rarestImg = cardImg(rarestStack.char);
       const rarestStats = cardStats(rarestStack.char, rarestStack.mut, rarestStack.trait, rarestStack.shiny);
-      const rarestPName = (typeof passiveName === 'function' ? passiveName(rarestStack.char) : (CARDS[rarestStack.char].passive && CARDS[rarestStack.char].passive.name)) || 'Skill';
-      const rarestSDesc = (typeof skillText === 'function' ? skillText(rarestStack.char) : (CARDS[rarestStack.char].passive && CARDS[rarestStack.char].passive.desc)) || '';
       const rarestDenom = stats.rarestCh > 0 ? fmtChance(stats.rarestCh) : '1';
       slot2Html = 
-        '<div class="prf-showcase-slot rarest-slot" onclick="inspectCard(\'' + rarestStack.id + '\')" title="Rarest Card: ' + rarestName + ' | ' + rarestPName + ': ' + rarestSDesc + '">' +
+        '<div class="prf-showcase-slot rarest-slot" onclick="inspectCard(\'' + rarestStack.id + '\')" title="Rarest Card: ' + rarestName + ' (1 IN ' + rarestDenom + ')">' +
           '<div class="sc-holo-sweep"></div>' +
           '<div class="sc-top-bar">' +
             '<span class="sc-pill pill-rarest">✦ 1 IN ' + rarestDenom + '</span>' +
@@ -1997,10 +1981,6 @@ function renderProfile(){
           '<div class="sc-plate">' +
             '<div class="sc-name">' + rarestName + '</div>' +
             '<div class="sc-stats-row">⚔ ' + fmtStat(rarestStats.atk) + ' · ❤ ' + fmtStat(rarestStats.hp) + '</div>' +
-            '<div class="sc-skill-row" title="' + rarestPName + ': ' + rarestSDesc + '">' +
-              '<span class="sc-sk-badge">SKILL</span>' +
-              '<span class="sc-sk-name">' + rarestPName + '</span>' +
-            '</div>' +
           '</div>' +
           '<span class="sc-crn tl"></span><span class="sc-crn br"></span>' +
         '</div>';
@@ -2047,7 +2027,7 @@ function renderProfile(){
     scRow.innerHTML = slot1Html + slot2Html + slot3Html;
   }
 
-  // 3. Team Row 1: Cards (4 slots from state.deck with Real Skills & Real Badges)
+  // 3. Team Row 1: Cards (4 slots from state.deck with New Solid Stamps & Top Title)
   const teamCardsEl = document.getElementById("profTeamCards");
   if(teamCardsEl){
     const deckIds = state.deck || [];
@@ -2060,12 +2040,10 @@ function renderProfile(){
         return (
           '<div class="prf-card-chassis empty-chassis" onclick="pfOpenDeck()" title="Slot ' + (i + 1) + ' Empty - Click to Manage Deck">' +
             '<div class="empty-art">' +
+              '<span class="pcc-slot-no">0' + (i + 1) + '</span>' +
               '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="pcc-empty-icon">' +
-                '<circle cx="12" cy="12" r="9"/>' +
-                '<path d="M12 8v8M8 12h8"/>' +
+                '<path d="M12 5v14M5 12h14"/>' +
               '</svg>' +
-              '<div class="pcc-empty-lbl">EMPTY SLOT ' + (i + 1) + '</div>' +
-              '<div class="pcc-empty-sub">CLICK TO EQUIP</div>' +
             '</div>' +
           '</div>'
         );
@@ -2073,47 +2051,43 @@ function renderProfile(){
 
       const stats = cardStats(s.char, s.mut, s.trait, s.shiny);
       const cardTitle = cardName(s.char);
-      const pName = (typeof passiveName === 'function' ? passiveName(s.char) : (c.passive && c.passive.name)) || 'Combat Skill';
-      const sDesc = (typeof skillText === 'function' ? skillText(s.char) : (c.passive && c.passive.desc)) || 'Standard combat unit.';
       const imgPath = cardImg(s.char);
+      const tier = c.tier || '';
+      const chanceVal = luckChance(s.char, s.mut, s.shiny);
+      const chanceStr = (typeof rarityText === 'function' ? rarityText(tier, chanceVal) : '') || (c.chance ? ('1 IN ' + fmtChance(c.chance)) : '1 IN 100');
 
-      // Real badges only: Shiny, Mutation, Trait, or Rarity
-      const badges = [];
-      if (s.shiny) {
-        badges.push('<span class="pcc-badge pcc-shiny">★ SHINY</span>');
-      }
-      if (s.mut && s.mut !== 'none') {
-        const mCol = (typeof MUT_COLOR !== 'undefined' && MUT_COLOR[s.mut]) ? MUT_COLOR[s.mut] : '#f3e600';
-        badges.push('<span class="pcc-badge pcc-mut" style="color:' + mCol + ';border-color:' + mCol + ';">' + s.mut.toUpperCase() + '</span>');
-      }
-      if (s.trait && s.trait !== 'none') {
-        const tCol = (typeof TRAIT_COLOR !== 'undefined' && TRAIT_COLOR[s.trait]) ? TRAIT_COLOR[s.trait] : '#00f0ff';
-        badges.push('<span class="pcc-badge pcc-trait" style="color:' + tCol + ';border-color:' + tCol + ';">' + s.trait.toUpperCase() + '</span>');
-      }
-      if (badges.length === 0 && c.chance) {
-        badges.push('<span class="pcc-badge pcc-rarity">1 IN ' + fmtChance(c.chance) + '</span>');
-      } else if (badges.length === 0 && c.tier) {
-        badges.push('<span class="pcc-badge pcc-rarity">' + c.tier.toUpperCase() + '</span>');
-      }
+      // Authentic New Game Stamps (Shiny / Mut / Trait)
+      const shBadge = s.shiny && typeof shinyStampHtml === 'function' ? shinyStampHtml(true) : '';
+      const mBadge = s.mut && s.mut !== 'none'
+        ? (typeof mutChip === 'function' && typeof mutStampHtml === 'function' ? mutChip(s.mut, mutStampHtml(s.mut, true)) : (typeof mutStampHtml === 'function' ? mutStampHtml(s.mut, true) : ''))
+        : '';
+      const tBadge = s.trait && s.trait !== 'none'
+        ? (typeof traitChip === 'function' && typeof traitStampHtml === 'function' ? traitChip(s.trait, traitStampHtml(s.trait, true)) : (typeof traitStampHtml === 'function' ? traitStampHtml(s.trait, true) : ''))
+        : '';
+      const stampsHtml = (shBadge || mBadge || tBadge) ? ('<div class="pcc-stamps">' + shBadge + mBadge + tBadge + '</div>') : '';
 
       const hzCls = (typeof hzBorderCls === 'function') ? hzBorderCls(s.mut || 'none', !!s.shiny, { tile: true, dense: true }) : '';
+      const hzLayers = (typeof hzBorderLayerHtml === 'function') ? hzBorderLayerHtml() : '';
 
       return (
-        '<div class="prf-card-chassis' + (s.shiny ? ' shiny' : '') + (s.mut && s.mut !== 'none' ? ' mut-' + s.mut : '') + (hzCls ? ' ' + hzCls : '') + '" onclick="inspectCard(\'' + s.id + '\')" title="' + cardTitle + ' | ' + pName + ': ' + sDesc + '">' +
+        '<div class="prf-card-chassis' + (s.shiny ? ' shiny' : '') + (s.mut && s.mut !== 'none' ? ' mut-' + s.mut : '') + (hzCls ? ' ' + hzCls : '') + '" onclick="inspectCard(\'' + s.id + '\')" title="' + cardTitle + ' | ⚔ ' + fmtStat(stats.atk) + ' · ❤ ' + fmtStat(stats.hp) + '">' +
+          hzLayers +
+          '<div class="pcc-top-bar">' +
+            '<div class="pcc-top-left">' +
+              '<span class="pcc-slot-no">0' + (i + 1) + '</span>' +
+              '<span class="pcc-name">' + cardTitle + '</span>' +
+            '</div>' +
+            stampsHtml +
+          '</div>' +
           '<div class="pcc-art-shell">' +
             '<img src="' + imgPath + '" alt="' + cardTitle + '"' + (c.pos ? ' style="object-position:' + c.pos + '"' : '') + '>' +
             '<div class="pcc-vignette"></div>' +
           '</div>' +
-          (badges.length > 0 ? ('<div class="pcc-top-bar">' + badges.join('') + '</div>') : '') +
           '<div class="pcc-plate">' +
-            '<div class="pcc-plate-top">' +
-              '<div class="pcc-name">' + cardTitle + '</div>' +
-              '<div class="pcc-stats">⚔ ' + fmtStat(stats.atk) + ' · ❤ ' + fmtStat(stats.hp) + '</div>' +
-            '</div>' +
-            '<div class="pcc-skill-row" title="' + pName + ': ' + sDesc + '">' +
-              '<span class="pcc-sk-badge">SKILL</span>' +
-              '<span class="pcc-sk-name">' + pName + '</span>' +
-              '<span class="pcc-sk-desc">' + sDesc + '</span>' +
+            '<div class="pcc-chance">' + chanceStr + '</div>' +
+            '<div class="pcc-stats-box">' +
+              '<div class="pcc-stat-box-item hp"><i>HP</i> <b>' + fmtStat(stats.hp) + '</b></div>' +
+              '<div class="pcc-stat-box-item atk"><i>ATK</i> <b>' + fmtStat(stats.atk) + '</b></div>' +
             '</div>' +
           '</div>' +
           '<span class="pcc-crn tl"></span><span class="pcc-crn br"></span>' +
@@ -2124,7 +2098,7 @@ function renderProfile(){
     teamCardsEl.innerHTML = cardsHtml;
   }
 
-  // 4. Team Row 2: Supports (Artifacts & Pets with Clean Data)
+  // 4. Team Row 2: Supports (Artifacts 1 & 2, Pet, and Slot 4 Placeholder)
   const teamSuppEl = document.getElementById("profTeamSupp");
   if(teamSuppEl){
     const art0 = state.artSlots && state.artSlots[0];
@@ -2136,24 +2110,36 @@ function renderProfile(){
     const pd = petId && typeof PET_DEFS !== 'undefined' ? PET_DEFS.find(x => x.id === petId) : null;
 
     const suppSlots = [
-      { type: 'art', data: d0, label: 'ARTIFACT 1', openTab: 'artefact' },
-      { type: 'art', data: d1, label: 'ARTIFACT 2', openTab: 'artefact' },
-      { type: 'pet', data: pd, label: 'PET COMPANION', openTab: 'pet' },
-      { type: 'empty', data: null, label: 'SUPPORT 4', openTab: 'artefact' }
+      { type: 'art', data: d0, label: 'ART 1', openTab: 'artefact', isPlaceHolder: false },
+      { type: 'art', data: d1, label: 'ART 2', openTab: 'artefact', isPlaceHolder: false },
+      { type: 'pet', data: pd, label: 'PET', openTab: 'pet', isPlaceHolder: false },
+      { type: 'empty', data: null, label: 'SLOT 4', openTab: '', isPlaceHolder: true }
     ];
 
     const suppHtml = suppSlots.map((slot, idx) => {
+      // Slot 4: Non-existent in game logic, pure placeholder with icon only
+      if (slot.isPlaceHolder) {
+        return (
+          '<div class="prf-card-chassis support-chassis placeholder-chassis" title="Support Slot 4 (Locked / Inactive)">' +
+            '<div class="empty-art">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="pcc-empty-icon">' +
+                '<circle cx="12" cy="12" r="8"/>' +
+                '<line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>' +
+              '</svg>' +
+            '</div>' +
+          '</div>'
+        );
+      }
+
       const item = slot.data;
       if (!item) {
         return (
           '<div class="prf-card-chassis support-chassis empty-chassis" onclick="pfOpenBackpack(\'' + slot.openTab + '\')" title="' + slot.label + ' Empty - Click to Manage Backpack">' +
             '<div class="empty-art">' +
+              '<span class="pcc-support-tag">' + slot.label + '</span>' +
               '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="pcc-empty-icon">' +
-                '<circle cx="12" cy="12" r="9"/>' +
-                '<path d="M12 8v8M8 12h8"/>' +
+                '<path d="M12 5v14M5 12h14"/>' +
               '</svg>' +
-              '<div class="pcc-empty-lbl">' + slot.label + '</div>' +
-              '<div class="pcc-empty-sub">CLICK TO EQUIP</div>' +
             '</div>' +
           '</div>'
         );
@@ -2165,15 +2151,12 @@ function renderProfile(){
       if (!img.startsWith('assets/')) {
         img = (isPet ? 'assets/pets/' : 'assets/artifacts/') + img;
       }
-      const powerText = item.flat ? ('+' + fmtStat(item.flat) + ' PWR') : (item.pct ? ('+' + item.pct + '% LUCK') : '// ACTIVE');
-      const tag = isPet ? 'PET' : ('ART ' + (idx + 1));
-      const effDesc = item.desc || (item.flat ? ('+' + fmtStat(item.flat) + ' Power') : (item.pct ? ('+' + item.pct + '% Luck') : 'Passive boost'));
+      const tag = slot.label;
 
       return (
-        '<div class="prf-card-chassis support-chassis" onclick="inspectSupport(\'' + slot.type + '\', \'' + item.id + '\')" title="' + name + ' | ' + effDesc + '">' +
+        '<div class="prf-card-chassis support-chassis" onclick="inspectSupport(\'' + slot.type + '\', \'' + item.id + '\')" title="' + name + '">' +
           '<div class="pcc-top-bar">' +
-            '<span class="pcc-badge pcc-support-chip">' + powerText + '</span>' +
-            '<span class="pcc-badge pcc-support-tag">' + tag + '</span>' +
+            '<span class="pcc-support-tag">' + tag + '</span>' +
           '</div>' +
           '<div class="pcc-art-shell support-art">' +
             '<div class="pcc-cyber-grid"></div>' +
@@ -2188,14 +2171,7 @@ function renderProfile(){
             '<div class="pcc-vignette"></div>' +
           '</div>' +
           '<div class="pcc-plate">' +
-            '<div class="pcc-plate-top">' +
-              '<div class="pcc-name">' + name + '</div>' +
-              '<div class="pcc-stats">' + (item.pct ? ('+' + item.pct + '% LUCK') : '// EQUIPPED') + '</div>' +
-            '</div>' +
-            '<div class="pcc-skill-row" title="' + effDesc + '">' +
-              '<span class="pcc-sk-badge">EFFECT</span>' +
-              '<span class="pcc-sk-desc">' + effDesc + '</span>' +
-            '</div>' +
+            '<div class="pcc-name">' + name + '</div>' +
           '</div>' +
           '<span class="pcc-crn tl"></span><span class="pcc-crn br"></span>' +
         '</div>'
