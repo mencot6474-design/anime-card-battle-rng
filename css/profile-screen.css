@@ -480,12 +480,18 @@ body:has(#profModal.show) .lobby-tactical-hud {
   filter: contrast(1.1);
 }
 
-/* 2. Hero Standee Chassis */
+/* 2. Hero Stack: [title] / [card art] / [name] / [level] stacked outside the card */
+.prf-hero-stack {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
 .prf-standee-box {
   position: relative;
   flex: 1 1 0;
-  min-height: 160px;
-  max-height: 235px;
+  min-height: 130px;
   background:
     radial-gradient(ellipse at 50% 65%, rgba(243, 230, 0, 0.06) 0%, transparent 65%),
     linear-gradient(180deg, #121218 0%, #060608 100%);
@@ -524,22 +530,24 @@ body:has(#profModal.show) .lobby-tactical-hud {
 
 /* Solo God Aura Anchor on Hero Card (Floating above Card) */
 .prf-crown-anchor {
-  position: absolute;
-  top: 8px;
-  left: 50%;
-  transform: translateX(-50%);
+  position: relative;
+  flex: 0 0 auto;
+  height: 40px;
+  margin-top: 10px;
   z-index: 10;
   cursor: pointer;
   pointer-events: auto;
   display: flex;
   justify-content: center;
+  align-items: center;
+  overflow: visible;
 }
 .prf-crown-anchor .solo-god-lockup {
   position: relative !important;
   top: 0 !important;
   left: 0 !important;
   transform: scale(0.65) !important;
-  transform-origin: center top !important;
+  transform-origin: center center !important;
   animation: godHoverFloat 3.6s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate !important;
 }
 
@@ -547,7 +555,7 @@ body:has(#profModal.show) .lobby-tactical-hud {
 .prf-level-module {
   position: relative;
   z-index: 5;
-  margin: 0 10px 10px 10px;
+  margin: 0;
   background: rgba(10, 10, 14, 0.9);
   border: 1px solid var(--hair);
   border-left: 3px solid var(--haz);
@@ -1128,10 +1136,10 @@ body:has(#profModal.show) .lobby-tactical-hud {
   z-index: 3;
   background: linear-gradient(
     180deg,
-    rgba(0, 0, 0, 0.35) 0%,
-    transparent 25%,
-    rgba(0, 0, 0, 0.35) 55%,
-    rgba(5, 5, 8, 0.98) 100%
+    rgba(0, 0, 0, 0.3) 0%,
+    transparent 22%,
+    transparent 62%,
+    rgba(5, 5, 8, 0.82) 100%
   );
 }
 
@@ -1259,9 +1267,10 @@ body:has(#profModal.show) .lobby-tactical-hud {
   z-index: 7;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   pointer-events: none;
   gap: 3px;
+  height: 16px;
 }
 .pcc-top-left {
   display: flex;
@@ -1269,6 +1278,7 @@ body:has(#profModal.show) .lobby-tactical-hud {
   gap: 3px;
   min-width: 0;
   overflow: hidden;
+  height: 16px;
 }
 .pcc-slot-no {
   font-family: var(--f-mono);
@@ -1294,8 +1304,10 @@ body:has(#profModal.show) .lobby-tactical-hud {
 .pcc-stamps {
   display: inline-flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 2px;
   flex-shrink: 0;
+  height: 16px;
   pointer-events: auto;
 }
 .pcc-stamps .xbadge.is-micro {
@@ -1326,15 +1338,19 @@ body:has(#profModal.show) .lobby-tactical-hud {
    BOTTOM ENGRAVED METALLIC NAMEPLATE (CHANCE & STAT BOXES)
    ========================================================================== */
 .pcc-plate {
-  position: relative;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 7;
-  padding: 3px 5px;
-  background: linear-gradient(180deg, rgba(14, 14, 20, 0.96) 0%, rgba(5, 5, 8, 0.99) 100%);
-  border-top: 1px solid rgba(245, 245, 245, 0.16);
+  padding: 10px 5px 4px;
+  background: linear-gradient(180deg, transparent 0%, rgba(5, 5, 8, 0.78) 55%, rgba(5, 5, 8, 0.9) 100%);
+  border-top: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.7);
+  box-shadow: none;
+  pointer-events: none;
 }
 .pcc-plate .pcc-name {
   font-family: var(--f-head);
@@ -1361,21 +1377,21 @@ body:has(#profModal.show) .lobby-tactical-hud {
 .pcc-stats-box {
   display: flex;
   align-items: center;
-  gap: 3px;
+  justify-content: space-between;
+  gap: 6px;
   width: 100%;
 }
 .pcc-stat-box-item {
-  flex: 1 1 0;
+  flex: 0 1 auto;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 2px;
+  gap: 3px;
   font-family: var(--f-mono);
-  font-size: 7px;
-  background: rgba(0, 0, 0, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 1.5px 3px;
-  border-radius: 2px;
+  font-size: 7.5px;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
 }
 .pcc-stat-box-item i {
   font-style: normal;
@@ -1407,7 +1423,7 @@ body:has(#profModal.show) .lobby-tactical-hud {
 .prf-standee-meta {
   position: relative;
   z-index: 5;
-  margin: 0 10px 6px 10px;
+  margin: 0;
   background: rgba(10, 10, 14, 0.94);
   border: 1px solid var(--hair);
   border-left: 3px solid var(--cyan);

@@ -41,7 +41,7 @@
 <link rel="stylesheet" href="css/trait-screen.css?v=v7-traitV2Vault">
 <link rel="stylesheet" href="css/weather-screen.css?v=v2-wmPotIcons">
 <link rel="stylesheet" href="css/index-screen.css?v=v7-fixCiiSearchIc">
-<link rel="stylesheet" href="css/profile-screen.css?v=v18-cleanShowcaseNoSkillNewStamps">
+<link rel="stylesheet" href="css/profile-screen.css?v=v19-heroStackOverlayPlate">
 <link rel="stylesheet" href="css/public-profile.css?v=v3-rkpOpen">
 <link rel="stylesheet" href="css/ranking-hazard.css?v=v1-rankHazard">
 <link rel="stylesheet" href="css/titles-hazard.css?v=v10-highZIndexSingleModal">
@@ -364,17 +364,16 @@
           </div>
         </div>
 
-        <!-- Hero Standee Chassis -->
-        <div class="prf-standee-box">
-          <!-- Floating Solo God Aura / Title Crown -->
+        <!-- Hero Stack: title ABOVE card, name + level BELOW card (all outside the art frame) -->
+        <div class="prf-hero-stack">
           <div class="prf-crown-anchor" id="profStandeeCrown" onclick="pfOpenTitles()" title="Click to Open Title Selector"></div>
 
-          <!-- Card Standee Artwork -->
-          <div class="prf-standee-art" id="profStandeeArtWrap" onclick="if(typeof pfOpenDeck==='function')pfOpenDeck()" title="Click to manage deck">
-            <img id="profStandeeArt" src="assets/cards/art/nine-tail-prodigy.webp" alt="Equipped Card">
+          <div class="prf-standee-box">
+            <div class="prf-standee-art" id="profStandeeArtWrap" onclick="if(typeof pfOpenDeck==='function')pfOpenDeck()" title="Click to manage deck">
+              <img id="profStandeeArt" src="assets/cards/art/nine-tail-prodigy.webp" alt="Equipped Card">
+            </div>
           </div>
 
-          <!-- Standee Hero Card Meta -->
           <div class="prf-standee-meta" id="profStandeeMeta" onclick="if(typeof pfOpenDeck==='function')pfOpenDeck()" title="Click to manage deck">
             <div class="psm-name-row">
               <span class="psm-name" id="profHeroName">NINE-TAIL PRODIGY</span>
@@ -382,7 +381,6 @@
             </div>
           </div>
 
-          <!-- Level & EXP Module -->
           <div class="prf-level-module">
             <div class="prf-level-row">
               <span class="prf-lv-badge" id="profLevelBadge">LV.1</span>
@@ -2465,7 +2463,7 @@
 <script src="js/supabase-sync.js?v=v335-speed3xPass"></script>
 <script src="js/notify-hazard.js?v=v1-notifyHazard"></script>
 <script src="js/titles-hazard.js?v=v3-titlesCatalog"></script>
-<script src="js/panels.js?v=v435-cleanShowcaseNewStamps"></script>
+<script src="js/panels.js?v=v436-cleanShowcase"></script>
 <script src="js/topup.js?v=v158-paywallOff"></script>
 <script src="js/cards-fx.js?v=v89-traitRates"></script>
 <script src="js/anime-archetype-attacks.js?v=v125-smooth60fps"></script>

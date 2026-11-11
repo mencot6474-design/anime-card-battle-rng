@@ -1934,16 +1934,9 @@ function renderProfile(){
       slot1Html = 
         '<div class="prf-showcase-slot fav-slot" onclick="inspectCard(\'' + fav.id + '\')" title="Signature Favorite Card: ' + favName + '">' +
           '<div class="sc-holo-sweep"></div>' +
-          '<div class="sc-top-bar">' +
-            '<span class="sc-pill pill-fav">★ FAVORITE</span>' +
-          '</div>' +
           '<div class="sc-art-shell">' +
             '<img src="' + favImg + '" alt="' + favName + '">' +
             '<div class="sc-vignette"></div>' +
-          '</div>' +
-          '<div class="sc-plate">' +
-            '<div class="sc-name">' + favName + '</div>' +
-            '<div class="sc-stats-row">⚔ ' + fmtStat(favStats.atk) + ' · ❤ ' + fmtStat(favStats.hp) + '</div>' +
           '</div>' +
           '<span class="sc-crn tl"></span><span class="sc-crn br"></span>' +
         '</div>';
@@ -1971,16 +1964,9 @@ function renderProfile(){
       slot2Html = 
         '<div class="prf-showcase-slot rarest-slot" onclick="inspectCard(\'' + rarestStack.id + '\')" title="Rarest Card: ' + rarestName + ' (1 IN ' + rarestDenom + ')">' +
           '<div class="sc-holo-sweep"></div>' +
-          '<div class="sc-top-bar">' +
-            '<span class="sc-pill pill-rarest">✦ 1 IN ' + rarestDenom + '</span>' +
-          '</div>' +
           '<div class="sc-art-shell">' +
             '<img src="' + rarestImg + '" alt="' + rarestName + '">' +
             '<div class="sc-vignette"></div>' +
-          '</div>' +
-          '<div class="sc-plate">' +
-            '<div class="sc-name">' + rarestName + '</div>' +
-            '<div class="sc-stats-row">⚔ ' + fmtStat(rarestStats.atk) + ' · ❤ ' + fmtStat(rarestStats.hp) + '</div>' +
           '</div>' +
           '<span class="sc-crn tl"></span><span class="sc-crn br"></span>' +
         '</div>';
@@ -2002,9 +1988,6 @@ function renderProfile(){
     const slot3Html = 
       '<div class="prf-showcase-slot rebirth-slot" onclick="inspectRebirth()" title="Cycle R' + rb + ' (×' + mult + ' Permanent Luck Multiplier)">' +
         '<div class="sc-holo-sweep"></div>' +
-        '<div class="sc-top-bar">' +
-          '<span class="sc-pill pill-rebirth">⚡ ASCENSION</span>' +
-        '</div>' +
         '<div class="sc-art-shell rebirth-art">' +
           '<svg class="sc-rebirth-mandala" viewBox="0 0 100 100">' +
             '<circle cx="50" cy="50" r="42" fill="none" stroke-width="1.2" stroke-dasharray="6 4"/>' +
@@ -2016,10 +1999,6 @@ function renderProfile(){
           '<div class="sc-rebirth-pedestal"></div>' +
           '<img src="assets/icons/drawer/rebirth.webp" alt="Rebirth Icon" class="sc-rebirth-icon">' +
           '<div class="sc-vignette"></div>' +
-        '</div>' +
-        '<div class="sc-plate">' +
-          '<div class="sc-name">CYCLE R' + rb + '</div>' +
-          '<div class="sc-sub sub-rebirth">×' + mult + ' LUCK GAIN ⚡</div>' +
         '</div>' +
         '<span class="sc-crn tl"></span><span class="sc-crn br"></span>' +
       '</div>';
