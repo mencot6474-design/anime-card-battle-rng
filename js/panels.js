@@ -1381,46 +1381,152 @@ function openProfileModal(){
   m.classList.add("show");
   document.body.classList.add("profile-open");
   renderProfile();
-  profTabGo("overview");
-  profHoverBind();
+  switchProfTab("overview");
   try{ prfBannerOpen(); }catch(e){}
 }
 function closeProfileModal(){
-  hoverHide();
+  if(typeof hoverHide === "function") hoverHide();
+  if(typeof closeCardInspector === "function") closeCardInspector();
   const m=document.getElementById("profModal");
   if(!m){document.body.classList.remove("profile-open");return;}
   const hide=()=>{m.classList.remove("show");document.body.classList.remove("profile-open");};
   try{ prfBannerClose(hide); }catch(e){ hide(); }
 }
 
-/* Tab menu profil: OVERVIEW (ringkasan) + EXTRA (koleksi/progres/gear/item/title) */
-const PROF_TABS={overview:"OVERVIEW",extra:"EXTRA"};
-/* Alias lama: tombol dalam kartu masih memanggil tab lama, semuanya jatuh ke EXTRA. */
-const PROF_TAB_ALIAS={stats:"extra",achievements:"extra",koleksi:"extra",progres:"extra",ekuipmen:"extra",item:"extra",titles:"extra"};
+function switchProfTab(tab){
+  const btnOv = document.getElementById('tabOverviewBtn');
+  const btnEx = document.getElementById('tabExtraBtn');
+  const bodyOv = document.getElementById('profOverviewBody');
+  const bodyEx = document.getElementById('profExtraBody');
 
-
-
-window.onStatCardClick = function(key, encodedInfo) {
-  const info = decodeURIComponent(encodedInfo);
-  if (typeof showToast === 'function') {
-    showToast(info);
-  } else if (typeof toast === 'function') {
-    toast("TELEMETRY " + key.toUpperCase(), info, "#38bdf8");
+  if (tab === 'overview') {
+    if (btnOv) btnOv.className = 'prf-tab-btn active';
+    if (btnEx) btnEx.className = 'prf-tab-btn inactive';
+    if (bodyOv) bodyOv.style.display = 'grid';
+    if (bodyEx) bodyEx.classList.remove('active');
+  } else {
+    if (btnOv) btnOv.className = 'prf-tab-btn inactive';
+    if (btnEx) btnEx.className = 'prf-tab-btn active';
+    if (bodyOv) bodyOv.style.display = 'none';
+    if (bodyEx) bodyEx.classList.add('active');
   }
-};
-
-window.profTab="overview";
-function profTabGo(k){
-  if(!PROF_TABS[k])k=PROF_TAB_ALIAS[k]||"overview";
-  if(!PROF_TABS[k])return;
-  window.profTab=k;
-  const tabs=document.querySelectorAll("#profModal .pfx-tab");
-  for(let i=0;i<tabs.length;i++)tabs[i].classList.toggle("active",tabs[i].dataset.tab===k);
-  const pages=document.querySelectorAll("#profModal .pfx-page");
-  for(let i=0;i<pages.length;i++)pages[i].classList.toggle("active",pages[i].dataset.page===k);
-  const body=document.getElementById("profPages");
-  if(body)body.scrollTop=0;
 }
+window.switchProfTab = switchProfTab;
+window.profTabGo = switchProfTab;
+
+let isTeamHidden = false;
+function toggleTeamDisplay(){
+  isTeamHidden = !isTeamHidden;
+  const content = document.getElementById('profTeamContent');
+  const btn = document.getElementById('hideTeamBtn');
+  if (isTeamHidden) {
+    if (content) content.classList.add('collapsed');
+    if (btn) btn.textContent = '[ SHOW TEAM ]';
+  } else {
+    if (content) content.classList.remove('collapsed');
+    if (btn) btn.textContent = '[ HIDE TEAM ]';
+  }
+}
+window.toggleTeamDisplay = toggleTeamDisplay;
+
+function onSearchUser(q){
+  if(!q || !q.trim()) return;
+  const target = q.trim();
+  if (typeof window.openRkProfile === "function") {
+    window.openRkProfile(target);
+  } else if (typeof showToast === "function") {
+    showToast("SEARCHING OPERATOR: " + target.toUpperCase());
+  }
+}
+window.onSearchUser = onSearchUser;
+
+function inspectCard(artKey, name, atk, hp, tier, skill) {
+  const dlg = document.getElementById('cardInspectorDialog');
+  if (!dlg) return;
+  const imgEl = document.getElementById('inspectImg');
+  if (imgEl) {
+    if (artKey.startsWith('assets/')) imgEl.src = artKey;
+    else if (artKey.includes('.')) imgEl.src = 'assets/cards/art/' + artKey;
+    else imgEl.src = 'assets/cards/art/' + artKey + '.webp';
+  }
+  const nameEl = document.getElementById('inspectName');
+  if (nameEl) nameEl.textContent = name;
+  const atkEl = document.getElementById('inspectAtk');
+  if (atkEl) atkEl.textContent = atk || '120k';
+  const hpEl = document.getElementById('inspectHp');
+  if (hpEl) hpEl.textContent = hp || '450k';
+  const tierEl = document.getElementById('inspectTier');
+  if (tierEl) tierEl.textContent = tier || 'MYTHIC';
+  const statusEl = document.getElementById('inspectStatus');
+  if (statusEl) statusEl.textContent = 'EQUIPPED';
+  
+  let desc = skill || 'Passive: Deploys heavy resonance shockwaves upon attacking, boosting overall party damage and resonance.';
+  if (!skill) {
+    if (name.includes('GHOUL') || name.includes('HUNGER')) desc = 'Passive: Devours enemy lifeforce on hit, converting 18% damage dealt into protective barrier shields.';
+    else if (name.includes('MOON') || name.includes('WALKER')) desc = 'Passive: Summons lunar tides that slow enemy attack cadence by 22% and amplify party critical focus.';
+    else if (name.includes('UMBRA') || name.includes('WITCH')) desc = 'Passive: Ignites radiant Solar Blaze, burning targets for 340% AoE elemental damage over 6 seconds.';
+    else if (name.includes('SKY') || name.includes('STUDENT')) desc = 'Passive: Channels storm gale currents, granting +30% attack speed to all adjacent deck members.';
+  }
+  const skillEl = document.getElementById('inspectSkill');
+  if (skillEl) skillEl.textContent = desc;
+  
+  dlg.classList.add('show');
+}
+window.inspectCard = inspectCard;
+
+function inspectRebirth() {
+  const dlg = document.getElementById('cardInspectorDialog');
+  if (!dlg) return;
+  const rb = typeof rebirthCount === 'function' ? rebirthCount() : 0;
+  const mult = rb > 0 ? (rb * 2) : 1;
+  const imgEl = document.getElementById('inspectImg');
+  if (imgEl) imgEl.src = 'assets/icons/drawer/rebirth.webp';
+  const nameEl = document.getElementById('inspectName');
+  if (nameEl) nameEl.textContent = 'REBIRTH // CYCLE R' + rb;
+  const atkEl = document.getElementById('inspectAtk');
+  if (atkEl) atkEl.textContent = '×' + mult + ' LUCK';
+  const hpEl = document.getElementById('inspectHp');
+  if (hpEl) hpEl.textContent = 'PERMANENT';
+  const tierEl = document.getElementById('inspectTier');
+  if (tierEl) tierEl.textContent = 'ASCENDANT';
+  const statusEl = document.getElementById('inspectStatus');
+  if (statusEl) statusEl.textContent = 'ACTIVE';
+  const skillEl = document.getElementById('inspectSkill');
+  if (skillEl) skillEl.textContent = 'Duplicate card pulls auto-transmute into Essence. Current Cycle R' + rb + ' grants permanent ×' + mult + ' Total Luck multiplier across all rolls without resetting cards, decks, levels, or relics.';
+  dlg.classList.add('show');
+}
+window.inspectRebirth = inspectRebirth;
+
+function inspectSupport(name, buffDesc, asset, relicType, themeColor) {
+  const dlg = document.getElementById('cardInspectorDialog');
+  if (!dlg) return;
+  const imgEl = document.getElementById('inspectImg');
+  if (imgEl) {
+    if (asset.startsWith('assets/')) imgEl.src = asset;
+    else if (asset.includes('.')) imgEl.src = 'assets/artifacts/' + asset;
+    else imgEl.src = 'assets/artifacts/' + asset + '.webp';
+  }
+  const nameEl = document.getElementById('inspectName');
+  if (nameEl) nameEl.textContent = name;
+  const atkEl = document.getElementById('inspectAtk');
+  if (atkEl) atkEl.textContent = relicType || 'RELIC';
+  const hpEl = document.getElementById('inspectHp');
+  if (hpEl) hpEl.textContent = '+10 MAX';
+  const tierEl = document.getElementById('inspectTier');
+  if (tierEl) tierEl.textContent = 'ARTIFACT';
+  const statusEl = document.getElementById('inspectStatus');
+  if (statusEl) statusEl.textContent = 'SYNCHRONIZED';
+  const skillEl = document.getElementById('inspectSkill');
+  if (skillEl) skillEl.textContent = buffDesc || 'Passive: Synchronizes artifact resonance with equipped deck cards, amplifying global combat metrics.';
+  dlg.classList.add('show');
+}
+window.inspectSupport = inspectSupport;
+
+function closeCardInspector() {
+  const dlg = document.getElementById('cardInspectorDialog');
+  if (dlg) dlg.classList.remove('show');
+}
+window.closeCardInspector = closeCardInspector;
 
 // Titles screen — hazard WoB (full-bleed, pola #rankModal)
 function openTitlesModal(){
@@ -1577,6 +1683,14 @@ function ttBannerClose(onCovered){
 }
 
 /* ============ PROFILE SCREEN (hazard WoB) — render ============ */
+function pfPlayTime(){
+  const playSec=Math.floor((state&&state.playSec)||0);
+  const h=Math.floor(playSec/3600), m=Math.floor((playSec%3600)/60), s=playSec%60;
+  if(h>0)return h + 'h ' + m + 'm';
+  if(m>0)return m + 'm ' + s + 's';
+  return s + 's';
+}
+
 function pfStatRows(){
   const _Kc=rollCommonScale();
   let rarest=null, rarestCh=-Infinity;
@@ -1591,127 +1705,21 @@ function pfStatRows(){
   const artTotal=typeof ART_DEFS!=="undefined"?ART_DEFS.length:0;
   const petTotal=typeof PET_DEFS!=="undefined"?PET_DEFS.length:0;
   const supOwned=((state.artOwned||[]).length+(state.petOwned||[]).length);
+  const rb = typeof rebirthCount === "function" ? rebirthCount() : 0;
+  const mult = rb > 0 ? (rb * 2) : 1;
   const rows=[
-    ["rolls","Rolls",fmt(state.totalRolls||0)],
-    ["luck","Luck",totalLuck().toFixed(1)+"×"],
-    ["speed","Roll speed",eff.toFixed(1)+"×"],
-    ["shiny","Shiny chance","1 in "+fmtChance(100*(typeof shinyChanceMult==="function"?shinyChanceMult():SHINY_CHANCE_MULT))],
-    ["rarest","Rarest card",rarest?cardName(rarest.char):"—"],
-    ["floor","Highest floor",String((state.tower&&state.tower.best)||0)],
-    ["playtime","Playtime",pfPlayTime()],
-    ["power","Total power",fmt(totalPower())],
-    ["supports","Supports found",(supOwned+"/"+(artTotal+petTotal))],
-    ["vestige","Vestige","R"+(typeof rebirthCount==="function"?rebirthCount():0)]
+    ["rolls","Rolls",fmt(state.totalRolls||0),""],
+    ["luck","Luck",totalLuck().toFixed(1)+"x","hz"],
+    ["speed","Roll speed",eff.toFixed(2)+"s",""],
+    ["border","Border chance","1.2625%",""],
+    ["rarest","Rarest card",rarest?("1/"+fmtChance(rarestCh)):"1/10,000,000","cyan"],
+    ["floor","Highest floor",String((state.tower&&state.tower.best)||0),"gold"],
+    ["playtime","Playtime",pfPlayTime(),""],
+    ["generated","Total generated",fmt(totalPower()),""],
+    ["supports","Supports found",(supOwned+"/"+(artTotal+petTotal)),""],
+    ["rebirth","Rebirth",'Cycle R' + rb + ' (×' + mult + ' Luck)',"hz"]
   ];
   return {rows,rarest,rarestCh};
-}
-function pfPlayTime(){
-  const playSec=Math.floor((state&&state.playSec)||0);
-  const h=Math.floor(playSec/3600), m=Math.floor((playSec%3600)/60), s=playSec%60;
-  if(h>0)return `${h}h ${m}m`;
-  if(m>0)return `${m}m ${s}s`;
-  return `${s}s`;
-}
-function pfCardAccent(s){
-  if(!s)return "#f3e600";
-  if(s.mut&&s.mut!=="none"&&MUT_COLOR[s.mut])return MUT_COLOR[s.mut];
-  const t=CARDS[s.char]&&CARDS[s.char].tier;
-  return (t&&typeof TIER_COLOR!=="undefined"&&TIER_COLOR[t])||"#f5f5f5";
-}
-function pfSlotHtml(opts){
-  const o=opts||{};
-  const sty=o.accent?` style="--pfx-ac:${o.accent}"`:"";
-  const act=o.action?` role="button" tabindex="0" onclick="${o.action}"`:' aria-disabled="true"';
-  return `<div class="pfx-slot${o.cls?" "+o.cls:""}"${o.slot?` data-slot="${o.slot}"`:""}${sty}${act}>
-    <div class="pfx-slot-img">${o.img?`<img src="${thumbSrc(o.img)}" alt="" decoding="async">`:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/></svg>'}</div>
-    <div class="pfx-slot-name">${o.label||""}</div>
-    ${o.sub?`<div class="pfx-slot-sub">${o.sub}</div>`:""}
-  </div>`;
-}
-window.pfOpenDeck=function(){
-  closeProfileModal();
-  if(typeof window.openDeckModal==="function"){ window.openDeckModal(); return; }
-  if(typeof toggleBackpack==="function"){ toggleBackpack(); if(typeof bpSetTab==="function")bpSetTab("deck"); }
-};
-window.pfOpenBackpack=function(tab){
-  closeProfileModal();
-  if(typeof toggleBackpack==="function"){ toggleBackpack(); if(typeof bpSetTab==="function")bpSetTab(tab||"artefact"); }
-};
-function pfDeckSlot(slotId,idx){
-  const s=slotId?(state.stacks||[]).find(x=>x.id===slotId):null;
-  if(!s||!CARDS[s.char])return pfSlotHtml({label:"EMPTY",sub:"SLOT "+(idx+1),cls:"empty",slot:"card",action:"pfOpenDeck()"});
-  return pfSlotHtml({
-    img:cardImg(s.char),
-    label:cardName(s.char),
-    sub:s.shiny?"SHINY":(s.mut&&s.mut!=="none"?(MUT_LABEL[s.mut]||"CARD"):"CARD"),
-    cls:"filled",accent:pfCardAccent(s),slot:"card",action:"pfOpenDeck()"
-  });
-}
-function pfShowcaseHtml(rarest){
-  const st=Array.isArray(state.stacks)?state.stacks:[];
-  const fav=st.find(s=>s.fav&&CARDS[s.char]);
-  const rb=typeof rebirthCount==="function"?rebirthCount():0;
-  const one=(o)=>`<div class="pfx-show${o.cls?" "+o.cls:""}"${o.accent?` style="--pfx-ac:${o.accent}"`:""}>
-    <div class="pfx-show-img">${o.img?`<img src="${thumbSrc(o.img)}" alt="" decoding="async">`:""}</div>
-    <div class="pfx-show-foot">${o.label}</div>
-    ${o.sub?`<div class="pfx-show-sub">${o.sub}</div>`:""}
-  </div>`;
-  return one({label:"FAVORITE",img:fav?cardImg(fav.char):"",accent:fav?pfCardAccent(fav):"#f5f5f5"})
-    +one({label:"RAREST",img:rarest?cardImg(rarest.char):"",accent:rarest?pfCardAccent(rarest):"#f5f5f5"})
-    +one({label:"VESTIGE",sub:"R"+rb,accent:"#f3e600"});
-}
-function pfSupportHtml(){
-  const out=[];
-  for(let i=0;i<2;i++){
-    const id=state.artSlots&&state.artSlots[i];
-    const d=id&&typeof ART_DEFS!=="undefined"?ART_DEFS.find(x=>x.id===id):null;
-    out.push(d
-      ?pfSlotHtml({img:d.img||("assets/artifacts/"+d.id+".png"),label:d.name,sub:"ART "+(i+1),cls:"filled",accent:d.color||"#f3e600",slot:"support",action:"pfOpenBackpack('artefact')"})
-      :pfSlotHtml({label:"ART "+(i+1),sub:"EMPTY",cls:"empty",slot:"support",action:"pfOpenBackpack('artefact')"}));
-  }
-  const pd=state.petEquipped&&typeof PET_DEFS!=="undefined"?PET_DEFS.find(x=>x.id===state.petEquipped):null;
-  out.push(pd
-    ?pfSlotHtml({img:pd.img||("assets/pets/"+pd.id+".png"),label:pd.name,sub:"PET",cls:"filled",accent:pd.color||"#f3e600",slot:"support",action:"pfOpenBackpack('pet')"})
-    :pfSlotHtml({label:"PET",sub:"EMPTY",cls:"empty",slot:"support",action:"pfOpenBackpack('pet')"}));
-  return out.join("");
-}
-function pfIdentity(eq){
-  const name=currentUser||"GUEST";
-  const nm=document.getElementById("pfName");if(nm)nm.textContent=name;
-  const hd=document.getElementById("pfHandle");if(hd)hd.textContent="@"+name;
-  const av=document.getElementById("pfAvatar");
-  const avSrc=(state.customAvatar)||(eq&&eq.char&&CARDS[eq.char]?cardImg(eq.char):"");
-  if(av&&av.dataset.src!==(avSrc||"")){
-    av.dataset.src=avSrc||"";
-    av.innerHTML=avSrc?`<img src="${thumbSrc(avSrc)}" alt="" decoding="async">`:"<span>?</span>";
-  }
-}
-function pfHeroCardHtml(eq){
-  const holder=document.getElementById("pfAv");
-  if(!holder)return;
-  const key=eq?[eq.id,eq.char,eq.mut||"",eq.trait||"",eq.shiny?1:0].join("|"):"none";
-  holder.style.cursor="pointer";
-  holder.title="Click to manage your deck in the Backpack";
-  holder.onclick=()=>{ if(typeof sfx!=="undefined"&&sfx.hit)sfx.hit(); pfOpenDeck(); };
-  if(holder.dataset.heroKey!==key){
-    holder.dataset.heroKey=key;
-    holder.innerHTML=(eq&&typeof hubCardHtml==="function")
-      ?hubCardHtml(eq,"",false)
-      :'<div class="hub-center"><div class="hc-info"><div class="hc-name">No cards yet</div></div></div>';
-  }
-}
-function pfBindSearch(){
-  const f=document.getElementById("pfSearchForm");
-  if(!f||f.dataset.bound)return;
-  f.dataset.bound="1";
-  f.addEventListener("submit",e=>{
-    e.preventDefault();
-    const inp=document.getElementById("pfSearch");
-    const u=((inp&&inp.value)||"").trim();
-    if(!u)return;
-    if(typeof window.openRkProfile==="function")window.openRkProfile(u);
-    else if(typeof showToast==="function")showToast("PLAYER SEARCH UNAVAILABLE OFFLINE");
-  });
 }
 
 function updateProfileLiveNumbers(){
@@ -1723,14 +1731,15 @@ function updateProfileLiveNumbers(){
   const xpNeed=lv*1000, curExp=p.exp||0;
   const xpPct=Math.max(0,Math.min(100,Math.round(curExp/xpNeed*100)));
   const setText=(id,val)=>{const el=document.getElementById(id);if(el&&el.textContent!==String(val))el.textContent=val;};
-  setText("pfLv",lv);
-  setText("pfPower",fmt(totalPower()));
-  setText("pfXpText",`${fmt(curExp)} / ${fmt(xpNeed)} · ${xpPct}%`);
-  const xf=document.getElementById("pfXpFill");
+
+  setText("profLevelBadge", "LV." + lv);
+  setText("profExpBadge", fmt(curExp) + ' / ' + fmt(xpNeed) + ' EXP (' + xpPct + '%)');
+  const xf=document.getElementById("profExpFill");
   if(xf&&xf.style.width!==(xpPct+"%"))xf.style.width=xpPct+"%";
+
   const stats=pfStatRows();
   for(const r of stats.rows){
-    const el=m.querySelector(`[data-pfstat="${r[0]}"] .pfx-stat-v`);
+    const el=document.getElementById("st" + r[0].charAt(0).toUpperCase() + r[0].slice(1));
     if(el&&el.textContent!==String(r[2]))el.textContent=r[2];
   }
 }
@@ -1742,195 +1751,367 @@ function renderProfile(){
   const lv=p.lv||state.playerLv||1;
   const xpNeed=lv*1000, curExp=p.exp||0;
   const xpPct=Math.max(0,Math.min(100,Math.round(curExp/xpNeed*100)));
-  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  const fill=(id,html,key)=>{
-    const el=document.getElementById(id);
-    if(!el)return;
-    if(key!=null&&el.dataset.renderedKey===key)return;
-    if(key!=null)el.dataset.renderedKey=key;
-    el.innerHTML=html;
-  };
-
-  /* ---- identity + hero card ---- */
   const eq=equipped();
-  pfIdentity(eq);
-  pfHeroCardHtml(eq);
-  pfBindSearch();
 
-  set("pfName",currentUser||"GUEST");
-  set("pfHandle","@"+(currentUser||"GUEST"));
-  set("pfDeck",eq&&eq.char?("MAIN CARD · "+cardName(eq.char)):"MAIN CARD · —");
-  set("pfLv",lv);
-  set("pfPower",fmt(totalPower()));
-  const xf=document.getElementById("pfXpFill");if(xf)xf.style.width=xpPct+"%";
-  set("pfXpText",`${fmt(curExp)} / ${fmt(xpNeed)} · ${xpPct}%`);
-  const tb=document.getElementById("pfTitlesBtn");
-  if(tb)tb.onclick=()=>{ openTitlesModal(); };
-  const curT=state.playerTitle||"ROOKIE";
-  const defs = (typeof window.getTitlesList === "function") ? window.getTitlesList() : ((typeof TITLE_DEFS !== "undefined") ? TITLE_DEFS : (window.TITLE_DEFS || []));
-  const def=defs.find(x=>x.id===curT||x.name===curT)||defs.find(x=>x.id==="ROOKIE")||defs[0];
+  const name=currentUser||"GUEST";
+  const nm=document.getElementById("profPlayerName");if(nm)nm.textContent=name;
+  const hd=document.getElementById("profPlayerHandle");if(hd)hd.textContent="@"+name;
   
-  // 1. Mount Pure Floating Solo God Aura above Hero Card in Profile (1:1 with Title Preview)
-  const crownHolder = document.getElementById("pfCardTitleCrown");
-  if(crownHolder && def && typeof renderSoloGodAuraHtml === "function"){
-    crownHolder.innerHTML = renderSoloGodAuraHtml(def, { bob: true });
-    crownHolder.onclick = () => { openTitlesModal(); };
+  // Avatar
+  const avImg=document.getElementById("profAvatarImg");
+  const avSrc=(state.customAvatar)||(eq&&eq.char&&CARDS[eq.char]?cardImg(eq.char):"assets/cards/art/devil-hunter.webp");
+  if(avImg&&avImg.src!==avSrc) avImg.src = avSrc;
+
+  // Hero Standee
+  const standeeImg=document.getElementById("profStandeeArt");
+  const standeeSrc=eq&&eq.char&&CARDS[eq.char]?cardImg(eq.char):"assets/cards/art/nine-tail-prodigy.webp";
+  if(standeeImg&&standeeImg.src!==standeeSrc) standeeImg.src = standeeSrc;
+
+  // Title
+  const curT=state.playerTitle||"Beyond Infinity";
+  const defs = (typeof window.getTitlesList === "function") ? window.getTitlesList() : ((typeof TITLE_DEFS !== "undefined") ? TITLE_DEFS : (window.TITLE_DEFS || []));
+  const def=defs.find(x=>x.id===curT||x.name===curT)||defs[0]||{name:"Beyond Infinity",colors:["#00f0ff","#ffffff"]};
+  const titleLbl=document.getElementById("profTitleLabel");
+  if(titleLbl) titleLbl.textContent = def.name;
+  const titleTrigger=document.getElementById("profEquippedTitle");
+  if(titleTrigger && def.colors){
+    const col=def.colors[0]||"#00f0ff";
+    titleTrigger.style.color = col;
+    titleTrigger.style.textShadow = '0 0 10px ' + col + ', 0 0 20px ' + col + '60';
   }
 
-  // 2. Pure Floating Street Title Tag in Levelbar (ZERO BOX BADGE)
-  const pt=document.getElementById("pfTitleTag");
-  if(pt&&def){
-    const col=(def.colors&&def.colors[0])||"#38bdf8";
-    const col2=(def.colors&&def.colors[1])||"#ffffff";
-    const col3=(def.colors&&def.colors[2])||"#0284c7";
-    const grad=`linear-gradient(180deg, ${col2} 0%, ${col} 65%, ${col3} 100%)`;
-    const safeCls=def.cls||('title-'+def.name.toLowerCase().replace(/\s+/g,'_'));
-    const iconSvg=(typeof TITLE_ICONS!=='undefined'&&TITLE_ICONS[def.iconKey])?TITLE_ICONS[def.iconKey]:'';
-    pt.className="pf-street-title-tag "+safeCls;
-    pt.style=`--aura-col:${col};--aura-glow:${col}60;--text-grad:${grad};`;
-    pt.title="Click to Change Operator Title";
-    pt.onclick=()=>{ openTitlesModal(); };
-    pt.innerHTML=`
-      <div class="pst-top-row">
-        <span class="pst-icon">${iconSvg}</span>
-        <span class="pst-name">${def.name}</span>
-        ${def.kanji?`<span class="pst-kanji">${def.kanji}</span>`:''}
-      </div>
-      <div class="pst-bot-row">
-        <span class="pst-sub">${def.subTag||'// ACTIVE'}</span>
-        <span class="pst-edit-pill">CHANGE TITLE ❯</span>
-      </div>
-    `;
+  // Floating Solo God Aura Crown
+  const crownMount=document.getElementById("profStandeeCrown");
+  if(crownMount && def && typeof renderSoloGodAuraHtml === "function"){
+    crownMount.innerHTML = renderSoloGodAuraHtml(def, { bob: true });
   }
 
-  /* ---- STATS panel ---- */
+  // Level & Exp
+  const lvBadge=document.getElementById("profLevelBadge");if(lvBadge)lvBadge.textContent="LV."+lv;
+  const expBadge=document.getElementById("profExpBadge");if(expBadge)expBadge.textContent=fmt(curExp) + ' / ' + fmt(xpNeed) + ' EXP (' + xpPct + '%)';
+  const expFill=document.getElementById("profExpFill");if(expFill)expFill.style.width=xpPct+"%";
+
+  // Stats calculation
   const stats=pfStatRows();
-  fill("pfStats",stats.rows.map(r=>`<div class="pfx-stat" data-pfstat="${r[0]}"><span class="pfx-stat-k">${r[1]}</span><span class="pfx-stat-v">${r[2]}</span></div>`).join(""),
-       stats.rows.map(r=>r[2]).join("|"));
+  const rb = typeof rebirthCount === "function" ? rebirthCount() : 0;
+  const mult = rb > 0 ? (rb * 2) : 1;
 
-  /* ---- TEAM (4 deck cards + supports) ---- */
-  const deckKey=[(state.deck||[]).join(","),state.petEquipped||"",(state.artSlots||[]).join(",")].join("~");
-  fill("pfTeamCards",[0,1,2,3].map(i=>pfDeckSlot((state.deck||[])[i],i)).join(""),deckKey);
-  fill("pfTeamSupp",pfSupportHtml(),deckKey);
-
-  /* ---- SHOWCASE ---- */
-  const favKey=(()=>{const s=(state.stacks||[]).find(x=>x.fav&&CARDS[x.char]);return [s?s.id:"none",stats.rarest?stats.rarest.id:"none",typeof rebirthCount==="function"?rebirthCount():0].join("|");})();
-  fill("pfShowcase",pfShowcaseHtml(stats.rarest),favKey);
-
-  /* ---- EXTRA: collection ---- */
-  const st=Array.isArray(state.stacks)?state.stacks:[];
-  let copies=0, shiny=0, gold=0, rainbow=0, secret=0, ultima=0; const uni=new Set();
-  for(const s of st){
-    const c=s.count||1;copies+=c;uni.add(s.char);
-    if(s.shiny)shiny+=c;const m=s.mut||"none";
-    if(m==="gold")gold+=c;else if(m==="rainbow")rainbow+=c;else if(m==="secret")secret+=c;else if(m==="ultima")ultima+=c;
+  // 1. Telemetry Stats Grid
+  const statsGrid=document.getElementById("profStatsGrid");
+  if(statsGrid){
+    statsGrid.innerHTML = stats.rows.map(r => 
+      '<div class="prf-stat-row">' +
+        '<span class="prf-stat-k">' + r[1] + '</span>' +
+        '<span class="prf-stat-v' + (r[3] ? ' ' + r[3] : '') + '" id="st' + (r[0].charAt(0).toUpperCase() + r[0].slice(1)) + '">' + r[2] + '</span>' +
+      '</div>'
+    ).join('');
   }
-  const totalCards=MASTER_CARD_INDEX.filter(c=>!c.isStoryEnemy).length;
-  const kolPct=Math.round(uni.size/Math.max(1,totalCards)*100);
-  const tile=(lab,val,sub,tcls,vcls,oc)=>`<div class="pfx-tile${tcls?" "+tcls:""}"${oc?` onclick="${oc}" role="button" tabindex="0"`:""}><span class="pfx-tile-l">${lab}</span><span class="pfx-tile-v${vcls?" "+vcls:""}">${val}</span>${sub?`<span class="pfx-tile-s">${sub}</span>`:""}</div>`;
-  const sec=(t,grid)=>`<div class="pfx-sec"><div class="pfx-sec-t">${t}</div><div class="pfx-grid">${grid}</div></div>`;
-  const koleksi=
-    tile("UNIQUE CARDS",`${uni.size} / ${totalCards}`,"")
-    +tile("TOTAL COPY",fmt(copies),"")
-    +tile("SHINY",fmt(shiny),"")
-    +tile("GOLD",fmt(gold),"")
-    +tile("RAINBOW",fmt(rainbow),"")
-    +tile("SECRET",fmt(secret),"")
-    +tile("ULTIMA",fmt(ultima),"");
-  const gacha=tile("BATTLE SPEED",battleSpeedEff()+"×","")+tile("TOTAL SUMMON",fmt(state.summons||0),"");
-  const kolKey=[uni.size,totalCards,copies,shiny,gold,rainbow,secret,ultima].join("|");
-  fill("pfPageKoleksi",
-    `<div class="pfx-kbar"><i style="width:${kolPct}%"></i><span>${uni.size} / ${totalCards} CARDS · ${kolPct}%</span></div>`
-    +sec("CARD COLLECTION",koleksi)
-    +sec("GACHA",gacha), kolKey);
 
-  /* ---- EXTRA: progress ---- */
-  const cd=(state.clearedDiff&&typeof state.clearedDiff==="object")?state.clearedDiff:{};
-  const storyTiles=DIFFS.map(d=>tile("STORY "+d.l,`${Object.keys(cd[d.k]||{}).length}/${LEVEL_COUNT}`,"")).join("");
-  const raidDone=(state.raidCleared&&Object.values(state.raidCleared).some(Boolean))?1:0;
-  const wbVals=i=>(typeof wbPoolVals==="function")?wbPoolVals(i):{pool:1e10,left:1e10};
-  const wbAttN=i=>(typeof wbAttOf==="function")?(wbAttOf(i)==null?0:wbAttOf(i)):3;
-  const wbHP=i=>(typeof fmtBig==="function"?fmtBig(wbVals(i).left):"—")+" HP";
-  const di=state.dailyIndex||0;
-  const progres=
-    tile("INFINITE TOWER",`Floor ${(state.tower&&state.tower.best)||0}`,"")
-    +tile("SKILL POINT",`${p.sp||0}`,"")
-    +tile("DAILY REWARD",`DAY ${di+1} / 7`,(typeof DAILY_PACKS_100K!=="undefined"&&DAILY_PACKS_100K[di]!=null)?`CLAIM · +${DAILY_PACKS_100K[di]}× 100K PACK · +${DAILY_GEMS[di]||0} GEM`:"","","","openDaily()")
-    +storyTiles
-    +tile("DRAGON",wbHP(0),`WORLD BOSS · ${wbAttN(0)}/3 ATTEMPT`)
-    +tile("SHADOW KING",wbHP(1),`WORLD BOSS · ${wbAttN(1)}/3 ATTEMPT`);
-  const progKey=[(state.tower&&state.tower.best)||0,p.sp||0,di,Object.keys(cd).length].join("|");
-  fill("pfPageProgres",`<div class="pfx-grid">${progres}</div>`,progKey);
+  // 2. Telemetry Showcase
+  const scRow=document.getElementById("profShowcaseRow");
+  if(scRow){
+    const st=Array.isArray(state.stacks)?state.stacks:[];
+    const fav=st.find(s=>s.fav&&CARDS[s.char]) || st[0];
+    const favChar = fav ? fav.char : 'shadow-king';
+    const favName = fav ? cardName(fav.char).toUpperCase() : 'SHADOW KING';
+    const favImg = fav ? cardImg(fav.char) : 'assets/cards/art/shadow-king.webp';
+    const favStats = fav ? cardStats(fav.char, fav.mut, fav.shiny) : { atk: 240000, hp: 890000 };
+    const favTier = (fav && CARDS[fav.char] && CARDS[fav.char].tier ? CARDS[fav.char].tier : 'ULTIMA').toUpperCase();
 
-  /* ---- EXTRA: equipment ---- */
-  const pd=state.petEquipped&&typeof PET_DEFS!=="undefined"?PET_DEFS.find(x=>x.id===state.petEquipped):null;
-  const artTile=i=>{
-    const id=state.artSlots&&state.artSlots[i];
-    const d=id&&typeof ART_DEFS!=="undefined"?ART_DEFS.find(x=>x.id===id):null;
-    return tile("ARTIFACT "+(i+1),d?d.name:"EMPTY","");
-  };
-  const gearStats=d=>`+${d.flat||0}${d.pct?" / +"+d.pct+"%":""}`;
-  const ownedArt=(typeof ART_DEFS!=="undefined"?ART_DEFS:[]).filter(d=>(state.artOwned||[]).includes(d.id))
-    .map(d=>{const on=(state.artSlots||[]).includes(d.id);return tile(d.name,on?"EQUIPPED":"OWNED",gearStats(d),on?"accent":"");}).join("");
-  const ownedPet=(typeof PET_DEFS!=="undefined"?PET_DEFS:[]).filter(d=>(state.petOwned||[]).includes(d.id))
-    .map(d=>{const on=state.petEquipped===d.id;return tile(d.name,on?"EQUIPPED":"OWNED",gearStats(d),on?"accent":"");}).join("");
-  const equipCounts=
-    tile("ARTIFACTS OWNED",`${(state.artOwned||[]).length} / ${(typeof ART_DEFS!=="undefined"?ART_DEFS.length:0)}`,"")
-    +tile("PETS OWNED",`${(state.petOwned||[]).length} / ${(typeof PET_DEFS!=="undefined"?PET_DEFS.length:0)}`,"");
-  const eqKey=[deckKey,(state.artOwned||[]).length,(state.petOwned||[]).length].join("|");
-  fill("pfPageEkuipmen",
-    sec("EQUIPPED",artTile(0)+artTile(1)+tile("PET",pd?pd.name:"NONE","")+equipCounts)
-    +sec("ARTIFACT INVENTORY",ownedArt||tile("NO ARTIFACTS YET","·","Buy in the shop to unlock the slot","wide"))
-    +sec("PET INVENTORY",ownedPet||tile("NO PETS YET","·","Get pets from raid / tower","wide")), eqKey);
+    const rarestStack = stats.rarest;
+    const rarestChar = rarestStack ? rarestStack.char : 'sun-god';
+    const rarestName = rarestStack ? cardName(rarestStack.char).toUpperCase() : 'SUN GODDESS';
+    const rarestImg = rarestStack ? cardImg(rarestStack.char) : 'assets/cards/art/sun-god.webp';
+    const rarestStats = rarestStack ? cardStats(rarestStack.char, rarestStack.mut, rarestStack.shiny) : { atk: 320000, hp: 1200000 };
+    const rarestDenom = stats.rarestCh > 0 ? fmtChance(stats.rarestCh) : '10M';
 
-  /* ---- EXTRA: items & buffs ---- */
-  const wAct=(state.weather&&Date.now()<state.weather.endsAt)?WEATHER[state.weather.id]:null;
-  const luckPotN=(state.luckPots||[]).reduce((a,b)=>a+(b||0),0);
-  const speedPotN=(state.speedPots||[]).reduce((a,b)=>a+(b||0),0);
-  const item=
-    tile("COIN",fmt(state.coins||0),"")
-    +tile("WORLD BOSS TOKEN",fmt(state.wbTokens||0),"")
-    +tile("INF TOKEN",fmt(state.infTokens||0),"")
-    +tile("WEATHER POTION",`×${state.potions||0}`,"")
-    +tile("MYTHIC POTION",`×${state.mythicPotions||0}`,"")
-    +tile("LUCK POTION",`×${fmt(luckPotN)}`,"")
-    +tile("SPEED POTION",`×${fmt(speedPotN)}`,"")
-    +tile("ACTIVE WEATHER",wAct?`<span class="pfx-wtag" style="color:${wAct.color}">${weatherSvg(wAct.id,15)} ${wAct.name}</span>`:"INACTIVE","","wide")
-    +tile("ACTIVE BUFF",(activeLuckBuff()>0||activeSpeedBuff()>0)?"ACTIVE":"INACTIVE","","wide");
-  const itemKey=[state.coins||0,state.wbTokens||0,state.infTokens||0,state.potions||0,state.mythicPotions||0,luckPotN,speedPotN,wAct?wAct.id:"none",activeLuckBuff(),activeSpeedBuff()].join("|");
-  fill("pfPageItem",`<div class="pfx-grid">${item}</div>`,itemKey);
+    scRow.innerHTML = 
+      '<!-- Slot 1: Favorite Card -->' +
+      '<div class="prf-showcase-slot fav-slot" onclick="inspectCard(\'' + favChar + '\', \'' + favName + '\', \'' + fmtStat(favStats.atk) + '\', \'' + fmtStat(favStats.hp) + '\', \'' + favTier + '\')" title="Signature Favorite Card">' +
+        '<div class="sc-holo-sweep"></div>' +
+        '<div class="sc-top-bar">' +
+          '<span class="sc-pill pill-fav">★ FAVORITE</span>' +
+        '</div>' +
+        '<div class="sc-art-shell">' +
+          '<img src="' + favImg + '" alt="' + favName + '">' +
+          '<div class="sc-vignette"></div>' +
+        '</div>' +
+        '<div class="sc-plate">' +
+          '<div class="sc-name">' + favName + '</div>' +
+          '<div class="sc-sub sub-fav">SIGNATURE ★★★★★</div>' +
+        '</div>' +
+        '<span class="sc-crn tl"></span><span class="sc-crn br"></span>' +
+      '</div>' +
 
-  /* ---- EXTRA: titles (29 Master Titles) ---- */
-  const masterDefs = (typeof window.getTitlesList === "function") ? window.getTitlesList() : ((typeof TITLE_DEFS !== "undefined") ? TITLE_DEFS : (window.TITLE_DEFS || []));
-  const earnedList = masterDefs.filter(t => t.unlocked);
-  if(tb) tb.textContent = `${earnedList.length}/${masterDefs.length} MANAGE`;
-  const titlesGrid = masterDefs.map(t => {
-    const isEq = (t.id === curT || t.name === curT);
-    const col = (t.colors && t.colors[0]) || "#38bdf8";
-    const cardCls = isEq ? "equipped" : t.unlocked ? "unlocked" : "locked";
-    const iconSvg = (typeof TITLE_ICONS !== 'undefined' && TITLE_ICONS[t.iconKey]) ? TITLE_ICONS[t.iconKey] : '';
-    const badgeHtml = isEq
-      ? '<span class="pf-tc-badge b-eq">EQUIPPED</span>'
-      : t.unlocked
-        ? '<span class="pf-tc-badge b-ok">✓ EARNED</span>'
-        : '<span class="pf-tc-badge b-lock">🔒 LOCKED</span>';
-    const clickHandler = isEq ? 'openTitlesModal()' : t.unlocked ? `equipTitle('${t.id}')` : 'openTitlesModal()';
-    return `<div class="pf-title-card ${cardCls}" style="--aura-col:${col};--aura-glow:${col}40;" onclick="${clickHandler}" title="${t.desc}">
-      <div class="pf-tc-icon">${iconSvg}</div>
-      <div class="pf-tc-body">
-        <div class="pf-tc-name">${t.name}</div>
-        <div class="pf-tc-req">${t.req}</div>
-        ${badgeHtml}
-      </div>
-    </div>`;
-  }).join("");
-  const achieveKey = [earnedList.length, masterDefs.length, curT].join("|") + "|" + masterDefs.map(t => t.unlocked ? 1 : 0).join("");
-  fill("pfPageTitles", `<div class="pf-titles-grid">${titlesGrid}</div>`, achieveKey);
+      '<!-- Slot 2: Rarest Card -->' +
+      '<div class="prf-showcase-slot rarest-slot" onclick="inspectCard(\'' + rarestChar + '\', \'' + rarestName + '\', \'' + fmtStat(rarestStats.atk) + '\', \'' + fmtStat(rarestStats.hp) + '\', \'1 IN ' + rarestDenom + '\')" title="Rarest Obtained: 1/' + rarestDenom + '">' +
+        '<div class="sc-holo-sweep"></div>' +
+        '<div class="sc-top-bar">' +
+          '<span class="sc-pill pill-rarest">✦ 1 IN ' + rarestDenom + '</span>' +
+        '</div>' +
+        '<div class="sc-art-shell">' +
+          '<img src="' + rarestImg + '" alt="' + rarestName + '">' +
+          '<div class="sc-vignette"></div>' +
+        '</div>' +
+        '<div class="sc-plate">' +
+          '<div class="sc-name">' + rarestName + '</div>' +
+          '<div class="sc-sub sub-rarest">RAREST 1/' + rarestDenom + ' ✦</div>' +
+        '</div>' +
+        '<span class="sc-crn tl"></span><span class="sc-crn br"></span>' +
+      '</div>' +
 
-  updateProfileLiveNumbers();
+      '<!-- Slot 3: Rebirth Crest Sanctuary -->' +
+      '<div class="prf-showcase-slot rebirth-slot" onclick="inspectRebirth()" title="Cycle R' + rb + ' (×' + mult + ' Permanent Luck Multiplier)">' +
+        '<div class="sc-holo-sweep"></div>' +
+        '<div class="sc-top-bar">' +
+          '<span class="sc-pill pill-rebirth">⚡ ASCENSION</span>' +
+        '</div>' +
+        '<div class="sc-art-shell rebirth-art">' +
+          '<svg class="sc-rebirth-mandala" viewBox="0 0 100 100">' +
+            '<circle cx="50" cy="50" r="42" fill="none" stroke-width="1.2" stroke-dasharray="6 4"/>' +
+            '<circle cx="50" cy="50" r="30" fill="none" stroke-width="1.4" stroke-dasharray="12 6"/>' +
+            '<polygon points="50,12 84,70 16,70" fill="none" stroke-width="1.2"/>' +
+            '<polygon points="50,88 84,30 16,30" fill="none" stroke-width="1.2"/>' +
+            '<circle cx="50" cy="50" r="14" fill="none" stroke-width="1.8"/>' +
+          '</svg>' +
+          '<div class="sc-rebirth-pedestal"></div>' +
+          '<img src="assets/icons/drawer/rebirth.webp" alt="Rebirth Icon" class="sc-rebirth-icon">' +
+          '<div class="sc-vignette"></div>' +
+        '</div>' +
+        '<div class="sc-plate">' +
+          '<div class="sc-name">CYCLE R' + rb + '</div>' +
+          '<div class="sc-sub sub-rebirth">×' + mult + ' LUCK GAIN ⚡</div>' +
+        '</div>' +
+        '<span class="sc-crn tl"></span><span class="sc-crn br"></span>' +
+      '</div>';
+  }
+
+  // 3. Team Row 1: Cards (4 collectible slots, Slot 3 fire-blaze)
+  const teamCardsEl = document.getElementById("profTeamCards");
+  if(teamCardsEl){
+    const fallbackCards = [
+      { char: 'devil-hunter', name: 'GHOUL HUNGER', tier: 'MYTHIC', type: 'VOID', elemIcon: '✦', atk: '125K', hp: '460K', tierCls: 'tier-mythic', elemCls: 'elem-void' },
+      { char: 'nine-tail-prodigy', name: 'MOON WALKER', tier: 'MYTHIC', type: 'LIGHT', elemIcon: '✦', atk: '140K', hp: '520K', tierCls: 'tier-mythic', elemCls: 'elem-void' },
+      { char: 'shadow-king', name: 'UMBRA WITCH', tier: 'ULTIMA', type: 'SOLAR', elemIcon: '🔥', atk: '280K', hp: '980K', tierCls: 'tier-ultima', elemCls: 'elem-fire' },
+      { char: 'sun-god', name: 'THE SKY-REACHING STUDENT', tier: 'MYTHIC', type: 'WIND', elemIcon: '✦', atk: '135K', hp: '490K', tierCls: 'tier-mythic', elemCls: 'elem-void' }
+    ];
+
+    const cardsHtml = [0, 1, 2, 3].map(i => {
+      const slotId = (state.deck || [])[i];
+      const s = slotId ? (state.stacks || []).find(x => x.id === slotId) : null;
+      const c = s ? CARDS[s.char] : null;
+      const fb = fallbackCards[i];
+
+      const charKey = c ? s.char : fb.char;
+      const cardTitle = c ? cardName(s.char).toUpperCase() : fb.name;
+      const tierName = c ? (c.tier || 'MYTHIC').toUpperCase() : fb.tier;
+      const elemName = c ? (c.type || 'VOID').toUpperCase() : fb.type;
+      const imgPath = c ? cardImg(s.char) : ('assets/cards/art/' + fb.char + '.webp');
+      const statsObj = (s && c) ? cardStats(s.char, s.mut, s.shiny) : null;
+      const atkText = statsObj ? fmtStat(statsObj.atk) : fb.atk;
+      const hpText = statsObj ? fmtStat(statsObj.hp) : fb.hp;
+      const isFire = (i === 2);
+
+      return (
+        '<div class="prf-card-chassis' + (isFire ? ' fire-blaze' : '') + '" onclick="inspectCard(\'' + charKey + '\', \'' + cardTitle + '\', \'' + atkText + '\', \'' + hpText + '\', \'' + tierName + '\')">' +
+          '<div class="pcc-holo-sweep"></div>' +
+          '<div class="pcc-top-bar">' +
+            '<span class="pcc-tier-badge ' + (tierName === 'ULTIMA' ? 'tier-ultima' : 'tier-mythic') + '">' + tierName + '</span>' +
+            '<span class="pcc-elem-badge ' + (isFire ? 'elem-fire' : 'elem-void') + '">' + elemName + ' ' + (isFire ? '🔥' : '✦') + '</span>' +
+          '</div>' +
+          '<div class="pcc-art-shell">' +
+            '<img src="' + imgPath + '" alt="' + cardTitle + '">' +
+            '<div class="pcc-vignette"></div>' +
+          '</div>' +
+          '<div class="pcc-plate' + (isFire ? ' fire-plate' : '') + '">' +
+            '<div class="pcc-name">' + cardTitle + '</div>' +
+            '<div class="pcc-stats-row">' +
+              '<div class="pcc-stats">⚔ ' + atkText + ' · ❤ ' + hpText + '</div>' +
+              '<span class="pcc-tier-level-tag">' + (tierName === 'ULTIMA' ? 'APEX' : 'MAX') + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<span class="pcc-crn tl"></span><span class="pcc-crn br"></span>' +
+        '</div>'
+      );
+    }).join('');
+
+    teamCardsEl.innerHTML = cardsHtml;
+  }
+
+  // 4. Team Row 2: Supports (4 relic slots, Slot 3 fire-blaze)
+  const teamSuppEl = document.getElementById("profTeamSupp");
+  if(teamSuppEl){
+    const fallbackSupports = [
+      { name: 'LIMIT BREAKER', chip: '+50% ATK', chipCls: 'buff-chip-blade', elem: 'BLADE ⚔', elemCls: '', artCls: 'art-sword', asset: 'pedang-api.webp', stats: '// DAMAGE AMP', tag: '+10 MAX', relicType: 'OFFENSIVE RELIC' },
+      { name: 'CRIMSON NOVA', chip: '+35% CRIT', chipCls: 'buff-chip-crit', elem: 'TOME 📜', elemCls: '', artCls: 'art-tome', asset: 'tome-infinity.webp', stats: '// CRIT BOOST', tag: '+10 MAX', relicType: 'CATALYST RELIC' },
+      { name: 'CHAKRA MASTERY', chip: '+50% BURST', chipCls: 'buff-chip-burst', elem: 'RING 🔥', elemCls: 'elem-fire', artCls: 'art-ring', asset: 'cincin.webp', stats: '// BURST MULT', tag: 'SOLAR ☼', relicType: 'SOLAR RING', isFire: true },
+      { name: 'ASHEN ARCANUM', chip: '+25% WARD', chipCls: 'buff-chip-ward', elem: 'HELM 🛡', elemCls: 'elem-void', artCls: 'art-helm', asset: 'abyss-helm.webp', stats: '// AEGIS WARD', tag: '+10 MAX', relicType: 'DEFENSIVE RELIC' }
+    ];
+
+    const suppHtml = [0, 1, 2, 3].map(i => {
+      const fb = fallbackSupports[i];
+      let name = fb.name;
+      let asset = fb.asset;
+      let chip = fb.chip;
+      let relicType = fb.relicType;
+      let tag = fb.tag;
+
+      if(i === 0 || i === 1){
+        const artId = state.artSlots && state.artSlots[i];
+        const artDef = artId && typeof ART_DEFS !== 'undefined' ? ART_DEFS.find(x => x.id === artId) : null;
+        if(artDef){
+          name = artDef.name.toUpperCase();
+          if(artDef.img) asset = artDef.img;
+          chip = '+' + (artDef.flat || 0) + ' PWR';
+        }
+      } else if(i === 3){
+        const petId = state.petEquipped;
+        const petDef = petId && typeof PET_DEFS !== 'undefined' ? PET_DEFS.find(x => x.id === petId) : null;
+        if(petDef){
+          name = petDef.name.toUpperCase();
+          if(petDef.img) asset = petDef.img;
+          chip = '+PET COMPANION';
+          relicType = 'BEAST COMPANION';
+        }
+      }
+
+      const isFire = !!fb.isFire;
+
+      return (
+        '<div class="prf-card-chassis support-chassis' + (isFire ? ' fire-blaze' : '') + '" onclick="inspectSupport(\'' + name + '\', \'Passive: Synchronizes artifact resonance with equipped deck cards, amplifying combat metrics.\', \'' + asset + '\', \'' + relicType + '\')">' +
+          '<div class="pcc-top-bar">' +
+            '<span class="pcc-tier-badge ' + fb.chipCls + '">' + chip + '</span>' +
+            '<span class="pcc-elem-badge ' + fb.elemCls + '">' + fb.elem + '</span>' +
+          '</div>' +
+          '<div class="pcc-art-shell support-art ' + fb.artCls + '">' +
+            '<div class="pcc-cyber-grid"></div>' +
+            '<svg class="relic-bg-mandala" viewBox="0 0 100 100">' +
+              '<circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="5 3"/>' +
+              '<circle cx="50" cy="50" r="32" fill="none" stroke="currentColor" stroke-width="1.5"/>' +
+              '<polygon points="50,15 80,68 20,68" fill="none" stroke="currentColor" stroke-width="1.2"/>' +
+              '<polygon points="50,85 80,32 20,32" fill="none" stroke="currentColor" stroke-width="1.2"/>' +
+            '</svg>' +
+            '<div class="relic-pedestal"></div>' +
+            '<img src="assets/artifacts/' + asset + '" alt="' + name + '" class="relic-icon">' +
+            '<div class="pcc-vignette"></div>' +
+          '</div>' +
+          '<div class="pcc-plate' + (isFire ? ' fire-plate' : '') + '">' +
+            '<div class="pcc-name">' + name + '</div>' +
+            '<div class="pcc-stats-row">' +
+              '<div class="pcc-stats">' + fb.stats + '</div>' +
+              '<span class="pcc-tier-level-tag">' + tag + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<span class="pcc-crn tl"></span><span class="pcc-crn br"></span>' +
+        '</div>'
+      );
+    }).join('');
+
+    teamSuppEl.innerHTML = suppHtml;
+  }
+
+  // 5. Extra Page Telemetry
+  const extraKoleksi=document.getElementById("profExtraKoleksi");
+  if(extraKoleksi){
+    const st=Array.isArray(state.stacks)?state.stacks:[];
+    let copies=0, shiny=0, rainbow=0, secret=0, ultima=0; const uni=new Set();
+    for(const s of st){
+      const c=s.count||1; copies+=c; uni.add(s.char);
+      if(s.shiny) shiny+=c;
+      const m=s.mut||"none";
+      if(m==="rainbow") rainbow+=c;
+      else if(m==="secret") secret+=c;
+      else if(m==="ultima") ultima+=c;
+    }
+    const totalCards=(typeof MASTER_CARD_INDEX!=="undefined"?MASTER_CARD_INDEX:[]).filter(c=>!c.isStoryEnemy).length||75;
+
+    extraKoleksi.innerHTML = 
+      '<div class="prf-extra-tile">' +
+        '<span class="prf-extra-tile-k">UNIQUE DISCOVERED</span>' +
+        '<span class="prf-extra-tile-v" style="color:var(--cyan)">' + uni.size + ' / ' + totalCards + '</span>' +
+      '</div>' +
+      '<div class="prf-extra-tile">' +
+        '<span class="prf-extra-tile-k">TOTAL COPIES</span>' +
+        '<span class="prf-extra-tile-v">' + fmt(copies) + '</span>' +
+      '</div>' +
+      '<div class="prf-extra-tile">' +
+        '<span class="prf-extra-tile-k">SHINY CARDS</span>' +
+        '<span class="prf-extra-tile-v" style="color:var(--haz)">' + fmt(shiny) + '</span>' +
+      '</div>' +
+      '<div class="prf-extra-tile">' +
+        '<span class="prf-extra-tile-k">RAINBOW MUTATION</span>' +
+        '<span class="prf-extra-tile-v" style="color:#ec4899">' + fmt(rainbow) + '</span>' +
+      '</div>' +
+      '<div class="prf-extra-tile">' +
+        '<span class="prf-extra-tile-k">SECRET MUTATION</span>' +
+        '<span class="prf-extra-tile-v" style="color:#a855f7">' + fmt(secret) + '</span>' +
+      '</div>' +
+      '<div class="prf-extra-tile">' +
+        '<span class="prf-extra-tile-k">ULTIMA MUTATION</span>' +
+        '<span class="prf-extra-tile-v" style="color:#ff3366">' + fmt(ultima) + '</span>' +
+      '</div>';
+  }
+
+  const extraProgres=document.getElementById("profExtraProgres");
+  if(extraProgres){
+    const cd=(state.clearedDiff&&typeof state.clearedDiff==="object")?state.clearedDiff:{};
+    const apocClears=Object.keys(cd["apocalypse"]||{}).length;
+    extraProgres.innerHTML = 
+      '<div class="prf-extra-tile">' +
+        '<span class="prf-extra-tile-k">INFINITE TOWER</span>' +
+        '<span class="prf-extra-tile-v" style="color:var(--haz)">Floor ' + ((state.tower&&state.tower.best)||0) + '</span>' +
+      '</div>' +
+      '<div class="prf-extra-tile">' +
+        '<span class="prf-extra-tile-k">STORY APOCALYPSE</span>' +
+        '<span class="prf-extra-tile-v">' + (apocClears > 0 ? ('Cleared ' + apocClears + '/8') : 'IN PROGRESS') + '</span>' +
+      '</div>' +
+      '<div class="prf-extra-tile">' +
+        '<span class="prf-extra-tile-k">WORLD BOSS DMG</span>' +
+        '<span class="prf-extra-tile-v" style="color:#ff4d5e">' + fmt(state.wbDamage||0) + '</span>' +
+      '</div>' +
+      '<div class="prf-extra-tile">' +
+        '<span class="prf-extra-tile-k">REBIRTH CYCLE</span>' +
+        '<span class="prf-extra-tile-v" style="color:#c084fc">Cycle R' + rb + ' (×' + mult + ' LUCK)</span>' +
+      '</div>';
+  }
+
+  const extraEkuipmen=document.getElementById("profExtraEkuipmen");
+  if(extraEkuipmen){
+    const artTotal=typeof ART_DEFS!=="undefined"?ART_DEFS.length:0;
+    const petTotal=typeof PET_DEFS!=="undefined"?PET_DEFS.length:0;
+    extraEkuipmen.innerHTML = 
+      '<div class="prf-extra-tile">' +
+        '<span class="prf-extra-tile-k">ARTIFACTS OWNED</span>' +
+        '<span class="prf-extra-tile-v" style="color:var(--cyan)">' + (state.artOwned||[]).length + ' / ' + artTotal + '</span>' +
+      '</div>' +
+      '<div class="prf-extra-tile">' +
+        '<span class="prf-extra-tile-k">PETS OWNED</span>' +
+        '<span class="prf-extra-tile-v" style="color:var(--haz)">' + (state.petOwned||[]).length + ' / ' + petTotal + '</span>' +
+      '</div>';
+  }
+
+  const extraItems=document.getElementById("profExtraItems");
+  if(extraItems){
+    const wAct=(state.weather&&Date.now()<state.weather.endsAt)?WEATHER[state.weather.id]:null;
+    extraItems.innerHTML = 
+      '<div class="prf-extra-tile">' +
+        '<span class="prf-extra-tile-k">COINS</span>' +
+        '<span class="prf-extra-tile-v" style="color:var(--gold)">' + fmt(state.coins||0) + '</span>' +
+      '</div>' +
+      '<div class="prf-extra-tile">' +
+        '<span class="prf-extra-tile-k">WB TOKENS</span>' +
+        '<span class="prf-extra-tile-v" style="color:#ff4d5e">' + fmt(state.wbTokens||0) + '</span>' +
+      '</div>' +
+      '<div class="prf-extra-tile">' +
+        '<span class="prf-extra-tile-k">INF TOKENS</span>' +
+        '<span class="prf-extra-tile-v" style="color:var(--cyan)">' + fmt(state.infTokens||0) + '</span>' +
+      '</div>' +
+      '<div class="prf-extra-tile">' +
+        '<span class="prf-extra-tile-k">ACTIVE WEATHER</span>' +
+        '<span class="prf-extra-tile-v">' + (wAct ? wAct.name : 'INACTIVE') + '</span>' +
+      '</div>';
+  }
 }
-
-
 function hideRollResult() {
   if (rollState.showcase) return; /* showcase terbuka: klaim dulu, jangan hilangkan reveal di belakangnya */
   /* hide saat auto jalan = sembunyi permanen sampai auto start lagi; hide manual = tutup saja,
