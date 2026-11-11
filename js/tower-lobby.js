@@ -1021,7 +1021,7 @@ function startTowerBattle(){
   armShotFx(tfx,0);partyDmgApply(tfx);
   if(tfx&&tfx.psychicBarrier)bt.psychic={left:tfx.psychicBarrier.turns,dr:tfx.psychicBarrier.dr,healPct:tfx.psychicBarrier.healPct};
   if(tfx&&tfx.sleepStrike){bt.sleepLeft[0]=tfx.sleepStrike.turns;bt.sleepArmed[0]=true;}
-   if(tfx&&tfx.entryFreeze&&!foeStatusImmune()){bt.eStun=tfx.entryFreeze.turns;bt.freezeLeft=tfx.entryFreeze.turns;setTimeout(()=>floatText(".fighter.foe","FROZEN","crit"),bsMs(300));}
+   if(tfx&&tfx.entryFreeze&&!foeStatusImmune()){bt.eStun=tfx.entryFreeze.turns;bt.freezeLeft=tfx.entryFreeze.turns;setTimeout(()=>{floatText(".fighter.foe","FROZEN","crit");if(window.playFreezeFx)playFreezeFx("foe",false);},bsMs(300));}
    if(tfx&&tfx.heavyRain)bt.rain={left:tfx.heavyRain.turns,healPct:tfx.heavyRain.healPct};
    if(tfx&&tfx.timeStop&&!foeStatusImmune()){bt.eStun=tfx.timeStop.turns;setTimeout(()=>floatText(".fighter.foe","THE WORLD","crit"),bsMs(300));}
   if(tfx&&tfx.dimensionShift){bt.eAbilityOff=tfx.dimensionShift.turns;setTimeout(()=>floatText(".fighter.foe","AMENOMINAKA","crit"),bsMs(300));}
@@ -1168,9 +1168,9 @@ function advanceTowerFoe(){
     {const cfx=resolveFx(bt.eq,bt.efx);if(cfx.copy&&cfx.copy.turns)bt.copyLeft=cfx.copy.turns;}
   {const nfx=resolveFx(bt.eq,bt.efx);
    /* FOE ENTRY FREEZE (ICE QUEEN): musuh baru masuk -> bekukan turns giliran (pola entryFreeze, guard statusImmune) */
-   if(nfx.foeEntryFreeze&&!foeStatusImmune()){bt.eStun=nfx.foeEntryFreeze.turns;bt.freezeLeft=nfx.foeEntryFreeze.turns;setTimeout(()=>floatText(".fighter.foe","FROZEN","crit"),bsMs(300));}
+   if(nfx.foeEntryFreeze&&!foeStatusImmune()){bt.eStun=nfx.foeEntryFreeze.turns;bt.freezeLeft=nfx.foeEntryFreeze.turns;setTimeout(()=>{floatText(".fighter.foe","FROZEN","crit");if(window.playFreezeFx)playFreezeFx("foe",false);},bsMs(300));}
    /* FREEZE TRANSFER (ABSOLUTE ZERO): musuh ini mewarisi freeze dari target beku yang dibunuh sebelumnya */
-   if(bt.freezeNext){bt.freezeNext=false;if(!foeStatusImmune()){bt.eStun=Math.max(bt.eStun,1);bt.freezeLeft=Math.max(bt.freezeLeft,1);setTimeout(()=>floatText(".fighter.foe","FROZEN","crit"),bsMs(360));}}
+   if(bt.freezeNext){bt.freezeNext=false;if(!foeStatusImmune()){bt.eStun=Math.max(bt.eStun,1);bt.freezeLeft=Math.max(bt.freezeLeft,1);setTimeout(()=>{floatText(".fighter.foe","FROZEN","crit");if(window.playFreezeFx)playFreezeFx("foe",false);},bsMs(360));}}
   }
 bt.ePoison=0;bt.dizzyStack=0;bt.dizzyLeft=0;bt.rbBounce=0;bt.pbKey="";bt.pbStreak=0;
 bt.pBurn=0;bt.pFreeze=0;bt.pPoisonCut=0;bt.pInk=0;bt.pInkPct=0;
@@ -1201,6 +1201,7 @@ bt.pBurn=0;bt.pFreeze=0;bt.pPoisonCut=0;bt.pInk=0;bt.pInkPct=0;
     const tl=document.getElementById("turnLabel");if(tl)tl.innerHTML="FLOOR <b>"+towerRun.floor+"</b> · WAVE <b>"+(towerRun.idx+1)+"/"+towerRun.waves.length+"</b>";
     floatText(".fighter.foe","TAG-IN!","tagin");
     if(typeof window.hzBattleSync==="function"){try{window.hzBattleSync();}catch(e){}}
+    if(typeof window.sheetStatusSync==="function"){try{window.sheetStatusSync();}catch(e){}}
     /* Musuh baru masuk = giliran MUSUH yang jalan. GET EXCITED satu-satunya yang menyela (serangan ekstra pemain). */
     if(bt.excited){bt.excited=false;floatText(".fighter.foe","EXTRA ATTACK!","crit");schedPhase(450,playerPhase);}else{schedPhase(450,enemyPhase);}
   },bsMs(960));

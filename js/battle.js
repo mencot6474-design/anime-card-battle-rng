@@ -213,6 +213,13 @@ function hzSkillDescEn(charId, fallback){
   return safe;
 }
 
+function hzStatusLayersHtml(){
+  return `<div class="fx-overlay fx-flash"></div>
+  <div class="fx-overlay fx-burn-layer"><svg class="fx-burn-svg" viewBox="0 0 240 348" preserveAspectRatio="none" aria-hidden="true"><path d="M0,348 L0,255 Q24,225 18,175 Q44,215 58,242 Q82,190 76,142 Q108,195 120,235 Q138,180 164,148 Q162,202 184,238 Q208,198 220,165 Q234,210 240,248 L240,348 Z" fill="rgba(255,77,26,0.44)"/><path d="M0,348 L0,285 Q28,258 34,222 Q58,264 78,278 Q104,238 118,210 Q138,252 160,275 Q186,232 204,214 Q224,256 240,280 L240,348 Z" fill="rgba(255,209,102,0.34)"/></svg></div>
+  <div class="fx-overlay fx-freeze-layer"><svg viewBox="0 0 240 348" preserveAspectRatio="none" aria-hidden="true"><polygon points="0,0 105,0 32,96 0,68" fill="rgba(230,252,255,.46)"/><polygon points="240,0 135,0 208,104 240,72" fill="rgba(125,249,255,.40)"/><polygon points="0,348 112,348 42,244 0,272" fill="rgba(125,249,255,.40)"/><polygon points="240,348 128,348 198,246 240,276" fill="rgba(230,252,255,.44)"/><polygon points="24,18 76,82 32,126" fill="rgba(255,255,255,.22)"/><polygon points="216,328 164,262 208,218" fill="rgba(255,255,255,.22)"/><path d="M0 70L88 134L44 190L116 238M240 82L152 146L194 200L128 248" fill="none" stroke="#e6fcff" stroke-width="2.2" stroke-opacity=".88"/><path d="M36 0L92 92M204 0L148 92M36 348L92 256M204 348L148 256" fill="none" stroke="#7DF9FF" stroke-width="1.8" stroke-opacity=".8"/></svg></div>
+  <div class="fx-overlay fx-shock-layer"><svg viewBox="0 0 240 348" preserveAspectRatio="none" aria-hidden="true"><polyline points="8,44 48,70 28,102 74,132 52,164" fill="none" stroke="#f3e600" stroke-width="3"/><polyline points="232,36 188,74 212,106 168,142 194,174" fill="none" stroke="#7DF9FF" stroke-width="3"/><polyline points="14,300 54,264 34,234 78,200" fill="none" stroke="#7DF9FF" stroke-width="2.8"/><polyline points="226,306 184,268 206,238 162,202" fill="none" stroke="#f3e600" stroke-width="2.8"/></svg></div>`;
+}
+
 function foeFighterInnerHtml(en,es,opts){
   opts=opts||{};
   const hpId=opts.hpId||"hpFoe",hpTid=opts.hpTid||"hpFoeT";
@@ -231,6 +238,7 @@ function foeFighterInnerHtml(en,es,opts){
     ${hzLayers}
     <img class="fc-art card-art" src="${en.img}" alt="${en.name}">
     <div class="fc-vig card-shade"></div>
+    ${hzStatusLayersHtml()}
     <div class="fc-top card-top-bar">
       ${stHtml?`<div class="hz-card-stamps">${stHtml}</div>`:""}
       <div class="fc-badges card-badges">${hzBadgeHtml(mut,null,false,role)}</div>
@@ -271,6 +279,7 @@ function meFighterHtml(s,opts){
     ${hzLayers}
     <img class="fc-art card-art" src="${cardImg(s.char)}" alt="${cardName(s.char)}"${pos}>
     <div class="fc-vig card-shade"></div>
+    ${hzStatusLayersHtml()}
     <div class="fc-top card-top-bar">
       ${stHtml?`<div class="hz-card-stamps">${stHtml}</div>`:""}
       <div class="fc-badges card-badges">${hzBadgeHtml(mut,s.trait,!!s.shiny,"OPERATOR")}</div>
@@ -299,6 +308,7 @@ function meShadowHtml(sh){
     ${hzLayers}
     <img class="fc-art card-art" src="${sh.img}" alt="${sh.name}" style="filter:grayscale(.35) brightness(.72) hue-rotate(215deg) saturate(1.5)">
     <div class="fc-vig card-shade"></div>
+    ${hzStatusLayersHtml()}
     <div class="fc-top card-top-bar">
       <div class="hz-card-stamps">${hzCardStampsHtml("secret",null,false)}</div>
       <div class="fc-badges card-badges"><span class="c-badge b-mut-secret">SHADOW</span></div>
@@ -512,7 +522,7 @@ function startBattle(){
   armShotFx(fx0,0);partyDmgApply(fx0);
   if(fx0.psychicBarrier)bt.psychic={left:fx0.psychicBarrier.turns,dr:fx0.psychicBarrier.dr,healPct:fx0.psychicBarrier.healPct};
   if(fx0.sleepStrike){bt.sleepLeft[0]=fx0.sleepStrike.turns;bt.sleepArmed[0]=true;}
-   if(fx0.entryFreeze&&!foeStatusImmune()){bt.eStun=fx0.entryFreeze.turns;bt.freezeLeft=fx0.entryFreeze.turns;setTimeout(()=>floatText(".fighter.foe","FROZEN","crit"),bsMs(300));}
+   if(fx0.entryFreeze&&!foeStatusImmune()){bt.eStun=fx0.entryFreeze.turns;bt.freezeLeft=fx0.entryFreeze.turns;setTimeout(()=>{floatText(".fighter.foe","FROZEN","crit");if(window.playFreezeFx)playFreezeFx("foe",false);},bsMs(300));}
    if(fx0.heavyRain)bt.rain={left:fx0.heavyRain.turns,healPct:fx0.heavyRain.healPct};
    if(fx0.timeStop&&!foeStatusImmune()){bt.eStun=fx0.timeStop.turns;setTimeout(()=>floatText(".fighter.foe","THE WORLD","crit"),bsMs(300));}
   if(fx0.dimensionShift){bt.eAbilityOff=fx0.dimensionShift.turns;setTimeout(()=>floatText(".fighter.foe","AMENOMINAKA","crit"),bsMs(300));}
@@ -526,7 +536,9 @@ if(fx0.dupEntry){bt.pMax=Math.round(bt.pMax*2);bt.pHp=bt.pMax;bt.atkBuff[bt.acti
 if(fx0.worldCorrupt){bt.wc={c:0,atk:Math.round(cardStats(bt.eq.char,bt.eq.mut,bt.eq.trait,bt.eq.shiny).atk),every:fx0.worldCorrupt.every,pct:fx0.worldCorrupt.pct,dmgUp:fx0.worldCorrupt.dmgUp};setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","ABILITY CORRUPTED","crit");},bsMs(520));}
   bt.fighters.forEach((f,i)=>{const x=resolveFx(f,efx);if(x.splitDeath)bt.splitLeft[i]=x.splitDeath.times;});
   applyFoeEntryPassives();
-  schedPhase(700,step);
+  if(typeof window.hzBattleSync==="function")setTimeout(window.hzBattleSync,bsMs(320));
+  if(typeof window.sheetStatusSync==="function")setTimeout(window.sheetStatusSync,bsMs(320));
+  schedPhase(450,step);
 }
 function applyFoeEntryPassives(){
   if(!bt||bt.over)return;
@@ -560,7 +572,7 @@ function applyFoeEntryPassives(){
       setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","IMMUNE · FREEZE","heal");},bsMs(300));
     }else{
       bt.pStun=Math.max(bt.pStun||0,efx.entryFreeze.turns);bt.pFreeze=efx.entryFreeze.turns;
-      setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","FROZEN","crit");},bsMs(300));
+      setTimeout(()=>{if(bt&&!bt.over){floatText(".fighter.me","FROZEN","crit");if(window.playFreezeFx)playFreezeFx("me",false);}},bsMs(300));
     }
   }
   if(efx.dimensionShift){
@@ -622,7 +634,7 @@ function tagIn(){
   armShotFx(nfx,next);
   if(nfx.psychicBarrier)bt.psychic={left:nfx.psychicBarrier.turns,dr:nfx.psychicBarrier.dr,healPct:nfx.psychicBarrier.healPct};
   if(nfx.sleepStrike){bt.sleepLeft[next]=nfx.sleepStrike.turns;bt.sleepArmed[next]=true;}
-   if(nfx.entryFreeze&&!foeStatusImmune()){bt.eStun=nfx.entryFreeze.turns;bt.freezeLeft=nfx.entryFreeze.turns;setTimeout(()=>floatText(".fighter.foe","FROZEN","crit"),bsMs(300));}
+   if(nfx.entryFreeze&&!foeStatusImmune()){bt.eStun=nfx.entryFreeze.turns;bt.freezeLeft=nfx.entryFreeze.turns;setTimeout(()=>{floatText(".fighter.foe","FROZEN","crit");if(window.playFreezeFx)playFreezeFx("foe",false);},bsMs(300));}
    if(nfx.heavyRain)bt.rain={left:nfx.heavyRain.turns,healPct:nfx.heavyRain.healPct};
    if(nfx.timeStop&&!foeStatusImmune()){bt.eStun=nfx.timeStop.turns;setTimeout(()=>floatText(".fighter.foe","THE WORLD","crit"),bsMs(300));}
 bt.pGuardDr=(nfx&&nfx.puppetBody)?nfx.puppetBody.dr:((nfx&&nfx.autoBlock)?nfx.autoBlock.pct:0);
@@ -652,6 +664,7 @@ if(nfx.worldCorrupt){bt.wc={c:0,atk:Math.round(cardStats(bt.eq.char,bt.eq.mut,bt
     if(me3){me3.classList.add("tag-enter");enterFx(me3);setTimeout(()=>me3.classList.remove("tag-enter"),650);}
     floatText(".fighter.me","TAG-IN!","tagin");
     if(typeof window.hzBattleSync==="function"){try{window.hzBattleSync();}catch(e){}}
+    if(typeof window.sheetStatusSync==="function"){try{window.sheetStatusSync();}catch(e){}}
   },bsMs(960));
   return true;
 }
@@ -724,7 +737,7 @@ function trySave(){
     armShotFx(fx,a);
     if(fx.psychicBarrier)bt.psychic={left:fx.psychicBarrier.turns,dr:fx.psychicBarrier.dr,healPct:fx.psychicBarrier.healPct};
     if(fx.sleepStrike){bt.sleepLeft[a]=fx.sleepStrike.turns;bt.sleepArmed[a]=true;}
-     if(fx.entryFreeze&&!foeStatusImmune()){bt.eStun=fx.entryFreeze.turns;bt.freezeLeft=fx.entryFreeze.turns;setTimeout(()=>floatText(".fighter.foe","FROZEN","crit"),bsMs(300));}
+     if(fx.entryFreeze&&!foeStatusImmune()){bt.eStun=fx.entryFreeze.turns;bt.freezeLeft=fx.entryFreeze.turns;setTimeout(()=>{floatText(".fighter.foe","FROZEN","crit");if(window.playFreezeFx)playFreezeFx("foe",false);},bsMs(300));}
      if(fx.heavyRain)bt.rain={left:fx.heavyRain.turns,healPct:fx.heavyRain.healPct};
      if(fx.timeStop&&!foeStatusImmune()){bt.eStun=fx.timeStop.turns;setTimeout(()=>floatText(".fighter.foe","THE WORLD","crit"),bsMs(300));}
 bt.pGuardDr=(fx&&fx.puppetBody)?fx.puppetBody.dr:((fx&&fx.autoBlock)?fx.autoBlock.pct:0);
@@ -804,7 +817,7 @@ if(fx.worldCorrupt){bt.wc={c:0,atk:Math.round(cardStats(bt.eq.char,bt.eq.mut,bt.
   if(fx.rumbling){bt.rumbling=fx.rumbling.turns;bt.rumblingPct=fx.rumbling.pct;setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","THE RUMBLING","burn");},bsMs(600));}
   /* DEATH HEX (ICE REAPER): beneran tumbang -> freeze turns + ePoison atkCut */
   if(fx.deathHex){
-    if(!foeStatusImmune()){bt.eStun=Math.max(bt.eStun||0,fx.deathHex.turns);bt.freezeLeft=Math.max(bt.freezeLeft||0,fx.deathHex.turns);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","HAKKA NO TOGAME · FROZEN","crit");},bsMs(520));}
+    if(!foeStatusImmune()){bt.eStun=Math.max(bt.eStun||0,fx.deathHex.turns);bt.freezeLeft=Math.max(bt.freezeLeft||0,fx.deathHex.turns);setTimeout(()=>{if(bt&&!bt.over){floatText(".fighter.foe","HAKKA NO TOGAME · FROZEN","crit");if(window.playFreezeFx)playFreezeFx("foe",false);}},bsMs(520));}
     bt.ePoison=Math.min(90,(bt.ePoison||0)+fx.deathHex.atkCut);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","-"+fx.deathHex.atkCut+"% ATK PERMANEN","burn");},bsMs(640));
   }
   /* DEATH REAR (THE GRIEFER): mati PERTAMA kali -> remove dari rotasi sekarang, nunggu balik di belakang party */
@@ -869,34 +882,46 @@ function schedPhase(ms,fn){
   },bsMs(ms));
 }
 /* ===== Renderer serangan SATU untuk semua kartu: user & musuh tinggal tukar sisi (A=penyerang, D=target) ===== */
-let _hzAtkAnimMe=null,_hzAtkAnimFoe=null,_hzRecAnimMe=null,_hzRecAnimFoe=null,_hzHitTimer=null;
-function triggerStageShake(){
-  const g=document.getElementById("hzArena")||document.querySelector(".battle-grid");
-  if(!g)return;
-  g.classList.remove("shake");
-  void g.offsetWidth;
-  g.classList.add("shake");
-  setTimeout(()=>g.classList.remove("shake"),340);
-}
-function attackLunge(sel,wind){
-  const atkEl=typeof sel==="string"?document.querySelector(sel):sel;
-  if(!atkEl)return;
-  const isMe=atkEl.classList.contains("me");
-  const defEl=document.querySelector(isMe?".fighter.foe":".fighter.me");
-  if(!defEl)return;
-  const atkCol=atkEl.closest(".me-col")||atkEl.parentElement;
-  const defCol=defEl.closest(".me-col")||defEl.parentElement;
-
-  /* Cancel any in-flight WAAPI animations so getBoundingClientRect() measures true resting positions */
+let _hzAtkAnimMe=null,_hzAtkAnimFoe=null,_hzRecAnimMe=null,_hzRecAnimFoe=null,_hzHitTimer=null,_hzAtkTimers=[],_hzComboRun=0;
+function clearAttackTimers(){
+  _hzComboRun++;
+  if(_hzHitTimer){clearTimeout(_hzHitTimer);_hzHitTimer=null;}
+  if(_hzAtkTimers.length){for(let i=0;i<_hzAtkTimers.length;i++)clearTimeout(_hzAtkTimers[i]);_hzAtkTimers=[];}
   try{
     if(_hzAtkAnimMe){_hzAtkAnimMe.cancel();_hzAtkAnimMe=null;}
     if(_hzAtkAnimFoe){_hzAtkAnimFoe.cancel();_hzAtkAnimFoe=null;}
     if(_hzRecAnimMe){_hzRecAnimMe.cancel();_hzRecAnimMe=null;}
     if(_hzRecAnimFoe){_hzRecAnimFoe.cancel();_hzRecAnimFoe=null;}
+  }catch(e){}
+}
+function triggerStageShake(heavy){
+  const g=document.getElementById("hzArena")||document.querySelector(".battle-grid");
+  if(!g)return;
+  const cls=heavy?"shake-heavy":"shake";
+  g.classList.remove("shake","shake-heavy");
+  void g.offsetWidth;
+  g.classList.add(cls);
+  _hzAtkTimers.push(setTimeout(()=>g.classList.remove(cls),340));
+}
+function attackLunge(sel,opts){
+  const atkEl=typeof sel==="string"?document.querySelector(sel):sel;
+  if(!atkEl)return;
+  const isMe=atkEl.classList.contains("me");
+  const defEl=document.querySelector(isMe?".fighter.foe":".fighter.me");
+  if(!defEl)return;
+  const cfg=(opts&&typeof opts==="object")?opts:{};
+  const mode=cfg.mode||(opts==="whiff"?"whiff":"default");
+  const onHit=(typeof cfg.onHit==="function")?cfg.onHit:null;
+  const atkCol=atkEl.closest(".me-col")||atkEl.parentElement;
+  const defCol=defEl.closest(".me-col")||defEl.parentElement;
+
+  /* Cancel any in-flight WAAPI animations & attack timers before measuring resting coordinates */
+  clearAttackTimers();
+  const runId=_hzComboRun;
+  try{
     if(typeof atkEl.getAnimations==="function")atkEl.getAnimations().forEach(a=>a.cancel());
     if(typeof defEl.getAnimations==="function")defEl.getAnimations().forEach(a=>a.cancel());
   }catch(e){}
-  if(_hzHitTimer){clearTimeout(_hzHitTimer);_hzHitTimer=null;}
 
   const atkCard=atkEl.querySelector(".card-shell")||atkEl;
   const defCard=defEl.querySelector(".card-shell")||defEl;
@@ -905,13 +930,11 @@ function attackLunge(sel,wind){
   if(!fromR.width||!toR.width)return;
   const fromCx=fromR.left+fromR.width/2, fromCy=fromR.top+fromR.height/2;
   const toCx=toR.left+toR.width/2, toCy=toR.top+toR.height/2;
-  const dx=(toCx-fromCx)*0.58;
-  const dy=(toCy-fromCy)*0.58;
-  const windX=-dx*0.16, windY=-dy*0.16;
-  const tiltWind=isMe?-5:5;
-  const tiltStrike=isMe?9:-9;
-  const totalMs=Math.max(260,Math.round(bsMs(620)));
-  const hitMs=Math.round(totalMs*0.44);
+  const dx=(toCx-fromCx)*(mode==="combo"?0.62:0.58);
+  const dy=(toCy-fromCy)*(mode==="combo"?0.62:0.58);
+  const windX=-dx*0.18, windY=-dy*0.18;
+  const tiltWind=isMe?-8:8;
+  const tiltStrike=isMe?8:-8;
 
   if(atkCol)atkCol.style.zIndex="28";
   if(defCol)defCol.style.zIndex="15";
@@ -925,6 +948,142 @@ function attackLunge(sel,wind){
     defEl.style.zIndex="";
   };
 
+  if(mode==="whiff"){
+    const totalMs=Math.max(200,Math.round(bsMs(520)));
+    const dashIn=Math.round(totalMs*0.22);
+    if(window.CyberSfx&&CyberSfx.dash)try{CyberSfx.dash();}catch(e){}
+    if(typeof atkEl.animate==="function"){
+      const animRef=atkEl.animate([
+        {transform:"translate3d(0,0,0) scale(1) rotate(0deg)",offset:0},
+        {transform:`translate3d(${windX.toFixed(1)}px,${windY.toFixed(1)}px,0) scale(0.94) rotate(${tiltWind}deg)`,offset:0.20},
+        {transform:`translate3d(${(dx*1.12).toFixed(1)}px,${(dy*1.12).toFixed(1)}px,0) scale(1.06) rotate(${(tiltStrike*1.15).toFixed(1)}deg)`,offset:0.46},
+        {transform:`translate3d(${(dx*1.04).toFixed(1)}px,${(dy*1.04).toFixed(1)}px,0) scale(1.03) rotate(${tiltStrike}deg)`,offset:0.58},
+        {transform:"translate3d(0,0,0) scale(1) rotate(0deg)",offset:1}
+      ],{duration:totalMs,easing:"cubic-bezier(0.22, 1, 0.36, 1)",fill:"none"});
+      if(isMe)_hzAtkAnimMe=animRef;else _hzAtkAnimFoe=animRef;
+      if(animRef&&animRef.finished)animRef.finished.then(resetZ).catch(resetZ);
+      else _hzAtkTimers.push(setTimeout(resetZ,totalMs+40));
+    }else{
+      _hzAtkTimers.push(setTimeout(resetZ,totalMs+40));
+    }
+    if(onHit)_hzAtkTimers.push(setTimeout(()=>onHit(0),dashIn));
+    return;
+  }
+
+  if(mode==="combo"){
+    const dashMs=Math.max(40,Math.round(bsMs(230)));
+    const jabMs=Math.max(25,Math.round(bsMs(115)));
+    const stepMs=Math.max(28,Math.round(bsMs(135)));
+    const stopMs=Math.max(20,Math.round(bsMs(90)));
+    const retMs=Math.max(45,Math.round(bsMs(240)));
+    const angles=[-0.35,0.55,0];
+    const scales=[0.92,0.98,1.25];
+    const recBase=Math.max(110,Math.round(bsMs(220)));
+
+    if(window.CyberSfx&&CyberSfx.dash)try{CyberSfx.dash();}catch(e){}
+
+    const triggerHit=(h)=>{
+      if(_hzComboRun!==runId)return;
+      const curDefEl=document.querySelector(isMe?".fighter.foe":".fighter.me");
+      const curDefCard=curDefEl?(curDefEl.querySelector(".card-shell")||curDefEl):null;
+      const liveToR=curDefCard?curDefCard.getBoundingClientRect():toR;
+      const destR=liveToR.width?liveToR:toR;
+      if(typeof window.fxAnimeSlash==="function"){
+        try{window.fxAnimeSlash(fromR,destR,isMe,angles[h],scales[h]);}catch(e){}
+      }
+      if(window.CyberSfx){
+        try{
+          if(h===0&&CyberSfx.katanaSlash)CyberSfx.katanaSlash(1);
+          else if(h===1&&CyberSfx.katanaSlash)CyberSfx.katanaSlash(1.25);
+          else if(h===2&&CyberSfx.katanaFinisher)CyberSfx.katanaFinisher();
+        }catch(e){}
+      }
+      if(curDefEl&&typeof window.hzFlashCard==="function"){try{window.hzFlashCard(curDefEl,"hit");}catch(e){}}
+      triggerStageShake(h===2);
+      const isFin=(h===2);
+      const rDist=isFin?24:14;
+      const recoilX=(toCx-fromCx)>0?rDist:-rDist;
+      const recoilY=(toCy-fromCy)>0?(isFin?-14:-9):(isFin?14:9);
+      const recoilRot=isMe?(isFin?9.6:4.8):(isFin?-9.6:-4.8);
+      if(curDefEl&&typeof curDefEl.animate==="function"){
+        try{curDefEl.getAnimations().forEach(a=>a.cancel());}catch(e){}
+        const recRef=curDefEl.animate([
+          {transform:"translate3d(0,0,0) scale(1) rotate(0deg)",offset:0},
+          {transform:`translate3d(${recoilX}px,${recoilY}px,0) scale(${isFin?0.91:0.95}) rotate(${recoilRot}deg)`,offset:0.26},
+          {transform:`translate3d(${(-recoilX*0.32).toFixed(1)}px,${(-recoilY*0.32).toFixed(1)}px,0) scale(1.02) rotate(${(-recoilRot*0.3).toFixed(1)}deg)`,offset:0.64},
+          {transform:"translate3d(0,0,0) scale(1) rotate(0deg)",offset:1}
+        ],{duration:isFin?Math.max(170,Math.round(recBase*1.45)):recBase,easing:"cubic-bezier(0.22, 1, 0.36, 1)",fill:"none"});
+        if(isMe)_hzRecAnimFoe=recRef;else _hzRecAnimMe=recRef;
+      }
+      if(onHit)onHit(h);
+    };
+
+    const runJab=(idx)=>{
+      if(_hzComboRun!==runId||typeof atkEl.animate!=="function")return;
+      const r1=(idx%2?-5:7),r2=(idx%2?9:-4);
+      const jRef=atkEl.animate([
+        {transform:`translate3d(${(dx*0.96).toFixed(1)}px,${(dy*0.96).toFixed(1)}px,0) scale(1.06) rotate(${r1}deg)`},
+        {transform:`translate3d(${dx.toFixed(1)}px,${dy.toFixed(1)}px,0) scale(1.10) rotate(${r2}deg)`}
+      ],{duration:jabMs,fill:"forwards"});
+      if(isMe)_hzAtkAnimMe=jRef;else _hzAtkAnimFoe=jRef;
+    };
+
+    const finishCombo=()=>{
+      if(_hzComboRun!==runId)return;
+      triggerHit(2);
+      _hzAtkTimers.push(setTimeout(()=>{
+        if(_hzComboRun!==runId)return;
+        if(typeof atkEl.animate==="function"){
+          const retRef=atkEl.animate([
+            {transform:`translate3d(${dx.toFixed(1)}px,${dy.toFixed(1)}px,0) scale(1.1) rotate(${tiltStrike}deg)`,offset:0},
+            {transform:`translate3d(${(-dx*0.08).toFixed(1)}px,${(-dy*0.08).toFixed(1)}px,0) scale(0.97)`,offset:0.7},
+            {transform:"translate3d(0,0,0) scale(1) rotate(0deg)",offset:1}
+          ],{duration:retMs,easing:"cubic-bezier(0.22, 1, 0.36, 1)",fill:"none"});
+          if(isMe)_hzAtkAnimMe=retRef;else _hzAtkAnimFoe=retRef;
+          const cleanReturn=()=>{
+            if(_hzComboRun!==runId)return;
+            try{if(typeof atkEl.getAnimations==="function")atkEl.getAnimations().forEach(a=>a.cancel());}catch(e){}
+            resetZ();
+          };
+          if(retRef&&retRef.finished)retRef.finished.then(cleanReturn).catch(cleanReturn);
+          else _hzAtkTimers.push(setTimeout(cleanReturn,retMs+30));
+        }else{
+          resetZ();
+        }
+      },stopMs));
+    };
+
+    const startHits=()=>{
+      if(_hzComboRun!==runId)return;
+      triggerHit(0);
+      runJab(0);
+      _hzAtkTimers.push(setTimeout(()=>{
+        if(_hzComboRun!==runId)return;
+        triggerHit(1);
+        runJab(1);
+        _hzAtkTimers.push(setTimeout(finishCombo,stepMs));
+      },stepMs));
+    };
+
+    if(typeof atkEl.animate==="function"){
+      const dashRef=atkEl.animate([
+        {transform:"translate3d(0,0,0) scale(1,1) rotate(0deg)",offset:0},
+        {transform:`translate3d(${windX.toFixed(1)}px,${windY.toFixed(1)}px,0) scale(0.92,1.06) rotate(${tiltWind}deg)`,offset:0.32},
+        {transform:`translate3d(${dx.toFixed(1)}px,${dy.toFixed(1)}px,0) scale(1.08,0.96) rotate(${tiltStrike}deg)`,offset:1}
+      ],{duration:dashMs,easing:"cubic-bezier(0.16, 1, 0.3, 1)",fill:"forwards"});
+      if(isMe)_hzAtkAnimMe=dashRef;else _hzAtkAnimFoe=dashRef;
+      let started=false;
+      const onceStart=()=>{if(started)return;started=true;startHits();};
+      if(dashRef&&dashRef.finished)dashRef.finished.then(onceStart).catch(()=>{});
+      _hzAtkTimers.push(setTimeout(onceStart,dashMs+24));
+    }else{
+      _hzAtkTimers.push(setTimeout(startHits,dashMs));
+    }
+    return;
+  }
+
+  const totalMs=Math.max(240,Math.round(bsMs(600)));
+  const hitMs=Math.round(totalMs*0.44);
   if(typeof atkEl.animate==="function"){
     const animRef=atkEl.animate([
       {transform:"translate3d(0,0,0) scale(1) rotate(0deg)",offset:0,easing:"cubic-bezier(0.32, 0, 0.67, 0)"},
@@ -936,22 +1095,22 @@ function attackLunge(sel,wind){
     if(animRef&&animRef.finished){
       animRef.finished.then(resetZ).catch(resetZ);
     }else{
-      setTimeout(resetZ,totalMs+40);
+      _hzAtkTimers.push(setTimeout(resetZ,totalMs+40));
     }
   }else{
-    setTimeout(resetZ,totalMs+40);
+    _hzAtkTimers.push(setTimeout(resetZ,totalMs+40));
   }
 
   _hzHitTimer=setTimeout(()=>{
     _hzHitTimer=null;
-    const curAtkEl=document.querySelector(isMe?".fighter.me":".fighter.foe");
     const curDefEl=document.querySelector(isMe?".fighter.foe":".fighter.me");
     const curDefCard=curDefEl?(curDefEl.querySelector(".card-shell")||curDefEl):null;
     const liveToR=curDefCard?curDefCard.getBoundingClientRect():toR;
     if(typeof window.fxImpactSlash==="function"){
       try{window.fxImpactSlash(fromR,liveToR.width?liveToR:toR,isMe);}catch(e){}
     }
-    triggerStageShake();
+    if(curDefEl&&typeof window.hzFlashCard==="function"){try{window.hzFlashCard(curDefEl,"hit");}catch(e){}}
+    triggerStageShake(false);
     const recoilX=(toCx-fromCx)>0?18:-18;
     const recoilY=(toCy-fromCy)>0?-12:12;
     const recoilRot=isMe?5:-5;
@@ -965,9 +1124,10 @@ function attackLunge(sel,wind){
       ],{duration:Math.max(160,Math.round(bsMs(380))),easing:"cubic-bezier(0.22, 1, 0.36, 1)",fill:"none"});
       if(isMe)_hzRecAnimFoe=recRef;else _hzRecAnimMe=recRef;
     }
+    if(onHit)onHit(0);
   },hitMs);
 }
-function shakeScreen(big){triggerStageShake();}
+function shakeScreen(big){triggerStageShake(!!big);}
 function hitStop(ms){}
 function speedLines(big){}
 function enterFx(el){
@@ -984,17 +1144,79 @@ function performAttack(o){
   const galaxy=!!o.galaxy;
   const psy=!!o.psychic;
   const hstep=psy?PSY_T.step:o.domainStrike?80:160;
-  /* Exact hit moment of attackLunge (620ms * 0.44 = 273ms) */
-  const hitDelay=273;
+  /* Single-hit miss/evade/void vs single-hit 3-Hit Combo vs multi-hit barrage */
+  const s0=shots[0];
+  const isMissShot=shots.length===1&&s0&&(s0.evade||s0.miss||s0.void);
+  const isBasicCombo=shots.length===1&&s0&&!isMissShot&&!galaxy&&!psy&&!md&&!o.domainStrike&&!o.ariseMode&&!o.ranton;
 
   const startHp=Math.max(0,Math.min(o.defMax,o.defHpStart));
   const endHp=Math.max(0,o.defHpEnd);
   const span=Math.max(0,startHp-endHp);
   const hpAt=(cum)=>o.total>0?Math.max(endHp,Math.round(startHp-span*Math.min(1,cum/o.total))):endHp;
-  attackLunge(A,true);
-  if(!bt)return;
+
   const self=(o.domainStrike?o.fx.domain:o.ariseMode?o.fx.barrage:null);
   if(self&&self.selfStun&&o.recharge)setTimeout(()=>{if(bt&&o.recharge)o.recharge(self);},bsMs(180));
+
+  if(isMissShot){
+    attackLunge(A,{mode:"whiff"});
+    if(!bt)return;
+    if(s0.evade){
+      setTimeout(()=>{
+        if(!bt||bt.over)return;
+        if(window.playMatrixDodgeFx)window.playMatrixDodgeFx(D,A);
+        floatText(D,"DODGE","miss");
+      },bsMs(140));
+    }else{
+      setTimeout(()=>{if(bt&&!bt.over)floatText(D,s0.void?"VOID":"MISS","miss");},bsMs(230));
+    }
+    setTimeout(()=>{
+      try{
+        if(bt&&!bt.over)setBar(o.barId,o.barTid,endHp,o.defMax);
+        if(bt&&o.onAnimEnd)o.onAnimEnd();
+      }catch(err){
+        console.error("onAnimEnd error",err);
+        if(bt&&!bt.over){ try{ bt.timer=null; endBattle(bt.eHp<=0); }catch(e2){} }
+      }
+    },bsMs(600));
+    return;
+  }
+
+  if(isBasicCombo){
+    const d0=Math.min(s0.d,Math.round(s0.d*0.24));
+    const d1=Math.min(s0.d-d0,Math.round(s0.d*0.30));
+    const d2=Math.max(0,s0.d-d0-d1);
+    const parts=[d0,d1,d2];
+    let cum=0;
+    attackLunge(A,{
+      mode:"combo",
+      onHit(h){
+        if(!bt||bt.over)return;
+        const dm=parts[h]||0;
+        cum+=dm;
+        const isLast=(h===2);
+        if(dm>0||isLast){
+          floatText(D,"-"+fmt(dm),(o.crit&&isLast)?"crit":"");
+        }
+        setBar(o.barId,o.barTid,isLast?endHp:hpAt(cum),o.defMax);
+        if(isLast&&s0.pierce)setTimeout(()=>{if(bt&&!bt.over)floatText(D,"PIERCE","crit");},bsMs(60));
+      }
+    });
+    if(!bt)return;
+    setTimeout(()=>{
+      try{
+        if(bt&&!bt.over)setBar(o.barId,o.barTid,endHp,o.defMax);
+        if(bt&&o.onAnimEnd)o.onAnimEnd();
+      }catch(err){
+        console.error("onAnimEnd error",err);
+        if(bt&&!bt.over){ try{ bt.timer=null; endBattle(bt.eHp<=0); }catch(e2){ console.error("force endBattle error",e2); } }
+      }
+    },bsMs(840));
+    return;
+  }
+
+  const hitDelay=264;
+  attackLunge(A,true);
+  if(!bt)return;
   const susStart=(o.ranton&&id==="CH_EX_MADARA"&&!bt.over)?MADARA_T.slash:hitDelay;
   const dlyAt=i=> galaxy ? hitDelay : md ? (susStart+i*MADARA_T.step) : (susStart+i*hstep);
   let cum=0,barEnd=hitDelay;
@@ -1014,7 +1236,6 @@ function performAttack(o){
     setTimeout(()=>setBar(o.barId,o.barTid,stepHp,o.defMax),bsMs(ft));
     if(s.pierce)setTimeout(()=>floatText(D,"PIERCE","crit"),bsMs(ft+60));
   });
-  /* Wait until the attacker card finishes returning to rest (620ms) before triggering death / next step */
   const finishWait=Math.max(660,barEnd+380);
   setTimeout(()=>{
     try{
@@ -1066,7 +1287,7 @@ function playerPhase(){
     setBar("hpMe","hpMeT",bt.pHp,bt.pMax);
     setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","UNLIMITED VOID","heal");},bsMs(220));
     if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE Â· VOID","heal"),bsMs(460));}
-    else{bt.eStun+=fx.unlimitedVoid.turns;setTimeout(()=>floatText(".fighter.foe","UNLIMITED VOID","crit"),bsMs(460));}
+    else{bt.eStun+=fx.unlimitedVoid.turns;setTimeout(()=>{floatText(".fighter.foe","UNLIMITED VOID","crit");if(window.playShockFx)playShockFx("foe");},bsMs(460));}
   }
   document.getElementById("turnLabel").innerHTML=(bt.tower&&towerRun)?("FLOOR <b>"+towerRun.floor+"</b> &middot; WAVE <b>"+(towerRun.idx+1)+"/"+towerRun.waves.length+"</b>"):("TURN <b>"+t+"</b>");
   setTurnPill("you","YOUR TURN");
@@ -1104,7 +1325,7 @@ function playerPhase(){
     setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","BIOKINESIS -"+fmt(td),"burn");}},bsMs(200));
     if(bt.eHp<=0){setTimeout(()=>{if(bt&&!bt.over)foeDown();},bsMs(700));return;}
   }
-  if((bt.pFreeze||0)>0)bt.pFreeze--;
+  const _wasFrozen=(bt.pFreeze||0)>0;if(_wasFrozen){bt.pFreeze--;if(bt.pFreeze===0&&window.playFreezeFx)setTimeout(()=>playFreezeFx("me",true),bsMs(160));}
   if(bt.pStun>0){
     if(fx.statusImmune){
       /* STATUS IMMUNE: stun DIBATALKAN — giliran tetap jalan */
@@ -1113,7 +1334,7 @@ function playerPhase(){
     }else{
       bt.pStun--;
       const lbl=(bt.pDrTurns>0&&bt.pDr)?"STUN · DR "+bt.pDr+"%":"STUN";
-      setTimeout(()=>floatText(".fighter.me",lbl,"crit"),bsMs(200));
+      setTimeout(()=>{floatText(".fighter.me",lbl,"crit");if(!_wasFrozen&&window.playShockFx)playShockFx("me");if(window.sheetStatusSync)window.sheetStatusSync();},bsMs(200));
       schedPhase(600,enemyPhase);
       return;
     }
@@ -1301,7 +1522,7 @@ function playerPhase(){
   if(fx.desperateStrike&&bt.dsState[a]===1){dmgMult*=fx.desperateStrike.mult;bt.dsState[a]=2;setTimeout(()=>floatText(".fighter.me",fx.desperateStrike.text||"DESPERATE STRIKE","crit"),bsMs(200));}
   /* SLEEP STRIKE dilepas: serangan pertama setelah bangun ×mult sekali; overkill disimpan di bt.overflow (dihantamkan ke musuh berikutnya di advanceTowerFoe) */
   let sleepHit=false;
-  if(fx.sleepStrike&&bt.sleepArmed[a]){sleepHit=true;dmgMult*=fx.sleepStrike.mult;bt.sleepArmed[a]=false;setTimeout(()=>floatText(".fighter.me",fx.sleepStrike.text||"THUNDERCLAP FLASH","crit"),bsMs(220));}
+  if(fx.sleepStrike&&bt.sleepArmed[a]){sleepHit=true;dmgMult*=fx.sleepStrike.mult;bt.sleepArmed[a]=false;setTimeout(()=>{floatText(".fighter.me",fx.sleepStrike.text||"THUNDERCLAP FLASH","crit");if((fx.sleepStrike.text||"THUNDERCLAP FLASH").indexOf("THUNDER")!==-1&&window.playShockFx)playShockFx("foe");},bsMs(220));}
     /* SERIOUS PUNCH dilepas: giliran ke-charge -> xmult + arm shockwave 10% (dipakai di blok hits) */
   if(fx.seriousPunch&&bt.spArmed[a]){bt.spArmed[a]=false;dmgMult*=fx.seriousPunch.mult;setTimeout(()=>floatText(".fighter.me","SERIOUS PUNCH","crit"),bsMs(200));}
   /* FREEZE (10TH CAPTAIN): selama target BEKU (bt.freezeLeft>0, tick paralel eStun di enemyPhase) serangan kartu ini ×mult */
@@ -1320,7 +1541,7 @@ function playerPhase(){
   if(fx.everySecond){bt.atkCount[a]++;if(bt.atkCount[a]%2===0){dmgMult*=fx.everySecond.mult;pen=true;setTimeout(()=>floatText(".fighter.me","ONE PERCENT","crit"),bsMs(220));}}
   /* SUSANOO CHIDORI: tiap serangan ke-N → ×mult damage + menembus pengurangan damage */
   let gammaRayHit=false;
-  if(fx.everyNth){bt.atkCount[a]++;if(bt.atkCount[a]%fx.everyNth.n===0){dmgMult*=fx.everyNth.mult;pen=true;if(fx.everyNth.text==="GAMMA RAY BURST")gammaRayHit=true;setTimeout(()=>floatText(".fighter.me",fx.everyNth.text||"SUSANOO CHIDORI","crit"),bsMs(gammaRayHit?(180+GR_T.first-120):220));}}if(fx.everyNth&&fx.everyNth.next&&bt.atkCount[a]>0&&bt.atkCount[a]%fx.everyNth.n===0&&bt.eHp>0){const nd=Math.max(1,Math.round(atk*(fx.everyNth.next/100)));if(fx.everyNth.all&&bt.tower&&towerRun){lineupAoeHit(nd);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","GAMMA RAY -"+fmt(nd),"crit");},bsMs(gammaRayHit?(180+GR_T.first+120):420));}else if(!fx.everyNth.all&&bt.tower&&towerRun){lineupNextHit(nd);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","DEATH BEAM -"+fmt(nd),"crit");},bsMs(420));}}
+  if(fx.everyNth){bt.atkCount[a]++;if(bt.atkCount[a]%fx.everyNth.n===0){dmgMult*=fx.everyNth.mult;pen=true;if(fx.everyNth.text==="GAMMA RAY BURST")gammaRayHit=true;setTimeout(()=>{floatText(".fighter.me",fx.everyNth.text||"SUSANOO CHIDORI","crit");if(!gammaRayHit&&(fx.everyNth.text||"SUSANOO CHIDORI").indexOf("CHIDORI")!==-1&&window.playShockFx)playShockFx("foe");},bsMs(gammaRayHit?(180+GR_T.first-120):220));}}if(fx.everyNth&&fx.everyNth.next&&bt.atkCount[a]>0&&bt.atkCount[a]%fx.everyNth.n===0&&bt.eHp>0){const nd=Math.max(1,Math.round(atk*(fx.everyNth.next/100)));if(fx.everyNth.all&&bt.tower&&towerRun){lineupAoeHit(nd);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","GAMMA RAY -"+fmt(nd),"crit");},bsMs(gammaRayHit?(180+GR_T.first+120):420));}else if(!fx.everyNth.all&&bt.tower&&towerRun){lineupNextHit(nd);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","DEATH BEAM -"+fmt(nd),"crit");},bsMs(420));}}
   /* THE WORLD (Immortal Vampire): serangan ke-`every` -> stun musuh `turns` giliran lagi (entry stun sudah arming di 4 titik masuk) */
   if(fx.timeStop){bt.atkCount[a]++;if(bt.atkCount[a]%fx.timeStop.every===0&&!foeStatusImmune()){bt.eStun=fx.timeStop.turns;setTimeout(()=>floatText(".fighter.foe","THE WORLD","crit"),bsMs(220));}}
   /* 40-DAY FLOOD (Sea Sovereign): serangan ke-`every` -> ×mult + tembus DR + eksekusi kalau musuh <= exec% HP */
@@ -1546,8 +1767,8 @@ if(fx.inkCorrupt&&total>0){bt.eInk=Math.min(fx.inkCorrupt.max,(bt.eInk||0)+1);bt
     if(efxM.inkCorrupt){bt.pInk=Math.min(efxM.inkCorrupt.max,(bt.pInk||0)+1);bt.pInkPct=efxM.inkCorrupt.pct;setTimeout(()=>floatText(".fighter.me","INK CORRUPTION","burn"),bsMs(380));}
     if(efxM.hpDrain&&!fx.statusImmune){bt.pMax=Math.max(1,Math.round(bt.pMax*(1-efxM.hpDrain.pct/100)));if(bt.pHp>bt.pMax)bt.pHp=bt.pMax;setTimeout(()=>{if(bt&&!bt.over){floatText(".fighter.me","HP DRAIN","crit");setBar("hpMe","hpMeT",bt.pHp,bt.pMax);}},bsMs(360));}
   }
-  if(ranton&&total>0&&bt.eHp>0&&fx.ranton.stun){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else bt.eStun=fx.ranton.stun;}
-   if(masterpiece&&bt.eHp>0&&fx.valhalla.master.stun){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else{bt.eStun=Math.max(bt.eStun||0,fx.valhalla.master.stun);setTimeout(()=>floatText(".fighter.foe","MASTERPIECE STUN","crit"),bsMs(520));}}
+  if(ranton&&total>0&&bt.eHp>0&&fx.ranton.stun){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else{bt.eStun=fx.ranton.stun;if(window.playShockFx)setTimeout(()=>playShockFx("foe"),bsMs(360));}}
+   if(masterpiece&&bt.eHp>0&&fx.valhalla.master.stun){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else{bt.eStun=Math.max(bt.eStun||0,fx.valhalla.master.stun);setTimeout(()=>{floatText(".fighter.foe","MASTERPIECE STUN","crit");if(window.playShockFx)playShockFx("foe");},bsMs(520));}}
   /* HP DRAIN: tiap serangan yang kena memotong MAX HP musuh secara permanen (compounding) */
   if(fx.hpDrain&&total>0&&bt.eHp>0&&!foeStatusImmune()){
     bt.es.hp=Math.max(1,Math.round(bt.es.hp*(1-fx.hpDrain.pct/100)));
@@ -1569,14 +1790,14 @@ if(fx.inkCorrupt&&total>0){bt.eInk=Math.min(fx.inkCorrupt.max,(bt.eInk||0)+1);bt
   /* WALL TITANS: tiap `every` giliran, berbaris ngasih bonus pct% ATK ke musuh (di luar serangan normal) */
   if(fx.wallTitans){bt.wtCount[a]=(bt.wtCount[a]||0)+1;if(bt.wtCount[a]%fx.wallTitans.every===0&&bt.eHp>0){const wt=Math.round(atk*fx.wallTitans.pct/100);bt.eHp-=wt;setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","WALL TITANS -"+fmt(wt),"crit");}},bsMs(520));}}
   /* SHOCKWAVE (OCEAN'S GUARDIAN): setiap serangan ke-`every`, kartu aktif musuh kena flat pct% ATK di luar serangan normal (gaya wallTitans; arena 1 musuh aktif = "all enemies" jatuh ke kartu aktif) */
-  if(fx.shockwave){bt.shockCount[a]=(bt.shockCount[a]||0)+1;if(bt.shockCount[a]%fx.shockwave.every===0&&bt.eHp>0){const sw=Math.round(atk*fx.shockwave.pct/100);bt.eHp-=sw;lineupAoeHit(sw);setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","SHOCKWAVE -"+fmt(sw),"crit");}},bsMs(560));}}
+  if(fx.shockwave){bt.shockCount[a]=(bt.shockCount[a]||0)+1;if(bt.shockCount[a]%fx.shockwave.every===0&&bt.eHp>0){const sw=Math.round(atk*fx.shockwave.pct/100);bt.eHp-=sw;lineupAoeHit(sw);setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","SHOCKWAVE -"+fmt(sw),"crit");if(window.playShockFx)playShockFx("foe");}},bsMs(560));}}
   if(fx.lifesteal&&total>0){
     const ls=Math.round(total*fx.lifesteal/100);bt.pHp=Math.min(bt.pMax,bt.pHp+ls);
     setTimeout(()=>floatText(".fighter.me","+"+fmt(ls),"heal"),bsMs(300));
   }
    /* INK DRAIN (INK ANAMLOY): serangan ke-every -> heal pct% dari damage yang DIBERIKAN serangan itu */
    if(fx.inkDrain&&total>0){bt.paintHits[a]=(bt.paintHits[a]||0)+1;if(bt.paintHits[a]%fx.inkDrain.every===0){const ih=Math.max(1,Math.round(total*fx.inkDrain.pct/100));bt.pHp=Math.min(bt.pMax,bt.pHp+ih);setBar("hpMe","hpMeT",bt.pHp,bt.pMax);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.me","INK DRAIN +"+fmt(ih),"heal");},bsMs(320));}}
-  if(fx.burn&&total>0&&Math.random()*100<fx.burn.chance){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else{bt.eBurn=fx.burn.turns;setTimeout(()=>floatText(".fighter.foe","BURN","burn"),bsMs(360));}}
+  if(fx.burn&&total>0&&Math.random()*100<fx.burn.chance){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else{bt.eBurn=fx.burn.turns;setTimeout(()=>{floatText(".fighter.foe","BURN","burn");if(window.burnSheetTick)burnSheetTick("foe",true);},bsMs(360));}}
   /* HIT FREEZE (ICE QUEEN): chance% per serangan -> bekukan musuh turns giliran (pola burn, guard statusImmune) */
   /* SENZU FINISH MEAL (DUMB HAIR GUY): gain 25% damage sbg flat ATK + 50% sbg max HP, cap maxMultx base */
   if(fx.senzu&&bt.senzuFin&&total>0&&bt.eHp>0){
@@ -1604,9 +1825,9 @@ if(fx.inkCorrupt&&total>0){bt.eInk=Math.min(fx.inkCorrupt.max,(bt.eInk||0)+1);bt
     if(bt.eHp>bt.es.hp)bt.eHp=bt.es.hp;
     setTimeout(()=>{if(bt&&!bt.over){floatText(".fighter.foe","MAX HP CORRUPT","burn");setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);}},bsMs(340));
   }
-  if(fx.hitFreeze&&total>0&&bt.eHp>0&&Math.random()*100<fx.hitFreeze.chance){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else{bt.eStun=fx.hitFreeze.turns;bt.freezeLeft=fx.hitFreeze.turns;setTimeout(()=>floatText(".fighter.foe","FROZEN","crit"),bsMs(360));}}
+  if(fx.hitFreeze&&total>0&&bt.eHp>0&&Math.random()*100<fx.hitFreeze.chance){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else{bt.eStun=fx.hitFreeze.turns;bt.freezeLeft=fx.hitFreeze.turns;setTimeout(()=>{floatText(".fighter.foe","FROZEN","crit");if(window.playFreezeFx)playFreezeFx("foe",false);},bsMs(360));}}
   /* PERFECT SUSANOO (low HP): di bawah ambang, serangan membakar musuh selama N giliran */
-  if(fx.lowHpAura&&total>0&&bt.pHp<bt.pMax*fx.lowHpAura.below/100&&bt.eHp>0){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else{if(fx.lowHpAura.burn)bt.eBurn=fx.lowHpAura.burn.turns;setTimeout(()=>floatText(".fighter.foe","PERFECT SUSANOO","burn"),bsMs(360));}}
+  if(fx.lowHpAura&&total>0&&bt.pHp<bt.pMax*fx.lowHpAura.below/100&&bt.eHp>0){if(foeStatusImmune()){setTimeout(()=>floatText(".fighter.foe","IMMUNE","heal"),bsMs(360));}else{if(fx.lowHpAura.burn)bt.eBurn=fx.lowHpAura.burn.turns;setTimeout(()=>{floatText(".fighter.foe","PERFECT SUSANOO","burn");if(fx.lowHpAura.burn&&window.burnSheetTick)burnSheetTick("foe",true);},bsMs(360));}}
   /* STUN PUNCH (LUCK VOLTIA): counter tiap serangan kena; serangan ke-every -> roll stun + atkBuff permanen */
   if(fx.stunPunch&&total>0&&bt.eHp>0){
     bt.punchCount=bt.punchCount||new Array(bt.fighters.length).fill(0);bt.stunGain=bt.stunGain||new Array(bt.fighters.length).fill(0);
@@ -1614,7 +1835,7 @@ if(fx.inkCorrupt&&total>0){bt.eInk=Math.min(fx.inkCorrupt.max,(bt.eInk||0)+1);bt
     if(bt.punchCount[a]%fx.stunPunch.every===0&&Math.random()*100<fx.stunPunch.chance&&!foeStatusImmune()){
       bt.eStun=Math.max(bt.eStun||0,fx.stunPunch.turns);
       if(bt.stunGain[a]<(fx.stunPunch.max||5)){bt.stunGain[a]++;bt.atkBuff[a]+=fx.stunPunch.atkPct;}
-      setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","STUN! +"+fx.stunPunch.atkPct+"% ATK","crit");},bsMs(360));
+      setTimeout(()=>{if(bt&&!bt.over){floatText(".fighter.foe","STUN! +"+fx.stunPunch.atkPct+"% ATK","crit");if(window.playShockFx)playShockFx("foe");}},bsMs(360));
     }
   }
   /* EIGHT GATES (GREEN BEAST): gerbang tiap kena -> atkBuff; gerbang penuh -> rugi selfPct% max HP (mati via gateKill) */
@@ -1630,8 +1851,8 @@ if(fx.inkCorrupt&&total>0){bt.eInk=Math.min(fx.inkCorrupt.max,(bt.eInk||0)+1);bt
   /* SHOCK ALL (TREMOR EMPEROR): shockwave flat pct% ATK ke seluruh lineup musuh / aktif (story) */
   if(fx.shockAll&&total>0&&bt.eHp>0){
     const sd=Math.max(1,Math.round(atk*fx.shockAll.pct/100));
-    if(bt.tower&&towerRun){lineupAoeHit(sd);setTimeout(()=>{if(bt&&!bt.over)floatText(".fighter.foe","QUAKE -"+fmt(sd),"crit");},bsMs(460));}
-    else{bt.eHp-=sd;setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","QUAKE -"+fmt(sd),"crit");setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);}},bsMs(460));}
+    if(bt.tower&&towerRun){lineupAoeHit(sd);setTimeout(()=>{if(bt&&!bt.over){floatText(".fighter.foe","QUAKE -"+fmt(sd),"crit");if(window.playShockFx)playShockFx("foe");}},bsMs(460));}
+    else{bt.eHp-=sd;setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.foe","hit");floatText(".fighter.foe","QUAKE -"+fmt(sd),"crit");setBar("hpFoe","hpFoeT",Math.max(0,bt.eHp),bt.es.hp);if(window.playShockFx)playShockFx("foe");}},bsMs(460));}
   }
   /* SPLASH (LIGHTBORNE ADMIRAL): tembusan flat pct% ATK ke lineup BERIKUTNYA / aktif lagi (story) */
   if(fx.splash&&total>0&&bt.eHp>0){
@@ -1652,7 +1873,8 @@ if(fx.inkCorrupt&&total>0){bt.eInk=Math.min(fx.inkCorrupt.max,(bt.eInk||0)+1);bt
     if(!foeDead)setTimeout(foeDownCb,bsMs(620));
     return;
   }
-  schedPhase(bajrangActive?BJ_T.first+1300:gammaRayHit?1500:wePhase>=0?1350:fx.psychicBarrage?Math.max(1000,PSY_T.first+(Math.max(1,bt.psyN||1)-1)*PSY_T.step+640):galaxy?GALAXY.total+160:ariseMode?2200:domainStrike?1700:ranton?MADARA_T.total+160:1000,enemyPhase);
+  if(typeof window.sheetStatusSync==="function")setTimeout(window.sheetStatusSync,bsMs(460));
+  schedPhase(bajrangActive?BJ_T.first+1300:gammaRayHit?1500:wePhase>=0?1350:fx.psychicBarrage?Math.max(1000,PSY_T.first+(Math.max(1,bt.psyN||1)-1)*PSY_T.step+640):galaxy?GALAXY.total+160:ariseMode?2200:domainStrike?1700:ranton?MADARA_T.total+160:950,enemyPhase);
 }
 function enemyPhase(){
   if(!bt||bt.over)return;
@@ -1702,7 +1924,7 @@ function enemyPhase(){
   const efx=(bt.eAbilityOff>0)?{}:(bt.efx||{});
   let eDomain=false,eArise=false,eranton=false,eGalaxy=false,eIceBlast=false,eBajrang=false,ePsychicActive=null,eWorldEnder=null,eGammaRay=false;
   /* FREEZE tick (10TH CAPTAIN): hitungan beku turun tiap giliran musuh — paralel dgn eStun, sebelum blok stun biar bonus ×mult habis pas 2 giliran */
-  if(bt.freezeLeft>0)bt.freezeLeft--;
+  const _foeWasFrozen=(bt.freezeLeft||0)>0;if(_foeWasFrozen){bt.freezeLeft--;if(bt.freezeLeft===0&&window.playFreezeFx)setTimeout(()=>playFreezeFx("foe",true),bsMs(160));}
   if(bt.eAbilityOff>0)bt.eAbilityOff--;
   if(bt.copyLeft>0)bt.copyLeft--;
   /* REGEN musuh */
@@ -1728,7 +1950,7 @@ function enemyPhase(){
     }else{
       bt.eStun--;
       anim(".fighter.foe","hit",true);
-      setTimeout(()=>floatText(".fighter.foe","STUNNED","crit"),bsMs(200));
+      setTimeout(()=>{floatText(".fighter.foe","STUNNED","crit");if(!_foeWasFrozen&&window.playShockFx)playShockFx("foe");if(window.sheetStatusSync)window.sheetStatusSync();},bsMs(200));
       bt.turn++;
       schedPhase(1000,playerPhase);
       return;
@@ -1747,12 +1969,12 @@ function enemyPhase(){
     if(typeof foeTurnPassives==="function"&&foeTurnPassives())return;
     const eA=bt.es.atk;
     if(efx.wallTitans){bt.eWt=(bt.eWt||0)+1;if(bt.eWt%efx.wallTitans.every===0){const d2=Math.min(Math.round(bt.pMax*0.25), Math.round(eA*efx.wallTitans.pct/100));bt.pHp=Math.max(0,bt.pHp-d2);setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.me","hit");floatText(".fighter.me","WALL TITANS -"+fmt(d2),"burn");setBar("hpMe","hpMeT",Math.max(0,bt.pHp),bt.pMax);}},bsMs(520));}}
-    if(efx.shockwave){bt.eShock=(bt.eShock||0)+1;if(bt.eShock%efx.shockwave.every===0){const d2=Math.min(Math.round(bt.pMax*0.25), Math.round(eA*efx.shockwave.pct/100));bt.pHp=Math.max(0,bt.pHp-d2);setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.me","hit");floatText(".fighter.me","SHOCKWAVE -"+fmt(d2),"burn");setBar("hpMe","hpMeT",Math.max(0,bt.pHp),bt.pMax);}},bsMs(560));}}
+    if(efx.shockwave){bt.eShock=(bt.eShock||0)+1;if(bt.eShock%efx.shockwave.every===0){const d2=Math.min(Math.round(bt.pMax*0.25), Math.round(eA*efx.shockwave.pct/100));bt.pHp=Math.max(0,bt.pHp-d2);setTimeout(()=>{if(bt&&!bt.over){anim(".fighter.me","hit");floatText(".fighter.me","SHOCKWAVE -"+fmt(d2),"burn");setBar("hpMe","hpMeT",Math.max(0,bt.pHp),bt.pMax);if(window.playShockFx)playShockFx("me");}},bsMs(560));}}
     if(efx.maxCorrupt){bt.pMax=Math.max(1,Math.round(bt.pMax*(100-efx.maxCorrupt.pct)/100));if(bt.pHp>bt.pMax)bt.pHp=bt.pMax;setTimeout(()=>{if(bt&&!bt.over){floatText(".fighter.me","MAX HP CORRUPT","burn");setBar("hpMe","hpMeT",bt.pHp,bt.pMax);}},bsMs(340));}
-    if(efx.burn&&Math.random()*100<efx.burn.chance){if(fx.statusImmune){setTimeout(()=>floatText(".fighter.me","IMMUNE","heal"),bsMs(360));}else{bt.pBurn=(bt.pBurn||0)+efx.burn.turns;setTimeout(()=>floatText(".fighter.me","BURN","burn"),bsMs(360));}}
-    if(efx.lowHpAura&&efx.lowHpAura.burn&&bt.eHp<bt.es.hp*efx.lowHpAura.below/100){if(fx.statusImmune){setTimeout(()=>floatText(".fighter.me","IMMUNE","heal"),bsMs(360));}else{bt.pBurn=(bt.pBurn||0)+efx.lowHpAura.burn.turns;setTimeout(()=>floatText(".fighter.me","PERFECT SUSANOO","burn"),bsMs(360));}}
-    if(efx.hitFreeze&&Math.random()*100<efx.hitFreeze.chance){if(fx.statusImmune){setTimeout(()=>floatText(".fighter.me","IMMUNE","heal"),bsMs(360));}else{bt.pStun=Math.max(bt.pStun||0,efx.hitFreeze.turns);bt.pFreeze=efx.hitFreeze.turns;setTimeout(()=>floatText(".fighter.me","FROZEN","crit"),bsMs(360));}}
-    if(efx.stunPunch){bt.ePunchN=(bt.ePunchN||0)+1;if(bt.ePunchN%efx.stunPunch.every===0&&Math.random()*100<efx.stunPunch.chance&&!fx.statusImmune){bt.pStun=Math.max(bt.pStun||0,efx.stunPunch.turns);setTimeout(()=>floatText(".fighter.me","STUN!","crit"),bsMs(360));}}
+    if(efx.burn&&Math.random()*100<efx.burn.chance){if(fx.statusImmune){setTimeout(()=>floatText(".fighter.me","IMMUNE","heal"),bsMs(360));}else{bt.pBurn=(bt.pBurn||0)+efx.burn.turns;setTimeout(()=>{floatText(".fighter.me","BURN","burn");if(window.burnSheetTick)burnSheetTick("me",true);},bsMs(360));}}
+    if(efx.lowHpAura&&efx.lowHpAura.burn&&bt.eHp<bt.es.hp*efx.lowHpAura.below/100){if(fx.statusImmune){setTimeout(()=>floatText(".fighter.me","IMMUNE","heal"),bsMs(360));}else{bt.pBurn=(bt.pBurn||0)+efx.lowHpAura.burn.turns;setTimeout(()=>{floatText(".fighter.me","PERFECT SUSANOO","burn");if(window.burnSheetTick)burnSheetTick("me",true);},bsMs(360));}}
+    if(efx.hitFreeze&&Math.random()*100<efx.hitFreeze.chance){if(fx.statusImmune){setTimeout(()=>floatText(".fighter.me","IMMUNE","heal"),bsMs(360));}else{bt.pStun=Math.max(bt.pStun||0,efx.hitFreeze.turns);bt.pFreeze=efx.hitFreeze.turns;setTimeout(()=>{floatText(".fighter.me","FROZEN","crit");if(window.playFreezeFx)playFreezeFx("me",false);},bsMs(360));}}
+    if(efx.stunPunch){bt.ePunchN=(bt.ePunchN||0)+1;if(bt.ePunchN%efx.stunPunch.every===0&&Math.random()*100<efx.stunPunch.chance&&!fx.statusImmune){bt.pStun=Math.max(bt.pStun||0,efx.stunPunch.turns);setTimeout(()=>{floatText(".fighter.me","STUN!","crit");if(window.playShockFx)playShockFx("me");},bsMs(360));}}
     if(efx.timeStop){bt.eTsN=(bt.eTsN||0)+1;if(bt.eTsN%efx.timeStop.every===0&&!fx.statusImmune){bt.pStun=Math.max(bt.pStun||0,efx.timeStop.turns);setTimeout(()=>floatText(".fighter.me","THE WORLD","crit"),bsMs(360));}}
     if(bt.pHp<=0){bt.turn++;setTimeout(()=>{if(bt&&!bt.over){if(!trySave())endBattle(false);}},bsMs(800));return;}
   }
@@ -1770,11 +1992,12 @@ function enemyPhase(){
     if(dodgeTrig)bt.dodgeArmed[pa]=false;
     /* ULTRA INSTINCT: tiap berhasil menghindar → +pct% ATK permanen, stack sampai max (khusus dodgeAtk; evasion biasa gak kepengaruh) */
     if(fx.dodgeAtk&&fx.dodgeAtk.nextOnly){bt.dodgeNext=bt.dodgeNext||new Array(bt.fighters.length).fill(0);bt.dodgeNext[bt.active]=(bt.dodgeNext[bt.active]||0)+fx.dodgeAtk.pct;}else if(fx.dodgeAtk&&bt.dodgeStack[bt.active]<fx.dodgeAtk.max){bt.dodgeStack[bt.active]++;bt.atkBuff[bt.active]+=fx.dodgeAtk.pct;setTimeout(()=>floatText(".fighter.me","+"+fx.dodgeAtk.pct+"% ATK","heal"),bsMs(420));}
+    attackLunge(".fighter.foe",{mode:"whiff"});
     if(id==="CH_EX_MADARA"){
       anim(".fighter.foe","lunge-l");
-      setTimeout(()=>{if(window.playMatrixDodgeFx)window.playMatrixDodgeFx(".fighter.me");floatText(".fighter.me","LIMBO","miss");},bsMs(220));
+      setTimeout(()=>{if(!bt||bt.over)return;if(window.playMatrixDodgeFx)window.playMatrixDodgeFx(".fighter.me",".fighter.foe");floatText(".fighter.me","LIMBO","miss");},bsMs(140));
     }else{
-      setTimeout(()=>{if(window.playMatrixDodgeFx)window.playMatrixDodgeFx(".fighter.me");floatText(".fighter.me",entryTrig?(fx.entryCounter.text||"AMENOTEJIKARA"):bt.trickNext?"TRICKSTER":"DODGE","miss");},bsMs(200));
+      setTimeout(()=>{if(!bt||bt.over)return;if(window.playMatrixDodgeFx)window.playMatrixDodgeFx(".fighter.me",".fighter.foe");floatText(".fighter.me",entryTrig?(fx.entryCounter.text||"AMENOTEJIKARA"):bt.trickNext?"TRICKSTER":"DODGE","miss");},bsMs(140));
     }
     /* AMENOTEJIKARA counter: balasan instan mult× ATK ke musuh (dilewati kalau mult 0 = klon murni menghindar) */
     if(entryTrig){
@@ -1985,12 +2208,16 @@ if(bt.ePoison>0)eAtk=Math.max(1,Math.round(eAtk*(1-Math.min(90,bt.ePoison)/100))
   }
   if(domainOn){bt.domainNow=false;}
   bt.turn++;
-  schedPhase(bt.justTagged?1350:(eBajrang?BJ_T.first+1300:eGammaRay?1500:eWorldEnder?1350:ePsychicActive?Math.max(1000,PSY_T.first+(ePsychicActive.n-1)*PSY_T.step+640):eGalaxy?GALAXY.total+160:eArise?2200:eDomain?1700:eranton?MADARA_T.total+160:1000),playerPhase);
+  if(typeof window.sheetStatusSync==="function")setTimeout(window.sheetStatusSync,bsMs(460));
+  schedPhase(bt.justTagged?1350:(eBajrang?BJ_T.first+1300:eGammaRay?1500:eWorldEnder?1350:ePsychicActive?Math.max(1000,PSY_T.first+(ePsychicActive.n-1)*PSY_T.step+640):eGalaxy?GALAXY.total+160:eArise?2200:eDomain?1700:eranton?MADARA_T.total+160:950),playerPhase);
 }
 function endBattle(win){
   if(!bt||bt.over)return;
   if(bt.timer){clearTimeout(bt.timer);bt.timer=null;}
   bt.over=true;
+  clearAttackTimers();
+  if(typeof window.sheetStatusSync==="function"){try{window.sheetStatusSync();}catch(e){}}
+  if(typeof window.clearAnimeAtkCanvas==="function"){try{window.clearAnimeAtkCanvas();}catch(e){}}
   /* klimaks: kartu yang kalah beneran tumbang (dulu final death gak ada animasi mati sama sekali) */
   try{
     const deadEl=document.querySelector(win?".fighter.foe":".fighter.me");
@@ -2183,6 +2410,8 @@ function leaveBattleToLobby(){
   const ov=document.getElementById("overlay");
   if(ov)ov.classList.remove("show");
   const done=()=>{
+    clearAttackTimers();
+    if(typeof window.clearAnimeAtkCanvas==="function"){try{window.clearAnimeAtkCanvas();}catch(e){}}
     try{ stopBattleLoop(); }catch(e){}
     try{ stopRaid(); }catch(e){}
     try{ stopTower(); }catch(e){}

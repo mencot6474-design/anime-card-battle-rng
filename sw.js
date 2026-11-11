@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v573-traitRates';
+const CACHE_NAME = 'anime-card-battle-v578-snappyComboZ';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

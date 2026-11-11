@@ -1458,14 +1458,37 @@ function raidStep(){
   /* Basic attack: archetype FX (6 elemen) — sama seperti battle/tower. Ult & barrage pakai FX khusus. */
   let total=0;hits.forEach(m=>total+=Math.round(dmg*m));
   /* All attacks in Raid use the exact Hazard Basic Attack lunge + slash choreography */
-  if(typeof attackLunge==="function"){try{attackLunge(".fighter.me",true);}catch(e){}}
-  /* All cut-in removed */
-  const setRaidBar=hp=>{const v=Math.max(0,hp);const p=Math.max(0,Math.min(100,v/raid.max*100))+"%";const b=document.getElementById("hpRaid");if(b){b.style.width=p;const tr=b.parentElement?b.parentElement.querySelector(".hp-trail"):null;if(tr)tr.style.width=p;}const tt=document.getElementById("hpRaidT");if(tt)tt.textContent=(typeof fmtBattleK==="function"?fmtBattleK(v):fmtBig(v));const ih=document.getElementById("foeInlineHp");if(ih)ih.textContent=(typeof fmtBattleK==="function"?fmtBattleK(v):fmtBig(v));if(typeof window.hzBattleSync==="function"){try{window.hzBattleSync();}catch(e){}}};
+  const setRaidBar=hp=>{const v=Math.max(0,hp);const p=Math.max(0,Math.min(100,v/raid.max*100))+"%";const b=document.getElementById("hpRaid");if(b){b.style.width=p;const tr=b.parentElement?b.parentElement.querySelector(".hp-trail"):null;if(tr)tr.style.width=p;}const tt=document.getElementById("hpRaidT");if(tt)tt.textContent=(typeof fmtBattleK==="function"?fmtBattleK(v):fmtBig(v));const ih=document.getElementById("foeInlineHp");if(ih)ih.textContent=(typeof fmtBattleK==="function"?fmtBattleK(v):fmtBig(v));if(typeof window.hzBattleSync==="function"){try{window.hzBattleSync();}catch(e){}}if(typeof window.sheetStatusSync==="function"){try{window.sheetStatusSync();}catch(e){}}};
+  const isRaidCombo=hits.length===1&&!domainActive&&!ariseMode&&!galaxyMode&&!psychicActive&&!bajrangActive&&!hpPurple&&!md;
   const rHstep=(psychicActive&&typeof PSY_T!=="undefined")?PSY_T.step:(domainActive?80:160);
   const rMd=md;
   const rHitDelay=273;
-  const rChainEnd=(rMd?MADARA_T.slash+Math.max(0,hits.length-1)*MADARA_T.step+40:rHitDelay+Math.max(0,hits.length-1)*rHstep)+420;
-  {
+  const rChainEnd=isRaidCombo?860:((rMd?MADARA_T.slash+Math.max(0,hits.length-1)*MADARA_T.step+40:rHitDelay+Math.max(0,hits.length-1)*rHstep)+420);
+  const rStartHp=raid.hp;
+  const rEndHp=Math.max(0,raid.hp-total);
+  if(isRaidCombo&&typeof attackLunge==="function"){
+    const d0=Math.min(total,Math.round(total*0.24));
+    const d1=Math.min(total-d0,Math.round(total*0.30));
+    const d2=Math.max(0,total-d0-d1);
+    const rParts=[d0,d1,d2];
+    let rShown=rStartHp;
+    try{
+      attackLunge(".fighter.me",{
+        mode:"combo",
+        onHit(h){
+          if(!raid||raid.over)return;
+          const dm=rParts[h]||0;
+          rShown=Math.max(0,rShown-dm);
+          const isLast=(h===2);
+          if(dm>0||isLast)floatText(".fighter.foe","-"+fmt(dm),(crit&&isLast)?"crit":"");
+          setRaidBar(isLast?rEndHp:rShown);
+        }
+      });
+    }catch(e){}
+    setTimeout(()=>{if(raid&&!raid.over)setRaidBar(rEndHp);},880);
+  }else{
+    if(typeof attackLunge==="function"){try{attackLunge(".fighter.me",true);}catch(e){}}
+    /* All cut-in removed */
     if(domainActive&&raid&&!raid.over){setTimeout(()=>floatText(".fighter.me","DOMAIN EXPANSION","crit"),rHitDelay+40);}
     if(ariseMode&&raid&&!raid.over){setTimeout(()=>floatText(".fighter.foe","ARMY OF SHADOWS","crit"),rHitDelay);}
     const susStart=(md&&raid&&!raid.over)?MADARA_T.slash:rHitDelay;
@@ -1473,7 +1496,7 @@ function raidStep(){
       const hstep=rHstep;
       const susDelay=susStart;
       const dlyAt=i=> galaxyMode ? rHitDelay : md ? (susDelay+i*MADARA_T.step) : (susDelay+i*hstep);
-      let rShown=raid.hp+total,rBarEnd=0;const rEndHp=raid.hp;
+      let rShown=raid.hp+total,rBarEnd=0;
       hits.forEach((m,i)=>{
         const dl=dlyAt(i),ft=dl;
         if(i>0){
@@ -1521,7 +1544,7 @@ function raidStep(){
     else endRaid();
     return;
   }
-  raid.timer=setTimeout(raidStep,ariseMode?1800:domainActive?1600:ranton?1600:1050);
+  raid.timer=setTimeout(raidStep,ariseMode?1800:domainActive?1600:ranton?1600:isRaidCombo?1200:1050);
 }
 function raidFinisher(done){
   if(!raid||raid.over){ if(done)done(); return; }
