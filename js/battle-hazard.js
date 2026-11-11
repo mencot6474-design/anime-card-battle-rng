@@ -841,10 +841,10 @@
     if (btnSpd) {
       btnSpd.onclick = function () {
         var cur = (typeof battleSpeedEff === 'function') ? battleSpeedEff() : 1;
-        var max = (typeof battleSpeedMax === 'function') ? battleSpeedMax() : 1;
+        var max = (typeof battleSpeedMax === 'function') ? battleSpeedMax() : 2;
         if (max <= 1) {
-          try { if (typeof toast === 'function') toast('SPEED LOCKED', 'Unlocks at LV 10', '#f3e600'); } catch (e) {}
-          showHzToast('SPEED LOCKED // UNLOCKS AT LV 10');
+          try { if (typeof toast === 'function') toast('SPEED LOCKED', 'Unlock in Premium Shop', '#f3e600'); } catch (e) {}
+          showHzToast('SPEED LOCKED // PREMIUM SHOP');
           return;
         }
         var next = cur >= max ? 1 : cur + 1;
@@ -883,7 +883,9 @@
     var sp = $('hzSpeed');
     if (sp && sp.firstElementChild) {
       var b = (typeof bt !== 'undefined') && bt ? bt : null;
-      var spd = b ? (b.speed || 1) : ((typeof battleSpeedEff === 'function') ? battleSpeedEff() : 1);
+      var maxSpd = (typeof battleSpeedMax === 'function') ? battleSpeedMax() : 2;
+      var rawSpd = b ? (b.speed || 1) : ((typeof battleSpeedEff === 'function') ? battleSpeedEff() : 1);
+      var spd = Math.min(rawSpd, maxSpd);
       var txt = '\u00ab ' + spd + 'x Speed';
       if (sp.firstElementChild.textContent !== txt) sp.firstElementChild.textContent = txt;
     }

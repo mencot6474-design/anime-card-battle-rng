@@ -26,7 +26,7 @@ function freshState(){
   const newState={coins:1000,wbTokens:0,wbStrikerId:null,wbAutoRepeat:false,playerLv:1,xp:0,dailyIndex:0,lastClaim:"",summons:0,totalRolls:0,playSec:0,muted:false,lang:"en",diff:"normal",chap:1,raidDiff:"normal",raidCleared:{normal:false,hard:false,extreme:false,nightmare:false},raidShopOwned:{},towerShopOwned:{},storyGemMilestones:{},dailyGemPending:0,storyCd:{},rebirth:{count:0,essence:0},tower:{best:0,runs:0,auto:false},battleSpeed:1,
     cleared:{},clearedDiff:{normal:{},hard:{},extreme:{},nightmare:{}},equippedId:start?start.id:null,equippedId2:null,deck:[start?start.id:null,null,null,null],stacks:start?[start]:[],charTraits:{},traitVault:{},history:[],rollHistory:[],battle:null,
     player:{luckBase:1,luckFlat:0,luckPercent:0,exp:0,lv:1,sp:0,tree:{}},weather:null,weatherBest:null,potions:0,mythicPotions:0,luckPots:[0,0,0],speedPots:[0,0,0],luckBuffs:[],speedBuffs:[],infTokens:0,
-    artOwned:[],artSlots:[null,null],petOwned:[],petEquipped:null,intanRolls:0,idxRewardsClaimed:0,premiumGems:50,rollPacks:{r5k:0,r10k:0,r25k:0,r50k:0,r100k:0}};
+    artOwned:[],artSlots:[null,null],petOwned:[],petEquipped:null,passesOwned:[],intanRolls:0,idxRewardsClaimed:0,premiumGems:50,rollPacks:{r5k:0,r10k:0,r25k:0,r50k:0,r100k:0}};
   console.log('[FRESH STATE] Initialized player:',newState.player);
   return newState;
 }
@@ -137,9 +137,11 @@ function loadStateFor(name){
       state.player.sp = _expectedSp;
     }
   } catch(e) { console.warn("[SP RECONCILE ERR]", e); }
-  /* BATTLE SPEED: migrasi save lama + clamp ke unlock level (LV10→2x, LV25→3x, LV50→4x) */
-  if(typeof state.battleSpeed!=="number"||state.battleSpeed<1||state.battleSpeed>4||Math.floor(state.battleSpeed)!==state.battleSpeed)state.battleSpeed=1;
-  {const _lv=state.playerLv||1,_max=_lv>=50?4:_lv>=25?3:_lv>=10?2:1;if(state.battleSpeed>_max)state.battleSpeed=_max;}
+  if(!Array.isArray(state.passesOwned))state.passesOwned=[];
+  state.passesOwned=Array.from(new Set(state.passesOwned.filter(id=>id==="speed-3x")));
+  /* BATTLE SPEED: 1x & 2x gratis (player baru langsung bisa pakai), 3x via Pass Premium Shop, 4x dihapus */
+  if(typeof state.battleSpeed!=="number"||state.battleSpeed<1||state.battleSpeed>3||Math.floor(state.battleSpeed)!==state.battleSpeed)state.battleSpeed=1;
+  {const _max=state.passesOwned.includes("speed-3x")?3:2;if(state.battleSpeed>_max)state.battleSpeed=_max;}
   /* MIGRATE: flag kepemilikan kartu BOSS (TOKO RAID) — unlock roll permanen */
   if(!state.raidShopOwned||typeof state.raidShopOwned!=="object")state.raidShopOwned={};
   /* MIGRATE: flag kepemilikan kartu BOSS (TOKO INF TOWER) — unlock roll permanen */

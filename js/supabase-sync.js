@@ -152,6 +152,12 @@ const CloudDB = {
         if (Array.isArray(res.artOwned) && JSON.stringify(ST.artOwned) !== JSON.stringify(res.artOwned)) {
           ST.artOwned = res.artOwned; dirty = true;
         }
+        if (Array.isArray(res.passesOwned) && JSON.stringify(ST.passesOwned) !== JSON.stringify(res.passesOwned)) {
+          ST.passesOwned = res.passesOwned; dirty = true;
+        }
+        if (typeof res.battleSpeed === "number" && ST.battleSpeed !== res.battleSpeed) {
+          ST.battleSpeed = res.battleSpeed; dirty = true;
+        }
         if (res.petEquipped !== undefined && (ST.petEquipped || null) !== (res.petEquipped || null)) {
           ST.petEquipped = res.petEquipped || null; dirty = true;
         }
@@ -326,6 +332,9 @@ const CloudDB = {
       } else if (itemType === "pet") {
         ST.petOwned = ST.petOwned || [];
         if (!ST.petOwned.includes(packKey)) ST.petOwned.push(packKey);
+      } else if (itemType === "pass") {
+        ST.passesOwned = ST.passesOwned || [];
+        if (!ST.passesOwned.includes(packKey)) ST.passesOwned.push(packKey);
       } else {
         ST.rollPacks = ST.rollPacks || {};
         ST.rollPacks[packKey] = (ST.rollPacks[packKey] || 0) + qty;
@@ -336,6 +345,7 @@ const CloudDB = {
         balance: ST.premiumGems,
         petOwned: ST.petOwned,
         artOwned: ST.artOwned,
+        passesOwned: ST.passesOwned,
         weather: ST.weather,
         weatherBest: ST.weatherBest
       };
@@ -369,9 +379,9 @@ const CloudDB = {
       }
       return { ok: true, balance: bp.balance };
     }
-    /* 0028: pet & artefak premium dibeli lewat RPC `buy_item` — atomik,
+    /* 0028/0045: pet, artefak & pass premium dibeli lewat RPC `buy_item` — atomik,
        harga diambil dari `item_def`, dan langsung masuk `player_items` ledger. */
-    if (username && (itemType === "art" || itemType === "pet") && typeof this.buyItem === "function") {
+    if (username && (itemType === "art" || itemType === "pet" || itemType === "pass") && typeof this.buyItem === "function") {
       const bi = await this.buyItem(username, packKey);
       if (!bi || !bi.ok) {
         if (shouldFallbackLocal(bi)) {
@@ -384,7 +394,8 @@ const CloudDB = {
         ok: true,
         balance: typeof bi.premiumGems === "number" ? bi.premiumGems : (ST ? ST.premiumGems : 0),
         petOwned: bi.petOwned,
-        artOwned: bi.artOwned
+        artOwned: bi.artOwned,
+        passesOwned: bi.passesOwned
       };
     }
     /* Weather instan dibeli lewat RPC atomik `buy_weather` — langsung potong gems
@@ -434,6 +445,9 @@ const CloudDB = {
       } else if (itemType === 'pet') {
         curSave.petOwned = curSave.petOwned || [];
         if (!curSave.petOwned.includes(packKey)) curSave.petOwned.push(packKey);
+      } else if (itemType === 'pass') {
+        curSave.passesOwned = curSave.passesOwned || [];
+        if (!curSave.passesOwned.includes(packKey)) curSave.passesOwned.push(packKey);
       } else {
         curSave.rollPacks = curSave.rollPacks || {};
         curSave.rollPacks[packKey] = (curSave.rollPacks[packKey] || 0) + qty;
@@ -446,6 +460,8 @@ const CloudDB = {
           ST.artOwned = curSave.artOwned;
         } else if (itemType === 'pet') {
           ST.petOwned = curSave.petOwned;
+        } else if (itemType === 'pass') {
+          ST.passesOwned = curSave.passesOwned;
         } else if (itemType !== 'weather') {
           ST.rollPacks = ST.rollPacks || {};
           ST.rollPacks[packKey] = curSave.rollPacks[packKey];
@@ -569,6 +585,7 @@ const CloudDB = {
       if (typeof res.premiumGems === "number" && ST.premiumGems !== res.premiumGems) { ST.premiumGems = res.premiumGems; dirty = true; }
       if (Array.isArray(res.petOwned) && JSON.stringify(ST.petOwned) !== JSON.stringify(res.petOwned)) { ST.petOwned = res.petOwned; dirty = true; }
       if (Array.isArray(res.artOwned) && JSON.stringify(ST.artOwned) !== JSON.stringify(res.artOwned)) { ST.artOwned = res.artOwned; dirty = true; }
+      if (Array.isArray(res.passesOwned) && JSON.stringify(ST.passesOwned) !== JSON.stringify(res.passesOwned)) { ST.passesOwned = res.passesOwned; dirty = true; }
       if (dirty) this._paint();
     }
     return res;

@@ -1,7 +1,7 @@
 /* =============== SETTINGS =============== */
 function renderSettings(){
   /* BATTLE SPEED: clamp ke unlock level sebelum render panel */
-  if(typeof state.battleSpeed!=="number"||state.battleSpeed<1||state.battleSpeed>4)state.battleSpeed=1;
+  if(typeof state.battleSpeed!=="number"||state.battleSpeed<1||state.battleSpeed>3)state.battleSpeed=1;
   {const _m=battleSpeedMax();if(state.battleSpeed>_m)state.battleSpeed=_m;}
   const curLang = (typeof getLang === 'function' ? getLang() : (window.GameLang && typeof window.GameLang.get === "function" ? window.GameLang.get() : (state.lang || "id")));
   const isEn = curLang === "en";
@@ -66,13 +66,13 @@ function renderSettings(){
         <div class="sett-fb" id="settFb1">
           <article class="card">
             <div class="chead"><span class="badge" style="--bc:var(--cyan)"><i class="ic i-swords"></i>COMBAT</span><span class="ctitle">BATTLE SPEED</span></div>
-            <div class="desc">${isEn ? "Combat action pace: 2× at LV 25 · 3× at LV 50 · 4× at LV 100." : "Kecepatan aksi & giliran: 2× di LV 25 · 3× di LV 50 · 4× di LV 100."}</div>
+            <div class="desc">${isEn ? "Combat action pace: 1× &amp; 2× Free · 3× via Premium Shop Pass." : "Kecepatan aksi &amp; giliran: 1× &amp; 2× Gratis · 3× via Pass Toko Premium."}</div>
             <div class="speed" id="bsRow">
-              ${[1,2,3,4].map(n=>{
+              ${[1,2,3].map(n=>{
                 const lk=n>battleSpeedMax();
                 const on=(!lk&&n===state.battleSpeed);
-                const lab=n===1?"":`<small>LV${n===2?25:n===3?50:100}</small>`;
-                return `<button type="button" class="bs${on?" on":""}" data-sp="${n}"${lk?" disabled":""}>${lk?'<i class="ic i-lock"></i>':''}${n}×${lab}</button>`;
+                const lab=n===2?`<small>${isEn?"FREE":"GRATIS"}</small>`:(n===3?`<small>${lk?"3,000G":"PASS"}</small>`:"");
+                return `<button type="button" class="bs${on?" on":""}${lk?" is-locked":""}" data-sp="${n}" aria-pressed="${on?"true":"false"}" title="${lk?(isEn?"Buy 3× Speed Pass in Premium Shop (3,000 Gems)":"Beli 3× Speed Pass di Toko Premium (3.000 Gems)"):("Battle Speed "+n+"×")}">${lk?'<i class="ic i-lock"></i>':''}${n}×${lab}</button>`;
               }).join("")}
             </div>
             <div class="note on" id="bsNote"></div>
@@ -270,11 +270,11 @@ ${_linkCard}
   autoCb.checked=state.tower.auto===true;
   towerSetMsg();
   autoCb.onchange=()=>{state.tower.auto=autoCb.checked;save();towerSetMsg();settPaintStats();};
-  /* BATTLE SPEED — pilihan 1x-4x; 2x/3x/4x terkunci level 10/25/50. */
+  /* BATTLE SPEED — 1x & 2x gratis; 3x via Pass Premium Shop; 4x dihapus. */
   const bsNote=document.getElementById("bsNote");
-  const bsMsg=()=>{const _m=battleSpeedMax();bsNote.textContent=(isEn ? "YOUR LEVEL: " : "LEVEL KAMU: ")+(state.playerLv||1)+(isEn ? " · SPEED: " : " · SPEED AKTIF: ")+state.battleSpeed+"×"+(_m<4?(isEn ? " · Next opens at LV " : " · Berikutnya terbuka di LV ")+(_m===1?10:_m===2?25:50):(isEn ? " · MAX REACHED" : " · SUDAH MAX"));};
+  const bsMsg=()=>{const _m=battleSpeedMax();bsNote.textContent=(isEn ? "ACTIVE SPEED: " : "SPEED AKTIF: ")+state.battleSpeed+"× · "+(_m>=3?(isEn ? "3× SPEED PASS OWNED" : "3× SPEED PASS DIMILIKI"):(isEn ? "1× & 2× FREE · 3× PASS IN PREMIUM SHOP (3,000 GEMS)" : "1× & 2× GRATIS · 3× PASS DI TOKO PREMIUM (3.000 GEMS)"));};
   bsMsg();
-  document.querySelectorAll("#bsRow .bs").forEach(el=>{el.onclick=()=>{const n=parseInt(el.getAttribute("data-sp"),10);if(!n||n>battleSpeedMax())return;state.battleSpeed=n;save();renderSettings();};});
+  document.querySelectorAll("#bsRow .bs").forEach(el=>{el.onclick=()=>{const n=parseInt(el.getAttribute("data-sp"),10);if(!n)return;if(n>battleSpeedMax()){if(typeof openPremiumShop==="function")openPremiumShop("speed-3x");return;}state.battleSpeed=n;save();renderSettings();};});
   /* AUDIO — status live + toggle mute + tes nada. Diagnosa kalau battle hening di perangkat. */
   {
     const audStat=document.getElementById("audStat"),audToggle=document.getElementById("audToggle");

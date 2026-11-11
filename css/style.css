@@ -23192,7 +23192,7 @@ main#app:has(.sett-wrap) {
 /* Speed Grid */
 .sett-speed-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
   width: 100%;
 }
@@ -27406,7 +27406,7 @@ html.m-landscape body.on-settings .sett-wrap {
 .sett-wrap .tel { font-family:var(--smono); font-size:8.5px; letter-spacing:.04em; color:var(--dim); line-height:1.5; }
 
 /* ---- BATTLE SPEED (prototipe .speed/.bs) ---- */
-.sett-wrap .speed { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; }
+.sett-wrap .speed { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
 .sett-wrap .bs {
   position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center;
   gap:1px; min-height:48px; padding:0; box-sizing:border-box;
@@ -27418,6 +27418,8 @@ html.m-landscape body.on-settings .sett-wrap {
 .sett-wrap .bs.on { color:#031017; background:linear-gradient(180deg,var(--cy),#0aa9c0); border-color:var(--cy); }
 .sett-wrap .bs.on small { color:#04303c; }
 .sett-wrap .bs[disabled] { opacity:.42; cursor:not-allowed; }
+.sett-wrap .bs.is-locked { opacity:.55; cursor:pointer; }
+.sett-wrap .bs.is-locked:hover { opacity:.85; border-color:rgba(243,230,0,.55); }
 .sett-wrap .bs .ic { position:absolute; right:5px; top:5px; width:10px; height:10px; color:var(--dim); }
 
 /* ---- TOMBOL (prototipe .btn) ---- */

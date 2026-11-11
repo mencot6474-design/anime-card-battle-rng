@@ -581,7 +581,7 @@ function renderTowerHub(opts){
       const isAuto=!!(state.tower&&state.tower.auto);
       const maxSp=(typeof battleSpeedMax==="function")?battleSpeedMax():1;
       const curSp=(typeof battleSpeedEff==="function")?battleSpeedEff():(state.battleSpeed||1);
-      const reqLv={1:1,2:10,3:25,4:50};
+      const has3=maxSp>=3;
       kick.textContent="// SPIRE AUTOMATION & COMBAT";
       title.textContent="TOWER SETTINGS";
       body.innerHTML=`<div class="sub-row">
@@ -589,10 +589,10 @@ function renderTowerHub(opts){
           <button type="button" class="sub-toggle${isAuto?" on":""}" id="tw2AutoTog">${isAuto?"ON":"OFF"}</button>
         </div>
         <div class="sub-row">
-          <div class="sub-row-txt"><b>Battle Speed Multiplier</b><small>Player Lv ${state.playerLv||1} &middot; Active ${curSp}&times;${maxSp<4?" (Next unlocks at Lv "+reqLv[maxSp+1]+")":" (Max unlocked)"}</small></div>
-          <div class="sub-pills">${[1,2,3,4].map(sp=>{
+          <div class="sub-row-txt"><b>Battle Speed Multiplier</b><small>Active ${curSp}&times; &middot; ${has3?"3&times; Speed Pass Active":"1&times; &amp; 2&times; Free &middot; 3&times; via Premium Shop Pass"}</small></div>
+          <div class="sub-pills">${[1,2,3].map(sp=>{
             const locked=sp>maxSp;
-            return `<button type="button" class="sub-pill${curSp===sp?" on":""}${locked?" locked":""}" data-twsp="${sp}" ${locked?`disabled title="Unlocks at Lv ${reqLv[sp]}"`:""}>${sp}&times;${locked?" (LV"+reqLv[sp]+")":""}</button>`;
+            return `<button type="button" class="sub-pill${curSp===sp?" on":""}${locked?" locked":""}" data-twsp="${sp}" aria-pressed="${curSp===sp?"true":"false"}" title="${locked?"Unlock 3× Speed Pass in Premium Shop (3,000 Gems)":"Battle Speed "+sp+"×"}">${sp}&times;${locked?" (PASS)":""}</button>`;
           }).join("")}</div>
         </div>`;
       const ab=document.getElementById("tw2AutoTog");
@@ -611,7 +611,7 @@ function renderTowerHub(opts){
       body.querySelectorAll("[data-twsp]").forEach(b=>{
         b.onclick=()=>{
           const v=parseInt(b.getAttribute("data-twsp"),10);
-          if(!v||v>maxSp)return;
+          if(!v)return;if(v>maxSp){try{sfx.hit();}catch(e){}closeSub();if(typeof openPremiumShop==="function")openPremiumShop("speed-3x");return;}
           try{sfx.hit();}catch(e){}
           state.battleSpeed=v;
           if(typeof bt!=="undefined"&&bt)bt.speed=battleSpeedEff();

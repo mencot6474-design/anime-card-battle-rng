@@ -1247,8 +1247,14 @@ body.on-tower:has(.tw2-hub) main#app {
   border-color: var(--tw-haz);
 }
 .tw2-sub .sub-pill.locked {
-  opacity: .38;
-  cursor: not-allowed;
+  opacity: .55;
+  cursor: pointer;
+  border-style: dashed;
+}
+.tw2-sub .sub-pill.locked:hover {
+  opacity: .88;
+  border-color: var(--tw-haz);
+  color: var(--tw-haz);
 }
 
 .tw2-sub .sub-cta-bar {

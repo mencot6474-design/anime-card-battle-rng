@@ -2410,6 +2410,8 @@ body.on-settings .sett-wrap .bs.on small { color: #101000 !important; }
 body.on-settings .sett-wrap .bs small { color: #9a9a9a !important; }
 body.on-settings .sett-wrap .bs .ic { color: #9a9a9a !important; }
 body.on-settings .sett-wrap .bs[disabled] { opacity: 0.5 !important; }
+body.on-settings .sett-wrap .bs.is-locked { opacity: 0.62 !important; cursor: pointer !important; border-style: dashed !important; }
+body.on-settings .sett-wrap .bs.is-locked:hover { opacity: 0.92 !important; border-color: #f3e600 !important; }
 
 /* Tombol aksi */
 body.on-settings .sett-wrap .btn {

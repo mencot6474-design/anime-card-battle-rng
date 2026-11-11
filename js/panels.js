@@ -3537,6 +3537,8 @@ var pxQty = 1;
 
 var PREMIUM_PACKS = [
   { id: 'global_luck', cat: 'event', type: 'global_luck', name: 'GLOBAL LUCK x10', price: 1200, img: 'assets/images/global-luck.webp?v=1', badge: 'SERVER EVENT', tier: 'WORLD BUFF', color: '#34d399', stats: ['10x SERVER LUCK', '60 MINUTES', 'MAX 100x'], desc: 'Activate 10x LUCK for every player on the server for 1 HOUR. Your username is shown as the activator.' },
+  // PASSES
+  { id: 'speed-3x', cat: 'pass', type: 'pass', name: '3× BATTLE SPEED PASS', price: 3000, img: 'assets/images/pass-speed-3x.svg?v=1', badge: 'BATTLE PASS', tier: 'PASS', color: '#f3e600', stats: ['3× BATTLE SPEED', 'STORY & TOWER', 'PERMANENT'], desc: 'Permanently unlocks 3× Battle Speed across Story and Infinite Tower battles (1× and 2× are free for all players).' },
   // LOADOUT
   { id: 'tome-infinity', cat: 'equip', type: 'art', name: 'TOME OF INFINITY', price: 3000, img: 'assets/artifacts/tome-infinity.webp?v=1', badge: 'MYTHIC ARTIFACT', tier: 'ARTIFACT', color: '#38bdf8', stats: ['+150 FLAT LUCK', '+200% LUCK', 'PERMANENT'], desc: 'Unlimited mystic tome. Grants +150 Flat Luck and +200% Luck permanently once equipped.' },
   { id: 'cyber-kitsune', cat: 'equip', type: 'pet', name: 'CYBER KITSUNE', price: 10000, img: 'assets/pets/cyber-kitsune.webp?v=1', badge: 'SUPREME PET', tier: 'PET', color: '#f43f5e', stats: ['+250 FLAT LUCK', '+300% LUCK', 'SUPREME TIER'], desc: 'Legendary future fox. Grants +250 Flat Luck and +300% Luck while equipped as your companion.' },
@@ -3559,6 +3561,7 @@ var PREMIUM_PACKS = [
 
 var PX_GROUPS = [
   { key: 'event',   label: 'SERVER EVENT',    note: 'WORLD BUFF' },
+  { key: 'pass',    label: 'BATTLE PASSES',   note: 'PERMANENT' },
   { key: 'pack',    label: 'INSTANT ROLL',    note: 'BACKPACK' },
   { key: 'equip',   label: 'LOADOUT',         note: 'PERMANENT' },
   { key: 'weather', label: 'WEATHER ANOMALY', note: '30 MIN' }
@@ -3591,6 +3594,7 @@ function pxOwnedInfo(it){
   }
   if (it.type === 'art') return { owned: (state.artOwned || []).includes(it.id) };
   if (it.type === 'pet') return { owned: (state.petOwned || []).includes(it.id) };
+  if (it.type === 'pass') return { owned: Array.isArray(state.passesOwned) && state.passesOwned.includes(it.id) };
   if (it.type === 'weather') {
     var cur = (typeof activeWeatherId === 'function') ? activeWeatherId() : null;
     return { owned: false, active: cur === it.targetWeather };
@@ -3611,6 +3615,8 @@ function premConfirmBody(pack, qty) {
     effect = 'Permanent artifact added to your Backpack.';
   } else if (pack.type === 'pet') {
     effect = 'Permanent pet added to your Backpack.';
+  } else if (pack.type === 'pass') {
+    effect = 'Permanently unlocks <b>3× Battle Speed</b> across Story &amp; Infinite Tower.';
   } else if (pack.type === 'weather') {
     var wName = (WEATHER[pack.targetWeather] && WEATHER[pack.targetWeather].name) || pack.name;
     effectLabel = 'SERVER WEATHER';
@@ -3706,9 +3712,23 @@ function premSetTab(tabKey){
 }
 
 /* ---- Open / close ---- */
-function openPremiumShop(){
+function openPremiumShop(focusId){
+  var hasFocus = !!(focusId && pxItems().some(function(i){ return i.id === focusId; }));
+  if (hasFocus) {
+    premCurTab = 'all';
+    pxSelId = focusId;
+    pxQty = 1;
+  }
   pxBack();
   renderPremiumShop();
+  if (hasFocus) {
+    var shell = document.getElementById('psxShell');
+    if (shell) shell.classList.add('detail-open');
+    document.querySelectorAll('#psxTabs .psx-tab').forEach(function(b){
+      if (b.getAttribute('data-cat') === premCurTab) b.classList.add('on');
+      else b.classList.remove('on');
+    });
+  }
   var modal = document.getElementById('premiumModal');
   if (modal) modal.classList.add('show');
   document.body.classList.add('hide-docks-modal');
@@ -3739,6 +3759,12 @@ function openPremiumShop(){
         state.petOwned = state.petOwned || [];
         sd.petOwned.forEach(function(id){
           if (!state.petOwned.includes(id)) { state.petOwned.push(id); changed = true; }
+        });
+      }
+      if (Array.isArray(sd.passesOwned)) {
+        state.passesOwned = state.passesOwned || [];
+        sd.passesOwned.forEach(function(id){
+          if (id === 'speed-3x' && !state.passesOwned.includes(id)) { state.passesOwned.push(id); changed = true; }
         });
       }
       if (sd.rollPacks && typeof sd.rollPacks === 'object') {
@@ -3774,7 +3800,7 @@ function closePremiumShop(){
 function pxRowHtml(it){
   var on = it.id === pxSelId;
   var owned = pxOwnedInfo(it).owned;
-  var hot = /STARTER|POPULAR|BEST|ULTIMATE/.test(it.badge || '');
+  var hot = /STARTER|POPULAR|BEST|ULTIMATE|BATTLE PASS/.test(it.badge || '');
   var isCard = (it.type === 'pack' || it.type === 'art' || it.type === 'pet');
   return '<button class="psx-row' + (on ? ' on' : '') + (owned ? ' dim' : '') + '" type="button" data-id="' + it.id + '" style="--ic:' + (it.color || '#f3e600') + '">' +
     '<span class="psx-row-art' + (isCard ? ' card' : '') + '">' +
@@ -3811,9 +3837,9 @@ function pxRenderCatalog(){
   if (footCount) footCount.textContent = pxItems().length + ' ITEMS';
 
   var all = pxItems();
-  var counts = { all: all.length, pack: 0, weather: 0, equip: 0, event: 0 };
+  var counts = { all: all.length, pass: 0, pack: 0, weather: 0, equip: 0, event: 0 };
   all.forEach(function(i){ if (counts[i.cat] !== undefined) counts[i.cat]++; });
-  var map = { psxCntAll: counts.all, psxCntPack: counts.pack, psxCntWeather: counts.weather, psxCntEquip: counts.equip, psxCntEvent: counts.event };
+  var map = { psxCntAll: counts.all, psxCntPass: counts.pass, psxCntPack: counts.pack, psxCntWeather: counts.weather, psxCntEquip: counts.equip, psxCntEvent: counts.event };
   Object.keys(map).forEach(function(id){
     var el = document.getElementById(id);
     if (el) el.textContent = map[id];
@@ -3878,7 +3904,8 @@ function pxRenderDetail(){
       '</div>';
   } else {
     var singleTitle = it.type === 'weather' ? 'Delivered to the live server'
-      : (it.type === 'global_luck' ? 'Activates instantly for everyone' : 'Added to your Backpack');
+      : (it.type === 'global_luck' ? 'Activates instantly for everyone'
+      : (it.type === 'pass' ? 'Unlocked permanently on account' : 'Added to your Backpack'));
     var singleSub = it.type === 'weather' ? 'ALL PLAYERS · 30 MINUTES'
       : (it.type === 'global_luck' ? 'SERVER-WIDE · 60 MINUTES' : 'PERMANENT · ACCOUNT BOUND');
     picker =
@@ -3997,13 +4024,17 @@ async function buyPremiumPack(packId, ev, qty){
   var pack = PREMIUM_PACKS.find(function(x){ return x.id === packId; });
   if(!pack) return;
 
-  // Check unique artifact/pet ownership
+  // Check unique artifact/pet/pass ownership
   if(pack.type === 'art' && (state.artOwned || []).includes(pack.id)){
     toast('ALREADY OWNED', 'Artifact ' + pack.name + ' is already in your Backpack!', '#fcd34d');
     return;
   }
   if(pack.type === 'pet' && (state.petOwned || []).includes(pack.id)){
     toast('ALREADY OWNED', 'Pet ' + pack.name + ' is already in your Backpack!', '#fcd34d');
+    return;
+  }
+  if(pack.type === 'pass' && Array.isArray(state.passesOwned) && state.passesOwned.includes(pack.id)){
+    toast('ALREADY OWNED', pack.name + ' is already unlocked on your account!', '#fcd34d');
     return;
   }
 
@@ -4092,6 +4123,16 @@ async function buyPremiumPack(packId, ev, qty){
           state.petOwned = state.petOwned || [];
           if(!state.petOwned.includes(pack.id)) state.petOwned.push(pack.id);
         }
+      } else if(pack.type === 'pass'){
+        if (Array.isArray(res.passesOwned)) state.passesOwned = res.passesOwned;
+        else {
+          state.passesOwned = state.passesOwned || [];
+          if(!state.passesOwned.includes(pack.id)) state.passesOwned.push(pack.id);
+        }
+        if(pack.id === 'speed-3x'){
+          state.battleSpeed = 3;
+          if(typeof bt !== 'undefined' && bt) bt.speed = battleSpeedEff();
+        }
       } else if(pack.type === 'weather'){
         const wId = pack.targetWeather;
         state.weatherBest = betterWeather(state.weatherBest, wId);
@@ -4119,6 +4160,13 @@ async function buyPremiumPack(packId, ev, qty){
       } else if(pack.type === 'pet'){
         state.petOwned = state.petOwned || [];
         if(!state.petOwned.includes(pack.id)) state.petOwned.push(pack.id);
+      } else if(pack.type === 'pass'){
+        state.passesOwned = state.passesOwned || [];
+        if(!state.passesOwned.includes(pack.id)) state.passesOwned.push(pack.id);
+        if(pack.id === 'speed-3x'){
+          state.battleSpeed = 3;
+          if(typeof bt !== 'undefined' && bt) bt.speed = battleSpeedEff();
+        }
       } else if(pack.type === 'weather'){
         const wId = pack.targetWeather;
         state.weatherBest = betterWeather(state.weatherBest, wId);
@@ -4138,6 +4186,8 @@ async function buyPremiumPack(packId, ev, qty){
     var rewardMsg = '';
     if(pack.type === 'art' || pack.type === 'pet'){
       rewardMsg = '+' + pack.name + ' unlocked and added to your Backpack!';
+    } else if(pack.type === 'pass'){
+      rewardMsg = '+' + pack.name + ' unlocked permanently (3× Battle Speed active)!';
     } else if(pack.type === 'weather'){
       const wDef = WEATHER[pack.targetWeather] || {};
       rewardMsg = (wDef.name || pack.name) + ' is ACTIVE for ALL SERVERS for 30 minutes!';
@@ -4163,6 +4213,7 @@ async function buyPremiumPack(packId, ev, qty){
     renderShell();
     if(typeof renderWeatherDock === 'function') renderWeatherDock();
     if(typeof renderBackpackPanel === 'function') renderBackpackPanel();
+    if(typeof renderSettings === 'function' && document.body.classList.contains('on-settings')) renderSettings();
     if(typeof renderWeatherMachine === 'function' && document.getElementById('weatherMachineModal')?.classList.contains('show')) {
       renderWeatherMachine();
     }
@@ -4171,7 +4222,13 @@ async function buyPremiumPack(packId, ev, qty){
     console.error('Buy pack error:', err);
     toast('ERROR', 'Something went wrong during the transaction', '#f87171');
   } finally {
-    if(btn) btn.disabled = false;
+    if(btn){
+      var curSel = pxSelItem();
+      var curOwn = curSel ? pxOwnedInfo(curSel).owned : false;
+      var curCost = curSel ? Number(curSel.price || 0) * (curSel.type === 'pack' ? pxQty : 1) : 0;
+      var curAfford = ((state && state.premiumGems) || 0) >= curCost;
+      btn.disabled = !!(curOwn || !curAfford);
+    }
   }
 }
 

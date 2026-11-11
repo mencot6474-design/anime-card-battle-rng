@@ -6,7 +6,8 @@ let FGEN=0;
    Semua jeda dijadwalkan lewat schedPhase()/bsMs(ms) → dibagi bt.speed. bt.speed dibekukan per battle
    dari battleSpeedEff() (state.battleSpeed; terkunci level: LV10→2x, LV25→3x, LV50→4x).
    Skala linear → urutan antar-timeout di dalam satu fase tetap aman. ===== */
-function battleSpeedMax(){const lv=(state&&state.playerLv)||1;return lv>=50?4:lv>=25?3:lv>=10?2:1;}
+function hasSpeed3xPass(){return !!(typeof state!=="undefined"&&state&&Array.isArray(state.passesOwned)&&state.passesOwned.includes("speed-3x"));}
+function battleSpeedMax(){return hasSpeed3xPass()?3:2;}
 function battleSpeedEff(){let s=(state&&state.battleSpeed)||1;if(s<1)s=1;const m=battleSpeedMax();return Math.min(Math.floor(s),m);}
 function bsMs(ms){const m=(bt&&bt.speed)||1;return m<=1?ms:Math.max(0,Math.round(ms/m));}
 /* FX canvas ult dipakai di battle cerita/tower DAN raid (engine terpisah). Guard `!bt` dulu
@@ -31,11 +32,11 @@ function wireSpeedBtn(){
   const upd=()=>{
     const m=battleSpeedMax();
     const sp=battleSpeedEff();
-    const tiers=[{v:1,lv:1},{v:2,lv:10},{v:3,lv:25},{v:4,lv:50}];
+    const tiers=[{v:1},{v:2},{v:3}];
     grp.innerHTML=tiers.map(t=>{
       const locked=t.v>m;
       const act=sp===t.v;
-      return `<button type="button" class="pgr-spd-btn${act?' active':''}" data-spd="${t.v}" ${locked?'disabled':''} title="${locked?'Unlocks at LV '+t.lv:'Battle Speed '+t.v+'×'}">${t.v}×</button>`;
+      return `<button type="button" class="pgr-spd-btn${act?' active':''}" data-spd="${t.v}" aria-pressed="${act?'true':'false'}" ${locked?'disabled':''} title="${locked?'Unlock 3× Speed Pass in Premium Shop (3,000 Gems)':'Battle Speed '+t.v+'×'}">${t.v}×</button>`;
     }).join("");
     grp.querySelectorAll(".pgr-spd-btn").forEach(btn=>{
       btn.onclick=()=>{
