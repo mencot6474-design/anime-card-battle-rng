@@ -1327,13 +1327,28 @@ body:has(#profModal.show) .lobby-tactical-hud {
   gap: 2px;
   flex-shrink: 0;
   height: 16px;
+  line-height: 0;
   pointer-events: auto;
 }
+.pcc-stamps > *,
+.pcc-stamps .mut-hover,
+.pcc-stamps .trait-hover {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 16px !important;
+  line-height: 0 !important;
+  vertical-align: middle !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
 .pcc-stamps .xbadge.is-micro {
-  width: 16px;
-  height: 16px;
-  min-width: 16px;
-  min-height: 16px;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  min-height: 16px !important;
+  margin: 0 !important;
+  vertical-align: middle !important;
 }
 .pcc-stamps .xbadge.is-micro svg {
   width: 10px;
