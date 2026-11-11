@@ -1928,45 +1928,12 @@ function renderProfile(){
     ).join('');
   }
 
-  // 2. Telemetry Showcase (Real Favorite, Real Rarest, Real Rebirth with Skills)
+  // 2. Telemetry Showcase (Real Rarest + Real Rebirth)
   const scRow=document.getElementById("profShowcaseRow");
   if(scRow){
-    const st=Array.isArray(state.stacks)?state.stacks:[];
-    const fav=st.find(s=>s.fav&&CARDS[s.char]);
     const rarestStack = stats.rarest;
 
-    // Slot 1: Favorite Card
-    let slot1Html = '';
-    if (fav && CARDS[fav.char]) {
-      const favName = cardName(fav.char);
-      const favImg = cardImg(fav.char);
-      const favHzCls = (typeof hzBorderCls === 'function') ? hzBorderCls(fav.mut || 'none', !!fav.shiny, { tile: true, dense: true }) : '';
-      const favHzLayers = (typeof hzBorderLayerHtml === 'function') ? hzBorderLayerHtml() : '';
-      slot1Html = 
-        '<div class="prf-showcase-slot fav-slot' + favHzCls + '" onclick="inspectCard(\'' + fav.id + '\')" title="Signature Favorite Card: ' + favName + '">' +
-          favHzLayers +
-          '<div class="sc-holo-sweep"></div>' +
-          '<div class="sc-art-shell">' +
-            '<img src="' + favImg + '" alt="' + favName + '">' +
-            '<div class="sc-vignette"></div>' +
-          '</div>' +
-          '<span class="sc-crn tl"></span><span class="sc-crn br"></span>' +
-        '</div>';
-    } else {
-      slot1Html = 
-        '<div class="prf-showcase-slot fav-slot empty" onclick="pfOpenDeck()" title="No Favorite Card - Click to Manage Deck">' +
-          '<div class="sc-art-shell empty-art">' +
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="sc-empty-icon">' +
-              '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>' +
-            '</svg>' +
-            '<div class="sc-empty-lbl">NO FAVORITE</div>' +
-            '<div class="sc-empty-sub">MARK IN DECK ★</div>' +
-          '</div>' +
-          '<span class="sc-crn tl"></span><span class="sc-crn br"></span>' +
-        '</div>';
-    }
-
-    // Slot 2: Rarest Card
+    // Slot 1: Rarest Card (with small "RAREST CARD" label below)
     let slot2Html = '';
     if (rarestStack && CARDS[rarestStack.char]) {
       const rarestName = cardName(rarestStack.char);
@@ -1975,49 +1942,55 @@ function renderProfile(){
       const rarHzCls = (typeof hzBorderCls === 'function') ? hzBorderCls(rarestStack.mut || 'none', !!rarestStack.shiny, { tile: true, dense: true }) : '';
       const rarHzLayers = (typeof hzBorderLayerHtml === 'function') ? hzBorderLayerHtml() : '';
       slot2Html = 
-        '<div class="prf-showcase-slot rarest-slot' + rarHzCls + '" onclick="inspectCard(\'' + rarestStack.id + '\')" title="Rarest Card: ' + rarestName + ' (1 IN ' + rarestDenom + ')">' +
-          rarHzLayers +
-          '<div class="sc-holo-sweep"></div>' +
-          '<div class="sc-art-shell">' +
-            '<img src="' + rarestImg + '" alt="' + rarestName + '">' +
-            '<div class="sc-vignette"></div>' +
+        '<div class="prf-showcase-col">' +
+          '<div class="prf-showcase-slot rarest-slot' + rarHzCls + '" onclick="inspectCard(\'' + rarestStack.id + '\')" title="Rarest Card: ' + rarestName + ' (1 IN ' + rarestDenom + ')">' +
+            rarHzLayers +
+            '<div class="sc-holo-sweep"></div>' +
+            '<div class="sc-art-shell">' +
+              '<img src="' + rarestImg + '" alt="' + rarestName + '">' +
+              '<div class="sc-vignette"></div>' +
+            '</div>' +
+            '<span class="sc-crn tl"></span><span class="sc-crn br"></span>' +
           '</div>' +
-          '<span class="sc-crn tl"></span><span class="sc-crn br"></span>' +
+          '<div class="sc-below-lbl">RAREST CARD</div>' +
         '</div>';
     } else {
       slot2Html = 
-        '<div class="prf-showcase-slot rarest-slot empty" title="No Rare Card Yet">' +
-          '<div class="sc-art-shell empty-art">' +
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="sc-empty-icon">' +
-              '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>' +
-            '</svg>' +
-            '<div class="sc-empty-lbl">NO RARE CARD</div>' +
-            '<div class="sc-empty-sub">ROLL TO UNLOCK ✦</div>' +
+        '<div class="prf-showcase-col">' +
+          '<div class="prf-showcase-slot rarest-slot empty" title="No Rare Card Yet">' +
+            '<div class="sc-art-shell empty-art">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="sc-empty-icon">' +
+                '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>' +
+              '</svg>' +
+            '</div>' +
+            '<span class="sc-crn tl"></span><span class="sc-crn br"></span>' +
           '</div>' +
-          '<span class="sc-crn tl"></span><span class="sc-crn br"></span>' +
+          '<div class="sc-below-lbl">RAREST CARD</div>' +
         '</div>';
     }
 
-    // Slot 3: Rebirth
+    // Slot 2: Rebirth
     const slot3Html = 
-      '<div class="prf-showcase-slot rebirth-slot" onclick="inspectRebirth()" title="Cycle R' + rb + ' (×' + mult + ' Permanent Luck Multiplier)">' +
-        '<div class="sc-holo-sweep"></div>' +
-        '<div class="sc-art-shell rebirth-art">' +
-          '<svg class="sc-rebirth-mandala" viewBox="0 0 100 100">' +
-            '<circle cx="50" cy="50" r="42" fill="none" stroke-width="1.2" stroke-dasharray="6 4"/>' +
-            '<circle cx="50" cy="50" r="30" fill="none" stroke-width="1.4" stroke-dasharray="12 6"/>' +
-            '<polygon points="50,12 84,70 16,70" fill="none" stroke-width="1.2"/>' +
-            '<polygon points="50,88 84,30 16,30" fill="none" stroke-width="1.2"/>' +
-            '<circle cx="50" cy="50" r="14" fill="none" stroke-width="1.8"/>' +
-          '</svg>' +
-          '<div class="sc-rebirth-pedestal"></div>' +
-          '<img src="assets/icons/drawer/rebirth.webp" alt="Rebirth Icon" class="sc-rebirth-icon">' +
-          '<div class="sc-vignette"></div>' +
+      '<div class="prf-showcase-col">' +
+        '<div class="prf-showcase-slot rebirth-slot" onclick="inspectRebirth()" title="Cycle R' + rb + ' (×' + mult + ' Permanent Luck Multiplier)">' +
+          '<div class="sc-holo-sweep"></div>' +
+          '<div class="sc-art-shell rebirth-art">' +
+            '<svg class="sc-rebirth-mandala" viewBox="0 0 100 100">' +
+              '<circle cx="50" cy="50" r="42" fill="none" stroke-width="1.2" stroke-dasharray="6 4"/>' +
+              '<circle cx="50" cy="50" r="30" fill="none" stroke-width="1.4" stroke-dasharray="12 6"/>' +
+              '<polygon points="50,12 84,70 16,70" fill="none" stroke-width="1.2"/>' +
+              '<polygon points="50,88 84,30 16,30" fill="none" stroke-width="1.2"/>' +
+              '<circle cx="50" cy="50" r="14" fill="none" stroke-width="1.8"/>' +
+            '</svg>' +
+            '<div class="sc-rebirth-pedestal"></div>' +
+            '<img src="assets/icons/drawer/rebirth.webp" alt="Rebirth Icon" class="sc-rebirth-icon">' +
+            '<div class="sc-vignette"></div>' +
+          '</div>' +
+          '<span class="sc-crn tl"></span><span class="sc-crn br"></span>' +
         '</div>' +
-        '<span class="sc-crn tl"></span><span class="sc-crn br"></span>' +
       '</div>';
 
-    scRow.innerHTML = slot1Html + slot2Html + slot3Html;
+    scRow.innerHTML = slot2Html + slot3Html;
   }
 
   // 3. Team Row 1: Cards (4 slots from state.deck with New Solid Stamps & Top Title)
