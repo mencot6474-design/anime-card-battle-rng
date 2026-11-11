@@ -1642,27 +1642,25 @@ function hubLoadoutHtml(){
 
   return slot(0)+slot(1)+pet;
 }
-/* Tile REBIRTH di rail kanan lobby — nilai dup dikumpulin di sini, naikkan luck. */
+/* Tile REBIRTH di rail kanan lobby — nilai dup dikumpulin di sini, naikkan luck (x5 per rebirth). */
 function rbCompact(n){n=n||0;if(n>=1e9)return (n/1e9).toFixed(n>=1e10?0:1)+'B';if(n>=1e6)return (n/1e6).toFixed(n>=1e7?0:1)+'M';if(n>=1e3)return (n/1e3).toFixed(n>=1e4?0:1)+'K';return String(Math.floor(n));}
 function hubRebirthTileHtml(){
   const cnt=typeof rebirthCount==='function'?rebirthCount():0;
   const es=typeof rebirthEssence==='function'?rebirthEssence():0;
   const th=typeof rebirthThreshold==='function'?rebirthThreshold():1000000;
   const mult=typeof rebirthLuckMult==='function'?rebirthLuckMult():1;
+  const tier=(typeof rebirthTierMeta==='function')?rebirthTierMeta(cnt):{c1:'#c084fc'};
+  const artSvg=(typeof rebirthCrestSvg==='function')
+    ? rebirthCrestSvg(cnt)
+    : `<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M78 50a28 28 0 1 1-9-20.8"/><path d="M70 20l10 9-13 6" stroke-width="2.2"/><circle cx="50" cy="50" r="6" fill="currentColor"/></svg>`;
   const ready=es>=th;
   const pct=Math.max(0,Math.min(100,Math.round(es/th*100)));
   return `
-    <div class="hub-box h-rebirth hub-link hub-link-rebirth${ready?' ready':''}" id="hubRebirth" role="button" title="Rebirth: convert duplicate essence into permanent luck">
+    <div class="hub-box h-rebirth hub-link hub-link-rebirth${ready?' ready':''}" id="hubRebirth" role="button" title="Rebirth: convert duplicate essence into permanent luck (x5 per rebirth)">
       <span class="tile-frame" aria-hidden="true"></span>
-      <span class="tile-index"><span class="tile-number" style="color:#c084fc">R${cnt}</span><span class="tile-category" style="color:#a855f7">CYCLE / ASCENSION</span></span>
-      <span class="tile-art" aria-hidden="true">
-        <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M78 50a28 28 0 1 1-9-20.8"/>
-          <path d="M70 20l10 9-13 6" stroke-width="2.2"/>
-          <circle cx="50" cy="50" r="6" fill="currentColor"/>
-        </svg>
-      </span>
-      <span class="tile-copy"><span class="hb-lbl" style="color:#c084fc;text-shadow:0 0 10px rgba(192,132,252,.4)">REBIRTH</span><span class="hb-meta">LUCK ×${mult}</span></span>
+      <span class="tile-index"><span class="tile-number" style="color:${tier.c1}">R${cnt}</span><span class="tile-category" style="color:#a855f7">CYCLE / ASCENSION</span></span>
+      <span class="tile-art" aria-hidden="true">${artSvg}</span>
+      <span class="tile-copy"><span class="hb-lbl" style="color:${tier.c1};text-shadow:0 0 10px rgba(192,132,252,.4)">REBIRTH</span><span class="hb-meta">LUCK ×${mult}</span></span>
       <span class="rebirth-progress">
         <span class="rebirth-meter" id="rebirthMeter" role="progressbar" aria-label="Rebirth progress" aria-valuemin="0" aria-valuemax="${th}" aria-valuenow="${es}"><span id="rebirthFill" style="width:${pct}%"></span></span>
         <span class="rb-sub" id="rebirthSub">${rbCompact(es)} / ${rbCompact(th)}</span>
@@ -1670,20 +1668,31 @@ function hubRebirthTileHtml(){
       <span class="tile-action" style="border-color:rgba(192,132,252,.5);color:${ready?'#e9d5ff':'#a855f7'}"><span>${ready?'REBIRTH':'LOCKED'}</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
     </div>`;
 }
-/* Patch tile in-place tanpa full re-render (dipanggil setelah roll selesai). */
+/* Patch tile + HUD/drawer in-place tanpa full re-render (dipanggil setelah roll/rebirth). */
 function updateRebirthUI(){
-  const box=document.getElementById('hubRebirth');
-  if(!box||typeof rebirthCount!=='function')return;
+  if(typeof rebirthCount!=='function')return;
   const es=rebirthEssence(),th=rebirthThreshold(),cnt=rebirthCount(),mult=rebirthLuckMult();
   const ready=es>=th,pct=Math.max(0,Math.min(100,Math.round(es/th*100)));
-  box.classList.toggle('ready',ready);
-  const num=box.querySelector('.tile-number');if(num)num.textContent='R'+cnt;
-  const lbl=box.querySelector('.hb-meta');if(lbl)lbl.textContent='LUCK ×'+mult;
-  const fill=document.getElementById('rebirthFill');if(fill)fill.style.width=pct+'%';
-  const meter=document.getElementById('rebirthMeter');if(meter){meter.setAttribute('aria-valuemax',String(th));meter.setAttribute('aria-valuenow',String(es));}
-  const sub=document.getElementById('rebirthSub');if(sub)sub.textContent=rbCompact(es)+' / '+rbCompact(th);
-  const act=box.querySelector('.tile-action span');if(act)act.textContent=ready?'REBIRTH':'LOCKED';
-  const rbM=document.getElementById('rebirthModal');if(rbM&&rbM.classList.contains('show'))renderRebirthModal();
+  const tier=(typeof rebirthTierMeta==='function')?rebirthTierMeta(cnt):{c1:'#c084fc'};
+  const box=document.getElementById('hubRebirth');
+  if(box){
+    box.classList.toggle('ready',ready);
+    const num=box.querySelector('.tile-number');if(num){num.textContent='R'+cnt;num.style.color=tier.c1;}
+    const lbl=box.querySelector('.hb-meta');if(lbl)lbl.textContent='LUCK ×'+mult;
+    const art=box.querySelector('.tile-art');if(art&&typeof rebirthCrestSvg==='function')art.innerHTML=rebirthCrestSvg(cnt);
+    const fill=document.getElementById('rebirthFill');if(fill)fill.style.width=pct+'%';
+    const meter=document.getElementById('rebirthMeter');if(meter){meter.setAttribute('aria-valuemax',String(th));meter.setAttribute('aria-valuenow',String(es));}
+    const sub=document.getElementById('rebirthSub');if(sub)sub.textContent=rbCompact(es)+' / '+rbCompact(th);
+    const act=box.querySelector('.tile-action span');if(act)act.textContent=ready?'REBIRTH':'LOCKED';
+  }
+  const vest=document.getElementById('l12QsVest');
+  if(vest)vest.textContent='R'+cnt;
+  const ql=document.getElementById('l12QsLuck');
+  if(ql&&typeof fmtLobbyLuck==='function')ql.textContent=fmtLobbyLuck();
+  const drwSub=document.getElementById('drwRebirthSub');
+  if(drwSub)drwSub.textContent='R'+cnt+' // LUCK ×'+mult+(ready?' · READY':'');
+  const rbM=document.getElementById('rebirthModal');
+  if(rbM&&rbM.classList.contains('show')&&typeof renderRebirthModal==='function')renderRebirthModal();
 }
 function onRebirthClick(){
   openRebirthModal();
@@ -2871,9 +2880,10 @@ window.l12UpdateWeatherDock = l12UpdateWeatherDock;
   try {
     const rbSub = document.getElementById('drwRebirthSub');
     if (rbSub && typeof state !== 'undefined' && state) {
-      const rbCount = state.rebirthCount || 0;
-      const rbMult = typeof rebirthLuckMult === 'function' ? rebirthLuckMult(rbCount) : (1 + rbCount * 0.5);
-      rbSub.textContent = 'R' + rbCount + ' // LUCK ' + rbMult.toFixed(1) + 'x';
+      const rbCount = (typeof rebirthCount === 'function') ? rebirthCount() : 0;
+      const rbMult = (typeof rebirthLuckMult === 'function') ? rebirthLuckMult(rbCount) : (rbCount <= 0 ? 1 : rbCount * 5);
+      const rbReady = (typeof canRebirth === 'function') && canRebirth();
+      rbSub.textContent = 'R' + rbCount + ' // LUCK ×' + rbMult + (rbReady ? ' · READY' : '');
     }
   } catch(e) {}
 
@@ -3769,308 +3779,7 @@ if(!window.__twrEscWired){
     if(m&&m.classList.contains("show")){ e.preventDefault(); closeTowerDropModal(); }
   });
 }
-/* ========== HORIZONTAL REBIRTH MODAL ========== */
-function renderRebirthModal(){
-  const body = document.getElementById("rebirthBody");
-  if (!body) return;
-  const isEn = (typeof getLang === 'function' && getLang() === 'en') || (typeof state !== 'undefined' && state && state.lang === 'en');
-  const cnt = typeof rebirthCount === 'function' ? rebirthCount() : 0;
-  const es = typeof rebirthEssence === 'function' ? rebirthEssence() : 0;
-  const th = typeof rebirthThreshold === 'function' ? rebirthThreshold() : 1000000;
-  const mult = typeof rebirthLuckMult === 'function' ? rebirthLuckMult() : 1;
-  const ready = es >= th;
-  const pct = Math.max(0, Math.min(100, Math.round(es / th * 100)));
-  const nextMult = mult + 1;
-  const need = Math.max(0, th - es);
-  const fmtEs = (typeof fmt === 'function' ? fmt(es) : es);
-  const fmtTh = (typeof fmt === 'function' ? fmt(th) : th);
-  const fmtNeed = (typeof fmt === 'function' ? fmt(need) : need);
-
-  body.innerHTML = `
-    <div class="rb-h-layout">
-      <!-- COL 1: Visual Sigil / Ascension Core -->
-      <div class="rb-col rb-col-sigil">
-        <div class="rb-sigil-wrap">
-          <div class="rb-sigil-rings">
-            <div class="rb-ring r1"></div>
-            <div class="rb-ring r2"></div>
-            <div class="rb-ring r3"></div>
-          </div>
-          <div class="rb-sigil-art">
-            <svg viewBox="0 0 100 100" fill="none" stroke="currentColor">
-              <circle cx="50" cy="50" r="40" stroke="#7e22ce" stroke-width="1.8" stroke-dasharray="5 3" opacity="0.4"/>
-              <path d="M78 50a28 28 0 1 1-9-20.8" stroke="url(#rbAscGrad)" stroke-width="3" stroke-linecap="round"/>
-              <path d="M70 20l10 9-13 6" stroke="url(#rbAscGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle cx="50" cy="50" r="14" fill="rgba(192,132,252,0.12)" stroke="#a855f7" stroke-width="1.6"/>
-              <circle cx="50" cy="50" r="6" fill="#c084fc"/>
-              <defs>
-                <linearGradient id="rbAscGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#f5d0fe"/>
-                  <stop offset="50%" stop-color="#c084fc"/>
-                  <stop offset="100%" stop-color="#9333ea"/>
-                </linearGradient>
-              </defs>
-            </svg>
-          </div>
-          <div class="rb-rank-badge">
-            <span class="rb-rank-lbl">${isEn ? 'CURRENT CYCLE' : 'CURRENT CYCLE'}</span>
-            <span class="rb-rank-val">R${cnt}</span>
-          </div>
-        </div>
-        <div class="rb-sigil-meta">
-          <span class="rb-cycle-tag">HUNTER ASCENSION</span>
-          <span class="rb-cycle-sub">${isEn ? 'CYCLE RANK' : 'CYCLE RANK'} ${cnt} · LEVEL ${typeof state !== 'undefined' && state?.playerLv ? state.playerLv : 1}</span>
-        </div>
-      </div>
-
-      <!-- COL 2: Telemetry & Mechanics Breakdown -->
-      <div class="rb-col rb-col-info">
-        <!-- Stat Transition Cards: CURRENT -> NEXT -->
-        <div class="rb-mult-compare">
-          <div class="rb-compare-box prev">
-            <span class="rcb-tag">${isEn ? 'CURRENT PERK' : 'CURRENT BONUS'}</span>
-            <span class="rcb-val">×${mult}</span>
-            <span class="rcb-desc">${isEn ? 'LUCK MULTIPLIER' : 'PENGALI LUCK'}</span>
-          </div>
-          <div class="rb-compare-arrow">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
-          </div>
-          <div class="rb-compare-box next">
-            <span class="rcb-tag">${isEn ? 'NEXT ASCENSION' : 'NEXT ASCENSION'}</span>
-            <span class="rcb-val">×${nextMult}</span>
-            <span class="rcb-desc">${isEn ? '+100% PERMANENT BOOST' : '+100% PERMANENT BONUS'}</span>
-          </div>
-        </div>
-
-        <!-- Progress & Fuel Bar -->
-        <div class="rb-progress-card">
-          <div class="rb-pc-head">
-            <span class="rb-pc-lbl"><span class="rb-glow-dot"></span>${isEn ? 'ESSENCE POOL CHARGE' : 'ESSENCE POOL CHARGE'}</span>
-            <span class="rb-pc-nums"><b>${fmtEs}</b> / ${fmtTh}</span>
-          </div>
-          <div class="rb-bar-wrap">
-            <div class="rb-bar-fill" style="width: ${pct}%">
-              <span class="rb-bar-glow"></span>
-            </div>
-          </div>
-          <div class="rb-pc-foot">
-            <span class="rb-foot-pct">${pct}% ${isEn ? 'CHARGED' : 'TERISI'}</span>
-            <span class="rb-foot-need ${ready ? 'ready' : ''}">${ready ? (isEn ? '✓ THRESHOLD REACHED · READY TO ASCEND' : '✓ THRESHOLD REACHED · READY TO REBIRTH') : (isEn ? `NEED ${fmtNeed} MORE ESSENCE` : `BUTUH ${fmtNeed} MORE ESSENCE`)}</span>
-          </div>
-        </div>
-
-        <!-- Info Protocol Pill -->
-        <div class="rb-protocol-info">
-          <div class="rb-pi-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
-          </div>
-          <div class="rb-pi-text">
-            <b>${isEn ? 'HOW TO ACQUIRE ESSENCE:' : 'CARA MENDAPATKAN ESSENCE:'}</b> ${isEn ? 'Any duplicate cards obtained from Gacha Rolls or Instant Packs are automatically transmuted into Rebirth Essence without losing any Cards, Decks, or Levels.' : 'Setiap kartu duplikat yang didapat dari Gacha Roll atau Instant Pack otomatis diubah jadi Essence tanpa mengurangi Kartu, Dek, atau Level.'}
-          </div>
-        </div>
-      </div>
-
-      <!-- COL 3: Action & Rewards Confirmation -->
-      <div class="rb-col rb-col-action">
-        <div class="rb-action-head">
-          <span class="rb-ah-status ${ready ? 'ready' : 'charging'}">
-            <span class="rb-status-dot"></span>
-            ${ready ? (isEn ? 'READY TO ASCEND' : 'READY TO REBIRTH') : (isEn ? 'CHARGING ESSENCE' : 'MENGISI ESSENCE')}
-          </span>
-          <span class="rb-ah-title">ASCENSION PROTOCOL</span>
-        </div>
-
-        <div class="rb-perks-list">
-          <div class="rb-perk-item">
-            <span class="rpi-check">✓</span>
-            <span>${isEn ? '<b>Permanent:</b> Luck multiplier rises to ' : '<b>Permanent:</b> Luck multiplier rises to '}<b>×${nextMult}</b></span>
-          </div>
-          <div class="rb-perk-item">
-            <span class="rpi-check">✓</span>
-            <span>${isEn ? '<b>Safe:</b> Cards, Decks, Artefacts & Pets stay intact' : '<b>Aman:</b> Koleksi, Dek, Artefak & Pet tetap aman'}</span>
-          </div>
-          <div class="rb-perk-item">
-            <span class="rpi-check">✓</span>
-            <span>${isEn ? '<b>Prestige:</b> Rebirth rank showcased on Hunter Profile' : '<b>Rank:</b> Rebirth Rank shown on Hunter Profile'}</span>
-          </div>
-        </div>
-
-        <button type="button" class="rb-execute-btn ${ready ? 'is-ready' : 'is-locked'}" id="rbExecBtn" onclick="executeRebirthFromModal()" ${ready ? '' : 'disabled'}>
-          <span class="reb-btn-glow"></span>
-          <span class="reb-btn-content">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 2v20m-7-7 7-7 7 7"/></svg>
-            <span>${ready ? (isEn ? 'ACTIVATE REBIRTH' : 'AKTIFKAN REBIRTH') : (isEn ? 'INSUFFICIENT ESSENCE' : 'NOT ENOUGH ESSENCE')}</span>
-          </span>
-          <span class="reb-btn-sub">${ready ? (isEn ? `ASCEND TO ×${nextMult} LUCK` : `RISE TO ×${nextMult} LUCK`) : `${pct}% ${isEn ? 'CHARGED' : 'TERISI'}`}</span>
-        </button>
-      </div>
-    </div>
-  `;
-}
-
-function openRebirthModal(){
-  if (typeof sfx !== 'undefined' && sfx.hit) sfx.hit();
-  renderRebirthModal();
-  const modal = document.getElementById('rebirthModal');
-  if (modal) modal.classList.add('show');
-  document.body.classList.add('hide-docks-modal');
-  const closeBtn = document.getElementById('rebirthClose');
-  if (closeBtn) closeBtn.onclick = closeRebirthModal;
-  if (modal) modal.onclick = function(e){ if(e.target === modal) closeRebirthModal(); };
-}
-
-function closeRebirthModal(){
-  const modal = document.getElementById('rebirthModal');
-  if (modal) {
-    modal.classList.remove('show');
-    modal.classList.remove('is-ascending');
-    modal.style.zIndex = '';
-  }
-  document.body.classList.remove('hide-docks-modal');
-  const cutin = document.getElementById('rebirthAscensionCutin');
-  if (cutin) cutin.classList.remove('show');
-}
-
-function executeRebirthFromModal(){
-  const isEn = (typeof getLang === 'function' && getLang() === 'en') || (typeof state !== 'undefined' && state && state.lang === 'en');
-  if (typeof canRebirth !== 'function' || !canRebirth()) {
-    const need = rebirthThreshold() - rebirthEssence();
-    const fmtNeed = (typeof fmt === 'function' ? fmt(need) : need);
-    if (typeof toast === 'function') {
-      toast(
-        isEn ? 'INSUFFICIENT ESSENCE' : 'NOT ENOUGH ESSENCE',
-        isEn ? ('Need ' + fmtNeed + ' more essence') : ('Butuh ' + fmtNeed + ' lagi'),
-        '#a855f7'
-      );
-    }
-    return;
-  }
-
-  const oldMult = (typeof rebirthLuckMult === 'function') ? rebirthLuckMult() : 1;
-  const oldCnt = (typeof rebirthCount === 'function') ? rebirthCount() : 0;
-  const nextMult = oldMult + 1;
-  const nextCnt = oldCnt + 1;
-
-  // 1. Pastikan modal Rebirth berada di layer depan (z-index 100010) dan aktifkan state is-ascending
-  const modalEl = document.getElementById('rebirthModal');
-  if (modalEl) {
-    modalEl.classList.add('is-ascending');
-    modalEl.style.zIndex = '100010';
-  }
-
-  const execBtn = document.getElementById('rbExecBtn');
-  if (execBtn) {
-    execBtn.classList.add('is-ascending');
-    execBtn.disabled = true;
-    const btnSpan = execBtn.querySelector('.reb-btn-content span') || execBtn.querySelector('span');
-    if (btnSpan) btnSpan.textContent = 'ASCENDING...';
-  }
-
-  const sigilWrap = document.querySelector('.rb-sigil-wrap');
-  if (sigilWrap) sigilWrap.classList.add('is-charging');
-
-  if (window.CyberSfx && typeof window.CyberSfx.rebirthAscendCharge === 'function') {
-    window.CyberSfx.rebirthAscendCharge();
-  } else if (typeof playSubBass === 'function') {
-    playSubBass(50, 0.4, 0.3);
-  }
-
-  // 2. Fase burst (+500ms): jalankan doRebirth, update modal segera, taruh animasi cutscene di belakang modal
-  setTimeout(() => {
-    if (typeof doRebirth === 'function') doRebirth();
-
-    // Re-render modal SEGERA saat burst agar pemain melihat nilai baru R{nextCnt} dan ×{nextMult} langsung menyala
-    if (typeof renderRebirthModal === 'function') renderRebirthModal();
-
-    // Pertahankan z-index dan class is-ascending pada modal & sigil yang baru dirender
-    if (modalEl) {
-      modalEl.classList.add('is-ascending');
-      modalEl.style.zIndex = '100010';
-    }
-    const newSigil = document.querySelector('.rb-sigil-wrap');
-    if (newSigil) newSigil.classList.add('is-charging');
-
-    // Overlay cutin di layer BELAKANG modal Rebirth (z-index 100002)
-    let cutin = document.getElementById('rebirthAscensionCutin');
-    if (!cutin) {
-      cutin = document.createElement('div');
-      cutin.id = 'rebirthAscensionCutin';
-      cutin.className = 'rb-cutin-backdrop';
-      document.body.appendChild(cutin);
-    }
-    cutin.style.zIndex = '100002';
-    cutin.style.pointerEvents = 'none';
-
-    cutin.innerHTML = `
-      <div class="rb-cutin-card">
-        <div class="rb-cutin-pill"><span class="rb-cutin-dot"></span>SYSTEM OVERRIDE // QUANTUM ASCENSION PROTOCOL</div>
-        <div class="rb-cutin-sigil-ring">
-          <svg viewBox="0 0 100 100" class="rb-cutin-svg">
-            <circle cx="50" cy="50" r="42" stroke="#c084fc" stroke-width="2" stroke-dasharray="6 4" opacity="0.6"/>
-            <circle cx="50" cy="50" r="32" stroke="#ffd700" stroke-width="2.5" stroke-dasharray="10 6"/>
-            <circle cx="50" cy="50" r="20" stroke="#7df9ff" stroke-width="2"/>
-            <circle cx="50" cy="50" r="7" fill="#ffffff"/>
-          </svg>
-        </div>
-        <div class="rb-cutin-title">REBIRTH ASCENSION</div>
-        <div class="rb-cutin-cycle">CYCLE R${nextCnt}</div>
-        <div class="rb-cutin-cycle-sub">${isEn ? 'CONSCIOUSNESS ELEVATED' : 'HIGHER CONSCIOUSNESS ACHIEVED'}</div>
-        <div class="rb-cutin-mult">
-          <span class="rcm-lbl">LUCK MULTIPLIER:</span>
-          <span class="rcm-val">×${oldMult} <i class="rcm-arr">➔</i> <b>×${nextMult}</b></span>
-          <span class="rcm-badge">+100% PERMANENT BOOST</span>
-        </div>
-      </div>
-    `;
-
-    cutin.classList.add('show');
-
-    // VFX canvas partikel di layer belakang modal (z-index 100005)
-    if (typeof window.playRebirthAscensionVfx === 'function') {
-      window.playRebirthAscensionVfx(window.innerWidth / 2, window.innerHeight / 2);
-      const cv = document.getElementById('pgrBattleFxCanvas');
-      if (cv) cv.style.zIndex = '100005';
-    }
-
-    if (window.CyberSfx && typeof window.CyberSfx.rebirthAscendBoom === 'function') {
-      window.CyberSfx.rebirthAscendBoom();
-    } else if (typeof sfx !== 'undefined' && sfx.win) {
-      sfx.win();
-    }
-
-    // Tampilkan notifikasi toast di layer terdepan (z-index 200000)
-    if (typeof toast === 'function') {
-      toast(
-        isEn ? 'ASCENSION SUCCESS!' : 'REBIRTH BERHASIL!',
-        isEn ? ('Luck multiplier increased permanently to ×' + nextMult) : ('Luck multiplier permanently rises to ×' + nextMult),
-        '#c084fc'
-      );
-    }
-
-    // 3. Fase resolusi (+2200ms)
-    setTimeout(() => {
-      if (cutin) cutin.classList.remove('show');
-      if (modalEl) {
-        modalEl.classList.remove('is-ascending');
-        modalEl.style.zIndex = '';
-      }
-      const cv = document.getElementById('pgrBattleFxCanvas');
-      if (cv) cv.style.zIndex = '';
-
-      const sigilWrapEnd = document.querySelector('.rb-sigil-wrap');
-      if (sigilWrapEnd) sigilWrapEnd.classList.remove('is-charging');
-
-      if (typeof updateRebirthUI === 'function') updateRebirthUI();
-      if (typeof renderShell === 'function') renderShell();
-    }, 2200);
-
-  }, 500);
-}
-
-window.openRebirthModal = openRebirthModal;
-window.closeRebirthModal = closeRebirthModal;
-window.renderRebirthModal = renderRebirthModal;
-window.executeRebirthFromModal = executeRebirthFromModal;
+/* Rebirth modal & 5s showcase moved to js/rebirth-hazard.js (WoB Hazard port). */
 
 
 /* ================= AAA HIGH-PERFORMANCE AUDIO & INTERACTIVE SUITE ================= */

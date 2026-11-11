@@ -2585,55 +2585,7 @@ html :is(body.on-lobby, body.on-settings, body:has(.sett-wrap)) .tb-xpbar {
   pointer-events: none !important;
 }
 
-/* ===== REBIRTH ASCENSION MODAL (Z-INDEX ELEVATION: 100010) ===== */
-#rebirthModal,
-#rebirthModal.show,
-.rb-modal-backdrop,
-.rb-modal-backdrop.show {
-  z-index: 100010 !important;
-}
-
-#rebirthModal.is-ascending .rb-modal-container {
-  border-color: #ffd700 !important;
-  box-shadow: 0 0 50px rgba(192, 132, 252, 0.7), 0 0 100px rgba(255, 215, 0, 0.45), 0 20px 60px rgba(0, 0, 0, 0.9) !important;
-  animation: rbModalAscendPulse 0.8s ease-in-out infinite alternate !important;
-}
-
-body:has(#rebirthModal.show) #rebirthAscensionCutin .rb-cutin-card {
-  display: none !important;
-}
-
-/* ===== REBIRTH ASCENSION PROTOCOL CINEMATIC (Z-INDEX: 100002 — DI BELAKANG MODAL REBIRTH) ===== */
-#rebirthAscensionCutin {
-  position: fixed !important;
-  inset: 0 !important;
-  z-index: 100002 !important;
-  display: none !important;
-  place-items: center !important;
-  pointer-events: auto !important;
-  padding: 16px !important;
-  box-sizing: border-box !important;
-  background:
-    radial-gradient(circle at 50% 50%, rgba(147, 51, 234, 0.28) 0%, rgba(10, 6, 22, 0.94) 60%, rgba(3, 2, 8, 0.98) 100%),
-    linear-gradient(90deg, rgba(192, 132, 252, 0.04) 1px, transparent 1px),
-    linear-gradient(0deg, rgba(192, 132, 252, 0.04) 1px, transparent 1px),
-    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.3) 0px, rgba(0, 0, 0, 0.3) 1.5px, transparent 1.5px, transparent 3px) !important;
-  background-size: 100% 100%, 28px 28px, 28px 28px, 100% 3px !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  overflow: hidden !important;
-}
-#rebirthAscensionCutin.show {
-  display: grid !important;
-}
-.rb-sigil-wrap.is-charging {
-  animation: rbSigilChargePulse 0.4s ease-in-out infinite alternate !important;
-}
-.rb-execute-btn.is-ascending {
-  filter: brightness(1.2) !important;
-  pointer-events: none !important;
-  box-shadow: 0 0 30px #c084fc, 0 0 50px rgba(255, 215, 0, 0.6) !important;
-}
+/* ===== REBIRTH ASCENSION MODAL — Delegated to css/rebirth-hazard.css ===== */
 
 /* ===== HOLO-GLASS ITEM INSPECTOR POPUP (Z-INDEX: 95000) ===== */
 .bpholo-backdrop {

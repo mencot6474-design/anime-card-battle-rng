@@ -33,8 +33,8 @@
 <link rel="stylesheet" href="css/world-boss.css?v=v283-wbCurtainFix">
 <link rel="stylesheet" href="css/sl-system.css?v=v391-coreSpireHub">
 <link rel="stylesheet" href="css/story-carousel.css?v=v354-storyCurtainZ">
-<link rel="stylesheet" href="css/lobby-prototype.css?v=v395-eagerImgFix">
-<link rel="stylesheet" href="css/mobile-shell.css?v=v473-speed3xPass">
+<link rel="stylesheet" href="css/lobby-prototype.css?v=v396-rebirthHazard5x">
+<link rel="stylesheet" href="css/mobile-shell.css?v=v474-rebirthHazard5x">
 <link rel="stylesheet" href="css/deck-screen.css?v=v4-searchInput">
 <link rel="stylesheet" href="css/skill-tree.css?v=v24-skIconsDim">
 <link rel="stylesheet" href="css/backpack-hazard.css?v=v3-eagerImgFix">
@@ -51,6 +51,7 @@
 <link rel="stylesheet" href="css/notify-hazard.css?v=v2-notifyHazard">
 <link rel="stylesheet" href="css/watch-ads-hazard.css?v=v3-watchAdsHazard">
 <link rel="stylesheet" href="css/daily-hazard.css?v=v1-dailyHazard">
+<link rel="stylesheet" href="css/rebirth-hazard.css?v=v3-rebirthHazard5x">
 <link rel="stylesheet" href="css/tower-hub.css?v=v4-speed3xPass">
 <link rel="stylesheet" href="css/card-assets-hazard.css?v=v4-indexPureBadge">
 <script>
@@ -1067,20 +1068,201 @@
   </div>
   <div id="wmBody" class="wm-body-wrap"></div>
 </div></div>
-<!-- REBIRTH ASCENSION MODAL (HORIZONTAL LAYOUT) -->
-<div id="rebirthModal" class="rb-modal-backdrop">
-  <div class="rb-modal-container">
-    <div class="rb-modal-head">
-      <div class="rb-head-title-wrap">
-        <div class="rb-cyber-pill"><span class="rb-cyber-dot"></span>CYCLE // ASCENSION MATRIX</div>
-        <div class="rb-modal-title">REBIRTH SYSTEM</div>
+<!-- REBIRTH SYSTEM MODAL + HAZARD CURTAIN + 5s SHOWCASE (port _tmp/proto_rebirth_v1.html) -->
+<div id="rebirthModal" role="dialog" aria-modal="true" aria-labelledby="rbhTitle">
+  <div class="rbh-shell" id="rbhShell">
+    <header class="rbh-banner-bar">
+      <div class="rbh-banner-ribbon">
+        <div class="rbh-banner-cap">
+          <div class="rbh-banner-cap-in">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/>
+            </svg>
+            <span>ASCEND</span>
+          </div>
+        </div>
+        <div class="rbh-banner-mid">
+          <div class="rbh-banner-titles">
+            <h1 class="rbh-title" id="rbhTitle">REBIRTH <em>SYSTEM</em></h1>
+            <span class="rbh-eyebrow">// CYCLE // ASCENSION MATRIX</span>
+          </div>
+          <div class="rbh-banner-tags">
+            <span class="rbh-banner-tag" id="rbhTagCycle">CYCLE R0</span>
+            <span class="rbh-banner-tag hz" id="rbhTagMult">×1 LUCK</span>
+          </div>
+        </div>
       </div>
-      <button class="ix-x rb-close-btn" id="rebirthClose" type="button" title="Close">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-      </button>
+
+      <div class="rbh-banner-right">
+        <button type="button" class="rbh-hdr-btn info" id="rbhGuideBtn" aria-label="Rebirth Mechanics Guide" title="Cycle &amp; Essence Guide">
+          <span>?</span>
+        </button>
+        <button type="button" class="rbh-hdr-btn close" id="rbhClose" aria-label="Close Rebirth System" title="Close [ESC]">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+        </button>
+        <div class="rbh-slashes" aria-hidden="true"><i></i><i></i><i></i></div>
+      </div>
+    </header>
+
+    <section class="rbh-panel">
+      <div class="rbh-tape-line" aria-hidden="true"></div>
+
+      <div class="rbh-subbar">
+        <div class="rbh-sub-desc">Duplicate pulls transmute into <b>Essence</b> — multiplying <em>Total Luck</em> (<b>×5</b>/Rebirth), zero reset.</div>
+        <div class="rbh-pills">
+          <div class="rbh-pill rank" id="rbhPillRank"><span class="rbh-dot"></span><span>CYCLE: <b id="rbhPillRankVal">R0</b></span></div>
+          <div class="rbh-pill luck"><span>LUCK MULT: <b id="rbhPillLuckVal">×1</b></span></div>
+          <div class="rbh-pill" id="rbhPillPool"><span>POOL: <b id="rbhPillPoolVal">0%</b></span></div>
+        </div>
+      </div>
+
+      <div class="rbh-body-wrap">
+        <div class="rbh-grid" id="rbhGrid"></div>
+      </div>
+    </section>
+
+    <div class="rbh-guide" id="rbhGuide" role="dialog" aria-modal="true" aria-label="Ascension Rules &amp; Cycle Roadmap">
+      <div class="rbh-guide-box">
+        <div class="rbh-guide-head">
+          <h2>// ASCENSION CYCLE ROADMAP</h2>
+          <button type="button" class="rbh-guide-x" id="rbhGuideClose" aria-label="Close Guide">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+          </button>
+        </div>
+        <p class="rbh-guide-p"><b>Doubling Threshold &amp; ×5 Scaling:</b> Each Rebirth Cycle starts at <b>1,000,000 Essence</b> and doubles per rank (<b>1M × 2^rank</b>), while your Luck Multiplier scales <b>×5 per Rebirth</b> (R1 ×5, R2 ×10, R3 ×15...). Excess Essence carries forward automatically.</p>
+        <div class="rbh-guide-table" id="rbhGuideTable"></div>
+        <p class="rbh-guide-p"><b>Zero Reset Guarantee:</b> Unlike traditional prestige systems, Rebirth <b>never</b> deletes your Cards, Decks, Player Level, Skill Tree, Artifacts, Pets, Coins, or Gems.</p>
+      </div>
     </div>
-    <div class="rb-modal-body" id="rebirthBody"></div>
   </div>
+</div>
+
+<div id="rebirthCurtain" aria-hidden="true">
+  <div class="half top"><span class="edge"></span><span class="mark">ASCENSION <b>MATRIX</b> // 01</span></div>
+  <div class="half bot"><span class="edge"></span><span class="mark">HZ-PROTOCOL <b>REBIRTH</b></span></div>
+  <div class="tape tape-a"></div>
+  <div class="tape tape-b"></div>
+  <div class="flash"></div>
+  <div class="plate">
+    <span class="corner tl"></span><span class="corner tr"></span>
+    <span class="corner bl"></span><span class="corner br"></span>
+    <span class="water" id="rbHzWater">REBIRTH</span>
+    <div class="in">
+      <div class="krow">
+        <span class="dot"></span>
+        <span class="kick" id="rbHzKick">// ASCENSION <b>PROTOCOL</b></span>
+        <span class="serial">SERIAL 0x<b id="rbHzSerial">RB01</b></span>
+      </div>
+      <div class="title"><span id="rbHzTitle">REBIRTH SYSTEM</span></div>
+      <div class="sub" id="rbHzSub">DUPLICATE ESSENCE TRANSMUTATION · PERMANENT LUCK MULTIPLIER</div>
+      <div class="bar"><i></i></div>
+      <div class="foot"><span>HZ-PROTOCOL</span><span id="rbHzFoot">SYNCING CORE</span></div>
+    </div>
+  </div>
+</div>
+
+<div id="rebirthShowcase" role="dialog" aria-modal="true" aria-label="Rebirth Ascension Showcase">
+  <div class="rbs-bggrid" aria-hidden="true"></div>
+  <canvas id="rbShowCv" aria-hidden="true"></canvas>
+  <div class="rbs-pillar" aria-hidden="true"></div>
+  <div class="rbs-rift a" aria-hidden="true"></div>
+  <div class="rbs-rift b" aria-hidden="true"></div>
+  <div class="rbs-flash" aria-hidden="true"></div>
+
+  <header class="rbs-top">
+    <div class="rbs-top-tape" aria-hidden="true"></div>
+    <div class="rbs-top-in">
+      <div class="rbs-lock-badge" id="rbsLockBadge">
+        <svg id="rbsLockIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        <span id="rbsLockTxt">LOCKED · UNSKIPPABLE</span>
+      </div>
+      <div class="rbs-phase-lbl" id="rbsPhaseLbl">PHASE 01 // ESSENCE SINGULARITY</div>
+      <div class="rbs-timer"><span>SEQ</span><b id="rbsCountdown">05.0s</b></div>
+    </div>
+    <div class="rbs-top-prog"><i id="rbsProgFill"></i></div>
+  </header>
+
+  <main class="rbs-stage" id="rbsStage">
+    <div class="rbs-emblem" id="rbsEmblem">
+      <svg class="rbs-mandala" viewBox="0 0 200 200" aria-hidden="true">
+        <g class="m-outer">
+          <circle cx="100" cy="100" r="92" fill="none" stroke="rgba(192,132,252,.55)" stroke-width="1.5" stroke-dasharray="6 6"/>
+          <circle cx="100" cy="100" r="85" fill="none" stroke="rgba(243,230,0,.65)" stroke-width="2" stroke-dasharray="22 14"/>
+        </g>
+        <g class="m-mid">
+          <polygon points="100,22 167,61 167,139 100,178 33,139 33,61" fill="none" stroke="rgba(245,245,245,.45)" stroke-width="1.4"/>
+          <circle cx="100" cy="100" r="64" fill="none" stroke="rgba(125,249,255,.5)" stroke-width="1.4" stroke-dasharray="3 7"/>
+        </g>
+        <g class="m-hex">
+          <polygon points="100,46 147,127 53,127" fill="none" stroke="rgba(243,230,0,.55)" stroke-width="1.4"/>
+          <polygon points="100,154 53,73 147,73" fill="none" stroke="rgba(192,132,252,.6)" stroke-width="1.4"/>
+        </g>
+      </svg>
+
+      <div class="rbs-old-rank" id="rbsOldRank">
+        <div class="rbs-old-halves">
+          <span class="rbs-half L" id="rbsOldL"></span>
+          <span class="rbs-half R" id="rbsOldR"></span>
+        </div>
+      </div>
+
+      <div class="rbs-new-rank" id="rbsNewRank">
+        <div class="rbs-new-crest" id="rbsNewCrest"></div>
+        <div class="rbs-new-num" id="rbsNewNum">R1</div>
+        <div class="rbs-new-lbl" id="rbsNewLbl">CYCLE UNLOCKED</div>
+      </div>
+    </div>
+
+    <div class="rbs-charge-copy" id="rbsChargeCopy">
+      <b id="rbsChargeTitle">COMPRESSING ESSENCE CORE...</b>
+      <span id="rbsChargeSub">CORE DENSITY: 100% // LIMITER BREACH IMMINENT</span>
+    </div>
+
+    <div class="rbs-dossier" id="rbsDossier">
+      <div class="rbs-kicker">// ASCENSION OVERRIDE CONFIRMED</div>
+      <h2 class="rbs-title">REBIRTH <em>COMPLETE</em></h2>
+      <div class="rbs-sub" id="rbsSubCopy">CYCLE R1 // CONSCIOUSNESS ELEVATED</div>
+
+      <div class="rbs-mult-card">
+        <div class="rbs-mc-l">
+          <k>PERMANENT BONUS</k>
+          <b>TOTAL LUCK MULTIPLIER</b>
+        </div>
+        <div class="rbs-mc-val">
+          <span class="old" id="rbsOldMult">×1</span>
+          <span class="arr">➔</span>
+          <span class="new" id="rbsNewMult">×5</span>
+        </div>
+        <span class="rbs-mc-tag" id="rbsBoostTag">+4× LUCK GAIN</span>
+      </div>
+
+      <div class="rbs-stats">
+        <div class="rbs-stat">
+          <k>NEXT THRESHOLD</k>
+          <b id="rbsNextTh">2,000,000</b>
+        </div>
+        <div class="rbs-stat">
+          <k>CARRYOVER ESSENCE</k>
+          <b id="rbsSurplus">0</b>
+        </div>
+        <div class="rbs-stat ok">
+          <k>COLLECTION &amp; DECK</k>
+          <b>100% INTACT</b>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="rbs-foot">
+    <div class="rbs-lock-notice" id="rbsLockNotice">
+      <span>MANDATORY ASCENSION VIEWING · CANNOT SKIP</span>
+      <b id="rbsFootTimer">05.0s</b>
+    </div>
+    <button type="button" class="rbs-continue" id="rbsContinue">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+      <span>CONTINUE TO REBIRTH TERMINAL</span>
+    </button>
+  </footer>
 </div>
 
 <div id="missionModal"><div class="ix-box mx-box">
@@ -2162,11 +2344,12 @@
 <script src="js/topup.js?v=v158-paywallOff"></script>
 <script src="js/cards-fx.js?v=v89-traitRates"></script>
 <script src="js/anime-archetype-attacks.js?v=v125-smooth60fps"></script>
-<script src="js/state.js?v=v360-luckShinyPasses"></script>
+<script src="js/state.js?v=v361-rebirthHazard5x"></script>
 <script src="js/sheetfx.js?v=v354-smooth60fps"></script>
 <script src="js/battle.js?v=v270-luckShinyPasses"></script>
 <script src="js/battle-hazard.js?v=v23-speed3xPass"></script>
-<script src="js/tower-lobby.js?v=v387-luckShinyPasses"></script>
+<script src="js/tower-lobby.js?v=v388-rebirthHazard5x"></script>
+<script src="js/rebirth-hazard.js?v=v3-rebirthHazard5x"></script>
 <script src="js/shadow-king-fx.js?v=v5-skillFxRestore"></script>
 <script src="js/foe-passives.js?v=v63-english"></script>
 <script src="js/story-carousel.js?v=v324-eagerImgFix"></script>

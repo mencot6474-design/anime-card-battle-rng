@@ -492,7 +492,7 @@ const STORY_REPEAT_GEM_MIN=2;
 /* ========== REBIRTH ==========
    Nilai tiap kartu duplikat (tier × mut × shiny) masuk ke state.rebirth.essence,
    BUKAN EXP player — jadi farming jutaan dup naikkan luck tanpa merusak level.
-   Ambang bertahap (doubling dari REBIRTH_BASE); tiap rebirth = luck ×(1+count). */
+   Ambang bertahap (doubling dari REBIRTH_BASE); luck mult: R0=x1, R1=x5, R2=x10, dst. */
 const REBIRTH_BASE=1000000;
 /* 0027: essence rebirth server-authoritative. Client mengumpulkan delta
    `_rebirthGain` (transient) dan menandai `_rebirthDo` saat menekan REBIRTH;
@@ -502,7 +502,7 @@ let _rebirthGained=0,_rebirthDo=false;
 function rebirthCount(){return (state&&state.rebirth&&state.rebirth.count)||0;}
 function rebirthEssence(){return (state&&state.rebirth&&state.rebirth.essence)||0;}
 function rebirthThreshold(){return Math.round(REBIRTH_BASE*Math.pow(2,rebirthCount()));}
-function rebirthLuckMult(){return 1+rebirthCount();}
+function rebirthLuckMult(cnt){const c=(typeof cnt==="number"&&isFinite(cnt))?Math.max(0,Math.floor(cnt)):rebirthCount();return c<=0?1:c*5;}
 function canRebirth(){return rebirthEssence()>=rebirthThreshold();}
 function addRebirthEssence(n){
   if(!state||!n)return 0;
@@ -518,6 +518,7 @@ function doRebirth(){
   state.rebirth.count=rebirthCount()+1;
   _rebirthDo=true;
   save();
+  try{if(typeof pushCloudNow==="function")pushCloudNow();}catch(e){}
   return true;
 }
 function storyCdKey(lv){return state.diff+":"+lv;}
