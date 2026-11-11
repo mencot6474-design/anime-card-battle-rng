@@ -1522,6 +1522,15 @@ document.getElementById("modal").addEventListener("click",e=>{
 
 /* =============== LOBBY =============== */
 function renderTitleCrownHtml(titleName, variantCls){
+  if (typeof window.renderSoloGodAuraHtml === 'function') {
+    const key = titleName || (window.state && window.state.playerTitle) || "ROOKIE";
+    const defs = (typeof TITLE_DEFS !== 'undefined') ? TITLE_DEFS : (window.TITLE_DEFS || []);
+    let t = defs.find(x => x.id === key || x.name === key);
+    if (!t && defs.length > 0) {
+      t = defs.find(x => x.id === "ROOKIE") || defs[defs.length - 2] || defs[0];
+    }
+    if (t) return window.renderSoloGodAuraHtml(t);
+  }
   const name = titleName || "ROOKIE";
   const cls = variantCls || ("title-" + name.toLowerCase().replace(/\s+/g,"_"));
   return `<div class="card-floating-title ${cls}">
@@ -1814,6 +1823,7 @@ function hubLivingStandeeHtml(eq) {
     </div>
     <div class="hero-standee-wrap" id="heroStandeeWrap" onclick="if(window.sfx&&sfx.hit)sfx.hit();if(typeof openDeckModal==='function')openDeckModal();else if(typeof toggleBackpack==='function')toggleBackpack();" title="Kelola Deck">
       <div class="hero-standee-rimlight" id="heroRimlight"></div>
+      ${(typeof renderTitleCrownHtml === 'function') ? renderTitleCrownHtml((state && state.playerTitle) || "ROOKIE") : ''}
       <div class="hero-card-plate ${frameTheme}" id="heroCardPlate">
         <div class="hero-card-art">
           <div class="hero-standee-char" id="heroStandeeChar" style="background-image: url('assets/cards/art/shadow-king.webp');"></div>
@@ -1846,6 +1856,9 @@ function hubLivingStandeeHtml(eq) {
   <div class="hero-standee-wrap" id="heroStandeeWrap" onclick="if(window.sfx&&sfx.hit)sfx.hit();if(typeof openDeckModal==='function')openDeckModal();else if(typeof toggleBackpack==='function')toggleBackpack();" title="Kelola Deck">
     <!-- Ambient Rimlight Backglow -->
     <div class="hero-standee-rimlight" id="heroRimlight" style="--tier-col:${tierCol};"></div>
+
+    <!-- Active Equipped Operator Title Floating Aura Crown -->
+    ${(typeof renderTitleCrownHtml === 'function') ? renderTitleCrownHtml((state && state.playerTitle) || "ROOKIE") : ''}
 
     <!-- Beveled Chamfer Plate with Hero Frame -->
     <div class="hero-card-plate ${frameTheme}" id="heroCardPlate">
@@ -2462,6 +2475,10 @@ function renderLobby(){
         <div class="stage" id="c12Stage">
           <div class="stage-bg-layer" id="stageBgLayer" style="background-image: url('${activeBg}');"></div>
           <canvas id="ambientCanvas"></canvas>
+
+          <div class="c12-stage-title" onclick="if(typeof openTitlesModal==='function')openTitlesModal();" title="Manage Titles">
+            ${(typeof renderTitleCrownHtml === 'function') ? renderTitleCrownHtml(state.playerTitle || "ROOKIE") : ''}
+          </div>
 
           <div class="hero" id="heroStandeeWrap" title="Click Hunter to manage Party &amp; Deck" onclick="if(window.sfx&&sfx.hit)sfx.hit();if(typeof toggleBackpack==='function')toggleBackpack();">
             <div class="artbox"><img class="art" src="${_art}" alt="" style="${_pos}"></div>

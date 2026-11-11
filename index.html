@@ -29,7 +29,7 @@
 <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
 <script src="js/crazygames.js?v=v2-sdkReadyGate"></script>
 <link rel="stylesheet" href="css/style.css?v=v398-rebirthHazard5x">
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Rajdhani:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Orbitron:wght@500;600;700;800;900&family=Rajdhani:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/world-boss.css?v=v283-wbCurtainFix">
 <link rel="stylesheet" href="css/sl-system.css?v=v391-coreSpireHub">
 <link rel="stylesheet" href="css/story-carousel.css?v=v354-storyCurtainZ">
@@ -44,7 +44,7 @@
 <link rel="stylesheet" href="css/profile-screen.css?v=v13-profileFitEnglish">
 <link rel="stylesheet" href="css/public-profile.css?v=v3-rkpOpen">
 <link rel="stylesheet" href="css/ranking-hazard.css?v=v1-rankHazard">
-<link rel="stylesheet" href="css/titles-hazard.css?v=v1-titlesHazard">
+<link rel="stylesheet" href="css/titles-hazard.css?v=v9-cleanSelectorPreview">
 <link rel="stylesheet" href="css/premium-exchange.css?v=v6-premiumConfirm">
 <link rel="stylesheet" href="css/drop-report.css?v=v3-eagerImgFix">
 <link rel="stylesheet" href="css/battle-fresh.css?v=v42-smooth60fps">
@@ -324,7 +324,10 @@
           <div class="pfx-avatar" id="pfAvatar"><span>?</span></div>
         </div>
 
-        <div class="pfx-cardstage" id="pfAv"></div>
+        <div class="pfx-cardstage-wrap">
+          <div class="pfx-card-title-crown" id="pfCardTitleCrown" title="Click to Change Title"></div>
+          <div class="pfx-cardstage" id="pfAv"></div>
+        </div>
 
         <div class="pfx-levelbar">
           <div class="prof-title-tag pfx-title-tag" id="pfTitleTag">[ROOKIE]</div>
@@ -413,6 +416,17 @@
     </div>
   </div>
 </div>
+<!-- SVG Filter Definitions for Solo God Aura Plasma Flame -->
+<svg style="position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;" aria-hidden="true">
+  <defs>
+    <filter id="godPlasmaFilter" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.04 0.08" numOctaves="3" result="noise" seed="4">
+        <animate attributeName="baseFrequency" dur="5s" values="0.03 0.07; 0.05 0.11; 0.03 0.07" repeatCount="indefinite"/>
+      </feTurbulence>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="12" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
 <!-- Titles screen — hazard WoB (full-bleed, pola #rankModal) -->
 <div id="titlesModal">
   <div class="tt-screen">
@@ -428,7 +442,7 @@
           <div class="tt-ts"><span class="tt-ts-k">EQUIPPED</span><span class="tt-ts-v" id="ttTsEquipped">ROOKIE</span></div>
         </div>
       </div>
-      <button class="tt-x" id="titlesClose" type="button" aria-label="Close titles">
+      <button class="tt-x" id="titlesClose" type="button" aria-label="Close titles" onclick="closeTitlesModal()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </header>
@@ -2340,7 +2354,8 @@
 <script src="js/mobile-shell.js?v=v288-dockWebpIcons"></script>
 <script src="js/supabase-sync.js?v=v335-speed3xPass"></script>
 <script src="js/notify-hazard.js?v=v1-notifyHazard"></script>
- <script src="js/panels.js?v=v424-luckShinyPasses"></script>
+<script src="js/titles-hazard.js?v=v3-titlesCatalog"></script>
+<script src="js/panels.js?v=v430-cleanSelectorPreview"></script>
 <script src="js/topup.js?v=v158-paywallOff"></script>
 <script src="js/cards-fx.js?v=v89-traitRates"></script>
 <script src="js/anime-archetype-attacks.js?v=v125-smooth60fps"></script>
@@ -2348,7 +2363,7 @@
 <script src="js/sheetfx.js?v=v354-smooth60fps"></script>
 <script src="js/battle.js?v=v270-luckShinyPasses"></script>
 <script src="js/battle-hazard.js?v=v23-speed3xPass"></script>
-<script src="js/tower-lobby.js?v=v388-rebirthHazard5x"></script>
+<script src="js/tower-lobby.js?v=v390-cleanLobbyNoTitle"></script>
 <script src="js/rebirth-hazard.js?v=v3-rebirthHazard5x"></script>
 <script src="js/shadow-king-fx.js?v=v5-skillFxRestore"></script>
 <script src="js/foe-passives.js?v=v63-english"></script>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v588-rebirthCurtainZ';
+const CACHE_NAME = 'anime-card-battle-v596-cleanSelectorPreview';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

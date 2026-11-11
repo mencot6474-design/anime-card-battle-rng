@@ -716,3 +716,1480 @@ body:has(#titlesModal.show) #topbar {
   #titlesCurtain .tape,
   #titlesCurtain .flash { animation: none !important; }
 }
+
+/* ==================== THE SOLO GOD AURA LOCKUP ==================== */
+.solo-god-lockup {
+  position: absolute;
+  top: -62px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-1deg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: none;
+  perspective: 800px;
+  animation: godHoverFloat 3.6s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate;
+}
+.solo-god-lockup.no-bob {
+  animation: none !important;
+}
+
+@keyframes godHoverFloat {
+  0%   { transform: translateX(-50%) translateY(0px) rotate(-1deg); }
+  50%  { transform: translateX(-50%) translateY(-10px) rotate(0.8deg); }
+  100% { transform: translateX(-50%) translateY(-3px) rotate(-0.5deg); }
+}
+
+/* 1. MULTI-TIER ORGANIC PLASMA AURA (100% ORGANIC, NO ROTATING BOX) */
+.sga-aura-field {
+  position: absolute;
+  inset: -30px -40px;
+  pointer-events: none;
+  z-index: 1;
+  overflow: visible;
+}
+
+/* Fluid Upward Plasma Flame Pillar (100% Organic Elliptical Feathering, ZERO Box Boundaries) */
+.sga-flame-pillar { display: none !important;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 220%;
+  height: 250%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(ellipse 42% 42% at 50% 55%, rgba(255,255,255,0.92) 0%, var(--aura-col, #38bdf8) 22%, rgba(2,132,199,0.55) 45%, transparent 68%);
+  filter: url(#godPlasmaFilter) blur(10px);
+  opacity: 0.88;
+  mask-image: radial-gradient(ellipse 46% 45% at 50% 55%, black 20%, transparent 68%);
+  -webkit-mask-image: radial-gradient(ellipse 46% 45% at 50% 55%, black 20%, transparent 68%);
+  animation: flameSurgeVertical 2.4s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes flameSurgeVertical {
+  0%   { transform: translate(-50%, -50%) translateY(4px) scaleX(0.92) scaleY(0.92); opacity: 0.75; }
+  50%  { transform: translate(-50%, -50%) translateY(-6px) scaleX(1.06) scaleY(1.08); opacity: 0.98; }
+  100% { transform: translate(-50%, -50%) translateY(-12px) scaleX(0.96) scaleY(1.15); opacity: 0.82; }
+}
+
+/* Concentric Expanding Circular Shockwaves (Strictly 1:1 Circular Aspect Ratio, ZERO Box Corners) */
+.sga-shockwave-circle {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 130px; height: 130px;
+  aspect-ratio: 1/1;
+  border-radius: 50%;
+  border: 2px solid var(--aura-col, #38bdf8);
+  box-shadow: 0 0 16px var(--aura-col, #38bdf8), inset 0 0 12px var(--aura-col, #38bdf8);
+  transform: translate(-50%, -50%) scale(0.2);
+  opacity: 0;
+  pointer-events: none;
+  mask-image: radial-gradient(circle, black 35%, transparent 85%);
+  -webkit-mask-image: radial-gradient(circle, black 35%, transparent 85%);
+}
+.sga-shockwave-circle.sw1 {
+  animation: circularShockwave 2.8s cubic-bezier(0.12, 0.8, 0.32, 1) infinite;
+}
+.sga-shockwave-circle.sw2 {
+  animation: circularShockwave 2.8s cubic-bezier(0.12, 0.8, 0.32, 1) infinite;
+  animation-delay: 1.4s;
+}
+@keyframes circularShockwave {
+  0%   { transform: translate(-50%, -50%) scale(0.25); opacity: 0.92; border-width: 2.5px; }
+  65%  { opacity: 0.4; }
+  100% { transform: translate(-50%, -50%) scale(1.68); opacity: 0; border-width: 0.5px; }
+}
+
+/* Fluid Organic Plasma Core Glow */
+.sga-flame-core { display: none !important;
+  position: absolute;
+  inset: -2px -16px;
+  border-radius: 999px;
+  background: radial-gradient(ellipse at center, var(--aura-col, #38bdf8) 22%, transparent 75%);
+  filter: blur(12px);
+  opacity: 0.8;
+  animation: corePulseGlow 2.2s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes corePulseGlow {
+  0%   { transform: scale(0.94); opacity: 0.65; }
+  100% { transform: scale(1.08); opacity: 0.95; filter: blur(16px); }
+}
+
+/* Crackling High-Voltage Lightning Sparks */
+.sga-lightning-wrap {
+  position: absolute;
+  inset: -14px -22px;
+  pointer-events: none;
+  z-index: 3;
+}
+.sga-bolt {
+  position: absolute;
+  stroke: #fff;
+  stroke-width: 2;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 8px var(--aura-col, #38bdf8));
+  opacity: 0;
+  animation: boltSnap 2.8s infinite;
+}
+.sga-bolt.b1 { top: -8px; left: 18%; animation-delay: 0.2s; }
+.sga-bolt.b2 { bottom: -8px; right: 22%; animation-delay: 1.1s; }
+.sga-bolt.b3 { top: 8px; right: -10px; animation-delay: 1.9s; }
+@keyframes boltSnap {
+  0%, 88%, 100% { opacity: 0; transform: scale(0.8); }
+  89% { opacity: 1; transform: scale(1.12) rotate(4deg); }
+  92% { opacity: 0.3; }
+  94% { opacity: 1; transform: scale(1); }
+  96% { opacity: 0; }
+}
+
+/* Floating Spirit Ion Embers */
+.sga-embers {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  z-index: 2;
+}
+.sga-ember {
+  position: absolute;
+  width: 3.5px; height: 3.5px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 10px currentColor;
+  animation: emberLevitate 2.2s infinite ease-out;
+}
+.sga-ember:nth-child(1) { left: 15%; animation-delay: 0s; }
+.sga-ember:nth-child(2) { left: 35%; animation-delay: 0.5s; }
+.sga-ember:nth-child(3) { left: 60%; animation-delay: 1.1s; }
+.sga-ember:nth-child(4) { left: 85%; animation-delay: 1.6s; }
+@keyframes emberLevitate {
+  0%   { transform: translateY(14px) scale(0.6); opacity: 0; }
+  40%  { opacity: 1; transform: translateY(-8px) scale(1.2); }
+  100% { transform: translateY(-38px) scale(0.1); opacity: 0; }
+}
+
+/* 2. ARTICULATED 3D ANIME WINGS (GENUINELY DISTINCT ANATOMY & ANIMATION CLASSES) */
+.sga-wing-mount {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  transform-style: preserve-3d;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.8));
+}
+.sga-wing-l { margin-right: -16px; }
+.sga-wing-r { margin-left: -16px; }
+
+/* Wing Mode Toggles */
+.wingmode-none .sga-wing-mount { display: none !important; }
+.wingmode-relics .sga-wing-mount { transform: scale(0.85); }
+.wingmode-halo .sga-wing-mount { display: none !important; }
+
+/* ARCHETYPE 1: SERAPH / FEATHERED (Double-Jointed 3D Flight Flap) */
+.sga-wing-l.wing-anim-seraph {
+  animation: seraphFlapL 3.2s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate;
+}
+.sga-wing-r.wing-anim-seraph {
+  animation: seraphFlapR 3.2s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate;
+}
+@keyframes seraphFlapL {
+  0%   { transform: rotateY(0deg) rotateZ(0deg) translateY(0); filter: drop-shadow(0 0 10px var(--aura-col, #38bdf8)); }
+  50%  { transform: rotateY(-36deg) rotateZ(-14deg) translateY(-6px) scale(1.08); filter: drop-shadow(0 0 26px var(--aura-col, #38bdf8)); }
+  100% { transform: rotateY(12deg) rotateZ(4deg) translateY(2px) scale(0.96); }
+}
+@keyframes seraphFlapR {
+  0%   { transform: rotateY(0deg) rotateZ(0deg) translateY(0); filter: drop-shadow(0 0 10px var(--aura-col, #38bdf8)); }
+  50%  { transform: rotateY(36deg) rotateZ(14deg) translateY(-6px) scale(1.08); filter: drop-shadow(0 0 26px var(--aura-col, #38bdf8)); }
+  100% { transform: rotateY(-12deg) rotateZ(-4deg) translateY(2px) scale(0.96); }
+}
+
+/* ARCHETYPE 2: FLOATING CRYSTAL SHARDS (Harmonic Telekinetic Suspension, NO Bird Flapping) */
+.sga-wing-l.wing-anim-shards {
+  animation: shardFloatL 2.6s ease-in-out infinite alternate;
+}
+.sga-wing-r.wing-anim-shards {
+  animation: shardFloatR 2.6s ease-in-out infinite alternate;
+}
+@keyframes shardFloatL {
+  0%   { transform: translateY(0px) rotate(-2deg) scale(0.97); }
+  50%  { transform: translateY(-9px) rotate(4deg) scale(1.06); filter: drop-shadow(0 0 20px var(--aura-col, #38bdf8)); }
+  100% { transform: translateY(3px) rotate(-4deg) scale(1); }
+}
+@keyframes shardFloatR {
+  0%   { transform: translateY(0px) rotate(2deg) scale(0.97); }
+  50%  { transform: translateY(-9px) rotate(-4deg) scale(1.06); filter: drop-shadow(0 0 20px var(--aura-col, #38bdf8)); }
+  100% { transform: translateY(3px) rotate(4deg) scale(1); }
+}
+
+/* ARCHETYPE 3: MECHA JET THRUSTERS (Forward-Swept Aerodynamic Pitch & Rocket Flame) */
+.sga-wing-l.wing-anim-thrusters {
+  animation: thrusterPitchL 1.8s ease-in-out infinite alternate;
+}
+.sga-wing-r.wing-anim-thrusters {
+  animation: thrusterPitchR 1.8s ease-in-out infinite alternate;
+}
+@keyframes thrusterPitchL {
+  0%   { transform: rotate(-2deg) translateY(0); }
+  50%  { transform: rotate(3deg) translateY(-4px) scale(1.04); filter: drop-shadow(0 0 22px var(--aura-col, #38bdf8)); }
+  100% { transform: rotate(-1deg) translateY(2px); }
+}
+@keyframes thrusterPitchR {
+  0%   { transform: rotate(2deg) translateY(0); }
+  50%  { transform: rotate(-3deg) translateY(-4px) scale(1.04); filter: drop-shadow(0 0 22px var(--aura-col, #38bdf8)); }
+  100% { transform: rotate(1deg) translateY(2px); }
+}
+
+/* ARCHETYPE 4: VOID TENDRILS (Sung Jin-Woo Shadow Monarch Undulating Mist) */
+.sga-wing-l.wing-anim-tendrils {
+  animation: shadowMistL 3s ease-in-out infinite alternate;
+}
+.sga-wing-r.wing-anim-tendrils {
+  animation: shadowMistR 3s ease-in-out infinite alternate;
+}
+@keyframes shadowMistL {
+  0%   { transform: skewX(-5deg) rotate(-3deg) scaleY(0.94); }
+  50%  { transform: skewX(8deg) rotate(7deg) scaleY(1.12); filter: drop-shadow(0 0 24px var(--aura-col, #38bdf8)); }
+  100% { transform: skewX(-3deg) rotate(-1deg) scaleY(1); }
+}
+@keyframes shadowMistR {
+  0%   { transform: skewX(5deg) rotate(3deg) scaleY(0.94); }
+  50%  { transform: skewX(-8deg) rotate(-7deg) scaleY(1.12); filter: drop-shadow(0 0 24px var(--aura-col, #38bdf8)); }
+  100% { transform: skewX(3deg) rotate(1deg) scaleY(1); }
+}
+
+/* ARCHETYPE 5: 3D GYROSCOPIC GIMBAL (Continuous 3D Spherical Orbit) */
+.sga-wing-mount.wing-anim-gimbal {
+  animation: gyroSpin3D 8s linear infinite;
+}
+@keyframes gyroSpin3D {
+  0%   { transform: rotate3d(1, 0.5, 0.2, 0deg); }
+  100% { transform: rotate3d(1, 0.5, 0.2, 360deg); }
+}
+
+/* ARCHETYPE 6: BLADED KATANA ARSENAL (Gate of Babylon Floating Blades) */
+.sga-wing-l.wing-anim-blades {
+  animation: katanaGateL 2.8s ease-in-out infinite alternate;
+}
+.sga-wing-r.wing-anim-blades {
+  animation: katanaGateR 2.8s ease-in-out infinite alternate;
+}
+@keyframes katanaGateL {
+  0%   { transform: translateY(0) rotate(-4deg); }
+  50%  { transform: translateY(-8px) rotate(3deg) scale(1.05); filter: drop-shadow(0 0 20px var(--aura-col, #38bdf8)); }
+  100% { transform: translateY(2px) rotate(-2deg); }
+}
+@keyframes katanaGateR {
+  0%   { transform: translateY(0) rotate(4deg); }
+  50%  { transform: translateY(-8px) rotate(-3deg) scale(1.05); filter: drop-shadow(0 0 20px var(--aura-col, #38bdf8)); }
+  100% { transform: translateY(2px) rotate(2deg); }
+}
+
+/* ARCHETYPE 7: DEMONIC SCYTHE WINGS (Menacing Forward Snap & Threat) */
+.sga-wing-l.wing-anim-demon {
+  animation: demonScytheL 3.4s ease-in-out infinite alternate;
+}
+.sga-wing-r.wing-anim-demon {
+  animation: demonScytheR 3.4s ease-in-out infinite alternate;
+}
+@keyframes demonScytheL {
+  0%, 75% { transform: rotate(0deg) scale(0.98); }
+  82%     { transform: rotate(-22deg) scale(1.12); filter: drop-shadow(0 0 28px #ff0055); }
+  88%     { transform: rotate(4deg) scale(1.02); }
+  94%, 100% { transform: rotate(0deg) scale(0.98); }
+}
+@keyframes demonScytheR {
+  0%, 75% { transform: rotate(0deg) scale(0.98); }
+  82%     { transform: rotate(22deg) scale(1.12); filter: drop-shadow(0 0 28px #ff0055); }
+  88%     { transform: rotate(-4deg) scale(1.02); }
+  94%, 100% { transform: rotate(0deg) scale(0.98); }
+}
+
+/* ARCHETYPE 8: CARD CONSTELLATION (Cascading Harmonic Arcana Wave) */
+.sga-wing-l.wing-anim-cards {
+  animation: cardFanWaveL 2.6s ease-in-out infinite alternate;
+}
+.sga-wing-r.wing-anim-cards {
+  animation: cardFanWaveR 2.6s ease-in-out infinite alternate;
+}
+@keyframes cardFanWaveL {
+  0%   { transform: rotate(-6deg) translateY(0); }
+  50%  { transform: rotate(-2deg) translateY(-8px) scale(1.06); filter: drop-shadow(0 0 20px var(--aura-col, #38bdf8)); }
+  100% { transform: rotate(-8deg) translateY(2px); }
+}
+@keyframes cardFanWaveR {
+  0%   { transform: rotate(6deg) translateY(0); }
+  50%  { transform: rotate(2deg) translateY(-8px) scale(1.06); filter: drop-shadow(0 0 20px var(--aura-col, #38bdf8)); }
+  100% { transform: rotate(8deg) translateY(2px); }
+}
+
+/* ARCHETYPE 9: INFINITY DRAGONS (Living Figure-8 Undulation) */
+.sga-wing-l.wing-anim-dragons {
+  animation: dragonDanceL 3.6s ease-in-out infinite alternate;
+}
+.sga-wing-r.wing-anim-dragons {
+  animation: dragonDanceR 3.6s ease-in-out infinite alternate;
+}
+@keyframes dragonDanceL {
+  0%   { transform: scale(0.96) rotate(-3deg); }
+  50%  { transform: scale(1.08) rotate(4deg) translateY(-6px); filter: drop-shadow(0 0 24px #ffd700); }
+  100% { transform: scale(0.98) rotate(-1deg); }
+}
+@keyframes dragonDanceR {
+  0%   { transform: scale(0.96) rotate(3deg); }
+  50%  { transform: scale(1.08) rotate(-4deg) translateY(-6px); filter: drop-shadow(0 0 24px #ffd700); }
+  100% { transform: scale(0.98) rotate(1deg); }
+}
+
+/* 3. PURE FLOATING ANIME TEXT (NO BADGE / NO CONTAINER BOX) */
+.sga-text-stage {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+}
+
+/* Background Kanji Aura Stamp (Subtle Atmospheric Shadow) */
+.sga-kanji-stamp {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(-4deg);
+  font-family: 'Dela Gothic One', sans-serif;
+  font-size: 38px;
+  font-weight: 900;
+  color: var(--aura-col, #38bdf8);
+  opacity: 0.18;
+  pointer-events: none;
+  z-index: 1;
+  letter-spacing: .08em;
+  text-shadow: 0 0 16px var(--aura-col, #38bdf8);
+}
+
+/* The Core Anime Graffiti Text */
+.sga-core-text {
+  position: relative;
+  z-index: 5;
+  display: inline-block;
+  font-family: 'Dela Gothic One', sans-serif !important;
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: skewX(-9deg);
+  line-height: 1.1;
+  /* Radiant Multi-Tone Gradient */
+  background: var(--text-grad, linear-gradient(180deg, #ffffff 0%, #38bdf8 65%, #0284c7 100%));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  /* Thick Manga Comic Stroke */
+  -webkit-text-stroke: var(--stroke-w, 1.4px) #030304;
+  /* Dramatic 3D Block Extrusion & Intense Bloom */
+  filter: 
+    drop-shadow(1px 1px 0 #000)
+    drop-shadow(2px 2px 0 #000)
+    drop-shadow(3px 3px 0 var(--aura-edge, #0369a1))
+    drop-shadow(0 0 16px var(--aura-col, #38bdf8))
+    drop-shadow(0 0 32px var(--aura-col, #38bdf8));
+  animation: textAuraTwitch 4s ease-in-out infinite;
+}
+
+@keyframes textAuraTwitch {
+  0%, 80%, 100% {
+    filter: 
+      drop-shadow(1px 1px 0 #000)
+      drop-shadow(2px 2px 0 #000)
+      drop-shadow(3px 3px 0 var(--aura-edge, #0369a1))
+      drop-shadow(0 0 14px var(--aura-col, #38bdf8))
+      drop-shadow(0 0 28px var(--aura-col, #38bdf8));
+  }
+  85% {
+    /* Chromatic Aberration Surge */
+    filter: 
+      drop-shadow(-2px 0 0 #00ffff)
+      drop-shadow(2px 0 0 #ff0055)
+      drop-shadow(3px 3px 0 var(--aura-edge, #0369a1))
+      drop-shadow(0 0 24px var(--aura-col, #38bdf8))
+      drop-shadow(0 0 45px var(--aura-col, #38bdf8));
+  }
+}
+
+/* Slashed Laser Sweep Reflection (Disabled per user feedback — cleaner anime graffiti) */
+.sga-sheen-line {
+  display: none !important;
+}
+
+/* Floating Subtitle Tag */
+.sga-kicker-tag {
+  position: relative;
+  z-index: 6;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: .2em;
+  color: var(--haz);
+  text-shadow: 0 1px 4px #000, 0 0 8px var(--haz-glow);
+  margin-top: 1px;
+}
+
+/* 4. GYROSCOPIC TOP CREST & RADIANT HALO EMBLEM */
+.sga-crest-mount {
+  position: absolute;
+  top: -38px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  filter: drop-shadow(0 2px 10px rgba(0,0,0,0.9));
+  pointer-events: none;
+}
+
+/* Smooth Circular Rotating Runic Halo behind crest */
+.crest-halo-ring {
+  transform-origin: center;
+  animation: crestDialSpin 18s linear infinite;
+}
+@keyframes crestDialSpin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* CUSTOM CREST ANIMATIONS BY ARCHETYPE */
+.sga-crest-mount.crown-anim-spire {
+  animation: spireBeaconPulse 2.4s ease-in-out infinite alternate;
+}
+@keyframes spireBeaconPulse {
+  0%   { transform: translateX(-50%) translateY(0) scale(0.96); filter: drop-shadow(0 0 10px var(--aura-col, #38bdf8)); }
+  100% { transform: translateX(-50%) translateY(-6px) scale(1.08); filter: drop-shadow(0 0 24px var(--aura-col, #38bdf8)); }
+}
+
+.sga-crest-mount.crown-anim-hammer {
+  animation: hammerTremorPulse 3s ease-in-out infinite alternate;
+}
+@keyframes hammerTremorPulse {
+  0%, 75% { transform: translateX(-50%) translateY(0) scale(1); }
+  80%     { transform: translateX(-50%) translateY(3px) scale(1.06); filter: drop-shadow(0 0 25px var(--aura-col, #38bdf8)); }
+  85%     { transform: translateX(-50%) translateY(-2px) scale(0.98); }
+  90%, 100% { transform: translateX(-50%) translateY(0) scale(1); }
+}
+
+.sga-crest-mount.crown-anim-solar {
+  animation: solarCrownHover 3.2s ease-in-out infinite alternate;
+}
+@keyframes solarCrownHover {
+  0%   { transform: translateX(-50%) translateY(0) scale(0.96); }
+  100% { transform: translateX(-50%) translateY(-5px) scale(1.06); filter: drop-shadow(0 0 26px #ffd700); }
+}
+
+.sga-crest-mount.crown-anim-mach {
+  animation: machVibePulse 1.6s ease-in-out infinite alternate;
+}
+@keyframes machVibePulse {
+  0%   { transform: translateX(-50%) translateY(0); }
+  50%  { transform: translateX(-50%) translateY(-3px) scale(1.04); filter: drop-shadow(0 0 20px #38bdf8); }
+  100% { transform: translateX(-50%) translateY(1px); }
+}
+
+.sga-crest-mount.crown-anim-void {
+  animation: voidSwirlGrip 3.2s ease-in-out infinite alternate;
+}
+@keyframes voidSwirlGrip {
+  0%   { transform: translateX(-50%) scale(0.95); filter: drop-shadow(0 0 12px #c084fc); }
+  100% { transform: translateX(-50%) scale(1.08); filter: drop-shadow(0 0 28px #a855f7); }
+}
+
+.sga-crest-mount.crown-anim-godhead {
+  animation: godheadLevitation 3.4s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate;
+}
+@keyframes godheadLevitation {
+  0%   { transform: translateX(-50%) translateY(0) scale(0.96); filter: drop-shadow(0 0 12px #ffd700); }
+  100% { transform: translateX(-50%) translateY(-7px) scale(1.1); filter: drop-shadow(0 0 30px #facc15); }
+}
+
+.sga-crest-mount.crown-anim-katana {
+  animation: katanaGlintHover 2.8s ease-in-out infinite alternate;
+}
+@keyframes katanaGlintHover {
+  0%   { transform: translateX(-50%) translateY(0) rotate(-1deg); }
+  100% { transform: translateX(-50%) translateY(-5px) rotate(1deg); filter: drop-shadow(0 0 20px var(--aura-col, #38bdf8)); }
+}
+
+.sga-crest-mount.crown-anim-oni {
+  animation: demonSkullFlare 3s ease-in-out infinite alternate;
+}
+@keyframes demonSkullFlare {
+  0%   { transform: translateX(-50%) scale(0.96); filter: drop-shadow(0 0 14px #ff0055); }
+  100% { transform: translateX(-50%) scale(1.08); filter: drop-shadow(0 0 30px #e11d48); }
+}
+
+.sga-crest-mount.crown-anim-omega {
+  animation: omegaSupernovaPulse 2.6s ease-in-out infinite alternate;
+}
+@keyframes omegaSupernovaPulse {
+  0%   { transform: translateX(-50%) scale(0.94); filter: drop-shadow(0 0 12px #ff0055); }
+  50%  { transform: translateX(-50%) scale(1.12); filter: drop-shadow(0 0 32px #ff5500); }
+  100% { transform: translateX(-50%) scale(0.98); }
+}
+
+.sga-crest-mount.crown-anim-diamond {
+  animation: diamondFacetGlint 2.8s ease-in-out infinite alternate;
+}
+@keyframes diamondFacetGlint {
+  0%   { transform: translateX(-50%) translateY(0) rotate(0deg); }
+  50%  { transform: translateX(-50%) translateY(-5px) rotate(2deg) scale(1.06); filter: drop-shadow(0 0 24px #38bdf8); }
+  100% { transform: translateX(-50%) translateY(1px) rotate(-1deg); }
+}
+
+.sga-crest-mount.crown-anim-grimoire {
+  animation: grimoireFloatRunes 3.4s ease-in-out infinite alternate;
+}
+@keyframes grimoireFloatRunes {
+  0%   { transform: translateX(-50%) translateY(0); filter: drop-shadow(0 0 12px #c084fc); }
+  100% { transform: translateX(-50%) translateY(-6px) scale(1.06); filter: drop-shadow(0 0 26px #a855f7); }
+}
+
+.sga-crest-mount.crown-anim-railgun {
+  animation: railgunLockCharge 2.6s ease-in-out infinite alternate;
+}
+@keyframes railgunLockCharge {
+  0%   { transform: translateX(-50%) scale(0.95); filter: drop-shadow(0 0 14px #f59e0b); }
+  100% { transform: translateX(-50%) scale(1.07); filter: drop-shadow(0 0 28px #ef4444); }
+}
+
+.sga-crest-mount.crown-anim-ouroboros {
+  animation: ouroborosLevitate 3.4s ease-in-out infinite alternate;
+}
+@keyframes ouroborosLevitate {
+  0%   { transform: translateX(-50%) translateY(0) scale(0.96); filter: drop-shadow(0 0 14px #ffd700); }
+  100% { transform: translateX(-50%) translateY(-6px) scale(1.08); filter: drop-shadow(0 0 28px #f59e0b); }
+}
+
+/* Optional Plate Toggle (for users who want to compare) */
+.solo-god-lockup.with-plate .sga-text-stage {
+  padding: 6px 18px;
+  background: rgba(8, 8, 12, 0.94);
+  border: 1.8px solid var(--aura-col, #38bdf8);
+  clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+  box-shadow: 0 0 16px var(--aura-glow, rgba(56,189,248,0.5));
+}
+
+
+
+/* SOLO GOD AURA TITLES FOR css/titles-hazard.css */
+/* SPIRE IGNITION (Adept (Cyan Lighting)) */
+.title-spire_ignition {
+  --aura-col: #38bdf8;
+  --aura-glow: #38bdf880;
+  --aura-edge: #0284c7;
+  --text-grad: linear-gradient(180deg, #ffffff 0%, #38bdf8 65%, #0284c7 100%);
+}
+
+/* STRATA CRUSHER (Veteran (Violet Blade)) */
+.title-strata_crusher {
+  --aura-col: #818cf8;
+  --aura-glow: #818cf880;
+  --aura-edge: #4f46e5;
+  --text-grad: linear-gradient(180deg, #e0e7ff 0%, #818cf8 65%, #4f46e5 100%);
+}
+
+/* CENTURION OVERDRIVE (Master (Hazard Solar)) */
+.title-centurion_overdrive {
+  --aura-col: #fbbf24;
+  --aura-glow: #fbbf2480;
+  --aura-edge: #d97706;
+  --text-grad: linear-gradient(180deg, #fffbeb 0%, #fbbf24 65%, #d97706 100%);
+}
+
+/* STRATO PIERCER (Grandmaster (Crimson Jet)) */
+.title-strato_piercer {
+  --aura-col: #f43f5e;
+  --aura-glow: #f43f5e80;
+  --aura-edge: #be123c;
+  --text-grad: linear-gradient(180deg, #ffe4e6 0%, #f43f5e 65%, #be123c 100%);
+}
+
+/* VOID HORIZON (Celestial (Void Miasma)) */
+.title-void_horizon {
+  --aura-col: #c084fc;
+  --aura-glow: #c084fc80;
+  --aura-edge: #7e22ce;
+  --text-grad: linear-gradient(180deg, #f3e8ff 0%, #c084fc 65%, #7e22ce 100%);
+}
+
+/* ABYSS EMPEROR (Transcendent (Emerald Plasma)) */
+.title-abyss_emperor {
+  --aura-col: #34d399;
+  --aura-glow: #34d39980;
+  --aura-edge: #047857;
+  --text-grad: linear-gradient(180deg, #ecfdf5 0%, #34d399 65%, #047857 100%);
+}
+
+/* INFINITE GODHEAD (God-Tier (Ultima Eternity)) */
+.title-infinite_godhead {
+  --aura-col: #ffd700;
+  --aura-glow: #ffd70080;
+  --aura-edge: #00f0ff;
+  --text-grad: linear-gradient(180deg, #ff0055 0%, #ffd700 65%, #00f0ff 100%);
+}
+
+/* ROOKIE STRIKER (Novice (Steel)) */
+.title-rookie_striker {
+  --aura-col: #94a3b8;
+  --aura-glow: #94a3b880;
+  --aura-edge: #475569;
+  --text-grad: linear-gradient(180deg, #f1f5f9 0%, #94a3b8 65%, #475569 100%);
+}
+
+/* CHRONICLE BLADE (Adept (Cobalt)) */
+.title-chronicle_blade {
+  --aura-col: #38bdf8;
+  --aura-glow: #38bdf880;
+  --aura-edge: #0369a1;
+  --text-grad: linear-gradient(180deg, #bae6fd 0%, #38bdf8 65%, #0369a1 100%);
+}
+
+/* IRON PROTOCOL (Veteran (Hazard Amber)) */
+.title-iron_protocol {
+  --aura-col: #f59e0b;
+  --aura-glow: #f59e0b80;
+  --aura-edge: #b45309;
+  --text-grad: linear-gradient(180deg, #fef3c7 0%, #f59e0b 65%, #b45309 100%);
+}
+
+/* CALAMITY REAPER (Master (Cryo Neon)) */
+.title-calamity_reaper {
+  --aura-col: #06b6d4;
+  --aura-glow: #06b6d480;
+  --aura-edge: #0e7490;
+  --text-grad: linear-gradient(180deg, #cffafe 0%, #06b6d4 65%, #0e7490 100%);
+}
+
+/* NIGHTMARE PURGER (Mythic (Phantom Purple)) */
+.title-nightmare_purger {
+  --aura-col: #c084fc;
+  --aura-glow: #c084fc80;
+  --aura-edge: #7e22ce;
+  --text-grad: linear-gradient(180deg, #f3e8ff 0%, #c084fc 65%, #7e22ce 100%);
+}
+
+/* APOCALYPSE ENDBRINGER (Ultima (Solar Supernova)) */
+.title-apocalypse_endbringer {
+  --aura-col: #ff0055;
+  --aura-glow: #ff005580;
+  --aura-edge: #ffd700;
+  --text-grad: linear-gradient(180deg, #ffaa00 0%, #ff0055 65%, #ffd700 100%);
+}
+
+/* GEM NOVA (Novice (Diamond Cyan)) */
+.title-gem_nova {
+  --aura-col: #38bdf8;
+  --aura-glow: #38bdf880;
+  --aura-edge: #0284c7;
+  --text-grad: linear-gradient(180deg, #e0f2fe 0%, #38bdf8 65%, #0284c7 100%);
+}
+
+/* EMERALD FORTUNE (Adept (Emerald Wealth)) */
+.title-emerald_fortune {
+  --aura-col: #34d399;
+  --aura-glow: #34d39980;
+  --aura-edge: #059669;
+  --text-grad: linear-gradient(180deg, #d1fae5 0%, #34d399 65%, #059669 100%);
+}
+
+/* JEWEL EMPEROR (Veteran (Royal Amethyst)) */
+.title-jewel_emperor {
+  --aura-col: #e879f9;
+  --aura-glow: #e879f980;
+  --aura-edge: #a21caf;
+  --text-grad: linear-gradient(180deg, #fae8ff 0%, #e879f9 65%, #a21caf 100%);
+}
+
+/* ASTRAL TREASURY (Master (Imperial Solar)) */
+.title-astral_treasury {
+  --aura-col: #facc15;
+  --aura-glow: #facc1580;
+  --aura-edge: #c2410c;
+  --text-grad: linear-gradient(180deg, #fef08a 0%, #facc15 65%, #c2410c 100%);
+}
+
+/* HYPER DIAMOND OVERLORD (Ultima (Hyper-Prism)) */
+.title-hyper_diamond_overlord {
+  --aura-col: #ffffff;
+  --aura-glow: #ffffff80;
+  --aura-edge: #ff007f;
+  --text-grad: linear-gradient(180deg, #7df9ff 0%, #ffffff 65%, #ff007f 100%);
+}
+
+/* CODEX MANIAC (Adept (Azure Archive)) */
+.title-codex_maniac {
+  --aura-col: #60a5fa;
+  --aura-glow: #60a5fa80;
+  --aura-edge: #1d4ed8;
+  --text-grad: linear-gradient(180deg, #dbeafe 0%, #60a5fa 65%, #1d4ed8 100%);
+}
+
+/* ARCHIVE DOMINATOR (Veteran (Grimoire Purple)) */
+.title-archive_dominator {
+  --aura-col: #c084fc;
+  --aura-glow: #c084fc80;
+  --aura-edge: #6b21a8;
+  --text-grad: linear-gradient(180deg, #f5d0fe 0%, #c084fc 65%, #6b21a8 100%);
+}
+
+/* OMNI CODEX GOD (Godhead (Cosmic Archive)) */
+.title-omni_codex_god {
+  --aura-col: #ff00ff;
+  --aura-glow: #ff00ff80;
+  --aura-edge: #ffd700;
+  --text-grad: linear-gradient(180deg, #00ffff 0%, #ff00ff 65%, #ffd700 100%);
+}
+
+/* TITAN BUSTER (Adept (Blast Orange)) */
+.title-titan_buster {
+  --aura-col: #f97316;
+  --aura-glow: #f9731680;
+  --aura-edge: #9a3412;
+  --text-grad: linear-gradient(180deg, #ffedd5 0%, #f97316 65%, #9a3412 100%);
+}
+
+/* CALAMITY BEHEMOTH (Veteran (Crimson Slayer)) */
+.title-calamity_behemoth {
+  --aura-col: #ef4444;
+  --aura-glow: #ef444480;
+  --aura-edge: #7f1d1d;
+  --text-grad: linear-gradient(180deg, #fee2e2 0%, #ef4444 65%, #7f1d1d 100%);
+}
+
+/* WORLD SHATTERER (Ultima (Planet Buster)) */
+.title-world_shatterer {
+  --aura-col: #ffd700;
+  --aura-glow: #ffd70080;
+  --aura-edge: #18181b;
+  --text-grad: linear-gradient(180deg, #ff0055 0%, #ffd700 65%, #18181b 100%);
+}
+
+/* DESTINY GAMBLER (Veteran (Cyber Magenta)) */
+.title-destiny_gambler {
+  --aura-col: #ec4899;
+  --aura-glow: #ec489980;
+  --aura-edge: #9d174d;
+  --text-grad: linear-gradient(180deg, #fce7f3 0%, #ec4899 65%, #9d174d 100%);
+}
+
+/* FATE WEAVER (Master (Loom Violet)) */
+.title-fate_weaver {
+  --aura-col: #8b5cf6;
+  --aura-glow: #8b5cf680;
+  --aura-edge: #4c1d95;
+  --text-grad: linear-gradient(180deg, #ede9fe 0%, #8b5cf6 65%, #4c1d95 100%);
+}
+
+/* SINGULARITY LORD (Godhead (1B Singularity)) */
+.title-singularity_lord {
+  --aura-col: #ffd700;
+  --aura-glow: #ffd70080;
+  --aura-edge: #00ffff;
+  --text-grad: linear-gradient(180deg, #ff0055 0%, #ffd700 65%, #00ffff 100%);
+}
+
+/* ROOKIE (Starter (Sky Blue)) */
+.title-rookie {
+  --aura-col: #38bdf8;
+  --aura-glow: #38bdf880;
+  --aura-edge: #0284c7;
+  --text-grad: linear-gradient(180deg, #ffffff 0%, #38bdf8 65%, #0284c7 100%);
+}
+
+/* SHINY HUNTER (Special (Prismatic)) */
+.title-shiny_hunter {
+  --aura-col: #22d3ee;
+  --aura-glow: #22d3ee80;
+  --aura-edge: #0891b2;
+  --text-grad: linear-gradient(180deg, #ffffff 0%, #22d3ee 65%, #0891b2 100%);
+}
+
+
+/* ==================== SOLO GOD AURA MODAL & LOBBY INTEGRATION ==================== */
+#titlesModal .tt-preview-stage {
+  min-height: 140px !important;
+  padding: 34px 14px 20px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: visible !important;
+}
+
+#titlesModal .tt-preview-box {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: 90px !important;
+  overflow: visible !important;
+}
+
+
+
+/* Card Roster Grid with Vector Crest Thumbnails */
+#titlesModal .tm-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)) !important;
+  gap: 12px !important;
+}
+
+#titlesModal .tm-card {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 12px 14px !important;
+  background: rgba(14, 14, 18, 0.95) !important;
+  border: 1px solid var(--tt-hair, rgba(255,255,255,0.08)) !important;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+#titlesModal .tm-card:hover {
+  border-color: var(--aura-col, var(--tt-haz)) !important;
+  box-shadow: 0 0 16px var(--aura-glow, rgba(243, 230, 0, 0.2)) !important;
+  transform: translateY(-2px) !important;
+}
+
+#titlesModal .tm-card.equipped {
+  border-color: var(--aura-col, #f3e600) !important;
+  background: linear-gradient(135deg, rgba(243, 230, 0, 0.12) 0%, rgba(14, 14, 18, 0.98) 78%) !important;
+  box-shadow: inset 3px 0 0 var(--aura-col, #f3e600), 0 0 18px var(--aura-glow, rgba(243, 230, 0, 0.25)) !important;
+}
+
+#titlesModal .tm-icon-box {
+  flex: none !important;
+  width: 44px !important;
+  height: 44px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(8, 8, 12, 0.9) !important;
+  border: 1px solid var(--aura-col, rgba(255,255,255,0.12)) !important;
+  box-shadow: 0 0 12px var(--aura-glow, transparent) !important;
+  border-radius: 4px !important;
+}
+
+#titlesModal .tm-icon-box svg {
+  width: 30px !important;
+  height: 30px !important;
+}
+
+#titlesModal .tm-info {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+}
+
+#titlesModal .tm-c-name {
+  font-family: 'Rajdhani', sans-serif !important;
+  font-size: 13.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: .06em !important;
+  color: #fff !important;
+  text-transform: uppercase !important;
+}
+
+#titlesModal .tm-card.equipped .tm-c-name {
+  color: var(--aura-col, #f3e600) !important;
+  text-shadow: 0 0 10px var(--aura-glow, rgba(243,230,0,0.5)) !important;
+}
+
+#titlesModal .tm-c-desc {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 8.5px !important;
+  color: var(--tt-dim, #888) !important;
+  line-height: 1.35 !important;
+}
+
+#titlesModal .tm-c-req {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 7.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: .08em !important;
+  color: var(--tt-haz, #f3e600) !important;
+  opacity: .85 !important;
+  text-transform: uppercase !important;
+  margin-top: 2px !important;
+}
+
+/* Standee Hero Mount in Lobby */
+.hero-standee-wrap .solo-god-lockup {
+  position: absolute !important;
+  top: -62px !important;
+  left: 50% !important;
+  transform: translateX(-50%) rotate(-1deg) !important;
+  z-index: 28 !important;
+  pointer-events: none !important;
+}
+
+@media (max-width: 600px) {
+  .hero-standee-wrap .solo-god-lockup {
+    transform: translateX(-50%) scale(0.85) !important;
+    top: -52px !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .hero-standee-wrap .solo-god-lockup {
+    transform: translateX(-50%) scale(0.72) !important;
+    top: -44px !important;
+  }
+}
+
+/* ==================== LOBBY STAGE TITLE MOUNT ==================== */
+.lobby-hub.l12.c12 .c12main .stage .c12-stage-title {
+  position: absolute !important;
+  top: 26px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 8 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.lobby-hub.l12.c12 .c12main .stage .c12-stage-title .solo-god-lockup {
+  position: relative !important;
+  top: 0 !important;
+  left: 0 !important;
+  transform: none !important;
+  animation: godHoverFloat 3.6s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate !important;
+}
+
+@media (max-width: 820px) {
+  .lobby-hub.l12.c12 .c12main .stage .c12-stage-title {
+    top: 54px !important;
+    transform: translateX(-50%) scale(0.85) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .lobby-hub.l12.c12 .c12main .stage .c12-stage-title {
+    top: 50px !important;
+    transform: translateX(-50%) scale(0.72) !important;
+  }
+}
+
+/* ==================== PROFILE STREET TITLE & CARD CROWN (1:1 WITH STUDIO PREVIEW) ==================== */
+#profModal .pfx-cardstage-wrap {
+  position: relative !important;
+  width: 100% !important;
+  margin-top: 60px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  user-select: none !important;
+}
+
+#profModal .pfx-card-title-crown {
+  position: absolute !important;
+  top: -44px !important;
+  left: 50% !important;
+  transform: translateX(-50%) scale(0.72) !important;
+  transform-origin: center bottom !important;
+  z-index: 40 !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  white-space: nowrap !important;
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+#profModal .pfx-card-title-crown:hover {
+  transform: translateX(-50%) scale(0.76) !important;
+}
+
+#profModal .pfx-card-title-crown .solo-god-lockup {
+  position: relative !important;
+  top: 0 !important;
+  left: 0 !important;
+  transform: none !important;
+  animation: godHoverFloat 3.6s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate !important;
+}
+
+/* Pure Floating Title Tag in Profile Levelbar (ZERO BOX BADGE) */
+#profModal .pf-street-title-tag {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+  align-self: flex-start !important;
+  max-width: 100% !important;
+  margin-bottom: 2px !important;
+  user-select: none !important;
+}
+
+#profModal .pf-street-title-tag:hover {
+  transform: translateY(-1px) !important;
+  filter: brightness(1.25) !important;
+}
+
+#profModal .pf-street-title-tag .pst-icon {
+  flex: none !important;
+  width: 20px !important;
+  height: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#profModal .pf-street-title-tag .pst-icon svg {
+  width: 100% !important;
+  height: 100% !important;
+  filter: drop-shadow(0 0 8px var(--aura-col, #f3e600)) !important;
+}
+
+#profModal .pf-street-title-tag .pst-name {
+  font-family: 'Dela Gothic One', sans-serif !important;
+  font-size: 13.5px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  transform: skewX(-8deg) !important;
+  line-height: 1.1 !important;
+  background: var(--text-grad, linear-gradient(180deg, #ffffff 0%, var(--aura-col, #38bdf8) 65%, #0284c7 100%)) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  -webkit-text-stroke: 0.8px #000 !important;
+  filter: 
+    drop-shadow(1px 1px 0 #000)
+    drop-shadow(0 0 10px var(--aura-col, #38bdf8)) !important;
+}
+
+#profModal .pf-street-title-tag .pst-kanji {
+  font-family: 'Dela Gothic One', sans-serif !important;
+  font-size: 11px !important;
+  color: var(--aura-col, #f3e600) !important;
+  opacity: 0.85 !important;
+  margin-left: 3px !important;
+  text-shadow: 0 0 8px var(--aura-col, #f3e600) !important;
+}
+
+#profModal .pf-street-title-tag .pst-sub {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 8.5px !important;
+  font-weight: 700 !important;
+  color: rgba(245, 245, 245, 0.45) !important;
+  letter-spacing: 0.08em !important;
+  margin-left: 4px !important;
+}
+
+#profModal .pf-street-title-tag .pst-edit-pill {
+  font-family: 'Orbitron', monospace !important;
+  font-size: 8px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.1em !important;
+  color: var(--haz, #f3e600) !important;
+  background: rgba(243, 230, 0, 0.12) !important;
+  border: 1px solid rgba(243, 230, 0, 0.4) !important;
+  padding: 1px 5px !important;
+  border-radius: 2px !important;
+  margin-left: 6px !important;
+  transition: all 0.2s ease !important;
+}
+#profModal .pf-street-title-tag:hover .pst-edit-pill {
+  background: var(--haz, #f3e600) !important;
+  color: #050505 !important;
+}
+
+/* ==================== PROFILE TITLES GRID (29 MASTER TITLES) ==================== */
+#profModal .pf-titles-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)) !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+#profModal .pf-title-card {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 9px 12px !important;
+  background: rgba(12, 12, 16, 0.9) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 3px !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+  user-select: none !important;
+}
+
+#profModal .pf-title-card:hover {
+  border-color: var(--aura-col, rgba(255,255,255,0.3)) !important;
+  box-shadow: 0 0 12px var(--aura-glow, rgba(255,255,255,0.1)) !important;
+  transform: translateY(-1px) !important;
+}
+
+#profModal .pf-title-card.equipped {
+  border-color: var(--aura-col, #f3e600) !important;
+  background: linear-gradient(135deg, rgba(243, 230, 0, 0.12) 0%, rgba(12, 12, 16, 0.95) 75%) !important;
+  box-shadow: inset 2.5px 0 0 var(--aura-col, #f3e600), 0 0 14px var(--aura-glow, rgba(243, 230, 0, 0.25)) !important;
+}
+
+#profModal .pf-title-card.locked {
+  opacity: 0.55 !important;
+  filter: grayscale(0.6) !important;
+}
+
+#profModal .pf-tc-icon {
+  flex: none !important;
+  width: 32px !important;
+  height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(8, 8, 12, 0.95) !important;
+  border: 1px solid var(--aura-col, rgba(255,255,255,0.1)) !important;
+  border-radius: 3px !important;
+}
+
+#profModal .pf-tc-icon svg {
+  width: 22px !important;
+  height: 22px !important;
+}
+
+#profModal .pf-tc-body {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+}
+
+#profModal .pf-tc-name {
+  font-family: 'Rajdhani', sans-serif !important;
+  font-size: 11.5px !important;
+  font-weight: 800 !important;
+  color: #fff !important;
+  letter-spacing: .04em !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+#profModal .pf-title-card.equipped .pf-tc-name {
+  color: var(--aura-col, #f3e600) !important;
+}
+
+#profModal .pf-tc-req {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 7px !important;
+  color: var(--pfx-dim, #888) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+#profModal .pf-tc-badge {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 6.5px !important;
+  font-weight: 700 !important;
+  padding: 1px 5px !important;
+  border-radius: 2px !important;
+  letter-spacing: .08em !important;
+  text-transform: uppercase !important;
+  align-self: flex-start !important;
+}
+
+#profModal .pf-tc-badge.b-eq {
+  color: #050505 !important;
+  background: var(--aura-col, #f3e600) !important;
+  font-weight: 900 !important;
+}
+
+#profModal .pf-tc-badge.b-ok {
+  color: #38bdf8 !important;
+  background: rgba(56, 189, 248, 0.12) !important;
+  border: 1px solid rgba(56, 189, 248, 0.35) !important;
+}
+
+#profModal .pf-tc-badge.b-lock {
+  color: #777 !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+
+/* ==================== PREVIEW STANDEE IN TITLES MODAL (1:1 FROM STUDIO) ==================== */
+#titlesModal .tt-preview-stage {
+  position: relative !important;
+  min-height: 420px !important;
+  padding: 40px 16px 28px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: visible !important;
+  background-image: 
+    radial-gradient(circle at 50% 30%, rgba(243, 230, 0, 0.09) 0%, transparent 68%),
+    linear-gradient(rgba(245, 245, 245, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245, 245, 245, 0.02) 1px, transparent 1px) !important;
+  background-size: 100% 100%, 28px 28px, 28px 28px !important;
+  border-bottom: 2px solid var(--hair) !important;
+}
+
+#titlesModal .tt-preview-box {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: 330px !important;
+  overflow: visible !important;
+}
+
+.st-card-standee-box {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 55px;
+  user-select: none;
+}
+
+.st-card-standee-box .preview-title-mount {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 0;
+  height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 35;
+}
+
+.st-card-standee-box .solo-god-lockup {
+  position: absolute !important;
+  top: -55px !important;
+  left: 50% !important;
+  transform: translateX(-50%) rotate(-1deg) !important;
+  margin: 0 !important;
+  z-index: 35 !important;
+  animation: godHoverFloat 3.6s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate !important;
+}
+
+.st-card-frame {
+  position: relative;
+  width: 220px;
+  height: 300px;
+  background: #08080a;
+  border: 2px solid var(--hair);
+  border-radius: 12px;
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.95), 0 0 30px rgba(0,0,0,0.8), 0 0 15px rgba(243, 230, 0, 0.12);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.st-card-art {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+.st-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.35) 55%, rgba(0,0,0,0.92) 100%);
+  pointer-events: none;
+}
+
+.st-card-info {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  z-index: 2;
+}
+
+.st-card-name {
+  font-family: 'Orbitron', 'Rajdhani', sans-serif;
+  font-size: 14.5px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: .06em;
+  text-shadow: 0 2px 8px #000;
+}
+
+.st-card-stats {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--haz);
+  letter-spacing: .04em;
+  text-shadow: 0 1px 4px #000;
+}
+
+/* Card highlight when previewing */
+#titlesListGrid .tm-card {
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+#titlesListGrid .tm-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(243, 230, 0, 0.5) !important;
+}
+#titlesListGrid .tm-card.previewing {
+  border-color: var(--haz) !important;
+  box-shadow: 0 0 18px rgba(243, 230, 0, 0.25) !important;
+}
+
+
+/* ==================== CLEAN PREVIEW IN TITLES MODAL (NO CARD ART) ==================== */
+#titlesModal .tt-preview-stage {
+  position: relative !important;
+  min-height: 145px !important;
+  padding: 22px 14px 18px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: visible !important;
+  background-image: 
+    radial-gradient(circle at 50% 30%, rgba(243, 230, 0, 0.08) 0%, transparent 68%),
+    linear-gradient(rgba(245, 245, 245, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245, 245, 245, 0.02) 1px, transparent 1px) !important;
+  background-size: 100% 100%, 28px 28px, 28px 28px !important;
+  border-bottom: 2px solid var(--hair) !important;
+}
+
+#titlesModal .tt-preview-box {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: 90px !important;
+  overflow: visible !important;
+}
+
+.tt-solo-preview-mount {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: 90px !important;
+  margin: 12px 0 6px 0 !important;
+}
+
+.tt-solo-preview-mount .solo-god-lockup {
+  position: relative !important;
+  top: 0 !important;
+  left: 0 !important;
+  transform: none !important;
+  animation: godHoverFloat 3.6s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate !important;
+  z-index: 10 !important;
+}
+
+/* Ensure Close Button (X) is always on top and clickable */
+#titlesModal .tt-x {
+  position: relative !important;
+  z-index: 100 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* Hide Title from Lobby Stage Completely */
+.c12-stage-title,
+#c12Stage .c12-stage-title {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+/* Profile Levelbar 2-Row Clean Layout (ZERO OVERLAP) */
+#profModal .pf-street-title-tag {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  cursor: pointer !important;
+  margin-bottom: 4px !important;
+}
+
+#profModal .pf-street-title-tag .pst-top-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  width: 100% !important;
+  overflow: hidden !important;
+}
+
+#profModal .pf-street-title-tag .pst-name {
+  font-family: 'Dela Gothic One', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  transform: skewX(-8deg) !important;
+  line-height: 1.1 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  max-width: calc(100% - 32px) !important;
+  background: var(--text-grad, linear-gradient(180deg, #ffffff 0%, var(--aura-col, #38bdf8) 65%, #0284c7 100%)) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  -webkit-text-stroke: 0.8px #000 !important;
+  filter: drop-shadow(1px 1px 0 #000) drop-shadow(0 0 10px var(--aura-col, #38bdf8)) !important;
+}
+
+#profModal .pf-street-title-tag .pst-bot-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  gap: 8px !important;
+  padding-left: 2px !important;
+}
+
+#profModal .pf-street-title-tag .pst-sub {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 8px !important;
+  font-weight: 700 !important;
+  color: rgba(245, 245, 245, 0.45) !important;
+  letter-spacing: 0.08em !important;
+}
+
+#profModal .pf-street-title-tag .pst-edit-pill {
+  font-family: 'Orbitron', monospace !important;
+  font-size: 7.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.1em !important;
+  color: var(--haz, #f3e600) !important;
+  background: rgba(243, 230, 0, 0.12) !important;
+  border: 1px solid rgba(243, 230, 0, 0.4) !important;
+  padding: 1px 6px !important;
+  border-radius: 2px !important;
+  margin-left: auto !important;
+  transition: all 0.2s ease !important;
+}
+#profModal .pf-street-title-tag:hover .pst-edit-pill {
+  background: var(--haz, #f3e600) !important;
+  color: #050505 !important;
+}

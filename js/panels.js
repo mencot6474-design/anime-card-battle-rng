@@ -1426,50 +1426,72 @@ function profTabGo(k){
 function openTitlesModal(){
   const m=document.getElementById("titlesModal");
   if(!m)return;
+  const closeBtn=document.getElementById("titlesClose");
+  if(closeBtn)closeBtn.onclick=closeTitlesModal;
   if(m.classList.contains("show")){renderTitlesModal();return;}
   renderTitlesModal();
   m.classList.add("show");
   document.body.classList.add("titles-open");
-  ttBannerOpen();
-  const closeBtn=document.getElementById("titlesClose");
-  if(closeBtn)closeBtn.onclick=closeTitlesModal;
+  if(typeof ttBannerOpen==="function")ttBannerOpen();
 }
 function closeTitlesModal(){
   const m=document.getElementById("titlesModal");
-  if(!m||!m.classList.contains("show"))return;
-  ttBannerClose(()=>{
-    m.classList.remove("show");
-    document.body.classList.remove("titles-open");
+  if(!m)return;
+  m.classList.remove("show");
+  document.body.classList.remove("titles-open");
+  if(typeof ttBannerClose==="function"){
+    try{ ttBannerClose(); }catch(e){}
+  }
+}
+window.closeTitlesModal = closeTitlesModal;
+window.openTitlesModal = openTitlesModal;
+let _currentPreviewTitleId = null;
+
+function previewTitle(titleId) {
+  const defs = (typeof window.getTitlesList === 'function') ? window.getTitlesList() : (window.TITLE_DEFS || []);
+  const found = defs.find(x => x.id === titleId || x.name === titleId);
+  if (!found) return;
+  _currentPreviewTitleId = titleId;
+
+  const mount = document.getElementById("tmPreviewTitleMount");
+  if (mount && typeof renderSoloGodAuraHtml === 'function') {
+    mount.innerHTML = renderSoloGodAuraHtml(found, { bob: true });
+  }
+
+  // Highlight previewed card in list
+  document.querySelectorAll("#titlesListGrid .tm-card").forEach(c => {
+    c.classList.remove("previewing");
+    if (c.getAttribute("data-title-id") === titleId) c.classList.add("previewing");
   });
 }
+window.previewTitle = previewTitle;
+
 function equipTitle(titleKey){
   state.playerTitle = titleKey;
+  _currentPreviewTitleId = titleKey;
   save();
   renderTitlesModal();
   renderProfile();
   if(location.hash==="#/lobby"&&typeof render==="function")render();
-  toast("TITLE EQUIPPED", `[${titleKey}] ACTIVE AS CARD CROWN`, "#f3e600");
+  const _def=(typeof TITLE_DEFS!=="undefined"?TITLE_DEFS:(window.TITLE_DEFS||[])).find(t=>t.id===titleKey);
+  const _name=_def?_def.name:titleKey;
+  const _col=(_def&&_def.colors)?_def.colors[0]:"#f3e600";
+  toast("TITLE EQUIPPED", `[${_name}] ACTIVE AS CARD CROWN`, _col);
 }
+
 function renderTitlesModal(){
   if(!state)return;
   const p=state.player||{};
   const lv=p.lv||state.playerLv||1;
   const curT=state.playerTitle || "ROOKIE";
-  const uni=new Set((state.stacks||[]).map(s=>s.char));
-  const shiny=(state.stacks||[]).filter(s=>s.shiny).length;
-  const raidDone=Object.values(state.raidCleared||{}).filter(Boolean).length;
 
-  const TITLE_DEFS=[
-    {id:"ROOKIE",name:"ROOKIE",cls:"title-rookie",desc:"Starting title for every hunter",unlocked:true},
-    {id:"COLLECTOR",name:"COLLECTOR",cls:"title-collector",desc:"Collect 10 unique cards",unlocked:uni.size>=10},
-    {id:"SHINY HUNTER",name:"SHINY HUNTER",cls:"title-shiny_hunter",desc:"Obtain at least 1 Shiny card",unlocked:shiny>=1},
-    {id:"TOWER CLIMBER",name:"TOWER CLIMBER",cls:"title-tower_climber",desc:"Reach floor 10 of the Infinite Tower",unlocked:((state.tower&&state.tower.best)||0)>=10},
-    {id:"RAID SLAYER",name:"RAID SLAYER",cls:"title-raid_slayer",desc:"Defeat at least 1 Raid Boss",unlocked:raidDone>=1},
-    {id:"ELITE",name:"ELITE",cls:"title-elite",desc:"Reach Operator Level 25",unlocked:lv>=25}
-  ];
+  const TITLE_DEFS = (typeof window.getTitlesList === "function") ? window.getTitlesList() : (window.TITLE_DEFS || []);
+  window.TITLE_DEFS = TITLE_DEFS;
 
-  // Header telemetry + list count
-  const activeDef=TITLE_DEFS.find(x=>x.id===curT)||TITLE_DEFS[0];
+  // Selected or Equipped Def for preview
+  if (!_currentPreviewTitleId) _currentPreviewTitleId = curT;
+  const previewDef = TITLE_DEFS.find(x=>x.id===_currentPreviewTitleId || x.name===_currentPreviewTitleId) || TITLE_DEFS.find(x=>x.id===curT) || TITLE_DEFS[0];
+  const activeDef=TITLE_DEFS.find(x=>x.id===curT || x.name===curT)||TITLE_DEFS.find(x=>x.id==="ROOKIE")||TITLE_DEFS[0];
   const unlockedCount=TITLE_DEFS.filter(t=>t.unlocked).length;
   const tsU=document.getElementById("ttTsUnlocked");
   if(tsU)tsU.textContent=unlockedCount+"/"+TITLE_DEFS.length;
@@ -1478,30 +1500,51 @@ function renderTitlesModal(){
   const lc=document.getElementById("ttListCount");
   if(lc)lc.textContent=TITLE_DEFS.length+" TITLES";
 
-  // Update Preview Box
+  // Update Preview Box with 1:1 Studio Card Standee
   const pBox=document.getElementById("tmPreviewBox");
   if(pBox){
-    pBox.innerHTML=renderTitleCrownHtml(activeDef.name, activeDef.cls);
+    const eq = (typeof equipped === 'function') ? equipped() : null;
+    const charKey = (eq && eq.char) ? eq.char : 'nine-tail-prodigy';
+    const cData = (typeof CARDS !== 'undefined' && CARDS[charKey]) ? CARDS[charKey] : { name: 'Nine-Tail Prodigy', atk: 95000, hp: 320000 };
+    const cArt = (typeof cardArt === 'function') ? cardArt(charKey) : ('assets/cards/art/' + charKey + '.webp');
+    const cName = (typeof cardName === 'function') ? cardName(charKey) : (cData.name || 'Nine-Tail Prodigy');
+    const cStats = 'ATK ' + (typeof fmtStat === 'function' ? fmtStat(cData.atk || 95000) : (cData.atk || '95k')) + ' · HP ' + (typeof fmtStat === 'function' ? fmtStat(cData.hp || 320000) : (cData.hp || '320k')) + ' · TACTICAL STRIKER';
+
+    const auraHtml = (typeof renderSoloGodAuraHtml === 'function')
+      ? renderSoloGodAuraHtml(previewDef, { bob: true })
+      : renderTitleCrownHtml(previewDef.id, previewDef.cls);
+
+    pBox.innerHTML = `
+      <div class="tt-solo-preview-mount" id="tmPreviewTitleMount">
+        ${auraHtml}
+      </div>
+    `;
   }
 
   // Update List Grid
   const listGrid=document.getElementById("titlesListGrid");
   if(listGrid){
     listGrid.innerHTML=TITLE_DEFS.map(t=>{
-      const isEq=(t.id===curT);
-      const cardCls=isEq?"equipped":t.unlocked?"unlocked":"locked";
+      const isEq=(t.id===curT || t.name===curT);
+      const isPrev=(t.id===previewDef.id);
+      const cardCls=(isEq ? "equipped" : t.unlocked ? "unlocked" : "locked") + (isPrev ? " previewing" : "");
+      const iconSvg=(typeof TITLE_ICONS!=='undefined' && TITLE_ICONS[t.iconKey]) ? TITLE_ICONS[t.iconKey] : '';
       let btnHtml="";
       if(isEq){
         btnHtml=`<button class="tm-action-btn btn-active" disabled>EQUIPPED</button>`;
       }else if(t.unlocked){
-        btnHtml=`<button class="tm-action-btn btn-equip" onclick="equipTitle('${t.id}')">EQUIP</button>`;
+        btnHtml=`<button class="tm-action-btn btn-equip" onclick="event.stopPropagation(); equipTitle('${t.id}')">EQUIP</button>`;
       }else{
         btnHtml=`<button class="tm-action-btn btn-locked" disabled>LOCKED</button>`;
       }
-      return `<div class="tm-card ${cardCls}">
+      return `<div class="tm-card ${cardCls}" data-title-id="${t.id}" onclick="previewTitle('${t.id}')" style="--aura-col:${t.colors[0]};--aura-glow:${t.colors[0]}50;">
+        <div class="tm-icon-box">
+          ${iconSvg}
+        </div>
         <div class="tm-info">
           <div class="tm-c-name">${t.name}</div>
           <div class="tm-c-desc">${t.desc}</div>
+          <div class="tm-c-req">REQUIREMENT: ${t.req}</div>
         </div>
         ${btnHtml}
       </div>`;
@@ -1509,31 +1552,6 @@ function renderTitlesModal(){
   }
 }
 
-/* ===== banner hazard masuk/keluar (#titlesCurtain, pola #rankCurtain) ===== */
-let ttHzTimers = [];
-/* Guards the async close: re-opening mid-animation must not be cancelled by the
-   pending "remove .show" of the previous close. */
-let ttSeq = 0;
-function ttHzClear(){ for(let i=0;i<ttHzTimers.length;i++)clearTimeout(ttHzTimers[i]); ttHzTimers=[]; }
-function ttHzSetCopy(mode){
-  const kick=document.getElementById("ttHzKick"), title=document.getElementById("ttHzTitle"),
-        sub=document.getElementById("ttHzSub"), foot=document.getElementById("ttHzFoot"),
-        serial=document.getElementById("ttHzSerial"), water=document.getElementById("ttHzWater");
-  if(serial)serial.textContent=(0x1000+Math.floor(Math.random()*0xefff)).toString(16).toUpperCase();
-  if(mode==="open"){
-    if(kick)kick.innerHTML="// CODEX <b>SYNC</b>";
-    if(title)title.textContent="TITLES";
-    if(water)water.textContent="TITLE";
-    if(sub)sub.textContent="OPERATOR CODEX · CROWN REGISTRY";
-    if(foot)foot.textContent="SYNC TITLES";
-  }else{
-    if(kick)kick.innerHTML="// LINK <b>STAND BY</b>";
-    if(title)title.textContent="HOLD";
-    if(water)water.textContent="OUT";
-    if(sub)sub.textContent="CODEX DISCONNECTING · DATA SAVED";
-    if(foot)foot.textContent="CLOSE SESSION";
-  }
-}
 function ttBannerOpen(){
   const c=document.getElementById("titlesCurtain");
   if(!c)return;
@@ -1749,10 +1767,40 @@ function renderProfile(){
   const tb=document.getElementById("pfTitlesBtn");
   if(tb)tb.onclick=()=>{ openTitlesModal(); };
   const curT=state.playerTitle||"ROOKIE";
+  const defs = (typeof window.getTitlesList === "function") ? window.getTitlesList() : ((typeof TITLE_DEFS !== "undefined") ? TITLE_DEFS : (window.TITLE_DEFS || []));
+  const def=defs.find(x=>x.id===curT||x.name===curT)||defs.find(x=>x.id==="ROOKIE")||defs[0];
+  
+  // 1. Mount Pure Floating Solo God Aura above Hero Card in Profile (1:1 with Title Preview)
+  const crownHolder = document.getElementById("pfCardTitleCrown");
+  if(crownHolder && def && typeof renderSoloGodAuraHtml === "function"){
+    crownHolder.innerHTML = renderSoloGodAuraHtml(def, { bob: true });
+    crownHolder.onclick = () => { openTitlesModal(); };
+  }
+
+  // 2. Pure Floating Street Title Tag in Levelbar (ZERO BOX BADGE)
   const pt=document.getElementById("pfTitleTag");
-  if(pt){
-    pt.className="prof-title-tag pfx-title-tag title-"+curT.toLowerCase().replace(/\s+/g,"_");
-    pt.innerHTML=`<span class="ptt-crown"><svg width="14" height="11" viewBox="0 0 24 18" fill="none"><path d="M2 15L4 4L9 9L12 2L15 9L20 4L22 15H2Z" fill="currentColor" stroke="rgba(255,255,255,.55)" stroke-width="1.1" stroke-linejoin="round"/></svg></span><span class="ptt-txt">${curT}</span>`;
+  if(pt&&def){
+    const col=(def.colors&&def.colors[0])||"#38bdf8";
+    const col2=(def.colors&&def.colors[1])||"#ffffff";
+    const col3=(def.colors&&def.colors[2])||"#0284c7";
+    const grad=`linear-gradient(180deg, ${col2} 0%, ${col} 65%, ${col3} 100%)`;
+    const safeCls=def.cls||('title-'+def.name.toLowerCase().replace(/\s+/g,'_'));
+    const iconSvg=(typeof TITLE_ICONS!=='undefined'&&TITLE_ICONS[def.iconKey])?TITLE_ICONS[def.iconKey]:'';
+    pt.className="pf-street-title-tag "+safeCls;
+    pt.style=`--aura-col:${col};--aura-glow:${col}60;--text-grad:${grad};`;
+    pt.title="Click to Change Operator Title";
+    pt.onclick=()=>{ openTitlesModal(); };
+    pt.innerHTML=`
+      <div class="pst-top-row">
+        <span class="pst-icon">${iconSvg}</span>
+        <span class="pst-name">${def.name}</span>
+        ${def.kanji?`<span class="pst-kanji">${def.kanji}</span>`:''}
+      </div>
+      <div class="pst-bot-row">
+        <span class="pst-sub">${def.subTag||'// ACTIVE'}</span>
+        <span class="pst-edit-pill">CHANGE TITLE ❯</span>
+      </div>
+    `;
   }
 
   /* ---- STATS panel ---- */
@@ -1852,19 +1900,32 @@ function renderProfile(){
   const itemKey=[state.coins||0,state.wbTokens||0,state.infTokens||0,state.potions||0,state.mythicPotions||0,luckPotN,speedPotN,wAct?wAct.id:"none",activeLuckBuff(),activeSpeedBuff()].join("|");
   fill("pfPageItem",`<div class="pfx-grid">${item}</div>`,itemKey);
 
-  /* ---- EXTRA: titles ---- */
-  const titles=[
-    {n:"ROOKIE ROLLER",d:"Roll your first card",ok:(state.summons||0)>=1},
-    {n:"COLLECTOR",d:"Collect 10 unique cards",ok:uni.size>=10},
-    {n:"SHINY HUNTER",d:"Obtain 1 shiny card",ok:shiny>=1},
-    {n:"TOWER CLIMBER",d:"Reach floor 10 of Infinite Tower",ok:((state.tower&&state.tower.best)||0)>=10},
-    {n:"RAID SLAYER",d:"Defeat 1 raid boss",ok:raidDone>=1},
-    {n:"ELITE",d:"Reach operator level 25",ok:lv>=25}
-  ];
-  const titlesGrid=titles.map(t=>tile(t.n,t.ok?"✓ EARNED":"· locked",t.d,t.ok?"accent":"",t.ok?"pfx-ok":"","openTitlesModal()")).join("");
-  const earned=titles.filter(t=>t.ok);
-  const achieveKey=[earned.length,titles.length].join("|")+"|"+titles.map(t=>t.ok?1:0).join("");
-  fill("pfPageTitles",`<div class="pfx-grid">${titlesGrid}</div>`,achieveKey);
+  /* ---- EXTRA: titles (29 Master Titles) ---- */
+  const masterDefs = (typeof window.getTitlesList === "function") ? window.getTitlesList() : ((typeof TITLE_DEFS !== "undefined") ? TITLE_DEFS : (window.TITLE_DEFS || []));
+  const earnedList = masterDefs.filter(t => t.unlocked);
+  if(tb) tb.textContent = `${earnedList.length}/${masterDefs.length} MANAGE`;
+  const titlesGrid = masterDefs.map(t => {
+    const isEq = (t.id === curT || t.name === curT);
+    const col = (t.colors && t.colors[0]) || "#38bdf8";
+    const cardCls = isEq ? "equipped" : t.unlocked ? "unlocked" : "locked";
+    const iconSvg = (typeof TITLE_ICONS !== 'undefined' && TITLE_ICONS[t.iconKey]) ? TITLE_ICONS[t.iconKey] : '';
+    const badgeHtml = isEq
+      ? '<span class="pf-tc-badge b-eq">EQUIPPED</span>'
+      : t.unlocked
+        ? '<span class="pf-tc-badge b-ok">✓ EARNED</span>'
+        : '<span class="pf-tc-badge b-lock">🔒 LOCKED</span>';
+    const clickHandler = isEq ? 'openTitlesModal()' : t.unlocked ? `equipTitle('${t.id}')` : 'openTitlesModal()';
+    return `<div class="pf-title-card ${cardCls}" style="--aura-col:${col};--aura-glow:${col}40;" onclick="${clickHandler}" title="${t.desc}">
+      <div class="pf-tc-icon">${iconSvg}</div>
+      <div class="pf-tc-body">
+        <div class="pf-tc-name">${t.name}</div>
+        <div class="pf-tc-req">${t.req}</div>
+        ${badgeHtml}
+      </div>
+    </div>`;
+  }).join("");
+  const achieveKey = [earnedList.length, masterDefs.length, curT].join("|") + "|" + masterDefs.map(t => t.unlocked ? 1 : 0).join("");
+  fill("pfPageTitles", `<div class="pf-titles-grid">${titlesGrid}</div>`, achieveKey);
 
   updateProfileLiveNumbers();
 }
