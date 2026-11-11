@@ -508,6 +508,17 @@ body:has(#profModal.show) .lobby-tactical-hud {
   height: 2px;
   background: linear-gradient(90deg, var(--haz), transparent 80%);
 }
+.prf-standee-box.hz-bdr,
+.prf-showcase-slot.hz-bdr,
+.prf-card-chassis.hz-bdr {
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+.prf-standee-box.hz-bdr::before,
+.prf-showcase-slot.hz-bdr .sc-crn,
+.prf-card-chassis.hz-bdr .pcc-crn {
+  display: none !important;
+}
 
 .prf-standee-art {
   position: absolute;

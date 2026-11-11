@@ -1862,10 +1862,20 @@ function renderProfile(){
   const avSrc=(state.customAvatar)||(eq&&eq.char&&CARDS[eq.char]?cardImg(eq.char):"assets/cards/art/nine-tail-prodigy.webp");
   if(avImg&&avImg.src!==avSrc) avImg.src = avSrc;
 
-  // Hero Standee
+  // Hero Standee + Mutation/Shiny Hazard Border
   const standeeImg=document.getElementById("profStandeeArt");
   const standeeSrc=eq&&eq.char&&CARDS[eq.char]?cardImg(eq.char):"assets/cards/art/nine-tail-prodigy.webp";
   if(standeeImg&&standeeImg.src!==standeeSrc) standeeImg.src = standeeSrc;
+  const standeeBox=document.querySelector("#profModal .prf-standee-box");
+  if(standeeBox){
+    const eqMut=(eq&&eq.mut&&eq.mut!=="none")?eq.mut:"none";
+    const eqShiny=!!(eq&&eq.shiny);
+    const hzCls=(typeof hzBorderCls==="function")?hzBorderCls(eqMut,eqShiny):"";
+    standeeBox.className="prf-standee-box"+(eqShiny?" shiny":"")+(eqMut!=="none"?" mut-"+eqMut:"")+hzCls;
+    if(typeof hzBorderLayerHtml==="function" && !standeeBox.querySelector(".xbdr-ring")){
+      standeeBox.insertAdjacentHTML("afterbegin", hzBorderLayerHtml());
+    }
+  }
 
   // Standee Hero Card Meta
   const heroCard = (eq && eq.char && CARDS[eq.char]) ? CARDS[eq.char] : null;
@@ -1930,9 +1940,11 @@ function renderProfile(){
     if (fav && CARDS[fav.char]) {
       const favName = cardName(fav.char);
       const favImg = cardImg(fav.char);
-      const favStats = cardStats(fav.char, fav.mut, fav.trait, fav.shiny);
+      const favHzCls = (typeof hzBorderCls === 'function') ? hzBorderCls(fav.mut || 'none', !!fav.shiny, { tile: true, dense: true }) : '';
+      const favHzLayers = (typeof hzBorderLayerHtml === 'function') ? hzBorderLayerHtml() : '';
       slot1Html = 
-        '<div class="prf-showcase-slot fav-slot" onclick="inspectCard(\'' + fav.id + '\')" title="Signature Favorite Card: ' + favName + '">' +
+        '<div class="prf-showcase-slot fav-slot' + favHzCls + '" onclick="inspectCard(\'' + fav.id + '\')" title="Signature Favorite Card: ' + favName + '">' +
+          favHzLayers +
           '<div class="sc-holo-sweep"></div>' +
           '<div class="sc-art-shell">' +
             '<img src="' + favImg + '" alt="' + favName + '">' +
@@ -1959,10 +1971,12 @@ function renderProfile(){
     if (rarestStack && CARDS[rarestStack.char]) {
       const rarestName = cardName(rarestStack.char);
       const rarestImg = cardImg(rarestStack.char);
-      const rarestStats = cardStats(rarestStack.char, rarestStack.mut, rarestStack.trait, rarestStack.shiny);
       const rarestDenom = stats.rarestCh > 0 ? fmtChance(stats.rarestCh) : '1';
+      const rarHzCls = (typeof hzBorderCls === 'function') ? hzBorderCls(rarestStack.mut || 'none', !!rarestStack.shiny, { tile: true, dense: true }) : '';
+      const rarHzLayers = (typeof hzBorderLayerHtml === 'function') ? hzBorderLayerHtml() : '';
       slot2Html = 
-        '<div class="prf-showcase-slot rarest-slot" onclick="inspectCard(\'' + rarestStack.id + '\')" title="Rarest Card: ' + rarestName + ' (1 IN ' + rarestDenom + ')">' +
+        '<div class="prf-showcase-slot rarest-slot' + rarHzCls + '" onclick="inspectCard(\'' + rarestStack.id + '\')" title="Rarest Card: ' + rarestName + ' (1 IN ' + rarestDenom + ')">' +
+          rarHzLayers +
           '<div class="sc-holo-sweep"></div>' +
           '<div class="sc-art-shell">' +
             '<img src="' + rarestImg + '" alt="' + rarestName + '">' +
