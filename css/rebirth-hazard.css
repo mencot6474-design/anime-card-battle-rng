@@ -72,7 +72,8 @@ body.rb-showcase-active .code-inspect-fab {
 }
 
 /* ================================ ROOT BACKDROP ========================= */
-#rebirthModal {
+#rebirthModal,
+#rebirthModal.show {
   --rb-ink: #050505;
   --rb-ink2: #0b0b0e;
   --rb-ink3: #121217;
@@ -952,10 +953,11 @@ body.rb-showcase-active .code-inspect-fab {
 #rebirthModal .rbh-guide-p b { color: var(--rb-paper); }
 
 /* ====================== HAZARD CURTAIN (#rebirthCurtain) ================ */
-#rebirthCurtain {
+#rebirthCurtain,
+#rebirthCurtain.on {
   position: fixed;
   inset: 0;
-  z-index: 96500;
+  z-index: 100030 !important;
   pointer-events: none;
   overflow: hidden;
   visibility: hidden;

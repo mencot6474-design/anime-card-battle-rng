@@ -22158,13 +22158,7 @@ html.fps-locked .bp-fchip{
 /* ==========================================================================
    REBIRTH ASCENSION MODAL (HORIZONTAL CYBERPUNK LAYOUT)
    ========================================================================== */
-/* ===== REBIRTH ASCENSION MODAL (Z-INDEX ELEVATION: 100010) ===== */
-#rebirthModal,
-#rebirthModal.show,
-.rb-modal-backdrop,
-.rb-modal-backdrop.show {
-  z-index: 100010 !important;
-}
+/* REBIRTH modal z-index delegated to css/rebirth-hazard.css (#rebirthModal 95500 < #rebirthCurtain 100030 < #rebirthShowcase 100050) */
 
 .rb-modal-backdrop {
   position: fixed;
