@@ -1051,8 +1051,18 @@
   }
 
   function curtainIn(cb, hold) {
-    var c = buildCurtain();
     clearTimers();
+    var info = battleInfo();
+    // Di mode story, animasi masuk battle ditiadakan sesuai instruksi user
+    if (info && info.mode === 'story') {
+      var c = $('hzCurtain');
+      if (c) c.className = '';
+      if (typeof cb === 'function') {
+        try { cb(); } catch (e) { console.error('hzCurtainIn cb', e); }
+      }
+      return;
+    }
+    var c = buildCurtain();
     c.classList.remove('smooth', 'revealed', 'sweep');
     c.classList.add('on');
     curtainCopy('in');
@@ -1069,15 +1079,21 @@
     var c = buildCurtain();
     clearTimers();
     curtainCopy('out');
-    c.classList.remove('smooth', 'revealed', 'sweep');
-    c.classList.add('on');
+    c.className = '';
+    c.classList.add('on', 'smooth', 'revealed');
     void c.offsetWidth;
+    c.classList.remove('revealed');
     timers.push(setTimeout(function () {
       if (typeof cb === 'function') {
         try { cb(); } catch (e) { console.error('hzCurtainOut cb', e); }
       }
-    }, 430));
-    timers.push(setTimeout(reveal, 470));
+    }, 560));
+    timers.push(setTimeout(function () {
+      c.classList.add('revealed');
+    }, 780));
+    timers.push(setTimeout(function () {
+      c.classList.remove('on', 'smooth', 'revealed');
+    }, 1560));
   }
 
   /* -------------------------------------------- 10. LIFECYCLE & SYNC */

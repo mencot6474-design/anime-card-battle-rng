@@ -548,7 +548,7 @@ window.addEventListener("hashchange",()=>{
   }
   closeStory();
   if(route()==="#/lobby"){
-    ["towerCurtain","wbCurtain","wbHzCurtain","storyCurtain","traitCurtain","weatherCurtain","rebirthCurtain","deckCurtain","skillCurtain","backpackCurtain","profileCurtain","rankCurtain","titlesCurtain","premiumCurtain","watchAdsCurtain","dailyCurtain","indexCurtain"].forEach(id=>{
+    ["hzCurtain","towerCurtain","wbCurtain","wbHzCurtain","storyCurtain","traitCurtain","weatherCurtain","rebirthCurtain","deckCurtain","skillCurtain","backpackCurtain","profileCurtain","rankCurtain","titlesCurtain","premiumCurtain","watchAdsCurtain","dailyCurtain","indexCurtain"].forEach(id=>{
       const el=document.getElementById(id);
       if(el && (el.classList.contains("on") || el.classList.contains("smooth") || el.classList.contains("revealed"))){
         el.className = el.id === "storyCurtain" ? "hz-curtain" : "";

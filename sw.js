@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v618-syncStoryCurtainToBackpack';
+const CACHE_NAME = 'anime-card-battle-v619-battleCurtainSync';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
