@@ -1,0 +1,1004 @@
+/* ==========================================================================
+   UPDATE LOG // HAZARD PROTOCOL (WHITE-on-BLACK)
+   Dedicated modular stylesheet for #changelogModal and #updateLogCurtain
+   Matches User Reference: Clean Rounded Card, Left Ribbon Header, Red Close,
+   Two-column Body, Rich Base Card Fan Stack, Clear High-Contrast Typography.
+   ========================================================================== */
+
+:root {
+  --upl-bg-shell: #121214;
+  --upl-bg-deep: #08080a;
+  --upl-bg-sidebar: #0e0e11;
+  --upl-bg-card: #151518;
+  --upl-bg-elevated: #1c1c20;
+  --upl-ink: #f5f5f5;
+  --upl-ink-dim: #a3a3a8;
+  --upl-ink-faint: #606066;
+  --upl-line: rgba(245, 245, 245, 0.12);
+  --upl-line-strong: rgba(245, 245, 245, 0.22);
+  --upl-haz: #f3e600;
+  --upl-haz-dim: rgba(243, 230, 0, 0.16);
+  --upl-haz-border: #f3e600;
+  --upl-purple-grad: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+  --upl-banner-grad: linear-gradient(135deg, #2a080c 0%, #17070a 60%, #0d0d10 100%);
+  --upl-danger: #ef4444;
+  --upl-danger-light: #f87171;
+  --upl-cyan: #22d3ee;
+  --upl-gold: #f59e0b;
+  --upl-f-disp: 'Orbitron', 'Rajdhani', sans-serif;
+  --upl-f-body: 'Rajdhani', system-ui, sans-serif;
+  --upl-f-mono: 'JetBrains Mono', monospace;
+}
+
+/* ==================== HAZARD CURTAIN ==================== */
+#updateLogCurtain {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: none;
+  visibility: hidden;
+}
+#updateLogCurtain.on {
+  visibility: visible;
+}
+#updateLogCurtain.on.sweep:not(.revealed) {
+  pointer-events: auto;
+}
+#updateLogCurtain .half {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 50.5%;
+  background: #050505;
+  overflow: hidden;
+}
+#updateLogCurtain .half.top {
+  top: 0;
+  transform: translateY(-101%);
+  border-bottom: 2px solid var(--upl-haz);
+}
+#updateLogCurtain .half.bot {
+  bottom: 0;
+  transform: translateY(101%);
+  border-top: 2px solid var(--upl-haz);
+}
+#updateLogCurtain.smooth .half {
+  transition: transform 0.45s cubic-bezier(0.74, 0, 0.22, 1);
+}
+#updateLogCurtain.on.sweep:not(.revealed) .half.top,
+#updateLogCurtain.on.sweep:not(.revealed) .half.bot {
+  transform: translateY(0);
+}
+#updateLogCurtain.on.revealed .half.top {
+  transform: translateY(-101%);
+}
+#updateLogCurtain.on.revealed .half.bot {
+  transform: translateY(101%);
+}
+#updateLogCurtain .edge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 12px;
+  background: repeating-linear-gradient(45deg, #f3e600 0 14px, #050505 14px 28px);
+  opacity: 0.85;
+}
+#updateLogCurtain .half.top .edge { bottom: 0; }
+#updateLogCurtain .half.bot .edge { top: 0; }
+#updateLogCurtain .mark {
+  position: absolute;
+  font-family: var(--upl-f-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--upl-haz);
+  padding: 6px 12px;
+  background: #050505;
+  border: 1px solid var(--upl-haz);
+}
+#updateLogCurtain .half.top .mark { bottom: 18px; left: 24px; }
+#updateLogCurtain .half.bot .mark { top: 18px; right: 24px; }
+
+/* ==================== BACKDROP & MODAL SHELL ==================== */
+#changelogBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  z-index: 95000 !important;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+#changelogBackdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#changelogModal {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 95001 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 30px 24px !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+#changelogModal.show {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Reference Main Outer Shell: Golden/Hazard Bevel Border, Rounded Corners */
+.upl-shell {
+  position: relative !important;
+  width: min(1080px, calc(100vw - 48px)) !important;
+  height: min(650px, calc(100dvh - 50px)) !important;
+  background: #0d0d10 !important;
+  border: 2px solid #f3e600 !important;
+  border-radius: 20px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.95), 0 0 40px rgba(243, 230, 0, 0.16) !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+  margin: auto !important;
+  z-index: 95002 !important;
+}
+
+/* Corner bracket accents (WoB Hazard flavor) */
+.upl-corner {
+  display: none !important;
+}
+
+/* Top Header Bar with Ribbons (Matches Screenshot Reference) */
+.upl-header {
+  position: relative;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  flex-shrink: 0;
+  z-index: 6;
+}
+
+/* Reference Top-Left Angled Ribbon: "Update Log" in Bold italic display font */
+.upl-title-wrap {
+  position: absolute;
+  top: -18px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  z-index: 7;
+}
+
+.upl-badge-protocol {
+  display: none; /* hidden to prioritize clean bold header title */
+}
+
+.upl-h1 {
+  background: var(--upl-purple-grad);
+  color: #ffffff;
+  font-family: 'Outfit', 'Rajdhani', sans-serif;
+  font-size: 26px;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 0.5px;
+  padding: 10px 42px 10px 24px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+  transform: skewX(-14deg);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+.upl-h1 b {
+  font-style: italic;
+  color: #fff;
+  margin-left: 8px;
+}
+.upl-h1 span, .upl-h1 * {
+  transform: skewX(14deg);
+}
+
+/* Reference Top-Right Red Pill Close Button */
+.upl-actions {
+  position: absolute;
+  top: -16px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  z-index: 10;
+}
+.upl-status { display: none; }
+button#changelogClose.upl-close-btn {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 50% !important;
+  background: #ef4444 !important;
+  border: 2px solid #ffffff !important;
+  color: #ffffff !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.6) !important;
+  transition: transform 0.15s ease, background-color 0.15s ease !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  outline: none !important;
+}
+button#changelogClose.upl-close-btn:hover {
+  transform: scale(1.08) !important;
+  background: #dc2626 !important;
+  border-color: #ffffff !important;
+  color: #ffffff !important;
+}
+button#changelogClose.upl-close-btn svg {
+  display: block !important;
+  stroke: #ffffff !important;
+}
+
+/* Two-column Body */
+.upl-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  overflow: hidden;
+  border-radius: 0 0 18px 18px;
+  margin-top: 0;
+  background: transparent;
+}
+
+/* Sidebar: Matching Reference Dark Rounded Containers */
+.upl-sidebar {
+  background: var(--upl-bg-sidebar);
+  border-right: 1px solid var(--upl-line);
+  padding: 18px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.upl-sidebar::-webkit-scrollbar { display: none; }
+
+.upl-side-sec {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.upl-side-lbl {
+  font-family: var(--upl-f-disp);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--upl-ink-faint);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding-left: 4px;
+}
+
+/* Active Update Item with Reference Dark-Red Container */
+.upl-tab-btn {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 10px 14px;
+  background: #18181c;
+  border: 1px solid var(--upl-line);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+  min-height: 48px;
+  color: inherit;
+}
+.upl-tab-btn:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.upl-tab-btn.active {
+  background: linear-gradient(135deg, rgba(153, 27, 27, 0.35) 0%, rgba(20, 20, 24, 0.8) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.6);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+.upl-tab-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.25;
+}
+.upl-tab-sub {
+  font-family: 'Outfit', 'Rajdhani', sans-serif;
+  font-size: 11px;
+  color: var(--upl-ink-dim);
+  margin-top: 3px;
+}
+
+/* Jump-To Links List */
+.upl-jump-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.upl-jump-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: transparent;
+  border-radius: 8px;
+  color: #9ca3af;
+  font-family: 'Outfit', 'Rajdhani', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  text-align: left;
+  min-height: 40px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.upl-jump-item:hover {
+  background: #18181c;
+  color: #fff;
+}
+.upl-jump-item.active {
+  background: rgba(153, 27, 27, 0.35);
+  color: #fff;
+}
+.upl-jump-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4b5563;
+  flex-shrink: 0;
+}
+.upl-jump-item.active .upl-jump-dot {
+  background: #ef4444;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+}
+
+/* Main Content Area */
+.upl-content {
+  background: var(--upl-bg-deep);
+  padding: 20px 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--upl-line-strong) transparent;
+  border-radius: 0 0 16px 0;
+}
+
+/* Reference Hero Feature Showcase Banner: Deep Maroon Gradient Card */
+.upl-hero-banner {
+  position: relative;
+  background: var(--upl-banner-grad);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 14px;
+  padding: 24px 28px;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 24px;
+  min-height: 220px !important;
+  height: auto !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  overflow: visible !important;
+  box-sizing: border-box !important;
+  flex-shrink: 0 !important;
+}
+
+.upl-hero-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 2;
+}
+.upl-tag-new {
+  align-self: flex-start;
+  font-family: var(--upl-f-disp);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  background: #ef4444;
+  color: #ffffff;
+  padding: 3px 10px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+.upl-hero-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+.upl-hero-sub {
+  font-family: 'Outfit', 'Rajdhani', sans-serif;
+  font-size: 14.5px;
+  color: #d1d5db;
+  line-height: 1.5;
+  max-width: 480px;
+  margin: 0;
+}
+.upl-hero-sub b { color: #fff; }
+.upl-hero-date {
+  font-family: var(--upl-f-body);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--upl-ink-faint);
+  margin-top: 4px;
+}
+
+/* Reference Overlapping Base Cards in Hero Banner (Real Game Cards) */
+.upl-card-deck {
+  position: relative;
+  width: 320px;
+  height: 205px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  perspective: 1000px;
+}
+
+.upl-deck-card-wrap {
+  position: absolute;
+  width: 140px;
+  height: 195px;
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), z-index 0.2s ease, filter 0.2s ease;
+  cursor: pointer;
+  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.95));
+}
+.upl-deck-card-wrap:hover {
+  transform: scale(1.15) translateY(-14px) !important;
+  z-index: 20 !important;
+  filter: drop-shadow(0 20px 35px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 16px rgba(243, 230, 0, 0.5)) !important;
+}
+
+.upl-deck-card-wrap.pos-left {
+  left: 0;
+  top: 14px;
+  transform: rotate(-6deg) scale(0.92);
+  z-index: 2;
+  opacity: 0.88;
+}
+.upl-deck-card-wrap.pos-mid {
+  left: 88px;
+  top: 0;
+  transform: rotate(0deg) scale(1.04);
+  z-index: 5;
+}
+.upl-deck-card-wrap.pos-right {
+  left: 176px;
+  top: 16px;
+  transform: rotate(6deg) scale(0.92);
+  z-index: 3;
+  opacity: 0.92;
+}
+
+/* Scoped styling for hub-center inside Update Log so it fits tight mini proportions */
+.upl-deck-card-wrap .hub-center {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: #050505 !important;
+  box-shadow: none !important;
+}
+.upl-deck-card-wrap .hub-center .hc-img {
+  position: absolute !important;
+  inset: 0 !important;
+  overflow: hidden !important;
+}
+.upl-deck-card-wrap .hub-center .hc-img img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+}
+.upl-deck-card-wrap .hub-center .hc-name-top {
+  position: absolute !important;
+  top: 6px !important;
+  right: 6px !important;
+  bottom: auto !important;
+  left: auto !important;
+  font-family: var(--upl-f-disp) !important;
+  font-size: 8.5px !important;
+  font-weight: 800 !important;
+  color: #fff !important;
+  text-shadow: 0 1px 3px #000, 0 0 6px rgba(0,0,0,0.9) !important;
+  white-space: nowrap !important;
+  max-width: 75px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  z-index: 6 !important;
+  transform: none !important;
+  background: rgba(0,0,0,0.6) !important;
+  padding: 1px 4px !important;
+  border-radius: 3px !important;
+}
+.upl-deck-card-wrap .hub-center .hc-chance {
+  position: absolute !important;
+  top: 6px !important;
+  left: 6px !important;
+  font-family: var(--upl-f-mono) !important;
+  font-size: 8px !important;
+  font-weight: 800 !important;
+  background: rgba(5, 5, 5, 0.9) !important;
+  color: var(--upl-haz) !important;
+  border: 1px solid var(--upl-haz) !important;
+  padding: 1px 4px !important;
+  border-radius: 3px !important;
+  z-index: 6 !important;
+  transform: none !important;
+}
+.upl-deck-card-wrap .hub-center .hc-info {
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  padding: 3px 6px !important;
+  background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 70%, transparent 100%) !important;
+  z-index: 6 !important;
+}
+.upl-deck-card-wrap .hub-center .hc-stats {
+  display: flex !important;
+  justify-content: space-between !important;
+  font-family: var(--upl-f-mono) !important;
+  font-size: 8px !important;
+  color: #a3a3a3 !important;
+}
+.upl-deck-card-wrap .hub-center .hc-stats .hp { color: #22c55e !important; }
+.upl-deck-card-wrap .hub-center .hc-stats .atk { color: #ef4444 !important; }
+.upl-deck-card-wrap .hub-center .hc-stats b {
+  color: #fff !important;
+}
+.upl-deck-card-wrap .hub-center .hc-skill,
+.upl-deck-card-wrap .hub-center .hc-desc,
+.upl-deck-card-wrap .hub-center .skill-overlay,
+.upl-deck-card-wrap .hub-center .roll-hide-btn {
+  display: none !important;
+}
+
+/* Featured Mini Card inside "New Cards" section */
+.upl-fc-basecard .hub-center {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 6px !important;
+  overflow: hidden !important;
+  position: relative !important;
+  background: #050505 !important;
+  box-shadow: none !important;
+}
+.upl-fc-basecard .hub-center .hc-img {
+  position: absolute !important;
+  inset: 0 !important;
+}
+.upl-fc-basecard .hub-center .hc-img img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+.upl-fc-basecard .hub-center .hc-name-top {
+  display: none !important;
+}
+.upl-fc-basecard .hub-center .hc-chance {
+  position: absolute !important;
+  top: 5px !important;
+  left: 5px !important;
+  font-family: var(--upl-f-mono) !important;
+  font-size: 7.5px !important;
+  background: rgba(5, 5, 5, 0.85) !important;
+  color: var(--upl-haz) !important;
+  border: 1px solid var(--upl-haz) !important;
+  padding: 1px 4px !important;
+  border-radius: 3px !important;
+  z-index: 6 !important;
+  transform: none !important;
+}
+.upl-fc-basecard .hub-center .hc-info {
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  padding: 3px 5px !important;
+  background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 100%) !important;
+  z-index: 6 !important;
+}
+.upl-fc-basecard .hub-center .hc-stats {
+  display: flex !important;
+  justify-content: space-between !important;
+  font-family: var(--upl-f-mono) !important;
+  font-size: 7px !important;
+  color: #a3a3a3 !important;
+}
+.upl-fc-basecard .hub-center .hc-stats b {
+  color: #fff !important;
+}
+.upl-fc-basecard .hub-center .hc-skill,
+.upl-fc-basecard .hub-center .hc-desc,
+.upl-fc-basecard .hub-center .skill-overlay,
+.upl-fc-basecard .hub-center .roll-hide-btn {
+  display: none !important;
+}
+
+/* Section Title: Reference "What's New" Bold White Header */
+.upl-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.upl-sec-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.upl-sec-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+.upl-sec-badge {
+  font-family: var(--upl-f-mono);
+  font-size: 11px;
+  color: var(--upl-ink-faint);
+}
+
+/* Reference What's New Single Big Release Card with Red Pill Badge */
+.upl-whats-new-card {
+  background: #15151a;
+  border: 1px solid var(--upl-line);
+  border-radius: 12px;
+  padding: 18px 22px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+.upl-wn-avatar {
+  width: 95px;
+  height: 95px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--upl-line-strong);
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.6);
+}
+.upl-wn-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.upl-wn-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+.upl-wn-badge {
+  align-self: flex-start;
+  font-family: 'Outfit', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  background: #ef4444;
+  color: #ffffff;
+  padding: 2px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.upl-wn-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+}
+.upl-wn-desc {
+  font-size: 14px;
+  color: #c7c7cf;
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* Feature Grid for Base Cards */
+.upl-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.upl-feat-card {
+  background: #111115;
+  border: 1px solid var(--upl-line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.15s ease;
+}
+.upl-feat-card:hover { border-color: var(--upl-line-strong); }
+
+.upl-fc-top {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.upl-fc-basecard {
+  width: 82px;
+  height: 122px;
+  flex-shrink: 0;
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
+}
+.upl-fc-basecard img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.upl-fc-basecard .fc-ov {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0%, transparent 40%, rgba(0, 0, 0, 0.95) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 3px 5px;
+}
+.upl-fc-basecard .fc-name {
+  font-family: var(--upl-f-disp);
+  font-size: 8px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.15;
+}
+.upl-fc-basecard .fc-chance {
+  font-family: var(--upl-f-mono);
+  font-size: 7.5px;
+  color: var(--upl-haz);
+  font-weight: 800;
+}
+.upl-fc-basecard .fc-stats {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--upl-f-mono);
+  font-size: 7px;
+  color: #a3a3a3;
+}
+
+.upl-fc-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.upl-fc-tag {
+  align-self: flex-start;
+  font-family: 'Outfit', sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  background: rgba(243, 230, 0, 0.15);
+  border: 1px solid var(--upl-haz);
+  color: var(--upl-haz);
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.upl-fc-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+  margin: 0;
+}
+.upl-fc-skill {
+  font-family: 'Outfit', 'Rajdhani', sans-serif;
+  font-size: 11.5px;
+  color: var(--upl-cyan);
+  font-weight: 700;
+}
+.upl-fc-desc {
+  font-family: 'Outfit', 'Rajdhani', sans-serif;
+  font-size: 13px;
+  color: #c7c7cf;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* System Cards */
+.upl-sys-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+}
+.upl-sys-card {
+  background: #111115;
+  border: 1px solid var(--upl-line);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.upl-sys-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.upl-sys-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--upl-ink);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.upl-sys-title svg { color: var(--upl-haz); }
+.upl-sys-status {
+  font-family: 'Outfit', sans-serif;
+  font-size: 9.5px;
+  font-weight: 800;
+  color: var(--upl-haz);
+  background: var(--upl-haz-dim);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+.upl-sys-desc {
+  font-family: 'Outfit', 'Rajdhani', sans-serif;
+  font-size: 13.5px;
+  color: #c7c7cf;
+  line-height: 1.45;
+  margin: 0;
+}
+.upl-sys-bullets {
+  margin: 0;
+  padding-left: 16px;
+  font-family: 'Outfit', 'Rajdhani', sans-serif;
+  font-size: 13px;
+  color: #b0b0b8;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.upl-sys-bullets li b { color: var(--upl-ink); }
+
+/* Changes Box */
+.upl-patch-box {
+  background: #111115;
+  border: 1px solid var(--upl-line);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.upl-pb-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--upl-line);
+  padding-bottom: 8px;
+}
+.upl-pb-v {
+  font-family: var(--upl-f-mono);
+  font-size: 11px;
+  font-weight: 800;
+  background: #18181c;
+  border: 1px solid var(--upl-line-strong);
+  color: var(--upl-haz);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.upl-pb-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--upl-ink);
+}
+.upl-pb-date {
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  color: var(--upl-ink-faint);
+}
+.upl-pb-list {
+  margin: 0;
+  padding-left: 18px;
+  font-family: 'Outfit', 'Rajdhani', sans-serif;
+  font-size: 13.5px;
+  color: #c7c7cf;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Footer: Clean subtle footer */
+.upl-foot {
+  display: none; /* hidden to keep clean aesthetic like reference */
+}
+
+/* Responsive Media Queries */
+@media (max-width: 900px) {
+  .upl-body {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+  .upl-sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--upl-line);
+    max-height: 150px;
+    flex-shrink: 0;
+  }
+  .upl-hero-banner {
+    grid-template-columns: 1fr;
+    text-align: left;
+  }
+  .upl-card-deck {
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .upl-shell {
+    height: 100dvh;
+    border-radius: 0;
+    border: none;
+  }
+  #changelogModal {
+    padding: 0 !important;
+  }
+  .upl-header {
+    height: 42px;
+  }
+  .upl-h1 {
+    font-size: 16px;
+    padding: 6px 20px 6px 14px;
+  }
+  .upl-content {
+    padding: 14px;
+  }
+  .upl-fc-top {
+    flex-direction: column;
+  }
+  .upl-fc-basecard {
+    width: 100%;
+    height: 130px;
+  }
+}

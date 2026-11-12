@@ -55,12 +55,13 @@
 <link rel="stylesheet" href="css/rebirth-hazard.css?v=v4-rebirthHazard5x">
 <link rel="stylesheet" href="css/tower-hub.css?v=v4-speed3xPass">
 <link rel="stylesheet" href="css/card-assets-hazard.css?v=v4-indexPureBadge">
+<link rel="stylesheet" href="css/update-log.css?v=v6-matchReferenceVerified">
 <script>
   /* Link toko Trakteer (fallback — utama ada di js/config.js). */
   window.TRAKTEER_SHOP_URL = "";
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=v621-removeOperatorSearch').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=v625-updateLogMatchRef').catch(() => {});
     });
   }
 </script>
@@ -757,19 +758,83 @@
     </div>
   </div>
 </div>
-<div class="modal-backdrop" id="changelogBackdrop" style="position:fixed;inset:0;z-index:90;display:none;"></div>
-<div class="modal-titles" id="changelogModal" style="display:none;z-index:91;">
-  <div class="titles-modal-inner">
-    <div class="tm-header">
-      <div class="tm-h-meta">
-        <span class="tm-tag" style="background:rgba(102,252,241,0.15);color:#66fcf1;border:1px solid rgba(102,252,241,0.3)">SYSTEM PATCH NOTES &middot; UPDATE LOG</span>
-        <h2 class="tm-title" style="color:#fff;font-size:22px;letter-spacing:1px">UPDATE LOG</h2>
+<div class="modal-backdrop" id="changelogBackdrop" style="display:none;"></div>
+<div id="changelogModal" class="upl-modal" role="dialog" aria-modal="true" aria-label="System Update Log" style="display:none;">
+  <div class="upl-shell">
+    <span class="upl-corner upl-c-tl"></span>
+    <span class="upl-corner upl-c-tr"></span>
+    <span class="upl-corner upl-c-bl"></span>
+    <span class="upl-corner upl-c-br"></span>
+
+    <!-- Top Header -->
+    <header class="upl-header">
+      <div class="upl-title-wrap">
+        <div class="upl-badge-protocol"><span></span>PATCH NOTES</div>
+        <h2 class="upl-h1">Update <b>Log</b></h2>
       </div>
-      <button class="prof-x" id="changelogClose" type="button" aria-label="Close Update Log" onclick="closeChangelogModal()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
+      <div class="upl-actions">
+        <span class="upl-status">BUILD v1.5.0 &middot; HAZARD WoB</span>
+        <button class="upl-close-btn" id="changelogClose" type="button" aria-label="Close Update Log" onclick="closeChangelogModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Modal Body -->
+    <div class="upl-body">
+      <!-- Sidebar -->
+      <aside class="upl-sidebar">
+        <div class="upl-side-sec">
+          <div class="upl-side-lbl">UPDATES</div>
+          <button class="upl-tab-btn active" type="button">
+            <span class="upl-tab-title">Awakened Hazard Release</span>
+            <span class="upl-tab-sub">Latest &middot; November 2026</span>
+          </button>
+        </div>
+
+        <div class="upl-side-sec">
+          <div class="upl-side-lbl">JUMP TO</div>
+          <div class="upl-jump-list">
+            <button class="upl-jump-item active" type="button" onclick="uplScrollTo('sec-overview')">
+              <span class="upl-jump-dot"></span><span>What's New</span>
+            </button>
+            <button class="upl-jump-item" type="button" onclick="uplScrollTo('sec-featured')">
+              <span class="upl-jump-dot"></span><span>New Cards</span>
+            </button>
+            <button class="upl-jump-item" type="button" onclick="uplScrollTo('sec-systems')">
+              <span class="upl-jump-dot"></span><span>Core Systems</span>
+            </button>
+            <button class="upl-jump-item" type="button" onclick="uplScrollTo('sec-changes')">
+              <span class="upl-jump-dot"></span><span>Changes</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Content Area -->
+      <section class="upl-content" id="changelogList"></section>
     </div>
-    <div id="changelogList"></div>
+
+    <!-- Modal Footer -->
+    <footer class="upl-foot">
+      <span>HAZARD PROTOCOL &middot; SYSTEM LOG v1.5.0</span>
+      <span>ALL RECORDS SECURE &middot; <b>SERVER VERIFIED</b></span>
+    </footer>
+  </div>
+</div>
+
+<!-- Transisi Hazard Curtain Update Log -->
+<div id="updateLogCurtain" aria-hidden="true">
+  <div class="half top">
+    <span class="edge"></span>
+    <span class="mark">UPDATE LOG // <b>SYSTEM PATCH</b></span>
+  </div>
+  <div class="half bot">
+    <span class="edge"></span>
+    <span class="mark">HZ-PROTOCOL <b>LOG-SYS</b></span>
   </div>
 </div>
 <main id="app"></main>
@@ -2663,7 +2728,7 @@
 <script src="js/skill-tree.js?v=v13-skIcons"></script>
 <script src="js/ranking.js?v=v15-ringWebp"></script>
 <script src="js/i18n.js?v=v398-smooth60fps"></script>
-<script src="js/boot.js?v=v163-hzCurtainReset"></script>
+<script src="js/boot.js?v=v167-matchReferenceVerified"></script>
 <script src="js/pwa.js?v=v156-install"></script>
 
 <!-- ====== TOP-UP GEMS MODAL ====== -->

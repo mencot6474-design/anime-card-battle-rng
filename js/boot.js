@@ -1286,179 +1286,309 @@ document.addEventListener("keydown",e=>{
 /* ========== UPDATE LOG MODAL ========== */
 const GAME_CHANGELOGS = [
   {
-    version: "v1.4.7",
-    date: "05 Nov 2026",
-    title: "Tema Elegan White-on-Black & Polish Backpack/Lobby",
-    titleEn: "Elegant White-on-Black Theme & Backpack/Lobby Polish",
+    version: "v1.5.0",
+    date: "November 2026",
+    title: "Awakened God Protocol",
+    titleEn: "Awakened God Protocol",
     items: [
-      "Tema UI baru WHITE-on-BLACK diterapkan di seluruh Backpack: panel, kerangka layar, tab, modal dialog, popup item, dan rails kini hitam pekat dengan aksen putih elegan.",
-      "Lobby ikut berpindah ke tema White-on-Black: header, rails animasi, tab bar sisi, frame kartu hero, dan tombol ROLL menyatu dengan tema baru.",
-      "Warna semantik tetap dipertahankan (koin emas, gem cyan, badge tier, warna mutasi) agar informasi gameplay tidak hilang.",
-      "Perbaikan border kartu mutasi Rainbow di Deck Aktif: kembali beranimasi pelangi berputar, tidak lagi membeku satu warna ungu.",
-      "Pembersihan visual kartu di backpack: strip meteran power cyan dihilangkan, ring mutasi dipulihkan, dan ukuran badge FAV/MUT dengan search bar disamakan (44px)."
+      "Awakened Weather anomalies have breached the timeline with three supreme god-tier base cards: Psychic Esper, Sun God, and Darkin Lord.",
+      "Comprehensive system overviews added for Weather Machine, Infinite Tower Core Spire, and World Boss Hazard Hub."
     ],
     itemsEn: [
-      "New WHITE-on-BLACK UI theme applied across the entire Backpack: panel, screen frame, tabs, modal dialogs, item popups, and rails now use deep black with elegant white accents.",
-      "The Lobby also moved to the White-on-Black theme: header, animated rails, side tab bar, hero card frame, and ROLL button now match the new look.",
-      "Semantic colors are preserved (gold coins, cyan gems, tier badges, mutation colors) so gameplay information stays readable.",
-      "Fixed Rainbow mutation card border in the Active Deck: the animated rainbow flow is back instead of freezing on a single purple color.",
-      "Backpack card visual cleanup: removed the cyan power meter strip, restored mutation rings, and equalized FAV/MUT badge and search bar sizing (44px)."
-    ]
-  },
-  {
-    version: "v1.4.6",
-    date: "27 Okt 2026",
-    title: "World Boss Hub & Toko Armory Full-Bleed & Anti-Flicker",
-    titleEn: "World Boss Hub & Armory Shop Full-Bleed & Anti-Flicker",
-    items: [
-      "Pembaruan tampilan World Boss Hub & Toko Shadow Hunter Armory menjadi 1-layar full-bleed cyberpunk tanpa batas tepi hitam kosong.",
-      "Ukuran kartu Toko World Boss diselaraskan dengan prototipe asli (lebar 300px, chamber display 145px, font terbaca jelas dan proporsional).",
-      "Perbaikan bug layar berkedip saat swipe boss (Eternal Dragon ↔ Shadow King) dengan sistem pembaruan in-place DOM tanpa refresh layar penuh.",
-      "Perbaikan crash render toko World Boss saat mengecek item artefak dan pet pada save data baru.",
-      "Standardisasi bahasa Inggris pada kategori toko, label parameter, telemetry hub, dan item Shadow Hunter Armory."
-    ],
-    itemsEn: [
-      "Overhauled World Boss Hub & Shadow Hunter Armory into a sleek full-bleed cyberpunk 1-screen matrix eliminating unused black borders.",
-      "World Boss Shop cards synchronized directly from prototype_v2.html (300px card width, 145px display chamber, crisp readable typography).",
-      "Fixed screen flicker bug when swiping/switching bosses (Eternal Dragon ↔ Shadow King) via in-place DOM synchronization.",
-      "Resolved unhandled null reference crash in World Boss shop when inspecting artifact & pet ownership on new saves.",
-      "Standardized full English localization across shop categories, parameter badges, hub telemetry, and armory supplies."
-    ]
-  },
-  {
-    version: "v1.4.5",
-    date: "27 Okt 2026",
-    title: "Format Stat Ringkas (1k/100k) & Visual Card Polish",
-    titleEn: "Compact Stat Formatting (1k/100k) & Visual Card Polish",
-    items: [
-      "Angka stat HP dan ATK kartu kini otomatis disingkat (1000 jadi 1k, 100000 jadi 100k, 1M, dll) agar lebih rapi dan nyaman dibaca.",
-      "Tampilan box stat HP & ATK kartu distandardisasi menjadi box placeholder gelap tanpa ikon di semua layar (Lobby, Battle, Tower Preview, Story, dan Modal Kartu).",
-      "Pembersihan kartu hasil run Tower Infinite dan Instant Roll Pack (.rrc): badge di-hide dan hanya menyisakan teks '1 in X' yang bersih di footer bawah.",
-      "Penataan badge pada kartu loading screen diubah menjadi tumpuk vertikal (Shiny di atas, Mutasi di tengah, Trait di bawah) dengan ukuran seragam seperti di kartu Lobby.",
-      "Penghapusan efek white flash pada basic attack archetype untuk kenyamanan visual pemain.",
-      "Perbaikan bug bayangan (shadow) menghitam pada teks nama kartu Shiny di Lobby & Loading screen."
-    ],
-    itemsEn: [
-      "HP and ATK card stats are now automatically abbreviated (1,000 to 1k, 100,000 to 100k, 1M, etc.) for a clean and readable layout.",
-      "Standardized HP & ATK stat containers into dark, sleek placeholder boxes without icons across all screens (Lobby, Battle, Tower Preview, Story, and Card Modals).",
-      "Cleaned up Tower Infinite and Instant Roll Pack result cards (.rrc): hidden all badges, showing only clean '1 in X' chance text at the bottom footer.",
-      "Loading screen card badges reorganized into a vertical stack (Shiny top, Mutation middle, Trait bottom) with standardized lobby badge sizing.",
-      "Removed white screen flash frames on basic archetype attacks for improved visual comfort.",
-      "Fixed blackened text-shadow visual artifact on Shiny card names in Lobby & Loading screen."
-    ]
-  },
-  {
-    version: "v1.4.4",
-    date: "27 Okt 2026",
-    title: "Story Enemy Tier Exclusivity & UI Polish",
-    titleEn: "Story Enemy Tier Exclusivity & UI Polish",
-    items: [
-      "Tier R s/d EX kini eksklusif untuk musuh di Story Mode; badge tier pada kartu pemain (hasil Instant Roll, bench battle, profil VS) telah dihapus.",
-      "Kelangkaan kartu pemain kini murni menggunakan sistem Chance (1 in N), Varian Mutasi & Shiny, serta Trait.",
-      "Pembersihan opsi pengurutan di Index Kartu agar selaras tanpa tier kosmetik pada kartu pemain.",
-      "Penyelarasan posisi dan ukuran Badge Nama (kiri atas), Badge 1 in X (bawah nama), dan Badge Shiny (kanan atas) pada seluruh kartu (Instant Roll, Card Index, Roll Showcase, Hover Card) agar seragam dengan kartu di Lobby.",
-      "Penyempurnaan tampilan modal Update Log & Instant Roll dengan scrollbar tersembunyi yang mulus."
-    ],
-    itemsEn: [
-      "Tiers R through EX are now strictly exclusive to Story Mode enemies; tier badges on player cards (Instant Roll results, battle bench, VS profile) have been removed.",
-      "Player card rarity is now purely governed by Chance (1 in N), Mutation & Shiny variants, and Traits.",
-      "Cleaned up Card Index sort options to align without cosmetic player card tiers.",
-      "Unified layout, positioning, and sizing of Card Name (top-left), 1 in X Badge (below name), and Shiny Badge (top-right) across all cards (Instant Roll, Card Index, Roll Showcase, Hover Card) to match the Lobby Card.",
-      "UI polish for Update Log and Instant Roll result modals with hidden clean scrollbars."
-    ]
-  },
-  {
-    version: "v1.4.3",
-    date: "27 Okt 2026",
-    title: "Rebirth Matrix & UI Stabilization",
-    titleEn: "Rebirth Matrix & UI Stabilization",
-    items: [
-      "Modal Rebirth Horizontal Cyberpunk baru dengan visual Sigil Core, live Essence meter, dan Ascension Protocol.",
-      "Perbaikan scroll reset & auto-tick pada menu Pengaturan dan Lobby (eliminasi re-render 1 detik via caching DOM).",
-      "Pemisahan Buff Potion Dock: kini eksklusif tampil di Lobby dan otomatis tersembunyi saat membuka Index, Profil, atau Modal.",
-      "Interaktivitas Slot Operator Profil: klik slot Pet/Artefak/Kartu langsung menuju Backpack + Hover Card Preview.",
-      "Optimalisasi observer sistem lokalisasi multi-bahasa (English & Bahasa Indonesia) bebas rekursi."
-    ],
-    itemsEn: [
-      "New Cyberpunk Horizontal Rebirth Modal featuring Sigil Core, live Essence meter, and Ascension Protocol.",
-      "Fixed scroll reset & auto-tick glitch in Settings and Lobby (preventing 1-second interval DOM wipes via dataset caching).",
-      "Buff Potion Dock isolation: strictly visible in Lobby and automatically hidden when opening Index, Profile, or Modals.",
-      "Interactive Profile Operator Slots: click Pet/Artefact/Card slots to navigate to Backpack + Card Hover Preview.",
-      "Multi-language (EN / ID) localization observer optimization with recursion-free DOM traversal."
-    ]
-  },
-  {
-    version: "v1.4.2",
-    date: "26 Okt 2026",
-    title: "Performance & Cloud Sync Update",
-    items: [
-      "Fitur Manual Cloud Save di menu Pengaturan (simpan seluruh kartu & backpack langsung ke Supabase).",
-      "Battle particle cleanup (0 FX particles) to improve performance on low-end phones.",
-      "Perbaikan navigasi scroll pada halaman Pengaturan.",
-      "New Refresh Game UI button to reload display elements without a page refresh.",
-      "New Update Log button in the navigation header."
-    ]
-  },
-  {
-    version: "v1.4.1",
-    date: "26 Okt 2026",
-    title: "CrazyGames SDK & 7-Day Rewards",
-    items: [
-      "Integrasi resmi CrazyGames SDK v3 (Rewarded Ads dengan hadiah 2x Global Luck & Instant 100K Pack).",
-      "Sistem 7-Day Attendance Reward horizontal baru dengan Instant Roll Packs langsung ke Backpack.",
-      "BGM baru Cyberpunk Electronic Synthwave di Lobby dengan autoplay gesture unlock.",
-      "Dukungan multi-bahasa penuh (English & Bahasa Indonesia) dengan selector di Pengaturan."
-    ]
-  },
-  {
-    version: "v1.4.0",
-    date: "25 Okt 2026",
-    title: "Security & Leaderboard v2",
-    items: [
-      "Pembaruan Leaderboard v2 dengan podium visual Top 3 dan dossier profil publik.",
-      "Anti-cheat terpadu: DevTools Guard (0031) & RPC Guard Honeypot (0032).",
-      "World Boss damage kalkulasi nyata & perbaikan sinkronisasi cloud state."
+      "Awakened Weather anomalies have breached the timeline with three supreme god-tier base cards: Psychic Esper, Sun God, and Darkin Lord.",
+      "Comprehensive system overviews added for Weather Machine, Infinite Tower Core Spire, and World Boss Hazard Hub."
     ]
   }
 ];
 
+let _uplCurtainT = [];
+let _uplSeq = 0;
+function uplCurtainClear() {
+  for (const t of _uplCurtainT) clearTimeout(t);
+  _uplCurtainT = [];
+}
+
 function openChangelogModal(){
-  const b=document.getElementById("changelogBackdrop"), m=document.getElementById("changelogModal");
-  if(b){b.classList.add("show");b.style.display="block";b.onclick=closeChangelogModal;}
-  if(m){
-    m.classList.add("show");m.style.display="flex";
-    renderChangelogModal();
+  const b = document.getElementById("changelogBackdrop");
+  const m = document.getElementById("changelogModal");
+  const c = document.getElementById("updateLogCurtain");
+
+  uplCurtainClear();
+  renderChangelogModal();
+
+  if (c) {
+    const seq = ++_uplSeq;
+    c.className = "on smooth sweep";
+    _uplCurtainT.push(setTimeout(() => {
+      if (seq !== _uplSeq) return;
+      if (b) { b.classList.add("show"); b.style.display = "block"; b.onclick = closeChangelogModal; }
+      if (m) { m.classList.add("show"); m.style.display = "flex"; }
+      c.classList.add("revealed");
+    }, 420));
+    _uplCurtainT.push(setTimeout(() => {
+      if (seq !== _uplSeq) return;
+      c.className = "";
+    }, 1000));
+  } else {
+    if (b) { b.classList.add("show"); b.style.display = "block"; b.onclick = closeChangelogModal; }
+    if (m) { m.classList.add("show"); m.style.display = "flex"; }
   }
 }
+
 function closeChangelogModal(){
-  const b=document.getElementById("changelogBackdrop"), m=document.getElementById("changelogModal");
-  if(b){b.classList.remove("show");b.style.display="none";}
-  if(m){m.classList.remove("show");m.style.display="none";}
+  const b = document.getElementById("changelogBackdrop");
+  const m = document.getElementById("changelogModal");
+  const c = document.getElementById("updateLogCurtain");
+
+  uplCurtainClear();
+
+  if (c && m && m.classList.contains("show")) {
+    const seq = ++_uplSeq;
+    c.className = "on smooth sweep";
+    _uplCurtainT.push(setTimeout(() => {
+      if (seq !== _uplSeq) return;
+      if (b) { b.classList.remove("show"); b.style.display = "none"; }
+      if (m) { m.classList.remove("show"); m.style.display = "none"; }
+      c.classList.add("revealed");
+    }, 320));
+    _uplCurtainT.push(setTimeout(() => {
+      if (seq !== _uplSeq) return;
+      c.className = "";
+    }, 850));
+  } else {
+    if (b) { b.classList.remove("show"); b.style.display = "none"; }
+    if (m) { m.classList.remove("show"); m.style.display = "none"; }
+  }
 }
+
+function uplScrollTo(id) {
+  const el = document.getElementById(id);
+  const container = document.getElementById("changelogList");
+  if (el && container) {
+    container.scrollTo({ top: el.offsetTop - 14, behavior: "smooth" });
+  }
+  document.querySelectorAll(".upl-jump-item").forEach(item => item.classList.remove("active"));
+  if (window.event && window.event.currentTarget) {
+    window.event.currentTarget.classList.add("active");
+  }
+}
+window.uplScrollTo = uplScrollTo;
+
 function renderChangelogModal(){
   const list = document.getElementById("changelogList");
   if(!list) return;
-  const isEn = (typeof getLang === 'function' && getLang() === 'en') || 
-               (typeof state !== 'undefined' && state && state.lang === 'en') ||
-               (window.GameLang && typeof window.GameLang.get === "function" && window.GameLang.get() === "en");
-  list.innerHTML = GAME_CHANGELOGS.map(log => {
-    const title = (isEn && log.titleEn) ? log.titleEn : log.title;
-    const items = (isEn && log.itemsEn) ? log.itemsEn : log.items;
-    return `
-    <div style="background:linear-gradient(135deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02));border:1px solid rgba(102,252,241,0.2);border-radius:12px;padding:14px;box-shadow:0 4px 16px rgba(0,0,0,0.3)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:6px">
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="background:rgba(102,252,241,0.2);color:#66fcf1;font-size:11px;font-weight:900;padding:2px 8px;border-radius:6px;border:1px solid rgba(102,252,241,0.4)">${log.version}</span>
-          <span style="font-size:13px;font-weight:800;color:#fff">${title}</span>
-        </div>
-        <span style="font-size:11px;color:#a4b0be;font-weight:600">${log.date}</span>
+
+  const cardHtml = (charId, mut, shiny) => {
+    if (typeof hubCardHtml === "function") {
+      return hubCardHtml({ char: charId, mut: mut || "none", shiny: !!shiny });
+    }
+    return '';
+  };
+
+  const darkinCard = cardHtml("CH_DARKIN_LORD", "none", false);
+  const esperCard = cardHtml("CH_PSYCHIC_ESPER", "none", false);
+  const sunCard = cardHtml("CH_SUN_GOD", "none", false);
+
+  list.innerHTML = `
+    <!-- Top Hero Banner: Awakened God Protocol with 3 Base Cards Stacked -->
+    <div class="upl-hero-banner" id="sec-overview">
+      <div class="upl-hero-meta">
+        <span class="upl-tag-new">NEW UPDATE</span>
+        <h3 class="upl-hero-title">Awakened God Protocol</h3>
+        <p class="upl-hero-sub">
+          Awakened Weather anomalies have breached the timeline. Unleash three supreme god-tier base cards with devastating board-wide skills: <b>Psychic Esper</b>, <b>Sun God</b>, and <b>Darkin Lord</b>.
+        </p>
+        <span class="upl-hero-date">November 2026</span>
       </div>
-      <ul style="margin:0;padding-left:18px;color:#dcdde1;font-size:12px;line-height:1.6">
-        ${items.map(it => `<li>${it}</li>`).join("")}
-      </ul>
+
+      <!-- Overlapping Base Cards (Genuine In-Game Borders & Graphics) -->
+      <div class="upl-card-deck">
+        <div class="upl-deck-card-wrap pos-left" title="DARKIN LORD">
+          ${darkinCard}
+        </div>
+        <div class="upl-deck-card-wrap pos-mid" title="PSYCHIC ESPER">
+          ${esperCard}
+        </div>
+        <div class="upl-deck-card-wrap pos-right" title="SUN GOD">
+          ${sunCard}
+        </div>
+      </div>
     </div>
-  `}).join("");
+
+    <!-- Section: What's New -->
+    <div class="upl-section" id="sec-new">
+      <div class="upl-sec-head">
+        <h4 class="upl-sec-title">What's New</h4>
+        <span class="upl-sec-badge">FEATURED RELEASE</span>
+      </div>
+
+      <div class="upl-whats-new-card">
+        <div class="upl-wn-avatar">
+          <img src="assets/cards/art/psychic-esper.webp" alt="Psychic Esper">
+        </div>
+        <div class="upl-wn-info">
+          <span class="upl-wn-badge">NEW ANOMALY</span>
+          <h5 class="upl-wn-title">Awakened God Protocol Release</h5>
+          <p class="upl-wn-desc">
+            The seal has broken under Awakened weather conditions. Fight and roll for 3 new supreme entities from the gacha shrine while Awakened Weather is active. Beat World Bosses and climb the Infinite Tower Spire to gather luck potions and unlock their devastating potential.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section: New Cards -->
+    <div class="upl-section" id="sec-featured">
+      <div class="upl-sec-head">
+        <h4 class="upl-sec-title">New Cards</h4>
+        <span class="upl-sec-badge">AWAKENED WEATHER EXCLUSIVES</span>
+      </div>
+
+      <div class="upl-feat-grid">
+        <!-- 1. Psychic Esper -->
+        <div class="upl-feat-card">
+          <div class="upl-fc-top">
+            <div class="upl-fc-basecard">
+              ${esperCard}
+            </div>
+            <div class="upl-fc-info">
+              <span class="upl-fc-tag">Supreme Esper &middot; Base</span>
+              <h5 class="upl-fc-title">Psychic Esper</h5>
+              <div class="upl-fc-skill">Passive: PSYCHIC BARRAGE</div>
+              <p class="upl-fc-desc">
+                Hurls 5 psychic boulders dealing 190% DMG across random enemies including bench slots. Consecutive hits add +10% DMG per rock. Upon first defeat, resurrects with full HP and fires 10 boulders on every attack.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Sun God -->
+        <div class="upl-feat-card">
+          <div class="upl-fc-top">
+            <div class="upl-fc-basecard">
+              ${sunCard}
+            </div>
+            <div class="upl-fc-info">
+              <span class="upl-fc-tag">Sun Deity &middot; Base</span>
+              <h5 class="upl-fc-title">Sun God</h5>
+              <div class="upl-fc-skill">Passive: RUBBER FIELD &amp; BAJRANG GUN</div>
+              <p class="upl-fc-desc">
+                Reduces incoming damage by 50% &amp; reflects 50% damage back while inflicting DIZZY (+20% DMG taken, stacks up to 9 turns). Unleashes Bajrang Gun on first turn (260% pierce DMG + 1-turn stun), shockwaving entire enemy bench for 90% ATK.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Darkin Lord -->
+        <div class="upl-feat-card">
+          <div class="upl-fc-top">
+            <div class="upl-fc-basecard">
+              ${darkinCard}
+            </div>
+            <div class="upl-fc-info">
+              <span class="upl-fc-tag">Darkin Blade &middot; Base</span>
+              <h5 class="upl-fc-title">Darkin Lord</h5>
+              <div class="upl-fc-skill">Passive: THE WORLD ENDER</div>
+              <p class="upl-fc-desc">
+                Executes a 3-stage attack cycle: Strike 1 deals 150% DMG, Strike 2 deals 40% DMG to all foes and bench slots, Strike 3 pierces frontline and backline for 80% DMG. Heals 30% of all damage dealt. Revives with 40% damage reduction and increased healing.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Core Systems Section -->
+    <div class="upl-section" id="sec-systems">
+      <div class="upl-sec-head">
+        <h4 class="upl-sec-title">Core Systems</h4>
+        <span class="upl-sec-badge">TACTICAL INFRASTRUCTURE</span>
+      </div>
+
+      <div class="upl-sys-grid">
+        <!-- Weather Machine & Global Luck -->
+        <div class="upl-sys-card">
+          <div class="upl-sys-h">
+            <span class="upl-sys-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+              Weather Machine &amp; Luck
+            </span>
+            <span class="upl-sys-status">ACTIVE</span>
+          </div>
+          <p class="upl-sys-desc">
+            Atmospheric shifts unlock limited-time god-tier character pools in gacha rolls and empower entire party stats.
+          </p>
+          <ul class="upl-sys-bullets">
+            <li><b>Awakened Weather:</b> Unlocks Psychic Esper, Sun God, and Darkin Lord.</li>
+            <li><b>Global Luck Shrine:</b> Stackable server-wide luck boosters with cinematic activation.</li>
+            <li><b>Potion Matrix:</b> Craft and activate tactical luck flasks directly from the lobby dock.</li>
+          </ul>
+        </div>
+
+        <!-- Tower INF (Core Spire) -->
+        <div class="upl-sys-card">
+          <div class="upl-sys-h">
+            <span class="upl-sys-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+              Infinite Tower (Core Spire)
+            </span>
+            <span class="upl-sys-status">ENDLESS</span>
+          </div>
+          <p class="upl-sys-desc">
+            Climb the endless spire against scaling enemy loadouts to claim massive coin bounties and INF shop tokens.
+          </p>
+          <ul class="upl-sys-bullets">
+            <li><b>Infinite Floors:</b> Face dynamic AI teams with randomized passives and trait counters.</li>
+            <li><b>INF Armory:</b> Exchange tower tokens for exclusive boss cards, pets, and artifacts.</li>
+            <li><b>Speed 3× Integration:</b> High-speed auto-combat support with Speed Pass authorization.</li>
+          </ul>
+        </div>
+
+        <!-- World Boss Raid -->
+        <div class="upl-sys-card">
+          <div class="upl-sys-h">
+            <span class="upl-sys-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24M14.83 9.17l4.24-4.24M14.83 14.83l4.24 4.24M9.17 14.83l-4.24 4.24"/></svg>
+              World Boss Hazard Hub
+            </span>
+            <span class="upl-sys-status">COLLABORATIVE</span>
+          </div>
+          <p class="upl-sys-desc">
+            Global server raids against cataclysmic apex behemoths with real server-verified damage calculations.
+          </p>
+          <ul class="upl-sys-bullets">
+            <li><b>Dual Bosses:</b> Challenge Eternal Dragon and Shadow King across dedicated HP pools.</li>
+            <li><b>7-Tier Milestones:</b> Claim daily damage milestone rewards directly to your inventory.</li>
+            <li><b>Integrated Armory:</b> Spend raid emblems on EX character unlocks and striker upgrades.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Changes Section -->
+    <div class="upl-section" id="sec-changes">
+      <div class="upl-sec-head">
+        <h4 class="upl-sec-title">Changes</h4>
+        <span class="upl-sec-badge">SYSTEM PATCH</span>
+      </div>
+
+      <div class="upl-patch-box">
+        <div class="upl-pb-head">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="upl-pb-v">v1.5.0</span>
+            <span class="upl-pb-title">Awakened God Protocol</span>
+          </div>
+          <span class="upl-pb-date">November 2026</span>
+        </div>
+        <ul class="upl-pb-list">
+          <li>Rebuilt Update Log interface to match reference layout: left purple title ribbon, red circular close button, 2-column sidebar, and rich base card showcase.</li>
+          <li>Purged all legacy changelog clutter; now strictly displaying the current major release.</li>
+          <li>Detailed breakdowns added for Weather Machine, Infinite Tower Core Spire, and World Boss Hazard Hub.</li>
+        </ul>
+      </div>
+    </div>
+  `;
 }
+
 window.openChangelogModal = openChangelogModal;
 window.closeChangelogModal = closeChangelogModal;
 function boot(){

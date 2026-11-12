@@ -1590,7 +1590,6 @@ function renderTitleCrownHtml(titleName, variantCls){
   </div>`;
 }
 window.renderTitleCrownHtml = renderTitleCrownHtml;
-
 function hubCardHtml(eq,idAttr,showHideBtn){
   if(!eq||!eq.char||!CARDS[eq.char]) return `<div class="hub-center"${idAttr||''}><div class="hc-info"><div class="hc-name">No cards yet</div></div></div>`;
   const tier=CARDS[eq.char].tier;
@@ -1620,6 +1619,7 @@ function hubCardHtml(eq,idAttr,showHideBtn){
         ${hideBtn}
     </div>`;
 }
+window.hubCardHtml = hubCardHtml;
 /* Loadout kiri kartu: kolom vertikal [ARTEFAK 1][ARTEFAK 2][PET]. Klik → Backpack (tab ARTEFAK/PET). */
 function hubLoadoutHtml(){
   const artSvg = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>`;
