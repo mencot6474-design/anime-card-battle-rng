@@ -2626,7 +2626,6 @@ function bpxDossierItem(d){
         +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>'
         +'<span>USE ALL ('+fmt(cap)+'× · '+fmt(totalAllPulls)+' PULLS)</span></button>'
       :'')
-    +(d.isPack&&d.kind!=='intan'?'<button type="button" class="bpn-btn bpn-btn-sub" onclick="bpxOpenItemPop(\''+d.kind+'\')">MORE BATCH OPTIONS</button>':'')
     +'</div></div>'
     +'<div class="bpn-det-foot">Every use is validated against your saved balance.</div>';
 }
@@ -3035,6 +3034,8 @@ function renderBpItems(){
 function bpItemPop(kind){
   bpItemPopClose();
   const d=bpItemDef(kind); if(!d)return;
+  /* Pack instan tidak lagi menggunakan dialog popup terpisah, semua kontrol ada di Backpack Dossier */
+  if(d.isPack)return;
   const isGacha=(kind==='potion'||kind==='mythic');
   const isRollPack=kind.startsWith('r');
   const odds=isGacha?weatherOddsHTML():'';

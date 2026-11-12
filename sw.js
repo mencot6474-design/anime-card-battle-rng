@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v622-useAllInstantPacks';
+const CACHE_NAME = 'anime-card-battle-v623-removeBatchOptionsPop';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

@@ -468,9 +468,6 @@ html.m-portrait #backpackPanel.open,
 #backpackPanel .bpn-btn.bpn-btn-useall svg{
   fill:currentColor; stroke:none;
 }
-#backpackPanel .bpn-btn.bpn-btn-sub{
-  font-size:7px; color:rgba(245,245,245,.6);
-}
 #backpackPanel .bpn-step{
   flex:none; width:44px; height:44px; display:grid; place-items:center;
   background:#0b0b0b; color:var(--bn-paper);
