@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v616-fixWeatherParticleScale';
+const CACHE_NAME = 'anime-card-battle-v617-fixWorldBossCurtainExit';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

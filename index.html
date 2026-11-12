@@ -30,7 +30,7 @@
 <script src="js/crazygames.js?v=v2-sdkReadyGate"></script>
 <link rel="stylesheet" href="css/style.css?v=v399-towerWebp">
 <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Orbitron:wght@500;600;700;800;900&family=Rajdhani:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/world-boss.css?v=v283-wbCurtainFix">
+<link rel="stylesheet" href="css/world-boss.css?v=v284-wbCurtainFix">
 <link rel="stylesheet" href="css/sl-system.css?v=v391-coreSpireHub">
 <link rel="stylesheet" href="css/story-carousel.css?v=v354-storyCurtainZ">
 <link rel="stylesheet" href="css/lobby-prototype.css?v=v400-nhLobbyDockAutoFix">
@@ -60,7 +60,7 @@
   window.TRAKTEER_SHOP_URL = "";
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=v616-fixWeatherParticleScale').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=v617-fixWorldBossCurtainExit').catch(() => {});
     });
   }
 </script>
@@ -1754,6 +1754,28 @@
   </div>
 </div>
 
+<!-- WORLD BOSS HAZARD CURTAIN TRANSITION -->
+<div id="wbHzCurtain" aria-hidden="true">
+  <div class="half top"></div>
+  <div class="half bot"></div>
+  <div class="tape tape-a"></div>
+  <div class="tape tape-b"></div>
+  <div class="flash"></div>
+  <div class="plate">
+    <div class="in">
+      <div class="krow">
+        <span class="dot"></span>
+        <span class="kick" id="wbHzKick">// SERVER-WIDE <b>RAID UPLINK</b></span>
+        <span class="serial" id="wbHzSerial">SERIAL 0x9E4A</span>
+      </div>
+      <div class="title"><span id="wbHzTitle">WORLD BOSS RAID</span></div>
+      <div class="sub" id="wbHzSub">10B SHARED HP POOL &middot; 3 DAILY ATTEMPTS PER BOSS</div>
+      <div class="bar"><i></i></div>
+      <div class="foot"><span>HZ-PROTOCOL</span><span id="wbHzFoot">SYNCHRONIZING TARGETS</span></div>
+    </div>
+  </div>
+</div>
+
 <div id="towerCurtain" aria-hidden="true">
   <div class="half top">
     <span class="edge"></span>
@@ -2639,12 +2661,12 @@
 <script src="js/shadow-king-fx.js?v=v5-skillFxRestore"></script>
 <script src="js/foe-passives.js?v=v63-english"></script>
 <script src="js/story-carousel.js?v=v324-eagerImgFix"></script>
-<script src="js/raid.js?v=v420-curtainSweepResetFix"></script>
+<script src="js/raid.js?v=v421-wbCurtainExitFix"></script>
 <script src="js/deck-modal.js?v=v9-hazardCardAssets"></script>
 <script src="js/skill-tree.js?v=v13-skIcons"></script>
 <script src="js/ranking.js?v=v15-ringWebp"></script>
 <script src="js/i18n.js?v=v398-smooth60fps"></script>
-<script src="js/boot.js?v=v161-removeActivePlayersBadge"></script>
+<script src="js/boot.js?v=v162-wbCurtainExitFix"></script>
 <script src="js/pwa.js?v=v156-install"></script>
 
 <!-- ====== TOP-UP GEMS MODAL ====== -->

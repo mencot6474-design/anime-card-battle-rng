@@ -360,7 +360,7 @@ function wbClearHz(forceResetClass){
   for(let i=0;i<wbHzTimers.length;i++)clearTimeout(wbHzTimers[i]);
   wbHzTimers=[];
   if(forceResetClass){
-    const hz=document.getElementById("wbCurtain");
+    const hz=document.getElementById("wbHzCurtain") || document.getElementById("wbCurtain");
     if(hz)hz.className="";
   }
 }
@@ -1060,13 +1060,14 @@ function wbExitToLobby(){
     raidView="hub";
     if(window.location.hash==="#/lobby"||window.location.hash===""||window.location.hash==="#/")render();
     else window.location.hash="#/lobby";
-  },540));
+  },560));
   wbHzTimers.push(setTimeout(()=>{
     hz.classList.add("revealed");
-  },760));
+  },780));
   wbHzTimers.push(setTimeout(()=>{
     hz.className="";
-  },1520));
+    _wbClosing=false;
+  },1560));
 }
 
 function wbLaunchRaid(){
