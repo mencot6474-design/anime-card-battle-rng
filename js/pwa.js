@@ -17,7 +17,12 @@
     return Array.prototype.slice.call(document.querySelectorAll("#pwaInstallBtn, #hubInstallBtn, .pwa-install-btn"));
   }
 
+  function isCrazyEnv() {
+    return typeof window.isCrazyGames === "function" && window.isCrazyGames();
+  }
+
   function showBtn(v) {
+    if (isCrazyEnv()) v = false;
     btns().forEach(function (b) { b.style.display = v ? "inline-flex" : "none"; });
   }
 
@@ -53,6 +58,7 @@
   /* Lobby me-render ulang tombol INSTALL, jadi sinkronkan visibility
    * whenever DOM berubah. */
   function sync() {
+    if (isCrazyEnv()) { showBtn(false); return; }
     if (!deferredPrompt) return;
     btns().forEach(function (b) { if (b.style.display === "none") b.style.display = "inline-flex"; });
   }

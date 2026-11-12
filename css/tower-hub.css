@@ -2158,22 +2158,24 @@ body.on-tower:has(.tw2-hub) main#app {
   .tw2-slashes { height: 26px; gap: 3px; }
   .tw2-slashes i { width: 4px; }
 
-  .tw2-panel { padding: 6px 10px 6px; border: 0; box-shadow: none; }
+  .tw2-panel { padding: 4px 10px 5px; border: 0; box-shadow: none; }
   .tw2-tape-line { display: none; }
   .tw2-body {
     display: grid;
     grid-template-columns: minmax(0, .94fr) minmax(0, 1.06fr);
-    gap: 10px;
+    grid-template-rows: minmax(0, 1fr);
+    gap: 8px;
     overflow: hidden;
-    height: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
   }
-  .tw2-col-main { justify-content: space-between; gap: 6px; min-height: 0; }
-  .tw2-col-rw { min-height: 0; gap: 5px; }
+  .tw2-col-main { justify-content: space-between; gap: 4px; min-height: 0; }
+  .tw2-col-rw { min-height: 0; gap: 4px; }
 
-  .tw2-hero { min-height: 118px; flex: 1 1 auto; padding: 5px 8px 6px; }
-  .tw2-hero-stage { min-height: 66px; }
-  .tw2-spire-core { width: 54px; height: 76px; }
-  .tw2-fcard { width: 42px; height: 60px; margin-left: -21px; margin-top: -30px; }
+  .tw2-hero { min-height: 76px; flex: 1 1 auto; padding: 4px 8px 5px; }
+  .tw2-hero-stage { min-height: 48px; }
+  .tw2-spire-core { width: 48px; height: 68px; }
+  .tw2-fcard { width: 38px; height: 54px; margin-left: -19px; margin-top: -27px; }
   .tw2-shell.is-entered .tw2-fcard.l3 { transform: translate3d(-112px, 4px, 0) rotate(-24deg) scale(.84); }
   .tw2-shell.is-entered .tw2-fcard.l2 { transform: translate3d(-78px, -1px, 0) rotate(-14deg) scale(.91); }
   .tw2-shell.is-entered .tw2-fcard.l1 { transform: translate3d(-46px, -4px, 0) rotate(-6deg) scale(.97); }
@@ -2181,31 +2183,31 @@ body.on-tower:has(.tw2-hub) main#app {
   .tw2-shell.is-entered .tw2-fcard.r2 { transform: translate3d(78px, -1px, 0) rotate(14deg) scale(.91); }
   .tw2-shell.is-entered .tw2-fcard.r3 { transform: translate3d(112px, 4px, 0) rotate(24deg) scale(.84); }
   .tw2-hchip { font-size: 6.5px; padding: 2px 6px; }
-  .tw2-hero-stat { padding: 3px 11px; }
-  .tw2-hero-stat-in { font-size: 10.5px; gap: 8px; }
+  .tw2-hero-stat { padding: 2px 10px; }
+  .tw2-hero-stat-in { font-size: 10px; gap: 8px; }
 
-  .tw2-brief { padding: 5px 8px; font-size: 10px; line-height: 1.28; text-align: left; }
-  .tw2-brief p:nth-child(n+3) { display: none; }
+  .tw2-brief { padding: 4px 7px; font-size: 9.5px; line-height: 1.22; text-align: left; }
+  .tw2-brief p:nth-child(n+2) { display: none; }
 
-  .tw2-actions { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+  .tw2-actions { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
   .tw2-act.primary { grid-column: 1 / -1; min-height: 44px; font-size: 11px; }
   .tw2-act { min-height: 44px; font-size: 9px; padding: 0 4px; gap: 4px; }
   .tw2-act small { display: none; }
 
-  .tw2-rw-head b { font-size: 10.5px; }
+  .tw2-rw-head b { font-size: 10px; }
   .tw2-rw-head .hint { display: none; }
   .tw2-rgrid {
     flex: 1 1 auto;
     min-height: 0;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     grid-template-rows: repeat(3, minmax(0, 1fr));
-    gap: 5px;
+    gap: 4px;
   }
-  .tw2-rtile { min-height: 0; padding: 4px; }
-  .tw2-rt-tag { font-size: 5.5px; padding: 1px 4px; }
-  .tw2-rt-art { height: 34px; }
-  .tw2-rt-art img, .tw2-rt-art svg { width: 32px; height: 32px; }
-  .tw2-rt-nm { font-size: 9px; }
+  .tw2-rtile { min-height: 0; padding: 2px 3px; gap: 1px; }
+  .tw2-rt-tag { font-size: 5.5px; padding: 0 3px; line-height: 1.25; }
+  .tw2-rt-art { height: 20px; }
+  .tw2-rt-art img, .tw2-rt-art svg { width: 18px; height: 18px; }
+  .tw2-rt-nm { font-size: 8px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 
   .tw2-tip, .tw2-tip.on-left { left: 10px; right: auto; bottom: 8px; width: 360px; }
   .tw2-tip-close { display: inline-flex; }
