@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v613-removeDevInspectors';
+const CACHE_NAME = 'anime-card-battle-v614-removeActivePlayersBadge';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
