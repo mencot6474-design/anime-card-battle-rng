@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v621-removeOperatorSearch';
+const CACHE_NAME = 'anime-card-battle-v622-useAllInstantPacks';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

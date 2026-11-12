@@ -2573,6 +2573,29 @@ function bpxDossierItem(d){
   if(bpxStep>cap)bpxStep=cap;
   const has=(d.cnt||0)>0;
   const cat=d.isPack?'SPECIAL ROLL PACK':(d.kind==='potion'?'WEATHER CATALYST':(d.kind.indexOf('luck')===0?'LUCK ENHANCER':'SPEED OVERCLOCK'));
+  const isRollPack=!!(d.isPack&&d.kind!=='intan');
+  const rollsPerPack=(typeof bpPackRollAmountOf==='function'?bpPackRollAmountOf(d.kind):0)||0;
+  const totalAllPulls=rollsPerPack*cap;
+
+  /* Preset amount chips for quick selection without fiddling with slider */
+  const presetPills=[1, 5, 10, 25, 50].filter(n=>n<=cap);
+  const showPills=has&&(cap>1);
+  let chipsHtml='';
+  if(showPills){
+    chipsHtml='<div class="bpn-chips-stepper">'
+      +presetPills.map(n=>'<button type="button" class="bpn-chip-step'+(bpxStep===n?' on':'')+'" onclick="bpxStepSet('+n+')">'+n+'×</button>').join('')
+      +'<button type="button" class="bpn-chip-step max'+(bpxStep===cap?' on':'')+'" onclick="bpxStepSet('+cap+')">MAX ('+fmt(cap)+')</button>'
+      +'</div>';
+  }
+
+  let packBanner='';
+  if(isRollPack&&has){
+    packBanner='<div class="bpn-pack-banner">'
+      +'<div class="bpn-pb-top"><span class="bpn-pb-tag">BATCH ROLL READY</span><span class="bpn-pb-cnt">×'+fmt(cap)+' PACKS</span></div>'
+      +'<div class="bpn-pb-stat"><b>'+fmt(totalAllPulls)+'</b> <span class="lbl">TOTAL CARDS IN STOCK</span></div>'
+      +'</div>';
+  }
+
   return '<div class="bpn-det-head"><span class="kick">// ITEM <b>DOSSIER</b></span>'
     +'<button type="button" class="bpn-det-x" onclick="bpxCloseDossier()" aria-label="Close dossier">'
     +'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div>'
@@ -2582,10 +2605,12 @@ function bpxDossierItem(d){
     +'<div class="bpn-det-chipwrap"><span class="bpn-det-chip">'+cat+'</span></div>'
     +'<p class="bpn-det-desc">'+(d.desc||'')+'</p>'
     +(d.active?'<p class="bpn-det-desc">'+d.active+'</p>':'')
+    +packBanner
     +'<div class="bpn-det-stats">'
     +'<div class="bpn-det-stat hot"><k>YOU OWN</k><v>'+fmt(d.cnt||0)+'×</v></div>'
-    +'<div class="bpn-det-stat"><k>AMOUNT</k><v>'+bpxStep+'</v></div>'
+    +'<div class="bpn-det-stat"><k>AMOUNT</k><v>'+bpxStep+(isRollPack?' ('+fmt(bpxStep*rollsPerPack)+' cards)':'')+'</v></div>'
     +'</div>'
+    +chipsHtml
     +'<div class="bpn-stepper">'
     +'<button type="button" class="bpn-step" onclick="bpxStepBy(-1)"'+(bpxStep<=1?' disabled':'')+' aria-label="Decrease amount">−</button>'
     +'<span class="bpn-range"><input type="range" min="1" max="'+cap+'" value="'+bpxStep+'" oninput="bpxStepSet(this.value)" aria-label="Amount"></span>'
@@ -2596,7 +2621,12 @@ function bpxDossierItem(d){
     +'<button type="button" class="bpn-btn pri" onclick="bpxUseSelected()"'+(has?'':' disabled')+'>'
     +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>'
     +'<span>'+bpxActionLabel(d)+'</span></button>'
-    +(d.isPack&&d.kind!=='intan'?'<button type="button" class="bpn-btn" onclick="bpxOpenItemPop(\''+d.kind+'\')">AMOUNT OPTIONS / USE ALL</button>':'')
+    +(isRollPack
+      ?'<button type="button" class="bpn-btn bpn-btn-useall" onclick="bpUseRollPack(\''+d.kind+'\','+rollsPerPack+','+cap+')"'+(has?'':' disabled')+'>'
+        +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>'
+        +'<span>USE ALL ('+fmt(cap)+'× · '+fmt(totalAllPulls)+' PULLS)</span></button>'
+      :'')
+    +(d.isPack&&d.kind!=='intan'?'<button type="button" class="bpn-btn bpn-btn-sub" onclick="bpxOpenItemPop(\''+d.kind+'\')">MORE BATCH OPTIONS</button>':'')
     +'</div></div>'
     +'<div class="bpn-det-foot">Every use is validated against your saved balance.</div>';
 }
@@ -3109,7 +3139,11 @@ function bpPackInfoHTML(cnt){
   const n = bpPackN;
   const packs = Math.min(n, Math.max(0, cnt || 0));
   const pulls = bpPackRollAmount * packs;
-  return `<div class="bpholo-packinfo">USE <b>${fmt(packs)}</b> PACKS · TOTAL <b>${fmt(pulls)}</b> PULLS</div>`;
+  const isAll = !!window.bpPackIsAll;
+  return `<div class="bpholo-packinfo ${isAll?'is-all':''}">
+    <div class="bpholo-packinfo-sub">${isAll ? 'MAX BATCH OVERDRIVE' : 'CONFIGURED AMOUNT'}</div>
+    <div class="bpholo-packinfo-main">USE <b>${fmt(packs)}</b> PACKS <span class="sep">·</span> TOTAL <b>${fmt(pulls)}</b> CARDS</div>
+  </div>`;
 }
 function bpSetPackN(n){
   const cnt = (typeof bpPackCnt === 'number') ? bpPackCnt : 0;
