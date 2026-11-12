@@ -4950,8 +4950,9 @@ function renderWeatherMachine(){
             '<div class="ts-ts"><span class="ts-ts-k">ACTIVE</span><span class="ts-ts-v" id="wmActiveTime">' + wmRemaining() + '</span></div>' +
           '</div>' +
         '</div>' +
-        '<button class="ts-x" id="wmShellClose" aria-label="Close weather machine" title="Close [ESC]">' +
-          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>' +
+        '<button class="ts-x ts-back-btn" id="wmShellClose" aria-label="Back to Lobby" title="Back to Lobby [ESC]">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>' +
+          '<span>BACK</span>' +
         '</button>' +
       '</header>' +
 

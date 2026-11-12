@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v609-cleanDiceNoPlaceholder';
+const CACHE_NAME = 'anime-card-battle-v612-curtainSweepResetFix';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

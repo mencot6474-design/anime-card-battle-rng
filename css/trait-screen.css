@@ -1680,8 +1680,9 @@ dialog.tr2-dialog .tgem .gem-cut { fill: #050505; fill-opacity: .38; }
   position: absolute;
   inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   padding: 12px 16px;
   min-width: 0;
   min-height: 0;
@@ -1703,7 +1704,7 @@ dialog.tr2-dialog .tgem .gem-cut { fill: #050505; fill-opacity: .38; }
   z-index: 10;
   width: min(1340px, 100%);
   height: 100%;
-  max-height: 850px;
+  max-height: 100%;
   min-width: 0;
   min-height: 0;
   display: flex;
@@ -1869,6 +1870,39 @@ dialog.tr2-dialog .tgem .gem-cut { fill: #050505; fill-opacity: .38; }
 #traitModal .tr2-hdr-btn:active { transform: skewX(-12deg) scale(.96); }
 .tr2-hdr-btn.close svg { width: 19px; height: 19px; display: block; }
 #traitModal .tr2-hdr-btn.close:hover { background: var(--atk); color: #fff; border-color: var(--atk); }
+#traitModal .tr2-hdr-btn.exit-back {
+  width: auto;
+  min-width: 86px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: 'Orbitron', var(--f-head, sans-serif);
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: .08em;
+  color: var(--haz);
+  border-color: var(--haz);
+  border-bottom: 3px solid var(--haz);
+}
+#traitModal .tr2-hdr-btn.exit-back svg {
+  width: 15px;
+  height: 15px;
+  display: block;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  flex-shrink: 0;
+}
+#traitModal .tr2-hdr-btn.exit-back span {
+  display: inline-block;
+  line-height: 1;
+}
+#traitModal .tr2-hdr-btn.exit-back:hover {
+  background: var(--haz);
+  color: #050505;
+  border-color: var(--haz);
+}
 
 .tr2-slashes {
   display: flex;
@@ -1882,8 +1916,11 @@ dialog.tr2-dialog .tgem .gem-cut { fill: #050505; fill-opacity: .38; }
 .tr2-slashes i:nth-child(3) { background: var(--paper); opacity: .32; height: 72%; }
 
 /* Main Dark WoB Panel */
-.tr2-panel {
-  position: relative;
+.tr2-panel,
+#traitModal .tr2-panel,
+html body.on-lobby #traitModal .tr2-panel {
+  position: relative !important;
+  inset: auto !important;
   z-index: 2;
   flex: 1 1 auto;
   min-height: 0;
@@ -3152,7 +3189,7 @@ dialog.tr2-dialog .tr2-dlg-btn.danger:hover { background: rgba(255, 77, 94, .32)
 
 /* =========================== RESPONSIVE V2 ============================ */
 @media (max-width: 899px) and (min-height: 521px), (orientation: portrait) and (max-width: 960px) {
-  #traitModal .tr2-stage { padding: 0; }
+  #traitModal .tr2-stage { padding: 0; align-items: stretch; justify-content: flex-start; }
   .tr2-shell { width: 100%; height: 100%; max-height: none; }
   .tr2-banner-bar {
     margin: 0;
@@ -3167,6 +3204,7 @@ dialog.tr2-dialog .tr2-dlg-btn.danger:hover { background: rgba(255, 77, 94, .32)
   .tr2-banner-mid { padding: 6px 10px; }
   .tr2-eyebrow, .tr2-banner-tags, .tr2-ribbon-slashes { display: none; }
   #traitModal .tr2-hdr-btn { transform: skewX(-8deg); width: 44px; height: 44px; box-shadow: none; }
+  #traitModal .tr2-hdr-btn.exit-back { width: auto; min-width: 72px; padding: 0 8px; font-size: 10px; }
   .tr2-hdr-btn > * { transform: skewX(8deg); }
   .tr2-slashes { height: 28px; }
   .tr2-panel { padding: 6px 8px 8px; border: 0; box-shadow: none; }
@@ -3294,7 +3332,7 @@ dialog.tr2-dialog .tr2-dlg-btn.danger:hover { background: rgba(255, 77, 94, .32)
 }
 
 @media (orientation: landscape) and (max-height: 520px) {
-  #traitModal .tr2-stage { padding: 0; }
+  #traitModal .tr2-stage { padding: 0; align-items: stretch; justify-content: flex-start; }
   .tr2-shell { width: 100%; height: 100%; max-height: none; }
   .tr2-banner-bar {
     margin: 0;
@@ -3310,6 +3348,7 @@ dialog.tr2-dialog .tr2-dlg-btn.danger:hover { background: rgba(255, 77, 94, .32)
   .tr2-title { font-size: 15.5px; }
   .tr2-eyebrow, .tr2-ribbon-slashes { display: none; }
   #traitModal .tr2-hdr-btn { width: 44px; height: 44px; transform: skewX(-10deg); box-shadow: none; }
+  #traitModal .tr2-hdr-btn.exit-back { width: auto; min-width: 70px; padding: 0 8px; font-size: 9.5px; }
   .tr2-hdr-btn > * { transform: skewX(10deg); }
   .tr2-slashes { height: 26px; gap: 3px; }
   .tr2-slashes i { width: 4px; }

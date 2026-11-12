@@ -59,6 +59,8 @@ function towerReward(f){const boss=towerIsBossFloor(f);return {coins:boss?(500+f
 let towerView="hub", towerRun=null;
 function stopTower(){
   towerLossAutoPending=false;
+  _twClosing=false;
+  _twClearCurtain(true);
   if(bt&&bt.tower){ if(bt.timer)clearTimeout(bt.timer); bt=null; }
   /* Run ditinggal (END / pindah menu) sebelum kalah: tetap cairkan roll yang sudah ditabung biar nggak hangus. */
   if(towerRun&&(towerRun.pendingRolls||0)>0){
@@ -121,7 +123,13 @@ function towerStartRun(){
   render();
 }
 let _twPrevRoute="", _twPrevView="", _twClosing=false, _twCurtainT=[];
-function _twClearCurtain(){ while(_twCurtainT.length)clearTimeout(_twCurtainT.pop()); }
+function _twClearCurtain(forceResetClass){
+  while(_twCurtainT.length)clearTimeout(_twCurtainT.pop());
+  if(forceResetClass){
+    const c=document.getElementById("towerCurtain");
+    if(c)c.className="";
+  }
+}
 function _twSetCurtainCopy(mode){
   const kick=document.getElementById("twHZKick"), title=document.getElementById("twHZTitle"),
         sub=document.getElementById("twHZSub"), foot=document.getElementById("twHZFoot"),
@@ -191,6 +199,7 @@ if(!window.__tw2RouteTrack){
       _twPrevRoute=r;
       _twPrevView="";
       _twClosing=false;
+      _twClearCurtain(true);
     }
   });
 }

@@ -27,6 +27,7 @@ if(!window.__wbRouteTrack){
     if(r!=="#/raid"){
       _wbPrevRoute=r;
       _wbClosing=false;
+      wbClearHz(true);
     }
   });
 }
@@ -355,9 +356,18 @@ function showWbRewardModal(res){
   requestAnimationFrame(()=>el.classList.add("in"));
 }
 
-function wbClearHz(){for(let i=0;i<wbHzTimers.length;i++)clearTimeout(wbHzTimers[i]);wbHzTimers=[];}
+function wbClearHz(forceResetClass){
+  for(let i=0;i<wbHzTimers.length;i++)clearTimeout(wbHzTimers[i]);
+  wbHzTimers=[];
+  if(forceResetClass){
+    const hz=document.getElementById("wbCurtain");
+    if(hz)hz.className="";
+  }
+}
 function stopRaid(){
   clearTimeout(wbAutoTimer);wbAutoTimer=null;
+  _wbClosing=false;
+  wbClearHz(true);
   if(raid){if(raid.timer)clearTimeout(raid.timer);raid=null;}
   if(typeof fightTimer!=="undefined"&&fightTimer){clearTimeout(fightTimer);fightTimer=null;}
   wbRunId=null;wbRunBoss=null;wbStarting=false;
@@ -2999,13 +3009,14 @@ function trBuildShell(){
         </div>
         <div class="tr2-banner-right">
           <button type="button" class="tr2-hdr-btn info" id="tr2GuideBtn" aria-label="Trait synthesis guide" title="How Traits Work [?]"><span>!</span></button>
-          <button type="button" class="tr2-hdr-btn close" id="tr2ExitBtn" aria-label="Close traits terminal" title="Close [ESC]">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+          <button type="button" class="tr2-hdr-btn exit-back" id="tr2ExitBtn" aria-label="Back to Lobby" title="Back to Lobby [ESC]">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <span>BACK</span>
           </button>
           <div class="tr2-slashes" aria-hidden="true"><i></i><i></i><i></i></div>
         </div>
       </header>
-      <main class="tr2-panel">
+      <div class="tr2-panel">
         <div class="tr2-tape-line" aria-hidden="true"></div>
         <div class="tr2-toolbar" id="tr2Toolbar">
           <div class="tr2-tablist" role="tablist" aria-label="Trait workspace tabs">
@@ -3117,7 +3128,7 @@ function trBuildShell(){
             <div class="tr2-idx-scroll"><div class="tr2-idx-grid" id="tr2IndexGrid"></div></div>
           </div>
         </section>
-      </main>
+      </div>
     </div>
     <div class="tr2-toast" id="tr2Toast" role="status" aria-live="polite"></div>
   </div>`;
@@ -3477,12 +3488,15 @@ function renderTrait(popAnim){
   const _m=document.getElementById("traitModal");
   if(_m&&!_m.classList.contains("show")&&!trForceRender)return;
   trSeedDiscovered();
+  if(!b.querySelector(".tr2-shell"))trBuildShell();
   if(!state||!Array.isArray(state.stacks)||!state.stacks.length){
-    b.innerHTML=`<div class="tr2-stage"><div class="tr2-shell"><div class="tr2-panel"><div class="tr2-empty-wrap"><h3>NO UNITS IN MATRIX</h3><p>Roll at least one card from the Summon terminal before synthesizing traits.</p><button type="button" class="tr2-mini-btn accent" id="trEmptyClose">CLOSE</button></div></div></div></div>`;
-    const ec=document.getElementById("trEmptyClose");if(ec)ec.onclick=closeTrait;
+    const p=b.querySelector(".tr2-panel");
+    if(p){
+      p.innerHTML=`<div class="tr2-empty-wrap"><h3>NO UNITS IN MATRIX</h3><p>Roll at least one card from the Summon terminal before synthesizing traits.</p><button type="button" class="tr2-mini-btn accent" id="trEmptyClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:6px;"><path d="M19 12H5M12 19l-7-7 7-7"/></svg><span>BACK TO LOBBY</span></button></div>`;
+      const ec=document.getElementById("trEmptyClose");if(ec)ec.onclick=closeTrait;
+    }
     return;
   }
-  if(!b.querySelector(".tr2-shell"))trBuildShell();
   trSetTab(tr2State.tab);
   trPaintAll(!!popAnim);
 }

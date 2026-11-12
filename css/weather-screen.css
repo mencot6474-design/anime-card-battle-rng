@@ -212,8 +212,56 @@ body:has(#weatherMachineModal.show) .lobby-tactical-hud {
 }
 #wmRailList .tsr-gem svg { width: 22px; height: 22px; }
 
+/* ===================== TACTICAL BACK BUTTON ===================== */
+#weatherMachineModal .ts-back-btn {
+  width: auto !important;
+  min-width: 96px;
+  height: 100%;
+  padding: 0 16px;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #0d0d11;
+  color: var(--ts-haz, #f3e600);
+  border: 0;
+  border-left: 1.5px solid rgba(245, 245, 245, .16);
+  border-bottom: 3px solid var(--ts-haz, #f3e600);
+  font-family: 'Orbitron', var(--ts-head, sans-serif);
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: .1em;
+  cursor: pointer;
+  transition: background-color .14s ease, color .14s ease, transform .12s ease;
+}
+#weatherMachineModal .ts-back-btn svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  flex-shrink: 0;
+}
+#weatherMachineModal .ts-back-btn span {
+  display: inline-block;
+  line-height: 1;
+}
+#weatherMachineModal .ts-back-btn:hover {
+  background: var(--ts-haz, #f3e600);
+  color: #050505;
+}
+#weatherMachineModal .ts-back-btn:active {
+  transform: scale(.96);
+}
+
 /* ============================ RESPONSIVE =============================== */
 @media (max-width: 719px) {
+  #weatherMachineModal .ts-back-btn {
+    min-width: 76px;
+    padding: 0 10px;
+    font-size: 10px;
+    gap: 5px;
+  }
   .wm-pity-mini { max-width: 320px; }
 }
 @media (max-width: 420px) {
@@ -236,6 +284,12 @@ body:has(#weatherMachineModal.show) .lobby-tactical-hud {
   .ts-status { margin-top: 6px; }
 }
 @media (orientation: landscape) and (max-height: 520px) {
+  #weatherMachineModal .ts-back-btn {
+    min-width: 70px;
+    padding: 0 8px;
+    font-size: 9.5px;
+    gap: 4px;
+  }
   .wm-pity-mini { margin-top: 5px; padding: 5px 8px 6px; gap: 3px; }
   .wm-pity-row { font-size: 5.5px; }
   .wm-pity-row b { font-size: 7.5px; }
