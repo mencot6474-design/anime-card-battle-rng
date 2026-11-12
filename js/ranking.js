@@ -82,7 +82,7 @@ function rkSub(r, board) {
    #1 = video loop (background hitam -> mix-blend-mode:screen), #2/#3 = ring PNG
    hasil keying dari asset user (background putih dibuang di canvas). */
 const RK_BD1 = "assets/ui/lb-top1.mp4";
-const RK_BD23 = "assets/ui/lb-ring.png";
+const RK_BD23 = "assets/ui/lb-ring.webp";
 const RK_UNIT = { world_boss: "DMG", world_boss_b: "DMG", inf_tower: "FLOOR", deck_power: "POWER", rarest_pull: "1 IN" };
 
 /* inf_tower ("F 187") dan rarest_pull ("1 in 2.4M") sudah membawa satuannya

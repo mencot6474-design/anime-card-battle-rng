@@ -203,12 +203,110 @@
 .nh-shell .dock-btn:hover .dock-ic { transform: none; filter: drop-shadow(0 0 6px rgba(243,230,0,.5)); }
 .nh-shell .dock-label { font-size: 10px; letter-spacing: .1em; }
 
-/* Center ROLL hex */
+/* Center ROLL hex & Cyber Hazard Dice */
 .nh-shell .dock-btn.mid-cta { overflow: visible; padding-top: 8px; justify-content: flex-start; }
 .nh-shell .dock-hex-chassis { width: 50px; height: 52px; margin-top: -24px; box-shadow: none; }
+.nh-shell .dock-hex-core { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+.nh-shell .roll-dice-svg {
+  width: 32px; height: 32px;
+  display: block;
+  transform-origin: 32px 32px;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.85));
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+.nh-shell .dock-btn.mid-cta:hover:not(.is-rolling) .roll-dice-svg {
+  transform: scale(1.12) rotate(-8deg);
+}
+
+/* 60fps compositor-only rolling continuous animation when Auto Roll is active */
+@keyframes hzDiceRolling {
+  0%   { transform: rotate(0deg) scale(1); }
+  20%  { transform: rotate(72deg) scale(0.92) translate3d(0, -2px, 0); }
+  40%  { transform: rotate(144deg) scale(1.06); }
+  60%  { transform: rotate(216deg) scale(0.92) translate3d(0, 2px, 0); }
+  80%  { transform: rotate(288deg) scale(1.04); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
 .nh-shell .dock-btn.mid-cta:hover .dock-hex-chassis { transform: translateY(-3px); box-shadow: none; }
 .nh-shell .dock-btn.mid-cta.is-rolling .dock-hex-chassis { background: #ef4444; box-shadow: none; }
+.nh-shell .dock-btn.mid-cta.is-rolling .roll-dice-svg,
+.nh-shell .dock-btn.dock-auto-btn.is-on ~ .dock-btn.mid-cta .roll-dice-svg,
+.nh-shell:has(.dock-auto-btn.is-on) .roll-dice-svg {
+  animation: hzDiceRolling 0.7s cubic-bezier(0.35, 0, 0.25, 1) infinite;
+}
 .nh-shell .cta-label { margin-top: 1px; }
+
+/* ------------------------- 2X ADS STREET BEACON (REPLACING DECORATIVE SUPPLY) ---------------- */
+@keyframes adsBeaconFloat {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(0, -5px, 0); }
+}
+@keyframes adsDotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.35; transform: scale(0.7); }
+}
+.street-ads-beacon,
+.street-crate {
+  position: absolute;
+  bottom: -38px; left: 41%;
+  width: 62px; height: 50px;
+  pointer-events: auto; cursor: pointer;
+  z-index: 19;
+  display: flex; flex-direction: column; align-items: center;
+  animation: adsBeaconFloat 2.4s infinite ease-in-out;
+  transition: transform 0.16s ease-out;
+}
+.street-ads-beacon:hover,
+.street-crate:hover {
+  transform: translate3d(0, -3px, 0) scale(1.08);
+}
+.ads-beacon-tag,
+.crate-tag {
+  background: var(--haz, #f3e600) !important;
+  color: #050507 !important;
+  font-family: 'JetBrains Mono', 'DIN Alternate', monospace;
+  font-size: 9px; font-weight: 900;
+  padding: 1px 6px; margin-bottom: 2px;
+  border: 1px solid #050507;
+  border-radius: 2px;
+  white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.85);
+}
+.ads-live-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 4px #ef4444;
+  animation: adsDotPulse 1.2s infinite ease-in-out;
+}
+.ads-beacon-core,
+.crate-box {
+  width: 48px; height: 32px;
+  background: linear-gradient(180deg, #181d29 0%, #0a0d14 100%) !important;
+  border: 1.5px solid var(--haz, #f3e600) !important;
+  border-radius: 5px;
+  position: relative;
+  display: flex; align-items: center; justify-content: center; gap: 3px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.95), 0 0 10px rgba(243,230,0,0.28) !important;
+}
+.ads-beacon-svg {
+  filter: drop-shadow(0 0 3px rgba(243,230,0,0.5));
+}
+.ads-beacon-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px; font-weight: 900;
+  color: var(--haz, #f3e600);
+  letter-spacing: 0.04em;
+}
+.ads-beacon-pad {
+  width: 34px; height: 5px;
+  background: radial-gradient(ellipse at 50% 50%, rgba(243,230,0,0.35) 0%, transparent 70%);
+  border-radius: 50%;
+  margin-top: 2px;
+}
 
 /* AUTO ROLL — idle */
 .nh-shell .dock-auto-btn .dock-ic-wrap { position: relative; }
@@ -322,6 +420,7 @@
   .nh-shell .dock-btn { height: 58px; }
   .nh-shell .dock-label { font-size: 8.5px; letter-spacing: .06em; }
   .nh-shell .dock-hex-chassis { width: 44px; height: 46px; margin-top: -20px; }
+  .nh-shell .roll-dice-svg { width: 28px; height: 28px; }
 }
 @media (max-width: 520px) {
   .nh-shell .res-pill.luck { display: none; }
@@ -335,11 +434,13 @@
   .nh-shell .res-pill { height: 28px; }
   .nh-shell .dock-btn { height: 48px; padding-top: 4px; }
   .nh-shell .dock-hex-chassis { width: 38px; height: 40px; margin-top: -14px; }
+  .nh-shell .roll-dice-svg { width: 24px; height: 24px; }
   .nh-shell .nav-dock { width: min(100%, 480px); }
 }
 @media (prefers-reduced-motion: reduce) {
   .nh-shell .dock-btn.dock-auto-btn.is-on::after,
   .nh-shell .dock-btn.dock-auto-btn.is-on .dock-ic-wrap::before,
   .nh-shell .dock-btn.dock-auto-btn.is-on .dock-auto-svg,
-  .nh-shell .dock-btn.dock-auto-btn.is-on .dock-ic-wrap::after { animation: none; }
+  .nh-shell .dock-btn.dock-auto-btn.is-on .dock-ic-wrap::after,
+  .nh-shell .roll-dice-svg { animation: none !important; }
 }

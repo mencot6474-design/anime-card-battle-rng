@@ -9574,7 +9574,7 @@ h1{font-size:clamp(26px,8vw,34px)}
 
 body.on-tower{
 
-  background: #080c13 url("../assets/bg/tower.jpg") center center / cover no-repeat fixed;
+  background: #080c13 url("../assets/bg/tower.webp") center center / cover no-repeat fixed;
 
 }
 
@@ -18073,7 +18073,7 @@ body.on-raid:has(.rd-page) .rd-pick-head{padding-right:110px!important;}
     radial-gradient(circle at 50% 35%, rgba(10,14,22,.45) 0%, rgba(8,12,19,.78) 75%, rgba(5,8,14,.92) 100%),
     linear-gradient(rgba(125,249,255,.015) 1px, transparent 1px) 0 0/28px 28px,
     linear-gradient(90deg, rgba(125,249,255,.015) 1px, transparent 1px) 0 0/28px 28px,
-    #080c13 url("../assets/bg/tower.jpg") center center / cover no-repeat fixed!important;
+    #080c13 url("../assets/bg/tower.webp") center center / cover no-repeat fixed!important;
   backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
 }
 
@@ -24351,7 +24351,7 @@ body.on-tower:not(:has(.cs-hub)):not(:has(.cs-shop)),
 html.on-tower-root:not(:has(.cs-hub)):not(:has(.cs-shop)),
 body.on-tower:not(:has(.cs-hub)):not(:has(.cs-shop)) main#app,
 body:has(.tactical-tower-page):not(:has(.cs-hub)):not(:has(.cs-shop)) main#app {
-  background: #080c13 url("../assets/bg/tower.jpg") center center / cover no-repeat fixed !important;
+  background: #080c13 url("../assets/bg/tower.webp") center center / cover no-repeat fixed !important;
   background-color: #07090e !important;
   color: #ffffff !important;
 }

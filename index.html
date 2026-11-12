@@ -28,14 +28,14 @@
 <!-- CrazyGames SDK v3 (Official HTML5 SDK) -->
 <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
 <script src="js/crazygames.js?v=v2-sdkReadyGate"></script>
-<link rel="stylesheet" href="css/style.css?v=v398-rebirthHazard5x">
+<link rel="stylesheet" href="css/style.css?v=v399-towerWebp">
 <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Orbitron:wght@500;600;700;800;900&family=Rajdhani:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/world-boss.css?v=v283-wbCurtainFix">
 <link rel="stylesheet" href="css/sl-system.css?v=v391-coreSpireHub">
 <link rel="stylesheet" href="css/story-carousel.css?v=v354-storyCurtainZ">
 <link rel="stylesheet" href="css/lobby-prototype.css?v=v400-nhLobbyDockAutoFix">
 <link rel="stylesheet" href="css/mobile-shell.css?v=v475-nhLobbyDockAutoFix">
-<link rel="stylesheet" href="css/nh-lobby-hud.css?v=v3-aaAIcons">
+<link rel="stylesheet" href="css/nh-lobby-hud.css?v=v4-diceAndAds">
 <link rel="stylesheet" href="css/deck-screen.css?v=v4-searchInput">
 <link rel="stylesheet" href="css/skill-tree.css?v=v24-skIconsDim">
 <link rel="stylesheet" href="css/backpack-hazard.css?v=v3-eagerImgFix">
@@ -60,7 +60,7 @@
   window.TRAKTEER_SHOP_URL = "";
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=v590-aaAIcons').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=v607-diceAndAdsWebp').catch(() => {});
     });
   }
 </script>
@@ -120,6 +120,29 @@
       <stop offset="30%" stop-color="#67e8f9"/>
       <stop offset="75%" stop-color="#06b6d4"/>
       <stop offset="100%" stop-color="#0e7490"/>
+    </radialGradient>
+
+    <!-- DICE GRADIENTS -->
+    <linearGradient id="hzDiceTopGrad" x1="10" y1="6" x2="54" y2="30" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3b4256"/>
+      <stop offset="45%" stop-color="#242938"/>
+      <stop offset="100%" stop-color="#141722"/>
+    </linearGradient>
+    <linearGradient id="hzDiceLeftGrad" x1="10" y1="18" x2="32" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1e2230"/>
+      <stop offset="50%" stop-color="#11141c"/>
+      <stop offset="100%" stop-color="#080a0e"/>
+    </linearGradient>
+    <linearGradient id="hzDiceRightGrad" x1="54" y1="18" x2="32" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#262c3e"/>
+      <stop offset="60%" stop-color="#161925"/>
+      <stop offset="100%" stop-color="#0b0e14"/>
+    </linearGradient>
+    <radialGradient id="hzDicePipGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="30%" stop-color="#fef08a"/>
+      <stop offset="70%" stop-color="#f3e600"/>
+      <stop offset="100%" stop-color="#ca8a04"/>
     </radialGradient>
 
     <!-- LEGACY COIN GRADIENT FALLBACK -->
@@ -201,6 +224,33 @@
     <polygon points="12 2 21 7 21 17 12 22 3 17 3 7" fill="#071a22" stroke="#22d3ee" stroke-width="1.6"/>
     <polygon points="12 5.5 17.5 8.8 17.5 15.2 12 18.5 6.5 15.2 6.5 8.8" fill="rgba(34,211,238,0.18)" stroke="#7df9ff" stroke-width="1"/>
     <path d="M12 8v8M9.5 10.5h5" stroke="#7df9ff" stroke-width="1.8" stroke-linecap="round"/>
+  </symbol>
+
+  <!-- 5. AAA HAZARD CYBER DICE (DADU) SYMBOL -->
+  <symbol id="diceSvgSymbol" viewBox="0 0 64 64">
+    <ellipse cx="32" cy="57" rx="22" ry="5.5" fill="rgba(0,0,0,0.65)"/>
+    <!-- Left Face -->
+    <polygon points="10,18 32,30 32,56 10,44" fill="url(#hzDiceLeftGrad)" stroke="#f3e600" stroke-width="1.8" stroke-linejoin="round"/>
+    <ellipse cx="21" cy="31" rx="2.8" ry="3.8" transform="rotate(15 21 31)" fill="url(#hzDicePipGlow)"/>
+    <ellipse cx="21" cy="31" rx="1.3" ry="1.8" transform="rotate(15 21 31)" fill="#ffffff"/>
+    <ellipse cx="21" cy="45" rx="2.8" ry="3.8" transform="rotate(15 21 45)" fill="url(#hzDicePipGlow)"/>
+    <ellipse cx="21" cy="45" rx="1.3" ry="1.8" transform="rotate(15 21 45)" fill="#ffffff"/>
+    <!-- Right Face -->
+    <polygon points="32,30 54,18 54,44 32,56" fill="url(#hzDiceRightGrad)" stroke="#f3e600" stroke-width="1.8" stroke-linejoin="round"/>
+    <ellipse cx="43" cy="28" rx="2.8" ry="3.8" transform="rotate(-15 43 28)" fill="url(#hzDicePipGlow)"/>
+    <ellipse cx="43" cy="28" rx="1.3" ry="1.8" transform="rotate(-15 43 28)" fill="#ffffff"/>
+    <ellipse cx="43" cy="39" rx="2.8" ry="3.8" transform="rotate(-15 43 39)" fill="url(#hzDicePipGlow)"/>
+    <ellipse cx="43" cy="39" rx="1.3" ry="1.8" transform="rotate(-15 43 39)" fill="#ffffff"/>
+    <ellipse cx="43" cy="50" rx="2.8" ry="3.8" transform="rotate(-15 43 50)" fill="url(#hzDicePipGlow)"/>
+    <ellipse cx="43" cy="50" rx="1.3" ry="1.8" transform="rotate(-15 43 50)" fill="#ffffff"/>
+    <!-- Top Face -->
+    <polygon points="32,6 54,18 32,30 10,18" fill="url(#hzDiceTopGrad)" stroke="#f3e600" stroke-width="1.8" stroke-linejoin="round"/>
+    <polygon points="32,11 41,18 32,25 23,18" fill="none" stroke="#f3e600" stroke-width="1" opacity="0.65"/>
+    <ellipse cx="32" cy="18" rx="4.5" ry="2.8" fill="url(#hzDicePipGlow)"/>
+    <ellipse cx="32" cy="17.6" rx="2.2" ry="1.4" fill="#ffffff"/>
+    <!-- Specular Edge Glints -->
+    <polyline points="10,18 32,6 54,18" fill="none" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" opacity="0.85"/>
+    <line x1="32" y1="6" x2="32" y2="30" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" opacity="0.45"/>
   </symbol>
 </svg>
 <div id="liveVeil" aria-hidden="true"></div>
@@ -2585,7 +2635,7 @@
 <script src="js/sheetfx.js?v=v354-smooth60fps"></script>
 <script src="js/battle.js?v=v271-hubExitToLobbyFix"></script>
 <script src="js/battle-hazard.js?v=v23-speed3xPass"></script>
-<script src="js/tower-lobby.js?v=v399-aaAIcons"></script>
+<script src="js/tower-lobby.js?v=v400-diceAndAdsWebp"></script>
 <script src="js/rebirth-hazard.js?v=v3-rebirthHazard5x"></script>
 <script src="js/shadow-king-fx.js?v=v5-skillFxRestore"></script>
 <script src="js/foe-passives.js?v=v63-english"></script>
@@ -2593,7 +2643,7 @@
 <script src="js/raid.js?v=v417-hubExitToLobbyFix"></script>
 <script src="js/deck-modal.js?v=v9-hazardCardAssets"></script>
 <script src="js/skill-tree.js?v=v13-skIcons"></script>
-<script src="js/ranking.js?v=v14-eagerImgFix"></script>
+<script src="js/ranking.js?v=v15-ringWebp"></script>
 <script src="js/i18n.js?v=v398-smooth60fps"></script>
 <script src="js/boot.js?v=v159-nhLobbyDockAutoFix"></script>
 <script src="js/pwa.js?v=v156-install"></script>

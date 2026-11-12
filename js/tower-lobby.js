@@ -379,7 +379,7 @@ function renderTowerHub(opts){
         <div class="tw2-body">
           <div class="tw2-col-main">
             <div class="tw2-hero">
-              <img class="tw2-hero-bgimg" src="assets/bg/tower.jpg" alt="" decoding="async">
+              <img class="tw2-hero-bgimg" src="assets/bg/tower.webp" alt="" decoding="async">
               <div class="tw2-hero-bg" aria-hidden="true"></div>
               <div class="tw2-hero-scan" aria-hidden="true"></div>
               <span class="tw2-hero-crn tl"></span><span class="tw2-hero-crn tr"></span>
@@ -3370,9 +3370,17 @@ function renderLobby() {
           <div class="street-pylon" style="left: 61%;"><div class="pylon-head"></div><div class="pylon-pole"></div><div class="pylon-base"></div><div class="pylon-cone"></div></div>
           <div class="street-pylon" style="left: 78%;"><div class="pylon-head"></div><div class="pylon-pole"></div><div class="pylon-base"></div><div class="pylon-cone"></div></div>
 
-          <div class="street-crate" id="streetCrate" onclick="claimStreetCrate(this)" title="Click to claim Street Supply Drop">
-            <span class="crate-tag">[!] SUPPLY</span>
-            <div class="crate-box"></div>
+          <div class="street-ads-beacon" id="streetAdsBeacon" onclick="if(typeof openWatchAdsModal==='function')openWatchAdsModal();" title="Watch Ads — Free 2× Luck &amp; Instant 100K Pack">
+            <div class="ads-beacon-tag"><span class="ads-live-dot"></span>2× ADS</div>
+            <div class="ads-beacon-core">
+              <svg class="ads-beacon-svg" viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
+                <rect x="2" y="4" width="20" height="15" rx="3" stroke="#f3e600" stroke-width="1.8" fill="rgba(10,12,18,0.85)"/>
+                <polygon points="10,8 16,11.5 10,15" fill="#f3e600"/>
+                <path d="M7 21h10" stroke="#f3e600" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              <span class="ads-beacon-sub">LUCK</span>
+            </div>
+            <div class="ads-beacon-pad"></div>
           </div>
         </div>
 
@@ -3382,7 +3390,7 @@ function renderLobby() {
             <div class="bldg-sign">
               <span class="bldg-title">TRAIT &amp; WEATHER</span>
             </div>
-            <img class="bldg-sprite" src="assets/images/buildings/front_b4_trait.png?v=7" alt="Trait &amp; Weather">
+            <img class="bldg-sprite" src="assets/images/buildings/front_b4_trait.webp?v=8" alt="Trait &amp; Weather">
             <div class="bldg-landing-pad"></div>
             <div class="bldg-ground-shadow"></div>
             <div class="bldg-ground-glow"></div>
@@ -3392,7 +3400,7 @@ function renderLobby() {
             <div class="bldg-sign">
               <span class="bldg-title">STORY GATE</span>
             </div>
-            <img class="bldg-sprite" src="assets/images/buildings/front_b1_story.png?v=7" alt="Story Gate">
+            <img class="bldg-sprite" src="assets/images/buildings/front_b1_story.webp?v=8" alt="Story Gate">
             <div class="bldg-landing-pad"></div>
             <div class="bldg-ground-shadow"></div>
             <div class="bldg-ground-glow"></div>
@@ -3402,7 +3410,7 @@ function renderLobby() {
             <div class="bldg-sign">
               <span class="bldg-title">TOWER INFINITE</span>
             </div>
-            <img class="bldg-sprite" src="assets/images/buildings/front_b2_tower.png?v=7" alt="Tower Infinite">
+            <img class="bldg-sprite" src="assets/images/buildings/front_b2_tower.webp?v=8" alt="Tower Infinite">
             <div class="bldg-landing-pad"></div>
             <div class="bldg-ground-shadow"></div>
             <div class="bldg-ground-glow"></div>
@@ -3412,7 +3420,7 @@ function renderLobby() {
             <div class="bldg-sign">
               <span class="bldg-title">WORLD BOSS</span>
             </div>
-            <img class="bldg-sprite" src="assets/images/buildings/front_b3_raid.png?v=7" alt="World Boss">
+            <img class="bldg-sprite" src="assets/images/buildings/front_b3_raid.webp?v=8" alt="World Boss">
             <div class="bldg-landing-pad"></div>
             <div class="bldg-ground-shadow"></div>
             <div class="bldg-ground-glow"></div>
@@ -3422,7 +3430,7 @@ function renderLobby() {
             <div class="bldg-sign">
               <span class="bldg-title">REBIRTH ALTAR</span>
             </div>
-            <img class="bldg-sprite" src="assets/images/buildings/front_b5_rebirth.png?v=7" alt="Rebirth Altar">
+            <img class="bldg-sprite" src="assets/images/buildings/front_b5_rebirth.webp?v=8" alt="Rebirth Altar">
             <div class="bldg-landing-pad"></div>
             <div class="bldg-ground-shadow"></div>
             <div class="bldg-ground-glow"></div>
@@ -3549,7 +3557,9 @@ function renderLobby() {
         <button class="dock-btn mid-cta${(typeof rollState !== 'undefined' && rollState && rollState.active) ? ' is-rolling' : ''}" id="nhDockRollBtn" type="button" onclick="var b=document.getElementById('rollBtn');if(b)b.click();else if(typeof startRollAnimation==='function')startRollAnimation();" title="Summon / Single Roll">
           <div class="dock-hex-chassis">
             <div class="dock-hex-core">
-              <img class="dock-ic hex-ic" src="assets/icons/dock/summon.webp" alt="" decoding="async">
+              <svg class="dock-ic hex-ic roll-dice-svg" viewBox="0 0 64 64" aria-hidden="true">
+                <use href="#diceSvgSymbol"></use>
+              </svg>
             </div>
           </div>
           <span class="dock-label cta-label" id="nhDockRollLbl">${(typeof rollState !== 'undefined' && rollState && rollState.active) ? 'STOP' : 'ROLL'}</span>
