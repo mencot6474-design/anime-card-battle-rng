@@ -42,7 +42,7 @@
 <link rel="stylesheet" href="css/trait-screen.css?v=v9-traitBackFix">
 <link rel="stylesheet" href="css/weather-screen.css?v=v3-wmBackBtn">
 <link rel="stylesheet" href="css/index-screen.css?v=v7-fixCiiSearchIc">
-<link rel="stylesheet" href="css/profile-screen.css?v=v26-rebirthLbl">
+<link rel="stylesheet" href="css/profile-screen.css?v=v27-removeOperatorSearch">
 <link rel="stylesheet" href="css/public-profile.css?v=v3-rkpOpen">
 <link rel="stylesheet" href="css/ranking-hazard.css?v=v1-rankHazard">
 <link rel="stylesheet" href="css/titles-hazard.css?v=v10-highZIndexSingleModal">
@@ -60,7 +60,7 @@
   window.TRAKTEER_SHOP_URL = "";
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=v620-removeBattleSupportCard').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=v621-removeOperatorSearch').catch(() => {});
     });
   }
 </script>
@@ -478,14 +478,11 @@
             <span>OPERATOR</span>
           </div>
         </div>
-        <!-- Center Titles & Search -->
+        <!-- Center Titles -->
         <div class="prf-banner-mid">
           <div class="prf-title-group">
             <h1 class="prf-title">PROFILE <em>// DOSSIER</em></h1>
             <span class="prf-eyebrow">// OPERATOR ARCHIVE</span>
-          </div>
-          <div class="prf-search-shell">
-            <input type="text" id="profSearchInput" placeholder="> SEARCH OPERATOR..." onkeydown="if(event.key==='Enter'){event.preventDefault();onSearchUser(this.value);}">
           </div>
         </div>
       </div>

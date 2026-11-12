@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v620-removeBattleSupportCard';
+const CACHE_NAME = 'anime-card-battle-v621-removeOperatorSearch';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
