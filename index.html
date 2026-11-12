@@ -60,7 +60,7 @@
   window.TRAKTEER_SHOP_URL = "";
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=v612-curtainSweepResetFix').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=v613-removeDevInspectors').catch(() => {});
     });
   }
 </script>
@@ -2646,18 +2646,6 @@
 <script src="js/i18n.js?v=v398-smooth60fps"></script>
 <script src="js/boot.js?v=v160-curtainSweepResetFix"></script>
 <script src="js/pwa.js?v=v156-install"></script>
-
-<!-- ========== CORET MODE (dev-only overlay anotasi) ==========
-     Alat buat user LINGKARIN bagian layout yang mau diubah. Cuma aktif di file:// / 127.0.0.1 / localhost.
-     Klik âœ CORET (kanan-atas) â†’ gambar freehand â†’ agen baca window.coretReport() buat tahu korekan
-     nyangkut di elemen DOM mana. Bukan bagian dari game; aman dihapus. -->
-<script src="js/coret.js?v=v2-english"></script>
-
-<!-- ========== IN-GAME CLICK-TO-SOURCE CODE INSPECTOR ==========
-     Tahan [ALT] atau klik badge [ðŸŽ¯ CODE INSPECT] di kiri bawah -> Klik elemen apapun di game
-     -> Kursor editor (Antigravity/Cursor/VSCode) langsung loncat ke baris kodenya!
-     -> Link markdown otomatis disalin ke clipboard untuk chat. -->
-<script src="js/code-inspector.js?v=v3-english"></script>
 
 <!-- ====== TOP-UP GEMS MODAL ====== -->
 <div id="topupModal" class="topup-backdrop"></div>

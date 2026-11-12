@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v612-curtainSweepResetFix';
+const CACHE_NAME = 'anime-card-battle-v613-removeDevInspectors';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
