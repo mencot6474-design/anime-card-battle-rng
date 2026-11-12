@@ -1051,6 +1051,7 @@ function startRollAnimation(luck, speedMultiplier = 1) {
        baru dipasang (spin indikator jadi tidak pernah tampil). */
     ra.setAttribute('aria-pressed', 'true');
   }
+  if (typeof window.syncNhRollDock === 'function') window.syncNhRollDock(true);
   if (rollState.hideTimer) { clearTimeout(rollState.hideTimer); rollState.hideTimer = null; }
 
   // Set initial delay based on speed multiplier
@@ -1146,6 +1147,7 @@ function stopRollAnimation() {
     ra.classList.remove('on');
     ra.setAttribute('aria-pressed', 'false');
   }
+  if (typeof window.syncNhRollDock === 'function') window.syncNhRollDock(false);
 }
 
 /* ===== REVEAL + ANOMALY SHOWCASE (port _tmp/proto_reveal_v1.html — TANPA partikel) =====
@@ -5115,37 +5117,7 @@ let _glWidgetTimer       = null;  // timer countdown widget
 /* ---- SVG Icon Cyber Clover / Golden Star Luck Crest (bukan air) ---- */
 function globalLuckFountainSvg(sz) {
   sz = sz || 30;
-  return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-    '<defs>' +
-      '<radialGradient id="glGlowGrad" cx="50%" cy="50%" r="50%">' +
-        '<stop offset="0%" stop-color="#ffd700" stop-opacity="0.55"/>' +
-        '<stop offset="60%" stop-color="#10b981" stop-opacity="0.22"/>' +
-        '<stop offset="100%" stop-color="#10b981" stop-opacity="0"/>' +
-      '</radialGradient>' +
-      '<linearGradient id="glLeafGrad" x1="6" y1="6" x2="30" y2="30" gradientUnits="userSpaceOnUse">' +
-        '<stop offset="0%" stop-color="#fde047"/>' +
-        '<stop offset="45%" stop-color="#34d399"/>' +
-        '<stop offset="100%" stop-color="#059669"/>' +
-      '</linearGradient>' +
-      '<linearGradient id="glGoldRim" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">' +
-        '<stop offset="0%" stop-color="#fffbeb"/>' +
-        '<stop offset="50%" stop-color="#ffd700"/>' +
-        '<stop offset="100%" stop-color="#f59e0b"/>' +
-      '</linearGradient>' +
-    '</defs>' +
-    '<circle cx="18" cy="18" r="16" fill="url(#glGlowGrad)"/>' +
-    '<polygon points="18,2.5 31.5,10.2 31.5,25.8 18,33.5 4.5,25.8 4.5,10.2" stroke="url(#glGoldRim)" stroke-width="1.2" stroke-opacity="0.55" fill="rgba(6,78,59,0.35)"/>' +
-    '<path d="M18 16.5 C15 11.5 10.5 8.5 13 6 C15 4 17.5 6 18 8.5 C18.5 6 21 4 23 6 C25.5 8.5 21 11.5 18 16.5 Z" fill="url(#glLeafGrad)" stroke="url(#glGoldRim)" stroke-width="0.9"/>' +
-    '<path d="M18 19.5 C15 24.5 10.5 27.5 13 30 C15 32 17.5 30 18 27.5 C18.5 30 21 32 23 30 C25.5 27.5 21 24.5 18 19.5 Z" fill="url(#glLeafGrad)" stroke="url(#glGoldRim)" stroke-width="0.9"/>' +
-    '<path d="M16.5 18 C11.5 15 8.5 10.5 6 13 C4 15 6 17.5 8.5 18 C6 18.5 4 21 6 23 C8.5 25.5 11.5 21 16.5 18 Z" fill="url(#glLeafGrad)" stroke="url(#glGoldRim)" stroke-width="0.9"/>' +
-    '<path d="M19.5 18 C24.5 15 27.5 10.5 30 13 C32 15 30 17.5 27.5 18 C30 18.5 32 21 30 23 C27.5 25.5 24.5 21 19.5 18 Z" fill="url(#glLeafGrad)" stroke="url(#glGoldRim)" stroke-width="0.9"/>' +
-    '<path d="M18 12.5 L19.4 16.6 L23.5 18 L19.4 19.4 L18 23.5 L16.6 19.4 L12.5 18 L16.6 16.6 Z" fill="url(#glGoldRim)"/>' +
-    '<circle cx="18" cy="18" r="1.8" fill="#ffffff"/>' +
-    '<circle cx="9" cy="8.5" r="1" fill="#fde047" opacity=".9"/>' +
-    '<circle cx="27.5" cy="9.5" r="1.1" fill="#fde047" opacity=".9"/>' +
-    '<circle cx="8.5" cy="27" r="0.9" fill="#34d399" opacity=".85"/>' +
-    '<circle cx="27" cy="27.5" r="1" fill="#fde047" opacity=".85"/>' +
-    '</svg>';
+  return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 32 32" fill="none" aria-hidden="true"><use href="#globalLuckSvgSymbol"/></svg>';
 }
 
 /* ---- Fetch dari Supabase ---- */

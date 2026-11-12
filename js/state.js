@@ -1107,6 +1107,7 @@ function battleLive(){
 }
 // Button footer kiri = menu (ikon hamburger statis di index.html).
 function renderShell(){
+  if(!state) return;
   try { syncBgmState(); } catch (e) {}
   const cv=document.getElementById("coinVal");if(cv)cv.textContent=fmt(state.coins);
   const gv=document.getElementById("gemVal");if(gv)gv.textContent=fmt(state.premiumGems||0);

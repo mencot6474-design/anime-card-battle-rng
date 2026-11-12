@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none">
+  <defs>
+    <linearGradient id="hzGlRingStandalone" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7dd3fc"/>
+      <stop offset="30%" stop-color="#fef08a"/>
+      <stop offset="65%" stop-color="#f3e600"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <radialGradient id="hzGlGoldLeafStandalone" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="30%" stop-color="#fef08a"/>
+      <stop offset="75%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </radialGradient>
+    <radialGradient id="hzGlCyanLeafStandalone" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="30%" stop-color="#67e8f9"/>
+      <stop offset="75%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#0e7490"/>
+    </radialGradient>
+  </defs>
+  <path d="M16 1 L16 31 M1 16 L31 16 M5.5 5.5 L26.5 26.5 M5.5 26.5 L26.5 5.5" 
+        stroke="#38bdf8" stroke-width="0.75" stroke-dasharray="1.5 2" opacity="0.75"/>
+  <ellipse cx="16" cy="16" rx="14.4" ry="5.6" transform="rotate(-30 16 16)" 
+           fill="none" stroke="url(#hzGlRingStandalone)" stroke-width="1.5" stroke-dasharray="7 2 2 2"/>
+  <ellipse cx="16" cy="16" rx="14.4" ry="5.6" transform="rotate(30 16 16)" 
+           fill="none" stroke="#38bdf8" stroke-width="1.2" opacity="0.9"/>
+  <circle cx="4" cy="9" r="2.2" fill="#f3e600" stroke="#05131f" stroke-width="0.6"/>
+  <circle cx="4" cy="9" r="1" fill="#ffffff"/>
+  <circle cx="28" cy="23" r="2.2" fill="#38bdf8" stroke="#05131f" stroke-width="0.6"/>
+  <circle cx="28" cy="23" r="1" fill="#ffffff"/>
+  <circle cx="28" cy="9" r="1.8" fill="#f3e600" stroke="#05131f" stroke-width="0.5"/>
+  <circle cx="4" cy="23" r="1.8" fill="#38bdf8" stroke="#05131f" stroke-width="0.5"/>
+  <path d="M16 16 C12.8 10.5 7.5 7 10.5 3 C12.8 0 15.5 1.8 16 4.2 C16.5 1.8 19.2 0 21.5 3 C24.5 7 19.2 10.5 16 16 Z" 
+        fill="url(#hzGlGoldLeafStandalone)" stroke="#92400e" stroke-width="0.6"/>
+  <path d="M16 16 C12.8 21.5 7.5 25 10.5 29 C12.8 32 15.5 30.2 16 27.8 C16.5 30.2 19.2 32 21.5 29 C24.5 25 19.2 21.5 16 16 Z" 
+        fill="url(#hzGlGoldLeafStandalone)" stroke="#92400e" stroke-width="0.6"/>
+  <path d="M16 16 C10.5 12.8 7 7.5 3 10.5 C0 12.8 1.8 15.5 4.2 16 C1.8 16.5 0 19.2 3 21.5 C7 24.5 10.5 19.2 16 16 Z" 
+        fill="url(#hzGlCyanLeafStandalone)" stroke="#0e7490" stroke-width="0.6"/>
+  <path d="M16 16 C21.5 12.8 25 7.5 29 10.5 C32 12.8 30.2 15.5 27.8 16 C30.2 16.5 32 19.2 29 21.5 C25 24.5 21.5 19.2 16 16 Z" 
+        fill="url(#hzGlCyanLeafStandalone)" stroke="#0e7490" stroke-width="0.6"/>
+  <polygon points="16,8.5 18,13.8 23.5,16 18,18.2 16,23.5 14,18.2 8.5,16 14,13.8" 
+           fill="#ffffff" stroke="#f3e600" stroke-width="0.8"/>
+  <circle cx="16" cy="16" r="2.6" fill="#fef08a"/>
+  <circle cx="16" cy="16" r="1.4" fill="#ffffff"/>
+</svg>

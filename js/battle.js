@@ -2931,7 +2931,7 @@ function leaveBattleToLobby(){
     try{ stopTower(); }catch(e){}
     state.battle=null; bt=null;
     try{ closeStory(); }catch(e){}
-    try{ render(); }catch(e){ console.error("leaveBattleToLobby render",e); }
+    if(location.hash!=="#/lobby"&&location.hash!==""&&location.hash!=="#/")location.hash="#/lobby";else{try{ render(); }catch(e){ console.error("leaveBattleToLobby render",e); }}
   };
   if(typeof window.hzCurtainOut==="function"){
     try{ window.hzCurtainOut(done); return; }catch(e){}

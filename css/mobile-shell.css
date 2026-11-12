@@ -70,11 +70,17 @@ html.m-portrait #topbar {
 }
 html.m-landscape #app,
 html.m-landscape .lobby-hub {
-  padding-left: calc(var(--nav-w) + var(--safe-left));
+  padding-left: 0;
 }
 html.m-landscape #topbar {
-  padding-left: calc(12px + var(--nav-w) + var(--safe-left));
+  padding-left: calc(12px + var(--safe-left));
   padding-top: calc(12px + var(--safe-top));
+}
+html.m-landscape .m-rail,
+nav.m-rail {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 /* ---- Nav component (portrait bottom tabbar) ----
@@ -2833,7 +2839,8 @@ body.on-settings .sett-wrap .ubox .out:hover {
 
 
 /* ---- kaki: buff (4 chip interaktif + Hazard popover) + dock ---- */
-.lobby-hub.l12.c12 .c12foot {
+.lobby-hub.l12.c12 .c12foot,
+.nh-shell .nh-bottom-hud {
   --ink:#050505;
   --ink2:#0a0a0b;
   --ink3:#121214;
@@ -2845,6 +2852,11 @@ body.on-settings .sett-wrap .ubox .out:hover {
   --haz:#f3e600;
   --luck:#6be08a;
   --spd:#5ac8fa;
+  --disp:'Orbitron','Chakra Petch',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --ui:'Plus Jakarta Sans',sans-serif;
+}
+.lobby-hub.l12.c12 .c12foot {
   position:relative; z-index:20; flex:none;
   display:flex; flex-direction:column; gap:6px; padding-bottom:2px;
 }
@@ -2931,9 +2943,10 @@ body.on-settings .sett-wrap .ubox .out:hover {
   from { opacity:0; transform:translateY(10px) scale(.985); }
   to { opacity:1; transform:none; }
 }
-.lobby-hub.l12.c12 #l12PotTray.hz-dock-pop {
+.lobby-hub.l12.c12 #l12PotTray.hz-dock-pop,
+.nh-shell #l12PotTray.hz-dock-pop {
   position:absolute; left:10px; right:10px; top:auto; bottom:calc(100% + 6px);
-  z-index:45; margin:0; padding:0; width:auto; max-width:none; border-radius:0; clip-path:none;
+  z-index:85; margin:0; padding:0; width:auto; max-width:none; border-radius:0; clip-path:none;
   display:none; flex-direction:column;
   max-height:min(520px, calc(100dvh - 180px));
   background:
@@ -2948,9 +2961,21 @@ body.on-settings .sett-wrap .ubox .out:hover {
   overflow:hidden;
   animation:c12PopRise .18s cubic-bezier(.2,.9,.25,1) both;
 }
-.lobby-hub.l12.c12 #l12PotTray.hz-dock-pop.open { display:flex; }
+.nh-shell #l12PotTray.hz-dock-pop {
+  position:fixed;
+  left:50%;
+  right:auto;
+  bottom:calc(124px + env(safe-area-inset-bottom, 0px));
+  transform:translateX(-50%);
+  width:min(95vw, 760px);
+  max-height:min(520px, calc(100dvh - 200px));
+  animation:none;
+}
+.lobby-hub.l12.c12 #l12PotTray.hz-dock-pop.open,
+.nh-shell #l12PotTray.hz-dock-pop.open { display:flex; }
 @media (prefers-reduced-motion:reduce) {
-  .lobby-hub.l12.c12 #l12PotTray.hz-dock-pop { animation:none !important; }
+  .lobby-hub.l12.c12 #l12PotTray.hz-dock-pop,
+  .nh-shell #l12PotTray.hz-dock-pop { animation:none !important; }
 }
 
 /* Sembunyikan lingkaran party & #pwaInstallBtn fixed saat panel buff terbuka */
@@ -3283,6 +3308,9 @@ html.m-portrait .lobby-hub.l12.c12 .c12buffs { grid-template-columns:repeat(2, m
 html.m-portrait .lobby-hub.l12.c12 #l12PotTray.hz-dock-pop {
   left:8px; right:8px; max-height:calc(100dvh - 256px);
 }
+html.m-portrait .nh-shell #l12PotTray.hz-dock-pop {
+  left:50%; right:auto; transform:translateX(-50%); width:calc(100vw - 16px); max-height:calc(100dvh - 230px);
+}
 html.m-portrait #l12PotTray .hzp-foot { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:6px; }
 html.m-portrait #l12PotTray .hzp-foot-meta { grid-column:1 / -1; min-width:0; }
 html.m-portrait #l12PotTray .hzp-foot .hzp-cta {
@@ -3491,6 +3519,7 @@ html body.on-lobby .lobby-hub.l12.c12 .c12dock #rollAutoBtn.tgl.on {
   html.m-landscape .lobby-hub.l12.c12 .l12-bchip-ic { width:21px; height:21px; }
   html.m-landscape .lobby-hub.l12.c12 .c12foot { gap:4px; }
   html.m-landscape .lobby-hub.l12.c12 #l12PotTray.hz-dock-pop { left:8px; right:8px; bottom:calc(100% + 4px); max-height:calc(100dvh - 134px); }
+  html.m-landscape .nh-shell #l12PotTray.hz-dock-pop { left:50%; right:auto; transform:translateX(-50%); width:min(96vw, 720px); bottom:96px; max-height:calc(100dvh - 110px); }
   html.m-landscape #l12PotTray .hzp-head { padding:5px 12px 5px 16px; }
   html.m-landscape #l12PotTray .hzp-title { font-size:13px; }
   html.m-landscape #l12PotTray .hzp-body { padding:8px 14px; gap:7px; }
@@ -3515,15 +3544,15 @@ html body.on-lobby .entry-tag { display:none !important; }
    .lobby-footer tinggal cangkang kosong (12-14px) yang mengambang di atas nav
    dan menutupi tepi bawah dock C. Di lobby C bar itu disembunyikan total;
    #footMenu (menu pop-up) tetap hidup karena dipanggil dari tab "More". */
-html body.on-lobby:has(.lobby-hub.l12.c12) .lobby-footer { display:none !important; }
+html body.on-lobby .lobby-footer { display:none !important; }
 /* #bfExit hanya untuk battle; sisa markup index.html membuatnya tampil di lobby. */
-html body.on-lobby:has(.lobby-hub.l12.c12) #bfExit { display:none !important; }
+html body.on-lobby #bfExit { display:none !important; }
 /* ---- #pwaInstallBtn: jangan menimpa judul hero ----
    css/lobby-prototype.css menambatkannya di kiri-atas (top:46px, left:4px) —
    di layout C posisi itu persis di atas judul "SHADOW HER..." dan menangkap
    klik di area judul. Dipindah ke kolom resource kanan-atas, di bawah pill
    GEM, tetap 44x44 dan tetap satu-satunya jalur install. */
-html body.on-lobby:has(.lobby-hub.l12.c12) #pwaInstallBtn {
+html body.on-lobby #pwaInstallBtn {
   position: fixed !important;
   top: calc(env(safe-area-inset-top, 0px) + 108px) !important;
   right: 8px !important; left: auto !important; bottom: auto !important;

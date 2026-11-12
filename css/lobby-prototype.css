@@ -7944,3 +7944,1597 @@ html #premiumModal .prem-buy-btn:disabled {
 
 
 
+
+
+/* =====================================================================
+   PORTED FROM _tmp/proto_lobby_nh_v1.html: CHIBI HAZARD STREET LOBBY
+   ===================================================================== */
+html body.on-lobby main#app,
+html body.on-lobby #app,
+html body.on-lobby main {
+  position: fixed !important;
+  inset: 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  width: 100dvw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  z-index: 10 !important;
+}
+html body.on-lobby header#topbar,
+html body.on-lobby #topbar,
+body:has(.nh-shell) header#topbar,
+body:has(.nh-shell) #topbar,
+html body.on-lobby .lobby-footer,
+body:has(.nh-shell) .lobby-footer,
+html body.on-lobby #activePlayersBadge,
+body:has(.nh-shell) #activePlayersBadge,
+html body.on-lobby .entry-tag,
+body:has(.nh-shell) .entry-tag,
+html body.on-lobby #bfExit,
+html body.on-lobby #pwaInstallBtn,
+body:has(.nh-shell) #bfExit,
+body:has(.nh-shell) #pwaInstallBtn {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+html body.on-lobby .m-tabbar,
+html body.on-lobby .m-rail,
+body:has(.nh-shell) .m-tabbar,
+body:has(.nh-shell) .m-rail,
+html.m-landscape .m-rail,
+nav.m-rail {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+html body.on-lobby {
+  overflow: hidden !important;
+  background: #050507 !important;
+}
+
+  /* ================= FULL-SCREEN VILLAGE SHELL ================= */
+  .nh-shell {
+    position: absolute !important;
+    inset: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100dvh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    --wx-color: #c084fc;
+    --wx-sky-top: #120824;
+    --wx-sky-mid: #1e1136;
+    background:
+      radial-gradient(ellipse at 50% 24%, var(--wx-sky-mid) 0%, var(--wx-sky-top) 48%, #050508 85%);
+    transition: background 0.6s ease;
+  }
+
+  /* ================= TOP HUD (HIGH-TECH ANIME RPG DOSSIER & CAPSULE CLUSTER) ================= */
+  .nh-top-hud {
+    position: relative; z-index: 30;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 12px 20px;
+    background: linear-gradient(180deg, rgba(5,5,7,0.96) 0%, rgba(5,5,7,0.6) 65%, transparent 100%);
+    pointer-events: none;
+  }
+  .nh-top-hud > * { pointer-events: auto; }
+
+  /* Operator Dossier Pill (Left) */
+  .op-pill {
+    display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(135deg, rgba(14, 18, 28, 0.95) 0%, rgba(6, 8, 14, 0.98) 100%);
+    border: 1.5px solid rgba(245, 245, 245, 0.22);
+    border-left: 4px solid var(--haz);
+    padding: 6px 14px 6px 8px;
+    cursor: pointer;
+    transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.18s, box-shadow 0.18s;
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.7);
+  }
+  .op-pill:hover {
+    transform: translateY(-2px);
+    border-color: var(--haz);
+    box-shadow: 0 6px 20px rgba(243, 230, 0, 0.25);
+  }
+  .op-ava {
+    position: relative; width: 46px; height: 46px;
+    border: 2px solid var(--haz); background: #0c0d12;
+    overflow: hidden; flex-shrink: 0;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(243, 230, 0, 0.3);
+  }
+  .op-ava img { width: 100%; height: 100%; object-fit: cover; }
+  .op-lv {
+    position: absolute; bottom: 0; right: 0;
+    background: var(--haz); color: #050505;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px; font-weight: 900; padding: 1px 4px;
+    border-top-left-radius: 3px;
+  }
+  .op-info { display: flex; flex-direction: column; gap: 2px; }
+  .op-row1 { display: flex; align-items: center; gap: 6px; }
+  .op-name {
+    font-family: 'Orbitron', 'Chakra Petch', sans-serif;
+    font-weight: 800; font-size: 13.5px; letter-spacing: 0.05em;
+    color: #fff;
+  }
+  .op-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px; font-weight: 800; letter-spacing: 0.04em;
+    color: var(--haz); background: rgba(243, 230, 0, 0.14);
+    border: 1px solid rgba(243, 230, 0, 0.45);
+    padding: 1px 6px; border-radius: 2px;
+  }
+  .op-pwr {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px; font-weight: 800;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .op-pwr-label { color: #a3a3a3; font-size: 10px; font-weight: 700; }
+  .op-pwr-val { color: var(--haz); font-size: 12.5px; letter-spacing: 0.02em; }
+  .op-xp-wrap {
+    display: flex; align-items: center; gap: 6px; margin-top: 2px;
+  }
+  .op-xpbar {
+    width: 95px; height: 4px; background: rgba(255,255,255,0.12);
+    border-radius: 2px; overflow: hidden;
+  }
+  .op-xpbar i {
+    display: block; height: 100%;
+    background: linear-gradient(90deg, var(--haz) 0%, #22d3ee 100%);
+  }
+  .op-xp-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8.5px; font-weight: 700; color: #737373;
+  }
+
+  /* Right Resource Cluster */
+  .res-cluster {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .res-pill {
+    display: flex; align-items: center; gap: 8px;
+    height: 40px; padding: 0 12px;
+    background: linear-gradient(135deg, rgba(14, 18, 28, 0.94) 0%, rgba(6, 8, 14, 0.98) 100%);
+    border: 1.5px solid rgba(245, 245, 245, 0.20);
+    clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+    cursor: pointer;
+    transition: transform 0.16s ease, border-color 0.16s, box-shadow 0.16s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+  }
+  .res-pill:hover {
+    transform: translateY(-2px);
+    border-color: var(--haz);
+    box-shadow: 0 6px 16px rgba(243, 230, 0, 0.2);
+  }
+  .res-ico {
+    display: flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; font-size: 16px; flex-shrink: 0;
+  }
+  .res-val-group {
+    display: flex; flex-direction: column; gap: 0px;
+  }
+  .res-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px; font-weight: 800; letter-spacing: 0.10em;
+    color: #a3a3a3; text-transform: uppercase;
+  }
+  .res-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; font-weight: 900; letter-spacing: 0.03em;
+    font-variant-numeric: tabular-nums;
+  }
+  .res-pill.luck { border-color: rgba(74, 222, 128, 0.35); }
+  .res-pill.luck .res-num { color: #4ade80; }
+  .res-pill.coin { border-color: rgba(251, 191, 36, 0.35); }
+  .res-pill.coin .res-num { color: #fbbf24; }
+  .res-pill.gem { border-color: rgba(34, 211, 238, 0.35); padding-right: 6px; }
+  .res-pill.gem .res-num { color: #22d3ee; }
+
+  /* Interactive Top-up Plus Button */
+  .res-plus-btn {
+    width: 26px; height: 26px;
+    background: var(--haz); color: #050505;
+    border: none; border-radius: 3px;
+    font-family: 'Orbitron', 'Chakra Petch', sans-serif;
+    font-size: 16px; font-weight: 900; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; margin-left: 2px;
+    box-shadow: 0 0 10px rgba(243, 230, 0, 0.45);
+    transition: transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.14s;
+  }
+  .res-plus-btn:hover {
+    transform: scale(1.14);
+    box-shadow: 0 0 16px var(--haz);
+  }
+  .res-plus-btn:active { transform: scale(0.92); }
+
+  /* Utility Quick Action Pills */
+  .hud-quick-btn {
+    position: relative;
+    height: 40px; padding: 0 11px;
+    background: linear-gradient(135deg, rgba(14, 18, 28, 0.94) 0%, rgba(6, 8, 14, 0.98) 100%);
+    border: 1.5px solid rgba(245, 245, 245, 0.20);
+    clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+    display: flex; align-items: center; gap: 6px;
+    color: #fff; cursor: pointer;
+    transition: transform 0.16s ease, border-color 0.16s;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 800;
+  }
+  .hud-quick-btn:hover {
+    transform: translateY(-2px); border-color: var(--haz);
+  }
+  .hud-quick-btn .hq-icon { font-size: 15px; }
+  .hud-quick-btn .hq-dot {
+    position: absolute; top: 4px; right: 4px;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #ef4444; box-shadow: 0 0 8px #ef4444;
+  }
+
+  /* ================= PANORAMIC CHIBI VILLAGE VIEWPORT ================= */
+  .village-viewport {
+    position: relative;
+    flex: 1; width: 100%;
+    overflow-x: auto; overflow-y: hidden;
+    cursor: grab;
+    scrollbar-width: none;
+  }
+  .village-viewport::-webkit-scrollbar { display: none; }
+  .village-viewport:active { cursor: grabbing; }
+
+  .village-world {
+    position: relative;
+    width: max(100%, 1320px);
+    height: 100%;
+    min-height: 460px;
+    overflow: hidden;
+  }
+
+  /* ================= IDEA 1 + 2: LAYERED CYBER-METROPOLIS + 15 DYNAMIC WEATHER SKYBOX ================= */
+  .sky-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(to right, rgba(245,245,245,0.025) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(245,245,245,0.025) 1px, transparent 1px);
+    background-size: 56px 56px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Dynamic Celestial Phenomenon Layer (Awakened Eye, Arcane Rune, Eclipse Corona, Galactic Planet, Aurora) */
+  @keyframes slowSpin {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to   { transform: translate(-50%, -50%) rotate(360deg); }
+  }
+  @keyframes auroraPulse {
+    0%, 100% { transform: translate3d(-50%, 0, 0) scaleY(1); opacity: 0.55; }
+    50%      { transform: translate3d(-48%, -6px, 0) scaleY(1.18); opacity: 0.85; }
+  }
+  .sky-celestial {
+    position: absolute;
+    left: 50%; top: 22%;
+    transform: translate(-50%, -50%);
+    width: 420px; height: 420px;
+    pointer-events: none;
+    z-index: 2;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cel-ring-outer {
+    position: absolute; width: 360px; height: 360px;
+    border-radius: 50%;
+    border: 1.5px dashed var(--wx-color, #f3e600);
+    opacity: 0.35;
+    animation: slowSpin 38s linear infinite;
+  }
+  .cel-ring-inner {
+    position: absolute; width: 240px; height: 240px;
+    border-radius: 50%;
+    border: 1px solid var(--wx-color, #f3e600);
+    box-shadow: 0 0 60px var(--wx-color, #f3e600), inset 0 0 40px var(--wx-color, #f3e600);
+    opacity: 0.28;
+    animation: slowSpin 24s linear infinite reverse;
+  }
+  .cel-core {
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--wx-color, #f3e600);
+    filter: drop-shadow(0 0 22px var(--wx-color, #f3e600));
+    opacity: 0.72;
+  }
+  /* Aurora Curtain Ribbon across upper sky */
+  .sky-aurora-veil {
+    position: absolute; top: 4%; left: 50%;
+    transform: translate3d(-50%, 0, 0);
+    width: 85%; height: 170px;
+    background:
+      radial-gradient(ellipse at 30% 50%, var(--wx-color, #5eead4) 0%, transparent 65%),
+      radial-gradient(ellipse at 70% 40%, var(--wx-color, #f3e600) 0%, transparent 65%);
+    opacity: 0.18;
+    filter: blur(22px);
+    pointer-events: none;
+    z-index: 2;
+    animation: auroraPulse 6s ease-in-out infinite;
+  }
+
+  /* Weather Atmospheric Mode Overlays */
+  .village-world.wx-mode-glitch::before {
+    content: "";
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.16) 0px, rgba(0, 0, 0, 0.16) 2px,
+      transparent 2px, transparent 4px
+    );
+    pointer-events: none;
+    z-index: 18;
+    opacity: 0.75;
+  }
+  .village-world.wx-mode-doodle .sky-grid {
+    background-image: radial-gradient(rgba(241, 245, 249, 0.12) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+  .village-world.wx-mode-thunderstorm .sky-grid {
+    background: radial-gradient(circle at 50% 12%, rgba(20, 28, 48, 0.9) 0%, transparent 68%);
+  }
+  .village-world.wx-mode-eclipse .sky-aurora-veil {
+    background: radial-gradient(ellipse at 50% 30%, rgba(244, 63, 94, 0.55) 0%, transparent 68%);
+    opacity: 0.65;
+  }
+  .village-world.wx-mode-sandstorm .sky-aurora-veil {
+    background: radial-gradient(ellipse at 50% 40%, rgba(245, 158, 11, 0.42) 0%, transparent 72%);
+    opacity: 0.55;
+  }
+
+  /* Searchlight Beams sweeping the night sky behind towers */
+  @keyframes beamSweepLeft {
+    0%, 100% { transform: rotate(-24deg); opacity: 0.22; }
+    50%      { transform: rotate(14deg); opacity: 0.42; }
+  }
+  @keyframes beamSweepRight {
+    0%, 100% { transform: rotate(22deg); opacity: 0.22; }
+    50%      { transform: rotate(-16deg); opacity: 0.42; }
+  }
+  .sky-searchlight {
+    position: absolute; bottom: 36%;
+    width: 90px; height: 460px;
+    background: linear-gradient(0deg, var(--wx-color, #f3e600) 0%, transparent 90%);
+    clip-path: polygon(45% 100%, 55% 100%, 100% 0%, 0% 0%);
+    transform-origin: bottom center;
+    pointer-events: none; z-index: 3;
+    opacity: 0.28;
+  }
+  .sky-searchlight.b1 { left: 24%; animation: beamSweepLeft 9s ease-in-out infinite; }
+  .sky-searchlight.b2 { right: 24%; animation: beamSweepRight 11s ease-in-out infinite; }
+
+  /* Layered Cyber-Metropolis Skyline Silhouette */
+  .city-skyline-far {
+    position: absolute; left: 0; right: 0; bottom: 35.5%;
+    height: 230px; z-index: 3;
+    pointer-events: none;
+    opacity: 0.85;
+  }
+  .city-skyline-far svg {
+    width: 100%; height: 100%; display: block;
+  }
+
+  /* Elevated Cyber-Monorail Bridge + Moving Hazard Train */
+  @keyframes monorailPass {
+    0%   { transform: translate3d(-320px, 0, 0); }
+    45%  { transform: translate3d(1650px, 0, 0); }
+    100% { transform: translate3d(1650px, 0, 0); }
+  }
+  .monorail-bridge {
+    position: absolute; left: 0; right: 0;
+    bottom: 48%; height: 18px;
+    z-index: 4; pointer-events: none;
+    border-top: 2px solid rgba(245,245,245,0.16);
+    border-bottom: 3px solid #090b12;
+    background: repeating-linear-gradient(
+      90deg,
+      rgba(15,18,28,0.9) 0px, rgba(15,18,28,0.9) 24px,
+      rgba(245,245,245,0.08) 24px, rgba(245,245,245,0.08) 26px
+    );
+  }
+  .monorail-train {
+    position: absolute; top: -11px; left: 0;
+    width: 240px; height: 11px;
+    background: linear-gradient(90deg, transparent 0%, var(--haz) 15%, #ffffff 85%, var(--cyan) 100%);
+    border-radius: 6px;
+    box-shadow: 0 0 18px var(--haz);
+    animation: monorailPass 11s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  /* Full-stage Weather Atmosphere Canvas (Rain, Snow, Lightning, Sandstorm, Glitch, Wind, Stars) */
+  .weather-sky-canvas {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 15;
+  }
+
+  /* Weather Switcher Drawer / Bar for testing all 15 real game weathers */
+  .wx-picker-bar {
+    position: fixed;
+    left: 50%; bottom: 132px;
+    transform: translate3d(-50%, 14px, 0) scale(0.96);
+    width: min(95vw, 860px);
+    background: rgba(6, 7, 11, 0.96);
+    border: 2px solid #f5f5f5;
+    border-top: 4px solid var(--wx-color, var(--haz));
+    padding: 10px 12px;
+    z-index: 60;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.95);
+  }
+  .wx-picker-bar.open {
+    opacity: 1; pointer-events: auto;
+    transform: translate3d(-50%, 0, 0) scale(1);
+  }
+  .wxp-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 800;
+  }
+  .wxp-head b { color: var(--wx-color, var(--haz)); }
+  .wxp-grid {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .wxp-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    height: 32px; padding: 0 9px;
+    background: #10121a;
+    border: 1px solid rgba(245,245,245,0.2);
+    color: #e5e7eb;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.14s, border-color 0.14s;
+  }
+  .wxp-btn:hover { transform: translateY(-1px); border-color: var(--WC); color: #fff; }
+  .wxp-btn.active {
+    background: rgba(255,255,255,0.1);
+    border: 1.5px solid var(--WC);
+    color: var(--WC);
+    box-shadow: 0 0 12px rgba(0,0,0,0.8);
+  }
+  .wxp-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--WC);
+  }
+
+  /* ================= STREET FLOOR / WET CYBER-PLAZA PAVEMENT ================= */
+  .village-street {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    height: 36%;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(243,230,0,0.08) 0%, transparent 60%),
+      linear-gradient(180deg, #0d1018 0%, #090b11 38%, #050609 100%);
+    border-top: 2px solid rgba(245, 245, 245, 0.32);
+    box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.95);
+    overflow: hidden;
+  }
+  /* Subtle Hazard Curb Line */
+  .street-curb {
+    position: absolute; top: 0; left: 0; right: 0; height: 7px;
+    background: repeating-linear-gradient(
+      -45deg,
+      #f3e600 0px, #f3e600 16px,
+      #090a0f 16px, #090a0f 32px
+    );
+    opacity: 0.82;
+    z-index: 2;
+  }
+  /* 3D Perspective Pavement Grid + Wet Sheen */
+  .street-lanes {
+    position: absolute; inset: 7px 0 0 0;
+    background-image:
+      linear-gradient(180deg, rgba(245,245,245,0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245,245,245,0.045) 1px, transparent 1px);
+    background-size: 100% 38px, 110px 100%;
+    pointer-events: none;
+  }
+
+  /* 1. WET CYBER-PAVEMENT VERTICAL NEON REFLECTIONS */
+  .street-reflections {
+    position: absolute; inset: 8px 36px 0 36px;
+    display: flex; justify-content: space-around;
+    pointer-events: none; z-index: 1;
+  }
+  .wet-refl {
+    width: 190px; height: 100%;
+    background:
+      radial-gradient(ellipse at 50% 0%, var(--RC, #f3e600) 0%, transparent 72%);
+    opacity: 0.16;
+    filter: blur(8px);
+    transform: scaleY(1.1);
+  }
+  .wet-refl.center { width: 250px; opacity: 0.24; }
+
+  /* 2. TACTICAL ROAD MARKINGS & CROSSWALK (NO FLOOR TEXT) */
+  .street-markings {
+    position: absolute; inset: 10px 0 0 0;
+    pointer-events: none; z-index: 2;
+  }
+  /* Dashed Center Transit Line */
+  .road-center-line {
+    position: absolute; left: 40px; right: 40px; top: 44%;
+    height: 2px;
+    background: repeating-linear-gradient(
+      90deg,
+      rgba(243, 230, 0, 0.32) 0px, rgba(243, 230, 0, 0.32) 36px,
+      transparent 36px, transparent 68px
+    );
+  }
+  .road-sub-line {
+    position: absolute; left: 40px; right: 40px; top: 74%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(245,245,245,0.14) 15%, rgba(245,245,245,0.14) 85%, transparent 100%);
+  }
+  /* Tactical Crosswalk Bars in front of Center Spire */
+  .spire-crosswalk {
+    position: absolute; left: 50%; top: 14%;
+    transform: translateX(-50%) perspective(260px) rotateX(52deg);
+    width: 210px; height: 52px;
+    background: repeating-linear-gradient(
+      90deg,
+      rgba(245, 245, 245, 0.14) 0px, rgba(245, 245, 245, 0.14) 14px,
+      transparent 14px, transparent 28px
+    );
+    border-top: 2px solid rgba(243, 230, 0, 0.45);
+    border-bottom: 2px solid rgba(243, 230, 0, 0.45);
+  }
+
+  /* 3. ROTATING DOTTED LANDING PAD RING ATTACHED DIRECTLY UNDER EACH BUILDING BASE (100% CENTERED AT FEET!) */
+  @keyframes padOrbitSpin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  @keyframes padOrbitSpinRev {
+    from { transform: translate(-50%, -50%) rotate(360deg); }
+    to   { transform: translate(-50%, -50%) rotate(0deg); }
+  }
+  .bldg-landing-pad {
+    position: absolute;
+    bottom: -24px; left: 50%;
+    transform: translateX(-50%) scaleY(0.24);
+    transform-origin: bottom center;
+    width: 215px; height: 215px;
+    border-radius: 50%;
+    z-index: 1;
+    pointer-events: none;
+    transition: transform 0.22s, opacity 0.22s;
+    opacity: 0.92;
+  }
+  .chibi-bldg.featured .bldg-landing-pad {
+    width: 260px; height: 260px;
+    bottom: -28px;
+  }
+  /* Outer Rotating Dashed Ring */
+  .bldg-landing-pad::before {
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    border: 6px dashed var(--BC, #f3e600);
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    box-shadow: 0 0 24px var(--BC, #f3e600);
+    animation: padOrbitSpin 14s linear infinite;
+  }
+  /* Inner Counter-Rotating Ring */
+  .bldg-landing-pad::after {
+    content: "";
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 72%; height: 72%;
+    border-radius: 50%;
+    border: 4px dotted var(--BC, #f3e600);
+    opacity: 0.85;
+    animation: padOrbitSpinRev 9s linear infinite;
+  }
+  .chibi-bldg:hover .bldg-landing-pad {
+    opacity: 1;
+    transform: translateX(-50%) scaleY(0.26) scaleX(1.08);
+  }
+
+  /* 4. STREET PROPS: TACTICAL LAMP PYLONS + INTERACTIVE SUPPLY CRATE */
+  .street-props-layer {
+    position: absolute; left: 0; right: 0; bottom: 26%;
+    height: 120px;
+    z-index: 14; pointer-events: none;
+  }
+  .street-pylon {
+    position: absolute; bottom: 0;
+    width: 18px; height: 96px;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .pylon-head {
+    width: 24px; height: 8px;
+    background: #f5f5f5; border: 1.5px solid #050507;
+    box-shadow: 0 0 14px var(--haz);
+  }
+  .pylon-pole {
+    width: 5px; flex: 1;
+    background: linear-gradient(180deg, #e5e7eb 0%, #1f2937 100%);
+    border-left: 1px solid #050507; border-right: 1px solid #050507;
+  }
+  .pylon-base {
+    width: 22px; height: 10px;
+    background: #111827; border: 1.5px solid #f3e600;
+  }
+  /* Warm Spotlight Cone cast onto the street floor */
+  .pylon-cone {
+    position: absolute; top: 8px; left: 50%;
+    transform: translateX(-50%);
+    width: 120px; height: 135px;
+    background: radial-gradient(ellipse at 50% 0%, rgba(243,230,0,0.22) 0%, rgba(243,230,0,0.05) 55%, transparent 78%);
+    clip-path: polygon(42% 0%, 58% 0%, 100% 100%, 0% 100%);
+    pointer-events: none;
+  }
+
+  /* Interactive Supply Drop Crate on the street floor */
+  @keyframes crateFloat {
+    0%, 100% { transform: translate3d(0, 0, 0); }
+    50%      { transform: translate3d(0, -4px, 0); }
+  }
+  .street-crate {
+    position: absolute;
+    bottom: -36px; left: 41%;
+    width: 56px; height: 46px;
+    pointer-events: auto; cursor: pointer;
+    z-index: 19;
+    display: flex; flex-direction: column; align-items: center;
+    animation: crateFloat 2.4s infinite ease-in-out;
+  }
+  .crate-tag {
+    background: var(--haz); color: #050507;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8.5px; font-weight: 900;
+    padding: 1px 5px; margin-bottom: 3px;
+    border: 1px solid #050507;
+    white-space: nowrap;
+  }
+  .crate-box {
+    width: 44px; height: 30px;
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    border: 2px solid var(--haz);
+    border-radius: 5px;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.9), 0 0 12px rgba(243,230,0,0.3);
+  }
+  .crate-box::before {
+    content: "⚡"; font-size: 13px;
+  }
+
+  /* 5. FOOTSTEP RIPPLE RING WHEN CARDS WALK ON THE FLOOR */
+  @keyframes stepRippleAnim {
+    0%   { transform: translate3d(-50%, -50%, 0) scale(0.35); opacity: 0.75; }
+    100% { transform: translate3d(-50%, -50%, 0) scale(1.45); opacity: 0; }
+  }
+  .step-ripple {
+    position: absolute;
+    width: 64px; height: 16px;
+    border: 1.5px solid var(--RC, #f3e600);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: stepRippleAnim 0.55s ease-out forwards;
+  }
+
+  /* ================= 5 TRANSPARENT CHIBI BUILDINGS PLANTED ON THE STREET ================= */
+  .buildings-row {
+    position: absolute;
+    left: 16px; right: 16px;
+    /* Sit cleanly on the street pavement curb line so bases are grounded! */
+    bottom: 34.5%;
+    display: flex; align-items: flex-end; justify-content: space-around;
+    gap: 8px;
+    z-index: 12;
+    pointer-events: none;
+  }
+
+  .chibi-bldg {
+    position: relative;
+    display: flex; flex-direction: column; align-items: center;
+    cursor: pointer; pointer-events: auto;
+    transition: transform 0.24s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-origin: bottom center;
+  }
+  .chibi-bldg:hover {
+    transform: translate3d(0, -8px, 0) scale(1.045);
+    z-index: 16;
+  }
+  .chibi-bldg:active {
+    transform: translate3d(0, -2px, 0) scale(0.98);
+  }
+
+  /* Floating Cyberpunk Holo Typography above each building (NO BOX BADGE, CLEAN & NEAT) */
+  .bldg-sign {
+    position: relative;
+    margin-bottom: 8px; z-index: 5;
+    display: flex; flex-direction: column; align-items: center;
+    pointer-events: none;
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .chibi-bldg:hover .bldg-sign {
+    transform: translate3d(0, -5px, 0) scale(1.06);
+  }
+  .bldg-title {
+    position: relative;
+    font-family: 'Orbitron', 'Chakra Petch', sans-serif;
+    font-style: italic;
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: #ffffff;
+    /* Crisp dark stroke + neon cyberpunk dual-layer glow */
+    -webkit-text-stroke: 1.5px #050507;
+    paint-order: stroke fill;
+    filter:
+      drop-shadow(2px 2px 0px #050507)
+      drop-shadow(-1px -1px 0px var(--BC, var(--haz)))
+      drop-shadow(0 0 10px var(--BC, var(--haz)));
+  }
+  .chibi-bldg.featured .bldg-title {
+    font-size: 18.5px;
+    letter-spacing: 0.14em;
+    color: var(--haz);
+    filter:
+      drop-shadow(2px 3px 0px #050507)
+      drop-shadow(-2px 0px 0px #22d3ee)
+      drop-shadow(0 0 14px rgba(243, 230, 0, 0.85));
+  }
+
+  /* Pure Transparent Cutout Sprite — NO BOX PLACEHOLDER! */
+  .bldg-sprite {
+    position: relative;
+    z-index: 2;
+    height: 180px;
+    max-width: 290px;
+    width: auto;
+    object-fit: contain;
+    object-position: bottom center;
+    display: block;
+    /* Ground contact shadow + subtle rim glow */
+    filter: drop-shadow(0 14px 16px rgba(0,0,0,0.92));
+    transition: filter 0.2s;
+  }
+  .chibi-bldg.featured .bldg-sprite {
+    height: 255px;
+    max-width: 265px;
+  }
+  .chibi-bldg:hover .bldg-sprite {
+    filter: drop-shadow(0 0 18px var(--BC, rgba(243,230,0,0.45))) drop-shadow(0 16px 20px rgba(0,0,0,0.95));
+  }
+
+  /* Realistic Floor Contact Shadow directly under the building base */
+  .bldg-ground-shadow {
+    position: absolute;
+    bottom: -10px; left: 50%;
+    transform: translateX(-50%);
+    width: 92%; height: 26px;
+    background:
+      radial-gradient(ellipse at center, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.65) 48%, transparent 76%);
+    border-radius: 50%;
+    z-index: 1;
+    pointer-events: none;
+  }
+  /* Subtle Colored Floor Reflection under each building */
+  .bldg-ground-glow {
+    position: absolute;
+    bottom: -14px; left: 50%;
+    transform: translateX(-50%);
+    width: 75%; height: 22px;
+    background: radial-gradient(ellipse at center, var(--BC, var(--haz)) 0%, transparent 72%);
+    opacity: 0.24;
+    border-radius: 50%;
+    z-index: 1;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .chibi-bldg:hover .bldg-ground-glow {
+    opacity: 0.52;
+    transform: translateX(-50%) scale(1.15);
+  }
+
+  /* ================= WALKING LIVING CARDS (PRODUCTION HAZARD BEVEL + 3D PHYSICS + DRAG/CLASH) ================= */
+  .walkers-layer {
+    position: absolute;
+    left: 0; right: 0; bottom: 5%;
+    height: 29%;
+    z-index: 20;
+    pointer-events: none;
+  }
+
+  .card-walker {
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 120px; height: 170px;
+    pointer-events: auto;
+    cursor: grab;
+    will-change: transform;
+    transform-origin: bottom center;
+    perspective: 750px;
+  }
+  .card-walker:active { cursor: grabbing; }
+  .card-walker.is-selected { z-index: 32 !important; }
+  .card-walker.is-dragging { z-index: 40 !important; }
+
+  /* REAL CARD FLOOR SHADOW + RARITY UNDERGLOW */
+  @keyframes shadowPulseWalk {
+    0%, 50%, 100% { transform: translate3d(-50%, 0, 0) scale(1, 1); opacity: 0.94; }
+    25%, 75%      { transform: translate3d(-50%, 0, 0) scale(0.75, 0.72); opacity: 0.56; }
+  }
+  @keyframes shadowBreatheIdle {
+    0%, 100% { transform: translate3d(-50%, 0, 0) scale(1, 1); opacity: 0.92; }
+    50%      { transform: translate3d(-50%, 0, 0) scale(0.88, 0.86); opacity: 0.72; }
+  }
+
+  .cw-shadow {
+    position: absolute;
+    bottom: -12px; left: 50%;
+    width: 112px; height: 22px;
+    transform: translate3d(-50%, 0, 0);
+    background:
+      radial-gradient(ellipse at center, rgba(0,0,0,0.97) 0%, rgba(0,0,0,0.75) 46%, rgba(0,0,0,0) 76%);
+    border-radius: 50%;
+    pointer-events: none;
+    transition: transform 0.2s, opacity 0.2s;
+  }
+  .cw-shadow::after {
+    content: "";
+    position: absolute;
+    inset: 2px 10px;
+    background: radial-gradient(ellipse at center, var(--RC, #f3e600) 0%, transparent 75%);
+    opacity: 0.48;
+    border-radius: 50%;
+  }
+  .card-walker.state-walk .cw-shadow {
+    animation: shadowPulseWalk 0.58s infinite ease-in-out;
+  }
+  .card-walker.state-idle .cw-shadow {
+    animation: shadowBreatheIdle 2.2s infinite ease-in-out;
+  }
+  .card-walker.is-dragging .cw-shadow {
+    animation: none !important;
+    transform: translate3d(-50%, 28px, 0) scale(0.55) !important;
+    opacity: 0.45 !important;
+  }
+  .card-walker.is-selected .cw-shadow::after {
+    background: radial-gradient(ellipse at center, var(--haz) 0%, transparent 78%);
+    opacity: 0.85;
+  }
+
+  /* 3D Turn / Tilt Wrapper — NO TEXT MIRRORING! Uses 3D yaw tilt + turn spin */
+  @keyframes cardTurnSpin {
+    0%   { transform: rotateY(0deg) scale(1); }
+    50%  { transform: rotateY(90deg) scale(1.08); }
+    100% { transform: rotateY(0deg) scale(1); }
+  }
+  .cw-tilt {
+    width: 100%; height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .card-walker.dir-right .cw-tilt {
+    transform: rotateY(11deg);
+  }
+  .card-walker.dir-left .cw-tilt {
+    transform: rotateY(-11deg);
+  }
+  .card-walker.is-selected .cw-tilt,
+  .card-walker:hover .cw-tilt {
+    transform: rotateY(0deg) scale(1.05);
+  }
+  .card-walker.turning .cw-tilt {
+    animation: cardTurnSpin 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* Production Hazard Bevel Card Shell (.cw-body.hz-bdr) */
+  .cw-body {
+    position: relative;
+    width: 100%; height: 100%;
+    background: #07080d;
+    overflow: hidden;
+    box-shadow: 0 14px 28px rgba(0,0,0,0.92);
+    transform-origin: bottom center;
+  }
+  .card-walker.is-selected .cw-body {
+    box-shadow: 0 0 0 2px var(--haz), 0 18px 38px rgba(0,0,0,0.96);
+  }
+
+  /* Waddle / Hop Walk Keyframes + Slam Drop + Clash Shake */
+  @keyframes cardHopWalk {
+    0%   { transform: translate3d(0, 0px, 0) rotate(0deg); }
+    25%  { transform: translate3d(0, -12px, 0) rotate(-3.2deg); }
+    50%  { transform: translate3d(0, 0px, 0) rotate(0deg); }
+    75%  { transform: translate3d(0, -12px, 0) rotate(3.2deg); }
+    100% { transform: translate3d(0, 0px, 0) rotate(0deg); }
+  }
+  @keyframes cardIdleBreathe {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    50%      { transform: translate3d(0, -4px, 0) scale(1.018); }
+  }
+  @keyframes cardSlamLand {
+    0%   { transform: translate3d(0, -24px, 0) scale(1.12, 0.88); }
+    45%  { transform: translate3d(0, 3px, 0) scale(1.14, 0.84); }
+    75%  { transform: translate3d(0, -6px, 0) scale(0.97, 1.04); }
+    100% { transform: translate3d(0, 0, 0) scale(1, 1); }
+  }
+  @keyframes cardClashPulse {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    30%      { transform: translate3d(0, -16px, 0) scale(1.1) rotate(-4deg); }
+    60%      { transform: translate3d(0, -8px, 0) scale(1.06) rotate(4deg); }
+  }
+  .card-walker.state-walk .cw-body {
+    animation: cardHopWalk 0.58s infinite ease-in-out;
+  }
+  .card-walker.state-idle .cw-body {
+    animation: cardIdleBreathe 2.2s infinite ease-in-out;
+  }
+  .card-walker.state-slam .cw-body {
+    animation: cardSlamLand 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  .card-walker.state-clash .cw-body {
+    animation: cardClashPulse 0.55s ease-in-out infinite;
+  }
+
+  /* Card Art & Production Top/Bottom Chrome */
+  .cw-art {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    z-index: 1;
+    pointer-events: none;
+  }
+  /* Top Row: Tier Pill (Left) + Solid Stamp Badges for Shiny/Mutation/Trait (Right) */
+  .cw-top {
+    position: absolute; top: 6px; left: 6px; right: 6px;
+    z-index: 7;
+    display: flex; justify-content: space-between; align-items: flex-start;
+    pointer-events: none;
+  }
+  .cw-tier {
+    background: #050507; color: var(--RC, #fff);
+    border: 1px solid var(--RC, #fff);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8.5px; font-weight: 800; padding: 2px 5px;
+    letter-spacing: 0.08em;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.85);
+  }
+  .cw-stamps {
+    display: flex; align-items: center; gap: 3px;
+  }
+  .cw-stamps .xbadge.is-micro {
+    width: 17px; height: 17px; min-width: 17px; min-height: 17px;
+  }
+  .cw-stamps .xbadge.is-micro svg {
+    width: 10px; height: 10px;
+  }
+
+  /* Bottom Info Plate inside Card (Name + Odds + HP/ATK Bar) */
+  .cw-foot {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    z-index: 6;
+    background: linear-gradient(0deg, rgba(5,5,7,0.98) 0%, rgba(5,5,7,0.86) 68%, transparent 100%);
+    padding: 18px 6px 5px;
+    display: flex; flex-direction: column; gap: 2px;
+    pointer-events: none;
+  }
+  .cw-name-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 4px;
+  }
+  .cw-name {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 11px; font-weight: 800; color: #fff;
+    letter-spacing: 0.03em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .cw-mut-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px; font-weight: 800;
+    color: var(--MC, var(--haz));
+    text-transform: uppercase;
+  }
+  .cw-stats-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    border-top: 1px solid rgba(245,245,245,0.15);
+    padding-top: 2px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8.5px; font-weight: 800;
+  }
+  .cw-hp { color: #4ade80; }
+  .cw-atk { color: #fb7185; }
+
+  /* Tactical Speech / Callout Bubble above Card (Polished WoB Hazard) */
+  .cw-bubble {
+    position: absolute;
+    bottom: calc(100% + 12px); left: 50%;
+    transform: translate3d(-50%, 6px, 0) scale(0.9);
+    background: #06070b;
+    border: 1px solid rgba(245, 245, 245, 0.35);
+    border-left: 3px solid var(--haz);
+    color: #f5f5f5;
+    padding: 5px 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.18s, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.92);
+    z-index: 35;
+  }
+  .cw-bubble::after {
+    content: ""; position: absolute;
+    top: 100%; left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: #f5f5f5;
+  }
+  .cw-bubble.show {
+    opacity: 1;
+    transform: translate3d(-50%, 0, 0) scale(1);
+  }
+
+  /* ================= 3D HOLO CARD INSPECTOR MODAL (FLOATING 3D CARD + ROTATING PEDESTAL + UPGRADED DOSSIER) ================= */
+  .holo-modal-backdrop {
+    position: fixed; inset: 0;
+    background: radial-gradient(circle at 38% 50%, rgba(16, 20, 34, 0.9) 0%, rgba(3, 4, 7, 0.96) 78%);
+    z-index: 90;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: opacity 0.22s ease, visibility 0.22s;
+  }
+  .holo-modal-backdrop.open {
+    opacity: 1; visibility: visible; pointer-events: auto;
+  }
+  .holo-split-layout {
+    display: flex; align-items: center; justify-content: center;
+    gap: 58px;
+    max-width: 900px; width: 94vw;
+  }
+
+  .holo-3d-stage {
+    position: relative;
+    perspective: 1000px;
+    flex-shrink: 0;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 20px;
+  }
+  /* Rotating Dotted Hologram Pedestal Ring under the 3D Card */
+  .holo-pedestal-ring {
+    position: relative;
+    margin-top: -42px;
+    margin-bottom: -48px;
+    width: 210px; height: 210px;
+    transform: scaleY(0.22);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .holo-pedestal-ring::before {
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    border: 6px dashed var(--haz);
+    background: radial-gradient(circle, rgba(243,230,0,0.34) 0%, transparent 70%);
+    box-shadow: 0 0 36px rgba(243,230,0,0.45);
+    animation: padOrbitSpin 10s linear infinite;
+  }
+  .holo-pedestal-ring::after {
+    content: "";
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 68%; height: 68%;
+    border-radius: 50%;
+    border: 4px dotted #ffffff;
+    opacity: 0.85;
+    animation: padOrbitSpinRev 6.5s linear infinite;
+  }
+  .holo-drag-hint {
+    margin-top: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px; font-weight: 800; letter-spacing: 0.14em;
+    color: var(--muted);
+  }
+  .holo-3d-card {
+    position: relative;
+    z-index: 2;
+    width: 252px; height: 356px;
+    background: #07080d;
+    transform-style: preserve-3d;
+    transition: transform 0.1s ease-out;
+    cursor: grab;
+    box-shadow: 0 28px 65px rgba(0,0,0,0.95), 0 0 38px rgba(243,230,0,0.22);
+  }
+  .holo-3d-card:active { cursor: grabbing; }
+
+  /* 2. Upgraded Separate Tactical Dossier Panel on the Right */
+  .holo-info-panel {
+    position: relative;
+    flex: 1;
+    max-width: 470px;
+    background: #06070b;
+    border: 1.5px solid rgba(245, 245, 245, 0.28);
+    border-top: 3px solid #f5f5f5;
+    border-bottom: 3px solid var(--haz);
+    display: flex; flex-direction: column;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.96);
+    clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%);
+    overflow: hidden;
+  }
+  /* Subtle grid watermark inside 3D Dossier */
+  .holo-info-panel::before {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      repeating-linear-gradient(0deg, rgba(245,245,245,0.02) 0 1px, transparent 1px 32px),
+      repeating-linear-gradient(90deg, rgba(245,245,245,0.02) 0 1px, transparent 1px 32px);
+    pointer-events: none;
+  }
+  .hip-topbar {
+    position: relative; z-index: 1;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 18px;
+    background: rgba(245, 245, 245, 0.04);
+    border-bottom: 1px solid rgba(245, 245, 245, 0.12);
+  }
+  .hi-kicker {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 800; color: var(--haz);
+    letter-spacing: 0.14em;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .hi-kicker::before {
+    content: ""; width: 6px; height: 6px; background: var(--haz); display: inline-block;
+  }
+  .hip-body {
+    position: relative; z-index: 1;
+    padding: 18px 22px 20px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .hip-hero-head {
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 10px;
+    border-bottom: 1px solid rgba(245, 245, 245, 0.12);
+    padding-bottom: 10px;
+  }
+  .hi-title {
+    font-family: 'Orbitron', 'Chakra Petch', sans-serif; font-size: 26px; font-weight: 900; color: #fff;
+    letter-spacing: 0.05em; line-height: 1.05;
+  }
+  .hi-pwr-pill {
+    background: rgba(243, 230, 0, 0.12);
+    border: 1px solid var(--haz);
+    padding: 4px 9px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 800; color: var(--haz);
+    white-space: nowrap;
+  }
+  .hi-stat-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  }
+  .hi-stat-box {
+    position: relative;
+    background: #0c0e16;
+    border: 1px solid rgba(245,245,245,0.14);
+    border-left: 3px solid var(--SC, #f5f5f5);
+    padding: 9px 12px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .hi-stat-box span {
+    display: block; font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
+    color: var(--muted); margin-bottom: 3px;
+  }
+  .hi-stat-box b { font-size: 16px; font-weight: 800; color: #fff; }
+  .hi-skill-box {
+    background: linear-gradient(90deg, rgba(243,230,0,0.08) 0%, rgba(243,230,0,0.02) 100%);
+    border: 1px solid rgba(243,230,0,0.24);
+    border-left: 3.5px solid var(--haz);
+    padding: 11px 14px; font-size: 12px; color: #e5e7eb; line-height: 1.55;
+  }
+  .hi-skill-box b {
+    color: var(--haz); display: block;
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+  .hip-foot {
+    display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+    padding-top: 4px;
+  }
+
+  @media (max-width: 768px) {
+    .holo-split-layout { flex-direction: column; gap: 18px; }
+    .holo-3d-card { width: 190px; height: 268px; }
+  }
+
+  /* ================= CLEAN TACTICAL DIALOG BOX WHEN CARD CLICKED ================= */
+  .card-inspector-pop {
+    position: fixed;
+    left: 50%; bottom: 136px;
+    transform: translate3d(-50%, 14px, 0) scale(0.96);
+    width: min(94vw, 520px);
+    background: #06070b;
+    border: 1.5px solid rgba(245, 245, 245, 0.32);
+    border-left: 4px solid var(--haz);
+    z-index: 50;
+    display: flex; flex-direction: column;
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: opacity 0.2s, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.2s;
+    box-shadow: 0 22px 55px rgba(0,0,0,0.95);
+    clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+  }
+  .card-inspector-pop.open {
+    opacity: 1; visibility: visible; pointer-events: auto;
+    transform: translate3d(-50%, 0, 0) scale(1);
+  }
+  /* Top Header Strip of Dialog Box */
+  .cip-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 12px;
+    background: rgba(245, 245, 245, 0.04);
+    border-bottom: 1px solid rgba(245, 245, 245, 0.12);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px; font-weight: 800; letter-spacing: 0.1em;
+    color: var(--haz);
+  }
+  .cip-close {
+    width: 24px; height: 24px;
+    background: transparent; color: var(--muted);
+    border: 1px solid rgba(245, 245, 245, 0.18);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .cip-close:hover { border-color: var(--red); color: #fff; background: rgba(244, 63, 94, 0.2); }
+
+  /* Main Dialog Body */
+  .cip-body {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 14px; padding: 12px 14px;
+  }
+  .cip-left { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
+  .cip-thumb-wrap {
+    position: relative;
+    width: 54px; height: 54px; flex-shrink: 0;
+    border: 1.5px solid var(--haz);
+    background: #0d0f17;
+    overflow: hidden;
+  }
+  .cip-thumb {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .cip-meta { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+  .cip-nm-row { display: flex; align-items: center; gap: 8px; }
+  .cip-nm {
+    font-family: 'Orbitron', 'Chakra Petch', sans-serif;
+    font-size: 16px; font-weight: 900; color: #fff;
+    letter-spacing: 0.04em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .cip-stats-inline {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 800;
+  }
+  .cip-stats-inline .hp { color: #4ade80; }
+  .cip-stats-inline .atk { color: #fb7185; }
+  .cip-quote {
+    font-family: 'Inter', sans-serif;
+    font-size: 11.5px; color: #d1d5db;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* Clean 2-Button Action Column */
+  .cip-actions {
+    display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+  }
+  .cip-btn {
+    height: 38px; padding: 0 13px;
+    background: #10121c; color: #f5f5f5;
+    border: 1.5px solid rgba(245,245,245,0.28);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
+  }
+  .cip-btn:hover { border-color: var(--haz); color: var(--haz); transform: translateY(-1px); }
+  .cip-btn.pri { background: var(--haz); color: #050505; border-color: var(--haz); }
+  .cip-btn.pri:hover { background: #fff; border-color: #fff; color: #050505; }
+
+  /* ================= BOTTOM BUFF CHIPS + 5-SLOT NAV DOCK ================= */
+  .nh-bottom-hud {
+    position: relative; z-index: 30;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 8px; padding: 0 16px 12px;
+    background: linear-gradient(0deg, rgba(5,5,7,0.98) 0%, rgba(5,5,7,0.7) 70%, transparent 100%);
+    pointer-events: none;
+  }
+  .nh-bottom-hud > * { pointer-events: auto; }
+
+  .buff-strip {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center;
+  }
+  .b-chip {
+    display: flex; align-items: center; gap: 7px;
+    height: 36px; padding: 0 12px;
+    background: linear-gradient(135deg, rgba(14, 18, 28, 0.94) 0%, rgba(6, 8, 14, 0.98) 100%);
+    border: 1.5px solid rgba(245, 245, 245, 0.20);
+    clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+    color: #fff; cursor: pointer;
+    transition: transform 0.16s ease, border-color 0.16s, box-shadow 0.16s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+  }
+  .b-chip:hover {
+    transform: translateY(-2px);
+    border-color: var(--haz);
+    box-shadow: 0 4px 16px rgba(243, 230, 0, 0.22);
+  }
+  .b-chip img { width: 20px; height: 20px; object-fit: contain; }
+  .b-chip b { color: var(--haz); }
+
+  /* 5-Slot Tactical Nav Dock (White-on-Black Hazard + 2.5D Raster WebP Icons) */
+  .nav-dock {
+    position: relative;
+    display: grid; grid-template-columns: repeat(5, minmax(68px, 120px));
+    gap: 6px; width: min(100%, 640px);
+    background: linear-gradient(180deg, rgba(16, 20, 30, 0.96) 0%, rgba(7, 9, 14, 0.98) 100%);
+    border: 1.5px solid rgba(245, 245, 245, 0.24);
+    border-top: 1px solid rgba(245, 245, 245, 0.35);
+    border-radius: 6px 6px 0 0;
+    padding: 0 4px 4px;
+    box-shadow: 0 -8px 30px rgba(0,0,0,0.85);
+  }
+  /* Top Hazard Tape Stripe */
+  .nav-dock::before {
+    content: '';
+    position: absolute; left: 0; right: 0; top: -3px; height: 3px;
+    background: repeating-linear-gradient(
+      115deg,
+      #f3e600 0 10px,
+      #050505 10px 20px
+    );
+    opacity: 0.85;
+    border-radius: 4px 4px 0 0;
+    pointer-events: none;
+  }
+
+  .dock-btn {
+    position: relative;
+    height: 60px;
+    background: transparent;
+    border: none;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 3px; cursor: pointer;
+    color: rgba(245, 245, 245, 0.72);
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), color 0.18s ease;
+    padding: 2px 0 0;
+  }
+  /* Slot Top Indicator Bar */
+  .dock-btn::after {
+    content: '';
+    position: absolute; top: 0; left: 50%;
+    width: 28px; height: 2px;
+    background: var(--haz);
+    transform: translateX(-50%) scaleX(0);
+    transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .dock-btn:hover {
+    transform: translateY(-2px);
+    color: #fff;
+  }
+  .dock-btn:hover::after {
+    transform: translateX(-50%) scaleX(1);
+  }
+  .dock-btn:active {
+    transform: scale(0.95);
+  }
+
+  .dock-ic-wrap {
+    width: 28px; height: 28px;
+    display: grid; place-items: center;
+  }
+  .dock-ic {
+    width: 26px; height: 26px;
+    object-fit: contain;
+    transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), filter 0.18s ease;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+    user-select: none; pointer-events: none;
+  }
+  .dock-btn:hover .dock-ic {
+    transform: translateY(-1px) scale(1.1);
+    filter: drop-shadow(0 0 8px rgba(243, 230, 0, 0.45));
+  }
+
+  .dock-label {
+    font-family: 'Orbitron', 'Chakra Petch', sans-serif;
+    font-size: 10px; font-weight: 800; letter-spacing: 0.08em;
+    text-transform: uppercase; line-height: 1;
+  }
+  .dock-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px; font-weight: 700; color: #8e8e93; letter-spacing: 0.04em;
+    line-height: 1;
+  }
+
+  /* Center Roll / Summon Hexagon CTA */
+  .dock-btn.mid-cta {
+    justify-content: flex-start;
+    padding-top: 4px;
+  }
+  .dock-btn.mid-cta::after { display: none; }
+  .dock-hex-chassis {
+    position: relative;
+    width: 48px; height: 50px;
+    margin-top: -18px;
+    display: grid; place-items: center;
+    background: var(--haz);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    box-shadow: 0 0 16px rgba(243, 230, 0, 0.5);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  }
+  .dock-hex-core {
+    position: absolute; inset: 2.5px;
+    background: #090b10;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    display: grid; place-items: center;
+  }
+  .hex-ic {
+    width: 32px; height: 32px;
+    filter: drop-shadow(0 0 6px rgba(243, 230, 0, 0.6));
+  }
+  .dock-btn.mid-cta:hover .dock-hex-chassis {
+    transform: translateY(-4px) scale(1.12);
+    box-shadow: 0 0 24px rgba(243, 230, 0, 0.85);
+  }
+  .dock-btn.mid-cta:active .dock-hex-chassis {
+    transform: scale(0.94);
+  }
+  .cta-label {
+    color: var(--haz); font-weight: 900; margin-top: 2px;
+  }
+  .cta-sub {
+    color: #e5e7eb; font-weight: 800; font-size: 7.5px; }
+  @keyframes nhAutoSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .dock-btn.dock-auto-btn .dock-auto-svg { width: 24px; height: 24px; transition: transform 0.2s ease, color 0.2s ease, filter 0.2s ease; color: rgba(245, 245, 245, 0.78); }
+  .dock-btn.dock-auto-btn:hover .dock-auto-svg { color: var(--haz); filter: drop-shadow(0 0 8px rgba(243, 230, 0, 0.5)); }
+  .dock-btn.dock-auto-btn.is-on { color: var(--haz); }
+  .dock-btn.dock-auto-btn.is-on::after { transform: translateX(-50%) scaleX(1); box-shadow: 0 0 10px var(--haz); }
+  .dock-btn.dock-auto-btn.is-on .dock-auto-svg { color: var(--haz); filter: drop-shadow(0 0 10px rgba(243, 230, 0, 0.75)); animation: nhAutoSpin 1.8s linear infinite; }
+  .dock-btn.dock-auto-btn.is-on .dock-label { color: var(--haz); text-shadow: 0 0 10px rgba(243, 230, 0, 0.45); }
+  .dock-btn.dock-auto-btn.is-on .dock-sub { color: #22c55e; }
+  .dock-btn.mid-cta.is-rolling .dock-hex-chassis { background: #ef4444; box-shadow: 0 0 22px rgba(239, 68, 68, 0.75); }
+  .dock-btn.mid-cta.is-rolling .cta-label { color: #f87171; }
+  .dock-btn.mid-cta.is-rolling .cta-sub { color: var(--haz); }
+  .b-chip.is-on { border-color: rgba(243, 230, 0, 0.55); background: rgba(15, 18, 28, 0.96); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.75), 0 0 12px rgba(243, 230, 0, 0.16); }
+  .b-chip.open { border-color: var(--haz) !important; background: #111522 !important; box-shadow: 0 0 0 1px var(--haz), 0 8px 20px rgba(0, 0, 0, 0.85), 0 0 16px rgba(243, 230, 0, 0.32) !important; transform: translateY(-2px); }
+  .b-chip .b-val.on { color: var(--haz); text-shadow: 0 0 8px rgba(243, 230, 0, 0.4); 
+  /* keep open brace balanced */
+  --_nh-noop: 1;
+  }
+
+  /* Toast Banner for Building Clicks */
+  .nh-toast {
+    position: fixed; top: 76px; left: 50%;
+    transform: translate3d(-50%, -12px, 0);
+    background: #050507; border: 2px solid var(--haz);
+    color: #fff; padding: 8px 18px;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 800;
+    z-index: 80; opacity: 0; pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .nh-toast.show { opacity: 1; transform: translate3d(-50%, 0, 0); }
+
+  @media (max-width: 768px) {
+    .nh-top-hud {
+      padding: 8px 12px;
+      gap: 8px;
+    }
+    .op-pill {
+      padding: 4px 8px 4px 6px;
+      gap: 8px;
+    }
+    .op-ava { width: 38px; height: 38px; }
+    .op-name { font-size: 11px; }
+    .op-title { font-size: 8px; padding: 0 4px; }
+    .op-pwr { font-size: 10px; }
+    .op-xpbar { width: 70px; height: 3px; }
+    .res-cluster {
+      flex-wrap: nowrap;
+      gap: 5px;
+    }
+    .res-sub { display: none; }
+    .res-pill { height: 34px; padding: 0 7px; gap: 5px; }
+    .res-num { font-size: 11px; }
+    .res-plus-btn { width: 22px; height: 22px; font-size: 13px; }
+    .hud-quick-btn { height: 34px; padding: 0 7px; }
+    .hud-quick-btn .hq-label { display: none; }
+    .hud-quick-btn:not(.daily) { display: none; }
+    .village-world { width: 1280px; }
+    .bldg-sprite { height: 165px; max-width: 270px; }
+    .chibi-bldg.featured .bldg-sprite { height: 220px; max-width: 250px; }
+    .bldg-title { font-size: 13px; }
+    .chibi-bldg.featured .bldg-title { font-size: 16px; }
+    .card-walker { width: 96px; height: 138px; }
+    .nav-dock {
+      width: 100%; max-width: 460px;
+      gap: 3px;
+    }
+    .dock-btn { height: 54px; }
+    .dock-sub { display: none; }
+    .dock-label { font-size: 8.5px; }
+    .dock-ic { width: 22px; height: 22px; }
+    .dock-hex-chassis { width: 44px; height: 46px; margin-top: -15px; }
+    .hex-ic { width: 28px; height: 28px; }
+    .b-chip { height: 32px; padding: 0 8px; font-size: 10px; }
+    .b-chip img { width: 16px; height: 16px; }
+  }
+  @media (max-width: 480px) {
+    .nh-top-hud {
+      gap: 4px;
+      padding: 6px 6px;
+    }
+    .op-pill { padding: 3px 6px; gap: 6px; }
+    .op-ava { width: 34px; height: 34px; }
+    .op-xp-wrap { display: none; }
+    .op-title { display: none; }
+    .res-pill { height: 32px; padding: 0 5px; gap: 3px; }
+    .res-num { font-size: 10px; }
+    .hud-quick-btn { display: none; }
+    .nav-dock {
+      max-width: 380px;
+      gap: 2px;
+      padding: 0 2px 2px;
+    }
+    .dock-btn { height: 50px; }
+    .dock-label { font-size: 8px; letter-spacing: 0.04em; }
+    .dock-ic { width: 20px; height: 20px; }
+    .dock-hex-chassis { width: 40px; height: 42px; margin-top: -14px; }
+    .hex-ic { width: 26px; height: 26px; }
+    .buff-strip { gap: 5px; }
+    .b-chip { height: 30px; padding: 0 6px; font-size: 9.5px; }
+  }
+  @media (max-height: 520px) and (orientation: landscape) {
+    .nh-top-hud { padding: 4px 12px; }
+    .op-pill { padding: 3px 8px; }
+    .op-ava { width: 34px; height: 34px; }
+    .op-xp-wrap { display: none; }
+    .res-cluster { flex-wrap: nowrap; gap: 5px; }
+    .res-sub { display: none; }
+    .res-pill { height: 32px; padding: 0 7px; }
+    .bldg-sprite { height: 135px; max-width: 220px; }
+    .chibi-bldg.featured .bldg-sprite { height: 180px; max-width: 200px; }
+    .bldg-title { font-size: 12px; }
+    .chibi-bldg.featured .bldg-title { font-size: 14px; }
+    .bldg-sign { margin-bottom: 4px; }
+    .buildings-row { bottom: 33%; }
+    .nh-bottom-hud { padding: 0 12px 6px; gap: 4px; }
+    .buff-strip { gap: 6px; }
+    .b-chip { height: 28px; padding: 0 8px; font-size: 9.5px; }
+    .b-chip img { width: 16px; height: 16px; }
+    .nav-dock { max-width: 480px; gap: 4px; }
+    .dock-btn { height: 48px; }
+    .dock-sub { display: none; }
+    .dock-label { font-size: 8px; }
+    .dock-ic { width: 20px; height: 20px; }
+    .dock-hex-chassis { width: 38px; height: 40px; margin-top: -12px; }
+    .hex-ic { width: 24px; height: 24px; }
+  }

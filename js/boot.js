@@ -341,7 +341,7 @@ function render(){
     const onTower = !hasBattle && !!(app.querySelector(".tw-page:not(.rd-page)") || app.querySelector(".tactical-tower-page"));
     const onRaid = !hasBattle && !!app.querySelector(".rd-page");
     const onSettings = r === "#/settings" || (!hasBattle && !!app.querySelector(".sett-wrap"));
-    document.body.classList.toggle("on-lobby", !hasBattle && !!app.querySelector(".lobby-hub"));
+    document.body.classList.toggle("on-lobby", !hasBattle && !!(app.querySelector(".lobby-hub") || app.querySelector(".nh-shell")));
     document.body.classList.toggle("on-tower", onTower);
     document.body.classList.toggle("on-raid", onRaid);
     document.body.classList.toggle("on-settings", onSettings);
@@ -355,7 +355,7 @@ function render(){
   }
     document.documentElement.classList.toggle("on-tower-root", onTower);
     /* Class tambahan di <html>: kunci scroll tanpa :has() (WebView APK lama bisa nggak support). */
-    document.documentElement.classList.toggle("view-locked", hasBattle||!!app.querySelector(".lobby-hub")||onTower||onRaid);
+    document.documentElement.classList.toggle("view-locked", hasBattle||!!app.querySelector(".lobby-hub")||!!app.querySelector(".nh-shell")||onTower||onRaid);
     /* Reset scroll dokumen tiap ganti view — sisa scroll lama jangan bocor
        ke view baru (efek "nempel ke topbar" di lobby/raid/battle). */
     window.scrollTo(0,0);
@@ -406,15 +406,16 @@ const bfSync=(muts)=>{
   const onTower = !hasBattle && !!(app.querySelector(".tw-page:not(.rd-page)") || app.querySelector(".tactical-tower-page"));
   const onRaid = !hasBattle && !!app.querySelector(".rd-page");
   const onSettings = !hasBattle && !!app.querySelector(".sett-wrap");
-  _setBodyCls("on-lobby", !hasBattle && !!app.querySelector(".lobby-hub"));
+  const onLobby = !hasBattle && !!(app.querySelector(".lobby-hub") || app.querySelector(".nh-shell"));
+  _setBodyCls("on-lobby", onLobby);
   _setBodyCls("on-tower", onTower);
   _setBodyCls("on-raid", onRaid);
   _setBodyCls("on-settings", onSettings);
   _setRootCls("on-tower-root", onTower);
-  _setRootCls("view-locked", hasBattle||!!app.querySelector(".lobby-hub")||onTower||onRaid);
+  _setRootCls("view-locked", hasBattle||onLobby||onTower||onRaid);
   /* Safety: dokumen selalu di posisi paling atas HANYA jika di view yang terkunci (battle/lobby/tower/raid).
      Jangan paksa scroll ke 0 saat pemain sedang berada di Settings agar halaman settings bisa di-scroll bebas. */
-  if((hasBattle||!!app.querySelector(".lobby-hub")||onTower||onRaid) && (window.scrollX||window.scrollY)) window.scrollTo(0,0);
+  if((hasBattle||onLobby||onTower||onRaid) && (window.scrollX||window.scrollY)) window.scrollTo(0,0);
 };
 /* Pin scrollY=0 selama battle — WebView APK suka auto-scroll ke tombol yang di-tap
    di tengah battle → layer fixed (#dmgLayer/canvas VFX) meleset dari kartunya. */

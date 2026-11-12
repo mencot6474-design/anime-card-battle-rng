@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v596-cleanSelectorPreview';
+const CACHE_NAME = 'anime-card-battle-v606-aaAIcons';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

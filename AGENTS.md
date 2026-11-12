@@ -1,30 +1,40 @@
 # PETA STRUKTUR GAME — Anime Card Battle RNG
 
 Vanilla JS SPA. Tanpa build step untuk web. Semua state global, semua render via string HTML.
-Baca file ini dulu; jangan baca `style.css` (28,3k baris) atau `index.html` (1.181 baris) utuh kecuali terpaksa — pakai anchor di bawah + grep.
-Angka baris di dokumen ini **terukur 2026-11-06** (HEAD `6c49ad2`); kalau file berubah, ukur ulang dengan `Select-String`/`grep -n`, jangan percaya ingatan.
+Baca file ini dulu; jangan baca `style.css` (28,1k baris) atau `index.html` (2.504 baris) utuh kecuali terpaksa — pakai anchor di bawah + grep.
+Angka baris di dokumen ini **terukur 2026-11-12** (HEAD `6e509b1`); kalau file berubah, ukur ulang dengan `Select-String`/`grep -n`, jangan percaya ingatan.
+
+> [!IMPORTANT]
+> **PROTOKOL WAJIB AWAL TUGAS (SETELAH BACA `AGENTS.md` → WAJIB BACA SKILL):**
+> Setiap kali mulai menjalankan tugas baru di sesi ini, **SETELAH membaca `AGENTS.md` ini, kamu WAJIB membaca file `SKILL.md` dari skill yang tersedia dan relevan SEBELUM menyentuh kode atau membuat rencana**:
+> 1. **`clean-agent-intent`** (`C:\Users\HDD\.gemini\config\skills\clean-agent-intent\SKILL.md`) — **WAJIB dibaca di setiap tugas kode/edit** agar maksud user (termasuk instruksi singkat/kasual Bahasa Indonesia) langsung tertangkap akurat, tepat sasaran ke file/baris, tanpa refactor liar atau drift.
+> 2. **`game-ui-ux-wob`** (`C:\Users\HDD\.gemini\config\skills\game-ui-ux-wob\SKILL.md`) — **WAJIB dibaca untuk semua tugas UI/UX, CSS, modal, kartu, HUD, atau layout responsif** (standar tema WHITE-on-BLACK `#050505`/`#f5f5f5` + Hazard `#f3e600`, preservasi warna semantik, touch target ≥44px, 3 viewport wajib).
+> 3. **`animator-2d-game-fx`** (`C:\Users\HDD\.gemini\config\skills\animator-2d-game-fx\SKILL.md`) — **WAJIB dibaca untuk semua tugas animasi 2D, VFX canvas, transisi curtain/banner, slash/hit-stop, atau efek kartu** (aturan compositor-only `transform`/`opacity`, shared `#animeAtkCanvas`, `FXDPR()`, 60fps HP kentang).
+> 4. **Plugin Skills & MCP (`superpowers`, `supabase`, `context7-mcp`, `chrome-devtools`, `mobbin`, `modern-web-guidance`)** — aktifkan dan baca `SKILL.md`-nya sesuai domain tugas (mis. `supabase` + `supabase-postgres-best-practices` sebelum menyentuh SQL/RPC, `systematic-debugging` saat melacak bug, `verification-before-completion` sebelum klaim selesai).
 
 ## 0. STATUS PROYEK (baca ini dulu — snapshot, timpa tiap milestone)
 
-**Tujuan**: game rapih & bisa dimainkan di **HP portrait + landscape** → publish ke **CrazyGames**. Yang rusak cuma UI/UX; mekanik & data udah ~70% jadi (lihat §5).
+**Tujuan**: game rapih & bisa dimainkan di **HP portrait + landscape** → publish ke **CrazyGames**. Mekanik, otoritas server Supabase (migrasi `0001`–`0047`), dan port layar **WHITE-on-BLACK (WoB) HAZARD PROTOCOL** sudah aktif di seluruh layar utama.
 **Alur kerja**: desain prototipe di `_tmp/` → user **kunci** → **port ke produksi** serial per divisi → **QC mandor** (fungsi **+ fidelitas visual vs prototipe**, bukan cuma angka) → commit per unit + bump `?v=`/`CACHE_NAME` (§2c.4) → push kalau diminta.
-**Fase sekarang**: PORT produksi **selesai untuk 10 layar** di tabel di bawah (semua bertema WoB); sisa = **battle**, lalu sweep P0 dan gate rilis (gerbang cache-bust 3 langkah §2c.4).
+**Fase sekarang**: **SELURUH layar utama + battle + modal pendukung sudah port ke WoB Hazard** (lihat tabel di bawah, semua punya stylesheet terdedikasi + transisi hazard curtain); fokus berjalan = polesan presisi UI/UX, sweep P0 mobile, dan gate rilis.
 
-| Layar | Prototipe sumber (`_tmp/`) | Status produksi |
+| Layar | Prototipe / Modul Produksi | Status produksi |
 |---|---|---|
-| **Loading screen + transisi masuk** | `proto_loading_v1.html` (banner hazard) + `proto_logo_v1.html` varian **HAZARD** (judul chrome 3D) — DIKUNCI | ✅ `0d9f2e1` (port penuh: fan kartu, progress tersegmentasi, plate ACCESS GRANTED, curtain tape, notif masuk) → `6c49ad2` (judul 3D menimpa kartu, `.ld-lockup`) |
-| **Lobby** | `proto_lobby_v1.html` (varian **C "HAZARD POSTER"**) — DIKUNCI | ✅ `c718bdb` (poster full-bleed + dock) → `1229cbb` (ROLL=STOP + AUTO berputar, label "1 IN" & panel DECK kiri dihapus) → `21e1080` (klik 4 lingkaran party ganti poster showcase; tray potion menyembunyikan party) |
-| **Story — "HAZARD PROTOCOL"** | `proto_story_v1.html` — DIKUNCI | ✅ `e629f6f` (port 100%, full English, banner hazard masuk/keluar/deploy) |
-| **Settings / tab More** | `proto_more_v2.html` (accordion) — DIKUNCI | ✅ `ac0d262`→`8091725`→`9da9d28`; tema WoB `01d6fdc` + fix header `ef4788b` |
-| **Command drawer / swipe menu** | `proto_drawer_v2.html` (accordion) — DIKUNCI | ✅ WoB `08db876` |
-| **Tab bar** (4 tab, Summon dihapus) | — | ⏳ ikut sweep P0 |
-| **Trait + Weather machine + Deck picker** | — | ✅ WoB `de5e2ca` (picker horizontal 1:1, header cyber) |
-| **Rebirth + 7-Day reward** | — | ✅ WoB `87e4ed0` |
-| **Card Index** | — | ✅ WoB `f7f3dec` + rangkaian fix header/scroll `63bf092`…`58d261f` |
-| **Tower (hub + toko INF + drop modal)** | `proto_tower_v1.html` | ✅ `e8ca9c8`→`5b78085`→`823a395`→`c263c91`→`fa3f344`→`ce0fcf4` (CORE SPIRE, HOLO SHELF `token`, body opaque WoB) |
-| **World Boss (hub + Shadow Armory)** | `proto_wb_v1.html` / `proto_wb_shop_v1.html` | ✅ `247df3e` (panggung kartu boss + rak rail) |
+| **Loading screen + transisi masuk** | `proto_loading_v1.html` + `proto_logo_v1.html` varian **HAZARD** — DIKUNCI | ✅ `0d9f2e1` → `6c49ad2` (fan kartu, progress tersegmentasi, plate ACCESS GRANTED, curtain tape, notif masuk, judul 3D `.ld-lockup`) |
+| **Lobby + Roll Reveal + Potion/Luck/Weather Dock** | `proto_lobby_v1.html` (varian **C "HAZARD POSTER"**) — DIKUNCI | ✅ `c718bdb` → `21e1080` → `36a3dea` → `0a5cfde` (poster full-bleed, 5-slot dock WebP 2.5D, Potion Matrix, Global Luck Shrine, Weather Dock, Hazard Gacha Reveal + Anomaly Showcase, Toast/Cinematic `notify-hazard.js`) |
+| **Story — "HAZARD PROTOCOL"** | `proto_story_v1.html` — DIKUNCI | ✅ `e629f6f` → `f29a4e7` (port 100%, full English, banner hazard masuk/keluar/deploy `#storyCurtain`) |
+| **Battle — "BATTLE HAZARD v2.2"** | `proto/battle-fresh.html` + `js/battle-hazard.js` + `css/battle-fresh.css` | ✅ `7063287` → `94bda2d` → `5fe63d3` (arena WoB, HUD 2 sisi, deck/graveyard swap, 3-hit combo, burn/freeze/shock/shunpo FX, 5 signature skill FX, 60fps smooth lunge & slash, Speed 1×/2× free + 3× Pass) |
+| **Settings / tab More** | `proto_more_v2.html` (accordion) — DIKUNCI | ✅ `ac0d262` → `01d6fdc` → `a8e6837` (tema WoB, speed 1×–3× dengan 3× Speed Pass) |
+| **Command drawer / swipe menu + Nav Dock** | `proto_drawer_v2.html` — DIKUNCI | ✅ `08db876` → `7d29593` → `bb2617f` → `df775f4` (drawer v5 + 5-slot dock + 15 ikon 2.5D WebP hazard) |
+| **Backpack + Deck Modal + Skill Tree** | `css/backpack-hazard.css`, `js/deck-modal.js` (`css/deck-screen.css`), `js/skill-tree.js` (`css/skill-tree.css`) | ✅ `7906243` (19 ikon 2.5D WebP untuk 3 path, core, dan 16 node; curtain `#backpackCurtain`, `#deckCurtain`, `#skillCurtain`) |
+| **Traits V2 + Weather Machine** | `css/trait-screen.css`, `css/weather-screen.css` | ✅ `ec06fff` → `23094c9` → `1d9791a` → `ced4e84` (Traits V2 EN, Swap Vault, base-card trait sharing, UR+ rates 0044, 15 ikon potion 2.5D WebP, curtain `#traitCurtain` & `#weatherCurtain`) |
+| **Rebirth (Ascension) + 7-Day Daily + Watch Ads** | `js/rebirth-hazard.js` (`css/rebirth-hazard.css`), `css/daily-hazard.css`, `css/watch-ads-hazard.css` | ✅ `fce7e84` → `f10d8be` → `4afb2a6` → `1756436` (Rebirth WoB Hazard UI, 5s showcase, evolving crests, ×5 sequential luck 0047, curtain `#rebirthCurtain`, `#dailyCurtain`, `#watchAdsCurtain`) |
+| **Card Index V2 + 3D Card Info Inspector + Card Assets** | `css/index-screen.css`, `css/card-assets-hazard.css` | ✅ `be57377` → `a25dbb3` → `278c9d6` (hazard bevel 1px border, solid stamp icons, 48×48 trait SVGs, 3D inspector `#ciInfoPanel`, curtain `#indexCurtain`) |
+| **Tower (CORE SPIRE Hub v2 + INF Shop + Drop Report)** | `proto_tower_v1.html`, `css/tower-hub.css`, `css/drop-report.css` | ✅ `c1988af` → `64a4d45` (Hub v2 + Shop WoB full English + `#towerCurtain`) |
+| **World Boss (Unified Hazard Hub + Milestones + Drops Shop)** | `proto_wb_v1.html`, `css/world-boss.css` | ✅ `72577b9` → `533272d` (Unified Hazard Hub, 7-tier daily milestones 0043, integrated drops shop, striker picker, entrance/exit curtain) |
+| **Profile Dossier + Public Profile + Titles + Ranking + Premium Exchange** | `css/profile-screen.css`, `css/public-profile.css`, `js/titles-hazard.js` (`css/titles-hazard.css`), `css/ranking-hazard.css`, `css/premium-exchange.css` | ✅ `1bb8e85` → `8b3fb36` → `ad1cfb1` → `0965572` → `6e509b1` (Zero-scroll WoB Profile Dossier, hero full-bleed card, 3 support slots, 29 master titles + Solo God Aura, Pass 2×/4× Luck & Shiny 0046) |
 
-**Tema UI terpilih (2026-11-05): WHITE-on-BLACK (WoB)** — hitam `#050505`/`#0a0a0a` + teks/garis putih `#f5f5f5` + satu aksen kuning hazard `#f3e600`. Prototipe lab: `_tmp/bp_color_lab.html` varian C (user kunci). Aturan: **warna semantik JANGAN diputihkan** (koin emas, gem cyan, badge tier, warna mutasi, danger, weather). Implementasi = blok per layar di `css/mobile-shell.css`: chrome lobby `1352`, trait `1522`, weather `1714`, deck picker `1858`+`1966`+`2110`, command drawer `2197`, settings `2327`, rebirth `2576`, daily `2621`, index `2698`; lobby HAZARD POSTER `2977`–`3760` (poster full-bleed `3367`, landscape pendek `3450`, buff strip `3536`, desktop `3616`, ROLL/STOP `3667`, chip buff `3695`, AUTO `3733`). Cascade lawan `#backpackPanel` id-rule (`css/lobby-prototype.css:2653`) perlu spesifisitas id. Progres: **lobby + backpack + settings + drawer + trait/weather/deck + rebirth/daily + index + tower + WB + story + loading = ✅**; sisa **battle** ⏳.
+**Tema UI terpilih (2026-11-05): WHITE-on-BLACK (WoB)** — hitam `#050505`/`#0a0a0a` + teks/garis putih `#f5f5f5` + satu aksen kuning hazard `#f3e600`. Prototipe lab: `_tmp/bp_color_lab.html` varian C (user kunci). Aturan: **warna semantik JANGAN diputihkan** (koin emas, gem cyan, badge tier, warna mutasi, danger, weather). Implementasi sekarang dipisah rapi ke stylesheet modular per layar di `css/*.css` (dimuat di `index.html:31-56`, lihat §2) plus blok fondasi di `css/mobile-shell.css`.
 
 **P0 mobile** (bukti terukur, antre — lihat §4/ledger): K-GRID koleksi di 320 · `#pwaInstallBtn` nutupin dock · tab active-state · daily-close 44px. (Story sudah beres: semua kontrol ≥44px, diverifikasi `_tmp/story_prod_shot.cjs`.)
 **Mandor aktif** = sesi ini; pekerja = sesi divisi terpisah (**MODE PARALEL**, §2c — 5 divisi boleh jalan bareng asalkan tiketnya disjoint per file). Sumber kebenaran giliran & keputusan = `_tmp/mandor_ledger.md` (ditimpa tiap unit).
@@ -33,259 +43,137 @@ Angka baris di dokumen ini **terukur 2026-11-06** (HEAD `6c49ad2`); kalau file b
 
 ## 1. ATURAN KERJA (WAJIB)
 
+0. **Baca `AGENTS.md` lalu BACA `SKILL.md` yang relevan sebelum mulai kerja.** Setiap awal tugas, setelah membaca `AGENTS.md`, wajib baca skill yang tersedia (`clean-agent-intent`, `game-ui-ux-wob`, `animator-2d-game-fx`, serta skill dari plugin `superpowers` / `supabase` / `context7-mcp` / `chrome-devtools` / `mobbin` / `modern-web-guidance` bila relevan). Jangan langsung mengedit kode tanpa memuat panduan skill terkait.
 1. **Jangan refactor besar / hapus kode** tanpa diminta eksplisit. User sensitif ke perubahan tak diminta.
 2. **ART JANGAN DISENTUH.** Jangan ganti / timpa / pindah file gambar apa pun (kartu, pet, artefak, item, thumbnail, `assets/**`) kecuali user minta tersurat "ganti art". "Optimasi" tidak pernah berarti menyentuh gambar.
-3. **Cache-busting:** setiap edit file JS/CSS → naikkan `?v=` di `index.html` (script JS di baris 1137–1169, CSS di baris 30–37). Kalau tidak, user lihat versi lama.
-4. **CSS: tidak lagi append-only.** Aturan lama (tumpuk override di akhir `css/style.css`) adalah penyebab 60k baris dan SUDAH DIGANTI: ubah deklarasi pemenang di tempatnya, per layar, jangan tambah strata override baru. Karena satu selector bisa ditimpa di 4 stylesheet (`style.css` → `world-boss/sl-system/story-carousel` → `lobby-prototype.css` → `mobile-shell.css`, urutan muat `index.html:19-26`), sebelum membuang/mengubah apa pun cek siapa pemenang cascade sungguhan lewat harness `_tmp/dominated.js` (bukti 58 kondisi) + `_tmp/ab_swap.js` (A/B computed-style, gerbang `BEDA=0`). Gaya yang cuma hidup di state runtime (kelas `body.*`, `html.m-*`) tidak boleh dinilai dari `index.html` saja.
+3. **Cache-busting:** setiap edit file JS/CSS → naikkan `?v=` di `index.html` (script JS di baris 30 & 2453–2492, CSS di baris 31–56, serta registrasi `sw.js?v=` di baris 62 dan `CACHE_NAME` di `sw.js:1`). Kalau tidak, user lihat versi lama.
+4. **CSS: tidak lagi append-only di `style.css`.** Aturan lama (tumpuk override di akhir `css/style.css`) SUDAH DIGANTI: setiap layar WoB Hazard kini punya stylesheet modularnya sendiri (lihat urutan muat 25 file CSS di `index.html:31-56`). Ubah deklarasi pemenang di tempatnya (di file CSS layar terkait), jangan tambah strata override baru di ekor `style.css`. Sebelum membuang/mengubah aturan bersama, cek siapa pemenang cascade sungguhan lewat harness `_tmp/dominated.js` + `_tmp/ab_swap.js`. Gaya yang cuma hidup di state runtime (kelas `body.*`, `html.m-*`) tidak boleh dinilai dari `index.html` saja.
 5. **Commit** pakai identitas inline (tidak ada global config):
    `git -c user.name="Qoder" -c user.email="qoder@local" commit -m "..."`
-   Stage **file spesifik**, JANGAN `git add -A` (folder prototipe bisa nyangkut).
-   Yang **sudah dilacak git dan wajar di-commit**: `js/config.js`, `js/pwa.js`, `js/topup.js`, `sw.js`, `manifest.json`, `docs/TOPUP.md`, `test-roll-system.md`, seluruh `supabase/migrations/*.sql` + `supabase/functions/**`.
-   Yang **di-ignore / jangan pernah dipaksa masuk**: `android/`, `www/`, `dist/`, `node_modules/`, `backups/`, `_tmp/`, `vibe_images/`, `proto/`, `supabase/.temp/`, `prototipe.html`, `*-prototype.html`, `demo-*.html`, `js/anim-prototipe.js`, `css/anim-prototipe.css`, `*.bak-*`.
+   Stage **file spesifik**, JANGAN `git add -A` (folder prototipe / `.kilo/` bisa nyangkut).
+   Yang **sudah dilacak git dan wajar di-commit**: `js/*.js` (kecuali `anim-prototipe.js`), `css/*.css` (kecuali `anim-prototipe.css`), `sw.js`, `manifest.json`, `docs/TOPUP.md`, `test-roll-system.md`, seluruh `supabase/migrations/*.sql` + `supabase/functions/**`.
+   Yang **di-ignore / jangan pernah dipaksa masuk**: `android/`, `www/`, `dist/`, `node_modules/`, `backups/`, `_tmp/`, `.kilo/`, `vibe_images/`, `proto/`, `supabase/.temp/`, `prototipe.html`, `*-prototype.html`, `demo-*.html`, `js/anim-prototipe.js`, `css/anim-prototipe.css`, `*.bak-*`.
 6. Push hanya kalau diminta. Remote: `origin` → GitHub `mencot6474-design/anime-card-battle-rng`. **Push `master` = deploy** (GitHub Pages langsung, dan build Netlify ikut ke-trigger — kuota Netlify sudah lewat per 2026-10-25, jadi build-nya cuma gagal). Kalau user minta "jangan ke netlify", dorong ke branch samping: `git push origin master:wb-balance`. `gh` CLI tidak ada.
 7. Responsif wajib dicek: desktop 1400×900, HP 500×844, HP landscape ~850×390.
 8. Preview dev server: `http://127.0.0.1:8123` (node_repl static server dengan Range + no-cache). **Jangan dimatikan** — itu preview milik user.
 9. **Performa = fitur.** User pakai HP/PC kentang. Setiap FX baru wajib ikut aturan di §2b (canvas bersama, `FXQ`, `FXDPR`, animasi composited). Jangan tambah `box-shadow`/`text-shadow`/`background-position`/custom property yang dianimasikan di subtree battle.
-10. **Akses DB = PAT di `_tmp/sbpat.txt`.** File itu gitignored dan satu-satunya tempat token boleh berada: **jangan** di-commit, di-paste ke chat, ditulis ke file lain, atau ditaruh di kode. `_tmp/apply_sql.cjs` + `_tmp/inspect_state.cjs` sudah membacanya. Revoke/hapus token hanya bisa dari dashboard (tidak ada API-nya) dan hanya kalau user minta. Service-role key / password DB tidak boleh ada di repo.
-11. **Probe DB live wajib bersih-bersih.** Script uji menulis ke DB produksi bersama. Setelah selesai: kembalikan state global yang tersentuh (mis. `world_boss_days.hp_left` → `world_boss_pool_size()`), hapus **hanya** baris/akun yang kamu buat sendiri (`player_saves` + `auth.users` + `gem_grants`), dan **laporkan** baris asing/admin tanpa menghapusnya. Sejak 0029, `probe_0029.cjs` berjalan di transaksi yang di-rollback (`raise exception`), jadi tidak menulis apa pun — jangan "memperbaiki" dengan commit. `tamper_log` adalah bukti audit: **jangan** dihapus/di-truncate kecuali user minta.
+10. **Akses DB = PAT di `_tmp/sbpat.txt`.** File itu gitignored dan satu-satunya tempat token boleh berada: **jangan** di-commit, di-paste ke chat, ditulis ke file lain, atau ditaruh di kode. `_tmp/apply_sql.cjs` + `_tmp/inspect_state.cjs` sudah membacanya (atau gunakan MCP `supabase_mcp` untuk inspeksi). Revoke/hapus token hanya bisa dari dashboard (tidak ada API-nya) dan hanya kalau user minta. Service-role key / password DB tidak boleh ada di repo.
+11. **Probe DB live wajib bersih-bersih.** Script uji menulis ke DB produksi bersama. Setelah selesai: kembalikan state global yang tersentuh (mis. `world_boss_days.hp_left` → `world_boss_pool_size()`), hapus **hanya** baris/akun yang kamu buat sendiri (`player_saves` + `auth.users`), dan **laporkan** baris asing/admin tanpa menghapusnya. Sejak 0029, `probe_0029.cjs` berjalan di transaksi yang di-rollback (`raise exception`), jadi tidak menulis apa pun — jangan "memperbaiki" dengan commit. `tamper_log` adalah bukti audit: **jangan** dihapus/di-truncate kecuali user minta.
 
 ---
 
-## 2. PETA FILE
+## 2. PETA FILE (Terukur 2026-11-12, HEAD `6e509b1`)
 
 ```
-index.html            1.181 baris, shell + semua modal/screen markup,
-                      CSS di baris 19–37, urutan script di baris 1137–1169
-css/style.css         28.280 baris total / 19.952 nonblank — gaya utama (edit pemenang
-                      di tempat, bukan append). Pemangkasan blank code user 2026-11-06.
-                      Jangkar: main rule 3353, battle arena 3583, PERF/LAYOUT 18183–18334,
-                      FULL-ART CARDS 18374, FULL-ART + MUTASI 18437, SHADOW ARMY 18480,
-                      FX PASSIVE SHADOW KING 18485, LEADERBOARD 18706–19013,
-                      SHEET PROFIL PLAYER PUBLIK 19014, WORLD BOSS klaim reward 19106,
-                      **LOADING SCREEN HAZARD 19323** (lockup `19380`, fan `19384`,
-                      judul 3D `19411`, curtain `19523`, plate `19562`, notif `19627`,
-                      responsif `19657`), WATCH ADS MODAL 20954, REBIRTH ASCENSION 21816,
-                      UPDATE LOG MODAL 23194, Card Index tata ulang 23473,
-                      CORE SPIRE hub 9564, TOKO INF 9881, PREMIUM SHOP 15988,
-                      TOP-UP 17235, full-screen screens 17788, profil 17578,
-                      GLOBAL LUCK WIDGET 17020, SETTINGS chrome 18037
-css/mobile-shell.css  3.767 baris (3.510 nonblank) — layout default semua device +
-                      seluruh tema WoB per layar (lihat §0)
-css/lobby-prototype.css  7.937 baris (7.354 nonblank) — lobby stage/topbar, drawer,
-                      backpack/deck/tree/item (port v3)
-css/battle-fresh.css  1.352 baris (1.210 nonblank) — port `proto/battle-fresh.html`: arena battle 1:1,
-                      header disembunyikan saat battle (dimuat index.html:26)
-css/story-carousel.css 1.970 baris — ditulis ulang penuh untuk port Story "HAZARD PROTOCOL"
-                      (dikunci 2026-11-06). Di-scope penuh ke `#storyModal`, plus
-                      `#storyCurtain` (banner transisi) yang hidup di body.
-                      Jangkar: token 24, shell modal `#storyModal` 42, header
-                      `.story-header` 164, rail bab `.chapter-rail` 337,
-                      kolom stage `.stage` 454, peta `.tactical-node-map` 632,
-                      node `.map-node` 688, dossier/sheet `.stage-briefing-drawer` 855,
-                      dock `.mobile-quick-dock` 1215, banner `.hz-half` 1444 /
-                      `.hz-plate` 1521; media query 1658 (`max-width:819px`),
-                      1846 (`max-width:400px`), 1857 (`max-height:520px` + landscape),
-                      1906 (`min-width:1180px`), 1921 (reduced-motion).
-                      PENTING: tema cyan global `.diff-btn` di `css/style.css` memakai
-                      `!important`, jadi semua deklarasi pill difficulty di sini WAJIB
-                      `!important` juga (kalau tidak, NORMAL/HARD tampil biru navy).
-css/world-boss.css    2.797 baris (2.664 nonblank) — hub World Boss (`249`), Shadow Armory (`1042`),
-                      panggung kartu boss (`1129`), swipe 3D (`1352`), reward track (`1567`),
-                      Tactical Striker Picker `.rd-pick` (`1625`), WB hub v2 (`1980`)
-css/sl-system.css     520 baris — roll/gacha + system window (panel 23, header 102,
-                      tile 162, search 203, tombol 231, empty 293, raid zero-scroll 308,
-                      toko raid 416, toko INF 485)
-css/anim-prototipe.css  halaman prototipe (tidak dipakai game) — LOKAL SAJA, sudah di-.gitignore
-js/data.js            STORY_BIBLE (baris 100), luck helper (`totalLuck` 93,
-                      `luckChance` 96, `fmtChance` 24), data cerita/unit
-js/crazygames.js      Integrasi resmi CrazyGames SDK v3: deteksi iframe (`isCrazyGamesEnvironment` 14),
-                      lifecycle hooks (`cgGameplayStart` 77, `cgHappyTime` 95), auto guest login, ad handler
-js/i18n.js            Sistem lokalisasi/bahasa (EN & ID), kamus frasa GameLang (1.727 baris;
-                      objek `window.GameLang` 1713, `window.tLang` 1726),
-                      MutationObserver ringan anti-looping (1678; tanpa characterData pada body)
-js/config.js          config runtime (Supabase dll)
-js/mobile-shell.js    responsive shell (228 baris) — set kelas `html.m-portrait`/`m-landscape` (35–36)
-                      + membangun tabbar portrait / rail landscape di luar `#app`
-js/supabase-sync.js   CloudDB: saveState (70) + flag p_skip_stacks + `_authRpc` (188, semua RPC tulis via JWT),
-                      `_st` 245 / `_paint` 251, gem RPC 513–525 (0023),
-                      leaderboard 812 / avatars 823 / profile 830 / submitScore 839,
-                      wbState/wbStart/wbSubmit/wbClaim 778–804,
-                      _coinRpc 533 (0025) + _tokenRpc 752 (0026),
-                      buyItem 561 / buyPack 582 / buyWeather 600 (0029),
-                      rollPull 623 / bulkRoll 640 / `_applyPullResult` 683 (Unit 4–5b),
-                      claimIndexReward 664 (0042) / spendIntan 733 (0039),
-                      guardStatus 909 / guardNuke 914 (stub), CloudAuth 990+ (`mySave` 1072,
-                      `mySessionId` 1078, `authenticate` 1084, `connect` 1100, `_confirmOn` 1125,
-                      `ensurePass` 1166)
-js/panels.js          gacha roll, profil, backpack, premium, weather, topup, global luck
-                      + SRoll 981–1058 (SROLL_BATCH 981, SRoll 983, srOn 997/srEnsure 1014/
-                        srTake 1042/srReset 1053/srOne 1058) dan rollTick 1129 (jalur server, tanpa fallback lokal)
-                      + `renderBackpackPanel` 1851 / renderBpItems 2174 / renderBpTree 2658 /
-                        renderBpArts 2834 / renderBpPets 2858; openProfileModal 1271 / renderProfile 1420;
-                        openTitlesModal 1350 / renderTitlesModal 1371;
-                        openPremiumShop 3143 / renderPremiumShop 3196;
-                        openWeatherMachine 3532 / renderWeatherMachine 3760;
-                        renderTopupModal 4381 / openTopup 4503;
-                        renderBuffDock 380 / renderWeatherDock 320 / startWeatherTick 617;
-                        renderGlobalLuck 3992; openWatchAdsModal 4674 / completeWatchAdReward 4918
-js/topup.js           modal topup (render terpisah)
-js/cards-fx.js        CARDS (7), DIFFS (159), FX/skill text, mutasi (128+)
-                      + GLOBAL: FXQ(n) = SELALU 0 (baris 4; bukan kuota 70% — lihat 2b#3),
-                        FXDPR() = 1 (6)
-                      + konstanta raid/WB: WB_POOL_HP 170 (1e10, 0033 — TIDAK ada
-                        pengali damage lagi; damage kartu dikirim apa adanya)
-                      + FORMATTER: fmt (305) format ribuan koma; fmtStat (307) format ringkas
-                        stat HP & ATK kartu (1000->1k, 100000->100k, 1e6->1M)
-                      + helper: cardStats 293, skillText 303, traitChip 235, mutChip 237
-js/anime-archetype-attacks.js  definisi attack per archetype
-                      + SATU canvas bersama #animeAtkCanvas (ensureSharedCanvas /
-                        registerFrame 119 / sharedTick 124, canvas z-index:78 di 99)
-                      + White impact screen flash pada basic attack ditiadakan (visual comfort & FPS)
-js/shadow-king-fx.js  FX passive Shadow King (arise/shadow exchange/legion absorb),
-                      engine hasil port dari prototipe; timing lewat bsMs();
-                      layer `#skfxLayer` dibuat dinamis di baris 21
-js/fps-lock.js        frame-rate lock global untuk semua loop JS-driven (partikel,
-                      camLoop, shared attack tick) — progres pakai performance.now()
-js/state.js           state global, auth, renderShell, home, mission, story hook,
-                      save/cloud push (lihat §3), `coinSpend` (560) & `xpGain` (572),
-                      `_rebirthGained`/`_rebirthDo` (0027, blok REBIRTH 435–460),
-                      `renderDaily` 1151 / `claimDaily` 1221 / `flushPendingDailyGems` 1249 / `openDaily` 1280,
-                      BGM `playBgm` 1000 / `syncBgmState` 1016
-js/sheetfx.js         efek lembar/slash battle (canvas FX terpisah, DPR via FXDPR)
-js/battle.js          battle engine + render (semua canvas pakai FXDPR; partikel FXQ
-                      kini = 0 jadi loop ber-FXQ TIDAK menggambar apa pun — lihat 2b#3)
-                      + renderBattle 255, startBattle 1748, `foeFighterInnerHtml` 136
-                      + story/tower close: towerEnd 3152, storySetCd 3177, xpGain 3178
-js/tower-lobby.js     lobby hub, tower, backpack toggle, modal helper, modal Rebirth horizontal
-                      + lobby HAZARD POSTER: renderLobby 1790, hubCardHtml 1178, hubLoadoutHtml 1202,
-                        hubRebirthTileHtml 1243, hubLivingStandeeHtml 1392, showcase party `l12Showcase` 1755
-                      + tower: towerReward 58, renderTower 121, renderTowerShop 497, renderTowerBattle 710,
-                        startTowerBattle 733, towerEnd 932, ITEMS 516, openTowerDropModal 2965
-                      + rebirth modal: renderRebirthModal 3010, openRebirthModal 3148, executeRebirthFromModal 3171
-                      + toggleBackpack 2849
-                      + standardisasi kartu: box HP & ATK gelap (tanpa ikon), tatanan vertikal badge loading,
-                        kartu hasil tower & instant pack (.rrc) bersih hanya teks 1 in X di footer tanpa badge
-js/foe-passives.js    passive musuh
-js/story-carousel.js  modal story "HAZARD PROTOCOL" (IIFE, ekspor ke window di 1095–1107).
-                      `CHAPTER_META` 29 (judul/region/lore per bab, English), `SKILL_DESC_EN` 87
-                      (deskripsi skill 30 musuh story, English — data kartu asli tetap ID),
-                      `lockTextEn` 120 (pengganti `cellReqText` yang berbahasa Indonesia),
-                      banner: `setBannerCopy` 200 / `bannerEnter` 256 / `bannerExit` 266 /
-                      `bannerDeploy` 284; lifecycle `openStory` 327 / `closeStory` 370;
-                      render `buildStoryChapterDOM` 382 / `renderChapterRail` 445 /
-                      `renderDifficultyPills` 495 / `renderTacticalNodes` 556 /
-                      `updateStoryDrawer` 624 / `renderPartyDock` 787;
-                      interaksi `selectStoryStage` 808 / `openLoreModal` 855 /
-                      `launchSelectedBattle` 881 / `changeStoryChapter` 1025;
-                      `startCdTicker` 1057 (tick 1 dtk label cooldown replay — pengganti
-                      `state.js:updateStoryCdUI` yang masih menargetkan DOM carousel lama).
-                      1.131 baris; ekspor publik (window.*) tidak berubah dari versi lama.
-js/raid.js            raid hub/battle/shop + Card Index (openIndex 1224/ixRender 1270) + trait (openTrait 1492/
-                      renderTrait 1496)/auto-roll 1690 + World Boss (syncBossDOM 512, goBoss 562)
-                      + Tactical Striker Picker (renderRaidPick 580), deck pick (openDeckPick 1609/renderDeckPick 1611)
-                      + WB_BOSSES 28, fmtBig 85, renderRaid 380/renderRaidHub 398, startRaid 687,
-                        WB_SHOP 954, renderRaidShop 1159, rollTrait 1645
-js/ranking.js         leaderboard 5 papan (world_boss, world_boss_b, inf_tower,
-                      deck_power, rarest_pull) via RPC get_leaderboard — layout v2:
-                      podium top-3 + border, baris RANK|AV|NAMA|SKOR|Δ (rkRowsHtml 290),
-                      tab pil di bawah, foto profil asli (rkFillAvatars 189) + sheet profil player
-                      (openRkProfile 723, rpHtml 595); RK_BOARDS 12, lbState 434,
-                      RK_REFRESH_DAY_MS 776, RK_AV_KEY 102, RK_DATA_IMG 105, RK_MUTS 540
-js/boot.js            router (`render` 329), `enterGame` 909, settings (`renderSettings` 2), foot menu,
-                      indikator pemain online 1302 (menggantikan label BUILD),
-                      **LOADING SCREEN HAZARD**: `runLoading` 1044 (progress ease-out → tape sweep →
-                      curtain → plate → lobby di belakang curtain → reveal → notif masuk; auto-advance
-                      2,6 dtk, `#ldgEnter` cuma mempercepat), `LD_SUBS` 969 / `LD_TIPS` 979 /
-                      `LD_FAN_FALLBACK` 997 / `_ldEl` 985 / `_ldArt` 986 / `_ldFillFan` 998 /
-                      `_ldStageUpdate` 1034; `loginAsGuest` 690 (TIDAK menumpuk `#authSpin` di atas
-                      loader baru — cek `_ldActive`, kirim status ke `#ldStatus`),
-                      update log modal (GAME_CHANGELOGS 1253 / openChangelogModal 1391 /
-                      renderChangelogModal 1404), cropper avatar 1265, ESC key listeners modal
-js/devtools-guard.js  (DIHAPUS/NONAKTIF per 0037) — tidak lagi dimuat `index.html`; stub aman no-op
-js/rpc-guard.js       (DIHAPUS/NONAKTIF per 0037) — tidak lagi dimuat `index.html`; stub aman no-op
-js/pwa.js             install prompt/service worker (pill `#pwaInstallBtn` di-append ke body, 27–34)
-js/coret.js           fitur coret dev (tombol float `#crFab`, dibuat dinamis di 13–14)
-sw.js / manifest.json PWA (service worker + precache) — tracked, naikkan `CACHE_NAME` bila perlu
-supabase/migrations/  0001–0042 SQL (topup, earn_gems, redeem, world boss 0005–0009 &
-                      0011, leaderboard 0010, hemat save 0012, JWT 0018–0021,
-                      gem JWT+cap 0022, gem per-aksi 0023, RPC tulis JWT 0024,
-                      coin server 0025, token WB/INF + level/xp server 0026,
-                      guard progres + cap damage WB 0027, ledger item
-                      pet/artefak + penalti coin 0028, tamper guard 0029
-                      (tamper_log, gating klaim, ledger pack, weather/potion/
-                       progres/pub), koreksi plafon papan 0030, devtools guard 0031
-                      (reset total via RPC report_devtools + guard_allow), RPC
-                      guard 0032 (honeypot + pre-request fingerprint + bom 30 dtk
-                      lewat guard_status/guard_nuke + guard_cfg/guard_allow),
-                      WB damage asli + deck_power server + rate limit 0033,
-                      ROLL SERVER 0034 (roll_config, roll_pool_def 105,
-                      roll_mut_rates, luck_def 51, RPC roll_pull = acak + potong
-                      pack + bayar esens dup + totalRolls), trait server 0035
-                      (trait_def + RPC trait_roll), ledger roll 0036 (roll_history
-                      + stacks_legacy 473 key + _validate_stacks_ledger, dipasang
-                      di merge), hapus penalti zeroing 0037, helper merge 0038
-                      (get_player_gems/_coins_of/_tokens_of/_level_of/_sp_*_of/
-                      _rebirth_*_of/_lb_*/_xp_req/spend_coins/spend_gems +
-                      tabel player_progress — tanpa 0038 SEMUA save gagal 404),
-                      intan ledger 0039 (player_saves.intan_credit + roll_config
-                      'intan_pulls' + INTAN_INFLATE di dalam _rebuild_packs +
-                      RPC spend_intan), pack harian server 0040 (kolom
-                      pack_def.pulls + tabel daily_pack_amnesty + amnesty sekali
-                      dari phantom dailyR100kBalance + claim_daily_gem versi 0040
-                      yang MEMBAYAR pack ke player_packs dan membalas packs /
-                      pack_qty), pack konsumsi server 0041 (tabel roll_ledger +
-                      helper _roll_entries/_bulk_count/_binom_small + RPC bulk_roll;
-                      roll_pull versi 0041 memotong player_packs FOR UPDATE lewat
-                      ledger yang sama, dan _validate_stacks_ledger juga menerima
-                      bukti dari roll_ledger), klaim reward index server 0042
-                      (helper _owned_variant_count + tabel index_reward_claims +
-                      RPC claim_index_reward) — apply lewat
-                      Management API (`_tmp/apply_sql.cjs`, token `_tmp/sbpat.txt`) atau SQL Editor.
-                      `supabase db push` DILARANG: riwayat `schema_migrations` remote kosong
-                      (0001–0024 dulu dijalankan manual), jadi push akan mengulang semuanya
-supabase/functions/   Deno edge: create-invoice, order-status, play-verify,
-                      redeem-code, trakteer-webhook (+ _shared/packs.ts)
-tools/cap-sync.mjs    copy web → www (Capacitor)
-assets/{cards,pets,artifacts,images,raid,vfx,audio,bg,frames,sprites,ui}
-                      assets/audio = BGM lobby (bgm-lobby.mp3 synthwave electronic, loop), SFX
-                      assets/ui = dekor UI (lb-top1.mp4 border podium #1,
-                      lb-ring.png border podium #2/#3) — JANGAN sentuh tanpa diminta
-docs/TOPUP.md, test-roll-system.md
-Bahan uji coba (TIDAK dilacak git, tidak ikut deploy): `proto/`, `prototipe.html`,
-`*-prototype.html`, `demo-*.html`, `js/anim-prototipe.js`, `css/anim-prototipe.css`.
-`_tmp/` = probe DB + harness: `apply_sql.cjs` / `inspect_state.cjs` (Management API,
-baca `_tmp/sbpat.txt`), `probe_0023*.cjs` (parity tabel gem), `probe_0024.cjs` (E2E
-authenticated + cleanup), `probe_0027.cjs` (guard progres + cap WB, E2E + cleanup
-world_boss_days), `probe_0028.cjs` (ledger item + penalti coin; seluruh uji di dalam
-transaksi yang di-rollback lewat `raise exception` — tidak menulis apa pun),
-`probe_0029.cjs` (tamper guard: gating klaim, ledger pack, weather/potion/progres/
-pub/LB, pola rollback yang sama), `probe_0030.cjs` (plafon papan rarest_pull/
-deck_power, rollback), `probe_0032.cjs` (RPC guard: grant anon, honeypot,
-pre-request lock, nuke, fingerprint, exempt; rollback), `probe_0032_live.cjs`
-(JWT asli lewat PostgREST: honeypot → 403 merge → nuke → merge lagi; akun uji
-dihapus di finally), `probe_0033.cjs` / `probe_0033b.cjs` / `probe_0033c.cjs`
-(WB damage asli + cap, deck_power server, rate limit, enforce; rollback),
-`backup_db.cjs` (dump tabel produksi ke `_tmp/backup_*.json` sebelum migrasi
-berisiko), `unit_00NN_client.cjs` (stub fetch), `gen_0025.cjs` / `gen_0027.cjs` / `gen_0028.cjs`
-/ `gen_0034.cjs` (+ `gen_0034_seed.cjs`) / `gen_0036.cjs` (generator tabel cermin +
-perakit SQL dari data.js/panels.js/cards-fx.js — 0034–0036 dan 0035 TIDAK boleh disunting
-manual), `probe_0034_rpc.cjs` (parity distribusi `roll_pull` vs RNG client + z-score,
-kunci luck, esens dup), `probe_merge.cjs` (nukes = in→out saldo identik; arg = username,
-semua di `begin; … rollback;` dengan JWT dipalsukan), `tamper_peek.cjs` /
-`gems_probe*.cjs` / `sig_check.cjs` / `audit_refs.cjs` / `merge_calls.cjs` (diagnostik
-read-only), `probe_hole.cjs` + `probe_intan.cjs` / `probe_intan2.cjs` (bukti
-lubang/mirror ekonomi di dalam rollback; arg = username), `grant_intan_test.cjs`
-(alat TEST saja — fixture browser, jangan dipakai untuk memberi intan ke pemain), `probe_0040.cjs` (amnesty + grant pack harian + respons `pack_qty`, rollback) dan `q_packs.cjs` (baca `player_packs` / `intan_credit` / phantom satu akun, SELECT murni — tidak menulis apa pun) dan `q_live_packs.cjs` (read-only SEMUA akun: saldo `player_packs`, `count/sum/max(last_at)` `roll_ledger`, `tamper_log` per `reason` — ini yang dipakai buat mastiin amnesty tidak ke-downgrade dan buat memantau apakah pemakaian pack pemain mulai kecatat setelah build live). Harness 0041: `probe_0041.cjs` (bukti `bulk_roll` — akuntansi new+dup=total, clamp `bulk_max_packs`, `PACK_EMPTY`/`PACK_UNKNOWN`, paritas chi-square vs bobot `_roll_entries`, regresi `roll_pull` + `merge_player_state`, dump ACL/RLS — semuanya `begin; … rollback;`), `q_0041_state.cjs` (snapshot `player_packs`/`roll_ledger`/leaderboard/tamper/save satu akun, read-only, tulis ke `_tmp/cgu1_pretest.json`), `q_fn.cjs <nama>` (cetak `prosrc` fungsi live — penting karena Management API hanya membalas statement TERAKHIR, jadi jangan simpulkan "baris tidak ada" dari query multi-statement), dan untuk uji E2E browser yang menulis data uji sungguhan: `grant_5b2_test.cjs <user> <pack> <qty>` + `undo_5b2_test.cjs <user> <qtyAwal> [--commit]` (restore save/ledger/LB dari `_tmp/cgu1_baseline.json` + backup; default dry-run). `tamper_log` TIDAK pernah dihapus harness itu. `_tmp/sbpat.txt` = PAT
-Supabase — **jangan pernah** di-commit atau disalin keluar.
+index.html                  2.504 baris (2.320 nonblank) — shell + semua modal/screen + curtain markup,
+                            CSS (25 file) di baris 31–56, urutan script (31 file) di baris 29–30 & 2453–2492
+sw.js / manifest.json       PWA service worker (`CACHE_NAME = 'anime-card-battle-v596-cleanSelectorPreview'` di baris 1)
+
+=== STYLESHEETS (urutan muat di index.html:31–56) ===
+css/style.css               28.065 baris (19.844 nonblank) — gaya dasar & legacy (edit pemenang di tempat,
+                            jangan append). Jangkar: main rule 3353, battle arena 3583, CORE SPIRE hub 9564,
+                            TOKO INF 9881, PREMIUM SHOP 15988, GLOBAL LUCK WIDGET 17020, TOP-UP 17235,
+                            profil 17578, full-screen screens 17788, SETTINGS chrome 18037, PERF/LAYOUT 18183,
+                            FULL-ART CARDS 18374, LEADERBOARD 18706, SHEET PROFIL PUBLIK 19014,
+                            LOADING SCREEN HAZARD 19323–19657, WATCH ADS 20954, REBIRTH 21816,
+                            UPDATE LOG 23194, Card Index 23473
+css/world-boss.css          2.187 baris (2.099 nonblank) — Unified World Boss Hazard Hub, daily milestones,
+                            integrated drops shop, striker picker, dan curtain WB
+css/sl-system.css             520 baris (497 nonblank) — roll/gacha + system window
+css/story-carousel.css      1.970 baris (1.877 nonblank) — Story "HAZARD PROTOCOL" (di-scope ke `#storyModal`
+                            + `#storyCurtain`). PENTING: semua deklarasi `.diff-btn` wajib `!important`
+                            untuk mengalahkan tema cyan global di `style.css`
+css/lobby-prototype.css     7.946 baris (7.368 nonblank) — lobby stage/topbar, drawer, `#backpackPanel`
+css/mobile-shell.css        3.694 baris (3.485 nonblank) — layout default semua device (`html.m-portrait` /
+                            `html.m-landscape`) + blok WoB lobby HAZARD POSTER, drawer, settings
+css/deck-screen.css           872 baris (841 nonblank) — layar Deck Modal Hazard (`#deckModal`, `#deckCurtain`)
+css/skill-tree.css            889 baris (853 nonblank) — layar Skill Tree Synapse (`#skillModal`, `#skillCurtain`)
+css/backpack-hazard.css       726 baris (704 nonblank) — Backpack Hazard WoB (`#backpackPanel`, `#backpackCurtain`)
+css/trait-screen.css        3.426 baris (3.353 nonblank) — Traits V2 UI, Swap Vault, Attunement (`#traitModal`, `#traitCurtain`)
+css/weather-screen.css        246 baris (237 nonblank) — Weather Machine Hazard (`#weatherMachineModal`, `#weatherCurtain`)
+css/index-screen.css        1.872 baris (1.813 nonblank) — Card Index V2 & 3D Card Info Inspector (`#indexModal`, `#ciInfoPanel`, `#indexCurtain`)
+css/profile-screen.css      2.230 baris (2.142 nonblank) — Operator Dossier Profile WoB zero-scroll (`#profModal`/`#wobProfileModal`, `#profileCurtain`)
+css/public-profile.css        689 baris (665 nonblank) — Public Player Dossier (`#rkProfModal`)
+css/ranking-hazard.css      1.120 baris (1.093 nonblank) — Leaderboard Hazard (`#rankModal`, `#rankCurtain`)
+css/titles-hazard.css       2.195 baris (2.029 nonblank) — Master Titles & Solo God Aura (`#titlesModal`, `#titlesCurtain`)
+css/premium-exchange.css      955 baris (913 nonblank) — Premium Exchange 2-panel store (`#premiumModal`, `#premiumCurtain`)
+css/drop-report.css           324 baris (312 nonblank) — Tower/Pack Drop Report Modal (`#towerDropModal`)
+css/battle-fresh.css        2.311 baris (2.256 nonblank) — Battle Hazard v2.2 Arena 1:1, HUD 2 sisi, kartu & kombo
+css/notify-hazard.css         150 baris (147 nonblank) — Global Hazard Toast Stack & Activation Cinematic
+css/watch-ads-hazard.css    1.338 baris (1.299 nonblank) — Watch Ads Terminal (`#watchAdsModal`, `#watchAdsCurtain`)
+css/daily-hazard.css        1.338 baris (1.293 nonblank) — 7-Day Daily Login Rewards (`#dailyModal`, `#dailyCurtain`)
+css/rebirth-hazard.css      1.900 baris (1.836 nonblank) — Rebirth Ascension WoB + 5s Showcase (`#rebirthModal`, `#rebirthCurtain`)
+css/tower-hub.css           2.242 baris (2.175 nonblank) — Infinite Tower Hub v2 + Shop (`#towerCurtain`)
+css/card-assets-hazard.css    782 baris (755 nonblank) — Hazard bevel 1px borders, solid stamp icons, badge mutasi/shiny/trait
+
+=== SCRIPTS (urutan muat di index.html:29–30 & 2453–2492) ===
+js/crazygames.js              205 baris — Integrasi CrazyGames SDK v3 (`isCrazyGamesEnvironment` 14, `cgGameplayStart` 77, `cgHappyTime` 95)
+js/fps-lock.js                 60 baris — Frame-rate lock global untuk semua loop JS-driven (`performance.now()`)
+js/data.js                    571 baris — `fmtChance` 24, `fmtLobbyLuck` 103, `totalLuck` 110 (termasuk `passLuckMult()`), `luckChance` 113, `STORY_BIBLE` 117
+js/config.js                   21 baris — Config runtime (Supabase URL/anon key, Trakteer)
+js/cyber-icons.js              27 baris — Registry SVG ikon cyber untuk command drawer & dock
+js/mobile-shell.js            246 baris — Responsive shell (`html.m-portrait`/`m-landscape` 35–36, tabbar/rail 5-slot dengan WebP 2.5D icons)
+js/supabase-sync.js         1.295 baris — CloudDB: `saveState` 70, `_authRpc` 194, `_st` 251, `_paint` 257, `verifyAndDeductGems` 318, `_gemRpc` 504 (`claimStoryGem` 529, `claimStoryReplay` 533, `claimDailyGem` 537, `exchangeTokens` 541), `_coinRpc` 549, `buyItem` 577 (pet/art/pass), `buyPack` 599, `buyWeather` 617, `rollPull` 640, `bulkRoll` 657, `claimIndexReward` 681, `_applyPullResult` 700, `spendIntan` 750, `_tokenRpc` 769, `wbState`/`wbStart`/`wbSubmit`/`wbClaim`/`wbClaimMilestone` 795–828, `leaderboard` 851, `avatars` 862, `profile` 869, `submitScore` 878, `traitRoll` 959, `CloudAuth` 1035 (`mySave` 1114, `mySessionId` 1120, `authenticate` 1126, `connect` 1142, `_confirmOn` 1167, `ensure` 1178, `ensurePass` 1208, `link` 1254, `kick` 1277)
+js/notify-hazard.js           267 baris — `window.hzNotify` (101, toast stack) & `window.hzCinematic` (aktivasi Global Luck / Weather Potion)
+js/titles-hazard.js         1.027 baris — 29 Master Titles, `evalTitleUnlocked` 905, `getTitlesList` 942, `renderSoloGodAuraHtml` 954, `renderTitleCrownHtml` 1013
+js/panels.js                6.504 baris — Gacha roll, profil WoB, backpack, premium exchange, weather machine, topup, global luck, watch ads:
+                            `renderWeatherDock` 336, `renderBuffDock` 396, `startWeatherTick` 571, `claimIndexReward` 820,
+                            `SROLL_BATCH` 938, `startRollAnimation` 1022, `rollTick` 1086,
+                            `openProfileModal` 1378, `openTitlesModal` 1619, `renderTitlesModal` 1687, `renderProfile` 1848,
+                            `renderBackpackPanel` 2797, `renderBpItems` 2994, `renderBpTree` 3478, `renderBpArts` 3654, `renderBpPets` 3678,
+                            `MASTER_CARD_INDEX` 3895, `openPremiumShop` 4092, `renderPremiumShop` 4374, `buyPremiumPack` 4412,
+                            `openWeatherMachine` 4704, `renderWeatherMachine` 4926, `renderGlobalLuckWidget` 5172, `renderGlobalLuckBanner` 5318, `buyGlobalLuck` 5506,
+                            `renderTopupModal` 5667, `openTopup` 5789, `openWatchAdsModal` 6036, `renderWatchAdsModal` 6153, `completeWatchAdReward` 6458
+js/topup.js                   305 baris — Modal topup Trakteer / QRIS
+js/cards-fx.js                395 baris — `FXQ` 4 (`return 0;`), `FXDPR` 6 (`return 1;`), `CARDS` 7, `DIFFS` 159, `WB_POOL_HP` 170 (`1e10`), `traitChip` 282, `mutChip` 284, `cardStats` 365, `skillText` 375, `fmt` 377, `fmtStat` 379
+js/anime-archetype-attacks.js 595 baris — Serangan archetype di 1 canvas bersama `#animeAtkCanvas` (`registerFrame` 99, `sharedTick` 126, `playAnimeArchetypeAttack` 581)
+js/state.js                 1.849 baris — `freshState` 12, `let state=null, currentUser=null` 36, `rebirthLuckMult` 505 (`c*5`), `coinSpend` 621, `xpGain` 633, `_cloudPush` 694, `save` 731, `playBgm` 1049, `syncBgmState` 1065, `renderDaily` 1259, `claimDaily` 1386, `flushPendingDailyGems` 1414, `openDaily` 1446, `renderHome` 1629, `openStory` 1630
+js/sheetfx.js                 375 baris — Efek slash/combo/status battle (3-hit combo, burn, freeze, shock, shunpo dodge — zero-particle 60fps)
+js/battle.js                2.965 baris — Battle engine + render (`foeFighterInnerHtml` 224, `renderBattle` 400, `startBattle` 1016)
+js/battle-hazard.js         1.144 baris — Dekorator & sinkronisasi arena Battle Hazard v2.2 (`hzBattleDecorate` 1139, `hzBattleSync` 1140, `hzCurtainIn` 1141, `hzCurtainOut` 1142, `hzAnimateDeathAndSwap` 1143)
+js/tower-lobby.js           3.880 baris — Lobby HAZARD POSTER & CORE SPIRE Tower (`towerReward` 58, `renderTower` 255, `renderTowerShop` 677, `renderTowerBattle` 979, `startTowerBattle` 1003, `hubCardHtml` 1585, `hubLoadoutHtml` 1615, `hubRebirthTileHtml` 1656, `renderLobby` 2238, `toggleBackpack` 3634, `openTowerDropModal` 3755)
+js/rebirth-hazard.js        1.135 baris — Modal Rebirth WoB Hazard + 5s showcase (`renderRebirthModal` 596, `executeRebirthFromModal` 926, `openRebirthModal` 1042)
+js/shadow-king-fx.js          360 baris — FX passive Shadow King & 5 signature skill FX (`#skfxLayer`)
+js/foe-passives.js            355 baris — Passive musuh (full English)
+js/story-carousel.js        1.106 baris — Story "HAZARD PROTOCOL" IIFE (`openStory`, `closeStory`, `selectStoryStage`, `launchSelectedBattle`, `startCdTicker`)
+js/raid.js                  3.769 baris — World Boss Unified Hazard Hub + Milestones + Drops Shop + Card Index V2 + Traits V2 (`WB_BOSSES` 64, `fmtBig` 117, `wbClaimMilestone` 218, `wbClaim` 280, `renderRaid` 391, `renderRaidHub` 1113, `syncBossDOM` 1348, `goBoss` 1360, `startRaid` 1387, `WB_SHOP` 1828, `ixRender` 2132, `openIndex` 2677, `openTrait` 2946, `renderTrait` 3472, `openDeckPick` 3560, `rollTrait` 3627, `startAutoRoll` 3701)
+js/deck-modal.js              820 baris — Deck Modal Hazard (`openDeckModal` 688, `closeDeckModal`, `deckModalRender`)
+js/skill-tree.js              815 baris — Skill Tree Synapse Modal (`openSkillTree` 809, `closeSkillTree`, `skillTreeRender`)
+js/ranking.js                 850 baris — Leaderboard Hazard 5 papan + Public Profile Sheet (`RK_BOARDS` 12, `openRanking` 25, `rkFillAvatars` 194, `rkRowsHtml` 295, `rkRender` 330, `rpHtml` 605, `openRkProfile` 727)
+js/i18n.js                  1.764 baris — Kamus lokalisasi EN/ID (`MutationObserver` 1689, `window.GameLang` 1738, `window.tLang` 1763)
+js/boot.js                  1.582 baris — Router & Lifecycle (`renderSettings` 2, `render` 329, `loginAsGuest` 716, `enterGame` 935, `runLoading` 1070, `GAME_CHANGELOGS` 1279, `openChangelogModal` 1417, `renderChangelogModal` 1430)
+js/pwa.js                      94 baris — PWA install prompt (`#pwaInstallBtn`) & service worker
+js/coret.js                   207 baris — Dev overlay anotasi (`#crFab`)
+js/code-inspector.js          529 baris — Click-to-source inspector dev (`[ALT]` + klik)
+js/devtools-guard.js / js/rpc-guard.js — Stub no-op 2 baris (DIHAPUS dari `index.html` per 0037)
+
+=== SUPABASE (migrations 0001–0047 & edge functions) ===
+supabase/migrations/        0001–0047 SQL:
+                            - 0001–0042: fondasi topup, world boss, leaderboard, JWT owner-only RLS (0018–0021),
+                              gem per aksi (0023), RPC tulis JWT (0024), coin/token/XP server (0025–0026),
+                              guard progres & item ledger (0027–0029), WB real damage & deck_power server (0033),
+                              roll server & trait server (0034–0036), hapus penalti zeroing (0037),
+                              merge helpers (0038), intan ledger (0039), daily pack grant & amnesty (0040),
+                              bulk_roll & roll_ledger (0041), claim_index_reward (0042).
+                            - 0043_wb_milestones.sql: tabel `world_boss_milestone_claims` (7 tier/boss/hari) +
+                              RPC `claim_world_boss_milestone(p_boss, p_tier)` + `total_dmg` harian di `world_boss_state`.
+                            - 0044_trait_odds_update.sql: sinkronisasi `trait_def` UR+ rates (`transiden` 0.34%,
+                              `demigod` 0.1%, `cosmic` 0.05%, `bigbang` 0.01%).
+                            - 0045_speed_3x_pass.sql: hapus speed 4×, buka 2× gratis, tambah pass permanen `speed-3x`
+                              (3.000 Gems) di `item_def`/`player_items` (`kind='pass'`) + kunci `passesOwned` di merge.
+                            - 0046_luck_shiny_passes.sql: tabel `pass_def` + 4 pass permanen stackable (`luck-2x` 5k,
+                              `luck-4x` 10k, `shiny-2x` 4k, `shiny-4x` 8k Gems) + helper `_pass_luck_mult` & `_pass_shiny_mult`.
+                            - 0047_rebirth_5x_luck.sql: update `_luck_of` agar multiplier Rebirth berskala sekuensial ×5
+                              per rank (`R0=1x, R1=5x, R2=10x, R3=15x...`, cermin `rebirthLuckMult()` di `js/state.js:505`).
+                            Apply lewat Management API (`_tmp/apply_sql.cjs`, token `_tmp/sbpat.txt`) atau MCP `supabase_mcp`.
+                            `supabase db push` DILARANG.
+supabase/functions/         Deno edge: create-invoice, order-status, play-verify, redeem-code, trakteer-webhook (+ _shared/packs.ts)
 ```
 
-Urutan load (penting — fungsi global saling pakai; `index.html` baris 1137–1169):
-`fps-lock → data → config → supabase-sync → panels → topup → cards-fx → anime-archetype-attacks → state → sheetfx → battle → tower-lobby → shadow-king-fx → foe-passives → story-carousel → raid → ranking → i18n → boot → pwa → coret → code-inspector`
-(`devtools-guard.js` / `rpc-guard.js` sudah dicabut dari `index.html` sejak 0037 — jangan ditulis ulang di peta ini.)
-CrazyGames SDK v3 dimuat di `<head>`: `https://sdk.crazygames.com/crazygames-sdk-v3.js` (dengan handler rewarded ads di `js/panels.js`).
+Urutan load script (`index.html` baris 29–30 & 2453–2492):
+`crazygames (di <head>) → fps-lock → data → config → cyber-icons → mobile-shell → supabase-sync → notify-hazard → titles-hazard → panels → topup → cards-fx → anime-archetype-attacks → state → sheetfx → battle → battle-hazard → tower-lobby → rebirth-hazard → shadow-king-fx → foe-passives → story-carousel → raid → deck-modal → skill-tree → ranking → i18n → boot → pwa → coret → code-inspector`
 
-`panels.js` dimuat **sebelum** `cards-fx.js` (CARDS dipakai saat render, bukan saat load). `raid.js` dimuat **setelah** `tower-lobby.js`.
-`cards-fx.js` harus tetap dimuat **sebelum** `anime-archetype-attacks.js`, `sheetfx.js`, dan `battle.js` karena `FXQ`/`FXDPR` dipakai ketiganya.
+`panels.js` dimuat **sebelum** `cards-fx.js` (`CARDS` dipakai saat render, bukan saat load). `cards-fx.js` wajib dimuat **sebelum** `anime-archetype-attacks.js`, `sheetfx.js`, dan `battle.js` karena `FXQ`/`FXDPR` dipakai ketiganya. `battle-hazard.js` dimuat tepat setelah `battle.js`, dan `rebirth-hazard.js` tepat setelah `tower-lobby.js`.
 
 ---
 
@@ -321,11 +209,11 @@ Aturan keras: **pekerja hanya menyentuh file miliknya.** Kalau perbaikan yang di
 
 | Divisi | File yang dipegang | Dilarang |
 |---|---|---|
-| **mandor** (orchestrator + QC) | `index.html` **hanya baris versi**, `sw.js` **hanya `CACHE_NAME``, commit/push, gate verifikasi | menulis logika permainan atau CSS sendiri; mendelegasikan lagi ke sesi lain |
-| **core** (logic, state, math) | `js/state.js`, `js/data.js`, `js/cards-fx.js`, `js/battle.js`, `js/panels.js`, `js/tower-lobby.js`, `js/raid.js`, `js/foe-passives.js`, `js/i18n.js`, `js/ranking.js`, `js/topup.js`, `roll-system.js` | menyentuh `ctx.*` baru (lihat konflik 1), mengutak-atik cascade CSS, memotong saldo tanpa delta (`_coinSpend`/`_xpGain`/`_rebirthGain`) |
-| **vfx** (canvas & render loop) | `js/anime-archetype-attacks.js`, `js/sheetfx.js`, `js/shadow-king-fx.js`, `js/fps-lock.js`. API `FXQ`/`FXDPR` (didefinisikan di `js/cards-fx.js:4,6`) dan `registerFrame` (`js/anime-archetype-attacks.js:119`) dipanggil, **bukan** diedit | bikin `<canvas>` baru per serangan; layer video/gambar di belakang kartu; mengubah HP/stat/state pemain |
-| **ui-ux** (struktur & journey) | markup `index.html` (modal/screen, **bukan** `?v=`), blok `renderXxx()` di `js/mobile-shell.js`, `js/story-carousel.js`, `js/pwa.js` | `innerHTML` berkala per-timer (flicker + scroll loncat), matematika battle/drop rate, **edit `css/*`** (lihat aturan 3) |
-| **ui-css** (styling & cascade) | `css/style.css`, `css/mobile-shell.css`, `css/world-boss.css`, `css/sl-system.css`, `css/story-carousel.css`, `css/battle-fresh.css`, **`css/lobby-prototype.css`** | append-only override di ujung file; `backdrop-filter` di permukaan besar; `background-attachment:fixed` di area scroll; menganimasikan `box-shadow`/`width`/`height`/`top` |
+| **mandor** (orchestrator + QC) | `index.html` **hanya baris versi**, `sw.js` **hanya `CACHE_NAME`**, commit/push, gate verifikasi | menulis logika permainan atau CSS sendiri; mendelegasikan lagi ke sesi lain |
+| **core** (logic, state, math) | `js/state.js`, `js/data.js`, `js/cards-fx.js`, `js/battle.js`, `js/panels.js`, `js/tower-lobby.js`, `js/raid.js`, `js/foe-passives.js`, `js/i18n.js`, `js/ranking.js`, `js/topup.js`, `js/rebirth-hazard.js`, `js/titles-hazard.js` | menyentuh `ctx.*` baru (lihat konflik 1), mengutak-atik cascade CSS, memotong saldo tanpa delta (`_coinSpend`/`_xpGain`/`_rebirthGain`) |
+| **vfx** (canvas & render loop) | `js/anime-archetype-attacks.js`, `js/sheetfx.js`, `js/shadow-king-fx.js`, `js/fps-lock.js`, `js/battle-hazard.js`, `js/notify-hazard.js`. API `FXQ`/`FXDPR` (didefinisikan di `js/cards-fx.js:4,6`) dan `registerFrame` (`js/anime-archetype-attacks.js:99`) dipanggil, **bukan** diedit | bikin `<canvas>` baru per serangan; layer video/gambar di belakang kartu; mengubah HP/stat/state pemain |
+| **ui-ux** (struktur & journey) | markup `index.html` (modal/screen, **bukan** `?v=`), blok `renderXxx()` di `js/mobile-shell.js`, `js/cyber-icons.js`, `js/story-carousel.js`, `js/deck-modal.js`, `js/skill-tree.js`, `js/pwa.js` | `innerHTML` berkala per-timer (flicker + scroll loncat), matematika battle/drop rate, **edit `css/*`** (lihat aturan 3) |
+| **ui-css** (styling & cascade) | seluruh 25 file produksi di `css/*.css` (`style.css`, `mobile-shell.css`, `lobby-prototype.css`, `battle-fresh.css`, `story-carousel.css`, `world-boss.css`, `sl-system.css`, dan semua `*-hazard.css` / `*-screen.css` / `tower-hub.css` / `skill-tree.css` / `drop-report.css` / `premium-exchange.css`) | append-only override di ujung `style.css`; `backdrop-filter` di permukaan besar; `background-attachment:fixed` di area scroll; menganimasikan `box-shadow`/`width`/`height`/`top` |
 | **db-sync** (DB, RPC, otoritas server) | `supabase/**`, `js/supabase-sync.js`, `js/config.js`, `js/rpc-guard.js`, `js/devtools-guard.js`, `js/code-inspector.js`. Harness DB: `_tmp/apply_sql.cjs`, `_tmp/inspect_state.cjs`, `_tmp/probe_*.cjs` | `supabase db push` (lewat Management API); mencetak isi `_tmp/sbpat.txt`; menghidupkan hukuman nuke/zeroing saldo (aturan revert 0037) |
 
 ### Empat konflik matriks vs kenyataan repo (sudah diputuskan, jangan didebat ulang di tengah jalan)
@@ -334,7 +222,7 @@ Aturan keras: **pekerja hanya menyentuh file miliknya.** Kalau perbaikan yang di
    **PRASYARAT peluruhan blok ke `#animeAtkCanvas` (terukur mandor 2026-10-30, jangan dilewati):** (a) `registerFrame` itu privat di dalam IIFE — satu-satunya export file itu `window.playAnimeArchetypeAttack` (`js/anime-archetype-attacks.js:1348`), jadi perpindahan blok WAJIB dulu 1 baris export dari vfx; (b) kanvas bersama di `z-index:78` (`js/anime-archetype-attacks.js:99`) sedangkan blok battle.js z68–69 dan `#dmgLayer` z70 (`css/style.css:3861`) — pindah = FX naik menutupi angka damage, itu **perubahan tampang** yang butuh ACC user, bukan keputusan teknis. (`#skfxLayer` dibuat dinamis di `js/shadow-king-fx.js:21`; aturan z-nya tidak lagi ada di `style.css`.) Kalau user belum setuju, blok tetap di canvas sendiri.
 2. **Template `renderXxx()` tinggal di file milik core.** Markup yang jadi tanggung jawab ui-ux hidup di dalam `js/panels.js`, `js/battle.js`, `js/tower-lobby.js`, `js/raid.js`. Jadi kepemilikan bersifat **per-blok, bukan per-file**: ui-ux memegang urutan/struktur DOM di blok `renderXxx()` itu; core memegang nilai yang dimasukkan ke dalamnya. Mandor wajib **mengurutkan (serialize)**: tidak ada dua pekerja menyentuh satu file di batch yang sama, urutannya core → ui-ux → ui-css.
 3. **Persyaratan layout bukan pemilik file CSS.** Ergonomi (target sentuh ≥44px, panel solid, anti-keptong, full-bleed modal) adalah hak ui-ux untuk **menuntut**, tapi wujud perbaikannya deklarasi CSS di file ui-css. Jalur yang benar: ui-ux menulis daftar (`_tmp/fix_queue_uiux.md`: selector + ukuran yang diminta + alasan + bukti ukur), **ui-css yang mengeksekusi**. ui-ux tidak pernah mengedit `css/*`.
-4. **`sw.js` wajib ikut gerbang cache-bust.** AGENTS.md aturan 3 cuma menyebut `index.html`, tapi `sw.js:1` (`anime-card-battle-v478-loadingLogoGap`) melayani precache — HP kentang bisa dapat CSS basi walau `?v=` sudah naik, dan itu sudah pernah kejadian (dicatat di §5 soal `roll_ledger`). Gerbang rilis mandor = **3 langkah, semua wajib**: (a) bump `?v=` di `index.html` (31 token terukur 2026-11-06), (b) bump `CACHE_NAME` di `sw.js`, (c) `grep -c <token baru>` membuktikan keduanya sebelum commit.
+4. **`sw.js` wajib ikut gerbang cache-bust.** AGENTS.md aturan 3 cuma menyebut `index.html`, tapi `sw.js:1` (`anime-card-battle-v596-cleanSelectorPreview`) melayani precache — HP kentang bisa dapat CSS basi walau `?v=` sudah naik, dan itu sudah pernah kejadian (dicatat di §5 soal `roll_ledger`). Gerbang rilis mandor = **3 langkah, semua wajib**: (a) bump `?v=` di `index.html` (25 CSS + 31 JS + 1 `sw.js?v=`), (b) bump `CACHE_NAME` di `sw.js`, (c) `grep -c <token baru>` membuktikan keduanya sebelum commit.
 
 ### Yang TIDAK ada pemiliknya — status "khusus izin"
 
@@ -381,68 +269,68 @@ Glob `_tmp/*.cjs` **bukan** milik db-sync. Pembagian nyata: ui-ux = `_tmp/layout
 ## 3. STATE & DATA MODEL
 
 - `let state=null, currentUser=null` — `js/state.js:36` (dua-duanya top-level `let`: tes in-page harus assign identifier polos, bukan `window.state`)
-  **`window.state` itu undefined, selalu.** `let` top-level tidak jadi properti window, jadi `if (window.state) window.state.premiumGems = x` adalah tulisannya *silent no-op* — tidak error, tidak berubah. Pernah bikin gems hasil `earn_gems` tidak pernah muncul di topbar (player mengira reward hilang). Di `supabase-sync.js` pakai `this._st()` (245) untuk membaca state dan `this._paint()` (251) untuk menggambar ulang topbar setelah saldo berubah.
+  **`window.state` itu undefined, selalu.** `let` top-level tidak jadi properti window, jadi `if (window.state) window.state.premiumGems = x` adalah tulisannya *silent no-op* — tidak error, tidak berubah. Pernah bikin gems hasil `earn_gems` tidak pernah muncul di topbar (player mengira reward hilang). Di `supabase-sync.js` pakai `this._st()` (251) untuk membaca state dan `this._paint()` (257) untuk menggambar ulang topbar setelah saldo berubah.
 - `freshState()` — `js/state.js:12` = bentuk save:
-  `coins, wbTokens, infTokens, playerLv, xp, dailyIndex, lastClaim, summons, totalRolls, playSec, muted, lang, diff, chap, raidDiff, raidCleared{}, raidShopOwned{}, towerShopOwned{}, storyGemMilestones{}, dailyGemPending, storyCd{}, rebirth{count,essence}, tower{best,auto}, battleSpeed, cleared{}, clearedDiff{}, equippedId, equippedId2, deck[4], stacks[](array, bukan map), history[], rollHistory[], battle, player{luckBase,luckFlat,luckPercent,exp,lv,sp,tree{}}, weather, weatherBest, potions, mythicPotions, luckPots[3], speedPots[3], luckBuffs[], speedBuffs[], artOwned[], artSlots[2], petOwned[], petEquipped, intanRolls, idxRewardsClaimed, premiumGems, rollPacks{r5k,r10k,r25k,r50k,r100k}` (`dailyR100kBalance` DIHAPUS 0040 — lihat bullet "Pack harian server-grant"; `dailyClaimedDays` juga sudah tidak ada)
+  `coins, wbTokens, infTokens, playerLv, xp, dailyIndex, lastClaim, summons, totalRolls, playSec, muted, lang, diff, chap, raidDiff, raidCleared{}, raidShopOwned{}, towerShopOwned{}, storyGemMilestones{}, dailyGemPending, storyCd{}, rebirth{count,essence}, tower{best,auto}, battleSpeed, cleared{}, clearedDiff{}, equippedId, equippedId2, deck[4], stacks[](array, bukan map), history[], rollHistory[], battle, player{luckBase,luckFlat,luckPercent,exp,lv,sp,tree{}}, weather, weatherBest, potions, mythicPotions, luckPots[3], speedPots[3], luckBuffs[], speedBuffs[], artOwned[], artSlots[2], petOwned[], petEquipped, passesOwned[], intanRolls, idxRewardsClaimed, premiumGems, rollPacks{r5k,r10k,r25k,r50k,r100k}` (`dailyR100kBalance` DIHAPUS 0040 — lihat bullet "Pack harian server-grant"; `dailyClaimedDays` juga sudah tidak ada)
 - Persist lokal: localStorage `aab-state-v2:<username>`. Contoh terukur 2026-10-25: 96,9 KB JSON, `stacks` = 73,8 KB (562 item), sisanya 23 KB.
 - Rantai save/cloud (`js/state.js`):
-  `save()` (670) → tulis localStorage + diff-check `_cloudStateKey()` (596; playSec dikecualikan; identik = skip total) → debounce 400 ms → `_cloudPush()` (633) → `CloudDB.saveState` → RPC `merge_player_state`.
-  Anti-bandwidth: `CLOUD_PUSH_MIN_MS = 30000` (604) membatasi push saat auto-roll (`skipStacks: true` kirim payload ringan ~2 KB); saat auto-roll selesai/berhenti, tab switch, logout, atau deck change, push penuh `stacks: true` langsung dipicu tanpa batasan 60 detik agar inventori kartu tidak hilang di browser lain. `flushCloudSave()` (659) dan `pushCloudNow()` (666) selalu kirim inventori penuh.
+  `save()` (731) → tulis localStorage + diff-check `_cloudStateKey()` (657; playSec dikecualikan; identik = skip total) → debounce 400 ms → `_cloudPush()` (694) → `CloudDB.saveState` → RPC `merge_player_state`.
+  Anti-bandwidth: `CLOUD_PUSH_MIN_MS = 30000` (665) membatasi push saat auto-roll (`skipStacks: true` kirim payload ringan ~2 KB); saat auto-roll selesai/berhenti, tab switch, logout, atau deck change, push penuh `stacks: true` langsung dipicu tanpa batasan 60 detik agar inventori kartu tidak hilang di browser lain. `flushCloudSave()` (720) dan `pushCloudNow()` (727) selalu kirim inventori penuh.
   **Reconcile SP & Tree:** Server hanya mengontrol `playerLv` dan `xp`. Di `loadStateFor()`, total SP yang berhak dimiliki pemain dihitung otomatis: `expectedSp = Math.max(0, (state.playerLv || 1) - 1 - spentSp)`. Jika `state.player.sp` tertinggal atau 0 saat login di browser baru, ia disinkronkan ke `expectedSp` sehingga pemain level 17+ tidak kehilangan poin SP.
-  **Daily 100K Pack Sync (0040):** klaim pack 7-hari TIDAK lagi lewat angka save. `claim_daily_gem` yang menulis pack ke ledger `player_packs` dan membalas `packs` (jatah hari ini) + `pack_qty` (saldo final); `flushPendingDailyGems` (state.js:1266) memakai `pack_qty` apa adanya, bukan `+=`, jadi cermin client tidak pernah bisa melebihi ledger. Klaim di satu browser otomatis terbawa ke browser lain karena sumbernya baris `player_packs`, bukan localStorage.
+  **Daily 100K Pack Sync (0040):** klaim pack 7-hari TIDAK lagi lewat angka save. `claim_daily_gem` yang menulis pack ke ledger `player_packs` dan membalas `packs` (jatah hari ini) + `pack_qty` (saldo final); `flushPendingDailyGems` (state.js:1414) memakai `pack_qty` apa adanya, bukan `+=`, jadi cermin client tidak pernah bisa melebihi ledger. Klaim di satu browser otomatis terbawa ke browser lain karena sumbernya baris `player_packs`, bukan localStorage.
   Payload ringan dibuat di `supabase-sync.js:70–115` (`skipStacks` → `p_skip_stacks`): salinan state tanpa `stacks`; `_coinSpend` (0025), `_xpGain` (0026), dan `_rebirthGain`/`_rebirthDo` (0027) ikut di salinan yang sama dan dibuang server setelah dipakai. Sejak 0024 satu-satunya jalur tulis = RPC `merge_player_state`; fallback PATCH dihapus karena tabel tidak punya policy UPDATE (pasti 401) — dulu sempat menyamar "berhasil".
-  **`pub` (ringkasan profil publik)** disuntik `buildPubSummary()` (state.js:611) ke `opts.pub` (salinan payload dibuat di `supabase-sync.js:93–103`) lalu ikut masuk `p_save_data` di `saveState`. `merge_player_state` mengganti `save_data` secara utuh, jadi key turunan seperti `pub` harus ikut terkirim lagi tiap push; pernah lupa sehingga profil player lain kosong.
-  **KEY INTI WAJIB DINORMALKAN** di `loadStateFor` (blok setelah `titles`, state.js 199–224): `coins, playerLv, xp, summons, lastClaim, muted, history, cleared, weather, weatherBest`. Alasannya nyata — baris cloud `admin` kembali TANPA `coins`/`playerLv`, dan `renderShell` memanggil `fmt(state.coins)` → `TypeError` dan seluruh layar mati. `fmt` (cards-fx.js:305) sekarang juga tahan `undefined`/`NaN` (tampil 0), tapi itu pagar kedua, bukan pengganti normalisasi. Field baru = tambah satu baris di blok itu.
-- **STORY GEM + KOOLDOWN = PER STAGE.** (a) Kooldown replay: `state.storyCd` map `"<diff>:<lv>"` → until-ms (`storyCdKey` state.js:463, `storyCdLeft(lv)` :464, `storySetCd(lv)` :469, dipanggil hanya dari `battle.js:3177` saat menang replay). Dulu `storyCdUntil` satu timestamp global — sekali replay mengunci SEMUA stage; key lama dibuang di `loadStateFor` (state.js:234), sengaja tidak dipetakan ke stage mana pun. Konsumen tick 1 detik (`updateStoryCdUI` state.js:520) membaca `dataset.lv` dari `.sc-card` (:524) supaya hitung per kartu; dock + tombol ikut stage terpilih lewat `updateStoryCarouselPositions` (state.js:538). **Sejak port hazard (2026-11-06) DOM carousel lama sudah tidak ada**, jadi `updateStoryCdUI` praktis hanya menyentuh jalur `#startModal` (`stGo`); label cooldown di layar story diurus `startCdTicker` (`js/story-carousel.js:1057`) yang hanya mengubah teks tombol, tanpa render ulang. JANGAN panggil `storyCdLeft()` tanpa `lv`.
-  (b) GEM: basis per BAB (`STORY_GEM_BASE` state.js:337) dipecah — 75% (`STORY_GEM_STAGE_SHARE` :338) ke 6 stage dengan bobot reward coin stage (`storyStageGemReward` :340, bos paling besar), 25% sisanya bonus "BAB SELESAI" (`storyChapBonus` :349). First clear claim sekali per (stage × mode) pakai key `"s"+lv+":"+diff` di `storyGemMilestones`; replay bayar `max(2, 35% × gem stage)` (`claimStoryRepeatGem` :478) dan SATU-SATUNYA pembatasnya ya kooldown stage tadi — tidak ada gate global GEM (sengaja: faucet harus terasa gampang di early game). Semua bayar lewat `_gemDone` (:362) yang tandai optimistis + rollback saat server nolak, lalu `save()` + `renderShell()` biar saldo topbar langsung berubah. Sejak 0023 nominal final dari server (`res.gems`), client hanya menghitung preview. Preview angka ada di `storyGemPreview(lv)` (:499) → baris `.st-reward-gem` (state.js:1506) di start modal dan blok `.sc-dock-gem-box` di dock carousel.
+  **`pub` (ringkasan profil publik)** disuntik `buildPubSummary()` (state.js:672) ke `opts.pub` (salinan payload dibuat di `supabase-sync.js:93–103`) lalu ikut masuk `p_save_data` di `saveState`. `merge_player_state` mengganti `save_data` secara utuh, jadi key turunan seperti `pub` harus ikut terkirim lagi tiap push; pernah lupa sehingga profil player lain kosong.
+  **KEY INTI WAJIB DINORMALKAN** di `loadStateFor` (blok setelah `titles`, state.js 199–224): `coins, playerLv, xp, summons, lastClaim, muted, history, cleared, weather, weatherBest`. Alasannya nyata — baris cloud `admin` kembali TANPA `coins`/`playerLv`, dan `renderShell` memanggil `fmt(state.coins)` → `TypeError` dan seluruh layar mati. `fmt` (cards-fx.js:377) sekarang juga tahan `undefined`/`NaN` (tampil 0), tapi itu pagar kedua, bukan pengganti normalisasi. Field baru = tambah satu baris di blok itu.
+- **STORY GEM + KOOLDOWN = PER STAGE.** (a) Kooldown replay: `state.storyCd` map `"<diff>:<lv>"` → until-ms (`storyCdKey` state.js:524, `storyCdLeft(lv)` :525, `storySetCd(lv)` :530, dipanggil hanya dari `battle.js` saat menang replay). Dulu `storyCdUntil` satu timestamp global — sekali replay mengunci SEMUA stage; key lama dibuang di `loadStateFor`, sengaja tidak dipetakan ke stage mana pun. **Sejak port hazard (2026-11-06) DOM carousel lama sudah tidak ada**, jadi `updateStoryCdUI` praktis hanya menyentuh jalur `#startModal` (`stGo`); label cooldown di layar story diurus `startCdTicker` (`js/story-carousel.js`) yang hanya mengubah teks tombol, tanpa render ulang. JANGAN panggil `storyCdLeft()` tanpa `lv`.
+  (b) GEM: basis per BAB (`STORY_GEM_BASE` state.js:398) dipecah — 75% (`STORY_GEM_STAGE_SHARE` :399) ke 6 stage dengan bobot reward coin stage (`storyStageGemReward` :401, bos paling besar), 25% sisanya bonus "BAB SELESAI" (`storyChapBonus` :410). First clear claim sekali per (stage × mode) pakai key `"s"+lv+":"+diff` di `storyGemMilestones`; replay bayar `max(2, 35% × gem stage)` (`claimStoryRepeatGem` :539) dan SATU-SATUNYA pembatasnya ya kooldown stage tadi — tidak ada gate global GEM (sengaja: faucet harus terasa gampang di early game). Semua bayar lewat `_gemDone` (:423) yang tandai optimistis + rollback saat server nolak, lalu `save()` + `renderShell()` biar saldo topbar langsung berubah. Sejak 0023 nominal final dari server (`res.gems`), client hanya menghitung preview.
   (c) Rate terukur 2026-10-25, kalau semua stage di satu bab dirotasi tiap 5 menit: NORMAL 14/16/18/24/31 gem per bab 1-5 (dulu 8/12/14/18/24), HARD 18..47. First clear per bab tetap ± basis lama (31+10=41 utk bab 1).
-- `const app=document.getElementById("app")` — `js/state.js:1045`; semua view di-render ke sini.
+- `const app=document.getElementById("app")` — `js/state.js:1094`; semua view di-render ke sini.
 - Routing: `render()` `js/boot.js:329` → `#/` home, `#/raid`, `#/tower`, `#/settings`, default lobby.
-- `enterGame()` `js/boot.js:909`.
+- `enterGame()` `js/boot.js:935`.
 
 Rantai data kartu:
-`STORY_BIBLE` (`js/data.js:100`, chapters → levels → unit/reward/boss)
-→ `MASTER_CARD_INDEX` (`js/panels.js:3075`, diturunkan dari units)
+`STORY_BIBLE` (`js/data.js:117`, chapters → levels → unit/reward/boss)
+→ `MASTER_CARD_INDEX` (`js/panels.js:3895`, diturunkan dari units)
 → `CARDS` (`js/cards-fx.js:7`, `Object.fromEntries(MASTER_CARD_INDEX...)`)
-→ `DIFFS` (`js/cards-fx.js:159`), `CHAPTERS` (`js/panels.js:3065`).
+→ `DIFFS` (`js/cards-fx.js:159`), `CHAPTERS` (`js/panels.js:3885`).
 Mutasi: `SHINY_MULT` (128), `MUT_MULT / MUT_CHANCE_MULT / MUT_LABEL / MUT_COLOR` (`js/cards-fx.js` 130–138).
 
 Helper kartu: `cardImg, cardName, cardStats, fmtStat, traitChip, mutChip, fxOf, skillText` (cards-fx.js).
-Luck: `luckChance, totalLuck, fmtChance` (data.js).
+Luck: `luckChance, totalLuck, fmtChance, fmtLobbyLuck, passLuckMult, passShinyMult` (data.js).
 
 ---
 
 ## 4. PETA LAYAR (modal → buka → render → CSS anchor)
 
-| Layar | Modal / root | Buka | Render | CSS anchor |
+| Layar | Modal / root (`index.html`) | Buka | Render | CSS anchor |
 |---|---|---|---|---|
-| **Loading + transisi masuk** | `#loadingScreen` (index.html:64) + `#ldCurtain` 141 + `#ldGrant` 155 + `#ldEntry` 189 | otomatis di `boot()` (boot.js:1430) → `loginAsGuest` → `enterGame` → `runLoading` | `runLoading` (boot.js:1044); `_ldFillFan` 998 isi fan dari state | `style.css` **19323–19656** (lockup 19380, fan 19384, judul 3D 19411, curtain 19523, plate 19562, notif 19627, responsif 19657) |
-| Home | `#app` | `render()` | `renderHome` (state.js:1429) → `renderLobby` (tower-lobby.js:1790) | **lobby HAZARD POSTER C** (`proto_lobby_v1.html`, DIKUNCI): root WAJIB tetap `.lobby-hub` (deteksi `on-lobby` boot.js), poster full-bleed; `lobby-prototype.css` `.lobby-hub` 823 + `mobile-shell.css` 2977–3760 |
-| Story | `#storyModal` (index.html:733) + `#storyCurtain` (index.html:927, di LUAR modal) | `openStory` (state.js:1430 → `window.openStoryCarousel`) | IIFE `story-carousel.js` (`openStory` 327, ekspor 1095–1107) | `story-carousel.css` (`#storyModal` 42, `.hz-curtain` 24) |
-| Index kartu | `#indexModal` (index.html:518) | `openIndex` (raid.js:1224) | `ixRender` (raid.js:1270) | `mobile-shell.css` 2698, `style.css` 6102 + tata ulang 23473 |
-| Trait / skill tree | `#traitModal` (index.html:974) | `openTrait` (raid.js:1492) | `renderTrait` (raid.js:1496) | `mobile-shell.css` 1522 |
-| Weather machine | `#weatherMachineModal` (index.html:602) | `openWeatherMachine` (panels.js:3532) | `renderWeatherMachine` (panels.js:3760) | `mobile-shell.css` 1714 |
-| Premium shop | `#premiumModal` (index.html:540) | `openPremiumShop` (panels.js:3143) | `renderPremiumShop` (panels.js:3196) | `style.css` 15988 |
-| Profil | `#profModal` (index.html:271) | `openProfileModal` (panels.js:1271) | `renderProfile` (panels.js:1420) | `style.css` 17578 |
-| Backpack | `#backpackPanel` (index.html:1134, `display:none` → diisi render) | `toggleBackpack` (tower-lobby.js:2849) | `renderBackpackPanel` (panels.js:1851) | **`lobby-prototype.css:2653`** (id-rule pemenang) + `style.css` 10377 |
-| Backpack tab item | — | — | `renderBpItems` 2174 / tree 2658 / arts 2834 / pets 2858 | — |
-| Mission | `#missionModal` (index.html:633) | `openMission` (state.js:1404) | — | — |
-| Start battle | `#startModal` (index.html:959) | `openStart` (state.js:1479) | — | — |
-| Deck pick | `#deckPickModal` (index.html:987) | `openDeckPick` (raid.js:1609) | `renderDeckPick` (raid.js:1611) | `mobile-shell.css` 1858 + 1966 + 2110 |
-| Battle | `#app` view | `startBattle` (battle.js:1748) | `renderBattle` (battle.js:255) | **`battle-fresh.css`** (1.352 baris) + `style.css` arena 3583 |
-| Tower | `#app` view | `startTowerBattle` (tower-lobby.js:733) | `renderTower` (121) / `renderTowerBattle` (710) | `style.css` 9546–9880 (CORE SPIRE 9564, toko INF 9881) |
-| Raid / World Boss | `#app` view | `startRaid` (raid.js:687) | `renderRaid` (380; hub 398, shop 1159) | `world-boss.css` 249 / 1042 / 1129 / 1980 |
-| Topup | `#topupModal` (index.html:1172) | `openTopup` (panels.js:4503) | `renderTopupModal` (panels.js:4381) | `style.css` 17235 |
-| Titles | `#titlesModal` (index.html:387) | `openTitlesModal` (panels.js:1350) | `renderTitlesModal` (panels.js:1371) | — |
-| 7-Day Login | `#dailyModal` (index.html:722) | `openDaily` (state.js:1280) | `renderDaily` (state.js:1151) | `mobile-shell.css` 2621 + `style.css` 21454 |
-| Rebirth (Ascension) | `#rebirthModal` (index.html:618) | `openRebirthModal` (tower-lobby.js:3148) | `renderRebirthModal` (3010) | `mobile-shell.css` 2576 + `style.css` 21816 |
-| Update Log | `#changelogModal` (index.html:409) | `openChangelogModal` (boot.js:1391) | `renderChangelogModal` (boot.js:1404) | `style.css` 23194 |
-| Settings | `#app` view | `#/settings` (boot.js:338) | `renderSettings` (boot.js:2) | `mobile-shell.css` 2327 — **desain V2 accordion** (`proto_more_v2.html`, DIKUNCI): 3 sektor `.sett-fold` (`.sett-fold` style.css 26875), header `.sett-fh`, satu-buka portrait, ikon mask `i-*`, chamfer |
-| Ranking | `#rankModal` (index.html:651) | `openRanking` (ranking.js:25) | `rkRender` (325) | `style.css` 18706–19013 |
-| Watch Ads | `#watchAdsModal` (dibuat dinamis, panels.js:4661) | `openWatchAdsModal` (panels.js:4674) | `renderWatchAdsModal` | `style.css` 20954 |
+| **Loading + transisi masuk** | `#loadingScreen` (88) + `#ldCurtain` (165) + `#ldGrant` (179) + `#ldEntry` (213) | otomatis di `boot()` → `loginAsGuest` (boot.js:716) → `enterGame` (935) → `runLoading` | `runLoading` (boot.js:1070); `_ldFillFan` isi fan dari state | `style.css` **19323–19657** |
+| **Home / Lobby** | `#app` + `#weatherPanel` (2080) + `#weatherToast` (2132) | `render()` (boot.js:329) | `renderHome` (state.js:1629) → `renderLobby` (tower-lobby.js:2238) | `lobby-prototype.css` + `mobile-shell.css` + `notify-hazard.css` |
+| **Story ("HAZARD PROTOCOL")** | `#storyModal` (1619) + `#loreModal` (1803) + `#storyCurtain` (1813) | `openStory` (state.js:1630 → `window.openStoryCarousel`) | IIFE `story-carousel.js` | `story-carousel.css` |
+| **Card Index V2 + 3D Inspector** | `#indexModal` (745) + `#ciInfoPanel` (952) + `#indexCurtain` (1963) | `openIndex` (raid.js:2677) | `ixRender` (raid.js:2132) | `index-screen.css` + `card-assets-hazard.css` |
+| **Traits V2 + Swap Vault** | `#traitModal` (1860) + `#traitCurtain` (1901) | `openTrait` (raid.js:2946) | `renderTrait` (raid.js:3472) | `trait-screen.css` |
+| **Weather Machine** | `#weatherMachineModal` (1173) + `#weatherCurtain` (1932) | `openWeatherMachine` (panels.js:4704) | `renderWeatherMachine` (panels.js:4926) | `weather-screen.css` + `mobile-shell.css` |
+| **Premium Exchange** | `#premiumModal` (1039) + `#premiumCurtain` (1108) | `openPremiumShop` (panels.js:4092) | `renderPremiumShop` (panels.js:4374) | `premium-exchange.css` |
+| **Profile Dossier (WoB)** | `#profModal` (294) / `#wobProfileModal` (295) + `#profileCurtain` (493) | `openProfileModal` (panels.js:1378) | `renderProfile` (panels.js:1848) | `profile-screen.css` |
+| **Public Player Dossier** | `#rkProfModal` (1463) | `openRkProfile` (ranking.js:727) | `rpHtml` (ranking.js:605) | `public-profile.css` |
+| **Backpack Hazard** | `#backpackPanel` (2144) + `#backpackCurtain` (2147) | `toggleBackpack` (tower-lobby.js:3634) | `renderBackpackPanel` (panels.js:2797); `renderBpItems` 2994 / `renderBpTree` 3478 / `renderBpArts` 3654 / `renderBpPets` 3678 | `backpack-hazard.css` + `lobby-prototype.css` |
+| **Deck Modal Hazard** | `#deckModal` (2178) + `#deckCurtain` (2270) + `#deckCardModal` (2301) + `#deckSlotPop` (2314) | `openDeckModal` (deck-modal.js:688) | `deckModalRender` (`deck-modal.js`) | `deck-screen.css` + `card-assets-hazard.css` |
+| **Skill Tree Synapse** | `#skillModal` (2329) + `#skillCurtain` (2421) + `#skillToast` (2451) | `openSkillTree` (skill-tree.js:809) | `skillTreeRender` (`skill-tree.js`) | `skill-tree.css` |
+| **Deck Pick (Picker)** | `#deckPickModal` (1993) | `openDeckPick` (raid.js:3560) | `renderDeckPick` (raid.js:3562) | `mobile-shell.css` |
+| **Battle ("BATTLE HAZARD v2.2")** | `#app` view | `startBattle` (battle.js:1016) | `renderBattle` (battle.js:400) + `hzBattleDecorate`/`hzBattleSync` (battle-hazard.js:1139–1140) | `battle-fresh.css` (2.311 baris) |
+| **Tower (CORE SPIRE v2)** | `#app` view + `#towerCurtain` (1589) + `#towerDropModal` (2008) | `startTowerBattle` (tower-lobby.js:1003) | `renderTower` (255) / `renderTowerShop` (677) / `renderTowerBattle` (979) / `openTowerDropModal` (3755) | `tower-hub.css` + `drop-report.css` |
+| **World Boss (Unified Hazard Hub)** | `#app` view | `startRaid` (raid.js:1387) | `renderRaid` (391; hub `renderRaidHub` 1113, `wbRenderMilestones` 548, `wbRenderDrops` 624) | `world-boss.css` (2.187 baris) |
+| **Topup** | `#topupModal` (2495) | `openTopup` (panels.js:5789) | `renderTopupModal` (panels.js:5667) | `style.css` 17235 |
+| **Master Titles** | `#titlesModal` (534) + `#titlesCurtain` (566) | `openTitlesModal` (panels.js:1619) | `renderTitlesModal` (panels.js:1687) + `titles-hazard.js` | `titles-hazard.css` |
+| **7-Day Daily Rewards** | `#dailyModal` (1511) + `#dailyCurtain` (1559) | `openDaily` (state.js:1446) | `renderDaily` (state.js:1259) | `daily-hazard.css` |
+| **Rebirth (Ascension)** | `#rebirthModal` (1189) + `#rebirthCurtain` (1257) | `openRebirthModal` (rebirth-hazard.js:1042) | `renderRebirthModal` (rebirth-hazard.js:596) / `executeRebirthFromModal` (926) | `rebirth-hazard.css` |
+| **Update Log** | `#changelogModal` (596) | `openChangelogModal` (boot.js:1417) | `renderChangelogModal` (boot.js:1430) | `style.css` 23194 |
+| **Settings** | `#app` view | `#/settings` (boot.js:338) | `renderSettings` (boot.js:2) | `mobile-shell.css` + `style.css` |
+| **Ranking / Leaderboard** | `#rankModal` (1403) + `#rankCurtain` (1432) | `openRanking` (ranking.js:25) | `rkRender` (ranking.js:330) | `ranking-hazard.css` |
+| **Watch Ads Terminal** | `#watchAdsModal` (1139) + `#watchAdsCurtain` (1140) | `openWatchAdsModal` (panels.js:6036) | `renderWatchAdsModal` (panels.js:6153) | `watch-ads-hazard.css` |
 
-Markup modal ada di `index.html` (baris kunci):
-`#loadingScreen` 64, `#ldCurtain` 141, `#ldGrant` 155, `#ldEntry` 189, `#authSpin` 194, welcomeModal 208, topbar 234, profModal 271, titlesModal 387, changelogModal 409, rollResultPop 493, `#modal` 516, indexModal 518, premiumModal 540, weatherMachineModal 602, rebirthModal 618, missionModal 633, rankModal 651, rkProfModal 675, dailyModal 722, storyModal 733, `#storyCurtain` 927, startModal 959, traitModal 974, deckPickModal 987, rarePromptModal 997, towerDropModal 1002, footMenu 1113, backpackPanel 1134, blok `<script>` 1137–1169 (`coret.js` 1163), `#weatherToast` 1126, `topupModal` 1172.
+Markup modal & curtain di `index.html` (baris terukur 2026-11-12):
+`#loadingScreen` 88, `#ldCurtain` 165, `#ldGrant` 179, `#ldEntry` 213, `#authSpin` 218, `#welcomeModal` 232, `#profModal` 294, `#wobProfileModal` 295, `#profileCurtain` 493, `#titlesModal` 534, `#titlesCurtain` 566, `#changelogModal` 596, `#rollResultPop` 701, `#modal` 743, `#indexModal` 745, `#ciInfoPanel` 952, `#premiumModal` 1039, `#premiumCurtain` 1108, `#watchAdsModal` 1139, `#watchAdsCurtain` 1140, `#weatherMachineModal` 1173, `#rebirthModal` 1189, `#rebirthCurtain` 1257, `#missionModal` 1385, `#rankModal` 1403, `#rankCurtain` 1432, `#rkProfModal` 1463, `#skillPop` 1478, `#dailyModal` 1511, `#dailyCurtain` 1559, `#towerCurtain` 1589, `#storyModal` 1619, `#loreModal` 1803, `#storyCurtain` 1813, `#startModal` 1845, `#traitModal` 1860, `#traitCurtain` 1901, `#weatherCurtain` 1932, `#indexCurtain` 1963, `#deckPickModal` 1993, `#rarePromptModal` 2003, `#towerDropModal` 2008, `#weatherPanel` 2080, `#weatherToast` 2132, `#backpackPanel` 2144, `#backpackCurtain` 2147, `#deckModal` 2178, `#deckCurtain` 2270, `#deckCardModal` 2301, `#deckSlotPop` 2314, `#skillModal` 2329, `#skillCurtain` 2421, `#skillToast` 2451, `#topupModal` 2495.
 
 ### Pola layar full-screen (index/premium/trait/weather/story/backpack/profil)
 `position:fixed; inset:0; width:100vw; height:100dvh; border-radius:0; min-height:0!important`
@@ -498,32 +386,33 @@ Backpack bukan `display:fixed` bawaan — `toggleBackpack` set inline transform;
   **QC harness:** `_tmp/ld_prod_shot.cjs` (4 viewport × 3 tahap, Supabase diblokir via `Network.setBlockedURLs` supaya tes tidak menulis DB), `_tmp/ld_reveal.cjs` (cek tape tidak nyangkut + authSpin tidak muncul), `_tmp/ld_seq.cjs` (tangkap frame curtain), `_tmp/proto_loading_shot.cjs` / `_tmp/proto_loading_measure.cjs` / `_tmp/proto_loading_flow.cjs` (prototipe), `_tmp/proto_logo_shot.cjs` (3 varian × 4 viewport).
 - **BGM & Audio Lobby** — `assets/audio/bgm-lobby.mp3` diputar looping di Lobby (`bgmAudio` state.js:993, `playBgm` 1000, `syncBgmState` 1016). Dilengkapi unlocker gesture otomatis pada klik/tap pertama serta sinkronisasi dengan status mute (`state.muted`).
 - **Lokalisasi (i18n)** — `js/i18n.js` menyediakan translasi EN & ID (`GameLang.t()`, `GameLang.set()`, `GameLang.get()`). Default bahasa diset ke English (`en`) untuk memenuhi syarat kurasi CrazyGames, dengan opsi ganti ke Indonesia (`id`) di Settings. MutationObserver ringan anti-looping (`characterData: false` di `document.body`, dan observer di-disconnect selama siklus translasi teks agar tidak memicu re-render / auto-scroll reset).
-- **Battle** — engine + render di `battle.js` (`renderBattle` 255, `startBattle` 1748); damage/FX/attack archetype di `anime-archetype-attacks.js` + `sheetfx.js` + `shadow-king-fx.js`; passive lawan `foe-passives.js`. Markup kartu musuh dipakai bersama lewat `foeFighterInnerHtml` (normal + raid/WB; opsi `hpFmt` untuk angka ringkas). `shakeScreen` = no-op, `hitStop` tak mem-pause apa pun, `speedLines` hanya dipakai 1 serangan.
+- **Battle ("BATTLE HAZARD v2.2")** — engine + render di `battle.js` (`renderBattle` 400, `startBattle` 1016) + dekorator arena WoB di `js/battle-hazard.js` (`hzBattleDecorate`, `hzBattleSync`, `hzCurtainIn`/`hzCurtainOut`, `hzAnimateDeathAndSwap`) + CSS `css/battle-fresh.css` (2.311 baris); damage/FX/attack archetype di `anime-archetype-attacks.js` + `sheetfx.js` (zero-particle 3-hit combo, burn, freeze, shock, shunpo dodge) + `shadow-king-fx.js` (5 signature skill FX); passive lawan `foe-passives.js`. Markup kartu musuh dipakai bersama lewat `foeFighterInnerHtml` (224). Kecepatan battle: 1× & 2× gratis untuk semua pemain, 3× dibuka lewat `speed-3x` Pass permanen (3.000 Gems, migrasi 0045; 4× sudah dihapus).
 - **Frame-rate lock** — `js/fps-lock.js` membungkus loop JS-driven supaya gerakan tidak cepat saat FPS naik; jangan bypass dengan `requestAnimationFrame` mentah di FX baru.
-- **Tower** — `tower-lobby.js` (`renderTower` 121, shop 497, `startTowerBattle` 733, `renderTowerBattle` 710) + `openTowerDropModal` 2965.
-- **Raid / auto-roll** — `raid.js` (`renderRaid` 380, `startRaid` 687, `startAutoRoll` 1690). Auto-roll = sumber beban cloud terbesar; lihat §3 sebelum mengubah ritme save.
-- **World Boss** — boss list `WB_BOSSES` raid.js:28 (`RAID_ETERNAL_DRAGON` → `world_boss`, `RAID_SHADOW_KING` → `world_boss_b`), WB shop 954 (token→gem 100:20), poll leaderboard 1×/menit (159/165). **Sejak 0033 damage yang dikirim = damage kartu APA ADANYA** (tidak ada lagi `RAID_DMG_SCALE`; konstanta itu sudah dihapus dari cards-fx.js), pool HP `WB_POOL_HP = 1e10` (cards-fx.js:170, harus sama dengan `world_boss_pool_size()`), format ringkas `fmtBig` raid.js:85. Sisi server: RPC `world_boss_state/start_world_boss_run/submit_world_boss_run/claim_world_boss_reward` (supabase-sync.js 778–804, JWT 0024) + migration `0005`–`0009`, `0011`, `0033`. **`world_boss_bracket` versi live TIDAK punya ambang damage** (semua rank dapat `participant`); ambang 1e9 di 0008:92 sudah mati sejak 0009 — jangan menghidupkannya lagi tanpa menghitung ulang skala.
-  Sejak 0027 `submit_world_boss_run` memotong `p_dmg` ke `_wb_dmg_cap(save)` (kartu terkuat di save × 10 × 80, floor 1e5 — ×100 dihapus di 0033) dan membalas `dmg_cap`/`dmg_capped`; jangan pernah percaya damage absolut dari client.
-  **Migrasi skala 0033** membagi 100 semua data lama (`world_boss_attempts.dmg`, `world_boss_runs.best_dmg`, `world_boss_days.hp_*`, `leaderboard_scores` board `world_boss*`) lewat flag `migration_flags('0033_wb_rescale')`. Kalau skala pool diubah lagi: ubah `world_boss_pool_size()`, `_wb_dmg_cap`, `WB_POOL_HP`, clamp `wbSubmit` (supabase-sync.js:794), dan migrasikan data dengan flag baru — `world_boss_day_info` menghitung ulang `hp_left = pool − Σ attempts.dmg`, jadi attempts WAJIB ikut diskalakan.
-- **Leaderboard** — `js/ranking.js`: `RK_BOARDS` (12) = 5 papan (world_boss, world_boss_b, inf_tower, deck_power, rarest_pull); `lbState` (434) cache namespace `aab-lb2-`; refresh `RK_REFRESH_DAY_MS = 60000` (776) — ini penyumbang egress berkala terbesar, tab hidden ikut di-skip. Submit via `CloudDB.submitScore` (supabase-sync.js:839, JWT 0024) dengan plafon 1e21 (migration 0010).
-  Layout v2 (podium + border): `rkRender` (325) merakit `rkPodiumHtml` (254) → `rkPodHtml` (229) → `rkRowsHtml` (290). Border #1 = video `assets/ui/lb-top1.mp4` (`mix-blend-mode:screen` + mask bulat) — **jangan pakai `transform` pada `.rk-pod1`**, transform bikin stacking context yang mematikan screen-blend (kotak hitam menutupi podium); naik-turun podium pakai `margin`. Border #2/#3 = `assets/ui/lb-ring.png` (sudah di-keying transparan). Profil (`inset:8%`, z2) digambar LEBAR dari lubang lalu **ditimpa border-nya** (z3): lubang hasil ukur = ring 57,5% dengan pusat 7,6% di atas tengah (`top:-3%`), video 52–56% dengan pusat 7,8% di bawah tengah (`top:-22%`); `margin-bottom` pada `.rk-ava` memberi ruang overhang border supaya nama tidak tertimpa. Δ posisi dihitung lokal (`rkDeltaHtml` 271, cache `aab-lb-delta`) — server tidak menyimpan peringkat sebelumnya; CSS `style.css` 18706–19013.
-  **Foto profil player lain** (`RK_AV_KEY` 102, cache `aab-lb-av`): foto = `save_data.customAvatar` yang sudah dikecilkan ke 96px WebP q0.75 di boot.js:1265 (±5,6 KB; JPEG q0.78 fallback). Egres Supabase hanya menghitung DOWNLOAD, jadi foto TIDAK ikut di row leaderboard — client minta nama yang belum ada di cache lewat RPC `get_player_avatars(usernames[])` (≤80 per panggilan, `rkFillAvatars` 189) lalu `rkAvPaint` (166) menempelkannya ke `[data-rkav]`. Wadah avatar menyimpan `data-rkfb` = thumbnail kartu dari `meta.av` sebagai cadangan, **wajib** disaring `rkAvSrc` (92) / `RK_DATA_IMG` (105) karena isinya datang dari player lain; menggantinya dengan URL bebas = XSS/egress tak terbatas.
-  **Sheet profil publik** (`openRkProfile` 723 → `rpHtml` 595, markup `#rkProfModal` index.html:547, CSS blok `SHEET PROFIL PLAYER PUBLIK` style.css:19014): bacanya lewat RPC `get_player_profile(username)` yang hanya membukakan key `pub`, `playSec`, `customAvatar`, `updated_at` — BUKAN save lengkap. `pub` dibangun client (`buildPubSummary` state.js:611, ikut terkirim di kedua jalur `saveState` — lihat §4) jadi server tidak perlu tahu rumus game. Semua isi `pub` dianggap tidak dipercaya: angka di-clamp, string di-escape, `mut` di-whitelist (`RK_MUTS` 540), `char` wajib ada di `CARDS` sebelum `hubCardHtml` dipanggil. **`pub` kosong ≠ nol** — `rpHtml` jatuh ke nilai `*_raw`, dan kalau dua-duanya kosong JANGAN tampilkan `LV 1 / POWER 0`: angka bohong lebih buruk dari strip `—`. Yang tetap nyata walau `pub` kosong: `playSec` dan posisi papan. Sisi server (migration `0013`): `playSec` tersimpan sebagai **float** (`"65076.964…"`) sehingga `::int` langsung melempar `22P02` dan seluruh profil gagal — cast hanya setelah lolos regex angka, lewat `round()::numeric`. Data URL avatar jangan dipotong `left(...,24000)` (base64 setengah tetap ditolak client); saring dengan `length(...) <= 24000`.
-- **Rebirth** — nilai tiap kartu DUPLIKAT (semua jalur roll) masuk `state.rebirth.essence`, BUKAN `state.player.exp` (jadi farming dup naikkan luck tanpa merusak level). Helper di `js/state.js` (blok REBIRTH, ~sebelum `storyCdKey`): `rebirthCount/rebirthEssence/rebirthThreshold/rebirthLuckMult/canRebirth/addRebirthEssence/doRebirth`. Ambang = `REBIRTH_BASE(1e6) × 2^count` (doubling); reward luck = `×(1+count)` (R1=x2, R2=x3...). Dikredit di `grantRolledCard` dup branch (`js/panels.js` ~465) via `addRebirthEssence(dupSellValue(...))` — `dupAddExp` kini cuma alias. Faktor luck dipasang di `totalLuck()` (`js/data.js:93`). UI: tile `REBIRTH` di rail kanan lobby (`hubRebirthTileHtml`/`updateRebirthUI`/`onRebirthClick` `js/tower-lobby.js`), disegarkan tiap roll lewat `rollCountBadge`. Klik tile Rebirth membuka **Modal Rebirth Horizontal Cyberpunk** (`#rebirthModal`, `openRebirthModal()`, `renderRebirthModal()`, `executeRebirthFromModal()`) dengan tata letak 3 kolom: Kolom 1 (Sigil Core berputar + Pangkat R0/R1), Kolom 2 (Komparator multiplier ×1 → ×2 + live progress bar Essence + keterangan duplikat), Kolom 3 (Ascension Protocol status, 3 checklist perks, tombol aktivasi Rebirth). Ditutup dengan tombol X, klik backdrop, atau ESC (`boot.js`). Saat modal terbuka, dock buff otomatis disembunyikan via `body:has(#rebirthModal.show) .buff-dock` dan `body.hide-docks-modal`. CSS blok `REBIRTH` di EOF `style.css` — Leaderboard (`.h-lb`) dikecilin `grid-column:auto` biar Rebirth muat di sel sebelahnya (baris bawah = LB + Rebirth).
-- **Story — "HAZARD PROTOCOL"** — `story-carousel.js` IIFE; mengekspor `window.openStoryCarousel/openStory/closeStory/openMission/selectStoryStage/slideStoryStage/changeStoryChapter/initStoryCarousel/startAmbientLoop/stopAmbientLoop/battleStage`. Seluruh teks layar ini **English** (`CHAPTER_META` untuk judul/region/lore 5 bab, `SKILL_DESC_EN` untuk 30 musuh story, `lockTextEn` pengganti `cellReqText` yang berbahasa Indonesia, semua toast). Banner hazard masuk/keluar/deploy = `#storyCurtain` di body (z 96000) supaya animasi keluar terlihat di atas lobby; animasi murni transform/opacity. Menambah bab = tambah entri `CHAPTER_META` (`title`/`short`/`region`/`lore`); menambah musuh = tambah `SKILL_DESC_EN[<id>]`. JANGAN menaruh angka reward/gate di file ini — semua dari helper produksi.
-- **Weather** — `WEATHERS` (panels.js:18), `WEATHER` map, `weatherSvg(id,sz)` 43, dock `renderWeatherDock` 320, tick `startWeatherTick` 617, machine modal 3532/3760.
-- **Buff dock** — `renderBuffDock` panels.js:380. Ditata eksklusif hanya muncul di Lobby (`body.on-lobby .buff-dock.show`). Otomatis disembunyikan saat membuka modal apa pun (`body:has(...modal.show) .buff-dock`), saat membuka Backpack (`body.bp-open .buff-dock`), saat battle arena penuh (`body.battle-full`), serta di Tower & World Boss.
-- **Trait/skill tree** — `renderTrait` raid.js:1496, auto-roll 1690.
-- **Backpack** — render di panels.js (`renderBackpackPanel` 1851, item 2174, tree 2658, artefak 2834, pet 2858); toggle + header close di tower-lobby.js:2849.
-- **Premium shop** — panels.js 3143/3196, CSS 15988.
-- **Profil** — panels.js 1271/1420, CSS 17578. Loadout slot operator interaktif: klik slot Pet/Artefak/Kartu langsung routing ke Backpack tab terkait (`toggleBackpack(tab)`), dilengkapi hover card preview pada layar desktop (`hoverPlace`). Pembaruan 1 detik berkala menggunakan dataset caching (`pfParty`) untuk menghindari re-render total yang merusak interaksi & mereset scroll.
-- **Update Log** — Modal `#changelogModal` & backdrop `#changelogBackdrop` (`index.html:408`), dibuka dari tombol `#hdrChangelog` di header navigasi samping pengaturan. Data riwayat rilis dikelola terpusat di array `GAME_CHANGELOGS` (`js/boot.js:1253`), mendukung tampilan bilingual (ID & EN) otomatis via `renderChangelogModal()`, serta penutupan cepat dengan tombol ESC.
-- **Settings** — Layar konfigurasi sistem (`#/settings`, `renderSettings` boot.js:2) dengan layout **Horizontal Cyberpunk 3-Sector Deck** (`.sett-wrap`, style.css):
-  - *Sektor 1 (Combat & Sound)*: selector kecepatan tempur 1×–4× dengan unlock level + instrumen diagnostik audio (toggle suara, tes sine 440Hz, tes SFX raid, telemetry status).
-  - *Sektor 2 (Locale & Automation)*: pemilih bahasa interaktif 🇮🇩 Indonesia / 🇬🇧 English + saklar otomatisasi Infinite Tower (auto-restart lantai 1) + tombol kalibrasi UI refresh HUD.
-  - *Sektor 3 (Cloud & Identity)*: kredensial hunter operator + tombol manual cloud save Supabase dengan log waktu real-time + tombol reset data lokal bersistem safety arm 2-tap.
-- **Global luck widget** — panels.js 3992 (`renderGlobalLuckWidget`) / 4138 (`renderGlobalLuckBanner`) / 4222 (`buyGlobalLuck`), CSS 17020.
-- **Topup** — panels.js 4381/4503 + topup.js; dokumentasi `docs/TOPUP.md`; edge function di `supabase/functions/`.
+- **Tower (CORE SPIRE Hub v2)** — `tower-lobby.js` (`renderTower` 255, shop 677, `startTowerBattle` 1003, `renderTowerBattle` 979) + `openTowerDropModal` 3755 + CSS `css/tower-hub.css` & `css/drop-report.css` + curtain `#towerCurtain`.
+- **Raid / auto-roll** — `raid.js` (`renderRaid` 391, `startRaid` 1387, `startAutoRoll` 3701). Auto-roll = sumber beban cloud terbesar; lihat §3 sebelum mengubah ritme save.
+- **World Boss (Unified Hazard Hub + Daily Milestones 0043)** — boss list `WB_BOSSES` raid.js:64 (`RAID_ETERNAL_DRAGON` → `world_boss`, `RAID_SHADOW_KING` → `world_boss_b`), WB shop 1828 (`wbRenderDrops` 624), 7-tier daily damage milestones per boss (`wbRenderMilestones` 548, `wbClaimMilestone` 218 → RPC `claim_world_boss_milestone(p_boss, p_tier)` di migrasi 0043 yang membayar WB Tokens, Gems, Instant Packs ke `player_packs`, dan Potions). **Sejak 0033 damage yang dikirim = damage kartu APA ADANYA** (tidak ada lagi `RAID_DMG_SCALE`), pool HP `WB_POOL_HP = 1e10` (cards-fx.js:170, harus sama dengan `world_boss_pool_size()`), format ringkas `fmtBig` raid.js:117. Sisi server: RPC `world_boss_state/start_world_boss_run/submit_world_boss_run/claim_world_boss_reward/claim_world_boss_milestone` (supabase-sync.js 795–828, JWT 0024/0043) + migration `0005`–`0009`, `0011`, `0033`, `0043`. **`world_boss_bracket` versi live TIDAK punya ambang damage** (semua rank dapat `participant`).
+  Sejak 0027 `submit_world_boss_run` memotong `p_dmg` ke `_wb_dmg_cap(save)` (kartu terkuat di save × 10 × 80, floor 1e5 — ×100 dihapus di 0033) dan membalas `dmg_cap`/`dmg_capped` + `total_dmg` harian (0043); jangan pernah percaya damage absolut dari client.
+  **Migrasi skala 0033** membagi 100 semua data lama (`world_boss_attempts.dmg`, `world_boss_runs.best_dmg`, `world_boss_days.hp_*`, `leaderboard_scores` board `world_boss*`) lewat flag `migration_flags('0033_wb_rescale')`. Kalau skala pool diubah lagi: ubah `world_boss_pool_size()`, `_wb_dmg_cap`, `WB_POOL_HP`, clamp `wbSubmit` (supabase-sync.js:811), dan migrasikan data dengan flag baru — `world_boss_day_info` menghitung ulang `hp_left = pool − Σ attempts.dmg`, jadi attempts WAJIB ikut diskalakan.
+- **Leaderboard Hazard** — `js/ranking.js` + `css/ranking-hazard.css`: `RK_BOARDS` (12) = 5 papan (world_boss, world_boss_b, inf_tower, deck_power, rarest_pull); refresh `RK_REFRESH_DAY_MS = 60000` (tab hidden di-skip). Submit via `CloudDB.submitScore` (supabase-sync.js:878, JWT 0024) dengan plafon 1e21 (migration 0010).
+  Layout (`rkRender` 330 → `rkRowsHtml` 295): podium top-3 + border (`assets/ui/lb-top1.mp4` `mix-blend-mode:screen` untuk #1 — jangan pakai `transform` pada `.rk-pod1`; `assets/ui/lb-ring.png` untuk #2/#3) + curtain `#rankCurtain`.
+  **Foto profil player lain** (`rkFillAvatars` 194): foto = `save_data.customAvatar` (96px WebP q0.75). Egres Supabase hanya menghitung DOWNLOAD, jadi foto TIDAK ikut di row leaderboard — client minta nama yang belum ada di cache lewat RPC `get_player_avatars(usernames[])` (≤80 per panggilan).
+  **Sheet profil publik (Public Dossier)** (`openRkProfile` 727 → `rpHtml` 605, markup `#rkProfModal` index.html:1463, CSS `css/public-profile.css`): bacanya lewat RPC `get_player_profile(username)` yang hanya membukakan key `pub`, `playSec`, `customAvatar`, `updated_at` — BUKAN save lengkap. `pub` dibangun client (`buildPubSummary` state.js:672). Semua isi `pub` disanitasi dan `mut` di-whitelist.
+- **Rebirth (Ascension WoB Hazard + ×5 Sequential Luck 0047)** — nilai tiap kartu DUPLIKAT (semua jalur roll) masuk `state.rebirth.essence`, BUKAN `state.player.exp`. Helper di `js/state.js` (blok REBIRTH): `rebirthCount/rebirthEssence/rebirthThreshold/rebirthLuckMult/canRebirth/addRebirthEssence/doRebirth`. Ambang = `REBIRTH_BASE(1e6) × 2^count` (doubling); **reward luck sejak 0047 berskala sekuensial ×5 per rank** (`rebirthLuckMult`: `R0=1×, R1=5×, R2=10×, R3=15×, R4=20×...`, disinkronkan dengan `_luck_of` di server lewat migrasi 0047). UI & logika modal kini di `js/rebirth-hazard.js` (`renderRebirthModal` 596, `executeRebirthFromModal` 926, `openRebirthModal` 1042) + CSS `css/rebirth-hazard.css` + curtain `#rebirthCurtain` (dengan 5s unskippable showcase & evolving crests).
+- **Pass Permanen Stackable (0045–0046)** — dikelola di `public.item_def` (`kind='pass'`, `src='gem'`), `public.pass_def`, dan `player_items` ledger (`state.passesOwned[]` dikunci server saat merge):
+  - `speed-3x` (3.000 Gems, 0045): membuka kecepatan battle 3× secara permanen (1× & 2× gratis).
+  - `luck-2x` (5.000 Gems) & `luck-4x` (10.000 Gems, 0046): mengalikan Total Luck secara penuh (`1× / 2× / 4× / 8×` jika punya keduanya) lewat `passLuckMult()` di `js/data.js` dan `_pass_luck_mult` di `_luck_of` server.
+  - `shiny-2x` (4.000 Gems) & `shiny-4x` (8.000 Gems, 0046): mengalikan peluang Shiny (`1× / 2× / 4× / 8×`) lewat `passShinyMult()` dan `_pass_shiny_mult` di `_roll_entries` server tanpa mengecilkan `v_ch` kanonik kartu.
+- **Story — "HAZARD PROTOCOL"** — `story-carousel.js` IIFE; mengekspor `window.openStoryCarousel/openStory/closeStory/openMission/selectStoryStage/slideStoryStage/changeStoryChapter/initStoryCarousel/startAmbientLoop/stopAmbientLoop/battleStage`. Seluruh teks layar ini **English** (`CHAPTER_META` untuk judul/region/lore 5 bab, `SKILL_DESC_EN` untuk 30 musuh story, `lockTextEn` pengganti `cellReqText` yang berbahasa Indonesia, semua toast). Banner hazard masuk/keluar/deploy = `#storyCurtain` di body (z 96000) supaya animasi keluar terlihat di atas lobby; animasi murni transform/opacity.
+- **Weather Machine** — `WEATHERS`, dock `renderWeatherDock` (panels.js:336), tick `startWeatherTick` (571), machine modal `openWeatherMachine` (4704) / `renderWeatherMachine` (4926) + CSS `css/weather-screen.css` + 15 ikon potion 2.5D WebP + curtain `#weatherCurtain`.
+- **Buff dock & Global Toast/Cinematic** — `renderBuffDock` (panels.js:396) + `js/notify-hazard.js` (`window.hzNotify` & `window.hzCinematic`) + CSS `css/notify-hazard.css`.
+- **Traits V2 + Swap Vault (0044)** — `openTrait` (raid.js:2946), `renderTrait` (3472), `trSwapVault` (3440), `rollTrait` (3627), `startAutoRoll` (3701) + CSS `css/trait-screen.css` + curtain `#traitCurtain`. Trait sekarang berbagi per base-card (`setCharTrait`), dilengkapi Swap Vault, dan peluang UR+ disinkronkan antara `js/cards-fx.js` & migrasi 0044 (`transiden` 0.34%, `demigod` 0.1%, `cosmic` 0.05%, `bigbang` 0.01%).
+- **Backpack + Deck Modal + Skill Tree Synapse** — Backpack di `panels.js` (`renderBackpackPanel` 2797, `renderBpItems` 2994, `renderBpTree` 3478, `renderBpArts` 3654, `renderBpPets` 3678) + `css/backpack-hazard.css` + `#backpackCurtain`; Deck Modal di `js/deck-modal.js` (`openDeckModal` 688) + `css/deck-screen.css` + `#deckCurtain`; Skill Tree di `js/skill-tree.js` (`openSkillTree` 809) + `css/skill-tree.css` (19 ikon 2.5D WebP untuk path, core, dan 16 node) + `#skillCurtain`.
+- **Premium Exchange** — `openPremiumShop` (panels.js:4092) / `renderPremiumShop` (4374) + CSS `css/premium-exchange.css` + `#premiumCurtain` (toko 2-panel untuk Pass, Instant Pack, Artefak/Pet Gem, dan Weather).
+- **Profile Dossier (WoB) & Master Titles** — `openProfileModal` (panels.js:1378) / `renderProfile` (1848) + CSS `css/profile-screen.css` + `#profileCurtain`: layout zero-scroll WoB dengan hero full-bleed card (title di atas kartu, username + level di bawah kartu), 3 support slots sejajar, dan telemetry showcase (termasuk label rarest card & rebirth). Master Titles (29 title + Solo God Aura SVG wings/crown) di `js/titles-hazard.js` + `openTitlesModal` (panels.js:1619) + CSS `css/titles-hazard.css` + `#titlesCurtain`.
+- **Update Log** — Modal `#changelogModal` (`index.html:596`), data riwayat rilis di `GAME_CHANGELOGS` (`js/boot.js:1279`), dibuka via `openChangelogModal` (1417) / `renderChangelogModal` (1430).
+- **Settings** — Layar konfigurasi sistem (`#/settings`, `renderSettings` boot.js:2) dengan 3 sektor accordion WoB: Combat & Sound (kecepatan tempur 1×–3× + diagnostik audio), Locale & Automation (EN/ID + auto-restart Infinite Tower), serta Cloud & Identity (manual cloud save + safety reset).
+- **Global luck widget** — `renderGlobalLuckWidget` (panels.js:5172) / `renderGlobalLuckBanner` (5318) / `buyGlobalLuck` (5506).
+- **Topup** — `renderTopupModal` (panels.js:5667) / `openTopup` (5789) + `topup.js`; dokumentasi `docs/TOPUP.md`; edge function di `supabase/functions/`.
 - **Cloud sync** — `supabase-sync.js` (CloudDB) + `js/config.js`; URL + anon key ada di baris 2–3 (publishable, memang publik). Save: §3. Klaim gem: `claimStoryGem` 513 / `claimStoryReplay` 517 / `claimDailyGem` 521 / `exchangeTokens` 525 — semua JWT-only, nominal dihitung server (0023). Sejak 0024 RPC tulis **tidak bisa** diprobe dengan anon key (401 semua) — uji E2E harus bikin sesi Auth dulu (pola `_tmp/probe_0024.cjs`: signUp → `_rpcJwt` → cleanup). `PGRST202`/404 = signature belum ada (migration belum jalan atau klien lebih tua dari migration).
 - **CloudAuth (JWT Fase 1–3)** — di akhir `supabase-sync.js`. Sesi Supabase Auth untuk tiap user: email sintetis `<username>@game.invalid` (RFC2606), password Auth = `acb_<hashPass>_v1` (hash lokal ~7 char < minimum 6→ panjang aman; password asli tidak pernah dikirim). Sesi (uid + access/refresh token) disimpan di localStorage `aab-auth-sess` (map per username). `CloudAuth.kick(user)` ditembak dari login / `enterGame` (ensure + link, error ditelan). **Register** pakai `CloudAuth.ensurePass(key, passH)` (1166) karena `aab-users` belum ditulis saat itu. `CloudAuth.token(user)` = access token valid atau null. Skema: `0018` (kolom `user_id`), `0019` (`link_player_auth`), `0020` (`get_my_save`), `0021` (RLS owner-only), `0024` (identitas semua RPC tulis dari `auth.uid()`).
   **Guard wajib:** `_confirmOn()` membaca `mailer_autoconfirm` dari `/auth/v1/settings` (cache per page-load). Selama Confirm email ON, `ensure()` berhenti dengan `reason:"confirm_email_on"` dan **tidak signUp** — akun Auth ber-email `.invalid` tak akan pernah bisa dikonfirmasi, jadi membuatnya = mengunci username itu selamanya (signIn "Email not confirmed", signUp "already registered").
@@ -559,24 +448,24 @@ Backpack bukan `display:fixed` bawaan — `toggleBackpack` set inline transform;
 - **Urutan & Tata Letak Badge Kartu**: Standar urutan badge vertikal dari atas ke bawah: SHINY (paling atas) → Mutasi (tengah) → Trait (bawah). Teks chance (1 in X) di bagian paling bawah. Pada kartu layar loading, badge ditata tumpuk vertikal dengan ukuran badge yang sama persis seperti di kartu Lobby.
 - **Hover Card Preview Integrity**: Preview saat hover kartu di profil player desktop memposisikan nama dan badge melayang di luar kartu, dengan ukuran badge diselaraskan dengan standar kartu lobby.
 
-- **Tambah/ubah kartu** → `STORY_BIBLE` (data.js:100) untuk unit cerita; `MASTER_CARD_INDEX` (panels.js:3075) untuk index; art di `assets/cards/art/<slug>.png` (deck/list pakai `assets/cards/thumb/`). Jangan cascade tier/skill kalau hanya diminta ganti art — dan jangan sentuh art tanpa permintaan tersurat.
-- **Ubah skill/trait** → `cards-fx.js` (`skillText`, `fxOf`), trait tree `renderTrait` (raid.js:1496), passive musuh `foe-passives.js` + `shadow-king-fx.js`.
-- **Ubah FX serangan** → `anime-archetype-attacks.js` (definisi) + `sheetfx.js` (render efek) + `assets/vfx`. Semua murni canvas (tanpa background video); wajib lewat `registerFrame` + `FXQ`, jangan bikin canvas baru.
-- **Ubah loading screen / judul game** → markup `#loadingScreen` (index.html:64, `.ld-lockup` 72), CSS `style.css` 19323–19656, logika `runLoading` (boot.js:1044). Judul chrome 3D = 4 span berlapis (`.ld-out` outline+ekstrusi, `.ld-ring2` ring putih, `.ld-back` ekstrusi, `.ld-front` gradient chrome + highlight `::after`); teksnya WAJIB ditulis 2× (atribut `data-t` + isi span) atau highlight-nya hilang. `--cw` (lebar kartu) mengendalikan seluruh skala lockup; judul menimpa kartu lewat `margin-top:calc(var(--cw) * -0.92)`. Kalau mengubah fan, jangan sentuh `assets/` — art kartu diambil dari `state.stacks` lewat `_ldFillFan`.
-- **Ubah tampilan layar** → cari id modal di `index.html` (lihat daftar baris di §4), render function di tabel §4, lalu ubah aturan yang MEMANG menang di layar itu (cek pemenang cascade lewat harness, lihat aturan 4 di atas). Jangan tambah blok override baru di akhir file.
-- **Ubah gacha/rate** → panels.js area roll (1065+), `sl-system.css`, konstanta `DIFFS`/mutasi di cards-fx.js (128–160). Prototipe ritme roll ada di `_tmp/`/`proto/` (tidak dilacak git).
-- **Ubah ekonomi/harga** → konstanta di panels.js (premium/topup), `TRAIT_COST` (cards-fx.js:213) + `WB_SHOP` (raid.js:954), shop tower di tower-lobby.js:516. Harga yang dibayar server ada di tabel: `token_shop_price` (0026), `coin_story_stage` (0025), `item_def` (0028: harga coin/gem pet & artefak + `src`), `pack_def` (0029: harga gem + `tower_rate` pack instan) — ubah client + regenerate tabelnya, jangan hanya salah satu. `pack_def` TIDAK lagi buta jumlah tarikan: sejak 0040 ada kolom `pulls` (5K/10K/25K/50K/100K, default 0 NOT NULL) sebagai sumber server — kalau `PACK_ROLL_AMOUNT` (panels.js:1819) berubah, update `pack_def.pulls` DAN baris `roll_config('intan_pulls')` (0039: 100.000 tarikan per intan) juga, kalau tidak server memotong pack/intan untuk jumlah yang salah. Tabel cermin 0027 (`card_stat`, `tree_node`, `pet_def`, `art_def`) regenerate dengan `node _tmp/gen_0027.cjs`; `item_def` dengan `node _tmp/gen_0028.cjs`; tabel Unit 4 (`roll_pool_def`, `roll_mut_rates`, `luck_def`, `trait_def` + seed `roll_config` di 0034/0035, dan `stacks_legacy` di 0036) dengan `node _tmp/gen_0034.cjs` lalu `node _tmp/gen_0036.cjs` — **0036 menyusun ulang `merge_player_state` dari 0037 dan `roll_pull` dari 0034, jadi jalankan `gen_0034.cjs` dulu**. Tabel cermin Unit 4 adalah SATU-SATUNYA cara generator menulis SQL-nya; jangan sunting `0034/0035/0036` manual, kalau pool kartu / chance mutasi / TRAIT_TIERS / `MASTER_CARD_INDEX` berubah di client = regenerate + apply ulang, kalau tidak server membayar angka lama (kartu baru tidak bisa di-pull, tier salah, item/pack baru tidak bisa dibeli).
-- **Ubah save/state** → `freshState` state.js:12 + migrasi di `enterGame` boot.js:909 + `supabase-sync.js`. Kalau menambah field besar (mis. inventori baru), pikirkan dulu dampaknya ke payload push (§3) — `stacks` sudah 74 KB.
-- **Ubah RPC / kena limit Supabase** → migration baru di `supabase/migrations/00NN_*.sql`, apply lewat Management API (`_tmp/apply_sql.cjs`, token dibaca dari `_tmp/sbpat.txt`) — jangan `supabase db push`. Ganti signature = **overload baru**, bukan replace: `drop function` semua sig lama (termasuk yang dulu dibikin `create or replace`). RPC tulis baru: `revoke execute ... from anon` **eksplisit** (grant default Supabase untuk `public` membuka anon), lalu buktikan anon 401 + signature lama 404, dan E2E pakai sesi Auth (pola `_tmp/probe_0024.cjs`), bukan anon.
-- **Tambah layar** → markup di index.html, render fn, route di `render()` boot.js:329 atau tombol di lobby tower-lobby.js:2526–2540.
-- **Kejar performa** → cek §2b dulu (canvas bersama, FXDPR, FXQ, animasi composited, backdrop-filter); blok PERF/LAYOUT 18183–18334, override terbaru sampai akhir file (27.9k).
+- **Tambah/ubah kartu** → `STORY_BIBLE` (data.js:117) untuk unit cerita; `MASTER_CARD_INDEX` (panels.js:3895) untuk index; art di `assets/cards/art/<slug>.png` (deck/list pakai `assets/cards/thumb/`). Jangan cascade tier/skill kalau hanya diminta ganti art — dan jangan sentuh art tanpa permintaan tersurat.
+- **Ubah skill/trait** → `cards-fx.js` (`skillText`, `fxOf`), Traits V2 `renderTrait` (raid.js:3472) + `css/trait-screen.css`, Skill Tree `openSkillTree` (skill-tree.js:809) + `css/skill-tree.css`, passive musuh `foe-passives.js` + `shadow-king-fx.js`.
+- **Ubah FX serangan** → `anime-archetype-attacks.js` (definisi) + `sheetfx.js` (render efek slash/combo/status) + `shadow-king-fx.js`. Semua murni canvas (tanpa background video); wajib lewat `registerFrame` + `FXQ`/`FXDPR`, jangan bikin canvas baru.
+- **Ubah loading screen / judul game** → markup `#loadingScreen` (index.html:88, `.ld-lockup` 96), CSS `style.css` 19323–19657, logika `runLoading` (boot.js:1070). Judul chrome 3D = 4 span berlapis (`.ld-out` outline+ekstrusi, `.ld-ring2` ring putih, `.ld-back` ekstrusi, `.ld-front` gradient chrome + highlight `::after`); teksnya WAJIB ditulis 2× (atribut `data-t` + isi span) atau highlight-nya hilang. `--cw` (lebar kartu) mengendalikan seluruh skala lockup; judul menimpa kartu lewat `margin-top:calc(var(--cw) * -0.92)`. Kalau mengubah fan, jangan sentuh `assets/` — art kartu diambil dari `state.stacks` lewat `_ldFillFan`.
+- **Ubah tampilan layar** → cari id modal di `index.html` (lihat daftar baris di §4), render function di tabel §4, lalu edit langsung di file CSS layar terkait (`css/*-hazard.css`, `css/*-screen.css`, `css/battle-fresh.css`, `css/world-boss.css`, `css/tower-hub.css`, `css/mobile-shell.css`). Jangan tambah blok override baru di ekor `style.css`.
+- **Ubah gacha/rate** → panels.js area roll (`startRollAnimation` 1022, `rollTick` 1086), `sl-system.css`, konstanta `DIFFS`/mutasi di cards-fx.js (128–160). Prototipe ritme roll ada di `_tmp/`/`proto/` (tidak dilacak git).
+- **Ubah ekonomi/harga/pass** → konstanta di panels.js (premium/topup), `TRAIT_COST` (cards-fx.js) + `WB_SHOP` (raid.js:1828), shop tower di tower-lobby.js:677. Harga yang dibayar server ada di tabel: `token_shop_price` (0026), `coin_story_stage` (0025), `item_def` (0028/0045/0046: harga coin/gem pet, artefak & pass + `src`), `pass_def` (0046: multiplier pass `speed-3x`, `luck-2x`, `luck-4x`, `shiny-2x`, `shiny-4x`), `pack_def` (0029/0040: harga gem + `tower_rate` + `pulls` pack instan) — ubah client + update/regenerate tabelnya, jangan hanya salah satu. Tabel cermin 0027 (`card_stat`, `tree_node`, `pet_def`, `art_def`) regenerate dengan `node _tmp/gen_0027.cjs`; `item_def` dengan `node _tmp/gen_0028.cjs`; tabel Unit 4 (`roll_pool_def`, `roll_mut_rates`, `luck_def`, `trait_def` + seed `roll_config` di 0034/0035/0044, dan `stacks_legacy` di 0036) dengan `node _tmp/gen_0034.cjs` lalu `node _tmp/gen_0036.cjs`.
+- **Ubah save/state** → `freshState` state.js:12 + migrasi di `enterGame` boot.js:935 + `supabase-sync.js`. Kalau menambah field besar (mis. inventori baru), pikirkan dulu dampaknya ke payload push (§3) — `stacks` sudah 74 KB.
+- **Ubah RPC / kena limit Supabase** → migration baru di `supabase/migrations/00NN_*.sql`, apply lewat Management API (`_tmp/apply_sql.cjs`, token dibaca dari `_tmp/sbpat.txt`) atau MCP `supabase_mcp` — jangan `supabase db push`. Ganti signature = **overload baru**, bukan replace: `drop function` semua sig lama (termasuk yang dulu dibikin `create or replace`). RPC tulis baru: `revoke execute ... from anon` **eksplisit** (grant default Supabase untuk `public` membuka anon), lalu buktikan anon 401 + signature lama 404, dan E2E pakai sesi Auth (pola `_tmp/probe_0024.cjs`), bukan anon.
+- **Tambah layar** → markup di index.html, render fn, stylesheet modular di `css/`, route di `render()` boot.js:329 atau tombol di lobby `tower-lobby.js`.
+- **Kejar performa** → baca skill `animator-2d-game-fx` + cek §2b dulu (canvas bersama, FXDPR, FXQ, animasi composited, tanpa backdrop-filter).
 
 ---
 
 ## 7. GOTCHA
 
-- Cache-bust `?v=` wajib naik setiap edit; user pakai browser cache agresif. "Masih bug" sering = cache (hard refresh dulu).
-- CSS 28.3k baris (19.9k nonblank): anchor section di atas hanya perkiraan; pakai `grep -n "\.nama-kelas"`. Semua override baru taruh paling bawah supaya menang specificity/order.
+- Cache-bust `?v=` wajib naik setiap edit (termasuk `CACHE_NAME` di `sw.js:1`); user pakai browser cache agresif. "Masih bug" sering = cache (hard refresh dulu).
+- CSS kini terpecah menjadi **25 stylesheet modular** di `css/*.css` (urutan muat `index.html:31-56`). Edit langsung di file CSS layar terkait; jangan menumpuk override baru di akhir `css/style.css` (28.1k baris).
 - **Layar loading: dua bug yang sudah pernah kejadian dan mudah terulang.** (a) `#authSpin` (z 1000001) menumpuk di atas loader baru (z 1000000) saat boot — gejalanya "masih ada loading lama"; `loginAsGuest` wajib cek `_ldActive` dan menulis ke `#ldStatus`, bukan menampilkan spinner. (b) Hazard tape harus anak masing-masing half-curtain; kalau ditaruh langsung di `#ldCurtain`, tape tertinggal "nyangkut" di tengah layar waktu half membuka.
 - **`<meta viewport>` dipaksa `device-width` di `index.html:6–16`, sebelum paint pertama.** Tanpa itu layar loading (dan seluruh shell) dilukis pada kanvas 1900px lalu di-zoom-out — di HP tampak kecil/nyangkut di tengah sesaat. `js/mobile-shell.js` melakukan hal yang sama tapi dimuat paling akhir, jadi jangan hapus skrip inline itu.
 - **Judul chrome 3D butuh teks ditulis 2×** (atribut `data-t` + isi span). Kalau `data-t` hilang, highlight atas di `.ld-front::after` kosong dan judul tampak doff.

@@ -24,4 +24,16 @@
     if (!inner) return '';
     return '<svg class="' + (cls || 'ic-svg') + '" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' + inner + '</svg>';
   };
+  window.hzIcon = function (name, sz, cls) {
+    sz = sz || 18;
+    cls = cls || 'res-ico';
+    const symMap = {
+      coin: 'coinSvgSymbol',
+      luck: 'luckSvgSymbol',
+      global: 'globalLuckSvgSymbol',
+      globalLuck: 'globalLuckSvgSymbol'
+    };
+    const id = symMap[name] || name;
+    return '<svg class="' + cls + '" width="' + sz + '" height="' + sz + '" viewBox="0 0 32 32" aria-hidden="true"><use href="#' + id + '"/></svg>';
+  };
 })();

@@ -1033,7 +1033,8 @@ function wbExitToLobby(){
     _wbClosing=false;
     _wbPrevRoute="#/lobby";
     raidView="hub";
-    window.location.hash="#/lobby";
+    if(window.location.hash==="#/lobby"||window.location.hash===""||window.location.hash==="#/")render();
+    else window.location.hash="#/lobby";
     return;
   }
   wbClearHz();
@@ -1047,7 +1048,8 @@ function wbExitToLobby(){
     _wbClosing=false;
     _wbPrevRoute="#/lobby";
     raidView="hub";
-    window.location.hash="#/lobby";
+    if(window.location.hash==="#/lobby"||window.location.hash===""||window.location.hash==="#/")render();
+    else window.location.hash="#/lobby";
   },540));
   wbHzTimers.push(setTimeout(()=>{
     hz.classList.add("revealed");

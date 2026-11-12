@@ -186,26 +186,12 @@
   }
 
   function buildNav(isPortrait) {
-    var wantClass = isPortrait ? "m-tabbar" : "m-rail";
-    var wrongClass = isPortrait ? "m-rail" : "m-tabbar";
-    // Remove whichever nav variant is not current.
-    var wrong = document.querySelector("." + wrongClass);
-    if (wrong) wrong.parentNode.removeChild(wrong);
-
-    var nav = document.querySelector("." + wantClass);
-    /* v5: strip aktif digambar per-slot (::after/::before), bukan satu .ind
-       geser. Nav lama yang masih punya .ind dibersihkan supaya tidak dobel. */
-    if (!nav) {
-      nav = document.createElement("nav");
-      nav.className = wantClass;
-      nav.setAttribute("role", "tablist");
-      nav.setAttribute("aria-label", isPortrait ? "Main navigation" : "Main navigation rail");
-      document.body.appendChild(nav);
-      makeButtons(isPortrait).forEach(function (b) { nav.appendChild(b); });
-    } else {
-      var oldInd = nav.querySelector(".ind");
-      if (oldInd) oldInd.parentNode.removeChild(oldInd);
-    }
+    /* User request 2026-11-12: Hapus dock di kiri (.m-rail) dan .m-tabbar.
+       Lobby baru sudah memiliki 5-slot bottom .nav-dock terintegrasi. */
+    var oldRail = document.querySelector(".m-rail");
+    if (oldRail && oldRail.parentNode) oldRail.parentNode.removeChild(oldRail);
+    var oldTab = document.querySelector(".m-tabbar");
+    if (oldTab && oldTab.parentNode) oldTab.parentNode.removeChild(oldTab);
   }
 
   function init() {

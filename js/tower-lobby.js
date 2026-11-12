@@ -204,7 +204,7 @@ function closeTowerHub(){
     _twPrevRoute="#/lobby";
     _twPrevView="";
     towerView="hub";
-    location.hash="#/lobby";
+    if(location.hash==="#/lobby"||location.hash===""||location.hash==="#/")render();else location.hash="#/lobby";
   });
 }
 window.closeTowerHub=closeTowerHub;
@@ -2235,27 +2235,967 @@ window.l12Showcase = function (i) {
   });
 };
 
-function renderLobby(){
-  if(state.battle){
-    if(typeof cleanupCommandDrawer==='function') cleanupCommandDrawer();
+
+/* =====================================================================
+   CHIBI HAZARD STREET LOBBY & REALISTIC ANIME WEATHER SYSTEM
+   Ported from _tmp/proto_lobby_nh_v1.html (User Locked 2026-11-12)
+   ===================================================================== */
+
+const REAL_WEATHERS = [
+  { id: "awakened", name: "AWAKENED", rar: "AWAKENED", luckBonus: 15.0, speedBonus: 8.0, color: "#c084fc", accent: "#facc15", skyTop: "#0a0318", skyMid: "#2a0f4a", reflOpacity: 0.38, fx: "awakened" },
+  { id: "arcane", name: "ARCANE", rar: "ARCANE", luckBonus: 10.0, speedBonus: 6.0, color: "#a78bfa", accent: "#38bdf8", skyTop: "#07051e", skyMid: "#1e1347", reflOpacity: 0.35, fx: "arcane" },
+  { id: "goofy", name: "GOOFY", rar: "RARE", luckBonus: 7.0, speedBonus: 4.5, color: "#fde047", accent: "#f43f5e", skyTop: "#221603", skyMid: "#4c3408", reflOpacity: 0.42, fx: "goofy" },
+  { id: "glitch", name: "GLITCH", rar: "RARE", luckBonus: 6.0, speedBonus: 4.0, color: "#f43f5e", accent: "#22d3ee", skyTop: "#18040d", skyMid: "#33081a", reflOpacity: 0.45, fx: "glitch" },
+  { id: "doodle", name: "DOODLE", rar: "RARE", luckBonus: 5.0, speedBonus: 3.5, color: "#f1f5f9", accent: "#38bdf8", skyTop: "#111625", skyMid: "#232e42", reflOpacity: 0.30, fx: "doodle" },
+  { id: "eclipse", name: "ECLIPSE", rar: "RARE", luckBonus: 4.0, speedBonus: 3.0, color: "#f43f5e", accent: "#fbbf24", skyTop: "#060105", skyMid: "#290410", reflOpacity: 0.48, fx: "eclipse" },
+  { id: "iceage", name: "ICE AGE", rar: "UNCOMMON", luckBonus: 3.5, speedBonus: 3.0, color: "#38bdf8", accent: "#ffffff", skyTop: "#031724", skyMid: "#0b344e", reflOpacity: 0.45, fx: "iceage" },
+  { id: "galactic", name: "GALACTIC", rar: "UNCOMMON", luckBonus: 3.0, speedBonus: 2.5, color: "#fb923c", accent: "#c084fc", skyTop: "#060618", skyMid: "#1d123a", reflOpacity: 0.36, fx: "galactic" },
+  { id: "aurora", name: "AURORA", rar: "UNCOMMON", luckBonus: 2.5, speedBonus: 2.0, color: "#2dd4bf", accent: "#38bdf8", skyTop: "#021417", skyMid: "#073634", reflOpacity: 0.42, fx: "aurora" },
+  { id: "monsoon", name: "MONSOON", rar: "UNCOMMON", luckBonus: 2.0, speedBonus: 1.8, color: "#3b82f6", accent: "#93c5fd", skyTop: "#051122", skyMid: "#112644", reflOpacity: 0.55, fx: "monsoon" },
+  { id: "sandstorm", name: "SANDSTORM", rar: "COMMON", luckBonus: 1.3, speedBonus: 1.4, color: "#f59e0b", accent: "#fbbf24", skyTop: "#1c1005", skyMid: "#3e2609", reflOpacity: 0.22, fx: "sandstorm" },
+  { id: "thunderstorm", name: "THUNDERSTORM", rar: "COMMON", luckBonus: 1.3, speedBonus: 1.4, color: "#eab308", accent: "#ffffff", skyTop: "#0c0d18", skyMid: "#202138", reflOpacity: 0.50, fx: "thunderstorm" },
+  { id: "snowfall", name: "SNOWFALL", rar: "COMMON", luckBonus: 1.2, speedBonus: 1.2, color: "#e2e8f0", accent: "#38bdf8", skyTop: "#0a1322", skyMid: "#1e2e47", reflOpacity: 0.35, fx: "snowfall" },
+  { id: "windy", name: "WINDY", rar: "COMMON", luckBonus: 1.1, speedBonus: 1.2, color: "#4ade80", accent: "#f472b6", skyTop: "#05160d", skyMid: "#0d351f", reflOpacity: 0.28, fx: "windy" },
+  { id: "lightrain", name: "LIGHT RAIN", rar: "COMMON", luckBonus: 1.1, speedBonus: 1.1, color: "#7dd3fc", accent: "#93c5fd", skyTop: "#071220", skyMid: "#10253c", reflOpacity: 0.44, fx: "lightrain" },
+  { id: "clear", name: "CLEAR SKY", rar: "COMMON", luckBonus: 1.0, speedBonus: 1.0, color: "#9ca3af", accent: "#e5e7eb", skyTop: "#07080d", skyMid: "#121420", reflOpacity: 0.16, fx: "clear" }
+];
+
+let currentVillageWx = REAL_WEATHERS[0];
+let _wxParts = [];
+let _wxSplashes = [];
+let _lightningFlash = 0;
+let _lightningBolt = null;
+let _shootingStars = [];
+let _lastMeteorTime = 0;
+let _animTime = 0;
+let _wxAnimRunning = false;
+let _walkerAnimRunning = false;
+let _villageWalkers = [];
+
+const OCCULT_RUNES = ['\u{13080}', '\u2726', '\u2727', '\u25c7', '\u2b21', '\u27c1', '\uaa5c', '\u{10308}', '\u232c', '\u229b'];
+const GLITCH_SNIPPETS = ['0x7F', '0101', 'NULL', 'SYNC', 'ERR_404', 'SYS_FAIL', 'CORE', 'BUFFER'];
+const DOODLE_MARKS = ['\u2605', '@', '\u{1f4a7}', '///', '\u26a1', '!!', '\u2726'];
+
+function getCelestialSvg(id) {
+  switch (id) {
+    case "awakened":
+      return `<svg width="180" height="180" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+        <g stroke-width="1.8" opacity="0.85">
+          <line x1="50" y1="6" x2="50" y2="18"/><line x1="50" y1="82" x2="50" y2="94"/>
+          <line x1="6" y1="50" x2="18" y2="50"/><line x1="82" y1="50" x2="94" y2="50"/>
+          <line x1="19" y1="19" x2="28" y2="28"/><line x1="72" y1="72" x2="81" y2="81"/>
+          <line x1="81" y1="19" x2="72" y2="28"/><line x1="19" y1="81" x2="28" y2="72"/>
+        </g>
+        <path d="M14 50 C26 26, 74 26, 86 50 C74 74, 26 74, 14 50 Z" stroke-width="2.2" fill="currentColor" fill-opacity="0.15"/>
+        <circle cx="50" cy="50" r="14" stroke-width="2" fill="#0c051a"/>
+        <circle cx="50" cy="50" r="8" fill="currentColor"/>
+        <circle cx="47" cy="47" r="3" fill="#ffffff"/>
+        <circle cx="50" cy="50" r="28" stroke-width="1" stroke-dasharray="3 3" opacity="0.6"/>
+      </svg>`;
+    case "arcane":
+      return `<svg width="180" height="180" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+        <polygon points="50,10 85,70 15,70" stroke-width="1.8" fill="currentColor" fill-opacity="0.08"/>
+        <polygon points="50,90 85,30 15,30" stroke-width="1.8" fill="currentColor" fill-opacity="0.08"/>
+        <circle cx="50" cy="50" r="44" stroke-width="1.6"/>
+        <circle cx="50" cy="50" r="38" stroke-width="1" stroke-dasharray="4 4" opacity="0.75"/>
+        <circle cx="50" cy="50" r="10" stroke-width="2" fill="currentColor" fill-opacity="0.25"/>
+        <circle cx="50" cy="10" r="3.5" fill="currentColor"/><circle cx="85" cy="70" r="3.5" fill="currentColor"/><circle cx="15" cy="70" r="3.5" fill="currentColor"/>
+        <circle cx="50" cy="90" r="3.5" fill="currentColor"/><circle cx="85" cy="30" r="3.5" fill="currentColor"/><circle cx="15" cy="30" r="3.5" fill="currentColor"/>
+      </svg>`;
+    case "eclipse":
+      return `<svg width="190" height="190" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+        <g stroke-width="1.8" opacity="0.75">
+          <path d="M50 8 Q56 22 50 30 Q44 22 50 8 Z" fill="currentColor"/>
+          <path d="M82 24 Q72 36 68 32 Q78 20 82 24 Z" fill="currentColor"/>
+          <path d="M92 50 Q78 56 70 50 Q78 44 92 50 Z" fill="currentColor"/>
+          <path d="M82 76 Q78 64 68 68 Q72 80 82 76 Z" fill="currentColor"/>
+          <path d="M50 92 Q44 78 50 70 Q56 78 50 92 Z" fill="currentColor"/>
+          <path d="M18 76 Q28 64 32 68 Q22 80 18 76 Z" fill="currentColor"/>
+          <path d="M8 50 Q22 44 30 50 Q22 56 8 50 Z" fill="currentColor"/>
+          <path d="M18 24 Q22 36 32 32 Q28 20 18 24 Z" fill="currentColor"/>
+        </g>
+        <circle cx="50" cy="50" r="32" stroke-width="3" stroke="#f43f5e" opacity="0.9"/>
+        <circle cx="50" cy="50" r="30" fill="#020204"/>
+        <circle cx="50" cy="50" r="28" stroke-width="1" stroke="#f43f5e" opacity="0.4"/>
+      </svg>`;
+    case "galactic":
+      return `<svg width="190" height="190" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+        <circle cx="50" cy="50" r="16" fill="currentColor" fill-opacity="0.3" stroke-width="2"/>
+        <circle cx="50" cy="50" r="8" fill="currentColor"/>
+        <ellipse cx="50" cy="50" rx="44" ry="14" stroke-width="2" transform="rotate(-24 50 50)"/>
+        <ellipse cx="50" cy="50" rx="40" ry="11" stroke-width="1.2" stroke-dasharray="3 3" transform="rotate(-24 50 50)" opacity="0.8"/>
+        <ellipse cx="50" cy="50" rx="34" ry="8" stroke-width="1" transform="rotate(40 50 50)" opacity="0.5"/>
+        <circle cx="16" cy="34" r="4" fill="currentColor"/><circle cx="84" cy="66" r="3" fill="currentColor"/><circle cx="72" cy="22" r="2.5" fill="#fff"/>
+      </svg>`;
+    case "aurora":
+      return `<svg width="180" height="180" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+        <path d="M10 32 Q30 18 50 32 T90 32" stroke-width="2.5" opacity="0.85"/>
+        <path d="M10 46 Q30 32 50 46 T90 46" stroke-width="2.2" opacity="0.7"/>
+        <path d="M10 60 Q30 46 50 60 T90 60" stroke-width="1.8" opacity="0.55"/>
+        <path d="M10 74 Q30 60 50 74 T90 74" stroke-width="1.4" opacity="0.4"/>
+        <circle cx="50" cy="24" r="6" fill="currentColor"/>
+        <line x1="50" y1="12" x2="50" y2="36" stroke-width="1.8"/><line x1="38" y1="24" x2="62" y2="24" stroke-width="1.8"/>
+      </svg>`;
+    case "thunderstorm":
+      return `<svg width="180" height="180" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+        <path d="M22 62 C14 62, 10 54, 14 46 C12 36, 22 28, 32 30 C38 20, 56 18, 64 26 C74 22, 86 30, 84 42 C92 46, 92 58, 82 62 Z" stroke-width="2" fill="currentColor" fill-opacity="0.18"/>
+        <path d="M52 36 L38 58 L50 58 L42 84 L66 52 L54 52 Z" fill="#ffffff" stroke="#facc15" stroke-width="2"/>
+        <path d="M42 84 L38 94" stroke="#facc15" stroke-width="1.8"/>
+      </svg>`;
+    case "monsoon":
+      return `<svg width="180" height="180" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+        <circle cx="50" cy="50" r="42" stroke-width="1.8" stroke-dasharray="8 6" opacity="0.6"/>
+        <path d="M50 14 C70 14 86 30 86 50 C86 64 74 76 60 76 C46 76 38 66 38 54 C38 46 44 40 50 40 C54 40 58 44 58 48 C58 52 54 54 50 54" stroke-width="2.6" stroke-linecap="round"/>
+        <circle cx="28" cy="24" r="3" fill="currentColor"/><circle cx="76" cy="30" r="3.5" fill="currentColor"/>
+        <circle cx="78" cy="74" r="2.5" fill="currentColor"/><circle cx="24" cy="70" r="3" fill="currentColor"/>
+      </svg>`;
+    case "sandstorm":
+      return `<svg width="180" height="180" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+        <circle cx="50" cy="50" r="16" fill="currentColor" fill-opacity="0.25" stroke-width="2"/>
+        <path d="M12 28 Q40 18 64 30 T96 26" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M6 44 Q36 34 60 46 T94 42" stroke-width="2.6" stroke-linecap="round"/>
+        <path d="M14 60 Q44 50 68 62 T98 58" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M8 76 Q38 66 62 78 T92 74" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>`;
+    case "iceage":
+      return `<svg width="180" height="180" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+        <line x1="50" y1="8" x2="50" y2="92" stroke-width="2.4"/>
+        <line x1="14" y1="29" x2="86" y2="71" stroke-width="2.4"/><line x1="14" y1="71" x2="86" y2="29" stroke-width="2.4"/>
+        <path d="M50 20 L42 28 M50 20 L58 28 M50 80 L42 72 M50 80 L58 72" stroke-width="2"/>
+        <path d="M26 36 L24 46 M26 36 L34 42 M74 64 L76 54 M74 64 L66 58" stroke-width="2"/>
+        <path d="M26 64 L34 58 M26 64 L24 54 M74 36 L66 42 M74 36 L76 46" stroke-width="2"/>
+        <polygon points="50,38 60,50 50,62 40,50" fill="currentColor" fill-opacity="0.25" stroke-width="1.6"/>
+      </svg>`;
+    case "snowfall":
+      return `<svg width="170" height="170" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+        <line x1="50" y1="12" x2="50" y2="88" stroke-width="2"/>
+        <line x1="17" y1="31" x2="83" y2="69" stroke-width="2"/><line x1="17" y1="69" x2="83" y2="31" stroke-width="2"/>
+        <circle cx="50" cy="50" r="10" stroke-width="1.5" stroke-dasharray="2 3"/>
+        <circle cx="50" cy="12" r="3" fill="currentColor"/><circle cx="50" cy="88" r="3" fill="currentColor"/>
+        <circle cx="17" cy="31" r="3" fill="currentColor"/><circle cx="83" cy="69" r="3" fill="currentColor"/>
+      </svg>`;
+    case "lightrain":
+      return `<svg width="170" height="170" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+        <path d="M52 24 A18 18 0 0 0 68 44 A18 18 0 1 1 52 24 Z" fill="currentColor" fill-opacity="0.25" stroke-width="1.8"/>
+        <path d="M22 64 C16 64, 12 56, 16 50 C14 40, 24 34, 34 36 C40 28, 56 26, 64 34 C74 32, 82 40, 80 50 C88 54, 88 64, 80 64 Z" stroke-width="2" fill="#07121f"/>
+        <line x1="30" y1="72" x2="26" y2="86" stroke-width="2" stroke-linecap="round"/>
+        <line x1="46" y1="72" x2="42" y2="86" stroke-width="2" stroke-linecap="round"/>
+        <line x1="62" y1="72" x2="58" y2="86" stroke-width="2" stroke-linecap="round"/>
+      </svg>`;
+    case "windy":
+      return `<svg width="170" height="170" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+        <path d="M12 36 L64 36 A14 14 0 1 1 54 48" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M8 52 L76 52 A12 12 0 1 0 68 40" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M16 68 L56 68 A10 10 0 1 1 48 76" stroke-width="2" stroke-linecap="round"/>
+        <path d="M28 24 Q36 20 38 28 Q34 34 28 24 Z" fill="currentColor"/>
+        <path d="M82 62 Q90 58 92 66 Q88 72 82 62 Z" fill="currentColor"/>
+      </svg>`;
+    case "glitch":
+      return `<svg width="180" height="180" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+        <rect x="22" y="22" width="56" height="56" stroke-width="2" stroke-dasharray="14 6"/>
+        <line x1="50" y1="12" x2="50" y2="30" stroke-width="2"/><line x1="50" y1="70" x2="50" y2="88" stroke-width="2"/>
+        <line x1="12" y1="50" x2="30" y2="50" stroke-width="2"/><line x1="70" y1="50" x2="88" y2="50" stroke-width="2"/>
+        <rect x="28" y="38" width="48" height="6" fill="#22d3ee" stroke="none" opacity="0.8"/>
+        <rect x="24" y="48" width="54" height="5" fill="#f43f5e" stroke="none" opacity="0.85"/>
+        <rect x="34" y="58" width="40" height="5" fill="#ffffff" stroke="none" opacity="0.9"/>
+      </svg>`;
+    case "doodle":
+      return `<svg width="180" height="180" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+        <circle cx="50" cy="50" r="22" stroke-width="2.2" stroke-dasharray="100" fill="currentColor" fill-opacity="0.1"/>
+        <path d="M50 14 Q53 20 50 26 M50 74 Q47 80 50 86" stroke-width="2.2" stroke-linecap="round"/>
+        <line x1="14" y1="50" x2="26" y2="50" stroke-width="2.2" stroke-linecap="round"/>
+        <line x1="74" y1="50" x2="86" y2="50" stroke-width="2.2" stroke-linecap="round"/>
+        <line x1="24" y1="24" x2="33" y2="33" stroke-width="2.2" stroke-linecap="round"/>
+        <line x1="67" y1="67" x2="76" y2="76" stroke-width="2.2" stroke-linecap="round"/>
+        <polygon points="50,38 53,46 62,46 55,51 58,60 50,54 42,60 45,51 38,46 47,46" fill="currentColor"/>
+      </svg>`;
+    case "goofy":
+      return `<svg width="180" height="180" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+        <circle cx="50" cy="50" r="22" fill="currentColor" fill-opacity="0.3" stroke-width="2.5"/>
+        <g stroke-width="2.4" stroke-linecap="round">
+          <path d="M50 12 L50 22 M50 78 L50 88"/><path d="M12 50 L22 50 M78 50 L88 50"/>
+          <path d="M24 24 L31 31 M69 69 L76 76"/><path d="M76 24 L69 31 M31 69 L24 76"/>
+        </g>
+        <polygon points="50,34 54,44 65,44 56,51 60,62 50,55 40,62 44,51 35,44 46,44" fill="#ffffff" stroke="currentColor" stroke-width="1.5"/>
+      </svg>`;
+    default:
+      return `<svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.65"><circle cx="12" cy="12" r="6"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg>`;
+  }
+}
+
+function setVillageWeather(id, silent) {
+  const w = REAL_WEATHERS.find(x => x.id === id) || REAL_WEATHERS[0];
+  currentVillageWx = w;
+  const shell = document.querySelector('.nh-shell');
+  const world = document.getElementById('villageWorld');
+  if (shell) {
+    shell.style.setProperty('--wx-color', w.color);
+    shell.style.setProperty('--wx-accent', w.accent);
+    shell.style.setProperty('--wx-sky-top', w.skyTop);
+    shell.style.setProperty('--wx-sky-mid', w.skyMid);
+  }
+  if (world) {
+    world.className = 'village-world wx-mode-' + w.id;
+  }
+  document.querySelectorAll('.street-reflections .wet-refl').forEach(r => {
+    r.style.setProperty('--RC', w.color);
+    r.style.opacity = String(w.reflOpacity || 0.25);
+  });
+  const celCore = document.getElementById('celCoreSvg');
+  if (celCore) celCore.innerHTML = getCelestialSvg(w.id);
+
+  const chipLbl = document.getElementById('wxChipLabel');
+  if (chipLbl) {
+    chipLbl.textContent = w.name + ' ' + w.luckBonus + '×';
+    chipLbl.style.color = w.color;
+  }
+  const chipBtn = document.getElementById('l12Wx') || document.getElementById('wxChipBtn');
+  if (chipBtn) chipBtn.style.borderColor = w.color;
+
+  const activeName = document.getElementById('wxpActiveName');
+  if (activeName) activeName.textContent = w.name + ' (' + w.rar + ' · ' + w.luckBonus + '× LUCK · ' + w.speedBonus + '× SPEED)';
+
+  document.querySelectorAll('.wxp-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.wx === w.id);
+  });
+
+  initWxParticles();
+  if (!silent && window.hzNotify) {
+    window.hzNotify('🌩️ WEATHER SKYBOX: ' + w.name + ' (' + w.luckBonus + '× LUCK · ' + w.speedBonus + '× SPEED)');
+  }
+}
+window.setVillageWeather = setVillageWeather;
+
+function toggleWxPicker() {
+  const p = document.getElementById('wxPickerBar');
+  if (p) p.classList.toggle('open');
+}
+window.toggleWxPicker = toggleWxPicker;
+
+function initWxParticles() {
+  const cv = document.getElementById('weatherSkyCanvas');
+  if (!cv) return;
+  cv.width = 1440;
+  cv.height = 760;
+  _wxParts = [];
+  _wxSplashes = [];
+  _shootingStars = [];
+  _lightningFlash = 0;
+  _lightningBolt = null;
+
+  const fx = currentVillageWx.fx;
+  let count = 45;
+  if (fx === 'monsoon' || fx === 'sandstorm' || fx === 'iceage') count = 90;
+  else if (fx === 'thunderstorm' || fx === 'galactic' || fx === 'snowfall') count = 65;
+  else if (fx === 'lightrain' || fx === 'rain' || fx === 'windy' || fx === 'glitch') count = 55;
+
+  for (let i = 0; i < count; i++) {
+    _wxParts.push({
+      x: Math.random() * 1440,
+      y: Math.random() * 760,
+      s: 1.2 + Math.random() * 2.8,
+      vx: (Math.random() - 0.5) * 1.5,
+      vy: 1.5 + Math.random() * 3.5,
+      a: 0.3 + Math.random() * 0.65,
+      rot: Math.random() * Math.PI * 2,
+      vrot: (Math.random() - 0.5) * 0.08,
+      flip: Math.random() * Math.PI,
+      seed: Math.random() * 100,
+      tag: i % 8
+    });
+  }
+}
+
+function spawnBranchingLightning() {
+  const startX = 260 + Math.random() * 920;
+  const segments = [];
+  let curX = startX;
+  let curY = 20;
+  const steps = 18;
+  const dy = (520 - 20) / steps;
+
+  for (let i = 0; i < steps; i++) {
+    const nextY = curY + dy;
+    const nextX = curX + (Math.random() - 0.5) * 44;
+    segments.push({ x1: curX, y1: curY, x2: nextX, y2: nextY });
+
+    if (Math.random() < 0.28 && i > 3 && i < 15) {
+      const branchSteps = 5 + Math.floor(Math.random() * 4);
+      let bx = nextX;
+      let by = nextY;
+      const bDir = (Math.random() < 0.5 ? -1 : 1) * (14 + Math.random() * 22);
+      for (let b = 0; b < branchSteps; b++) {
+        const bNextX = bx + bDir + (Math.random() - 0.5) * 15;
+        const bNextY = by + dy * 0.75;
+        segments.push({ x1: bx, y1: by, x2: bNextX, y2: bNextY, branch: true });
+        bx = bNextX;
+        by = bNextY;
+      }
+    }
+    curX = nextX;
+    curY = nextY;
+  }
+  _lightningBolt = { segments, life: 10 };
+  _lightningFlash = 0.68;
+}
+
+function tickWxCanvas() {
+  const cv = document.getElementById('weatherSkyCanvas');
+  if (!cv) {
+    _wxAnimRunning = false;
+    return;
+  }
+  _wxAnimRunning = true;
+  const wxCtx = cv.getContext('2d');
+  _animTime++;
+  wxCtx.clearRect(0, 0, cv.width, cv.height);
+  const fx = currentVillageWx.fx;
+  const col = currentVillageWx.color;
+  const accent = currentVillageWx.accent || '#ffffff';
+
+  if (fx === 'thunderstorm') {
+    if (Math.random() < 0.016 && (!_lightningBolt || _lightningBolt.life <= 0)) {
+      spawnBranchingLightning();
+    }
+    if (_lightningFlash > 0) {
+      wxCtx.fillStyle = `rgba(250, 204, 21, ${Math.min(0.35, _lightningFlash * 0.4).toFixed(3)})`;
+      wxCtx.fillRect(0, 0, cv.width, cv.height);
+      _lightningFlash = Math.max(0, _lightningFlash - 0.045);
+    }
+    if (_lightningBolt && _lightningBolt.life > 0) {
+      _lightningBolt.life--;
+      wxCtx.save();
+      wxCtx.strokeStyle = 'rgba(250, 204, 21, 0.75)';
+      wxCtx.lineWidth = 4.5;
+      wxCtx.beginPath();
+      _lightningBolt.segments.forEach(s => {
+        wxCtx.moveTo(s.x1, s.y1);
+        wxCtx.lineTo(s.x2, s.y2);
+      });
+      wxCtx.stroke();
+      wxCtx.strokeStyle = '#ffffff';
+      wxCtx.lineWidth = 1.8;
+      wxCtx.beginPath();
+      _lightningBolt.segments.forEach(s => {
+        wxCtx.moveTo(s.x1, s.y1);
+        wxCtx.lineTo(s.x2, s.y2);
+      });
+      wxCtx.stroke();
+      wxCtx.restore();
+    }
+  }
+
+  if (fx === 'aurora') {
+    wxCtx.save();
+    for (let b = 0; b < 3; b++) {
+      const baseY = 80 + b * 45;
+      const grad = wxCtx.createLinearGradient(0, baseY - 60, 0, baseY + 90);
+      grad.addColorStop(0, 'rgba(45, 212, 191, 0)');
+      grad.addColorStop(0.4, b === 1 ? 'rgba(56, 189, 248, 0.32)' : 'rgba(45, 212, 191, 0.38)');
+      grad.addColorStop(0.8, 'rgba(192, 132, 252, 0.22)');
+      grad.addColorStop(1, 'rgba(45, 212, 191, 0)');
+
+      wxCtx.fillStyle = grad;
+      wxCtx.beginPath();
+      wxCtx.moveTo(0, baseY - 40);
+      for (let x = 0; x <= 1440; x += 32) {
+        const wave1 = Math.sin((x * 0.004) + (_animTime * 0.015) + b) * 36;
+        const wave2 = Math.cos((x * 0.008) - (_animTime * 0.02) + (b * 2)) * 18;
+        wxCtx.lineTo(x, baseY + wave1 + wave2);
+      }
+      wxCtx.lineTo(1440, 0);
+      wxCtx.lineTo(0, 0);
+      wxCtx.closePath();
+      wxCtx.fill();
+    }
+    wxCtx.restore();
+  }
+
+  if (fx === 'galactic') {
+    if (_animTime - _lastMeteorTime > 110 && Math.random() < 0.04) {
+      _lastMeteorTime = _animTime;
+      _shootingStars.push({
+        x: 200 + Math.random() * 1000,
+        y: Math.random() * 220,
+        vx: -(12 + Math.random() * 8),
+        vy: 6 + Math.random() * 5,
+        len: 120 + Math.random() * 70,
+        life: 18, maxLife: 18
+      });
+    }
+    for (let m = _shootingStars.length - 1; m >= 0; m--) {
+      const st = _shootingStars[m];
+      st.x += st.vx;
+      st.y += st.vy;
+      st.life--;
+      const t = st.life / st.maxLife;
+      const grad = wxCtx.createLinearGradient(st.x, st.y, st.x - st.vx * 7, st.y - st.vy * 7);
+      grad.addColorStop(0, `rgba(255, 255, 255, ${t.toFixed(2)})`);
+      grad.addColorStop(0.4, `rgba(251, 146, 60, ${(t * 0.8).toFixed(2)})`);
+      grad.addColorStop(1, 'rgba(192, 132, 252, 0)');
+      wxCtx.strokeStyle = grad;
+      wxCtx.lineWidth = 2.4;
+      wxCtx.beginPath();
+      wxCtx.moveTo(st.x, st.y);
+      wxCtx.lineTo(st.x - st.vx * 7, st.y - st.vy * 7);
+      wxCtx.stroke();
+      if (st.life <= 0) _shootingStars.splice(m, 1);
+    }
+  }
+
+  if (fx === 'awakened') {
+    wxCtx.save();
+    wxCtx.globalCompositeOperation = 'screen';
+    for (let r = 0; r < 4; r++) {
+      const rayAngle = (r - 1.5) * 0.22;
+      const rayAlpha = (0.06 + Math.sin(_animTime * 0.02 + r) * 0.035).toFixed(3);
+      const grad = wxCtx.createRadialGradient(720, 160, 40, 720 + Math.sin(rayAngle) * 500, 520, 280);
+      grad.addColorStop(0, `rgba(250, 204, 21, ${rayAlpha})`);
+      grad.addColorStop(0.6, `rgba(192, 132, 252, ${(rayAlpha * 0.7).toFixed(3)})`);
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      wxCtx.fillStyle = grad;
+      wxCtx.beginPath();
+      wxCtx.moveTo(720, 160);
+      wxCtx.lineTo(720 + (r - 1.5) * 360 - 140, 760);
+      wxCtx.lineTo(720 + (r - 1.5) * 360 + 140, 760);
+      wxCtx.closePath();
+      wxCtx.fill();
+    }
+    wxCtx.restore();
+  }
+
+  if (fx === 'iceage') {
+    wxCtx.save();
+    const frost = wxCtx.createRadialGradient(720, 380, 480, 720, 380, 780);
+    frost.addColorStop(0, 'rgba(56, 189, 248, 0)');
+    frost.addColorStop(0.85, 'rgba(56, 189, 248, 0.12)');
+    frost.addColorStop(1, 'rgba(255, 255, 255, 0.28)');
+    wxCtx.fillStyle = frost;
+    wxCtx.fillRect(0, 0, cv.width, cv.height);
+    wxCtx.restore();
+  }
+
+  wxCtx.fillStyle = col;
+  wxCtx.strokeStyle = col;
+
+  for (let i = 0; i < _wxParts.length; i++) {
+    const p = _wxParts[i];
+    wxCtx.globalAlpha = p.a;
+
+    if (fx === 'rain' || fx === 'lightrain' || fx === 'rain_heavy' || fx === 'monsoon' || fx === 'thunderstorm') {
+      const isMonsoon = (fx === 'monsoon');
+      const isLight = (fx === 'lightrain' || fx === 'rain');
+      const speed = isMonsoon ? 14 : (isLight ? 7 : 11);
+      const slant = isMonsoon ? -4.5 : -2.0;
+
+      p.x += slant;
+      p.y += speed;
+
+      if (p.y >= 510) {
+        if (Math.random() < (isMonsoon ? 0.35 : 0.18)) {
+          _wxSplashes.push({
+            x: p.x, y: 512 + Math.random() * 160,
+            r: 2, maxR: isMonsoon ? 14 : 9, a: 0.75, col: col
+          });
+        }
+        p.y = -10;
+        p.x = Math.random() * 1440;
+      }
+
+      wxCtx.lineWidth = isMonsoon ? 1.8 : 1.3;
+      wxCtx.strokeStyle = isMonsoon ? '#93c5fd' : (isLight ? '#bae6fd' : col);
+      wxCtx.beginPath();
+      wxCtx.moveTo(p.x, p.y);
+      wxCtx.lineTo(p.x + slant * 2.2, p.y + (isMonsoon ? 22 : 14));
+      wxCtx.stroke();
+
+    } else if (fx === 'snowfall' || fx === 'snow') {
+      p.y += (p.s * 0.75);
+      p.x += Math.sin((p.y * 0.02) + p.seed) * 0.9;
+      wxCtx.fillStyle = '#ffffff';
+      wxCtx.beginPath();
+      wxCtx.arc(p.x, p.y, p.s * 1.3, 0, Math.PI * 2);
+      wxCtx.fill();
+
+    } else if (fx === 'iceage' || fx === 'snow_heavy') {
+      p.x -= (14 + p.s * 4);
+      p.y += (1.2 + Math.sin(p.x * 0.02) * 1.5);
+      wxCtx.lineWidth = 1.6;
+      wxCtx.strokeStyle = '#ffffff';
+      wxCtx.beginPath();
+      wxCtx.moveTo(p.x, p.y);
+      wxCtx.lineTo(p.x - (18 + p.s * 10), p.y - 1);
+      wxCtx.stroke();
+
+    } else if (fx === 'sandstorm' || fx === 'sand') {
+      p.x += (12 + p.s * 5);
+      p.y += Math.sin((p.x * 0.015) + p.seed) * 0.8;
+      wxCtx.lineWidth = 1.8;
+      wxCtx.strokeStyle = p.s > 2.5 ? '#f59e0b' : '#d97706';
+      wxCtx.beginPath();
+      wxCtx.moveTo(p.x, p.y);
+      wxCtx.lineTo(p.x + (20 + p.s * 14), p.y);
+      wxCtx.stroke();
+
+    } else if (fx === 'windy' || fx === 'wind') {
+      p.x += (4.5 + Math.sin(p.rot) * 2.2);
+      p.y += (1.2 + Math.cos(p.rot) * 1.4);
+      p.rot += p.vrot;
+      p.flip += 0.06;
+
+      wxCtx.save();
+      wxCtx.translate(p.x, p.y);
+      wxCtx.rotate(p.rot);
+      wxCtx.scale(Math.cos(p.flip), 1);
+      wxCtx.fillStyle = (i % 2 === 0) ? '#f472b6' : '#4ade80';
+      wxCtx.beginPath();
+      wxCtx.ellipse(0, 0, p.s * 3.2, p.s * 1.8, 0, 0, Math.PI * 2);
+      wxCtx.fill();
+      wxCtx.restore();
+
+    } else if (fx === 'glitch') {
+      if (Math.random() < 0.12) {
+        p.x = Math.random() * 1440;
+        p.y = Math.random() * 680;
+      }
+      if (i % 3 === 0) {
+        wxCtx.font = 'bold 11px monospace';
+        wxCtx.fillStyle = (i % 2 === 0) ? '#f43f5e' : '#22d3ee';
+        wxCtx.fillText(GLITCH_SNIPPETS[p.tag % GLITCH_SNIPPETS.length], p.x, p.y);
+      } else {
+        wxCtx.fillStyle = (i % 2 === 0) ? '#f43f5e' : '#22d3ee';
+        wxCtx.fillRect(p.x, p.y, p.s * 16, p.s * 2.8);
+      }
+
+    } else if (fx === 'doodle') {
+      p.y -= 0.6;
+      p.x += Math.sin(p.y * 0.02) * 0.5;
+      wxCtx.font = '14px sans-serif';
+      wxCtx.fillStyle = '#f1f5f9';
+      wxCtx.fillText(DOODLE_MARKS[p.tag % DOODLE_MARKS.length], p.x, p.y);
+
+    } else if (fx === 'goofy') {
+      p.y -= 1.1;
+      p.x += Math.sin(p.y * 0.03 + p.seed) * 1.2;
+      wxCtx.save();
+      wxCtx.translate(p.x, p.y);
+      wxCtx.rotate(_animTime * 0.03 + p.seed);
+      wxCtx.fillStyle = (i % 3 === 0) ? '#facc15' : (i % 3 === 1 ? '#f43f5e' : '#38bdf8');
+      wxCtx.beginPath();
+      for (let sp = 0; sp < 5; sp++) {
+        const a1 = (sp * Math.PI * 2) / 5;
+        const a2 = a1 + Math.PI / 5;
+        const r1 = p.s * 3.2;
+        const r2 = p.s * 1.4;
+        if (sp === 0) wxCtx.moveTo(Math.cos(a1) * r1, Math.sin(a1) * r1);
+        else wxCtx.lineTo(Math.cos(a1) * r1, Math.sin(a1) * r1);
+        wxCtx.lineTo(Math.cos(a2) * r2, Math.sin(a2) * r2);
+      }
+      wxCtx.closePath();
+      wxCtx.fill();
+      wxCtx.restore();
+
+    } else if (fx === 'awakened' || fx === 'arcane') {
+      p.y -= (0.45 + p.s * 0.18);
+      p.x += Math.sin(p.y * 0.02 + p.seed) * 0.6;
+      wxCtx.font = `bold ${Math.round(10 + p.s * 3.5)}px sans-serif`;
+      wxCtx.fillStyle = (i % 2 === 0) ? col : accent;
+      wxCtx.fillText(OCCULT_RUNES[p.tag % OCCULT_RUNES.length], p.x, p.y);
+
+    } else if (fx === 'eclipse') {
+      p.y += (0.9 + p.s * 0.4);
+      p.x += Math.sin(p.y * 0.025 + p.seed) * 1.1;
+      wxCtx.fillStyle = (i % 3 === 0) ? '#facc15' : '#f43f5e';
+      wxCtx.beginPath();
+      wxCtx.arc(p.x, p.y, p.s * 1.4, 0, Math.PI * 2);
+      wxCtx.fill();
+
+    } else {
+      p.a = 0.3 + Math.sin(_animTime * 0.05 + p.seed) * 0.4;
+      wxCtx.fillStyle = (i % 3 === 0) ? '#fb923c' : (i % 3 === 1 ? '#c084fc' : '#ffffff');
+      wxCtx.beginPath();
+      wxCtx.arc(p.x, p.y, p.s * 1.2, 0, Math.PI * 2);
+      wxCtx.fill();
+    }
+
+    if (p.y > 760) { p.y = -10; p.x = Math.random() * 1440; }
+    if (p.y < -10) { p.y = 750; p.x = Math.random() * 1440; }
+    if (p.x > 1450) p.x = -10;
+    if (p.x < -10) p.x = 1440;
+  }
+
+  for (let s = _wxSplashes.length - 1; s >= 0; s--) {
+    const sp = _wxSplashes[s];
+    sp.r += 0.55;
+    sp.a -= 0.038;
+    wxCtx.save();
+    wxCtx.strokeStyle = sp.col || col;
+    wxCtx.globalAlpha = Math.max(0, sp.a);
+    wxCtx.lineWidth = 1.2;
+    wxCtx.beginPath();
+    wxCtx.ellipse(sp.x, sp.y, sp.r * 1.9, sp.r * 0.65, 0, 0, Math.PI * 2);
+    wxCtx.stroke();
+    wxCtx.restore();
+    if (sp.a <= 0 || sp.r >= sp.maxR) {
+      _wxSplashes.splice(s, 1);
+    }
+  }
+
+  wxCtx.globalAlpha = 1;
+  requestAnimationFrame(tickWxCanvas);
+}
+
+function initVillageWalkers(party) {
+  const layer = document.getElementById('walkersLayer');
+  if (!layer) return;
+  layer.innerHTML = '';
+  _villageWalkers = [];
+
+  const defaultChars = ['CH_SHADOW_KING', 'CH_SUN_GOD', 'CH_ETERNAL_DRAGON', 'CH_ABSOLUTE_ZERO'];
+  const defaultQuotes = [
+    ['"Arise... and patrol Sector 01!"', '"Tower Infinite energy feels unstable today."', '"Ready to strike the World Boss!"'],
+    ['"SET YOUR HEART ABLAZE! 🔥"', '"Standing guard by the Rebirth Altar!"', '"UMAI! Great luck aura today!"'],
+    ['"Swift as the wind."', '"Checking out the Trait & Weather potions~"', '"Let us rip through the Tower!"'],
+    ['"Thunderclap and flash! ⚡"', '"World Boss barrier is holding."', '"Ready to roll!"']
+  ];
+
+  let draggingCard = null;
+  let dragMoved = false;
+  let dragStartX = 0, dragStartY = 0, cardStartX = 0, cardStartY = 0;
+
+  for (let i = 0; i < 4; i++) {
+    const s = party && party[i];
+    const cId = (s && s.char && CARDS[s.char]) ? s.char : defaultChars[i];
+    const cData = CARDS[cId] || CARDS['CH_SHADOW_KING'] || Object.values(CARDS)[0] || { name: 'Shadow King', tier: 'UR', base_hp: 1000, base_atk: 500, passive: { name: 'Signature Skill', desc: 'Deals devastating signature damage on strike.' } };
+    const art = (typeof cardImg === 'function' && cardImg(cId)) ? cardImg(cId) : 'assets/cards/art/shadow-king.webp';
+    const thumb = (typeof cardThumb === 'function' && cardThumb(cId)) ? cardThumb(cId) : art;
+    const mut = (s && s.mut) || 'normal';
+    const shiny = !!(s && s.shiny);
+    const tr = (s && typeof stackTraitOf === 'function') ? stackTraitOf(s) : ((s && s.trait) || 'none');
+    const col = (typeof MUT_COLOR !== 'undefined' && MUT_COLOR[mut]) ? MUT_COLOR[mut] : '#f3e600';
+    const stats = (typeof cardStats === 'function' && s) ? cardStats(cId, mut, tr, shiny) : { hp: cData.base_hp || cData.hp || 1000, atk: cData.base_atk || cData.atk || 500 };
+    const fmtS = (typeof fmtStat === 'function') ? fmtStat : (n => String(n));
+    const skTxt = (typeof skillText === 'function' && skillText(cId)) ? skillText(cId) : ((cData.passive && cData.passive.desc) || 'Deals devastating signature damage on strike.');
+
+    const wItem = {
+      id: 'vw_' + i,
+      slot: 'S' + (i + 1),
+      char: cId,
+      name: ((typeof cardName === 'function') ? cardName(cId) : (cData.name || 'Hunter')).toUpperCase(),
+      tier: String(cData.tier || 'UR').toUpperCase(),
+      pwr: fmtS((stats.hp || 0) + (stats.atk || 0)),
+      hp: fmtS(stats.hp || 1000),
+      atk: fmtS(stats.atk || 500),
+      mut: mut,
+      mutLabel: String(mut || 'NONE').toUpperCase(),
+      mutColor: col,
+      shiny: shiny,
+      traitName: String(tr || 'NONE').toUpperCase(),
+      traitColor: '#c084fc',
+      skillName: String((cData.passive && cData.passive.name) || cData.skill || 'SIGNATURE SKILL').toUpperCase(),
+      skillDesc: skTxt,
+      art: art,
+      thumb: thumb,
+      color: col,
+      x: 200 + i * 280,
+      y: 12 + (i % 2) * 14,
+      vx: (i % 2 === 0 ? 0.75 : -0.75),
+      dir: (i % 2 === 0 ? 1 : -1),
+      state: 'walk',
+      timer: 140 + i * 35,
+      clashCd: 0,
+      quotes: defaultQuotes[i] || ['"Patrolling the hazard district."']
+    };
+
+    const el = document.createElement('div');
+    el.className = 'card-walker state-walk ' + (wItem.dir > 0 ? 'dir-right' : 'dir-left');
+    el.style.setProperty('--RC', wItem.color);
+    el.style.zIndex = String(20 + Math.round(30 - wItem.y));
+
+    const borderHtml = (typeof hzBorderLayerHtml === 'function') ? hzBorderLayerHtml() : '';
+    const hzCls = 'hz-bdr bdr-bracket sh-orbital anim-on m-' + wItem.mut + (wItem.shiny ? ' is-shiny' : '');
+
+    el.innerHTML = `
+      <div class="cw-bubble" id="bub_${wItem.id}">${wItem.quotes[0]}</div>
+      <div class="cw-shadow"></div>
+      <div class="cw-tilt">
+        <div class="cw-body ${hzCls}">
+          ${borderHtml}
+          <img class="cw-art" src="${wItem.art}" onerror="this.src='assets/cards/art/shadow-king.webp'" alt="">
+        </div>
+      </div>
+    `;
+
+    el.addEventListener('pointerdown', (e) => {
+      if (e.button && e.button !== 0) return;
+      e.stopPropagation();
+      draggingCard = wItem;
+      dragMoved = false;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      cardStartX = wItem.x;
+      cardStartY = wItem.y;
+      try { el.setPointerCapture(e.pointerId); } catch (_) {}
+    });
+
+    el.addEventListener('pointermove', (e) => {
+      if (draggingCard !== wItem) return;
+      const dx = e.clientX - dragStartX;
+      const dy = e.clientY - dragStartY;
+      if (Math.abs(dx) > 9 || Math.abs(dy) > 9) {
+        if (!dragMoved) {
+          dragMoved = true;
+          wItem.state = 'drag';
+          wItem.el.classList.remove('state-walk', 'state-idle', 'state-slam');
+          wItem.el.classList.add('is-dragging');
+          showVillageBubble(wItem, '⚡ REPOSITIONING...', 1500);
+        }
+        wItem.x = Math.max(70, Math.min(1290, cardStartX + dx));
+        wItem.y = Math.max(2, Math.min(48, cardStartY - dy * 0.45));
+        wItem.el.style.zIndex = String(20 + Math.round(50 - wItem.y));
+      }
+    });
+
+    const finishPointer = (e) => {
+      if (draggingCard !== wItem) return;
+      draggingCard = null;
+      try { el.releasePointerCapture(e.pointerId); } catch (_) {}
+      if (dragMoved) {
+        wItem.el.classList.remove('is-dragging');
+        wItem.state = 'idle';
+        wItem.timer = 150;
+        wItem.el.classList.add('state-slam');
+        spawnVillageStepRipple(wItem.x + 60, wItem.y - 6, '#f3e600');
+        showVillageBubble(wItem, '💥 LANDED ON SECTOR-01!', 2000);
+        setTimeout(() => {
+          if (wItem.el) {
+            wItem.el.classList.remove('state-slam');
+            wItem.el.classList.add('state-idle');
+          }
+        }, 400);
+      } else {
+        onSelectVillageCard(wItem);
+      }
+    };
+    el.addEventListener('pointerup', finishPointer);
+    el.addEventListener('pointercancel', finishPointer);
+
+    layer.appendChild(el);
+    wItem.el = el;
+    wItem.bub = el.querySelector('.cw-bubble');
+    _villageWalkers.push(wItem);
+  }
+}
+
+let _selectedVillageCard = null;
+
+function turnVillageCardDir(c, newDir) {
+  if (c.dir === newDir || !c.el) return;
+  c.dir = newDir;
+  c.el.classList.remove('dir-left', 'dir-right', 'turning');
+  void c.el.offsetWidth;
+  c.el.classList.add('turning', newDir > 0 ? 'dir-right' : 'dir-left');
+  setTimeout(() => { if (c.el) c.el.classList.remove('turning'); }, 320);
+}
+
+function showVillageBubble(c, text, ms = 2600) {
+  if (!c || !c.bub) return;
+  c.bub.textContent = text || c.quotes[Math.floor(Math.random() * c.quotes.length)];
+  c.bub.classList.add('show');
+  clearTimeout(c._bubTm);
+  c._bubTm = setTimeout(() => { if (c.bub) c.bub.classList.remove('show'); }, ms);
+}
+
+function spawnVillageStepRipple(x, yBottom, color) {
+  const layer = document.getElementById('walkersLayer');
+  if (!layer) return;
+  const r = document.createElement('div');
+  r.className = 'step-ripple';
+  r.style.setProperty('--RC', color);
+  r.style.left = x + 'px';
+  r.style.bottom = yBottom + 'px';
+  layer.appendChild(r);
+  setTimeout(() => r.remove(), 550);
+}
+
+function onSelectVillageCard(c) {
+  _villageWalkers.forEach(item => { if (item.el) item.el.classList.remove('is-selected'); });
+  _selectedVillageCard = c;
+  c.state = 'idle';
+  c.timer = 260;
+  if (c.el) {
+    c.el.classList.remove('state-walk');
+    c.el.classList.add('state-idle', 'is-selected');
+  }
+
+  const quote = c.quotes[Math.floor(Math.random() * c.quotes.length)];
+  showVillageBubble(c, quote, 3500);
+
+  const lImg = document.getElementById('hudLeaderImg');
+  if (lImg && c.thumb) lImg.src = c.thumb;
+  const cThumb = document.getElementById('cipThumb');
+  if (cThumb && c.thumb) cThumb.src = c.thumb;
+  const cTier = document.getElementById('cipTier');
+  if (cTier) cTier.textContent = c.tier + ' · ' + c.mutLabel + ' · PARTY ' + c.slot;
+  const cName = document.getElementById('cipName');
+  if (cName) cName.textContent = c.name;
+  const cQuote = document.getElementById('cipQuote');
+  if (cQuote) cQuote.textContent = quote;
+  const pop = document.getElementById('cardPop');
+  if (pop) pop.classList.add('open');
+}
+
+window.closeCardPop = function closeCardPop() {
+  const pop = document.getElementById('cardPop');
+  if (pop) pop.classList.remove('open');
+  _villageWalkers.forEach(item => { if (item.el) item.el.classList.remove('is-selected'); });
+  _selectedVillageCard = null;
+};
+
+window.openHoloInspector = function openHoloInspector() {
+  const c = _selectedVillageCard || _villageWalkers[0];
+  if (!c) return;
+  const box = document.getElementById('holoCardBox');
+  if (box) {
+    const borderHtml = (typeof hzBorderLayerHtml === 'function') ? hzBorderLayerHtml() : '';
+    box.className = 'holo-3d-card cw-body hz-bdr bdr-bracket sh-orbital anim-on m-' + c.mut + (c.shiny ? ' is-shiny' : '');
+    box.style.setProperty('--RC', c.color);
+    box.innerHTML = borderHtml + '<img class="cw-art" src="' + c.art + '" onerror="this.src=\'assets/cards/art/shadow-king.webp\'" alt="">';
+  }
+  const setTxt = (id, t) => { const e = document.getElementById(id); if (e) e.textContent = t; };
+  setTxt('hiKicker', c.tier + ' // ' + c.slot + ' PARTY UNIT');
+  setTxt('hiTitle', c.name);
+  setTxt('hiPwr', '⚡ ' + c.pwr + ' PWR');
+  setTxt('hiHp', c.hp);
+  setTxt('hiAtk', c.atk);
+  setTxt('hiMut', c.mutLabel);
+  const mEl = document.getElementById('hiMut');
+  if (mEl) mEl.style.color = c.mutColor;
+  setTxt('hiTrait', c.traitName);
+  setTxt('hiSkillName', 'SIGNATURE PASSIVE // ' + c.skillName);
+  setTxt('hiSkillDesc', c.skillDesc);
+  const modal = document.getElementById('holoModal');
+  if (modal) modal.classList.add('open');
+};
+
+window.closeHoloInspector = function closeHoloInspector() {
+  const modal = document.getElementById('holoModal');
+  if (modal) modal.classList.remove('open');
+};
+
+window.claimStreetCrate = function claimStreetCrate(el) {
+  if (window.hzNotify) window.hzNotify('🎁 STREET SUPPLY CLAIMED: +1,250 COINS & +50 XP!');
+  if (typeof coinGain === 'function') coinGain(1250);
+  if (typeof xpGain === 'function') xpGain(50);
+  if (!el) return;
+  el.style.transform = 'scale(0.2)';
+  el.style.opacity = '0';
+  setTimeout(() => {
+    const spots = ['26%', '41%', '58%', '73%'];
+    el.style.left = spots[Math.floor(Math.random() * spots.length)];
+    el.style.transform = '';
+    el.style.opacity = '1';
+  }, 4500);
+};
+
+function tickVillageWalkers() {
+  const layer = document.getElementById('walkersLayer');
+  if (!layer) {
+    _walkerAnimRunning = false;
+    return;
+  }
+  _walkerAnimRunning = true;
+  const minX = 90;
+  const maxX = 1260;
+
+  for (let i = 0; i < _villageWalkers.length; i++) {
+    const c = _villageWalkers[i];
+    if (c.clashCd > 0) c.clashCd--;
+    if (c.state === 'drag') {
+      c.el.style.transform = 'translate3d(' + c.x.toFixed(1) + 'px, ' + (-c.y - 26).toFixed(1) + 'px, 0) scale(1.08)';
+      continue;
+    }
+    c.timer--;
+    if (c.timer <= 0) {
+      if (c.state === 'walk' || c.state === 'clash') {
+        c.state = 'idle';
+        c.timer = 75 + Math.floor(Math.random() * 90);
+        c.el.classList.remove('state-walk', 'state-clash');
+        c.el.classList.add('state-idle');
+        if (Math.random() < 0.45) showVillageBubble(c);
+      } else {
+        c.state = 'walk';
+        c.timer = 140 + Math.floor(Math.random() * 180);
+        const nextDir = Math.random() < 0.5 ? -1 : 1;
+        turnVillageCardDir(c, nextDir);
+        c.vx = (0.58 + Math.random() * 0.42) * c.dir;
+        c.el.classList.remove('state-idle', 'state-clash');
+        c.el.classList.add('state-walk');
+      }
+    }
+
+    if (c.state === 'walk') {
+      c.x += c.vx;
+      if (c.x < minX) { c.x = minX; turnVillageCardDir(c, 1); c.vx = Math.abs(c.vx); }
+      if (c.x > maxX) { c.x = maxX; turnVillageCardDir(c, -1); c.vx = -Math.abs(c.vx); }
+
+      c._stepTick = (c._stepTick || 0) + 1;
+      if (c._stepTick % 28 === 0) {
+        spawnVillageStepRipple(c.x + 60, c.y - 6, c.color);
+      }
+
+      for (let j = i + 1; j < _villageWalkers.length; j++) {
+        const o = _villageWalkers[j];
+        if (o.state === 'walk' && c.clashCd === 0 && o.clashCd === 0 && Math.abs(c.x - o.x) < 95) {
+          c.state = o.state = 'clash';
+          c.timer = o.timer = 65;
+          c.clashCd = o.clashCd = 380;
+          turnVillageCardDir(c, c.x < o.x ? 1 : -1);
+          turnVillageCardDir(o, o.x < c.x ? 1 : -1);
+          c.el.classList.remove('state-walk'); o.el.classList.remove('state-walk');
+          c.el.classList.add('state-clash'); o.el.classList.add('state-clash');
+          showVillageBubble(c, '⚡ AURA SYNC!', 1600);
+          showVillageBubble(o, '🔥 READY FOR BATTLE!', 1600);
+          break;
+        }
+      }
+    }
+    c.el.style.transform = 'translate3d(' + c.x.toFixed(1) + 'px, ' + (-c.y).toFixed(1) + 'px, 0)';
+  }
+  requestAnimationFrame(tickVillageWalkers);
+}
+
+function setupVillageViewportDrag() {
+  const vp = document.getElementById('villageViewport');
+  if (!vp) return;
+  let isDown = false, startX = 0, scrollL = 0;
+  vp.addEventListener('pointerdown', (e) => {
+    isDown = true; startX = e.clientX; scrollL = vp.scrollLeft;
+  });
+  window.addEventListener('pointerup', () => { isDown = false; });
+  window.addEventListener('pointercancel', () => { isDown = false; });
+  vp.addEventListener('pointermove', (e) => {
+    if (!isDown) return;
+    const dx = e.clientX - startX;
+    vp.scrollLeft = scrollL - dx * 1.2;
+  });
+}
+
+function renderLobby() {
+  if (state.battle) {
+    if (typeof cleanupCommandDrawer === 'function') cleanupCommandDrawer();
     return renderBattle();
   }
-  /* Tray potion tidak hidup lagi setelah #app ditimpa render lain. */
   _l12DockPanel = null;
   _l12PopKey = "";
   _l12PotTrayClass(false);
   const _oldDrw = document.getElementById('commandDrawer');
-  if(_oldDrw && _oldDrw.parentElement === document.body) _oldDrw.remove();
+  if (_oldDrw && _oldDrw.parentElement === document.body) _oldDrw.remove();
   const _oldBd = document.getElementById('drawerBackdrop');
-  if(_oldBd && _oldBd.parentElement === document.body) _oldBd.remove();
+  if (_oldBd && _oldBd.parentElement === document.body) _oldBd.remove();
   document.body.classList.remove('drawer-open');
-  const eq = equipped();
-  const activeBg = getLobbyActiveBg();
+  document.body.classList.add('on-lobby');
 
-  /* ---- RELOKASI (teknik A): parkir dulu node hidup SEBELUM #app ditimpa.
-     Node yang sudah dipindah ke dalam #app akan MUSNAH bersama innerHTML, jadi
-     tiap render mereka diparkir di luar #app (identitas elemen + listener
-     boot.js/panels.js ikut pindah, bukan disalin -> nol duplikat id). ---- */
   let _l12Park = document.getElementById("l12Park");
   if (!_l12Park) {
     _l12Park = document.createElement("div");
@@ -2265,42 +3205,30 @@ function renderLobby(){
   }
   ["rollBtn", "rollAutoBtn", "footAv"].forEach(function (id) {
     let n = document.getElementById(id);
-    /* Tidak ada di DOM -> mungkin baru dilepas innerHTML layar lain; adopsi dari registry. */
     if (!n && _l12Live[id]) n = _l12Live[id];
-    /* Masih ada di DOM tapi belum pernah direlokasi (render pertama) -> kenali. */
     if (n) _l12Live[id] = n;
     if (n && n.parentElement !== _l12Park) _l12Park.appendChild(n);
   });
 
-  /* ---- DATA ASLI (tidak ada yang pseudo) ---- */
   const _fmt = (typeof fmt === "function") ? fmt : (n => String(n));
   const _lv = state.playerLv || 1;
-  const _xpNeed = Math.max(1, _lv * 1000);                       /* state.js:507 — xp per level = lv*1000 */
+  const _xpNeed = Math.max(1, _lv * 1000);
   const _xpPct = Math.max(0, Math.min(100, Math.round((state.xp || 0) / _xpNeed * 100)));
   const _coins = _fmt(state.coins || 0);
   const _gems = _fmt(state.premiumGems || 0);
-  const _luckMult = (typeof totalLuck === "function") ? totalLuck() : 1;
-  const _luckFlat = (state.player && state.player.luckFlat) || 0;
-  const _luckPct = (state.player && state.player.luckPercent) || 0;
-  /* Meter luck = skala 0..10x (produksi TIDAK punya target "3000" seperti prototipe). */
-  const _luckPctW = Math.max(3, Math.min(100, Math.round(_luckMult / 10 * 100)));
+  const _title = String(state.playerTitle || "ROOKIE").toUpperCase();
+  const _heroPower = (typeof totalPower === "function") ? _fmt(totalPower()) : "0";
+  const _cLuck = (typeof fmtLobbyLuck === "function") ? fmtLobbyLuck() : ("×" + ((typeof totalLuck === "function" ? totalLuck() : 1).toFixed(1)));
 
   const _deck = Array.isArray(state.deck) ? state.deck : [null, null, null, null];
   const _byId = {};
   (state.stacks || []).forEach(s => { if (s && s.id) _byId[s.id] = s; });
   const _party = _deck.slice(0, 4).map(id => (id && _byId[id]) ? _byId[id] : null);
-  const _combo = _party.filter(Boolean).length;
-  /* Slot terpilih untuk poster panggung (klik lingkaran party). Kalau slot yang
-     tersimpan kosong, jatuh ke slot terisi pertama supaya poster tak hilang. */
-  const _showIdx = (_l12ShowIdx >= 0 && _l12ShowIdx < 4 && _party[_l12ShowIdx])
-    ? _l12ShowIdx
-    : (function () { const f = _party.findIndex(Boolean); return f >= 0 ? f : 0; })();
-  /* Data untuk handler klik .pav (l12Showcase). _l12ShowIdx sengaja TIDAK
-     ditimpa dengan fallback: kalau slot pilihan sedang kosong, pilihan pemain
-     tetap disimpan supaya poster balik lagi saat slot itu diisi. */
-  _l12ShowParty = _party;
 
-  /* POTION (sumber sama dengan #buffDock milik panels.js) */
+  const _leadStack = _party[0] || (state.stacks && state.stacks[0]) || null;
+  const _leadChar = (_leadStack && _leadStack.char) || "shadow-king";
+  const _leadThumb = (typeof cardImg === "function") ? cardImg(_leadChar, "thumb") : ("assets/cards/thumb/" + _leadChar + ".webp");
+
   const _now = Date.now();
   const _cd = (typeof fmtCountdown === "function") ? fmtCountdown : (ms => Math.ceil(ms / 1000) + "s");
   const _luckBuffs = (typeof luckBuffs === "function") ? luckBuffs().slice().sort((a, b) => a.lv - b.lv) : [];
@@ -2308,69 +3236,12 @@ function renderLobby(){
   const _potLuck = _luckBuffs[_luckBuffs.length - 1] || null;
   const _potSpeed = _speedBuffs[_speedBuffs.length - 1] || null;
   const _adLuckMs = (typeof adLuckLeftMs === "function") ? adLuckLeftMs() : 0;
-  const _lkPots = Array.isArray(state.luckPots) ? state.luckPots : [0,0,0];
-  const _spPots = Array.isArray(state.speedPots) ? state.speedPots : [0,0,0];
-  const _lkStock = (_lkPots[0]||0) + (_lkPots[1]||0) + (_lkPots[2]||0);
-  const _spStock = (_spPots[0]||0) + (_spPots[1]||0) + (_spPots[2]||0);
-
-  /* GLOBAL LUCK */
   const _gl = (typeof _globalLuckCache !== "undefined") ? _globalLuckCache : null;
   const _glActive = !!(_gl && _now < new Date(_gl.ends_at).getTime());
   const _glMult = _glActive ? (_gl.multiplier || 0) : 0;
-  const _glLeft = _glActive ? (new Date(_gl.ends_at).getTime() - _now) : 0;
-  const _glStacks = Math.min(10, Math.round(_glMult / 10) || (_glActive ? 1 : 0));
-  const _glCost = (typeof GLOBAL_LUCK_COST !== "undefined") ? GLOBAL_LUCK_COST : 0;
-  const _glCan = (state.premiumGems || 0) >= _glCost;
-  const _glMaxMult = (typeof GLOBAL_LUCK_MAX_MULT !== "undefined") ? GLOBAL_LUCK_MAX_MULT : 100;
-  const _glMaxed = _glMult >= _glMaxMult;
-  /* Label ikut widget asli panels.js:3317 (AKTIFKAN / +10× / MAX 100×) + HARGA
-     selalu tampil: user mengira tombolnya rusak karena harganya tak pernah kelihatan. */
-  const _glLabel = _glActive ? (_glMaxed ? "MAX " + _glMaxMult + "×" : "+10×") : "ACTIVATE";
-
-  /* WEATHER */
-  const _wId = (typeof activeWeatherId === "function") ? activeWeatherId() : null;
+  const _wId = (typeof activeWeatherId === "function") ? activeWeatherId() : "awakened";
   const _w = (_wId && typeof WEATHER !== "undefined" && WEATHER[_wId]) ? WEATHER[_wId] : null;
-  const _wLeft = (state.weather && state.weather.endsAt) ? Math.max(0, state.weather.endsAt - _now) : 0;
-  const _wRr = _w ? (String(_w.rar || _w.rarity || "COMMON").toUpperCase()) : "";
 
-  /* MODE HUB — progress asli */
-  let _storyBadge = "CH" + ((state.chap || 0) + 1);
-  if (typeof CHAPTERS !== "undefined" && Array.isArray(CHAPTERS) && typeof chapProgMode === "function") {
-    const _done = CHAPTERS.reduce((a, c) => a + chapProgMode(c, state.diff), 0);
-    const _tot = CHAPTERS.reduce((a, c) => a + c.levels.length, 0);
-    if (_tot) _storyBadge = Math.round(_done / _tot * 100) + "%";
-  }
-  const _towerBadge = "F" + ((state.tower && state.tower.best) || 0);
-  const _raidBadge = "#" + ((state.raidCleared && state.raidCleared.normal) ? Object.keys(state.raidCleared.normal).length : 0);
-
-  /* HERO */
-  const _potWin = (typeof WEATHER_MS !== "undefined") ? WEATHER_MS : 300000;  /* panels.js:16 — window potion 5 menit */
-  const _luckTxt = [_luckFlat ? "+" + _luckFlat : "", _luckPct ? "+" + Math.round(_luckPct * 100) + "%" : ""].filter(Boolean).join(" · ");
-  const _frameCfg = (typeof getLobbyActiveFrame === "function") ? getLobbyActiveFrame() : { src: "" };
-  /* Kartu yang dipamerkan di poster = slot party terpilih (fallback deck leader). */
-  const _show = _party[_showIdx] || eq;
-  const _hasEq = !!(_show && _show.char && CARDS[_show.char]);
-  const _c = _hasEq ? CARDS[_show.char] : null;
-  const _art = _hasEq ? ((typeof cardImg === "function") ? cardImg(_show.char) : "assets/cards/art/shadow-king.webp") : "assets/cards/art/shadow-king.webp";
-  const _heroName = _hasEq ? ((typeof cardName === "function") ? cardName(_show.char) : _c.name) : "NO FIGHTER";
-  const _heroPower = (typeof totalPower === "function") ? _fmt(totalPower()) : "0";
-  const _pos = (_c && _c.pos) ? ("object-position:" + _c.pos + ";") : "";
-
-  /* ---- turunan layout C HAZARD (semua dari state asli, tanpa angka palsu) ---- */
-  const _cWbAtt = (function () {
-    try { if (typeof wbAttOf === "function") { const n = wbAttOf(); return (n == null) ? "\u2014" : (n + " / 3"); } } catch (e) {}
-    return "3 / 3";
-  })();
-  const _cAvatar = _l12SlotThumb(_party[0] || (state.stacks && state.stacks[state.stacks.length - 1]) || null);
-  /* luck & shiny chance memakai formatter tunggal di data.js agar sinkron dengan renderShell() */
-  const _cLuck = (typeof fmtLobbyLuck === "function") ? fmtLobbyLuck() : ("x" + ((typeof totalLuck === "function" ? totalLuck() : 1).toFixed(2)));
-  const _cShiny = (typeof fmtLobbyShiny === "function") ? fmtLobbyShiny() : "\u2014";
-  /* Vestige rank R0/R1/... dari rebirthCount() (bukan angka karangan). */
-  const _cVest = "R" + ((typeof rebirthCount === "function") ? rebirthCount() : 0);
-
-  /* ---- COMMAND DRAWER v5 markup helpers (tile icon = 2.5D WebP hazard set,
-     group header = inline Solar SVG 15px). Statistik hidup tetap di sub-label
-     tile (missionSub, drwDailySub, dst) supaya handler lama tetap utuh. */
   const _drwGrp = function (icon, label, count, statId, tiles) {
     const rows = tiles.map(function (t, i) {
       const badge = t.badge ? '<span class="hx-b"' + (t.badgeId ? ' id="' + t.badgeId + '"' : "") + ">" + t.badge + "</span>" : "";
@@ -2394,246 +3265,391 @@ function renderLobby(){
   };
 
   app.innerHTML = `
-  <div class="lobby-hub stage-root l12 c12" id="stage">
-    <div class="colw c12wrap">
-
-      <div class="c12main">
-
-        <!-- ============ KIRI: PANEL HAZARD ============ -->
-        <div class="c12panel">
-          <span class="rail rail-panel" aria-hidden="true"></span>
-
-          <div class="c12kick">
-            <span class="c12dot" aria-hidden="true"></span>
-            <span class="c12kickt">SHADOW OPERATOR // ${(currentUser || "GUEST").toUpperCase()}</span>
-            <span class="c12live"><i></i>ONLINE</span>
-          </div>
-
-          <h1 class="c12title">${String(_heroName).replace(" ", "<br>")}</h1>
-
-          <div class="c12meta">${_l12HeroMetaHtml(_show, _lv, _combo)}</div>
-
-          <div class="c12pow">
-            <b id="l12TopPwr">${_heroPower}</b><span>COMBAT POWER</span>
-          </div>
-
-          <!-- POD LEVEL / XP = pintu masuk layar PROFILE (perintah user 2026-11-09).
-               Seluruh blok bisa diklik; judul di dalamnya tetap membuka TITLES. -->
-          <div class="l12-lvl-pod c12lvl" id="l12LvlPod" role="button" tabindex="0" data-pfopen
-               title="Open Operator Profile" aria-label="Open Operator Profile"
-               onclick="if(typeof openProfileModal==='function')openProfileModal();"
-               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();if(typeof openProfileModal==='function')openProfileModal();}">
-            <span class="lv-badge">LV <b id="l12TopLv">${_lv}</b></span>
-            <span class="lv-info">
-              <span class="lv-meta">
-                <span class="lv-title" onclick="event.stopPropagation();if(typeof openTitlesModal==='function')openTitlesModal();" title="Change Title">[${String(state.playerTitle || "ROOKIE").toUpperCase()}]</span>
-                <span class="lv-pct" id="l12TopXpPct">${_xpPct}%</span>
-              </span>
-              <span class="bar"><span id="l12TopXpBar" style="width:${_xpPct}%"></span></span>
-            </span>
-            <span class="lv-open" aria-hidden="true">PROFILE<i></i></span>
-          </div>
-
-          <div class="c12rule" aria-hidden="true"></div>
-
-          <div class="c12brief">
-            <div class="c12br"><span class="c12bk">CLEARED</span><span class="c12bv">${_storyBadge}</span></div>
-            <div class="c12br"><span class="c12bk">BEST FLOOR</span><span class="c12bv">${_towerBadge}</span></div>
-            <div class="c12br hot"><span class="c12bk">WB ATTEMPTS</span><span class="c12bv">${_cWbAtt}</span></div>
-          </div>
-
-          <!-- QUICK STATS: mengisi ruang kosong panel kiri dengan data asli
-               (totalRolls, totalLuck, shiny chance, vestige/rebirth). -->
-          <div class="c12qs">
-            <div class="c12q"><span class="c12qk">TOTAL ROLLS</span><b class="c12qv" id="l12QsRolls">${_fmt(state.totalRolls || 0)}</b></div>
-            <div class="c12q"><span class="c12qk">LUCK</span><b class="c12qv" id="l12QsLuck">${_cLuck}</b></div>
-            <div class="c12q"><span class="c12qk">SHINY</span><b class="c12qv" id="l12QsShiny">${_cShiny}</b></div>
-            <div class="c12q"><span class="c12qk">VESTIGE</span><b class="c12qv" id="l12QsVest">${_cVest}</b></div>
-          </div>
-
-          <!-- DECK // 4 dihapus (perintah user 2026-11-06): panel kiri
-               dibiarkan kosong bersih. Info deck masih ada di chip meta dan
-               avatar party di kanan-bawah panggung. -->
-
-          <div class="c12gap" aria-hidden="true"></div>
-
-          <!-- RIWAYAT ROLL: JS menggambar 10 sel, 4 terlihat -->
-          <div class="c12hist" id="l12RollHistWrap">
-            <span class="c12hl" id="l12RollTotal">TOTAL ROLLS · ${_fmt(state.totalRolls || 0)}</span>
-            <div class="rh-strip c12strip" id="l12RollHist"></div>
-          </div>
-
-          <!-- MODE HUB -->
-          <div class="hlist c12modes">
-            <button class="hrow" type="button" data-hub="story"><span class="mn">01</span><i class="ic i-story"></i><span class="mt">STORY</span><b class="bd">${_storyBadge}</b><i class="chv"></i></button>
-            <button class="hrow" type="button" data-hub="tower"><span class="mn">02</span><i class="ic i-tower"></i><span class="mt">TOWER</span><b class="bd">${_towerBadge}</b><i class="chv"></i></button>
-            <button class="hrow" type="button" data-hub="raid"><span class="mn">03</span><i class="ic i-raid"></i><span class="mt">RAID</span><b class="bd">${_raidBadge}</b><i class="chv"></i></button>
-          </div>
+  <div class="nh-shell" id="nhLobbyShell">
+    <!-- TOP HUD -->
+    <header class="nh-top-hud">
+      <div class="op-pill" onclick="if(typeof openProfileModal==='function')openProfileModal();" title="Profile">
+        <div class="op-ava">
+          <img id="hudLeaderImg" src="${_leadThumb}" alt="">
+          <span class="op-lv"><b id="l12TopLv">${_lv}</b></span>
         </div>
-
-        <!-- ============ KANAN: POSTER HERO (full-bleed, tanpa bingkai) ============ -->
-        <div class="stage" id="c12Stage">
-          <div class="stage-bg-layer" id="stageBgLayer" style="background-image: url('${activeBg}');"></div>
-          <canvas id="ambientCanvas"></canvas>
-
-          <div class="c12-stage-title" onclick="if(typeof openTitlesModal==='function')openTitlesModal();" title="Manage Titles">
-            ${(typeof renderTitleCrownHtml === 'function') ? renderTitleCrownHtml(state.playerTitle || "ROOKIE") : ''}
-          </div>
-
-          <div class="hero" id="heroStandeeWrap" title="Click Hunter to manage Party &amp; Deck" onclick="if(window.sfx&&sfx.hit)sfx.hit();if(typeof toggleBackpack==='function')toggleBackpack();">
-            <div class="artbox"><img class="art" src="${_art}" alt="" style="${_pos}"></div>
-            <span class="cast" aria-hidden="true"></span>
-          </div>
-
-          <div class="c12party">${(_party || []).slice(0, 4).map(function (s, i) {
-            if (!s) return '<button class="pav empty" type="button" title="Empty slot — click to open Backpack" onclick="if(typeof toggleBackpack===\'function\')toggleBackpack();">+</button>';
-            var _pn = (typeof cardName === 'function') ? cardName(s.char) : s.char;
-            var _pc = (typeof MUT_COLOR !== 'undefined' && MUT_COLOR[s.mut]) ? MUT_COLOR[s.mut] : 'rgba(245,245,245,.26)';
-            /* Klik lingkaran = tukar poster showcase (bukan buka Backpack; tombol tas ada di dock). */
-            return '<button class="pav' + (i === _showIdx ? ' on' : '') + '" type="button" aria-pressed="' + (i === _showIdx ? 'true' : 'false') + '" title="Showcase ' + _pn + ' on stage" style="--mc:' + _pc + '" onclick="if(typeof l12Showcase===\'function\')l12Showcase(' + i + ');">' + _l12SlotThumb(s) + '</button>';
-          }).join("")}</div>
-        </div>
-
-        <!-- resource kanan-atas -->
-        <div class="c12res">
-          <button class="pill coin-pill" type="button" onclick="if(typeof openPremiumShop==='function')openPremiumShop();" title="Gold Coins">
-            <span class="p-ic">${typeof coinIcon === 'function' ? coinIcon(15) : '<i class="ic i-coin"></i>'}</span><b id="l12TopCoins">${_coins}</b>
-          </button>
-          <button class="pill gem-pill" type="button" onclick="if(typeof openPremiumShop==='function')openPremiumShop();" title="Premium Gems">
-            <img class="p-gem" src="assets/images/premium-currency.webp" alt=""><b id="l12TopGems">${_gems}</b><span class="p-plus">+</span>
-          </button>
-        </div>
-
-
-      </div>
-
-      <!-- ============ BAWAH: BUFF (4 chip + Hazard popovers) + DOCK ============ -->
-      <div class="c12foot">
-        <section class="pot-tray hz-dock-pop" id="l12PotTray" style="display:none;" aria-live="polite"></section>
-
-        <div class="hud c12buffs">
-          <button type="button" class="l12-bchip${(_potLuck || _adLuckMs > 0) ? " is-on" : ""}" id="l12PotLuck"
-                  data-block="pot-luck" style="--bc:var(--luck)" title="Luck Potions &amp; Buffs"
-                  onclick="window.l12ToggleDockPanel('luck')">
-            <span class="l12-bchip-ic"><img id="l12PotLuckImg" src="assets/images/pot-luck-${_potLuck ? _potLuck.lv : 1}.webp" alt=""></span>
-            <span class="l12-bchip-txt">
-              <span class="l12-bchip-k">LUCK POT <span class="tag" id="l12PotLuckStock">&times;${_lkStock}</span></span>
-              <span class="l12-bchip-v" id="l12PotLuckVal">${_potLuck ? ("+" + (_potLuck.flat || 0) + " L" + _potLuck.lv + (_luckBuffs.length > 1 ? " (+" + (_luckBuffs.length - 1) + ")" : "")) : (_adLuckMs > 0 ? "ADS 2&times;" : "OFF")}</span>
-            </span>
-            <span class="l12-bchip-cd"><span id="l12PotLuckTm">${_potLuck ? _cd(_potLuck.endsAt - _now) : (_adLuckMs > 0 ? _cd(_adLuckMs) : "--:--")}</span></span>
-          </button>
-
-          <button type="button" class="l12-bchip${_potSpeed ? " is-on" : ""}" id="l12PotSpeed"
-                  data-block="pot-speed" style="--bc:var(--spd)" title="Speed Potions &amp; Buffs"
-                  onclick="window.l12ToggleDockPanel('speed')">
-            <span class="l12-bchip-ic"><img id="l12PotSpeedImg" src="assets/images/pot-speed-${_potSpeed ? _potSpeed.lv : 1}.webp" alt=""></span>
-            <span class="l12-bchip-txt">
-              <span class="l12-bchip-k">SPEED POT <span class="tag" id="l12PotSpeedStock">&times;${_spStock}</span></span>
-              <span class="l12-bchip-v" id="l12PotSpeedVal">${_potSpeed ? ("+" + (_potSpeed.add || 0).toFixed(1) + "&times; L" + _potSpeed.lv + (_speedBuffs.length > 1 ? " (+" + (_speedBuffs.length - 1) + ")" : "")) : "OFF"}</span>
-            </span>
-            <span class="l12-bchip-cd"><span id="l12PotSpeedTm">${_potSpeed ? _cd(_potSpeed.endsAt - _now) : "--:--"}</span></span>
-          </button>
-
-          <button type="button" class="l12-bchip${_glActive ? " is-on" : ""}" id="l12Glw"
-                  data-block="global-luck" style="--bc:var(--haz)" title="Global Luck Shrine"
-                  onclick="window.l12ToggleDockPanel('global')">
-            <span class="l12-bchip-ic">${_l12CloverSvg()}</span>
-            <span class="l12-bchip-txt">
-              <span class="l12-bchip-k">GLOBAL LUCK <span class="tag" id="l12GlStack">${_glStacks}/10</span></span>
-              <span class="l12-bchip-v" id="l12GlMult">${_glActive ? (_glMult + "&times; LUCK") : "OFFLINE"}</span>
-            </span>
-            <span class="l12-bchip-cd"><span id="l12GlTm">${_glActive ? _cd(_glLeft) : "--:--"}</span></span>
-          </button>
-
-          <button type="button" class="l12-bchip${_w ? " is-on" : ""}" id="l12Wx"
-                  data-block="weather" style="--bc:${_w ? _w.color : "#9ca3af"}" title="Weather Dock &amp; Exclusive Cards"
-                  onclick="window.l12ToggleDockPanel('weather')">
-            <span class="l12-bchip-ic" id="l12WxIcon"><img id="l12WxImg" src="${(typeof weatherPotionSrc === "function") ? weatherPotionSrc((_w && _w.id) || "clear", true) : "assets/images/thumb/weather-clear.webp?v=1"}" alt="" decoding="async"></span>
-            <span class="l12-bchip-txt">
-              <span class="l12-bchip-k">WEATHER <span class="tag" id="l12WxRr">${_wRr || "IDLE"}</span></span>
-              <span class="l12-bchip-v" id="l12WxName">${_w ? String(_w.name || _wId).toUpperCase() : "CLEAR SKY"}</span>
-            </span>
-            <span class="l12-bchip-cd"><span id="l12WxTm">${_wLeft ? _cd(_wLeft) : "--:--"}</span><span class="stk" id="l12WxLkSub">${_w ? (_w.luckBonus + "&times; LK") : "IDLE"}</span></span>
-          </button>
-        </div>
-
-        <div class="rollbar c12dock">
-          <span class="rail rail-roll" aria-hidden="true"></span>
-          <span class="l12-slot" id="slotRoll"></span>
-          <span class="l12-slot" id="slotAuto"></span>
-          <button class="sq c12sq" type="button" onclick="if(typeof toggleBackpack==='function')toggleBackpack();" title="Backpack / Deck">
-            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7.4" width="16" height="13" rx="2"/><path d="M9 7.4V5.6a3 3 0 0 1 6 0v1.8"/></svg>
-          </button>
-          <button class="sq c12sq" type="button" onclick="if(typeof openPremiumShop==='function')openPremiumShop();" title="Premium Shop">
-            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h2l2.2 10.2a2 2 0 0 0 2 1.6h7.2a2 2 0 0 0 2-1.6L21 9H7"/><circle cx="10" cy="20" r="1.2"/><circle cx="18" cy="20" r="1.2"/></svg>
-          </button>
-          <button class="sq c12sq" type="button" onclick="location.hash='#/settings'" title="Settings">
-            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          </button>
+        <div class="op-info">
+          <span class="op-name">${(currentUser || "OPERATOR").toUpperCase()}</span>
+          <div class="op-pwr"><svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg><b class="op-pwr-val" id="l12TopPwr">${_heroPower}</b></div>
+          <div class="op-xpbar"><i id="l12TopXpBar" style="width: ${_xpPct}%;"></i></div>
         </div>
       </div>
-    </div>
-    </div>
 
-    <!-- 5. Backdrop Overlay for Command Drawer -->
-    <div id="drawerBackdrop" onclick="closeCommandDrawer()"></div>
+      <!-- Center unobstructed skybox -->
 
-    <!-- 6. Command Anchor Drawer v5 — hex tile hub (desain dikunci _tmp/proto_drawer_v5) -->
-    <aside id="commandDrawer" aria-label="Command drawer">
-      <div class="drw-tape" aria-hidden="true"></div>
-      <div class="drw-scan" aria-hidden="true"></div>
-
-      <header class="drw-head">
-        <div class="drw-head-l">
-          <div class="drw-kick"><i aria-hidden="true"></i>TACTICAL HUD // ARCHON COMMAND ONLINE</div>
-          <div class="drw-ttl">QUICK <em>ACTIONS</em></div>
+      <div class="res-cluster">
+        <div class="res-pill luck" onclick="if(window.hzNotify)hzNotify('TOTAL LUCK: ' + '${_cLuck}');" title="Total Luck">
+          <svg class="res-ico" width="18" height="18" viewBox="0 0 32 32" aria-hidden="true"><use href="#luckSvgSymbol"/></svg>
+          <b class="res-num" id="l12TopLuck">${_cLuck}</b>
         </div>
-        <button class="drw-close-btn" id="drwCloseBtn" type="button" onclick="closeCommandDrawer()" title="Close (ESC / Swipe Right)" aria-label="Close command drawer">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
+        <div class="res-pill coin" onclick="if(typeof openPremiumShop==='function')openPremiumShop();" title="Coins">
+          <svg class="res-ico" width="18" height="18" viewBox="0 0 32 32" aria-hidden="true"><use href="#coinSvgSymbol"/></svg>
+          <b class="res-num" id="l12TopCoins">${_coins}</b>
+        </div>
+        <div class="res-pill gem" onclick="if(typeof openTopup==='function')openTopup();else if(typeof openPremiumShop==='function')openPremiumShop();" title="Gems">
+          <img class="res-ico" src="assets/images/premium-currency.webp" alt="" width="18" height="18">
+          <b class="res-num" id="l12TopGems">${_gems}</b>
+          <button class="res-plus-btn" type="button" title="Top-Up Gems" onclick="event.stopPropagation();if(typeof openTopup==='function')openTopup();else if(typeof openPremiumShop==='function')openPremiumShop();">+</button>
+        </div>
+        <button class="hud-quick-btn daily" type="button" onclick="if(typeof openDaily==='function')openDaily();" title="Daily Rewards" aria-label="Daily Rewards">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="13" rx="1"/><path d="M12 8v13M3 12h18M12 8c-2.5 0-4-1-4-2.4S9.4 3 12 8c2.6-5 4-3.8 4-2.4S14.500 8 12 8z"/></svg>
+          <span class="hq-dot"></span>
         </button>
-      </header>
+        <button class="hud-quick-btn" type="button" onclick="if(location.hash==='#/settings')render();else location.hash='#/settings';" title="Settings" aria-label="Settings">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.400 15a1.700 1.700 0 0 0 .3 1.800l.1.100a2 2 0 1 1-2.800 2.800l-.1-.1a1.700 1.700 0 0 0-1.800-.3 1.700 1.700 0 0 0-1 1.500V21a2 2 0 1 1-4 0v-.1a1.700 1.700 0 0 0-1.100-1.500 1.700 1.700 0 0 0-1.800.3l-.1.100a2 2 0 1 1-2.800-2.800l.1-.1a1.700 1.700 0 0 0 .3-1.800 1.700 1.700 0 0 0-1.500-1H3a2 2 0 1 1 0-4h.1a1.700 1.700 0 0 0 1.500-1.100 1.700 1.700 0 0 0-.3-1.800l-.1-.1a2 2 0 1 1 2.800-2.800l.1.100a1.700 1.700 0 0 0 1.800.3H9a1.700 1.700 0 0 0 1-1.500V3a2 2 0 1 1 4 0v.1a1.700 1.700 0 0 0 1 1.500 1.700 1.700 0 0 0 1.800-.3l.1-.1a2 2 0 1 1 2.800 2.800l-.1.100a1.700 1.700 0 0 0-.3 1.800V9a1.700 1.700 0 0 0 1.500 1H21a2 2 0 1 1 0 4h-.1a1.700 1.700 0 0 0-1.500 1z"/></svg>
+        </button>
+      </div>
+    </header>
 
-      <div class="drw-body" id="drwBody">
-        ${_drwGrp('deck', 'UNITS', '04', 'foldCombatStat', [
-          { id: 'drwStoryBtn', img: 'story', ic: 'quests', nm: 'Story', hc: '#f3e600', s: 'CAMPAIGN PROGRESS', sId: 'missionSub', s2: '0% COMPLETE', s2Id: 'drwStoryPercent', pbId: 'missionFill', pbW: 0 },
-          { id: 'drwRaidBtn', img: 'world_boss', ic: 'skills', nm: 'World Boss', hc: '#f87171', s: 'SHARED HP RAID' },
-          { id: 'drwTowerBtn', img: 'tower', ic: 'home', nm: 'Tower', hc: '#b58cff', s: 'INFINITE SPIRE', sId: 'drwTowerSub' },
-          { id: 'drwRankBtn', img: 'ranking', ic: 'luck', nm: 'Ranking', hc: '#ffd700', s: 'GLOBAL RANK', sId: 'drwRankSub' }
-        ])}
-        ${_drwGrp('daily', 'REWARDS', '04', '', [
-          { id: 'drwDailyBtn', img: 'daily', ic: 'daily', nm: 'Daily', hc: '#4ade80', s: 'CLAIM DAILY REWARD', sId: 'drwDailySub' },
-          { id: 'drwAdsBtn', img: 'free_luck', ic: 'ads', nm: 'Free Luck', hc: '#ffd700', s: 'WATCH ADS FOR BOOST', sId: 'drwAdsSub' },
-          { id: 'drwGlBtn', img: 'global_luck', ic: 'luck', nm: 'Global Luck', hc: '#22d3ee', s: 'COMMUNITY MULTIPLIER', sId: 'drwGlSub' },
-          { id: 'drwWeatherBtn', img: 'weather', ic: 'rebirth', nm: 'Weather', hc: '#b58cff', s: 'ATMOSPHERIC BUFF', sId: 'drwWeatherSub' }
-        ])}
-        ${_drwGrp('supply', 'SHOP', '02', '', [
-          { id: 'drwPremiumBtn', img: 'supply_shop', ic: 'supply', nm: 'Supply Shop', hc: '#ffd700', s: 'INSTANT ROLL PACKS', sId: 'drwPremiumSub' },
-          { id: 'drwRebirthBtn', img: 'rebirth', ic: 'rebirth', nm: 'Rebirth', hc: '#b58cff', s: 'ASCENSION PROTOCOL', sId: 'drwRebirthSub' }
-        ])}
-        ${_drwGrp('settings', 'SYSTEM', '05', '', [
-          { id: 'drwTraitBtn', img: 'trait', ic: 'more', nm: 'Trait', hc: '#22d3ee', s: 'PASSIVE OPTIMIZER', sId: 'drwTraitSub' },
-          { id: 'drwSkillBtn', img: 'skill_tree', ic: 'skills', nm: 'Skill Tree', hc: '#4ade80', s: 'SPEND SKILL POINTS', sId: 'drwSkillSub', badge: '0 SP', badgeId: 'drwSkillSp' },
-          { id: 'drwIndexBtn', img: 'archive', ic: 'archive', nm: 'Archive', hc: '#22d3ee', s: 'CARD CATALOG', sId: 'drwIndexSub' },
-          { id: 'drwSettingsBtn', img: 'settings', ic: 'settings', nm: 'Settings', hc: '#f5f5f5', s: 'AUDIO · COMBAT · LANGUAGE' },
-          { id: 'drwChangelogBtn', img: 'changelog', ic: 'changelog', nm: 'Changelog', hc: '#f87171', s: 'RELEASE NOTES' }
-        ])}
+    <!-- PANORAMIC CHIBI VILLAGE STREET -->
+    <section class="village-viewport" id="villageViewport">
+      <div class="village-world" id="villageWorld">
+        <div class="sky-grid"></div>
+        <div class="sky-aurora-veil" id="skyAuroraVeil"></div>
+
+        <div class="sky-celestial" id="skyCelestial">
+          <div class="cel-ring-outer"></div>
+          <div class="cel-ring-inner"></div>
+          <div class="cel-core" id="celCoreSvg"></div>
+        </div>
+
+        <div class="sky-searchlight b1"></div>
+        <div class="sky-searchlight b2"></div>
+
+        <div class="monorail-bridge">
+          <div class="monorail-train"></div>
+        </div>
+
+        <div class="city-skyline-far">
+          <svg viewBox="0 0 1440 230" preserveAspectRatio="none" aria-hidden="true">
+            <path fill="#090c14" d="M0,230 L0,120 L55,120 L55,75 L110,75 L110,135 L165,135 L165,50 L230,50 L230,115 L310,115 L310,65 L390,65 L390,130 L470,130 L470,40 L550,40 L550,110 L650,110 L650,25 L770,25 L770,105 L860,105 L860,55 L940,55 L940,125 L1030,125 L1030,45 L1120,45 L1120,115 L1210,115 L1210,70 L1300,70 L1300,120 L1380,120 L1380,85 L1440,85 L1440,230 Z"/>
+            <path fill="#0d111c" d="M0,230 L0,150 L85,150 L85,95 L155,95 L155,160 L250,160 L250,85 L340,85 L340,145 L430,145 L430,90 L520,90 L520,155 L610,155 L610,70 L810,70 L810,150 L910,150 L910,88 L1000,88 L1000,155 L1090,155 L1090,92 L1185,92 L1185,148 L1280,148 L1280,102 L1365,102 L1365,152 L1440,152 L1440,230 Z"/>
+            <g fill="#f3e600" opacity="0.45">
+              <rect x="98" y="108" width="6" height="42"/><rect x="112" y="108" width="6" height="42"/>
+              <rect x="270" y="100" width="48" height="3"/><rect x="270" y="112" width="48" height="3"/><rect x="270" y="124" width="48" height="3"/>
+              <rect x="450" y="105" width="8" height="36"/><rect x="468" y="105" width="8" height="36"/><rect x="486" y="105" width="8" height="36"/>
+              <rect x="930" y="102" width="50" height="4"/><rect x="930" y="116" width="50" height="4"/>
+              <rect x="1115" y="106" width="8" height="40"/><rect x="1135" y="106" width="8" height="40"/>
+              <rect x="1300" y="116" width="44" height="3"/><rect x="1300" y="128" width="44" height="3"/>
+            </g>
+            <g fill="#22d3ee" opacity="0.4">
+              <rect x="180" y="68" width="34" height="3"/><rect x="180" y="80" width="34" height="3"/>
+              <rect x="490" y="56" width="42" height="3"/><rect x="490" y="68" width="42" height="3"/>
+              <rect x="1050" y="62" width="52" height="3"/><rect x="1050" y="74" width="52" height="3"/>
+            </g>
+          </svg>
+        </div>
+
+        <canvas class="weather-sky-canvas" id="weatherSkyCanvas"></canvas>
+
+        <div class="village-street">
+          <div class="street-curb"></div>
+          <div class="street-lanes"></div>
+          <div class="street-reflections">
+            <div class="wet-refl" style="--RC:#22d3ee"></div>
+            <div class="wet-refl" style="--RC:#22d3ee"></div>
+            <div class="wet-refl center" style="--RC:#f3e600"></div>
+            <div class="wet-refl" style="--RC:#f43f5e"></div>
+            <div class="wet-refl" style="--RC:#fbbf24"></div>
+          </div>
+          <div class="street-markings">
+            <div class="spire-crosswalk"></div>
+            <div class="road-center-line"></div>
+            <div class="road-sub-line"></div>
+          </div>
+        </div>
+
+        <div class="street-props-layer">
+          <div class="street-pylon" style="left: 22%;"><div class="pylon-head"></div><div class="pylon-pole"></div><div class="pylon-base"></div><div class="pylon-cone"></div></div>
+          <div class="street-pylon" style="left: 39%;"><div class="pylon-head"></div><div class="pylon-pole"></div><div class="pylon-base"></div><div class="pylon-cone"></div></div>
+          <div class="street-pylon" style="left: 61%;"><div class="pylon-head"></div><div class="pylon-pole"></div><div class="pylon-base"></div><div class="pylon-cone"></div></div>
+          <div class="street-pylon" style="left: 78%;"><div class="pylon-head"></div><div class="pylon-pole"></div><div class="pylon-base"></div><div class="pylon-cone"></div></div>
+
+          <div class="street-crate" id="streetCrate" onclick="claimStreetCrate(this)" title="Click to claim Street Supply Drop">
+            <span class="crate-tag">[!] SUPPLY</span>
+            <div class="crate-box"></div>
+          </div>
+        </div>
+
+        <!-- 5 TRANSPARENT CUTOUT CHIBI BUILDINGS PLANTED ON THE PAVEMENT -->
+        <section class="buildings-row">
+          <div class="chibi-bldg" style="--BC:#22d3ee" onclick="if(typeof openTrait==='function')openTrait();" title="Enter Trait &amp; Weather Lab">
+            <div class="bldg-sign">
+              <span class="bldg-title">TRAIT &amp; WEATHER</span>
+            </div>
+            <img class="bldg-sprite" src="assets/images/buildings/front_b4_trait.png?v=7" alt="Trait &amp; Weather">
+            <div class="bldg-landing-pad"></div>
+            <div class="bldg-ground-shadow"></div>
+            <div class="bldg-ground-glow"></div>
+          </div>
+
+          <div class="chibi-bldg" style="--BC:#22d3ee" onclick="if(typeof openStory==='function')openStory();" title="Enter Story Gate">
+            <div class="bldg-sign">
+              <span class="bldg-title">STORY GATE</span>
+            </div>
+            <img class="bldg-sprite" src="assets/images/buildings/front_b1_story.png?v=7" alt="Story Gate">
+            <div class="bldg-landing-pad"></div>
+            <div class="bldg-ground-shadow"></div>
+            <div class="bldg-ground-glow"></div>
+          </div>
+
+          <div class="chibi-bldg featured" style="--BC:#f3e600" onclick="if(typeof stopTower==='function')stopTower();if(location.hash==='#/tower')render();else location.hash='#/tower';" title="Enter Tower Infinite">
+            <div class="bldg-sign">
+              <span class="bldg-title">TOWER INFINITE</span>
+            </div>
+            <img class="bldg-sprite" src="assets/images/buildings/front_b2_tower.png?v=7" alt="Tower Infinite">
+            <div class="bldg-landing-pad"></div>
+            <div class="bldg-ground-shadow"></div>
+            <div class="bldg-ground-glow"></div>
+          </div>
+
+          <div class="chibi-bldg" style="--BC:#f43f5e" onclick="window.raidView='hub';if(location.hash==='#/raid')render();else location.hash='#/raid';" title="Enter World Boss Raid">
+            <div class="bldg-sign">
+              <span class="bldg-title">WORLD BOSS</span>
+            </div>
+            <img class="bldg-sprite" src="assets/images/buildings/front_b3_raid.png?v=7" alt="World Boss">
+            <div class="bldg-landing-pad"></div>
+            <div class="bldg-ground-shadow"></div>
+            <div class="bldg-ground-glow"></div>
+          </div>
+
+          <div class="chibi-bldg" style="--BC:#fbbf24" onclick="if(typeof openRebirthModal==='function')openRebirthModal();" title="Enter Rebirth Altar">
+            <div class="bldg-sign">
+              <span class="bldg-title">REBIRTH ALTAR</span>
+            </div>
+            <img class="bldg-sprite" src="assets/images/buildings/front_b5_rebirth.png?v=7" alt="Rebirth Altar">
+            <div class="bldg-landing-pad"></div>
+            <div class="bldg-ground-shadow"></div>
+            <div class="bldg-ground-glow"></div>
+          </div>
+        </section>
+
+        <!-- WALKING LIVING CARDS LAYER -->
+        <div class="walkers-layer" id="walkersLayer"></div>
+      </div>
+    </section>
+
+    <!-- CLEAN TACTICAL DIALOG BOX WHEN A WALKING CARD IS CLICKED -->
+    <aside class="card-inspector-pop" id="cardPop">
+      <div class="cip-head">
+        <span id="cipTier">SECRET · ULTIMA · PARTY UNIT S1</span>
+        <button class="cip-close" type="button" onclick="closeCardPop()" title="Close">×</button>
+      </div>
+      <div class="cip-body">
+        <div class="cip-left">
+          <div class="cip-thumb-wrap">
+            <img class="cip-thumb" id="cipThumb" src="assets/cards/thumb/shadow-king.webp" alt="">
+          </div>
+          <div class="cip-meta">
+            <div class="cip-nm-row">
+              <span class="cip-nm" id="cipName">SHADOW KING</span>
+            </div>
+            <span class="cip-quote" id="cipQuote">"The shadows answer only to me."</span>
+          </div>
+        </div>
+        <div class="cip-actions">
+          <button class="cip-btn pri" type="button" onclick="openHoloInspector()">INSPECT 3D</button>
+          <button class="cip-btn" type="button" onclick="closeCardPop();if(typeof openDeckModal==='function')openDeckModal();">SWAP</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 3D HOLO CARD INSPECTOR MODAL -->
+    <div class="holo-modal-backdrop" id="holoModal" onclick="if(event.target===this)closeHoloInspector()">
+      <div class="holo-split-layout">
+        <div class="holo-3d-stage" id="holoStage">
+          <div class="holo-3d-card" id="holoCardBox"></div>
+          <div class="holo-pedestal-ring" id="holoPedestal"></div>
+          <span class="holo-drag-hint">↻ MOVE CURSOR OVER CARD FOR 3D TILT</span>
+        </div>
+        <div class="holo-info-panel">
+          <div class="hip-topbar">
+            <span class="hi-kicker" id="hiKicker">SECRET // S1 PARTY UNIT</span>
+            <button class="cip-close" type="button" onclick="closeHoloInspector()" title="Close">×</button>
+          </div>
+          <div class="hip-body">
+            <div class="hip-hero-head">
+              <div class="hi-title" id="hiTitle">SHADOW KING</div>
+              <span class="hi-pwr-pill" id="hiPwr">⚡ 540.2K PWR</span>
+            </div>
+            <div class="hi-stat-grid">
+              <div class="hi-stat-box" style="--SC:#4ade80"><span>HP STAT</span><b id="hiHp" style="color:#4ade80">248.5K</b></div>
+              <div class="hi-stat-box" style="--SC:#fb7185"><span>ATK STAT</span><b id="hiAtk" style="color:#fb7185">291.7K</b></div>
+              <div class="hi-stat-box" style="--SC:#ff0055"><span>MUTATION</span><b id="hiMut" style="color:#ff0055">ULTIMA</b></div>
+              <div class="hi-stat-box" style="--SC:#c084fc"><span>TRAIT</span><b id="hiTrait" style="color:#c084fc">MONARCH</b></div>
+            </div>
+            <div class="hi-skill-box">
+              <b id="hiSkillName">SIGNATURE PASSIVE // DOMAIN OF THE MONARCH</b>
+              <span id="hiSkillDesc">Summons shadow soldiers on strike, dealing 240% true slash damage and draining 18% foe ATK.</span>
+            </div>
+            <div class="hip-foot">
+              <button class="cip-btn pri" type="button" onclick="closeHoloInspector();if(typeof openDeckModal==='function')openDeckModal();">SWAP PARTY SLOT</button>
+              <button class="cip-btn" type="button" onclick="closeHoloInspector()">CLOSE</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEATHER SWITCHER DRAWER -->
+    <aside class="wx-picker-bar" id="wxPickerBar">
+      <div class="wxp-head">
+        <span>🌩️ ACTIVE WEATHER: <b id="wxpActiveName">AWAKENED (15× LUCK · 8× SPD)</b></span>
+        <button class="cip-close" style="height:26px;width:28px;font-size:13px;" onclick="toggleWxPicker()">×</button>
+      </div>
+      <div class="wxp-grid" id="wxpGrid"></div>
+    </aside>
+
+    <!-- BOTTOM BUFF STRIP + NAV DOCK -->
+    <footer class="nh-bottom-hud">
+      <section class="pot-tray hz-dock-pop" id="l12PotTray" style="display:none;" aria-live="polite"></section>
+
+      <div class="buff-strip">
+        <button class="b-chip${(_potLuck || _adLuckMs > 0) ? " is-on" : ""}" id="l12PotLuck" onclick="window.l12ToggleDockPanel('luck')" title="Luck Potions &amp; Buffs">
+          <img id="l12PotLuckImg" src="assets/images/pot-luck-${_potLuck ? _potLuck.lv : 1}.webp" alt="">
+          <b id="l12PotLuckVal">${_potLuck ? ("+" + (_potLuck.flat || 0) + " L" + _potLuck.lv) : (_adLuckMs > 0 ? "ADS 2×" : "OFF")}</b>
+        </button>
+
+        <button class="b-chip${_potSpeed ? " is-on" : ""}" id="l12PotSpeed" onclick="window.l12ToggleDockPanel('speed')" title="Speed Potions &amp; Buffs">
+          <img id="l12PotSpeedImg" src="assets/images/pot-speed-${_potSpeed ? _potSpeed.lv : 1}.webp" alt="">
+          <b id="l12PotSpeedVal">${_potSpeed ? ("+" + (_potSpeed.add || 0).toFixed(1) + "× L" + _potSpeed.lv) : "OFF"}</b>
+        </button>
+
+        <button class="b-chip${_glActive ? " is-on" : ""}" id="l12Glw" onclick="window.l12ToggleDockPanel('global')" title="Global Luck Shrine">
+          <span class="b-ic"><svg width="18" height="18" viewBox="0 0 32 32" aria-hidden="true"><use href="#globalLuckSvgSymbol"/></svg></span>
+          <b id="l12GlMult">${_glActive ? (_glMult + "× ACTIVE") : "OFFLINE"}</b>
+        </button>
+
+        <button class="b-chip${_w ? " is-on" : ""}" id="l12Wx" onclick="window.l12ToggleDockPanel('weather')" style="border-color: var(--wx-color, #c084fc);" title="Weather Dock &amp; Machine">
+          <span class="b-ic"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18a4 4 0 0 1-.6-7.9A6 6 0 0 1 18 11a3.500 3.500 0 0 1-.5 7H7z"/></svg></span>
+          <b id="wxChipLabel" style="color: var(--wx-color, #c084fc);">${_w ? (String(_w.name || _wId).toUpperCase() + " " + _w.luckBonus + "×") : "CLEAR SKY"}</b>
+        </button>
       </div>
 
-      <footer class="drw-foot">
-        <span class="drw-foot-k"><i class="live-dot" aria-hidden="true"></i>${(currentUser || 'OPERATOR').toUpperCase()} · LV <b>${_lv}</b></span>
-        <span class="drw-tel" aria-hidden="true"><i class="tel-bar" style="--n:1"></i><i class="tel-bar" style="--n:2"></i><i class="tel-bar" style="--n:3"></i><i class="tel-bar" style="--n:4"></i><b>LINK</b>&nbsp;STABLE</span>
-      </footer>
-    </aside>
-  </div>`;
+      <nav class="nav-dock" aria-label="Main Navigation">
+        <button class="dock-btn" type="button" onclick="if(typeof openCommandDrawer==='function')openCommandDrawer();" title="Command Menu">
+          <span class="dock-ic-wrap">
+            <img class="dock-ic" src="assets/icons/dock/home.webp" alt="" decoding="async">
+          </span>
+          <span class="dock-label">MENU</span>
+        </button>
 
-  /* ---- TAHAP 2: dudukan node hidup ke slot v12 (teknik A) ----
-     replaceWith(node) = node yang SAMA pindah, listener boot.js (#rollBtn) dan
-     state panels.js tetap menempel; placeholder .l12-slot ikut hilang sehingga
-     tidak ada id ganda. Dipanggil ulang tiap render karena innerHTML membuat
-     slot baru dan node-nya ada di park. */
+        <button class="dock-btn" type="button" onclick="if(typeof toggleBackpack==='function')toggleBackpack();" title="Backpack">
+          <span class="dock-ic-wrap">
+            <img class="dock-ic" src="assets/icons/dock/archive.webp" alt="" decoding="async">
+          </span>
+          <span class="dock-label">BACKPACK</span>
+        </button>
+
+        <button class="dock-btn mid-cta${(typeof rollState !== 'undefined' && rollState && rollState.active) ? ' is-rolling' : ''}" id="nhDockRollBtn" type="button" onclick="var b=document.getElementById('rollBtn');if(b)b.click();else if(typeof startRollAnimation==='function')startRollAnimation();" title="Summon / Single Roll">
+          <div class="dock-hex-chassis">
+            <div class="dock-hex-core">
+              <img class="dock-ic hex-ic" src="assets/icons/dock/summon.webp" alt="" decoding="async">
+            </div>
+          </div>
+          <span class="dock-label cta-label" id="nhDockRollLbl">${(typeof rollState !== 'undefined' && rollState && rollState.active) ? 'STOP' : 'ROLL'}</span>
+        </button>
+
+        <button class="dock-btn dock-auto-btn${(typeof rollState !== 'undefined' && rollState && rollState.active) ? ' is-on' : ''}" id="nhDockAutoBtn" type="button" onclick="var a=document.getElementById('rollAutoBtn');if(a)a.click();else if(typeof startRollAnimation==='function'){if(window.rollState&&rollState.active)stopRollAnimation();else startRollAnimation();}" title="Toggle Continuous Auto Roll">
+          <span class="dock-ic-wrap auto-ic-wrap">
+            <svg class="dock-auto-svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4.2 12a7.8 7.8 0 0 1 13.3-5.5l2 2"/>
+              <path d="M19.8 4.4v4.2h-4.2"/>
+              <path d="M19.8 12a7.8 7.8 0 0 1-13.3 5.5l-2-2"/>
+              <path d="M4.2 19.6v-4.2h4.2"/>
+            </svg>
+          </span>
+          <span class="dock-label">AUTO ROLL</span>
+        </button>
+
+        <button class="dock-btn" type="button" onclick="if(typeof openDeckModal==='function')openDeckModal();" title="Deck Party">
+          <span class="dock-ic-wrap">
+            <img class="dock-ic" src="assets/icons/dock/deck.webp" alt="" decoding="async">
+          </span>
+          <span class="dock-label">DECK</span>
+        </button>
+      </nav>
+    </footer>
+
+    <!-- Hidden slots for live nodes -->
+    <div style="display:none!important">
+      <span id="slotRoll"></span>
+      <span id="slotAuto"></span>
+    </div>
+  </div>
+
+  <div id="drawerBackdrop" onclick="closeCommandDrawer()"></div>
+
+  <aside id="commandDrawer" aria-label="Command drawer">
+    <div class="drw-tape" aria-hidden="true"></div>
+    <div class="drw-scan" aria-hidden="true"></div>
+
+    <header class="drw-head">
+      <div class="drw-head-l">
+        <div class="drw-kick"><i aria-hidden="true"></i>TACTICAL HUD // ARCHON COMMAND ONLINE</div>
+        <div class="drw-ttl">QUICK <em>ACTIONS</em></div>
+      </div>
+      <button class="drw-close-btn" id="drwCloseBtn" type="button" onclick="closeCommandDrawer()" title="Close (ESC / Swipe Right)" aria-label="Close command drawer">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </header>
+
+    <div class="drw-body" id="drwBody">
+      ${_drwGrp('deck', 'UNITS', '04', 'foldCombatStat', [
+        { id: 'drwStoryBtn', img: 'story', ic: 'quests', nm: 'Story', hc: '#f3e600', s: 'CAMPAIGN PROGRESS', sId: 'missionSub', s2: '0% COMPLETE', s2Id: 'drwStoryPercent', pbId: 'missionFill', pbW: 0 },
+        { id: 'drwRaidBtn', img: 'world_boss', ic: 'skills', nm: 'World Boss', hc: '#f87171', s: 'SHARED HP RAID' },
+        { id: 'drwTowerBtn', img: 'tower', ic: 'home', nm: 'Tower', hc: '#b58cff', s: 'INFINITE SPIRE', sId: 'drwTowerSub' },
+        { id: 'drwRankBtn', img: 'ranking', ic: 'luck', nm: 'Ranking', hc: '#ffd700', s: 'GLOBAL RANK', sId: 'drwRankSub' }
+      ])}
+      ${_drwGrp('daily', 'REWARDS', '04', '', [
+        { id: 'drwDailyBtn', img: 'daily', ic: 'daily', nm: 'Daily', hc: '#4ade80', s: 'CLAIM DAILY REWARD', sId: 'drwDailySub' },
+        { id: 'drwAdsBtn', img: 'free_luck', ic: 'ads', nm: 'Free Luck', hc: '#ffd700', s: 'WATCH ADS FOR BOOST', sId: 'drwAdsSub' },
+        { id: 'drwGlBtn', img: 'global_luck', ic: 'luck', nm: 'Global Luck', hc: '#22d3ee', s: 'COMMUNITY MULTIPLIER', sId: 'drwGlSub' },
+        { id: 'drwWeatherBtn', img: 'weather', ic: 'rebirth', nm: 'Weather', hc: '#b58cff', s: 'ATMOSPHERIC BUFF', sId: 'drwWeatherSub' }
+      ])}
+      ${_drwGrp('supply', 'SHOP', '02', '', [
+        { id: 'drwPremiumBtn', img: 'supply_shop', ic: 'supply', nm: 'Supply Shop', hc: '#ffd700', s: 'INSTANT ROLL PACKS', sId: 'drwPremiumSub' },
+        { id: 'drwRebirthBtn', img: 'rebirth', ic: 'rebirth', nm: 'Rebirth', hc: '#b58cff', s: 'ASCENSION PROTOCOL', sId: 'drwRebirthSub' }
+      ])}
+      ${_drwGrp('settings', 'SYSTEM', '05', '', [
+        { id: 'drwTraitBtn', img: 'trait', ic: 'more', nm: 'Trait', hc: '#22d3ee', s: 'PASSIVE OPTIMIZER', sId: 'drwTraitSub' },
+        { id: 'drwSkillBtn', img: 'skill_tree', ic: 'skills', nm: 'Skill Tree', hc: '#4ade80', s: 'SPEND SKILL POINTS', sId: 'drwSkillSub', badge: '0 SP', badgeId: 'drwSkillSp' },
+        { id: 'drwIndexBtn', img: 'archive', ic: 'archive', nm: 'Archive', hc: '#22d3ee', s: 'CARD CATALOG', sId: 'drwIndexSub' },
+        { id: 'drwSettingsBtn', img: 'settings', ic: 'settings', nm: 'Settings', hc: '#f5f5f5', s: 'AUDIO · COMBAT · LANGUAGE' },
+        { id: 'drwChangelogBtn', img: 'changelog', ic: 'changelog', nm: 'Changelog', hc: '#f87171', s: 'RELEASE NOTES' }
+      ])}
+    </div>
+
+    <footer class="drw-foot">
+      <span class="drw-foot-k"><i class="live-dot" aria-hidden="true"></i>${(currentUser || 'OPERATOR').toUpperCase()} · LV <b>${_lv}</b></span>
+      <span class="drw-tel" aria-hidden="true"><i class="tel-bar" style="--n:1"></i><i class="tel-bar" style="--n:2"></i><i class="tel-bar" style="--n:3"></i><i class="tel-bar" style="--n:4"></i><b>LINK</b>&nbsp;STABLE</span>
+    </footer>
+  </aside>`;
+
+  // Populate weather grid buttons
+  const wxGrid = document.getElementById('wxpGrid');
+  if (wxGrid) {
+    wxGrid.innerHTML = '';
+    REAL_WEATHERS.forEach((w) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'wxp-btn' + (w.id === currentVillageWx.id ? ' active' : '');
+      b.style.setProperty('--WC', w.color);
+      b.dataset.wx = w.id;
+      b.innerHTML = '<span class="wxp-dot"></span><span>' + w.name + '</span><small style="opacity:0.7">' + w.luckBonus + '×</small>';
+      b.onclick = () => setVillageWeather(w.id);
+      wxGrid.appendChild(b);
+    });
+  }
+
   const _l12Place = (slotId, elId, cls) => {
     const slot = document.getElementById(slotId);
     const node = document.getElementById(elId);
@@ -2645,11 +3661,28 @@ function renderLobby(){
   _l12Place("slotRoll", "rollBtn", "cta");
   _l12Place("slotAuto", "rollAutoBtn", "tgl");
 
-  /* Label "1 IN <chance>" di tombol ROLL DIHAPUS (perintah user 2026-11-06).
-     Tombol kini hanya punya .roll-txt: "SUMMON" saat idle, "STOP" saat roll
-     berjalan (dipasang dari kelas .active di css/mobile-shell.css), jadi tidak
-     ada angka yang perlu diisi ulang di sini. */
-  /* #footAv burger removed from header per user request */
+  // Interactive 3D tilt inside Holo Inspector
+  const holoStage = document.getElementById('holoStage');
+  if (holoStage) {
+    holoStage.addEventListener('mousemove', (e) => {
+      const rect = holoStage.getBoundingClientRect();
+      const rx = ((e.clientY - rect.top) / rect.height - 0.5) * -24;
+      const ry = ((e.clientX - rect.left) / rect.width - 0.5) * 24;
+      const box = document.getElementById('holoCardBox');
+      if (box) box.style.transform = `rotateX(${rx.toFixed(1)}deg) rotateY(${ry.toFixed(1)}deg)`;
+    });
+    holoStage.addEventListener('mouseleave', () => {
+      const box = document.getElementById('holoCardBox');
+      if (box) box.style.transform = 'rotateX(0deg) rotateY(0deg)';
+    });
+  }
+
+  initVillageWalkers(_party);
+  setVillageWeather(_wId || 'awakened', true);
+  setupVillageViewportDrag();
+
+  if (!_wxAnimRunning) requestAnimationFrame(tickWxCanvas);
+  if (!_walkerAnimRunning) requestAnimationFrame(tickVillageWalkers);
 
 /* ---- LIVE WEATHER DOCK ENGINE (LOBBY V12) ----
    Menyinkronkan icon vektor SVG, warna, nama, rarity badge, dan weather dock
@@ -2696,6 +3729,10 @@ function l12UpdateWeatherDock(force){
     if (iconEl) iconEl.innerHTML = '<img id="l12WxImg" src="' + wantWxSrc + '" alt="" decoding="async">';
   }
 
+  if (typeof setVillageWeather === "function") {
+    setVillageWeather(curWxId || "awakened", true);
+  }
+
   if (_l12DockPanel === "weather" && typeof _l12RenderDockPanel === "function") {
     _l12RenderDockPanel();
   }
@@ -2707,7 +3744,7 @@ window.l12UpdateWeatherDock = l12UpdateWeatherDock;
      Interval dibersihkan sendiri begitu lobby tidak ada (pola _telemetryTimer). */
   if (_l12HudTick) clearInterval(_l12HudTick);
   _l12HudTick = setInterval(() => {
-    if (!document.querySelector(".lobby-hub.l12")) { clearInterval(_l12HudTick); _l12HudTick = null; return; }
+    if (!document.querySelector(".lobby-hub.l12") && !document.querySelector(".nh-shell")) { clearInterval(_l12HudTick); _l12HudTick = null; return; }
     const now = Date.now();
     const put = (id, txt) => { const e = document.getElementById(id); if (e && e.textContent !== txt) e.textContent = txt; };
     const wid = (id, pct) => { const e = document.getElementById(id); if (e) e.style.width = pct + "%"; };
@@ -2722,6 +3759,10 @@ window.l12UpdateWeatherDock = l12UpdateWeatherDock;
       put("l12TopGems", (typeof fmt === "function") ? fmt(state.premiumGems || 0) : String(state.premiumGems || 0));
       put("l12TopPwr", (typeof totalPower === "function") ? ((typeof fmt === "function") ? fmt(totalPower()) : String(totalPower())) : "0");
       put("l12RollTotal", "TOTAL ROLLS \u00b7 " + ((typeof fmt === "function") ? fmt(state.totalRolls || 0) : (state.totalRolls || 0)));
+      if (typeof fmtLobbyLuck === "function") put("l12TopLuck", fmtLobbyLuck());
+      const bpSub = document.getElementById("nhDockBpSub");
+      if (bpSub) bpSub.textContent = ((typeof totalCardsCount === "function") ? totalCardsCount() : (state.collection ? Object.keys(state.collection).length : 0)) + " CARDS";
+      if (typeof window.syncNhRollDock === "function") window.syncNhRollDock();
     }
 
     if (typeof _l12SyncBuffChips === "function") _l12SyncBuffChips(now);
@@ -2919,8 +3960,8 @@ window.l12UpdateWeatherDock = l12UpdateWeatherDock;
   };
 
   bindClick('drwStoryBtn', () => { if (typeof openMission === 'function') openMission(); });
-  bindClick('drwRaidBtn', () => { window.raidView = 'hub'; window.location.hash = '#/raid'; });
-  bindClick('drwTowerBtn', () => { if (typeof stopTower === 'function') stopTower(); window.location.hash = '#/tower'; });
+  bindClick('drwRaidBtn', () => { window.raidView = 'hub'; if (window.location.hash === '#/raid') render(); else window.location.hash = '#/raid'; });
+  bindClick('drwTowerBtn', () => { if (typeof stopTower === 'function') stopTower(); if (window.location.hash === '#/tower') render(); else window.location.hash = '#/tower'; });
   bindClick('drwRankBtn', () => { if (typeof openRanking === 'function') openRanking(); });
   bindClick('drwDailyBtn', () => { if (typeof openDaily === 'function') openDaily(); });
   bindClick('drwAdsBtn', () => { if (typeof openWatchAdsModal === 'function') openWatchAdsModal(); });
@@ -2931,7 +3972,7 @@ window.l12UpdateWeatherDock = l12UpdateWeatherDock;
   bindClick('drwIndexBtn', () => { if (typeof openIndex === 'function') openIndex(); });
   bindClick('drwPremiumBtn', () => { if (typeof openPremiumShop === 'function') openPremiumShop(); });
   bindClick('drwRebirthBtn', () => { if (typeof onRebirthClick === 'function') onRebirthClick(); });
-  bindClick('drwSettingsBtn', () => { location.hash = '#/settings'; });
+  bindClick('drwSettingsBtn', () => { if (location.hash === '#/settings') render(); else location.hash = '#/settings'; });
   bindClick('drwChangelogBtn', () => { if (typeof openChangelogModal === 'function') openChangelogModal(); });
 
   /* Accordion v2 (.fh/.fold) DIHAPUS: drawer v5 adalah grid heksagon yang
@@ -3467,7 +4508,7 @@ window.l12BuyGlobalLuckFromDock = function () {
   const r = buyGlobalLuck();
   if (r && typeof r.then === "function") {
     r.then(function () {
-      if (document.querySelector(".lobby-hub.l12")) renderLobby();
+      if (document.querySelector(".lobby-hub.l12") || document.querySelector(".nh-shell")) renderLobby();
     }).catch(function () {});
   }
 };
@@ -3510,6 +4551,7 @@ window.l12OpenWeatherMachine = function () {
   window.l12CloseDockPanel();
   if (typeof openWeatherMachine === "function") openWeatherMachine();
 };
+window.syncNhRollDock = function (forceActive) { const isRoll = (typeof forceActive === "boolean") ? forceActive : !!(typeof rollState !== "undefined" && rollState && rollState.active); const rBtn = document.getElementById("nhDockRollBtn"); if (rBtn) { rBtn.classList.toggle("is-rolling", isRoll); rBtn.setAttribute("aria-pressed", isRoll ? "true" : "false"); const rLbl = document.getElementById("nhDockRollLbl"); if (rLbl) rLbl.textContent = isRoll ? "STOP" : "ROLL"; const rSub = document.getElementById("nhDockRollSub"); if (rSub) rSub.textContent = isRoll ? "ROLLING" : "SUMMON"; } const aBtn = document.getElementById("nhDockAutoBtn"); if (aBtn) { aBtn.classList.toggle("is-on", isRoll); aBtn.setAttribute("aria-pressed", isRoll ? "true" : "false"); const aSub = document.getElementById("nhDockAutoSub"); if (aSub) aSub.textContent = isRoll ? "ACTIVE" : "OFF"; } };
 
 if (!window._l12DockEscBound) {
   window._l12DockEscBound = true;
