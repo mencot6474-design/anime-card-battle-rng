@@ -1034,21 +1034,40 @@ function fightShout(){
 }
 /* ---------- suara serangan Gojo: Hollow Purple (charge → boom tebal + crackle) ---------- */
 /* =============== BACKGROUND MUSIC (BGM) SYSTEM =============== */
-let bgmAudio = null;
+const BGM_SOURCES = {
+  lobby: "assets/audio/bgm-lobby.mp3?v=2",
+  battle: "assets/audio/bgm-battle.mp3?v=2"
+};
+const bgmTracks = { lobby: null, battle: null };
+let bgmMode = "lobby";
 let bgmInitialized = false;
 
-function initBgm() {
-  if (bgmAudio) return bgmAudio;
-  bgmAudio = new Audio("assets/audio/bgm-lobby.mp3");
-  bgmAudio.loop = true;
-  bgmAudio.volume = 0.35;
-  bgmAudio.preload = "auto";
-  return bgmAudio;
+function initBgm(mode = "lobby") {
+  const key = mode === "battle" ? "battle" : "lobby";
+  if (bgmTracks[key]) return bgmTracks[key];
+  const a = new Audio(BGM_SOURCES[key]);
+  a.loop = true;
+  a.volume = key === "battle" ? 0.36 : 0.35;
+  a.preload = "auto";
+  bgmTracks[key] = a;
+  return a;
 }
 
-function playBgm() {
-  if (!state || state.muted) return;
-  const a = initBgm();
+function playBgm(mode) {
+  if (!state || state.muted || document.hidden) return;
+  const target = mode === "battle" || (!mode && battleLive()) ? "battle" : "lobby";
+  const other = target === "battle" ? "lobby" : "battle";
+  const prevMode = bgmMode;
+  bgmMode = target;
+
+  if (bgmTracks[other] && !bgmTracks[other].paused) {
+    try { bgmTracks[other].pause(); } catch (e) {}
+  }
+
+  const a = initBgm(target);
+  if (target === "battle" && prevMode !== "battle") {
+    try { a.currentTime = 0; } catch (e) {}
+  }
   if (a.paused) {
     a.play().catch(() => {
       /* Browser autoplay block — tunggu interaksi user pertama */
@@ -1057,17 +1076,22 @@ function playBgm() {
 }
 
 function pauseBgm() {
-  if (bgmAudio && !bgmAudio.paused) {
-    try { bgmAudio.pause(); } catch (e) {}
-  }
+  Object.keys(bgmTracks).forEach(k => {
+    const a = bgmTracks[k];
+    if (a && !a.paused) {
+      try { a.pause(); } catch (e) {}
+    }
+  });
 }
 
 function syncBgmState() {
   if (!state) return;
-  if (state.muted) {
+  if (state.muted || document.hidden) {
     pauseBgm();
-  } else if (!battleLive()) {
-    playBgm();
+  } else if (battleLive()) {
+    playBgm("battle");
+  } else {
+    playBgm("lobby");
   }
 }
 
@@ -1075,12 +1099,20 @@ window.initBgm = initBgm;
 window.playBgm = playBgm;
 window.pauseBgm = pauseBgm;
 window.syncBgmState = syncBgmState;
+window.getBgmState = () => ({
+  mode: bgmMode,
+  lobbyPaused: !bgmTracks.lobby || bgmTracks.lobby.paused,
+  battlePaused: !bgmTracks.battle || bgmTracks.battle.paused,
+  lobbySrc: bgmTracks.lobby ? bgmTracks.lobby.src : null,
+  battleSrc: bgmTracks.battle ? bgmTracks.battle.src : null
+});
 
 // User gesture unlocker untuk browser autoplay policy
 function unlockBgmAutoplay() {
   if (bgmInitialized) return;
   bgmInitialized = true;
-  initBgm();
+  initBgm("lobby");
+  initBgm("battle");
   syncBgmState();
   ['click', 'touchstart', 'keydown'].forEach(evt => {
     window.removeEventListener(evt, unlockBgmAutoplay, { capture: true });
@@ -1088,6 +1120,10 @@ function unlockBgmAutoplay() {
 }
 ['click', 'touchstart', 'keydown'].forEach(evt => {
   window.addEventListener(evt, unlockBgmAutoplay, { capture: true, once: true });
+});
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) pauseBgm();
+  else syncBgmState();
 });
 
 /* =============== SHELL RENDER =============== */

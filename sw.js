@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v639-scrollSpot';
+const CACHE_NAME = 'anime-card-battle-v641-dualBgmCacheBust';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
