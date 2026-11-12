@@ -202,7 +202,7 @@
 .nh-shell .dock-btn:hover .dock-ic { transform: none; filter: drop-shadow(0 0 6px rgba(243,230,0,.5)); }
 .nh-shell .dock-label { font-size: 10px; letter-spacing: .1em; }
 
-/* Center ROLL Slot & Cyber Hazard Dice — flush & aligned with other dock slots */
+/* Center ROLL Slot & Cyber Hazard Dice — flush & aligned with other dock slots (no placeholder box) */
 .nh-shell .dock-btn.mid-cta {
   overflow: hidden;
   padding-top: 8px;
@@ -213,15 +213,14 @@
   width: 34px;
   height: 34px;
   margin: 0 !important;
-  box-shadow: none;
-  border-radius: 6px;
+  box-shadow: none !important;
+  border-radius: 0;
   clip-path: none !important;
-  background: #0d0f14;
-  border: 1.5px solid var(--haz, #f3e600);
+  background: transparent !important;
+  border: none !important;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
 }
 .nh-shell .dock-hex-core {
   display: flex;
@@ -231,19 +230,17 @@
   height: 100%;
 }
 .nh-shell .roll-dice-svg {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   display: block;
   transform-origin: 50% 50%;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.85));
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,0.85));
   will-change: transform;
-}
-.nh-shell .dock-btn.mid-cta:hover:not(.is-rolling) .dock-hex-chassis {
-  transform: translateY(-1px);
-  border-color: #ffffff;
+  transition: transform 0.18s ease, filter 0.18s ease;
 }
 .nh-shell .dock-btn.mid-cta:hover:not(.is-rolling) .roll-dice-svg {
-  filter: drop-shadow(0 0 6px rgba(243,230,0,0.85));
+  transform: scale(1.12);
+  filter: drop-shadow(0 0 8px rgba(243,230,0,0.85));
 }
 
 /* 60fps compositor-only pure rotation in place — spins strictly on its own center */
@@ -253,9 +250,9 @@
 }
 
 .nh-shell .dock-btn.mid-cta.is-rolling .dock-hex-chassis {
-  background: rgba(239, 68, 68, 0.18) !important;
-  border-color: #ef4444 !important;
-  box-shadow: 0 0 8px rgba(239, 68, 68, 0.45);
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 .nh-shell .dock-btn.mid-cta.is-rolling .roll-dice-svg,
 .nh-shell .dock-btn.dock-auto-btn.is-on ~ .dock-btn.mid-cta .roll-dice-svg,
@@ -450,8 +447,8 @@
   .nh-shell .nav-dock { width: 100%; }
   .nh-shell .dock-btn { height: 58px; }
   .nh-shell .dock-label { font-size: 8.5px; letter-spacing: .06em; }
-  .nh-shell .dock-hex-chassis { width: 30px; height: 30px; margin: 0 !important; }
-  .nh-shell .roll-dice-svg { width: 22px; height: 22px; }
+  .nh-shell .dock-hex-chassis { width: 34px; height: 34px; margin: 0 !important; background: transparent !important; border: none !important; }
+  .nh-shell .roll-dice-svg { width: 26px; height: 26px; }
 }
 @media (max-width: 520px) {
   .nh-shell .res-pill.luck { display: none; }
@@ -464,8 +461,8 @@
   .nh-shell .op-info { padding: 4px 20px 4px 18px; }
   .nh-shell .res-pill { height: 28px; }
   .nh-shell .dock-btn { height: 48px; padding-top: 4px; }
-  .nh-shell .dock-hex-chassis { width: 26px; height: 26px; margin: 0 !important; }
-  .nh-shell .roll-dice-svg { width: 18px; height: 18px; }
+  .nh-shell .dock-hex-chassis { width: 28px; height: 28px; margin: 0 !important; background: transparent !important; border: none !important; }
+  .nh-shell .roll-dice-svg { width: 22px; height: 22px; }
   .nh-shell .nav-dock { width: min(100%, 480px); }
 }
 @media (prefers-reduced-motion: reduce) {

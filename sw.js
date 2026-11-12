@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v608-dockAlignedDiceInPlace';
+const CACHE_NAME = 'anime-card-battle-v609-cleanDiceNoPlaceholder';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
