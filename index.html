@@ -35,7 +35,7 @@
 <link rel="stylesheet" href="css/story-carousel.css?v=v354-storyCurtainZ">
 <link rel="stylesheet" href="css/lobby-prototype.css?v=v400-nhLobbyDockAutoFix">
 <link rel="stylesheet" href="css/mobile-shell.css?v=v475-nhLobbyDockAutoFix">
-<link rel="stylesheet" href="css/nh-lobby-hud.css?v=v9-rpgFtue8Steps">
+<link rel="stylesheet" href="css/nh-lobby-hud.css?v=v13-dockRollAutoPolish">
 <link rel="stylesheet" href="css/deck-screen.css?v=v4-searchInput">
 <link rel="stylesheet" href="css/skill-tree.css?v=v24-skIconsDim">
 <link rel="stylesheet" href="css/backpack-hazard.css?v=v5-removeBatchOptionsPop">
@@ -57,11 +57,9 @@
 <link rel="stylesheet" href="css/card-assets-hazard.css?v=v4-indexPureBadge">
 <link rel="stylesheet" href="css/update-log.css?v=v6-matchReferenceVerified">
 <script>
-  /* Link toko Trakteer (fallback — utama ada di js/config.js). */
-  window.TRAKTEER_SHOP_URL = "";
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=v641-dualBgmCacheBust').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=v645-dockRollAutoPolish').catch(() => {});
     });
   }
 </script>
@@ -2711,14 +2709,13 @@
 <script src="js/notify-hazard.js?v=v1-notifyHazard"></script>
 <script src="js/titles-hazard.js?v=v3-titlesCatalog"></script>
 <script src="js/panels.js?v=v446-cgAdsCompliance"></script>
-<script src="js/topup.js?v=v158-paywallOff"></script>
 <script src="js/cards-fx.js?v=v89-traitRates"></script>
 <script src="js/anime-archetype-attacks.js?v=v125-smooth60fps"></script>
 <script src="js/state.js?v=v365-dualBgmCacheBust"></script>
 <script src="js/sheetfx.js?v=v354-smooth60fps"></script>
 <script src="js/battle.js?v=v272-dualBgm"></script>
 <script src="js/battle-hazard.js?v=v25-removeSupportCardSlot"></script>
-<script src="js/tower-lobby.js?v=v404-dualBgm"></script>
+<script src="js/tower-lobby.js?v=v407-dockAutoIcon"></script>
 <script src="js/rebirth-hazard.js?v=v3-rebirthHazard5x"></script>
 <script src="js/shadow-king-fx.js?v=v5-skillFxRestore"></script>
 <script src="js/foe-passives.js?v=v63-english"></script>
@@ -2730,9 +2727,6 @@
 <script src="js/i18n.js?v=v398-smooth60fps"></script>
 <script src="js/boot.js?v=v171-perUserFtue"></script>
 <script src="js/pwa.js?v=v157-hideInCrazyGames"></script>
-
-<!-- ====== TOP-UP GEMS MODAL ====== -->
-<div id="topupModal" class="topup-backdrop"></div>
 
 </body>
 </html>

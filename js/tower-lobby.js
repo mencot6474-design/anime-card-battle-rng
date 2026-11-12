@@ -3296,7 +3296,7 @@ function renderLobby() {
           <span class="op-lv"><b id="l12TopLv">${_lv}</b></span>
         </div>
         <div class="op-info">
-          <span class="op-name">${(currentUser || "OPERATOR").toUpperCase()}</span>
+          <span class="op-name">${(typeof currentUser === "string" && currentUser ? currentUser : (state && state.name) || "OPERATOR").toUpperCase()}</span>
           <div class="op-pwr"><svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg><b class="op-pwr-val" id="l12TopPwr">${_heroPower}</b></div>
           <div class="op-xpbar"><i id="l12TopXpBar" style="width: ${_xpPct}%;"></i></div>
         </div>
@@ -3313,10 +3313,9 @@ function renderLobby() {
           <svg class="res-ico" width="18" height="18" viewBox="0 0 32 32" aria-hidden="true"><use href="#coinSvgSymbol"/></svg>
           <b class="res-num" id="l12TopCoins">${_coins}</b>
         </div>
-        <div class="res-pill gem" onclick="if(typeof openTopup==='function')openTopup();else if(typeof openPremiumShop==='function')openPremiumShop();" title="Gems">
+        <div class="res-pill gem" onclick="if(typeof openPremiumShop==='function')openPremiumShop();" title="Gems">
           <img class="res-ico" src="assets/images/premium-currency.webp" alt="" width="18" height="18">
           <b class="res-num" id="l12TopGems">${_gems}</b>
-          <button class="res-plus-btn" type="button" title="Top-Up Gems" onclick="event.stopPropagation();if(typeof openTopup==='function')openTopup();else if(typeof openPremiumShop==='function')openPremiumShop();">+</button>
         </div>
         <button class="hud-quick-btn daily" type="button" onclick="if(typeof openDaily==='function')openDaily();" title="Daily Rewards" aria-label="Daily Rewards">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="13" rx="1"/><path d="M12 8v13M3 12h18M12 8c-2.5 0-4-1-4-2.4S9.4 3 12 8c2.6-5 4-3.8 4-2.4S14.500 8 12 8z"/></svg>
@@ -3589,11 +3588,12 @@ function renderLobby() {
 
         <button class="dock-btn dock-auto-btn${(typeof rollState !== 'undefined' && rollState && rollState.active) ? ' is-on' : ''}" id="nhDockAutoBtn" type="button" onclick="var a=document.getElementById('rollAutoBtn');if(a)a.click();else if(typeof startRollAnimation==='function'){if(window.rollState&&rollState.active)stopRollAnimation();else startRollAnimation();}" title="Toggle Continuous Auto Roll">
           <span class="dock-ic-wrap auto-ic-wrap">
-            <svg class="dock-auto-svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M4.2 12a7.8 7.8 0 0 1 13.3-5.5l2 2"/>
-              <path d="M19.8 4.4v4.2h-4.2"/>
-              <path d="M19.8 12a7.8 7.8 0 0 1-13.3 5.5l-2-2"/>
-              <path d="M4.2 19.6v-4.2h4.2"/>
+            <svg class="dock-auto-svg" viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
+              <path d="M4.8 11.2A7.4 7.4 0 0 1 17.6 6.4" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+              <polygon points="19.6,3.8 20.1,9.2 14.9,8.3" fill="currentColor"/>
+              <path d="M19.2 12.8A7.4 7.4 0 0 1 6.4 17.6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+              <polygon points="4.4,20.2 3.9,14.8 9.1,15.7" fill="currentColor"/>
+              <polygon points="12,8.4 14.8,12 12,15.6 9.2,12" fill="#f3e600"/>
             </svg>
           </span>
           <span class="dock-label">AUTO ROLL</span>
