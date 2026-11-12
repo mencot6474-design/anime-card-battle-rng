@@ -226,48 +226,38 @@
     if (foot) foot.textContent = "ENTER SECTOR";
   }
 
-  function curtainCoverInstant() {
-    var c = curtainEl();
-    if (!c) return;
-    c.classList.remove("smooth", "fast", "revealed", "sweep");
-    c.classList.add("on");
-    void c.offsetWidth;
-  }
-
-  function curtainReveal(fast) {
-    var c = curtainEl();
-    if (!c) return;
-    c.classList.add(fast ? "fast" : "smooth", "revealed", "sweep");
-    bannerTimers.push(setTimeout(function(){ c.classList.remove("sweep"); }, fast ? 1150 : 1650));
-    bannerTimers.push(setTimeout(function(){ c.classList.remove("smooth", "fast"); }, fast ? 560 : 780));
-    /* Setelah tirai terbuka penuh, lepas `on` supaya elemen benar-benar
-       tersembunyi (visibility:hidden) dan tidak menutupi layer lain. */
-    bannerTimers.push(setTimeout(function(){ c.classList.remove("on"); }, fast ? 640 : 840));
-  }
-
   function bannerEnter() {
-    if (bannerBusy) return;
-    bannerBusy = true;
+    var c = curtainEl();
+    if (!c) return;
     clearBannerTimers();
     setBannerCopy("in");
-    curtainCoverInstant();
-    bannerTimers.push(setTimeout(function(){ curtainReveal(false); }, 430));
-    bannerTimers.push(setTimeout(function(){ bannerBusy = false; }, 1180));
+    bannerBusy = true;
+    c.className = "";
+    void c.offsetWidth;
+    c.classList.add("on", "smooth", "sweep");
+    bannerTimers.push(setTimeout(function(){ c.classList.add("revealed"); }, 1080));
+    bannerTimers.push(setTimeout(function(){
+      c.classList.remove("on", "smooth", "sweep", "revealed");
+      bannerBusy = false;
+    }, 1800));
   }
 
   function bannerExit(afterCovered) {
-    if (bannerBusy) { if (afterCovered) afterCovered(); return; }
-    bannerBusy = true;
+    var c = curtainEl();
+    if (!c) { if (afterCovered) afterCovered(); return; }
     clearBannerTimers();
     setBannerCopy("out");
-    var c = curtainEl();
-    if (c) {
-      c.classList.remove("smooth", "fast", "revealed", "sweep");
-      c.classList.add("on");
-    }
-    bannerTimers.push(setTimeout(function(){ if (afterCovered) afterCovered(); }, 420));
-    bannerTimers.push(setTimeout(function(){ curtainReveal(true); }, 460));
-    bannerTimers.push(setTimeout(function(){ bannerBusy = false; }, 1150));
+    bannerBusy = true;
+    c.className = "";
+    c.classList.add("on", "smooth", "revealed");
+    void c.offsetWidth;
+    c.classList.remove("revealed");
+    bannerTimers.push(setTimeout(function(){ if (afterCovered) afterCovered(); }, 560));
+    bannerTimers.push(setTimeout(function(){ c.classList.add("revealed"); }, 780));
+    bannerTimers.push(setTimeout(function(){
+      c.classList.remove("on", "smooth", "revealed");
+      bannerBusy = false;
+    }, 1560));
   }
 
   /* Banner deploy story DIHAPUS (permintaan user): battle sudah punya banner

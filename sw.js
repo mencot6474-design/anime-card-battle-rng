@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v617-fixWorldBossCurtainExit';
+const CACHE_NAME = 'anime-card-battle-v618-syncStoryCurtainToBackpack';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
