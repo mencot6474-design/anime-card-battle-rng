@@ -1047,6 +1047,7 @@ body.on-raid {
    ========================================================================== */
 body.on-raid #topbar,
 body.on-raid #pwaInstallBtn,
+body.on-raid #bfExit,
 body.on-raid #weatherToast,
 body.on-raid #activePlayersBadge{
   display:none !important;

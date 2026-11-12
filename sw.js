@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v645-dockRollAutoPolish';
+const CACHE_NAME = 'anime-card-battle-v646-mobileAuditClean';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

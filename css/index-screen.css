@@ -411,7 +411,8 @@ html #indexModal .ix-shell .ix-eyebrow {
 #indexModal .ix-cattabs::-webkit-scrollbar { display: none; }
 #indexModal .ix-cat {
   flex: none;
-  min-height: 36px;
+  min-width: 44px;
+  min-height: 44px;
   padding: 4px 11px;
   display: flex;
   flex-direction: column;
@@ -702,7 +703,7 @@ html #indexModal .ix-shell .ix-body {
 #indexModal .ix-src-list::-webkit-scrollbar-thumb { background: rgba(245, 245, 245, .22); }
 #indexModal .ix-src-btn {
   flex: none;
-  min-height: 30px;
+  min-height: 40px;
   width: 100%;
   padding: 5px 8px;
   display: flex;

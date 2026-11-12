@@ -181,7 +181,7 @@
 
 /* --------------------------------- NAV DOCK ---------------------------------- */
 .nh-shell .nav-dock {
-  grid-template-columns: repeat(5, minmax(62px, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0;
   width: min(100%, 560px);
   padding: 0;
@@ -505,8 +505,8 @@
   .nh-shell .res-ico,
   .nh-shell svg.res-ico { width: 19px; height: 19px; margin-top: -9.5px; left: 7px; }
   .nh-shell .res-num { font-size: 11.5px; }
-  .nh-shell .hud-quick-btn { width: 38px; height: 38px; }
-  .nh-shell .hud-quick-btn:not(.daily) { display: flex; }
+  .nh-shell .hud-quick-btn { display: flex; width: 40px; height: 40px; }
+  .nh-shell .hud-quick-btn::after { content: ""; position: absolute; inset: -4px; }
   .nh-shell .b-chip { min-width: 0; padding: 0 9px; height: 30px; }
   .nh-shell .nav-dock { width: 100%; border-radius: 8px; }
   .nh-shell .dock-btn { height: 60px; padding: 7px 2px 5px; }
@@ -541,17 +541,22 @@
   .nh-shell .cta-label { font-size: 8.5px; letter-spacing: .08em; }
 }
 @media (max-width: 359px) {
-  .nh-shell .nh-top-hud { padding: 5px 6px 8px; gap: 3px; }
-  .nh-shell .op-ava { width: 35px; height: 35px; }
-  .nh-shell .op-info { padding: 3px 11px 3px 12px; }
-  .nh-shell .op-name { font-size: 9.5px; max-width: 56px; }
+  .nh-shell .nh-top-hud { padding: 5px 5px 8px; gap: 3px; }
+  .nh-shell .op-ava { width: 34px; height: 34px; }
+  .nh-shell .op-info { padding: 3px 9px 3px 10px; }
+  .nh-shell .op-name { font-size: 9px; max-width: 50px; }
   .nh-shell .res-cluster { gap: 3px; }
-  .nh-shell .res-pill { height: 28px; padding: 0 7px 0 24px; }
+  .nh-shell .res-pill { height: 28px; padding: 0 6px 0 21px; }
   .nh-shell .res-ico,
-  .nh-shell svg.res-ico { width: 15px; height: 15px; margin-top: -7.5px; left: 5px; }
-  .nh-shell .res-num { font-size: 10px; }
-  .nh-shell .hud-quick-btn { width: 32px; height: 32px; }
-  .nh-shell .dock-label { font-size: 7.2px; letter-spacing: .01em; }
+  .nh-shell svg.res-ico { width: 14px; height: 14px; margin-top: -7px; left: 4px; }
+  .nh-shell .res-num { font-size: 9.5px; }
+  .nh-shell .hud-quick-btn { display: flex; width: 34px; height: 34px; }
+  .nh-shell .hud-quick-btn::after { content: ""; position: absolute; inset: -5px; }
+  .nh-shell .buff-strip { gap: 3px; padding-inline: 2px; }
+  .nh-shell .b-chip { padding: 0 5px; gap: 3px; height: 26px; }
+  .nh-shell .b-chip b { font-size: 8.5px; }
+  .nh-shell .dock-btn { padding: 6px 1px 5px; }
+  .nh-shell .dock-label { font-size: 7px; letter-spacing: .01em; }
 }
 @media (max-height: 520px) and (orientation: landscape) {
   .nh-shell .nh-top-hud { padding: 4px 12px 8px; }

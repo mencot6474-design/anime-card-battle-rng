@@ -1859,6 +1859,7 @@ body:has(#storyModal.show) .lobby-tactical-hud {
   #storyModal .btn-back { min-height: 44px; }
   #storyModal .diff-btn {
     flex: 0 0 auto !important;
+    min-width: 44px !important;
     min-height: 44px !important;
     padding: 0 7px !important;
     font-size: 7.5px !important;
