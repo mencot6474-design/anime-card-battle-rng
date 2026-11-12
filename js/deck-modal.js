@@ -810,6 +810,7 @@
 
   window.openDeckModal = openDeckModal;
   window.closeDeckModal = closeDeckModal;
+  window.deckEquipBest = equipBestByPower;
   window.deckModalRender = function () {
     if (!_open) return;
     renderSlots(); renderSupport(); renderMeta(); renderGrid();

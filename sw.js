@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v631-cgAdsCompliance';
+const CACHE_NAME = 'anime-card-battle-v639-scrollSpot';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

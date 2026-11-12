@@ -317,7 +317,23 @@ ${_linkCard}
   const disarm=()=>{armed=false;if(timer){clearTimeout(timer);timer=null;}b.classList.remove("armed");b.querySelector("span").textContent=isEn ? "RESET LOCAL DATA" : "RESET DATA LOKAL";};
   b.onclick=()=>{
     if(!armed){armed=true;b.classList.add("armed");b.querySelector("span").textContent=isEn ? "Confirm? Tap again to wipe" : "Yakin? Tap lagi untuk reset";timer=setTimeout(disarm,4000);}
-    else{localStorage.removeItem(KEY);location.reload();}
+    else{
+      window.__ACB_SAVE_LOCK__=true;
+      if(typeof stopBattleLoop==="function")stopBattleLoop();
+      const _oldUser=currentUser;
+      state=null;currentUser=null;
+      try{
+        if(window.CloudAuth && _oldUser) window.CloudAuth.clearSession(_oldUser);
+        Object.keys(localStorage).forEach(k=>{
+          if(/^(aab|acb_)/i.test(k)) localStorage.removeItem(k);
+        });
+        localStorage.removeItem(KEY);
+        localStorage.removeItem(USERS_KEY);
+        localStorage.removeItem(SESSION_KEY);
+      }catch(e){}
+      try{ history.replaceState(null,"",location.pathname+location.search); }catch(e){}
+      location.reload();
+    }
   };
 }
 
@@ -778,7 +794,7 @@ async function loginAsGuest(){
       },100);
     });
   }
-  if(window.__cgSdkReady && window.CrazyGames.SDK.user){
+  if(typeof window.isCrazyGames==="function" && window.isCrazyGames() && window.__cgSdkReady && window.CrazyGames.SDK.user){
     try {
       const cgUser = await _withTimeout(window.CrazyGames.SDK.user.getUser(), 3000, "CrazyGames getUser");
       if(cgUser && cgUser.username){
@@ -980,7 +996,7 @@ async function enterGame(name,welcome){
     try {
       document.getElementById("loadingScreen").classList.add("hidden");
       location.hash="#/lobby";
-      render();
+      render(); if(typeof window.triggerFtueCheck==="function")window.triggerFtueCheck();
       /* Popup "ACCESS GRANTED" lama (showWelcomeWindow) TIDAK dipanggil lagi:
          plate #ldGrant di layar loading sudah jadi gerbang masuk yang sama
          (identitas + Lv + power + tombol Enter Arena), jadi memanggilnya di
@@ -1231,18 +1247,18 @@ function runLoading(done){
     }
   },9000);
 }
-async function logout(){
+async function logout(){ const _btn=document.getElementById("logoutBtn"); if(_btn){ _btn.disabled=true; _btn.textContent="..."; }
   try {
     save();
     if(typeof pushCloudNow === "function"){
-      await pushCloudNow();
+      await Promise.race([pushCloudNow(), new Promise(r=>setTimeout(r, 1500))]);
     } else if(typeof flushCloudSave === "function"){
       flushCloudSave();
     }
   } catch(e){
     console.warn("Logout cloud push error:", e);
   }
-  localStorage.removeItem(SESSION_KEY);
+  window.__ACB_SAVE_LOCK__ = true; if(typeof stopBattleLoop === "function") stopBattleLoop(); const _oldUser = currentUser, _oldKey = typeof KEY === "string" ? KEY : ""; state = null; currentUser = null; try { if(window.CloudAuth && _oldUser) window.CloudAuth.clearSession(_oldUser); if(_oldKey) localStorage.removeItem(_oldKey); localStorage.removeItem(SESSION_KEY); localStorage.removeItem("aab-linked-user"); localStorage.removeItem("aab-linked-pass"); localStorage.removeItem("aab_guest_user"); localStorage.removeItem("aab_guest_pass"); localStorage.removeItem("aab_device_session"); } catch(e){} try { history.replaceState(null, "", location.pathname + location.search); } catch(e){}
   location.reload();
 }
 /* ---- Menu dock (tombol kiri footer) ---- */
