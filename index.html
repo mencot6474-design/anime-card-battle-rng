@@ -27,7 +27,7 @@
 <script src="https://unpkg.com/lucide@latest"></script>
 <!-- CrazyGames SDK v3 (Official HTML5 SDK) -->
 <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
-<script src="js/crazygames.js?v=v2-sdkReadyGate"></script>
+<script src="js/crazygames.js?v=v3-singleInitAdFix"></script>
 <link rel="stylesheet" href="css/style.css?v=v399-towerWebp">
 <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Orbitron:wght@500;600;700;800;900&family=Rajdhani:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/world-boss.css?v=v284-wbCurtainFix">
@@ -61,7 +61,7 @@
   window.TRAKTEER_SHOP_URL = "";
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=v630-mobileCrazyGamesFix').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=v631-cgAdsCompliance').catch(() => {});
     });
   }
 </script>
@@ -2710,7 +2710,7 @@
 <script src="js/supabase-sync.js?v=v335-speed3xPass"></script>
 <script src="js/notify-hazard.js?v=v1-notifyHazard"></script>
 <script src="js/titles-hazard.js?v=v3-titlesCatalog"></script>
-<script src="js/panels.js?v=v445-removeBatchOptionsPop"></script>
+<script src="js/panels.js?v=v446-cgAdsCompliance"></script>
 <script src="js/topup.js?v=v158-paywallOff"></script>
 <script src="js/cards-fx.js?v=v89-traitRates"></script>
 <script src="js/anime-archetype-attacks.js?v=v125-smooth60fps"></script>

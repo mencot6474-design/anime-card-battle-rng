@@ -6367,26 +6367,8 @@ function tickWatchAdsModal() {
   }
 }
 
-/* CrazyGames SDK v3 Helper Initialization */
-var _cgSdkReady = false;
-async function initCrazyGamesSdk() {
-  try {
-    if (window.CrazyGames && window.CrazyGames.SDK) {
-      await window.CrazyGames.SDK.init();
-      _cgSdkReady = true;
-      console.log("[CrazyGames SDK] Initialized successfully");
-    }
-  } catch (e) {
-    console.warn("[CrazyGames SDK] Init error / running outside portal:", e && e.message);
-  }
-}
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initCrazyGamesSdk);
-} else {
-  initCrazyGamesSdk();
-}
-
-function triggerWatchAd(kind) {
+/* CrazyGames SDK v3 Rewarded Ad Trigger (uses single SDK init from js/crazygames.js) */
+async function triggerWatchAd(kind) {
   if (_watchingAdBusy) return;
   if (kind === 'luck' && adLuckLeftMs() > 0) {
     toast('BUFF STILL ACTIVE', 'Wait for the 5-minute duration to end before watching again.', '#fbbf24');
@@ -6397,36 +6379,36 @@ function triggerWatchAd(kind) {
     return;
   }
 
-  // 1. Primary: CrazyGames SDK v3 rewarded ad when running inside portal
-  if (window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.ad) {
-    try {
-      _watchingAdBusy = true;
-      var wasMuted = (typeof state !== 'undefined' && state && state.muted);
-      var callbacks = {
-        adStarted: function() {
-          if (typeof state !== 'undefined' && state) state.muted = true;
-        },
-        adFinished: function() {
-          if (typeof state !== 'undefined' && state) state.muted = wasMuted;
-          _watchingAdBusy = false;
-          completeWatchAdReward(kind);
-        },
-        adError: function(error) {
-          if (typeof state !== 'undefined' && state) state.muted = wasMuted;
-          _watchingAdBusy = false;
-          console.warn("[CrazyGames Ad Error]", error);
-          // Fallback to local timer simulation when portal ad fill is unavailable
-          runWatchAdSimulation(kind);
-        }
-      };
-      window.CrazyGames.SDK.ad.requestAd('rewarded', callbacks);
-      return;
-    } catch (err) {
-      console.warn("[CrazyGames Ad requestAd exception]", err);
-    }
+  // Pastikan init() di js/crazygames.js selesai dulu sebelum requestAd (cegah race condition)
+  if (!window.__cgSdkDone && typeof window.cgEnsureInit === 'function') {
+    _watchingAdBusy = true;
+    try { await window.cgEnsureInit(); } catch (e) {}
+    _watchingAdBusy = false;
   }
 
-  // 2. Fallback: Local 5-second broadcast simulation (localhost / dev)
+  // 1. Primary: CrazyGames SDK v3 rewarded ad via single handler in js/crazygames.js
+  if (typeof window.cgRequestRewardedAd === 'function') {
+    _watchingAdBusy = true;
+    var dispatched = window.cgRequestRewardedAd(
+      function onSuccess() {
+        _watchingAdBusy = false;
+        completeWatchAdReward(kind);
+      },
+      function onError() {
+        _watchingAdBusy = false;
+        // Wajib CrazyGames: adError TIDAK boleh memberi reward gratis
+        toast('AD UNAVAILABLE', 'Video ad could not load right now. Please try again in a moment.', '#fbbf24');
+      }
+    );
+    if (dispatched) return;
+    _watchingAdBusy = false;
+  }
+
+  // 2. Fallback hanya di luar portal CrazyGames (localhost / standalone web)
+  if (typeof window.isCrazyGames === 'function' && window.isCrazyGames()) {
+    toast('AD UNAVAILABLE', 'CrazyGames ad service is not ready yet. Please try again.', '#fbbf24');
+    return;
+  }
   runWatchAdSimulation(kind);
 }
 window.triggerWatchAd = triggerWatchAd;

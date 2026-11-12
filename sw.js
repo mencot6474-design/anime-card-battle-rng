@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v630-mobileCrazyGamesFix';
+const CACHE_NAME = 'anime-card-battle-v631-cgAdsCompliance';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

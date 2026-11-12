@@ -30,25 +30,31 @@
   }
   window.isCrazyGames = isCrazyGamesEnvironment;
 
-  // Inisialisasi SDK v3
+  // Inisialisasi SDK v3 (hanya 1x seumur hidup halaman)
   let _cgInitialized = false;
-  async function initCrazyGames() {
-    if (_cgInitialized) return;
-    try {
-      if (window.CrazyGames && window.CrazyGames.SDK) {
-        await window.CrazyGames.SDK.init();
-        _cgInitialized = true;
-        window.__cgSdkReady = true;
-        console.log('[CrazyGames SDK v3] Initialized successfully');
+  let _cgInitPromise = null;
+  function initCrazyGames() {
+    if (_cgInitPromise) return _cgInitPromise;
+    _cgInitPromise = (async () => {
+      try {
+        const sdk = window.CrazyGames && window.CrazyGames.SDK;
+        if (sdk && sdk.environment !== 'disabled') {
+          await sdk.init();
+          _cgInitialized = true;
+          window.__cgSdkReady = true;
+          console.log('[CrazyGames SDK v3] Initialized successfully (' + (sdk.environment || 'portal') + ')');
+        }
+      } catch (e) {
+        console.warn('[CrazyGames SDK v3] Init note:', e && e.message);
+      } finally {
+        // "sudah mencoba" != "berhasil": boot.js menunggu sinyal ini supaya tidak
+        // salah memilih identitas (CG_<user> vs guest lokal) saat init masih jalan.
+        window.__cgSdkDone = true;
       }
-    } catch (e) {
-      console.warn('[CrazyGames SDK v3] Init note:', e && e.message);
-    } finally {
-      // "sudah mencoba" != "berhasil": boot.js menunggu sinyal ini supaya tidak
-      // salah memilih identitas (CG_<user> vs guest lokal) saat init masih jalan.
-      window.__cgSdkDone = true;
-    }
+    })();
+    return _cgInitPromise;
   }
+  window.cgEnsureInit = initCrazyGames;
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initCrazyGames);
@@ -100,32 +106,56 @@
     } catch (e) {}
   };
 
-  // Rewarded Video Ad with Audio Muting
-  window.cgRequestRewardedAd = function (onSuccess, onError) {
-    if (window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.ad) {
-      const wasMuted = (typeof state !== 'undefined' && state && state.muted);
-      const callbacks = {
-        adStarted: () => {
-          if (typeof state !== 'undefined' && state) state.muted = true;
-        },
-        adFinished: () => {
-          if (typeof state !== 'undefined' && state) state.muted = wasMuted;
-          if (typeof onSuccess === 'function') onSuccess();
-        },
-        adError: (error) => {
-          if (typeof state !== 'undefined' && state) state.muted = wasMuted;
-          console.warn('[CrazyGames Ad Error]', error);
-          if (typeof onError === 'function') onError(error);
-        }
-      };
-      try {
-        window.CrazyGames.SDK.ad.requestAd('rewarded', callbacks);
-        return true;
-      } catch (err) {
-        console.warn('[CrazyGames Ad exception]', err);
+  // Shared Ad Runner (Rewarded & Midgame) with BGM/SFX mute + gameplay pause
+  function requestCrazyAd(type, onSuccess, onError) {
+    const sdk = window.CrazyGames && window.CrazyGames.SDK;
+    if (!sdk || !sdk.ad || sdk.environment === 'disabled') return false;
+    if (!window.__cgSdkReady && !isCrazyGamesEnvironment()) return false;
+
+    const wasMuted = (typeof state !== 'undefined' && state && state.muted);
+    const wasGameplayRunning = _gameplayRunning;
+    const syncAudio = () => {
+      try { if (typeof window.syncBgmState === 'function') window.syncBgmState(); } catch (e) {}
+    };
+    const restoreAfterAd = () => {
+      if (typeof state !== 'undefined' && state) state.muted = wasMuted;
+      syncAudio();
+      if (wasGameplayRunning) window.cgGameplayStart();
+    };
+
+    const callbacks = {
+      adStarted: () => {
+        if (typeof state !== 'undefined' && state) state.muted = true;
+        syncAudio();
+        if (wasGameplayRunning) window.cgGameplayStop();
+      },
+      adFinished: () => {
+        restoreAfterAd();
+        if (typeof onSuccess === 'function') onSuccess();
+      },
+      adError: (error) => {
+        restoreAfterAd();
+        console.warn('[CrazyGames Ad Error]', type, error);
+        if (typeof onError === 'function') onError(error);
       }
+    };
+
+    try {
+      sdk.ad.requestAd(type, callbacks);
+      return true;
+    } catch (err) {
+      restoreAfterAd();
+      console.warn('[CrazyGames Ad exception]', type, err);
+      return false;
     }
-    return false;
+  }
+
+  window.cgRequestRewardedAd = function (onSuccess, onError) {
+    return requestCrazyAd('rewarded', onSuccess, onError);
+  };
+
+  window.cgRequestMidgameAd = function (onDone) {
+    return requestCrazyAd('midgame', onDone, onDone);
   };
 
   // =========================================================================
