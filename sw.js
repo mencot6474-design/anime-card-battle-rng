@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v619-battleCurtainSync';
+const CACHE_NAME = 'anime-card-battle-v620-removeBattleSupportCard';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

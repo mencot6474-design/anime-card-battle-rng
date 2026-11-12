@@ -400,11 +400,6 @@
           '<span class="pile-badge" id="meGraveCnt">0</span>' +
           '<span class="pile-lbl">GRAVE</span>' +
         '</div>' +
-        '<div class="support-slot" id="meSupportSlot">' +
-          '<span class="sup-head">SUPPORT</span>' +
-          '<div class="sup-card"><img id="meSupImg" src="' + esc(sup.img) + '" alt=""></div>' +
-          '<span class="sup-name" id="meSupName">' + esc(sup.name) + '</span>' +
-        '</div>' +
       '</div>' +
 
       /* ENEMY MAT CLUSTER: DECK + GRAVE */
