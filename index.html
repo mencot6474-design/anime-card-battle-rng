@@ -60,7 +60,7 @@
   window.TRAKTEER_SHOP_URL = "";
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=v614-removeActivePlayersBadge').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=v615-fixWeatherAutoRollFlicker').catch(() => {});
     });
   }
 </script>
@@ -2634,7 +2634,7 @@
 <script src="js/sheetfx.js?v=v354-smooth60fps"></script>
 <script src="js/battle.js?v=v271-hubExitToLobbyFix"></script>
 <script src="js/battle-hazard.js?v=v23-speed3xPass"></script>
-<script src="js/tower-lobby.js?v=v401-curtainSweepResetFix"></script>
+<script src="js/tower-lobby.js?v=v402-fixWeatherAutoRollFlicker"></script>
 <script src="js/rebirth-hazard.js?v=v3-rebirthHazard5x"></script>
 <script src="js/shadow-king-fx.js?v=v5-skillFxRestore"></script>
 <script src="js/foe-passives.js?v=v63-english"></script>

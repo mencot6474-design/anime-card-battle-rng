@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v614-removeActivePlayersBadge';
+const CACHE_NAME = 'anime-card-battle-v615-fixWeatherAutoRollFlicker';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

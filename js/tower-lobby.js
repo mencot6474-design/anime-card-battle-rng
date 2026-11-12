@@ -2434,6 +2434,7 @@ function getCelestialSvg(id) {
 
 function setVillageWeather(id, silent) {
   const w = REAL_WEATHERS.find(x => x.id === id) || REAL_WEATHERS[0];
+  const wxChanged = !currentVillageWx || currentVillageWx.id !== w.id;
   currentVillageWx = w;
   const shell = document.querySelector('.nh-shell');
   const world = document.getElementById('villageWorld');
@@ -2468,7 +2469,9 @@ function setVillageWeather(id, silent) {
     btn.classList.toggle('active', btn.dataset.wx === w.id);
   });
 
-  initWxParticles();
+  if (wxChanged || !_wxParts || _wxParts.length === 0) {
+    initWxParticles();
+  }
   if (!silent && window.hzNotify) {
     window.hzNotify('🌩️ WEATHER SKYBOX: ' + w.name + ' (' + w.luckBonus + '× LUCK · ' + w.speedBonus + '× SPEED)');
   }
