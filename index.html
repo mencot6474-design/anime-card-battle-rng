@@ -35,7 +35,7 @@
 <link rel="stylesheet" href="css/story-carousel.css?v=v354-storyCurtainZ">
 <link rel="stylesheet" href="css/lobby-prototype.css?v=v400-nhLobbyDockAutoFix">
 <link rel="stylesheet" href="css/mobile-shell.css?v=v475-nhLobbyDockAutoFix">
-<link rel="stylesheet" href="css/nh-lobby-hud.css?v=v4-diceAndAds">
+<link rel="stylesheet" href="css/nh-lobby-hud.css?v=v5-dockAlignedDiceInPlace">
 <link rel="stylesheet" href="css/deck-screen.css?v=v4-searchInput">
 <link rel="stylesheet" href="css/skill-tree.css?v=v24-skIconsDim">
 <link rel="stylesheet" href="css/backpack-hazard.css?v=v3-eagerImgFix">
@@ -60,7 +60,7 @@
   window.TRAKTEER_SHOP_URL = "";
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=v607-diceAndAdsWebp').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=v608-dockAlignedDiceInPlace').catch(() => {});
     });
   }
 </script>
@@ -227,8 +227,7 @@
   </symbol>
 
   <!-- 5. AAA HAZARD CYBER DICE (DADU) SYMBOL -->
-  <symbol id="diceSvgSymbol" viewBox="0 0 64 64">
-    <ellipse cx="32" cy="57" rx="22" ry="5.5" fill="rgba(0,0,0,0.65)"/>
+  <symbol id="diceSvgSymbol" viewBox="0 0 64 62">
     <!-- Left Face -->
     <polygon points="10,18 32,30 32,56 10,44" fill="url(#hzDiceLeftGrad)" stroke="#f3e600" stroke-width="1.8" stroke-linejoin="round"/>
     <ellipse cx="21" cy="31" rx="2.8" ry="3.8" transform="rotate(15 21 31)" fill="url(#hzDicePipGlow)"/>
