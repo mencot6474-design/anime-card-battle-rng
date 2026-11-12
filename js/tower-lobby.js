@@ -2269,7 +2269,7 @@ const REAL_WEATHERS = [
   { id: "clear", name: "CLEAR SKY", rar: "COMMON", luckBonus: 1.0, speedBonus: 1.0, color: "#9ca3af", accent: "#e5e7eb", skyTop: "#07080d", skyMid: "#121420", reflOpacity: 0.16, fx: "clear" }
 ];
 
-let currentVillageWx = REAL_WEATHERS[0];
+let currentVillageWx = REAL_WEATHERS.find(x => x.id === "clear") || REAL_WEATHERS[15];
 let _wxParts = [];
 let _wxSplashes = [];
 let _lightningFlash = 0;
@@ -2433,7 +2433,7 @@ function getCelestialSvg(id) {
 }
 
 function setVillageWeather(id, silent) {
-  const w = REAL_WEATHERS.find(x => x.id === id) || REAL_WEATHERS[0];
+  const w = REAL_WEATHERS.find(x => x.id === id) || REAL_WEATHERS.find(x => x.id === "clear") || REAL_WEATHERS[0];
   const wxChanged = !currentVillageWx || currentVillageWx.id !== w.id;
   currentVillageWx = w;
   const shell = document.querySelector('.nh-shell');
@@ -2487,8 +2487,10 @@ window.toggleWxPicker = toggleWxPicker;
 function initWxParticles() {
   const cv = document.getElementById('weatherSkyCanvas');
   if (!cv) return;
-  cv.width = 1440;
-  cv.height = 760;
+  const cw = cv.clientWidth || 1440;
+  const ch = cv.clientHeight || 760;
+  cv.width = cw;
+  cv.height = ch;
   _wxParts = [];
   _wxSplashes = [];
   _shootingStars = [];
@@ -2496,19 +2498,19 @@ function initWxParticles() {
   _lightningBolt = null;
 
   const fx = currentVillageWx.fx;
-  let count = 45;
-  if (fx === 'monsoon' || fx === 'sandstorm' || fx === 'iceage') count = 90;
-  else if (fx === 'thunderstorm' || fx === 'galactic' || fx === 'snowfall') count = 65;
-  else if (fx === 'lightrain' || fx === 'rain' || fx === 'windy' || fx === 'glitch') count = 55;
+  let count = 35;
+  if (fx === 'monsoon' || fx === 'sandstorm' || fx === 'iceage') count = 70;
+  else if (fx === 'thunderstorm' || fx === 'galactic' || fx === 'snowfall') count = 50;
+  else if (fx === 'lightrain' || fx === 'rain' || fx === 'windy' || fx === 'glitch') count = 40;
 
   for (let i = 0; i < count; i++) {
     _wxParts.push({
-      x: Math.random() * 1440,
-      y: Math.random() * 760,
-      s: 1.2 + Math.random() * 2.8,
+      x: Math.random() * cw,
+      y: Math.random() * ch,
+      s: 0.8 + Math.random() * 1.6,
       vx: (Math.random() - 0.5) * 1.5,
       vy: 1.5 + Math.random() * 3.5,
-      a: 0.3 + Math.random() * 0.65,
+      a: 0.25 + Math.random() * 0.55,
       rot: Math.random() * Math.PI * 2,
       vrot: (Math.random() - 0.5) * 0.08,
       flip: Math.random() * Math.PI,
@@ -2558,9 +2560,15 @@ function tickWxCanvas() {
     return;
   }
   _wxAnimRunning = true;
+  const cw = cv.clientWidth || 1440;
+  const ch = cv.clientHeight || 760;
+  if (cv.width !== cw || cv.height !== ch) {
+    cv.width = cw;
+    cv.height = ch;
+  }
   const wxCtx = cv.getContext('2d');
   _animTime++;
-  wxCtx.clearRect(0, 0, cv.width, cv.height);
+  wxCtx.clearRect(0, 0, cw, ch);
   const fx = currentVillageWx.fx;
   const col = currentVillageWx.color;
   const accent = currentVillageWx.accent || '#ffffff';
@@ -2658,18 +2666,19 @@ function tickWxCanvas() {
   if (fx === 'awakened') {
     wxCtx.save();
     wxCtx.globalCompositeOperation = 'screen';
+    const midX = cw * 0.5;
     for (let r = 0; r < 4; r++) {
       const rayAngle = (r - 1.5) * 0.22;
-      const rayAlpha = (0.06 + Math.sin(_animTime * 0.02 + r) * 0.035).toFixed(3);
-      const grad = wxCtx.createRadialGradient(720, 160, 40, 720 + Math.sin(rayAngle) * 500, 520, 280);
+      const rayAlpha = (0.05 + Math.sin(_animTime * 0.02 + r) * 0.03).toFixed(3);
+      const grad = wxCtx.createRadialGradient(midX, ch * 0.2, 30, midX + Math.sin(rayAngle) * (cw * 0.35), ch * 0.7, ch * 0.4);
       grad.addColorStop(0, `rgba(250, 204, 21, ${rayAlpha})`);
       grad.addColorStop(0.6, `rgba(192, 132, 252, ${(rayAlpha * 0.7).toFixed(3)})`);
       grad.addColorStop(1, 'rgba(0,0,0,0)');
       wxCtx.fillStyle = grad;
       wxCtx.beginPath();
-      wxCtx.moveTo(720, 160);
-      wxCtx.lineTo(720 + (r - 1.5) * 360 - 140, 760);
-      wxCtx.lineTo(720 + (r - 1.5) * 360 + 140, 760);
+      wxCtx.moveTo(midX, ch * 0.2);
+      wxCtx.lineTo(midX + (r - 1.5) * (cw * 0.25) - 80, ch);
+      wxCtx.lineTo(midX + (r - 1.5) * (cw * 0.25) + 80, ch);
       wxCtx.closePath();
       wxCtx.fill();
     }
@@ -2767,22 +2776,22 @@ function tickWxCanvas() {
 
     } else if (fx === 'glitch') {
       if (Math.random() < 0.12) {
-        p.x = Math.random() * 1440;
-        p.y = Math.random() * 680;
+        p.x = Math.random() * cw;
+        p.y = Math.random() * ch;
       }
       if (i % 3 === 0) {
-        wxCtx.font = 'bold 11px monospace';
+        wxCtx.font = 'bold 9px monospace';
         wxCtx.fillStyle = (i % 2 === 0) ? '#f43f5e' : '#22d3ee';
         wxCtx.fillText(GLITCH_SNIPPETS[p.tag % GLITCH_SNIPPETS.length], p.x, p.y);
       } else {
         wxCtx.fillStyle = (i % 2 === 0) ? '#f43f5e' : '#22d3ee';
-        wxCtx.fillRect(p.x, p.y, p.s * 16, p.s * 2.8);
+        wxCtx.fillRect(p.x, p.y, p.s * 7, p.s * 1.8);
       }
 
     } else if (fx === 'doodle') {
       p.y -= 0.6;
       p.x += Math.sin(p.y * 0.02) * 0.5;
-      wxCtx.font = '14px sans-serif';
+      wxCtx.font = '10px sans-serif';
       wxCtx.fillStyle = '#f1f5f9';
       wxCtx.fillText(DOODLE_MARKS[p.tag % DOODLE_MARKS.length], p.x, p.y);
 
@@ -2797,8 +2806,8 @@ function tickWxCanvas() {
       for (let sp = 0; sp < 5; sp++) {
         const a1 = (sp * Math.PI * 2) / 5;
         const a2 = a1 + Math.PI / 5;
-        const r1 = p.s * 3.2;
-        const r2 = p.s * 1.4;
+        const r1 = p.s * 1.8;
+        const r2 = p.s * 0.8;
         if (sp === 0) wxCtx.moveTo(Math.cos(a1) * r1, Math.sin(a1) * r1);
         else wxCtx.lineTo(Math.cos(a1) * r1, Math.sin(a1) * r1);
         wxCtx.lineTo(Math.cos(a2) * r2, Math.sin(a2) * r2);
@@ -2810,7 +2819,7 @@ function tickWxCanvas() {
     } else if (fx === 'awakened' || fx === 'arcane') {
       p.y -= (0.45 + p.s * 0.18);
       p.x += Math.sin(p.y * 0.02 + p.seed) * 0.6;
-      wxCtx.font = `bold ${Math.round(10 + p.s * 3.5)}px sans-serif`;
+      wxCtx.font = `bold ${Math.round(8 + p.s * 1.8)}px sans-serif`;
       wxCtx.fillStyle = (i % 2 === 0) ? col : accent;
       wxCtx.fillText(OCCULT_RUNES[p.tag % OCCULT_RUNES.length], p.x, p.y);
 
@@ -2819,21 +2828,21 @@ function tickWxCanvas() {
       p.x += Math.sin(p.y * 0.025 + p.seed) * 1.1;
       wxCtx.fillStyle = (i % 3 === 0) ? '#facc15' : '#f43f5e';
       wxCtx.beginPath();
-      wxCtx.arc(p.x, p.y, p.s * 1.4, 0, Math.PI * 2);
+      wxCtx.arc(p.x, p.y, p.s * 1.1, 0, Math.PI * 2);
       wxCtx.fill();
 
     } else {
       p.a = 0.3 + Math.sin(_animTime * 0.05 + p.seed) * 0.4;
       wxCtx.fillStyle = (i % 3 === 0) ? '#fb923c' : (i % 3 === 1 ? '#c084fc' : '#ffffff');
       wxCtx.beginPath();
-      wxCtx.arc(p.x, p.y, p.s * 1.2, 0, Math.PI * 2);
+      wxCtx.arc(p.x, p.y, p.s * 1.0, 0, Math.PI * 2);
       wxCtx.fill();
     }
 
-    if (p.y > 760) { p.y = -10; p.x = Math.random() * 1440; }
-    if (p.y < -10) { p.y = 750; p.x = Math.random() * 1440; }
-    if (p.x > 1450) p.x = -10;
-    if (p.x < -10) p.x = 1440;
+    if (p.y > ch + 10) { p.y = -10; p.x = Math.random() * cw; }
+    if (p.y < -10) { p.y = ch + 5; p.x = Math.random() * cw; }
+    if (p.x > cw + 10) p.x = -10;
+    if (p.x < -10) p.x = cw + 5;
   }
 
   for (let s = _wxSplashes.length - 1; s >= 0; s--) {
@@ -3251,7 +3260,7 @@ function renderLobby() {
   const _gl = (typeof _globalLuckCache !== "undefined") ? _globalLuckCache : null;
   const _glActive = !!(_gl && _now < new Date(_gl.ends_at).getTime());
   const _glMult = _glActive ? (_gl.multiplier || 0) : 0;
-  const _wId = (typeof activeWeatherId === "function") ? activeWeatherId() : "awakened";
+  const _wId = (typeof activeWeatherId === "function") ? activeWeatherId() : "clear";
   const _w = (_wId && typeof WEATHER !== "undefined" && WEATHER[_wId]) ? WEATHER[_wId] : null;
 
   const _drwGrp = function (icon, label, count, statId, tiles) {
@@ -3700,7 +3709,7 @@ function renderLobby() {
   }
 
   initVillageWalkers(_party);
-  setVillageWeather(_wId || 'awakened', true);
+  setVillageWeather(_wId || 'clear', true);
   setupVillageViewportDrag();
 
   if (!_wxAnimRunning) requestAnimationFrame(tickWxCanvas);
@@ -3752,7 +3761,7 @@ function l12UpdateWeatherDock(force){
   }
 
   if (typeof setVillageWeather === "function") {
-    setVillageWeather(curWxId || "awakened", true);
+    setVillageWeather(curWxId || "clear", true);
   }
 
   if (_l12DockPanel === "weather" && typeof _l12RenderDockPanel === "function") {

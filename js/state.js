@@ -1173,7 +1173,7 @@ function renderShell(){
     const qr=document.getElementById("l12QsRolls");if(qr&&state)qr.textContent=fmt(state.totalRolls||0);
   }catch(e){}
   try{if(typeof updateProfileLiveNumbers==="function")updateProfileLiveNumbers();}catch(e){}
-  try{renderWeatherDock();renderBuffDock();startWeatherTick();if(typeof l12UpdateWeatherDock==='function')l12UpdateWeatherDock(true);}catch(e){}
+  try{renderWeatherDock();renderBuffDock();startWeatherTick();if(typeof l12UpdateWeatherDock==='function')l12UpdateWeatherDock(false);}catch(e){}
   try{if(typeof startGlobalLuckPoll==='function')startGlobalLuckPoll();}catch(e){}
 }
 

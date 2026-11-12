@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v615-fixWeatherAutoRollFlicker';
+const CACHE_NAME = 'anime-card-battle-v616-fixWeatherParticleScale';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
