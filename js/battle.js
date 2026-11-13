@@ -2937,10 +2937,17 @@ function leaveBattleToLobby(){
     try{ closeStory(); }catch(e){}
     if(location.hash!=="#/lobby"&&location.hash!==""&&location.hash!=="#/")location.hash="#/lobby";else{try{ render(); }catch(e){ console.error("leaveBattleToLobby render",e); }}
   };
-  if(typeof window.hzCurtainOut==="function"){
-    try{ window.hzCurtainOut(done); return; }catch(e){}
+  const transitionOut=()=>{
+    if(typeof window.hzCurtainOut==="function"){
+      try{ window.hzCurtainOut(done); return; }catch(e){}
+    }
+    done();
+  };
+  if(typeof window.cgTryMidgameAd==="function"){
+    window.cgTryMidgameAd(transitionOut);
+    return;
   }
-  done();
+  transitionOut();
 }
 document.getElementById("overlay").addEventListener("click",e=>{
   if(e.target.id!=="overlay")return;

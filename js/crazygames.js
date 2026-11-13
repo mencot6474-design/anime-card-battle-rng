@@ -107,6 +107,9 @@
   };
 
   // Shared Ad Runner (Rewarded & Midgame) with BGM/SFX mute + gameplay pause
+  let _lastAdAt = 0;
+  const MIDGAME_COOLDOWN_MS = 180000;
+
   function requestCrazyAd(type, onSuccess, onError) {
     const sdk = window.CrazyGames && window.CrazyGames.SDK;
     if (!sdk || !sdk.ad || sdk.environment === 'disabled') return false;
@@ -118,6 +121,7 @@
       try { if (typeof window.syncBgmState === 'function') window.syncBgmState(); } catch (e) {}
     };
     const restoreAfterAd = () => {
+      _lastAdAt = Date.now();
       if (typeof state !== 'undefined' && state) state.muted = wasMuted;
       syncAudio();
       if (wasGameplayRunning) window.cgGameplayStart();
@@ -156,6 +160,17 @@
 
   window.cgRequestMidgameAd = function (onDone) {
     return requestCrazyAd('midgame', onDone, onDone);
+  };
+
+  // Cooldown-gated midgame ad for natural battle-to-lobby transitions on CrazyGames
+  window.cgTryMidgameAd = function (onDone) {
+    const done = typeof onDone === 'function' ? onDone : function () {};
+    if (!isCrazyGamesEnvironment() || !window.__cgSdkReady) { done(); return false; }
+    if (isNewPlayerEligible()) { done(); return false; }
+    if (_lastAdAt && (Date.now() - _lastAdAt) < MIDGAME_COOLDOWN_MS) { done(); return false; }
+    const started = requestCrazyAd('midgame', done, done);
+    if (!started) done();
+    return started;
   };
 
   // =========================================================================
@@ -538,9 +553,10 @@
 
   window.triggerFtueCheck = renderOnboardingGuide;
 
-  setInterval(() => {
+  const _ftueTimer = setInterval(() => {
     if (typeof currentUser === 'string' && currentUser && localStorage.getItem(ftueDoneKey()) === '1') {
       if (document.getElementById('hzFtueGuide') || document.getElementById('hzFtueSpot')) removeFtueDom();
+      clearInterval(_ftueTimer);
       return;
     }
     renderOnboardingGuide();

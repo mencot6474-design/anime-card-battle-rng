@@ -58,6 +58,7 @@ function towerWaves(f){
 function towerReward(f){const boss=towerIsBossFloor(f);return {coins:boss?(500+f*60):(150+f*30),starStone:0,potion:boss?2:1};}
 let towerView="hub", towerRun=null;
 function stopTower(){
+  try{if(typeof window.cgGameplayStop==="function")window.cgGameplayStop();}catch(e){}
   towerLossAutoPending=false;
   _twClosing=false;
   _twClearCurtain(true);
@@ -1289,6 +1290,7 @@ function towerEnd(win){
     return;
   }
   /* Kalah: run berhenti — cairkan SEMUA roll yang ditabung SEBELUM sfx/DOM apa pun */
+  try{if(typeof window.cgGameplayStop==="function")window.cgGameplayStop();}catch(e){}
   const pending=towerRun.pendingRolls||0;
   let loot=[];
   try{ loot=pending>0?instantRoll(pending):[]; }

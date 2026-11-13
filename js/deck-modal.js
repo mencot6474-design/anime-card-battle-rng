@@ -689,7 +689,6 @@
     var m = el('deckModal');
     if (!m || _open) return;
     _open = true;
-    safe(function () { if (typeof cgGameplayStart === 'function') cgGameplayStart(); });
     safe(function () { if (window.sfx && sfx.hit) sfx.hit(); });
     DKM.q = '';
     DKM.inDeckOnly = false;
@@ -717,7 +716,6 @@
     _open = false;
     closeSlotPicker();
     closeDossier();
-    safe(function () { if (typeof cgGameplayStop === 'function') cgGameplayStop(); });
     var hide = function () {
       m.classList.remove('show');
       document.body.classList.remove('deck-open');

@@ -688,7 +688,6 @@
     SK.open = true;
     /* drawer z-index 100000 > modal 94500: tutup dulu supaya tidak menutupi layar */
     safe(function () { if (typeof closeCommandDrawer === 'function') closeCommandDrawer(); });
-    safe(function () { if (typeof cgGameplayStart === 'function') cgGameplayStart(); });
     safe(function () { if (window.sfx && sfx.hit) sfx.hit(); });
 
     SK.path = null; SK.sel = 'none'; SK.selId = null;
@@ -709,7 +708,6 @@
     var m = el('skillModal');
     if (!m || !SK.open) return;
     SK.open = false;
-    safe(function () { if (typeof cgGameplayStop === 'function') cgGameplayStop(); });
     var hide = function () {
       m.classList.remove('show', 'in');
       document.body.classList.remove('sk-open');

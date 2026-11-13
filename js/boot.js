@@ -148,8 +148,8 @@ function renderSettings(){
         <div class="sett-fb" id="settFb3">
           <article class="card">
             <div class="chead"><span class="badge" style="--bc:var(--emerald)"><i class="ic i-hood"></i>ACCOUNT</span><span class="ctitle">OPERATOR CREDENTIALS</span></div>
-            <div class="ubox"><span class="av"><i class="ic i-hood"></i></span><span class="ui"><small>AUTHENTICATED HUNTER</small><b>${currentUser || "GUEST"}</b></span>
-              <button type="button" class="out" id="logoutBtn" title="Logout">${isEn ? "LOGOUT" : "KELUAR"}</button></div>
+            <div class="ubox"><span class="av"><i class="ic i-hood"></i></span><span class="ui"><small>${_onCG ? "CRAZYGAMES HUNTER" : "AUTHENTICATED HUNTER"}</small><b>${currentUser || "GUEST"}</b></span>
+              ${_onCG ? `<span class="badge" style="--bc:var(--emerald);margin-left:auto">SYNCED</span>` : `<button type="button" class="out" id="logoutBtn" title="Logout">${isEn ? "LOGOUT" : "KELUAR"}</button>`}</div>
           </article>
 ${_linkCard}
           <article class="card">
@@ -157,11 +157,11 @@ ${_linkCard}
             <div class="desc" id="cloudSyncNote">${isEn ? "Save all cards, backpacks & progression to Supabase server." : "Simpan seluruh kartu, backpack & progres langsung ke Supabase server."}</div>
             <button type="button" class="btn emerald" id="manualCloudBtn"><i class="ic i-scroll"></i><span id="manualCloudTxt">${isEn ? "SAVE TO CLOUD NOW" : "SIMPAN CLOUD SEKARANG"}</span></button>
           </article>
-          <article class="card">
+          ${_onCG ? "" : `<article class="card">
             <div class="chead"><span class="badge" style="--bc:var(--crimson)"><i class="ic i-fire"></i>DANGER</span><span class="ctitle">${isEn ? "LOCAL RECOVERY" : "PEMULIHAN LOKAL"}</span></div>
             <div class="desc">${isEn ? "Wipe local browser cache and restart session from scratch." : "Hapus seluruh cache browser lokal dan mulai game dari kondisi awal."}</div>
             <button type="button" class="btn red reset-btn" id="resetBtn"><i class="ic i-fire"></i><span>${isEn ? "RESET LOCAL DATA" : "RESET DATA LOKAL"}</span></button>
-          </article>
+          </article>`}
         </div>
       </section>
     </div>
@@ -229,7 +229,8 @@ ${_linkCard}
       }
     };
   });
-  document.getElementById("logoutBtn").onclick=logout;
+  const _logoutBtn = document.getElementById("logoutBtn");
+  if(_logoutBtn) _logoutBtn.onclick=logout;
 
   /* Tautkan Akun (non-CrazyGames). Elemen hanya ada kalau kartunya dirender. */
   {
@@ -364,27 +365,29 @@ ${_linkCard}
   }
   let armed=false,timer=null;
   const b=document.getElementById("resetBtn");
-  const disarm=()=>{armed=false;if(timer){clearTimeout(timer);timer=null;}b.classList.remove("armed");b.querySelector("span").textContent=isEn ? "RESET LOCAL DATA" : "RESET DATA LOKAL";};
-  b.onclick=()=>{
-    if(!armed){armed=true;b.classList.add("armed");b.querySelector("span").textContent=isEn ? "Confirm? Tap again to wipe" : "Yakin? Tap lagi untuk reset";timer=setTimeout(disarm,4000);}
-    else{
-      window.__ACB_SAVE_LOCK__=true;
-      if(typeof stopBattleLoop==="function")stopBattleLoop();
-      const _oldUser=currentUser;
-      state=null;currentUser=null;
-      try{
-        if(window.CloudAuth && _oldUser) window.CloudAuth.clearSession(_oldUser);
-        Object.keys(localStorage).forEach(k=>{
-          if(/^(aab|acb_)/i.test(k)) localStorage.removeItem(k);
-        });
-        localStorage.removeItem(KEY);
-        localStorage.removeItem(USERS_KEY);
-        localStorage.removeItem(SESSION_KEY);
-      }catch(e){}
-      try{ history.replaceState(null,"",location.pathname+location.search); }catch(e){}
-      location.reload();
-    }
-  };
+  if(b){
+    const disarm=()=>{armed=false;if(timer){clearTimeout(timer);timer=null;}b.classList.remove("armed");b.querySelector("span").textContent=isEn ? "RESET LOCAL DATA" : "RESET DATA LOKAL";};
+    b.onclick=()=>{
+      if(!armed){armed=true;b.classList.add("armed");b.querySelector("span").textContent=isEn ? "Confirm? Tap again to wipe" : "Yakin? Tap lagi untuk reset";timer=setTimeout(disarm,4000);}
+      else{
+        window.__ACB_SAVE_LOCK__=true;
+        if(typeof stopBattleLoop==="function")stopBattleLoop();
+        const _oldUser=currentUser;
+        state=null;currentUser=null;
+        try{
+          if(window.CloudAuth && _oldUser) window.CloudAuth.clearSession(_oldUser);
+          Object.keys(localStorage).forEach(k=>{
+            if(/^(aab|acb_)/i.test(k)) localStorage.removeItem(k);
+          });
+          localStorage.removeItem(KEY);
+          localStorage.removeItem(USERS_KEY);
+          localStorage.removeItem(SESSION_KEY);
+        }catch(e){}
+        try{ history.replaceState(null,"",location.pathname+location.search); }catch(e){}
+        location.reload();
+      }
+    };
+  }
 }
 
 
@@ -848,7 +851,10 @@ async function loginAsGuest(){
     try {
       const cgUser = await _withTimeout(window.CrazyGames.SDK.user.getUser(), 3000, "CrazyGames getUser");
       if(cgUser && cgUser.username){
-        guestUser = "CG_" + cgUser.username.replace(/[^a-zA-Z0-9_]/g, "").slice(0, 15);
+        const cleaned = String(cgUser.username).replace(/[^a-zA-Z0-9_]/g, "").slice(0, 15);
+        if(cleaned.length >= 2){
+          guestUser = "CG_" + cleaned;
+        }
       }
     } catch(e){ console.warn("CrazyGames getUser dilewati:", e && e.message); }
   }
@@ -1379,6 +1385,9 @@ async function logout(){ const _btn=document.getElementById("logoutBtn"); if(_bt
 /* ---- Menu dock (tombol kiri footer) ---- */
 function toggleFootMenu(){
   const m=document.getElementById("footMenu");if(!m)return;
+  const _onCG=typeof window.isCrazyGames==="function"&&window.isCrazyGames();
+  const _lo=m.querySelector('.fm-item[onclick*="logout"]');
+  if(_lo) _lo.style.display=_onCG?"none":"";
   m.classList.toggle("show");
 }
 function closeFootMenu(){
