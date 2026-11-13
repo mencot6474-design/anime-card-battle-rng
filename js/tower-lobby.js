@@ -2875,7 +2875,9 @@ const LOBBY_CHIBI_SLUGS = new Set([
   'frost-wizard', 'frostbane', 'galactic-tyrant', 'glitched-entity', 'green-beast',
   'havoc-wreacker', 'height-of-painting', 'ice-queen', 'ice-reaper', 'immortal-colossus',
   'immortal-vampire', 'ink-anamloy', 'lightborne-admiral', 'luck-voltia', 'meteor-conqueror',
-  'moon-mother', 'nine-tail-prodigy', 'noble-companion', 'nullblade-knight', 'psychic-esper'
+  'moon-mother', 'nine-tail-prodigy', 'noble-companion', 'nullblade-knight', 'oceans-guardian',
+  'omni-sovereign', 'otherworldly-being', 'paper-pal', 'psychic-esper', 'puppeteer',
+  'regressor', 'royal-vanguard'
 ]);
 
 function lobbyChibiSrc(artPath) {
