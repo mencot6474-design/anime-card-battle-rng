@@ -3452,13 +3452,33 @@ function trPaintAll(popAnim){
   trPaintButtons();
   if(tr2State.tab==="index")trPaintIndexTab();
 }
-function trSwapVault(){
+let traitSwapBusy=false;
+async function trSwapVault(){
+  if(traitSwapBusy)return;
   if(autoRoll)stopAutoRoll();
   const tgt=traitTargetBase();if(!tgt)return;
   const curKey=charTraitOf(tgt.char);
   const cur=(curKey&&curKey!=="none"&&TRAIT[curKey])?curKey:null;
   const vk=trVaultOf(tgt.char);
   if(!cur&&!vk){trShowToast("Both Active Trait and The Vault are empty.");return;}
+  if(srOn()&&window.CloudDB&&typeof CloudDB.traitSwapVault==="function"){
+    traitSwapBusy=true;
+    try{
+      const res=await CloudDB.traitSwapVault(currentUser,tgt.char);
+      if(!res||!res.ok){
+        const msg=res&&res.msg==="BOTH_EMPTY"?"Both Active Trait and The Vault are empty.":"Sync error — vault swap cancelled.";
+        trShowToast(msg);
+        return;
+      }
+      const nextActive=res.active||"none";
+      if(typeof sfx!=="undefined"&&sfx.hit)sfx.hit();
+      try{save(false,{skipStacks:true});}catch(_){}
+      if(!battleLive()&&typeof render==="function")render();
+      trPaintAll(true);
+      trShowToast(nextActive!=="none"?`Swapped! ${TRAIT[nextActive]?TRAIT[nextActive].name:nextActive} active on ${cardName(tgt.char)} & variants.`:`Parked ${(cur&&TRAIT[cur])?TRAIT[cur].name:"Trait"} for ${cardName(tgt.char)} in The Vault.`);
+    }finally{traitSwapBusy=false;}
+    return;
+  }
   const nextActive=vk||"none";
   setCharTrait(tgt.char,nextActive);
   trSetVault(tgt.char,cur);

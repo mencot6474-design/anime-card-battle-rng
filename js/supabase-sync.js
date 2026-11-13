@@ -200,6 +200,24 @@ const CloudDB = {
         if (typeof res.mythicPotions === "number" && ST.mythicPotions !== res.mythicPotions) { ST.mythicPotions = res.mythicPotions; dirty = true; }
         if (Array.isArray(res.luckPots) && JSON.stringify(ST.luckPots) !== JSON.stringify(res.luckPots)) { ST.luckPots = res.luckPots; dirty = true; }
         if (Array.isArray(res.speedPots) && JSON.stringify(ST.speedPots) !== JSON.stringify(res.speedPots)) { ST.speedPots = res.speedPots; dirty = true; }
+        /* 0051: charTraits & traitVault milik server. */
+        if (res.charTraits && typeof res.charTraits === "object") {
+          if (JSON.stringify(ST.charTraits || {}) !== JSON.stringify(res.charTraits)) {
+            ST.charTraits = res.charTraits; dirty = true;
+          }
+          if (Array.isArray(ST.stacks)) {
+            ST.stacks.forEach(s => {
+              if (!s || !s.char) return;
+              const srvTr = res.charTraits[s.char] || "none";
+              if ((s.trait || "none") !== srvTr) { s.trait = srvTr; dirty = true; }
+            });
+          }
+        }
+        if (res.traitVault && typeof res.traitVault === "object") {
+          if (JSON.stringify(ST.traitVault || {}) !== JSON.stringify(res.traitVault)) {
+            ST.traitVault = res.traitVault; dirty = true;
+          }
+        }
         if (dirty) this._paint();
       }
 // Nilai otomatis sinkron dengan data asli server
@@ -1052,6 +1070,24 @@ const CloudDB = {
       this._paint();
     } else if (!res.ok && ST && typeof res.coins === "number") {
       ST.coins = res.coins;
+      this._paint();
+    }
+    return res;
+  },
+
+  /** 0051: server-authoritative Trait Vault swap/park (charTraits <-> traitVault + stacks) */
+  async traitSwapVault(username, charId) {
+    if (!username || !charId) return null;
+    const res = await this._authRpc(username, "trait_swap_vault", { p_char: String(charId) });
+    if (!res) return null;
+    const ST = this._st();
+    if (res.ok && ST) {
+      if (res.charTraits && typeof res.charTraits === "object") ST.charTraits = res.charTraits;
+      if (res.traitVault && typeof res.traitVault === "object") ST.traitVault = res.traitVault;
+      const nextActive = res.active || "none";
+      if (Array.isArray(ST.stacks)) {
+        ST.stacks.forEach(x => { if (x && x.char === charId) x.trait = nextActive; });
+      }
       this._paint();
     }
     return res;

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v674-secMobileBatch2';
+const CACHE_NAME = 'anime-card-battle-v675-traitGuardTouch';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
