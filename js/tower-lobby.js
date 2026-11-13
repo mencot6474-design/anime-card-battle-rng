@@ -3287,6 +3287,24 @@ function renderLobby() {
   const _byId = {};
   (state.stacks || []).forEach(s => { if (s && s.id) _byId[s.id] = s; });
   const _party = _deck.slice(0, 4).map(id => (id && _byId[id]) ? _byId[id] : null);
+  const _spCount = (state && state.player && state.player.sp) ? (state.player.sp | 0) : 0;
+  const _totalRollsFmt = _fmt((state && state.totalRolls) || 0);
+  const _idxValid = (typeof MASTER_CARD_INDEX !== "undefined" && Array.isArray(MASTER_CARD_INDEX)) ? MASTER_CARD_INDEX.filter(c => c && !c.isStoryEnemy) : [];
+  const _idxOwnSet = new Set((state.stacks || []).map(s => s && s.char).filter(Boolean));
+  const _idxOwn = _idxValid.reduce((n, c) => n + (_idxOwnSet.has(c.char_id) ? 1 : 0), 0);
+  const _idxShort = _idxValid.length ? (_idxOwn + "/" + _idxValid.length) : String(_idxOwnSet.size);
+  const _wingPartyHtml = _party.map((slot, idx) => {
+    if (!slot || typeof CARDS === "undefined" || !CARDS[slot.char]) {
+      return '<span class="nh-wp-slot is-empty" aria-label="Empty party slot ' + (idx + 1) + '"><span>+</span></span>';
+    }
+    const c = CARDS[slot.char];
+    const thumb = (typeof cardImg === "function") ? cardImg(slot.char, "thumb") : ("assets/cards/thumb/" + slot.char + ".webp");
+    const mut = (slot.mut && slot.mut !== "none") ? String(slot.mut).toLowerCase() : "";
+    const pcol = (mut && typeof MUT_COLOR !== "undefined" && MUT_COLOR[mut])
+      ? MUT_COLOR[mut]
+      : ((c.tier && typeof TIER_COLOR !== "undefined" && TIER_COLOR[c.tier]) ? TIER_COLOR[c.tier] : "rgba(245,245,245,.42)");
+    return '<span class="nh-wp-slot' + (slot.shiny ? ' is-shiny' : '') + '" style="--pcol:' + pcol + '"><img src="' + thumb + '" alt="" decoding="async" loading="lazy"></span>';
+  }).join("");
 
   const _leadStack = _party[0] || (state.stacks && state.stacks[0]) || null;
   const _leadChar = (_leadStack && _leadStack.char) || "shadow-king";
@@ -3696,7 +3714,30 @@ function renderLobby() {
         </button>
       </div>
 
-      <nav class="nav-dock" aria-label="Main Navigation">
+      <div class="nh-dock-row">
+        <aside class="nh-wing left" aria-label="Quick Actions Left">
+          <div class="nh-wing-btns">
+            <button class="nh-wing-btn" type="button" onclick="if(typeof openPremiumShop==='function')openPremiumShop();" title="Supply Shop">
+              <span class="nh-wing-ic-wrap">
+                <img class="nh-wing-ic" src="assets/icons/drawer/supply_shop.webp?v=1" alt="" decoding="async">
+              </span>
+              <span class="nh-wing-lbl">SHOP</span>
+            </button>
+            <button class="nh-wing-btn" type="button" onclick="if(typeof openIndex==='function')openIndex();" title="Card Archive / Index">
+              <span class="nh-wing-ic-wrap">
+                <img class="nh-wing-ic" src="assets/icons/drawer/archive.webp?v=1" alt="" decoding="async">
+                <span class="nh-wing-badge" id="nhWingIdxBadge">${_idxShort}</span>
+              </span>
+              <span class="nh-wing-lbl">INDEX</span>
+            </button>
+          </div>
+          <button class="nh-wing-party" type="button" id="nhWingPartyBtn" onclick="if(typeof openDeckModal==='function')openDeckModal();" title="Active Party — Open Deck">
+            <span class="nh-wing-party-lbl">PARTY</span>
+            <span class="nh-wing-party-slots">${_wingPartyHtml}</span>
+          </button>
+        </aside>
+
+        <nav class="nav-dock" aria-label="Main Navigation">
         <button class="dock-btn" type="button" onclick="if(typeof openCommandDrawer==='function')openCommandDrawer();" title="Command Menu">
           <span class="dock-ic-wrap">
             <img class="dock-ic" src="assets/icons/dock/home.webp" alt="" decoding="async">
@@ -3742,6 +3783,32 @@ function renderLobby() {
           <span class="dock-label">DECK</span>
         </button>
       </nav>
+
+        <aside class="nh-wing right" aria-label="Quick Actions Right">
+          <div class="nh-wing-rolls${(typeof rollState !== 'undefined' && rollState && rollState.active) ? ' is-rolling' : ''}" id="nhWingRollsBox" title="Total Summon Rolls">
+            <span class="nh-wing-roll-k">
+              <i class="nh-wing-live-dot" aria-hidden="true"></i>
+              <span id="nhWingRollState">${(typeof rollState !== 'undefined' && rollState && rollState.active) ? 'ROLLING' : 'ROLLS'}</span>
+            </span>
+            <b class="nh-wing-roll-v" id="nhWingRollVal">${_totalRollsFmt}</b>
+          </div>
+          <div class="nh-wing-btns">
+            <button class="nh-wing-btn" type="button" onclick="if(typeof openSkillTree==='function')openSkillTree();" title="Skill Tree">
+              <span class="nh-wing-ic-wrap">
+                <img class="nh-wing-ic" src="assets/icons/drawer/skill_tree.webp?v=1" alt="" decoding="async">
+                <span class="nh-wing-badge sp${_spCount > 0 ? ' is-ready' : ''}" id="nhWingSpBadge"${_spCount > 0 ? '' : ' style="display:none;"'}>${_spCount} SP</span>
+              </span>
+              <span class="nh-wing-lbl">SKILL</span>
+            </button>
+            <button class="nh-wing-btn" type="button" onclick="if(typeof openRanking==='function')openRanking();" title="Global Ranking">
+              <span class="nh-wing-ic-wrap">
+                <img class="nh-wing-ic" src="assets/icons/drawer/ranking.webp?v=1" alt="" decoding="async">
+              </span>
+              <span class="nh-wing-lbl">RANK</span>
+            </button>
+          </div>
+        </aside>
+      </div>
     </footer>
 
     <!-- Hidden slots for live nodes -->
@@ -3926,7 +3993,16 @@ window.l12UpdateWeatherDock = l12UpdateWeatherDock;
       put("l12TopCoins", (typeof fmt === "function") ? fmt(state.coins || 0) : String(state.coins || 0));
       put("l12TopGems", (typeof fmt === "function") ? fmt(state.premiumGems || 0) : String(state.premiumGems || 0));
       put("l12TopPwr", (typeof totalPower === "function") ? ((typeof fmt === "function") ? fmt(totalPower()) : String(totalPower())) : "0");
-      put("l12RollTotal", "TOTAL ROLLS \u00b7 " + ((typeof fmt === "function") ? fmt(state.totalRolls || 0) : (state.totalRolls || 0)));
+      const _rFmt = (typeof fmt === "function") ? fmt(state.totalRolls || 0) : String(state.totalRolls || 0);
+      put("l12RollTotal", "TOTAL ROLLS \u00b7 " + _rFmt);
+      put("nhWingRollVal", _rFmt);
+      const _spEl = document.getElementById("nhWingSpBadge");
+      if (_spEl) {
+        const _spNow = (state.player && state.player.sp) ? (state.player.sp | 0) : 0;
+        _spEl.style.display = _spNow > 0 ? "" : "none";
+        _spEl.classList.toggle("is-ready", _spNow > 0);
+        if (_spNow > 0) _spEl.textContent = _spNow + " SP";
+      }
       if (typeof fmtLobbyLuck === "function") put("l12TopLuck", fmtLobbyLuck());
       const bpSub = document.getElementById("nhDockBpSub");
       if (bpSub) bpSub.textContent = ((typeof totalCardsCount === "function") ? totalCardsCount() : (state.collection ? Object.keys(state.collection).length : 0)) + " CARDS";
@@ -4719,7 +4795,7 @@ window.l12OpenWeatherMachine = function () {
   window.l12CloseDockPanel();
   if (typeof openWeatherMachine === "function") openWeatherMachine();
 };
-window.syncNhRollDock = function (forceActive) { const isRoll = (typeof forceActive === "boolean") ? forceActive : !!(typeof rollState !== "undefined" && rollState && rollState.active); const rBtn = document.getElementById("nhDockRollBtn"); if (rBtn) { rBtn.classList.toggle("is-rolling", isRoll); rBtn.setAttribute("aria-pressed", isRoll ? "true" : "false"); const rLbl = document.getElementById("nhDockRollLbl"); if (rLbl) rLbl.textContent = isRoll ? "STOP" : "ROLL"; const rSub = document.getElementById("nhDockRollSub"); if (rSub) rSub.textContent = isRoll ? "ROLLING" : "SUMMON"; } const aBtn = document.getElementById("nhDockAutoBtn"); if (aBtn) { aBtn.classList.toggle("is-on", isRoll); aBtn.setAttribute("aria-pressed", isRoll ? "true" : "false"); const aSub = document.getElementById("nhDockAutoSub"); if (aSub) aSub.textContent = isRoll ? "ACTIVE" : "OFF"; } };
+window.syncNhRollDock = function (forceActive) { const isRoll = (typeof forceActive === "boolean") ? forceActive : !!(typeof rollState !== "undefined" && rollState && rollState.active); const rBtn = document.getElementById("nhDockRollBtn"); if (rBtn) { rBtn.classList.toggle("is-rolling", isRoll); rBtn.setAttribute("aria-pressed", isRoll ? "true" : "false"); const rLbl = document.getElementById("nhDockRollLbl"); if (rLbl) rLbl.textContent = isRoll ? "STOP" : "ROLL"; const rSub = document.getElementById("nhDockRollSub"); if (rSub) rSub.textContent = isRoll ? "ROLLING" : "SUMMON"; } const aBtn = document.getElementById("nhDockAutoBtn"); if (aBtn) { aBtn.classList.toggle("is-on", isRoll); aBtn.setAttribute("aria-pressed", isRoll ? "true" : "false"); const aSub = document.getElementById("nhDockAutoSub"); if (aSub) aSub.textContent = isRoll ? "ACTIVE" : "OFF"; } const wBox = document.getElementById("nhWingRollsBox"); if (wBox) { wBox.classList.toggle("is-rolling", isRoll); const wSt = document.getElementById("nhWingRollState"); if (wSt) wSt.textContent = isRoll ? "ROLLING" : "ROLLS"; const wVal = document.getElementById("nhWingRollVal"); if (wVal && typeof state !== "undefined" && state) { wVal.textContent = (typeof fmt === "function") ? fmt(state.totalRolls || 0) : String(state.totalRolls || 0); } } };
 
 if (!window._l12DockEscBound) {
   window._l12DockEscBound = true;
@@ -4750,6 +4826,17 @@ function l12ScheduleRollHistPaint() {
 window.l12ScheduleRollHistPaint = l12ScheduleRollHistPaint;
 
 function l12PaintRollHist() {
+  const _wRollEl = document.getElementById("nhWingRollVal");
+  if (_wRollEl && typeof state !== "undefined" && state) {
+    _wRollEl.textContent = (typeof fmt === "function") ? fmt(state.totalRolls || 0) : String(state.totalRolls || 0);
+  }
+  const _wIdxEl = document.getElementById("nhWingIdxBadge");
+  if (_wIdxEl && typeof state !== "undefined" && state && typeof MASTER_CARD_INDEX !== "undefined" && Array.isArray(MASTER_CARD_INDEX)) {
+    const _v = MASTER_CARD_INDEX.filter(c => c && !c.isStoryEnemy);
+    const _own = new Set((state.stacks || []).map(s => s && s.char).filter(Boolean));
+    let _c = 0; for (let i = 0; i < _v.length; i++) if (_own.has(_v[i].char_id)) _c++;
+    _wIdxEl.textContent = _c + "/" + _v.length;
+  }
   const container = document.getElementById("l12RollHist");
   if (!container) return;
   const tot = document.getElementById("l12RollTotal");

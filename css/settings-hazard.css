@@ -1,0 +1,776 @@
+/* ==========================================================================
+   SETTINGS-HAZARD.CSS — "SYSTEM ARCHITECTURE // MATRIX CONFIG" (WoB HAZARD)
+   Dedicated modular stylesheet for #/settings (.sett-wrap).
+   Loaded after mobile-shell.css so it cleanly owns Settings presentation.
+   Compositor-only transitions, >= 44px touch targets, semantic colors kept.
+   ========================================================================== */
+
+body.on-settings #pwaInstallBtn,
+body:has(.sett-wrap) #pwaInstallBtn,
+body.on-settings .buff-dock,
+body.on-settings .foot-menu,
+body.on-settings .m-tabbar,
+body.on-settings .m-rail {
+  display: none !important;
+}
+
+html body.on-settings:has(.sett-wrap)::before,
+html body.on-settings::before {
+  background:
+    repeating-linear-gradient(0deg, rgba(245, 245, 245, .02) 0 1px, transparent 1px 42px),
+    repeating-linear-gradient(90deg, rgba(245, 245, 245, .02) 0 1px, transparent 1px 42px),
+    radial-gradient(88% 58% at 50% -4%, rgba(243, 230, 0, .085), transparent 62%),
+    linear-gradient(180deg, #050505 0%, #07080c 60%, #040406 100%) !important;
+}
+
+body.on-settings main#app {
+  min-height: 100dvh !important;
+  height: auto !important;
+  padding: 14px 16px 28px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+  background: transparent !important;
+}
+
+html body.on-settings .sett-wrap {
+  --haz: #f3e600;
+  --ink: #050505;
+  --ink2: #0a0b0f;
+  --ink3: #101219;
+  --paper: #f5f5f5;
+  --silver: rgba(245, 245, 245, .74);
+  --dim: rgba(245, 245, 245, .48);
+  --hair: rgba(245, 245, 245, .18);
+  --cyan: #22d3ee;
+  --purple: #c084fc;
+  --emerald: #34d399;
+  --gold: #fbbf24;
+  --crimson: #fb7185;
+  --sdisp: 'Orbitron', 'Chakra Petch', sans-serif;
+  --stac: 'Rajdhani', 'Chakra Petch', sans-serif;
+  --smono: 'JetBrains Mono', ui-monospace, monospace;
+
+  position: relative;
+  width: 100% !important;
+  max-width: 1240px !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  background: transparent !important;
+  color: var(--paper) !important;
+  overflow: visible !important;
+  font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ================================ HEADER ================================= */
+html body.on-settings .sett-wrap .sett-head {
+  position: relative !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  padding: 16px 20px 14px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: linear-gradient(180deg, rgba(245, 245, 245, .42) 0%, rgba(160, 170, 188, .18) 54%, rgba(243, 230, 0, .48) 100%) !important;
+  clip-path: polygon(16px 0, calc(100% - 16px) 0, 100% 16px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 16px) !important;
+  box-shadow: none !important;
+}
+html body.on-settings .sett-wrap .sett-head::before {
+  content: '';
+  position: absolute;
+  inset: 1.5px;
+  background: linear-gradient(135deg, #10131b 0%, #07080c 60%, #0b0c12 100%);
+  clip-path: polygon(16px 0, calc(100% - 16px) 0, 100% 16px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 16px);
+  z-index: 0;
+  pointer-events: none;
+}
+html body.on-settings .sett-wrap .sett-head::after {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  bottom: auto !important;
+  left: 24px !important;
+  right: auto !important;
+  width: 124px !important;
+  height: 3.5px !important;
+  background: repeating-linear-gradient(-45deg, var(--haz) 0 6px, #050505 6px 11px) !important;
+  opacity: 1 !important;
+  z-index: 2;
+  pointer-events: none;
+}
+html body.on-settings .sett-wrap .sett-head > * {
+  position: relative;
+  z-index: 1;
+}
+
+html body.on-settings .sett-wrap .sett-head .hl {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+html body.on-settings .sett-wrap .sett-head .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font: 700 9.5px/1.2 var(--smono) !important;
+  letter-spacing: .16em !important;
+  color: var(--haz) !important;
+}
+html body.on-settings .sett-wrap .sett-head .eyebrow i.d {
+  width: 7px !important;
+  height: 7px !important;
+  border-radius: 1px !important;
+  background: var(--haz) !important;
+  box-shadow: 0 0 8px rgba(243, 230, 0, .55) !important;
+}
+html body.on-settings .sett-wrap .sett-head h1 {
+  margin: 0;
+  font: 900 22px/1.08 var(--sdisp) !important;
+  letter-spacing: .08em !important;
+  color: #ffffff !important;
+}
+html body.on-settings .sett-wrap .sett-head h1 em {
+  font-style: normal !important;
+  color: var(--haz) !important;
+  background: none !important;
+  -webkit-text-fill-color: var(--haz) !important;
+}
+html body.on-settings .sett-wrap .sett-head .sub {
+  font: 700 10px/1.2 var(--stac) !important;
+  letter-spacing: .14em !important;
+  color: var(--dim) !important;
+}
+
+html body.on-settings .sett-wrap .sett-head .hr {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap;
+}
+html body.on-settings .sett-wrap .upill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  min-height: 44px !important;
+  padding: 0 13px !important;
+  background: #0b0d13 !important;
+  border: 1px solid rgba(245, 245, 245, .24) !important;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px) !important;
+  font: 700 10.5px/1 var(--smono) !important;
+  letter-spacing: .06em !important;
+  color: var(--silver) !important;
+}
+html body.on-settings .sett-wrap .upill i.d {
+  width: 7px !important;
+  height: 7px !important;
+  border-radius: 50% !important;
+  background: var(--emerald) !important;
+  box-shadow: 0 0 8px rgba(52, 211, 153, .65) !important;
+}
+html body.on-settings .sett-wrap .upill b {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+html body.on-settings .sett-wrap .back {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  min-height: 44px !important;
+  padding: 0 16px !important;
+  background: var(--haz) !important;
+  border: 0 !important;
+  color: #050505 !important;
+  font: 900 11px/1 var(--sdisp) !important;
+  letter-spacing: .1em !important;
+  clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px) !important;
+  cursor: pointer;
+  transition: transform .12s ease, opacity .15s ease !important;
+}
+html body.on-settings .sett-wrap .back:hover {
+  background: #fff24a !important;
+  color: #050505 !important;
+  transform: translateY(-1px);
+  box-shadow: none !important;
+}
+html body.on-settings .sett-wrap .back:active {
+  transform: scale(.97);
+}
+html body.on-settings .sett-wrap .back svg {
+  width: 15px !important;
+  height: 15px !important;
+  stroke-width: 2.8 !important;
+}
+
+/* =========================== SECTOR TAB BAR (MOBILE/LANDSCAPE) =========== */
+html body.on-settings .sett-tabs {
+  display: none;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+}
+html body.on-settings .sett-tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  min-height: 46px;
+  padding: 6px 10px;
+  background: #0c0e14;
+  border: 1px solid rgba(245, 245, 245, .20);
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  color: rgba(245, 245, 245, .74);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+html body.on-settings .sett-tab-k {
+  font: 700 8px/1 var(--smono);
+  letter-spacing: .12em;
+  opacity: .72;
+}
+html body.on-settings .sett-tab-n {
+  font: 800 10.5px/1.1 var(--sdisp);
+  letter-spacing: .05em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+html body.on-settings .sett-tab.is-active {
+  background: var(--haz);
+  border-color: var(--haz);
+  color: #050505;
+}
+html body.on-settings .sett-tab.is-active .sett-tab-k {
+  opacity: .85;
+  color: #050505;
+}
+
+/* =========================== COMMAND MATRIX DECK ========================= */
+html body.on-settings .sett-wrap .sett-deck {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  align-items: start !important;
+  width: 100% !important;
+}
+
+html body.on-settings .sett-wrap .sett-fold {
+  --sc: var(--cyan);
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+  padding: 1.5px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: linear-gradient(180deg, rgba(245, 245, 245, .36) 0%, rgba(160, 170, 188, .14) 55%, rgba(245, 245, 245, .24) 100%) !important;
+  clip-path: polygon(12px 0, calc(100% - 4px) 0, 100% 4px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 4px 100%, 0 calc(100% - 4px), 0 12px) !important;
+  box-shadow: none !important;
+}
+html body.on-settings .sett-wrap .sett-fold::before {
+  content: '';
+  position: absolute;
+  inset: 1.5px;
+  background: #080a0e;
+  clip-path: polygon(12px 0, calc(100% - 4px) 0, 100% 4px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 4px 100%, 0 calc(100% - 4px), 0 12px);
+  z-index: 0;
+  pointer-events: none;
+}
+html body.on-settings .sett-wrap .sett-fold > * {
+  position: relative;
+  z-index: 1;
+}
+
+html body.on-settings .sett-wrap .sett-fh {
+  position: relative;
+  display: grid !important;
+  grid-template-columns: 38px minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  min-height: 58px !important;
+  padding: 10px 12px !important;
+  background: linear-gradient(180deg, #12151e 0%, #090b10 100%) !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(245, 245, 245, .12) !important;
+  cursor: default;
+  text-align: left;
+  color: inherit;
+}
+html body.on-settings .sett-wrap .sett-fh .sett-fbar {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: 0 !important;
+  height: 3px !important;
+  background: linear-gradient(90deg, var(--sc) 0%, rgba(245, 245, 245, .16) 70%, transparent 100%) !important;
+  transform: scaleX(1) !important;
+}
+html body.on-settings .sett-wrap .sett-fh .fic {
+  width: 38px !important;
+  height: 38px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: #07080c !important;
+  border: 1px solid var(--sc) !important;
+  clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px) !important;
+  color: var(--sc) !important;
+}
+html body.on-settings .sett-wrap .sett-fh .fic .ic {
+  width: 18px !important;
+  height: 18px !important;
+  color: var(--sc) !important;
+}
+html body.on-settings .sett-wrap .sett-fh .ftag {
+  font: 700 8.5px/1.1 var(--smono) !important;
+  letter-spacing: .14em !important;
+  color: var(--sc) !important;
+}
+html body.on-settings .sett-wrap .sett-fh .fnm {
+  font: 800 13.5px/1.15 var(--sdisp) !important;
+  letter-spacing: .05em !important;
+  color: #ffffff !important;
+}
+html body.on-settings .sett-wrap .sett-fh .fstat {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 4px 8px !important;
+  background: #050609 !important;
+  border: 1px solid rgba(245, 245, 245, .18) !important;
+  font: 700 9px/1 var(--smono) !important;
+  color: var(--silver) !important;
+}
+html body.on-settings .sett-wrap .sett-fh .fstat b {
+  color: var(--haz) !important;
+}
+html body.on-settings .sett-wrap .sett-fh .ch {
+  display: none !important;
+}
+
+/* Desktop always shows all 3 sector bodies simultaneously */
+html body.on-settings .sett-wrap .sett-fb {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  padding: 10px !important;
+  border-top: 0 !important;
+}
+
+/* =============================== MODULE CARDS ============================ */
+html body.on-settings .sett-wrap .card {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  padding: 12px !important;
+  background: #0d1016 !important;
+  border: 1px solid rgba(245, 245, 245, .14) !important;
+  border-left: 3px solid var(--sc) !important;
+  border-radius: 0 !important;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04) !important;
+}
+
+html body.on-settings .sett-wrap .chead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+html body.on-settings .sett-wrap .badge {
+  flex: none;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  height: 22px !important;
+  padding: 0 8px !important;
+  background: #050609 !important;
+  border: 1px solid var(--bc, var(--haz)) !important;
+  color: var(--bc, var(--haz)) !important;
+  font: 800 8.5px/1 var(--smono) !important;
+  letter-spacing: .1em !important;
+  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px) !important;
+}
+html body.on-settings .sett-wrap .badge .ic {
+  width: 11px;
+  height: 11px;
+}
+html body.on-settings .sett-wrap .ctitle {
+  font: 800 13px/1.15 var(--sdisp) !important;
+  letter-spacing: .05em !important;
+  color: #ffffff !important;
+}
+html body.on-settings .sett-wrap .desc {
+  font-size: 11.5px !important;
+  line-height: 1.45 !important;
+  color: var(--silver) !important;
+}
+html body.on-settings .sett-wrap .note {
+  font: 700 9.5px/1.4 var(--smono) !important;
+  color: var(--dim) !important;
+}
+html body.on-settings .sett-wrap .note.on {
+  color: var(--haz) !important;
+}
+html body.on-settings .sett-wrap .tel {
+  padding: 7px 9px !important;
+  background: #050609 !important;
+  border: 1px solid rgba(245, 245, 245, .12) !important;
+  font: 600 9.5px/1.4 var(--smono) !important;
+  color: var(--silver) !important;
+  word-break: break-word;
+}
+
+/* =========================== BATTLE SPEED KEYS =========================== */
+html body.on-settings .sett-wrap .speed {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+html body.on-settings .sett-wrap .bs {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 50px !important;
+  padding: 4px !important;
+  background: linear-gradient(180deg, #171b24 0%, #090b10 100%) !important;
+  border: 1px solid rgba(245, 245, 245, .24) !important;
+  color: #f5f5f5 !important;
+  font: 900 15px/1 var(--sdisp) !important;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px) !important;
+  cursor: pointer;
+  transition: border-color .15s ease, transform .12s ease;
+}
+html body.on-settings .sett-wrap .bs:hover:not(.on) {
+  border-color: var(--haz) !important;
+  transform: translateY(-1px);
+}
+html body.on-settings .sett-wrap .bs small {
+  font: 800 7.5px/1 var(--smono) !important;
+  letter-spacing: .08em;
+  color: var(--dim) !important;
+}
+html body.on-settings .sett-wrap .bs.on {
+  background: var(--haz) !important;
+  border-color: var(--haz) !important;
+  color: #050505 !important;
+}
+html body.on-settings .sett-wrap .bs.on small {
+  color: #141200 !important;
+}
+html body.on-settings .sett-wrap .bs.is-locked {
+  border-style: dashed !important;
+  border-color: rgba(243, 230, 0, .42) !important;
+  opacity: .78 !important;
+}
+
+/* =========================== TACTICAL ACTION BUTTONS ===================== */
+html body.on-settings .sett-wrap .row {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+html body.on-settings .sett-wrap .row > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+html body.on-settings .sett-wrap .btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  min-height: 44px !important;
+  padding: 0 12px !important;
+  background: linear-gradient(180deg, #171b24 0%, #090b10 100%) !important;
+  border: 1px solid rgba(245, 245, 245, .30) !important;
+  color: #ffffff !important;
+  font: 800 11px/1 var(--sdisp) !important;
+  letter-spacing: .07em !important;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px) !important;
+  cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease, transform .12s ease;
+}
+html body.on-settings .sett-wrap .btn:hover {
+  border-color: var(--haz) !important;
+  background: linear-gradient(180deg, #222735 0%, #10131c 100%) !important;
+}
+html body.on-settings .sett-wrap .btn:active {
+  transform: scale(.98);
+}
+html body.on-settings .sett-wrap .btn.amber {
+  border-color: rgba(243, 230, 0, .55) !important;
+  color: var(--haz) !important;
+  background: linear-gradient(180deg, rgba(243, 230, 0, .14) 0%, #0b0a04 100%) !important;
+}
+html body.on-settings .sett-wrap .btn.amber:hover {
+  border-color: var(--haz) !important;
+  background: linear-gradient(180deg, rgba(243, 230, 0, .24) 0%, #151306 100%) !important;
+}
+html body.on-settings .sett-wrap .btn.emerald {
+  border-color: rgba(52, 211, 153, .62) !important;
+  color: var(--emerald) !important;
+  background: linear-gradient(180deg, rgba(52, 211, 153, .14) 0%, #06130e 100%) !important;
+}
+html body.on-settings .sett-wrap .btn.emerald:hover {
+  border-color: var(--emerald) !important;
+  background: linear-gradient(180deg, rgba(52, 211, 153, .24) 0%, #091d16 100%) !important;
+}
+html body.on-settings .sett-wrap .btn.red {
+  border-color: rgba(251, 113, 133, .62) !important;
+  color: var(--crimson) !important;
+  background: linear-gradient(180deg, rgba(251, 113, 133, .14) 0%, #16070a 100%) !important;
+}
+html body.on-settings .sett-wrap .btn.red.armed {
+  background: var(--crimson) !important;
+  border-color: var(--crimson) !important;
+  color: #160407 !important;
+}
+
+/* =========================== LANGUAGE CARDS & SWITCH ===================== */
+html body.on-settings .sett-wrap .lang {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+html body.on-settings .sett-wrap .lc {
+  display: flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+  min-height: 52px !important;
+  padding: 0 10px !important;
+  background: #080a0f !important;
+  border: 1px solid rgba(245, 245, 245, .20) !important;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px) !important;
+  cursor: pointer;
+}
+html body.on-settings .sett-wrap .lc .code {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  height: 26px !important;
+  background: #141822 !important;
+  border: 1px solid rgba(245, 245, 245, .28) !important;
+  font: 900 11px/1 var(--sdisp) !important;
+  color: #ffffff !important;
+}
+html body.on-settings .sett-wrap .lc.on {
+  background: linear-gradient(180deg, rgba(192, 132, 252, .16) 0%, #09070f 100%) !important;
+  border-color: var(--purple) !important;
+}
+html body.on-settings .sett-wrap .lc.on .code {
+  background: var(--purple) !important;
+  border-color: var(--purple) !important;
+  color: #050505 !important;
+}
+html body.on-settings .sett-wrap .lc .li b {
+  font: 800 11px/1.1 var(--sdisp) !important;
+  color: #ffffff !important;
+}
+html body.on-settings .sett-wrap .lc .li span {
+  font-size: 9.5px !important;
+  color: var(--dim) !important;
+}
+
+html body.on-settings .sett-wrap .sw {
+  min-height: 50px !important;
+  padding: 0 12px !important;
+  background: #080a0f !important;
+  border: 1px solid rgba(245, 245, 245, .20) !important;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px) !important;
+}
+html body.on-settings .sett-wrap .sw .t {
+  font: 800 11px/1.2 var(--sdisp) !important;
+  letter-spacing: .05em !important;
+  color: #f5f5f5 !important;
+}
+html body.on-settings .sett-wrap .sw .k {
+  width: 48px !important;
+  height: 26px !important;
+  background: #050609 !important;
+  border: 1px solid rgba(245, 245, 245, .28) !important;
+}
+html body.on-settings .sett-wrap .sw .k::after {
+  background: rgba(245, 245, 245, .45) !important;
+}
+html body.on-settings .sett-wrap .sw:has(.setsw:checked) {
+  border-color: rgba(34, 211, 238, .6) !important;
+}
+html body.on-settings .sett-wrap .sw:has(.setsw:checked) .k {
+  border-color: var(--cyan) !important;
+  background: rgba(34, 211, 238, .12) !important;
+}
+html body.on-settings .sett-wrap .sw:has(.setsw:checked) .k::after {
+  transform: translateX(22px) !important;
+  background: var(--cyan) !important;
+}
+
+/* =========================== USER & ACCOUNT INPUTS ======================= */
+html body.on-settings .sett-wrap .ubox {
+  min-height: 56px !important;
+  padding: 8px 10px !important;
+  background: #080a0f !important;
+  border: 1px solid rgba(245, 245, 245, .20) !important;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px) !important;
+}
+html body.on-settings .sett-wrap .ubox .ui small {
+  font: 700 8px/1 var(--smono) !important;
+  letter-spacing: .12em;
+  color: var(--emerald) !important;
+}
+html body.on-settings .sett-wrap .ubox .ui b {
+  font: 800 13.5px/1.2 var(--sdisp) !important;
+  color: #ffffff !important;
+}
+html body.on-settings .sett-wrap .ubox .out {
+  min-height: 44px !important;
+  padding: 0 12px !important;
+  border: 1px solid rgba(251, 113, 133, .55) !important;
+  color: var(--crimson) !important;
+  font: 800 10px/1 var(--sdisp) !important;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+}
+html body.on-settings .sett-wrap .in {
+  min-height: 44px !important;
+  background: #050609 !important;
+  border: 1px solid rgba(245, 245, 245, .24) !important;
+  color: #ffffff !important;
+}
+html body.on-settings .sett-wrap .in:focus {
+  outline: none;
+  border-color: var(--haz) !important;
+}
+
+/* =============================== RESPONSIVE ============================== */
+@media (max-width: 1360px) and (min-width: 860px) {
+  html body.on-settings .sett-wrap .sett-fh {
+    grid-template-columns: 34px minmax(0, 1fr) auto !important;
+    gap: 7px !important;
+    padding: 9px 10px !important;
+  }
+  html body.on-settings .sett-wrap .sett-fh .fic {
+    width: 34px !important;
+    height: 34px !important;
+  }
+  html body.on-settings .sett-wrap .sett-fh .fnm {
+    font-size: 11.5px !important;
+    letter-spacing: .03em !important;
+  }
+  html body.on-settings .sett-wrap .sett-fh .fstat {
+    padding: 3px 6px !important;
+    font-size: 8.5px !important;
+  }
+}
+
+@media (max-width: 1120px) and (min-width: 860px) {
+  html body.on-settings .sett-wrap .sett-deck {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Narrow Mobile Portrait (< 860px) and Short Landscape (<= 520px height) -> Sector Tabs */
+@media (max-width: 859px), (max-height: 520px) and (orientation: landscape) {
+  body.on-settings main#app {
+    padding: 10px 10px 22px !important;
+  }
+  html body.on-settings .sett-tabs {
+    display: grid;
+  }
+  html body.on-settings .sett-wrap .sett-deck {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  html body.on-settings .sett-wrap .sett-fold:not(.open) {
+    display: none !important;
+  }
+  html body.on-settings .sett-wrap .sett-fh {
+    cursor: pointer;
+    min-height: 50px !important;
+    padding: 8px 10px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  html body.on-settings .sett-wrap .sett-head {
+    padding: 12px 13px !important;
+    gap: 10px !important;
+  }
+  html body.on-settings .sett-wrap .sett-head h1 {
+    font-size: 18px !important;
+  }
+  html body.on-settings .sett-wrap .sett-head .hr {
+    width: 100%;
+    justify-content: space-between;
+  }
+  html body.on-settings .sett-wrap .back {
+    flex: 1 1 auto;
+  }
+  html body.on-settings .sett-tab {
+    padding: 6px 8px;
+  }
+  html body.on-settings .sett-tab-n {
+    font-size: 9.5px;
+  }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  body.on-settings main#app {
+    padding: 8px 14px 16px !important;
+  }
+  html.m-landscape body.on-settings main#app {
+    padding-left: calc(14px + var(--safe-left, 0px)) !important;
+  }
+  html.m-landscape body.on-settings .sett-wrap {
+    max-width: 100% !important;
+  }
+  html body.on-settings .sett-wrap {
+    gap: 8px !important;
+  }
+  html body.on-settings .sett-wrap .sett-head {
+    padding: 8px 14px !important;
+    gap: 8px !important;
+  }
+  html body.on-settings .sett-wrap .sett-head h1 {
+    font-size: 16px !important;
+  }
+  html body.on-settings .sett-wrap .sett-head .sub {
+    display: none !important;
+  }
+  html body.on-settings .sett-tabs {
+    gap: 6px;
+  }
+  html body.on-settings .sett-tab {
+    min-height: 44px;
+    padding: 4px 10px;
+  }
+  html body.on-settings .sett-wrap .sett-fold.open .sett-fb {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html body.on-settings .sett-wrap * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

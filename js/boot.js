@@ -52,7 +52,23 @@ function renderSettings(){
       </div>
     </div>
 
-    <!-- SEKTOR AKORDEON (desain terkunci: _tmp/proto_more_v2.html) -->
+    <!-- TAB SEKTOR (Mobile Portrait / Landscape) -->
+    <div class="sett-tabs" role="tablist" aria-label="Settings Sectors">
+      <button type="button" class="sett-tab is-active" data-sec="dynamics" role="tab" aria-selected="true">
+        <span class="sett-tab-k">SECTOR 01</span>
+        <span class="sett-tab-n">${isEn ? "COMBAT" : "TEMPUR"}</span>
+      </button>
+      <button type="button" class="sett-tab" data-sec="interface" role="tab" aria-selected="false">
+        <span class="sett-tab-k">SECTOR 02</span>
+        <span class="sett-tab-n">${isEn ? "SYSTEM" : "SISTEM"}</span>
+      </button>
+      <button type="button" class="sett-tab" data-sec="telemetry" role="tab" aria-selected="false">
+        <span class="sett-tab-k">SECTOR 03</span>
+        <span class="sett-tab-n">${isEn ? "ACCOUNT" : "AKUN"}</span>
+      </button>
+    </div>
+
+    <!-- SEKTOR MATRIKS -->
     <div class="sett-deck">
 
       <!-- SEKTOR 01 // DYNAMICS -->
@@ -81,7 +97,7 @@ function renderSettings(){
             <div class="chead"><span class="badge" style="--bc:var(--gold)"><i class="ic i-sound"></i>AUDIO</span><span class="ctitle">SOUND DIAGNOSTICS</span></div>
             <div class="desc">${isEn ? "Live audio engine status & sound channel diagnostics." : "Status live audio engine & diagnostik kanal suara pertempuran."}</div>
             <div class="row">
-              <button type="button" class="btn" id="audToggle"><i class="ic i-sound"></i><span>SUARA: -</span></button>
+              <button type="button" class="btn" id="audToggle"><i class="ic i-sound"></i><span>${isEn ? "SOUND: -" : "SUARA: -"}</span></button>
               <button type="button" class="btn amber" id="audTone"><i class="ic i-sound"></i><span>${isEn ? "TEST 440Hz TONE" : "TES NADA 440Hz"}</span></button>
             </div>
             <button type="button" class="btn amber" id="audHit"><i class="ic i-axe"></i><span>${isEn ? "TEST RAID SFX (HIT + BLAST)" : "TES SFX RAID (HIT + DENTUMAN)"}</span></button>
@@ -144,7 +160,7 @@ ${_linkCard}
           <article class="card">
             <div class="chead"><span class="badge" style="--bc:var(--crimson)"><i class="ic i-fire"></i>DANGER</span><span class="ctitle">${isEn ? "LOCAL RECOVERY" : "PEMULIHAN LOKAL"}</span></div>
             <div class="desc">${isEn ? "Wipe local browser cache and restart session from scratch." : "Hapus seluruh cache browser lokal dan mulai game dari kondisi awal."}</div>
-            <button type="button" class="btn red reset-btn" id="resetBtn"><i class="ic i-fire"></i><span>RESET DATA LOKAL</span></button>
+            <button type="button" class="btn red reset-btn" id="resetBtn"><i class="ic i-fire"></i><span>${isEn ? "RESET LOCAL DATA" : "RESET DATA LOKAL"}</span></button>
           </article>
         </div>
       </section>
@@ -157,16 +173,31 @@ ${_linkCard}
   /* AKORDEON V2 — satu sektor terbuka di layar sempit (<700px), bebas di atasnya.
      Tubuh sektor tidak dianimasikan tingginya (display:none↔flex) supaya tidak ada
      animasi layout; yang bergerak hanya opacity/transform panel + chevron. */
-  document.querySelectorAll(".sett-fold .sett-fh").forEach(h=>{
-    h.onclick=()=>{
-      const f=h.parentElement, open=!f.classList.contains("open");
-      if(open&&window.innerWidth<700){
-        document.querySelectorAll(".sett-fold.open").forEach(x=>{
-          if(x!==f){x.classList.remove("open");const xh=x.querySelector(".sett-fh");if(xh)xh.setAttribute("aria-expanded","false");}
-        });
-      }
-      f.classList.toggle("open",open);
-      h.setAttribute("aria-expanded",open?"true":"false");
+  /* SECTOR TABS (mobile portrait & landscape) + Accordion fallback */
+  const _activateSettSec = (sec) => {
+    document.querySelectorAll(".sett-tab").forEach(tb => {
+      const on = tb.getAttribute("data-sec") === sec;
+      tb.classList.toggle("is-active", on);
+      tb.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    document.querySelectorAll(".sett-fold").forEach(f => {
+      const on = f.getAttribute("data-fold") === sec;
+      f.classList.toggle("open", on);
+      const xh = f.querySelector(".sett-fh");
+      if (xh) xh.setAttribute("aria-expanded", on ? "true" : "false");
+    });
+  };
+  document.querySelectorAll(".sett-tab").forEach(tb => {
+    tb.onclick = () => {
+      if (window.sfx && sfx.hit) try { sfx.hit(); } catch (e) {}
+      _activateSettSec(tb.getAttribute("data-sec"));
+    };
+  });
+  document.querySelectorAll(".sett-fold .sett-fh").forEach(h => {
+    h.onclick = () => {
+      if (window.innerWidth >= 860 && window.innerHeight > 520) return;
+      const sec = h.parentElement && h.parentElement.getAttribute("data-fold");
+      if (sec) _activateSettSec(sec);
     };
   });
 
