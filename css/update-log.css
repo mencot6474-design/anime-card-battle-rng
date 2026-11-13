@@ -351,7 +351,7 @@ button#changelogClose.upl-close-btn svg {
   cursor: pointer;
   border: none;
   text-align: left;
-  min-height: 40px;
+  min-height: 44px;
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 .upl-jump-item:hover {

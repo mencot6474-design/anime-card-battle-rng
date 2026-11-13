@@ -1869,7 +1869,7 @@ body:has(#storyModal.show) .lobby-tactical-hud {
   #storyModal .story-main { grid-template-columns: 132px minmax(0, 1fr) 286px; }
   #storyModal .chapter-rail { padding: 8px; }
   #storyModal .rail-h { display: none; }
-  #storyModal .rail-ch { min-height: 40px; padding: 5px 6px; grid-template-columns: 20px minmax(0, 1fr); gap: 6px; }
+  #storyModal .rail-ch { min-height: 44px; padding: 5px 6px; grid-template-columns: 20px minmax(0, 1fr); gap: 6px; }
   #storyModal .rail-no { font-size: 12px; }
   #storyModal .rail-nm { font-size: 7px; }
   #storyModal .rail-f { font-size: 6px; padding-top: 6px; }

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v675-traitGuardTouch';
+const CACHE_NAME = 'anime-card-battle-v676-stage4TouchSweep';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

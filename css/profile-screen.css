@@ -329,6 +329,10 @@ body:has(#profModal.show) .lobby-tactical-hud {
 
 .prf-tab-btn {
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
   padding: 7px 32px;
   transform: skewX(-12deg);
   font-family: var(--f-head);
