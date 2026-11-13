@@ -3279,25 +3279,45 @@ async function bpUseIntanRoll(n){
   if(owned<1){toast("INTAN ROLL EMPTY","NO ITEMS LEFT","#f87171");return;}
   const use=Math.min(n,owned);
   bpItemPopClose();
-  let pulls=100000*use, spent=use;
-  if(typeof srOn==="function"&&srOn()){
-    const r=await CloudDB.spendIntan(currentUser,use);
-    if(!r||!r.ok){
-      const msg=!r?"KONEKSI KE SERVER PUTUS":(r.msg==="NO_INTAN"?"KREDIT INTAN SUDAH HABIS":"DITOLAK SERVER");
-      toast("INTAN REJECTED BY SERVER",msg+" · TRY AGAIN","#f87171");
-      renderBackpackPanel();
-      return;
-    }
-    /* Server yang memutuskan berapa intan yang benar-benar kepotong: client boleh
-       saja mengklaim 999, kreditnya cuma 2 -> yang dipakai 2, bukan 999. */
-    spent=Math.max(1,Number(r.spent)||use);
-    pulls=Number(r.pulls)||pulls;
-  }else{
-    state.intanRolls=owned-use;save();
-  }
   beep(440,.18,"triangle",.1);setTimeout(()=>beep(880,.24,"triangle",.08),150);
+  if(typeof srOn==="function"&&srOn()&&typeof CloudDB!=="undefined"&&CloudDB.intanRoll){
+    const groups={}, order=[];
+    let total=0, spent=0, left=use, guard=0;
+    const maxGuards=Math.max(20,Math.ceil(use/10)+5);
+    const luckArg=(typeof totalLuck==="function"&&totalLuck()>0)?totalLuck():undefined;
+    while(left>0 && guard++<maxGuards){
+      const r=await CloudDB.intanRoll(currentUser,Math.min(left,10),luckArg);
+      if(!r||!r.ok){
+        const msg=!r?"SERVER CONNECTION LOST":(r.msg==="NO_INTAN"?"INTAN CREDIT EMPTY":"REJECTED BY SERVER: "+(r.msg||""));
+        if(spent===0){ toast("INTAN REJECTED BY SERVER",msg+" · TRY AGAIN","#f87171"); renderBackpackPanel(); return; }
+        toast("INTAN ROLL STOPPED",msg+" · "+fmt(spent)+"× ALREADY ADDED","#fcd34d");
+        break;
+      }
+      const usedNow=Math.max(1,Number(r.spent)||1);
+      spent+=usedNow; total+=Number(r.total)||0;
+      for(const g of (r.results||[])){
+        const key=g.cardId+"|"+(g.mut||"none")+"|"+(g.shiny?1:0);
+        let it=groups[key];
+        if(!it){ it=groups[key]={cardId:g.cardId,tier:g.tier,mut:g.mut||"none",shiny:!!g.shiny,chance:g.chance,n:0}; order.push(key); }
+        it.n+=Number(g.n)||1;
+      }
+      left=Math.min(left-usedNow, state.intanRolls||0);
+    }
+    const loot=order.map(k=>groups[k]);
+    loot.totalPulls=total;
+    if(!total){ renderBackpackPanel(); return; }
+    if(loot.length){
+      loot.slice().sort((a,b)=>(a.chance||0)-(b.chance||0)).slice(-10).forEach(g=>pushRollHistory(g,true));
+      if(typeof window.l12ScheduleRollHistPaint==="function")window.l12ScheduleRollHistPaint();
+    }
+    showTowerLoot(loot,{weather:0,luck:0,speed:0},"HASIL INTAN ROLL · "+fmt(total)+" ("+spent+"×)");
+    renderBackpackPanel();
+    return;
+  }
+  state.intanRolls=owned-use;save();
+  const pulls=100000*use;
   const loot=instantRollFast(pulls,true);
-  showTowerLoot(loot,{weather:0,luck:0,speed:0},"HASIL INTAN ROLL · "+fmt(pulls)+" ("+spent+"×)");
+  showTowerLoot(loot,{weather:0,luck:0,speed:0},"HASIL INTAN ROLL · "+fmt(pulls)+" ("+use+"×)");
   renderBackpackPanel();
 }
 async function bpUseRollPack(packKey, rollAmount, n){

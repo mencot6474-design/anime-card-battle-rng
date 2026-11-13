@@ -57,6 +57,39 @@ function towerWaves(f){
 }
 function towerReward(f){const boss=towerIsBossFloor(f);return {coins:boss?(500+f*60):(150+f*30),starStone:0,potion:boss?2:1};}
 let towerView="hub", towerRun=null;
+async function _claimServerTowerRolls(floors, tokenPromises){
+  if(Array.isArray(tokenPromises)&&tokenPromises.length){
+    try{ await Promise.allSettled(tokenPromises); }catch(e){}
+  }
+  const groups={}, order=[];
+  let total=0, claimed=0, left=Math.max(0,parseInt(floors,10)||0), guard=0;
+  const maxGuards=Math.max(10,Math.ceil(left/500)+4);
+  const luckArg=(typeof totalLuck==="function"&&totalLuck()>0)?totalLuck():undefined;
+  let lastErr=null;
+  while(left>0 && guard++<maxGuards){
+    const r=await CloudDB.claimTowerRolls(currentUser,Math.min(left,500),luckArg);
+    if(!r||!r.ok){
+      lastErr=r;
+      break;
+    }
+    const usedNow=Math.max(1,Number(r.used)||1);
+    claimed+=usedNow; total+=Number(r.total)||0;
+    for(const g of (r.results||[])){
+      const key=g.cardId+"|"+(g.mut||"none")+"|"+(g.shiny?1:0);
+      let it=groups[key];
+      if(!it){ it=groups[key]={cardId:g.cardId,tier:g.tier,mut:g.mut||"none",shiny:!!g.shiny,chance:g.chance,n:0}; order.push(key); }
+      it.n+=Number(g.n)||1;
+    }
+    left=Math.min(left-usedNow, Number(r.remaining)||0);
+  }
+  const loot=order.map(k=>groups[k]);
+  loot.totalPulls=total;
+  if(loot.length && typeof pushRollHistory==="function"){
+    loot.slice().sort((a,b)=>(a.chance||0)-(b.chance||0)).slice(-10).forEach(g=>pushRollHistory(g,true));
+    if(typeof window.l12ScheduleRollHistPaint==="function")window.l12ScheduleRollHistPaint();
+  }
+  return { loot, total, claimed, err: lastErr };
+}
 function stopTower(){
   try{if(typeof window.cgGameplayStop==="function")window.cgGameplayStop();}catch(e){}
   towerLossAutoPending=false;
@@ -65,9 +98,24 @@ function stopTower(){
   if(bt&&bt.tower){ if(bt.timer)clearTimeout(bt.timer); bt=null; }
   /* Run ditinggal (END / pindah menu) sebelum kalah: tetap cairkan roll yang sudah ditabung biar nggak hangus. */
   if(towerRun&&(towerRun.pendingRolls||0)>0){
-    const n=towerRun.pendingRolls; const loot=instantRoll(n); towerRun.pendingRolls=0;
-    /* Popup hasil roll tetap BIKIN pack + artefak/pet ikut tampil (icon sama dgn backpack). */
-    if(loot&&loot.length)showTowerLoot(loot,towerRun.drops,null,{packDrops:towerRun.packDrops||{},rareDrops:towerRun.rareDrops||[]}); else toast("TOWER ROLLS WITHDRAWN","+"+n+" CARDS","#7df9ff");
+    const n=towerRun.pendingRolls;
+    const pendingFloors=typeof towerRun.pendingRollFloors==="number"?towerRun.pendingRollFloors:Math.floor(n/100);
+    const tokenPromises=Array.isArray(towerRun._tokenPromises)?towerRun._tokenPromises.slice():[];
+    const drops=towerRun.drops||{weather:0,luck:0,speed:0};
+    const packDrops=towerRun.packDrops||{};
+    const rareDrops=towerRun.rareDrops||[];
+    towerRun.pendingRolls=0; towerRun.pendingRollFloors=0;
+    if(typeof srOn==="function"&&srOn()&&typeof CloudDB!=="undefined"&&CloudDB.claimTowerRolls){
+      (async()=>{
+        const cr=await _claimServerTowerRolls(Math.max(1,pendingFloors),tokenPromises);
+        if(cr.loot&&cr.loot.length)showTowerLoot(cr.loot,drops,null,{packDrops,rareDrops});
+        else if(cr.total>0)toast("TOWER ROLLS WITHDRAWN","+"+fmt(cr.total)+" CARDS","#7df9ff");
+      })();
+    }else{
+      const loot=instantRoll(n);
+      /* Popup hasil roll tetap BIKIN pack + artefak/pet ikut tampil (icon sama dgn backpack). */
+      if(loot&&loot.length)showTowerLoot(loot,drops,null,{packDrops,rareDrops}); else toast("TOWER ROLLS WITHDRAWN","+"+n+" CARDS","#7df9ff");
+    }
   }
   towerView="hub"; towerRun=null;
 }
@@ -119,7 +167,7 @@ function towerStartRun(){
   if(!state.tower)state.tower={best:0,runs:0,auto:false};
   state.tower.runs=(state.tower.runs||0)+1;
   try{save();}catch(e){}
-  towerRun={floor:1,waves:towerWaves(1),idx:0,cleared:0,cards:0,coins:0,drops:{weather:0,luck:0,speed:0},tokens:0,pendingRolls:0,packDrops:{},rareDrops:[]};
+  towerRun={floor:1,waves:towerWaves(1),idx:0,cleared:0,cards:0,coins:0,drops:{weather:0,luck:0,speed:0},tokens:0,pendingRolls:0,pendingRollFloors:0,_tokenPromises:[],packDrops:{},rareDrops:[]};
   towerView="battle";
   render();
 }
@@ -1218,7 +1266,7 @@ bt.pBurn=0;bt.pFreeze=0;bt.pPoisonCut=0;bt.pInk=0;bt.pInkPct=0;
     if(bt.excited){bt.excited=false;floatText(".fighter.foe","EXTRA ATTACK!","crit");schedPhase(450,playerPhase);}else{schedPhase(450,enemyPhase);}
   },bsMs(960));
 }
-function towerEnd(win){
+async function towerEnd(win){
   if(bt){clearTimeout(bt.timer);bt.over=true;}
   const f=towerRun.floor;
   if(win){
@@ -1243,7 +1291,9 @@ function towerEnd(win){
     /* Drop tiap floor lolos: Instant roll 100% PASTI (DITABUNG, di-roll saat kalah) — 100 tarikan per lantai · Weather 5% · Luck +1 10% · Speed +1 10% */
     if(!towerRun.drops)towerRun.drops={weather:0,luck:0,speed:0};
     const rr=100;
-    towerRun.pendingRolls=(towerRun.pendingRolls||0)+rr; towerRun.cards=(towerRun.cards||0)+rr;
+    towerRun.pendingRolls=(towerRun.pendingRolls||0)+rr;
+    towerRun.pendingRollFloors=(towerRun.pendingRollFloors||0)+1;
+    towerRun.cards=(towerRun.cards||0)+rr;
     if(Math.random()<0.05){state.potions=(state.potions||0)+1;towerRun.drops.weather++;}
     if(Math.random()<0.10){state.luckPots=state.luckPots||[0,0,0];state.luckPots[0]++;towerRun.drops.luck++;}
     if(Math.random()<0.10){state.speedPots=state.speedPots||[0,0,0];state.speedPots[0]++;towerRun.drops.speed++;}
@@ -1267,17 +1317,23 @@ function towerEnd(win){
     /* Token Inf: +1 per lantai, +5 per lantai bos. */
     const tok=towerIsBossFloor(f)?5:1;
     state.infTokens=(state.infTokens||0)+tok; towerRun.tokens=(towerRun.tokens||0)+tok;
-    /* 0026: token lantai dibayar server (claim_tower_tokens). */
-    (async()=>{
+    /* 0026 + 0052: token lantai & ledger roll lantai dibayar server (claim_tower_tokens). */
+    const runRef=towerRun;
+    const tokPromise=(async()=>{
       if(!(typeof currentUser!=="undefined"&&currentUser&&window.CloudDB&&window.CloudDB.claimTowerTokens))return;
       let res=null;
       try{res=await window.CloudDB.claimTowerTokens(currentUser,f);}catch(e){res=null;}
       if(res&&!res.ok&&(res.msg==="DAILY_CAP"||res.msg==="UNREACHABLE")){
         state.infTokens=Math.max(0,(state.infTokens||0)-tok);
+        if(runRef)runRef.pendingRollFloors=Math.max(0,(runRef.pendingRollFloors||0)-1);
         try{toast(res.msg==="UNREACHABLE"?"FLOOR LOCKED":"DAILY TOKEN LIMIT","Floor tokens not credited by server","#f87171");}catch(e){}
+      }else if(!res){
+        if(runRef)runRef.pendingRollFloors=Math.max(0,(runRef.pendingRollFloors||0)-1);
       }
       try{save();renderShell();}catch(e){}
     })();
+    if(!runRef._tokenPromises)runRef._tokenPromises=[];
+    runRef._tokenPromises.push(tokPromise);
     towerRun.cleared=f; towerRun.coins=(towerRun.coins||0)+r.coins;
     state.tower.best=Math.max(state.tower.best||0,f);
     if(typeof lbTrackTower==="function")lbTrackTower(state.tower.best);
@@ -1291,25 +1347,43 @@ function towerEnd(win){
   }
   /* Kalah: run berhenti — cairkan SEMUA roll yang ditabung SEBELUM sfx/DOM apa pun */
   try{if(typeof window.cgGameplayStop==="function")window.cgGameplayStop();}catch(e){}
-  const pending=towerRun.pendingRolls||0;
+  const runSnap=towerRun;
+  const pending=(runSnap&&runSnap.pendingRolls)||0;
+  const pendingFloors=(runSnap&&typeof runSnap.pendingRollFloors==="number")?runSnap.pendingRollFloors:Math.floor(pending/100);
+  const tokenPromises=(runSnap&&Array.isArray(runSnap._tokenPromises))?runSnap._tokenPromises.slice():[];
+  if(runSnap){ runSnap.pendingRolls=0; runSnap.pendingRollFloors=0; }
   let loot=[];
-  try{ loot=pending>0?instantRoll(pending):[]; }
-  catch(err){ console.error("towerEnd instantRoll error",err); }
-  towerRun.pendingRolls=0;
+  if(typeof srOn==="function"&&srOn()&&typeof CloudDB!=="undefined"&&CloudDB.claimTowerRolls){
+    if(pendingFloors>0||pending>0){
+      try{
+        const cr=await _claimServerTowerRolls(Math.max(1,pendingFloors),tokenPromises);
+        loot=cr.loot||[];
+        if(!loot.length&&cr.err){
+          const msg=cr.err.msg==="NO_TOWER_ROLLS"?"NO SERVER TOWER ROLLS AVAILABLE":("SERVER REJECTED: "+(cr.err.msg||""));
+          try{toast("TOWER ROLLS NOT CREDITED",msg,"#f87171");}catch(e){}
+        }
+      }catch(err){ console.error("towerEnd claimTowerRolls error",err); }
+    }
+  }else{
+    try{ loot=pending>0?instantRoll(pending):[]; }
+    catch(err){ console.error("towerEnd instantRoll error",err); }
+  }
   try{ sfx.lose(); }catch(e){}
-  const reached=towerRun.cleared||0;
-  const dr=towerRun.drops||{weather:0,luck:0,speed:0};
+  const reached=(runSnap&&runSnap.cleared)||0;
+  const dr=(runSnap&&runSnap.drops)||{weather:0,luck:0,speed:0};
   const auto=!!(state&&state.tower&&state.tower.auto);
   towerLossAutoPending=auto;
   try{ save(); renderShell(); }catch(e){}
-  try{ toast("RUN ENDED AT FLOOR "+f,"FLOORS CONQUERED: "+reached+" · CARDS +"+fmt(towerRun.cards||0)+" · TOKENS +"+fmt(towerRun.tokens||0),"#f87171"); }catch(e){}
+  try{ toast("RUN ENDED AT FLOOR "+f,"FLOORS CONQUERED: "+reached+" · CARDS +"+fmt((runSnap&&runSnap.cards)||0)+" · TOKENS +"+fmt((runSnap&&runSnap.tokens)||0),"#f87171"); }catch(e){}
   /* Popup hasil roll (kartu + potion) tetap tampil — z-220, di atas segalanya. */
-  try{ showTowerLoot(loot,dr,null,{packDrops:towerRun.packDrops,rareDrops:towerRun.rareDrops}); }
+  try{ showTowerLoot(loot,dr,null,{packDrops:runSnap&&runSnap.packDrops,rareDrops:runSnap&&runSnap.rareDrops}); }
   catch(err){ console.error("showTowerLoot error",err); }
   /* Lobby Tower muncul di belakang popup: begitu AMBIL diklik, pemain sudah di hub. */
   try{ stopBattleLoop(); }catch(e){}
-  towerView="hub";
-  try{ render(); }catch(e){}
+  if(towerRun===runSnap){
+    towerView="hub";
+    try{ render(); }catch(e){}
+  }
   /* Auto-restart tapi gak ada yang bisa diklik (run tuntas sebelum lantai apa pun
      ditaklukkan → loot & potion kosong → popup gak muncul): restart setelah jeda singkat. */
   if(auto&&!loot.length&&!(dr.weather+dr.luck+dr.speed)){

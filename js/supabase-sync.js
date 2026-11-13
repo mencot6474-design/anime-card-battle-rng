@@ -837,6 +837,38 @@ const CloudDB = {
     return res || null;
   },
 
+  /** 0052: INTAN ROLL 100K server-authoritative — memotong intan_credit sekaligus
+      mengacak & mencatat ke roll_ledger di server (tidak memakai RNG client). */
+  async intanRoll(username, qty, luck) {
+    if (!username) return null;
+    const n = Math.max(1, Math.min(50, parseInt(qty, 10) || 1));
+    const args = { p_qty: n };
+    if (typeof luck === "number" && isFinite(luck) && luck > 0) args.p_luck = luck;
+    const res = await this._authRpc(username, "intan_roll", args);
+    const ST = this._st();
+    if (ST && res && typeof res.credit === "number" && ST.intanRolls !== res.credit) {
+      ST.intanRolls = Math.max(0, res.credit);
+      if (!res.ok) {
+        this._paint();
+        try { if (typeof save === "function") save(); } catch (e) {}
+      }
+    }
+    if (res && res.ok) this._applyPullResult(res);
+    return res || null;
+  },
+
+  /** 0052: Klaim roll Infinite Tower server-authoritative — divalidasi terhadap
+      tower_roll_ledger.earned_floors (diisi claim_tower_tokens per floor win). */
+  async claimTowerRolls(username, floors, luck) {
+    if (!username) return null;
+    const n = Math.max(1, Math.min(1000, parseInt(floors, 10) || 1));
+    const args = { p_floors: n };
+    if (typeof luck === "number" && isFinite(luck) && luck > 0) args.p_luck = luck;
+    const res = await this._authRpc(username, "claim_tower_rolls", args);
+    if (res && res.ok) this._applyPullResult(res);
+    return res || null;
+  },
+
   /* ===== TOKEN WB/INF (0026) =====
      Saldo token hanya berubah di server. Belanja memakai harga dari tabel
      `token_shop_price` (bukan angka dari client), dan klaim lantai memakai
