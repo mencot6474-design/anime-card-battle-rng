@@ -390,7 +390,8 @@ body:has(#profModal.show) .lobby-tactical-hud {
   grid-template-columns: 280px 1fr;
   gap: 10px;
   padding: 6px 14px 8px 14px;
-  overflow: hidden !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
   box-sizing: border-box;
 }
 
@@ -833,6 +834,19 @@ body:has(#profModal.show) .lobby-tactical-hud {
   filter: drop-shadow(0 0 12px rgba(192, 132, 252, 0.85)) drop-shadow(0 0 6px #f3e600) drop-shadow(0 6px 12px rgba(0,0,0,0.95));
   animation: rebirthFloat3D 3.5s infinite alternate ease-in-out;
 }
+.sc-rebirth-icon.sc-rebirth-crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  filter: drop-shadow(0 0 10px rgba(192, 132, 252, 0.5)) drop-shadow(0 5px 10px rgba(0, 0, 0, 0.9));
+}
+.sc-rebirth-icon.sc-rebirth-crest svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
 
 /* Holographic Shimmer Sweep */
 .sc-holo-sweep {
@@ -1060,11 +1074,12 @@ body:has(#profModal.show) .lobby-tactical-hud {
 }
 .prf-team-body > .prf-team-row:first-child {
   flex: 1 1 0;
-  min-height: 0;
+  min-height: 130px;
 }
 .prf-team-body.collapsed {
   opacity: 0;
   max-height: 0;
+  overflow: hidden;
   pointer-events: none;
   margin: 0;
   padding: 0;
@@ -1100,7 +1115,8 @@ body:has(#profModal.show) .lobby-tactical-hud {
   color: var(--haz);
   border-color: var(--haz-dim);
 }
-.prf-team-rail-lbl.supports-lbl {
+.prf-team-rail-lbl.supports-lbl,
+.prf-team-rail-lbl.supp-lbl {
   color: var(--cyan);
   border-color: var(--cyan-dim);
 }
@@ -1117,6 +1133,7 @@ body:has(#profModal.show) .lobby-tactical-hud {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
+  height: auto;
 }
 
 /* ==========================================================================
@@ -1125,7 +1142,7 @@ body:has(#profModal.show) .lobby-tactical-hud {
 .prf-card-chassis {
   position: relative;
   height: 100%;
-  min-height: 185px;
+  min-height: 0;
   background: radial-gradient(circle at 50% 30%, #161622 0%, #07070a 100%);
   border: 1.5px solid rgba(245, 245, 245, 0.16);
   border-radius: 5px;
@@ -1138,8 +1155,8 @@ body:has(#profModal.show) .lobby-tactical-hud {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.9), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
 }
 .prf-card-chassis.support-chassis {
-  height: 108px;
-  min-height: 108px;
+  height: 104px;
+  min-height: 104px;
 }
 .prf-card-chassis:hover {
   transform: translateY(-4px) scale(1.02);
@@ -1668,7 +1685,7 @@ body:has(#profModal.show) .lobby-tactical-hud {
   inset: 0;
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(8px);
-  z-index: 6000;
+  z-index: 95500;
   display: none;
   place-items: center;
   padding: 16px;
@@ -1700,6 +1717,18 @@ body:has(#profModal.show) .lobby-tactical-hud {
   max-width: 90%;
   max-height: 90%;
   object-fit: contain;
+}
+.inspect-rebirth-crest {
+  width: 136px;
+  height: 136px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.inspect-rebirth-crest svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 .inspect-name {
   font-family: var(--f-head);
@@ -1762,7 +1791,10 @@ body:has(#profModal.show) .lobby-tactical-hud {
     display: none !important;
   }
   .prf-title {
-    font-size: 16px !important;
+    font-size: clamp(13px, 4vw, 16px) !important;
+  }
+  .prf-banner-mid {
+    padding: 7px 10px !important;
   }
   .prf-tabs-deck {
     padding: 10px 10px 0 10px !important;
@@ -1772,11 +1804,23 @@ body:has(#profModal.show) .lobby-tactical-hud {
   }
   .prf-body-grid {
     grid-template-columns: 1fr !important;
+    grid-auto-rows: max-content !important;
     overflow-y: auto !important;
+    align-content: start !important;
     padding: 8px !important;
     gap: 10px !important;
   }
+  .prf-left-col,
+  .prf-right-col {
+    height: auto !important;
+    min-height: max-content !important;
+  }
+  .prf-hero-stack {
+    flex: 0 0 auto !important;
+    min-height: auto !important;
+  }
   .prf-standee-box {
+    flex: 0 0 auto !important;
     height: 220px !important;
   }
   .prf-showcase-shell {
@@ -1786,11 +1830,27 @@ body:has(#profModal.show) .lobby-tactical-hud {
     grid-template-columns: 1fr !important;
     column-gap: 0 !important;
   }
+  .prf-team-shell,
+  .prf-team-body,
+  .prf-team-body > .prf-team-row:first-child {
+    flex: 0 0 auto !important;
+    min-height: auto !important;
+  }
   .prf-card-slots {
     grid-template-columns: repeat(2, 1fr) !important;
+    height: auto !important;
   }
   .prf-support-slots {
     grid-template-columns: repeat(3, 1fr) !important;
+    height: auto !important;
+  }
+  .prf-card-chassis:not(.support-chassis) {
+    height: 168px !important;
+    min-height: 168px !important;
+  }
+  .prf-card-chassis.support-chassis {
+    height: 104px !important;
+    min-height: 104px !important;
   }
 }
 
@@ -1811,9 +1871,22 @@ body:has(#profModal.show) .lobby-tactical-hud {
   .prf-body-grid {
     padding: 4px 8px !important;
     gap: 6px !important;
+    grid-auto-rows: max-content !important;
     overflow-y: auto !important;
+    align-content: start !important;
+  }
+  .prf-left-col,
+  .prf-right-col {
+    height: auto !important;
+    min-height: max-content !important;
+  }
+  .prf-hero-stack {
+    flex: 0 0 auto !important;
+    min-height: auto !important;
   }
   .prf-standee-box {
+    flex: 0 0 auto !important;
+    height: 132px !important;
     max-height: 140px !important;
     min-height: 110px !important;
   }
@@ -1833,6 +1906,10 @@ body:has(#profModal.show) .lobby-tactical-hud {
   .prf-showcase-slot {
     height: 54px !important;
   }
+  .sc-rebirth-icon.sc-rebirth-crest {
+    width: 40px !important;
+    height: 40px !important;
+  }
   .prf-stats-grid {
     padding: 3px 6px !important;
     row-gap: 1.5px !important;
@@ -1840,9 +1917,22 @@ body:has(#profModal.show) .lobby-tactical-hud {
   .prf-stat-row {
     padding: 1px 0 !important;
   }
-  .prf-card-chassis,
-  .support-chassis {
-    height: 98px !important;
+  .prf-team-shell,
+  .prf-team-body,
+  .prf-team-body > .prf-team-row:first-child {
+    flex: 0 0 auto !important;
+    min-height: auto !important;
+  }
+  .prf-card-slots {
+    height: auto !important;
+  }
+  .prf-card-chassis:not(.support-chassis) {
+    height: 124px !important;
+    min-height: 0 !important;
+  }
+  .prf-card-chassis.support-chassis {
+    height: 94px !important;
+    min-height: 94px !important;
   }
   .pcc-plate {
     padding: 2px 4px !important;

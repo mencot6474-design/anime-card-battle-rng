@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v681-mobileTouchPolish';
+const CACHE_NAME = 'anime-card-battle-v683-profileRebirthCrest';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

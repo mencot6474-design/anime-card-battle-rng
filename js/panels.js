@@ -1475,7 +1475,9 @@ function inspectCard(stackOrChar, name, atk, hp, tier, customSkill) {
   const fullSkill = '[' + realPName + '] ' + realDesc;
 
   const imgEl = document.getElementById('inspectImg');
-  if (imgEl && realImg) imgEl.src = realImg;
+  const crestEl = document.getElementById('inspectCrest');
+  if (crestEl) { crestEl.innerHTML = ''; crestEl.style.display = 'none'; }
+  if (imgEl) { imgEl.style.display = ''; if (realImg) imgEl.src = realImg; }
   const nameEl = document.getElementById('inspectName');
   if (nameEl) nameEl.textContent = realName;
   const atkEl = document.getElementById('inspectAtk');
@@ -1502,7 +1504,25 @@ function inspectRebirth() {
   const ess = typeof rebirthEssence === 'function' ? rebirthEssence() : 0;
 
   const imgEl = document.getElementById('inspectImg');
-  if (imgEl) imgEl.src = 'assets/icons/drawer/rebirth.webp';
+  let crestEl = document.getElementById('inspectCrest');
+  if (typeof rebirthCrestSvg === 'function') {
+    if (imgEl) {
+      imgEl.style.display = 'none';
+      if (!crestEl && imgEl.parentElement) {
+        crestEl = document.createElement('div');
+        crestEl.id = 'inspectCrest';
+        crestEl.className = 'inspect-rebirth-crest';
+        imgEl.parentElement.appendChild(crestEl);
+      }
+    }
+    if (crestEl) {
+      crestEl.innerHTML = rebirthCrestSvg(rb);
+      crestEl.style.display = 'inline-flex';
+    }
+  } else {
+    if (crestEl) { crestEl.innerHTML = ''; crestEl.style.display = 'none'; }
+    if (imgEl) { imgEl.style.display = ''; imgEl.src = 'assets/icons/drawer/rebirth.webp'; }
+  }
   const nameEl = document.getElementById('inspectName');
   if (nameEl) nameEl.textContent = 'ASCENSION // REBIRTH R' + rb;
   const atkEl = document.getElementById('inspectAtk');
@@ -1559,7 +1579,9 @@ function inspectSupport(type, id) {
   if (!name) return;
 
   const imgEl = document.getElementById('inspectImg');
-  if (imgEl) imgEl.src = img;
+  const crestEl = document.getElementById('inspectCrest');
+  if (crestEl) { crestEl.innerHTML = ''; crestEl.style.display = 'none'; }
+  if (imgEl) { imgEl.style.display = ''; imgEl.src = img; }
   const nameEl = document.getElementById('inspectName');
   if (nameEl) nameEl.textContent = name;
   const atkEl = document.getElementById('inspectAtk');
@@ -1973,6 +1995,9 @@ function renderProfile(){
     }
 
     // Slot 2: Rebirth
+    const rbIconHtml = (typeof rebirthCrestSvg === 'function')
+      ? ('<span class="sc-rebirth-icon sc-rebirth-crest" aria-hidden="true">' + rebirthCrestSvg(rb) + '</span>')
+      : '<img src="assets/icons/drawer/rebirth.webp" alt="Rebirth Icon" class="sc-rebirth-icon">';
     const slot3Html = 
       '<div class="prf-showcase-col">' +
         '<div class="prf-showcase-slot rebirth-slot" onclick="inspectRebirth()" title="Cycle R' + rb + ' (×' + mult + ' Permanent Luck Multiplier)">' +
@@ -1986,7 +2011,7 @@ function renderProfile(){
               '<circle cx="50" cy="50" r="14" fill="none" stroke-width="1.8"/>' +
             '</svg>' +
             '<div class="sc-rebirth-pedestal"></div>' +
-            '<img src="assets/icons/drawer/rebirth.webp" alt="Rebirth Icon" class="sc-rebirth-icon">' +
+            rbIconHtml +
             '<div class="sc-vignette"></div>' +
           '</div>' +
           '<span class="sc-crn tl"></span><span class="sc-crn br"></span>' +
