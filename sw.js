@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v684-storyGemSync';
+const CACHE_NAME = 'anime-card-battle-v685-removeInfDailyLimit';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

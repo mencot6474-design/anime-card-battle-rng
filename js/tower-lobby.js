@@ -1323,10 +1323,10 @@ async function towerEnd(win){
       if(!(typeof currentUser!=="undefined"&&currentUser&&window.CloudDB&&window.CloudDB.claimTowerTokens))return;
       let res=null;
       try{res=await window.CloudDB.claimTowerTokens(currentUser,f);}catch(e){res=null;}
-      if(res&&!res.ok&&(res.msg==="DAILY_CAP"||res.msg==="UNREACHABLE")){
+      if(res&&!res.ok&&res.msg==="UNREACHABLE"){
         state.infTokens=Math.max(0,(state.infTokens||0)-tok);
         if(runRef)runRef.pendingRollFloors=Math.max(0,(runRef.pendingRollFloors||0)-1);
-        try{toast(res.msg==="UNREACHABLE"?"FLOOR LOCKED":"DAILY TOKEN LIMIT","Floor tokens not credited by server","#f87171");}catch(e){}
+        try{toast("FLOOR LOCKED","Floor tokens not credited by server","#f87171");}catch(e){}
       }else if(!res){
         if(runRef)runRef.pendingRollFloors=Math.max(0,(runRef.pendingRollFloors||0)-1);
       }
