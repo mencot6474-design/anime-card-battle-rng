@@ -3759,7 +3759,7 @@ function renderLobby() {
     <aside class="wx-picker-bar" id="wxPickerBar">
       <div class="wxp-head">
         <span>🌩️ ACTIVE WEATHER: <b id="wxpActiveName">AWAKENED (15× LUCK · 8× SPD)</b></span>
-        <button class="cip-close" style="height:26px;width:28px;font-size:13px;" onclick="toggleWxPicker()">×</button>
+        <button class="cip-close" type="button" style="font-size:13px;" onclick="toggleWxPicker()" title="Close" aria-label="Close">×</button>
       </div>
       <div class="wxp-grid" id="wxpGrid"></div>
     </aside>

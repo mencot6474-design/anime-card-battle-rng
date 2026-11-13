@@ -235,7 +235,7 @@ body:has(#storyModal.show) .lobby-tactical-hud {
   letter-spacing: 0.06em;
   color: var(--ink3);
 }
-#storyModal .sector-name {
+#storyModal .sector-name { display: block; min-height: 44px; line-height: 44px;
   font-family: var(--disp);
   font-weight: 700;
   font-size: 11.5px;
@@ -1268,7 +1268,7 @@ body:has(#storyModal.show) .lobby-tactical-hud {
 #storyModal .dk-slot.empty { display: grid; place-items: center; border-style: dashed; border-color: rgba(245, 245, 245, 0.18); }
 #storyModal .dk-slot.empty em { position: static; background: none; }
 
-#storyModal .dk-meta {
+#storyModal .dk-meta { min-height: 44px;
   flex: 1 1 auto;
   min-width: 0;
   display: flex;
@@ -1663,7 +1663,7 @@ body:has(#storyModal.show) .lobby-tactical-hud {
   #storyModal .sector-k,
   #storyModal .sector-nav { display: none; }
   #storyModal .sector-no b { font-size: 17px; }
-  #storyModal .sector-name { font-size: 9.5px; padding-left: 7px; letter-spacing: 0.08em; }
+  #storyModal .sector-name { display: block; min-height: 44px; line-height: 44px; font-size: 9.5px; padding-left: 7px; letter-spacing: 0.08em; }
   /* 5 pill harus muat di 320px tanpa terpotong: bagi rata, bukan scroll. */
   #storyModal .diffs { order: 9; flex: 1 1 100%; gap: 3px; overflow: visible; padding-bottom: 0; }
   #storyModal .diff-btn {
@@ -1819,7 +1819,7 @@ body:has(#storyModal.show) .lobby-tactical-hud {
   #storyModal .dk-party { display: none; }
   #storyModal .btn-mq-expand { display: block; }
   /* Dock 320px: meta target + TARGET + PLAY harus muat. Nama boleh 2 baris. */
-  #storyModal .dk-meta { flex: 1 1 0; min-width: 0; gap: 7px; }
+  #storyModal .dk-meta { min-height: 44px; flex: 1 1 0; min-width: 0; gap: 7px; }
   #storyModal .mq-avatar-frame { width: 34px; height: 34px; }
   #storyModal .mq-name {
     font-size: 11px;

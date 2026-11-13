@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v680-polishStage3';
+const CACHE_NAME = 'anime-card-battle-v681-mobileTouchPolish';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
