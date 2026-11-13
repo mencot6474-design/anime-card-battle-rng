@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v683-profileRebirthCrest';
+const CACHE_NAME = 'anime-card-battle-v684-storyGemSync';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

@@ -2765,46 +2765,97 @@ function endBattle(win){
     }
   },bsMs(win?2000:950));
 }
+function _paintOvGemMilestone(win,gemGain,gemLabel,diffLabel){
+  const ms=document.getElementById("ovGemMilestone");
+  if(!ms)return;
+  const showGem=!!(win&&gemGain>0);
+  ms.classList.toggle("hide",!showGem);
+  if(showGem){
+    ms.style.display="flex";
+    ms.innerHTML='<img class="ov-gem-ms-ic" src="assets/images/premium-currency.webp" alt="" width="30" height="30">'
+      +'<div class="ov-gem-ms-txt">'
+        +'<span class="ov-gem-ms-k">STORY GEM &bull; '+(gemLabel||"REWARD").toUpperCase()+' &bull; '+(diffLabel||"")+'</span>'
+        +'<span class="ov-gem-ms-v">+'+gemGain+' <small>GEM</small></span>'
+      +'</div>';
+  }else{
+    ms.style.display="none";
+    ms.innerHTML="";
+  }
+}
 function finish(win){ try{if(typeof window.cgGameplayStop==="function")window.cgGameplayStop();}catch(e){}
   clearTimeout(bt.timer);bt.over=true;
-  const lv=bt.lv,first=!diffProg()[state.diff][lv];
+  const lv=bt.lv,diffKey=state.diff,diffLabel=diffOf().l,first=!diffProg()[diffKey][lv];
+  const wasOnCd=!first&&(typeof storyInRepeatCdFor==="function"?storyInRepeatCdFor(lv,diffKey):storyInRepeatCd(lv));
   const reward=win?(first?firstClearReward(lv):Math.round(firstClearReward(lv)*.2)):0;
   /* 0028: coin HANYA ditambah lokal saat tidak ada sesi cloud. Kalau ada sesi,
      saldo menunggu jawaban RPC (server yang membayar). Dulu angka optimis
      ditahan walau klaim gagal, sehingga coin lokal bisa jauh di atas saldo
      server — persis pola yang dipakai penalti 0028 untuk mendeteksi F12. */
   const coinLocal=!(typeof currentUser!=="undefined"&&currentUser&&window.CloudDB&&window.CloudDB.claimStoryCoins);
-  if(win&&!first)storySetCd(lv);
-  if(win){state.cleared[lv]=true;diffProg()[state.diff][lv]=true;if(coinLocal)state.coins+=reward;xpGain(20);
+  if(win){state.cleared[lv]=true;diffProg()[diffKey][lv]=true;if(coinLocal)state.coins+=reward;xpGain(20);
     try{if(typeof window.cgHappyTime==="function")window.cgHappyTime();}catch(e){}
     fanfare();
-    /* 0025: coin dibayar server (first clear sekali, replay ber-cooldown 5 menit).
-       Angka lokal di atas cuma untuk UI; klaim yang menetapkan saldo sebenarnya.
-       COOLDOWN = server belum setuju (mis. replay terlalu cepat) → tarik kembali. */
-    (async()=>{
-      if(!(typeof currentUser!=="undefined"&&currentUser&&window.CloudDB&&window.CloudDB.claimStoryCoins))return;
-      let res=null;
-      try{res=await window.CloudDB.claimStoryCoins(currentUser,lv,state.diff);}catch(e){res=null;}
-      if(res&&res.ok){try{renderShell();save();}catch(e){}return;}
-      if(coinLocal&&res&&(res.msg==="COOLDOWN"||res.msg==="ALREADY"||res.msg==="DAILY_CAP"||res.msg==="UNREACHABLE")){
-        state.coins=Math.max(0,(state.coins||0)-reward);
-      }
-      /* res null = jaringan: saldo tetap angka server (tidak ada tambahan lokal). */
-      try{renderShell();save();}catch(e){}
-    })();
   }else sfx.lose();
   state.history.unshift({char:bt.eq.char,tier:bt.eq.tier,enemy:bt.en.name+(bt.en.boss?", "+bt.en.epithet:""),boss:bt.en.boss,level:lv,result:win?"VICTORY":"DEFEAT"});
   state.history=state.history.slice(0,120);
   save();renderShell();
   const ov=document.getElementById("overlay");
-  const ch=chapOf(lv),chDone=win&&chapClearedMode(ch,state.diff),nxtCh=CHAPTERS.find(c=>c.no===ch.no+1);
+  const ovToken=(typeof window!=="undefined")?(window.__ovGemSession=(window.__ovGemSession||0)+1):1;
+  const ch=chapOf(lv),chDone=win&&chapClearedMode(ch,diffKey),nxtCh=CHAPTERS.find(c=>c.no===ch.no+1);
   /* GEM story dibayar TIAP stage: first clear sekali per (stage x mode), replay
      tiap kali kooldown stage itu lewat — plus bonus saat bab tamat. */
   let gemGain=0,gemLabel="";
   if(win){
-    if(first){const g=claimStageGem(lv,state.diff);if(g){gemGain=g;gemLabel="STAGE "+lv;}}
-    else{const g=claimStoryRepeatGem(lv,state.diff);if(g){gemGain=g;gemLabel="REPLAY STAGE "+lv;}}
-    if(chDone){const b=claimStoryMilestone(ch.no,state.diff);if(b){gemGain+=b;gemLabel+=(gemLabel?" + ":"")+"CHAPTER "+ch.no;}}
+    if(first){const g=storyStageGemReward(lv,diffKey);if(g){gemGain=g;gemLabel="STAGE "+lv;}}
+    else if(!wasOnCd){
+      const one=storyStageGemReward(lv,diffKey);
+      const g=one?Math.max(STORY_REPEAT_GEM_MIN,Math.round(one*STORY_REPEAT_GEM_PCT)):0;
+      if(g){gemGain=g;gemLabel="REPLAY STAGE "+lv;}
+    }
+    const chMsKey=ch.no+":"+diffKey;
+    const chAlready=(state.storyGemMilestones&&state.storyGemMilestones[chMsKey]);
+    if(chDone&&!chAlready){const b=storyChapBonus(ch.no,diffKey);if(b){gemGain+=b;gemLabel+=(gemLabel?" + ":"")+"CHAPTER "+ch.no;}}
+
+    /* 0053: Jalankan coins -> stage/replay -> chapter SEKUENSIAL agar progres server
+       tercatat lebih dulu dan hasil final selalu menyelaraskan #ovGemMilestone. */
+    (async()=>{
+      if(typeof window!=="undefined")window.__storyClaimInFlight=(window.__storyClaimInFlight||0)+1;
+      try{
+        if(!coinLocal){
+          let cres=null;
+          try{cres=await window.CloudDB.claimStoryCoins(currentUser,lv,diffKey);}catch(e){cres=null;}
+          if(cres&&cres.ok){try{renderShell();}catch(e){}}
+        }
+        let actualGems=0;
+        const labels=[];
+        let sRes=null;
+        if(first&&typeof claimStageGemAsync==="function"){
+          sRes=await claimStageGemAsync(lv,diffKey,{forceCheck:true,revertProgOnFail:true}).promise;
+        }else if(!first&&typeof claimStoryRepeatGemAsync==="function"){
+          sRes=await claimStoryRepeatGemAsync(lv,diffKey).promise;
+        }else{
+          const gFallback=first?claimStageGem(lv,diffKey):claimStoryRepeatGem(lv,diffKey);
+          sRes={ok:gFallback>0,gems:gFallback,label:first?"STAGE "+lv:"REPLAY STAGE "+lv};
+        }
+        if(sRes&&sRes.ok&&sRes.gems>0){actualGems+=sRes.gems;if(sRes.label)labels.push(sRes.label);}
+        if(chDone){
+          let cRes=null;
+          if(typeof claimStoryMilestoneAsync==="function"){
+            cRes=await claimStoryMilestoneAsync(ch.no,diffKey,{forceCheck:true}).promise;
+          }else{
+            const bFallback=claimStoryMilestone(ch.no,diffKey);
+            cRes={ok:bFallback>0,gems:bFallback,label:"CHAPTER "+ch.no};
+          }
+          if(cRes&&cRes.ok&&cRes.gems>0){actualGems+=cRes.gems;if(cRes.label)labels.push(cRes.label);}
+        }
+        if((typeof window==="undefined"||window.__ovGemSession===ovToken)&&ov&&ov.classList.contains("show")){
+          _paintOvGemMilestone(true,actualGems,labels.join(" + "),diffLabel);
+        }
+      }finally{
+        if(typeof window!=="undefined")window.__storyClaimInFlight=Math.max(0,(window.__storyClaimInFlight||1)-1);
+        try{renderShell();save();}catch(e){}
+      }
+    })();
   }
   const ovCard=document.getElementById("ovCard");
   if(ovCard){
@@ -2842,22 +2893,7 @@ function finish(win){ try{if(typeof window.cgGameplayStop==="function")window.cg
       +'<span class="ov-rw-info"><span class="ov-rw-v">+'+fmt(reward)+'</span>'
       +'<span class="ov-rw-l">COINS</span></span>';
   }
-  const ms=document.getElementById("ovGemMilestone");
-  if(ms){
-    const showGem=!!(win&&gemGain>0);
-    ms.classList.toggle("hide",!showGem);
-    if(showGem){
-      ms.style.display="flex";
-      ms.innerHTML='<img class="ov-gem-ms-ic" src="assets/images/premium-currency.webp" alt="" width="30" height="30">'
-        +'<div class="ov-gem-ms-txt">'
-          +'<span class="ov-gem-ms-k">STORY GEM &bull; '+gemLabel.toUpperCase()+' &bull; '+diffOf().l+'</span>'
-          +'<span class="ov-gem-ms-v">+'+gemGain+' <small>GEM</small></span>'
-        +'</div>';
-    }else{
-      ms.style.display="none";
-      ms.innerHTML="";
-    }
-  }
+  _paintOvGemMilestone(win,gemGain,gemLabel,diffLabel);
   const tokEl=document.getElementById("ovTokenGain");
   if(tokEl){tokEl.style.display="none";tokEl.classList.add("hide");tokEl.innerHTML="";}
 

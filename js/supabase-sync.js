@@ -28,13 +28,64 @@ const CloudDB = {
     }
   },
 
+  _reconcileStoryData(target, srvMilestones, srvProgress) {
+    if (!target || typeof target !== "object") return false;
+    let dirty = false;
+    const pending = (typeof window !== "undefined" && window.__storyClaimPending && typeof window.__storyClaimPending === "object")
+      ? window.__storyClaimPending : null;
+    if (srvMilestones && typeof srvMilestones === "object") {
+      const nextMs = Object.assign({}, srvMilestones);
+      if (pending && target.storyGemMilestones && typeof target.storyGemMilestones === "object") {
+        for (const k of Object.keys(pending)) {
+          if (pending[k] && target.storyGemMilestones[k]) nextMs[k] = true;
+        }
+      }
+      if (JSON.stringify(target.storyGemMilestones || {}) !== JSON.stringify(nextMs)) {
+        target.storyGemMilestones = nextMs;
+        dirty = true;
+      }
+    }
+    const inFlight = (typeof window !== "undefined" && Number(window.__storyClaimInFlight || 0) > 0);
+    if (!inFlight && srvProgress && typeof srvProgress === "object") {
+      const cd = (target.clearedDiff && typeof target.clearedDiff === "object") ? target.clearedDiff : {};
+      for (const diff of Object.keys(cd)) {
+        const maxLv = Math.max(0, Number(srvProgress[diff] || 0));
+        const map = cd[diff];
+        if (!map || typeof map !== "object") continue;
+        for (const k of Object.keys(map)) {
+          const lvNum = Number(k);
+          if (Number.isFinite(lvNum) && lvNum > maxLv && map[k]) {
+            delete map[k];
+            dirty = true;
+          }
+        }
+      }
+      if (target.cleared && typeof target.cleared === "object") {
+        const normMax = Math.max(0, Number(srvProgress.normal || 0));
+        for (const k of Object.keys(target.cleared)) {
+          const lvNum = Number(k);
+          if (Number.isFinite(lvNum) && lvNum > normMax && target.cleared[k]) {
+            delete target.cleared[k];
+            dirty = true;
+          }
+        }
+      }
+    }
+    return dirty;
+  },
+
   async getUser(username) {
     const key = String(username || "").toLowerCase();
     /* Fase 2b: save SENDIRI dibaca lewat JWT (get_my_save), bukan anon.
        Fallback anon di bawah cuma jaring transisi; dicabut saat RLS 2c. */
     if (window.CloudAuth && key) {
       const own = await window.CloudAuth.mySave(key);
-      if (own) return { username: own.username, save_data: own.save_data, updated_at: own.updated_at };
+      if (own) {
+        if (own.save_data && typeof own.save_data === "object") {
+          this._reconcileStoryData(own.save_data, own.storyMilestones, own.storyProgress);
+        }
+        return { username: own.username, save_data: own.save_data, updated_at: own.updated_at };
+      }
     }
     const data = await this._request(`player_saves?username=eq.${encodeURIComponent(key)}&select=username,save_data,updated_at`);
     if (data && data.length > 0) return data[0];
@@ -217,6 +268,9 @@ const CloudDB = {
           if (JSON.stringify(ST.traitVault || {}) !== JSON.stringify(res.traitVault)) {
             ST.traitVault = res.traitVault; dirty = true;
           }
+        }
+        if (this._reconcileStoryData(ST, res.storyGemMilestones, res.storyProgress)) {
+          dirty = true;
         }
         if (dirty) this._paint();
       }
@@ -550,7 +604,19 @@ const CloudDB = {
       sess = await window.CloudAuth._fresh(key);
     }
     if (!sess) return { ok: false, msg: "SESI LOGIN TIDAK LENGKAP" };
-    const res = await window.CloudAuth._rpcJwt(fn, args || {}, sess.at);
+    if (!window.CloudAuth._linked[key] && !window.CloudAuth._linkFailed[key]) {
+      const lr = await window.CloudAuth.link(key).catch(() => null);
+      if (lr && lr.ok) window.CloudAuth._linked[key] = true;
+      else window.CloudAuth._linkFailed[key] = true;
+    }
+    let res = await window.CloudAuth._rpcJwt(fn, args || {}, sess.at);
+    if (!res) {
+      await window.CloudAuth.kick(key);
+      const retrySess = await window.CloudAuth._fresh(key);
+      if (retrySess && retrySess.at) {
+        res = await window.CloudAuth._rpcJwt(fn, args || {}, retrySess.at);
+      }
+    }
     if (!res) return { ok: false, msg: "GAGAL MENGHUBUNGI CLOUD" };
     const ST = this._st();
     if (res.ok && typeof res.balance === "number" && ST) {

@@ -416,6 +416,27 @@ function _storyMsObj(){
   if(!state.storyGemMilestones||typeof state.storyGemMilestones!=="object")state.storyGemMilestones={};
   return state.storyGemMilestones;
 }
+function _storyPendingSet(key,on){
+  if(typeof window==="undefined")return;
+  if(!window.__storyClaimPending||typeof window.__storyClaimPending!=="object")window.__storyClaimPending={};
+  if(on)window.__storyClaimPending[key]=true;
+  else delete window.__storyClaimPending[key];
+}
+function _storyMarkCleared(lv,diffKey){
+  if(!state)return;
+  if(!state.clearedDiff||typeof state.clearedDiff!=="object")state.clearedDiff={};
+  if(!state.clearedDiff[diffKey]||typeof state.clearedDiff[diffKey]!=="object")state.clearedDiff[diffKey]={};
+  state.clearedDiff[diffKey][lv]=true;
+  if(diffKey==="normal"){
+    if(!state.cleared||typeof state.cleared!=="object")state.cleared={};
+    state.cleared[lv]=true;
+  }
+}
+function _storyUnmarkCleared(lv,diffKey){
+  if(!state)return;
+  if(state.clearedDiff&&state.clearedDiff[diffKey])delete state.clearedDiff[diffKey][lv];
+  if(diffKey==="normal"&&state.cleared)delete state.cleared[lv];
+}
 /* Satu pintu hasil klaim GEM: toast + rollback kalau server nolak.
    Nominal final datang dari server (res.gems) — client cuma menghitung
    preview untuk layar, bukan untuk pembayaran. */
@@ -436,51 +457,103 @@ function _gemUser(){
 }
 /* GEM first-clear satu stage — sekali per (stage x mode). Server yang tahu
    nominal & memastikan cuma dibayar sekali (0023 claim_story_gem). */
-function claimStageGem(lv,diffKey){
+function claimStageGemAsync(lv,diffKey,opts){
+  const cfg=opts||{};
   const ms=_storyMsObj();
-  if(!ms)return 0;
+  if(!ms)return{preview:0,promise:Promise.resolve({ok:false,gems:0,msg:"NO_STATE"})};
   const key="s"+lv+":"+diffKey;
-  if(ms[key])return 0;
+  if(ms[key]&&!cfg.forceCheck){
+    return{preview:0,promise:Promise.resolve({ok:false,gems:0,msg:"ALREADY"})};
+  }
   const gems=storyStageGemReward(lv,diffKey);
-  if(!gems)return 0;
+  if(!gems)return{preview:0,promise:Promise.resolve({ok:false,gems:0,msg:"BAD_STAGE"})};
   ms[key]=true;
+  _storyPendingSet(key,true);
   try{save();}catch(e){}
-  (async()=>{
+  const promise=(async()=>{
+    if(typeof window!=="undefined")window.__storyClaimInFlight=(window.__storyClaimInFlight||0)+1;
     let res;
     try{
       const u=_gemUser();
       if(u&&window.CloudDB&&window.CloudDB.claimStoryGem) res=await window.CloudDB.claimStoryGem(u,lv,diffKey,"stage");
       else{state.premiumGems=(state.premiumGems||0)+gems;res={ok:true,gems};}
     }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
-    if(res&&res.msg==="ALREADY"){try{save();}catch(e){}return;}
-    const paid=(res&&typeof res.gems==="number")?res.gems:gems;
-    _gemDone(res,"STAGE "+lv+" · "+String(diffKey).toUpperCase(),"+"+paid+" GEM",()=>{ms[key]=false;});
+    finally{
+      _storyPendingSet(key,false);
+      if(typeof window!=="undefined")window.__storyClaimInFlight=Math.max(0,(window.__storyClaimInFlight||1)-1);
+    }
+    if(res&&res.ok){
+      ms[key]=true;
+      _storyMarkCleared(lv,diffKey);
+      const paid=(typeof res.gems==="number")?res.gems:gems;
+      _gemDone(res,"STAGE "+lv+" · "+String(diffKey).toUpperCase(),"+"+paid+" GEM");
+      return{ok:true,gems:paid,kind:"stage",label:"STAGE "+lv};
+    }
+    if(res&&res.msg==="ALREADY"){
+      ms[key]=true;
+      _storyMarkCleared(lv,diffKey);
+      try{save();}catch(e){}
+      if(!cfg.noReplayFallback&&!storyInRepeatCdFor(lv,diffKey)){
+        return await claimStoryRepeatGemAsync(lv,diffKey,{noStageFallback:true}).promise;
+      }
+      return{ok:false,gems:0,msg:"ALREADY",label:""};
+    }
+    _gemDone(res,"STAGE "+lv+" · "+String(diffKey).toUpperCase(),"+"+gems+" GEM",()=>{
+      ms[key]=false;
+      if(cfg.revertProgOnFail)_storyUnmarkCleared(lv,diffKey);
+    });
+    return{ok:false,gems:0,msg:(res&&res.msg)||"ERROR",label:""};
   })();
-  return gems;
+  return{preview:gems,promise};
+}
+function claimStageGem(lv,diffKey,opts){
+  return claimStageGemAsync(lv,diffKey,opts).preview;
 }
 /* Bonus saat SEMUA stage bab tamat — key lama (chap:diff) tetap dipakai, jadi
    player yang sudah pernah klaim milestone penuh tidak dapat dua kali. */
-function claimStoryMilestone(chapNo,diffKey){
+function claimStoryMilestoneAsync(chapNo,diffKey,opts){
+  const cfg=opts||{};
   const ms=_storyMsObj();
-  if(!ms)return 0;
+  if(!ms)return{preview:0,promise:Promise.resolve({ok:false,gems:0,msg:"NO_STATE"})};
   const key=chapNo+":"+diffKey;
-  if(ms[key])return 0;
+  if(ms[key]&&!cfg.forceCheck){
+    return{preview:0,promise:Promise.resolve({ok:false,gems:0,msg:"ALREADY"})};
+  }
   const gems=storyChapBonus(chapNo,diffKey);
-  if(!gems)return 0;
+  if(!gems)return{preview:0,promise:Promise.resolve({ok:false,gems:0,msg:"BAD_CHAPTER"})};
   ms[key]=true;
+  _storyPendingSet(key,true);
   try{save();}catch(e){}
-  (async()=>{
+  const promise=(async()=>{
+    if(typeof window!=="undefined")window.__storyClaimInFlight=(window.__storyClaimInFlight||0)+1;
     let res;
     try{
       const u=_gemUser();
       if(u&&window.CloudDB&&window.CloudDB.claimStoryGem) res=await window.CloudDB.claimStoryGem(u,chapNo,diffKey,"chapter");
       else{state.premiumGems=(state.premiumGems||0)+gems;res={ok:true,gems};}
     }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
-    if(res&&res.msg==="ALREADY"){try{save();}catch(e){}return;}
-    const paid=(res&&typeof res.gems==="number")?res.gems:gems;
-    _gemDone(res,"CHAPTER "+chapNo+" COMPLETE · "+String(diffKey).toUpperCase(),"+"+paid+" GEM",()=>{ms[key]=false;});
+    finally{
+      _storyPendingSet(key,false);
+      if(typeof window!=="undefined")window.__storyClaimInFlight=Math.max(0,(window.__storyClaimInFlight||1)-1);
+    }
+    if(res&&res.ok){
+      ms[key]=true;
+      const paid=(typeof res.gems==="number")?res.gems:gems;
+      _gemDone(res,"CHAPTER "+chapNo+" COMPLETE · "+String(diffKey).toUpperCase(),"+"+paid+" GEM");
+      return{ok:true,gems:paid,kind:"chapter",label:"CHAPTER "+chapNo};
+    }
+    if(res&&res.msg==="ALREADY"){
+      ms[key]=true;
+      try{save();}catch(e){}
+      return{ok:false,gems:0,msg:"ALREADY",label:""};
+    }
+    _gemDone(res,"CHAPTER "+chapNo+" COMPLETE · "+String(diffKey).toUpperCase(),"+"+gems+" GEM",()=>{ms[key]=false;});
+    return{ok:false,gems:0,msg:(res&&res.msg)||"ERROR",label:""};
   })();
-  return gems;
+  return{preview:gems,promise};
+}
+function claimStoryMilestone(chapNo,diffKey,opts){
+  return claimStoryMilestoneAsync(chapNo,diffKey,opts).preview;
 }
 /* ===== REPEAT STORY: GEM PER STAGE + COOLDOWN 5 MENIT PER STAGE =====
    Replay stage yang sudah tamat memberi 20% coin & sebagian GEM-nya.
@@ -521,40 +594,88 @@ function doRebirth(){
   try{if(typeof pushCloudNow==="function")pushCloudNow();}catch(e){}
   return true;
 }
-function storyCdKey(lv){return state.diff+":"+lv;}
-function storyCdLeft(lv){
+function storyCdKeyFor(lv,diffKey){return (diffKey||(state&&state.diff)||"normal")+":"+lv;}
+function storyCdKey(lv){return storyCdKeyFor(lv,state&&state.diff);}
+function storyCdLeftFor(lv,diffKey){
   if(!state)return 0;
-  return Math.max(0,(+(state.storyCd||{})[storyCdKey(lv)]||0)-Date.now());
+  return Math.max(0,(+(state.storyCd||{})[storyCdKeyFor(lv,diffKey)]||0)-Date.now());
 }
+function storyCdLeft(lv){return storyCdLeftFor(lv,state&&state.diff);}
 function storyCdText(ms){const s=Math.max(0,Math.ceil((ms||0)/1000));return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");}
-function storySetCd(lv){
+function storySetCdFor(lv,diffKey){
   if(!state)return;
   if(!state.storyCd||typeof state.storyCd!=="object")state.storyCd={};
   Object.keys(state.storyCd).forEach(k=>{if(!(+state.storyCd[k]>Date.now()))delete state.storyCd[k];});
-  state.storyCd[storyCdKey(lv)]=Date.now()+STORY_REPEAT_CD_MS;
+  state.storyCd[storyCdKeyFor(lv,diffKey)]=Date.now()+STORY_REPEAT_CD_MS;
 }
-function storyInRepeatCd(lv){return !!(state&&diffProg()[state.diff][lv]&&storyCdLeft(lv)>0);}
+function storySetCd(lv){storySetCdFor(lv,state&&state.diff);}
+function storyInRepeatCdFor(lv,diffKey){
+  const dk=diffKey||(state&&state.diff)||"normal";
+  return !!(state&&state.clearedDiff&&state.clearedDiff[dk]&&state.clearedDiff[dk][lv]&&storyCdLeftFor(lv,dk)>0);
+}
+function storyInRepeatCd(lv){return storyInRepeatCdFor(lv,state&&state.diff);}
 /* Replay gem: dibayar tiap stage. Kooldown 5 menit per stage ditegakkan
    SERVER (0023 claim_story_replay), jadi rotasi stage tetap boleh. */
-function claimStoryRepeatGem(lv,diffKey){
+function claimStoryRepeatGemAsync(lv,diffKey,opts){
+  const cfg=opts||{};
   const one=storyStageGemReward(lv,diffKey);
-  if(!one)return 0;
+  if(!one)return{preview:0,promise:Promise.resolve({ok:false,gems:0,msg:"BAD_STAGE"})};
   const gems=Math.max(STORY_REPEAT_GEM_MIN,Math.round(one*STORY_REPEAT_GEM_PCT));
-  (async()=>{
+  const promise=(async()=>{
+    if(typeof window!=="undefined")window.__storyClaimInFlight=(window.__storyClaimInFlight||0)+1;
     let res;
     try{
       const u=_gemUser();
       if(u&&window.CloudDB&&window.CloudDB.claimStoryReplay) res=await window.CloudDB.claimStoryReplay(u,lv,diffKey);
       else{state.premiumGems=(state.premiumGems||0)+gems;res={ok:true,gems};}
     }catch(e){res={ok:false,msg:(e&&e.message)||"ERROR"};}
-    if(res&&res.msg==="COOLDOWN"){
-      try{toast("REPLAY COOLDOWN","This stage was just paid — wait 5 minutes","#fbbf24");}catch(e){}
-      return;
+    finally{
+      if(typeof window!=="undefined")window.__storyClaimInFlight=Math.max(0,(window.__storyClaimInFlight||1)-1);
     }
-    const paid=(res&&typeof res.gems==="number")?res.gems:gems;
-    _gemDone(res,"REPLAY STAGE "+lv+" · "+String(diffKey).toUpperCase(),"+"+paid+" GEM");
+    if(res&&res.ok){
+      const paid=(typeof res.gems==="number")?res.gems:gems;
+      storySetCdFor(lv,diffKey);
+      _gemDone(res,"REPLAY STAGE "+lv+" · "+String(diffKey).toUpperCase(),"+"+paid+" GEM");
+      return{ok:true,gems:paid,kind:"replay",label:"REPLAY STAGE "+lv};
+    }
+    if(res&&res.msg==="COOLDOWN"){
+      if(storyCdLeftFor(lv,diffKey)<=0)storySetCdFor(lv,diffKey);
+      try{save();renderShell();}catch(e){}
+      try{toast("REPLAY COOLDOWN","This stage was just paid — wait 5 minutes","#fbbf24");}catch(e){}
+      return{ok:false,gems:0,msg:"COOLDOWN",label:""};
+    }
+    if(res&&res.msg==="UNREACHABLE"&&!cfg.noStageFallback){
+      const firstRes=await claimStageGemAsync(lv,diffKey,{forceCheck:true,noReplayFallback:true}).promise;
+      if(firstRes&&firstRes.ok)return firstRes;
+      if(firstRes&&firstRes.msg==="ALREADY"){
+        const u=_gemUser();
+        if(u&&window.CloudDB&&window.CloudDB.claimStoryReplay){
+          await new Promise(r=>setTimeout(r,250));
+          let r2=null;
+          try{r2=await window.CloudDB.claimStoryReplay(u,lv,diffKey);}catch(e){r2=null;}
+          if(r2&&r2.ok){
+            const paid2=(typeof r2.gems==="number")?r2.gems:gems;
+            storySetCdFor(lv,diffKey);
+            _gemDone(r2,"REPLAY STAGE "+lv+" · "+String(diffKey).toUpperCase(),"+"+paid2+" GEM");
+            return{ok:true,gems:paid2,kind:"replay",label:"REPLAY STAGE "+lv};
+          }
+          if(r2&&r2.msg==="COOLDOWN"){
+            if(storyCdLeftFor(lv,diffKey)<=0)storySetCdFor(lv,diffKey);
+            try{save();renderShell();}catch(e){}
+            try{toast("REPLAY COOLDOWN","This stage was just paid — wait 5 minutes","#fbbf24");}catch(e){}
+            return{ok:false,gems:0,msg:"COOLDOWN",label:""};
+          }
+          res=r2||res;
+        }
+      }
+    }
+    _gemDone(res,"REPLAY STAGE "+lv+" · "+String(diffKey).toUpperCase(),"+"+gems+" GEM");
+    return{ok:false,gems:0,msg:(res&&res.msg)||"ERROR",label:""};
   })();
-  return gems;
+  return{preview:gems,promise};
+}
+function claimStoryRepeatGem(lv,diffKey,opts){
+  return claimStoryRepeatGemAsync(lv,diffKey,opts).preview;
 }
 /* Angka GEM yang bakal dibayar stage ini (first clear vs replay) — display only. */
 function storyGemPreview(lv){
