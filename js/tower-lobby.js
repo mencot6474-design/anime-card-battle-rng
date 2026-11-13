@@ -2881,7 +2881,8 @@ const LOBBY_CHIBI_SLUGS = new Set([
   'sea-sovereign', 'shadow-heir', 'shadow-king', 'shadow-monarch', 'sixfold-prophet',
   'solar-brawler', 'soul-reaper', 'sun-god', 'sunbreath-swordsman', 'the-griefer',
   'the-struggler', 'threeblade-ronin', 'thriller-king', 'thunder-prodigy', 'time-master',
-  'time-trickster', 'titan-hunter', 'tremor-emperor', 'trickster-ace'
+  'time-trickster', 'titan-hunter', 'tremor-emperor', 'trickster-ace', 'undying-rogue',
+  'white-hawk', 'wildheart-hunter', 'yordle-inventor', 'young-shadow-heir', 'young-spirit-vessel'
 ]);
 
 function lobbyChibiSrc(artPath) {
