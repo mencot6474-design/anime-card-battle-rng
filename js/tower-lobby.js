@@ -2869,11 +2869,13 @@ function tickWxCanvas() {
 
 const LOBBY_CHIBI_SLUGS = new Set([
   '10th-captain', 'absolute-zero', 'almighty-tyrant', 'ant-king', 'astral-devourer',
-  'bald-king', 'blessed-mage', 'blessed-sorcerer', 'bloodmoon-demon', 'copyblade-mentor',
-  'crimson-warlord', 'darkin-lord', 'demon-slime', 'devil-hunter', 'dragon-sin',
-  'dumb-hair-guy', 'dumb-stretchy-guy', 'eternal-dragon', 'fabled-soldier', 'frost-wizard',
-  'frostbane', 'galactic-tyrant', 'glitched-entity', 'green-beast', 'havoc-wreacker',
-  'height-of-painting', 'psychic-esper'
+  'bald-king', 'blessed-mage', 'blessed-sorcerer', 'blizzard-baddie', 'bloodmoon-demon',
+  'copyblade-mentor', 'crimson-warlord', 'darkin-lord', 'demon-slime', 'devil-hunter',
+  'dragon-sin', 'dumb-hair-guy', 'dumb-stretchy-guy', 'eternal-dragon', 'fabled-soldier',
+  'frost-wizard', 'frostbane', 'galactic-tyrant', 'glitched-entity', 'green-beast',
+  'havoc-wreacker', 'height-of-painting', 'ice-queen', 'ice-reaper', 'immortal-colossus',
+  'immortal-vampire', 'ink-anamloy', 'lightborne-admiral', 'luck-voltia', 'meteor-conqueror',
+  'moon-mother', 'nine-tail-prodigy', 'noble-companion', 'nullblade-knight', 'psychic-esper'
 ]);
 
 function lobbyChibiSrc(artPath) {
