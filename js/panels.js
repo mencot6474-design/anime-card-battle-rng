@@ -961,7 +961,8 @@ function srWarn(){
   /* Jangan toast tiap tick — satu peringatan per beberapa detik cukup. */
   if (Date.now() - SRoll.warnAt < 6000) return;
   SRoll.warnAt = Date.now();
-  if (typeof toast === "function") toast("SERVER ROLL BUSY", "Sambungan ke server terputus — roll dijeda sebentar.", "#f87171");
+  const isEn = (window.GameLang && typeof window.GameLang.get === "function") ? window.GameLang.get() === "en" : (typeof state === "undefined" || !state || state.lang !== "id");
+  if (typeof toast === "function") toast("SERVER ROLL BUSY", isEn ? "Connection to server lost — roll paused briefly." : "Sambungan ke server terputus — roll dijeda sebentar.", "#f87171");
 }
 /* Isi antrean sampai >= min. Fire-and-forget untuk tick yang lagi jalan; di-await
    untuk roll manual pertama. Return promise<boolean> = apakah hasil tersedia.
@@ -3346,7 +3347,8 @@ async function bpUseRollPack(packKey, rollAmount, n){
     while(left>0 && guard++<maxGuards){
       const r=await CloudDB.bulkRoll(currentUser,packKey,Math.min(left,10));
       if(!r||!r.ok){
-        const msg=!r?"KONEKSI KE SERVER PUTUS":(r.msg==="PACK_EMPTY"?"LEDGER SERVER: PACK HABIS":"DITOLAK SERVER: "+(r.msg||""));
+        const isEn=(window.GameLang&&typeof window.GameLang.get==="function")?window.GameLang.get()==="en":(typeof state==="undefined"||!state||state.lang!=="id");
+        const msg=!r?(isEn?"SERVER CONNECTION LOST":"KONEKSI KE SERVER PUTUS"):(r.msg==="PACK_EMPTY"?(isEn?"SERVER LEDGER: PACK EMPTY":"LEDGER SERVER: PACK HABIS"):((isEn?"REJECTED BY SERVER: ":"DITOLAK SERVER: ")+(r.msg||"")));
         if(spent===0){ toast("PACK REJECTED BY SERVER",msg+" · TRY AGAIN","#f87171"); renderBackpackPanel(); return; }
         toast("ROLL STOPPED BY SERVER",msg+" · "+fmt(spent)+"× ALREADY ADDED","#fcd34d");
         break;
@@ -3612,29 +3614,30 @@ function bpTreeDetailSync(){
   }
   const sp=(state&&state.player&&state.player.sp)||0;
   const st=bpTreeState(n,sp);
+  const isEn=(window.GameLang&&typeof window.GameLang.get==="function")?window.GameLang.get()==="en":(typeof state==="undefined"||!state||state.lang!=="id");
   const core=n.branch==='root';
   const gain=bpNodeGain(n);
-  const stTxt=st==='owned'?'DIMILIKI':st==='ready'?'SIAP DIBUKA':st==='locked'?'Buka node sebelumnya dulu':'SP kurang';
+  const stTxt=st==='owned'?(isEn?'OWNED':'DIMILIKI'):st==='ready'?(isEn?'READY TO UNLOCK':'SIAP DIBUKA'):st==='locked'?(isEn?'Unlock previous node first':'Buka node sebelumnya dulu'):(isEn?'Not enough SP':'SP kurang');
   const buyable=!core&&st==='ready';
   const bcol=BP_TREE_BCOL[n.branch]||BP_TREE_BCOL.luck;
   const ic='assets/icons/'+(BP_TREE_ICON[n.branch]||BP_TREE_ICON.luck);
   const x='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg>';
   el.setAttribute('aria-label',n.name);
   el.innerHTML=`<div class="bp-td-card" style="--bcol:${bcol}">
-    <button class="bp-td-x" type="button" onclick="bpTreeDetailClose()" aria-label="Tutup detail ${n.name}" title="Tutup [ESC]">${x}</button>
+    <button class="bp-td-x" type="button" onclick="bpTreeDetailClose()" aria-label="${isEn?'Close':'Tutup'} detail ${n.name}" title="${isEn?'Close':'Tutup'} [ESC]">${x}</button>
     <div class="bp-td-head">
       <img class="bp-td-icon" src="${ic}" alt="" decoding="async">
       <div class="bp-td-id"><div class="bp-td-name">${n.name}</div>
         <span class="bp-td-chip">${n.branch.toUpperCase()} · ${n.cost} SP</span></div>
     </div>
     <div class="bp-td-stats">
-      <div class="bp-td-stat"><span class="bp-td-k">BIAYA</span><span class="bp-td-v num">${n.cost} SP</span></div>
-      <div class="bp-td-stat"><span class="bp-td-k">SP LO</span><span class="bp-td-v num">${sp}</span></div>
-      <div class="bp-td-stat wide"><span class="bp-td-k">PRASYARAT</span><span class="bp-td-v sm">${bpTreePreqNames(n)}</span></div>
+      <div class="bp-td-stat"><span class="bp-td-k">${isEn?'COST':'BIAYA'}</span><span class="bp-td-v num">${n.cost} SP</span></div>
+      <div class="bp-td-stat"><span class="bp-td-k">${isEn?'YOUR SP':'SP LO'}</span><span class="bp-td-v num">${sp}</span></div>
+      <div class="bp-td-stat wide"><span class="bp-td-k">${isEn?'REQUIRES':'PRASYARAT'}</span><span class="bp-td-v sm">${bpTreePreqNames(n)}</span></div>
     </div>
     <div class="bp-td-status${st==='owned'?' on':''}">${stTxt}</div>
-    <div class="bp-td-eff"><span class="bp-td-k">EFEK</span><div class="bp-td-gain">${gain}</div><p class="bp-td-desc">${n.desc}</p></div>
-    ${buyable?`<div class="bp-td-acts"><button class="bp-td-btn pri" type="button" onclick="bpTreeDetailBuy('${n.id}')">BELI · ${n.cost} SP</button></div>`:''}
+    <div class="bp-td-eff"><span class="bp-td-k">${isEn?'EFFECT':'EFEK'}</span><div class="bp-td-gain">${gain}</div><p class="bp-td-desc">${n.desc}</p></div>
+    ${buyable?`<div class="bp-td-acts"><button class="bp-td-btn pri" type="button" onclick="bpTreeDetailBuy('${n.id}')">${isEn?'UNLOCK':'BELI'} · ${n.cost} SP</button></div>`:''}
   </div>`;
 }
 
@@ -3657,7 +3660,7 @@ function artIconHtml(d){
 /* Tombol beli Backpack per kanal: raid/tower TIDAK dijual pakai coin — tombol jadi petunjuk sumber. */
 function bpBuyBtn(d,kind){
   if(d.src==="raid")return `<button class="bp-shop-b off" onclick="toast('WORLD BOSS SHOP','BUY WITH WORLD BOSS TOKENS · ${fmt(d.raidCost||0)} TOKEN','#B58CFF')">WORLD BOSS SHOP · ${fmt(d.raidCost||0)} TOKEN</button>`;
-  if(d.src==="tower")return `<button class="bp-shop-b off" onclick="toast('INF TOWER','DROP BASE CHANCE — TIDAK KENA LUCK PLAYER','#7DF9FF')">DROP · INF TOWER</button>`;
+  if(d.src==="tower")return `<button class="bp-shop-b off" onclick="toast('INF TOWER','BASE DROP CHANCE — UNAFFECTED BY PLAYER LUCK','#7DF9FF')">DROP · INF TOWER</button>`;
   if(d.src==="premium")return `<button class="bp-shop-b buy" style="background:linear-gradient(135deg,#e6b800,#b38600);color:#0a0800;border-color:#ffd700;" onclick="openPremiumShop()">TOKO PREMIUM · ${d.gemPrice} GEMS</button>`;
   return `<button class="bp-shop-b ${(state.coins||0)>=d.price?'buy':'poor'}" onclick="bpBuy${kind}('${d.id}')">BELI · ${coinIcon(15)} ${fmt(d.price)}</button>`;
 }
@@ -3802,7 +3805,7 @@ function bpBuyErr(res){
   const m=(res&&res.msg)||"";
   const map={COIN_KURANG:"NOT ENOUGH COINS",GEMS_TIDAK_CUKUP:"NOT ENOUGH GEMS",BAD_ITEM:"UNKNOWN ITEM",
              NOT_SOLD_HERE:"NOT SOLD HERE",PLAYER_NOT_FOUND:"ACCOUNT NOT SYNCED YET"};
-  return map[m]||m||"SERVER TIDAK MERESPONS";
+  return map[m]||m||"SERVER NOT RESPONDING";
 }
 async function bpBuyArt(id){
   const d=ART_DEFS.find(x=>x.id===id);if(!d||state.artOwned.includes(id))return;

@@ -287,9 +287,9 @@ ${_linkCard}
       } catch(err){
         console.error("Manual cloud save err:", err);
         if(txt) txt.textContent = isEn ? "SAVE FAILED" : "GAGAL MENYIMPAN";
-        if(note) note.innerHTML = `<span style="color:var(--crimson,#fb7185);font-weight:700">● ${err && err.message ? err.message : "Gagal terhubung ke Cloud"}</span>`;
+        if(note) note.innerHTML = `<span style="color:var(--crimson,#fb7185);font-weight:700">● ${err && err.message ? err.message : (isEn ? "Failed to connect to Cloud" : "Gagal terhubung ke Cloud")}</span>`;
         if(typeof toast === "function"){
-          toast("ERROR", isEn ? "Failed to save to cloud" : "Failed to save to cloud", "#ff4757");
+          toast("ERROR", isEn ? "Failed to save to cloud" : "Gagal menyimpan ke Cloud", "#ff4757");
         }
       } finally {
         setTimeout(()=>{
@@ -330,7 +330,7 @@ ${_linkCard}
   {
     const audStat=document.getElementById("audStat"),audToggle=document.getElementById("audToggle");
     if(audStat&&audToggle){
-      const ctxState=()=>{try{return (typeof actx!=="undefined"&&actx)?actx.state:"belum dibuat";}catch(e){return "?";}};
+      const ctxState=()=>{try{return (typeof actx!=="undefined"&&actx)?actx.state:(isEn?"not created":"belum dibuat");}catch(e){return "?";}};
       let sayUntil=0;
       const say=t=>{sayUntil=Date.now()+4000;audStat.textContent=t;};
       const paint=()=>{
@@ -355,7 +355,7 @@ ${_linkCard}
         if(state.muted){say(isEn ? "SFX is currently MUTED — turn SOUND ON first." : "SFX sedang MATI — tekan SUARA dulu.");return;}
         try{
           unlockGameAudio();
-          if(!window.CyberSfx){say("CyberSfx tidak termuat");return;}
+          if(!window.CyberSfx){say(isEn?"CyberSfx not loaded":"CyberSfx tidak termuat");return;}
           window.CyberSfx.katanaSlash(1);
           setTimeout(()=>{try{if(window.CyberSfx)window.CyberSfx.aoeDetonate();}catch(e){}},260);
           say((isEn ? "Raid SFX Impact Played · AudioContext: " : "SFX raid diputar · AudioContext: ")+ctxState());
@@ -686,7 +686,7 @@ async function submitAuth(){
   /* WAJIB ONLINE: Game ini sepenuhnya online dan terhubung ke Supabase.
      Jika modul CloudDB / CloudAuth gagal dimuat atau internet terputus, tolak akses. */
   if(!navigator.onLine || !window.CloudDB || !window.CloudAuth){
-    auError("Tidak dapat terhubung ke server Supabase. Pastikan internet aktif dan refresh halaman.");
+    auError(isEn ? "Unable to reach Supabase server. Check your internet connection and refresh the page." : "Tidak dapat terhubung ke server Supabase. Pastikan internet aktif dan refresh halaman.");
     finish();
     return;
   }
@@ -722,15 +722,15 @@ async function submitAuth(){
     const initSt = freshState();
     const ep = await window.CloudAuth.ensurePass(key, passH);
     if(!ep || !ep.ok){
-      const rsn = (ep && ep.reason) || "koneksi ditolak";
+      const rsn = (ep && ep.reason) || (isEn ? "connection rejected" : "koneksi ditolak");
       if(rsn === "USER_EXISTS"){
-        auError("Username ini sudah terdaftar di server (dengan password berbeda). Silakan klik MASUK atau pilih username lain.");
+        auError(isEn ? "This username is already registered on the server (with a different password). Click SIGN IN or choose another username." : "Username ini sudah terdaftar di server (dengan password berbeda). Silakan klik MASUK atau pilih username lain.");
       }else if(rsn === "RATE_LIMIT"){
-        auError("Terlalu banyak percobaan daftar dalam waktu singkat. Tunggu 1 menit lalu coba lagi.");
+        auError(isEn ? "Too many registration attempts in a short time. Wait 1 minute and try again." : "Terlalu banyak percobaan daftar dalam waktu singkat. Tunggu 1 menit lalu coba lagi.");
       }else if(rsn === "confirm_email_on"){
-        auError("Fitur Confirm Email di Supabase masih aktif. Matikan dulu di pengaturan Auth Supabase.");
+        auError(isEn ? "Supabase email confirmation is enabled on the server. Disable it in Auth settings." : "Fitur Confirm Email di Supabase masih aktif. Matikan dulu di pengaturan Auth Supabase.");
       }else{
-        auError("Gagal mendaftar ke server: " + rsn);
+        auError((isEn ? "Failed to register on server: " : "Gagal mendaftar ke server: ") + rsn);
       }
       finish();
       return;
@@ -740,13 +740,13 @@ async function submitAuth(){
       reg = await window.CloudDB.registerUser(name, initSt, passH);
     } catch(err){ console.error("Cloud register fail:", err); }
     if(!reg || reg.ok === false){
-      const errMsg = (reg && reg.msg) || "Server menolak pendaftaran";
-      auError(errMsg === "TAKEN" ? "Username itu sudah dipakai di server. Coba masuk." : ("Pendaftaran cloud gagal: " + errMsg));
+      const errMsg = (reg && reg.msg) || (isEn ? "Server rejected registration" : "Server menolak pendaftaran");
+      auError(errMsg === "TAKEN" ? (isEn ? "That username is already in use. Try signing in." : "Username itu sudah dipakai di server. Coba masuk.") : ((isEn ? "Cloud registration failed: " : "Pendaftaran cloud gagal: ") + errMsg));
       finish();
       return;
     }
     if(reg && reg.created === false){
-      auError("Username itu sudah terdaftar di server. Silakan masuk (Login).");
+      auError(isEn ? "That username is already registered on the server. Please sign in." : "Username itu sudah terdaftar di server. Silakan masuk (Login).");
       finish();
       return;
     }
@@ -771,9 +771,9 @@ async function submitAuth(){
       enterGame(targetName, true);
     }else{
       if(loginErrReason === "no_save"){
-        auError("Akun belum memiliki data di server. Silakan klik DAFTAR untuk membuat akun di Cloud.");
+        auError(isEn ? "This account does not have a server save yet. Click REGISTER to create a Cloud account." : "Akun belum memiliki data di server. Silakan klik DAFTAR untuk membuat akun di Cloud.");
       }else{
-        auError("Username belum terdaftar di server atau password salah.");
+        auError(isEn ? "Username is not registered or password is incorrect." : "Username belum terdaftar di server atau password salah.");
       }
       finish();
       return;
@@ -959,7 +959,7 @@ async function claimNamedAccount(){
     _linkMsg(isEn ? "Preparing credentials…" : "Menyiapkan kredensial akun…");
     const ep=await window.CloudAuth.ensurePass(key, passH);
     if(!ep || !ep.ok){
-      const r=(ep && ep.reason) || "ditolak";
+      const r=(ep && ep.reason) || (isEn ? "rejected" : "ditolak");
       _linkMsg(r==="USER_EXISTS"
         ? (isEn ? "Username is already taken. Use “Sign In” if it belongs to you." : "Nama itu sudah dipakai. Pakai “Masuk Akun” kalau itu punyamu.")
         : (r==="RATE_LIMIT"
@@ -1749,9 +1749,9 @@ function renderChangelogModal(){
           <span class="upl-pb-date">November 2026</span>
         </div>
         <ul class="upl-pb-list">
-          <li>Rebuilt Update Log interface to match reference layout: left purple title ribbon, red circular close button, 2-column sidebar, and rich base card showcase.</li>
-          <li>Purged all legacy changelog clutter; now strictly displaying the current major release.</li>
-          <li>Detailed breakdowns added for Weather Machine, Infinite Tower Core Spire, and World Boss Hazard Hub.</li>
+          <li>Full Hazard Protocol visual overhaul across all screens, combat arena HUD, and tactical command drawer.</li>
+          <li>Added Awakened Weather anomalies (Psychic Esper, Sun God, and Darkin Lord) plus Global Luck Shrine buffs.</li>
+          <li>Introduced Weather Machine, Infinite Tower Core Spire, World Boss Hazard Hub, and 7-Day / Sponsored Terminal rewards.</li>
         </ul>
       </div>
     </div>

@@ -21,13 +21,11 @@
 <meta name="theme-color" content="#050505">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700;800&family=Russo+One&family=Rajdhani:wght@700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@400;600;700;800&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Cinzel:wght@600;700;800;900&family=Dela+Gothic+One&family=JetBrains+Mono:wght@400;500;600;700&family=Orbitron:wght@500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Rajdhani:wght@500;600;700;800;900&family=Russo+One&display=swap" rel="stylesheet">
 <!-- CrazyGames SDK v3 (Official HTML5 SDK) -->
 <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
 <script src="js/crazygames.js?v=v11-cgMidgameAndFtueStop"></script>
 <link rel="stylesheet" href="css/style.css?v=v399-towerWebp">
-<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Orbitron:wght@500;600;700;800;900&family=Rajdhani:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/world-boss.css?v=v285-hideBfExitOnHub">
 <link rel="stylesheet" href="css/sl-system.css?v=v391-coreSpireHub">
 <link rel="stylesheet" href="css/story-carousel.css?v=v356-landscapeRail44">
@@ -58,7 +56,7 @@
 <script>
   if ('serviceWorker' in navigator && !(typeof window.isCrazyGames === 'function' && window.isCrazyGames())) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=v679-serverAuthStage2').catch(() => {});
+      navigator.serviceWorker.register('sw.js?v=v680-polishStage3').catch(() => {});
     });
   }
 </script>
@@ -384,12 +382,12 @@
 <div id="authSpin" class="hidden">
   <div class="as-box">
     <div class="as-ring"></div>
-    <div class="as-txt" id="asTxt">Processingâ€¦</div>
+    <div class="as-txt" id="asTxt">Processing&hellip;</div>
   </div>
 </div>
 <div id="authDone" class="hidden">
   <div class="as-box">
-    <div class="as-check">âœ“</div>
+    <div class="as-check">&#10003;</div>
     <div class="as-title" id="adTitle">Account successfully created</div>
     <div class="as-txt" id="adMsg">Please log in with your new account.</div>
     <button class="as-btn" id="adOk">TO LOGIN</button>
@@ -1707,19 +1705,19 @@
     <img id="spImg" src="" alt="Card Art">
   </div>
   <div class="sp-info-panel">
-    <button class="sp-x-btn" id="spClose" title="Close">âœ•</button>
+    <button class="sp-x-btn" id="spClose" title="Close">&#10005;</button>
     <div class="sp-card-name" id="spCardName"></div>
     <div class="sp-card-rarity" id="spCardRarity"></div>
     <div class="sp-stats-row">
       <div class="sp-stat-card hp">
-        <span class="sp-stat-ic">â¤ï¸</span>
+        <span class="sp-stat-ic">&#10084;&#65039;</span>
         <div class="sp-stat-data">
           <small>HEALTH</small>
           <b id="spHp">0</b>
         </div>
       </div>
       <div class="sp-stat-card atk">
-        <span class="sp-stat-ic">âš”ï¸</span>
+        <span class="sp-stat-ic">&#9876;&#65039;</span>
         <div class="sp-stat-data">
           <small>ATTACK</small>
           <b id="spAtk">0</b>
@@ -2241,8 +2239,8 @@
 
 <div id="deckPickModal"><div class="dp-box">
   <div class="ix-head">
-    <div><div class="eyebrow">DECK</div><div class="ix-title">Pilih Kartu</div></div>
-    <button class="ix-x" id="dpClose" title="Close">âœ•</button>
+    <div><div class="eyebrow">DECK</div><div class="ix-title">Select Card</div></div>
+    <button class="ix-x" id="dpClose" title="Close">&#10005;</button>
   </div>
   <div id="dpBody"></div>
 </div></div>
@@ -2707,7 +2705,7 @@
 <script src="js/supabase-sync.js?v=v340-intanTowerServer"></script>
 <script src="js/notify-hazard.js?v=v1-notifyHazard"></script>
 <script src="js/titles-hazard.js?v=v3-titlesCatalog"></script>
-<script src="js/panels.js?v=v449-intanServerRoll"></script>
+<script src="js/panels.js?v=v450-i18nStage3"></script>
 <script src="js/cards-fx.js?v=v89-traitRates"></script>
 <script src="js/anime-archetype-attacks.js?v=v125-smooth60fps"></script>
 <script src="js/state.js?v=v366-towerBgmContinuous"></script>
@@ -2724,8 +2722,8 @@
 <script src="js/skill-tree.js?v=v14-cgMenuNoGameplay"></script>
 <script src="js/ranking.js?v=v15-ringWebp"></script>
 <script src="js/i18n.js?v=v398-smooth60fps"></script>
-<script src="js/boot.js?v=v176-cgSettingsGuard"></script>
-<script src="js/pwa.js?v=v157-hideInCrazyGames"></script>
+<script src="js/boot.js?v=v177-polishStage3"></script>
+<script src="js/pwa.js?v=v158-i18nTitle"></script>
 
 </body>
 </html>
