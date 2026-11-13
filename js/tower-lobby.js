@@ -2890,7 +2890,7 @@ function lobbyChibiSrc(artPath) {
   const m = /^assets\/cards\/art\/([^/?#]+)\.(?:webp|png|jpe?g)$/i.exec(artPath);
   if (!m) return '';
   const slug = m[1].toLowerCase();
-  return LOBBY_CHIBI_SLUGS.has(slug) ? ('assets/chibi/' + slug + '.webp?v=6') : '';
+  return LOBBY_CHIBI_SLUGS.has(slug) ? ('assets/chibi/' + slug + '.webp?v=7') : '';
 }
 
 function initVillageWalkers(party) {
