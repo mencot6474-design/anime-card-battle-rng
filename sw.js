@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v685-removeInfDailyLimit';
+const CACHE_NAME = 'anime-card-battle-v686-wbShopGrantFix';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

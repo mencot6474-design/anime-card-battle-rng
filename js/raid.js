@@ -1839,13 +1839,22 @@ function renderRaidResult(){
 }
 
 function stackHas(char,mut){mut=mut||"none";return state.stacks.some(s=>s.char===char&&(s.mut||"none")===mut);}
+/* Pengganti gmGrantCard yang ikut terhapus saat GM console dibuang (4aa04ac). */
+function wbGrantBossCard(charId){
+  const c=CARDS[charId];
+  if(!c)return "unknown card";
+  const ex=state.stacks.find(x=>x.char===charId&&(x.mut||"none")==="none"&&!x.shiny);
+  if(ex){ex.count=(ex.count||1)+1;return c.name+" ×"+ex.count;}
+  state.stacks.push({id:Math.random().toString(36).slice(2,9),char:charId,tier:c.tier,fav:false,lock:false,mut:"none",shiny:false,trait:"none",count:1});
+  return c.name+" added to your deck";
+}
 const WB_SHOP=[
   {id:"gem",name:"Token → Gem // 100:20",cost:100,gem:20,desc:"Trade 100 Tokens for 20 Gems.",apply:()=>""},
   {id:"coins",name:"2,000 Coins",cost:12,coinBuy:true,desc:"Coin Mint · 2,000 Coins for rolls & upgrades.",apply:()=>""},
   {id:"card_edragon",name:"Eternal Dragon",cost:4000,desc:"Exclusive boss card. Buy once — its roll opens permanently in every gacha. Base 1 in 25M.",card:{char:"CH_ETERNAL_DRAGON",mut:"none"},
-    apply:()=>{state.raidShopOwned=state.raidShopOwned||{};state.raidShopOwned.CH_ETERNAL_DRAGON=true;return gmGrantCard("CH_ETERNAL_DRAGON");}},
+    apply:()=>{state.raidShopOwned=state.raidShopOwned||{};state.raidShopOwned.CH_ETERNAL_DRAGON=true;return wbGrantBossCard("CH_ETERNAL_DRAGON");}},
   {id:"card_shadowking",name:"Shadow King",cost:8000,desc:"Exclusive boss card. Buy once — granted instantly + its roll opens permanently. Base 1 in 100M.",card:{char:"CH_SHADOW_KING",mut:"none"},
-    apply:()=>{state.raidShopOwned=state.raidShopOwned||{};state.raidShopOwned.CH_SHADOW_KING=true;return gmGrantCard("CH_SHADOW_KING");}},
+    apply:()=>{state.raidShopOwned=state.raidShopOwned||{};state.raidShopOwned.CH_SHADOW_KING=true;return wbGrantBossCard("CH_SHADOW_KING");}},
   {id:"helm-abyss",name:"HELM ABYSS",cost:12000,desc:"Permanent artefact. Delivered to your Backpack.",effect:"+80 FLAT & +120% LUCK",owned:()=>(state.artOwned||[]).includes("helm-abyss"),
     apply:()=>{state.artOwned=state.artOwned||[];if(!state.artOwned.includes("helm-abyss"))state.artOwned.push("helm-abyss");return "HELM ABYSS · +80 FLAT & +120% LUCK";}},
   {id:"nebula-wisp",name:"NEBULA WISP",cost:30000,desc:"Permanent pet. Delivered to your Backpack.",effect:"+150 FLAT & +220% LUCK",owned:()=>(state.petOwned||[]).includes("nebula-wisp"),
