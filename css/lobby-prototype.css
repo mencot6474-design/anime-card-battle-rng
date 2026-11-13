@@ -8905,6 +8905,63 @@ html body.on-lobby {
     z-index: 1;
     pointer-events: none;
   }
+  /* 2D Pixel Chibi Walkers (Transparent Sprite Mode on Lobby Street) */
+  .card-walker.is-chibi {
+    width: 132px;
+    height: 148px;
+    perspective: none;
+  }
+  .card-walker.is-chibi .cw-shadow {
+    bottom: -6px;
+    width: 88px;
+    height: 18px;
+  }
+  .card-walker.is-chibi .cw-tilt {
+    transform: none;
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .card-walker.is-chibi.dir-right .cw-tilt,
+  .card-walker.is-chibi.dir-left .cw-tilt {
+    transform: none;
+  }
+  .card-walker.is-chibi.is-selected .cw-tilt,
+  .card-walker.is-chibi:hover .cw-tilt {
+    transform: scale(1.06);
+  }
+  .card-walker.is-chibi.turning .cw-tilt {
+    animation: none;
+  }
+  .card-walker.is-chibi .cw-body {
+    background: transparent;
+    box-shadow: none;
+    overflow: visible;
+  }
+  .card-walker.is-chibi.is-selected .cw-body {
+    box-shadow: none;
+  }
+  @keyframes chibiHopWalk {
+    0%, 100% { transform: translate3d(0, 0px, 0) rotate(0deg) scale(1.02, 0.98); }
+    25%      { transform: translate3d(0, -10px, 0) rotate(-3.5deg) scale(0.99, 1.02); }
+    50%      { transform: translate3d(0, 0px, 0) rotate(0deg) scale(1.02, 0.98); }
+    75%      { transform: translate3d(0, -10px, 0) rotate(3.5deg) scale(0.99, 1.02); }
+  }
+  .card-walker.is-chibi.state-walk .cw-body {
+    animation: chibiHopWalk 0.54s infinite ease-in-out;
+  }
+  .cw-art.is-chibi-img {
+    object-fit: contain;
+    object-position: bottom center;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.72));
+    transition: transform 0.14s ease-out;
+  }
+  .card-walker.is-chibi.dir-left .cw-art.is-chibi-img {
+    transform: scaleX(-1);
+  }
+  .card-walker.is-chibi.is-selected .cw-art.is-chibi-img {
+    filter: drop-shadow(0 0 8px rgba(243, 230, 0, 0.85)) drop-shadow(0 6px 10px rgba(0, 0, 0, 0.78));
+  }
   /* Top Row: Tier Pill (Left) + Solid Stamp Badges for Shiny/Mutation/Trait (Right) */
   .cw-top {
     position: absolute; top: 6px; left: 6px; right: 6px;
@@ -9474,6 +9531,7 @@ html body.on-lobby {
     .bldg-title { font-size: 13px; }
     .chibi-bldg.featured .bldg-title { font-size: 16px; }
     .card-walker { width: 96px; height: 138px; }
+    .card-walker.is-chibi { width: 106px; height: 118px; }
     .nav-dock {
       width: 100%; max-width: 460px;
       gap: 3px;
@@ -9525,7 +9583,11 @@ html body.on-lobby {
     .bldg-title { font-size: 12px; }
     .chibi-bldg.featured .bldg-title { font-size: 14px; }
     .bldg-sign { margin-bottom: 4px; }
-    .buildings-row { bottom: 33%; }
+    .village-world { min-height: 0; height: 100%; }
+    .buildings-row { bottom: 36%; }
+    .walkers-layer { bottom: 22%; height: 28%; }
+    .card-walker { width: 76px; height: 108px; }
+    .card-walker.is-chibi { width: 88px; height: 98px; }
     .nh-bottom-hud { padding: 0 12px 6px; gap: 4px; }
     .buff-strip { gap: 6px; }
     .b-chip { height: 28px; padding: 0 8px; font-size: 9.5px; }

@@ -2867,13 +2867,30 @@ function tickWxCanvas() {
   requestAnimationFrame(tickWxCanvas);
 }
 
+const LOBBY_CHIBI_SLUGS = new Set([
+  '10th-captain', 'absolute-zero', 'almighty-tyrant', 'ant-king', 'astral-devourer',
+  'bald-king', 'blessed-mage', 'blessed-sorcerer', 'bloodmoon-demon', 'copyblade-mentor',
+  'crimson-warlord', 'darkin-lord', 'demon-slime', 'devil-hunter', 'dragon-sin',
+  'dumb-hair-guy', 'dumb-stretchy-guy', 'eternal-dragon', 'fabled-soldier', 'frost-wizard',
+  'frostbane', 'galactic-tyrant', 'glitched-entity', 'green-beast', 'havoc-wreacker',
+  'height-of-painting', 'psychic-esper'
+]);
+
+function lobbyChibiSrc(artPath) {
+  if (!artPath) return '';
+  const m = /^assets\/cards\/art\/([^/?#]+)\.(?:webp|png|jpe?g)$/i.exec(artPath);
+  if (!m) return '';
+  const slug = m[1].toLowerCase();
+  return LOBBY_CHIBI_SLUGS.has(slug) ? ('assets/chibi/' + slug + '.webp?v=1') : '';
+}
+
 function initVillageWalkers(party) {
   const layer = document.getElementById('walkersLayer');
   if (!layer) return;
   layer.innerHTML = '';
   _villageWalkers = [];
 
-  const defaultChars = ['CH_SHADOW_KING', 'CH_SUN_GOD', 'CH_ETERNAL_DRAGON', 'CH_ABSOLUTE_ZERO'];
+  const defaultChars = ['CH_CRIMSON_WARLORD', 'CH_FABLED_SOLDIER', 'CH_ETERNAL_DRAGON', 'CH_ABSOLUTE_ZERO'];
   const defaultQuotes = [
     ['"Arise... and patrol Sector 01!"', '"Tower Infinite energy feels unstable today."', '"Ready to strike the World Boss!"'],
     ['"SET YOUR HEART ABLAZE! 🔥"', '"Standing guard by the Rebirth Altar!"', '"UMAI! Great luck aura today!"'],
@@ -2890,6 +2907,7 @@ function initVillageWalkers(party) {
     const cId = (s && s.char && CARDS[s.char]) ? s.char : defaultChars[i];
     const cData = CARDS[cId] || CARDS['CH_SHADOW_KING'] || Object.values(CARDS)[0] || { name: 'Shadow King', tier: 'UR', base_hp: 1000, base_atk: 500, passive: { name: 'Signature Skill', desc: 'Deals devastating signature damage on strike.' } };
     const art = (typeof cardImg === 'function' && cardImg(cId)) ? cardImg(cId) : 'assets/cards/art/shadow-king.webp';
+    const chibi = lobbyChibiSrc(art);
     const thumb = (typeof cardThumb === 'function' && cardThumb(cId)) ? cardThumb(cId) : art;
     const mut = (s && s.mut) || 'normal';
     const shiny = !!(s && s.shiny);
@@ -2917,6 +2935,7 @@ function initVillageWalkers(party) {
       skillName: String((cData.passive && cData.passive.name) || cData.skill || 'SIGNATURE SKILL').toUpperCase(),
       skillDesc: skTxt,
       art: art,
+      chibi: chibi,
       thumb: thumb,
       color: col,
       x: 200 + i * 280,
@@ -2930,23 +2949,36 @@ function initVillageWalkers(party) {
     };
 
     const el = document.createElement('div');
-    el.className = 'card-walker state-walk ' + (wItem.dir > 0 ? 'dir-right' : 'dir-left');
+    const isChibi = !!wItem.chibi;
+    el.className = 'card-walker state-walk ' + (wItem.dir > 0 ? 'dir-right' : 'dir-left') + (isChibi ? ' is-chibi' : '');
     el.style.setProperty('--RC', wItem.color);
     el.style.zIndex = String(20 + Math.round(30 - wItem.y));
 
-    const borderHtml = (typeof hzBorderLayerHtml === 'function') ? hzBorderLayerHtml() : '';
-    const hzCls = 'hz-bdr bdr-bracket sh-orbital anim-on m-' + wItem.mut + (wItem.shiny ? ' is-shiny' : '');
-
-    el.innerHTML = `
-      <div class="cw-bubble" id="bub_${wItem.id}">${wItem.quotes[0]}</div>
-      <div class="cw-shadow"></div>
-      <div class="cw-tilt">
-        <div class="cw-body ${hzCls}">
-          ${borderHtml}
-          <img class="cw-art" src="${wItem.art}" onerror="this.src='assets/cards/art/shadow-king.webp'" alt="">
+    if (isChibi) {
+      el.innerHTML = `
+        <div class="cw-bubble" id="bub_${wItem.id}">${wItem.quotes[0]}</div>
+        <div class="cw-shadow"></div>
+        <div class="cw-tilt">
+          <div class="cw-body">
+            <img class="cw-art is-chibi-img" src="${wItem.chibi}" onerror="this.onerror=null;this.src='${wItem.art}'" alt="">
+          </div>
         </div>
-      </div>
-    `;
+      `;
+    } else {
+      const borderHtml = (typeof hzBorderLayerHtml === 'function') ? hzBorderLayerHtml() : '';
+      const hzCls = 'hz-bdr bdr-bracket sh-orbital anim-on m-' + wItem.mut + (wItem.shiny ? ' is-shiny' : '');
+
+      el.innerHTML = `
+        <div class="cw-bubble" id="bub_${wItem.id}">${wItem.quotes[0]}</div>
+        <div class="cw-shadow"></div>
+        <div class="cw-tilt">
+          <div class="cw-body ${hzCls}">
+            ${borderHtml}
+            <img class="cw-art" src="${wItem.art}" onerror="this.src='assets/cards/art/shadow-king.webp'" alt="">
+          </div>
+        </div>
+      `;
+    }
 
     el.addEventListener('pointerdown', (e) => {
       if (e.button && e.button !== 0) return;

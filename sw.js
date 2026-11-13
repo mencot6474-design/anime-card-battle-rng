@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v646-mobileAuditClean';
+const CACHE_NAME = 'anime-card-battle-v648-landscapeChibiFit';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
