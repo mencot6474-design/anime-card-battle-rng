@@ -3427,20 +3427,115 @@ function renderLobby() {
         </div>
 
         <div class="street-props-layer">
-          <div class="street-pylon" style="left: 22%;"><div class="pylon-head"></div><div class="pylon-pole"></div><div class="pylon-base"></div><div class="pylon-cone"></div></div>
-          <div class="street-pylon" style="left: 39%;"><div class="pylon-head"></div><div class="pylon-pole"></div><div class="pylon-base"></div><div class="pylon-cone"></div></div>
-          <div class="street-pylon" style="left: 61%;"><div class="pylon-head"></div><div class="pylon-pole"></div><div class="pylon-base"></div><div class="pylon-cone"></div></div>
-          <div class="street-pylon" style="left: 78%;"><div class="pylon-head"></div><div class="pylon-pole"></div><div class="pylon-base"></div><div class="pylon-cone"></div></div>
+          <svg width="0" height="0" style="position:absolute;pointer-events:none;overflow:hidden;" aria-hidden="true">
+            <defs>
+              <linearGradient id="hzLampMetal" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#334155"/>
+                <stop offset="35%" stop-color="#94a3b8"/>
+                <stop offset="70%" stop-color="#334155"/>
+                <stop offset="100%" stop-color="#0f172a"/>
+              </linearGradient>
+              <linearGradient id="hzLampHead" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#334155"/>
+                <stop offset="55%" stop-color="#111827"/>
+                <stop offset="100%" stop-color="#05070c"/>
+              </linearGradient>
+              <pattern id="hzLampStripe" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+                <rect width="4" height="8" fill="#f3e600"/>
+                <rect x="4" width="4" height="8" fill="#090b10"/>
+              </pattern>
+              <symbol id="hzStreetLampSym" viewBox="0 0 64 140">
+                <ellipse cx="32" cy="136" rx="22" ry="3.2" fill="#000000" opacity="0.72"/>
+                <!-- Heavy armored base plinth -->
+                <polygon points="12,135 52,135 47,125 17,125" fill="#111827" stroke="#f5f5f5" stroke-opacity="0.45" stroke-width="1"/>
+                <circle cx="19" cy="130" r="1.4" fill="#94a3b8"/>
+                <circle cx="45" cy="130" r="1.4" fill="#94a3b8"/>
+                <rect x="17" y="119" width="30" height="6" fill="url(#hzLampStripe)" stroke="#050507" stroke-width="1"/>
+                <rect x="22" y="113" width="20" height="6" rx="1" fill="#1e293b" stroke="#f3e600" stroke-width="1"/>
+                <!-- Lower reinforced sleeve & mid collar -->
+                <rect x="26" y="81" width="12" height="32" fill="url(#hzLampMetal)" stroke="#050507" stroke-width="1"/>
+                <line x1="28.5" y1="84" x2="28.5" y2="111" stroke="#e2e8f0" stroke-opacity="0.4" stroke-width="1"/>
+                <rect x="24" y="78" width="16" height="4" rx="1" fill="#0f172a" stroke="#f3e600" stroke-opacity="0.75" stroke-width="0.9"/>
+                <!-- Upper mast + external power conduit -->
+                <rect x="28.5" y="35" width="7" height="43" fill="url(#hzLampMetal)" stroke="#050507" stroke-width="1"/>
+                <path d="M37 37 V112" stroke="#64748b" stroke-width="1.3"/>
+                <rect x="35.5" y="47" width="3" height="2" fill="#f3e600"/>
+                <rect x="35.5" y="67" width="3" height="2" fill="#f3e600"/>
+                <rect x="35.5" y="96" width="3" height="2" fill="#f3e600"/>
+                <!-- Mid-mast telemetry node -->
+                <rect x="25" y="55" width="14" height="6" rx="1" fill="#0f172a" stroke="#94a3b8" stroke-width="0.9"/>
+                <rect x="28" y="57" width="8" height="2" rx="0.8" fill="#22d3ee"/>
+                <!-- Dual-wing cyber pagoda luminaire head -->
+                <line x1="32" y1="3" x2="32" y2="11" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round"/>
+                <circle cx="32" cy="3" r="1.9" fill="#f3e600"/>
+                <polygon points="18,16 46,16 41,11 23,11" fill="#1e293b" stroke="#f5f5f5" stroke-opacity="0.55" stroke-width="1"/>
+                <polygon points="4,22 12,15 52,15 60,22 52,25 12,25" fill="url(#hzLampHead)" stroke="#050507" stroke-width="1.2"/>
+                <polyline points="7,21 13,16 51,16 57,21" fill="none" stroke="#f5f5f5" stroke-opacity="0.78" stroke-width="1"/>
+                <rect x="13" y="18.5" width="5" height="2" fill="#f3e600"/>
+                <rect x="46" y="18.5" width="5" height="2" fill="#f3e600"/>
+                <!-- Glowing LED emitter lens -->
+                <polygon points="14,25 50,25 46,30 18,30" fill="#f3e600"/>
+                <polygon points="19,25.6 45,25.6 43,28.8 21,28.8" fill="#fffef0"/>
+                <polygon points="24,30 40,30 36,36 28,36" fill="#0f172a" stroke="#64748b" stroke-width="0.9"/>
+              </symbol>
+            </defs>
+          </svg>
+          ${[22, 39, 61, 78].map(pct => `<div class="street-pylon" style="left: ${pct}%;"><div class="pylon-cone"></div><div class="pylon-floor-pool"></div><svg class="pylon-svg" viewBox="0 0 64 140" aria-hidden="true"><use href="#hzStreetLampSym"/></svg></div>`).join('')}
 
-          <div class="street-ads-beacon" id="streetAdsBeacon" onclick="if(typeof openWatchAdsModal==='function')openWatchAdsModal();" title="Watch Ads — Free 2× Luck &amp; Instant 100K Pack">
+          <div class="street-ads-beacon" id="streetAdsBeacon" role="button" tabindex="0" onclick="if(typeof openWatchAdsModal==='function')openWatchAdsModal();" title="Watch Ads — Free 2× Luck &amp; Instant 100K Pack">
             <div class="ads-beacon-tag"><span class="ads-live-dot"></span>2× ADS</div>
-            <div class="ads-beacon-core">
-              <svg class="ads-beacon-svg" viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
-                <rect x="2" y="4" width="20" height="15" rx="3" stroke="#f3e600" stroke-width="1.8" fill="rgba(10,12,18,0.85)"/>
-                <polygon points="10,8 16,11.5 10,15" fill="#f3e600"/>
-                <path d="M7 21h10" stroke="#f3e600" stroke-width="1.8" stroke-linecap="round"/>
+            <div class="ads-crate-wrap">
+              <svg class="ads-crate-svg" viewBox="0 0 88 74" aria-hidden="true">
+                <defs>
+                  <linearGradient id="hzCrateLid" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#3b475e"/>
+                    <stop offset="100%" stop-color="#171d29"/>
+                  </linearGradient>
+                  <linearGradient id="hzCrateBody" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#1d2433"/>
+                    <stop offset="100%" stop-color="#090c12"/>
+                  </linearGradient>
+                  <linearGradient id="hzCrateCore" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#fff48a"/>
+                    <stop offset="55%" stop-color="#f3e600"/>
+                    <stop offset="100%" stop-color="#ca8a04"/>
+                  </linearGradient>
+                  <pattern id="hzCrateStripe" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+                    <rect width="5" height="10" fill="#f3e600"/>
+                    <rect x="5" width="5" height="10" fill="#090b10"/>
+                  </pattern>
+                </defs>
+                <!-- Contact shadow -->
+                <ellipse cx="44" cy="69" rx="31" ry="4" fill="#000000" opacity="0.72"/>
+                <!-- Skid feet -->
+                <rect x="14" y="61" width="16" height="6" rx="1.5" fill="#0f172a" stroke="#64748b" stroke-width="1.1"/>
+                <rect x="58" y="61" width="16" height="6" rx="1.5" fill="#0f172a" stroke="#64748b" stroke-width="1.1"/>
+                <!-- Side heavy clamp latches -->
+                <polygon points="4,35 11,32 11,54 4,51" fill="#f3e600" stroke="#050507" stroke-width="1.4"/>
+                <rect x="6" y="39" width="3" height="8" fill="#050507"/>
+                <polygon points="84,35 77,32 77,54 84,51" fill="#f3e600" stroke="#050507" stroke-width="1.4"/>
+                <rect x="79" y="39" width="3" height="8" fill="#050507"/>
+                <!-- Armored chest body -->
+                <polygon points="10,28 78,28 75,62 13,62" fill="url(#hzCrateBody)" stroke="#050507" stroke-width="1.6"/>
+                <polygon points="10,28 20,28 20,62 13,62" fill="#232c3d" stroke="#475569" stroke-width="0.9"/>
+                <polygon points="68,28 78,28 75,62 68,62" fill="#232c3d" stroke="#475569" stroke-width="0.9"/>
+                <!-- Corner rivets -->
+                <circle cx="15" cy="33" r="1.4" fill="#e2e8f0"/>
+                <circle cx="73" cy="33" r="1.4" fill="#e2e8f0"/>
+                <circle cx="16.5" cy="57" r="1.4" fill="#e2e8f0"/>
+                <circle cx="71.5" cy="57" r="1.4" fill="#e2e8f0"/>
+                <!-- 3D chamfered top lid + lock clasp -->
+                <polygon points="16,9 72,9 80,22 8,22" fill="url(#hzCrateLid)" stroke="#f5f5f5" stroke-opacity="0.72" stroke-width="1.2"/>
+                <rect x="32" y="12.5" width="24" height="5.5" rx="1.5" fill="#090b10" stroke="#94a3b8" stroke-width="1"/>
+                <rect x="40" y="13.5" width="8" height="3.5" fill="#f3e600"/>
+                <!-- Hazard stripe collar -->
+                <rect x="8" y="22" width="72" height="6.5" fill="url(#hzCrateStripe)" stroke="#050507" stroke-width="1.4"/>
+                <!-- Central glowing energy core bay + play emblem -->
+                <polygon points="32,33 56,33 61,38 61,52 56,57 32,57 27,52 27,38" fill="#050507" stroke="#f3e600" stroke-width="1.7"/>
+                <polygon points="34,36 54,36 58,40 58,50 54,54 34,54 30,50 30,40" fill="url(#hzCrateCore)"/>
+                <polygon points="40,39.5 52,45 40,50.5" fill="#050507"/>
               </svg>
-              <span class="ads-beacon-sub">LUCK</span>
+              <span class="ads-beacon-sub">SUPPLY</span>
             </div>
             <div class="ads-beacon-pad"></div>
           </div>

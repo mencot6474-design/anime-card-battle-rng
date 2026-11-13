@@ -322,16 +322,36 @@
   color: #f87171;
 }
 
-/* ------------------------- 2X ADS STREET BEACON (REPLACING DECORATIVE SUPPLY) ---------------- */
+/* ------------------------- 2X ADS SUPPLY CRATE (LOBBY STREET PROP) ---------------- */
 @keyframes adsBeaconFloat {
-  0%, 100% { transform: translate3d(0, 0, 0); }
-  50%      { transform: translate3d(0, -5px, 0); }
+  0%, 100% { transform: translate3d(-50%, 0, 0); }
+  50%      { transform: translate3d(-50%, -5px, 0); }
 }
 @keyframes adsDotPulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50%      { opacity: 0.35; transform: scale(0.7); }
 }
-.street-ads-beacon,
+@keyframes adsPadPulse {
+  0%, 100% { opacity: 0.65; transform: scale(0.95); }
+  50%      { opacity: 1; transform: scale(1.08); }
+}
+.street-ads-beacon {
+  position: absolute;
+  bottom: -44px; left: 43%;
+  width: 72px; min-height: 68px;
+  pointer-events: auto; cursor: pointer;
+  z-index: 19;
+  display: flex; flex-direction: column; align-items: center;
+  animation: adsBeaconFloat 2.4s infinite ease-in-out;
+  transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+.street-ads-beacon:hover {
+  transform: translate3d(-50%, -4px, 0) scale(1.09);
+}
+.street-ads-beacon:active {
+  transform: translate3d(-50%, 0, 0) scale(0.96);
+}
 .street-crate {
   position: absolute;
   bottom: -38px; left: 41%;
@@ -339,25 +359,21 @@
   pointer-events: auto; cursor: pointer;
   z-index: 19;
   display: flex; flex-direction: column; align-items: center;
-  animation: adsBeaconFloat 2.4s infinite ease-in-out;
   transition: transform 0.16s ease-out;
-}
-.street-ads-beacon:hover,
-.street-crate:hover {
-  transform: translate3d(0, -3px, 0) scale(1.08);
 }
 .ads-beacon-tag,
 .crate-tag {
   background: var(--haz, #f3e600) !important;
   color: #050507 !important;
-  font-family: 'JetBrains Mono', 'DIN Alternate', monospace;
-  font-size: 9px; font-weight: 900;
-  padding: 1px 6px; margin-bottom: 2px;
-  border: 1px solid #050507;
+  font-family: 'Orbitron', 'JetBrains Mono', monospace;
+  font-size: 8.5px; font-weight: 900;
+  letter-spacing: 0.05em;
+  padding: 2px 7px; margin-bottom: 1px;
+  border: 1.5px solid #050507;
   border-radius: 2px;
   white-space: nowrap;
   display: inline-flex; align-items: center; gap: 4px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.85);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.9);
 }
 .ads-live-dot {
   width: 5px; height: 5px;
@@ -366,7 +382,28 @@
   box-shadow: 0 0 4px #ef4444;
   animation: adsDotPulse 1.2s infinite ease-in-out;
 }
-.ads-beacon-core,
+.ads-crate-wrap {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center;
+}
+.ads-crate-svg {
+  width: 58px; height: 49px;
+  display: block;
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,0.9)) drop-shadow(0 0 8px rgba(243,230,0,0.28));
+}
+.ads-beacon-sub {
+  margin-top: -5px;
+  padding: 1px 6px;
+  background: #07090f;
+  border: 1px solid rgba(243,230,0,0.8);
+  border-radius: 2px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 7.5px; font-weight: 900;
+  color: var(--haz, #f3e600);
+  letter-spacing: 0.09em;
+  line-height: 1.2;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.9);
+}
 .crate-box {
   width: 48px; height: 32px;
   background: linear-gradient(180deg, #181d29 0%, #0a0d14 100%) !important;
@@ -376,20 +413,12 @@
   display: flex; align-items: center; justify-content: center; gap: 3px;
   box-shadow: 0 8px 16px rgba(0,0,0,0.95), 0 0 10px rgba(243,230,0,0.28) !important;
 }
-.ads-beacon-svg {
-  filter: drop-shadow(0 0 3px rgba(243,230,0,0.5));
-}
-.ads-beacon-sub {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 8px; font-weight: 900;
-  color: var(--haz, #f3e600);
-  letter-spacing: 0.04em;
-}
 .ads-beacon-pad {
-  width: 34px; height: 5px;
-  background: radial-gradient(ellipse at 50% 50%, rgba(243,230,0,0.35) 0%, transparent 70%);
+  width: 50px; height: 10px;
+  margin-top: 1px;
   border-radius: 50%;
-  margin-top: 2px;
+  background: radial-gradient(ellipse at 50% 50%, rgba(243,230,0,0.42) 0%, rgba(243,230,0,0.12) 48%, transparent 74%);
+  animation: adsPadPulse 2.4s infinite ease-in-out;
 }
 
 /* AUTO ROLL — sleek framed icon badge + crisp status dot */
@@ -575,6 +604,8 @@
   .nh-shell .dock-hex-chassis { width: 28px; height: 26px; }
   .nh-shell .roll-dice-svg { width: 23px; height: 23px; }
   .nh-shell .nav-dock { width: min(100%, 490px); }
+  .nh-shell .street-ads-beacon { bottom: -32px; width: 64px; min-height: 58px; }
+  .nh-shell .ads-crate-svg { width: 48px; height: 40px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .nh-shell .dock-btn.dock-auto-btn.is-on::after,
@@ -582,6 +613,9 @@
   .nh-shell .dock-btn.dock-auto-btn.is-on .dock-auto-svg,
   .nh-shell .dock-btn.dock-auto-btn.is-on .dock-ic-wrap::after,
   .nh-shell .roll-dice-svg,
+  .nh-shell .street-ads-beacon,
+  .nh-shell .ads-live-dot,
+  .nh-shell .ads-beacon-pad,
   .hz-ftue-card,
   .hz-ftue-dot,
   .dock-btn.hz-ftue-target::after { animation: none !important; }

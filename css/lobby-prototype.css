@@ -8553,7 +8553,7 @@ html body.on-lobby {
     transform: translateX(-50%) scaleY(0.26) scaleX(1.08);
   }
 
-  /* 4. STREET PROPS: TACTICAL LAMP PYLONS + INTERACTIVE SUPPLY CRATE */
+  /* 4. STREET PROPS: TACTICAL CYBER LAMP PYLONS + INTERACTIVE SUPPLY CRATE */
   .street-props-layer {
     position: absolute; left: 0; right: 0; bottom: 26%;
     height: 120px;
@@ -8561,30 +8561,48 @@ html body.on-lobby {
   }
   .street-pylon {
     position: absolute; bottom: 0;
-    width: 18px; height: 96px;
-    display: flex; flex-direction: column; align-items: center;
-  }
-  .pylon-head {
-    width: 24px; height: 8px;
-    background: #f5f5f5; border: 1.5px solid #050507;
-    box-shadow: 0 0 14px var(--haz);
-  }
-  .pylon-pole {
-    width: 5px; flex: 1;
-    background: linear-gradient(180deg, #e5e7eb 0%, #1f2937 100%);
-    border-left: 1px solid #050507; border-right: 1px solid #050507;
-  }
-  .pylon-base {
-    width: 22px; height: 10px;
-    background: #111827; border: 1.5px solid #f3e600;
-  }
-  /* Warm Spotlight Cone cast onto the street floor */
-  .pylon-cone {
-    position: absolute; top: 8px; left: 50%;
+    width: 56px; height: 118px;
     transform: translateX(-50%);
-    width: 120px; height: 135px;
-    background: radial-gradient(ellipse at 50% 0%, rgba(243,230,0,0.22) 0%, rgba(243,230,0,0.05) 55%, transparent 78%);
-    clip-path: polygon(42% 0%, 58% 0%, 100% 100%, 0% 100%);
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  .pylon-svg {
+    position: relative;
+    z-index: 2;
+    width: 100%; height: 100%;
+    display: block;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.85));
+  }
+  /* Volumetric Spotlight Cone cast from emitter lens onto street pavement */
+  .pylon-cone {
+    position: absolute;
+    top: 20%; bottom: -4px; left: 50%;
+    transform: translateX(-50%);
+    width: 128px;
+    z-index: 1;
+    background: linear-gradient(
+      180deg,
+      rgba(243, 230, 0, 0.24) 0%,
+      rgba(243, 230, 0, 0.11) 42%,
+      rgba(243, 230, 0, 0.03) 76%,
+      transparent 100%
+    );
+    clip-path: polygon(38% 0%, 62% 0%, 100% 100%, 0% 100%);
+    pointer-events: none;
+  }
+  /* Soft Ground Light Pool around base on wet asphalt */
+  .pylon-floor-pool {
+    position: absolute;
+    bottom: -10px; left: 50%;
+    transform: translateX(-50%);
+    width: 118px; height: 26px;
+    border-radius: 50%;
+    z-index: 0;
+    background: radial-gradient(
+      ellipse at 50% 50%,
+      rgba(243, 230, 0, 0.26) 0%,
+      rgba(243, 230, 0, 0.09) 48%,
+      transparent 76%
+    );
     pointer-events: none;
   }
 
@@ -9585,6 +9603,10 @@ html body.on-lobby {
     .bldg-sign { margin-bottom: 4px; }
     .village-world { min-height: 0; height: 100%; }
     .buildings-row { bottom: 36%; }
+    .street-props-layer { bottom: 28%; height: 96px; }
+    .street-pylon { width: 44px; height: 92px; }
+    .pylon-cone { width: 96px; }
+    .pylon-floor-pool { width: 90px; height: 20px; }
     .walkers-layer { bottom: 22%; height: 28%; }
     .card-walker { width: 76px; height: 108px; }
     .card-walker.is-chibi { width: 88px; height: 98px; }
