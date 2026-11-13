@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v650-lobbyChibi47';
+const CACHE_NAME = 'anime-card-battle-v651-lobbyChibi53';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

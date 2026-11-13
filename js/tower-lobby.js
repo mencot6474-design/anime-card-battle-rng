@@ -2877,7 +2877,8 @@ const LOBBY_CHIBI_SLUGS = new Set([
   'immortal-vampire', 'ink-anamloy', 'lightborne-admiral', 'luck-voltia', 'meteor-conqueror',
   'moon-mother', 'nine-tail-prodigy', 'noble-companion', 'nullblade-knight', 'oceans-guardian',
   'omni-sovereign', 'otherworldly-being', 'paper-pal', 'psychic-esper', 'puppeteer',
-  'regressor', 'royal-vanguard'
+  'regressor', 'royal-vanguard', 'rubberbound-captain', 'ruler', 'sand-vessel',
+  'sea-sovereign', 'shadow-heir', 'shadow-king'
 ]);
 
 function lobbyChibiSrc(artPath) {
