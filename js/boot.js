@@ -168,7 +168,7 @@ ${_linkCard}
   </div>`;
 
 
-  if(window.lucide) window.lucide.createIcons();
+  /* Lucide CDN dihapus — game pakai inline SVG & aset 2.5D WebP. */
 
   /* AKORDEON V2 — satu sektor terbuka di layar sempit (<700px), bebas di atasnya.
      Tubuh sektor tidak dianimasikan tingginya (display:none↔flex) supaya tidak ada
@@ -240,7 +240,26 @@ ${_linkCard}
     const unlock=()=>{ if(claimBtn)claimBtn.disabled=false; if(signinBtn)signinBtn.disabled=false; };
     if(claimBtn) claimBtn.onclick=()=>{ lock(); claimNamedAccount().finally(unlock); };
     if(signinBtn) signinBtn.onclick=()=>{ lock(); signInNamedAccount().finally(unlock); };
-    if(unlinkBtn) unlinkBtn.onclick=()=>{ if(confirm(isEn?"Unlink this account on this device? You'll resume as a guest here. (Your cloud account is safe.)":"Putuskan tautan akun ini di perangkat ini? Kamu akan balik jadi guest di sini. (Akun cloud-mu tetap aman.)")) unlinkAccount(); };
+    if(unlinkBtn) unlinkBtn.onclick=()=>{
+      if(unlinkBtn.dataset.armed==="1"){
+        clearTimeout(unlinkBtn._armTimer);
+        delete unlinkBtn.dataset.armed;
+        unlinkAccount();
+        return;
+      }
+      unlinkBtn.dataset.armed="1";
+      const prevHtml=unlinkBtn.innerHTML;
+      unlinkBtn.textContent=isEn?"CONFIRM UNLINK? (TAP AGAIN)":"KLIK LAGI UNTUK PUTUS";
+      unlinkBtn.style.borderColor="#f3e600";
+      unlinkBtn.style.color="#f3e600";
+      unlinkBtn._armTimer=setTimeout(()=>{
+        if(!unlinkBtn) return;
+        delete unlinkBtn.dataset.armed;
+        unlinkBtn.innerHTML=prevHtml;
+        unlinkBtn.style.borderColor="";
+        unlinkBtn.style.color="";
+      },4000);
+    };
   }
   const manualCloudBtn=document.getElementById("manualCloudBtn");
   if(manualCloudBtn){
@@ -648,9 +667,9 @@ async function submitAuth(){
   const name=document.getElementById("auUser").value.trim();
   const pass=document.getElementById("auPass").value;
   auError("");
-  if(name.length<3){auError("Username minimal 3 karakter.");return;}
-  if(/\s/.test(name)){auError("Username tidak boleh ada spasi.");return;}
-  if(pass.length<3){auError("Password minimal 3 karakter.");return;}
+  if(name.length<3){auError((window.GameLang&&typeof window.GameLang.get==="function"?window.GameLang.get()==="en":true)?"Username must be at least 3 characters.":"Username minimal 3 karakter.");return;}
+  if(/\s/.test(name)){auError((window.GameLang&&typeof window.GameLang.get==="function"?window.GameLang.get()==="en":true)?"Username cannot contain spaces.":"Username tidak boleh ada spasi.");return;}
+  if(pass.length<3){auError((window.GameLang&&typeof window.GameLang.get==="function"?window.GameLang.get()==="en":true)?"Password must be at least 3 characters.":"Password minimal 3 karakter.");return;}
   btn.disabled=true;btn.classList.add("press");
   const isEn = (window.GameLang && typeof window.GameLang.get === "function") ? window.GameLang.get() === "en" : true;
   document.getElementById("asTxt").textContent = authMode === "register"
@@ -987,11 +1006,12 @@ async function claimNamedAccount(){
 async function signInNamedAccount(){
   const uEl=document.getElementById("linkUser"), pEl=document.getElementById("linkPass");
   const name=(uEl&&uEl.value||"").trim(), pass=(pEl&&pEl.value||"");
-  if(typeof window.isCrazyGames==="function" && window.isCrazyGames()){ _linkMsg("Nonaktif di CrazyGames."); return; }
-  if(!name || !pass){ _linkMsg("Isi username dan password."); return; }
-  if(!window.CloudAuth || !window.CloudDB || !navigator.onLine){ _linkMsg("Butuh koneksi Cloud. Periksa internet lalu coba lagi."); return; }
+  if(typeof window.isCrazyGames==="function" && window.isCrazyGames()){ const _en=(window.GameLang&&typeof window.GameLang.get==="function")?window.GameLang.get()==="en":true; _linkMsg(_en?"Disabled on CrazyGames.":"Nonaktif di CrazyGames."); return; }
+  if(!name || !pass){ const _en=(window.GameLang&&typeof window.GameLang.get==="function")?window.GameLang.get()==="en":true; _linkMsg(_en?"Enter username and password.":"Isi username dan password."); return; }
+  if(!window.CloudAuth || !window.CloudDB || !navigator.onLine){ const _en=(window.GameLang&&typeof window.GameLang.get==="function")?window.GameLang.get()==="en":true; _linkMsg(_en?"Cloud connection required. Check internet and retry.":"Butuh koneksi Cloud. Periksa internet lalu coba lagi."); return; }
   const key=name.toLowerCase(), passH=hashPass(pass);
-  _linkMsg("Masuk…");
+  const _siEn=(window.GameLang&&typeof window.GameLang.get==="function")?window.GameLang.get()==="en":(typeof state==="undefined"||!state||state.lang!=="id");
+  _linkMsg(_siEn?"Signing in…":"Masuk…");
   try{
     let jwt=await window.CloudAuth.authenticate(key, passH);
     if(!jwt || !jwt.ok){
@@ -1003,10 +1023,10 @@ async function signInNamedAccount(){
       if(jwt.save_data){ try{ localStorage.setItem("aab-state-v2:"+target, JSON.stringify(jwt.save_data)); }catch(e){} }
       _rememberLink(target, passH);
       localStorage.removeItem("aab_guest_user"); localStorage.removeItem("aab_guest_pass");
-      _linkMsg("Masuk sebagai "+target+". Memuat…");
+      _linkMsg(_siEn?("Signed in as "+target+". Loading…"):("Masuk sebagai "+target+". Memuat…"));
       enterGame(target, true);
     } else {
-      _linkMsg("Username/password salah, atau akun belum punya save di server.");
+      _linkMsg(_siEn?"Incorrect username/password, or account has no server save yet.":"Username/password salah, atau akun belum punya save di server.");
     }
   }catch(e){ console.error("signIn err:", e); _linkMsg("Error: "+(e&&e.message||e)); }
 }
@@ -1364,6 +1384,26 @@ function toggleFootMenu(){
 function closeFootMenu(){
   const m=document.getElementById("footMenu");if(m)m.classList.remove("show");
 }
+function _hzConfirmModal(title, msg, okTxt, cancelTxt, onOk){
+  const prev=document.getElementById("hzConfirmOverlay");
+  if(prev)prev.remove();
+  const ov=document.createElement("div");
+  ov.id="hzConfirmOverlay";
+  ov.style.cssText="position:fixed;inset:0;background:rgba(5,5,5,0.92);z-index:9999997;display:flex;align-items:center;justify-content:center;padding:20px;font-family:'Outfit',sans-serif;";
+  ov.innerHTML=`<div style="width:100%;max-width:360px;background:#0a0a0a;border:2px solid #f5f5f5;border-top:4px solid #f3e600;padding:22px 20px;color:#f5f5f5;box-sizing:border-box;">
+    <div style="font-family:'Rajdhani','Russo One',sans-serif;font-size:18px;font-weight:900;letter-spacing:1.4px;color:#f3e600;text-transform:uppercase;margin-bottom:8px;">${title}</div>
+    <div style="font-size:13px;line-height:1.5;color:#d4d4d8;margin-bottom:20px;">${msg}</div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button type="button" id="hzCfCancel" style="min-height:44px;padding:0 18px;background:#141414;color:#f5f5f5;border:1px solid #52525b;font-weight:800;font-size:12px;letter-spacing:1px;cursor:pointer;text-transform:uppercase;">${cancelTxt||"CANCEL"}</button>
+      <button type="button" id="hzCfOk" style="min-height:44px;padding:0 20px;background:#f3e600;color:#050505;border:2px solid #f3e600;font-weight:900;font-size:12px;letter-spacing:1px;cursor:pointer;text-transform:uppercase;">${okTxt||"CONFIRM"}</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  ov.querySelector("#hzCfCancel").onclick=close;
+  ov.onclick=(e)=>{if(e.target===ov)close();};
+  ov.querySelector("#hzCfOk").onclick=()=>{close();try{if(typeof onOk==="function")onOk();}catch(err){console.error(err);}};
+}
 function footMenuGo(k){
   closeFootMenu();
   if(k==="profile")openProfileModal();
@@ -1378,7 +1418,16 @@ function footMenuGo(k){
   else if(k==="changelog"){if(typeof openChangelogModal==="function")openChangelogModal();}
   else if(k==="bg"){if(typeof cycleLobbyBackground==="function")cycleLobbyBackground();}
   else if(k==="frame"){if(typeof cycleCardFrame==="function")cycleCardFrame();}
-  else if(k==="logout"){if(confirm("Keluar dari akun ini?"))logout();}
+  else if(k==="logout"){
+    const isEn=(window.GameLang&&typeof window.GameLang.get==="function")?window.GameLang.get()==="en":(typeof state==="undefined"||!state||state.lang!=="id");
+    _hzConfirmModal(
+      isEn?"LOG OUT":"KELUAR AKUN",
+      isEn?"Sign out of this account? Cloud progress stays saved on the server.":"Keluar dari akun ini? Progres cloud tetap tersimpan di server.",
+      isEn?"LOG OUT":"KELUAR",
+      isEn?"CANCEL":"BATAL",
+      ()=>logout()
+    );
+  }
 }
 document.addEventListener("keydown",e=>{
   if(e.key!=="Escape")return;
@@ -1725,7 +1774,7 @@ function boot(){
       const file = e.target.files && e.target.files[0];
       if(!file) return;
       if(!file.type.startsWith("image/")){
-        if(typeof toast==="function") toast("ERROR", "HANYA FILE GAMBAR YANG DIPERBOLEHKAN", "#ff4757");
+        if(typeof toast==="function"){ const _en=(window.GameLang&&typeof window.GameLang.get==="function")?window.GameLang.get()==="en":(typeof state==="undefined"||!state||state.lang!=="id"); toast("ERROR", _en?"IMAGE FILES ONLY":"HANYA FILE GAMBAR YANG DIPERBOLEHKAN", "#ff4757"); }
         return;
       }
       const reader = new FileReader();
@@ -1747,7 +1796,7 @@ function boot(){
           state.customAvatar = webp.indexOf("data:image/webp") === 0 ? webp : cv.toDataURL("image/jpeg", 0.78);
           save();
           renderShell();
-          if(typeof toast==="function") toast("AVATAR UPDATED", "FOTO PROFIL BERHASIL DIUPDATE!", "#7df9ff");
+          if(typeof toast==="function"){ const _en=(window.GameLang&&typeof window.GameLang.get==="function")?window.GameLang.get()==="en":(typeof state==="undefined"||!state||state.lang!=="id"); toast(_en?"AVATAR UPDATED":"FOTO PROFIL DIPERBARUI", _en?"Profile avatar updated!":"FOTO PROFIL BERHASIL DIUPDATE!", "#7df9ff"); }
         };
         img.src = ev.target.result;
       };
@@ -1762,13 +1811,13 @@ function boot(){
       if(netBar)return netBar;
       netBar=document.createElement("div");
       netBar.id="onlineGuardOverlay";
-      netBar.style.cssText="position:fixed;inset:0;background:rgba(5,7,13,0.94);z-index:9999998;display:none;align-items:center;justify-content:center;padding:20px;font-family:sans-serif;backdrop-filter:blur(8px);";
-      netBar.innerHTML=`
-        <div style="background:#0d1322;border:1px solid #ff4757;border-radius:16px;padding:28px 24px;max-width:360px;text-align:center;color:#fff;box-shadow:0 0 40px rgba(255,71,87,0.35);">
-          <div style="font-size:38px;margin-bottom:10px">📡</div>
-          <div style="font-size:17px;font-weight:800;color:#ff4757;letter-spacing:1px;margin-bottom:8px">KONEKSI TERPUTUS</div>
-          <div style="font-size:13px;color:#94a3b8;line-height:1.5;margin-bottom:20px">Game ini membutuhkan koneksi internet aktif ke server Supabase. Periksa jaringan kamu untuk melanjutkan permainan.</div>
-          <button onclick="location.reload()" style="background:linear-gradient(135deg,#ff4757,#e84118);color:#fff;border:none;padding:11px 26px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;letter-spacing:0.5px">MUAT ULANG</button>
+      netBar.style.cssText="position:fixed;inset:0;background:rgba(5,5,5,0.96);z-index:9999998;display:none;align-items:center;justify-content:center;padding:20px;font-family:'Outfit',sans-serif;";
+      const _nEn=(window.GameLang&&typeof window.GameLang.get==="function")?window.GameLang.get()==="en":(typeof state==="undefined"||!state||state.lang!=="id"); netBar.innerHTML=`
+        <div style="background:#0a0a0a;border:2px solid #f5f5f5;border-top:4px solid #f3e600;padding:28px 24px;max-width:360px;text-align:center;color:#f5f5f5;">
+          <div style="font-size:10px;font-weight:800;letter-spacing:2px;color:#f3e600;margin-bottom:6px;text-transform:uppercase">HAZARD // NETWORK GUARD</div>
+          <div style="font-family:'Rajdhani','Russo One',sans-serif;font-size:19px;font-weight:900;color:#f3e600;letter-spacing:1.5px;margin-bottom:8px;text-transform:uppercase">${_nEn?"CONNECTION LOST":"KONEKSI TERPUTUS"}</div>
+          <div style="font-size:13px;color:#d4d4d8;line-height:1.5;margin-bottom:20px">${_nEn?"An active internet connection to the server is required. Check your network to continue playing.":"Game ini membutuhkan koneksi internet aktif ke server. Periksa jaringan kamu untuk melanjutkan permainan."}</div>
+          <button onclick="location.reload()" style="min-height:44px;background:#f3e600;color:#050505;border:2px solid #f3e600;padding:0 26px;font-weight:900;font-size:13px;cursor:pointer;letter-spacing:1px;text-transform:uppercase">${_nEn?"RELOAD":"MUAT ULANG"}</button>
         </div>
       `;
       document.body.appendChild(netBar);

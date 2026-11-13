@@ -423,7 +423,7 @@
         : '10 summon selesai! Tekan tombol <b>DECK</b> di pojok kanan bawah untuk mengatur timmu.';
       ctaLabel = isEn ? 'OPEN DECK' : 'BUKA DECK';
       ctaAttr = 'onclick="hzFtueOpenDeck()"';
-      targetEl = document.querySelector('.nh-shell .dock-btn[title="Deck Party"]');
+      targetEl = document.getElementById('nhDockDeckBtn') || document.querySelector('.nh-shell .dock-btn[title="Deck Party"]');
     } else if (phase === 4) {
       badge = 'STEP 04 / 07';
       line = isEn
@@ -448,7 +448,7 @@
         : 'Skuadmu siap bertempur! Ketuk bangunan <b>STORY GATE</b> untuk masuk ke mode Story.';
       ctaLabel = isEn ? 'OPEN STORY' : 'BUKA STORY';
       ctaAttr = 'onclick="hzFtueOpenStory()"';
-      targetEl = document.querySelector('.chibi-bldg[title="Enter Story Gate"]');
+      targetEl = document.getElementById('nhFtueStoryGate') || document.querySelector('.chibi-bldg[title="Enter Story Gate"]');
       if (targetEl && !_scrolledStoryOnce) {
         _scrolledStoryOnce = true;
         try { targetEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); } catch (e) {}

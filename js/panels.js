@@ -5849,6 +5849,13 @@ function openWatchAdsModal() {
   m.classList.add('show');
   document.body.classList.add('wa-open', 'hide-docks-modal');
   waBannerOpen();
+  if (typeof srOn === 'function' && srOn() && typeof CloudDB !== 'undefined' && CloudDB.getAdRewardState && typeof currentUser !== 'undefined' && currentUser) {
+    CloudDB.getAdRewardState(currentUser).then(function(r) {
+      if (!r || !r.ok) return;
+      _saveAdState(Number(r.luckEndsAtMs) || 0, Number(r.packCdEndsAtMs) || 0);
+      if (m.classList.contains('show') && !_watchingAdBusy) renderWatchAdsModal();
+    }).catch(function() {});
+  }
   if (_watchAdsModalTimer) clearInterval(_watchAdsModalTimer);
   _watchAdsModalTimer = setInterval(function() {
     if (!m.classList.contains('show')) {
@@ -6245,49 +6252,125 @@ function runWatchAdSimulation(kind) {
   }, 1000);
 }
 
-function completeWatchAdReward(kind) {
-  var now = Date.now();
-  _watchAdsClaims++;
-  if (kind === 'luck') {
-    _saveAdState(now + AD_LUCK_DURATION_MS, null);
-    _watchAdsDoneKind = 'luck';
-    try { if (typeof sfx !== 'undefined' && sfx.win) sfx.win(); } catch (e) {}
-    toast('2× LUCK ACTIVE (5 MIN)!', 'Your total luck is doubled (×2) for 5 minutes!', '#6be08a');
-    renderWatchAdsModal();
-    if (typeof renderShell === 'function') renderShell();
-    if (typeof renderLobby === 'function' && typeof route === 'function' && route() === '#/lobby' && !battleLive()) {
-      var lbl = document.getElementById('hfdAdsLbl');
-      if (lbl) lbl.textContent = '2× ON';
-    }
-    if (_watchAdsDoneTimer) clearTimeout(_watchAdsDoneTimer);
-    _watchAdsDoneTimer = setTimeout(function() {
-      _watchAdsDoneKind = null;
-      var m = document.getElementById('watchAdsModal');
-      if (m && m.classList.contains('show') && !_watchingAdBusy) renderWatchAdsModal();
-    }, 2400);
-  } else if (kind === 'pack100k') {
-    _saveAdState(null, now + AD_PACK_COOLDOWN_MS);
-    _watchAdsDoneKind = null;
-    try { if (typeof sfx !== 'undefined' && sfx.win) sfx.win(); } catch (e) {}
-    renderWatchAdsModal();
-    var pulls = 100000;
-    var loot = (typeof instantRollFast === 'function') ? instantRollFast(pulls, true) : [];
-    toast('INSTANT PACK 100K RECEIVED!', '100,000 instant card pulls opened!', '#ffd700');
-    if (typeof renderShell === 'function') renderShell();
-    closeWatchAdsModal(function() {
-      if (typeof showTowerLoot === 'function') {
-        showTowerLoot(loot, { weather: 0, luck: 0, speed: 0 }, 'REWARD WATCH ADS · 100,000 ROLL');
+var _claimingAdReward = false;
+async function completeWatchAdReward(kind) {
+  if (_claimingAdReward) return;
+  _claimingAdReward = true;
+  try {
+    var now = Date.now();
+    var hasCloud = (typeof srOn === 'function' && srOn() && typeof CloudDB !== 'undefined' && CloudDB.claimAdReward && typeof currentUser !== 'undefined' && currentUser);
+    if (hasCloud) {
+      var res = null;
+      try {
+        var luckArg = (kind === 'pack100k' && typeof totalLuck === 'function') ? totalLuck() : null;
+        res = await CloudDB.claimAdReward(currentUser, kind, luckArg);
+      } catch (e) { res = null; }
+      if (!res || !res.ok) {
+        var msg = (!res) ? 'Connection to server failed. Please try again.'
+          : (res.msg === 'COOLDOWN' ? 'Reward is still on cooldown on the server.'
+          : (res.msg === 'ALREADY_ACTIVE' ? '2× Ad Luck buff is already active on the server.'
+          : (res.msg === 'DAILY_CAP' ? 'Daily rewarded gem limit reached (' + (res.gemsTodayCount || 40) + '/' + (res.gemsTodayCap || 40) + ').'
+          : ('Server rejected reward: ' + (res.msg || 'ERROR')))));
+        if (res && typeof res.luckEndsAtMs === 'number' && kind === 'luck') _saveAdState(res.luckEndsAtMs, null);
+        if (res && typeof res.packCdEndsAtMs === 'number' && kind === 'pack100k') _saveAdState(null, res.packCdEndsAtMs);
+        toast('REWARD DENIED', msg, '#f87171');
+        renderWatchAdsModal();
+        return;
       }
-    });
-  } else if (kind === 'gems') {
-    if (typeof state !== 'undefined' && state) {
-      state.premiumGems = (state.premiumGems || 0) + 25;
-      if (typeof save === 'function') save();
+      _watchAdsClaims++;
+      if (kind === 'luck') {
+        var luckEnd = Number(res.luckEndsAtMs) || (now + AD_LUCK_DURATION_MS);
+        _saveAdState(luckEnd, null);
+        _watchAdsDoneKind = 'luck';
+        try { if (typeof sfx !== 'undefined' && sfx.win) sfx.win(); } catch (e) {}
+        toast('2× LUCK ACTIVE (5 MIN)!', 'Your total luck is doubled (×2) for 5 minutes!', '#6be08a');
+        renderWatchAdsModal();
+        if (typeof renderShell === 'function') renderShell();
+        if (typeof renderLobby === 'function' && typeof route === 'function' && route() === '#/lobby' && !battleLive()) {
+          var lbl = document.getElementById('hfdAdsLbl');
+          if (lbl) lbl.textContent = '2× ON';
+        }
+        if (_watchAdsDoneTimer) clearTimeout(_watchAdsDoneTimer);
+        _watchAdsDoneTimer = setTimeout(function() {
+          _watchAdsDoneKind = null;
+          var m = document.getElementById('watchAdsModal');
+          if (m && m.classList.contains('show') && !_watchingAdBusy) renderWatchAdsModal();
+        }, 2400);
+      } else if (kind === 'pack100k') {
+        var packCd = Number(res.packCdEndsAtMs) || (now + AD_PACK_COOLDOWN_MS);
+        _saveAdState(null, packCd);
+        _watchAdsDoneKind = null;
+        try { if (typeof sfx !== 'undefined' && sfx.win) sfx.win(); } catch (e) {}
+        renderWatchAdsModal();
+        var loot = (res.results || []).map(function(g) {
+          return { cardId: g.cardId, tier: g.tier, mut: g.mut || 'none', shiny: !!g.shiny, chance: g.chance, n: Number(g.n) || 1 };
+        });
+        loot.totalPulls = Number(res.total) || 100000;
+        if (loot.length && typeof pushRollHistory === 'function') {
+          loot.slice().sort(function(a, b) { return (a.chance || 0) - (b.chance || 0); }).slice(-10).forEach(function(g) { pushRollHistory(g, true); });
+          if (typeof window.l12ScheduleRollHistPaint === 'function') window.l12ScheduleRollHistPaint();
+        }
+        toast('INSTANT PACK 100K RECEIVED!', '100,000 instant card pulls opened!', '#ffd700');
+        if (typeof renderShell === 'function') renderShell();
+        closeWatchAdsModal(function() {
+          if (typeof showTowerLoot === 'function') {
+            showTowerLoot(loot, { weather: 0, luck: 0, speed: 0 }, 'REWARD WATCH ADS · 100,000 ROLL');
+          }
+        });
+      } else if (kind === 'gems') {
+        try { if (typeof sfx !== 'undefined' && sfx.win) sfx.win(); } catch (e) {}
+        toast('FREE REWARD CLAIMED!', '+' + (res.gain || 25) + ' GEMS RECEIVED FROM CRAZYGAMES REWARD!', '#7df9ff');
+        if (typeof renderPremiumShop === 'function') renderPremiumShop();
+        if (typeof renderWatchAdsModal === 'function') renderWatchAdsModal();
+        if (typeof renderShell === 'function') renderShell();
+      }
+      return;
     }
-    try { if (typeof sfx !== 'undefined' && sfx.win) sfx.win(); } catch (e) {}
-    toast('FREE REWARD CLAIMED!', '+25 GEMS RECEIVED FROM CRAZYGAMES REWARD!', '#7df9ff');
-    if (typeof renderPremiumShop === 'function') renderPremiumShop();
-    if (typeof renderShell === 'function') renderShell();
+
+    _watchAdsClaims++;
+    if (kind === 'luck') {
+      _saveAdState(now + AD_LUCK_DURATION_MS, null);
+      _watchAdsDoneKind = 'luck';
+      try { if (typeof sfx !== 'undefined' && sfx.win) sfx.win(); } catch (e) {}
+      toast('2× LUCK ACTIVE (5 MIN)!', 'Your total luck is doubled (×2) for 5 minutes!', '#6be08a');
+      renderWatchAdsModal();
+      if (typeof renderShell === 'function') renderShell();
+      if (typeof renderLobby === 'function' && typeof route === 'function' && route() === '#/lobby' && !battleLive()) {
+        var lbl = document.getElementById('hfdAdsLbl');
+        if (lbl) lbl.textContent = '2× ON';
+      }
+      if (_watchAdsDoneTimer) clearTimeout(_watchAdsDoneTimer);
+      _watchAdsDoneTimer = setTimeout(function() {
+        _watchAdsDoneKind = null;
+        var m = document.getElementById('watchAdsModal');
+        if (m && m.classList.contains('show') && !_watchingAdBusy) renderWatchAdsModal();
+      }, 2400);
+    } else if (kind === 'pack100k') {
+      _saveAdState(null, now + AD_PACK_COOLDOWN_MS);
+      _watchAdsDoneKind = null;
+      try { if (typeof sfx !== 'undefined' && sfx.win) sfx.win(); } catch (e) {}
+      renderWatchAdsModal();
+      var pulls = 100000;
+      var lootLocal = (typeof instantRollFast === 'function') ? instantRollFast(pulls, true) : [];
+      toast('INSTANT PACK 100K RECEIVED!', '100,000 instant card pulls opened!', '#ffd700');
+      if (typeof renderShell === 'function') renderShell();
+      closeWatchAdsModal(function() {
+        if (typeof showTowerLoot === 'function') {
+          showTowerLoot(lootLocal, { weather: 0, luck: 0, speed: 0 }, 'REWARD WATCH ADS · 100,000 ROLL');
+        }
+      });
+    } else if (kind === 'gems') {
+      if (typeof state !== 'undefined' && state) {
+        state.premiumGems = (state.premiumGems || 0) + 25;
+        if (typeof save === 'function') save();
+      }
+      try { if (typeof sfx !== 'undefined' && sfx.win) sfx.win(); } catch (e) {}
+      toast('FREE REWARD CLAIMED!', '+25 GEMS RECEIVED FROM CRAZYGAMES REWARD!', '#7df9ff');
+      if (typeof renderPremiumShop === 'function') renderPremiumShop();
+      if (typeof renderShell === 'function') renderShell();
+    }
+  } finally {
+    _claimingAdReward = false;
   }
 }
 

@@ -699,6 +699,42 @@ const CloudDB = {
       F12 menambah kartu palsu di client tidak menaikkan progress. Tombol KLAIM
       di footer Index wajib lewat RPC ini; tanpa sesi cloud (guest) caller
       pakai jalur lokal. Return null = tidak ada sesi cloud. */
+  /** 0049: Watch Ads server timers (syncs authoritative adLuckEndsAt / adPackCdEndsAt). */
+  async getAdRewardState(username) {
+    if (!username) return null;
+    const res = await this._authRpc(username, "get_ad_reward_state", {});
+    if (!res || !res.ok) return res || null;
+    const ST = this._st();
+    if (ST) {
+      ST.adLuckEndsAt = Number(res.luckEndsAtMs) || 0;
+      ST.adPackCdEndsAt = Number(res.packCdEndsAtMs) || 0;
+    }
+    return res;
+  },
+
+  /** 0049: Server-authoritative Watch Ads reward claim ('gems' | 'luck' | 'pack100k'). */
+  async claimAdReward(username, kind, luck) {
+    if (!username || !kind) return null;
+    const args = { p_kind: String(kind) };
+    if (typeof luck === "number" && isFinite(luck) && luck > 0) args.p_luck = luck;
+    const res = await this._authRpc(username, "claim_ad_reward", args);
+    if (!res) return null;
+    const ST = this._st();
+    if (res.ok && ST) {
+      if (kind === "gems" && typeof res.balance === "number") {
+        ST.premiumGems = res.balance;
+        this._paint();
+        try { if (typeof save === "function") save(); } catch (e) {}
+      } else if (kind === "luck") {
+        ST.adLuckEndsAt = Number(res.luckEndsAtMs) || 0;
+      } else if (kind === "pack100k") {
+        ST.adPackCdEndsAt = Number(res.packCdEndsAtMs) || 0;
+        this._applyPullResult(res);
+      }
+    }
+    return res;
+  },
+
   async claimIndexReward(username) {
     if (!username) return null;
     const res = await this._authRpc(username, "claim_index_reward", {});

@@ -1024,6 +1024,7 @@ function startBattle(){
   /* SHARINGAN COPY sbg lawan (Kakashi): sekali di awal battle, salin seluruh passive kartu pemain */
   if(efx.copy){const own={...efx};delete own.copy;efx=Object.assign({},fxOf(eq)||{},own);delete efx.copy;}
   bt={t0:Date.now(),dmgDone:0,speed:battleSpeedEff(),fgen:++FGEN,lv,en,es,eq,fighters,eid,efx,active:0,cutInShown:false,revUsed:new Array(fighters.length).fill(false),justTagged:false,pHp:base.hp,pMax:base.hp,eHp:es.hp,turn:1,over:false,eBurn:0,ePoison:0,pGuardDr:0,eAbilityOff:0,voidUsed:false,pCopyFx:null,spCd:[],spTurn:[],spArmed:[],spWave:[],meteorGuard:[],phase2used:false,domainUsed:false,domainLeft:0,eStun:0,pStun:0,pDr:0,pDrTurns:0,atkBuff:new Array(fighters.length).fill(0),dodgeStack:new Array(fighters.length).fill(0),atkCount:new Array(fighters.length).fill(0),standUsed:new Array(fighters.length).fill(false),styleCount:new Array(fighters.length).fill(0),burstStart:new Array(fighters.length).fill(1),entryGuard:new Array(fighters.length).fill(false),dodgeArmed:new Array(fighters.length).fill(false),dodgeCount:new Array(fighters.length).fill(0),execGuard:new Array(fighters.length).fill(false),shatterGuard:new Array(fighters.length).fill(false),wtCount:new Array(fighters.length).fill(0),snatchAtk:new Array(fighters.length).fill(0),snatchHp:new Array(fighters.length).fill(0),regressCharges:new Array(fighters.length).fill(0),bioGuard:new Array(fighters.length).fill(false),splitLeft:new Array(fighters.length).fill(0),splitMult:new Array(fighters.length).fill(1),rumbling:0,rumblingPct:0,defyUsed:new Array(fighters.length).fill(false),defyHold:false,openGuard:true,dsState:new Array(fighters.length).fill(0),aftermath:false,gumTurns:0,trickNext:false,royalNow:false,gunsNow:false,psychic:null,atkEntryGuard:new Array(fighters.length).fill(false),sleepLeft:new Array(fighters.length).fill(0),sleepArmed:new Array(fighters.length).fill(false),overflow:0,rain:null,freezeLeft:0,shockCount:new Array(fighters.length).fill(0),shadow:null,freezeNext:false,valhallaLeft:0,paintHits:[],eInk:0,eInkPct:0,wc:null,rearIdx:-1,rearWaiting:false,rearUsed:[],senzu:{},senzuFin:false,balloon:0,stretchShot:0,turret:0,hvCount:new Array(fighters.length).fill(0),hvUses:new Array(fighters.length).fill(0),hvEntryGuard:new Array(fighters.length).fill(false),eHvUses:0,excited:false,weCount:new Array(fighters.length).fill(0),weRevived:false,pbRocks:0,pbKey:"",pbStreak:0,rubber:false,rbBounce:0,dizzyStack:0,dizzyLeft:0,bajrangUsed:new Array(fighters.length).fill(false)};
+  try{if(typeof window.cgGameplayStart==="function")window.cgGameplayStart();}catch(e){}
   try{if(typeof syncBgmState==="function")syncBgmState();}catch(e){}
   // BURST: kartu pertama masuk arena langsung dapat boost HP kalau punya fx.burst
   const fx0=resolveFx(eq,efx);
@@ -2764,7 +2765,7 @@ function endBattle(win){
     }
   },bsMs(win?2000:950));
 }
-function finish(win){
+function finish(win){ try{if(typeof window.cgGameplayStop==="function")window.cgGameplayStop();}catch(e){}
   clearTimeout(bt.timer);bt.over=true;
   const lv=bt.lv,first=!diffProg()[state.diff][lv];
   const reward=win?(first?firstClearReward(lv):Math.round(firstClearReward(lv)*.2)):0;
@@ -2775,6 +2776,7 @@ function finish(win){
   const coinLocal=!(typeof currentUser!=="undefined"&&currentUser&&window.CloudDB&&window.CloudDB.claimStoryCoins);
   if(win&&!first)storySetCd(lv);
   if(win){state.cleared[lv]=true;diffProg()[state.diff][lv]=true;if(coinLocal)state.coins+=reward;xpGain(20);
+    try{if(typeof window.cgHappyTime==="function")window.cgHappyTime();}catch(e){}
     fanfare();
     /* 0025: coin dibayar server (first clear sekali, replay ber-cooldown 5 menit).
        Angka lokal di atas cuma untuk UI; klaim yang menetapkan saldo sebenarnya.
@@ -2922,6 +2924,7 @@ function finish(win){
    berpindah ke lobby. Lanjut stage berikutnya / replay / naik lantai tower TIDAK
    lewat sini, jadi tidak ada banner exit di tengah alur battle. */
 function leaveBattleToLobby(){
+  try{if(typeof window.cgGameplayStop==="function")window.cgGameplayStop();}catch(e){}
   const ov=document.getElementById("overlay");
   if(ov)ov.classList.remove("show");
   const done=()=>{

@@ -3571,7 +3571,7 @@ function renderLobby() {
             <div class="bldg-ground-glow"></div>
           </div>
 
-          <div class="chibi-bldg" style="--BC:#22d3ee" onclick="if(typeof openStory==='function')openStory();" title="Enter Story Gate">
+          <div id="nhFtueStoryGate" data-ftue="story-gate" class="chibi-bldg" style="--BC:#22d3ee" onclick="if(typeof openStory==='function')openStory();" title="Enter Story Gate">
             <div class="bldg-sign">
               <span class="bldg-title">STORY GATE</span>
             </div>
@@ -3776,7 +3776,7 @@ function renderLobby() {
           <span class="dock-label">AUTO ROLL</span>
         </button>
 
-        <button class="dock-btn" type="button" onclick="if(typeof openDeckModal==='function')openDeckModal();" title="Deck Party">
+        <button id="nhDockDeckBtn" data-ftue="deck-btn" class="dock-btn" type="button" onclick="if(typeof openDeckModal==='function')openDeckModal();" title="Deck Party">
           <span class="dock-ic-wrap">
             <img class="dock-ic" src="assets/icons/dock/deck.webp" alt="" decoding="async">
           </span>
