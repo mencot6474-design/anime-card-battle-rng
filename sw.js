@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v670-settingsHazardPolish';
+const CACHE_NAME = 'anime-card-battle-v672-claimGuestSafe';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

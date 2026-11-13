@@ -67,6 +67,27 @@ const CloudDB = {
     }, true /* isRegister */);
   },
 
+  /* 0048: Terbitkan token klaim 1x dari sesi guest yang sedang aktif agar
+     seluruh progres server (koin, gem, level, rebirth, pet/art/pass, kartu)
+     bisa dipindahkan ke username baru tanpa reset. */
+  async issueGuestClaim(guestUsername) {
+    if (!guestUsername) return null;
+    return await this._authRpc(guestUsername, "issue_guest_claim", {}, false);
+  },
+
+  /* 0048: Panggil RPC complete_guest_claim dari JWT target (akun baru) untuk
+     memindahkan row player_saves & seluruh ledger guest secara atomik. */
+  async completeGuestClaim(newUsername, claimToken, passHash) {
+    if (!newUsername || !claimToken) return null;
+    const key = String(newUsername).toLowerCase();
+    const ph = passHash || this._localPassHash(key);
+    return await this._authRpc(newUsername, "complete_guest_claim", {
+      p_token: claimToken,
+      p_new_username: key,
+      p_new_password_hash: ph || null
+    }, true /* isRegister: baris player_saves target belum ada */);
+  },
+
   async saveState(username, stateObj, opts) {
     if (!username) return;
     const allowGemDecrease = !!(opts && opts.allowGemDecrease);

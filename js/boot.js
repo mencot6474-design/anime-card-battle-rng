@@ -896,27 +896,91 @@ function _rememberLink(name, passH){
 async function claimNamedAccount(){
   const uEl=document.getElementById("linkUser"), pEl=document.getElementById("linkPass");
   const name=(uEl&&uEl.value||"").trim(), pass=(pEl&&pEl.value||"");
-  if(typeof window.isCrazyGames==="function" && window.isCrazyGames()){ _linkMsg("Nonaktif di CrazyGames."); return; }
-  if(!/^[a-zA-Z0-9_]{3,16}$/.test(name)){ _linkMsg("Username 3–16 karakter (huruf/angka/_ saja)."); return; }
-  if(pass.length<4){ _linkMsg("Password minimal 4 karakter."); return; }
-  if(!window.CloudAuth || !window.CloudDB || !navigator.onLine){ _linkMsg("Butuh koneksi Cloud. Periksa internet lalu coba lagi."); return; }
+  const isEn = typeof window.GameLang === "function" ? window.GameLang() === "en" : false;
+  if(typeof window.isCrazyGames==="function" && window.isCrazyGames()){ _linkMsg(isEn ? "Disabled on CrazyGames." : "Nonaktif di CrazyGames."); return; }
+  if(localStorage.getItem("aab-linked-user")){
+    _linkMsg(isEn ? "This device is already linked. Unlink first to claim a guest save." : "Perangkat ini sudah tertaut akun. Putuskan tautan dulu jika ingin klaim akun guest baru.");
+    return;
+  }
+  if(!/^[a-zA-Z0-9_]{3,16}$/.test(name)){ _linkMsg(isEn ? "Username must be 3–16 characters (letters, numbers, _ only)." : "Username 3–16 karakter (huruf/angka/_ saja)."); return; }
+  if(pass.length<4){ _linkMsg(isEn ? "Password must be at least 4 characters." : "Password minimal 4 karakter."); return; }
+  if(!window.CloudAuth || !window.CloudDB || !navigator.onLine){ _linkMsg(isEn ? "Cloud connection required. Check internet and try again." : "Butuh koneksi Cloud. Periksa internet lalu coba lagi."); return; }
   const key=name.toLowerCase(), passH=hashPass(pass);
-  _linkMsg("Menyiapkan akun…");
+  const oldUser = typeof currentUser === "string" && currentUser ? currentUser : "";
+  const oldKey = oldUser.toLowerCase();
+  if(oldKey && key === oldKey){
+    _linkMsg(isEn ? "Choose a new username different from your current guest ID." : "Gunakan username baru yang berbeda dari nama guest saat ini.");
+    return;
+  }
+  _linkMsg(isEn ? "Syncing guest progress…" : "Menyinkronkan progres guest…");
   try{
+    const cur = JSON.parse(JSON.stringify(state || freshState()));
+    if(oldUser){
+      try{ await window.CloudDB.saveState(oldUser, cur); }catch(e){}
+    }
+    let claimTok = null;
+    if(oldUser && typeof window.CloudDB.issueGuestClaim === "function"){
+      const iss = await window.CloudDB.issueGuestClaim(oldUser);
+      if(iss && iss.ok && iss.token){
+        claimTok = iss.token;
+      } else if(iss && iss.msg === "ALREADY_CLAIMED"){
+        _linkMsg(isEn ? "This save was already claimed. Use Sign In instead." : "Akun ini sudah pernah diklaim. Gunakan Masuk Akun.");
+        return;
+      } else if(!(iss && iss.msg === "NO_GUEST_SAVE")){
+        _linkMsg(isEn ? "Could not verify guest save on server. Please try again." : "Gagal memverifikasi progres guest di server. Coba lagi.");
+        return;
+      }
+    }
+    _linkMsg(isEn ? "Preparing credentials…" : "Menyiapkan kredensial akun…");
     const ep=await window.CloudAuth.ensurePass(key, passH);
     if(!ep || !ep.ok){
       const r=(ep && ep.reason) || "ditolak";
-      _linkMsg(r==="USER_EXISTS" ? "Nama itu sudah dipakai. Pakai “Masuk Akun” kalau itu punyamu." : ("Gagal menyiapkan akun: "+r));
+      _linkMsg(r==="USER_EXISTS"
+        ? (isEn ? "Username is already taken. Use “Sign In” if it belongs to you." : "Nama itu sudah dipakai. Pakai “Masuk Akun” kalau itu punyamu.")
+        : (r==="RATE_LIMIT"
+          ? (isEn ? "Too many attempts. Wait a moment and try again." : "Terlalu sering mencoba, tunggu sebentar lalu coba lagi.")
+          : ((isEn ? "Failed to prepare account: " : "Gagal menyiapkan akun: ") + r)));
       return;
     }
-    const cur = JSON.parse(JSON.stringify(state || freshState()));
-    const reg=await window.CloudDB.registerUser(name, cur, passH);
-    if(!reg || reg.ok===false){ _linkMsg("Server menolak klaim: "+((reg&&reg.msg)||"unknown")); return; }
-    try{ await window.CloudAuth.connect(key, passH); }catch(e){}
-    try{ localStorage.setItem("aab-state-v2:"+name, JSON.stringify(cur)); }catch(e){}
+    let finalSave = cur;
+    if(claimTok && typeof window.CloudDB.completeGuestClaim === "function"){
+      _linkMsg(isEn ? "Transferring server progress…" : "Memindahkan seluruh progres server…");
+      const claimed = await window.CloudDB.completeGuestClaim(name, claimTok, passH);
+      if(!claimed || !claimed.ok){
+        try{ window.CloudAuth.clearSession(key); }catch(e){}
+        const msg = (claimed && claimed.msg) || "unknown";
+        if(msg === "USERNAME_TAKEN" || msg === "TARGET_ALREADY_HAS_SAVE"){
+          _linkMsg(isEn ? "Username is already taken. Use “Sign In” if it belongs to you." : "Nama itu sudah dipakai akun lain. Pakai “Masuk Akun” kalau itu punyamu.");
+        } else if(msg === "ALREADY_CLAIMED"){
+          _linkMsg(isEn ? "This guest save was already claimed." : "Save guest ini sudah pernah diklaim.");
+        } else {
+          _linkMsg((isEn ? "Claim rejected by server: " : "Server menolak klaim: ") + msg);
+        }
+        return;
+      }
+      if(claimed.save_data) finalSave = claimed.save_data;
+      window.CloudAuth._linked[key] = true;
+    } else {
+      const reg=await window.CloudDB.registerUser(name, cur, passH);
+      if(!reg || reg.ok===false){
+        try{ window.CloudAuth.clearSession(key); }catch(e){}
+        _linkMsg((isEn ? "Claim rejected by server: " : "Server menolak klaim: ")+((reg&&reg.msg)||"unknown"));
+        return;
+      }
+      try{ await window.CloudAuth.connect(key, passH); }catch(e){}
+    }
+    try{ localStorage.setItem("aab-state-v2:"+name, JSON.stringify(finalSave)); }catch(e){}
+    if(oldUser){
+      try{
+        localStorage.removeItem("aab-state-v2:"+oldUser);
+        window.CloudAuth.clearSession(oldKey);
+        const uMap = getUsers();
+        if(uMap && uMap[oldKey]){ delete uMap[oldKey]; saveUsers(uMap); }
+      }catch(e){}
+    }
     _rememberLink(name, passH);
     localStorage.removeItem("aab_guest_user"); localStorage.removeItem("aab_guest_pass");
-    _linkMsg("Tertaut sebagai "+name+". Memuat…");
+    _linkMsg((isEn ? "Linked as " : "Tertaut sebagai ")+name+(isEn ? ". Loading…" : ". Memuat…"));
     enterGame(name, false);
   }catch(e){ console.error("claim err:", e); _linkMsg("Error: "+(e&&e.message||e)); }
 }
