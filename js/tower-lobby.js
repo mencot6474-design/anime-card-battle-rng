@@ -2879,7 +2879,8 @@ const LOBBY_CHIBI_SLUGS = new Set([
   'omni-sovereign', 'otherworldly-being', 'paper-pal', 'psychic-esper', 'puppeteer',
   'regressor', 'royal-vanguard', 'rubberbound-captain', 'ruler', 'sand-vessel',
   'sea-sovereign', 'shadow-heir', 'shadow-king', 'shadow-monarch', 'sixfold-prophet',
-  'solar-brawler', 'soul-reaper'
+  'solar-brawler', 'soul-reaper', 'sun-god', 'sunbreath-swordsman', 'the-griefer',
+  'the-struggler'
 ]);
 
 function lobbyChibiSrc(artPath) {
