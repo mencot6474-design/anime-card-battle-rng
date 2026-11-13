@@ -1012,25 +1012,47 @@ const CloudDB = {
     return await this._authRpc(username, "guard_nuke", { p_signal: "login" });
   },
 
-  /** Unit 4b: server-authoritative trait reroll */
+  /** Unit 4b / 0050: server-authoritative trait reroll (syncs charTraits + variants + coins) */
   async traitRoll(username, stackId) {
     if (!username || !stackId) return null;
     const res = await this._authRpc(username, "trait_roll", { p_stack_id: stackId });
     if (!res) return null;
-    if (res.ok) {
-      const ST = this._st();
-      if (ST) {
-        if (typeof res.coins === "number" && ST.coins !== res.coins) { ST.coins = res.coins; }
-        if (Array.isArray(ST.stacks)) {
-          const s = ST.stacks.find(x => x && x.id === stackId);
-          if (s) {
-            if (typeof setCharTrait === "function") setCharTrait(s.char, res.trait || "common");
-            else s.trait = res.trait || "common";
-          }
-        }
-        this._paint();
-        try { if (typeof renderTrait === "function") renderTrait(); } catch(e){}
+    const ST = this._st();
+    if (res.ok && ST) {
+      if (typeof res.coins === "number") ST.coins = res.coins;
+      const charId = res.char || (Array.isArray(ST.stacks) ? (ST.stacks.find(x => x && x.id === stackId) || {}).char : null);
+      if (charId) {
+        if (typeof setCharTrait === "function") setCharTrait(charId, res.trait || "common");
+        else if (Array.isArray(ST.stacks)) ST.stacks.forEach(x => { if (x && x.char === charId) x.trait = res.trait || "common"; });
       }
+      this._paint();
+    } else if (!res.ok && ST && typeof res.coins === "number") {
+      ST.coins = res.coins;
+      this._paint();
+    }
+    return res;
+  },
+
+  /** 0050: server-authoritative batch auto roll for Traits V2 (up to 50 rolls/RPC) */
+  async traitAutoRoll(username, charId, targets, maxRolls) {
+    if (!username || !charId || !Array.isArray(targets) || !targets.length) return null;
+    const res = await this._authRpc(username, "trait_auto_roll", {
+      p_char: String(charId),
+      p_targets: targets.map(String),
+      p_max: Math.max(1, Math.min(50, parseInt(maxRolls, 10) || 25))
+    });
+    if (!res) return null;
+    const ST = this._st();
+    if (res.ok && ST) {
+      if (typeof res.coins === "number") ST.coins = res.coins;
+      if (res.trait) {
+        if (typeof setCharTrait === "function") setCharTrait(charId, res.trait);
+        else if (Array.isArray(ST.stacks)) ST.stacks.forEach(x => { if (x && x.char === charId) x.trait = res.trait; });
+      }
+      this._paint();
+    } else if (!res.ok && ST && typeof res.coins === "number") {
+      ST.coins = res.coins;
+      this._paint();
     }
     return res;
   }

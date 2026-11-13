@@ -7,10 +7,10 @@
   "scope": "./",
   "display": "standalone",
   "display_override": ["standalone", "fullscreen", "minimal-ui"],
-  "orientation": "landscape",
+  "orientation": "any",
   "prefer_related_applications": false,
-  "background_color": "#0b0c10",
-  "theme_color": "#1f2833",
+  "background_color": "#050505",
+  "theme_color": "#050505",
   "icons": [
     {
       "src": "icon-192.png",

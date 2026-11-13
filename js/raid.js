@@ -3642,20 +3642,37 @@ function confirmRareReplace(k,auto){
     const go=document.getElementById("trRareGo");if(go)go.onclick=()=>finish(true);
   });
 }
+let traitRollBusy=false;
 async function rollTrait(skipGuard){
-  if(autoRoll)return;
+  if(autoRoll||traitRollBusy)return;
   if(state.coins<TRAIT_COST){trShowToast(`Need ${fmt(TRAIT_COST)} Credits to roll!`);return;}
-  const tgt=traitTargetBase();if(!tgt)return;
+  const tgt=traitTargetBase();if(!tgt||!tgt.repStack)return;
   const curTrait=charTraitOf(tgt.char);
   if(!skipGuard&&isRareTrait(curTrait)){
     if(!(await confirmRareReplace(curTrait,false)))return;
     if(autoRoll||state.coins<TRAIT_COST)return;
   }
-  coinSpend(TRAIT_COST);
+  let k;
+  const useCloud=(typeof srOn==="function"&&srOn()&&typeof CloudDB!=="undefined"&&CloudDB.traitRoll&&typeof currentUser!=="undefined"&&currentUser);
+  if(useCloud){
+    traitRollBusy=true;
+    let res=null;
+    try{ res=await CloudDB.traitRoll(currentUser,tgt.repStack.id); }
+    catch(e){ res=null; }
+    finally{ traitRollBusy=false; }
+    if(!res||!res.ok){
+      trShowToast(!res?"Server connection failed — try again.":(res.msg==="COIN_LESS"?`Need ${fmt(TRAIT_COST)} Credits to roll!`:`Server rejected roll (${res.msg||"ERROR"})`));
+      trPaintAll(false);
+      return;
+    }
+    k=res.trait||"common";
+  }else{
+    coinSpend(TRAIT_COST);
+    k=rollTraitPick();
+    setCharTrait(tgt.char,k);
+  }
   tr2State.sessionRolls++;
   tr2State.sessionSpent+=TRAIT_COST;
-  const k=rollTraitPick();
-  setCharTrait(tgt.char,k);
   tr2State.discovered.add(k);
   tr2State.lastRolls.unshift(k);
   if(tr2State.lastRolls.length>10)tr2State.lastRolls.length=10;
@@ -3735,10 +3752,55 @@ function stopAutoRoll(){
   if(!battleLive()&&typeof render==="function")render();
   trPaintAll(false);
 }
-function autoTick(){
+let autoTickBusy=false;
+async function autoTick(){
   if(!autoRoll)return;
+  if(autoTickBusy){autoRollTimer=setTimeout(autoTick,120);return;}
   if(state.coins<TRAIT_COST){stopAutoRoll();trShowToast("AUTO ROLL STOPPED · OUT OF CREDITS");return;}
   const tgt=traitTargetBase();if(!tgt){stopAutoRoll();return;}
+  const useCloud=(typeof srOn==="function"&&srOn()&&typeof CloudDB!=="undefined"&&CloudDB.traitAutoRoll&&typeof currentUser!=="undefined"&&currentUser);
+  if(useCloud){
+    autoTickBusy=true;
+    let res=null;
+    try{ res=await CloudDB.traitAutoRoll(currentUser,tgt.char,[...autoTargets],25); }
+    catch(e){ res=null; }
+    finally{ autoTickBusy=false; }
+    if(!res||!res.ok){
+      stopAutoRoll();
+      trShowToast(res&&res.msg==="COIN_LESS"?"AUTO ROLL STOPPED · OUT OF CREDITS":"AUTO ROLL STOPPED · SERVER ERROR");
+      return;
+    }
+    const rolls=Array.isArray(res.rolls)?res.rolls:(res.trait?[res.trait]:[]);
+    const rolledN=Math.max(0,Number(res.rolled)||rolls.length);
+    autoRollN+=rolledN;
+    tr2State.sessionRolls+=rolledN;
+    tr2State.sessionSpent+=Number(res.spent)||(rolledN*TRAIT_COST);
+    for(const rk of rolls){
+      tr2State.discovered.add(rk);
+      tr2State.lastRolls.unshift(rk);
+    }
+    if(tr2State.lastRolls.length>10)tr2State.lastRolls.length=10;
+    const k=res.trait||rolls[rolls.length-1]||charTraitOf(tgt.char);
+    if(typeof sfx!=="undefined"&&sfx.crit)sfx.crit();
+    if(res.hit&&k&&TRAIT[k]){
+      autoStop();save();renderShell();
+      if(!battleLive()&&typeof render==="function")render();
+      trPaintAll(true);
+      trShowToast(`TARGET HIT! ${cardName(tgt.char)} & variants gained ${TRAIT[k].name} (${TRAIT[k].rar})!`);
+      return;
+    }
+    if(!autoRoll||res.reason==="COIN_LESS"||state.coins<TRAIT_COST){
+      autoStop();save();renderShell();
+      if(!battleLive()&&typeof render==="function")render();
+      trPaintAll(false);
+      if(res.reason==="COIN_LESS"||state.coins<TRAIT_COST)trShowToast("AUTO ROLL STOPPED · OUT OF CREDITS");
+      return;
+    }
+    save();renderShell();
+    trPaintAll(true);
+    autoRollTimer=setTimeout(autoTick,550);
+    return;
+  }
   coinSpend(TRAIT_COST);autoRollN++;
   tr2State.sessionRolls++;
   tr2State.sessionSpent+=TRAIT_COST;
