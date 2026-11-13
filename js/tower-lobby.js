@@ -2880,7 +2880,8 @@ const LOBBY_CHIBI_SLUGS = new Set([
   'regressor', 'royal-vanguard', 'rubberbound-captain', 'ruler', 'sand-vessel',
   'sea-sovereign', 'shadow-heir', 'shadow-king', 'shadow-monarch', 'sixfold-prophet',
   'solar-brawler', 'soul-reaper', 'sun-god', 'sunbreath-swordsman', 'the-griefer',
-  'the-struggler', 'threeblade-ronin', 'thriller-king', 'thunder-prodigy'
+  'the-struggler', 'threeblade-ronin', 'thriller-king', 'thunder-prodigy', 'time-master',
+  'time-trickster', 'titan-hunter', 'tremor-emperor', 'trickster-ace'
 ]);
 
 function lobbyChibiSrc(artPath) {
