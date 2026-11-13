@@ -1053,9 +1053,23 @@ function initBgm(mode = "lobby") {
   return a;
 }
 
+/* Tower Infinite mempertahankan battle BGM terus menerus selama antar-lantai
+   (bt.over = true / bt = null sesaat sebelum towerEnter(f+1) memulai lantai baru). */
+function _isBgmBattle() {
+  if (battleLive()) return true;
+  try {
+    if (typeof route === "function" && route() === "#/tower"
+        && typeof towerView !== "undefined" && towerView === "battle"
+        && typeof towerRun !== "undefined" && towerRun) {
+      return true;
+    }
+  } catch (e) {}
+  return false;
+}
+
 function playBgm(mode) {
   if (!state || state.muted || document.hidden) return;
-  const target = mode === "battle" || (!mode && battleLive()) ? "battle" : "lobby";
+  const target = mode === "battle" || (!mode && _isBgmBattle()) ? "battle" : "lobby";
   const other = target === "battle" ? "lobby" : "battle";
   const prevMode = bgmMode;
   bgmMode = target;
@@ -1088,7 +1102,7 @@ function syncBgmState() {
   if (!state) return;
   if (state.muted || document.hidden) {
     pauseBgm();
-  } else if (battleLive()) {
+  } else if (_isBgmBattle()) {
     playBgm("battle");
   } else {
     playBgm("lobby");
