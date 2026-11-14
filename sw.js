@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v689-rebirthLivePatch';
+const CACHE_NAME = 'anime-card-battle-v690-dockTransparent';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
