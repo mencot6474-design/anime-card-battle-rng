@@ -412,8 +412,8 @@
     if (phase === 1) {
       badge = 'STEP 01 / 07';
       line = isEn
-        ? 'Welcome to <b>Anime Card Battle RNG</b>, Operator! Monsters are breaching the Hazard Sector — summon heroes, equip your strongest squad, and clear <b>Stage 01</b>!'
-        : 'Selamat datang di <b>Anime Card Battle RNG</b>, Operator! Sektor Hazard sedang diserang — panggil hero, pasang tim terkuatmu, lalu taklukkan <b>Stage 01</b>!';
+        ? 'Your mission: <b>ROLL</b> heroes → equip your <b>4 strongest</b> → they auto-battle. Drop enemy <b>HP to 0</b> to clear the stage!'
+        : 'Misimu: <b>ROLL</b> hero → pasang <b>4 terkuat</b> → mereka auto-battle. Bikin <b>HP musuh ke 0</b> buat clear stage!';
       ctaLabel = isEn ? 'START MISSION' : 'MULAI MISI';
       ctaAttr = 'onclick="hzFtueNext(2)"';
     } else if (phase === 2) {
@@ -426,8 +426,8 @@
           '<span class="hz-ftue-prog-txt">ROLLS ' + capped + ' / 10</span>' +
         '</div>';
       line = isEn
-        ? 'First objective: summon <b>10 Heroes</b>! Tap <b>ROLL</b> (or <b>AUTO ROLL</b>) below until your summons reach <b>10 / 10</b>.'
-        : 'Misi pertama: summon minimal <b>10×</b>! Tekan <b>ROLL</b> (atau <b>AUTO ROLL</b>) di bawah sampai mencapai <b>10 / 10</b>.';
+        ? 'Summon <b>10 heroes</b>! Tap <b>ROLL</b> / <b>AUTO ROLL</b> until <b>10 / 10</b>. Watch the <b>1 in N</b> odds — rarer cards are stronger.'
+        : 'Summon <b>10 hero</b>! Tekan <b>ROLL</b> / <b>AUTO ROLL</b> sampai <b>10 / 10</b>. Lihat odds <b>1 in N</b> — makin langka makin kuat.';
       ctaLabel = isEn ? 'ROLL NOW (' + capped + '/10)' : 'ROLL SEKARANG (' + capped + '/10)';
       ctaAttr = 'onclick="hzFtueRoll()"';
       targetEl = document.getElementById('nhDockRollBtn');
@@ -442,8 +442,8 @@
     } else if (phase === 4) {
       badge = 'STEP 04 / 07';
       line = isEn
-        ? 'Inside Deck Matrix, tap the highlighted <b>EQUIP BEST</b> button to auto-equip your 4 strongest heroes!'
-        : 'Di dalam Deck, klik tombol <b>EQUIP BEST</b> yang disorot untuk langsung memasang 4 hero terkuat!';
+        ? 'Tap <b>EQUIP BEST</b> to auto-field your 4 strongest. Power = <b>ATK</b> (damage) + <b>HP</b> (survival) — bigger numbers win fights.'
+        : 'Tekan <b>EQUIP BEST</b> buat pasang 4 terkuat otomatis. Kuat = <b>ATK</b> (damage) + <b>HP</b> (bertahan) — angka gede menang battle.';
       targetEl = document.getElementById('dkActBest');
       if (targetEl && isElVisible(targetEl)) {
         const r = targetEl.getBoundingClientRect();

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v687-loading6s';
+const CACHE_NAME = 'anime-card-battle-v688-ftueLoopConcept';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
