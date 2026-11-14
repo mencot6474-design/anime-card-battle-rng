@@ -8776,7 +8776,7 @@ html body.on-lobby {
   /* ================= WALKING LIVING CARDS (PRODUCTION HAZARD BEVEL + 3D PHYSICS + DRAG/CLASH) ================= */
   .walkers-layer {
     position: absolute;
-    left: 0; right: 0; bottom: 28%;
+    left: 0; right: 0; bottom: 5%;
     height: 29%;
     z-index: 20;
     pointer-events: none;
@@ -9608,7 +9608,7 @@ html body.on-lobby {
     .street-pylon { width: 44px; height: 92px; }
     .pylon-cone { width: 96px; }
     .pylon-floor-pool { width: 90px; height: 20px; }
-    .walkers-layer { bottom: 26%; height: 28%; }
+    .walkers-layer { bottom: 22%; height: 28%; }
     .card-walker { width: 76px; height: 108px; }
     .card-walker.is-chibi { width: 88px; height: 98px; }
     .nh-bottom-hud { padding: 0 12px 6px; gap: 4px; }

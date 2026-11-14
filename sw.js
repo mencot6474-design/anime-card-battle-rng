@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v691-chibiStreetLine';
+const CACHE_NAME = 'anime-card-battle-v692-dockStreetConnect';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

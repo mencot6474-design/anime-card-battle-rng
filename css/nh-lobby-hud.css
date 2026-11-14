@@ -140,9 +140,10 @@
   align-items: center;
   gap: 7px;
   padding: 0 12px calc(10px + env(safe-area-inset-bottom, 0px));
-  /* Transparan ngikut lobby (perintah user 2026-11-14): bar solid sebelumnya
-     nutupin art karakter di non-fullscreen. Tile tombol tetap solid terpisah. */
-  background: transparent;
+  /* Dock nyambung sama jalan chibi (perintah user 2026-11-14): pakai ground
+     dari background lobby yang sama, anchor bawah, biar street terlihat
+     lanjut ke area dock. Tile tombol tetap solid terpisah. */
+  background: url('../assets/bg/lobby-wuwa-genshin.webp') center bottom / cover;
 }
 
 /* ------------------------------- BUFF CHIPS ---------------------------------- */
