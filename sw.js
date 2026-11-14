@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v686-wbShopGrantFix';
+const CACHE_NAME = 'anime-card-battle-v687-loading6s';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

@@ -1287,7 +1287,7 @@ function runLoading(done){
     tipEl.textContent=LD_TIPS[tipIdx];
   },3400);
 
-  const dur=4200, t0=Date.now();
+  const dur=2600, t0=Date.now();
   let completed=false;
   let raf=null;
 
@@ -1347,7 +1347,7 @@ function runLoading(done){
         grant.classList.add("show");
       }
       /* auto-advance: tidak ada jalan buntu kalau tombol tidak terjangkau */
-      setTimeout(advance,2600);
+      setTimeout(advance,1600);
     },900);
   }
 
