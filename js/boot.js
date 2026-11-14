@@ -504,6 +504,7 @@ window.syncBattleBackground = function() {
   if(bgLayer.dataset.lastBg===activeBg)return;
   bgLayer.dataset.lastBg=activeBg;
   bgLayer.style.backgroundImage = 'url("' + activeBg + '")';
+  document.documentElement.style.setProperty('--lobby-bg', 'url("' + activeBg + '")');
 };
 
 window.mountArena = function mountArena(){

@@ -1847,6 +1847,7 @@ window.cycleLobbyBackground = function() {
     layer.style.opacity = '0.25';
     setTimeout(() => {
       layer.style.backgroundImage = 'url("' + LOBBY_BGS[nextKey].src + '")';
+      document.documentElement.style.setProperty('--lobby-bg', 'url("' + LOBBY_BGS[nextKey].src + '")');
       layer.style.opacity = '1';
     }, 140);
   }
