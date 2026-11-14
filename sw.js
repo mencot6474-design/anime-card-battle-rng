@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v694-stageFitDock';
+const CACHE_NAME = 'anime-card-battle-v695-unityScene';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

@@ -146,6 +146,21 @@
   background: transparent;
 }
 
+/* UNITY (user 2026-11-14): satu background lobby full-shell supaya top-HUD &
+   dock tidak "motong" scene. Village-world jadi full-height, HUD & dock overlay
+   transparan di atas gambar yang sama; chibi jalan di street di atas dock. */
+@media (pointer: fine) {
+  .nh-shell { background: var(--lobby-bg, none) center / cover; }
+  .nh-shell .village-world { position: absolute; inset: 0; height: 100%; min-height: 0; }
+  .nh-shell .stage-bg-layer { background-image: none !important; }
+  .nh-shell .nh-top-hud { position: absolute; top: 0; left: 0; right: 0; background: transparent; }
+  .nh-shell .nh-bottom-hud { position: absolute; bottom: 0; left: 0; right: 0; }
+  .nh-shell .walkers-layer { bottom: 120px; }
+}
+/* Markup mati (tanpa CSS/JS pemakai) yang bocor saat HUD transparan; sembunyikan. */
+#battleIntroOverlay { display: none !important; }
+body:not(.battle-full) #fightFx { display: none !important; }
+
 /* ------------------------------- BUFF CHIPS ---------------------------------- */
 .nh-shell .buff-strip {
   gap: 6px; flex-wrap: nowrap;
