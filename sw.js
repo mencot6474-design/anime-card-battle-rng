@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v693-dockBgSync';
+const CACHE_NAME = 'anime-card-battle-v694-stageFitDock';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

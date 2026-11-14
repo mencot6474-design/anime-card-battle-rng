@@ -143,7 +143,7 @@
   /* Dock nyambung sama jalan chibi (perintah user 2026-11-14): pakai ground
      dari background lobby yang sama, anchor bawah, biar street terlihat
      lanjut ke area dock. Tile tombol tetap solid terpisah. */
-  background: var(--lobby-bg, url('../assets/bg/lobby-wuwa-genshin.webp')) center bottom / cover;
+  background: transparent;
 }
 
 /* ------------------------------- BUFF CHIPS ---------------------------------- */

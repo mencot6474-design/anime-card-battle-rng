@@ -8203,7 +8203,7 @@ html body.on-lobby {
     position: relative;
     width: max(100%, 1320px);
     height: 100%;
-    min-height: 460px;
+    min-height: 0;
     overflow: hidden;
   }
 

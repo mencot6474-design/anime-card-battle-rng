@@ -1824,6 +1824,26 @@ function getLobbyActiveBg() {
 }
 window.getLobbyActiveBg = getLobbyActiveBg;
 
+/* Sample warna ground (dasar street) dari bg aktif supaya dock bisa pakai
+   warna yang SAMA PERSIS -> jalan chibi terlihat lanjut mulus ke area dock,
+   bukan crop gambar beda yang "nempel". Set --lobby-ground. */
+window.syncDockGround = function (src) {
+  try {
+    var img = new Image();
+    img.onload = function () {
+      try {
+        var c = document.createElement('canvas'); c.width = 8; c.height = 8;
+        var x = c.getContext('2d');
+        x.drawImage(img, 0, Math.floor(img.height * 0.96), img.width, Math.max(1, Math.floor(img.height * 0.04)), 0, 0, 8, 8);
+        var d = x.getImageData(0, 0, 8, 8).data, r = 0, g = 0, b = 0, n = d.length / 4;
+        for (var i = 0; i < d.length; i += 4) { r += d[i]; g += d[i + 1]; b += d[i + 2]; }
+        document.documentElement.style.setProperty('--lobby-ground', 'rgb(' + Math.round(r / n) + ',' + Math.round(g / n) + ',' + Math.round(b / n) + ')');
+      } catch (e) {}
+    };
+    img.src = src;
+  } catch (e) {}
+};
+
 function getLobbyActiveFrame() {
   const key = (typeof state !== 'undefined' && state && state.lobbyFrame && LOBBY_FRAMES[state.lobbyFrame]) 
     ? state.lobbyFrame 
@@ -1848,6 +1868,7 @@ window.cycleLobbyBackground = function() {
     setTimeout(() => {
       layer.style.backgroundImage = 'url("' + LOBBY_BGS[nextKey].src + '")';
       document.documentElement.style.setProperty('--lobby-bg', 'url("' + LOBBY_BGS[nextKey].src + '")');
+      if (typeof window.syncDockGround === 'function') window.syncDockGround(LOBBY_BGS[nextKey].src);
       layer.style.opacity = '1';
     }, 140);
   }
