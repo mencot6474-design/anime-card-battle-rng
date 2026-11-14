@@ -1787,7 +1787,7 @@ function updateRebirthUI(){
   const drwSub=document.getElementById('drwRebirthSub');
   if(drwSub)drwSub.textContent='R'+cnt+' // LUCK ×'+mult+(ready?' · READY':'');
   const rbM=document.getElementById('rebirthModal');
-  if(rbM&&rbM.classList.contains('show')&&typeof renderRebirthModal==='function')renderRebirthModal();
+  if(rbM&&rbM.classList.contains('show')){ if(typeof patchRebirthModalLive==='function')patchRebirthModalLive(); else if(typeof renderRebirthModal==='function')renderRebirthModal(); }
 }
 function onRebirthClick(){
   openRebirthModal();

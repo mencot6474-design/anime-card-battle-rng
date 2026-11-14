@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anime-card-battle-v688-ftueLoopConcept';
+const CACHE_NAME = 'anime-card-battle-v689-rebirthLivePatch';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

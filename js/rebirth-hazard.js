@@ -769,6 +769,46 @@
     if (g && g.classList.contains("open")) renderGuideTable();
   }
 
+  /* Live in-place patch untuk modal yang SEDANG open (dipanggil per tick auto-roll).
+     Hanya mutate text/class/transform node esens — TIDAK rebuild #rbhGrid.innerHTML,
+     jadi tidak flicker / reset scroll / restart animasi. Full renderRebirthModal tetap
+     dipakai saat open & pasca-rebirth (rank/ladder/crest berubah). */
+  function patchRebirthModalLive() {
+    const grid = el("rbhGrid"); if (!grid) return;
+    const cnt = getCount(), es = getEssence(), th = getThreshold(cnt), mult = getMult(cnt);
+    const ready = es >= th;
+    const ratio = Math.max(0, Math.min(1, th > 0 ? (es / th) : 1));
+    const pct = Math.min(100, Math.round(ratio * 100));
+    const need = Math.max(0, th - es), surplus = Math.max(0, es - th);
+    const curTier = tierOf(cnt);
+    const tagCycle = el("rbhTagCycle"); if (tagCycle) tagCycle.textContent = "CYCLE R" + cnt;
+    const tagMult = el("rbhTagMult"); if (tagMult) tagMult.textContent = "×" + mult + " LUCK";
+    const pRank = el("rbhPillRank"); if (pRank) pRank.classList.toggle("ready", ready);
+    const pRankVal = el("rbhPillRankVal"); if (pRankVal) pRankVal.textContent = "R" + cnt + " · " + curTier.badge;
+    const pLuckVal = el("rbhPillLuckVal"); if (pLuckVal) pLuckVal.textContent = "×" + mult;
+    const pPool = el("rbhPillPool"); if (pPool) pPool.classList.toggle("ready", ready);
+    const pPoolVal = el("rbhPillPoolVal"); if (pPoolVal) pPoolVal.textContent = compact(es) + " / " + compact(th) + " (" + pct + "%)";
+    const core = grid.querySelector(".rbh-box.core");
+    if (core) { core.classList.toggle("is-ready", ready); const kb = core.querySelector(".rbh-sec-k b"); if (kb) kb.textContent = ready ? "CRITICAL" : curTier.badge; }
+    const numsB = grid.querySelector(".rbh-mc-nums b"); if (numsB) numsB.textContent = fmtN(es);
+    const track = grid.querySelector(".rbh-track");
+    if (track) { track.setAttribute("aria-valuenow", String(es)); track.setAttribute("aria-valuemax", String(th)); }
+    const fill = grid.querySelector(".rbh-track-fill");
+    if (fill) { fill.style.transform = "scaleX(" + ratio.toFixed(4) + ")"; fill.classList.toggle("ready", ready); }
+    const mcPct = grid.querySelector(".rbh-mc-pct");
+    if (mcPct) { mcPct.textContent = pct + "% CHARGED"; mcPct.classList.toggle("ready", ready); }
+    const mcNeed = grid.querySelector(".rbh-mc-need");
+    if (mcNeed) { mcNeed.textContent = ready ? (surplus > 0 ? ("✓ READY · +" + fmtN(surplus) + " SURPLUS CARRIES OVER") : "✓ THRESHOLD MET · READY TO ASCEND") : ("NEED " + fmtN(need) + " MORE ESSENCE"); mcNeed.classList.toggle("ready", ready); }
+    const sp = grid.querySelector(".rbh-status-pill");
+    if (sp) { sp.classList.toggle("ready", ready); sp.classList.toggle("charging", !ready); const s = sp.querySelector("span"); if (s) s.textContent = ready ? "READY FOR OVERRIDE" : "CHARGING ESSENCE"; }
+    const ignite = el("rbhIgniteBtn");
+    if (ignite) { ignite.disabled = !ready; const top = ignite.querySelector(".rbh-ig-top span"); if (top) top.textContent = ready ? "ACTIVATE REBIRTH" : "INSUFFICIENT ESSENCE"; const sub = ignite.querySelector(".rbh-ig-sub"); if (sub) sub.textContent = ready ? ("ASCEND TO R" + (cnt + 1) + " · ×" + getMult(cnt + 1) + " LUCK") : (pct + "% CHARGED · NEED " + compact(need)); }
+    const note = grid.querySelector(".rbh-ignite-note");
+    if (note) { const nh = ready ? "TRIGGERS <b>5.0s UNSKIPPABLE</b> ASCENSION SHOWCASE" : "KEEP SUMMONING DUPLICATES TO FILL CORE"; if (note.innerHTML !== nh) note.innerHTML = nh; }
+    const perks = grid.querySelectorAll(".rbh-perk");
+    if (perks[2]) { const spn = perks[2].querySelector("span:last-child"); if (spn) { const sh = (ready && surplus > 0) ? ("<em>+" + fmtN(surplus) + " Essence</em> transfers directly into Cycle R" + (cnt + 1) + ".") : ("Excess Essence above " + compact(th) + " automatically rolls into R" + (cnt + 1) + "."); if (spn.innerHTML !== sh) spn.innerHTML = sh; } }
+  }
+
   /* ==================== 5.0-SECOND UNSKIPPABLE SHOWCASE ==================== */
   let showRaf = 0;
   let lockBumpTimer = null;
@@ -1129,6 +1169,7 @@
   window.openRebirthModal = openRebirthModal;
   window.closeRebirthModal = closeRebirthModal;
   window.renderRebirthModal = renderRebirthModal;
+  window.patchRebirthModalLive = patchRebirthModalLive;
   window.executeRebirthFromModal = executeRebirthFromModal;
   window.__rbShowcaseLocked = () => ST.showcaseLocked;
   window.__rbShowcaseActive = () => ST.showcaseActive;
